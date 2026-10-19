@@ -23,7 +23,7 @@ android/app/google-services.json
 # Gizli
 .env
 tmp/
-# Claude: yerel ayar/hook makineye özgü; skill'ler repoya girer ki bulut oturumu görsün (sandık kararı 2026-10-08)
+# Claude: yerel ayar/hook makineye özgü; skill'ler repoya girer ki bulut oturumu görsün (2026-10-08 kararı)
 .claude/*
 !.claude/skills/
 .claude/skills/brag/assets/music/*.mp3

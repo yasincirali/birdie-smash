@@ -1,7 +1,7 @@
 name: iOS — Setup Match (one-time)
 
-# TEK SEFERLİK, elle tetiklenir. com.sandik.birdiesmash için App Store
-# provisioning profili üretip sandık'ın match deposuna (aynı MATCH_GIT_URL)
+# TEK SEFERLİK, elle tetiklenir. com.birdiesmash.app için App Store
+# provisioning profili üretip match deposuna (MATCH_GIT_URL)
 # yazar. Sertifika takım geneli tektir; yalnız profil eklenir.
 # Önkoşul: bundle id Apple Developer'da kayıtlı olmalı.
 

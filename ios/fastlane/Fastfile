@@ -2,12 +2,12 @@ require "shellwords"
 
 default_platform(:ios)
 
-# Harçlıklarım `ios/fastlane/Fastfile`'ından türetildi (Birdie Smash, 2026-10-19; kök: sandık
+# Harçlıklarım `ios/fastlane/Fastfile`'ından türetildi (Birdie Smash, 2026-10-19; kök: Harçlıklarım
 # pipeline'ını örnek al"). Uzantı hedefi, kapalı-train tespiti ve harici grup
-# dağıtımı BİLİNÇLİ olarak yok: tek hedef, ilk sürüm. Gerekince sandık'tan
+# dağıtımı BİLİNÇLİ olarak yok: tek hedef, ilk sürüm. Gerekince Harçlıklarım'dan
 # aynı bloklar taşınır.
 
-BUNDLE_ID = "com.sandik.birdiesmash"
+BUNDLE_ID = "com.birdiesmash.app"
 PUBSPEC_PATH = File.expand_path("../../pubspec.yaml", __dir__)
 
 def asc_api_key
@@ -57,7 +57,7 @@ platform :ios do
     keychain_path = File.expand_path("~/Library/Keychains/birdiesmash_ci-db")
 
     # Headless runner'da izole, kilidi açık keychain; aksi hâlde codesign
-    # etkileşimli parola ister ve job asılır (sandık'ta yaşandı).
+    # etkileşimli parola ister ve job asılır (daha önce yaşandı).
     if is_ci
       create_keychain(
         name: "birdiesmash_ci",
@@ -71,7 +71,7 @@ platform :ios do
       existing = sh("security list-keychains -d user", log: false)
                    .lines.map { |l| l.strip.delete('"') }.reject(&:empty?)
       sh("security list-keychains -d user -s #{([keychain_path] + existing).uniq.shelljoin}")
-      # `log: false` ŞART: repo herkese açıksa parola günlüğe sızar (sandık #46).
+      # `log: false` ŞART: repo herkese açıksa parola günlüğe sızar (bilinen sızıntı riski).
       sh("security unlock-keychain -p #{ENV['MATCH_PASSWORD'].to_s.shellescape} #{keychain_path.shellescape}", log: false)
     end
 

@@ -59,7 +59,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          # Sürüm sabit (sandık kararı): stable ilerleyince analyze kendiliğinden kırılmasın.
+          # Sürüm sabit (Harçlıklarım ile aynı karar): stable ilerleyince analyze kendiliğinden kırılmasın.
           flutter-version: 3.47.2
           cache: true
 
