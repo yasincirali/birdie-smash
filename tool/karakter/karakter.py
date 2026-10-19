@@ -1,0 +1,214 @@
+# Birdie Smash oyuncusu — eklemli rig + hareket seti + sprite sheet (yasin 2026-10-19: "hareket modelleme olarak kusursuz").
+# Yaklaşım: kemik/skin yerine parçalı (oyuncak figür) gövde; her karede eklem KONUMLARI hedef olarak verilir, dirsek/diz
+# iki-kemik IK ile çözülür → uzuv boyları hiç bozulmaz, pozlar insan diliyle ("bilek baş üstünde, dirsek yüksek") yazılır.
+# Anahtar pozlar arasında kosinüs geçiş + hız eğrisi (hazırlık yavaş, temas hızlı, devam sönümlü).
+# Çıktı: sheet.png (renk), mask.png (R=forma G=raket çerçevesi B=kafa bandı A=bileklik), meta.json.
+import bpy, math, sys, json, os
+from mathutils import Vector, Matrix
+OUT=sys.argv[sys.argv.index('--')+1] if '--' in sys.argv else '/tmp/bs'
+MODE=sys.argv[sys.argv.index('--')+2] if '--' in sys.argv and len(sys.argv)>sys.argv.index('--')+2 else 'full'   # 'keys' = yalnız anahtar pozlar (önizleme)
+os.makedirs(OUT,exist_ok=True)
+bpy.ops.wm.read_factory_settings(use_empty=True)
+sc=bpy.context.scene
+def mat(name,col,rough=.6):
+    m=bpy.data.materials.new(name); m.use_nodes=True; b=m.node_tree.nodes['Principled BSDF']; b.inputs['Base Color'].default_value=(*col,1); b.inputs['Roughness'].default_value=rough; return m
+def emis(name,col):
+    m=bpy.data.materials.new(name); m.use_nodes=True; nt=m.node_tree; nt.nodes.clear(); e=nt.nodes.new('ShaderNodeEmission'); e.inputs[0].default_value=(*col,1); e.inputs[1].default_value=1; o=nt.nodes.new('ShaderNodeOutputMaterial'); nt.links.new(e.outputs[0],o.inputs[0]); return m
+def holdout(name):
+    m=bpy.data.materials.new(name); m.use_nodes=True; nt=m.node_tree; nt.nodes.clear(); h=nt.nodes.new('ShaderNodeHoldout'); o=nt.nodes.new('ShaderNodeOutputMaterial'); nt.links.new(h.outputs[0],o.inputs[0]); return m
+SKIN=mat('ten',(0.93,0.72,0.56)); FORMA=mat('forma',(0.80,0.80,0.80)); SORT=mat('sort',(0.12,0.14,0.2)); SAC=mat('sac',(0.16,0.1,0.07)); BEYAZ=mat('beyaz',(0.95,0.95,0.93)); CERCEVE=mat('cerceve',(0.85,0.85,0.85),.35); TEL=mat('tel',(0.85,0.85,0.85),.4); BANT=mat('bant',(0.85,0.85,0.85)); BILEK=mat('bilek',(0.85,0.85,0.85)); TUY=mat('tuy',(0.97,0.97,0.95)); MANTAR=mat('mantar',(0.95,0.72,0.3))
+WHITE=emis('w',(1,1,1)); HOLD=holdout('h')
+objs=[]
+def sphere(name,loc,r,m,scale=(1,1,1),tag=None):
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=r,location=loc,segments=24,ring_count=12); o=bpy.context.object; o.name=name; o.scale=scale; o.data.materials.append(m); bpy.ops.object.shade_smooth(); o['tag']=tag or m.name; objs.append(o); return o
+def capsule(name,a,b,r1,r2,m,tag=None):
+    a=Vector(a); b=Vector(b); d=b-a; L=max(1e-4,d.length); mid=a+d/2
+    bpy.ops.mesh.primitive_cone_add(vertices=20,radius1=r1,radius2=r2,depth=L,location=mid); o=bpy.context.object; o.name=name
+    o.rotation_mode='QUATERNION'; o.rotation_quaternion=d.to_track_quat('Z','Y'); o.data.materials.append(m); bpy.ops.object.shade_smooth(); o['tag']=tag or m.name; objs.append(o)
+    sphere(name+'_a',a,r1,m,tag=tag); sphere(name+'_b',b,r2,m,tag=tag); return o
+def ik(A,B,l1,l2,hint):
+    """iki kemik: A'dan B'ye, boylar l1,l2; dirsek hint yönüne bükülür"""
+    A=Vector(A); B=Vector(B); d=B-A; L=d.length; mx=l1+l2-1e-3
+    if L>mx: B=A+d.normalized()*mx; d=B-A; L=mx
+    a=(l1*l1-l2*l2+L*L)/(2*L); h=math.sqrt(max(0,l1*l1-a*a)); u=d.normalized()
+    hv=Vector(hint); hv=hv-u*hv.dot(u)
+    if hv.length<1e-4: hv=Vector((0,0,-1))-u*Vector((0,0,-1)).dot(u)
+    return A+u*a+hv.normalized()*h, B
+UA,FA=0.19,0.17; TH,SH=0.20,0.18   # üst kol/ön kol, uyluk/baldır
+SHW=0.13; HIPW=0.085
+def build(p):
+    """p: poz sözlüğü → sahneye figürü kur"""
+    for o in list(objs): bpy.data.objects.remove(o)
+    objs.clear()
+    root=Vector(p['root']); lean=Vector(p.get('lean',(0,0,0))); tw=math.radians(p.get('twist',0))
+    chest=root+Vector((0,0,0.22))+lean
+    Rz=Matrix.Rotation(tw,3,'Z')
+    shL=chest+Rz@Vector((-SHW,0,0.04)); shR=chest+Rz@Vector((SHW,0,0.04))
+    neck=chest+Vector((0,0,0.08)); hc=neck+Vector((0,0,0.14))+Vector(p.get('head',(0,0,0)))
+    capsule('govde',root,chest,0.11,0.13,FORMA); sphere('karin',(root+chest)/2+Vector((0,0.01,0)),0.12,FORMA,(1,0.85,1))
+    capsule('sort',root-Vector((0,0,0.06)),root+Vector((0,0,0.04)),0.115,0.115,SORT)
+    capsule('boyun',chest+Vector((0,0,0.03)),neck+Vector((0,0,0.02)),0.045,0.045,SKIN)
+    sphere('bas',hc,0.14,SKIN,(1,0.95,1.05)); sphere('sac',hc+Vector((0,-0.01,0.03)),0.145,SAC,(1,0.98,0.95))
+    sphere('cene',hc+Vector((0,0.02,-0.08)),0.09,SKIN,(1,0.9,0.8))
+    look=Vector(p.get('look',(0,1,0))).normalized(); side=look.cross(Vector((0,0,1))).normalized(); up=side.cross(look).normalized()
+    for sx in (-1,1):
+        sphere('goz'+str(sx),hc+look*0.12+side*sx*0.055,0.03,BEYAZ); sphere('bebek'+str(sx),hc+look*0.145+side*sx*0.055,0.016,SORT)
+        sphere('kulak'+str(sx),hc+side*sx*0.14-Vector((0,0,0.01)),0.03,SKIN,(0.6,1,1))
+    bpy.ops.mesh.primitive_torus_add(location=hc+look*0.125-Vector((0,0,0.055)),major_radius=0.035,minor_radius=0.006); sm=bpy.context.object; sm.name='gulus'; sm.rotation_mode='QUATERNION'; sm.rotation_quaternion=look.to_track_quat('Z','Y'); sm.data.materials.append(SORT); sm['tag']='sort'; objs.append(sm)
+    # kafa bandı: ayrı nesne (maske); renk oyunda
+    bpy.ops.mesh.primitive_torus_add(location=hc+Vector((0,0,0.045)),major_radius=0.142,minor_radius=0.016,major_segments=40,minor_segments=8); bd=bpy.context.object; bd.name='kafabandi'; bd.scale=(1,0.97,1); bd.data.materials.append(BANT); bd['tag']='bant'; objs.append(bd)
+    # kollar
+    for side_,sh,pre in ((1,shR,'sag'),(-1,shL,'sol')):
+        wr=Vector(p['wr'+pre[1].upper() if False else ('wrR' if side_>0 else 'wrL')]); hint=Vector(p.get('elR' if side_>0 else 'elL',(side_*1,-0.3,-0.6)))
+        el,wr=ik(sh,wr,UA,FA,hint)
+        sphere(pre+'_omuz',sh,0.062,FORMA)
+        capsule(pre+'_ustkol',sh,el,0.05,0.042,SKIN); capsule(pre+'_onkol',el,wr,0.04,0.034,SKIN)
+        hd=(wr-el).normalized(); sphere(pre+'_el',wr+hd*0.025,0.045,SKIN,(0.85,1,1.05))
+        if side_>0:
+            bpy.ops.mesh.primitive_torus_add(location=wr-hd*0.02,major_radius=0.042,minor_radius=0.014,major_segments=24,minor_segments=8); bk=bpy.context.object; bk.name='bileklik'; bk.rotation_mode='QUATERNION'; bk.rotation_quaternion=hd.to_track_quat('Z','Y'); bk.data.materials.append(BILEK); bk['tag']='bilek'; objs.append(bk)
+            rd=Vector(p.get('rk',(0,0.6,0.8))).normalized(); g0=wr+hd*0.03; g1=g0+rd*0.20
+            capsule('raket_sap',g0,g1,0.014,0.012,SORT); hcn=g1+rd*0.13
+            fn=Vector(p.get('rkFace',(1,0,0))); fn=(fn-rd*fn.dot(rd)).normalized()
+            q=rd.to_track_quat('Y','Z')
+            # çerçeve: elips (Y ekseni boyunca uzun), yüzey normali fn
+            m3=Matrix((rd.cross(fn),rd,fn)).transposed()  # sütunlar: x=rd×fn, y=rd, z=fn
+            bpy.ops.mesh.primitive_torus_add(location=hcn,major_radius=0.12,minor_radius=0.012,major_segments=40,minor_segments=10); t=bpy.context.object; t.name='raket_kafa'; t.scale=(0.85,1,1); t.rotation_mode='QUATERNION'; t.rotation_quaternion=m3.to_quaternion(); t.data.materials.append(CERCEVE); t['tag']='cerceve'; objs.append(t); bpy.ops.object.shade_smooth()
+            bpy.ops.mesh.primitive_circle_add(radius=0.115,fill_type='NGON',location=hcn); c=bpy.context.object; c.name='raket_tel'; c.scale=(0.85,1,1); c.rotation_mode='QUATERNION'; c.rotation_quaternion=m3.to_quaternion(); c.data.materials.append(TEL); c['tag']='tel'; objs.append(c)
+        elif p.get('shuttle'):  # servis: sol elde tüy top
+            sh_=wr+hd*0.06; sphere('mantar',sh_,0.022,MANTAR); capsule('tuy',sh_,sh_+Vector((0,0,0.075)),0.02,0.045,TUY)
+    # bacaklar
+    for side_,pre in ((1,'sag'),(-1,'sol')):
+        hp=root+Vector((side_*HIPW,0,-0.04)); an=Vector(p['anR' if side_>0 else 'anL']); hint=Vector(p.get('knR' if side_>0 else 'knL',(0,1,0)))
+        kn,an=ik(hp,an,TH,SH,hint)
+        capsule(pre+'_uyluk',hp,kn,0.062,0.05,SKIN); capsule(pre+'_baldir',kn,an,0.048,0.036,SKIN)
+        fd=Vector(p.get('ftR' if side_>0 else 'ftL',(0,1,0))); fd.z=0; fd=fd.normalized()
+        bpy.ops.mesh.primitive_cube_add(size=1,location=an+fd*0.04-Vector((0,0,0.02))); f=bpy.context.object; f.name=pre+'_ayakkabi'; f.scale=(0.075,0.14,0.05); f.rotation_euler=(0,0,math.atan2(fd.x,fd.y)*-1); f.data.materials.append(BEYAZ); f['tag']='beyaz'
+        md=f.modifiers.new('b','BEVEL'); md.width=0.02; md.segments=3; bpy.ops.object.shade_smooth(); objs.append(f)
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.07,depth=0.04,location=an+Vector((0,0,0.03))); s2=bpy.context.object; s2.name=pre+'_corap'; s2.data.materials.append(BEYAZ); s2['tag']='beyaz'; objs.append(s2)
+
+# ---------- pozlar ----------
+def P_(**k): return k
+READY=dict(root=(0,0,0.40),lean=(0,0.01,0),twist=8,wrR=(0.24,0.22,0.52),elR=(1,-0.2,-0.5),rk=(0.05,0.45,0.85),rkFace=(1,0,0),wrL=(-0.22,0.18,0.48),elL=(-1,-0.3,-0.5),anR=(0.12,-0.02,0.05),anL=(-0.12,0.05,0.05),knR=(0,1,0),knL=(0,1,0),head=(0,0,0),look=(0,1,0))
+def mix(a,b,t):
+    o={}
+    for k in a:
+        va=a[k]; vb=b.get(k,va)
+        if isinstance(va,(int,float)): o[k]=va+(vb-va)*t
+        elif isinstance(va,(tuple,list)): o[k]=tuple(va[i]+(vb[i]-va[i])*t for i in range(len(va)))
+        else: o[k]=va if t<.5 else vb
+    for k in b:
+        if k not in o: o[k]=b[k]
+    return o
+def ease(t): return .5-.5*math.cos(math.pi*t)
+def sample(keys,n,loop=False):
+    """keys: [(t, poz)], t 0..1; n kare"""
+    out=[]
+    for i in range(n):
+        t=i/(n if loop else max(1,n-1))
+        for j in range(len(keys)-1):
+            t0,p0=keys[j]; t1,p1=keys[j+1]
+            if t0<=t<=t1: out.append(mix(p0,p1,ease((t-t0)/(t1-t0) if t1>t0 else 1))); break
+        else: out.append(dict(keys[-1][1]))
+    return out
+def D(base,**k):
+    o=dict(base); o.update(k); return o
+# --- hazır: hafif zıplayan bekleyiş (8 kare döngü)
+idle=sample([(0,READY),(0.5,D(READY,root=(0,0,0.425),wrR=(0.24,0.22,0.56),wrL=(-0.22,0.18,0.52))),(1,READY)],8,loop=True)
+# --- koşu (8 kare döngü): bacaklar karşıt, kollar karşıt, gövde öne eğik, raket yukarıda
+run=[]
+for i in range(8):
+    ph=i/8*2*math.pi; s=math.sin(ph); c=math.cos(ph)
+    run.append(D(READY,root=(0,0,0.41+0.02*abs(c)),lean=(0,0.06,0),twist=-10*s,
+        anR=(0.11,0.17*s,max(0,0.11*math.sin(ph+0.4))),anL=(-0.11,-0.17*s,max(0,0.11*math.sin(ph+math.pi+0.4))),
+        wrR=(0.26,0.16-0.08*s,0.56),wrL=(-0.20,0.05+0.16*s,0.42+0.08*max(0,s))))
+# --- smaç (baş üstü, güçlü): hazırlık (raket sırt kaşır, sol el topu gösterir, gövde yay) → temas (kol tam uzanmış,
+#     bilek başın hafif önünde) → devam (raket çapraz aşağı, sol kol çekilmiş) → toparlanma
+S_PREP=D(READY,root=(0,-0.03,0.40),lean=(0,-0.07,0.01),twist=30,wrR=(0.20,-0.22,0.86),elR=(1,-0.5,0.3),rk=(-0.2,-0.3,0.93),rkFace=(0,1,0),wrL=(-0.12,0.22,0.95),elL=(-1,0.2,0),anR=(0.16,-0.14,0.05),anL=(-0.10,0.14,0.05),look=(0,0.4,1),head=(0,-0.02,0))
+S_HIT=D(READY,root=(0,0.02,0.43),lean=(0,0.03,0.02),twist=-5,wrR=(0.10,0.10,1.26),elR=(1,0.2,0.3),rk=(0,0.55,0.83),rkFace=(0,1,0),wrL=(-0.20,0.16,0.60),elL=(-1,-0.3,-0.4),anR=(0.12,-0.06,0.05),anL=(-0.12,0.12,0.05),look=(0,0.6,0.8))
+S_FOL=D(READY,root=(0,0.05,0.38),lean=(0,0.09,-0.02),twist=-25,wrR=(-0.18,0.30,0.45),elR=(1,0.5,-0.3),rk=(-0.4,0.5,-0.75),rkFace=(0,1,0),wrL=(-0.22,0.02,0.40),elL=(-1,-0.5,-0.3),anR=(0.12,0.02,0.05),anL=(-0.12,0.10,0.05),look=(0,1,-0.2))
+smash=sample([(0,READY),(0.25,S_PREP),(0.40,S_PREP),(0.56,S_HIT),(0.72,S_FOL),(1,READY)],10)
+# --- clear (baş üstü, uzun): aynı yay ama temas başın hafif arkasında, devam öne-yukarı (topu taşır)
+C_HIT=D(S_HIT,wrR=(0.12,-0.02,1.27),rk=(0,0.2,0.98),lean=(0,0,0.02))
+C_FOL=D(S_FOL,wrR=(-0.05,0.36,0.78),rk=(-0.3,0.85,0.2),root=(0,0.04,0.40),lean=(0,0.06,0))
+clear=sample([(0,READY),(0.28,S_PREP),(0.42,S_PREP),(0.58,C_HIT),(0.75,C_FOL),(1,READY)],10)
+# --- drive (omuz hizası, yandan): raket sağ-arkada yatay → yan-önde temas → gövde önünden geçer
+DR_PREP=D(READY,twist=35,lean=(0.02,-0.03,0),wrR=(0.34,-0.18,0.70),elR=(1,-0.6,-0.2),rk=(0.3,-0.9,0.3),rkFace=(0,1,0),wrL=(-0.1,0.25,0.65),anR=(0.16,-0.10,0.05),anL=(-0.10,0.10,0.05),look=(0.3,1,0))
+DR_HIT=D(READY,twist=0,lean=(0,0.04,0),wrR=(0.38,0.30,0.72),elR=(1,0.2,-0.3),rk=(0.5,0.85,0.1),rkFace=(0,1,0.3),wrL=(-0.2,0.1,0.55),anR=(0.14,0.0,0.05),anL=(-0.12,0.10,0.05))
+DR_FOL=D(READY,twist=-25,lean=(0,0.05,0),wrR=(-0.12,0.36,0.70),elR=(1,0.6,-0.3),rk=(-0.9,0.4,0.1),rkFace=(0,1,0),wrL=(-0.24,-0.02,0.45))
+drive=sample([(0,READY),(0.3,DR_PREP),(0.55,DR_HIT),(0.72,DR_FOL),(1,READY)],8)
+# --- file öldürme (kısa, yüksek dürtme): raket önde yüksek, bilek kırar
+K_PREP=D(READY,wrR=(0.22,0.10,0.95),elR=(1,-0.3,-0.4),rk=(0.1,0.3,0.95),rkFace=(0,1,0),lean=(0,0.03,0),look=(0,0.7,0.7))
+K_HIT=D(READY,wrR=(0.16,0.34,0.98),elR=(1,-0.2,-0.3),rk=(0.1,0.95,-0.3),rkFace=(0,0.4,1),lean=(0,0.08,0),root=(0,0.05,0.40),anR=(0.14,0.14,0.05),anL=(-0.12,0.0,0.05),look=(0,0.9,0.4))
+kill=sample([(0,READY),(0.3,K_PREP),(0.55,K_HIT),(0.75,D(K_HIT,wrR=(0.12,0.30,0.88),rk=(0.1,0.9,-0.45))),(1,READY)],7)
+# --- alçak forehand (lift/alçak top): raket alttan geriden öne süpürür, sağ ayak öne adım
+L_PREP=D(READY,twist=25,lean=(0.02,0.02,-0.02),root=(0,0.02,0.36),wrR=(0.34,-0.16,0.30),elR=(1,-0.5,0.2),rk=(0.3,-0.5,-0.8),rkFace=(0,1,0),wrL=(-0.22,0.2,0.55),anR=(0.14,0.16,0.05),anL=(-0.12,-0.10,0.05),knR=(0,1,0),look=(0.2,1,-0.3))
+L_HIT=D(READY,twist=5,lean=(0,0.08,-0.04),root=(0,0.06,0.34),wrR=(0.30,0.38,0.26),elR=(1,0.3,0.4),rk=(0.1,0.9,-0.3),rkFace=(0,0.3,1),wrL=(-0.24,-0.02,0.5),anR=(0.14,0.24,0.05),anL=(-0.12,-0.14,0.05),look=(0.1,1,-0.3))
+L_FOL=D(READY,twist=-15,lean=(0,0.06,0),root=(0,0.05,0.38),wrR=(0.06,0.42,0.78),elR=(1,0.4,-0.2),rk=(-0.3,0.4,0.85),rkFace=(0,1,0),wrL=(-0.22,0.05,0.45),anR=(0.14,0.18,0.05),anL=(-0.12,-0.08,0.05))
+low=sample([(0,READY),(0.32,L_PREP),(0.55,L_HIT),(0.75,L_FOL),(1,READY)],8)
+# --- hamle (lunge): sağ bacak derin öne, sol bacak gergin arkada, raket alçak ve çok önde, sol kol denge için arkada
+LU_HIT=D(READY,twist=10,lean=(0,0.14,-0.08),root=(0,0.22,0.30),wrR=(0.22,0.70,0.14),elR=(1,0.4,0.6),rk=(0.1,0.95,-0.2),rkFace=(0,0.3,1),wrL=(-0.26,-0.18,0.46),elL=(-1,-0.5,0.2),anR=(0.14,0.40,0.05),anL=(-0.12,-0.20,0.05),knR=(0,1,0),knL=(0,1,0),ftL=(-0.3,1,0),look=(0,1,-0.4))
+LU_PREP=D(READY,twist=15,lean=(0,0.08,-0.03),root=(0,0.10,0.37),wrR=(0.28,0.20,0.30),elR=(1,-0.2,0.5),rk=(0.1,0.8,-0.5),rkFace=(0,1,0),wrL=(-0.24,0.0,0.50),anR=(0.14,0.22,0.08),anL=(-0.12,-0.10,0.05))
+lunge=sample([(0,READY),(0.35,LU_PREP),(0.6,LU_HIT),(0.78,D(LU_HIT,wrR=(0.16,0.66,0.30),rk=(0,0.9,0.4))),(1,READY)],8)
+# --- servis (kısa alçak servis): sol el topu bel önünde tutar, raket alttan kısa itiş, sonra hazır
+SV0=D(READY,twist=20,lean=(0,0.02,0),wrL=(-0.06,0.30,0.50),elL=(-1,0.1,-0.5),shuttle=True,wrR=(0.26,0.10,0.40),elR=(1,-0.4,-0.2),rk=(0.2,0.3,-0.9),rkFace=(0,1,0),anR=(0.12,-0.12,0.05),anL=(-0.12,0.10,0.05),look=(0,1,-0.2))
+SV1=D(SV0,wrR=(0.30,-0.06,0.38),rk=(0.3,-0.3,-0.9))
+SV2=D(SV0,twist=-5,lean=(0,0.06,0),wrR=(0.08,0.36,0.52),rk=(-0.2,0.9,0.2),rkFace=(0,0.2,1),wrL=(-0.16,0.18,0.52),shuttle=False)
+serve=sample([(0,SV0),(0.25,SV0),(0.45,SV1),(0.65,SV2),(1,READY)],10)
+# --- blok (ağa yakın kısa itiş): raket göğüs önünde dik, küçük hareket
+B_HIT=D(READY,wrR=(0.14,0.34,0.66),elR=(1,-0.4,-0.3),rk=(0,0.3,0.95),rkFace=(0,1,0),lean=(0,0.04,0),look=(0,1,0.1))
+block=sample([(0,READY),(0.35,D(READY,wrR=(0.18,0.20,0.62),rk=(0,0.3,0.95))),(0.6,B_HIT),(1,READY)],6)
+CLIPS=dict(idle=idle,run=run,smash=smash,clear=clear,drive=drive,kill=kill,low=low,lunge=lunge,serve=serve,block=block)
+KEYS=dict(ready=[READY],smash=[S_PREP,S_HIT,S_FOL],clear=[C_HIT,C_FOL],drive=[DR_PREP,DR_HIT,DR_FOL],kill=[K_PREP,K_HIT],low=[L_PREP,L_HIT,L_FOL],lunge=[LU_PREP,LU_HIT],serve=[SV0,SV2],block=[B_HIT],run=[run[1],run[3]])
+
+# ---------- sahne ----------
+bpy.ops.object.light_add(type='SUN',location=(1,-2,4)); sun=bpy.context.object; sun.data.energy=3.2; sun.rotation_euler=(math.radians(40),0,math.radians(20))
+bpy.ops.object.light_add(type='AREA',location=(-2,-2,2)); fill=bpy.context.object; fill.data.energy=120; fill.data.size=3; fill.rotation_euler=(math.radians(60),0,math.radians(-45))
+sc.world=bpy.data.worlds.new('w'); sc.world.use_nodes=True; sc.world.node_tree.nodes['Background'].inputs[0].default_value=(0.5,0.55,0.55,1); sc.world.node_tree.nodes['Background'].inputs[1].default_value=0.6
+sc.render.engine='CYCLES'; sc.cycles.samples=24; sc.cycles.use_denoising=True; sc.render.film_transparent=True; sc.view_settings.view_transform='Standard'
+try: sc.cycles.device='CPU'
+except: pass
+CW_,CH_=192,256; sc.render.resolution_x=CW_; sc.render.resolution_y=CH_; sc.render.resolution_percentage=100
+bpy.ops.object.camera_add(); cam=bpy.context.object; sc.camera=cam; cam.data.type='ORTHO'; cam.data.ortho_scale=2.4  # büyük kenar (yükseklik) = 2.4 birim → ~107 px/birim; hamlede raket kadraja sığsın
+VIEWS={'me':(0,-1,1.35),'op':(0,1,1.35)}  # arkadan (ben) ve önden (rakip), ~53° yukarıdan
+def setcam(v):
+    d=Vector(VIEWS[v]).normalized(); cam.location=Vector((0,0,0.5))+d*4; cam.rotation_mode='XYZ'; el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2)  # baş hep yukarıda (track_quat'ta roll kayıyordu)
+from bpy_extras.object_utils import world_to_camera_view as w2c
+def anchor():
+    p=w2c(sc,cam,Vector((0,0,0))); return [p.x*CW_,(1-p.y)*CH_]
+def render(path):
+    sc.render.filepath=path; bpy.ops.render.render(write_still=True)
+def set_mats(tag):
+    """tag=None: normal; tag='forma'...: o etiket beyaz emisyon, kalan holdout"""
+    for o in objs:
+        if o.type!='MESH': continue
+        if tag is None:
+            for i,m in enumerate(o.data.materials): o.data.materials[i]=o['orig'][i] if 'orig' in o else m
+        else:
+            if 'orig' not in o: o['orig']=[m for m in o.data.materials]
+            tags=o.get('tag')
+            for i in range(len(o.data.materials)): o.data.materials[i]=WHITE if tags==tag else HOLD
+# Bant ve bileklik renk pasında görünmez (oyun maskeden boyar; "yok" seçilince hiç çizilmez)
+def hide_bands(h):
+    for o in objs:
+        if o.get('tag') in ('bant','bilek'): o.hide_render=h
+meta={'cell':[CW_,CH_],'clips':{},'views':list(VIEWS),'pxPerUnit':CH_/2.4}
+if MODE=='keys':
+    sc.cycles.samples=12; setcam('me'); i=0
+    for name,ps in KEYS.items():
+        for j,p in enumerate(ps):
+            build(p); hide_bands(False); render(f'{OUT}/key_{name}{j}_me.png'); setcam('op'); render(f'{OUT}/key_{name}{j}_op.png'); setcam('me'); i+=1
+    print('KEYS DONE',i)
+else:
+    row=0
+    for name,frames in CLIPS.items():
+        meta['clips'][name]={'n':len(frames),'row':row}
+        for v in VIEWS:
+            setcam(v); meta.setdefault('anchor',{})[v]=anchor()
+            for fi,p in enumerate(frames):
+                build(p); hide_bands(True); set_mats(None); render(f'{OUT}/f_{name}_{v}_{fi}.png')
+                hide_bands(False); sc.cycles.samples=4; sc.cycles.use_denoising=False
+                for tag in ('forma','cerceve','bant','bilek'): set_mats(tag); render(f'{OUT}/m_{name}_{v}_{fi}_{tag}.png')
+                set_mats(None); sc.cycles.samples=24; sc.cycles.use_denoising=True
+        row+=1
+    json.dump(meta,open(f'{OUT}/meta.json','w'))
+    print('DONE')
