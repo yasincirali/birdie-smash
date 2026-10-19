@@ -493,7 +493,7 @@ function endMatch(){ mode='over'; crowdLevel(.004); underwater(false); const won
 function runMe(d){ const o=M.me; if(!M.s){ o.vx=o.vy=0; return; } /* servis atılana kadar iki oyuncu da yerinde durur (kural) */ if(o.stun>0){ o.stun-=d; o.vx*=.8; o.vy*=.8; return; }
   o.manualT=Math.max(0,(o.manualT||0)-d);
   /* Koşu yardımı: oyuncu, rakibin topunun kesişme noktasına kendi koşar (biraz tembel), vuruştan sonra merkeze döner. Dokunma 1,4 sn boyunca öncelik alır. */
-  if(easy&&o.manualT<=0){ const s=M.s, I=M.icpt; if(s&&s.from==='op'&&I&&I.who==='me'){ o.tx=I.x; o.ty=I.y+(I.lunge?.6:.25); } else if(s&&s.from==='op'&&s.landPred&&s.landPred.y>NET){ o.tx=s.landPred.x; o.ty=s.landPred.y+.3; } else if(s&&s.from==='me'){ o.tx=MID; o.ty=L-3.3; } }
+  if(easy&&o.manualT<=0){ const s=M.s, I=M.icpt; if(s&&s.from==='op'&&I&&I.who==='me'){ o.tx=Math.max(-.4,Math.min(CW+.4,I.x-hitSide(o,'me',I,s))); o.ty=I.y+(I.lunge?.6:.25); /* forehand tarafı önde; yetişemezse backhand */ } else if(s&&s.from==='op'&&s.landPred&&s.landPred.y>NET){ o.tx=s.landPred.x; o.ty=s.landPred.y+.3; } else if(s&&s.from==='me'){ o.tx=MID; o.ty=L-3.3; } }
   const max=meSpd(), A=(M.split?20:(easy?18:14))*GS.kosu; let dvx=0,dvy=0;
   if(o.tx!=null){ const dx=o.tx-o.x, dy=o.ty-o.y, dist=Math.hypot(dx,dy); if(dist>.02){ const v=Math.min(max,Math.sqrt(2*A*dist)); dvx=dx/dist*v; dvy=dy/dist*v; } else o.tx=null; }
   const ex=dvx-o.vx, ey=dvy-o.vy, el=Math.hypot(ex,ey), st=A*d; const pvx=o.vx,pvy=o.vy;
@@ -540,7 +540,7 @@ function update(dt){
     if(s.z<=0){ s.z=0; land(); return; } }
   const sp=P(s.x,s.y,s.z); M.trail.push(sp); if(M.trail.length>(s.type==='smash'?14:8)) M.trail.shift();
   const I=M.icpt;
-  if(s.from==='me'){ if(I&&I.who==='op'&&!I.leave){ if(M.op.fakeUntil>M.clock) move(M.op,M.op.fakeX,M.op.y,1.6*d); else move(M.op,I.x,I.y-.3,opSpd()*d);
+  if(s.from==='me'){ if(I&&I.who==='op'&&!I.leave){ if(M.op.fakeUntil>M.clock) move(M.op,M.op.fakeX,M.op.y,1.6*d); else move(M.op,Math.max(-.4,Math.min(CW+.4,I.x+hitSide(M.op,'op',I,s))),I.y-.3,opSpd()*d); /* rakip de aynı kural (onun sağı = -x) */
       if(I.opType==='smash'&&I.t-s.t<.32&&I.t-s.t>0) M.op.jump=Math.max(M.op.jump,1-(I.t-s.t)/.32*.6);
       if(s.t>=I.t){ opHit(); return; } }
     else { move(M.op,s.landPred.x,s.landPred.y-.4,2.2*d); if(!M.op.dive&&s.landPred&&!isOut(s.landPred.x,s.landPred.y,s.serve)&&!(s.landPred.net&&!s.landPred.net.ok)&&s.t>s.landPred.t-.25){ M.op.dive=1; const p=P(M.op.x,M.op.y); txt('Kıl payı!',p.x,p.y-40,'#ffd27a',20); if(!reduce){ slow=.35; slowT=.3; } } }
@@ -604,6 +604,13 @@ function armPose(o){ if(o.sw>0){ let P2=POSE[o.shot||'low']; if(o.hand==='back')
   let B=POSE[o.prepShot||'low'].back; if(o.prepHand==='back') B=mirP(B); const a=o.prepA||0; return lerpP(POSE.ready,B,a*a*(3-2*a)); }
 /* Forehand / backhand: sağ elli oyuncu. Top raket tarafındaysa forehand; gövdenin öbür tarafındaysa backhand.
    Baş üstünde "baş çevresinden" forehand payı var (0,6 m), alçakta sınır daha dar (0,25 m). Rakip bize dönük olduğundan onun sağı ekranın solu. */
+/* Pozisyon kararı (yasin 2026-10-19: "pozisyona göre backhand ise animasyon ona göre"): oyuncu topu raket tarafında ~0,45 m
+   yana alacak şekilde durur (forehand). Top sola geliyorsa ve forehand noktasına vaktinde varamayacaksa daha yakın backhand
+   noktasına (topun 0,3 m sağına) gider; handOf temas anında gerçek konuma bakar, böylece backhand klibi oynar. Karar bir kez
+   verilir (I.side), yoksa oyuncu iki nokta arasında salınır. */
+function hitSide(o,who,I,s){ if(I.side!=null) return I.side; const m=who==='me'?1:-1, fh=(I.kill||I.lunge?.3:.45)*m, bh=-.3*m;
+  const spd=who==='me'?5.2*GS.kosu:opSpd(), tt=Math.max(0,I.t-s.t)*.9; const dF=Math.hypot(I.x-fh-o.x,I.y-o.y), dB=Math.hypot(I.x-bh-o.x,I.y-o.y);
+  I.side=(dF>spd*tt&&dB<dF-.3)?bh:fh; return I.side; }
 function handOf(o,who,sx,sz){ const side=(sx-o.x)*(who==='me'?1:-1); return side<-(sz>1.95?.6:.25)?'back':'fore'; }
 function shotClass(type,z,y){ if(type==='smash'||z>1.95) return 'over'; if(type==='drive') return 'drive'; if(Math.abs(y-NET)<2.3&&z>NETH) return 'kill'; return 'low'; }
 function player(o,col,isMe){ const v=isMe?'me':'op'; if(!SPR.ready||!SPR.tint[v]) return playerVec(o,col,isMe);
@@ -782,6 +789,6 @@ buildGear();
 document.getElementById('mute').addEventListener('click',e=>{ muted=!muted; crowdLevel(muted?0:.01); if(muted) underwater(false); e.currentTarget.textContent=muted?'Ses kapalı':'Ses açık'; e.currentTarget.setAttribute('aria-pressed',muted); });
 document.getElementById('bestLine').textContent=best.rally?`Ralli rekorun ${best.rally} · ${best.wins} galibiyet · ${best.gorev||0} görev`:'';
 function size(){ const r=stage.getBoundingClientRect(); W=Math.round(r.width); H=Math.round(r.height); DPR=Math.min(2,devicePixelRatio||1); cv.width=W*DPR; cv.height=H*DPR; }
-addEventListener('resize',size); size();  
+addEventListener('resize',size); size();   
 })();
 </script>
