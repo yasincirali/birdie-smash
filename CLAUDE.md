@@ -17,7 +17,7 @@ onay beklemeden yap, sonunda Türkçe özetle; push saatleri kuralı (hafta içi
 - **Ses ve his oyunun içindedir:** raket sesi tel gerilimine ve vuruş türüne
   göre sentezlenir, kabuk yorumlamaz; süre/desen oyundan gelir.
 - TestFlight: `main`'e birleşme → `ios-testflight.yml` (Harçlıklarım'dan
-  türetildi; match branch `birdiesmash`, ayrı `MATCH_PASSWORD`). Android hattı yok.
+  türetildi; match dalı ve `MATCH_PASSWORD` Harçlıklarım ile ortak (Apple sertifika sınırı, 2026-10-19)). Android hattı yok.
 - Doğrulama: `flutter analyze && flutter test && node tool/oyun_sozdizimi.js`.
 - Karakter: `tool/karakter/` (bpy, IK rig, 22 klip × 2 bakış → sprite sheet, oyuna base64 gömülü). Raket HEP sağ elde: backhand ayrı klip, aynalama yok. Ayak işi badminton: split step, chassé, öne adım, arkaya çapraz. Render.lar
   `/mnt/project-files/birdie-smash/` altında; oyuna girişi (sprite ya da

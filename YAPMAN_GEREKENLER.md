@@ -15,7 +15,7 @@ Yalnız yasin'in yapabileceği adımlar. Sıra önemlidir (Harçlıklarım ile a
 4. **GitHub secrets** (yeni depoya): `APPLE_ID`, `APPLE_TEAM_ID`, `ITC_TEAM_ID`,
    `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_KEY_CONTENT`, `MATCH_GIT_URL`,
    `MATCH_GIT_BASIC_AUTH` Harçlıklarım ile aynı (ortak sertifika deposu); `MATCH_PASSWORD` için YENİ bir parola
-   (match branch `birdiesmash`, Harçlıklarım'daki ayrı-branch kararı).
+   (match dalı `harcliklarim`, parola Harçlıklarım ile AYNI; Apple sertifika sınırı).
 5. **Actions › "iOS — Setup Match (one-time)"** çalıştır.
 6. `main`'e ilk birleşme → "iOS — TestFlight" build'i yükler. TestFlight'ta dahili
    gruba kendini ekle; davet linki ASC › TestFlight › harici grup "Public Link".

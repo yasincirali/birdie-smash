@@ -1,11 +1,12 @@
-# Sertifika deposu MATCH_GIT_URL (Harçlıklarım ile ortak depo, AYRI branch ve
-# AYRI parola; yasin 2026-10-15 kararı). Neden: öteki uygulamaların
-# MATCH_PASSWORD'ü yalnız kendi secret'larında durur ve geri okunamaz; ortak
-# branch onu bilmeyi gerektirirdi. Bedeli: bu branch kendi Apple Distribution
-# sertifikasını üretir (takım başına sınır 3). Öteki branch'lere dokunulmaz.
-# Tamamen ayrı bir depo istenirse MATCH_GIT_URL secret'ı değiştirilir; kod aynı.
+# Sertifika deposu MATCH_GIT_URL, Harçlıklarım ile AYNI dal (`harcliklarim`) ve
+# AYNI parola (yasin kararı 2026-10-19). Neden: Apple takım başına 3 dağıtım
+# sertifikasına izin veriyor ve sınır dolu; ayrı dal yeni sertifika üretmeye
+# çalışıp "maximum number of Distribution certificates" ile düşüyordu. Ortak
+# dalda sertifika paylaşılır, yalnız bu bundle için profil eklenir. Bedeli:
+# MATCH_PASSWORD secret'ı Harçlıklarım'ınkiyle aynı olmak zorunda; o parola
+# değişirse iki repoda birden güncellenir. İlk `birdiesmash` dalı boş kaldı.
 git_url(ENV["MATCH_GIT_URL"])
-git_branch("birdiesmash")
+git_branch("harcliklarim")
 storage_mode("git")
 type("appstore")
 app_identifier(["com.birdiesmash.app"])
