@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  analyze_test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.2
+          cache: true
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      # Oyun tek HTML dosyasıdır; script bloğu sözdizimi burada doğrulanır
+      # (Flutter testi WebView içini göremez).
+      - name: Oyun script sözdizimi
+        run: node tool/oyun_sozdizimi.js

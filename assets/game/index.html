@@ -1,0 +1,710 @@
+<title>Birdie Smash</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito+Sans:wght@400;700&display=swap">
+<style>
+/* Tek ekran oyun: gerçek ölçülü tek kişilik kort, üstten perspektif. Menü ve bitiş DOM katmanı (44pt). Koyu tek görünüm bilinçli. */
+:root{
+  --bg:#0f1a1c; --panel:#162629; --ink:#effaf6; --muted:#9dbab3; --line:#264044; --lime:#d8ff5a; --coral:#ff7a6b;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif; --body:"Nunito Sans",system-ui,-apple-system,sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;box-sizing:border-box;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px}
+.wrap{max-width:460px;margin:0 auto;height:100%;display:flex;flex-direction:column;gap:10px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+h1{font-family:var(--display);font-weight:800;font-size:24px;margin:0;line-height:1}
+.btn{min-height:44px;min-width:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:700 13px var(--body);padding:0 12px;cursor:pointer}
+.btn[aria-pressed="true"]{border-color:var(--lime);color:var(--lime)}
+.btn:focus-visible,.play:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
+.stage{position:relative;flex:1;min-height:520px;border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+canvas{display:block;width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none}
+.layer{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:safe center;gap:12px;padding:18px;text-align:center;background:rgba(9,16,17,.84);backdrop-filter:blur(3px);overflow:auto}
+.layer h2{font-family:var(--display);font-weight:800;font-size:42px;line-height:1;margin:0}
+.big{font-family:var(--display);font-weight:800;font-size:60px;line-height:.9;color:var(--lime)}
+.muted{color:var(--muted);margin:0;line-height:1.45}
+.play{min-height:56px;padding:0 28px;border-radius:16px;border:0;background:var(--lime);color:#1b2600;font:800 20px var(--display);cursor:pointer}
+.how{width:100%;max-width:350px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;text-align:left;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:14px}
+.how b{font-family:var(--display);color:var(--lime);font-weight:600}
+.how .r{grid-column:1/-1;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:8px;margin-top:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.gear{width:100%;max-width:350px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;text-align:left;display:grid;gap:8px}
+.gear summary{list-style:none;cursor:pointer;min-height:44px;display:flex;align-items:center}
+.gear summary::-webkit-details-marker{display:none}
+.gear summary h3{flex:1}
+.gear summary h3::after{content:'▾';color:var(--muted);margin-left:8px}
+.gear[open] summary h3::after{content:'▴'}
+.gear h3{font-family:var(--display);font-weight:700;font-size:15px;margin:0;color:var(--lime);display:flex;justify-content:space-between;align-items:baseline}
+.gear h3 small{color:var(--muted);font:600 12px var(--body)}
+.gl{display:flex;flex-direction:column;gap:4px}
+.gl .lab{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.02em}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:700 13px var(--body);padding:4px 10px;cursor:pointer;display:flex;align-items:center;gap:7px;text-align:left}
+.chip small{display:block;font:600 11px var(--body);color:var(--muted);line-height:1.2}
+.chip[aria-pressed="true"]{border-color:var(--lime);box-shadow:inset 0 0 0 1px var(--lime)}
+.sw{width:14px;height:14px;border-radius:50%;border:1px solid rgba(255,255,255,.35);flex:none}
+.stat{font-size:12px;color:var(--muted);line-height:1.4;border-top:1px solid var(--line);padding-top:6px}
+.stat b{color:var(--ink);font-weight:700}
+input[type=range]{width:100%;min-height:44px;accent-color:var(--lime);margin:0}
+[hidden]{display:none!important}
+</style>
+
+<div class="wrap">
+  <div class="top"><h1>Birdie Smash</h1><button class="btn" id="mute" aria-pressed="false">Ses açık</button></div>
+  <div class="stage" id="stage">
+    <canvas id="cv" aria-label="Badminton kortu"></canvas>
+    <div class="layer" id="menu">
+      <h2>Birdie Smash</h2>
+      <p class="muted">Tek kişilik badminton. Gerçek kort, BWF sayı kuralları ve tüy topun gerçek uçuşu.</p>
+      <div class="how">
+        <b>Vur</b><span>Top parlayınca ekranın herhangi bir yerinde kaydır. Yön kaydırdığın yön, güç kaydırma hızın</span>
+        <b>Dokun</b><span>Top parlayınca dokunursan güvenli bir clear atarsın</span>
+        <b>Tam orta</b><span>Kaydırırken parmağın topun üstünden geçerse mükemmel vuruş olur</span>
+        <b>Koş</b><span>Kolay modda oyuncu topa kendisi koşar, senin işin yalnız vuruş; kısa bir dokunuşla yerini değiştirebilirsin. Usta modda koşmak sende: dokun = oraya koş, yavaş sürükle = parmağı izle</span>
+        <b>Forehand / backhand</b><span>Top raket tarafında gelirse forehand, öbür tarafta backhand. Backhand clear kısa kalır, drive yavaşlar, smaç olmaz; topu forehand tarafına alacak şekilde dur</span>
+        <b>Akış</b><span>Üst üste 4 tam orta: çizgiler altın olur, hedef büyür, şarkıya armoni girer</span>
+        <b>Derinlik</b><span>Topun yerdeki gölgesi ve ona bağlı ince çizgi yüksekliği gösterir. Top sana inerken son saniyede yer çizgisi ve büzülen iniş halkası belirir; yeşilse yetişiyorsun</span>
+        <b>Rakip ve görev</b><span>Her maçta tarzı farklı bir rakip (Smaşçı, Duvar, File oyuncusu) ve 3 görev var; görevler kazanmaktan bağımsız ikinci ödül. Kaydırırken rakip kortunda beliren hedef, bıraksan topun düşeceği yer</span>
+        <b>Nefes</b><span>Smaç, sıçrama ve uzanma nefes yakar; nefesin düşünce yavaşlarsın ve smaç zayıflar. Clear atıp sayı arasında dinlen. Topu tepeden alırsan smaç dikleşir</span>
+        <b>Slice</b><span>Kavis çizerek kaydırırsan topu keserek alırsın: top takla atar, beklenenden kısa düşer, rakip yanlış adım atar</span>
+        <b>Ekipman</b><span>Raket, tel gerginliği, bileklik, bant ve forma oyunun dinamiklerini, raket sesini ve titreşimi değiştirir</span>
+        <span class="r">Top vuruş alanına girince zaman yavaşlar. Dışarı gidecek topu bırak: sayı senin. Her vuruş ralli şarkısının bir notası; titreşim Android'de.</span>
+      </div>
+      <details class="gear" id="gear">
+        <summary><h3>Ekipman <small id="gearSum"></small></h3></summary>
+        <p class="muted" style="font-size:12px;margin:0">Rakete ya da tele dokununca o takımın smaç sesini duyarsın.</p>
+        <div class="gl"><span class="lab">Raket</span><div class="chips" data-g="raket"></div></div>
+        <div class="gl"><span class="lab">Tel gerginliği · <b id="telVal">26 lbs</b></span>
+          <input type="range" id="tel" min="18" max="32" step="1" value="26" aria-label="Tel gerginliği, libre">
+          <span class="muted" id="telNote" style="font-size:12px"></span></div>
+        <div class="gl"><span class="lab">Bileklik</span><div class="chips" data-g="bileklik"></div></div>
+        <div class="gl"><span class="lab">Kafa bandı</span><div class="chips" data-g="bant"></div></div>
+        <div class="gl"><span class="lab">Forma</span><div class="chips" data-g="forma"></div></div>
+        <div class="stat" id="gearStat"></div>
+      </details>
+      <div class="row"><button class="btn" id="mdEasy" aria-pressed="true">Kolay · topa kendin gidersin, sen vur</button><button class="btn" id="mdPro" aria-pressed="false">Usta · koşmak da sende</button></div>
+      <div class="row"><button class="btn" id="len21" aria-pressed="true">21 sayı (resmî)</button><button class="btn" id="len11" aria-pressed="false">11 sayı (kısa)</button><button class="btn" id="len7" aria-pressed="false">7 sayı (hızlı)</button></div>
+      <button class="play" id="start">Maça başla</button>
+      <p class="muted" id="bestLine"></p>
+    </div>
+    <div class="layer" id="over" hidden>
+      <p class="muted" id="oTitle">Maç bitti</p>
+      <div class="big" id="oScore">21 – 0</div>
+      <p class="muted" id="oInfo"></p>
+      <button class="play" id="again">Bir maç daha</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'), ctx=cv.getContext('2d'), stage=document.getElementById('stage');
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FONT='"Baloo 2","Trebuchet MS",system-ui,sans-serif';
+let W=400,H=640,DPR=1;
+let best={rally:0,wins:0}; try{ best={...best,...JSON.parse(localStorage.getItem('tuytop_v2')||'{}')}; }catch(e){}
+function save(){ try{ localStorage.setItem('tuytop_v2',JSON.stringify(best)); }catch(e){} }
+
+/* ---- BWF ölçüleri (metre). Kort 13,40 x 6,10; tek kişilik yan çizgi 0,46 içeride (5,18 genişlik); kısa servis çizgisi fileden 1,98.
+   Tek kişilikte servis karesinin arka sınırı dip çizgidir. File ortada 1,524, direklerde 1,55. ---- */
+const L=13.4, CW=6.1, NET=L/2, SL=.46, SR=CW-.46, SSL=1.98, NETH=1.524, NETP=1.55, MID=CW/2, MG=.9;
+/* ---- Tüy top fiziği: yerçekimi + hızın karesiyle sürüklenme. Son hız ~6,7 m/sn (yaklaşık, ölçüm literatürü).
+   Bu yüzden top hızlı çıkar, çabuk yavaşlar ve neredeyse dik düşer. ---- */
+const GR=9.81, VT=6.7, KD=GR/(VT*VT), DT=1/240;
+function step(s,dt){ const kd=s.kd||KD, sp=Math.hypot(s.vx,s.vy,s.vz); s.vx-=kd*sp*s.vx*dt; s.vy-=kd*sp*s.vy*dt; s.vz-=(GR+kd*sp*s.vz)*dt; s.x+=s.vx*dt; s.y+=s.vy*dt; s.z+=s.vz*dt; }
+function simulate(x,y,z,vx,vy,vz,keep=false,kd=KD){ const s={x,y,z,vx,vy,vz,kd}, side=y>NET; let t=0,net=null; const path=keep?[]:null;
+  for(let i=0;i<4000;i++){ const py=s.y; step(s,DT); t+=DT; if(keep&&i%4===0) path.push({t,x:s.x,y:s.y,z:s.z});
+    if(!net&&(py>NET)!==(s.y>NET)){ const lim=NETH+(NETP-NETH)*Math.abs(s.x-MID)/MID; net={z:s.z,ok:s.z>lim,t}; if(!net.ok) break; }
+    if(s.z<=0) break; }
+  return {x:s.x,y:s.y,t,net,path}; }
+/* Belirli hedefe vuruş: açı sabitken hızı ya da hız sabitken açıyı ikiye bölmeyle bulur. */
+function aim(from,tx,ty,mode,val){ const dx=tx-from.x, dy=ty-from.y, R=Math.hypot(dx,dy), ux=dx/R, uy=dy/R;
+  const shoot=(v,a)=>{ const c=Math.cos(a); return [ux*v*c,uy*v*c,v*Math.sin(a)]; };
+  const range=(v,a)=>{ const [vx,vy,vz]=shoot(v,a); const r=simulate(from.x,from.y,from.z,vx,vy,vz); return Math.hypot(r.x-from.x,r.y-from.y); };
+  let lo,hi,v,a; if(mode==='angle'){ a=val; lo=1; hi=140; for(let k=0;k<26;k++){ const m=(lo+hi)/2; range(m,a)<R?lo=m:hi=m; } v=(lo+hi)/2; }
+  else { v=val; lo=-1.2; hi=.9; for(let k=0;k<26;k++){ const m=(lo+hi)/2; range(v,m)<R?lo=m:hi=m; } a=(lo+hi)/2; }
+  return shoot(v,a); }
+
+/* ---- ses ---- */
+let muted=false,AC=null;
+function ac(){ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); return AC; }
+function tone(f,d=.1,type='sine',v=.1,delay=0){ if(muted)return; try{ const A=ac(),t=A.currentTime+delay,o=A.createOscillator(),g=A.createGain(); o.type=type; o.frequency.setValueAtTime(f,t); g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g).connect(out()); o.start(t); o.stop(t+d+.02);}catch(e){} }
+function noise(d,type,f,v,q=1){ if(muted)return; try{ const A=ac(),n=Math.floor(A.sampleRate*d),b=A.createBuffer(1,n,A.sampleRate),c=b.getChannelData(0); for(let i=0;i<n;i++) c[i]=(Math.random()*2-1)*Math.pow(1-i/n,4); const s=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain(); s.buffer=b; fl.type=type; fl.frequency.value=f; fl.Q.value=q; g.gain.value=v; s.connect(fl).connect(g).connect(out()); s.start(); }catch(e){} }
+/* Raket sesi — üç katman, gerçek vuruşun anatomisi:
+   (1) tel modları: gerginliğe bağlı ana frekans (~1,5 kHz, sıkı telde tizleşir) + 3 üst kısmi; sıkı tel kısa ve parlak çınlar, gevşek tel tok ve uzun.
+   (2) kafa/çerçeve: alçak tok darbe (kafa ağır rakette daha derin), (3) mantar ucu tıkırtısı + hızlı toplarda tüy hışırtısı.
+   Tür karışımı değiştirir: smaç = yoğun çatırtı, clear = dolgun uzun çınlama, drive = kısa sert, drop/blok = yalnız hafif tel dokunuşu.
+   İsabet de duyulur: tam orta temiz tel, sıyırma tel susar çerçeve "klonk" eder. Rakip 13 m ötede: daha kısık, daha boğuk, 30 ms geç. */
+function burstN(A,dst,t,d,type,f,v,q=1,env=3){ const n=Math.max(8,Math.floor(A.sampleRate*d)),b=A.createBuffer(1,n,A.sampleRate),c=b.getChannelData(0); for(let i=0;i<n;i++) c[i]=(Math.random()*2-1)*Math.pow(1-i/n,env); const s=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain(); s.buffer=b; fl.type=type; fl.frequency.value=f; fl.Q.value=q; g.gain.value=v; s.connect(fl).connect(g).connect(dst); s.start(t); }
+function decay(A,dst,t,f,type,v,d,glide=1){ const o=A.createOscillator(),g=A.createGain(); o.type=type; o.frequency.setValueAtTime(f*glide,t); if(glide!==1) o.frequency.exponentialRampToValueAtTime(f,t+.012); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+.0015); g.gain.exponentialRampToValueAtTime(.0001,t+.0015+d); o.connect(g).connect(dst); o.start(t); o.stop(t+d+.03); }
+const HITMIX={smash:{a:1,str:1,frm:.9,crk:1,ring:.55,hiss:1},clear:{a:.72,str:1,frm:.55,crk:.25,ring:1,hiss:.5},drive:{a:.8,str:.9,frm:.7,crk:.55,ring:.5,hiss:.6},drop:{a:.34,str:.8,frm:.12,crk:0,ring:.9,hiss:0}};
+function racketHit(o){ if(muted) return; try{ const A=ac(), t=A.currentTime+(o.who==='op'?.03:0), S=GS, T=HITMIX[o.type]||HITMIX.clear;
+  let a=T.a*(o.super?1.3:1)*(o.who==='op'?.5:1)*(o.serve?.55:1), str=T.str, frm=T.frm, crk=T.crk, ring=T.ring, hiss=T.hiss;
+  if(o.q==='poor'){ str*=.22; frm*=2.2; crk*=.3; ring*=.4; } else if(o.q==='perfect'){ str*=1.15; frm*=.6; crk*=1.1; }
+  if(o.slice){ str*=.55; crk*=.25; frm*=.7; }
+  const bus=A.createGain(); bus.gain.value=a*1.35; if(o.who==='op'){ const lp=A.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=3000; bus.connect(lp).connect(out()); } else bus.connect(out());
+  const ton=o.ton||S.ton, kafa=o.kafa||S.kafa, f0=1480*ton*(1+(Math.random()-.5)*.05);
+  [[1,.24],[1.63,.13],[2.41,.08],[3.3,.045]].forEach(([m,v],i)=>decay(A,bus,t,f0*m,'sine',v*str,(.1-i*.018)*ring/ton,1.045));
+  burstN(A,bus,t,.004,'highpass',3200*ton,.5*str,1,2);
+  if(crk>0) burstN(A,bus,t,.014,'bandpass',4300*Math.sqrt(ton),.5*crk,1.1,4);
+  decay(A,bus,t,235*kafa,'triangle',.2*frm,.045,1.15); burstN(A,bus,t,.03,'lowpass',360*kafa,.32*frm,.8,3);
+  if(o.q==='poor') decay(A,bus,t,640*kafa,'square',.1,.06,1.1);
+  burstN(A,bus,t+.001,.008,'bandpass',1300,.22,2,2);
+  if(hiss>0) burstN(A,bus,t+.004,.035,'bandpass',6200,.07*hiss,.7,2);
+  /* Slice: top telin üstünde kayar → yükselen "zzip" sürtünmesi, ardından takla atan topun kanat çırpışı gibi kesik hışırtı. */
+  if(o.slice){ const n=Math.floor(A.sampleRate*.07),b=A.createBuffer(1,n,A.sampleRate),c=b.getChannelData(0); for(let i=0;i<n;i++) c[i]=(Math.random()*2-1)*Math.sin(Math.PI*i/n); const sr=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain(); sr.buffer=b; fl.type='bandpass'; fl.Q.value=3; fl.frequency.setValueAtTime(2200*ton,t); fl.frequency.exponentialRampToValueAtTime(5200*ton,t+.07); g.gain.value=.2; sr.connect(fl).connect(g).connect(bus); sr.start(t);
+    for(let k=0;k<4;k++) burstN(A,bus,t+.08+k*.028,.014,'bandpass',4800,.05-k*.01,1,2); }
+  /* salon: kısa bir yansıma ve kısık oda kuyruğu; sesi kuru bir laboratuvar vuruşundan spor salonuna taşır */
+  decay(A,bus,t+.055,f0,'sine',.05*str,.05); burstN(A,bus,t+.02,.17,'lowpass',1700,.075,.7,2);
+}catch(e){} }
+function cheer(v=.12){ if(muted)return; try{ const A=ac(),n=A.sampleRate*1.2,b=A.createBuffer(1,n,A.sampleRate),c=b.getChannelData(0); for(let i=0;i<n;i++){ const e=i/n; c[i]=(Math.random()*2-1)*Math.sin(Math.PI*e)*(.6+.4*Math.sin(i/900)); } const s=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain(); s.buffer=b; fl.type='bandpass'; fl.frequency.value=1200; fl.Q.value=.6; g.gain.value=v; s.connect(fl).connect(g).connect(out()); s.start(); }catch(e){} }
+// Titreşim: Flutter kabuğunda (iOS WKWebView navigator.vibrate'i hiç desteklemez)
+// 'Haptic' JS kanalı varsa desen oraya gider, Flutter HapticFeedback'e çevirir.
+function buzz(p){ try{ if(window.Haptic){ Haptic.postMessage(JSON.stringify(p)); return } navigator.vibrate&&navigator.vibrate(p) }catch(e){} }
+/* Ses yolu: her şey bir alçak geçiren süzgeçten geçer. Vuruş penceresinde süzgeç kapanır: ses su altındaymış gibi boğulur, vuruşla açılır. */
+let BUSF=null, CROWDG=null, SWO=null;
+function out(){ const A=ac(); if(!BUSF){ BUSF=A.createBiquadFilter(); BUSF.type='lowpass'; BUSF.frequency.value=20000; const comp=A.createDynamicsCompressor(); BUSF.connect(comp).connect(A.destination); } return BUSF; }
+function underwater(on){ if(muted) return; try{ const A=ac(); out().frequency.setTargetAtTime(on?750:20000,A.currentTime,on?.05:.02); }catch(e){} }
+function loopNoise(A,sec){ const n=A.sampleRate*sec,b=A.createBuffer(1,n,A.sampleRate),c=b.getChannelData(0); for(let i=0;i<n;i++) c[i]=Math.random()*2-1; const src=A.createBufferSource(); src.buffer=b; src.loop=true; return src; }
+/* Seyirci uğultusu: ralli uzadıkça yükselir. */
+function crowdStart(){ if(CROWDG) return; try{ const A=ac(), src=loopNoise(A,2), f=A.createBiquadFilter(), f2=A.createBiquadFilter(); f.type='bandpass'; f.frequency.value=520; f.Q.value=.8; f2.type='lowpass'; f2.frequency.value=1400; CROWDG=A.createGain(); CROWDG.gain.value=0; src.connect(f).connect(f2).connect(CROWDG).connect(out()); src.start(); }catch(e){} }
+function crowdLevel(v){ if(!CROWDG) return; try{ CROWDG.gain.setTargetAtTime(muted?0:v,ac().currentTime,.4); }catch(e){} }
+function gasp(v=.08){ if(muted) return; try{ const A=ac(),t=A.currentTime,src=loopNoise(A,1),f=A.createBiquadFilter(),g=A.createGain(); f.type='bandpass'; f.Q.value=2; f.frequency.setValueAtTime(380,t); f.frequency.linearRampToValueAtTime(900,t+.5); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+.15); g.gain.exponentialRampToValueAtTime(.0001,t+.8); src.connect(f).connect(g).connect(out()); src.start(t); src.stop(t+.85); }catch(e){} }
+/* Raket uğultusu: parmak hızına göre perdesi ve sesi artan hava sesi. */
+function swooshStart(){ if(muted||SWO) return; try{ const A=ac(),src=loopNoise(A,1),f=A.createBiquadFilter(),g=A.createGain(); f.type='bandpass'; f.Q.value=1.4; f.frequency.value=700; g.gain.value=0; src.connect(f).connect(g).connect(out()); src.start(); SWO={src,f,g}; }catch(e){} }
+function swooshSet(sp){ if(!SWO) return; try{ const t=ac().currentTime; SWO.g.gain.setTargetAtTime(Math.min(.22,sp*.09),t,.02); SWO.f.frequency.setTargetAtTime(500+Math.min(3,sp)*900,t,.03); }catch(e){} }
+function swooshStop(){ if(!SWO) return; try{ const t=ac().currentTime, o=SWO; o.g.gain.setTargetAtTime(0,t,.04); setTimeout(()=>{ try{o.src.stop()}catch(e){} },250); }catch(e){} SWO=null; }
+/* Ralli melodisi: her vuruş beşli dizinin bir sonraki notası. Ralli uzadıkça şarkı tırmanır; düşen top şarkıyı keser. */
+const PENTA=[0,2,4,7,9];
+function rallyNote(n,mine,harm){ const i=Math.min(n,14), semi=Math.floor(i/5)*12+PENTA[i%5], f=(mine?392:196)*Math.pow(2,semi/12);
+  tone(f,.32,'triangle',mine?.05:.03); tone(f*2,.18,'sine',mine?.02:.01,.01); if(harm){ tone(f*1.5,.4,'sine',.03,.04); tone(f*2.52,.3,'sine',.015,.08); } }
+function squeak(){ if(muted) return; try{ const A=ac(),t=A.currentTime,o=A.createOscillator(),g=A.createGain(); o.type='sine'; o.frequency.setValueAtTime(2300,t); o.frequency.linearRampToValueAtTime(3400,t+.06); o.frequency.linearRampToValueAtTime(2800,t+.1); g.gain.setValueAtTime(.025,t); g.gain.exponentialRampToValueAtTime(.0001,t+.12); o.connect(g).connect(out()); o.start(t); o.stop(t+.13); }catch(e){} }
+function kickDrum(v=.22){ if(muted) return; try{ const A=ac(),t=A.currentTime,o=A.createOscillator(),g=A.createGain(); o.type='sine'; o.frequency.setValueAtTime(130,t); o.frequency.exponentialRampToValueAtTime(42,t+.14); g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.0001,t+.22); o.connect(g).connect(out()); o.start(t); o.stop(t+.25); }catch(e){} }
+function whistle(){ if(muted) return; try{ const A=ac(),t=A.currentTime,o=A.createOscillator(),g=A.createGain(); o.type='sine'; o.frequency.setValueAtTime(2600,t); o.frequency.exponentialRampToValueAtTime(700,t+.45); g.gain.setValueAtTime(.025,t); g.gain.exponentialRampToValueAtTime(.0001,t+.5); o.connect(g).connect(out()); o.start(t); o.stop(t+.52); }catch(e){} }
+function floorPat(big){ noise(.05,'lowpass',big?600:1100,big?.25:.12); if(big) kickDrum(.18); }
+function netRattle(){ for(let k=0;k<4;k++) setTimeout(()=>noise(.04,'bandpass',900+k*300,.09,3),k*45); }
+function drumroll(){ for(let k=0;k<9;k++) setTimeout(()=>noise(.03,'bandpass',300,.06+k*.008,1.5),k*38); }
+/* Titreşim desenleri (Android tarayıcıları destekler; iPhone Safari titreşim vermez). */
+const HAP={tick:8,hit:14,perfect:[16,10,28],smash:[35,15,55],jump:[45,20,30,20,80],kill:[30,10,50],net:[20,30,20],win:[20,40,20,40,90],lose:60,flow:[10,30,10,30,10,30,70],hawk:[6,40,6,40,6],poor:[8,20,8]};
+function hap(k){ if(!reduce||k==='win'||k==='lose') buzz(HAP[k]); }
+/* Vuruş titreşimi: el raketi tutuyor, telefon da öyle. Süre vuruşun gücü (smaç uzun ve sert, drop kısacık bir tık),
+   gerginlik dokuyu verir: gevşek tel uzun ve "trambolin" artçısı olan yumuşak bir titreşim, sıkı tel kısa ve keskin.
+   Tam orta tek temiz darbe; sıyırma kırık, kesik kesik; slice topun telde kayışı gibi kısa bir kekeme dizi. Rakibin vuruşu titremez (o raket senin elinde değil). */
+const HIT_MS={smash:44,jump:62,kill:26,drive:28,clear:32,drop:9,lift:24,block:12};
+function hapHit(o){ if(reduce) return; const T=G.tel, k=Math.pow(26/T,.45); let d=Math.round((HIT_MS[o.type]||28)*k); let pat;
+  if(o.q==='poor') pat=[Math.round(d*.3),14,Math.round(d*.25),12,Math.round(d*.2)];
+  else if(o.slice) pat=[4,9,4,9,5,9,Math.round(d*.55)];
+  else if(T<=22) pat=[d,18,Math.round(d*.4)];           /* gevşek tel: ana darbe + trambolin artçısı */
+  else if(T>=30) pat=[Math.max(5,Math.round(d*.7))];     /* sıkı tel: tek keskin darbe */
+  else pat=[d];
+  if(o.q==='perfect') pat[0]=Math.round(pat[0]*1.15);
+  buzz(pat); }
+
+/* ---- efekt ---- */
+const parts=[],floats=[],waves=[]; let shake=0,flash=0,flashCol='255,255,255',freeze=0,zoom=1,slow=1,slowT=0;
+function burst(x,y,col,n,spd,kind='dot',up=40){ if(reduce) n=Math.ceil(n/3); for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2,s=spd*(.3+Math.random()*.9); parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-up,t:0,life:.4+Math.random()*.5,col,r:kind==='feather'?5+Math.random()*4:1.5+Math.random()*3,kind,rot:Math.random()*6,vr:(Math.random()-.5)*10}); } }
+function txt(t,x,y,col='#fff',size=24){ floats.push({t,x,y,col,size,a:0}); }
+function wave(x,y,col,max){ if(!reduce) waves.push({x,y,col,max,t:0}); }
+function kick(a){ if(!reduce) shake=Math.max(shake,a); }
+function hitstop(s){ if(!reduce) freeze=Math.max(freeze,s); }
+function punch(z){ if(!reduce) zoom=Math.max(zoom,z); }
+
+/* ---- izdüşüm: metreden ekrana; uzak taraf dar ---- */
+function geo(){ const top=H*.09, bot=H*.95; return {top,bot,ch:bot-top,cw:W*.92}; }
+function sc(y){ return .62+.38*((y+MG)/(L+2*MG)); } /* uzak uç biraz daha küçük: derinlik daha okunur (v12) */
+function P(x,y,z=0){ const g=geo(), s=sc(y), py=g.top+(y+MG)/(L+2*MG)*g.ch, ppm=g.ch/(L+2*MG); return {x:W/2+(x-MID)/(CW+2*MG)*g.cw*s, y:py-z*ppm*.75*s, s, ppm:ppm*s}; }
+
+/* ---- maç durumu. Ben alt yarıdayım (y>NET), rakip üst yarıda. ---- */
+/* ---- ekipman ----
+   Her parça oyunun dinamiklerini sayıyla değiştirir; tek tablo (GEAR) hem menüyü hem fiziği hem sesi besler, böylece dengeyi
+   bir yerden yönetiriz. Her seçimin artısı ve eksisi var, "en iyi" parça yok (gerçek badminton da öyle: kafa ağır raket smaç verir,
+   file oyununu yavaşlatır; sıkı tel kontrol verir, tatlı noktayı daraltır). Sayılar çarpan: 1 = nötr. */
+const GEAR={
+  raket:{
+    denge:{ad:'Denge',n:'Her şeyden biraz',guc:1,kontrol:1,hiz:1,tatli:1,ton:1,kafa:1,renk:'#e9eef0'},
+    agir:{ad:'Kafa ağır',n:'Smaç +12 · clear uzun · drive −7 · tatlı nokta dar',guc:1.12,kontrol:.92,hiz:.93,tatli:.85,ton:.9,kafa:.78,renk:'#ff9f7a'},
+    hafif:{ad:'Kafa hafif',n:'Drive/file +8 · smaç −7 · clear kısa',guc:.93,kontrol:1.05,hiz:1.08,tatli:1,ton:1.1,kafa:1.18,renk:'#7ad7ff'},
+    esnek:{ad:'Esnek şaft',n:'Tatlı nokta geniş · sapma az · smaç −10',guc:.9,kontrol:1.3,hiz:1,tatli:1.3,ton:.95,kafa:1,renk:'#d8ff5a'}},
+  bileklik:{
+    yok:{ad:'Yok',n:'—'},
+    pamuk:{ad:'Pamuk',n:'Sıyırınca top yarı yarıya az kaçar',kenar:.5,renk:'#e9eef0'},
+    agir:{ad:'Ağırlıklı',n:'Smaç +4 · drive −4',guc:1.04,hiz:.96,renk:'#3a4a4e'}},
+  bant:{
+    yok:{ad:'Yok',n:'—'},
+    ter:{ad:'Ter bandı',n:'Akış 3 tam ortada açılır',akis:3,renk:'#e9eef0'},
+    odak:{ad:'Odak bandı',n:'Vuruş anı %15 daha yavaş akar · rakip %6 hızlı',yavas:.85,rakip:1.06,renk:'#ffd23a'}},
+  forma:{
+    mavi:{ad:'Mavi',n:'Klasik',renk:'#4fb8ff'},
+    fistik:{ad:'Fıstık',n:'Hafif kumaş: koşu +6',renk:'#d8ff5a',kosu:1.06},
+    beyaz:{ad:'Beyaz',n:'Enerji %40 hızlı dolar',renk:'#f2f6f4',enerji:1.4},
+    mor:{ad:'Mor',n:'Uzanma sonrası toparlanma kısa',renk:'#b48cff',toparla:.6}}};
+/* Tel gerginliği sürekli (18–32 lbs). Fizik gerçek: tel frekansı √gerginlik ile artar (sıkı tel tiz ve kısa çınlar); gevşek tel trambolin
+   etkisiyle güç verir ama tatlı nokta büyür ve kontrol düşer, sıkı tel tersi. 26 lbs nötr. */
+let G={raket:'denge',tel:26,bileklik:'yok',bant:'yok',forma:'mavi'};
+try{ const g=JSON.parse(localStorage.getItem('tuytop_gear')||'{}'); for(const k in G){ if(k==='tel'){ const v=typeof g.tel==='string'?+g.tel.replace('t',''):+g.tel; if(v>=18&&v<=32) G.tel=v; } else if(g[k]&&GEAR[k][g[k]]) G[k]=g[k]; } }catch(e){}
+function telStats(T){ const d=26-T; return {ad:T+' lbs',n:T<=22?'Gevşek: güç artar, tatlı nokta geniş, tok ve uzun çınlama':T>=30?'Sıkı: kontrol artar, tatlı nokta dar, tiz ve kısa çınlama':'Orta',
+  guc:1+d*.012,tatli:1+d*.035,kontrol:1-d*.025,ton:Math.sqrt(T/26)}; }
+let GS=null;
+function gearStats(){ const r=GEAR.raket[G.raket], t=telStats(G.tel), b=GEAR.bileklik[G.bileklik], h=GEAR.bant[G.bant], f=GEAR.forma[G.forma];
+  GS={raket:r,forma:f,bileklik:b,bant:h,tel:t,guc:r.guc*t.guc*(b.guc||1),kontrol:r.kontrol*t.kontrol,hiz:r.hiz*(b.hiz||1),tatli:r.tatli*t.tatli,ton:r.ton*t.ton,kafa:r.kafa,
+    kenar:b.kenar||1,akis:h.akis||4,yavas:h.yavas||1,rakip:h.rakip||1,kosu:f.kosu||1,enerji:f.enerji||1,toparla:f.toparla||1}; return GS; }
+gearStats();
+/* Rakip tarzları (Tennis Clash'in karakterleri, Badminton Clash'in hikâye rakipleri): her maçta farklı bir rakip, okunabilir bir alışkanlık ve ona karşı bir plan.
+   Olasılıklar baş üstü / alçak top için ayrı; hiz rakip koşusunu, hata sapmasını, ev rakibin dinlenme yerini (file oyuncusu öne durur) çarpar. */
+const STIL={
+  smasci:{ad:'Smaşçı',ipucu:'Her baş üstü topu smaçlar. Derin clear atıp blokla al',ust:{smash:.62,clear:.23,drop:.15},alt:{clear:.45,drop:.2,drive:.35},hiz:1,hata:1.2,ev:3.2},
+  duvar:{ad:'Duvar',ipucu:'Her şeyi geri çevirir, az hata yapar. Drop ve slice ile öne çek',ust:{smash:.15,clear:.6,drop:.25},alt:{clear:.65,drop:.25,drive:.1},hiz:1.08,hata:.75,ev:3.6},
+  file:{ad:'File oyuncusu',ipucu:'Fileye yakın durur, drop sever. Arkasına lift ve clear at',ust:{smash:.3,clear:.2,drop:.5},alt:{clear:.25,drop:.6,drive:.15},hiz:1,hata:1,ev:2.2}};
+let M=null, mode='menu', target=21, easy=true;
+/* Maç görevleri (Badminton Clash'in Challenge modu, Kule'deki görevler): her maç havuzdan 3 görev; biten görev anında kutlanır, toplam menüde birikir.
+   Görevler oyuncuyu yeni vuruşlara iter (slice, tepeden, file), sayı kazanmaktan bağımsız ikinci bir ödül hattı açar. */
+const GOREV=[
+  {id:'slice',ad:'3 slice vuruşu',hedef:3,say:()=>M.slices||0},
+  {id:'tepe',ad:'Topu 2 kez tepeden al',hedef:2,say:()=>M.tepeden},
+  {id:'ralli',ad:'10 vuruşluk ralli',hedef:10,say:()=>M.maxRally},
+  {id:'kill',ad:'2 file vuruşu',hedef:2,say:()=>M.kills},
+  {id:'perf',ad:'5 tam orta',hedef:5,say:()=>M.perfects},
+  {id:'aldat',ad:'2 aldatma',hedef:2,say:()=>M.deceives},
+  {id:'uzan',ad:'3 uzanarak kurtarış',hedef:3,say:()=>M.saves},
+  {id:'out',ad:'Dışarı giden 2 topu bırak',hedef:2,say:()=>M.outsLeft},
+  {id:'smac',ad:'3 smaç sayısı',hedef:3,say:()=>M.smacSayi||0}];
+function gorevSec(){ const h=GOREV.slice(); const out=[]; while(out.length<3){ out.push(h.splice(Math.floor(Math.random()*h.length),1)[0]); } return out.map(g=>({...g,bitti:false})); }
+function gorevKontrol(){ if(!M||!M.gorevler) return; M.gorevler.forEach(g=>{ if(!g.bitti&&g.say()>=g.hedef){ g.bitti=true; M.gorevBitti++; best.gorev=(best.gorev||0)+1; save();
+  setTimeout(()=>{ txt('Görev tamam: '+g.ad,W/2,H*.3,'#ffd23a',22); hap('flow'); [0,4,7,12,16].forEach((k,i)=>tone(660*Math.pow(2,k/12),.18,'triangle',.05,i*.07)); burst(W/2,H*.3,'#ffd23a',16,220,'spark',80); },250); } }); }
+function newMatch(){ M={me:{x:MID,y:L-2.2,sw:0,dive:0,jump:0,prep:0,vx:0,vy:0,tx:null,ty:null,stun:0},op:{x:MID,y:2.2,sw:0,dive:0,jump:0},sc:[0,0],server:'me',rally:0,maxRally:0,energy:0,nefes:1,tepeden:0,s:null,trail:[],smashes:0,perfects:0,outsLeft:0,between:false,wait:0,serveFaults:0};
+  M.stil=STIL[Object.keys(STIL)[Math.floor(Math.random()*3)]]; M.gorevler=gorevSec(); M.gorevBitti=0;
+  mode='play'; M.pop=[0,0]; M.cams=[]; M.marks=[]; M.hawk=null; M.flow=false; M.inWin=false; crowdStart(); M.clock=0; M.opHitAt=-9; M.split=false; M.splitPending=false; M.deceive=false; M.pstreak=0; M.kills=0; M.saves=0; M.deceives=0; M.splits=0; setupServe(); }
+/* Servis yeri: sunucunun skoru çiftse sağ, tekse sol servis karesi. Ben fileye bakıyorum (yukarı): benim sağım ekranın sağı. Rakibin sağı ekranın solu. */
+function serveSide(who){ const even=M.sc[who==='me'?0:1]%2===0; return who==='me'?(even?'R':'L'):(even?'R':'L'); }
+function boxX(who,side){ // o oyuncunun kendi bakışına göre sağ/sol karesinin x aralığı
+  const right=who==='me'?[MID,SR]:[SL,MID], left=who==='me'?[SL,MID]:[MID,SR]; return side==='R'?right:left; }
+function setupServe(){ M.s=null; M.trail=[]; M.me.vx=M.me.vy=0; M.me.tx=null; M.me.stun=0; M.mark=null; M.rally=0; M.between=false; M.icpt=null; M.serveMsg='';
+  const sv=M.server, side=serveSide(sv), rv=sv==='me'?'op':'me';
+  const sb=boxX(sv,side), rb=boxX(rv,side); // çapraz: alıcı kendi aynı adlı karesinde (karşıdan bakınca çapraz düşer)
+  const cx=(a)=>(a[0]+a[1])/2;
+  if(sv==='me'){ M.me.x=cx(sb); M.me.y=NET+SSL+1.4; M.op.x=cx(rb); M.op.y=NET-SSL-1.6; }
+  else { M.op.x=cx(sb); M.op.y=NET-SSL-1.4; M.me.x=cx(rb); M.me.y=NET+SSL+1.6; }
+  M.serveBox={who:rv,x:rb,y:rv==='me'?[NET+SSL,L]:[0,NET-SSL]};
+  M.wait=sv==='op'?1.0:0; M.hint=sv==='me';
+  if(M.sc[0]+M.sc[1]===0&&M.stil){ M.serveMsg=`Rakip: ${M.stil.ad}. ${M.stil.ipucu}`; }
+}
+
+function startFlight(from,vx,vy,vz,hp,isServe,type,isSuper){
+  M.s={x:hp.x,y:hp.y,z:hp.z,vx,vy,vz,from,serve:isServe,type,super:!!isSuper,t:0,netDone:false,dead:false,kd:M.hitSlice?KD*1.35:KD,slice:!!M.hitSlice};
+  M.trail=[]; M.rally++; M.maxRally=Math.max(M.maxRally,M.rally);
+  if(from==='op'){ M.opHitAt=M.clock; M.split=false; if(M.splitPending){ M.splitPending=false; doSplit(); } } else { M.split=false; M.splitPending=false; }
+  const sp=P(hp.x,hp.y,hp.z);
+  racketHit({type,q:M.hitQ||'good',who:from,serve:isServe,super:isSuper,slice:!!M.hitSlice}); M.hitQ=null; M.hitSlice=false; burst(sp.x,sp.y,'#ffffff',type==='smash'?10:5,type==='smash'?220:120,'feather',20); wave(sp.x,sp.y,type==='smash'?'#d8ff5a':'#ffffff',type==='smash'?90:46);
+  { const h=from==='me'?M.me:M.op; h.sw=1; h.shot=isServe?'low':(h.prepShot==='lunge'?'lunge':shotClass(type,hp.z,hp.y)); h.hand=isServe?'fore':handOf(h,from,hp.x,hp.z); }
+  if(type==='smash'){ hitstop(isSuper?.16:.08); punch(isSuper?1.09:1.05); kick(isSuper?12:6); flash=isSuper?.5:.2; flashCol=isSuper?'255,140,60':'216,255,90'; if(from==='op') hap('tick'); }
+  rallyNote(M.rally-1,from==='me',from==='me'&&M.flow); if(M.rally>=6) kickDrum(.12+Math.min(.12,M.rally*.008)); if(type==='smash') whistle();
+  crowdLevel(.01+Math.min(.06,M.rally*.0045));
+  if(from==='me'){ const n=type==='smash'?16:M.flow?12:6; for(let k=0;k<n;k++){ const a=Math.random()*Math.PI*2; parts.push({x:sp.x,y:sp.y,vx:Math.cos(a)*600,vy:Math.sin(a)*600,t:0,life:.18,col:M.flow?'#ffd23a':'#ffffff',r:1,kind:'streak',rot:0,vr:0}); } }
+  if(M.rally>2&&M.rally%5===0){ txt(`Ralli ${M.rally}`,W/2,H*.5,'#d8ff5a',30); tone(523*Math.pow(2,Math.min(M.rally,30)/24),.2,'triangle',.07); }
+  planIntercept();
+}
+/* Karşılayan için yolu önceden hesapla: baş üstünde alabiliyorsa yüksekte (smaç şansı), değilse yere düşmeden en alçak noktada. */
+/* Nefes (kondisyon, Badminton Clash'ten): smaç, sıçrama ve uzanma nefes yakar; nefes düşünce koşu yavaşlar ve smaç zayıflar.
+   Sayılar arasında hızla, ralli içinde yavaş dolar. Amaç vuruş seçimine bedel vermek: her top smaçlanmaz, clear ile nefes alınır. */
+function nefesF(){ return M.nefes<.4?.8+.5*M.nefes:1; }
+function yor(v){ M.nefes=Math.max(0,M.nefes-v); if(M.nefes<.25&&!M.nefesUyari){ M.nefesUyari=true; const p=P(M.me.x,M.me.y); txt('Nefes al: clear at',p.x,p.y+40,'#7ad7ff',16); } if(M.nefes>.5) M.nefesUyari=false; }
+function meSpd(){ return 5.2*GS.kosu*nefesF()*(M.split?1.3:1); }
+function behind(){ return Math.max(0,M.sc[1]-M.sc[0]); }
+function opSpd(){ return GS.rakip*M.stil.hiz*(easy?3.2:3.6)+Math.min(1.1,(M.sc[0]+M.sc[1])*.04)-Math.min(.8,behind()*.12); }
+function planIntercept(){ const s=M.s, r=simulate(s.x,s.y,s.z,s.vx,s.vy,s.vz,true,s.kd||KD); const recv=s.from==='me'?'op':'me', P0=recv==='me'?M.me:M.op;
+  /* Yeniden planlamada (split step) yol şimdiki andan başlar: zamanları uçuş saatine taşı. */
+  const t0=s.t||0; r.path.forEach(p=>p.t+=t0); r.t+=t0;
+  s.landPred={x:r.x,y:r.y,t:r.t,net:r.net}; if(r.net) s.netPred=r.net; const mySide=p=>recv==='me'?p.y>NET:p.y<NET;
+  let react=recv==='me'?0:.18; const spd=recv==='me'?meSpd():opSpd();
+  /* Aldatma: tutulup son anda bırakılan vuruşta rakip geç ve ters yöne çıkar (hold & flick). */
+  if(recv==='op'&&M.deceive){ react+=.3; M.op.fakeUntil=M.clock+.32; M.op.fakeX=Math.max(SL,Math.min(SR,2*MID-r.x)); M.deceive=false; M.deceives++; const p=P(M.op.x,M.op.y); txt('Aldattın!',p.x,p.y-60,'#7ad7ff',24); tone(740,.1,'triangle',.06); tone(988,.12,'triangle',.06,.08); }
+  const need=(p,reach)=>Math.max(0,Math.hypot(p.x-P0.x,p.y-P0.y)-reach)/spd+react+t0;
+  let pick=null, overhead=false, kill=false, lunge=false;
+  const cands=r.path.filter(p=>mySide(p)&&p.z>.25&&p.z<3.0);
+  // file üstünde kalan gevşek top: öldürme şansı
+  if(recv==='me'){ for(const p of cands){ if(Math.abs(p.y-NET)<2.3&&p.z>NETH+.2&&p.z<2.6&&need(p,1.15)<=p.t){ pick=p; kill=true; break; } } }
+  if(!pick) for(const p of cands){ if(p.z>2.1&&p.z<2.8&&need(p,1.15)<=p.t){ pick=p; overhead=true; break; } }
+  if(!pick){ for(let i=cands.length-1;i>=0;i--){ const p=cands[i]; if(p.z>.75) continue; if(need(p,1.15)<=p.t){ pick=p; break; } } }
+  if(!pick){ for(const p of cands){ if(need(p,1.15)<=p.t){ pick=p; break; } } }
+  // yetişemiyorsa uzanma: daha geniş erişim ama yalnızca kaldırma
+  if(!pick&&recv==='me'){ for(let i=cands.length-1;i>=0;i--){ const p=cands[i]; if(p.z>1.3) continue; if(need(p,2.1)<=p.t){ pick=p; lunge=true; break; } } }
+  M.icpt=pick?{...pick,who:recv,overhead,kill,lunge}:null;
+  if(recv==='op'&&M.icpt){ const out=isOut(r.x,r.y,s.serve); const margin=Math.min(Math.abs(r.x-SL),Math.abs(r.x-SR),Math.abs(r.y),Math.abs(r.y-L)); if((out&&!(margin<.25&&Math.random()<.5))||(r.net&&!r.net.ok)) M.icpt.leave=true;
+    const q=Math.random(), T=overhead?M.stil.ust:M.stil.alt, keys=Object.keys(T); let acc=0, pick=keys[keys.length-1]; for(const k of keys){ acc+=T[k]; if(q<acc){ pick=k; break; } } M.icpt.opType=pick; }
+}
+/* Split step: rakip vururken küçük sıçrama. Daha hızlı çıkış = daha çok baş üstü top. */
+function doSplit(){ M.split=true; M.splits++; const p=P(M.me.x,M.me.y); txt('Split step',p.x,p.y+24,'#7ad7ff',16); M.me.jump=Math.max(M.me.jump,.5); tone(1200,.04,'square',.03); if(M.s&&M.s.from==='op') planIntercept(); }
+function inServeBox(x,y){ const b=M.serveBox; return x>=b.x[0]&&x<=b.x[1]&&y>=b.y[0]&&y<=b.y[1]; }
+function isOut(x,y,serve){ if(serve) return !inServeBox(x,y); return x<SL||x>SR||y<0||y>L; }
+
+/* ---- vuruş türleri ---- */
+function plan(who,type,dxAim,hp,overhead){
+  const opp=who==='me'; // hedef karşı yarı
+  const yN=d=>opp?NET-d:NET+d; let tx=MID+dxAim*(SR-SL)*.62, ty, mode='angle', val;
+  switch(type){
+    case 'smash': ty=yN(3.6+Math.random()*1.2); mode='speed'; val=M.s&&M.s.superNext?78:52; break; // ~190 km/s amatör smaç
+    case 'drive': ty=yN(4.6); mode='speed'; val=22; break;
+    case 'drop': ty=yN(overhead?1.2:0.9); mode='angle'; val=overhead?.12:.75; break;
+    default: ty=yN(L/2-.55); mode='angle'; val=overhead?.85:1.0; } // clear / lift
+  return {tx,ty,mode,val};
+}
+/* Vuruş penceresi: top karşılama noktasına yaklaşırken kısa bir aralık. Bu aralıkta zaman yavaşlar ve top kesilebilir. */
+/* Erişim: raket kolu ~1,15 m; uzanmayla ~1,75 m ama yalnız alçak topta. Vuruş penceresi artık oyuncunun gerçek yerine bağlı: koşmazsan yetişemezsin. */
+function reachInfo(){ const s=M&&M.s; if(!s||s.dead||s.from!=='op'||s.y<=NET||s.z<.12||s.z>3.1) return null;
+  const d=Math.hypot(s.x-M.me.x,s.y-M.me.y), kill=s.y-NET<2.3&&s.z>NETH+.2;
+  const R1=easy?1.45:1.15, R2=easy?2.2:1.75; if(d<=R1) return {lunge:false,over:s.z>2.0,kill,d}; if(d<=R2&&s.z<1.5) return {lunge:true,over:false,kill:false,d}; return null; }
+function hitWindow(){ return !!reachInfo(); }
+const PREV_TR={lift:'Lift',kill:'File vuruşu',jump:'Sıçrayarak smaç',smash:'Smaç',block:'Blok'};
+const KIND_TR={lift:'kaldırdın',kill:'FİLE VURUŞU',jump:'SIÇRAYARAK SMAÇ',smash:'SMAÇ!',drive:'Drive',drop:'Drop',clear:'Clear',block:'Blok'};
+/* Kesişten vuruş: yön = parmağın yönü, hız = güç ve tür, topun merkezine uzaklık = isabet. */
+/* Vuruş planı: kaydırmadan tür + hedef. Hem gerçek vuruş hem de parmak hâlâ ekrandayken gösterilen hedef önizlemesi (dry) bunu kullanır,
+   böylece önizleme ile gerçek vuruş asla ayrışmaz. (Tennis Clash: kaydırırken yörüngeyi şekillendirme.) */
+function shotPlan(sw,I,s,dry){
+  const sp=sw.speed, up=-sw.dy, r=Math.max(-1.3,Math.min(1.3,sw.dx/Math.max(50,Math.abs(sw.dy))));
+  const hp={x:s.x,y:s.y,z:Math.max(.2,s.z)}, over=s.z>2.0;
+  const hand=handOf(M.me,'me',s.x,s.z), bh=hand==='back';
+  let type; if(sw.tap) type=I.lunge?'lift':I.kill?'kill':'clear'; else if(I.lunge) type='lift'; else if(up<0) type='block'; else if(sp>1.5&&I.kill) type='kill'; else if(sp>1.7) type=over?(bh?'clear':(M.energy>=1?'jump':'smash')):'drive'; else if(sp<.75) type='drop'; else type='clear';
+  /* Backhand'den smaç yok: hızlı kaydırış baş üstü backhand'de sert bir clear olur. Backhand clear kısa kalır, backhand drive daha yavaş. */
+  let tx=MID+r*2.4, d, mode='angle', val;
+  switch(type){
+    case 'kill': d=2.6; mode='speed'; val=30*GS.hiz; if(!dry) yor(.06); break;
+    case 'jump': d=3.2; mode='speed'; val=78*GS.guc*nefesF(); if(!dry){ M.energy=0; yor(.3); } break;
+    case 'smash': d=4.2; mode='speed'; val=52*GS.guc*nefesF(); if(!dry) yor(.18); break;
+    case 'drive': d=4.6; mode='speed'; val=(bh?18:22)*GS.hiz; break;
+    case 'drop': d=over?1.2:1.0; val=over?.12:(Math.abs(hp.y-NET)<2.5?.75:.95); break; // arkadan alçak drop daha yüksek kavis ister
+    case 'block': d=.9; val=.6; tx=hp.x+r*1.2; break;
+    case 'lift': tx=MID+r*1.2; d=5.4; val=1.05; break;
+    default: d=Math.min(bh?5.6:6.9,(bh?4.6:5.5)+(sp-.75)*1.4+(GS.guc-1)*3); val=over?.85:1.0; } /* kafa ağır raket clear'ı ~35 cm uzatır, kafa hafif kısaltır */
+  return {type,tx,d,mode,val,bh,over,hp,sp};
+}
+function swipeShot(sw){ const s=M.s, I=reachInfo(); if(M.between||!s||!I) return false;
+  const PL=shotPlan(sw,I,s,false); let {type,tx,d,mode,val}=PL; const {bh,over,hp,sp}=PL; M.preview=null;
+  /* İsabet: merkeze uzaklık (top yarıçapı birimi). Zamanlama sapması da hafifçe bozar. */
+  const cq=sw.dist/sw.R;
+  let q=cq<.4*GS.tatli?'perfect':cq<=1?'good':easy?'good':'poor'; /* tatlı nokta: esnek şaft ve gevşek tel genişletir */ if(I.lunge&&q==='perfect') q='good'; if(sw.tap) q='good';
+  /* Slice: kavisli kaydırma = raket topu keserek alır. Top takla atar: sürtünme artar, tahmin edilenden kısa düşer; rakip yine aldanır. */
+  const slice=sw.curved&&q!=='poor'&&(type==='drop'||type==='clear'||type==='drive'||type==='block'); if(slice){ M.deceive=true; M.slices=(M.slices||0)+1; }
+  const sig=((q==='perfect'?.1:q==='good'?.35:.9)+(I.lunge?.4:0))/GS.kontrol; const g=()=>(Math.random()+Math.random()+Math.random()-1.5)*sig*1.4;
+  /* Kenardan sıyırma topu sıyırdığın tarafa kaçırır. */
+  const edge=q==='poor'?sw.side*.8*GS.kenar:0;
+  /* Tepeden alma (Badminton Clash'in "topu erken al"ı): smaç 2,4 m üstünde alınırsa dikleşir ve hızlanır. Erken yerleşmenin ödülü. */
+  const tepeden=(type==='smash'||type==='jump')&&s.z>2.4; if(tepeden){ val*=1.08; d-=.5; M.tepeden++; }
+  let [vx,vy,vz]=aim(hp,tx+g()+edge,NET-d+g()*.8,mode,val);
+  if(q==='poor'){ const k=1+(Math.random()-.5)*.16; vx*=k; vy*=k; vz*=k; }
+  const p=P(hp.x,hp.y,hp.z);
+  if(q==='perfect'){ M.perfects++; M.pstreak++; M.energy=Math.min(1,M.energy+.34*GS.enerji); flash=Math.max(flash,.14); flashCol='255,255,255';
+    if(M.pstreak===GS.akis&&!M.flow){ M.flow=true; setTimeout(()=>{ txt('AKIŞ',W/2,H*.36,'#ffd23a',44); hap('flow'); [0,2,4,7,9,12].forEach((k,i)=>tone(523*Math.pow(2,k/12),.25,'triangle',.05,i*.06)); },120); }
+    const lbl=(type==='jump'||type==='smash'||type==='kill')?KIND_TR[type]:M.pstreak>1?`Tam orta ×${M.pstreak}`:(bh&&(type==='clear'||type==='drive')?'Backhand, tam orta':'Tam orta');
+    txt(lbl,p.x,p.y-40,type==='jump'?'#ff8a3c':'#d8ff5a',type==='jump'?36:26); burst(p.x,p.y,'#d8ff5a',18,280,'spark'); tone(660*Math.pow(2,Math.min(M.pstreak,12)/12),.12,'sine',.06,.02); hitstop(.06); punch(1.03); }
+  else { M.pstreak=0; if(M.flow){ M.flow=false; txt('Akış bitti',W/2,H*.36,'#9dbab3',18); } txt(q==='poor'?'Sıyırdın':(slice?'Slice ':'')+((type==='clear'||type==='drive')?(bh?'Backhand ':'Forehand ')+KIND_TR[type].toLowerCase():KIND_TR[type]),p.x,p.y-40,q==='poor'?'#9dbab3':'#ffffff',q==='poor'?18:20); }
+  if(I.lunge){ M.me.dive=1; M.me.stun=.35*GS.toparla; M.saves++; yor(.15); txt('Uzandın!',p.x,p.y-64,'#ffd27a',22); }
+  if(type==='jump') M.me.jump=1;
+  if(tepeden) txt('Tepeden!',p.x,p.y-66,'#ff8a3c',22);
+  if(type==='kill'){ M.kills++; kick(8); }
+  if(type==='smash'||type==='jump') M.smashes++;
+  M.me.sw=1; M.cut={x:p.x,y:p.y,a:Math.atan2(sw.dy,sw.dx),t:0}; M.hitQ=q; M.hitSlice=slice; hapHit({type,q,slice}); gorevKontrol();
+  startFlight('me',vx,vy,vz,hp,false,type==='jump'||type==='kill'?'smash':type==='lift'?'clear':type==='block'?'drop':type,type==='jump');
+  return true;
+}
+/* Servis: kareye doğru kaydır. Yavaş = kısa servis, hızlı = uzun servis. */
+function swipeServe(sw){ if(M.s||M.between||M.server!=='me'||M.wait>0) return; M.hint=false;
+  const b=M.serveBox, cx=(b.x[0]+b.x[1])/2, r=Math.max(-1.3,Math.min(1.3,sw.dx/Math.max(50,Math.abs(sw.dy))));
+  const long=sw.speed>1.0, hp={x:M.me.x,y:M.me.y-.5,z:1.0}, d=long?6.2:SSL+.45;
+  const [vx,vy,vz]=aim(hp,cx+r*1.5,NET-d,'angle',long?1.0:.32); M.me.sw=1; startFlight('me',vx,vy,vz,hp,true,long?'clear':'drop'); }
+function opHit(){ const s=M.s, I=M.icpt, hp={x:s.x,y:s.y,z:Math.max(.2,s.z)}; let type; const r=Math.random(); M.hitQ=Math.random()<.12?'poor':Math.random()<.3?'perfect':'good';
+  if(s.serve&&false){}
+  const obh=handOf(M.op,'op',hp.x,hp.z)==='back'; type=I.opType||(I.overhead?'clear':'drop'); if(obh&&type==='smash') type='clear';
+  /* Rakip file önünde arada gevşek top bırakır: file üstüne kalkar, sana öldürme şansı. */
+  if(type==='drop'&&!I.overhead&&hp.y>NET-2.6&&r<.35){ const [vx,vy,vz]=aim(hp,MID+(Math.random()-.5)*2.4,NET+1.0,'angle',1.15); startFlight('op',vx,vy,vz,hp,false,'drop'); return; }
+  const pl=plan('op',type,(Math.random()*2-1)*.8,hp,I.overhead); if(obh&&type==='clear') pl.ty=Math.max(pl.ty,NET+1.2); /* backhand clear'ı kısa kalır */ const g=()=>(Math.random()-.5)*M.stil.hata*(.5+(easy?.3:0)+(obh?.35:0)+Math.min(.9,behind()*.15)); /* geride kalınca rakip daha çok hata yapar (lastik bant) */
+  let [vx,vy,vz]=aim(hp,pl.tx+g(),pl.ty+g(),pl.mode,pl.val);
+  /* Rakip fileyi çoğunlukla görür: fileye gidecek vuruşu çoğu zaman düzeltir, arada yine takar. */
+  const chk=simulate(hp.x,hp.y,hp.z,vx,vy,vz); if(chk.net&&!chk.net.ok&&Math.random()<.9) [vx,vy,vz]=aim(hp,pl.tx,pl.ty-(hp.y<NET?0:0),'angle',Math.max(.75,pl.mode==='angle'?pl.val:.75));
+  startFlight('op',vx,vy,vz,hp,false,type); }
+function opServe(){ const sv=M.op, hp={x:sv.x,y:sv.y+.5,z:1.0}, b=M.serveBox, long=Math.random()<.4;
+  const tx=b.x[0]+.3+Math.random()*(b.x[1]-b.x[0]-.6), ty=long?b.y[1]-.6:b.y[0]+.5; const [vx,vy,vz]=aim(hp,tx,ty,'angle',long?1.0:.32); startFlight('op',vx,vy,vz,hp,true,long?'clear':'drop'); }
+
+/* ---- sayı: ralli sistemi, sayıyı alan servisi alır ---- */
+function point(winner,why,at){ if(M.between) return; M.between=true; M.sc[winner==='me'?0:1]++; M.server=winner; if(winner==='me'&&M.s&&M.s.from==='me'&&M.s.type==='smash') M.smacSayi=(M.smacSayi||0)+1; setTimeout(gorevKontrol,0);
+  if(at){ const p=P(at.x,at.y); burst(p.x,p.y,'rgba(230,255,240,.7)',14,140,'dot',30); wave(p.x,p.y,winner==='me'?'#d8ff5a':'#ff7a6b',70); }
+  if(winner==='me'){ txt(why,W/2,H*.42,'#d8ff5a',34); cheer(.14); [0,4,7,12].forEach((s,k)=>tone(523*Math.pow(2,s/12),.18,'triangle',.08,k*.07)); kick(5); hap('win'); M.pop[0]=1; if(M.rally>=8||(M.s&&M.s.type==='smash')) for(let k=0;k<26;k++) M.cams.push({x:Math.random()*W,y:8+Math.random()*48,t:-Math.random()*.6}); for(let k=0;k<3;k++) setTimeout(()=>burst(W*(.2+Math.random()*.6),H*.3,['#d8ff5a','#ff7a6b','#7ad7ff'][k],22,260,'spark',100),k*120); }
+  else { txt(why,W/2,H*.58,'#ff7a6b',28); tone(220,.25,'sawtooth',.05); hap('lose'); M.pop[1]=1; }
+  if(M.rally>best.rally){ best.rally=M.rally; save(); if(M.rally>=6) setTimeout(()=>txt(`Yeni ralli rekoru: ${M.rally}`,W/2,H*.5,'#7ad7ff',22),500); }
+  const [a,b]=M.sc, cap=target===21?30:target===11?15:10, done=(Math.max(a,b)>=target&&Math.abs(a-b)>=2)||Math.max(a,b)>=cap;
+  if(done){ slow=.3; slowT=.9; setTimeout(endMatch,1400); }
+  else { if(Math.max(a,b)>=target-1&&a!==b&&Math.abs(a-b)<=1) M.serveMsg=a>b?'Maç sayısı':'Rakibin maç sayısı'; else if(a===b&&a>=target-1) M.serveMsg='Uzatma: 2 fark gerekiyor';
+    setTimeout(()=>{ if(M&&mode==='play'){ const msg=M.serveMsg; setupServe(); M.serveMsg=msg; } },1300); }
+}
+function endMatch(){ mode='over'; crowdLevel(.004); underwater(false); const won=M.sc[0]>M.sc[1]; if(won){ best.wins++; save(); }
+  document.getElementById('oTitle').textContent=won?'Kazandın':'Bu sefer rakip aldı';
+  document.getElementById('oScore').textContent=`${M.sc[0]} – ${M.sc[1]}`;
+  document.getElementById('oInfo').textContent=`Rakip ${M.stil.ad} · Görev ${M.gorevBitti}/3 (${M.gorevler.filter(g=>g.bitti).map(g=>g.ad).join(', ')||'yok'}) · En uzun ralli ${M.maxRally} · ${M.smashes} smaç · ${M.kills} file vuruşu · ${M.perfects} mükemmel · ${M.deceives} aldatma · ${M.splits} split step · ${M.tepeden} tepeden · ${M.saves} uzanma · ${M.outsLeft} kez dışarıyı bıraktın`;
+  over.hidden=false; if(won){ cheer(.18); for(let k=0;k<6;k++) setTimeout(()=>burst(W*(.15+Math.random()*.7),H*(.2+Math.random()*.3),['#d8ff5a','#ff7a6b','#7ad7ff'][k%3],30,300,'spark',120),k*130); } }
+
+/* Oyuncu hareketi: hedefe ivmeyle koşar (≈14 m/s²), hedefe yaklaşınca frenler. Hızlı yön değişiminde ayakkabı gıcırtısı ve toz. */
+function runMe(d){ const o=M.me; if(!M.s){ o.vx=o.vy=0; return; } /* servis atılana kadar iki oyuncu da yerinde durur (kural) */ if(o.stun>0){ o.stun-=d; o.vx*=.8; o.vy*=.8; return; }
+  o.manualT=Math.max(0,(o.manualT||0)-d);
+  /* Koşu yardımı: oyuncu, rakibin topunun kesişme noktasına kendi koşar (biraz tembel), vuruştan sonra merkeze döner. Dokunma 1,4 sn boyunca öncelik alır. */
+  if(easy&&o.manualT<=0){ const s=M.s, I=M.icpt; if(s&&s.from==='op'&&I&&I.who==='me'){ o.tx=I.x; o.ty=I.y+(I.lunge?.6:.25); } else if(s&&s.from==='op'&&s.landPred&&s.landPred.y>NET){ o.tx=s.landPred.x; o.ty=s.landPred.y+.3; } else if(s&&s.from==='me'){ o.tx=MID; o.ty=L-3.3; } }
+  const max=meSpd(), A=(M.split?20:(easy?18:14))*GS.kosu; let dvx=0,dvy=0;
+  if(o.tx!=null){ const dx=o.tx-o.x, dy=o.ty-o.y, dist=Math.hypot(dx,dy); if(dist>.02){ const v=Math.min(max,Math.sqrt(2*A*dist)); dvx=dx/dist*v; dvy=dy/dist*v; } else o.tx=null; }
+  const ex=dvx-o.vx, ey=dvy-o.vy, el=Math.hypot(ex,ey), st=A*d; const pvx=o.vx,pvy=o.vy;
+  if(el>st){ o.vx+=ex/el*st; o.vy+=ey/el*st; } else { o.vx=dvx; o.vy=dvy; }
+  o.x=Math.max(-.6,Math.min(CW+.6,o.x+o.vx*d)); o.y=Math.max(NET+.25,Math.min(L+1,o.y+o.vy*d));
+  const sp=Math.hypot(o.vx,o.vy), psp=Math.hypot(pvx,pvy);
+  o.dust=(o.dust||0)-d; if(sp>2.6&&o.dust<=0){ o.dust=.07; const p=P(o.x,o.y); burst(p.x,p.y,'rgba(220,240,230,.55)',2,40,'dot',15); }
+  if(psp>2.4&&(pvx*o.vx+pvy*o.vy)<psp*sp*.2&&!o.sq){ o.sq=.25; squeak(); } o.sq=Math.max(0,(o.sq||0)-d); }
+function screenToCourt(sx,sy){ const g=geo(); const y=(sy-g.top)/g.ch*(L+2*MG)-MG, s=sc(y); return {x:MID+(sx-W/2)/(g.cw*s)*(CW+2*MG),y}; }
+function runTo(sx,sy){ const c=screenToCourt(sx,sy); M.me.tx=Math.max(-.4,Math.min(CW+.4,c.x)); M.me.ty=Math.max(NET+.3,Math.min(L+.8,c.y)); M.mark={x:M.me.tx,y:M.me.ty,t:0}; }
+function move(o,x,y,step){ const dx=x-o.x, dy=y-o.y, d=Math.hypot(dx,dy); if(d<1e-3) return; const k=Math.min(1,step/d); o.x+=dx*k; o.y+=dy*k; }
+function update(dt){
+  if(freeze>0){ freeze-=dt; return; }
+  if(slowT>0){ slowT-=dt; if(slowT<=0) slow=1; }
+  const d=dt*slow*(hitWindow()?(reduce?.7:(easy?.3:.45)*GS.yavas):1);
+  zoom=1+(zoom-1)*Math.pow(.0005,dt); shake*=Math.pow(.002,dt); flash=Math.max(0,flash-dt*1.8);
+  if(M&&mode==='play'){ M.nefes=Math.min(1,M.nefes+dt*((!M.s||M.between)?.14:.03)); }
+  for(let i=parts.length-1;i>=0;i--){ const p=parts[i]; p.t+=d; const gr=p.kind==='feather'?60:p.kind==='spark'?240:p.kind==='streak'?0:300, dr=p.kind==='feather'?Math.pow(.08,d):p.kind==='streak'?1:Math.pow(.4,d); p.vx*=dr; p.vy=p.vy*dr+gr*d; p.x+=p.vx*d; p.y+=p.vy*d; p.rot+=p.vr*d; if(p.t>p.life) parts.splice(i,1); }
+  for(let i=floats.length-1;i>=0;i--){ const t=floats[i]; t.a+=d; t.y-=30*d; if(t.a>1.2) floats.splice(i,1); }
+  waves.forEach(w=>w.t+=d*2.4); for(let i=waves.length-1;i>=0;i--) if(waves[i].t>=1) waves.splice(i,1);
+  if(!M||mode!=='play') return;
+  { const w=hitWindow(); if(w&&!M.inWin){ hap('tick'); underwater(true); noise(.25,'lowpass',300,.08); } else if(!w&&M.inWin) underwater(false); M.inWin=w; }
+  M.pop[0]=Math.max(0,M.pop[0]-dt*3); M.pop[1]=Math.max(0,M.pop[1]-dt*3); M.cams.forEach(c=>c.t+=dt); M.cams=M.cams.filter(c=>c.t<.5);
+  if(M.mark){ M.mark.t+=dt; if(M.mark.t>.6) M.mark=null; } M.marks.forEach(m=>m.t+=dt); M.marks=M.marks.filter(m=>m.t<3); if(M.hawk){ M.hawk.t+=dt; if(M.hawk.t>1.5) M.hawk=null; }
+  M.clock+=d; M.me.dive=Math.max(0,M.me.dive-d*1.5); M.me.jump=Math.max(0,M.me.jump-d*2.2); M.op.jump=Math.max(0,M.op.jump-d*2.2);
+  M.me.sw=Math.max(0,M.me.sw-d*4); M.op.sw=Math.max(0,M.op.sw-d*4); M.op.dive=Math.max(0,M.op.dive-d*1.5);
+  if(M.wait>0){ M.wait-=d; if(M.wait<=0&&M.server==='op'&&!M.s&&!M.between){ M.wait=0; opServe(); } }
+  runMe(d);
+  { /* Hazırlık pozu: top yaklaşırken kol geri alınır; hangi poz, topun geleceği yüksekliğe göre */
+    const s=M.s, I=M.icpt; const upd=(o,who)=>{ let tg=0; if(s&&!s.dead&&s.from!==who&&I&&I.who===who&&I.t-s.t<.7){ tg=1; o.prepShot=I.lunge?'lunge':I.kill?'kill':(I.z>1.95?'over':'low'); o.prepHand=handOf(o,who,I.x,I.z); } else if(!s&&M.server===who){ tg=.6; o.prepShot='low'; }
+      if(who==='me'&&s&&!s.dead&&s.from==='op'){ const ri=reachInfo(); if(ri){ tg=1; o.prepShot=ri.lunge?'lunge':ri.kill?'kill':ri.over?'over':'low'; o.prepHand=handOf(o,'me',s.x,s.z); } }
+      o.prepA=(o.prepA||0)+(tg-(o.prepA||0))*Math.min(1,dt*9); };
+    upd(M.me,'me'); upd(M.op,'op'); }
+  const s=M.s; if(!s||s.dead) return;
+  // canlı fizik: tahminle aynı adım
+  let rem=d; while(rem>1e-6){ const h=Math.min(DT,rem); const py=s.y; step(s,h); s.t+=h; rem-=h;
+    if(!s.netDone&&(py>NET)!==(s.y>NET)){ s.netDone=true; const lim=NETH+(NETP-NETH)*Math.abs(s.x-MID)/MID; /* Tahminle canlı uçuş aynı karara varsın: kıl payı geçişte adım farkı sonucu değiştirmesin. */ if(s.netPred?!s.netPred.ok:s.z<=lim){ s.vx=0; s.vy=(py>NET?.4:-.4); s.vz=Math.min(0,s.vz); s.netHit=true; const p=P(s.x,NET,s.z); burst(p.x,p.y,'#ffffff',8,90,'feather'); noise(.12,'lowpass',500,.15); netRattle(); hap('net'); } }
+    if(s.z<=0){ s.z=0; land(); return; } }
+  const sp=P(s.x,s.y,s.z); M.trail.push(sp); if(M.trail.length>(s.type==='smash'?14:8)) M.trail.shift();
+  const I=M.icpt;
+  if(s.from==='me'){ if(I&&I.who==='op'&&!I.leave){ if(M.op.fakeUntil>M.clock) move(M.op,M.op.fakeX,M.op.y,1.6*d); else move(M.op,I.x,I.y-.3,opSpd()*d);
+      if(I.opType==='smash'&&I.t-s.t<.32&&I.t-s.t>0) M.op.jump=Math.max(M.op.jump,1-(I.t-s.t)/.32*.6);
+      if(s.t>=I.t){ opHit(); return; } }
+    else { move(M.op,s.landPred.x,s.landPred.y-.4,2.2*d); if(!M.op.dive&&s.landPred&&!isOut(s.landPred.x,s.landPred.y,s.serve)&&!(s.landPred.net&&!s.landPred.net.ok)&&s.t>s.landPred.t-.25){ M.op.dive=1; const p=P(M.op.x,M.op.y); txt('Kıl payı!',p.x,p.y-40,'#ffd27a',20); if(!reduce){ slow=.35; slowT=.3; } } }
+  }
+  else { move(M.op,MID,M.stil.ev,2.0*d); }
+}
+function lineMargin(x,y,serve){ if(serve){ const b=M.serveBox; return Math.min(Math.abs(x-b.x[0]),Math.abs(x-b.x[1]),Math.abs(y-b.y[0]),Math.abs(y-b.y[1])); } return Math.min(Math.abs(x-SL),Math.abs(x-SR),Math.abs(y),Math.abs(y-L)); }
+function land(){ const s=M.s; s.dead=true; const at={x:s.x,y:s.y}; const hitter=s.from, other=hitter==='me'?'op':'me';
+  const big=s.type==='smash'; if(!s.netHit){ M.marks.push({x:s.x,y:s.y,t:0,big,cr:Array.from({length:big?5:0},()=>Math.random()*6.28)}); floorPat(big); }
+  /* Çizgi kamerası: kıl payı topta büyütülmüş iz gösterilir, karar santimle yazılır. */
+  if(!s.netHit){ const m=lineMargin(s.x,s.y,s.serve); if(m<.15){ M.hawk={x:s.x,y:s.y,serve:s.serve,in:!isOut(s.x,s.y,s.serve),cm:Math.max(1,Math.round(m*100)),t:0}; drumroll(); hap('hawk'); setTimeout(()=>{ if(M.hawk){ tone(M.hawk.in?880:330,.3,'triangle',.07); gasp(.07); } },380); } }
+  if(s.netHit){ point(other,hitter==='me'?'Fileye takıldı':'Rakip fileye taktı',at); return; }
+  const out=isOut(s.x,s.y,s.serve);
+  if(out){ if(other==='me') M.outsLeft++; point(other, s.serve?(hitter==='me'?'Servis hatası':'Rakip servis hatası'):(hitter==='me'?'Dışarı':'Dışarı! Bıraktın, sayı senin'),at); }
+  else { if(s.type==='smash'&&hitter==='me'){ kick(10); flash=.35; flashCol='216,255,90'; hitstop(.1); M.op.dive=1; gasp(.09); } point(hitter, hitter==='me'?(s.super?'SIÇRAYARAK SMAÇ SAYISI':s.type==='smash'?'SMAÇ SAYISI':'SAYI!'):'Kaçtı',at); }
+}
+
+/* ---- çizim ---- */
+function rr(x,y,w,h,r){ ctx.beginPath(); ctx.roundRect?ctx.roundRect(x,y,w,h,r):ctx.rect(x,y,w,h); }
+function line(x1,y1,x2,y2,w=1.6,col='rgba(255,255,255,.85)'){ const a=P(x1,y1),b=P(x2,y2); ctx.strokeStyle=col; ctx.lineWidth=w; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
+function quad(x1,y1,x2,y2,fill){ const c=[P(x1,y1),P(x2,y1),P(x2,y2),P(x1,y2)]; ctx.beginPath(); c.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.closePath(); ctx.fillStyle=fill; ctx.fill(); }
+function court(){
+  const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#13262a'); bg.addColorStop(1,'#0c1719'); ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  quad(-MG*.7,-MG*.7,CW+MG*.7,L+MG*.7,'#1b4f45'); quad(0,0,CW,L,'#23725f'); quad(SL,0,SR,L,'#278066');
+  // servis bekleniyorsa geçerli servis karesi parlar
+  if(M&&!M.s&&M.serveBox){ const b=M.serveBox; quad(b.x[0],b.y[0],b.x[1],b.y[1],'rgba(216,255,90,.14)'); }
+  // çizgiler: çift dış yan çizgi, tek kişilik yan çizgi, dip çizgi, çiftler uzun servis, kısa servis, orta çizgi
+  [[0,0,0,L],[CW,0,CW,L],[SL,0,SL,L],[SR,0,SR,L],[0,0,CW,0],[0,L,CW,L],[0,.76,CW,.76],[0,L-.76,CW,L-.76],[0,NET-SSL,CW,NET-SSL],[0,NET+SSL,CW,NET+SSL],[MID,0,MID,NET-SSL],[MID,NET+SSL,MID,L]].forEach(l=>line(l[0],l[1],l[2],l[3],M&&M.flow?2.4:1.6,M&&M.flow?`rgba(255,226,120,${.75+.25*Math.sin(performance.now()/180)})`:'rgba(255,255,255,.85)'));
+  if(M&&M.marks) for(const m of M.marks){ const p=P(m.x,m.y), a=Math.max(0,1-m.t/3); ctx.fillStyle=`rgba(10,30,26,${.45*a})`; ctx.beginPath(); ctx.ellipse(p.x,p.y,(m.big?9:5)*p.s,(m.big?4:2.4)*p.s,0,0,7); ctx.fill();
+    if(m.t<.5){ ctx.strokeStyle=`rgba(255,255,255,${(.5-m.t)*1.6})`; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(p.x,p.y,(8+m.t*80)*p.s,(3.5+m.t*35)*p.s,0,0,7); ctx.stroke(); }
+    if(m.big){ ctx.strokeStyle=`rgba(216,255,90,${.6*a})`; ctx.lineWidth=1.5; m.cr.forEach(r=>{ ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x+Math.cos(r)*18*p.s,p.y+Math.sin(r)*8*p.s); ctx.stroke(); }); } }
+  // file: direkler çift kişilik yan çizgide
+  const a=P(0,NET),b=P(CW,NET), ha=NETP*a.ppm*.75, hm=NETH*P(MID,NET).ppm*.75;
+  ctx.fillStyle='rgba(255,255,255,.07)'; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(a.x,a.y-ha); ctx.quadraticCurveTo(W/2,a.y-hm*.98,b.x,b.y-ha); ctx.lineTo(b.x,b.y); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.16)'; ctx.lineWidth=1; for(let x=a.x;x<b.x;x+=6){ ctx.beginPath(); ctx.moveTo(x,a.y-hm); ctx.lineTo(x,a.y); ctx.stroke(); }
+  ctx.strokeStyle='#ffffff'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(a.x,a.y-ha); ctx.quadraticCurveTo(W/2,a.y-hm*.98,b.x,b.y-ha); ctx.stroke();
+  ctx.fillStyle='#cfd9d6'; ctx.fillRect(a.x-3,a.y-ha,4,ha); ctx.fillRect(b.x-1,b.y-ha,4,ha);
+}
+function runMark(){ if(!easy&&M.me.tx!=null&&M.s){ const a=P(M.me.x,M.me.y), b=P(M.me.tx,M.me.ty); if(Math.hypot(b.x-a.x,b.y-a.y)>12){ ctx.strokeStyle='rgba(79,184,255,.5)'; ctx.lineWidth=1.5; ctx.setLineDash([2,5]); ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle='rgba(79,184,255,.6)'; ctx.beginPath(); ctx.ellipse(b.x,b.y,4*b.s,1.8*b.s,0,0,7); ctx.fill(); } } /* koşu çizgisi: nereye koştuğun yerde görünür */
+  if(M.mark){ const p=P(M.mark.x,M.mark.y), a=1-M.mark.t/.6; ctx.strokeStyle=`rgba(79,184,255,${a})`; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(p.x,p.y,(6+M.mark.t*20)*p.s,(2.6+M.mark.t*9)*p.s,0,0,7); ctx.stroke(); }
+  // erişim halkası: raketin yetiştiği alan (1,15 m)
+  const c=P(M.me.x,M.me.y), rx=1.15*geo().cw*c.s/(CW+2*MG), ry=1.15*c.ppm; ctx.strokeStyle='rgba(79,184,255,.16)'; ctx.lineWidth=1; ctx.beginPath(); ctx.ellipse(c.x,c.y,rx,ry,0,0,7); ctx.stroke(); }
+/* Kol pozları: omuz→dirsek→el→raket. Açılar yukarıdan (0) saat yönünde radyan. Her vuruş sınıfı için hazırlık, temas ve devam pozu;
+   gerçek tekniğe yakın: baş üstünde dirsek önce bükülü arkada ("sırtı kaşı"), temasta kol tam uzanır, devamda gövde önünden iner; alçakta kol geriden öne süpürür. */
+const POSE={
+  ready:{ua:2.2,fa:.7,ra:.2},
+  over:{back:{ua:.45,fa:2.5,ra:3.0},hit:{ua:.12,fa:.05,ra:-.15},fol:{ua:3.5,fa:3.4,ra:3.7}},
+  low:{back:{ua:2.7,fa:2.4,ra:2.1},hit:{ua:2.3,fa:1.75,ra:1.25},fol:{ua:.9,fa:.3,ra:-.2}},
+  drive:{back:{ua:1.9,fa:1.5,ra:.3},hit:{ua:1.55,fa:1.3,ra:.55},fol:{ua:.9,fa:.2,ra:-.6}},
+  kill:{back:{ua:1.2,fa:.6,ra:.3},hit:{ua:.6,fa:.3,ra:-.9},fol:{ua:1.4,fa:1.6,ra:-1.6}},
+  lunge:{back:{ua:2.3,fa:2.0,ra:1.8},hit:{ua:1.6,fa:1.5,ra:1.4},fol:{ua:1.3,fa:1.1,ra:.9}} };
+const lerpP=(a,b,t)=>({ua:a.ua+(b.ua-a.ua)*t,fa:a.fa+(b.fa-a.fa)*t,ra:a.ra+(b.ra-a.ra)*t});
+const mirP=p=>({ua:-p.ua,fa:-p.fa,ra:-p.ra}); /* backhand: aynı omuzdan kol gövdenin önünden karşı tarafa geçer */
+function armPose(o){ if(o.sw>0){ let P2=POSE[o.shot||'low']; if(o.hand==='back') P2={hit:mirP(P2.hit),fol:mirP(P2.fol)}; const t=1-o.sw, e=1-Math.pow(1-t,3); return lerpP(P2.hit,P2.fol,e); }
+  let B=POSE[o.prepShot||'low'].back; if(o.prepHand==='back') B=mirP(B); const a=o.prepA||0; return lerpP(POSE.ready,B,a*a*(3-2*a)); }
+/* Forehand / backhand: sağ elli oyuncu. Top raket tarafındaysa forehand; gövdenin öbür tarafındaysa backhand.
+   Baş üstünde "baş çevresinden" forehand payı var (0,6 m), alçakta sınır daha dar (0,25 m). Rakip bize dönük olduğundan onun sağı ekranın solu. */
+function handOf(o,who,sx,sz){ const side=(sx-o.x)*(who==='me'?1:-1); return side<-(sz>1.95?.6:.25)?'back':'fore'; }
+function shotClass(type,z,y){ if(type==='smash'||z>1.95) return 'over'; if(type==='drive') return 'drive'; if(Math.abs(y-NET)<2.3&&z>NETH) return 'kill'; return 'low'; }
+function player(o,col,isMe){ const p0=P(o.x,o.y), s=p0.ppm/28; const dive=o.dive||0, j=Math.sin(Math.min(1,o.jump||0)*Math.PI)*16*s, p={x:p0.x,y:p0.y-j};
+  ctx.fillStyle='rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(p0.x,p0.y,14*s*(1-j/(40*s)),5*s,0,0,7); ctx.fill();
+  const vx=o.vx||0, vy=o.vy||0, spd=Math.hypot(vx,vy), lean=Math.max(-.35,Math.min(.35,vx*.07)), st=1+Math.min(.18,spd*.035);
+  ctx.save(); ctx.translate(p.x,p.y-20*s); ctx.rotate(dive*(o.x<MID?-1:1)*.9+lean); ctx.scale(1/st,st); /* koşarken uzar, durunca toparlanır */
+  rr(-9*s,-10*s,18*s,22*s,8*s); ctx.fillStyle=col; ctx.fill(); ctx.beginPath(); ctx.arc(0,-17*s,7.5*s,0,7); ctx.fillStyle='#f3d2b3'; ctx.fill();
+  /* seçilen ekipman görünür: kafa bandı (alın çizgisi), bileklik (bilek halkası), raket rengi. Rakibin ekipmanı sabit. */
+  const gb=isMe?GS.bant:null, gw=isMe?GS.bileklik:null, rk=isMe?GS.raket.renk:'#e9eef0';
+  if(gb&&gb.renk){ ctx.strokeStyle=gb.renk; ctx.lineWidth=2.4*s; ctx.beginPath(); ctx.arc(0,-17*s,7.6*s,Math.PI*1.15,Math.PI*1.85); ctx.stroke(); }
+  const ps=armPose(o), m=isMe?1:-1, dir=t=>({x:Math.sin(t)*m,y:-Math.cos(t)});
+  const sh={x:8*s*m,y:-6*s}, d1=dir(ps.ua), el={x:sh.x+d1.x*11*s,y:sh.y+d1.y*11*s}, d2=dir(ps.fa), hd={x:el.x+d2.x*10*s,y:el.y+d2.y*10*s}, d3=dir(ps.ra);
+  ctx.lineCap='round'; ctx.strokeStyle='#f3d2b3'; ctx.lineWidth=4.2*s; ctx.beginPath(); ctx.moveTo(sh.x,sh.y); ctx.lineTo(el.x,el.y); ctx.lineTo(hd.x,hd.y); ctx.stroke();
+  if(gw&&gw.renk){ ctx.fillStyle=gw.renk; ctx.beginPath(); ctx.arc(hd.x,hd.y,3.2*s,0,7); ctx.fill(); }
+  ctx.strokeStyle='#e9eef0'; ctx.lineWidth=2.2*s; ctx.beginPath(); ctx.moveTo(hd.x,hd.y); ctx.lineTo(hd.x+d3.x*12*s,hd.y+d3.y*12*s); ctx.stroke();
+  ctx.save(); ctx.translate(hd.x+d3.x*19*s,hd.y+d3.y*19*s); ctx.rotate(ps.ra*m); ctx.strokeStyle=rk; ctx.beginPath(); ctx.ellipse(0,0,6*s,7.5*s,0,0,7); ctx.stroke();
+  ctx.strokeStyle='rgba(233,238,240,.35)'; ctx.lineWidth=.8*s; for(let k=-3;k<=3;k+=2){ ctx.beginPath(); ctx.moveTo(k*1.6*s,-6.5*s); ctx.lineTo(k*1.6*s,6.5*s); ctx.stroke(); } ctx.restore(); ctx.lineCap='butt';
+  if(o.sw>.3&&!reduce){ const P2=POSE[o.shot||'low']; const a0=P2.hit.ua*m-Math.PI/2, a1=P2.fol.ua*m-Math.PI/2; for(let k=0;k<3;k++){ ctx.strokeStyle=`rgba(255,255,255,${o.sw*(.5-k*.14)})`; ctx.lineWidth=(5-k*1.2)*s; ctx.beginPath(); ctx.arc(sh.x,sh.y,(28+k*5)*s,Math.min(a0,a1),Math.max(a0,a1)); ctx.stroke(); } }
+  ctx.restore(); }
+function shuttle(){ const s=M.s; if(!s) return; const g=P(s.x,s.y,0), p=P(s.x,s.y,s.z);
+  /* Derinlik okunabilirliği (yasin, 19 Ekim: "topa gidişi ve gelişini perspektif olarak algılamakta zorlandım"):
+     üstten bakışta havadaki top ekranda yukarı kayar, "uzakta" ile "yüksekte" birbirine karışır. Üç ipucu ayırır:
+     (1) yere düşen gölge: yükseldikçe büyür ve soluklaşır (penumbra), (2) gölgeden topa kesikli yükseklik çizgisi,
+     (3) gölgenin bulunduğu derinlikte kort boyunca ince bir yer çizgisi: top "hangi satırın üstünde" bir bakışta okunur. */
+  const zz=Math.max(0,s.z);
+  const remL=(s.landPred&&s.from==='op')?s.landPred.t-s.t:9;
+  /* Sade ekran (yasin 19 Ekim): ipuçları yalnız karar anında görünür. Yer çizgisi son 1,1 sn, iniş halkası son 0,9 sn; yükseklik çizgisi hep ince. */
+  if(!s.dead&&s.from==='op'&&s.y>NET-1&&remL<1.1){ const l=P(0,s.y), r=P(CW,s.y); ctx.strokeStyle='rgba(255,255,255,.1)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(l.x,l.y); ctx.lineTo(r.x,r.y); ctx.stroke(); }
+  ctx.fillStyle=`rgba(0,0,0,${.4/(1+zz*.35)})`; ctx.beginPath(); ctx.ellipse(g.x,g.y,5*g.s*(1+zz*.3),2*g.s*(1+zz*.3),0,0,7); ctx.fill();
+  if(zz>.25){ ctx.strokeStyle='rgba(255,255,255,.22)'; ctx.lineWidth=1; ctx.setLineDash([2,4]); ctx.beginPath(); ctx.moveTo(g.x,g.y); ctx.lineTo(p.x,p.y); ctx.stroke(); ctx.setLineDash([]); }
+  if(M.trail.length>1){ ctx.globalCompositeOperation='lighter'; for(let i=1;i<M.trail.length;i++){ const a=M.trail[i-1],b=M.trail[i],k=i/M.trail.length; ctx.strokeStyle=(M.flow&&s.from==='me')?`rgba(255,210,58,${k*.9})`:s.super?`rgba(255,120,40,${k*.9})`:s.type==='smash'?`rgba(216,255,90,${k*.8})`:`rgba(255,255,255,${k*.3})`; ctx.lineWidth=(s.super?10:s.type==='smash'?6:2.5)*k*p.s; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); } ctx.globalCompositeOperation='source-over'; }
+  // tüy top mantar ucu öne bakar: yön ekrandaki hız yönü
+  const prev=M.trail.length>1?M.trail[M.trail.length-2]:{x:p.x,y:p.y+1}, ang=Math.atan2(p.y-prev.y,p.x-prev.x)-Math.PI/2;
+  ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(ang); const k=p.s*1.1*(1+zz*.09); /* yükseldikçe kameraya yaklaşır, büyür */ ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.moveTo(-5*k,-9*k); ctx.lineTo(5*k,-9*k); ctx.lineTo(2.6*k,0); ctx.lineTo(-2.6*k,0); ctx.closePath(); ctx.fill(); ctx.beginPath(); ctx.arc(0,1.4*k,2.8*k,0,7); ctx.fillStyle='#ffcf5a'; ctx.fill(); ctx.restore();
+  // iniş tahmini: rakibin topu nereye düşecek (oyuncunun okuması için hafif işaret)
+  if(s.from==='op'&&!s.dead&&s.landPred&&s.landPred.y>NET&&!(s.landPred.net&&!s.landPred.net.ok)){ const q=P(s.landPred.x,s.landPred.y), rem=Math.max(0,s.landPred.t-s.t), tot=Math.max(.3,s.landPred.t), f=rem/tot;
+    /* iniş halkası: top yaklaştıkça büzülen halka, "ne zaman" sorusunu gözle yanıtlar; son 0,35 sn'de dolar */
+    ctx.strokeStyle='rgba(255,255,255,.45)'; ctx.lineWidth=1.5; ctx.setLineDash([3,4]); ctx.beginPath(); ctx.ellipse(q.x,q.y,9*q.s,4*q.s,0,0,7); ctx.stroke(); ctx.setLineDash([]);
+    const near=Math.hypot(s.landPred.x-M.me.x,s.landPred.y-M.me.y)<=(easy?1.45:1.15); if(rem<.9){ const f2=rem/.9; ctx.strokeStyle=near?'rgba(216,255,90,.7)':'rgba(255,255,255,.5)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.ellipse(q.x,q.y,(9+18*f2)*q.s,(4+8*f2)*q.s,0,0,7); ctx.stroke(); }
+    if(rem<.35){ ctx.fillStyle=near?'rgba(216,255,90,.25)':'rgba(255,255,255,.18)'; ctx.beginPath(); ctx.ellipse(q.x,q.y,9*q.s,4*q.s,0,0,7); ctx.fill(); } }
+  // hedef önizleme (parmak ekrandayken): kesikli halka + vuruş adı
+  if(M.preview&&swipe.on&&!swipe.hit){ const v=M.preview, q=P(v.x,v.y); ctx.strokeStyle='rgba(216,255,90,.8)'; ctx.lineWidth=2; ctx.setLineDash([4,4]); ctx.beginPath(); ctx.ellipse(q.x,q.y,12*q.s,5*q.s,0,0,7); ctx.stroke(); ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(q.x-6,q.y); ctx.lineTo(q.x+6,q.y); ctx.moveTo(q.x,q.y-4); ctx.lineTo(q.x,q.y+4); ctx.stroke(); ctx.fillStyle='rgba(216,255,90,.9)'; ctx.font=`700 11px ${FONT}`; ctx.textAlign='center'; ctx.fillText(PREV_TR[v.type]||KIND_TR[v.type]||v.type,q.x,q.y-10*q.s); }
+  // vuruş alanı: top erişimindeyken parlayan hale
+  const I=reachInfo(); if(I){ const R=hitR(p.s);
+    const pul=1+Math.sin(performance.now()/60)*.06; ctx.globalCompositeOperation='lighter'; const gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,R*1.3); gr.addColorStop(0,'rgba(216,255,90,.35)'); gr.addColorStop(1,'rgba(216,255,90,0)'); ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(p.x,p.y,R*1.3,0,7); ctx.fill(); ctx.globalCompositeOperation='source-over';
+    ctx.strokeStyle=I.lunge?'#ff9f7a':'#d8ff5a'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(p.x,p.y,R*pul,0,7); ctx.stroke(); ctx.strokeStyle='rgba(255,210,58,.9)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(p.x,p.y,R*.33,0,7); ctx.stroke();
+    const hnd=handOf(M.me,'me',s.x,s.z)==='back'?'backhand':'forehand'; const tag=I.kill?'file üstü: hızlı kaydır':I.lunge?'uzak: uzan':I.over?(hnd==='back'?'baş üstü backhand: smaç yok':'baş üstü: hızlı kaydır = smaç'):hnd+': kaydır'; ctx.fillStyle=I.kill?'#ffd27a':I.lunge?'#ff9f7a':'#d8ff5a'; ctx.font=`700 12px ${FONT}`; ctx.textAlign='center'; ctx.fillText(tag,p.x,p.y-R-8); }
+}
+function hitR(sc){ return Math.max(26,40*sc)*(M&&M.flow?1.25:1)*(easy?1.3:1); }
+/* Parmak izi: raketin süpürdüğü yay. Vuruşta parlar. */
+function swipeTrail(){ const tr=swipe.trail, now=performance.now(); if(tr.length<2) return; ctx.globalCompositeOperation='lighter'; ctx.lineCap='round';
+  for(let i=1;i<tr.length;i++){ const a=tr[i-1],b=tr[i],age=(now-b.t)/220; if(age>1) continue; ctx.strokeStyle=swipe.hit?`rgba(216,255,90,${(1-age)*.9})`:`rgba(255,255,255,${(1-age)*.55})`; ctx.lineWidth=(swipe.hit?14:9)*(1-age)+1; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
+  ctx.globalCompositeOperation='source-over'; ctx.lineCap='butt'; }
+function hawkEye(h){ const cx=W/2, cy=H*.22, R=74, e=Math.min(1,h.t/.18), k=1+2.7*Math.pow(e-1,3)+1.7*Math.pow(e-1,2), fade=h.t>1.25?1-(h.t-1.25)/.25:1;
+  ctx.save(); ctx.globalAlpha=Math.max(0,fade); ctx.translate(cx,cy); ctx.scale(k,k);
+  ctx.beginPath(); ctx.arc(0,0,R,0,7); ctx.fillStyle='#23725f'; ctx.fill(); ctx.save(); ctx.clip();
+  const S=300; /* 1 m = 300 px */ const lx=v=>(v-h.x)*S, ly=v=>(v-h.y)*S;
+  const xs=h.serve?[M.serveBox.x[0],M.serveBox.x[1]]:[SL,SR], ys=h.serve?[M.serveBox.y[0],M.serveBox.y[1]]:[0,L];
+  ctx.fillStyle='#ffffff'; const lw=.04*S; xs.forEach(x=>ctx.fillRect(lx(x)-lw/2,-R,lw,2*R)); ys.forEach(y=>ctx.fillRect(-R,ly(y)-lw/2,2*R,lw));
+  if(h.t>.36){ const q=Math.min(1,(h.t-.36)/.12); ctx.fillStyle=h.in?'rgba(216,255,90,.95)':'rgba(255,122,107,.95)'; ctx.beginPath(); ctx.ellipse(0,0,.034*S*q,.026*S*q,0,0,7); ctx.fill(); }
+  ctx.restore(); ctx.lineWidth=4; ctx.strokeStyle='rgba(8,16,17,.9)'; ctx.beginPath(); ctx.arc(0,0,R,0,7); ctx.stroke(); ctx.lineWidth=2; ctx.strokeStyle='#ffffff'; ctx.stroke();
+  ctx.font=`600 11px ${FONT}`; ctx.fillStyle='#9dbab3'; ctx.textAlign='center'; ctx.fillText('ÇİZGİ KAMERASI',0,-R-8);
+  if(h.t>.36){ ctx.font=`800 20px ${FONT}`; ctx.lineWidth=5; ctx.strokeStyle='rgba(8,16,17,.9)'; const tt=(h.in?'İÇERİ':'DIŞARI')+` · ${h.cm} cm`; ctx.strokeText(tt,0,R+24); ctx.fillStyle=h.in?'#d8ff5a':'#ff7a6b'; ctx.fillText(tt,0,R+24); }
+  ctx.restore(); }
+function draw(){
+  ctx.setTransform(DPR,0,0,DPR,0,0); ctx.save();
+  if(shake>.2) ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
+  if(zoom>1.001&&M&&M.s){ const c=P(M.s.x,M.s.y,M.s.z); ctx.translate(c.x,c.y); ctx.scale(zoom,zoom); ctx.translate(-c.x,-c.y); }
+  court();
+  if(M&&mode==='play') runMark();
+  if(M){ if(M.s&&M.s.y<NET){ player(M.op,'#ff7a6b',false); shuttle(); player(M.me,GS.forma.renk,true); } else { player(M.op,'#ff7a6b',false); player(M.me,GS.forma.renk,true); shuttle(); } }
+  for(const w of waves){ const e=1-Math.pow(1-w.t,3); ctx.globalAlpha=(1-w.t)*.8; ctx.strokeStyle=w.col; ctx.lineWidth=5*(1-w.t)+1; ctx.beginPath(); ctx.ellipse(w.x,w.y,w.max*e,w.max*e*.5,0,0,7); ctx.stroke(); } ctx.globalAlpha=1;
+  for(const p of parts){ const a=Math.max(0,1-p.t/p.life); ctx.globalAlpha=a; ctx.fillStyle=p.col;
+    if(p.kind==='feather'){ ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.beginPath(); ctx.ellipse(0,0,p.r*.35,p.r,0,0,7); ctx.fill(); ctx.restore(); }
+    else if(p.kind==='spark'){ ctx.globalCompositeOperation='lighter'; ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); const r=p.r*1.6; ctx.beginPath(); for(let k=0;k<8;k++){ const q=k%2?r*.3:r; ctx.lineTo(Math.cos(k*Math.PI/4)*q,Math.sin(k*Math.PI/4)*q); } ctx.closePath(); ctx.fill(); ctx.restore(); ctx.globalCompositeOperation='source-over'; }
+    else if(p.kind==='streak'){ ctx.globalCompositeOperation='lighter'; ctx.strokeStyle=p.col; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x-p.vx*.05,p.y-p.vy*.05); ctx.stroke(); ctx.globalCompositeOperation='source-over'; }
+    else { ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill(); } } ctx.globalAlpha=1;
+  ctx.restore();
+  if(M&&mode==='play') swipeTrail();
+  for(const t of floats){ const q=Math.min(1,t.a*5), k=1+2.7*Math.pow(q-1,3)+1.7*Math.pow(q-1,2), a=t.a>.8?1-(t.a-.8)/.4:1; ctx.globalAlpha=Math.max(0,a); ctx.font=`800 ${t.size*(.5+.5*k)}px ${FONT}`; ctx.textAlign='center'; ctx.lineWidth=5; ctx.strokeStyle='rgba(8,16,17,.85)'; ctx.strokeText(t.t,t.x,t.y); ctx.fillStyle=t.col; ctx.fillText(t.t,t.x,t.y); } ctx.globalAlpha=1;
+  if(flash>0){ ctx.fillStyle=`rgba(${flashCol},${flash})`; ctx.fillRect(0,0,W,H); }
+  if(M&&mode==='play'){
+    rr(W/2-62,8,124,34,10); ctx.fillStyle='rgba(8,16,17,.7)'; ctx.fill();
+    ctx.textAlign='center'; const pz=i=>`800 ${24*(1+.5*Math.sin(M.pop[i]*Math.PI))}px ${FONT}`; ctx.font=pz(0); ctx.fillStyle=GS.forma.renk; ctx.fillText(M.sc[0],W/2-30,34); ctx.font=`800 24px ${FONT}`; ctx.fillStyle='#9dbab3'; ctx.fillText('–',W/2,34); ctx.font=pz(1); ctx.fillStyle='#ff7a6b'; ctx.fillText(M.sc[1],W/2+30,34); ctx.font=`800 24px ${FONT}`;
+    for(const c of M.cams){ if(c.t<0) continue; const a=1-c.t/.5; ctx.globalCompositeOperation='lighter'; const g=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,10); g.addColorStop(0,`rgba(255,255,255,${a})`); g.addColorStop(1,'rgba(255,255,255,0)'); ctx.fillStyle=g; ctx.fillRect(c.x-10,c.y-10,20,20); ctx.globalCompositeOperation='source-over'; }
+    if(M.hawk) hawkEye(M.hawk);
+    ctx.fillStyle=M.server==='me'?GS.forma.renk:'#ff7a6b'; ctx.beginPath(); ctx.arc(M.server==='me'?W/2-52:W/2+52,25,3.5,0,7); ctx.fill();
+    ctx.font=`600 12px ${FONT}`; ctx.fillStyle='#9dbab3'; ctx.textAlign='left'; ctx.fillText(`Ralli ${M.rally}`,12,26); ctx.font=`600 11px ${FONT}`; ctx.fillStyle='rgba(255,210,58,.9)'; ctx.fillText(`Görev ${M.gorevBitti}/3`,12,42); ctx.textAlign='right'; ctx.fillText(`${target} sayı · ${M.stil.ad}`,W-12,26);
+    const bw=W-24; rr(12,H-25,bw,4,2); ctx.fillStyle='rgba(255,255,255,.1)'; ctx.fill(); rr(12,H-25,bw*M.nefes,4,2); ctx.fillStyle=M.nefes<.4?'#ff9f7a':'#7ad7ff'; ctx.fill(); /* nefes çubuğu: enerjinin üstünde ince, düşünce turuncu */
+    rr(12,H-16,bw,6,3); ctx.fillStyle='rgba(255,255,255,.12)'; ctx.fill(); if(M.energy>0){ rr(12,H-16,bw*M.energy,6,3); ctx.fillStyle=M.energy>=1?'#ff8a3c':'#d8ff5a'; ctx.fill(); }
+    if(M.energy>=1){ ctx.fillStyle='#ff8a3c'; ctx.textAlign='left'; ctx.font=`700 12px ${FONT}`; ctx.fillText('Sıçrayarak smaç hazır: baş üstü topu hızlı kes',12,H-31); }
+    if(M.nefes<.4){ ctx.fillStyle='#ff9f7a'; ctx.textAlign='right'; ctx.font=`700 12px ${FONT}`; ctx.fillText('Nefes',W-12,H-31); }
+    else if(M.sc[0]+M.sc[1]<2&&M.s){ ctx.fillStyle='#9dbab3'; ctx.textAlign='center'; ctx.font=`600 12px ${FONT}`; ctx.fillText(easy?'Top parlayınca kaydır: yön ve güç senin':'Dokun: oraya koş · Top parlayınca kaydır',W/2,H-34); }
+    if(!M.s&&!M.between){ ctx.textAlign='center'; ctx.font=`800 18px ${FONT}`; ctx.fillStyle='#ffffff';
+      const side=serveSide(M.server)==='R'?'sağ':'sol';
+      ctx.fillText(M.server==='me'?`Servis sende, ${side} kareden`:`Rakip ${side} kareden servis atıyor`,W/2,H*.56);
+      if(M.server==='me'){ ctx.font=`600 13px ${FONT}`; ctx.fillStyle='#9dbab3'; ctx.fillText('Yukarı kaydır: yavaş kısa, hızlı uzun servis',W/2,H*.56+(M.serveMsg?48:22)); }
+      if(M.serveMsg){ ctx.fillStyle='#ffd27a'; ctx.fillText(M.serveMsg,W/2,H*.56+26); }
+      if(M.sc[0]+M.sc[1]===0&&M.gorevler){ ctx.fillStyle='rgba(255,210,58,.9)'; ctx.font=`600 12px ${FONT}`; M.gorevler.forEach((g,i)=>ctx.fillText('Görev: '+g.ad,W/2,H*.56+48+i*16)); } }
+  }
+}
+let last=performance.now(); function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now; update(dt); draw(); requestAnimationFrame(loop); } requestAnimationFrame(loop);
+
+/* ---- giriş ---- */
+/* Giriş: parmak izi tutulur; her harekette son parça topun ekrandaki yeriyle kesişiyor mu diye bakılır. */
+const swipe={on:false,trail:[],hit:false,x0:0,y0:0,t0:0};
+function segDist(px,py,ax,ay,bx,by){ const vx=bx-ax,vy=by-ay,L2=vx*vx+vy*vy; let t=L2?((px-ax)*vx+(py-ay)*vy)/L2:0; t=Math.max(0,Math.min(1,t)); const cx=ax+vx*t,cy=ay+vy*t; return {d:Math.hypot(px-cx,py-cy),side:Math.sign(vx*(py-ay)-vy*(px-ax))}; }
+function localXY(e){ const r=cv.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; }
+function swipeVec(now){ const tr=swipe.trail, last=tr[tr.length-1]; let a=tr[0]; for(const p of tr){ if(now-p.t<=90){ a=p; break; } }
+  const dt=Math.max(16,last.t-a.t); const dx=last.x-a.x, dy=last.y-a.y; return {dx,dy,speed:Math.hypot(dx,dy)/dt}; }
+function curvedNow(){ const tr=swipe.trail; if(tr.length<4) return false; const n=tr.length, m=Math.floor(n/2); const a=tr[0],b=tr[m],c=tr[n-1];
+  const a1=Math.atan2(b.y-a.y,b.x-a.x), a2=Math.atan2(c.y-b.y,c.x-b.x); let da=Math.abs(a2-a1); if(da>Math.PI) da=2*Math.PI-da; return da>.8&&Math.hypot(c.x-b.x,c.y-b.y)>25; }
+cv.addEventListener('pointerdown',e=>{ e.preventDefault(); if(mode!=='play'||!M) return; const q=localXY(e), now=performance.now();
+  swooshStart(); swipe.on=true; swipe.hit=false; swipe.moved=false; /* Kolay modda dokunuş koşuyu bozmaz: oyuncu topa kendisi gider, parmak yalnız vuruş içindir (yasin 19 Ekim: haz vuruşta). Usta'da dokunuş = oraya koş. */ if(!easy&&M.s&&!hitWindow()){ runTo(q.x,q.y); M.me.manualT=1.4; } swipe.trail=[{x:q.x,y:q.y,t:now}]; swipe.x0=q.x; swipe.y0=q.y; swipe.t0=now; M.me.prep=1;
+  const s=M.s; if(s&&!s.dead&&!M.split){ if(s.from==='op'&&M.clock-M.opHitAt<.3) doSplit(); else if(s.from==='me'&&M.icpt&&M.icpt.who==='op'&&M.icpt.t-s.t<.3) M.splitPending=true; }
+  try{cv.setPointerCapture(e.pointerId)}catch(_){} });
+cv.addEventListener('pointermove',e=>{ if(!swipe.on||!M||mode!=='play') return; const q=localXY(e), now=performance.now(), tr=swipe.trail, prev=tr[tr.length-1];
+  tr.push({x:q.x,y:q.y,t:now}); while(tr.length>2&&now-tr[0].t>300) tr.shift(); swooshSet(Math.hypot(q.x-prev.x,q.y-prev.y)/Math.max(8,now-prev.t));
+  if(Math.hypot(q.x-swipe.x0,q.y-swipe.y0)>18) swipe.moved=true;
+  /* Parmak yavaşça kayarsa oyuncu parmağı izler; hızlı kaydırma ise vuruş sayılır. */
+  if(!easy&&M.s&&!hitWindow()&&!swipe.hit&&Math.hypot(q.x-prev.x,q.y-prev.y)/Math.max(8,now-prev.t)<.6){ runTo(q.x,q.y); M.me.manualT=1.4; }
+  if(swipe.hit) return;
+  const s=M.s; if(!s||s.dead||s.from!=='op'||!hitWindow()) return;
+  const p=P(s.x,s.y,s.z), R=hitR(p.s), k=segDist(p.x,p.y,prev.x,prev.y,q.x,q.y);
+  /* Topun üstünden geçmek şart değil: pencere açıkken ekranın herhangi bir yerinde belirgin bir kaydırma vuruştur; topu kesmek yalnız mükemmeli verir. */
+  const far=Math.hypot(q.x-swipe.x0,q.y-swipe.y0), v=swipeVec(now);
+  /* Hedef önizleme: parmak ekrandayken "şu an bıraksan top nereye düşer" rakip kortunda küçük bir hedef olarak görünür. */
+  if(far>14&&v.speed>.1){ const I=reachInfo(); if(I){ const pl=shotPlan({...v,tap:false,curved:curvedNow()},I,s,true); M.preview={x:Math.max(SL,Math.min(SR,pl.tx)),y:NET-pl.d,type:pl.type,t:performance.now()}; } }
+  /* 70 px: parmağın kavis çizmesine yer kalsın (slice/aldatma kavisle okunur); topun üstünden geçmek yine anında vurur. */ if(k.d<=R||(far>70&&v.speed>.45)){ if(swipeShot({...v,dist:k.d<=R?k.d:R*1.5,R,side:k.side,curved:curvedNow(),tap:false})) swipe.hit=true; } });
+cv.addEventListener('pointerup',e=>{ swooshStop(); if(!swipe.on||!M) return; swipe.on=false; M.preview=null; M.me.prep=0; const q=localXY(e), now=performance.now();
+  const tr=swipe.trail; if(tr[tr.length-1].x!==q.x||tr[tr.length-1].y!==q.y) tr.push({x:q.x,y:q.y,t:now});
+  if(!M.s&&mode==='play'){ const dy=q.y-swipe.y0, dx=q.x-swipe.x0; if(-dy>30){ const v=swipeVec(now); swipeServe({dx,dy,speed:v.speed}); } return; }
+  if(!swipe.hit&&hitWindow()){ const far=Math.hypot(q.x-swipe.x0,q.y-swipe.y0);
+    if(far<24){ swipeShot({dx:0,dy:-1,speed:1,dist:hitR(1)*1.5,R:hitR(1),side:0,curved:false,tap:true}); } /* dokunma = güvenli clear */
+    else { const p=P(M.me.x,M.me.y); txt('Iska',p.x,p.y-70,'#9dbab3',16); noise(.05,'highpass',1200,.05); } }
+  else if(easy&&M.s&&!swipe.hit&&!hitWindow()&&Math.hypot(q.x-swipe.x0,q.y-swipe.y0)<18&&now-swipe.t0<250){ runTo(q.x,q.y); M.me.manualT=.7; } /* Kolay'da yalnız kısa, temiz bir dokunuş yer değiştirir; 0,7 sn sonra yardım geri alır */ });
+cv.addEventListener('pointercancel',()=>{ swooshStop(); swipe.on=false; if(M){ M.me.prep=0; M.preview=null; } });
+const menu=document.getElementById('menu'), over=document.getElementById('over');
+function start(){ menu.hidden=true; over.hidden=true; newMatch(); tone(660,.08,'triangle',.06); }
+document.getElementById('start').addEventListener('click',start);
+document.getElementById('again').addEventListener('click',start);
+/* Ekipman menüsü: GEAR tablosundan üretilir; seçim localStorage'a yazılır. Raket/tel çipine dokununca o takımın smaç sesi çalar (ses, dokunuşla açılır). */
+function pct(v){ const d=Math.round((v-1)*100); return d===0?'nötr':(d>0?'+':'')+d+'%'; }
+function gearStatText(){ const S=gearStats(); return `<b>Güç</b> ${pct(S.guc)} · <b>Kontrol</b> ${pct(S.kontrol)} · <b>Drive/file</b> ${pct(S.hiz)} · <b>Tatlı nokta</b> ${pct(S.tatli)} · <b>Koşu</b> ${pct(S.kosu)} · <b>Akış</b> ${S.akis} tam orta`; }
+function buildGear(){ document.querySelectorAll('#gear .chips').forEach(box=>{ const k=box.dataset.g; box.innerHTML=''; for(const id in GEAR[k]){ const it=GEAR[k][id], b=document.createElement('button'); b.className='chip'; b.type='button'; b.setAttribute('aria-pressed',G[k]===id); b.innerHTML=(it.renk?`<span class="sw" style="background:${it.renk}"></span>`:'')+`<span>${it.ad}<small>${it.n}</small></span>`;
+  b.addEventListener('click',()=>{ G[k]=id; try{ localStorage.setItem('tuytop_gear',JSON.stringify(G)); }catch(e){} gearStats(); box.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===b)); document.getElementById('gearStat').innerHTML=gearStatText(); gearSum(); hap('tick');
+    if(k==='raket'){ racketHit({type:'smash',q:'perfect',who:'me'}); hapHit({type:'smash',q:'perfect'}); } else tone(880,.05,'triangle',.04); });
+  box.appendChild(b); } }); document.getElementById('gearStat').innerHTML=gearStatText(); gearSum(); }
+function gearSum(){ document.getElementById('gearSum').textContent=[GEAR.raket[G.raket].ad,G.tel+' lbs',GEAR.forma[G.forma].ad].join(' · '); }
+/* Kaydırıcı: sürüklerken etiket ve istatistik canlı; bırakınca o gerginliğin smaç sesi ve titreşimi. */
+{ const el=document.getElementById('tel'); el.value=G.tel; const show=()=>{ document.getElementById('telVal').textContent=G.tel+' lbs'; document.getElementById('telNote').textContent=telStats(G.tel).n; document.getElementById('gearStat').innerHTML=gearStatText(); gearSum(); };
+  el.addEventListener('input',()=>{ G.tel=+el.value; gearStats(); show(); });
+  el.addEventListener('change',()=>{ try{ localStorage.setItem('tuytop_gear',JSON.stringify(G)); }catch(e){} racketHit({type:'smash',q:'perfect',who:'me'}); hapHit({type:'smash',q:'perfect'}); }); show(); }
+buildGear();
+['mdEasy','mdPro'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{ easy=id==='mdEasy'; document.getElementById('mdEasy').setAttribute('aria-pressed',easy); document.getElementById('mdPro').setAttribute('aria-pressed',!easy); }));
+/* 7 sayı: Tennis Clash'in "7'ye ilk ulaşan" formatı; otobüs oturumu için 1–2 dakikalık maç. 2 fark kuralı kalır, tavan 10. */
+['len21','len11','len7'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{ target=id==='len21'?21:id==='len11'?11:7; ['len21','len11','len7'].forEach(j=>document.getElementById(j).setAttribute('aria-pressed',j===id)); }));
+document.getElementById('mute').addEventListener('click',e=>{ muted=!muted; crowdLevel(muted?0:.01); if(muted) underwater(false); e.currentTarget.textContent=muted?'Ses kapalı':'Ses açık'; e.currentTarget.setAttribute('aria-pressed',muted); });
+document.getElementById('bestLine').textContent=best.rally?`Ralli rekorun ${best.rally} · ${best.wins} galibiyet · ${best.gorev||0} görev`:'';
+function size(){ const r=stage.getBoundingClientRect(); W=Math.round(r.width); H=Math.round(r.height); DPR=Math.min(2,devicePixelRatio||1); cv.width=W*DPR; cv.height=H*DPR; }
+addEventListener('resize',size); size(); 
+})();
+</script>

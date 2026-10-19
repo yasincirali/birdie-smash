@@ -1,0 +1,14 @@
+# sandık ile aynı sertifika deposu (MATCH_GIT_URL), ama AYRI branch ve AYRI
+# parola (Harçlıklarım kararı, yasin 2026-10-15; Birdie Smash aynı düzeni izler: branch `birdiesmash`). Neden: sandık'ın MATCH_PASSWORD'ü yalnız sandık
+# secret'ında duruyor ve geri okunamıyor; ortak branch onu bilmeyi ya da
+# canlı sandık hattında parola değişimini gerektirirdi. Bedeli: bu branch'te
+# match kendi Apple Distribution sertifikasını üretir (takım başına sınır 3).
+# sandık'ın `master` branch'ine ve parolasına hiç dokunulmaz.
+git_url(ENV["MATCH_GIT_URL"])
+git_branch("birdiesmash")
+storage_mode("git")
+type("appstore")
+app_identifier(["com.sandik.birdiesmash"])
+username(ENV["APPLE_ID"])
+git_basic_authorization(ENV["MATCH_GIT_BASIC_AUTH"])
+readonly(ENV["MATCH_READONLY"] == "true")

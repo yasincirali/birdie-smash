@@ -1,0 +1,29 @@
+# Flutter
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Runner/GoogleService-Info.plist
+ios/fastlane/report.xml
+ios/fastlane/README.md
+ios/build/
+# Android
+android/.gradle/
+android/local.properties
+android/key.properties
+android/app/google-services.json
+# Gizli
+.env
+tmp/
+# Claude: yerel ayar/hook makineye özgü; skill'ler repoya girer ki bulut oturumu görsün (sandık kararı 2026-10-08)
+.claude/*
+!.claude/skills/
+.claude/skills/brag/assets/music/*.mp3

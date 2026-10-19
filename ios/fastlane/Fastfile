@@ -1,0 +1,134 @@
+require "shellwords"
+
+default_platform(:ios)
+
+# Harçlıklarım `ios/fastlane/Fastfile`'ından türetildi (Birdie Smash, 2026-10-19; kök: sandık
+# pipeline'ını örnek al"). Uzantı hedefi, kapalı-train tespiti ve harici grup
+# dağıtımı BİLİNÇLİ olarak yok: tek hedef, ilk sürüm. Gerekince sandık'tan
+# aynı bloklar taşınır.
+
+BUNDLE_ID = "com.sandik.birdiesmash"
+PUBSPEC_PATH = File.expand_path("../../pubspec.yaml", __dir__)
+
+def asc_api_key
+  app_store_connect_api_key(
+    key_id: ENV["ASC_KEY_ID"],
+    issuer_id: ENV["ASC_ISSUER_ID"],
+    key_content: ENV["ASC_KEY_CONTENT"],
+    is_key_content_base64: false,
+    in_house: false
+  )
+end
+
+def flutter_version_name
+  line = File.readlines(PUBSPEC_PATH).find { |l| l =~ /^version:\s*/ }
+  UI.user_error!("pubspec.yaml içinde `version:` bulunamadı") if line.nil?
+  line.sub(/^version:\s*/, "").strip.split("+").first
+end
+
+CHANGELOG_LIMIT = 4000
+
+# Her build'in "What to Test" metni farklı olsun: build no + kısa SHA + commit başlığı.
+def testflight_changelog(build_number)
+  notes = File.read("../../store_listing/whats_new.txt", encoding: "UTF-8").scrub("").strip
+  kimlik = begin
+    sha = sh("git rev-parse --short HEAD", log: false).to_s.force_encoding("UTF-8").scrub("").strip
+    subject = sh("git log -1 --pretty=%s", log: false).to_s.force_encoding("UTF-8").scrub("").strip
+    subject = "#{subject[0, 157]}..." if subject.length > 160
+    ["Build #{build_number} · #{sha}", subject].reject(&:empty?).join("\n")
+  rescue StandardError
+    "Build #{build_number}"
+  end
+  full = "#{notes}\n\n———\n#{kimlik}"
+  full.length > CHANGELOG_LIMIT ? full[0, CHANGELOG_LIMIT] : full
+end
+
+platform :ios do
+  desc "İlk kurulum: Match ile bu bundle id için App Store profili üret (tek seferlik)"
+  lane :setup_match_certificates do
+    api_key = asc_api_key
+    match(type: "appstore", readonly: false, force_for_new_devices: false, api_key: api_key)
+    UI.success("Match tamam — #{BUNDLE_ID} profili #{ENV['MATCH_GIT_URL']} içine yazıldı")
+  end
+
+  desc "Build ve TestFlight'a upload"
+  lane :beta do
+    api_key = asc_api_key
+    keychain_path = File.expand_path("~/Library/Keychains/birdiesmash_ci-db")
+
+    # Headless runner'da izole, kilidi açık keychain; aksi hâlde codesign
+    # etkileşimli parola ister ve job asılır (sandık'ta yaşandı).
+    if is_ci
+      create_keychain(
+        name: "birdiesmash_ci",
+        password: ENV["MATCH_PASSWORD"],
+        default_keychain: true,
+        unlock: true,
+        timeout: 3600,
+        lock_when_sleeps: false,
+        require_create: false
+      )
+      existing = sh("security list-keychains -d user", log: false)
+                   .lines.map { |l| l.strip.delete('"') }.reject(&:empty?)
+      sh("security list-keychains -d user -s #{([keychain_path] + existing).uniq.shelljoin}")
+      # `log: false` ŞART: repo herkese açıksa parola günlüğe sızar (sandık #46).
+      sh("security unlock-keychain -p #{ENV['MATCH_PASSWORD'].to_s.shellescape} #{keychain_path.shellescape}", log: false)
+    end
+
+    match(
+      type: "appstore",
+      readonly: true,
+      api_key: api_key,
+      keychain_name: is_ci ? "birdiesmash_ci" : nil,
+      keychain_password: is_ci ? ENV["MATCH_PASSWORD"] : nil
+    )
+
+    if is_ci
+      identities = sh("security find-identity -v -p codesigning #{keychain_path.shellescape} || true", log: false)
+      unless identities.include?("Apple Distribution")
+        UI.user_error!("Keychain'de 'Apple Distribution' kimliği yok — MATCH_PASSWORD yanlış ya da profil üretilmemiş (setup-match.yml çalıştırıldı mı?).")
+      end
+    end
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Runner.xcodeproj",
+      team_id: ENV["APPLE_TEAM_ID"],
+      code_sign_identity: "Apple Distribution",
+      bundle_identifier: BUNDLE_ID,
+      profile_name: "match AppStore #{BUNDLE_ID}",
+      targets: ["Runner"],
+      build_configurations: ["Release"]
+    )
+
+    version = flutter_version_name
+    build_in_version = latest_testflight_build_number(
+      app_identifier: BUNDLE_ID, api_key: api_key, version: version, initial_build_number: 0
+    ) || 0
+    build_any = latest_testflight_build_number(
+      app_identifier: BUNDLE_ID, api_key: api_key, initial_build_number: 0
+    ) || 0
+    next_build_number = [build_in_version, build_any].max + 1
+    UI.message("Sürüm #{version}, build #{next_build_number}")
+    increment_build_number(xcodeproj: "Runner.xcodeproj", build_number: next_build_number.to_s)
+
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store",
+      clean: false,
+      output_directory: "./build",
+      output_name: "birdiesmash.ipa",
+      export_options: { provisioningProfiles: { BUNDLE_ID => "match AppStore #{BUNDLE_ID}" } }
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true,
+      changelog: testflight_changelog(next_build_number)
+    )
+    sh("echo TF_BUILD_NUMBER=#{next_build_number} >> $GITHUB_ENV") if ENV["GITHUB_ENV"]
+    UI.success("TestFlight'a yüklendi: #{version} (#{next_build_number})")
+  end
+end

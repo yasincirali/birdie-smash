@@ -1,0 +1,114 @@
+name: iOS — TestFlight
+
+# Her main push'ta: Flutter iOS release build + fastlane match (readonly) +
+# gym + pilot. Harçlıklarım `ios-testflight.yml`'den türetildi (2026-10-19); GoogleService,
+# Supabase define'ları ve uzantı adımları bu uygulamada yok.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'store_listing/**'
+      - '**/*.md'
+  workflow_dispatch:
+
+concurrency:
+  group: ios-testflight-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Secrets kapısı (ubuntu, saniyeler): Apple secret'ları girilmeden macOS
+  # runner'ı hiç başlamaz. Neden: depo PRIVATE, macOS dakikası GitHub kotasında
+  # 10× sayılır; kırmızı düşecek bir build 20–30 dk × 10 = kotanın yarısı.
+  # Secret'lar `if:` içinde doğrudan okunamaz, bu yüzden ayrı iş + çıktı.
+  kapi:
+    runs-on: ubuntu-latest
+    outputs:
+      hazir: ${{ steps.k.outputs.hazir }}
+    steps:
+      - id: k
+        env:
+          ASC: ${{ secrets.ASC_KEY_ID }}
+          MATCH: ${{ secrets.MATCH_PASSWORD }}
+        run: |
+          if [ -n "$ASC" ] && [ -n "$MATCH" ]; then
+            echo "hazir=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "hazir=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Apple secret'ları yok — TestFlight adımı atlandı (YAPMAN_GEREKENLER.md adım 3–4)."
+          fi
+
+  build_and_upload:
+    needs: kapi
+    if: needs.kapi.outputs.hazir == 'true'
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          # Sürüm sabit (sandık kararı): stable ilerleyince analyze kendiliğinden kırılmasın.
+          flutter-version: 3.47.2
+          cache: true
+
+      - name: Set up Ruby (fastlane + cocoapods)
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+          working-directory: ios
+
+      - name: Flutter dependencies
+        run: flutter pub get
+
+      # Eklentiler Swift Package Manager ile gelir (Flutter 3.47 varsayılanı),
+      # depoda Podfile yok; `pod install` Podfile'sız kırılıyordu. bundle
+      # install yine gerekli (fastlane). Bir eklenti CocoaPods isterse Flutter
+      # Podfile üretir ve adım kendiliğinden çalışır.
+      - name: CocoaPods install
+        working-directory: ios
+        run: |
+          bundle install
+          if [ -f Podfile ]; then bundle exec pod install; else echo "Podfile yok (SwiftPM) — pod install atlandı"; fi
+
+      - name: Flutter iOS release build (no codesign — fastlane resigns)
+        run: flutter build ios --release --no-codesign
+
+      - name: Fastlane beta (match + gym + TestFlight)
+        working-directory: ios
+        timeout-minutes: 35
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          ITC_TEAM_ID: ${{ secrets.ITC_TEAM_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+          MATCH_GIT_URL: ${{ secrets.MATCH_GIT_URL }}
+          MATCH_GIT_BASIC_AUTH: ${{ secrets.MATCH_GIT_BASIC_AUTH }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_READONLY: "true"
+          FASTLANE_HIDE_CHANGELOG: "1"
+          FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: "180"
+          FASTLANE_XCODEBUILD_SETTINGS_RETRIES: "5"
+        run: bundle exec fastlane beta
+
+      - name: Upload IPA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: birdiesmash-ios-ipa
+          path: ios/build/*.ipa
+          if-no-files-found: ignore
