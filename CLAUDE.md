@@ -18,6 +18,6 @@ aynıdır; burada yalnız farklar.
 - TestFlight: `main`'e birleşme → `ios-testflight.yml` (Harçlıklarım'dan
   türetildi; match branch `birdiesmash`, ayrı `MATCH_PASSWORD`). Android hattı yok.
 - Doğrulama: `flutter analyze && flutter test && node tool/oyun_sozdizimi.js`.
-- Karakter modeli (Blender/bpy, `karakter.py`) ve render'lar
+- Karakter: `tool/karakter/` (bpy, IK rig, 22 klip × 2 bakış → sprite sheet, oyuna base64 gömülü). Raket HEP sağ elde: backhand ayrı klip, aynalama yok. Ayak işi badminton: split step, chassé, öne adım, arkaya çapraz. Render.lar
   `/mnt/project-files/birdie-smash/` altında; oyuna girişi (sprite ya da
   three.js) henüz kararlaştırılmadı.

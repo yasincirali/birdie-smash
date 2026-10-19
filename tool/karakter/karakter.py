@@ -157,8 +157,62 @@ serve=sample([(0,SV0),(0.25,SV0),(0.45,SV1),(0.65,SV2),(1,READY)],10)
 # --- blok (ağa yakın kısa itiş): raket göğüs önünde dik, küçük hareket
 B_HIT=D(READY,wrR=(0.14,0.34,0.66),elR=(1,-0.4,-0.3),rk=(0,0.3,0.95),rkFace=(0,1,0),lean=(0,0.04,0),look=(0,1,0.1))
 block=sample([(0,READY),(0.35,D(READY,wrR=(0.18,0.20,0.62),rk=(0,0.3,0.95))),(0.6,B_HIT),(1,READY)],6)
-CLIPS=dict(idle=idle,run=run,smash=smash,clear=clear,drive=drive,kill=kill,low=low,lunge=lunge,serve=serve,block=block)
-KEYS=dict(ready=[READY],smash=[S_PREP,S_HIT,S_FOL],clear=[C_HIT,C_FOL],drive=[DR_PREP,DR_HIT,DR_FOL],kill=[K_PREP,K_HIT],low=[L_PREP,L_HIT,L_FOL],lunge=[LU_PREP,LU_HIT],serve=[SV0,SV2],block=[B_HIT],run=[run[1],run[3]])
+
+# ================= v16: raket HEP sağ elde (yasin 2026-10-19: "rakette el değiştirilmez"). Backhand aynalama değil,
+# gerçek backhand pozu: kol gövdeyi çaprazlar, dirsek topa doğru, el sırtı önde, devam kısa. =================
+# --- backhand overhead (sırt file'ye döner, dirsek yukarı, bilek kırılır; devam kısa)
+BO_PREP=D(READY,twist=-48,lean=(-0.02,-0.05,0.01),wrR=(-0.06,-0.10,0.80),elR=(-1,-0.3,0.7),rk=(-0.3,-0.5,-0.8),rkFace=(0,1,0),wrL=(0.18,0.0,0.55),elL=(1,-0.4,-0.3),anR=(0.06,-0.18,0.05),anL=(-0.16,0.08,0.05),ftR=(-0.6,1,0),look=(-0.6,0.3,0.7))
+BO_HIT=D(READY,twist=-30,lean=(-0.02,0.0,0.02),wrR=(-0.28,0.02,1.22),elR=(-1,0.1,0.3),rk=(-0.3,0.25,0.92),rkFace=(0,1,0),wrL=(0.18,0.05,0.5),anR=(0.08,-0.12,0.05),anL=(-0.16,0.10,0.05),ftR=(-0.6,1,0),look=(-0.4,0.5,0.75))
+BO_FOL=D(READY,twist=-15,lean=(0,0.03,0),wrR=(-0.34,0.16,0.96),elR=(-1,0.3,0.2),rk=(-0.9,0.3,0.3),rkFace=(0,1,0),wrL=(0.16,0.1,0.48),anR=(0.10,-0.06,0.05),anL=(-0.14,0.10,0.05))
+bh_over=sample([(0,READY),(0.26,BO_PREP),(0.40,BO_PREP),(0.56,BO_HIT),(0.72,BO_FOL),(1,READY)],10)
+# --- backhand drive (omuz hizası, gövde önünden sola)
+BD_PREP=D(READY,twist=-32,lean=(-0.02,-0.02,0),wrR=(-0.16,0.02,0.72),elR=(0.5,1,0),rk=(-0.5,-0.8,0.2),rkFace=(0,1,0),wrL=(0.16,0.0,0.5),anR=(0.04,-0.14,0.05),anL=(-0.16,0.10,0.05),look=(-0.4,1,0))
+BD_HIT=D(READY,twist=-8,lean=(0,0.04,0),wrR=(-0.36,0.30,0.74),elR=(0.3,0.8,0),rk=(-0.85,0.5,0.1),rkFace=(0,1,0.3),wrL=(0.18,0.0,0.5),anR=(0.08,-0.04,0.05),anL=(-0.16,0.12,0.05))
+BD_FOL=D(READY,twist=4,lean=(0,0.05,0),wrR=(-0.42,0.34,0.80),elR=(0.2,0.8,0),rk=(-0.95,0.2,0.3),rkFace=(0,1,0),wrL=(0.2,-0.02,0.46))
+bh_drive=sample([(0,READY),(0.3,BD_PREP),(0.55,BD_HIT),(0.72,BD_FOL),(1,READY)],8)
+# --- backhand file öldürme (yüksek, kısa dürtme)
+BK_PREP=D(READY,twist=-20,wrR=(-0.14,0.08,0.92),elR=(0.5,1,0.2),rk=(-0.3,0.2,0.93),rkFace=(0,1,0),lean=(0,0.03,0),look=(-0.3,0.7,0.6))
+BK_HIT=D(READY,twist=-5,wrR=(-0.28,0.34,0.98),elR=(0.4,0.9,0),rk=(-0.4,0.8,-0.4),rkFace=(0,0.4,1),lean=(0,0.08,0),root=(0,0.05,0.40),anR=(0.0,0.14,0.05),anL=(-0.16,0.0,0.05),look=(-0.2,0.9,0.4))
+bh_kill=sample([(0,READY),(0.3,BK_PREP),(0.55,BK_HIT),(0.75,D(BK_HIT,wrR=(-0.26,0.30,0.88),rk=(-0.4,0.75,-0.55))),(1,READY)],7)
+# --- backhand alçak (file/lift): sağ ayak öne-sola, raket alttan sola süpürür
+BL_PREP=D(READY,twist=-25,lean=(-0.02,0.02,-0.02),root=(0,0.02,0.36),wrR=(-0.18,0.0,0.36),elR=(0,1,0.3),rk=(-0.3,-0.4,-0.85),rkFace=(0,1,0),wrL=(0.2,0.1,0.52),anR=(-0.02,0.18,0.05),anL=(-0.16,-0.10,0.05),look=(-0.2,1,-0.3))
+BL_HIT=D(READY,twist=-8,lean=(0,0.08,-0.04),root=(0,0.06,0.34),wrR=(-0.30,0.40,0.28),elR=(0,1,0.5),rk=(-0.3,0.9,-0.3),rkFace=(0,0.3,1),wrL=(0.22,-0.02,0.48),anR=(-0.02,0.26,0.05),anL=(-0.16,-0.14,0.05),look=(-0.1,1,-0.3))
+BL_FOL=D(READY,twist=0,lean=(0,0.06,0),root=(0,0.05,0.38),wrR=(-0.14,0.42,0.72),elR=(0,1,0),rk=(-0.5,0.4,0.75),rkFace=(0,1,0),wrL=(0.2,0.05,0.45),anR=(-0.02,0.20,0.05),anL=(-0.16,-0.08,0.05))
+bh_low=sample([(0,READY),(0.32,BL_PREP),(0.55,BL_HIT),(0.75,BL_FOL),(1,READY)],8)
+# --- backhand hamle: sol-öne derin, sağ (raket) bacak öne
+BLU_PREP=D(READY,twist=-15,lean=(-0.02,0.08,-0.03),root=(-0.03,0.10,0.37),wrR=(-0.22,0.2,0.30),elR=(0,1,0.6),rk=(-0.3,0.8,-0.5),rkFace=(0,1,0),wrL=(0.22,0.0,0.50),anR=(-0.04,0.22,0.08),anL=(-0.14,-0.10,0.05))
+BLU_HIT=D(READY,twist=-15,lean=(-0.04,0.14,-0.08),root=(-0.06,0.22,0.30),wrR=(-0.30,0.68,0.14),elR=(0,1,0.6),rk=(-0.3,0.9,-0.2),rkFace=(0,0.3,1),wrL=(0.24,-0.18,0.46),elL=(1,-0.5,0.2),anR=(-0.04,0.42,0.05),anL=(-0.16,-0.20,0.05),ftL=(0.3,1,0),look=(-0.2,1,-0.4))
+bh_lunge=sample([(0,READY),(0.35,BLU_PREP),(0.6,BLU_HIT),(0.78,D(BLU_HIT,wrR=(-0.24,0.64,0.30),rk=(-0.3,0.9,0.4))),(1,READY)],8)
+# ================= ayak işi (yasin: "adımlamalar badminton sporunun doğasına uygun olmalı") =================
+# split step: rakip vururken küçük sıçrama, geniş ve alçak iniş
+split=sample([(0,READY),(0.35,D(READY,root=(0,0,0.47),anR=(0.16,0,0.10),anL=(-0.16,0,0.10),wrR=(0.24,0.22,0.58),wrL=(-0.22,0.18,0.54))),(0.65,D(READY,root=(0,0,0.36),anR=(0.20,0,0.05),anL=(-0.20,0,0.05))),(1,READY)],5)
+# chassé (yana kayma): öndeki ayak açılır, arkadaki ayak yanına gelir; gövde alçak, raket yukarıda
+def chasse(sgn):
+    k0=D(READY,root=(0,0,0.39),anR=(sgn*0.14 if sgn>0 else 0.12,0,0.05),anL=(sgn*0.14 if sgn<0 else -0.12,0,0.05),lean=(sgn*0.03,0.02,0))
+    k1=D(k0,root=(0,0,0.41),**({'anR':(0.34,0,0.07)} if sgn>0 else {'anL':(-0.34,0,0.07)}))
+    k2=D(k0,root=(0,0,0.38),**({'anR':(0.34,0,0.05),'anL':(0.06,0,0.06)} if sgn>0 else {'anL':(-0.34,0,0.05),'anR':(-0.06,0,0.06)}))
+    return sample([(0,k0),(0.35,k1),(0.7,k2),(1,k0)],6,loop=True)
+chasse_r=chasse(1); chasse_l=chasse(-1)
+# öne adım: kısa, alçak adımlar (hamleye hazırlanır), raket önde yukarıda
+fwd=[]
+for i in range(6):
+    ph=i/6*2*math.pi; s_=math.sin(ph)
+    fwd.append(D(READY,root=(0,0.02,0.38+0.01*abs(math.cos(ph))),lean=(0,0.07,-0.01),twist=-6*s_,anR=(0.11,0.12*s_,max(0,0.06*math.sin(ph+0.4))),anL=(-0.11,-0.12*s_,max(0,0.06*math.sin(ph+math.pi+0.4))),wrR=(0.24,0.24,0.60),wrL=(-0.2,0.14,0.46)))
+# arkaya çapraz adım — sağ (forehand) köşe: kalça sağa döner, sol ayak sağın arkasından geçer, sağ ayak geri; raket hazırlıkta
+def back(sgn):
+    tw=42*sgn if sgn>0 else -62
+    base=D(READY,twist=tw,lean=(0,-0.04,0),wrR=(0.22,-0.08,0.80) if sgn>0 else (-0.06,-0.06,0.76),elR=(1,-0.4,0.3) if sgn>0 else (-1,-0.3,0.6),rk=(0,-0.4,0.9) if sgn>0 else (-0.3,-0.5,-0.7),wrL=(-0.16,0.16,0.70) if sgn>0 else (0.18,0.0,0.55),look=(0.3*sgn,0.5,0.8))
+    if sgn>0: k1=D(base,anL=(0.10,-0.16,0.07),anR=(0.14,0.0,0.05)); k2=D(base,anL=(0.10,-0.16,0.05),anR=(0.18,-0.30,0.07))
+    else:     k1=D(base,anR=(-0.10,-0.16,0.07),anL=(-0.14,0.0,0.05)); k2=D(base,anR=(-0.10,-0.16,0.05),anL=(-0.18,-0.30,0.07))
+    return sample([(0,base),(0.35,k1),(0.7,k2),(1,base)],6,loop=True)
+back_r=back(1); back_l=back(-1)
+# sıçrayarak smaç: makas — raket bacağı geride, sıçrayışta öne savrulur, sol bacak geriye; iniş sol ayağa. Yükseklik oyunda eklenir (root sabit).
+J_TAKE=D(S_PREP,root=(0,-0.03,0.34),anR=(0.16,-0.18,0.05),anL=(-0.10,0.14,0.05))
+J_AIR=D(S_HIT,root=(0,0.0,0.42),anR=(0.12,0.22,0.16),anL=(-0.12,-0.22,0.22),knR=(0,1,0),knL=(0,-1,0))
+J_LAND=D(S_FOL,root=(0,0.04,0.36),anR=(0.14,-0.08,0.05),anL=(-0.12,0.16,0.05))
+jump=sample([(0,READY),(0.22,S_PREP),(0.34,J_TAKE),(0.52,J_AIR),(0.70,J_LAND),(1,READY)],10)
+CLIPS=dict(idle=idle,run=run,smash=smash,clear=clear,drive=drive,kill=kill,low=low,lunge=lunge,serve=serve,block=block,bh_over=bh_over,bh_drive=bh_drive,bh_kill=bh_kill,bh_low=bh_low,bh_lunge=bh_lunge,split=split,chasse_r=chasse_r,chasse_l=chasse_l,fwd=fwd,back_r=back_r,back_l=back_l,jump=jump)
+KEYS=dict(bo=[BO_PREP,BO_HIT,BO_FOL],bd=[BD_PREP,BD_HIT,BD_FOL],bk=[BK_PREP,BK_HIT],bl=[BL_PREP,BL_HIT,BL_FOL],blu=[BLU_PREP,BLU_HIT],split=[split[1],split[3]],chr=[chasse_r[2],chasse_r[4]],chl=[chasse_l[2],chasse_l[4]],fwd=[fwd[1],fwd[4]],bkr=[back_r[2],back_r[4]],bkl=[back_l[2],back_l[4]],jump=[J_TAKE,J_AIR,J_LAND])
 
 # ---------- sahne ----------
 bpy.ops.object.light_add(type='SUN',location=(1,-2,4)); sun=bpy.context.object; sun.data.energy=3.2; sun.rotation_euler=(math.radians(40),0,math.radians(20))
