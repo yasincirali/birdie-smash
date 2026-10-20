@@ -1,12 +1,11 @@
 Bu sürümde neler değişti
-• Takılma giderildi. Oyuncu çizimi her karede gereğinden çok iş yapıyordu; artık kare başına çizim süresi yaklaşık 10 kat kısaldı.
-• Yazılar düzeldi. Fontlar artık uygulamanın içinde geliyor; internetten geç yüklenip yazıların önce başka fontla görünmesi bitti.
-• Servis öncesi bilgiler (servis yönü, rakip ipucu, görevler) tek bir koyu kartta. Artık kortun ve oyuncunun üstüne dağınık yazılmıyor.
-• Yazıların koyu kenarındaki sivri çıkıntılar giderildi.
+• Türkçe harfler düzeldi. Önceki sürümde ç, ş, ğ, ı, ö, ü gibi harfler "aÃ§Ä±k" gibi bozuk görünüyordu.
+• Menü ekrana tam oturuyor: açıklama kutuları ekran genişliğini kullanıyor, sol sütundaki başlıklar dar kalıp gerekirse iki satıra iniyor.
+• Önceki sürümdeki takılma düzeltmesi ve gömülü fontlar bu sürümde de var.
 
 Bunları dene
-1. Bir maç oyna. Koşarken ve vururken oyun akıcı olmalı, takılmamalı.
-2. Servis öncesi ortadaki koyu kartı oku. Tüm yazılar net ve okunur olmalı.
-3. İnterneti kapatıp oyunu aç. Yazılar yine aynı fontla görünmeli.
-4. "Kıl payı!" gibi büyük yazılara bak. Harf kenarlarında iğne gibi çıkıntı olmamalı.
+1. Oyunu aç. Sağ üstteki düğmede "Ses açık" yazmalı, harfler bozuk olmamalı.
+2. Menüdeki açıklamaları oku. Ç, ş, ğ, ı, ö, ü harfleri düzgün görünmeli.
+3. Maç başlat. Servis kartındaki ve oyun içindeki yazılar da düzgün olmalı.
+4. Menüyü aşağı kaydır. Kutular ekranın iki yanına kadar uzanmalı, yazılar taşmamalı.
 Bir şey tuhaf görünürse ekran görüntüsünü gönder.
