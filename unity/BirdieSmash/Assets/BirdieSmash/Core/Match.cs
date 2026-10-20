@@ -79,7 +79,19 @@ namespace BirdieSmash.Core
         float R01() { return (float)rng.NextDouble(); }
         static float Clamp(float v, float a, float b) { return v < a ? a : v > b ? b : v; }
         static float Hyp(float a, float b) { return (float)Math.Sqrt(a * a + b * b); }
+        // Clear/lift kalkış açıları (2026-10-20, HTML ile aynı): eski 49°/57° clear'ı 8–9 m tepeye ve 70–110 m/s
+        // çıkışa zorluyordu; ölçülen elit clear çıkışı 42–51 m/s (arastirma/vurus_biyomekanigi.md §2).
+        public const float CLEAR_A = .63f, LIFT_A = .80f;
         public static string ClipHand(string c, string hand) { string b; return hand == "back" && BH.TryGetValue(c, out b) ? b : c; }
+        // Yazı bütçesi (yasin 2026-10-20: "yazılar ekranda çok sık çıkıyor"; HTML ile aynı kural): ölçümde dakikada
+        // 24 yazı vardı. Önem 3 her zaman; 2 (smaç, file vuruşu, seri) en az 0,8 s arayla; 1 (ipucu) son yazıdan
+        // 1,8 s sonra. Sıradan vuruşun adı yazılmaz. Süre gerçek zamanla (realClock) ölçülür, yavaşlatmadan etkilenmez.
+        public float realClock; int saves; float txtSon = -9, txtBuyukSon = -9;
+        void Say(string who, string type, float x, float y, float z, string text, int onem = 1)
+        {
+            if (onem < 3) { if (onem == 2 && realClock - txtBuyukSon < .8f) return; if (onem == 1 && realClock - txtSon < 1.8f) return; }
+            txtSon = realClock; if (onem >= 2) txtBuyukSon = realClock; Emit(Ev.Text, who, type, x, y, z, onem, text);
+        }
         void Emit(Ev k, string who = null, string type = null, float x = 0, float y = 0, float z = 0, float kk = 0, string text = null, string q = null, bool big = false)
         { events.Add(new GameEvent { kind = k, who = who, type = type, x = x, y = y, z = z, k = kk, text = text, quality = q, big = big }); }
 
@@ -215,8 +227,8 @@ namespace BirdieSmash.Core
                 case "drive": d = 4.6f; byAngle = false; val = bh ? 18 : 22; break;
                 case "drop": d = overS ? 1.2f : 1.0f; val = overS ? .12f : (Math.Abs(hy - Court.NET) < 2.5f ? .75f : .95f); break;
                 case "block": d = .9f; val = .6f; tx = hx + r * 1.2f; break;
-                case "lift": tx = Court.MID + r * 1.2f; d = 5.4f; val = 1.05f; break;
-                default: d = Math.Min(bh ? 5.6f : 6.9f, (bh ? 4.6f : 5.5f) + (sp - .75f) * 1.4f); val = overS ? .85f : 1.0f; break;
+                case "lift": tx = Court.MID + r * 1.2f; d = 5.4f; val = LIFT_A + .08f; break;
+                default: d = Math.Min(bh ? 5.6f : 6.9f, (bh ? 4.6f : 5.5f) + (sp - .75f) * 1.4f); val = overS ? CLEAR_A : LIFT_A; break;
             }
             float cq = sw.dist / sw.R;
             string q = cq < .4f ? "perfect" : cq <= 1 ? "good" : easy ? "good" : "poor"; if (I.lunge && q == "perfect") q = "good"; if (sw.tap) q = "good";
@@ -229,12 +241,12 @@ namespace BirdieSmash.Core
             if (q == "perfect")
             {
                 pstreak++; energy = Math.Min(1, energy + .34f); freeze = Math.Max(freeze, .06f);
-                Emit(Ev.Text, "me", type, hx, hy, hz, 0, type == "jump" ? "SIÇRAYARAK SMAÇ" : type == "smash" ? "SMAÇ!" : type == "kill" ? "FİLE VURUŞU" : pstreak > 1 ? "Tam orta ×" + pstreak : (bh ? "Backhand, tam orta" : "Tam orta"));
+                Say("me", type, hx, hy, hz, type == "jump" ? "SIÇRAYARAK SMAÇ" : type == "smash" ? "SMAÇ!" : type == "kill" ? "FİLE VURUŞU" : pstreak > 1 ? "Tam orta ×" + pstreak : (bh ? "Backhand, tam orta" : "Tam orta"), (type == "jump" || type == "smash" || type == "kill" || pstreak >= 3) ? 2 : 1);
             }
-            else { pstreak = 0; Emit(Ev.Text, "me", type, hx, hy, hz, 0, q == "poor" ? "Sıyırdın" : Label(type, bh)); }
-            if (I.lunge) { me.dive = 1; me.stun = .35f; Emit(Ev.Text, "me", "lunge", hx, hy, hz, 0, "Uzandın!"); }
+            else { pstreak = 0; if (q == "poor") Say("me", type, hx, hy, hz, "Sıyırdın"); }
+            if (I.lunge) { me.dive = 1; me.stun = .35f; if (++saves <= 3) Say("me", "lunge", hx, hy, hz, "Uzandın!"); }   // öğretici: maçta ilk 3 kez, sonra his yeter
             if (type == "jump") me.jump = 1;
-            if (tepeden) Emit(Ev.Text, "me", type, hx, hy, hz, 0, "Tepeden!");
+            
             me.sw = 1;
             string ft = type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type;
             StartFlight("me", vx, vy, vz, hx, hy, hz, false, ft, type == "jump", q);
@@ -270,7 +282,7 @@ namespace BirdieSmash.Core
                 case "smash": ty = yN(3.6f + R01() * 1.2f); byAngle = false; val = 52; break;
                 case "drive": ty = yN(4.6f); byAngle = false; val = 22; break;
                 case "drop": ty = yN(overhead ? 1.2f : 0.9f); val = overhead ? .12f : .75f; break;
-                default: ty = yN(Court.L / 2 - .55f); val = overhead ? .85f : 1.0f; break;
+                default: ty = yN(Court.L / 2 - .55f); val = overhead ? CLEAR_A : LIFT_A; break;
             }
         }
 
@@ -360,7 +372,7 @@ namespace BirdieSmash.Core
         float lastDt;
 
         public void Update(float dt)
-        {
+        { realClock += dt;
             lastDt = dt;
             foreach (var q in new[] { me, op })
             {
@@ -413,7 +425,7 @@ namespace BirdieSmash.Core
                 {
                     Move(op, s.landPred.x, s.landPred.y - .4f, 2.2f * d);
                     if (op.dive <= 0 && !IsOut(s.landPred.x, s.landPred.y, s.serve) && !(s.landPred.net != null && !s.landPred.net.ok) && s.t > s.landPred.t - .25f)
-                    { op.dive = 1; Emit(Ev.Text, "op", null, op.x, op.y, 0, 0, "Kıl payı!"); slow = .35f; slowT = .3f; }
+                    { op.dive = 1; Say("op", null, op.x, op.y, 0, "Kıl payı!"); slow = .35f; slowT = .3f; }
                 }
             }
             else Move(op, Court.MID, stil.ev, 2.0f * d);

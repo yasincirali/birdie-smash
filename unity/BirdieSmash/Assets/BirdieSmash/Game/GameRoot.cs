@@ -10,7 +10,7 @@ namespace BirdieSmash.Game
     public class GameRoot : MonoBehaviour
     {
         public Match match; public Camera cam;
-        PlayerView me, op; ShuttleView shuttle; NetView net; Sfx sfx; Hud hud; ParticleSystem feathers;
+        PlayerView me, op; ShuttleView shuttle; NetView net; Sfx sfx; Hud hud; ParticleSystem feathers; int splitYazi;
         float shake, punch; Vector3 camBase; Quaternion camRot; float camFov; int seed = 1;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -169,14 +169,14 @@ namespace BirdieSmash.Game
                     sfx.Hit(e.type, (int)e.k, mine); Burst(at, e.type == "smash" ? 14 : 6, e.type == "smash" ? 3.2f : 1.8f, Color.white);
                     if (e.type == "smash") { shake = Mathf.Max(shake, e.big ? 12 : 6); punch = Mathf.Max(punch, e.big ? 1.09f : 1.05f); }
                     if (e.quality == "perfect" && mine) Burst(at, 12, 3, Kit.Hex("#d8ff5a"));
-                    if (e.k > 2 && (int)e.k % 5 == 0) hud.Say("Ralli " + (int)e.k, Kit.W(Court.MID, Court.NET, 2.5f), Kit.Hex("#d8ff5a"), 1.3f);
+                    if (e.k > 2 && (int)e.k % 10 == 0) hud.Say("Ralli " + (int)e.k, Kit.W(Court.MID, Court.NET, 2.5f), Kit.Hex("#d8ff5a"), 1.3f);
                     break;
                 case Ev.Net: net.sign = mine ? -1 : 1; sfx.Net(e.k); Burst(at, 4 + Mathf.RoundToInt(8 * e.k), .8f + 1.5f * e.k, Color.white); break;
                 case Ev.Tape: net.sign = mine ? -1 : 1; hud.Say(e.text, at, Kit.Hex("#ffd27a")); break;
                 case Ev.Floor: sfx.Floor(e.big); Burst(at, e.big ? 10 : 4, 1, new Color(.85f, .95f, .9f, .7f)); if (e.big) shake = Mathf.Max(shake, 5); break;
                 case Ev.Point: sfx.Point(mine); hud.Say(e.text, Kit.W(Court.MID, mine ? Court.NET - 2 : Court.NET + 2, 1.5f), mine ? Kit.Hex("#d8ff5a") : Kit.Hex("#ff7a6b"), 1.4f); break;
                 case Ev.Text: hud.Say(e.text, at, e.who == "op" ? Kit.Hex("#ffd27a") : Color.white); break;
-                case Ev.Split: hud.Say("Split step", Kit.W(e.x, e.y, .4f), Kit.Hex("#7ad7ff"), .8f); break;
+                case Ev.Split: if (++splitYazi <= 2) hud.Say("Split step", Kit.W(e.x, e.y, .4f), Kit.Hex("#7ad7ff"), .8f); break;   // yalnız ilk iki kez öğretici
             }
         }
     }
