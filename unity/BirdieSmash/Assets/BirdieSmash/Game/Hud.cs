@@ -45,7 +45,8 @@ namespace BirdieSmash.Game
                 var c = f.c; c.a = Mathf.Clamp01(1.3f - f.a); var st = new GUIStyle(mid) { fontSize = Mathf.RoundToInt(20 * u * f.size) };
                 Shadowed(new Rect(sp.x - W / 2, H - sp.y - 20 * u, W, 40 * u), f.t, st, c);
             }
-            float bw = 92 * u, bh = 34 * u, by = safe.yMin > 0 ? H - safe.yMin - bh - 8 * u : H - bh - 10 * u;
+            float bw = 96 * u, bh = 44 * u,   // 44/640 ekran yüksekliği: iPhone SE (667 pt) dahil ≥44 pt dokunma alanı
+            by = safe.yMin > 0 ? H - safe.yMin - bh - 8 * u : H - bh - 10 * u;
             if (GUI.Button(new Rect(10 * u, by, bw, bh), M.easy ? "Kolay" : "Usta", btn)) root.NewMatch(!M.easy);
             if (GUI.Button(new Rect(W - bw - 10 * u, by, bw, bh), "Yeniden", btn)) root.NewMatch(M.easy);
             if (M.over)
