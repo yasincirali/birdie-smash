@@ -1,11 +1,12 @@
 Bu sürümde neler değişti
-• Türkçe harfler düzeldi. Önceki sürümde ç, ş, ğ, ı, ö, ü gibi harfler "aÃ§Ä±k" gibi bozuk görünüyordu.
-• Menü ekrana tam oturuyor: açıklama kutuları ekran genişliğini kullanıyor, sol sütundaki başlıklar dar kalıp gerekirse iki satıra iniyor.
-• Önceki sürümdeki takılma düzeltmesi ve gömülü fontlar bu sürümde de var.
+• Çizgi kararı düzeldi. Çizgiye değen top artık İÇERİ sayılıyor (gerçek badminton kuralı). Önceden topun yarısı çizgideyken bile dışarı denebiliyordu.
+• Çizgi kamerasındaki iz artık topun gerçek mantar boyunda ve çizgiler doğru yerde çiziliyor.
+• Oyuncu adımları sakinleşti: ayaklar pırpır etmiyor, adım hızı gerçek ayak işine yakın, yön değiştirirken hareket gidip gelmiyor.
+• Karakterdeki hayalet gibi çift görüntü giderildi.
 
 Bunları dene
-1. Oyunu aç. Sağ üstteki düğmede "Ses açık" yazmalı, harfler bozuk olmamalı.
-2. Menüdeki açıklamaları oku. Ç, ş, ğ, ı, ö, ü harfleri düzgün görünmeli.
-3. Maç başlat. Servis kartındaki ve oyun içindeki yazılar da düzgün olmalı.
-4. Menüyü aşağı kaydır. Kutular ekranın iki yanına kadar uzanmalı, yazılar taşmamalı.
+1. Topu yan çizgiye ya da dip çizgiye yakın düşür. Çizgi kamerası açılınca iz çizgiye değiyorsa "İÇERİ" yazmalı.
+2. Rakibin topu çizginin hemen dışına düşerse "DIŞARI" yazmalı.
+3. Rakibi ve kendi oyuncunu koşarken izle. Ayaklar titremeden, düzenli adımla gitmeli.
+4. Vuruşlarda karakterin üstünde soluk ikinci bir görüntü olmamalı.
 Bir şey tuhaf görünürse ekran görüntüsünü gönder.
