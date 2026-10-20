@@ -1,13 +1,12 @@
 Bu sürümde neler değişti
-• File yeniden çizildi: ince ağ dokusu, üstte beyaz bant ve yuvarlak direkler. Top çarpınca ağ ve bant birlikte dalgalanıyor.
-• Tüy top artık gerçek bir tüy top gibi: mantar ucu, açılan tüy eteği ve iplik bandı var. Uçarken hep mantar önde gidiyor, vuruştan sonra kısa bir an sallanıp dönüyor, hızlandıkça tüyler dönüyor.
-• Oyuncu animasyonu daha akıcı: kareler arası geçiş yumuşatıldı, takılma hissi azaldı.
-• Maç başındaki uzun rakip ipucu artık ekrandan taşmıyor, iki satıra bölünüyor.
+• Oyun artık her telefonda ekranı baştan sona dolduruyor. Önceki sürümde iPhone'da oyun ekranın ortasında dar bir şerit gibi kalabiliyordu, bu düzeldi.
+• Kort her telefonda aynı oranda görünüyor. Uzun ya da geniş ekranda kort uzamıyor, basılmıyor.
+• Tüy topun tüyleri tek tek görünüyor: her tüyün ortasında sapı, uçlarda tırtıllı kenar ve iki iplik bağı var.
 
 Bunları dene
-1. Maç başında sarı rakip ipucunu oku. Kenarlardan kesilmemeli, gerekirse iki satır olmalı.
-2. Fileye bak: koyu bir şerit değil, arkasından kort görünen ince bir ağ olmalı. Üstte beyaz bant olmalı.
-3. Topu fileye vur. Ağ ve beyaz bant çarptığı yerden dalgalanmalı.
-4. Uçan topa bak: mantar ucu hep gittiği yöne bakmalı. Smaçta top hızlanınca arkasında hafif iz görmelisin.
-5. Koşarken ve vururken oyuncunun hareketinin eskisinden daha akıcı olduğunu izle.
+1. Oyunu aç. Başlık çentiğin altında, kort ekranın tamamını kaplamalı. Yanlarda geniş siyah boşluk kalmamalı.
+2. Bir maç başlat. Kort çizgileri düzgün, oyuncular orantılı görünmeli.
+3. Elinde başka bir telefon varsa onda da aç. Kort aynı şekilde görünmeli.
+4. Top yavaşladığında ya da sana yaklaştığında tüylere bak. Tüyler tek tek seçilmeli, ortada koyu iplik bağı görünmeli.
+5. Alt kenardaki enerji çubuğu ana ekran çizgisinin üstünde kalmalı.
 Bir şey tuhaf görünürse ekran görüntüsünü gönder.

@@ -1,4 +1,5 @@
 <title>Birdie Smash</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito+Sans:wght@400;700&display=swap">
@@ -9,16 +10,19 @@
   --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif; --body:"Nunito Sans",system-ui,-apple-system,sans-serif;
   color-scheme:dark;
 }
-html,body{height:100%}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;box-sizing:border-box;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px}
-.wrap{max-width:460px;margin:0 auto;height:100%;display:flex;flex-direction:column;gap:10px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+/* Tam ekran: sahne her telefonda kenardan kenara ve alta kadar uzanır. Başlık çentiğin, sahnenin altı ana ekran
+   çubuğunun dışında kalır (güvenli alan). Kortun oranı ekran şeklinden bağımsızdır: geo() tek ölçekle çizer. */
+html,body{height:100%;margin:0;overflow:hidden;overscroll-behavior:none}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;box-sizing:border-box}
+.wrap{height:100%;height:100dvh;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;
+  padding-top:max(8px,env(safe-area-inset-top,0px));padding-bottom:env(safe-area-inset-bottom,0px)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 h1{font-family:var(--display);font-weight:800;font-size:24px;margin:0;line-height:1}
 .btn{min-height:44px;min-width:44px;border-radius:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:700 13px var(--body);padding:0 12px;cursor:pointer}
 .btn[aria-pressed="true"]{border-color:var(--lime);color:var(--lime)}
 .btn:focus-visible,.play:focus-visible{outline:2px solid var(--lime);outline-offset:2px}
-.stage{position:relative;flex:1;min-height:520px;border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+.stage{position:relative;flex:1;min-height:0;overflow:hidden;border-top:1px solid var(--line)}
 canvas{display:block;width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none}
 .layer{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:safe center;gap:12px;padding:18px;text-align:center;background:rgba(9,16,17,.84);backdrop-filter:blur(3px);overflow:auto}
 .layer h2{font-family:var(--display);font-weight:800;font-size:42px;line-height:1;margin:0}
@@ -241,7 +245,15 @@ function hitstop(s){ if(!reduce) freeze=Math.max(freeze,s); }
 function punch(z){ if(!reduce) zoom=Math.max(zoom,z); }
 
 /* ---- izdüşüm: metreden ekrana; uzak taraf dar ---- */
-function geo(){ const top=H*.09, bot=H*.95; return {top,bot,ch:bot-top,cw:W*.92}; }
+/* Eski geo genişliği W'ye, derinliği H'ye ayrı ayrı yayıyordu: uzun Android ekranında kort uzuyor, geniş ekranda
+   basıklaşıyordu. Şimdi en/boy oranı tasarım ekranındaki (iPhone 390×844) orandan en çok %10 sapar; ekranı
+   doldurmaya yeten sapma kullanılır, fazlası boşluk olarak üst/alta (ya da yanlara) eşit dağılır. */
+const GEO_R=1.045; let GEO_K=null;
+function geo(){ if(GEO_K&&GEO_K.W===W&&GEO_K.H===H) return GEO_K.g;
+  const kxF=W*.92/(CW+2*MG), kyF=H*.86/(L+2*MG), R=Math.max(GEO_R*.9,Math.min(GEO_R*1.1,kyF/kxF));
+  let kx=kxF, ky=kx*R; if(ky>kyF){ ky=kyF; kx=ky/R; }
+  const ch=ky*(L+2*MG), cw=kx*(CW+2*MG), top=(H-ch)*(.09/.14);
+  GEO_K={W,H,g:{top,bot:top+ch,ch,cw}}; return GEO_K.g; }
 function sc(y){ return .62+.38*((y+MG)/(L+2*MG)); } /* uzak uç biraz daha küçük: derinlik daha okunur (v12) */
 function P(x,y,z=0){ const g=geo(), s=sc(y), py=g.top+(y+MG)/(L+2*MG)*g.ch, ppm=g.ch/(L+2*MG); return {x:W/2+(x-MID)/(CW+2*MG)*g.cw*s, y:py-z*ppm*.75*s, s, ppm:ppm*s}; }
 
@@ -695,7 +707,7 @@ function shuttleModel(s,zz){ const now=performance.now()/1000, dt=Math.min(.05,M
   const dl=Math.hypot(...SHM.d)||1; SHM.d=SHM.d.map(v=>v/dl);
   SHM.wv+=(-SHM.wob*260-SHM.wv*18)*dt; SHM.wob+=SHM.wv*dt; if(reduce) SHM.wob=0; /* sönümlü salınım ~80 ms */
   SHM.phi+=dt*Math.min(40,sp*1.6)*(s.dead?0:1);   /* etek dönüşü: hızla artar */
-  const G=3.1; /* okunurluk büyütmesi: gerçek top 7 cm, ekranda görünsün */
+  const G=4.4; /* okunurluk büyütmesi: gerçek top 7 cm; tüyler tek tek seçilsin diye ekranda ~9–13 pt */
   let d=SHM.d; const up=Math.abs(d[2])<.9?[0,0,1]:[1,0,0];
   const cr=(u,v)=>[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]], nr=v=>{const l=Math.hypot(...v)||1; return v.map(q=>q/l);};
   let e1=nr(cr(d,up)), e2=cr(d,e1);
@@ -706,18 +718,35 @@ function shuttleModel(s,zz){ const now=performance.now()/1000, dt=Math.min(.05,M
   for(let gi=ghosts;gi>=0;gi--){ /* hareket bulanıklığı: bir karelik yolun gerisinde soluk kopyalar */
     const back=gi*(1/60)/(ghosts+1), off=[-s.vx*back,-s.vy*back,-s.vz*back], A=gi?.22/(gi):1;
     ctx.globalAlpha=A;
-    const ring=(r,along)=>{ const pts=[]; for(let i=0;i<16;i++){ const a2=SHM.phi+i/16*Math.PI*2; pts.push(W3(add(off,mul(d,along),mul(e1,Math.cos(a2)*r),mul(e2,Math.sin(a2)*r)))); } return pts; };
-    const rim=ring(Rt,L), base=ring(Rb,.004*G), band=ring(Rb+(Rt-Rb)*.55,L*.55);
-    const corkC=W3(off), rimC=W3(add(off,mul(d,L)));
+    /* 16 kaz tüyü: her biri ayrı çizilir. Dipte dar, uca doğru genişler, ucu yuvarlak ve komşusunun üstüne biner
+       (gerçek topta etek kenarı tırtıllıdır). Ortadan tüy sapı geçer, dipten 1/3 ve 1/2'de iki iplik bağı var.
+       Kameraya bakan tüyler öne, arkadakiler (iç yüzü görünen, daha gölgeli) arkaya çizilir. */
+    const V=[0,.6,.8], pt=(a2,r,al)=>W3(add(off,mul(d,al),mul(e1,Math.cos(a2)*r),mul(e2,Math.sin(a2)*r)));
+    const ringA=(r,al,n=32)=>{ const q=[]; for(let i=0;i<n;i++) q.push(pt(SHM.phi+i/n*Math.PI*2,r,al)); return q; };
+    const corkC=W3(off), rimPx=Rt*corkC.ppm, ayrinti=rimPx>3.2;
     const corkFront=(d[1]*.6+d[2]*.8)<0; /* etek kameradan uzaklaşıyorsa mantar önde çizilir */
-    const drawCork=()=>{ const pr=Math.max(1.6,Rc*corkC.ppm*1.05); const gr=ctx.createRadialGradient(corkC.x-pr*.35,corkC.y-pr*.35,pr*.1,corkC.x,corkC.y,pr); gr.addColorStop(0,'#fff6e3'); gr.addColorStop(.7,'#f1dcb4'); gr.addColorStop(1,'#c9a978'); ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(corkC.x,corkC.y,pr,0,7); ctx.fill(); };
-    const drawSkirt=()=>{ /* iç yüz (koyu) → 16 tüy (dönüşle açık/gölge) → iplik bağı → ağız kenarı */
-      ctx.fillStyle='rgba(205,210,208,.95)'; ctx.beginPath(); rim.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)); ctx.closePath(); ctx.fill();
-      for(let i=0;i<16;i++){ const j=(i+1)%16, sh=.82+.18*Math.cos(SHM.phi+i/16*Math.PI*2+1.1); const c=Math.round(255*sh);
-        ctx.fillStyle=`rgb(${c},${c},${Math.round(c*.985)})`; ctx.beginPath(); ctx.moveTo(base[i].x,base[i].y); ctx.lineTo(rim[i].x,rim[i].y); ctx.lineTo(rim[j].x,rim[j].y); ctx.lineTo(base[j].x,base[j].y); ctx.closePath(); ctx.fill(); }
-      ctx.strokeStyle='rgba(120,128,126,.45)'; ctx.lineWidth=.7; ctx.beginPath(); for(let i=0;i<16;i+=2){ ctx.moveTo(base[i].x,base[i].y); ctx.lineTo(rim[i].x,rim[i].y); } ctx.stroke(); /* tüy sapları */
-      ctx.strokeStyle='rgba(60,70,90,.55)'; ctx.lineWidth=1; ctx.beginPath(); band.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)); ctx.closePath(); ctx.stroke(); /* iplik bağı */
-      ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=1; ctx.beginPath(); rim.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)); ctx.closePath(); ctx.stroke(); };
+    const drawCork=()=>{ const pr=Math.max(1.6,Rc*corkC.ppm*1.05); const gr=ctx.createRadialGradient(corkC.x-pr*.35,corkC.y-pr*.35,pr*.1,corkC.x,corkC.y,pr); gr.addColorStop(0,'#fff6e3'); gr.addColorStop(.7,'#f1dcb4'); gr.addColorStop(1,'#c9a978'); ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(corkC.x,corkC.y,pr,0,7); ctx.fill();
+      if(ayrinti){ ctx.strokeStyle='rgba(40,60,120,.55)'; ctx.lineWidth=.6; ctx.beginPath(); ctx.arc(corkC.x,corkC.y,pr*.98,0,7); ctx.stroke(); } };
+    const N=16, dw=Math.PI*2/N, tuy=[];
+    for(let i=0;i<N;i++){ const a2=SHM.phi+i*dw, rr3=add(mul(e1,Math.cos(a2)),mul(e2,Math.sin(a2))), f=rr3[0]*V[0]+rr3[1]*V[1]+rr3[2]*V[2]; tuy.push({a2,f}); }
+    const feather=t=>{ const {a2,f}=t, front=f>=0, hb=dw*.42, ht=dw*.66, al0=.004*G;
+      const b1=pt(a2-hb,Rb,al0), b2=pt(a2+hb,Rb,al0), t1=pt(a2-ht,Rt,L*.9), t2=pt(a2+ht,Rt,L*.9), tc=pt(a2,Rt*1.04,L*1.1);
+      const ish=Math.max(0,Math.min(1,.5+.5*Math.cos(a2-SHM.phi*.0+2.2)));      /* ışık sol üstten */
+      const c=Math.round(front?212+40*(.55+.45*f)*(.7+.3*ish):178+22*ish);
+      ctx.fillStyle=`rgb(${c},${c},${Math.min(255,c+2)})`;
+      ctx.beginPath(); ctx.moveTo(b1.x,b1.y); ctx.lineTo(t1.x,t1.y); ctx.quadraticCurveTo(tc.x+(tc.x-(t1.x+t2.x)/2)*.6,tc.y+(tc.y-(t1.y+t2.y)/2)*.6,t2.x,t2.y); ctx.lineTo(b2.x,b2.y); ctx.closePath(); ctx.fill();
+      if(ayrinti){ ctx.strokeStyle=front?'rgba(96,106,112,.62)':'rgba(70,80,86,.5)'; ctx.lineWidth=.55; ctx.stroke();
+        const s0=pt(a2,Rb,al0), s1=pt(a2,Rt*.98,L*.98); ctx.strokeStyle=front?'rgba(250,247,238,.95)':'rgba(150,156,158,.7)'; ctx.lineWidth=.7; ctx.beginPath(); ctx.moveTo(s0.x,s0.y); ctx.lineTo(s1.x,s1.y); ctx.stroke(); } };
+    const drawSkirt=()=>{
+      const arka=tuy.filter(t=>t.f<0).sort((p1,p2)=>p1.f-p2.f), on=tuy.filter(t=>t.f>=0).sort((p1,p2)=>p1.f-p2.f);
+      arka.forEach(feather);
+      if(ayrinti){ [[.34,'rgba(35,45,60,.7)'],[.5,'rgba(35,45,60,.55)']].forEach(([u,col])=>{ const q=ringA(Rb+(Rt-Rb)*u,L*u); ctx.strokeStyle=col; ctx.lineWidth=.8; ctx.beginPath(); q.forEach((z,i)=>i?ctx.lineTo(z.x,z.y):ctx.moveTo(z.x,z.y)); ctx.closePath(); ctx.stroke(); }); }
+      on.forEach(feather);
+      if(ayrinti){ /* iplik bağı tüylerin dışından geçer: önde kalan yarısı tüylerin üstüne */
+        [[.34,'rgba(35,45,60,.8)'],[.5,'rgba(35,45,60,.65)']].forEach(([u,col])=>{ ctx.strokeStyle=col; ctx.lineWidth=.8; ctx.beginPath();
+          for(let i=0;i<32;i++){ const a2=SHM.phi+i/32*Math.PI*2, a3=a2+Math.PI*2/32, rv=add(mul(e1,Math.cos(a2+Math.PI/32)),mul(e2,Math.sin(a2+Math.PI/32)));
+            if(rv[0]*V[0]+rv[1]*V[1]+rv[2]*V[2]<0) continue; const r=Rb+(Rt-Rb)*u, q0=pt(a2,r*1.02,L*u), q1=pt(a3,r*1.02,L*u); ctx.moveTo(q0.x,q0.y); ctx.lineTo(q1.x,q1.y); }
+          ctx.stroke(); }); } };
     if(corkFront){ drawSkirt(); drawCork(); } else { drawCork(); drawSkirt(); }
   }
   ctx.globalAlpha=1; }
@@ -865,7 +894,7 @@ buildGear();
 ['len21','len11','len7'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{ target=id==='len21'?21:id==='len11'?11:7; ['len21','len11','len7'].forEach(j=>document.getElementById(j).setAttribute('aria-pressed',j===id)); }));
 document.getElementById('mute').addEventListener('click',e=>{ muted=!muted; crowdLevel(muted?0:.01); if(muted) underwater(false); e.currentTarget.textContent=muted?'Ses kapalı':'Ses açık'; e.currentTarget.setAttribute('aria-pressed',muted); });
 document.getElementById('bestLine').textContent=best.rally?`Ralli rekorun ${best.rally} · ${best.wins} galibiyet · ${best.gorev||0} görev`:'';
-function size(){ const r=stage.getBoundingClientRect(); W=Math.round(r.width); H=Math.round(r.height); DPR=Math.min(2,devicePixelRatio||1); cv.width=W*DPR; cv.height=H*DPR; }
-addEventListener('resize',size); size();   
+function size(){ const r=stage.getBoundingClientRect(); W=Math.round(r.width); H=Math.round(r.height); DPR=Math.min(2,devicePixelRatio||1); /* 3x denendi: çizim süresi ikiye katlandı, akıcılık öncelikli */ cv.width=W*DPR; cv.height=H*DPR; }
+addEventListener('resize',size); if(window.ResizeObserver) new ResizeObserver(size).observe(stage); size();   
 })();
 </script>
