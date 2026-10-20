@@ -1,12 +1,16 @@
 Bu sürümde neler değişti
-• Çizgi kararı düzeldi. Çizgiye değen top artık İÇERİ sayılıyor (gerçek badminton kuralı). Önceden topun yarısı çizgideyken bile dışarı denebiliyordu.
-• Çizgi kamerasındaki iz artık topun gerçek mantar boyunda ve çizgiler doğru yerde çiziliyor.
-• Oyuncu adımları sakinleşti: ayaklar pırpır etmiyor, adım hızı gerçek ayak işine yakın, yön değiştirirken hareket gidip gelmiyor.
-• Karakterdeki hayalet gibi çift görüntü giderildi.
+• Hızlı maç: 5 sayılık maç eklendi (yaklaşık 2 dakika). Seçtiğin maç uzunluğu bir sonraki açılışta hatırlanır.
+• Kariyer: menüde "Serbest maç" ve "Kariyer" seçeneği var. Kariyerde 6 basamak var, her basamağın rakibi biraz daha güçlü. Hepsini geçince Şampiyon forması açılıyor.
+• Iska nedeni: topu kaçırınca neden kaçırdığın yazıyor (kısa kaydırdın, yavaş kaydırdın, kıl payı, topun uzağından geçtin). Erken kaydırırsan da söylüyor.
+• File bandı: top filenin bandına sürtünürse bazen karşıya yuvarlanıp düşüyor, gerçek maçtaki gibi.
+• Çizgiye değen top İÇERİ sayılıyor; oyuncu adımları sakinleşti; karakterdeki hayalet görüntü giderildi.
 
 Bunları dene
-1. Topu yan çizgiye ya da dip çizgiye yakın düşür. Çizgi kamerası açılınca iz çizgiye değiyorsa "İÇERİ" yazmalı.
-2. Rakibin topu çizginin hemen dışına düşerse "DIŞARI" yazmalı.
-3. Rakibi ve kendi oyuncunu koşarken izle. Ayaklar titremeden, düzenli adımla gitmeli.
-4. Vuruşlarda karakterin üstünde soluk ikinci bir görüntü olmamalı.
+1. Menüde "5 sayı (hızlı, ~2 dk)" seçili olmalı. Bir maç oyna, 5 sayıda bitmeli (4-4 olursa 2 fark gerekir, en fazla 7).
+2. Menüde "Kariyer"e dokun. Altında "Basamak 1/6 · Mahalle salonu" yazmalı. Maçı kazanınca sonuç ekranında yeni basamak yazmalı.
+3. Uygulamayı kapatıp aç. Kariyer basamağın ve maç uzunluğun korunmalı.
+4. Ekipman › Forma'da "Şampiyon" kilitli ve soluk görünmeli; kariyer bitmeden seçilmemeli.
+5. Bilerek kısa ya da yavaş kaydır. Topu kaçırınca nedeni ekranda yazmalı.
+6. Topu fileye çok yakın, alçak vur. Ara sıra "File bandı!" yazıp top karşıya düşmeli.
+7. Topu çizgiye yakın düşür. İz çizgiye değiyorsa "İÇERİ" yazmalı.
 Bir şey tuhaf görünürse ekran görüntüsünü gönder.
