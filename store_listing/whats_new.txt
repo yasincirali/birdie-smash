@@ -1,2 +1,12 @@
-• Birdie Smash ilk TestFlight sürümü: tek dokunuşla vuruş, Kolay/Usta modu, raket ve tel gerilimi seçimi
-• Vuruşa göre raket sesi ve titreşim
+Bu sürümde neler değişti
+• Ekrandaki yazılar azaldı. Her vuruşta isim yazmıyor; yalnız sayı, mükemmel vuruş ve özel anlar yazıyor.
+• Top daha gerçekçi uçuyor. Uzun vuruşlar (clear) eskisi kadar yükseğe çıkmıyor ve daha kısa sürede iniyor.
+• Oyuncu hareketleri gerçek badminton vuruşlarına göre yeniden yapıldı: smaçta yan duruş ve sol kol yukarıda, vuruştan sonra gövde öne döner, file önünde uzanma daha dik gövdeyle, savunmada daha alçak duruş.
+
+Bunları dene
+1. Bir maç başlat ve 2-3 ralli oyna. Ekranda yazının eskisine göre çok daha seyrek çıktığını görmelisin.
+2. Rakip uzun vuruş yaptığında topun tavana yakın değil, orta yükseklikte süzülüp arka çizgiye indiğini izle.
+3. Smaç atarken kendi oyuncuna bak: vuruştan önce yana dönüp sol kolunu kaldırmalı, vuruştan sonra raket gövdenin önünden sola inmeli.
+4. File önüne düşen topa uzan: sağ ayak öne, gövde dik olmalı.
+5. Uzun bir yazı (ör. sayı sonu mesajı) ekrandan taşmamalı.
+Bir şey tuhaf görünürse ekran görüntüsünü gönder.
