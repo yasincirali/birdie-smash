@@ -584,18 +584,36 @@ function court(){
   if(M&&M.marks) for(const m of M.marks){ const p=P(m.x,m.y), a=Math.max(0,1-m.t/3); ctx.fillStyle=`rgba(10,30,26,${.45*a})`; ctx.beginPath(); ctx.ellipse(p.x,p.y,(m.big?9:5)*p.s,(m.big?4:2.4)*p.s,0,0,7); ctx.fill();
     if(m.t<.5){ ctx.strokeStyle=`rgba(255,255,255,${(.5-m.t)*1.6})`; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(p.x,p.y,(8+m.t*80)*p.s,(3.5+m.t*35)*p.s,0,0,7); ctx.stroke(); }
     if(m.big){ ctx.strokeStyle=`rgba(216,255,90,${.6*a})`; ctx.lineWidth=1.5; m.cr.forEach(r=>{ ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x+Math.cos(r)*18*p.s,p.y+Math.sin(r)*8*p.s); ctx.stroke(); }); } }
-  // file: direkler çift kişilik yan çizgide
-  const a=P(0,NET),b=P(CW,NET), ha=NETP*a.ppm*.75, hm=NETH*P(MID,NET).ppm*.75;
-  ctx.fillStyle='rgba(255,255,255,.07)'; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(a.x,a.y-ha); ctx.quadraticCurveTo(W/2,a.y-hm*.98,b.x,b.y-ha); ctx.lineTo(b.x,b.y); ctx.closePath(); ctx.fill();
-  { /* ağ: 32 sütun × 6 sıra; file esnediğinde düğüm bana doğru (ekranda aşağı ve büyüyerek) kayar — esneme gözle okunur */
-    const cols=NETN-1, rows=6, act=NETW.act; ctx.lineWidth=1; ctx.strokeStyle=act?'rgba(255,255,255,.2)':'rgba(255,255,255,.16)';
-    const pt=(i,r)=>{ const x=i/cols*CW, lim=NETH+(NETP-NETH)*Math.abs(x-MID)/MID, z=lim*(1-r/rows); return P(x,NET+(act?netAt(x,z)*1.8:0),z); }; /* 1,8: perspektif esnemeyi yatırır, gözle okunsun diye çizimde büyütülür; fizik değişmez */
-    ctx.beginPath(); for(let i=0;i<=cols;i++){ let q=pt(i,0); ctx.moveTo(q.x,q.y); for(let r=1;r<=rows;r++){ q=pt(i,r); ctx.lineTo(q.x,q.y); } }
-    for(let r=1;r<rows;r++){ let q=pt(0,r); ctx.moveTo(q.x,q.y); for(let i=1;i<=cols;i++){ q=pt(i,r); ctx.lineTo(q.x,q.y); } } ctx.stroke();
+  /* File (yasin 2026-10-20: "file modeli daha gerçekçi olmalı"). Gerçek ölçüler (BWF Law 1): ağ koyu renkli ince
+     örgü, 760 mm derin, üst kenarı 1,524 m (ortada) – 1,55 m (direkte); üstte 75 mm beyaz bant kordonu sarar; ağın
+     altı ile zemin arası boş. Eski çizim ağı zemine kadar uzanan seyrek beyaz ızgaraydı. Esneme (NETW) aynen kalır;
+     ızgara sıklaştı (64 × 12), örgü koyu ve ince, bant gerçek genişlikte ve esnemeyi izler, direkler gövdeli. */
+  const a=P(0,NET),b=P(CW,NET), act=NETW.act;
+  const NCOL=64, NROW=12, NDEP=.76, TAPE=.075;
+  const lim=x=>NETH+(NETP-NETH)*Math.abs(x-MID)/MID;
+  const npt=(x,z)=>P(x,NET+(act?netAt(x,z)*1.8:0),z); /* 1,8: perspektif esnemeyi yatırır, gözle okunsun diye çizimde büyütülür; fizik değişmez */
+  { /* gölge: üstten-soldan ışıkla ağın zemindeki yumuşak izi */
+    const s0=P(0,NET+.35,0), s1=P(CW,NET+.35,0), s2=P(CW,NET+.05,0), s3=P(0,NET+.05,0);
+    ctx.fillStyle='rgba(0,0,0,.10)'; ctx.beginPath(); ctx.moveTo(s0.x,s0.y); ctx.lineTo(s1.x,s1.y); ctx.lineTo(s2.x,s2.y); ctx.lineTo(s3.x,s3.y); ctx.closePath(); ctx.fill(); }
+  { /* ağ gövdesi: hafif koyu dolgu (örgü yoğunluğu) + ince örgü çizgileri */
+    const top=[],bot=[]; for(let i=0;i<=NCOL;i++){ const x=i/NCOL*CW, t=lim(x)-TAPE; top.push(npt(x,t)); bot.push(npt(x,lim(x)-NDEP)); }
+    ctx.fillStyle='rgba(14,20,24,.22)'; ctx.beginPath(); ctx.moveTo(top[0].x,top[0].y); for(const q of top) ctx.lineTo(q.x,q.y); for(let i=bot.length-1;i>=0;i--) ctx.lineTo(bot[i].x,bot[i].y); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle=act?'rgba(18,24,28,.62)':'rgba(18,24,28,.5)'; ctx.lineWidth=Math.max(.6,.9*a.s); ctx.beginPath();
+    for(let i=0;i<=NCOL;i++){ const x=i/NCOL*CW, t=lim(x)-TAPE; for(let r=0;r<=NROW;r++){ const q=npt(x,t-(NDEP-TAPE)*r/NROW); r?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y); } }
+    for(let r=1;r<=NROW;r++){ for(let i=0;i<=NCOL;i++){ const x=i/NCOL*CW, q=npt(x,lim(x)-TAPE-(NDEP-TAPE)*r/NROW); i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y); } }
+    ctx.stroke();
+    ctx.strokeStyle='rgba(235,240,238,.55)'; ctx.lineWidth=Math.max(1,1.4*a.s); ctx.beginPath(); bot.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)); ctx.stroke(); /* alt kordon */
     if(NETW.glow>0){ const g=P(NETW.gx,NET,NETW.gz); const rad=(18+30*NETW.glow)*g.s; const gr=ctx.createRadialGradient(g.x,g.y,0,g.x,g.y,rad); gr.addColorStop(0,`rgba(255,255,255,${.35*NETW.glow})`); gr.addColorStop(1,'rgba(255,255,255,0)'); ctx.fillStyle=gr; ctx.beginPath(); ctx.ellipse(g.x,g.y,rad,rad*.6,0,0,7); ctx.fill(); } }
-  { const tp=NETW.tape*P(MID,NET).ppm*.75; /* bant: kordon gergin, yalnız orta sarkar/titrer */
-    ctx.strokeStyle='#ffffff'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(a.x,a.y-ha); ctx.quadraticCurveTo(W/2,a.y-hm*.98+tp*2,b.x,b.y-ha); ctx.stroke(); }
-  ctx.fillStyle='#cfd9d6'; ctx.fillRect(a.x-3,a.y-ha,4,ha); ctx.fillRect(b.x-1,b.y-ha,4,ha);
+  { /* bant: 75 mm beyaz, kordon gergin; ortası esnemeyle birlikte titrer (NETW.tape) */
+    const tp=NETW.tape, up=[],dn=[]; for(let i=0;i<=NCOL;i++){ const x=i/NCOL*CW, w=Math.sin(Math.PI*x/CW)*tp*.06, t=lim(x); const q1=P(x,NET+w+(act?netAt(x,t)*1.8:0),t), q2=P(x,NET+w+(act?netAt(x,t-TAPE)*1.8:0),t-TAPE); up.push(q1); dn.push(q2); }
+    ctx.fillStyle='#f4f6f5'; ctx.beginPath(); ctx.moveTo(up[0].x,up[0].y); for(const q of up) ctx.lineTo(q.x,q.y); for(let i=dn.length-1;i>=0;i--) ctx.lineTo(dn[i].x,dn[i].y); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle='rgba(120,130,128,.5)'; ctx.lineWidth=1; ctx.beginPath(); dn.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)); ctx.stroke(); }
+  for(const x of [0,CW]){ /* direkler: çift yan çizgide, 1,55 m, gövde + taban */
+    const f=P(x,NET,0), t=P(x,NET,NETP), w=Math.max(3,5*f.s), bx=x===0?-1:1;
+    ctx.fillStyle='rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(f.x+bx*2,f.y+1,w*2.2,w*.9,0,0,7); ctx.fill();
+    ctx.fillStyle='#3a4a47'; ctx.beginPath(); ctx.ellipse(f.x,f.y,w*1.8,w*.7,0,0,7); ctx.fill();
+    const gr=ctx.createLinearGradient(f.x-w/2,0,f.x+w/2,0); gr.addColorStop(0,'#e3e9e7'); gr.addColorStop(.45,'#ffffff'); gr.addColorStop(1,'#9aa7a4');
+    ctx.fillStyle=gr; ctx.fillRect(f.x-w/2,t.y,w,f.y-t.y); ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.ellipse(t.x,t.y,w/2,w/4,0,0,7); ctx.fill(); }
 }
 function runMark(){ if(!easy&&M.me.tx!=null&&M.s){ const a=P(M.me.x,M.me.y), b=P(M.me.tx,M.me.ty); if(Math.hypot(b.x-a.x,b.y-a.y)>12){ ctx.strokeStyle='rgba(79,184,255,.5)'; ctx.lineWidth=1.5; ctx.setLineDash([2,5]); ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle='rgba(79,184,255,.6)'; ctx.beginPath(); ctx.ellipse(b.x,b.y,4*b.s,1.8*b.s,0,0,7); ctx.fill(); } } /* koşu çizgisi: nereye koştuğun yerde görünür */
   if(M.mark){ const p=P(M.mark.x,M.mark.y), a=1-M.mark.t/.6; ctx.strokeStyle=`rgba(79,184,255,${a})`; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(p.x,p.y,(6+M.mark.t*20)*p.s,(2.6+M.mark.t*9)*p.s,0,0,7); ctx.stroke(); }
@@ -625,6 +643,7 @@ function hitSide(o,who,I,s){ if(I.side!=null) return I.side; const m=who==='me'?
   I.side=(dF>spd*tt&&dB<dF-.3)?bh:fh; return I.side; }
 function handOf(o,who,sx,sz){ const side=(sx-o.x)*(who==='me'?1:-1); return side<-(sz>1.95?.6:.25)?'back':'fore'; }
 function shotClass(type,z,y){ if(type==='smash'||z>1.95) return 'over'; if(type==='drive') return 'drive'; if(Math.abs(y-NET)<2.3&&z>NETH) return 'kill'; return 'low'; }
+const LOOP_CLIP=new Set(['idle','run','chasse_r','chasse_l','fwd','back_r','back_l']);
 function player(o,col,isMe){ const v=isMe?'me':'op'; if(!SPR.ready||!SPR.tint[v]) return playerVec(o,col,isMe);
   const p0=P(o.x,o.y), s=p0.ppm/28, dive=o.dive||0, j=Math.sin(Math.min(1,o.jump||0)*Math.PI)*16*s;
   ctx.fillStyle='rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(p0.x,p0.y,14*s*(1-j/(40*s)),5*s,0,0,7); ctx.fill();
@@ -638,9 +657,13 @@ function player(o,col,isMe){ const v=isMe?'me':'op'; if(!SPR.ready||!SPR.tint[v]
     const fwdv=isMe?-vy:vy, side=isMe?vx:-vx; /* oyuncunun kendi bakışında: ileri = fileye, sağ = raket tarafı */
     clip=Math.abs(side)>Math.abs(fwdv)*1.15?(side>0?'chasse_r':'chasse_l'):fwdv>0?'fwd':(side>=0?'back_r':'back_l'); ph=o.runPh||0; }
   else { clip='idle'; ph=(now*.8+(isMe?0:.5))%1; }
-  const c=meta.clips[clip]||meta.clips.idle, fi=Math.min(c.n-1,Math.floor(ph*c.n)), sx=fi*cw, sy=c.row*ch;
+  /* klip başına 6–10 kare var; 60 fps'te kare kare atlamak takılma gibi görünüyordu. İki komşu kare kesirle
+     üst üste çizilir: geçiş yumuşar, hızlı salınımda hafif hareket bulanıklığı gibi okunur. Yeniden render gerektirmez. */
+  const c=meta.clips[clip]||meta.clips.idle, fx=Math.max(0,ph)*c.n, dong=LOOP_CLIP.has(clip);
+  const fi=Math.min(c.n-1,Math.floor(fx)), fr=fi===c.n-1&&!dong?0:fx-Math.floor(fx), f2=dong?(fi+1)%c.n:Math.min(c.n-1,fi+1), sy=c.row*ch;
   ctx.save(); ctx.translate(p0.x,p0.y-j); ctx.rotate(dive*(o.x<MID?-1:1)*.9+lean);
-  ctx.drawImage(SPR.tint[v],sx,sy,cw,ch,-an[0]*k,-an[1]*k,cw*k,ch*k);
+  ctx.drawImage(SPR.tint[v],fi*cw,sy,cw,ch,-an[0]*k,-an[1]*k,cw*k,ch*k);
+  if(fr>.04&&f2!==fi){ ctx.globalAlpha=fr; ctx.drawImage(SPR.tint[v],f2*cw,sy,cw,ch,-an[0]*k,-an[1]*k,cw*k,ch*k); ctx.globalAlpha=1; }
   if(o.sw>.3&&!reduce){ const m=isMe?1:-1; let P2=POSE[o.shot||'low']; if(o.hand==='back') P2={hit:mirP(P2.hit),fol:mirP(P2.fol)}; /* backhand yayı sol tarafta */ const a0=P2.hit.ua*m-Math.PI/2, a1=P2.fol.ua*m-Math.PI/2; const sh={x:8*s*m,y:-26*s}; for(let q=0;q<3;q++){ ctx.strokeStyle=`rgba(255,255,255,${o.sw*(.5-q*.14)})`; ctx.lineWidth=(5-q*1.2)*s; ctx.beginPath(); ctx.arc(sh.x,sh.y,(28+q*5)*s,Math.min(a0,a1),Math.max(a0,a1)); ctx.stroke(); } }
   ctx.restore(); }
 function playerVec(o,col,isMe){ const p0=P(o.x,o.y), s=p0.ppm/28; const dive=o.dive||0, j=Math.sin(Math.min(1,o.jump||0)*Math.PI)*16*s, p={x:p0.x,y:p0.y-j};
@@ -660,6 +683,44 @@ function playerVec(o,col,isMe){ const p0=P(o.x,o.y), s=p0.ppm/28; const dive=o.d
   ctx.strokeStyle='rgba(233,238,240,.35)'; ctx.lineWidth=.8*s; for(let k=-3;k<=3;k+=2){ ctx.beginPath(); ctx.moveTo(k*1.6*s,-6.5*s); ctx.lineTo(k*1.6*s,6.5*s); ctx.stroke(); } ctx.restore(); ctx.lineCap='butt';
   if(o.sw>.3&&!reduce){ const P2=POSE[o.shot||'low']; const a0=P2.hit.ua*m-Math.PI/2, a1=P2.fol.ua*m-Math.PI/2; for(let k=0;k<3;k++){ ctx.strokeStyle=`rgba(255,255,255,${o.sw*(.5-k*.14)})`; ctx.lineWidth=(5-k*1.2)*s; ctx.beginPath(); ctx.arc(sh.x,sh.y,(28+k*5)*s,Math.min(a0,a1),Math.max(a0,a1)); ctx.stroke(); } }
   ctx.restore(); }
+function satirla(t,x,y,maxw,lh){ const k=t.split(' '); let l='';
+  for(const w of k){ const d=l?l+' '+w:w; if(ctx.measureText(d).width>maxw&&l){ ctx.fillText(l,x,y); y+=lh; l=w; } else l=d; }
+  if(l){ ctx.fillText(l,x,y); y+=lh; } return y; }
+const SHM={s:null,d:[0,1,0],wob:0,wv:0,phi:0,t:0,vx:0,vy:0,vz:0};
+function shuttleModel(s,zz){ const now=performance.now()/1000, dt=Math.min(.05,Math.max(0,now-(SHM.t||now))); SHM.t=now;
+  const sp=Math.hypot(s.vx,s.vy,s.vz)||1e-6, tgt=[-s.vx/sp,-s.vy/sp,-s.vz/sp]; /* etek hızın tersine: mantar önde */
+  const flip=SHM.s!==s||(SHM.vx*s.vx+SHM.vy*s.vy+SHM.vz*s.vz)<0; /* yeni vuruş: hız yön değiştirdi */
+  if(flip&&SHM.s){ SHM.wv=(Math.random()<.5?-1:1)*14; } SHM.s=s; SHM.vx=s.vx; SHM.vy=s.vy; SHM.vz=s.vz;
+  const k=reduce?1:1-Math.exp(-dt/.02); for(let i=0;i<3;i++) SHM.d[i]+=(tgt[i]-SHM.d[i])*k; /* ~20 ms dönüş */
+  const dl=Math.hypot(...SHM.d)||1; SHM.d=SHM.d.map(v=>v/dl);
+  SHM.wv+=(-SHM.wob*260-SHM.wv*18)*dt; SHM.wob+=SHM.wv*dt; if(reduce) SHM.wob=0; /* sönümlü salınım ~80 ms */
+  SHM.phi+=dt*Math.min(40,sp*1.6)*(s.dead?0:1);   /* etek dönüşü: hızla artar */
+  const G=3.1; /* okunurluk büyütmesi: gerçek top 7 cm, ekranda görünsün */
+  let d=SHM.d; const up=Math.abs(d[2])<.9?[0,0,1]:[1,0,0];
+  const cr=(u,v)=>[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]], nr=v=>{const l=Math.hypot(...v)||1; return v.map(q=>q/l);};
+  let e1=nr(cr(d,up)), e2=cr(d,e1);
+  if(SHM.wob){ const c=Math.cos(SHM.wob*.35), sn=Math.sin(SHM.wob*.35); d=nr(d.map((v,i)=>v*c+e1[i]*sn)); e1=nr(cr(d,up)); e2=cr(d,e1); }
+  const W3=(o,a,b2,c3)=>P(s.x+o[0],s.y+o[1],s.z+o[2]), add=(...vs)=>vs.reduce((m,v)=>[m[0]+v[0],m[1]+v[1],m[2]+v[2]],[0,0,0]), mul=(v,k2)=>v.map(q=>q*k2);
+  const L=.066*G, Rt=.032*G, Rb=.012*G, Rc=.0135*G;
+  const ghosts=(!reduce&&sp>18)?Math.min(3,Math.floor(sp/18)):0;
+  for(let gi=ghosts;gi>=0;gi--){ /* hareket bulanıklığı: bir karelik yolun gerisinde soluk kopyalar */
+    const back=gi*(1/60)/(ghosts+1), off=[-s.vx*back,-s.vy*back,-s.vz*back], A=gi?.22/(gi):1;
+    ctx.globalAlpha=A;
+    const ring=(r,along)=>{ const pts=[]; for(let i=0;i<16;i++){ const a2=SHM.phi+i/16*Math.PI*2; pts.push(W3(add(off,mul(d,along),mul(e1,Math.cos(a2)*r),mul(e2,Math.sin(a2)*r)))); } return pts; };
+    const rim=ring(Rt,L), base=ring(Rb,.004*G), band=ring(Rb+(Rt-Rb)*.55,L*.55);
+    const corkC=W3(off), rimC=W3(add(off,mul(d,L)));
+    const corkFront=(d[1]*.6+d[2]*.8)<0; /* etek kameradan uzaklaşıyorsa mantar önde çizilir */
+    const drawCork=()=>{ const pr=Math.max(1.6,Rc*corkC.ppm*1.05); const gr=ctx.createRadialGradient(corkC.x-pr*.35,corkC.y-pr*.35,pr*.1,corkC.x,corkC.y,pr); gr.addColorStop(0,'#fff6e3'); gr.addColorStop(.7,'#f1dcb4'); gr.addColorStop(1,'#c9a978'); ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(corkC.x,corkC.y,pr,0,7); ctx.fill(); };
+    const drawSkirt=()=>{ /* iç yüz (koyu) → 16 tüy (dönüşle açık/gölge) → iplik bağı → ağız kenarı */
+      ctx.fillStyle='rgba(205,210,208,.95)'; ctx.beginPath(); rim.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)); ctx.closePath(); ctx.fill();
+      for(let i=0;i<16;i++){ const j=(i+1)%16, sh=.82+.18*Math.cos(SHM.phi+i/16*Math.PI*2+1.1); const c=Math.round(255*sh);
+        ctx.fillStyle=`rgb(${c},${c},${Math.round(c*.985)})`; ctx.beginPath(); ctx.moveTo(base[i].x,base[i].y); ctx.lineTo(rim[i].x,rim[i].y); ctx.lineTo(rim[j].x,rim[j].y); ctx.lineTo(base[j].x,base[j].y); ctx.closePath(); ctx.fill(); }
+      ctx.strokeStyle='rgba(120,128,126,.45)'; ctx.lineWidth=.7; ctx.beginPath(); for(let i=0;i<16;i+=2){ ctx.moveTo(base[i].x,base[i].y); ctx.lineTo(rim[i].x,rim[i].y); } ctx.stroke(); /* tüy sapları */
+      ctx.strokeStyle='rgba(60,70,90,.55)'; ctx.lineWidth=1; ctx.beginPath(); band.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)); ctx.closePath(); ctx.stroke(); /* iplik bağı */
+      ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=1; ctx.beginPath(); rim.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)); ctx.closePath(); ctx.stroke(); };
+    if(corkFront){ drawSkirt(); drawCork(); } else { drawCork(); drawSkirt(); }
+  }
+  ctx.globalAlpha=1; }
 function shuttle(){ const s=M.s; if(!s) return; const g=P(s.x,s.y,0), p=P(s.x,s.y,s.z);
   /* Derinlik okunabilirliği (yasin, 19 Ekim: "topa gidişi ve gelişini perspektif olarak algılamakta zorlandım"):
      üstten bakışta havadaki top ekranda yukarı kayar, "uzakta" ile "yüksekte" birbirine karışır. Üç ipucu ayırır:
@@ -672,9 +733,11 @@ function shuttle(){ const s=M.s; if(!s) return; const g=P(s.x,s.y,0), p=P(s.x,s.
   ctx.fillStyle=`rgba(0,0,0,${.4/(1+zz*.35)})`; ctx.beginPath(); ctx.ellipse(g.x,g.y,5*g.s*(1+zz*.3),2*g.s*(1+zz*.3),0,0,7); ctx.fill();
   if(zz>.25){ ctx.strokeStyle='rgba(255,255,255,.22)'; ctx.lineWidth=1; ctx.setLineDash([2,4]); ctx.beginPath(); ctx.moveTo(g.x,g.y); ctx.lineTo(p.x,p.y); ctx.stroke(); ctx.setLineDash([]); }
   if(M.trail.length>1){ ctx.globalCompositeOperation='lighter'; for(let i=1;i<M.trail.length;i++){ const a=M.trail[i-1],b=M.trail[i],k=i/M.trail.length; ctx.strokeStyle=(M.flow&&s.from==='me')?`rgba(255,210,58,${k*.9})`:s.super?`rgba(255,120,40,${k*.9})`:s.type==='smash'?`rgba(216,255,90,${k*.8})`:`rgba(255,255,255,${k*.3})`; ctx.lineWidth=(s.super?10:s.type==='smash'?6:2.5)*k*p.s; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); } ctx.globalCompositeOperation='source-over'; }
-  // tüy top mantar ucu öne bakar: yön ekrandaki hız yönü
-  const prev=M.trail.length>1?M.trail[M.trail.length-2]:{x:p.x,y:p.y+1}, ang=Math.atan2(p.y-prev.y,p.x-prev.x)-Math.PI/2;
-  ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(ang); const k=p.s*1.1*(1+zz*.09); /* yükseldikçe kameraya yaklaşır, büyür */ ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.moveTo(-5*k,-9*k); ctx.lineTo(5*k,-9*k); ctx.lineTo(2.6*k,0); ctx.lineTo(-2.6*k,0); ctx.closePath(); ctx.fill(); ctx.beginPath(); ctx.arc(0,1.4*k,2.8*k,0,7); ctx.fillStyle='#ffcf5a'; ctx.fill(); ctx.restore();
+  /* Tüy top (yasin 2026-10-20: "tüytop modeli daha gerçekçi olmalı"). Gerçek ölçüler (BWF Law 2): mantar Ø25–28 mm,
+     16 tüy 62–70 mm, etek ağzı Ø58–68 mm, iki iplik bağı. 3B yön hız vektöründen gelir ve kameraya göre kısalır (eski
+     çizim düz bir ekran üçgeniydi). Vuruştan sonra top ~20 ms'de mantarı öne döner ve ~80 ms sallanır (arastirma §12);
+     etek uçuşta kendi ekseninde döner. Hızlı uçuşta bir kare içindeki yolu soluk kopyalar (hareket bulanıklığı) gösterir. */
+  shuttleModel(s,zz);
   // iniş tahmini: rakibin topu nereye düşecek (oyuncunun okuması için hafif işaret)
   if(s.from==='op'&&!s.dead&&s.landPred&&s.landPred.y>NET&&!(s.landPred.net&&!s.landPred.net.ok)){ const q=P(s.landPred.x,s.landPred.y), rem=Math.max(0,s.landPred.t-s.t), tot=Math.max(.3,s.landPred.t), f=rem/tot;
     /* iniş halkası: top yaklaştıkça büzülen halka, "ne zaman" sorusunu gözle yanıtlar; son 0,35 sn'de dolar */
@@ -737,9 +800,11 @@ function draw(){
     if(!M.s&&!M.between){ ctx.textAlign='center'; ctx.font=`800 18px ${FONT}`; ctx.fillStyle='#ffffff';
       const side=serveSide(M.server)==='R'?'sağ':'sol';
       ctx.fillText(M.server==='me'?`Servis sende, ${side} kareden`:`Rakip ${side} kareden servis atıyor`,W/2,H*.56);
-      if(M.server==='me'){ ctx.font=`600 13px ${FONT}`; ctx.fillStyle='#9dbab3'; ctx.fillText('Yukarı kaydır: yavaş kısa, hızlı uzun servis',W/2,H*.56+(M.serveMsg?48:22)); }
-      if(M.serveMsg){ ctx.fillStyle='#ffd27a'; ctx.fillText(M.serveMsg,W/2,H*.56+26); }
-      if(M.sc[0]+M.sc[1]===0&&M.gorevler){ ctx.fillStyle='rgba(255,210,58,.9)'; ctx.font=`600 12px ${FONT}`; M.gorevler.forEach((g,i)=>ctx.fillText('Görev: '+g.ad,W/2,H*.56+48+i*16)); } }
+      // uzun rakip ipucu ekrandan taşıyordu: satırlara bölünür, altındaki yazılar satır sayısı kadar kayar
+      let yy=H*.56+26;
+      if(M.serveMsg){ ctx.font=`700 14px ${FONT}`; ctx.fillStyle='#ffd27a'; yy=satirla(M.serveMsg,W/2,yy,W*.86,18)+4; }
+      if(M.server==='me'){ ctx.font=`600 13px ${FONT}`; ctx.fillStyle='#9dbab3'; ctx.fillText('Yukarı kaydır: yavaş kısa, hızlı uzun servis',W/2,yy); yy+=22; }
+      if(M.sc[0]+M.sc[1]===0&&M.gorevler){ ctx.fillStyle='rgba(255,210,58,.9)'; ctx.font=`600 12px ${FONT}`; M.gorevler.forEach((g,i)=>ctx.fillText('Görev: '+g.ad,W/2,yy+i*16)); } }
   }
 }
 let last=performance.now(); function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now; update(dt); draw(); requestAnimationFrame(loop); } requestAnimationFrame(loop);

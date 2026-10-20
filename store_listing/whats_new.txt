@@ -1,12 +1,13 @@
 Bu sürümde neler değişti
-• Ekrandaki yazılar azaldı. Her vuruşta isim yazmıyor; yalnız sayı, mükemmel vuruş ve özel anlar yazıyor.
-• Top daha gerçekçi uçuyor. Uzun vuruşlar (clear) eskisi kadar yükseğe çıkmıyor ve daha kısa sürede iniyor.
-• Oyuncu hareketleri gerçek badminton vuruşlarına göre yeniden yapıldı: smaçta yan duruş ve sol kol yukarıda, vuruştan sonra gövde öne döner, file önünde uzanma daha dik gövdeyle, savunmada daha alçak duruş.
+• File yeniden çizildi: ince ağ dokusu, üstte beyaz bant ve yuvarlak direkler. Top çarpınca ağ ve bant birlikte dalgalanıyor.
+• Tüy top artık gerçek bir tüy top gibi: mantar ucu, açılan tüy eteği ve iplik bandı var. Uçarken hep mantar önde gidiyor, vuruştan sonra kısa bir an sallanıp dönüyor, hızlandıkça tüyler dönüyor.
+• Oyuncu animasyonu daha akıcı: kareler arası geçiş yumuşatıldı, takılma hissi azaldı.
+• Maç başındaki uzun rakip ipucu artık ekrandan taşmıyor, iki satıra bölünüyor.
 
 Bunları dene
-1. Bir maç başlat ve 2-3 ralli oyna. Ekranda yazının eskisine göre çok daha seyrek çıktığını görmelisin.
-2. Rakip uzun vuruş yaptığında topun tavana yakın değil, orta yükseklikte süzülüp arka çizgiye indiğini izle.
-3. Smaç atarken kendi oyuncuna bak: vuruştan önce yana dönüp sol kolunu kaldırmalı, vuruştan sonra raket gövdenin önünden sola inmeli.
-4. File önüne düşen topa uzan: sağ ayak öne, gövde dik olmalı.
-5. Uzun bir yazı (ör. sayı sonu mesajı) ekrandan taşmamalı.
+1. Maç başında sarı rakip ipucunu oku. Kenarlardan kesilmemeli, gerekirse iki satır olmalı.
+2. Fileye bak: koyu bir şerit değil, arkasından kort görünen ince bir ağ olmalı. Üstte beyaz bant olmalı.
+3. Topu fileye vur. Ağ ve beyaz bant çarptığı yerden dalgalanmalı.
+4. Uçan topa bak: mantar ucu hep gittiği yöne bakmalı. Smaçta top hızlanınca arkasında hafif iz görmelisin.
+5. Koşarken ve vururken oyuncunun hareketinin eskisinden daha akıcı olduğunu izle.
 Bir şey tuhaf görünürse ekran görüntüsünü gönder.
