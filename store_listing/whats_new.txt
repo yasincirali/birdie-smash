@@ -1,18 +1,17 @@
 Bu sürümde neler değişti
-• File artık katı bir nesne gibi duruyor: rakip ve karşı taraftaki top filenin arkasında görünüyor, filenin önüne çizilmiyor. Filenin zeminde gölgesi var.
-• Nefes göstergesi oyuncunun ayağının altında bir halka. Nefes azaldıkça halka kısalıyor, azalınca turuncuya dönüp "Nefes" yazıyor. Alttaki çubuk artık yalnız "Smaç gücü".
-• Duraklat: sağ üstteki düğmeyle oyunu durdurabilirsin. Menüde Devam et, Ses, Maçı baştan başlat ve Ana menü var. Uygulamadan çıkınca oyun kendiliğinden duruyor.
-• Ana menüye çıksan da maç bekliyor, menüde "Maça devam et" görünüyor.
-• Saha seçimi: Salon, Turnuva, Okul (ahşap) ve Gece. Kariyerde saha basamağa göre geliyor.
-• Kort ekranın daha büyük kısmını kaplıyor; oyun sırasında üstteki başlık gizleniyor.
-• Maç bitince "Ana menü" düğmesi var.
+• Yeni ana menü: logo, Hızlı maç ve Kariyer kartları, büyük Oyna düğmesi. Ayarlar, Ekipman ve Nasıl oynanır ayrı sayfalarda.
+• Kortun iki yanında tribün ve seyirci, reklam panoları, file ucunda yüksek sandalyede baş hakem, karşı uçta servis hakemi var. Sayı bitince baş hakem servisi alan tarafı gösteriyor.
+• Üç servis: yavaş yukarı kaydırırsan backhand kısa servis, aynı duruştan kısa ve sert fiske flick servis, uzun ve hızlı kaydırırsan forehand yüksek servis. Servis hareketi artık topa vurmadan önce görünüyor.
+• Alçak forehand/backhand vuruşlar ve drive'lar yeniden yapıldı: raket önde, kısa hazırlık, kısa takip; tenis gibi büyük savurma yok.
+• File katı bir nesne gibi duruyor, nefes halkası ayağının altında, sağ üstte duraklat düğmesi, saha seçimi, daha büyük kort.
 
 Bunları dene
-1. Maç başlat. Üstte başlık yazısı olmamalı, kort daha büyük görünmeli.
-2. Rakip fileye yaklaştığında filenin arkasında kalmalı, ağın içinden görünmeli.
-3. Birkaç smaç at. Ayağının altındaki halka kısalmalı, azalınca turuncu "Nefes" yazmalı.
-4. Sağ üstteki duraklat düğmesine bas. Oyun durmalı, ses kesilmeli. "Devam et" ile kaldığın yerden sürmeli.
-5. Oyun sırasında ana ekrana çık ve geri gel. Oyun duraklatılmış olmalı.
-6. Duraklat menüsünden "Ana menü"ye geç. Menüde "Maça devam et" çıkmalı ve maç aynı skordan sürmeli.
-7. Menüde her sahayı seçip bir maç aç. Çizgiler ve top her zeminde rahat okunmalı.
+1. Uygulamayı aç. Yeni ana ekran görünmeli; Ayarlar, Ekipman ve Nasıl oynanır'a girip Geri ile dönebilmelisin.
+2. Kariyer kartına dokun. Altında basamak ve 6 parçalı ilerleme çubuğu görünmeli.
+3. Maç başlat. Kortun yanlarında tribün, file ucunda hakem sandalyesi görünmeli.
+4. Servis sende iken yavaşça yukarı kaydır: oyuncu backhand kısa servis atmalı, top fileyi sıyırıp kısa düşmeli.
+5. Aynı duruşta kısa ve sert fiske at: flick servis, top rakibin üstünden dibe gitmeli.
+6. Uzun ve hızlı kaydır: oyuncu yan dönüp forehand yüksek servis atmalı.
+7. Alçak toplarda ve omuz hizasındaki drive'larda oyuncunun hareketine bak; raket önde, savurma kısa olmalı.
+8. Sayı bitince baş hakem kolunu servisi alacak tarafa uzatmalı.
 Bir şey tuhaf görünürse ekran görüntüsünü gönder.
