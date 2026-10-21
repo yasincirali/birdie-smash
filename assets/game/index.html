@@ -59,6 +59,10 @@ canvas{display:block;width:100%;height:100%;touch-action:none;user-select:none;-
 .stat b{color:var(--ink);font-weight:700}
 input[type=range]{width:100%;min-height:44px;accent-color:var(--lime);margin:0}
 [hidden]{display:none!important}
+/* Oyun sırasında başlık gizlenir: ekranın tamamı kort olur (yasin 2026-10-21: oynanabilir alan). Ses ve çıkış duraklat menüsünde. */
+.wrap.oyunda .top{display:none}
+.play.ikincil{background:var(--panel);color:var(--ink);border:1px solid var(--line);font-size:16px;min-height:48px}
+.pz{position:absolute;top:6px;right:max(8px,env(safe-area-inset-right,0px));z-index:2;background:rgba(8,16,17,.7);font-size:14px;letter-spacing:-1px}
 </style>
 
 <div class="wrap">
@@ -98,6 +102,9 @@ input[type=range]{width:100%;min-height:44px;accent-color:var(--lime);margin:0}
       <div class="row"><button class="btn" id="len5" aria-pressed="false">5 sayı (hızlı, ~2 dk)</button><button class="btn" id="len21" aria-pressed="true">21 sayı (resmî)</button><button class="btn" id="len11" aria-pressed="false">11 sayı (kısa)</button><button class="btn" id="len7" aria-pressed="false">7 sayı (hızlı)</button></div>
       <div class="row"><button class="btn" id="mdSerbest" aria-pressed="true">Serbest maç</button><button class="btn" id="mdKariyer" aria-pressed="false">Kariyer</button></div>
       <p class="muted" id="kariyerLine" hidden></p>
+      <div class="row" id="sahaRow" role="group" aria-label="Saha"></div>
+      <p class="muted" id="sahaNot" hidden>Kariyerde saha basamağa göre gelir.</p>
+      <button class="play" id="devam" hidden>Maça devam et</button>
       <button class="play" id="start">Maça başla</button>
       <p class="muted" id="bestLine"></p>
     </div>
@@ -106,6 +113,15 @@ input[type=range]{width:100%;min-height:44px;accent-color:var(--lime);margin:0}
       <div class="big" id="oScore">21 – 0</div>
       <p class="muted" id="oInfo"></p>
       <button class="play" id="again">Bir maç daha</button>
+      <button class="btn" id="overMenu">Ana menü</button>
+    </div>
+    <button class="btn pz" id="pauseBtn" aria-label="Duraklat" hidden><span aria-hidden="true">❚❚</span></button>
+    <div class="layer" id="pause" hidden role="dialog" aria-label="Duraklatıldı">
+      <h2>Duraklatıldı</h2>
+      <div class="big" id="pScore">0 – 0</div>
+      <p class="muted" id="pInfo"></p>
+      <button class="play" id="pDevam">Devam et</button>
+      <div class="row"><button class="btn" id="pSes" aria-pressed="false">Ses açık</button><button class="btn" id="pYeni">Maçı baştan başlat</button><button class="btn" id="pMenu">Ana menü</button></div>
     </div>
   </div>
 </div>
@@ -121,7 +137,7 @@ function save(){ try{ localStorage.setItem('tuytop_v2',JSON.stringify(best)); }c
 
 /* ---- BWF ölçüleri (metre). Kort 13,40 x 6,10; tek kişilik yan çizgi 0,46 içeride (5,18 genişlik); kısa servis çizgisi fileden 1,98.
    Tek kişilikte servis karesinin arka sınırı dip çizgidir. File ortada 1,524, direklerde 1,55. ---- */
-const L=13.4, CW=6.1, NET=L/2, SL=.46, SR=CW-.46, SSL=1.98, NETH=1.524, NETP=1.55, MID=CW/2, MG=.9;
+const L=13.4, CW=6.1, NET=L/2, SL=.46, SR=CW-.46, SSL=1.98, NETH=1.524, NETP=1.55, MID=CW/2, MG=.7; /* MG: kort çevresinde çizilen pay. 0,9 → 0,7 (yasin 2026-10-21: "oynanabilir alanı artırmalıyız"): kort ekranın daha çoğunu kaplar */
 /* ---- Tüy top fiziği: yerçekimi + hızın karesiyle sürüklenme. Son hız ~6,7 m/sn (yaklaşık, ölçüm literatürü).
    Bu yüzden top hızlı çıkar, çabuk yavaşlar ve neredeyse dik düşer. ---- */
 const GR=9.81, VT=6.7, KD=GR/(VT*VT), DT=1/240;
@@ -259,7 +275,7 @@ function punch(z){ if(!reduce) zoom=Math.max(zoom,z); }
    doldurmaya yeten sapma kullanılır, fazlası boşluk olarak üst/alta (ya da yanlara) eşit dağılır. */
 const GEO_R=1.045; let GEO_K=null;
 function geo(){ if(GEO_K&&GEO_K.W===W&&GEO_K.H===H) return GEO_K.g;
-  const kxF=W*.92/(CW+2*MG), kyF=H*.86/(L+2*MG), R=Math.max(GEO_R*.9,Math.min(GEO_R*1.1,kyF/kxF));
+  const kxF=W*.97/(CW+2*MG), kyF=H*.9/(L+2*MG), R=Math.max(GEO_R*.9,Math.min(GEO_R*1.1,kyF/kxF));
   let kx=kxF, ky=kx*R; if(ky>kyF){ ky=kyF; kx=ky/R; }
   const ch=ky*(L+2*MG), cw=kx*(CW+2*MG), top=(H-ch)*(.09/.14);
   GEO_K={W,H,g:{top,bot:top+ch,ch,cw}}; return GEO_K.g; }
@@ -345,9 +361,19 @@ gearStats();
    güç yok, çünkü rakip oyunlarda en çok şikâyet buydu. Serbest maç eskisi gibi rastgele tarz. */
 const KARIYER=[{stil:'file',g:.88,yer:'Mahalle salonu'},{stil:'smasci',g:.94,yer:'Okul turnuvası'},{stil:'duvar',g:1,yer:'İl şampiyonası'},
   {stil:'file',g:1.07,yer:'Bölge finali'},{stil:'smasci',g:1.13,yer:'Ulusal lig'},{stil:'duvar',g:1.2,yer:'Şampiyonlar kupası'}];
+/* Saha seçimi (yasin 2026-10-21). Yalnız görünüm değişir, fizik aynı. Kariyerde saha basamağın mekânından gelir
+   (mahalle/okul = ahşap, il ve bölge = salon, ulusal ve kupa = turnuva); serbest maçta oyuncunun seçimi. Her zeminde
+   beyaz çizgi ve beyaz top okunur kalsın diye zeminler orta tonda tutuldu. */
+const SAHA={salon:{ad:'Salon',kort:'#23725f',tek:'#278066',cevre:'#1b4f45',ust:'#13262a'},
+  turnuva:{ad:'Turnuva',kort:'#1f7a55',tek:'#22845c',cevre:'#1c3d6b',ust:'#101d33'},
+  okul:{ad:'Okul (ahşap)',kort:'#a4703f',tek:'#ab7744',cevre:'#7c5230',ust:'#21170f',tahta:true},
+  park:{ad:'Gece',kort:'#2f5674',tek:'#335d7d',cevre:'#22394c',ust:'#0c1420'}};
+const KARIYER_SAHA=['okul','okul','salon','salon','turnuva','turnuva'];
+let saha='salon'; try{ const v=localStorage.getItem('tuytop_saha'); if(SAHA[v]) saha=v; }catch(e){}
+function SAHA_T(){ return SAHA[(M&&M.saha)||saha]; }
 let kariyerModu=false;
 function kariyerRakip(i){ const k=KARIYER[i], b=STIL[k.stil]; return {...b,hiz:b.hiz*k.g,hata:b.hata/k.g,ad:b.ad,kariyer:i}; }
-function kariyerYaz(){ const el=document.getElementById('kariyerLine'), i=Math.min(best.kariyer||0,KARIYER.length-1); el.hidden=!kariyerModu;
+function kariyerYaz(){ const sn=document.getElementById('sahaNot'); if(sn) sn.hidden=!kariyerModu; const el=document.getElementById('kariyerLine'), i=Math.min(best.kariyer||0,KARIYER.length-1); el.hidden=!kariyerModu;
   if(best.kariyer>=KARIYER.length) el.textContent='Kariyer tamam: Şampiyon formasını Ekipman › Forma bölümünden seçebilirsin. Son basamağı yeniden oynuyorsun.';
   else el.textContent=`Basamak ${i+1}/${KARIYER.length} · ${KARIYER[i].yer} · Rakip: ${STIL[KARIYER[i].stil].ad}`; }
 const STIL={
@@ -372,6 +398,7 @@ function gorevKontrol(){ if(!M||!M.gorevler) return; M.gorevler.forEach(g=>{ if(
   setTimeout(()=>{ txt('Görev tamam: '+g.ad,W/2,H*.3,'#ffd23a',22,3); hap('flow'); [0,4,7,12,16].forEach((k,i)=>tone(660*Math.pow(2,k/12),.18,'triangle',.05,i*.07)); burst(W/2,H*.3,'#ffd23a',16,220,'spark',80); },250); } }); }
 function newMatch(){ M={me:{x:MID,y:L-2.2,sw:0,dive:0,jump:0,prep:0,vx:0,vy:0,tx:null,ty:null,stun:0},op:{x:MID,y:2.2,sw:0,dive:0,jump:0},sc:[0,0],server:'me',rally:0,maxRally:0,energy:0,nefes:1,tepeden:0,s:null,trail:[],smashes:0,perfects:0,outsLeft:0,between:false,wait:0,serveFaults:0};
   M.stil=kariyerModu?kariyerRakip(Math.min(best.kariyer||0,KARIYER.length-1)):STIL[Object.keys(STIL)[Math.floor(Math.random()*3)]]; M.gorevler=gorevSec(); M.gorevBitti=0;
+  M.saha=kariyerModu?KARIYER_SAHA[Math.min(best.kariyer||0,KARIYER.length-1)]:saha;
   mode='play'; swipe.erkenN=0; M.pop=[0,0]; M.cams=[]; M.marks=[]; M.hawk=null; M.flow=false; M.inWin=false; crowdStart(); M.clock=0; M.opHitAt=-9; M.split=false; M.splitPending=false; M.deceive=false; M.pstreak=0; M.kills=0; M.saves=0; M.deceives=0; M.splits=0; setupServe(); }
 /* Servis yeri: sunucunun skoru çiftse sağ, tekse sol servis karesi. Ben fileye bakıyorum (yukarı): benim sağım ekranın sağı. Rakibin sağı ekranın solu. */
 function serveSide(who){ const even=M.sc[who==='me'?0:1]%2===0; return who==='me'?(even?'R':'L'):(even?'R':'L'); }
@@ -407,6 +434,17 @@ function startFlight(from,vx,vy,vz,hp,isServe,type,isSuper){
 /* Karşılayan için yolu önceden hesapla: baş üstünde alabiliyorsa yüksekte (smaç şansı), değilse yere düşmeden en alçak noktada. */
 /* Nefes (kondisyon, Badminton Clash'ten): smaç, sıçrama ve uzanma nefes yakar; nefes düşünce koşu yavaşlar ve smaç zayıflar.
    Sayılar arasında hızla, ralli içinde yavaş dolar. Amaç vuruş seçimine bedel vermek: her top smaçlanmaz, clear ile nefes alınır. */
+/* Nefes göstergesi (yasin 2026-10-21: "exhaust bar ne şekilde gözükmeli"). Eskiden ekranın en altında etiketsiz 4 px
+   çizgiydi; oyuncu ralli sırasında oraya bakmıyor. Aksiyon oyunlarındaki gibi (dayanıklılık halkası) gösterge oyuncunun
+   ayağının altına, gözün zaten olduğu yere taşındı: nefes azaldıkça halka iki uçtan öne doğru kısalır. Doluyken görünmez;
+   %40 altında turuncuya döner ve yanına "Nefes" yazılır (anlam yalnız renkle verilmez), %20 altında nabız gibi atar. */
+function nefesHalka(){ if(!M||mode!=='play') return; const n=M.nefes; M.halkaA=Math.max(0,Math.min(1,(M.halkaA||0)+(n<.985?1:-1)*.06)); const A=M.halkaA; if(A<=0) return;
+  const p=P(M.me.x,M.me.y), s=p.ppm/28, rx=22*s, ry=9*s, dusuk=n<.4, kritik=n<.2, nab=kritik&&!reduce?.55+.45*Math.sin(performance.now()/110):1;
+  ctx.save(); ctx.globalAlpha=A; ctx.lineCap='round';
+  ctx.lineWidth=Math.max(3,4.5*s); ctx.strokeStyle='rgba(8,16,17,.55)'; ctx.beginPath(); ctx.ellipse(p.x,p.y,rx,ry,0,0,7); ctx.stroke();
+  if(n>.01){ ctx.strokeStyle=dusuk?`rgba(255,159,122,${nab})`:'#7ad7ff'; ctx.lineWidth=Math.max(2.5,3.5*s); ctx.beginPath(); ctx.ellipse(p.x,p.y,rx,ry,0,Math.PI/2-n*Math.PI,Math.PI/2+n*Math.PI); ctx.stroke(); }
+  if(dusuk){ ctx.font=`800 ${Math.max(11,12*s)}px ${FONT}`; ctx.textAlign='left'; ctx.lineWidth=3; ctx.lineJoin='round'; ctx.strokeStyle='rgba(8,16,17,.85)'; ctx.strokeText('Nefes',p.x+rx+6,p.y+4); ctx.fillStyle='#ff9f7a'; ctx.fillText('Nefes',p.x+rx+6,p.y+4); }
+  ctx.restore(); }
 function nefesF(){ return M.nefes<.4?.8+.5*M.nefes:1; }
 function yor(v){ M.nefes=Math.max(0,M.nefes-v); if(M.nefes<.25&&!M.nefesUyari){ M.nefesUyari=true; const p=P(M.me.x,M.me.y); txt('Nefes al: clear at',p.x,p.y+40,'#7ad7ff',16,2); } if(M.nefes>.5) M.nefesUyari=false; }
 function meSpd(){ return 5.2*GS.kosu*nefesF()*(M.split?1.3:1); }
@@ -550,7 +588,7 @@ function endMatch(){ mode='over'; crowdLevel(.004); underwater(false); const won
   document.getElementById('oTitle').textContent=(won?'Kazandın':'Bu sefer rakip aldı')+(kNot?' · '+kNot:'');
   document.getElementById('oScore').textContent=`${M.sc[0]} – ${M.sc[1]}`;
   document.getElementById('oInfo').textContent=`Rakip ${M.stil.ad} · Görev ${M.gorevBitti}/3 (${M.gorevler.filter(g=>g.bitti).map(g=>g.ad).join(', ')||'yok'}) · En uzun ralli ${M.maxRally} · ${M.smashes} smaç · ${M.kills} file vuruşu · ${M.perfects} mükemmel · ${M.deceives} aldatma · ${M.splits} split step · ${M.tepeden} tepeden · ${M.saves} uzanma · ${M.outsLeft} kez dışarıyı bıraktın`;
-  over.hidden=false; if(won){ cheer(.18); for(let k=0;k<6;k++) setTimeout(()=>burst(W*(.15+Math.random()*.7),H*(.2+Math.random()*.3),['#d8ff5a','#ff7a6b','#7ad7ff'][k%3],30,300,'spark',120),k*130); } }
+  over.hidden=false; paused=false; pauseL.hidden=true; ekran(); if(won){ cheer(.18); for(let k=0;k<6;k++) setTimeout(()=>burst(W*(.15+Math.random()*.7),H*(.2+Math.random()*.3),['#d8ff5a','#ff7a6b','#7ad7ff'][k%3],30,300,'spark',120),k*130); } }
 
 /* Oyuncu hareketi: hedefe ivmeyle koşar (≈14 m/s²), hedefe yaklaşınca frenler. Hızlı yön değişiminde ayakkabı gıcırtısı ve toz. */
 function runMe(d){ const o=M.me; if(!M.s){ o.vx=o.vy=0; return; } /* servis atılana kadar iki oyuncu da yerinde durur (kural) */ if(o.stun>0){ o.stun-=d; o.vx*=.8; o.vy*=.8; return; }
@@ -647,8 +685,9 @@ function rr(x,y,w,h,r){ ctx.beginPath(); ctx.roundRect?ctx.roundRect(x,y,w,h,r):
 function line(x1,y1,x2,y2,w=1.6,col='rgba(255,255,255,.85)'){ const a=P(x1,y1),b=P(x2,y2); ctx.strokeStyle=col; ctx.lineWidth=w<0?Math.max(1.2,LW*(a.ppm+b.ppm)/2)*-w:w; /* w<0: gerçek 40 mm genişliğin katı */ ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
 function quad(x1,y1,x2,y2,fill){ const c=[P(x1,y1),P(x2,y1),P(x2,y2),P(x1,y2)]; ctx.beginPath(); c.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.closePath(); ctx.fillStyle=fill; ctx.fill(); }
 function court(){
-  const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#13262a'); bg.addColorStop(1,'#0c1719'); ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
-  quad(-MG*.7,-MG*.7,CW+MG*.7,L+MG*.7,'#1b4f45'); quad(0,0,CW,L,'#23725f'); quad(SL,0,SR,L,'#278066');
+  const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,SAHA_T().ust); bg.addColorStop(1,'#0c1719'); ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  const T=SAHA_T(); quad(-MG*.85,-MG*.85,CW+MG*.85,L+MG*.85,T.cevre); quad(0,0,CW,L,T.kort); quad(SL,0,SR,L,T.tek);
+  if(T.tahta){ ctx.strokeStyle='rgba(60,30,10,.10)'; ctx.lineWidth=1; ctx.beginPath(); for(let x=-MG*.85;x<=CW+MG*.85;x+=.42){ const a=P(x,-MG*.85), b=P(x,L+MG*.85); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); } ctx.stroke(); } /* ahşap: boyuna parke şeritleri */
   // servis bekleniyorsa geçerli servis karesi parlar
   if(M&&!M.s&&M.serveBox){ const b=M.serveBox; quad(b.x[0],b.y[0],b.x[1],b.y[1],'rgba(216,255,90,.14)'); }
   // çizgiler: çift dış yan çizgi, tek kişilik yan çizgi, dip çizgi, çiftler uzun servis, kısa servis, orta çizgi
@@ -656,6 +695,11 @@ function court(){
   if(M&&M.marks) for(const m of M.marks){ const p=P(m.x,m.y), a=Math.max(0,1-m.t/3); ctx.fillStyle=`rgba(10,30,26,${.45*a})`; ctx.beginPath(); ctx.ellipse(p.x,p.y,(m.big?9:5)*p.s,(m.big?4:2.4)*p.s,0,0,7); ctx.fill();
     if(m.t<.5){ ctx.strokeStyle=`rgba(255,255,255,${(.5-m.t)*1.6})`; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(p.x,p.y,(8+m.t*80)*p.s,(3.5+m.t*35)*p.s,0,0,7); ctx.stroke(); }
     if(m.big){ ctx.strokeStyle=`rgba(216,255,90,${.6*a})`; ctx.lineWidth=1.5; m.cr.forEach(r=>{ ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x+Math.cos(r)*18*p.s,p.y+Math.sin(r)*8*p.s); ctx.stroke(); }); } }
+}
+/* Çizim sırası (yasin 2026-10-21: "topu ve oyuncuyu filenin üstünde gibi çizdiriyor"). Kamera benim arkamda; file
+   zeminle birlikte çizilince rakip ve karşı yarıdaki top filenin ÖNÜNDE görünüyordu. Artık ressam sırası: zemin →
+   karşı yarıdaki her şey (rakip, top, gölgesi) → file → benim yarım. File yarı saydam olduğu için arkası seçilir. */
+function netDraw(){
   /* File (yasin 2026-10-20: "file modeli daha gerçekçi olmalı"). Gerçek ölçüler (BWF Law 1): ağ koyu renkli ince
      örgü, 760 mm derin, üst kenarı 1,524 m (ortada) – 1,55 m (direkte); üstte 75 mm beyaz bant kordonu sarar; ağın
      altı ile zemin arası boş. Eski çizim ağı zemine kadar uzanan seyrek beyaz ızgaraydı. Esneme (NETW) aynen kalır;
@@ -664,9 +708,14 @@ function court(){
   const NCOL=64, NROW=12, NDEP=.76, TAPE=.075;
   const lim=x=>NETH+(NETP-NETH)*Math.abs(x-MID)/MID;
   const npt=(x,z)=>P(x,NET+(act?netAt(x,z)*1.8:0),z); /* 1,8: perspektif esnemeyi yatırır, gözle okunsun diye çizimde büyütülür; fizik değişmez */
-  { /* gölge: üstten-soldan ışıkla ağın zemindeki yumuşak izi */
-    const s0=P(0,NET+.35,0), s1=P(CW,NET+.35,0), s2=P(CW,NET+.05,0), s3=P(0,NET+.05,0);
-    ctx.fillStyle='rgba(0,0,0,.10)'; ctx.beginPath(); ctx.moveTo(s0.x,s0.y); ctx.lineTo(s1.x,s1.y); ctx.lineTo(s2.x,s2.y); ctx.lineTo(s3.x,s3.y); ctx.closePath(); ctx.fill(); }
+  { /* gölge: salon ışığı tepeden ve biraz karşı taraftan. Ağ 0,76–1,55 m yüksekte, gölgesi tabana değmez: fileden
+       ~0,3 m bize doğru başlayıp ~0,9 m'de biten, kenarları yumuşak bir bant (ağın altı boş, o yüzden fileye yapışık değil).
+       Direklerin gölgesi aynı yöne uzar; böylece file zemine oturan katı bir nesne gibi okunur. */
+    const y0=NET+.22, y1=NET+.95, a0=P(0,y0), a1=P(CW,y0), b0=P(0,y1), b1=P(CW,y1);
+    const g=ctx.createLinearGradient(0,a0.y,0,b0.y); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(.35,'rgba(0,0,0,.16)'); g.addColorStop(.7,'rgba(0,0,0,.12)'); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(a0.x,a0.y); ctx.lineTo(a1.x,a1.y); ctx.lineTo(b1.x,b1.y); ctx.lineTo(b0.x,b0.y); ctx.closePath(); ctx.fill();
+    const bnd=P(0,(y0+y1)/2), bndR=P(CW,(y0+y1)/2); ctx.strokeStyle='rgba(0,0,0,.18)'; ctx.lineWidth=Math.max(1,1.4*bnd.s); ctx.beginPath(); ctx.moveTo(bnd.x,bnd.y-2*bnd.s); ctx.lineTo(bndR.x,bndR.y-2*bnd.s); ctx.stroke(); /* bant gölgesi: ince koyu çizgi */
+    for(const x of [0,CW]){ const f=P(x,NET,0), t=P(x,NET+1.1,0); ctx.strokeStyle='rgba(0,0,0,.22)'; ctx.lineWidth=Math.max(2,4*f.s); ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(f.x,f.y); ctx.lineTo(t.x,t.y); ctx.stroke(); ctx.lineCap='butt'; } }
   { /* ağ gövdesi: hafif koyu dolgu (örgü yoğunluğu) + ince örgü çizgileri */
     const top=[],bot=[]; for(let i=0;i<=NCOL;i++){ const x=i/NCOL*CW, t=lim(x)-TAPE; top.push(npt(x,t)); bot.push(npt(x,lim(x)-NDEP)); }
     ctx.fillStyle='rgba(14,20,24,.22)'; ctx.beginPath(); ctx.moveTo(top[0].x,top[0].y); for(const q of top) ctx.lineTo(q.x,q.y); for(let i=bot.length-1;i>=0;i--) ctx.lineTo(bot[i].x,bot[i].y); ctx.closePath(); ctx.fill();
@@ -844,7 +893,7 @@ function swipeTrail(){ const tr=swipe.trail, now=performance.now(); if(tr.length
   ctx.globalCompositeOperation='source-over'; ctx.lineCap='butt'; }
 function hawkEye(h){ const cx=W/2, cy=H*.22, R=74, e=Math.min(1,h.t/.18), k=1+2.7*Math.pow(e-1,3)+1.7*Math.pow(e-1,2), fade=h.t>1.25?1-(h.t-1.25)/.25:1;
   ctx.save(); ctx.globalAlpha=Math.max(0,fade); ctx.translate(cx,cy); ctx.scale(k,k);
-  ctx.beginPath(); ctx.arc(0,0,R,0,7); ctx.fillStyle='#23725f'; ctx.fill(); ctx.save(); ctx.clip();
+  ctx.beginPath(); ctx.arc(0,0,R,0,7); ctx.fillStyle=SAHA_T().kort; ctx.fill(); ctx.save(); ctx.clip();
   const S=300; /* 1 m = 300 px */ const lx=v=>(v-h.x)*S, ly=v=>(v-h.y)*S;
   const b=sinir(h.serve), lw=LW*S; ctx.fillStyle='#ffffff'; /* çizgi alanın içindedir: dış kenar sınırda, 40 mm içeri doğru */
   ctx.fillRect(lx(b.x[0]),-R,lw,2*R); ctx.fillRect(lx(b.x[1])-lw,-R,lw,2*R); ctx.fillRect(-R,ly(b.y[0]),2*R,lw); ctx.fillRect(-R,ly(b.y[1])-lw,2*R,lw);
@@ -859,7 +908,8 @@ function draw(){
   if(zoom>1.001&&M&&M.s){ const c=P(M.s.x,M.s.y,M.s.z); ctx.translate(c.x,c.y); ctx.scale(zoom,zoom); ctx.translate(-c.x,-c.y); }
   court();
   if(M&&mode==='play') runMark();
-  if(M){ if(M.s&&M.s.y<NET){ player(M.op,'#ff7a6b',false); shuttle(); player(M.me,GS.forma.renk,true); } else { player(M.op,'#ff7a6b',false); player(M.me,GS.forma.renk,true); shuttle(); } }
+  if(M){ const uzak=M.s&&M.s.y<NET; player(M.op,'#ff7a6b',false); if(uzak) shuttle(); netDraw(); nefesHalka(); player(M.me,GS.forma.renk,true); if(!uzak) shuttle(); }
+  else netDraw();
   for(const w of waves){ const e=1-Math.pow(1-w.t,3); ctx.globalAlpha=(1-w.t)*.8; ctx.strokeStyle=w.col; ctx.lineWidth=5*(1-w.t)+1; ctx.beginPath(); ctx.ellipse(w.x,w.y,w.max*e,w.max*e*.5,0,0,7); ctx.stroke(); } ctx.globalAlpha=1;
   for(const p of parts){ const a=Math.max(0,1-p.t/p.life); ctx.globalAlpha=a; ctx.fillStyle=p.col;
     if(p.kind==='feather'){ ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.beginPath(); ctx.ellipse(0,0,p.r*.35,p.r,0,0,7); ctx.fill(); ctx.restore(); }
@@ -876,12 +926,15 @@ function draw(){
     for(const c of M.cams){ if(c.t<0) continue; const a=1-c.t/.5; ctx.globalCompositeOperation='lighter'; const g=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,10); g.addColorStop(0,`rgba(255,255,255,${a})`); g.addColorStop(1,'rgba(255,255,255,0)'); ctx.fillStyle=g; ctx.fillRect(c.x-10,c.y-10,20,20); ctx.globalCompositeOperation='source-over'; }
     if(M.hawk) hawkEye(M.hawk);
     ctx.fillStyle=M.server==='me'?GS.forma.renk:'#ff7a6b'; ctx.beginPath(); ctx.arc(M.server==='me'?W/2-52:W/2+52,25,3.5,0,7); ctx.fill();
-    ctx.font=`600 12px ${FONT}`; ctx.fillStyle='#9dbab3'; ctx.textAlign='left'; ctx.fillText(`Ralli ${M.rally}`,12,26); ctx.font=`600 11px ${FONT}`; ctx.fillStyle='rgba(255,210,58,.9)'; ctx.fillText(`Görev ${M.gorevBitti}/3`,12,42); ctx.textAlign='right'; ctx.fillText(`${target} sayı · ${M.stil.ad}`,W-12,26);
-    const bw=W-24; rr(12,H-25,bw,4,2); ctx.fillStyle='rgba(255,255,255,.1)'; ctx.fill(); rr(12,H-25,bw*M.nefes,4,2); ctx.fillStyle=M.nefes<.4?'#ff9f7a':'#7ad7ff'; ctx.fill(); /* nefes çubuğu: enerjinin üstünde ince, düşünce turuncu */
-    rr(12,H-16,bw,6,3); ctx.fillStyle='rgba(255,255,255,.12)'; ctx.fill(); if(M.energy>0){ rr(12,H-16,bw*M.energy,6,3); ctx.fillStyle=M.energy>=1?'#ff8a3c':'#d8ff5a'; ctx.fill(); }
-    if(M.energy>=1){ ctx.fillStyle='#ff8a3c'; ctx.textAlign='left'; ctx.font=`700 12px ${FONT}`; ctx.fillText('Sıçrayarak smaç hazır: baş üstü topu hızlı kes',12,H-31); }
-    if(M.nefes<.4){ ctx.fillStyle='#ff9f7a'; ctx.textAlign='right'; ctx.font=`700 12px ${FONT}`; ctx.fillText('Nefes',W-12,H-31); }
-    else if(M.sc[0]+M.sc[1]<2&&M.s){ ctx.fillStyle='#9dbab3'; ctx.textAlign='center'; ctx.font=`600 12px ${FONT}`; ctx.fillText(easy?'Top parlayınca kaydır: yön ve güç senin':'Dokun: oraya koş · Top parlayınca kaydır',W/2,H-34); }
+    ctx.font=`600 12px ${FONT}`; ctx.fillStyle='#9dbab3'; ctx.textAlign='left'; ctx.fillText(`Ralli ${M.rally}`,12,26); ctx.font=`600 11px ${FONT}`; ctx.fillStyle='rgba(255,210,58,.9)'; ctx.fillText(`Görev ${M.gorevBitti}/3`,12,42); ctx.fillStyle='#9dbab3'; ctx.fillText(`${target} sayı · ${M.stil.ad}`,12,57); /* sağ üst köşe duraklat düğmesinin */
+    { /* Smaç gücü çubuğu: altta tek, etiketli. Nefes artık oyuncunun ayağında (nefesHalka). */
+      const dol=M.energy>=1, lab=dol?'Sıçrayarak smaç hazır':'Smaç gücü'; ctx.font=`800 12px ${FONT}`; ctx.textAlign='left'; ctx.textBaseline='middle';
+      const lw=ctx.measureText(lab).width, bx=12+lw+10, bw=Math.max(40,W-12-bx), by=H-17;
+      ctx.fillStyle=dol?'#ff8a3c':'#cfe3dc'; ctx.fillText(lab,12,by+4);
+      rr(bx,by,bw,8,4); ctx.fillStyle='rgba(255,255,255,.12)'; ctx.fill();
+      if(M.energy>0){ rr(bx,by,bw*Math.min(1,M.energy),8,4); ctx.fillStyle=dol?`rgba(255,138,60,${reduce?1:.75+.25*Math.sin(performance.now()/160)})`:'#d8ff5a'; ctx.fill(); }
+      ctx.textBaseline='alphabetic'; }
+    if(M.sc[0]+M.sc[1]<2&&M.s){ ctx.fillStyle='#9dbab3'; ctx.textAlign='center'; ctx.font=`600 12px ${FONT}`; ctx.fillText(easy?'Top parlayınca kaydır: yön ve güç senin':'Dokun: oraya koş · Top parlayınca kaydır',W/2,H-30); }
     if(!M.s&&!M.between){ /* servis bilgisi: yazılar kortun ve oyuncunun üstüne çıplak yazılınca okunmuyordu (yeşil üstüne gri).
          Tek koyu kartta toplanır; kart fileden hemen sonra başlar, satır sayısına göre boy alır. */
       const side=serveSide(M.server)==='R'?'sağ':'sol', bas=M.server==='me'?`Servis sende, ${side} kareden`:`Rakip ${side} kareden servis atıyor`;
@@ -898,7 +951,7 @@ function draw(){
       satirlar.forEach(q=>{ yy+=q.lh; ctx.font=q.font; ctx.fillStyle=q.col; ctx.fillText(q.t,W/2,yy-5); }); }
   }
 }
-let last=performance.now(); function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now; update(dt); draw(); requestAnimationFrame(loop); } requestAnimationFrame(loop);
+let last=performance.now(); function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now; if(!paused) update(dt); draw(); requestAnimationFrame(loop); } requestAnimationFrame(loop);
 
 /* ---- giriş ---- */
 /* Giriş: parmak izi tutulur; her harekette son parça topun ekrandaki yeriyle kesişiyor mu diye bakılır. */
@@ -937,12 +990,36 @@ cv.addEventListener('pointerup',e=>{ swooshStop(); if(!swipe.on||!M) return; swi
   else if(!swipe.hit&&M.s&&!M.s.dead&&M.s.from==='op'&&!hitWindow()&&Math.hypot(q.x-swipe.x0,q.y-swipe.y0)>60&&swipe.erkenN<3){ swipe.erkenN++; const p=P(M.me.x,M.me.y); txt('Erken: top parlayınca kaydır',p.x,p.y-70,'#ffd27a',16,2); } /* maç başına en çok 3 kez */
   else if(easy&&M.s&&!swipe.hit&&!hitWindow()&&Math.hypot(q.x-swipe.x0,q.y-swipe.y0)<18&&now-swipe.t0<250){ runTo(q.x,q.y); M.me.manualT=.7; } /* Kolay'da yalnız kısa, temiz bir dokunuş yer değiştirir; 0,7 sn sonra yardım geri alır */ });
 cv.addEventListener('pointercancel',()=>{ swooshStop(); swipe.on=false; if(M){ M.me.prep=0; M.preview=null; } });
-const menu=document.getElementById('menu'), over=document.getElementById('over');
-function start(){ menu.hidden=true; over.hidden=true; newMatch(); tone(660,.08,'triangle',.06); }
+const menu=document.getElementById('menu'), over=document.getElementById('over'), pauseL=document.getElementById('pause'), pauseBtn=document.getElementById('pauseBtn'), wrapEl=document.querySelector('.wrap');
+/* Duraklat / devam (yasin 2026-10-21: "resume menü olmalı"). paused iken update() çalışmaz, çizim donar, ses susar.
+   Uygulama arka plana geçince (arama, bildirim, ana ekran) kendiliğinden duraklar; dönünce oyuncu "Devam et"e basar,
+   top bir anda üstüne düşmez. Ana menüye çıkınca maç bekletilir, menüde "Maça devam et" görünür. */
+let paused=false;
+function ekran(){ const oyunda=!!M&&mode==='play'&&menu.hidden; wrapEl.classList.toggle('oyunda',oyunda); pauseBtn.hidden=!(oyunda&&!paused); const bek=!!(M&&mode==='play'&&paused&&!menu.hidden), st=document.getElementById('start'); document.getElementById('devam').hidden=!bek; st.classList.toggle('ikincil',bek); st.textContent=bek?'Yeni maç başlat':'Maça başla'; } /* bekleyen maç varken tek birincil düğme Devam olsun */
+function duraklat(){ if(!M||mode!=='play'||paused||!menu.hidden) return; paused=true; swooshStop(); swipe.on=false; M.preview=null; M.me.prep=0;
+  document.getElementById('pScore').textContent=`${M.sc[0]} – ${M.sc[1]}`; document.getElementById('pInfo').textContent=`${target} sayı · Rakip ${M.stil.ad}`+(M.stil.kariyer!=null?` · ${KARIYER[M.stil.kariyer].yer}`:'');
+  pauseL.hidden=false; try{ AC&&AC.suspend(); }catch(e){} ekran(); setTimeout(()=>document.getElementById('pDevam').focus(),0); }
+function devamEt(){ if(!paused) return; paused=false; pauseL.hidden=true; menu.hidden=true; last=performance.now(); try{ AC&&AC.resume(); }catch(e){} ekran(); }
+function anaMenu(){ pauseL.hidden=true; over.hidden=true; menu.hidden=false; if(!(M&&mode==='play')){ paused=false; } kariyerYaz(); ekran(); }
+function start(){ menu.hidden=true; over.hidden=true; pauseL.hidden=true; paused=false; try{ AC&&AC.resume(); }catch(e){} newMatch(); ekran(); tone(660,.08,'triangle',.06); }
+pauseBtn.addEventListener('click',duraklat);
+document.getElementById('pDevam').addEventListener('click',devamEt);
+document.getElementById('devam').addEventListener('click',devamEt);
+document.getElementById('pYeni').addEventListener('click',start);
+document.getElementById('pMenu').addEventListener('click',anaMenu);
+document.getElementById('overMenu').addEventListener('click',()=>{ M=null; mode='menu'; anaMenu(); });
+document.getElementById('pSes').addEventListener('click',()=>document.getElementById('mute').click());
+document.addEventListener('visibilitychange',()=>{ if(document.hidden) duraklat(); });
+addEventListener('pagehide',duraklat); /* blur bilerek yok: WebView klavye/izin penceresinde de blur atar, oyun boşuna durur */
+/* Saha seçici: SAHA tablosundan üretilir */
+{ const row=document.getElementById('sahaRow'); for(const id in SAHA){ const b=document.createElement('button'); b.className='btn'; b.type='button'; b.dataset.saha=id; b.setAttribute('aria-pressed',id===saha);
+    b.innerHTML=`<span class="sw" style="display:inline-block;vertical-align:-2px;margin-right:6px;background:${SAHA[id].kort};box-shadow:0 0 0 3px ${SAHA[id].cevre}"></span>${SAHA[id].ad}`;
+    b.addEventListener('click',()=>{ saha=id; try{ localStorage.setItem('tuytop_saha',id); }catch(e){} row.querySelectorAll('.btn').forEach(c=>c.setAttribute('aria-pressed',c===b)); tone(880,.05,'triangle',.04); }); row.appendChild(b); } }
 document.getElementById('start').addEventListener('click',start);
 ['mdSerbest','mdKariyer'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{ kariyerModu=id==='mdKariyer'; ['mdSerbest','mdKariyer'].forEach(j=>document.getElementById(j).setAttribute('aria-pressed',j===id)); kariyerYaz(); try{ localStorage.setItem('tuytop_mod',kariyerModu?'k':'s'); }catch(e){} }));
 try{ if(localStorage.getItem('tuytop_mod')==='k') document.getElementById('mdKariyer').click(); }catch(e){}
 document.getElementById('again').addEventListener('click',start);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ paused?devamEt():duraklat(); } });
 /* Ekipman menüsü: GEAR tablosundan üretilir; seçim localStorage'a yazılır. Raket/tel çipine dokununca o takımın smaç sesi çalar (ses, dokunuşla açılır). */
 function pct(v){ const d=Math.round((v-1)*100); return d===0?'nötr':(d>0?'+':'')+d+'%'; }
 function gearStatText(){ const S=gearStats(); return `<b>Güç</b> ${pct(S.guc)} · <b>Kontrol</b> ${pct(S.kontrol)} · <b>Drive/file</b> ${pct(S.hiz)} · <b>Tatlı nokta</b> ${pct(S.tatli)} · <b>Koşu</b> ${pct(S.kosu)} · <b>Akış</b> ${S.akis} tam orta`; }
@@ -963,7 +1040,7 @@ const LENS={len5:5,len7:7,len11:11,len21:21};
 function lenSec(id){ target=LENS[id]; Object.keys(LENS).forEach(j=>document.getElementById(j).setAttribute('aria-pressed',j===id)); try{ localStorage.setItem('tuytop_len',id); }catch(e){} }
 Object.keys(LENS).forEach(id=>document.getElementById(id).addEventListener('click',()=>lenSec(id)));
 { let id='len5'; try{ const v=localStorage.getItem('tuytop_len'); if(LENS[v]) id=v; }catch(e){} lenSec(id); }
-document.getElementById('mute').addEventListener('click',e=>{ muted=!muted; crowdLevel(muted?0:.01); if(muted) underwater(false); e.currentTarget.textContent=muted?'Ses kapalı':'Ses açık'; e.currentTarget.setAttribute('aria-pressed',muted); });
+document.getElementById('mute').addEventListener('click',e=>{ muted=!muted; crowdLevel(muted?0:.01); if(muted) underwater(false); e.currentTarget.textContent=muted?'Ses kapalı':'Ses açık'; e.currentTarget.setAttribute('aria-pressed',muted); const q=document.getElementById('pSes'); q.textContent=e.currentTarget.textContent; q.setAttribute('aria-pressed',muted); });
 document.getElementById('bestLine').textContent=best.rally?`Ralli rekorun ${best.rally} · ${best.wins} galibiyet · ${best.gorev||0} görev`:'';
 function size(){ const r=stage.getBoundingClientRect(); W=Math.round(r.width); H=Math.round(r.height); DPR=Math.min(2,devicePixelRatio||1); /* 3x denendi: çizim süresi ikiye katlandı, akıcılık öncelikli */ cv.width=W*DPR; cv.height=H*DPR; if(typeof sprHazirla==='function') sprHazirla(); }
 addEventListener('resize',size); if(window.ResizeObserver) new ResizeObserver(size).observe(stage); size();   

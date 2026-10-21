@@ -1,16 +1,18 @@
 Bu sürümde neler değişti
-• Hızlı maç: 5 sayılık maç eklendi (yaklaşık 2 dakika). Seçtiğin maç uzunluğu bir sonraki açılışta hatırlanır.
-• Kariyer: menüde "Serbest maç" ve "Kariyer" seçeneği var. Kariyerde 6 basamak var, her basamağın rakibi biraz daha güçlü. Hepsini geçince Şampiyon forması açılıyor.
-• Iska nedeni: topu kaçırınca neden kaçırdığın yazıyor (kısa kaydırdın, yavaş kaydırdın, kıl payı, topun uzağından geçtin). Erken kaydırırsan da söylüyor.
-• File bandı: top filenin bandına sürtünürse bazen karşıya yuvarlanıp düşüyor, gerçek maçtaki gibi.
-• Çizgiye değen top İÇERİ sayılıyor; oyuncu adımları sakinleşti; karakterdeki hayalet görüntü giderildi.
+• File artık katı bir nesne gibi duruyor: rakip ve karşı taraftaki top filenin arkasında görünüyor, filenin önüne çizilmiyor. Filenin zeminde gölgesi var.
+• Nefes göstergesi oyuncunun ayağının altında bir halka. Nefes azaldıkça halka kısalıyor, azalınca turuncuya dönüp "Nefes" yazıyor. Alttaki çubuk artık yalnız "Smaç gücü".
+• Duraklat: sağ üstteki düğmeyle oyunu durdurabilirsin. Menüde Devam et, Ses, Maçı baştan başlat ve Ana menü var. Uygulamadan çıkınca oyun kendiliğinden duruyor.
+• Ana menüye çıksan da maç bekliyor, menüde "Maça devam et" görünüyor.
+• Saha seçimi: Salon, Turnuva, Okul (ahşap) ve Gece. Kariyerde saha basamağa göre geliyor.
+• Kort ekranın daha büyük kısmını kaplıyor; oyun sırasında üstteki başlık gizleniyor.
+• Maç bitince "Ana menü" düğmesi var.
 
 Bunları dene
-1. Menüde "5 sayı (hızlı, ~2 dk)" seçili olmalı. Bir maç oyna, 5 sayıda bitmeli (4-4 olursa 2 fark gerekir, en fazla 7).
-2. Menüde "Kariyer"e dokun. Altında "Basamak 1/6 · Mahalle salonu" yazmalı. Maçı kazanınca sonuç ekranında yeni basamak yazmalı.
-3. Uygulamayı kapatıp aç. Kariyer basamağın ve maç uzunluğun korunmalı.
-4. Ekipman › Forma'da "Şampiyon" kilitli ve soluk görünmeli; kariyer bitmeden seçilmemeli.
-5. Bilerek kısa ya da yavaş kaydır. Topu kaçırınca nedeni ekranda yazmalı.
-6. Topu fileye çok yakın, alçak vur. Ara sıra "File bandı!" yazıp top karşıya düşmeli.
-7. Topu çizgiye yakın düşür. İz çizgiye değiyorsa "İÇERİ" yazmalı.
+1. Maç başlat. Üstte başlık yazısı olmamalı, kort daha büyük görünmeli.
+2. Rakip fileye yaklaştığında filenin arkasında kalmalı, ağın içinden görünmeli.
+3. Birkaç smaç at. Ayağının altındaki halka kısalmalı, azalınca turuncu "Nefes" yazmalı.
+4. Sağ üstteki duraklat düğmesine bas. Oyun durmalı, ses kesilmeli. "Devam et" ile kaldığın yerden sürmeli.
+5. Oyun sırasında ana ekrana çık ve geri gel. Oyun duraklatılmış olmalı.
+6. Duraklat menüsünden "Ana menü"ye geç. Menüde "Maça devam et" çıkmalı ve maç aynı skordan sürmeli.
+7. Menüde her sahayı seçip bir maç aç. Çizgiler ve top her zeminde rahat okunmalı.
 Bir şey tuhaf görünürse ekran görüntüsünü gönder.
