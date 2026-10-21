@@ -166,15 +166,20 @@ lunge=sample([(0,READY),(0.35,LU_PREP),(0.6,LU_HIT),(0.78,D(LU_HIT,wrR=(0.16,0.6
 # kısa servis (backhand): sağ ayak önde, ayaklar omuz genişliğinde kademeli, gövde fileye kare; backhand tutuş,
 #     raket bel önünde, başı aşağı, dirsek yukarı-öne; tüy top sol elde tüylerinden, raketin hemen önünde ve 1,15 m
 #     altında. Geri salınım birkaç santim; başparmakla kısa itiş; takip raket yüzü fileye bakar, göğüs hizasının altında kalır.
-SB0=D(READY,root=(0,0.02,0.42),twist=-8,lean=(0,0.02,0),anR=(0.07,0.12,0.05),anL=(-0.13,-0.10,0.05),ftR=(0,1,0),ftL=(-0.3,1,0),
-      wrR=(-0.02,0.20,0.44),elR=(1,0.6,0.3),rk=(-0.18,0.20,-0.96),rkFace=(0,1,0),wrL=(-0.04,0.34,0.48),elL=(-1,0.2,-0.6),shuttle=True,look=(0,1,-0.25))
-SB1=D(SB0,wrR=(-0.02,0.16,0.43),rk=(-0.18,0.05,-0.98))
-SB2=D(SB0,wrR=(-0.02,0.30,0.47),rk=(-0.12,0.62,-0.77),wrL=(-0.12,0.24,0.46),shuttle=False)
-SB3=D(SB2,wrR=(-0.02,0.34,0.53),rk=(-0.06,0.88,-0.40),look=(0,1,0))
+# 2026-10-21 (2. tur, yasin: "kısa serviste anatomik hareketler sergilenmiyor"): eski pozda el kalça hizasında, dirsek
+#     gövdeye yapışık ve raket bacakların arasından dik sarkıyordu. Elit tekler kısa servisinde (Axelsen, Lee Zii Jia;
+#     arastirma/research_notes/backhand_servis_anatomi.md) el bel–göbek önünde, DİRSEK DIŞA VE YUKARI kalkık, önkol
+#     gövdenin önünde yataya yakın; raket başı sola-aşağı ~35° eğik, yüzü fileye; top sol elde tüylerinden, raket yüzünün
+#     hemen önünde. Geri salınım yok; başparmak itişi raketi birkaç santim öne taşır, takip göğüs altında biter.
+SB0=D(READY,root=(0,0.03,0.41),twist=-10,lean=(0,0.04,0),anR=(0.04,0.14,0.05),anL=(-0.14,-0.10,0.05),ftR=(-0.1,1,0),ftL=(-0.3,1,0),
+      wrR=(0.03,0.24,0.56),elR=(1,0.4,0.5),rk=(-0.80,0.22,-0.55),rkFace=(0,1,0),wrL=(-0.23,0.30,0.40),elL=(-1,-0.2,-0.6),shuttle=True,look=(0,1,-0.15))
+SB1=D(SB0,wrR=(0.03,0.22,0.56))
+SB2=D(SB0,wrR=(0.03,0.29,0.57),rk=(-0.72,0.45,-0.52),wrL=(-0.26,0.20,0.40),shuttle=False)
+SB3=D(SB2,wrR=(0.02,0.34,0.60),rk=(-0.55,0.80,-0.22),rkFace=(0,0.8,0.6),wrL=(-0.24,0.12,0.42),look=(0,1,0))
 serve_bh=sample([(0,SB0),(0.22,SB0),(0.40,SB1),(0.50,SB2),(0.68,SB3),(1,READY)],10)
 # flick: SB0/SB1 birebir aynı (aldatmanın şartı); temasta geç ve kısa bir bilek/başparmak kırılması raket başını yukarı fırlatır
-SF2=D(SB0,wrR=(-0.02,0.29,0.50),rk=(-0.10,0.75,0.65),rkFace=(0,0.6,0.8),wrL=(-0.12,0.24,0.46),shuttle=False)
-SF3=D(SF2,wrR=(-0.04,0.28,0.64),rk=(-0.10,0.25,0.96),look=(0,0.8,0.6))
+SF2=D(SB0,wrR=(0.03,0.30,0.60),rk=(-0.45,0.55,0.70),rkFace=(0,0.6,0.8),wrL=(-0.26,0.20,0.40),shuttle=False)
+SF3=D(SF2,wrR=(0.0,0.30,0.70),rk=(-0.25,0.25,0.93),wrL=(-0.24,0.12,0.42),look=(0,0.8,0.6))
 serve_flick=sample([(0,SB0),(0.22,SB0),(0.40,SB1),(0.50,SF2),(0.66,SF3),(1,READY)],10)
 # yüksek servis (forehand, teklerde uzun): yan duruş, sol ayak önde, ağırlık arka (sağ) ayakta; sol el topu önde omuz
 #     hizasında tutar ve bırakır (atmaz); raket arkada yukarıdan uzun ve gevşek iner; temas ön ayak hizasında alçakta,
@@ -201,9 +206,13 @@ bh_over=sample([(0,READY),(0.26,BO_PREP),(0.40,BO_PREP),(0.56,BO_HIT),(0.72,BO_F
 # --- backhand drive (2026-10-21): başparmak tutuş, dirsek önde ve topa dönük, raket başı arkadan gelir; temas vuran
 #     omzun önünde, kol hafif bükük; supinasyon + bilek açılması; geri salınım çok kısa, takip gövdenin önünden
 #     SAĞA savrulmaz (eskiden kol gövdeyi çaprazlayıp sağa uzanıyordu). Sağ ayak sola-öne adım atar.
-BD_PREP=D(READY,twist=-30,lean=(-0.02,0.0,0),wrR=(-0.08,0.14,0.66),elR=(0.3,1,0.4),rk=(-0.55,-0.45,0.70),rkFace=(0,1,0),wrL=(-0.22,-0.04,0.52),anR=(-0.06,0.14,0.05),anL=(-0.18,-0.04,0.05),look=(-0.4,1,0))
-BD_HIT=D(READY,twist=-16,lean=(-0.02,0.04,0),wrR=(-0.28,0.36,0.72),elR=(0.3,1,0.2),rk=(-0.60,0.78,0.15),rkFace=(0,1,0),wrL=(-0.24,-0.08,0.50),anR=(-0.10,0.18,0.05),anL=(-0.18,-0.06,0.05),ftR=(-0.5,0.9,0))
-BD_FOL=D(READY,twist=-12,lean=(-0.01,0.04,0),wrR=(-0.28,0.42,0.76),elR=(0.3,1,0.2),rk=(-0.30,0.90,0.30),rkFace=(0,1,0),wrL=(-0.24,-0.08,0.48),anR=(-0.10,0.18,0.05),anL=(-0.18,-0.06,0.05))
+# 2. tur (2026-10-21, yasin: "backhand vuruşta anatomik hareketler yok"): eski pozda gövde fileye kare kalıyordu ve
+#     sağ ayak yerinde duruyordu. Backhand'de sağ omuz fileye döner (göğüs sola, sırtın bir kısmı fileye), sağ ayak
+#     sola-öne çapraz adım atar, el sol göğüs önünde, dirsek alt kaburga hizasında ÖNDE ve topa dönük, raket başı sol
+#     omzun arkasında; temas vuran omzun önünde, el sırtı fileye; takip kısa, sağa savrulmaz. Sol kol geride dengede.
+BD_PREP=D(READY,twist=-55,lean=(-0.02,0.01,0),root=(-0.03,0.02,0.39),wrR=(-0.14,0.10,0.60),elR=(0.4,1,-0.3),rk=(-0.50,-0.55,0.67),rkFace=(0,1,0),wrL=(-0.18,-0.20,0.48),elL=(-1,-0.5,-0.3),anR=(-0.14,0.20,0.06),anL=(-0.10,-0.12,0.05),ftR=(-0.6,0.8,0),look=(-0.5,1,0.05))
+BD_HIT=D(BD_PREP,twist=-40,lean=(-0.02,0.04,0),wrR=(-0.20,0.38,0.64),elR=(0.3,1,-0.2),rk=(-0.70,0.55,0.10),rkFace=(0,1,0),anR=(-0.16,0.24,0.05),look=(-0.4,1,0))
+BD_FOL=D(BD_HIT,twist=-32,wrR=(-0.12,0.44,0.66),rk=(-0.15,0.95,0.25))
 bh_drive=sample([(0,READY),(0.3,BD_PREP),(0.55,BD_HIT),(0.72,BD_FOL),(1,READY)],8)
 # --- backhand file öldürme (yüksek, kısa dürtme)
 BK_PREP=D(READY,twist=-20,wrR=(-0.14,0.08,0.92),elR=(0.5,1,0.2),rk=(-0.3,0.2,0.93),rkFace=(0,1,0),lean=(0,0.03,0),look=(-0.3,0.7,0.6))
@@ -212,13 +221,16 @@ bh_kill=sample([(0,READY),(0.3,BK_PREP),(0.55,BK_HIT),(0.75,D(BK_HIT,wrR=(-0.26,
 # --- backhand alçak (file önü / lift, 2026-10-21): sağ ayak sola-öne adım (backhand köşesine de raket ayağı gider),
 #     başparmak tutuş, dirsek önce yükselip öne çıkar, raket başı arkadan ve elin ALTINDA gelir; gövde dik, sol kol
 #     geride; takip kısa ve hedefe. Eskisinde raket başı önde süpürüyordu.
-BL_PREP=D(READY,twist=-22,lean=(-0.01,0.03,-0.02),root=(-0.02,0.06,0.36),wrR=(-0.12,0.22,0.40),elR=(0.3,1,0.6),rk=(-0.45,-0.15,-0.88),rkFace=(0,1,0.3),wrL=(-0.26,-0.14,0.46),elL=(-1,-0.4,-0.3),anR=(-0.06,0.22,0.06),anL=(-0.16,-0.10,0.05),look=(-0.2,1,-0.3))
-BL_HIT=D(READY,twist=-12,lean=(-0.01,0.06,-0.03),root=(-0.03,0.12,0.33),wrR=(-0.22,0.44,0.28),elR=(0.3,1,0.6),rk=(-0.30,0.70,-0.65),rkFace=(0,0.7,0.7),wrL=(-0.28,-0.18,0.44),elL=(-1,-0.5,-0.2),anR=(-0.08,0.34,0.05),anL=(-0.16,-0.14,0.05),ftR=(-0.4,1,0),look=(-0.1,1,-0.3))
-BL_FOL=D(READY,twist=-10,lean=(0,0.05,-0.01),root=(-0.03,0.11,0.35),wrR=(-0.20,0.48,0.50),elR=(0.3,1,0.4),rk=(-0.25,0.60,0.76),rkFace=(0,1,0.3),wrL=(-0.26,-0.16,0.44),anR=(-0.08,0.34,0.05),anL=(-0.16,-0.12,0.05))
+# 2. tur: backhand ön köşe = sağ bacakla sola-öne hamle (sol bacakla hamle acemi hatası), gövde ~45° döner, sırt
+#     fileye yarı dönük; dirsek önce yükselip öne çıkar, raket başı elin ALTINDA ve arkada gelir; sol kol hamlenin tersine
+#     geride uzanır; temas öndeki ayağın önünde alçakta; lift'te takip öne-yukarı, file vuruşunda çok kısa.
+BL_PREP=D(READY,twist=-45,lean=(-0.02,0.05,-0.02),root=(-0.06,0.10,0.36),wrR=(-0.16,0.30,0.48),elR=(0.2,1,0.3),rk=(-0.35,-0.10,-0.93),rkFace=(-0.3,0.9,0.3),wrL=(0.10,-0.22,0.46),elL=(1,-0.6,-0.2),anR=(-0.16,0.30,0.08),anL=(0.0,-0.16,0.05),ftR=(-0.5,0.9,0),ftL=(-0.2,1,0),look=(-0.3,1,-0.3))
+BL_HIT=D(BL_PREP,twist=-40,lean=(-0.03,0.07,-0.04),root=(-0.10,0.22,0.29),wrR=(-0.26,0.58,0.26),elR=(0.2,1,0.4),rk=(-0.35,0.55,-0.76),rkFace=(0,0.6,0.8),wrL=(0.18,-0.30,0.42),anR=(-0.22,0.46,0.05),anL=(0.04,-0.20,0.07),knR=(0,1,0),look=(-0.2,1,-0.4))
+BL_FOL=D(BL_HIT,wrR=(-0.22,0.56,0.46),rk=(-0.30,0.70,0.65),rkFace=(0,0.8,0.6))
 bh_low=sample([(0,READY),(0.32,BL_PREP),(0.55,BL_HIT),(0.75,BL_FOL),(1,READY)],8)
 # --- backhand hamle: sol-öne derin, sağ (raket) bacak öne
-BLU_PREP=D(READY,twist=-15,lean=(-0.02,0.08,-0.03),root=(-0.03,0.10,0.37),wrR=(-0.22,0.2,0.30),elR=(0,1,0.6),rk=(-0.3,0.8,-0.5),rkFace=(0,1,0),wrL=(0.22,0.0,0.50),anR=(-0.04,0.22,0.08),anL=(-0.14,-0.10,0.05))
-BLU_HIT=D(READY,twist=-30,lean=(-0.03,0.07,-0.04),root=(-0.06,0.24,0.28),wrR=(-0.30,0.68,0.14),elR=(0,1,0.6),rk=(-0.3,0.9,-0.2),rkFace=(0,0.3,1),wrL=(0.24,-0.18,0.46),elL=(1,-0.5,0.2),anR=(-0.04,0.42,0.05),anL=(-0.16,-0.20,0.05),ftL=(0.3,1,0),look=(-0.2,1,-0.4))
+BLU_PREP=D(BL_PREP,root=(-0.06,0.12,0.35),anR=(-0.18,0.34,0.09))
+BLU_HIT=D(BL_HIT,root=(-0.12,0.26,0.27),wrR=(-0.30,0.66,0.18),rk=(-0.30,0.90,-0.30),rkFace=(0,0.3,1),anR=(-0.24,0.52,0.05),anL=(0.06,-0.24,0.07))
 bh_lunge=sample([(0,READY),(0.35,BLU_PREP),(0.6,BLU_HIT),(0.78,D(BLU_HIT,wrR=(-0.24,0.64,0.30),rk=(-0.3,0.9,0.4))),(1,READY)],8)
 # ================= ayak işi (yasin: "adımlamalar badminton sporunun doğasına uygun olmalı") =================
 # split step: rakip vururken küçük sıçrama, geniş ve alçak iniş
