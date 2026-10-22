@@ -38,6 +38,12 @@ canvas{display:block;width:100%;height:100%;touch-action:none;user-select:none;-
 .play{min-height:56px;padding:0 28px;border-radius:16px;border:0;background:var(--lime);color:#1b2600;font:800 20px var(--display);cursor:pointer}
 .how{width:100%;max-width:520px;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;text-align:left;display:grid;grid-template-columns:minmax(0,7.5em) minmax(0,1fr);gap:8px 12px;font-size:14px}
 .how b{font-family:var(--display);color:var(--lime);font-weight:600}
+.ogr{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 70px);width:min(calc(100% - 24px),390px);box-sizing:border-box;z-index:2;background:rgba(9,16,17,.88);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:8px 12px 10px;text-align:left;color:#fff}
+.ogr .ust{display:flex;align-items:center;justify-content:space-between;gap:8px;font:700 12px var(--body);color:#9dbab3}
+.ogr b{display:block;font:800 16px var(--display);color:#d8ff5a;margin-top:2px}
+.ogr p{margin:4px 0 0;font:600 14px/1.35 var(--body)}
+.ogr p.neden{font-size:13px;color:#cfe3dc;font-weight:500}
+.ogr .tamam{margin-top:8px;width:100%;background:#d8ff5a;color:#0b1414;border:0}
 .how .r{grid-column:1/-1;color:var(--muted);font-size:13px;border-top:1px solid var(--line);padding-top:8px;margin-top:2px}
 .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .gear{width:100%;max-width:520px;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px;text-align:left;display:grid;gap:8px}
@@ -162,6 +168,7 @@ input[type=range]{width:100%;min-height:44px;accent-color:var(--lime);margin:0}
         <b>Servis</b><span>Yukarı yavaş kaydırırsan backhand kısa servis atarsın. Aynı duruştan kısa ve sert bir fiske flick olur: top rakibin üstünden dibe gider. Uzun ve hızlı kaydırırsan forehand yüksek servis atarsın</span>
         <b>Slice</b><span>Kavis çizerek kaydırırsan topu keserek alırsın: top takla atar, beklenenden kısa düşer, rakip yanlış adım atar</span>
         <b>Ekipman</b><span>Raket, tel gerginliği, bileklik, bant ve forma oyunun dinamiklerini, raket sesini ve titreşimi değiştirir</span>
+        <button class="btn" id="ogrBtn" type="button" style="grid-column:1/-1">Antrenmanı yeniden oyna</button>
         <span class="r">Top vuruş alanına girince zaman yavaşlar. Dışarı gidecek topu bırak: sayı senin. Her vuruş ralli şarkısının bir notası; titreşim Android'de.</span>
       </div>
       </section>
@@ -172,6 +179,11 @@ input[type=range]{width:100%;min-height:44px;accent-color:var(--lime);margin:0}
       <p class="muted" id="oInfo"></p>
       <button class="play" id="again">Bir maç daha</button>
       <button class="btn" id="overMenu">Ana menü</button>
+    </div>
+    <div class="ogr" id="ogrKart" hidden role="status" aria-live="polite">
+      <div class="ust"><span id="ogrSay">Antrenman</span><button class="btn" id="ogrGec" type="button">Antrenmanı geç</button></div>
+      <b id="ogrBas"></b><p id="ogrMet"></p><p class="neden" id="ogrNeden"></p>
+      <button class="btn tamam" id="ogrTamam" type="button" hidden>Anladım, devam</button>
     </div>
     <button class="btn pz" id="pauseBtn" aria-label="Duraklat" hidden><span aria-hidden="true">❚❚</span></button>
     <div class="layer" id="pause" hidden role="dialog" aria-label="Duraklatıldı">
@@ -460,15 +472,84 @@ const GOREV=[
 function gorevSec(){ const h=GOREV.slice(); const out=[]; while(out.length<3){ out.push(h.splice(Math.floor(Math.random()*h.length),1)[0]); } return out.map(g=>({...g,bitti:false})); }
 function gorevKontrol(){ if(!M||!M.gorevler) return; M.gorevler.forEach(g=>{ if(!g.bitti&&g.say()>=g.hedef){ g.bitti=true; M.gorevBitti++; best.gorev=(best.gorev||0)+1; save();
   setTimeout(()=>{ txt('Görev tamam: '+g.ad,W/2,H*.3,'#ffd23a',22,3); hap('flow'); [0,4,7,12,16].forEach((k,i)=>tone(660*Math.pow(2,k/12),.18,'triangle',.05,i*.07)); burst(W/2,H*.3,'#ffd23a',16,220,'spark',80); },250); } }); }
-function newMatch(){ M={me:{x:MID,y:L-2.2,sw:0,dive:0,jump:0,prep:0,vx:0,vy:0,tx:null,ty:null,stun:0},op:{x:MID,y:2.2,sw:0,dive:0,jump:0},sc:[0,0],server:'me',rally:0,maxRally:0,energy:0,nefes:1,tepeden:0,s:null,trail:[],smashes:0,perfects:0,outsLeft:0,between:false,wait:0,serveFaults:0};
+/* Antrenman (yasin 2026-10-22: "oyun motoru dinamiği ile ilgili vuruşlar nasıl yapılır gibi ilk maçta tutorial";
+   "durdurup odaklayarak kesme için şunu yap, drive için, dip için clear ve smaç için şunları yap"; "tüm vuruş tipleri
+   için ve ayrıca nefes ve smaç gücü alanlarını canlı gösterimle açıkla"). İlk "Oyna"da maç yerine antrenman açılır
+   (tuytop_antrenman yoksa); menüde "Nasıl oynanır" içinden yeniden oynanır, kartta "Antrenmanı geç" hep var.
+   Akış: her adım bir vuruşu ister. Antrenör o vuruşa uygun topu besler (smaç için yüksek, drive için düz, file vuruşu
+   için file üstüne gevşek top); top vuruş yerine, vuruşun istediği yüksekliğe gelince oyun DURUR ve parmak hareketi
+   topun üstünde canlı çizilir. Doğru vuruş adımı geçirir; başka tür çıkarsa ne çıktığı söylenir, sıradaki top yeniden
+   durur. Nefes ve smaç gücü bilgi adımlarıdır: oyun durur, ilgili alan nabız atan bir çerçeveyle işaretlenir.
+   Antrenmanda skor yok, servis hep sende, Kolay hareket (oyuncu topa kendi koşar) açık: tek iş vuruşu öğrenmek. */
+const OGR_ADIM=[
+  {bas:'Kısa servis',met:'Oyuncunun önünden yukarı doğru YAVAŞ kaydır.',neden:'Top fileyi sıyırır, rakibin önüne düşer. Tekler maçlarında en çok atılan servis.',servis:'kisa',iz:'yavas'},
+  {bas:'Flick servis',met:'Aynı duruştan KISA ve SERT bir fiske yap.',neden:'Hazırlık kısa servisle aynı görünür; rakip öne çıkarken top üstünden dibe gider.',servis:'flick',iz:'fiske'},
+  {bas:'Yüksek servis',met:'UZUN ve HIZLI yukarı kaydır.',neden:'Top yükselip rakibin dip çizgisine neredeyse dik iner.',servis:'yuksek',iz:'uzun'},
+  {bas:'Nefes',met:'Ayağının altındaki halka nefesin.',neden:'Smaç, sıçrama ve uzanma nefes yakar; halka azalınca yavaşlarsın ve smaç zayıflar. Clear atıp sayı arasında dinlenince dolar.',bilgi:'nefes'},
+  {bas:'Clear: dibe at',met:'Topun içinden yukarı doğru UZUN ve orta hızda kaydır. Sağa sola eğersen top o yöne gider.',neden:'Top rakibin arka çizgisine gider; sana yerine dönecek zaman kazandırır.',tip:['clear'],iz:'uzun',besle:'clear',dur:I=>I.over},
+  {bas:'Drop: fileye bırak',met:'Topun üstünden YAVAŞ ve kısa geç.',neden:'Top filenin hemen arkasına düşer; dipteki rakip öne koşmak zorunda kalır.',tip:['drop'],iz:'yavas',besle:'clear',dur:I=>I.over},
+  {bas:'Smaç',met:'Top başının üstünde. HIZLI ve sert kaydır.',neden:'Top aşağı doğru en hızlı iner; karşılaması en zor vuruş. Backhand tarafından smaç olmaz.',tip:['smash','jump'],iz:'hizli',besle:'clear',dur:I=>I.over},
+  {bas:'Drive: düz ve sert',met:'Top omuz hizasında. HIZLI ve düz kaydır.',neden:'Top fileyi alçaktan, düz geçer; rakibe hazırlanacak zaman kalmaz.',tip:['drive'],iz:'hizli',besle:'drive',dur:I=>!I.over&&!I.lunge&&!I.kill},
+  {bas:'Blok',met:'Rakip smaç attı. Parmağını AŞAĞI doğru kısa çek.',neden:'Raketi topun önüne koyarsın; smacın hızıyla top filenin dibine düşer.',tip:['block'],iz:'asagi',besle:'smash',dur:()=>true},
+  {bas:'Lift',met:'Top alçakta. Yukarı doğru orta hızda kaydır.',neden:'Alçak topu rakibin dibine kaldırırsın; fileden kurtulup yerine dönersin.',tip:['lift','clear'],iz:'uzun',besle:'drop',dur:I=>!I.over&&I.lunge!==undefined&&M.s.z<1.4},
+  {bas:'File vuruşu',met:'Top file üstünde yüksek kaldı. HIZLI ve sert kaydır.',neden:'Fileye yakın yüksek top kaçırılmaz: aşağı vurursun, sayı neredeyse kesin.',tip:['kill'],iz:'hizli',besle:'gevsek',dur:I=>I.kill},
+  {bas:'Slice: kesme',met:'Kaydırırken parmağınla bir YAY çiz; sert değil, clear hızında.',neden:'Raket topu keserek alır; top takla atar, beklenenden kısa düşer ve rakip yanlış adım atar.',slice:true,iz:'yay',besle:'clear',dur:I=>I.over},
+  {bas:'Smaç gücü',met:'Alttaki çubuk smaç gücün.',neden:'Topun tam ortasından geçen her vuruş doldurur. Dolunca bir sonraki smaç SIÇRAYARAK smaç olur: en sert vuruşun. Şimdi senin için doldurduk.',bilgi:'guc'},
+  {bas:'Sıçrayarak smaç',met:'Güç dolu, top başının üstünde. HIZLI ve sert kaydır.',neden:'Oyuncu sıçrar, top dik ve çok hızlı iner. Gücü bitirir; yeniden doldurmak için tam orta vur.',tip:['jump'],iz:'hizli',besle:'clear',dur:I=>I.over,guc:true}];
+const OGR_AD={kisa:'Kısa servis',flick:'Flick servis',yuksek:'Yüksek servis',clear:'Clear',lift:'Lift',drop:'Drop',drive:'Drive',smash:'Smaç',jump:'Sıçrayarak smaç',kill:'File vuruşu',block:'Blok'};
+let ogrZorla=false, ogrEasy=null; /* antrenman Kolay hareketi zorlar; oyuncunun kendi seçimi burada saklanır, maç başında geri gelir */
+function ogrBittiMi(){ try{ return localStorage.getItem('tuytop_antrenman')==='1'; }catch(e){ return true; } } /* depolama yoksa her açılışta antrenman açılmasın */
+function ogrKur(){ M.ogr={i:0,dur:false,top:null}; if(ogrEasy===null) ogrEasy=easy; easy=true; M.gorevler=[]; M.stil={...STIL.duvar,ad:'Antrenör',ipucu:'',hata:.45}; M.energy=0; ogrKart(); }
+function ogrKart(){ const k=document.getElementById('ogrKart'), o=M&&M.ogr, a=o&&OGR_ADIM[o.i]; k.hidden=!a||mode!=='play';
+  if(!a) return; document.getElementById('ogrSay').textContent=`Antrenman ${o.i+1}/${OGR_ADIM.length}`;
+  document.getElementById('ogrBas').textContent=a.bas; document.getElementById('ogrMet').textContent=(!a.servis&&!a.bilgi&&!o.dur?'Top sana gelince oyun duracak. ':'')+a.met; document.getElementById('ogrNeden').textContent=a.neden;
+  document.getElementById('ogrTamam').hidden=!a.bilgi; }
+function ogrIlerle(a){ const o=M.ogr; o.dur=false; o.i++; if(a.bilgi==='nefes') M.nefes=1;
+  txt('Tamam: '+a.bas,W/2,H*.32,'#d8ff5a',22,2); hap('flow'); [0,4,7].forEach((k,i)=>tone(660*Math.pow(2,k/12),.14,'triangle',.05,i*.06));
+  const b=OGR_ADIM[o.i]; if(!b){ setTimeout(()=>ogrBitir(false),1400); } else { if(b.bilgi==='nefes') M.nefes=.55; if(b.bilgi==='guc'||b.guc) M.energy=1; if(b.bilgi) o.dur=true; }
+  ogrKart(); }
+function ogrOlay(e){ const o=M&&M.ogr; if(!o) return; if(o.dur){ o.dur=false; ogrKart(); } const a=OGR_ADIM[o.i]; if(!a||a.bilgi) return;
+  if(a.servis){ if(!e.servis) return; if(e.servis===a.servis) ogrIlerle(a); else txt(`${OGR_AD[e.servis]} oldu. ${a.met}`,W/2,H*.32,'#ffd27a',16,2); return; }
+  if(!e.tip) return;
+  if(a.slice?e.slice:a.tip.includes(e.tip)) ogrIlerle(a);
+  else { txt(`${OGR_AD[e.tip]||e.tip} oldu, sıradaki topta yeniden dene`,W/2,H*.32,'#ffd27a',16,2); if(a.guc) M.energy=1; } }
+function ogrDurdur(){ const o=M.ogr, a=OGR_ADIM[o.i]; if(!a) return false; if(o.dur) return true;
+  if(a.servis||a.bilgi) return false; const s=M.s; if(!s||s.dead||s.from!=='op'||o.top===s) return false;
+  const I=reachInfo(); if(!I||!a.dur(I)) return false;
+  o.top=s; o.dur=true; ogrKart(); hap('flow'); tone(880,.06,'triangle',.05); return true; }
+function ogrBitir(gec){ try{ localStorage.setItem('tuytop_antrenman','1'); }catch(e){}
+  if(!M||!M.ogr) return; M.ogr=null; document.getElementById('ogrKart').hidden=true;
+  if(!gec) txt('Antrenman bitti. Maç başlıyor!',W/2,H*.4,'#d8ff5a',24,3);
+  setTimeout(()=>{ if(mode==='play'&&M&&!M.ogr){ newMatch(false); ekran(); } },gec?0:1600); }
+/* Canlı parmak izi: adımın istediği hareket topun (serviste oyuncunun) üstünden geçen kesikli bir çizgi ve onu izleyen
+   bir parmak noktasıyla gösterilir; hız farkı noktanın hızıyla okunur (yavaş drop, sert smaç). Hareketi azalt açıksa
+   nokta durur, yalnız çizgi ve ok kalır. Bilgi adımlarında ilgili alan nabız atan çerçeveyle işaretlenir. */
+function ogrIz(){ const o=M.ogr, a=OGR_ADIM[o.i]; if(!a||mode!=='play'||paused) return; const now=performance.now()/1000;
+  const nab=reduce?1:.6+.4*Math.sin(now*6);
+  if(a.bilgi){ ctx.save(); ctx.strokeStyle=`rgba(216,255,90,${nab})`; ctx.lineWidth=3;
+    if(a.bilgi==='nefes'){ const p=P(M.me.x,M.me.y), u=p.ppm/28; ctx.beginPath(); ctx.ellipse(p.x,p.y,34*u,16*u,0,0,7); ctx.stroke(); ogrOk(p.x+40*u,p.y-40*u,p.x+26*u,p.y-14*u); }
+    else { rr(6,H-30,W-12,26,9); ctx.stroke(); ogrOk(W/2,H-80,W/2,H-34); }
+    ctx.restore(); return; }
+  let ox, oy; if(a.servis){ if(M.s||M.svPending) return; const p=P(M.me.x,M.me.y,.9); ox=p.x; oy=p.y+30; }
+  else { if(!o.dur||!M.s) return; const p=P(M.s.x,M.s.y,M.s.z); ox=p.x; oy=p.y+(a.iz==='asagi'?-50:45); }
+  const boy={yavas:90,fiske:60,uzun:170,hizli:150,yay:150,asagi:100}[a.iz], hiz={yavas:1.7,fiske:.45,uzun:.9,hizli:.42,yay:.9,asagi:.5}[a.iz];
+  const yon=a.iz==='asagi'?1:-1, ex=ox, ey=oy+yon*boy, cx=ox+(a.iz==='yay'?boy*.55:0), cy=(oy+ey)/2;
+  const nk=t=>{ const u=1-t; return {x:u*u*ox+2*u*t*cx+t*t*ex,y:u*u*oy+2*u*t*cy+t*t*ey}; };
+  ctx.save(); ctx.setLineDash([7,6]); ctx.lineWidth=3; ctx.strokeStyle='rgba(255,255,255,.75)'; ctx.beginPath(); ctx.moveTo(ox,oy); ctx.quadraticCurveTo(cx,cy,ex,ey); ctx.stroke(); ctx.setLineDash([]);
+  const son=nk(.97); ogrOk(son.x,son.y,ex,ey,true);
+  const dur=hiz+.7, t=reduce?1:Math.min(1,(now%dur)/hiz), q=nk(t); ctx.fillStyle='rgba(216,255,90,.95)'; ctx.strokeStyle='rgba(8,16,17,.8)'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(q.x,q.y,11,0,7); ctx.fill(); ctx.stroke();
+  ctx.restore(); }
+function ogrOk(x1,y1,x2,y2,kisa){ const a=Math.atan2(y2-y1,x2-x1), k=12; ctx.save(); ctx.strokeStyle=ctx.strokeStyle||'#fff'; ctx.lineWidth=3; ctx.lineCap='round'; ctx.beginPath(); if(!kisa){ ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); }
+  ctx.moveTo(x2-k*Math.cos(a-.5),y2-k*Math.sin(a-.5)); ctx.lineTo(x2,y2); ctx.lineTo(x2-k*Math.cos(a+.5),y2-k*Math.sin(a+.5)); ctx.stroke(); ctx.restore(); }
+function newMatch(ogr){ M={me:{x:MID,y:L-2.2,sw:0,dive:0,jump:0,prep:0,vx:0,vy:0,tx:null,ty:null,stun:0},op:{x:MID,y:2.2,sw:0,dive:0,jump:0},sc:[0,0],server:'me',rally:0,maxRally:0,energy:0,nefes:1,tepeden:0,s:null,trail:[],smashes:0,perfects:0,outsLeft:0,between:false,wait:0,serveFaults:0};
   M.stil=kariyerModu?kariyerRakip(Math.min(best.kariyer||0,KARIYER.length-1)):STIL[Object.keys(STIL)[Math.floor(Math.random()*3)]]; M.gorevler=gorevSec(); M.gorevBitti=0;
   M.saha=kariyerModu?KARIYER_SAHA[Math.min(best.kariyer||0,KARIYER.length-1)]:saha;
-  mode='play'; swipe.erkenN=0; M.pop=[0,0]; M.cams=[]; M.marks=[]; M.hawk=null; M.flow=false; M.inWin=false; crowdStart(); M.clock=0; M.opHitAt=-9; M.split=false; M.splitPending=false; M.deceive=false; M.pstreak=0; M.kills=0; M.saves=0; M.deceives=0; M.splits=0; setupServe(); }
+  mode='play'; swipe.erkenN=0; M.pop=[0,0]; M.cams=[]; M.marks=[]; M.hawk=null; M.flow=false; M.inWin=false; crowdStart(); M.clock=0; M.opHitAt=-9; M.split=false; M.splitPending=false; M.deceive=false; M.pstreak=0; M.kills=0; M.saves=0; M.deceives=0; M.splits=0; if(ogr) ogrKur(); else { if(ogrEasy!==null){ easy=ogrEasy; ogrEasy=null; } ogrKart(); } setupServe(); }
 /* Servis yeri: sunucunun skoru çiftse sağ, tekse sol servis karesi. Ben fileye bakıyorum (yukarı): benim sağım ekranın sağı. Rakibin sağı ekranın solu. */
 function serveSide(who){ const even=M.sc[who==='me'?0:1]%2===0; return who==='me'?(even?'R':'L'):(even?'R':'L'); }
 function boxX(who,side){ // o oyuncunun kendi bakışına göre sağ/sol karesinin x aralığı
   const right=who==='me'?[MID,SR]:[SL,MID], left=who==='me'?[SL,MID]:[MID,SR]; return side==='R'?right:left; }
-function setupServe(){ M.s=null; M.trail=[]; M.me.vx=M.me.vy=0; M.me.tx=null; M.me.stun=0; M.mark=null; M.rally=0; M.between=false; M.icpt=null; M.serveMsg='';
+function setupServe(){ if(M.ogr){ const a=OGR_ADIM[M.ogr.i]; if(a&&!a.bilgi) M.server=a.servis?'me':'op'; } /* antrenman: servis adımında sen, vuruş adımında antrenör yüksek servisle başlatır */ M.s=null; M.trail=[]; M.me.vx=M.me.vy=0; M.me.tx=null; M.me.stun=0; M.mark=null; M.rally=0; M.between=false; M.icpt=null; M.serveMsg='';
   const sv=M.server, side=serveSide(sv), rv=sv==='me'?'op':'me';
   const sb=boxX(sv,side), rb=boxX(rv,side); // çapraz: alıcı kendi aynı adlı karesinde (karşıdan bakınca çapraz düşer)
   const cx=(a)=>(a[0]+a[1])/2;
@@ -477,8 +558,8 @@ function setupServe(){ M.s=null; M.trail=[]; M.me.vx=M.me.vy=0; M.me.tx=null; M.
   M.serveBox={who:rv,x:rb,y:rv==='me'?[NET+SSL,L]:[0,NET-SSL]};
   M.wait=sv==='op'?1.0:0; M.hint=sv==='me'; M.svPending=null; M.me.svAnim=M.op.svAnim=null;
   { const r=Math.random(); M.op.svTur=r<.58?'kisa':r<.8?'flick':'yuksek'; } /* rakip servis türünü önceden seçer, duruşu ona göre görünür; flick kısa servisle aynı duruştan */
-  M.op.svClip=SERVIS[M.op.svTur].klip; M.me.svClip='serve_bh';
-  if(M.sc[0]+M.sc[1]===0&&M.stil){ M.serveMsg=`Rakip: ${M.stil.ad}. ${M.stil.ipucu}`; }
+  if(M.ogr) M.op.svTur='yuksek'; M.op.svClip=SERVIS[M.op.svTur].klip; M.me.svClip='serve_bh';
+  if(M.sc[0]+M.sc[1]===0&&M.stil&&!M.ogr){ M.serveMsg=`Rakip: ${M.stil.ad}. ${M.stil.ipucu}`; }
 }
 
 function startFlight(from,vx,vy,vz,hp,isServe,type,isSuper){
@@ -616,7 +697,7 @@ function swipeShot(sw){ const s=M.s, I=reachInfo(); if(M.between||!s||!I) return
   if(type==='smash'||type==='jump') M.smashes++;
   M.me.sw=1; M.cut={x:p.x,y:p.y,a:Math.atan2(sw.dy,sw.dx),t:0}; M.hitQ=q; M.hitSlice=slice; hapHit({type,q,slice}); gorevKontrol();
   startFlight('me',vx,vy,vz,hp,false,type==='jump'||type==='kill'?'smash':type==='lift'?'clear':type==='block'?'drop':type,type==='jump');
-  return true;
+  ogrOlay({tip:type,slice,over:PL.over}); return true;
 }
 /* Servis: kareye doğru kaydır. Yavaş = kısa servis, hızlı = uzun servis. */
 /* Servis (yasin 2026-10-21: "kısa servisi bir badminton sporcusu gibi atmalı, uzun servis de buna göre; kısa servis
@@ -641,10 +722,11 @@ function servisAt(who,tur,tx,ty){ const o=who==='me'?M.me:M.op, S=SERVIS[tur], d
 function swipeServe(sw){ if(M.s||M.between||M.server!=='me'||M.wait>0||M.svPending) return; M.hint=false;
   const b=M.serveBox, cx=(b.x[0]+b.x[1])/2, r=Math.max(-1.3,Math.min(1.3,sw.dx/Math.max(50,Math.abs(sw.dy)))), mesafe=Math.hypot(sw.dx,sw.dy);
   const tur=sw.speed>1.0?(mesafe<95?'flick':'yuksek'):'kisa', d=tur==='kisa'?SSL+.45:tur==='flick'?6.0:6.2;
-  servisAt('me',tur,cx+r*1.5,NET-d); }
+  servisAt('me',tur,cx+r*1.5,NET-d); ogrOlay({servis:tur}); }
 function opHit(){ const s=M.s, I=M.icpt, hp={x:s.x,y:s.y,z:Math.max(.2,s.z)}; let type; const r=Math.random(); M.hitQ=Math.random()<.12?'poor':Math.random()<.3?'perfect':'good';
   if(s.serve&&false){}
   const obh=handOf(M.op,'op',hp.x,hp.z)==='back'; type=I.opType||(I.overhead?'clear':'drop'); if(obh&&type==='smash') type='clear';
+  if(M.ogr){ const a=OGR_ADIM[M.ogr.i]; const b=(a&&a.besle)||'clear'; if(b==='gevsek'){ const [vx,vy,vz]=aim(hp,MID+(Math.random()-.5)*1.2,NET+1.0,'angle',1.15); startFlight('op',vx,vy,vz,hp,false,'drop'); return; } type=b; } /* antrenör o adımın istediği topu besler */
   /* Rakip file önünde arada gevşek top bırakır: file üstüne kalkar, sana öldürme şansı. */
   if(type==='drop'&&!I.overhead&&hp.y>NET-2.6&&r<.35){ const [vx,vy,vz]=aim(hp,MID+(Math.random()-.5)*2.4,NET+1.0,'angle',1.15); startFlight('op',vx,vy,vz,hp,false,'drop'); return; }
   const pl=plan('op',type,(Math.random()*2-1)*.8,hp,I.overhead); if(obh&&type==='clear') pl.ty=Math.max(pl.ty,NET+1.2); /* backhand clear'ı kısa kalır */ const g=()=>(Math.random()-.5)*M.stil.hata*(.5+(easy?.3:0)+(obh?.35:0)+Math.min(.9,behind()*.15)); /* geride kalınca rakip daha çok hata yapar (lastik bant) */
@@ -656,7 +738,7 @@ function opServe(){ const b=M.serveBox, tur=M.op.svTur||'kisa';
   const tx=b.x[0]+.3+Math.random()*(b.x[1]-b.x[0]-.6), ty=tur==='kisa'?b.y[0]+.5:b.y[1]-.6; servisAt('op',tur,tx,ty); }
 
 /* ---- sayı: ralli sistemi, sayıyı alan servisi alır ---- */
-function point(winner,why,at){ if(M.between) return; M.between=true; M.hakemT=1.4; M.hakemYon=winner; /* baş hakem yeni servisçinin tarafını gösterir */ M.sc[winner==='me'?0:1]++; M.server=winner; if(winner==='me'&&M.s&&M.s.from==='me'&&M.s.type==='smash') M.smacSayi=(M.smacSayi||0)+1; setTimeout(gorevKontrol,0);
+function point(winner,why,at){ if(M.between) return; M.between=true; M.hakemT=1.4; M.hakemYon=winner; /* baş hakem yeni servisçinin tarafını gösterir */ if(!M.ogr){ M.sc[winner==='me'?0:1]++; M.server=winner; } /* antrenmanda skor yok, servis hep sende */ if(winner==='me'&&M.s&&M.s.from==='me'&&M.s.type==='smash') M.smacSayi=(M.smacSayi||0)+1; setTimeout(gorevKontrol,0);
   if(at){ const p=P(at.x,at.y); burst(p.x,p.y,'rgba(230,255,240,.7)',14,140,'dot',30); wave(p.x,p.y,winner==='me'?'#d8ff5a':'#ff7a6b',70); }
   if(winner==='me'){ txt(why,W/2,H*.42,'#d8ff5a',34,3); cheer(.14); [0,4,7,12].forEach((s,k)=>tone(523*Math.pow(2,s/12),.18,'triangle',.08,k*.07)); kick(5); hap('win'); M.pop[0]=1; if(M.rally>=8||(M.s&&M.s.type==='smash')) for(let k=0;k<26;k++) M.cams.push({x:Math.random()*W,y:8+Math.random()*48,t:-Math.random()*.6}); for(let k=0;k<3;k++) setTimeout(()=>burst(W*(.2+Math.random()*.6),H*.3,['#d8ff5a','#ff7a6b','#7ad7ff'][k],22,260,'spark',100),k*120); }
   else { txt(why,W/2,H*.58,'#ff7a6b',28,3); tone(220,.25,'sawtooth',.05); hap('lose'); M.pop[1]=1; }
@@ -710,6 +792,7 @@ function move(o,x,y,step){ const dx=x-o.x, dy=y-o.y, d=Math.hypot(dx,dy); if(d<1
 function update(dt){
   if(M&&dt>0){ const o=M.op; if(o.px!=null){ o.vx=(o.x-o.px)/dt; o.vy=(o.y-o.py)/dt; } o.px=o.x; o.py=o.y; [M.me,M.op].forEach(q=>{ ayakIsi(q,dt,q===M.me); q.splitT=Math.max(0,(q.splitT||0)-dt); }); }
   if(freeze>0){ freeze-=dt; return; }
+  if(M&&M.ogr&&mode==='play'&&ogrDurdur()) return; /* antrenman: top vuruş yerine gelince oyun durur, parmak hareketi gösterilir */
   if(slowT>0){ slowT-=dt; if(slowT<=0) slow=1; }
   const d=dt*slow*(hitWindow()?(reduce?.7:(easy?.3:.45)*GS.yavas):1);
   zoom=1+(zoom-1)*Math.pow(.0005,dt); shake*=Math.pow(.002,dt); flash=Math.max(0,flash-dt*1.8);
@@ -1039,7 +1122,7 @@ function shuttle(){ const s=M.s; if(!s) return; const g=P(s.x,s.y,0), p=P(s.x,s.
   const I=reachInfo(); if(I){ const R=hitR(p.s);
     const pul=1+Math.sin(performance.now()/60)*.06; ctx.globalCompositeOperation='lighter'; const gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,R*1.3); gr.addColorStop(0,'rgba(216,255,90,.35)'); gr.addColorStop(1,'rgba(216,255,90,0)'); ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(p.x,p.y,R*1.3,0,7); ctx.fill(); ctx.globalCompositeOperation='source-over';
     ctx.strokeStyle=I.lunge?'#ff9f7a':'#d8ff5a'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(p.x,p.y,R*pul,0,7); ctx.stroke(); ctx.strokeStyle='rgba(255,210,58,.9)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(p.x,p.y,R*.33,0,7); ctx.stroke();
-    const hnd=handOf(M.me,'me',s.x,s.z)==='back'?'backhand':'forehand'; const tag=I.kill?'file üstü: hızlı kaydır':I.lunge?'uzak: uzan':I.over?(hnd==='back'?'baş üstü backhand: smaç yok':'baş üstü: hızlı kaydır = smaç'):hnd+': kaydır'; ctx.fillStyle=I.kill?'#ffd27a':I.lunge?'#ff9f7a':'#d8ff5a'; ctx.font=`700 12px ${FONT}`; ctx.textAlign='center'; ctx.fillText(tag,p.x,p.y-R-8); }
+    const hnd=handOf(M.me,'me',s.x,s.z)==='back'?'backhand':'forehand'; const tag=I.kill?'file üstü: hızlı kaydır':I.lunge?'uzak: uzan':I.over?(hnd==='back'?'baş üstü backhand: smaç yok':'baş üstü: hızlı kaydır = smaç'):hnd+': kaydır'; ctx.fillStyle=I.kill?'#ffd27a':I.lunge?'#ff9f7a':'#d8ff5a'; ctx.font=`700 12px ${FONT}`; ctx.textAlign='center'; if(!M.ogr) ctx.fillText(tag,p.x,p.y-R-8); } /* antrenmanda etiket susar: kart başka vuruş istiyorken "smaç" yazıp çelişmesin */
 }
 function hitR(sc){ return Math.max(26,40*sc)*(M&&M.flow?1.25:1)*(easy?1.3:1); }
 /* Parmak izi: raketin süpürdüğü yay. Vuruşta parlar. */
@@ -1091,7 +1174,7 @@ function draw(){
       if(M.energy>0){ rr(bx,by,bw*Math.min(1,M.energy),8,4); ctx.fillStyle=dol?`rgba(255,138,60,${reduce?1:.75+.25*Math.sin(performance.now()/160)})`:'#d8ff5a'; ctx.fill(); }
       ctx.textBaseline='alphabetic'; }
     if(M.sc[0]+M.sc[1]<2&&M.s){ ctx.fillStyle='#9dbab3'; ctx.textAlign='center'; ctx.font=`600 12px ${FONT}`; ctx.fillText(easy?'Top parlayınca kaydır: yön ve güç senin':'Dokun: oraya koş · Top parlayınca kaydır',W/2,H-30); }
-    if(!M.s&&!M.between&&!M.svPending){ /* servis bilgisi (servis hareketi başlayınca kalkar). Önceki hâli fileden başlayan büyük
+    if(!M.s&&!M.between&&!M.svPending&&!M.ogr){ /* servis bilgisi (servis hareketi başlayınca kalkar). Önceki hâli fileden başlayan büyük
          koyu karttı (6–8 satır, 18 px başlık): yasin 2026-10-22 "servislerimde yazı aşırı büyük alan kaplıyor, servis
          animasyonlarını kaçırıyorum". Şimdi ekranın altında, dip çizginin gerisinde ince bir şerit: kortun ortası ve iki
          oyuncu açık kalır. Hareket ipucu yalnız maçın ilk iki servisinde, görevler yalnız 0-0'da ve tek satırda; maç sayısı gibi notlar her zaman. */
@@ -1108,6 +1191,7 @@ function draw(){
       rr(W/2-ww/2,y0,ww,hh,12); ctx.fillStyle='rgba(9,16,17,.74)'; ctx.fill();
       ctx.textAlign='center'; ctx.textBaseline='alphabetic'; let yy=y0+pad;
       satirlar.forEach(q=>{ yy+=q.lh; ctx.font=q.font; ctx.fillStyle=q.col; ctx.fillText(q.t,W/2,yy-4); }); }
+    if(M.ogr) ogrIz();
   }
 }
 let last=performance.now(); function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now; if(!paused) update(dt); draw(); requestAnimationFrame(loop); } requestAnimationFrame(loop);
@@ -1137,12 +1221,13 @@ cv.addEventListener('pointermove',e=>{ if(!swipe.on||!M||mode!=='play') return; 
   const far=Math.hypot(q.x-swipe.x0,q.y-swipe.y0), v=swipeVec(now);
   /* Hedef önizleme: parmak ekrandayken "şu an bıraksan top nereye düşer" rakip kortunda küçük bir hedef olarak görünür. */
   if(far>14&&v.speed>.1){ const I=reachInfo(); if(I){ const pl=shotPlan({...v,tap:false,curved:curvedNow()},I,s,true); M.preview={x:Math.max(SL,Math.min(SR,pl.tx)),y:NET-pl.d,type:pl.type,t:performance.now()}; } }
-  /* 70 px: parmağın kavis çizmesine yer kalsın (slice/aldatma kavisle okunur); topun üstünden geçmek yine anında vurur. */ if(k.d<=R||(far>70&&v.speed>.45)){ if(swipeShot({...v,dist:k.d<=R?k.d:R*1.5,R,side:k.side,curved:curvedNow(),tap:false})) swipe.hit=true; } });
+  /* 70 px: parmağın kavis çizmesine yer kalsın (slice/aldatma kavisle okunur); topun üstünden geçmek yine anında vurur. */ if(!(M.ogr&&M.ogr.dur)&&(k.d<=R||(far>70&&v.speed>.45))){ if(swipeShot({...v,dist:k.d<=R?k.d:R*1.5,R,side:k.side,curved:curvedNow(),tap:false})) swipe.hit=true; } });
 cv.addEventListener('pointerup',e=>{ swooshStop(); if(!swipe.on||!M) return; swipe.on=false; M.preview=null; M.me.prep=0; const q=localXY(e), now=performance.now();
   const tr=swipe.trail; if(tr[tr.length-1].x!==q.x||tr[tr.length-1].y!==q.y) tr.push({x:q.x,y:q.y,t:now});
   if(!M.s&&mode==='play'){ const dy=q.y-swipe.y0, dx=q.x-swipe.x0; if(-dy>30){ const v=swipeVec(now); swipeServe({dx,dy,speed:v.speed}); } return; }
   if(!swipe.hit&&hitWindow()){ const far=Math.hypot(q.x-swipe.x0,q.y-swipe.y0);
     if(far<24){ swipeShot({dx:0,dy:-1,speed:1,dist:hitR(1)*1.5,R:hitR(1),side:0,curved:false,tap:true}); } /* dokunma = güvenli clear */
+    else if(M.ogr&&M.ogr.dur){ const v=swipeVec(now), R=hitR(P(M.s.x,M.s.y,M.s.z).s); swipeShot({...v,dist:Math.min(swipe.minD,1.5)*R,R,side:0,curved:curvedNow(),tap:false}); } /* antrenmanda top durur: parmak topun yanından başlasa bile vuruş parmak kalkınca, bütün hareketin hızıyla okunur (yoksa ilk temas yavaş sayılıp her vuruş drop oluyordu) */
     else { /* "doğru zamanda vurdum ama geçti" hissi (rakip analizi): ıskanın nedeni bir kelimeyle söylenir */
       const p=P(M.me.x,M.me.y), v=swipeVec(now), neden=far<70?'Kısa kaydırdın':v.speed<=.45?'Yavaş kaydırdın':swipe.minD<2.2?'Kıl payı: topun üstünden geç':'Topun uzağından geçtin';
       txt('Iska · '+neden,p.x,p.y-70,'#ffd27a',16,2); noise(.05,'highpass',1200,.05); } }
@@ -1154,13 +1239,13 @@ const menu=document.getElementById('menu'), over=document.getElementById('over')
    Uygulama arka plana geçince (arama, bildirim, ana ekran) kendiliğinden duraklar; dönünce oyuncu "Devam et"e basar,
    top bir anda üstüne düşmez. Ana menüye çıkınca maç bekletilir, menüde "Maça devam et" görünür. */
 let paused=false;
-function ekran(){ const oyunda=!!M&&mode==='play'&&menu.hidden; wrapEl.classList.toggle('oyunda',oyunda); pauseBtn.hidden=!(oyunda&&!paused); const bek=!!(M&&mode==='play'&&paused&&!menu.hidden), st=document.getElementById('start'); document.getElementById('devam').hidden=!bek; st.classList.toggle('ikincil',bek); st.textContent=bek?'Yeni maç başlat':'Oyna'; } /* bekleyen maç varken tek birincil düğme Devam olsun */
+function ekran(){ const oyunda=!!M&&mode==='play'&&menu.hidden; if(oyunda) ogrKart(); else document.getElementById('ogrKart').hidden=true; wrapEl.classList.toggle('oyunda',oyunda); pauseBtn.hidden=!(oyunda&&!paused); const bek=!!(M&&mode==='play'&&paused&&!menu.hidden), st=document.getElementById('start'); document.getElementById('devam').hidden=!bek; st.classList.toggle('ikincil',bek); st.textContent=bek?'Yeni maç başlat':'Oyna'; } /* bekleyen maç varken tek birincil düğme Devam olsun */
 function duraklat(){ if(!M||mode!=='play'||paused||!menu.hidden) return; paused=true; swooshStop(); swipe.on=false; M.preview=null; M.me.prep=0;
   document.getElementById('pScore').textContent=`${M.sc[0]} – ${M.sc[1]}`; document.getElementById('pInfo').textContent=`${target} sayı · Rakip ${M.stil.ad}`+(M.stil.kariyer!=null?` · ${KARIYER[M.stil.kariyer].yer}`:'');
   pauseL.hidden=false; try{ AC&&AC.suspend(); }catch(e){} ekran(); setTimeout(()=>document.getElementById('pDevam').focus(),0); }
 function devamEt(){ if(!paused) return; paused=false; pauseL.hidden=true; menu.hidden=true; last=performance.now(); try{ AC&&AC.resume(); }catch(e){} ekran(); }
 function anaMenu(){ pauseL.hidden=true; over.hidden=true; menu.hidden=false; panelAc('anaEkran'); if(!(M&&mode==='play')){ paused=false; } kariyerYaz(); ekran(); }
-function start(){ menu.hidden=true; over.hidden=true; pauseL.hidden=true; paused=false; try{ AC&&AC.resume(); }catch(e){} newMatch(); ekran(); tone(660,.08,'triangle',.06); }
+function start(){ menu.hidden=true; over.hidden=true; pauseL.hidden=true; paused=false; try{ AC&&AC.resume(); }catch(e){} newMatch(ogrZorla||!ogrBittiMi()); ogrZorla=false; ekran(); tone(660,.08,'triangle',.06); }
 pauseBtn.addEventListener('click',duraklat);
 document.getElementById('pDevam').addEventListener('click',devamEt);
 document.getElementById('devam').addEventListener('click',devamEt);
@@ -1175,6 +1260,9 @@ addEventListener('pagehide',duraklat); /* blur bilerek yok: WebView klavye/izin 
     b.innerHTML=`<span class="sw" style="display:inline-block;vertical-align:-2px;margin-right:6px;background:${SAHA[id].kort};box-shadow:0 0 0 3px ${SAHA[id].cevre}"></span>${SAHA[id].ad}`;
     b.addEventListener('click',()=>{ saha=id; try{ localStorage.setItem('tuytop_saha',id); }catch(e){} row.querySelectorAll('.btn').forEach(c=>c.setAttribute('aria-pressed',c===b)); tone(880,.05,'triangle',.04); }); row.appendChild(b); } }
 document.getElementById('start').addEventListener('click',start);
+document.getElementById('ogrBtn').addEventListener('click',()=>{ ogrZorla=true; start(); });
+document.getElementById('ogrGec').addEventListener('click',()=>ogrBitir(true));
+document.getElementById('ogrTamam').addEventListener('click',()=>{ if(M&&M.ogr){ const a=OGR_ADIM[M.ogr.i]; if(a&&a.bilgi) ogrIlerle(a); } });
 ['mdSerbest','mdKariyer'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{ kariyerModu=id==='mdKariyer'; ['mdSerbest','mdKariyer'].forEach(j=>document.getElementById(j).setAttribute('aria-pressed',j===id)); kariyerYaz(); try{ localStorage.setItem('tuytop_mod',kariyerModu?'k':'s'); }catch(e){} }));
 try{ if(localStorage.getItem('tuytop_mod')==='k') document.getElementById('mdKariyer').click(); }catch(e){}
 document.getElementById('again').addEventListener('click',start);
