@@ -1,4 +1,6 @@
 Bu sürümde yeni:
+- Oyun artık İngilizce de: telefonun dili Türkçe değilse menü, antrenman, maç ve ekipman İngilizce görünür. Türkçe telefonda her şey eskisi gibi Türkçe.
+- Maç uzunluğu üç seçenek: 5 sayı (hızlı), 11 sayı (kısa), 21 sayı (resmî). 7 sayı kalktı; onu seçmiş olan 5 sayı ile başlar.
 - Oyuncular maçın ilk anından itibaren 3D figür olarak çiziliyor. Önceden açılıştan hemen sonra maça girince birkaç saniye yuvarlak kafalı basit çizim görünüyordu. Çok hızlı "Oyna"ya basarsan düğme bir an "Hazırlanıyor…" yazıp kendiliğinden başlar.
 - Uzun servis akıcı: servis hareketi iki kat daha fazla kareyle oynuyor, kısa servis duruşundan uzun servise geçerken vücut artık sıçramıyor.
 - Top biraz küçüldü: önceden oyuncunun kafası kadar görünüyordu.
@@ -8,6 +10,9 @@ Bu sürümde yeni:
 - Tüy, seviye ve ekipman yükseltme önceki sürümdeki gibi.
 
 Nasıl denenir:
+- Türkçe telefonda uygulamayı aç: her şey Türkçe olmalı. Bunu mutlaka kontrol et, İngilizce çıkarsa haber ver.
+- Telefon dilini İngilizce yapıp uygulamayı yeniden aç: menü, Ayarlar, Ekipman, Nasıl oynanır, antrenman kartları ve maç sonu İngilizce olmalı.
+- Ayarlar > Maç uzunluğu: yalnız 5, 11 ve 21 sayı görünmeli.
 0. Uygulamayı tamamen kapatıp aç, menü gelir gelmez hemen "Oyna"ya bas. Maç başladığı anda iki oyuncu da 3D figür olmalı, yuvarlak kafalı çizim hiç görünmemeli.
 1. Uygulamayı aç. Menü takılmadan hemen gelmeli.
 2. Maçta servis sende iken parmağını hızlı ve uzun yukarı kaydır (uzun servis). Oyuncu önce gövdesini çevirip raketi arkaya almalı, hareket akmalı.

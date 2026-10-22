@@ -153,7 +153,7 @@ input[type=range]{width:100%;min-height:44px;accent-color:var(--lime);margin:0}
       <div class="row" role="group" aria-label="Zorluk"><button class="btn" id="mdEasy" aria-pressed="true">Kolay · topa kendin gidersin, sen vur</button><button class="btn" id="mdPro" aria-pressed="false">Usta · koşmak da sende</button></div>
         </div>
         <div class="grup"><span class="lab">Maç uzunluğu</span>
-      <div class="row" role="group" aria-label="Maç uzunluğu"><button class="btn" id="len5" aria-pressed="false">5 sayı (hızlı, ~2 dk)</button><button class="btn" id="len21" aria-pressed="true">21 sayı (resmî)</button><button class="btn" id="len11" aria-pressed="false">11 sayı (kısa)</button><button class="btn" id="len7" aria-pressed="false">7 sayı (hızlı)</button></div>
+      <div class="row" role="group" aria-label="Maç uzunluğu"><button class="btn" id="len5" aria-pressed="false">5 sayı (hızlı, ~2 dk)</button><button class="btn" id="len11" aria-pressed="false">11 sayı (kısa)</button><button class="btn" id="len21" aria-pressed="true">21 sayı (resmî)</button></div>
         </div>
         <div class="grup"><span class="lab">Saha</span>
       <div class="row" id="sahaRow" role="group" aria-label="Saha"></div>
@@ -223,6 +223,18 @@ input[type=range]{width:100%;min-height:44px;accent-color:var(--lime);margin:0}
 </div>
 
 <script>
+/* Dil (Ar-Ge 2026-10-23, yasin "yap"): mağaza global, Türkçe bilmeyen oyuncu antrenmanı okuyamazsa "kontroller bozuk"
+   der. Tek tablo: anahtar Türkçe metnin kendisi (Türkçe davranış birebir aynı kalır), değeri İngilizcesi; {0} yer tutucu.
+   Dil yalnız cihazdan gelir: tr* = Türkçe, başka her dil = İngilizce; ayar satırı yok. HTML'deki sabit metinler ve
+   aria-label'lar açılışta aynı tablodan çevrilir (domCevir). Yeni metin = Tr('…') + aşağıya İngilizcesi. */
+const DIL=(()=>{ try{ return /^tr\b/i.test(navigator.language||'tr')?'tr':'en'; }catch(e){ return 'tr'; } })(), LOC=DIL==='tr'?'tr-TR':'en-US';
+const TR_EN={"nötr":"neutral","Badminton kortu":"Badminton court","Kaydır, kes, smaçla.":"Swipe, slice, smash.","Oyun modu":"Game mode","Hızlı maç":"Quick match","Kariyer":"Career","Maça devam et":"Resume match","Oyna":"Play","Ayarlar":"Settings","Ekipman":"Gear","Nasıl oynanır":"How to play","Vuruş, servis, nefes":"Shots, serves, stamina","‹ Geri":"‹ Back","Zorluk":"Difficulty","Kolay · topa kendin gidersin, sen vur":"Easy · you move to the shuttle by yourself, you just hit","Usta · koşmak da sende":"Pro · you do the running too","Maç uzunluğu":"Match length","5 sayı (hızlı, ~2 dk)":"5 points (quick, ~2 min)","11 sayı (kısa)":"11 points (short)","21 sayı (resmî)":"21 points (official)","Saha":"Court","Kariyerde saha basamağa göre gelir.":"In career mode the court depends on the stage.","Ses":"Sound","Ses açık":"Sound on","Ses kapalı":"Sound off","Seviye ve yükseltmeler":"Level and upgrades","Rakete ya da tele dokununca o takımın smaç sesini duyarsın.":"Tap a racket or string to hear that setup's smash sound.","Raket":"Racket","Tel gerginliği ·":"String tension ·","Tel gerginliği, libre":"String tension, pounds","Bileklik":"Wristband","Kafa bandı":"Headband","Forma":"Shirt","Vur":"Hit","Top parlayınca ekranın herhangi bir yerinde kaydır. Yön kaydırdığın yön, güç kaydırma hızın":"When the shuttle glows, swipe anywhere on the screen. Direction is where you swipe, power is how fast","Dokun":"Tap","Top parlayınca dokunursan güvenli bir clear atarsın":"Tap when the shuttle glows to play a safe clear","Tam orta":"Perfect","Kaydırırken parmağın topun üstünden geçerse mükemmel vuruş olur":"If your finger passes over the shuttle while swiping, the hit is perfect","Koş":"Move","Kolay modda oyuncu topa kendisi koşar, senin işin yalnız vuruş; kısa bir dokunuşla yerini değiştirebilirsin. Usta modda koşmak sende: dokun = oraya koş, yavaş sürükle = parmağı izle":"In Easy mode your player runs to the shuttle and you only hit; a short tap moves you. In Pro mode you run: tap = run there, slow drag = follow your finger","Forehand / backhand":"Forehand / backhand","Top raket tarafında gelirse forehand, öbür tarafta backhand. Backhand clear kısa kalır, drive yavaşlar, smaç olmaz; topu forehand tarafına alacak şekilde dur":"A shuttle on your racket side is a forehand, on the other side a backhand. Backhand clears land short, drives are slower and there is no smash; position yourself to take it on the forehand","Akış":"Flow","Üst üste 4 tam orta: çizgiler altın olur, hedef büyür, şarkıya armoni girer":"4 perfect hits in a row: the lines turn gold, the target grows and the music gains a harmony","Derinlik":"Depth","Topun yerdeki gölgesi ve ona bağlı ince çizgi yüksekliği gösterir. Top sana inerken son saniyede yer çizgisi ve büzülen iniş halkası belirir; yeşilse yetişiyorsun":"The shuttle's shadow and the thin line to it show its height. As it comes down to you, a ground line and a shrinking landing ring appear in the last second; green means you'll make it","Rakip ve görev":"Opponent and missions","Her maçta tarzı farklı bir rakip (Smaşçı, Duvar, File oyuncusu) ve 3 görev var; görevler kazanmaktan bağımsız ikinci ödül. Kaydırırken rakip kortunda beliren hedef, bıraksan topun düşeceği yer":"Every match has an opponent with its own style (Smasher, Wall, Net player) and 3 missions; missions are a second reward apart from winning. While you swipe, the target on the opponent's court shows where the shuttle would land if you let go","Nefes":"Stamina","Smaç, sıçrama ve uzanma nefes yakar; nefesin düşünce yavaşlarsın ve smaç zayıflar. Clear atıp sayı arasında dinlen. Topu tepeden alırsan smaç dikleşir":"Smashes, jumps and lunges burn stamina; when it runs low you slow down and your smash weakens. Play clears and rest between points. Take the shuttle high and your smash gets steeper","Servis":"Serve","Yukarı yavaş kaydırırsan backhand kısa servis atarsın. Aynı duruştan kısa ve sert bir fiske flick olur: top rakibin üstünden dibe gider. Uzun ve hızlı kaydırırsan forehand yüksek servis atarsın":"A slow upward swipe plays a backhand short serve. A short, sharp flick from the same stance is a flick serve: the shuttle goes over the opponent to the back. A long, fast swipe plays a forehand high serve","Slice":"Slice","Kavis çizerek kaydırırsan topu keserek alırsın: top takla atar, beklenenden kısa düşer, rakip yanlış adım atar":"Swipe in a curve to slice the shuttle: it tumbles, lands shorter than expected and wrong-foots the opponent","Raket, tel gerginliği, bileklik, bant ve forma oyunun dinamiklerini, raket sesini ve titreşimi değiştirir":"Racket, string tension, wristband, headband and shirt change how the game plays, the racket sound and the haptics","Antrenmanı yeniden oyna":"Replay the training","Top vuruş alanına girince zaman yavaşlar. Dışarı gidecek topu bırak: sayı senin. Her vuruş ralli şarkısının bir notası; titreşim Android'de.":"Time slows down when the shuttle enters your hitting zone. Leave a shuttle that is going out: the point is yours. Every hit is a note in the rally song; haptics on Android.","Maç bitti":"Match over","Ekipmanı yükselt":"Upgrade gear","Bir maç daha":"Play again","Ana menü":"Main menu","Antrenman":"Training","Antrenmanı geç":"Skip training","Anladım, devam":"Got it, continue","Duraklat":"Pause","Duraklatıldı":"Paused","Devam et":"Resume","Maçı baştan başlat":"Restart match","Denge":"Balanced","Her şeyden biraz":"A bit of everything","Kafa ağır":"Head-heavy","Smaç +12 · clear uzun · drive −7 · tatlı nokta dar":"Smash +12 · long clear · drive −7 · small sweet spot","Kafa hafif":"Head-light","Drive/file +8 · smaç −7 · clear kısa":"Drive/net +8 · smash −7 · short clear","Esnek şaft":"Flexible shaft","Tatlı nokta geniş · sapma az · smaç −10":"Big sweet spot · less spray · smash −10","Yok":"None","Pamuk":"Cotton","Sıyırınca top yarı yarıya az kaçar":"Edge hits stray half as much","Ağırlıklı":"Weighted","Smaç +4 · drive −4":"Smash +4 · drive −4","Ter bandı":"Sweatband","Akış 3 tam ortada açılır":"Flow starts after 3 perfect hits","Odak bandı":"Focus band","Vuruş anı %15 daha yavaş akar · rakip %6 hızlı":"Hit moment 15% slower · opponent 6% faster","Mavi":"Blue","Klasik":"Classic","Fıstık":"Pistachio","Hafif kumaş: koşu +6":"Light fabric: movement +6","Beyaz":"White","Enerji %40 hızlı dolar":"Energy fills 40% faster","Mor":"Purple","Uzanma sonrası toparlanma kısa":"Faster recovery after a lunge","Şampiyon":"Champion","Kariyeri bitirince açılır · yalnız görünüm":"Unlocks when you finish the career · looks only","Gevşek: güç artar, tatlı nokta geniş, tok ve uzun çınlama":"Loose: more power, bigger sweet spot, deep and long ring","Sıkı: kontrol artar, tatlı nokta dar, tiz ve kısa çınlama":"Tight: more control, smaller sweet spot, high and short ring","Orta":"Medium","Kordaj":"Strings","Güç ve kontrol artar; modelin artısı büyür, eksisi küçülür":"More power and control; the model's upside grows and its downside shrinks","Tatlı nokta genişler, gerginliğin eksisi azalır":"Bigger sweet spot, smaller tension downside","Grip":"Grip","Kontrol artar: top daha az sapar":"More control: the shuttle strays less","Nefes daha yavaş tükenir":"Stamina drains more slowly","Tam orta penceresi genişler":"Wider window for perfect hits","Koşu hızlanır, formanın etkisi büyür":"Faster movement, bigger shirt effect","günün ilk galibiyeti +50":"first win of the day +50","yeni basamak +60":"new stage +60","En yüksek seviye":"Max level","Sonraki seviye":"Next level",", kilitli: ":", locked: ","Mahalle salonu":"Local gym","Okul turnuvası":"School tournament","İl şampiyonası":"City championship","Bölge finali":"Regional final","Ulusal lig":"National league","Şampiyonlar kupası":"Champions cup","Salon":"Hall","Turnuva":"Tournament","Okul (ahşap)":"School (wood)","Gece":"Night","Şampiyon! Son basamağı yeniden oynarsın":"Champion! You replay the last stage","Kolay":"Easy","Usta":"Pro","Smaşçı":"Smasher","Her baş üstü topu smaçlar. Derin clear atıp blokla al":"Smashes every overhead. Clear deep and block it back","Duvar":"Wall","Her şeyi geri çevirir, az hata yapar. Drop ve slice ile öne çek":"Returns everything, rarely misses. Pull it forward with drops and slices","File oyuncusu":"Net player","Fileye yakın durur, drop sever. Arkasına lift ve clear at":"Stays near the net and loves drops. Lift and clear behind it","3 slice vuruşu":"3 slice shots","Topu 2 kez tepeden al":"Take the shuttle high twice","10 vuruşluk ralli":"A 10-shot rally","2 file vuruşu":"2 net kills","5 tam orta":"5 perfect hits","2 aldatma":"2 deceptions","3 uzanarak kurtarış":"3 lunging saves","Dışarı giden 2 topu bırak":"Leave 2 shuttles that go out","3 smaç sayısı":"3 smash winners","Antrenör":"Coach","Kısa servis":"Short serve","Oyuncunun önünden yukarı doğru YAVAŞ kaydır.":"Swipe up SLOWLY from in front of the player.","Top fileyi sıyırır, rakibin önüne düşer. Tekler maçlarında en çok atılan servis.":"The shuttle skims the net and drops in front of the opponent. The most common serve in singles.","Flick servis":"Flick serve","Aynı duruştan KISA ve SERT bir fiske yap.":"From the same stance, make a SHORT, SHARP flick.","Hazırlık kısa servisle aynı görünür; rakip öne çıkarken top üstünden dibe gider.":"It looks like a short serve; as the opponent steps forward, the shuttle goes over them to the back.","Yüksek servis":"High serve","UZUN ve HIZLI yukarı kaydır.":"Swipe up LONG and FAST.","Top yükselip rakibin dip çizgisine neredeyse dik iner.":"The shuttle rises and drops almost straight down on the opponent's back line.","Ayağının altındaki halka nefesin. Halkaya dokun.":"The ring under your feet is your stamina. Tap the ring.","Smaç, sıçrama ve uzanma nefes yakar; halka azalınca yavaşlarsın ve smaç zayıflar. Clear atıp sayı arasında dinlenince dolar.":"Smashes, jumps and lunges burn stamina; as the ring shrinks you slow down and your smash weakens. It refills when you play clears and rest between points.","Clear: dibe at":"Clear: hit it deep","Topun içinden yukarı doğru UZUN ve orta hızda kaydır. Sağa sola eğersen top o yöne gider.":"Swipe up through the shuttle, LONG and at medium speed. Angle left or right to send it that way.","Top rakibin arka çizgisine gider; sana yerine dönecek zaman kazandırır.":"The shuttle goes to the opponent's back line and gives you time to get back.","Drop: fileye bırak":"Drop: drop it at the net","Topun üstünden YAVAŞ ve kısa geç.":"Pass over the shuttle SLOWLY and briefly.","Top filenin hemen arkasına düşer; dipteki rakip öne koşmak zorunda kalır.":"The shuttle falls just behind the net; an opponent at the back has to run forward.","Smaç":"Smash","Top başının üstünde. HIZLI ve sert kaydır.":"The shuttle is above your head. Swipe FAST and hard.","Top aşağı doğru en hızlı iner; karşılaması en zor vuruş. Backhand tarafından smaç olmaz.":"The shuttle comes down fastest; the hardest shot to return. There is no smash on the backhand side.","Drive: düz ve sert":"Drive: flat and hard","Top omuz hizasında. HIZLI ve düz kaydır.":"The shuttle is at shoulder height. Swipe FAST and flat.","Top fileyi alçaktan, düz geçer; rakibe hazırlanacak zaman kalmaz.":"The shuttle crosses the net low and flat; the opponent has no time to get ready.","Blok":"Block","Rakip smaç attı. Parmağını AŞAĞI doğru kısa çek.":"The opponent smashed. Pull your finger DOWN briefly.","Raketi topun önüne koyarsın; smacın hızıyla top filenin dibine düşer.":"You put the racket in the way; the smash's speed drops the shuttle right behind the net.","Lift":"Lift","Top alçakta. Yukarı doğru orta hızda kaydır.":"The shuttle is low. Swipe up at medium speed.","Alçak topu rakibin dibine kaldırırsın; fileden kurtulup yerine dönersin.":"You lift a low shuttle to the opponent's back; you escape the net and get back to position.","File vuruşu":"Net kill","Top file üstünde yüksek kaldı. HIZLI ve sert kaydır.":"The shuttle is high above the net. Swipe FAST and hard.","Fileye yakın yüksek top kaçırılmaz: aşağı vurursun, sayı neredeyse kesin.":"Never miss a high shuttle near the net: hit it down and the point is almost certain.","Slice: kesme":"Slice: cut it","Kaydırırken parmağınla bir YAY çiz; sert değil, clear hızında.":"Draw an ARC with your finger as you swipe; not hard, at clear speed.","Raket topu keserek alır; top takla atar, beklenenden kısa düşer ve rakip yanlış adım atar.":"The racket cuts the shuttle; it tumbles, lands shorter than expected and wrong-foots the opponent.","Smaç gücü":"Smash power","Alttaki çubuk smaç gücün. Çubuğa dokun.":"The bar at the bottom is your smash power. Tap the bar.","Topun tam ortasından geçen her vuruş doldurur. Dolunca bir sonraki smaç SIÇRAYARAK smaç olur: en sert vuruşun. Şimdi senin için doldurduk.":"Every hit through the middle of the shuttle fills it. When it is full, your next smash is a JUMP smash: your hardest shot. We filled it for you this time.","Sıçrayarak smaç":"Jump smash","Güç dolu, top başının üstünde. HIZLI ve sert kaydır.":"Power is full and the shuttle is above your head. Swipe FAST and hard.","Oyuncu sıçrar, top dik ve çok hızlı iner. Gücü bitirir; yeniden doldurmak için tam orta vur.":"Your player jumps and the shuttle comes down steep and very fast. It uses up the power; hit perfect shots to refill it.","Antrenör ne derse":"Coach's call","Artık oyun durmuyor. Top gelirken antrenör bir vuruş söyler: onu at.":"The game no longer pauses. As the shuttle comes, the coach calls a shot: play it.","Maçta topu görür görmez karar verirsin. Dört topta kaçını tutturacaksın?":"In a match you decide the moment you see the shuttle. How many of four will you get?","Clear":"Clear","Drop":"Drop","Drive":"Drive","Top sana gelince oyun duracak. ":"The game will pause when the shuttle reaches you. ","Bir daha, bu sefer iz yok. ":"Again, this time without the guide. ","Yavaş: kısa":"Slow: short","Hızlı: flick / yüksek":"Fast: flick / high","Yavaş":"Slow","Hızlı":"Fast","Yukarı kaydır":"Swipe up","Çıkan":"Result","Şu an":"Now","Antrenör: ":"Coach: ","Hızlıydın: yavaşça it":"Too fast: push gently","Yavaş kaldı: kısa ama SERT fiske yap":"Too slow: make a short but SHARP flick","Yavaş kaldı: uzun ve hızlı kaydır":"Too slow: swipe long and fast","Hareket uzun oldu: kısa tut":"Too long: keep it short","Hareket kısa oldu: daha uzun kaydır":"Too short: swipe longer","Kavis okunmadı: kaydırırken bir yay çiz":"No curve detected: draw an arc as you swipe","Parmağını AŞAĞI çek":"Pull your finger DOWN","Aşağı çektin: yukarı kaydır":"You pulled down: swipe up","Backhand tarafından smaç olmaz":"No smash on the backhand side","Yavaş kaldın: daha hızlı kaydır":"Too slow: swipe faster","Hızlıydın: daha yavaş kaydır":"Too fast: swipe slower","sıradaki topta yeniden dene":"try again on the next shuttle","Güzel! Bir daha, bu sefer iz yok":"Nice! Again, this time without the guide","İz geri geldi":"Guide is back","Doğru: ":"Correct: ","Tamam: ":"Done: ","Antrenman bitti. Maç başlıyor!":"Training done. Match starting!","Hedef":"Target","Antrenör diyor":"Coach says","Hedefte! ★":"On target! ★","kaldırdın":"lifted","FİLE VURUŞU":"NET KILL","SIÇRAYARAK SMAÇ":"JUMP SMASH","SMAÇ!":"SMASH!","AKIŞ":"FLOW","Akış bitti":"Flow ended","Aldattın!":"Fooled them!","Bandı sıyırdı!":"Clipped the tape!","Bu sefer rakip aldı":"The opponent got it this time","DIŞARI":"OUT","İÇERİ":"IN","ÇİZGİ KAMERASI":"LINE CAMERA","Dokun: oraya koş · Top parlayınca kaydır":"Tap: run there · Swipe when the shuttle glows","Erken: top parlayınca kaydır":"Too early: swipe when the shuttle glows","File bandı! Top karşıya yuvarlandı":"Net cord! The shuttle rolled over","Fileye takıldı":"Into the net","Rakip fileye taktı":"Opponent hit the net","Dışarı! Bıraktın, sayı senin":"Out! You left it, your point","Dışarı":"Out","Flick servis!":"Flick serve!","Görev tamam: ":"Mission done: ","Görev: ":"Missions: ","Iska · ":"Miss · ","Kazandın":"You won","Kaçtı":"Missed","Kıl payı!":"So close!","Kıl payı: topun üstünden geç":"So close: pass over the shuttle","Kısa kaydırdın":"Swipe was too short","Yavaş kaydırdın":"Swipe was too slow","Topun uzağından geçtin":"You swiped too far from the shuttle","Maç sayısı":"Match point","Rakibin maç sayısı":"Opponent's match point","Uzatma: 2 fark gerekiyor":"Deuce: need a 2-point lead","Rakip servis hatası":"Opponent service fault","Servis hatası":"Service fault","SAYI!":"POINT!","SIÇRAYARAK SMAÇ SAYISI":"JUMP SMASH WINNER","SMAÇ SAYISI":"SMASH WINNER","Sıyırdın":"Edged it","Sıçrayarak smaç hazır":"Jump smash ready","Split step":"Split step","Top parlayınca kaydır: yön ve güç senin":"Swipe when the shuttle glows: you control direction and power","Uzandın!":"Lunge!","Kariyer tamam! Şampiyon forması açıldı.":"Career complete! Champion shirt unlocked.","Yukarı kaydır: yavaş kısa · sert fiske flick · hızlı uzun yüksek":"Swipe up: slow = short · sharp flick = flick · fast and long = high","baş üstü backhand: smaç yok":"overhead backhand: no smash","baş üstü: hızlı kaydır = smaç":"overhead: swipe fast = smash","file üstü: hızlı kaydır":"above the net: swipe fast","uzak: uzan":"far: lunge",": kaydır":": swipe","Backhand, tam orta":"Backhand, perfect","Nefes al: clear at":"Catch your breath: play a clear","Yeni maç başlat":"Start new match","Hazırlanıyor…":"Getting ready…","sağ":"right","sol":"left","yok":"none","Seviye {0}":"Level {0}","{0} Tüy":"{0} Feathers","Yükselt · {0}":"Upgrade · {0}","Sv {0} gerekli":"Lv {0} needed","Sv {0}":"Lv {0}","Tam":"Max","Sonraki seviyeye {0} XP · maç kazandıkça Tüy ve XP gelir":"{0} XP to next level · win matches to earn Feathers and XP","{0} seviye {1}, {2}":"{0} level {1}, {2}","en yüksek":"max","oyuncu seviyesi {0} gerekli":"player level {0} needed","yetersiz Tüy, ":"not enough Feathers, ","{0} Tüy, yükselt":"{0} Feathers, upgrade","Eşit şartlar":"Equal terms","Serbest maçta yükseltmeler sayılmaz":"Upgrades don't count in quick matches","{0} sayı · {1} · {2}":"{0} points · {1} · {2}","{0} · {1} sayı · {2}":"{0} · {1} points · {2}","Rekor ralli":"Best rally","Galibiyet":"Wins","Görev":"Missions"," · Top {0}/{1} · Doğru {2}":" · Shuttle {0}/{1} · Correct {2}","Antrenman {0}/{1}{2}":"Training {0}/{1}{2}","{0} {1}: {2}":"{0} {1}: {2}","Antrenör çağrısı {0}/{1} · {2} kez hedefte":"Coach calls {0}/{1} · {2} on target","{0} oldu · {1}":"{0} · {1}","{0} oldu, istenen {1}":"{0} played, the call was {1}","Yeni basamak açıldı: {0}, rakip {1}.":"New stage unlocked: {0}, opponent {1}.","{0} basamağı seni bekliyor.":"{0} is waiting for you.","+{0} Tüy{1} · +{2} XP":"+{0} Feathers{1} · +{2} XP"," · Seviye {0}!":" · Level {0}!"," · Toplam {0}{1}":" · Total {0}{1}","Rakip {0} · Görev {1}/3 ({2}) · En uzun ralli {3} · {4} smaç · {5} file vuruşu · {6} mükemmel · {7} aldatma · {8} split step · {9} tepeden · {10} uzanma · {11} kez dışarıyı bıraktın":"Opponent {0} · Missions {1}/3 ({2}) · Longest rally {3} · {4} smashes · {5} net kills · {6} perfect · {7} deceptions · {8} split steps · {9} taken high · {10} lunges · {11} outs left","{0} sayı · {1}":"{0} points · {1}","Görev {0}/3":"Missions {0}/3","Servis sende · {0} kare":"Your serve · {0} court","Rakip servis atıyor · {0} kare":"Opponent serving · {0} court","{0} sayı · Rakip {1}":"{0} points · Opponent {1}","Güç":"Power","Kontrol":"Control","Drive/file":"Drive/net","Tatlı nokta":"Sweet spot","Koşu":"Movement","{0} tam orta":"{0} perfect","Rakip: {0}. {1}":"Opponent: {0}. {1}","Ralli {0}":"Rally {0}","Tam orta ×{0}":"Perfect ×{0}","Yeni ralli rekoru: {0}":"New rally record: {0}","{0}/{1} · {2} · {3}":"{0}/{1} · {2} · {3}"};
+function Tr(k,...a){ let v=k; if(DIL!=='tr'&&TR_EN[k]!=null) v=TR_EN[k]; return a.length?v.replace(/\{(\d+)\}/g,(_,i)=>a[+i]):v; }
+function domCevir(kok){ if(DIL==='tr') return; document.documentElement.lang=DIL; const w=document.createTreeWalker(kok||document.body,NodeFilter.SHOW_TEXT);
+  for(let n=w.nextNode();n;n=w.nextNode()){ const t=n.nodeValue, k=t.trim(); if(k&&TR_EN[k]!=null) n.nodeValue=t.replace(k,TR_EN[k]); }
+  (kok||document).querySelectorAll('[aria-label],[title]').forEach(e=>['aria-label','title'].forEach(a=>{ const v=e.getAttribute(a); if(v&&TR_EN[v]!=null) e.setAttribute(a,TR_EN[v]); })); }
+domCevir();
+
 (function(){
 const cv=document.getElementById('cv'), stage=document.getElementById('stage'); let ctx=cv.getContext('2d'); /* let: zemin önbelleği çizerken geçici olarak kendi tuvaline döner */
 const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -450,29 +462,29 @@ sprLoad();
 let sprTintT=0; function sprTintLater(){ clearTimeout(sprTintT); sprTintT=setTimeout(()=>{ if(SPR.ready) sprTint('me'); },0); }
 const GEAR={
   raket:{
-    denge:{ad:'Denge',n:'Her şeyden biraz',guc:1,kontrol:1,hiz:1,tatli:1,ton:1,kafa:1,renk:'#e9eef0'},
-    agir:{ad:'Kafa ağır',n:'Smaç +12 · clear uzun · drive −7 · tatlı nokta dar',guc:1.12,kontrol:.92,hiz:.93,tatli:.85,ton:.9,kafa:.78,renk:'#ff9f7a'},
-    hafif:{ad:'Kafa hafif',n:'Drive/file +8 · smaç −7 · clear kısa',guc:.93,kontrol:1.05,hiz:1.08,tatli:1,ton:1.1,kafa:1.18,renk:'#7ad7ff'},
-    esnek:{ad:'Esnek şaft',n:'Tatlı nokta geniş · sapma az · smaç −10',guc:.9,kontrol:1.3,hiz:1,tatli:1.3,ton:.95,kafa:1,renk:'#d8ff5a'}},
+    denge:{ad:Tr('Denge'),n:Tr('Her şeyden biraz'),guc:1,kontrol:1,hiz:1,tatli:1,ton:1,kafa:1,renk:'#e9eef0'},
+    agir:{ad:Tr('Kafa ağır'),n:Tr('Smaç +12 · clear uzun · drive −7 · tatlı nokta dar'),guc:1.12,kontrol:.92,hiz:.93,tatli:.85,ton:.9,kafa:.78,renk:'#ff9f7a'},
+    hafif:{ad:Tr('Kafa hafif'),n:Tr('Drive/file +8 · smaç −7 · clear kısa'),guc:.93,kontrol:1.05,hiz:1.08,tatli:1,ton:1.1,kafa:1.18,renk:'#7ad7ff'},
+    esnek:{ad:Tr('Esnek şaft'),n:Tr('Tatlı nokta geniş · sapma az · smaç −10'),guc:.9,kontrol:1.3,hiz:1,tatli:1.3,ton:.95,kafa:1,renk:'#d8ff5a'}},
   bileklik:{
-    yok:{ad:'Yok',n:'—'},
-    pamuk:{ad:'Pamuk',n:'Sıyırınca top yarı yarıya az kaçar',kenar:.5,renk:'#e9eef0'},
-    agir:{ad:'Ağırlıklı',n:'Smaç +4 · drive −4',guc:1.04,hiz:.96,renk:'#3a4a4e'}},
+    yok:{ad:Tr('Yok'),n:'—'},
+    pamuk:{ad:Tr('Pamuk'),n:Tr('Sıyırınca top yarı yarıya az kaçar'),kenar:.5,renk:'#e9eef0'},
+    agir:{ad:Tr('Ağırlıklı'),n:Tr('Smaç +4 · drive −4'),guc:1.04,hiz:.96,renk:'#3a4a4e'}},
   bant:{
-    yok:{ad:'Yok',n:'—'},
-    ter:{ad:'Ter bandı',n:'Akış 3 tam ortada açılır',akis:3,renk:'#e9eef0'},
-    odak:{ad:'Odak bandı',n:'Vuruş anı %15 daha yavaş akar · rakip %6 hızlı',yavas:.85,rakip:1.06,renk:'#ffd23a'}},
+    yok:{ad:Tr('Yok'),n:'—'},
+    ter:{ad:Tr('Ter bandı'),n:Tr('Akış 3 tam ortada açılır'),akis:3,renk:'#e9eef0'},
+    odak:{ad:Tr('Odak bandı'),n:Tr('Vuruş anı %15 daha yavaş akar · rakip %6 hızlı'),yavas:.85,rakip:1.06,renk:'#ffd23a'}},
   forma:{
-    mavi:{ad:'Mavi',n:'Klasik',renk:'#4fb8ff'},
-    fistik:{ad:'Fıstık',n:'Hafif kumaş: koşu +6',renk:'#d8ff5a',kosu:1.06},
-    beyaz:{ad:'Beyaz',n:'Enerji %40 hızlı dolar',renk:'#f2f6f4',enerji:1.4},
-    mor:{ad:'Mor',n:'Uzanma sonrası toparlanma kısa',renk:'#b48cff',toparla:.6},
-    sampiyon:{ad:'Şampiyon',n:'Kariyeri bitirince açılır · yalnız görünüm',renk:'#ffc94a',kilit:true}}};
+    mavi:{ad:Tr('Mavi'),n:Tr('Klasik'),renk:'#4fb8ff'},
+    fistik:{ad:Tr('Fıstık'),n:Tr('Hafif kumaş: koşu +6'),renk:'#d8ff5a',kosu:1.06},
+    beyaz:{ad:Tr('Beyaz'),n:Tr('Enerji %40 hızlı dolar'),renk:'#f2f6f4',enerji:1.4},
+    mor:{ad:Tr('Mor'),n:Tr('Uzanma sonrası toparlanma kısa'),renk:'#b48cff',toparla:.6},
+    sampiyon:{ad:Tr('Şampiyon'),n:Tr('Kariyeri bitirince açılır · yalnız görünüm'),renk:'#ffc94a',kilit:true}}};
 /* Tel gerginliği sürekli (18–32 lbs). Fizik gerçek: tel frekansı √gerginlik ile artar (sıkı tel tiz ve kısa çınlar); gevşek tel trambolin
    etkisiyle güç verir ama tatlı nokta büyür ve kontrol düşer, sıkı tel tersi. 26 lbs nötr. */
 let G={raket:'denge',tel:26,bileklik:'yok',bant:'yok',forma:'mavi'};
 try{ const g=JSON.parse(localStorage.getItem('tuytop_gear')||'{}'); for(const k in G){ if(k==='tel'){ const v=typeof g.tel==='string'?+g.tel.replace('t',''):+g.tel; if(v>=18&&v<=32) G.tel=v; } else if(g[k]&&GEAR[k][g[k]]) G[k]=g[k]; } }catch(e){}
-function telStats(T){ const d=26-T; return {ad:T+' lbs',n:T<=22?'Gevşek: güç artar, tatlı nokta geniş, tok ve uzun çınlama':T>=30?'Sıkı: kontrol artar, tatlı nokta dar, tiz ve kısa çınlama':'Orta',
+function telStats(T){ const d=26-T; return {ad:T+' lbs',n:T<=22?Tr('Gevşek: güç artar, tatlı nokta geniş, tok ve uzun çınlama'):T>=30?Tr('Sıkı: kontrol artar, tatlı nokta dar, tiz ve kısa çınlama'):Tr('Orta'),
   guc:1+d*.012,tatli:1+d*.035,kontrol:1-d*.025,ton:Math.sqrt(T/26)}; }
 /* Ekonomi v1 (yasin 2026-10-22: "kişi kendi envanterini upgrade edebilecek, maçlar kazandıkça puan kazanıp level,
    token ve bileklik/forma/kafa bandı/raket/kordaj/grip yükseltmeleri"; "tasarımı kritik, belki IAP'i burada devreye
@@ -486,9 +498,9 @@ function telStats(T){ const d=26-T; return {ad:T+' lbs',n:T<=22?'Gevşek: güç 
    - Modeller bu sürümde herkese açık kalır (eski oyuncunun seçimi elinden alınmasın); model kapıları sonraki adım.
    - "Eşit şartlar": serbest maçta yükseltmeler sayılmaz (saf beceri isteyen ve eski davranışı isteyen oyuncu için).
    - Eski oyuncu: ilk açılışta kazandığı maç başına 25 Tüy (en çok 1.000) + 100 hoş geldin, sıfırdan başlamasın. */
-const YUVA=[{k:'raket',ad:'Raket',n:'Güç ve kontrol artar; modelin artısı büyür, eksisi küçülür'},{k:'tel',ad:'Kordaj',n:'Tatlı nokta genişler, gerginliğin eksisi azalır'},
-  {k:'grip',ad:'Grip',n:'Kontrol artar: top daha az sapar'},{k:'bileklik',ad:'Bileklik',n:'Nefes daha yavaş tükenir'},
-  {k:'bant',ad:'Kafa bandı',n:'Tam orta penceresi genişler'},{k:'forma',ad:'Forma',n:'Koşu hızlanır, formanın etkisi büyür'}];
+const YUVA=[{k:'raket',ad:Tr('Raket'),n:Tr('Güç ve kontrol artar; modelin artısı büyür, eksisi küçülür')},{k:'tel',ad:Tr('Kordaj'),n:Tr('Tatlı nokta genişler, gerginliğin eksisi azalır')},
+  {k:'grip',ad:Tr('Grip'),n:Tr('Kontrol artar: top daha az sapar')},{k:'bileklik',ad:Tr('Bileklik'),n:Tr('Nefes daha yavaş tükenir')},
+  {k:'bant',ad:Tr('Kafa bandı'),n:Tr('Tam orta penceresi genişler')},{k:'forma',ad:Tr('Forma'),n:Tr('Koşu hızlanır, formanın etkisi büyür')}];
 /* Tüy simgesi (yasin 2026-10-22: "Tüy olur, görselle de desteklenir"): top tüyü, gövde çizgisi ve yarık uçlu bayrak. Para
    her yerde sayı + bu simge; renk temadan (currentColor) gelir, ayrı bir para rengi icat edilmez. */
 const TUY_IKON='<svg class="tuyi" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 3.2c-5.6.4-10.4 4.6-11.6 10.6l-.6 3.2 3-.7c5.4-1.3 9.4-6.2 9.7-11.8z" fill="currentColor" opacity=".9"/><path d="M4 21 15.5 8.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M12.6 12.3l2.3.4M10.8 14.6l2.1.5" stroke="#0b1414" stroke-width="1.1" stroke-linecap="round" opacity=".55"/></svg>';
@@ -505,22 +517,22 @@ function yukselt(k){ const sv=EKO.sv[k]||1; if(sv>=10) return; const f=YUK_FIYAT
   EKO.tuy-=f; EKO.sv[k]=sv+1; ekoYaz(); gearStats(); ekoCiz(); document.getElementById('gearStat').innerHTML=gearStatText(); gearSum();
   hap('flow'); [0,4,7,12].forEach((q,i)=>tone(523*Math.pow(2,q/12),.14,'triangle',.05,i*.06)); }
 function ekoCiz(){ const el=document.getElementById('ekoKutu'); if(!el) return; const o=oyuncuSv(), y=o.gerek?Math.round(o.kalan/o.gerek*100):100;
-  let h=`<div class="ust"><span>Seviye ${o.L}</span><span class="tuy">${EKO.tuy.toLocaleString('tr-TR')} Tüy${TUY_IKON}</span></div>
-    <div class="xp" role="progressbar" aria-label="Sonraki seviye" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${y}"><i style="width:${y}%"></i></div>
-    <small class="muted">${o.gerek?`Sonraki seviyeye ${o.gerek-o.kalan} XP · maç kazandıkça Tüy ve XP gelir`:'En yüksek seviye'}</small>`;
+  let h=`<div class="ust"><span>${Tr('Seviye {0}',o.L)}</span><span class="tuy">${Tr('{0} Tüy',EKO.tuy.toLocaleString(LOC))}${TUY_IKON}</span></div>
+    <div class="xp" role="progressbar" aria-label="${Tr('Sonraki seviye')}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${y}"><i style="width:${y}%"></i></div>
+    <small class="muted">${o.gerek?Tr('Sonraki seviyeye {0} XP · maç kazandıkça Tüy ve XP gelir',o.gerek-o.kalan):Tr('En yüksek seviye')}</small>`;
   for(const Y of YUVA){ const sv=EKO.sv[Y.k]||1, f=YUK_FIYAT[sv-1], gk=YUK_SV[sv-1], tam=sv>=10, kilit=!tam&&o.L<gk, az=!tam&&EKO.tuy<f;
-    const ne=tam?'Tam':kilit?`Sv ${gk} gerekli`:az?`${f}${TUY_IKON}`:`Yükselt · ${f}${TUY_IKON}`;
+    const ne=tam?Tr('Tam'):kilit?Tr('Sv {0} gerekli',gk):az?`${f}${TUY_IKON}`:Tr('Yükselt · {0}',f+TUY_IKON);
     h+=`<div class="yuk"><b>${Y.ad} <span class="nok" aria-hidden="true">${'●'.repeat(sv)}${'○'.repeat(10-sv)}</span></b><small>${sv}/10 · ${Y.n}</small>
-      <button class="btn" data-yuk="${Y.k}" ${tam||kilit||az?'disabled':''} aria-label="${Y.ad} seviye ${sv}, ${tam?'en yüksek':kilit?'oyuncu seviyesi '+gk+' gerekli':(az?'yetersiz Tüy, ':'')+f+' Tüy'}">${ne}</button></div>`; }
-  h+=`<button class="chip" id="esitBtn" aria-pressed="${!!EKO.esit}"><span>Eşit şartlar<small>Serbest maçta yükseltmeler sayılmaz</small></span></button>`;
+      <button class="btn" data-yuk="${Y.k}" ${tam||kilit||az?'disabled':''} aria-label="${Tr('{0} seviye {1}, {2}',Y.ad,sv,tam?Tr('en yüksek'):kilit?Tr('oyuncu seviyesi {0} gerekli',gk):(az?Tr('yetersiz Tüy, '):'')+Tr('{0} Tüy, yükselt',f))}">${ne}</button></div>`; }
+  h+=`<button class="chip" id="esitBtn" aria-pressed="${!!EKO.esit}"><span>${Tr('Eşit şartlar')}<small>${Tr('Serbest maçta yükseltmeler sayılmaz')}</small></span></button>`;
   el.innerHTML=h; el.querySelectorAll('[data-yuk]').forEach(b=>b.addEventListener('click',()=>yukselt(b.dataset.yuk)));
   document.getElementById('esitBtn').addEventListener('click',()=>{ EKO.esit=!EKO.esit; ekoYaz(); gearStats(); ekoCiz(); document.getElementById('gearStat').innerHTML=gearStatText(); }); }
 /* Maç sonu ödülü. Değerler 5 sayılık maç için; uzun maç sayı başına adil (7 ×1,4, 11 ×2, 21 ×3,5), Usta ×1,25.
    Kaybetmek de ilerletir (galibiyet 40 / mağlubiyet 15 Tüy). Günün ilk galibiyeti +50; seri ve kaçırma cezası yok. */
-function ekoOdul(won,kariyerIlk){ const f={5:1,7:1.4,11:2,21:3.5}[target]||1, zor=easy?1:1.25, gor=(M.gorevler||[]).filter(g=>g.bitti).length, mk=Math.min(10,M.perfects);
+function ekoOdul(won,kariyerIlk){ const f={5:1,11:2,21:3.5}[target]||1, zor=easy?1:1.25, gor=(M.gorevler||[]).filter(g=>g.bitti).length, mk=Math.min(10,M.perfects);
   let tuy=Math.round(((won?40:15)*f+gor*15+(gor===3?20:0)+mk)*zor), xp=Math.round(((won?50:20)*f+gor*15+mk*2)*zor); const ek=[];
-  const d=new Date(), gun=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; if(won&&EKO.gun!==gun){ EKO.gun=gun; tuy+=50; ek.push('günün ilk galibiyeti +50'); }
-  if(kariyerIlk){ tuy+=60; xp+=40; ek.push('yeni basamak +60'); }
+  const d=new Date(), gun=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; if(won&&EKO.gun!==gun){ EKO.gun=gun; tuy+=50; ek.push(Tr('günün ilk galibiyeti +50')); }
+  if(kariyerIlk){ tuy+=60; xp+=40; ek.push(Tr('yeni basamak +60')); }
   const once=oyuncuSv().L; EKO.tuy+=tuy; EKO.xp+=xp; ekoYaz(); const sonra=oyuncuSv().L;
   return {tuy,xp,ek,once,sonra}; }
 let GS=null;
@@ -536,49 +548,49 @@ gearStats();
    güçlenir: hız çarpanı artar, hata payı azalır. Ödül yalnız görünüm (Şampiyon forması). 2026-10-20'de "parayla ya da
    yükseltmeyle güç yok" kararı vardı (rakip oyunlarda en çok şikâyet); 2026-10-22'de yasin yükseltmeyi istedi: tek oyunculu oyunda
    başka oyuncuya karşı satın alınmış güç olmadığı için küçük güce izin verildi (tavan ~%15–18, ekonomi notu), parayla güç hâlâ yok. Serbest maç eskisi gibi rastgele tarz. */
-const KARIYER=[{stil:'file',g:.88,yer:'Mahalle salonu'},{stil:'smasci',g:.94,yer:'Okul turnuvası'},{stil:'duvar',g:1,yer:'İl şampiyonası'},
-  {stil:'file',g:1.07,yer:'Bölge finali'},{stil:'smasci',g:1.13,yer:'Ulusal lig'},{stil:'duvar',g:1.2,yer:'Şampiyonlar kupası'}];
+const KARIYER=[{stil:'file',g:.88,yer:Tr('Mahalle salonu')},{stil:'smasci',g:.94,yer:Tr('Okul turnuvası')},{stil:'duvar',g:1,yer:Tr('İl şampiyonası')},
+  {stil:'file',g:1.07,yer:Tr('Bölge finali')},{stil:'smasci',g:1.13,yer:Tr('Ulusal lig')},{stil:'duvar',g:1.2,yer:Tr('Şampiyonlar kupası')}];
 /* Saha seçimi (yasin 2026-10-21). Yalnız görünüm değişir, fizik aynı. Kariyerde saha basamağın mekânından gelir
    (mahalle/okul = ahşap, il ve bölge = salon, ulusal ve kupa = turnuva); serbest maçta oyuncunun seçimi. Her zeminde
    beyaz çizgi ve beyaz top okunur kalsın diye zeminler orta tonda tutuldu. */
-const SAHA={salon:{ad:'Salon',kort:'#23725f',tek:'#278066',cevre:'#1b4f45',ust:'#13262a'},
-  turnuva:{ad:'Turnuva',kort:'#1f7a55',tek:'#22845c',cevre:'#1c3d6b',ust:'#101d33'},
-  okul:{ad:'Okul (ahşap)',kort:'#a4703f',tek:'#ab7744',cevre:'#7c5230',ust:'#21170f',tahta:true},
-  park:{ad:'Gece',kort:'#2f5674',tek:'#335d7d',cevre:'#22394c',ust:'#0c1420'}};
+const SAHA={salon:{ad:Tr('Salon'),kort:'#23725f',tek:'#278066',cevre:'#1b4f45',ust:'#13262a'},
+  turnuva:{ad:Tr('Turnuva'),kort:'#1f7a55',tek:'#22845c',cevre:'#1c3d6b',ust:'#101d33'},
+  okul:{ad:Tr('Okul (ahşap)'),kort:'#a4703f',tek:'#ab7744',cevre:'#7c5230',ust:'#21170f',tahta:true},
+  park:{ad:Tr('Gece'),kort:'#2f5674',tek:'#335d7d',cevre:'#22394c',ust:'#0c1420'}};
 const KARIYER_SAHA=['okul','okul','salon','salon','turnuva','turnuva'];
 let saha='salon'; try{ const v=localStorage.getItem('tuytop_saha'); if(SAHA[v]) saha=v; }catch(e){}
 function SAHA_T(){ return SAHA[(M&&M.saha)||saha]; }
 let kariyerModu=false;
 function kariyerRakip(i){ const k=KARIYER[i], b=STIL[k.stil]; return {...b,hiz:b.hiz*k.g,hata:b.hata/k.g,ad:b.ad,kariyer:i}; }
 function kariyerYaz(){ const sn=document.getElementById('sahaNot'); if(sn) sn.hidden=!kariyerModu; const el=document.getElementById('kariyerLine'), k=best.kariyer||0, i=Math.min(k,KARIYER.length-1);
-  if(k>=KARIYER.length) el.textContent='Şampiyon! Son basamağı yeniden oynarsın';
-  else el.textContent=`${i+1}/${KARIYER.length} · ${KARIYER[i].yer} · ${STIL[KARIYER[i].stil].ad}`;
+  if(k>=KARIYER.length) el.textContent=Tr('Şampiyon! Son basamağı yeniden oynarsın');
+  else el.textContent=Tr('{0}/{1} · {2} · {3}',i+1,KARIYER.length,KARIYER[i].yer,STIL[KARIYER[i].stil].ad);
   const bar=document.getElementById('kariyerBar'); if(bar) bar.innerHTML=KARIYER.map((_,j)=>`<i class="${j<k?'ok':j===k?'su':''}"></i>`).join('');
   if(typeof menuOzet==='function') menuOzet(); }
 /* Menü özetleri: mod kartı ve kısayollar seçili ayarı tek satırda gösterir, panel açmadan ne oynanacağı görünür. */
-function menuOzet(){ const z=easy?'Kolay':'Usta', sh=SAHA[saha].ad; const a=document.getElementById('serbestLine'), b=document.getElementById('ayarSum'); if(!a) return;
-  a.textContent=`${target} sayı · ${z} · ${sh}`; b.textContent=`${z} · ${target} sayı · ${sh}`;
-  const bl=document.getElementById('bestLine'); bl.innerHTML=best.rally||best.wins?`<span>Rekor ralli <b>${best.rally}</b></span><span>Galibiyet <b>${best.wins}</b></span><span>Görev <b>${best.gorev||0}</b></span>`:''; }
+function menuOzet(){ const z=easy?Tr('Kolay'):Tr('Usta'), sh=SAHA[saha].ad; const a=document.getElementById('serbestLine'), b=document.getElementById('ayarSum'); if(!a) return;
+  a.textContent=Tr('{0} sayı · {1} · {2}',target,z,sh); b.textContent=Tr('{0} · {1} sayı · {2}',z,target,sh);
+  const bl=document.getElementById('bestLine'); bl.innerHTML=best.rally||best.wins?`<span>${Tr('Rekor ralli')} <b>${best.rally}</b></span><span>${Tr('Galibiyet')} <b>${best.wins}</b></span><span>${Tr('Görev')} <b>${best.gorev||0}</b></span>`:''; }
 const STIL={
-  smasci:{ad:'Smaşçı',ipucu:'Her baş üstü topu smaçlar. Derin clear atıp blokla al',ust:{smash:.62,clear:.23,drop:.15},alt:{clear:.45,drop:.2,drive:.35},hiz:1,hata:1.2,ev:3.2},
-  duvar:{ad:'Duvar',ipucu:'Her şeyi geri çevirir, az hata yapar. Drop ve slice ile öne çek',ust:{smash:.15,clear:.6,drop:.25},alt:{clear:.65,drop:.25,drive:.1},hiz:1.08,hata:.75,ev:3.6},
-  file:{ad:'File oyuncusu',ipucu:'Fileye yakın durur, drop sever. Arkasına lift ve clear at',ust:{smash:.3,clear:.2,drop:.5},alt:{clear:.25,drop:.6,drive:.15},hiz:1,hata:1,ev:2.2}};
+  smasci:{ad:Tr('Smaşçı'),ipucu:Tr('Her baş üstü topu smaçlar. Derin clear atıp blokla al'),ust:{smash:.62,clear:.23,drop:.15},alt:{clear:.45,drop:.2,drive:.35},hiz:1,hata:1.2,ev:3.2},
+  duvar:{ad:Tr('Duvar'),ipucu:Tr('Her şeyi geri çevirir, az hata yapar. Drop ve slice ile öne çek'),ust:{smash:.15,clear:.6,drop:.25},alt:{clear:.65,drop:.25,drive:.1},hiz:1.08,hata:.75,ev:3.6},
+  file:{ad:Tr('File oyuncusu'),ipucu:Tr('Fileye yakın durur, drop sever. Arkasına lift ve clear at'),ust:{smash:.3,clear:.2,drop:.5},alt:{clear:.25,drop:.6,drive:.15},hiz:1,hata:1,ev:2.2}};
 let M=null, mode='menu', target=21, easy=true;
 /* Maç görevleri (Badminton Clash'in Challenge modu, Kule'deki görevler): her maç havuzdan 3 görev; biten görev anında kutlanır, toplam menüde birikir.
    Görevler oyuncuyu yeni vuruşlara iter (slice, tepeden, file), sayı kazanmaktan bağımsız ikinci bir ödül hattı açar. */
 const GOREV=[
-  {id:'slice',ad:'3 slice vuruşu',hedef:3,say:()=>M.slices||0},
-  {id:'tepe',ad:'Topu 2 kez tepeden al',hedef:2,say:()=>M.tepeden},
-  {id:'ralli',ad:'10 vuruşluk ralli',hedef:10,say:()=>M.maxRally},
-  {id:'kill',ad:'2 file vuruşu',hedef:2,say:()=>M.kills},
-  {id:'perf',ad:'5 tam orta',hedef:5,say:()=>M.perfects},
-  {id:'aldat',ad:'2 aldatma',hedef:2,say:()=>M.deceives},
-  {id:'uzan',ad:'3 uzanarak kurtarış',hedef:3,say:()=>M.saves},
-  {id:'out',ad:'Dışarı giden 2 topu bırak',hedef:2,say:()=>M.outsLeft},
-  {id:'smac',ad:'3 smaç sayısı',hedef:3,say:()=>M.smacSayi||0}];
+  {id:'slice',ad:Tr('3 slice vuruşu'),hedef:3,say:()=>M.slices||0},
+  {id:'tepe',ad:Tr('Topu 2 kez tepeden al'),hedef:2,say:()=>M.tepeden},
+  {id:'ralli',ad:Tr('10 vuruşluk ralli'),hedef:10,say:()=>M.maxRally},
+  {id:'kill',ad:Tr('2 file vuruşu'),hedef:2,say:()=>M.kills},
+  {id:'perf',ad:Tr('5 tam orta'),hedef:5,say:()=>M.perfects},
+  {id:'aldat',ad:Tr('2 aldatma'),hedef:2,say:()=>M.deceives},
+  {id:'uzan',ad:Tr('3 uzanarak kurtarış'),hedef:3,say:()=>M.saves},
+  {id:'out',ad:Tr('Dışarı giden 2 topu bırak'),hedef:2,say:()=>M.outsLeft},
+  {id:'smac',ad:Tr('3 smaç sayısı'),hedef:3,say:()=>M.smacSayi||0}];
 function gorevSec(){ const h=GOREV.slice(); const out=[]; while(out.length<3){ out.push(h.splice(Math.floor(Math.random()*h.length),1)[0]); } return out.map(g=>({...g,bitti:false})); }
 function gorevKontrol(){ if(!M||!M.gorevler) return; M.gorevler.forEach(g=>{ if(!g.bitti&&g.say()>=g.hedef){ g.bitti=true; M.gorevBitti++; best.gorev=(best.gorev||0)+1; save();
-  setTimeout(()=>{ txt('Görev tamam: '+g.ad,W/2,H*.3,'#ffd23a',22,3); hap('flow'); [0,4,7,12,16].forEach((k,i)=>tone(660*Math.pow(2,k/12),.18,'triangle',.05,i*.07)); burst(W/2,H*.3,'#ffd23a',16,220,'spark',80); },250); } }); }
+  setTimeout(()=>{ txt(Tr('Görev tamam: ')+g.ad,W/2,H*.3,'#ffd23a',22,3); hap('flow'); [0,4,7,12,16].forEach((k,i)=>tone(660*Math.pow(2,k/12),.18,'triangle',.05,i*.07)); burst(W/2,H*.3,'#ffd23a',16,220,'spark',80); },250); } }); }
 /* Antrenman (yasin 2026-10-22: "oyun motoru dinamiği ile ilgili vuruşlar nasıl yapılır gibi ilk maçta tutorial";
    "durdurup odaklayarak kesme için şunu yap, drive için, dip için clear ve smaç için şunları yap"; "tüm vuruş tipleri
    için ve ayrıca nefes ve smaç gücü alanlarını canlı gösterimle açıkla"). İlk "Oyna"da maç yerine antrenman açılır
@@ -596,40 +608,40 @@ function gorevKontrol(){ if(!M||!M.gorevler) return; M.gorevler.forEach(g=>{ if(
    görünür, top oraya düşerse "Hedefte!". (5) Bilgi adımlarında işaretli alana dokunmak geçirir. (6) Son adım "Antrenör ne
    derse": oyun durmaz, top gelirken antrenör bir vuruş söyler; 4 topta kaçının tuttuğu sayılır (maça köprü). */
 const OGR_ADIM=[
-  {bas:'Kısa servis',met:'Oyuncunun önünden yukarı doğru YAVAŞ kaydır.',neden:'Top fileyi sıyırır, rakibin önüne düşer. Tekler maçlarında en çok atılan servis.',servis:'kisa',iz:'yavas'},
-  {bas:'Flick servis',met:'Aynı duruştan KISA ve SERT bir fiske yap.',neden:'Hazırlık kısa servisle aynı görünür; rakip öne çıkarken top üstünden dibe gider.',servis:'flick',iz:'fiske'},
-  {bas:'Yüksek servis',met:'UZUN ve HIZLI yukarı kaydır.',neden:'Top yükselip rakibin dip çizgisine neredeyse dik iner.',servis:'yuksek',iz:'uzun'},
-  {bas:'Nefes',met:'Ayağının altındaki halka nefesin. Halkaya dokun.',neden:'Smaç, sıçrama ve uzanma nefes yakar; halka azalınca yavaşlarsın ve smaç zayıflar. Clear atıp sayı arasında dinlenince dolar.',bilgi:'nefes'},
-  {bas:'Clear: dibe at',met:'Topun içinden yukarı doğru UZUN ve orta hızda kaydır. Sağa sola eğersen top o yöne gider.',neden:'Top rakibin arka çizgisine gider; sana yerine dönecek zaman kazandırır.',tip:['clear'],iz:'uzun',besle:'clear',dur:I=>I.over},
-  {bas:'Drop: fileye bırak',met:'Topun üstünden YAVAŞ ve kısa geç.',neden:'Top filenin hemen arkasına düşer; dipteki rakip öne koşmak zorunda kalır.',tip:['drop'],iz:'yavas',besle:'clear',dur:I=>I.over},
-  {bas:'Smaç',met:'Top başının üstünde. HIZLI ve sert kaydır.',neden:'Top aşağı doğru en hızlı iner; karşılaması en zor vuruş. Backhand tarafından smaç olmaz.',tip:['smash','jump'],iz:'hizli',besle:'clear',dur:I=>I.over},
-  {bas:'Drive: düz ve sert',met:'Top omuz hizasında. HIZLI ve düz kaydır.',neden:'Top fileyi alçaktan, düz geçer; rakibe hazırlanacak zaman kalmaz.',tip:['drive'],iz:'hizli',besle:'drive',dur:I=>!I.over&&!I.lunge&&!I.kill},
-  {bas:'Blok',met:'Rakip smaç attı. Parmağını AŞAĞI doğru kısa çek.',neden:'Raketi topun önüne koyarsın; smacın hızıyla top filenin dibine düşer.',tip:['block'],iz:'asagi',besle:'smash',dur:()=>true},
-  {bas:'Lift',met:'Top alçakta. Yukarı doğru orta hızda kaydır.',neden:'Alçak topu rakibin dibine kaldırırsın; fileden kurtulup yerine dönersin.',tip:['lift','clear'],iz:'uzun',besle:'drop',dur:I=>!I.over&&I.lunge!==undefined&&M.s.z<1.4},
-  {bas:'File vuruşu',met:'Top file üstünde yüksek kaldı. HIZLI ve sert kaydır.',neden:'Fileye yakın yüksek top kaçırılmaz: aşağı vurursun, sayı neredeyse kesin.',tip:['kill'],iz:'hizli',besle:'gevsek',dur:I=>I.kill},
-  {bas:'Slice: kesme',met:'Kaydırırken parmağınla bir YAY çiz; sert değil, clear hızında.',neden:'Raket topu keserek alır; top takla atar, beklenenden kısa düşer ve rakip yanlış adım atar.',slice:true,iz:'yay',besle:'clear',dur:I=>I.over},
-  {bas:'Smaç gücü',met:'Alttaki çubuk smaç gücün. Çubuğa dokun.',neden:'Topun tam ortasından geçen her vuruş doldurur. Dolunca bir sonraki smaç SIÇRAYARAK smaç olur: en sert vuruşun. Şimdi senin için doldurduk.',bilgi:'guc'},
-  {bas:'Sıçrayarak smaç',met:'Güç dolu, top başının üstünde. HIZLI ve sert kaydır.',neden:'Oyuncu sıçrar, top dik ve çok hızlı iner. Gücü bitirir; yeniden doldurmak için tam orta vur.',tip:['jump'],iz:'hizli',besle:'clear',dur:I=>I.over,guc:true},
-  {bas:'Antrenör ne derse',met:'Artık oyun durmuyor. Top gelirken antrenör bir vuruş söyler: onu at.',neden:'Maçta topu görür görmez karar verirsin. Dört topta kaçını tutturacaksın?',drill:true}];
+  {bas:Tr('Kısa servis'),met:Tr('Oyuncunun önünden yukarı doğru YAVAŞ kaydır.'),neden:Tr('Top fileyi sıyırır, rakibin önüne düşer. Tekler maçlarında en çok atılan servis.'),servis:'kisa',iz:'yavas'},
+  {bas:Tr('Flick servis'),met:Tr('Aynı duruştan KISA ve SERT bir fiske yap.'),neden:Tr('Hazırlık kısa servisle aynı görünür; rakip öne çıkarken top üstünden dibe gider.'),servis:'flick',iz:'fiske'},
+  {bas:Tr('Yüksek servis'),met:Tr('UZUN ve HIZLI yukarı kaydır.'),neden:Tr('Top yükselip rakibin dip çizgisine neredeyse dik iner.'),servis:'yuksek',iz:'uzun'},
+  {bas:Tr('Nefes'),met:Tr('Ayağının altındaki halka nefesin. Halkaya dokun.'),neden:Tr('Smaç, sıçrama ve uzanma nefes yakar; halka azalınca yavaşlarsın ve smaç zayıflar. Clear atıp sayı arasında dinlenince dolar.'),bilgi:'nefes'},
+  {bas:Tr('Clear: dibe at'),met:Tr('Topun içinden yukarı doğru UZUN ve orta hızda kaydır. Sağa sola eğersen top o yöne gider.'),neden:Tr('Top rakibin arka çizgisine gider; sana yerine dönecek zaman kazandırır.'),tip:['clear'],iz:'uzun',besle:'clear',dur:I=>I.over},
+  {bas:Tr('Drop: fileye bırak'),met:Tr('Topun üstünden YAVAŞ ve kısa geç.'),neden:Tr('Top filenin hemen arkasına düşer; dipteki rakip öne koşmak zorunda kalır.'),tip:['drop'],iz:'yavas',besle:'clear',dur:I=>I.over},
+  {bas:Tr('Smaç'),met:Tr('Top başının üstünde. HIZLI ve sert kaydır.'),neden:Tr('Top aşağı doğru en hızlı iner; karşılaması en zor vuruş. Backhand tarafından smaç olmaz.'),tip:['smash','jump'],iz:'hizli',besle:'clear',dur:I=>I.over},
+  {bas:Tr('Drive: düz ve sert'),met:Tr('Top omuz hizasında. HIZLI ve düz kaydır.'),neden:Tr('Top fileyi alçaktan, düz geçer; rakibe hazırlanacak zaman kalmaz.'),tip:['drive'],iz:'hizli',besle:'drive',dur:I=>!I.over&&!I.lunge&&!I.kill},
+  {bas:Tr('Blok'),met:Tr('Rakip smaç attı. Parmağını AŞAĞI doğru kısa çek.'),neden:Tr('Raketi topun önüne koyarsın; smacın hızıyla top filenin dibine düşer.'),tip:['block'],iz:'asagi',besle:'smash',dur:()=>true},
+  {bas:Tr('Lift'),met:Tr('Top alçakta. Yukarı doğru orta hızda kaydır.'),neden:Tr('Alçak topu rakibin dibine kaldırırsın; fileden kurtulup yerine dönersin.'),tip:['lift','clear'],iz:'uzun',besle:'drop',dur:I=>!I.over&&I.lunge!==undefined&&M.s.z<1.4},
+  {bas:Tr('File vuruşu'),met:Tr('Top file üstünde yüksek kaldı. HIZLI ve sert kaydır.'),neden:Tr('Fileye yakın yüksek top kaçırılmaz: aşağı vurursun, sayı neredeyse kesin.'),tip:['kill'],iz:'hizli',besle:'gevsek',dur:I=>I.kill},
+  {bas:Tr('Slice: kesme'),met:Tr('Kaydırırken parmağınla bir YAY çiz; sert değil, clear hızında.'),neden:Tr('Raket topu keserek alır; top takla atar, beklenenden kısa düşer ve rakip yanlış adım atar.'),slice:true,iz:'yay',besle:'clear',dur:I=>I.over},
+  {bas:Tr('Smaç gücü'),met:Tr('Alttaki çubuk smaç gücün. Çubuğa dokun.'),neden:Tr('Topun tam ortasından geçen her vuruş doldurur. Dolunca bir sonraki smaç SIÇRAYARAK smaç olur: en sert vuruşun. Şimdi senin için doldurduk.'),bilgi:'guc'},
+  {bas:Tr('Sıçrayarak smaç'),met:Tr('Güç dolu, top başının üstünde. HIZLI ve sert kaydır.'),neden:Tr('Oyuncu sıçrar, top dik ve çok hızlı iner. Gücü bitirir; yeniden doldurmak için tam orta vur.'),tip:['jump'],iz:'hizli',besle:'clear',dur:I=>I.over,guc:true},
+  {bas:Tr('Antrenör ne derse'),met:Tr('Artık oyun durmuyor. Top gelirken antrenör bir vuruş söyler: onu at.'),neden:Tr('Maçta topu görür görmez karar verirsin. Dört topta kaçını tutturacaksın?'),drill:true}];
 const OGR_TEKRAR=2, OGR_CAGRI=4; /* ustalık: her vuruş iki kez; son adımda dört çağrı */
 /* Hedef alanı: rakip kortunda vuruşun düşmesi gereken bant (y, dip çizgi 0 → file NET). Vuruşların gerçek düşüş
    mesafelerinden (shotPlan d) biraz geniş tutuldu: "Hedefte" ödüldür, adımı geçirmek için şart değil. */
 const OGR_HEDEF={clear:[0,2.4],lift:[0,2.8],slice:[0,4.2],drop:[NET-2.2,NET],block:[NET-2.2,NET],smash:[.5,NET-1.2],jump:[.5,NET-1.2],drive:[.5,4.6],kill:[NET-4.2,NET]};
-const OGR_AD={kisa:'Kısa servis',flick:'Flick servis',yuksek:'Yüksek servis',clear:'Clear',lift:'Lift',drop:'Drop',drive:'Drive',smash:'Smaç',jump:'Sıçrayarak smaç',kill:'File vuruşu',block:'Blok'};
+const OGR_AD={kisa:Tr('Kısa servis'),flick:Tr('Flick servis'),yuksek:Tr('Yüksek servis'),clear:Tr('Clear'),lift:Tr('Lift'),drop:Tr('Drop'),drive:Tr('Drive'),smash:Tr('Smaç'),jump:Tr('Sıçrayarak smaç'),kill:Tr('File vuruşu'),block:Tr('Blok')};
 let ogrZorla=false, ogrEasy=null; /* antrenman Kolay hareketi zorlar; oyuncunun kendi seçimi burada saklanır, maç başında geri gelir */
 function ogrBittiMi(){ try{ return localStorage.getItem('tuytop_antrenman')==='1'; }catch(e){ return true; } } /* depolama yoksa her açılışta antrenman açılmasın */
-function ogrKur(){ M.ogr={i:0,dur:false,top:null,n:0,miss:0,canli:null,son:null,yildiz:0,dene:0,isabet:0,cagri:null,gs:''}; if(ogrEasy===null) ogrEasy=easy; easy=true; M.gorevler=[]; M.stil={...STIL.duvar,ad:'Antrenör',ipucu:'',hata:.45}; M.energy=0; ogrKart(); }
+function ogrKur(){ M.ogr={i:0,dur:false,top:null,n:0,miss:0,canli:null,son:null,yildiz:0,dene:0,isabet:0,cagri:null,gs:''}; if(ogrEasy===null) ogrEasy=easy; easy=true; M.gorevler=[]; M.stil={...STIL.duvar,ad:Tr('Antrenör'),ipucu:'',hata:.45}; M.energy=0; ogrKart(); }
 function ogrKart(){ const k=document.getElementById('ogrKart'), o=M&&M.ogr, a=o&&OGR_ADIM[o.i]; k.hidden=!a||mode!=='play';
-  if(!a) return; const ilr=a.drill?` · Top ${o.dene}/${OGR_CAGRI} · Doğru ${o.isabet}`:a.bilgi?'':` · ${'●'.repeat(o.n)}${'○'.repeat(OGR_TEKRAR-o.n)} ${o.n}/${OGR_TEKRAR}`;
-  document.getElementById('ogrSay').textContent=`Antrenman ${o.i+1}/${OGR_ADIM.length}${ilr}`;
+  if(!a) return; const ilr=a.drill?Tr(' · Top {0}/{1} · Doğru {2}',o.dene,OGR_CAGRI,o.isabet):a.bilgi?'':` · ${'●'.repeat(o.n)}${'○'.repeat(OGR_TEKRAR-o.n)} ${o.n}/${OGR_TEKRAR}`;
+  document.getElementById('ogrSay').textContent=Tr('Antrenman {0}/{1}{2}',o.i+1,OGR_ADIM.length,ilr);
   const izsiz=!a.bilgi&&!a.drill&&o.n>=1&&o.miss<2;
-  document.getElementById('ogrBas').textContent=a.bas; document.getElementById('ogrMet').textContent=(izsiz?'Bir daha, bu sefer iz yok. ':'')+(!a.servis&&!a.bilgi&&!a.drill&&!o.dur?'Top sana gelince oyun duracak. ':'')+a.met; document.getElementById('ogrNeden').textContent=a.neden;
+  document.getElementById('ogrBas').textContent=a.bas; document.getElementById('ogrMet').textContent=(izsiz?Tr('Bir daha, bu sefer iz yok. '):'')+(!a.servis&&!a.bilgi&&!a.drill&&!o.dur?Tr('Top sana gelince oyun duracak. '):'')+a.met; document.getElementById('ogrNeden').textContent=a.neden;
   document.getElementById('ogrTamam').hidden=!a.bilgi; ogrBantKur(a); }
 /* Hız göstergesi: bölgeler oyunun kendi eşikleridir (servis 1,0; vuruş 0,75 / 1,7 px/ms), yani gösterge yalan söylemez.
    Ölçek 0–2,6 px/ms. Blok ve lift hızla değil yönle/uzanmayla okunur: onlarda bant gizlenir, canlı ad kalır. */
 const OGR_MAX=2.6;
-function ogrBolgeler(a){ if(a.servis) return {s:[1.0],ad:['Yavaş: kısa','Hızlı: flick / yüksek']};
-  return {s:[.75,1.7],ad:['Yavaş','Orta','Hızlı']}; }
+function ogrBolgeler(a){ if(a.servis) return {s:[1.0],ad:[Tr('Yavaş: kısa'),Tr('Hızlı: flick / yüksek')]};
+  return {s:[.75,1.7],ad:[Tr('Yavaş'),Tr('Orta'),Tr('Hızlı')]}; }
 function ogrIstenen(a){ const o=M.ogr; return a.drill?o.cagri:a.servis?a.servis:a.slice?'slice':a.tip&&a.tip[0]; }
 function ogrHedefBolge(a){ const w=ogrIstenen(a); if(!w) return null; if(a.servis) return w==='kisa'?0:1;
   return {drop:0,clear:1,slice:1,smash:2,jump:2,drive:2,kill:2}[w]??null; }
@@ -642,8 +654,8 @@ function ogrUygun(a,tip,slice){ const o=M.ogr; if(!tip) return false; if(a.drill
 function ogrGostergeGuncelle(){ const o=M&&M.ogr, a=o&&OGR_ADIM[o.i]; if(!a||a.bilgi) return; const now=performance.now()/1000;
   const g=swipe.on&&o.canli?o.canli:(o.son&&now-o.son.t<2.2?o.son:null), ig=document.getElementById('ogrIgne'), cn=document.getElementById('ogrCanli');
   ig.hidden=!g; if(g){ const x=(Math.min(g.sp,OGR_MAX)/OGR_MAX*100).toFixed(1)+'%'; if(ig.style.left!==x) ig.style.left=x; }
-  let t='', k='canli'; if(g){ const ok=ogrUygun(a,g.tip,g.slice), ad=g.tip?(g.slice?'Slice':OGR_AD[g.tip]||g.tip):'Yukarı kaydır'; t=`${ok?'✓':'✗'} ${g===o.son?'Çıkan':'Şu an'}: ${ad}`; k+=ok?' ok':' yok'; }
-  else if(a.drill&&o.cagri&&M.s&&M.s.from==='op') t='Antrenör: '+OGR_AD[o.cagri];
+  let t='', k='canli'; if(g){ const ok=ogrUygun(a,g.tip,g.slice), ad=g.tip?(g.slice?Tr('Slice'):OGR_AD[g.tip]||g.tip):Tr('Yukarı kaydır'); t=`${ok?'✓':'✗'} ${g===o.son?Tr('Çıkan'):Tr('Şu an')}: ${ad}`; k+=ok?' ok':' yok'; }
+  else if(a.drill&&o.cagri&&M.s&&M.s.from==='op') t=Tr('Antrenör: ')+OGR_AD[o.cagri];
   if(cn.textContent!==t) cn.textContent=t; if(cn.className!==k) cn.className=k; }
 /* Canlı okuma: parmak hareket ettikçe "şu an bıraksan ne çıkar" aynı fonksiyonlarla (shotPlan dry, servis kuralı) hesaplanır. */
 function ogrCanli(q,now){ const o=M.ogr, a=OGR_ADIM[o.i]; if(!a||a.bilgi) return; const v=swipeVec(now); let tip=null, slice=false;
@@ -652,30 +664,30 @@ function ogrCanli(q,now){ const o=M.ogr, a=OGR_ADIM[o.i]; if(!a||a.bilgi) return
   o.canli={sp:v.speed,tip,slice,t:now/1000}; }
 /* Iska ipucu: ne çıktığına ve ne istendiğine göre tek bir düzeltme söylenir. */
 function ogrIpucu(a,e){ const o=M.ogr;
-  if(a.servis){ const w=a.servis, g=e.servis; if(w==='kisa') return 'Hızlıydın: yavaşça it';
-    if(g==='kisa') return w==='flick'?'Yavaş kaldı: kısa ama SERT fiske yap':'Yavaş kaldı: uzun ve hızlı kaydır';
-    return w==='flick'?'Hareket uzun oldu: kısa tut':'Hareket kısa oldu: daha uzun kaydır'; }
+  if(a.servis){ const w=a.servis, g=e.servis; if(w==='kisa') return Tr('Hızlıydın: yavaşça it');
+    if(g==='kisa') return w==='flick'?Tr('Yavaş kaldı: kısa ama SERT fiske yap'):Tr('Yavaş kaldı: uzun ve hızlı kaydır');
+    return w==='flick'?Tr('Hareket uzun oldu: kısa tut'):Tr('Hareket kısa oldu: daha uzun kaydır'); }
   const w=a.drill?o.cagri:a.slice?'slice':a.tip[0], g=e.tip;
-  if(w==='slice') return 'Kavis okunmadı: kaydırırken bir yay çiz';
-  if(w==='block') return 'Parmağını AŞAĞI çek';
-  if(g==='block') return 'Aşağı çektin: yukarı kaydır';
-  if((w==='smash'||w==='jump')&&g==='clear'&&e.sp>1.7) return 'Backhand tarafından smaç olmaz';
+  if(w==='slice') return Tr('Kavis okunmadı: kaydırırken bir yay çiz');
+  if(w==='block') return Tr('Parmağını AŞAĞI çek');
+  if(g==='block') return Tr('Aşağı çektin: yukarı kaydır');
+  if((w==='smash'||w==='jump')&&g==='clear'&&e.sp>1.7) return Tr('Backhand tarafından smaç olmaz');
   const B={drop:0,clear:1,lift:1,smash:2,jump:2,drive:2,kill:2}, bw=B[w], bg=B[g];
-  if(bw!=null&&bg!=null&&bw>bg) return 'Yavaş kaldın: daha hızlı kaydır';
-  if(bw!=null&&bg!=null&&bw<bg) return 'Hızlıydın: daha yavaş kaydır';
-  return 'sıradaki topta yeniden dene'; }
+  if(bw!=null&&bg!=null&&bw>bg) return Tr('Yavaş kaldın: daha hızlı kaydır');
+  if(bw!=null&&bg!=null&&bw<bg) return Tr('Hızlıydın: daha yavaş kaydır');
+  return Tr('sıradaki topta yeniden dene'); }
 function ogrBasari(a){ const o=M.ogr; o.n++; o.miss=0; if(M.s&&M.s.from==='me') M.s.ogrHedef=OGR_HEDEF[ogrIstenen(a)];
   if(o.n>=OGR_TEKRAR){ ogrIlerle(a); return; }
-  txt('Güzel! Bir daha, bu sefer iz yok',W/2,H*.5,'#d8ff5a',20,2); hap('flow'); tone(784,.12,'triangle',.05); if(a.guc) M.energy=1; ogrKart(); }
+  txt(Tr('Güzel! Bir daha, bu sefer iz yok'),W/2,H*.5,'#d8ff5a',20,2); hap('flow'); tone(784,.12,'triangle',.05); if(a.guc) M.energy=1; ogrKart(); }
 function ogrIska(a,e){ const o=M.ogr; o.miss++; const ad=e.servis?OGR_AD[e.servis]:(OGR_AD[e.tip]||e.tip);
-  txt(`${ad} oldu · ${ogrIpucu(a,e)}`,W/2,H*.5,'#ffd27a',16,2); if(o.miss===2&&o.n>0) setTimeout(()=>txt('İz geri geldi',W/2,H*.55,'#9dbab3',14,1),500); ogrKart(); }
+  txt(Tr('{0} oldu · {1}',ad,ogrIpucu(a,e)),W/2,H*.5,'#ffd27a',16,2); if(o.miss===2&&o.n>0) setTimeout(()=>txt(Tr('İz geri geldi'),W/2,H*.55,'#9dbab3',14,1),500); ogrKart(); }
 /* Son adım: antrenör her topta bir vuruş çağırır. Yüksek topta (servis, clear beslemesi) clear/drop/smaç; antrenör
    drive çağırınca topu düz besler. Aynı çağrı arka arkaya gelmez. Smaç çağrısına sıçrayarak smaç da sayılır. */
 function ogrCagriSec(yuksek){ const o=M.ogr, l=yuksek?['clear','drop','smash']:['clear','drop','smash','drive']; let c; do c=l[Math.floor(Math.random()*l.length)]; while(c===o.cagriSon);
   o.cagri=c; o.cagriSon=c; o.cagriT=performance.now()/1000; ogrKart(); return c; }
 function ogrCagriSonuc(e){ const o=M.ogr, c=o.cagri; if(!c) return; o.cagri=null; o.dene++;
-  if(e.tip===c||(c==='smash'&&e.tip==='jump')){ o.isabet++; if(M.s&&M.s.from==='me') M.s.ogrHedef=OGR_HEDEF[c]; txt('Doğru: '+OGR_AD[c],W/2,H*.5,'#d8ff5a',20,2); tone(784,.12,'triangle',.05); }
-  else txt(`${OGR_AD[e.tip]||e.tip} oldu, istenen ${OGR_AD[c]}`,W/2,H*.5,'#ffd27a',16,2);
+  if(e.tip===c||(c==='smash'&&e.tip==='jump')){ o.isabet++; if(M.s&&M.s.from==='me') M.s.ogrHedef=OGR_HEDEF[c]; txt(Tr('Doğru: ')+OGR_AD[c],W/2,H*.5,'#d8ff5a',20,2); tone(784,.12,'triangle',.05); }
+  else txt(Tr('{0} oldu, istenen {1}',OGR_AD[e.tip]||e.tip,OGR_AD[c]),W/2,H*.5,'#ffd27a',16,2);
   ogrCagriBitti(); }
 function ogrCagriBitti(){ const o=M.ogr; ogrKart(); if(o.dene>=OGR_CAGRI) ogrIlerle(OGR_ADIM[o.i]); }
 /* Bilgi adımı: işaretli alana dokunmak geçirir. Dokunma alanı çizilen halkadan/çubuktan 22 px geniş (≥44 pt). */
@@ -684,7 +696,7 @@ function ogrBilgiDokun(q){ const o=M.ogr, a=OGR_ADIM[o.i]; if(!a||!a.bilgi) retu
   else ic=q.y>H-60;
   if(ic) ogrIlerle(a); return true; }
 function ogrIlerle(a){ const o=M.ogr; o.dur=false; o.i++; o.n=0; o.miss=0; o.son=null; o.canli=null; if(a.bilgi==='nefes') M.nefes=1;
-  txt('Tamam: '+a.bas,W/2,H*.5,'#d8ff5a',22,2); hap('flow'); [0,4,7].forEach((k,i)=>tone(660*Math.pow(2,k/12),.14,'triangle',.05,i*.06));
+  txt(Tr('Tamam: ')+a.bas,W/2,H*.5,'#d8ff5a',22,2); hap('flow'); [0,4,7].forEach((k,i)=>tone(660*Math.pow(2,k/12),.14,'triangle',.05,i*.06));
   const b=OGR_ADIM[o.i]; if(!b){ setTimeout(()=>ogrBitir(false),1400); } else { if(b.bilgi==='nefes') M.nefes=.55; if(b.bilgi==='guc'||b.guc) M.energy=1; if(b.bilgi) o.dur=true; }
   ogrKart(); }
 function ogrOlay(e){ const o=M&&M.ogr; if(!o) return; if(o.dur){ o.dur=false; ogrKart(); } const a=OGR_ADIM[o.i]; if(!a||a.bilgi) return;
@@ -700,7 +712,7 @@ function ogrDurdur(){ const o=M.ogr, a=OGR_ADIM[o.i]; if(!a) return false; if(o.
   o.top=s; o.dur=true; ogrKart(); hap('flow'); tone(880,.06,'triangle',.05); return true; }
 function ogrBitir(gec){ try{ localStorage.setItem('tuytop_antrenman','1'); }catch(e){}
   if(!M||!M.ogr) return; const o=M.ogr; M.ogr=null; document.getElementById('ogrKart').hidden=true;
-  if(!gec){ txt('Antrenman bitti. Maç başlıyor!',W/2,H*.4,'#d8ff5a',24,3); txt(`Antrenör çağrısı ${o.isabet}/${OGR_CAGRI} · ${o.yildiz} kez hedefte`,W/2,H*.46,'#ffd23a',16,2); }
+  if(!gec){ txt(Tr('Antrenman bitti. Maç başlıyor!'),W/2,H*.4,'#d8ff5a',24,3); txt(Tr('Antrenör çağrısı {0}/{1} · {2} kez hedefte',o.isabet,OGR_CAGRI,o.yildiz),W/2,H*.46,'#ffd23a',16,2); }
   setTimeout(()=>{ if(mode==='play'&&M&&!M.ogr){ newMatch(false); ekran(); } },gec?0:1600); }
 /* Canlı parmak izi: adımın istediği hareket topun (serviste oyuncunun) üstünden geçen kesikli bir çizgi ve onu izleyen
    bir parmak noktasıyla gösterilir; hız farkı noktanın hızıyla okunur (yavaş drop, sert smaç). Hareketi azalt açıksa
@@ -727,11 +739,11 @@ function ogrIz(){ const o=M.ogr, a=OGR_ADIM[o.i]; if(!a||mode!=='play'||paused) 
 function ogrHedefCiz(a){ const k=ogrIstenen(a), h=!a.servis&&k&&OGR_HEDEF[k]; if(!h) return; const [y0,y1]=h;
   const c=[P(SL,y0),P(SR,y0),P(SR,y1),P(SL,y1)]; ctx.save(); ctx.beginPath(); c.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)); ctx.closePath();
   ctx.fillStyle='rgba(216,255,90,.10)'; ctx.fill(); ctx.setLineDash([6,5]); ctx.lineWidth=2; ctx.strokeStyle='rgba(216,255,90,.6)'; ctx.stroke(); ctx.setLineDash([]);
-  const m=P(MID,(y0+y1)/2); ctx.font=`700 12px ${FONT}`; ctx.textAlign='center'; ctx.fillStyle='rgba(216,255,90,.85)'; ctx.fillText('Hedef',m.x,m.y+4); ctx.restore(); }
+  const m=P(MID,(y0+y1)/2); ctx.font=`700 12px ${FONT}`; ctx.textAlign='center'; ctx.fillStyle='rgba(216,255,90,.85)'; ctx.fillText(Tr('Hedef'),m.x,m.y+4); ctx.restore(); }
 /* Antrenör çağrısı: top gelirken büyük harfle, oyuncunun üstünde. Hareketi azalt açıkken nabız yok. */
 function ogrCagriCiz(o,now){ if(!o.cagri||!M.s||M.s.dead||M.s.from!=='op') return; const p=P(M.me.x,M.me.y), y=Math.min(p.y-120,H*.62), b=reduce?1:1+.06*Math.max(0,1-(now-o.cagriT)*3);
-  ctx.save(); ctx.font=`800 ${Math.round(30*b)}px ${FONT}`; ctx.textAlign='center'; ctx.lineWidth=5; ctx.strokeStyle='rgba(8,16,17,.85)'; const t=OGR_AD[o.cagri].toLocaleUpperCase('tr')+'!';
-  ctx.strokeText(t,W/2,y); ctx.fillStyle='#d8ff5a'; ctx.fillText(t,W/2,y); ctx.font=`700 12px ${FONT}`; ctx.lineWidth=3; ctx.strokeText('Antrenör diyor',W/2,y-30); ctx.fillStyle='#cfe3dc'; ctx.fillText('Antrenör diyor',W/2,y-30); ctx.restore(); }
+  ctx.save(); ctx.font=`800 ${Math.round(30*b)}px ${FONT}`; ctx.textAlign='center'; ctx.lineWidth=5; ctx.strokeStyle='rgba(8,16,17,.85)'; const t=OGR_AD[o.cagri].toLocaleUpperCase(LOC)+'!';
+  ctx.strokeText(t,W/2,y); ctx.fillStyle='#d8ff5a'; ctx.fillText(t,W/2,y); ctx.font=`700 12px ${FONT}`; ctx.lineWidth=3; ctx.strokeText(Tr('Antrenör diyor'),W/2,y-30); ctx.fillStyle='#cfe3dc'; ctx.fillText(Tr('Antrenör diyor'),W/2,y-30); ctx.restore(); }
 function ogrOk(x1,y1,x2,y2,kisa){ const a=Math.atan2(y2-y1,x2-x1), k=12; ctx.save(); ctx.strokeStyle=ctx.strokeStyle||'#fff'; ctx.lineWidth=3; ctx.lineCap='round'; ctx.beginPath(); if(!kisa){ ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); }
   ctx.moveTo(x2-k*Math.cos(a-.5),y2-k*Math.sin(a-.5)); ctx.lineTo(x2,y2); ctx.lineTo(x2-k*Math.cos(a+.5),y2-k*Math.sin(a+.5)); ctx.stroke(); ctx.restore(); }
 function newMatch(ogr){ gearStats(); M={me:{x:MID,y:L-2.2,sw:0,dive:0,jump:0,prep:0,vx:0,vy:0,tx:null,ty:null,stun:0},op:{x:MID,y:2.2,sw:0,dive:0,jump:0},sc:[0,0],server:'me',rally:0,maxRally:0,energy:0,nefes:1,tepeden:0,s:null,trail:[],smashes:0,perfects:0,outsLeft:0,between:false,wait:0,serveFaults:0};
@@ -752,7 +764,7 @@ function setupServe(){ if(M.ogr){ const a=OGR_ADIM[M.ogr.i]; if(a&&!a.bilgi) M.s
   M.wait=sv==='op'?1.0:0; M.hint=sv==='me'; M.svPending=null; M.me.svAnim=M.op.svAnim=null;
   { const r=Math.random(); M.op.svTur=r<.58?'kisa':r<.8?'flick':'yuksek'; } /* rakip servis türünü önceden seçer, duruşu ona göre görünür; flick kısa servisle aynı duruştan */
   if(M.ogr) M.op.svTur='yuksek'; M.op.svClip=SERVIS[M.op.svTur].klip; M.me.svClip='serve_bh';
-  if(M.sc[0]+M.sc[1]===0&&M.stil&&!M.ogr){ M.serveMsg=`Rakip: ${M.stil.ad}. ${M.stil.ipucu}`; }
+  if(M.sc[0]+M.sc[1]===0&&M.stil&&!M.ogr){ M.serveMsg=Tr('Rakip: {0}. {1}',M.stil.ad,M.stil.ipucu); }
 }
 
 function startFlight(from,vx,vy,vz,hp,isServe,type,isSuper){
@@ -768,7 +780,7 @@ function startFlight(from,vx,vy,vz,hp,isServe,type,isSuper){
   rallyNote(M.rally-1,from==='me',from==='me'&&M.flow); if(M.rally>=6) kickDrum(.12+Math.min(.12,M.rally*.008)); if(type==='smash') whistle();
   crowdLevel(.01+Math.min(.06,M.rally*.0045));
   if(from==='me'){ const n=type==='smash'?16:M.flow?12:6; for(let k=0;k<n;k++){ const a=Math.random()*Math.PI*2; parts.push({x:sp.x,y:sp.y,vx:Math.cos(a)*600,vy:Math.sin(a)*600,t:0,life:.18,col:M.flow?'#ffd23a':'#ffffff',r:1,kind:'streak',rot:0,vr:0}); } }
-  if(M.rally>2&&M.rally%5===0){ if(M.rally%10===0) txt(`Ralli ${M.rally}`,W/2,H*.5,'#d8ff5a',30,2); tone(523*Math.pow(2,Math.min(M.rally,30)/24),.2,'triangle',.07); }
+  if(M.rally>2&&M.rally%5===0){ if(M.rally%10===0) txt(Tr('Ralli {0}',M.rally),W/2,H*.5,'#d8ff5a',30,2); tone(523*Math.pow(2,Math.min(M.rally,30)/24),.2,'triangle',.07); }
   planIntercept();
 }
 /* Karşılayan için yolu önceden hesapla: baş üstünde alabiliyorsa yüksekte (smaç şansı), değilse yere düşmeden en alçak noktada. */
@@ -783,10 +795,10 @@ function nefesHalka(){ if(!M||mode!=='play') return; const n=M.nefes; M.halkaA=M
   ctx.save(); ctx.globalAlpha=A; ctx.lineCap='round';
   ctx.lineWidth=Math.max(3,4.5*s); ctx.strokeStyle='rgba(8,16,17,.55)'; ctx.beginPath(); ctx.ellipse(p.x,p.y,rx,ry,0,0,7); ctx.stroke();
   if(n>.01){ ctx.strokeStyle=dusuk?`rgba(255,159,122,${nab})`:'#7ad7ff'; ctx.lineWidth=Math.max(2.5,3.5*s); ctx.beginPath(); ctx.ellipse(p.x,p.y,rx,ry,0,Math.PI/2-n*Math.PI,Math.PI/2+n*Math.PI); ctx.stroke(); }
-  if(dusuk){ ctx.font=`800 ${Math.max(11,12*s)}px ${FONT}`; ctx.textAlign='left'; ctx.lineWidth=3; ctx.lineJoin='round'; ctx.strokeStyle='rgba(8,16,17,.85)'; ctx.strokeText('Nefes',p.x+rx+6,p.y+4); ctx.fillStyle='#ff9f7a'; ctx.fillText('Nefes',p.x+rx+6,p.y+4); }
+  if(dusuk){ ctx.font=`800 ${Math.max(11,12*s)}px ${FONT}`; ctx.textAlign='left'; ctx.lineWidth=3; ctx.lineJoin='round'; ctx.strokeStyle='rgba(8,16,17,.85)'; ctx.strokeText(Tr('Nefes'),p.x+rx+6,p.y+4); ctx.fillStyle='#ff9f7a'; ctx.fillText(Tr('Nefes'),p.x+rx+6,p.y+4); }
   ctx.restore(); }
 function nefesF(){ return M.nefes<.4?.8+.5*M.nefes:1; }
-function yor(v){ M.nefes=Math.max(0,M.nefes-v*(GS.yorK||1)); if(M.nefes<.25&&!M.nefesUyari){ M.nefesUyari=true; const p=P(M.me.x,M.me.y); txt('Nefes al: clear at',p.x,p.y+40,'#7ad7ff',16,2); } if(M.nefes>.5) M.nefesUyari=false; }
+function yor(v){ M.nefes=Math.max(0,M.nefes-v*(GS.yorK||1)); if(M.nefes<.25&&!M.nefesUyari){ M.nefesUyari=true; const p=P(M.me.x,M.me.y); txt(Tr('Nefes al: clear at'),p.x,p.y+40,'#7ad7ff',16,2); } if(M.nefes>.5) M.nefesUyari=false; }
 function meSpd(){ return 5.2*GS.kosu*nefesF()*(M.split?1.3:1); }
 function behind(){ return Math.max(0,M.sc[1]-M.sc[0]); }
 function opSpd(){ return GS.rakip*M.stil.hiz*(easy?3.2:3.6)+Math.min(1.1,(M.sc[0]+M.sc[1])*.04)-Math.min(.8,behind()*.12); }
@@ -796,7 +808,7 @@ function planIntercept(){ const s=M.s, r=simulate(s.x,s.y,s.z,s.vx,s.vy,s.vz,tru
   s.landPred={x:r.x,y:r.y,t:r.t,net:r.net}; if(r.net) s.netPred=r.net; const mySide=p=>recv==='me'?p.y>NET:p.y<NET;
   let react=recv==='me'?0:.18; const spd=recv==='me'?meSpd():opSpd();
   /* Aldatma: tutulup son anda bırakılan vuruşta rakip geç ve ters yöne çıkar (hold & flick). */
-  if(recv==='op'&&M.deceive){ react+=.3; M.op.fakeUntil=M.clock+.32; M.op.fakeX=Math.max(SL,Math.min(SR,2*MID-r.x)); M.deceive=false; M.deceives++; const p=P(M.op.x,M.op.y); txt('Aldattın!',p.x,p.y-60,'#7ad7ff',24,2); tone(740,.1,'triangle',.06); tone(988,.12,'triangle',.06,.08); }
+  if(recv==='op'&&M.deceive){ react+=.3; M.op.fakeUntil=M.clock+.32; M.op.fakeX=Math.max(SL,Math.min(SR,2*MID-r.x)); M.deceive=false; M.deceives++; const p=P(M.op.x,M.op.y); txt(Tr('Aldattın!'),p.x,p.y-60,'#7ad7ff',24,2); tone(740,.1,'triangle',.06); tone(988,.12,'triangle',.06,.08); }
   const need=(p,reach)=>Math.max(0,Math.hypot(p.x-P0.x,p.y-P0.y)-reach)/spd+react+t0;
   let pick=null, overhead=false, kill=false, lunge=false;
   const cands=r.path.filter(p=>mySide(p)&&p.z>.25&&p.z<3.0);
@@ -812,7 +824,7 @@ function planIntercept(){ const s=M.s, r=simulate(s.x,s.y,s.z,s.vx,s.vy,s.vz,tru
     const q=Math.random(), T=overhead?M.stil.ust:M.stil.alt, keys=Object.keys(T); let acc=0, pick=keys[keys.length-1]; for(const k of keys){ acc+=T[k]; if(q<acc){ pick=k; break; } } M.icpt.opType=pick; }
 }
 /* Split step: rakip vururken küçük sıçrama. Daha hızlı çıkış = daha çok baş üstü top. */
-function doSplit(){ M.split=true; M.splits++; const p=P(M.me.x,M.me.y); if(M.splits<=2) txt('Split step',p.x,p.y+24,'#7ad7ff',16); M.me.jump=Math.max(M.me.jump,.5); tone(1200,.04,'square',.03); if(M.s&&M.s.from==='op') planIntercept(); }
+function doSplit(){ M.split=true; M.splits++; const p=P(M.me.x,M.me.y); if(M.splits<=2) txt(Tr('Split step'),p.x,p.y+24,'#7ad7ff',16); M.me.jump=Math.max(M.me.jump,.5); tone(1200,.04,'square',.03); if(M.s&&M.s.from==='op') planIntercept(); }
 /* Çizgi kuralı (BWF Law 1.1 + 13): çizgiler 40 mm genişliğindedir ve sınırladıkları alana dahildir; ölçüler çizgilerin
    dış kenarına göredir. Topun mantarı (Ø ~26 mm) çizgiye değdiyse top İÇERİ. Eski kural yalnız top merkezini çizginin
    koordinatıyla karşılaştırıyordu: çizgiye yarısı değen top dışarı sayılıyordu (yasin 2026-10-20 "çizgiye teması
@@ -840,8 +852,8 @@ function reachInfo(){ const s=M&&M.s; if(!s||s.dead||s.from!=='op'||s.y<=NET||s.
   const d=Math.hypot(s.x-M.me.x,s.y-M.me.y), kill=s.y-NET<2.3&&s.z>NETH+.2;
   const R1=easy?1.45:1.15, R2=easy?2.2:1.75; if(d<=R1) return {lunge:false,over:s.z>2.0,kill,d}; if(d<=R2&&s.z<1.5) return {lunge:true,over:false,kill:false,d}; return null; }
 function hitWindow(){ return !!reachInfo(); }
-const PREV_TR={lift:'Lift',kill:'File vuruşu',jump:'Sıçrayarak smaç',smash:'Smaç',block:'Blok'};
-const KIND_TR={lift:'kaldırdın',kill:'FİLE VURUŞU',jump:'SIÇRAYARAK SMAÇ',smash:'SMAÇ!',drive:'Drive',drop:'Drop',clear:'Clear',block:'Blok'};
+const PREV_TR={lift:Tr('Lift'),kill:Tr('File vuruşu'),jump:Tr('Sıçrayarak smaç'),smash:Tr('Smaç'),block:Tr('Blok')};
+const KIND_TR={lift:Tr('kaldırdın'),kill:Tr('FİLE VURUŞU'),jump:Tr('SIÇRAYARAK SMAÇ'),smash:Tr('SMAÇ!'),drive:Tr('Drive'),drop:Tr('Drop'),clear:Tr('Clear'),block:Tr('Blok')};
 /* Kesişten vuruş: yön = parmağın yönü, hız = güç ve tür, topun merkezine uzaklık = isabet. */
 /* Vuruş planı: kaydırmadan tür + hedef. Hem gerçek vuruş hem de parmak hâlâ ekrandayken gösterilen hedef önizlemesi (dry) bunu kullanır,
    böylece önizleme ile gerçek vuruş asla ayrışmaz. (Tennis Clash: kaydırırken yörüngeyi şekillendirme.) */
@@ -879,11 +891,11 @@ function swipeShot(sw){ const s=M.s, I=reachInfo(); if(M.between||!s||!I) return
   if(q==='poor'){ const k=1+(Math.random()-.5)*.16; vx*=k; vy*=k; vz*=k; }
   const p=P(hp.x,hp.y,hp.z);
   if(q==='perfect'){ M.perfects++; M.pstreak++; M.energy=Math.min(1,M.energy+.34*GS.enerji); flash=Math.max(flash,.14); flashCol='255,255,255';
-    if(M.pstreak===GS.akis&&!M.flow){ M.flow=true; setTimeout(()=>{ txt('AKIŞ',W/2,H*.36,'#ffd23a',44,3); hap('flow'); [0,2,4,7,9,12].forEach((k,i)=>tone(523*Math.pow(2,k/12),.25,'triangle',.05,i*.06)); },120); }
-    const lbl=(type==='jump'||type==='smash'||type==='kill')?KIND_TR[type]:M.pstreak>1?`Tam orta ×${M.pstreak}`:(bh&&(type==='clear'||type==='drive')?'Backhand, tam orta':'Tam orta');
+    if(M.pstreak===GS.akis&&!M.flow){ M.flow=true; setTimeout(()=>{ txt(Tr('AKIŞ'),W/2,H*.36,'#ffd23a',44,3); hap('flow'); [0,2,4,7,9,12].forEach((k,i)=>tone(523*Math.pow(2,k/12),.25,'triangle',.05,i*.06)); },120); }
+    const lbl=(type==='jump'||type==='smash'||type==='kill')?KIND_TR[type]:M.pstreak>1?Tr('Tam orta ×{0}',M.pstreak):(bh&&(type==='clear'||type==='drive')?Tr('Backhand, tam orta'):Tr('Tam orta'));
     txt(lbl,p.x,p.y-40,type==='jump'?'#ff8a3c':'#d8ff5a',type==='jump'?36:26,(type==='jump'||type==='smash'||type==='kill'||M.pstreak>=3)?2:1); burst(p.x,p.y,'#d8ff5a',18,280,'spark'); tone(660*Math.pow(2,Math.min(M.pstreak,12)/12),.12,'sine',.06,.02); hitstop(.06); punch(1.03); }
-  else { M.pstreak=0; if(M.flow){ M.flow=false; txt('Akış bitti',W/2,H*.36,'#9dbab3',18); } if(q==='poor') txt('Sıyırdın',p.x,p.y-40,'#9dbab3',18); }
-  if(I.lunge){ M.me.dive=1; M.me.stun=.35*GS.toparla; M.saves++; yor(.15); if(M.saves<=3) txt('Uzandın!',p.x,p.y-64,'#ffd27a',22); } /* öğretici: maçta ilk 3 kez */
+  else { M.pstreak=0; if(M.flow){ M.flow=false; txt(Tr('Akış bitti'),W/2,H*.36,'#9dbab3',18); } if(q==='poor') txt(Tr('Sıyırdın'),p.x,p.y-40,'#9dbab3',18); }
+  if(I.lunge){ M.me.dive=1; M.me.stun=.35*GS.toparla; M.saves++; yor(.15); if(M.saves<=3) txt(Tr('Uzandın!'),p.x,p.y-64,'#ffd27a',22); } /* öğretici: maçta ilk 3 kez */
   if(type==='jump') M.me.jump=1;
   
   if(type==='kill'){ M.kills++; kick(8); }
@@ -914,7 +926,7 @@ function servisAt(who,tur,tx,ty){ const o=who==='me'?M.me:M.op, S=SERVIS[tur], d
   o.svClip=klip; o.svAnim={clip:klip,t:0,d:reduce?sure*.6:sure};
   M.svPending=()=>{ const [vx,vy,vz]=aim(hp,tx,ty,'angle',S.aci);
     if(tur==='flick'&&(who==='op'||Math.random()<.75)) M.deceive=who==='me'; /* çoğu flick rakibi kısa servise hazırlıksız yakalar */
-    startFlight(who,vx,vy,vz,hp,true,tur==='kisa'?'drop':'clear'); if(tur==='flick'&&who==='op'){ const p=P(M.me.x,M.me.y); txt('Flick servis!',p.x,p.y-70,'#ffd27a',16,2); } }; }
+    startFlight(who,vx,vy,vz,hp,true,tur==='kisa'?'drop':'clear'); if(tur==='flick'&&who==='op'){ const p=P(M.me.x,M.me.y); txt(Tr('Flick servis!'),p.x,p.y-70,'#ffd27a',16,2); } }; }
 function swipeServe(sw){ if(M.s||M.between||M.server!=='me'||M.wait>0||M.svPending) return; M.hint=false;
   const b=M.serveBox, cx=(b.x[0]+b.x[1])/2, r=Math.max(-1.3,Math.min(1.3,sw.dx/Math.max(50,Math.abs(sw.dy)))), mesafe=Math.hypot(sw.dx,sw.dy);
   const tur=sw.speed>1.0?(mesafe<95?'flick':'yuksek'):'kisa', d=tur==='kisa'?SSL+.45:tur==='flick'?6.0:6.2;
@@ -938,22 +950,22 @@ function point(winner,why,at){ if(M.between) return; M.between=true; if(M.ogr&&M
   if(at){ const p=P(at.x,at.y); burst(p.x,p.y,'rgba(230,255,240,.7)',14,140,'dot',30); wave(p.x,p.y,winner==='me'?'#d8ff5a':'#ff7a6b',70); }
   if(winner==='me'){ txt(why,W/2,H*.42,'#d8ff5a',34,3); cheer(.14); [0,4,7,12].forEach((s,k)=>tone(523*Math.pow(2,s/12),.18,'triangle',.08,k*.07)); kick(5); hap('win'); M.pop[0]=1; if(M.rally>=8||(M.s&&M.s.type==='smash')) for(let k=0;k<26;k++) M.cams.push({x:Math.random()*W,y:8+Math.random()*48,t:-Math.random()*.6}); for(let k=0;k<3;k++) setTimeout(()=>burst(W*(.2+Math.random()*.6),H*.3,['#d8ff5a','#ff7a6b','#7ad7ff'][k],22,260,'spark',100),k*120); }
   else { txt(why,W/2,H*.58,'#ff7a6b',28,3); tone(220,.25,'sawtooth',.05); hap('lose'); M.pop[1]=1; }
-  if(M.rally>best.rally){ best.rally=M.rally; save(); if(M.rally>=6) setTimeout(()=>txt(`Yeni ralli rekoru: ${M.rally}`,W/2,H*.5,'#7ad7ff',22,3),500); }
-  const [a,b]=M.sc, cap=target===21?30:target===11?15:target===7?10:7, done=(Math.max(a,b)>=target&&Math.abs(a-b)>=2)||Math.max(a,b)>=cap;
+  if(M.rally>best.rally){ best.rally=M.rally; save(); if(M.rally>=6) setTimeout(()=>txt(Tr('Yeni ralli rekoru: {0}',M.rally),W/2,H*.5,'#7ad7ff',22,3),500); }
+  const [a,b]=M.sc, cap=target===21?30:target===11?15:7, done=(Math.max(a,b)>=target&&Math.abs(a-b)>=2)||Math.max(a,b)>=cap;
   if(done){ slow=.3; slowT=.9; setTimeout(endMatch,1400); }
-  else { if(Math.max(a,b)>=target-1&&a!==b&&Math.abs(a-b)<=1) M.serveMsg=a>b?'Maç sayısı':'Rakibin maç sayısı'; else if(a===b&&a>=target-1) M.serveMsg='Uzatma: 2 fark gerekiyor';
+  else { if(Math.max(a,b)>=target-1&&a!==b&&Math.abs(a-b)<=1) M.serveMsg=a>b?Tr('Maç sayısı'):Tr('Rakibin maç sayısı'); else if(a===b&&a>=target-1) M.serveMsg=Tr('Uzatma: 2 fark gerekiyor');
     setTimeout(()=>{ if(M&&mode==='play'){ const msg=M.serveMsg; setupServe(); M.serveMsg=msg; } },1300); }
 }
 function endMatch(){ mode='over'; crowdLevel(.004); underwater(false); const won=M.sc[0]>M.sc[1]; if(won){ best.wins++; save(); }
   let kNot=''; if(M.stil.kariyer!=null){ const i=M.stil.kariyer;
-    if(won&&i===(best.kariyer||0)){ M.kariyerIlk=true; best.kariyer=i+1; if(best.kariyer>=KARIYER.length){ best.sampiyon=true; kNot='Kariyer tamam! Şampiyon forması açıldı.'; buildGear(); } else kNot=`Yeni basamak açıldı: ${KARIYER[i+1].yer}, rakip ${STIL[KARIYER[i+1].stil].ad}.`; save(); }
-    else if(!won) kNot=`${KARIYER[i].yer} basamağı seni bekliyor.`; save(); kariyerYaz(); }
+    if(won&&i===(best.kariyer||0)){ M.kariyerIlk=true; best.kariyer=i+1; if(best.kariyer>=KARIYER.length){ best.sampiyon=true; kNot=Tr('Kariyer tamam! Şampiyon forması açıldı.'); buildGear(); } else kNot=Tr('Yeni basamak açıldı: {0}, rakip {1}.',KARIYER[i+1].yer,STIL[KARIYER[i+1].stil].ad); save(); }
+    else if(!won) kNot=Tr('{0} basamağı seni bekliyor.',KARIYER[i].yer); save(); kariyerYaz(); }
   { const od=ekoOdul(won,M.kariyerIlk); const yuk=YUVA.some(Y=>{ const sv=EKO.sv[Y.k]||1; return sv<10&&EKO.tuy>=YUK_FIYAT[sv-1]&&od.sonra>=YUK_SV[sv-1]; });
-    document.getElementById('oOdul').innerHTML=`+${od.tuy} Tüy${TUY_IKON} · +${od.xp} XP`+(od.ek.length?` (${od.ek.join(', ')})`:'')+(od.sonra>od.once?` · Seviye ${od.sonra}!`:'')+` · Toplam ${EKO.tuy.toLocaleString('tr-TR')}${TUY_IKON}`; /* metin bizim ürettiğimiz sayılar ve sabitler, kullanıcı girdisi yok */
+    document.getElementById('oOdul').innerHTML=Tr('+{0} Tüy{1} · +{2} XP',od.tuy,TUY_IKON,od.xp)+(od.ek.length?` (${od.ek.join(', ')})`:'')+(od.sonra>od.once?Tr(' · Seviye {0}!',od.sonra):'')+Tr(' · Toplam {0}{1}',EKO.tuy.toLocaleString(LOC),TUY_IKON); /* metin bizim ürettiğimiz sayılar ve sabitler, kullanıcı girdisi yok */
     document.getElementById('oYukselt').hidden=!yuk; ekoCiz(); gearSum(); if(od.sonra>od.once){ hap('flow'); } }
-  document.getElementById('oTitle').textContent=(won?'Kazandın':'Bu sefer rakip aldı')+(kNot?' · '+kNot:'');
+  document.getElementById('oTitle').textContent=(won?Tr('Kazandın'):Tr('Bu sefer rakip aldı'))+(kNot?' · '+kNot:'');
   document.getElementById('oScore').textContent=`${M.sc[0]} – ${M.sc[1]}`;
-  document.getElementById('oInfo').textContent=`Rakip ${M.stil.ad} · Görev ${M.gorevBitti}/3 (${M.gorevler.filter(g=>g.bitti).map(g=>g.ad).join(', ')||'yok'}) · En uzun ralli ${M.maxRally} · ${M.smashes} smaç · ${M.kills} file vuruşu · ${M.perfects} mükemmel · ${M.deceives} aldatma · ${M.splits} split step · ${M.tepeden} tepeden · ${M.saves} uzanma · ${M.outsLeft} kez dışarıyı bıraktın`;
+  document.getElementById('oInfo').textContent=Tr('Rakip {0} · Görev {1}/3 ({2}) · En uzun ralli {3} · {4} smaç · {5} file vuruşu · {6} mükemmel · {7} aldatma · {8} split step · {9} tepeden · {10} uzanma · {11} kez dışarıyı bıraktın',M.stil.ad,M.gorevBitti,M.gorevler.filter(g=>g.bitti).map(g=>g.ad).join(', ')||Tr('yok'),M.maxRally,M.smashes,M.kills,M.perfects,M.deceives,M.splits,M.tepeden,M.saves,M.outsLeft);
   over.hidden=false; paused=false; pauseL.hidden=true; ekran(); if(won){ cheer(.18); for(let k=0;k<6;k++) setTimeout(()=>burst(W*(.15+Math.random()*.7),H*(.2+Math.random()*.3),['#d8ff5a','#ff7a6b','#7ad7ff'][k%3],30,300,'spark',120),k*130); } }
 
 /* Oyuncu hareketi: hedefe ivmeyle koşar (≈14 m/s²), hedefe yaklaşınca frenler. Hızlı yön değişiminde ayakkabı gıcırtısı ve toz. */
@@ -1025,17 +1037,17 @@ function update(dt){
            fileye değip geçen top geçerlidir). Önceden banda değen her top vurana geri dönüyordu. Tahmin bunu bilmez:
            karşı oyuncu için gerçek hayattaki gibi şanslı, alınması zor bir top. */
         if(lim-s.z<.03&&Math.abs(s.vy)>6){ s.vy=(py>NET?-1:1)*1.3; s.vx*=.3; s.vz=.7; s.netCord=true; netImpulse(s.x,s.z,sp,true); netThud(.3,true); hap('net');
-          const p=P(s.x,NET,s.z); txt('File bandı! Top karşıya yuvarlandı',p.x,p.y-36,'#ffd27a',17,2); }
+          const p=P(s.x,NET,s.z); txt(Tr('File bandı! Top karşıya yuvarlandı'),p.x,p.y-36,'#ffd27a',17,2); }
         else { const tape=lim-s.z<.06; s.vx*=tape?.4:.15; s.vy=(py>NET?1:-1)*(tape?.25:.15+.85*k); s.vz=tape?.3:Math.min(0,s.vz*.2); s.netHit=true; s.netK=k;
         const p=P(s.x,NET,s.z); burst(p.x,p.y,'#ffffff',4+Math.round(8*k),60+90*k,'feather'); netThud(k,tape); hap('net'); } }
-      else if(lim-s.z>-.045&&s.z>lim){ /* bandı sıyırdı: top geçti ama kordon titredi */ netImpulse(s.x,s.z,Math.hypot(s.vx,s.vy,s.vz),true); const p=P(s.x,NET,s.z); txt('Bandı sıyırdı!',p.x,p.y-36,'#ffd27a',18); tone(1900,.05,'triangle',.05); } }
+      else if(lim-s.z>-.045&&s.z>lim){ /* bandı sıyırdı: top geçti ama kordon titredi */ netImpulse(s.x,s.z,Math.hypot(s.vx,s.vy,s.vz),true); const p=P(s.x,NET,s.z); txt(Tr('Bandı sıyırdı!'),p.x,p.y-36,'#ffd27a',18); tone(1900,.05,'triangle',.05); } }
     if(s.z<=0){ s.z=0; land(); return; } }
   const sp=P(s.x,s.y,s.z); M.trail.push(sp); if(M.trail.length>(s.type==='smash'?14:8)) M.trail.shift();
   const I=M.icpt;
   if(s.from==='me'){ if(I&&I.who==='op'&&!I.leave){ if(M.op.fakeUntil>M.clock) move(M.op,M.op.fakeX,M.op.y,1.6*d); else move(M.op,Math.max(-.4,Math.min(CW+.4,I.x+hitSide(M.op,'op',I,s))),I.y-.3,opSpd()*d); /* rakip de aynı kural (onun sağı = -x) */
       if(I.opType==='smash'&&I.t-s.t<.32&&I.t-s.t>0) M.op.jump=Math.max(M.op.jump,1-(I.t-s.t)/.32*.6);
       if(s.t>=I.t){ opHit(); return; } }
-    else { move(M.op,s.landPred.x,s.landPred.y-.4,2.2*d); if(!M.op.dive&&s.landPred&&!isOut(s.landPred.x,s.landPred.y,s.serve)&&!(s.landPred.net&&!s.landPred.net.ok)&&s.t>s.landPred.t-.25){ M.op.dive=1; const p=P(M.op.x,M.op.y); txt('Kıl payı!',p.x,p.y-40,'#ffd27a',20); if(!reduce){ slow=.35; slowT=.3; } } }
+    else { move(M.op,s.landPred.x,s.landPred.y-.4,2.2*d); if(!M.op.dive&&s.landPred&&!isOut(s.landPred.x,s.landPred.y,s.serve)&&!(s.landPred.net&&!s.landPred.net.ok)&&s.t>s.landPred.t-.25){ M.op.dive=1; const p=P(M.op.x,M.op.y); txt(Tr('Kıl payı!'),p.x,p.y-40,'#ffd27a',20); if(!reduce){ slow=.35; slowT=.3; } } }
   }
   else { move(M.op,MID,M.stil.ev,2.0*d); }
 }
@@ -1044,11 +1056,11 @@ function land(){ const s=M.s; s.dead=true; const at={x:s.x,y:s.y}; const hitter=
   const big=s.type==='smash'; if(!s.netHit){ M.marks.push({x:s.x,y:s.y,t:0,big,cr:Array.from({length:big?5:0},()=>Math.random()*6.28)}); floorPat(big); }
   /* Çizgi kamerası: kıl payı topta büyütülmüş iz gösterilir, karar santimle yazılır. */
   if(!s.netHit){ const m=lineMargin(s.x,s.y,s.serve); if(m<.15){ const pay=sinirPayi(s.x,s.y,s.serve); M.hawk={x:s.x,y:s.y,serve:s.serve,in:pay>=0,cm:Math.max(1,Math.round(Math.abs(pay)*100)),deg:pay>=0&&pay<LW+2*RC,t:0}; drumroll(); hap('hawk'); setTimeout(()=>{ if(M.hawk){ tone(M.hawk.in?880:330,.3,'triangle',.07); gasp(.07); } },380); } }
-  if(s.netHit){ point(other,hitter==='me'?'Fileye takıldı':'Rakip fileye taktı',at); return; }
+  if(s.netHit){ point(other,hitter==='me'?Tr('Fileye takıldı'):Tr('Rakip fileye taktı'),at); return; }
   const out=isOut(s.x,s.y,s.serve);
-  if(M.ogr&&s.ogrHedef&&hitter==='me'&&!out&&s.y>=s.ogrHedef[0]&&s.y<=s.ogrHedef[1]){ M.ogr.yildiz++; const p=P(s.x,s.y); txt('Hedefte! ★',p.x,p.y-30,'#ffd23a',20,2); tone(1320,.1,'triangle',.05); }
-  if(out){ if(other==='me') M.outsLeft++; point(other, s.serve?(hitter==='me'?'Servis hatası':'Rakip servis hatası'):(hitter==='me'?'Dışarı':'Dışarı! Bıraktın, sayı senin'),at); }
-  else { if(s.type==='smash'&&hitter==='me'){ kick(10); flash=.35; flashCol='216,255,90'; hitstop(.1); M.op.dive=1; gasp(.09); } point(hitter, hitter==='me'?(s.super?'SIÇRAYARAK SMAÇ SAYISI':s.type==='smash'?'SMAÇ SAYISI':'SAYI!'):'Kaçtı',at); }
+  if(M.ogr&&s.ogrHedef&&hitter==='me'&&!out&&s.y>=s.ogrHedef[0]&&s.y<=s.ogrHedef[1]){ M.ogr.yildiz++; const p=P(s.x,s.y); txt(Tr('Hedefte! ★'),p.x,p.y-30,'#ffd23a',20,2); tone(1320,.1,'triangle',.05); }
+  if(out){ if(other==='me') M.outsLeft++; point(other, s.serve?(hitter==='me'?Tr('Servis hatası'):Tr('Rakip servis hatası')):(hitter==='me'?Tr('Dışarı'):Tr('Dışarı! Bıraktın, sayı senin')),at); }
+  else { if(s.type==='smash'&&hitter==='me'){ kick(10); flash=.35; flashCol='216,255,90'; hitstop(.1); M.op.dive=1; gasp(.09); } point(hitter, hitter==='me'?(s.super?Tr('SIÇRAYARAK SMAÇ SAYISI'):s.type==='smash'?Tr('SMAÇ SAYISI'):Tr('SAYI!')):Tr('Kaçtı'),at); }
 }
 
 /* ---- çizim ---- */
@@ -1356,7 +1368,7 @@ function shuttle(){ const s=M.s; if(!s) return; const g=P(s.x,s.y,0), p=P(s.x,s.
   const I=reachInfo(); if(I){ const R=hitR(p.s);
     const pul=1+Math.sin(performance.now()/60)*.06; ctx.globalCompositeOperation='lighter'; const gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,R*1.3); gr.addColorStop(0,'rgba(216,255,90,.35)'); gr.addColorStop(1,'rgba(216,255,90,0)'); ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(p.x,p.y,R*1.3,0,7); ctx.fill(); ctx.globalCompositeOperation='source-over';
     ctx.strokeStyle=I.lunge?'#ff9f7a':'#d8ff5a'; ctx.lineWidth=2.5; ctx.beginPath(); ctx.arc(p.x,p.y,R*pul,0,7); ctx.stroke(); ctx.strokeStyle='rgba(255,210,58,.9)'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.arc(p.x,p.y,R*.33,0,7); ctx.stroke();
-    const hnd=handOf(M.me,'me',s.x,s.z)==='back'?'backhand':'forehand'; const tag=I.kill?'file üstü: hızlı kaydır':I.lunge?'uzak: uzan':I.over?(hnd==='back'?'baş üstü backhand: smaç yok':'baş üstü: hızlı kaydır = smaç'):hnd+': kaydır'; ctx.fillStyle=I.kill?'#ffd27a':I.lunge?'#ff9f7a':'#d8ff5a'; ctx.font=`700 12px ${FONT}`; ctx.textAlign='center'; if(!M.ogr) ctx.fillText(tag,p.x,p.y-R-8); } /* antrenmanda etiket susar: kart başka vuruş istiyorken "smaç" yazıp çelişmesin */
+    const hnd=handOf(M.me,'me',s.x,s.z)==='back'?'backhand':'forehand'; const tag=I.kill?Tr('file üstü: hızlı kaydır'):I.lunge?Tr('uzak: uzan'):I.over?(hnd==='back'?Tr('baş üstü backhand: smaç yok'):Tr('baş üstü: hızlı kaydır = smaç')):hnd+Tr(': kaydır'); ctx.fillStyle=I.kill?'#ffd27a':I.lunge?'#ff9f7a':'#d8ff5a'; ctx.font=`700 12px ${FONT}`; ctx.textAlign='center'; if(!M.ogr) ctx.fillText(tag,p.x,p.y-R-8); } /* antrenmanda etiket susar: kart başka vuruş istiyorken "smaç" yazıp çelişmesin */
 }
 function hitR(sc){ return Math.max(26,40*sc)*(M&&M.flow?1.25:1)*(easy?1.3:1); }
 /* Parmak izi: raketin süpürdüğü yay. Vuruşta parlar. */
@@ -1371,8 +1383,8 @@ function hawkEye(h){ const cx=W/2, cy=H*.22, R=74, e=Math.min(1,h.t/.18), k=1+2.
   ctx.fillRect(lx(b.x[0]),-R,lw,2*R); ctx.fillRect(lx(b.x[1])-lw,-R,lw,2*R); ctx.fillRect(-R,ly(b.y[0]),2*R,lw); ctx.fillRect(-R,ly(b.y[1])-lw,2*R,lw);
   if(h.t>.36){ const q=Math.min(1,(h.t-.36)/.12); ctx.fillStyle=h.in?'rgba(216,255,90,.95)':'rgba(255,122,107,.95)'; ctx.beginPath(); ctx.arc(0,0,RC*S*q,0,7); ctx.fill(); } /* iz = mantarın gerçek izi (Ø 26 mm) */
   ctx.restore(); ctx.lineWidth=4; ctx.strokeStyle='rgba(8,16,17,.9)'; ctx.beginPath(); ctx.arc(0,0,R,0,7); ctx.stroke(); ctx.lineWidth=2; ctx.strokeStyle='#ffffff'; ctx.stroke();
-  ctx.font=`600 11px ${FONT}`; ctx.fillStyle='#9dbab3'; ctx.textAlign='center'; ctx.fillText('ÇİZGİ KAMERASI',0,-R-8);
-  if(h.t>.36){ ctx.font=`800 20px ${FONT}`; ctx.lineWidth=5; ctx.strokeStyle='rgba(8,16,17,.9)'; const tt=(h.in?'İÇERİ':'DIŞARI')+` · ${h.cm} cm`; ctx.lineJoin='round'; ctx.strokeText(tt,0,R+24); ctx.fillStyle=h.in?'#d8ff5a':'#ff7a6b'; ctx.fillText(tt,0,R+24); }
+  ctx.font=`600 11px ${FONT}`; ctx.fillStyle='#9dbab3'; ctx.textAlign='center'; ctx.fillText(Tr('ÇİZGİ KAMERASI'),0,-R-8);
+  if(h.t>.36){ ctx.font=`800 20px ${FONT}`; ctx.lineWidth=5; ctx.strokeStyle='rgba(8,16,17,.9)'; const tt=(h.in?Tr('İÇERİ'):Tr('DIŞARI'))+` · ${h.cm} cm`; ctx.lineJoin='round'; ctx.strokeText(tt,0,R+24); ctx.fillStyle=h.in?'#d8ff5a':'#ff7a6b'; ctx.fillText(tt,0,R+24); }
   ctx.restore(); }
 function draw(){
   ctx.setTransform(DPR,0,0,DPR,0,0); ctx.save();
@@ -1399,27 +1411,27 @@ function draw(){
     for(const c of M.cams){ if(c.t<0) continue; const a=1-c.t/.5; ctx.globalCompositeOperation='lighter'; const g=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,10); g.addColorStop(0,`rgba(255,255,255,${a})`); g.addColorStop(1,'rgba(255,255,255,0)'); ctx.fillStyle=g; ctx.fillRect(c.x-10,c.y-10,20,20); ctx.globalCompositeOperation='source-over'; }
     if(M.hawk) hawkEye(M.hawk);
     ctx.fillStyle=M.server==='me'?GS.forma.renk:'#ff7a6b'; ctx.beginPath(); ctx.arc(M.server==='me'?W/2-52:W/2+52,25,3.5,0,7); ctx.fill();
-    { ctx.font=`600 11px ${FONT}`; const hw=Math.max(ctx.measureText(`${target} sayı · ${M.stil.ad}`).width,60)+14; rr(5,11,hw,54,10); ctx.fillStyle='rgba(8,16,17,.72)'; ctx.fill(); } /* tribün seyircisi yazıların altına düşmesin */ ctx.font=`600 12px ${FONT}`; ctx.fillStyle='#9dbab3'; ctx.textAlign='left'; ctx.fillText(`Ralli ${M.rally}`,12,26); ctx.font=`600 11px ${FONT}`; ctx.fillStyle='rgba(255,210,58,.9)'; ctx.fillText(`Görev ${M.gorevBitti}/3`,12,42); ctx.fillStyle='#9dbab3'; ctx.fillText(`${target} sayı · ${M.stil.ad}`,12,57); /* sağ üst köşe duraklat düğmesinin */
+    { ctx.font=`600 11px ${FONT}`; const hw=Math.max(ctx.measureText(Tr('{0} sayı · {1}',target,M.stil.ad)).width,60)+14; rr(5,11,hw,54,10); ctx.fillStyle='rgba(8,16,17,.72)'; ctx.fill(); } /* tribün seyircisi yazıların altına düşmesin */ ctx.font=`600 12px ${FONT}`; ctx.fillStyle='#9dbab3'; ctx.textAlign='left'; ctx.fillText(Tr('Ralli {0}',M.rally),12,26); ctx.font=`600 11px ${FONT}`; ctx.fillStyle='rgba(255,210,58,.9)'; ctx.fillText(Tr('Görev {0}/3',M.gorevBitti),12,42); ctx.fillStyle='#9dbab3'; ctx.fillText(Tr('{0} sayı · {1}',target,M.stil.ad),12,57); /* sağ üst köşe duraklat düğmesinin */
     { /* Smaç gücü çubuğu: altta tek, etiketli. Nefes artık oyuncunun ayağında (nefesHalka). */
-      const dol=M.energy>=1, lab=dol?'Sıçrayarak smaç hazır':'Smaç gücü'; ctx.font=`800 12px ${FONT}`; ctx.textAlign='left'; ctx.textBaseline='middle';
+      const dol=M.energy>=1, lab=dol?Tr('Sıçrayarak smaç hazır'):Tr('Smaç gücü'); ctx.font=`800 12px ${FONT}`; ctx.textAlign='left'; ctx.textBaseline='middle';
       const lw=ctx.measureText(lab).width, bx=12+lw+10, bw=Math.max(40,W-12-bx), by=H-17;
       ctx.fillStyle=dol?'#ff8a3c':'#cfe3dc'; ctx.fillText(lab,12,by+4);
       rr(bx,by,bw,8,4); ctx.fillStyle='rgba(255,255,255,.12)'; ctx.fill();
       if(M.energy>0){ rr(bx,by,bw*Math.min(1,M.energy),8,4); ctx.fillStyle=dol?`rgba(255,138,60,${reduce?1:.75+.25*Math.sin(performance.now()/160)})`:'#d8ff5a'; ctx.fill(); }
       ctx.textBaseline='alphabetic'; }
-    if(M.sc[0]+M.sc[1]<2&&M.s){ ctx.fillStyle='#9dbab3'; ctx.textAlign='center'; ctx.font=`600 12px ${FONT}`; ctx.fillText(easy?'Top parlayınca kaydır: yön ve güç senin':'Dokun: oraya koş · Top parlayınca kaydır',W/2,H-30); }
+    if(M.sc[0]+M.sc[1]<2&&M.s){ ctx.fillStyle='#9dbab3'; ctx.textAlign='center'; ctx.font=`600 12px ${FONT}`; ctx.fillText(easy?Tr('Top parlayınca kaydır: yön ve güç senin'):Tr('Dokun: oraya koş · Top parlayınca kaydır'),W/2,H-30); }
     if(!M.s&&!M.between&&!M.svPending&&!M.ogr){ /* servis bilgisi (servis hareketi başlayınca kalkar). Önceki hâli fileden başlayan büyük
          koyu karttı (6–8 satır, 18 px başlık): yasin 2026-10-22 "servislerimde yazı aşırı büyük alan kaplıyor, servis
          animasyonlarını kaçırıyorum". Şimdi ekranın altında, dip çizginin gerisinde ince bir şerit: kortun ortası ve iki
          oyuncu açık kalır. Hareket ipucu yalnız maçın ilk iki servisinde, görevler yalnız 0-0'da ve tek satırda; maç sayısı gibi notlar her zaman. */
-      const side=serveSide(M.server)==='R'?'sağ':'sol', bas=M.server==='me'?`Servis sende · ${side} kare`:`Rakip servis atıyor · ${side} kare`;
+      const side=serveSide(M.server)==='R'?Tr('sağ'):Tr('sol'), bas=M.server==='me'?Tr('Servis sende · {0} kare',side):Tr('Rakip servis atıyor · {0} kare',side);
       const maxw=Math.min(W-40,380), satirlar=[];
       const sar=(t,font,col,lh)=>{ ctx.font=font; const k=t.split(' '); let l=''; for(const w of k){ const d=l?l+' '+w:w; if(ctx.measureText(d).width>maxw&&l){ satirlar.push({t:l,font,col,lh}); l=w; } else l=d; } if(l) satirlar.push({t:l,font,col,lh}); };
       const ilk=M.sc[0]+M.sc[1]<2;
       sar(bas,`800 14px ${FONT}`,'#ffffff',18);
-      if(M.server==='me'&&ilk) sar('Yukarı kaydır: yavaş kısa · sert fiske flick · hızlı uzun yüksek',`600 12px ${FONT}`,'#cfe3dc',16);
+      if(M.server==='me'&&ilk) sar(Tr('Yukarı kaydır: yavaş kısa · sert fiske flick · hızlı uzun yüksek'),`600 12px ${FONT}`,'#cfe3dc',16);
       if(M.serveMsg) sar(M.serveMsg,`600 12px ${FONT}`,'#ffd27a',16);
-      if(M.sc[0]+M.sc[1]===0&&M.gorevler) sar('Görev: '+M.gorevler.map(g=>g.ad).join(' · '),`600 12px ${FONT}`,'#ffd23a',16);
+      if(M.sc[0]+M.sc[1]===0&&M.gorevler) sar(Tr('Görev: ')+M.gorevler.map(g=>g.ad).join(' · '),`600 12px ${FONT}`,'#ffd23a',16);
       const pad=8, hh=satirlar.reduce((t,q)=>t+q.lh,0)+pad*2-2; let ww=0; satirlar.forEach(q=>{ ctx.font=q.font; ww=Math.max(ww,ctx.measureText(q.t).width); }); ww+=pad*3;
       const y0=H-hh-30; /* smaç gücü çubuğunun hemen üstü */
       rr(W/2-ww/2,y0,ww,hh,12); ctx.fillStyle='rgba(9,16,17,.74)'; ctx.fill();
@@ -1464,9 +1476,9 @@ cv.addEventListener('pointerup',e=>{ swooshStop(); if(!swipe.on||!M) return; swi
     if(far<24){ swipeShot({dx:0,dy:-1,speed:1,dist:hitR(1)*1.5,R:hitR(1),side:0,curved:false,tap:true}); } /* dokunma = güvenli clear */
     else if(M.ogr&&M.ogr.dur){ const v=swipeVec(now), R=hitR(P(M.s.x,M.s.y,M.s.z).s); swipeShot({...v,dist:Math.min(swipe.minD,1.5)*R,R,side:0,curved:curvedNow(),tap:false}); } /* antrenmanda top durur: parmak topun yanından başlasa bile vuruş parmak kalkınca, bütün hareketin hızıyla okunur (yoksa ilk temas yavaş sayılıp her vuruş drop oluyordu) */
     else { /* "doğru zamanda vurdum ama geçti" hissi (rakip analizi): ıskanın nedeni bir kelimeyle söylenir */
-      const p=P(M.me.x,M.me.y), v=swipeVec(now), neden=far<70?'Kısa kaydırdın':v.speed<=.45?'Yavaş kaydırdın':swipe.minD<2.2?'Kıl payı: topun üstünden geç':'Topun uzağından geçtin';
-      txt('Iska · '+neden,p.x,p.y-70,'#ffd27a',16,2); noise(.05,'highpass',1200,.05); } }
-  else if(!swipe.hit&&M.s&&!M.s.dead&&M.s.from==='op'&&!hitWindow()&&Math.hypot(q.x-swipe.x0,q.y-swipe.y0)>60&&swipe.erkenN<3){ swipe.erkenN++; const p=P(M.me.x,M.me.y); txt('Erken: top parlayınca kaydır',p.x,p.y-70,'#ffd27a',16,2); } /* maç başına en çok 3 kez */
+      const p=P(M.me.x,M.me.y), v=swipeVec(now), neden=far<70?Tr('Kısa kaydırdın'):v.speed<=.45?Tr('Yavaş kaydırdın'):swipe.minD<2.2?Tr('Kıl payı: topun üstünden geç'):Tr('Topun uzağından geçtin');
+      txt(Tr('Iska · ')+neden,p.x,p.y-70,'#ffd27a',16,2); noise(.05,'highpass',1200,.05); } }
+  else if(!swipe.hit&&M.s&&!M.s.dead&&M.s.from==='op'&&!hitWindow()&&Math.hypot(q.x-swipe.x0,q.y-swipe.y0)>60&&swipe.erkenN<3){ swipe.erkenN++; const p=P(M.me.x,M.me.y); txt(Tr('Erken: top parlayınca kaydır'),p.x,p.y-70,'#ffd27a',16,2); } /* maç başına en çok 3 kez */
   else if(easy&&M.s&&!swipe.hit&&!hitWindow()&&Math.hypot(q.x-swipe.x0,q.y-swipe.y0)<18&&now-swipe.t0<250){ runTo(q.x,q.y); M.me.manualT=.7; } /* Kolay'da yalnız kısa, temiz bir dokunuş yer değiştirir; 0,7 sn sonra yardım geri alır */ });
 cv.addEventListener('pointercancel',()=>{ swooshStop(); swipe.on=false; if(M){ M.me.prep=0; M.preview=null; } });
 const menu=document.getElementById('menu'), over=document.getElementById('over'), pauseL=document.getElementById('pause'), pauseBtn=document.getElementById('pauseBtn'), wrapEl=document.querySelector('.wrap');
@@ -1474,9 +1486,9 @@ const menu=document.getElementById('menu'), over=document.getElementById('over')
    Uygulama arka plana geçince (arama, bildirim, ana ekran) kendiliğinden duraklar; dönünce oyuncu "Devam et"e basar,
    top bir anda üstüne düşmez. Ana menüye çıkınca maç bekletilir, menüde "Maça devam et" görünür. */
 let paused=false;
-function ekran(){ const oyunda=!!M&&mode==='play'&&menu.hidden; if(oyunda) ogrKart(); else document.getElementById('ogrKart').hidden=true; wrapEl.classList.toggle('oyunda',oyunda); pauseBtn.hidden=!(oyunda&&!paused); const bek=!!(M&&mode==='play'&&paused&&!menu.hidden), st=document.getElementById('start'); document.getElementById('devam').hidden=!bek; st.classList.toggle('ikincil',bek); st.textContent=bek?'Yeni maç başlat':'Oyna'; } /* bekleyen maç varken tek birincil düğme Devam olsun */
+function ekran(){ const oyunda=!!M&&mode==='play'&&menu.hidden; if(oyunda) ogrKart(); else document.getElementById('ogrKart').hidden=true; wrapEl.classList.toggle('oyunda',oyunda); pauseBtn.hidden=!(oyunda&&!paused); const bek=!!(M&&mode==='play'&&paused&&!menu.hidden), st=document.getElementById('start'); document.getElementById('devam').hidden=!bek; st.classList.toggle('ikincil',bek); st.textContent=bek?Tr('Yeni maç başlat'):Tr('Oyna'); } /* bekleyen maç varken tek birincil düğme Devam olsun */
 function duraklat(){ if(!M||mode!=='play'||paused||!menu.hidden) return; paused=true; swooshStop(); swipe.on=false; M.preview=null; M.me.prep=0;
-  document.getElementById('pScore').textContent=`${M.sc[0]} – ${M.sc[1]}`; document.getElementById('pInfo').textContent=`${target} sayı · Rakip ${M.stil.ad}`+(M.stil.kariyer!=null?` · ${KARIYER[M.stil.kariyer].yer}`:'');
+  document.getElementById('pScore').textContent=`${M.sc[0]} – ${M.sc[1]}`; document.getElementById('pInfo').textContent=Tr('{0} sayı · Rakip {1}',target,M.stil.ad)+(M.stil.kariyer!=null?` · ${KARIYER[M.stil.kariyer].yer}`:'');
   pauseL.hidden=false; try{ AC&&AC.suspend(); }catch(e){} ekran(); setTimeout(()=>document.getElementById('pDevam').focus(),0); }
 function devamEt(){ if(!paused) return; paused=false; pauseL.hidden=true; menu.hidden=true; last=performance.now(); try{ AC&&AC.resume(); }catch(e){} ekran(); }
 function anaMenu(){ pauseL.hidden=true; over.hidden=true; menu.hidden=false; panelAc('anaEkran'); if(!(M&&mode==='play')){ paused=false; } kariyerYaz(); ekran(); }
@@ -1486,7 +1498,7 @@ function anaMenu(){ pauseL.hidden=true; over.hidden=true; menu.hidden=false; pan
    "Hazırlanıyor…" der ve hazır olunca kendiliğinden başlar. Klipler hiç yüklenemezse sayfa açılışından 8 sn sonra yedek çizimle başlar. */
 function sprHazir(){ return !!(SPR.clip.me&&SPR.clip.op)||performance.now()>8000; }
 let startBek=false;
-function start(){ if(!sprHazir()){ if(startBek) return; startBek=true; const st=document.getElementById('start'), eski=st.textContent; st.textContent='Hazırlanıyor…'; st.disabled=true; st.setAttribute('aria-busy','true');
+function start(){ if(!sprHazir()){ if(startBek) return; startBek=true; const st=document.getElementById('start'), eski=st.textContent; st.textContent=Tr('Hazırlanıyor…'); st.disabled=true; st.setAttribute('aria-busy','true');
     const bekle=()=>{ if(!sprHazir()) return setTimeout(bekle,50); startBek=false; st.textContent=eski; st.disabled=false; st.removeAttribute('aria-busy'); start(); }; bekle(); return; }
   menu.hidden=true; over.hidden=true; pauseL.hidden=true; paused=false; try{ AC&&AC.resume(); }catch(e){} newMatch(ogrZorla||!ogrBittiMi()); ogrZorla=false; ekran(); tone(660,.08,'triangle',.06); }
 pauseBtn.addEventListener('click',duraklat);
@@ -1511,13 +1523,13 @@ try{ if(localStorage.getItem('tuytop_mod')==='k') document.getElementById('mdKar
 document.getElementById('again').addEventListener('click',start);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ paused?devamEt():duraklat(); } });
 /* Ekipman menüsü: GEAR tablosundan üretilir; seçim localStorage'a yazılır. Raket/tel çipine dokununca o takımın smaç sesi çalar (ses, dokunuşla açılır). */
-function pct(v){ const d=Math.round((v-1)*100); return d===0?'nötr':(d>0?'+':'')+d+'%'; }
-function gearStatText(){ const S=gearStats(); return `<b>Güç</b> ${pct(S.guc)} · <b>Kontrol</b> ${pct(S.kontrol)} · <b>Drive/file</b> ${pct(S.hiz)} · <b>Tatlı nokta</b> ${pct(S.tatli)} · <b>Koşu</b> ${pct(S.kosu)} · <b>Akış</b> ${S.akis} tam orta`; }
-function buildGear(){ document.querySelectorAll('#gear .chips').forEach(box=>{ const k=box.dataset.g; box.innerHTML=''; for(const id in GEAR[k]){ const it=GEAR[k][id], b=document.createElement('button'); b.className='chip'; b.type='button'; b.setAttribute('aria-pressed',G[k]===id); if(it.kilit&&!best.sampiyon){ b.disabled=true; b.style.opacity=.5; b.setAttribute('aria-label',it.ad+', kilitli: '+it.n); } b.innerHTML=(it.renk?`<span class="sw" style="background:${it.renk}"></span>`:'')+`<span>${it.ad}<small>${it.n}</small></span>`;
+function pct(v){ const d=Math.round((v-1)*100); return d===0?Tr('nötr'):(d>0?'+':'')+d+'%'; }
+function gearStatText(){ const S=gearStats(); return `<b>${Tr('Güç')}</b> ${pct(S.guc)} · <b>${Tr('Kontrol')}</b> ${pct(S.kontrol)} · <b>${Tr('Drive/file')}</b> ${pct(S.hiz)} · <b>${Tr('Tatlı nokta')}</b> ${pct(S.tatli)} · <b>${Tr('Koşu')}</b> ${pct(S.kosu)} · <b>${Tr('Akış')}</b> ${Tr('{0} tam orta',S.akis)}`; }
+function buildGear(){ document.querySelectorAll('#gear .chips').forEach(box=>{ const k=box.dataset.g; box.innerHTML=''; for(const id in GEAR[k]){ const it=GEAR[k][id], b=document.createElement('button'); b.className='chip'; b.type='button'; b.setAttribute('aria-pressed',G[k]===id); if(it.kilit&&!best.sampiyon){ b.disabled=true; b.style.opacity=.5; b.setAttribute('aria-label',it.ad+Tr(', kilitli: ')+it.n); } b.innerHTML=(it.renk?`<span class="sw" style="background:${it.renk}"></span>`:'')+`<span>${it.ad}<small>${it.n}</small></span>`;
   b.addEventListener('click',()=>{ G[k]=id; try{ localStorage.setItem('tuytop_gear',JSON.stringify(G)); }catch(e){} gearStats(); box.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===b)); document.getElementById('gearStat').innerHTML=gearStatText(); gearSum(); hap('tick');
     if(k==='raket'){ racketHit({type:'smash',q:'perfect',who:'me'}); hapHit({type:'smash',q:'perfect'}); } else tone(880,.05,'triangle',.04); });
   box.appendChild(b); } }); document.getElementById('gearStat').innerHTML=gearStatText(); gearSum(); }
-function gearSum(){ document.getElementById('gearSum').textContent=[`Sv ${oyuncuSv().L}`,`${EKO.tuy.toLocaleString('tr-TR')} Tüy`,GEAR.raket[G.raket].ad].join(' · '); }
+function gearSum(){ document.getElementById('gearSum').textContent=[Tr('Sv {0}',oyuncuSv().L),Tr('{0} Tüy',EKO.tuy.toLocaleString(LOC)),GEAR.raket[G.raket].ad].join(' · '); }
 /* Kaydırıcı: sürüklerken etiket ve istatistik canlı; bırakınca o gerginliğin smaç sesi ve titreşimi. */
 { const el=document.getElementById('tel'); el.value=G.tel; const show=()=>{ document.getElementById('telVal').textContent=G.tel+' lbs'; document.getElementById('telNote').textContent=telStats(G.tel).n; document.getElementById('gearStat').innerHTML=gearStatText(); gearSum(); };
   el.addEventListener('input',()=>{ G.tel=+el.value; gearStats(); show(); });
@@ -1525,13 +1537,14 @@ function gearSum(){ document.getElementById('gearSum').textContent=[`Sv ${oyuncu
 buildGear(); ekoCiz();
 document.getElementById('oYukselt').addEventListener('click',()=>{ M=null; mode='menu'; anaMenu(); panelAc('pnEkip'); });
 ['mdEasy','mdPro'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{ easy=id==='mdEasy'; document.getElementById('mdEasy').setAttribute('aria-pressed',easy); document.getElementById('mdPro').setAttribute('aria-pressed',!easy); }));
-/* 7 sayı: Tennis Clash'in "7'ye ilk ulaşan" formatı; otobüs oturumu için 1–2 dakikalık maç. 2 fark kuralı kalır, tavan 10. */
+/* Üç uzunluk, üç niyet: hızlı / kısa / resmî (Ar-Ge 2026-10-23, yasin "yap"). 7 sayı kalktı: 5 ile farkı hissedilmiyordu.
+   Kayıtlı 'len7' seçimi 'len5'e taşınır; anahtar (tuytop_len) aynı kalır. */
 /* Maç uzunluğu: mobilde oturum kısa (rakip oyunlarda 1–2 dk maç). İlk açılışta 5 sayı; oyuncunun seçimi hatırlanır. */
-const LENS={len5:5,len7:7,len11:11,len21:21};
+const LENS={len5:5,len11:11,len21:21};
 function lenSec(id){ target=LENS[id]; Object.keys(LENS).forEach(j=>document.getElementById(j).setAttribute('aria-pressed',j===id)); try{ localStorage.setItem('tuytop_len',id); }catch(e){} }
 Object.keys(LENS).forEach(id=>document.getElementById(id).addEventListener('click',()=>lenSec(id)));
-{ let id='len5'; try{ const v=localStorage.getItem('tuytop_len'); if(LENS[v]) id=v; }catch(e){} lenSec(id); }
-document.getElementById('mute').addEventListener('click',e=>{ muted=!muted; crowdLevel(muted?0:.01); if(muted) underwater(false); e.currentTarget.textContent=muted?'Ses kapalı':'Ses açık'; e.currentTarget.setAttribute('aria-pressed',muted); const q=document.getElementById('pSes'); q.textContent=e.currentTarget.textContent; q.setAttribute('aria-pressed',muted); });
+{ let id='len5'; try{ const v=localStorage.getItem('tuytop_len'); if(LENS[v]) id=v; }catch(e){} lenSec(id); } /* bilinmeyen değer (eski len7 dahil) len5 olur ve lenSec kaydeder */
+document.getElementById('mute').addEventListener('click',e=>{ muted=!muted; crowdLevel(muted?0:.01); if(muted) underwater(false); e.currentTarget.textContent=muted?Tr('Ses kapalı'):Tr('Ses açık'); e.currentTarget.setAttribute('aria-pressed',muted); const q=document.getElementById('pSes'); q.textContent=e.currentTarget.textContent; q.setAttribute('aria-pressed',muted); });
 /* Panel geçişi: ana ekran ↔ Ayarlar / Ekipman / Nasıl oynanır. Geri düğmesi ve Escape ana ekrana döner, odak taşınır. */
 function panelAc(id){ document.querySelectorAll('#menu .ekran').forEach(e=>e.hidden=e.id!==id); menu.scrollTop=0; const f=document.querySelector(`#${id} [data-geri]`)||document.getElementById('start'); setTimeout(()=>f.focus(),0); if(id==='anaEkran') menuOzet(); }
 document.querySelectorAll('#menu [data-panel]').forEach(b=>b.addEventListener('click',()=>{ panelAc(b.dataset.panel); tone(880,.04,'triangle',.03); }));
