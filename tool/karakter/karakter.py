@@ -189,7 +189,13 @@ SH0=D(READY,root=(0,-0.03,0.41),twist=55,lean=(0,-0.03,0),anL=(-0.02,0.20,0.05),
 SH1=D(SH0,root=(0,-0.02,0.40),twist=45,wrR=(0.30,-0.10,0.36),elR=(1,-0.4,0.2),rk=(0.2,-0.45,-0.87),wrL=(-0.06,0.24,0.62),shuttle=False)
 SH2=D(SH1,root=(0,0.04,0.40),twist=12,lean=(0,0.02,0),wrR=(0.18,0.30,0.34),elR=(1,0,0.2),rk=(0.10,0.92,-0.37),rkFace=(0,0.5,0.85),wrL=(-0.14,0.16,0.56))
 SH3=D(SH2,root=(0,0.08,0.41),twist=-35,lean=(0,0.04,0),wrR=(-0.22,0.18,0.92),elR=(1,0.4,0.4),rk=(-0.45,-0.2,0.87),rkFace=(0,1,0),wrL=(-0.20,0.02,0.50),anR=(0.12,0.0,0.07))
-serve=sample([(0,SH0),(0.18,SH0),(0.38,SH1),(0.55,SH2),(0.75,SH3),(1,READY)],10)
+serve=sample([(0,SH0),(0.18,SH0),(0.38,SH1),(0.55,SH2),(0.75,SH3),(1,READY)],20)
+# 20 kare (yasin 2026-10-22 "uzun serviste animasyon takılıyor"): 10 karede temasa kadar 6,5 kare 0,56 sn'ye yayılıyordu
+#     = saniyede ~11 poz, her poz 6 ekran karesi bekliyordu. 20 karede ~23 poz/sn. Klip iki sıraya yayılır (sheet.py).
+# Benim uzun servisim: servis türünü kaydırma seçtiği için beklerken backhand kısa servis duruşundayım; doğrudan
+#     'serve'e geçince duruş tek karede sıçrıyordu. Geçiş klibi aynı salınımı kısa servis duruşundan başlatır: ilk %22'de
+#     gövde döner, sol ayak öne, raket arkaya gider. Rakip 'serve'i kullanır (duruşu servis türünü önceden ele verir).
+serve_gec=sample([(0,SB0),(0.06,SB0),(0.24,SH0),(0.42,SH1),(0.58,SH2),(0.77,SH3),(1,READY)],20)
 # --- blok (ağa yakın kısa itiş): raket göğüs önünde dik, küçük hareket
 # savunma bloğu: geniş alçak duruş, raket bel önünde (diz ile göğüs arası), çok kısa itiş, takip yok
 B_LOW=D(READY,root=(0,-0.02,0.34),lean=(0,0.07,-0.02),anR=(0.20,0.04,0.05),anL=(-0.19,0.0,0.05),wrR=(0.04,0.24,0.46),elR=(1,-0.4,-0.3),rk=(-0.1,0.6,0.8),rkFace=(0,1,0),wrL=(-0.20,0.16,0.42))
@@ -260,7 +266,7 @@ J_TAKE=D(S_PREP,root=(0,-0.03,0.34),anR=(0.16,-0.18,0.05),anL=(-0.10,0.14,0.05))
 J_AIR=D(S_HIT,root=(0,0.0,0.42),anR=(0.12,0.22,0.16),anL=(-0.12,-0.22,0.22),knR=(0,1,0),knL=(0,-1,0))
 J_LAND=D(S_FOL,root=(0,0.04,0.36),anR=(0.14,0.16,0.10),anL=(-0.14,-0.10,0.05),ftL=(-0.7,1,0))   # önce sol ayak dışa dönük iner (§3)
 jump=sample([(0,READY),(0.22,S_PREP),(0.34,J_TAKE),(0.52,J_AIR),(0.70,J_LAND),(1,READY)],10)
-CLIPS=dict(idle=idle,run=run,smash=smash,clear=clear,drive=drive,kill=kill,low=low,lunge=lunge,serve=serve,serve_bh=serve_bh,serve_flick=serve_flick,block=block,bh_over=bh_over,bh_drive=bh_drive,bh_kill=bh_kill,bh_low=bh_low,bh_lunge=bh_lunge,split=split,chasse_r=chasse_r,chasse_l=chasse_l,fwd=fwd,back_r=back_r,back_l=back_l,jump=jump)
+CLIPS=dict(idle=idle,run=run,smash=smash,clear=clear,drive=drive,kill=kill,low=low,lunge=lunge,serve=serve,serve_gec=serve_gec,serve_bh=serve_bh,serve_flick=serve_flick,block=block,bh_over=bh_over,bh_drive=bh_drive,bh_kill=bh_kill,bh_low=bh_low,bh_lunge=bh_lunge,split=split,chasse_r=chasse_r,chasse_l=chasse_l,fwd=fwd,back_r=back_r,back_l=back_l,jump=jump)
 KEYS=dict(sv=[SB0,SB1,SB2,SB3],fl=[SF2,SF3],sh=[SH0,SH1,SH2,SH3],dr=[DR_PREP,DR_HIT,DR_FOL],lo=[L_PREP,L_HIT,L_FOL],bdn=[BD_PREP,BD_HIT,BD_FOL],bln=[BL_PREP,BL_HIT,BL_FOL],X0=[],bo=[BO_PREP,BO_HIT,BO_FOL],bd=[BD_PREP,BD_HIT,BD_FOL],bk=[BK_PREP,BK_HIT],bl=[BL_PREP,BL_HIT,BL_FOL],blu=[BLU_PREP,BLU_HIT],split=[split[1],split[3]],chr=[chasse_r[2],chasse_r[4]],chl=[chasse_l[2],chasse_l[4]],fwd=[fwd[1],fwd[4]],bkr=[back_r[2],back_r[4]],bkl=[back_l[2],back_l[4]],jump=[J_TAKE,J_AIR,J_LAND])
 
 # ---------- sahne ----------
@@ -302,9 +308,14 @@ if MODE=='keys':
             build(p); hide_bands(False); render(f'{OUT}/key_{name}{j}_me.png'); setcam('op'); render(f'{OUT}/key_{name}{j}_op.png'); setcam('me'); i+=1
     print('KEYS DONE',i)
 else:
-    row=0
+    row=0; ONLY=MODE[5:].split(',') if MODE.startswith('only:') else None   # 'only:a,b' = yalnız bu klipler render edilir, meta tümü
+    COLS=10   # 10'dan uzun klip alt alta birden çok sıra kaplar (sheet.py ile aynı)
     for name,frames in CLIPS.items():
         meta['clips'][name]={'n':len(frames),'row':row}
+        row+=(len(frames)+COLS-1)//COLS-1
+        if ONLY and name not in ONLY:
+            for v in VIEWS: setcam(v); meta.setdefault('anchor',{})[v]=anchor()
+            row+=1; continue
         for v in VIEWS:
             setcam(v); meta.setdefault('anchor',{})[v]=anchor()
             for fi,p in enumerate(frames):

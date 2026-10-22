@@ -3,13 +3,13 @@
 import json, base64, io, sys, os
 from PIL import Image
 D=sys.argv[1]; meta=json.load(open(f'{D}/meta.json')); cw,ch=meta['cell']; clips=meta['clips']
-COLS=max(c['n'] for c in clips.values()); ROWS=len(clips)
+COLS=10; ROWS=sum((c['n']+COLS-1)//COLS for c in clips.values())   # uzun klip alt sıraya taşar
 out={}
 for v in meta['views']:
     sheet=Image.new('RGBA',(COLS*cw,ROWS*ch),(0,0,0,0)); mask=Image.new('RGB',(COLS*cw,ROWS*ch),(0,0,0)); wrist=Image.new('RGB',(COLS*cw,ROWS*ch),(0,0,0))
     for name,c in clips.items():
         for fi in range(c['n']):
-            x,y=fi*cw,c['row']*ch
+            x,y=(fi%COLS)*cw,(c['row']+fi//COLS)*ch
             sheet.paste(Image.open(f'{D}/f_{name}_{v}_{fi}.png').convert('RGBA'),(x,y))
             ch_=[Image.open(f'{D}/m_{name}_{v}_{fi}_{t}.png').convert('RGBA').split()[3] for t in ('forma','cerceve','bant','bilek')]
             mask.paste(Image.merge('RGB',ch_[:3]),(x,y)); wrist.paste(Image.merge('RGB',(ch_[3],ch_[3],ch_[3])),(x,y))
