@@ -18,6 +18,9 @@ def holdout(name):
     m=bpy.data.materials.new(name); m.use_nodes=True; nt=m.node_tree; nt.nodes.clear(); h=nt.nodes.new('ShaderNodeHoldout'); o=nt.nodes.new('ShaderNodeOutputMaterial'); nt.links.new(h.outputs[0],o.inputs[0]); return m
 SKIN=mat('ten',(0.93,0.72,0.56)); FORMA=mat('forma',(0.80,0.80,0.80)); SORT=mat('sort',(0.12,0.14,0.2)); SAC=mat('sac',(0.16,0.1,0.07)); BEYAZ=mat('beyaz',(0.95,0.95,0.93)); CERCEVE=mat('cerceve',(0.85,0.85,0.85),.35); TEL=mat('tel',(0.85,0.85,0.85),.4); BANT=mat('bant',(0.85,0.85,0.85)); BILEK=mat('bilek',(0.85,0.85,0.85)); TUY=mat('tuy',(0.97,0.97,0.95)); MANTAR=mat('mantar',(0.95,0.72,0.3))
 WHITE=emis('w',(1,1,1)); HOLD=holdout('h')
+# Hakem kıyafeti (BWF: lacivert ceket, açık gömlek, koyu pantolon, siyah ayakkabı). Renk sahnede pişer; oyunda boyanmaz.
+CEKET=mat('ceket',(0.025,0.04,0.10)); PANT=mat('pantolon',(0.08,0.08,0.10)); SIYAH=mat('ayakkabi',(0.04,0.04,0.05),.35); GOMLEK=mat('gomlek',(0.92,0.94,0.96)); TABLET=mat('tablet',(0.10,0.10,0.12),.3); EKRAN=emis('ekran',(0.35,0.55,0.75))
+SAC_GRI=mat('sac_gri',(0.12,0.12,0.12))
 objs=[]
 def sphere(name,loc,r,m,scale=(1,1,1),tag=None):
     bpy.ops.mesh.primitive_uv_sphere_add(radius=r,location=loc,segments=24,ring_count=12); o=bpy.context.object; o.name=name; o.scale=scale; o.data.materials.append(m); bpy.ops.object.shade_smooth(); o['tag']=tag or m.name; objs.append(o); return o
@@ -50,10 +53,12 @@ def build(p):
     Rz=Matrix.Rotation(tw,3,'Z')
     shL=chest+Rz@Vector((-SHW,0,0.04)); shR=chest+Rz@Vector((SHW,0,0.04))
     neck=chest+Vector((0,0,0.08)); hc=neck+Vector((0,0,0.14))+Vector(p.get('head',(0,0,0)))
-    capsule('govde',root,chest,0.11,0.13,FORMA); sphere('karin',(root+chest)/2+Vector((0,0.01,0)),0.12,FORMA,(1,0.85,1))
-    capsule('sort',root-Vector((0,0,0.06)),root+Vector((0,0,0.04)),0.115,0.115,SORT)
+    HK=p.get('hakem',False); GV=CEKET if HK else FORMA; KOL=CEKET if HK else SKIN; BAC=PANT if HK else SKIN; AYK=SIYAH if HK else BEYAZ
+    capsule('govde',root,chest,0.11,0.13,GV); sphere('karin',(root+chest)/2+Vector((0,0.01,0)),0.12,GV,(1,0.85,1))
+    if HK: sphere('yaka',chest+Vector((0,0.085,0.035)),0.045,GOMLEK,(1,0.5,1.2))   # ceket önünde gömlek yakası
+    capsule('sort',root-Vector((0,0,0.06)),root+Vector((0,0,0.04)),0.115,0.115,PANT if HK else SORT)
     capsule('boyun',chest+Vector((0,0,0.03)),neck+Vector((0,0,0.02)),0.045,0.045,SKIN)
-    sphere('bas',hc,0.14,SKIN,(1,0.95,1.05)); sphere('sac',hc+Vector((0,-0.01,0.03)),0.145,SAC,(1,0.98,0.95))
+    sphere('bas',hc,0.14,SKIN,(1,0.95,1.05)); sphere('sac',hc+Vector((0,-0.01,0.03)),0.145,SAC_GRI if p.get('gri') else SAC,(1,0.98,0.95))
     sphere('cene',hc+Vector((0,0.02,-0.08)),0.09,SKIN,(1,0.9,0.8))
     look=Vector(p.get('look',(0,1,0))).normalized(); side=look.cross(Vector((0,0,1))).normalized(); up=side.cross(look).normalized()
     for sx in (-1,1):
@@ -61,15 +66,16 @@ def build(p):
         sphere('kulak'+str(sx),hc+side*sx*0.14-Vector((0,0,0.01)),0.03,SKIN,(0.6,1,1))
     bpy.ops.mesh.primitive_torus_add(location=hc+look*0.125-Vector((0,0,0.055)),major_radius=0.035,minor_radius=0.006); sm=bpy.context.object; sm.name='gulus'; sm.rotation_mode='QUATERNION'; sm.rotation_quaternion=look.to_track_quat('Z','Y'); sm.data.materials.append(SORT); sm['tag']='sort'; objs.append(sm)
     # kafa bandı: ayrı nesne (maske); renk oyunda
-    bpy.ops.mesh.primitive_torus_add(location=hc+Vector((0,0,0.045)),major_radius=0.142,minor_radius=0.016,major_segments=40,minor_segments=8); bd=bpy.context.object; bd.name='kafabandi'; bd.scale=(1,0.97,1); bd.data.materials.append(BANT); bd['tag']='bant'; objs.append(bd)
+    if not HK: bpy.ops.mesh.primitive_torus_add(location=hc+Vector((0,0,0.045)),major_radius=0.142,minor_radius=0.016,major_segments=40,minor_segments=8); bd=bpy.context.object; bd.name='kafabandi'; bd.scale=(1,0.97,1); bd.data.materials.append(BANT); bd['tag']='bant'; objs.append(bd)
     # kollar
     for side_,sh,pre in ((1,shR,'sag'),(-1,shL,'sol')):
         wr=Vector(p['wr'+pre[1].upper() if False else ('wrR' if side_>0 else 'wrL')]); hint=Vector(p.get('elR' if side_>0 else 'elL',(side_*1,-0.3,-0.6)))
         el,wr=ik(sh,wr,UA,FA,hint)
-        sphere(pre+'_omuz',sh,0.062,FORMA)
-        capsule(pre+'_ustkol',sh,el,0.05,0.042,SKIN); capsule(pre+'_onkol',el,wr,0.04,0.034,SKIN)
+        sphere(pre+'_omuz',sh,0.062,GV)
+        capsule(pre+'_ustkol',sh,el,0.05,0.042,KOL); capsule(pre+'_onkol',el,wr,0.04,0.034,KOL)
         hd=(wr-el).normalized(); sphere(pre+'_el',wr+hd*0.025,0.045,SKIN,(0.85,1,1.05))
-        if side_>0:
+        if HK: pass
+        elif side_>0:
             bpy.ops.mesh.primitive_torus_add(location=wr-hd*0.02,major_radius=0.042,minor_radius=0.014,major_segments=24,minor_segments=8); bk=bpy.context.object; bk.name='bileklik'; bk.rotation_mode='QUATERNION'; bk.rotation_quaternion=hd.to_track_quat('Z','Y'); bk.data.materials.append(BILEK); bk['tag']='bilek'; objs.append(bk)
             rd=Vector(p.get('rk',(0,0.6,0.8))).normalized(); g0=wr+hd*0.03; g1=g0+rd*0.20
             capsule('raket_sap',g0,g1,0.014,0.012,SORT); hcn=g1+rd*0.13
@@ -85,11 +91,14 @@ def build(p):
     for side_,pre in ((1,'sag'),(-1,'sol')):
         hp=root+Vector((side_*HIPW,0,-0.04)); an=Vector(p['anR' if side_>0 else 'anL']); hint=Vector(p.get('knR' if side_>0 else 'knL',(0,1,0)))
         kn,an=ik(hp,an,TH,SH,hint)
-        capsule(pre+'_uyluk',hp,kn,0.062,0.05,SKIN); capsule(pre+'_baldir',kn,an,0.048,0.036,SKIN)
+        capsule(pre+'_uyluk',hp,kn,0.062,0.05,BAC); capsule(pre+'_baldir',kn,an,0.048,0.036,BAC)
         fd=Vector(p.get('ftR' if side_>0 else 'ftL',(0,1,0))); fd.z=0; fd=fd.normalized()
-        bpy.ops.mesh.primitive_cube_add(size=1,location=an+fd*0.04-Vector((0,0,0.02))); f=bpy.context.object; f.name=pre+'_ayakkabi'; f.scale=(0.075,0.14,0.05); f.rotation_euler=(0,0,math.atan2(fd.x,fd.y)*-1); f.data.materials.append(BEYAZ); f['tag']='beyaz'
+        bpy.ops.mesh.primitive_cube_add(size=1,location=an+fd*0.04-Vector((0,0,0.02))); f=bpy.context.object; f.name=pre+'_ayakkabi'; f.scale=(0.075,0.14,0.05); f.rotation_euler=(0,0,math.atan2(fd.x,fd.y)*-1); f.data.materials.append(AYK); f['tag']='beyaz'
         md=f.modifiers.new('b','BEVEL'); md.width=0.02; md.segments=3; bpy.ops.object.shade_smooth(); objs.append(f)
-        bpy.ops.mesh.primitive_cylinder_add(radius=0.07,depth=0.04,location=an+Vector((0,0,0.03))); s2=bpy.context.object; s2.name=pre+'_corap'; s2.data.materials.append(BEYAZ); s2['tag']='beyaz'; objs.append(s2)
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.07,depth=0.04,location=an+Vector((0,0,0.03))); s2=bpy.context.object; s2.name=pre+'_corap'; s2.data.materials.append(PANT if HK else BEYAZ); s2['tag']='beyaz'; objs.append(s2)
+    if p.get('tablet'):   # BWF baş hakemi skoru tablete girer: iki elin arasında, kucakta/masada
+        c_=Vector(p['tablet']); bpy.ops.mesh.primitive_cube_add(size=1,location=c_); tb=bpy.context.object; tb.name='tablet'; tb.scale=(0.20,0.14,0.012); tb.rotation_euler=(math.radians(p.get('tabletEgim',25)),0,0); tb.data.materials.append(TABLET); objs.append(tb)
+        bpy.ops.mesh.primitive_plane_add(size=1,location=c_+Vector((0,-0.003,0.008))); ek=bpy.context.object; ek.name='tablet_ekran'; ek.scale=(0.18,0.12,1); ek.rotation_euler=(math.radians(p.get('tabletEgim',25)),0,0); ek.data.materials.append(EKRAN); objs.append(ek)
 
 # ---------- pozlar ----------
 def P_(**k): return k
@@ -283,6 +292,7 @@ def setcam(v):
     d=Vector(VIEWS[v]).normalized(); cam.location=Vector((0,0,0.5))+d*4; cam.rotation_mode='XYZ'; el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2)  # baş hep yukarıda (track_quat'ta roll kayıyordu)
 from bpy_extras.object_utils import world_to_camera_view as w2c
 def anchor():
+    bpy.context.view_layer.update()   # setcam sonrası matris güncellenmeden okunursa eski kamerayla izdüşer (hakem görünümünde 128 çıkıyordu)
     p=w2c(sc,cam,Vector((0,0,0))); return [p.x*CW_,(1-p.y)*CH_]
 def render(path):
     sc.render.filepath=path; bpy.ops.render.render(write_still=True)
@@ -301,6 +311,35 @@ def hide_bands(h):
     for o in objs:
         if o.get('tag') in ('bant','bilek'): o.hide_render=h
 meta={'cell':[CW_,CH_],'clips':{},'views':list(VIEWS),'pxPerUnit':CH_/2.4}
+# ---------- hakemler (yasin 2026-10-22: "hakemler daha gerçekçi olmalı, benim sporcularım gibi, sayıda hareket etmeli
+# sadece"). Aynı figür, hakem kıyafetiyle. Araştırma: arastirma/hakemler_sayida.md. Baş hakem (yüksek sandalye, file
+# hizası, kortun solunda) her sayıda skoru tablete girer; servis el değiştirince ("Service over") o tarafı açık elle,
+# o taraftaki koluyla gösterir. Servis hakemi (alçak sandalye, karşı direkte) servisi atacak oyuncuya bakar; servis el
+# değiştirince başı ve gövdesi yeni servisçiye döner. Ralli sırasında ikisi de kıpırdamaz.
+HK0=dict(READY,hakem=True,gri=True,root=(0,0,0.40),lean=(0,-0.01,0),twist=0,anR=(0.09,0.21,0.20),anL=(-0.09,0.21,0.20),knR=(0,1,1),knL=(0,1,1),ftR=(0,1,0),ftL=(0,1,0),
+     wrR=(0.10,0.24,0.47),elR=(1,-0.4,-0.7),wrL=(-0.10,0.24,0.47),elL=(-1,-0.4,-0.7),tablet=(0,0.28,0.45),tabletEgim=35,look=(0,1,-0.05),shuttle=False)
+HK_YAZ=D(HK0,wrR=(0.03,0.29,0.49),look=(0,1,-0.55),head=(0,0.01,-0.01))         # başını eğer, sağ işaret parmağıyla tablete dokunur
+HK_SOL=D(HK0,wrL=(-0.46,0.16,0.62),elL=(-0.3,-0.2,-1),look=(-0.55,1,0.0),twist=-6)  # sol kol açık elle sol tarafı (rakibin yarısı) gösterir
+HK_SAG=D(HK0,wrR=(0.46,0.16,0.62),elR=(0.3,-0.2,-1),look=(0.55,1,0.0),twist=6)
+SJ0=dict(READY,hakem=True,root=(0,0,0.27),lean=(0,0.03,0),twist=0,anR=(0.10,0.21,0.04),anL=(-0.10,0.21,0.04),knR=(0,1,1),knL=(0,1,1),ftR=(0,1,0),ftL=(0,1,0),
+     wrR=(0.11,0.17,0.27),elR=(1,-0.3,-0.4),wrL=(-0.11,0.17,0.27),elL=(-1,-0.3,-0.4),look=(0,1,-0.2),shuttle=False)
+SJ_SAG=D(SJ0,look=(0.75,1,-0.25),twist=14,head=(0.01,0,0)); SJ_SOL=D(SJ0,look=(-0.75,1,-0.25),twist=-14,head=(-0.01,0,0))
+HCLIPS={'hk':dict(hk_dur=[HK0],hk_yaz=sample([(0,HK0),(0.3,HK_YAZ),(0.7,HK_YAZ),(1,HK0)],8),
+                  hk_sol=sample([(0,HK0),(0.25,HK_SOL),(0.75,HK_SOL),(1,HK0)],12),hk_sag=sample([(0,HK0),(0.25,HK_SAG),(0.75,HK_SAG),(1,HK0)],12)),
+        'sj':dict(sj_sag=[SJ_SAG],sj_sol=[SJ_SOL],sj_saga=sample([(0,SJ_SOL),(1,SJ_SAG)],7),sj_sola=sample([(0,SJ_SAG),(1,SJ_SOL)],7))}
+# Oyun kamerası benim arkamda. Oyunun (x sağ, y ekranda aşağı, z yukarı) eksenleri sol-elli, Blender sağ-elli: bu
+# yüzden baş hakem (kortun solunda korta bakar) kameraya SAĞ yanını, servis hakemi SOL yanını gösterir. Benim yarım
+# baş hakemin sağı, servis hakeminin solu (ilk denemede tersi alınmıştı: hakem tableti dışarı bakıyordu).
+# Yükseklik oyuncu görünümüyle aynı (~53°).
+VIEWS.update({'hk':(1,0,1.35),'sj':(-1,0,1.35)})
+if MODE=='hakem':
+    hm={'cell':[CW_,CH_],'pxPerUnit':CH_/2.4,'clips':{},'anchor':{}}
+    for v,cl in HCLIPS.items():
+        setcam(v); hm['anchor'][v]=anchor()
+        for name,frames in cl.items():
+            hm['clips'][name]={'n':len(frames),'v':v}
+            for fi,p in enumerate(frames): build(p); set_mats(None); render(f'{OUT}/h_{name}_{fi}.png')
+    json.dump(hm,open(f'{OUT}/hmeta.json','w')); print('HAKEM DONE'); sys.exit(0)
 if MODE=='keys':
     sc.cycles.samples=12; setcam('me'); i=0
     for name,ps in KEYS.items():

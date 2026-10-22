@@ -1,14 +1,14 @@
 Bu sürümde yeni:
-- Tüy ve seviye: her maçtan sonra Tüy ve XP kazanırsın. Kaybetsen de kazanırsın, günün ilk galibiyeti +50 Tüy getirir. XP ile oyuncu seviyen (1–30) yükselir.
-- Ekipman yükseltme: raket, kordaj, grip, bileklik, kafa bandı ve forma 10'ar seviye yükseltilebilir. Her seviye biraz güç katar ve bir oyuncu seviyesi ister.
-- Daha önce oynadıysan kazandığın maçlar kadar başlangıç Tüy'ü hesabına eklendi.
-- "Eşit şartlar": serbest maçta yükseltmeleri kapatıp saf beceriyle oynayabilirsin.
-- İlk maçtan önceki antrenman da bu sürümde.
+- Uzun servis akıcı: servis hareketi iki kat daha fazla kareyle oynuyor, kısa servis duruşundan uzun servise geçerken vücut artık sıçramıyor.
+- Top biraz küçüldü: önceden oyuncunun kafası kadar görünüyordu.
+- Hakemler oyuncularla aynı 3D figür: lacivert ceketli baş hakem her sayıda skoru tabletine girer, servis el değiştirince yeni servisçinin tarafını eliyle gösterir. Servis hakemi servisi atacak oyuncuya döner. Ralli sırasında kıpırdamazlar.
+- Daha az pil ve bellek: oyun açılışta donmuyor, telefon daha az ısınmalı.
+- Tüy, seviye ve ekipman yükseltme önceki sürümdeki gibi.
 
 Nasıl denenir:
-1. Bir maç oyna ve bitir. Skorun altında "+… Tüy · +… XP" yazmalı.
-2. Maç sonunda "Ekipmanı yükselt" görünüyorsa bas. Ekipman ekranında seviyen, Tüy'ün ve altı yuva görünmeli.
-3. Bir yuvada "Yükselt · 50"ye bas. Tüy düşmeli ve o yuvanın noktalarından biri dolmalı.
-4. Seviyen yetmeyen yükseltmede düğme "Sv 2 gerekli" gibi kapalı görünmeli.
-5. Uygulamayı kapatıp aç: Tüy, XP ve yükseltmeler yerinde durmalı.
-6. "Eşit şartlar"ı aç ve serbest maç oyna; istatistik satırı yükseltmesiz değerlere dönmeli.
+1. Uygulamayı aç. Menü takılmadan hemen gelmeli.
+2. Maçta servis sende iken parmağını hızlı ve uzun yukarı kaydır (uzun servis). Oyuncu önce gövdesini çevirip raketi arkaya almalı, hareket akmalı.
+3. Topun boyuna bak: rakibin arkasındayken kafasından belirgin küçük olmalı ama tüyleri seçilmeli.
+4. Sol taraftaki yüksek sandalyedeki hakeme bak: ralli sürerken hiç kıpırdamamalı. Sayı bitince başını eğip tablete dokunmalı.
+5. Rakip senin servisini alınca baş hakem kolunu rakibin tarafına kaldırmalı. Sağdaki alçak sandalyedeki servis hakemi rakibe dönmeli.
+6. Birkaç maç üst üste oyna: telefon eskisine göre daha az ısınmalı, oyun takılmamalı.
