@@ -427,7 +427,7 @@ function sprTint(v,sonra){ const keys=['sheet_'+v,'mask_'+v,'wrist_'+v], sF=sprS
   const base=SPR.img[keys[0]].bm, mk=SPR.img[keys[1]].bm, wk=SPR.img[keys[2]].bm, [cw,ch]=SPR_META.cell, COLS=SPR_META.cols||10;
   const t=document.createElement('canvas'), x=t.getContext('2d',{willReadFrequently:true}), out={sF}, liste=Object.entries(SPR_META.clips); let li=0;
   const adim=()=>{ if(SPR.son[v]!==is) return; const t0=performance.now();
-   while(li<liste.length&&performance.now()-t0<12){ const [ad,c]=liste[li++]; const rn=Math.ceil(c.n/COLS), w=Math.min(c.n,COLS)*cw, h=rn*ch, y0=c.row*ch;
+   while(li<liste.length&&performance.now()-t0<(mode==='play'?12:30)){ /* menüde ekran durağan: daha büyük dilim, klipler daha erken hazır */ const [ad,c]=liste[li++]; const rn=Math.ceil(c.n/COLS), w=Math.min(c.n,COLS)*cw, h=rn*ch, y0=c.row*ch;
     t.width=w; t.height=h; const rd=im=>{ x.clearRect(0,0,w,h); x.drawImage(im,0,y0,w,h,0,0,w,h); return x.getImageData(0,0,w,h).data; };
     const m=rd(mk), wr=rd(wk); x.clearRect(0,0,w,h); x.drawImage(base,0,y0,w,h,0,0,w,h); const d=x.getImageData(0,0,w,h), p=d.data;
     let x0=cw,y1=ch,x1=0,y2=0; /* klibin tüm karelerini kapsayan dolu alan (hücre içi), kırpma için */
@@ -1480,7 +1480,15 @@ function duraklat(){ if(!M||mode!=='play'||paused||!menu.hidden) return; paused=
   pauseL.hidden=false; try{ AC&&AC.suspend(); }catch(e){} ekran(); setTimeout(()=>document.getElementById('pDevam').focus(),0); }
 function devamEt(){ if(!paused) return; paused=false; pauseL.hidden=true; menu.hidden=true; last=performance.now(); try{ AC&&AC.resume(); }catch(e){} ekran(); }
 function anaMenu(){ pauseL.hidden=true; over.hidden=true; menu.hidden=false; panelAc('anaEkran'); if(!(M&&mode==='play')){ paused=false; } kariyerYaz(); ekran(); }
-function start(){ menu.hidden=true; over.hidden=true; pauseL.hidden=true; paused=false; try{ AC&&AC.resume(); }catch(e){} newMatch(ogrZorla||!ogrBittiMi()); ogrZorla=false; ekran(); tone(660,.08,'triangle',.06); }
+/* Oyuncular ilk karden itibaren 3D figür olmalı (yasin 2026-10-22: "initial state'de sporcuların çizilmesinde sorun var").
+   Boyanmış klipler açılışta ~1,6 sn sonra hazır oluyor (ölçüm: yavaş telefon benzetiminde ~5 sn); o arada maç başlarsa yedek
+   vektör çizim (yuvarlak kafa + çubuk raket) görünüyordu. Maç artık klipler hazır olunca başlar; erken basılırsa düğme
+   "Hazırlanıyor…" der ve hazır olunca kendiliğinden başlar. Klipler hiç yüklenemezse sayfa açılışından 8 sn sonra yedek çizimle başlar. */
+function sprHazir(){ return !!(SPR.clip.me&&SPR.clip.op)||performance.now()>8000; }
+let startBek=false;
+function start(){ if(!sprHazir()){ if(startBek) return; startBek=true; const st=document.getElementById('start'), eski=st.textContent; st.textContent='Hazırlanıyor…'; st.disabled=true; st.setAttribute('aria-busy','true');
+    const bekle=()=>{ if(!sprHazir()) return setTimeout(bekle,50); startBek=false; st.textContent=eski; st.disabled=false; st.removeAttribute('aria-busy'); start(); }; bekle(); return; }
+  menu.hidden=true; over.hidden=true; pauseL.hidden=true; paused=false; try{ AC&&AC.resume(); }catch(e){} newMatch(ogrZorla||!ogrBittiMi()); ogrZorla=false; ekran(); tone(660,.08,'triangle',.06); }
 pauseBtn.addEventListener('click',duraklat);
 document.getElementById('pDevam').addEventListener('click',devamEt);
 document.getElementById('devam').addEventListener('click',devamEt);

@@ -1,4 +1,5 @@
 Bu sürümde yeni:
+- Oyuncular maçın ilk anından itibaren 3D figür olarak çiziliyor. Önceden açılıştan hemen sonra maça girince birkaç saniye yuvarlak kafalı basit çizim görünüyordu. Çok hızlı "Oyna"ya basarsan düğme bir an "Hazırlanıyor…" yazıp kendiliğinden başlar.
 - Uzun servis akıcı: servis hareketi iki kat daha fazla kareyle oynuyor, kısa servis duruşundan uzun servise geçerken vücut artık sıçramıyor.
 - Top biraz küçüldü: önceden oyuncunun kafası kadar görünüyordu.
 - Hakemler oyuncularla aynı 3D figür: lacivert ceketli baş hakem her sayıda skoru tabletine girer, servis el değiştirince yeni servisçinin tarafını eliyle gösterir. Servis hakemi servisi atacak oyuncuya döner. Ralli sırasında kıpırdamazlar.
@@ -7,6 +8,7 @@ Bu sürümde yeni:
 - Tüy, seviye ve ekipman yükseltme önceki sürümdeki gibi.
 
 Nasıl denenir:
+0. Uygulamayı tamamen kapatıp aç, menü gelir gelmez hemen "Oyna"ya bas. Maç başladığı anda iki oyuncu da 3D figür olmalı, yuvarlak kafalı çizim hiç görünmemeli.
 1. Uygulamayı aç. Menü takılmadan hemen gelmeli.
 2. Maçta servis sende iken parmağını hızlı ve uzun yukarı kaydır (uzun servis). Oyuncu önce gövdesini çevirip raketi arkaya almalı, hareket akmalı.
 3. Topun boyuna bak: rakibin arkasındayken kafasından belirgin küçük olmalı ama tüyleri seçilmeli.
