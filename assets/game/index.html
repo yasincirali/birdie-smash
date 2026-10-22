@@ -195,7 +195,7 @@ function save(){ try{ localStorage.setItem('tuytop_v2',JSON.stringify(best)); }c
 
 /* ---- BWF ölçüleri (metre). Kort 13,40 x 6,10; tek kişilik yan çizgi 0,46 içeride (5,18 genişlik); kısa servis çizgisi fileden 1,98.
    Tek kişilikte servis karesinin arka sınırı dip çizgidir. File ortada 1,524, direklerde 1,55. ---- */
-const L=13.4, CW=6.1, NET=L/2, SL=.46, SR=CW-.46, SSL=1.98, NETH=1.524, NETP=1.55, MID=CW/2, MG=.7; /* MG: kort çevresinde çizilen pay. 0,9 → 0,7 (yasin 2026-10-21: "oynanabilir alanı artırmalıyız"): kort ekranın daha çoğunu kaplar */
+const L=13.4, CW=6.1, NET=L/2, SL=.46, SR=CW-.46, SSL=1.98, NETH=1.524, NETP=1.55, MID=CW/2, MG=.7, MGX=.35; /* MG: kort çevresinde çizilen pay. 0,9 → 0,7 (yasin 2026-10-21: "oynanabilir alanı artırmalıyız"): kort ekranın daha çoğunu kaplar */
 /* ---- Tüy top fiziği: yerçekimi + hızın karesiyle sürüklenme. Son hız ~6,7 m/sn (yaklaşık, ölçüm literatürü).
    Bu yüzden top hızlı çıkar, çabuk yavaşlar ve neredeyse dik düşer. ---- */
 const GR=9.81, VT=6.7, KD=GR/(VT*VT), DT=1/240;
@@ -331,14 +331,14 @@ function punch(z){ if(!reduce) zoom=Math.max(zoom,z); }
 /* Eski geo genişliği W'ye, derinliği H'ye ayrı ayrı yayıyordu: uzun Android ekranında kort uzuyor, geniş ekranda
    basıklaşıyordu. Şimdi en/boy oranı tasarım ekranındaki (iPhone 390×844) orandan en çok %10 sapar; ekranı
    doldurmaya yeten sapma kullanılır, fazlası boşluk olarak üst/alta (ya da yanlara) eşit dağılır. */
-const GEO_R=1.045; let GEO_K=null;
+const GEO_R=1.045, SC0=.68; /* SC0: uzak ucun ölçeği .62 → .68 ve yan pay MGX .35 (2026-10-22, yan tribün kalkınca): rakibin yarısı %12–16, yakın uç %3–7 genişledi */ let GEO_K=null;
 function geo(){ if(GEO_K&&GEO_K.W===W&&GEO_K.H===H) return GEO_K.g;
-  const kxF=W*.97/(CW+2*MG), kyF=H*.875/(L+2*MG), R=Math.max(GEO_R*.9,Math.min(GEO_R*1.1,kyF/kxF));
+  const kxF=W*.97/(CW+2*MGX), kyF=H*.875/(L+2*MG), R=Math.max(GEO_R*.88,Math.min(GEO_R*1.1,kyF/kxF));
   let kx=kxF, ky=kx*R; if(ky>kyF){ ky=kyF; kx=ky/R; }
-  const ch=ky*(L+2*MG), cw=kx*(CW+2*MG), top=(H-ch)*.85; /* boşluğun çoğu üstte: rakibin arkasındaki pano + 2 sıra seyirci skor kutularının altında görünsün (2026-10-22; kyF .9→.875) */
+  const ch=ky*(L+2*MG), cw=kx*(CW+2*MGX), top=(H-ch)*.85; /* boşluğun çoğu üstte: rakibin arkasındaki pano + 2 sıra seyirci skor kutularının altında görünsün (2026-10-22; kyF .9→.875) */
   GEO_K={W,H,g:{top,bot:top+ch,ch,cw}}; return GEO_K.g; }
-function sc(y){ return .62+.38*((y+MG)/(L+2*MG)); } /* uzak uç biraz daha küçük: derinlik daha okunur (v12) */
-function P(x,y,z=0){ const g=geo(), s=sc(y), py=g.top+(y+MG)/(L+2*MG)*g.ch, ppm=g.ch/(L+2*MG); return {x:W/2+(x-MID)/(CW+2*MG)*g.cw*s, y:py-z*ppm*.75*s, s, ppm:ppm*s}; }
+function sc(y){ return SC0+(1-SC0)*((y+MG)/(L+2*MG)); } /* uzak uç biraz daha küçük: derinlik daha okunur (v12) */
+function P(x,y,z=0){ const g=geo(), s=sc(y), py=g.top+(y+MG)/(L+2*MG)*g.ch, ppm=g.ch/(L+2*MG); return {x:W/2+(x-MID)/(CW+2*MGX)*g.cw*s, y:py-z*ppm*.75*s, s, ppm:ppm*s}; }
 
 /* ---- maç durumu. Ben alt yarıdayım (y>NET), rakip üst yarıda. ---- */
 /* ---- ekipman ----
@@ -688,7 +688,7 @@ function runMe(d){ const o=M.me; if(!M.s){ o.vx=o.vy=0; return; } /* servis atı
   const sp=Math.hypot(o.vx,o.vy), psp=Math.hypot(pvx,pvy);
   o.dust=(o.dust||0)-d; if(sp>2.6&&o.dust<=0){ o.dust=.07; const p=P(o.x,o.y); burst(p.x,p.y,'rgba(220,240,230,.55)',2,40,'dot',15); }
   if(psp>2.4&&(pvx*o.vx+pvy*o.vy)<psp*sp*.2&&!o.sq){ o.sq=.25; squeak(); } o.sq=Math.max(0,(o.sq||0)-d); }
-function screenToCourt(sx,sy){ const g=geo(); const y=(sy-g.top)/g.ch*(L+2*MG)-MG, s=sc(y); return {x:MID+(sx-W/2)/(g.cw*s)*(CW+2*MG),y}; }
+function screenToCourt(sx,sy){ const g=geo(); const y=(sy-g.top)/g.ch*(L+2*MG)-MG, s=sc(y); return {x:MID+(sx-W/2)/(g.cw*s)*(CW+2*MGX),y}; }
 function runTo(sx,sy){ const c=screenToCourt(sx,sy); M.me.tx=Math.max(-.4,Math.min(CW+.4,c.x)); M.me.ty=Math.max(NET+.3,Math.min(L+.8,c.y)); M.mark={x:M.me.tx,y:M.me.ty,t:0}; }
 /* Ayak işi (yasin 2026-10-20: "pırpır yapmak yerine anatomiye uygun"). Eski hâl: hız her karede ham konum farkından
    okunuyor, adım döngüsü 1,25 m'de bir dönüyordu. Rakip sabit hızla hedefe kaydığı için hız 0 ↔ 3,5 m/s sıçrıyor, yön
@@ -832,7 +832,23 @@ function court(){
   if(M&&M.marks) for(const m of M.marks){ const p=P(m.x,m.y), a=Math.max(0,1-m.t/3); ctx.fillStyle=`rgba(10,30,26,${.45*a})`; ctx.beginPath(); ctx.ellipse(p.x,p.y,(m.big?9:5)*p.s,(m.big?4:2.4)*p.s,0,0,7); ctx.fill();
     if(m.t<.5){ ctx.strokeStyle=`rgba(255,255,255,${(.5-m.t)*1.6})`; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(p.x,p.y,(8+m.t*80)*p.s,(3.5+m.t*35)*p.s,0,0,7); ctx.stroke(); }
     if(m.big){ ctx.strokeStyle=`rgba(216,255,90,${.6*a})`; ctx.lineWidth=1.5; m.cr.forEach(r=>{ ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x+Math.cos(r)*18*p.s,p.y+Math.sin(r)*8*p.s); ctx.stroke(); }); } }
+  if(ISIK!=='yok') ctx.drawImage(isikHazirla(),0,0,W,H);
 }
+/* Işık (yasin 2026-10-22: "yan tribünler kalktığından sahayı daha da odak noktası yap", seçenekler A ışıksız / B spot /
+   C yayın ışığı; seçim C). Kortun dışı kararır, kortun üstü 8 katmanla yumuşak kenarlı açılır, file çevresine üç tavan
+   lambası havuzu eklenir. Bir kez çizilip önbelleğe alınır; karede tek drawImage. 'yok' / 'spot' denemek için kalır. */
+const ISIK='yayin', ISIKC={key:'',c:null};
+function isikHazirla(){ const key=[W,H,DPR,ISIK].join(); if(ISIKC.key===key) return ISIKC.c;
+  const c=ISIKC.c||document.createElement('canvas'); c.width=W*DPR; c.height=H*DPR; const x=c.getContext('2d'); x.setTransform(DPR,0,0,DPR,0,0); x.clearRect(0,0,W,H);
+  const kar=ISIK==='yayin'?.62:.42; x.fillStyle=`rgba(3,7,9,${kar})`; x.fillRect(0,0,W,H); /* önce her yer kararır */
+  x.globalCompositeOperation='destination-out'; x.fillStyle='rgba(0,0,0,.125)';
+  for(let i=0;i<8;i++){ const e=.15+i*.12, k=[P(-e,-e),P(CW+e,-e),P(CW+e,L+e),P(-e,L+e)]; /* kortun üstü 8 katmanla açılır: yumuşak kenarlı ışık havuzu */
+    x.beginPath(); k.forEach((q,j)=>j?x.lineTo(q.x,q.y):x.moveTo(q.x,q.y)); x.closePath(); x.fill(); }
+  x.globalCompositeOperation='lighter';
+  const lamba=ISIK==='yayin'?[[MID,NET*.45],[MID,NET],[MID,NET*1.55]]:[[MID,NET]];
+  for(const [lx,ly] of lamba){ const q=P(lx,ly), r=(ISIK==='yayin'?3.6:6.5)*q.ppm, h=x.createRadialGradient(q.x,q.y,0,q.x,q.y,r);
+    h.addColorStop(0,`rgba(255,246,225,${ISIK==='yayin'?.09:.08})`); h.addColorStop(1,'rgba(255,246,225,0)'); x.fillStyle=h; x.save(); x.translate(q.x,q.y); x.scale(1,.75); x.translate(-q.x,-q.y); x.beginPath(); x.arc(q.x,q.y,r,0,7); x.fill(); x.restore(); }
+  x.globalCompositeOperation='source-over'; ISIKC.c=c; ISIKC.key=key; return c; }
 /* Çizim sırası (yasin 2026-10-21: "topu ve oyuncuyu filenin üstünde gibi çizdiriyor"). Kamera benim arkamda; file
    zeminle birlikte çizilince rakip ve karşı yarıdaki top filenin ÖNÜNDE görünüyordu. Artık ressam sırası: zemin →
    karşı yarıdaki her şey (rakip, top, gölgesi) → file → benim yarım. File yarı saydam olduğu için arkası seçilir. */
@@ -876,7 +892,7 @@ function netDraw(){
 function runMark(){ if(!easy&&M.me.tx!=null&&M.s){ const a=P(M.me.x,M.me.y), b=P(M.me.tx,M.me.ty); if(Math.hypot(b.x-a.x,b.y-a.y)>12){ ctx.strokeStyle='rgba(79,184,255,.5)'; ctx.lineWidth=1.5; ctx.setLineDash([2,5]); ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); ctx.setLineDash([]); ctx.fillStyle='rgba(79,184,255,.6)'; ctx.beginPath(); ctx.ellipse(b.x,b.y,4*b.s,1.8*b.s,0,0,7); ctx.fill(); } } /* koşu çizgisi: nereye koştuğun yerde görünür */
   if(M.mark){ const p=P(M.mark.x,M.mark.y), a=1-M.mark.t/.6; ctx.strokeStyle=`rgba(79,184,255,${a})`; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(p.x,p.y,(6+M.mark.t*20)*p.s,(2.6+M.mark.t*9)*p.s,0,0,7); ctx.stroke(); }
   // erişim halkası: raketin yetiştiği alan (1,15 m)
-  const c=P(M.me.x,M.me.y), rx=1.15*geo().cw*c.s/(CW+2*MG), ry=1.15*c.ppm; ctx.strokeStyle='rgba(79,184,255,.16)'; ctx.lineWidth=1; ctx.beginPath(); ctx.ellipse(c.x,c.y,rx,ry,0,0,7); ctx.stroke(); }
+  const c=P(M.me.x,M.me.y), rx=1.15*geo().cw*c.s/(CW+2*MGX), ry=1.15*c.ppm; ctx.strokeStyle='rgba(79,184,255,.16)'; ctx.lineWidth=1; ctx.beginPath(); ctx.ellipse(c.x,c.y,rx,ry,0,0,7); ctx.stroke(); }
 /* Kol pozları: omuz→dirsek→el→raket. Açılar yukarıdan (0) saat yönünde radyan. Her vuruş sınıfı için hazırlık, temas ve devam pozu;
    gerçek tekniğe yakın: baş üstünde dirsek önce bükülü arkada ("sırtı kaşı"), temasta kol tam uzanır, devamda gövde önünden iner; alçakta kol geriden öne süpürür. */
 const POSE={
@@ -1075,20 +1091,23 @@ function draw(){
       if(M.energy>0){ rr(bx,by,bw*Math.min(1,M.energy),8,4); ctx.fillStyle=dol?`rgba(255,138,60,${reduce?1:.75+.25*Math.sin(performance.now()/160)})`:'#d8ff5a'; ctx.fill(); }
       ctx.textBaseline='alphabetic'; }
     if(M.sc[0]+M.sc[1]<2&&M.s){ ctx.fillStyle='#9dbab3'; ctx.textAlign='center'; ctx.font=`600 12px ${FONT}`; ctx.fillText(easy?'Top parlayınca kaydır: yön ve güç senin':'Dokun: oraya koş · Top parlayınca kaydır',W/2,H-30); }
-    if(!M.s&&!M.between&&!M.svPending){ /* servis bilgisi (servis hareketi başlayınca kart kalkar, oyuncu görünsün): yazılar kortun ve oyuncunun üstüne çıplak yazılınca okunmuyordu (yeşil üstüne gri).
-         Tek koyu kartta toplanır; kart fileden hemen sonra başlar, satır sayısına göre boy alır. */
-      const side=serveSide(M.server)==='R'?'sağ':'sol', bas=M.server==='me'?`Servis sende, ${side} kareden`:`Rakip ${side} kareden servis atıyor`;
-      const maxw=Math.min(W*.84,360), satirlar=[];
+    if(!M.s&&!M.between&&!M.svPending){ /* servis bilgisi (servis hareketi başlayınca kalkar). Önceki hâli fileden başlayan büyük
+         koyu karttı (6–8 satır, 18 px başlık): yasin 2026-10-22 "servislerimde yazı aşırı büyük alan kaplıyor, servis
+         animasyonlarını kaçırıyorum". Şimdi ekranın altında, dip çizginin gerisinde ince bir şerit: kortun ortası ve iki
+         oyuncu açık kalır. Hareket ipucu yalnız maçın ilk iki servisinde, görevler yalnız 0-0'da ve tek satırda; maç sayısı gibi notlar her zaman. */
+      const side=serveSide(M.server)==='R'?'sağ':'sol', bas=M.server==='me'?`Servis sende · ${side} kare`:`Rakip servis atıyor · ${side} kare`;
+      const maxw=Math.min(W-40,380), satirlar=[];
       const sar=(t,font,col,lh)=>{ ctx.font=font; const k=t.split(' '); let l=''; for(const w of k){ const d=l?l+' '+w:w; if(ctx.measureText(d).width>maxw&&l){ satirlar.push({t:l,font,col,lh}); l=w; } else l=d; } if(l) satirlar.push({t:l,font,col,lh}); };
-      sar(bas,`800 18px ${FONT}`,'#ffffff',24);
-      if(M.serveMsg) sar(M.serveMsg,`700 14px ${FONT}`,'#ffd27a',19);
-      if(M.server==='me') sar('Yukarı kaydır. Yavaş: kısa servis · Kısa sert fiske: flick · Uzun hızlı: yüksek servis',`600 13px ${FONT}`,'#cfe3dc',19);
-      if(M.sc[0]+M.sc[1]===0&&M.gorevler) M.gorevler.forEach(g=>sar('Görev: '+g.ad,`600 13px ${FONT}`,'#ffd23a',18));
-      const pad=12, hh=satirlar.reduce((t,q)=>t+q.lh,0)+pad*2-4; let ww=0; satirlar.forEach(q=>{ ctx.font=q.font; ww=Math.max(ww,ctx.measureText(q.t).width); }); ww+=pad*2.4;
-      const y0=Math.min(H-hh-60,P(MID,NET+.6).y);
-      rr(W/2-ww/2,y0,ww,hh,14); ctx.fillStyle='rgba(9,16,17,.82)'; ctx.fill(); ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1; ctx.stroke();
+      const ilk=M.sc[0]+M.sc[1]<2;
+      sar(bas,`800 14px ${FONT}`,'#ffffff',18);
+      if(M.server==='me'&&ilk) sar('Yukarı kaydır: yavaş kısa · sert fiske flick · hızlı uzun yüksek',`600 12px ${FONT}`,'#cfe3dc',16);
+      if(M.serveMsg) sar(M.serveMsg,`600 12px ${FONT}`,'#ffd27a',16);
+      if(M.sc[0]+M.sc[1]===0&&M.gorevler) sar('Görev: '+M.gorevler.map(g=>g.ad).join(' · '),`600 12px ${FONT}`,'#ffd23a',16);
+      const pad=8, hh=satirlar.reduce((t,q)=>t+q.lh,0)+pad*2-2; let ww=0; satirlar.forEach(q=>{ ctx.font=q.font; ww=Math.max(ww,ctx.measureText(q.t).width); }); ww+=pad*3;
+      const y0=H-hh-30; /* smaç gücü çubuğunun hemen üstü */
+      rr(W/2-ww/2,y0,ww,hh,12); ctx.fillStyle='rgba(9,16,17,.74)'; ctx.fill();
       ctx.textAlign='center'; ctx.textBaseline='alphabetic'; let yy=y0+pad;
-      satirlar.forEach(q=>{ yy+=q.lh; ctx.font=q.font; ctx.fillStyle=q.col; ctx.fillText(q.t,W/2,yy-5); }); }
+      satirlar.forEach(q=>{ yy+=q.lh; ctx.font=q.font; ctx.fillStyle=q.col; ctx.fillText(q.t,W/2,yy-4); }); }
   }
 }
 let last=performance.now(); function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now; if(!paused) update(dt); draw(); requestAnimationFrame(loop); } requestAnimationFrame(loop);
