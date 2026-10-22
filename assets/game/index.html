@@ -62,6 +62,16 @@ canvas{display:block;width:100%;height:100%;touch-action:none;user-select:none;-
 .chip[aria-pressed="true"]{border-color:var(--lime);box-shadow:inset 0 0 0 1px var(--lime)}
 .sw{width:14px;height:14px;border-radius:50%;border:1px solid rgba(255,255,255,.35);flex:none}
 .stat{font-size:12px;color:var(--muted);line-height:1.4;border-top:1px solid var(--line);padding-top:6px}
+.eko{display:flex;flex-direction:column;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.eko .ust{display:flex;justify-content:space-between;align-items:baseline;font:800 15px var(--display)}
+.eko .ust .tuy{color:var(--lime)}
+.eko .xp{height:8px;border-radius:4px;background:rgba(255,255,255,.1);overflow:hidden}.eko .xp i{display:block;height:100%;background:#7ad7ff}
+.yuk{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:center;border-top:1px solid var(--line);padding-top:6px}
+.yuk b{font-size:13px}.yuk small{grid-column:1;color:var(--muted);font-size:12px}
+.yuk .nok{letter-spacing:1px;color:var(--lime);font-size:12px}
+.yuk button{grid-row:1/span 2;grid-column:2;min-width:96px}
+.yuk button:disabled{opacity:.55}
+#oOdul{color:var(--lime);font-weight:800;margin:0}
 .stat b{color:var(--ink);font-weight:700}
 input[type=range]{width:100%;min-height:44px;accent-color:var(--lime);margin:0}
 [hidden]{display:none!important}
@@ -142,6 +152,7 @@ input[type=range]{width:100%;min-height:44px;accent-color:var(--lime);margin:0}
       <section class="ekran panel" id="pnEkip" hidden aria-label="Ekipman">
         <div class="pbas"><button class="btn geri" data-geri>‹ Geri</button><h3>Ekipman</h3></div>
         <div id="gear">
+        <div class="eko" id="ekoKutu" aria-label="Seviye ve yükseltmeler"></div>
         <p class="muted" style="font-size:12px;margin:0">Rakete ya da tele dokununca o takımın smaç sesini duyarsın.</p>
         <div class="gl"><span class="lab">Raket</span><div class="chips" data-g="raket"></div></div>
         <div class="gl"><span class="lab">Tel gerginliği · <b id="telVal">26 lbs</b></span>
@@ -176,7 +187,9 @@ input[type=range]{width:100%;min-height:44px;accent-color:var(--lime);margin:0}
     <div class="layer" id="over" hidden>
       <p class="muted" id="oTitle">Maç bitti</p>
       <div class="big" id="oScore">21 – 0</div>
+      <p id="oOdul" aria-live="polite"></p>
       <p class="muted" id="oInfo"></p>
+      <button class="btn" id="oYukselt" hidden>Ekipmanı yükselt</button>
       <button class="play" id="again">Bir maç daha</button>
       <button class="btn" id="overMenu">Ana menü</button>
     </div>
@@ -419,16 +432,65 @@ let G={raket:'denge',tel:26,bileklik:'yok',bant:'yok',forma:'mavi'};
 try{ const g=JSON.parse(localStorage.getItem('tuytop_gear')||'{}'); for(const k in G){ if(k==='tel'){ const v=typeof g.tel==='string'?+g.tel.replace('t',''):+g.tel; if(v>=18&&v<=32) G.tel=v; } else if(g[k]&&GEAR[k][g[k]]) G[k]=g[k]; } }catch(e){}
 function telStats(T){ const d=26-T; return {ad:T+' lbs',n:T<=22?'Gevşek: güç artar, tatlı nokta geniş, tok ve uzun çınlama':T>=30?'Sıkı: kontrol artar, tatlı nokta dar, tiz ve kısa çınlama':'Orta',
   guc:1+d*.012,tatli:1+d*.035,kontrol:1-d*.025,ton:Math.sqrt(T/26)}; }
+/* Ekonomi v1 (yasin 2026-10-22: "kişi kendi envanterini upgrade edebilecek, maçlar kazandıkça puan kazanıp level,
+   token ve bileklik/forma/kafa bandı/raket/kordaj/grip yükseltmeleri"; "tasarımı kritik, belki IAP'i burada devreye
+   sokacağız"). Tasarım: /mnt/project-files/birdie-smash/ekonomi/ekonomi_tasarimi.md. yasin "devam et" ile onayladı:
+   yükseltme küçük güç verir, analitik yok, para birimi "Tüy". v1'de IAP yok.
+   - Tek para "Tüy" + XP → oyuncu seviyesi 1–30 (eşik 100+60·(L−1)^1,35). Sert para, sandık, enerji, bakım ücreti yok.
+   - Altı yuva × 10 seviye: raket, kordaj, grip (yeni), bileklik, kafa bandı, forma. Yükseltme MODELE değil YUVAYA:
+     model değiştirmek emeği yakmaz, "her seçimin artısı ve eksisi var" korunur. Sv 10'da modelin artısı ~%18 büyür,
+     eksisi %60 küçülür; toplam tavan ~%15–18 (bir kariyer basamağı kadar), becerinin yerini tutmaz.
+   - Her seviyenin oyuncu seviyesi kapısı var; ileride satılacak hiçbir şey kapıyı aşamaz.
+   - Modeller bu sürümde herkese açık kalır (eski oyuncunun seçimi elinden alınmasın); model kapıları sonraki adım.
+   - "Eşit şartlar": serbest maçta yükseltmeler sayılmaz (saf beceri isteyen ve eski davranışı isteyen oyuncu için).
+   - Eski oyuncu: ilk açılışta kazandığı maç başına 25 Tüy (en çok 1.000) + 100 hoş geldin, sıfırdan başlamasın. */
+const YUVA=[{k:'raket',ad:'Raket',n:'Güç ve kontrol artar; modelin artısı büyür, eksisi küçülür'},{k:'tel',ad:'Kordaj',n:'Tatlı nokta genişler, gerginliğin eksisi azalır'},
+  {k:'grip',ad:'Grip',n:'Kontrol artar: top daha az sapar'},{k:'bileklik',ad:'Bileklik',n:'Nefes daha yavaş tükenir'},
+  {k:'bant',ad:'Kafa bandı',n:'Tam orta penceresi genişler'},{k:'forma',ad:'Forma',n:'Koşu hızlanır, formanın etkisi büyür'}];
+const YUK_FIYAT=[50,110,180,290,450,680,1000,1450,2100], YUK_SV=[1,2,4,6,9,12,16,20,24];
+let EKO={tuy:0,xp:0,sv:{raket:1,tel:1,grip:1,bileklik:1,bant:1,forma:1},gun:'',esit:false};
+try{ const e=JSON.parse(localStorage.getItem('tuytop_ekonomi')||'null'); if(e){ EKO={...EKO,...e,sv:{...EKO.sv,...(e.sv||{})}}; }
+  else { EKO.tuy=(best.wins>0?100+Math.min(1000,best.wins*25):0); localStorage.setItem('tuytop_ekonomi',JSON.stringify(EKO)); } }catch(e){}
+function ekoYaz(){ try{ localStorage.setItem('tuytop_ekonomi',JSON.stringify(EKO)); }catch(e){} }
+function svEsik(L){ return Math.round((100+60*Math.pow(L-1,1.35))/10)*10; }
+function oyuncuSv(){ let L=1,x=EKO.xp; while(L<30&&x>=svEsik(L)){ x-=svEsik(L); L++; } return {L,kalan:x,gerek:L<30?svEsik(L):0}; }
+function kSv(k){ return EKO.esit&&!kariyerModu?0:(Math.max(1,Math.min(10,EKO.sv[k]||1))-1)/9; }
+function olcek(m,k,arti,eksi){ if(m==null) return m; return m>=1?1+(m-1)*(1+arti*k):1-(1-m)*(1-eksi*k); }
+function yukselt(k){ const sv=EKO.sv[k]||1; if(sv>=10) return; const f=YUK_FIYAT[sv-1], gk=YUK_SV[sv-1]; if(EKO.tuy<f||oyuncuSv().L<gk) return;
+  EKO.tuy-=f; EKO.sv[k]=sv+1; ekoYaz(); gearStats(); ekoCiz(); document.getElementById('gearStat').innerHTML=gearStatText(); gearSum();
+  hap('flow'); [0,4,7,12].forEach((q,i)=>tone(523*Math.pow(2,q/12),.14,'triangle',.05,i*.06)); }
+function ekoCiz(){ const el=document.getElementById('ekoKutu'); if(!el) return; const o=oyuncuSv(), y=o.gerek?Math.round(o.kalan/o.gerek*100):100;
+  let h=`<div class="ust"><span>Seviye ${o.L}</span><span class="tuy">${EKO.tuy.toLocaleString('tr-TR')} Tüy</span></div>
+    <div class="xp" role="progressbar" aria-label="Sonraki seviye" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${y}"><i style="width:${y}%"></i></div>
+    <small class="muted">${o.gerek?`Sonraki seviyeye ${o.gerek-o.kalan} XP · maç kazandıkça Tüy ve XP gelir`:'En yüksek seviye'}</small>`;
+  for(const Y of YUVA){ const sv=EKO.sv[Y.k]||1, f=YUK_FIYAT[sv-1], gk=YUK_SV[sv-1], tam=sv>=10, kilit=!tam&&o.L<gk, az=!tam&&EKO.tuy<f;
+    const ne=tam?'Tam':kilit?`Sv ${gk} gerekli`:az?`${f} Tüy`:`Yükselt · ${f}`;
+    h+=`<div class="yuk"><b>${Y.ad} <span class="nok" aria-hidden="true">${'●'.repeat(sv)}${'○'.repeat(10-sv)}</span></b><small>${sv}/10 · ${Y.n}</small>
+      <button class="btn" data-yuk="${Y.k}" ${tam||kilit||az?'disabled':''} aria-label="${Y.ad} seviye ${sv}, ${tam?'en yüksek':kilit?'oyuncu seviyesi '+gk+' gerekli':(az?'yetersiz Tüy, ':'')+f+' Tüy'}">${ne}</button></div>`; }
+  h+=`<button class="chip" id="esitBtn" aria-pressed="${!!EKO.esit}"><span>Eşit şartlar<small>Serbest maçta yükseltmeler sayılmaz</small></span></button>`;
+  el.innerHTML=h; el.querySelectorAll('[data-yuk]').forEach(b=>b.addEventListener('click',()=>yukselt(b.dataset.yuk)));
+  document.getElementById('esitBtn').addEventListener('click',()=>{ EKO.esit=!EKO.esit; ekoYaz(); gearStats(); ekoCiz(); document.getElementById('gearStat').innerHTML=gearStatText(); }); }
+/* Maç sonu ödülü. Değerler 5 sayılık maç için; uzun maç sayı başına adil (7 ×1,4, 11 ×2, 21 ×3,5), Usta ×1,25.
+   Kaybetmek de ilerletir (galibiyet 40 / mağlubiyet 15 Tüy). Günün ilk galibiyeti +50; seri ve kaçırma cezası yok. */
+function ekoOdul(won,kariyerIlk){ const f={5:1,7:1.4,11:2,21:3.5}[target]||1, zor=easy?1:1.25, gor=(M.gorevler||[]).filter(g=>g.bitti).length, mk=Math.min(10,M.perfects);
+  let tuy=Math.round(((won?40:15)*f+gor*15+(gor===3?20:0)+mk)*zor), xp=Math.round(((won?50:20)*f+gor*15+mk*2)*zor); const ek=[];
+  const d=new Date(), gun=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; if(won&&EKO.gun!==gun){ EKO.gun=gun; tuy+=50; ek.push('günün ilk galibiyeti +50'); }
+  if(kariyerIlk){ tuy+=60; xp+=40; ek.push('yeni basamak +60'); }
+  const once=oyuncuSv().L; EKO.tuy+=tuy; EKO.xp+=xp; ekoYaz(); const sonra=oyuncuSv().L;
+  return {tuy,xp,ek,once,sonra}; }
 let GS=null;
 function gearStats(){ sprTintLater(); const r=GEAR.raket[G.raket], t=telStats(G.tel), b=GEAR.bileklik[G.bileklik], h=GEAR.bant[G.bant], f=GEAR.forma[G.forma];
-  GS={raket:r,forma:f,bileklik:b,bant:h,tel:t,guc:r.guc*t.guc*(b.guc||1),kontrol:r.kontrol*t.kontrol,hiz:r.hiz*(b.hiz||1),tatli:r.tatli*t.tatli,ton:r.ton*t.ton,kafa:r.kafa,
-    kenar:b.kenar||1,akis:h.akis||4,yavas:h.yavas||1,rakip:h.rakip||1,kosu:f.kosu||1,enerji:f.enerji||1,toparla:f.toparla||1}; return GS; }
+  const kr=kSv('raket'), kt=kSv('tel'), kg=kSv('grip'), kb=kSv('bileklik'), kh=kSv('bant'), kf=kSv('forma'), O=(m,k,a,e)=>olcek(m,k,a,e); /* yuva seviyesi modelin çarpanlarını ölçekler (yukarıdaki ekonomi notu); nötr modelde (Denge, Mavi) yükseltme boşa gitmesin diye raket güç/kontrole +%5, forma koşuya +%4 taban katkı verir */
+  GS={raket:r,forma:f,bileklik:b,bant:h,tel:t,guc:(1+.05*kr)*O(r.guc,kr,.18,.6)*O(t.guc,kt,0,.5)*O(b.guc||1,kb,.18,.6),kontrol:(1+.05*kr)*O(r.kontrol,kr,.18,.6)*O(t.kontrol,kt,0,.5)*(1+.15*kg),hiz:O(r.hiz,kr,.18,.6)*O(b.hiz||1,kb,.18,.6),
+    tatli:O(r.tatli,kr,.18,.6)*O(t.tatli,kt,0,.5)*(1+.15*kt)*(1+.10*kh),ton:r.ton*t.ton,kafa:r.kafa,
+    kenar:b.kenar||1,akis:h.akis||4,yavas:h.yavas||1,rakip:h.rakip||1,kosu:(1+.04*kf)*O(f.kosu||1,kf,.12,0),enerji:O(f.enerji||1,kf,.12,0),toparla:f.toparla?1-(1-f.toparla)*(1+.12*kf):1,yorK:1/(1+.15*kb)}; return GS; }
 gearStats();
 /* Rakip tarzları (Tennis Clash'in karakterleri, Badminton Clash'in hikâye rakipleri): her maçta farklı bir rakip, okunabilir bir alışkanlık ve ona karşı bir plan.
    Olasılıklar baş üstü / alçak top için ayrı; hiz rakip koşusunu, hata sapmasını, ev rakibin dinlenme yerini (file oyuncusu öne durur) çarpar. */
 /* Kariyer (rakip analizi 2026-10-20: lig/hikâye modu oyuncuyu geri getiriyor). Altı basamak, aynı üç tarz giderek
-   güçlenir: hız çarpanı artar, hata payı azalır. Ödül yalnız görünüm (Şampiyon forması); parayla ya da yükseltmeyle
-   güç yok, çünkü rakip oyunlarda en çok şikâyet buydu. Serbest maç eskisi gibi rastgele tarz. */
+   güçlenir: hız çarpanı artar, hata payı azalır. Ödül yalnız görünüm (Şampiyon forması). 2026-10-20'de "parayla ya da
+   yükseltmeyle güç yok" kararı vardı (rakip oyunlarda en çok şikâyet); 2026-10-22'de yasin yükseltmeyi istedi: tek oyunculu oyunda
+   başka oyuncuya karşı satın alınmış güç olmadığı için küçük güce izin verildi (tavan ~%15–18, ekonomi notu), parayla güç hâlâ yok. Serbest maç eskisi gibi rastgele tarz. */
 const KARIYER=[{stil:'file',g:.88,yer:'Mahalle salonu'},{stil:'smasci',g:.94,yer:'Okul turnuvası'},{stil:'duvar',g:1,yer:'İl şampiyonası'},
   {stil:'file',g:1.07,yer:'Bölge finali'},{stil:'smasci',g:1.13,yer:'Ulusal lig'},{stil:'duvar',g:1.2,yer:'Şampiyonlar kupası'}];
 /* Saha seçimi (yasin 2026-10-21). Yalnız görünüm değişir, fizik aynı. Kariyerde saha basamağın mekânından gelir
@@ -541,7 +603,7 @@ function ogrIz(){ const o=M.ogr, a=OGR_ADIM[o.i]; if(!a||mode!=='play'||paused) 
   ctx.restore(); }
 function ogrOk(x1,y1,x2,y2,kisa){ const a=Math.atan2(y2-y1,x2-x1), k=12; ctx.save(); ctx.strokeStyle=ctx.strokeStyle||'#fff'; ctx.lineWidth=3; ctx.lineCap='round'; ctx.beginPath(); if(!kisa){ ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); }
   ctx.moveTo(x2-k*Math.cos(a-.5),y2-k*Math.sin(a-.5)); ctx.lineTo(x2,y2); ctx.lineTo(x2-k*Math.cos(a+.5),y2-k*Math.sin(a+.5)); ctx.stroke(); ctx.restore(); }
-function newMatch(ogr){ M={me:{x:MID,y:L-2.2,sw:0,dive:0,jump:0,prep:0,vx:0,vy:0,tx:null,ty:null,stun:0},op:{x:MID,y:2.2,sw:0,dive:0,jump:0},sc:[0,0],server:'me',rally:0,maxRally:0,energy:0,nefes:1,tepeden:0,s:null,trail:[],smashes:0,perfects:0,outsLeft:0,between:false,wait:0,serveFaults:0};
+function newMatch(ogr){ gearStats(); M={me:{x:MID,y:L-2.2,sw:0,dive:0,jump:0,prep:0,vx:0,vy:0,tx:null,ty:null,stun:0},op:{x:MID,y:2.2,sw:0,dive:0,jump:0},sc:[0,0],server:'me',rally:0,maxRally:0,energy:0,nefes:1,tepeden:0,s:null,trail:[],smashes:0,perfects:0,outsLeft:0,between:false,wait:0,serveFaults:0};
   M.stil=kariyerModu?kariyerRakip(Math.min(best.kariyer||0,KARIYER.length-1)):STIL[Object.keys(STIL)[Math.floor(Math.random()*3)]]; M.gorevler=gorevSec(); M.gorevBitti=0;
   M.saha=kariyerModu?KARIYER_SAHA[Math.min(best.kariyer||0,KARIYER.length-1)]:saha;
   mode='play'; swipe.erkenN=0; M.pop=[0,0]; M.cams=[]; M.marks=[]; M.hawk=null; M.flow=false; M.inWin=false; crowdStart(); M.clock=0; M.opHitAt=-9; M.split=false; M.splitPending=false; M.deceive=false; M.pstreak=0; M.kills=0; M.saves=0; M.deceives=0; M.splits=0; if(ogr) ogrKur(); else { if(ogrEasy!==null){ easy=ogrEasy; ogrEasy=null; } ogrKart(); } setupServe(); }
@@ -593,7 +655,7 @@ function nefesHalka(){ if(!M||mode!=='play') return; const n=M.nefes; M.halkaA=M
   if(dusuk){ ctx.font=`800 ${Math.max(11,12*s)}px ${FONT}`; ctx.textAlign='left'; ctx.lineWidth=3; ctx.lineJoin='round'; ctx.strokeStyle='rgba(8,16,17,.85)'; ctx.strokeText('Nefes',p.x+rx+6,p.y+4); ctx.fillStyle='#ff9f7a'; ctx.fillText('Nefes',p.x+rx+6,p.y+4); }
   ctx.restore(); }
 function nefesF(){ return M.nefes<.4?.8+.5*M.nefes:1; }
-function yor(v){ M.nefes=Math.max(0,M.nefes-v); if(M.nefes<.25&&!M.nefesUyari){ M.nefesUyari=true; const p=P(M.me.x,M.me.y); txt('Nefes al: clear at',p.x,p.y+40,'#7ad7ff',16,2); } if(M.nefes>.5) M.nefesUyari=false; }
+function yor(v){ M.nefes=Math.max(0,M.nefes-v*(GS.yorK||1)); if(M.nefes<.25&&!M.nefesUyari){ M.nefesUyari=true; const p=P(M.me.x,M.me.y); txt('Nefes al: clear at',p.x,p.y+40,'#7ad7ff',16,2); } if(M.nefes>.5) M.nefesUyari=false; }
 function meSpd(){ return 5.2*GS.kosu*nefesF()*(M.split?1.3:1); }
 function behind(){ return Math.max(0,M.sc[1]-M.sc[0]); }
 function opSpd(){ return GS.rakip*M.stil.hiz*(easy?3.2:3.6)+Math.min(1.1,(M.sc[0]+M.sc[1])*.04)-Math.min(.8,behind()*.12); }
@@ -750,8 +812,11 @@ function point(winner,why,at){ if(M.between) return; M.between=true; M.hakemT=1.
 }
 function endMatch(){ mode='over'; crowdLevel(.004); underwater(false); const won=M.sc[0]>M.sc[1]; if(won){ best.wins++; save(); }
   let kNot=''; if(M.stil.kariyer!=null){ const i=M.stil.kariyer;
-    if(won&&i===(best.kariyer||0)){ best.kariyer=i+1; if(best.kariyer>=KARIYER.length){ best.sampiyon=true; kNot='Kariyer tamam! Şampiyon forması açıldı.'; buildGear(); } else kNot=`Yeni basamak açıldı: ${KARIYER[i+1].yer}, rakip ${STIL[KARIYER[i+1].stil].ad}.`; save(); }
+    if(won&&i===(best.kariyer||0)){ M.kariyerIlk=true; best.kariyer=i+1; if(best.kariyer>=KARIYER.length){ best.sampiyon=true; kNot='Kariyer tamam! Şampiyon forması açıldı.'; buildGear(); } else kNot=`Yeni basamak açıldı: ${KARIYER[i+1].yer}, rakip ${STIL[KARIYER[i+1].stil].ad}.`; save(); }
     else if(!won) kNot=`${KARIYER[i].yer} basamağı seni bekliyor.`; save(); kariyerYaz(); }
+  { const od=ekoOdul(won,M.kariyerIlk); const yuk=YUVA.some(Y=>{ const sv=EKO.sv[Y.k]||1; return sv<10&&EKO.tuy>=YUK_FIYAT[sv-1]&&od.sonra>=YUK_SV[sv-1]; });
+    document.getElementById('oOdul').textContent=`+${od.tuy} Tüy · +${od.xp} XP`+(od.ek.length?` (${od.ek.join(', ')})`:'')+(od.sonra>od.once?` · Seviye ${od.sonra}!`:'')+` · Toplam ${EKO.tuy.toLocaleString('tr-TR')} Tüy`;
+    document.getElementById('oYukselt').hidden=!yuk; ekoCiz(); gearSum(); if(od.sonra>od.once){ hap('flow'); } }
   document.getElementById('oTitle').textContent=(won?'Kazandın':'Bu sefer rakip aldı')+(kNot?' · '+kNot:'');
   document.getElementById('oScore').textContent=`${M.sc[0]} – ${M.sc[1]}`;
   document.getElementById('oInfo').textContent=`Rakip ${M.stil.ad} · Görev ${M.gorevBitti}/3 (${M.gorevler.filter(g=>g.bitti).map(g=>g.ad).join(', ')||'yok'}) · En uzun ralli ${M.maxRally} · ${M.smashes} smaç · ${M.kills} file vuruşu · ${M.perfects} mükemmel · ${M.deceives} aldatma · ${M.splits} split step · ${M.tepeden} tepeden · ${M.saves} uzanma · ${M.outsLeft} kez dışarıyı bıraktın`;
@@ -1274,12 +1339,13 @@ function buildGear(){ document.querySelectorAll('#gear .chips').forEach(box=>{ c
   b.addEventListener('click',()=>{ G[k]=id; try{ localStorage.setItem('tuytop_gear',JSON.stringify(G)); }catch(e){} gearStats(); box.querySelectorAll('.chip').forEach(c=>c.setAttribute('aria-pressed',c===b)); document.getElementById('gearStat').innerHTML=gearStatText(); gearSum(); hap('tick');
     if(k==='raket'){ racketHit({type:'smash',q:'perfect',who:'me'}); hapHit({type:'smash',q:'perfect'}); } else tone(880,.05,'triangle',.04); });
   box.appendChild(b); } }); document.getElementById('gearStat').innerHTML=gearStatText(); gearSum(); }
-function gearSum(){ document.getElementById('gearSum').textContent=[GEAR.raket[G.raket].ad,G.tel+' lbs',GEAR.forma[G.forma].ad].join(' · '); }
+function gearSum(){ document.getElementById('gearSum').textContent=[`Sv ${oyuncuSv().L}`,`${EKO.tuy.toLocaleString('tr-TR')} Tüy`,GEAR.raket[G.raket].ad].join(' · '); }
 /* Kaydırıcı: sürüklerken etiket ve istatistik canlı; bırakınca o gerginliğin smaç sesi ve titreşimi. */
 { const el=document.getElementById('tel'); el.value=G.tel; const show=()=>{ document.getElementById('telVal').textContent=G.tel+' lbs'; document.getElementById('telNote').textContent=telStats(G.tel).n; document.getElementById('gearStat').innerHTML=gearStatText(); gearSum(); };
   el.addEventListener('input',()=>{ G.tel=+el.value; gearStats(); show(); });
   el.addEventListener('change',()=>{ try{ localStorage.setItem('tuytop_gear',JSON.stringify(G)); }catch(e){} racketHit({type:'smash',q:'perfect',who:'me'}); hapHit({type:'smash',q:'perfect'}); }); show(); }
-buildGear();
+buildGear(); ekoCiz();
+document.getElementById('oYukselt').addEventListener('click',()=>{ M=null; mode='menu'; anaMenu(); panelAc('pnEkip'); });
 ['mdEasy','mdPro'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{ easy=id==='mdEasy'; document.getElementById('mdEasy').setAttribute('aria-pressed',easy); document.getElementById('mdPro').setAttribute('aria-pressed',!easy); }));
 /* 7 sayı: Tennis Clash'in "7'ye ilk ulaşan" formatı; otobüs oturumu için 1–2 dakikalık maç. 2 fark kuralı kalır, tavan 10. */
 /* Maç uzunluğu: mobilde oturum kısa (rakip oyunlarda 1–2 dk maç). İlk açılışta 5 sayı; oyuncunun seçimi hatırlanır. */

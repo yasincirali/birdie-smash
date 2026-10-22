@@ -1,11 +1,14 @@
 Bu sürümde yeni:
-- Antrenman: ilk "Oyna"da maçtan önce 14 adımlık bir antrenman açılır. Top vuruş yerine gelince oyun durur, parmağın ne yapması gerektiği topun üstünde canlı çizilir. Kısa servis, flick, yüksek servis, clear, drop, smaç, drive, blok, lift, file vuruşu, slice ve sıçrayarak smaç tek tek öğretilir. Nefes halkası ile smaç gücü çubuğu da işaretlenip anlatılır.
-- Antrenmanı istediğin an "Antrenmanı geç" ile atlayabilirsin. Sonra "Nasıl oynanır" ekranından yeniden oynayabilirsin.
+- Tüy ve seviye: her maçtan sonra Tüy ve XP kazanırsın. Kaybetsen de kazanırsın, günün ilk galibiyeti +50 Tüy getirir. XP ile oyuncu seviyen (1–30) yükselir.
+- Ekipman yükseltme: raket, kordaj, grip, bileklik, kafa bandı ve forma 10'ar seviye yükseltilebilir. Her seviye biraz güç katar ve bir oyuncu seviyesi ister.
+- Daha önce oynadıysan kazandığın maçlar kadar başlangıç Tüy'ü hesabına eklendi.
+- "Eşit şartlar": serbest maçta yükseltmeleri kapatıp saf beceriyle oynayabilirsin.
+- İlk maçtan önceki antrenman da bu sürümde.
 
 Nasıl denenir:
-1. Uygulamayı aç ve "Oyna"ya bas. Maç yerine "Antrenman 1/14 · Kısa servis" kartı çıkmalı.
-2. Kartın söylediğini yap: oyuncunun önündeki kesikli çizgi ve yeşil nokta hareketi gösterir. Doğru yaparsan "Tamam" yazar ve sonraki adıma geçer.
-3. Vuruş adımlarında top sana gelince oyun durmalı ve çizgi topun üstünde görünmeli. Yanlış vuruş yaparsan ne çıktığı söylenir ve sıradaki top yeniden durur.
-4. Nefes ve Smaç gücü adımlarında ilgili yer yanıp sönen çerçeveyle işaretlenmeli, "Anladım, devam" ile geçilmeli.
-5. Antrenman bitince maç kendiliğinden başlamalı. Uygulamayı kapatıp açınca antrenman bir daha çıkmamalı.
-6. Ana menüde Nasıl oynanır > "Antrenmanı yeniden oyna" ile tekrar açılabilmeli.
+1. Bir maç oyna ve bitir. Skorun altında "+… Tüy · +… XP" yazmalı.
+2. Maç sonunda "Ekipmanı yükselt" görünüyorsa bas. Ekipman ekranında seviyen, Tüy'ün ve altı yuva görünmeli.
+3. Bir yuvada "Yükselt · 50"ye bas. Tüy düşmeli ve o yuvanın noktalarından biri dolmalı.
+4. Seviyen yetmeyen yükseltmede düğme "Sv 2 gerekli" gibi kapalı görünmeli.
+5. Uygulamayı kapatıp aç: Tüy, XP ve yükseltmeler yerinde durmalı.
+6. "Eşit şartlar"ı aç ve serbest maç oyna; istatistik satırı yükseltmesiz değerlere dönmeli.
