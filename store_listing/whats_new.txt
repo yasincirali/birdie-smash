@@ -1,5 +1,4 @@
 Bu sürümde yeni:
-- Game Center başarımları: 6 kariyer basamağı ve 5 beceri (antrenmanı bitir, Akış'a gir, 20 vuruşluk ralli, sıçrayarak smaçla sayı, bir maçta 3 görev). Giriş isteği ilk açılışta gelmez; kariyerin ilk basamağını kazanınca bir kez gelir. Giriş yapınca Ayarlar'da "Başarımlar" düğmesi çıkar. Daha önce kazandığın basamaklar da gönderilir.
 - Oyun artık İngilizce de: telefonun dili Türkçe değilse menü, antrenman, maç ve ekipman İngilizce görünür. Türkçe telefonda her şey eskisi gibi Türkçe.
 - Maç uzunluğu üç seçenek: 5 sayı (hızlı), 11 sayı (kısa), 21 sayı (resmî). 7 sayı kalktı; onu seçmiş olan 5 sayı ile başlar.
 - Oyuncular maçın ilk anından itibaren 3D figür olarak çiziliyor. Önceden açılıştan hemen sonra maça girince birkaç saniye yuvarlak kafalı basit çizim görünüyordu. Çok hızlı "Oyna"ya basarsan düğme bir an "Hazırlanıyor…" yazıp kendiliğinden başlar.
@@ -7,8 +6,6 @@ Bu sürümde yeni:
 - Tüy, seviye ve ekipman yükseltme önceki sürümdeki gibi.
 
 Nasıl denenir:
-- Kariyer modunda ilk basamağı (Mahalle salonu) kazan. Maç bitince Game Center giriş penceresi bir kez açılmalı. Giriş yap, sonra Ayarlar'da "Başarımlar"a bas: kazandığın basamak görünmeli. (Başarım listesi App Store Connect'te tanımlanana kadar boş görünebilir.)
-- İlk açılışta, hiç maç kazanmadan, Game Center penceresi açılmamalı.
 - Türkçe telefonda uygulamayı aç: her şey Türkçe olmalı. Bunu mutlaka kontrol et, İngilizce çıkarsa haber ver.
 - Telefon dilini İngilizce yapıp uygulamayı yeniden aç: menü, Ayarlar, Ekipman, Nasıl oynanır, antrenman kartları ve maç sonu İngilizce olmalı.
 - Ayarlar > Maç uzunluğu: yalnız 5, 11 ve 21 sayı görünmeli.

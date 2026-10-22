@@ -34,9 +34,15 @@ App Store Connect'te tanımlanmadan Game Center'da görünmez; oyun yine de
 yerelde sayar ve tanım yapılınca bir sonraki girişte hepsini gönderir.
 Sıralama tablosu (leaderboard) bilerek yok.
 
+0. **Developer › Identifiers › com.birdiesmash.app › Capabilities › Game Center**
+   işaretle, Save. (Şu anki App Store profili bu yeteneği içermiyor; 23 Ekim
+   build'i bu yüzden arşivde düştü, Game Center yetkisi geri alındı.) Sonra
+   Claude'a "profili yenile" de: match profili zorla yenilenir ve
+   `CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements` Runner'ın üç
+   yapılandırmasına geri eklenir. O build'e kadar oyun başarımları yalnız
+   yerelde sayar, kayıp olmaz.
 1. **ASC › Birdie Smash › Services (ya da Features) › Game Center**: aç.
    Sürüm sayfasında ("App Store" sekmesi) Game Center kutusunu işaretle.
-   App ID'de Game Center varsayılan açıktır; Developer portalında ek adım yok.
 2. **Achievements › +** ile aşağıdaki 11 başarımı ekle. **Achievement ID
    birebir aynı olmalı** (oyun bu kimlikle gönderir). Hidden: No,
    Achievable More Than Once: No. Görseller `store_listing/game_center/<id>.png`
