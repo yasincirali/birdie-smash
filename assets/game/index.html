@@ -333,9 +333,9 @@ function punch(z){ if(!reduce) zoom=Math.max(zoom,z); }
    doldurmaya yeten sapma kullanılır, fazlası boşluk olarak üst/alta (ya da yanlara) eşit dağılır. */
 const GEO_R=1.045; let GEO_K=null;
 function geo(){ if(GEO_K&&GEO_K.W===W&&GEO_K.H===H) return GEO_K.g;
-  const kxF=W*.97/(CW+2*MG), kyF=H*.9/(L+2*MG), R=Math.max(GEO_R*.9,Math.min(GEO_R*1.1,kyF/kxF));
+  const kxF=W*.97/(CW+2*MG), kyF=H*.875/(L+2*MG), R=Math.max(GEO_R*.9,Math.min(GEO_R*1.1,kyF/kxF));
   let kx=kxF, ky=kx*R; if(ky>kyF){ ky=kyF; kx=ky/R; }
-  const ch=ky*(L+2*MG), cw=kx*(CW+2*MG), top=(H-ch)*(.09/.14);
+  const ch=ky*(L+2*MG), cw=kx*(CW+2*MG), top=(H-ch)*.85; /* boşluğun çoğu üstte: rakibin arkasındaki pano + 2 sıra seyirci skor kutularının altında görünsün (2026-10-22; kyF .9→.875) */
   GEO_K={W,H,g:{top,bot:top+ch,ch,cw}}; return GEO_K.g; }
 function sc(y){ return .62+.38*((y+MG)/(L+2*MG)); } /* uzak uç biraz daha küçük: derinlik daha okunur (v12) */
 function P(x,y,z=0){ const g=geo(), s=sc(y), py=g.top+(y+MG)/(L+2*MG)*g.ch, ppm=g.ch/(L+2*MG); return {x:W/2+(x-MID)/(CW+2*MG)*g.cw*s, y:py-z*ppm*.75*s, s, ppm:ppm*s}; }
@@ -780,31 +780,22 @@ function tribunHazirla(){ const T=SAHA_T(), key=[W,H,DPR,(M&&M.saha)||saha].join
   const dol={turnuva:.92,salon:.6,okul:.3,park:.38}[(M&&M.saha)||saha]||.5; let sd=7; const rnd=()=>{ sd=(sd*16807)%2147483647; return sd/2147483647; };
   const poly=(pts,fill)=>{ x.beginPath(); pts.forEach((q,i)=>i?x.lineTo(q.x,q.y):x.moveTo(q.x,q.y)); x.closePath(); x.fillStyle=fill; x.fill(); };
   const giysi=['#e85d4f','#3f7fd8','#f2c14e','#f4f1ea','#2c3e50','#8e5bd1','#3fb37f','#ff8a3c','#d94f8a','#5fc4d9'], ten=['#f1c9a5','#d9a57a','#a8714a','#6e4a2f','#f5d6bb'];
-  /* Tribün yerleşimi (yasin 2026-10-21: "seyirciler sahanın yanlış köşelerinde"). Eskiden yan tribünler kortun 1,45 m
-     dışından başlıyordu; dar perspektifte yakın yarıdakiler ekran dışına taşıyor, seyirci yalnızca uzak köşelerde ve
-     skor panosunun arkasında yığılıyordu. Gerçek salonda (BWF: yanlarda 1,5 m, arkada 2 m boşluk) tribün kortun iki
-     uzun kenarı boyunca ve uzak dip çizginin arkasında olur. Şimdi: arka tribün dip çizginin 2 m gerisinde, yan
-     tribünler kortu boydan boya izler; basamaklar sıkı (0,5 m derin, 0,4 m yüksek) ki yakın yarıda da ekranda kalsın. */
+  /* Tribün yerleşimi (yasin 2026-10-22: "seyirciler sadece karşı rakibin arkasında gözükmeli, bir reklam panosu olabilir
+     onun üstünde 1 ya da 2 sıra; badminton maçında sahanın uzun kenarlarında tribün olmaz"). Önceki tur (21 Eki) yan
+     tribünleri kortu boydan boya uzatmıştı; yasin'in gözlemine göre yayın görüntüsünde yanlar boş (hakemler, koçlar,
+     çizgi hakemleri, kamera) kalır. Şimdi tek tribün: zeminin bittiği yerde reklam panosu (0,8 m), onun hemen arkasında
+     panonun üstünden görünen 2 sıra seyirci. Gerçekte pano dip çizginin ~2 m gerisindedir; kamera açısında 2 m geri
+     ekranın üstüne taşıdığı için pano zemin kenarına çekildi (yalnız görüntü, oyun alanı değişmedi). Yan reklam panoları da kalktı ki göz rakibe ve topa kalsın. */
   const seyirci=(q,yuz)=>{ const u=q.ppm; if(q.x<-20||q.x>W+20||q.y<-30||q.y>H+30) return;
     x.fillStyle=giysi[(rnd()*giysi.length)|0]; x.beginPath(); x.roundRect?x.roundRect(q.x-.2*u,q.y-.5*u,.4*u,.5*u,.12*u):x.rect(q.x-.2*u,q.y-.5*u,.4*u,.5*u); x.fill();
     x.fillStyle=ten[(rnd()*ten.length)|0]; x.beginPath(); x.arc(q.x,q.y-.62*u,.12*u,0,7); x.fill();
     if(rnd()<.55){ x.fillStyle='rgba(30,22,16,.85)'; x.beginPath(); x.arc(q.x,q.y-(yuz?.67:.64)*u,.12*u,yuz?Math.PI:Math.PI*.9,yuz?0:Math.PI*2.1); x.fill(); } };
-  const SIRA=7, DER=.5, YUK=.4;
-  /* arka tribün: önce çizilir (en uzak) */
-  { const X0=-1.6, X1=CW+1.6, pano=-1.6;
-    for(let r=SIRA-1;r>=0;r--){ const ya=-2-r*DER, yb=ya-DER, z=.45+r*YUK;
-      poly([P(X0,ya,z-YUK),P(X1,ya,z-YUK),P(X1,ya,z),P(X0,ya,z)],T.basamak2||'#16222a');
-      poly([P(X0,ya,z),P(X1,ya,z),P(X1,yb,z),P(X0,yb,z)],T.basamak||'#1f2e37');
-      for(let xx=X0+.3;xx<X1-.2;xx+=.55){ if(rnd()>dol) continue; seyirci(P(xx+(rnd()-.5)*.1,ya-DER*.55,z),true); } }
-    for(let xx=X0;xx<X1;xx+=2){ const a=P(xx,pano,0),b=P(Math.min(X1,xx+2),pano,0),b2=P(Math.min(X1,xx+2),pano,.8),a2=P(xx,pano,.8); poly([a,b,b2,a2],((xx-X0)/2|0)%2?T.pano1||'#1d2b3a':T.pano2||'#243a4f'); } }
-  const Y0=-1.6, Y1=L+1.6;
-  for(const sd_ of [-1,1]){
-    for(let r=SIRA-1;r>=0;r--){ const xa=sd_<0?-1.25-r*DER:CW+1.25+r*DER, xb=xa+sd_*DER, z=.45+r*YUK;
-      poly([P(xa,Y0,z-YUK),P(xa,Y1,z-YUK),P(xa,Y1,z),P(xa,Y0,z)],T.basamak2||'#16222a'); /* basamak ön yüzü */
-      poly([P(xa,Y0,z),P(xa,Y1,z),P(xb,Y1,z),P(xb,Y0,z)],T.basamak||'#1f2e37'); /* basamak üstü */
-      for(let y=Y0+.3;y<Y1-.2;y+=.55){ if(rnd()>dol) continue; seyirci(P(xa+sd_*DER*.55,y+(rnd()-.5)*.1,z),false); } }
-    const pano=sd_<0?-1.0:CW+1.0; /* reklam panosu: 0,8 m yüksek, 2 m'lik renkli bloklar; tribünün önünde */
-    for(let y=Y0;y<Y1;y+=2){ const a=P(pano,y,0),b=P(pano,Math.min(Y1,y+2),0),b2=P(pano,Math.min(Y1,y+2),.8),a2=P(pano,y,.8); poly([a,b,b2,a2],((y-Y0)/2|0)%2?T.pano1||'#1d2b3a':T.pano2||'#243a4f'); } }
+  const SIRA=2, DER=.32, YUK=.38, X0=-1.6, X1=CW+1.6, pano=-MG;
+  for(let r=SIRA-1;r>=0;r--){ const ya=pano-.08-r*DER, yb=ya-DER, z=.55+r*YUK; /* oturan seyircinin omzu panonun (0,8 m) üstünde kalsın */
+    poly([P(X0,ya,0),P(X1,ya,0),P(X1,ya,z),P(X0,ya,z)],T.basamak2||'#16222a');
+    poly([P(X0,ya,z),P(X1,ya,z),P(X1,yb,z),P(X0,yb,z)],T.basamak||'#1f2e37');
+    for(let xx=X0+.3;xx<X1-.2;xx+=.55){ if(rnd()>dol) continue; seyirci(P(xx+(rnd()-.5)*.1,ya-DER*.5,z),true); } }
+  for(let xx=X0;xx<X1;xx+=2){ const a=P(xx,pano,0),b=P(Math.min(X1,xx+2),pano,0),b2=P(Math.min(X1,xx+2),pano,.8),a2=P(xx,pano,.8); poly([a,b,b2,a2],((xx-X0)/2|0)%2?T.pano1||'#1d2b3a':T.pano2||'#243a4f'); }
   TRIB.c=c; TRIB.key=key; return c; }
 /* Hakemler: BWF'de baş hakem filenin bir ucunda, kortun dışında yüksek sandalyede oturur (gözü file bandının
    üstünde); servis hakemi karşı uçta alçak sandalyede, servis yüksekliği ölçerinin yanında. Sayı bitince baş hakem

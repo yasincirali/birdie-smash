@@ -1,11 +1,11 @@
 Bu sürümde yeni:
-- Seyirciler artık kortun iki uzun kenarı boyunca ve uzak dip çizginin arkasındaki tribünlerde oturuyor (eskiden köşelerde yığılıyordu).
+- Seyirciler artık yalnızca rakibin arkasında: reklam panosu ve hemen üstünde iki sıra seyirci. Kortun yanlarında tribün yok, gerçek maçtaki gibi.
 - Kısa servis gerçek oyuncular gibi atılıyor: dirsek dışa kalkık, raket bel önünde sola-aşağı eğik, top raket yüzünün hemen önünde, kısa bir itiş.
 - Flick servis aynı duruştan başlıyor, son anda bilekle yukarı açılıyor.
 - Backhand vuruşlar yeni: sağ omuz fileye dönüyor, sağ ayak sola-öne çapraz adım atıyor, dirsek önde; file önü ve lift'te sağ bacakla derin hamle, raket başı elin altında.
 
 Nasıl denenir:
-1. Bir maç başlat. Seyirciler kortun sağında ve solunda boydan boya oturuyor olmalı.
+1. Bir maç başlat. Seyirciler yalnızca ekranın üstünde, rakibin arkasındaki reklam panosunun üstünde iki sıra halinde görünmeli; kortun sağında ve solunda seyirci olmamalı.
 2. Servis sende iken yavaş yukarı kaydır (kısa servis). Oyuncu raketi bel önünde sola-aşağı tutmalı, dirsek dışarıda olmalı, raket kısa bir itişle öne gitmeli.
 3. Aynı duruştan kısa sert fiske yap (flick). Hazırlık kısa servisle aynı görünmeli, sonra raket yukarı açılmalı.
 4. Topu kortun sol tarafına (backhand) gönder ve rakip oraya dönünce kendin de solda vur. Gövde sola dönmeli, sağ ayak sola-öne adım atmalı.
