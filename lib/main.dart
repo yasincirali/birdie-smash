@@ -1,14 +1,16 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:games_services/games_services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 // Birdie Smash: oyun tek bir HTML/canvas dosyasıdır (assets/game/index.html) ve
 // prototip olarak https://claude.ai/artifact/4e8aG15tCWDe8hdtVCPryQ adresinde
-// yaşar. Flutter kabuğu YALNIZ üç iş yapar: mağaza/TestFlight hattı, tam
-// ekran WebView ve haptic köprüsü. Oyun mantığı Dart'a taşınmaz; oyun
-// değiştiğinde HTML dosyası yenilenir (tool/oyun_sozdizimi.js doğrular).
+// yaşar. Flutter kabuğu YALNIZ dört iş yapar: mağaza/TestFlight hattı, tam
+// ekran WebView, haptic köprüsü ve platform hizmetleri köprüsü (Game Center).
+// Oyun mantığı Dart'a taşınmaz; oyun değiştiğinde HTML dosyası yenilenir (tool/oyun_sozdizimi.js doğrular).
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   // Oyun dikey tasarlandı (kort derinliği ekran yüksekliğinde).
@@ -47,6 +49,7 @@ class _OyunEkraniState extends State<OyunEkrani> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0xFF0B1A12))
       ..addJavaScriptChannel('Haptic', onMessageReceived: _haptic)
+      ..addJavaScriptChannel('Oyun', onMessageReceived: _oyun)
       ..loadFlutterAsset('assets/game/index.html');
   }
 
@@ -80,6 +83,54 @@ class _OyunEkraniState extends State<OyunEkrani> {
         await HapticFeedback.selectionClick();
       }
     }
+  }
+
+  // Platform hizmetleri köprüsü (2026-10-22). Oyun ne zaman ne isteyeceğine
+  // kendisi karar verir (giriş isteği ilk kariyer basamağından sonra gelir:
+  // oyuncu oyunu sevmeden izin ekranı görmesin); kabuk yalnız iletir. Mesaj
+  // {tip: ...} biçimindedir ki iCloud kaydı ({tip: 'kayit'}) aynı kanala
+  // eklenebilsin. Yalnız iOS: Android hattı yok ve Play Games uygulama
+  // kimliği tanımlı değil. Hata oyunu asla durdurmaz; başarım yerelde
+  // tutulduğu için giriş sonradan yapılsa da gcDurum ile yeniden gönderilir.
+  bool _gcAcik = false;
+
+  Future<void> _oyun(JavaScriptMessage m) async {
+    if (!Platform.isIOS) return;
+    Map<String, dynamic> v;
+    try {
+      v = (jsonDecode(m.message) as Map).cast<String, dynamic>();
+    } catch (_) {
+      return;
+    }
+    try {
+      switch (v['tip']) {
+        case 'giris':
+          if (!_gcAcik) {
+            await GameAuth.signIn();
+            _gcAcik = await GameAuth.isSignedIn;
+          }
+          if (_gcAcik) await _web.runJavaScript('gcDurum(true)');
+        case 'basarimlar':
+          final idler = (v['idler'] as List?)?.whereType<String>() ?? const [];
+          for (final id in idler) {
+            await _basarimAc(id);
+          }
+        case 'basarim':
+          final id = v['id'];
+          if (id is String) await _basarimAc(id);
+        case 'basarimGoster':
+          if (_gcAcik) await Achievements.showAchievements();
+      }
+    } catch (_) {
+      // Game Center kapalı/iptal: oyun yerel ilerlemeyle sürer.
+    }
+  }
+
+  Future<void> _basarimAc(String id) async {
+    if (!_gcAcik) return;
+    await Achievements.unlock(
+      achievement: Achievement(iOSID: id, percentComplete: 100),
+    );
   }
 
   @override

@@ -27,6 +27,44 @@ Yalnız yasin'in yapabileceği adımlar. Sıra önemlidir (Harçlıklarım ile a
   oluştururken gör; doluysa "Birdie Smash!" ya da "Smash Birdie" yedek.
 - Karakterin oyuna girişi: sprite sheet (2D canvas) mi, three.js mi — karar.
 
+## Game Center başarımları (2026-10-23, Ar-Ge önerisi, yasin "yap")
+
+Kod hazır (kabuk `games_services`, oyun `tuytop_basarim`). Başarımlar
+App Store Connect'te tanımlanmadan Game Center'da görünmez; oyun yine de
+yerelde sayar ve tanım yapılınca bir sonraki girişte hepsini gönderir.
+Sıralama tablosu (leaderboard) bilerek yok.
+
+1. **ASC › Birdie Smash › Services (ya da Features) › Game Center**: aç.
+   Sürüm sayfasında ("App Store" sekmesi) Game Center kutusunu işaretle.
+   App ID'de Game Center varsayılan açıktır; Developer portalında ek adım yok.
+2. **Achievements › +** ile aşağıdaki 11 başarımı ekle. **Achievement ID
+   birebir aynı olmalı** (oyun bu kimlikle gönderir). Hidden: No,
+   Achievable More Than Once: No. Görseller `store_listing/game_center/<id>.png`
+   (1024×1024). Her birine iki dil ekle: English (birincil) ve Turkish.
+
+| ID | Puan | EN başlık / açıklama | TR başlık / açıklama |
+|---|---|---|---|
+| bs_kariyer_1 | 20 | Local Hall / Win the local hall stage in Career. | Mahalle salonu / Kariyerde mahalle salonu basamağını kazan. |
+| bs_kariyer_2 | 30 | School Tournament / Win the school tournament stage in Career. | Okul turnuvası / Kariyerde okul turnuvası basamağını kazan. |
+| bs_kariyer_3 | 40 | Provincial Champion / Win the provincial championship stage in Career. | İl şampiyonu / Kariyerde il şampiyonası basamağını kazan. |
+| bs_kariyer_4 | 60 | Regional Final / Win the regional final stage in Career. | Bölge finali / Kariyerde bölge finali basamağını kazan. |
+| bs_kariyer_5 | 80 | National League / Win the national league stage in Career. | Ulusal lig / Kariyerde ulusal lig basamağını kazan. |
+| bs_kariyer_6 | 150 | Champion / Win the Champions Cup and finish Career. | Şampiyon / Şampiyonlar kupasını kazanıp kariyeri bitir. |
+| bs_antrenman | 10 | Coached / Finish the tutorial without skipping it. | Antrenmanlı / Antrenmanı atlamadan bitir. |
+| bs_akis | 40 | In the Flow / Reach Flow with perfect hits in a row. | Akışta / Üst üste tam orta vurup Akış'a gir. |
+| bs_ralli_20 | 50 | Marathon Rally / Play a rally of 20 shots. | Maraton ralli / 20 vuruşluk bir ralli oyna. |
+| bs_sicrayan_smac | 30 | Sky Smash / Win a point with a jump smash. | Gökten smaç / Sıçrayarak smaçla sayı kazan. |
+| bs_uc_gorev | 40 | Full Card / Complete all 3 missions in one match. | Tam kart / Bir maçta 3 görevin hepsini bitir. |
+
+Toplam 550 puan (Apple sınırı 1000; ileride eklenecekler için pay bırakıldı).
+Açıklamada ASC iki alan ister (kazanılmadan / kazanılınca); ikisine de aynı
+cümleyi yazabilirsin. Kaydettikten sonra başarımlar TestFlight build'inde
+hemen çalışır; mağaza sürümünde ilk incelemeyle birlikte yayına çıkar.
+
+Deneme: TestFlight build'inde kariyerin ilk basamağını kazan; maç sonunda
+Game Center giriş penceresi bir kez gelir. Giriş yapınca Ayarlar'da
+"Başarımlar" düğmesi çıkar.
+
 ## Karakter/animasyon araçları (2026-10-20, yasin: "gerekli kurulmamış tüm toolları kuralım")
 
 Bulut tarafı hazır: `3d-animator` ve `birdie-karakter` skill'leri repoda, Mesh2Motion
