@@ -275,8 +275,16 @@ J_TAKE=D(S_PREP,root=(0,-0.03,0.34),anR=(0.16,-0.18,0.05),anL=(-0.10,0.14,0.05))
 J_AIR=D(S_HIT,root=(0,0.0,0.42),anR=(0.12,0.22,0.16),anL=(-0.12,-0.22,0.22),knR=(0,1,0),knL=(0,-1,0))
 J_LAND=D(S_FOL,root=(0,0.04,0.36),anR=(0.14,0.16,0.10),anL=(-0.14,-0.10,0.05),ftL=(-0.7,1,0))   # önce sol ayak dışa dönük iner (§3)
 jump=sample([(0,READY),(0.22,S_PREP),(0.34,J_TAKE),(0.52,J_AIR),(0.70,J_LAND),(1,READY)],10)
-CLIPS=dict(idle=idle,run=run,smash=smash,clear=clear,drive=drive,kill=kill,low=low,lunge=lunge,serve=serve,serve_gec=serve_gec,serve_bh=serve_bh,serve_flick=serve_flick,block=block,bh_over=bh_over,bh_drive=bh_drive,bh_kill=bh_kill,bh_low=bh_low,bh_lunge=bh_lunge,split=split,chasse_r=chasse_r,chasse_l=chasse_l,fwd=fwd,back_r=back_r,back_l=back_l,jump=jump)
-KEYS=dict(sv=[SB0,SB1,SB2,SB3],fl=[SF2,SF3],sh=[SH0,SH1,SH2,SH3],dr=[DR_PREP,DR_HIT,DR_FOL],lo=[L_PREP,L_HIT,L_FOL],bdn=[BD_PREP,BD_HIT,BD_FOL],bln=[BL_PREP,BL_HIT,BL_FOL],X0=[],bo=[BO_PREP,BO_HIT,BO_FOL],bd=[BD_PREP,BD_HIT,BD_FOL],bk=[BK_PREP,BK_HIT],bl=[BL_PREP,BL_HIT,BL_FOL],blu=[BLU_PREP,BLU_HIT],split=[split[1],split[3]],chr=[chasse_r[2],chasse_r[4]],chl=[chasse_l[2],chasse_l[4]],fwd=[fwd[1],fwd[4]],bkr=[back_r[2],back_r[4]],bkl=[back_l[2],back_l[4]],jump=[J_TAKE,J_AIR,J_LAND])
+# --- yorgun (2026-10-23, Ar-Ge "rakibin nefesi"; yasin: "rakibi koşturup endurance'ı düşürmeliyiz, onu da görelim").
+#     Sayı arasında nefesi bitmiş oyuncu: dizler bükük, gövde öne eğik, iki el dizlerin hemen üstünde, raket sağ elden
+#     aşağı sarkar, baş aşağıda. Omuzlar nefesle iner kalkar (döngü, 10 kare). Klip listenin SONUNA eklenir ki önceki
+#     klip satırları kaymasın ve yalnız bu klip render edilip var olan sheet'e eklenebilsin.
+YG0=D(READY,root=(0,0.02,0.33),lean=(0,0.13,-0.05),twist=0,wrR=(0.13,0.16,0.25),elR=(1,-0.3,0.4),rk=(0.2,0.25,-0.95),rkFace=(1,0,0),
+      wrL=(-0.13,0.16,0.25),elL=(-1,-0.3,0.4),anR=(0.13,0.0,0.05),anL=(-0.13,0.0,0.05),knR=(0,1,0),knL=(0,1,0),look=(0,1,-0.55))
+YG1=D(YG0,root=(0,0.02,0.345),lean=(0,0.11,-0.03),wrR=(0.13,0.15,0.26),wrL=(-0.13,0.15,0.26),look=(0,1,-0.4))
+yorgun=sample([(0,YG0),(0.45,YG1),(1,YG0)],10,loop=True)
+CLIPS=dict(idle=idle,run=run,smash=smash,clear=clear,drive=drive,kill=kill,low=low,lunge=lunge,serve=serve,serve_gec=serve_gec,serve_bh=serve_bh,serve_flick=serve_flick,block=block,bh_over=bh_over,bh_drive=bh_drive,bh_kill=bh_kill,bh_low=bh_low,bh_lunge=bh_lunge,split=split,chasse_r=chasse_r,chasse_l=chasse_l,fwd=fwd,back_r=back_r,back_l=back_l,jump=jump,yorgun=yorgun)
+KEYS=dict(sv=[SB0,SB1,SB2,SB3],fl=[SF2,SF3],sh=[SH0,SH1,SH2,SH3],dr=[DR_PREP,DR_HIT,DR_FOL],lo=[L_PREP,L_HIT,L_FOL],bdn=[BD_PREP,BD_HIT,BD_FOL],bln=[BL_PREP,BL_HIT,BL_FOL],X0=[],bo=[BO_PREP,BO_HIT,BO_FOL],bd=[BD_PREP,BD_HIT,BD_FOL],bk=[BK_PREP,BK_HIT],bl=[BL_PREP,BL_HIT,BL_FOL],blu=[BLU_PREP,BLU_HIT],split=[split[1],split[3]],chr=[chasse_r[2],chasse_r[4]],chl=[chasse_l[2],chasse_l[4]],fwd=[fwd[1],fwd[4]],bkr=[back_r[2],back_r[4]],bkl=[back_l[2],back_l[4]],jump=[J_TAKE,J_AIR,J_LAND],yorgun=[YG0,YG1])
 
 # ---------- sahne ----------
 bpy.ops.object.light_add(type='SUN',location=(1,-2,4)); sun=bpy.context.object; sun.data.energy=3.2; sun.rotation_euler=(math.radians(40),0,math.radians(20))
