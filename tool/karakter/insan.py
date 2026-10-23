@@ -144,7 +144,7 @@ class Iskelet:
             b=pb[f'foot.{k}']; M=b.matrix.copy(); y=M.to_3x3()@Vector((0,1,0)); yh=Vector((y.x,y.y,0)).normalized(); f=T['ft'+k]
             ang=math.atan2(yh.x*f.y-yh.y*f.x, yh.dot(f)); N=Matrix.Rotation(ang,4,'Z')@Matrix(M.to_3x3()).to_4x4(); N.translation=M.translation; b.matrix=N; L.update()
             # parmaklar: raket elinde sap etrafında kapanır, boş elde yarı açık
-            kap=1.35 if k=='R' else .55
+            kap=1.35 if k=='R' else .32   # boş el: yarı kapalı parmak uzaktan halka gibi okunuyordu
             for f_ in range(2,6):
                 for j in (1,2,3): pb[f'finger{f_}-{j}.{k}'].rotation_mode='XYZ'; pb[f'finger{f_}-{j}.{k}'].rotation_euler=(kap*(.9 if j==1 else 1),0,0)
             for j in (2,3): pb[f'finger1-{j}.{k}'].rotation_mode='XYZ'; pb[f'finger1-{j}.{k}'].rotation_euler=(kap*.5,0,0)
@@ -183,6 +183,51 @@ def _kabuk(kaynak,isim,yuzler,kalinlik,mat,etiket,duzle=0):
     a=o.modifiers.new('isk','ARMATURE'); a.object=kaynak.modifiers['isk'].object; o.parent=kaynak.parent
     sm=o.modifiers.new('yumusat','SUBSURF'); sm.levels=sm.render_levels=1
     o.data.materials.append(mat); o['tag']=etiket; return o
+def _yuz_boya(ten,V,gm,gd,A):
+    """Yüz ifadesi (yasin 2026-10-23: "yüz tamamlanmamış, bir ifade olmalı"; mimik istemiyor). Köşe rengine boyamak ağın
+    sıklığıyla sınırlıydı (kaş lekeli, ağız kırık çıkıyordu): köşelere yalnız yüz koordinatı yazılır, çizgiler gölgelendiricide
+    piksel piksel hesaplanır (_yuz_dugum). Koordinat 'yuzuv': x=u yatay, y=v dikey, birim = iki göz merkezi arası
+    (gözler u=±0,5, v=0); z=1 yüzün önü (göz merkezine göre kutu içinde ve öne bakan), değilse 0."""
+    at=ten.data.attributes.new('yuzuv','FLOAT_VECTOR','POINT')
+    for v in ten.data.vertices:
+        # yüz bölgesi konumdan: kaş ve ağız köşeleri yüz kemiklerine (orbicularis, oris) ağırlıklı, 'head' ağırlığı orada düşük
+        # olduğu için ağırlıkla seçilen maske kaşı ikiye bölüyor, ağzı hiç çizmiyordu
+        m=1. if abs(v.co.x-gm.x)<1.3*gd and gm.z-1.7*gd<v.co.z<gm.z+1.0*gd and v.co.y>gm.y-.6*gd and v.normal.y>=.15 else 0.
+        at.data[v.index].vector=((v.co.x-gm.x)/gd,(v.co.z-gm.z)/gd,m)
+def _yuz_dugum(nt,taban):
+    """'yuzuv' koordinatından kaş, üst kirpik, ağız, dudak ve yanak; taban rengin üstüne karıştırılır. İfade: odaklı, hafif
+    gülümseyen (kaşın iç ucu alçak ve düz, ağız köşeleri yukarı). Döner: renk soketi."""
+    N=nt.nodes; L=nt.links
+    def m(op,a,b=None,c=None):
+        n=N.new('ShaderNodeMath'); n.operation=op
+        for i,x in enumerate((a,b,c)):
+            if x is None: continue
+            if isinstance(x,(int,float)): n.inputs[i].default_value=x
+            else: L.new(x,n.inputs[i])
+        return n.outputs[0]
+    at=N.new('ShaderNodeAttribute'); at.attribute_type='GEOMETRY'; at.attribute_name='yuzuv'
+    sp=N.new('ShaderNodeSeparateXYZ'); L.new(at.outputs['Vector'],sp.inputs[0]); u,z,on=sp.outputs[0],sp.outputs[1],sp.outputs[2]
+    au=m('ABSOLUTE',u)
+    def bant(x,c,yar,keskin=2.): return m('MINIMUM',1.,m('MAXIMUM',0.,m('MULTIPLY',m('SUBTRACT',1.,m('DIVIDE',m('ABSOLUTE',m('SUBTRACT',x,c)),yar)),keskin)))
+    def kirp(x): return m('MINIMUM',1.,m('MAXIMUM',0.,x))
+    def aralik(x,a0,a1,yum): return m('MULTIPLY',kirp(m('DIVIDE',m('SUBTRACT',x,a0-yum),yum)),kirp(m('DIVIDE',m('SUBTRACT',a1+yum,x),yum)))   # [a0,a1] içinde 1, dışında yum genişliğinde söner
+    # kaş: iç uç u=.14'te alçak, dışa doğru hafif yay; dış uca doğru incelir
+    t=m('DIVIDE',m('SUBTRACT',au,.14),.8); vc=m('ADD',.30,m('SUBTRACT',m('MULTIPLY',t,.26),m('MULTIPLY',m('MULTIPLY',t,t),.20)))
+    yar=m('SUBTRACT',.12,m('MULTIPLY',t,.05)); kas=m('MULTIPLY',bant(z,vc,yar,2.2),aralik(au,.15,.92,.05))
+    # üst kirpik: göz kapağı kenarı, dış ucu hafif kalkık ve kalın
+    x=m('SUBTRACT',au,.5); vk=m('ADD',m('SUBTRACT',.10,m('MULTIPLY',m('MULTIPLY',x,x),.9)),m('MULTIPLY',m('MAXIMUM',x,0.),.16))
+    kir=m('MULTIPLY',bant(z,vk,.032,2.2),aralik(x,-.27,.29,.04))
+    # ağız: köşeler yukarı (gülümseme), uçlara doğru incelir
+    mc=m('ADD',-1.23,m('MULTIPLY',m('MULTIPLY',u,u),.8)); ag=m('MULTIPLY',bant(z,mc,m('SUBTRACT',.06,m('MULTIPLY',au,.07)),2.),aralik(au,-1.,.38,.05))
+    dud=m('MULTIPLY',m('MULTIPLY',bant(z,m('SUBTRACT',mc,.075),.06,1.4),aralik(au,-1.,.26,.06)),.45)   # alt dudak
+    yan=m('MULTIPLY',m('MULTIPLY',bant(au,.6,.22,1.),bant(z,-.55,.22,1.)),.14)   # yanak
+    renk=taban
+    for f,c in ((yan,(.95,.50,.46)),(dud,(.72,.38,.36)),(kas,(.09,.06,.045)),(kir,(.05,.035,.035)),(ag,(.26,.09,.09))):
+        mx=N.new('ShaderNodeMix'); mx.data_type='RGBA'; L.new(m('MULTIPLY',f,on),mx.inputs['Factor'])
+        if isinstance(renk,tuple): mx.inputs[6].default_value=(*renk,1)
+        else: L.new(renk,mx.inputs[6])
+        mx.inputs[7].default_value=(*c,1); renk=mx.outputs[2]
+    return renk
 def giydir(pc,ad,M,J):
     """M: malzemeler. Giysiler ten ağının kendi yüzlerinden (tam ağırlıklı) türetilir; tayt yardımcısının ağırlıkları eksik."""
     ten=pc[ad+'_ten']; A=_agirlik(ten); V=ten.data.vertices
@@ -230,7 +275,8 @@ def giydir(pc,ad,M,J):
     out['sac']=_kabuk(ten,ad+'_sackabuk',sac,.009,M['sac'],'sac')
     tx=bpy.data.textures.new(ad+'_sac_t','CLOUDS'); tx.noise_scale=.012; d=out['sac'].modifiers['sis']; d.texture=tx; d.strength=.016; d.mid_level=.35   # kısa saç dokusu: düz kask gibi durmasın
     kas=[f for f in hd if P[f].normal.y>.6 and all(.17<(V[i].co.z-gm.z)/gd<.32 and .12<abs(V[i].co.x-gm.x)/gd<.95 for i in P[f].vertices)]
-    out['kas']=_kabuk(ten,ad+'_kas',kas,.0025,M['sac'],'sac')
+    out['kas']=_kabuk(ten,ad+'_kas',kas,.0025,M['sac'],'sac'); out['kas'].hide_render=True   # ince kabuk kaş uzaktan görünmüyordu: yerine tene boyanan kaş (aşağıda)
+    _yuz_boya(ten,V,gm,gd,A)
     # bant: saç çizgisinin hemen üstünde, düzleme dik halka; ağ kesitine oturan elips (kulaklar dışarıda kalsın)
     hv=[V[i].co for f in hd for i in P[f].vertices]; dil=[v for v in hv if abs(h(v)-.95)<.06]
     cx=sum(dil,Vector())/len(dil); ex=nrm.cross(Vector((1,0,0))).normalized()*-1; xx=Vector((1,0,0))
@@ -242,10 +288,14 @@ def giydir(pc,ad,M,J):
     for k in ('gozL','gozR'):   # yardımcı göz ağı kaba (72 köşe): yerine aynı yerde düzgün küre, iris köşe renginden
         h=pc[ad+'_'+k]; c=sum((v.co for v in h.data.vertices),Vector())/len(h.data.vertices); r=max(h.dimensions)/2*.98
         h.hide_render=True; h.hide_viewport=True
-        bpy.ops.mesh.primitive_uv_sphere_add(radius=r,location=c,segments=32,ring_count=16); g=bpy.context.object; g.name=ad+'_'+k+'_kure'
+        bpy.ops.mesh.primitive_uv_sphere_add(radius=r,location=c,segments=96,ring_count=48); g=bpy.context.object; g.name=ad+'_'+k+'_kure'
         ca=g.data.color_attributes.new('renk','FLOAT_COLOR','POINT')
         for v in g.data.vertices:
-            d=v.co.normalized().y; col=(.02,.015,.01,1) if d>.96 else (.23,.14,.07,1) if d>.86 else (.92,.9,.88,1)
+            n_=v.co.normalized(); d=n_.y
+            col=((.05,.035,.03,1) if n_.z<.47 else (.74,.52,.40,1)) if n_.z>.40 and d>0 else \
+                (1,1,1,1) if (n_.x-.18)**2+(n_.z-.22)**2<.012 else (.02,.015,.01,1) if d>.95 else (.28,.17,.08,1) if d>.82 else (.12,.08,.05,1) if d>.79 else (.90,.89,.87,1)
+            # büyük iris + parlama noktası: uzaktan bakışı okunsun. Üstte göz kapağı (kirpik çizgisiyle) irisin üstünü örter:
+            # tam açık beyaz küre şaşkın bakıyordu (yasin: "bir yüz ifadesi olmalı"), kapak odaklı bakış verir. 96×48: iris kenarı kırık çıkmasın
             ca.data[v.index].color=col
         g.data.materials.append(M['goz']); bpy.ops.object.shade_smooth(); _kemige(g,ao,'head'); out[k]=g
     # bileklik: ön kol ucunda ten yüzünden halka
@@ -298,32 +348,114 @@ def raket(el, rk, yuz, s, M, ad='raket', tel_kalin=.00055):
 def _grip(m):   # grip bandı: sapa sarılmış şerit (çapraz dalga kabartısı)
     nt=m.node_tree; w=nt.nodes.new('ShaderNodeTexWave'); w.wave_type='BANDS'; w.bands_direction='DIAGONAL'; w.inputs['Scale'].default_value=60; tc=nt.nodes.new('ShaderNodeTexCoord'); nt.links.new(tc.outputs['Object'],w.inputs['Vector'])
     bm=nt.nodes.new('ShaderNodeBump'); bm.inputs['Strength'].default_value=.5; nt.links.new(w.outputs['Fac'],bm.inputs['Height']); nt.links.new(bm.outputs['Normal'],nt.nodes['Principled BSDF'].inputs['Normal']); return m
+def _kabarti(m,olcek,guc):
+    nt=m.node_tree; b=nt.nodes['Principled BSDF']
+    if b.inputs['Normal'].links: return
+    n=nt.nodes.new('ShaderNodeTexNoise'); n.inputs['Scale'].default_value=olcek; bm=nt.nodes.new('ShaderNodeBump'); bm.inputs['Strength'].default_value=guc
+    nt.links.new(n.outputs['Fac'],bm.inputs['Height']); nt.links.new(bm.outputs['Normal'],b.inputs['Normal'])
+def _kumas(m):   # spor forma örgüsü: iki yönlü ince dalga
+    nt=m.node_tree; b=nt.nodes['Principled BSDF']
+    if b.inputs['Normal'].links: return
+    tc=nt.nodes.new('ShaderNodeTexCoord'); w1=nt.nodes.new('ShaderNodeTexWave'); w2=nt.nodes.new('ShaderNodeTexWave')
+    for w,d in ((w1,'X'),(w2,'Y')): w.inputs['Scale'].default_value=260; w.bands_direction=d; nt.links.new(tc.outputs['Object'],w.inputs['Vector'])
+    mx=nt.nodes.new('ShaderNodeMath'); mx.operation='MULTIPLY'; nt.links.new(w1.outputs['Fac'],mx.inputs[0]); nt.links.new(w2.outputs['Fac'],mx.inputs[1])
+    bm=nt.nodes.new('ShaderNodeBump'); bm.inputs['Strength'].default_value=.18; nt.links.new(mx.outputs[0],bm.inputs['Height']); nt.links.new(bm.outputs['Normal'],b.inputs['Normal'])
+    b.inputs['Sheen Weight'].default_value=.3
 def malzemeler(FORMA,SORT,BEYAZ,BANT,CERCEVE,TEL,KOYU):
     """karakter.py'nin boyanan malzemeleri (forma/bant/çerçeve maskeden boyanır) + gerçekçi ten, göz, saç"""
     def mat(n,c,r=.6,**k):
         m=bpy.data.materials.new(n); m.use_nodes=True; b=m.node_tree.nodes['Principled BSDF']; b.inputs['Base Color'].default_value=(*c,1); b.inputs['Roughness'].default_value=r
         for a,v in k.items(): b.inputs[a].default_value=v
         return m
-    ten=mat('ten_g',(0.80,0.56,0.42),.5); b=ten.node_tree.nodes['Principled BSDF']; b.inputs['Subsurface Weight'].default_value=.15; b.inputs['Subsurface Radius'].default_value=(.01,.004,.002)
+    ten=mat('ten_g',(0.80,0.56,0.42),.5); nt=ten.node_tree; b=nt.nodes['Principled BSDF']; nt.links.new(_yuz_dugum(nt,(0.80,0.56,0.42)),b.inputs['Base Color'])
+    b.inputs['Subsurface Weight'].default_value=.15; b.inputs['Subsurface Radius'].default_value=(.01,.004,.002)
     goz=bpy.data.materials.new('goz_g'); goz.use_nodes=True; nt=goz.node_tree; gb=nt.nodes['Principled BSDF']; at=nt.nodes.new('ShaderNodeAttribute'); at.attribute_name='renk'; nt.links.new(at.outputs['Color'],gb.inputs['Base Color']); gb.inputs['Roughness'].default_value=.15
     sac=mat('sac_g',(0.05,0.035,0.025),.55); nt=sac.node_tree; n=nt.nodes.new('ShaderNodeTexNoise'); n.inputs['Scale'].default_value=400; bm=nt.nodes.new('ShaderNodeBump'); bm.inputs['Strength'].default_value=.6; nt.links.new(n.outputs['Fac'],bm.inputs['Height']); nt.links.new(bm.outputs['Normal'],nt.nodes['Principled BSDF'].inputs['Normal'])
+    for m_ in (FORMA,SORT): _kumas(m_)   # doku: ekranda düz plastik gibi duruyordu; ince örgü kabartısı ışığı kırar
+    _kabarti(ten,900,.08)
     return dict(ten=ten,goz=goz,sac=sac,forma=FORMA,sort=SORT,beyaz=BEYAZ,ayakkabi=mat('ayk_g',(0.95,0.95,0.95),.35),bant=BANT,bilek=BANT,
         grip=_grip(mat('grip_g',(0.85,0.85,0.85),.75)),tel=TEL,telzemin=mat('telz_g',(0.9,0.9,0.85),.4,Alpha=.12),koyu=KOYU,cerceve=CERCEVE,
         mantar=mat('mantar_g',(0.75,0.6,0.4),.8),tuy=mat('tuy_g',(0.97,0.97,0.95),.6))
 
+# Arcade tarzları (yasin 2026-10-23: "daha arcade karakterler olabilir, doku kalitesi düşüktü"): aynı iskelet ve pozlar,
+# kafa/el/ayak kemiği ölçeği (çocuklar ve oyun karakterleri büyük kafa/el ile okunur), cel gölge ve dış çizgi.
+# kafa/el/ayak: kemik ölçeği; toon: gölge basamağı (0 = gerçekçi PBR); cizgi: dış çizgi kalınlığı (boyun oranı); kenar: arka ışık
+STILLER={'gercek':{}, 'sportif':dict(kafa=1.3,el=1.25,ayak=1.15,toon=3,cizgi=.006,goz=1.25),
+    'kafali':dict(kafa=1.65,el=1.4,ayak=1.3,toon=2,cizgi=.009,goz=1.4), 'yumusak':dict(kafa=1.35,el=1.2,ayak=1.15,kenar=1)}
+def _toon(m,adim,kenar=False):
+    """Principled'ı ışığa bakan cel gölgeye çevirir. Işık kameradan ve yukarıdan (her bakışta aynı okunsun)."""
+    nt=m.node_tree; b=nt.nodes.get('Principled BSDF'); out=nt.nodes.get('Material Output')
+    if not b or not out or b.inputs['Alpha'].default_value<1: return
+    L=nt.links; bc=b.inputs['Base Color']; src=bc.links[0].from_socket if bc.links else None
+    g=nt.nodes.new('ShaderNodeNewGeometry'); up=nt.nodes.new('ShaderNodeCombineXYZ'); up.inputs[2].default_value=1.1
+    ad=nt.nodes.new('ShaderNodeVectorMath'); ad.operation='ADD'; L.new(g.outputs['Incoming'],ad.inputs[0]); L.new(up.outputs[0],ad.inputs[1])
+    nr=nt.nodes.new('ShaderNodeVectorMath'); nr.operation='NORMALIZE'; L.new(ad.outputs[0],nr.inputs[0])
+    dt=nt.nodes.new('ShaderNodeVectorMath'); dt.operation='DOT_PRODUCT'; L.new(g.outputs['Normal'],dt.inputs[0]); L.new(nr.outputs[0],dt.inputs[1])
+    cr=nt.nodes.new('ShaderNodeValToRGB'); cr.color_ramp.interpolation='EASE' if m.name.startswith('ten') else 'CONSTANT'; e=cr.color_ramp.elements   # ten keskin basamakta yüzü lekeli gösteriyordu: yumuşak geçiş
+    sev=[(0,.52),(.35,.8),(.7,1.0)] if adim>=3 else [(0,.6),(.4,1.0)]
+    e[0].position,e[0].color=sev[0][0],(sev[0][1],)*3+(1,); e[1].position,e[1].color=sev[1][0],(sev[1][1],)*3+(1,)
+    for pz,v in sev[2:]: x=e.new(pz); x.color=(v,)*3+(1,)
+    L.new(dt.outputs['Value'],cr.inputs[0])
+    mx=nt.nodes.new('ShaderNodeMix'); mx.data_type='RGBA'; mx.blend_type='MULTIPLY'; mx.inputs['Factor'].default_value=1
+    L.new(cr.outputs['Color'],mx.inputs[6])
+    if src: L.new(src,mx.inputs[7])
+    else: mx.inputs[7].default_value=bc.default_value
+    em=nt.nodes.new('ShaderNodeEmission'); L.new(mx.outputs[2],em.inputs['Color'])
+    L.new(em.outputs[0],out.inputs['Surface'])
+def _kenar(m):
+    """Yumuşak 3D: yandan gelen ince arka ışık (fresnel) — silüeti sahadan ayırır"""
+    nt=m.node_tree; b=nt.nodes.get('Principled BSDF'); out=nt.nodes.get('Material Output')
+    if not b or not out or b.inputs['Alpha'].default_value<1: return
+    b.inputs['Roughness'].default_value=min(1,b.inputs['Roughness'].default_value+.1)
+    lw=nt.nodes.new('ShaderNodeLayerWeight'); lw.inputs['Blend'].default_value=.1; em=nt.nodes.new('ShaderNodeEmission'); em.inputs['Color'].default_value=(1,.97,.9,1); em.inputs['Strength'].default_value=.25
+    ad=nt.nodes.new('ShaderNodeMixShader'); nt.links.new(lw.outputs['Facing'],ad.inputs[0]); nt.links.new(b.outputs[0],ad.inputs[1]); nt.links.new(em.outputs[0],ad.inputs[2]); nt.links.new(ad.outputs[0],out.inputs['Surface'])
+def _cizgi_mat():
+    m=bpy.data.materials.get('cizgi_g')
+    if m: return m
+    m=bpy.data.materials.new('cizgi_g'); m.use_nodes=True; nt=m.node_tree; nt.nodes.clear(); o=nt.nodes.new('ShaderNodeOutputMaterial')
+    g=nt.nodes.new('ShaderNodeNewGeometry'); e=nt.nodes.new('ShaderNodeEmission'); e.inputs['Color'].default_value=(.06,.05,.07,1); t=nt.nodes.new('ShaderNodeBsdfTransparent'); mx=nt.nodes.new('ShaderNodeMixShader')
+    nt.links.new(g.outputs['Backfacing'],mx.inputs[0]); nt.links.new(e.outputs[0],mx.inputs[1]); nt.links.new(t.outputs[0],mx.inputs[2]); nt.links.new(mx.outputs[0],o.inputs['Surface']); return m   # ters kabuk: kameraya bakan yüz şeffaf, silüet kenarı koyu
+def stillendir(oy,st):
+    if not st: return
+    seen=set()
+    for o in oy.kalici:
+        if o.type!='MESH': continue
+        for m in o.data.materials:
+            if m and m.name not in seen:
+                seen.add(m.name)
+                if st.get('toon'): _toon(m,st['toon'] if not m.name.startswith('ten') else 2)
+                elif st.get('kenar'): _kenar(m)
+        if st.get('goz') and o.name.endswith('_kure'): o.scale=(st['goz'],)*3
+        if st.get('cizgi') and not any(k in o.name for k in ('_kas','_goz','_tayt')):   # kaş ve göz çizgisi yüzde kara leke yapıyordu
+            o.data.materials.append(_cizgi_mat()); sm=o.modifiers.new('cizgi','SOLIDIFY'); sm.thickness=st['cizgi']*oy.boy; sm.offset=1; sm.use_flip_normals=True; sm.use_rim=False
+            sm.material_offset=len(o.data.materials)-1; sm.material_offset_rim=len(o.data.materials)-1
+            if o.name.endswith('_ten'):   # parmak ve yüzde kalın çizgi içeri taşıp leke yapıyordu: oralarda %30
+                vg=o.vertex_groups.new(name='cizgi_k'); ince=[o.vertex_groups[n].index for n in o.vertex_groups.keys() if any(x in n for x in ('finger','thumb','metacarpal','wrist','head','oris','levator','risorius','eye','jaw'))]
+                yz=o.data.attributes.get('yuzuv')
+                for v in o.data.vertices:
+                    w=sum(g.weight for g in v.groups if g.group in ince); vg.add([v.index],.1 if yz and yz.data[v.index].vector[2]>.5 else max(.3,1-.7*min(1,w)),'REPLACE')
+                sm.vertex_group='cizgi_k'; sm.thickness_vertex_group=0   # yüzün önünde çizgi %10: ağız köşesi ve burun deliğinde kara çentik (somurtkan) yapıyordu; yüz hattı kenardan gelir.
+                # Sıfır olmaz: tenle çakışan şeffaf kabuktan geçen ışın kafanın içine düşüp bandı/saçı yüzde gösteriyordu
+
 class Oyuncu:
     """Bir kez kurulur; her karede poz + o karenin raketi/topu yeniden kurulur. nesneler: etiketli tüm parçalar"""
-    def __init__(s,M,boy_bacak=.49,kas=.75,kilo=.45,ad='insan'):
+    def __init__(s,M,boy_bacak=.49,kas=.75,kilo=.45,ad='insan',stil=None):
         ao,pc,J=kur(boy=1.0,kas=kas,kilo=kilo,ad=ad+'_olc'); I=Iskelet(ao,J); oran=boy_bacak/(I.TH+I.SH)
         for o in list(pc.values())+[ao]: bpy.data.objects.remove(o)
         s.boy=oran; s.ao,s.pc,s.J=kur(boy=oran,kas=kas,kilo=kilo,ad=ad); s.I=Iskelet(s.ao,s.J); s.M=M
         s.pc[ad+'_ten'].data.materials.append(M['ten']); s.pc[ad+'_ten']['tag']='ten'
         s.G=giydir(s.pc,ad,M,s.J); s.gecici=[]
         s.kalici=[o for o in list(s.pc.values())+list(s.G.values()) if not o.hide_render]
+        s.stil=STILLER.get(stil or 'gercek',{}); stillendir(s,s.stil)
     def kur_poz(s,p):
         for o in s.gecici: bpy.data.objects.remove(o)
         s.gecici=[]; T=s.I.hedef(p); s.I.uygula(T); s.T=T
         pb=s.ao.pose.bones; mw=s.ao.matrix_world
+        for k,bs in (('kafa',('head',)),('el',('wrist.L','wrist.R')),('ayak',('foot.L','foot.R'))):
+            v=s.stil.get(k)
+            if v:
+                for n in bs: pb[n].scale=(v,v,v)
+        if s.stil: bpy.context.view_layer.update()
         palm=mw@((pb['metacarpal3.R'].head+pb['metacarpal3.R'].tail)/2)
         nes,s.kafa=raket(palm,T['rk'],T['rkFace'],s.boy/1.78,s.M); s.gecici+=nes
         if p.get('shuttle'):   # servis: sol elde tüy top, mantar aşağıda (gerçek: 25 mm mantar, 85 mm boy)

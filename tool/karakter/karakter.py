@@ -49,7 +49,7 @@ def build_gercek(p):
     import insan
     if OY is None:
         for o in list(objs): bpy.data.objects.remove(o)
-        objs.clear(); OY=insan.Oyuncu(insan.malzemeler(FORMA,SORT,BEYAZ,BANT,CERCEVE,TEL,SORT))
+        objs.clear(); OY=insan.Oyuncu(insan.malzemeler(FORMA,SORT,BEYAZ,BANT,CERCEVE,TEL,SORT),stil=os.environ.get('BS_STIL'))
     objs[:]=OY.kur_poz(p)
 def build(p):
     """p: poz sözlüğü → sahneye figürü kur"""
@@ -306,7 +306,9 @@ sc.world=bpy.data.worlds.new('w'); sc.world.use_nodes=True; sc.world.node_tree.n
 sc.render.engine='CYCLES'; sc.cycles.samples=24; sc.cycles.use_denoising=True; sc.render.film_transparent=True; sc.view_settings.view_transform='Standard'
 try: sc.cycles.device='CPU'
 except: pass
-CW_,CH_=192,256; sc.render.resolution_x=CW_; sc.render.resolution_y=CH_; sc.render.resolution_percentage=100
+CW_,CH_=192,256
+if MODE!='stil': CW_,CH_=CW_*int(os.environ.get('BS_OLCEK','1')),CH_*int(os.environ.get('BS_OLCEK','1'))   # 2× hücre (yasin 2026-10-23 "doku kalitesi düşüktü"): oyunda büyütülüp bulanıklaşmasın
+sc.render.resolution_x=CW_; sc.render.resolution_y=CH_; sc.render.resolution_percentage=100
 bpy.ops.object.camera_add(); cam=bpy.context.object; sc.camera=cam; cam.data.type='ORTHO'; cam.data.ortho_scale=2.4  # büyük kenar (yükseklik) = 2.4 birim → ~107 px/birim; hamlede raket kadraja sığsın
 VIEWS={'me':(0,-1,1.35),'op':(0,1,1.35)}  # arkadan (ben) ve önden (rakip), ~53° yukarıdan
 def setcam(v):
@@ -396,6 +398,22 @@ if MODE=='raket':   # raket 360° (yasin 2026-10-23: "rakete dokununca raketin 3
         for tag in ('tel','tel2','grip','cerceve'): set_mats(tag); render(f'{OUT}/rm_{i}_{tag}.png')
         set_mats(None)
     json.dump(rm,open(f'{OUT}/rmeta.json','w')); print('RAKET DONE'); sys.exit(0)
+if MODE=='stil':   # arcade tarz önizlemesi: aynı pozlar, 2× hücre (doku), arkadan/önden + yakın ön görünüm
+    FORMA.node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value=(0.06,0.42,0.85,1); BANT_=BANT.node_tree.nodes.get('Principled BSDF')   # önizlemede oyunun boyadığı renkler pişer
+    if BANT_: BANT_.inputs['Base Color'].default_value=(0.85,0.12,0.18,1)
+    R2=int(os.environ.get('BS_OLCEK','2')); sc.render.resolution_x=CW_*R2; sc.render.resolution_y=CH_*R2; sc.cycles.samples=32
+    pz=dict(hazir=READY,smac=CLIPS['smash'][len(CLIPS['smash'])//2],uzan=CLIPS['lunge'][len(CLIPS['lunge'])//2],kos=CLIPS['run'][2])
+    for ad,p in pz.items():
+        build(p); hide_bands(False); set_mats(None)
+        for v in ('me','op'): setcam(v); render(f'{OUT}/s_{ad}_{v}.png')
+    build(READY); hide_bands(False); set_mats(None); sc.render.resolution_x=480; sc.render.resolution_y=640; cam.data.ortho_scale=1.35
+    d=Vector((0.55,0.75,0.35)).normalized(); cam.location=Vector((0,0,0.5))+d*4; el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2)
+    render(f'{OUT}/s_yakin.png')
+    pb=OY.ao.pose.bones; mw=OY.ao.matrix_world
+    for ad_,bn,osc,yon in (('yuz','head',.28,(0.25,1,0.12)),('elR','wrist.R',.24,(0.6,0.8,0.3)),('elL','wrist.L',.24,(-0.5,0.8,0.3))):
+        c=mw@pb[bn].head if bn!='head' else mw@((pb[bn].head+pb[bn].tail)/2); d=Vector(yon).normalized(); cam.location=c+d*3; cam.data.ortho_scale=osc
+        el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2); sc.render.resolution_x=sc.render.resolution_y=480; render(f'{OUT}/s_{ad_}.png')
+    print('STIL DONE'); sys.exit(0)
 if MODE=='keys':
     sc.cycles.samples=12; setcam('me'); i=0
     for name,ps in KEYS.items():

@@ -1,26 +1,17 @@
 Bu sürümde yeni:
-- Oyuncular artık gerçek insan oranlarında: kas, eklem, saç, göz, ayakkabı ve kıyafet kıvrımları var. Oyundaki tüm hareketler bu yeni figürle yeniden çizildi.
-- Ekipman ekranında "Raketi incele": raket oyuncunun elinden ortaya kayarak büyür ve kendi etrafında döner. Grip rengini, kordaj rengini ve deseni (tek renk ya da ana ve çapraz teller ayrı) seçebilirsin; seçtiğin renk oyuncunun elindeki rakette de görünür.
-- Açılışta ve "Oyna"ya basınca yeni geçiş: top ekranı çapraz geçer, halkalar ekranı kaplayıp kortu açar. Beklenen her yerde kendi ekseni etrafında dönen bir tüy top görünür.
-- Ekipman ekranında oyuncun 360 derece: parmağınla sağa sola sürükle, bırakınca yavaşlayarak durur. ‹ ve › düğmeleri 15 derece çevirir. Seçtiğin forma, raket, bant ve bileklik renkleri figürde görünür.
-- Her yükseltmenin altında ne değişeceği yazıyor: gri çubuk şimdiki değer, yeşil uç yükseltince eklenen kısım, yanında "+%2" gibi. Yükseltince çubuk dolar ve figürde o parça (raket, forma, bant ya da bileklik) bir an yeşil parlar.
-- Rakip de yorulur: onu sağa sola, özellikle geriye koşturdukça nefesi azalır. Altında "Yorgun" yazan bir halka belirir, ilk kez "Rakip yoruldu!" yazar. Yorgun rakip daha yavaş koşar, daha çok hata yapar, smaç yerine yüksek top atar; sayı arasında ellerini dizlerine koyup soluklanır.
-- Rakiplerin adı ve kendi forması var: Blaze (Smaşçı, mercan), Rocco (Duvar, lacivert), Mika (File oyuncusu, pembe). Maç başında kısa bir kart adını, tarzını ve ona karşı planı gösterir; 1,5 saniyede kapanır, dokununca hemen kapanır.
-- Kaybedilen maçın son sayısı artık ağır çekimde oynamıyor. Kazanınca ağır çekim duruyor.
-- "Nasıl oynanır" kısaldı: en üstte büyük "Antrenmanı yeniden oyna" düğmesi, altında yalnız antrenmanın anlatmadığı 6 konu.
+- Oyuncular yeni "sportif arcade" görünümde: biraz büyük kafa, el ve ayak, çizgi film gibi düz renkli gölgeler ve ince dış çizgi. Uzaktan da kim olduğu okunuyor.
+- Yüzler tamamlandı: kaşlar, kirpik çizgisi, göz kapağı ve hafif gülümseyen bir ağız var. Oyuncu odaklı ve kendinden emin görünüyor. Mimik ya da yüz hareketi yok, ifade sabit.
+- Eller tam: parmaklar ayrı ayrı görünüyor, raketi tutan el sapı sarıyor, boştaki el doğal duruyor.
+- Figürler iki kat çözünürlükte çizildi: telefonda büyütülünce bulanıklaşmıyor, forma ve ten dokusu daha net.
+- Ekipman ekranındaki 360 derece oyuncu ve hakemler de aynı görünüme geçti.
+- Açılış ve "Oyna" geçişi akıcı: figürleri boyama işi arka plana taşındı, perde artık takılmadan kapanıp açılıyor.
 
 Nasıl denenir:
-A. Uygulamayı aç: halkalı açılış ekranı kısa sürede kalkıp menüyü göstermeli; ekrana dokununca hemen kalkmalı.
-B. "Oyna"ya bas: top sol alttan sağ üste uçmalı, halkalar ekranı kaplayıp maç ekranını açmalı. Maç hemen başlamamalı, perde kalkınca başlamalı.
-C. Maçta iki oyuncuya yakından bak: kafa, kollar, bacaklar insan gibi olmalı; vuruşlarda raket elinde kalmalı, kopma ya da titreme olmamalı.
-D. Menü > Ekipman > "Raketi incele": raket ortaya kayıp büyümeli. Grip ve kordaj renklerine bas: raket hemen o renge geçmeli, seçili rengin üstünde ✓ olmalı. "Ana ve çapraz ayrı"yı seçip çapraz tele başka renk ver: teller iki renk görünmeli. "Oyuncuya dön" ile geri dön: elindeki raket de yeni renkte olmalı.
-E. "Hareketi azalt" açıkken: geçişler yalnız solarak olmalı, tüy top dönmemeli.
-1. Menü > Ekipman: en üstte oyuncun durmalı ve ağır ağır dönmeli. Parmakla sürükle: hızlı bırakınca bir süre dönüp yavaşlamalı.
-2. ‹ ve › düğmelerine bas: her basışta biraz dönmeli.
-3. Aynı ekranda aşağıdan başka bir forma ya da raket seç: üstteki figür hemen yeni renge geçmeli.
-4. Tüyün yetiyorsa bir parçayı yükselt: altındaki çubuk dolmalı, figürde o parça yeşil parlamalı, nokta sayısı bir artmalı.
-5. Telefonda "Hareketi azalt" açıksa figür kendiliğinden dönmemeli, parlama olmamalı; sürükleme ve düğmeler yine çalışmalı.
-6. Hızlı maç oyna ve rakibi uzun rallilerde arka çizgiye ve fileye koştur: altında "Yorgun" halkası belirmeli, "Rakip yoruldu!" yazmalı. Sayı arasında elleri dizinde durmalı.
-7. Maç başında rakibin ad kartı çıkmalı, rakibin forması kartın kenar rengiyle aynı olmalı. Karta dokununca hemen kapanmalı.
-8. Bir maçı kaybet: son sayıda oyun yavaşlamamalı. Bir maçı kazan: son sayı ağır çekimde olmalı.
-9. Telefon dilini İngilizce yapıp aç: Ekipman ekranındaki yeni yazılar da İngilizce olmalı. Türkçe telefonda her şey Türkçe olmalı.
+1. Uygulamayı aç: halkalı açılış perdesi takılmadan dönmeli, tüy top akıcı dönmeli, kısa sürede menüye açılmalı.
+2. "Oyna"ya bas: top ekranı çapraz geçmeli, halkalar ekranı kaplayıp kortu açmalı. Bu sırada titreme ya da duraklama olmamalı.
+3. Maçta kendi oyuncuna ve rakibe bak: kafa biraz büyük, çevresinde ince koyu çizgi olmalı; renkler düz ve net olmalı, bulanık olmamalı.
+4. Menü > Ekipman: dönen oyuncunun yüzüne bak. Kaşlar, gözler ve hafif gülümseyen ağız görünmeli, yüzde boş ya da yarım kalmış yer olmamalı. Ellerde parmaklar görünmeli.
+5. Ekipmanda başka forma, raket, bant ya da bileklik seç: hem 360 derece figürde hem maçta yeni renk görünmeli.
+6. Maç ekranında file kenarındaki hakemlere bak: onlar da aynı çizgi film görünümünde olmalı.
+7. Eski bir telefonda dene: açılış ve geçiş yine akıcı olmalı, figürler biraz geç gelse bile perde takılmamalı.
+8. "Hareketi azalt" açıkken: geçişler yalnız solarak olmalı, tüy top dönmemeli.
