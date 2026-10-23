@@ -27,3 +27,10 @@ if [ ! -d "$LIB/animations" ]; then
     rm -rf "$T"
   fi
 fi
+# Gerçekçi oyuncu (tool/karakter/insan.py): MakeHuman veri dosyaları (CC0), yalnız gövde ağı, makro hedefler, iskelet.
+MH=$HOME/AnimationLibrary/makehuman/mh
+if [ ! -f "$MH/makehuman/data/3dobjs/base.obj" ]; then
+  git clone -q --depth 1 --filter=blob:none --sparse https://github.com/makehumancommunity/makehuman "$MH" \
+    && git -C "$MH" sparse-checkout set makehuman/data/3dobjs makehuman/data/targets/macrodetails makehuman/data/rigs \
+    && echo "makehuman: clone" || echo "makehuman alınamadı"
+fi

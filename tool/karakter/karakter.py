@@ -4,6 +4,7 @@
 # Anahtar pozlar arasında kosinüs geçiş + hız eğrisi (hazırlık yavaş, temas hızlı, devam sönümlü).
 # Çıktı: sheet.png (renk), mask.png (R=forma G=raket çerçevesi B=kafa bandı A=bileklik), meta.json.
 import bpy, math, sys, json, os
+sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from mathutils import Vector, Matrix
 OUT=sys.argv[sys.argv.index('--')+1] if '--' in sys.argv else '/tmp/bs'
 MODE=sys.argv[sys.argv.index('--')+2] if '--' in sys.argv and len(sys.argv)>sys.argv.index('--')+2 else 'full'   # 'keys' = yalnız anahtar pozlar (önizleme)
@@ -39,8 +40,20 @@ def ik(A,B,l1,l2,hint):
     return A+u*a+hv.normalized()*h, B
 UA,FA=0.19,0.17; TH,SH=0.20,0.18   # üst kol/ön kol, uyluk/baldır
 SHW=0.13; HIPW=0.085
+# Gerçekçi gövde (yasin 2026-10-23: "insan anatomisine uygun olacak kadar gerçekçi"): MakeHuman tabanı (insan.py, CC0),
+# aynı poz sözlüklerini kullanır. BS_GERCEK=0 eski oyuncak figürü çizer (hakemler şimdilik oyuncak figürde).
+GERCEK=os.environ.get('BS_GERCEK','1')=='1'
+OY=None
+def build_gercek(p):
+    global OY
+    import insan
+    if OY is None:
+        for o in list(objs): bpy.data.objects.remove(o)
+        objs.clear(); OY=insan.Oyuncu(insan.malzemeler(FORMA,SORT,BEYAZ,BANT,CERCEVE,TEL,SORT))
+    objs[:]=OY.kur_poz(p)
 def build(p):
     """p: poz sözlüğü → sahneye figürü kur"""
+    if GERCEK and not p.get('hakem'): return build_gercek(p)
     for o in list(objs): bpy.data.objects.remove(o)
     objs.clear()
     root=Vector(p['root']); lean=Vector(p.get('lean',(0,0,0)))
@@ -361,12 +374,28 @@ if MODE=='tur':
         a_=2*math.pi*i/N; d=Vector((math.sin(a_),-math.cos(a_),0.62)).normalized()   # i=0: önden değil arkadan değil, oyuncuya karşıdan (yüz kameraya)
         d=Vector((-d.x,-d.y,d.z)); cam.location=Vector((0,0,0.5))+d*4; el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2)
         bpy.context.view_layer.update()
-        rk_=[o for o in objs if o.name.startswith('raket_kafa')][0]; q=w2c(sc,cam,rk_.matrix_world.translation); tm['raket'].append([round(q.x*TWD,1),round((1-q.y)*THD,1)])
+        rkp=OY.kafa if (GERCEK and OY) else [o for o in objs if o.name.startswith('raket_kafa')][0].matrix_world.translation; q=w2c(sc,cam,rkp); tm['raket'].append([round(q.x*TWD,1),round((1-q.y)*THD,1)])
         hide_bands(True); set_mats(None); render(f'{OUT}/t_{i}.png')
         hide_bands(False); sc.cycles.samples=4; sc.cycles.use_denoising=False
-        for tag in ('forma','cerceve','bant','bilek'): set_mats(tag); render(f'{OUT}/tm_{i}_{tag}.png')
+        for tag in ('forma','cerceve','bant','bilek','tel','tel2','grip'): set_mats(tag); render(f'{OUT}/tm_{i}_{tag}.png')   # tel/tel2/grip: raket ekranındaki renk seçimi oyuncuda da görünsün
         set_mats(None); sc.cycles.samples=24; sc.cycles.use_denoising=True
     json.dump(tm,open(f'{OUT}/tmeta.json','w')); print('TUR DONE'); sys.exit(0)
+if MODE=='raket':   # raket 360° (yasin 2026-10-23: "rakete dokununca raketin 360 ekranı, teller gerçekçi, grip ve kordaj rengi")
+    import insan
+    RW,RH=300,640; sc.render.resolution_x=RW; sc.render.resolution_y=RH; N=24
+    for o in list(objs): bpy.data.objects.remove(o)
+    objs.clear(); M=insan.malzemeler(FORMA,SORT,BEYAZ,BANT,CERCEVE,TEL,SORT); S_=1.0
+    nes,kc=insan.raket(Vector((0,0,0)),Vector((0,0,1)),Vector((0,-1,0)),S_,M,tel_kalin=.0008); objs[:]=nes   # gerçek boy (67,5 cm), yüz kameraya; tel yakın ekranda seçilsin diye biraz kalın
+    zc=.228; cam.data.ortho_scale=.74   # sap ucu -0,11, kafa tepesi 0,565
+    rm={'cell':[RW,RH],'n':N,'cols':12}
+    for i in range(N):
+        a_=2*math.pi*i/N; d=Vector((math.sin(a_),-math.cos(a_),0.18)).normalized(); cam.location=Vector((0,0,zc))+d*3
+        el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2); bpy.context.view_layer.update()
+        set_mats(None); sc.cycles.samples=32; sc.cycles.use_denoising=True; render(f'{OUT}/r_{i}.png')
+        sc.cycles.samples=4; sc.cycles.use_denoising=False
+        for tag in ('tel','tel2','grip','cerceve'): set_mats(tag); render(f'{OUT}/rm_{i}_{tag}.png')
+        set_mats(None)
+    json.dump(rm,open(f'{OUT}/rmeta.json','w')); print('RAKET DONE'); sys.exit(0)
 if MODE=='keys':
     sc.cycles.samples=12; setcam('me'); i=0
     for name,ps in KEYS.items():
@@ -380,9 +409,9 @@ else:
         meta['clips'][name]={'n':len(frames),'row':row}
         row+=(len(frames)+COLS-1)//COLS-1
         if ONLY and name not in ONLY:
-            for v in VIEWS: setcam(v); meta.setdefault('anchor',{})[v]=anchor()
+            for v in meta['views']: setcam(v); meta.setdefault('anchor',{})[v]=anchor()
             row+=1; continue
-        for v in VIEWS:
+        for v in meta['views']:   # hk/sj hakem modunun; oyuncu klipleri yalnız me/op
             setcam(v); meta.setdefault('anchor',{})[v]=anchor()
             for fi,p in enumerate(frames):
                 build(p); hide_bands(True); set_mats(None); render(f'{OUT}/f_{name}_{v}_{fi}.png')
