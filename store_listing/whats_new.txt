@@ -1,4 +1,7 @@
 Bu sürümde yeni:
+- Rakiplerin adı ve kendi forması var: Blaze (Smaşçı, mercan), Rocco (Duvar, lacivert), Mika (File oyuncusu, pembe). Maç başında kısa bir kart rakibin adını, tarzını ve ona karşı planı gösterir; 1,5 saniyede kendiliğinden kapanır, dokununca hemen kapanır.
+- Kaybedilen maçın son sayısı artık ağır çekimde oynamıyor. Kazanınca ağır çekim duruyor.
+- "Nasıl oynanır" kısaldı: en üstte büyük "Antrenmanı yeniden oyna" düğmesi, altında yalnız antrenmanın anlatmadığı konular (koşma, forehand/backhand, Akış, derinlik, nefes, ekipman).
 - Oyun artık İngilizce de: telefonun dili Türkçe değilse menü, antrenman, maç ve ekipman İngilizce görünür. Türkçe telefonda her şey eskisi gibi Türkçe.
 - Maç uzunluğu üç seçenek: 5 sayı (hızlı), 11 sayı (kısa), 21 sayı (resmî). 7 sayı kalktı; onu seçmiş olan 5 sayı ile başlar.
 - Oyuncular maçın ilk anından itibaren 3D figür olarak çiziliyor. Önceden açılıştan hemen sonra maça girince birkaç saniye yuvarlak kafalı basit çizim görünüyordu. Çok hızlı "Oyna"ya basarsan düğme bir an "Hazırlanıyor…" yazıp kendiliğinden başlar.
@@ -6,6 +9,9 @@ Bu sürümde yeni:
 - Tüy, seviye ve ekipman yükseltme önceki sürümdeki gibi.
 
 Nasıl denenir:
+- Hızlı maç başlat: rakibin üstünde ad kartı çıkmalı, rakip figürün forması kartın kenar rengiyle aynı olmalı. Karta dokununca hemen kapanmalı. Birkaç maç aç: farklı rakiplerde farklı forma görmelisin.
+- Bir maçı kaybet: son sayıda oyun yavaşlamamalı. Bir maçı kazan: son sayı ağır çekimde olmalı.
+- Menü > Nasıl oynanır: en üstte büyük antrenman düğmesi ve altında 6 konu olmalı.
 - Türkçe telefonda uygulamayı aç: her şey Türkçe olmalı. Bunu mutlaka kontrol et, İngilizce çıkarsa haber ver.
 - Telefon dilini İngilizce yapıp uygulamayı yeniden aç: menü, Ayarlar, Ekipman, Nasıl oynanır, antrenman kartları ve maç sonu İngilizce olmalı.
 - Ayarlar > Maç uzunluğu: yalnız 5, 11 ve 21 sayı görünmeli.
