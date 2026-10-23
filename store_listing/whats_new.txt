@@ -5,9 +5,10 @@ Bu sürümde yeni:
 - Figürler iki kat çözünürlükte çizildi: telefonda büyütülünce bulanıklaşmıyor, forma ve ten dokusu daha net.
 - Ekipman ekranındaki 360 derece oyuncu ve hakemler de aynı görünüme geçti.
 - Açılış ve "Oyna" geçişi akıcı: figürleri boyama işi arka plana taşındı, perde artık takılmadan kapanıp açılıyor.
+- Yükleme ekranındaki tüy top artık takılmadan, atlamadan dönüyor: daha sakin bir hızla kendi ekseninde dönüyor ve hafifçe sağa sola sallanıyor. Telefon meşgulken bile dönmesi durmuyor.
 
 Nasıl denenir:
-1. Uygulamayı aç: halkalı açılış perdesi takılmadan dönmeli, tüy top akıcı dönmeli, kısa sürede menüye açılmalı.
+1. Uygulamayı aç: halkalı açılış perdesi takılmadan dönmeli, kısa sürede menüye açılmalı. "Hazırlanıyor…" görünürse üstündeki tüy top geriye dönüyormuş ya da atlıyormuş gibi görünmemeli; yavaş ve düzgün dönmeli, hafifçe sallanmalı.
 2. "Oyna"ya bas: top ekranı çapraz geçmeli, halkalar ekranı kaplayıp kortu açmalı. Bu sırada titreme ya da duraklama olmamalı.
 3. Maçta kendi oyuncuna ve rakibe bak: kafa biraz büyük, çevresinde ince koyu çizgi olmalı; renkler düz ve net olmalı, bulanık olmamalı.
 4. Menü > Ekipman: dönen oyuncunun yüzüne bak. Kaşlar, gözler ve hafif gülümseyen ağız görünmeli, yüzde boş ya da yarım kalmış yer olmamalı. Ellerde parmaklar görünmeli.
