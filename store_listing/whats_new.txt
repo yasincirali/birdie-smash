@@ -1,23 +1,18 @@
 Bu sürümde yeni:
-- Rakiplerin adı ve kendi forması var: Blaze (Smaşçı, mercan), Rocco (Duvar, lacivert), Mika (File oyuncusu, pembe). Maç başında kısa bir kart rakibin adını, tarzını ve ona karşı planı gösterir; 1,5 saniyede kendiliğinden kapanır, dokununca hemen kapanır.
+- Ekipman ekranında oyuncun 360 derece: parmağınla sağa sola sürükle, bırakınca yavaşlayarak durur. ‹ ve › düğmeleri 15 derece çevirir. "Raketi yakından gör" raketin göründüğü açıya döner ve 2 kat yaklaşır. Seçtiğin forma, raket, bant ve bileklik renkleri figürde görünür.
+- Her yükseltmenin altında ne değişeceği yazıyor: gri çubuk şimdiki değer, yeşil uç yükseltince eklenen kısım, yanında "+%2" gibi. Yükseltince çubuk dolar ve figürde o parça (raket, forma, bant ya da bileklik) bir an yeşil parlar.
+- Rakip de yorulur: onu sağa sola, özellikle geriye koşturdukça nefesi azalır. Altında "Yorgun" yazan bir halka belirir, ilk kez "Rakip yoruldu!" yazar. Yorgun rakip daha yavaş koşar, daha çok hata yapar, smaç yerine yüksek top atar; sayı arasında ellerini dizlerine koyup soluklanır.
+- Rakiplerin adı ve kendi forması var: Blaze (Smaşçı, mercan), Rocco (Duvar, lacivert), Mika (File oyuncusu, pembe). Maç başında kısa bir kart adını, tarzını ve ona karşı planı gösterir; 1,5 saniyede kapanır, dokununca hemen kapanır.
 - Kaybedilen maçın son sayısı artık ağır çekimde oynamıyor. Kazanınca ağır çekim duruyor.
-- "Nasıl oynanır" kısaldı: en üstte büyük "Antrenmanı yeniden oyna" düğmesi, altında yalnız antrenmanın anlatmadığı konular (koşma, forehand/backhand, Akış, derinlik, nefes, ekipman).
-- Oyun artık İngilizce de: telefonun dili Türkçe değilse menü, antrenman, maç ve ekipman İngilizce görünür. Türkçe telefonda her şey eskisi gibi Türkçe.
-- Maç uzunluğu üç seçenek: 5 sayı (hızlı), 11 sayı (kısa), 21 sayı (resmî). 7 sayı kalktı; onu seçmiş olan 5 sayı ile başlar.
-- Oyuncular maçın ilk anından itibaren 3D figür olarak çiziliyor. Önceden açılıştan hemen sonra maça girince birkaç saniye yuvarlak kafalı basit çizim görünüyordu. Çok hızlı "Oyna"ya basarsan düğme bir an "Hazırlanıyor…" yazıp kendiliğinden başlar.
-- Antrenman artık etkileşimli: kartta canlı hız göstergesi parmağın o anki hızını ve "Şu an: Drop" gibi çıkacak vuruşu gösterir. Yanlış vuruşta nasıl düzelteceğin söylenir. Her vuruş iki kez istenir, ikincisi yardımsız. Rakip kortunda hedef alanı var, top oraya düşerse "Hedefte!" çıkar. Son adımda oyun durmaz, antrenör her topta bir vuruş söyler.
-- Tüy, seviye ve ekipman yükseltme önceki sürümdeki gibi.
+- "Nasıl oynanır" kısaldı: en üstte büyük "Antrenmanı yeniden oyna" düğmesi, altında yalnız antrenmanın anlatmadığı 6 konu.
 
 Nasıl denenir:
-- Hızlı maç başlat: rakibin üstünde ad kartı çıkmalı, rakip figürün forması kartın kenar rengiyle aynı olmalı. Karta dokununca hemen kapanmalı. Birkaç maç aç: farklı rakiplerde farklı forma görmelisin.
-- Bir maçı kaybet: son sayıda oyun yavaşlamamalı. Bir maçı kazan: son sayı ağır çekimde olmalı.
-- Menü > Nasıl oynanır: en üstte büyük antrenman düğmesi ve altında 6 konu olmalı.
-- Türkçe telefonda uygulamayı aç: her şey Türkçe olmalı. Bunu mutlaka kontrol et, İngilizce çıkarsa haber ver.
-- Telefon dilini İngilizce yapıp uygulamayı yeniden aç: menü, Ayarlar, Ekipman, Nasıl oynanır, antrenman kartları ve maç sonu İngilizce olmalı.
-- Ayarlar > Maç uzunluğu: yalnız 5, 11 ve 21 sayı görünmeli.
-0. Uygulamayı tamamen kapatıp aç, menü gelir gelmez hemen "Oyna"ya bas. Maç başladığı anda iki oyuncu da 3D figür olmalı, yuvarlak kafalı çizim hiç görünmemeli.
-7. Menüde "Nasıl oynanır" içinden antrenmanı aç. Kısa serviste parmağını yavaşça kaydırırken kartın altındaki iğne "Yavaş" bölgesinde durmalı, altında "✓ Şu an: Kısa servis" yazmalı. Hızlı kaydırınca ✗ ve başka servis adı çıkmalı.
-8. Bir vuruşu yanlış at (drop isterken hızlı kaydır): üstte "Clear oldu · Hızlıydın: daha yavaş kaydır" gibi bir ipucu çıkmalı.
-9. Doğru vuruştan sonra kartta ●○ 1/2 görünmeli ve ikinci denemede parmak izi çizilmemeli.
-10. Nefes adımında oyuncunun altındaki halkaya, smaç gücü adımında alttaki çubuğa dokun: adım geçmeli.
-11. Son adım "Antrenör ne derse": top gelirken ekranda büyük harfle bir vuruş adı çıkar. Dört topun sonunda maç başlarken kaçını tutturduğun yazmalı.
+1. Menü > Ekipman: en üstte oyuncun durmalı ve ağır ağır dönmeli. Parmakla sürükle: hızlı bırakınca bir süre dönüp yavaşlamalı.
+2. ‹ ve › düğmelerine bas: her basışta biraz dönmeli. "Raketi yakından gör"e bas: figür raketin yandan göründüğü açıya dönüp raketi büyütmeli. Tekrar basınca geri uzaklaşmalı.
+3. Aynı ekranda aşağıdan başka bir forma ya da raket seç: üstteki figür hemen yeni renge geçmeli.
+4. Tüyün yetiyorsa bir parçayı yükselt: altındaki çubuk dolmalı, figürde o parça yeşil parlamalı, nokta sayısı bir artmalı.
+5. Telefonda "Hareketi azalt" açıksa figür kendiliğinden dönmemeli, parlama olmamalı; sürükleme ve düğmeler yine çalışmalı.
+6. Hızlı maç oyna ve rakibi uzun rallilerde arka çizgiye ve fileye koştur: altında "Yorgun" halkası belirmeli, "Rakip yoruldu!" yazmalı. Sayı arasında elleri dizinde durmalı.
+7. Maç başında rakibin ad kartı çıkmalı, rakibin forması kartın kenar rengiyle aynı olmalı. Karta dokununca hemen kapanmalı.
+8. Bir maçı kaybet: son sayıda oyun yavaşlamamalı. Bir maçı kazan: son sayı ağır çekimde olmalı.
+9. Telefon dilini İngilizce yapıp aç: Ekipman ekranındaki yeni yazılar da İngilizce olmalı. Türkçe telefonda her şey Türkçe olmalı.

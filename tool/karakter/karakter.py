@@ -348,6 +348,25 @@ if MODE=='hakem':
             hm['clips'][name]={'n':len(frames),'v':v}
             for fi,p in enumerate(frames): build(p); set_mats(None); render(f'{OUT}/h_{name}_{fi}.png')
     json.dump(hm,open(f'{OUT}/hmeta.json','w')); print('HAKEM DONE'); sys.exit(0)
+# Ekipman ekranında 360° görünüm (2026-10-23, yasin: "avatarımı 360 görmek isterim, raketimi görmek isterim"). Hazır
+# duruş, 24 açı (15°), ~32° yukarıdan (göz hizasında bacaklar figürü uzatıyordu), daha büyük hücre. Aynı tint maskeleri: oyunda seçilen forma,
+# raket, bant ve bileklik renkleri burada da boyanır. Raket kafasının her açıdaki ekran yeri meta'ya yazılır: "raketi
+# yakından gör" ayrı render istemez, o noktaya 2× kırpar.
+if MODE=='tur':
+    TWD,THD=480,640; sc.render.resolution_x=TWD; sc.render.resolution_y=THD; cam.data.ortho_scale=2.3; N=24   # TH adı uyluk boyu, kullanma; 480×640: "raketi yakından gör" 2× büyütmede bulanıklaşmasın
+    TUR=D(READY,twist=0,rk=(0.18,0.30,0.94),wrR=(0.24,0.20,0.56),look=(0,1,0.05))
+    tm={'cell':[TWD,THD],'n':N,'raket':[],'cols':8}
+    build(TUR)
+    for i in range(N):
+        a_=2*math.pi*i/N; d=Vector((math.sin(a_),-math.cos(a_),0.62)).normalized()   # i=0: önden değil arkadan değil, oyuncuya karşıdan (yüz kameraya)
+        d=Vector((-d.x,-d.y,d.z)); cam.location=Vector((0,0,0.5))+d*4; el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2)
+        bpy.context.view_layer.update()
+        rk_=[o for o in objs if o.name.startswith('raket_kafa')][0]; q=w2c(sc,cam,rk_.matrix_world.translation); tm['raket'].append([round(q.x*TWD,1),round((1-q.y)*THD,1)])
+        hide_bands(True); set_mats(None); render(f'{OUT}/t_{i}.png')
+        hide_bands(False); sc.cycles.samples=4; sc.cycles.use_denoising=False
+        for tag in ('forma','cerceve','bant','bilek'): set_mats(tag); render(f'{OUT}/tm_{i}_{tag}.png')
+        set_mats(None); sc.cycles.samples=24; sc.cycles.use_denoising=True
+    json.dump(tm,open(f'{OUT}/tmeta.json','w')); print('TUR DONE'); sys.exit(0)
 if MODE=='keys':
     sc.cycles.samples=12; setcam('me'); i=0
     for name,ps in KEYS.items():
