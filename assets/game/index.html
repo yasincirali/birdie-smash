@@ -1029,7 +1029,7 @@ function setupServe(){ if(M.ogr){ const a=OGR_ADIM[M.ogr.i]; if(a&&!a.bilgi) M.s
   if(sv==='me'){ M.me.x=cx(sb); M.me.y=NET+SSL+1.4; M.op.x=cx(rb); M.op.y=NET-SSL-1.6; }
   else { M.op.x=cx(sb); M.op.y=NET-SSL-1.4; M.me.x=cx(rb); M.me.y=NET+SSL+1.6; }
   M.serveBox={who:rv,x:rb,y:rv==='me'?[NET+SSL,L]:[0,NET-SSL]};
-  M.wait=sv==='op'?1.0:0; M.hint=sv==='me'; M.svPending=null; M.me.svAnim=M.op.svAnim=null;
+  M.wait=sv==='op'?(M.kisaBekle?.7:1.0):0; M.hint=sv==='me'; M.svPending=null; M.me.svAnim=M.op.svAnim=null;
   { const r=Math.random(); M.op.svTur=r<.58?'kisa':r<.8?'flick':'yuksek'; } /* rakip servis türünü önceden seçer, duruşu ona göre görünür; flick kısa servisle aynı duruştan */
   if(M.ogr) M.op.svTur='yuksek'; M.op.svClip=SERVIS[M.op.svTur].klip; M.me.svClip='serve_bh';
   if(M.sc[0]+M.sc[1]===0&&M.stil&&!M.ogr){ M.serveMsg=Tr('Rakip: {0}',rakipAd(true)); /* planı giriş kartı söyler; burada yalnız kim olduğu kalır */ }
@@ -1223,15 +1223,19 @@ function opServe(){ const b=M.serveBox, tur=M.op.svTur||'kisa';
   const tx=b.x[0]+.3+Math.random()*(b.x[1]-b.x[0]-.6), ty=tur==='kisa'?b.y[0]+.5:b.y[1]-.6; servisAt('op',tur,tx,ty); }
 
 /* ---- sayı: ralli sistemi, sayıyı alan servisi alır ---- */
-function point(winner,why,at){ if(M.between) return; M.between=true; if(M.ogr&&M.ogr.cagri&&winner==='op'&&M.s&&M.s.from==='op'&&OGR_ADIM[M.ogr.i]?.drill){ M.ogr.cagri=null; M.ogr.dene++; setTimeout(()=>{ if(M&&M.ogr) ogrCagriBitti(); },0); } /* son adım: çağrılan topu kaçırmak da bir deneme */ M.hakemT=1.4; M.hakemYon=winner; M.hakemSO=!M.ogr&&winner!==M.server; /* servis el değişti mi: baş hakem o zaman yeni servisçinin tarafını gösterir */ if(!M.ogr){ M.sc[winner==='me'?0:1]++; M.server=winner; } /* antrenmanda skor yok, servis hep sende */ if(winner==='me'&&M.s&&M.s.from==='me'&&M.s.type==='smash') M.smacSayi=(M.smacSayi||0)+1; setTimeout(gorevKontrol,0);
+function point(winner,why,at){ if(M.between) return; M.between=true; if(M.ogr&&M.ogr.cagri&&winner==='op'&&M.s&&M.s.from==='op'&&OGR_ADIM[M.ogr.i]?.drill){ M.ogr.cagri=null; M.ogr.dene++; setTimeout(()=>{ if(M&&M.ogr) ogrCagriBitti(); },0); } /* son adım: çağrılan topu kaçırmak da bir deneme */ M.hakemT=M.hakemT0=1.4; M.hakemYon=winner; M.hakemSO=!M.ogr&&winner!==M.server; /* servis el değişti mi: baş hakem o zaman yeni servisçinin tarafını gösterir */ if(!M.ogr){ M.sc[winner==='me'?0:1]++; M.server=winner; } /* antrenmanda skor yok, servis hep sende */ if(winner==='me'&&M.s&&M.s.from==='me'&&M.s.type==='smash') M.smacSayi=(M.smacSayi||0)+1; setTimeout(gorevKontrol,0);
   if(at){ const p=P(at.x,at.y); burst(p.x,p.y,'rgba(230,255,240,.7)',14,140,'dot',30); wave(p.x,p.y,winner==='me'?'#d8ff5a':'#ff7a6b',70); }
   if(winner==='me'){ if(!M.ogr&&M.s&&M.s.from==='me'&&M.s.super) basarimVer(BASARIM.sicrama); txt(why,W/2,H*.42,'#d8ff5a',34,3); cheer(.14); [0,4,7,12].forEach((s,k)=>tone(523*Math.pow(2,s/12),.18,'triangle',.08,k*.07)); kick(5); hap('win'); M.pop[0]=1; if(M.rally>=8||(M.s&&M.s.type==='smash')) for(let k=0;k<26;k++) M.cams.push({x:Math.random()*W,y:8+Math.random()*48,t:-Math.random()*.6}); for(let k=0;k<3;k++) setTimeout(()=>burst(W*(.2+Math.random()*.6),H*.3,['#d8ff5a','#ff7a6b','#7ad7ff'][k],22,260,'spark',100),k*120); }
   else { txt(why,W/2,H*.58,'#ff7a6b',28,3); tone(220,.25,'sawtooth',.05); hap('lose'); M.pop[1]=1; }
+  const rekor=M.rally>best.rally&&M.rally>=6;
   if(M.rally>best.rally){ best.rally=M.rally; save(); if(M.rally>=6) setTimeout(()=>txt(Tr('Yeni ralli rekoru: {0}',M.rally),W/2,H*.5,'#7ad7ff',22,3),500); }
   const [a,b]=M.sc, cap=target===21?30:target===11?15:7, done=(Math.max(a,b)>=target&&Math.abs(a-b)>=2)||Math.max(a,b)>=cap;
   if(done){ if(winner==='me'){ slow=.3; slowT=.9; } setTimeout(endMatch,1400); } /* kaybı ağır çekimde izletmek cezalandırır (Ar-Ge 23 Eki) */
   else { if(Math.max(a,b)>=target-1&&a!==b&&Math.abs(a-b)<=1) M.serveMsg=a>b?Tr('Maç sayısı'):Tr('Rakibin maç sayısı'); else if(a===b&&a>=target-1) M.serveMsg=Tr('Uzatma: 2 fark gerekiyor');
-    setTimeout(()=>{ if(M&&mode==='play'){ const msg=M.serveMsg; setupServe(); M.serveMsg=msg; } },1300); }
+    /* sayılar arası bekleme kısaldı (Ar-Ge 24 Eki): ritim düşmesin diye 1,3 → 0,7 sn; baş hakemin el hareketi aynı oranla hızlanır.
+       Antrenman ve yeni ralli rekoru sayısı eski süreyi korur: orada okunacak bir yazı var. */
+    const kisa=!M.ogr&&!rekor; M.kisaBekle=kisa; if(kisa){ M.hakemT=M.hakemT0=1.0; }
+    setTimeout(()=>{ if(M&&mode==='play'){ const msg=M.serveMsg; setupServe(); M.serveMsg=msg; } },kisa?700:1300); }
 }
 function endMatch(){ mode='over'; crowdLevel(.004); underwater(false); const won=M.sc[0]>M.sc[1]; if(won){ best.wins++; save(); }
   let kNot=''; if(M.stil.kariyer!=null){ const i=M.stil.kariyer;
@@ -1285,7 +1289,7 @@ function update(dt){
   const d=dt*slow*(hitWindow()?(reduce?.7:(easy?.3:.45)*GS.yavas):1);
   zoom=1+(zoom-1)*Math.pow(.0005,dt); shake*=Math.pow(.002,dt); flash=Math.max(0,flash-dt*1.8);
   if(M&&M.hakemT>0) M.hakemT-=dt;
-  if(M){ if(M.sjYon==null) M.sjYon=M.server; if(M.sjYon!==M.server&&!(M.hakemT>1.1)){ M.sjT=(M.sjT||0)+dt; if(M.sjT>=.5||reduce){ M.sjYon=M.server; M.sjT=0; } } } /* servis hakemi yeni servisçiye ~0,3 sn sonra döner */
+  if(M){ if(M.sjYon==null) M.sjYon=M.server; if(M.sjYon!==M.server&&!(M.hakemT>M.hakemT0*1.1/1.4)){ M.sjT=(M.sjT||0)+dt; if(M.sjT>=.5||reduce){ M.sjYon=M.server; M.sjT=0; } } } /* servis hakemi yeni servisçiye ~0,3 sn sonra döner */
   if(M&&mode==='play'){ const dinlen=!M.s||M.between; M.nefes=Math.min(1,M.nefes+dt*(dinlen?.14:.03)); M.op.nefes=Math.min(1,(M.op.nefes??1)+dt*(dinlen?.14:.015)); /* ralli içi dolum yarı: uzun rallide birikmesi koşturmanın ödülü */
     const o=M.op; if(o.px!=null&&!dinlen){ const m=Math.hypot(o.x-o.px,o.y-o.py), geri=Math.max(0,o.py-o.y); opYor(.045*m+.045*geri*((M.stil.geriK||1)-1)); } o.px=o.x; o.py=o.y; }
   for(let i=parts.length-1;i>=0;i--){ const p=parts[i]; p.t+=d; const gr=p.kind==='feather'?60:p.kind==='spark'?240:p.kind==='streak'?0:300, dr=p.kind==='feather'?Math.pow(.08,d):p.kind==='streak'?1:Math.pow(.4,d); p.vx*=dr; p.vy=p.vy*dr+gr*d; p.x+=p.vx*d; p.y+=p.vy*d; p.rot+=p.vr*d; if(p.t>p.life) parts.splice(i,1); }
@@ -1387,7 +1391,7 @@ const HK={bm:null}; (window.createImageBitmap?fetch(HK_SRC).then(r=>r.blob()).th
 const HK_OLCEK=1.45;
 function hkCiz(ad,ph,x,y,z){ const c=HK_META.clips[ad]; if(!HK.bm||!c) return; const p=P(x,y,z), k=HK_OLCEK*p.ppm/HK_META.pxPerUnit, an=HK_META.anchor[c.v];
   const fi=Math.min(c.n-1,Math.max(0,Math.floor(ph*c.n))); ctx.drawImage(HK.bm,fi*c.bw,c.y,c.bw,c.bh,p.x+(c.bx-an[0])*k,p.y+(c.by-an[1])*k,c.bw*k,c.bh*k); }
-function hakemler(){ const e=M&&M.hakemT>0?1.4-M.hakemT:-1;
+function hakemler(){ const e=M&&M.hakemT>0?(M.hakemT0-M.hakemT)*1.4/M.hakemT0:-1;   /* faz eski 1,4 sn ölçeğinde: kısa beklemede hareket hızlanır */
   { const x0=-.5, f=P(x0,NET,0), seat=P(x0,NET,1.5), u=seat.ppm; /* baş hakem sandalyesi: iki ayak, basamak, ayaklık, oturak */
     ctx.strokeStyle='#cfd6d4'; ctx.lineWidth=Math.max(1.5,.06*u); ctx.beginPath(); for(const dy of [-.25,.25]){ const a=P(x0-.12,NET+dy,0), b=P(x0-.12,NET+dy,1.45); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); }
     for(const h of [.7,1.2]){ const st=P(x0-.05,NET-.25,h), st2=P(x0-.05,NET+.25,h); ctx.moveTo(st.x,st.y); ctx.lineTo(st2.x,st2.y); } ctx.stroke();
