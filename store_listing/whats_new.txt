@@ -1,5 +1,5 @@
 Bu sürümde yeni:
-- Vuruş animasyonları akıcı: oyuncu artık temas pozunda donup topu beklemiyor. Raketi geri alıp bekliyor, savuruş topa değdiği anda oluyor. Sıçrayarak smaçta oyuncu temas anında havada, tepede. Drive ve blokta raket yere inip fırlamıyor. Uzanmada gövde yana yatmıyor.
+- Vuruş animasyonları akıcı: oyuncu artık temas pozunda donup topu beklemiyor. Raketi geri alıp bekliyor, savuruş topa değdiği anda oluyor. Sıçrayarak smaçta oyuncu temas anında havada, tepede. Drive ve blokta raket yere inip fırlamıyor. Uzanmada gövde yana yatmıyor. Vuruştan sonraki toparlanma vuruşa göre: net vuruşu kısa, smaç uzun. Koşarken ayaklar kaymıyor, split step küçük bir sıçrama.
 - İlk açılışta antrenman kısaldı: 15 ders yerine yalnız kısa servis, clear ve smaç. Sonra hemen 5 sayılık Kolay ilk maç başlar. Diğer vuruşlar menüdeki Antrenman'da duruyor; ilk maçın sonunda "Daha fazla vuruş: Antrenman" düğmesi çıkar.
 - Kariyerde maçı kazanınca ana düğme sıradaki basamağı söyler ("Sıradaki: Okul turnuvası"); kaybedince "Tekrar dene".
 
