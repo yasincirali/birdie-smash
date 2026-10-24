@@ -1,4 +1,5 @@
 Bu sürümde yeni:
+- Vuruş hareketleri yeniden çizildi: baş üstü vuruşlarda raket önce sırtın arkasına düşüyor, sonra bilek dönerek topa çıkıyor. Kalça göğüsten önce dönüyor. Drive ve file vuruşunda dirsek hafif bükük. Drop ve file vuruşunun artık kendi hareketi var; drop başlangıçta clear gibi görünür, rakibi kandırır.
 - Vuruş animasyonları akıcı: oyuncu artık temas pozunda donup topu beklemiyor. Raketi geri alıp bekliyor, savuruş topa değdiği anda oluyor. Sıçrayarak smaçta oyuncu temas anında havada, tepede. Drive ve blokta raket yere inip fırlamıyor. Uzanmada gövde yana yatmıyor. Vuruştan sonraki toparlanma vuruşa göre: net vuruşu kısa, smaç uzun. Koşarken ayaklar kaymıyor, split step küçük bir sıçrama.
 - İlk açılışta antrenman kısaldı: 15 ders yerine yalnız kısa servis, clear ve smaç. Sonra hemen 5 sayılık Kolay ilk maç başlar. Diğer vuruşlar menüdeki Antrenman'da duruyor; ilk maçın sonunda "Daha fazla vuruş: Antrenman" düğmesi çıkar.
 - Kariyerde maçı kazanınca ana düğme sıradaki basamağı söyler ("Sıradaki: Okul turnuvası"); kaybedince "Tekrar dene".
@@ -7,12 +8,9 @@ Akıcılık:
 - İlk servisteki takılma giderildi: rakip figürü artık her maç başında baştan boyanmıyor. Sıradaki rakip menüdeyken hazırlanıyor, maç başlarken yalnız yer değiştiriyor. Figür kareleri de maçtan önce ekran kartına yükleniyor. Kaydırma ve servis vuruşu sesi önceden hazırlanıyor.
 - Test için gizli kare hızı göstergesi: Ayarlar ekranında "Ayarlar" başlığına 3 saniye içinde 5 kez dokun. Ekranın üstünde iki satır çıkar: üstte son 1 saniye (kare/sn, en uzun kare, takılma sayısı), altta o ekranın toplamı. Aynı şekilde 5 dokunuşla kapanır.
 - Maçta vuruş anları hafifledi: raket sesi artık her vuruşta baştan üretilmiyor, maç başında bir kez hazırlanıyor. Smaç yakınlaşmasında kort yeniden çizilmiyor. Eski ve yavaş telefonlarda vuruş anındaki takılma azalmalı.
-- Ekipman ekranı akıcı: forma ve raket renkleri arka planda boyanıyor, ekran açılırken ve renk seçerken donma olmamalı. 360 derece figür boşta gereksiz yere yeniden çizilmiyor.
-- Ekipman, Ayarlar, Nasıl oynanır, duraklatma ve maç sonu ekranlarında arkadaki saha artık sürekli çizilmiyor; pil ve ısınma için daha iyi.
-- Önceki sürümden: iki oyuncu görünümü (Oyuncak 3B ve Gerçekçi), takılmayan "Oyna" geçişi, sayılar arası daha kısa bekleme.
 
 Nasıl denenir:
-V. Bir maç oyna, rakibi izle: clear ve smaçta raket geride beklemeli, savuruş topa değerken hızlı akmalı. Rakip smaçta bir kez sıçramalı, topa havadayken vurmalı. Göğüs hizasındaki toplarda (drive) raket yere inmemeli. Uzandığında figür yere yatmamalı. Smaç gücü doluyken baş üstü topta çömelip sıçrayarak vurmalısın.
+V. Bir maç oyna, rakibi izle: smaç ve clear'da raketin sırtın arkasına düştüğünü, drop'ta hareketin sona doğru yavaşladığını görmelisin. Ayrıca clear ve smaçta raket geride beklemeli, savuruş topa değerken hızlı akmalı. Rakip smaçta bir kez sıçramalı, topa havadayken vurmalı. Göğüs hizasındaki toplarda (drive) raket yere inmemeli. Uzandığında figür yere yatmamalı. Smaç gücü doluyken baş üstü topta çömelip sıçrayarak vurmalısın.
 A. Uygulamayı silip yeniden kur, Oyna'ya bas: antrenman "1/3" ile başlamalı (kısa servis, clear, smaç). Üçü bitince "Maç başlıyor!" yazmalı ve 5 sayılık maç gelmeli. Maçta nefes halkası azalınca bir kez "Nefes al: clear at" uyarısı görmelisin. Maç sonunda "Daha fazla vuruş: Antrenman" düğmesi olmalı, bir sonraki maçta olmamalı. Ayarlarda maç uzunluğu seçtiysen ikinci maç o uzunlukta olmalı.
 B. Menü > Kariyer'de bir maç kazan: ana düğme "Sıradaki: …" yazmalı. Kaybedince "Tekrar dene", hızlı maçta "Bir maç daha".
 C. Menü > Antrenman: tam liste (15 adım) değişmeden oynanmalı.
@@ -21,7 +19,4 @@ C. Menü > Antrenman: tam liste (15 adım) değişmeden oynanmalı.
 2. Bir maç oyna, uzun ralliler yap: smaç, clear ve drop vuruşlarında top, oyuncular ve ekran sallanması takılmadan akmalı. Vuruş sesi önceki gibi duyulmalı (raket tellerinin çınlaması, smaçta sert çatırtı).
 3. Ekipman'da tel gerginliğini değiştirip bir vuruş yap: ses tel gerginliğine göre değişmeye devam etmeli.
 4. Menü > Ekipman'ı aç: ekran hemen açılmalı, figür hazırlanırken dönen top görünmeli ve donmamalı. Forma rengi değiştir: renk kısa sürede gelmeli, ekran kilitlenmemeli.
-5. Ekipman'da figürü parmakla çevir ve sayfayı aşağı kaydır: akıcı olmalı. "Raketi incele"ye geç, raketi çevir, kordaj ve grip rengini değiştir.
-6. Maçta duraklat, sonra devam et: oyun kaldığı yerden sürmeli, arkadaki saha donuk ama doğru görünmeli.
-7. Maçı bitir: maç sonu ekranındaki kutlama efekti oynamalı, sonra ekran sakin kalmalı.
-8. Ayarlar > Oyuncu görünümü > Gerçekçi ile 2–5. adımları bir kez daha dene.
+5. Ayarlar > Oyuncu görünümü > Gerçekçi ile 2–4. adımları bir kez daha dene.

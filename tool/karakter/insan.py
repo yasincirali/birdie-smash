@@ -87,6 +87,39 @@ def _ik(A,B,l1,l2,hint):
     if hv.length<1e-4: hv=Vector((0,0,-1))-u*Vector((0,0,-1)).dot(u)
     return A+u*a+hv.normalized()*h, B
 
+# Ön kol burulması (2026-10-24, animasyon denetimi #8). aim() kemiği en kısa dönüşle çevirir; ön kol hiç burulmuyordu,
+# pronasyon/supinasyon yalnız ayrı kurulan raketin yüzünden okunuyordu (el ile raket ayrı dönüyordu). burgu>0 olan pozda
+# rkFace AVUÇ yönü sayılır ve kol, avuç o yöne (ön kol eksenine dik izdüşümü) bakacak kadar kendi ekseninde döner.
+# Açı anatomik nötrden ölçülür: dirsek bükme düzlemine dik, içe bakan avuç (el sıkışma, başparmak yukarı) = fa×ua.
+# + supinasyon (avuç yukarı), − pronasyon; nötrden ±100° ile kırpılır. aim zincirinin kendi "nötrü" anatomik değil (kupa
+# pozunda avucu 180° ters bırakıyordu), bu yüzden ölçü ondan alınmaz. Burulma üç kemiğe paylaşılır: üst kol (omuz iç/dış
+# rotasyonu; tek başına ön kol alınca deri dirsekte burgu gibi sarılıyordu), ön kol, kalanı el.
+def _sar(a): return (a+math.pi)%(2*math.pi)-math.pi
+def _aci(f,n0,v):
+    v=v-f*v.dot(f)
+    return math.atan2(f.dot(n0.cross(v)),n0.dot(v)) if v.length>1e-5 else None
+def burgu_uygula(pb,n,aci,eksen,L):
+    b=pb[n]; M=b.matrix.copy(); N=Matrix.Rotation(aci,4,eksen)@Matrix(M.to_3x3()).to_4x4(); N.translation=M.translation; b.matrix=N; L.update()
+def on_kol_burgu(pb,L,T,kemik,avuc,aim_fa,aim_el,sinir=math.radians(100),pay=(.30,.45)):
+    """kemik=(üst kol, ön kol, el); üst kol ve ön kol aim edilmiş olarak çağrılır, aim_fa/aim_el o aim'i yeniden yapar.
+    Dönüş: istenen avuç açısı (rad, anatomik nötre göre) ya da None."""
+    ua,fa,el=kemik; w=T.get('burgu',0)
+    f=(T['wrR']-T['elR']).normalized(); n0=f.cross((T['elR']-T['shR']).normalized())
+    rk=T['rk']; yz=T['rkFace']-rk*T['rkFace'].dot(rk)   # raket() ile aynı: yüz önce raket düzlemine izdüşer
+    hed=_aci(f,n0.normalized(),yz) if n0.length>1e-4 else None
+    if w<=0 or hed is None: aim_el(); return None
+    n0.normalize(); hed=max(-sinir,min(sinir,hed))
+    simdi=lambda b:_aci(f,n0,pb[b].matrix.to_3x3()@avuc[b]) or 0.
+    a0=simdi(fa); top=_sar(hed-a0)*w; son=a0+top
+    ax=(pb[ua].matrix.to_3x3()@Vector((0,1,0))).normalized(); burgu_uygula(pb,ua,top*pay[0],ax,L); aim_fa()
+    burgu_uygula(pb,fa,_sar(a0+top*(pay[0]+pay[1])-simdi(fa)),f,L); aim_el()
+    for _ in range(2):   # el ekseni ön koldan biraz kırık: iki adımda hizalanır
+        ax=(pb[el].matrix.to_3x3()@Vector((0,1,0))).normalized(); burgu_uygula(pb,el,_sar(son-simdi(el))*(1 if ax.dot(f)>0 else -1),ax,L)
+    return hed
+def avuc_yerel(ao,n,avuc_dunya):
+    """dinlenmede dünya avuç normali → kemiğin yerel çerçevesi (pose-space ile rest aynı eksende kurulur)"""
+    return (ao.data.bones[n].matrix_local.to_3x3().inverted()@Vector(avuc_dunya)).normalized()
+
 class Iskelet:
     def __init__(s,ao,J):
         s.ao=ao; s.J=J; B=lambda k:J[k+'____head']
@@ -101,7 +134,10 @@ class Iskelet:
         T={}; root=Vector(p['root'])*k; lean=Vector(p.get('lean',(0,0,0)))*k; tw=-math.radians(p.get('twist',0))
         chestT=root+(Vector((0,0,.22))+lean/k)*k; up=(chestT-root).normalized()
         R=Vector((0,0,1)).rotation_difference(up).to_matrix()@Matrix.Rotation(tw,3,'Z')
-        T['root']=root; T['Rpel']=Matrix.Rotation(tw*.35,3,'Z'); T['Rgov']=R
+        # Leğen ayrı kanal (2026-10-24, animasyon denetimi #9): eskiden her karede göğsün sabit %35'iydi, ikisi aynı eğriyle
+        # dönüyordu. Poz 'pelvis' yazarsa (karakter.py sample() kalçayı bir kare önden okur) o kullanılır; yoksa eski kural.
+        pel=-math.radians(p['pelvis']) if 'pelvis' in p else tw*.35
+        T['root']=root; T['Rpel']=Matrix.Rotation(pel,3,'Z'); T['Rgov']=R
         for sd,shm in ((1,s.shR),(-1,s.shL)):
             T['sh'+('R' if sd>0 else 'L')]=root+R@(shm-s.root)
         T['neck']=root+R@(s.neck-s.root); T['head']=T['neck']+(R@(s.headc-s.neck))+Vector(p.get('head',(0,0,0)))
@@ -115,7 +151,7 @@ class Iskelet:
             kn,an=_ik(hp,an,s.TH,s.SH,Vector(p.get('kn'+K,(0,1,0)))); T['hp'+K]=hp; T['kn'+K]=kn; T['an'+K]=an
             fd=Vector(p.get('ft'+K,(0,1,0))); fd.z=0; T['ft'+K]=fd.normalized()
         T['k']=k; T['look']=Vector(p.get('look',(0,1,0))).normalized(); T['rk']=Vector(p.get('rk',(0,.6,.8))).normalized()
-        T['rkFace']=Vector(p.get('rkFace',(1,0,0)))
+        T['rkFace']=Vector(p.get('rkFace',(1,0,0))); T['burgu']=float(p.get('burgu',0))
         return T
     def uygula(s,T):
         ao=s.ao; pb=ao.pose.bones; L=bpy.context.view_layer

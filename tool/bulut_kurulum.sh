@@ -49,3 +49,26 @@ if [ ! -f "$RB/Export/Sports_Male_04.fbx" ]; then
     && for t in body head; do for k in color normal specular; do curl -sSfL -o "$RB/Textures/m026_${t}_${k}.tga" "$U/Textures/m026_${t}_${k}.tga"; done; done \
     && echo "rocketbox: indirildi" || echo "rocketbox alınamadı"
 fi
+# Unity MCP (CoderGamester/mcp-unity, MIT): sunucu bulutta derlenip kaydedilir. Araçları yalnız mcp-unity paketi
+# kurulu, açık bir Unity Editor'a (WebSocket, UNITY_HOST/UNITY_PORT, varsayılan localhost:8090) bağlanınca çalışır;
+# bulutta Editor yok (Unity indirme/lisans sunucuları ağ politikasında kapalı), yani burada bağlantı bekler.
+MU=$HOME/mcp-unity
+if [ ! -f "$MU/Server~/build/index.js" ]; then
+  { [ -d "$MU" ] || git clone -q --depth 1 https://github.com/CoderGamester/mcp-unity.git "$MU"; } \
+    && (cd "$MU/Server~" && npm ci --no-audit --no-fund -s && npm run -s build) >/dev/null 2>&1 \
+    && echo "mcp-unity: derlendi" || echo "mcp-unity derlenemedi"
+fi
+if [ -f "$MU/Server~/build/index.js" ] && command -v claude >/dev/null; then
+  for d in /home/user /home/user/birdie-smash; do
+    (cd "$d" 2>/dev/null && claude mcp add -s local mcp-unity -- node "$MU/Server~/build/index.js" >/dev/null 2>&1) || true
+  done
+  echo "mcp-unity: kayıtlı"
+fi
+# Babysitter (a5c-ai, MIT): uzun işleri adım adım, kalite kapılı yürüten orkestrasyon eklentisi; /babysitter:* komutları
+# ve babysit skill'i yeni oturumlarda görünür.
+if command -v claude >/dev/null; then
+  command -v babysitter >/dev/null || npm install -g @a5c-ai/babysitter@6.0.0 --no-audit --no-fund -s >/dev/null 2>&1
+  claude plugin marketplace add a5c-ai/babysitter-claude >/dev/null 2>&1 || true
+  claude plugin install --scope user babysitter@a5c.ai >/dev/null 2>&1 || true
+  claude plugin list 2>/dev/null | grep -q "babysitter@a5c.ai" && echo "babysitter: kurulu" || echo "babysitter kurulamadı"
+fi
