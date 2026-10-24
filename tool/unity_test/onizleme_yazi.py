@@ -34,7 +34,9 @@ for i in range(n):
             y = (H * (.62 if w == 'me' else .36)) - age * 90
             if w in last: y = min(y, last[w] - 52)
             last[w] = y
-            shadow_text(d, (W / 2, y), s, f_mid, col, int(255 * min(1, (1.1 - age) * 2.5)))
+            f = f_mid
+            if d.textlength(s, font=f) > W - 60: f = ImageFont.truetype(FB, int(40 * (W - 60) / d.textlength(s, font=f)))   # uzun olay yazısı kenardan taşmasın
+            shadow_text(d, (W / 2, y), s, f, col, int(255 * min(1, (1.1 - age) * 2.5)))
     shadow_text(d, (W / 2, H - 92), 'Önizleme: aynı C# simülasyonu ve aynı FBX', f_small, (220, 225, 235), 230)
     shadow_text(d, (W / 2, H - 58), 'Blender ile çizildi, Unity çıktısı değil', f_small, (220, 225, 235), 230)
     Image.alpha_composite(im, ov).convert('RGB').save(os.path.join(T, 'k%04d.png' % i))
