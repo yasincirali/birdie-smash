@@ -1,18 +1,15 @@
-Bu sürümde yeni:
-- Oyuncular artık iki görünümde: "Oyuncak 3B" (varsayılan) ve "Gerçekçi". Ayarlar > Oyuncu görünümü'nden seçilir, seçim hatırlanır.
-- Oyuncak 3B: iri başlı, yumuşak hatlı oyuncak bir sporcu. Mavi forma ve beyaz ön yaka, koyu şort, beyaz çorap, kırmızı tabanlı beyaz ayakkabı, raket kolunda bileklik.
-- Gerçekçi: yeni, gerçek insan oranlarında bir sporcu (Microsoft Rocketbox). Saç bandı ve raket kolunda bileklik var; forma rengi Ekipman'dan değişir. Önceki sportif figür bunun yerine geldi; onu seçmiş olanlar otomatik olarak Gerçekçi'ye geçer.
-- İki görünümde de hareketler aynı badminton klipleri: smaç, clear, drop, uzanma, split step, ayrı backhand; raket hep sağ elde.
-- Rakip de senin seçtiğin görünümde oynar. Hakemler şimdilik eskisi gibi.
-- "Oyna"ya basınca gelen smaç perdesi artık takılmadan akıyor: halkaların büyümesi, dönmesi ve topun uçuşu maç arkada hazırlanırken de duraksamıyor.
-- Sayılar arası bekleme kısaldı: sayı bitince yeni servis daha çabuk geliyor, rakip servisinde de daha az bekliyorsun. 11 sayılık bir maçta toplam bekleme yaklaşık 13 saniye azaldı. Antrenmanda ve yeni ralli rekoru yazısı çıktığında bekleme eskisi gibi.
+Bu sürümde yeni (akıcılık):
+- Maçta vuruş anları hafifledi: raket sesi artık her vuruşta baştan üretilmiyor, maç başında bir kez hazırlanıyor. Smaç yakınlaşmasında kort yeniden çizilmiyor. Eski ve yavaş telefonlarda vuruş anındaki takılma azalmalı.
+- Ekipman ekranı akıcı: forma ve raket renkleri arka planda boyanıyor, ekran açılırken ve renk seçerken donma olmamalı. 360 derece figür boşta gereksiz yere yeniden çizilmiyor.
+- Ekipman, Ayarlar, Nasıl oynanır, duraklatma ve maç sonu ekranlarında arkadaki saha artık sürekli çizilmiyor; pil ve ısınma için daha iyi.
+- Önceki sürümden: iki oyuncu görünümü (Oyuncak 3B ve Gerçekçi), takılmayan "Oyna" geçişi, sayılar arası daha kısa bekleme.
 
 Nasıl denenir:
-1. Uygulamayı ilk kez aç: oyuncular Oyuncak 3B görünümünde olmalı (iri baş, mavi forma, koyu şort).
-2. Menüde "Oyna"ya bas: top köşeden smaçlanıp geçmeli, halkalar büyüyüp ekranı kaplamalı ve sonra açılmalı. Bu sırada hiçbir an donma ya da sıçrama olmamalı. Birkaç kez maçtan çıkıp yeniden dene; eski bir telefonda da dene.
-3. Menü > Ekipman: 360 derece dönen oyuncuyu çevir. Belde, kollarda, yakada ve ensede çizgi, delik ya da basamak görünmemeli.
-4. Ekipmanda başka forma rengi seç: hem 360 derece figürde hem maçta formanın rengi değişmeli.
-5. Ayarlar > Oyuncu görünümü > Gerçekçi: uygulama kısa bir an yenilenir, oyuncular gerçek oranlı sporcuya döner. Ekipman'da 360 derece figüre ve forma rengine yeniden bak. Uygulamayı kapatıp açınca seçim korunmalı.
-6. Gerçekçi görünümde bir maç oyna: smaç, clear, uzanma ve backhand vuruşlarında raket hep sağ elde kalmalı, el raketi tutuyor görünmeli. Sonra Oyuncak 3B'ye geri dön.
-7. Bir sayı bitir: yeni servis eskisinden belirgin biçimde çabuk gelmeli, baş hakemin el hareketi de hızlanmalı ama yarıda kesilmemeli.
-8. 6 vuruştan uzun bir ralliyle rekor kır: "Yeni ralli rekoru" yazısı okunacak kadar ekranda kalmalı.
+1. Mümkünse eski ya da yavaş bir telefonda dene.
+2. Bir maç oyna, uzun ralliler yap: smaç, clear ve drop vuruşlarında top, oyuncular ve ekran sallanması takılmadan akmalı. Vuruş sesi önceki gibi duyulmalı (raket tellerinin çınlaması, smaçta sert çatırtı).
+3. Ekipman'da tel gerginliğini değiştirip bir vuruş yap: ses tel gerginliğine göre değişmeye devam etmeli.
+4. Menü > Ekipman'ı aç: ekran hemen açılmalı, figür hazırlanırken dönen top görünmeli ve donmamalı. Forma rengi değiştir: renk kısa sürede gelmeli, ekran kilitlenmemeli.
+5. Ekipman'da figürü parmakla çevir ve sayfayı aşağı kaydır: akıcı olmalı. "Raketi incele"ye geç, raketi çevir, kordaj ve grip rengini değiştir.
+6. Maçta duraklat, sonra devam et: oyun kaldığı yerden sürmeli, arkadaki saha donuk ama doğru görünmeli.
+7. Maçı bitir: maç sonu ekranındaki kutlama efekti oynamalı, sonra ekran sakin kalmalı.
+8. Ayarlar > Oyuncu görünümü > Gerçekçi ile 2–5. adımları bir kez daha dene.

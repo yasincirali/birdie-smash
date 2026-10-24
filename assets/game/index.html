@@ -431,8 +431,10 @@ const CLEAR_A=.63, LIFT_A=.80;
 function aim(from,tx,ty,mode,val){ const dx=tx-from.x, dy=ty-from.y, R=Math.hypot(dx,dy), ux=dx/R, uy=dy/R;
   const shoot=(v,a)=>{ const c=Math.cos(a); return [ux*v*c,uy*v*c,v*Math.sin(a)]; };
   const range=(v,a)=>{ const [vx,vy,vz]=shoot(v,a); const r=simulate(from.x,from.y,from.z,vx,vy,vz); return Math.hypot(r.x-from.x,r.y-from.y); };
-  let lo,hi,v,a; if(mode==='angle'){ a=val; lo=1; hi=140; for(let k=0;k<26;k++){ const m=(lo+hi)/2; range(m,a)<R?lo=m:hi=m; } v=(lo+hi)/2; }
-  else { v=val; lo=-1.2; hi=.9; for(let k=0;k<26;k++){ const m=(lo+hi)/2; range(v,m)<R?lo=m:hi=m; } a=(lo+hi)/2; }
+  /* 18 adım (2026-10-24, eskiden 26): hız aralığı 139/2¹⁸ ≈ 0,5 mm/sn, açı ≈ 0,0005°; düşüş yerindeki fark 1 mm'nin altında.
+     Her adım bir uçuş benzetimi; vuruş karesinde rakip 2–3 kez nişan alıyor, 8 adım daha az = o karede %30 daha az fizik. */
+  let lo,hi,v,a; if(mode==='angle'){ a=val; lo=1; hi=140; for(let k=0;k<18;k++){ const m=(lo+hi)/2; range(m,a)<R?lo=m:hi=m; } v=(lo+hi)/2; }
+  else { v=val; lo=-1.2; hi=.9; for(let k=0;k<18;k++){ const m=(lo+hi)/2; range(v,m)<R?lo=m:hi=m; } a=(lo+hi)/2; }
   return shoot(v,a); }
 
 /* ---- ses ---- */
@@ -440,22 +442,57 @@ let muted=false,AC=null;
 function ac(){ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); return AC; }
 /* Ses bağlamını ilk dokunuşta kur: kurulum ~110 ms sürüyor, eskiden "Oyna"dan sonra perde kapanırken oluyordu. Dokunuş
    içinde kurulduğu için iOS'ta askıda başlamaz. */
-addEventListener('pointerdown',()=>{ try{ ac().resume(); }catch(e){} },{once:true,capture:true});
+addEventListener('pointerdown',()=>{ try{ ac().resume(); }catch(e){} setTimeout(onIsit,400); },{once:true,capture:true});
+/* Maçın önbellekleri (yakınlaştırma zemini, ses tamponları, kayıtlı vuruş sesleri) menüdeyken boşta, parça parça hazırlanır;
+   eskiden "Oyna"dan sonra perde kapalıyken yapılıyordu ve geçişi 4× yavaşta ~150 ms uzatıyordu. maciKur yine çağırır
+   (saha ya da ekran değiştiyse yeniden kurulur, aynıysa önbellekten döner). */
+function onIsit(){ const is=[()=>zeminHazirla(),()=>zeminHazirla(ZK),sesIsit,vsesIsit]; let i=0; const adim=()=>{ if(i>=is.length) return; if(perdeOynuyor()||mode==='play'&&!(M&&M.between)){ setTimeout(adim,500); return; } try{ is[i++](); }catch(e){} setTimeout(adim,120); }; adim(); }
 function tone(f,d=.1,type='sine',v=.1,delay=0){ if(muted)return; try{ const A=ac(),t=A.currentTime+delay,o=A.createOscillator(),g=A.createGain(); o.type=type; o.frequency.setValueAtTime(f,t); g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g).connect(out()); o.start(t); o.stop(t+d+.02);}catch(e){} }
-function noise(d,type,f,v,q=1){ if(muted)return; try{ const A=ac(),n=Math.floor(A.sampleRate*d),b=A.createBuffer(1,n,A.sampleRate),c=b.getChannelData(0); for(let i=0;i<n;i++) c[i]=(Math.random()*2-1)*Math.pow(1-i/n,4); const s=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain(); s.buffer=b; fl.type=type; fl.frequency.value=f; fl.Q.value=q; g.gain.value=v; s.connect(fl).connect(g).connect(out()); s.start(); }catch(e){} }
+/* Gürültü tamponları önbellekte (2026-10-24, yasin: "maç içi vuruşlarda performanslı olmalı, tüm telefon ve işlemci
+   tiplerinde akıcı"). Her vuruşta ~12 bin örnek rastgele sayı + üs hesabıyla 7 tampon yeniden üretiliyordu; 4× yavaş
+   işlemcide vuruş sesi tek başına 6 ms (en çok 11 ms) sürüyordu, tam vuruş karesinde. Şimdi aynı uzunluk ve zarf için 3
+   farklı tampon bir kez üretilir, sırayla kullanılır: 3 ayrı rastgele dizi süzgeçten geçince tekrar duyulmaz. */
+const NTAMP={};
+function nTampon(A,n,anah,fn){ const k=n+'|'+anah, v=NTAMP[k]||(NTAMP[k]=[]); v.i=((v.i||0)+1)%3; if(v[v.i]) return v[v.i];
+  const b=A.createBuffer(1,n,A.sampleRate), c=b.getChannelData(0); for(let i=0;i<n;i++) c[i]=fn(i,n); return v[v.i]=b; }
+const zarf=env=>(i,n)=>(Math.random()*2-1)*Math.pow(1-i/n,env);
+/* Maç kurulurken (perde kapalıyken) vuruş sesinin tamponları önceden üretilir; ilk vuruşlar da hafif kalsın */
+function sesIsit(){ try{ const A=ac(), R=A.sampleRate; [[.004,2],[.014,4],[.03,3],[.008,2],[.035,2],[.17,2],[.014,2]].forEach(([d,e])=>{ const n=Math.max(8,Math.floor(R*d)); for(let j=0;j<3;j++) nTampon(A,n,e,zarf(e)); });
+  for(let j=0;j<3;j++) nTampon(A,Math.floor(R*.25),4,zarf(4)); }catch(e){} }
+function noise(d,type,f,v,q=1){ if(muted)return; try{ const A=ac(),n=Math.floor(A.sampleRate*d),b=nTampon(A,n,4,zarf(4)); const s=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain(); s.buffer=b; fl.type=type; fl.frequency.value=f; fl.Q.value=q; g.gain.value=v; s.connect(fl).connect(g).connect(out()); s.start(); }catch(e){} }
 /* Raket sesi — üç katman, gerçek vuruşun anatomisi:
    (1) tel modları: gerginliğe bağlı ana frekans (~1,5 kHz, sıkı telde tizleşir) + 3 üst kısmi; sıkı tel kısa ve parlak çınlar, gevşek tel tok ve uzun.
    (2) kafa/çerçeve: alçak tok darbe (kafa ağır rakette daha derin), (3) mantar ucu tıkırtısı + hızlı toplarda tüy hışırtısı.
    Tür karışımı değiştirir: smaç = yoğun çatırtı, clear = dolgun uzun çınlama, drive = kısa sert, drop/blok = yalnız hafif tel dokunuşu.
    İsabet de duyulur: tam orta temiz tel, sıyırma tel susar çerçeve "klonk" eder. Rakip 13 m ötede: daha kısık, daha boğuk, 30 ms geç. */
-function burstN(A,dst,t,d,type,f,v,q=1,env=3){ const n=Math.max(8,Math.floor(A.sampleRate*d)),b=A.createBuffer(1,n,A.sampleRate),c=b.getChannelData(0); for(let i=0;i<n;i++) c[i]=(Math.random()*2-1)*Math.pow(1-i/n,env); const s=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain(); s.buffer=b; fl.type=type; fl.frequency.value=f; fl.Q.value=q; g.gain.value=v; s.connect(fl).connect(g).connect(dst); s.start(t); }
+function burstN(A,dst,t,d,type,f,v,q=1,env=3){ const n=Math.max(8,Math.floor(A.sampleRate*d)),b=nTampon(A,n,env,zarf(env)); const s=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain(); s.buffer=b; fl.type=type; fl.frequency.value=f; fl.Q.value=q; g.gain.value=v; s.connect(fl).connect(g).connect(dst); s.start(t); }
 function decay(A,dst,t,f,type,v,d,glide=1){ const o=A.createOscillator(),g=A.createGain(); o.type=type; o.frequency.setValueAtTime(f*glide,t); if(glide!==1) o.frequency.exponentialRampToValueAtTime(f,t+.012); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+.0015); g.gain.exponentialRampToValueAtTime(.0001,t+.0015+d); o.connect(g).connect(dst); o.start(t); o.stop(t+d+.03); }
 const HITMIX={smash:{a:1,str:1,frm:.9,crk:1,ring:.55,hiss:1},clear:{a:.72,str:1,frm:.55,crk:.25,ring:1,hiss:.5},drive:{a:.8,str:.9,frm:.7,crk:.55,ring:.5,hiss:.6},drop:{a:.34,str:.8,frm:.12,crk:0,ring:.9,hiss:0}};
-function racketHit(o){ if(muted) return; try{ const A=ac(), t=A.currentTime+(o.who==='op'?.03:0), S=GS, T=HITMIX[o.type]||HITMIX.clear;
-  let a=T.a*(o.super?1.3:1)*(o.who==='op'?.5:1)*(o.serve?.55:1), str=T.str, frm=T.frm, crk=T.crk, ring=T.ring, hiss=T.hiss;
+/* Vuruş sesi önceden kaydedilir (2026-10-24, yasin: "maç içi vuruşlarda performanslı olmalı, tüm telefon ve işlemci
+   tiplerinde akıcı"). Sentez her vuruşta ~45 ses düğümü kuruyordu; 4× yavaş işlemcide 4,5–6 ms, tam vuruş karesinde. Şimdi
+   her (tür, isabet, slice, süper, servis, tel gerginliği, kafa) bileşimi ilk istendiğinde OfflineAudioContext'te iki farklı
+   rastgele çekimle bir kez çalınıp tampona alınır; vuruş o tamponu 2–3 düğümle çalar. Ses aynı sentez, aynı karışım; rakibin
+   uzaklığı (kısık, boğuk, 30 ms geç) çalarken eklenir. Tampon hazır olana kadar (ilk vuruş, eski WebView) canlı sentez çalar. */
+const VSES={}, VSES_SURE=.4;
+function vsesAnah(o,S){ return [HITMIX[o.type]?o.type:'clear',o.q||'good',!!o.slice,!!o.super,!!o.serve,(o.ton||S.ton).toFixed(3),(o.kafa||S.kafa).toFixed(3)].join(); }
+function vsesKaydet(o,S,k){ const OA=window.OfflineAudioContext||window.webkitOfflineAudioContext; if(!OA||VSES[k]) return; VSES[k]={b:[],i:0};
+  for(let j=0;j<2;j++){ try{ const R=ac().sampleRate, X=new OA(1,Math.ceil(R*VSES_SURE),R); vurusCal(X,X.destination,0,{...o,who:'me'},S,1);
+    const p=X.startRendering(); if(p&&p.then) p.then(b=>VSES[k].b.push(b)).catch(()=>{}); else X.oncomplete=e=>VSES[k].b.push(e.renderedBuffer); }catch(e){} } }
+/* Maç başında sık vuruşlar kaydedilir. Kayıt kurulumu da canlı sentez kadar iş: tek seferde değil, kare aralarına
+   yayılarak (her 60 ms'de bir bileşim) yapılır ki perde ve ilk ralli takılmasın. Az görülen bileşim (ör. süper smaç)
+   ilk geldiğinde canlı çalar, kaydı vuruş karesinden sonraya ertelenir. */
+function vsesIsit(){ if(muted) return; const L=[]; for(const type of Object.keys(HITMIX)) for(const q of ['good','perfect','poor']) L.push({type,q});
+  L.push({type:'clear',q:'good',serve:true},{type:'drop',q:'good',serve:true},{type:'smash',q:'good',super:true},{type:'smash',q:'perfect',super:true});
+  let i=0; const adim=()=>{ if(i>=L.length||muted) return; const o=L[i++]; try{ vsesKaydet(o,GS,vsesAnah(o,GS)); }catch(e){} setTimeout(adim,60); }; setTimeout(adim,0); }
+function racketHit(o){ if(muted) return; try{ const A=ac(), t=A.currentTime+(o.who==='op'?.03:0), S=GS, k=vsesAnah(o,S), V=VSES[k];
+  if(V&&V.b.length){ const b=V.b[V.i=(V.i+1)%V.b.length]||V.b[0], src=A.createBufferSource(), g=A.createGain(); src.buffer=b; src.playbackRate.value=1+(Math.random()-.5)*.05; /* canlı sentezdeki ±%2,5 tel perdesi */
+    g.gain.value=o.who==='op'?.5:1; src.connect(g); if(o.who==='op'){ const lp=A.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=3000; g.connect(lp).connect(out()); } else g.connect(out()); src.start(t); return; }
+  vurusCal(A,null,t,o,S,o.who==='op'?.5:1); setTimeout(()=>vsesKaydet(o,S,k),120); }catch(e){} }
+function vurusCal(A,hedef,t,o,S,uz){ const T=HITMIX[o.type]||HITMIX.clear;
+  let a=T.a*(o.super?1.3:1)*uz*(o.serve?.55:1), str=T.str, frm=T.frm, crk=T.crk, ring=T.ring, hiss=T.hiss;
   if(o.q==='poor'){ str*=.22; frm*=2.2; crk*=.3; ring*=.4; } else if(o.q==='perfect'){ str*=1.15; frm*=.6; crk*=1.1; }
   if(o.slice){ str*=.55; crk*=.25; frm*=.7; }
-  const bus=A.createGain(); bus.gain.value=a*1.35; if(o.who==='op'){ const lp=A.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=3000; bus.connect(lp).connect(out()); } else bus.connect(out());
+  const bus=A.createGain(); bus.gain.value=a*1.35; if(hedef) bus.connect(hedef); else if(o.who==='op'){ const lp=A.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=3000; bus.connect(lp).connect(out()); } else bus.connect(out());
   const ton=o.ton||S.ton, kafa=o.kafa||S.kafa, f0=1480*ton*(1+(Math.random()-.5)*.05);
   [[1,.24],[1.63,.13],[2.41,.08],[3.3,.045]].forEach(([m,v],i)=>decay(A,bus,t,f0*m,'sine',v*str,(.1-i*.018)*ring/ton,1.045));
   burstN(A,bus,t,.004,'highpass',3200*ton,.5*str,1,2);
@@ -465,12 +502,12 @@ function racketHit(o){ if(muted) return; try{ const A=ac(), t=A.currentTime+(o.w
   burstN(A,bus,t+.001,.008,'bandpass',1300,.22,2,2);
   if(hiss>0) burstN(A,bus,t+.004,.035,'bandpass',6200,.07*hiss,.7,2);
   /* Slice: top telin üstünde kayar → yükselen "zzip" sürtünmesi, ardından takla atan topun kanat çırpışı gibi kesik hışırtı. */
-  if(o.slice){ const n=Math.floor(A.sampleRate*.07),b=A.createBuffer(1,n,A.sampleRate),c=b.getChannelData(0); for(let i=0;i<n;i++) c[i]=(Math.random()*2-1)*Math.sin(Math.PI*i/n); const sr=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain(); sr.buffer=b; fl.type='bandpass'; fl.Q.value=3; fl.frequency.setValueAtTime(2200*ton,t); fl.frequency.exponentialRampToValueAtTime(5200*ton,t+.07); g.gain.value=.2; sr.connect(fl).connect(g).connect(bus); sr.start(t);
+  if(o.slice){ const n=Math.floor(A.sampleRate*.07),b=nTampon(A,n,'sin',(i,n)=>(Math.random()*2-1)*Math.sin(Math.PI*i/n)); const sr=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain(); sr.buffer=b; fl.type='bandpass'; fl.Q.value=3; fl.frequency.setValueAtTime(2200*ton,t); fl.frequency.exponentialRampToValueAtTime(5200*ton,t+.07); g.gain.value=.2; sr.connect(fl).connect(g).connect(bus); sr.start(t);
     for(let k=0;k<4;k++) burstN(A,bus,t+.08+k*.028,.014,'bandpass',4800,.05-k*.01,1,2); }
   /* salon: kısa bir yansıma ve kısık oda kuyruğu; sesi kuru bir laboratuvar vuruşundan spor salonuna taşır */
   decay(A,bus,t+.055,f0,'sine',.05*str,.05); burstN(A,bus,t+.02,.17,'lowpass',1700,.075,.7,2);
-}catch(e){} }
-function cheer(v=.12){ if(muted)return; try{ const A=ac(),n=A.sampleRate*1.2,b=A.createBuffer(1,n,A.sampleRate),c=b.getChannelData(0); for(let i=0;i<n;i++){ const e=i/n; c[i]=(Math.random()*2-1)*Math.sin(Math.PI*e)*(.6+.4*Math.sin(i/900)); } const s=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain(); s.buffer=b; fl.type='bandpass'; fl.frequency.value=1200; fl.Q.value=.6; g.gain.value=v; s.connect(fl).connect(g).connect(out()); s.start(); }catch(e){} }
+}
+function cheer(v=.12){ if(muted)return; try{ const A=ac(),n=Math.floor(A.sampleRate*1.2),b=nTampon(A,n,'tezahurat',(i,n)=>(Math.random()*2-1)*Math.sin(Math.PI*i/n)*(.6+.4*Math.sin(i/900))); const s=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain(); s.buffer=b; fl.type='bandpass'; fl.frequency.value=1200; fl.Q.value=.6; g.gain.value=v; s.connect(fl).connect(g).connect(out()); s.start(); }catch(e){} }
 // Titreşim: Flutter kabuğunda (iOS WKWebView navigator.vibrate'i hiç desteklemez)
 // 'Haptic' JS kanalı varsa desen oraya gider, Flutter HapticFeedback'e çevirir.
 function buzz(p){ try{ if(window.Haptic){ Haptic.postMessage(JSON.stringify(p)); return } navigator.vibrate&&navigator.vibrate(p) }catch(e){} }
@@ -737,23 +774,53 @@ function yukDoldur(k,once){ const kutu=document.querySelector(`[data-yuk="${k}"]
 var TUR=null;
 function turAcik(){ const e=document.getElementById('pnEkip'); return !!e&&!e.hidden; }
 function turYenile(){ if(!TUR||!turAcik()) return; TUR.anah=null; turBoya(); rakBoya(); }
-function turBoya(){ if(!TUR||!TUR.img) return; const col=sprRenk('me'), rk=[rRenk(RGOR.tel),RGOR.desen==='iki'?rRenk(RGOR.tel2):rRenk(RGOR.tel),rRenk(RGOR.grip)], anah=JSON.stringify([col,rk]); if(TUR.anah===anah) return; TUR.anah=anah;
-  const [cw,ch]=TUR_META.cell, C=TUR_META.cols, R=Math.ceil(TUR_META.n/C), w=C*cw, h=R*ch, t=TUR.boya||(TUR.boya=document.createElement('canvas')); t.width=w; t.height=h;
-  const x=t.getContext('2d',{willReadFrequently:true}); const rd=im=>{ x.clearRect(0,0,w,h); x.drawImage(im,0,0); return x.getImageData(0,0,w,h).data; };
-  const m=rd(TUR.img.mask), wr=rd(TUR.img.wrist), m2=TUR.img.mask2?rd(TUR.img.mask2):null; x.clearRect(0,0,w,h); x.drawImage(TUR.img.sheet,0,0); const d=x.getImageData(0,0,w,h), p=d.data;
+/* 360° boyaması işçide (2026-10-24, akıcılık denetimi): forma/raket renkleri 3840×1920 sayfada piksel piksel boyanıyordu,
+   ana iş parçacığında; Ekipman açılırken ve her renk seçiminde 4× yavaş işlemcide 1,35 sn'lik tek kare (Raketi incele 680 ms).
+   Şimdi maçtaki figürler gibi Worker + OffscreenCanvas'ta, sonuç ImageBitmap olarak gelir; o sırada eski boyama ya da dönen
+   top görünür. OffscreenCanvas olmayan WebView'da eski yol. Boyama kodu ikisinde aynı fonksiyon (turPiksel / rakPiksel). */
+function turPiksel(p,m,wr,m2,col,rk){
   for(let i=0;i<p.length;i+=4){ if(p[i+3]===0&&m[i+2]===0&&wr[i]===0) continue; const r=m[i]/255,g=m[i+1]/255,b=m[i+2]/255,k=wr[i]/255; /* sprTint ile aynı boyama */
     if(r>0){ const l=Math.min(1.15,(p[i]+p[i+1]+p[i+2])/(3*204)); for(let q=0;q<3;q++) p[i+q]=p[i+q]*(1-r)+col.forma[q]*l*r; }
     if(g>0){ const l=Math.min(1.15,(p[i]+p[i+1]+p[i+2])/(3*217)); for(let q=0;q<3;q++) p[i+q]=p[i+q]*(1-g)+col.cer[q]*l*g; }
     if(b>0&&col.bant){ for(let q=0;q<3;q++) p[i+q]=p[i+q]*(1-b)+col.bant[q]*.92*b; p[i+3]=Math.max(p[i+3],b*255); }
     if(k>0&&col.bilek){ for(let q=0;q<3;q++) p[i+q]=p[i+q]*(1-k)+col.bilek[q]*.92*k; p[i+3]=Math.max(p[i+3],k*255); }
     if(m2) for(let j=0;j<3;j++){ const a=Math.min(1,m2[i+j]/(j<2?140:255)); if(a>0){ const l=Math.min(1.2,(p[i]+p[i+1]+p[i+2])/(3*(j<2?224:212))); for(let q=0;q<3;q++) p[i+q]=p[i+q]*(1-a)+rk[j][q]*l*a; } } }   /* raket ekranında seçilen kordaj ve grip oyuncunun elindeki rakette de (R ana tel, G çapraz, B grip) */
-  x.putImageData(d,0,0); TUR.ciz=true;
+}
+function rakPiksel(p,m,c,tel,tel2,grip,cer){ const boya=(i,k,col,ref)=>{ if(k<=0) return; const l=Math.min(1.2,(p[i]+p[i+1]+p[i+2])/(3*ref)); for(let q=0;q<3;q++) p[i+q]=p[i+q]*(1-k)+col[q]*l*k; };
+  for(let i=0;i<p.length;i+=4){ if(p[i+3]===0) continue; boya(i,Math.min(1,m[i]/140),tel,224); boya(i,Math.min(1,m[i+1]/140),tel2,224);   /* ince tel kenar yumuşatmasıyla zayıf maske verir: güçlendir */ boya(i,m[i+2]/255,grip,212); boya(i,c[i]/255,cer,214); } }
+const TUR_ISCI=(()=>{ try{ if(typeof OffscreenCanvas==='undefined'||!window.Worker||!window.createImageBitmap||!new OffscreenCanvas(1,1).getContext('2d')) return null;
+    const kod=turPiksel.toString()+rakPiksel.toString()+`
+let B={}; const al=u=>B[u]||(B[u]=fetch(u).then(r=>r.blob()).then(x=>createImageBitmap(x)));
+onmessage=async e=>{ const q=e.data; if(q.birak){ for(const k in B) B[k].then(b=>b.close()).catch(()=>{}); B={}; return; }
+ try{ const im=await Promise.all(q.src.map(al)), w=im[0].width, h=im[0].height, c=new OffscreenCanvas(w,h), x=c.getContext('2d',{willReadFrequently:true});
+  const rd=i=>{ x.clearRect(0,0,w,h); x.drawImage(i,0,0); return x.getImageData(0,0,w,h).data; }, ek=im.slice(1).map(rd);
+  x.clearRect(0,0,w,h); x.drawImage(im[0],0,0); const d=x.getImageData(0,0,w,h);
+  if(q.tur==='tur') turPiksel(d.data,ek[0],ek[1],ek[2]||null,q.col,q.rk); else rakPiksel(d.data,ek[0],ek[1],q.tel,q.tel2,q.grip,q.cer);
+  x.putImageData(d,0,0); const bm=c.transferToImageBitmap(); postMessage({id:q.id,bm},[bm]); }
+ catch(err){ postMessage({id:q.id,hata:1}); } };`;
+    const w=new Worker(URL.createObjectURL(new Blob([kod],{type:'text/javascript'}))), bekle={}; let id=0, bozuk=false;
+    w.onmessage=e=>{ const q=e.data, f=bekle[q.id]; delete bekle[q.id]; if(f) q.hata?f.rej():f.res(q); };
+    w.onerror=()=>{ bozuk=true; Object.values(bekle).forEach(f=>f.rej()); };
+    return { bozuk:()=>bozuk, is:q=>new Promise((res,rej)=>{ if(bozuk) return rej(); q.id=++id; bekle[q.id]={res,rej}; w.postMessage(q); }), birak:()=>{ try{ w.postMessage({birak:1}); }catch(e){} } };
+  }catch(e){ return null; } })();
+const turBirak=x=>{ if(!x) return; if(x.close) x.close(); else x.width=x.height=0; };
+function turBoya(){ if(!TUR) return; const col=sprRenk('me'), rk=[rRenk(RGOR.tel),RGOR.desen==='iki'?rRenk(RGOR.tel2):rRenk(RGOR.tel),rRenk(RGOR.grip)], anah=JSON.stringify([col,rk]); if(TUR.anah===anah) return;
+  if(TUR_ISCI&&!TUR_ISCI.bozuk()){ TUR.anah=anah; TUR_ISCI.is({tur:'tur',src:[TUR_SRC.sheet,TUR_SRC.mask,TUR_SRC.wrist,...(TUR_SRC.mask2?[TUR_SRC.mask2]:[])],col,rk})
+      .then(r=>{ if(!TUR||TUR.anah!==anah){ r.bm.close(); return; } turBirak(TUR.boya); TUR.boya=r.bm; TUR.ciz=true; TUR.kadr=TUR_META.kadr; })
+      .catch(()=>{ if(TUR&&TUR.anah===anah){ TUR.anah=null; turBoyaAna(); } }); return; }
+  turBoyaAna(); }
+function turBoyaAna(){ if(!TUR||!TUR.img) return; const col=sprRenk('me'), rk=[rRenk(RGOR.tel),RGOR.desen==='iki'?rRenk(RGOR.tel2):rRenk(RGOR.tel),rRenk(RGOR.grip)], anah=JSON.stringify([col,rk]); if(TUR.anah===anah) return; TUR.anah=anah;
+  const [cw,ch]=TUR_META.cell, C=TUR_META.cols, R=Math.ceil(TUR_META.n/C), w=C*cw, h=R*ch, t=document.createElement('canvas'); t.width=w; t.height=h;
+  const x=t.getContext('2d',{willReadFrequently:true}); const rd=im=>{ x.clearRect(0,0,w,h); x.drawImage(im,0,0); return x.getImageData(0,0,w,h).data; };
+  const m=rd(TUR.img.mask), wr=rd(TUR.img.wrist), m2=TUR.img.mask2?rd(TUR.img.mask2):null; x.clearRect(0,0,w,h); x.drawImage(TUR.img.sheet,0,0); const d=x.getImageData(0,0,w,h);
+  turPiksel(d.data,m,wr,m2,col,rk); x.putImageData(d,0,0); turBirak(TUR.boya); TUR.boya=t; TUR.ciz=true;
   TUR.kadr=TUR_META.kadr; } /* çerçeveleme (meta'da, Blender çıktısından): her açının gövde (forma maskesi) ortası dönüş ekseni, tüm açıların ortak boyu ölçek; yoksa figür kutuda küçük kalır */
 function turAc(){ if(!TUR) TUR={a:0,v:0,zoom:0,hedefZoom:0,gec:0,hedefGec:0,ra:0,rv:0,parla:null,anah:null,img:null,suruk:null,son:performance.now()};
   if(!TUR.img&&!TUR.yuk){ TUR.yuk=true; Promise.all(['sheet','mask','wrist',...(TUR_SRC.mask2?['mask2']:[])].map(k=>(window.createImageBitmap?fetch(TUR_SRC[k]).then(r=>r.blob()).then(b=>createImageBitmap(b)):Promise.reject()).catch(()=>new Promise(res=>{ const im=new Image(); im.onload=()=>res(im); im.src=TUR_SRC[k]; }))))
     .then(([sheet,mask,wrist,mask2])=>{ TUR.yuk=false; TUR.img={sheet,mask,wrist,mask2}; turBoya(); }); }
+  if(TUR_ISCI) turBoya();
   if(!TUR.raf) TUR.raf=requestAnimationFrame(turKare); }
-function turKapat(){ if(!TUR) return; if(TUR.hedefGec){ TUR.gec=TUR.hedefGec=0; TUR.zoom=TUR.hedefZoom=0; const b=document.getElementById('turRaket'); if(b){ b.setAttribute('aria-pressed',false); b.textContent=Tr('Raketi incele'); } const g=document.getElementById('rakGor'); if(g) g.hidden=true; } cancelAnimationFrame(TUR.raf); TUR.raf=0; if(TUR.img){ Object.values(TUR.img).forEach(b=>b.close&&b.close()); TUR.img=null; } if(TUR.boya){ TUR.boya.width=TUR.boya.height=0; TUR.boya=null; } if(TUR.pk){ Object.values(TUR.pk).forEach(o=>o.width=o.height=0); TUR.pk=null; } if(TUR.rimg){ Object.values(TUR.rimg).forEach(b=>b.close&&b.close()); TUR.rimg=null; } if(TUR.rboya){ TUR.rboya.width=TUR.rboya.height=0; TUR.rboya=null; } TUR.ranah=null; TUR.anah=null; }
+function turKapat(){ if(!TUR) return; if(TUR.hedefGec){ TUR.gec=TUR.hedefGec=0; TUR.zoom=TUR.hedefZoom=0; const b=document.getElementById('turRaket'); if(b){ b.setAttribute('aria-pressed',false); b.textContent=Tr('Raketi incele'); } const g=document.getElementById('rakGor'); if(g) g.hidden=true; } cancelAnimationFrame(TUR.raf); TUR.raf=0; if(TUR.img){ Object.values(TUR.img).forEach(b=>b.close&&b.close()); TUR.img=null; } turBirak(TUR.boya); TUR.boya=null; if(TUR.pk){ Object.values(TUR.pk).forEach(o=>o.width=o.height=0); TUR.pk=null; } if(TUR.rimg){ Object.values(TUR.rimg).forEach(b=>b.close&&b.close()); TUR.rimg=null; } turBirak(TUR.rboya); TUR.rboya=null; TUR.ranah=null; TUR.anah=null; TUR.rgerek=false; if(TUR_ISCI) TUR_ISCI.birak(); }
 function turKare(now){ if(!turAcik()){ turKapat(); return; } TUR.raf=requestAnimationFrame(turKare); const dt=Math.min(.05,(now-TUR.son)/1000); TUR.son=now;
   if(TUR.hedefA!=null&&!TUR.suruk){ const d=TUR.hedefA-TUR.a; TUR.a+=reduce||Math.abs(d)<.5?d:d*Math.min(1,dt*7); TUR.v=0; if(TUR.a===TUR.hedefA) TUR.hedefA=null; }
   else if(!TUR.suruk){ if(Math.abs(TUR.v)>2) TUR.v*=Math.pow(.08,dt); else TUR.v=reduce||TUR.hedefZoom?0:18; TUR.a+=TUR.v*dt; } /* boşta 18°/sn */
@@ -762,7 +829,10 @@ function turKare(now){ if(!turAcik()){ turKapat(); return; } TUR.raf=requestAnim
   if(TUR.hedefGec===1&&!TUR.suruk){ if(Math.abs(TUR.rv)>2) TUR.rv*=Math.pow(.08,dt); else TUR.rv=reduce?0:24; TUR.ra+=TUR.rv*dt; }   /* raket boşta 24°/sn */
   const cv=document.getElementById('turCv'); if(cv&&!TUR.boya){ turBekle(cv,now); return; }   /* figür açılıyor: dönen tüy top */
   if(cv&&TUR.hedefGec&&!TUR.rboya) TUR.rciz=true;   /* raket açılırken gösterge dönsün */
-  if(!cv||!TUR.boya||!TUR.ciz&&TUR.sonA===TUR.a&&!TUR.parla&&Math.abs(TUR.hedefZoom-TUR.zoom)<.001&&TUR.gec===TUR.sonG&&(TUR.gec===0||!TUR.rciz&&TUR.sonRA===TUR.ra)) return;
+  /* Açı karesi değişmedikçe çizilmez (2026-10-24): figür boşta 18°/sn döner ama resmi yalnız 360/n derecede bir değişir;
+     eskiden her karede 3× çözünürlükte yeniden basılıyordu, Ekipman'da kare hızı yarıya iniyordu. */
+  const afi=a=>((Math.round(a/(360/TUR_META.n))%TUR_META.n)+TUR_META.n)%TUR_META.n, rfi=a=>((Math.round(a/(360/RAK_META.n))%RAK_META.n)+RAK_META.n)%RAK_META.n;
+  if(!cv||!TUR.boya||!TUR.ciz&&TUR.sonF===afi(TUR.a)&&!TUR.parla&&Math.abs(TUR.hedefZoom-TUR.zoom)<.001&&TUR.gec===TUR.sonG&&(TUR.gec===0||!TUR.rciz&&TUR.sonRF===rfi(TUR.ra))) return;
   const r=cv.getBoundingClientRect(), D=Math.min(3,devicePixelRatio||1), W=Math.round(r.width*D), H=Math.round(r.height*D); if(!W||!H) return; if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
   const [cw,ch]=TUR_META.cell, N=TUR_META.n, C=TUR_META.cols, f=((Math.round(TUR.a/(360/N))%N)+N)%N, sx=(f%C)*cw, sy=((f/C)|0)*ch;
   const K=TUR.kadr, bh=(K.y1-K.y0)*1.1, bw=bh*W/H, z=1+TUR.zoom, [rx,ry]=TUR_META.raket[f], ax=K.gx[f], ay=(K.y0+K.y1)/2;
@@ -779,7 +849,7 @@ function turKare(now){ if(!turAcik()){ turKapat(); return; } TUR.raf=requestAnim
   TUR.sonG=G; TUR.sonRA=TUR.ra; TUR.rciz=false;
   if(TUR.parla){ const t=(now-TUR.parla.t0)/900; if(t>=1) TUR.parla=null; else { const o=turParlakTabaka(TUR.parla.kanal,f); /* hızlı yüksel, yavaş sön */
       c.save(); c.globalAlpha=.95*(t<.15?t/.15:1-(t-.15)/.85); c.shadowColor='#d8ff5a'; c.shadowBlur=14*D; blit(c,o,1); blit(c,o,1); c.restore(); } } /* limon parıltı: beyaz raket çerçevesinde 'lighter' görünmüyordu */
-  TUR.ciz=false; TUR.sonA=TUR.a; }
+  TUR.ciz=false; TUR.sonA=TUR.a; TUR.sonF=f; TUR.sonRF=rfi(TUR.ra); }
 function turBekle(cv,now){ const r=cv.getBoundingClientRect(), D=Math.min(3,devicePixelRatio||1), W=Math.round(r.width*D), H=Math.round(r.height*D); if(!W||!H) return; if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
   const c=cv.getContext('2d'); c.clearRect(0,0,W,H); tuyDon(c,W/2,H/2,Math.min(W,H)*.16,now/1000); TUR.ciz=true; }
 function turParlakTabaka(kn,f){ const P=TUR.pk||(TUR.pk={}), k=kn+'_'+f; if(P[k]) return P[k]; /* yalnız o açının parça maskesi limona boyanır (tüm sayfa 3840×1920, her karede getImageData pahalı) */
@@ -804,14 +874,17 @@ function rakGorCiz(){ const el=document.getElementById('rakGor'); if(!el) return
 function rakYukle(){ if(TUR.rimg||TUR.ryuk) return; TUR.ryuk=true;
   Promise.all(['sheet','mask','cer'].map(k=>(window.createImageBitmap?fetch(RAK_SRC[k]).then(r=>r.blob()).then(b=>createImageBitmap(b)):Promise.reject()).catch(()=>new Promise(res=>{ const im=new Image(); im.onload=()=>res(im); im.src=RAK_SRC[k]; }))))
     .then(([sheet,mask,cer])=>{ TUR.ryuk=false; TUR.rimg={sheet,mask,cer}; rakBoya(); }); }
-function rakBoya(){ if(!TUR||!TUR.rimg) return; const tel=rRenk(RGOR.tel), tel2=RGOR.desen==='iki'?rRenk(RGOR.tel2):tel, grip=rRenk(RGOR.grip), cer=sprRenk('me').cer, an=JSON.stringify([tel,tel2,grip,cer]); if(TUR.ranah===an) return; TUR.ranah=an;
-  const im=TUR.rimg, w=im.sheet.width, h=im.sheet.height, t=TUR.rboya||(TUR.rboya=document.createElement('canvas')); t.width=w; t.height=h;
+function rakBoya(){ if(!TUR) return; const tel=rRenk(RGOR.tel), tel2=RGOR.desen==='iki'?rRenk(RGOR.tel2):tel, grip=rRenk(RGOR.grip), cer=sprRenk('me').cer, an=JSON.stringify([tel,tel2,grip,cer]); if(TUR.ranah===an) return;
+  if(TUR_ISCI&&!TUR_ISCI.bozuk()){ if(!TUR.rgerek) return; TUR.ranah=an; TUR_ISCI.is({tur:'rak',src:[RAK_SRC.sheet,RAK_SRC.mask,RAK_SRC.cer],tel,tel2,grip,cer})
+      .then(r=>{ if(!TUR||TUR.ranah!==an){ r.bm.close(); return; } turBirak(TUR.rboya); TUR.rboya=r.bm; TUR.rciz=true; })
+      .catch(()=>{ if(TUR&&TUR.ranah===an){ TUR.ranah=null; if(TUR.rimg) rakBoyaAna(); else rakYukle(); } }); return; }
+  rakBoyaAna(); }
+function rakBoyaAna(){ if(!TUR||!TUR.rimg) return; const tel=rRenk(RGOR.tel), tel2=RGOR.desen==='iki'?rRenk(RGOR.tel2):tel, grip=rRenk(RGOR.grip), cer=sprRenk('me').cer, an=JSON.stringify([tel,tel2,grip,cer]); if(TUR.ranah===an) return; TUR.ranah=an;
+  const im=TUR.rimg, w=im.sheet.width, h=im.sheet.height, t=document.createElement('canvas'); t.width=w; t.height=h;
   const x=t.getContext('2d',{willReadFrequently:true}); const rd=i=>{ x.clearRect(0,0,w,h); x.drawImage(i,0,0); return x.getImageData(0,0,w,h).data; };
-  const m=rd(im.mask), c=rd(im.cer); x.clearRect(0,0,w,h); x.drawImage(im.sheet,0,0); const d=x.getImageData(0,0,w,h), p=d.data;
-  const boya=(i,k,col,ref)=>{ if(k<=0) return; const l=Math.min(1.2,(p[i]+p[i+1]+p[i+2])/(3*ref)); for(let q=0;q<3;q++) p[i+q]=p[i+q]*(1-k)+col[q]*l*k; };
-  for(let i=0;i<p.length;i+=4){ if(p[i+3]===0) continue; boya(i,Math.min(1,m[i]/140),tel,224); boya(i,Math.min(1,m[i+1]/140),tel2,224);   /* ince tel kenar yumuşatmasıyla zayıf maske verir: güçlendir */ boya(i,m[i+2]/255,grip,212); boya(i,c[i]/255,cer,214); }
-  x.putImageData(d,0,0); TUR.rciz=true; }
-function rakModu(ac){ if(!TUR) return; TUR.hedefGec=ac?1:0; TUR.hedefZoom=ac?1:0; TUR.v=0; if(ac){ turRaketAcisi(); rakYukle(); } if(reduce){ TUR.gec=TUR.hedefGec; TUR.zoom=TUR.hedefZoom; }
+  const m=rd(im.mask), c=rd(im.cer); x.clearRect(0,0,w,h); x.drawImage(im.sheet,0,0); const d=x.getImageData(0,0,w,h);
+  rakPiksel(d.data,m,c,tel,tel2,grip,cer); x.putImageData(d,0,0); turBirak(TUR.rboya); TUR.rboya=t; TUR.rciz=true; }
+function rakModu(ac){ if(!TUR) return; TUR.hedefGec=ac?1:0; TUR.hedefZoom=ac?1:0; TUR.v=0; if(ac){ turRaketAcisi(); TUR.rgerek=true; if(TUR_ISCI) rakBoya(); else rakYukle(); } if(reduce){ TUR.gec=TUR.hedefGec; TUR.zoom=TUR.hedefZoom; }
   const b=document.getElementById('turRaket'); if(b){ b.setAttribute('aria-pressed',!!ac); b.textContent=ac?Tr('Oyuncuya dön'):Tr('Raketi incele'); }
   const cv=document.getElementById('turCv'); if(cv) cv.setAttribute('aria-label',ac?Tr('Raketin, 360 derece görünüm'):Tr('Oyuncun, 360 derece görünüm'));
   const g=document.getElementById('rakGor'); if(g){ g.hidden=!ac; if(ac) rakGorCiz(); } hap('tick'); }
@@ -1463,7 +1536,7 @@ function quad(x1,y1,x2,y2,fill){ const c=[P(x1,y1),P(x2,y1),P(x2,y2),P(x1,y2)]; 
 /* Zemin önbelleği (yasin 2026-10-22: "işlemci, grafik işlemci ve bellek olarak optimize edebilir miyiz, kaliteden ödün
    vermeden"). Her karede ekran boyu gradyan + tribün + kort + 12 çizgi + ışık katmanı çiziliyordu: üç tam ekran dolgu.
    Hiçbiri sayı ortasında değişmez; bir kez tek tuvale çizilir, karede tek drawImage. Canlı kalan: servis karesi parıltısı,
-   top izleri, akış (flow) çizgileri. Smaç yakınlaştırmasında (zoom) eski yol çizilir ki çizgiler bulanıklaşmasın. */
+   top izleri, akış (flow) çizgileri. Smaç yakınlaştırmasında (zoom) 1,1× çözünürlüklü ikinci önbellek basılır (bkz. ZEMIN_Z). */
 function zeminStatik(){
   const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,SAHA_T().ust); bg.addColorStop(1,'#0c1719'); ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
   const T=SAHA_T(); { const tc=tribunHazirla(); ctx.drawImage(tc,0,0,W,H); }
@@ -1481,14 +1554,15 @@ function zeminCanli(oran){
     if(m.t<.5){ ctx.strokeStyle=`rgba(255,255,255,${(.5-m.t)*1.6})`; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(p.x,p.y,(8+m.t*80)*p.s,(3.5+m.t*35)*p.s,0,0,7); ctx.stroke(); }
     if(m.big){ ctx.strokeStyle=`rgba(216,255,90,${.6*a})`; ctx.lineWidth=1.5; m.cr.forEach(r=>{ ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(p.x+Math.cos(r)*18*p.s,p.y+Math.sin(r)*8*p.s); ctx.stroke(); }); } }
 }
-const ZEMIN={key:'',c:null};
-function zeminHazirla(){ const key=[W,H,DPR,(M&&M.saha)||saha,ISIK].join(); if(ZEMIN.key===key) return ZEMIN.c;
-  const c=ZEMIN.c||document.createElement('canvas'); c.width=W*DPR; c.height=H*DPR; const eski=ctx; ctx=c.getContext('2d'); ctx.setTransform(DPR,0,0,DPR,0,0);
-  try{ zeminStatik(); cizgiler(false); if(ISIK!=='yok') ctx.drawImage(isikHazirla(),0,0,W,H); } finally{ ctx=eski; } ZEMIN.c=c; ZEMIN.key=key; return c; }
+/* Yakınlaştırma önbelleği (2026-10-24): her vuruştaki punch (1,03–1,09) ~0,5 sn kortu canlı çiziyordu (üç tam ekran dolgu,
+   tribün, 12 çizgi, ışık); vuruş karelerinde boyama işi %40 artıyordu. Şimdi aynı zemin 1,1× çözünürlükte ikinci bir tuvalde
+   durur ve yakınlaşırken o basılır: en çok 1,09 büyütmede kaynak hâlâ ekran pikselinden yoğun, çizgiler bulanıklaşmaz. */
+const ZEMIN={key:'',c:null}, ZEMIN_Z={key:'',c:null}, ZK=1.1;
+function zeminHazirla(k=1){ const Z=k>1?ZEMIN_Z:ZEMIN, D=DPR*k, key=[W,H,D,(M&&M.saha)||saha,ISIK].join(); if(Z.key===key) return Z.c;
+  const c=Z.c||document.createElement('canvas'); c.width=Math.round(W*D); c.height=Math.round(H*D); const eski=ctx; ctx=c.getContext('2d'); ctx.setTransform(D,0,0,D,0,0);
+  try{ zeminStatik(); cizgiler(false); if(ISIK!=='yok') ctx.drawImage(isikHazirla(),0,0,W,H); } finally{ ctx=eski; } Z.c=c; Z.key=key; return c; }
 function court(){ const flow=!!(M&&M.flow);
-  if(zoom>1.001){ zeminStatik(); zeminCanli(1); cizgiler(flow);
-  if(ISIK!=='yok') ctx.drawImage(isikHazirla(),0,0,W,H); return; }
-  ctx.drawImage(zeminHazirla(),0,0,W,H);
+  ctx.drawImage(zeminHazirla(zoom>1.001?ZK:1),0,0,W,H);
   zeminCanli(.8); /* ışığın üstünde çizildiği için parıltı ışık altındaki tonuna indirilir */ if(flow) cizgiler(true);
 }
 /* Işık (yasin 2026-10-22: "yan tribünler kalktığından sahayı daha da odak noktası yap", seçenekler A ışıksız / B spot /
@@ -1769,7 +1843,14 @@ function draw(){
     if(M.ogr) ogrIz();
   }
 }
-let last=performance.now(); function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now; if(!paused) update(dt); const po=PERDE.oyun; if(!(po&&po.evre==='kapali'&&!po.ortuldu)) draw(); requestAnimationFrame(loop); } /* perde tam kapalı ve altı henüz kurulmadıyken görünmeyen sahne çizilmez; kurulduktan sonra çizim örtü altında önbellekleri ısıtır */ requestAnimationFrame(loop);
+/* Donuk sahne (2026-10-24, akıcılık denetimi): Ekipman/Ayarlar/Nasıl oynanır açıkken, duraklatınca ve maç sonu (efektler
+   sönünce) arkadaki saha değişmiyor ama her karede baştan çiziliyor, üstündeki bulanık panel de her karede yeniden
+   bulanıklaşıyordu: duraklatılmışken 4× yavaş işlemcide 3 sn'de 550 ms boşa iş. Şimdi iki kare çizilip durulur; panelde bir
+   dokunuş, boyut değişimi ya da efekt sahneyi yeniden canlandırır. Ana menü canlı kalır (arkasında hareket görünüyor). */
+let PANEL='anaEkran', donuk=0;
+let last=performance.now(); function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now; if(!paused) update(dt); const po=PERDE.oyun;
+  const dur=!po&&(paused||(!menu.hidden&&PANEL!=='anaEkran')||(mode==='over'&&!parts.length&&!floats.length&&!waves.length&&flash<=0));
+  if(!dur) donuk=0; if(!(po&&po.evre==='kapali'&&!po.ortuldu)&&donuk<2){ draw(); if(dur) donuk++; } requestAnimationFrame(loop); } /* perde tam kapalı ve altı henüz kurulmadıyken görünmeyen sahne çizilmez; kurulduktan sonra çizim örtü altında önbellekleri ısıtır */ requestAnimationFrame(loop);
 
 /* ---- giriş ---- */
 /* Giriş: parmak izi tutulur; her harekette son parça topun ekrandaki yeriyle kesişiyor mu diye bakılır. */
@@ -1811,6 +1892,7 @@ cv.addEventListener('pointerup',e=>{ swooshStop(); if(!swipe.on||!M) return; swi
   else if(easy&&M.s&&!swipe.hit&&!hitWindow()&&Math.hypot(q.x-swipe.x0,q.y-swipe.y0)<18&&now-swipe.t0<250){ runTo(q.x,q.y); M.me.manualT=.7; } /* Kolay'da yalnız kısa, temiz bir dokunuş yer değiştirir; 0,7 sn sonra yardım geri alır */ });
 cv.addEventListener('pointercancel',()=>{ swooshStop(); swipe.on=false; if(M){ M.me.prep=0; M.preview=null; } });
 const menu=document.getElementById('menu'), over=document.getElementById('over'), pauseL=document.getElementById('pause'), pauseBtn=document.getElementById('pauseBtn'), wrapEl=document.querySelector('.wrap');
+[menu,over,pauseL].forEach(e=>e.addEventListener('pointerdown',()=>{ donuk=0; },{passive:true}));   /* donuk sahne: panelde bir seçim sahneyi değiştirebilir (saha, ışık), yeniden çiz */
 /* Duraklat / devam (yasin 2026-10-21: "resume menü olmalı"). paused iken update() çalışmaz, çizim donar, ses susar.
    Uygulama arka plana geçince (arama, bildirim, ana ekran) kendiliğinden duraklar; dönünce oyuncu "Devam et"e basar,
    top bir anda üstüne düşmez. Ana menüye çıkınca maç bekletilir, menüde "Maça devam et" görünür. */
@@ -1829,7 +1911,7 @@ function sprHazir(){ return !!(SPR.clip.me&&SPR.clip.op)||performance.now()>8000
 /* Maça geçiş Smaç perdesiyle (0,9 sn); klipler hazır değilse perde kapalı kalır, top döner, "Hazırlanıyor…" yazar.
    Maç perde kalkmadan, klipler hazır olunca kurulur: eskiden düğme "Hazırlanıyor…" deyip bekliyordu. */
 function start(){ if(perdeOynuyor()) return; perde({hazir:sprHazir,ortunce:maciKur}); }
-function maciKur(){ menu.hidden=true; over.hidden=true; pauseL.hidden=true; paused=false; try{ AC&&AC.resume(); }catch(e){} newMatch(ogrZorla||!ogrBittiMi()); ogrZorla=false; ekran(); tone(660,.08,'triangle',.06); }
+function maciKur(){ menu.hidden=true; over.hidden=true; pauseL.hidden=true; paused=false; try{ AC&&AC.resume(); }catch(e){} newMatch(ogrZorla||!ogrBittiMi()); ogrZorla=false; zeminHazirla(); zeminHazirla(ZK); sesIsit(); vsesIsit(); ekran(); tone(660,.08,'triangle',.06); }
 pauseBtn.addEventListener('click',duraklat);
 document.getElementById('pDevam').addEventListener('click',devamEt);
 document.getElementById('devam').addEventListener('click',devamEt);
@@ -1888,7 +1970,7 @@ for(const m of MODELLER){ const b=document.getElementById('mdl'+m[0].toUpperCase
 { let id='len5'; try{ const v=localStorage.getItem('tuytop_len'); if(LENS[v]) id=v; }catch(e){} lenSec(id); } /* bilinmeyen değer (eski len7 dahil) len5 olur ve lenSec kaydeder */
 document.getElementById('mute').addEventListener('click',e=>{ muted=!muted; crowdLevel(muted?0:.01); if(muted) underwater(false); e.currentTarget.textContent=muted?Tr('Ses kapalı'):Tr('Ses açık'); e.currentTarget.setAttribute('aria-pressed',muted); const q=document.getElementById('pSes'); q.textContent=e.currentTarget.textContent; q.setAttribute('aria-pressed',muted); });
 /* Panel geçişi: ana ekran ↔ Ayarlar / Ekipman / Nasıl oynanır. Geri düğmesi ve Escape ana ekrana döner, odak taşınır. */
-function panelAc(id){ document.querySelectorAll('#menu .ekran').forEach(e=>e.hidden=e.id!==id); if(id==='pnEkip') turAc(); menu.scrollTop=0; const f=document.querySelector(`#${id} [data-geri]`)||document.getElementById('start'); setTimeout(()=>f.focus(),0); if(id==='anaEkran') menuOzet(); }
+function panelAc(id){ PANEL=id; donuk=0; document.querySelectorAll('#menu .ekran').forEach(e=>e.hidden=e.id!==id); if(id==='pnEkip') turAc(); menu.scrollTop=0; const f=document.querySelector(`#${id} [data-geri]`)||document.getElementById('start'); setTimeout(()=>f.focus(),0); if(id==='anaEkran') menuOzet(); }
 document.querySelectorAll('#menu [data-panel]').forEach(b=>b.addEventListener('click',()=>{ panelAc(b.dataset.panel); tone(880,.04,'triangle',.03); }));
 document.querySelectorAll('#menu [data-geri]').forEach(b=>b.addEventListener('click',()=>panelAc('anaEkran')));
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!menu.hidden&&document.getElementById('anaEkran').hidden) panelAc('anaEkran'); });
@@ -1896,7 +1978,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!menu.hidden&&docu
 document.getElementById('sahaRow').addEventListener('click',()=>setTimeout(menuOzet,0));
 kariyerYaz(); basarimEsitle(); gcGiris();
 document.getElementById('gcBas').addEventListener('click',()=>kabuk({tip:'basarimGoster'}));
-function size(){ const r=stage.getBoundingClientRect(); W=Math.round(r.width); H=Math.round(r.height); DPR=Math.min(2,devicePixelRatio||1); /* 3x denendi: çizim süresi ikiye katlandı, akıcılık öncelikli */ cv.width=W*DPR; cv.height=H*DPR; }
+function size(){ const r=stage.getBoundingClientRect(); W=Math.round(r.width); H=Math.round(r.height); DPR=Math.min(2,devicePixelRatio||1); donuk=0; /* 3x denendi: çizim süresi ikiye katlandı, akıcılık öncelikli */ cv.width=W*DPR; cv.height=H*DPR; }
 addEventListener('resize',size); if(window.ResizeObserver) new ResizeObserver(size).observe(stage); size();
 /* Açılış: kapalı perde (logo halkaları) klipler hazır olunca kalkar; en az 0,6 sn, dokununca hazırsa hemen */
 perde({kapali:true,ucus:false,hazir:sprHazir,min:.6});   
