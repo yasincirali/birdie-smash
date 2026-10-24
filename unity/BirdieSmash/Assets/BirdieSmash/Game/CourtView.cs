@@ -25,6 +25,7 @@ namespace BirdieSmash.Game
             {"okul",   new Saha{ad="Okul (ahşap)",kort="#a4703f",tek="#ab7744",cevre="#7c5230",ust="#21170f",tahta=true,dol=.3f}},
             {"park",   new Saha{ad="Gece",kort="#2f5674",tek="#335d7d",cevre="#22394c",ust="#0c1420",dol=.38f}}};
         public static readonly string[] SIRA = { "salon", "turnuva", "okul", "park" };
+        public const string AKIS = "akis_cizgileri";
 
         public static GameObject Build(Transform root, string sahaId, out Color clear)
         {
@@ -59,6 +60,15 @@ namespace BirdieSmash.Game
             seg(Court.MID, 0, Court.MID, N - Court.SSL); seg(Court.MID, N + Court.SSL, Court.MID, L);
             var m = new Mesh { name = "cizgiler" }; m.SetVertices(v); m.SetTriangles(tr, 0); m.RecalculateNormals(); m.RecalculateBounds();
             Kit.MeshObj("cizgiler", k, m, Kit.Lit(new Color(.95f, .97f, .95f), .2f)).GetComponent<Renderer>().receiveShadows = true;
+            // Akış (HTML cizgiler(true)): üst üste tam ortada çizgiler altın olur ve nabız atar (alfa .75 + .25·sin(t/180 ms)),
+            // 2,4 kat kalın. Ayrı ağ, kapalı başlar; GameRoot akışta açar ve rengini sürer.
+            var av = new List<Vector3>(); for (int i = 0; i < v.Count; i += 4)
+            {
+                Vector3 c0 = (v[i] + v[i + 1]) / 2, c1 = (v[i + 2] + v[i + 3]) / 2, n2 = (v[i + 1] - v[i]) * 1.2f;
+                av.Add(c0 - n2 + Vector3.up * .001f); av.Add(c0 + n2 + Vector3.up * .001f); av.Add(c1 + n2 + Vector3.up * .001f); av.Add(c1 - n2 + Vector3.up * .001f);
+            }
+            var am = new Mesh { name = "akis" }; am.SetVertices(av); am.SetTriangles(tr, 0); am.RecalculateBounds();
+            var ag = Kit.MeshObj(AKIS, k, am, Kit.Clear(new Color(1, .886f, .47f, .85f))); ag.GetComponent<Renderer>().enabled = false;
 
             var post = Kit.Lit(Kit.Hex("#e9eef0"), .5f);
             foreach (float x in new[] { 0f, Court.CW })

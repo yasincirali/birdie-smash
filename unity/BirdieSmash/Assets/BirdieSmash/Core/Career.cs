@@ -18,7 +18,7 @@ namespace BirdieSmash.Core
             if (won && i == kariyer)
             {
                 kariyer = i + 1;
-                note = kariyer >= Match.KARIYER.Length ? "Kariyer tamam! Şampiyonsun." : "Yeni basamak açıldı: " + Match.KARIYER[i + 1].yer + ", rakip " + Match.STIL[Match.KARIYER[i + 1].stil].ad + ".";
+                note = kariyer >= Match.KARIYER.Length ? "Kariyer tamam! Şampiyon forması açıldı." : "Yeni basamak açıldı: " + Match.KARIYER[i + 1].yer + ", rakip " + Match.STIL[Match.KARIYER[i + 1].stil].ad + ".";
             }
             else if (!won) note = Match.KARIYER[i].yer + " basamağı seni bekliyor.";
         }

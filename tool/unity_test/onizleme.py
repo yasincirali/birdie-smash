@@ -181,21 +181,88 @@ def place(ch, st, isme, yaw=None, z0=0., tilt=0.):
 ME = import_char('#4fb8ff'); OP = import_char(R.get('renk', '#ff7a6b'))
 HK1 = import_char('#0a1530', True); HK2 = import_char('#0a1530', True)
 
-# ---- tüy top: mantar küre + etek koni, hız yönünde; iz = küçük parlayan küreler ----
-sh = bpy.data.objects.new('top', None); sc.collection.objects.link(sh)
-def child(name, build_fn, m, loc):
-    me = bpy.data.meshes.new(name); bm = bmesh.new(); build_fn(bm); bm.to_mesh(me); bm.free(); me.materials.append(m)
-    o = bpy.data.objects.new(name, me); sc.collection.objects.link(o); o.parent = sh; o.location = loc
-    for poly in me.polygons: poly.use_smooth = True
+# ---- tüy top: Unity ShuttleView ile aynı ağ (HTML shuttleModel; BWF ölçüsü × G=3,2 okunurluk büyütmesi) ----
+# Yerel +Z mantar yönü, etek −Z'ye açılır. 16 tüy (dipte ±.42, uçta ±.66 dilim, ucu karesel eğri), tüy sapları, iki iplik
+# bağı, krem mantar + mavi şerit. Yön, salınım, dönüş, hayaletler, iz, gölge ve iniş halkası ShuttleView.Show kurallarıyla.
+G = 3.2; TL, TRt, TRb, TRc = .066 * G, .032 * G, .012 * G, .0135 * G
+def _P(a, r, al): return (math.cos(a) * r, math.sin(a) * r, -al)
+def _bez(p0, c, p1, t): u = 1 - t; return (u * u * p0[0] + 2 * u * t * c[0] + t * t * p1[0], u * u * p0[1] + 2 * u * t * c[1] + t * t * p1[1])
+def _obj(name, verts, faces, mats, mi=None, parent=None, edges=()):
+    me = bpy.data.meshes.new(name); me.from_pydata(verts, list(edges), faces); me.update()
+    for m in mats: me.materials.append(m)
+    if mi is not None:
+        for poly, k in zip(me.polygons, mi): poly.material_index = k
+    o = bpy.data.objects.new(name, me); sc.collection.objects.link(o)
+    if parent: o.parent = parent
     return o
-K = 2.2   # okunurluk büyütmesi, Unity ShuttleView ile aynı
-child('mantar', lambda bm: bmesh.ops.create_uvsphere(bm, u_segments=12, v_segments=8, radius=.0135 * K), mat('mantarm', hexc('#f2b64c'), .5), (0, 0, 0))
-child('etek', lambda bm: bmesh.ops.create_cone(bm, cap_ends=False, segments=16, radius1=.012 * K, radius2=.034 * K, depth=.062 * K), mat('etekm', hexc('#fbfbf6'), .6, emit=.15), (0, 0, -.04 * K))
-trail = []
-for i in range(8):
-    me = bpy.data.meshes.new('iz'); bm = bmesh.new(); bmesh.ops.create_uvsphere(bm, u_segments=8, v_segments=6, radius=.02 * K * (1 - i / 9)); bm.to_mesh(me); bm.free()
-    me.materials.append(mat('iz%d' % i, (1, .95, .8, 1), .5, emit=3 * (1 - i / 8))); o = bpy.data.objects.new('iz', me); sc.collection.objects.link(o); trail.append(o)
-
+def shuttle_mesh(name, parent, m_out, m_in, m_sap, m_cork, m_strip, m_ip):
+    N, TIP = 16, 6; dw = math.pi * 2 / N; hb, ht, al0 = dw * .42, dw * .66, .004 * G
+    V, F, MI = [], [], []
+    for i in range(N):
+        a = i * dw; kat = 1 + (i % 2) * .012
+        pts = [(-hb, TRb, al0), (hb, TRb, al0)]
+        t1, t2, tc = (ht, TL * .9), (-ht, TL * .9), (0, TL * 1.1); mid = ((t1[0] + t2[0]) / 2, (t1[1] + t2[1]) / 2); cc = (tc[0] + (tc[0] - mid[0]) * .6, tc[1] + (tc[1] - mid[1]) * .6)
+        for j in range(TIP + 1):
+            bz = _bez(t1, cc, t2, j / TIP); pts.append((bz[0], TRt * (1 + max(0, bz[1] - TL * .9) / (TL * .2) * .04), bz[1]))
+        b0 = len(V); V += [_P(a + q[0], q[1] * kat, q[2]) for q in pts]
+        for k in range(1, len(pts) - 1): F.append((b0, b0 + k + 1, b0 + k)); MI.append(0)        # dış yüz
+        c0 = len(V); V += [_P(a + q[0], q[1] * kat * .995, q[2]) for q in pts]
+        for k in range(1, len(pts) - 1): F.append((c0, c0 + k, c0 + k + 1)); MI.append(1)        # iç yüz (gölgeli)
+        w = .0016 * G / (TRb + TRt) * 2; s0 = len(V)
+        V += [_P(a - w * .6, TRb * kat * 1.01, al0), _P(a + w * .6, TRb * kat * 1.01, al0), _P(a - w * .25, TRt * .98 * kat * 1.01, TL * .98), _P(a + w * .25, TRt * .98 * kat * 1.01, TL * .98)]
+        F += [(s0, s0 + 1, s0 + 3, s0 + 2)]; MI.append(2)
+    # iplik bağları: dipten 1/3 ve 1/2'de ince halka şerit
+    for u in (.34, .5):
+        r = (TRb + (TRt - TRb) * u) * 1.03; h0 = len(V); n = 48
+        for i in range(n): ang = i * math.pi * 2 / n; V += [_P(ang, r, TL * u - .0012 * G), _P(ang, r, TL * u + .0012 * G)]
+        for i in range(n): j = (i + 1) % n; F.append((h0 + 2 * i, h0 + 2 * j, h0 + 2 * j + 1, h0 + 2 * i + 1)); MI.append(5)
+    # mantar: önde yarım küre, arkada kısa silindir, ekvatorun gerisinde mavi şerit
+    S_, R_ = 24, 7; ln = TRc * .75; k0 = len(V)
+    for j in range(R_ + 1):
+        ph = j / R_ * math.pi / 2
+        for i in range(S_): ang = i * math.pi * 2 / S_; V.append((math.cos(ang) * math.cos(ph) * TRc, math.sin(ang) * math.cos(ph) * TRc, math.sin(ph) * TRc))
+    for j in range(R_):
+        for i in range(S_): ii = (i + 1) % S_; F.append((k0 + j * S_ + i, k0 + j * S_ + ii, k0 + (j + 1) * S_ + ii, k0 + (j + 1) * S_ + i)); MI.append(3)
+    c0 = len(V)
+    for z in (0, -.06 * TRc, -.16 * TRc, -ln):
+        for i in range(S_): ang = i * math.pi * 2 / S_; V.append((math.cos(ang) * TRc, math.sin(ang) * TRc, z))
+    for r in range(3):
+        for i in range(S_): ii = (i + 1) % S_; F.append((c0 + (r + 1) * S_ + i, c0 + (r + 1) * S_ + ii, c0 + r * S_ + ii, c0 + r * S_ + i)); MI.append(4 if r == 1 else 3)
+    F.append(tuple(c0 + 3 * S_ + i for i in reversed(range(S_)))); MI.append(3)
+    o = _obj(name, V, F, [m_out, m_in, m_sap, m_cork, m_strip, m_ip], MI, parent)
+    for poly in o.data.polygons: poly.use_smooth = poly.material_index in (3, 4)
+    return o
+def tmat(name, col, alpha, emit=0.):
+    m = mat(name, col, .5, 0., emit); m.node_tree.nodes['Principled BSDF'].inputs['Alpha'].default_value = alpha
+    try: m.surface_render_method = 'BLENDED'
+    except Exception: pass
+    return m
+M_OUT, M_IN, M_SAP = mat('tuy_dis', (.92, .92, .9, 1), .55, emit=.08), mat('tuy_ic', (.5, .52, .54, 1), .7), mat('tuy_sap', (.95, .93, .86, 1), .4)
+M_CORK, M_STRIP, M_IP = mat('mantar', hexc('#f1dcb4'), .55), mat('serit', (.06, .09, .25, 1), .4), mat('iplik', (.1, .12, .14, 1), .6)
+sh = bpy.data.objects.new('top', None); sc.collection.objects.link(sh); sh.rotation_mode = 'QUATERNION'
+body = shuttle_mesh('tuytop', sh, M_OUT, M_IN, M_SAP, M_CORK, M_STRIP, M_IP)
+ghosts = []
+for i in range(3):   # hareket bulanıklığı: v > 18 m/s'de en çok 3 soluk kopya (alfa .22/i)
+    gm = tmat('hayalet%d' % i, (1, 1, 1, 1), .22 / (i + 1), .3); g = bpy.data.objects.new('hayalet', body.data.copy()); sc.collection.objects.link(g)
+    g.data.materials.clear()
+    for _ in range(6): g.data.materials.append(gm)
+    g.rotation_mode = 'QUATERNION'; ghosts.append(g)
+# yer gölgesi (alfa .4/(1+z·.35)·1,4, boy ×(1+z·.3)): yumuşak kenarlı disk
+def disc(name, r, m, n=40, z=0.):
+    return _obj(name, [(0, 0, z)] + [(math.cos(i * 2 * math.pi / n) * r, math.sin(i * 2 * math.pi / n) * r, z) for i in range(n)], [(0, i + 1, (i + 1) % n + 1) for i in range(n)], [m])
+SHM = tmat('golge', (0, 0, 0, 1), .4); shadow = disc('golge', 1, SHM)
+ringM = tmat('inis', (1, 1, 1, 1), .45, .6); ringSM = tmat('inis_b', (1, 1, 1, 1), .5, .6); fillM = tmat('inis_d', (1, 1, 1, 1), .18, .3)
+def ring_obj(name, m):
+    n = 48; V = []; F = []
+    for i in range(n): ang = i * 2 * math.pi / n; V += [(math.cos(ang) * .94, math.sin(ang) * .94, 0), (math.cos(ang) * 1.06, math.sin(ang) * 1.06, 0)]
+    for i in range(n):
+        if name == 'inis' and (i // 3) % 7 >= 4: continue   # kesikli (3/4)
+        j = (i + 1) % n; F.append((2 * i, 2 * j, 2 * j + 1, 2 * i + 1))
+    return _obj(name, V, F, [m])
+ring, ringS, ringF = ring_obj('inis', ringM), ring_obj('inis_b', ringSM), disc('inis_d', 1, fillM)
+hline = _obj('yukseklik', [(-.006, 0, 0), (.006, 0, 0), (.006, 0, 1), (-.006, 0, 1)], [(0, 1, 2, 3)], [tmat('ycizgi', (1, 1, 1, 1), .22, .4)])
+trailM = {k: tmat('iz_' + k, c, a, 2.0) for k, c, a in (('beyaz', (1, 1, 1, 1), .3), ('smac', (.85, 1, .35, 1), .8), ('super', (1, .47, .16, 1), .9))}
+trail = _obj('iz', [], [], [trailM['beyaz']])
 # ---- yayın ışığı: kısık anahtar ışık + kortun boyunca üç tavan lambası (CourtView.Isik) ----
 sun = bpy.data.objects.new('gunes', bpy.data.lights.new('gunes', 'SUN')); sun.data.energy = 1.4; sun.data.angle = math.radians(8)
 sun.rotation_euler = (math.radians(28), math.radians(-12), math.radians(24)); sc.collection.objects.link(sun)
@@ -234,30 +301,82 @@ def hakemler(hk):
 pose_at(HK1, 'idle', .25); pose_at(HK2, 'idle', .25)
 
 # ---- kare döngüsü ----
-hist = []; punch = 1.0; hits = {t['f']: t for t in R['texts'] if 'hit' in t}
+punch = 1.0; hits = {t['f']: t for t in R['texts'] if 'hit' in t}
+YAKIN = os.environ.get('YAKIN') == '1'   # yakın plan geçişi (tüy top ayrıntısı)
+ST = {'last': None, 't': 0, 'lv': Vector((0, 0, 0)), 'd': Vector((0, 0, 1)), 'wob': 0., 'wv': 0., 'phi': 0., 'iz': [], 'cp': None}
+random.seed(4)
 for fi in range(F0, F1):
     fr = frames[fi]
     place(ME, fr['me'], True); place(OP, fr['op'], False); hakemler(fr['hk'])
-    s = fr.get('s')
+    s = fr.get('s'); dt = 1 / R.get('fps', 30)
     if s:
-        p = B(s['x'], s['y'], s['z']); v = Vector((s['vx'], -s['vy'], s['vz']))
-        sh.location = p; sh.rotation_mode = 'QUATERNION'
-        sh.rotation_quaternion = (-v).to_track_quat('-Z', 'Y') if v.length > 1e-3 else Quaternion()   # mantar önde, etek arkada
-        for c in sh.children: c.hide_render = False
-        hist.insert(0, p.copy()); hist = hist[:9]
+        sp = max(1e-6, math.sqrt(s['vx'] ** 2 + s['vy'] ** 2 + s['vz'] ** 2))
+        v = Vector((s['vx'], -s['vy'], s['vz'])); tgt = v / sp   # mantar yönü (Blender)
+        # yeni vuruş = vuran değişti ya da hız tersine döndü → ±14 rad/s sönümlü salınım (slice: ±22, sönüm ·9; SLICE_TAKLA)
+        yeni = ST['last'] is None or ST['last'] != s['fr'] or s['t'] < ST['t']   # yeni Shuttle nesnesi = yeni vuruş
+        flip = ST['last'] is not None and (yeni or ST['lv'].dot(v) < 0)
+        takla = bool(s.get('sl'))
+        if flip: ST['wv'] = random.choice((-1, 1)) * (22 if takla else 14)
+        if yeni: ST['iz'] = []
+        ST['last'] = s['fr']; ST['t'] = s['t']; ST['lv'] = v
+        # 30 kare/sn'de 1/240'lık alt adımla (oyun 60+ kare/sn akar; salınım kararlı kalsın)
+        for _ in range(8):
+            h = dt / 8; k = 1 - math.exp(-h / .02); ST['d'] = (ST['d'] + (tgt - ST['d']) * k).normalized()
+            ST['wv'] += (-ST['wob'] * 260 - ST['wv'] * (9 if takla else 18)) * h; ST['wob'] += ST['wv'] * h
+        if not s.get('d'): ST['phi'] += dt * min(40, sp * 1.6)
+        d = ST['d']; up = Vector((0, 0, 1)) if abs(d.z) < .9 else Vector((1, 0, 0)); e1 = d.cross(up).normalized()
+        dd = Quaternion(d.cross(e1).normalized(), -ST['wob'] * .35) @ d
+        q = dd.to_track_quat('Z', 'Y') @ Quaternion((0, 0, 1), ST['phi'])
+        p = B(s['x'], s['y'], max(TRc * .6, s['z']))
+        sh.location = p; sh.rotation_quaternion = q; body.hide_render = False
+        gn = min(3, int(sp // 18)) if sp > 18 and not s.get('d') else 0
+        for i, g in enumerate(ghosts):
+            g.hide_render = i >= gn
+            if i < gn: back = (i + 1) * (1 / 60) / (gn + 1); g.location = p - v * back; g.rotation_quaternion = q
+        if not s.get('d'): ST['iz'].append(p.copy()); ST['iz'] = ST['iz'][-(14 if s.get('sm') else 8):]
+        # iz: kameraya bakan, kuyrukta sıfıra incelen şerit (ShuttleView: genişlik 0 → w/28 m, alfa 0 → a)
+        kind, w = ('super', 10) if s.get('su') else ('smac', 6) if s.get('sm') else ('beyaz', 2.5)
+        pts = ST['iz']; V, F = [], []
+        for i, pt in enumerate(pts):
+            nxt = pts[min(i + 1, len(pts) - 1)] - pts[max(i - 1, 0)]
+            side = nxt.cross(cam.location - pt).normalized() if nxt.length > 1e-5 else Vector((0, 0, 0)); ww = (w / 28) * (i / max(1, len(pts) - 1)) / 2 * (.35 if YAKIN else 1)   # yakında tam genişlik kâğıt gibi durur
+            V += [pt + side * ww, pt - side * ww]
+        for i in range(len(pts) - 1): F.append((2 * i, 2 * i + 1, 2 * i + 3, 2 * i + 2))
+        old = trail.data; trail.data = bpy.data.meshes.new('iz'); trail.data.from_pydata(V, [], F); trail.data.materials.append(trailM[kind]); bpy.data.meshes.remove(old)
+        trail.hide_render = len(F) == 0
+        zz = max(0, s['z']); shr = 5 / 28 * (1 + zz * .3) * 1.2
+        shadow.location = B(s['x'], s['y'], .006); shadow.scale = (shr, shr, 1); shadow.hide_render = False
+        SHM.node_tree.nodes['Principled BSDF'].inputs['Alpha'].default_value = min(1, .4 / (1 + zz * .35) * 1.4)
+        hline.hide_render = zz <= .25
+        if zz > .25:
+            hline.location = B(s['x'], s['y'], 0); hline.scale = (1, 1, zz)
+            hline.rotation_euler = (0, 0, math.atan2(cam.location.y - hline.location.y, cam.location.x - hline.location.x) + math.pi / 2)
+        land = s['fr'] == 'op' and not s.get('d') and 'ly' in s and s['ly'] > NET and s.get('lok', 1)
+        ring.hide_render = ringS.hide_render = ringF.hide_render = True
+        if land:
+            qd = B(s['lx'], s['ly'], .009); rem = max(0, s['lt'] - s['t']); ring.location = qd; ring.scale = (9 / 28, 9 / 28, 1); ring.hide_render = False
+            mex, mey = fr['me']['x'], fr['me']['y']; near = math.hypot(s['lx'] - mex, s['ly'] - mey) <= 1.45
+            if rem < .9:
+                f2 = max(0, rem / .9); r2 = (9 + 18 * f2) / 28; ringS.location = qd; ringS.scale = (r2, r2, 1); ringS.hide_render = False
+                ringSM.node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value = (.85, 1, .35, 1) if near else (1, 1, 1, 1)
+            if rem < .35: ringF.location = qd; ringF.scale = (9 / 28, 9 / 28, 1); ringF.hide_render = False
     else:
-        for c in sh.children: c.hide_render = True
-        hist = []
-    fast = s and s.get('sm', 0)
-    for i, o in enumerate(trail):
-        if i + 1 < len(hist) and (fast or i < 4): o.location = hist[i + 1]; o.hide_render = False
-        else: o.hide_render = True
+        for o in [body, shadow, hline, ring, ringS, ringF, trail] + ghosts: o.hide_render = True
+        ST['last'] = None; ST['iz'] = []
+    if YAKIN and s:   # yakın plan: kamera topu sabit bir 3/4 açıdan (sağ yan, biraz bizden, hafif üstten) izler
+        hedef = sh.location.copy(); ST['cp'] = hedef + Vector((1.2, -.7, .22))   # gecikmesiz: top hızlı, gecikme kadrajdan atar
+        cam.location = ST['cp']; cam.rotation_quaternion = (hedef - ST['cp']).to_track_quat('-Z', 'Y'); cam.data.angle_y = math.radians(float(os.environ.get('YAKIN_FOV', 40)))
+        hline.hide_render = True   # yükseklik çizgisi uzak kamera ipucu; yakında direk gibi görünür
     net_update(fr['net'], -1 if fr['net'].get('from') == 'me' else 1)
     h = hits.get(fi)
     if h and h['hit'] == 'smash': punch = 1.09 if h.get('big') else 1.05
-    cam.data.angle_y = 2 * math.atan(math.tan(FOV / 2) / punch); punch = 1 + (punch - 1) * .82
+    if not YAKIN: cam.data.angle_y = 2 * math.atan(math.tan(FOV / 2) / punch)
+    punch = 1 + (punch - 1) * .82
     bpy.context.view_layer.update()
     sc.render.filepath = os.path.join(OUT, 'k%04d.png' % fi)
     bpy.ops.render.render(write_still=True)
+    if s:   # topun ekran konumu (yakın plan seçimi ve kare denetimi için günlüğe)
+        from bpy_extras.object_utils import world_to_camera_view
+        c2 = world_to_camera_view(sc, cam, sh.location); print('top', fi, round(c2.x * RX), round((1 - c2.y) * RY), flush=True)
     print('kare', fi, flush=True)
 print('bitti')

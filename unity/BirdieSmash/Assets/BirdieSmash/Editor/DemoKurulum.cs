@@ -30,7 +30,7 @@ namespace BirdieSmash.EditorTools
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, "com.birdiesmash.app");
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, "com.birdiesmash.app");
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
-            ShaderEkle("Standard");
+            ShaderEkle("Standard"); ShaderEkle("Unlit/Color"); ShaderEkle("Legacy Shaders/Particles/Additive");   // tüy topu çizgileri, iz (eklemeli)
             InputEski();
             AssetDatabase.SaveAssets();
             Debug.Log("Birdie Smash demo hazır: Assets/Scenes/Demo.unity açık, Play'e bas.");

@@ -81,6 +81,43 @@ namespace BirdieSmash.Game
             return g;
         }
 
+        // Işıksız düz renk (tüy kenarı, iplik bağı çizgileri): Unlit/Color derinlik yazar, ışıktan etkilenmez.
+        static Shader unl, add;
+        public static Material Unlit(Color c) { if (unl == null) unl = Shader.Find("Unlit/Color"); var m = new Material(unl ?? spr ?? Shader.Find("Sprites/Default")); m.color = c; return m; }
+        // Eklemeli (HTML globalCompositeOperation='lighter'): iz ve hale. Yoksa Sprites/Default'a düşer.
+        public static Material Additive(Color c, Texture t = null)
+        {
+            if (add == null) add = Shader.Find("Legacy Shaders/Particles/Additive");
+            if (add == null) return Clear(c, t);
+            var m = new Material(add); m.SetColor("_TintColor", c * .5f); if (t != null) m.mainTexture = t; return m;
+        }
+        // Kesikli çizgi dokusu (HTML setLineDash): u boyunca dolu/boş; LineRenderer textureMode=Tile ile tekrarlar.
+        public static Texture2D DashTex(int on = 3, int off = 4)
+        {
+            int n = on + off; var t = new Texture2D(n * 4, 1, TextureFormat.RGBA32, false); t.wrapMode = TextureWrapMode.Repeat; t.filterMode = FilterMode.Point;
+            for (int i = 0; i < n * 4; i++) t.SetPixel(i, 0, i / 4 < on ? Color.white : new Color(1, 1, 1, 0)); t.Apply(); return t;
+        }
+        // Çember dokusu (IMGUI hale ve halkaları için): kalınlık ölçeğe göre piksel.
+        public static Texture2D RingTex(int n, float kalin)
+        {
+            var t = new Texture2D(n, n, TextureFormat.RGBA32, false); t.wrapMode = TextureWrapMode.Clamp; var px = new Color32[n * n]; float R = n / 2f - 1;
+            for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
+                { float r = Mathf.Sqrt((x + .5f - n / 2f) * (x + .5f - n / 2f) + (y + .5f - n / 2f) * (y + .5f - n / 2f)); float a = Mathf.Clamp01(kalin / 2 - Mathf.Abs(r - (R - kalin / 2)) + .5f); px[y * n + x] = new Color32(255, 255, 255, (byte)(a * 255)); }
+            t.SetPixels32(px); t.Apply(); return t;
+        }
+        // flat: yere yatık (iniş halkası, yer çizgisi); değilse kameraya dönük (iz, yükseklik çizgisi).
+        public static LineRenderer Line(string name, Transform parent, Material m, bool loop = false, bool flat = false)
+        {
+            var g = new GameObject(name); g.transform.SetParent(parent, false); var l = g.AddComponent<LineRenderer>(); l.sharedMaterial = m; l.loop = loop; l.useWorldSpace = true;
+            l.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; l.receiveShadows = false; l.numCapVertices = 0;
+            if (flat) { g.transform.rotation = Quaternion.Euler(90, 0, 0); l.alignment = LineAlignment.TransformZ; } else l.alignment = LineAlignment.View;
+            return l;
+        }
+        public static void Ellipse(LineRenderer l, Vector3 c, float rx, float rz, int n = 48)
+        {
+            l.positionCount = n; for (int i = 0; i < n; i++) { float a = i * Mathf.PI * 2 / n; l.SetPosition(i, c + new Vector3(Mathf.Cos(a) * rx, 0, Mathf.Sin(a) * rz)); }
+        }
+
         public static Color Hex(string h) { Color c; return ColorUtility.TryParseHtmlString(h, out c) ? c : Color.magenta; }
     }
 }

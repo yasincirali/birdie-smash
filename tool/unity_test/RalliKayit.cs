@@ -1,6 +1,8 @@
 // Önizleme videosu için: Unity demosunun çekirdeğiyle (Core) maçlar oynatır, en iyi ralliyi (sayıdan sonraki 0,7 sn ve
 // yeni servis dizilişiyle birlikte) 30 kare/sn kaydeder: oyuncu konumu, klip+faz (Match.PickClip, Unity ile aynı karar),
 // sıçrama (Match.JumpH), gövde eğimi girdileri, nefes, top, file dalgası, hakem durumu, yazılar → JSON.
+// 2026-10-24 tam geçiş: top kaydı slice/süper/ölü/vuran/uçuş süresi ve iniş tahminini de taşır; önizleme tüy topun
+// yönünü (ShuttleView salınımı), izini, gölgesini ve iniş halkasını Unity ile aynı kurallardan çizer.
 // tool/unity_test/onizleme.py bu JSON'u aynı FBX karakterle Blender'da render eder.
 //   mcs -out:/tmp/r.exe tool/unity_test/RalliKayit.cs unity/BirdieSmash/Assets/BirdieSmash/Core/*.cs && mono /tmp/r.exe out.json [saha]
 using System;
@@ -58,7 +60,8 @@ static class RalliKayit
                 var sb = new StringBuilder();
                 sb.Append("{\"me\":").Append(Ath(M, M.me, true)).Append(",\"op\":").Append(Ath(M, M.op, false));
                 var s = M.s;
-                if (s != null) sb.Append(",\"s\":{\"x\":" + F(s.x) + ",\"y\":" + F(s.y) + ",\"z\":" + F(s.z) + ",\"vx\":" + F(s.vx) + ",\"vy\":" + F(s.vy) + ",\"vz\":" + F(s.vz) + ",\"sm\":" + (s.type == "smash" ? 1 : 0) + "}");
+                if (s != null) sb.Append(",\"s\":{\"x\":" + F(s.x) + ",\"y\":" + F(s.y) + ",\"z\":" + F(s.z) + ",\"vx\":" + F(s.vx) + ",\"vy\":" + F(s.vy) + ",\"vz\":" + F(s.vz) + ",\"sm\":" + (s.type == "smash" ? 1 : 0) + ",\"sl\":" + (s.slice ? 1 : 0) + ",\"su\":" + (s.super ? 1 : 0) + ",\"d\":" + (s.dead ? 1 : 0) + ",\"fr\":\"" + s.from + "\",\"t\":" + F(s.t) +
+                    (s.landPred != null ? ",\"lx\":" + F(s.landPred.x) + ",\"ly\":" + F(s.landPred.y) + ",\"lt\":" + F(s.landPred.t) + ",\"lok\":" + (s.landPred.net != null && !s.landPred.net.ok ? 0 : 1) : "") + "}");
                 sb.Append(",\"net\":{\"a\":[");
                 for (int i = 0; i < NetWave.N; i++) { if (i > 0) sb.Append(','); sb.Append(F(M.net.a[i])); }
                 sb.Append("],\"z\":" + F(M.net.z) + ",\"tape\":" + F(M.net.tape) + ",\"glow\":" + F(M.net.glow) + ",\"gx\":" + F(M.net.gx) + ",\"gz\":" + F(M.net.gz) + ",\"from\":\"" + (s != null ? s.from : "") + "\"}");

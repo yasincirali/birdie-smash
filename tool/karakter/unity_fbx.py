@@ -62,7 +62,8 @@ for name, frames in CLIPS.items():
     first = frame
     for p in seq: timeline.append((frame, p)); frame += FR
     last = frame - FR
-    meta['clips'].append({'name': name, 'first': first, 'last': last, 'loop': name in LOOP, 'poses': len(frames)})
+    meta['clips'].append({'name': name, 'first': first, 'last': last, 'loop': name in LOOP, 'poses': len(frames),
+                          'hitK': getattr(frames, 'hit', None), 'hold': getattr(frames, 'hold', None), 'drop': getattr(frames, 'drop', None)})
     frame = last + GAP
 
 bones = {}; prevq = {}; pprev = {}; cur_frame = [1]

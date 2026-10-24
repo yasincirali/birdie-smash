@@ -4,8 +4,10 @@
 // örneklenir: klip ve faz Match.PickClip'ten gelir (HTML player() ile aynı karar), vuruş anı topla kare kare eşleşir.
 // Faz → klip zamanı: sprite kare k'yı (k+.5)/n fazında gösterir; FBX'te pozlar eşit aralıklı olduğu için aynı faz aynı
 // pozu verir (döngülü kliplerde kapanış pozu ek). Klip değişiminde 0,08 s harmanlama. FBX yoksa basit kapsül figür.
-// Renk: parça adının "__" sonrası etiketi: forma = takım rengi; bant/bilek ekipmanı demo'da yok (HTML varsayılanı
-// "Yok") → gizli; diğer parçalar FBX'in kendi malzemesini korur (Rocketbox dokusu, KayKit renkleri).
+// Renk: parça adının "__" sonrası etiketi (HTML sprRenk/tint maskesi karşılığı): forma = takım rengi, cerceve = raket
+// modelinin rengi, bant/bilek = seçili kafa bandı/bileklik (ekipman "Yok" ise gizli), grip/tel/tel2 = raket görünümü
+// (tuytop_raket_gor; tel2 yalnız "ana ve çapraz ayrı" desende farklı). Rakipte raket #e9eef0, bant/bilek yok.
+// Diğer parçalar FBX'in kendi malzemesini korur (Rocketbox dokusu, KayKit renkleri).
 using System.Collections.Generic;
 using UnityEngine;
 using BirdieSmash.Core;
@@ -23,13 +25,21 @@ namespace BirdieSmash.Game
         [System.Serializable] class ClipMeta { public string name; public int poses; public bool loop; }
         [System.Serializable] class Meta { public ClipMeta[] clips; }
 
-        public static PlayerView Build(Transform root, string model, bool isMe, Color forma, bool hakem = false)
+        // Görünüm: null alan = FBX'in kendi rengi (cerceve/grip/tel) ya da gizli (bant/bilek).
+        public class Gorunum { public Color forma; public Color? cerceve, bant, bilek, grip, tel, tel2; }
+        public static Gorunum Benim()
+        {
+            var gs = Ayar.GS; var r = Ayar.RGOR;
+            return new Gorunum { forma = Kit.Hex(gs.forma), cerceve = Kit.Hex(gs.raketRenk), bant = gs.bant != null ? Kit.Hex(gs.bant) : (Color?)null, bilek = gs.bileklik != null ? Kit.Hex(gs.bileklik) : (Color?)null,
+                grip = Kit.Hex(Vitrin.RAK_RENK[r["grip"]]), tel = Kit.Hex(Vitrin.RAK_RENK[r["tel"]]), tel2 = Kit.Hex(Vitrin.RAK_RENK[r["desen"] == "iki" ? r["tel2"] : r["tel"]]) };
+        }
+        public static PlayerView Build(Transform root, string model, bool isMe, Color forma, bool hakem = false, Gorunum gor = null)
         {
             var g = new GameObject(hakem ? "hakem" : isMe ? "ben" : "rakip"); g.transform.SetParent(root, false);
-            var pv = g.AddComponent<PlayerView>(); pv.isMe = isMe; pv.hakem = hakem; pv.Init(model, forma); return pv;
+            var pv = g.AddComponent<PlayerView>(); pv.isMe = isMe; pv.hakem = hakem; pv.Init(model, gor ?? new Gorunum { forma = forma, cerceve = Kit.Hex("#e9eef0") }); return pv;
         }
 
-        void Init(string modelAd, Color forma)
+        void Init(string modelAd, Gorunum gor)
         {
             yaw = new GameObject("yon").transform; yaw.SetParent(transform, false);
             var prefab = Resources.Load<GameObject>("karakter/" + modelAd) ?? Resources.Load<GameObject>("karakter/oyuncak");
@@ -43,11 +53,11 @@ namespace BirdieSmash.Game
             {
                 model = Instantiate(prefab, yaw).transform; model.localPosition = Vector3.zero; model.localScale = Vector3.one * SCALE;
                 anim = model.GetComponentInChildren<Animation>();
-                Paint(forma);
+                Paint(gor);
                 if (anim != null && anim["idle"] != null) Sample("idle", 0, null, 0, 1);
                 Calibrate();
             }
-            else Fallback(forma);
+            else Fallback(gor.forma);
             shadow = Kit.Prim(PrimitiveType.Quad, "golge", transform, new Vector3(0, .003f, 0), new Vector3(.9f, .9f, 1), Kit.Clear(new Color(0, 0, 0, .35f), Kit.RadialTex())).transform;
             shadow.localRotation = Quaternion.Euler(90, 0, 0);
             if (!hakem) { ringBg = Ring("nefes_zemin", .11f); ringFg = Ring("nefes", .08f); }
@@ -97,21 +107,51 @@ namespace BirdieSmash.Game
             if (head.position.y - model.position.y < .3f) Debug.LogWarning("Birdie Smash: karakterin başı beklenenden alçak, FBX eksenlerini kontrol et");
         }
 
-        void Paint(Color forma)
+        public static string Etiket(string n)
         {
-            var formaM = Kit.Lit(forma, .25f); var cerceve = Kit.Lit(Kit.Hex("#e9eef0"), .6f);
+            int i = n.IndexOf("__"); string tag = i >= 0 ? n.Substring(i + 2) : "";
+            int dot = tag.IndexOfAny(new[] { '.', ' ' }); if (dot >= 0) tag = tag.Substring(0, dot); return tag;
+        }
+        // Parça kanalları (HTML turParlat): 0 forma, 1 raket (cerceve/grip/tel/tel2), 2 bant, 3 bileklik.
+        public readonly List<Renderer>[] kanal = { new List<Renderer>(), new List<Renderer>(), new List<Renderer>(), new List<Renderer>() };
+        public Transform Model { get { return model; } }
+        void Paint(Gorunum g)
+        {
+            var formaM = Kit.Lit(g.forma, .25f); var M = new Dictionary<string, Material> { { "forma", formaM } };
+            if (g.cerceve.HasValue) M["cerceve"] = Kit.Lit(g.cerceve.Value, .6f);
+            if (g.bant.HasValue) M["bant"] = Kit.Lit(g.bant.Value, .2f); if (g.bilek.HasValue) M["bilek"] = Kit.Lit(g.bilek.Value, .2f);
+            if (g.grip.HasValue) M["grip"] = Kit.Lit(g.grip.Value, .15f); if (g.tel.HasValue) M["tel"] = Kit.Lit(g.tel.Value, .5f); if (g.tel2.HasValue) M["tel2"] = Kit.Lit(g.tel2.Value, .5f);
             foreach (var r in model.GetComponentsInChildren<Renderer>(true))
             {
-                string n = r.gameObject.name; int i = n.IndexOf("__"); string tag = i >= 0 ? n.Substring(i + 2) : "";
-                int dot = tag.IndexOfAny(new[] { '.', ' ' }); if (dot >= 0) tag = tag.Substring(0, dot);
+                string tag = Etiket(r.gameObject.name);
                 // hakemde raket ve top (pozla kurulan rijit parçalar = deri ağı olmayan MeshRenderer'lar) gizli
-                if (tag == "isaret" || tag == "bant" || tag == "bilek" || (hakem && !(r is SkinnedMeshRenderer))) { r.enabled = false; continue; }
+                if (tag == "isaret" || (tag == "bant" && !g.bant.HasValue) || (tag == "bilek" && !g.bilek.HasValue) || (hakem && !(r is SkinnedMeshRenderer))) { r.enabled = false; continue; }
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-                Material m = tag == "forma" ? formaM : tag == "cerceve" ? cerceve : null;
+                int kn = tag == "forma" ? 0 : tag == "cerceve" || tag == "grip" || tag == "tel" || tag == "tel2" ? 1 : tag == "bant" ? 2 : tag == "bilek" ? 3 : -1; if (kn >= 0) kanal[kn].Add(r);
+                Material m; M.TryGetValue(tag, out m);
                 if (m == null) { if (r.sharedMaterial == null || r.sharedMaterial.shader == null || r.sharedMaterial.shader.name.Contains("Error")) m = Kit.Lit(Color.gray); else continue; }
                 var arr = r.sharedMaterials; for (int k = 0; k < arr.Length; k++) arr[k] = m; if (arr.Length == 0) arr = new[] { m }; r.sharedMaterials = arr;
             }
-            if (hakem) { var g = Kit.Lit(Kit.Hex("#0a1530"), .2f); foreach (var r in model.GetComponentsInChildren<Renderer>()) if (r.gameObject.name.Contains("__sort")) r.sharedMaterial = g; }
+            if (hakem) { var hg = Kit.Lit(Kit.Hex("#0a1530"), .2f); foreach (var r in model.GetComponentsInChildren<Renderer>()) if (r.gameObject.name.Contains("__sort")) r.sharedMaterial = hg; }
+            // Salınım yayı (HTML player(): sw > .3 iken omuz çevresinde 3 beyaz yay, alfa sw·.5): 3B'de raket kafasının izi.
+            // Hareketi azalt açıkken çizilmez (HTML ile aynı).
+            if (!hakem) foreach (var t in model.GetComponentsInChildren<Transform>()) if (t.name.StartsWith("raket_kafa")) { kafa = t; break; }
+            if (kafa != null)
+            {
+                yay = kafa.gameObject.AddComponent<TrailRenderer>(); yay.time = .12f; yay.minVertexDistance = .03f; yay.emitting = false;
+                yay.widthCurve = new AnimationCurve(new Keyframe(0, .14f), new Keyframe(1, 0)); yay.material = Kit.Additive(Color.white);
+                yay.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; yay.receiveShadows = false;
+            }
+        }
+        Transform kafa; TrailRenderer yay;
+        // Yükseltme parlaması (HTML turParlat): o kanalın parçaları limona yanıp söner; k 0..1.
+        public void Parlat(int kn, float k)
+        {
+            foreach (var r in kanal[kn]) foreach (var m in r.materials)
+            {
+                if (k > 0) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", new Color(.85f, 1, .35f) * k * 1.2f); }
+                else { m.SetColor("_EmissionColor", Color.black); m.DisableKeyword("_EMISSION"); }
+            }
         }
 
         void Fallback(Color forma)
@@ -163,6 +203,11 @@ namespace BirdieSmash.Game
             yaw.localRotation = Quaternion.Euler(0, isMe ? 0 : 180, 0) * Quaternion.Euler(0, 0, -(dive + lean) * Mathf.Rad2Deg) * calib;
             shadow.position = Kit.W(o.x, o.y, .003f); shadow.localScale = Vector3.one * (.9f - j * .8f);
             ShowRing(o.nefes, dt, M.reduce);
+            if (yay != null)
+            {
+                yay.emitting = o.sw > .3f && !M.reduce; float a = Mathf.Clamp01(o.sw) * .5f;
+                yay.colorGradient = new Gradient { colorKeys = new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) }, alphaKeys = new[] { new GradientAlphaKey(a, 0), new GradientAlphaKey(0, 1) } };
+            }
             string clip; float ph; M.PickClip(o, isMe, out clip, out ph);
             if (anim == null) { if (fbRacket != null) fbRacket.localRotation = Quaternion.Euler(0, 0, o.sw > 0 ? -140 * (1 - o.sw) + 40 : 20 - 40 * o.prepA); return; }
             if (anim[clip] == null) clip = "idle";

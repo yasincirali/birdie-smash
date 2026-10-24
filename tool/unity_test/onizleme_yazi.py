@@ -1,8 +1,11 @@
 # Önizleme karelerine HUD yazılarını (skor, vuruş/olay metinleri, "önizleme" etiketi) basar ve mp4 yapar.
-# Kullanım: python3 -I onizleme_yazi.py <ralli.json> <kare_klasörü> <çıktı.mp4>
+# Kullanım: python3 -I onizleme_yazi.py <ralli.json> <kare_klasörü> <çıktı.mp4> [<yakın_plan_klasörü>]
+# 2026-10-24 tam geçiş: kareler hangi çözünürlükte çizilirse çizilsin 720 px genişliğe ölçeklenir (yazı boyları buna göre);
+# yakın plan klasörü verilirse ralliden sonra 2× yavaşlatılmış tüy top yakın planı eklenir (uçuşta / vuruşta etiketli).
 import sys, json, os, subprocess
 from PIL import Image, ImageDraw, ImageFont
 R = json.load(open(sys.argv[1])); D = sys.argv[2]; OUT = sys.argv[3]; T = D + '_yazili'; os.makedirs(T, exist_ok=True)
+YK = sys.argv[4] if len(sys.argv) > 4 else None
 FB = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'; FN = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
 f_big, f_mid, f_small = ImageFont.truetype(FB, 64), ImageFont.truetype(FB, 40), ImageFont.truetype(FN, 24)
 QL = {'perfect': 'MÜKEMMEL!', 'good': None, 'poor': None}
@@ -18,7 +21,7 @@ n = len(R['frames'])
 for i in range(n):
     p = os.path.join(D, 'k%04d.png' % i)
     if not os.path.exists(p): break
-    im = Image.open(p).convert('RGB'); im = im.resize((im.width * 2, im.height * 2), Image.LANCZOS).convert('RGBA')
+    im = Image.open(p).convert('RGB'); im = im.resize((720, round(720 * im.height / im.width)), Image.LANCZOS).convert('RGBA')
     ov = Image.new('RGBA', im.size, (0, 0, 0, 0)); d = ImageDraw.Draw(ov); W, H = im.size
     sc = R['frames'][i]['sc']
     d.rounded_rectangle((W / 2 - 170, 40, W / 2 + 170, 130), 24, fill=(10, 16, 28, 150))
@@ -40,5 +43,24 @@ for i in range(n):
     shadow_text(d, (W / 2, H - 92), 'Önizleme: aynı C# simülasyonu ve aynı FBX', f_small, (220, 225, 235), 230)
     shadow_text(d, (W / 2, H - 58), 'Blender ile çizildi, Unity çıktısı değil', f_small, (220, 225, 235), 230)
     Image.alpha_composite(im, ov).convert('RGB').save(os.path.join(T, 'k%04d.png' % i))
+n_ana = i + 1
+if YK:   # yakın plan: aynı kayıt, kamera topu izler; her kare iki kez (2× yavaş)
+    hits = {t['f']: t for t in R['texts'] if 'hit' in t}; kareler = sorted(int(f[1:5]) for f in os.listdir(YK) if f.startswith('k') and f.endswith('.png'))
+    out_i = n_ana; son_vurus = None
+    for fi in kareler:
+        if fi in hits: son_vurus = (fi, hits[fi])
+        im = Image.open(os.path.join(YK, 'k%04d.png' % fi)).convert('RGB'); im = im.resize((720, round(720 * im.height / im.width)), Image.LANCZOS).convert('RGBA')
+        ov = Image.new('RGBA', im.size, (0, 0, 0, 0)); d = ImageDraw.Draw(ov); W, H = im.size
+        d.rounded_rectangle((40, 40, W - 40, 150), 24, fill=(10, 16, 28, 160))
+        shadow_text(d, (W / 2, 52), 'Yakın plan: tüy top', f_mid, (255, 255, 255))
+        vur = son_vurus and fi - son_vurus[0] < 6
+        alt = ('VURUŞTA: ' + {'smash': 'smaç', 'clear': 'clear', 'drop': 'drop', 'drive': 'drive'}.get(son_vurus[1]['hit'], son_vurus[1]['hit']) + ', mantar yeni yöne döner') if vur else 'UÇUŞTA: mantar önde, etek arkada'
+        shadow_text(d, (W / 2, 104), alt, f_small, (255, 214, 90) if vur else (220, 235, 255))
+        shadow_text(d, (W / 2, H - 126), '16 tüy · iki iplik bağı · mantar + mavi şerit · 2× yavaş', f_small, (220, 225, 235), 230)
+        shadow_text(d, (W / 2, H - 92), 'Önizleme: aynı C# simülasyonu ve aynı ağ kuralları', f_small, (220, 225, 235), 230)
+        shadow_text(d, (W / 2, H - 58), 'Blender ile çizildi, Unity çıktısı değil', f_small, (220, 225, 235), 230)
+        fr_ = Image.alpha_composite(im, ov).convert('RGB')
+        for _ in range(2): fr_.save(os.path.join(T, 'k%04d.png' % out_i)); out_i += 1
+    i = out_i - 1
 subprocess.run(['ffmpeg', '-y', '-loglevel', 'error', '-framerate', '30', '-i', os.path.join(T, 'k%04d.png'), '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '22', '-movflags', '+faststart', OUT], check=True)
 print('yazıldı', OUT, i + 1, 'kare')

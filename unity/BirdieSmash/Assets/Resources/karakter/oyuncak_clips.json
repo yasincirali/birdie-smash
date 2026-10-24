@@ -7,182 +7,280 @@
    "first": 1,
    "last": 25,
    "loop": true,
-   "poses": 8
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null
   },
   {
    "name": "run",
    "first": 35,
    "last": 59,
    "loop": true,
-   "poses": 8
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null
   },
   {
    "name": "smash",
    "first": 69,
-   "last": 96,
+   "last": 108,
    "loop": false,
-   "poses": 10
+   "poses": 14,
+   "hitK": 9,
+   "hold": 2,
+   "drop": 5
   },
   {
    "name": "clear",
-   "first": 106,
-   "last": 133,
+   "first": 118,
+   "last": 157,
    "loop": false,
-   "poses": 10
+   "poses": 14,
+   "hitK": 9,
+   "hold": 2,
+   "drop": 5
   },
   {
    "name": "drive",
-   "first": 143,
-   "last": 164,
+   "first": 167,
+   "last": 188,
    "loop": false,
-   "poses": 8
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
   },
   {
    "name": "kill",
-   "first": 174,
-   "last": 192,
+   "first": 198,
+   "last": 216,
    "loop": false,
-   "poses": 7
+   "poses": 7,
+   "hitK": 3,
+   "hold": 2,
+   "drop": null
   },
   {
    "name": "low",
-   "first": 202,
-   "last": 223,
+   "first": 226,
+   "last": 247,
    "loop": false,
-   "poses": 8
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
   },
   {
    "name": "lunge",
-   "first": 233,
-   "last": 254,
+   "first": 257,
+   "last": 278,
    "loop": false,
-   "poses": 8
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
   },
   {
    "name": "serve",
-   "first": 264,
-   "last": 321,
+   "first": 288,
+   "last": 345,
    "loop": false,
-   "poses": 20
+   "poses": 20,
+   "hitK": 10,
+   "hold": null,
+   "drop": null
   },
   {
    "name": "serve_gec",
-   "first": 331,
-   "last": 388,
+   "first": 355,
+   "last": 412,
    "loop": false,
-   "poses": 20
+   "poses": 20,
+   "hitK": 11,
+   "hold": null,
+   "drop": null
   },
   {
    "name": "serve_bh",
-   "first": 398,
-   "last": 425,
+   "first": 422,
+   "last": 449,
    "loop": false,
-   "poses": 10
+   "poses": 10,
+   "hitK": 5,
+   "hold": null,
+   "drop": null
   },
   {
    "name": "serve_flick",
-   "first": 435,
-   "last": 462,
+   "first": 459,
+   "last": 486,
    "loop": false,
-   "poses": 10
+   "poses": 10,
+   "hitK": 5,
+   "hold": null,
+   "drop": null
   },
   {
    "name": "block",
-   "first": 472,
-   "last": 487,
+   "first": 496,
+   "last": 511,
    "loop": false,
-   "poses": 6
+   "poses": 6,
+   "hitK": 3,
+   "hold": 2,
+   "drop": null
   },
   {
    "name": "bh_over",
-   "first": 497,
-   "last": 524,
+   "first": 521,
+   "last": 548,
    "loop": false,
-   "poses": 10
+   "poses": 10,
+   "hitK": 5,
+   "hold": 2,
+   "drop": null
   },
   {
    "name": "bh_drive",
-   "first": 534,
-   "last": 555,
+   "first": 558,
+   "last": 579,
    "loop": false,
-   "poses": 8
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
   },
   {
    "name": "bh_kill",
-   "first": 565,
-   "last": 583,
+   "first": 589,
+   "last": 607,
    "loop": false,
-   "poses": 7
+   "poses": 7,
+   "hitK": 3,
+   "hold": 2,
+   "drop": null
   },
   {
    "name": "bh_low",
-   "first": 593,
-   "last": 614,
+   "first": 617,
+   "last": 638,
    "loop": false,
-   "poses": 8
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
   },
   {
    "name": "bh_lunge",
-   "first": 624,
-   "last": 645,
+   "first": 648,
+   "last": 669,
    "loop": false,
-   "poses": 8
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
   },
   {
    "name": "split",
-   "first": 655,
-   "last": 667,
+   "first": 679,
+   "last": 691,
    "loop": false,
-   "poses": 5
+   "poses": 5,
+   "hitK": null,
+   "hold": null,
+   "drop": null
   },
   {
    "name": "chasse_r",
-   "first": 677,
-   "last": 695,
+   "first": 701,
+   "last": 719,
    "loop": true,
-   "poses": 6
+   "poses": 6,
+   "hitK": null,
+   "hold": null,
+   "drop": null
   },
   {
    "name": "chasse_l",
-   "first": 705,
-   "last": 723,
+   "first": 729,
+   "last": 747,
    "loop": true,
-   "poses": 6
+   "poses": 6,
+   "hitK": null,
+   "hold": null,
+   "drop": null
   },
   {
    "name": "fwd",
-   "first": 733,
-   "last": 751,
+   "first": 757,
+   "last": 775,
    "loop": true,
-   "poses": 6
+   "poses": 6,
+   "hitK": null,
+   "hold": null,
+   "drop": null
   },
   {
    "name": "back_r",
-   "first": 761,
-   "last": 779,
+   "first": 785,
+   "last": 803,
    "loop": true,
-   "poses": 6
+   "poses": 6,
+   "hitK": null,
+   "hold": null,
+   "drop": null
   },
   {
    "name": "back_l",
-   "first": 789,
-   "last": 807,
+   "first": 813,
+   "last": 831,
    "loop": true,
-   "poses": 6
+   "poses": 6,
+   "hitK": null,
+   "hold": null,
+   "drop": null
   },
   {
    "name": "jump",
-   "first": 817,
-   "last": 844,
+   "first": 841,
+   "last": 880,
    "loop": false,
-   "poses": 10
+   "poses": 14,
+   "hitK": 9,
+   "hold": 2,
+   "drop": 6
   },
   {
    "name": "yorgun",
-   "first": 854,
-   "last": 884,
+   "first": 890,
+   "last": 920,
    "loop": true,
-   "poses": 10
+   "poses": 10,
+   "hitK": null,
+   "hold": null,
+   "drop": null
+  },
+  {
+   "name": "drop",
+   "first": 930,
+   "last": 969,
+   "loop": false,
+   "poses": 14,
+   "hitK": 9,
+   "hold": 2,
+   "drop": 5
+  },
+  {
+   "name": "net",
+   "first": 979,
+   "last": 1000,
+   "loop": false,
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
   }
  ],
  "model": "oyuncak",

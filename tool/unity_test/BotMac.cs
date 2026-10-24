@@ -4,6 +4,8 @@
 // türü de atılır, iki oyuncunun nefesi düşer ve dolar, sayı arası 0,7 sn (rekorda 1,3), hazırlıkta temas karesi temastan
 // önce gösterilmez, sıçrayarak smaç temasta tepede, hamlede gövde yatmaz, ilk açılış antrenmanı 3 adım + 5 sayılık maç,
 // kariyer düğme etiketi, NaN yok.
+// 2026-10-24 tam geçiş: ekipman çarpanları HTML gsHesap ile aynı (node ile ölçülen değerler), ağır raket smacı gerçekten
+// hızlandırır, görev olayı gelir, tam antrenman 15 adım (iki bilgi + antrenör çağrısı) ve ödül yuvarlaması HTML gibi.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +41,7 @@ static class BotMac
         var clipSeen = new Dictionary<string, int>(); var serveSeen = new Dictionary<string, int>();
         int nets = 0, cords = 0, points = 0, meWins = 0, maxRally = 0, hits = 0, prepEarly = 0, prepFrames = 0, jumpN = 0, opJumpN = 0, tiltBad = 0;
         float minMe = 1, minOp = 1, jumpMin = 9, opJumpMin = 9; var gaps = new List<float>(); var gapsRekor = new List<float>();
-        var styles = new Dictionary<string, int>(); int tired = 0;
+        var styles = new Dictionary<string, int>(); int tired = 0, gorevN = 0;
         int[] targets = { 5, 11, 21 };
         for (int m = 0; m < 18; m++)
         {
@@ -67,6 +69,7 @@ static class BotMac
                 {
                     if (e.kind == Ev.Net) nets++;
                     if (e.kind == Ev.Cord) cords++;
+                    if (e.kind == Ev.Gorev) gorevN++;
                     if (e.kind == Ev.Text && e.text == "Rakip yoruldu!") tired++;
                     if (e.kind == Ev.Hit)
                     {
@@ -109,7 +112,9 @@ static class BotMac
         if (minMe > .9f || minOp > .95f) Fail("nefes düşmüyor");
         if (gaps.Count == 0 || Math.Abs(gaps.OrderBy(x => x).ElementAt(gaps.Count / 2) - .7f) > .05f) Fail("sayı arası 0,7 sn değil");
 
-        Antrenman(); Kariyer();
+        if (gorevN == 0) Fail("görev olayı hiç gelmedi");
+        Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
+        Antrenman(); TamAntrenman(); Kariyer(); Ekipman();
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }
@@ -145,5 +150,47 @@ static class BotMac
         if (a != "Sıradaki: Okul turnuvası" || b != "Tekrar dene" || c != "Bir maç daha" || d != "Bir maç daha") Fail("kariyer düğme etiketi");
         int k = 0; string note; Career.Apply(ref k, 0, true, out note); if (k != 1 || !note.Contains("Okul turnuvası")) Fail("kariyer basamağı açılmadı: " + note);
         Career.Apply(ref k, 1, false, out note); if (k != 1 || !note.Contains("bekliyor")) Fail("kayıpta basamak notu: " + note);
+    }
+
+    // Tam antrenman (menüden): 15 adım; 4. adım "Nefes" ve "Smaç gücü" bilgi adımı, son adım antrenör çağrısı.
+    static void TamAntrenman()
+    {
+        var M = new Match(11, new MatchOptions { ogr = true });
+        int bilgi = M.ogr.liste.Count(a => a.bilgi != null), drill = M.ogr.liste.Count(a => a.drill);
+        Console.WriteLine("tam antrenman: " + M.ogr.liste.Count + " adım, " + bilgi + " bilgi, " + drill + " antrenör çağrısı; ilk adımlar " + string.Join(" → ", M.ogr.liste.Take(4).Select(a => a.bas)));
+        if (M.ogr.liste.Count != 15 || bilgi != 2 || drill != 1 || M.ogr.liste[3].bilgi != "nefes" || !M.ogr.liste[14].drill) Fail("tam antrenman adımları HTML ile aynı değil");
+    }
+
+    // Ekipman: (1) gsHesap çarpanları HTML'den node ile ölçülen değerlerle aynı; (2) aynı tohum ve bot girdisiyle ağır raket +
+    // tam seviye smaç çıkış hızını artırır; (3) 21 sayılık yenilgi ödülü 15·3,5 = 52,5 → 53 Tüy (JS yuvarlaması).
+    static void Ekipman()
+    {
+        var g = new Gear(new BellekKayit(), 0); g.raket = "agir"; g.tel = 22; g.bileklik = "agir"; g.bant = "odak"; g.forma = "beyaz";
+        foreach (var k in g.eko.sv.Keys.ToList()) g.eko.sv[k] = 10;
+        var r = g.Hesap(); float[] html = { 1.31551f, 1.11042f, .95645f, 1.35557f, .82788f, .78f, 1, 4, .85f, 1.06f, 1.04f, 1.448f, 1, .86957f };
+        float[] cs = { r.guc, r.kontrol, r.hiz, r.tatli, r.ton, r.kafa, r.kenar, r.akis, r.yavas, r.rakip, r.kosu, r.enerji, r.toparla, r.yorK };
+        for (int i = 0; i < cs.Length; i++) if (Math.Abs(cs[i] - html[i]) > 1e-4) Fail("ekipman çarpanı " + i + ": " + cs[i] + " ≠ HTML " + html[i]);
+        float notr = SmacHizi(null), agir = SmacHizi(r);
+        Console.WriteLine("ekipman: smaç çıkış hızı nötr " + notr.ToString("0.0") + " m/s, ağır raket + 10. seviye " + agir.ToString("0.0") + " m/s (guc ×" + r.guc.ToString("0.00") + ")");
+        if (!(agir > notr * 1.1f)) Fail("ağır raket smacı hızlandırmadı");
+        var o = new Gear(new BellekKayit(), 0); o.eko.gun = "x"; var od = o.Odul(false, false, 21, true, 0, 0, DateTime.Now);
+        if (od.tuy != 53) Fail("21 sayılık yenilgi ödülü 53 Tüy olmalı (JS Math.round): " + od.tuy);
+    }
+    static float SmacHizi(GearStats gs)
+    {
+        var rr = new Random(5); float sum = 0; int n = 0; const float dt = 1f / 60f;
+        for (int m = 0; m < 4; m++)
+        {
+            var M = new Match(300 + m, new MatchOptions { easy = true, target = 11, gs = gs }); int guard = 0;
+            while (!M.over && guard++ < 60 * 60 * 20)
+            {
+                if (M.s == null && M.server == "me" && M.wait <= 0 && !M.between && M.svPending == null && rr.NextDouble() < .05) M.SwipeServe(0, -200, 1.8f);
+                Reach R; if (M.ReachInfo(out R) && rr.NextDouble() < .15) M.SwipeShot(new SwipeInput { dx = (float)(rr.NextDouble() * 100 - 50), dy = -250, speed = 2.3f, R = 40, dist = 5, side = 1 });
+                M.Update(dt);
+                foreach (var e in M.events) if (e.kind == Ev.Hit && e.who == "me" && e.type == "smash" && M.s != null) { sum += (float)Math.Sqrt(M.s.vx * M.s.vx + M.s.vy * M.s.vy + M.s.vz * M.s.vz); n++; }
+                M.events.Clear();
+            }
+        }
+        return n > 0 ? sum / n : 0;
     }
 }
