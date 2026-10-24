@@ -27,7 +27,8 @@ namespace BirdieSmash.Core
 
         public float x, y, z, vx, vy, vz, kd = KD, t;
         public string from, type;
-        public bool serve, super, netDone, dead, netHit;
+        public bool serve, super, netDone, dead, netHit, slice, netCord;
+        public float[] ogrHedef;   // antrenman: bu vuruşun düşmesi gereken bant ("Hedefte! ★")
         public float netK;
         public NetPass netPred;   // tahmin edilen file geçişi (canlı uçuş aynı karara varsın)
         public SimResult landPred;
@@ -62,7 +63,8 @@ namespace BirdieSmash.Core
             r.x = x; r.y = y; r.t = t; return r;
         }
 
-        // Belirli hedefe vuruş: açı sabitken hızı ya da hız sabitken açıyı ikiye bölmeyle bulur.
+        // Belirli hedefe vuruş: açı sabitken hızı ya da hız sabitken açıyı ikiye bölmeyle bulur. 18 adım (HTML 2026-10-24,
+        // eskiden 26): düşüş yerindeki fark 1 mm'nin altında, vuruş karesinde %30 daha az fizik.
         public static void Aim(float fx, float fy, float fz, float tx, float ty, bool byAngle, float val, out float ovx, out float ovy, out float ovz)
         {
             float dx = tx - fx, dy = ty - fy, R = (float)Math.Sqrt(dx * dx + dy * dy); if (R < 1e-3f) R = 1e-3f;
@@ -74,8 +76,8 @@ namespace BirdieSmash.Core
                 return (float)Math.Sqrt((r.x - fx) * (r.x - fx) + (r.y - fy) * (r.y - fy));
             };
             float lo, hi, vv, aa;
-            if (byAngle) { aa = val; lo = 1; hi = 140; for (int k = 0; k < 26; k++) { float m = (lo + hi) / 2; if (range(m, aa) < R) lo = m; else hi = m; } vv = (lo + hi) / 2; }
-            else { vv = val; lo = -1.2f; hi = .9f; for (int k = 0; k < 26; k++) { float m = (lo + hi) / 2; if (range(vv, m) < R) lo = m; else hi = m; } aa = (lo + hi) / 2; }
+            if (byAngle) { aa = val; lo = 1; hi = 140; for (int k = 0; k < 18; k++) { float m = (lo + hi) / 2; if (range(m, aa) < R) lo = m; else hi = m; } vv = (lo + hi) / 2; }
+            else { vv = val; lo = -1.2f; hi = .9f; for (int k = 0; k < 18; k++) { float m = (lo + hi) / 2; if (range(vv, m) < R) lo = m; else hi = m; } aa = (lo + hi) / 2; }
             float cc = (float)Math.Cos(aa);
             ovx = ux * vv * cc; ovy = uy * vv * cc; ovz = vv * (float)Math.Sin(aa);
         }
