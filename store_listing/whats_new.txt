@@ -1,3 +1,35 @@
+=== UNITY ===
+Bu sürüm yeni: oyunun tamamı ve menüler baştan Unity ile yapıldı. Kurallar ve kaydırma hareketleri öncekiyle aynı, görüntü 3B.
+
+Bu sürümde yeni:
+- Tüy top artık 3B: tüyleri, mantar başı var; uçarken döner ve sallanır, yere düştüğü yerde halka çıkar.
+- Saha, tribün, ışıklar ve iki hakem 3B. Saha seçimi: salon, turnuva, okul, park.
+- Menü, Ayarlar, Kariyer, Antrenman, Ekipman ve maç sonu ekranları yeniden yapıldı.
+- Ekipman: raket, tel gerginliği (18–32 lbs), bileklik, saç bandı, forma. Tüy ile yükseltilir. Raketi 360° çevirip bakabilirsin.
+- Her maçta 3 görev; maç sonunda Tüy ve XP ödülü, seviye atlama.
+- Ayarlar'da dil seçimi: Türkçe / English.
+- Raket sesi telefonda üretiliyor; tel gerginliğine ve vuruşa göre değişir.
+
+Bilerek eksik olanlar:
+- Önceki sürümdeki ilerlemen (kariyer, ayarlar, ekipman) bu sürüme taşınmaz; oyun ilk açılış gibi başlar.
+- Game Center başarımları bu sürümde yok.
+- Titreşim her olayda tek kısa titreşim; vuruşa göre değişen desen yok.
+- VoiceOver ve büyük yazı ayarı menülerde çalışmaz.
+
+Nasıl denenir:
+1. Uygulamayı aç: önce kısa bir antrenman (kısa servis, clear, smaç) gelmeli, sonra 5 sayılık Kolay maç. Ekran yalnız dikey durmalı, telefonu çevirince dönmemeli.
+2. Servis: yukarı kaydır. Yavaş kaydırma kısa servis, hızlı ve kısa kaydırma flick, hızlı ve uzun kaydırma yüksek servis olmalı.
+3. Top sana gelince zaman yavaşlar. Yukarı kaydır: yavaş drop, orta clear, hızlı smaç. Aşağı kaydırma blok. Parmağını yana eğerek yön ver.
+4. Bir maçı sonuna kadar oyna: skor doğru saymalı, maç sonunda Tüy/XP ekranı ve doğru düğme gelmeli ("Sıradaki: …", "Tekrar dene" ya da "Bir maç daha").
+5. Menü > Ekipman: bir yuvayı yükselt, tel gerginliğini değiştir, sonra bir maçta vuruş sesinin değiştiğini dinle.
+6. Menü > Antrenman: 15 adımın hepsi açılmalı, bilgi adımlarında oyun durup dokununca devam etmeli.
+7. Ayarlar > Dil > English: tüm menüler İngilizce olmalı. Geri Türkçe'ye al.
+8. Ayarlar > Hareketi azalt: açınca ekran sarsıntısı ve yakınlaşma olmamalı.
+9. Çentikli/Dynamic Island'lı telefonda: skor ve düğmeler ekranın kenarına ya da çentiğin altına girmemeli; düğmelere rahat basılmalı.
+10. Uygulamayı arka plana atıp geri aç, telefonu kilitleyip aç: oyun donmamalı, ses geri gelmeli.
+11. Bir şey takılırsa ya da yavaşlarsa hangi telefon olduğunu ve ne yaptığını yaz.
+
+=== HTML ===
 Bu sürümde yeni:
 - Vuruş hareketleri yeniden çizildi: baş üstü vuruşlarda raket önce sırtın arkasına düşüyor, sonra bilek dönerek topa çıkıyor. Kalça göğüsten önce dönüyor. Drive ve file vuruşunda dirsek hafif bükük. Drop ve file vuruşunun artık kendi hareketi var; drop başlangıçta clear gibi görünür, rakibi kandırır.
 - Vuruş animasyonları akıcı: oyuncu artık temas pozunda donup topu beklemiyor. Raketi geri alıp bekliyor, savuruş topa değdiği anda oluyor. Sıçrayarak smaçta oyuncu temas anında havada, tepede. Drive ve blokta raket yere inip fırlamıyor. Uzanmada gövde yana yatmıyor. Vuruştan sonraki toparlanma vuruşa göre: net vuruşu kısa, smaç uzun. Koşarken ayaklar kaymıyor, split step küçük bir sıçrama.

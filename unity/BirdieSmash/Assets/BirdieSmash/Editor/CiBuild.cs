@@ -1,0 +1,90 @@
+// TestFlight hattının Unity yolu (2026-10-24, yasin: "Unity ile değiştirelim menüleri ve tüm oyunu"):
+// game-ci/unity-builder bu yöntemi `buildMethod` ile çağırır, çıktı Xcode projesidir; imzalama, build numarası
+// ve yükleme macOS'ta fastlane `beta_unity` lane'indedir (Unity tarafı App Store Connect'i görmez).
+// Neden ayarlar burada, ProjectSettings.asset'te değil: depoda ProjectSettings.asset yok (Unity ilk açılışta
+// varsayılanla üretir); elle yazılmış bir asset Unity sürümüyle uyuşmazsa sessizce bozulur. Build anında
+// PlayerSettings koddan yazılır ki CI'daki taze kopya ile yasin'ın Editor'ü aynı sonucu versin.
+// Info.plist'e ITSAppUsesNonExemptEncryption=false burada da yazılır (fastlane ayrıca yazar): anahtar yoksa
+// build App Store Connect'te "Missing Compliance"ta bekler, test edilemez.
+using System;
+using System.IO;
+using System.Linq;
+using UnityEditor;
+using UnityEditor.Build.Reporting;
+using UnityEngine;
+
+namespace BirdieSmash.EditorTools
+{
+    public static class CiBuild
+    {
+        const string Bundle = "com.birdiesmash.app";
+        const string Icon = "Assets/BirdieSmash/Icon/AppIcon.png";   // Flutter ikonunun kopyası (ios/Runner/.../Icon-App-1024x1024@1x.png)
+
+        // unity-builder: -customBuildPath <workspace>/build/iOS/iOS (klasör = Xcode projesi)
+        public static void iOS()
+        {
+            try
+            {
+                string path = Arg("-customBuildPath") ?? "build/iOS/iOS";
+                DemoKurulum.Kur();   // sahne Assets/Scenes/Demo.unity + build listesi + shader/girdi ayarları (CI kopyası taze)
+                Ayarla(Arg("-buildVersion"));
+                var opt = new BuildPlayerOptions
+                {
+                    scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray(),
+                    locationPathName = path, target = BuildTarget.iOS, targetGroup = BuildTargetGroup.iOS, options = BuildOptions.None
+                };
+                if (opt.scenes.Length == 0) throw new Exception("Build listesinde sahne yok (DemoKurulum.Kur)");
+                var rep = BuildPipeline.BuildPlayer(opt);
+                if (rep.summary.result != BuildResult.Succeeded) throw new Exception("BuildPlayer: " + rep.summary.result + ", hata " + rep.summary.totalErrors);
+                PlistSifreleme(Path.Combine(path, "Info.plist"));
+                Debug.Log("Birdie Smash iOS Xcode projesi: " + path);
+                EditorApplication.Exit(0);
+            }
+            catch (Exception e) { Debug.LogError("Birdie Smash CI build kırıldı: " + e); EditorApplication.Exit(1); }
+        }
+
+#pragma warning disable 618   // BuildTargetGroup imzaları Unity 6'da eski sayılır (uyarı); DemoKurulum ile aynı aile, 2021+ derler
+        static void Ayarla(string surum)
+        {
+            PlayerSettings.productName = "Birdie Smash"; PlayerSettings.companyName = "Birdie Smash";
+            PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, Bundle);
+            // Sürüm adı ve build numarası fastlane'de Info.plist'e yeniden yazılır (TestFlight'taki son numara + 1);
+            // buradaki değer yalnız yerel Editor build'i için anlamlı.
+            if (!string.IsNullOrEmpty(surum) && surum != "none") PlayerSettings.bundleVersion = surum;
+            PlayerSettings.SetScriptingBackend(BuildTargetGroup.iOS, ScriptingImplementation.IL2CPP);   // iOS'ta zorunlu
+            // Yalnız dikey (HTML kabuğuyla aynı): otomatik döndürme kapalı.
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
+            PlayerSettings.allowedAutorotateToPortrait = true; PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = false; PlayerSettings.allowedAutorotateToLandscapeRight = false;
+            // iPad'de dikey kilit için tam ekran şart (Apple: çoklu pencere destekleyen uygulama tüm yönleri ister).
+            PlayerSettings.iOS.requiresFullScreen = true;
+            PlayerSettings.iOS.appleEnableAutomaticSigning = false;   // imza fastlane match'ten; Xcode otomatik imzaya kalkışmasın
+            PlayerSettings.statusBarHidden = true;
+            var ikon = AssetDatabase.LoadAssetAtPath<Texture2D>(Icon);
+            // Unknown grubu = "Default Icon": Unity tüm iOS boylarını bundan üretir. fastlane ayrıca Flutter'ın
+            // AppIcon.appiconset'ini Xcode projesine kopyalar (1024'lük ikon alfa kanalsız kalsın diye).
+            if (ikon != null) PlayerSettings.SetIconsForTargetGroup(BuildTargetGroup.Unknown, new[] { ikon });
+            else Debug.LogWarning("Birdie Smash: ikon yok (" + Icon + ")");
+        }
+#pragma warning restore 618
+
+        // Plist'i metin olarak düzenler: UnityEditor.iOS.Xcode yalnız iOS modülü kuruluyken derlenir, bu dosya
+        // modülsüz Editor'de (ve tool/unity_test derlemesinde) de kırılmasın.
+        static void PlistSifreleme(string plist)
+        {
+            if (!File.Exists(plist)) { Debug.LogWarning("Info.plist yok: " + plist); return; }
+            var t = File.ReadAllText(plist);
+            if (t.Contains("ITSAppUsesNonExemptEncryption")) return;
+            int i = t.LastIndexOf("</dict>", StringComparison.Ordinal);
+            if (i < 0) return;
+            File.WriteAllText(plist, t.Substring(0, i) + "\t<key>ITSAppUsesNonExemptEncryption</key>\n\t<false/>\n" + t.Substring(i));
+        }
+
+        static string Arg(string name)
+        {
+            var a = Environment.GetCommandLineArgs();
+            for (int i = 0; i < a.Length - 1; i++) if (a[i] == name) return a[i + 1];
+            return null;
+        }
+    }
+}

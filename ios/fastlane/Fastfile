@@ -1,4 +1,5 @@
 require "shellwords"
+require "fileutils"
 
 default_platform(:ios)
 
@@ -28,9 +29,19 @@ end
 
 CHANGELOG_LIMIT = 4000
 
+# whats_new.txt iki bölüm taşıyabilir (2026-10-24, Unity geçişi): `=== UNITY ===` ve `=== HTML ===`
+# başlıkları. Unity lane'i Unity bölümünü, Flutter lane'i HTML bölümünü gönderir; testçi o build'de
+# olmayan şeyi denemeye çalışmasın. Başlık yoksa dosyanın tamamı gider (eski davranış).
+def whats_new_bolumu(text, bolum)
+  parcalar = text.split(/^===\s*([A-Z]+)\s*===\s*$/)
+  return text if parcalar.length < 3
+  harita = parcalar[1..].each_slice(2).to_h { |ad, govde| [ad.strip, govde.to_s.strip] }
+  harita[bolum] || text
+end
+
 # Her build'in "What to Test" metni farklı olsun: build no + kısa SHA + commit başlığı.
-def testflight_changelog(build_number)
-  notes = File.read("../../store_listing/whats_new.txt", encoding: "UTF-8").scrub("").strip
+def testflight_changelog(build_number, bolum = "HTML")
+  notes = whats_new_bolumu(File.read("../../store_listing/whats_new.txt", encoding: "UTF-8").scrub("").strip, bolum)
   kimlik = begin
     sha = sh("git rev-parse --short HEAD", log: false).to_s.force_encoding("UTF-8").scrub("").strip
     subject = sh("git log -1 --pretty=%s", log: false).to_s.force_encoding("UTF-8").scrub("").strip
@@ -41,6 +52,58 @@ def testflight_changelog(build_number)
   end
   full = "#{notes}\n\n———\n#{kimlik}"
   full.length > CHANGELOG_LIMIT ? full[0, CHANGELOG_LIMIT] : full
+end
+
+# Headless runner'da izole, kilidi açık keychain + match (readonly). `beta` ve `beta_unity` ortak;
+# Unity yolu aynı sertifika/profili kullanır (bundle id aynı).
+def ci_imza_hazirla(api_key)
+  keychain_path = File.expand_path("~/Library/Keychains/birdiesmash_ci-db")
+
+  # Headless runner'da izole, kilidi açık keychain; aksi hâlde codesign
+  # etkileşimli parola ister ve job asılır (daha önce yaşandı).
+  if is_ci
+    create_keychain(
+      name: "birdiesmash_ci",
+      password: ENV["MATCH_PASSWORD"],
+      default_keychain: true,
+      unlock: true,
+      timeout: 3600,
+      lock_when_sleeps: false,
+      require_create: false
+    )
+    existing = sh("security list-keychains -d user", log: false)
+                 .lines.map { |l| l.strip.delete('"') }.reject(&:empty?)
+    sh("security list-keychains -d user -s #{([keychain_path] + existing).uniq.shelljoin}")
+    # `log: false` ŞART: repo herkese açıksa parola günlüğe sızar (bilinen sızıntı riski).
+    sh("security unlock-keychain -p #{ENV['MATCH_PASSWORD'].to_s.shellescape} #{keychain_path.shellescape}", log: false)
+  end
+
+  match(
+    type: "appstore",
+    readonly: true,
+    api_key: api_key,
+    keychain_name: is_ci ? "birdiesmash_ci" : nil,
+    keychain_password: is_ci ? ENV["MATCH_PASSWORD"] : nil
+  )
+
+  if is_ci
+    identities = sh("security find-identity -v -p codesigning #{keychain_path.shellescape} || true", log: false)
+    unless identities.include?("Apple Distribution")
+      UI.user_error!("Keychain'de 'Apple Distribution' kimliği yok — MATCH_PASSWORD yanlış ya da profil üretilmemiş (setup-match.yml çalıştırıldı mı?).")
+    end
+  end
+end
+
+# Sürümdeki ve tüm uygulamadaki en büyük TestFlight build numarası + 1. Unity build'i de buradan
+# alır: aynı bundle id'de numara geri gidemez, iki yol aynı sırayı paylaşır.
+def sonraki_build_numarasi(api_key, version)
+  build_in_version = latest_testflight_build_number(
+    app_identifier: BUNDLE_ID, api_key: api_key, version: version, initial_build_number: 0
+  ) || 0
+  build_any = latest_testflight_build_number(
+    app_identifier: BUNDLE_ID, api_key: api_key, initial_build_number: 0
+  ) || 0
+  [build_in_version, build_any].max + 1
 end
 
 platform :ios do
@@ -54,41 +117,7 @@ platform :ios do
   desc "Build ve TestFlight'a upload"
   lane :beta do
     api_key = asc_api_key
-    keychain_path = File.expand_path("~/Library/Keychains/birdiesmash_ci-db")
-
-    # Headless runner'da izole, kilidi açık keychain; aksi hâlde codesign
-    # etkileşimli parola ister ve job asılır (daha önce yaşandı).
-    if is_ci
-      create_keychain(
-        name: "birdiesmash_ci",
-        password: ENV["MATCH_PASSWORD"],
-        default_keychain: true,
-        unlock: true,
-        timeout: 3600,
-        lock_when_sleeps: false,
-        require_create: false
-      )
-      existing = sh("security list-keychains -d user", log: false)
-                   .lines.map { |l| l.strip.delete('"') }.reject(&:empty?)
-      sh("security list-keychains -d user -s #{([keychain_path] + existing).uniq.shelljoin}")
-      # `log: false` ŞART: repo herkese açıksa parola günlüğe sızar (bilinen sızıntı riski).
-      sh("security unlock-keychain -p #{ENV['MATCH_PASSWORD'].to_s.shellescape} #{keychain_path.shellescape}", log: false)
-    end
-
-    match(
-      type: "appstore",
-      readonly: true,
-      api_key: api_key,
-      keychain_name: is_ci ? "birdiesmash_ci" : nil,
-      keychain_password: is_ci ? ENV["MATCH_PASSWORD"] : nil
-    )
-
-    if is_ci
-      identities = sh("security find-identity -v -p codesigning #{keychain_path.shellescape} || true", log: false)
-      unless identities.include?("Apple Distribution")
-        UI.user_error!("Keychain'de 'Apple Distribution' kimliği yok — MATCH_PASSWORD yanlış ya da profil üretilmemiş (setup-match.yml çalıştırıldı mı?).")
-      end
-    end
+    ci_imza_hazirla(api_key)
 
     update_code_signing_settings(
       use_automatic_signing: false,
@@ -102,13 +131,7 @@ platform :ios do
     )
 
     version = flutter_version_name
-    build_in_version = latest_testflight_build_number(
-      app_identifier: BUNDLE_ID, api_key: api_key, version: version, initial_build_number: 0
-    ) || 0
-    build_any = latest_testflight_build_number(
-      app_identifier: BUNDLE_ID, api_key: api_key, initial_build_number: 0
-    ) || 0
-    next_build_number = [build_in_version, build_any].max + 1
+    next_build_number = sonraki_build_numarasi(api_key, version)
     UI.message("Sürüm #{version}, build #{next_build_number}")
     increment_build_number(xcodeproj: "Runner.xcodeproj", build_number: next_build_number.to_s)
 
@@ -130,5 +153,86 @@ platform :ios do
     )
     sh("echo TF_BUILD_NUMBER=#{next_build_number} >> $GITHUB_ENV") if ENV["GITHUB_ENV"]
     UI.success("TestFlight'a yüklendi: #{version} (#{next_build_number})")
+  end
+
+  # Unity yolu (2026-10-24): Xcode projesi ubuntu'da game-ci/unity-builder ile üretilir (CiBuild.iOS),
+  # bu lane yalnız imzalar, numaralar, derler, yükler. Neden Info.plist doğrudan yazılıyor
+  # (increment_build_number değil): Unity'nin Info.plist'i CFBundleVersion'ı sabit metin olarak taşır,
+  # agvtool'un yazdığı CURRENT_PROJECT_VERSION'a bakmaz; numara sessizce eski kalırdı.
+  desc "Unity Xcode projesini (UNITY_XCODE_DIR) imzala, derle, TestFlight'a yükle"
+  lane :beta_unity do
+    dir = ENV["UNITY_XCODE_DIR"].to_s
+    UI.user_error!("UNITY_XCODE_DIR yok ya da Unity-iPhone.xcodeproj içermiyor: #{dir}") unless File.directory?(File.join(dir, "Unity-iPhone.xcodeproj"))
+    xcodeproj = File.join(dir, "Unity-iPhone.xcodeproj")
+    plist = File.join(dir, "Info.plist")
+    profile = "match AppStore #{BUNDLE_ID}"
+
+    api_key = asc_api_key
+    ci_imza_hazirla(api_key)
+
+    # Uygulama hedefi match profiliyle elle imzalanır. UnityFramework bir framework: profil almaz
+    # (verilirse Xcode "does not support provisioning profiles" der), yalnız kimlik + takım.
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: xcodeproj,
+      team_id: ENV["APPLE_TEAM_ID"],
+      code_sign_identity: "Apple Distribution",
+      bundle_identifier: BUNDLE_ID,
+      profile_name: profile,
+      targets: ["Unity-iPhone"],
+      build_configurations: ["Release"]
+    )
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: xcodeproj,
+      team_id: ENV["APPLE_TEAM_ID"],
+      code_sign_identity: "Apple Distribution",
+      targets: ["UnityFramework"],
+      build_configurations: ["Release"]
+    )
+
+    # Uygulama ikonu Flutter'ınkiyle aynı set: Unity'nin ürettiği 1024'lük ikon alfa kanalı taşırsa
+    # App Store Connect yüklemeyi reddeder; Flutter seti zaten kabul edilmiş durumda.
+    flutter_ikon = File.expand_path("../Runner/Assets.xcassets/AppIcon.appiconset", __dir__)
+    unity_ikon = Dir.glob(File.join(dir, "**", "AppIcon.appiconset")).first
+    if unity_ikon && File.directory?(flutter_ikon)
+      FileUtils.rm_rf(unity_ikon)
+      FileUtils.cp_r(flutter_ikon, unity_ikon)
+      UI.message("İkon seti Flutter'dan kopyalandı: #{unity_ikon}")
+    else
+      UI.important("AppIcon.appiconset bulunamadı; Unity'nin ikonu kalıyor")
+    end
+
+    version = flutter_version_name   # iki yol aynı sürüm adı (pubspec), numara ortak sıradan
+    next_build_number = sonraki_build_numarasi(api_key, version)
+    UI.message("Unity · sürüm #{version}, build #{next_build_number}")
+    set_info_plist_value(path: plist, key: "CFBundleShortVersionString", value: version)
+    set_info_plist_value(path: plist, key: "CFBundleVersion", value: next_build_number.to_s)
+    # Unity de yazar (CiBuild.PlistSifreleme); burada ikinci kez, çünkü anahtar yoksa build
+    # "Missing Compliance"ta bekler ve testçiye hiç görünmez.
+    set_info_plist_value(path: plist, key: "ITSAppUsesNonExemptEncryption", value: false)
+    set_info_plist_value(path: plist, key: "CFBundleDisplayName", value: "Birdie Smash")
+    set_info_plist_value(path: plist, key: "UISupportedInterfaceOrientations", value: ["UIInterfaceOrientationPortrait"])
+    set_info_plist_value(path: plist, key: "UISupportedInterfaceOrientations~ipad", value: ["UIInterfaceOrientationPortrait"])
+    set_info_plist_value(path: plist, key: "UIRequiresFullScreen", value: true)
+
+    build_app(
+      project: xcodeproj,
+      scheme: "Unity-iPhone",
+      configuration: "Release",
+      export_method: "app-store",
+      clean: false,
+      output_directory: "./build",
+      output_name: "birdiesmash-unity.ipa",
+      export_options: { provisioningProfiles: { BUNDLE_ID => profile } }
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true,
+      changelog: testflight_changelog(next_build_number, "UNITY")
+    )
+    sh("echo TF_BUILD_NUMBER=#{next_build_number} >> $GITHUB_ENV") if ENV["GITHUB_ENV"]
+    UI.success("TestFlight'a yüklendi (Unity): #{version} (#{next_build_number})")
   end
 end
