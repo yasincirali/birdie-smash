@@ -457,7 +457,7 @@ function nTampon(A,n,anah,fn){ const k=n+'|'+anah, v=NTAMP[k]||(NTAMP[k]=[]); v.
   const b=A.createBuffer(1,n,A.sampleRate), c=b.getChannelData(0); for(let i=0;i<n;i++) c[i]=fn(i,n); return v[v.i]=b; }
 const zarf=env=>(i,n)=>(Math.random()*2-1)*Math.pow(1-i/n,env);
 /* Maç kurulurken (perde kapalıyken) vuruş sesinin tamponları önceden üretilir; ilk vuruşlar da hafif kalsın */
-function sesIsit(){ try{ const A=ac(), R=A.sampleRate; [[.004,2],[.014,4],[.03,3],[.008,2],[.035,2],[.17,2],[.014,2]].forEach(([d,e])=>{ const n=Math.max(8,Math.floor(R*d)); for(let j=0;j<3;j++) nTampon(A,n,e,zarf(e)); });
+function sesIsit(){ try{ const A=ac(), R=A.sampleRate; loopNoise(A,1); loopNoise(A,2); [[.004,2],[.014,4],[.03,3],[.008,2],[.035,2],[.17,2],[.014,2]].forEach(([d,e])=>{ const n=Math.max(8,Math.floor(R*d)); for(let j=0;j<3;j++) nTampon(A,n,e,zarf(e)); });
   for(let j=0;j<3;j++) nTampon(A,Math.floor(R*.25),4,zarf(4)); }catch(e){} }
 function noise(d,type,f,v,q=1){ if(muted)return; try{ const A=ac(),n=Math.floor(A.sampleRate*d),b=nTampon(A,n,4,zarf(4)); const s=A.createBufferSource(),fl=A.createBiquadFilter(),g=A.createGain(); s.buffer=b; fl.type=type; fl.frequency.value=f; fl.Q.value=q; g.gain.value=v; s.connect(fl).connect(g).connect(out()); s.start(); }catch(e){} }
 /* Raket sesi — üç katman, gerçek vuruşun anatomisi:
@@ -485,12 +485,13 @@ function vsesKaydet(o,S,k){ const OA=window.OfflineAudioContext||window.webkitOf
    yapıyordu; ilk açılışta antrenmanın ilk saniyelerine denk gelip kare düşürüyordu (yasin 24 Eki: "ilk açıldığından
    itibaren fps düşmesi ve kasma"). */
 const VSES_SIRA=[]; let vsesSiraT=0;
-function vsesSakin(){ return !perdeOynuyor()&&(mode!=='play'||paused||!M||M.between); }
+function vsesSakin(){ const po=PERDE.oyun; if(po) return po.evre==='kapali'; return mode!=='play'||paused||!M||M.between; } /* perde tam kapalıyken çizim yok: kayıt için en sakin an */
 function vsesIsle(){ vsesSiraT=0; if(!VSES_SIRA.length||muted) return; if(!vsesSakin()){ vsesSiraT=setTimeout(vsesIsle,400); return; }
   const [o,S]=VSES_SIRA.shift(); try{ vsesKaydet(o,S,vsesAnah(o,S)); }catch(e){} vsesSiraT=setTimeout(vsesIsle,80); }
 function vsesSirala(o,S){ const k=vsesAnah(o,S); if(VSES[k]||VSES_SIRA.some(([a,b])=>vsesAnah(a,b)===k)) return; VSES_SIRA.push([o,S]); if(!vsesSiraT) vsesSiraT=setTimeout(vsesIsle,80); }
-function vsesIsit(){ if(muted) return; for(const type of Object.keys(HITMIX)) for(const q of ['good','perfect','poor']) vsesSirala({type,q},GS);
-  [{type:'clear',q:'good',serve:true},{type:'drop',q:'good',serve:true},{type:'smash',q:'good',super:true},{type:'smash',q:'perfect',super:true}].forEach(o=>vsesSirala(o,GS)); }
+function vsesIsit(){ if(muted) return; [{type:'clear',q:'good',serve:true},{type:'drop',q:'good',serve:true}].forEach(o=>vsesSirala(o,GS)); /* önce servis: maçın ilk vuruşu */
+  for(const type of Object.keys(HITMIX)) for(const q of ['good','perfect','poor']) vsesSirala({type,q},GS);
+  [{type:'smash',q:'good',super:true},{type:'smash',q:'perfect',super:true}].forEach(o=>vsesSirala(o,GS)); }
 function racketHit(o){ if(muted) return; try{ const A=ac(), t=A.currentTime+(o.who==='op'?.03:0), S=GS, k=vsesAnah(o,S), V=VSES[k];
   if(V&&V.b.length){ const b=V.b[V.i=(V.i+1)%V.b.length]||V.b[0], src=A.createBufferSource(), g=A.createGain(); src.buffer=b; src.playbackRate.value=1+(Math.random()-.5)*.05; /* canlı sentezdeki ±%2,5 tel perdesi */
     g.gain.value=o.who==='op'?.5:1; src.connect(g); if(o.who==='op'){ const lp=A.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=3000; g.connect(lp).connect(out()); } else g.connect(out()); src.start(t); return; }
@@ -522,7 +523,11 @@ function buzz(p){ try{ if(window.Haptic){ Haptic.postMessage(JSON.stringify(p));
 let BUSF=null, CROWDG=null, SWO=null;
 function out(){ const A=ac(); if(!BUSF){ BUSF=A.createBiquadFilter(); BUSF.type='lowpass'; BUSF.frequency.value=20000; const comp=A.createDynamicsCompressor(); BUSF.connect(comp).connect(A.destination); } return BUSF; }
 function underwater(on){ if(muted) return; try{ const A=ac(); out().frequency.setTargetAtTime(on?750:20000,A.currentTime,on?.05:.02); }catch(e){} }
-function loopNoise(A,sec){ const n=A.sampleRate*sec,b=A.createBuffer(1,n,A.sampleRate),c=b.getChannelData(0); for(let i=0;i<n;i++) c[i]=Math.random()*2-1; const src=A.createBufferSource(); src.buffer=b; src.loop=true; return src; }
+/* Döngü gürültüsü tamponu bir kez üretilir: her kaydırmada (swooshStart) 1 sn'lik rastgele tampon doldurmak ilk servis
+   kaydırmasının karesine biniyordu. Aynı tamponun tekrarı duyulmaz: filtre ve zarf her seferinde ayrı. */
+const LOOPN={};
+function loopNoise(A,sec){ const n=Math.round(A.sampleRate*sec); let b=LOOPN[n]; if(!b){ b=LOOPN[n]=A.createBuffer(1,n,A.sampleRate); const c=b.getChannelData(0); for(let i=0;i<n;i++) c[i]=Math.random()*2-1; }
+  const src=A.createBufferSource(); src.buffer=b; src.loop=true; return src; }
 /* Seyirci uğultusu: ralli uzadıkça yükselir. */
 function crowdStart(){ if(CROWDG) return; try{ const A=ac(), src=loopNoise(A,2), f=A.createBiquadFilter(), f2=A.createBiquadFilter(); f.type='bandpass'; f.frequency.value=520; f.Q.value=.8; f2.type='lowpass'; f2.frequency.value=1400; CROWDG=A.createGain(); CROWDG.gain.value=0; src.connect(f).connect(f2).connect(CROWDG).connect(out()); src.start(); }catch(e){} }
 function crowdLevel(v){ if(!CROWDG) return; try{ CROWDG.gain.setTargetAtTime(muted?0:v,ac().currentTime,.4); }catch(e){} }
@@ -639,13 +644,13 @@ const SPR={img:{},clip:{me:null,op:null},ready:false,is:{me:0,op:0}};
    WebView'da Image'a düşer. Çözülen görüntü boyamadan hemen sonra bırakılır: bellekte yalnız boyalı, kırpılmış klip kalır. */
 function sprCoz(u){ return (window.createImageBitmap?fetch(u).then(r=>r.blob()).then(b=>createImageBitmap(b)):Promise.reject())
   .catch(()=>new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=u; })); }
-function sprLoad(){ SPR.ready=true; setTimeout(()=>sprTint('me',()=>sprTint('op')),0); }
+function sprLoad(){ SPR.ready=true; setTimeout(()=>sprTint('me',()=>sprTint('op',null,sonrakiStil())),0); }
 function hexRgb(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
 /* Takılmanın kaynağı (2026-10-20 ölçümü: kare başına çizimin %88'i oyuncu): boyalı sayfa willReadFrequently ile CPU'da
    tutulan tek dev tuvaldi, her karede GPU'ya yeniden taşınıyordu. Her klip ayrı, GPU'da kalan küçük tuval olarak kalır;
    ekranda gereken boydan büyükse küçültülür. 10 kareden uzun klip sayfada alt sıraya taşar (sheet.py). */
-function sprRenk(v){ return v==='me'?{forma:hexRgb(GS.forma.renk),cer:hexRgb(GS.raket.renk),bant:GS.bant.renk?hexRgb(GS.bant.renk):null,bilek:GS.bileklik.renk?hexRgb(GS.bileklik.renk):null}
-                    :{forma:hexRgb(opRenk()),cer:hexRgb('#e9eef0'),bant:null,bilek:null}; }
+function sprRenk(v,st){ return v==='me'?{forma:hexRgb(GS.forma.renk),cer:hexRgb(GS.raket.renk),bant:GS.bant.renk?hexRgb(GS.bant.renk):null,bilek:GS.bileklik.renk?hexRgb(GS.bileklik.renk):null}
+                    :{forma:hexRgb(opRenk(st)),cer:hexRgb('#e9eef0'),bant:null,bilek:null}; }
 /* Bir klibin boyanması. Saf işlev: işçide (OffscreenCanvas) ve yedek olarak ana iş parçacığında aynen çalışır, dışarıdan
    hiçbir şeye dokunmaz (işçiye kaynağı toString ile gider). bm renk, mk maske (R forma, G çerçeve, B bant), wk bileklik.
    Döner: klibin tüm karelerini kapsayan dolu alana kırpılmış, sF ölçekli tek sıra tuval + kırpma kutusu. */
@@ -681,19 +686,39 @@ onmessage=async e=>{ const q=e.data; try{ const b=await Promise.all(q.src.map(u=
     return { bozuk:()=>bozuk, is:q=>new Promise((res,rej)=>{ q.id=++id; bekle[q.id]={res,rej}; w.postMessage(q); }) };
   }catch(e){ return null; } })();
 /* Biten klip seti bir kerede devreye girer; o ana kadar eskisi çizilir. Aynı renk + aynı ölçek ikinci kez boyanmaz. */
-function sprTint(v,sonra){ const sF=sprSF(), col=sprRenk(v), anah=JSON.stringify(col)+sF;
-  if(SPR.anah&&SPR.anah[v]===anah){ if(sonra) setTimeout(sonra,0); return; }
-  const is=(SPR.is_n=(SPR.is_n||0)+1); SPR.son=SPR.son||{}; SPR.son[v]=is; /* daha yeni bir boyama başlarsa bu bırakılır; bekleyen işi o devralır */
-  SPR.bek=SPR.bek||{}; if(sonra) (SPR.bek[v]=SPR.bek[v]||[]).push(sonra);
+function sprAnah(v,st){ return JSON.stringify(sprRenk(v,st))+sprSF(); }
+function sprTint(v,sonra,st,y=v){ const sF=sprSF(), col=sprRenk(v,st), anah=JSON.stringify(col)+sF;
+  if(SPR.anah&&SPR.anah[y]===anah){ if(sonra) setTimeout(sonra,0); return; }
+  SPR.yap=SPR.yap||{}; SPR.bek=SPR.bek||{};
+  if(SPR.yap[y]===anah){ if(sonra) (SPR.bek[y]=SPR.bek[y]||[]).push(sonra); return; } /* aynı boyama zaten sürüyor: ikinci kez başlatma, bitince haber al */
+  SPR.yap[y]=anah; v=v==='op2'?'op':v;
+  const is=(SPR.is_n=(SPR.is_n||0)+1); SPR.son=SPR.son||{}; SPR.son[y]=is; /* daha yeni bir boyama başlarsa bu bırakılır; bekleyen işi o devralır */
+  if(sonra) (SPR.bek[y]=SPR.bek[y]||[]).push(sonra);
   const [cw,ch]=SPR_META.cell, COLS=SPR_META.cols||10, out={sF}, liste=Object.entries(SPR_META.clips);
-  const bitir=()=>{ if(SPR.son[v]!==is) return; const eski=SPR.clip[v]; SPR.clip[v]=out; if(eski) Object.values(eski).forEach(k=>k&&k.c&&k.c.close&&k.c.close()); /* eski boyalı klipler bellekte kalmasın */ SPR.is[v]=sF; (SPR.anah=SPR.anah||{})[v]=anah; const bk=SPR.bek[v]||[]; SPR.bek[v]=[]; bk.forEach(f=>setTimeout(f,0)); };
-  const anaYol=li=>{ if(SPR.son[v]!==is) return; if(li>=liste.length) return bitir(); const [ad,c]=liste[li];
-    Promise.all(SPR_SRC[v][ad].map(sprCoz)).then(b=>{ if(SPR.son[v]!==is) return;
+  const bitir=()=>{ if(SPR.son[y]!==is) return; const eski=SPR.clip[y]; SPR.clip[y]=out; if(eski) Object.values(eski).forEach(k=>k&&k.c&&k.c.close&&k.c.close()); /* eski boyalı klipler bellekte kalmasın */ SPR.is[y]=sF; (SPR.anah=SPR.anah||{})[y]=anah; SPR.yap[y]=null;
+    sprIsitEkle(out); const bk=SPR.bek[y]||[]; SPR.bek[y]=[]; bk.forEach(f=>setTimeout(f,0)); };
+  const anaYol=li=>{ if(SPR.son[y]!==is) return; if(li>=liste.length) return bitir(); const [ad,c]=liste[li];
+    Promise.all(SPR_SRC[v][ad].map(sprCoz)).then(b=>{ if(SPR.son[y]!==is) return;
       out[ad]=sprBoyaKlip(b[0],b[1],b[2],col,sF,cw,ch,COLS,c.n,(w,h)=>{ const e=document.createElement('canvas'); e.width=w; e.height=h; return e; });
       b.forEach(x=>x.close&&x.close()); setTimeout(()=>anaYol(li+1),0); }).catch(()=>setTimeout(()=>anaYol(li),50)); };
   if(!SPR_ISCI||SPR_ISCI.bozuk()) return anaYol(0);
   Promise.all(liste.map(([ad,c])=>SPR_ISCI.is({src:SPR_SRC[v][ad],col,sF,cw,ch,COLS,n:c.n}).then(r=>{ out[ad]={c:r.bm,bx:r.bx,by:r.by,bw:r.bw,bh:r.bh}; })))
-    .then(bitir).catch(()=>{ if(SPR.son[v]===is) anaYol(0); }); }
+    .then(bitir).catch(()=>{ if(SPR.son[y]===is) anaYol(0); }); }
+/* İlk servis takılması (yasin 24 Eki: "hala 3b modda ilk serviste takılma oluyor"): rakip figürü her maç başında yeni
+   formasıyla baştan boyanıyordu (22 klip × 3 PNG çözme, 4× yavaş CPU'da ~0,7 sn işçi işi). Boyama Oyna'dan sonraki ilk
+   saniyelere, yani ilk servise denk geliyor, bitince de yeni klipler ilk çizildikleri karede GPU'ya yükleniyordu. Şimdi
+   sıradaki rakip menüdeyken bilinir ve ayrı yuvaya ('op2') önceden boyanır; maç başında yalnız yer değiştirir. Biten her
+   klip seti de kare başına üçer üçer 1×1 çizilerek (zemin üstünü kapatır) GPU'ya maçtan önce yüklenir. */
+function sprIsitEkle(out){ SPR.isit=(SPR.isit||[]).concat(Object.values(out).filter(k=>k&&k.c).map(k=>k.c)); try{ donuk=0; }catch(e){} }
+let stilSira=null; /* serbest maçta sıradaki rakip tarzı önceden çekilir ki boyaması menüde yapılabilsin */
+function sonrakiStil(){ return kariyerModu?kariyerRakip(Math.min(best.kariyer||0,KARIYER.length-1)):STIL[stilSira||(stilSira=Object.keys(STIL)[Math.floor(Math.random()*3)])]; }
+function opHazirla(){ if(!SPR.ready||!SPR.clip.me) return; const st=sonrakiStil(), a=sprAnah('op',st); if(SPR.anah&&SPR.anah.op===a) return;
+  if(!M) sprTint('op',null,st); else sprTint('op2',null,st); } /* maç yokken sahnede rakip görünmez, doğrudan boyanır */
+function opGecir(){ const a=sprAnah('op'); if(SPR.anah&&SPR.anah.op===a) return;
+  if(SPR.anah&&SPR.anah.op2===a&&SPR.clip.op2){ const eski=SPR.clip.op; SPR.clip.op=SPR.clip.op2; SPR.is.op=SPR.is.op2; SPR.anah.op=a; SPR.clip.op2=null; SPR.anah.op2=null;
+    if(eski) Object.values(eski).forEach(k=>k&&k.c&&k.c.close&&k.c.close()); return; }
+  if(SPR.yap&&SPR.yap.op2===a){ (SPR.bek.op2=SPR.bek.op2||[]).push(()=>{ if(M&&sprAnah('op')===a) opGecir(); }); return; } /* önceden boyama sürüyor: bitince geçir */
+  sprTint('op'); }
 /* Çizim ölçeği SPR_K: oyuncak figür 1,75× büyütülüyordu; gerçek oranlı figür (2026-10-23) %9 kısa, %24 ince, aynı okunurluk için 1,9× */
 const SPR_K=1.9;
 function sprSF(){ const g=geo(), kN=SPR_K*(g.ch/(L+2*MG))/SPR_META.pxPerUnit; return Math.min(1,Math.ceil(kN*DPR*1.15*10)/10); }
@@ -961,7 +986,7 @@ let M=null, mode='menu', target=21, easy=true;
 /* Rakip kimliği (Ar-Ge 23 Eki, yasin "evet ekle"): kariyerde "aynı rakip daha hızlı" hissini kırmak için her tarzın
    global kısa adı (TR/EN aynı okunur) ve kendi forması var; yeni sprite yok, tint maskesi boyar. Forma oyuncunun
    formasına yakınsa (RGB uzaklığı <110) yedek renk: kortta iki oyuncu hiç karışmaz. İmza vuruşu Lig 2'ye kaldı. */
-function opRenk(){ const st=M&&M.stil; if(!st||!st.renk) return '#ff7a6b'; const a=hexRgb(st.renk), b=hexRgb(GS.forma.renk);
+function opRenk(st=M&&M.stil){ if(!st||!st.renk) return '#ff7a6b'; const a=hexRgb(st.renk), b=hexRgb(GS.forma.renk);
   return Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2])<110?st.yedek:st.renk; }
 /* Maç görevleri (Badminton Clash'in Challenge modu, Kule'deki görevler): her maç havuzdan 3 görev; biten görev anında kutlanır, toplam menüde birikir.
    Görevler oyuncuyu yeni vuruşlara iter (slice, tepeden, file), sayı kazanmaktan bağımsız ikinci bir ödül hattı açar. */
@@ -1134,9 +1159,9 @@ function ogrCagriCiz(o,now){ if(!o.cagri||!M.s||M.s.dead||M.s.from!=='op') retur
 function ogrOk(x1,y1,x2,y2,kisa){ const a=Math.atan2(y2-y1,x2-x1), k=12; ctx.save(); ctx.strokeStyle=ctx.strokeStyle||'#fff'; ctx.lineWidth=3; ctx.lineCap='round'; ctx.beginPath(); if(!kisa){ ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); }
   ctx.moveTo(x2-k*Math.cos(a-.5),y2-k*Math.sin(a-.5)); ctx.lineTo(x2,y2); ctx.lineTo(x2-k*Math.cos(a+.5),y2-k*Math.sin(a+.5)); ctx.stroke(); ctx.restore(); }
 function newMatch(ogr){ gearStats(); M={me:{x:MID,y:L-2.2,sw:0,dive:0,jump:0,prep:0,vx:0,vy:0,tx:null,ty:null,stun:0},op:{x:MID,y:2.2,sw:0,dive:0,jump:0},sc:[0,0],server:'me',rally:0,maxRally:0,energy:0,nefes:1,tepeden:0,s:null,trail:[],smashes:0,perfects:0,outsLeft:0,between:false,wait:0,serveFaults:0};
-  M.stil=kariyerModu?kariyerRakip(Math.min(best.kariyer||0,KARIYER.length-1)):STIL[Object.keys(STIL)[Math.floor(Math.random()*3)]]; M.gorevler=gorevSec(); M.gorevBitti=0;
+  M.stil=sonrakiStil(); stilSira=null; M.gorevler=gorevSec(); M.gorevBitti=0;
   M.saha=kariyerModu?KARIYER_SAHA[Math.min(best.kariyer||0,KARIYER.length-1)]:saha; M.op.nefes=1; M.opUyari=false;
-  if(SPR.ready) sprTint('op'); if(!ogr) rakipKart();
+  if(SPR.ready) opGecir(); if(!ogr) rakipKart();
   mode='play'; swipe.erkenN=0; M.pop=[0,0]; M.cams=[]; M.marks=[]; M.hawk=null; M.flow=false; M.inWin=false; crowdStart(); M.clock=0; M.opHitAt=-9; M.split=false; M.splitPending=false; M.deceive=false; M.pstreak=0; M.kills=0; M.saves=0; M.deceives=0; M.splits=0; if(ogr) ogrKur(); else { if(ogrEasy!==null){ easy=ogrEasy; ogrEasy=null; } ogrKart(); } setupServe(); }
 /* Servis yeri: sunucunun skoru çiftse sağ, tekse sol servis karesi. Ben fileye bakıyorum (yukarı): benim sağım ekranın sağı. Rakibin sağı ekranın solu. */
 /* Maç başı 1,5 sn rakip kartı: ad, tarz, tek cümle plan. Oyunu durdurmaz; dokununca hemen kapanır. Antrenmanda yok. */
@@ -1363,7 +1388,7 @@ function point(winner,why,at){ if(M.between) return; M.between=true; if(M.ogr&&M
     const kisa=!M.ogr&&!rekor; M.kisaBekle=kisa; if(kisa){ M.hakemT=M.hakemT0=1.0; }
     setTimeout(()=>{ if(M&&mode==='play'){ const msg=M.serveMsg; setupServe(); M.serveMsg=msg; } },kisa?700:1300); }
 }
-function endMatch(){ mode='over'; crowdLevel(.004); underwater(false); const won=M.sc[0]>M.sc[1]; if(won){ best.wins++; save(); }
+function endMatch(){ mode='over'; crowdLevel(.004); underwater(false); const won=M.sc[0]>M.sc[1]; if(won){ best.wins++; save(); } setTimeout(opHazirla,1500); /* kutlama bitince sıradaki rakip boyanır (kariyer basamağı aşağıda güncellenir, 1,5 sn sonra okunur) */
   let kNot=''; if(M.stil.kariyer!=null){ const i=M.stil.kariyer;
     if(won&&i===(best.kariyer||0)){ M.kariyerIlk=true; best.kariyer=i+1; basarimVer('bs_kariyer_'+best.kariyer); gcGiris(); if(best.kariyer>=KARIYER.length){ best.sampiyon=true; kNot=Tr('Kariyer tamam! Şampiyon forması açıldı.'); buildGear(); } else kNot=Tr('Yeni basamak açıldı: {0}, rakip {1}.',KARIYER[i+1].yer,STIL[KARIYER[i+1].stil].ad); save(); }
     else if(!won) kNot=Tr('{0} basamağı seni bekliyor.',KARIYER[i].yer); save(); kariyerYaz(); }
@@ -1800,6 +1825,7 @@ function draw(){
   ctx.setTransform(DPR,0,0,DPR,0,0); ctx.save();
   if(shake>.2) ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
   if(zoom>1.001&&M&&M.s){ const c=P(M.s.x,M.s.y,M.s.z); ctx.translate(c.x,c.y); ctx.scale(zoom,zoom); ctx.translate(-c.x,-c.y); }
+  if(SPR.isit&&SPR.isit.length&&shake<=.2&&zoom<=1.001){ for(let i=0;i<3&&SPR.isit.length;i++){ try{ ctx.drawImage(SPR.isit.shift(),0,0,1,1); }catch(e){} } donuk=0; } /* GPU'ya ön yükleme; zemin hemen üstünü örter */
   court();
   if(M&&mode==='play') runMark();
   hakemler();
@@ -1927,7 +1953,7 @@ function duraklat(){ if(!M||mode!=='play'||paused||!menu.hidden) return; paused=
   document.getElementById('pScore').textContent=`${M.sc[0]} – ${M.sc[1]}`; document.getElementById('pInfo').textContent=Tr('{0} sayı · Rakip {1}',target,rakipAd())+(M.stil.kariyer!=null?` · ${KARIYER[M.stil.kariyer].yer}`:'');
   pauseL.hidden=false; try{ AC&&AC.suspend(); }catch(e){} ekran(); setTimeout(()=>document.getElementById('pDevam').focus(),0); }
 function devamEt(){ if(!paused) return; paused=false; pauseL.hidden=true; menu.hidden=true; last=performance.now(); try{ AC&&AC.resume(); }catch(e){} ekran(); }
-function anaMenu(){ pauseL.hidden=true; over.hidden=true; menu.hidden=false; panelAc('anaEkran'); if(!(M&&mode==='play')){ paused=false; } kariyerYaz(); ekran(); }
+function anaMenu(){ pauseL.hidden=true; over.hidden=true; menu.hidden=false; panelAc('anaEkran'); if(!(M&&mode==='play')){ paused=false; } kariyerYaz(); ekran(); if(mode!=='play') setTimeout(opHazirla,300); }
 /* Oyuncular ilk karden itibaren 3D figür olmalı (yasin 2026-10-22: "initial state'de sporcuların çizilmesinde sorun var").
    Boyanmış klipler açılışta ~1,6 sn sonra hazır oluyor (ölçüm: yavaş telefon benzetiminde ~5 sn); o arada maç başlarsa yedek
    vektör çizim (yuvarlak kafa + çubuk raket) görünüyordu. Maç artık klipler hazır olunca başlar; erken basılırsa düğme
@@ -1955,7 +1981,7 @@ document.getElementById('ogrBtn').addEventListener('click',()=>{ ogrZorla=true; 
 document.getElementById('rakipKart').addEventListener('pointerdown',e=>{ e.stopPropagation(); rakipKartKapat(); });
 document.getElementById('ogrGec').addEventListener('click',()=>ogrBitir(true));
 document.getElementById('ogrTamam').addEventListener('click',()=>{ if(M&&M.ogr){ const a=OGR_ADIM[M.ogr.i]; if(a&&a.bilgi) ogrIlerle(a); } });
-['mdSerbest','mdKariyer'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{ kariyerModu=id==='mdKariyer'; ['mdSerbest','mdKariyer'].forEach(j=>document.getElementById(j).setAttribute('aria-pressed',j===id)); kariyerYaz(); try{ localStorage.setItem('tuytop_mod',kariyerModu?'k':'s'); }catch(e){} }));
+['mdSerbest','mdKariyer'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{ kariyerModu=id==='mdKariyer'; ['mdSerbest','mdKariyer'].forEach(j=>document.getElementById(j).setAttribute('aria-pressed',j===id)); kariyerYaz(); try{ localStorage.setItem('tuytop_mod',kariyerModu?'k':'s'); }catch(e){} setTimeout(opHazirla,300); }));
 try{ if(localStorage.getItem('tuytop_mod')==='k') document.getElementById('mdKariyer').click(); }catch(e){}
 document.getElementById('again').addEventListener('click',start);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ paused?devamEt():duraklat(); } });
