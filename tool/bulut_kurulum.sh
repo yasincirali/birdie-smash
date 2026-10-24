@@ -64,3 +64,11 @@ if [ -f "$MU/Server~/build/index.js" ] && command -v claude >/dev/null; then
   done
   echo "mcp-unity: kayıtlı"
 fi
+# Babysitter (a5c-ai, MIT): uzun işleri adım adım, kalite kapılı yürüten orkestrasyon eklentisi; /babysitter:* komutları
+# ve babysit skill'i yeni oturumlarda görünür.
+if command -v claude >/dev/null; then
+  command -v babysitter >/dev/null || npm install -g @a5c-ai/babysitter@6.0.0 --no-audit --no-fund -s >/dev/null 2>&1
+  claude plugin marketplace add a5c-ai/babysitter-claude >/dev/null 2>&1 || true
+  claude plugin install --scope user babysitter@a5c.ai >/dev/null 2>&1 || true
+  claude plugin list 2>/dev/null | grep -q "babysitter@a5c.ai" && echo "babysitter: kurulu" || echo "babysitter kurulamadı"
+fi
