@@ -49,3 +49,18 @@ if [ ! -f "$RB/Export/Sports_Male_04.fbx" ]; then
     && for t in body head; do for k in color normal specular; do curl -sSfL -o "$RB/Textures/m026_${t}_${k}.tga" "$U/Textures/m026_${t}_${k}.tga"; done; done \
     && echo "rocketbox: indirildi" || echo "rocketbox alınamadı"
 fi
+# Unity MCP (CoderGamester/mcp-unity, MIT): sunucu bulutta derlenip kaydedilir. Araçları yalnız mcp-unity paketi
+# kurulu, açık bir Unity Editor'a (WebSocket, UNITY_HOST/UNITY_PORT, varsayılan localhost:8090) bağlanınca çalışır;
+# bulutta Editor yok (Unity indirme/lisans sunucuları ağ politikasında kapalı), yani burada bağlantı bekler.
+MU=$HOME/mcp-unity
+if [ ! -f "$MU/Server~/build/index.js" ]; then
+  { [ -d "$MU" ] || git clone -q --depth 1 https://github.com/CoderGamester/mcp-unity.git "$MU"; } \
+    && (cd "$MU/Server~" && npm ci --no-audit --no-fund -s && npm run -s build) >/dev/null 2>&1 \
+    && echo "mcp-unity: derlendi" || echo "mcp-unity derlenemedi"
+fi
+if [ -f "$MU/Server~/build/index.js" ] && command -v claude >/dev/null; then
+  for d in /home/user /home/user/birdie-smash; do
+    (cd "$d" 2>/dev/null && claude mcp add -s local mcp-unity -- node "$MU/Server~/build/index.js" >/dev/null 2>&1) || true
+  done
+  echo "mcp-unity: kayıtlı"
+fi
