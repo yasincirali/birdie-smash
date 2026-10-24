@@ -18,6 +18,20 @@ namespace BirdieSmash.Game
             if (std == null) std = Shader.Find("Standard");
             var m = new Material(std); m.color = c; m.SetFloat("_Glossiness", smooth); return m;
         }
+        public static Material LitTex(Color c, Texture t, float smooth = .25f) { var m = Lit(c, smooth); m.mainTexture = t; return m; }
+        // Ahşap zemin (okul sahası): boyuna tahta şeritleri, şerit başına hafif ton farkı ve ince derz çizgisi.
+        public static Texture2D WoodTex(Color baseC)
+        {
+            const int W = 64, H = 64; var t = new Texture2D(W, H, TextureFormat.RGBA32, true); t.wrapMode = TextureWrapMode.Repeat; t.filterMode = FilterMode.Bilinear;
+            var px = new Color32[W * H]; var rnd = new System.Random(3); var tone = new float[8]; for (int i = 0; i < 8; i++) tone[i] = .92f + (float)rnd.NextDouble() * .14f;
+            for (int y = 0; y < H; y++) for (int x = 0; x < W; x++)
+                {
+                    int sh = x / 8; float k = tone[sh] * (1 + .03f * Mathf.Sin(y * .7f + sh * 3)); if (x % 8 == 0) k *= .8f;
+                    px[y * W + x] = new Color(baseC.r * k, baseC.g * k, baseC.b * k, 1);
+                }
+            t.SetPixels32(px); t.Apply(true); return t;
+        }
+
         // Saydam, iki yüzlü, köşe rengi çarpan (file, iz, gölge): Sprites/Default her yapıda bulunur.
         public static Material Clear(Color c, Texture tex = null)
         {

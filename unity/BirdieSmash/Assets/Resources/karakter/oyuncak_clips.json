@@ -1,0 +1,220 @@
+{
+ "fps": 30,
+ "scale": 1.75,
+ "clips": [
+  {
+   "name": "idle",
+   "first": 1,
+   "last": 25,
+   "loop": true,
+   "poses": 8
+  },
+  {
+   "name": "run",
+   "first": 35,
+   "last": 59,
+   "loop": true,
+   "poses": 8
+  },
+  {
+   "name": "smash",
+   "first": 69,
+   "last": 96,
+   "loop": false,
+   "poses": 10
+  },
+  {
+   "name": "clear",
+   "first": 106,
+   "last": 133,
+   "loop": false,
+   "poses": 10
+  },
+  {
+   "name": "drive",
+   "first": 143,
+   "last": 164,
+   "loop": false,
+   "poses": 8
+  },
+  {
+   "name": "kill",
+   "first": 174,
+   "last": 192,
+   "loop": false,
+   "poses": 7
+  },
+  {
+   "name": "low",
+   "first": 202,
+   "last": 223,
+   "loop": false,
+   "poses": 8
+  },
+  {
+   "name": "lunge",
+   "first": 233,
+   "last": 254,
+   "loop": false,
+   "poses": 8
+  },
+  {
+   "name": "serve",
+   "first": 264,
+   "last": 321,
+   "loop": false,
+   "poses": 20
+  },
+  {
+   "name": "serve_gec",
+   "first": 331,
+   "last": 388,
+   "loop": false,
+   "poses": 20
+  },
+  {
+   "name": "serve_bh",
+   "first": 398,
+   "last": 425,
+   "loop": false,
+   "poses": 10
+  },
+  {
+   "name": "serve_flick",
+   "first": 435,
+   "last": 462,
+   "loop": false,
+   "poses": 10
+  },
+  {
+   "name": "block",
+   "first": 472,
+   "last": 487,
+   "loop": false,
+   "poses": 6
+  },
+  {
+   "name": "bh_over",
+   "first": 497,
+   "last": 524,
+   "loop": false,
+   "poses": 10
+  },
+  {
+   "name": "bh_drive",
+   "first": 534,
+   "last": 555,
+   "loop": false,
+   "poses": 8
+  },
+  {
+   "name": "bh_kill",
+   "first": 565,
+   "last": 583,
+   "loop": false,
+   "poses": 7
+  },
+  {
+   "name": "bh_low",
+   "first": 593,
+   "last": 614,
+   "loop": false,
+   "poses": 8
+  },
+  {
+   "name": "bh_lunge",
+   "first": 624,
+   "last": 645,
+   "loop": false,
+   "poses": 8
+  },
+  {
+   "name": "split",
+   "first": 655,
+   "last": 667,
+   "loop": false,
+   "poses": 5
+  },
+  {
+   "name": "chasse_r",
+   "first": 677,
+   "last": 695,
+   "loop": true,
+   "poses": 6
+  },
+  {
+   "name": "chasse_l",
+   "first": 705,
+   "last": 723,
+   "loop": true,
+   "poses": 6
+  },
+  {
+   "name": "fwd",
+   "first": 733,
+   "last": 751,
+   "loop": true,
+   "poses": 6
+  },
+  {
+   "name": "back_r",
+   "first": 761,
+   "last": 779,
+   "loop": true,
+   "poses": 6
+  },
+  {
+   "name": "back_l",
+   "first": 789,
+   "last": 807,
+   "loop": true,
+   "poses": 6
+  },
+  {
+   "name": "jump",
+   "first": 817,
+   "last": 844,
+   "loop": false,
+   "poses": 10
+  },
+  {
+   "name": "yorgun",
+   "first": 854,
+   "last": 884,
+   "loop": true,
+   "poses": 10
+  }
+ ],
+ "model": "oyuncak",
+ "parts": [
+  "Cone__tuy",
+  "Cylinder__cerceve",
+  "Cylinder__grip",
+  "Cylinder__koyu",
+  "Cylinder__tel",
+  "Cylinder__tel2",
+  "Rogue_ArmLeft_001__ten",
+  "Rogue_ArmLeft__forma",
+  "Rogue_ArmRight_001__ten",
+  "Rogue_ArmRight__forma",
+  "Rogue_Bel__sort",
+  "Rogue_Bileklik__bilek",
+  "Rogue_Body_001__forma",
+  "Rogue_Body__yaka",
+  "Rogue_Head_001__sac",
+  "Rogue_Head_002__ten",
+  "Rogue_Head__goz",
+  "Rogue_LegLeft_001__taban",
+  "Rogue_LegLeft_002__beyaz",
+  "Rogue_LegLeft_003__ten",
+  "Rogue_LegLeft__sort",
+  "Rogue_LegRight_001__taban",
+  "Rogue_LegRight_002__beyaz",
+  "Rogue_LegRight_003__ten",
+  "Rogue_LegRight__sort",
+  "Sphere__mantar",
+  "oy_sackapak__sac",
+  "raket_kafa__cerceve"
+ ],
+ "hit": {}
+}
