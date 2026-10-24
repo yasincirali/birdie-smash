@@ -56,6 +56,7 @@ if YK:   # yakın plan: aynı kayıt, kamera topu izler; her kare iki kez (2× y
         vur = son_vurus and fi - son_vurus[0] < 6
         alt = ('VURUŞTA: ' + {'smash': 'smaç', 'clear': 'clear', 'drop': 'drop', 'drive': 'drive'}.get(son_vurus[1]['hit'], son_vurus[1]['hit']) + ', mantar yeni yöne döner') if vur else 'UÇUŞTA: mantar önde, etek arkada'
         shadow_text(d, (W / 2, 104), alt, f_small, (255, 214, 90) if vur else (220, 235, 255))
+        d.rounded_rectangle((30, H - 140, W - 30, H - 22), 20, fill=(10, 16, 28, 170))   # file/kort dokusu üstünde okunsun
         shadow_text(d, (W / 2, H - 126), '16 tüy · iki iplik bağı · mantar + mavi şerit · 2× yavaş', f_small, (220, 225, 235), 230)
         shadow_text(d, (W / 2, H - 92), 'Önizleme: aynı C# simülasyonu ve aynı ağ kuralları', f_small, (220, 225, 235), 230)
         shadow_text(d, (W / 2, H - 58), 'Blender ile çizildi, Unity çıktısı değil', f_small, (220, 225, 235), 230)
