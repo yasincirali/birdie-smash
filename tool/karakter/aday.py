@@ -38,7 +38,14 @@ class AdayIskelet(insan.Iskelet):
             aim(s.n('ua',k),T['el'+K]); aim(s.n('fa',k),T['wr'+K])
             fa=(T['wr'+K]-T['el'+K]).normalized()
             if K=='R': fa=(fa*.6+T['rk']*.4).normalized()
-            aim(s.n('el',k),T['wr'+K]+fa)
+            if K=='R':   # ön kol burulması (insan.on_kol_burgu, oyuncak.py ile aynı kural)
+                nua,nfa,nel=s.n('ua','r'),s.n('fa','r'),s.n('el','r')
+                if not hasattr(s,'_avuc'):
+                    # Rocketbox A-pozunda avuç: el kemiğinin yerel x'i (parmaklar yerel z çevresinde bu yöne kapanır;
+                    # kur_poz'daki parmak bükümüyle aynı eksen). Ön kol için aynı dünya yönü.
+                    av=ao.data.bones[nel].matrix_local.to_3x3().col[0]; s._avuc={n:insan.avuc_yerel(ao,n,av) for n in (nfa,nel)}
+                s.son_burgu=insan.on_kol_burgu(pb,L,T,(nua,nfa,nel),s._avuc,lambda:aim(nfa,T['wrR']),lambda:aim(nel,T['wrR']+fa))
+            else: aim(s.n('el',k),T['wr'+K]+fa)
             aim(s.n('ul',k),T['kn'+K]); aim(s.n('ll',k),T['an'+K])
         set_rot(s.n('head'),Vector((0,1,0)).rotation_difference(T['look']).to_matrix())
 

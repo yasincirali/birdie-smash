@@ -69,7 +69,11 @@ class OyuncakIskelet(insan.Iskelet):
             aim(f'upperarm.{k}',T['el'+K]); aim(f'lowerarm.{k}',T['wr'+K])
             fa=(T['wr'+K]-T['el'+K]).normalized()
             if K=='R': fa=(fa*.6+T['rk']*.4).normalized()   # bilek rakete doğru hafif kırılır
-            aim(f'wrist.{k}',T['wr'+K]+fa); aim(f'hand.{k}',T['wr'+K]+fa*2)
+            if K=='R':   # ön kol burulması (insan.on_kol_burgu); KayKit T-pozunda avuç aşağı (-z; handslot elin altında)
+                if not hasattr(s,'_avuc'): s._avuc={n:insan.avuc_yerel(ao,n,(0,0,-1)) for n in ('lowerarm.r','wrist.r')}
+                s.son_burgu=insan.on_kol_burgu(pb,L,T,('upperarm.r','lowerarm.r','wrist.r'),s._avuc,lambda:aim('lowerarm.r',T['wrR']),lambda:aim('wrist.r',T['wrR']+fa))
+            else: aim(f'wrist.{k}',T['wr'+K]+fa)
+            aim(f'hand.{k}',T['wr'+K]+fa*2)
             aim(f'upperleg.{k}',T['kn'+K]); aim(f'lowerleg.{k}',T['an'+K])
             b=pb[f'foot.{k}']; M=b.matrix.copy(); y=M.to_3x3()@Vector((0,1,0)); yh=Vector((y.x,y.y,0)).normalized(); f=T['ft'+K]
             ang=math.atan2(yh.x*f.y-yh.y*f.x,yh.dot(f)); N=Matrix.Rotation(ang,4,'Z')@Matrix(M.to_3x3()).to_4x4(); N.translation=M.translation; b.matrix=N; L.update()
