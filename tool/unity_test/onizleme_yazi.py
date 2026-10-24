@@ -6,6 +6,8 @@ R = json.load(open(sys.argv[1])); D = sys.argv[2]; OUT = sys.argv[3]; T = D + '_
 FB = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'; FN = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
 f_big, f_mid, f_small = ImageFont.truetype(FB, 64), ImageFont.truetype(FB, 40), ImageFont.truetype(FN, 24)
 QL = {'perfect': 'MÜKEMMEL!', 'good': None, 'poor': None}
+def hx(h): h = h.lstrip('#'); return tuple(int(h[k:k + 2], 16) for k in (0, 2, 4))
+ME_C, OP_C = hx('#4fb8ff'), hx(R.get('renk', '#ff7a6b'))   # skor renkleri formalarla aynı (HTML gibi)
 ev = []
 for t in R['texts']:
     if 't' in t: ev.append((t['f'], t['t'], t['w'], (255, 214, 90) if t['t'].isupper() else (255, 255, 255)))
@@ -20,8 +22,11 @@ for i in range(n):
     ov = Image.new('RGBA', im.size, (0, 0, 0, 0)); d = ImageDraw.Draw(ov); W, H = im.size
     sc = R['frames'][i]['sc']
     d.rounded_rectangle((W / 2 - 170, 40, W / 2 + 170, 130), 24, fill=(10, 16, 28, 150))
-    shadow_text(d, (W / 2 - 95, 52), str(sc[0]), f_big, (184, 160, 255)); shadow_text(d, (W / 2, 52), '–', f_big, (255, 255, 255)); shadow_text(d, (W / 2 + 95, 52), str(sc[1]), f_big, (255, 140, 130))
+    shadow_text(d, (W / 2 - 95, 52), str(sc[0]), f_big, ME_C); shadow_text(d, (W / 2, 52), '–', f_big, (255, 255, 255)); shadow_text(d, (W / 2 + 95, 52), str(sc[1]), f_big, OP_C)
     shadow_text(d, (W / 2 - 95, 132), 'SEN', f_small, (230, 230, 240)); shadow_text(d, (W / 2 + 95, 132), 'RAKİP', f_small, (230, 230, 240))
+    if i < 45 and R.get('rakip'):   # rakip kartı: maç başında 1,5 sn (HTML'deki gibi kim olduğunu söyler)
+        a = int(255 * min(1, (45 - i) / 10)); d.rounded_rectangle((W / 2 - 250, H * .2, W / 2 + 250, H * .2 + 90), 22, fill=(10, 16, 28, int(a * .7)))
+        shadow_text(d, (W / 2, H * .2 + 22), 'Rakip: ' + R['rakip'], f_mid, OP_C, a)
     last = {}   # aynı taraftaki yazılar üst üste binmesin: her yeni satır bir öncekinin en az 52 px üstünde
     for (f, s, w, col) in ev:
         age = (i - f) / 30

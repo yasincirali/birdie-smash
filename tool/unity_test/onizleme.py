@@ -1,11 +1,13 @@
-# Unity demosunun önizleme videosu: bulutta Unity çalışmadığı için aynı C# simülasyonunun
-# kaydettiği ralliyi (RalliKayit.cs → ralli.json) ve Unity'nin içe aldığı AYNI oyuncu.fbx'i
-# Blender'da, Unity sahnesinin kamera/kort/file kurallarıyla çizer. Bu bir Unity render'ı
-# değildir; amaç oyun kuralı, kamera ve animasyon zamanlamasını göstermek.
+# Unity demosunun önizleme videosu: bulutta Unity çalışmadığı için aynı C# simülasyonunun kaydettiği ralliyi
+# (RalliKayit.cs → ralli.json) ve Unity'nin içe aldığı AYNI karakter FBX'ini Blender'da, Unity sahnesinin kamera, kort,
+# saha teması, tribün, hakem, file ve ışık kurallarıyla çizer. Bu bir Unity render'ı değildir; amaç oyun kuralı, kamera
+# ve animasyon zamanlamasını göstermek.
+# 2026-10-24: karakter iskeletli (Oyuncak 3B / Gerçekçi). Her figür FBX'ten ayrı içe alınır; eğriler sahne karesinden
+# bağımsız, figür başına kendi klip zamanında değerlendirilir (iki oyuncu aynı anda farklı klipte).
 #
-# Kullanım: python3 -I tool/unity_test/onizleme.py -- <ralli.json> <oyuncu.fbx> <clips.json> <çıktı_klasörü> [başlangıç bitiş]
+# Kullanım: python3 -I tool/unity_test/onizleme.py -- <ralli.json> <model.fbx> <model_clips.json> <çıktı_klasörü> [başlangıç bitiş]
 # Koordinat: kort (x,y,z) → Blender (x-MID, NET-y, z); Unity'deki W(x,y,z)=(x-MID, z, NET-y) ile aynı yerleşim.
-import bpy, sys, json, math, os
+import bpy, sys, json, math, os, random
 from mathutils import Vector, Matrix, Quaternion
 
 a = sys.argv[sys.argv.index('--') + 1:]
@@ -22,6 +24,9 @@ bpy.ops.wm.read_homefile(use_empty=True)   # factory ayarı yasak (3d-animator k
 sc = bpy.context.scene
 R = json.load(open(RALLI)); meta = json.load(open(CLIPS)); clips = {c['name']: c for c in meta['clips']}
 frames = R['frames']; F1 = F1 if F1 is not None else len(frames)
+SAHA = {'salon': ('#23725f', '#278066', '#1b4f45', '#13262a', .6), 'turnuva': ('#1f7a55', '#22845c', '#1c3d6b', '#101d33', .92),
+        'okul': ('#a4703f', '#ab7744', '#7c5230', '#21170f', .3), 'park': ('#2f5674', '#335d7d', '#22394c', '#0c1420', .38)}
+KORT, TEK, CEVRE, UST, DOL = SAHA.get(R.get('saha', 'salon'), SAHA['salon'])
 
 _mats = {}
 def mat(name, col, rough=.5, metal=0., emit=0.):
@@ -31,14 +36,24 @@ def mat(name, col, rough=.5, metal=0., emit=0.):
     if emit: p.inputs['Emission Color'].default_value = col; p.inputs['Emission Strength'].default_value = emit
     _mats[name] = m; return m
 
+import bmesh
 def box(name, c, size, m):
     me = bpy.data.meshes.new(name); o = bpy.data.objects.new(name, me); sc.collection.objects.link(o)
-    import bmesh; bm = bmesh.new(); bmesh.ops.create_cube(bm, size=1); bm.to_mesh(me); bm.free()
+    bm = bmesh.new(); bmesh.ops.create_cube(bm, size=1); bm.to_mesh(me); bm.free()
     o.location = c; o.scale = size; me.materials.append(m); return o
+def ball(name, c, r, m, s=(1, 1, 1)):
+    me = bpy.data.meshes.new(name); bm = bmesh.new(); bmesh.ops.create_uvsphere(bm, u_segments=12, v_segments=8, radius=r); bm.to_mesh(me); bm.free()
+    for p in me.polygons: p.use_smooth = True
+    o = bpy.data.objects.new(name, me); sc.collection.objects.link(o); o.location = c; o.scale = s; me.materials.append(m); return o
+def cyl(name, c, r, h, m):
+    me = bpy.data.meshes.new(name); bm = bmesh.new(); bmesh.ops.create_cone(bm, cap_ends=True, segments=12, radius1=r, radius2=r, depth=h); bm.to_mesh(me); bm.free()
+    o = bpy.data.objects.new(name, me); sc.collection.objects.link(o); o.location = c; me.materials.append(m); return o
 
-# ---- kort: zemin, yeşil kort, BWF çizgileri, direkler ----
-box('arena', (0, 0, -.06), (400, 400, .1), mat('arena', hexc('#1d2b3a'), .9))
-box('kort', (0, 0, -.005), (CW + .8, L + .8, .01), mat('kort', hexc('#2f8f5b'), .8))
+# ---- kort: salon zemini, çevre, kort, tekler bandı, BWF çizgileri, direkler (CourtView ile aynı) ----
+box('arena', (0, 0, -.07), (400, 400, .1), mat('arena', hexc(UST), .9))
+box('cevre', (0, 0, -.012), (CW + 3.2, L + 4.2, .01), mat('cevre', hexc(CEVRE), .8))
+box('kort', (0, 0, -.006), (CW + .1, L + .1, .01), mat('kort', hexc(KORT), .7))
+box('tekler', (0, 0, -.004), (SR - SL, L, .01), mat('tek', hexc(TEK), .7))
 white = mat('cizgi', hexc('#f4f4f0'), .6); LW = .04
 def line(x0, y0, x1, y1):
     p0, p1 = B(x0, y0, 0), B(x1, y1, 0); c = (p0 + p1) / 2; c.z = .002
@@ -46,10 +61,33 @@ def line(x0, y0, x1, y1):
 for x in (0, SL, SR, CW): line(x, 0, x, L)
 for y in (0, .76, NET - SSL, NET + SSL, L - .76, L): line(0, y, CW, y)
 line(MID, 0, MID, NET - SSL); line(MID, NET + SSL, MID, L)
-for x in (0, CW):
-    p = B(x, NET, 0); o = bpy.data.objects.new('direk', bpy.data.meshes.new('direk')); sc.collection.objects.link(o)
-    import bmesh; bm = bmesh.new(); bmesh.ops.create_cone(bm, cap_ends=True, segments=12, radius1=.03, radius2=.03, depth=NETP); bm.to_mesh(o.data); bm.free()
-    o.location = (p.x, p.y, NETP / 2); o.data.materials.append(mat('direk', hexc('#d9dde3'), .3, .6))
+for x in (0, CW): p = B(x, NET, 0); cyl('direk', (p.x, p.y, NETP / 2), .03, NETP, mat('direk', hexc('#d9dde3'), .3, .6))
+
+# ---- tribün yalnız rakibin arkasında: pano + 2 sıra oturan seyirci (CourtView.Tribun ile aynı ölçü) ----
+rnd = random.Random(7); giysi = ['#e85d4f', '#3f7fd8', '#f2c14e', '#f4f1ea', '#2c3e50', '#8e5bd1', '#3fb37f', '#ff8a3c', '#d94f8a', '#5fc4d9']; ten = ['#f1c9a5', '#d9a57a', '#a8714a', '#6e4a2f', '#f5d6bb']
+X0, X1, PANO, DER, YUK = -1.6, CW + 1.6, -1.3, .55, .42
+x = X0
+while x < X1:
+    x2 = min(X1, x + 2); box('pano', B((x + x2) / 2, PANO, .4), (x2 - x, .06, .8), mat('pano%d' % (int((x - X0) / 2) % 2), hexc('#1d2b3a' if int((x - X0) / 2) % 2 else '#243a4f'), .6)); x += 2
+for r in range(2):
+    ya = PANO - .15 - r * DER; z = .55 + r * YUK
+    box('basamak', B(MID, ya - DER / 2, z / 2), (X1 - X0, DER, z), mat('bas%d' % r, hexc('#1f2e37' if r == 0 else '#16222a'), .8))
+    xx = X0 + .3
+    while xx < X1 - .2:
+        if rnd.random() <= DOL:
+            px = xx + (rnd.random() - .5) * .1; yy = ya - DER * .5
+            ball('seyirci', B(px, yy, z + .27), .2, mat('g' + giysi[rnd.randrange(10)], hexc(giysi[rnd.randrange(10)]), .8), (.9, .7, 1.35))
+            ball('bas', B(px, yy, z + .66), .11, mat('t' + ten[rnd.randrange(5)], hexc(ten[rnd.randrange(5)]), .7))
+            if rnd.random() < .55: ball('sac', B(px, yy - .015, z + .7), .115, mat('sac', hexc('#1e1610'), .8), (1, 1, .7))
+        xx += .55
+
+# ---- hakem sandalyeleri ve servis ölçeri ----
+metal = mat('metal', hexc('#cfd6d4'), .3, .6); koyu = mat('koyu', hexc('#3a4a52'), .6)
+for dy in (-.25, .25): cyl('ayak', B(-.72, NET + dy, .72), .02, 1.44, metal)
+box('ayaklik', B(-.6, NET, .93), (.5, .6, .04), koyu)
+for dx in (-.15, .15): cyl('ayak', B(CW + .55 + dx, NET - .1, .2), .015, .4, metal)
+box('oturak', B(CW + .55, NET - .1, .41), (.4, .4, .05), koyu)
+cyl('olcer', B(CW + .1, NET + .2, .575), .01, 1.15, mat('olc', hexc('#f0f0f0'), .4)); box('olcer_c', B(CW + .1, NET + .2, 1.15), (.16, .02, .02), mat('olc', hexc('#f0f0f0'), .4))
 
 # ---- file: 66×12 ızgara, NetWave profilinden esner (kazanç 1,8), tel örgü = wireframe ----
 NX, NZ, DEPTH, GAIN = 66, 12, .76, 1.8
@@ -73,7 +111,6 @@ def net_at(nw, x, zz):
     f = x / CW * 32; i = math.floor(f); t = f - i; arr = nw['a']
     a0 = arr[max(0, min(32, i))]; a1 = arr[max(0, min(32, i + 1))]; ax = a0 * (1 - t) + a1 * t; w = .42
     return ax * math.exp(-((zz - nw['z']) ** 2) / (2 * w * w)) * (1 - (max(0, zz) / NETH) ** 6)
-
 def net_update(nw, sign):
     vs = netme.vertices
     for j in range(NZ):
@@ -85,47 +122,66 @@ def net_update(nw, sign):
         tapeme.vertices[2 * i].co = B(x, NET + wob, t - .038); tapeme.vertices[2 * i + 1].co = B(x, NET + wob, t + .002)
     netme.update(); tapeme.update()
 
-# ---- karakter: Unity'nin içe aldığı aynı FBX; kaynak parçalar gizli, iki oyuncu statik kopyalarla ----
-before = set(bpy.data.objects); bpy.ops.import_scene.fbx(filepath=FBX); src = [o for o in bpy.data.objects if o not in before]
-parts = [o for o in src if o.type == 'MESH']
-for o in src: o.hide_render = True; o.hide_viewport = False
+# ---- karakter: Unity'nin içe aldığı aynı FBX; her figür ayrı kopya, eğriler figürün kendi klip zamanında ----
 SCALE = meta.get('scale', 1.75)
-def tag_of(n):
-    i = n.find('__'); t = n[i + 2:] if i >= 0 else 'ten'; return t.split('.')[0]
-def build(isme, forma, bant, bilek):
-    cols = {'forma': forma, 'bant': bant, 'bilek': bilek, 'ten': '#eeb890', 'sort': '#1f2433', 'sac': '#3b2418', 'beyaz': '#f4f4f0',
-            'cerceve': '#2b2f3a', 'tel': '#f2f2e6', 'tuy': '#fbfbf6', 'mantar': '#f2b64c'}
-    out = []
-    for p in parts:
-        t = tag_of(p.name); c = p.copy(); c.animation_data_clear(); c.parent = None; c.hide_render = False
-        c.data = p.data.copy(); c.data.materials.clear()
-        c.data.materials.append(mat(('ben_' if isme else 'rk_') + t, hexc(cols.get(t, '#888888')), .6 if t == 'cerceve' else .55, .4 if t == 'cerceve' else 0))
-        sc.collection.objects.link(c); out.append((p, c))
-    return out
-ME = build(True, '#7b5cff', '#ffd23a', '#23263a'); OP = build(False, '#ff5a52', '#ffffff', '#ffffff')
-
-# Yön kalibrasyonu (PlayerView.Calibrate ile aynı fikir): gözler − baş, yatayda +Y'ye (fileye) döndürülür
-sc.frame_set(clips['idle']['first']); bpy.context.view_layer.update()
-head = [o for o in parts if o.name.startswith('bas__')][0]; eyes = [o for o in parts if o.name.startswith('goz') and '__' in o.name]
-fwd = sum((e.matrix_world.translation for e in eyes), Vector()) / len(eyes) - head.matrix_world.translation; fwd.z = 0
-CAL = math.atan2(fwd.x, fwd.y)   # +Y'ye göre açı → ters döndür
-zs = [ (o.matrix_world @ Vector(v)).z for o in parts for v in o.bound_box ]
-print('karakter yükseklik %.2f m (ölçek öncesi), taban %.2f' % (max(zs) - min(zs), min(zs)))
-
-def pose(set_, st, isme):
-    c = clips.get(st['c'], clips['idle']); f = c['first'] + st['p'] * (c['last'] - c['first'])
-    sc.frame_set(int(f), subframe=f - int(f))
-    j = math.sin(min(1, st['j']) * math.pi) * .35
-    lean = max(-.3, min(.3, st['vx'] * .05)) * (1 if isme else -1)
-    dive = st['dv'] * (-1 if st['x'] < MID else 1) * .9 * (1 if isme else -1)
-    root = (Matrix.Translation(B(st['x'], st['y'], 0) + Vector((0, 0, j)))
-            @ Matrix.Rotation(0 if isme else math.pi, 4, 'Z')
-            @ Matrix.Rotation((dive + lean) * .6, 4, 'Y')
-            @ Matrix.Rotation(CAL, 4, 'Z') @ Matrix.Scale(SCALE, 4))
-    for p, cpy in set_: cpy.matrix_world = root @ p.matrix_world
+def fcurves_of(o):
+    ad = o.animation_data; act = ad.action if ad else None
+    if not act: return []
+    try: return list(act.fcurves)
+    except AttributeError: pass
+    from bpy_extras import anim_utils
+    cb = anim_utils.action_get_channelbag_for_slot(act, ad.action_slot)
+    return list(cb.fcurves) if cb else []
+def import_char(forma, hakem=False):
+    before = set(bpy.data.objects); bpy.ops.import_scene.fbx(filepath=FBX, use_image_search=True); new = [o for o in bpy.data.objects if o not in before]
+    root = [o for o in new if o.parent is None and o.type == 'EMPTY'][0]
+    chans = []
+    for o in new:
+        for fc in fcurves_of(o):
+            dp = fc.data_path
+            if dp.endswith('rotation_quaternion'):
+                tgt = o.path_resolve(dp.rsplit('.', 1)[0]) if '.' in dp else o
+                tgt.rotation_mode = 'QUATERNION'
+            chans.append((o, dp, fc.array_index, fc))
+    for o in new:
+        if o.animation_data: o.animation_data_clear()
+    fm = mat('forma_' + forma, hexc(forma), .55); navy = mat('lacivert', hexc('#0a1530'), .6)
+    for o in new:
+        if o.type != 'MESH': continue
+        n = o.name; t = n[n.find('__') + 2:].split('.')[0] if '__' in n else ''
+        skinned = any(m.type == 'ARMATURE' for m in o.modifiers)
+        if t in ('isaret', 'bant', 'bilek') or (hakem and not skinned): o.hide_render = True; continue
+        if t == 'forma' or (hakem and t == 'sort'):
+            o.data = o.data.copy(); o.data.materials.clear(); o.data.materials.append(fm if not hakem or t == 'forma' else navy)
+    R0 = root.matrix_world.copy()
+    ch = {'root': root, 'R0': R0, 'chans': chans, 'objs': new}
+    pose_at(ch, 'idle', 0); bpy.context.view_layer.update()
+    hd = [o for o in new if o.name.startswith('bas__')]; ey = [o for o in new if o.name.startswith('goz__')]
+    cal = 0
+    if hd and ey:
+        f = ey[0].matrix_world.translation - hd[0].matrix_world.translation; f.z = 0; cal = -math.atan2(-f.x, f.y) if f.length > 1e-6 else 0
+    ch['cal'] = cal; return ch
+def clip_frame(c, ph):
+    cl = clips.get(c, clips['idle']); n = cl.get('poses', 2)
+    if cl.get('loop'): t = ph % 1
+    else: t = min(1, max(0, (ph * n - .5) / max(1, n - 1)))   # PlayerView.ClipTime ile aynı
+    return cl['first'] + t * (cl['last'] - cl['first'])
+def pose_at(ch, c, ph):
+    f = clip_frame(c, ph)
+    for o, dp, idx, fc in ch['chans']:
+        try: o.path_resolve(dp)[idx] = fc.evaluate(f)
+        except Exception: pass
+def place(ch, st, isme, yaw=None, z0=0., tilt=0.):
+    pose_at(ch, st['c'], st['p']) if st else None
+    j = st['j'] * .5 if st else 0; tl = (st['tilt'] if st else tilt) * (1 if isme else -1)
+    rz = (0 if isme else math.pi) if yaw is None else yaw
+    pos = B(st['x'], st['y'], 0) if st else Vector((0, 0, 0))
+    ch['root'].matrix_world = (Matrix.Translation(pos + Vector((0, 0, j + z0))) @ Matrix.Rotation(rz, 4, 'Z') @ Matrix.Rotation(tl, 4, 'Y')
+                               @ Matrix.Rotation(ch['cal'], 4, 'Z') @ Matrix.Scale(SCALE, 4) @ ch['R0'])
+ME = import_char('#4fb8ff'); OP = import_char(R.get('renk', '#ff7a6b'))
+HK1 = import_char('#0a1530', True); HK2 = import_char('#0a1530', True)
 
 # ---- tüy top: mantar küre + etek koni, hız yönünde; iz = küçük parlayan küreler ----
-import bmesh
 sh = bpy.data.objects.new('top', None); sc.collection.objects.link(sh)
 def child(name, build_fn, m, loc):
     me = bpy.data.meshes.new(name); bm = bmesh.new(); build_fn(bm); bm.to_mesh(me); bm.free(); me.materials.append(m)
@@ -140,17 +196,20 @@ for i in range(8):
     me = bpy.data.meshes.new('iz'); bm = bmesh.new(); bmesh.ops.create_uvsphere(bm, u_segments=8, v_segments=6, radius=.02 * K * (1 - i / 9)); bm.to_mesh(me); bm.free()
     me.materials.append(mat('iz%d' % i, (1, .95, .8, 1), .5, emit=3 * (1 - i / 8))); o = bpy.data.objects.new('iz', me); sc.collection.objects.link(o); trail.append(o)
 
-# ---- ışık + kamera (Unity GameRoot.FitCamera ile aynı yerleşim) ----
-sun = bpy.data.objects.new('gunes', bpy.data.lights.new('gunes', 'SUN')); sun.data.energy = 3.2; sun.data.angle = math.radians(6)
-sun.rotation_euler = (math.radians(40), math.radians(-15), math.radians(25)); sc.collection.objects.link(sun)
-sc.world = bpy.data.worlds.new('w'); sc.world.use_nodes = True; sc.world.node_tree.nodes['Background'].inputs[0].default_value = (.35, .42, .5, 1)
-sc.world.node_tree.nodes['Background'].inputs[1].default_value = .9
+# ---- yayın ışığı: kısık anahtar ışık + kortun boyunca üç tavan lambası (CourtView.Isik) ----
+sun = bpy.data.objects.new('gunes', bpy.data.lights.new('gunes', 'SUN')); sun.data.energy = 1.4; sun.data.angle = math.radians(8)
+sun.rotation_euler = (math.radians(28), math.radians(-12), math.radians(24)); sc.collection.objects.link(sun)
+for yy in (NET * .45, NET, NET * 1.55):
+    l = bpy.data.objects.new('lamba', bpy.data.lights.new('lamba', 'SPOT')); l.data.energy = 2600; l.data.spot_size = math.radians(70); l.data.spot_blend = .6
+    l.data.color = (1, .965, .88); l.location = B(MID, yy, 9); sc.collection.objects.link(l)
+sc.world = bpy.data.worlds.new('w'); sc.world.use_nodes = True; sc.world.node_tree.nodes['Background'].inputs[0].default_value = hexc(UST)
+sc.world.node_tree.nodes['Background'].inputs[1].default_value = 1.6
 RX, RY = int(os.environ.get('RX', 360)), int(os.environ.get('RY', 780))
 cam = bpy.data.objects.new('kamera', bpy.data.cameras.new('kamera')); sc.collection.objects.link(cam); sc.camera = cam
 cpos = Vector((0, -(L / 2 + 6.2), 10.5)); tgt = Vector((0, .9, .4))
 cq = (tgt - cpos).to_track_quat('-Z', 'Y'); cam.location = cpos; cam.rotation_mode = 'QUATERNION'; cam.rotation_quaternion = cq
 aspect = RX / RY; inv = cq.inverted(); tv_ = 0
-pts = [B(x, y, 0) for x in (0, CW) for y in (0, L)] + [B(MID, .4, 2.6), B(MID, L + .8, 0)]
+pts = [B(x, y, 0) for x in (0, CW) for y in (0, L)] + [B(MID, .4, 2.6), B(MID, L + .8, 0), B(MID, -1.3, .9)]
 for p in pts:
     l = inv @ (p - cpos); tv_ = max(tv_, abs(l.y / l.z), abs(l.x / l.z) / aspect)
 FOV = 2 * math.atan(tv_ * 1.06); cam.data.sensor_fit = 'VERTICAL'; cam.data.angle_y = FOV
@@ -161,18 +220,29 @@ except Exception: pass
 sc.cycles.max_bounces = 3; sc.render.resolution_x = RX; sc.render.resolution_y = RY; sc.render.film_transparent = False
 sc.view_settings.view_transform = 'AgX' if 'AgX' in [v.identifier for v in type(sc.view_settings).bl_rna.properties['view_transform'].enum_items] else 'Filmic'
 
+# hakemler: baş hakem kortun soluna (x −0,6) sandalyenin ayaklığında, servis hakemi sağda (GameRoot.Hakemler ile aynı açı kuralı)
+def hakemler(hk):
+    yaw = 90; tilt = 0; e = hk['e']
+    if e >= 0:
+        if hk['so']: yaw = 90 + (30 if hk['yon'] == 'me' else -30) * min(1, max(0, e * 3))
+        elif e < 1.05: tilt = 14 * math.sin(min(1, max(0, e)) * math.pi)
+    # Unity yaw (y ekseni, +z'den saat yönü) → Blender (z ekseni, +y'den saat yönünün tersi): -yaw
+    place(HK1, None, True, yaw=math.radians(-yaw), z0=.95); HK1['root'].matrix_world = Matrix.Translation(B(-.6, NET, .95)) @ Matrix.Rotation(math.radians(-yaw), 4, 'Z') @ Matrix.Rotation(math.radians(tilt), 4, 'X') @ Matrix.Rotation(HK1['cal'], 4, 'Z') @ Matrix.Scale(SCALE, 4) @ HK1['R0']
+    yeni = hk['sv']; eski = hk['sj'] or yeni; k = min(1, hk['sjT'] / .5) if eski != yeni and hk['sjT'] > 0 else 0
+    a0 = -125 if eski == 'me' else -55; a1 = -125 if yeni == 'me' else -55; ya = a0 + (a1 - a0) * k
+    HK2['root'].matrix_world = Matrix.Translation(B(CW + .55, NET + .35, 0)) @ Matrix.Rotation(math.radians(-ya), 4, 'Z') @ Matrix.Rotation(HK2['cal'], 4, 'Z') @ Matrix.Scale(SCALE, 4) @ HK2['R0']
+pose_at(HK1, 'idle', .25); pose_at(HK2, 'idle', .25)
+
 # ---- kare döngüsü ----
 hist = []; punch = 1.0; hits = {t['f']: t for t in R['texts'] if 'hit' in t}
-meta_out = []
 for fi in range(F0, F1):
     fr = frames[fi]
-    pose(ME, fr['me'], True); pose(OP, fr['op'], False)
+    place(ME, fr['me'], True); place(OP, fr['op'], False); hakemler(fr['hk'])
     s = fr.get('s')
     if s:
         p = B(s['x'], s['y'], s['z']); v = Vector((s['vx'], -s['vy'], s['vz']))
         sh.location = p; sh.rotation_mode = 'QUATERNION'
         sh.rotation_quaternion = (-v).to_track_quat('-Z', 'Y') if v.length > 1e-3 else Quaternion()   # mantar önde, etek arkada
-        sh.hide_render = False; for_ = [c.hide_render for c in sh.children]
         for c in sh.children: c.hide_render = False
         hist.insert(0, p.copy()); hist = hist[:9]
     else:
@@ -184,8 +254,9 @@ for fi in range(F0, F1):
         else: o.hide_render = True
     net_update(fr['net'], -1 if fr['net'].get('from') == 'me' else 1)
     h = hits.get(fi)
-    if h and h['hit'] == 'smash': punch = 1.05 if h.get('q') == 'perfect' else 1.035
+    if h and h['hit'] == 'smash': punch = 1.09 if h.get('big') else 1.05
     cam.data.angle_y = 2 * math.atan(math.tan(FOV / 2) / punch); punch = 1 + (punch - 1) * .82
+    bpy.context.view_layer.update()
     sc.render.filepath = os.path.join(OUT, 'k%04d.png' % fi)
     bpy.ops.render.render(write_still=True)
     print('kare', fi, flush=True)
