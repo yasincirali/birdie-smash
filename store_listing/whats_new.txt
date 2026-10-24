@@ -1,4 +1,5 @@
 Bu sürümde yeni:
+- Vuruş animasyonları akıcı: oyuncu artık temas pozunda donup topu beklemiyor. Raketi geri alıp bekliyor, savuruş topa değdiği anda oluyor. Sıçrayarak smaçta oyuncu temas anında havada, tepede. Drive ve blokta raket yere inip fırlamıyor. Uzanmada gövde yana yatmıyor.
 - İlk açılışta antrenman kısaldı: 15 ders yerine yalnız kısa servis, clear ve smaç. Sonra hemen 5 sayılık Kolay ilk maç başlar. Diğer vuruşlar menüdeki Antrenman'da duruyor; ilk maçın sonunda "Daha fazla vuruş: Antrenman" düğmesi çıkar.
 - Kariyerde maçı kazanınca ana düğme sıradaki basamağı söyler ("Sıradaki: Okul turnuvası"); kaybedince "Tekrar dene".
 
@@ -11,6 +12,7 @@ Akıcılık:
 - Önceki sürümden: iki oyuncu görünümü (Oyuncak 3B ve Gerçekçi), takılmayan "Oyna" geçişi, sayılar arası daha kısa bekleme.
 
 Nasıl denenir:
+V. Bir maç oyna, rakibi izle: clear ve smaçta raket geride beklemeli, savuruş topa değerken hızlı akmalı. Rakip smaçta bir kez sıçramalı, topa havadayken vurmalı. Göğüs hizasındaki toplarda (drive) raket yere inmemeli. Uzandığında figür yere yatmamalı. Smaç gücü doluyken baş üstü topta çömelip sıçrayarak vurmalısın.
 A. Uygulamayı silip yeniden kur, Oyna'ya bas: antrenman "1/3" ile başlamalı (kısa servis, clear, smaç). Üçü bitince "Maç başlıyor!" yazmalı ve 5 sayılık maç gelmeli. Maçta nefes halkası azalınca bir kez "Nefes al: clear at" uyarısı görmelisin. Maç sonunda "Daha fazla vuruş: Antrenman" düğmesi olmalı, bir sonraki maçta olmamalı. Ayarlarda maç uzunluğu seçtiysen ikinci maç o uzunlukta olmalı.
 B. Menü > Kariyer'de bir maç kazan: ana düğme "Sıradaki: …" yazmalı. Kaybedince "Tekrar dene", hızlı maçta "Bir maç daha".
 C. Menü > Antrenman: tam liste (15 adım) değişmeden oynanmalı.

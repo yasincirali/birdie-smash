@@ -633,6 +633,13 @@ const HK_SRC='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAqwAAAJ6CAMAAADae+Aw
 const CLIP_HIT={smash:.56,clear:.58,drive:.55,kill:.55,low:.55,lunge:.6,serve:.55,serve_gec:.58,serve_bh:.5,serve_flick:.5,block:.6,bh_over:.56,bh_drive:.55,bh_kill:.55,bh_low:.55,bh_lunge:.6,jump:.52};
 /* Raket HEP sağ elde (yasin 2026-10-19): backhand aynalama değil, kendi klibi. Aynalama yok. */
 const BH={smash:'bh_over',clear:'bh_over',drive:'bh_drive',kill:'bh_kill',low:'bh_low',lunge:'bh_lunge',block:'bh_drive',jump:'bh_over'};
+/* Hazırlık temasa kalan süreyle oynar (animasyon denetimi 24 Eki, yasin "gerçeğe uygun mu kontrol et"). Eskiden hazırlık
+   130 ms'de temas pozunun %90'ına varıp top gelene dek 220–520 ms orada donuyordu; asıl ileri salınım hiç görünmüyordu.
+   Şimdi figür geri salınımın tepesinde (PREP_KARE: karakter.py'deki *_PREP anahtarına en yakın kare) bekler, ileri salınım
+   son SALINIM saniyesinde oynar, temas karesi ancak raket topa değdiğinde gelir (en hızlı an temasta; King vd. 2020,
+   ivmelenme evresi ~60–100 ms). Sıçrayarak smaçta salınım kalkıştan başlar: çömelme → havada → temas tepede. */
+const PREP_KARE={smash:3,clear:3,jump:3,bh_over:3,drive:2,bh_drive:2,kill:2,bh_kill:2,low:2,bh_low:2,lunge:2,bh_lunge:2,block:2};
+const SALINIM={jump:.28}, SALINIM_V=.1;
 function clipHand(c,hand){ return hand==='back'&&BH[c]?BH[c]:c; } /* klip içinde temas anı (karakter2.py anahtar zamanları) */
 const SPR={img:{},clip:{me:null,op:null},ready:false,is:{me:0,op:0}};
 /* Bellek (yasin 2026-10-22: "işlemci, grafik işlemci ve memory olarak optimize edebilir miyiz, kaliteden ödün vermeden").
@@ -1200,8 +1207,9 @@ function startFlight(from,vx,vy,vz,hp,isServe,type,isSuper){
   if(from==='op'){ M.opHitAt=M.clock; M.split=false; if(M.splitPending){ M.splitPending=false; doSplit(); } } else { M.split=false; M.splitPending=false; }
   const sp=P(hp.x,hp.y,hp.z);
   racketHit({type,q:M.hitQ||'good',who:from,serve:isServe,super:isSuper,slice:!!M.hitSlice}); M.hitQ=null; M.hitSlice=false; burst(sp.x,sp.y,'#ffffff',type==='smash'?10:5,type==='smash'?220:120,'feather',20); wave(sp.x,sp.y,type==='smash'?'#d8ff5a':'#ffffff',type==='smash'?90:46);
-  { const h=from==='me'?M.me:M.op; h.sw=1; h.shot=isServe?'low':(h.prepShot==='lunge'?'lunge':shotClass(type,hp.z,hp.y)); h.hand=isServe?'fore':handOf(h,from,hp.x,hp.z);
-    h.clip=clipHand(isServe?(h.svClip||'serve'):h.shot==='lunge'?'lunge':h.shot==='over'?(type==='jump'?'jump':type==='smash'?'smash':'clear'):h.shot==='drive'?'drive':h.shot==='kill'?'kill':type==='block'?'block':'low',h.hand);
+  { const h=from==='me'?M.me:M.op; h.sw=1; h.shot=isServe?'low':h.prepShot==='lunge'?'lunge':shotClass(type,hp.z,hp.y);
+    { const ps=h.prepShot, sc=h.shot; if(!isServe&&(h.prepA||0)>.5&&(ps==='low'&&sc==='drive'&&hp.z<1.3||ps==='drive'&&sc==='low'&&hp.z>.6||ps==='kill'&&(sc==='over'&&hp.z<=1.95||sc==='drive'&&hp.z>1))) h.shot=ps; } /* sınır bölgesinde gösterilen hazırlık kazanır: hazırlık tahmini temas yüksekliğinden seçilir, gerçek temas biraz farklı olabilir; poz sıçramasın (file önünde smaç = kısa öldürme salınımı) */ h.hand=isServe?'fore':handOf(h,from,hp.x,hp.z);
+    h.clip=clipHand(isServe?(h.svClip||'serve'):h.shot==='lunge'?'lunge':h.shot==='over'?(type==='jump'||from==='op'&&h.jump>0?'jump':type==='smash'?'smash':'clear'):h.shot==='drive'?'drive':h.shot==='kill'?'kill':type==='block'?'block':'low',h.hand);
     const oth=from==='me'?M.op:M.me; if(oth.sw<=0) oth.splitT=.3; /* rakip vururken split step */ }
   if(type==='smash'){ hitstop(isSuper?.16:.08); punch(isSuper?1.09:1.05); kick(isSuper?12:6); flash=isSuper?.5:.2; flashCol=isSuper?'255,140,60':'216,255,90'; if(from==='op') hap('tick'); }
   rallyNote(M.rally-1,from==='me',from==='me'&&M.flow); if(M.rally>=6) kickDrum(.12+Math.min(.12,M.rally*.008)); if(type==='smash') whistle();
@@ -1259,6 +1267,7 @@ function planIntercept(){ const s=M.s, r=simulate(s.x,s.y,s.z,s.vx,s.vy,s.vz,tru
     const q=Math.random(), T=overhead?M.stil.ust:M.stil.alt, keys=Object.keys(T); let acc=0, pick=keys[keys.length-1]; for(const k of keys){ acc+=T[k]; if(q<acc){ pick=k; break; } } M.icpt.opType=pick; }
 }
 /* Split step: rakip vururken küçük sıçrama. Daha hızlı çıkış = daha çok baş üstü top. */
+const JUMP_HIZ=1/.53; /* sıçrama 0,53 sn: kalkıştan 0,28 sn sonra tepe (j=sin(jump·π) simetrik) */
 function doSplit(){ M.split=true; M.splits++; const p=P(M.me.x,M.me.y); if(M.splits<=2) txt(Tr('Split step'),p.x,p.y+24,'#7ad7ff',16); M.me.jump=Math.max(M.me.jump,.5); tone(1200,.04,'square',.03); if(M.s&&M.s.from==='op') planIntercept(); }
 /* Çizgi kuralı (BWF Law 1.1 + 13): çizgiler 40 mm genişliğindedir ve sınırladıkları alana dahildir; ölçüler çizgilerin
    dış kenarına göredir. Topun mantarı (Ø ~26 mm) çizgiye değdiyse top İÇERİ. Eski kural yalnız top merkezini çizginin
@@ -1330,8 +1339,8 @@ function swipeShot(sw){ const s=M.s, I=reachInfo(); if(M.between||!s||!I) return
     const lbl=(type==='jump'||type==='smash'||type==='kill')?KIND_TR[type]:M.pstreak>1?Tr('Tam orta ×{0}',M.pstreak):(bh&&(type==='clear'||type==='drive')?Tr('Backhand, tam orta'):Tr('Tam orta'));
     txt(lbl,p.x,p.y-40,type==='jump'?'#ff8a3c':'#d8ff5a',type==='jump'?36:26,(type==='jump'||type==='smash'||type==='kill'||M.pstreak>=3)?2:1); burst(p.x,p.y,'#d8ff5a',18,280,'spark'); tone(660*Math.pow(2,Math.min(M.pstreak,12)/12),.12,'sine',.06,.02); hitstop(.06); punch(1.03); }
   else { M.pstreak=0; if(M.flow){ M.flow=false; txt(Tr('Akış bitti'),W/2,H*.36,'#9dbab3',18); } if(q==='poor') txt(Tr('Sıyırdın'),p.x,p.y-40,'#9dbab3',18); }
-  if(I.lunge){ M.me.dive=1; M.me.stun=.35*GS.toparla; M.saves++; yor(.15); if(M.saves<=3) txt(Tr('Uzandın!'),p.x,p.y-64,'#ffd27a',22); } /* öğretici: maçta ilk 3 kez */
-  if(type==='jump') M.me.jump=1;
+  if(I.lunge){ M.me.dive=1; M.me.yat=0; M.me.stun=.35*GS.toparla; M.saves++; yor(.15); if(M.saves<=3) txt(Tr('Uzandın!'),p.x,p.y-64,'#ffd27a',22); } /* öğretici: maçta ilk 3 kez */
+  if(type==='jump') M.me.jump=.53; /* kaydırma anı temas anıdır, kalkış önceden bilinmez: figür temasta tepede, sonra iner (eskiden temasta yerdeydi, tepe 227 ms sonra) */
   
   if(type==='kill'){ M.kills++; kick(8); }
   if(type==='smash'||type==='jump') M.smashes++;
@@ -1461,16 +1470,16 @@ function update(dt){
   { const w=hitWindow(); if(w&&!M.inWin){ hap('tick'); underwater(true); noise(.25,'lowpass',300,.08); } else if(!w&&M.inWin) underwater(false); M.inWin=w; }
   M.pop[0]=Math.max(0,M.pop[0]-dt*3); M.pop[1]=Math.max(0,M.pop[1]-dt*3); M.cams.forEach(c=>c.t+=dt); M.cams=M.cams.filter(c=>c.t<.5);
   if(M.mark){ M.mark.t+=dt; if(M.mark.t>.6) M.mark=null; } M.marks.forEach(m=>m.t+=dt); M.marks=M.marks.filter(m=>m.t<3); if(M.hawk){ M.hawk.t+=dt; if(M.hawk.t>1.5) M.hawk=null; }
-  M.clock+=d; M.me.dive=Math.max(0,M.me.dive-d*1.5); M.me.jump=Math.max(0,M.me.jump-d*2.2); M.op.jump=Math.max(0,M.op.jump-d*2.2);
+  M.clock+=d; M.me.dive=Math.max(0,M.me.dive-d*1.5); M.me.jump=Math.max(0,M.me.jump-d*JUMP_HIZ); M.op.jump=Math.max(0,M.op.jump-d*JUMP_HIZ);
   if(NETW.act||NETW.glow>0){ let r=d; while(r>0){ const h=Math.min(1/240,r); netStep(h); r-=h; } }
   M.me.sw=Math.max(0,M.me.sw-d*4); M.op.sw=Math.max(0,M.op.sw-d*4); M.op.dive=Math.max(0,M.op.dive-d*1.5);
   for(const o of [M.me,M.op]) if(o.svAnim){ o.svAnim.t+=d; if(o.svAnim.t>=o.svAnim.d){ o.svAnim=null; const f=M.svPending; M.svPending=null; if(f) f(); } }
   if(M.wait>0){ M.wait-=d; if(M.wait<=0&&M.server==='op'&&!M.s&&!M.between){ M.wait=0; opServe(); } }
   runMe(d);
   { /* Hazırlık pozu: top yaklaşırken kol geri alınır; hangi poz, topun geleceği yüksekliğe göre */
-    const s=M.s, I=M.icpt; const upd=(o,who)=>{ let tg=0; if(s&&!s.dead&&s.from!==who&&I&&I.who===who&&I.t-s.t<.7){ tg=1; o.prepShot=I.lunge?'lunge':I.kill?'kill':(I.z>1.95?'over':'low'); o.prepHand=handOf(o,who,I.x,I.z); o.prepClip=clipHand(o.prepShot==='over'?'clear':o.prepShot,o.prepHand); } else if(!s&&M.server===who){ tg=.6; o.prepShot='low'; o.prepClip='serve'; /* servisçi topu elinde tutar */ }
-      if(who==='me'&&s&&!s.dead&&s.from==='op'){ const ri=reachInfo(); if(ri){ tg=1; o.prepShot=ri.lunge?'lunge':ri.kill?'kill':ri.over?'over':'low'; o.prepHand=handOf(o,'me',s.x,s.z); o.prepClip=clipHand(o.prepShot==='over'?'clear':o.prepShot,o.prepHand); } }
-      o.prepA=(o.prepA||0)+(tg-(o.prepA||0))*Math.min(1,dt*9); };
+    const s=M.s, I=M.icpt; const upd=(o,who)=>{ let tg=0; o.prepT=null; if(s&&!s.dead&&s.from!==who&&I&&I.who===who&&I.t-s.t<.7){ tg=1; o.prepT=I.t-s.t; o.prepShot=I.lunge?'lunge':shotClass(who==='op'?I.opType||'':'',I.z,I.y); /* hazırlık, vuruş anındaki sınıflamanın aynısıyla seçilir: iki klip aynı aileden, temasta poz sıçramaz */ o.prepHand=handOf(o,who,I.x,I.z); o.prepClip=clipHand(o.prepShot==='over'?(who==='op'&&I.opType==='smash'&&o.prepHand!=='back'?'jump':'clear'):o.prepShot,o.prepHand); } else if(!s&&M.server===who){ tg=.6; o.prepShot='low'; o.prepClip='serve'; /* servisçi topu elinde tutar */ }
+      if(who==='me'&&s&&!s.dead&&s.from==='op'){ const ri=reachInfo(), yakin=s.y>NET&&Math.hypot(s.x-o.x,s.y-o.y)<2.6; if(ri||yakin){ tg=1; o.prepShot=ri&&ri.lunge?'lunge':shotClass(s.type==='smash'&&s.z<=.8?'block':'',s.z,s.y); if(o.prepShot==='low'&&s.type==='smash') o.prepShot='block'; /* vuruş anındaki sınıflamanın aynısı (o anki top yüksekliği): hazırlık ile vuruş klibi aynı aileden */ o.prepHand=handOf(o,'me',s.x,s.z); o.prepClip=clipHand(o.prepShot==='over'?(M.energy>=1&&o.prepHand!=='back'?'jump':'clear'):o.prepShot,o.prepHand); } }
+      o.prepA=(o.prepA||0)+(tg-(o.prepA||0))*Math.min(1,dt*(tg&&who==='op'?4.5:9)); }; /* rakipte geri salınım sakin akar (~0,4 sn); bizde vuruş penceresi kısa, eski hız kalır. Bırakış hızlı. Drive ve blok kendi hazırlığıyla: eskiden alçak vuruş klibinden gelip raket yere iniyor, temasta 1,2–1,6 m fırlıyordu */
     upd(M.me,'me'); upd(M.op,'op'); }
   const s=M.s; if(!s||s.dead) return;
   // canlı fizik: tahminle aynı adım
@@ -1489,9 +1498,9 @@ function update(dt){
   const sp=P(s.x,s.y,s.z); M.trail.push(sp); if(M.trail.length>(s.type==='smash'?14:8)) M.trail.shift();
   const I=M.icpt;
   if(s.from==='me'){ if(I&&I.who==='op'&&!I.leave){ if(M.op.fakeUntil>M.clock) move(M.op,M.op.fakeX,M.op.y,1.6*d); else move(M.op,Math.max(-.4,Math.min(CW+.4,I.x+hitSide(M.op,'op',I,s))),I.y-.3,opSpd()*d); /* rakip de aynı kural (onun sağı = -x) */
-      if(I.opType==='smash'&&I.t-s.t<.32&&I.t-s.t>0) M.op.jump=Math.max(M.op.jump,1-(I.t-s.t)/.32*.6);
+      if(I.opType==='smash'&&M.op.prepClip==='jump'&&I.t-s.t<SALINIM.jump&&I.t-s.t>0&&!(M.op.jump>0)) M.op.jump=1-(SALINIM.jump-(I.t-s.t))*JUMP_HIZ; /* tek sıçrama, tepe temasta (eskiden temastan önce ve sonra iki zıplama) */
       if(s.t>=I.t){ opHit(); return; } }
-    else { move(M.op,s.landPred.x,s.landPred.y-.4,2.2*d); if(!M.op.dive&&s.landPred&&!isOut(s.landPred.x,s.landPred.y,s.serve)&&!(s.landPred.net&&!s.landPred.net.ok)&&s.t>s.landPred.t-.25){ M.op.dive=1; const p=P(M.op.x,M.op.y); txt(Tr('Kıl payı!'),p.x,p.y-40,'#ffd27a',20); if(!reduce){ slow=.35; slowT=.3; } } }
+    else { move(M.op,s.landPred.x,s.landPred.y-.4,2.2*d); if(!M.op.dive&&s.landPred&&!isOut(s.landPred.x,s.landPred.y,s.serve)&&!(s.landPred.net&&!s.landPred.net.ok)&&s.t>s.landPred.t-.25){ M.op.dive=1; M.op.yat=1; const p=P(M.op.x,M.op.y); txt(Tr('Kıl payı!'),p.x,p.y-40,'#ffd27a',20); if(!reduce){ slow=.35; slowT=.3; } } }
   }
   else { move(M.op,MID,M.stil.ev,2.0*d); }
 }
@@ -1504,7 +1513,7 @@ function land(){ const s=M.s; s.dead=true; const at={x:s.x,y:s.y}; const hitter=
   const out=isOut(s.x,s.y,s.serve);
   if(M.ogr&&s.ogrHedef&&hitter==='me'&&!out&&s.y>=s.ogrHedef[0]&&s.y<=s.ogrHedef[1]){ M.ogr.yildiz++; const p=P(s.x,s.y); txt(Tr('Hedefte! ★'),p.x,p.y-30,'#ffd23a',20,2); tone(1320,.1,'triangle',.05); }
   if(out){ if(other==='me') M.outsLeft++; point(other, s.serve?(hitter==='me'?Tr('Servis hatası'):Tr('Rakip servis hatası')):(hitter==='me'?Tr('Dışarı'):Tr('Dışarı! Bıraktın, sayı senin')),at); }
-  else { if(s.type==='smash'&&hitter==='me'){ kick(10); flash=.35; flashCol='216,255,90'; hitstop(.1); M.op.dive=1; gasp(.09); } point(hitter, hitter==='me'?(s.super?Tr('SIÇRAYARAK SMAÇ SAYISI'):s.type==='smash'?Tr('SMAÇ SAYISI'):Tr('SAYI!')):Tr('Kaçtı'),at); }
+  else { if(s.type==='smash'&&hitter==='me'){ kick(10); flash=.35; flashCol='216,255,90'; hitstop(.1); M.op.dive=1; M.op.yat=1; gasp(.09); } point(hitter, hitter==='me'?(s.super?Tr('SIÇRAYARAK SMAÇ SAYISI'):s.type==='smash'?Tr('SMAÇ SAYISI'):Tr('SAYI!')):Tr('Kaçtı'),at); }
 }
 
 /* ---- çizim ---- */
@@ -1679,7 +1688,7 @@ const POSE={
 const lerpP=(a,b,t)=>({ua:a.ua+(b.ua-a.ua)*t,fa:a.fa+(b.fa-a.fa)*t,ra:a.ra+(b.ra-a.ra)*t});
 const mirP=p=>({ua:-p.ua,fa:-p.fa,ra:-p.ra}); /* backhand: aynı omuzdan kol gövdenin önünden karşı tarafa geçer */
 function armPose(o){ if(o.sw>0){ let P2=POSE[o.shot||'low']; if(o.hand==='back') P2={hit:mirP(P2.hit),fol:mirP(P2.fol)}; const t=1-o.sw, e=1-Math.pow(1-t,3); return lerpP(P2.hit,P2.fol,e); }
-  let B=POSE[o.prepShot||'low'].back; if(o.prepHand==='back') B=mirP(B); const a=o.prepA||0; return lerpP(POSE.ready,B,a*a*(3-2*a)); }
+  let B=(POSE[o.prepShot]||POSE.low).back; if(o.prepHand==='back') B=mirP(B); const a=o.prepA||0; return lerpP(POSE.ready,B,a*a*(3-2*a)); }
 /* Forehand / backhand: sağ elli oyuncu. Top raket tarafındaysa forehand; gövdenin öbür tarafındaysa backhand.
    Baş üstünde "baş çevresinden" forehand payı var (0,6 m), alçakta sınır daha dar (0,25 m). Rakip bize dönük olduğundan onun sağı ekranın solu. */
 /* Pozisyon kararı (yasin 2026-10-19: "pozisyona göre backhand ise animasyon ona göre"): oyuncu topu raket tarafında ~0,45 m
@@ -1690,25 +1699,28 @@ function hitSide(o,who,I,s){ if(I.side!=null) return I.side; const m=who==='me'?
   const spd=who==='me'?5.2*GS.kosu:opSpd(), tt=Math.max(0,I.t-s.t)*.9; const dF=Math.hypot(I.x-fh-o.x,I.y-o.y), dB=Math.hypot(I.x-bh-o.x,I.y-o.y);
   I.side=(dF>spd*tt&&dB<dF-.3)?bh:fh; return I.side; }
 function handOf(o,who,sx,sz){ const side=(sx-o.x)*(who==='me'?1:-1); return side<-(sz>1.95?.6:.25)?'back':'fore'; }
-function shotClass(type,z,y){ if(type==='smash'||z>1.95) return 'over'; if(type==='drive') return 'drive'; if(Math.abs(y-NET)<2.3&&z>NETH) return 'kill'; return 'low'; }
+function shotClass(type,z,y){ if(type==='smash'||z>1.95) return 'over'; if(type==='drive'&&z>.8) return 'drive'; if(Math.abs(y-NET)<2.3&&z>NETH) return 'kill'; if(z>.8&&type!=='block'&&type!=='lift') return 'drive'; return 'low'; } /* göğüs hizasındaki top düz salınımla vurulur; alçak vuruş klibi raketi yere indirip temasta fırlatıyordu */
 function player(o,col,isMe){ const v=isMe?'me':'op'; const SC_=SPR.clip[v]; if(!SPR.ready||!SC_) return playerVec(o,col,isMe); if(SC_.sF!==sprSF()&&SPR.is[v]===SC_.sF){ SPR.is[v]=-1; setTimeout(()=>sprTint(v),0); } /* ekran boyu değişti: yeniden boya, o arada eski klip çizilir */
   const p0=P(o.x,o.y), s=p0.ppm/28, dive=o.dive||0, j=Math.sin(Math.min(1,o.jump||0)*Math.PI)*16*s;
   ctx.fillStyle='rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(p0.x,p0.y,14*s*(1-j/(40*s)),5*s,0,0,7); ctx.fill();
-  const vx=o.svx||0, vy=o.svy||0, spd=Math.hypot(vx,vy), lean=Math.max(-.3,Math.min(.3,vx*.05));
+  const vx=o.svx||0, vy=o.svy||0, spd=Math.hypot(vx,vy), lean=Math.max(-.1,Math.min(.1,vx*.02)); /* chassé'de gövde dik kalır: eğim 17° → en çok 6° */
   const meta=SPR_META, cw=meta.cell[0], ch=meta.cell[1], k=SPR_K*p0.ppm/meta.pxPerUnit, an=meta.anchor[v];
   let clip,ph; const now=M.clock||0;
   if(o.svAnim){ clip=o.svAnim.clip; ph=(CLIP_HIT[clip]||.5)*Math.min(.999,o.svAnim.t/o.svAnim.d); } /* servis hazırlığı: klip başından temasa */
   else if(o.sw>0){ clip=o.clip||'low'; const hit=CLIP_HIT[clip]||.55; ph=hit+(1-o.sw)*(1-hit); }
   else if(M.s===null&&!M.between&&M.server===(isMe?'me':'op')&&o.svClip&&meta.clips[o.svClip]){ clip=o.svClip; ph=0; } /* servis duruşu */
   else if(!isMe&&(M.s===null||M.between)&&(o.nefes??1)<.4&&meta.clips.yorgun&&spd<.4){ clip='yorgun'; ph=(now*.55)%1; } /* nefesi bitmiş rakip sayı arasında eller dizde soluklanır */
-  else if((o.prepA||0)>.08&&o.prepClip){ clip=o.prepClip; const hit=CLIP_HIT[clip]||.55; ph=hit*.9*Math.min(1,o.prepA); }
+  else if((o.prepA||0)>.08&&o.prepClip){ clip=o.prepClip; const hit=CLIP_HIT[clip]||.55, hold=PREP_KARE[clip], c0=meta.clips[clip];
+    if(hold==null||!c0) ph=hit*.9*Math.min(1,o.prepA);
+    else { const hitF=Math.floor(hit*c0.n), sal=SALINIM[clip]||SALINIM_V; let f=Math.min(1,o.prepA)*hold;
+      if(o.prepT!=null&&o.prepT<sal) f=hold+(hitF-hold)*(1-o.prepT/sal); ph=(Math.min(hitF-1,Math.floor(f))+.5)/c0.n; } }
   else if((o.splitT||0)>0&&spd<1.5){ clip='split'; ph=1-o.splitT/.3; }
   else if(o.yuru&&o.ayakKlip){ clip=o.ayakKlip; ph=o.runPh||0; } /* badminton ayak işi: yana chassé, öne kısa adım, arkaya çapraz adım; seçim ayakIsi()'nde */
   else { clip='idle'; ph=(now*.8+(isMe?0:.5))%1; }
   /* Komşu kareleri kesirle karıştırma denendi (2026-10-20) ve kaldırıldı: iki poz üst üste binince karakter hayalet gibi
      görünüyordu (yasin). Kare tam seçilir; akıcılık adım hızının doğru olmasından gelir. */
   const c=meta.clips[clip]||meta.clips.idle, fi=Math.min(c.n-1,Math.floor(Math.max(0,ph)*c.n));
-  ctx.save(); ctx.translate(p0.x,p0.y-j); ctx.rotate(dive*(o.x<MID?-1:1)*.9+lean);
+  ctx.save(); ctx.translate(p0.x,p0.y-j); ctx.rotate((o.yat?dive:0)*(o.x<MID?-1:1)*.26+lean); /* hamlede gövde dik (eskiden 52° yatıyordu); yalnız kıl payı kurtarışta en çok 15° */
   const kc=SC_[clip]||SC_.idle, f=SC_.sF;
   ctx.drawImage(kc.c,fi*kc.bw*f,0,kc.bw*f,kc.bh*f,(kc.bx-an[0])*k,(kc.by-an[1])*k,kc.bw*k,kc.bh*k);
   if(o.sw>.3&&!reduce){ const m=isMe?1:-1; let P2=POSE[o.shot||'low']; if(o.hand==='back') P2={hit:mirP(P2.hit),fol:mirP(P2.fol)}; /* backhand yayı sol tarafta */ const a0=P2.hit.ua*m-Math.PI/2, a1=P2.fol.ua*m-Math.PI/2; const sh={x:8*s*m,y:-26*s}; for(let q=0;q<3;q++){ ctx.strokeStyle=`rgba(255,255,255,${o.sw*(.5-q*.14)})`; ctx.lineWidth=(5-q*1.2)*s; ctx.beginPath(); ctx.arc(sh.x,sh.y,(28+q*5)*s,Math.min(a0,a1),Math.max(a0,a1)); ctx.stroke(); } }
@@ -1716,7 +1728,7 @@ function player(o,col,isMe){ const v=isMe?'me':'op'; const SC_=SPR.clip[v]; if(!
 function playerVec(o,col,isMe){ const p0=P(o.x,o.y), s=p0.ppm/28; const dive=o.dive||0, j=Math.sin(Math.min(1,o.jump||0)*Math.PI)*16*s, p={x:p0.x,y:p0.y-j};
   ctx.fillStyle='rgba(0,0,0,.3)'; ctx.beginPath(); ctx.ellipse(p0.x,p0.y,14*s*(1-j/(40*s)),5*s,0,0,7); ctx.fill();
   const vx=o.vx||0, vy=o.vy||0, spd=Math.hypot(vx,vy), lean=Math.max(-.35,Math.min(.35,vx*.07)), st=1+Math.min(.18,spd*.035);
-  ctx.save(); ctx.translate(p.x,p.y-20*s); ctx.rotate(dive*(o.x<MID?-1:1)*.9+lean); ctx.scale(1/st,st); /* koşarken uzar, durunca toparlanır */
+  ctx.save(); ctx.translate(p.x,p.y-20*s); ctx.rotate((o.yat?dive:0)*(o.x<MID?-1:1)*.26+lean); /* hamlede gövde dik (eskiden 52° yatıyordu); yalnız kıl payı kurtarışta en çok 15° */ ctx.scale(1/st,st); /* koşarken uzar, durunca toparlanır */
   rr(-9*s,-10*s,18*s,22*s,8*s); ctx.fillStyle=col; ctx.fill(); ctx.beginPath(); ctx.arc(0,-17*s,7.5*s,0,7); ctx.fillStyle='#f3d2b3'; ctx.fill();
   /* seçilen ekipman görünür: kafa bandı (alın çizgisi), bileklik (bilek halkası), raket rengi. Rakibin ekipmanı sabit. */
   const gb=isMe?GS.bant:null, gw=isMe?GS.bileklik:null, rk=isMe?GS.raket.renk:'#e9eef0';
