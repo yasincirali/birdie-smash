@@ -34,3 +34,9 @@ if [ ! -f "$MH/makehuman/data/3dobjs/base.obj" ]; then
     && git -C "$MH" sparse-checkout set makehuman/data/3dobjs makehuman/data/targets/macrodetails makehuman/data/rigs \
     && echo "makehuman: clone" || echo "makehuman alınamadı"
 fi
+# Oyuncak 3B oyuncu (tool/karakter/oyuncak.py): KayKit Character Pack Adventures 1.0 (CC0, Kay Lousberg), Rogue gövdesi.
+KK=$HOME/AnimationLibrary/kaykit
+if [ ! -f "$KK/addons/kaykit_character_pack_adventures/Characters/gltf/Rogue.glb" ]; then
+  T=$(mktemp -d) && git clone -q --depth 1 https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0.git "$T/k" \
+    && mkdir -p "$KK" && mv "$T/k/addons" "$KK/addons" && echo "kaykit: clone" || echo "kaykit alınamadı"
+fi

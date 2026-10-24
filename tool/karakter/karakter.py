@@ -43,13 +43,17 @@ SHW=0.13; HIPW=0.085
 # Gerçekçi gövde (yasin 2026-10-23: "insan anatomisine uygun olacak kadar gerçekçi"): MakeHuman tabanı (insan.py, CC0),
 # aynı poz sözlüklerini kullanır. BS_GERCEK=0 eski oyuncak figürü çizer (hakemler şimdilik oyuncak figürde).
 GERCEK=os.environ.get('BS_GERCEK','1')=='1'
+MODEL=os.environ.get('BS_MODEL','insan')   # 'oyuncak' = KayKit gövdeli oyuncak figür (oyuncak.py), aynı pozlar
 OY=None
 def build_gercek(p):
     global OY
     import insan
     if OY is None:
         for o in list(objs): bpy.data.objects.remove(o)
-        objs.clear(); OY=insan.Oyuncu(insan.malzemeler(FORMA,SORT,BEYAZ,BANT,CERCEVE,TEL,SORT),stil=os.environ.get('BS_STIL'))
+        M_=insan.malzemeler(FORMA,SORT,BEYAZ,BANT,CERCEVE,TEL,SORT)
+        if MODEL=='oyuncak': import oyuncak; objs.clear(); OY=oyuncak.Oyuncak(M_)
+        elif MODEL=='aday': import aday; objs.clear(); OY=aday.Aday(M_)   # karşılaştırma: hazır modeller (aday.py)
+        else: objs.clear(); OY=insan.Oyuncu(M_,stil=os.environ.get('BS_STIL'))
     objs[:]=OY.kur_poz(p)
 def build(p):
     """p: poz sözlüğü → sahneye figürü kur"""
@@ -368,7 +372,7 @@ if MODE=='hakem':
 # raket, bant ve bileklik renkleri burada da boyanır. Raket kafasının her açıdaki ekran yeri meta'ya yazılır: "raketi
 # yakından gör" ayrı render istemez, o noktaya 2× kırpar.
 if MODE=='tur':
-    TWD,THD=480,640; sc.render.resolution_x=TWD; sc.render.resolution_y=THD; cam.data.ortho_scale=2.3; N=24   # TH adı uyluk boyu, kullanma; 480×640: "raketi yakından gör" 2× büyütmede bulanıklaşmasın
+    TWD,THD=480,640; sc.render.resolution_x=TWD; sc.render.resolution_y=THD; cam.data.ortho_scale=2.3; N=int(os.environ.get('BS_TUR_N','24'))   # TH adı uyluk boyu, kullanma; 480×640: "raketi yakından gör" 2× büyütmede bulanıklaşmasın
     TUR=D(READY,twist=0,rk=(0.18,0.30,0.94),wrR=(0.24,0.20,0.56),look=(0,1,0.05))
     tm={'cell':[TWD,THD],'n':N,'raket':[],'cols':8}
     build(TUR)
@@ -379,7 +383,7 @@ if MODE=='tur':
         rkp=OY.kafa if (GERCEK and OY) else [o for o in objs if o.name.startswith('raket_kafa')][0].matrix_world.translation; q=w2c(sc,cam,rkp); tm['raket'].append([round(q.x*TWD,1),round((1-q.y)*THD,1)])
         hide_bands(True); set_mats(None); render(f'{OUT}/t_{i}.png')
         hide_bands(False); sc.cycles.samples=4; sc.cycles.use_denoising=False
-        for tag in ('forma','cerceve','bant','bilek','tel','tel2','grip'): set_mats(tag); render(f'{OUT}/tm_{i}_{tag}.png')   # tel/tel2/grip: raket ekranındaki renk seçimi oyuncuda da görünsün
+        for tag in (() if os.environ.get('BS_ONIZLEME') else ('forma','cerceve','bant','bilek','tel','tel2','grip')): set_mats(tag); render(f'{OUT}/tm_{i}_{tag}.png')   # BS_ONIZLEME: yalnız renk geçişi   # tel/tel2/grip: raket ekranındaki renk seçimi oyuncuda da görünsün
         set_mats(None); sc.cycles.samples=24; sc.cycles.use_denoising=True
     json.dump(tm,open(f'{OUT}/tmeta.json','w')); print('TUR DONE'); sys.exit(0)
 if MODE=='raket':   # raket 360° (yasin 2026-10-23: "rakete dokununca raketin 360 ekranı, teller gerçekçi, grip ve kordaj rengi")
@@ -411,6 +415,7 @@ if MODE=='stil':   # arcade tarz önizlemesi: aynı pozlar, 2× hücre (doku), a
     render(f'{OUT}/s_yakin.png')
     pb=OY.ao.pose.bones; mw=OY.ao.matrix_world
     for ad_,bn,osc,yon in (('yuz','head',.28,(0.25,1,0.12)),('elR','wrist.R',.24,(0.6,0.8,0.3)),('elL','wrist.L',.24,(-0.5,0.8,0.3))):
+        bn=bn if bn in pb else bn.lower(); osc=osc*(2.2 if MODEL=='oyuncak' and bn=='head' else 1.6 if MODEL=='oyuncak' else 1)   # oyuncak: küçük harf kemik, iri baş/el
         c=mw@pb[bn].head if bn!='head' else mw@((pb[bn].head+pb[bn].tail)/2); d=Vector(yon).normalized(); cam.location=c+d*3; cam.data.ortho_scale=osc
         el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2); sc.render.resolution_x=sc.render.resolution_y=480; render(f'{OUT}/s_{ad_}.png')
     print('STIL DONE'); sys.exit(0)

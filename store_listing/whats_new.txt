@@ -1,18 +1,15 @@
 Bu sürümde yeni:
-- Oyuncular yeni "sportif arcade" görünümde: biraz büyük kafa, el ve ayak, çizgi film gibi düz renkli gölgeler ve ince dış çizgi. Uzaktan da kim olduğu okunuyor.
-- Yüzler tamamlandı: kaşlar, kirpik çizgisi, göz kapağı ve hafif gülümseyen bir ağız var. Oyuncu odaklı ve kendinden emin görünüyor. Mimik ya da yüz hareketi yok, ifade sabit.
-- Eller tam: parmaklar ayrı ayrı görünüyor, raketi tutan el sapı sarıyor, boştaki el doğal duruyor.
-- Figürler iki kat çözünürlükte çizildi: telefonda büyütülünce bulanıklaşmıyor, forma ve ten dokusu daha net.
-- Ekipman ekranındaki 360 derece oyuncu ve hakemler de aynı görünüme geçti.
-- Açılış ve "Oyna" geçişi akıcı: figürleri boyama işi arka plana taşındı, perde artık takılmadan kapanıp açılıyor.
-- Yükleme ekranındaki tüy top artık takılmadan, atlamadan dönüyor: daha sakin bir hızla kendi ekseninde dönüyor ve hafifçe sağa sola sallanıyor. Telefon meşgulken bile dönmesi durmuyor.
+- Oyuncular artık iki görünümde: "Oyuncak 3B" (yeni, varsayılan) ve "Gerçekçi" (önceki sportif figür). Ayarlar > Oyuncu görünümü'nden seçilir, seçim hatırlanır.
+- Oyuncak 3B: iri başlı, yumuşak hatlı oyuncak bir sporcu. Mavi forma ve beyaz ön yaka, koyu şort, beyaz çorap, kırmızı tabanlı beyaz ayakkabı, raket kolunda bileklik. Hareketler aynı badminton klipleri: smaç, clear, drop, uzanma, split step, ayrı backhand; raket hep sağ elde. Dizler hafif bükük, duruşu oturaklı.
+- Rakip de senin seçtiğin görünümde oynar. Hakemler şimdilik eskisi gibi.
+- Sayılar arası bekleme kısaldı: sayı bitince yeni servis daha çabuk geliyor, rakip servisinde de daha az bekliyorsun. 11 sayılık bir maçta toplam bekleme yaklaşık 13 saniye azaldı. Antrenmanda ve yeni ralli rekoru yazısı çıktığında bekleme eskisi gibi.
 
 Nasıl denenir:
-1. Uygulamayı aç: halkalı açılış perdesi takılmadan dönmeli, kısa sürede menüye açılmalı. "Hazırlanıyor…" görünürse üstündeki tüy top geriye dönüyormuş ya da atlıyormuş gibi görünmemeli; yavaş ve düzgün dönmeli, hafifçe sallanmalı.
-2. "Oyna"ya bas: top ekranı çapraz geçmeli, halkalar ekranı kaplayıp kortu açmalı. Bu sırada titreme ya da duraklama olmamalı.
-3. Maçta kendi oyuncuna ve rakibe bak: kafa biraz büyük, çevresinde ince koyu çizgi olmalı; renkler düz ve net olmalı, bulanık olmamalı.
-4. Menü > Ekipman: dönen oyuncunun yüzüne bak. Kaşlar, gözler ve hafif gülümseyen ağız görünmeli, yüzde boş ya da yarım kalmış yer olmamalı. Ellerde parmaklar görünmeli.
-5. Ekipmanda başka forma, raket, bant ya da bileklik seç: hem 360 derece figürde hem maçta yeni renk görünmeli.
-6. Maç ekranında file kenarındaki hakemlere bak: onlar da aynı çizgi film görünümünde olmalı.
-7. Eski bir telefonda dene: açılış ve geçiş yine akıcı olmalı, figürler biraz geç gelse bile perde takılmamalı.
-8. "Hareketi azalt" açıkken: geçişler yalnız solarak olmalı, tüy top dönmemeli.
+1. Uygulamayı ilk kez aç: oyuncular Oyuncak 3B görünümünde olmalı (iri baş, mavi forma, koyu şort).
+2. Menü > Ekipman: 360 derece dönen oyuncuyu çevir. Belde, kollarda, yakada ve ensede çizgi, delik ya da basamak görünmemeli; bileklik yalnız raket kolunda olmalı.
+3. Ekipmanda başka forma rengi seç: hem 360 derece figürde hem maçta formanın rengi değişmeli.
+4. Maç oyna: smaç, clear, uzanma ve backhand vuruşlarında raket hep sağ elde kalmalı, el yüzün önüne girmemeli.
+5. Ayarlar > Oyuncu görünümü > Gerçekçi: uygulama kısa bir an yenilenir ve oyuncular önceki sportif görünüme döner. Uygulamayı kapatıp açınca seçim korunmalı. Sonra Oyuncak 3B'ye geri dön.
+6. Bir sayı bitir: yeni servis eskisinden belirgin biçimde çabuk gelmeli, baş hakemin el hareketi de hızlanmalı ama yarıda kesilmemeli.
+7. 6 vuruştan uzun bir ralliyle rekor kır: "Yeni ralli rekoru" yazısı okunacak kadar ekranda kalmalı.
+8. Eski bir telefonda dene: açılış ve "Oyna" geçişi önceki sürüm kadar akıcı olmalı.
