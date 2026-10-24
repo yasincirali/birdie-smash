@@ -1848,7 +1848,24 @@ function draw(){
    bulanıklaşıyordu: duraklatılmışken 4× yavaş işlemcide 3 sn'de 550 ms boşa iş. Şimdi iki kare çizilip durulur; panelde bir
    dokunuş, boyut değişimi ya da efekt sahneyi yeniden canlandırır. Ana menü canlı kalır (arkasında hareket görünüyor). */
 let PANEL='anaEkran', donuk=0;
-let last=performance.now(); function loop(now){ const dt=Math.min(.05,(now-last)/1000); last=now; if(!paused) update(dt); const po=PERDE.oyun;
+/* Gizli kare hızı göstergesi (2026-10-24, yasin: "gönder bakayım orada"): test tarayıcısında ekran kartı olmadığı için
+   telefondaki gerçek akıcılık ancak telefonda ölçülür. Ayarlar başlığına 3 sn içinde 5 kez dokununca açılır/kapanır
+   (tuytop_fps); mağaza kullanıcısı rastlamaz, görse de yalnız sayı görür. Üst satır son 1 sn: kare/sn, en uzun kare,
+   takılma (>50 ms, en az iki kare kaybı). Alt satır o ekranın toplamı; ekran (menü, panel, maç, duraklatma…) değişince sıfırlanır.
+   Ölçüm ana döngünün kendi kare aralığından: oyunun JS'i ve çizimi takılırsa burada görünür. Yazı saniyede iki kez güncellenir. */
+const FPS={on:false,el:null,son:0,k:[],ekran:'',top:{n:0,t:0,tak:0,en:0},yaz:0};
+try{ FPS.on=localStorage.getItem('tuytop_fps')==='1'; }catch(e){}
+function fpsEkran(){ return PERDE.oyun?'Perde':paused?'Duraklatma':mode==='over'?'Maç sonu':!menu.hidden?({anaEkran:'Menü',pnEkip:(TUR&&TUR.hedefGec?'Raket 360°':'Ekipman'),pnAyar:'Ayarlar',pnNasil:'Nasıl oynanır'}[PANEL]||PANEL):mode==='play'?'Maç':mode; }
+function fpsOlc(now){ const d=FPS.son?now-FPS.son:0; FPS.son=now; if(!FPS.el){ const e=FPS.el=document.createElement('div'); e.setAttribute('aria-hidden','true');
+    e.style.cssText='position:fixed;left:max(6px,env(safe-area-inset-left));top:calc(env(safe-area-inset-top) + 80px);z-index:60;pointer-events:none;font:600 10px/1.35 ui-monospace,Menlo,monospace;color:#d8ff5a;background:rgba(0,0,0,.62);padding:3px 6px;border-radius:6px;white-space:pre';
+    document.body.appendChild(e); }
+  const ek=fpsEkran(); if(ek!==FPS.ekran){ FPS.ekran=ek; FPS.top={n:0,t:0,tak:0,en:0}; }
+  if(d>0&&d<1000){ FPS.k.push([now,d]); const T=FPS.top; T.n++; T.t+=d; if(d>50) T.tak++; if(d>T.en) T.en=d; }
+  while(FPS.k.length&&FPS.k[0][0]<now-1000) FPS.k.shift();
+  if(now-FPS.yaz>500){ FPS.yaz=now; const K=FPS.k, en=K.reduce((m,q)=>Math.max(m,q[1]),0), tak=K.filter(q=>q[1]>50).length, T=FPS.top;
+    FPS.el.textContent=`${K.length} fps · en uzun ${Math.round(en)} ms · takılma ${tak}\n${ek}: ort ${T.t?Math.round(T.n/(T.t/1000)):0} fps · en uzun ${Math.round(T.en)} ms · takılma ${T.tak} · ${Math.round(T.t/1000)} sn`; } }
+function fpsAc(on){ FPS.on=on; try{ localStorage.setItem('tuytop_fps',on?'1':'0'); }catch(e){} if(!on&&FPS.el){ FPS.el.remove(); FPS.el=null; } FPS.son=0; FPS.k=[]; FPS.ekran=''; hap('tick'); }
+let last=performance.now(); function loop(now){ if(FPS.on) fpsOlc(now); const dt=Math.min(.05,(now-last)/1000); last=now; if(!paused) update(dt); const po=PERDE.oyun;
   const dur=!po&&(paused||(!menu.hidden&&PANEL!=='anaEkran')||(mode==='over'&&!parts.length&&!floats.length&&!waves.length&&flash<=0));
   if(!dur) donuk=0; if(!(po&&po.evre==='kapali'&&!po.ortuldu)&&donuk<2){ draw(); if(dur) donuk++; } requestAnimationFrame(loop); } /* perde tam kapalı ve altı henüz kurulmadıyken görünmeyen sahne çizilmez; kurulduktan sonra çizim örtü altında önbellekleri ısıtır */ requestAnimationFrame(loop);
 
@@ -1893,6 +1910,7 @@ cv.addEventListener('pointerup',e=>{ swooshStop(); if(!swipe.on||!M) return; swi
 cv.addEventListener('pointercancel',()=>{ swooshStop(); swipe.on=false; if(M){ M.me.prep=0; M.preview=null; } });
 const menu=document.getElementById('menu'), over=document.getElementById('over'), pauseL=document.getElementById('pause'), pauseBtn=document.getElementById('pauseBtn'), wrapEl=document.querySelector('.wrap');
 [menu,over,pauseL].forEach(e=>e.addEventListener('pointerdown',()=>{ donuk=0; },{passive:true}));   /* donuk sahne: panelde bir seçim sahneyi değiştirebilir (saha, ışık), yeniden çiz */
+{ const h=document.querySelector('#pnAyar .pbas h3'); let n=0, t0=0; if(h) h.addEventListener('click',()=>{ const t=performance.now(); if(t-t0>3000){ n=0; t0=t; } if(++n>=5){ n=0; fpsAc(!FPS.on); } }); }   /* gizli kare hızı göstergesi: Ayarlar başlığına 5 dokunuş */
 /* Duraklat / devam (yasin 2026-10-21: "resume menü olmalı"). paused iken update() çalışmaz, çizim donar, ses susar.
    Uygulama arka plana geçince (arama, bildirim, ana ekran) kendiliğinden duraklar; dönünce oyuncu "Devam et"e basar,
    top bir anda üstüne düşmez. Ana menüye çıkınca maç bekletilir, menüde "Maça devam et" görünür. */

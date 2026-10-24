@@ -1,11 +1,12 @@
 Bu sürümde yeni (akıcılık):
+- Test için gizli kare hızı göstergesi: Ayarlar ekranında "Ayarlar" başlığına 3 saniye içinde 5 kez dokun. Ekranın üstünde iki satır çıkar: üstte son 1 saniye (kare/sn, en uzun kare, takılma sayısı), altta o ekranın toplamı. Aynı şekilde 5 dokunuşla kapanır.
 - Maçta vuruş anları hafifledi: raket sesi artık her vuruşta baştan üretilmiyor, maç başında bir kez hazırlanıyor. Smaç yakınlaşmasında kort yeniden çizilmiyor. Eski ve yavaş telefonlarda vuruş anındaki takılma azalmalı.
 - Ekipman ekranı akıcı: forma ve raket renkleri arka planda boyanıyor, ekran açılırken ve renk seçerken donma olmamalı. 360 derece figür boşta gereksiz yere yeniden çizilmiyor.
 - Ekipman, Ayarlar, Nasıl oynanır, duraklatma ve maç sonu ekranlarında arkadaki saha artık sürekli çizilmiyor; pil ve ısınma için daha iyi.
 - Önceki sürümden: iki oyuncu görünümü (Oyuncak 3B ve Gerçekçi), takılmayan "Oyna" geçişi, sayılar arası daha kısa bekleme.
 
 Nasıl denenir:
-1. Mümkünse eski ya da yavaş bir telefonda dene.
+1. Mümkünse eski ya da yavaş bir telefonda dene. Önce göstergeyi aç (Ayarlar başlığına 5 dokunuş). Her adımda alt satırdaki "ort fps" ve "takılma" sayısını not et; 55 fps üstü ve takılma 0–1 iyi demek.
 2. Bir maç oyna, uzun ralliler yap: smaç, clear ve drop vuruşlarında top, oyuncular ve ekran sallanması takılmadan akmalı. Vuruş sesi önceki gibi duyulmalı (raket tellerinin çınlaması, smaçta sert çatırtı).
 3. Ekipman'da tel gerginliğini değiştirip bir vuruş yap: ses tel gerginliğine göre değişmeye devam etmeli.
 4. Menü > Ekipman'ı aç: ekran hemen açılmalı, figür hazırlanırken dönen top görünmeli ve donmamalı. Forma rengi değiştir: renk kısa sürede gelmeli, ekran kilitlenmemeli.
