@@ -3,7 +3,11 @@
 HTML oyununun (`assets/game/index.html`, main 46943a8 hâli) kurallarının, görünümünün ve hissinin Unity 6'ya taşınmış hâli.
 2026-10-24 tam geçiş: 3B tüy top, ekipman + ekonomi + 360° vitrin, görevler, İngilizce arayüz, akış görselleri, smaç perdesi,
 antrenman iz/hız bandı/bilgi adımları/antrenör çağrısı, sentez ses. Game Center bu demoda yok.
-Mağaza hattı hâlâ Flutter + WebView; bu klasör yalnız deneme (dal `unity-demo`, push edilmedi).
+TestFlight (2026-10-24, yasin: "Unity ile değiştirelim menüleri ve tüm oyunu"): `ios-testflight.yml` Unity lisans secret'ları
+varsa build'i bu projeden çıkarır (ubuntu'da game-ci/unity-builder → `Editor/CiBuild.cs` `BirdieSmash.EditorTools.CiBuild.iOS` →
+Xcode projesi; macOS'ta fastlane `beta_unity`). Secret'lar yoksa Flutter + WebView yolu çalışır. Kurulum: `YAPMAN_GEREKENLER.md`.
+PlayerSettings (bundle `com.birdiesmash.app`, ad, dikey, IL2CPP, ikon `Icon/AppIcon.png` = Flutter ikonu) build anında koddan yazılır;
+depoda ProjectSettings.asset yok.
 
 ## Açma
 1. Unity Hub › **Add** › bu klasörü (`unity/BirdieSmash`) seç. Sürüm: **Unity 6** (6000.0.x; başka 6000 sürümü de açar, Hub sorar).

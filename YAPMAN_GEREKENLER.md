@@ -27,6 +27,46 @@ Yalnız yasin'in yapabileceği adımlar. Sıra önemlidir (Harçlıklarım ile a
   oluştururken gör; doluysa "Birdie Smash!" ya da "Smash Birdie" yedek.
 - Karakterin oyuna girişi: sprite sheet (2D canvas) mi, three.js mi — karar.
 
+## Unity build'i TestFlight'a (2026-10-24, yasin: "Unity ile değiştirelim menüleri ve tüm oyunu")
+
+Hat hazır (`ios-testflight.yml`): üç Unity secret'ı girilince TestFlight build'i kendiliğinden
+Unity projesinden (`unity/BirdieSmash`) çıkar. Secret'lar yokken eski Flutter + WebView yolu
+aynen çalışır; Actions özetinde "Unity secret'ları eksik" notu görünür. Geri dönmek istersen
+`UNITY_LICENSE` secret'ını sil, hat Flutter'a döner.
+
+1. **Unity Hub'ı kur** (unity.com/download), Unity hesabınla giriş yap.
+2. **Installs › Install Editor › Archive** (ya da "download archive" sayfası) üzerinden tam olarak
+   **6000.0.58f2** sürümünü kur; modüllerden **iOS Build Support**'u işaretle. (Başka 6000.0.x
+   da proje açar ama CI bu sürümle derler; aynısı olsun.)
+3. **Lisans**: Unity Hub › sağ üstte hesap simgesi › **Manage licenses** › **Add** ›
+   **Get a free personal license**. Hub lisansı bilgisayara bir dosya olarak yazar:
+   - Windows: `C:\ProgramData\Unity\Unity_lic.ulf` (ProgramData gizli klasör; adres
+     çubuğuna yazarak git)
+   - macOS: `/Library/Application Support/Unity/Unity_lic.ulf` (Finder › Git › Klasöre Git;
+     baştaki `/` önemli, kullanıcı klasöründeki `~/Library` değil)
+4. **GitHub › yasincirali/birdie-smash › Settings › Secrets and variables › Actions ›
+   New repository secret** ile üç secret ekle:
+   - `UNITY_LICENSE`: `Unity_lic.ulf` dosyasını Not Defteri / TextEdit ile aç, **tüm içeriği**
+     (`<?xml` ile başlayıp `</root>` ile biten) kopyala, yapıştır.
+   - `UNITY_EMAIL`: Unity hesabının e-postası.
+   - `UNITY_PASSWORD`: Unity hesabının parolası.
+   Bu değerleri sohbete, commit'e ya da bir dosyaya yazma; yalnız GitHub secret alanına.
+5. **Birleştirmeden önce dene** (önerilir): Actions › "iOS — TestFlight" › **Run workflow** ›
+   dal `unity-demo` seç › Run. ~30–60 dk sürer (ilk build Library önbelleği olmadan en uzunu).
+   Yeşil biterse TestFlight'ta "Birdie Smash" altında yeni build görünür; notlar `=== UNITY ===`
+   bölümünden gelir. Kırmızıysa Claude'a "Unity build kırıldı" de, log'a bakar.
+6. Build iyiyse PR'ı `main`'e birleştir; bundan sonra her `main` push'u Unity build'i yükler.
+
+Notlar:
+- **Unity Personal sınırı**: son 12 ayda toplam gelir + alınan yatırım **200.000 USD**'yi
+  geçmemeli (Unity 6 koşulu). Geçerse Unity Pro gerekir; o zaman CI'ya Pro seri numarası
+  (`UNITY_SERIAL`) eklenir. Unity 6 Personal'da açılış logosu zorunlu değil.
+- Lisans dosyası zamanla yenilenebilir; CI "license" hatasıyla kırılırsa Hub'da lisansı
+  yenile ve 3–4. adımı tekrarla.
+- Unity build'inde **Game Center yok** ve önceki (HTML) sürümdeki ilerleme taşınmaz;
+  testçiler ilk açılış gibi başlar. Mağaza sürümü henüz yok, gerçek kullanıcı etkilenmez.
+- Bilgisayarda açmak için: Unity Hub › Add › `unity/BirdieSmash` klasörü (README orada).
+
 ## Game Center başarımları (2026-10-23, Ar-Ge önerisi, yasin "yap")
 
 Kod hazır (kabuk `games_services`, oyun `tuytop_basarim`). Başarımlar

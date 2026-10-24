@@ -18,6 +18,12 @@ onay beklemeden yap, sonunda Türkçe özetle; push saatleri kuralı (hafta içi
   göre sentezlenir, kabuk yorumlamaz; süre/desen oyundan gelir.
 - TestFlight: `main`'e birleşme → `ios-testflight.yml` (Harçlıklarım'dan
   türetildi; match dalı ve `MATCH_PASSWORD` Harçlıklarım ile ortak (Apple sertifika sınırı, 2026-10-19)). Android hattı yok.
+- **Unity geçişi (2026-10-24, yasin: "Unity ile değiştirelim menüleri ve tüm oyunu"):**
+  oyun + menüler `unity/BirdieSmash` (Unity 6000.0.58f2). `ios-testflight.yml` kapısı
+  UNITY_LICENSE/EMAIL/PASSWORD varsa Unity yolunu (unity-builder → fastlane `beta_unity`),
+  yoksa Flutter yolunu koşar; ikisi aynı bundle id ve aynı build numarası sırasını paylaşır.
+  `store_listing/whats_new.txt` `=== UNITY ===` / `=== HTML ===` bölümlü; her lane kendi bölümünü gönderir.
+  Unity'siz doğrulama: mono derleme (Unity modül DLL'leri) + `tool/unity_test/BotMac.cs`.
 - Doğrulama: `flutter analyze && flutter test && node tool/oyun_sozdizimi.js`.
 - Araçlar (2026-10-20): skill `3d-animator` (rig/mocap/retarget) + `birdie-karakter`
   (bu hat), `.mcp.json` → `blender` MCP (yalnız PC), bulut `tool/bulut_kurulum.sh`
