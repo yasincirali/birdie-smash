@@ -27,6 +27,50 @@ Yalnız yasin'in yapabileceği adımlar. Sıra önemlidir (Harçlıklarım ile a
   oluştururken gör; doluysa "Birdie Smash!" ya da "Smash Birdie" yedek.
 - Karakterin oyuna girişi: sprite sheet (2D canvas) mi, three.js mi — karar.
 
+## Game Center başarımları (2026-10-23, Ar-Ge önerisi, yasin "yap")
+
+Kod hazır (kabuk `games_services`, oyun `tuytop_basarim`). Başarımlar
+App Store Connect'te tanımlanmadan Game Center'da görünmez; oyun yine de
+yerelde sayar ve tanım yapılınca bir sonraki girişte hepsini gönderir.
+Sıralama tablosu (leaderboard) bilerek yok.
+
+0. **Developer › Identifiers › com.birdiesmash.app › Capabilities › Game Center**
+   işaretle, Save. (Şu anki App Store profili bu yeteneği içermiyor; 23 Ekim
+   build'i bu yüzden arşivde düştü, Game Center yetkisi geri alındı.) Sonra
+   Claude'a "profili yenile" de: match profili zorla yenilenir ve
+   `CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements` Runner'ın üç
+   yapılandırmasına geri eklenir. O build'e kadar oyun başarımları yalnız
+   yerelde sayar, kayıp olmaz.
+1. **ASC › Birdie Smash › Services (ya da Features) › Game Center**: aç.
+   Sürüm sayfasında ("App Store" sekmesi) Game Center kutusunu işaretle.
+2. **Achievements › +** ile aşağıdaki 11 başarımı ekle. **Achievement ID
+   birebir aynı olmalı** (oyun bu kimlikle gönderir). Hidden: No,
+   Achievable More Than Once: No. Görseller `store_listing/game_center/<id>.png`
+   (1024×1024). Her birine iki dil ekle: English (birincil) ve Turkish.
+
+| ID | Puan | EN başlık / açıklama | TR başlık / açıklama |
+|---|---|---|---|
+| bs_kariyer_1 | 20 | Local Hall / Win the local hall stage in Career. | Mahalle salonu / Kariyerde mahalle salonu basamağını kazan. |
+| bs_kariyer_2 | 30 | School Tournament / Win the school tournament stage in Career. | Okul turnuvası / Kariyerde okul turnuvası basamağını kazan. |
+| bs_kariyer_3 | 40 | Provincial Champion / Win the provincial championship stage in Career. | İl şampiyonu / Kariyerde il şampiyonası basamağını kazan. |
+| bs_kariyer_4 | 60 | Regional Final / Win the regional final stage in Career. | Bölge finali / Kariyerde bölge finali basamağını kazan. |
+| bs_kariyer_5 | 80 | National League / Win the national league stage in Career. | Ulusal lig / Kariyerde ulusal lig basamağını kazan. |
+| bs_kariyer_6 | 150 | Champion / Win the Champions Cup and finish Career. | Şampiyon / Şampiyonlar kupasını kazanıp kariyeri bitir. |
+| bs_antrenman | 10 | Coached / Finish the tutorial without skipping it. | Antrenmanlı / Antrenmanı atlamadan bitir. |
+| bs_akis | 40 | In the Flow / Reach Flow with perfect hits in a row. | Akışta / Üst üste tam orta vurup Akış'a gir. |
+| bs_ralli_20 | 50 | Marathon Rally / Play a rally of 20 shots. | Maraton ralli / 20 vuruşluk bir ralli oyna. |
+| bs_sicrayan_smac | 30 | Sky Smash / Win a point with a jump smash. | Gökten smaç / Sıçrayarak smaçla sayı kazan. |
+| bs_uc_gorev | 40 | Full Card / Complete all 3 missions in one match. | Tam kart / Bir maçta 3 görevin hepsini bitir. |
+
+Toplam 550 puan (Apple sınırı 1000; ileride eklenecekler için pay bırakıldı).
+Açıklamada ASC iki alan ister (kazanılmadan / kazanılınca); ikisine de aynı
+cümleyi yazabilirsin. Kaydettikten sonra başarımlar TestFlight build'inde
+hemen çalışır; mağaza sürümünde ilk incelemeyle birlikte yayına çıkar.
+
+Deneme: TestFlight build'inde kariyerin ilk basamağını kazan; maç sonunda
+Game Center giriş penceresi bir kez gelir. Giriş yapınca Ayarlar'da
+"Başarımlar" düğmesi çıkar.
+
 ## Karakter/animasyon araçları (2026-10-20, yasin: "gerekli kurulmamış tüm toolları kuralım")
 
 Bulut tarafı hazır: `3d-animator` ve `birdie-karakter` skill'leri repoda, Mesh2Motion
@@ -45,3 +89,69 @@ PC tarafı (Blender'ı Claude'un canlı sürmesi için, ~5 dk):
 4. Claude Code'u kapat-aç; `/mcp` listesinde `blender` Connected görünmeli.
 5. Mixamo: adobe hesabıyla https://www.mixamo.com'a giriş yap; klipleri elle
    indir (FBX, With Skin, 30 fps). Toplu/script indirme kural dışı.
+
+## Mağaza gönderimi, parça 1: gizlilik, App Privacy, yaş, metinler (2026-10-24, Ar-Ge raporu "yap")
+
+Hazır dosyalar: `legal/gizlilik.md` + `legal/privacy.md` (kaynak) → `docs/gizlilik.html`
++ `docs/privacy.html` (`python3 docs/_build_legal.py` üretir; HTML'i elle düzenleme),
+`store_listing/app_privacy.md`, `store_listing/yas_derecesi.md`,
+`store_listing/en/*.txt` ve `store_listing/tr/*.txt`. Ekran görüntüleri parça 2'de
+(karakter kararından sonra).
+
+### A. Gizlilik sayfasını yayınla (GitHub Pages)
+
+1. Bu dosyalar `main`'e girsin (PR + birleşme, push saatleri dışında). Yalnız
+   `docs/`, `store_listing/` ve `.md` değiştiği için TestFlight build'i tetiklenmez
+   (`ios-testflight.yml` paths-ignore).
+2. GitHub › `yasincirali/birdie-smash` › **Settings › Pages** › Build and deployment:
+   Source **Deploy from a branch**, Branch **main**, klasör **/docs** › **Save**.
+   (Depo public olduğu için ücretsiz plan yeter.)
+3. 1–2 dakika sonra telefonda aç ve kontrol et:
+   - İngilizce: **https://yasincirali.github.io/birdie-smash/privacy.html**
+   - Türkçe: **https://yasincirali.github.io/birdie-smash/gizlilik.html**
+4. Açılmıyorsa Settings › Pages'de yeşil "Your site is live" yazısını bekle.
+
+### B. Uygulama bilgileri (App Information)
+
+ASC › Apps › Birdie Smash › **General › App Information**.
+1. Sağ üstteki dil menüsünden **Add Language › Turkish** ekle (birincil dil English kalır).
+2. English seçiliyken: **Name** = `store_listing/en/name.txt`, **Subtitle** = `store_listing/en/subtitle.txt`.
+3. Turkish seçiliyken: **Name** = `store_listing/tr/name.txt`, **Subtitle** = `store_listing/tr/subtitle.txt`.
+4. **Category**: Primary **Games › Sports**; ikinci alt kategori istersen **Arcade**.
+5. **Age Ratings › Set Up Age Ratings**: `store_listing/yas_derecesi.md`'deki tabloyu
+   adım adım işaretle; son adımda **Not Applicable**, Save. Sonuç **4+** olmalı.
+
+### C. App Privacy
+
+ASC › Birdie Smash › **General › App Privacy**.
+1. **Privacy Policy URL** › Edit: English için `privacy.html`, Turkish için
+   `gizlilik.html` adresi (A.3; aynı adresler `store_listing/<dil>/privacy_url.txt`'te).
+2. **Data Types › Get Started** › "Do you or your third-party partners collect data
+   from this app?" → **No, we do not collect data from this app** › Save.
+3. Sağ üstte **Publish**. Sayfada "Data Not Collected" görünmeli.
+   Gerekçe ve hangi durumda değişeceği: `store_listing/app_privacy.md`.
+
+### D. Sürüm sayfası (iOS App › 1.0 Prepare for Submission)
+
+Her dil için (sağ üst dil menüsü) ilgili klasördeki dosyayı yapıştır:
+- **Promotional Text** ← `promotional_text.txt`
+- **Description** ← `description.txt`
+- **Keywords** ← `keywords.txt` (olduğu gibi; virgülden sonra boşluk ekleme)
+- **Support URL** ← açık soru (aşağıda)
+- **Marketing URL** boş kalabilir. "What's New" ilk sürümde sorulmaz.
+- **Copyright**: örn. `2026 <ad soyad ya da şirket adı>` (senin kararın).
+- **App Review Information**: iletişim adı/telefon/e-posta senin; **Sign-in required** işaretsiz (hesap yok).
+- Fiyat: **Pricing and Availability › Free**.
+- Ekran görüntüleri: parça 2.
+
+### Açık sorular (senin kararın)
+
+1. **Destek e-postası ve Support URL.** Support URL ASC'de zorunlu. Seçenekler:
+   (a) bir destek e-postası belirle, Claude `docs/destek.html` sayfasını o adresle
+   yapsın, URL `https://yasincirali.github.io/birdie-smash/destek.html` olur;
+   (b) mevcut bir web sayfan varsa onu ver. E-posta belirlenince gizlilik metninin
+   "İletişim" bölümüne de yazılır (yalnız "Sürüm" artar). Şu an metin "App Store'daki
+   destek bağlantısı"na yönlendiriyor; adres uydurulmadı.
+2. **Copyright satırı** ve App Store'da görünecek **geliştirici adı** (Apple hesabındaki
+   ad/şirket adı otomatik gelir).
+3. İkinci kategori **Arcade** olsun mu, yalnız Sports mu?

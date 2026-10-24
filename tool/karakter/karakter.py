@@ -4,6 +4,7 @@
 # Anahtar pozlar arasında kosinüs geçiş + hız eğrisi (hazırlık yavaş, temas hızlı, devam sönümlü).
 # Çıktı: sheet.png (renk), mask.png (R=forma G=raket çerçevesi B=kafa bandı A=bileklik), meta.json.
 import bpy, math, sys, json, os
+sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from mathutils import Vector, Matrix
 OUT=sys.argv[sys.argv.index('--')+1] if '--' in sys.argv else '/tmp/bs'
 MODE=sys.argv[sys.argv.index('--')+2] if '--' in sys.argv and len(sys.argv)>sys.argv.index('--')+2 else 'full'   # 'keys' = yalnız anahtar pozlar (önizleme)
@@ -18,6 +19,9 @@ def holdout(name):
     m=bpy.data.materials.new(name); m.use_nodes=True; nt=m.node_tree; nt.nodes.clear(); h=nt.nodes.new('ShaderNodeHoldout'); o=nt.nodes.new('ShaderNodeOutputMaterial'); nt.links.new(h.outputs[0],o.inputs[0]); return m
 SKIN=mat('ten',(0.93,0.72,0.56)); FORMA=mat('forma',(0.80,0.80,0.80)); SORT=mat('sort',(0.12,0.14,0.2)); SAC=mat('sac',(0.16,0.1,0.07)); BEYAZ=mat('beyaz',(0.95,0.95,0.93)); CERCEVE=mat('cerceve',(0.85,0.85,0.85),.35); TEL=mat('tel',(0.85,0.85,0.85),.4); BANT=mat('bant',(0.85,0.85,0.85)); BILEK=mat('bilek',(0.85,0.85,0.85)); TUY=mat('tuy',(0.97,0.97,0.95)); MANTAR=mat('mantar',(0.95,0.72,0.3))
 WHITE=emis('w',(1,1,1)); HOLD=holdout('h')
+# Hakem kıyafeti (BWF: lacivert ceket, açık gömlek, koyu pantolon, siyah ayakkabı). Renk sahnede pişer; oyunda boyanmaz.
+CEKET=mat('ceket',(0.025,0.04,0.10)); PANT=mat('pantolon',(0.08,0.08,0.10)); SIYAH=mat('ayakkabi',(0.04,0.04,0.05),.35); GOMLEK=mat('gomlek',(0.92,0.94,0.96)); TABLET=mat('tablet',(0.10,0.10,0.12),.3); EKRAN=emis('ekran',(0.35,0.55,0.75))
+SAC_GRI=mat('sac_gri',(0.12,0.12,0.12))
 objs=[]
 def sphere(name,loc,r,m,scale=(1,1,1),tag=None):
     bpy.ops.mesh.primitive_uv_sphere_add(radius=r,location=loc,segments=24,ring_count=12); o=bpy.context.object; o.name=name; o.scale=scale; o.data.materials.append(m); bpy.ops.object.shade_smooth(); o['tag']=tag or m.name; objs.append(o); return o
@@ -36,8 +40,24 @@ def ik(A,B,l1,l2,hint):
     return A+u*a+hv.normalized()*h, B
 UA,FA=0.19,0.17; TH,SH=0.20,0.18   # üst kol/ön kol, uyluk/baldır
 SHW=0.13; HIPW=0.085
+# Gerçekçi gövde (yasin 2026-10-23: "insan anatomisine uygun olacak kadar gerçekçi"): MakeHuman tabanı (insan.py, CC0),
+# aynı poz sözlüklerini kullanır. BS_GERCEK=0 eski oyuncak figürü çizer (hakemler şimdilik oyuncak figürde).
+GERCEK=os.environ.get('BS_GERCEK','1')=='1'
+MODEL=os.environ.get('BS_MODEL','insan')   # 'oyuncak' = KayKit gövdeli oyuncak figür (oyuncak.py), aynı pozlar
+OY=None
+def build_gercek(p):
+    global OY
+    import insan
+    if OY is None:
+        for o in list(objs): bpy.data.objects.remove(o)
+        M_=insan.malzemeler(FORMA,SORT,BEYAZ,BANT,CERCEVE,TEL,SORT)
+        if MODEL=='oyuncak': import oyuncak; objs.clear(); OY=oyuncak.Oyuncak(M_)
+        elif MODEL=='aday': import aday; objs.clear(); OY=aday.Aday(M_)   # karşılaştırma: hazır modeller (aday.py)
+        else: objs.clear(); OY=insan.Oyuncu(M_,stil=os.environ.get('BS_STIL'))
+    objs[:]=OY.kur_poz(p)
 def build(p):
     """p: poz sözlüğü → sahneye figürü kur"""
+    if GERCEK and not p.get('hakem'): return build_gercek(p)
     for o in list(objs): bpy.data.objects.remove(o)
     objs.clear()
     root=Vector(p['root']); lean=Vector(p.get('lean',(0,0,0)))
@@ -50,10 +70,12 @@ def build(p):
     Rz=Matrix.Rotation(tw,3,'Z')
     shL=chest+Rz@Vector((-SHW,0,0.04)); shR=chest+Rz@Vector((SHW,0,0.04))
     neck=chest+Vector((0,0,0.08)); hc=neck+Vector((0,0,0.14))+Vector(p.get('head',(0,0,0)))
-    capsule('govde',root,chest,0.11,0.13,FORMA); sphere('karin',(root+chest)/2+Vector((0,0.01,0)),0.12,FORMA,(1,0.85,1))
-    capsule('sort',root-Vector((0,0,0.06)),root+Vector((0,0,0.04)),0.115,0.115,SORT)
+    HK=p.get('hakem',False); GV=CEKET if HK else FORMA; KOL=CEKET if HK else SKIN; BAC=PANT if HK else SKIN; AYK=SIYAH if HK else BEYAZ
+    capsule('govde',root,chest,0.11,0.13,GV); sphere('karin',(root+chest)/2+Vector((0,0.01,0)),0.12,GV,(1,0.85,1))
+    if HK: sphere('yaka',chest+Vector((0,0.085,0.035)),0.045,GOMLEK,(1,0.5,1.2))   # ceket önünde gömlek yakası
+    capsule('sort',root-Vector((0,0,0.06)),root+Vector((0,0,0.04)),0.115,0.115,PANT if HK else SORT)
     capsule('boyun',chest+Vector((0,0,0.03)),neck+Vector((0,0,0.02)),0.045,0.045,SKIN)
-    sphere('bas',hc,0.14,SKIN,(1,0.95,1.05)); sphere('sac',hc+Vector((0,-0.01,0.03)),0.145,SAC,(1,0.98,0.95))
+    sphere('bas',hc,0.14,SKIN,(1,0.95,1.05)); sphere('sac',hc+Vector((0,-0.01,0.03)),0.145,SAC_GRI if p.get('gri') else SAC,(1,0.98,0.95))
     sphere('cene',hc+Vector((0,0.02,-0.08)),0.09,SKIN,(1,0.9,0.8))
     look=Vector(p.get('look',(0,1,0))).normalized(); side=look.cross(Vector((0,0,1))).normalized(); up=side.cross(look).normalized()
     for sx in (-1,1):
@@ -61,15 +83,16 @@ def build(p):
         sphere('kulak'+str(sx),hc+side*sx*0.14-Vector((0,0,0.01)),0.03,SKIN,(0.6,1,1))
     bpy.ops.mesh.primitive_torus_add(location=hc+look*0.125-Vector((0,0,0.055)),major_radius=0.035,minor_radius=0.006); sm=bpy.context.object; sm.name='gulus'; sm.rotation_mode='QUATERNION'; sm.rotation_quaternion=look.to_track_quat('Z','Y'); sm.data.materials.append(SORT); sm['tag']='sort'; objs.append(sm)
     # kafa bandı: ayrı nesne (maske); renk oyunda
-    bpy.ops.mesh.primitive_torus_add(location=hc+Vector((0,0,0.045)),major_radius=0.142,minor_radius=0.016,major_segments=40,minor_segments=8); bd=bpy.context.object; bd.name='kafabandi'; bd.scale=(1,0.97,1); bd.data.materials.append(BANT); bd['tag']='bant'; objs.append(bd)
+    if not HK: bpy.ops.mesh.primitive_torus_add(location=hc+Vector((0,0,0.045)),major_radius=0.142,minor_radius=0.016,major_segments=40,minor_segments=8); bd=bpy.context.object; bd.name='kafabandi'; bd.scale=(1,0.97,1); bd.data.materials.append(BANT); bd['tag']='bant'; objs.append(bd)
     # kollar
     for side_,sh,pre in ((1,shR,'sag'),(-1,shL,'sol')):
         wr=Vector(p['wr'+pre[1].upper() if False else ('wrR' if side_>0 else 'wrL')]); hint=Vector(p.get('elR' if side_>0 else 'elL',(side_*1,-0.3,-0.6)))
         el,wr=ik(sh,wr,UA,FA,hint)
-        sphere(pre+'_omuz',sh,0.062,FORMA)
-        capsule(pre+'_ustkol',sh,el,0.05,0.042,SKIN); capsule(pre+'_onkol',el,wr,0.04,0.034,SKIN)
+        sphere(pre+'_omuz',sh,0.062,GV)
+        capsule(pre+'_ustkol',sh,el,0.05,0.042,KOL); capsule(pre+'_onkol',el,wr,0.04,0.034,KOL)
         hd=(wr-el).normalized(); sphere(pre+'_el',wr+hd*0.025,0.045,SKIN,(0.85,1,1.05))
-        if side_>0:
+        if HK: pass
+        elif side_>0:
             bpy.ops.mesh.primitive_torus_add(location=wr-hd*0.02,major_radius=0.042,minor_radius=0.014,major_segments=24,minor_segments=8); bk=bpy.context.object; bk.name='bileklik'; bk.rotation_mode='QUATERNION'; bk.rotation_quaternion=hd.to_track_quat('Z','Y'); bk.data.materials.append(BILEK); bk['tag']='bilek'; objs.append(bk)
             rd=Vector(p.get('rk',(0,0.6,0.8))).normalized(); g0=wr+hd*0.03; g1=g0+rd*0.20
             capsule('raket_sap',g0,g1,0.014,0.012,SORT); hcn=g1+rd*0.13
@@ -85,11 +108,14 @@ def build(p):
     for side_,pre in ((1,'sag'),(-1,'sol')):
         hp=root+Vector((side_*HIPW,0,-0.04)); an=Vector(p['anR' if side_>0 else 'anL']); hint=Vector(p.get('knR' if side_>0 else 'knL',(0,1,0)))
         kn,an=ik(hp,an,TH,SH,hint)
-        capsule(pre+'_uyluk',hp,kn,0.062,0.05,SKIN); capsule(pre+'_baldir',kn,an,0.048,0.036,SKIN)
+        capsule(pre+'_uyluk',hp,kn,0.062,0.05,BAC); capsule(pre+'_baldir',kn,an,0.048,0.036,BAC)
         fd=Vector(p.get('ftR' if side_>0 else 'ftL',(0,1,0))); fd.z=0; fd=fd.normalized()
-        bpy.ops.mesh.primitive_cube_add(size=1,location=an+fd*0.04-Vector((0,0,0.02))); f=bpy.context.object; f.name=pre+'_ayakkabi'; f.scale=(0.075,0.14,0.05); f.rotation_euler=(0,0,math.atan2(fd.x,fd.y)*-1); f.data.materials.append(BEYAZ); f['tag']='beyaz'
+        bpy.ops.mesh.primitive_cube_add(size=1,location=an+fd*0.04-Vector((0,0,0.02))); f=bpy.context.object; f.name=pre+'_ayakkabi'; f.scale=(0.075,0.14,0.05); f.rotation_euler=(0,0,math.atan2(fd.x,fd.y)*-1); f.data.materials.append(AYK); f['tag']='beyaz'
         md=f.modifiers.new('b','BEVEL'); md.width=0.02; md.segments=3; bpy.ops.object.shade_smooth(); objs.append(f)
-        bpy.ops.mesh.primitive_cylinder_add(radius=0.07,depth=0.04,location=an+Vector((0,0,0.03))); s2=bpy.context.object; s2.name=pre+'_corap'; s2.data.materials.append(BEYAZ); s2['tag']='beyaz'; objs.append(s2)
+        bpy.ops.mesh.primitive_cylinder_add(radius=0.07,depth=0.04,location=an+Vector((0,0,0.03))); s2=bpy.context.object; s2.name=pre+'_corap'; s2.data.materials.append(PANT if HK else BEYAZ); s2['tag']='beyaz'; objs.append(s2)
+    if p.get('tablet'):   # BWF baş hakemi skoru tablete girer: iki elin arasında, kucakta/masada
+        c_=Vector(p['tablet']); bpy.ops.mesh.primitive_cube_add(size=1,location=c_); tb=bpy.context.object; tb.name='tablet'; tb.scale=(0.20,0.14,0.012); tb.rotation_euler=(math.radians(p.get('tabletEgim',25)),0,0); tb.data.materials.append(TABLET); objs.append(tb)
+        bpy.ops.mesh.primitive_plane_add(size=1,location=c_+Vector((0,-0.003,0.008))); ek=bpy.context.object; ek.name='tablet_ekran'; ek.scale=(0.18,0.12,1); ek.rotation_euler=(math.radians(p.get('tabletEgim',25)),0,0); ek.data.materials.append(EKRAN); objs.append(ek)
 
 # ---------- pozlar ----------
 def P_(**k): return k
@@ -136,29 +162,66 @@ smash=sample([(0,READY),(0.25,S_PREP),(0.40,S_PREP),(0.56,S_HIT),(0.72,S_FOL),(1
 C_HIT=D(S_HIT,wrR=(0.12,-0.02,1.27),rk=(0,0.2,0.98),lean=(0,0,0.02))
 C_FOL=D(S_FOL,wrR=(-0.14,0.30,0.62),rk=(-0.5,0.75,0.2),root=(0,0.05,0.40),lean=(0,0.07,0),twist=-30,anR=(0.12,0.10,0.05))
 clear=sample([(0,READY),(0.28,S_PREP),(0.42,S_PREP),(0.58,C_HIT),(0.75,C_FOL),(1,READY)],10)
-# --- drive (omuz hizası, yandan): raket sağ-arkada yatay → yan-önde temas → gövde önünden geçer
-DR_PREP=D(READY,twist=18,lean=(0.02,-0.03,0),wrR=(0.34,-0.18,0.70),elR=(1,-0.6,-0.2),rk=(0.3,-0.9,0.3),rkFace=(0,1,0),wrL=(-0.1,0.25,0.65),anR=(0.16,-0.10,0.05),anL=(-0.10,0.10,0.05),look=(0.3,1,0))
-DR_HIT=D(READY,twist=0,lean=(0.03,0.04,-0.02),root=(0.04,0,0.37),wrR=(0.40,0.30,0.70),elR=(1,0.2,-0.3),rk=(0.5,0.85,0.1),rkFace=(0,1,0.3),wrL=(-0.2,0.1,0.55),anR=(0.26,0.04,0.05),anL=(-0.12,0.04,0.05),ftR=(0.8,0.6,0))
-DR_FOL=D(READY,twist=-25,lean=(0,0.05,0),wrR=(-0.12,0.36,0.70),elR=(1,0.6,-0.3),rk=(-0.9,0.4,0.1),rkFace=(0,1,0),wrL=(-0.24,-0.02,0.45))
+# --- drive (omuz hizası). 2026-10-21 (yasin: "drive'larda anatomi gerçekçi değil"; arastirma/reports/Badminton alçak
+#     vuruş ve servis.md §drive): eskisi tenis gibi büyük geri salınımdı (el gövdenin arkasında, raket geriye yatık).
+#     Gerçekte: sağ ayak sağa adım, gövde fileye neredeyse kare; KISA hazırlık (dirsek bükük ve yukarıda, raket başı
+#     yukarıda, bilek geriye kırık); temas sağ omzun önünde; güç omuz iç rotasyonu + pronasyon + bilekten; takip kısa,
+#     gövdenin önünden sola geçmez.
+DR_PREP=D(READY,twist=14,lean=(0.02,0.0,0),wrR=(0.32,0.04,0.74),elR=(1,-0.3,-0.2),rk=(0.25,-0.35,0.90),rkFace=(0.3,1,0),wrL=(-0.18,0.20,0.60),anR=(0.26,0.02,0.05),anL=(-0.12,0.02,0.05),look=(0.3,1,0.1))
+DR_HIT=D(READY,twist=0,lean=(0.03,0.03,-0.01),root=(0.03,0.02,0.38),wrR=(0.36,0.34,0.74),elR=(1,0.1,-0.4),rk=(0.35,0.92,0.15),rkFace=(0,1,0),wrL=(-0.20,0.12,0.56),anR=(0.30,0.06,0.05),anL=(-0.12,0.0,0.05),ftR=(0.7,0.7,0))
+DR_FOL=D(READY,twist=-8,lean=(0.02,0.04,0),root=(0.02,0.02,0.39),wrR=(0.22,0.40,0.72),elR=(1,0.3,-0.4),rk=(-0.15,0.95,0.25),rkFace=(0,1,0),wrL=(-0.20,0.08,0.52),anR=(0.28,0.06,0.05),anL=(-0.12,0.0,0.05))
 drive=sample([(0,READY),(0.3,DR_PREP),(0.55,DR_HIT),(0.72,DR_FOL),(1,READY)],8)
 # --- file öldürme (kısa, yüksek dürtme): raket önde yüksek, bilek kırar
 K_PREP=D(READY,wrR=(0.22,0.10,0.95),elR=(1,-0.3,-0.4),rk=(0.1,0.3,0.95),rkFace=(0,1,0),lean=(0,0.03,0),look=(0,0.7,0.7))
 K_HIT=D(READY,wrR=(0.16,0.34,0.98),elR=(1,-0.2,-0.3),rk=(0.1,0.95,-0.3),rkFace=(0,0.4,1),lean=(0,0.08,0),root=(0,0.05,0.40),anR=(0.14,0.14,0.05),anL=(-0.12,0.0,0.05),look=(0,0.9,0.4))
 kill=sample([(0,READY),(0.3,K_PREP),(0.55,K_HIT),(0.75,D(K_HIT,wrR=(0.12,0.30,0.88),rk=(0.1,0.9,-0.45))),(1,READY)],7)
-# --- alçak forehand (lift/alçak top): raket alttan geriden öne süpürür, sağ ayak öne adım
-L_PREP=D(READY,twist=25,lean=(0.02,0.02,-0.02),root=(0,0.02,0.36),wrR=(0.34,-0.16,0.30),elR=(1,-0.5,0.2),rk=(0.3,-0.5,-0.8),rkFace=(0,1,0),wrL=(-0.22,0.2,0.55),anR=(0.14,0.16,0.05),anL=(-0.12,-0.10,0.05),knR=(0,1,0),look=(0.2,1,-0.3))
-L_HIT=D(READY,twist=5,lean=(0,0.08,-0.04),root=(0,0.06,0.34),wrR=(0.30,0.38,0.26),elR=(1,0.3,0.4),rk=(0.1,0.9,-0.3),rkFace=(0,0.3,1),wrL=(-0.24,-0.02,0.5),anR=(0.14,0.24,0.05),anL=(-0.12,-0.14,0.05),look=(0.1,1,-0.3))
-L_FOL=D(READY,twist=-15,lean=(0,0.06,0),root=(0,0.05,0.38),wrR=(0.06,0.42,0.78),elR=(1,0.4,-0.2),rk=(-0.3,0.4,0.85),rkFace=(0,1,0),wrL=(-0.22,0.05,0.45),anR=(0.14,0.18,0.05),anL=(-0.12,-0.08,0.05))
+# --- alçak forehand (lift / file önü). 2026-10-21: eski hazırlıkta el kalçanın ARKASINDAYDI (tenis forehand'ı gibi).
+#     Gerçekte raket erken ve önde sunulur: sağ ayak öne adım (topuk önce), gövde dik (20–30° eğim), sol kol dengede
+#     geride uzanır; kısa geri salınım = önkol dışa döner, raket başı elin altına düşer; temas sağ ayağın önünde alçakta,
+#     dirsek hafif bükük; takip kısa, hedefe doğru ileri-yukarı.
+L_PREP=D(READY,twist=10,lean=(0.01,0.03,-0.02),root=(0,0.06,0.36),wrR=(0.28,0.24,0.34),elR=(1,-0.1,-0.3),rk=(0.25,-0.25,-0.93),rkFace=(0,1,0.3),wrL=(-0.26,-0.10,0.48),elL=(-1,-0.4,-0.3),anR=(0.15,0.22,0.06),anL=(-0.12,-0.10,0.05),look=(0.1,1,-0.3))
+L_HIT=D(READY,twist=2,lean=(0.01,0.06,-0.03),root=(0.02,0.12,0.33),wrR=(0.26,0.44,0.26),elR=(1,0.2,-0.2),rk=(0.15,0.75,-0.64),rkFace=(0,0.7,0.7),wrL=(-0.28,-0.18,0.44),elL=(-1,-0.5,-0.2),anR=(0.16,0.34,0.05),anL=(-0.12,-0.14,0.05),look=(0.1,1,-0.3))
+L_FOL=D(READY,twist=-4,lean=(0,0.05,-0.01),root=(0.02,0.11,0.35),wrR=(0.20,0.48,0.56),elR=(1,0.3,-0.3),rk=(0.05,0.55,0.83),rkFace=(0,1,0.3),wrL=(-0.26,-0.16,0.44),anR=(0.16,0.34,0.05),anL=(-0.12,-0.12,0.05))
 low=sample([(0,READY),(0.32,L_PREP),(0.55,L_HIT),(0.75,L_FOL),(1,READY)],8)
 # --- hamle (lunge): sağ bacak derin öne, sol bacak gergin arkada, raket alçak ve çok önde, sol kol denge için arkada
 LU_HIT=D(READY,twist=10,lean=(0,0.07,-0.04),root=(0,0.24,0.28),wrR=(0.22,0.72,0.16),elR=(1,0.4,0.6),rk=(0.1,0.95,-0.2),rkFace=(0,0.3,1),wrL=(-0.26,-0.20,0.42),elL=(-1,-0.5,0.2),anR=(0.14,0.48,0.05),anL=(-0.12,-0.24,0.07),knR=(0,1,0),knL=(0,1,0),ftL=(-0.3,1,0),look=(0,1,-0.4))
 LU_PREP=D(READY,twist=15,lean=(0,0.08,-0.03),root=(0,0.10,0.37),wrR=(0.28,0.20,0.30),elR=(1,-0.2,0.5),rk=(0.1,0.8,-0.5),rkFace=(0,1,0),wrL=(-0.24,0.0,0.50),anR=(0.14,0.22,0.08),anL=(-0.12,-0.10,0.05))
 lunge=sample([(0,READY),(0.35,LU_PREP),(0.6,LU_HIT),(0.78,D(LU_HIT,wrR=(0.16,0.66,0.30),rk=(0,0.9,0.4))),(1,READY)],8)
-# --- servis (kısa alçak servis): sol el topu bel önünde tutar, raket alttan kısa itiş, sonra hazır
-SV0=D(READY,twist=20,lean=(0,0.02,0),wrL=(-0.06,0.30,0.50),elL=(-1,0.1,-0.5),shuttle=True,wrR=(0.26,0.10,0.40),elR=(1,-0.4,-0.2),rk=(0.2,0.3,-0.9),rkFace=(0,1,0),anR=(0.12,-0.12,0.05),anL=(-0.12,0.10,0.05),look=(0,1,-0.2))
-SV1=D(SV0,wrR=(0.30,-0.06,0.38),rk=(0.3,-0.3,-0.9))
-SV2=D(SV0,twist=-5,lean=(0,0.06,0),wrR=(0.08,0.36,0.52),rk=(-0.2,0.9,0.2),rkFace=(0,0.2,1),wrL=(-0.16,0.18,0.52),shuttle=False)
-serve=sample([(0,SV0),(0.25,SV0),(0.45,SV1),(0.65,SV2),(1,READY)],10)
+# --- servisler (2026-10-21, yasin: "kısa servisi bir badminton sporcusu gibi atmalı, uzun servis de buna göre; kısa servis
+#     pozisyonunda flick de atabilmeliyim"; arastirma/reports/Badminton alçak vuruş ve servis.md §servis).
+# kısa servis (backhand): sağ ayak önde, ayaklar omuz genişliğinde kademeli, gövde fileye kare; backhand tutuş,
+#     raket bel önünde, başı aşağı, dirsek yukarı-öne; tüy top sol elde tüylerinden, raketin hemen önünde ve 1,15 m
+#     altında. Geri salınım birkaç santim; başparmakla kısa itiş; takip raket yüzü fileye bakar, göğüs hizasının altında kalır.
+# 2026-10-21 (2. tur, yasin: "kısa serviste anatomik hareketler sergilenmiyor"): eski pozda el kalça hizasında, dirsek
+#     gövdeye yapışık ve raket bacakların arasından dik sarkıyordu. Elit tekler kısa servisinde (Axelsen, Lee Zii Jia;
+#     arastirma/research_notes/backhand_servis_anatomi.md) el bel–göbek önünde, DİRSEK DIŞA VE YUKARI kalkık, önkol
+#     gövdenin önünde yataya yakın; raket başı sola-aşağı ~35° eğik, yüzü fileye; top sol elde tüylerinden, raket yüzünün
+#     hemen önünde. Geri salınım yok; başparmak itişi raketi birkaç santim öne taşır, takip göğüs altında biter.
+SB0=D(READY,root=(0,0.03,0.41),twist=-10,lean=(0,0.04,0),anR=(0.04,0.14,0.05),anL=(-0.14,-0.10,0.05),ftR=(-0.1,1,0),ftL=(-0.3,1,0),
+      wrR=(0.03,0.24,0.56),elR=(1,0.4,0.5),rk=(-0.80,0.22,-0.55),rkFace=(0,1,0),wrL=(-0.23,0.30,0.40),elL=(-1,-0.2,-0.6),shuttle=True,look=(0,1,-0.15))
+SB1=D(SB0,wrR=(0.03,0.22,0.56))
+SB2=D(SB0,wrR=(0.03,0.29,0.57),rk=(-0.72,0.45,-0.52),wrL=(-0.26,0.20,0.40),shuttle=False)
+SB3=D(SB2,wrR=(0.02,0.34,0.60),rk=(-0.55,0.80,-0.22),rkFace=(0,0.8,0.6),wrL=(-0.24,0.12,0.42),look=(0,1,0))
+serve_bh=sample([(0,SB0),(0.22,SB0),(0.40,SB1),(0.50,SB2),(0.68,SB3),(1,READY)],10)
+# flick: SB0/SB1 birebir aynı (aldatmanın şartı); temasta geç ve kısa bir bilek/başparmak kırılması raket başını yukarı fırlatır
+SF2=D(SB0,wrR=(0.03,0.30,0.60),rk=(-0.45,0.55,0.70),rkFace=(0,0.6,0.8),wrL=(-0.26,0.20,0.40),shuttle=False)
+SF3=D(SF2,wrR=(0.0,0.30,0.70),rk=(-0.25,0.25,0.93),wrL=(-0.24,0.12,0.42),look=(0,0.8,0.6))
+serve_flick=sample([(0,SB0),(0.22,SB0),(0.40,SB1),(0.50,SF2),(0.66,SF3),(1,READY)],10)
+# yüksek servis (forehand, teklerde uzun): yan duruş, sol ayak önde, ağırlık arka (sağ) ayakta; sol el topu önde omuz
+#     hizasında tutar ve bırakır (atmaz); raket arkada yukarıdan uzun ve gevşek iner; temas ön ayak hizasında alçakta,
+#     önkol rotasyonu; takip sol omzun üstüne, ağırlık öne geçer; temastan sonra arka ayak öne kayar.
+SH0=D(READY,root=(0,-0.03,0.41),twist=55,lean=(0,-0.03,0),anL=(-0.02,0.20,0.05),anR=(0.14,-0.16,0.05),ftL=(0.2,1,0),ftR=(0.9,0.4,0),
+      wrR=(0.30,-0.20,0.74),elR=(1,-0.5,0.2),rk=(0.2,-0.5,0.85),rkFace=(1,0,0),wrL=(0.04,0.28,0.68),elL=(-1,0.2,-0.4),shuttle=True,look=(0,1,0))
+SH1=D(SH0,root=(0,-0.02,0.40),twist=45,wrR=(0.30,-0.10,0.36),elR=(1,-0.4,0.2),rk=(0.2,-0.45,-0.87),wrL=(-0.06,0.24,0.62),shuttle=False)
+SH2=D(SH1,root=(0,0.04,0.40),twist=12,lean=(0,0.02,0),wrR=(0.18,0.30,0.34),elR=(1,0,0.2),rk=(0.10,0.92,-0.37),rkFace=(0,0.5,0.85),wrL=(-0.14,0.16,0.56))
+SH3=D(SH2,root=(0,0.08,0.41),twist=-35,lean=(0,0.04,0),wrR=(-0.22,0.18,0.92),elR=(1,0.4,0.4),rk=(-0.45,-0.2,0.87),rkFace=(0,1,0),wrL=(-0.20,0.02,0.50),anR=(0.12,0.0,0.07))
+serve=sample([(0,SH0),(0.18,SH0),(0.38,SH1),(0.55,SH2),(0.75,SH3),(1,READY)],20)
+# 20 kare (yasin 2026-10-22 "uzun serviste animasyon takılıyor"): 10 karede temasa kadar 6,5 kare 0,56 sn'ye yayılıyordu
+#     = saniyede ~11 poz, her poz 6 ekran karesi bekliyordu. 20 karede ~23 poz/sn. Klip iki sıraya yayılır (sheet.py).
+# Benim uzun servisim: servis türünü kaydırma seçtiği için beklerken backhand kısa servis duruşundayım; doğrudan
+#     'serve'e geçince duruş tek karede sıçrıyordu. Geçiş klibi aynı salınımı kısa servis duruşundan başlatır: ilk %22'de
+#     gövde döner, sol ayak öne, raket arkaya gider. Rakip 'serve'i kullanır (duruşu servis türünü önceden ele verir).
+serve_gec=sample([(0,SB0),(0.06,SB0),(0.24,SH0),(0.42,SH1),(0.58,SH2),(0.77,SH3),(1,READY)],20)
 # --- blok (ağa yakın kısa itiş): raket göğüs önünde dik, küçük hareket
 # savunma bloğu: geniş alçak duruş, raket bel önünde (diz ile göğüs arası), çok kısa itiş, takip yok
 B_LOW=D(READY,root=(0,-0.02,0.34),lean=(0,0.07,-0.02),anR=(0.20,0.04,0.05),anL=(-0.19,0.0,0.05),wrR=(0.04,0.24,0.46),elR=(1,-0.4,-0.3),rk=(-0.1,0.6,0.8),rkFace=(0,1,0),wrL=(-0.20,0.16,0.42))
@@ -172,23 +235,34 @@ BO_PREP=D(READY,twist=-125,lean=(-0.02,-0.06,0.01),wrR=(-0.10,-0.14,0.78),elR=(-
 BO_HIT=D(READY,twist=-105,lean=(-0.02,-0.03,0.02),wrR=(-0.20,-0.10,1.22),elR=(-0.5,-1,0.6),rk=(-0.2,-0.2,0.96),rkFace=(0,-1,0),wrL=(0.10,0.08,0.48),anR=(-0.12,-0.24,0.05),anL=(0.04,0.06,0.05),ftR=(-0.6,-1,0),ftL=(0.3,1,0),look=(-0.4,-0.4,0.8))
 BO_FOL=D(READY,twist=-70,lean=(0,0.0,0),wrR=(-0.30,-0.04,1.04),elR=(-0.6,-1,0.4),rk=(-0.6,-0.2,0.75),rkFace=(0,-1,0),wrL=(0.12,0.08,0.48),anR=(-0.08,-0.18,0.05),anL=(-0.02,0.08,0.05))
 bh_over=sample([(0,READY),(0.26,BO_PREP),(0.40,BO_PREP),(0.56,BO_HIT),(0.72,BO_FOL),(1,READY)],10)
-# --- backhand drive (omuz hizası, gövde önünden sola)
-BD_PREP=D(READY,twist=-32,lean=(-0.02,-0.02,0),wrR=(-0.16,0.02,0.72),elR=(0.5,1,0),rk=(-0.5,-0.8,0.2),rkFace=(0,1,0),wrL=(0.16,0.0,0.5),anR=(0.04,-0.14,0.05),anL=(-0.16,0.10,0.05),look=(-0.4,1,0))
-BD_HIT=D(READY,twist=-8,lean=(0,0.04,0),wrR=(-0.36,0.30,0.74),elR=(0.3,0.8,0),rk=(-0.85,0.5,0.1),rkFace=(0,1,0.3),wrL=(0.18,0.0,0.5),anR=(0.08,-0.04,0.05),anL=(-0.16,0.12,0.05))
-BD_FOL=D(READY,twist=4,lean=(0,0.05,0),wrR=(-0.42,0.34,0.80),elR=(0.2,0.8,0),rk=(-0.95,0.2,0.3),rkFace=(0,1,0),wrL=(0.2,-0.02,0.46))
+# --- backhand drive (2026-10-21): başparmak tutuş, dirsek önde ve topa dönük, raket başı arkadan gelir; temas vuran
+#     omzun önünde, kol hafif bükük; supinasyon + bilek açılması; geri salınım çok kısa, takip gövdenin önünden
+#     SAĞA savrulmaz (eskiden kol gövdeyi çaprazlayıp sağa uzanıyordu). Sağ ayak sola-öne adım atar.
+# 2. tur (2026-10-21, yasin: "backhand vuruşta anatomik hareketler yok"): eski pozda gövde fileye kare kalıyordu ve
+#     sağ ayak yerinde duruyordu. Backhand'de sağ omuz fileye döner (göğüs sola, sırtın bir kısmı fileye), sağ ayak
+#     sola-öne çapraz adım atar, el sol göğüs önünde, dirsek alt kaburga hizasında ÖNDE ve topa dönük, raket başı sol
+#     omzun arkasında; temas vuran omzun önünde, el sırtı fileye; takip kısa, sağa savrulmaz. Sol kol geride dengede.
+BD_PREP=D(READY,twist=-55,lean=(-0.02,0.01,0),root=(-0.03,0.02,0.39),wrR=(-0.14,0.10,0.60),elR=(0.4,1,-0.3),rk=(-0.50,-0.55,0.67),rkFace=(0,1,0),wrL=(-0.18,-0.20,0.48),elL=(-1,-0.5,-0.3),anR=(-0.14,0.20,0.06),anL=(-0.10,-0.12,0.05),ftR=(-0.6,0.8,0),look=(-0.5,1,0.05))
+BD_HIT=D(BD_PREP,twist=-40,lean=(-0.02,0.04,0),wrR=(-0.20,0.38,0.64),elR=(0.3,1,-0.2),rk=(-0.70,0.55,0.10),rkFace=(0,1,0),anR=(-0.16,0.24,0.05),look=(-0.4,1,0))
+BD_FOL=D(BD_HIT,twist=-32,wrR=(-0.12,0.44,0.66),rk=(-0.15,0.95,0.25))
 bh_drive=sample([(0,READY),(0.3,BD_PREP),(0.55,BD_HIT),(0.72,BD_FOL),(1,READY)],8)
 # --- backhand file öldürme (yüksek, kısa dürtme)
 BK_PREP=D(READY,twist=-20,wrR=(-0.14,0.08,0.92),elR=(0.5,1,0.2),rk=(-0.3,0.2,0.93),rkFace=(0,1,0),lean=(0,0.03,0),look=(-0.3,0.7,0.6))
 BK_HIT=D(READY,twist=-5,wrR=(-0.28,0.34,0.98),elR=(0.4,0.9,0),rk=(-0.4,0.8,-0.4),rkFace=(0,0.4,1),lean=(0,0.08,0),root=(0,0.05,0.40),anR=(0.0,0.14,0.05),anL=(-0.16,0.0,0.05),look=(-0.2,0.9,0.4))
 bh_kill=sample([(0,READY),(0.3,BK_PREP),(0.55,BK_HIT),(0.75,D(BK_HIT,wrR=(-0.26,0.30,0.88),rk=(-0.4,0.75,-0.55))),(1,READY)],7)
-# --- backhand alçak (file/lift): sağ ayak öne-sola, raket alttan sola süpürür
-BL_PREP=D(READY,twist=-25,lean=(-0.02,0.02,-0.02),root=(0,0.02,0.36),wrR=(-0.18,0.0,0.36),elR=(0,1,0.3),rk=(-0.3,-0.4,-0.85),rkFace=(0,1,0),wrL=(0.2,0.1,0.52),anR=(-0.02,0.18,0.05),anL=(-0.16,-0.10,0.05),look=(-0.2,1,-0.3))
-BL_HIT=D(READY,twist=-8,lean=(0,0.08,-0.04),root=(0,0.06,0.34),wrR=(-0.30,0.40,0.28),elR=(0,1,0.5),rk=(-0.3,0.9,-0.3),rkFace=(0,0.3,1),wrL=(0.22,-0.02,0.48),anR=(-0.02,0.26,0.05),anL=(-0.16,-0.14,0.05),look=(-0.1,1,-0.3))
-BL_FOL=D(READY,twist=0,lean=(0,0.06,0),root=(0,0.05,0.38),wrR=(-0.14,0.42,0.72),elR=(0,1,0),rk=(-0.5,0.4,0.75),rkFace=(0,1,0),wrL=(0.2,0.05,0.45),anR=(-0.02,0.20,0.05),anL=(-0.16,-0.08,0.05))
+# --- backhand alçak (file önü / lift, 2026-10-21): sağ ayak sola-öne adım (backhand köşesine de raket ayağı gider),
+#     başparmak tutuş, dirsek önce yükselip öne çıkar, raket başı arkadan ve elin ALTINDA gelir; gövde dik, sol kol
+#     geride; takip kısa ve hedefe. Eskisinde raket başı önde süpürüyordu.
+# 2. tur: backhand ön köşe = sağ bacakla sola-öne hamle (sol bacakla hamle acemi hatası), gövde ~45° döner, sırt
+#     fileye yarı dönük; dirsek önce yükselip öne çıkar, raket başı elin ALTINDA ve arkada gelir; sol kol hamlenin tersine
+#     geride uzanır; temas öndeki ayağın önünde alçakta; lift'te takip öne-yukarı, file vuruşunda çok kısa.
+BL_PREP=D(READY,twist=-45,lean=(-0.02,0.05,-0.02),root=(-0.06,0.10,0.36),wrR=(-0.16,0.30,0.48),elR=(0.2,1,0.3),rk=(-0.35,-0.10,-0.93),rkFace=(-0.3,0.9,0.3),wrL=(0.10,-0.22,0.46),elL=(1,-0.6,-0.2),anR=(-0.16,0.30,0.08),anL=(0.0,-0.16,0.05),ftR=(-0.5,0.9,0),ftL=(-0.2,1,0),look=(-0.3,1,-0.3))
+BL_HIT=D(BL_PREP,twist=-40,lean=(-0.03,0.07,-0.04),root=(-0.10,0.22,0.29),wrR=(-0.26,0.58,0.26),elR=(0.2,1,0.4),rk=(-0.35,0.55,-0.76),rkFace=(0,0.6,0.8),wrL=(0.18,-0.30,0.42),anR=(-0.22,0.46,0.05),anL=(0.04,-0.20,0.07),knR=(0,1,0),look=(-0.2,1,-0.4))
+BL_FOL=D(BL_HIT,wrR=(-0.22,0.56,0.46),rk=(-0.30,0.70,0.65),rkFace=(0,0.8,0.6))
 bh_low=sample([(0,READY),(0.32,BL_PREP),(0.55,BL_HIT),(0.75,BL_FOL),(1,READY)],8)
 # --- backhand hamle: sol-öne derin, sağ (raket) bacak öne
-BLU_PREP=D(READY,twist=-15,lean=(-0.02,0.08,-0.03),root=(-0.03,0.10,0.37),wrR=(-0.22,0.2,0.30),elR=(0,1,0.6),rk=(-0.3,0.8,-0.5),rkFace=(0,1,0),wrL=(0.22,0.0,0.50),anR=(-0.04,0.22,0.08),anL=(-0.14,-0.10,0.05))
-BLU_HIT=D(READY,twist=-30,lean=(-0.03,0.07,-0.04),root=(-0.06,0.24,0.28),wrR=(-0.30,0.68,0.14),elR=(0,1,0.6),rk=(-0.3,0.9,-0.2),rkFace=(0,0.3,1),wrL=(0.24,-0.18,0.46),elL=(1,-0.5,0.2),anR=(-0.04,0.42,0.05),anL=(-0.16,-0.20,0.05),ftL=(0.3,1,0),look=(-0.2,1,-0.4))
+BLU_PREP=D(BL_PREP,root=(-0.06,0.12,0.35),anR=(-0.18,0.34,0.09))
+BLU_HIT=D(BL_HIT,root=(-0.12,0.26,0.27),wrR=(-0.30,0.66,0.18),rk=(-0.30,0.90,-0.30),rkFace=(0,0.3,1),anR=(-0.24,0.52,0.05),anL=(0.06,-0.24,0.07))
 bh_lunge=sample([(0,READY),(0.35,BLU_PREP),(0.6,BLU_HIT),(0.78,D(BLU_HIT,wrR=(-0.24,0.64,0.30),rk=(-0.3,0.9,0.4))),(1,READY)],8)
 # ================= ayak işi (yasin: "adımlamalar badminton sporunun doğasına uygun olmalı") =================
 # split step: rakip vururken küçük sıçrama, geniş ve alçak iniş
@@ -218,8 +292,16 @@ J_TAKE=D(S_PREP,root=(0,-0.03,0.34),anR=(0.16,-0.18,0.05),anL=(-0.10,0.14,0.05))
 J_AIR=D(S_HIT,root=(0,0.0,0.42),anR=(0.12,0.22,0.16),anL=(-0.12,-0.22,0.22),knR=(0,1,0),knL=(0,-1,0))
 J_LAND=D(S_FOL,root=(0,0.04,0.36),anR=(0.14,0.16,0.10),anL=(-0.14,-0.10,0.05),ftL=(-0.7,1,0))   # önce sol ayak dışa dönük iner (§3)
 jump=sample([(0,READY),(0.22,S_PREP),(0.34,J_TAKE),(0.52,J_AIR),(0.70,J_LAND),(1,READY)],10)
-CLIPS=dict(idle=idle,run=run,smash=smash,clear=clear,drive=drive,kill=kill,low=low,lunge=lunge,serve=serve,block=block,bh_over=bh_over,bh_drive=bh_drive,bh_kill=bh_kill,bh_low=bh_low,bh_lunge=bh_lunge,split=split,chasse_r=chasse_r,chasse_l=chasse_l,fwd=fwd,back_r=back_r,back_l=back_l,jump=jump)
-KEYS=dict(bo=[BO_PREP,BO_HIT,BO_FOL],bd=[BD_PREP,BD_HIT,BD_FOL],bk=[BK_PREP,BK_HIT],bl=[BL_PREP,BL_HIT,BL_FOL],blu=[BLU_PREP,BLU_HIT],split=[split[1],split[3]],chr=[chasse_r[2],chasse_r[4]],chl=[chasse_l[2],chasse_l[4]],fwd=[fwd[1],fwd[4]],bkr=[back_r[2],back_r[4]],bkl=[back_l[2],back_l[4]],jump=[J_TAKE,J_AIR,J_LAND])
+# --- yorgun (2026-10-23, Ar-Ge "rakibin nefesi"; yasin: "rakibi koşturup endurance'ı düşürmeliyiz, onu da görelim").
+#     Sayı arasında nefesi bitmiş oyuncu: dizler bükük, gövde öne eğik, iki el dizlerin hemen üstünde, raket sağ elden
+#     aşağı sarkar, baş aşağıda. Omuzlar nefesle iner kalkar (döngü, 10 kare). Klip listenin SONUNA eklenir ki önceki
+#     klip satırları kaymasın ve yalnız bu klip render edilip var olan sheet'e eklenebilsin.
+YG0=D(READY,root=(0,0.02,0.33),lean=(0,0.13,-0.05),twist=0,wrR=(0.13,0.16,0.25),elR=(1,-0.3,0.4),rk=(0.2,0.25,-0.95),rkFace=(1,0,0),
+      wrL=(-0.13,0.16,0.25),elL=(-1,-0.3,0.4),anR=(0.13,0.0,0.05),anL=(-0.13,0.0,0.05),knR=(0,1,0),knL=(0,1,0),look=(0,1,-0.55))
+YG1=D(YG0,root=(0,0.02,0.345),lean=(0,0.11,-0.03),wrR=(0.13,0.15,0.26),wrL=(-0.13,0.15,0.26),look=(0,1,-0.4))
+yorgun=sample([(0,YG0),(0.45,YG1),(1,YG0)],10,loop=True)
+CLIPS=dict(idle=idle,run=run,smash=smash,clear=clear,drive=drive,kill=kill,low=low,lunge=lunge,serve=serve,serve_gec=serve_gec,serve_bh=serve_bh,serve_flick=serve_flick,block=block,bh_over=bh_over,bh_drive=bh_drive,bh_kill=bh_kill,bh_low=bh_low,bh_lunge=bh_lunge,split=split,chasse_r=chasse_r,chasse_l=chasse_l,fwd=fwd,back_r=back_r,back_l=back_l,jump=jump,yorgun=yorgun)
+KEYS=dict(sv=[SB0,SB1,SB2,SB3],fl=[SF2,SF3],sh=[SH0,SH1,SH2,SH3],dr=[DR_PREP,DR_HIT,DR_FOL],lo=[L_PREP,L_HIT,L_FOL],bdn=[BD_PREP,BD_HIT,BD_FOL],bln=[BL_PREP,BL_HIT,BL_FOL],X0=[],bo=[BO_PREP,BO_HIT,BO_FOL],bd=[BD_PREP,BD_HIT,BD_FOL],bk=[BK_PREP,BK_HIT],bl=[BL_PREP,BL_HIT,BL_FOL],blu=[BLU_PREP,BLU_HIT],split=[split[1],split[3]],chr=[chasse_r[2],chasse_r[4]],chl=[chasse_l[2],chasse_l[4]],fwd=[fwd[1],fwd[4]],bkr=[back_r[2],back_r[4]],bkl=[back_l[2],back_l[4]],jump=[J_TAKE,J_AIR,J_LAND],yorgun=[YG0,YG1])
 
 # ---------- sahne ----------
 bpy.ops.object.light_add(type='SUN',location=(1,-2,4)); sun=bpy.context.object; sun.data.energy=3.2; sun.rotation_euler=(math.radians(40),0,math.radians(20))
@@ -228,13 +310,16 @@ sc.world=bpy.data.worlds.new('w'); sc.world.use_nodes=True; sc.world.node_tree.n
 sc.render.engine='CYCLES'; sc.cycles.samples=24; sc.cycles.use_denoising=True; sc.render.film_transparent=True; sc.view_settings.view_transform='Standard'
 try: sc.cycles.device='CPU'
 except: pass
-CW_,CH_=192,256; sc.render.resolution_x=CW_; sc.render.resolution_y=CH_; sc.render.resolution_percentage=100
+CW_,CH_=192,256
+if MODE!='stil': CW_,CH_=CW_*int(os.environ.get('BS_OLCEK','1')),CH_*int(os.environ.get('BS_OLCEK','1'))   # 2× hücre (yasin 2026-10-23 "doku kalitesi düşüktü"): oyunda büyütülüp bulanıklaşmasın
+sc.render.resolution_x=CW_; sc.render.resolution_y=CH_; sc.render.resolution_percentage=100
 bpy.ops.object.camera_add(); cam=bpy.context.object; sc.camera=cam; cam.data.type='ORTHO'; cam.data.ortho_scale=2.4  # büyük kenar (yükseklik) = 2.4 birim → ~107 px/birim; hamlede raket kadraja sığsın
 VIEWS={'me':(0,-1,1.35),'op':(0,1,1.35)}  # arkadan (ben) ve önden (rakip), ~53° yukarıdan
 def setcam(v):
     d=Vector(VIEWS[v]).normalized(); cam.location=Vector((0,0,0.5))+d*4; cam.rotation_mode='XYZ'; el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2)  # baş hep yukarıda (track_quat'ta roll kayıyordu)
 from bpy_extras.object_utils import world_to_camera_view as w2c
 def anchor():
+    bpy.context.view_layer.update()   # setcam sonrası matris güncellenmeden okunursa eski kamerayla izdüşer (hakem görünümünde 128 çıkıyordu)
     p=w2c(sc,cam,Vector((0,0,0))); return [p.x*CW_,(1-p.y)*CH_]
 def render(path):
     sc.render.filepath=path; bpy.ops.render.render(write_still=True)
@@ -253,6 +338,87 @@ def hide_bands(h):
     for o in objs:
         if o.get('tag') in ('bant','bilek'): o.hide_render=h
 meta={'cell':[CW_,CH_],'clips':{},'views':list(VIEWS),'pxPerUnit':CH_/2.4}
+# ---------- hakemler (yasin 2026-10-22: "hakemler daha gerçekçi olmalı, benim sporcularım gibi, sayıda hareket etmeli
+# sadece"). Aynı figür, hakem kıyafetiyle. Araştırma: arastirma/hakemler_sayida.md. Baş hakem (yüksek sandalye, file
+# hizası, kortun solunda) her sayıda skoru tablete girer; servis el değiştirince ("Service over") o tarafı açık elle,
+# o taraftaki koluyla gösterir. Servis hakemi (alçak sandalye, karşı direkte) servisi atacak oyuncuya bakar; servis el
+# değiştirince başı ve gövdesi yeni servisçiye döner. Ralli sırasında ikisi de kıpırdamaz.
+HK0=dict(READY,hakem=True,gri=True,root=(0,0,0.40),lean=(0,-0.01,0),twist=0,anR=(0.09,0.21,0.20),anL=(-0.09,0.21,0.20),knR=(0,1,1),knL=(0,1,1),ftR=(0,1,0),ftL=(0,1,0),
+     wrR=(0.10,0.24,0.47),elR=(1,-0.4,-0.7),wrL=(-0.10,0.24,0.47),elL=(-1,-0.4,-0.7),tablet=(0,0.28,0.45),tabletEgim=35,look=(0,1,-0.05),shuttle=False)
+HK_YAZ=D(HK0,wrR=(0.03,0.29,0.49),look=(0,1,-0.55),head=(0,0.01,-0.01))         # başını eğer, sağ işaret parmağıyla tablete dokunur
+HK_SOL=D(HK0,wrL=(-0.46,0.16,0.62),elL=(-0.3,-0.2,-1),look=(-0.55,1,0.0),twist=-6)  # sol kol açık elle sol tarafı (rakibin yarısı) gösterir
+HK_SAG=D(HK0,wrR=(0.46,0.16,0.62),elR=(0.3,-0.2,-1),look=(0.55,1,0.0),twist=6)
+SJ0=dict(READY,hakem=True,root=(0,0,0.27),lean=(0,0.03,0),twist=0,anR=(0.10,0.21,0.04),anL=(-0.10,0.21,0.04),knR=(0,1,1),knL=(0,1,1),ftR=(0,1,0),ftL=(0,1,0),
+     wrR=(0.11,0.17,0.27),elR=(1,-0.3,-0.4),wrL=(-0.11,0.17,0.27),elL=(-1,-0.3,-0.4),look=(0,1,-0.2),shuttle=False)
+SJ_SAG=D(SJ0,look=(0.75,1,-0.25),twist=14,head=(0.01,0,0)); SJ_SOL=D(SJ0,look=(-0.75,1,-0.25),twist=-14,head=(-0.01,0,0))
+HCLIPS={'hk':dict(hk_dur=[HK0],hk_yaz=sample([(0,HK0),(0.3,HK_YAZ),(0.7,HK_YAZ),(1,HK0)],8),
+                  hk_sol=sample([(0,HK0),(0.25,HK_SOL),(0.75,HK_SOL),(1,HK0)],12),hk_sag=sample([(0,HK0),(0.25,HK_SAG),(0.75,HK_SAG),(1,HK0)],12)),
+        'sj':dict(sj_sag=[SJ_SAG],sj_sol=[SJ_SOL],sj_saga=sample([(0,SJ_SOL),(1,SJ_SAG)],7),sj_sola=sample([(0,SJ_SAG),(1,SJ_SOL)],7))}
+# Oyun kamerası benim arkamda. Oyunun (x sağ, y ekranda aşağı, z yukarı) eksenleri sol-elli, Blender sağ-elli: bu
+# yüzden baş hakem (kortun solunda korta bakar) kameraya SAĞ yanını, servis hakemi SOL yanını gösterir. Benim yarım
+# baş hakemin sağı, servis hakeminin solu (ilk denemede tersi alınmıştı: hakem tableti dışarı bakıyordu).
+# Yükseklik oyuncu görünümüyle aynı (~53°).
+VIEWS.update({'hk':(1,0,1.35),'sj':(-1,0,1.35)})
+if MODE=='hakem':
+    hm={'cell':[CW_,CH_],'pxPerUnit':CH_/2.4,'clips':{},'anchor':{}}
+    for v,cl in HCLIPS.items():
+        setcam(v); hm['anchor'][v]=anchor()
+        for name,frames in cl.items():
+            hm['clips'][name]={'n':len(frames),'v':v}
+            for fi,p in enumerate(frames): build(p); set_mats(None); render(f'{OUT}/h_{name}_{fi}.png')
+    json.dump(hm,open(f'{OUT}/hmeta.json','w')); print('HAKEM DONE'); sys.exit(0)
+# Ekipman ekranında 360° görünüm (2026-10-23, yasin: "avatarımı 360 görmek isterim, raketimi görmek isterim"). Hazır
+# duruş, 24 açı (15°), ~32° yukarıdan (göz hizasında bacaklar figürü uzatıyordu), daha büyük hücre. Aynı tint maskeleri: oyunda seçilen forma,
+# raket, bant ve bileklik renkleri burada da boyanır. Raket kafasının her açıdaki ekran yeri meta'ya yazılır: "raketi
+# yakından gör" ayrı render istemez, o noktaya 2× kırpar.
+if MODE=='tur':
+    TWD,THD=480,640; sc.render.resolution_x=TWD; sc.render.resolution_y=THD; cam.data.ortho_scale=2.3; N=int(os.environ.get('BS_TUR_N','24'))   # TH adı uyluk boyu, kullanma; 480×640: "raketi yakından gör" 2× büyütmede bulanıklaşmasın
+    TUR=D(READY,twist=0,rk=(0.18,0.30,0.94),wrR=(0.24,0.20,0.56),look=(0,1,0.05))
+    tm={'cell':[TWD,THD],'n':N,'raket':[],'cols':8}
+    build(TUR)
+    for i in range(N):
+        a_=2*math.pi*i/N; d=Vector((math.sin(a_),-math.cos(a_),0.62)).normalized()   # i=0: önden değil arkadan değil, oyuncuya karşıdan (yüz kameraya)
+        d=Vector((-d.x,-d.y,d.z)); cam.location=Vector((0,0,0.5))+d*4; el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2)
+        bpy.context.view_layer.update()
+        rkp=OY.kafa if (GERCEK and OY) else [o for o in objs if o.name.startswith('raket_kafa')][0].matrix_world.translation; q=w2c(sc,cam,rkp); tm['raket'].append([round(q.x*TWD,1),round((1-q.y)*THD,1)])
+        hide_bands(True); set_mats(None); render(f'{OUT}/t_{i}.png')
+        hide_bands(False); sc.cycles.samples=4; sc.cycles.use_denoising=False
+        for tag in (() if os.environ.get('BS_ONIZLEME') else ('forma','cerceve','bant','bilek','tel','tel2','grip')): set_mats(tag); render(f'{OUT}/tm_{i}_{tag}.png')   # BS_ONIZLEME: yalnız renk geçişi   # tel/tel2/grip: raket ekranındaki renk seçimi oyuncuda da görünsün
+        set_mats(None); sc.cycles.samples=24; sc.cycles.use_denoising=True
+    json.dump(tm,open(f'{OUT}/tmeta.json','w')); print('TUR DONE'); sys.exit(0)
+if MODE=='raket':   # raket 360° (yasin 2026-10-23: "rakete dokununca raketin 360 ekranı, teller gerçekçi, grip ve kordaj rengi")
+    import insan
+    RW,RH=300,640; sc.render.resolution_x=RW; sc.render.resolution_y=RH; N=24
+    for o in list(objs): bpy.data.objects.remove(o)
+    objs.clear(); M=insan.malzemeler(FORMA,SORT,BEYAZ,BANT,CERCEVE,TEL,SORT); S_=1.0
+    nes,kc=insan.raket(Vector((0,0,0)),Vector((0,0,1)),Vector((0,-1,0)),S_,M,tel_kalin=.0008); objs[:]=nes   # gerçek boy (67,5 cm), yüz kameraya; tel yakın ekranda seçilsin diye biraz kalın
+    zc=.228; cam.data.ortho_scale=.74   # sap ucu -0,11, kafa tepesi 0,565
+    rm={'cell':[RW,RH],'n':N,'cols':12}
+    for i in range(N):
+        a_=2*math.pi*i/N; d=Vector((math.sin(a_),-math.cos(a_),0.18)).normalized(); cam.location=Vector((0,0,zc))+d*3
+        el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2); bpy.context.view_layer.update()
+        set_mats(None); sc.cycles.samples=32; sc.cycles.use_denoising=True; render(f'{OUT}/r_{i}.png')
+        sc.cycles.samples=4; sc.cycles.use_denoising=False
+        for tag in ('tel','tel2','grip','cerceve'): set_mats(tag); render(f'{OUT}/rm_{i}_{tag}.png')
+        set_mats(None)
+    json.dump(rm,open(f'{OUT}/rmeta.json','w')); print('RAKET DONE'); sys.exit(0)
+if MODE=='stil':   # arcade tarz önizlemesi: aynı pozlar, 2× hücre (doku), arkadan/önden + yakın ön görünüm
+    FORMA.node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value=(0.06,0.42,0.85,1); BANT_=BANT.node_tree.nodes.get('Principled BSDF')   # önizlemede oyunun boyadığı renkler pişer
+    if BANT_: BANT_.inputs['Base Color'].default_value=(0.85,0.12,0.18,1)
+    R2=int(os.environ.get('BS_OLCEK','2')); sc.render.resolution_x=CW_*R2; sc.render.resolution_y=CH_*R2; sc.cycles.samples=32
+    pz=dict(hazir=READY,smac=CLIPS['smash'][len(CLIPS['smash'])//2],uzan=CLIPS['lunge'][len(CLIPS['lunge'])//2],kos=CLIPS['run'][2])
+    for ad,p in pz.items():
+        build(p); hide_bands(False); set_mats(None)
+        for v in ('me','op'): setcam(v); render(f'{OUT}/s_{ad}_{v}.png')
+    build(READY); hide_bands(False); set_mats(None); sc.render.resolution_x=480; sc.render.resolution_y=640; cam.data.ortho_scale=1.35
+    d=Vector((0.55,0.75,0.35)).normalized(); cam.location=Vector((0,0,0.5))+d*4; el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2)
+    render(f'{OUT}/s_yakin.png')
+    pb=OY.ao.pose.bones; mw=OY.ao.matrix_world
+    for ad_,bn,osc,yon in (('yuz','head',.28,(0.25,1,0.12)),('elR','wrist.R',.24,(0.6,0.8,0.3)),('elL','wrist.L',.24,(-0.5,0.8,0.3))):
+        bn={'head':OY.R['head'],'wrist.R':OY.R['el'].format(S='R'),'wrist.L':OY.R['el'].format(S='L')}[bn] if MODEL=='aday' else bn; bn=bn if bn in pb else bn.lower(); osc=osc*(2.2 if MODEL=='oyuncak' and bn=='head' else 1.6 if MODEL=='oyuncak' else 1)   # oyuncak: küçük harf kemik, iri baş/el
+        c=mw@pb[bn].head if bn!='head' else mw@((pb[bn].head+pb[bn].tail)/2); d=Vector(yon).normalized(); cam.location=c+d*3; cam.data.ortho_scale=osc
+        el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2); sc.render.resolution_x=sc.render.resolution_y=480; render(f'{OUT}/s_{ad_}.png')
+    print('STIL DONE'); sys.exit(0)
 if MODE=='keys':
     sc.cycles.samples=12; setcam('me'); i=0
     for name,ps in KEYS.items():
@@ -260,10 +426,15 @@ if MODE=='keys':
             build(p); hide_bands(False); render(f'{OUT}/key_{name}{j}_me.png'); setcam('op'); render(f'{OUT}/key_{name}{j}_op.png'); setcam('me'); i+=1
     print('KEYS DONE',i)
 else:
-    row=0
+    row=0; ONLY=MODE[5:].split(',') if MODE.startswith('only:') else None   # 'only:a,b' = yalnız bu klipler render edilir, meta tümü
+    COLS=10   # 10'dan uzun klip alt alta birden çok sıra kaplar (sheet.py ile aynı)
     for name,frames in CLIPS.items():
         meta['clips'][name]={'n':len(frames),'row':row}
-        for v in VIEWS:
+        row+=(len(frames)+COLS-1)//COLS-1
+        if ONLY and name not in ONLY:
+            for v in meta['views']: setcam(v); meta.setdefault('anchor',{})[v]=anchor()
+            row+=1; continue
+        for v in meta['views']:   # hk/sj hakem modunun; oyuncu klipleri yalnız me/op
             setcam(v); meta.setdefault('anchor',{})[v]=anchor()
             for fi,p in enumerate(frames):
                 build(p); hide_bands(True); set_mats(None); render(f'{OUT}/f_{name}_{v}_{fi}.png')

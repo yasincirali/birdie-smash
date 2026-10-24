@@ -27,3 +27,25 @@ if [ ! -d "$LIB/animations" ]; then
     rm -rf "$T"
   fi
 fi
+# Gerçekçi oyuncu (tool/karakter/insan.py): MakeHuman veri dosyaları (CC0), yalnız gövde ağı, makro hedefler, iskelet.
+MH=$HOME/AnimationLibrary/makehuman/mh
+if [ ! -f "$MH/makehuman/data/3dobjs/base.obj" ]; then
+  git clone -q --depth 1 --filter=blob:none --sparse https://github.com/makehumancommunity/makehuman "$MH" \
+    && git -C "$MH" sparse-checkout set makehuman/data/3dobjs makehuman/data/targets/macrodetails makehuman/data/rigs \
+    && echo "makehuman: clone" || echo "makehuman alınamadı"
+fi
+# Oyuncak 3B oyuncu (tool/karakter/oyuncak.py): KayKit Character Pack Adventures 1.0 (CC0, Kay Lousberg), Rogue gövdesi.
+KK=$HOME/AnimationLibrary/kaykit
+if [ ! -f "$KK/addons/kaykit_character_pack_adventures/Characters/gltf/Rogue.glb" ]; then
+  T=$(mktemp -d) && git clone -q --depth 1 https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0.git "$T/k" \
+    && mkdir -p "$KK" && mv "$T/k/addons" "$KK/addons" && echo "kaykit: clone" || echo "kaykit alınamadı"
+fi
+# Gerçekçi oyuncu (tool/karakter/aday.py, BS_MODEL=aday): Microsoft Rocketbox Sports_Male_04 (MIT). Repo çok büyük;
+# yalnız bu avatarın FBX'i ve 6 dokusu raw.githubusercontent'ten alınır.
+RB=$HOME/AnimationLibrary/rocketbox/Sports_Male_04
+if [ ! -f "$RB/Export/Sports_Male_04.fbx" ]; then
+  U=https://raw.githubusercontent.com/microsoft/Microsoft-Rocketbox/master/Assets/Avatars/Professions/Sports_Male_04
+  mkdir -p "$RB/Export" "$RB/Textures" && curl -sSfL -o "$RB/Export/Sports_Male_04.fbx" "$U/Export/Sports_Male_04.fbx" \
+    && for t in body head; do for k in color normal specular; do curl -sSfL -o "$RB/Textures/m026_${t}_${k}.tga" "$U/Textures/m026_${t}_${k}.tga"; done; done \
+    && echo "rocketbox: indirildi" || echo "rocketbox alınamadı"
+fi

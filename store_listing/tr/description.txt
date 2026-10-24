@@ -1,0 +1,29 @@
+Birdie Smash, tek parmakla oynanan bir badminton oyunu. Top gelince ekranda kaydırırsın: kaydırmanın yönü topun gideceği yeri, hızı vuruşun gücünü belirler.
+
+VURUŞLAR
+Yavaş ve kısa geçersen drop olur, top filenin hemen arkasına düşer. Uzun kaydırırsan clear ile dibe atarsın. Top başının üstündeyken hızlı kaydırırsan smaç gelir. Omuz hizasında drive, alçak topta lift, file üstünde file vuruşu, rakibin smacına karşı blok. Kaydırırken parmağınla yay çizersen top kesilir ve beklenenden kısa düşer. Servis de sende: kısa, flick ya da yüksek.
+
+Topun tam ortasından geçen vuruşlar smaç gücünü doldurur. Güç dolunca bir sonraki smacın sıçrayarak smaç olur. Üst üste tam orta vurursan Akış'a girersin: çizgiler altın olur, hedef büyür, müziğe armoni katılır.
+
+FORMDA KAL
+Smaç, sıçrama ve uzanma nefes yakar. Nefesin azalınca yavaşlarsın, smacın zayıflar. Clear atıp sayı arasında dinlen. Forehand ile backhand farklıdır: backhand tarafından smaç olmaz, topu forehand tarafına alacak şekilde dur.
+
+KARİYER
+Altı basamak: mahalle salonu, okul turnuvası, il şampiyonası, bölge finali, ulusal lig ve Şampiyonlar kupası. Rakiplerin farklı oynar: her topu smaçlayan Smaşçı, her şeyi geri çeviren Duvar, fileye yapışan File oyuncusu. Her maçta üç görev seni bekler. Kariyeri bitirince Şampiyon forması açılır.
+
+EKİPMAN
+Maç kazandıkça Tüy ve XP toplarsın. Raket modeli, tel gerginliği, bileklik, kafa bandı ve forma oyunun hissini değiştirir: kafa ağır raket smacı sertleştirir, kafa hafif raket file oyununu hızlandırır, gevşek tel güç verir, sıkı tel kontrol. Ekipman raketin sesini ve titreşimini de değiştirir. Oyuncunu 360 derece döndürüp raketini yakından inceleyebilirsin. Tüy yalnızca oynayarak kazanılır; satın alma yoktur.
+
+ANTRENMAN VE HIZLI MAÇ
+Antrenörlü antrenman her vuruşu adım adım öğretir. Hızlı maçta 5, 11 ya da 21 sayılık maç seçersin; dört saha var: salon, turnuva, ahşap zeminli okul ve gece. Kolay modda oyuncun topa kendisi koşar, sen yalnızca vurursun. Usta modda koşmak da sende.
+
+HİS VE SES
+Raket sesi tel gerginliğine ve vuruş türüne göre telefonunda üretilir. Her vuruş titreşimle hissedilir. Hareketi azalt ayarı açıksa geçişler sakinleşir.
+
+GAME CENTER
+Kariyer ve oyun içi başarılar için Game Center başarımları. Giriş isteğe bağlıdır.
+
+İNTERNET GEREKMEZ
+Oyun tamamen telefonunda çalışır. Hesap yok, reklam yok, veri toplanmaz; ilerlemen yalnızca cihazında saklanır.
+
+Türkçe ve İngilizce, telefonunun diline göre açılır.
