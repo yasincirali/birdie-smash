@@ -195,7 +195,15 @@ platform :ios do
     # Basarim.cs → Social API (GameKit). Yetki yoksa giriş sessizce başarısız olur. Unity'nin ürettiği projeye yetki
     # dosyası yazılıp uygulama hedefine bağlanır. App Store profili Game Center'ı zaten taşır (Flutter yolu aynı profille
     # imzalıyor). Bir şey ters giderse build durmaz: başarımlar çalışmaz ama oyun yüklenir.
+    # 2026-10-25 düzeltme: ilk Unity koşusu (40233036476) "profil Game Center yetkisini taşımıyor" diye arşivde
+    # kırıldı; varsayım yanlıştı. Yetki artık yalnız match'in kurduğu profil onu gerçekten taşıyorsa yazılır.
+    # App ID'de Game Center açılıp profil yenilenince (setup-match) kendiliğinden devreye girer.
+    profil_yolu = ENV["sigh_#{BUNDLE_ID}_appstore_profile-path"].to_s
+    profil_gc = !profil_yolu.empty? && File.exist?(profil_yolu) &&
+                sh("security cms -D -i #{profil_yolu.shellescape}", log: false).include?("com.apple.developer.game-center")
+    UI.important("Profil Game Center yetkisi taşımıyor: başarımlar bu build'de kapalı") unless profil_gc
     begin
+      raise "profil Game Center taşımıyor" unless profil_gc
       require "xcodeproj"
       ent_ad = "BirdieSmash.entitlements"
       File.write(File.join(dir, ent_ad), <<~PLIST)
@@ -214,7 +222,7 @@ platform :ios do
       proj.save
       UI.message("Game Center yetkisi eklendi: #{ent_ad}")
     rescue => e
-      UI.important("Game Center yetkisi eklenemedi (başarımlar çalışmaz): #{e.class}")
+      UI.important("Game Center yetkisi eklenmedi (başarımlar çalışmaz): #{e.message}")
     end
 
     # Uygulama ikonu Flutter'ınkiyle aynı set: Unity'nin ürettiği 1024'lük ikon alfa kanalı taşırsa
