@@ -68,10 +68,10 @@ jobs:
           sudo chmod -R a+rwX build
           mkdir -p "$RUNNER_TEMP/ekran"
           export LIBGL_ALWAYS_SOFTWARE=1
-          timeout 900 xvfb-run -a -s "-screen 0 600x1300x24" "$EXE" -screen-width 590 -screen-height 1278 -screen-fullscreen 0 \
+          timeout 1500 xvfb-run -a -s "-screen 0 600x1300x24" "$EXE" -screen-width 390 -screen-height 845 -screen-fullscreen 0 \
             -force-glcore -logFile "$RUNNER_TEMP/ekran/player.log" -bsekran "$RUNNER_TEMP/ekran" || echo "oyuncu çıkış kodu $?"
           ls -la "$RUNNER_TEMP/ekran"
-          tail -50 "$RUNNER_TEMP/ekran/player.log" || true
+          grep -E "EkranTuru|Exception|Error" "$RUNNER_TEMP/ekran/player.log" | grep -v ALSA | tail -60 || true
 
       - uses: actions/upload-artifact@v4
         if: always()

@@ -30,7 +30,9 @@ namespace BirdieSmash.Game
         IEnumerator Start()
         {
             Directory.CreateDirectory(dir); Time.captureDeltaTime = 1f / 30;
-            yield return null; root = FindFirstObjectByType<GameRoot>();
+            Debug.Log("EkranTuru başladı: " + dir);
+            yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
+            yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             Ayar.antrenman = true; Ayar.easy = true; Ayar.target = 5; Ayar.reduce = false;
             string[] modeller = { "oyuncak", "rocketbox" };
             foreach (var mdl in modeller)
@@ -84,6 +86,7 @@ namespace BirdieSmash.Game
 
         IEnumerator Cek(string ad)
         {
+            Debug.Log("EkranTuru kare " + Time.frameCount + " t=" + Time.realtimeSinceStartup.ToString("F1") + " → " + ad);
             yield return new WaitForEndOfFrame();
             // ScreenCapture modülü projede yok: kare sonunda arka tampondan oku (OnGUI HUD'u dahil).
             var t = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false); RenderTexture.active = null;
