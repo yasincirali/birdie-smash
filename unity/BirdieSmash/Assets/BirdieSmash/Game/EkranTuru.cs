@@ -85,7 +85,9 @@ namespace BirdieSmash.Game
         IEnumerator Cek(string ad)
         {
             yield return new WaitForEndOfFrame();
-            var t = ScreenCapture.CaptureScreenshotAsTexture();
+            // ScreenCapture modülü projede yok: kare sonunda arka tampondan oku (OnGUI HUD'u dahil).
+            var t = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false); RenderTexture.active = null;
+            t.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0); t.Apply();
             File.WriteAllBytes(Path.Combine(dir, ad + ".png"), t.EncodeToPNG()); Destroy(t);
         }
 
