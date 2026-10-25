@@ -285,16 +285,19 @@
  ],
  "model": "rocketbox",
  "parts": [
-  "Cylinder__cerceve",
-  "Cylinder__grip",
-  "Cylinder__koyu",
-  "Cylinder__tel",
-  "Cylinder__tel2",
   "m026_hipoly_81_bones_001__forma",
   "m026_hipoly_81_bones__ten",
   "raket_kafa__cerceve",
+  "raket_koyu__koyu",
+  "raket_sap__grip",
+  "raket_tel2__tel2",
+  "raket_tel__tel",
   "rb_bant__bant",
   "rb_bileklik__bilek"
  ],
+ "raket": {
+  "kemik": "Bip01 R Hand",
+  "pivot": "raket_pivot"
+ },
  "hit": {}
 }

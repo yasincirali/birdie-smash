@@ -9,6 +9,7 @@ Bu sürümde yeni:
 - Her maçta 3 görev; maç sonunda Tüy ve XP ödülü, seviye atlama.
 - Ayarlar'da dil seçimi: Türkçe / English.
 - Raket sesi telefonda üretiliyor; tel gerginliğine ve vuruşa göre değişir.
+- Raket elde tek parça: çerçeve, teller ve sap elle birlikte hareket ediyor. Öne adım atarken ayaklar yere gömülmüyor, Oyuncak 3B'de ayaklar her harekette yere basıyor.
 
 Bilerek eksik olanlar:
 - Önceki sürümdeki ilerlemen (kariyer, ayarlar, ekipman) bu sürüme taşınmaz; oyun ilk açılış gibi başlar.
@@ -33,13 +34,14 @@ Nasıl denenir:
 Bu sürümde yeni:
 - Vuruş hareketleri yeniden çizildi: baş üstü vuruşlarda raket önce sırtın arkasına düşüyor, sonra bilek dönerek topa çıkıyor. Kalça göğüsten önce dönüyor. Drive ve file vuruşunda dirsek hafif bükük. Drop ve file vuruşunun artık kendi hareketi var; drop başlangıçta clear gibi görünür, rakibi kandırır.
 - Vuruş animasyonları akıcı: oyuncu artık temas pozunda donup topu beklemiyor. Raketi geri alıp bekliyor, savuruş topa değdiği anda oluyor. Sıçrayarak smaçta oyuncu temas anında havada, tepede. Drive ve blokta raket yere inip fırlamıyor. Uzanmada gövde yana yatmıyor. Vuruştan sonraki toparlanma vuruşa göre: net vuruşu kısa, smaç uzun. Koşarken ayaklar kaymıyor, split step küçük bir sıçrama.
+- Öne adım atarken ayaklar artık yere gömülmüyor; Oyuncak 3B'de ayaklar her harekette yere basıyor.
 - İlk açılışta antrenman kısaldı: 15 ders yerine yalnız kısa servis, clear ve smaç. Sonra hemen 5 sayılık Kolay ilk maç başlar. Diğer vuruşlar menüdeki Antrenman'da duruyor; ilk maçın sonunda "Daha fazla vuruş: Antrenman" düğmesi çıkar.
 - Kariyerde maçı kazanınca ana düğme sıradaki basamağı söyler ("Sıradaki: Okul turnuvası"); kaybedince "Tekrar dene".
 
 Akıcılık:
-- İlk servisteki takılma giderildi: rakip figürü artık her maç başında baştan boyanmıyor. Sıradaki rakip menüdeyken hazırlanıyor, maç başlarken yalnız yer değiştiriyor. Figür kareleri de maçtan önce ekran kartına yükleniyor. Kaydırma ve servis vuruşu sesi önceden hazırlanıyor.
+- İlk servisteki takılma giderildi: rakip figürü, figür kareleri ve sesler maçtan önce hazırlanıyor.
 - Test için gizli kare hızı göstergesi: Ayarlar ekranında "Ayarlar" başlığına 3 saniye içinde 5 kez dokun. Ekranın üstünde iki satır çıkar: üstte son 1 saniye (kare/sn, en uzun kare, takılma sayısı), altta o ekranın toplamı. Aynı şekilde 5 dokunuşla kapanır.
-- Maçta vuruş anları hafifledi: raket sesi artık her vuruşta baştan üretilmiyor, maç başında bir kez hazırlanıyor. Smaç yakınlaşmasında kort yeniden çizilmiyor. Eski ve yavaş telefonlarda vuruş anındaki takılma azalmalı.
+- Maçta vuruş anları hafifledi: raket sesi maç başında bir kez hazırlanıyor, smaç yakınlaşmasında kort yeniden çizilmiyor. Eski telefonlarda takılma azalmalı.
 
 Nasıl denenir:
 V. Bir maç oyna, rakibi izle: smaç ve clear'da raketin sırtın arkasına düştüğünü, drop'ta hareketin sona doğru yavaşladığını görmelisin. Ayrıca clear ve smaçta raket geride beklemeli, savuruş topa değerken hızlı akmalı. Rakip smaçta bir kez sıçramalı, topa havadayken vurmalı. Göğüs hizasındaki toplarda (drive) raket yere inmemeli. Uzandığında figür yere yatmamalı. Smaç gücü doluyken baş üstü topta çömelip sıçrayarak vurmalısın.

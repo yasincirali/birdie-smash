@@ -372,10 +372,13 @@ def chasse(sgn):
     return sample([(0,k0),(0.35,k1),(0.7,k2),(1,k0)],6,loop=True)
 chasse_r=chasse(1); chasse_l=chasse(-1)
 # öne adım: kısa, alçak adımlar (hamleye hazırlanır), raket önde yukarıda
+# 2026-10-25: yerdeki ayağın bilek yüksekliği 0'dı (max(0, …) READY'nin 0,05 bilek yüksekliğini atlıyordu; diğer ayak işi
+#     klipleri 0,05 tabanlı). Bilek 5 cm alçak hedeflenince derili ağda ayak her fazda zemine gömülüyordu (Gerçekçi model
+#     -5,7 cm, Unity 1,75× ölçekte ~10 cm). Taban 0,05: kaldırılan ayak eskisi gibi +6 cm'e çıkar, basan ayak zeminde kalır.
 fwd=[]
 for i in range(6):
     ph=i/6*2*math.pi; s_=math.sin(ph)
-    fwd.append(D(READY,root=(0,0.02,0.38+0.01*abs(math.cos(ph))),lean=(0,0.07,-0.01),twist=-6*s_,anR=(0.11,0.12*s_,max(0,0.06*math.sin(ph+0.4))),anL=(-0.11,-0.12*s_,max(0,0.06*math.sin(ph+math.pi+0.4))),wrR=(0.24,0.24,0.60),wrL=(-0.2,0.14,0.46)))
+    fwd.append(D(READY,root=(0,0.02,0.38+0.01*abs(math.cos(ph))),lean=(0,0.07,-0.01),twist=-6*s_,anR=(0.11,0.12*s_,0.05+max(0,0.06*math.sin(ph+0.4))),anL=(-0.11,-0.12*s_,0.05+max(0,0.06*math.sin(ph+math.pi+0.4))),wrR=(0.24,0.24,0.60),wrL=(-0.2,0.14,0.46)))
 # arkaya çapraz adım — sağ (forehand) köşe: kalça sağa döner, sol ayak sağın arkasından geçer, sağ ayak geri; raket hazırlıkta
 def back(sgn):
     tw=42*sgn if sgn>0 else -62

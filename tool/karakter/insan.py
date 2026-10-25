@@ -79,6 +79,7 @@ def kur(boy=1.0,kas=.6,kilo=.45,ad='insan'):
 # Pozlar oyuncak figür ölçüsünde yazıldı (UA+FA=.36, TH+SH=.38). Biçimleri korumak için hedefler omuza/kalçaya
 # göre bu gövdenin uzuv boyuna ölçeklenir; dirsek/diz aynı iki-kemik IK ve aynı bükülme ipucuyla çözülür.
 TOY=dict(UA=.19,FA=.17,TH=.20,SH=.18,SHW=.13,HIPW=.085)
+son_raket=None   # raket() son kurulan raketin dünya çerçevesini buraya yazar (unity_fbx.py okur)
 def _ik(A,B,l1,l2,hint):
     d=B-A; L=d.length; mx=l1+l2-1e-3
     if L>mx: B=A+d.normalized()*mx; d=B-A; L=mx
@@ -347,8 +348,12 @@ def _kemige(o,ao,bone):
 # ---------- raket: gerçek ölçüler (BWF sınırı: boy ≤ 68 cm, kafa ≤ 29 cm × 23 cm; tipik 67.5 cm, kafa 23 × 20 cm) ----------
 def raket(el, rk, yuz, s, M, ad='raket', tel_kalin=.00055):
     """el: avuç merkezi (sap ortası), rk: sap→kafa yönü, yuz: kafa yüzey normali tahmini, s: gövde ölçeği (boy/1.78)"""
+    global son_raket
     rk=rk.normalized(); fn=(yuz-rk*yuz.dot(rk)).normalized(); x=rk.cross(fn)
     R=Matrix((x,rk,fn)).transposed()
+    # Raketin dünya çerçevesi (avuç + yön): unity_fbx.py raketi bir kez yerel çerçevede kurar ve her pozda bu matrisle
+    # el kemiğine bağlı pivotu anahtarlar (2026-10-25; eskiden parçalar her pozda dünyada yeniden kuruluyordu).
+    son_raket=Matrix.Translation(el)@R.to_4x4()
     def yerel(p): return el+R@Vector(p)
     nes=[]
     def ekle(o,mat,tag): o.data.materials.append(mat); o['tag']=tag; nes.append(o); bpy.ops.object.shade_smooth(); return o

@@ -4,7 +4,13 @@
 # parçalı figürün "her parçayı dünya dönüşümüyle anahtarla" yolu derili ağı bozardı. Şimdi:
 #  - iskelet: her pozda karakter.py/insan.py'nin IK'sı kemiklere uygulanır, her kemiğin matrix_basis'i anahtarlanır
 #    (Unity Legacy klibi derili ağı kendisi büker);
-#  - pozla yeniden kurulan rijit parçalar (raket, servis topu): eskisi gibi nesne olarak dünya dönüşümüyle anahtarlanır;
+#  - raket (2026-10-25): bir kez yerel çerçevede kurulur, parçaları etikete göre birleşir (raket_kafa__cerceve, raket_tel__tel,
+#    raket_tel2__tel2, raket_sap__grip, raket_koyu__koyu) ve el kemiğine bağlı "raket_pivot" boşluğunun altına girer; her
+#    pozda yalnız pivotun kemiğe göre dönüşümü anahtarlanır. Eskisi her pozda insan.raket()'in dünyada yeniden kurduğu
+#    parçaları o.name.split('.')[0] anahtarıyla eşliyordu: adsız silindirler ('Cylinder.012') tek anahtara çöküyordu (22 ana
+#    telden yalnız biri kalıyordu), çerçeve eğrisi dünya koordinatında ağa dönüştüğü için ilk pozun yerinde ve kökte donuk
+#    kalıyordu. Şimdi bütün raket tek rijit parça olarak eli izler, Unity'de kareler arası da elle birlikte gider;
+#  - pozla yeniden kurulan diğer rijit parçalar (servis topu): eskisi gibi nesne olarak dünya dönüşümüyle anahtarlanır;
 #  - parça adının "__" sonrası etiketi (forma, bant, bilek, cerceve…) Unity'de takım rengini seçer; diğer parçalar
 #    FBX'in kendi malzemesini/dokusunu korur (Rocketbox dokusu gömülü, 1024 px'e indirilir).
 #  - "bas__isaret" ve "goz__isaret" görünmez işaretler: Unity PlayerView "ileri"yi bunlardan çıkarır.
@@ -41,6 +47,33 @@ for o in kalici:
 kset = set(o.name for o in kalici)   # adlar değiştikten sonra: deri ağları rijit parça sanılmasın
 proxies = {}
 
+import insan   # karakter.py'nin içe aktardığı modülün aynısı (sys.modules): son_raket oradan okunur
+RAKET_TAG = ('cerceve', 'tel', 'tel2', 'grip', 'koyu')
+RAKET_AD = {'cerceve': 'raket_kafa', 'tel': 'raket_tel', 'tel2': 'raket_tel2', 'grip': 'raket_sap', 'koyu': 'raket_koyu'}
+pb = ao.pose.bones
+EL = 'handslot.r' if 'handslot.r' in pb else OY.R['el'].format(S=OY.R['S']['r'])   # raketin bağlandığı el kemiği
+for o in OY.gecici: bpy.data.objects.remove(o)   # idle pozunun dünyada kurulmuş raketi
+OY.gecici = []; objs[:] = list(kalici)
+nes, kc = insan.raket(Vector((0, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1)), 1.0, OY.M, ad='rk')   # yerel çerçeve = birim
+piv = bpy.data.objects.new('raket_pivot', None); sc.collection.objects.link(piv)
+piv.parent = ao; piv.parent_type = 'BONE'; piv.parent_bone = EL; piv.rotation_mode = 'QUATERNION'
+raket_par = []; gruplar = {t: [o for o in nes if o.get('tag') == t] for t in RAKET_TAG}   # join birleşeni siler: önce grupla
+for tag in RAKET_TAG:
+    grp = gruplar[tag]
+    if not grp: continue
+    bpy.ops.object.select_all(action='DESELECT')
+    for o in grp: o.select_set(True)
+    bpy.context.view_layer.objects.active = grp[0]
+    if len(grp) > 1: bpy.ops.object.join()
+    o = bpy.context.view_layer.objects.active
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)   # köşeler raket çerçevesinde, nesne birim
+    org = kc if tag == 'cerceve' else Vector((0, 0, 0))   # kafa: orijin kafa merkezinde (Unity salınım izi buradan çıkar)
+    if org.length: o.data.transform(Matrix.Translation(-org))
+    o.name = RAKET_AD[tag] + '__' + tag; o.data.name = o.name; o['tag'] = tag
+    o.parent = piv; o.matrix_parent_inverse = Matrix(); o.location = org; o.rotation_mode = 'QUATERNION'
+    raket_par.append(o)
+rset = set(o.name for o in raket_par)
+
 def proxy_for(o):
     key = o.name.split('.')[0] + '__' + str(o.get('tag') or 'x')
     if key in proxies: return key, proxies[key]
@@ -66,18 +99,24 @@ for name, frames in CLIPS.items():
                           'hitK': getattr(frames, 'hit', None), 'hold': getattr(frames, 'hold', None), 'drop': getattr(frames, 'drop', None)})
     frame = last + GAP
 
-bones = {}; prevq = {}; pprev = {}; cur_frame = [1]
-pb = ao.pose.bones
+bones = {}; prevq = {}; pprev = {}; cur_frame = [1]; rq = [None]; rhata = [0.]
 for f, pose in timeline:
     cur_frame[0] = f
     build(pose)
+    bpy.context.view_layer.update()
+    W = insan.son_raket.copy(); piv.matrix_world = W; bpy.context.view_layer.update()
+    rhata[0] = max(rhata[0], (piv.matrix_world.translation - W.translation).length)   # kemiğe göre çözüm dünyayı tutmalı
+    loc, q, s_ = piv.matrix_basis.decompose()
+    if rq[0] is not None and rq[0].dot(q) < 0: q = -q
+    rq[0] = q; piv.location, piv.rotation_quaternion, piv.scale = loc, q, s_
+    for path in ('location', 'rotation_quaternion', 'scale'): piv.keyframe_insert(path, frame=f)
     for b in pb:
         loc, q, s = b.matrix_basis.decompose()
         if b.name in prevq and prevq[b.name].dot(q) < 0: q = -q       # kuaterniyon sürekliliği (Unity'de takla olmasın)
         prevq[b.name] = q; bones.setdefault(b.name, []).append((f, loc.copy(), q.copy(), s.copy()))
     seen = set()
     for o in list(objs):
-        if o.type != 'MESH' or o.name in kset: continue
+        if o.type != 'MESH' or o.name in kset or o.get('tag') in RAKET_TAG: continue   # raket pivotla gider
         key, p = proxy_for(o); seen.add(key)
         loc, q, s = o.matrix_world.decompose()
         if key in pprev and pprev[key].dot(q) < 0: q = -q
@@ -120,7 +159,9 @@ bpy.ops.export_scene.fbx(filepath=fbx, use_selection=False, object_types={'EMPTY
     use_mesh_modifiers=True, mesh_smooth_type='FACE', use_armature_deform_only=False, add_leaf_bones=False,
     bake_anim=True, bake_anim_use_all_actions=False, bake_anim_use_nla_strips=False, bake_anim_step=1.0,
     bake_anim_simplify_factor=0.0, bake_anim_force_startend_keying=True, path_mode='COPY', embed_textures=True)
-meta['parts'] = sorted([o.name for o in kalici] + list(proxies))
+meta['parts'] = sorted([o.name for o in kalici] + list(proxies) + sorted(rset))
+meta['raket'] = {'kemik': EL, 'pivot': 'raket_pivot'}
+print('raket pivot en büyük konum hatası', rhata[0])
 meta['hit'] = ns.get('CLIP_HIT_JS') or {}
 json.dump(meta, open(os.path.join(OUT, AD + '_clips.json'), 'w'), indent=1, ensure_ascii=False)
 print('FBX', fbx, os.path.getsize(fbx), 'kemik', len(pb), 'parça', len(meta['parts']), 'kare', frame, 'klip', len(meta['clips']))

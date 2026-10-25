@@ -286,11 +286,6 @@
  "model": "oyuncak",
  "parts": [
   "Cone__tuy",
-  "Cylinder__cerceve",
-  "Cylinder__grip",
-  "Cylinder__koyu",
-  "Cylinder__tel",
-  "Cylinder__tel2",
   "Rogue_ArmLeft_001__ten",
   "Rogue_ArmLeft__forma",
   "Rogue_ArmRight_001__ten",
@@ -312,7 +307,15 @@
   "Rogue_LegRight__sort",
   "Sphere__mantar",
   "oy_sackapak__sac",
-  "raket_kafa__cerceve"
+  "raket_kafa__cerceve",
+  "raket_koyu__koyu",
+  "raket_sap__grip",
+  "raket_tel2__tel2",
+  "raket_tel__tel"
  ],
+ "raket": {
+  "kemik": "handslot.r",
+  "pivot": "raket_pivot"
+ },
  "hit": {}
 }

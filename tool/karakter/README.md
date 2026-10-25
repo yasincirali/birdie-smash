@@ -47,3 +47,12 @@ cd ../.. && python3 -I tool/karakter/gom.py oyuncak /tmp/oy/spr.js /tmp/oy/tur.j
 Oyunda her model ayrı `<script type="application/json" id="bs_model_<ad>">` bloğunda; oyun yalnız seçili olanı
 ayrıştırır (`tuytop_model`, Ayarlar › Oyuncu görünümü). Hızlı önizleme: `stil` modu, 360° için `BS_TUR_N=8 BS_ONIZLEME=1`.
 `aday.py`: hazır modelleri (Rocketbox, VRM) aynı pozlarla deneme (karşılaştırma sayfası için).
+
+## Zemin ve Unity raketi (2026-10-25)
+
+- `fwd` klibinde basan bilek z=0'dı (diğer ayak işi 0,05): Gerçekçi modelde ayak her fazda 3,8–5,7 cm gömülüyordu, şimdi en çok 1,4 cm.
+- Oyuncak 3B'de taban her klipte 8–13 cm zeminin altındaydı (bilek hedefi bacak oranıyla küçülüyor, KayKit'in iri ayağında
+  bilek tabandan 6,7 cm yukarıda; ayak baldırın eğimini devralıp burnu yere sokuyordu). `OyuncakIskelet`: bütün figür `dz`
+  kadar yukarı, ayak dinlenme eğiminde düz basar; ayak işi kliplerinde taban 0,1–2,9 cm.
+- `unity_fbx.py`: raket bir kez yerel çerçevede kurulur, etikete göre beş parça (`raket_kafa__cerceve`, `raket_tel__tel`,
+  `raket_tel2__tel2`, `raket_sap__grip`, `raket_koyu__koyu`) el kemiğine bağlı `raket_pivot` altında; anahtarlanan yalnız pivot.

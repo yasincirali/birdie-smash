@@ -44,8 +44,16 @@ class OyuncakIskelet(insan.Iskelet):
         s.TH=(s.kneeR-s.hipR).length; s.SH=(s.ankR-s.kneeR).length; s.UA=(s.elR-s.shR).length; s.FA=(s.wrR-s.elR).length
         s.root=(s.hipR+s.hipL)/2+Vector((0,0,.04*OLC))
         s.neck=H('head'); s.headc=(H('head')+b['head'].tail_local)/2
+        # Zemin kalibrasyonu (2026-10-25): poz sözlüğünde basan bilek z=0,05 (soyut figürün tabanı bileğin 4,5 cm altında);
+        # hedef() bunu bacak oranıyla (k≈0,46) 2,3 cm'e küçültüyordu, KayKit'in iri ayağında bilek tabandan 6,7 cm yukarıda.
+        # Ayakkabı tabanı her klipte zeminin 8–12 cm altındaydı (Unity'de 1,75× ölçekle ~17 cm). Bütün figür (kök, eklem
+        # hedefleri) aradaki fark kadar yukarı taşınır: poz biçimi aynı kalır, basan ayağın tabanı zemine oturur.
+        k=(s.TH+s.SH)/(insan.TOY['TH']+insan.TOY['SH']); s.dz=float(os.environ.get('BS_OY_DZ',s.ankR.z-.045*k))
+    POZ=('root','shR','shL','neck','head','elR','elL','wrR','wrL','hpR','hpL','knR','knL','anR','anL')
     def hedef(s,p):   # "sevimli ama oturaklı" (yasin 24 Eki): kalça biraz alçak, ayaklar yerinde kalır, IK dizi hafif büker
         p=dict(p); r=p['root']; p['root']=(r[0],r[1],r[2]-float(os.environ.get('BS_OY_COK','.014'))); T=super().hedef(p)
+        dz=Vector((0,0,s.dz))
+        for n in s.POZ: T[n]=T[n]+dz
         # iri baş: ince figürün başının yanından geçen el (smaç, clear hazırlığı) burada yüzün önüne düşüyordu. El ve dirsek
         # baş küresinin içindeyse küreden dışarı itilir; raket kemiğin gerçek pozundan kurulduğu için elle birlikte gider
         hc=T['head']; rH=.62*OLC
@@ -75,8 +83,11 @@ class OyuncakIskelet(insan.Iskelet):
             else: aim(f'wrist.{k}',T['wr'+K]+fa)
             aim(f'hand.{k}',T['wr'+K]+fa*2)
             aim(f'upperleg.{k}',T['kn'+K]); aim(f'lowerleg.{k}',T['an'+K])
-            b=pb[f'foot.{k}']; M=b.matrix.copy(); y=M.to_3x3()@Vector((0,1,0)); yh=Vector((y.x,y.y,0)).normalized(); f=T['ft'+K]
-            ang=math.atan2(yh.x*f.y-yh.y*f.x,yh.dot(f)); N=Matrix.Rotation(ang,4,'Z')@Matrix(M.to_3x3()).to_4x4(); N.translation=M.translation; b.matrix=N; L.update()
+            # Ayak düz basar (2026-10-25): eskiden ayak baldırın eğimini devralıyordu, diz öne gidince burun zemine giriyordu
+            # (boşta 2 cm, öne adımda 4 cm). Ayak dinlenme duruşundaki eğimini korur, yalnız ft yönüne döner.
+            b=pb[f'foot.{k}']; M=b.matrix.copy(); R0=ao.data.bones[f'foot.{k}'].matrix_local.to_3x3()
+            y=R0@Vector((0,1,0)); yh=Vector((y.x,y.y,0)).normalized(); f=T['ft'+K]
+            ang=math.atan2(yh.x*f.y-yh.y*f.x,yh.dot(f)); N=Matrix.Rotation(ang,4,'Z')@Matrix(R0).to_4x4(); N.translation=M.translation; b.matrix=N; L.update()
         set_rot('head',Vector((0,1,0)).rotation_difference(T['look']).to_matrix())
 
 class Oyuncak:
