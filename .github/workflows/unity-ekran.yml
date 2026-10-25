@@ -30,8 +30,9 @@ jobs:
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || true
           df -h /
 
-      - name: Unity Library önbelleği
-        uses: actions/cache@v4
+      # restore/save ayrı: sonraki adım kırılsa da (ilk derleme ~33 dk) önbellek kaydedilsin.
+      - name: Unity Library önbelleği (geri yükle)
+        uses: actions/cache/restore@v4
         with:
           path: unity/BirdieSmash/Library
           key: unity-library-linux-${{ hashFiles('unity/BirdieSmash/Assets/**', 'unity/BirdieSmash/Packages/**') }}
@@ -52,13 +53,19 @@ jobs:
           buildName: BirdieSmash
           versioning: None
 
+      - name: Unity Library önbelleği (kaydet)
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: unity/BirdieSmash/Library
+          key: unity-library-linux-${{ hashFiles('unity/BirdieSmash/Assets/**', 'unity/BirdieSmash/Packages/**') }}
+
       - name: xvfb altında ekran turu
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri libglu1-mesa > /dev/null
           ls -la build/StandaloneLinux64 || true
           EXE=$(ls build/StandaloneLinux64/BirdieSmash* | grep -v '_Data' | head -1)
           sudo chmod -R a+rwX build
-          chmod +x "$EXE"
           mkdir -p "$RUNNER_TEMP/ekran"
           export LIBGL_ALWAYS_SOFTWARE=1
           timeout 900 xvfb-run -a -s "-screen 0 600x1300x24" "$EXE" -screen-width 590 -screen-height 1278 -screen-fullscreen 0 \
@@ -78,8 +85,9 @@ jobs:
         if: always()
         run: |
           git config user.name "birdie-ekran"; git config user.email "ekran@users.noreply.github.com"
-          git fetch origin ekran-sonuc || true
-          if git rev-parse --verify origin/ekran-sonuc >/dev/null 2>&1; then git checkout -B ekran-sonuc origin/ekran-sonuc; else git checkout --orphan ekran-sonuc; git rm -rfq . ; fi
-          D="r${{ github.run_number }}"; mkdir -p "$D"; cp -r "$RUNNER_TEMP/ekran/." "$D/" || true
-          echo "${{ github.sha }}" > "$D/sha.txt"
-          git add "$D"; git commit -qm "ekran $D (${{ github.sha }})"; git push -q origin ekran-sonuc
+          # Ayrı çalışma ağacı: Unity'nin değiştirdiği dosyalar (manifest, ProjectVersion) checkout'u bozmasın.
+          git fetch origin ekran-sonuc
+          W="$RUNNER_TEMP/sonuc"; git worktree add -B ekran-sonuc "$W" origin/ekran-sonuc
+          D="r${{ github.run_number }}"; mkdir -p "$W/$D"; cp -r "$RUNNER_TEMP/ekran/." "$W/$D/" || true
+          echo "${{ github.sha }}" > "$W/$D/sha.txt"
+          cd "$W" && git add "$D" && git commit -qm "ekran $D (${{ github.sha }})" && git push -q origin ekran-sonuc
