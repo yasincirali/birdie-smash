@@ -2,39 +2,38 @@
 Bu sürüm yeni: oyunun tamamı ve menüler baştan Unity ile yapıldı. Kurallar ve kaydırma hareketleri öncekiyle aynı, görüntü 3B.
 
 Bu sürümde yeni:
-- Tüy top artık 3B: tüyleri, mantar başı var; uçarken döner ve sallanır, yere düştüğü yerde halka çıkar.
-- Saha, tribün, ışıklar ve iki hakem 3B. Saha seçimi: salon, turnuva, okul, park.
-- Menü, Ayarlar, Kariyer, Antrenman, Ekipman ve maç sonu ekranları yeniden yapıldı.
-- Ekipman: raket, tel gerginliği (18–32 lbs), bileklik, saç bandı, forma. Tüy ile yükseltilir. Raketi 360° çevirip bakabilirsin.
-- Her maçta 3 görev; maç sonunda Tüy ve XP ödülü, seviye atlama.
-- Ayarlar'da dil seçimi: Türkçe / English.
-- Raket sesi telefonda üretiliyor; tel gerginliğine ve vuruşa göre değişir.
-- Raket elde tek parça: çerçeve, teller ve sap elle birlikte hareket ediyor. Öne adım atarken ayaklar yere gömülmüyor, Oyuncak 3B'de ayaklar her harekette yere basıyor.
-- İlerlemen taşınır: önceki sürümdeki kariyer, Tüy, ekipman ve ayarlar ilk açılışta bir kez bu sürüme geçer.
-- Maç sonu sadeleşti: iki öne çıkan sayı ve bir ipucu. Tüm sayılar "Ayrıntılar" düğmesinde.
-- Vuruştan sonra oyuncu hazır duruşa yumuşak dönüyor; nefesi azalınca duruşu ağırlaşıyor, soluklanıyor.
-- Ekran yalnız maçta ve antrenmanda açık kalıyor; menüde, duraklatınca ve maç sonunda telefon kendi ayarıyla kararır.
-- Kariyer basamağı açan galibiyette ya da 3. galibiyette Apple'ın puan penceresi gelebilir (TestFlight'ta görünmez).
+- Tüy top, saha, tribün, ışıklar ve hakemler 3B. Saha: salon, turnuva, okul, park.
+- Menü, Ayarlar, Kariyer, Antrenman, Ekipman ve maç sonu yeniden yapıldı; menüde logo var.
+- Ekipman: raket, tel gerginliği, bileklik, bant, forma; Tüy ile yükseltilir. 360° görünümde rakete dokununca raket görünümü açılır.
+- Her maçta 3 görev; maç sonunda Tüy ve XP, seviye atlama. Maç sonu: iki sayı, bir ipucu, gerisi "Ayrıntılar"da.
+- Raket sesi tel gerginliğine ve vuruşa göre değişir.
+- Titreşim vuruşa göre değişir (tür, isabet, tel gerginliği); sayı, akış, görev, file ve çizgi kamerasının kendi deseni var.
+- Game Center başarımları: ilk kariyer basamağından sonra giriş ister; Ayarlar > Game Center · Başarımlar.
+- Açılışta ve maça geçerken perde; sesler hazırlanırken dönen tüy top ve "Hazırlanıyor…".
+- Duraklatınca tüm sesler susar; duraklatmada Ses düğmesi. Ana menüye çıkınca maç bekler: "Maça devam et".
+- Ayarlar > Yazı boyutu (Sistem / Normal / Büyük). Hareketi azalt telefonun ayarını da izler.
+- Sayı kazanınca kıvılcımlar, top yere düşünce toz ve halka.
+- İlerlemen taşınır: önceki sürümdeki kariyer, Tüy, ekipman, ayarlar ve başarımlar ilk açılışta bir kez geçer.
+- Ekran yalnız maçta ve antrenmanda açık kalır. Kariyer basamağı açan galibiyette puan penceresi gelebilir (TestFlight'ta görünmez).
 
 Bilerek eksik olanlar:
-- İlerleme yalnız Unity'den önceki son sürüm bir kez açıldıysa taşınır; açılmadıysa oyun ilk açılış gibi başlar.
-- Game Center başarımları bu sürümde yok.
-- Titreşim her olayda tek kısa titreşim; vuruşa göre değişen desen yok.
-- VoiceOver ve büyük yazı ayarı menülerde çalışmaz.
+- İlerleme yalnız Unity'den önceki son sürüm bir kez açıldıysa taşınır.
+- VoiceOver menülerde çalışmaz (sonraki büyük güncellemede). Yazı en fazla %30 büyür.
 
 Nasıl denenir:
-0. Güncellemeden önce önceki sürümü bir kez açtıysan: menüde galibiyet, kariyer basamağı ve Tüy sayın aynı olmalı, ekipmanın ve ayarların (maç uzunluğu, saha, oyuncu görünümü) yerinde durmalı. Bir maç oyna, uygulamayı kapatıp aç: yeni ilerleme durmalı.
-1. Uygulamayı aç: önce kısa bir antrenman (kısa servis, clear, smaç) gelmeli, sonra 5 sayılık Kolay maç. Ekran yalnız dikey durmalı, telefonu çevirince dönmemeli.
-2. Servis: yukarı kaydır. Yavaş kaydırma kısa servis, hızlı ve kısa kaydırma flick, hızlı ve uzun kaydırma yüksek servis olmalı.
-3. Top sana gelince zaman yavaşlar. Yukarı kaydır: yavaş drop, orta clear, hızlı smaç. Aşağı kaydırma blok. Parmağını yana eğerek yön ver.
-4. Bir maçı sonuna kadar oyna: skor doğru saymalı, maç sonunda Tüy/XP, iki sayı kartı, bir ipucu satırı ve doğru düğme gelmeli ("Sıradaki: …", "Tekrar dene" ya da "Bir maç daha"). "Ayrıntılar"a bas: tüm sayılar açılmalı, düğmeler ekranda kalmalı.
-5. Menü > Ekipman: bir yuvayı yükselt, tel gerginliğini değiştir, sonra bir maçta vuruş sesinin değiştiğini dinle.
-6. Menü > Antrenman: 15 adımın hepsi açılmalı, bilgi adımlarında oyun durup dokununca devam etmeli.
-7. Ayarlar > Dil > English: tüm menüler İngilizce olmalı. Geri Türkçe'ye al.
-8. Ayarlar > Hareketi azalt: açınca ekran sarsıntısı ve yakınlaşma olmamalı.
-9. Çentikli/Dynamic Island'lı telefonda: skor ve düğmeler ekranın kenarına ya da çentiğin altına girmemeli; düğmelere rahat basılmalı.
-10. Uygulamayı arka plana atıp geri aç, telefonu kilitleyip aç: oyun donmamalı, ses geri gelmeli. Menüde telefonu bırak: ekran kendi kilit süresinde kararmalı; maçta kararmamalı.
-11. Bir şey takılırsa ya da yavaşlarsa hangi telefon olduğunu ve ne yaptığını yaz.
+0. Önceki sürümü açtıysan: galibiyet, kariyer basamağı, Tüy, ekipman ve ayarların yerinde olmalı.
+1. Uygulamayı aç: perde kalkmalı, sonra kısa antrenman ve 5 sayılık Kolay maç. Ekran dikey kalmalı.
+2. Servis: yukarı kaydır. Yavaş kısa servis, hızlı kısa flick, hızlı uzun yüksek servis.
+3. Top sana gelince zaman yavaşlar. Yukarı kaydır: yavaş drop, orta clear, hızlı smaç; aşağı blok.
+4. Titreşim: drop hafif, smaç sert olmalı; tel gerginliğini değiştirince his değişmeli. Sayı kazanınca/kaybedince farklı desen.
+5. Maçı bitir: skor, Tüy/XP, iki kart, ipucu ve doğru düğme gelmeli. "Ayrıntılar" açılmalı. "Bir maç daha" perdeyle başlamalı.
+6. Maçta II: sesler susmalı. Ses düğmesini dene. Ana menüye çık: "Maça devam et" kaldığın yerden sürdürmeli.
+7. Kariyerde ilk basamağı geç: Game Center girişi istenmeli. Ayarlar > Game Center · Başarımlar açılmalı.
+8. Ekipman: yükselt, tel gerginliğini değiştir, maçta sesi dinle. 360° figürde rakete dokun: raket görünümü açılmalı.
+9. Ayarlar > Dil > English, Yazı boyutu > Büyük: metinler büyümeli, taşmamalı. Telefonda Hareketi Azalt açıkken ayar "sistem" demeli.
+10. Çentikli telefonda: skor ve düğmeler çentiğin altına girmemeli.
+11. Arka plana atıp geri aç, kilitleyip aç: oyun donmamalı, ses geri gelmeli.
+12. Takılma olursa telefonu ve ne yaptığını yaz.
 
 === HTML ===
 Bu sürümde yeni:
