@@ -43,6 +43,33 @@ namespace BirdieSmash.EditorTools
             catch (Exception e) { Debug.LogError("Birdie Smash CI build kırıldı: " + e); EditorApplication.Exit(1); }
         }
 
+        // Ekran görüntüsü hattı (unity-ekran.yml, 2026-10-25): aynı sahne Linux oyuncusu olarak (Mono, hızlı derleme);
+        // CI xvfb altında `-bsekran` ile koşar (Game/EkranTuru). Mağazaya gitmez.
+        public static void Linux()
+        {
+            try
+            {
+                string path = Arg("-customBuildPath") ?? "build/StandaloneLinux64/BirdieSmash";
+                DemoKurulum.Kur();
+                PlayerSettings.productName = "Birdie Smash"; PlayerSettings.companyName = "Birdie Smash";
+#pragma warning disable 618
+                PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.Mono2x);
+#pragma warning restore 618
+                PlayerSettings.fullScreenMode = FullScreenMode.Windowed; PlayerSettings.resizableWindow = true;
+                PlayerSettings.defaultScreenWidth = 590; PlayerSettings.defaultScreenHeight = 1278;
+                var opt = new BuildPlayerOptions
+                {
+                    scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray(),
+                    locationPathName = path, target = BuildTarget.StandaloneLinux64, targetGroup = BuildTargetGroup.Standalone, options = BuildOptions.None
+                };
+                var rep = BuildPipeline.BuildPlayer(opt);
+                if (rep.summary.result != BuildResult.Succeeded) throw new Exception("BuildPlayer: " + rep.summary.result + ", hata " + rep.summary.totalErrors);
+                Debug.Log("Birdie Smash Linux oyuncusu: " + path);
+                EditorApplication.Exit(0);
+            }
+            catch (Exception e) { Debug.LogError("Birdie Smash Linux build kırıldı: " + e); EditorApplication.Exit(1); }
+        }
+
 #pragma warning disable 618   // BuildTargetGroup imzaları Unity 6'da eski sayılır (uyarı); DemoKurulum ile aynı aile, 2021+ derler
         static void Ayarla(string surum)
         {
