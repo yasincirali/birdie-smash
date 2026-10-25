@@ -16,7 +16,7 @@ namespace BirdieSmash.Game
     public class EkranTuru : MonoBehaviour
     {
         string dir; GameRoot root; readonly StringBuilder rap = new StringBuilder(); readonly System.Random rng = new System.Random(11);
-        bool botAcik;
+        bool botAcik; static volatile int kare; static volatile string adim = "başlangıç";
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot()
@@ -31,6 +31,8 @@ namespace BirdieSmash.Game
         {
             Directory.CreateDirectory(dir); Time.captureDeltaTime = 1f / 30;
             Debug.Log("EkranTuru başladı: " + dir);
+            // Bekçi: ana döngü takılırsa nerede takıldığını günlükten görmek için 10 sn'de bir kare sayısı ve son adım.
+            var bekci = new System.Threading.Thread(() => { for (int i = 0; i < 300; i++) { System.Threading.Thread.Sleep(10000); Debug.Log("EkranTuru bekçi: kare " + kare + " adım " + adim); } }); bekci.IsBackground = true; bekci.Start();
             yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             Ayar.antrenman = true; Ayar.easy = true; Ayar.target = 5; Ayar.reduce = false;
@@ -67,6 +69,7 @@ namespace BirdieSmash.Game
 
         void Update()
         {
+            kare = Time.frameCount;
             if (!botAcik || root == null || root.match == null || root.ekran != Ekran.Oyun) return;
             var M = root.match;
             if (M.s == null && M.server == "me" && M.wait <= 0 && !M.between && M.svPending == null && rng.NextDouble() < .08)
@@ -86,7 +89,7 @@ namespace BirdieSmash.Game
 
         IEnumerator Cek(string ad)
         {
-            Debug.Log("EkranTuru kare " + Time.frameCount + " t=" + Time.realtimeSinceStartup.ToString("F1") + " → " + ad);
+            adim = ad; Debug.Log("EkranTuru kare " + Time.frameCount + " t=" + Time.realtimeSinceStartup.ToString("F1") + " → " + ad);
             yield return new WaitForEndOfFrame();
             // ScreenCapture modülü projede yok: kare sonunda arka tampondan oku (OnGUI HUD'u dahil).
             var t = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false); RenderTexture.active = null;

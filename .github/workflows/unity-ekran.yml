@@ -68,8 +68,14 @@ jobs:
           sudo chmod -R a+rwX build
           mkdir -p "$RUNNER_TEMP/ekran"
           export LIBGL_ALWAYS_SOFTWARE=1
+          sudo apt-get install -y -qq gdb > /dev/null || true
           timeout 1500 xvfb-run -a -s "-screen 0 600x1300x24" "$EXE" -screen-width 390 -screen-height 845 -screen-fullscreen 0 \
-            -force-glcore -logFile "$RUNNER_TEMP/ekran/player.log" -bsekran "$RUNNER_TEMP/ekran" || echo "oyuncu çıkış kodu $?"
+            -force-glcore -logFile "$RUNNER_TEMP/ekran/player.log" -bsekran "$RUNNER_TEMP/ekran" &
+          # Takılma tanısı: 150 sn sonra hâlâ ilk karelerdeyse yığın dökümü (gdb, tüm iş parçacıkları).
+          sleep 150
+          P=$(pgrep -f "BirdieSmash -screen" | head -1)
+          if [ -n "$P" ]; then sudo gdb -p "$P" -batch -ex "thread apply all bt 25" > "$RUNNER_TEMP/ekran/yigin.txt" 2>&1 || true; fi
+          wait || echo "oyuncu çıkış kodu $?"
           ls -la "$RUNNER_TEMP/ekran"
           grep -E "EkranTuru|Exception|Error" "$RUNNER_TEMP/ekran/player.log" | grep -v ALSA | tail -60 || true
 
