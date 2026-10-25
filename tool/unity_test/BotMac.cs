@@ -4,6 +4,8 @@
 // türü de atılır, iki oyuncunun nefesi düşer ve dolar, sayı arası 0,7 sn (rekorda 1,3), hazırlıkta temas karesi temastan
 // önce gösterilmez, sıçrayarak smaç temasta tepede, hamlede gövde yatmaz, ilk açılış antrenmanı 3 adım + 5 sayılık maç,
 // kariyer düğme etiketi, NaN yok.
+// 2026-10-25: HTML → Unity ilerleme devri (Core/Devir: bir kez, bayrak, normalize), maç sonu özeti (Core/Ozet: öncelik
+// sırası, ipucu), mağaza puanı koşulu, boşta duruşun nefese bağlı hızı.
 // 2026-10-24 tam geçiş: ekipman çarpanları HTML gsHesap ile aynı (node ile ölçülen değerler), ağır raket smacı gerçekten
 // hızlandırır, görev olayı gelir, tam antrenman 15 adım (iki bilgi + antrenör çağrısı) ve ödül yuvarlaması HTML gibi.
 using System;
@@ -114,7 +116,7 @@ static class BotMac
 
         if (gorevN == 0) Fail("görev olayı hiç gelmedi");
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
-        Antrenman(); TamAntrenman(); Kariyer(); Ekipman();
+        Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler();
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }
@@ -175,6 +177,48 @@ static class BotMac
         if (!(agir > notr * 1.1f)) Fail("ağır raket smacı hızlandırmadı");
         var o = new Gear(new BellekKayit(), 0); o.eko.gun = "x"; var od = o.Odul(false, false, 21, true, 0, 0, DateTime.Now);
         if (od.tuy != 53) Fail("21 sayılık yenilgi ödülü 53 Tüy olmalı (JS Math.round): " + od.tuy);
+    }
+    // HTML → Unity devri: kabuğun yazdığı HTML değerleri bir kez kabul edilir, bayrak konur, ikinci açılış dokunmaz.
+    static void Devirler()
+    {
+        var k = new BellekKayit();
+        k.Set("tuytop_v2", "{\"rally\":23.0,\"wins\":7,\"kariyer\":9,\"gorev\":-2,\"fazla\":1}"); k.Set("tuytop_len", "len11"); k.Set("tuytop_gear", "bozuk{"); k.Set("tuytop_puan", "5");
+        k.Set("tuytop_ekonomi", "{\"tuy\":340}");
+        int n = Devir.Kabul(k);
+        if (n != 5) Fail("devralınan anahtar sayısı 5 olmalı: " + n);
+        var b = Json.Obj(Json.Parse(k.Get("tuytop_v2")));
+        if (b == null || Json.Num(b, "rally", -1) != 23 || Json.Num(b, "wins", -1) != 7 || Json.Num(b, "kariyer", -1) != Match.KARIYER.Length || Json.Num(b, "gorev", -1) != 0 || !Json.Bool(b, "sampiyon", false) || b.ContainsKey("fazla"))
+            Fail("tuytop_v2 normalize edilmedi: " + k.Get("tuytop_v2"));
+        if (k.Get("tuytop_gear") != "{}") Fail("bozuk tuytop_gear {} olmalı: " + k.Get("tuytop_gear"));
+        if (k.Get("tuytop_ekonomi") != "{\"tuy\":340}") Fail("geçerli ekonomi değişti");
+        if (k.Get("tuytop_puan") != "3") Fail("puan sayacı 0..3: " + k.Get("tuytop_puan"));
+        if (k.Get(Devir.BAYRAK) == null) Fail("devir bayrağı konmadı");
+        k.Set("tuytop_v2", "{\"rally\":99}"); if (Devir.Kabul(k) != -1 || k.Get("tuytop_v2") != "{\"rally\":99}") Fail("devir ikinci kez çalıştı");
+        var bos = new BellekKayit(); if (Devir.Kabul(bos) != 0 || bos.Get(Devir.BAYRAK) == null) Fail("HTML verisi yokken de bayrak konmalı");
+        var g = new Gear(k, 7); if (g.eko == null) Fail("devirden sonra Gear açılmadı");
+        Console.WriteLine("devir: 5 HTML anahtarı kabul, bayrak, ikinci açılış dokunmadı");
+    }
+    // Maç sonu özeti ve puan koşulu (HTML ozetKart/ozetIpucu/puanBak ile aynı kural).
+    static void Ozetler()
+    {
+        var M = new Match(1, new MatchOptions { easy = true, target = 5 });
+        M.maxRally = 5; M.smashes = 3; M.kills = 2; M.saves = 1; M.outsBen = 3;
+        var k = Ozet.Kartlar(M); object a;
+        if (k.Count != 2 || k[0].ad != "Smaç" || k[1].ad != "File vuruşu") Fail("özet kartları öncelik sırasında değil: " + string.Join(",", k.Select(x => x.ad)));
+        if (Ozet.Ipucu(M, false, out a) != "{0} vuruşun dışarı gitti: çizgiden biraz içeriye nişan al." || (int)a != 3) Fail("yenilgi ipucu dışarı vuruş olmalı");
+        M.maxRally = 12; k = Ozet.Kartlar(M); if (k[0].ad != "En uzun ralli" || k[0].deger != 12) Fail("8+ ralli ilk kart olmalı");
+        var B = new Match(2, new MatchOptions { easy = true, target = 5 }); B.maxRally = 3; k = Ozet.Kartlar(B);
+        if (k.Count != 1 || k[0].ad != "En uzun ralli") Fail("boş maçta tek kart en uzun ralli olmalı");
+        if (Ozet.Ipucu(B, false, out a) != "Dışarı gidecek topu bırak: sayı senin olur.") Fail("yenilgi ipucu bırakma olmalı");
+        string w = Ozet.Ipucu(B, true, out a); if (B.gorevler.Count > 0 && w != "Bu maçta kalan görev: {0}") Fail("galibiyet ipucu kalan görev olmalı: " + w);
+        if (!Ozet.PuanIste(true, true, 1, 0) || !Ozet.PuanIste(true, false, 3, 2) || Ozet.PuanIste(true, false, 4, 0) || Ozet.PuanIste(false, true, 3, 0) || Ozet.PuanIste(true, true, 3, 3))
+            Fail("puan koşulu: basamak ya da 3. galibiyet, en çok 3");
+        // boşta duruş: yorgun oyuncunun fazı daha hızlı ilerler
+        var I = new Match(3, new MatchOptions { easy = true, target = 5 }); I.op.nefes = .1f; float p0 = I.me.idlePh, q0 = I.op.idlePh;
+        for (int i = 0; i < 30; i++) { I.me.nefes = 1; I.op.nefes = .1f; I.Update(1 / 60f); I.events.Clear(); }
+        float dm = (I.me.idlePh - p0 + 1) % 1, dn = (I.op.idlePh - q0 + 1) % 1;
+        if (!(dn > dm * 1.5f)) Fail("yorgunken boşta duruş hızlanmadı: " + dm + " / " + dn);
+        Console.WriteLine("özet: " + string.Join(" + ", Ozet.Kartlar(M).Select(x => x.ad + " " + x.deger)) + "; puan koşulu tamam; boşta hız dolu/yorgun " + dm.ToString("0.000") + "/" + dn.ToString("0.000"));
     }
     static float SmacHizi(GearStats gs)
     {

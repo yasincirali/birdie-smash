@@ -345,5 +345,18 @@
 "Kırmızı": "Red",
 "Limon": "Lime",
 "Turuncu": "Orange",
-"Pembe": "Pink"
+"Pembe": "Pink",
+"Ayrıntılar": "Details",
+"Ayrıntıları gizle": "Hide details",
+"En uzun ralli": "Longest rally",
+"Mükemmel": "Perfect",
+"Aldatma": "Deception",
+"Uzanma": "Lunge save",
+"Tepeden": "Overhead",
+"Bu maçta kalan görev: {0}": "Mission left this match: {0}",
+"Üç görevin üçü de tamam.": "All three missions done.",
+"{0} vuruşun dışarı gitti: çizgiden biraz içeriye nişan al.": "{0} of your shots went out: aim a little inside the line.",
+"Dışarı gidecek topu bırak: sayı senin olur.": "Let a shuttle that is going out drop: the point is yours.",
+"Top parlayınca topun tam üstünden geç: mükemmel vuruş gelir.": "When the shuttle glows, swipe right across it for a perfect hit.",
+"Uzun rallide nefesini clear ile topla.": "In long rallies, catch your breath with a clear."
 }

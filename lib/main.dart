@@ -6,10 +6,13 @@ import 'package:flutter/services.dart';
 import 'package:games_services/games_services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import 'kabuk.dart';
+
 // Birdie Smash: oyun tek bir HTML/canvas dosyasıdır (assets/game/index.html) ve
 // prototip olarak https://claude.ai/artifact/4e8aG15tCWDe8hdtVCPryQ adresinde
 // yaşar. Flutter kabuğu YALNIZ dört iş yapar: mağaza/TestFlight hattı, tam
-// ekran WebView, haptic köprüsü ve platform hizmetleri köprüsü (Game Center).
+// ekran WebView, haptic köprüsü ve platform hizmetleri köprüsü (Game Center, mağaza puanı, Unity'ye
+// ilerleme devri).
 // Oyun mantığı Dart'a taşınmaz; oyun değiştiğinde HTML dosyası yenilenir (tool/oyun_sozdizimi.js doğrular).
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -93,17 +96,36 @@ class _OyunEkraniState extends State<OyunEkrani> {
   // kimliği tanımlı değil. Hata oyunu asla durdurmaz; başarım yerelde
   // tutulduğu için giriş sonradan yapılsa da gcDurum ile yeniden gönderilir.
   bool _gcAcik = false;
+  static const _kanal = MethodChannel(kabukKanalAdi);
+  String? _devirSon;
 
   Future<void> _oyun(JavaScriptMessage m) async {
-    if (!Platform.isIOS) return;
     Map<String, dynamic> v;
     try {
       v = (jsonDecode(m.message) as Map).cast<String, dynamic>();
     } catch (_) {
       return;
     }
+    // Mağaza puanı iOS kontrolünden önce (Ar-Ge 23 Eki #1): ne zaman isteneceğine oyun karar verir (kariyer
+    // basamağı ya da 3. galibiyet, ömür boyu en çok 3), kabuk yalnız sistem penceresini çağırır. Android'de
+    // yerel karşılık henüz yok (Android hattı yok); MissingPluginException sessiz geçer.
+    if (v['tip'] == 'puan') {
+      try {
+        await _kanal.invokeMethod<void>('puanIste');
+      } catch (_) {}
+      return;
+    }
+    if (!Platform.isIOS) return;
     try {
       switch (v['tip']) {
+        case 'devir':
+          // HTML → Unity ilerleme devri: aynı içerik ikinci kez yazılmaz (oyun zaten değişmeyeni göndermez).
+          final d = devirAyikla(v['veri']);
+          if (d == null) break;
+          final imza = jsonEncode(d);
+          if (imza == _devirSon) break;
+          await _kanal.invokeMethod<bool>('devirYaz', d);
+          _devirSon = imza;
         case 'giris':
           if (!_gcAcik) {
             await GameAuth.signIn();

@@ -3,7 +3,9 @@
 // Microsoft Rocketbox Sports_Male_04, MIT). İkisi de iskeletli; 26 klip Legacy Animation olarak normalize zamanla
 // örneklenir: klip ve faz Match.PickClip'ten gelir (HTML player() ile aynı karar), vuruş anı topla kare kare eşleşir.
 // Faz → klip zamanı: sprite kare k'yı (k+.5)/n fazında gösterir; FBX'te pozlar eşit aralıklı olduğu için aynı faz aynı
-// pozu verir (döngülü kliplerde kapanış pozu ek). Klip değişiminde 0,08 s harmanlama. FBX yoksa basit kapsül figür.
+// pozu verir (döngülü kliplerde kapanış pozu ek). Klip değişiminde 0,08 s harmanlama; vuruş klibinden boşta/ayak
+// klibine dönüşte 0,2 s (Ar-Ge 23 Eki animasyon B1: takip pozundan hazır duruşa "ışınlanma" yok; sprite'ta harmanlama
+// hayalet yapıyordu, iskelette yapmaz, bu yüzden Blender'da yeniden render gerekmedi). FBX yoksa basit kapsül figür.
 // Renk: parça adının "__" sonrası etiketi (HTML sprRenk/tint maskesi karşılığı): forma = takım rengi, cerceve = raket
 // modelinin rengi, bant/bilek = seçili kafa bandı/bileklik (ekipman "Yok" ise gizli), grip/tel/tel2 = raket görünümü
 // (tuytop_raket_gor; tel2 yalnız "ana ve çapraz ayrı" desende farklı). Rakipte raket #e9eef0, bant/bilek yok.
@@ -16,7 +18,7 @@ namespace BirdieSmash.Game
 {
     public class PlayerView : MonoBehaviour
     {
-        public bool isMe; Transform model, yaw; Animation anim; string cur, prev; float blend = 1, prevPh, lastPh;
+        public bool isMe; Transform model, yaw; Animation anim; string cur, prev; float blend = 1, blendS = .08f, prevPh, lastPh;
         Transform fbRacket, shadow; LineRenderer ringBg, ringFg; float ringA;
         const float SCALE = 1.75f;   // sprite sürümündeki 1,75 kat okunurluk büyütmesi
         static readonly Dictionary<string, bool> LOOPS = new Dictionary<string, bool>();
@@ -197,8 +199,9 @@ namespace BirdieSmash.Game
             // Sıçrama: sin(jump·π) (tepe temasta), split step küçük hop (%20). 0,5 m ≈ HTML'deki 16 px/28 px-m ölçeği.
             float j = Match.JumpH(o) * .5f;
             transform.position = Kit.W(o.x, o.y, 0) + Vector3.up * j;
-            // Gövde dik (ce47f5c): chassé'de en çok 6°, hamlede yatma yok; yalnız kıl payı kurtarışta (yat) en çok 15°.
-            float lean = Mathf.Clamp(o.svx * .02f, -.1f, .1f) * (isMe ? 1 : -1);
+            // Gövde dik (ce47f5c): hamlede yatma yok; yalnız kıl payı kurtarışta (yat) en çok 15°. Koşu eğimi ±0,08 rad (~4,6°;
+            // Ar-Ge 23 Eki B3: render edilmiş figürü düz resim gibi yatırmak sahte görünür, ayaklar yerden kalkar).
+            float lean = Mathf.Clamp(o.svx * .02f, -.08f, .08f) * (isMe ? 1 : -1);
             float dive = (o.yat ? o.dive : 0) * (o.x < Court.MID ? -1 : 1) * .26f * (isMe ? 1 : -1);
             yaw.localRotation = Quaternion.Euler(0, isMe ? 0 : 180, 0) * Quaternion.Euler(0, 0, -(dive + lean) * Mathf.Rad2Deg) * calib;
             shadow.position = Kit.W(o.x, o.y, .003f); shadow.localScale = Vector3.one * (.9f - j * .8f);
@@ -211,8 +214,16 @@ namespace BirdieSmash.Game
             string clip; float ph; M.PickClip(o, isMe, out clip, out ph);
             if (anim == null) { if (fbRacket != null) fbRacket.localRotation = Quaternion.Euler(0, 0, o.sw > 0 ? -140 * (1 - o.sw) + 40 : 20 - 40 * o.prepA); return; }
             if (anim[clip] == null) clip = "idle";
-            if (clip != cur) { prev = cur; prevPh = lastPh; cur = clip; blend = 0; }
-            blend = Mathf.Min(1, blend + dt / .08f); lastPh = ph;
+            if (clip != cur)
+            {
+                bool takip = cur != null && Match.CLIP_HIT.ContainsKey(cur) && !Match.CLIP_HIT.ContainsKey(clip);   // vuruş → hazır duruş/ayak
+                prev = cur; prevPh = lastPh; cur = clip; blend = 0; blendS = takip ? .2f : .08f;
+            }
+            blend = Mathf.Min(1, blend + dt / blendS); lastPh = ph;
+            // Boşta duruşun genliği nefese bağlı (B4; hız Match.IdleIlerle'de): nefes %70'in altına inince yorgun klibi
+            // (eller dizde) %35'e kadar karışır, beden soluklanır. Harmanlama bitmeden karıştırılmaz.
+            if (cur == "idle" && blend >= 1 && o.nefes < .7f && anim["yorgun"] != null)
+            { Sample("idle", ph, "yorgun", ph, 1 - .35f * Mathf.Clamp01((.7f - o.nefes) / .7f)); return; }
             Sample(cur, ph, prev, prevPh, prev == null ? 1 : blend);
         }
     }

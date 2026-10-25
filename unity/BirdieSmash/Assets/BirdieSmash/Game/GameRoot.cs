@@ -14,7 +14,7 @@ namespace BirdieSmash.Game
     public class GameRoot : MonoBehaviour
     {
         public Match match; public Camera cam; public Ekran ekran = Ekran.Menu; public bool paused;
-        public string bittiBaslik, bittiNot, bittiBilgi, bittiDugme; public bool bittiIlk; public float rakipKartT;
+        public string bittiBaslik, bittiNot, bittiBilgi, bittiDugme, bittiIpucu; public List<Ozet.Kart> bittiKart = new List<Ozet.Kart>(); public bool bittiIlk; public float rakipKartT;
         PlayerView me, op, hk1, hk2; public ShuttleView shuttle; NetView net; public Sfx sfx; Hud hud; public Vitrin vitrin; public Fx fx; GameObject court; Renderer akisR; string courtId, modelId, gorunumId;
         public OdulSonuc odul; public bool yukseltHazir; bool pencere; float sqT; float psvx, psvy;
         float shake, punch; Vector3 camBase; Quaternion camRot; float camFov; int seed = 1; Light sun; readonly System.Random rnd = new System.Random();
@@ -25,7 +25,7 @@ namespace BirdieSmash.Game
 
         void Awake()
         {
-            Application.targetFrameRate = 60; Screen.sleepTimeout = SleepTimeout.NeverSleep; Ayar.Yukle();
+            Application.targetFrameRate = 60; Uyanik(false); Ayar.Yukle();
             foreach (var c in FindObjectsByType<Camera>(FindObjectsSortMode.None)) if (c.gameObject.scene.IsValid() && c.transform.root != transform) c.gameObject.SetActive(false);
             foreach (var l in FindObjectsByType<Light>(FindObjectsSortMode.None)) if (l.transform.root != transform) l.gameObject.SetActive(false);
             var cg = new GameObject("kamera"); cg.transform.SetParent(transform, false); cam = cg.AddComponent<Camera>(); cg.AddComponent<AudioListener>();
@@ -43,6 +43,10 @@ namespace BirdieSmash.Game
             Kur(match);
             AudioListener.volume = Ayar.ses ? 1 : 0;
         }
+
+        // Ekran yalnız maçta/antrenmanda açık kalır (Ar-Ge 25 Eki #3): menüde, duraklatmada ve maç sonunda sistem ayarı
+        // geçerli; masada unutulan telefon kararır, pil bitmez. Oyun sırasında dokunuş seyrek olabildiği için orada kapalı.
+        static void Uyanik(bool acik) { Screen.sleepTimeout = acik ? SleepTimeout.NeverSleep : SleepTimeout.SystemSetting; }
 
         // Sahneyi maça göre kur: saha değiştiyse kort, model değiştiyse oyuncular ve hakemler, rakip forması her maçta.
         void Kur(Match M)
@@ -85,7 +89,7 @@ namespace BirdieSmash.Game
             if (Ayar.kariyerModu && !ogr) { int i = Career.Basamak(Ayar.kariyer); o.stil = Match.KariyerRakip(i); o.saha = Match.KARIYER[i].saha; }
             else o.stil = Match.STIL[Match.STIL_SIRA[rnd.Next(3)]];
             match = new Match(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
-            Kur(match); ekran = Ekran.Oyun; paused = false; ogrKayit = false; rakipKartT = ogr ? 0 : 1.5f; erkenN = 0;
+            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = ogr ? 0 : 1.5f; erkenN = 0;
             fx.Temizle(); sfx.CrowdStart(); pencere = false; sfx.SuAlti(false); odul = null; hud.MacBasi(); vitrin.Kapat();
         }
         public void OgrGec()
@@ -93,14 +97,14 @@ namespace BirdieSmash.Game
             if (match.ogr == null) return; Ayar.antrenman = true; Ayar.Kaydet(); bool kisa = match.ogr.kisa;
             if (kisa) StartMatch(false, false, true); else StartMatch(false, false, false);
         }
-        public void AnaMenu() { ekran = Ekran.Menu; paused = false; hud.panel = "ana"; sfx.SuAlti(false); sfx.Ugultu(false, 0); }
-        public void Duraklat() { if (ekran == Ekran.Oyun && !paused) { paused = true; input.Reset(); sfx.Ugultu(false, 0); } }
-        public void Devam() { paused = false; }
+        public void AnaMenu() { ekran = Ekran.Menu; paused = false; Uyanik(false); hud.panel = "ana"; sfx.SuAlti(false); sfx.Ugultu(false, 0); }
+        public void Duraklat() { if (ekran == Ekran.Oyun && !paused) { paused = true; Uyanik(false); input.Reset(); sfx.Ugultu(false, 0); } }
+        public void Devam() { paused = false; if (ekran == Ekran.Oyun) Uyanik(true); }
         void OnApplicationPause(bool p) { if (p) Duraklat(); }   // arka plana geçince kendiliğinden duraklar; top bir anda üstüne düşmez
 
         void EndMatch(bool won)
         {
-            ekran = Ekran.Bitti; var M = match; bittiIlk = M.ilk; sfx.MacSonu(won); sfx.Ugultu(false, 0);
+            ekran = Ekran.Bitti; Uyanik(false); var M = match; bittiIlk = M.ilk; sfx.MacSonu(won); sfx.Ugultu(false, 0);
             if (won) Ayar.wins++;
             string kNot = ""; bool kariyerIlk = false;
             if (M.stil.kariyer >= 0)
@@ -118,9 +122,22 @@ namespace BirdieSmash.Game
             bittiBilgi = L.T("Rakip {0} · Görev {1}/3 ({2}) · En uzun ralli {3} · {4} smaç · {5} file vuruşu · {6} mükemmel · {7} aldatma · {8} split step · {9} tepeden · {10} uzanma · {11} kez dışarıyı bıraktın",
                 M.RakipAd(false), M.gorevBitti, bitenler.Count > 0 ? string.Join(", ", bitenler.ToArray()) : L.T("yok"), M.maxRally, M.smashes, M.kills, M.perfects, M.deceives, M.splits, M.tepeden, M.saves, M.outsLeft);
             bittiDugme = L.Cumle(Career.AgainLabel(M.stil.kariyer >= 0, won, Ayar.kariyer));
+            // Özet (Ar-Ge 23 Eki #2): iki kart + ipucu; bittiBilgi artık "Ayrıntılar" ardında (Hud.Over).
+            bittiKart = Ozet.Kartlar(M); object ia; string ik = Ozet.Ipucu(M, won, out ia);
+            bittiIpucu = ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
+            if (Ozet.PuanIste(won, kariyerIlk, Ayar.wins, Ayar.puan)) { CancelInvoke("PuanIste"); Invoke("PuanIste", 1.5f); }
             if (won) hud.Konfeti();
         }
         public void TekrarOyna() { StartMatch(false, false, false); }
+        // Mağaza puanı (Ar-Ge 23 Eki #1): sonuç ekranından 1,5 sn sonra, oyuncu hâlâ oradaysa; yalnız sistem penceresi.
+        // İstenmediyse sayılmaz. Apple ayrıca yılda 3 ile sınırlar; TestFlight'ta pencere hiç çıkmaz. Android hattı yok.
+        void PuanIste()
+        {
+            if (ekran != Ekran.Bitti || Ayar.puan >= Ozet.PUAN_AZAMI) return;
+#if UNITY_IOS && !UNITY_EDITOR
+            UnityEngine.iOS.Device.RequestStoreReview(); Ayar.puan++; Ayar.Kaydet();
+#endif
+        }
 
         // Dikey ekranda kortun tamamı, iki oyuncu ve rakibin arkasındaki pano görünsün: konum sabit, görüş açısı ekrana göre.
         int lastW, lastH;

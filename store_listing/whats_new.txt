@@ -10,47 +10,45 @@ Bu sürümde yeni:
 - Ayarlar'da dil seçimi: Türkçe / English.
 - Raket sesi telefonda üretiliyor; tel gerginliğine ve vuruşa göre değişir.
 - Raket elde tek parça: çerçeve, teller ve sap elle birlikte hareket ediyor. Öne adım atarken ayaklar yere gömülmüyor, Oyuncak 3B'de ayaklar her harekette yere basıyor.
+- İlerlemen taşınır: önceki sürümdeki kariyer, Tüy, ekipman ve ayarlar ilk açılışta bir kez bu sürüme geçer.
+- Maç sonu sadeleşti: iki öne çıkan sayı ve bir ipucu. Tüm sayılar "Ayrıntılar" düğmesinde.
+- Vuruştan sonra oyuncu hazır duruşa yumuşak dönüyor; nefesi azalınca duruşu ağırlaşıyor, soluklanıyor.
+- Ekran yalnız maçta ve antrenmanda açık kalıyor; menüde, duraklatınca ve maç sonunda telefon kendi ayarıyla kararır.
+- Kariyer basamağı açan galibiyette ya da 3. galibiyette Apple'ın puan penceresi gelebilir (TestFlight'ta görünmez).
 
 Bilerek eksik olanlar:
-- Önceki sürümdeki ilerlemen (kariyer, ayarlar, ekipman) bu sürüme taşınmaz; oyun ilk açılış gibi başlar.
+- İlerleme yalnız Unity'den önceki son sürüm bir kez açıldıysa taşınır; açılmadıysa oyun ilk açılış gibi başlar.
 - Game Center başarımları bu sürümde yok.
 - Titreşim her olayda tek kısa titreşim; vuruşa göre değişen desen yok.
 - VoiceOver ve büyük yazı ayarı menülerde çalışmaz.
 
 Nasıl denenir:
+0. Güncellemeden önce önceki sürümü bir kez açtıysan: menüde galibiyet, kariyer basamağı ve Tüy sayın aynı olmalı, ekipmanın ve ayarların (maç uzunluğu, saha, oyuncu görünümü) yerinde durmalı. Bir maç oyna, uygulamayı kapatıp aç: yeni ilerleme durmalı.
 1. Uygulamayı aç: önce kısa bir antrenman (kısa servis, clear, smaç) gelmeli, sonra 5 sayılık Kolay maç. Ekran yalnız dikey durmalı, telefonu çevirince dönmemeli.
 2. Servis: yukarı kaydır. Yavaş kaydırma kısa servis, hızlı ve kısa kaydırma flick, hızlı ve uzun kaydırma yüksek servis olmalı.
 3. Top sana gelince zaman yavaşlar. Yukarı kaydır: yavaş drop, orta clear, hızlı smaç. Aşağı kaydırma blok. Parmağını yana eğerek yön ver.
-4. Bir maçı sonuna kadar oyna: skor doğru saymalı, maç sonunda Tüy/XP ekranı ve doğru düğme gelmeli ("Sıradaki: …", "Tekrar dene" ya da "Bir maç daha").
+4. Bir maçı sonuna kadar oyna: skor doğru saymalı, maç sonunda Tüy/XP, iki sayı kartı, bir ipucu satırı ve doğru düğme gelmeli ("Sıradaki: …", "Tekrar dene" ya da "Bir maç daha"). "Ayrıntılar"a bas: tüm sayılar açılmalı, düğmeler ekranda kalmalı.
 5. Menü > Ekipman: bir yuvayı yükselt, tel gerginliğini değiştir, sonra bir maçta vuruş sesinin değiştiğini dinle.
 6. Menü > Antrenman: 15 adımın hepsi açılmalı, bilgi adımlarında oyun durup dokununca devam etmeli.
 7. Ayarlar > Dil > English: tüm menüler İngilizce olmalı. Geri Türkçe'ye al.
 8. Ayarlar > Hareketi azalt: açınca ekran sarsıntısı ve yakınlaşma olmamalı.
 9. Çentikli/Dynamic Island'lı telefonda: skor ve düğmeler ekranın kenarına ya da çentiğin altına girmemeli; düğmelere rahat basılmalı.
-10. Uygulamayı arka plana atıp geri aç, telefonu kilitleyip aç: oyun donmamalı, ses geri gelmeli.
+10. Uygulamayı arka plana atıp geri aç, telefonu kilitleyip aç: oyun donmamalı, ses geri gelmeli. Menüde telefonu bırak: ekran kendi kilit süresinde kararmalı; maçta kararmamalı.
 11. Bir şey takılırsa ya da yavaşlarsa hangi telefon olduğunu ve ne yaptığını yaz.
 
 === HTML ===
 Bu sürümde yeni:
-- Vuruş hareketleri yeniden çizildi: baş üstü vuruşlarda raket önce sırtın arkasına düşüyor, sonra bilek dönerek topa çıkıyor. Kalça göğüsten önce dönüyor. Drive ve file vuruşunda dirsek hafif bükük. Drop ve file vuruşunun artık kendi hareketi var; drop başlangıçta clear gibi görünür, rakibi kandırır.
-- Vuruş animasyonları akıcı: oyuncu artık temas pozunda donup topu beklemiyor. Raketi geri alıp bekliyor, savuruş topa değdiği anda oluyor. Sıçrayarak smaçta oyuncu temas anında havada, tepede. Drive ve blokta raket yere inip fırlamıyor. Uzanmada gövde yana yatmıyor. Vuruştan sonraki toparlanma vuruşa göre: net vuruşu kısa, smaç uzun. Koşarken ayaklar kaymıyor, split step küçük bir sıçrama.
-- Öne adım atarken ayaklar artık yere gömülmüyor; Oyuncak 3B'de ayaklar her harekette yere basıyor.
-- İlk açılışta antrenman kısaldı: 15 ders yerine yalnız kısa servis, clear ve smaç. Sonra hemen 5 sayılık Kolay ilk maç başlar. Diğer vuruşlar menüdeki Antrenman'da duruyor; ilk maçın sonunda "Daha fazla vuruş: Antrenman" düğmesi çıkar.
-- Kariyerde maçı kazanınca ana düğme sıradaki basamağı söyler ("Sıradaki: Okul turnuvası"); kaybedince "Tekrar dene".
+- Unity sürümüne hazırlık: ilerlemen (kariyer, Tüy, ekipman, ayarlar) telefonda ikinci bir yere de kaydediliyor. Bir sonraki büyük güncelleme (Unity, 3B) bunu bir kez okuyup ilerlemeni taşıyacak.
+- Maç sonu sadeleşti: 12 sayı yerine iki öne çıkan sayı kartı ve bir ipucu satırı. Kaybedince ne yapabileceğini, kazanınca bu maçta kalan görevi söyler. Tüm sayılar "Ayrıntılar" düğmesinde.
+- Kariyer basamağı açan galibiyette ya da 3. galibiyette Apple'ın puan penceresi gelebilir (en çok 3 kez). TestFlight'ta Apple bu pencereyi göstermez; görmemen normal.
 
-Akıcılık:
-- İlk servisteki takılma giderildi: rakip figürü, figür kareleri ve sesler maçtan önce hazırlanıyor.
-- Test için gizli kare hızı göstergesi: Ayarlar ekranında "Ayarlar" başlığına 3 saniye içinde 5 kez dokun. Ekranın üstünde iki satır çıkar: üstte son 1 saniye (kare/sn, en uzun kare, takılma sayısı), altta o ekranın toplamı. Aynı şekilde 5 dokunuşla kapanır.
-- Maçta vuruş anları hafifledi: raket sesi maç başında bir kez hazırlanıyor, smaç yakınlaşmasında kort yeniden çizilmiyor. Eski telefonlarda takılma azalmalı.
+Önemli:
+- Unity sürümünden önce bu sürümü bir kez aç. Menü görününce bir maç oyna ya da birkaç saniye bekle, sonra uygulamayı kapatabilirsin. Bu sürümü hiç açmadan Unity sürümüne geçersen ilerlemen taşınmaz.
 
 Nasıl denenir:
-V. Bir maç oyna, rakibi izle: smaç ve clear'da raketin sırtın arkasına düştüğünü, drop'ta hareketin sona doğru yavaşladığını görmelisin. Ayrıca clear ve smaçta raket geride beklemeli, savuruş topa değerken hızlı akmalı. Rakip smaçta bir kez sıçramalı, topa havadayken vurmalı. Göğüs hizasındaki toplarda (drive) raket yere inmemeli. Uzandığında figür yere yatmamalı. Smaç gücü doluyken baş üstü topta çömelip sıçrayarak vurmalısın.
-A. Uygulamayı silip yeniden kur, Oyna'ya bas: antrenman "1/3" ile başlamalı (kısa servis, clear, smaç). Üçü bitince "Maç başlıyor!" yazmalı ve 5 sayılık maç gelmeli. Maçta nefes halkası azalınca bir kez "Nefes al: clear at" uyarısı görmelisin. Maç sonunda "Daha fazla vuruş: Antrenman" düğmesi olmalı, bir sonraki maçta olmamalı. Ayarlarda maç uzunluğu seçtiysen ikinci maç o uzunlukta olmalı.
-B. Menü > Kariyer'de bir maç kazan: ana düğme "Sıradaki: …" yazmalı. Kaybedince "Tekrar dene", hızlı maçta "Bir maç daha".
-C. Menü > Antrenman: tam liste (15 adım) değişmeden oynanmalı.
-0. Uygulamayı kapatıp yeniden aç, Oyna'ya bas, hemen servis at: ilk serviste ve ilk rallide takılma olmamalı. Maçı bitirip "Bir maç daha" ile farklı rakiple tekrar dene; rakibin forma rengi doğru olmalı (Blaze kırmızı, Rocco lacivert, Mika pembe).
-1. Mümkünse eski ya da yavaş bir telefonda dene. Önce göstergeyi aç (Ayarlar başlığına 5 dokunuş). Her adımda alt satırdaki "ort fps" ve "takılma" sayısını not et; 55 fps üstü ve takılma 0–1 iyi demek.
-2. Bir maç oyna, uzun ralliler yap: smaç, clear ve drop vuruşlarında top, oyuncular ve ekran sallanması takılmadan akmalı. Vuruş sesi önceki gibi duyulmalı (raket tellerinin çınlaması, smaçta sert çatırtı).
-3. Ekipman'da tel gerginliğini değiştirip bir vuruş yap: ses tel gerginliğine göre değişmeye devam etmeli.
-4. Menü > Ekipman'ı aç: ekran hemen açılmalı, figür hazırlanırken dönen top görünmeli ve donmamalı. Forma rengi değiştir: renk kısa sürede gelmeli, ekran kilitlenmemeli.
-5. Ayarlar > Oyuncu görünümü > Gerçekçi ile 2–4. adımları bir kez daha dene.
+1. Uygulamayı aç, menüde birkaç saniye bekle: galibiyet, kariyer ve Tüy sayın öncekiyle aynı olmalı (bu sürüm hiçbir şeyi silmez).
+2. Bir maç oyna ve kaybet: maç sonunda iki sayı kartı (ör. "3 Smaç", "2 File vuruşu") ve altında bir ipucu satırı görmelisin. "Ayrıntılar"a bas: tüm sayılar açılmalı, düğme "Ayrıntıları gizle" olmalı. Bir daha bas: kapanmalı.
+3. Bir maç kazan: ipucu satırı bu maçta bitmeyen görevi söylemeli ya da "Üç görevin üçü de tamam." yazmalı. "Sıradaki: …" / "Bir maç daha" düğmesi yerinde olmalı.
+4. Ayarlar > Dil İngilizce'yse maç sonu kartları ve ipucu İngilizce olmalı.
+5. Küçük ekranlı telefonda (iPhone SE gibi) "Ayrıntılar" açıkken maç sonu ekranı taşmamalı; gerekirse ekran kaymalı, düğmelere rahat basılmalı.
+6. Bir şey takılırsa hangi telefon olduğunu ve ne yaptığını yaz.

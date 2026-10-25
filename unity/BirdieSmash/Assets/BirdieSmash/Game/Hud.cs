@@ -18,7 +18,7 @@ namespace BirdieSmash.Game
 {
     public class Hud : MonoBehaviour
     {
-        public GameRoot root; public string panel = "ana";
+        public GameRoot root; public string panel = "ana"; public bool ayrinti;
         GUIStyle big, mid, small, tiny, btn, btnP, chip, chipOn, card, left, leftB, btnD; float u; Vector2 scroll, ekipScroll;
         class Float { public string t; public Vector3 w; public float a; public Color c; public float size; public bool sabit; }
         readonly List<Float> floats = new List<Float>(); readonly List<Rect> blocks = new List<Rect>();
@@ -597,9 +597,10 @@ namespace BirdieSmash.Game
             if (Button(new Rect(x, y, w, BH), "Ana menü")) root.AnaMenu();
         }
 
+        float overH;   // son karedeki içerik yüksekliği: "Ayrıntılar" açılınca blok yukarı kayar, alt düğmeler ekranda kalır
         void Over(Match M)
         {
-            Dim(.6f); float x = ColX, w = ColW, y = H * .18f;
+            Dim(.6f); float x = ColX, w = ColW, y = Mathf.Max(top + 8 * u, Mathf.Min(H * .18f, H - bot - overH - 8 * u)), y0 = y;
             float th = big.CalcHeight(new GUIContent(root.bittiBaslik), w); var bs = root.bittiBaslik.Length > 24 ? mid : big; th = bs.CalcHeight(new GUIContent(root.bittiBaslik), w);
             Shadowed(new Rect(x, y, w, th), root.bittiBaslik, bs, Color.white); y += th + 8 * u;
             Shadowed(new Rect(x, y, w, 60 * u), M.sc[0] + " – " + M.sc[1], new GUIStyle(big) { fontSize = Mathf.RoundToInt(48 * u) }, Color.white); y += 64 * u;
@@ -611,10 +612,21 @@ namespace BirdieSmash.Game
             }
             // HTML oYukselt: yükseltme yapılabiliyorsa maç sonundan doğrudan Ekipman paneline götüren düğme
             if (od != null && root.yukseltHazir) { if (Button(new Rect(x, y, w, BH), "Ekipmanı yükselt")) { root.AnaMenu(); panel = "ekip"; ekipScroll = Vector2.zero; root.vitrin.Ac(); } y += BH + 10 * u; }
-            float ih = small.CalcHeight(new GUIContent(root.bittiBilgi), w); Shadowed(new Rect(x, y, w, ih), root.bittiBilgi, small, new Color(1, 1, 1, .8f)); y += ih + 16 * u;
+            // Özet (Ar-Ge 23 Eki #2): iki kart (sayı + adı; renk anlam taşımaz) + bir ipucu, tam liste "Ayrıntılar" ardında.
+            // Yükseklikler CalcHeight'tan: metin uzasa da üst üste binmez.
+            { int n = root.bittiKart.Count; float g = 10 * u, kw = n > 1 ? (w - g) / 2 : w, kh = 0; var vs = new GUIStyle(big) { fontSize = Mathf.RoundToInt(28 * u) };
+              foreach (var k in root.bittiKart) kh = Mathf.Max(kh, small.CalcHeight(new GUIContent(L.T(k.ad)), kw - 16 * u));
+              kh += 36 * u + 14 * u;
+              for (int i = 0; i < n; i++) { var r = new Rect(x + i * (kw + g), y, kw, kh); GUI.Box(r, GUIContent.none, card); var k = root.bittiKart[i];
+                  GUI.Label(new Rect(r.x, r.y + 6 * u, r.width, 34 * u), k.deger.ToString(), vs); GUI.Label(new Rect(r.x + 8 * u, r.y + 40 * u, r.width - 16 * u, kh - 44 * u), L.T(k.ad), small); }
+              y += kh + 10 * u; }
+            if (!string.IsNullOrEmpty(root.bittiIpucu)) { float ph = small.CalcHeight(new GUIContent(root.bittiIpucu), w); Shadowed(new Rect(x, y, w, ph), root.bittiIpucu, small, Color.white); y += ph + 10 * u; }
+            if (Button(new Rect(x, y, w, BH), ayrinti ? "Ayrıntıları gizle" : "Ayrıntılar")) ayrinti = !ayrinti; y += BH + 10 * u;
+            if (ayrinti) { float ih = small.CalcHeight(new GUIContent(root.bittiBilgi), w); Shadowed(new Rect(x, y, w, ih), root.bittiBilgi, small, new Color(1, 1, 1, .8f)); y += ih + 16 * u; }
             if (ButtonRaw(new Rect(x, y, w, BH * 1.15f), root.bittiDugme, true)) root.TekrarOyna(); y += BH * 1.15f + 10 * u;
             if (root.bittiIlk) { if (Button(new Rect(x, y, w, BH), "Tam antrenman")) root.Antrenman(); y += BH + 10 * u; }
             if (Button(new Rect(x, y, w, BH), "Ana menü")) root.AnaMenu();
+            overH = y + BH - y0;
         }
 
         // ---- smaç perdesi (HTML perde): 5 halka × 24 dilim, komşu halkalar ters yönde 1,2 rad/sn döner. Kapanış: disk

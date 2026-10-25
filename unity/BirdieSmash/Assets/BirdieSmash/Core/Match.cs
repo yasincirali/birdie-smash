@@ -20,7 +20,7 @@ namespace BirdieSmash.Core
         public string clip = "idle", prepClip, shot = "low", hand = "fore", prepShot, prepHand, svClip, svTur;
         public SvAnim svAnim;
         // ayak işi (HTML ayakIsi): yumuşatılmış hız, adım fazı, seçili ayak klibi ve aday klibin süresi
-        public float qx = float.NaN, qy, svx, svy, runPh, adayT; public bool yuru; public string ayakKlip, adayAd;
+        public float qx = float.NaN, qy, svx, svy, runPh, adayT, idlePh; public bool yuru; public string ayakKlip, adayAd;
         public float fakeUntil = -9, fakeX;   // aldatılan rakip: bu ana dek ters yöne çıkar
         public bool HasTarget { get { return !float.IsNaN(tx); } }
     }
@@ -79,7 +79,7 @@ namespace BirdieSmash.Core
         public bool easy = true, reduce, ilk, between, split, splitPending, over, matchDone, hint, deceive, kisaBekle, flow;
         public Action svPending;
         // maç sonu istatistiği (HTML oInfo)
-        public int smashes, kills, perfects, deceives, splits, tepeden, saves, outsLeft, slices, smacSayi;
+        public int smashes, kills, perfects, deceives, splits, tepeden, saves, outsLeft, slices, smacSayi, outsBen;   // outsBen: dışarı giden kendi vuruşum (servis hariç), maç sonu ipucu
         bool nefesUyari, nefesIlk, opUyari, rekorBuMac;
         // hakemler (görünüm okur): baş hakemin el hareketi süresi, kime, servis el değişti mi; servis hakeminin yönü
         public float hakemT, hakemT0 = 1.4f, sjT; public string hakemYon, sjYon; public bool hakemSO;
@@ -520,7 +520,7 @@ namespace BirdieSmash.Core
             if (s.netHit) { Point(other, hitter == "me" ? "Fileye takıldı" : "Rakip fileye taktı", s.x, s.y); return; }
             bool outp = IsOut(s.x, s.y, s.serve);
             if (ogr != null && s.ogrHedef != null && hitter == "me" && !outp && s.y >= s.ogrHedef[0] && s.y <= s.ogrHedef[1]) { ogr.yildiz++; Say("me", null, s.x, s.y, 0, "Hedefte! ★", 2); }
-            if (outp) { if (other == "me") outsLeft++; Point(other, s.serve ? (hitter == "me" ? "Servis hatası" : "Rakip servis hatası") : (hitter == "me" ? "Dışarı" : "Dışarı! Bıraktın, sayı senin"), s.x, s.y); }
+            if (outp) { if (other == "me") outsLeft++; else if (!s.serve) outsBen++; Point(other, s.serve ? (hitter == "me" ? "Servis hatası" : "Rakip servis hatası") : (hitter == "me" ? "Dışarı" : "Dışarı! Bıraktın, sayı senin"), s.x, s.y); }
             else { if (s.type == "smash" && hitter == "me") { op.dive = 1; op.yat = true; } Point(hitter, hitter == "me" ? (s.super ? "SIÇRAYARAK SMAÇ SAYISI" : s.type == "smash" ? "SMAÇ SAYISI" : "SAYI!") : "Kaçtı", s.x, s.y); }
         }
 
@@ -619,6 +619,7 @@ namespace BirdieSmash.Core
             if (between) { betweenT -= dt; if (betweenT <= 0) { if (matchDone) { over = true; Emit(Ev.MatchEnd, sc[0] > sc[1] ? "me" : "op"); return; } string msg = serveMsg; SetupServe(); serveMsg = msg; } }
             OgrTick(dt);
             clock += d; me.dive = Math.Max(0, me.dive - d * 1.5f); me.jump = Math.Max(0, me.jump - d * JUMP_HIZ); op.jump = Math.Max(0, op.jump - d * JUMP_HIZ);
+            IdleIlerle(me, d); IdleIlerle(op, d);
             me.sw = Math.Max(0, me.sw - d * me.swHiz); op.sw = Math.Max(0, op.sw - d * op.swHiz); me.hop = Math.Max(0, me.hop - d * 5); op.dive = Math.Max(0, op.dive - d * 1.5f);
             foreach (var o in new[] { me, op }) if (o.svAnim != null) { o.svAnim.t += d; if (o.svAnim.t >= o.svAnim.d) { o.svAnim = null; var f = svPending; svPending = null; if (f != null) f(); } }
             if (wait > 0) { wait -= d; if (wait <= 0 && server == "op" && s == null && !between && svPending == null) { wait = 0; OpServe(); } }
@@ -697,8 +698,12 @@ namespace BirdieSmash.Core
             }
             else if (o.splitT > 0 && spd < 1.5f) { clip = "split"; ph = 1 - o.splitT / .3f; }
             else if (o.yuru && o.ayakKlip != null) { clip = o.ayakKlip; ph = o.runPh; }
-            else { clip = "idle"; ph = (clock * .8f + (isMe ? 0 : .5f)) % 1f; }
+            else { clip = "idle"; ph = (o.idlePh + (isMe ? 0 : .5f)) % 1f; }
         }
+        // Boşta duruş nefese bağlı (Ar-Ge 23 Eki animasyon B4): dolu nefeste eski hız (0,8 döngü/sn), nefes azaldıkça
+        // %90'a kadar hızlanır; uzun ralliden sonra beden de soluklanır. Faz birikir (saatle çarpılsa nefes değişince
+        // poz sıçrardı). Genlik görünümde: PlayerView boşta pozuna yorgun klibini nefesle karıştırır.
+        static void IdleIlerle(Athlete o, float d) { o.idlePh = (o.idlePh + d * .8f * (1 + .9f * (1 - o.nefes))) % 1f; }
         // Görünüm için sıçrama yüksekliği oranı (0..1.2): tam sıçrama sin(jump·π), split step hop'u bunun %20'si.
         public static float JumpH(Athlete o) { return (float)(Math.Sin(Math.Min(1, o.jump) * Math.PI) + Math.Sin(o.hop * Math.PI) * .2); }
     }

@@ -34,6 +34,13 @@ Unity projesinden (`unity/BirdieSmash`) çıkar. Secret'lar yokken eski Flutter 
 aynen çalışır; Actions özetinde "Unity secret'ları eksik" notu görünür. Geri dönmek istersen
 `UNITY_LICENSE` secret'ını sil, hat Flutter'a döner.
 
+0. **Önce ilerleme devri (2026-10-25):** secret'ları girmeden ÖNCE ilerleme devrini taşıyan HTML build'i
+   (25 Eki, "Unity sürümüne hazırlık" notlu) TestFlight'a çıksın; sen ve testçiler onu **bir kez açın**
+   (menüde birkaç saniye). O build kariyer/Tüy/ekipman/ayarları iOS kullanıcı ayarlarına da yazar; Unity ilk
+   açılışta bir kez okur. Açılmadan Unity'ye geçilirse ilerleme taşınmaz. Unity açıldıktan sonra eski HTML
+   build'ine dönülse de Unity ilerlemesinin üstüne yazılmaz (bayrak `tuytop_html_devir`).
+   Not: geri dönüş (`UNITY_LICENSE`'ı silmek) Unity'de kazanılan ilerlemeyi HTML'e geri taşımaz.
+
 1. **Unity Hub'ı kur** (unity.com/download), Unity hesabınla giriş yap.
 2. **Installs › Install Editor › Archive** (ya da "download archive" sayfası) üzerinden tam olarak
    **6000.0.58f2** sürümünü kur; modüllerden **iOS Build Support**'u işaretle. (Başka 6000.0.x

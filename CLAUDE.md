@@ -24,6 +24,9 @@ onay beklemeden yap, sonunda Türkçe özetle; push saatleri kuralı (hafta içi
   yoksa Flutter yolunu koşar; ikisi aynı bundle id ve aynı build numarası sırasını paylaşır.
   `store_listing/whats_new.txt` `=== UNITY ===` / `=== HTML ===` bölümlü; her lane kendi bölümünü gönderir.
   Unity'siz doğrulama: mono derleme (Unity modül DLL'leri) + `tool/unity_test/BotMac.cs`.
+  İlerleme devri (2026-10-25): HTML `{tip:'devir'}` → kabuk `birdiesmash/kabuk` kanalı → AppDelegate tuytop_* değerlerini
+  aynı adla NSUserDefaults'a yazar (= iOS PlayerPrefs); Unity `Core/Devir.cs` bir kez kabul edip `tuytop_html_devir` koyar,
+  bayrak varsa kabuk yazmaz. Mağaza puanı `{tip:'puan'}` (karar oyunda, kabuk yalnız sistem API'si).
 - Doğrulama: `flutter analyze && flutter test && node tool/oyun_sozdizimi.js`.
 - Araçlar (2026-10-20): skill `3d-animator` (rig/mocap/retarget) + `birdie-karakter`
   (bu hat), `.mcp.json` → `blender` MCP (yalnız PC), bulut `tool/bulut_kurulum.sh`
