@@ -62,6 +62,13 @@ namespace BirdieSmash.Game
             raketPivot.gameObject.SetActive(false);
         }
         float raketBoy = .7f;
+        // Figürdeki raketin RT içindeki yeri (viewport 0..1; HTML TUR.rkE): Hud rakete dokunuşu (sürüklemeden) raket ekranına çevirir.
+        public bool RaketYeri(out Vector2 vp)
+        {
+            vp = Vector2.zero; if (fig == null || gec > .01f) return false; bool var_ = false; Bounds b = new Bounds();
+            foreach (var r in fig.kanal[1]) { if (r == null) continue; if (!var_) { b = r.bounds; var_ = true; } else b.Encapsulate(r.bounds); }
+            if (!var_) return false; var p = kam.WorldToViewportPoint(b.center); if (p.z < 0) return false; vp = new Vector2(p.x, p.y); return true;
+        }
 
         public void Parlat(string yuva)
         {

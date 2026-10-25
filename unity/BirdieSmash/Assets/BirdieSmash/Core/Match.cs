@@ -363,6 +363,7 @@ namespace BirdieSmash.Core
         }
 
         // Kesişten vuruş: yön = parmağın yönü, hız = güç ve tür, topun merkezine uzaklık = isabet.
+        public string sonTip, sonQ; public bool sonSlice;   // son SwipeShot: tür (jump/kill/lift/block dahil), isabet, slice
         public bool SwipeShot(SwipeInput sw)
         {
             Reach I; if (between || s == null || !ReachInfo(out I)) return false;
@@ -392,6 +393,7 @@ namespace BirdieSmash.Core
             if (type == "smash" || type == "jump") smashes++;
             me.sw = 1; GorevKontrol();
             string ft = type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type;
+            sonTip = type; sonQ = q; sonSlice = slice;   // titreşim deseni (HTML hapHit) uçuş türünü değil vuruşun kendisini ister
             StartFlight("me", vx, vy, vz, hx, hy, hz, false, ft, type == "jump", q, slice);
             OgrOlay(type, null, slice, PL.over, sw.speed);
             return true;

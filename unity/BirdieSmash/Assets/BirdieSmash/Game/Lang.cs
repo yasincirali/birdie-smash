@@ -14,7 +14,8 @@ namespace BirdieSmash.Game
     {
         static Dictionary<string, string> d; static List<KeyValuePair<Regex, string>> kalip;
         static readonly Dictionary<string, string> UNITY_EK = new Dictionary<string, string> {
-            {"Hedefte! ★","On target! ★"},{"İz geri geldi","Trail is back"},{"Unity demosu · HTML oyunla aynı kurallar","Unity demo · same rules as the HTML game"},
+            {"Hedefte! ★","On target! ★"},{"İz geri geldi","Trail is back"},{"Lisanslar","Licences"},{"Yazı boyutu","Text size"},{"Sistem","System"},{"Normal","Normal"},{"Büyük","Large"},
+            {"Game Center · Başarımlar","Game Center · Achievements"},{"Hareket azaltıldı · sistem","Reduced motion · system"},
             {"Dil","Language"},{"Lisanslar ve üçüncü taraf içerik","Licences and third-party content"},{"Duraklatıldı","Paused"},{"Yeni maç başlat","Start a new match"},
             {"Ana menü","Main menu"},{"Tam antrenman","Full training"},{"Antrenmanı geç","Skip training"},{"Anladım, devam","Got it, continue"},
             {"Hareket azaltıldı","Reduced motion"},{"Hareket tam","Full motion"},{"Ses açık","Sound on"},{"Ses kapalı","Sound off"},{"Geri","Back"},

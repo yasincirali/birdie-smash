@@ -191,6 +191,32 @@ platform :ios do
       build_configurations: ["Release"]
     )
 
+    # Game Center (Flutter yolundaki Runner.entitlements ile aynı yetki; 2026-10-25 eşitlik turu): Unity'de başarımlar
+    # Basarim.cs → Social API (GameKit). Yetki yoksa giriş sessizce başarısız olur. Unity'nin ürettiği projeye yetki
+    # dosyası yazılıp uygulama hedefine bağlanır. App Store profili Game Center'ı zaten taşır (Flutter yolu aynı profille
+    # imzalıyor). Bir şey ters giderse build durmaz: başarımlar çalışmaz ama oyun yüklenir.
+    begin
+      require "xcodeproj"
+      ent_ad = "BirdieSmash.entitlements"
+      File.write(File.join(dir, ent_ad), <<~PLIST)
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+        	<key>com.apple.developer.game-center</key>
+        	<true/>
+        </dict>
+        </plist>
+      PLIST
+      proj = Xcodeproj::Project.open(xcodeproj)
+      hedef = proj.targets.find { |t| t.name == "Unity-iPhone" }
+      hedef.build_configurations.each { |c| c.build_settings["CODE_SIGN_ENTITLEMENTS"] = ent_ad }
+      proj.save
+      UI.message("Game Center yetkisi eklendi: #{ent_ad}")
+    rescue => e
+      UI.important("Game Center yetkisi eklenemedi (başarımlar çalışmaz): #{e.class}")
+    end
+
     # Uygulama ikonu Flutter'ınkiyle aynı set: Unity'nin ürettiği 1024'lük ikon alfa kanalı taşırsa
     # App Store Connect yüklemeyi reddeder; Flutter seti zaten kabul edilmiş durumda.
     flutter_ikon = File.expand_path("../Runner/Assets.xcassets/AppIcon.appiconset", __dir__)

@@ -72,7 +72,7 @@ namespace BirdieSmash.Game
         static Vector2 Bez(Vector2 p0, Vector2 c, Vector2 p1, float t) { float u = 1 - t; return u * u * p0 + 2 * u * t * c + t * t * p1; }
         // Tek tüy (dilim açısı a etrafında): dip iki köşe, uçta karesel yuvarlak kenar. Yüzey koni üstünde, kalınlığı yok;
         // tek ve çift tüyler 0,4 mm farklı yarıçapta ki üst üste binen kenarlar titreşmesin (z-fighting).
-        static Mesh Feathers()
+        public static Mesh Feathers()
         {
             const int N = 16, TIP = 6; float dw = Mathf.PI * 2 / N, hb = dw * .42f, ht = dw * .66f, al0 = .004f * G;
             var v = new List<Vector3>(); var outT = new List<int>(); var inT = new List<int>(); var shT = new List<int>();
@@ -113,7 +113,7 @@ namespace BirdieSmash.Game
             return o;
         }
         // Mantar: önde yarım küre (Rc), arkada kısa silindir; ön kenarda mavi şerit (ayrı alt ağ).
-        static Mesh Cork()
+        public static Mesh Cork()
         {
             const int S = 24, R = 7; var v = new List<Vector3>(); var t0 = new List<int>(); var t1 = new List<int>(); float len = Rc * .75f;
             for (int j = 0; j <= R; j++) { float ph = j / (float)R * Mathf.PI / 2; for (int i = 0; i <= S; i++) { float a = i * Mathf.PI * 2 / S; v.Add(new Vector3(Mathf.Cos(a) * Mathf.Cos(ph) * Rc, Mathf.Sin(a) * Mathf.Cos(ph) * Rc, Mathf.Sin(ph) * Rc)); } }
@@ -134,7 +134,7 @@ namespace BirdieSmash.Game
             return o;
         }
         // Kenar ve iplik çizgileri (çizgi topolojisi, 1 px): her tüyün dış hattı + 1/3 ve 1/2'de iki iplik halkası.
-        static Mesh Lines()
+        public static Mesh Lines()
         {
             var v = new List<Vector3>(); var idx = new List<int>(); const int N = 16; float dw = Mathf.PI * 2 / N, hb = dw * .42f, ht = dw * .66f, al0 = .004f * G;
             for (int i = 0; i < N; i++)

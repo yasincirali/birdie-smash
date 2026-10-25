@@ -13,8 +13,7 @@
 // (tüm ses lowpass 750 Hz: AudioLowPassFilter dinleyicide), file "puf", bant tınısı, yer pıtırtısı, çizgi kamerası
 // davulu, sevinç/iç çekiş, yön değişiminde ayakkabı gıcırtısı, parmak hızıyla raket uğultusu (canlı bandpass).
 // Web Audio'daki son kompresör yok (Unity mikserinde yok; düzeyler HTML'deki kazançlarla).
-// Titreşim: Unity'de yalnız Handheld.Vibrate (tek sabit darbe) var; HTML HAP/hapHit desenleri (süre, gerginlik dokusu)
-// yerel eklenti gerektirir: desen burada hesaplanır (Desen) ama cihazda tek darbe çalar. Bilinen eksik.
+// Titreşim: desen burada hesaplanır (Desen, HTML hapHit), Yerel.Vurus iOS eklentisiyle çalar (Plugins/iOS/BirdieYerel.mm).
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -115,18 +114,31 @@ namespace BirdieSmash.Game
             Yumusat(sy.buf, 2000);
             crowd = gameObject.AddComponent<AudioSource>(); crowd.clip = sy.Clip("seyirci", 3); crowd.loop = true; crowd.volume = 0; crowd.playOnAwake = false; crowd.Play();
             var sg = new GameObject("ugultu"); sg.transform.SetParent(transform, false); swo = sg.AddComponent<Swoosh>();
-            Isit();
+            Isit();   // açılış perdesi bu sıra bitene kadar kapalı kalır (Hazir)
         }
         // döngü dikişinde tık olmasın: baş ve son karışır
         static void Yumusat(float[] b, int n) { for (int i = 0; i < n; i++) { float k = i / (float)n; b[i] = b[i] * k + b[b.Length - n + i] * (1 - k); } }
 
-        // Sık vuruşlar maç öncesi hazırlanır (HTML vsesIsit): servis, her tür × üç isabet, süper smaç.
+        // Sık vuruşlar maç öncesi hazırlanır (HTML vsesIsit): servis, her tür × üç isabet, süper smaç; Unity'de rakibin
+        // sesi ayrı tampon olduğu için rakibin vuruşları da. HTML gibi tek seferde değil, sıraya girer ve yalnız sakin
+        // anlarda (menü, perde, sayı arası, duraklatma, servis beklerken) karede ikişer işlenir (HTML vsesSakin): eskiden
+        // açılışta tek karede ~30 tampon üretiliyor, tel gerginliği değişince ilk vuruşlar o karede sentezleniyordu.
+        // Sıra boşalana kadar perde kapalı kalır (Hud: dönen tüy top + "Hazırlanıyor…").
+        readonly Queue<System.Action> isitSira = new Queue<System.Action>(); public System.Func<bool> sakin;
+        public bool Hazir { get { return isitSira.Count == 0; } }
         public void Isit()
         {
-            var GS = Ayar.GS;
-            Vurus("clear", "good", false, false, true, false); Vurus("drop", "good", false, false, true, false);
-            foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect", "poor" }) Vurus(t, q, false, false, false, false);
-            Vurus("smash", "perfect", false, true, false, false);
+            isitSira.Clear();   // tel/raket değişip yeniden istenirse sıra ikilenmesin
+            isitSira.Enqueue(() => Vurus("clear", "good", false, false, true, false)); isitSira.Enqueue(() => Vurus("drop", "good", false, false, true, false));
+            foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect", "poor" }) { string tt = t, qq = q; isitSira.Enqueue(() => Vurus(tt, qq, false, false, false, false)); }
+            isitSira.Enqueue(() => Vurus("smash", "perfect", false, true, false, false)); isitSira.Enqueue(() => Vurus("smash", "good", false, true, false, false));
+            foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect", "poor" }) { string tt = t, qq = q; isitSira.Enqueue(() => Vurus(tt, qq, false, false, false, true)); }
+            isitSira.Enqueue(() => Vurus("clear", "good", false, false, true, true)); isitSira.Enqueue(() => Vurus("drop", "good", false, false, true, true));
+        }
+        void IsitIsle()
+        {
+            if (isitSira.Count == 0 || (sakin != null && !sakin())) return;
+            for (int i = 0; i < 2 && isitSira.Count > 0; i++) { var f = isitSira.Dequeue(); try { f(); } catch (System.Exception) { } }
         }
         static string Tur(string type) { return type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : HITMIX.ContainsKey(type ?? "") ? type : "clear"; }
         AudioClip Vurus(string type, string q, bool slice, bool super_, bool serve, bool op)
@@ -238,13 +250,15 @@ namespace BirdieSmash.Game
 
         void Update()
         {
+            IsitIsle();
             float dt = Time.unscaledDeltaTime; bool sessiz = !Ayar.ses;
             crowd.volume += ((sessiz ? 0 : crowdHedef * 3.5f) - crowd.volume) * (1 - Mathf.Exp(-dt / .4f));   // Web Audio setTargetAtTime(.4)
             float tc = suHedef < 1000 ? .05f : .02f; suAlti.cutoffFrequency += (suHedef - suAlti.cutoffFrequency) * (1 - Mathf.Exp(-dt / tc));
         }
         public void CrowdStart() { crowdHedef = .01f; }
+        public void CrowdSus() { crowdHedef = 0; }
 
-        // Titreşim deseni (HTML hapHit): süre vuruşun gücü, gerginlik dokusu. Unity'de yalnız tek darbe çalınabilir.
+        // Titreşim deseni (HTML hapHit): süre vuruşun gücü, gerginlik dokusu. Yerel.Vurus çalar.
         public static readonly Dictionary<string, int> HIT_MS = new Dictionary<string, int> { { "smash", 44 }, { "jump", 62 }, { "kill", 26 }, { "drive", 28 }, { "clear", 32 }, { "drop", 9 }, { "lift", 24 }, { "block", 12 } };
         public static int[] Desen(string type, string q, bool slice, float T)
         {
