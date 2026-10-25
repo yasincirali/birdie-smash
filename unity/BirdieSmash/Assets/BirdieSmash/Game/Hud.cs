@@ -607,7 +607,7 @@ namespace BirdieSmash.Game
             var od = root.odul;
             if (od != null)
             {   // HTML oOdul: +Tüy · +XP (ekler) · Seviye! · Toplam
-                string t = L.T("+{0} Tüy{1} · +{2} XP", od.tuy, "", od.xp) + (od.ek.Count > 0 ? " (" + string.Join(", ", od.ek.ConvertAll(L.T).ToArray()) + ")" : "") + (od.sonra > od.once ? L.T(" · Seviye {0}!", od.sonra) : "") + L.T(" · Toplam {0}{1}", Ayar.gear.eko.tuy, " " + L.T("Tüy"));
+                string t = L.T("+{0} Tüy{1} · +{2} XP", od.tuy, "", od.xp) + (od.ek.Count > 0 ? " (" + string.Join(", ", od.ek.ConvertAll(s => L.T(s)).ToArray()) + ")" : "") + (od.sonra > od.once ? L.T(" · Seviye {0}!", od.sonra) : "") + L.T(" · Toplam {0}{1}", Ayar.gear.eko.tuy, " " + L.T("Tüy"));
                 float oh = small.CalcHeight(new GUIContent(t), w); Shadowed(new Rect(x, y, w, oh), t, new GUIStyle(small) { fontStyle = FontStyle.Bold }, Kit.Hex("#ffd23a")); y += oh + 6 * u;
             }
             // HTML oYukselt: yükseltme yapılabiliyorsa maç sonundan doğrudan Ekipman paneline götüren düğme
