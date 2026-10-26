@@ -1,6 +1,6 @@
 # Birdie Smash karakteri → Unity: tek FBX + klip aralıkları JSON. Pozlar karakter.py'den okunur (tek kaynak).
-# 2026-10-24: oyun iki modelle çalışıyor (Ayarlar › Oyuncu görünümü): Oyuncak 3B (KayKit Rogue, CC0; BS_MODEL=oyuncak)
-# ve Gerçekçi (Microsoft Rocketbox Sports_Male_04, MIT; BS_MODEL=aday). İkisi de iskeletli ve deri ağırlıklı ağ; eski
+# 2026-10-24: oyun iki modelle çalışıyor (Ayarlar › Oyuncu görünümü): Oyuncak 3B (2026-10-26: MakeHuman CC0 atletik gövde + kendi kıyafet/yüz geometrisi, UE adlı iskelet; BS_MODEL=oyuncak; eski KayKit chibi BS_MODEL=oyuncak_kaykit)
+# ve Gerçekçi (Microsoft Rocketbox Sports_Male_02 + badminton kiti, 2026-10-26; MIT; BS_MODEL=aday). İkisi de iskeletli ve deri ağırlıklı ağ; eski
 # parçalı figürün "her parçayı dünya dönüşümüyle anahtarla" yolu derili ağı bozardı. Şimdi:
 #  - iskelet: her pozda karakter.py/insan.py'nin IK'sı kemiklere uygulanır, her kemiğin matrix_basis'i anahtarlanır
 #    (Unity Legacy klibi derili ağı kendisi büker);
@@ -54,7 +54,7 @@ pb = ao.pose.bones
 EL = 'handslot.r' if 'handslot.r' in pb else OY.R['el'].format(S=OY.R['S']['r'])   # raketin bağlandığı el kemiği
 for o in OY.gecici: bpy.data.objects.remove(o)   # idle pozunun dünyada kurulmuş raketi
 OY.gecici = []; objs[:] = list(kalici)
-nes, kc = insan.raket(Vector((0, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1)), 1.0, OY.M, ad='rk')   # yerel çerçeve = birim
+nes, kc = insan.raket(Vector((0, 0, 0)), Vector((0, 1, 0)), Vector((0, 0, 1)), getattr(OY, 'raket_s', 1.0), OY.M, ad='rk')   # yerel çerçeve = birim; ölçek modelin kur_poz'uyla aynı
 piv = bpy.data.objects.new('raket_pivot', None); sc.collection.objects.link(piv)
 piv.parent = ao; piv.parent_type = 'BONE'; piv.parent_bone = EL; piv.rotation_mode = 'QUATERNION'
 raket_par = []; gruplar = {t: [o for o in nes if o.get('tag') == t] for t in RAKET_TAG}   # join birleşeni siler: önce grupla
@@ -89,21 +89,47 @@ def proxy_for(o):
         p.scale = (1e-4, 1e-4, 1e-4); p.keyframe_insert('scale', frame=fp)
     return key, p
 
-timeline, frame, meta = [], 1, {'fps': FPS, 'scale': 1.75, 'clips': [], 'model': AD}
+# Ara kareler (2026-10-26, oyuncak 3B): poz başına 3 kare; arası eskiden Unity'nin eklem dönüşü ara-değerlemesiydi. Hızlı
+# geçişte (hamleden toparlanma, smaç salınımı) anahtarlar temiz olsa bile arada ayak zemine 7 cm giriyor, ön kol baştan
+# geçiyordu. Model `ara_kare` derse iki ara poz karakter.py mix() ile karıştırılıp IK + çözücüyle kurulur ve anahtarlanır.
+# FBX zaten her kareyi pişirir (bake_anim_step=1): boyut değişmez, dışa aktarma ~3 kat sürer. Diğer modeller aynen.
+ARA = bool(getattr(OY, 'ara_kare', False))
+fklip = {}; timeline, frame, meta = [], 1, {'fps': FPS, 'scale': 1.75, 'clips': [], 'model': AD}
 for name, frames in CLIPS.items():
     seq = list(frames) + ([frames[0]] if name in LOOP else [])
     first = frame
-    for p in seq: timeline.append((frame, p)); frame += FR
+    for i_, p in enumerate(seq):
+        timeline.append((frame, p)); fklip[frame] = name
+        if ARA and i_ + 1 < len(seq):   # ara kareler de kurulur (modelin iç içe geçme çözücüsü onlarda da çalışsın)
+            for j in range(1, FR):
+                timeline.append((frame + j, ns['mix'](p, seq[i_ + 1], j / FR))); fklip[frame + j] = name
+        frame += FR
     last = frame - FR
     meta['clips'].append({'name': name, 'first': first, 'last': last, 'loop': name in LOOP, 'poses': len(frames),
                           'hitK': getattr(frames, 'hit', None), 'hold': getattr(frames, 'hold', None), 'drop': getattr(frames, 'drop', None)})
     frame = last + GAP
 
+# adim (2026-10-26, fizik denetimi: ayak kayması %28-37): ayak işi döngüsünün bir turda taşıdığı yol, model biriminde.
+# Ardışık iki pozda da zeminde olan ayağın (klibin en alçak temasının 6 mm içinde; ikisi yerdeyse ortalaması) yatay
+# yer değiştirmesi toplanır (yerinde döngü: basan ayak geriye kayar, oyun kökü o kadar ileri gitmeli). Unity PlayerView
+# `adim × SCALE`'i Match.ADIM_BOY'a yazar; klibin evresi hızla tam bu adımda ilerler, ayak yerde durur.
+ADIM_KLIP = ('run', 'chasse_r', 'chasse_l', 'fwd', 'back_r', 'back_l')
+def ayak_kemikleri(k):
+    out = [b for b in pb if ('foot' in b.name.lower() or 'ball' in b.name.lower() or 'toe' in b.name.lower()) and
+           b.name.lower().rstrip('.').endswith(('_' + k, '.' + k, ' ' + k)) and 'ik' not in b.name.lower()]
+    return out or [b for b in pb if 'foot' in b.name.lower() and (' ' + k.upper() + ' ') in b.name]
+AYAK = {k: ayak_kemikleri(k) for k in 'rl'}
+adim_iz = {}
 bones = {}; prevq = {}; pprev = {}; cur_frame = [1]; rq = [None]; rhata = [0.]
 for f, pose in timeline:
     cur_frame[0] = f
     build(pose)
     bpy.context.view_layer.update()
+    if fklip.get(f) in ADIM_KLIP and AYAK['r'] and AYAK['l']:
+        mw_ = ao.matrix_world
+        z = {k: min((mw_ @ b.head).z for b in AYAK[k]) for k in 'rl'}
+        xy = {k: (mw_ @ AYAK[k][0].head).xy.copy() for k in 'rl'}
+        adim_iz.setdefault(fklip[f], []).append((z, xy))
     W = insan.son_raket.copy(); piv.matrix_world = W; bpy.context.view_layer.update()
     rhata[0] = max(rhata[0], (piv.matrix_world.translation - W.translation).length)   # kemiğe göre çözüm dünyayı tutmalı
     loc, q, s_ = piv.matrix_basis.decompose()
@@ -145,6 +171,11 @@ for nm, at in (('bas__isaret', hc), ('goz__isaret', hc + Vector((0, .2, 0)))):
     me = bpy.data.meshes.new(nm); me.from_pydata([(0, 0, 0), (.001, 0, 0), (0, .001, 0)], [], [(0, 1, 2)])
     mk = bpy.data.objects.new(nm, me); sc.collection.objects.link(mk); mk.parent = root; mk.location = at
 
+if not getattr(OY, 'doku_gomme', True):   # model dokusunu Unity Resources'tan okuyorsa (Rocketbox kit) FBX'e gömme: boyut
+    for o in kalici:
+        for m in o.data.materials:
+            if m and m.use_nodes:
+                for n in [n for n in m.node_tree.nodes if n.type == 'TEX_IMAGE']: m.node_tree.nodes.remove(n)
 for im in bpy.data.images:                 # gömülecek dokular: en çok 1024 px (Rocketbox 2048)
     try:
         if im.size[0] > 1024: im.scale(1024, max(1, int(im.size[1] * 1024 / im.size[0])))
@@ -159,6 +190,16 @@ bpy.ops.export_scene.fbx(filepath=fbx, use_selection=False, object_types={'EMPTY
     use_mesh_modifiers=True, mesh_smooth_type='FACE', use_armature_deform_only=False, add_leaf_bones=False,
     bake_anim=True, bake_anim_use_all_actions=False, bake_anim_use_nla_strips=False, bake_anim_step=1.0,
     bake_anim_simplify_factor=0.0, bake_anim_force_startend_keying=True, path_mode='COPY', embed_textures=True)
+for c in meta['clips']:
+    iz = adim_iz.get(c['name'])
+    if not iz: continue
+    zt = min(min(z.values()) for z, _ in iz) + .006   # zemindeki ayak: klibin en alçak temasının 6 mm (≈1 cm oyunda) içinde
+    top = Vector((0, 0))
+    for (za, a), (zb, b) in zip(iz, iz[1:]):
+        yer = [k for k in 'rl' if za[k] < zt and zb[k] < zt]   # iki pozda da yerde olan ayak(lar); ikisi yerdeyse ortalama
+        if yer: top += sum((a[k] - b[k] for k in yer), Vector((0, 0))) / len(yer)
+    c['adim'] = round(top.length, 4)
+    print('adim', c['name'], c['adim'], 'birim =', round(top.length * 1.75, 3), 'm oyunda')
 meta['parts'] = sorted([o.name for o in kalici] + list(proxies) + sorted(rset))
 meta['raket'] = {'kemik': EL, 'pivot': 'raket_pivot'}
 print('raket pivot en büyük konum hatası', rhata[0])

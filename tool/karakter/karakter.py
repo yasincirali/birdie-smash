@@ -43,7 +43,7 @@ SHW=0.13; HIPW=0.085
 # Gerçekçi gövde (yasin 2026-10-23: "insan anatomisine uygun olacak kadar gerçekçi"): MakeHuman tabanı (insan.py, CC0),
 # aynı poz sözlüklerini kullanır. BS_GERCEK=0 eski oyuncak figürü çizer (hakemler şimdilik oyuncak figürde).
 GERCEK=os.environ.get('BS_GERCEK','1')=='1'
-MODEL=os.environ.get('BS_MODEL','insan')   # 'oyuncak' = KayKit gövdeli oyuncak figür (oyuncak.py), aynı pozlar; 'aday' = Rocketbox (aday.py); 'sade' = Mesh2Motion mankeni (sade.py)
+MODEL=os.environ.get('BS_MODEL','insan')   # 'oyuncak' = Oyuncak 3B, 2026-10-26 yeniden tasarım: MakeHuman (CC0) atletik gövde + kendi kıyafet/yüz/saç geometrisi (oyuncak.py); 'oyuncak_kaykit' = eski KayKit chibi (arşiv, oyuncak_kaykit.py); 'aday' = Rocketbox (aday.py); 'sade' = Mesh2Motion mankeni (sade.py)
 OY=None
 def build_gercek(p):
     global OY
@@ -52,6 +52,7 @@ def build_gercek(p):
         for o in list(objs): bpy.data.objects.remove(o)
         M_=insan.malzemeler(FORMA,SORT,BEYAZ,BANT,CERCEVE,TEL,SORT)
         if MODEL=='oyuncak': import oyuncak; objs.clear(); OY=oyuncak.Oyuncak(M_)
+        elif MODEL=='oyuncak_kaykit': import oyuncak_kaykit; objs.clear(); OY=oyuncak_kaykit.Oyuncak(M_)   # arşiv: eski KayKit chibi (asset ayrıca gerekir)
         elif MODEL=='aday': import aday; objs.clear(); OY=aday.Aday(M_)   # karşılaştırma: hazır modeller (aday.py)
         elif MODEL=='sade': import sade; objs.clear(); OY=sade.Sade(M_)   # sade: Mesh2Motion mankeni (CC0), normal oranlı insan
         else: objs.clear(); OY=insan.Oyuncu(M_,stil=os.environ.get('BS_STIL'))
@@ -212,7 +213,7 @@ run=[]
 for i in range(8):
     ph=i/8*2*math.pi; s=math.sin(ph); c=math.cos(ph)
     run.append(D(READY,root=(0,0,0.41+0.02*abs(c)),lean=(0,0.06,0),twist=-10*s,
-        anR=(0.11,0.17*s,max(0,0.11*math.sin(ph+0.4))),anL=(-0.11,-0.17*s,max(0,0.11*math.sin(ph+math.pi+0.4))),
+        anR=(0.11,0.22*s,max(0,0.11*c)),anL=(-0.11,-0.22*s,max(0,-0.11*c)),   # 2026-10-26 (fizik §4.1): adım 0,17 → 0,22; ayak öne giderken (cos>0) havada, geri giderken yerde (eskiden sin(ph+0,4): geri vuruşun bir kısmı havadaydı, döngü yalnız 0,49 m taşıyordu). Gerçek yol JSON 'adim'.
         wrR=(0.26,0.16-0.08*s,0.56),wrL=(-0.20,0.05+0.16*s,0.42+0.08*max(0,s))))
 # --- smaç (baş üstü, güçlü): hazırlık (raket sırt kaşır, sol el topu gösterir, gövde yay) → temas (kol tam uzanmış,
 #     bilek başın hafif önünde) → devam (raket çapraz aşağı, sol kol çekilmiş) → toparlanma
@@ -260,17 +261,19 @@ kill=sample([(0,READY),(0.3,K_PREP),(0.55,K_HIT),(0.75,K_FOL),(1,READY)],7,hit=2
 #     Gerçekte raket erken ve önde sunulur: sağ ayak öne adım (topuk önce), gövde dik (20–30° eğim), sol kol dengede
 #     geride uzanır; kısa geri salınım = önkol dışa döner, raket başı elin altına düşer; temas sağ ayağın önünde alçakta,
 #     dirsek hafif bükük; takip kısa, hedefe doğru ileri-yukarı.
-L_PREP=D(READY,twist=10,lean=(0.01,0.03,-0.02),root=(0,0.06,0.36),wrR=(0.28,0.24,0.34),elR=(1,-0.1,-0.3),rk=(0.25,-0.25,-0.93),rkFace=(0,1,0.3),wrL=(-0.26,-0.10,0.48),elL=(-1,-0.4,-0.3),anR=(0.15,0.22,0.06),anL=(-0.12,-0.10,0.05),look=(0.1,1,-0.3))
+L_PREP=D(READY,twist=10,lean=(0.01,0.03,-0.02),root=(0,0.06,0.36),wrR=(0.28,0.24,0.37),elR=(1,-0.1,-0.3),rk=(0.25,-0.25,-0.93),rkFace=(0,1,0.3),wrL=(-0.26,-0.10,0.48),elL=(-1,-0.4,-0.3),anR=(0.15,0.22,0.06),anL=(-0.12,-0.10,0.05),look=(0.1,1,-0.3))
 L_HIT=D(READY,twist=2,lean=(0.01,0.06,-0.03),root=(0.02,0.12,0.33),wrR=(0.26,0.44,0.26),elR=(1,0.2,-0.2),rk=(0.15,0.75,-0.64),rkFace=(0,0.7,0.7),wrL=(-0.28,-0.18,0.44),elL=(-1,-0.5,-0.2),anR=(0.16,0.34,0.05),anL=(-0.12,-0.14,0.05),look=(0.1,1,-0.3))
 L_FOL=D(READY,twist=-4,lean=(0,0.05,-0.01),root=(0.02,0.11,0.35),wrR=(0.20,0.48,0.56),elR=(1,0.3,-0.3),rk=(0.05,0.55,0.83),rkFace=(0,1,0.3),wrL=(-0.26,-0.16,0.44),anR=(0.16,0.34,0.05),anL=(-0.12,-0.12,0.05))
 L_HIT=bukuk(L_HIT,150)   # denetim #12: dirsek hafif bükük (171° kilitliydi)
+# 2026-10-26 (fizik denetimi §4.3): low/net'te raket kafası zemine ~5 cm giriyordu; bilek 3,1 poz cm (oyunda ~10 cm) yukarı
+L_HIT=D(L_HIT,wrR=(L_HIT['wrR'][0],L_HIT['wrR'][1],L_HIT['wrR'][2]+.031))
 low=sample([(0,READY),(0.32,L_PREP),(0.55,L_HIT),(0.75,L_FOL),(1,READY)],8,hit=2,hold=1,lead=1)
 # --- net vuruşu (denetim #13): low ile aynı gövde ve aynı ilk 5 kare; takip yok. Raket başı temastan sonra 10-20 cm
 #     ileri gider ve orada kalır (eski 'low' takibi raketi baş hizasına kaldırıyordu: lift için doğru, net için değil).
-N_FOL=bukuk(D(L_HIT,wrR=(0.26,0.47,0.29),rk=(0.15,0.80,-0.58),look=(0.1,1,-0.2)),150)
+N_FOL=bukuk(D(L_HIT,wrR=(0.26,0.47,0.32),rk=(0.15,0.80,-0.58),look=(0.1,1,-0.2)),150)
 net=sample([(0,READY),(0.32,L_PREP),(0.55,L_HIT),(0.72,N_FOL),(1,READY)],8,hit=2,hold=1,lead=1)
 # --- hamle (lunge): sağ bacak derin öne, sol bacak gergin arkada, raket alçak ve çok önde, sol kol denge için arkada
-LU_HIT=D(READY,twist=10,lean=(0,0.07,-0.04),root=(0,0.24,0.28),wrR=(0.22,0.72,0.16),elR=(1,0.4,0.6),rk=(0.1,0.95,-0.2),rkFace=(0,0.3,1),wrL=(-0.26,-0.20,0.42),elL=(-1,-0.5,0.2),anR=(0.14,0.48,0.05),anL=(-0.12,-0.24,0.07),knR=(0,1,0),knL=(0,1,0),ftL=(-0.3,1,0),look=(0,1,-0.4))
+LU_HIT=D(READY,twist=10,lean=(0,0.07,-0.04),root=(0,0.24,0.28),wrR=(0.22,0.72,0.16),elR=(1,0.4,0.6),rk=(0.1,0.95,-0.2),rkFace=(0,0.3,1),wrL=(-0.26,-0.20,0.42),elL=(-1,-0.5,0.2),anR=(0.14,0.38,0.05),anL=(-0.12,-0.24,0.07),knR=(0,1,0),knL=(0,1,0),ftL=(-0.3,1,0),look=(0,1,-0.4))   # 2026-10-26 (fizik §4.2): ön ayak 0,48 → 0,38 (kökten ~1,5 m yerine ~1,2 m), uzanma diz ve gövdeden
 LU_PREP=D(READY,twist=15,lean=(0,0.08,-0.03),root=(0,0.10,0.37),wrR=(0.28,0.20,0.30),elR=(1,-0.2,0.5),rk=(0.1,0.8,-0.5),rkFace=(0,1,0),wrL=(-0.24,0.0,0.50),anR=(0.14,0.22,0.08),anL=(-0.12,-0.10,0.05))
 LU_HIT=bukuk(LU_HIT,150); LU_FOL=bukuk(D(LU_HIT,wrR=(0.16,0.66,0.30),rk=(0,0.9,0.4)),150)   # denetim #12
 lunge=sample([(0,READY),(0.35,LU_PREP),(0.6,LU_HIT),(0.78,LU_FOL),(1,READY)],8,hit=2,hold=1,lead=1)
@@ -324,8 +327,12 @@ block=sample([(0,READY),(0.3,B_LOW),(0.6,B_HIT),(0.8,B_LOW),(1,READY)],6,hit=2,h
 #     temasa u² ile girer: supinasyonun çoğu son iki karede. BO_PREP yüzü burgu=0 olduğu için işaretsiz; (-0.15,1,0) ile
 #     BO_HIT'e tam ters değil (küre karışımı ortada yön seçebilsin). Takip kısa ve sert: raket temas noktasının hemen
 #     ötesinde durur, yatay dışa savrulmaz (kaynak: "tık" diye biten vuruş).
-BO_PREP=D(READY,twist=-125,lean=(-0.02,-0.06,0.01),wrR=(-0.10,-0.14,0.78),elR=(-0.4,-1,0.8),rk=(-0.2,-0.4,-0.9),rkFace=(-0.15,1,0),wrL=(0.10,0.06,0.52),elL=(1,-0.4,-0.3),anR=(-0.12,-0.24,0.05),anL=(0.04,0.06,0.05),ftR=(-0.6,-1,0),ftL=(0.3,1,0),look=(-0.5,-0.5,0.7))
-BO_HIT=D(READY,twist=-105,lean=(-0.02,-0.03,0.02),wrR=(-0.20,-0.10,1.22),elR=(-0.5,-1,0.6),rk=(-0.2,-0.2,0.96),rkFace=(0,-1,0),burgu=1.,wrL=(0.10,0.08,0.48),anR=(-0.12,-0.24,0.05),anL=(0.04,0.06,0.05),ftR=(-0.6,-1,0),ftL=(0.3,1,0),look=(-0.4,-0.4,0.8))
+# Boş el ve raket eli (2026-10-26, iç içe geçme denetimi): twist −105…−125'te gövdenin önü −x'e bakar; eski wrL (0.10,0.06/0.08)
+#     sırtın arkasında kalıyordu ve READY'ye dönüşte (ara kareler) ön kol gövdenin içinden geçiyordu (oyuncak 3B'de 4–9 cm).
+#     Yeni wrL gövdenin sol-önünde (gövde çerçevesinde ~20 cm sol, ~10 cm ön), dirsek dışa. BO_PREP raket eli çeneye 6 cm
+#     giriyordu: 4 cm sol omuza doğru açıldı. Tüm modeller için aynı poz; HTML sprite'ı yeniden çizilmeli.
+BO_PREP=D(READY,twist=-125,lean=(-0.02,-0.06,0.01),wrR=(-0.05,-0.18,0.78),elR=(-0.4,-1,0.8),rk=(-0.2,-0.4,-0.9),rkFace=(-0.15,1,0),wrL=(0.03,-0.22,0.52),elL=(0.6,-0.8,-0.5),anR=(-0.12,-0.24,0.05),anL=(0.04,0.06,0.05),ftR=(-0.6,-1,0),ftL=(0.3,1,0),look=(-0.5,-0.5,0.7))
+BO_HIT=D(READY,twist=-105,lean=(-0.02,-0.03,0.02),wrR=(-0.20,-0.10,1.22),elR=(-0.5,-1,0.6),rk=(-0.2,-0.2,0.96),rkFace=(0,-1,0),burgu=1.,wrL=(-0.07,-0.21,0.50),elL=(0.3,-0.95,-0.5),anR=(-0.12,-0.24,0.05),anL=(0.04,0.06,0.05),ftR=(-0.6,-1,0),ftL=(0.3,1,0),look=(-0.4,-0.4,0.8))
 BO_FOL=D(BO_HIT,twist=-98,lean=(-0.02,-0.02,0.015),wrR=(-0.21,-0.04,1.16),rk=(-0.25,0.12,0.96),rkFace=(0.3,-1,0))
 BO_FOL=bukuk(BO_FOL,158)
 # Bekleme kopyası (eski 0,26→0,40 BO_PREP) kalktı: oyun hazırlıkta hold karesinde bekler; kareler ileri salınıma verildi.
@@ -359,7 +366,7 @@ BL_HIT=bukuk(BL_HIT,150)   # denetim #12 (BL_FOL ve BLU_HIT kendi bileğini yaza
 bh_low=sample([(0,READY),(0.32,BL_PREP),(0.55,BL_HIT),(0.75,BL_FOL),(1,READY)],8,hit=2,hold=1,lead=1)
 # --- backhand hamle: sol-öne derin, sağ (raket) bacak öne
 BLU_PREP=D(BL_PREP,root=(-0.06,0.12,0.35),anR=(-0.18,0.34,0.09))
-BLU_HIT=D(BL_HIT,root=(-0.12,0.26,0.27),wrR=(-0.30,0.66,0.18),rk=(-0.30,0.90,-0.30),rkFace=(0,0.3,1),anR=(-0.24,0.52,0.05),anL=(0.06,-0.24,0.07))
+BLU_HIT=D(BL_HIT,root=(-0.12,0.26,0.27),wrR=(-0.30,0.66,0.18),rk=(-0.30,0.90,-0.30),rkFace=(0,0.3,1),anR=(-0.22,0.40,0.05),anL=(0.06,-0.24,0.07))   # 2026-10-26 (fizik §4.2): ön ayak 0,52 → 0,40
 BLU_HIT=bukuk(BLU_HIT,150); BLU_FOL=bukuk(D(BLU_HIT,wrR=(-0.24,0.64,0.30),rk=(-0.3,0.9,0.4)),150)   # denetim #12
 bh_lunge=sample([(0,READY),(0.35,BLU_PREP),(0.6,BLU_HIT),(0.78,BLU_FOL),(1,READY)],8,hit=2,hold=1,lead=1)
 # ================= ayak işi (yasin: "adımlamalar badminton sporunun doğasına uygun olmalı") =================
@@ -367,9 +374,12 @@ bh_lunge=sample([(0,READY),(0.35,BLU_PREP),(0.6,BLU_HIT),(0.78,BLU_FOL),(1,READY
 split=sample([(0,READY),(0.35,D(READY,root=(0,0,0.47),anR=(0.16,0,0.10),anL=(-0.16,0,0.10),wrR=(0.24,0.22,0.58),wrL=(-0.22,0.18,0.54))),(0.65,D(READY,root=(0,0,0.36),anR=(0.20,0,0.05),anL=(-0.20,0,0.05))),(1,READY)],5)
 # chassé (yana kayma): öndeki ayak açılır, arkadaki ayak yanına gelir; gövde alçak, raket yukarıda
 def chasse(sgn):
-    k0=D(READY,root=(0,0,0.39),anR=(sgn*0.14 if sgn>0 else 0.12,0,0.05),anL=(sgn*0.14 if sgn<0 else -0.12,0,0.05),lean=(sgn*0.03,0.02,0))
-    k1=D(k0,root=(0,0,0.41),**({'anR':(0.34,0,0.07)} if sgn>0 else {'anL':(-0.34,0,0.07)}))
-    k2=D(k0,root=(0,0,0.38),**({'anR':(0.34,0,0.05),'anL':(0.06,0,0.06)} if sgn>0 else {'anL':(-0.34,0,0.05),'anR':(-0.06,0,0.06)}))
+    # 2026-10-26 (fizik §4.1: döngü ~0,33 m, ADIM_BOY 0,7 → %28 kayma): kök 0,39'da bacak yana 0,26'dan öteye uzanamıyordu
+    #     (0,34 hedefi kırpılıyordu). Gövde alçak (0,35), öndeki ayak 0,36'ya açılır, arkadaki 0,12'ye kapanır, iki ayak
+    #     aynı yolla (≈0,25) geri basar: tur başına ≈0,56 m. Gerçek değer unity_fbx'te ölçülüp JSON 'adim'a yazılır.
+    k0=D(READY,root=(0,0,0.37),anR=(sgn*0.12 if sgn>0 else 0.14,0,0.05),anL=(sgn*0.12 if sgn<0 else -0.14,0,0.05),lean=(sgn*0.03,0.02,0))
+    k1=D(k0,root=(0,0,0.36),**({'anR':(0.36,0,0.07)} if sgn>0 else {'anL':(-0.36,0,0.07)}))
+    k2=D(k0,root=(0,0,0.34),**({'anR':(0.36,0,0.05),'anL':(0.12,0,0.06)} if sgn>0 else {'anL':(-0.36,0,0.05),'anR':(-0.12,0,0.06)}))
     return sample([(0,k0),(0.35,k1),(0.7,k2),(1,k0)],6,loop=True)
 chasse_r=chasse(1); chasse_l=chasse(-1)
 # öne adım: kısa, alçak adımlar (hamleye hazırlanır), raket önde yukarıda
@@ -379,7 +389,7 @@ chasse_r=chasse(1); chasse_l=chasse(-1)
 fwd=[]
 for i in range(6):
     ph=i/6*2*math.pi; s_=math.sin(ph)
-    fwd.append(D(READY,root=(0,0.02,0.38+0.01*abs(math.cos(ph))),lean=(0,0.07,-0.01),twist=-6*s_,anR=(0.11,0.12*s_,0.05+max(0,0.06*math.sin(ph+0.4))),anL=(-0.11,-0.12*s_,0.05+max(0,0.06*math.sin(ph+math.pi+0.4))),wrR=(0.24,0.24,0.60),wrL=(-0.2,0.14,0.46)))
+    fwd.append(D(READY,root=(0,0.02,0.38+0.01*abs(math.cos(ph))),lean=(0,0.07,-0.01),twist=-6*s_,anR=(0.11,0.17*s_,0.05+max(0,0.06*math.cos(ph))),anL=(-0.11,-0.17*s_,0.05+max(0,-0.06*math.cos(ph))),wrR=(0.24,0.24,0.60),wrL=(-0.2,0.14,0.46)))   # 2026-10-26 (fizik §4.1): adım 0,12 → 0,17; kaldırma öne gidişle aynı evrede (cos), koşudaki gibi
 # arkaya çapraz adım — sağ (forehand) köşe: kalça sağa döner, sol ayak sağın arkasından geçer, sağ ayak geri; raket hazırlıkta
 def back(sgn):
     tw=42*sgn if sgn>0 else -62
@@ -401,7 +411,8 @@ jump=sample([(0,READY),(OV(2),S_PREP),(OV(4),J_TAKE),(OV(6),J_DROP),(OV(9),J_AIR
 #     Sayı arasında nefesi bitmiş oyuncu: dizler bükük, gövde öne eğik, iki el dizlerin hemen üstünde, raket sağ elden
 #     aşağı sarkar, baş aşağıda. Omuzlar nefesle iner kalkar (döngü, 10 kare). Klip listenin SONUNA eklenir ki önceki
 #     klip satırları kaymasın ve yalnız bu klip render edilip var olan sheet'e eklenebilsin.
-YG0=D(READY,root=(0,0.02,0.33),lean=(0,0.13,-0.05),twist=0,wrR=(0.13,0.16,0.25),elR=(1,-0.3,0.4),rk=(0.2,0.25,-0.95),rkFace=(1,0,0),
+# 2026-10-26 (fizik §4.3): raket aşağı sarkıyordu (rk z −0,95), kafası zemine ~29 cm giriyordu; şimdi dizin önünde yatay, öne-içe
+YG0=D(READY,root=(0,0.02,0.33),lean=(0,0.13,-0.05),twist=0,wrR=(0.13,0.16,0.25),elR=(1,-0.3,0.4),rk=(-0.35,0.93,-0.10),rkFace=(0,0,1),
       wrL=(-0.13,0.16,0.25),elL=(-1,-0.3,0.4),anR=(0.13,0.0,0.05),anL=(-0.13,0.0,0.05),knR=(0,1,0),knL=(0,1,0),look=(0,1,-0.55))
 YG1=D(YG0,root=(0,0.02,0.345),lean=(0,0.11,-0.03),wrR=(0.13,0.15,0.26),wrL=(-0.13,0.15,0.26),look=(0,1,-0.4))
 yorgun=sample([(0,YG0),(0.45,YG1),(1,YG0)],10,loop=True)
@@ -521,7 +532,7 @@ if MODE=='stil':   # arcade tarz önizlemesi: aynı pozlar, 2× hücre (doku), a
     render(f'{OUT}/s_yakin.png')
     pb=OY.ao.pose.bones; mw=OY.ao.matrix_world
     for ad_,bn,osc,yon in (('yuz','head',.28,(0.25,1,0.12)),('elR','wrist.R',.24,(0.6,0.8,0.3)),('elL','wrist.L',.24,(-0.5,0.8,0.3))):
-        bn={'head':OY.R['head'],'wrist.R':OY.R['el'].format(S='R'),'wrist.L':OY.R['el'].format(S='L')}[bn] if MODEL in ('aday','sade') else bn; bn=bn if bn in pb else bn.lower(); osc=osc*(2.2 if MODEL=='oyuncak' and bn=='head' else 1.6 if MODEL=='oyuncak' else 1)   # oyuncak: küçük harf kemik, iri baş/el
+        bn={'head':OY.R['head'],'wrist.R':OY.R['el'].format(S='R'),'wrist.L':OY.R['el'].format(S='L')}[bn] if MODEL in ('aday','sade','oyuncak') else bn; bn=bn if bn in pb else bn.lower(); osc=osc*(2.2 if MODEL=='oyuncak_kaykit' and bn=='head' else 1.6 if MODEL=='oyuncak_kaykit' else 1)   # oyuncak_kaykit: küçük harf kemik, iri baş/el; yeni oyuncak UE adlı, gerçek oranlı
         c=mw@pb[bn].head if bn!='head' else mw@((pb[bn].head+pb[bn].tail)/2); d=Vector(yon).normalized(); cam.location=c+d*3; cam.data.ortho_scale=osc
         el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2); sc.render.resolution_x=sc.render.resolution_y=480; render(f'{OUT}/s_{ad_}.png')
     print('STIL DONE'); sys.exit(0)

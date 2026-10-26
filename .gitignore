@@ -27,3 +27,4 @@ tmp/
 .claude/*
 !.claude/skills/
 .claude/skills/brag/assets/music/*.mp3
+__pycache__/

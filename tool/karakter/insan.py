@@ -346,6 +346,10 @@ def _kemige(o,ao,bone):
     bpy.context.view_layer.update(); o.matrix_world=M
 
 # ---------- raket: gerçek ölçüler (BWF sınırı: boy ≤ 68 cm, kafa ≤ 29 cm × 23 cm; tipik 67.5 cm, kafa 23 × 20 cm) ----------
+# Raket ayrıntı düzeyi (2026-10-26, performans bütçesi): None = eski geometri birebir. Bir model kurulurken kendi
+# değerini koyabilir (oyuncak.py: çerçeve 40 adım, bevel 1, tel üçgen kesit → ~2,2k yerine ~0,7k üçgen); unity_fbx.py
+# aynı modülün raket()'ini çağırdığı için FBX'teki raket de aynı ayrıntıda olur.
+RAKET_LOD=None
 def raket(el, rk, yuz, s, M, ad='raket', tel_kalin=.00055):
     """el: avuç merkezi (sap ortası), rk: sap→kafa yönü, yuz: kafa yüzey normali tahmini, s: gövde ölçeği (boy/1.78)"""
     global son_raket
@@ -357,7 +361,9 @@ def raket(el, rk, yuz, s, M, ad='raket', tel_kalin=.00055):
     def yerel(p): return el+R@Vector(p)
     nes=[]
     def ekle(o,mat,tag): o.data.materials.append(mat); o['tag']=tag; nes.append(o); bpy.ops.object.shade_smooth(); return o
+    lod=RAKET_LOD or {}
     def silindir(a,b,r,mat,tag,v=16):
+        v=max(3,min(v,lod.get('v',v)))
         a=yerel(a); b=yerel(b); d=b-a; bpy.ops.mesh.primitive_cylinder_add(vertices=v,radius=r,depth=d.length,location=(a+b)/2); o=bpy.context.object
         o.rotation_mode='QUATERNION'; o.rotation_quaternion=d.to_track_quat('Z','Y'); return ekle(o,mat,tag)
     L=.675*s; gL=.20*s; gr=.0135*s; shL=.26*s; a_=.115*s; b_=.098*s
@@ -368,8 +374,8 @@ def raket(el, rk, yuz, s, M, ad='raket', tel_kalin=.00055):
     sy=y0+gL+.02*s; silindir((0,sy,0),(0,sy+shL,0),.0042*s,M['koyu'],'koyu',v=12)   # şaft
     cy=sy+shL+a_*.92
     # çerçeve: elips boru (kafa izometrik: üstte geniş)
-    cd=bpy.data.curves.new(ad+'_kafa_c','CURVE'); cd.dimensions='3D'; cd.bevel_depth=.0048*s; cd.bevel_resolution=3
-    sp=cd.splines.new('POLY'); N=64; sp.points.add(N-1); sp.use_cyclic_u=True
+    cd=bpy.data.curves.new(ad+'_kafa_c','CURVE'); cd.dimensions='3D'; cd.bevel_depth=.0048*s; cd.bevel_resolution=lod.get('bev',3)
+    sp=cd.splines.new('POLY'); N=lod.get('N',64); sp.points.add(N-1); sp.use_cyclic_u=True
     for i in range(N):
         t=2*math.pi*i/N; xx=math.sin(t)*b_; yy=math.cos(t)*a_; xx*=1+.06*math.cos(t)   # izometrik: kafanın üstü biraz geniş
         sp.points[i].co=(*yerel((xx,cy+yy,0)),1)
@@ -379,9 +385,9 @@ def raket(el, rk, yuz, s, M, ad='raket', tel_kalin=.00055):
     tr=tel_kalin*s
     for i in range(22):
         xx=(-1+(i+.5)/11)*b_*.94; h=a_*.94*math.sqrt(max(0,1-(xx/(b_*.94))**2))
-        silindir((xx,cy-h,0),(xx,cy+h,0),tr,M['tel'],'tel',v=5)
+        silindir((xx,cy-h,0),(xx,cy+h,0),tr,M['tel'],'tel',v=lod.get('tel_v',5))
     for j in range(21):
-        yy=(-1+(j+.5)/10.5)*a_*.94; w=b_*.94*math.sqrt(max(0,1-(yy/(a_*.94))**2)); o=silindir((-w,cy+yy,tr*.9),(w,cy+yy,tr*.9),tr,M['tel'],'tel2',v=5)   # çapraz teller ayrı etiket: iki renkli kordaj
+        yy=(-1+(j+.5)/10.5)*a_*.94; w=b_*.94*math.sqrt(max(0,1-(yy/(a_*.94))**2)); o=silindir((-w,cy+yy,tr*.9),(w,cy+yy,tr*.9),tr,M['tel'],'tel2',v=lod.get('tel_v',5))   # çapraz teller ayrı etiket: iki renkli kordaj
     # T-bağlantı
     silindir((0,sy+shL-.004*s,0),(0,cy-a_*.9,0),.005*s,M['cerceve'],'cerceve',v=10)
     return nes, yerel((0,cy,0))

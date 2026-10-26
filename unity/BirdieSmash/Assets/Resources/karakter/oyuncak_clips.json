@@ -20,7 +20,8 @@
    "poses": 8,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.9252
   },
   {
    "name": "smash",
@@ -200,7 +201,8 @@
    "poses": 6,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.1762
   },
   {
    "name": "chasse_l",
@@ -210,7 +212,8 @@
    "poses": 6,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.1762
   },
   {
    "name": "fwd",
@@ -220,7 +223,8 @@
    "poses": 6,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.7672
   },
   {
    "name": "back_r",
@@ -230,7 +234,8 @@
    "poses": 6,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.2356
   },
   {
    "name": "back_l",
@@ -240,7 +245,8 @@
    "poses": 6,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.1669
   },
   {
    "name": "jump",
@@ -286,27 +292,11 @@
  "model": "oyuncak",
  "parts": [
   "Cone__tuy",
-  "Rogue_ArmLeft_001__ten",
-  "Rogue_ArmLeft__forma",
-  "Rogue_ArmRight_001__ten",
-  "Rogue_ArmRight__forma",
-  "Rogue_Bel__sort",
-  "Rogue_Bileklik__bilek",
-  "Rogue_Body_001__forma",
-  "Rogue_Body__yaka",
-  "Rogue_Head_001__sac",
-  "Rogue_Head_002__ten",
-  "Rogue_Head__goz",
-  "Rogue_LegLeft_001__taban",
-  "Rogue_LegLeft_002__beyaz",
-  "Rogue_LegLeft_003__ten",
-  "Rogue_LegLeft__sort",
-  "Rogue_LegRight_001__taban",
-  "Rogue_LegRight_002__beyaz",
-  "Rogue_LegRight_003__ten",
-  "Rogue_LegRight__sort",
   "Sphere__mantar",
-  "oy_sackapak__sac",
+  "oy_bant__bant",
+  "oy_bilek__bilek",
+  "oy_forma__forma",
+  "oy_govde__govde",
   "raket_kafa__cerceve",
   "raket_koyu__koyu",
   "raket_sap__grip",
@@ -314,7 +304,7 @@
   "raket_tel__tel"
  ],
  "raket": {
-  "kemik": "handslot.r",
+  "kemik": "hand_r",
   "pivot": "raket_pivot"
  },
  "hit": {}
