@@ -320,7 +320,7 @@ namespace BirdieSmash.Game
         // Onaylanan hedefler (değişmedi): üstte boş bant yok (seyirci başları ve rakibin sıçrama tepesi skor kutusunun hemen
         // altında), uzak yarı ve rakip r15'e göre ~1,3× büyük, yakın dip çizgi smaç çubuğunun üstünde, tekler alanı (+15 cm)
         // her derinlikte ekranda (çiftler koridoru yakın köşelerde taşabilir), iPhone SE ve 19,5:9.
-        // İkinci yazım (2026-10-27, kadraj incelemesi, r22 → r23): ilk yazım bu hedeflere görüntü düzlemini KAD_EGIM kadar
+        // İkinci yazım (2026-10-27, kadraj incelemesi, r22 → r27): ilk yazım bu hedeflere görüntü düzlemini KAD_EGIM kadar
         // fazladan aşağı eğip (12/20°) merceği eksen dışı kaydırarak (projeksiyon matrisinde m12) ulaşıyordu. Matris girdiyi
         // bozmuyordu (ScreenPointToRay, WorldToScreenPoint, kırpma aynı matrisi kullanır) ama eğim + kaydırma "mimari düzeltmenin"
         // tersiydi: dikeyler daha çok yatıyor, Alçak 7 m'den 50,6° aşağı 83° geniş açıyla bakıyordu (yakın yarı 305 px, rakip
@@ -334,7 +334,8 @@ namespace BirdieSmash.Game
         //    kamerayı 5 m'ye indirip açıyı 85°'ye açıyordu (model taraması); Alçak bu yüzden dipten 5 m, genişlikte %10 taşar.
         //  - Uzaklık gölge mesafesine bağlı: Kalite orta basamağı 25 m; Yayın'da rakibin dip gerisi 24,3 m (dipten 7 m sınır).
         //  - Çözüm yoksa (çok geniş ekran, ör. iPad) son çare eski kaydırma: üst nokta yine skor kutusunun altına alınır.
-        // Ölçüm (tool modeli + CI r23, 390×845 / 375×667): rapor ve tablo inceleme notunda.
+        // Ölçüm (model + CI r27, 390×845 / 375×667; EkranTuru "kadraj" satırları): Yayın 19,5:9 yükseklik 13,7 m, eğim 47°, açı 44°;
+        // uzak çiftler eni r15 187 → 268 px (1,43×), 1,75 m rakip 53 → 71 px (1,34×), file bandı 52 → 63 px, direk eğikliği −9°.
         public static readonly float[] KAD_D = { 7, 5, 3 };              // KAMERA_SIRA sırasıyla: dipten geri (m)
         public static readonly float[] KAD_GENIS = { 1, 1.1f, .85f };    // tekler(+15 cm) genişliğinin ekrana oranı: Alçak yakın köşede
                                                                          // ~8 px taşar (oyuncu büyür), Üstten'de yanlarda pay

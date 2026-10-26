@@ -285,7 +285,7 @@ namespace BirdieSmash.Game
 
         // Tanı: her figürün renderer'ları (tür, açık mı, shader, render kuyruğu, saydamlık), dünya sınırları, baş yüksekliği.
         // Kadraj ölçümü (2026-10-27, kadraj incelemesi): çizgilerin ekran yüksekliği (piksel, yukarıdan), tekler genişliği, file
-        // bandı, oyuncu boyları (model sınırının tepesi − ayak) ve kamera. r15/r22/r23 karşılaştırma tablosu bu satırlardan.
+        // bandı, oyuncu boyları (model sınırının tepesi − ayak) ve kamera. r15/r22/r27 karşılaştırma tablosu bu satırlardan.
         void Kadraj(string ad)
         {
             var c = root.cam; float H = Screen.height;
