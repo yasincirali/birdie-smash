@@ -76,11 +76,15 @@ namespace BirdieSmash.Game
             if (kok == null) { kok = KodIskelet(); r.Add(kok); }
             zemin = kok.Q<VisualElement>("zemin"); alan = kok.Q<VisualElement>("alan"); ust = kok.Q<VisualElement>("ust"); icerik = kok.Q<VisualElement>("icerik");
             sayfa = kok.Q<VisualElement>("sayfa"); sekmeCubugu = kok.Q<VisualElement>("sekmeler"); altKatman = kok.Q<VisualElement>("alt-katman"); kalkan = kok.Q<VisualElement>("kalkan");
-            if (temaYok)
+            // 2026-10-26 Yayın Gecesi: gövde yazı tipi Barlow (Resources/fonts, OFL). Sınıf kuralları (menu.uss) kalın ve başlık
+            // dosyalarını seçer; kökteki satır içi değer, USS çözülemezse ya da tema yoksa da Barlow'a düşülsün diye.
+            var barlow = Resources.Load<Font>("fonts/Barlow-Medium");
+            if (barlow != null) kok.style.unityFontDefinition = FontDefinition.FromFont(barlow);
+            else if (temaYok)
             {   // tema yoksa yazı tipi de yok: yerleşik çalışma zamanı yazı tipi (Unity 2022.2+ adı LegacyRuntime.ttf)
                 try { var f = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); if (f != null) kok.style.unityFontDefinition = FontDefinition.FromFont(f); } catch (System.Exception) { }
             }
-            var zi = new Image { image = Ikonlar.Gradyan, scaleMode = ScaleMode.StretchToFill }; zi.pickingMode = PickingMode.Ignore; zi.AddToClassList("tam"); zemin.Add(zi);
+            ZeminKur();
             for (int i = 0; i < 4; i++) { sekmeKok[i] = new VisualElement(); sekmeKok[i].AddToClassList("sekme-kok"); sekmeKok[i].AddToClassList("tam"); icerik.Add(sekmeKok[i]); }
             altKatman.RegisterCallback<PointerDownEvent>(e => { if (e.target == altKatman) AltKapat(); });
             kalkan.RegisterCallback<PointerDownEvent>(e => { if (root.HudKatman != null) root.HudKatman.PerdeAtla(); e.StopPropagation(); });
@@ -112,7 +116,8 @@ namespace BirdieSmash.Game
                 sonGorunur = gor; kok.style.display = gor ? DisplayStyle.Flex : DisplayStyle.None;
                 if (gor) Kirlet();   // maçta Tüy, XP, kariyer değişmiş olabilir; vitrin Uygula'da açılır
             }
-            if (!gor) return;
+            if (!gor) { if (root.afis.Acik) root.afis.Kapat(); return; }
+            if (!temaFontVar) TemaFontOku();
             float k = Ayar.MenuYaziK; if (Mathf.Abs(k - K) > .001f || sonDil != Ayar.dil) { K = k; sonDil = Ayar.dil; HepsiniKur(); }
             if (Ayar.reduce != sonReduce) { sonReduce = Ayar.reduce; kok.EnableInClassList("az-hareket", sonReduce); }
             GuvenliAlan();
@@ -156,7 +161,11 @@ namespace BirdieSmash.Game
             for (int i = 0; i < 4; i++)
             {
                 bool on = (int)s == i; sekmeKok[i].style.display = on && tam == null ? DisplayStyle.Flex : DisplayStyle.None;
-                if (sekmeDugme[i] != null) { sekmeDugme[i].EnableInClassList("sekme--secili", on); var b = sekmeDugme[i].userData as ErisimBilgi; if (b != null) b.secili = on; }
+                if (sekmeDugme[i] != null)
+                {
+                    sekmeDugme[i].EnableInClassList("sekme--secili", on); var b = sekmeDugme[i].userData as ErisimBilgi; if (b != null) b.secili = on;
+                    var im = sekmeDugme[i].Q<Image>(null, "sekme-ikon"); if (im != null) im.tintColor = on ? KOYU : SOLUK;   // seçili: limon dolgu üstünde koyu simge
+                }
             }
             ust.style.display = tam == null ? DisplayStyle.Flex : DisplayStyle.None;
             if (tam != null) { SayfaKur(tam); sayfa.style.display = DisplayStyle.Flex; if (anim) Giris(sayfa); } else { sayfa.style.display = DisplayStyle.None; sayfa.Clear(); }
@@ -167,6 +176,8 @@ namespace BirdieSmash.Game
             bool vitrinGerek = s == Sekme.Soyunma && tam == null && root.ekran == Ekran.Menu;
             if (!vitrinGerek && root.vitrin.gameObject.activeSelf) { root.vitrin.Kapat(); if (root.ekran == Ekran.Menu) root.GorunumDegisti(); }
             else if (vitrinGerek && !root.vitrin.gameObject.activeSelf) { root.vitrin.Ac(); kirli[(int)Sekme.Soyunma] = true; }   // Kapat raket görünümünü sıfırladı: gövde ona göre
+            // 2026-10-26 Yayın Gecesi: Oyna'nın VS afişi yalnız Oyna görünürken çizer (Vitrin ile aynı kural).
+            AfisGuncelle(s == Sekme.Oyna && tam == null && root.ekran == Ekran.Menu);
             if (tam == null && kirli[(int)s]) SekmeKur(s);
             if (tam == null && s != once && anim) Giris(sekmeKok[(int)s]);
             if (ustKirli) UstKur();
@@ -191,7 +202,7 @@ namespace BirdieSmash.Game
             {
                 var s = (Sekme)i; var d = new VisualElement(); d.AddToClassList("sekme"); sekmeDugme[i] = d;
                 var cizgi = new VisualElement(); cizgi.AddToClassList("sekme-cizgi"); cizgi.pickingMode = PickingMode.Ignore; d.Add(cizgi);
-                var im = Ikon(ik[i], 24, Color.white); im.AddToClassList("sekme-ikon"); d.Add(im);
+                var im = Ikon(ik[i], 22, s == gez.sekme ? KOYU : SOLUK); im.AddToClassList("sekme-ikon"); d.Add(im);
                 string ad = L.T(SEKME_AD[i]); if (etiket) d.Add(Yazi(ad, 11, "sekme-yazi"));
                 d.AddManipulator(new Clickable(() => SekmeAc(s))); Erisim.Etiket(d, ad, "sekme", s == gez.sekme);
                 sekmeCubugu.Add(d);
@@ -213,16 +224,54 @@ namespace BirdieSmash.Game
         }
 
         // Üst bilgi şeridi (56 pt): seviye + XP, Tüy, ⚙ Ayarlar.
+        // 2026-10-26 Yayın Gecesi (a-top): üç hap. Sol: avatar halkası (limon = senin taraf) + "Sv 7" + XP çizgisi; dokununca
+        // Profil (yeni: hap düğme gibi göründüğü için ölü olmasın; Profil sekmesi aynı bilgiyi açar). Orta-sağ: Tüy hapı (altın
+        // tüy simgesi + sayı; ekran okuyucuya "1.240 Tüy"). Sağ: ⚙ Ayarlar (44 pt daire). Sayılar dar italik (rakam).
         void UstKur()
         {
             ustKirli = false; ust.Clear(); var gr = Ayar.gear; int L_, kalan, gerek; gr.OyuncuSv(out L_, out kalan, out gerek);
-            var sol = new VisualElement(); sol.AddToClassList("ust-sol"); sol.pickingMode = PickingMode.Ignore; ust.Add(sol);
-            sol.Add(Yazi(L.T("Seviye {0}", L_), 15, "kalin"));
-            var c = Cubuk(gerek > 0 ? kalan / (float)gerek : 1, CAMGOBEGI, 5); c.AddToClassList("ust-xp"); sol.Add(c);
-            Erisim.Etiket(sol, L.T("Seviye {0}", L_) + (gerek > 0 ? ", " + L.T("Sonraki seviyeye {0} XP", gerek - kalan) : ""), "metin");
-            var tuy = Yazi(L.T("{0} Tüy", gr.eko.tuy), 15, "ust-tuy"); ust.Add(tuy); Erisim.Etiket(tuy, L.T("{0} Tüy", gr.eko.tuy), "metin");
-            var ayar = new VisualElement(); ayar.AddToClassList("dugme"); ayar.AddToClassList("ikon-dugme"); ayar.Add(Ikon(Ikonlar.Disli, 24, Color.white));
+            var sol = new VisualElement(); sol.AddToClassList("ust-sol"); ust.Add(sol);
+            var hap = new VisualElement(); hap.AddToClassList("ust-hap"); hap.AddToClassList("profil-hap"); sol.Add(hap);
+            var av = new VisualElement(); av.AddToClassList("ust-avatar"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); av.Add(Ikon(Ikonlar.Kisi, 24, KOYU)); hap.Add(av);
+            var sv = new VisualElement(); sv.AddToClassList("ust-sv"); sv.pickingMode = PickingMode.Ignore; hap.Add(sv);
+            sv.Add(Yazi(L.T("Sv {0}", L_), 18, "rakam"));
+            var c = Cubuk(gerek > 0 ? kalan / (float)gerek : 1, LIMON, 5); c.AddToClassList("ust-xp"); sv.Add(c);
+            hap.AddManipulator(new Clickable(() => SekmeAc(Sekme.Profil)));
+            Erisim.Etiket(hap, L.T("Seviye {0}", L_) + (gerek > 0 ? ", " + L.T("Sonraki seviyeye {0} XP", gerek - kalan) : "") + ", " + L.T("Profil"), "dugme");
+            var tuy = new VisualElement(); tuy.AddToClassList("ust-hap"); tuy.AddToClassList("tuy-hap"); tuy.pickingMode = PickingMode.Ignore; ust.Add(tuy);
+            tuy.Add(Ikon(Ikonlar.Tuy, 20, ALTIN)); var tz = Yazi(Sayi(gr.eko.tuy), 20, "rakam"); tz.AddToClassList("ust-tuy"); tuy.Add(tz);
+            Erisim.Etiket(tuy, L.T("{0} Tüy", gr.eko.tuy), "metin");
+            var ayar = new VisualElement(); ayar.AddToClassList("dugme"); ayar.AddToClassList("ikon-dugme"); ayar.Add(Ikon(Ikonlar.Disli, 22, SOLUK));
             ayar.AddManipulator(new Clickable(AyarlarAc)); Erisim.Etiket(ayar, L.T("Ayarlar"), "dugme"); ust.Add(ayar);
+        }
+        // Binlik ayraçlı sayı (Türkçe nokta, İngilizce virgül): 1.240 Tüy.
+        public static string Sayi(int n) { return n.ToString("#,0", System.Globalization.CultureInfo.InvariantCulture).Replace(",", L.En ? "," : "."); }
+
+        // ---- 2026-10-26 Yayın Gecesi: Oyna zemini (a-arena) ----
+        // Katmanlar (arkadan öne): iki projektör ışığı (sol limon, sağ gök; a-flood), karartma gradyanı (a-fade: üst şerit ve
+        // alttaki plaka okunsun, ortada salon görünsün), VS afişi (Afis RT; ScaleAndCrop: her en-boyda kırpılır, esnemez) ve
+        // "VS". Zemin yalnız Oyna'da görünür (.kok.koyu #zemin gizli). Büyük yazıda afiş soluklaşır (dekor; içerik kayar).
+        Image afisImg; Label vsYazi;
+        void ZeminKur()
+        {
+            var fl = new Image { image = Ikonlar.Isik, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(LIMON.r, LIMON.g, LIMON.b, .32f) }; fl.AddToClassList("isik-sol"); fl.pickingMode = PickingMode.Ignore; zemin.Add(fl);
+            var fr = new Image { image = Ikonlar.Isik, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(GOK.r, GOK.g, GOK.b, .30f) }; fr.AddToClassList("isik-sag"); fr.pickingMode = PickingMode.Ignore; zemin.Add(fr);
+            var zi = new Image { image = Ikonlar.Gradyan, scaleMode = ScaleMode.StretchToFill }; zi.pickingMode = PickingMode.Ignore; zi.AddToClassList("tam"); zemin.Add(zi);
+            afisImg = new Image { image = root.afis.rt, scaleMode = ScaleMode.ScaleAndCrop }; afisImg.AddToClassList("afis"); afisImg.pickingMode = PickingMode.Ignore; zemin.Add(afisImg);
+            vsYazi = new Label("VS"); vsYazi.AddToClassList("yazi"); vsYazi.AddToClassList("vs"); vsYazi.pickingMode = PickingMode.Ignore; zemin.Add(vsYazi);
+        }
+        // Afiş: Oyna görünürken açık. Rakip = Oyna'daki büyük düğmenin oynatacağı maçın rakibi (bekleyen maç, Usta yolu ya da
+        // kariyerin sıradaki basamağı); ilk açılışta (antrenman görülmedi) rakip yok, "VS" de yok.
+        void AfisGuncelle(bool gerek)
+        {
+            var a = root.afis; if (a == null) return;
+            if (!gerek) { if (a.Acik) a.Kapat(); return; }
+            Style st = null;
+            if (root.bekleyen && root.match != null) st = root.match.stil;
+            else if (Ayar.antrenman && UstaYolu.Acik(Ayar.ilerleme) && Ayar.ilerleme.HepsiBitti) st = UstaYolu.Rakip(Ayar.ilerleme.Usta);
+            else if (Ayar.antrenman) st = Match.KariyerRakip(Ayar.ilerleme.Siradaki());
+            a.Ac(st, st != null ? Kit.Hex(Match.OpRenk(st, Ayar.FORMA)) : Color.white);
+            if (vsYazi != null) vsYazi.style.display = st != null ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
         // Tam sayfa başı: "‹ Geri" (44 pt) + başlık.

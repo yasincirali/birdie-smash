@@ -16,14 +16,60 @@ namespace BirdieSmash.Game
 {
     public partial class UiKok
     {
-        public static readonly Color LIMON = Kit.Hex("#d8ff5a"), CAMGOBEGI = Kit.Hex("#7ad7ff"), MERCAN = Kit.Hex("#ff7a6b"), ALTIN = Kit.Hex("#ffd23a"),
-            SOLUK = Kit.Hex("#9dbab3"), KOYU = Kit.Hex("#0d1a12");
+        // 2026-10-26 Yayın Gecesi paleti (menu.uss kök değişkenleriyle aynı değerler; kodda boyanan simgeler ve dokular için).
+        // CAMGOBEGI adı geriye uyum için kaldı: seçili/şimdi rengi artık limon (bkz. menu.uss başı); GOK ikincil veri.
+        public static readonly Color LIMON = Kit.Hex("#D8FF3A"), CAMGOBEGI = Kit.Hex("#D8FF3A"), GOK = Kit.Hex("#5FC8FF"), MERCAN = Kit.Hex("#FF5B4A"), ALTIN = Kit.Hex("#FFC83D"),
+            SOLUK = Kit.Hex("#A3ABD1"), KOYU = Kit.Hex("#0B1206"), MUREKKEP = Kit.Hex("#070B1F"), YAZI = Kit.Hex("#F4F6FF");
 
         Label Yazi(string t, float px, string cls = null)
         {
             var l = new Label(t); l.AddToClassList("yazi"); if (cls != null) l.AddToClassList(cls);
-            l.style.fontSize = Mathf.Round(px * K); l.pickingMode = PickingMode.Ignore; return l;
+            l.style.fontSize = Mathf.Round(px * K); l.pickingMode = PickingMode.Ignore;
+            if (SembolVar(t)) { l.AddToClassList("sembol"); if (temaFontVar) l.style.unityFontDefinition = temaFont; }
+            return l;
         }
+        // Sembol (2026-10-26, Barlow geçişi): ✓ ✗ ★ ◆ Barlow'da yok (kare kutu çıkar). Bu glifleri taşıyan yazı temanın kendi
+        // yazı tipinde kalır (bugünkü görünüş birebir): tema yazı tipi kökten (Barlow atanmamış belge kökü) ilk yerleşimde
+        // okunur (UiKok.Update), o ana kadar kurulan .sembol yazılara o an yazılır.
+        static bool SembolVar(string t) { return t != null && t.IndexOfAny(SEMBOL) >= 0; }
+        static readonly char[] SEMBOL = { '✓', '✗', '★', '☆', '◆' };
+        StyleFontDefinition temaFont; bool temaFontVar;
+        void TemaFontOku()
+        {
+            if (temaFontVar || doc == null || doc.rootVisualElement == null) return;
+            var fd = doc.rootVisualElement.resolvedStyle.unityFontDefinition;
+            if (fd.fontAsset == null && fd.font == null) return;
+            temaFont = new StyleFontDefinition(fd); temaFontVar = true;
+            kok.Query<Label>(null, "sembol").ForEach(l => l.style.unityFontDefinition = temaFont);
+        }
+        // Yayın başlığı (2026-10-26, yön A): Barlow Condensed italik, BÜYÜK harf (Türkçe i → İ, ı → I; CultureInfo("tr-TR")
+        // iOS'ta değişmez kültür modunda güvenilmez). En uzun kelime satıra sığmazsa yazı küçülür (KelimeSigdir): ×2'de
+        // "ŞAMPİYONASI" hece ortasından bölünmesin; boşluktan sarma serbest.
+        Label Baslik(string t, float px, string cls = null)
+        {
+            var l = Yazi(Buyuk(t), px, "baslik"); if (cls != null) l.AddToClassList(cls); KelimeSigdir(l); return l;
+        }
+        public static string Buyuk(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return s; if (!L.En) s = s.Replace('i', 'İ').Replace('ı', 'I');
+            return s.ToUpperInvariant();
+        }
+        void KelimeSigdir(Label l, float minOran = .6f)
+        {
+            float taban = l.style.fontSize.value.value;
+            l.RegisterCallback<GeometryChangedEvent>(e => KelimeOlc(l, taban, minOran));
+        }
+        static void KelimeOlc(Label l, float taban, float minOran)
+        {
+            float w = l.contentRect.width; if (float.IsNaN(w) || w <= 1 || taban <= 0 || string.IsNullOrEmpty(l.text)) return;
+            float simdi = l.resolvedStyle.fontSize; if (float.IsNaN(simdi) || simdi <= 0) return;
+            float en = 0; foreach (var k in l.text.Split(' ')) { if (k.Length == 0) continue; var o = l.MeasureTextSize(k, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined); if (o.x > en) en = o.x; }
+            float gen = en * taban / simdi; if (float.IsNaN(gen) || gen <= 0) return;
+            float hedef = Mathf.Clamp(Mathf.Floor(taban * Mathf.Min(1, (w - 2) / gen) * 2) / 2, Mathf.Round(taban * minOran), taban);
+            if (Mathf.Abs(hedef - simdi) > .25f) l.style.fontSize = hedef;
+        }
+        // Dokulu öğe (eğik plaka, gradyan): arka plan dokusu koddan, dilim değerleri USS'te (sınıf).
+        static void Doku(VisualElement v, Texture2D t) { if (t != null) v.style.backgroundImage = new StyleBackground(t); }
         // Ana düğme biçimi: üst satır kalın, isteğe bağlı alt satır küçük.
         VisualElement Dugme(string t, Action a, string cls = null, string alt = null, float px = 16)
         {
@@ -41,7 +87,7 @@ namespace BirdieSmash.Game
         {
             var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("cip"); if (secili) d.AddToClassList("cip--secili");
             var ic = new VisualElement(); ic.AddToClassList("cip-ic"); ic.pickingMode = PickingMode.Ignore; d.Add(ic);
-            if (secili) ic.Add(Ikon(Ikonlar.Tik, 16, Kit.Hex("#07161c")));
+            if (secili) ic.Add(Ikon(Ikonlar.Tik, 16, MUREKKEP));
             var yz = new VisualElement(); yz.AddToClassList("cip-yazilar"); yz.pickingMode = PickingMode.Ignore; ic.Add(yz);
             yz.Add(Yazi(t, 14, "dugme-yazi")); if (!string.IsNullOrEmpty(alt)) yz.Add(Yazi(alt, 11.5f, "dugme-alt"));
             if (a != null) d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); a(); }));
@@ -101,6 +147,10 @@ namespace BirdieSmash.Game
     public static class Ikonlar
     {
         public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Gradyan, YildizDolu, YildizBos, Yukari, Asagi;
+        // 2026-10-26 Yayın Gecesi: simgeler (tüy, şimşek, hedef, güneş, çarpı, açık kilit) ve şekil dokuları (eğik düğme,
+        // yayın plakası, etiket şeridi, basamak çizgisi, altın kutucuk, ışık süpürmesi, ışın). Hepsi 2× çözünürlükte (1 pt =
+        // 2 doku pikseli; USS'te -unity-slice-scale: 0.5), açılışta bir kez; her biri birkaç KB.
+        public static Texture2D Tuy, Simsek, Hedef, Gunes, Carpi, AcikKilit, EgikLimon, EgikLimonKucuk, Plaka, Serit, AltinKaro, Parilti, Isinlar, Isik;
         static bool hazir;
         public static void Hazirla()
         {
@@ -145,10 +195,130 @@ namespace BirdieSmash.Game
             // Stat çubuğunun artı/eksi işareti (2026-10-26, ekipman v2 ▲ ▼): glif değil çizim (yazı tipinde olmayabilir); yönü
             // biçimle verir, rengi ek bilgidir (renk körlüğü).
             Yukari = Ciz((x, y) => y > -.55f && y < .6f && Mathf.Abs(x) < (.6f - y) * .62f); Asagi = Ciz((x, y) => y < .55f && y > -.6f && Mathf.Abs(x) < (y + .6f) * .62f);
-            // Oyna sekmesinin zemini: üstte saydam (kort görünür), altta koyu (kartlar okunur). USS'te gradyan yok.
+            // Oyna sekmesinin zemini: USS'te gradyan yok. 2026-10-26: renk ve duraklar yön A'ya göre YayinDokulari'nda.
             Gradyan = new Texture2D(1, 64, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-            var px = new Color32[64]; for (int i = 0; i < 64; i++) { float t = 1 - i / 63f; float a = Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - .18f) / .62f)) * .9f; px[i] = new Color(8 / 255f, 16 / 255f, 17 / 255f, a); }
+            YayinDokulari();
+        }
+
+        // ---- Yayın Gecesi dokuları ----
+        static readonly Color NAVY = Kit.Hex("#10173A"), NAVY2 = Kit.Hex("#1A2350"), INK = Kit.Hex("#070B1F");
+        static void YayinDokulari()
+        {
+            // Oyna zemini (yön A a-fade): üstte koyu (durum çubuğu ve üst şerit okunsun), ortada saydama yakın (afiş ve salon),
+            // altta tam mürekkep (plaka, düğme ve kutucuklar). Eski yeşil-siyah gradyanın yerine.
+            var px = new Color32[64]; float[] dur = { 0, .22f, .48f, .82f, 1 }, al = { .85f, .15f, .2f, 1, 1 };
+            for (int i = 0; i < 64; i++)
+            {
+                float u = 1 - i / 63f, a = al[al.Length - 1];   // u: yukarıdan aşağı
+                for (int k = 0; k < dur.Length - 1; k++) if (u >= dur[k] && u <= dur[k + 1]) { a = Mathf.Lerp(al[k], al[k + 1], Mathf.SmoothStep(0, 1, (u - dur[k]) / (dur[k + 1] - dur[k]))); break; }
+                px[i] = new Color(INK.r, INK.g, INK.b, a);
+            }
             Gradyan.SetPixels32(px); Gradyan.Apply();
+            Tuy = Ciz((x, y) =>
+            {   // eğik yaprak + sap (tüy top tüyü; Tüy para birimi)
+                float c = Mathf.Cos(.785f), s = Mathf.Sin(.785f), rx = x * c - y * s, ry = x * s + y * c;
+                bool yaprak = (rx * rx) / (.3f * .3f) + ((ry - .2f) * (ry - .2f)) / (.68f * .68f) < 1 && !(Mathf.Abs(rx) < .035f && ry > -.25f && ry < .7f);
+                return yaprak || Cizgi(x, y, -.28f, -.28f, -.72f, -.72f, .07f);
+            });
+            Simsek = Ciz((x, y) => IcindeMi(x, y, new[] { .18f, .9f, -.5f, -.08f, -.02f, -.08f, -.2f, -.9f, .5f, .1f, .02f, .1f }));
+            Hedef = Ciz((x, y) => { float r = Mathf.Sqrt(x * x + y * y); return Mathf.Abs(r - .78f) < .1f || Mathf.Abs(r - .46f) < .1f || r < .18f; });
+            Gunes = Ciz((x, y) => { float r = Mathf.Sqrt(x * x + y * y), a = Mathf.Atan2(y, x); return r < .38f || (r > .52f && r < .9f && Mathf.Abs(Mathf.Repeat(a + Mathf.PI / 8, Mathf.PI / 4) - Mathf.PI / 8) < .13f); });
+            Carpi = Ciz((x, y) => Cizgi(x, y, -.55f, -.55f, .55f, .55f, .14f) || Cizgi(x, y, -.55f, .55f, .55f, -.55f, .14f));
+            AcikKilit = Ciz((x, y) =>
+            {
+                bool govde = Mathf.Abs(x) < .58f && y > -.82f && y < .08f && !((x * x + (y + .34f) * (y + .34f)) < .02f);
+                float r = Mathf.Sqrt((x - .5f) * (x - .5f) + (y - .25f) * (y - .25f)); bool kulp = y > .2f && Mathf.Abs(r - .3f) < .1f;
+                return govde || kulp || (Mathf.Abs(x - .2f) < .1f && y > .05f && y < .25f);
+            });
+            // OYNA düğmesi (a-cta): eğik kenarlı (sol kenar "/" 14 pt, sağ kenar aynı), dikey gradyan #E6FF73 → #D8FF3A (%55) →
+            // #B9E61F, altta 4 pt koyu iç gölge. 9 dilim: yan dilimler 16 pt (32 doku pikseli), yükseklik 80 pt.
+            EgikLimon = Egik(96, 160, 28, Kit.Hex("#E6FF73"), Kit.Hex("#D8FF3A"), Kit.Hex("#B9E61F"), 8);
+            // Etiket şeridi (a-kick "SIRADAKİ MAÇ"): düz limon, küçük eğim (−12°), 22 pt.
+            EgikLimonKucuk = Egik(32, 44, 9, Kit.Hex("#D8FF3A"), Kit.Hex("#D8FF3A"), Kit.Hex("#D8FF3A"), 0);
+            // Yayın plakası (a-plate): üç köşe 14 pt yuvarlak, sağ alt 18 pt kesik; soldan sağa navy2 → navy; 1 pt ince çerçeve.
+            Plaka = Sekil(96, 96, (x, y, ic) => PlakaIc(x, y, 96, 96, ic), (x, y) => Color.Lerp(new Color(NAVY2.r, NAVY2.g, NAVY2.b, .97f), new Color(NAVY.r, NAVY.g, NAVY.b, .95f), x / 96f), new Color(1, 1, 1, .12f), 2);
+            // Şimdiki basamak (a-pips .cur): limon / soluk limon çapraz çizgi; düz renk yerine desen, yalnız renkle değil.
+            Serit = new Texture2D(96, 10, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var sp = new Color32[96 * 10]; for (int y = 0; y < 10; y++) for (int x = 0; x < 96; x++) { bool on = Mathf.Repeat(x + y * .36f, 12) < 6; sp[y * 96 + x] = on ? (Color32)LIMON_D : (Color32)new Color(LIMON_D.r, LIMON_D.g, LIMON_D.b, .35f); }
+            Serit.SetPixels32(sp); Serit.Apply();
+            // Günün maçı kutucuğu (a-tile--gold): sol üstten altın %16 → %60'ta lacivert. Köşe yuvarlaması USS border-radius'ta.
+            AltinKaro = Sekil(64, 64, (x, y, ic) => true, (x, y) => { float k = Mathf.Clamp01(((x / 64f) + (1 - y / 64f)) / 2 / .6f); return Color.Lerp(Color.Lerp(NAVY, Kit.Hex("#FFC83D"), .16f), NAVY, k); }, Color.clear, 0);
+            // Işık süpürmesi (a-cta::after): beyaz, eğik, iki yandan sönen bant.
+            Parilti = Sekil(64, 64, (x, y, ic) => true, (x, y) => { float k = (x - (y - 32) * .36f) / 64f; float a = Mathf.Clamp01(1 - Mathf.Abs(k - .5f) * 2); return new Color(1, 1, 1, a * a * .55f); }, Color.clear, 0);
+            // Maç sonu ışınları (a-rays): 18 ışın, merkezden dışa sönen; Hud döndürür (hareketi azaltta yok).
+            Isinlar = Sekil(256, 256, (x, y, ic) => true, (x, y) =>
+            {
+                float dx = (x - 128) / 128f, dy = (y - 128) / 128f, r = Mathf.Sqrt(dx * dx + dy * dy), a = Mathf.Atan2(dy, dx) * Mathf.Rad2Deg + 180;
+                float isin = Mathf.Repeat(a, 20) < 7 ? 1 : 0; float maske = Mathf.Clamp01((.7f - r) / .5f); return new Color(1, 1, 1, isin * maske * Mathf.Clamp01(r * 4));
+            }, Color.clear, 0);
+            Isik = Kit.RadialTex(64);
+        }
+        static readonly Color LIMON_D = Kit.Hex("#D8FF3A");
+        // Yuvarlak köşeli kutu (r doku pikseli) + ince çerçeve: IMGUI maç sonu kartları ve düğmeleri için (GUIStyle.border = r+2,
+        // 9 dilim). IMGUI'de 1 doku pikseli = 1 ekran pikseli olduğu için Hud ölçek değişince yeniden üretir.
+        public static Texture2D Kutu(int r, Color dolgu, Color cerceve, float kalin)
+        {
+            int n = r * 2 + 4;
+            return Sekil(n, n, (x, y, ic) =>
+            {
+                if (x < ic || x > n - ic || y < ic || y > n - ic) return false;
+                float cx = Mathf.Clamp(x, r, n - r), cy = Mathf.Clamp(y, r, n - r), dx = x - cx, dy = y - cy; return dx * dx + dy * dy <= (r - ic) * (r - ic);
+            }, (x, y) => dolgu, cerceve, kalin);
+        }
+        // Eğik limon düğme dokusu istenen ekran ölçeğinde (IMGUI: yan dilim = egim + 2 piksel).
+        public static Texture2D EgikDugme(int w, int h, int egim) { return Egik(w, h, egim, Kit.Hex("#E6FF73"), Kit.Hex("#D8FF3A"), Kit.Hex("#B9E61F"), Mathf.Max(1, h / 20)); }
+        // Eğik dikdörtgen: sol kenar alttan üste sağa (14 pt), sağ kenar alttan üste sağa; gradyan üst, orta (%55), alt; altta iç gölge.
+        static Texture2D Egik(int w, int h, int egim, Color ust, Color orta, Color alt, int golge)
+        {
+            return Sekil(w, h, (x, y, ic) =>
+            {
+                float yt = h - y, sol = egim * (1 - yt / h), sag = w - egim * (yt / h);
+                return x >= sol + ic && x <= sag - ic && yt >= ic && yt <= h - ic;
+            }, (x, y) =>
+            {
+                float v = 1 - y / (float)h; Color c = v < .55f ? Color.Lerp(ust, orta, v / .55f) : Color.Lerp(orta, alt, (v - .55f) / .45f);
+                if (golge > 0 && y < golge) c = Color.Lerp(c, Color.black, .18f); return c;
+            }, Color.clear, 0);
+        }
+        static bool PlakaIc(float x, float y, int w, int h, float ic)
+        {
+            float r = 28, kes = 36; float yt = h - y;   // yt: yukarıdan
+            if (x < ic || x > w - ic || yt < ic || yt > h - ic) return false;
+            if (x + yt > w + h - kes - ic * .6f) return false;   // sağ alt kesik
+            float cx = x < r ? r : x > w - r ? w - r : x, cy = yt < r ? r : yt > h - r ? h - r : yt;
+            bool sagAlt = x > w - r && yt > h - r; if (sagAlt) return true;
+            float dx = x - cx, dy = yt - cy; return dx * dx + dy * dy <= (r - ic) * (r - ic);
+        }
+        // Şekil dokusu: ic(x, y, içe pay) şeklin içinde mi; renk(x, y) dolgu; cerceveKalin > 0 ise kenarda ince çerçeve.
+        // 2×2 örnekleme ile kenar yumuşatma. y aşağıdan yukarı (Texture2D satır sırası).
+        static Texture2D Sekil(int w, int h, Func<float, float, float, bool> ic, Func<float, float, Color> renk, Color cerceve, float cerceveKalin)
+        {
+            var t = new Texture2D(w, h, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var px = new Color32[w * h];
+            for (int y = 0; y < h; y++) for (int x = 0; x < w; x++)
+                {
+                    int say = 0, kenar = 0;
+                    for (int sy = 0; sy < 2; sy++) for (int sx = 0; sx < 2; sx++)
+                        {
+                            float fx = x + .25f + .5f * sx, fy = y + .25f + .5f * sy;
+                            if (ic(fx, fy, 0)) { say++; if (cerceveKalin > 0 && !ic(fx, fy, cerceveKalin)) kenar++; }
+                        }
+                    if (say == 0) { px[y * w + x] = new Color32(0, 0, 0, 0); continue; }
+                    Color c = renk(x + .5f, y + .5f); if (kenar > 0) c = Color.Lerp(c, new Color(Mathf.Lerp(c.r, cerceve.r, cerceve.a), Mathf.Lerp(c.g, cerceve.g, cerceve.a), Mathf.Lerp(c.b, cerceve.b, cerceve.a), Mathf.Max(c.a, cerceve.a)), kenar / (float)say);
+                    c.a *= say / 4f; px[y * w + x] = c;
+                }
+            t.SetPixels32(px); t.Apply(); return t;
+        }
+        // Çokgen içinde mi (x0,y0,x1,y1,... simge birimi −1..1; ışın sayımı).
+        static bool IcindeMi(float x, float y, float[] p)
+        {
+            bool ic = false; int n = p.Length / 2;
+            for (int i = 0, j = n - 1; i < n; j = i++)
+            {
+                float xi = p[i * 2], yi = p[i * 2 + 1], xj = p[j * 2], yj = p[j * 2 + 1];
+                if ((yi > y) != (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) ic = !ic;
+            }
+            return ic;
         }
         // Beş köşeli yıldız (dış yarıçap r, iç .45r): çokgen içinde mi (ışın sayımı).
         static bool Yildiz(float x, float y, float r)
