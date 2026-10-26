@@ -110,7 +110,7 @@ namespace BirdieSmash.Game
         {
             var ui = root != null ? root.ui : null; if (ui == null) { Debug.Log("EkranTuru: menü kabuğu yok"); yield break; }
             float t0 = Time.realtimeSinceStartup; while (root.HudKatman != null && root.HudKatman.PerdeVar && Time.realtimeSinceStartup - t0 < 12) yield return null;
-            ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_" + ek + "oyna");
+            ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_" + ek + "oyna"); rap.AppendLine("menu_" + ek + "oyna · " + ui.SahneDurumu);
             if (!hepsi) yield break;
             ui.SekmeAc(Sekme.Kariyer); yield return Bekle(20); yield return Cek("menu_" + ek + "kariyer");
             yield return Harita(ui, ek);

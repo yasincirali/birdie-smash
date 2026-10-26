@@ -25,16 +25,13 @@
 }
 
 .tam { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
-/* 2026-10-26 gece (yasin build 40: "menüler sahaya iç içe geçmiş"): kök her sekmede OPAK. Eskiden Oyna'da saydam, diğer
-   sekmelerde %92 idi; canlı maç sahnesi (kort, oyuncular, hakemler) kartların arasından görünüyordu. Oyna'nın salon fonu
-   artık bulanık bir kare (UiKok.SalonCek, .salon); ana kamera menüde sahneyi çizmez. */
-.kok { flex-grow: 1; background-color: var(--ink); }
-.kok.koyu { background-color: #0B1130; }   /* yön A a-bgnight: diğer sekmelerde düz gece zemini */
+.kok { flex-grow: 1; background-color: rgba(0, 0, 0, 0); }
+.kok.koyu { background-color: rgba(7, 11, 31, 0.92); }   /* yön A: diğer sekmelerde gece zemini (salon çok soluk seçilir) */
 .kok.koyu #zemin { display: none; }
 .govde { flex-direction: column; }
 .alan { flex-grow: 1; flex-shrink: 1; }
 .icerik { flex-grow: 1; flex-shrink: 1; }
-.sayfa { display: none; background-color: var(--ink); flex-direction: column; }
+.sayfa { display: none; background-color: rgba(7, 11, 31, 0.96); flex-direction: column; }
 .sekme-kok { flex-direction: column; }
 .alt-katman { display: none; background-color: rgba(3, 5, 15, 0.6); justify-content: flex-end; }
 .kalkan { display: none; background-color: rgba(0, 0, 0, 0); }

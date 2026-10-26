@@ -172,7 +172,11 @@ namespace BirdieSmash.Game
             if (tam != null) { SayfaKur(tam); sayfa.style.display = DisplayStyle.Flex; if (anim) Giris(sayfa); } else { sayfa.style.display = DisplayStyle.None; sayfa.Clear(); }
             string altS = gez.AcikAltSayfa;
             if (altS != null) { AltSayfaYenidenKur(altS); altKatman.style.display = DisplayStyle.Flex; if (anim) Giris(altSayfa); } else { altKatman.style.display = DisplayStyle.None; altKatman.Clear(); altSayfa = null; }
-            kok.EnableInClassList("koyu", s != Sekme.Oyna || tam != null);
+            bool koyu = s != Sekme.Oyna || tam != null; kok.EnableInClassList("koyu", koyu);
+            // 2026-10-26 gece: kök her sekmede opak (Oyna: mürekkep, salon fonu üstünde; diğerleri yön A a-bgnight #0B1130), tam
+            // sayfa mürekkep. Satır içi (USS'te değil): r24'te USS'teki değişiklikle bütün sayfa biçimsiz çıktı, kök neden
+            // ayrılana kadar zemin koddan (eski USS değerleri saydamdı; satır içi değer onları ezer).
+            kok.style.backgroundColor = koyu ? GECE : INK_; sayfa.style.backgroundColor = INK_;
             // Vitrin kamerası yalnız Soyunma odası görünürken çizer (bütçe §7.3); çıkınca sahnedeki oyuncu yeni görünüme geçer.
             bool vitrinGerek = s == Sekme.Soyunma && tam == null && root.ekran == Ekran.Menu;
             if (!vitrinGerek && root.vitrin.gameObject.activeSelf) { root.vitrin.Kapat(); if (root.ekran == Ekran.Menu) root.GorunumDegisti(); }
@@ -291,14 +295,14 @@ namespace BirdieSmash.Game
         // (cullingMask 0: sahne çizilmez, pil ve GPU da kazanır; kamera kapatılmaz ki arka tampon her karede tanımlı kalsın);
         // (3) Oyna'nın fonu, sahnenin oyuncusuz bir karesi: menü açılınca (ya da saha, bakış, model, ekran boyu değişince)
         // bir kez küçük bir RT'ye çizilir, iki kez yarıya indirilerek bulanıklaştırılır ve Image olarak gösterilir.
-        RenderTexture salonRt; Image salonImg; bool salonKirli = true; string salonSaha, salonKamera, salonModel; int salonW, salonH, sahneMaske = -1;
+        RenderTexture salonRt; Image salonImg; bool salonKirli = true; string salonSaha, salonKamera, salonModel; int salonW, salonH, sahneMaske; bool maskeVar;
         readonly List<Renderer> salonGizli = new List<Renderer>();
         // ciz: ana kamera sahneyi çizsin mi (maçta ve perde varken evet). menu: menü görünür; Oyna'daysa salon fonu gerekirse
         // perde açılırken de çekilir (perde kalkınca canlı korttan bulanık fona sıçrama olmasın).
         void SahneCiz(bool ciz, bool menu)
         {
             var c = root.cam; if (c == null) return;
-            if (sahneMaske == -1) sahneMaske = c.cullingMask;
+            if (!maskeVar) { maskeVar = true; sahneMaske = c.cullingMask; }   // r24: −1 (Everything) bekçi değeriyle karışıyordu, maçta maske 0 kalıyordu
             int m = ciz ? sahneMaske : 0; if (c.cullingMask != m) c.cullingMask = m;
             if (menu && sekmeKok[0] != null && gez.sekme == Sekme.Oyna)
             {
@@ -333,7 +337,9 @@ namespace BirdieSmash.Game
             if (salonImg != null) { salonImg.image = salonRt; salonImg.MarkDirtyRepaint(); }
         }
         // Ekran turu tanısı (EkranTuru.MenuSahne): ana kamera ne çiziyor, salon fonu var mı.
-        public string SahneDurumu { get { var c = root.cam; return "ana kamera " + (c == null ? "yok" : (c.enabled ? "açık" : "kapalı") + " maske " + c.cullingMask) + " · salon " + (salonRt != null ? salonRt.width + "x" + salonRt.height + " " + salonSaha : "yok"); } }
+        public string SahneDurumu { get { var c = root.cam; return "ana kamera " + (c == null ? "yok" : (c.enabled ? "açık" : "kapalı") + " maske " + c.cullingMask) + " · salon " + (salonRt != null ? salonRt.width + "x" + salonRt.height + " " + salonSaha : "yok")
+            + " · stil " + doc.rootVisualElement.styleSheets.count + " zemin " + zemin.resolvedStyle.position + " kök renk " + kok.resolvedStyle.backgroundColor; } }
+        static readonly Color GECE = new Color(11 / 255f, 17 / 255f, 48 / 255f, 1), INK_ = new Color(7 / 255f, 11 / 255f, 31 / 255f, 1);
         void OnDestroy() { if (salonRt != null) { salonRt.Release(); Destroy(salonRt); } }
 
         // Tam sayfa başı: "‹ Geri" (44 pt) + başlık.
