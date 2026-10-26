@@ -126,14 +126,16 @@ namespace BirdieSmash.Game
             return d;
         }
 
-        // Yayın plakası (a-plate): "Sıradaki" kartının yeni biçimi; içerik ve dokunuş (Kariyer) aynı. Rakip rengi yanında adıyla
+        // Yayın plakası (a-plate): "Sıradaki" kartının yeni biçimi; içerik aynı, dokunuş maç kartını açar (2026-10-26). Rakip rengi yanında adıyla
         // (yalnız renkle değil), yıldızlar dolu/çerçeve biçimiyle ve ekran okuyucuya "1/3 yıldız"; basamak çizgisi biçimle
         // (geçilen dolu limon, şimdiki çizgili desen, gelecek soluk).
         VisualElement SiradakiKart()
         {
             var p = Ayar.ilerleme; int g = p.Siradaki(), tr = KariyerVeri.TurOf(g), i = KariyerVeri.BasOf(g); var kb = KariyerVeri.Al(g); var st = Match.STIL[kb.stil];
             bool tamam = p.HepsiBitti;
-            var kart = new VisualElement(); kart.AddToClassList("plaka"); Doku(kart, Ikonlar.Plaka); kart.AddManipulator(new Clickable(() => SekmeAc(Sekme.Kariyer)));
+            var kart = new VisualElement(); kart.AddToClassList("plaka"); Doku(kart, Ikonlar.Plaka); // 2026-10-26 (yasin onayı, ekran/inceleme ile aynı davranış): plakaya dokunmak o basamağın maç kartını açar; kariyer
+            // bittiyse (sıradaki basamak yok) Kariyer sekmesi.
+            kart.AddManipulator(new Clickable(() => { if (tamam) SekmeAc(Sekme.Kariyer); else MacKartAc(g); }));
             var bas = new VisualElement(); bas.AddToClassList("plaka-ust"); bas.pickingMode = PickingMode.Ignore; kart.Add(bas);
             var serit = new VisualElement(); serit.AddToClassList("serit"); Doku(serit, Ikonlar.EgikLimonKucuk); serit.pickingMode = PickingMode.Ignore; bas.Add(serit);
             serit.Add(Yazi(Buyuk(L.T(tamam ? "Kariyer tamam" : "Sıradaki maç")), 13, "serit-yazi"));
