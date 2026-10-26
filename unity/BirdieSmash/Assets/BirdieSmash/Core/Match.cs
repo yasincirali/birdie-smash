@@ -26,6 +26,9 @@ namespace BirdieSmash.Core
         // İmza vuruşu hazırlığı (Core/Imza, 2026-10-26): imzaT > 0 iken görünüm pozu tutar ve ışığı yakar; imzaId hangisi.
         public float imzaT; public string imzaId;
         public float fakeY;   // aldatılan oyuncu (Vex, gölge flick): Kolay'da kendiliğinden koşu bu ana dek yanlış yöne
+        // Temas noktası (yalnız görünüm, 2026-10-27 gece; PlayerView uzanma katmanı): son vuruşun kort koordinatı ve sayacı.
+        // StartFlight yazar, kural okumaz. Raket kafası temas karesinde buraya oturtulur.
+        public float tmX, tmY, tmZ; public int tmN;
         public bool HasTarget { get { return !float.IsNaN(tx); } }
     }
 
@@ -299,6 +302,7 @@ namespace BirdieSmash.Core
             vurusY = hy;   // Günün maçı "file" değiştiricisi: son vuruşun derinliği
             if (from == "op") { opHitAt = clock; split = false; if (splitPending) { splitPending = false; DoSplit(); } } else { split = false; splitPending = false; }
             var h = from == "me" ? me : op;
+            h.tmX = hx; h.tmY = hy; h.tmZ = hz; h.tmN++;
             h.sw = 1; h.shot = isServe ? "low" : (h.prepShot == "lunge" ? "lunge" : ShotClass(type, hz, hy));
             {   // sınır bölgesinde gösterilen hazırlık kazanır: poz temasta sıçramasın (file önünde smaç = kısa öldürme salınımı)
                 string ps = h.prepShot, c0 = h.shot;
