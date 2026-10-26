@@ -1,0 +1,422 @@
+=== acilis · ekran 390x845 · llvmpipe (LLVM 20.1.2, 256 bits)
+-- ben poz (-499.50, 0.00, 0.00) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-499.53, 0.05, 0.05) (0.72, 0.33, 0.71) kemik 53 mesh 1558
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-499.54, 0.03, 0.06) (0.66, 0.26, 0.65) kemik 53 mesh 1446
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-499.54, 0.03, 0.06) (0.66, 0.27, 0.65) kemik 53 mesh 1591
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-499.54, 0.03, 0.06) (0.64, 0.21, 0.39) kemik 53 mesh 1251
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-499.54, 0.03, 0.06) (0.68, 0.27, 0.66) kemik 53 mesh 1276
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-499.49, 1.54, -0.01) (0.28, 0.12, 0.30) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-499.32, 1.10, 0.36) (0.10, 0.09, 0.10) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.310, 0.722, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-499.41, 1.10, -0.09) (0.77, 0.67, 0.65) kemik 53 mesh 279
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-499.49, 0.82, 0.04) (0.99, 1.63, 0.96) kemik 53 mesh 3607
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-499.49, 1.53, -0.01) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-499.39, 1.26, 0.38) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-499.69, 1.58, 0.27) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (-499.58, 1.78, 0.71) (0.22, 0.43, 0.35)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (-499.58, 1.77, 0.72) (1.00, 1.00, 1.00)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-499.48, 1.34, 0.52) (0.17, 0.63, 0.31)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.149, 0.149, 0.169, 1.000) mode 0 tex yok sınır (-499.45, 1.16, 0.45) (0.09, 0.27, 0.15)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (-499.58, 1.78, 0.72) (0.19, 0.37, 0.31)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (-499.58, 1.78, 0.71) (0.18, 0.38, 0.30)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-499.40, 1.18, 0.39) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-499.48, 1.56, -0.03) (0.36, 0.30, 0.38) kemik 53 mesh 386
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-499.48, 1.55, -0.03) (0.37, 0.29, 0.39) kemik 53 mesh 759
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-499.48, 1.49, -0.05) (0.35, 0.30, 0.39) kemik 53 mesh 538
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-499.49, 1.52, -0.02) (0.30, 0.23, 0.32) kemik 53 mesh 380
+   SkinnedMeshRenderer sac_kisa__sac açık True/True Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-499.49, 1.53, -0.01) (0.28, 0.24, 0.30) kemik 53 mesh 383
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-499.49, 1.54, -0.02) (0.30, 0.27, 0.33) kemik 53 mesh 491
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-499.49, 1.50, -0.03) (0.33, 0.30, 0.36) kemik 53 mesh 454
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-499.49, 1.52, -0.03) (0.32, 0.25, 0.35) kemik 53 mesh 1472
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-499.49, 1.51, -0.03) (0.34, 0.26, 0.36) kemik 53 mesh 1578
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-499.49, 1.55, -0.02) (0.30, 0.28, 0.33) kemik 53 mesh 465
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-499.49, 1.53, -0.02) (0.30, 0.24, 0.33) kemik 53 mesh 396
+   toplam sınır (-499.54, 1.08, 0.39) boyut (1.08, 2.38, 1.65) · ileri (0.58, -0.13, -0.80) yukarı (0.07, 0.99, -0.11)
+-- hakem poz (-3.76, 0.76, 0.01) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.30, 1.12, 0.01) (0.40, 0.26, 0.41) kemik 53 mesh 1558
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-3.29, 1.11, 0.02) (0.35, 0.24, 0.36) kemik 53 mesh 1446
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-3.29, 1.11, 0.02) (0.35, 0.24, 0.36) kemik 53 mesh 1591
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.29, 1.11, 0.00) (0.26, 0.22, 0.33) kemik 53 mesh 1251
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.29, 1.11, 0.02) (0.36, 0.24, 0.38) kemik 53 mesh 1276
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-4.02, 2.31, 0.00) (0.28, 0.19, 0.21) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.67, 1.69, -0.14) (0.09, 0.08, 0.08) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex oyuncak_govde 512 sınır (-4.00, 1.89, 0.00) (0.54, 0.77, 0.61) kemik 53 mesh 279
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-3.66, 1.73, 0.00) (1.11, 1.42, 0.69) kemik 53 mesh 3607
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.77, 2.29, 0.01) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık False/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-3.48, 2.02, -0.26) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.43, 2.34, 0.06) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.99, 2.02, -0.42) (0.42, 0.41, 0.16)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-3.36, 1.78, -0.21) (0.54, 0.38, 0.32)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.50, 1.68, -0.13) (0.24, 0.17, 0.15)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.99, 2.02, -0.42) (0.36, 0.36, 0.13)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.99, 2.02, -0.42) (0.37, 0.36, 0.14)
+   MeshRenderer Sphere__mantar açık False/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-3.47, 1.94, -0.26) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.04, 2.32, -0.01) (0.40, 0.38, 0.29) kemik 53 mesh 386
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.04, 2.31, -0.01) (0.41, 0.37, 0.30) kemik 53 mesh 759
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.01, 2.26, 0.00) (0.39, 0.38, 0.23) kemik 53 mesh 538
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.01, 2.30, 0.00) (0.33, 0.29, 0.21) kemik 53 mesh 380
+   SkinnedMeshRenderer sac_kisa__sac açık True/True Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.01, 2.31, 0.00) (0.31, 0.29, 0.20) kemik 53 mesh 383
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.02, 2.31, 0.00) (0.36, 0.34, 0.22) kemik 53 mesh 491
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.00, 2.28, 0.00) (0.36, 0.36, 0.22) kemik 53 mesh 454
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.01, 2.29, 0.00) (0.34, 0.32, 0.22) kemik 53 mesh 1472
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.01, 2.30, 0.00) (0.34, 0.31, 0.25) kemik 53 mesh 1578
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.02, 2.32, 0.00) (0.35, 0.34, 0.22) kemik 53 mesh 465
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.01, 2.31, 0.00) (0.33, 0.31, 0.22) kemik 53 mesh 396
+   toplam sınır (-3.69, 1.75, 0.00) boyut (1.17, 1.52, 0.69) · ileri (-0.98, -0.13, -0.13) yukarı (-0.13, 0.99, -0.01)
+-- ben poz (1.30, 0.00, -3.38) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.16, 0.05, -3.35) (0.51, 0.39, 0.94) kemik 53 mesh 1558
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (1.15, 0.03, -3.33) (0.48, 0.32, 0.89) kemik 53 mesh 1446
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (1.15, 0.03, -3.33) (0.48, 0.32, 0.90) kemik 53 mesh 1591
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.16, 0.03, -3.33) (0.33, 0.27, 0.86) kemik 53 mesh 1251
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.15, 0.03, -3.33) (0.50, 0.33, 0.90) kemik 53 mesh 1276
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.28, 1.53, -3.41) (0.21, 0.13, 0.27) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.34, 1.14, -3.15) (0.08, 0.08, 0.08) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.310, 0.722, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (1.33, 1.08, -3.47) (0.75, 0.72, 0.58) kemik 53 mesh 279
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (1.27, 0.78, -3.31) (0.90, 1.66, 1.15) kemik 53 mesh 3607
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.30, 1.53, -3.39) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (0.90, 0.80, -2.89) (0.18, 0.18, 0.20)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.25, 1.58, -3.05) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (0.71, 0.59, -3.07) (0.44, 0.43, 0.03)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (0.71, 0.59, -3.07) (1.00, 1.00, 1.00)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (1.10, 0.88, -3.08) (0.56, 0.44, 0.05)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.149, 0.149, 0.169, 1.000) mode 0 tex yok sınır (1.25, 1.00, -3.09) (0.24, 0.19, 0.04)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.71, 0.59, -3.07) (0.39, 0.38, 0.02)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.71, 0.59, -3.07) (0.39, 0.38, 0.02)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (0.90, 0.72, -2.88) (0.06, 0.07, 0.07)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.28, 1.55, -3.43) (0.28, 0.32, 0.37) kemik 53 mesh 386
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.28, 1.55, -3.43) (0.28, 0.31, 0.35) kemik 53 mesh 759
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.30, 1.48, -3.44) (0.23, 0.32, 0.38) kemik 53 mesh 538
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.51, -3.42) (0.22, 0.24, 0.32) kemik 53 mesh 380
+   SkinnedMeshRenderer sac_kisa__sac açık True/True Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.52, -3.42) (0.21, 0.21, 0.27) kemik 53 mesh 383
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.54, -3.42) (0.22, 0.29, 0.33) kemik 53 mesh 491
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.49, -3.43) (0.23, 0.31, 0.36) kemik 53 mesh 454
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.51, -3.43) (0.23, 0.27, 0.34) kemik 53 mesh 1472
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.51, -3.43) (0.25, 0.27, 0.34) kemik 53 mesh 1578
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.54, -3.42) (0.22, 0.30, 0.33) kemik 53 mesh 465
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.52, -3.42) (0.22, 0.26, 0.32) kemik 53 mesh 396
+   toplam sınır (0.97, 0.78, -3.23) boyut (1.51, 1.85, 1.32) · ileri (0.13, -0.13, -0.98) yukarı (0.01, 0.99, -0.13)
+-- hakem poz (3.63, -0.30, 0.06) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.25, 0.09, -0.19) (0.51, 0.26, 0.51) kemik 53 mesh 1558
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (3.24, 0.09, -0.21) (0.44, 0.24, 0.44) kemik 53 mesh 1446
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (3.24, 0.09, -0.21) (0.45, 0.24, 0.45) kemik 53 mesh 1591
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.24, 0.09, -0.18) (0.37, 0.22, 0.39) kemik 53 mesh 1251
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.24, 0.09, -0.21) (0.47, 0.24, 0.47) kemik 53 mesh 1276
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.83, 1.26, 0.23) (0.31, 0.19, 0.31) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.45, 0.65, 0.13) (0.11, 0.08, 0.11) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex oyuncak_govde 512 sınır (3.80, 0.84, 0.19) (0.65, 0.77, 0.64) kemik 53 mesh 279
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (3.53, 0.69, 0.05) (1.12, 1.38, 1.00) kemik 53 mesh 3607
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.63, 1.24, 0.07) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık False/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (3.24, 0.97, 0.13) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.38, 1.28, -0.16) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.75, 1.01, 0.00) (0.42, 0.41, 0.14)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (3.16, 0.75, 0.02) (0.60, 0.40, 0.07)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.32, 0.65, 0.03) (0.26, 0.18, 0.05)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.75, 1.01, 0.00) (0.37, 0.36, 0.12)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.75, 1.01, 0.00) (0.37, 0.36, 0.12)
+   MeshRenderer Sphere__mantar açık False/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (3.23, 0.89, 0.12) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.84, 1.26, 0.24) (0.44, 0.38, 0.43) kemik 53 mesh 386
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.84, 1.26, 0.24) (0.45, 0.37, 0.44) kemik 53 mesh 759
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.82, 1.21, 0.22) (0.40, 0.38, 0.39) kemik 53 mesh 538
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.82, 1.24, 0.22) (0.35, 0.29, 0.34) kemik 53 mesh 380
+   SkinnedMeshRenderer sac_kisa__sac açık True/True Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.82, 1.25, 0.22) (0.33, 0.29, 0.32) kemik 53 mesh 383
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.83, 1.26, 0.23) (0.37, 0.34, 0.36) kemik 53 mesh 491
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.81, 1.23, 0.21) (0.37, 0.36, 0.36) kemik 53 mesh 454
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.82, 1.24, 0.22) (0.36, 0.32, 0.35) kemik 53 mesh 1472
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.82, 1.24, 0.22) (0.38, 0.31, 0.37) kemik 53 mesh 1578
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.83, 1.27, 0.23) (0.36, 0.34, 0.35) kemik 53 mesh 465
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.82, 1.25, 0.22) (0.35, 0.31, 0.34) kemik 53 mesh 396
+   toplam sınır (3.55, 0.71, 0.05) boyut (1.15, 1.49, 1.00) · ileri (0.73, -0.13, 0.67) yukarı (0.10, 0.99, 0.09)
+-- rakip poz (-1.30, 0.00, 3.58) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.29, 0.05, 3.52) (0.62, 0.32, 0.56) kemik 53 mesh 1446
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.29, 0.03, 3.51) (0.56, 0.22, 0.38) kemik 53 mesh 1411
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.29, 0.03, 3.51) (0.57, 0.28, 0.53) kemik 53 mesh 1594
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.29, 0.03, 3.51) (0.58, 0.28, 0.52) kemik 53 mesh 1262
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.29, 0.03, 3.51) (0.58, 0.29, 0.53) kemik 53 mesh 1256
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.30, 1.57, 3.60) (0.20, 0.11, 0.25) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.66, 1.13, 3.34) (0.10, 0.10, 0.09) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(1.000, 0.478, 0.420, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.34, 1.13, 3.69) (0.95, 0.69, 0.53) kemik 53 mesh 337
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.31, 0.84, 3.54) (1.16, 1.66, 0.79) kemik 53 mesh 3609
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.30, 1.54, 3.59) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-1.57, 1.28, 3.28) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.25, 1.59, 3.25) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (-1.57, 1.86, 2.97) (0.05, 0.41, 0.39)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (-1.57, 1.86, 2.97) (1.00, 1.00, 1.00)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-1.57, 1.40, 3.14) (0.04, 0.65, 0.27)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.57, 1.22, 3.21) (0.03, 0.27, 0.13)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.57, 1.86, 2.97) (0.03, 0.36, 0.34)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.57, 1.86, 2.97) (0.03, 0.37, 0.34)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-1.57, 1.20, 3.26) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.58, 3.62) (0.27, 0.30, 0.33) kemik 53 mesh 404
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.57, 3.62) (0.28, 0.29, 0.33) kemik 53 mesh 747
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.51, 3.63) (0.22, 0.31, 0.36) kemik 53 mesh 534
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.55, 3.61) (0.21, 0.23, 0.29) kemik 53 mesh 372
+   SkinnedMeshRenderer sac_kisa__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.56, 3.61) (0.21, 0.24, 0.29) kemik 53 mesh 395
+   SkinnedMeshRenderer sac_mohikan__sac açık True/True Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.57, 3.60) (0.19, 0.26, 0.28) kemik 53 mesh 473
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.52, 3.62) (0.22, 0.30, 0.34) kemik 53 mesh 467
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.54, 3.62) (0.22, 0.25, 0.31) kemik 53 mesh 1455
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.54, 3.61) (0.25, 0.26, 0.32) kemik 53 mesh 1603
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.57, 3.61) (0.21, 0.28, 0.29) kemik 53 mesh 455
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.56, 3.61) (0.21, 0.24, 0.29) kemik 53 mesh 412
+   toplam sınır (-1.40, 1.12, 3.21) boyut (1.34, 2.47, 1.48) · ileri (-0.13, -0.13, 0.98) yukarı (-0.01, 0.99, 0.13)
+=== oyuncak · ekran 390x845 · llvmpipe (LLVM 20.1.2, 256 bits)
+-- hakem poz (-3.76, 0.76, 0.01) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.30, 1.12, 0.01) (0.40, 0.26, 0.41) kemik 53 mesh 1558
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-3.29, 1.11, 0.02) (0.35, 0.24, 0.36) kemik 53 mesh 1446
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-3.29, 1.11, 0.02) (0.35, 0.24, 0.36) kemik 53 mesh 1591
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.29, 1.11, 0.00) (0.26, 0.22, 0.33) kemik 53 mesh 1251
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.29, 1.11, 0.02) (0.36, 0.24, 0.38) kemik 53 mesh 1276
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-4.02, 2.31, 0.00) (0.28, 0.19, 0.21) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.67, 1.69, -0.14) (0.09, 0.08, 0.08) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex oyuncak_govde 512 sınır (-4.00, 1.89, 0.00) (0.54, 0.77, 0.61) kemik 53 mesh 279
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-3.66, 1.73, 0.00) (1.11, 1.42, 0.69) kemik 53 mesh 3607
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.77, 2.29, 0.01) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık False/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-3.48, 2.02, -0.26) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.43, 2.34, 0.06) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.99, 2.02, -0.42) (0.42, 0.41, 0.16)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-3.36, 1.78, -0.21) (0.54, 0.38, 0.32)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.50, 1.68, -0.13) (0.24, 0.17, 0.15)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.99, 2.02, -0.42) (0.36, 0.36, 0.13)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.99, 2.02, -0.42) (0.37, 0.36, 0.14)
+   MeshRenderer Sphere__mantar açık False/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-3.47, 1.94, -0.26) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.04, 2.32, -0.01) (0.40, 0.38, 0.29) kemik 53 mesh 386
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.04, 2.31, -0.01) (0.41, 0.37, 0.30) kemik 53 mesh 759
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.01, 2.26, 0.00) (0.39, 0.38, 0.23) kemik 53 mesh 538
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.01, 2.30, 0.00) (0.33, 0.29, 0.21) kemik 53 mesh 380
+   SkinnedMeshRenderer sac_kisa__sac açık True/True Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.01, 2.31, 0.00) (0.31, 0.29, 0.20) kemik 53 mesh 383
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.02, 2.31, 0.00) (0.36, 0.34, 0.22) kemik 53 mesh 491
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.00, 2.28, 0.00) (0.36, 0.36, 0.22) kemik 53 mesh 454
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.01, 2.29, 0.00) (0.34, 0.32, 0.22) kemik 53 mesh 1472
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.01, 2.30, 0.00) (0.34, 0.31, 0.25) kemik 53 mesh 1578
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.02, 2.32, 0.00) (0.35, 0.34, 0.22) kemik 53 mesh 465
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.01, 2.31, 0.00) (0.33, 0.31, 0.22) kemik 53 mesh 396
+   toplam sınır (-3.69, 1.75, 0.00) boyut (1.17, 1.52, 0.69) · ileri (-0.98, -0.13, -0.13) yukarı (-0.13, 0.99, -0.01)
+-- hakem poz (3.63, -0.30, 0.06) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.25, 0.09, -0.19) (0.51, 0.26, 0.51) kemik 53 mesh 1558
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (3.24, 0.09, -0.21) (0.44, 0.24, 0.44) kemik 53 mesh 1446
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (3.24, 0.09, -0.21) (0.45, 0.24, 0.45) kemik 53 mesh 1591
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.24, 0.09, -0.18) (0.37, 0.22, 0.39) kemik 53 mesh 1251
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.24, 0.09, -0.21) (0.47, 0.24, 0.47) kemik 53 mesh 1276
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.83, 1.26, 0.23) (0.31, 0.19, 0.31) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.45, 0.65, 0.13) (0.11, 0.08, 0.11) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex oyuncak_govde 512 sınır (3.80, 0.84, 0.19) (0.65, 0.77, 0.64) kemik 53 mesh 279
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (3.53, 0.69, 0.05) (1.12, 1.38, 1.00) kemik 53 mesh 3607
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.63, 1.24, 0.07) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık False/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (3.24, 0.97, 0.13) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.38, 1.28, -0.16) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.75, 1.01, 0.00) (0.42, 0.41, 0.14)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (3.16, 0.75, 0.02) (0.60, 0.40, 0.07)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.32, 0.65, 0.03) (0.26, 0.18, 0.05)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.75, 1.01, 0.00) (0.37, 0.36, 0.12)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.75, 1.01, 0.00) (0.37, 0.36, 0.12)
+   MeshRenderer Sphere__mantar açık False/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (3.23, 0.89, 0.12) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.84, 1.26, 0.24) (0.44, 0.38, 0.43) kemik 53 mesh 386
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.84, 1.26, 0.24) (0.45, 0.37, 0.44) kemik 53 mesh 759
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.82, 1.21, 0.22) (0.40, 0.38, 0.39) kemik 53 mesh 538
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.82, 1.24, 0.22) (0.35, 0.29, 0.34) kemik 53 mesh 380
+   SkinnedMeshRenderer sac_kisa__sac açık True/True Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.82, 1.25, 0.22) (0.33, 0.29, 0.32) kemik 53 mesh 383
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.83, 1.26, 0.23) (0.37, 0.34, 0.36) kemik 53 mesh 491
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.81, 1.23, 0.21) (0.37, 0.36, 0.36) kemik 53 mesh 454
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.82, 1.24, 0.22) (0.36, 0.32, 0.35) kemik 53 mesh 1472
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.82, 1.24, 0.22) (0.38, 0.31, 0.37) kemik 53 mesh 1578
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.83, 1.27, 0.23) (0.36, 0.34, 0.35) kemik 53 mesh 465
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.82, 1.25, 0.22) (0.35, 0.31, 0.34) kemik 53 mesh 396
+   toplam sınır (3.55, 0.71, 0.05) boyut (1.15, 1.49, 1.00) · ileri (0.73, -0.13, 0.67) yukarı (0.10, 0.99, 0.09)
+-- rakip poz (-1.30, 0.00, 3.58) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.29, 0.04, 3.52) (0.58, 0.24, 0.40) kemik 53 mesh 1446
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.29, 0.03, 3.51) (0.57, 0.28, 0.52) kemik 53 mesh 1411
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.29, 0.03, 3.51) (0.57, 0.28, 0.53) kemik 53 mesh 1594
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.29, 0.03, 3.51) (0.58, 0.28, 0.52) kemik 53 mesh 1262
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.29, 0.03, 3.51) (0.58, 0.29, 0.53) kemik 53 mesh 1256
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.30, 1.56, 3.60) (0.20, 0.11, 0.25) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.66, 1.12, 3.34) (0.10, 0.10, 0.09) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.247, 0.310, 0.659, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.34, 1.12, 3.69) (0.94, 0.70, 0.53) kemik 53 mesh 337
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.31, 0.83, 3.54) (1.16, 1.65, 0.79) kemik 53 mesh 3609
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.30, 1.54, 3.59) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-1.57, 1.28, 3.28) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.25, 1.59, 3.25) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (-1.57, 1.84, 2.97) (0.05, 0.41, 0.39)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (-1.57, 1.83, 2.96) (1.00, 1.02, 1.03)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-1.57, 1.38, 3.14) (0.04, 0.65, 0.27)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.57, 1.20, 3.21) (0.03, 0.27, 0.13)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.57, 1.84, 2.97) (0.03, 0.36, 0.34)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.57, 1.84, 2.97) (0.03, 0.37, 0.34)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-1.57, 1.20, 3.26) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.57, 3.62) (0.27, 0.30, 0.33) kemik 53 mesh 404
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.57, 3.62) (0.28, 0.29, 0.33) kemik 53 mesh 747
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.51, 3.63) (0.22, 0.31, 0.36) kemik 53 mesh 534
+   SkinnedMeshRenderer sac_kazima__sac açık True/True Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.54, 3.59) (0.19, 0.22, 0.26) kemik 53 mesh 372
+   SkinnedMeshRenderer sac_kisa__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.55, 3.61) (0.21, 0.24, 0.29) kemik 53 mesh 395
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.56, 3.61) (0.21, 0.27, 0.29) kemik 53 mesh 473
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.52, 3.62) (0.22, 0.30, 0.34) kemik 53 mesh 467
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.54, 3.61) (0.22, 0.25, 0.31) kemik 53 mesh 1455
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.53, 3.61) (0.25, 0.26, 0.32) kemik 53 mesh 1603
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.57, 3.61) (0.21, 0.28, 0.29) kemik 53 mesh 455
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.55, 3.60) (0.21, 0.24, 0.29) kemik 53 mesh 412
+   toplam sınır (-1.40, 1.11, 3.20) boyut (1.35, 2.45, 1.51) · ileri (-0.13, -0.13, 0.98) yukarı (-0.01, 0.99, 0.13)
+-- ben poz (1.30, 0.00, -3.38) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.16, 0.05, -3.35) (0.51, 0.39, 0.94) kemik 53 mesh 1558
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (1.15, 0.03, -3.33) (0.48, 0.32, 0.89) kemik 53 mesh 1446
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (1.15, 0.03, -3.33) (0.48, 0.32, 0.90) kemik 53 mesh 1591
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.16, 0.03, -3.33) (0.33, 0.27, 0.86) kemik 53 mesh 1251
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.15, 0.03, -3.33) (0.50, 0.33, 0.90) kemik 53 mesh 1276
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.28, 1.53, -3.41) (0.21, 0.13, 0.27) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.34, 1.14, -3.15) (0.08, 0.08, 0.08) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.310, 0.722, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (1.33, 1.08, -3.47) (0.75, 0.72, 0.58) kemik 53 mesh 279
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (1.27, 0.78, -3.31) (0.90, 1.66, 1.15) kemik 53 mesh 3607
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.30, 1.53, -3.39) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (0.90, 0.80, -2.89) (0.18, 0.18, 0.20)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.25, 1.58, -3.05) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (0.71, 0.59, -3.07) (0.44, 0.43, 0.03)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (0.49, 1.18, -1.20) (1.44, 2.18, 4.75)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (1.10, 0.88, -3.08) (0.56, 0.44, 0.05)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.149, 0.149, 0.169, 1.000) mode 0 tex yok sınır (1.25, 1.00, -3.09) (0.24, 0.19, 0.04)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.71, 0.59, -3.07) (0.39, 0.38, 0.02)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.71, 0.59, -3.07) (0.39, 0.38, 0.02)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (0.90, 0.72, -2.88) (0.06, 0.07, 0.07)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.28, 1.55, -3.43) (0.28, 0.32, 0.37) kemik 53 mesh 386
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.28, 1.55, -3.43) (0.28, 0.31, 0.35) kemik 53 mesh 759
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.30, 1.48, -3.44) (0.23, 0.32, 0.38) kemik 53 mesh 538
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.51, -3.42) (0.22, 0.24, 0.32) kemik 53 mesh 380
+   SkinnedMeshRenderer sac_kisa__sac açık True/True Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.52, -3.42) (0.21, 0.21, 0.27) kemik 53 mesh 383
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.54, -3.42) (0.22, 0.29, 0.33) kemik 53 mesh 491
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.49, -3.43) (0.23, 0.31, 0.36) kemik 53 mesh 454
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.51, -3.43) (0.23, 0.27, 0.34) kemik 53 mesh 1472
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.51, -3.43) (0.25, 0.27, 0.34) kemik 53 mesh 1578
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.54, -3.42) (0.22, 0.30, 0.33) kemik 53 mesh 465
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.52, -3.42) (0.22, 0.26, 0.32) kemik 53 mesh 396
+   toplam sınır (0.75, 1.07, -1.36) boyut (1.95, 2.41, 5.07) · ileri (0.13, -0.13, -0.98) yukarı (0.01, 0.99, -0.13)
+=== rocketbox · ekran 390x845 · llvmpipe (LLVM 20.1.2, 256 bits)
+-- rakip poz (-1.30, 0.00, 3.58) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer m301_hipoly_81_bones_001__forma açık True/True Standard q2000 renk RGBA(1.000, 0.478, 0.420, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-1.29, 1.30, 3.65) (0.92, 0.69, 0.42) kemik 52 mesh 462
+   SkinnedMeshRenderer m301_hipoly_81_bones__ten açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-1.28, 0.94, 3.48) (1.06, 1.88, 0.76) kemik 52 mesh 4534
+   SkinnedMeshRenderer rb_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.30, 1.77, 3.59) (0.27, 0.09, 0.30) kemik 52 mesh 231
+   SkinnedMeshRenderer rb_bileklik__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.67, 1.26, 3.26) (0.15, 0.16, 0.15) kemik 52 mesh 98
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.29, 1.61, 3.51) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (-1.64, 2.03, 2.84) (0.06, 0.53, 0.50)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (-1.64, 2.03, 2.84) (1.00, 1.00, 1.00)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-1.64, 1.47, 3.09) (0.06, 0.80, 0.40)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.64, 1.25, 3.18) (0.05, 0.34, 0.19)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.64, 2.03, 2.84) (0.04, 0.46, 0.44)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.64, 2.03, 2.84) (0.04, 0.47, 0.44)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.24, 1.64, 3.16) (0.00, 0.00, 0.00)
+   toplam sınır (-1.44, 1.26, 3.10) boyut (1.39, 2.53, 1.52) · ileri (-0.13, -0.07, 0.99) yukarı (-0.01, 1.00, 0.07)
+-- hakem poz (-3.80, 0.71, 0.01) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer m301_hipoly_81_bones_001__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-3.96, 1.97, -0.01) (0.44, 0.68, 0.65) kemik 52 mesh 462
+   SkinnedMeshRenderer m301_hipoly_81_bones__ten açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-3.62, 1.80, 0.00) (1.03, 1.59, 0.51) kemik 52 mesh 4534
+   SkinnedMeshRenderer rb_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-4.02, 2.47, 0.00) (0.31, 0.15, 0.27) kemik 52 mesh 231
+   SkinnedMeshRenderer rb_bileklik__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.68, 1.75, -0.14) (0.21, 0.18, 0.16) kemik 52 mesh 98
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.73, 2.32, 0.02) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.93, 2.12, -0.38) (0.54, 0.51, 0.18)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-3.42, 1.82, -0.20) (0.72, 0.48, 0.31)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.62, 1.70, -0.12) (0.32, 0.23, 0.16)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.93, 2.12, -0.38) (0.47, 0.45, 0.14)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.93, 2.12, -0.38) (0.48, 0.45, 0.15)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.38, 2.35, 0.07) (0.00, 0.00, 0.00)
+   toplam sınır (-3.64, 1.80, -0.01) boyut (1.07, 1.59, 0.65) · ileri (-0.99, -0.07, -0.13) yukarı (-0.07, 1.00, -0.01)
+-- hakem poz (3.66, -0.35, 0.09) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer m301_hipoly_81_bones_001__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex rocketbox_govde 1024 sınır (3.81, 0.92, 0.23) (0.61, 0.68, 0.68) kemik 52 mesh 462
+   SkinnedMeshRenderer m301_hipoly_81_bones__ten açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (3.48, 0.76, -0.02) (0.98, 1.55, 0.85) kemik 52 mesh 4534
+   SkinnedMeshRenderer rb_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.83, 1.42, 0.23) (0.38, 0.15, 0.37) kemik 52 mesh 231
+   SkinnedMeshRenderer rb_bileklik__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.46, 0.70, 0.13) (0.24, 0.19, 0.24) kemik 52 mesh 98
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.61, 1.27, 0.04) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.72, 1.10, -0.10) (0.50, 0.52, 0.25)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (3.22, 0.78, 0.03) (0.74, 0.50, 0.25)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.42, 0.65, 0.09) (0.33, 0.23, 0.14)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.72, 1.10, -0.10) (0.43, 0.45, 0.21)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.72, 1.10, -0.10) (0.44, 0.45, 0.21)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.35, 1.29, -0.19) (0.00, 0.00, 0.00)
+   toplam sınır (3.55, 0.76, 0.06) boyut (1.12, 1.55, 1.02) · ileri (0.73, -0.07, 0.68) yukarı (0.05, 1.00, 0.05)
+-- ben poz (1.30, 0.00, -3.38) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer m301_hipoly_81_bones_001__forma açık True/True Standard q2000 renk RGBA(0.310, 0.722, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (1.29, 1.24, -3.38) (0.72, 0.67, 0.53) kemik 52 mesh 462
+   SkinnedMeshRenderer m301_hipoly_81_bones__ten açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (1.22, 0.92, -3.32) (0.83, 1.87, 0.89) kemik 52 mesh 4534
+   SkinnedMeshRenderer rb_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.29, 1.74, -3.37) (0.30, 0.12, 0.33) kemik 52 mesh 231
+   SkinnedMeshRenderer rb_bileklik__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.34, 1.27, -3.07) (0.18, 0.17, 0.18) kemik 52 mesh 98
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.29, 1.61, -3.31) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (0.64, 0.68, -2.96) (0.55, 0.54, 0.11)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (0.61, 0.73, -2.92) (1.05, 1.10, 1.09)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (1.09, 1.08, -3.04) (0.67, 0.60, 0.17)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.149, 0.149, 0.169, 1.000) mode 0 tex yok sınır (1.28, 1.24, -3.08) (0.29, 0.27, 0.10)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.64, 0.68, -2.96) (0.48, 0.47, 0.09)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.64, 0.68, -2.96) (0.49, 0.48, 0.09)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.24, 1.64, -2.96) (0.00, 0.00, 0.00)
+   toplam sınır (0.87, 0.92, -3.07) boyut (1.56, 1.87, 1.40) · ileri (0.13, -0.07, -0.99) yukarı (0.01, 1.00, -0.07)
+=== sade · ekran 390x845 · llvmpipe (LLVM 20.1.2, 256 bits)
+-- hakem poz (-3.79, 0.71, 0.01) model ölçek (1.75, 1.75, 1.75)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.00, 2.16, -0.37) (0.54, 0.53, 0.16)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-3.45, 1.80, -0.17) (0.67, 0.54, 0.34)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.63, 1.66, -0.08) (0.30, 0.25, 0.16)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.00, 2.16, -0.37) (0.47, 0.46, 0.13)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.00, 2.16, -0.37) (0.47, 0.46, 0.13)
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.79, 2.25, 0.01) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık False/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-3.55, 2.20, -0.05) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.44, 2.27, 0.06) (0.00, 0.00, 0.00)
+   MeshRenderer Sphere__mantar açık False/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-3.54, 2.11, -0.05) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sade_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-4.08, 2.37, -0.01) (0.28, 0.17, 0.24) kemik 53 mesh 539
+   SkinnedMeshRenderer sade_beyaz__beyaz açık True/True Standard q2000 renk RGBA(0.950, 0.950, 0.930, 1.000) mode 0 tex yok sınır (-3.40, 1.19, 0.00) (0.14, 0.13, 0.31) kemik 53 mesh 264
+   SkinnedMeshRenderer sade_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.69, 1.72, -0.13) (0.15, 0.14, 0.14) kemik 53 mesh 130
+   SkinnedMeshRenderer sade_forma__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (-4.04, 1.90, -0.01) (0.53, 0.78, 0.70) kemik 53 mesh 1548
+   SkinnedMeshRenderer sade_sac__sac açık True/True Standard q2000 renk RGBA(0.050, 0.030, 0.020, 1.000) mode 0 tex yok sınır (-4.09, 2.37, -0.01) (0.32, 0.29, 0.23) kemik 53 mesh 472
+   SkinnedMeshRenderer sade_sort__sort açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (-3.82, 1.60, 0.00) (0.48, 0.28, 0.38) kemik 53 mesh 670
+   SkinnedMeshRenderer sade_taban__taban açık True/True Standard q2000 renk RGBA(0.780, 0.080, 0.100, 1.000) mode 0 tex yok sınır (-3.27, 1.15, 0.00) (0.34, 0.25, 0.39) kemik 53 mesh 616
+   SkinnedMeshRenderer sade_ten__ten açık True/True Standard q2000 renk RGBA(0.800, 0.550, 0.400, 1.000) mode 0 tex yok sınır (-3.79, 1.86, -0.01) (0.89, 1.32, 0.49) kemik 53 mesh 8293
+   toplam sınır (-3.70, 1.77, -0.01) boyut (1.21, 1.50, 0.70) · ileri (-0.99, -0.07, -0.13) yukarı (-0.07, 1.00, -0.01)
+-- ben poz (1.30, 0.00, -3.38) model ölçek (1.75, 1.75, 1.75)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (0.55, 0.70, -3.05) (0.55, 0.52, 0.13)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (0.53, 0.75, -3.00) (1.04, 1.11, 1.09)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (1.05, 1.02, -3.14) (0.73, 0.51, 0.19)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.149, 0.149, 0.169, 1.000) mode 0 tex yok sınır (1.26, 1.15, -3.18) (0.32, 0.24, 0.11)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.55, 0.70, -3.05) (0.48, 0.46, 0.10)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.55, 0.70, -3.05) (0.49, 0.46, 0.10)
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.30, 1.54, -3.38) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (0.96, 1.05, -3.06) (0.18, 0.17, 0.19)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.25, 1.56, -3.03) (0.00, 0.00, 0.00)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (0.96, 0.97, -3.05) (0.07, 0.06, 0.07)
+   SkinnedMeshRenderer sade_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.29, 1.63, -3.38) (0.24, 0.16, 0.28) kemik 53 mesh 539
+   SkinnedMeshRenderer sade_beyaz__beyaz açık True/True Standard q2000 renk RGBA(0.950, 0.950, 0.930, 1.000) mode 0 tex yok sınır (1.19, 0.16, -3.38) (0.24, 0.18, 0.66) kemik 53 mesh 264
+   SkinnedMeshRenderer sade_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.30, 1.21, -3.13) (0.13, 0.14, 0.15) kemik 53 mesh 130
+   SkinnedMeshRenderer sade_forma__forma açık True/True Standard q2000 renk RGBA(0.310, 0.722, 1.000, 1.000) mode 0 tex yok sınır (1.31, 1.16, -3.46) (0.69, 0.73, 0.60) kemik 53 mesh 1548
+   SkinnedMeshRenderer sade_sac__sac açık True/True Standard q2000 renk RGBA(0.050, 0.030, 0.020, 1.000) mode 0 tex yok sınır (1.29, 1.64, -3.39) (0.23, 0.26, 0.29) kemik 53 mesh 472
+   SkinnedMeshRenderer sade_sort__sort açık True/True Standard q2000 renk RGBA(0.020, 0.025, 0.060, 1.000) mode 0 tex yok sınır (1.27, 0.74, -3.33) (0.44, 0.48, 0.51) kemik 53 mesh 670
+   SkinnedMeshRenderer sade_taban__taban açık True/True Standard q2000 renk RGBA(0.780, 0.080, 0.100, 1.000) mode 0 tex yok sınır (1.14, 0.05, -3.30) (0.39, 0.30, 0.93) kemik 53 mesh 616
+   SkinnedMeshRenderer sade_ten__ten açık True/True Standard q2000 renk RGBA(0.800, 0.550, 0.400, 1.000) mode 0 tex yok sınır (1.24, 0.94, -3.32) (0.78, 1.64, 0.75) kemik 53 mesh 8293
+   toplam sınır (0.83, 0.83, -3.11) boyut (1.64, 1.87, 1.31) · ileri (0.13, -0.07, -0.99) yukarı (0.01, 1.00, -0.07)
+-- hakem poz (3.65, -0.34, 0.08) model ölçek (1.75, 1.75, 1.75)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.79, 1.13, -0.06) (0.52, 0.53, 0.21)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (3.26, 0.77, 0.03) (0.71, 0.56, 0.19)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.45, 0.62, 0.06) (0.31, 0.26, 0.11)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.78, 1.13, -0.06) (0.45, 0.47, 0.18)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.79, 1.13, -0.06) (0.46, 0.47, 0.17)
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.65, 1.19, 0.08) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık False/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (3.41, 1.14, 0.00) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.39, 1.22, -0.15) (0.00, 0.00, 0.00)
+   MeshRenderer Sphere__mantar açık False/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (3.41, 1.06, -0.01) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sade_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.87, 1.31, 0.27) (0.33, 0.17, 0.32) kemik 53 mesh 539
+   SkinnedMeshRenderer sade_beyaz__beyaz açık True/True Standard q2000 renk RGBA(0.950, 0.950, 0.930, 1.000) mode 0 tex yok sınır (3.32, 0.17, -0.13) (0.29, 0.13, 0.32) kemik 53 mesh 264
+   SkinnedMeshRenderer sade_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.48, 0.68, 0.13) (0.18, 0.14, 0.18) kemik 53 mesh 130
+   SkinnedMeshRenderer sade_forma__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (3.85, 0.84, 0.26) (0.60, 0.78, 0.59) kemik 53 mesh 1548
+   SkinnedMeshRenderer sade_sac__sac açık True/True Standard q2000 renk RGBA(0.050, 0.030, 0.020, 1.000) mode 0 tex yok sınır (3.88, 1.32, 0.28) (0.35, 0.29, 0.34) kemik 53 mesh 472
+   SkinnedMeshRenderer sade_sort__sort açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (3.65, 0.54, 0.10) (0.56, 0.27, 0.52) kemik 53 mesh 670
+   SkinnedMeshRenderer sade_taban__taban açık True/True Standard q2000 renk RGBA(0.780, 0.080, 0.100, 1.000) mode 0 tex yok sınır (3.22, 0.13, -0.20) (0.46, 0.25, 0.49) kemik 53 mesh 616
+   SkinnedMeshRenderer sade_ten__ten açık True/True Standard q2000 renk RGBA(0.800, 0.550, 0.400, 1.000) mode 0 tex yok sınır (3.61, 0.82, 0.07) (0.87, 1.29, 0.74) kemik 53 mesh 8293
+   toplam sınır (3.57, 0.74, 0.05) boyut (1.16, 1.46, 1.01) · ileri (0.73, -0.07, 0.68) yukarı (0.05, 1.00, 0.05)
+-- rakip poz (-1.30, 0.00, 3.58) model ölçek (1.75, 1.75, 1.75)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (-1.56, 1.95, 2.89) (0.06, 0.53, 0.50)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (-1.56, 1.95, 2.89) (1.00, 1.00, 1.00)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-1.56, 1.39, 3.14) (0.06, 0.80, 0.39)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.56, 1.17, 3.23) (0.05, 0.34, 0.19)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.56, 1.95, 2.89) (0.04, 0.46, 0.44)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.56, 1.95, 2.89) (0.04, 0.47, 0.43)
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.30, 1.54, 3.58) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-1.36, 1.48, 3.34) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.25, 1.56, 3.23) (0.00, 0.00, 0.00)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-1.36, 1.40, 3.33) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sade_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.30, 1.66, 3.60) (0.23, 0.13, 0.26) kemik 53 mesh 539
+   SkinnedMeshRenderer sade_beyaz__beyaz açık True/True Standard q2000 renk RGBA(0.950, 0.950, 0.930, 1.000) mode 0 tex yok sınır (-1.29, 0.17, 3.58) (0.47, 0.15, 0.23) kemik 53 mesh 264
+   SkinnedMeshRenderer sade_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.62, 1.20, 3.31) (0.13, 0.13, 0.12) kemik 53 mesh 130
+   SkinnedMeshRenderer sade_forma__forma açık True/True Standard q2000 renk RGBA(0.247, 0.310, 0.659, 1.000) mode 0 tex yok sınır (-1.30, 1.24, 3.68) (0.79, 0.75, 0.62) kemik 53 mesh 1548
+   SkinnedMeshRenderer sade_sac__sac açık True/True Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex yok sınır (-1.30, 1.67, 3.61) (0.22, 0.23, 0.26) kemik 53 mesh 472
+   SkinnedMeshRenderer sade_sort__sort açık True/True Standard q2000 renk RGBA(0.020, 0.025, 0.060, 1.000) mode 0 tex yok sınır (-1.29, 0.79, 3.63) (0.43, 0.46, 0.44) kemik 53 mesh 670
+   SkinnedMeshRenderer sade_taban__taban açık True/True Standard q2000 renk RGBA(0.780, 0.080, 0.100, 1.000) mode 0 tex yok sınır (-1.28, 0.05, 3.49) (0.58, 0.26, 0.44) kemik 53 mesh 616
+   SkinnedMeshRenderer sade_ten__ten açık True/True Standard q2000 renk RGBA(0.659, 0.435, 0.298, 1.000) mode 0 tex yok sınır (-1.28, 0.98, 3.45) (1.03, 1.61, 0.66) kemik 53 mesh 8293
+   toplam sınır (-1.41, 1.18, 3.19) boyut (1.29, 2.53, 1.60) · ileri (-0.13, -0.07, 0.99) yukarı (-0.01, 1.00, 0.07)
+ekran boyu istendi 375x667 · oldu 375x667
+ekran boyu istendi 390x845 · oldu 390x845
