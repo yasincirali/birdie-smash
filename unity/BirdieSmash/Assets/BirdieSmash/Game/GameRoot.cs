@@ -130,7 +130,7 @@ namespace BirdieSmash.Game
                 int g = Ayar.kariyerSecim >= 0 && Ayar.ilerleme.Acik(Ayar.kariyerSecim) ? Ayar.kariyerSecim : Ayar.ilerleme.Siradaki(); var kb = KariyerVeri.Al(g);
                 o.stil = Match.KariyerRakip(g); o.saha = kb.saha; if (kb.uzunluk > 0) o.target = kb.uzunluk;
             }
-            else o.stil = Match.STIL[Match.STIL_SIRA[rnd.Next(3)]];
+            else o.stil = KariyerVeri.Serbest(Match.STIL_SIRA[rnd.Next(3)], Ayar.ilerleme);   // 2026-10-27: oyuncunun kariyer seviyesinde (KariyerVeri.Serbest)
             mod = Mod.Normal; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
         }
         MatchOptions Secenek(bool ogr)
@@ -213,7 +213,11 @@ namespace BirdieSmash.Game
         public void Duraklat() { if (ekran == Ekran.Oyun && !paused) { paused = true; Uyanik(false); input.Reset(); sfx.Ugultu(false, 0); AudioListener.pause = true; } }
         public void Devam() { paused = false; AudioListener.pause = false; if (ekran == Ekran.Oyun) Uyanik(true); }
         void OnApplicationPause(bool p) { if (p) Duraklat(); }   // arka plana geçince kendiliğinden duraklar; top bir anda üstüne düşmez
-        void OnApplicationFocus(bool f) { if (f) Ayar.SistemOku(); }   // sistem "Hareketi Azalt" ve yazı boyutu değişmiş olabilir
+        // Odak kaybı da duraklatır (2026-10-27, oyun incelemesi): Denetim Merkezi/Bildirim Merkezi açılması, gelen arama afişi,
+        // Siri ve sistem uyarısı uygulamayı arka plana atmadan yalnız etkinliği alır (iOS willResignActive); oyun sürerken top
+        // oyuncunun göremediği anda yere düşüyordu. Duraklat menüde ve maç sonunda hiçbir şey yapmaz. Yalnız telefonda: masaüstü
+        // ve CI ekran turunda (Xvfb, pencere odaksız açılabilir) maç durmasın.
+        void OnApplicationFocus(bool f) { if (f) Ayar.SistemOku(); else if (Application.isMobilePlatform) Duraklat(); }   // dönüşte sistem "Hareketi Azalt" ve yazı boyutu değişmiş olabilir
 
         void EndMatch(bool won)
         {
@@ -582,7 +586,7 @@ namespace BirdieSmash.Game
             switch (e.kind)
             {
                 case Ev.Hit:
-                    sfx.Hit(e.type, e.quality, e.slice, e.big, e.serve, mine, (int)e.k, M.flow);
+                    sfx.Hit(e.type, e.quality, e.slice, e.big, e.serve, mine, (int)e.k, M.flow, M.s != null ? M.s.Speed : 0);   // hız: vuruşun gücü sese biner (Sfx 2026-10-27)
                     fx.Burst(at, Color.white, e.type == "smash" ? 10 : 5, e.type == "smash" ? 220 : 120, "feather");
                     fx.Dalga(at, e.type == "smash" ? limon : Color.white, e.type == "smash" ? 90 : 46);
                     if (e.type == "smash") { if (!rm) { shake = Mathf.Max(shake, e.big ? 12 : 6); punch = Mathf.Max(punch, e.big ? 1.09f : 1.05f); } hud.Flash(e.big ? .5f : .2f, e.big ? new Color(1, .55f, .24f) : limon); }
@@ -609,7 +613,7 @@ namespace BirdieSmash.Game
                 case Ev.Point:
                     {
                         bool smac = mine && e.type == "smash";
-                        sfx.Point(mine, smac); hud.Pop(mine ? 0 : 1); Yerel.Hap(mine ? "win" : "lose");
+                        sfx.Point(mine, smac, (int)e.k); hud.Pop(mine ? 0 : 1); Yerel.Hap(mine ? "win" : "lose");
                         // düşüş yerinde toz ve kazananın renginde dalga; benim sayımda üst bantta üç renkli kıvılcım (HTML point)
                         if (e.x != 0 || e.y != 0) { var yer = Kit.W(e.x, e.y, .05f); fx.Burst(yer, new Color(.9f, 1, .94f, .7f), 14, 140, "dot"); fx.Dalga(yer, mine ? limon : Kit.Hex("#ff7a6b"), 70); }
                         if (mine) hud.SayiKivilcim();

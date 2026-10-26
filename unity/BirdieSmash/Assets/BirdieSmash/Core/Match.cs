@@ -163,7 +163,18 @@ namespace BirdieSmash.Core
             me.x = Court.MID; me.y = Court.L - 2.2f; op.x = Court.MID; op.y = 2.2f;
             if (o.ogr) OgrKur(o.ogrKisa);
             if (!o.ogr) DegistiriciKur(o.degistirici);
+            UstaGucu();
             SetupServe();
+        }
+        // Usta zorluğu (2026-10-27, oyun incelemesi): Usta'da oyuncu koşar, erişim 1,15 m, ağır çekim az; rakibin gücü (g) Kolay
+        // için ayarlandığından Usta'da Hızlı maç, kariyer ve Günün maçı "Usta" günü Usta botuna %0–7 kazandırıyordu (Denge
+        // notu: "Usta botuyla g 1,0 %3–7"); yalnız Usta yolu kendi g'siyle (0,6) dengelenmişti. Usta yolu dışındaki Usta maçında
+        // rakibin hızı ×ustaCarpan, hatası ÷ustaCarpan (kariyer.json usta.carpan; Usta yolu g'siyle aynı ölçek). Kolay maç ve
+        // Usta yolu birebir eski. Antrenmanda rakip antrenördür, dokunulmaz.
+        void UstaGucu()
+        {
+            if (easy || ogr != null || stil.usta >= 0) return; float k = KariyerVeri.Usta.carpan; if (k == 1) return;
+            stil = stil.Clone(); stil.hiz *= k; stil.hata /= k;
         }
         // Eski imza (bot testleri): rastgele rakip, serbest maç.
         public Match(int seed, bool easyMode, int targetPoints) : this(seed, new MatchOptions { easy = easyMode, target = targetPoints }) { }

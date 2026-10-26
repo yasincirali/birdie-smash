@@ -1,5 +1,5 @@
 {
- "_not": "Günün maçı (komple-oyun tasarımı §3.5, Ek A.4; adım 8, 2026-10-26). Cihazın yerel günü tohumdur (sunucu yok): aynı gün herkes aynı rakip, saha, g ve değiştiriciyle oynar (Core/Gunluk, kendi karma fonksiyonu: System.Random'ın tohum algoritmasına bağlı kalınmaz). Arka arkaya iki gün aynı değiştirici ya da aynı rakip gelmez. Ödül günde bir kez, kazanınca (odul); seri yok, kaçırma cezası yok, özel ödül yok, sıralama tablosu yok. Değiştiricilerin hepsi var olan sistemlerden: sayı değeri (altin, file, uzun), Usta zorluğu (usta), imza sıklığı (patron), nefes (nefes). uzunluk = maç uzunluğu. Metinler Türkçe anahtar, çeviri Lang.UNITY_EK.",
+ "_not": "Günün maçı (komple-oyun tasarımı §3.5, Ek A.4; adım 8, 2026-10-26). Cihazın yerel günü tohumdur (sunucu yok): aynı gün herkes aynı rakip, saha, g ve değiştiriciyle oynar (Core/Gunluk, kendi karma fonksiyonu: System.Random'ın tohum algoritmasına bağlı kalınmaz). Arka arkaya iki gün aynı değiştirici ya da aynı rakip gelmez. Ödül günde bir kez, kazanınca (odul); seri yok, kaçırma cezası yok, özel ödül yok, sıralama tablosu yok. Değiştiricilerin hepsi var olan sistemlerden: sayı değeri (altin, file, uzun), Usta zorluğu (usta), imza sıklığı (patron), nefes (nefes). uzunluk = maç uzunluğu. Metinler Türkçe anahtar, çeviri Lang.UNITY_EK. g 2026-10-27: 0,95–1,15 → 0,72–0,88 (kariyer.json notu: vuruş penceresi ağır çekimi hafifleyince basamak g'leri ortalama ×0,76 yeniden ölçüldü; Günün maçı aynı oranla).",
  "rakipler": [
   "smasci",
   "duvar",
@@ -9,8 +9,8 @@
   "aria"
  ],
  "g": [
-  0.95,
-  1.15
+  0.72,
+  0.88
  ],
  "sahalar": [
   "salon",
