@@ -1,0 +1,92 @@
+{
+  "not": "Aldatıcı vuruşlar (2026-10-26, yasin: 'üst seviyelerde çıksın; ekipman, seviye ve pozisyon uygunsa yapılabilsin'). Okuyan: Core/Aldatma.cs. Tasarım notu: komple-oyun/aldatici_vuruslar.md. kosul aralıkları [sınırAlt, rahatAlt, rahatÜst, sınırÜst]: sınır dışı = vuruş olmaz (normal vuruş çıkar), sınır ile rahat arası = marjinal (etki küçülür, hata olasılığı artar). Anahtarlar: file = topun fileye uzaklığı (m), z = temas yüksekliği (m; bant 1,524), sure = oyuncunun topa yerleşip durduğu süre (oyun sn), hiz = temasta oyuncunun koşu hızı (m/s), nefes = 0–1, onde = topun oyuncunun ne kadar önünde olduğu (m; eksi = arkasında). 99/-99 = sınır yok.",
+  "rakip": {
+    "kariyerMin": 12,
+    "azami": 3,
+    "ara": 3,
+    "p": 0.3,
+    "hazirlik": 0.4,
+    "stil": { "vex": 1.6, "file": 1.3, "aria": 1.2 }
+  },
+  "okuma": { "tur": 0.15, "usta": 0.5, "tavan": 0.6 },
+  "vuruslar": [
+    {
+      "id": "cevirme", "ad": "Çevirme file", "sv": 6,
+      "kisa": "Top bandın dibinde takla atarak düşer; rakip temiz alamaz, geç çıkar.",
+      "jest": "File önünde kavisli ve yavaş kaydır", "jestKod": "kavis", "baglam": "file",
+      "konum": "File önünde, top bandın az altında; topa yerleşmiş ol, uzanma",
+      "ilk": "Çevirme file açık · file önünde kavisli yavaş kaydır",
+      "ekipman": { "stat": "kafa", "min": 0.95, "ad": "Kafa ağır olmayan raket" },
+      "kosul": { "file": [-99, -99, 1.0, 1.6], "z": [0.95, 1.2, 1.62, 1.75], "sure": [0.04, 0.16, 99, 99], "hiz": [-99, -99, 1.2, 2.4], "nefes": [0.15, 0.35, 99, 99] },
+      "etki": { "tepki": 0.22, "adim": 0.25, "yon": "yerinde" },
+      "risk": { "taban": 0.04, "marj": 0.3, "sapma": 0.8 },
+      "vurus": { "tip": "drop", "d": 0.6, "val": 0.72, "aci": true, "slice": true, "takip": 0.1 },
+      "rakipte": true, "uyari": "Çevirme file: top takla atar, erken öne çık!"
+    },
+    {
+      "id": "tutflick", "ad": "Tut ve flick", "sv": 9,
+      "kisa": "File önünde raketi tutarsın; rakip file vuruşu bekler, top bilek fiskesiyle arkaya gider.",
+      "jest": "Parmağını tut, sonra hızla yukarı kaydır", "jestKod": "bekle_hizli", "baglam": "file",
+      "konum": "File önünde, top bel üstünde; erken yerleş ki tutacak zamanın olsun",
+      "ilk": "Tut ve flick açık · parmağını tut, sonra hızla yukarı kaydır",
+      "ekipman": { "stat": "hiz", "min": 1.0, "ad": "Çabuk raket başı (Drive/file en az nötr)" },
+      "kosul": { "file": [-99, -99, 1.3, 2.0], "z": [0.95, 1.2, 1.7, 1.85], "sure": [0.1, 0.28, 99, 99], "hiz": [-99, -99, 0.8, 1.8], "nefes": [0.2, 0.4, 99, 99] },
+      "etki": { "tepki": 0.32, "adim": 0.3, "yon": "yerinde" },
+      "risk": { "taban": 0.05, "marj": 0.35, "sapma": 1.0 },
+      "vurus": { "tip": "lift", "d": 5.7, "val": 0.6, "aci": true, "slice": false, "takip": 0.12 },
+      "rakipte": true, "uyari": "Tut ve flick: raket tutuluyor, geri adım hazır ol!"
+    },
+    {
+      "id": "tersslice", "ad": "Ters slice drop", "sv": 12,
+      "kisa": "Baş üstünde raket yüzü ters keser; rakip topu başka yöne bekler, top yavaşlayıp fileye iner.",
+      "jest": "Baş üstünde sola bükülen yayla yavaş kaydır", "jestKod": "terskavis", "baglam": "ust",
+      "konum": "Baş üstü forehand; topun arkasına geçmiş ol",
+      "ilk": "Ters slice drop açık · baş üstünde sola bükülen yayla yavaş kaydır",
+      "ekipman": { "stat": "slice", "min": 1.12, "ad": "Kesici raket (slice en az +12)" },
+      "kosul": { "z": [2.0, 2.2, 2.7, 2.95], "onde": [-0.1, 0.15, 99, 99], "sure": [0.2, 0.45, 99, 99], "hiz": [-99, -99, 1.0, 2.0], "nefes": [0.2, 0.4, 99, 99] },
+      "etki": { "tepki": 0.3, "adim": 0.32, "yon": "ayna" },
+      "risk": { "taban": 0.05, "marj": 0.35, "sapma": 0.9 },
+      "vurus": { "tip": "drop", "d": 1.3, "val": 0.2, "aci": true, "slice": true, "takip": 0.16 },
+      "rakipte": false
+    },
+    {
+      "id": "sahtesmac", "ad": "Son anda kes", "sv": 15,
+      "kisa": "Smaç hazırlığı tam görünür, raket son anda yavaşlar: rakip geride savunmaya çökerken top fileye düşer.",
+      "jest": "Baş üstünde parmağını tut, sonra yavaş kaydır", "jestKod": "bekle_yavas", "baglam": "ust",
+      "konum": "Baş üstü forehand, topun arkasında ve dengede; nefesin olmalı",
+      "ilk": "Son anda kes açık · baş üstünde parmağını tut, sonra yavaş kaydır",
+      "ekipman": { "stat": "kontrol", "min": 1.0, "ad": "Kontrol en az nötr (kafa ağır raket tek başına yetmez)" },
+      "kosul": { "z": [2.1, 2.3, 2.8, 3.0], "onde": [-0.05, 0.2, 99, 99], "sure": [0.3, 0.6, 99, 99], "hiz": [-99, -99, 0.8, 1.6], "nefes": [0.3, 0.5, 99, 99] },
+      "etki": { "tepki": 0.36, "adim": 0.34, "yon": "yerinde" },
+      "risk": { "taban": 0.05, "marj": 0.4, "sapma": 0.9 },
+      "vurus": { "tip": "drop", "d": 1.0, "val": 0.2, "aci": true, "slice": false, "takip": 0.08, "nefes": 0.06 },
+      "rakipte": true, "uyari": "Son anda kes: smaç duruşu, ama drop gelebilir!"
+    },
+    {
+      "id": "ciftaksiyon", "ad": "Çift hareket", "sv": 19,
+      "kisa": "File önünde raket bir yöne gösterir, son anda öbür yöne döner: rakip yanlış köşeye adım atar.",
+      "jest": "File önünde bir yöne başla, keskin dönüp öbür yöne kaydır (V çiz)", "jestKod": "kirik", "baglam": "file",
+      "konum": "File önünde, top bandın hemen altında ya da hizasında; erken ve sakin ol",
+      "ilk": "Çift hareket açık · file önünde V çiz: bir yöne başla, öbür yöne bitir",
+      "ekipman": { "stat": "kafa", "min": 1.05, "ad": "Kafa hafif raket (Kafa hafif ya da Kesici)" },
+      "kosul": { "file": [-99, -99, 0.9, 1.4], "z": [1.15, 1.35, 1.7, 1.82], "sure": [0.14, 0.32, 99, 99], "hiz": [-99, -99, 0.7, 1.5], "nefes": [0.25, 0.45, 99, 99] },
+      "etki": { "tepki": 0.4, "adim": 0.38, "yon": "ayna" },
+      "risk": { "taban": 0.06, "marj": 0.45, "sapma": 1.1 },
+      "vurus": { "tip": "drop", "d": 0.7, "val": 0.7, "aci": true, "slice": false, "takip": 0.08 },
+      "rakipte": true, "uyari": "Çift hareket: raket yön değiştirir, merkezde kal!"
+    },
+    {
+      "id": "arkadan", "ad": "Arkadan kurtarış", "sv": 25,
+      "kisa": "Backhand tarafında yanından geçen topu baş arkasından ya da sırt arkasından çaprazına vurursun. Gösterişli, riskli.",
+      "jest": "Backhand tarafında yatay ve hızlı kaydır", "jestKod": "yatay", "baglam": "bh",
+      "konum": "Top backhand tarafında, omuz üstünde ve yanında ya da biraz arkanda; nefesin dolu olmalı",
+      "ilk": "Arkadan kurtarış açık · backhand tarafında yatay ve hızlı kaydır",
+      "ekipman": { "stat": "hiz", "min": 1.04, "ad": "Çok çabuk raket başı (Drive/file en az +4)" },
+      "kosul": { "z": [1.3, 1.6, 2.3, 2.6], "onde": [-99, -99, 0.1, 0.6], "sure": [-99, 0.1, 99, 99], "hiz": [-99, -99, 1.6, 3.2], "nefes": [0.35, 0.55, 99, 99] },
+      "etki": { "tepki": 0.34, "adim": 0.3, "yon": "ayna" },
+      "risk": { "taban": 0.12, "marj": 0.45, "sapma": 1.3 },
+      "vurus": { "tip": "drive", "d": 4.4, "val": 20, "aci": false, "capraz": true, "slice": false, "takip": 0.22, "nefes": 0.08 },
+      "rakipte": false
+    }
+  ]
+}

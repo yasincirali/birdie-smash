@@ -23,7 +23,7 @@ namespace BirdieSmash.Core
         public static TarzBilgi[] Tarzlar { get { Yukle(); return tarzlar; } }
         public static UnvanBilgi[] Unvanlar { get { Yukle(); return unvanlar; } }
         public static GorunumOge[] Gorunum(string kat) { Yukle(); GorunumOge[] a; return gorunum.TryGetValue(kat, out a) ? a : new GorunumOge[0]; }
-        public static void Sifirla() { tarzlar = null; unvanlar = null; gorunum = null; }
+        public static void Sifirla() { tarzlar = null; unvanlar = null; gorunum = null; Kozmetik.Sifirla(); }
 
         public static TarzBilgi Tarz(string id) { foreach (var t in Tarzlar) if (t.id == id) return t; return Tarzlar[0]; }
         public static GorunumOge Oge(string kat, string id) { foreach (var o in Gorunum(kat)) if (o.id == id) return o; var a = Gorunum(kat); return a.Length > 0 ? a[0] : null; }
@@ -86,10 +86,13 @@ namespace BirdieSmash.Core
         public static List<string[]> AcilanlarTurlu(int sv)
         {
             var l = new List<string[]>(); if (sv <= 1) return l;
-            foreach (var y in Gear.MODEL_YUVA) foreach (var m in Gear.GEAR[y].Values) if (m.sv == sv) l.Add(new[] { null, m.ad });
+            // 2026-10-26 karakter tasarımı: ayakkabı modeli "Ayakkabı", rengi "Ayakkabı rengi" (iki ayrı şey artık), tip ve saç biçimi.
+            foreach (var y in Gear.MODEL_YUVA) foreach (var m in Gear.GEAR[y].Values) if (m.sv == sv) l.Add(new[] { y == "ayakkabi" ? "Ayakkabı" : null, m.ad });
             foreach (var t in Tarzlar) if (t.sv == sv) l.Add(new[] { "Tarz", t.ad });
+            foreach (var o in Kozmetik.Acilan(Kozmetik.TIP, sv)) l.Add(new[] { "Tip", o.ad });
+            foreach (var o in Kozmetik.Acilan(Kozmetik.SAC, sv)) l.Add(new[] { "Saç modeli", o.ad });
             foreach (var m in Gear.RENK.Values) if (m.sv == sv && !m.kilit) l.Add(new[] { "Forma rengi", m.ad });
-            foreach (var k in GORUNUM_KAT) foreach (var o in Gorunum(k)) if (o.sv == sv) l.Add(new[] { k == "ten" ? "Ten tonu" : k == "sac" ? "Saç rengi" : k == "ayakkabi" ? "Ayakkabı" : "Raket kaplaması", o.ad });
+            foreach (var k in GORUNUM_KAT) foreach (var o in Gorunum(k)) if (o.sv == sv) l.Add(new[] { k == "ten" ? "Ten tonu" : k == "sac" ? "Saç rengi" : k == "ayakkabi" ? "Ayakkabı rengi" : "Raket kaplaması", o.ad });
             foreach (var u in Unvanlar) if (u.sv == sv) l.Add(new[] { "Unvan", u.ad });
             return l;
         }
@@ -98,6 +101,7 @@ namespace BirdieSmash.Core
             var l = new List<string>();
             foreach (var y in Gear.MODEL_YUVA) foreach (var m in Gear.GEAR[y].Values) if (m.sv == sv && sv > 1) l.Add(m.ad);
             foreach (var t in Tarzlar) if (t.sv == sv && sv > 1) l.Add(t.ad);
+            foreach (var k in Kozmetik.KAT) foreach (var o in Kozmetik.Acilan(k, sv)) if (sv > 1) l.Add(o.ad);
             foreach (var m in Gear.RENK.Values) if (m.sv == sv && sv > 1 && !m.kilit) l.Add(m.ad);
             foreach (var k in GORUNUM_KAT) foreach (var o in Gorunum(k)) if (o.sv == sv && sv > 1) l.Add(o.ad);
             foreach (var u in Unvanlar) if (u.sv == sv && sv > 1) l.Add(u.ad);

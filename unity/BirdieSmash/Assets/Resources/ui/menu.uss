@@ -249,3 +249,26 @@
 .az-hareket .sayfa, .az-hareket .alt-sayfa, .az-hareket .sekme-kok, .az-hareket .dugme, .az-hareket .onizle-kayar { transition-duration: 0s; }
 .az-hareket .dugme:active { scale: 1 1; }
 .kaydir { flex-grow: 1; flex-shrink: 1; }
+
+/* Soyunma odası › Karakter (2026-10-26 karakter tasarımı): vitrinin yakın plan düğmeleri (sol alt, okların üstünde), alt
+   segment Tip · Saç · Ayakkabı · Ten, tip kartları 2×2, saç biçimleri 5 sütun, ayakkabı satırları, deneme kartı.
+   Seçili = kalın camgöbeği çerçeve + ✓ + "Seçili"; denenen = limon çerçeve + "deneniyor" yazısı;
+   kilitli = soluk + kilit + "Sv n". Hiçbir durum yalnız renkle verilmez. Dokunma alanları ≥ 44 pt. */
+.vitrin-odak { position: absolute; left: 8px; bottom: 60px; flex-direction: row; flex-wrap: nowrap; margin: 0; }
+.odak-dugme { min-width: 56px; margin-right: 6px; padding: 0 10px; background-color: rgba(34, 52, 58, 0.9); }
+.odak-dugme--secili { background-color: rgb(122, 215, 255); }
+.odak-dugme--secili .dugme-yazi { color: rgb(7, 22, 28); -unity-font-style: bold; }
+.alt-segment { margin: 4px 0 8px 0; }
+.koz-izgara { margin: 0 -4px; }
+.izgara > .koz-kart { flex-basis: 45%; flex-grow: 1; margin: 4px; padding: 12px; min-height: 96px; align-items: flex-start; justify-content: flex-start; }
+.izgara > .sac-kare { flex-basis: 17%; flex-grow: 1; margin: 3px; padding: 6px 4px; min-height: 64px; min-width: 56px; align-items: center; justify-content: center; }
+.sac-kare .yazi { -unity-text-align: middle-center; white-space: normal; }
+.koz-kart.secili, .sac-kare.secili, .ayk-satir.secili { border-width: 2px; border-color: rgb(122, 215, 255); }
+.koz-kart.kilitli, .sac-kare.kilitli, .ayk-satir.kilitli { opacity: 0.7; }
+.denenen { border-width: 2px; border-color: rgb(216, 255, 90); }
+.ayk-satir { padding: 10px 12px; min-height: 56px; margin: 4px 0; }
+.deneme-kart { padding: 12px; border-width: 2px; border-color: rgb(216, 255, 90); }
+.deneme-birak { margin-top: 8px; }
+.renk--yuvarlak { flex-grow: 0; flex-basis: auto; width: 44px; border-radius: 22px; }
+.buyuk-yazi .vitrin-odak { bottom: 56px; }
+.buyuk-yazi .izgara > .sac-kare { flex-basis: auto; min-height: 48px; }

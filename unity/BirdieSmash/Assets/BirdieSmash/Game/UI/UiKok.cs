@@ -40,7 +40,7 @@ namespace BirdieSmash.Game
             get
             {
                 string u = gez.Ust; if (u == Gezinti.AYAR) return "Ayarlar"; if (u == Gezinti.NASIL) return "Nasıl oynanır"; if (u == Gezinti.LISANS) return "Lisanslar"; if (u == Gezinti.HIZLI) return "Hızlı maç"; if (u == Gezinti.KART) return "Maç kartı"; if (u == Gezinti.YUVA) return "Yuva"; if (u == Gezinti.ANTRENMAN) return "Antrenman"; if (u == Gezinti.DRIL) return "Görev kartı"; if (u == Gezinti.GUNLUK) return "Günün maçı";
-                if (gez.sekme == Sekme.Soyunma) return root.vitrin.hedefGec >= 1 ? "Raket 360°" : soyunmaSeg == 1 ? "Tarz" : soyunmaSeg == 2 ? "Görünüm" : "Ekipman";
+                if (gez.sekme == Sekme.Soyunma) return root.vitrin.hedefGec >= 1 ? "Raket 360°" : soyunmaSeg == 1 ? "Tarz" : soyunmaSeg == 2 ? "Görünüm" : soyunmaSeg == SEG_KARAKTER ? "Karakter" : "Ekipman";
                 return gez.sekme == Sekme.Kariyer ? "Kariyer" : gez.sekme == Sekme.Profil ? "Profil" : "Menü";
             }
         }

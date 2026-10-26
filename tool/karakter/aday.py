@@ -23,6 +23,18 @@ class AdayIskelet(insan.Iskelet):
         s.shR,s.shL=H(s.n('ua','r')),H(s.n('ua','l')); s.elR=H(s.n('fa','r')); s.wrR=H(s.n('el','r'))
         s.TH=(s.kneeR-s.hipR).length; s.SH=(s.ankR-s.kneeR).length; s.UA=(s.elR-s.shR).length; s.FA=(s.wrR-s.elR).length
         s.root=(s.hipR+s.hipL)/2; hb=b[s.n('head')]; s.neck=hb.head_local.copy(); s.headc=hb.head_local+Vector((0,0,.11*s.TH/.42))
+    # Zemin (2026-10-26, tüm beden turu): ayak artık dinlenme eğimiyle basıyor (aşağıda ft); eskiden baldırın öne eğimini
+    # devralıp burnu aşağı (sol ayak −9°) indiği için taban zemine değiyordu. Düz ayakta Rocketbox bileği poz z=0,05'ten
+    # 3,7 figür cm yüksekte kalıyor (probe: taban 8 cm oyunda); figür o kadar indirilir (sade.py ile aynı kural, kendi değeri).
+    # Yalnız bu sınıf: SadeIskelet kendi dz'sini uygular.
+    POZ_Z=('root','shR','shL','neck','head','elR','elL','wrR','wrL','hpR','hpL','knR','knL','anR','anL')
+    def hedef(s,p):
+        T=super().hedef(p)
+        if type(s) is AdayIskelet:
+            dz=Vector((0,0,float(os.environ.get('BS_ADAY_DZ','-.037'))))
+            for n in s.POZ_Z:
+                if n in T: T[n]=T[n]+dz
+        return T
     def uygula(s,T):
         ao=s.ao; pb=ao.pose.bones; L=bpy.context.view_layer
         for b in pb: b.matrix_basis=Matrix()
@@ -47,6 +59,19 @@ class AdayIskelet(insan.Iskelet):
                 s.son_burgu=insan.on_kol_burgu(pb,L,T,(nua,nfa,nel),s._avuc,lambda:aim(nfa,T['wrR']),lambda:aim(nel,T['wrR']+fa))
             else: aim(s.n('el',k),T['wr'+K]+fa)
             aim(s.n('ul',k),T['kn'+K]); aim(s.n('ll',k),T['an'+K])
+        # Ayak yönü (2026-10-26, tüm beden turu): bu iskelet ft (ayak ucu yönü) kanalını hiç okumuyordu; ayak baldırın dönüşünü
+        # devralıyordu. Backhand overhead'de sade/oyuncak sağ ayağı arkaya (ft −0,6,−1) çevirirken Rocketbox'ta ayak öne
+        # bakıyor, diz ipucu ayak ucuna göre 177° ters kalıyordu (probe). sade.py ile aynı kural: ayak dinlenme eğimini korur,
+        # yalnız düşey eksen çevresinde ft yönüne döner. İleri = parmak kemiğine (Bip01 ayak kemiğinin y'si tabana bakar).
+        up=(ao.matrix_world.inverted().to_3x3()@Vector((0,0,1))).normalized()
+        for k,K in (('r','R'),('l','L')):
+            n=s.n('ft',k); b=pb[n]; db=ao.data.bones[n]; R0=db.matrix_local.to_3x3()
+            uc=[c for c in db.children]
+            y=(uc[0].head_local-db.head_local) if uc else R0@Vector((0,1,0))
+            yh=y-up*y.dot(up); f=Vector(T['ft'+K]); f=f-up*f.dot(up)
+            if yh.length<1e-6 or f.length<1e-6: continue
+            yh.normalize(); f.normalize(); ang=math.atan2(up.dot(yh.cross(f)),yh.dot(f))
+            N=Matrix.Rotation(ang,4,up)@Matrix(R0).to_4x4(); N.translation=b.matrix.translation; b.matrix=N; L.update()
         set_rot(s.n('head'),Vector((0,1,0)).rotation_difference(T['look']).to_matrix())
 
 # Temas katmanı (2026-10-26, yasin: "objelerde iç içe geçmeleri de çözmen lazım"). Ortak poz sözlükleri (karakter.py)

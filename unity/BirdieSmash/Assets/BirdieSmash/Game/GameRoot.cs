@@ -89,7 +89,7 @@ namespace BirdieSmash.Game
                 modelId = Ayar.model;
             }
             if (op != null) Destroy(op.gameObject);
-            op = PlayerView.Build(transform, Ayar.model, false, Kit.Hex(Match.OpRenk(M.stil, Ayar.FORMA)));
+            var opR = Kit.Hex(Match.OpRenk(M.stil, Ayar.FORMA)); op = PlayerView.Build(transform, Ayar.model, false, opR, false, PlayerView.Rakip(M.stil, opR));   // 2026-10-26: rakibin tipi/saçı/ayakkabısı stil.json gorunum
             if (net != null) Destroy(net.gameObject); net = NetView.Build(transform, M.net);
             input.Reset(); lastW = 0;
         }
@@ -309,6 +309,14 @@ namespace BirdieSmash.Game
             float dt = Mathf.Max(16, last.z - a.z); dx = last.x - a.x; dy = last.y - a.y; speed = Mathf.Sqrt(dx * dx + dy * dy) / dt;
         }
         // Kavis (slice): izin ilk yarısı ile ikinci yarısının yönü 0,8 rad'dan fazla ayrışıyorsa ve ikinci yarı 25 px'ten uzunsa.
+        // Aldatıcı vuruş jesti (2026-10-26, Core/Aldatma.JestOku): tutma süresi, yay yönü, V. Hesap Core'da (BotMac sınar); burada
+        // yalnız iz diziye çevrilir. Kaydırmanın eski alanları (tür, hız, kavis) değişmez.
+        SwipeInput Jest(SwipeInput si)
+        {
+            var tr = input.tr; int n = tr.Count; var xs = new float[n]; var ys = new float[n]; var ts = new float[n];
+            for (int i = 0; i < n; i++) { xs[i] = tr[i].x; ys[i] = tr[i].y; ts[i] = tr[i].z; }
+            Aldatma.JestOku(xs, ys, ts, n, input.p0.x, input.p0.y, input.t0, ref si); return si;
+        }
         bool Curved()
         {
             var tr = input.tr; if (tr.Count < 4) return false; int n = tr.Count, m = n / 2; Vector3 a = tr[0], b = tr[m], c = tr[n - 1];
@@ -377,7 +385,7 @@ namespace BirdieSmash.Game
                     // Topun üstünden geçmek şart değil: pencere açıkken belirgin kaydırma (70 px, kavis için yer) vuruştur; topu kesmek mükemmeli verir.
                     bool durdu = M.ogr != null && M.ogr.dur;
                     if (!durdu && (d <= R || (far > 70 && speed > .45f)))
-                        if (M.SwipeShot(new SwipeInput { dx = dx, dy = dy, speed = speed, dist = d <= R ? d : R * 1.5f, R = R, side = side, curved = Curved() })) { input.hit = true; Yerel.Vurus(M.sonTip, M.sonQ, M.sonSlice); }
+                        if (M.SwipeShot(Jest(new SwipeInput { dx = dx, dy = dy, speed = speed, dist = d <= R ? d : R * 1.5f, R = R, side = side, curved = Curved() }))) { input.hit = true; Yerel.Vurus(M.sonTip, M.sonQ, M.sonSlice); }
                 }
             }
             else if (up && input.on)
@@ -391,7 +399,7 @@ namespace BirdieSmash.Game
                     else if (M.ogr != null && M.ogr.dur)
                     {   // antrenmanda top durur: vuruş parmak kalkınca, bütün hareketin hızıyla okunur
                         float dx, dy, speed; SwipeVec(out dx, out dy, out speed);
-                        if (M.SwipeShot(new SwipeInput { dx = dx, dy = dy, speed = speed, dist = Mathf.Min(input.minD, 1.5f) * HitR(), R = HitR(), curved = Curved() })) Yerel.Vurus(M.sonTip, M.sonQ, M.sonSlice);
+                        if (M.SwipeShot(Jest(new SwipeInput { dx = dx, dy = dy, speed = speed, dist = Mathf.Min(input.minD, 1.5f) * HitR(), R = HitR(), curved = Curved() }))) Yerel.Vurus(M.sonTip, M.sonQ, M.sonSlice);
                     }
                     else
                     {   // "doğru zamanda vurdum ama geçti": ıskanın nedeni bir kelimeyle

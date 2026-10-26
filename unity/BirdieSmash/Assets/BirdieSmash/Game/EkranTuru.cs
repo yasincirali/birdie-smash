@@ -11,6 +11,8 @@
 // hareket tam ve hareketi azalt.
 // 2026-10-26 ekipman v2 + karakter (adım 4, 6): Soyunma odası Tarz ve Görünüm segmentleri, raket ve kordaj yuva sayfaları,
 // örnek ilerlemeyle Profil (ad, unvan, maç/smaç); ×1 ve ×2 yazı.
+// 2026-10-26 karakter tasarımı: Karakter › Tip/Saç/Ayakkabı/Ten, yakın planlar (yüz, ayak, tutuş forehand/backhand) ve
+// deneme kartları (normal ve x2_ büyük yazı; deneme kayda yazılmaz, segmentten çıkınca silinir).
 // Süre: gerçek zaman (GameRoot dt'yi 0,05 ile sınırlar; yavaş yazılım render'ında maç da yavaşlar, kareler yine anlamlı).
 using System.Collections;
 using System.IO;
@@ -142,6 +144,17 @@ namespace BirdieSmash.Game
         {
             ui.SoyunmaSegment(1); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_tarz");
             ui.SoyunmaSegment(2); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_gorunum");
+            // 2026-10-26 karakter tasarımı: Karakter alt sayfaları (Tip, Saç, Ayakkabı, Ten), yakın planlar (Yüz, Ayak, Tutuş:
+            // kamera yumuşak geçişini bitirsin diye 40 kare) ve deneme kartı (alınmamış öğe vitrinde, kayda yazılmaz).
+            ui.KarakterAc(UiKok.KAR_TIP); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_tip");
+            ui.KarakterDene(Kozmetik.TIP, "guclu"); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_tip_deneme");
+            ui.KarakterAc(UiKok.KAR_SAC); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_sac_yuz");
+            ui.KarakterDene(Kozmetik.SAC, "afro"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_sac_deneme");
+            ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_ayakkabi_ayak");
+            ui.KarakterDene("ayakkabi", "karbon"); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_ayakkabi_deneme");
+            ui.KarakterAc(UiKok.KAR_TEN); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_ten");
+            ui.SoyunmaSegment(2); ui.VitrinOdak(Vitrin.TUTUS, "drive"); yield return Bekle(40); yield return Cek("menu_" + ek + "yakin_tutus_forehand");
+            ui.VitrinOdak(Vitrin.TUTUS, "bh_drive"); yield return Bekle(40); yield return Cek("menu_" + ek + "yakin_tutus_backhand");
             ui.SoyunmaSegment(0); yield return Bekle(10);
             ui.YuvaAc("raket"); yield return Bekle(20); yield return Cek("menu_" + ek + "yuva_raket"); ui.Geri(); yield return Bekle(5);
             ui.YuvaAc("tel"); yield return Bekle(20); yield return Cek("menu_" + ek + "yuva_kordaj"); ui.Geri(); yield return Bekle(5);

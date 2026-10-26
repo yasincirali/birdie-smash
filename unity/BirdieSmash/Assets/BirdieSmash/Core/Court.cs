@@ -109,11 +109,13 @@ namespace BirdieSmash.Core
         // seçilir (top hedeften biraz derine düşer). İsabet hatası (poor hızı ±%8, kenar) bunun DIŞINDA kalır: fileye
         // takmak kötü vuruşun sonucudur, nişan almanın değil. Düzeltme yalnız sınırda çalışır; diğer vuruşlar birebir aynı.
         public const float FILE_PAY = .06f;
-        public static void Aim(float fx, float fy, float fz, float tx, float ty, bool byAngle, float val, out float ovx, out float ovy, out float ovz)
+        // kd: uçuşun gerçek sürüklenmesi (2026-10-26: slice ×1,35 sürüklenmeyle uçar; nişan KD ile alınırsa top kısa kalıp fileye
+        // gidiyordu, bot ölçümü 150/150). Varsayılan KD, diğer vuruşlar birebir aynı.
+        public static void Aim(float fx, float fy, float fz, float tx, float ty, bool byAngle, float val, out float ovx, out float ovy, out float ovz, float kd = KD)
         {
             float dx = tx - fx, dy = ty - fy, R = (float)Math.Sqrt(dx * dx + dy * dy); if (R < 1e-3f) R = 1e-3f;
             float ux = dx / R, uy = dy / R;
-            Func<float, float, SimResult> sim = (v, a) => { float c = (float)Math.Cos(a); return Simulate(fx, fy, fz, ux * v * c, uy * v * c, v * (float)Math.Sin(a), false, KD); };
+            Func<float, float, SimResult> sim = (v, a) => { float c = (float)Math.Cos(a); return Simulate(fx, fy, fz, ux * v * c, uy * v * c, v * (float)Math.Sin(a), false, kd); };
             Func<SimResult, float> range = r => (float)Math.Sqrt((r.x - fx) * (r.x - fx) + (r.y - fy) * (r.y - fy));
             Func<SimResult, float> pay = r => r.net == null ? -9 : r.net.z - r.net.lim;
             Func<float, float> hizBul = a => { float l = 1, h = 140; for (int k = 0; k < 18; k++) { float m = (l + h) / 2; if (range(sim(m, a)) < R) l = m; else h = m; } return (l + h) / 2; };

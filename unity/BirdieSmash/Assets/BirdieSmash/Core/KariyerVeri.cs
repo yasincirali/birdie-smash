@@ -50,7 +50,7 @@ namespace BirdieSmash.Core
         }
         public static ImzaBilgi Imza(string id) { ImzaBilgi b; return id != null && Imzalar.TryGetValue(id, out b) ? b : null; }
 
-        public static void Sifirla() { turlar = null; stil = null; imza = null; sira = null; usta = null; Gear.VeriSifirla(); Karakter.Sifirla(); Dril.Sifirla(); Gunluk.Sifirla(); }
+        public static void Sifirla() { turlar = null; stil = null; imza = null; sira = null; usta = null; Gear.VeriSifirla(); Karakter.Sifirla(); Dril.Sifirla(); Gunluk.Sifirla(); Aldatma.Sifirla(); }
         // 2026-10-26 ekipman v2 ve karakter: gear.json ve karakter.json da aynı kaynaktan (Unity Resources, testte tool/veri).
         public static string Metin(string ad) { return Oku(ad); }
 

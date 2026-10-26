@@ -12,6 +12,9 @@
 //   tuytop_ilerleme + tarz, unvan, ad, mac, smac (Core/Ilerleme)
 //   tuytop_gorunum  (yeni) JSON {ten, sac, ayakkabi, kaplama} (Core/Karakter görünüm öğeleri; yoksa hepsi "modelin rengi":
 //                   var olan oyuncunun görünümü değişmez). tuytop_raket_gor ayrı kalır.
+//                   + tip, sac_model (2026-10-26 karakter tasarımı; Core/Kozmetik): yoksa listenin ilki (Standart, Kısa kesim) =
+//                   var olan oyuncunun görünüşü. Sahiplik tuytop_ekonomi.acik'te ("tip:id", "sac_model:id"); ayakkabı MODELİ
+//                   tuytop_gear.ayakkabi (Core/Gear, 7. model yuvası), ayakkabı RENGİ burada (ayakkabi).
 // HTML → Unity devri (Core/Devir): ilk açılışta kabuğun NSUserDefaults'a yazdığı HTML değerleri bir kez kabul edilir,
 // sonra tuytop_html_devir bayrağı konur. Bayraktan sonra kabuk (eski HTML build'i) bir daha yazmaz.
 // HTML'de karşılığı olmayan Unity anahtarları: tuytop_easy, tuytop_reduce (elle zorlanan; sistem ayarı ayrıca okunur),
@@ -60,6 +63,7 @@ namespace BirdieSmash.Game
         // okur). Tarz ekipman kartına girmez: güç ekipmandan, tarz karakterden (tasarım §5.1).
         public static Gear gear; public static GearStats GS = GearStats.Notr, GSE = GearStats.Notr;
         public static readonly Dictionary<string, string> GORUNUM = new Dictionary<string, string> { { "ten", "dogal" }, { "sac", "dogal" }, { "ayakkabi", "dogal" }, { "kaplama", "model" } };
+        public static readonly Dictionary<string, string> KOZ = new Dictionary<string, string> { { Kozmetik.TIP, "atlet" }, { Kozmetik.SAC, "kisa" } };
         public static readonly Dictionary<string, string> RGOR = new Dictionary<string, string> { { "grip", "siyah" }, { "tel", "beyaz" }, { "tel2", "kirmizi" }, { "desen", "tek" } };
         public static string FORMA { get { return GS.forma; } }
         static readonly PrefsKayit kayit = new PrefsKayit();
@@ -97,10 +101,20 @@ namespace BirdieSmash.Game
             // ekranda Karakter.Oge ile yine geçerli öğeye çözülür.
             var gv = Json.Obj(Json.Parse(Str("tuytop_gorunum", null)));
             if (gv != null) foreach (var k in new List<string>(GORUNUM.Keys)) { string v = Json.Str(gv, k, null); if (v != null && System.Array.Exists(Karakter.Gorunum(k), o => o.id == v)) GORUNUM[k] = v; }
+            // Tip ve saç biçimi: kayıtta yoksa varsayılan; varsa sahip sayılır (Kozmetik.Koru: hiçbir seçim elden alınmaz).
+            foreach (var k in Kozmetik.KAT) KOZ[k] = Kozmetik.Koru(gear, k, gv != null ? Json.Str(gv, k, Kozmetik.Varsayilan(k)) : Kozmetik.Varsayilan(k));
             GearHesap();
             Kaydet();
         }
-        public static void GearHesap() { gear.kariyerModu = kariyerModu; GSE = gear.Hesap(); GS = Karakter.Uygula(GSE, Tarz); }
+        public static void GearHesap() { gear.kariyerModu = kariyerModu; GSE = gear.Hesap(); GS = Karakter.Uygula(GSE, Tarz); AldatmaKur(); }
+        // Aldatıcı vuruşlar (2026-10-26, Core/Aldatma): seviye kapısı maça buradan gider (her maç kurulumunda GearHesap çağrılır);
+        // ilk fırsat açıklaması bir kez gösterilir, görülenler ilerleme kaydında (tuytop_ilerleme.aldatmaGor).
+        static void AldatmaKur()
+        {
+            Match.OyuncuSv = gear.Seviye(); if (ilerleme == null) return;
+            Match.HileGorulen.Clear(); foreach (var id in ilerleme.AldatmaGorulen) Match.HileGorulen.Add(id);
+            Match.HileGorulduKaydet = id => { ilerleme.AldatmaGor(id); PlayerPrefs.SetString(Ilerleme.ANAHTAR, ilerleme.Yaz()); };
+        }
         // Geçerli oyun tarzı: kayıttaki tarz, seviyesi geldiyse (Core/Karakter.Gecerli).
         public static string Tarz { get { return Karakter.Gecerli(ilerleme != null ? ilerleme.Tarz : "dengeli", gear != null ? gear.Seviye() : 1); } }
         // Görünüm öğesinin rengi (null = modelin kendi rengi). Seviyesi gelmemiş öğe görünmez (varsayılan).
@@ -118,7 +132,7 @@ namespace BirdieSmash.Game
             PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0);
             PlayerPrefs.SetString("tuytop_dil", dil); PlayerPrefs.SetString("tuytop_puan", puan.ToString()); PlayerPrefs.SetString("tuytop_yazi", yazi); PlayerPrefs.SetString("tuytop_fps", fps ? "1" : "0");
             var rg = new Dictionary<string, object>(); foreach (var kv in RGOR) rg[kv.Key] = kv.Value; PlayerPrefs.SetString("tuytop_raket_gor", Json.Write(rg));
-            var gv = new Dictionary<string, object>(); foreach (var kv in GORUNUM) gv[kv.Key] = kv.Value; PlayerPrefs.SetString("tuytop_gorunum", Json.Write(gv));
+            var gv = new Dictionary<string, object>(); foreach (var kv in GORUNUM) gv[kv.Key] = kv.Value; foreach (var kv in KOZ) gv[kv.Key] = kv.Value; PlayerPrefs.SetString("tuytop_gorunum", Json.Write(gv));
             if (gear != null) { gear.GearYaz(); gear.EkoYaz(); }
             PlayerPrefs.Save();
         }

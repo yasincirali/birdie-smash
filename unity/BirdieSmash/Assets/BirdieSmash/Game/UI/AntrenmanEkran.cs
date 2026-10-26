@@ -33,6 +33,7 @@ namespace BirdieSmash.Game
             var td = Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", L.T("Vuruş, servis, nefes") + " · " + L.T("15 adım, skor yok")); td.AddToClassList("tam-genislik"); c.Add(td);
             c.Add(Yazi(L.T("Her görev 12 top, skor yok. Antrenör topu besler, sen tek bir vuruşu çalışırsın. Yıldız en iyi sonucundur, geri alınmaz."), 13, "soluk"));
             foreach (var d in Dril.Liste) c.Add(DrilSatir(d));
+            AldatmaBolum(c);   // 2026-10-26 aldatıcı vuruşlar: kilitliler de görünür, ne açtığıyla (Game/UI/AldatmaListe)
             c.Add(Bosluk(24));
         }
 

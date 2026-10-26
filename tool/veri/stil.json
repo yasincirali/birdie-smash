@@ -1,25 +1,25 @@
 {
-"_not": "Rakip tarzları ve imza vuruşları (komple-oyun tasarımı §3.3, Ek A.2/A.4; 2026-10-26). Tek kaynak: tool/veri; tool/veri_kopyala.js Unity'ye (Assets/Resources/veri) kopyalar, BotMac ikisinin aynı olduğunu doğrular. Metinler Türkçe anahtar, çeviri Lang.UNITY_EK.",
+"_not": "Rakip tarzları ve imza vuruşları (komple-oyun tasarımı §3.3, Ek A.2/A.4; 2026-10-26). Tek kaynak: tool/veri; tool/veri_kopyala.js Unity'ye (Assets/Resources/veri) kopyalar, BotMac ikisinin aynı olduğunu doğrular. gorunum (2026-10-26 karakter tasarımı) = rakibin beden tipi, saç biçimi/rengi, ten ve ayakkabı modeli (karakter.json/gear.json kimlikleri; yalnız görünüş, rakibin fiziği stil değerlerinden). Rakip kendi forma rengini bugünkü OpRenk kuralıyla alır. Metinler Türkçe anahtar, çeviri Lang.UNITY_EK.",
 "sira": ["smasci", "duvar", "file", "nova", "vex", "aria"],
 "stiller": {
   "smasci": {"isim": "Blaze", "renk": "#ff7a6b", "yedek": "#e8508f", "ad": "Smaşçı", "ipucu": "Her baş üstü topu smaçlar. Derin clear atıp blokla al",
              "ustK": ["smash", "clear", "drop"], "ustP": [0.62, 0.23, 0.15], "altK": ["clear", "drop", "drive"], "altP": [0.45, 0.2, 0.35],
-             "hiz": 1, "hata": 1.2, "ev": 3.2, "yorK": 1.3, "geriK": 1, "imza": "yildirim"},
+             "hiz": 1, "hata": 1.2, "ev": 3.2, "yorK": 1.3, "geriK": 1, "gorunum": {"tip": "guclu", "sac": "mohikan", "sacRenk": "kizil", "ten": "t2", "ayakkabi": "hafif"}, "imza": "yildirim"},
   "duvar":  {"isim": "Rocco", "renk": "#3f4fa8", "yedek": "#ff7a6b", "ad": "Duvar", "ipucu": "Her şeyi geri çevirir, az hata yapar. Drop ve slice ile öne çek",
              "ustK": ["smash", "clear", "drop"], "ustP": [0.15, 0.6, 0.25], "altK": ["clear", "drop", "drive"], "altP": [0.65, 0.25, 0.1],
-             "hiz": 1.08, "hata": 0.75, "ev": 3.6, "yorK": 0.7, "geriK": 1, "imza": "duvarblok"},
+             "hiz": 1.08, "hata": 0.75, "ev": 3.6, "yorK": 0.7, "geriK": 1, "gorunum": {"tip": "guclu", "sac": "kazima", "sacRenk": "siyah", "ten": "t4", "ayakkabi": "bilekli"}, "imza": "duvarblok"},
   "file":   {"isim": "Mika", "renk": "#e8508f", "yedek": "#3f4fa8", "ad": "File oyuncusu", "ipucu": "Fileye yakın durur, drop sever. Arkasına lift ve clear at",
              "ustK": ["smash", "clear", "drop"], "ustP": [0.3, 0.2, 0.5], "altK": ["clear", "drop", "drive"], "altP": [0.25, 0.6, 0.15],
-             "hiz": 1, "hata": 1, "ev": 2.2, "yorK": 1, "geriK": 1.8, "imza": "tuldrop"},
+             "hiz": 1, "hata": 1, "ev": 2.2, "yorK": 1, "geriK": 1.8, "gorunum": {"tip": "kadin", "sac": "atkuyrugu", "sacRenk": "siyah", "ten": "t1", "ayakkabi": "klasik"}, "imza": "tuldrop"},
   "nova":   {"isim": "Nova", "renk": "#9b6bff", "yedek": "#ffb43a", "ad": "Drive'cı", "ipucu": "Düz ve hızlı vurur, orta yükseklikte. Topu yükselt, onu arkaya it",
              "ustK": ["smash", "clear", "drop"], "ustP": [0.4, 0.3, 0.3], "altK": ["clear", "drop", "drive"], "altP": [0.2, 0.15, 0.65],
-             "hiz": 1.1, "hata": 1.05, "ev": 2.7, "yorK": 1.1, "geriK": 1.3, "imza": "mermi"},
+             "hiz": 1.1, "hata": 1.05, "ev": 2.7, "yorK": 1.1, "geriK": 1.3, "gorunum": {"tip": "kadin", "sac": "topuz", "sacRenk": "kahve", "ten": "t3", "ayakkabi": "karbon"}, "imza": "mermi"},
   "vex":    {"isim": "Vex", "renk": "#22b8a0", "yedek": "#e8508f", "ad": "Aldatıcı", "ipucu": "Son anda yön değiştirir. Merkezde bekle, acele etme",
              "ustK": ["smash", "clear", "drop"], "ustP": [0.2, 0.35, 0.45], "altK": ["clear", "drop", "drive"], "altP": [0.35, 0.5, 0.15],
-             "hiz": 1.04, "hata": 0.95, "ev": 3.0, "yorK": 1, "geriK": 1, "aldatP": 0.35, "imza": "golgeflick"},
+             "hiz": 1.04, "hata": 0.95, "ev": 3.0, "yorK": 1, "geriK": 1, "aldatP": 0.35, "gorunum": {"tip": "uzun", "sac": "anime", "sacRenk": "mavi", "ten": "t5", "ayakkabi": "yastikli"}, "imza": "golgeflick"},
   "aria":   {"isim": "Aria", "renk": "#e9eef0", "yedek": "#3f4fa8", "ad": "Komple", "ipucu": "En çok kullandığın vuruşa göre yer alır. Vuruşlarını karıştır",
              "ustK": ["smash", "clear", "drop"], "ustP": [0.35, 0.35, 0.3], "altK": ["clear", "drop", "drive"], "altP": [0.4, 0.3, 0.3],
-             "hiz": 1.08, "hata": 0.85, "ev": 3.0, "yorK": 0.9, "geriK": 1, "uyum": 0.3, "imza": "karma"}
+             "hiz": 1.08, "hata": 0.85, "ev": 3.0, "yorK": 0.9, "geriK": 1, "uyum": 0.3, "gorunum": {"tip": "kadin", "sac": "orgu", "sacRenk": "sari", "ten": "t6", "ayakkabi": "karbon"}, "imza": "karma"}
 },
 "imzalar": {
   "yildirim":   {"ad": "Yıldırım smaç", "uyari": "Yıldırım smaç: çapraz gelir!", "cevap": "Hazırlıkta raketinde turuncu ışık. Hep çapraz gelir: karşıla", "renk": "#ff8a3c"},

@@ -322,6 +322,16 @@ namespace BirdieSmash.Game
             // r11: topun yanındaki etiket sağ kenarda kesiliyordu; kutu ekran kenarları içinde tutulur.
             float tx = Mathf.Clamp(px - 120 * u, lx, Mathf.Max(lx, rx - 240 * u));
             Shadowed(new Rect(tx, py - R - 26 * u, 240 * u, 18 * u), tag, Stil(small, Mathf.RoundToInt(12 * fu), FontStyle.Bold), I.kill ? Kit.Hex("#ffd27a") : I.lunge ? Kit.Hex("#ff9f7a") : Kit.Hex("#d8ff5a"));
+            // Aldatıcı vuruş penceresi (2026-10-26, Core/Aldatma): şu an seviye, ekipman ve konum tutuyorsa vuruşun adı ve jesti,
+            // etiketin üstünde. ◆ işareti + metin (yalnız renkle değil), mor = slice/aldatma rengi (Kesici raket). Pencereyi öğretir;
+            // jest yapılmazsa normal vuruş çıkar, ceza yok. Büyük yazıda sarılır, kutu ekran kenarı içinde.
+            var hf = M.HileFirsat();
+            if (hf != null)
+            {
+                string ht = "◆ " + L.T(hf.ad) + " · " + L.T(hf.jest); var hs = new GUIStyle(Stil(small, Mathf.RoundToInt(11 * fu), FontStyle.Bold)) { wordWrap = true };
+                float hw = Mathf.Min(rx - lx, 300 * u), hx = Mathf.Clamp(px - hw / 2, lx, Mathf.Max(lx, rx - hw)), hh = hs.CalcHeight(new GUIContent(ht), hw);
+                Shadowed(new Rect(hx, py - R - 28 * u - hh, hw, hh), ht, hs, Kit.Hex("#c9a0ff"));
+            }
         }
         static readonly Dictionary<string, string> PREV_TR = new Dictionary<string, string> { { "lift", "Lift" }, { "kill", "File vuruşu" }, { "jump", "Sıçrayarak smaç" }, { "smash", "Smaç" }, { "block", "Blok" }, { "drive", "Drive" }, { "drop", "Drop" }, { "clear", "Clear" } };
         void HedefYazi(Match M)

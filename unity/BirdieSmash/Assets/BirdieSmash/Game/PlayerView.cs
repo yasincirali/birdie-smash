@@ -14,6 +14,9 @@
 // = modelin kendi rengi (var olan oyuncu ve rakipler değişmez). Dokulu parça (Gerçekçi model teni: DokuMalzeme) boyanmaz:
 // dokunun üstüne düz renk yüzü siler; ten tonu orada bilinçli olarak yok (Soyunma odası bunu yazar). Etiketi olmayan modelde
 // (yeni karakter hattında etiket değişirse) hiçbir şey boyanmaz, çökme yok. Grip "cizgi" dokusu (Havlu) koddan çizilir.
+// 2026-10-26 karakter tasarımı (tip, saç biçimi, ayakkabı modeli; Core/Kozmetik, varlık sözleşmesi
+// /mnt/project-files/birdie-smash/komple-oyun/karakter_varlik_sozlesmesi.md): yalnız "Karakter varyantları" bölümündeki
+// yöntemler (ModelYolu, Varyant, AyakkabiBoya, ShowPoz) ve Gorunum alanları; hareket/ayak kodu bu bölüme girmez.
 using System.Collections.Generic;
 using UnityEngine;
 using BirdieSmash.Core;
@@ -31,14 +34,20 @@ namespace BirdieSmash.Game
         // adim (2026-10-26): ayak işi klibinin bir döngüde taşıdığı yol, modelin kendi ölçeğinde metre (basan ayaktan ölçülür).
         // Varsa Match.ADIM_BOY'u ezer (oyun ölçeği = adim × SCALE); yoksa 0 gelir ve tahmin değerler kalır.
         [System.Serializable] class ClipMeta { public string name; public int poses; public bool loop; public float adim; }
-        [System.Serializable] class Meta { public ClipMeta[] clips; }
+        // 2026-10-26 karakter varlık sözleşmesi §5: tip (varsayılan saç/ayakkabı, saç rengi) ve saç başına bant uyumu.
+        [System.Serializable] class TipMeta { public string id, sac, ayakkabi, sacRenk; public float boy; }
+        [System.Serializable] class SacMeta { public string id; public bool bant = true; }
+        [System.Serializable] class Meta { public ClipMeta[] clips; public TipMeta tip; public SacMeta[] sac; }
 
         // Görünüm: null alan = FBX'in kendi rengi (cerceve/grip/tel) ya da gizli (bant/bilek).
         public class Gorunum
         {
             public Color forma; public Color? cerceve, bant, bilek, grip, tel, tel2, ten, sac, ayakkabi; public bool gripCizgi;
+            // 2026-10-26: tip (Kozmetik.TIP), saç biçimi (Kozmetik.SAC) ve ayakkabı modeli (Gear "ayakkabi") kimlikleri; null =
+            // varsayılan (listenin ilki: hakemler ve eski çağrılar bugünkü görünüşle kalır).
+            public string tip, sacModel, aykModel;
             // Sahnedeki figürü yeniden kurmak gerekip gerekmediğinin özeti (GameRoot, Vitrin).
-            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + gripCizgi; }
+            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel; }
         }
         static Color? Renk(string h) { return h != null ? Kit.Hex(h) : (Color?)null; }
         public static Gorunum Benim()
@@ -46,7 +55,19 @@ namespace BirdieSmash.Game
             var gs = Ayar.GS; var r = Ayar.RGOR; string kp = Ayar.GorunumRenk("kaplama");
             return new Gorunum { forma = Kit.Hex(gs.forma), cerceve = Kit.Hex(kp ?? gs.raketRenk), bant = gs.bant != null ? Kit.Hex(gs.bant) : (Color?)null, bilek = gs.bileklik != null ? Kit.Hex(gs.bileklik) : (Color?)null,
                 grip = Kit.Hex(Vitrin.RAK_RENK[r["grip"]]), tel = Kit.Hex(Vitrin.RAK_RENK[r["tel"]]), tel2 = Kit.Hex(Vitrin.RAK_RENK[r["desen"] == "iki" ? r["tel2"] : r["tel"]]),
-                ten = Renk(Ayar.GorunumRenk("ten")), sac = Renk(Ayar.GorunumRenk("sac")), ayakkabi = Renk(Ayar.GorunumRenk("ayakkabi")), gripCizgi = gs.gripDoku == "cizgi" };
+                ten = Renk(Ayar.GorunumRenk("ten")), sac = Renk(Ayar.GorunumRenk("sac")), ayakkabi = Renk(Ayar.GorunumRenk("ayakkabi")), gripCizgi = gs.gripDoku == "cizgi",
+                tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.gear != null ? Ayar.gear.ayakkabi : null };
+        }
+        // Rakip (2026-10-26): tip, saç biçimi/rengi, ten ve ayakkabı stil.json'daki gorunum'dan (rakip kimliği: Blaze hep dikenli
+        // kızıl saçlı). Forma ve raket bugünkü gibi; veri yoksa bugünkü görünüş.
+        public static Gorunum Rakip(Style st, Color forma)
+        {
+            var g = new Gorunum { forma = forma, cerceve = Kit.Hex("#e9eef0") }; var r = Kozmetik.Rakip(st != null ? st.id : null); if (r == null) return g;
+            g.tip = r.tip; g.sacModel = r.sac; g.aykModel = r.ayakkabi;
+            var o = r.sacRenk != null ? Karakter.Oge("sac", r.sacRenk) : null; if (o != null) g.sac = Renk(o.renk);
+            o = r.ten != null ? Karakter.Oge("ten", r.ten) : null; if (o != null) g.ten = Renk(o.renk);
+            o = r.aykRenk != null ? Karakter.Oge("ayakkabi", r.aykRenk) : null; if (o != null) g.ayakkabi = Renk(o.renk);
+            return g;
         }
         public static PlayerView Build(Transform root, string model, bool isMe, Color forma, bool hakem = false, Gorunum gor = null)
         {
@@ -57,18 +78,19 @@ namespace BirdieSmash.Game
         void Init(string modelAd, Gorunum gor)
         {
             yaw = new GameObject("yon").transform; yaw.SetParent(transform, false);
-            var prefab = Resources.Load<GameObject>("karakter/" + modelAd) ?? Resources.Load<GameObject>("karakter/oyuncak");
-            var js = Resources.Load<TextAsset>("karakter/" + modelAd + "_clips");
+            string yol = ModelYolu(modelAd, gor.tip);
+            var prefab = Resources.Load<GameObject>("karakter/" + yol) ?? Resources.Load<GameObject>("karakter/" + modelAd) ?? Resources.Load<GameObject>("karakter/oyuncak");
+            var js = Resources.Load<TextAsset>("karakter/" + yol + "_clips") ?? Resources.Load<TextAsset>("karakter/" + modelAd + "_clips");
             if (js != null)
             {
-                var meta = JsonUtility.FromJson<Meta>(js.text);
+                var meta = JsonUtility.FromJson<Meta>(js.text); tipMeta = meta != null && meta.tip != null && !string.IsNullOrEmpty(meta.tip.id) ? meta.tip : null; sacMeta = meta != null ? meta.sac : null;
                 if (meta != null && meta.clips != null) foreach (var c in meta.clips) { if (c.poses > 0) Match.CLIP_N[c.name] = c.poses; LOOPS[c.name] = c.loop; if (c.adim > 0 && Match.ADIM_BOY.ContainsKey(c.name)) Match.ADIM_BOY[c.name] = c.adim * SCALE; }
             }
             if (prefab != null)
             {
-                modelAdi = prefab.name; model = Instantiate(prefab, yaw).transform; model.localPosition = Vector3.zero; model.localScale = Vector3.one * SCALE;
+                modelAdi = DokuAdi(prefab.name, modelAd); model = Instantiate(prefab, yaw).transform; model.localPosition = Vector3.zero; model.localScale = Vector3.one * SCALE;
                 anim = model.GetComponentInChildren<Animation>();
-                Paint(gor);
+                Varyant(gor); Paint(gor);
                 if (anim != null && anim["idle"] != null) Sample("idle", 0, null, 0, 1);
                 Calibrate(); AltKatmanKur();
             }
@@ -237,11 +259,14 @@ namespace BirdieSmash.Game
             if (g.bant.HasValue) M["bant"] = Kit.Lit(g.bant.Value, .2f); if (g.bilek.HasValue) M["bilek"] = Kit.Lit(g.bilek.Value, .2f);
             if (g.grip.HasValue) M["grip"] = g.gripCizgi ? Kit.LitTex(g.grip.Value, CizgiDoku(), .1f) : Kit.Lit(g.grip.Value, .15f); if (g.tel.HasValue) M["tel"] = Kit.Lit(g.tel.Value, .5f); if (g.tel2.HasValue) M["tel2"] = Kit.Lit(g.tel2.Value, .5f);
             if (g.ten.HasValue) M["ten"] = Kit.Lit(g.ten.Value, .3f); if (g.sac.HasValue) M["sac"] = Kit.Lit(g.sac.Value, .2f); if (g.ayakkabi.HasValue) M["taban"] = Kit.Lit(g.ayakkabi.Value, .25f);
+            bool bantGizle = sacBantGizle;
             foreach (var r in model.GetComponentsInChildren<Renderer>(true))
             {
                 string tag = Etiket(r.gameObject.name);
                 // hakemde raket ve top (pozla kurulan rijit parçalar = deri ağı olmayan MeshRenderer'lar) gizli
-                if (tag == "isaret" || (tag == "bant" && !g.bant.HasValue) || (tag == "bilek" && !g.bilek.HasValue) || (hakem && !(r is SkinnedMeshRenderer))) { r.enabled = false; continue; }
+                if (tag == "ayakkabi") { AyakkabiBoya(r, g.ayakkabi); continue; }
+                if (tag == "sac" && r.gameObject.name.StartsWith("sac_")) { SacBoya(r, g.sac); continue; }
+                if (tag == "isaret" || (tag == "bant" && (!g.bant.HasValue || bantGizle)) || (tag == "bilek" && !g.bilek.HasValue) || (hakem && !(r is SkinnedMeshRenderer))) { r.enabled = false; continue; }
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
                 int kn = tag == "forma" ? 0 : tag == "cerceve" || tag == "grip" || tag == "tel" || tag == "tel2" ? 1 : tag == "bant" ? 2 : tag == "bilek" ? 3 : -1; if (kn >= 0) kanal[kn].Add(r);
                 Material m; M.TryGetValue(tag, out m);
@@ -286,6 +311,93 @@ namespace BirdieSmash.Game
             }
         }
 
+        // ---- Karakter varyantları (2026-10-26; Core/Kozmetik, varlık sözleşmesi karakter_varlik_sozlesmesi.md) ----
+        // Tip: Oyuncak modelin beden tipi ayrı FBX (oyuncak_<varlik>.fbx, aynı iskelet ailesi ve klip adları). Gerçekçi ve sade
+        // modelde tip yok (tek beden; Soyunma odası bunu yazar). Dosya yoksa (karakter hattı henüz üretmediyse) taban model, hata
+        // yok: Init önce bu yolu, sonra taban modeli dener. Beden yalnız görünüş: vuruş menzili ve fizik Core'da, boydan bağımsız.
+        public static string ModelYolu(string modelAd, string tip)
+        {
+            if (modelAd != "oyuncak") return modelAd;
+            var o = Kozmetik.Oge(Kozmetik.TIP, tip); return o != null && o.varlik != null ? modelAd + "_" + o.varlik : modelAd;
+        }
+        // Doku adı: tip FBX'inin kendi gövde dokusu yoksa taban modelinki (oyuncak_govde). Varsayım: tipler aynı UV yerleşimini
+        // paylaşır (aynı taban ağdan şekil anahtarıyla türer); sözleşme başka derse tipin kendi dokusu konur, kod değişmez.
+        static string DokuAdi(string prefabAd, string modelAd)
+        {
+            if (prefabAd == modelAd || Resources.Load<Texture2D>("karakter/" + prefabAd + "_govde") != null) return prefabAd;
+            return Resources.Load<Texture2D>("karakter/" + modelAd + "_govde") != null ? modelAd : prefabAd;
+        }
+        // Saç ve ayakkabı parçaları: sac_<varlik>__sac, ayk_<varlik>__ayakkabi. Tam olarak biri açık, diğerleri SetActive(false)
+        // (çizim çağrısı sıfır, deri hesabı da yok). Seçilen parça bu FBX'te yoksa varsayılanın (listenin ilki) parçası, o da
+        // yoksa ilk bulunan: figür hiçbir zaman saçsız/ayakkabısız kalmaz. Kazıtılmış (varlik null) bilerek hiçbirini açmaz.
+        // Bugünkü oyuncak.fbx'te bu parçalar yok: sözlükler boş, hiçbir şey değişmez (bant da gizlenmez).
+        bool sacBantGizle; TipMeta tipMeta; SacMeta[] sacMeta;
+        void Varyant(Gorunum g)
+        {
+            var sac = new Dictionary<string, GameObject>(); var ayk = new Dictionary<string, GameObject>();
+            foreach (var t in model.GetComponentsInChildren<Transform>(true))
+            {
+                int i = t.name.IndexOf("__"); if (i <= 4) continue; string bas = t.name.Substring(0, i), tag = Etiket(t.name);
+                if (tag == "sac" && bas.StartsWith("sac_")) sac[bas.Substring(4)] = t.gameObject;
+                else if (tag == "ayakkabi" && bas.StartsWith("ayk_")) ayk[bas.Substring(4)] = t.gameObject;
+            }
+            // Seçim yoksa (hakem, eski çağrı) ya da seçilen parça bu FBX'te yoksa tipin varsayılanı (sözleşme §6.2: _clips.json tip).
+            var so = g.sacModel != null ? Kozmetik.Bul(Kozmetik.SAC, g.sacModel) : null; var sv = Kozmetik.Oge(Kozmetik.SAC, null);
+            string sacVars = tipMeta != null && !string.IsNullOrEmpty(tipMeta.sac) ? tipMeta.sac : sv != null ? sv.varlik : null;
+            string acik = VaryantAc(sac, so != null ? so.varlik : sacVars, so != null && so.varlik == null, sacVars);
+            bool bant = so == null || so.bant; if (acik != null && sacMeta != null) foreach (var m in sacMeta) if (m != null && m.id == acik) bant = m.bant;   // FBX'in ölçtüğü kazanır
+            sacBantGizle = acik != null && !bant;   // bant yalnız o saç gerçekten takılıysa gizlenir
+            GearModel am = null; if (g.aykModel != null) Gear.GEAR["ayakkabi"].TryGetValue(g.aykModel, out am);
+            GearModel av; Gear.GEAR["ayakkabi"].TryGetValue(Gear.Varsayilan("ayakkabi"), out av);
+            string aykVars = tipMeta != null && !string.IsNullOrEmpty(tipMeta.ayakkabi) ? tipMeta.ayakkabi : av != null ? av.varlik ?? av.id : null;
+            VaryantAc(ayk, am != null ? am.varlik ?? am.id : aykVars, false, aykVars);
+        }
+        static string VaryantAc(Dictionary<string, GameObject> d, string istenen, bool hicbiri, string varsayilan)
+        {
+            if (d.Count == 0) return null;
+            string ac = hicbiri ? null : istenen != null && d.ContainsKey(istenen) ? istenen : varsayilan != null && d.ContainsKey(varsayilan) ? varsayilan : null;
+            if (ac == null && !hicbiri) foreach (var k in d.Keys) { ac = k; break; }
+            foreach (var kv in d) kv.Value.SetActive(kv.Key == ac);
+            return ac;
+        }
+        // Ayakkabı (sözleşme §3): iki malzeme yuvası. "ayk_ust" (saya) seçili ayakkabı rengiyle boyanır (null = FBX'in açık
+        // rengi), "oy_body" (taban, bağcık, topuk) gövde atlasına bağlanır (DokuMalzeme), boyanmaz: kontrast kaybolmasın.
+        // Eski (__taban) etiketli modellerde boyama aynen M["taban"] ile sürer.
+        void AyakkabiBoya(Renderer r, Color? c)
+        {
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            var arr = r.sharedMaterials; bool degisti = false;
+            for (int k = 0; k < arr.Length; k++)
+            {
+                if (arr[k] == null) continue;
+                if (arr[k].name.StartsWith("ayk_ust")) { if (c.HasValue) { arr[k] = Kit.Lit(c.Value, .3f); degisti = true; } }
+                else { var dm = DokuMalzeme(arr[k]); if (dm != null) { arr[k] = dm; degisti = true; } }
+            }
+            if (degisti) r.sharedMaterials = arr;
+        }
+        // Saç (sözleşme §3): tel/AO dokusu (oyuncak_sac, gri tonlu) × saç rengi; seçim yoksa tipin varsayılan rengi (_clips.json
+        // tip.sacRenk), o da yoksa FBX malzemesi. Doku yoksa düz renk (AO kaybolur, görünüş yine düzgün).
+        void SacBoya(Renderer r, Color? c)
+        {
+            r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            Color? renk = c ?? (tipMeta != null && !string.IsNullOrEmpty(tipMeta.sacRenk) ? Kit.Hex(tipMeta.sacRenk) : (Color?)null);
+            var tx = Resources.Load<Texture2D>("karakter/oyuncak_sac"); if (!renk.HasValue && tx == null) return;
+            Color rk = renk ?? (r.sharedMaterial != null ? r.sharedMaterial.color : Color.gray);
+            var m = tx != null ? Kit.LitTex(rk, tx, .2f) : Kit.Lit(rk, .2f);
+            var arr = r.sharedMaterials; for (int k = 0; k < arr.Length; k++) arr[k] = m; if (arr.Length == 0) arr = new[] { m }; r.sharedMaterials = arr;
+        }
+        // Vitrin tutuş görünümü (Soyunma odası › Raket: Forehand · Backhand · File · Servis): klibin temas pozunda durur; yalnız
+        // poz değişince örneklenir (karede ayırma ve örnekleme yok).
+        string pozK; float pozP = -1;
+        public void ShowPoz(Vector3 pos, float yawDeg, string clip, float ph)
+        {
+            transform.position = pos; yaw.localRotation = Quaternion.Euler(0, yawDeg, 0) * calib;
+            if (shadow != null) shadow.position = new Vector3(pos.x, .003f, pos.z);
+            if (anim == null) return; if (anim[clip] == null) clip = "idle";
+            if (cur == clip && pozK == clip && Mathf.Abs(pozP - ph) < 1e-4f) return;
+            cur = clip; pozK = clip; pozP = ph; Sample(clip, ph, null, 0, 1);
+        }
+
         void Fallback(Color forma)
         {
             model = new GameObject("yedek").transform; model.SetParent(yaw, false);
@@ -314,7 +426,7 @@ namespace BirdieSmash.Game
         // açılır (0,5 → 1,4 m/s smoothstep, 12/s yumuşatma: pop yok). Bacakları vuruşun kendisi olan kliplerde (hamle, sıçrama,
         // servis, split, yorgun) kapalı. Kemikler bulunamazsa kurulmaz: eski davranış birebir. HTML'de karşılığı yok (sprite tek
         // parça); bu yalnız görünüm, oyun kuralı değil.
-        static readonly string[] AYAK_KLIP = { "chasse_r", "chasse_l", "fwd", "back_r", "back_l" };
+        static readonly string[] AYAK_KLIP = { "chasse_r", "chasse_l", "fwd", "back_r", "back_l", "run", "kros_r", "kros_l" };   // run/kros_*: 2026-10-26 hız bantları
         static readonly HashSet<string> BACAK_VURUS = new HashSet<string> { "lunge", "bh_lunge", "jump", "serve", "serve_gec", "serve_bh", "serve_flick", "split", "yorgun" };
         bool altVar; float altW, altPh; string altKlip;
         void AltKatmanKur()
@@ -433,7 +545,8 @@ namespace BirdieSmash.Game
         public void Show(Athlete o, Match M, float dt)
         {
             // Sıçrama: sin(jump·π) (tepe temasta), split step küçük hop (%20). 0,5 m ≈ HTML'deki 16 px/28 px-m ölçeği.
-            float j = Match.JumpH(o) * .5f;
+            string clip; float ph; M.PickClip(o, isMe, out clip, out ph);   // önce: split klibi kendi hop'unu taşır (Match.JumpH hopsuz)
+            float j = Match.JumpH(o, clip == "split" && anim != null && anim["split"] != null) * .5f;
             transform.position = Kit.W(o.x, o.y, 0) + Vector3.up * j;
             // Gövde dik (ce47f5c): hamlede yatma yok; yalnız kıl payı kurtarışta (yat) en çok 15°. Koşu eğimi ±0,08 rad (~4,6°;
             // Ar-Ge 23 Eki B3: render edilmiş figürü düz resim gibi yatırmak sahte görünür, ayaklar yerden kalkar).
@@ -447,7 +560,6 @@ namespace BirdieSmash.Game
                 yay.emitting = o.sw > .3f && !M.reduce; float a = Mathf.Clamp01(o.sw) * .5f;
                 yay.colorGradient = new Gradient { colorKeys = new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) }, alphaKeys = new[] { new GradientAlphaKey(a, 0), new GradientAlphaKey(0, 1) } };
             }
-            string clip; float ph; M.PickClip(o, isMe, out clip, out ph);
             if (anim == null) { if (fbRacket != null) fbRacket.localRotation = Quaternion.Euler(0, 0, o.sw > 0 ? -140 * (1 - o.sw) + 40 : 20 - 40 * o.prepA); return; }
             if (anim[clip] == null) clip = "idle";
             if (clip != cur)
@@ -462,12 +574,15 @@ namespace BirdieSmash.Game
             { Sample("idle", ph, "yorgun", ph, 1 - .35f * Mathf.Clamp01((.7f - o.nefes) / .7f)); FileItin(); return; }
             {   // alt beden katmanı: vuruş/hazırlık klibinde koşarken bacaklar ayak işinden
                 float gsp = Mathf.Sqrt(o.svx * o.svx + o.svy * o.svy);
-                bool vurus = Match.CLIP_HIT.ContainsKey(cur) && !BACAK_VURUS.Contains(cur);
+                // Hamle (2026-10-26): yaklaşırken (hazırlık, o.sw = 0) bacaklar ayak işinden; hamle klibinin bacakları yalnız son
+                // adımda ve takipte (temastan sonra). Eskiden hazırlık boyunca hamle duruşu donup zeminde kayıyordu.
+                bool hamle = cur == "lunge" || cur == "bh_lunge";
+                bool vurus = Match.CLIP_HIT.ContainsKey(cur) && (!BACAK_VURUS.Contains(cur) || hamle && o.sw <= 0);
                 if (o.yuru && o.ayakKlip != null) { altKlip = o.ayakKlip; altPh = o.runPh; }
                 float hedef = altVar && vurus && o.yuru && altKlip != null ? Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.5f, 1.4f, gsp)) : 0;
-                altW += (hedef - altW) * Mathf.Min(1, dt * 12); if (altW < .01f && hedef == 0) altW = 0;
+                altW += (hedef - altW) * (1 - Mathf.Exp(-dt * 12)); if (altW < .01f && hedef == 0) altW = 0;   // üstel: 60/120 Hz aynı eğri
             }
-            Sample(cur, ph, prev, prevPh, prev == null ? 1 : blend, altKlip, altPh, altW);
+            Sample(cur, ph, prev, prevPh, prev == null ? 1 : Mathf.SmoothStep(0, 1, blend), altKlip, altPh, altW);   // smoothstep (2026-10-26): doğrusal ağırlık geçişin başında ve sonunda hız kırığı veriyordu
             FileItin();
         }
 

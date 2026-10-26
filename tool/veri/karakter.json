@@ -1,5 +1,26 @@
 {
 "_not": "Karakter: oyun tarzı, unvanlar, görünüm (komple-oyun tasarımı §5.1–5.5, Ek A.4; adım 6, 2026-10-26). Güç ekipmandan, tarz karakterden, görünüm ikisinden: tarz ikinci bir güç katmanı değil, artısı ve eksisi olan ücretsiz bir yan seçimdir (yasin varsayılanı kabul etti: puan ağacı yok, karakter = tarz). etki = GearStats üstüne çarpan (Core/Tarz.Uygula; 1'den farklı olanlar yazılır). Görünüm öğelerinde renk null = modelin kendi rengi (var olan oyuncunun görünümü değişmez). Ten tonu baştan hepsi açık (kimlik satılmaz). Tüy ile kozmetik dükkânı adım 10'da; o zamana kadar görünüm seviye ile açılır, açılan hiçbir şey geri alınmaz. Metinler Türkçe anahtar, çeviri Lang.UNITY_EK.",
+"tipler_not": "2026-10-26 karakter tasarımı (yasin: \"tip seçebilme, garip saçlar ... parayla ya da tüyle saç modeli alacak\"). tip = beden tipi, sac_model = saç biçimi: ikisi de YALNIZ görünüş (etki alanı yok, BotMac kilitler; vuruş menzili ve fizik Core'da, beden boyundan bağımsız). sv = açılış seviyesi, fiyat = Tüy (0 = seviye gelince kendiliğinden senin). Alınan bir daha geri alınmaz; sahip olunan tip/saç arasında geçiş ücretsiz. varlik = FBX adı (karakter_varlik_sozlesmesi.md v0): tip → Resources/karakter/oyuncak_<varlik>.fbx (null = oyuncak.fbx, Atlet), saç → sac_<varlik>__sac parçası (null = hiç saç parçası açılmaz: Kel). bant false = bu saçta kafa bandı gizlenir (saçın içinde kalır; sözleşme v0 ön tahmini afro, anime, rasta; FBX _clips.json sac[].bant varsa o kazanır). Kimlik satılmaz (ten tonu kuralı): Atlet ve Atletik kadın baştan ücretsiz; cinsiyet/beden kimliği parayla ya da seviyeyle kilitlenmez, yalnız biçim farkı (Uzun ve ince, Güçlü) kazanılır. Saçta da en az bir uzun saç (At kuyruğu) baştan ücretsiz. paket = ileride kozmetik IAP paketine ayrılmış kimlik (şimdi kullanılmaz; IAP iCloud kaydından sonra). Listenin ilki varsayılandır (var olan oyuncunun görünümü). Gerçek para yok: her şey Tüy ile.",
+"tipler": [
+  {"id": "atlet", "ad": "Atlet",         "n": "Dengeli boy ve omuz",       "sv": 1, "fiyat": 0,   "varlik": null},
+  {"id": "kadin", "ad": "Atletik kadın", "n": "Çevik, dengeli yapı",       "sv": 1, "fiyat": 0,   "varlik": "kadin"},
+  {"id": "uzun",  "ad": "Uzun ve ince",  "n": "Uzun bacak, dar omuz",      "sv": 4, "fiyat": 300, "varlik": "uzun"},
+  {"id": "guclu", "ad": "Güçlü",         "n": "İri gövde, kalın kol",      "sv": 8, "fiyat": 450, "varlik": "guclu"}
+],
+"sac_model": [
+  {"id": "kisa",      "ad": "Kısa kesim",   "sv": 1,  "fiyat": 0,   "varlik": "kisa"},
+  {"id": "yan",       "ad": "Yandan ayrık", "sv": 1,  "fiyat": 0,   "varlik": "yan"},
+  {"id": "atkuyrugu", "ad": "At kuyruğu",   "sv": 1,  "fiyat": 0,   "varlik": "atkuyrugu"},
+  {"id": "kazima",    "ad": "Kazıma",       "sv": 2,  "fiyat": 100, "varlik": "kazima"},
+  {"id": "kel",       "ad": "Kel",          "sv": 2,  "fiyat": 100, "varlik": null},
+  {"id": "topuz",     "ad": "Topuz",        "sv": 5,  "fiyat": 250, "varlik": "topuz"},
+  {"id": "anime",     "ad": "Anime dikenli","sv": 6,  "fiyat": 300, "varlik": "anime", "bant": false},
+  {"id": "orgu",      "ad": "Örgülü",       "sv": 8,  "fiyat": 350, "varlik": "orgu"},
+  {"id": "afro",      "ad": "Afro",         "sv": 9,  "fiyat": 450, "varlik": "afro", "bant": false},
+  {"id": "rasta",     "ad": "Rasta",        "sv": 11, "fiyat": 500, "varlik": "rasta", "bant": false},
+  {"id": "mullet",    "ad": "Mullet",       "sv": 13, "fiyat": 700, "varlik": "mullet", "garip": true},
+  {"id": "mohikan",   "ad": "Mohikan",      "sv": 15, "fiyat": 900, "varlik": "mohikan", "garip": true}
+],
 "tarzlar": [
   {"id": "dengeli", "ad": "Dengeli",     "sv": 1,  "arti": "Artısı da eksisi de yok",                               "eksi": "",                                  "etki": {}},
   {"id": "smasci",  "ad": "Smaşçı",      "sv": 4,  "arti": "Smaç enerjisi %20 hızlı dolar · sıçrayarak smaçta tatlı nokta +5", "eksi": "Smaç nefesi %15 fazla yakar",       "etki": {"enerji": 1.2, "jumpTatli": 1.05, "smacYor": 1.15}},

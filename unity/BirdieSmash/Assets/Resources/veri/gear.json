@@ -1,5 +1,5 @@
 {
-"_not": "Ekipman modelleri ve forma renkleri (komple-oyun tasarımı §4.2, §4.5, §5.2, Ek A.4; ekipman v2, 2026-10-26). Tek kaynak: tool/veri; tool/veri_kopyala.js Unity'ye (Assets/Resources/veri) kopyalar, BotMac ikisinin aynı olduğunu doğrular. Çarpan yazılmayan alan = model o değeri değiştirmez (1). sv = açılış seviyesi, fiyat = Tüy (0 = seviye gelince kendiliğinden açık), eski = 2026-10-26 öncesinde herkese açıktı: var olan oyuncuda açık kalır (tasarım §4.2, 'elimden aldılar' hissi olmasın). Yuva seviyesi (yükseltme) modele değil yuvaya bağlı: model değiştirmek Tüy yakmaz. kumas = forma kumaşı (işlev), renkler = forma rengi (yalnız görünüm). Metinler Türkçe anahtar, çeviri Lang.UNITY_EK.",
+"_not": "Ekipman modelleri ve forma renkleri (komple-oyun tasarımı §4.2, §4.5, §5.2, Ek A.4; ekipman v2, 2026-10-26). Tek kaynak: tool/veri; tool/veri_kopyala.js Unity'ye (Assets/Resources/veri) kopyalar, BotMac ikisinin aynı olduğunu doğrular. Çarpan yazılmayan alan = model o değeri değiştirmez (1). sv = açılış seviyesi, fiyat = Tüy (0 = seviye gelince kendiliğinden açık), eski = 2026-10-26 öncesinde herkese açıktı: var olan oyuncuda açık kalır (tasarım §4.2, 'elimden aldılar' hissi olmasın). Yuva seviyesi (yükseltme) modele değil yuvaya bağlı: model değiştirmek Tüy yakmaz. kumas = forma kumaşı (işlev), renkler = forma rengi (yalnız görünüm). 2026-10-26 ayakkabı modeli (yasin: \"ayakkabı seçebilecek, özelliklerine ve fiyatına göre\"; tasarım §1.3 ayakkabıyı yalnız görünüm sayıyordu, kullanıcı isteğiyle 7. model yuvası oldu): yükseltme seviyesi YOK (ekonomi tavanı 6 yuvaya göre ayarlı), yalnız model; diğer yuvalar gibi yan seçim: her modelin ayakkabı çubuklarında (İlk adım, Çabukluk, Uzanma, Sıçrama, Nefes; 50 nötr) artı ve eksi toplamı ≈ 0, en iyi ayakkabı yok. varlik = FBX parçası ayk_<varlik>__ayakkabi. Ayakkabı RENGİ karakter.json ayakkabi listesinde, ücretsiz görünüm. Ayakkabı modeli güç taşıdığı için hiçbir zaman IAP paketine girmez (güç satılmaz; paket alanı yalnız karakter.json kozmetiklerinde). Metinler Türkçe anahtar, çeviri Lang.UNITY_EK.",
 "modeller": {
   "raket": [
     {"id": "denge",  "ad": "Denge",      "n": "Her şeyden biraz",                                 "sv": 1,  "fiyat": 0,    "eski": true, "guc": 1, "kontrol": 1, "hiz": 1, "tatli": 1, "ton": 1, "kafa": 1, "renk": "#e9eef0"},
@@ -34,6 +34,13 @@
     {"id": "hafif",  "ad": "Hafif",       "n": "Koşu +6",                             "sv": 5,  "fiyat": 400, "eski": true, "forma": "fistik", "kosu": 1.06},
     {"id": "nefes",  "ad": "Nefes alan",  "n": "Smaç enerjisi %40 hızlı dolar",       "sv": 8,  "fiyat": 600, "eski": true, "forma": "beyaz", "enerji": 1.4},
     {"id": "esnek",  "ad": "Esnek",       "n": "Uzanma sonrası toparlanma kısa",      "sv": 12, "fiyat": 900, "eski": true, "forma": "mor", "toparla": 0.6}
+  ],
+  "ayakkabi": [
+    {"id": "klasik",   "ad": "Klasik kort", "n": "Nötr: her yüzeyde aynı",                                   "sv": 1,  "fiyat": 0,    "varlik": "klasik"},
+    {"id": "hafif",    "ad": "Hafif hız",   "n": "İlk adım +8 · nefes −8",                                   "sv": 4,  "fiyat": 350,  "varlik": "hafif",    "kosu": 1.048, "yor": 1.05},
+    {"id": "yastikli", "ad": "Yastıklı",    "n": "Sıçrayarak smaçta tatlı nokta +8 (yumuşak iniş) · çabukluk −8", "sv": 7, "fiyat": 450, "varlik": "yastik",   "jumpTatli": 1.048, "toparla": 1.048},
+    {"id": "bilekli",  "ad": "Bilekli",     "n": "Uzanma sonrası toparlanma +8 · ilk adım −8",               "sv": 10, "fiyat": 650,  "varlik": "bilekli",  "toparla": 0.952, "kosu": 0.952},
+    {"id": "karbon",   "ad": "Pro karbon",  "n": "İlk adım +6 · uzanma +4 · nefes −10",                      "sv": 18, "fiyat": 1000, "varlik": "karbon",   "kosu": 1.036, "uzanma": 1.024, "yor": 1.065}
   ]
 },
 "renkler": [

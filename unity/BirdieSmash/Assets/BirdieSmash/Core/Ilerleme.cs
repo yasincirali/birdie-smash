@@ -84,6 +84,10 @@ namespace BirdieSmash.Core
         // imza: okunan (karşılanan) imza vuruşu toplamı; bs_imza_okur başarımı (15) buradan.
         public int ImzaOkunan { get { return N("imzaOku"); } }
         public void ImzaOkuSay(int n) { if (n > 0) diger["imzaOku"] = (double)(ImzaOkunan + n); }
+        // 2026-10-26 aldatıcı vuruşlar (Core/Aldatma): ilk fırsat açıklaması gösterilmiş vuruşlar (bir kez; aynı "bilinmeyeni
+        // koru" kuralı). Liste, kimlik sırası önemsiz.
+        public List<string> AldatmaGorulen { get { var l = new List<string>(); var o = diger.ContainsKey("aldatmaGor") ? diger["aldatmaGor"] as List<object> : null; if (o != null) foreach (var x in o) if (x is string) l.Add((string)x); return l; } }
+        public void AldatmaGor(string id) { var l = AldatmaGorulen; if (l.Contains(id)) return; var o = new List<object>(); foreach (var x in l) o.Add(x); o.Add(id); diger["aldatmaGor"] = o; }
         // Usta yolu: son turun (Dünya Finalleri) finali kazanılınca açılır.
         public bool UstaAcik { get { int s = KariyerVeri.Turlar.Length - 1; return s >= 0 && KariyerVeri.Turlar[s].Var && TurAcik(s) && TurBitti(s); } }
 

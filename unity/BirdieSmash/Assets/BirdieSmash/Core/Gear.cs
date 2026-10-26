@@ -22,10 +22,12 @@ namespace BirdieSmash.Core
     // Yeni özel etkiler (sayıya sığmayan, "özel" satırı): slice (slice sapması ve aldatma süresi çarpanı, Kesici),
     // yorgunSapma (nefes < 0,4 iken isabet sapması çarpanı, Havlu grip), yor (nefes tüketimi çarpanı, Hücum).
     // forma: kumaşın eski (v1) forma kimliği; taşıma ve eski build'e geri yazma için. doku: grip görünümü ("cizgi").
+    // 2026-10-26 ayakkabı (7. model yuvası): varlik = FBX parçası ayk_<varlik>__ayakkabi; uzanma ve jumpTatli ayakkabının
+    // Uzanma ve Sıçrama çubukları (tarzla aynı GearStats alanları, çarpılarak biner).
     public class GearModel
     {
-        public string id, ad, n, renk, forma, doku, kilitAd; public bool kilit, eski; public int sv = 1, fiyat;
-        public float? guc, kontrol, hiz, tatli, ton, kafa, kenar, yavas, rakip, kosu, enerji, toparla, slice, yorgunSapma, yor; public int? akis;
+        public string id, ad, n, renk, forma, doku, kilitAd, varlik; public bool kilit, eski; public int sv = 1, fiyat;
+        public float? guc, kontrol, hiz, tatli, ton, kafa, kenar, yavas, rakip, kosu, enerji, toparla, slice, yorgunSapma, yor, uzanma, jumpTatli; public int? akis;
     }
 
     public class TelStat { public string ad, n; public float guc, tatli, kontrol, ton; }
@@ -68,7 +70,10 @@ namespace BirdieSmash.Core
         // ---- veri (tool/veri/gear.json → Resources/veri; Core/KariyerVeri ile aynı kaynak yolu) ----
         // Neden veri: tasarım Ek A.4 "veri tek kaynak"; modeller, açılış seviyeleri ve fiyatlar denge turlarında değişecek,
         // hesap (Hesap) değişmeden. Model sırası dosyadaki sıradır (Soyunma odası listesi o sırayla dizilir).
-        public static readonly string[] MODEL_YUVA = { "raket", "kordaj", "grip", "bileklik", "bant", "kumas" };
+        // 2026-10-26: "ayakkabi" 7. model yuvası (yasin: "ayakkabı seçebilecek, özelliklerine ve fiyatına göre"). Gear.YUVA'ya
+        // (yükseltme) girmez: ekonomi tavanı (%15–18) altı yükseltme yuvasına göre ayarlı; 7. yükseltme tavanı delerdi. Ayakkabı
+        // yalnız model seçimidir (sv + Tüy), diğer modeller gibi artısı ve eksisi olan yan seçim. Soyunma odası › Karakter'de.
+        public static readonly string[] MODEL_YUVA = { "raket", "kordaj", "grip", "bileklik", "bant", "kumas", "ayakkabi" };
         static Dictionary<string, Dictionary<string, GearModel>> gear; static Dictionary<string, GearModel> renkler;
         public static Dictionary<string, Dictionary<string, GearModel>> GEAR { get { VeriYukle(); return gear; } }
         public static Dictionary<string, GearModel> RENK { get { VeriYukle(); return renkler; } }
@@ -93,13 +98,13 @@ namespace BirdieSmash.Core
         {
             string kl = Json.Str(d, "kilit", null);
             return new GearModel {
-                id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), n = Json.Str(d, "n", ""), renk = Json.Str(d, "renk", null), forma = Json.Str(d, "forma", null), doku = Json.Str(d, "doku", null),
+                id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), n = Json.Str(d, "n", ""), renk = Json.Str(d, "renk", null), forma = Json.Str(d, "forma", null), doku = Json.Str(d, "doku", null), varlik = Json.Str(d, "varlik", null),
                 sv = (int)Json.Num(d, "sv", 1), fiyat = (int)Json.Num(d, "fiyat", 0), eski = Json.Bool(d, "eski", false), kilit = kl != null, kilitAd = kl,
                 guc = F(d, "guc"), kontrol = F(d, "kontrol"), hiz = F(d, "hiz"), tatli = F(d, "tatli"), ton = F(d, "ton"), kafa = F(d, "kafa"), kenar = F(d, "kenar"), yavas = F(d, "yavas"),
-                rakip = F(d, "rakip"), kosu = F(d, "kosu"), enerji = F(d, "enerji"), toparla = F(d, "toparla"), slice = F(d, "slice"), yorgunSapma = F(d, "yorgunSapma"), yor = F(d, "yor"),
+                rakip = F(d, "rakip"), kosu = F(d, "kosu"), enerji = F(d, "enerji"), toparla = F(d, "toparla"), slice = F(d, "slice"), yorgunSapma = F(d, "yorgunSapma"), yor = F(d, "yor"), uzanma = F(d, "uzanma"), jumpTatli = F(d, "jumpTatli"),
                 akis = d.ContainsKey("akis") && d["akis"] is double ? (int)(double)d["akis"] : (int?)null };
         }
-        static readonly Dictionary<string, string> VARSAYILAN = new Dictionary<string, string> { { "raket", "denge" }, { "kordaj", "dayanikli" }, { "grip", "sentetik" }, { "bileklik", "yok" }, { "bant", "yok" }, { "kumas", "klasik" } };
+        static readonly Dictionary<string, string> VARSAYILAN = new Dictionary<string, string> { { "raket", "denge" }, { "kordaj", "dayanikli" }, { "grip", "sentetik" }, { "bileklik", "yok" }, { "bant", "yok" }, { "kumas", "klasik" }, { "ayakkabi", "klasik" } };
         public static string Varsayilan(string yuva) { return VARSAYILAN[yuva]; }
 
         // Tel gerginliği sürekli (18–32 lbs): tel frekansı √gerginlik ile artar; gevşek tel güç ve geniş tatlı nokta, sıkı tel kontrol. 26 nötr.
@@ -123,18 +128,18 @@ namespace BirdieSmash.Core
             {"guc","Güç"},{"kontrol","Kontrol"},{"hiz","Drive/file"},{"tatli","Tatlı nokta"},{"kosu","Koşu"},{"enerji","Smaç gücü dolumu"},{"day","Dayanıklılık"}};
 
         // seçili modeller (HTML G) + ekonomi. renk = forma rengi (yalnız görünüm), kumas = forma kumaşı (işlev).
-        public string raket = "denge", kordaj = "dayanikli", grip = "sentetik", bileklik = "yok", bant = "yok", kumas = "klasik", renk = "mavi"; public float tel = 26;
+        public string raket = "denge", kordaj = "dayanikli", grip = "sentetik", bileklik = "yok", bant = "yok", kumas = "klasik", renk = "mavi", ayakkabi = "klasik"; public float tel = 26;
         public Ekonomi eko = new Ekonomi();
         public bool kariyerModu;
         readonly IKayit kayit;
 
         public string Secili(string yuva)
         {
-            switch (yuva) { case "raket": return raket; case "kordaj": return kordaj; case "grip": return grip; case "bileklik": return bileklik; case "bant": return bant; case "kumas": return kumas; default: return renk; }
+            switch (yuva) { case "raket": return raket; case "kordaj": return kordaj; case "grip": return grip; case "bileklik": return bileklik; case "bant": return bant; case "kumas": return kumas; case "ayakkabi": return ayakkabi; default: return renk; }
         }
         void Ata(string yuva, string id)
         {
-            switch (yuva) { case "raket": raket = id; break; case "kordaj": kordaj = id; break; case "grip": grip = id; break; case "bileklik": bileklik = id; break; case "bant": bant = id; break; case "kumas": kumas = id; break; default: renk = id; break; }
+            switch (yuva) { case "raket": raket = id; break; case "kordaj": kordaj = id; break; case "grip": grip = id; break; case "bileklik": bileklik = id; break; case "bant": bant = id; break; case "kumas": kumas = id; break; case "ayakkabi": ayakkabi = id; break; default: renk = id; break; }
         }
 
         // Forma ayrımı (tasarım §4.2, 2026-10-26): v1'de forma hem renk hem işlevdi. Eski kayıtta kumas/renk yoksa forma ikiye
@@ -153,6 +158,7 @@ namespace BirdieSmash.Core
                 object tv; if (g.TryGetValue("tel", out tv)) { double v = tv is string ? ParseD(((string)tv).Replace("t", "")) : tv is double ? (double)tv : 0; if (v >= 18 && v <= 32) tel = (float)v; }
                 raket = Model("raket", Json.Str(g, "raket", raket)); bileklik = Model("bileklik", Json.Str(g, "bileklik", bileklik)); bant = Model("bant", Json.Str(g, "bant", bant));
                 kordaj = Model("kordaj", Json.Str(g, "kordaj", kordaj)); grip = Model("grip", Json.Str(g, "grip", grip));
+                ayakkabi = Model("ayakkabi", Json.Str(g, "ayakkabi", ayakkabi));   // 2026-10-26: alan yoksa Klasik kort (nötr = bugünkü fizik)
                 string fo = Json.Str(g, "forma", null), ku = Json.Str(g, "kumas", null), rn = Json.Str(g, "renk", null);
                 kumas = ku != null && GEAR["kumas"].ContainsKey(ku) ? ku : fo != null ? KumasOf(fo) : "klasik";
                 renk = rn != null && RENK.ContainsKey(rn) ? rn : fo != null && RENK.ContainsKey(fo) ? fo : "mavi";
@@ -189,7 +195,7 @@ namespace BirdieSmash.Core
         public void GearYaz()
         {
             kayit.Set("tuytop_gear", Json.Write(new Dictionary<string, object> { { "raket", raket }, { "tel", (double)tel }, { "bileklik", bileklik }, { "bant", bant }, { "forma", EskiForma() },
-                { "kumas", kumas }, { "renk", renk }, { "grip", grip }, { "kordaj", kordaj } }));
+                { "kumas", kumas }, { "renk", renk }, { "grip", grip }, { "kordaj", kordaj }, { "ayakkabi", ayakkabi } }));
         }
         public void EkoYaz()
         {
@@ -252,6 +258,7 @@ namespace BirdieSmash.Core
         public GearStats Hesap()
         {
             var r = GEAR["raket"][raket]; var t = TelStats(tel); var kd = GEAR["kordaj"][kordaj]; var gp = GEAR["grip"][grip]; var b = GEAR["bileklik"][bileklik]; var h = GEAR["bant"][bant]; var f = GEAR["kumas"][kumas];
+            var a = GEAR["ayakkabi"][ayakkabi];   // ayakkabı: yuva seviyesi yok, çarpanı olduğu gibi (ölçeklenmez)
             GearModel rn; if (!RENK.TryGetValue(renk, out rn)) rn = RENK["mavi"];
             float kr = KSv("raket"), kt = KSv("tel"), kg = KSv("grip"), kb = KSv("bileklik"), kh = KSv("bant"), kf = KSv("forma");
             return new GearStats {
@@ -260,9 +267,10 @@ namespace BirdieSmash.Core
                 hiz = Olcek(r.hiz.Value, kr, .18f, RAKET_EKSI) * Olcek(b.hiz ?? 1, kb, .18f, .6f) * Olcek(gp.hiz ?? 1, kg, .18f, RAKET_EKSI),
                 tatli = Olcek(r.tatli.Value, kr, .18f, RAKET_EKSI) * Olcek(t.tatli, kt, 0, .5f) * Olcek(kd.tatli ?? 1, kt, .18f, RAKET_EKSI) * (1 + .15f * kt) * (1 + .10f * kh),
                 ton = r.ton.Value * t.ton * (kd.ton ?? 1), kafa = r.kafa.Value, kenar = b.kenar ?? 1, akis = h.akis ?? 4, yavas = h.yavas ?? 1, rakip = h.rakip ?? 1,
-                kosu = (1 + .04f * kf) * Olcek(f.kosu ?? 1, kf, .12f, 0), enerji = Olcek(f.enerji ?? 1, kf, .12f, 0),
-                toparla = f.toparla.HasValue ? 1 - (1 - f.toparla.Value) * (1 + .12f * kf) : 1,
-                yorK = 1 / (1 + .15f * kb) * (r.yor.HasValue ? 1 + (r.yor.Value - 1) * (1 - RAKET_EKSI * kr) : 1),
+                kosu = (1 + .04f * kf) * Olcek(f.kosu ?? 1, kf, .12f, 0) * (a.kosu ?? 1), enerji = Olcek(f.enerji ?? 1, kf, .12f, 0),
+                toparla = (f.toparla.HasValue ? 1 - (1 - f.toparla.Value) * (1 + .12f * kf) : 1) * (a.toparla ?? 1),
+                yorK = 1 / (1 + .15f * kb) * (r.yor.HasValue ? 1 + (r.yor.Value - 1) * (1 - RAKET_EKSI * kr) : 1) * (a.yor ?? 1),
+                uzanma = a.uzanma ?? 1, jumpTatli = a.jumpTatli ?? 1,
                 slice = r.slice ?? 1, yorgunSapma = gp.yorgunSapma ?? 1, gripDoku = gp.doku,
                 forma = rn.renk, raketRenk = r.renk, bant = h.renk, bileklik = b.renk };
         }
@@ -282,6 +290,16 @@ namespace BirdieSmash.Core
                 C(g.tatli * (1 + (4 - g.akis) * .04) * (1 + (1 - g.yavas) * .3)),
                 C((g.hiz + g.kosu + (2 - g.toparla)) / 3),
                 C(1 / g.yorK) };
+        }
+        // Ayakkabı çubukları (2026-10-26; Soyunma odası › Karakter › Ayakkabı): takımın 5 çubuğu ayakkabının farkını boğuyordu
+        // (Çabukluk üç değerin ortalaması, Uzanma ve Sıçrama hiç yok), bu yüzden ayakkabı kendi 5 çubuğuyla anlatılır, yalnız
+        // modelin çarpanından (50 nötr, aynı ölçek C): İlk adım = koşu/ivme (kosu), Çabukluk = uzanma sonrası toparlanma
+        // (2 − toparla), Uzanma = uzanma erişimi, Sıçrama = sıçrayarak smaç tatlı noktası, Nefes = 1/yor. Takımın çubuklarına da
+        // kosu/toparla/yor yoluyla girer (Çabukluk, Dayanıklılık).
+        public static readonly string[] AYK_CUBUK_AD = { "İlk adım", "Çabukluk", "Uzanma", "Sıçrama", "Nefes" };
+        public static int[] AyakkabiCubuklar(GearModel m)
+        {
+            return new[] { C(m.kosu ?? 1), C(2 - (m.toparla ?? 1)), C(m.uzanma ?? 1), C(m.jumpTatli ?? 1), C(1 / (m.yor ?? 1)) };
         }
         // Bir yuvaya başka model takılsaydı (diğer her şey şimdiki gibi) 5 çubuk; yuva kartının ▲/▼ karşılaştırması bununla.
         public int[] CubuklarIle(string yuva, string id)

@@ -26,9 +26,12 @@ namespace BirdieSmash.Core
             new Gorev{id="karsila",ad="3 smaçı karşıla",hedef=3,say=m=>m.smacKarsila},
             new Gorev{id="drop",ad="2 drop sayısı",hedef=2,say=m=>m.dropSayi},
             new Gorev{id="okudun",ad="İmza vuruşunu oku",hedef=1,say=m=>m.okudun}};
+        // 2026-10-26 aldatıcı vuruş görevi (Core/Aldatma): havuza yalnız ilk aldatma açılmış oyuncuda girer (Sv'si yetmeyen
+        // oyuncuya yapamayacağı görev çıkmasın); eski oyuncuda (ve Sv 1 bot maçlarında) havuz ve kura birebir aynı.
+        public static readonly Gorev HILE_GOREV = new Gorev{id="hile",ad="2 aldatıcı vuruş",hedef=2,say=m=>m.hileler};
         public static Gorev GorevBul(string id)
         {
-            foreach (var g in GOREV) if (g.id == id) return g; foreach (var g in GOREV_KARIYER) if (g.id == id) return g; return null;
+            foreach (var g in GOREV) if (g.id == id) return g; foreach (var g in GOREV_KARIYER) if (g.id == id) return g; return id == HILE_GOREV.id ? HILE_GOREV : null;
         }
         // Kariyer maçının sabit görevi (yoksa null): maç sonunda 2. yıldız buna bakar.
         public Gorev BasamakGorevi { get { return gorevler.Count > 0 && gorevler[0].basamak ? gorevler[0] : null; } }
@@ -37,6 +40,7 @@ namespace BirdieSmash.Core
         List<Gorev> GorevSec()
         {
             var h = new List<Gorev>(GOREV); var o = new List<Gorev>();
+            if (oyuncuSv >= HileIlkSv) h.Add(HILE_GOREV);
             var kb = stil != null ? KariyerVeri.Al(stil.kariyer) : null; var sabit = kb != null ? GorevBul(kb.gorev) : null;
             if (kb == null && stil != null && stil.usta >= 0) sabit = GorevBul(UstaYolu.GorevId(stil.usta));   // 2026-10-26 Usta yolu basamağının görevi
             if (sabit != null) { o.Add(new Gorev { id = sabit.id, ad = sabit.ad, hedef = sabit.hedef, say = sabit.say, basamak = true }); h.RemoveAll(g => g.id == sabit.id); }

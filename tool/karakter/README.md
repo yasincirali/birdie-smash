@@ -40,7 +40,7 @@ koordinatından çizilir (`insan.py` `_yuz_dugum`). 360° ve hakemler aynı `BS_
   ağırlıkları taşır, smaç/hamlede ayrılmaz, yırtılmaz. Ayrı parçalar: göz (sklera/iris/bebek + ışık), kaş/kirpik şeridi,
   saç kabuğu (saç çizgisi alanıyla kesik, perçem + tutam), bant ve bileklik halkası, dışbükey zarflı spor ayakkabı +
   iki katlı taban (beyaz ara taban, kırmızı dış taban). İskelet UE adlı (Calibrate'in aradığı head/pelvis/upperarm/
-  foot/ball/thigh/calf), parmaklar 2 boğum (FBX boyutu kemik başına ~0,1 MB). Ball kemiği taban altından 0,02 birim
+  foot/ball/thigh/calf), parmaklar 3 boğum, iki elde (2026-10-26 tutuş turu; aşağıda). Ball kemiği taban altından 0,02 birim
   yukarıda (PlayerView.Zemin 3,5 cm sözleşmesi). Ayarlar `BS_OY_*` ortam değişkenleri.
   `BS_MODEL=oyuncak python3 -I tool/karakter/unity_fbx.py -- /tmp/oy oyuncak` → `oyuncak.fbx` + `oyuncak_clips.json`.
   - **Performans bütçesi** (yasin: "her telefonda akıcı"; ekranda 4 figür): karakter 9,0k üçgen + raket ~1k, 33 kemik (sol el
@@ -53,6 +53,34 @@ koordinatından çizilir (`insan.py` `_yuz_dugum`). 360° ve hakemler aynı `BS_
     adımda ≤6°, toplam ≤25°). `ara_kare`: unity_fbx iki ara pozu da (mix) kurar, çözücü onlarda da çalışır (hızlı geçişte
     anahtarlar temizken arada ayak zemine 7 cm giriyordu). Ölçüt: her karede en küçük işaretli uzaklık (içeride < 0).
   - Raket ölçeği 0,8 (`BS_OY_RAKET`; 1,0 = oyunda 1,18 m). `insan.RAKET_LOD` raketin üçgenini düşürür (None = eski geometri).
+- **Tutuş, tipler, saç, ayakkabı** (2026-10-26, yasin: "raket tutuşu net ve detaylı, 5 parmak badmintonun doğasındaki gibi
+  ... tip seçebilme, garip saçlar ... ayakkabı seçebilecek"). Varlık sözleşmesi (C# tarafı buna göre):
+  `/mnt/project-files/birdie-smash/komple-oyun/karakter_varlik_sozlesmesi.md`; tutuş kaynakları:
+  `/mnt/project-files/birdie-smash/arastirma/tutus_notlari.md`.
+  - **Parmaklar:** iki elde 5 parmak × 3 boğum (53 kemik). Uç boğumu orta boğuma katmak FBX'i ~1,9 MB küçültürdü ama
+    yakın planda parmak ucu sapın üstünde düz dururdu (tutuşun okunduğu yer orası); bütçe ölçülüp karar verildi
+    (sözleşme v1'deki boyutlar). El deri ağı sadeleştirmede korunur (`BS_OY_ELKORU`), parmaklar kıymıklaşmasın.
+  - **Tutuş katmanı** `tutus.py`: klibe göre tutuş (el sıkışma / başparmak / panhandle / parmak), el yönü raket
+    çerçevesinden, ön kol burulması + bilek sınırı + ≤20° avuçta kayma; parmaklar sapa ızgara eniyilemesiyle sarılır,
+    deri ağıyla son denetim; gerilim temasa doğru sıkılaşır. Sol el serviste topu tüyünden çimdikler. Poz sözlükleri
+    (karakter.py) değişmedi; `unity_fbx.py` klip/kare bilgisini `OY.klip_bilgi` ile verir.
+  - **Tipler** (`BS_OY_TIP`: atlet, guclu, kadin, uzun; `TIPLER` sözlüğü): aynı iskelet adları ve klipler, MakeHuman
+    makro hedefleri (cinsiyet, kas, kilo, boy oranı, etnik karışım) + omuz/kalça genişliği. Her tip kendi FBX'i
+    (`oyuncak.fbx` = atlet, geriye uyum; `oyuncak_<tip>.fbx`), kendi atlası, `_clips.json`'da `tip` alanı.
+  - **Saç** (`sac_ayk.py`, 11 biçim + kel): kafa derisinden kabuk (saç çizgisi alanla kesilir) + yordamsal parçalar
+    (at kuyruğu tüpü, topuz elipsoidi, mohikan testere yelesi, anime dikenleri, örgü sıraları, dread tüpleri, mullet ense
+    kanadı). Ağırlık en yakın 6 deri köşesinden (baş/boyun/üst sırt): at kuyruğu ucu sırtı izler. AO 14 ışınla pişip
+    UV v'ye yazılır, u tel deseni; ortak doku `oyuncak_sac.png` (gri çarpan, Unity saç rengiyle çarpar). Saç oyunda
+    görünen (sadeleştirilmiş) deriden en az 3,6 mm dışarıda (`aralik`, `aralik_son`; ince saçta ten lekesi deliyordu).
+  - **Bant** deriye oturur (eskisi varsayılan saçın üstüne ölçülüyordu): her saç bandın altında `BANT_KAL`'a ezilir; ezme
+    `BANT_SIK`'i (1,1 cm) aşan saçta bant gizlenir (`_clips.json` `sac[].bant=false`; ölçüm: yalnız afro).
+  - **Ayakkabı** (5 çeşit): sayanın dışbükey zarfı (çeşide göre burun, en, hacim, bilekli yaka) + katmanlı taban (orta
+    taban yan duvarı/taşması, karbon plaka). Taban altı hepsinde aynı: Zemin sözleşmesi değişmedi. Saya `ayk_ust` yuvası
+    (Unity boyar), taban/topuk/şerit/bağcık atlasta (`oy_body`); bölgeler alanla kesilir (yüz seçimi seyrek ağda kamuflaj
+    lekesi bırakıyordu).
+  - **Çözücü** yalnız tipin varsayılan saçı ve klasik ayakkabıyla ölçer (afro her tipte kol yolunu iterdi); en hacimli
+    saçla kalan girme denetimde raporlanır. Çeşitler render'da gizli (`BS_OY_SACSEC`, `BS_OY_AYKSEC` seçer),
+    `unity_fbx.py` hepsini FBX'e koyar.
 - **Oyuncak (KayKit, arşiv)**: `oyuncak_kaykit.py`, `BS_MODEL=oyuncak_kaykit`; KayKit Adventurers Rogue (CC0) gerekir.
 - **Adım boyu** (2026-10-26, fizik denetimi): `unity_fbx.py` ayak işi döngülerinin (run, chasse_r/l, fwd, back_r/l) bir turda
   taşıdığı yolu basan ayaktan ölçüp `<model>_clips.json` `adim` alanına yazar (model birimi; Unity × SCALE ile ADIM_BOY'u ezer,
