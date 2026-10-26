@@ -617,6 +617,25 @@ namespace BirdieSmash.Game
             if (o.imzaId == "mermi" && on) transform.position += Vector3.down * .12f * imzaA;
         }
 
+        // Tanı (yalnız ekran turu, EkranTuru animasyon izi; 2026-10-26 gece): gösterilen klip, alt katman ağırlığı, iki ayak
+        // bileğinin ve sağ elin dünya konumu, raket sapının ele uzaklığı. Ayak kayması = yerdeki ayağın kareler arası yatay
+        // hızı; raket kayması = sapın el kemiğinden uzaklığı (rijit parça elle birlikte gitmeli). Oyunda çağıran yok.
+        public string TaniKlip { get { return cur; } }
+        public float TaniAlt { get { return altW; } }
+        public float TaniFaz { get { return lastPh; } }
+        Transform raketSap;
+        public bool TaniAyak(out Vector3 sol, out Vector3 sag, out Vector3 el, out float sapEl)
+        {
+            sol = sag = el = Vector3.zero; sapEl = -1;
+            if (model == null || kThigh.Count == 0) return false;
+            if (kBacak == null) ZincirKur();
+            if (raketSap == null) foreach (var t in model.GetComponentsInChildren<Transform>(true)) if (t.name.StartsWith("raket_sap")) { raketSap = t; break; }
+            if (kBacak[2] == null || kBacak[5] == null) return false;
+            sol = kBacak[2].position; sag = kBacak[5].position;
+            var h = kKol[5]; if (h != null) { el = h.position; if (raketSap != null) { var r = raketSap.GetComponent<Renderer>(); var c = r != null ? r.bounds.ClosestPoint(h.position) : raketSap.position; sapEl = (c - h.position).magnitude; } }
+            return true;
+        }
+
         // File düzlemi (2026-10-26, yasin: "objelerde iç içe geçme olmasın"): Core gövde kökünü fileden .25 m uzak tutar
         // (Match.Engel), ama hamle/file pozlarında ön ayak kökten ~1,5 m öne uzanıyor (oyun ölçeğinde 1,75×) ve fileye
         // ~1,5 m'den yakın vuruşta ayak/diz file düzlemini geçiyordu. Gerçekte file düzlemini gövdeyle geçmek faul; burada
