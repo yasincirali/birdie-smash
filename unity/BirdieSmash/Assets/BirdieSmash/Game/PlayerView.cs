@@ -424,11 +424,10 @@ namespace BirdieSmash.Game
         // oyunlarının olağan çözümü: üst beden vuruştan, leğen ve bacaklar ayak işi klibinden. Ayak işi klibinin kopyası
         // (<ad>_alt) yalnız leğeni (özyinelemesiz) ve uyluk zincirlerini sürer, katman 1'dedir; Legacy Animation katman 1'in
         // ağırlığını yalnız onun sürdüğü kemiklerden düşer, omurga/kollar/raket vuruş klibinde kalır. Ağırlık gövde hızıyla
-        // açılır (0,5 → 1,4 m/s smoothstep, 12/s yumuşatma: pop yok). Bacakları vuruşun kendisi olan kliplerde (hamle, sıçrama,
-        // servis, split, yorgun) kapalı. Kemikler bulunamazsa kurulmaz: eski davranış birebir. HTML'de karşılığı yok (sprite tek
+        // açılır (Match.ALT_HIZ üstel yumuşatma: pop yok; eşik ve istisnalar Match.AltHedef'te). Bacakları vuruşun kendisi olan kliplerde
+        // (hamle, sıçrama, servis, split, yorgun) kapalı, istisnalar orada. Kemikler bulunamazsa kurulmaz: eski davranış birebir. HTML'de karşılığı yok (sprite tek
         // parça); bu yalnız görünüm, oyun kuralı değil.
         static readonly string[] AYAK_KLIP = { "chasse_r", "chasse_l", "fwd", "back_r", "back_l", "run", "kros_r", "kros_l" };   // run/kros_*: 2026-10-26 hız bantları
-        static readonly HashSet<string> BACAK_VURUS = new HashSet<string> { "lunge", "bh_lunge", "jump", "serve", "serve_gec", "serve_bh", "serve_flick", "split", "yorgun" };
         bool altVar; float altW, altPh; string altKlip;
         void AltKatmanKur()
         {
@@ -573,15 +572,12 @@ namespace BirdieSmash.Game
             // (eller dizde) %35'e kadar karışır, beden soluklanır. Harmanlama bitmeden karıştırılmaz.
             if (cur == "idle" && blend >= 1 && o.nefes < .7f && anim["yorgun"] != null)
             { Sample("idle", ph, "yorgun", ph, 1 - .35f * Mathf.Clamp01((.7f - o.nefes) / .7f)); FileItin(); return; }
-            {   // alt beden katmanı: vuruş/hazırlık klibinde koşarken bacaklar ayak işinden
-                float gsp = Mathf.Sqrt(o.svx * o.svx + o.svy * o.svy);
-                // Hamle (2026-10-26): yaklaşırken (hazırlık, o.sw = 0) bacaklar ayak işinden; hamle klibinin bacakları yalnız son
-                // adımda ve takipte (temastan sonra). Eskiden hazırlık boyunca hamle duruşu donup zeminde kayıyordu.
-                bool hamle = cur == "lunge" || cur == "bh_lunge";
-                bool vurus = Match.CLIP_HIT.ContainsKey(cur) && (!BACAK_VURUS.Contains(cur) || hamle && o.sw <= 0);
+            {   // alt beden katmanı: vuruş/hazırlık klibinde koşarken bacaklar ayak işinden. Hangi klipte ve ne ağırlıkla:
+                // Match.AltHedef (hamle yaklaşırken, servis temastan sonra, sıçrama yerdeyken; anlık hızla). 2026-10-26 gece Core'a
+                // taşındı: ölçüm aracı (tool/unity_test/AnimOlc) aynı kuralı okur.
                 if (o.yuru && o.ayakKlip != null) { altKlip = o.ayakKlip; altPh = o.runPh; }
-                float hedef = altVar && vurus && o.yuru && altKlip != null ? Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.5f, 1.4f, gsp)) : 0;
-                altW += (hedef - altW) * (1 - Mathf.Exp(-dt * 12)); if (altW < .01f && hedef == 0) altW = 0;   // üstel: 60/120 Hz aynı eğri
+                float hedef = altVar && altKlip != null ? Match.AltHedef(o, cur) : 0;
+                altW += (hedef - altW) * (1 - Mathf.Exp(-dt * Match.ALT_HIZ)); if (altW < .01f && hedef == 0) altW = 0;   // üstel: 60/120 Hz aynı eğri
             }
             Sample(cur, ph, prev, prevPh, prev == null ? 1 : Mathf.SmoothStep(0, 1, blend), altKlip, altPh, altW);   // smoothstep (2026-10-26): doğrusal ağırlık geçişin başında ve sonunda hız kırığı veriyordu
             FileItin();
