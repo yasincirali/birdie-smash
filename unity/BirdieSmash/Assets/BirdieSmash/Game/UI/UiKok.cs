@@ -304,15 +304,12 @@ namespace BirdieSmash.Game
             var c = root.cam; if (c == null) return;
             if (!maskeVar) { maskeVar = true; sahneMaske = c.cullingMask; }   // r24: −1 (Everything) bekçi değeriyle karışıyordu, maçta maske 0 kalıyordu
             int m = ciz ? sahneMaske : 0; if (c.cullingMask != m) c.cullingMask = m;
-            if (menu && !SalonBekle && sekmeKok[0] != null && gez.sekme == Sekme.Oyna)
+            if (menu && sekmeKok[0] != null && gez.sekme == Sekme.Oyna)
             {
                 if (salonSaha != Ayar.saha || salonKamera != Ayar.kamera || salonModel != Ayar.model || salonW != Screen.width || salonH != Screen.height) salonKirli = true;
                 if (salonKirli) SalonCek();
             }
         }
-        // Tanı (r24/r29: menü biçimsiz çıktı, kaynağı ayrılıyor): ekran turu ilk menü karelerini salon çekimi olmadan alır,
-        // MenuSahne'de açar. Mağaza build'inde hep false.
-        public static bool SalonBekle = System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-bsekran") >= 0;
         void SalonCek()
         {
             var c = root.cam; if (Screen.width <= 0 || Screen.height <= 0) return;

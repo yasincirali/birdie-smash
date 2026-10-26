@@ -231,8 +231,6 @@ namespace BirdieSmash.Game
         IEnumerator MenuSahne()
         {
             var ui = root.ui; if (ui == null) yield break;
-            ui.SekmeAc(Sekme.Oyna); yield return Bekle(30); yield return Cek("menu_salonsuz_oyna"); rap.AppendLine("menu_salonsuz_oyna · " + ui.SahneDurumu);
-            UiKok.SalonBekle = false;
             ui.SekmeAc(Sekme.Kariyer); ui.SekmeAc(Sekme.Oyna); yield return Bekle(30); yield return Cek("menu_macsonu_oyna"); rap.AppendLine("menu_macsonu_oyna · " + ui.SahneDurumu);
             ui.SekmeAc(Sekme.Kariyer); yield return Bekle(20); yield return Cek("menu_macsonu_kariyer"); rap.AppendLine("menu_macsonu_kariyer · " + ui.SahneDurumu);
             ui.SekmeAc(Sekme.Soyunma); yield return Bekle(30); yield return Cek("menu_macsonu_soyunma"); rap.AppendLine("menu_macsonu_soyunma · " + ui.SahneDurumu);
