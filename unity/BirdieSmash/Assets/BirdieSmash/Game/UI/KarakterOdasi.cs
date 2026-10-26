@@ -48,7 +48,7 @@ namespace BirdieSmash.Game
                 int o = od[i]; bool sec = vt.odak == o && vt.hedefGec < 1;
                 var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("odak-dugme"); if (sec) d.AddToClassList("odak-dugme--secili");
                 var ic = new VisualElement(); ic.AddToClassList("cip-ic"); ic.pickingMode = PickingMode.Ignore; d.Add(ic);
-                if (sec) ic.Add(Ikon(Ikonlar.Tik, 13, Kit.Hex("#07161c")));
+                if (sec) ic.Add(Ikon(Ikonlar.Tik, 13, MUREKKEP));
                 ic.Add(Yazi(L.T(ad[i]), VitrinPx(13), "dugme-yazi"));
                 d.AddManipulator(new Clickable(() => { Tik(); vt.Odak(sec ? Vitrin.TAM : o, o == Vitrin.TUTUS ? vt.poz ?? "drive" : null); SoyunmaGovdeKur(true); }));
                 Erisim.Etiket(d, L.T("Yakın plan: {0}", L.T(ad[i])) + (sec ? ", " + L.T("tüm boya dönmek için yeniden dokun") : ""), "dugme", sec);

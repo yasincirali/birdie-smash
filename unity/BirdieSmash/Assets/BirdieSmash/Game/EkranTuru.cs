@@ -48,6 +48,9 @@ namespace BirdieSmash.Game
             yield return MenuTuru();
             Ayar.antrenman = true; Ayar.easy = true; Ayar.target = 5; Ayar.reduce = false; if (root.ui != null) root.ui.Kirlet();   // r11: Oyna sekmesi ilk açılış kurulumunda kalıyordu
             yield return MenuTuru("", true); Ayar.yaziTest = 2; yield return MenuTuru("x2_", true); Ayar.yaziTest = 0; root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
+            // 2026-10-26 yön A: Türkçe Oyna (CI dili İngilizce; Barlow'da ş, ğ, İ, ı karelerde görünsün), sonra eski dile dönülür.
+            { string d0 = Ayar.dil; Ayar.dil = "tr"; root.ui.SekmeAc(Sekme.Kariyer); root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_tr_oyna");
+              Ayar.yaziTest = 2; yield return Bekle(20); yield return Cek("menu_x2_tr_oyna"); Ayar.yaziTest = 0; Ayar.dil = d0; root.ui.SekmeAc(Sekme.Kariyer); root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(5); }
             var modeller = new System.Collections.Generic.List<string> { "oyuncak", "rocketbox" };
             if (Resources.Load<GameObject>("karakter/sade") != null) modeller.Add("sade");
             foreach (var mdl in modeller)
@@ -61,15 +64,28 @@ namespace BirdieSmash.Game
                 Ayar.model = "oyuncak"; Ayar.saha = s; root.SahaDegisti(); root.StartMatch(false, false, false); botAcik = true;
                 yield return Bekle(60); yield return Cek("saha_" + s);
             }
-            foreach (var k in new[] { "alcak", "ust", "yayin" })
+            // 2026-10-26 kadraj: her açı iki ekran oranında: 390×845 (19,5:9, uzun ekran; ad eki yok, eski karelerle aynı ad) ve
+            // 375×667 (iPhone SE, 16:9; "_se"). Pencere boyu turun içinde değişir, sonunda eskisine döner.
+            int w0 = Screen.width, h0 = Screen.height;
+            foreach (var en in new[] { "", "_se" })
             {
-                Ayar.kamera = k; Ayar.saha = "salon"; root.SahaDegisti(); root.KameraDegisti(); root.StartMatch(false, false, false); botAcik = true;
-                yield return Bekle(60); yield return Cek("kamera_" + k);
+                if (en == "_se") yield return Boyut(375, 667);
+                foreach (var k in new[] { "alcak", "ust", "yayin" })
+                {
+                    Ayar.kamera = k; Ayar.saha = "salon"; root.SahaDegisti(); root.KameraDegisti(); root.StartMatch(false, false, false); botAcik = true;
+                    yield return Bekle(60); yield return Cek("kamera_" + k + en);
+                }
             }
+            yield return Boyut(w0, h0);
             Ayar.model = "oyuncak"; Ayar.saha = "salon"; Ayar.kamera = "yayin"; root.SahaDegisti(); root.KameraDegisti();
             yield return ImzaKare("imza_mermi", KariyerVeri.Global(1, 5), false);
             yield return ImzaKare("imza_duvar_azalt", KariyerVeri.Global(0, 5), true);
             yield return GorevKare();
+            yield return SonucKare("sonuc_galibiyet", true, false, 0, "en");
+            yield return SonucKare("sonuc_galibiyet_azalt", true, true, 0, "en");
+            yield return SonucKare("sonuc_buyuk_galibiyet", true, false, 2, "en");   // HUD ×1,3 sınırında (Ayar.YaziK); "Büyük" yazı
+            yield return SonucKare("sonuc_tr_galibiyet", true, false, 0, "tr");
+            yield return SonucKare("sonuc_yenilgi", false, false, 0, "en");
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             Application.Quit(0);
         }
@@ -191,7 +207,29 @@ namespace BirdieSmash.Game
             yield return Bekle(20); yield return Cek("gorev_sonuc"); botAcik = false;
             root.GunlukBaslat(); botAcik = true; yield return Bekle(60 * 3); yield return Cek("gunun_maci_oyun"); botAcik = false;
         }
+        // 2026-10-26 yön A sonuç ekranı: örnek ilerlemeyle (Tur 1 ilk basamak üç yıldız) ikinci basamak maçı 11–7 biter, gerçek
+        // EndMatch akışı (GameRoot.EkranBitir) çalışır; yıldızlar düşüp Tüy/XP sayımı bitsin diye 3,5 sn gerçek zaman beklenir.
+        // Kayda giden ödül (Tüy, XP) CI'nın geçici kaydıdır; ilerleme ve ayarlar sonunda geri konur.
+        IEnumerator SonucKare(string ad, bool won, bool azalt, int yazi, string dil)
+        {
+            var eski = Ayar.ilerleme; var q = new Ilerleme(); q.tur[0][0] = 7; Ayar.ilerleme = q;
+            bool r0 = Ayar.reduce, km = Ayar.kariyerModu; string d0 = Ayar.dil; Ayar.reduce = azalt; Ayar.kariyerModu = true; Ayar.kariyerSecim = KariyerVeri.Global(0, 1);
+            string y0 = Ayar.yazi; if (yazi > 0) Ayar.yazi = "buyuk"; Ayar.dil = dil;   // sonuç ekranı IMGUI: yaziTest değil YaziK (×1,3)
+            root.StartMatch(false, false, false); botAcik = false;
+            { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 4) yield return null; }   // r16: maç başı rakip kartı kalksın (gerçek akışta maç sonunda yok)
+            root.match.sc[0] = won ? 11 : 7; root.match.sc[1] = won ? 7 : 11; root.EkranBitir(won);
+            float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 3.5f) yield return null;
+            yield return Cek(ad);
+            Ayar.ilerleme = eski; Ayar.reduce = r0; Ayar.kariyerModu = km; Ayar.kariyerSecim = -1; Ayar.yazi = y0; Ayar.dil = d0;
+            root.AnaMenu(); yield return Bekle(5);
+        }
         IEnumerator Bekle(int kare) { for (int i = 0; i < kare; i++) yield return null; }
+        IEnumerator Boyut(int w, int h)
+        {
+            Screen.SetResolution(w, h, FullScreenMode.Windowed);
+            for (int i = 0; i < 120 && (Screen.width != w || Screen.height != h); i++) yield return null;
+            yield return Bekle(10); rap.AppendLine("ekran boyu istendi " + w + "x" + h + " · oldu " + Screen.width + "x" + Screen.height);
+        }
 
         void Update()
         {
@@ -235,7 +273,7 @@ namespace BirdieSmash.Game
         IEnumerator YakinNokta(string ad, Vector3 hedef, Vector3 ofset)
         {
             yield return new WaitForEndOfFrame();
-            var g = new GameObject("yakin_kamera"); var c = g.AddComponent<Camera>(); c.CopyFrom(root.cam); c.fieldOfView = 40;
+            var g = new GameObject("yakin_kamera"); var c = g.AddComponent<Camera>(); c.CopyFrom(root.cam); c.ResetProjectionMatrix(); c.fieldOfView = 40;   // ana kamera özel (eksen dışı) matris taşır, 2026-10-26
             g.transform.position = hedef + ofset; g.transform.LookAt(hedef);
             var rt = new RenderTexture(720, 960, 24); c.targetTexture = rt; c.Render();
             var prev = RenderTexture.active; RenderTexture.active = rt;

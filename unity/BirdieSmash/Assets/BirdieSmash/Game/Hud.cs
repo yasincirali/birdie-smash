@@ -45,6 +45,15 @@ namespace BirdieSmash.Game
             if (!stilOn.TryGetValue(key, out st)) { st = new GUIStyle(b); if (boy > 0) st.fontSize = boy; if ((int)fs >= 0) st.fontStyle = fs; stilOn[key] = st; }
             return st;
         }
+        // Tek satıra sığdır (2026-10-26, r16: "THE OPPONENT GOT IT THIS TIME" iki satıra kırılıp skorun üstüne biniyordu;
+        // "SIRADAKİ: İL ŞAMPİYONASI" düğmenin dairesine taşıyordu): boyu 2 px adımlarla küçült, en çok tabanın %55'ine; yine
+        // sığmazsa kelime arasından kırılır (kelime ortası değil: GUIStyle wordWrap).
+        GUIStyle Sigdir(GUIStyle b, string t, float w)
+        {
+            int boy = b.fontSize, alt = Mathf.Max(10, Mathf.RoundToInt(b.fontSize * .55f)); var st = b; var c = new GUIContent(t);
+            while (boy > alt && st.CalcSize(c).x > w) { boy -= 2; st = Stil(b, boy); }
+            return st;
+        }
         GUIStyle leftWrap, leftWrapTaban; // her karede yeni taban S() önbelleğini şişirirdi
         public void StilSifirla() { stilOn.Clear(); stilNo.Clear(); }
         float ralliPop; int sonRalli; float[] pop = new float[2]; float flash; Color flashC; readonly List<Vector3> cams = new List<Vector3>();
@@ -104,6 +113,7 @@ namespace BirdieSmash.Game
                 if (kivT > .3f) kivT = -1;
             }
             if (Ayar.fps) FpsOlc();
+            SonucZaman();
             PerdeTick(d);
         }
         // ---- gizli kare hızı göstergesi (HTML FPS): üst satır son 1 sn, alt satır o ekranın toplamı; ekran değişince sıfırlanır.
@@ -250,7 +260,7 @@ namespace BirdieSmash.Game
             if (hawk != null) HawkCiz(M);
             if (root.ekran == Ekran.Oyun && !root.paused && Button(new Rect(rx - BH, top, BH, BH), "II")) root.Duraklat();   // Duraklat
             float y = top + 62 * u;
-            if (root.rakipKartT > 0 && !ogr) y = RakipKart(M, y);
+            if (root.rakipKartT > 0 && !ogr && root.ekran == Ekran.Oyun) y = RakipKart(M, y);   // r17: sonuç ekranının altından okunuyordu
             if (ogr && root.ekran == Ekran.Oyun) y = OgrKart(M, y);   // görev sonuç ekranında kart kalkar (Over üstüne binmesin)
             // smaç gücü çubuğu
             {
@@ -507,44 +517,274 @@ namespace BirdieSmash.Game
             if (Button(new Rect(x, y, w, BH), "Ana menü")) root.AnaMenu();
         }
 
-        float overH;   // son karedeki içerik yüksekliği: "Ayrıntılar" açılınca blok yukarı kayar, alt düğmeler ekranda kalır
+        // ---- maç sonu (2026-10-26, arayüz yönü A "Yayın Gecesi", tasarım ph4; yasin yönü henüz onaylamadı) ----
+        // Sıra yukarıdan: üst satır (tur · basamak · yer), büyük başlık (GALİBİYET limon; kayıpta "Bu sefer rakip aldı" beyaz,
+        // suçlamayan ton aynı), skor (senin sayın limon, solda halka + "SEN", sağda rakip halkası + adı: yalnız renkle değil),
+        // üç büyük yıldız ve koşulları (✓/✗ simgesi + yazı; dolu/çerçeve biçim), Tüy sayarak artar, XP çubuğu dolar, seviye
+        // atladıysan "SEVİYE ATLADIN · Sv n", ilk galibiyetin açtığı şey limon çerçeveli kartta, öneri satırı, turun basamak
+        // çizgisi. Altta (başparmak bölgesi) büyük eğik düğme (eski birincil düğmenin metni ve işi: Sıradaki maç / Tekrar dene /
+        // Bir maç daha) ve alt satırında sıradaki basamak · rakip; ikincil düğmeler (Ekipmanı yükselt, Tam antrenman, önerilen
+        // görev, Antrenman görevleri) aynı koşullarla; en altta Ayrıntılar · Ana menü yan yana. Ayrıntılar açıkken yıldız ve
+        // ödül alanının yerine iki özet kartı ve tam liste gelir (eski ekranda özet kartları hep açıktı; yer kalmadı).
+        // Hareket: ışınlar döner (30 sn'de bir tur), başlık yaylanır, yıldızlar sırayla iner (her yenisi hafif titreşim), Tüy
+        // sayar. Hareketi azalt: ışın ve iniş yok, sayılar son değerinde, bütün içerik .25 sn'de solarak gelir.
+        // Yazı: Barlow (OFL, Resources/fonts); boyut fu ile (Dynamic Type ×1,3'e kadar, HUD sınırı). ★ ✓ ✗ glif değil doku.
+        Font fSiyah, fEkstra, fYari, fKalin; float aS = -1, aK = -1;
+        GUIStyle aBas, aUst, aSkor, aAd, aKosul, aSatir, aSayi, aLv, aUnl, aCta, aCtaAlt, aDug, aIpucu, aKutuS, aKutuIkon, aKutuLimon, aCtaS, aIz;
+        float overT0 = -1; bool overAcik; int yildizHap;
+        static readonly Color A_INK = Kit.Hex("#070B1F"), A_LIMON = Kit.Hex("#D8FF3A"), A_LIMON_KOYU = Kit.Hex("#0B1206"), A_ALTIN = Kit.Hex("#FFC83D"), A_MERCAN = Kit.Hex("#FF5B4A"),
+            A_YAZI = Kit.Hex("#F4F6FF"), A_SOLUK = Kit.Hex("#A3ABD1"), A_NAVY = Kit.Hex("#10173A"), A_NAVY3 = Kit.Hex("#263169");
+        GUIStyle AStil(Font f, float px, TextAnchor hiza, bool sar)
+        {
+            var st = new GUIStyle(GUI.skin.label) { font = f, fontSize = Mathf.Max(8, Mathf.RoundToInt(px)), alignment = hiza, wordWrap = sar, richText = false, fontStyle = FontStyle.Normal, clipping = TextClipping.Overflow };
+            st.normal.textColor = Color.white; st.padding = new RectOffset(0, 0, 0, 0); st.margin = new RectOffset(0, 0, 0, 0); return st;
+        }
+        GUIStyle AKutu(Texture2D t, int b) { var st = new GUIStyle(); st.normal.background = t; st.border = new RectOffset(b, b, b, b); return st; }
+        void YayinStil(float s, float k)
+        {
+            if (Mathf.Abs(s - aS) < .001f && Mathf.Abs(k - aK) < .001f && aBas != null) return; aS = s; aK = k;
+            if (fSiyah == null)
+            {
+                fSiyah = Resources.Load<Font>("fonts/BarlowCondensed-BlackItalic"); fEkstra = Resources.Load<Font>("fonts/BarlowCondensed-ExtraBoldItalic");
+                fYari = Resources.Load<Font>("fonts/Barlow-SemiBold"); fKalin = Resources.Load<Font>("fonts/Barlow-Bold");
+            }
+            Ikonlar.Hazirla();
+            aBas = AStil(fSiyah, 74 * k, TextAnchor.MiddleCenter, true); aUst = AStil(fKalin, 12 * k, TextAnchor.MiddleCenter, true);
+            aSkor = AStil(fSiyah, 44 * k, TextAnchor.MiddleCenter, false); aAd = AStil(fEkstra, 12 * k, TextAnchor.UpperCenter, false);
+            aKosul = AStil(fKalin, 12 * k, TextAnchor.UpperLeft, true); aSatir = AStil(fYari, 16 * k, TextAnchor.MiddleLeft, false);
+            aSayi = AStil(fSiyah, 26 * k, TextAnchor.MiddleRight, false); aLv = AStil(fEkstra, 16 * k, TextAnchor.MiddleCenter, false);
+            aUnl = AStil(fKalin, 15 * k, TextAnchor.MiddleLeft, true); aCta = AStil(fSiyah, 40 * k, TextAnchor.UpperLeft, false);
+            aCtaAlt = AStil(fYari, 14 * k, TextAnchor.UpperLeft, false); aDug = AStil(fKalin, 16 * k, TextAnchor.MiddleCenter, true);
+            aIpucu = AStil(fYari, 13 * k, TextAnchor.UpperCenter, true); aIz = AStil(fKalin, 12 * k, TextAnchor.MiddleLeft, false);
+            int r = Mathf.Max(4, Mathf.RoundToInt(16 * s)), ri = Mathf.Max(3, Mathf.RoundToInt(9 * s));
+            aKutuS = AKutu(Ikonlar.Kutu(r, new Color(A_NAVY.r, A_NAVY.g, A_NAVY.b, .92f), new Color(1, 1, 1, .12f), Mathf.Max(1, s)), r + 2);
+            aKutuIkon = AKutu(Ikonlar.Kutu(ri, A_NAVY3, new Color(1, 1, 1, 0), 0), ri + 2);
+            aKutuLimon = AKutu(Ikonlar.Kutu(r, new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, .08f), new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, .6f), Mathf.Max(1.5f, 1.5f * s)), r + 2);
+            int eg = Mathf.Max(4, Mathf.RoundToInt(14 * s)), ch = Mathf.Max(20, Mathf.RoundToInt(80 * s));
+            aCtaS = AKutu(Ikonlar.EgikDugme(eg * 2 + 8, ch, eg), 0); aCtaS.border = new RectOffset(eg + 4, eg + 4, 0, 0);
+        }
+        static float GeriYay(float x) { const float c1 = 1.70158f, c3 = c1 + 1; x = Mathf.Clamp01(x) - 1; return 1 + c3 * x * x * x + c1 * x * x; }
+        // Yıldızın iniş anı (sn, ekran açılışından): 0,45 + 0,3·i. Titreşim Hud.Update'te (OnGUI karede birkaç kez çalışır).
+        static float YildizAn(int i) { return .45f + .3f * i; }
+        void SonucZaman()
+        {
+            bool b = root.ekran == Ekran.Bitti;
+            if (b && !overAcik) { overT0 = Time.unscaledTime; yildizHap = 0; sigK = 1; }
+            overAcik = b; if (!b || Ayar.reduce) return;
+            float t = Time.unscaledTime - overT0;
+            for (int i = 0; i < 3; i++) if ((root.bittiYeniMaske & (1 << i)) != 0 && (yildizHap & (1 << i)) == 0 && t >= YildizAn(i) + .2f) { yildizHap |= 1 << i; Yerel.Hap("tick"); }
+        }
+
+        // Sığdırma çarpanı (2026-10-26, r16 "Büyük" yazı): sonuç ekranı IMGUI'de kaydırılamaz; ×1,3 yazıda içerik SIRADAKİ
+        // düğmesini ekran dışına itiyordu. Bir karede ölçülen yükseklik ekranı aşarsa sonraki kare her şey 0,05 adımla
+        // küçülür (en çok ×0,7; düğmeler yine ≥ 44 pt, BH). Yalnız küçülür, ekran her açılışta 1'den başlar (sallanma yok).
+        float sigK = 1;
         void Over(Match M)
         {
-            Dim(.6f); float x = ColX, w = ColW, y = Mathf.Max(top + 8 * u, Mathf.Min(H * .18f, H - bot - overH - 8 * u)), y0 = y;
-            float th = big.CalcHeight(new GUIContent(root.bittiBaslik), w); var bs = root.bittiBaslik.Length > 24 ? mid : big; th = bs.CalcHeight(new GUIContent(root.bittiBaslik), w);
-            Shadowed(new Rect(x, y, w, th), root.bittiBaslik, bs, Color.white); y += th + 8 * u;
-            if (root.bittiSkor != null) { Shadowed(new Rect(x, y, w, 44 * u), root.bittiSkor, Stil(big, Mathf.RoundToInt(32 * fu)), Color.white); y += 48 * u; }   // görev: "7/12 hedefte"
-            else { Shadowed(new Rect(x, y, w, 60 * u), M.sc[0] + " – " + M.sc[1], Stil(big, Mathf.RoundToInt(48 * fu)), Color.white); y += 64 * u; }
-            // Kariyer yıldızları (2026-10-26): dolu/boş yıldız + sayı yazıyla (yalnız simgeye güvenilmez), yeniler ayrıca
-            if (!string.IsNullOrEmpty(root.bittiYildiz)) { float yh = small.CalcHeight(new GUIContent(root.bittiYildiz), w); Shadowed(new Rect(x, y, w, yh), root.bittiYildiz, Stil(small, -1, FontStyle.Bold), Kit.Hex("#ffd23a")); y += yh + 6 * u; }
-            var od = root.odul;
-            if (od != null)
-            {   // HTML oOdul: +Tüy · +XP (ekler) · Seviye! · Toplam
-                string t = L.T("+{0} Tüy{1} · +{2} XP", od.tuy, "", od.xp) + (od.ek.Count > 0 ? " (" + string.Join(", ", od.ek.ConvertAll(s => L.Cumle(s)).ToArray()) + ")" : "") + (od.sonra > od.once ? L.T(" · Seviye {0}!", od.sonra) : "") + L.T(" · Toplam {0}{1}", Ayar.gear.eko.tuy, " " + L.T("Tüy"));
-                float oh = small.CalcHeight(new GUIContent(t), w); Shadowed(new Rect(x, y, w, oh), t, Stil(small, -1, FontStyle.Bold), Kit.Hex("#ffd23a")); y += oh + 6 * u;
+            var R = root; float s = Mathf.Min(W / 390f, H / 844f) * sigK, k = s * Ayar.YaziK; YayinStil(s, k);
+            float t = overT0 < 0 ? 99 : Time.unscaledTime - overT0; bool rm = Ayar.reduce;
+            var o0 = GUI.color; GUI.color = new Color(A_INK.r, A_INK.g, A_INK.b, .82f); GUI.DrawTexture(new Rect(-W, 0, W * 3, H), Texture2D.whiteTexture); GUI.color = o0;
+            // r16: .82'de maç başı rakip kartı ve skor tabelası arkadan okunuyordu; yayın grafiği gibi tam kapalı zemin.
+            o0 = GUI.color; GUI.color = new Color(A_INK.r, A_INK.g, A_INK.b, .5f); GUI.DrawTexture(new Rect(-W, 0, W * 3, H), Texture2D.whiteTexture); GUI.color = o0;
+            float w = Mathf.Min(rx - lx, 420 * s), x = (W - w) / 2, y = top + 14 * s, al = rm ? Mathf.Clamp01(t / .25f) : 1;
+            bool ayr = ayrinti && !string.IsNullOrEmpty(R.bittiBilgi);
+            // ışınlar (a-rays): yalnız galibiyette, hareketi azaltta yok
+            if (R.bittiKazandi && !rm)
+            {
+                var c = new Vector2(W / 2, y + 120 * s); float sz = 900 * s; var m = GUI.matrix; GUIUtility.RotateAroundPivot(Time.unscaledTime * 12f, c);
+                Tex(new Rect(c.x - sz / 2, c.y - sz / 2, sz, sz), Ikonlar.Isinlar, new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, .13f * Mathf.Clamp01(t / .4f))); GUI.matrix = m;
             }
-            // HTML oYukselt: yükseltme yapılabiliyorsa maç sonundan doğrudan Ekipman paneline götüren düğme
-            if (od != null && root.yukseltHazir) { if (Button(new Rect(x, y, w, BH), "Ekipmanı yükselt")) { root.AnaMenu(); if (root.ui != null) root.ui.SekmeAc(Sekme.Soyunma); } y += BH + 10 * u; }
-            // Özet (Ar-Ge 23 Eki #2): iki kart (sayı + adı; renk anlam taşımaz) + bir ipucu, tam liste "Ayrıntılar" ardında.
-            // Yükseklikler CalcHeight'tan: metin uzasa da üst üste binmez.
-            { int n = root.bittiKart.Count; float g = 10 * u, kw = n > 1 ? (w - g) / 2 : w, kh = 0; var vs = Stil(big, Mathf.RoundToInt(28 * fu));
-              foreach (var k in root.bittiKart) kh = Mathf.Max(kh, small.CalcHeight(new GUIContent(L.T(k.ad)), kw - 16 * u));
-              kh += 36 * u + 14 * u;
-              for (int i = 0; i < n; i++) { var r = new Rect(x + i * (kw + g), y, kw, kh); GUI.Box(r, GUIContent.none, card); var k = root.bittiKart[i];
-                  GUI.Label(new Rect(r.x, r.y + 6 * u, r.width, 34 * u), k.deger.ToString(), vs); GUI.Label(new Rect(r.x + 8 * u, r.y + 40 * u, r.width - 16 * u, kh - 44 * u), L.T(k.ad), small); }
-              y += kh + 10 * u; }
-            if (!string.IsNullOrEmpty(root.bittiIpucu)) { float ph = small.CalcHeight(new GUIContent(root.bittiIpucu), w); Shadowed(new Rect(x, y, w, ph), root.bittiIpucu, small, Color.white); y += ph + 10 * u; }
-            bool ayrintiVar = !string.IsNullOrEmpty(root.bittiBilgi);   // görev sonucunda ayrıntı listesi yok
-            if (ayrintiVar && Button(new Rect(x, y, w, BH), ayrinti ? "Ayrıntıları gizle" : "Ayrıntılar")) ayrinti = !ayrinti; if (ayrintiVar) y += BH + 10 * u;
-            if (ayrinti && ayrintiVar) { float ih = small.CalcHeight(new GUIContent(root.bittiBilgi), w); Shadowed(new Rect(x, y, w, ih), root.bittiBilgi, small, new Color(1, 1, 1, .8f)); y += ih + 16 * u; }
-            if (ButtonRaw(new Rect(x, y, w, BH * 1.15f), root.bittiDugme, true)) root.TekrarOyna(); y += BH * 1.15f + 10 * u;
-            if (root.bittiIlk) { if (Button(new Rect(x, y, w, BH), "Tam antrenman")) root.Antrenman(); y += BH + 10 * u; }
-            // 2026-10-26: kayıpta önerilen görev (tek düğme, adıyla) ve görev sonucundan görev listesine dönüş
-            var od2 = root.bittiDril != null ? Dril.Bul(root.bittiDril) : null;
-            if (od2 != null) { if (ButtonRaw(new Rect(x, y, w, BH), L.T("Antrenman: {0}", L.T(od2.ad)), false)) root.DrilOyna(od2.id); y += BH + 10 * u; }
-            if (root.mod == Mod.Dril) { if (Button(new Rect(x, y, w, BH), "Antrenman görevleri")) { root.AnaMenu(); if (root.ui != null) root.ui.AntrenmanAc(); } y += BH + 10 * u; }
-            if (Button(new Rect(x, y, w, BH), "Ana menü")) root.AnaMenu();
-            overH = y + BH - y0;
+            if (!string.IsNullOrEmpty(R.bittiUst)) { string us = UiKok.Buyuk(R.bittiUst); float uh = aUst.CalcHeight(new GUIContent(us), w); Yaz(new Rect(x, y, w, uh), us, aUst, A_SOLUK, al); y += uh + 4 * s; }
+            // başlık: yaylanarak (1,25 → 1), hareketi azaltta yalnız solma
+            {
+                string bs = UiKok.Buyuk(R.bittiBas ?? R.bittiBaslik ?? ""); var st = Sigdir(R.bittiKazandi && bs.Length <= 12 ? aBas : Stil(aBas, Mathf.RoundToInt(46 * k)), bs, w);
+                float th = st.CalcHeight(new GUIContent(bs), w); var r = new Rect(x, y, w, th);
+                float e = rm ? 1 : GeriYay(t / .35f), sc = rm ? 1 : Mathf.LerpUnclamped(1.25f, 1, e); var m = GUI.matrix; GUIUtility.ScaleAroundPivot(new Vector2(sc, sc), r.center);
+                var g = GUI.color; GUI.color = new Color(0, 0, 0, .45f * al); GUI.Label(new Rect(r.x, r.y + 5 * s, r.width, r.height), bs, st);
+                GUI.color = new Color(1, 1, 1, al) * (R.bittiKazandi ? A_LIMON : A_YAZI); GUI.Label(r, bs, st); GUI.color = g; GUI.matrix = m;
+                y += th + 2 * s;
+            }
+            if (!string.IsNullOrEmpty(R.bittiAltNot)) { float nh = aIpucu.CalcHeight(new GUIContent(R.bittiAltNot), w); Yaz(new Rect(x, y, w, nh), R.bittiAltNot, aIpucu, A_SOLUK, al); y += nh + 6 * s; }
+            // skor: halka + sayı – sayı + halka; adlar halkaların altında
+            if (R.bittiSkor != null) { float sh = aSkor.CalcHeight(new GUIContent(R.bittiSkor), w); Yaz(new Rect(x, y, w, sh), R.bittiSkor, aSkor, A_YAZI, al); y += sh + 10 * s; }
+            else
+            {
+                string a = M.sc[0].ToString(), b = M.sc[1].ToString(); float aw = aSkor.CalcSize(new GUIContent(a)).x, bw = aSkor.CalcSize(new GUIContent(b)).x, dw = 30 * s, f = 48 * s, gp = 12 * s;
+                float tw = f + gp + aw + dw + bw + gp + f, cx = W / 2 - tw / 2, sh = Mathf.Max(f, aSkor.CalcHeight(new GUIContent(a), 200));
+                Yuz(new Rect(cx, y + (sh - f) / 2, f, f), A_LIMON, al, false); cx += f + gp;
+                Yaz(new Rect(cx, y, aw, sh), a, aSkor, A_LIMON, al); cx += aw; Yaz(new Rect(cx, y, dw, sh), "–", aSkor, A_SOLUK, al); cx += dw;
+                Yaz(new Rect(cx, y, bw, sh), b, aSkor, A_YAZI, al); cx += bw + gp; Yuz(new Rect(cx, y + (sh - f) / 2, f, f), A_MERCAN, al, true);
+                float nx0 = W / 2 - tw / 2, ah = aAd.CalcHeight(new GUIContent("S"), 100);
+                Yaz(new Rect(nx0 - 20 * s, y + sh + 3 * s, f + 40 * s, ah), UiKok.Buyuk(L.T("Sen")), aAd, A_LIMON, al);
+                Yaz(new Rect(cx - 30 * s, y + sh + 3 * s, f + 60 * s, ah), UiKok.Buyuk(M.RakipAd(false)), aAd, A_SOLUK, al);
+                y += sh + ah + 12 * s;
+            }
+            var od = R.odul;
+            if (ayr) y = AyrintiCiz(x, y, w, s, al);
+            else
+            {
+                if (R.bittiMaske >= 0) y = YildizCiz(x, y, w, s, t, rm, al);
+                if (od != null) y = OdulCiz(od, x, y, w, s, t, rm, al);
+                if (!string.IsNullOrEmpty(R.bittiAcilan))
+                {
+                    float ik = 26 * s, ph = 14 * s, tw = w - ik - ph * 3, uh = Mathf.Max(aUnl.CalcHeight(new GUIContent(R.bittiAcilan), tw), ik) + 16 * s; var r = new Rect(x, y, w, uh);
+                    float ua = rm ? al : Mathf.Clamp01((t - 1.9f) / .3f); KutuCiz(r, aKutuLimon, ua);
+                    Tex(new Rect(r.x + ph, r.y + (uh - ik) / 2, ik, ik), Ikonlar.AcikKilit, new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, ua));
+                    Yaz(new Rect(r.x + ph * 2 + ik, r.y + 8 * s, tw, uh - 16 * s), R.bittiAcilan, aUnl, A_YAZI, ua); y += uh + 10 * s;
+                }
+                if (!string.IsNullOrEmpty(R.bittiIpucu)) { float ph = aIpucu.CalcHeight(new GUIContent(R.bittiIpucu), w); Yaz(new Rect(x, y, w, ph), R.bittiIpucu, aIpucu, A_SOLUK, al); y += ph + 8 * s; }
+                if (R.bittiG >= 0) y = YolCiz(x, y, w, s, al);
+            }
+            // ---- alt blok: büyük düğme, ikincil düğmeler, Ayrıntılar · Ana menü ----
+            var od2 = R.bittiDril != null ? Dril.Bul(R.bittiDril) : null; bool ayrintiVar = !string.IsNullOrEmpty(R.bittiBilgi);
+            bool yuk = od != null && R.yukseltHazir; int nIk = (yuk ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (od2 != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0);
+            float bh = Mathf.Max(BH, 50 * s), gap = 8 * s;
+            string ct = UiKok.Buyuk(CtaBaslik(R.bittiDugme, R.bittiDugmeAlt)); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(new GUIContent(ct), w - 100 * s), cah = string.IsNullOrEmpty(R.bittiDugmeAlt) ? 0 : aCtaAlt.CalcHeight(new GUIContent(R.bittiDugmeAlt), w);
+            float ctaH = Mathf.Max(80 * s, cth + cah + 22 * s), blokH = ctaH + 12 * s + nIk * (bh + gap) + bh;
+            // r16: kayıpta iki ikincil düğme (Ekipmanı yükselt + Antrenman: X) alt satırı ekran dışına itiyordu. Sığmazsa ikincil
+            // düğmeler ikişer yan yana dizilir (sıra ve işlev aynı; yazı küçülerek sığar, hücre yine ≥ 44 pt).
+            bool cift = nIk > 1 && y + 6 * s + blokH > H - bot; if (cift) blokH -= (nIk / 2) * (bh + gap);
+            float yb = Mathf.Max(y + 6 * s, H - bot - blokH);
+            if (BuyukDugme(new Rect(x, yb, w, ctaH), ct, R.bittiDugmeAlt, s, al)) root.TekrarOyna(); yb += ctaH + 12 * s;
+            int ki = 0; float kw = cift ? (w - gap) / 2 : w;
+            if (yuk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Ekipmanı yükselt"), al)) { root.AnaMenu(); if (root.ui != null) root.ui.SekmeAc(Sekme.Soyunma); } }
+            if (R.bittiIlk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Tam antrenman"), al)) root.Antrenman(); }
+            if (od2 != null) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman: {0}", L.T(od2.ad)), al)) root.DrilOyna(od2.id); }
+            if (R.mod == Mod.Dril) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman görevleri"), al)) { root.AnaMenu(); if (root.ui != null) root.ui.AntrenmanAc(); } }
+            if (ayrintiVar)
+            {
+                float hw = (w - gap) / 2;
+                if (ADugme(new Rect(x, yb, hw, bh), L.T(ayrinti ? "Ayrıntıları gizle" : "Ayrıntılar"), al)) { ayrinti = !ayrinti; Yerel.Hap("tick"); }
+                if (ADugme(new Rect(x + hw + gap, yb, hw, bh), L.T("Ana menü"), al)) root.AnaMenu();
+            }
+            else if (ADugme(new Rect(x, yb, w, bh), L.T("Ana menü"), al)) root.AnaMenu();
+            float son = yb + bh, sinir = H - bot;
+            if (Event.current.type == EventType.Repaint && son > sinir + 1 && sigK > .7f)
+                sigK = Mathf.Max(.7f, Mathf.Floor(sigK * (sinir - top) / Mathf.Max(1, son - top) * 20) / 20);
+        }
+        // i. ikincil düğmenin yeri: tek sütunda alt alta; çift sütunda ikişer (tek kalan son düğme tam genişlik).
+        static Rect IkincilYer(ref int i, ref float yb, float x, float kw, float bh, float gap, bool cift, int n)
+        {
+            Rect r;
+            if (!cift) { r = new Rect(x, yb, kw, bh); yb += bh + gap; }
+            else if (i % 2 == 0 && i == n - 1) { r = new Rect(x, yb, kw * 2 + gap, bh); yb += bh + gap; }
+            else { r = new Rect(x + (i % 2) * (kw + gap), yb, kw, bh); if (i % 2 == 1) yb += bh + gap; }
+            i++; return r;
+        }
+        void Yaz(Rect r, string t, GUIStyle st, Color c, float a) { var g = GUI.color; GUI.color = new Color(c.r, c.g, c.b, c.a * a); GUI.Label(r, t, st); GUI.color = g; }
+        void KutuCiz(Rect r, GUIStyle st, float a) { if (Event.current.type != EventType.Repaint) return; var g = GUI.color; GUI.color = new Color(1, 1, 1, a); st.Draw(r, false, false, false, false); GUI.color = g; }
+        // Oyuncu halkası (yüz resmi yok: rakip portreleri sonraki faz; şimdilik kişi simgesi, renkli halka: sen limon, rakip mercan).
+        void Yuz(Rect r, Color halka, float a, bool rakip)
+        {
+            Tex(r, disk, new Color(A_NAVY3.r, A_NAVY3.g, A_NAVY3.b, a)); Tex(r, ring, new Color(halka.r, halka.g, halka.b, a));
+            float p = r.width * .2f; Tex(new Rect(r.x + p, r.y + p, r.width - 2 * p, r.height - 2 * p), Ikonlar.Kisi, new Color(A_YAZI.r, A_YAZI.g, A_YAZI.b, .85f * a));
+        }
+        // Üç büyük yıldız (a-bigstars): ortadaki büyük; alınan dolu altın + parıltı, alınmayan çerçeve; altında koşul (✓/✗ + yazı).
+        float YildizCiz(float x, float y, float w, float s, float t, bool rm, float al)
+        {
+            var R = root; int n = Mathf.Clamp(R.bittiYildizN, 1, 3); float col = Mathf.Min(112 * s, w / n), rowH = 92 * s, x0 = W / 2 - col * n / 2, kh = 0;
+            for (int i = 0; i < n; i++)
+            {
+                bool var_ = (R.bittiMaske & (1 << i)) != 0, yeni = (R.bittiYeniMaske & (1 << i)) != 0; float sz = (n == 3 && i == 1 ? 92 : 72) * s;
+                float a = rm ? al : yeni ? Mathf.Clamp01((t - YildizAn(i)) / .28f) : Mathf.Clamp01((t - .25f) / .3f);
+                float sc = rm || !yeni ? 1 : Mathf.LerpUnclamped(1.8f, 1, GeriYay(a)); var c = new Vector2(x0 + col * (i + .5f), y + rowH - sz / 2);
+                var m = GUI.matrix; GUIUtility.ScaleAroundPivot(new Vector2(sc, sc), c);
+                if (var_) Tex(new Rect(c.x - sz * .8f, c.y - sz * .8f, sz * 1.6f, sz * 1.6f), Ikonlar.Isik, new Color(A_ALTIN.r, A_ALTIN.g, A_ALTIN.b, .45f * a));
+                Tex(new Rect(c.x - sz / 2, c.y - sz / 2, sz, sz), var_ ? Ikonlar.YildizDolu : Ikonlar.YildizBos, var_ ? new Color(A_ALTIN.r, A_ALTIN.g, A_ALTIN.b, a) : new Color(1, 1, 1, .35f * a));
+                GUI.matrix = m;
+                string ks = R.bittiKosul != null && i < R.bittiKosul.Length ? R.bittiKosul[i] : ""; float ik = 13 * s, tw = col - ik - 8 * s, h = aKosul.CalcHeight(new GUIContent(ks), tw);
+                float tx = c.x - Mathf.Min(tw, aKosul.CalcSize(new GUIContent(ks)).x) / 2 + ik / 2 + 2 * s, ty = y + rowH + 8 * s, ka = rm ? al : Mathf.Clamp01((t - .3f) / .3f);
+                Tex(new Rect(tx - ik - 3 * s, ty + 1 * s, ik, ik), var_ ? Ikonlar.Tik : Ikonlar.Carpi, var_ ? new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, ka) : new Color(A_SOLUK.r, A_SOLUK.g, A_SOLUK.b, ka));
+                Yaz(new Rect(tx, ty, tw, h), ks, aKosul, var_ ? A_YAZI : A_SOLUK, ka); kh = Mathf.Max(kh, h);
+            }
+            return y + rowH + 8 * s + kh + 14 * s;
+        }
+        // Ödül kartı (a-rew): Tüy sayarak (yıldızlardan sonra .9 sn), XP çubuğu aynı sürede dolar, seviye atladıysan satır.
+        float OdulCiz(OdulSonuc od, float x, float y, float w, float s, float t, bool rm, float al)
+        {
+            float p = 14 * s, ik = 30 * s, rh = 34 * s, t1 = YildizAn(Mathf.Max(0, Ilerleme.Say(root.bittiYeniMaske))) + .1f, e = rm ? 1 : Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - t1) / .9f));
+            bool lv = od.sonra > od.once; string ek = od.ek.Count > 0 ? string.Join(" · ", od.ek.ConvertAll(q => L.Cumle(q)).ToArray()) : null;
+            string top_ = L.T(" · Toplam {0}{1}", Ayar.gear.eko.tuy, " " + L.T("Tüy")); if (top_.StartsWith(" · ")) top_ = top_.Substring(3);
+            string alt = ek != null ? ek + " · " + top_ : top_; float ah = aIpucu.CalcHeight(new GUIContent(alt), w - 2 * p);
+            float h = p + rh + 6 * s + rh + (lv ? 26 * s : 0) + 6 * s + ah + p; var r = new Rect(x, y, w, h); KutuCiz(r, aKutuS, al);
+            float yy = y + p, rx_ = x + w - p;
+            KutuCiz(new Rect(x + p, yy + (rh - ik) / 2, ik, ik), aKutuIkon, al); Tex(new Rect(x + p + ik * .2f, yy + (rh - ik) / 2 + ik * .2f, ik * .6f, ik * .6f), Ikonlar.Tuy, new Color(A_ALTIN.r, A_ALTIN.g, A_ALTIN.b, al));
+            Yaz(new Rect(x + p + ik + 10 * s, yy, w * .5f, rh), L.T("Tüy"), aSatir, A_YAZI, al);
+            Yaz(new Rect(rx_ - 120 * s, yy, 120 * s, rh), "+" + Mathf.RoundToInt(od.tuy * e), aSayi, A_ALTIN, al); yy += rh + 6 * s;
+            KutuCiz(new Rect(x + p, yy + (rh - ik) / 2, ik, ik), aKutuIkon, al); Yaz(new Rect(x + p, yy + (rh - ik) / 2, ik, ik), "XP", Stil(aLv, Mathf.RoundToInt(13 * aK)), A_YAZI, al);
+            string xs = "+" + Mathf.RoundToInt(od.xp * e); float xw = aSayi.CalcSize(new GUIContent("+" + od.xp)).x + 4 * s;
+            int L_, kalan, gerek; Ayar.gear.OyuncuSv(out L_, out kalan, out gerek);
+            float son = gerek > 0 ? kalan / (float)gerek : 1, bas = lv ? 0 : Mathf.Clamp01((kalan - od.xp) / (float)Mathf.Max(1, gerek)), dol = lv ? (e < .5f ? Mathf.Lerp(.3f, 1, e * 2) : Mathf.Lerp(0, son, (e - .5f) * 2)) : Mathf.Lerp(bas, son, e);
+            var bar = new Rect(x + p + ik + 10 * s, yy + rh / 2 - 5 * s, rx_ - xw - 10 * s - (x + p + ik + 10 * s), 10 * s);
+            Fill(bar, new Color(1, 1, 1, .12f * al)); Fill(new Rect(bar.x, bar.y, bar.width * Mathf.Clamp01(dol), bar.height), new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, al));
+            Yaz(new Rect(rx_ - xw, yy, xw, rh), xs, aSayi, A_YAZI, al); yy += rh;
+            if (lv)
+            {
+                float la = rm ? al : Mathf.Clamp01((t - t1 - .9f) / .25f); string ls = UiKok.Buyuk(L.T("Seviye atladın")) + " · " + L.T("Sv {0}", od.sonra);
+                float lw = aLv.CalcSize(new GUIContent(ls)).x, ik2 = 14 * s, lx0 = x + (w - lw - ik2 - 4 * s) / 2;
+                Tex(new Rect(lx0, yy + 6 * s + (20 * s - ik2) / 2, ik2, ik2), Ikonlar.Yukari, new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, la)); Yaz(new Rect(lx0 + ik2 + 4 * s, yy + 6 * s, lw, 20 * s), ls, aLv, A_LIMON, la); yy += 26 * s;
+            }
+            Yaz(new Rect(x + p, yy + 6 * s, w - 2 * p, ah), alt, aIpucu, A_SOLUK, al);
+            return y + h + 10 * s;
+        }
+        // Turun basamak çizgisi (a-road): geçilen limon, şimdiki çizgili, gelecek soluk; yanında "3/6" (yalnız renkle değil).
+        float YolCiz(float x, float y, float w, float s, float al)
+        {
+            var p = Ayar.ilerleme; int g = root.bittiG, tr = KariyerVeri.TurOf(g), sira = p.HepsiBitti ? -1 : p.Siradaki(), gec = 0;
+            for (int j = 0; j < KariyerVeri.BASAMAK; j++) if (p.Kazanildi(KariyerVeri.Global(tr, j))) gec++;
+            string sol = UiKok.Buyuk(L.T(UiKok.TurAd(tr))), sag = gec + "/" + KariyerVeri.BASAMAK; float sw = aIz.CalcSize(new GUIContent(sol)).x, gw = aIz.CalcSize(new GUIContent(sag)).x, h = 16 * s;
+            Yaz(new Rect(x, y, sw, h), sol, aIz, A_SOLUK, al); Yaz(new Rect(x + w - gw, y, gw, h), sag, aIz, A_SOLUK, al);
+            float bx = x + sw + 10 * s, bw = w - sw - gw - 20 * s, pw = (bw - 5 * s * (KariyerVeri.BASAMAK - 1)) / KariyerVeri.BASAMAK;
+            for (int j = 0; j < KariyerVeri.BASAMAK; j++)
+            {
+                int gj = KariyerVeri.Global(tr, j); var r = new Rect(bx + j * (pw + 5 * s), y + h / 2 - 2.5f * s, pw, 5 * s);
+                if (gj == sira) Tex(r, Ikonlar.Serit, new Color(1, 1, 1, al)); else Fill(r, p.Kazanildi(gj) ? new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, al) : new Color(1, 1, 1, .14f * al));
+            }
+            return y + h + 10 * s;
+        }
+        // Ayrıntılar: iki özet kartı (sayı + adı) ve tam liste (eski ekranın içeriği).
+        float AyrintiCiz(float x, float y, float w, float s, float al)
+        {
+            var R = root; int n = R.bittiKart.Count; float g = 10 * s, kw = n > 1 ? (w - g) / 2 : w, kh = 0; var vs = Stil(aSkor, Mathf.RoundToInt(30 * aK));
+            foreach (var kk in R.bittiKart) kh = Mathf.Max(kh, aIpucu.CalcHeight(new GUIContent(L.T(kk.ad)), kw - 16 * s));
+            kh += 40 * s + 14 * s;
+            for (int i = 0; i < n; i++)
+            {
+                var r = new Rect(x + i * (kw + g), y, kw, kh); KutuCiz(r, aKutuS, al); var kk = R.bittiKart[i];
+                Yaz(new Rect(r.x, r.y + 6 * s, r.width, 38 * s), kk.deger.ToString(), vs, A_LIMON, al); Yaz(new Rect(r.x + 8 * s, r.y + 46 * s, r.width - 16 * s, kh - 50 * s), L.T(kk.ad), aIpucu, A_YAZI, al);
+            }
+            if (n > 0) y += kh + 10 * s;
+            float ih = aIpucu.CalcHeight(new GUIContent(R.bittiBilgi), w - 28 * s); var bk = new Rect(x, y, w, ih + 24 * s); KutuCiz(bk, aKutuS, al);
+            Yaz(new Rect(x + 14 * s, y + 12 * s, w - 28 * s, ih), R.bittiBilgi, aIpucu, A_YAZI, al);
+            return y + bk.height + 10 * s;
+        }
+        // Büyük eğik düğme (a-cta, IMGUI): limon eğik doku, solda başlık + alt satır, sağda koyu daire içinde ok. Basılıyken .96.
+        // "Sıradaki: İl şampiyonası" düğmede iki kez yazılıyordu (alt satır zaten "İl şampiyonası · Rocco"): alt satır varsa
+        // başlık iki noktadan öncesi (a-cta: "SIRADAKİ"); yoksa tamamı.
+        static string CtaBaslik(string t, string alt)
+        {
+            if (string.IsNullOrEmpty(t)) return ""; int i = t.IndexOf(": "); return i > 0 && !string.IsNullOrEmpty(alt) ? t.Substring(0, i) : t;
+        }
+        bool BuyukDugme(Rect r, string t, string alt, float s, float al)
+        {
+            blocks.Add(r); bool bas = r.Contains(Event.current.mousePosition) && Input.GetMouseButton(0);
+            var m = GUI.matrix; if (bas && !Ayar.reduce) GUIUtility.ScaleAroundPivot(new Vector2(.96f, .96f), r.center);
+            KutuCiz(r, aCtaS, al);
+            float ci = 52 * s; var cst = Sigdir(aCta, t, r.width - ci - 48 * s); float th = cst.CalcHeight(new GUIContent(t), r.width - ci - 48 * s), ah = string.IsNullOrEmpty(alt) ? 0 : aCtaAlt.CalcHeight(new GUIContent(alt), r.width), ty = r.y + (r.height - th - ah) / 2;
+            Yaz(new Rect(r.x + 24 * s, ty, r.width - ci - 48 * s, th), t, cst, A_LIMON_KOYU, al);
+            if (ah > 0) Yaz(new Rect(r.x + 24 * s, ty + th, r.width - ci - 48 * s, ah), alt, aCtaAlt, new Color(A_LIMON_KOYU.r, A_LIMON_KOYU.g, A_LIMON_KOYU.b, .78f), al);
+            var cr = new Rect(r.xMax - 24 * s - ci, r.y + (r.height - ci) / 2, ci, ci); Tex(cr, disk, new Color(A_LIMON_KOYU.r, A_LIMON_KOYU.g, A_LIMON_KOYU.b, al));
+            Tex(new Rect(cr.x + ci * .3f, cr.y + ci * .3f, ci * .4f, ci * .4f), Ikonlar.Ileri, new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, al));
+            GUI.matrix = m;
+            bool b = GUI.Button(r, GUIContent.none, GUIStyle.none); if (b) Yerel.Hap("tick"); return b;
+        }
+        // İkincil düğme (a-res2): lacivert yuvarlak kutu, kalın yazı; ≥ 44 pt (BH) ve ≥ 50 tasarım pikseli.
+        bool ADugme(Rect r, string t, float al)
+        {
+            blocks.Add(r); bool bas = r.Contains(Event.current.mousePosition) && Input.GetMouseButton(0);
+            KutuCiz(r, aKutuS, al); if (bas) Fill(r, new Color(1, 1, 1, .06f));
+            Yaz(new Rect(r.x + 8, r.y, r.width - 16, r.height), t, Sigdir(aDug, t, r.width - 16), A_YAZI, al);
+            return GUI.Button(r, GUIContent.none, GUIStyle.none);
         }
 
         // ---- smaç perdesi (HTML perde): 5 halka × 24 dilim, komşu halkalar ters yönde 1,2 rad/sn döner. Kapanış: disk

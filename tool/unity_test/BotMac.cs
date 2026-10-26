@@ -21,6 +21,8 @@
 // 2026-10-26 aldatıcı vuruşlar (Core/Aldatma, Aldatmalar()): her vuruş seviyesinin altında, ekipmansız, kötü konumda ve
 // uzanırken reddedilir, üç kapı tutunca kabul; etki uygulanır ve üst tur rakibinde küçülür; marjinal konumda kötü vuruş ve
 // dışarı/file artar; jest okuma (tutma, V, yay yönü); görev havuzu; rakip aldatması Tur 3+/Usta, sıklık ve hazırlık sınırı.
+// 2026-10-26 vuruş anı ağır çekimi (Pencereler()): hız tek karede değil ~0,12 sn'de iner, ~0,15 sn'de çıkar; taban
+// Kolay .45 / Usta .6, Odak bandı aynı oranla; Hareketi azalt zaman çarpanını değiştirmez.
 // Çalıştırma: depo kökünden (KariyerVeri tool/veri'yi çalışma klasöründen yukarı arar).
 using System;
 using System.Collections.Generic;
@@ -131,7 +133,7 @@ static class BotMac
         if (gorevN == 0) Fail("görev olayı hiç gelmedi");
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
-        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); Aldatmalar();
+        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); Aldatmalar(); Pencereler();
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }
@@ -797,4 +799,31 @@ static class BotMac
         Match.OyuncuSv = 1;
     }
     static bool Hata(Match M) { var p = M.s != null ? M.s.landPred : null; return p == null || (p.net != null && !p.net.ok) || M.IsOut(p.x, p.y, false); }
+
+    // Vuruş anı ağır çekimi: yumuşak iniş/çıkış, yeni taban, Hareketi azalt zorluğu değiştirmez (2026-10-26).
+    static void Pencereler()
+    {
+        const float dt = 1f / 60f;
+        foreach (var kolay in new[] { true, false })
+            foreach (var reduce in new[] { false, true })
+            {
+                var M = new Match(5, new MatchOptions { easy = kolay, reduce = reduce });
+                float taban = kolay ? .45f : .6f, k1 = M.PencereAdim(dt, true), tIn = dt;
+                if (Math.Abs(M.PencereTaban() - taban) > 1e-4f) Fail("pencere tabanı " + M.PencereTaban() + " (beklenen " + taban + ")");
+                if (k1 <= taban + .05f) Fail("ağır çekim tek karede indi: " + k1);
+                while (M.pencereK > taban + 1e-4f && tIn < 1) { M.PencereAdim(dt, true); tIn += dt; }
+                if (Math.Abs(tIn - Match.PENCERE_IN) > dt * 1.5f) Fail("iniş süresi " + tIn.ToString("0.000") + " sn");
+                float u1 = M.PencereAdim(dt, false), tOut = dt;
+                if (u1 >= 1 - .05f) Fail("ağır çekim tek karede kalktı: " + u1);
+                while (M.pencereK < 1 - 1e-4f && tOut < 1) { M.PencereAdim(dt, false); tOut += dt; }
+                if (Math.Abs(tOut - Match.PENCERE_OUT) > dt * 1.5f) Fail("çıkış süresi " + tOut.ToString("0.000") + " sn");
+                Console.WriteLine("pencere " + (kolay ? "kolay" : "usta ") + (reduce ? " azalt" : "      ") + ": taban " + taban + ", ilk kare " + k1.ToString("0.000") + ", iniş " + tIn.ToString("0.000") + " sn, çıkış " + tOut.ToString("0.000") + " sn");
+            }
+        var O = new Match(5, new MatchOptions { easy = true, gs = new GearStats { yavas = .85f } });
+        if (Math.Abs(O.PencereTaban() - .45f * .85f) > 1e-4f) Fail("Odak bandı oranı bozuldu: " + O.PencereTaban());
+        // Gerçek Update yolu: Hareketi azalt açıkken de pencerede hız tabana iner (eski .7 dalı yok).
+        var R = new Match(9, new MatchOptions { easy = true, reduce = true }); float enAz = 1; int g = 0;
+        while (!R.over && g++ < 60 * 120) { Bot(R, dt, .05); R.Update(dt); enAz = Math.Min(enAz, R.pencereK); R.events.Clear(); }
+        if (Math.Abs(enAz - .45f) > 1e-3f) Fail("Hareketi azalt açıkken pencere hızı " + enAz + " (beklenen .45)");
+    }
 }
