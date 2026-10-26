@@ -56,6 +56,7 @@ namespace BirdieSmash.EditorTools
                 PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.Mono2x);
 #pragma warning restore 618
                 PlayerSettings.fullScreenMode = FullScreenMode.Windowed; PlayerSettings.resizableWindow = true;
+                PlayerSettings.runInBackground = true;   // xvfb'de pencere yöneticisi yok, odak gelmez: yoksa oyuncu ilk karede durur (gdb: PlayerMain usleep)
                 PlayerSettings.defaultScreenWidth = 590; PlayerSettings.defaultScreenHeight = 1278;
                 var opt = new BuildPlayerOptions
                 {
