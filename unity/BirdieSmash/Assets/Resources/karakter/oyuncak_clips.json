@@ -21,7 +21,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.9252
+   "adim": 1.3273
   },
   {
    "name": "smash",
@@ -186,72 +186,72 @@
   {
    "name": "split",
    "first": 679,
-   "last": 691,
+   "last": 697,
    "loop": false,
-   "poses": 5,
+   "poses": 7,
    "hitK": null,
    "hold": null,
    "drop": null
   },
   {
    "name": "chasse_r",
-   "first": 701,
-   "last": 719,
+   "first": 707,
+   "last": 731,
    "loop": true,
-   "poses": 6,
+   "poses": 8,
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.1762
+   "adim": 0.5595
   },
   {
    "name": "chasse_l",
-   "first": 729,
-   "last": 747,
+   "first": 741,
+   "last": 765,
    "loop": true,
-   "poses": 6,
+   "poses": 8,
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.1762
+   "adim": 0.5595
   },
   {
    "name": "fwd",
-   "first": 757,
-   "last": 775,
+   "first": 775,
+   "last": 799,
    "loop": true,
-   "poses": 6,
+   "poses": 8,
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.7672
+   "adim": 0.8189
   },
   {
    "name": "back_r",
-   "first": 785,
-   "last": 803,
+   "first": 809,
+   "last": 833,
    "loop": true,
-   "poses": 6,
+   "poses": 8,
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.2356
+   "adim": 0.9026
   },
   {
    "name": "back_l",
-   "first": 813,
-   "last": 831,
+   "first": 843,
+   "last": 867,
    "loop": true,
-   "poses": 6,
+   "poses": 8,
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.1669
+   "adim": 0.9026
   },
   {
    "name": "jump",
-   "first": 841,
-   "last": 880,
+   "first": 877,
+   "last": 916,
    "loop": false,
    "poses": 14,
    "hitK": 9,
@@ -260,8 +260,8 @@
   },
   {
    "name": "yorgun",
-   "first": 890,
-   "last": 920,
+   "first": 926,
+   "last": 956,
    "loop": true,
    "poses": 10,
    "hitK": null,
@@ -270,8 +270,8 @@
   },
   {
    "name": "drop",
-   "first": 930,
-   "last": 969,
+   "first": 966,
+   "last": 1005,
    "loop": false,
    "poses": 14,
    "hitK": 9,
@@ -280,19 +280,46 @@
   },
   {
    "name": "net",
-   "first": 979,
-   "last": 1000,
+   "first": 1015,
+   "last": 1036,
    "loop": false,
    "poses": 8,
    "hitK": 4,
    "hold": 2,
    "drop": null
+  },
+  {
+   "name": "kros_r",
+   "first": 1046,
+   "last": 1070,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.9284
+  },
+  {
+   "name": "kros_l",
+   "first": 1080,
+   "last": 1104,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.9648
   }
  ],
  "model": "oyuncak",
  "parts": [
   "Cone__tuy",
   "Sphere__mantar",
+  "ayk_bilekli__ayakkabi",
+  "ayk_hafif__ayakkabi",
+  "ayk_karbon__ayakkabi",
+  "ayk_klasik__ayakkabi",
+  "ayk_yastik__ayakkabi",
   "oy_bant__bant",
   "oy_bilek__bilek",
   "oy_forma__forma",
@@ -301,11 +328,92 @@
   "raket_koyu__koyu",
   "raket_sap__grip",
   "raket_tel2__tel2",
-  "raket_tel__tel"
+  "raket_tel__tel",
+  "sac_afro__sac",
+  "sac_anime__sac",
+  "sac_atkuyrugu__sac",
+  "sac_kazima__sac",
+  "sac_kisa__sac",
+  "sac_mohikan__sac",
+  "sac_mullet__sac",
+  "sac_orgu__sac",
+  "sac_rasta__sac",
+  "sac_topuz__sac",
+  "sac_yan__sac"
  ],
  "raket": {
   "kemik": "hand_r",
   "pivot": "raket_pivot"
  },
+ "tip": {
+  "id": "atlet",
+  "boy": 1.0,
+  "sac": "kisa",
+  "ayakkabi": "klasik",
+  "sacRenk": "#2b1d14"
+ },
+ "sac": [
+  {
+   "id": "kisa",
+   "bant": true
+  },
+  {
+   "id": "kazima",
+   "bant": true
+  },
+  {
+   "id": "yan",
+   "bant": true
+  },
+  {
+   "id": "atkuyrugu",
+   "bant": true
+  },
+  {
+   "id": "topuz",
+   "bant": true
+  },
+  {
+   "id": "afro",
+   "bant": false
+  },
+  {
+   "id": "mohikan",
+   "bant": true
+  },
+  {
+   "id": "anime",
+   "bant": true
+  },
+  {
+   "id": "orgu",
+   "bant": true
+  },
+  {
+   "id": "rasta",
+   "bant": true
+  },
+  {
+   "id": "mullet",
+   "bant": true
+  }
+ ],
+ "ayakkabi": [
+  {
+   "id": "klasik"
+  },
+  {
+   "id": "hafif"
+  },
+  {
+   "id": "yastik"
+  },
+  {
+   "id": "bilekli"
+  },
+  {
+   "id": "karbon"
+  }
+ ],
  "hit": {}
 }

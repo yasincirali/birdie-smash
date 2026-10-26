@@ -21,19 +21,26 @@ def _hedef(V,ad,w):
         if not l.strip() or l[0]=='#': continue
         i,x,y,z=l.split(); i=int(i); V[i][0]+=w*float(x); V[i][1]+=w*float(y); V[i][2]+=w*float(z)
 
-def govde(boy=1.0, kas=.6, kilo=.45):
-    """Genç, atletik erkek. kas/kilo 0..1 (0.5 = ortalama). boy: metre cinsinden ayakta boy."""
+def govde(boy=1.0, kas=.6, kilo=.45, cins=1., boyh=.5, etnik=(1/3,1/3,1/3)):
+    """Genç, atletik insan. kas/kilo 0..1 (0.5 = ortalama). boy: metre cinsinden ayakta boy. cins 1 erkek, 0 kadın
+    (MakeHuman makro cinsiyet karışımı); boyh: makro boy (0,5 = hedef yok; oranları değiştirir, boy sonra ölçeklenir);
+    etnik: (caucasian, african, asian) ağırlıkları. Varsayılanlar 2026-10-26 öncesi gövdeyi birebir verir (oyuncak tip
+    'atlet', insan.Oyuncu)."""
     V,F=_obj()
     def ikili(v):  # MakeHuman makro karışımı: min/average/max arası doğrusal
         return {'min':max(0,1-2*v),'average':1-abs(2*v-1),'max':max(0,2*v-1)}
-    K=ikili(kas); W=ikili(kilo)
-    for km,kw in K.items():
-        for wm,ww in W.items():
-            _hedef(V,f'universal-male-young-{km}muscle-{wm}weight',kw*ww)
-    for e in ('caucasian','african','asian'): _hedef(V,f'{e}-male-young',1/3)
-    for km,kw in K.items():
-        for wm,ww in W.items():
-            _hedef(V,f'proportions/male-young-{km}muscle-{wm}weight-idealproportions',kw*ww*.6)
+    K=ikili(kas); W=ikili(kilo); G={'male':cins,'female':1-cins}
+    for g,gw in G.items():
+        if gw<=0: continue
+        for km,kw in K.items():
+            for wm,ww in W.items():
+                _hedef(V,f'universal-{g}-young-{km}muscle-{wm}weight',gw*kw*ww)
+        for e,ew in zip(('caucasian','african','asian'),etnik): _hedef(V,f'{e}-{g}-young',gw*ew)
+        for km,kw in K.items():
+            for wm,ww in W.items():
+                _hedef(V,f'proportions/{g}-young-{km}muscle-{wm}weight-idealproportions',gw*kw*ww*.6)
+                for hm,hw in (('max',max(0,2*boyh-1)),('min',max(0,1-2*boyh))):
+                    _hedef(V,f'height/{g}-young-{km}muscle-{wm}weight-{hm}height',gw*kw*ww*hw)
     # Y yukarı dm → Z yukarı m; ayak tabanı z=0, boy ölçeklenir
     P=[Vector((-x,z,y)) for x,y,z in V]   # yüz +Y'ye, sağ el +X'e (karakter.py ile aynı eksenler)
     bi=sorted({i for f in F['body'] for i in f}); zmin=min(P[i].z for i in bi); zmax=max(P[i].z for i in bi); s=boy/(zmax-zmin)
@@ -366,7 +373,7 @@ def raket(el, rk, yuz, s, M, ad='raket', tel_kalin=.00055):
         v=max(3,min(v,lod.get('v',v)))
         a=yerel(a); b=yerel(b); d=b-a; bpy.ops.mesh.primitive_cylinder_add(vertices=v,radius=r,depth=d.length,location=(a+b)/2); o=bpy.context.object
         o.rotation_mode='QUATERNION'; o.rotation_quaternion=d.to_track_quat('Z','Y'); return ekle(o,mat,tag)
-    L=.675*s; gL=.20*s; gr=.0135*s; shL=.26*s; a_=.115*s; b_=.098*s
+    L=.675*s; gL=.20*s; gr=.0135*s*lod.get('gr',1.); shL=.26*s; a_=.115*s; b_=.098*s   # 'gr': sap yarıçapı çarpanı (oyuncak tutuşu, 2026-10-26)
     y0=-gL*.55   # sapın alt ucu avucun biraz altında
     silindir((0,y0,0),(0,y0+gL,0),gr,M['grip'],'grip',v=8)          # sekizgen sap + grip bandı
     silindir((0,y0-.004*s,0),(0,y0,0),gr*1.08,M['koyu'],'koyu',v=8)  # dip kapağı

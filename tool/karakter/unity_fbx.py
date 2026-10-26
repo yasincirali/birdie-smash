@@ -31,7 +31,7 @@ sys.argv = [sys.argv[0], '--', OUT, 'keys']
 ns = {'__name__': 'karakter', '__file__': SRC}
 exec(compile(src, SRC, 'exec'), ns)
 CLIPS, build, objs = ns['CLIPS'], ns['build'], ns['objs']
-LOOP = {'idle', 'run', 'fwd', 'chasse_r', 'chasse_l', 'back_r', 'back_l', 'yorgun'}
+LOOP = {'idle', 'run', 'fwd', 'chasse_r', 'chasse_l', 'back_r', 'back_l', 'yorgun', 'kros_r', 'kros_l'}   # kros_*: 2026-10-26 hızlı yana çapraz koşu
 FR, GAP, FPS = 3, 10, 30   # poz başına 3 kare (Unity arası doldurur), klipler arası boşluk
 sc = bpy.context.scene; sc.render.fps = FPS
 
@@ -39,6 +39,7 @@ build(CLIPS['idle'][0])
 OY = ns['OY']
 if OY is None or not hasattr(OY, 'ao'): raise SystemExit('iskeletli model kurulmadı (BS_MODEL=oyuncak|aday)')
 ao = OY.ao; kalici = list(OY.kalici)
+for o in kalici: o.hide_set(False); o.hide_render = False   # oyuncak: saç/ayakkabı çeşitlerinin hepsi FBX'e (Unity seçileni açar)
 root = bpy.data.objects.new(AD, None); sc.collection.objects.link(root)
 ao.parent = root
 for o in kalici:
@@ -94,15 +95,15 @@ def proxy_for(o):
 # geçiyordu. Model `ara_kare` derse iki ara poz karakter.py mix() ile karıştırılıp IK + çözücüyle kurulur ve anahtarlanır.
 # FBX zaten her kareyi pişirir (bake_anim_step=1): boyut değişmez, dışa aktarma ~3 kat sürer. Diğer modeller aynen.
 ARA = bool(getattr(OY, 'ara_kare', False))
-fklip = {}; timeline, frame, meta = [], 1, {'fps': FPS, 'scale': 1.75, 'clips': [], 'model': AD}
+fklip = {}; fkare = {}; timeline, frame, meta = [], 1, {'fps': FPS, 'scale': 1.75, 'clips': [], 'model': AD}
 for name, frames in CLIPS.items():
     seq = list(frames) + ([frames[0]] if name in LOOP else [])
     first = frame
     for i_, p in enumerate(seq):
-        timeline.append((frame, p)); fklip[frame] = name
+        timeline.append((frame, p)); fklip[frame] = name; fkare[frame] = i_
         if ARA and i_ + 1 < len(seq):   # ara kareler de kurulur (modelin iç içe geçme çözücüsü onlarda da çalışsın)
             for j in range(1, FR):
-                timeline.append((frame + j, ns['mix'](p, seq[i_ + 1], j / FR))); fklip[frame + j] = name
+                timeline.append((frame + j, ns['mix'](p, seq[i_ + 1], j / FR))); fklip[frame + j] = name; fkare[frame + j] = i_ + j / FR
         frame += FR
     last = frame - FR
     meta['clips'].append({'name': name, 'first': first, 'last': last, 'loop': name in LOOP, 'poses': len(frames),
@@ -113,7 +114,7 @@ for name, frames in CLIPS.items():
 # Ardışık iki pozda da zeminde olan ayağın (klibin en alçak temasının 6 mm içinde; ikisi yerdeyse ortalaması) yatay
 # yer değiştirmesi toplanır (yerinde döngü: basan ayak geriye kayar, oyun kökü o kadar ileri gitmeli). Unity PlayerView
 # `adim × SCALE`'i Match.ADIM_BOY'a yazar; klibin evresi hızla tam bu adımda ilerler, ayak yerde durur.
-ADIM_KLIP = ('run', 'chasse_r', 'chasse_l', 'fwd', 'back_r', 'back_l')
+ADIM_KLIP = ('run', 'chasse_r', 'chasse_l', 'fwd', 'back_r', 'back_l', 'kros_r', 'kros_l')
 def ayak_kemikleri(k):
     out = [b for b in pb if ('foot' in b.name.lower() or 'ball' in b.name.lower() or 'toe' in b.name.lower()) and
            b.name.lower().rstrip('.').endswith(('_' + k, '.' + k, ' ' + k)) and 'ik' not in b.name.lower()]
@@ -123,6 +124,9 @@ adim_iz = {}
 bones = {}; prevq = {}; pprev = {}; cur_frame = [1]; rq = [None]; rhata = [0.]
 for f, pose in timeline:
     cur_frame[0] = f
+    # klip bilgisi (2026-10-26, tutus.py): raket tutuşu klibe göre seçilir (forehand/backhand/file), parmak gerilimi
+    # temas karesine göre sıkılaşır. Pozun kendisi klip adını taşımaz; model okuyabiliyorsa buradan verilir.
+    if hasattr(OY, 'klip_bilgi'): OY.klip_bilgi = (fklip[f], fkare[f], CLIPS[fklip[f]].hit if hasattr(CLIPS[fklip[f]], 'hit') else None, len(CLIPS[fklip[f]]))
     build(pose)
     bpy.context.view_layer.update()
     if fklip.get(f) in ADIM_KLIP and AYAK['r'] and AYAK['l']:
@@ -182,6 +186,8 @@ for im in bpy.data.images:                 # gömülecek dokular: en çok 1024 p
         if not im.packed_file and im.size[0] > 0: im.pack()
     except Exception as e: print('doku', im.name, e)
 
+# anim_sade (2026-10-26, oyuncak 53 kemik): 0,01 yalnız komşusundan göreli 1e-5'ten az farklı örnekleri düşürür (sabit
+# ölçek/konum kanalları, tutulan pozlar): pratikte kayıpsız, FBX 6,3 MB'tan küçülür. Diğer modeller 0 (aynen).
 sc.frame_start, sc.frame_end = 1, frame
 sc.frame_set(1)
 fbx = os.path.join(OUT, AD + '.fbx')
@@ -189,19 +195,24 @@ bpy.ops.export_scene.fbx(filepath=fbx, use_selection=False, object_types={'EMPTY
     apply_scale_options='FBX_SCALE_ALL', axis_forward='-Z', axis_up='Y', bake_space_transform=False,
     use_mesh_modifiers=True, mesh_smooth_type='FACE', use_armature_deform_only=False, add_leaf_bones=False,
     bake_anim=True, bake_anim_use_all_actions=False, bake_anim_use_nla_strips=False, bake_anim_step=1.0,
-    bake_anim_simplify_factor=0.0, bake_anim_force_startend_keying=True, path_mode='COPY', embed_textures=True)
+    bake_anim_simplify_factor=getattr(OY, 'anim_sade', 0.0), bake_anim_force_startend_keying=True, path_mode='COPY', embed_textures=True)
 for c in meta['clips']:
     iz = adim_iz.get(c['name'])
     if not iz: continue
     zt = min(min(z.values()) for z, _ in iz) + .006   # zemindeki ayak: klibin en alçak temasının 6 mm (≈1 cm oyunda) içinde
-    top = Vector((0, 0))
+    top = Vector((0, 0)); bas = 0
     for (za, a), (zb, b) in zip(iz, iz[1:]):
         yer = [k for k in 'rl' if za[k] < zt and zb[k] < zt]   # iki pozda da yerde olan ayak(lar); ikisi yerdeyse ortalama
-        if yer: top += sum((a[k] - b[k] for k in yer), Vector((0, 0))) / len(yer)
+        if yer: top += sum((a[k] - b[k] for k in yer), Vector((0, 0))) / len(yer); bas += 1
+    # Uçuş evresi (2026-10-26, tüm beden turu: koşu, chassé dörtnalı, kros karakter.py dongu() ile uçuşlu): ayak yerdeyken
+    # kök sabit hızla gider, havadayken de aynı hızla gitmeli; toplam yalnız basılı kare çiftlerini sayar. Döngü boyu =
+    # toplam / basılı oran. Uçuşsuz eski kliplerde oran 1, değer değişmez.
+    if bas: top = top * ((len(iz) - 1) / bas)
     c['adim'] = round(top.length, 4)
     print('adim', c['name'], c['adim'], 'birim =', round(top.length * 1.75, 3), 'm oyunda')
 meta['parts'] = sorted([o.name for o in kalici] + list(proxies) + sorted(rset))
 meta['raket'] = {'kemik': EL, 'pivot': 'raket_pivot'}
+meta.update(getattr(OY, 'meta_ek', {}))   # oyuncak: tip, saç ve ayakkabı listeleri (karakter_varlik_sozlesmesi.md)
 print('raket pivot en büyük konum hatası', rhata[0])
 meta['hit'] = ns.get('CLIP_HIT_JS') or {}
 json.dump(meta, open(os.path.join(OUT, AD + '_clips.json'), 'w'), indent=1, ensure_ascii=False)

@@ -43,11 +43,15 @@ koordinatından çizilir (`insan.py` `_yuz_dugum`). 360° ve hakemler aynı `BS_
   foot/ball/thigh/calf), parmaklar 3 boğum, iki elde (2026-10-26 tutuş turu; aşağıda). Ball kemiği taban altından 0,02 birim
   yukarıda (PlayerView.Zemin 3,5 cm sözleşmesi). Ayarlar `BS_OY_*` ortam değişkenleri.
   `BS_MODEL=oyuncak python3 -I tool/karakter/unity_fbx.py -- /tmp/oy oyuncak` → `oyuncak.fbx` + `oyuncak_clips.json`.
-  - **Performans bütçesi** (yasin: "her telefonda akıcı"; ekranda 4 figür): karakter 9,0k üçgen + raket ~1k, 33 kemik (sol el
-    parmakları kemik değil, hafif kapalı pişirilir; sağ el tutuşu 10 boğumla), FBX ~3,3 MB. Sabit renkli her şey TEK derili ağ
-    `oy_govde__govde` + TEK malzeme `oy_body` + 512 px renk atlası (`oyuncak_govde.png`, dışa aktarma klasörüne yazılır;
+  - **Performans bütçesi** (yasin: "her telefonda akıcı"; ekranda 4 figür): gövde ~7,3–7,4k üçgen (govde+forma+bant+bilek; raket ayrıca ~1k),
+    seçili saç (0,5–1,7k) + ayakkabı çifti (1,2–1,8k) ile ekrandaki en ağır figür ~10,7k; 53 kemik (iki elde 5×3 parmak:
+    tutuş ve servis kıskacı kemikle okunsun diye), FBX ~2,9 MB (`BS_OY_ANIMSADE` 0,01 anahtar sadeleştirmesi; kayıpsız, 6,3 →
+    2,9 MB). Sabit renkli her şey TEK derili ağ
+    `oy_govde__govde` + TEK malzeme `oy_body` + 512 px renk atlası (`<model>_govde.png`; tip başına AYRI atlas, çünkü ten ve
+    ayakkabı hücreleri tipe göre değişir; dışa aktarma klasörüne yazılır;
     Resources/karakter'e kopyalanır, PlayerView.DokuMalzeme "body" adlı malzemeye bağlar). Ayrı kalan yalnız Unity'nin boyadığı
-    `oy_forma__forma`, `oy_bant__bant`, `oy_bilek__bilek` (4 renderer, 4 malzeme). Şort atlasta lacivert (hakem rengiyle aynı).
+    `oy_forma__forma`, `oy_bant__bant`, `oy_bilek__bilek` + seçili 1 saç (`oy_sac`) + 1 ayakkabı (`ayk_ust` + atlas):
+    ekranda en çok 6 derili renderer. Şort atlasta lacivert (hakem rengiyle aynı).
   - **İç içe geçme çözücü** (`Carpisma`, `Oyuncak.coz`): her pozda derili ağ ölçülür; el/ön kol/üst kol gövde-baş-bacağa,
     baldır öbür bacağa, taban ve raket zemine, raket gövdeye girerse hedef itilir ve IK yeniden çözülür (bilek ≤7 cm, raket
     adımda ≤6°, toplam ≤25°). `ara_kare`: unity_fbx iki ara pozu da (mix) kurar, çözücü onlarda da çalışır (hızlı geçişte
@@ -61,7 +65,11 @@ koordinatından çizilir (`insan.py` `_yuz_dugum`). 360° ve hakemler aynı `BS_
     yakın planda parmak ucu sapın üstünde düz dururdu (tutuşun okunduğu yer orası); bütçe ölçülüp karar verildi
     (sözleşme v1'deki boyutlar). El deri ağı sadeleştirmede korunur (`BS_OY_ELKORU`), parmaklar kıymıklaşmasın.
   - **Tutuş katmanı** `tutus.py`: klibe göre tutuş (el sıkışma / başparmak / panhandle / parmak), el yönü raket
-    çerçevesinden, ön kol burulması + bilek sınırı + ≤20° avuçta kayma; parmaklar sapa ızgara eniyilemesiyle sarılır,
+    çerçevesinden, ön kol burulması + bilek sınırı; artakalan açı avuçta kaymaya bölünür: sapı eksen dışına eğme ≤20° (`BS_TT_KAYMA`),
+    sap ekseni çevresinde parmaklarda çevirme ≤70° (`BS_TT_BURGUK`; oyuncular forehand↔backhand geçişinde sapı parmakta
+    çevirir, eğmez). Bu da yetmezse el öbür tutuşa geçer (on↔bh, kil→bh; 0,35 rad ceza ki sebepsiz geçmesin) — yüksek
+    backhand hazırlığında raket gövdeye 6–9 cm girmesin diye. Temas çevresinde (gerilim ≥ 0,9) klibin tutuşu kilitli:
+    vuruşun okunduğu karede tutuş klibin adıyla tutarlı kalır. Parmaklar sapa ızgara eniyilemesiyle sarılır,
     deri ağıyla son denetim; gerilim temasa doğru sıkılaşır. Sol el serviste topu tüyünden çimdikler. Poz sözlükleri
     (karakter.py) değişmedi; `unity_fbx.py` klip/kare bilgisini `OY.klip_bilgi` ile verir.
   - **Tipler** (`BS_OY_TIP`: atlet, guclu, kadin, uzun; `TIPLER` sözlüğü): aynı iskelet adları ve klipler, MakeHuman

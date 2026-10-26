@@ -1,0 +1,419 @@
+{
+ "fps": 30,
+ "scale": 1.75,
+ "clips": [
+  {
+   "name": "idle",
+   "first": 1,
+   "last": 25,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null
+  },
+  {
+   "name": "run",
+   "first": 35,
+   "last": 59,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 1.33
+  },
+  {
+   "name": "smash",
+   "first": 69,
+   "last": 108,
+   "loop": false,
+   "poses": 14,
+   "hitK": 9,
+   "hold": 2,
+   "drop": 5
+  },
+  {
+   "name": "clear",
+   "first": 118,
+   "last": 157,
+   "loop": false,
+   "poses": 14,
+   "hitK": 9,
+   "hold": 2,
+   "drop": 5
+  },
+  {
+   "name": "drive",
+   "first": 167,
+   "last": 188,
+   "loop": false,
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
+  },
+  {
+   "name": "kill",
+   "first": 198,
+   "last": 216,
+   "loop": false,
+   "poses": 7,
+   "hitK": 3,
+   "hold": 2,
+   "drop": null
+  },
+  {
+   "name": "low",
+   "first": 226,
+   "last": 247,
+   "loop": false,
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
+  },
+  {
+   "name": "lunge",
+   "first": 257,
+   "last": 278,
+   "loop": false,
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
+  },
+  {
+   "name": "serve",
+   "first": 288,
+   "last": 345,
+   "loop": false,
+   "poses": 20,
+   "hitK": 10,
+   "hold": null,
+   "drop": null
+  },
+  {
+   "name": "serve_gec",
+   "first": 355,
+   "last": 412,
+   "loop": false,
+   "poses": 20,
+   "hitK": 11,
+   "hold": null,
+   "drop": null
+  },
+  {
+   "name": "serve_bh",
+   "first": 422,
+   "last": 449,
+   "loop": false,
+   "poses": 10,
+   "hitK": 5,
+   "hold": null,
+   "drop": null
+  },
+  {
+   "name": "serve_flick",
+   "first": 459,
+   "last": 486,
+   "loop": false,
+   "poses": 10,
+   "hitK": 5,
+   "hold": null,
+   "drop": null
+  },
+  {
+   "name": "block",
+   "first": 496,
+   "last": 511,
+   "loop": false,
+   "poses": 6,
+   "hitK": 3,
+   "hold": 2,
+   "drop": null
+  },
+  {
+   "name": "bh_over",
+   "first": 521,
+   "last": 548,
+   "loop": false,
+   "poses": 10,
+   "hitK": 5,
+   "hold": 2,
+   "drop": null
+  },
+  {
+   "name": "bh_drive",
+   "first": 558,
+   "last": 579,
+   "loop": false,
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
+  },
+  {
+   "name": "bh_kill",
+   "first": 589,
+   "last": 607,
+   "loop": false,
+   "poses": 7,
+   "hitK": 3,
+   "hold": 2,
+   "drop": null
+  },
+  {
+   "name": "bh_low",
+   "first": 617,
+   "last": 638,
+   "loop": false,
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
+  },
+  {
+   "name": "bh_lunge",
+   "first": 648,
+   "last": 669,
+   "loop": false,
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
+  },
+  {
+   "name": "split",
+   "first": 679,
+   "last": 697,
+   "loop": false,
+   "poses": 7,
+   "hitK": null,
+   "hold": null,
+   "drop": null
+  },
+  {
+   "name": "chasse_r",
+   "first": 707,
+   "last": 731,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.5595
+  },
+  {
+   "name": "chasse_l",
+   "first": 741,
+   "last": 765,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.5595
+  },
+  {
+   "name": "fwd",
+   "first": 775,
+   "last": 799,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.8202
+  },
+  {
+   "name": "back_r",
+   "first": 809,
+   "last": 833,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.9026
+  },
+  {
+   "name": "back_l",
+   "first": 843,
+   "last": 867,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.9026
+  },
+  {
+   "name": "jump",
+   "first": 877,
+   "last": 916,
+   "loop": false,
+   "poses": 14,
+   "hitK": 9,
+   "hold": 2,
+   "drop": 6
+  },
+  {
+   "name": "yorgun",
+   "first": 926,
+   "last": 956,
+   "loop": true,
+   "poses": 10,
+   "hitK": null,
+   "hold": null,
+   "drop": null
+  },
+  {
+   "name": "drop",
+   "first": 966,
+   "last": 1005,
+   "loop": false,
+   "poses": 14,
+   "hitK": 9,
+   "hold": 2,
+   "drop": 5
+  },
+  {
+   "name": "net",
+   "first": 1015,
+   "last": 1036,
+   "loop": false,
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
+  },
+  {
+   "name": "kros_r",
+   "first": 1046,
+   "last": 1070,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.9284
+  },
+  {
+   "name": "kros_l",
+   "first": 1080,
+   "last": 1104,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.9284
+  }
+ ],
+ "model": "oyuncak_guclu",
+ "parts": [
+  "Cone__tuy",
+  "Sphere__mantar",
+  "ayk_bilekli__ayakkabi",
+  "ayk_hafif__ayakkabi",
+  "ayk_karbon__ayakkabi",
+  "ayk_klasik__ayakkabi",
+  "ayk_yastik__ayakkabi",
+  "oy_bant__bant",
+  "oy_bilek__bilek",
+  "oy_forma__forma",
+  "oy_govde__govde",
+  "raket_kafa__cerceve",
+  "raket_koyu__koyu",
+  "raket_sap__grip",
+  "raket_tel2__tel2",
+  "raket_tel__tel",
+  "sac_afro__sac",
+  "sac_anime__sac",
+  "sac_atkuyrugu__sac",
+  "sac_kazima__sac",
+  "sac_kisa__sac",
+  "sac_mohikan__sac",
+  "sac_mullet__sac",
+  "sac_orgu__sac",
+  "sac_rasta__sac",
+  "sac_topuz__sac",
+  "sac_yan__sac"
+ ],
+ "raket": {
+  "kemik": "hand_r",
+  "pivot": "raket_pivot"
+ },
+ "tip": {
+  "id": "guclu",
+  "boy": 1.0,
+  "sac": "kazima",
+  "ayakkabi": "klasik",
+  "sacRenk": "#1d1b1b"
+ },
+ "sac": [
+  {
+   "id": "kisa",
+   "bant": true
+  },
+  {
+   "id": "kazima",
+   "bant": true
+  },
+  {
+   "id": "yan",
+   "bant": true
+  },
+  {
+   "id": "atkuyrugu",
+   "bant": true
+  },
+  {
+   "id": "topuz",
+   "bant": true
+  },
+  {
+   "id": "afro",
+   "bant": false
+  },
+  {
+   "id": "mohikan",
+   "bant": true
+  },
+  {
+   "id": "anime",
+   "bant": true
+  },
+  {
+   "id": "orgu",
+   "bant": true
+  },
+  {
+   "id": "rasta",
+   "bant": true
+  },
+  {
+   "id": "mullet",
+   "bant": true
+  }
+ ],
+ "ayakkabi": [
+  {
+   "id": "klasik"
+  },
+  {
+   "id": "hafif"
+  },
+  {
+   "id": "yastik"
+  },
+  {
+   "id": "bilekli"
+  },
+  {
+   "id": "karbon"
+  }
+ ],
+ "hit": {}
+}

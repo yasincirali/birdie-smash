@@ -382,6 +382,7 @@ namespace BirdieSmash.Game
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             Color? renk = c ?? (tipMeta != null && !string.IsNullOrEmpty(tipMeta.sacRenk) ? Kit.Hex(tipMeta.sacRenk) : (Color?)null);
             var tx = Resources.Load<Texture2D>("karakter/oyuncak_sac"); if (!renk.HasValue && tx == null) return;
+            if (tx != null) tx.wrapMode = TextureWrapMode.Repeat;   // tel dokusu UV'de 1'i aşar; .meta içe aktarma ayarına bağlı kalmasın
             Color rk = renk ?? (r.sharedMaterial != null ? r.sharedMaterial.color : Color.gray);
             var m = tx != null ? Kit.LitTex(rk, tx, .2f) : Kit.Lit(rk, .2f);
             var arr = r.sharedMaterials; for (int k = 0; k < arr.Length; k++) arr[k] = m; if (arr.Length == 0) arr = new[] { m }; r.sharedMaterials = arr;

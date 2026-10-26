@@ -29,10 +29,23 @@ import insan, aday
 R_UE=aday.RIG['ue']
 E=lambda k,d: float(os.environ.get(k,d))
 BOY=1.80                       # tasarım gerçek metrede; sonda bacak 0,49 birime ölçeklenir (insan/sade/aday ile aynı)
-KAS,KILO=E('BS_OY_KAS','.78'),E('BS_OY_KILO','.36')
-BAS=E('BS_OY_BAS','1.07')       # baş büyütmesi (1 = gerçek)
+# Oyuncu tipleri (2026-10-26, yasin: "tip seçebilme ... karakterin tasarımına ekstra önem"): aynı iskelet adları, aynı
+# klipler; her tip kendi FBX'i (oyuncak_<tip>.fbx; atlet = oyuncak.fbx, geriye uyum). Yüksek kameradan silüetle ayrılsınlar
+# diye kütle/omuz/boy ve saç farklı; yüz yakın planda aynı stilize dil (iri göz, sakin gülüş). boy: oyundaki boy çarpanı
+# (bacak 0,49 × boy; pozlar insan.Iskelet.hedef'te bacak oranıyla büyür, raket yolu tipe göre ölçeklenir). ±%4'te tutuldu:
+# vuruş yüksekliği oyun mantığında sabit, raket başı tipler arasında en çok ~9 cm kayar.
+# kasK/kirpik: kaş genişliği ve üst kirpik şeridi (kadın tipinde ince kaş, belirgin kirpik; ilk dizilişte yüzler aynıydı).
+TIPLER={
+ 'atlet':dict(cins=1.,kas=.78,kilo=.36,boyh=.5,etnik=(1/3,1/3,1/3),boy=1.00,bas=1.07,el=1.06,sac='kisa',sacRenk='#2b1d14'),
+ 'guclu':dict(cins=1.,kas=1.,kilo=.74,boyh=.4,etnik=(.25,.55,.20),boy=1.00,bas=1.04,el=1.10,omuz=1.10,kalca=1.03,sac='kazima',sacRenk='#1d1b1b'),
+ 'kadin':dict(kasK=.52,kirpik=1.45,cins=0.,kas=.70,kilo=.42,boyh=.6,etnik=(.30,.15,.55),boy=.96,bas=1.09,el=1.03,omuz=.95,kalca=1.05,sac='atkuyrugu',sacRenk='#3a2416'),
+ 'uzun': dict(cins=1.,kas=.48,kilo=.04,boyh=1.,etnik=(.60,.20,.20),boy=1.04,bas=1.04,el=1.06,omuz=.95,kalca=.97,sac='yan',sacRenk='#6b4a2e'),
+}
+TIP_ID=os.environ.get('BS_OY_TIP','atlet'); TIP=TIPLER[TIP_ID]
+KAS,KILO=E('BS_OY_KAS',TIP['kas']),E('BS_OY_KILO',TIP['kilo'])
+BAS=E('BS_OY_BAS',TIP['bas'])       # baş büyütmesi (1 = gerçek)
 GOZ=E('BS_OY_GOZ','1.24')       # göz bölgesi büyütmesi
-EL=E('BS_OY_EL','1.06')
+EL=E('BS_OY_EL',TIP['el'])
 ORAN=E('BS_OY_ORAN','.185')      # gövde ağı sadeleştirme oranı (MakeHuman 26,7k üçgen)
 
 # ---------- MakeHuman → UE kemik eşlemesi ----------
@@ -51,7 +64,7 @@ def ue_ad(mh):
     if n.startswith('lowerarm'): return 'lowerarm'+yan
     if n=='wrist' or n.startswith('metacarpal'): return 'hand'+yan
     if n.startswith('finger'):
-        f,j=n[6:].split('-'); return ('thumb','index','middle','ring','pinky')[int(f)-1]+'_0'+str(min(int(j),2))+yan   # uç boğum ikinciye: 10 kemik az, FBX ~1 MB küçük
+        f,j=n[6:].split('-'); return ('thumb','index','middle','ring','pinky')[int(f)-1]+'_0'+j+yan   # 3 boğum (2026-10-26 tutuş turu: uç boğum sapı sarmak için ayrı; tutus.py)
     if n.startswith('upperleg'): return 'thigh'+yan
     if n.startswith('lowerleg'): return 'calf'+yan
     if n=='foot': return 'foot'+yan
@@ -73,7 +86,7 @@ def _ss(a,b,x):
 
 # ---------- 1) gövde: MakeHuman, stilize oran ----------
 def _govde():
-    P,F=insan.govde(BOY,KAS,KILO); d,J=insan.eklemler(P)
+    P,F=insan.govde(BOY,KAS,KILO,TIP['cins'],TIP['boyh'],TIP['etnik']); d,J=insan.eklemler(P)
     W=json.load(open(f'{insan.MH}/rigs/default_weights.mhw'))['weights']
     UW=[{} for _ in P]   # köşe → {ue: ağırlık}
     for bn,lst in W.items():
@@ -84,6 +97,22 @@ def _govde():
         if s>0:
             for k in a: a[k]/=s
     j=lambda k: J[k].copy()
+    # tip silüeti: omuz kuşağı genişliği (göğüs/sırt x'te ölçeklenir, kollar omuzla birlikte dışa kayar) ve kalça genişliği
+    # (bacaklar dışa kayar). Makro hedefler kas/kiloyla hacmi verir ama yüksek kameradan "geniş omuz" / "dar omuz, geniş
+    # kalça" farkı ancak bununla okunuyordu (ilk dizilişte dört tip neredeyse aynı silüetteydi).
+    om,ka=TIP.get('omuz',1.),TIP.get('kalca',1.)
+    if om!=1 or ka!=1:
+        shx=abs(j('upperarm01.R____head').x); hpx=abs(j('upperleg01.R____head').x)
+        UST=('spine_03','clavicle_r','clavicle_l','neck_01'); KOL=('upperarm','lowerarm','hand','thumb','index','middle','ring','pinky'); BAC=('thigh','calf','foot','ball')
+        def don(p,w):
+            wu=sum(w.get(u,0) for u in UST)+.5*w.get('spine_02',0); wk=sum(v for u,v in w.items() if u.startswith(KOL))
+            wp=w.get('pelvis',0)+.4*w.get('spine_01',0); wb=sum(v for u,v in w.items() if u.startswith(BAC))
+            sg=1 if p.x>0 else -1
+            x=p.x*(1+(om-1)*wu)+sg*(om-1)*shx*wk+p.x*(ka-1)*wp+sg*(ka-1)*hpx*wb
+            return Vector((x,p.y,p.z))
+        for i,p in enumerate(P): P[i]=don(p,UW[i])
+        for k in list(J):
+            u=ue_ad(k.split('____')[0]); J[k]=don(J[k],{u:1.})
     # stilize: baş boyun tabanından, eller bilekten büyür (ağırlıkla yumuşak geçiş); göz bölgesi göz merkezinden
     piv=j('neck03____tail')
     def olc(p,mer,k,w): return mer+(p-mer)*(1+(k-1)*w)
@@ -279,124 +308,10 @@ def _serit(bvh,yol,gen,kal,ad,mat,tag,ymin=-1.):
     sm=o.modifiers.new('k','SOLIDIFY'); sm.thickness=kal; sm.offset=1; bpy.ops.object.modifier_apply(modifier=sm.name)
     return o
 
-def _sac(P,F,UW,J,mat):
-    """saç kabuğu: başın tam çözünürlüklü derisinden (sadeleştirilmeden önce), saç çizgisi eğik alan."""
-    gm=(J['eye.L____head']+J['eye.R____head'])/2; gd=(J['eye.L____head']-J['eye.R____head']).length
-    top=max(p.z for p in P)
-    nrm=Vector((0,-.62,1)).normalized()
-    def h(c): return (c-gm).dot(nrm)/gd
-    kulak=lambda c: abs(c.x)>.078 and c.z<gm.z+.028
-    def zh(c):
-        # saç çizgisi: alında göz hizasının 6,2 cm üstü, kulak üstünde 3,2 cm, ensede 7,5 cm altı (yumuşak geçiş)
-        dy=c.y-gm.y; t=_ss(-.03,-.17,dy); ax=abs(c.x)
-        z=gm.z+(.057+.017*_ss(.012,.055,ax))*(1-t)-.075*t        # alın: ortada hafif sivri, şakaklarda geri çekilir (kâse kesimi gibi düz çizgi olmasın)
-        # kulak üstü: yan yüzde saç kulağın üstünden dolanır (yumuşak geçiş)
-        w=_ss(.050,.066,ax)*_ss(-.005,-.03,dy)*(1-_ss(-.12,-.16,dy))
-        return z*(1-w)+max(z,gm.z+.030)*w
-    fs=[]
-    for f in F['body']:
-        cs=[P[i] for i in f]; c=sum(cs,Vector())/len(cs)
-        if min(UW[i].get('head',0)+UW[i].get('neck_01',0) for i in f)<.7: continue
-        if max(P[i].z-zh(P[i]) for i in f)>-.004 and not kulak(c): fs.append(f)
-    ix=sorted({i for f in fs for i in f}); yeni={o:n for n,o in enumerate(ix)}
-    bm=bmesh.new(); V=[bm.verts.new(P[i]) for i in ix]
-    for f in fs:
-        try: bm.faces.new([V[yeni[i]] for i in f])
-        except ValueError: pass
-    # saç çizgisi alanla kesilir (yüz yüz seçim testere dişi bırakıyordu), altı silinir
-    kes(bm,list(bm.faces),lambda c: c.z-zh(c))
-    bmesh.ops.delete(bm,geom=[f for f in bm.faces if f.calc_center_median().z<zh(f.calc_center_median())],context='FACES')
-    bmesh.ops.delete(bm,geom=[v for v in bm.verts if not v.link_faces],context='VERTS')
-    bm.normal_update()
-    # sınırdan uzaklık (kenarda sıfıra iner: kask kenarı yok)
-    sinir=[v.co.copy() for v in bm.verts if v.is_boundary]
-    from mathutils.kdtree import KDTree
-    kd=KDTree(len(sinir))
-    for i,c in enumerate(sinir): kd.insert(c,i)
-    kd.balance()
-    tepe=Vector((0,gm.y-.03,top))
-    for v in bm.verts:
-        c=v.co; db=kd.find(c)[2]
-        ramp=_ss(0,E('BS_OY_SACR','.022'),db)
-        y=_ss(gm.z+.4*gd,top-.015,c.z)                 # yanlar kısa (fade), tepe dolgun
-        kal=.003+E('BS_OY_SACT','.019')*y
-        # perçem: alnın üstü öne/yukarı kabarık
-        on=_ss(gm.y-.04,gm.y+.04,c.y)*_ss(gm.z+.9*gd,top-.03,c.z); kal+=E('BS_OY_PERCEM','.012')*on
-        # tutamlar: tepeden öne yayılan oluklar, kenara doğru söner
-        d=c-tepe; az=math.atan2(d.x,-d.y); el=d.length
-        kal+=.0045*math.sin(7*az+14*el)*y*ramp
-        v.co=c+v.normal*(kal*ramp+.0012)
-    me=bpy.data.meshes.new('oy_sac'); bm.to_mesh(me); bm.free()
-    o=_nesne('oy_sac',me,mat,'sac')
-    bpy.ops.object.select_all(action='DESELECT'); bpy.context.view_layer.objects.active=o; o.select_set(True)
-    bpy.ops.object.modifier_add(type='SMOOTH'); o.modifiers[-1].factor=.5; o.modifiers[-1].iterations=2; bpy.ops.object.modifier_apply(modifier=o.modifiers[-1].name)
-    return o,gm,gd,h
+# saç, ayakkabı ve taban: sac_ayk.py (2026-10-26 çeşitler; eski tek saç/ayakkabı kuralları oraya taşındı: kal_kisa = eski
+# varsayılan saç, _saya/_taban = eski ayakkabı yolu çeşit parametreleriyle)
 
-def _ayakkabi(ad,pts,bal,an,mat,vurgu=None):
-    """saya: ayak noktalarının dışbükey zarfı (parmak girintisi yok, sneaker hacmi), burun 1,6 cm uzar ve hafif kalkar,
-    yumuşatılıp sadeleştirilir; alt düz (taban bunun altına gelir)"""
-    q=[]
-    for c in pts:
-        c=c.copy(); u=_ss(bal.y-.07,bal.y+.06,c.y); c.y+=.010*u
-        c.z=max(0.,c.z); q.append(c)
-    bm=bmesh.new()
-    for c in q: bm.verts.new(c)
-    bmesh.ops.convex_hull(bm,input=bm.verts[:])
-    bmesh.ops.delete(bm,geom=[v for v in bm.verts if not v.link_faces],context='VERTS')
-    me=bpy.data.meshes.new(ad); bm.to_mesh(me); bm.free(); o=_nesne(ad,me,mat,'ayakkabi')
-    bpy.ops.object.select_all(action='DESELECT'); bpy.context.view_layer.objects.active=o; o.select_set(True)
-    for typ,kw in (('REMESH',dict(mode='SMOOTH',octree_depth=5,scale=.9)),('DISPLACE',dict(direction='NORMAL',strength=.003,mid_level=0)),
-                   ('SMOOTH',dict(factor=1.,iterations=14)),('DECIMATE',dict(ratio=E('BS_OY_AYKD','.17')))):
-        m=o.modifiers.new(typ,typ)
-        for a,v in kw.items(): setattr(m,a,v)
-        bpy.ops.object.modifier_apply(modifier=m.name)
-    zmin=min(v.co.z for v in me.vertices)
-    for v in me.vertices:
-        v.co.z-=zmin
-        if v.co.z<.008: v.co.z*=.3
-        v.co.z+=.006*_ss(bal.y,bal.y+.08,v.co.y)*(1-_ss(0,.03,v.co.z))   # burun hafif kalkık (toe spring)
-    for p in me.polygons: p.use_smooth=True
-    if vurgu:   # topuk kapağı dış taban renginde: arkadan/yandan ayakkabı okunur, beyaz kütle tek düze durmaz
-        me.materials.append(vurgu); y0=min(v.co.y for v in me.vertices)
-        for p in me.polygons:
-            c=p.center
-            if c.y<y0+.045-.25*max(0,c.z-.02) and c.z>.012: p.material_index=1
-    print('oyuncak: ayakkabı',ad,len(me.polygons))
-    return o
-
-def _taban(ad,ayk,K,k,mats,olc):
-    """iki katlı taban: ayakkabı ağının alt çevresinin dışbükey zarfı, 4 mm dışa; üst kenar sayanın içinde"""
-    vs=[c for c in ayk if (c.x>0)==(k=='r')]
-    zmin=min(c.z for c in vs); alt=[c for c in vs if c.z<zmin+.018]
-    import mathutils.geometry as G
-    pts=[(c.x,c.y) for c in alt]; hull=[pts[i] for i in G.convex_hull_2d(pts)]
-    cx=sum(p[0] for p in hull)/len(hull); cy=sum(p[1] for p in hull)/len(hull)
-    def dis(p,d):
-        v=Vector((p[0]-cx,p[1]-cy)); return Vector((p[0],p[1]))+v.normalized()*d
-    # çevreyi eşit aralıklı yeniden örnekle (yumuşak kenar)
-    n=24; per=[]
-    L=[(Vector(hull[i])-Vector(hull[(i+1)%len(hull)])).length for i in range(len(hull))]; T=sum(L)
-    for j in range(n):
-        s=T*j/n; i=0
-        while s>L[i] and i<len(L)-1: s-=L[i]; i+=1
-        a=Vector(hull[i]); b=Vector(hull[(i+1)%len(hull)]); per.append(tuple(a+(b-a)*(s/L[i])))
-    TOP,ORT,ALT=zmin+.006,zmin-.013,zmin-.024
-    katman=[(TOP,.001),(zmin-.004,.0045),(ORT,.0045),(ALT+.003,.0038),(ALT,.0005)]
-    bm=bmesh.new(); hal=[]
-    for z,d in katman: hal.append([bm.verts.new((*dis(p,d),z)) for p in per])
-    for j in range(len(katman)-1):
-        for i in range(n):
-            f=bm.faces.new((hal[j][i],hal[j][(i+1)%n],hal[j+1][(i+1)%n],hal[j+1][i])); f.material_index=0 if j<2 else 1
-    f=bm.faces.new(list(reversed(hal[-1]))); f.material_index=1
-    f=bm.faces.new(hal[0]); f.material_index=0
-    bmesh.ops.recalc_face_normals(bm,faces=bm.faces)
-    me=bpy.data.meshes.new(ad); bm.to_mesh(me); bm.free()
-    me.materials.append(mats['orta_taban']); me.materials.append(mats['taban'])
-    o=bpy.data.objects.new(ad,me); bpy.context.scene.collection.objects.link(o)
-    for p in me.polygons: p.use_smooth=False
-    return o,ALT
-
-def _halka_r(ad,merkez,ez,pts,yuk,kal,mat,tag,n=40,pay=0.):
+def _halka_r(ad,merkez,ez,pts,yuk,kal,mat,tag,n=40,pay=0.,prof=None):
     """halka şerit, kesit açı açı ölçülür: her açıda dilimdeki (|z|<yuk/2) noktaların en büyük yarıçapı + pay; komşu
     açılarla yumuşatılır. Kafa bandı saçın, bileklik ön kolun üstüne oturur (elips varsayımı kulak ve ensede boşluk bırakıyordu)"""
     ex=Vector((1,0,0)) if abs(ez.x)<.9 else Vector((0,1,0)); ex=(ex-ez*ex.dot(ez)).normalized(); ey=ez.cross(ex)
@@ -409,7 +324,7 @@ def _halka_r(ad,merkez,ez,pts,yuk,kal,mat,tag,n=40,pay=0.):
         r=[r[i] if r[i]>0 else max(r[i-1],r[(i+1)%n]) for i in range(n)]
     for _ in range(2): r=[max(r[i],(r[i-1]+r[i]+r[(i+1)%n])/3) for i in range(n)]
     r=[(r[i-1]+2*r[i]+r[(i+1)%n])/4+pay for i in range(n)]
-    prof=[(-.5,0),(-.36,1),(.36,1),(.5,0)]   # 4 nokta, pahlı kesit (6 noktalı yuvarlak kesit uzak kamerada fark edilmiyordu; bütçe)
+    prof=prof or [(-.5,0),(-.36,1),(.36,1),(.5,0)]   # 4 nokta, pahlı kesit (6 noktalı yuvarlak kesit uzak kamerada fark edilmiyordu; bütçe)
     bm=bmesh.new(); hal=[]
     for i in range(n):
         a=2*math.pi*i/n; u=ex*math.cos(a)+ey*math.sin(a)
@@ -423,13 +338,13 @@ def _halka_r(ad,merkez,ez,pts,yuk,kal,mat,tag,n=40,pay=0.):
     me=bpy.data.meshes.new(ad); bm.to_mesh(me); bm.free(); return _nesne(ad,me,mat,tag)
 
 class OyIskelet(aday.AdayIskelet):
-    """UE eşlemesi (aday.AdayIskelet); ayak düz basar, zemin kaydırması tabandan ölçülür, parmaklar avuca kapanır.
-    Avuç normali dinlenme duruşunun (MakeHuman A-pozu, avuç içe-aşağı) eklemlerinden hesaplanır."""
+    """UE eşlemesi (aday.AdayIskelet); ayak düz basar, zemin kaydırması tabandan ölçülür. Raket eli ve parmaklar tutus.py:
+    el yönü raket çerçevesinden (tutuş), ön kol burulması ona göre, parmaklar sapa sarılır; sol el serviste çimdik."""
     POZ=('root','shR','shL','neck','head','elR','elL','wrR','wrL','hpR','hpL','knR','knL','anR','anL')
     def __init__(s,ao,avuc,dz):
         super().__init__(ao,R_UE); s.avuc_d=avuc
         s._avuc={n:insan.avuc_yerel(ao,n,avuc[n[-1]]) for n in ('lowerarm_r','hand_r','hand_l')}
-        s.dz=dz
+        s.dz=dz; s.tut=None; s.parmak_coz=True
     def hedef(s,p):
         zmin=E('BS_OY_BILEK','.05'); p=dict(p)
         for K in 'RL':
@@ -437,27 +352,21 @@ class OyIskelet(aday.AdayIskelet):
             if a[2]<zmin: p['an'+K]=(a[0],a[1],zmin)
         T=super().hedef(p); dz=Vector((0,0,s.dz))
         for n in s.POZ: T[n]=T[n]+dz
+        T['_top']=bool(p.get('shuttle'))
         return T
     def uygula(s,T):
-        super().uygula(T)
+        T2=s.tut.hazirla(T) if s.tut else T
+        super().uygula(T2)
         ao=s.ao; pb=ao.pose.bones; L=bpy.context.view_layer
         for k,K in (('r','R'),('l','L')):
             b=pb[f'foot_{k}']; M=b.matrix.copy(); R0=ao.data.bones[f'foot_{k}'].matrix_local.to_3x3()
             y=R0@Vector((0,1,0)); yh=Vector((y.x,y.y,0)).normalized(); f=T['ft'+K]
             ang=math.atan2(yh.x*f.y-yh.y*f.x,yh.dot(f)); N=Matrix.Rotation(ang,4,'Z')@Matrix(R0).to_4x4(); N.translation=M.translation; b.matrix=N; L.update()
-        ac=math.radians(E('BS_OY_PARMAK','58'))   # 58° (2026-10-26 tutuş ölçümü): 68° parmak uçlarını sapın 1,4 cm içine sokuyordu
-        for k,kat in (('r',1.),('l',.35)):
-            n_=s.avuc_d[k]
-            for f in ('index','middle','ring','pinky','thumb'):
-                for j,pay in (('01',.85),('02',1.55)):   # uç boğum ikinciyle birlikte kapanır
-                    n=f'{f}_{j}_{k}'
-                    if n not in pb: continue
-                    bn=ao.data.bones[n]; d=(bn.tail_local-bn.head_local).normalized()
-                    ax=d.cross(n_)
-                    if ax.length<1e-4: continue
-                    ax=(bn.matrix_local.to_3x3().inverted()@ax.normalized()).normalized()
-                    q=pb[n]; q.rotation_mode='QUATERNION'; q.rotation_quaternion=Quaternion(ax,ac*kat*pay*(.5 if f=='thumb' else 1))
-        L.update()
+        if s.tut:
+            s.tut.el_kur(T)
+            if s.parmak_coz: s.tut.parmak(T,s.tut.cimdik_noktasi() if T.get('_top') else None)
+            else: s.tut.P.uygula()   # çözücü turu: son parmak çözümü (sargı kur_poz'un sonunda yeniden)
+            L.update()
 
 
 # ---------- iç içe geçme çözücü (2026-10-26, yasin: "objelerde iç içe geçmeleri de çözmen lazım") ----------
@@ -679,32 +588,27 @@ class Oyuncak:
             # üst kirpik: göz kapağı kenarı boyunca ince koyu şerit (yüze oturur)
             xs=[c.x+sx*r*t for t in (-1.05,-.7,-.35,0,.35,.7,1.1)]
             zs=[c.z+r*(.50+.20*(1-((t)/1.05)**2))+(.12*r if (sx*t)>.7 else 0) for t in (-1.05,-.7,-.35,0,.35,.7,1.1)]
-            parca.append(_serit(hb,list(zip(xs,zs)),ymin=c.y,gen=[r*.10,r*.16,r*.18,r*.18,r*.18,r*.17,r*.12],kal=.0013,ad='oy_kirpik'+mh,mat=mats['kirpik'],tag='kirpik'))
+            parca.append(_serit(hb,list(zip(xs,zs)),ymin=c.y,gen=[r*w*TIP.get('kirpik',1.) for w in (.10,.16,.18,.18,.18,.17,.12)],kal=.0013,ad='oy_kirpik'+mh,mat=mats['kirpik'],tag='kirpik'))
             # kaş: iç uç alçak ve kalın, dışa doğru yay ve incelir
             gd=(J['eye.L____head']-J['eye.R____head']).length
             us=[.16,.30,.45,.60,.75,.90]; ks=[]
             for u in us:
                 t=(u-.16)/.74; ks.append((sx*u*gd,gm.z+gd*(.40+.20*t-.16*t*t)))
-            parca.append(_serit(hb,ks,[gd*w*E('BS_OY_KASK','.85') for w in (.085,.095,.09,.08,.065,.045)],.0022,'oy_kas'+mh,mats['kas'],'kas',ymin=c.y))
-        sac,gm,gd,hfn=_sac(P,F,UW,J,mats['sac']); parca.append(sac)
-        # kafa bandı: saç çizgisinin üstünde, saç kabuğunun kesitine oturan elips
-        # bant düzlemi alında kaşların üstünde, arkada biraz alçak; kesit saç + deri noktalarından açı açı ölçülür
-        ez=Vector((0,-.30,1)).normalized(); cx=Vector((0,gm.y-.085,gm.z+E('BS_OY_BANT','.050')))
-        pts=[v.co.copy() for v in sac.data.vertices]+[P[i] for f in F['body'] for i in f if UW[i].get('head',0)>.8]
-        bant=_halka_r('oy_bant',cx,ez,pts,.024,.0042,mats['bant'],'bant',n=32); parca.append(bant)
+            parca.append(_serit(hb,ks,[gd*w*E('BS_OY_KASK',TIP.get('kasK',.85)) for w in (.085,.095,.09,.08,.065,.045)],.0022,'oy_kas'+mh,mats['kas'],'kas',ymin=c.y))
+        # saç, bant, ayakkabı çeşitleri (sac_ayk.py; 2026-10-26 tip/saç/ayakkabı seçimi). Saçlar ve ayakkabılar 'oy_' ile
+        # başlamaz: aşağıdaki atlas birleştirmesine girmez, her biri ayrı nesne kalır (Unity yalnız seçileni açar).
+        import sac_ayk as SA
+        Bh=SA.Bas(P,F,UW,J,me); gm,gd=Bh.gm,Bh.gd
+        bant,halka=SA.bant(Bh,mats['bant'],_halka_r); parca.append(bant)
+        r_,g_,b_=(int(TIP['sacRenk'][i:i+2],16)/255 for i in (1,3,5)); lin=lambda x: x/12.92 if x<=.04045 else ((x+.055)/1.055)**2.4
+        mats['sac'].node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value=(lin(r_),lin(g_),lin(b_),1); mats['sac'].diffuse_color=(lin(r_),lin(g_),lin(b_),1)
+        s.saclar,s.sac_bant=SA.saclar(Bh,mats['sac'],halka); parca+=list(s.saclar.values())
         # bileklik: sağ ön kolun bileğe yakın kesiti
         ar,aw=J['lowerarm01.R____head'],J['wrist.R____head']; d=(aw-ar); dn=d.normalized(); c0=aw-dn*.045
         cc=c0   # kemik ekseni (sadeleştirilmiş ağda dilimin köşe ortalaması boş kalabiliyordu)
         bil=_halka_r('oy_bilek',cc,dn,[v.co.copy() for v in me.vertices if (v.co-c0).length<.08],.042,.006,mats['bilek'],'bilek',n=20,pay=.0015); parca.append(bil)
-        # taban
-        tabanlar=[]
-        aykn={}
-        for k in 'rl':
-            bal=J[f'toe1-1.{"R" if k=="r" else "L"}____head']
-            aykn[k]=_ayakkabi('oy_ayk_'+k,[c for c in aykco if (c.x>0)==(k=='r')],bal,K.an[k],mats['ayakkabi'],mats['taban']); parca.append(aykn[k])
-        aykco=[aykn[k].matrix_world@v.co for k in 'rl' for v in aykn[k].data.vertices]
-        for k in 'rl':
-            o,alt=_taban('oy_taban_'+k,aykco,K,k,mats,1); tabanlar.append(o); parca.append(o)
+        yaka=[v.co.copy() for v in me.vertices if any(K.an[k].z-.01<v.co.z<K.an[k].z+.10 and (Vector((v.co.x,v.co.y))-Vector((K.an[k].x,K.an[k].y))).length<.075 for k in 'rl')]
+        s.ayakkabilar,alt=SA.ayakkabilar(aykco,J,K.an,yaka,_mat); parca+=list(s.ayakkabilar.values())
         s.taban_alt=alt
         # --- iskelet (UE adları, MakeHuman eklemlerinde)
         arm=bpy.data.armatures.new('oy_isk'); ao=bpy.data.objects.new('oy_isk',arm); bpy.context.scene.collection.objects.link(ao)
@@ -726,8 +630,8 @@ class Oyuncak:
             kemik(f'lowerarm_{k}',jh(f'lowerarm01.{m}'),jh(f'wrist.{m}'),f'upperarm_{k}')
             kemik(f'hand_{k}',jh(f'wrist.{m}'),jh(f'finger3-1.{m}'),f'lowerarm_{k}')
             for fi,fn in enumerate(('thumb','index','middle','ring','pinky')):
-                kemik(f'{fn}_01_{k}',jh(f'finger{fi+1}-1.{m}'),jt(f'finger{fi+1}-1.{m}'),f'hand_{k}')
-                kemik(f'{fn}_02_{k}',jh(f'finger{fi+1}-2.{m}'),jt(f'finger{fi+1}-3.{m}'),f'{fn}_01_{k}')
+                for j in (1,2,3):
+                    kemik(f'{fn}_0{j}_{k}',jh(f'finger{fi+1}-{j}.{m}'),jt(f'finger{fi+1}-{j}.{m}'),f'hand_{k}' if j==1 else f'{fn}_0{j-1}_{k}')
             kemik(f'thigh_{k}',jh(f'upperleg01.{m}'),jh(f'lowerleg01.{m}'),'pelvis')
             kemik(f'calf_{k}',jh(f'lowerleg01.{m}'),jh(f'foot.{m}'),f'thigh_{k}')
             tb=sum((jh(f'toe{t}-1.{m}') for t in range(1,6)),Vector())/5
@@ -751,6 +655,7 @@ class Oyuncak:
             if o is govde: continue
             n=o.name
             if n.startswith('oy_bilek'): _tek(o,'lowerarm_r')
+            elif o.vertex_groups: pass   # saç ve ayakkabı ağırlıkları sac_ayk.py'de
             elif n.startswith(('oy_taban_','oy_ayk_')):
                 k=n[-1]; vg=o.vertex_groups.new(name=f'foot_{k}'); vb=o.vertex_groups.new(name=f'ball_{k}'); by=ao.data.bones[f'ball_{k}'].head_local.y
                 for v in o.data.vertices:
@@ -758,10 +663,10 @@ class Oyuncak:
             else: _tek(o,'head')
         for o in parca:
             md=o.modifiers.new('isk','ARMATURE'); md.object=ao
-        # sol el parmakları kemik değil, dinlenme ağına hafif kapalı pişirilir (bütçe: 43 → 33 kemik, FBX kemik başına
-        # ~0,1 MB). Sol el yalnız servis topunu tutar; boğum hareketi uzak kamerada okunmuyordu. Kapanma uygula()'daki
-        # sol el değeriyle aynı (68°·0,35), görünüm değişmez. BS_OY_SOLPARMAK=1 eski 10 kemiği geri getirir.
-        if E('BS_OY_SOLPARMAK','0')<.5:
+        # sol el parmakları (2026-10-26 öncesi) kemik değildi, dinlenme ağına hafif kapalı pişiriliyordu (FBX kemik başına
+        # ~0,1 MB). Tutuş turunda (yasin: "5 parmak tutuşa göre") iki el de 5 parmak × 3 boğum: sol el serviste topu tüyünden
+        # çimdikler (tutus.py). Eski pişirme BS_OY_SOLPARMAK=0 ile duruyor (bütçe gerekirse).
+        if E('BS_OY_SOLPARMAK','1')<.5:
             pb=ao.pose.bones; ac=math.radians(E('BS_OY_PARMAK','58')); n_=avuc['l']; L=bpy.context.view_layer
             sol=[f'{f}_{j}_l' for f in ('thumb','index','middle','ring','pinky') for j in ('01','02')]
             for n in sol:
@@ -788,7 +693,7 @@ class Oyuncak:
         print('oyuncak: ağırlıksız köşe',len(ag),'/',len(me.vertices))
         # --- ölçek: bacak 0,49 (insan.Oyuncu/aday/sade ile aynı)
         bn=ao.data.bones; bacak=(bn['calf_r'].head_local-bn['thigh_r'].head_local).length+(bn['foot_r'].head_local-bn['calf_r'].head_local).length
-        olc=E('BS_OY_OLC',.49/bacak); s.olc=olc
+        olc=E('BS_OY_OLC',.49*TIP['boy']/bacak); s.olc=olc
         D=Matrix.Scale(olc,4)
         for o in [ao]+parca: o.matrix_world=D@o.matrix_world
         bpy.context.view_layer.update()
@@ -824,6 +729,10 @@ class Oyuncak:
             if o['_k'] in AYRI: continue
             c=tuple(round(x,4) for x in o.data.materials[0].node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value[:3])
             if c not in renk: renk.append(c)
+        bc=lambda m: tuple(round(x,4) for x in m.node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value[:3])
+        for o in s.ayakkabilar.values():   # ayakkabı: saya (yuva 0, Unity boyar) dışındaki renkler atlasa
+            for m in o.data.materials[1:]:
+                if bc(m) not in renk: renk.append(bc(m))
         N_=8; PX=512; assert len(renk)<=N_*N_
         def srgb(x): return 12.92*x if x<=.0031308 else 1.055*x**(1/2.4)-.055
         img=bpy.data.images.new('oyuncak_govde',PX,PX,alpha=False); pix=[0.]*(PX*PX*4); cel=PX//N_
@@ -847,6 +756,16 @@ class Oyuncak:
             ul=o.data.uv_layers[0] if o.data.uv_layers else o.data.uv_layers.new(name='UVMap')
             for l in ul.data: l.uv=uv
             o.data.materials[0]=body; gov.append(o)
+        # ayakkabı yuvaları: [ayk_ust (boyanır), oy_body (atlas)]: taban/topuk/şerit yüzleri hücre ortasına
+        for o in s.ayakkabilar.values():
+            me_=o.data; ul=me_.uv_layers.new(name='UVMap'); ms=list(me_.materials); yi=[]
+            for p_ in me_.polygons:
+                if p_.material_index==0: uv=(.999,.999)   # saya: atlas dışı köşe (malzeme boyanır, doku yok)
+                else: i_=renk.index(bc(ms[p_.material_index])); uv=((i_%N_+.5)/N_,(i_//N_+.5)/N_)
+                for li in p_.loop_indices: ul.data[li].uv=uv
+                yi.append(min(p_.material_index,1))
+            me_.materials.clear(); me_.materials.append(ms[0]); me_.materials.append(body)   # clear() yüz indekslerini sıfırlar
+            for p_,i_ in zip(me_.polygons,yi): p_.material_index=i_
         ayri=[o for o in parcalar if o['_k'] in AYRI]   # join birleşenleri siler: önce ayır
         for o in gov:   # join için tek ad: UV katmanı aynı adda olmalı
             o.data.uv_layers[0].name='UVMap'
@@ -854,13 +773,21 @@ class Oyuncak:
         for o in gov: o.select_set(True)
         ana=next(o for o in gov if o['_k']=='ten'); bpy.context.view_layer.objects.active=ana; bpy.ops.object.join()
         ana.name='oy_govde'; ana.data.name='oy_govde'; ana['tag']='govde'
+        print('oyuncak: saç son aralık itilen',SA.aralik_son(list(s.saclar.values()),ana,SA.ARALIK*olc))
         son=[ana]
         for o in ayri:
             o.name='oy_'+o['_k']; o.data.name=o.name; o['tag']=o['_k']; son.append(o)
         for o in son:
             if '_k' in o: del o['_k']
+        for o in list(s.saclar.values())+list(s.ayakkabilar.values()): son.append(o)
         s.kalici=son
-        tri=sum(len(p.vertices)-2 for o in son for p in o.data.polygons)
+        s.sac_sec=os.environ.get('BS_OY_SACSEC',TIP['sac']); s.ayk_sec=os.environ.get('BS_OY_AYKSEC','klasik')
+        gor=set(map(id,s.gorunen()))
+        for o in son:   # seçili olmayan çeşit render'da ve görünümde gizli (FBX'e yine girer: unity_fbx açar)
+            if id(o) not in gor: o.hide_render=True; o.hide_set(True)
+        s.meta_ek={'tip':{'id':TIP_ID,'boy':TIP['boy'],'sac':TIP['sac'],'ayakkabi':'klasik','sacRenk':TIP['sacRenk']},
+                   'sac':[{'id':k,'bant':bool(s.sac_bant[k])} for k in s.saclar],'ayakkabi':[{'id':k} for k in s.ayakkabilar]}
+        tri=sum(len(p.vertices)-2 for o in son if o.get('tag') not in ('sac','ayakkabi') for p in o.data.polygons)
         print('oyuncak: parçalar',sorted((o.name,o['tag'],sum(len(p.vertices)-2 for p in o.data.polygons)) for o in son),'üçgen',tri,'ölçek',round(olc,4),
               'kemik',sum(1 for b in ao.data.bones),'malzeme',len({m for o in son for m in o.data.materials}))
         # zemin: bilek yüksekliği (taban altından) ölçülür; hedef() basan bileği 0,09·k'ya koyar (insan.Iskelet), fark kaydırılır
@@ -874,13 +801,20 @@ class Oyuncak:
         # alçak vuruşta kafa zemine 10-20 cm giriyordu). Gerçekçi oranlı gövdede 0,8 (~94 cm): gerçeğinden (67,5 cm) hâlâ iri,
         # yüksek kameradan okunur. unity_fbx.py OY.raket_s'yi okur; diğer modeller 1,0.
         s.raket_s=E('BS_OY_RAKET','.8')
+        # tutuş (tutus.py): sap yarıçapı oyuncakta ×0,78 (oyunda 3,8 → 2,9 cm çap; 1,4× büyük raketin sapı elin yanında kalın
+        # duruyor, parmaklar sapı sarmıyordu; gerçek sap+grip ~2,7 cm). Yüksek kameradan fark yok, yakın planda tutuş okunur.
+        grk=E('BS_OY_SAP','.78'); insan.RAKET_LOD['gr']=grk
+        import tutus; s.I.tut=tutus.Tutus(ao,ana,avuc,s.raket_s,grk); s.klip_bilgi=None
         nes,_=insan.raket(Vector((0,0,0)),Vector((0,1,0)),Vector((0,0,1)),s.raket_s,M,ad='rk_ornek')
         ry=[]
         for o in nes:
             if o.get('tag') in ('cerceve','koyu','grip'):
                 vs=[o.matrix_world@v.co for v in o.data.vertices]; ry+=vs[::3] if o.get('tag')=='cerceve' else vs
         for o in nes: bpy.data.objects.remove(o)
-        s.C=Carpisma(ao,son,ry); s.cozum={}; s.ara_kare=True   # unity_fbx ara kareleri de kurar (Carpisma notu)
+        # çözücü yalnız tipin varsayılan saçı ve klasik ayakkabıyla ölçer: bütün çeşitler aynı anda ağ olsa en hacimli saç
+        # (afro) her tipte kol yolunu iterdi; en hacimli saçla kalan girme icice denetiminde raporlanır
+        s.anim_sade=E('BS_OY_ANIMSADE','.01')   # unity_fbx bake_anim_simplify_factor (oradaki not)
+        s.C=Carpisma(ao,s.gorunen(),ry); s.cozum={}; s.ara_kare=True   # unity_fbx ara kareleri de kurar (Carpisma notu)
         print('oyuncak: bilek-taban',round(h_ank,4),'dz',round(dz,4))
     def _avuc(s,k):
         """sap ekseni: el kemiği başından orta parmak köküne %55, avuç yönünde (yarım el kalınlığı + sap yarıçapı)"""
@@ -936,8 +870,9 @@ class Oyuncak:
                 if zmin< -TOL: bacak_ik(K,T['an'+K]+Vector((0,0,-zmin+.001))); degisti=True
             # raket: gövdeye ve zemine (sağ el ve ön kol hariç: sap avuçta)
             if not degisti:
-                I.uygula(T); C.degerlendir(); palm=mw@s._avuc('r')
-                tum=C.raket_dunya(palm,T['rk'],T['rkFace']); pts=[q for q in tum if (q-palm).length>.10]
+                I.uygula(T); C.degerlendir(); palm=T['_C'] if '_C' in T else mw@s._avuc('r')
+                tum=C.raket_dunya(T['_el'],T['_rk'],T['_fn']) if '_el' in T else C.raket_dunya(palm,T['rk'],T['rkFace'])   # raket elden (tutus)
+                pts=[q for q in tum if (q-palm).length>.10]
                 # sap ve şaft dibi (avuca 10 cm içi): döndürmek elin içinde döndürmek olur; bilek dışarı itilir
                 hed=C.bvh(('govde','bas','uylukR','uylukL','bacakR','bacakL','kolL','onkolL','elL'))
                 d2,n2,q2=C.en_derin(hed,[q for q in tum if (q-palm).length<=.10]); kalan['raket_sap']=d2
@@ -961,14 +896,23 @@ class Oyuncak:
         return T
     def kur_poz(s,p):
         for o in s.gecici: bpy.data.objects.remove(o)
-        s.gecici=[]; T=s.I.hedef(p); s.I.uygula(T)
-        if E('BS_OY_COZ','1')>.5: T=s.coz(T)
+        s.gecici=[]; s.I.tut.bilgi=getattr(s,'klip_bilgi',None)
+        T=s.I.hedef(p); s.I.parmak_coz=True; s.I.uygula(T)
+        if E('BS_OY_COZ','1')>.5:
+            s.I.parmak_coz=False; T=s.coz(T); s.I.parmak_coz=True; s.I.uygula(T)   # parmaklar son pozda sarılır
         s.T=T
-        mw=s.ao.matrix_world; palm=mw@s._avuc('r')
-        nes,s.kafa=insan.raket(palm,T['rk'],T['rkFace'],s.raket_s,s.M); s.gecici+=nes
-        if p.get('shuttle'):   # servis: sol elde tüy top (sade.py ile aynı ölçü)
-            k=.85; c=mw@s._avuc('l')+Vector((0,.01,.012))
+        mw=s.ao.matrix_world
+        nes,s.kafa=insan.raket(T['_el'],T['_rk'],T['_fn'],s.raket_s,s.M); s.gecici+=nes
+        if p.get('shuttle'):   # servis: sol elde tüy top (sade.py ile aynı ölçü), tüyünden çimdikli (tutus.cimdik)
+            k=.85; P=s.I.tut.cimdik_noktasi(); el=s.I.tut.el['l']; ah=(s.I.tut.P.Hm('l').to_3x3()@el.a); ah.z=0; ah.normalize()
+            ust=.035*k*1.6+.065*k*1.6/2; rp=.034*k*1.6-(.010/(.065*k*1.6))*(.022*k*1.6)
+            c=P+ah*rp-Vector((0,0,ust-.010))   # pedlerin arası tüy etek kenarının 1 cm altı, mantar aşağıda
             bpy.ops.mesh.primitive_uv_sphere_add(segments=10,ring_count=6,radius=.0125*k*1.6,location=c); m_=bpy.context.object; m_.data.materials.append(s.M['mantar']); m_['tag']='mantar'   # mantar 10×6 (varsayılan 32×16: 960 → 100 üçgen)
             bpy.ops.mesh.primitive_cone_add(vertices=16,radius1=.012*k*1.6,radius2=.034*k*1.6,depth=.065*k*1.6,end_fill_type='NOTHING',location=c+Vector((0,0,.035*k*1.6))); t=bpy.context.object; t.data.materials.append(s.M['tuy']); t['tag']='tuy'
             s.gecici+=[m_,t]
-        return s.kalici+s.gecici
+        return s.gorunen()+s.gecici
+    def gorunen(s):
+        """çizilecek kalıcı parçalar: saç/ayakkabı çeşitlerinden yalnız seçili olan (BS_OY_SACSEC, BS_OY_AYKSEC; kel = saç
+        yok). unity_fbx hepsini s.kalici'den alır."""
+        return [o for o in s.kalici if not (o.get('tag')=='sac' and o.name.split('__')[0]!='sac_'+s.sac_sec)
+                and not (o.get('tag')=='ayakkabi' and o.name.split('__')[0]!='ayk_'+s.ayk_sec)]
