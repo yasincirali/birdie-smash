@@ -225,6 +225,19 @@ platform :ios do
       UI.message("Game Center yetkisi eklendi: #{ent_ad}")
     rescue => e
       UI.important("Game Center yetkisi eklenmedi (başarımlar çalışmaz): #{e.message}")
+      # 2026-10-26 (koşu 40393369125): Unity Social API'yi görünce kendi BirdieSmash.entitlements'ını yazıp
+      # CODE_SIGN_ENTITLEMENTS'a Docker yolunu koyuyor. Profil Game Center taşımıyorsa o ayar hem bulunamayan
+      # dosyaya hem de profilde olmayan yetkiye işaret eder; temizlenir ki arşiv kırılmasın (oyun başarımsız yüklenir).
+      begin
+        require "xcodeproj"
+        proj = Xcodeproj::Project.open(xcodeproj)
+        hedef = proj.targets.find { |t| t.name == "Unity-iPhone" }
+        hedef.build_configurations.each { |c| c.build_settings.delete("CODE_SIGN_ENTITLEMENTS") }
+        proj.save
+        UI.message("Unity'nin yazdığı yetki ayarı kaldırıldı")
+      rescue => e2
+        UI.important("Yetki ayarı temizlenemedi: #{e2.message}")
+      end
     end
 
     # Uygulama ikonu Flutter'ınkiyle aynı set: Unity'nin ürettiği 1024'lük ikon alfa kanalı taşırsa
