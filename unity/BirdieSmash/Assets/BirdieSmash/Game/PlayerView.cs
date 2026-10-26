@@ -53,7 +53,7 @@ namespace BirdieSmash.Game
             }
             if (prefab != null)
             {
-                model = Instantiate(prefab, yaw).transform; model.localPosition = Vector3.zero; model.localScale = Vector3.one * SCALE;
+                modelAdi = prefab.name; model = Instantiate(prefab, yaw).transform; model.localPosition = Vector3.zero; model.localScale = Vector3.one * SCALE;
                 anim = model.GetComponentInChildren<Animation>();
                 Paint(gor);
                 if (anim != null && anim["idle"] != null) Sample("idle", 0, null, 0, 1);
@@ -92,8 +92,81 @@ namespace BirdieSmash.Game
         public float RingAlpha { get { return ringA; } }
 
         Quaternion calib = Quaternion.identity;
-        // FBX eksen dönüşümüne güvenme: "ileri"yi işaretlerden çıkar (goz__isaret − bas__isaret), +Z'ye çevir.
+        // Yön ve dikey hizalama İSKELETTEN (2026-10-26, yasin build 38: "3B olanlar ters görünüyor", "gerçekçi karakterler
+        // render edilmiyor"). Unity ekran turu ölçtü: FBX kökünün doğrudan çocukları (bas__/goz__ işaretleri, servis topu
+        // vekilleri) derili ağa göre X ekseninde 180° dönük geliyor; işaretten çıkarılan "ileri" bu yüzden tersti (Oyuncak'ta
+        // yüz kameraya, rakipte sırt fileye bakıyordu) ve Rocketbox kökü yan yatmış, ağ zeminin 1 m altına gömülüydü.
+        // Şimdi: boşta pozunda baş, iki üst kol ve iki ayak kemiğinden karakterin yukarı/sağ/ileri ekseni ölçülür, model
+        // yaw'a göre dik ve +Z'ye bakar hâle döndürülür, tabanı y=0'a, ayak ortası eksene oturtulur. Kemik adları üç
+        // iskeletin hepsinde bulunur: KayKit (head, upperarm.l, foot.l), Rocketbox (Bip01 Head, Bip01 L UpperArm,
+        // Bip01 L Foot), sade/Mesh2Motion (head, upperarm_l, foot_l). İşaretler yalnız kemik bulunamazsa yedek.
+        Transform kHead, kHip; readonly List<Transform> kThigh = new List<Transform>(), kCalf = new List<Transform>();
+        static bool Sol(string n) { return n.EndsWith(".l") || n.EndsWith("_l") || n.Contains(" l ") || n.Contains("left"); }
+        static bool Sag(string n) { return n.EndsWith(".r") || n.EndsWith("_r") || n.Contains(" r ") || n.Contains("right"); }
         void Calibrate()
+        {
+            Transform la = null, ra = null; var feet = new List<Transform>();
+            foreach (var t in model.GetComponentsInChildren<Transform>(true))
+            {
+                string n = t.name.ToLowerInvariant(); if (n.Contains("__")) continue;   // ağ/parça nesneleri kemik değil
+                if (kHead == null && (n == "head" || n.EndsWith(" head"))) kHead = t;
+                if (kHip == null && (n == "hips" || n == "pelvis" || n.EndsWith(" pelvis"))) kHip = t;
+                if (n.Contains("upperarm")) { if (Sol(n)) la = t; else if (Sag(n)) ra = t; }
+                if (n.Contains("foot") && !n.Contains("step") && !n.Contains("ik")) feet.Add(t);
+                if (n.Contains("thigh") || n.Contains("upperleg")) kThigh.Add(t);
+                if (n.Contains("calf") || n.Contains("lowerleg")) kCalf.Add(t);
+            }
+            foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>(true)) r.updateWhenOffscreen = true;   // sınır gerçek pozdan (kırpılma yok)
+            if (kHead == null || la == null || ra == null || feet.Count == 0) { CalibrateIsaret(); return; }
+            Vector3 fm = Vector3.zero; foreach (var f in feet) fm += yaw.InverseTransformPoint(f.position); fm /= feet.Count;
+            Vector3 up = yaw.InverseTransformPoint(kHead.position) - fm, right = yaw.InverseTransformPoint(ra.position) - yaw.InverseTransformPoint(la.position);
+            Vector3 fwd = Vector3.Cross(right, up); if (fwd.sqrMagnitude < 1e-8f || up.sqrMagnitude < 1e-8f) { CalibrateIsaret(); return; }
+            var R0 = Quaternion.LookRotation(fwd, up);
+            model.localRotation = Quaternion.Inverse(R0) * model.localRotation;
+            model.localPosition = Vector3.zero; Zemin(); calib = Quaternion.identity;
+            VekilDuzelt(true);
+        }
+        // Tabanı y=0'a, ayak ortasını yaw eksenine oturt (dönüşten sonra). Derili ağın sınırı (bounds) bir sonraki çizime
+        // dek eski pozda kalır; bu yüzden kemik konumlarından: ayak/parmak kemiklerinin en alçağı − taban payı (3,5 cm).
+        void Zemin()
+        {
+            float minY = float.MaxValue; Vector3 fm = Vector3.zero; int k = 0;
+            foreach (var t in model.GetComponentsInChildren<Transform>())
+            {
+                string n = t.name.ToLowerInvariant(); if (n.Contains("__") || n.Contains("step") || n.Contains("ik")) continue;
+                bool ayak = n.Contains("foot"), uc = n.Contains("toe") || n.Contains("ball");
+                if (!ayak && !uc) continue;
+                var p = yaw.InverseTransformPoint(t.position); minY = Mathf.Min(minY, p.y); if (ayak) { fm += p; k++; }
+            }
+            if (minY == float.MaxValue) return; if (k > 0) fm /= k;
+            model.localPosition -= new Vector3(fm.x, minY - .035f, fm.z);
+        }
+        // Kökün doğrudan çocukları (işaret, servis topu vekili) ağa göre dönük gelir: bas__isaret'i baş kemiğine en iyi
+        // oturtan eksen dönüşü (24 aday) seçilir ve her örneklemeden sonra bu parçalara uygulanır (animasyon her karede
+        // yerel değeri yeniden yazar; yazmadığı karede ikinci kez uygulanmasın diye son yazılan değer tutulur).
+        Quaternion vekilF = Quaternion.identity; bool vekilVar; readonly List<Transform> vekil = new List<Transform>();
+        readonly Dictionary<Transform, Pose> vekilSon = new Dictionary<Transform, Pose>();
+        void VekilDuzelt(bool kur)
+        {
+            if (kur)
+            {
+                Transform bas = null;
+                foreach (Transform c in model) { if (c.GetComponent<MeshRenderer>() == null) continue; if (c.name.StartsWith("bas__")) bas = c; vekil.Add(c); }
+                if (bas == null || kHead == null) return;
+                Vector3 hedef = model.InverseTransformPoint(kHead.position), m = bas.localPosition; float best = float.MaxValue;
+                foreach (var e in new[] { Vector3.zero, new Vector3(180, 0, 0), new Vector3(0, 180, 0), new Vector3(0, 0, 180), new Vector3(90, 0, 0), new Vector3(-90, 0, 0), new Vector3(0, 0, 90), new Vector3(0, 0, -90), new Vector3(90, 180, 0), new Vector3(-90, 180, 0), new Vector3(0, 90, 0), new Vector3(0, -90, 0) })
+                { var q = Quaternion.Euler(e); float d = (q * m - hedef).sqrMagnitude; if (d < best) { best = d; vekilF = q; } }
+                vekilVar = vekilF != Quaternion.identity;
+            }
+            if (!vekilVar) return;
+            foreach (var t in vekil)
+            {
+                Pose son; if (vekilSon.TryGetValue(t, out son) && son.position == t.localPosition && son.rotation == t.localRotation) continue;
+                t.localPosition = vekilF * t.localPosition; t.localRotation = vekilF * t.localRotation; vekilSon[t] = new Pose(t.localPosition, t.localRotation);
+            }
+        }
+        // Yedek (eski yol): işaretlerden "ileri".
+        void CalibrateIsaret()
         {
             Transform head = null; var eyes = new List<Transform>();
             foreach (var t in model.GetComponentsInChildren<Transform>())
@@ -106,7 +179,6 @@ namespace BirdieSmash.Game
             Vector3 f = yaw.InverseTransformDirection(e - head.position); f.y = 0;
             if (f.sqrMagnitude < 1e-8f) return;
             calib = Quaternion.FromToRotation(f.normalized, Vector3.forward);
-            if (head.position.y - model.position.y < .3f) Debug.LogWarning("Birdie Smash: karakterin başı beklenenden alçak, FBX eksenlerini kontrol et");
         }
 
         public static string Etiket(string n)
@@ -117,6 +189,16 @@ namespace BirdieSmash.Game
         // Parça kanalları (HTML turParlat): 0 forma, 1 raket (cerceve/grip/tel/tel2), 2 bant, 3 bileklik.
         public readonly List<Renderer>[] kanal = { new List<Renderer>(), new List<Renderer>(), new List<Renderer>(), new List<Renderer>() };
         public Transform Model { get { return model; } }
+        string modelAdi;
+        // Gömülü doku Unity'de malzemeye bağlanmıyor (ekran turu rapor.txt: Rocketbox ten malzemesi siyah, doku yok): gövde ve
+        // baş renk dokusu FBX'ten çıkarılıp Resources'a kondu (<model>_govde / <model>_bas.jpg), malzeme adına göre bağlanır.
+        Material DokuMalzeme(Material asil)
+        {
+            if (asil == null) return null; string n = asil.name.ToLowerInvariant(); string ek = n.Contains("body") ? "_govde" : n.Contains("head") ? "_bas" : null;
+            if (ek == null) return null; var tx = Resources.Load<Texture2D>("karakter/" + modelAdi + ek); if (tx == null) return null;
+            Material m; if (!dokuM.TryGetValue(modelAdi + ek, out m)) dokuM[modelAdi + ek] = m = Kit.LitTex(Color.white, tx, .18f); return m;
+        }
+        static readonly Dictionary<string, Material> dokuM = new Dictionary<string, Material>();
         void Paint(Gorunum g)
         {
             var formaM = Kit.Lit(g.forma, .25f); var M = new Dictionary<string, Material> { { "forma", formaM } };
@@ -131,7 +213,13 @@ namespace BirdieSmash.Game
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
                 int kn = tag == "forma" ? 0 : tag == "cerceve" || tag == "grip" || tag == "tel" || tag == "tel2" ? 1 : tag == "bant" ? 2 : tag == "bilek" ? 3 : -1; if (kn >= 0) kanal[kn].Add(r);
                 Material m; M.TryGetValue(tag, out m);
-                if (m == null) { if (r.sharedMaterial == null || r.sharedMaterial.shader == null || r.sharedMaterial.shader.name.Contains("Error")) m = Kit.Lit(Color.gray); else continue; }
+                if (m == null)
+                {
+                    var asl = r.sharedMaterials; bool degisti = false;
+                    for (int k = 0; k < asl.Length; k++) { var dm = DokuMalzeme(asl[k]); if (dm != null) { asl[k] = dm; degisti = true; } }
+                    if (degisti) { r.sharedMaterials = asl; continue; }
+                    if (r.sharedMaterial == null || r.sharedMaterial.shader == null || r.sharedMaterial.shader.name.Contains("Error")) m = Kit.Lit(Color.gray); else continue;
+                }
                 var arr = r.sharedMaterials; for (int k = 0; k < arr.Length; k++) arr[k] = m; if (arr.Length == 0) arr = new[] { m }; r.sharedMaterials = arr;
             }
             if (hakem) { var hg = Kit.Lit(Kit.Hex("#0a1530"), .2f); foreach (var r in model.GetComponentsInChildren<Renderer>()) if (r.gameObject.name.Contains("__sort")) r.sharedMaterial = hg; }
@@ -184,9 +272,30 @@ namespace BirdieSmash.Game
             if (b != null && w < 1) { var B = anim[b]; if (B != null) { B.enabled = true; B.weight = 1 - w; B.normalizedTime = ClipTime(b, pb); } }
             anim.Sample();
             foreach (AnimationState st in anim) st.enabled = false;
+            VekilDuzelt(false);
         }
 
-        // Hakem: sabit konum ve yön, boşta pozu; yaw derece.
+        // Hakem: oturur (BWF: baş hakem file hizasında yüksek sandalyede, servis hakemi karşıda normal sandalyede; yasin build
+        // 38 "hakemler yok": eskiden ayaklığın üstünde ayakta, sırtı korta dönüktü). Boşta pozu üstüne kalça 90° öne, diz 90°
+        // geri: uyluk kemikleri karakterin sağ ekseni etrafında −90°, baldırlar +90° (dünya ekseninde, üç iskelette aynı).
+        // Sonra kalça kemiği oturağın üstüne (oturak + 0,08 m), oturağın gerisine (0,1 m) taşınır. yaw derece.
+        public void ShowSit(Vector3 oturak, float yawDeg, float tiltDeg)
+        {
+            yaw.localRotation = Quaternion.Euler(0, yawDeg, 0) * calib;
+            if (anim != null) Sample("idle", .25f, null, 0, 1); cur = "idle";
+            if (kHip != null && kThigh.Count > 0)
+            {
+                Vector3 sagE = yaw.right;
+                foreach (var t in kThigh) t.rotation = Quaternion.AngleAxis(-88, sagE) * t.rotation;
+                foreach (var t in kCalf) t.rotation = Quaternion.AngleAxis(88, sagE) * t.rotation;
+                if (kHead != null && tiltDeg != 0) kHead.rotation = Quaternion.AngleAxis(tiltDeg, sagE) * kHead.rotation;
+                transform.position = Vector3.zero;
+                Vector3 kal = kHip.position, hedef = oturak + Vector3.up * .08f - yaw.forward * .1f;
+                transform.position = hedef - kal;
+            }
+            else transform.position = oturak;
+            shadow.position = new Vector3(transform.position.x, .003f, transform.position.z);
+        }
         public void ShowStatic(Vector3 pos, float yawDeg, float tiltDeg)
         {
             transform.position = pos; yaw.localRotation = Quaternion.Euler(tiltDeg, yawDeg, 0) * calib;

@@ -20,10 +20,13 @@ namespace BirdieSmash.Game
     public static class CourtView
     {
         public static readonly Dictionary<string, Saha> SAHA = new Dictionary<string, Saha> {
-            {"salon",  new Saha{ad="Salon",kort="#23725f",tek="#278066",cevre="#1b4f45",ust="#13262a",dol=.6f}},
-            {"turnuva",new Saha{ad="Turnuva",kort="#1f7a55",tek="#22845c",cevre="#1c3d6b",ust="#101d33",dol=.92f}},
-            {"okul",   new Saha{ad="Okul (ahşap)",kort="#a4703f",tek="#ab7744",cevre="#7c5230",ust="#21170f",tahta=true,dol=.3f}},
-            {"park",   new Saha{ad="Gece",kort="#2f5674",tek="#335d7d",cevre="#22394c",ust="#0c1420",dol=.38f}}};
+            // Renkler (2026-10-26, yasin "sahalar aslında uygun çizilmeli, renkler de o şekilde olmalı"): gerçek kort gibi tek
+            // renk yeşil mat (BWF onaylı matlar yeşil; tekler bandı ayrı renk DEĞİL), mat yanda 0,5 m, dipte 1 m taşar
+            // (BWF tesis şartnamesi), dışı koyu zemin. Turnuvada mavi zemin (yayın görüntüsü), okulda ahşap, gecede koyu mavi.
+            {"salon",  new Saha{ad="Salon",kort="#2e7a4f",tek="#2e7a4f",cevre="#2b3a42",ust="#11181d",dol=.6f}},
+            {"turnuva",new Saha{ad="Turnuva",kort="#237a4b",tek="#237a4b",cevre="#1d3b6e",ust="#0b1424",dol=.92f}},
+            {"okul",   new Saha{ad="Okul (ahşap)",kort="#b07a45",tek="#b07a45",cevre="#7c5230",ust="#21170f",tahta=true,dol=.3f}},
+            {"park",   new Saha{ad="Gece",kort="#2d5e7d",tek="#2d5e7d",cevre="#1b2a38",ust="#090f18",dol=.38f}}};
         public static readonly string[] SIRA = { "salon", "turnuva", "okul", "park" };
         public const string AKIS = "akis_cizgileri";
 
@@ -36,21 +39,24 @@ namespace BirdieSmash.Game
             var cevre = Kit.Prim(PrimitiveType.Cube, "cevre", k, new Vector3(0, -.008f, 0), new Vector3(Court.CW + 3.2f, .01f, Court.L + 4.2f), Kit.Lit(Kit.Hex(T.cevre), .2f));
             cevre.GetComponent<Renderer>().receiveShadows = true;
             Material km = T.tahta ? Kit.LitTex(Color.white, Kit.WoodTex(Kit.Hex(T.kort)), .35f) : Kit.Lit(Kit.Hex(T.kort), .3f);
-            var floor = Kit.Prim(PrimitiveType.Cube, "kort", k, new Vector3(0, -.004f, 0), new Vector3(Court.CW + .1f, .01f, Court.L + .1f), km);
+            var floor = Kit.Prim(PrimitiveType.Cube, "kort", k, new Vector3(0, -.004f, 0), new Vector3(Court.CW + (T.tahta ? .1f : 1f), .01f, Court.L + (T.tahta ? .1f : 2f)), km);
             if (T.tahta) { var tm = floor.GetComponent<Renderer>().material; tm.mainTextureScale = new Vector2(1, 9); }
             floor.GetComponent<Renderer>().receiveShadows = true;
-            if (!T.tahta)
+            if (!T.tahta && T.tek != T.kort)
             {
                 var tek = Kit.Prim(PrimitiveType.Cube, "tekler", k, new Vector3(0, -.0035f, 0), new Vector3(Court.SR - Court.SL, .01f, Court.L), Kit.Lit(Kit.Hex(T.tek), .3f));
                 tek.GetComponent<Renderer>().receiveShadows = true;
             }
 
-            var v = new List<Vector3>(); var tr = new List<int>(); const float w = .04f, h = .002f;
+            // Çizgiler (2026-10-26, yasin build 38 "saha doğru çizilememiş"): Unity ekran turu gösterdi ki çizgi üçgenleri aşağı
+            // bakıyordu (sarım ters), yukarıdan bakan kamera arka yüzü kırpıyordu: kortta hiç çizgi görünmüyordu. Sarım
+            // düzeltildi, yükseklik 6 mm (zemin 1 mm, mat üstü 1,5 mm; 15 m'deki derinlik hassasiyetinde titremesin).
+            var v = new List<Vector3>(); var tr = new List<int>(); const float w = .04f, h = .006f;
             System.Action<float, float, float, float> seg = (x1, y1, x2, y2) =>
             {
                 Vector3 a = Kit.W(x1, y1, h), b = Kit.W(x2, y2, h), d = (b - a).normalized, n = Vector3.Cross(Vector3.up, d) * (w / 2);
                 int i = v.Count; v.Add(a - n); v.Add(a + n); v.Add(b + n); v.Add(b - n);
-                tr.AddRange(new[] { i, i + 1, i + 2, i, i + 2, i + 3 });
+                tr.AddRange(new[] { i, i + 2, i + 1, i, i + 3, i + 2 });
             };
             float L = Court.L, CW = Court.CW, N = Court.NET;
             seg(0, 0, CW, 0); seg(0, L, CW, L); seg(0, 0, 0, L); seg(CW, 0, CW, L);
@@ -100,19 +106,27 @@ namespace BirdieSmash.Game
             }
         }
 
-        // Baş hakem: filenin bir ucunda (x −0,5) iki ayaklı yüksek sandalye, 1,5 m oturak ve ayaklık; servis hakemi
-        // karşı uçta (x CW+0,5) alçak sandalye ve 1,15 m servis ölçeri.
-        public static readonly Vector3 HAKEM1 = Kit.W(-.6f, Court.NET, .95f), HAKEM2 = Kit.W(Court.CW + .55f, Court.NET + .35f, 0);
+        // Baş hakem: filenin bir ucunda (x −0,75), 1,5 m oturaklı yüksek sandalye (BWF tesis şartnamesi: oturma yüksekliği
+        // fileyle aynı, ~1,55 m), sırtlık ve 0,93 m ayaklık; servis hakemi karşı uçta (x CW+0,6) 0,45 m normal sandalyede,
+        // önünde 1,15 m servis ölçeri. HAKEM1/2 = oturak üst yüzü (PlayerView.ShowSit kalçayı buraya oturtur).
+        // 2026-10-26: eskiden yüksek sandalyenin oturağı yoktu, hakem ayaklığın üstünde ayakta duruyordu.
+        public const float BH_X = -.75f, SH_X = Court.CW + .6f, BH_Z = 1.5f, SH_Z = .45f;
+        public static readonly Vector3 HAKEM1 = Kit.W(BH_X, Court.NET, BH_Z + .03f), HAKEM2 = Kit.W(SH_X, Court.NET - .1f, SH_Z + .025f);
         static void Sandalyeler(Transform k)
         {
             var g = new GameObject("sandalyeler").transform; g.SetParent(k, false); var metal = Kit.Lit(Kit.Hex("#cfd6d4"), .6f); var koyu = Kit.Lit(Kit.Hex("#3a4a52"), .3f);
-            float x0 = -.6f;
-            foreach (float dy in new[] { -.25f, .25f }) Kit.Prim(PrimitiveType.Cylinder, "ayak", g, Kit.W(x0 - .12f, Court.NET + dy, .72f), new Vector3(.04f, .72f, .04f), metal);
-            Kit.Prim(PrimitiveType.Cube, "ayaklik", g, Kit.W(x0, Court.NET, .93f), new Vector3(.5f, .04f, .6f), koyu);
-            Kit.Prim(PrimitiveType.Cube, "basamak", g, Kit.W(x0 - .05f, Court.NET, .5f), new Vector3(.08f, .03f, .5f), metal);
-            float x1 = Court.CW + .55f;
-            foreach (float dx in new[] { -.15f, .15f }) Kit.Prim(PrimitiveType.Cylinder, "ayak", g, Kit.W(x1 + dx, Court.NET - .1f, .2f), new Vector3(.03f, .2f, .03f), metal);
-            Kit.Prim(PrimitiveType.Cube, "oturak", g, Kit.W(x1, Court.NET - .1f, .41f), new Vector3(.4f, .05f, .4f), koyu);
+            float x0 = BH_X, N = Court.NET;
+            foreach (float dx in new[] { -.22f, .22f }) foreach (float dy in new[] { -.22f, .22f })
+                Kit.Prim(PrimitiveType.Cylinder, "ayak", g, Kit.W(x0 + dx, N + dy, BH_Z / 2), new Vector3(.035f, BH_Z / 2, .035f), metal);
+            Kit.Prim(PrimitiveType.Cube, "oturak", g, Kit.W(x0, N, BH_Z), new Vector3(.5f, .05f, .5f), koyu);
+            Kit.Prim(PrimitiveType.Cube, "sirtlik", g, Kit.W(x0 - .24f, N, BH_Z + .3f), new Vector3(.04f, .55f, .5f), koyu);
+            Kit.Prim(PrimitiveType.Cube, "ayaklik", g, Kit.W(x0 + .42f, N, .93f), new Vector3(.3f, .04f, .5f), metal);
+            for (int i = 1; i <= 3; i++) Kit.Prim(PrimitiveType.Cube, "basamak", g, Kit.W(x0 + .24f, N, BH_Z * i / 4), new Vector3(.06f, .03f, .46f), metal);
+            float x1 = SH_X;
+            foreach (float dx in new[] { -.17f, .17f }) foreach (float dy in new[] { -.17f, .17f })
+                Kit.Prim(PrimitiveType.Cylinder, "ayak", g, Kit.W(x1 + dx, N - .1f + dy, SH_Z / 2), new Vector3(.03f, SH_Z / 2, .03f), metal);
+            Kit.Prim(PrimitiveType.Cube, "oturak", g, Kit.W(x1, N - .1f, SH_Z), new Vector3(.4f, .05f, .4f), koyu);
+            Kit.Prim(PrimitiveType.Cube, "sirtlik", g, Kit.W(x1 + .19f, N - .1f, SH_Z + .25f), new Vector3(.04f, .45f, .4f), koyu);
             Kit.Prim(PrimitiveType.Cylinder, "olcer", g, Kit.W(Court.CW + .1f, Court.NET + .2f, .575f), new Vector3(.02f, .575f, .02f), Kit.Lit(new Color(.94f, .94f, .94f), .4f));
             Kit.Prim(PrimitiveType.Cube, "olcer_cizgi", g, Kit.W(Court.CW + .1f, Court.NET + .2f, 1.15f), new Vector3(.16f, .02f, .02f), Kit.Lit(new Color(.94f, .94f, .94f), .4f));
         }

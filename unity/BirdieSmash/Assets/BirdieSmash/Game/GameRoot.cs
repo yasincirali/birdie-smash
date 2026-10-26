@@ -322,10 +322,10 @@ namespace BirdieSmash.Game
         {
             var M = match; float yaw = 90, tilt = 0;
             if (M.hakemT > 0 && !Ayar.reduce) { float e = (M.hakemT0 - M.hakemT) * 1.4f / M.hakemT0; if (M.hakemSO) yaw = 90 + (M.hakemYon == "me" ? 30 : -30) * Mathf.Clamp01(e * 3); else if (e < 1.05f) tilt = 14 * Mathf.Sin(Mathf.Clamp01(e) * Mathf.PI); }
-            hk1.ShowStatic(CourtView.HAKEM1, yaw, tilt);
+            hk1.ShowSit(CourtView.HAKEM1, yaw, tilt);
             string yeni = M.server, eski = M.sjYon ?? yeni; float k = eski != yeni && M.sjT > 0 ? Mathf.Clamp01(M.sjT / .5f) : 0;
             float a0 = eski == "me" ? -125 : -55, a1 = yeni == "me" ? -125 : -55;
-            hk2.ShowStatic(CourtView.HAKEM2, Mathf.Lerp(a0, a1, k), 0);
+            hk2.ShowSit(CourtView.HAKEM2, Mathf.Lerp(a0, a1, k), 0);
         }
 
         // Ayakkabı gıcırtısı ve toz (HTML runMe): hızlı koşarken yön sertçe değişince; koşu > 2,6 m/sn'de 70 ms'de bir toz.

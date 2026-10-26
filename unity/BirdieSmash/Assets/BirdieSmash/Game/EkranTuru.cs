@@ -36,7 +36,8 @@ namespace BirdieSmash.Game
             yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             Ayar.antrenman = true; Ayar.easy = true; Ayar.target = 5; Ayar.reduce = false;
-            string[] modeller = { "oyuncak", "rocketbox" };
+            var modeller = new System.Collections.Generic.List<string> { "oyuncak", "rocketbox" };
+            if (Resources.Load<GameObject>("karakter/sade") != null) modeller.Add("sade");
             foreach (var mdl in modeller)
             {
                 Ayar.model = mdl; Ayar.saha = "salon"; root.ModelDegisti(); root.SahaDegisti();
@@ -59,7 +60,8 @@ namespace BirdieSmash.Game
             Tani(mdl);
             yield return Yakin(mdl + "_03_ben", root.match.me, true);
             yield return Yakin(mdl + "_04_rakip", root.match.op, false);
-            yield return YakinNokta(mdl + "_05_hakemler", CourtView.HAKEM1 + new Vector3(0, .8f, 0), new Vector3(3.5f, 1.2f, -2.5f));
+            yield return YakinNokta(mdl + "_05_hakemler", CourtView.HAKEM1 + new Vector3(0, .5f, 0), new Vector3(3.2f, .6f, -2.6f));
+            yield return YakinNokta(mdl + "_06_servis_hakemi", CourtView.HAKEM2 + new Vector3(0, .5f, 0), new Vector3(-2.8f, .7f, -2.2f));
             botAcik = true;
             for (int i = 0; i < 10; i++) { yield return Bekle(14); yield return Cek(mdl + "_1" + i + "_ralli"); }
             botAcik = false;
