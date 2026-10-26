@@ -19,7 +19,7 @@ namespace BirdieSmash.Core
     public static class KariyerVeri
     {
         public const int TUR = 4, BASAMAK = 6;
-        public static Func<string, string> Kaynak;   // ad ("kariyer" | "stil") → JSON metni
+        public static Func<string, string> Kaynak;   // ad ("kariyer" | "stil" | "gear" | "karakter") → JSON metni
         static KariyerTur[] turlar; static Dictionary<string, Style> stil; static Dictionary<string, ImzaBilgi> imza; static string[] sira;
 
         public static KariyerTur[] Turlar { get { Yukle(); return turlar; } }
@@ -41,7 +41,9 @@ namespace BirdieSmash.Core
         }
         public static ImzaBilgi Imza(string id) { ImzaBilgi b; return id != null && Imzalar.TryGetValue(id, out b) ? b : null; }
 
-        public static void Sifirla() { turlar = null; stil = null; imza = null; sira = null; }
+        public static void Sifirla() { turlar = null; stil = null; imza = null; sira = null; Gear.VeriSifirla(); Karakter.Sifirla(); }
+        // 2026-10-26 ekipman v2 ve karakter: gear.json ve karakter.json da aynı kaynaktan (Unity Resources, testte tool/veri).
+        public static string Metin(string ad) { return Oku(ad); }
 
         static void Yukle()
         {

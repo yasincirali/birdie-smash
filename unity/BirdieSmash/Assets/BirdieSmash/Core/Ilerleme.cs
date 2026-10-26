@@ -12,7 +12,11 @@
 // (Tur 1'de kazanılan basamak sayısı) Tur 1'in ilk n basamağına KAZAN olarak yazılır; kariyer = 6 → Tur 1 tamam (Şampiyon
 // forması Ayar'da aynı kuralla) ve Asya Turu açık. Yeni kayıt varken de eski sayı büyükse birleştirilir (eski build'e dönüp
 // ilerleyen oyuncu, güncellemeye geri gelince kaybetmesin). tuytop_v2.kariyer yazılmaya devam eder (Tur1Gecilen).
-// Bilinmeyen alanlar (ileride: usta, tarz, unvan, gunluk, antrenman, ad) okunup aynen geri yazılır.
+// Bilinmeyen alanlar (ileride: usta, gunluk, antrenman) okunup aynen geri yazılır.
+// 2026-10-26 karakter (adım 6, Ek A.6): tarz (oyun tarzı kimliği), unvan (seçilen unvan; yoksa kazanılanların en değerlisi),
+// ad (oyuncu adı, yalnız cihazda; boş = "Oyuncu"), smac ve mac (Profil istatistiği: toplam smaç, oynanan maç; cihazda
+// hesaplanır, hiçbir yere gönderilmez). Aynı JSON'da, aynı "bilinmeyeni koru" kuralıyla: eski build bu alanları okumaz ama
+// tuytop_ilerleme'yi yazmaz da (anahtar yalnız bu sürümde var), kayıp olmaz.
 using System;
 using System.Collections.Generic;
 
@@ -28,6 +32,25 @@ namespace BirdieSmash.Core
         Dictionary<string, object> diger = new Dictionary<string, object>();
 
         public Ilerleme() { for (int t = 0; t < tur.Length; t++) tur[t] = new int[KariyerVeri.BASAMAK]; }
+
+        // ---- karakter alanları (diger sözlüğünde; Yaz aynen geri yazar) ----
+        string S(string k) { object v; return diger.TryGetValue(k, out v) ? v as string : null; }
+        int N(string k) { object v; return diger.TryGetValue(k, out v) && v is double ? (int)(double)v : 0; }
+        public string Tarz { get { return S("tarz") ?? "dengeli"; } set { diger["tarz"] = value; } }
+        public string Unvan { get { return S("unvan"); } set { if (value == null) diger.Remove("unvan"); else diger["unvan"] = value; } }
+        // Ad: en çok 16 karakter, baştaki/sondaki boşluk atılır, denetim karakteri alınmaz (kayıt JSON'u ve ekran güvenli kalsın).
+        public const int AD_AZAMI = 16;
+        public string Ad { get { return S("ad"); } set { var a = AdTemizle(value); if (a == null) diger.Remove("ad"); else diger["ad"] = a; } }
+        public static string AdTemizle(string s)
+        {
+            if (s == null) return null; var b = new System.Text.StringBuilder(); foreach (char c in s) if (!char.IsControl(c)) b.Append(c);
+            string t = b.ToString().Trim(); if (t.Length > AD_AZAMI) t = t.Substring(0, AD_AZAMI).TrimEnd(); return t.Length == 0 ? null : t;
+        }
+        public int Smac { get { return N("smac"); } }
+        public int Mac { get { return N("mac"); } }
+        public void MacSay(int smac) { diger["mac"] = (double)(Mac + 1); diger["smac"] = (double)(Smac + Math.Max(0, smac)); }
+        // Antrenman sahası (adım 7) gelene kadar 0; unvan koşulu ("Antrenör") buradan okur.
+        public int AntrenmanYildiz { get { var o = diger.ContainsKey("antrenman") ? Json.Obj(diger["antrenman"]) : null; int n = 0; if (o != null) foreach (var kv in o) if (kv.Value is double) n += (int)(double)kv.Value; return n; } }
 
         public static int Say(int m) { return (m & 1) + (m >> 1 & 1) + (m >> 2 & 1); }
         public int Maske(int g) { return tur[KariyerVeri.TurOf(g)][KariyerVeri.BasOf(g)]; }

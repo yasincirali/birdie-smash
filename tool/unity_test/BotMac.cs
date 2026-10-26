@@ -11,6 +11,9 @@
 // 2026-10-26 kariyer haritası ve imza vuruşları (adım 2–3): veri tek kaynak (tool/veri = Resources/veri), Tur 1 eski altı
 // basamakla birebir, yıldız kuralları ve kayıt taşıması (Core/Ilerleme), basamağın sabit görevi, imza vuruşu: yalnız
 // patronda, maçta ≤ 4, aralarında ≥ 4 sayı, hazırlık ≥ 0,4 sn (Kolay 0,6), her imza görülür ve cevaplanabilir.
+// 2026-10-26 ekipman v2 ve karakter (adım 4 ve 6): forma kumaş/renk ayrımı ve eski kayıt taşıması, açılış seviyeleri ve
+// Tüy ile model alma, Sv 10'da her raket/kordaj/grip modelinin artısı ve eksisi kalır, 5 çubuk (nötr 50), tarz kuralları
+// (Dengeli etkisiz, her tarzın artısı ve eksisi, etki ≤ %20, seviye kapısı), unvanlar, ad/tarz/unvan kaydı.
 // Çalıştırma: depo kökünden (KariyerVeri tool/veri'yi çalışma klasöründen yukarı arar).
 using System;
 using System.Collections.Generic;
@@ -120,7 +123,7 @@ static class BotMac
 
         if (gorevN == 0) Fail("görev olayı hiç gelmedi");
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
-        Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar();
+        Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }
@@ -172,7 +175,7 @@ static class BotMac
     // tam seviye smaç çıkış hızını artırır; (3) 21 sayılık yenilgi ödülü 15·3,5 = 52,5 → 53 Tüy (JS yuvarlaması).
     static void Ekipman()
     {
-        var g = new Gear(new BellekKayit(), 0); g.raket = "agir"; g.tel = 22; g.bileklik = "agir"; g.bant = "odak"; g.forma = "beyaz";
+        var g = new Gear(new BellekKayit(), 0); g.raket = "agir"; g.tel = 22; g.bileklik = "agir"; g.bant = "odak"; g.kumas = "nefes";   // 2026-10-26: v1 "beyaz" forması = Nefes alan kumaşı
         foreach (var k in g.eko.sv.Keys.ToList()) g.eko.sv[k] = 10;
         // 2026-10-26: raket taban katkısı yalnız nötr değere, raket eksisi Sv 10'da %40 küçülür (Core/Gear.Hesap; tasarım §4.5).
         // HTML dondurulduğu için (yeni özellik yalnız Unity'de) beklenen değerler artık HTML'den değil bu kuraldan; ilk dört
@@ -245,7 +248,7 @@ static class BotMac
     // Veri tek kaynak (Ek A.4): tool/veri ile Unity kopyası aynı; Tur 1 eski koddaki altı basamakla birebir (kayıt bu sırayı sayar).
     static void Veri()
     {
-        foreach (var ad in new[] { "kariyer", "stil" })
+        foreach (var ad in System.IO.Directory.GetFiles("tool/veri", "*.json").Select(f => System.IO.Path.GetFileNameWithoutExtension(f)))
         {
             string a = System.IO.File.ReadAllText("tool/veri/" + ad + ".json"), b = System.IO.File.ReadAllText("unity/BirdieSmash/Assets/Resources/veri/" + ad + ".json");
             if (a != b) Fail("veri kopyası farklı: " + ad + ".json (node tool/veri_kopyala.js)");
@@ -340,6 +343,104 @@ static class BotMac
         if (enKisaKolay < Match.IMZA_HAZIRLIK + .2f - 1e-3f) Fail("Kolay'da hazırlık 0,6 sn'den kısa: " + enKisaKolay);
         if (okunan.Count == 0) Fail("hiç imza okunmadı (cevap çalışmıyor)");
         if (normalImza > 0) Fail("patron olmayan maçta imza: " + normalImza);
+    }
+
+    // Ekipman v2 (tasarım §4, Ek A.6): kayıt taşıması, açılış ve alma, Sv 10'da artı/eksi, 5 çubuk.
+    static void EkipmanV2()
+    {
+        // (1) v1 kaydı: forma ikiye bölünür, v1 modellerinin hepsi açık kalır, seçim korunur
+        var k = new BellekKayit();
+        k.Set("tuytop_gear", "{\"raket\":\"esnek\",\"tel\":24,\"bileklik\":\"pamuk\",\"bant\":\"ter\",\"forma\":\"fistik\"}");
+        k.Set("tuytop_ekonomi", "{\"tuy\":500,\"xp\":0,\"sv\":{\"raket\":3,\"tel\":1,\"grip\":2,\"bileklik\":1,\"bant\":1,\"forma\":4},\"gun\":\"\",\"esit\":false}");
+        var g = new Gear(k, 3);
+        if (g.kumas != "hafif" || g.renk != "fistik" || g.raket != "esnek" || g.tel != 24 || g.eko.sv["forma"] != 4) Fail("v1 kaydı taşınmadı: " + g.kumas + "/" + g.renk + "/" + g.raket);
+        foreach (var x in new[] { "raket:agir", "raket:hafif", "bant:odak", "bileklik:agir", "kumas:esnek", "kumas:nefes" }) { var p = x.Split(':'); if (!g.Sahip(p[0], p[1])) Fail("eski oyuncu v1 modelini kaybetti: " + x); }
+        if (g.Sahip("raket", "kesici") || g.Sahip("kordaj", "multi")) Fail("yeni model eski oyuncuya bedava açıldı");
+        g.GearYaz(); g.EkoYaz(); var j = Json.Obj(Json.Parse(k.Get("tuytop_gear")));
+        if (Json.Str(j, "forma", "") != "fistik" || Json.Str(j, "kumas", "") != "hafif" || Json.Str(j, "renk", "") != "fistik") Fail("tuytop_gear forma/kumas/renk yazılmadı: " + k.Get("tuytop_gear"));
+        var g2 = new Gear(k, 3); if (g2.kumas != "hafif" || !g2.Sahip("raket", "agir") || g2.eko.acik.Count != g.eko.acik.Count) Fail("v2 kaydı gidiş-dönüş");
+        string[,] es = { { "mavi", "klasik", "mavi" }, { "beyaz", "nefes", "beyaz" }, { "mor", "esnek", "mor" }, { "sampiyon", "klasik", "sampiyon" }, { "yok_boyle", "klasik", "mavi" } };
+        for (int i = 0; i < es.GetLength(0); i++)
+        {
+            var kk = new BellekKayit(); kk.Set("tuytop_gear", "{\"forma\":\"" + es[i, 0] + "\"}"); var gg = new Gear(kk, 0);
+            if (gg.kumas != es[i, 1] || gg.renk != es[i, 2]) Fail("forma " + es[i, 0] + " → " + gg.kumas + "+" + gg.renk);
+        }
+        // eski build tuytop_gear'ı kumas/renk olmadan geri yazdı: forma'dan yeniden türer; işlev öncelikli eski forma
+        g.kumas = "nefes"; g.renk = "mavi"; if (g.EskiForma() != "beyaz") Fail("eski forma işlevi korumalı: " + g.EskiForma());
+        g.kumas = "klasik"; g.renk = "kirmizi"; if (g.EskiForma() != "mavi") Fail("v1'de olmayan renk: kumaşın forması");
+        g.kumas = "esnek"; g.renk = "mor"; if (g.EskiForma() != "mor") Fail("aynı çift kendi forması");
+        // (2) yeni oyuncu: açılış seviyesi + Tüy ile alma; seviye kapısı Tüy ile aşılmaz
+        var y = new Gear(new BellekKayit(), 0); y.eko.tuy = 5000;
+        if (y.Sahip("raket", "hafif") || y.Durum("raket", "hafif") != ModelDurum.Kilitli || y.Al("raket", "hafif") || y.Sec("raket", "hafif")) Fail("Sv 1'de Kafa hafif kilitli olmalı");
+        if (!y.Sahip("raket", "denge") || y.Durum("raket", "denge") != ModelDurum.Secili || !y.RenkAcik("beyaz", false) || y.RenkAcik("kirmizi", false) || y.RenkAcik("sampiyon", false) || !y.RenkAcik("sampiyon", true)) Fail("başlangıç modelleri ve renkler");
+        y.eko.xp = 0; for (int L = 1; L < 3; L++) y.eko.xp += Gear.SvEsik(L);
+        if (y.Seviye() != 3 || y.Durum("raket", "hafif") != ModelDurum.Alinir || !y.Al("raket", "hafif") || y.eko.tuy != 5000 - Gear.GEAR["raket"]["hafif"].fiyat || !y.Sec("raket", "hafif") || y.raket != "hafif") Fail("Sv 3'te Kafa hafif alınıp seçilmeli");
+        if (y.Al("raket", "hafif")) Fail("aynı model iki kez alındı");
+        y.EkoYaz(); var y2 = new Gear(new BellekKayit(), 0); if (y2.Sahip("raket", "hafif")) Fail("bellek kaydı paylaşıldı");
+        // fiyat 300–1.200, açılış seviyeleri tasarım §5.2 ile aynı
+        var sv = new Dictionary<string, int> { { "raket:hafif", 3 }, { "raket:agir", 5 }, { "raket:esnek", 8 }, { "raket:kesici", 12 }, { "raket:hucum", 18 }, { "kordaj:multi", 6 }, { "kordaj:ince", 11 }, { "grip:havlu", 4 }, { "grip:kalin", 9 },
+            { "bileklik:pamuk", 2 }, { "bileklik:agir", 7 }, { "bant:ter", 3 }, { "bant:odak", 10 }, { "kumas:hafif", 5 }, { "kumas:nefes", 8 }, { "kumas:esnek", 12 } };
+        foreach (var kv in sv) { var p = kv.Key.Split(':'); var m = Gear.GEAR[p[0]][p[1]]; if (m.sv != kv.Value || m.fiyat < 300 || m.fiyat > 1200) Fail("açılış/fiyat " + kv.Key + ": Sv " + m.sv + ", " + m.fiyat); }
+        // (3) Sv 10'da her raket/kordaj/grip modelinin artısı ve eksisi kalır (aynı seviyedeki nötr modele göre)
+        var t10 = new Gear(new BellekKayit(), 0); foreach (var kk in t10.eko.sv.Keys.ToList()) t10.eko.sv[kk] = 10;
+        Console.WriteLine("ekipman v2: 5 çubuk (Güç/Kontrol/Tatlı/Çabukluk/Dayanıklılık), Sv 1 → Sv 10, diğer yuvalar nötr:");
+        foreach (var yu in new[] { "raket", "kordaj", "grip", "bileklik", "bant", "kumas" })
+            foreach (var m in Gear.GEAR[yu].Values)
+            {
+                var a1 = new Gear(new BellekKayit(), 0); var a10 = new Gear(new BellekKayit(), 0); foreach (var kk in a10.eko.sv.Keys.ToList()) a10.eko.sv[kk] = 10;
+                Set(a1, yu, m.id); Set(a10, yu, m.id); var n10 = new Gear(new BellekKayit(), 0); foreach (var kk in n10.eko.sv.Keys.ToList()) n10.eko.sv[kk] = 10;
+                var h = a10.Hesap(); var n = n10.Hesap();
+                Console.WriteLine("  " + (yu + "/" + m.id).PadRight(18) + string.Join(" ", Gear.Cubuklar(a1.Hesap()).Select(v => v.ToString().PadLeft(3))) + "  →" + string.Join(" ", Gear.Cubuklar(h).Select(v => v.ToString().PadLeft(3))) + "   " + m.n);
+                if (yu != "raket" && yu != "kordaj" && yu != "grip" || m.id == Gear.Varsayilan(yu)) continue;
+                float[] r = { h.guc / n.guc, h.kontrol / n.kontrol, h.hiz / n.hiz, h.tatli / n.tatli, n.yorK / h.yorK };
+                bool eksi = r.Any(v => v < 1 - 1e-4), arti = r.Any(v => v > 1 + 1e-4) || h.slice > 1 || h.yorgunSapma < 1;
+                if (!eksi || !arti) Fail("Sv 10'da " + yu + "/" + m.id + " artı/eksi kaybı: " + string.Join(",", r.Select(v => v.ToString("0.000"))));
+            }
+        var b0 = Gear.Cubuklar(new Gear(new BellekKayit(), 0).Hesap()); if (b0.Any(v => v != 50)) Fail("nötr çubuklar 50 değil: " + string.Join(",", b0));
+        var gk = Gear.Cubuklar(GearStats.Notr); if (gk.Any(v => v != 50)) Fail("GearStats.Notr çubukları 50 değil");
+        // (4) özel etkiler fiziğe gider: Kesici slice çarpanı, Havlu yorgun sapma, Hücum nefes
+        var kz = new Gear(new BellekKayit(), 0); kz.raket = "kesici"; if (kz.Hesap().slice != 1.15f) Fail("Kesici slice ×1,15");
+        kz.raket = "hucum"; if (!(kz.Hesap().yorK > 1.07f)) Fail("Hücum nefes ×1,08"); kz.grip = "havlu"; if (kz.Hesap().yorgunSapma != .5f || kz.Hesap().gripDoku != "cizgi") Fail("Havlu yorgun sapma");
+        Console.WriteLine("ekipman v2: v1 kaydı taşındı (forma → kumaş + renk, v1 modelleri açık), açılış/alma, Sv 10 artı-eksi, nötr çubuk 50 tamam");
+    }
+    static void Set(Gear g, string yuva, string id)
+    {
+        switch (yuva) { case "raket": g.raket = id; break; case "kordaj": g.kordaj = id; break; case "grip": g.grip = id; break; case "bileklik": g.bileklik = id; break; case "bant": g.bant = id; break; default: g.kumas = id; break; }
+    }
+
+    // Oyun tarzı, unvan, karakter kaydı (tasarım §5, Ek A.6).
+    static void Tarzlar()
+    {
+        var T = Karakter.Tarzlar; if (T.Length != 5 || T[0].id != "dengeli" || T[0].etki.Count != 0) Fail("5 tarz, ilki etkisiz Dengeli");
+        var sv = new Dictionary<string, int> { { "dengeli", 1 }, { "smasci", 4 }, { "duvar", 8 }, { "file", 12 }, { "aldatici", 18 } };
+        foreach (var t in T)
+        {
+            if (!sv.ContainsKey(t.id) || sv[t.id] != t.sv) Fail("tarz açılışı " + t.id + " Sv " + t.sv);
+            if (t.id == "dengeli") continue;
+            // iyi yön: smacYor ve toparla küçüldükçe, diğerleri büyüdükçe
+            Func<KeyValuePair<string, float>, bool> iyi = kv => kv.Key == "smacYor" || kv.Key == "toparla" ? kv.Value < 1 : kv.Value > 1;
+            if (!t.etki.Any(kv => iyi(kv))) Fail("tarzın artısı yok: " + t.id);
+            if (!t.etki.Any(kv => !iyi(kv))) Fail("tarzın eksisi yok: " + t.id);
+            if (t.etki.Values.Any(v => Math.Abs(v - 1) > .2001f)) Fail("tarz etkisi %20'den büyük: " + t.id);
+            var u = Karakter.Uygula(GearStats.Notr, t.id); if (u.tarz != t.id || GearStats.Notr.tarz != "dengeli") Fail("Uygula kopya değil");
+        }
+        var d = Karakter.Uygula(GearStats.Notr, "dengeli"); if (d.enerji != 1 || d.tatli != 1 || d.slice != 1 || d.uzanma != 1) Fail("Dengeli nötr değil");
+        if (Karakter.Gecerli("aldatici", 17) != "dengeli" || Karakter.Gecerli("aldatici", 18) != "aldatici" || Karakter.Gecerli("yok", 30) != "dengeli") Fail("tarz seviye kapısı");
+        // tarz maça gider: Smaşçı enerjisi, Duvar uzanma erişimi (aynı tohum, aynı girdi)
+        var sm = Karakter.Uygula(GearStats.Notr, "smasci"); if (Math.Abs(sm.enerji - 1.2f) > 1e-5 || sm.smacYor != 1.15f) Fail("Smaşçı etkisi");
+        var dv = new Match(3, new MatchOptions { easy = true, target = 5, gs = Karakter.Uygula(GearStats.Notr, "duvar") }); if (dv.GS.uzanma != 1.06f) Fail("tarz maça gitmedi");
+        // unvanlar
+        var p = new Ilerleme(); var u0 = Karakter.Kazanilan(p, 1, 0);
+        if (u0.Count != 1 || u0[0].id != "mahalle" || Karakter.Gosterilen(p, 1, 0).id != "mahalle") Fail("başlangıç unvanı Mahalle oyuncusu");
+        for (int b = 0; b < 6; b++) p.tur[0][b] = Ilerleme.KAZAN;
+        if (Karakter.Gosterilen(p, 1, 0).id != "yerel" || Karakter.Kazanilan(p, 30, 0).Count != 3 || Karakter.Gosterilen(p, 30, 0).id != "efsane") Fail("Tur 1 → Yerel şampiyon, Sv 30 → Efsane");
+        p.Unvan = "mahalle"; if (Karakter.Gosterilen(p, 30, 0).id != "mahalle") Fail("seçilen unvan gösterilmeli"); p.Unvan = "dunya"; if (Karakter.Gosterilen(p, 30, 0).id != "efsane") Fail("kazanılmamış seçili unvan düşmeli");
+        // kayıt: tarz, unvan, ad, sayaçlar; bilinmeyen alan korunur
+        p.Tarz = "duvar"; p.Unvan = "yerel"; p.Ad = "  Yasin\u0007 Birdie Smash Oyuncusu  "; p.MacSay(4); p.MacSay(2);
+        var q = Ilerleme.Oku(p.Yaz(), 0, false);
+        if (q.Tarz != "duvar" || q.Unvan != "yerel" || q.Ad != "Yasin Birdie Sma" || q.Mac != 2 || q.Smac != 6 || q.Tur1Gecilen() != 6) Fail("karakter kaydı: " + q.Yaz());
+        if (Ilerleme.AdTemizle("   ") != null || new Ilerleme().Tarz != "dengeli" || new Ilerleme().Ad != null) Fail("boş ad / varsayılan tarz");
+        Console.WriteLine("tarz: " + string.Join(", ", T.Select(t => t.ad + " Sv" + t.sv)) + "; unvan " + Karakter.Unvanlar.Length + "; açılanlar Sv 4: " + string.Join(", ", Karakter.Acilanlar(4)) + "; Sv 18: " + string.Join(", ", Karakter.Acilanlar(18)));
     }
 
     static float SmacHizi(GearStats gs)

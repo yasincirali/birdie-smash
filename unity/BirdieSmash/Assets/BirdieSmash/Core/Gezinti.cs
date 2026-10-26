@@ -6,6 +6,7 @@
 //     en üstünde durur. Aynı anda tek alt sayfa: yenisi açılınca öteki kapanır (iki sheet üst üste binmez; 2026-10-26).
 //   · Geri: önce en üstteki sayfa kapanır; yığın boşsa Oyna dışındaki sekmeden Oyna'ya döner; Oyna'da geri bir şey yapmaz
 //     (uygulamadan çıkmak sistemin işi).
+//   · 2026-10-26 ekipman v2: Soyunma odasında yuvaya dokununca yuva sayfası (YUVA) alt sayfa olarak açılır (tasarım §2.3).
 //   · Sekmeler kendi durumunu tutar (kaydırma yeri vb. görünüm katmanında): burada yalnız hangi sekme ve hangi sayfa.
 using System.Collections.Generic;
 
@@ -15,15 +16,15 @@ namespace BirdieSmash.Core
 
     public class Gezinti
     {
-        public const string AYAR = "ayar", NASIL = "nasil", LISANS = "lisans", HIZLI = "hizli", KART = "kart";
+        public const string AYAR = "ayar", NASIL = "nasil", LISANS = "lisans", HIZLI = "hizli", KART = "kart", YUVA = "yuva";
         public Sekme sekme = Sekme.Oyna;
         readonly List<string> yigin = new List<string>();
 
         public int Derinlik { get { return yigin.Count; } }
         public string Ust { get { return yigin.Count > 0 ? yigin[yigin.Count - 1] : null; } }
         // Alt sayfa (sheet) tam sayfa değildir: altındaki ekran görünür kalır.
-        public static bool AltSayfa(string s) { return s == HIZLI || s == KART; }
-        public string AcikAltSayfa { get { return Acik(KART) ? KART : Acik(HIZLI) ? HIZLI : null; } }
+        public static bool AltSayfa(string s) { return s == HIZLI || s == KART || s == YUVA; }
+        public string AcikAltSayfa { get { return Acik(KART) ? KART : Acik(HIZLI) ? HIZLI : Acik(YUVA) ? YUVA : null; } }
         public bool Acik(string s) { return yigin.Contains(s); }
 
         // Sekme seçimi: değiştiyse true. Aynı sekmeye yeniden dokunmak açık sayfaları kapatır (iOS: köke dön).
@@ -31,7 +32,7 @@ namespace BirdieSmash.Core
         public void Ac(string sayfa)
         {
             if (string.IsNullOrEmpty(sayfa) || Ust == sayfa) return; yigin.Remove(sayfa);
-            if (AltSayfa(sayfa)) { yigin.Remove(HIZLI); yigin.Remove(KART); }
+            if (AltSayfa(sayfa)) { yigin.Remove(HIZLI); yigin.Remove(KART); yigin.Remove(YUVA); }
             yigin.Add(sayfa);
         }
         public void Kapat(string sayfa) { yigin.Remove(sayfa); }

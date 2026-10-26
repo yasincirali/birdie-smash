@@ -70,7 +70,7 @@ namespace BirdieSmash.Game
                 if (court != null) Destroy(court); Color bg; court = CourtView.Build(transform, M.saha, out bg); cam.backgroundColor = bg; courtId = M.saha;
                 var ak = court.transform.Find(CourtView.AKIS); akisR = ak != null ? ak.GetComponent<Renderer>() : null;
             }
-            var gor = PlayerView.Benim(); string gk = "" + gor.forma + gor.cerceve + gor.bant + gor.bilek + gor.grip + gor.tel + gor.tel2;
+            var gor = PlayerView.Benim(); string gk = gor.Anahtar();
             if (me == null || modelId != Ayar.model || gorunumId != gk)
             {
                 if (me != null) Destroy(me.gameObject);
@@ -132,6 +132,7 @@ namespace BirdieSmash.Game
         {
             ekran = Ekran.Bitti; Uyanik(false); var M = match; bittiIlk = M.ilk; sfx.MacSonu(won); sfx.Ugultu(false, 0);
             if (won) Ayar.wins++;
+            if (M.ogr == null && Ayar.ilerleme != null) Ayar.ilerleme.MacSay(M.smashes);   // Profil istatistiği (2026-10-26; cihazda)
             string kNot = ""; bool kariyerIlk = false; int yeniYildiz = 0; bittiYildiz = null;
             if (KariyerVeri.Var(M.stil.kariyer))
             {   // yıldızlar ve açılış Core/Ilerleme'de; Tur 1 sayısı (tuytop_v2.kariyer, başarımlar) ondan türer
@@ -141,6 +142,9 @@ namespace BirdieSmash.Game
                 Ayar.kariyer = Ayar.ilerleme.Tur1Gecilen(); if (Ayar.kariyer >= Match.KARIYER.Length) Ayar.sampiyon = true;
                 if (kariyerIlk && KariyerVeri.TurOf(g) == 0) { Basarim.Ver("bs_kariyer_" + Ayar.kariyer); Basarim.Giris(Ayar.kariyer); }   // giriş isteği ilk basamaktan sonra
                 if (r.turBitti) Yerel.Hap("flow");   // tur finali: güçlü desen (HAP'ta "success" yok, en uzun desen "flow")
+                // 2026-10-26 (tasarım §5.5): Tur 2+ finali yeni başarım (Tur 1 finali bs_kariyer_6 olarak zaten var). Kimlikler
+                // App Store Connect'e yasin ekler (YAPMAN_GEREKENLER); eklenmeden de yerel liste tutulur, sonra gönderilir.
+                if (r.turBitti && KariyerVeri.TurOf(g) > 0) Basarim.Ver("bs_tur_" + (KariyerVeri.TurOf(g) + 1));
                 Ayar.kariyerSecim = won ? -1 : g;   // kazanınca "Sıradaki", kaybedince aynı basamak ("Tekrar dene")
                 int n = Ilerleme.Say(r.maske);
                 bittiYildiz = new string('★', n) + new string('☆', 3 - n) + " · " + L.T("{0}/3 yıldız", n) + (r.yeniYildiz > 0 ? " · " + L.T("{0} yeni", r.yeniYildiz) : "");
@@ -148,7 +152,9 @@ namespace BirdieSmash.Game
             // Maç sonu ödülü (HTML ekoOdul): antrenmanda yok (antrenman maç sonu ekranına gelmez). Yeni yıldız +20 Tüy, okunan imza +5 XP.
             odul = Ayar.gear.Odul(won, kariyerIlk, M.target, M.easy, M.gorevBitti, M.perfects, System.DateTime.Now, yeniYildiz, M.okudun);
             if (odul.sonra > odul.once) Yerel.Hap("flow");   // seviye atladın
-            yukseltHazir = false; foreach (var y in Gear.YUVA) { int sv = Ayar.gear.eko.sv[y.k]; if (sv < 10 && Ayar.gear.eko.tuy >= Gear.YUK_FIYAT[sv - 1] && odul.sonra >= Gear.YUK_SV[sv - 1]) yukseltHazir = true; }
+            if (odul.sonra >= 30) Basarim.Ver(Basarim.EFSANE);
+            // "Ekipmanı yükselt": alınabilecek yükseltme ya da (ekipman v2) seviyesi gelmiş, Tüy'ü yeten model varsa.
+            yukseltHazir = false; foreach (var y in Gear.YUVA) { int sv = Ayar.gear.eko.sv[y.k]; if (sv < 10 && Ayar.gear.eko.tuy >= Gear.YUK_FIYAT[sv - 1] && odul.sonra >= Gear.YUK_SV[sv - 1] || Ayar.gear.AlinabilirVar(y.m)) yukseltHazir = true; }
             Ayar.Kaydet();
             bittiBaslik = L.T(won ? "Kazandın" : "Bu sefer rakip aldı") + (kNot != "" ? " · " + L.Cumle(kNot) : "");
             var bitenler = new List<string>(); foreach (var g in M.gorevler) if (g.bitti) bitenler.Add(L.Cumle(g.ad));

@@ -269,7 +269,7 @@ namespace BirdieSmash.Core
 
         void StartFlight(string from, float vx, float vy, float vz, float hx, float hy, float hz, bool isServe, string type, bool isSuper, string q, bool slice = false)
         {
-            s = new Shuttle { x = hx, y = hy, z = hz, vx = vx, vy = vy, vz = vz, from = from, serve = isServe, type = type, super = isSuper, kd = slice ? Shuttle.KD * 1.35f : Shuttle.KD, slice = slice };
+            s = new Shuttle { x = hx, y = hy, z = hz, vx = vx, vy = vy, vz = vz, from = from, serve = isServe, type = type, super = isSuper, kd = slice ? Shuttle.KD * (1 + .35f * (from == "me" ? GS.slice : 1)) : Shuttle.KD, slice = slice };   // 2026-10-26: Kesici raket / Aldatıcı tarzı slice sapmasını büyütür (GS.slice, nötr 1)
             rally++; maxRally = Math.Max(maxRally, rally);
             if (from == "op") { opHitAt = clock; split = false; if (splitPending) { splitPending = false; DoSplit(); } } else { split = false; splitPending = false; }
             var h = from == "me" ? me : op;
@@ -304,7 +304,7 @@ namespace BirdieSmash.Core
             // Aldatma: kesilen/son anda bırakılan vuruşta rakip geç ve ters yöne çıkar (hold & flick).
             if (recv == "op" && deceive)
             {
-                react += .3f; op.fakeUntil = clock + .32f; op.fakeX = Clamp(2 * Court.MID - r.x, Court.SL, Court.SR); deceive = false; deceives++;
+                react += .3f * GS.slice; op.fakeUntil = clock + .32f * GS.slice; op.fakeX = Clamp(2 * Court.MID - r.x, Court.SL, Court.SR); deceive = false; deceives++;
                 Say("op", null, op.x, op.y, 0, "Aldattın!", 2); Emit(Ev.Aldat, "op", null, op.x, op.y);
             }
             Func<PathPt, float, float> need = (p, reach) => Math.Max(0, Hyp(p.x - P0.x, p.y - P0.y) - reach) / spd + react + t0;
@@ -315,7 +315,7 @@ namespace BirdieSmash.Core
             if (pick == null) foreach (var p in cands) if (p.z > 2.1f && p.z < 2.8f && need(p, 1.15f) <= p.t) { pick = p; overhead = true; break; }
             if (pick == null) for (int i = cands.Count - 1; i >= 0; i--) { var p = cands[i]; if (p.z > .75f) continue; if (need(p, 1.15f) <= p.t) { pick = p; break; } }
             if (pick == null) foreach (var p in cands) if (need(p, 1.15f) <= p.t) { pick = p; break; }
-            if (pick == null && recv == "me") for (int i = cands.Count - 1; i >= 0; i--) { var p = cands[i]; if (p.z > 1.3f) continue; if (need(p, 2.1f) <= p.t) { pick = p; lunge = true; break; } }
+            if (pick == null && recv == "me") for (int i = cands.Count - 1; i >= 0; i--) { var p = cands[i]; if (p.z > 1.3f) continue; if (need(p, 2.1f * GS.uzanma) <= p.t) { pick = p; lunge = true; break; } }
             icpt = pick == null ? null : new Intercept { t = pick.t, x = pick.x, y = pick.y, z = pick.z, who = recv, overhead = overhead, kill = kill, lunge = lunge };
             if (recv == "op" && icpt != null)
             {
@@ -346,7 +346,7 @@ namespace BirdieSmash.Core
             R = new Reach();
             if (s == null || s.dead || s.from != "op" || s.y <= Court.NET || s.z < .12f || s.z > 3.1f) return false;
             float d = Hyp(s.x - me.x, s.y - me.y); bool kill = s.y - Court.NET < 2.3f && s.z > Court.NETH + .2f;
-            float R1 = easy ? 1.45f : 1.15f, R2 = easy ? 2.2f : 1.75f;
+            float R1 = easy ? 1.45f : 1.15f, R2 = (easy ? 2.2f : 1.75f) * GS.uzanma;   // uzanma: Duvar tarzı +%6 (2026-10-26)
             if (d <= R1) { R = new Reach { lunge = false, over = s.z > 2.0f, kill = kill, d = d }; return true; }
             if (d <= R2 && s.z < 1.5f) { R = new Reach { lunge = true, d = d }; return true; }
             return false;
@@ -372,8 +372,9 @@ namespace BirdieSmash.Core
             switch (type)
             {
                 case "kill": d = 2.6f; byAngle = false; val = 30 * GS.hiz; if (!dry) Yor(.06f); break;
-                case "jump": d = 3.2f; byAngle = false; val = 78 * GS.guc * NefesF(); if (!dry) { energy = 0; Yor(.3f); } break;
-                case "smash": d = 4.2f; byAngle = false; val = 52 * GS.guc * NefesF(); if (!dry) Yor(.18f); break;
+                // 2026-10-26 oyun tarzı (Core/Tarz): smacHiz (Duvar −%4) ve smacYor (Smaşçı +%15 nefes) yalnız smaçta; nötr 1.
+                case "jump": d = 3.2f; byAngle = false; val = 78 * GS.guc * GS.smacHiz * NefesF(); if (!dry) { energy = 0; Yor(.3f * GS.smacYor); } break;
+                case "smash": d = 4.2f; byAngle = false; val = 52 * GS.guc * GS.smacHiz * NefesF(); if (!dry) Yor(.18f * GS.smacYor); break;
                 case "drive": d = 4.6f; byAngle = false; val = (P.bh ? 18 : 22) * GS.hiz; break;
                 case "drop": d = P.over ? 1.2f : 1.0f; val = P.over ? DROP_A : (Math.Abs(P.hy - Court.NET) < 2.5f ? .75f : .95f); break;
                 case "block": d = .9f; val = .6f; tx = P.hx + r * 1.2f; break;
@@ -390,10 +391,14 @@ namespace BirdieSmash.Core
             Reach I; if (between || s == null || !ReachInfo(out I)) return false;
             var PL = ShotPlan(sw, I, false); string type = PL.type; float d = PL.d, val = PL.val, hx = PL.hx, hy = PL.hy, hz = PL.hz; bool bh = PL.bh;
             float cq = sw.dist / sw.R;
-            string q = cq < .4f * GS.tatli ? "perfect" : cq <= 1 ? "good" : easy ? "good" : "poor"; if (I.lunge && q == "perfect") q = "good"; if (sw.tap) q = "good";
+            // Tam orta penceresi: ekipmanın tatli'si × tarzın durum çarpanı (2026-10-26: Smaşçı sıçrayarak smaçta +%5, File ustası
+            // file vuruşunda ve file önündeki drop/blokta +%10; nötr 1).
+            float tk = type == "jump" ? GS.jumpTatli : type == "kill" || ((type == "drop" || type == "block") && Math.Abs(hy - Court.NET) < 2.3f) ? GS.fileTatli : 1;
+            string q = cq < .4f * GS.tatli * tk ? "perfect" : cq <= 1 ? "good" : easy ? "good" : "poor"; if (I.lunge && q == "perfect") q = "good"; if (sw.tap) q = "good";
             // Slice: kavisli kaydırma = raket topu keserek alır; top takla atar, kısa düşer, rakip aldanır.
             bool slice = sw.curved && q != "poor" && (type == "drop" || type == "clear" || type == "drive" || type == "block"); if (slice) { deceive = true; slices++; }
             float sig = ((q == "perfect" ? .1f : q == "good" ? .35f : .9f) + (I.lunge ? .4f : 0)) / GS.kontrol;
+            if (me.nefes < .4f) sig *= GS.yorgunSapma;   // Havlu grip (2026-10-26): nefes azken sapma yarıya iner; nötr 1
             Func<float> g = () => (R01() + R01() + R01() - 1.5f) * sig * 1.4f;
             float edge = q == "poor" ? sw.side * .8f * GS.kenar : 0;
             // Tepeden alma: smaç 2,4 m üstünde alınırsa dikleşir ve hızlanır.
@@ -578,6 +583,8 @@ namespace BirdieSmash.Core
                 else if (s.from == "me") { o.tx = Court.MID; o.ty = Court.L - 3.3f; }
             }
             float max = MeSpd(), A = (split ? 20 : (easy ? 18 : 14)) * GS.kosu, dvx = 0, dvy = 0;
+            // File ustası tarzı (2026-10-26): arka sahaya (kendi yarının arka yarısı) giden koşu −%5; öne ve yana koşu aynı.
+            if (GS.arkaKosu != 1 && o.HasTarget && o.ty > Court.NET + Court.L / 4 && o.ty > o.y + .2f) max *= GS.arkaKosu;
             if (o.HasTarget) { float dx = o.tx - o.x, dy = o.ty - o.y, dist = Hyp(dx, dy); if (dist > .02f) { float v = Math.Min(max, (float)Math.Sqrt(2 * A * dist)); dvx = dx / dist * v; dvy = dy / dist * v; } else o.tx = float.NaN; }
             float ex = dvx - o.vx, ey = dvy - o.vy, el = Hyp(ex, ey), st = A * d;
             if (el > st) { o.vx += ex / el * st; o.vy += ey / el * st; } else { o.vx = dvx; o.vy = dvy; }

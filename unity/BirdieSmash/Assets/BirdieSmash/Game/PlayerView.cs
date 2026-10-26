@@ -10,6 +10,10 @@
 // modelinin rengi, bant/bilek = seçili kafa bandı/bileklik (ekipman "Yok" ise gizli), grip/tel/tel2 = raket görünümü
 // (tuytop_raket_gor; tel2 yalnız "ana ve çapraz ayrı" desende farklı). Rakipte raket #e9eef0, bant/bilek yok.
 // Diğer parçalar FBX'in kendi malzemesini korur (Rocketbox dokusu, KayKit renkleri).
+// 2026-10-26 karakter görünümü (adım 6): ten (__ten), saç (__sac) ve ayakkabı (__taban) yalnız oyuncu seçtiyse boyanır; null
+// = modelin kendi rengi (var olan oyuncu ve rakipler değişmez). Dokulu parça (Gerçekçi model teni: DokuMalzeme) boyanmaz:
+// dokunun üstüne düz renk yüzü siler; ten tonu orada bilinçli olarak yok (Soyunma odası bunu yazar). Etiketi olmayan modelde
+// (yeni karakter hattında etiket değişirse) hiçbir şey boyanmaz, çökme yok. Grip "cizgi" dokusu (Havlu) koddan çizilir.
 using System.Collections.Generic;
 using UnityEngine;
 using BirdieSmash.Core;
@@ -30,12 +34,19 @@ namespace BirdieSmash.Game
         [System.Serializable] class Meta { public ClipMeta[] clips; }
 
         // Görünüm: null alan = FBX'in kendi rengi (cerceve/grip/tel) ya da gizli (bant/bilek).
-        public class Gorunum { public Color forma; public Color? cerceve, bant, bilek, grip, tel, tel2; }
+        public class Gorunum
+        {
+            public Color forma; public Color? cerceve, bant, bilek, grip, tel, tel2, ten, sac, ayakkabi; public bool gripCizgi;
+            // Sahnedeki figürü yeniden kurmak gerekip gerekmediğinin özeti (GameRoot, Vitrin).
+            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + gripCizgi; }
+        }
+        static Color? Renk(string h) { return h != null ? Kit.Hex(h) : (Color?)null; }
         public static Gorunum Benim()
         {
-            var gs = Ayar.GS; var r = Ayar.RGOR;
-            return new Gorunum { forma = Kit.Hex(gs.forma), cerceve = Kit.Hex(gs.raketRenk), bant = gs.bant != null ? Kit.Hex(gs.bant) : (Color?)null, bilek = gs.bileklik != null ? Kit.Hex(gs.bileklik) : (Color?)null,
-                grip = Kit.Hex(Vitrin.RAK_RENK[r["grip"]]), tel = Kit.Hex(Vitrin.RAK_RENK[r["tel"]]), tel2 = Kit.Hex(Vitrin.RAK_RENK[r["desen"] == "iki" ? r["tel2"] : r["tel"]]) };
+            var gs = Ayar.GS; var r = Ayar.RGOR; string kp = Ayar.GorunumRenk("kaplama");
+            return new Gorunum { forma = Kit.Hex(gs.forma), cerceve = Kit.Hex(kp ?? gs.raketRenk), bant = gs.bant != null ? Kit.Hex(gs.bant) : (Color?)null, bilek = gs.bileklik != null ? Kit.Hex(gs.bileklik) : (Color?)null,
+                grip = Kit.Hex(Vitrin.RAK_RENK[r["grip"]]), tel = Kit.Hex(Vitrin.RAK_RENK[r["tel"]]), tel2 = Kit.Hex(Vitrin.RAK_RENK[r["desen"] == "iki" ? r["tel2"] : r["tel"]]),
+                ten = Renk(Ayar.GorunumRenk("ten")), sac = Renk(Ayar.GorunumRenk("sac")), ayakkabi = Renk(Ayar.GorunumRenk("ayakkabi")), gripCizgi = gs.gripDoku == "cizgi" };
         }
         public static PlayerView Build(Transform root, string model, bool isMe, Color forma, bool hakem = false, Gorunum gor = null)
         {
@@ -224,7 +235,8 @@ namespace BirdieSmash.Game
             var M = new Dictionary<string, Material> { { "forma", formaM } };
             if (g.cerceve.HasValue) M["cerceve"] = Kit.Lit(g.cerceve.Value, .6f);
             if (g.bant.HasValue) M["bant"] = Kit.Lit(g.bant.Value, .2f); if (g.bilek.HasValue) M["bilek"] = Kit.Lit(g.bilek.Value, .2f);
-            if (g.grip.HasValue) M["grip"] = Kit.Lit(g.grip.Value, .15f); if (g.tel.HasValue) M["tel"] = Kit.Lit(g.tel.Value, .5f); if (g.tel2.HasValue) M["tel2"] = Kit.Lit(g.tel2.Value, .5f);
+            if (g.grip.HasValue) M["grip"] = g.gripCizgi ? Kit.LitTex(g.grip.Value, CizgiDoku(), .1f) : Kit.Lit(g.grip.Value, .15f); if (g.tel.HasValue) M["tel"] = Kit.Lit(g.tel.Value, .5f); if (g.tel2.HasValue) M["tel2"] = Kit.Lit(g.tel2.Value, .5f);
+            if (g.ten.HasValue) M["ten"] = Kit.Lit(g.ten.Value, .3f); if (g.sac.HasValue) M["sac"] = Kit.Lit(g.sac.Value, .2f); if (g.ayakkabi.HasValue) M["taban"] = Kit.Lit(g.ayakkabi.Value, .25f);
             foreach (var r in model.GetComponentsInChildren<Renderer>(true))
             {
                 string tag = Etiket(r.gameObject.name);
@@ -233,6 +245,7 @@ namespace BirdieSmash.Game
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
                 int kn = tag == "forma" ? 0 : tag == "cerceve" || tag == "grip" || tag == "tel" || tag == "tel2" ? 1 : tag == "bant" ? 2 : tag == "bilek" ? 3 : -1; if (kn >= 0) kanal[kn].Add(r);
                 Material m; M.TryGetValue(tag, out m);
+                if (m != null && (tag == "ten" || tag == "sac" || tag == "taban") && DokuluMu(r)) m = null;   // dokulu parça kendi dokusunu korur
                 if (m == null)
                 {
                     var asl = r.sharedMaterials; bool degisti = false;
@@ -254,6 +267,15 @@ namespace BirdieSmash.Game
             }
         }
         Transform kafa; TrailRenderer yay;
+        bool DokuluMu(Renderer r) { foreach (var a in r.sharedMaterials) if (DokuMalzeme(a) != null) return true; return false; }
+        // Havlu grip: sapı saran açık-koyu şerit (16×64, tekrar eden; bir kez üretilir, tüm figürler paylaşır).
+        static Texture2D cizgi;
+        static Texture2D CizgiDoku()
+        {
+            if (cizgi != null) return cizgi; cizgi = new Texture2D(16, 64, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Repeat, filterMode = FilterMode.Bilinear, name = "grip_cizgi" };
+            var px = new Color32[16 * 64]; for (int y = 0; y < 64; y++) for (int x = 0; x < 16; x++) { byte v = (byte)(((y + x / 2) / 6) % 2 == 0 ? 255 : 170); px[y * 16 + x] = new Color32(v, v, v, 255); }
+            cizgi.SetPixels32(px); cizgi.Apply(); return cizgi;
+        }
         // Yükseltme parlaması (HTML turParlat): o kanalın parçaları limona yanıp söner; k 0..1.
         public void Parlat(int kn, float k)
         {

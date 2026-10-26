@@ -177,6 +177,35 @@
 .tel-kaydirici .unity-base-slider__dragger { width: 28px; height: 28px; margin-top: -14px; border-radius: 14px; background-color: rgb(216, 255, 90); border-width: 0; }
 .tel-kaydirici .unity-base-slider__drag-container { min-height: 44px; }
 
+/* Soyunma odası v2 (2026-10-26, ekipman v2 + karakter): segment, yuva kartları, 5 çubuk, model/tarz kartları.
+   Seçili kart kalın camgöbeği çerçeve + ✓ + "Seçili" yazısı (yalnız renkle değil); kilitli kart soluk + kilit + koşul. */
+.segment { margin: 8px 12px 0 12px; flex-wrap: nowrap; }
+.segment-cip { padding: 8px 6px; }
+.buyuk-yazi .segment { flex-wrap: wrap; }
+.buyuk-yazi .vitrin-alan { height: 30%; min-height: 160px; }
+.yuva-izgara { margin: 0 -4px; }
+.izgara > .yuva-kare { flex-basis: 30%; flex-grow: 1; margin: 4px; padding: 10px; min-height: 88px; align-items: flex-start; justify-content: flex-start; }
+.bolme--kucuk { width: 7px; height: 5px; margin-right: 2px; }
+.cubuk-kart { padding: 10px 12px; }
+.stat-satir { flex-direction: row; align-items: center; margin: 3px 0; flex-wrap: nowrap; min-height: 18px; }
+.stat-ad { width: 34%; color: rgb(207, 227, 220); flex-shrink: 0; }
+.stat-iz { flex-grow: 1; height: 8px; background-color: rgba(255, 255, 255, 0.1); border-radius: 4px; margin: 0 8px; }
+.stat-dolu { position: absolute; left: 0; top: 0; bottom: 0; background-color: rgb(122, 215, 255); border-radius: 4px; }
+.stat-orta { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background-color: rgba(255, 255, 255, 0.55); }
+.stat-deger { width: 30px; -unity-text-align: middle-right; -unity-font-style: bold; flex-shrink: 0; }
+.stat-isaret { width: 16px; margin-left: 4px; align-items: center; flex-shrink: 0; }
+.buyuk-yazi .stat-satir { flex-wrap: wrap; }
+.buyuk-yazi .stat-ad { width: 100%; }
+.model-kart, .tarz-kart { padding: 12px; }
+.model-kart.secili, .tarz-kart.secili { border-width: 2px; border-color: rgb(122, 215, 255); }
+.model-kart.kilitli, .tarz-kart.kilitli { opacity: 0.7; }
+.model-dugme { margin-top: 8px; }
+.esnek-yatay-sifir { flex-grow: 1; flex-shrink: 1; }
+.renk--kilit { opacity: 0.55; }
+.renk-kilit-yazi { -unity-text-align: middle-center; -unity-font-style: bold; margin-top: 1px; }
+.ad-alan { margin: 0 0 4px 0; }
+.ad-alan .unity-base-text-field__input { min-height: 44px; background-color: rgb(34, 52, 58); color: rgb(255, 255, 255); border-radius: 12px; border-width: 1px; border-color: rgba(255, 255, 255, 0.12); padding: 8px 12px; -unity-text-align: middle-left; }
+
 /* Profil */
 .profil-ust { flex-direction: row; align-items: center; margin: 0 0 8px 0; flex-wrap: nowrap; }
 .avatar { width: 56px; height: 56px; border-radius: 28px; align-items: center; justify-content: center; flex-shrink: 0; }

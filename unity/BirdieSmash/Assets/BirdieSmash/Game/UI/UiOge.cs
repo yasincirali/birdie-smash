@@ -79,7 +79,7 @@ namespace BirdieSmash.Game
     // Koddan çizilen simgeler (beyaz + alfa; boya Image.tintColor). 96 px, 2×2 örnekleme ile kenar yumuşatma.
     public static class Ikonlar
     {
-        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Gradyan, YildizDolu, YildizBos;
+        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Gradyan, YildizDolu, YildizBos, Yukari, Asagi;
         static bool hazir;
         public static void Hazirla()
         {
@@ -121,6 +121,9 @@ namespace BirdieSmash.Game
             });
             // Kariyer yıldızları (2026-10-26): alınan dolu, alınmayan yalnız çerçeve (renk körlüğü: biçim farkı, renk değil).
             YildizDolu = Ciz((x, y) => Yildiz(x, y, .92f)); YildizBos = Ciz((x, y) => Yildiz(x, y, .92f) && !Yildiz(x, y, .58f));
+            // Stat çubuğunun artı/eksi işareti (2026-10-26, ekipman v2 ▲ ▼): glif değil çizim (yazı tipinde olmayabilir); yönü
+            // biçimle verir, rengi ek bilgidir (renk körlüğü).
+            Yukari = Ciz((x, y) => y > -.55f && y < .6f && Mathf.Abs(x) < (.6f - y) * .62f); Asagi = Ciz((x, y) => y < .55f && y > -.6f && Mathf.Abs(x) < (y + .6f) * .62f);
             // Oyna sekmesinin zemini: üstte saydam (kort görünür), altta koyu (kartlar okunur). USS'te gradyan yok.
             Gradyan = new Texture2D(1, 64, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             var px = new Color32[64]; for (int i = 0; i < 64; i++) { float t = 1 - i / 63f; float a = Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - .18f) / .62f)) * .9f; px[i] = new Color(8 / 255f, 16 / 255f, 17 / 255f, a); }

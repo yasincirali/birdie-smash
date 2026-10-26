@@ -38,7 +38,7 @@ namespace BirdieSmash.Game
         // Ekipman ya da raket görünümü değişince figürü yeniden boya (anahtar: görünümün özeti).
         public void Yenile()
         {
-            var g = PlayerView.Benim(); string k = Ayar.model + g.forma + g.cerceve + g.bant + g.bilek + g.grip + g.tel + g.tel2;
+            var g = PlayerView.Benim(); string k = Ayar.model + g.Anahtar();
             if (k == anah && fig != null) return; anah = k;
             if (fig != null) Destroy(fig.gameObject); if (raketPivot != null) Destroy(raketPivot.gameObject);
             fig = PlayerView.Build(transform, Ayar.model, true, g.forma, false, g); fig.transform.position = YER;

@@ -62,7 +62,9 @@ namespace BirdieSmash.Game
             {"Akış","Üst üste 4 tam orta: çizgiler altın olur, hedef büyür, şarkıya armoni girer"},
             {"Derinlik","Topun yerdeki gölgesi ve ona bağlı ince çizgi yüksekliği gösterir. Top sana inerken son saniyede yer çizgisi ve büzülen iniş halkası belirir; yeşilse yetişiyorsun"},
             {"Nefes","Smaç, sıçrama ve uzanma nefes yakar; nefesin düşünce yavaşlarsın ve smaç zayıflar. Clear atıp sayı arasında dinlen. Topu tepeden alırsan smaç dikleşir"},
-            {"Ekipman","Raket, tel gerginliği, bileklik, bant ve forma oyunun dinamiklerini, raket sesini ve titreşimi değiştirir"}};
+            {"Ekipman","Raket, tel gerginliği, bileklik, bant ve forma oyunun dinamiklerini, raket sesini ve titreşimi değiştirir"},
+            // 2026-10-26 ekipman v2 ve karakter: 5 çubuk ve tarz bir satırla anlatılır (yalnız Unity; HTML donduruldu)
+            {"Çubuklar ve tarz","Soyunma odasında her parçanın 5 çubuğu var (50 nötr), ▲ artısını ▼ eksisini gösterir; en iyi parça yok. Tarz güç vermez, oyun biçimini değiştirir: ücretsiz, istediğin an değiştir"}};
         void NasilKur(VisualElement p)
         {
             SayfaBasi(p, "Nasıl oynanır");

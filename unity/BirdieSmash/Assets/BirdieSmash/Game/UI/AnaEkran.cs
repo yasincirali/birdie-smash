@@ -94,6 +94,8 @@ namespace BirdieSmash.Game
             }, "dugme--birincil", HizliOzet(), 19));
         }
 
+        void AltSayfaYenidenKur(string altS) { if (altS == Gezinti.KART) MacKartKur(); else if (altS == Gezinti.YUVA) YuvaSayfaKur(); else HizliKur(); }
+
         // Alt sayfa iskeleti (Hızlı maç ve kariyer maç kartı ortak, 2026-10-26): tutamak (aşağı çekince kapanır, iOS kalıbı;
         // ayrıca Kapat, Geri ve zemine dokunma), başlık, kaydırmalı gövde. Dönüş: gövdenin içerik kabı.
         VisualElement AltSayfaKur(string baslik)
@@ -135,7 +137,7 @@ namespace BirdieSmash.Game
         {
             for (int i = 0; i < 4; i++) kirli[i] = true; ustKirli = true;
             string altS = gez.AcikAltSayfa;
-            if (altS != null) { var eski = altSayfa != null ? altSayfa.Q<ScrollView>() : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; if (altS == Gezinti.KART) MacKartKur(); else HizliKur(); KaydirmaGeri(altSayfa, of); }
+            if (altS != null) { var eski = altSayfa != null ? altSayfa.Q<ScrollView>() : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; AltSayfaYenidenKur(altS); KaydirmaGeri(altSayfa, of); }
             string u = gez.Ust; if (u != null && !Gezinti.AltSayfa(u)) { var eski = sayfa.Q<ScrollView>(); Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; SayfaKur(u); KaydirmaGeri(sayfa, of); }
             else if (u == null) { var k = sekmeKok[(int)gez.sekme]; var eski = k.Q<ScrollView>(null, "govde-kaydir") ?? k.Q<ScrollView>(); Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; SekmeKur(gez.sekme); KaydirmaGeri(k, of); }
             if (ustKirli) UstKur();

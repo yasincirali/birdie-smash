@@ -9,6 +9,8 @@
 // 2026-10-26 kariyer haritası (adım 2–3): örnek ilerlemeyle (kaydedilmez, tur sonunda eskisi geri konur) harita Tur 1,
 // Tur 2 kilitli ve açık, final maç kartı (imza vuruşu satırı), ×1 ve ×2 yazı; maçta patronun imza hazırlığı (ışık + poz),
 // hareket tam ve hareketi azalt.
+// 2026-10-26 ekipman v2 + karakter (adım 4, 6): Soyunma odası Tarz ve Görünüm segmentleri, raket ve kordaj yuva sayfaları,
+// örnek ilerlemeyle Profil (ad, unvan, maç/smaç); ×1 ve ×2 yazı.
 // Süre: gerçek zaman (GameRoot dt'yi 0,05 ile sınırlar; yavaş yazılım render'ında maç da yavaşlar, kareler yine anlamlı).
 using System.Collections;
 using System.IO;
@@ -93,7 +95,9 @@ namespace BirdieSmash.Game
             ui.SekmeAc(Sekme.Kariyer); yield return Bekle(20); yield return Cek("menu_" + ek + "kariyer");
             yield return Harita(ui, ek);
             ui.SekmeAc(Sekme.Soyunma); yield return Bekle(30); yield return Cek("menu_" + ek + "soyunma");
+            yield return Soyunma(ui, ek);
             ui.SekmeAc(Sekme.Profil); yield return Bekle(20); yield return Cek("menu_" + ek + "profil");
+            yield return Profil(ui, ek);
             ui.SekmeAc(Sekme.Oyna); ui.HizliMacAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "hizli"); ui.Geri();
             ui.AyarlarAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "ayarlar"); ui.Geri(); yield return Bekle(5);
         }
@@ -112,6 +116,28 @@ namespace BirdieSmash.Game
             ui.MacKartAc(KariyerVeri.Global(1, 2)); yield return Bekle(20); yield return Cek("menu_" + ek + "mac_karti_tur2"); ui.Geri();
             ui.KariyerTurSec(3); yield return Bekle(15); yield return Cek("menu_" + ek + "harita_tur4_yakinda");
             Ayar.ilerleme = eski; ui.KariyerTurSec(-1); yield return Bekle(5);
+        }
+
+        // Soyunma odası (2026-10-26, ekipman v2 + karakter): Tarz ve Görünüm segmentleri, raket ve kordaj yuva sayfaları (model
+        // kartları, 5 çubuk, ▲/▼). Oyuncunun kendi kaydıyla: seçim değiştirilmez, yalnız bakılır; sonunda Ekipman'a dönülür.
+        IEnumerator Soyunma(UiKok ui, string ek)
+        {
+            ui.SoyunmaSegment(1); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_tarz");
+            ui.SoyunmaSegment(2); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_gorunum");
+            ui.SoyunmaSegment(0); yield return Bekle(10);
+            ui.YuvaAc("raket"); yield return Bekle(20); yield return Cek("menu_" + ek + "yuva_raket"); ui.Geri(); yield return Bekle(5);
+            ui.YuvaAc("tel"); yield return Bekle(20); yield return Cek("menu_" + ek + "yuva_kordaj"); ui.Geri(); yield return Bekle(5);
+        }
+
+        // Profil örnek ilerlemeyle (kaydedilmez, sonunda eskisi geri konur): ad, iki tur bitmiş (Yerel şampiyon + Asya fatihi
+        // unvanları), maç/smaç sayısı; ad girilmemiş hâl yukarıdaki "profil" karesinde.
+        IEnumerator Profil(UiKok ui, string ek)
+        {
+            var eski = Ayar.ilerleme;
+            var p = new Ilerleme(); for (int t = 0; t < 2; t++) for (int b = 0; b < 6; b++) p.tur[t][b] = 7;
+            p.Ad = "Yasin"; p.Unvan = "yerel"; for (int i = 0; i < 12; i++) p.MacSay(3); Ayar.ilerleme = p;
+            ui.SekmeAc(Sekme.Oyna); ui.SekmeAc(Sekme.Profil); yield return Bekle(20); yield return Cek("menu_" + ek + "profil_ornek");
+            Ayar.ilerleme = eski; ui.SekmeAc(Sekme.Oyna); ui.SekmeAc(Sekme.Profil); yield return Bekle(5);
         }
 
         // Patron maçında imza hazırlığı: örnek ilerlemeyle Tur 2 finali (Nova, mermi drive) ya da Tur 1 finali (Rocco, duvar

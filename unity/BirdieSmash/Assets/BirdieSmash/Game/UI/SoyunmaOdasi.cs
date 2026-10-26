@@ -1,12 +1,23 @@
-// Soyunma odası (eski Ekipman paneli, 2026-10-26): içerik ve davranış bugünkü IMGUI paneliyle birebir; yalnız yüzey UI
-// Toolkit. Tarz ve Görünüm segmentleri sonraki adımlarda (tasarım §2.3, §5).
+// Soyunma odası (eski Ekipman paneli, 2026-10-26). Adım 1'de bugünkü IMGUI paneliyle birebir taşındı; adım 4 (ekipman v2) ve
+// adım 6 (karakter) ile tasarım §2.3 yerleşimine geçti:
 //   Üst: 360° vitrin (Vitrin.rt): sürükle = döndür (bırakınca yavaşlar), ‹ › 15° (raket görünümünde 20°), "Raketi incele" /
 //   "Oyuncuya dön"; rakete dokunmak (sürüklemeden: < 8 pt, < 400 ms, kutunun %14'ü yarıçap) raket görünümünü açar.
-//   Gövde (kayar): raket görünümündeyse grip / kordaj / desen / çapraz tel renkleri (yalnız süs); seviye + Tüy + XP;
-//   altı yuva (●○ yerine 10 bölmeli çubuk: glif riski yok) + Yükselt (kapalıysa nedeni yazar) + önizleme çubukları
-//   (gri = şimdi, yeşil uç = yükseltince; yükseltince gri .5 sn'de kayar, hareketi azaltta anında); Eşit şartlar; modeller;
-//   tel gerginliği (kaydırıcı + − / + düğmeleri: kaydırıcının tutamağı 44 pt'den küçük, tek adımlık iş düğmeyle de yapılır);
-//   istatistik satırı. Seçimde titreşim ve raket/telde deneme smacı (sesi ve titreşimi) aynı.
+//   Altında segment [Ekipman | Tarz | Görünüm] (vitrinle birlikte sabit, gövde kayar):
+//   · Ekipman: seviye + Tüy + XP; takımın 5 çubuğu (Güç, Kontrol, Tatlı nokta, Çabukluk, Dayanıklılık; Core/Gear.Cubuklar);
+//     altı yuva kartı (3×2, büyük yazıda alt alta): yuva, model, Sv n/10, yükseltme ya da alınacak model varsa ▲ "Hazır".
+//     Yuvaya dokunmak yuva sayfasını alt sayfa olarak açar; Eşit şartlar.
+//   · Yuva sayfası (alt sayfa): seviye bölmesi + Yükselt (kapı varsa nedeni yazar, düğme pasif ama okunur) + önizleme
+//     (gri = şimdi, yeşil uç = yükseltince); Kordaj'da tel gerginliği kaydırıcısı (+ − düğmeleri; kaydırıcı takımın çubuklarını
+//     canlı oynatır); modeller: ad, "özel" satırı, o model takılınca 5 çubuk ve nötr modele göre ▲/▼ (artısı ve eksisi her
+//     zaman görünür), durum (Seçili ✓ / Seç / Al · fiyat / Sv n gerekli). Toplam "güç puanı" bilerek yok (§4.1).
+//     Neden yatay kaydırmalı kart değil (tasarım "yatay kartlar" diyordu): Dynamic Type ×2'de kart yüksekliği ikiye katlanır
+//     ve ekran dışındaki kart VoiceOver sırasında da görünmez kalır; dikey liste her ölçekte okunur.
+//   · Tarz: Dengeli + 4 tarz (Core/Karakter); artı ve eksi satırı ▲/▼ ile, seçili ✓ + "Seçili", kilitli kilit + "Sv n
+//     gerekli". Ücretsiz, maç dışında her an değişir, güç değil kimlik.
+//   · Görünüm: forma rengi, ten tonu (baştan hepsi açık), saç, ayakkabı, raket kaplaması; raketin grip/kordaj/desen renkleri
+//     (yalnız süs). Raket görünümüne geçince Görünüm açılır (raket renkleri orada). Seçili örnek ✓ ve kalın çerçeve, grup
+//     başlığında seçilenin adı (yalnız renkle değil); kilitli örnek kilit + "Sv n".
+// Seçimde titreşim; raket/telde deneme smacı (sesi ve titreşimi) aynı.
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -16,9 +27,17 @@ namespace BirdieSmash.Game
 {
     public partial class UiKok
     {
-        Image vitrinIm; Label vitrinYazi, telYazi, telNot, statYazi; VisualElement soyunmaGovde; ScrollView soyunmaKaydir;
+        Image vitrinIm; Label vitrinYazi, telYazi, telNot; VisualElement soyunmaGovde, soyunmaSegment; ScrollView soyunmaKaydir;
         Dictionary<string, float> yukOnce; string yukK; bool telDegisti;
         Vector2 vBas; float vBasT, vSonX, vSonT; bool vBasili;
+        int soyunmaSeg; string yuvaAcik = "raket";
+        // Canlı çubuklar (tel kaydırıcısı sürüklenirken yeniden kurmadan güncellenir): dolgu + değer yazısı.
+        readonly List<VisualElement> canliDolgu = new List<VisualElement>(); readonly List<Label> canliDeger = new List<Label>();
+        static readonly string[] SEG_AD = { "Ekipman", "Tarz", "Görünüm" };
+
+        // EkranTuru ve maç sonu "Ekipmanı yükselt" için açık yöntemler.
+        public void SoyunmaSegment(int i) { soyunmaSeg = Mathf.Clamp(i, 0, 2); SegmentKur(); SoyunmaGovdeKur(false); }
+        public void YuvaAc(string k) { if (Gear.YuvaOf(k) == null) return; yuvaAcik = Gear.YuvaOf(k).k; var once = gez.sekme; gez.Ac(Gezinti.YUVA); Uygula(once, true); }
 
         void SoyunmaKur(VisualElement k)
         {
@@ -30,11 +49,30 @@ namespace BirdieSmash.Game
             vitrinYazi = Yazi("", 12, "vitrin-yazi"); ust.Add(vitrinYazi);
             var ok = Satir("vitrin-oklar"); ust.Add(ok);
             var sol = new VisualElement(); sol.AddToClassList("dugme"); sol.AddToClassList("ikon-dugme"); sol.Add(Ikon(Ikonlar.Geri, 20, Color.white)); sol.AddManipulator(new Clickable(() => VitrinCevir(-1))); Erisim.Etiket(sol, L.T("Sola çevir"), "dugme"); ok.Add(sol);
-            var orta = Dugme("", () => { vt.hedefGec = vt.hedefGec >= 1 ? 0 : 1; Tik(); SoyunmaGovdeKur(true); }, "vitrin-gecis"); ok.Add(orta);
+            var orta = Dugme("", () => RaketGorunum(vt.hedefGec < 1), "vitrin-gecis"); ok.Add(orta);
             var sag = new VisualElement(); sag.AddToClassList("dugme"); sag.AddToClassList("ikon-dugme"); sag.Add(Ikon(Ikonlar.Ileri, 20, Color.white)); sag.AddManipulator(new Clickable(() => VitrinCevir(1))); Erisim.Etiket(sag, L.T("Sağa çevir"), "dugme"); ok.Add(sag);
+            soyunmaSegment = Satir("segment"); k.Add(soyunmaSegment); SegmentKur();
             soyunmaKaydir = Kaydirma(k); soyunmaKaydir.AddToClassList("govde-kaydir"); soyunmaKaydir.AddToClassList("soyunma-kaydir");
             soyunmaGovde = soyunmaKaydir.contentContainer; soyunmaGovde.AddToClassList("sekme-icerik");
             SoyunmaGovdeKur(false);
+        }
+
+        // Raket görünümü: vitrin rakete geçer, gövde Görünüm segmentine (raketin renkleri orada); dönüşte segment kalır.
+        void RaketGorunum(bool ac)
+        {
+            var vt = root.vitrin; vt.hedefGec = ac ? 1 : 0; Tik();
+            if (ac && soyunmaSeg != 2) { soyunmaSeg = 2; SegmentKur(); SoyunmaGovdeKur(false); } else SoyunmaGovdeKur(true);
+        }
+
+        // Segment: üç çip; seçili ✓ + zemin (yalnız renkle değil), ekran okuyucuda "sekme, seçili".
+        void SegmentKur()
+        {
+            if (soyunmaSegment == null) return; soyunmaSegment.Clear();
+            for (int i = 0; i < 3; i++)
+            {
+                int ii = i; var d = Cip(L.T(SEG_AD[i]), soyunmaSeg == i, () => { if (soyunmaSeg == ii) return; soyunmaSeg = ii; SegmentKur(); SoyunmaGovdeKur(false); });
+                d.AddToClassList("segment-cip"); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; soyunmaSegment.Add(d);
+            }
         }
 
         void VitrinCevir(int yon)
@@ -62,7 +100,7 @@ namespace BirdieSmash.Game
             {   // ScaleAndCrop: dokunun RT içindeki yeri (Hud'daki hesabın aynısı, panel birimiyle)
                 float W = vitrinIm.layout.width, H = vitrinIm.layout.height; float s = Mathf.Max(W / vt.rt.width, H / vt.rt.height), dw = vt.rt.width * s, dh = vt.rt.height * s;
                 var gp = new Vector2((W - dw) / 2 + vp.x * dw, (H - dh) / 2 + (1 - vp.y) * dh);
-                if ((lp - gp).magnitude < W * .14f) { vt.hedefGec = 1; Tik(); SoyunmaGovdeKur(true); }
+                if ((lp - gp).magnitude < W * .14f) RaketGorunum(true);
             }
         }
 
@@ -73,49 +111,114 @@ namespace BirdieSmash.Game
             vitrinYazi.text = L.T(raketG ? "Raketin, 360 derece görünüm" : "Oyuncun, 360 derece görünüm");
             var gecis = vitrinIm.parent.Q<VisualElement>(null, "vitrin-gecis");
             if (gecis != null) { var gy = gecis.Q<Label>(); string gt = L.T(raketG ? "Oyuncuya dön" : "Raketi incele"); if (gy != null) gy.text = gt; Erisim.Etiket(gecis, gt, "dugme"); }
-            var c = soyunmaGovde; c.Clear(); var gr = Ayar.gear;
-            if (raketG)
-            {   // raket görünümü (yalnız süs, oyuna etkisi yok)
-                RenkSira(c, "Grip", "grip"); RenkSira(c, "Kordaj", "tel");
-                c.Add(Grup(L.T("Desen"))); var ds = Satir(); c.Add(ds);
-                ds.Add(Cip(L.T("Tek renk"), Ayar.RGOR["desen"] == "tek", () => { Ayar.RGOR["desen"] = "tek"; Ayar.Kaydet(); vt.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
-                ds.Add(Cip(L.T("Ana ve çapraz ayrı"), Ayar.RGOR["desen"] == "iki", () => { Ayar.RGOR["desen"] = "iki"; Ayar.Kaydet(); vt.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
-                if (Ayar.RGOR["desen"] == "iki") RenkSira(c, "Çapraz teller", "tel2");
-                c.Add(Bosluk(10));
-            }
-            // seviye ve Tüy
-            int L_, kalan, gerek; gr.OyuncuSv(out L_, out kalan, out gerek);
-            var sv = Satir("arali"); c.Add(sv); sv.Add(Yazi(L.T("Seviye {0}", L_), 16, "kalin")); sv.Add(Yazi(L.T("{0} Tüy", gr.eko.tuy), 16, "kalin"));
-            c.Add(Cubuk(gerek > 0 ? kalan / (float)gerek : 1, CAMGOBEGI));
-            c.Add(Yazi(gerek > 0 ? L.T("Sonraki seviyeye {0} XP · maç kazandıkça Tüy ve XP gelir", gerek - kalan) : L.T("En yüksek seviye"), 12, "soluk"));
-            foreach (var Y in Gear.YUVA) YuvaKur(c, Y, L_);
-            // eşit şartlar
-            c.Add(Cip(L.T("Eşit şartlar"), gr.eko.esit, () => { gr.eko.esit = !gr.eko.esit; Ayar.GearHesap(); Ayar.Kaydet(); SoyunmaGovdeKur(true); }, L.T("Serbest maçta yükseltmeler sayılmaz")));
-            c.Add(Yazi(L.T("Rakete ya da tele dokununca o takımın smaç sesini duyarsın."), 12, "soluk"));
-            Modeller(c, "raket", "Raket");
-            TelKur(c);
-            Modeller(c, "bileklik", "Bileklik"); Modeller(c, "bant", "Kafa bandı"); Modeller(c, "forma", "Forma");
-            statYazi = Yazi(StatSatiri(), 12, "soluk"); c.Add(statYazi); c.Add(Bosluk(20));
+            var c = soyunmaGovde; c.Clear(); canliDolgu.Clear(); canliDeger.Clear();
+            if (soyunmaSeg == 1) TarzGovde(c); else if (soyunmaSeg == 2) GorunumGovde(c, raketG); else EkipmanGovde(c);
+            c.Add(Bosluk(20));
             if (of.y > 0) { soyunmaKaydir.scrollOffset = of; var sk = soyunmaKaydir; sk.schedule.Execute(() => sk.scrollOffset = of).StartingIn(33); }
         }
 
-        static string StatSatiri()
+        void SeviyeSatiri(VisualElement c)
         {
-            var S = Ayar.GS; System.Func<float, string> pct = v => (v >= 1 ? "+" : "−") + Mathf.Abs(Mathf.Round((v - 1) * 100)) + "%";
-            return L.T("Güç") + " " + pct(S.guc) + " · " + L.T("Kontrol") + " " + pct(S.kontrol) + " · " + L.T("Drive/file") + " " + pct(S.hiz) + " · " + L.T("Tatlı nokta") + " " + pct(S.tatli) + " · " + L.T("Koşu") + " " + pct(S.kosu) + " · " + L.T("Akış") + " " + L.T("{0} tam orta", S.akis);
+            var gr = Ayar.gear; int L_, kalan, gerek; gr.OyuncuSv(out L_, out kalan, out gerek);
+            var sv = Satir("arali"); c.Add(sv); sv.Add(Yazi(L.T("Seviye {0}", L_), 16, "kalin")); sv.Add(Yazi(L.T("{0} Tüy", gr.eko.tuy), 16, "kalin"));
+            c.Add(Cubuk(gerek > 0 ? kalan / (float)gerek : 1, CAMGOBEGI));
+            c.Add(Yazi(gerek > 0 ? L.T("Sonraki seviyeye {0} XP · maç kazandıkça Tüy ve XP gelir", gerek - kalan) : L.T("En yüksek seviye"), 12, "soluk"));
         }
 
-        void RenkSira(VisualElement c, string ad, string k)
+        // ---- Ekipman segmenti ----
+        void EkipmanGovde(VisualElement c)
         {
-            c.Add(Grup(L.T(ad))); var s = Satir("renkler"); c.Add(s);
-            foreach (var id in Vitrin.RAK_SIRA)
+            var gr = Ayar.gear; SeviyeSatiri(c);
+            c.Add(Grup(L.T("Takımın")));
+            var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true);
+            c.Add(Grup(L.T("Yuvalar"))); var iz = Satir("izgara"); iz.AddToClassList("yuva-izgara"); c.Add(iz);
+            foreach (var Y in Gear.YUVA) iz.Add(YuvaKare(Y));
+            c.Add(Cip(L.T("Eşit şartlar"), gr.eko.esit, () => { gr.eko.esit = !gr.eko.esit; Ayar.GearHesap(); Ayar.Kaydet(); SoyunmaGovdeKur(true); }, L.T("Serbest maçta yükseltmeler sayılmaz")));
+            c.Add(Yazi(L.T("Çubuklar ekipmanı anlatır, 50 nötr. Oyun tarzı Tarz bölümünde, çubuklara girmez."), 12, "soluk"));
+        }
+
+        // Yuva kartı: dokununca yuva sayfası. "Hazır" = yükseltme alınabilir ya da seviyesi gelmiş, Tüy'ü yeten model var.
+        VisualElement YuvaKare(Yuva Y)
+        {
+            var gr = Ayar.gear; int sv = gr.eko.sv[Y.k], f, kp; bool hazir = gr.YukseltOlur(Y.k, out f, out kp) || gr.AlinabilirVar(Y.m);
+            var m = Gear.GEAR[Y.m][gr.Secili(Y.m)];
+            var kart = Kart("yuva-kare"); kart.AddToClassList("dugme");
+            kart.Add(Yazi(L.T(Y.ad), 12, "soluk")); kart.Add(Yazi(L.T(m.ad), 15, "kalin"));
+            var bol = Satir("seviye-bolme"); bol.pickingMode = PickingMode.Ignore; kart.Add(bol);
+            for (int i = 0; i < 10; i++) { var b = new VisualElement(); b.AddToClassList("bolme"); b.AddToClassList("bolme--kucuk"); if (i < sv) b.AddToClassList("bolme--dolu"); b.pickingMode = PickingMode.Ignore; bol.Add(b); }
+            var alt = Satir("rakip-satir"); alt.pickingMode = PickingMode.Ignore; kart.Add(alt); alt.Add(Yazi(L.T("Sv {0}/10", sv), 12, "soluk"));
+            if (hazir) { var h = Ikon(Ikonlar.Yukari, 12, LIMON); h.style.marginLeft = 6; alt.Add(h); var hy = Yazi(L.T("Hazır"), 12, "durum-gecti"); hy.style.marginLeft = 2; alt.Add(hy); }
+            kart.AddManipulator(new Clickable(() => { Tik(); YuvaAc(Y.k); }));
+            Erisim.Etiket(kart, L.T(Y.ad) + ", " + L.T(m.ad) + ", " + L.T("Sv {0}/10", sv) + (hazir ? ", " + L.T("yükseltme ya da yeni model hazır") : ""), "dugme");
+            return kart;
+        }
+
+        // 5 çubuk: ad, iz (50'de nötr çizgisi), değer; karsi verildiyse ▲/▼ (nötr modele göre). canli: tel kaydırıcısı günceller.
+        void CubukKart(VisualElement c, int[] v, int[] karsi, bool canli)
+        {
+            for (int i = 0; i < 5; i++)
             {
-                bool on = Ayar.RGOR[k] == id; string rid = id;
-                var d = new VisualElement(); d.AddToClassList("renk"); if (on) d.AddToClassList("renk--secili"); d.style.backgroundColor = Kit.Hex(Vitrin.RAK_RENK[id]);
-                if (on) d.Add(Ikon(Ikonlar.Tik, 18, id == "beyaz" || id == "limon" ? Color.black : Color.white));
-                d.AddManipulator(new Clickable(() => { Ayar.RGOR[k] = rid; Ayar.Kaydet(); Tik(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
-                Erisim.Etiket(d, L.T(ad) + ", " + L.T(Vitrin.RAK_AD[id]), "dugme", on); s.Add(d);
+                var r = Satir("stat-satir"); r.pickingMode = PickingMode.Ignore; c.Add(r);
+                r.Add(Yazi(L.T(Gear.CUBUK_AD[i]), 12, "stat-ad"));
+                var iz = new VisualElement(); iz.AddToClassList("stat-iz"); iz.pickingMode = PickingMode.Ignore; r.Add(iz);
+                var dl = new VisualElement(); dl.AddToClassList("stat-dolu"); dl.style.width = Length.Percent(v[i]); dl.pickingMode = PickingMode.Ignore; iz.Add(dl);
+                var orta = new VisualElement(); orta.AddToClassList("stat-orta"); orta.pickingMode = PickingMode.Ignore; iz.Add(orta);
+                var dg = Yazi(v[i].ToString(), 12, "stat-deger"); r.Add(dg);
+                int fark = karsi != null ? v[i] - karsi[i] : 0; string yon = "";
+                var isk = new VisualElement(); isk.AddToClassList("stat-isaret"); isk.pickingMode = PickingMode.Ignore; r.Add(isk);
+                if (fark != 0) { isk.Add(Ikon(fark > 0 ? Ikonlar.Yukari : Ikonlar.Asagi, 12, fark > 0 ? LIMON : MERCAN)); yon = ", " + L.T(fark > 0 ? "artı {0}" : "eksi {0}", Mathf.Abs(fark)); }
+                Erisim.Etiket(r, L.T(Gear.CUBUK_AD[i]) + " " + v[i] + yon, "metin");
+                if (canli) { canliDolgu.Add(dl); canliDeger.Add(dg); }
             }
+        }
+        void CanliCubukYaz()
+        {
+            if (canliDolgu.Count != 5) return; var v = Gear.Cubuklar(Ayar.GSE);
+            for (int i = 0; i < 5; i++) { canliDolgu[i].style.width = Length.Percent(v[i]); canliDeger[i].text = v[i].ToString(); var b = canliDeger[i].parent.userData as ErisimBilgi; if (b != null) b.etiket = L.T(Gear.CUBUK_AD[i]) + " " + v[i]; }
+        }
+
+        // ---- yuva sayfası (alt sayfa) ----
+        void YuvaSayfaKur()
+        {
+            var Y = Gear.YuvaOf(yuvaAcik) ?? Gear.YUVA[0]; var gr = Ayar.gear; int L_ = gr.Seviye();
+            var c = AltSayfaKur(L.T(Y.ad)); canliDolgu.Clear(); canliDeger.Clear();
+            YuvaKur(c, Y, L_);
+            if (Y.k == "tel") TelKur(c);
+            c.Add(Grup(L.T("Takımın şimdi"))); var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true);
+            c.Add(Grup(L.T("Modeller")));
+            var notr = gr.CubuklarIle(Y.m, Gear.Varsayilan(Y.m));
+            foreach (var m in Gear.GEAR[Y.m].Values) ModelKart(c, Y, m, notr);
+            if (gr.eko.esit) c.Add(Yazi(L.T("Eşit şartlar açık: serbest maçta sayılmaz, kariyerde sayılır"), 12, "soluk"));
+        }
+
+        void ModelKart(VisualElement c, Yuva Y, GearModel m, int[] notr)
+        {
+            var gr = Ayar.gear; var du = gr.Durum(Y.m, m.id); string id = m.id;
+            var kart = Kart("model-kart"); if (du == ModelDurum.Secili) kart.AddToClassList("secili"); if (du == ModelDurum.Kilitli) kart.AddToClassList("kilitli"); c.Add(kart);
+            var bas = Satir("arali"); kart.Add(bas); bas.Add(Yazi(L.T(m.ad), 16, "kalin"));
+            var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; bas.Add(dr); string durum;
+            if (du == ModelDurum.Secili) { dr.Add(Ikon(Ikonlar.Tik, 14, LIMON)); durum = L.T("Seçili"); }
+            else if (du == ModelDurum.Kilitli) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = L.T("Sv {0} gerekli", m.sv); }
+            else if (du == ModelDurum.Alinir) durum = m.fiyat + " " + L.T("Tüy"); else durum = L.T("Senin");
+            var dy = Yazi(durum, 12, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
+            var ns = Yazi(L.T(m.n), 13, "ipucu"); kart.Add(ns);
+            if (m.renk != null) { var rr = Satir("rakip-satir"); rr.pickingMode = PickingMode.Ignore; kart.Add(rr); var n = new VisualElement(); n.AddToClassList("renk-nokta"); n.style.backgroundColor = Kit.Hex(m.renk); rr.Add(n); rr.Add(Yazi(L.T("Görünüm rengi"), 11, "soluk")); }
+            CubukKart(kart, gr.CubuklarIle(Y.m, m.id), notr, false);
+            Erisim.Etiket(kart, L.T(m.ad) + ", " + L.T(m.n) + ", " + durum, "metin", du == ModelDurum.Secili);
+            if (du == ModelDurum.Acik) kart.Add(Dugme(L.T("Seç"), () => ModelSec(Y, id), "model-dugme"));
+            else if (du == ModelDurum.Alinir)
+            {
+                if (gr.AlOlur(Y.m, id)) kart.Add(Dugme(L.T("Al · {0}", m.fiyat + " " + L.T("Tüy")), () => { if (gr.Al(Y.m, id)) { root.sfx.Yukselt(); Yerel.Hap("flow"); ModelSec(Y, id); } }, "dugme--birincil", L.T("Bir kez alınır, hep senin"), 16));
+                else kart.Add(Pasif(L.T("Al · {0}", m.fiyat + " " + L.T("Tüy")), L.T("{0} Tüy daha gerekli", m.fiyat - gr.eko.tuy)));
+            }
+            else if (du == ModelDurum.Kilitli) kart.Add(Pasif(L.T("Sv {0} gerekli", m.sv), L.T("Seviye atladıkça açılır")));
+        }
+
+        void ModelSec(Yuva Y, string id)
+        {
+            var gr = Ayar.gear; if (!gr.Sec(Y.m, id)) return;
+            Ayar.GearHesap(); Ayar.Kaydet(); root.vitrin.Yenile(); if (Y.m == "raket" || Y.m == "kordaj") { root.sfx.Deneme(); Yerel.Vurus("smash", "perfect", false); } else root.sfx.Tik();
+            ustKirli = true; UstKur(); Degisti(); SoyunmaGovdeKur(true);
         }
 
         void YuvaKur(VisualElement c, Yuva Y, int L_)
@@ -125,7 +228,7 @@ namespace BirdieSmash.Game
             var kart = Kart("yuva"); c.Add(kart);
             var r = Satir("yuva-satir"); kart.Add(r);
             var sol = new VisualElement(); sol.AddToClassList("yuva-sol"); sol.pickingMode = PickingMode.Ignore; r.Add(sol);
-            sol.Add(Yazi(L.T(Y.ad), 16, "kalin"));
+            sol.Add(Yazi(L.T("Yuva seviyesi"), 15, "kalin"));
             var bol = Satir("seviye-bolme"); bol.pickingMode = PickingMode.Ignore; sol.Add(bol);
             for (int i = 0; i < 10; i++) { var b = new VisualElement(); b.AddToClassList("bolme"); if (i < sv) b.AddToClassList("bolme--dolu"); b.pickingMode = PickingMode.Ignore; bol.Add(b); }
             sol.Add(Yazi(sv + "/10 · " + L.T(Y.n), 12, "soluk"));
@@ -135,7 +238,7 @@ namespace BirdieSmash.Game
             else dg = Dugme(ne, () =>
             {
                 var once = gr.YukDegerler(Y.k, 0);
-                if (gr.Yukselt(Y.k)) { Ayar.GearHesap(); Ayar.Kaydet(); root.sfx.Yukselt(); Yerel.Hap("flow"); root.vitrin.Parlat(Y.k); yukOnce = once; yukK = Y.k; ustKirli = true; UstKur(); SoyunmaGovdeKur(true); }
+                if (gr.Yukselt(Y.k)) { Ayar.GearHesap(); Ayar.Kaydet(); root.sfx.Yukselt(); Yerel.Hap("flow"); root.vitrin.Parlat(Y.k); yukOnce = once; yukK = Y.k; ustKirli = true; UstKur(); Degisti(); SoyunmaGovdeKur(true); }
             }, "dugme--birincil");
             dg.AddToClassList("yuva-dugme"); r.Add(dg);
             Erisim.Etiket(kart, L.T(Y.ad) + ", " + sv + "/10", "metin");
@@ -166,31 +269,6 @@ namespace BirdieSmash.Game
             if (var_ && gr.eko.esit) kart.Add(Yazi(L.T("Eşit şartlar açık: serbest maçta sayılmaz, kariyerde sayılır"), 12, "soluk"));
         }
 
-        void Modeller(VisualElement c, string k, string ad)
-        {
-            var gr = Ayar.gear; c.Add(Grup(L.T(ad)));
-            string cur = k == "raket" ? gr.raket : k == "bileklik" ? gr.bileklik : k == "bant" ? gr.bant : gr.forma;
-            var izgara = Satir("izgara"); c.Add(izgara);
-            foreach (var kv in Gear.GEAR[k])
-            {
-                var it = kv.Value; bool on = cur == kv.Key, kilit = it.kilit && !Ayar.sampiyon; string id = kv.Key;
-                VisualElement d;
-                if (kilit) { d = Pasif(L.T(it.ad), L.T(it.n)); var ki = Ikon(Ikonlar.Kilit, 14, SOLUK); ki.AddToClassList("kose-ikon"); d.Add(ki); }
-                else d = Cip(L.T(it.ad), on, () =>
-                {
-                    if (k == "raket") gr.raket = id; else if (k == "bileklik") gr.bileklik = id; else if (k == "bant") gr.bant = id; else gr.forma = id;
-                    Ayar.GearHesap(); Ayar.Kaydet(); root.vitrin.Yenile(); if (k == "raket") { root.sfx.Deneme(); Yerel.Vurus("smash", "perfect", false); } else root.sfx.Tik();
-                    SoyunmaGovdeKur(true);
-                }, L.T(it.n));
-                d.AddToClassList("model");
-                if (it.renk != null)
-                {   // renk örneği (ad da yazılı: yalnız renkle değil)
-                    var n = new VisualElement(); n.AddToClassList("renk-nokta"); n.AddToClassList("model-renk"); n.style.backgroundColor = Kit.Hex(it.renk); n.pickingMode = PickingMode.Ignore; d.Add(n);
-                }
-                izgara.Add(d);
-            }
-        }
-
         void TelKur(VisualElement c)
         {
             var gr = Ayar.gear;
@@ -207,22 +285,118 @@ namespace BirdieSmash.Game
             sl.RegisterCallback<PointerUpEvent>(e => TelBitti(), TrickleDown.TrickleDown);
             sl.RegisterCallback<PointerCaptureOutEvent>(e => TelBitti(), TrickleDown.TrickleDown);
             var arti = Dugme("+", () => TelAdim(1), "ikon-dugme"); Erisim.Etiket(arti, L.T("Tel gerginliği") + " +1", "dugme"); r.Add(arti);
-            telNot = Yazi(L.T(Gear.TelStats(gr.tel).n), 12, "soluk"); c.Add(telNot);
+            telNot = Yazi(L.T(Gear.TelStats(gr.tel).n) + " · " + L.T("Gerginlik bir beceri ayarıdır, seviye istemez."), 12, "soluk"); c.Add(telNot);
         }
         static string TelBaslik() { return L.T("Tel gerginliği") + " · " + Mathf.RoundToInt(Ayar.gear.tel) + " lbs"; }
         void TelYaz()
         {
-            if (telYazi != null) telYazi.text = TelBaslik(); if (telNot != null) telNot.text = L.T(Gear.TelStats(Ayar.gear.tel).n); if (statYazi != null) statYazi.text = StatSatiri();
+            if (telYazi != null) telYazi.text = TelBaslik(); if (telNot != null) telNot.text = L.T(Gear.TelStats(Ayar.gear.tel).n) + " · " + L.T("Gerginlik bir beceri ayarıdır, seviye istemez.");
+            CanliCubukYaz();
         }
+        Slider TelKaydirici() { return altSayfa != null ? altSayfa.Q<Slider>() : null; }
         void TelAdim(int d)
         {
             var gr = Ayar.gear; float yeni = Mathf.Clamp(gr.tel + d, 18, 32); if (yeni == gr.tel) return;
-            gr.tel = yeni; Ayar.GearHesap(); telDegisti = true; var sl = soyunmaGovde != null ? soyunmaGovde.Q<Slider>() : null; if (sl != null) sl.SetValueWithoutNotify(yeni); TelYaz(); TelBitti();
+            gr.tel = yeni; Ayar.GearHesap(); telDegisti = true; var sl = TelKaydirici(); if (sl != null) sl.SetValueWithoutNotify(yeni); TelYaz(); TelBitti();
         }
         void TelBitti()
         {
             if (!telDegisti) return; telDegisti = false; Ayar.Kaydet(); root.sfx.Deneme(); Yerel.Vurus("smash", "perfect", false);
-            var sl = soyunmaGovde != null ? soyunmaGovde.Q<Slider>() : null; if (sl != null) { var b = sl.userData as ErisimBilgi; if (b != null) b.deger = Mathf.RoundToInt(Ayar.gear.tel) + " lbs"; }
+            var sl = TelKaydirici(); if (sl != null) { var b = sl.userData as ErisimBilgi; if (b != null) b.deger = Mathf.RoundToInt(Ayar.gear.tel) + " lbs"; }
+            // modellerin çubukları gerginliğe bağlı: bırakınca yuva sayfası ve Soyunma gövdesi yeniden kurulur (sürüklerken değil).
+            kirli[(int)Sekme.Soyunma] = true;
+            sayfa.schedule.Execute(() => { if (gez.AcikAltSayfa == Gezinti.YUVA) { var eski = altSayfa != null ? altSayfa.Q<ScrollView>() : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; YuvaSayfaKur(); KaydirmaGeri(altSayfa, of); } SoyunmaGovdeKur(true); kirli[(int)Sekme.Soyunma] = false; }).StartingIn(16);
+        }
+
+        // ---- Tarz segmenti (karakter, adım 6) ----
+        void TarzGovde(VisualElement c)
+        {
+            int sv = Ayar.gear.Seviye(); string cur = Ayar.Tarz;
+            c.Add(Yazi(L.T("Tarz bir kimliktir, güç değil: artısı ve eksisi var, ücretsiz, maç dışında istediğin an değiştir. Eşit şartlarda da geçerli."), 13, "soluk"));
+            foreach (var t in Karakter.Tarzlar)
+            {
+                bool acik = sv >= t.sv, secili = cur == t.id; string id = t.id;
+                var kart = Kart("tarz-kart"); if (secili) kart.AddToClassList("secili"); if (!acik) kart.AddToClassList("kilitli"); c.Add(kart);
+                var bas = Satir("arali"); bas.pickingMode = PickingMode.Ignore; kart.Add(bas); bas.Add(Yazi(L.T(t.ad), 17, "kalin"));
+                var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; bas.Add(dr); string durum;
+                if (secili) { dr.Add(Ikon(Ikonlar.Tik, 14, LIMON)); durum = L.T("Seçili"); }
+                else if (!acik) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = L.T("Sv {0} gerekli", t.sv); }
+                else durum = L.T("Seç");
+                var dy = Yazi(durum, 12, secili ? "durum-gecti" : acik ? "durum-simdi" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
+                if (!string.IsNullOrEmpty(t.arti)) TarzSatir(kart, Ikonlar.Yukari, LIMON, L.T("Artı") + ": " + L.T(t.arti));
+                if (!string.IsNullOrEmpty(t.eksi)) TarzSatir(kart, Ikonlar.Asagi, MERCAN, L.T("Eksi") + ": " + L.T(t.eksi));
+                if (acik && !secili) kart.AddManipulator(new Clickable(() =>
+                {
+                    Ayar.ilerleme.Tarz = id; Ayar.GearHesap(); Ayar.Kaydet(); Tik(); kirli[(int)Sekme.Profil] = true; SoyunmaGovdeKur(true);
+                }));
+                Erisim.Etiket(kart, L.T(t.ad) + (t.arti != "" ? ", " + L.T("Artı") + ": " + L.T(t.arti) : "") + (t.eksi != "" ? ", " + L.T("Eksi") + ": " + L.T(t.eksi) : "") + ", " + durum, acik && !secili ? "dugme" : "metin", secili, !acik);
+            }
+        }
+        void TarzSatir(VisualElement kart, Texture2D ik, Color renk, string yazi)
+        {
+            var r = Satir("rakip-satir"); r.pickingMode = PickingMode.Ignore; kart.Add(r); var i = Ikon(ik, 12, renk); i.style.marginRight = 6; r.Add(i); r.Add(Yazi(yazi, 13, "esnek-yatay-sifir"));
+        }
+
+        // ---- Görünüm segmenti (karakter, adım 6) ----
+        class Ornek { public string id, ad, renk, neden, kisa; public bool acik; }   // kisa: kilitli karede görünen kısa koşul ("Sv 14")
+
+        void GorunumGovde(VisualElement c, bool raketG)
+        {
+            var gr = Ayar.gear; int sv = gr.Seviye();
+            if (!raketG)
+            {
+                var fr = new List<Ornek>(); foreach (var m in Gear.RENK.Values) fr.Add(new Ornek { id = m.id, ad = m.ad, renk = m.renk, acik = gr.RenkAcik(m.id, Ayar.sampiyon), neden = m.kilit ? L.T("Kariyeri bitirince açılır") : L.T("Sv {0} gerekli", m.sv), kisa = m.kilit ? "" : L.T("Sv {0}", m.sv) });
+                OrnekSira(c, L.T("Forma rengi"), fr, gr.renk, id => { gr.renk = id; Ayar.GearHesap(); Ayar.Kaydet(); });
+                c.Add(Yazi(L.T("Forma rengi yalnız görünüştür; işlevi kumaş verir (Ekipman › Forma kumaşı)."), 12, "soluk"));
+                foreach (var kat in new[] { "ten", "sac", "ayakkabi" })
+                {
+                    var l = new List<Ornek>(); foreach (var o in Karakter.Gorunum(kat)) l.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
+                    string k2 = kat; OrnekSira(c, L.T(kat == "ten" ? "Ten tonu" : kat == "sac" ? "Saç rengi" : "Ayakkabı"), l, Ayar.GORUNUM[kat], id => { Ayar.GORUNUM[k2] = id; Ayar.Kaydet(); });
+                    if (kat == "ten" && Ayar.model == "rocketbox") c.Add(Yazi(L.T("Gerçekçi modelde ten dokudan gelir; ten tonu Oyuncak modelde görünür."), 12, "soluk"));
+                }
+            }
+            // raket: kaplama (çerçeve) + grip/kordaj/desen (yalnız süs, oyuna etkisi yok)
+            var kl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("kaplama")) kl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
+            OrnekSira(c, L.T("Raket kaplaması"), kl, Ayar.GORUNUM["kaplama"], id => { Ayar.GORUNUM["kaplama"] = id; Ayar.Kaydet(); });
+            RenkSira(c, "Grip", "grip"); RenkSira(c, "Kordaj", "tel");
+            c.Add(Grup(L.T("Desen"))); var ds = Satir(); c.Add(ds);
+            ds.Add(Cip(L.T("Tek renk"), Ayar.RGOR["desen"] == "tek", () => { Ayar.RGOR["desen"] = "tek"; Ayar.Kaydet(); root.vitrin.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
+            ds.Add(Cip(L.T("Ana ve çapraz ayrı"), Ayar.RGOR["desen"] == "iki", () => { Ayar.RGOR["desen"] = "iki"; Ayar.Kaydet(); root.vitrin.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
+            if (Ayar.RGOR["desen"] == "iki") RenkSira(c, "Çapraz teller", "tel2");
+            if (raketG) c.Add(Yazi(L.T("Forma, ten ve saç için Oyuncuya dön."), 12, "soluk"));
+        }
+
+        // Renk örnekleri: kare (44 pt) + seçili ✓ ve kalın çerçeve; "modelin rengi" kişi simgesiyle; kilitli kilit + "Sv n".
+        // Başlıkta seçilenin adı (renk körlüğü: hangisinin seçili olduğu yazıyla da okunur).
+        void OrnekSira(VisualElement c, string baslik, List<Ornek> l, string secili, System.Action<string> sec)
+        {
+            string sad = ""; foreach (var o in l) if (o.id == secili) sad = L.T(o.ad);
+            c.Add(Grup(baslik + " · " + sad)); var s = Satir("renkler"); c.Add(s);
+            foreach (var o in l)
+            {
+                bool on = o.id == secili; string id = o.id;
+                var d = new VisualElement(); d.AddToClassList("renk"); if (on) d.AddToClassList("renk--secili"); if (!o.acik) d.AddToClassList("renk--kilit");
+                Color zemin = o.renk != null ? Kit.Hex(o.renk) : Kit.Hex("#22343a"); d.style.backgroundColor = zemin;
+                bool acikZemin = o.renk != null && zemin.r * .3f + zemin.g * .59f + zemin.b * .11f > .55f; Color ik = acikZemin ? Color.black : Color.white;
+                if (on) d.Add(Ikon(Ikonlar.Tik, 18, ik));
+                else if (!o.acik) { d.Add(Ikon(Ikonlar.Kilit, 14, ik)); if (!string.IsNullOrEmpty(o.kisa)) { var sy = Yazi(o.kisa, 10, "renk-kilit-yazi"); sy.style.color = ik; d.Add(sy); } }
+                else if (o.renk == null) d.Add(Ikon(Ikonlar.Kisi, 18, SOLUK));
+                if (o.acik && !on) d.AddManipulator(new Clickable(() => { sec(id); Tik(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
+                Erisim.Etiket(d, baslik + ", " + L.T(o.ad) + (o.acik ? "" : ", " + o.neden), "dugme", on, !o.acik); s.Add(d);
+            }
+        }
+
+        void RenkSira(VisualElement c, string ad, string k)
+        {
+            c.Add(Grup(L.T(ad) + " · " + L.T(Vitrin.RAK_AD[Ayar.RGOR[k]]))); var s = Satir("renkler"); c.Add(s);
+            foreach (var id in Vitrin.RAK_SIRA)
+            {
+                bool on = Ayar.RGOR[k] == id; string rid = id;
+                var d = new VisualElement(); d.AddToClassList("renk"); if (on) d.AddToClassList("renk--secili"); d.style.backgroundColor = Kit.Hex(Vitrin.RAK_RENK[id]);
+                if (on) d.Add(Ikon(Ikonlar.Tik, 18, id == "beyaz" || id == "limon" ? Color.black : Color.white));
+                d.AddManipulator(new Clickable(() => { Ayar.RGOR[k] = rid; Ayar.Kaydet(); Tik(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
+                Erisim.Etiket(d, L.T(ad) + ", " + L.T(Vitrin.RAK_AD[id]), "dugme", on); s.Add(d);
+            }
         }
     }
 }

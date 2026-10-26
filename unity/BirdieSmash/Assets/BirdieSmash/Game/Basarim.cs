@@ -15,6 +15,8 @@ namespace BirdieSmash.Game
     public static class Basarim
     {
         public const string ANTRENMAN = "bs_antrenman", AKIS = "bs_akis", RALLI20 = "bs_ralli_20", SICRAMA = "bs_sicrayan_smac", GOREV3 = "bs_uc_gorev";
+        // 2026-10-26 karakter (tasarım §5.5): tur finalleri bs_tur_2..4 (Tur 1 = bs_kariyer_6) ve Sv 30 "Efsane".
+        public const string EFSANE = "bs_efsane";
         static Dictionary<string, object> yerel; static bool istendi;
         public static bool acik;   // Game Center girişi tamam: Ayarlar'da "Başarımlar" görünür
 

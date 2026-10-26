@@ -6,6 +6,12 @@
 //   tuytop_ilerleme (2026-10-26, kariyer haritası) JSON {v, tur: [[maske×6]×4]} (Core/Ilerleme: yıldız bit maskesi). İlk
 //                   açılışta tuytop_v2.kariyer'den taşınır; tuytop_v2.kariyer yazılmaya devam eder (= Tur 1'de geçilen
 //                   basamak; eski build'e dönen oyuncunun kaydı bozulmasın, geri gelince ikisi birleştirilir).
+// 2026-10-26 ekipman v2 ve karakter (adım 4 ve 6; Ek A.6):
+//   tuytop_gear     + kumas, renk, grip, kordaj (forma okunur, silinmez, eski build için yazılmaya devam eder; Core/Gear)
+//   tuytop_ekonomi  + acik: ["yuva:id"] (Tüy ile alınmış ya da v1'den taşınmış modeller)
+//   tuytop_ilerleme + tarz, unvan, ad, mac, smac (Core/Ilerleme)
+//   tuytop_gorunum  (yeni) JSON {ten, sac, ayakkabi, kaplama} (Core/Karakter görünüm öğeleri; yoksa hepsi "modelin rengi":
+//                   var olan oyuncunun görünümü değişmez). tuytop_raket_gor ayrı kalır.
 // HTML → Unity devri (Core/Devir): ilk açılışta kabuğun NSUserDefaults'a yazdığı HTML değerleri bir kez kabul edilir,
 // sonra tuytop_html_devir bayrağı konur. Bayraktan sonra kabuk (eski HTML build'i) bir daha yazmaz.
 // HTML'de karşılığı olmayan Unity anahtarları: tuytop_easy, tuytop_reduce (elle zorlanan; sistem ayarı ayrıca okunur),
@@ -50,7 +56,10 @@ namespace BirdieSmash.Game
         public static float MenuYaziK { get { if (yaziTest > 0) return yaziTest; return yazi == "normal" ? 1 : yazi == "buyuk" ? 1.3f : Mathf.Clamp(yaziSistem, .9f, 2f); } }
         // Sistem ayarları (hareketi azalt, yazı boyutu) açılışta ve uygulama öne her geldiğinde okunur.
         public static void SistemOku() { reduceSistem = Yerel.HareketAzalt(); reduce = reduceSecim || reduceSistem; yaziSistem = Yerel.YaziOlcek(); }
-        public static Gear gear; public static GearStats GS = GearStats.Notr;
+        // GSE = yalnız ekipman (5 çubuk ve yükseltme önizlemesi bunu anlatır), GS = ekipman + oyun tarzı (maç fiziği bunu
+        // okur). Tarz ekipman kartına girmez: güç ekipmandan, tarz karakterden (tasarım §5.1).
+        public static Gear gear; public static GearStats GS = GearStats.Notr, GSE = GearStats.Notr;
+        public static readonly Dictionary<string, string> GORUNUM = new Dictionary<string, string> { { "ten", "dogal" }, { "sac", "dogal" }, { "ayakkabi", "dogal" }, { "kaplama", "model" } };
         public static readonly Dictionary<string, string> RGOR = new Dictionary<string, string> { { "grip", "siyah" }, { "tel", "beyaz" }, { "tel2", "kirmizi" }, { "desen", "tek" } };
         public static string FORMA { get { return GS.forma; } }
         static readonly PrefsKayit kayit = new PrefsKayit();
@@ -83,11 +92,23 @@ namespace BirdieSmash.Game
             // için "Ana ve çapraz ayrı" seçimi her açılışta 'tek'e dönüyordu; eski 'capraz' kaydı da 'iki' sayılır.
             if (rg != null) foreach (var k in new List<string>(RGOR.Keys)) { string v = Json.Str(rg, k, null); if (k == "desen" && v == "capraz") v = "iki"; if (v != null && (k == "desen" ? v == "tek" || v == "iki" : Vitrin.RAK_RENK.ContainsKey(v))) RGOR[k] = v; }
             gear = new Gear(kayit, wins); gear.kariyerModu = kariyerModu;
-            if (gear.forma == "sampiyon" && !sampiyon) gear.forma = "mavi";
+            if (gear.renk == "sampiyon" && !sampiyon) gear.renk = "mavi";   // v1 kuralı (forma = Şampiyon), artık renkte
+            // Görünüm (karakter): bilinmeyen değer varsayılana düşer; seviyesi düşmüş gibi görünen değer (bozuk XP) silinmez,
+            // ekranda Karakter.Oge ile yine geçerli öğeye çözülür.
+            var gv = Json.Obj(Json.Parse(Str("tuytop_gorunum", null)));
+            if (gv != null) foreach (var k in new List<string>(GORUNUM.Keys)) { string v = Json.Str(gv, k, null); if (v != null && System.Array.Exists(Karakter.Gorunum(k), o => o.id == v)) GORUNUM[k] = v; }
             GearHesap();
             Kaydet();
         }
-        public static void GearHesap() { gear.kariyerModu = kariyerModu; GS = gear.Hesap(); }
+        public static void GearHesap() { gear.kariyerModu = kariyerModu; GSE = gear.Hesap(); GS = Karakter.Uygula(GSE, Tarz); }
+        // Geçerli oyun tarzı: kayıttaki tarz, seviyesi geldiyse (Core/Karakter.Gecerli).
+        public static string Tarz { get { return Karakter.Gecerli(ilerleme != null ? ilerleme.Tarz : "dengeli", gear != null ? gear.Seviye() : 1); } }
+        // Görünüm öğesinin rengi (null = modelin kendi rengi). Seviyesi gelmemiş öğe görünmez (varsayılan).
+        public static string GorunumRenk(string kat)
+        {
+            string id; if (!GORUNUM.TryGetValue(kat, out id)) return null; var o = Karakter.Oge(kat, id);
+            return o != null && (gear == null || o.sv <= gear.Seviye()) ? o.renk : null;
+        }
         public static void Kaydet()
         {
             if (ilerleme != null) { kariyer = ilerleme.Tur1Gecilen(); PlayerPrefs.SetString(Ilerleme.ANAHTAR, ilerleme.Yaz()); }
@@ -97,6 +118,7 @@ namespace BirdieSmash.Game
             PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0);
             PlayerPrefs.SetString("tuytop_dil", dil); PlayerPrefs.SetString("tuytop_puan", puan.ToString()); PlayerPrefs.SetString("tuytop_yazi", yazi); PlayerPrefs.SetString("tuytop_fps", fps ? "1" : "0");
             var rg = new Dictionary<string, object>(); foreach (var kv in RGOR) rg[kv.Key] = kv.Value; PlayerPrefs.SetString("tuytop_raket_gor", Json.Write(rg));
+            var gv = new Dictionary<string, object>(); foreach (var kv in GORUNUM) gv[kv.Key] = kv.Value; PlayerPrefs.SetString("tuytop_gorunum", Json.Write(gv));
             if (gear != null) { gear.GearYaz(); gear.EkoYaz(); }
             PlayerPrefs.Save();
         }
