@@ -86,6 +86,7 @@ namespace BirdieSmash.Game
             yield return SonucKare("sonuc_buyuk_galibiyet", true, false, 2, "en");   // HUD ×1,3 sınırında (Ayar.YaziK); "Büyük" yazı
             yield return SonucKare("sonuc_tr_galibiyet", true, false, 0, "tr");
             yield return SonucKare("sonuc_yenilgi", false, false, 0, "en");
+            yield return MenuSahne();
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             Application.Quit(0);
         }
@@ -222,6 +223,23 @@ namespace BirdieSmash.Game
             yield return Cek(ad);
             Ayar.ilerleme = eski; Ayar.reduce = r0; Ayar.kariyerModu = km; Ayar.kariyerSecim = -1; Ayar.yazi = y0; Ayar.dil = d0;
             root.AnaMenu(); yield return Bekle(5);
+        }
+        // 2026-10-26 gece (yasin build 40: "menüler sahaya iç içe geçmiş"): maçtan menüye dönüşte menünün arkası. Ana kamera
+        // menüde sahneyi çizmemeli (cullingMask 0), Oyna'nın fonu oyuncusuz bulanık salon karesi olmalı; saha değişince fon
+        // yenilenmeli; duraklatıp Ana menü'ye çıkınca (bekleyen maç) Oyna "Maça devam et" göstermeli. Her karede kameranın
+        // durumu rapora yazılır (görüntüde gözden kaçarsa sayı yakalar).
+        IEnumerator MenuSahne()
+        {
+            var ui = root.ui; if (ui == null) yield break;
+            ui.SekmeAc(Sekme.Oyna); yield return Bekle(30); yield return Cek("menu_macsonu_oyna"); rap.AppendLine("menu_macsonu_oyna · " + ui.SahneDurumu);
+            ui.SekmeAc(Sekme.Kariyer); yield return Bekle(20); yield return Cek("menu_macsonu_kariyer"); rap.AppendLine("menu_macsonu_kariyer · " + ui.SahneDurumu);
+            ui.SekmeAc(Sekme.Soyunma); yield return Bekle(30); yield return Cek("menu_macsonu_soyunma"); rap.AppendLine("menu_macsonu_soyunma · " + ui.SahneDurumu);
+            string s0 = Ayar.saha; Ayar.saha = "park"; root.SahaDegisti(); ui.SekmeAc(Sekme.Oyna); yield return Bekle(30); yield return Cek("menu_park_oyna"); rap.AppendLine("menu_park_oyna · " + ui.SahneDurumu);
+            Ayar.saha = s0; root.SahaDegisti(); yield return Bekle(5);
+            root.StartMatch(false, false, false); botAcik = true; yield return Bekle(60); botAcik = false; root.Duraklat(); yield return Bekle(10); yield return Cek("duraklat");
+            root.AnaMenu(); yield return Bekle(30); yield return Cek("menu_bekleyen_oyna"); rap.AppendLine("menu_bekleyen_oyna · " + ui.SahneDurumu + " · bekleyen " + root.bekleyen);
+            root.MacaDon(); yield return Bekle(30); yield return Cek("bekleyen_devam"); rap.AppendLine("bekleyen_devam · " + ui.SahneDurumu);
+            root.AnaMenu(); yield return Bekle(10);
         }
         IEnumerator Bekle(int kare) { for (int i = 0; i < kare; i++) yield return null; }
         IEnumerator Boyut(int w, int h)
