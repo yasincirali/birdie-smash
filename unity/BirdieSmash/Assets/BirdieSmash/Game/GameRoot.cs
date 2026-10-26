@@ -42,9 +42,9 @@ namespace BirdieSmash.Game
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = Kit.Hex("#6f8590"); RenderSettings.ambientEquatorColor = Kit.Hex("#3b4c55"); RenderSettings.ambientGroundColor = Kit.Hex("#1a2420");
             QualitySettings.shadowDistance = 40;
-            // 4× MSAA (2026-10-26, yasin "saha nizami çizilmeli"): 4 cm'lik saha çizgileri uzak yarıda 1 pikselin altına iniyor,
-            // kenar yumuşatma yokken kırık/kesik görünüyordu. Karo tabanlı mobil GPU'larda 4× MSAA ucuz.
-            QualitySettings.antiAliasing = 4; cam.allowMSAA = true;
+            // Kenar yumuşatma (2026-10-26, yasin "saha nizami çizilmeli"): 4 cm'lik saha çizgileri uzak yarıda 1 pikselin altına
+            // iniyor, MSAA yokken kırık/kesik görünüyordu. MSAA, gölge ve çözünürlük cihaza göre Kalite'de.
+            Kalite.Kur(gameObject, cam);
             shuttle = ShuttleView.Build(transform); shuttle.cam = cam; sfx = Sfx.Build(transform, cg.transform);
             vitrin = Vitrin.Build(transform); fx = Fx.Build(transform, cam); yukleyici = Yukleyici.Build(transform);
             hud = gameObject.AddComponent<Hud>(); hud.root = this; hud.Acilis();
