@@ -93,6 +93,11 @@ namespace BirdieSmash.Game
                 Varyant(gor); Paint(gor);
                 if (anim != null && anim["idle"] != null) Sample("idle", 0, null, 0, 1);
                 Calibrate(); AltKatmanKur();
+                if (!hakem && kThigh.Count > 0)
+                {   // ayak kilidi: boşta pozunda (taban y=0'da) bilek yüksekliği
+                    ZincirKur(); bilek0 = new float[2];
+                    for (int i = 0; i < 2; i++) bilek0[i] = kBacak[i * 3 + 2] != null ? Mathf.Max(.02f, yaw.InverseTransformPoint(kBacak[i * 3 + 2].position).y) : -1;
+                }
             }
             else Fallback(gor.forma);
             shadow = Kit.Prim(PrimitiveType.Quad, "golge", transform, new Vector3(0, .003f, 0), new Vector3(.9f, .9f, 1), Kit.Clear(new Color(0, 0, 0, .35f), Kit.RadialTex())).transform;
@@ -573,7 +578,7 @@ namespace BirdieSmash.Game
             // Boşta duruşun genliği nefese bağlı (B4; hız Match.IdleIlerle'de): nefes %70'in altına inince yorgun klibi
             // (eller dizde) %35'e kadar karışır, beden soluklanır. Harmanlama bitmeden karıştırılmaz.
             if (cur == "idle" && blend >= 1 && o.nefes < .7f && anim["yorgun"] != null)
-            { Sample("idle", ph, "yorgun", ph, 1 - .35f * Mathf.Clamp01((.7f - o.nefes) / .7f)); FileItin(); return; }
+            { Sample("idle", ph, "yorgun", ph, 1 - .35f * Mathf.Clamp01((.7f - o.nefes) / .7f)); FileItin(); AyakKilit(dt); return; }
             {   // alt beden katmanı: vuruş/hazırlık klibinde koşarken bacaklar ayak işinden. Hangi klipte ve ne ağırlıkla:
                 // Match.AltHedef (hamle yaklaşırken, servis temastan sonra, sıçrama yerdeyken; anlık hızla). 2026-10-26 gece Core'a
                 // taşındı: ölçüm aracı (tool/unity_test/AnimOlc) aynı kuralı okur.
@@ -582,7 +587,7 @@ namespace BirdieSmash.Game
                 altW += (hedef - altW) * (1 - Mathf.Exp(-dt * Match.ALT_HIZ)); if (altW < .01f && hedef == 0) altW = 0;   // üstel: 60/120 Hz aynı eğri
             }
             Sample(cur, ph, prev, prevPh, prev == null ? 1 : Mathf.SmoothStep(0, 1, blend), altKlip, altPh, altW);   // smoothstep (2026-10-26): doğrusal ağırlık geçişin başında ve sonunda hız kırığı veriyordu
-            FileItin();
+            FileItin(); AyakKilit(dt);
         }
 
         // İmza vuruşu hazırlığı (2026-10-26, Core/Imza; tasarım §3.3 kural 1): raket kafasında imzanın renginde ışık küresi +
@@ -614,6 +619,46 @@ namespace BirdieSmash.Game
             imzaIsik.intensity = 2.2f * imzaA * (reduce ? 1 : puls);
             if (o.imzaId == "mermi" && on) transform.position += Vector3.down * .12f * imzaA;
         }
+
+        // Ayak kilidi (2026-10-26 gece, build 40 incelemesi; 3d-animator "pin the feet"). Faz yolla ilerlese de yerdeki ayak
+        // kayıyordu: (1) kliplerde basan ayağın geriye gidişi döngü boyunca sabit değil ve adım ölçüsünden ~%10 kısa (Blender'da
+        // FBX'ten ölçüm: fwd sol 0,81 / sağ 0,69 birim/döngü, json 0,82), (2) boşta, hazırlık ve vuruş pozları yerinde durur,
+        // gövde ise 0,3–1 m/sn kayabilir, (3) klip geçişlerinde harmanlama ayağı sürükler. Unity izinde (ekran turu r31) ayak
+        // işindeki yerdeki ayak gövde hızının %20–50'siyle kayıyordu. Çözüm, spor oyunlarının olağanı: ayak yere değdiği karede
+        // dünya konumu kilitlenir, yerde kaldıkça iki kemik IK (uyluk–baldır) bileği orada tutar; ayak kalkınca ya da kilit
+        // KILIT_MAX'tan fazla gerilirse (bacak gerilip diz kilitlenmesin) bırakılır ve fark KILIT_BIRAK hızıyla söner (pop yok).
+        // Bileğin dünya dönüşü animasyondaki gibi kalır (taban açısı klipten). Yerde sayılma: bilek, boşta pozundaki
+        // yüksekliğinin KILIT_Y kadar üstüne kadar. Havadayken (sıçrama, split hop) bilek yükseldiği için kendiliğinden kapalı.
+        // Oyun kuralı değil; vuruş menzili Core'da. Kemikler bulunamazsa hiçbir şey yapılmaz.
+        const float KILIT_Y = .025f, KILIT_MAX = .28f, KILIT_BIRAK = 18f;
+        float[] bilek0; readonly Vector3[] kilitP = new Vector3[2], kilitO = new Vector3[2]; readonly bool[] kilitli = new bool[2];
+        void AyakKilit(float dt)
+        {
+            if (hakem || model == null || kThigh.Count == 0) return;
+            if (kBacak == null) ZincirKur();
+            if (bilek0 == null) return;
+            for (int i = 0; i < 2; i++)
+            {
+                Transform th = kBacak[i * 3], kn = kBacak[i * 3 + 1], ft = kBacak[i * 3 + 2]; if (th == null || kn == null || ft == null) continue;
+                Vector3 A = ft.position; bool yerde = A.y < bilek0[i] + KILIT_Y;
+                if (yerde && !kilitli[i] && kilitO[i].sqrMagnitude < 1e-6f) { kilitli[i] = true; kilitP[i] = A; }
+                else if (yerde && !kilitli[i]) { kilitli[i] = true; kilitP[i] = A + kilitO[i]; }   // bırakılış sönmeden yeniden bastı: kaldığı yerden
+                Vector3 O = Vector3.zero;
+                if (kilitli[i])
+                {
+                    O = new Vector3(kilitP[i].x - A.x, 0, kilitP[i].z - A.z);
+                    // Gerilince bırakılır, fark söner; yarım metreden büyükse gövde ışınlandı (servis dizilişi): ayak hemen yerine.
+                    if (!yerde || O.magnitude > KILIT_MAX) { kilitli[i] = false; kilitO[i] = O.magnitude > .5f ? Vector3.zero : O; if (kilitO[i] == Vector3.zero) continue; }
+                    else kilitO[i] = O;
+                }
+                if (!kilitli[i]) { kilitO[i] *= Mathf.Exp(-dt * KILIT_BIRAK); O = kilitO[i]; if (O.sqrMagnitude < 1e-6f) { kilitO[i] = Vector3.zero; continue; } }
+                if (O.sqrMagnitude < 1e-8f) continue;
+                var rot = ft.rotation; Vector3 kutup = kn.position - (th.position + A) * .5f;
+                IK(th, kn, ft, A + O, kutup.sqrMagnitude > 1e-6f ? kutup : yaw.forward);
+                ft.rotation = rot;
+            }
+        }
+        public float TaniKilit { get { return (kilitli[0] ? 1 : 0) + (kilitli[1] ? 2 : 0); } }
 
         // Tanı (yalnız ekran turu, EkranTuru animasyon izi; 2026-10-26 gece): gösterilen klip, alt katman ağırlığı, iki ayak
         // bileğinin ve sağ elin dünya konumu, raket sapının ele uzaklığı. Ayak kayması = yerdeki ayağın kareler arası yatay

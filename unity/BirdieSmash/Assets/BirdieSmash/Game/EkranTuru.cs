@@ -100,7 +100,7 @@ namespace BirdieSmash.Game
             yield return YakinNokta(mdl + "_05_hakemler", CourtView.HAKEM1 + new Vector3(0, .5f, 0), new Vector3(3.2f, .6f, -2.6f));
             yield return YakinNokta(mdl + "_06_servis_hakemi", CourtView.HAKEM2 + new Vector3(0, .5f, 0), new Vector3(-2.8f, .7f, -2.2f));
             botAcik = true; iz = new StringBuilder();
-            iz.AppendLine("kare,t,dt,kim,klip,faz,alt,vAn,x,y,solx,soly,solz,sagx,sagy,sagz,elx,ely,elz,sapEl,pencere,donuk,sw,kafax,kafay,kafaz,topx,topy,topz");
+            iz.AppendLine("kare,t,dt,kim,klip,faz,alt,vAn,x,y,solx,soly,solz,sagx,sagy,sagz,elx,ely,elz,sapEl,pencere,donuk,sw,kafax,kafay,kafaz,topx,topy,topz,kilit");
             for (int i = 0; i < 10; i++) { yield return Bekle(14); yield return Cek(mdl + "_1" + i + "_ralli"); }
             yield return Serit(mdl, true); yield return Serit(mdl, false);
             File.WriteAllText(Path.Combine(dir, mdl + "_anim_iz.csv"), iz.ToString()); iz = null;
@@ -123,7 +123,7 @@ namespace BirdieSmash.Game
                 float vAn = 0; var f = typeof(Athlete).GetField("vAn"); if (f != null) vAn = (float)f.GetValue(a);
                 iz.AppendLine(Time.frameCount + "," + F(Time.realtimeSinceStartup) + "," + F(Mathf.Min(.05f, Time.unscaledDeltaTime)) + "," + (pv.isMe ? "me" : "op") + "," + pv.TaniKlip + "," + F(pv.TaniFaz) + "," + F(pv.TaniAlt) + "," + F(vAn) + "," + F(a.x) + "," + F(a.y) + ","
                     + F(l.x) + "," + F(l.y) + "," + F(l.z) + "," + F(r.x) + "," + F(r.y) + "," + F(r.z) + "," + F(e.x) + "," + F(e.y) + "," + F(e.z) + "," + F(se) + "," + (M.HitWindow() ? 1 : 0) + "," + (M.freeze > 0 ? 1 : 0)
-                    + "," + F(a.sw) + "," + F(pv.TaniKafa.x) + "," + F(pv.TaniKafa.y) + "," + F(pv.TaniKafa.z) + "," + (M.s != null ? F(Kit.W(M.s.x, M.s.y, M.s.z).x) + "," + F(Kit.W(M.s.x, M.s.y, M.s.z).y) + "," + F(Kit.W(M.s.x, M.s.y, M.s.z).z) : ",,"));
+                    + "," + F(a.sw) + "," + F(pv.TaniKafa.x) + "," + F(pv.TaniKafa.y) + "," + F(pv.TaniKafa.z) + "," + (M.s != null ? F(Kit.W(M.s.x, M.s.y, M.s.z).x) + "," + F(Kit.W(M.s.x, M.s.y, M.s.z).y) + "," + F(Kit.W(M.s.x, M.s.y, M.s.z).z) : ",,") + "," + F(pv.TaniKilit));
             }
         }
         // Şerit: bir vuruşun hazırlığından takibine ardışık kareler, figürü yandan izleyen ikinci kamerayla (oyun durmaz).
