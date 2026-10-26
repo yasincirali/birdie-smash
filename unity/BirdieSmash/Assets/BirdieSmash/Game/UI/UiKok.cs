@@ -4,7 +4,7 @@
 // (oyuncu oturumda bir kez bile girmez). Ayarlar › Nasıl oynanır / Lisanslar tam sayfa, Hızlı maç kurulumu alt sayfa.
 // Gezinti kuralı Core/Gezinti'de (saf C#, test edilir); burası yalnız görünüm.
 // Kurulum çalışma zamanında: UIDocument + PanelSettings (Resources/ui/PanelSettings varsa o; Editor'de DemoKurulum üretir,
-// shader başvurusu için; yoksa ScriptableObject.CreateInstance), iskelet Resources/ui/menu.uxml (yoksa koddan, aynı adlarla), biçim Resources/ui/menu.uss,
+// shader başvurusu için; yoksa ScriptableObject.CreateInstance), iskelet Resources/ui/menu.uxml (yoksa koddan, aynı adlarla), biçim Resources/ui/menu_stil.uss (2026-10-26 gece: eski adı menu.uss, aşağıda neden),
 // varsayılan tema Resources/ui/tema.tss (yoksa yerleşik yazı tipine düşülür). Editor API'si yok: sahne dosyasız kurulum
 // (GameRoot gibi) her Unity sürümünde aynı sonucu versin.
 // Ölçek: ScaleWithScreenSize, referans 375 pt genişlik (iPhone SE/mini). Neden ConstantPhysicalSize değil (tasarım Ek A.7
@@ -71,12 +71,17 @@ namespace BirdieSmash.Game
             Ikonlar.Hazirla(); K = Ayar.MenuYaziK; sonDil = Ayar.dil;
             var r = doc.rootVisualElement; r.pickingMode = PickingMode.Ignore;
             r.style.position = Position.Absolute; r.style.left = 0f; r.style.top = 0f; r.style.right = 0f; r.style.bottom = 0f;   // tam ekran (UIDocument kökü)
-            var uss = Resources.Load<StyleSheet>("ui/menu"); if (uss != null) r.styleSheets.Add(uss); else Debug.LogWarning("Birdie Smash: Resources/ui/menu.uss yok");
+            // 2026-10-26 gece (yasin build 40 "menüler sahaya iç içe"; CI r24–r36): biçim sayfası eskiden "ui/menu" adıyla
+            // yükleniyordu, oysa aynı yolda menu.uxml de var ve VisualTreeAsset içinde bir StyleSheet alt varlığı (satır içi
+            // stiller) taşır. Resources.Load<StyleSheet>("ui/menu") içe aktarma sırasına göre o boş sayfayı döndürebiliyordu:
+            // menü kuralsız (saydam, yerleşimsiz, siyah yazı) çıkıyor, maç sahnesi arkadan görünüyordu. Ad ayrıldı (menu_stil),
+            // yine de sayfa adıyla doğrulanır; kural yoksa yüksek sesle günlüğe yazılır.
+            var uss = StilSayfasi(); if (uss != null) r.styleSheets.Add(uss); else Debug.LogError("Birdie Smash: Resources/ui/menu_stil.uss yok ya da boş");
             kok = r.Q<VisualElement>("kok");
             if (kok == null) { kok = KodIskelet(); r.Add(kok); }
             zemin = kok.Q<VisualElement>("zemin"); alan = kok.Q<VisualElement>("alan"); ust = kok.Q<VisualElement>("ust"); icerik = kok.Q<VisualElement>("icerik");
             sayfa = kok.Q<VisualElement>("sayfa"); sekmeCubugu = kok.Q<VisualElement>("sekmeler"); altKatman = kok.Q<VisualElement>("alt-katman"); kalkan = kok.Q<VisualElement>("kalkan");
-            // 2026-10-26 Yayın Gecesi: gövde yazı tipi Barlow (Resources/fonts, OFL). Sınıf kuralları (menu.uss) kalın ve başlık
+            // 2026-10-26 Yayın Gecesi: gövde yazı tipi Barlow (Resources/fonts, OFL). Sınıf kuralları (menu_stil.uss) kalın ve başlık
             // dosyalarını seçer; kökteki satır içi değer, USS çözülemezse ya da tema yoksa da Barlow'a düşülsün diye.
             var barlow = Resources.Load<Font>("fonts/Barlow-Medium");
             if (barlow != null) kok.style.unityFontDefinition = FontDefinition.FromFont(barlow);
@@ -291,7 +296,7 @@ namespace BirdieSmash.Game
         // oyuncunun ve hakemlerin önüne biniyordu (aynı oyuncu iki kez: afişte büyük, kortta küçük); Kariyer, Soyunma ve
         // Profil'de kort çizgileri ve oyuncular kartların arasından seçiliyordu. Yön A taslağı bunu istemiyor: Oyna'da salon
         // bulanık bir fon (a-arena, arena_blur), diğer sekmelerde düz gece zemini (a-bgnight); figür yalnız afişte.
-        // Çözüm: (1) menü kökü her sekmede opak (menu.uss); (2) menü görünür ve perde yokken ana kamera yalnız temizler
+        // Çözüm: (1) menü kökü her sekmede opak (satır içi, Uygula; ayrıca biçim sayfası yanlış yükleniyordu: StilSayfasi); (2) menü görünür ve perde yokken ana kamera yalnız temizler
         // (cullingMask 0: sahne çizilmez, pil ve GPU da kazanır; kamera kapatılmaz ki arka tampon her karede tanımlı kalsın);
         // (3) Oyna'nın fonu, sahnenin oyuncusuz bir karesi: menü açılınca (ya da saha, bakış, model, ekran boyu değişince)
         // bir kez küçük bir RT'ye çizilir, iki kez yarıya indirilerek bulanıklaştırılır ve Image olarak gösterilir.
@@ -341,6 +346,13 @@ namespace BirdieSmash.Game
             + " · stil " + doc.rootVisualElement.styleSheets.count + " " + StilTani(doc.rootVisualElement.styleSheets.count > 0 ? doc.rootVisualElement.styleSheets[0] : null)
             + " · tema " + StilTani(doc.panelSettings != null ? doc.panelSettings.themeStyleSheet : null)
             + " zemin " + zemin.resolvedStyle.position + " kök renk " + kok.resolvedStyle.backgroundColor; } }
+        static StyleSheet StilSayfasi()
+        {
+            var ss = Resources.Load<StyleSheet>("ui/menu_stil");
+            if (ss == null || ss.name != "menu_stil") foreach (var a in Resources.LoadAll<StyleSheet>("ui")) if (a.name == "menu_stil") { ss = a; break; }
+            if (ss != null) Debug.Log("Birdie Smash: menü biçimi " + StilTani(ss));
+            return ss;
+        }
         // r24–r36 tanısı: CI'da menü USS'siz çıkıyor; içe aktarılan sayfanın hata bayrağı ve kural sayısı (iç alanlar, yansıma).
         static string StilTani(StyleSheet ss)
         {

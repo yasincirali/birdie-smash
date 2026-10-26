@@ -1,4 +1,4 @@
-// Menü yapı taşları (UI Toolkit, 2026-10-26): yazı, düğme, seçim çipi, kart, simge. Biçim Resources/ui/menu.uss'te,
+// Menü yapı taşları (UI Toolkit, 2026-10-26): yazı, düğme, seçim çipi, kart, simge. Biçim Resources/ui/menu_stil.uss.te,
 // burada yalnız davranış ve yazı boyutu.
 // Neden yazı boyutu kodda: USS'te em/rem yok (yalnız px ve %), Dynamic Type çarpanı (Ayar.MenuYaziK) stil dosyasından
 // verilemiyor. Her yazı oluşturulurken taban boyut × K yazılır; K değişince menü baştan kurulur (yalnız o an, karede değil).
@@ -16,8 +16,8 @@ namespace BirdieSmash.Game
 {
     public partial class UiKok
     {
-        // 2026-10-26 Yayın Gecesi paleti (menu.uss kök değişkenleriyle aynı değerler; kodda boyanan simgeler ve dokular için).
-        // CAMGOBEGI adı geriye uyum için kaldı: seçili/şimdi rengi artık limon (bkz. menu.uss başı); GOK ikincil veri.
+        // 2026-10-26 Yayın Gecesi paleti (menu_stil.uss kök değişkenleriyle aynı değerler; kodda boyanan simgeler ve dokular için).
+        // CAMGOBEGI adı geriye uyum için kaldı: seçili/şimdi rengi artık limon (bkz. menu_stil.uss başı); GOK ikincil veri.
         public static readonly Color LIMON = Kit.Hex("#D8FF3A"), CAMGOBEGI = Kit.Hex("#D8FF3A"), GOK = Kit.Hex("#5FC8FF"), MERCAN = Kit.Hex("#FF5B4A"), ALTIN = Kit.Hex("#FFC83D"),
             SOLUK = Kit.Hex("#A3ABD1"), KOYU = Kit.Hex("#0B1206"), MUREKKEP = Kit.Hex("#070B1F"), YAZI = Kit.Hex("#F4F6FF");
 
