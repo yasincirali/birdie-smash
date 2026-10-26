@@ -135,15 +135,17 @@ namespace BirdieSmash.Game
             {   // r13: iki ayakkabı + biraz bilek, hafif önden-yandan ve yukarıdan (~25°); ayakkabı ortada. Eski kadraj (0,22 · 0,62
                 // boy) kutuya kırpılınca 40 cm'lik bir pencere bırakıyor, çorap kutuyu dolduruyordu.
                 Vector3 m = Vector3.zero; foreach (var t in bAyak) m += t.position; m /= bAyak.Count; m.y = YER.y + .06f * boy;
-                float d = Uzaklik(.10f * boy, .15f * boy, out kay);
-                cam = m + new Vector3(.35f, .45f, .85f).normalized * d; hedef = m - Vector3.up * kay;
+                // r14: .10/.15 boy hâlâ dardı (Oyuncak modelin ayakkabısı iri, ayaklar açık duruşta; öndeki ayak düğmelerin
+                // altında kaldı). Pencere ~60 × 90 cm: iki ayakkabı ve bileğe kadar baldır.
+                float d = Uzaklik(.17f * boy, .26f * boy, out kay);
+                cam = m + new Vector3(.35f, .38f, .86f).normalized * d; hedef = m - Vector3.up * kay;
             }
             else if (odak == TUTUS && (bGrip != null || bEl != null)) TutusPoz(boy, out cam, out hedef);
         }
         // r13: forehand'de sap kameraya doğru uzanıyor, yüzün önünü kesiyor, beş parmak okunmuyordu. Kamera artık sapa dik
         // bir yönden bakar (sap kadrajı yatay keser, el ve parmaklar yandan görünür) ve o dik yönlerden, figürün önüne ve
         // dışına en çok bakan, başı ya da gövdeyi elin önüne (perde) ya da hemen arkasına (yüz arkada) almayan seçilir.
-        // 24 aday, poz durağan olduğu için seçim karede değişmez; sürükleyince kamera yumuşatmayla kayar.
+        // 72 aday, poz durağan olduğu için seçim karede değişmez; sürükleyince kamera yumuşatmayla kayar.
         void TutusPoz(float boy, out Vector3 cam, out Vector3 hedef)
         {
             var gc = bGrip != null && (bGrip.gameObject.activeInHierarchy || bEl == null) ? bGrip.bounds.center : bEl.position;
@@ -153,25 +155,30 @@ namespace BirdieSmash.Game
             Vector3 e1 = Vector3.Cross(u, Vector3.up); if (e1.sqrMagnitude < 1e-4f) e1 = Vector3.Cross(u, Vector3.forward); e1.Normalize(); var e2 = Vector3.Cross(u, e1);
             Vector3 dis = hedef - YER; dis.y = 0; dis = dis.sqrMagnitude > 1e-4f ? dis.normalized : Vector3.right;
             var tercih = (Vector3.forward * .8f + dis * .6f + Vector3.up * .2f).normalized;
-            float kay; float d = Uzaklik(.075f * boy, .1f * boy, out kay);
+            float kay; float d = Uzaklik(.075f * boy, .1f * boy, out kay); float gx, gy; Gorus(out gx, out gy);
             Vector3 bas = bBas != null ? bBas.position + Vector3.up * .06f * boy : YER + Vector3.up * .93f * boy, govde = bas - Vector3.up * .3f * boy;
             Vector3 en = tercih; float enP = -99;
-            for (int i = 0; i < 24; i++)
+            // r14: tam dik halkaya ±20° eğik iki halka eklendi (sap yine kadrajı keser ama baştan kaçacak yer artar); eğik küçük ceza.
+            for (int i = 0; i < 72; i++)
             {
-                float th = i * Mathf.PI * 2 / 24; var dir = e1 * Mathf.Cos(th) + e2 * Mathf.Sin(th);
-                float p = Vector3.Dot(dir, tercih);
-                p -= Engel(bas, hedef, dir, d, .14f * boy) + Engel(govde, hedef, dir, d, .2f * boy);
+                float th = (i % 24) * Mathf.PI * 2 / 24; int j = i / 24 - 1; var dir = e1 * Mathf.Cos(th) + e2 * Mathf.Sin(th);
+                if (j != 0) dir = (dir * Mathf.Cos(.35f) + u * (Mathf.Sin(.35f) * j)).normalized;
+                float p = Vector3.Dot(dir, tercih) - (j != 0 ? .12f : 0);
+                p -= Engel(bas, hedef, dir, d, .14f * boy, gx, gy, 1) + Engel(govde, hedef, dir, d, .2f * boy, gx, gy, 0);
                 if (dir.y < -.35f) p -= .5f; if ((hedef + dir * d).y < YER.y + .15f) p -= 1;
                 if (p > enP) { enP = p; en = dir; }
             }
             cam = hedef + en * d; hedef -= Vector3.up * kay;
         }
-        // Bir nokta kamera ile el arasında (perde: 2) ya da elin hemen arkasında, görüş çizgisine yakınsa (yüz arkada: 0,6) ceza.
-        static float Engel(Vector3 p, Vector3 hedef, Vector3 dir, float d, float yaricap)
+        // Bir nokta kamera ile el arasında ve görüş çizgisine yakınsa perde (2); kadrajın içinde kalıyorsa (kadrajda: 1 ise)
+        // 0,8 ceza. r14: forehand'de yüz elin yanında kadrajda kalıyordu; yalnız "tam arkada" bakmak yetmedi, baş kadrajın
+        // herhangi bir yerinde olmasın. Gövde (forma) arka planda sorun değil, yalnız perde sayılır.
+        static float Engel(Vector3 p, Vector3 hedef, Vector3 dir, float d, float yaricap, float gx, float gy, int kadrajda)
         {
-            var v = p - hedef; float boyunca = Vector3.Dot(v, dir); float dik = (v - dir * boyunca).magnitude;
-            if (boyunca > 0 && boyunca < d && dik < yaricap * 1.3f) return 2;
-            if (boyunca <= 0 && dik < yaricap) return .6f;
+            var v = p - hedef; float boyunca = Vector3.Dot(v, dir); float dik = (v - dir * boyunca).magnitude; float derin = d - boyunca;
+            if (derin < .05f) return 0;
+            if (boyunca > 0 && dik < yaricap * 1.3f) return 2;
+            if (kadrajda == 1 && (dik - yaricap * .6f) / derin < Mathf.Max(gx, gy) * 1.1f) return .8f;
             return 0;
         }
         float raketBoy = .7f;

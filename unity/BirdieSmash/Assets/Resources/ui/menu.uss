@@ -145,11 +145,6 @@
 .yildizlar .ikon { margin-right: 2px; }
 .imza-kart { border-color: rgba(255, 210, 58, 0.35); margin-top: 10px; }
 .buyuk-yazi .dugum--sol, .buyuk-yazi .dugum--sag { margin-left: 0; margin-right: 0; }
-/* r13 (2026-10-26): ×2'de rozet + ad + durum ("Locked", "Cleared") yan yana sıkışıyor, ad hece ortasından bölünüyordu
-   ("Champi ons", "tourname nt", "Singap ore"). Büyük yazıda orta sütun satırın çoğunu ister; durum yazısı alt satıra iner
-   (rozetin hizasından sonra). */
-.buyuk-yazi .dugum .basamak-orta { flex-basis: 70%; }
-.buyuk-yazi .dugum .basamak-satir > .yazi { margin-left: 52px; margin-top: 4px; }
 .buyuk-yazi .tur-secici { flex-direction: row; flex-wrap: wrap; }
 .buyuk-yazi .tur-secici .cip { flex-basis: 40%; }
 
@@ -205,6 +200,9 @@
 .dar-cip .cip-ic { flex-direction: column; }
 .dar-cip .cip-ic .ikon { margin-right: 0; margin-bottom: 2px; }
 .buyuk-yazi .secim .dar-cip { flex-basis: auto; }
+/* r14: 2×2'de yer var; ✓ yine yanda, yoksa seçili satır ötekinden uzun kalıyordu. */
+.buyuk-yazi .dar-cip .cip-ic { flex-direction: row; }
+.buyuk-yazi .dar-cip .cip-ic .ikon { margin-right: 6px; margin-bottom: 0; }
 .buyuk-yazi .vitrin-alan { height: 30%; min-height: 160px; }
 .yuva-izgara { margin: 0 -4px; }
 .izgara > .yuva-kare { flex-basis: 30%; flex-grow: 1; margin: 4px; padding: 10px; min-height: 88px; align-items: flex-start; justify-content: flex-start; }

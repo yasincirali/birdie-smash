@@ -65,7 +65,7 @@ namespace BirdieSmash.Game
             vitrinOdak = Satir("vitrin-odak"); vitrinOdak.pickingMode = PickingMode.Ignore; alt.Add(vitrinOdak);
             var ok = Satir("vitrin-oklar"); ok.pickingMode = PickingMode.Ignore; alt.Add(ok);
             var sol = new VisualElement(); sol.AddToClassList("dugme"); sol.AddToClassList("ikon-dugme"); sol.Add(Ikon(Ikonlar.Geri, 20, Color.white)); sol.AddManipulator(new Clickable(() => VitrinCevir(-1))); Erisim.Etiket(sol, L.T("Sola çevir"), "dugme"); ok.Add(sol);
-            var orta = Dugme("", () => RaketGorunum(vt.hedefGec < 1), "vitrin-gecis", null, VitrinPx(16)); ok.Add(orta);
+            var orta = Dugme("", () => RaketGorunum(vt.hedefGec < 1), "vitrin-gecis", null, VitrinPx(16)); Sigdir(orta, .75f); ok.Add(orta);   // r14: ×2'de "Inspect racket" iki satıra çıkıp önizlemeyi kapatıyordu
             var sag = new VisualElement(); sag.AddToClassList("dugme"); sag.AddToClassList("ikon-dugme"); sag.Add(Ikon(Ikonlar.Ileri, 20, Color.white)); sag.AddManipulator(new Clickable(() => VitrinCevir(1))); Erisim.Etiket(sag, L.T("Sağa çevir"), "dugme"); ok.Add(sag);
             OdakDugmeleriKur();
             // Yakın plan kadrajı kutunun en-boyuna ve alttaki düğmelerin payına göre (Vitrin.Uzaklik).
@@ -77,10 +77,11 @@ namespace BirdieSmash.Game
             SoyunmaGovdeKur(false);
         }
 
-        // Vitrinin üstündeki yazılar (köşe yazısı, Raketi incele, Yüz·Ayak·Tutuş) yazı çarpanını en çok 1,6'ya kadar izler
-        // (simgeler gibi, UiOge.Ikon). Neden (2026-10-26, r13): ×2'de bu yazılar 3D önizlemenin yarısını kapatıyordu; kutu büyük
-        // yazıda zaten %30 boy. 1,6 kat hâlâ büyük yazıdır ve okunur; asıl içerik (gövde) tam çarpanla büyür. Bilinçli HIG sapması.
-        float VitrinPx(float px) { return K > 1.6f ? px * 1.6f / K : px; }
+        // Vitrinin üstündeki yazılar (köşe yazısı, Raketi incele, Yüz·Ayak·Tutuş) yazı çarpanını en çok 1,35'e kadar izler.
+        // Neden (2026-10-26, r13–r14): ×2'de bu yazılar 3D önizlemenin yarısını kapatıyordu; kutu büyük yazıda zaten %30 boy.
+        // r14'te 1,6 ile de düğmeler yüzün üstünü örttü. 1,35 büyük yazı eşiği (UiKok .buyuk-yazi); asıl içerik (gövde) tam
+        // çarpanla büyür, düğmelerin dokunma alanı 44 pt. Bilinçli HIG sapması (sistemdeki görüntü üstü denetimler gibi).
+        float VitrinPx(float px) { return K > 1.35f ? px * 1.35f / K : px; }
         void VitrinKutuYaz(VisualElement ust, VisualElement alt)
         {
             var vt = root.vitrin; float w = ust.layout.width, h = ust.layout.height; if (vt == null || float.IsNaN(w) || float.IsNaN(h) || h < 1) return;
@@ -144,7 +145,7 @@ namespace BirdieSmash.Game
             vitrinYazi.text = L.T(raketG ? "Raketin, 360 derece görünüm" : od == Vitrin.YUZ ? "Yakın plan: yüz ve saç" : od == Vitrin.AYAK ? "Yakın plan: ayakkabılar" : od == Vitrin.TUTUS ? "Yakın plan: tutuş" : "Oyuncun, 360 derece görünüm");
             OdakDugmeleriKur();
             var gecis = vitrinIm.parent.Q<VisualElement>(null, "vitrin-gecis");
-            if (gecis != null) { var gy = gecis.Q<Label>(); string gt = L.T(raketG ? "Oyuncuya dön" : "Raketi incele"); if (gy != null) gy.text = gt; Erisim.Etiket(gecis, gt, "dugme"); }
+            if (gecis != null) { var gy = gecis.Q<Label>(); string gt = L.T(raketG ? "Oyuncuya dön" : "Raketi incele"); if (gy != null) { gy.text = gt; var gc_ = gecis; gecis.schedule.Execute(() => SigdirOlc(gc_, gy, Mathf.Round(VitrinPx(16) * K), .75f)); } Erisim.Etiket(gecis, gt, "dugme"); }
             var c = soyunmaGovde; c.Clear(); canliDolgu.Clear(); canliDeger.Clear();
             if (soyunmaSeg == 1) TarzGovde(c); else if (soyunmaSeg == 2) GorunumGovde(c, raketG); else if (soyunmaSeg == SEG_KARAKTER) KarakterGovde(c); else EkipmanGovde(c);
             c.Add(Bosluk(20));

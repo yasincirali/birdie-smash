@@ -127,7 +127,11 @@ namespace BirdieSmash.Game
             rk.Add(Yazi(st.isim + " · " + L.T(st.ad) + (final ? " · " + L.T("Final") : ""), 13, "soluk"));
             var yr = Satir("rakip-satir"); yr.pickingMode = PickingMode.Ignore; orta.Add(yr); yr.Add(UcYildiz(p.Maske(g), 16)); var yy = Yazi(ys + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy);
             string durum = L.T(gecti ? "Geçildi" : simdi ? "ŞİMDİ" : acik ? "Açık" : "Kilitli");
-            r.Add(Yazi(durum, 12, gecti ? "durum-gecti" : simdi ? "durum-simdi" : acik ? "durum-gecti" : "durum-kilit"));
+            // r13 (2026-10-26): ×2'de rozet + ad + durum yan yana sıkışıyor, ad hece ortasından bölünüyordu ("Champi ons",
+            // "Singap ore"); USS'teki sarma denemesi (flex-basis %70) Yoga'da satırı kırmadı. Büyük yazıda durum orta sütunun
+            // altına iner, ad satırın tamamını alır.
+            var dz = Yazi(durum, 12, gecti ? "durum-gecti" : simdi ? "durum-simdi" : acik ? "durum-gecti" : "durum-kilit");
+            if (K >= 1.35f) { dz.style.marginTop = 4; orta.Add(dz); } else r.Add(dz);
             Erisim.Etiket(kart, L.T(TurAd(KariyerVeri.TurOf(g))) + ", " + (b + 1) + ". " + L.T("basamak") + ", " + L.T(kb.yer) + ", " + st.isim + (final ? ", " + L.T("Final") : "") + ", " + L.T("{0}/3 yıldız", ys) + ", " + durum, "dugme", simdi);
             return kart;
         }
