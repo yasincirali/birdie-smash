@@ -1,0 +1,235 @@
+The selected window backend is x11 
+Mono path[0] = '/home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/Managed'
+Mono config path = '/home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/etc'
+Input System module state changed to: Initialized.
+Display 0 'screen': 600x1300 (primary device).
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+Desktop is 600 x 1300 @ 0 Hz
+Initialize engine version: 6000.0.58f2 (92dee566b325)
+[Subsystems] Discovering subsystems at path /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/UnitySubsystems
+Forcing GfxDevice: OpenGL Core
+kGfxThreadingModeClientWorkerNativeJobs is not supported on OpenGL Core. Reverting to kGfxThreadingModeClientWorkerJobs instead.
+GfxDevice: creating device client; kGfxThreadingModeClientWorkerJobs
+Renderer: llvmpipe (LLVM 20.1.2, 256 bits)
+Vendor:   Mesa
+Version:  4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.4
+GLES:     0
+ GL_3DFX_texture_compression_FXT1 GL_AMD_conservative_depth GL_AMD_draw_buffers_blend GL_AMD_gpu_shader_int64 GL_AMD_multi_draw_indirect GL_AMD_pinned_memory GL_AMD_query_buffer_object GL_AMD_seamless_cubemap_per_texture GL_AMD_shader_stencil_export GL_AMD_shader_trinary_minmax GL_AMD_texture_texture4 GL_AMD_vertex_shader_layer GL_AMD_vertex_shader_viewport_index GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ARB_ES2_compatibility GL_ARB_ES3_1_compatibility GL_ARB_ES3_2_compatibility GL_ARB_ES3_compatibility GL_ARB_arrays_of_arrays GL_ARB_base_instance GL_ARB_blend_func_extended GL_ARB_buffer_storage GL_ARB_clear_buffer_object GL_ARB_clear_texture GL_ARB_clip_control GL_ARB_compressed_texture_pixel_storage GL_ARB_compute_shader GL_ARB_conditional_render_inverted GL_ARB_conservative_depth GL_ARB_copy_buffer GL_ARB_copy_image GL_ARB_cull_distance GL_ARB_debug_output GL_ARB_depth_buffer_float GL_ARB_depth_clamp GL_ARB_derivative_control GL_ARB_direct_state_access GL_ARB_draw_buffers GL_A
+RB_draw_buffers_blend GL_ARB_draw_elements_base_vertex GL_ARB_draw_indirect GL_ARB_draw_instanced GL_ARB_enhanced_layouts GL_ARB_explicit_attrib_location GL_ARB_explicit_uniform_location GL_ARB_fragment_coord_conventions GL_ARB_fragment_layer_viewport GL_ARB_fragment_shader GL_ARB_framebuffer_no_attachments GL_ARB_framebuffer_object GL_ARB_framebuffer_sRGB GL_ARB_get_program_binary GL_ARB_get_texture_sub_image GL_ARB_gl_spirv GL_ARB_gpu_shader5 GL_ARB_gpu_shader_fp64 GL_ARB_gpu_shader_int64 GL_ARB_half_float_pixel GL_ARB_half_float_vertex GL_ARB_indirect_parameters GL_ARB_instanced_arrays GL_ARB_internalformat_query GL_ARB_internalformat_query2 GL_ARB_invalidate_subdata GL_ARB_map_buffer_alignment GL_ARB_map_buffer_range GL_ARB_multi_bind GL_ARB_multi_draw_indirect GL_ARB_occlusion_query2 GL_ARB_parallel_shader_compile GL_ARB_pipeline_statistics_query GL_ARB_pixel_buffer_object GL_ARB_point_sprite GL_ARB_polygon_offset_clamp GL_ARB_post_depth_coverage GL_ARB_program_interface_query GL_ARB_provoking_vertex GL
+_ARB_query_buffer_object GL_ARB_robust_buffer_access_behavior GL_ARB_robustness GL_ARB_sample_shading GL_ARB_sampler_objects GL_ARB_seamless_cube_map GL_ARB_seamless_cubemap_per_texture GL_ARB_separate_shader_objects GL_ARB_shader_atomic_counter_ops GL_ARB_shader_atomic_counters GL_ARB_shader_ballot GL_ARB_shader_bit_encoding GL_ARB_shader_clock GL_ARB_shader_draw_parameters GL_ARB_shader_group_vote GL_ARB_shader_image_load_store GL_ARB_shader_image_size GL_ARB_shader_objects GL_ARB_shader_precision GL_ARB_shader_stencil_export GL_ARB_shader_storage_buffer_object GL_ARB_shader_subroutine GL_ARB_shader_texture_image_samples GL_ARB_shader_texture_lod GL_ARB_shader_viewport_layer_array GL_ARB_shading_language_420pack GL_ARB_shading_language_include GL_ARB_shading_language_packing GL_ARB_spirv_extensions GL_ARB_stencil_texturing GL_ARB_sync GL_ARB_tessellation_shader GL_ARB_texture_barrier GL_ARB_texture_border_clamp GL_ARB_texture_buffer_object GL_ARB_texture_buffer_object_rgb32 GL_ARB_texture_buffer_range GL_A
+RB_texture_compression_bptc GL_ARB_texture_compression_rgtc GL_ARB_texture_cube_map_array GL_ARB_texture_filter_anisotropic GL_ARB_texture_filter_minmax GL_ARB_texture_float GL_ARB_texture_gather GL_ARB_texture_mirror_clamp_to_edge GL_ARB_texture_multisample GL_ARB_texture_non_power_of_two GL_ARB_texture_query_levels GL_ARB_texture_query_lod GL_ARB_texture_rectangle GL_ARB_texture_rg GL_ARB_texture_rgb10_a2ui GL_ARB_texture_stencil8 GL_ARB_texture_storage GL_ARB_texture_storage_multisample GL_ARB_texture_swizzle GL_ARB_texture_view GL_ARB_timer_query GL_ARB_transform_feedback2 GL_ARB_transform_feedback3 GL_ARB_transform_feedback_instanced GL_ARB_transform_feedback_overflow_query GL_ARB_uniform_buffer_object GL_ARB_vertex_array_bgra GL_ARB_vertex_array_object GL_ARB_vertex_attrib_64bit GL_ARB_vertex_attrib_binding GL_ARB_vertex_buffer_object GL_ARB_vertex_shader GL_ARB_vertex_type_10f_11f_11f_rev GL_ARB_vertex_type_2_10_10_10_rev GL_ARB_viewport_array GL_ARM_shader_framebuffer_fetch_depth_stencil GL_ATI_blend
+_equation_separate GL_ATI_meminfo GL_ATI_texture_float GL_ATI_texture_mirror_once GL_EXT_EGL_image_storage GL_EXT_EGL_image_storage_compression GL_EXT_EGL_sync GL_EXT_abgr GL_EXT_blend_equation_separate GL_EXT_debug_label GL_EXT_draw_buffers2 GL_EXT_draw_instanced GL_EXT_framebuffer_blit GL_EXT_framebuffer_multisample GL_EXT_framebuffer_multisample_blit_scaled GL_EXT_framebuffer_object GL_EXT_framebuffer_sRGB GL_EXT_memory_object GL_EXT_memory_object_fd GL_EXT_packed_depth_stencil GL_EXT_packed_float GL_EXT_pixel_buffer_object GL_EXT_polygon_offset_clamp GL_EXT_provoking_vertex GL_EXT_shader_clock GL_EXT_shader_framebuffer_fetch GL_EXT_shader_framebuffer_fetch_non_coherent GL_EXT_shader_image_load_formatted GL_EXT_shader_integer_mix GL_EXT_texture_array GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc GL_EXT_texture_filter_anisotropic GL_EXT_texture_filter_minmax GL_EXT_texture_integer GL_EXT_texture_mirror_clamp GL_EXT_texture_sRGB GL_EXT_texture_sRGB_R8 GL_EXT
+_texture_sRGB_RG8 GL_EXT_texture_sRGB_decode GL_EXT_texture_shadow_lod GL_EXT_texture_shared_exponent GL_EXT_texture_snorm GL_EXT_texture_storage GL_EXT_texture_swizzle GL_EXT_timer_query GL_EXT_transform_feedback GL_EXT_vertex_array_bgra GL_EXT_vertex_attrib_64bit GL_IBM_multimode_draw_arrays GL_INTEL_shader_atomic_float_minmax GL_KHR_blend_equation_advanced GL_KHR_blend_equation_advanced_coherent GL_KHR_context_flush_control GL_KHR_debug GL_KHR_no_error GL_KHR_parallel_shader_compile GL_KHR_robust_buffer_access_behavior GL_KHR_robustness GL_KHR_texture_compression_astc_ldr GL_KHR_texture_compression_astc_sliced_3d GL_MESA_framebuffer_flip_y GL_MESA_pack_invert GL_MESA_shader_integer_functions GL_MESA_texture_signed_rgba GL_NVX_gpu_memory_info GL_NV_alpha_to_coverage_dither_control GL_NV_conditional_render GL_NV_copy_image GL_NV_depth_clamp GL_NV_packed_depth_stencil GL_NV_shader_atomic_float GL_NV_texture_barrier GL_OES_EGL_image GL_OVR_multiview GL_OVR_multiview2 GL_S3_s3tc
+OPENGL LOG: Creating OpenGL 4.5 graphics device ; Context level  <OpenGL 4.5> ; Context handle 25333216
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+FMOD failed to initialize the output device.: "Error initializing output device. " (60)
+Forced to initialize FMOD to to the device driver's system output rate 48000, this may impact performance and/or give inconsistent experiences compared to selected sample rate 48000
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+FMOD failed to initialize the output device.: "Error initializing output device. " (60)
+FMOD failed to initialize any audio devices, running on emulated software output with no sound. Please check your audio drivers and/or hardware for malfunction.
+Begin MonoManager ReloadAssembly
+- Loaded All Assemblies, in  0.059 seconds
+- Finished resetting the current domain, in  0.002 seconds
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Default vsync count 1
+requesting resize 390 x 845
+resizing window to 390 x 845
+Desktop is 600 x 1300 @ 0 Hz
+UnloadTime: 0.422706 ms
+EkranTuru başladı: /home/runner/work/_temp/ekran
+requesting resize 390 x 845
+resizing window to 390 x 845
+Desktop is 600 x 1300 @ 0 Hz
+EkranTuru GameRoot True
+EkranTuru kare 2 t=6.8 → 00_ilk_kare
+EkranTuru kare 36 t=8.9 → menu_ilk_oyna
+EkranTuru kare 56 t=11.0 → menu_oyna
+EkranTuru kare 76 t=11.6 → menu_kariyer
+EkranTuru kare 96 t=11.9 → menu_harita_tur1
+EkranTuru kare 111 t=12.6 → menu_harita_tur2_kilitli
+EkranTuru kare 131 t=13.0 → menu_mac_karti
+EkranTuru bekçi: kare 141 adım menu_mac_karti
+EkranTuru kare 151 t=13.3 → menu_mac_karti_final_kilitli
+EkranTuru kare 171 t=13.6 → menu_harita_tur2
+EkranTuru kare 191 t=14.0 → menu_mac_karti_tur2
+EkranTuru kare 211 t=14.3 → menu_harita_tur3
+EkranTuru kare 231 t=14.6 → menu_mac_karti_tur3
+EkranTuru kare 246 t=14.9 → menu_harita_tur4_kilitli
+EkranTuru kare 266 t=15.2 → menu_harita_tur4
+EkranTuru kare 286 t=15.6 → menu_mac_karti_tur4_imza
+EkranTuru kare 306 t=15.9 → menu_harita_tur4_usta
+EkranTuru kare 326 t=17.1 → menu_oyna_usta
+EkranTuru kare 361 t=19.1 → menu_soyunma
+EkranTuru kare 381 t=20.1 → menu_soyunma_tarz
+EkranTuru kare 401 t=20.8 → menu_soyunma_gorunum
+EkranTuru kare 431 t=22.5 → menu_karakter_tip
+EkranTuru bekçi: kare 443 adım menu_karakter_tip
+EkranTuru kare 461 t=23.8 → menu_karakter_tip_deneme
+EkranTuru kare 501 t=25.6 → menu_karakter_sac_yuz
+EkranTuru kare 541 t=27.4 → menu_karakter_sac_deneme
+EkranTuru kare 581 t=28.7 → menu_karakter_ayakkabi_ayak
+EkranTuru kare 611 t=29.7 → menu_karakter_ayakkabi_deneme
+EkranTuru kare 641 t=30.8 → menu_karakter_ten
+EkranTuru kare 681 t=32.3 → menu_yakin_tutus_forehand
+EkranTuru bekçi: kare 701 adım menu_yakin_tutus_forehand
+EkranTuru kare 721 t=33.9 → menu_yakin_tutus_backhand
+EkranTuru kare 751 t=35.1 → menu_yuva_raket
+EkranTuru kare 776 t=36.0 → menu_yuva_kordaj
+EkranTuru kare 801 t=36.8 → menu_profil
+EkranTuru kare 821 t=37.1 → menu_profil_ornek
+EkranTuru kare 846 t=38.4 → menu_hizli
+EkranTuru kare 866 t=39.2 → menu_ayarlar
+EkranTuru kare 891 t=39.9 → menu_antrenman
+EkranTuru kare 901 t=40.1 → menu_antrenman_alt
+EkranTuru kare 921 t=40.7 → menu_gorev_karti
+EkranTuru kare 946 t=42.2 → menu_gunun_maci
+EkranTuru kare 966 t=43.1 → menu_oyna_gunluk_alindi
+EkranTuru bekçi: kare 966 adım menu_oyna_gunluk_alindi
+EkranTuru kare 991 t=44.2 → menu_x2_oyna
+EkranTuru kare 1011 t=44.7 → menu_x2_kariyer
+EkranTuru kare 1031 t=45.0 → menu_x2_harita_tur1
+EkranTuru kare 1046 t=45.2 → menu_x2_harita_tur2_kilitli
+EkranTuru kare 1066 t=45.6 → menu_x2_mac_karti
+EkranTuru kare 1086 t=45.9 → menu_x2_mac_karti_final_kilitli
+EkranTuru kare 1106 t=46.2 → menu_x2_harita_tur2
+EkranTuru kare 1126 t=46.6 → menu_x2_mac_karti_tur2
+EkranTuru kare 1146 t=46.9 → menu_x2_harita_tur3
+EkranTuru kare 1166 t=47.2 → menu_x2_mac_karti_tur3
+EkranTuru kare 1181 t=47.5 → menu_x2_harita_tur4_kilitli
+EkranTuru kare 1201 t=47.8 → menu_x2_harita_tur4
+EkranTuru kare 1221 t=48.2 → menu_x2_mac_karti_tur4_imza
+EkranTuru kare 1241 t=48.5 → menu_x2_harita_tur4_usta
+EkranTuru kare 1261 t=49.3 → menu_x2_oyna_usta
+EkranTuru kare 1296 t=50.6 → menu_x2_soyunma
+EkranTuru kare 1316 t=51.3 → menu_x2_soyunma_tarz
+EkranTuru kare 1336 t=52.0 → menu_x2_soyunma_gorunum
+EkranTuru kare 1366 t=53.1 → menu_x2_karakter_tip
+EkranTuru bekçi: kare 1366 adım menu_x2_karakter_tip
+EkranTuru kare 1396 t=54.2 → menu_x2_karakter_tip_deneme
+EkranTuru kare 1436 t=55.9 → menu_x2_karakter_sac_yuz
+EkranTuru kare 1476 t=57.6 → menu_x2_karakter_sac_deneme
+EkranTuru kare 1516 t=58.9 → menu_x2_karakter_ayakkabi_ayak
+EkranTuru kare 1546 t=59.9 → menu_x2_karakter_ayakkabi_deneme
+EkranTuru kare 1576 t=61.0 → menu_x2_karakter_ten
+EkranTuru kare 1616 t=62.9 → menu_x2_yakin_tutus_forehand
+EkranTuru bekçi: kare 1622 adım menu_x2_yakin_tutus_forehand
+EkranTuru kare 1656 t=64.7 → menu_x2_yakin_tutus_backhand
+EkranTuru kare 1686 t=65.9 → menu_x2_yuva_raket
+EkranTuru kare 1711 t=66.9 → menu_x2_yuva_kordaj
+EkranTuru kare 1736 t=67.7 → menu_x2_profil
+EkranTuru kare 1756 t=68.1 → menu_x2_profil_ornek
+EkranTuru kare 1781 t=69.1 → menu_x2_hizli
+EkranTuru kare 1801 t=69.7 → menu_x2_ayarlar
+EkranTuru kare 1826 t=70.4 → menu_x2_antrenman
+EkranTuru kare 1836 t=70.5 → menu_x2_antrenman_alt
+EkranTuru kare 1856 t=70.9 → menu_x2_gorev_karti
+EkranTuru kare 1881 t=71.9 → menu_x2_gunun_maci
+EkranTuru kare 1901 t=72.8 → menu_x2_oyna_gunluk_alindi
+EkranTuru bekçi: kare 1908 adım menu_x2_oyna_gunluk_alindi
+EkranTuru kare 1931 t=74.2 → menu_tr_oyna
+EkranTuru kare 1951 t=75.1 → menu_x2_tr_oyna
+EkranTuru kare 1996 t=77.1 → oyuncak_01_menu
+EkranTuru kare 2041 t=78.0 → oyuncak_02_servis_once
+EkranTuru kare 2061 t=78.4 → oyuncak_10_ralli
+EkranTuru kare 2075 t=78.6 → oyuncak_11_ralli
+EkranTuru kare 2089 t=78.8 → oyuncak_12_ralli
+EkranTuru kare 2103 t=79.1 → oyuncak_13_ralli
+EkranTuru kare 2117 t=79.3 → oyuncak_14_ralli
+EkranTuru kare 2131 t=79.5 → oyuncak_15_ralli
+EkranTuru kare 2145 t=79.8 → oyuncak_16_ralli
+EkranTuru kare 2159 t=80.0 → oyuncak_17_ralli
+EkranTuru kare 2173 t=80.2 → oyuncak_18_ralli
+EkranTuru kare 2187 t=80.5 → oyuncak_19_ralli
+EkranTuru kare 2227 t=81.1 → rocketbox_01_menu
+EkranTuru kare 2272 t=81.9 → rocketbox_02_servis_once
+EkranTuru kare 2292 t=82.3 → rocketbox_10_ralli
+EkranTuru kare 2306 t=82.5 → rocketbox_11_ralli
+EkranTuru kare 2320 t=82.8 → rocketbox_12_ralli
+EkranTuru kare 2334 t=83.0 → rocketbox_13_ralli
+EkranTuru bekçi: kare 2344 adım rocketbox_13_ralli
+EkranTuru kare 2348 t=83.2 → rocketbox_14_ralli
+EkranTuru kare 2362 t=83.5 → rocketbox_15_ralli
+EkranTuru kare 2376 t=83.7 → rocketbox_16_ralli
+EkranTuru kare 2390 t=83.9 → rocketbox_17_ralli
+EkranTuru kare 2404 t=84.2 → rocketbox_18_ralli
+EkranTuru kare 2418 t=84.4 → rocketbox_19_ralli
+EkranTuru kare 2458 t=85.1 → sade_01_menu
+EkranTuru kare 2503 t=85.8 → sade_02_servis_once
+EkranTuru kare 2523 t=86.2 → sade_10_ralli
+EkranTuru kare 2537 t=86.4 → sade_11_ralli
+EkranTuru kare 2551 t=86.7 → sade_12_ralli
+EkranTuru kare 2565 t=86.9 → sade_13_ralli
+EkranTuru kare 2579 t=87.1 → sade_14_ralli
+EkranTuru kare 2593 t=87.4 → sade_15_ralli
+EkranTuru kare 2607 t=87.6 → sade_16_ralli
+EkranTuru kare 2621 t=87.8 → sade_17_ralli
+EkranTuru kare 2635 t=88.1 → sade_18_ralli
+EkranTuru kare 2649 t=88.3 → sade_19_ralli
+EkranTuru kare 2709 t=89.3 → saha_turnuva
+EkranTuru kare 2769 t=90.3 → saha_okul
+EkranTuru kare 2829 t=91.3 → saha_park
+EkranTuru kare 2889 t=92.3 → kamera_alcak
+EkranTuru bekçi: kare 2940 adım kamera_alcak
+EkranTuru kare 2949 t=93.3 → kamera_ust
+EkranTuru kare 3009 t=94.3 → kamera_yayin
+requesting resize 375 x 667
+resizing window to 375 x 667
+Desktop is 600 x 1300 @ 0 Hz
+EkranTuru kare 3080 t=95.5 → kamera_alcak_se
+EkranTuru kare 3140 t=96.5 → kamera_ust_se
+EkranTuru kare 3200 t=97.5 → kamera_yayin_se
+requesting resize 390 x 845
+resizing window to 390 x 845
+Desktop is 600 x 1300 @ 0 Hz
+EkranTuru bekçi: kare 3540 adım kamera_yayin_se
+EkranTuru bekçi: kare 4140 adım kamera_yayin_se
+EkranTuru kare 4554 t=120.1 → imza_mermi
+EkranTuru bekçi: kare 4740 adım imza_mermi
+EkranTuru bekçi: kare 5340 adım imza_mermi
+EkranTuru kare 5493 t=135.7 → imza_duvar_azalt
+EkranTuru kare 5853 t=141.7 → gorev_kose_oyun
+EkranTuru bekçi: kare 5907 adım gorev_kose_oyun
+EkranTuru kare 5968 t=144.4 → gorev_sonuc
+EkranTuru kare 6148 t=147.4 → gunun_maci_oyun
+EkranTuru bekçi: kare 6500 adım gunun_maci_oyun
+EkranTuru kare 6597 t=154.9 → sonuc_galibiyet
+EkranTuru kare 7028 t=162.6 → sonuc_galibiyet_azalt
+EkranTuru bekçi: kare 7062 adım sonuc_galibiyet_azalt
+EkranTuru kare 7482 t=170.3 → sonuc_buyuk_galibiyet
+EkranTuru bekçi: kare 7654 adım sonuc_buyuk_galibiyet
+EkranTuru kare 7934 t=178.0 → sonuc_tr_galibiyet
+EkranTuru bekçi: kare 8245 adım sonuc_tr_galibiyet
+EkranTuru kare 8389 t=185.7 → sonuc_yenilgi
+EkranTuru kare 8424 t=187.2 → menu_macsonu_oyna
+EkranTuru kare 8444 t=187.6 → menu_macsonu_kariyer
+EkranTuru kare 8474 t=188.7 → menu_macsonu_soyunma
+EkranTuru kare 8504 t=190.1 → menu_park_oyna
+EkranTuru kare 8579 t=191.6 → duraklat
+EkranTuru kare 8609 t=192.9 → menu_bekleyen_oyna
+EkranTuru bekçi: kare 8625 adım menu_bekleyen_oyna
+EkranTuru kare 8639 t=193.5 → bekleyen_devam
+[Physics::Module] Cleanup current backned.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
