@@ -306,7 +306,7 @@ namespace BirdieSmash.Game
 #endif
         }
 
-        // Dikey ekranda kortun tamamı, iki oyuncu ve rakibin arkasındaki pano görünsün: konum sabit, görüş açısı ekrana göre.
+        // Dikey ekranda kortun tamamı, iki oyuncu ve rakibin arkasındaki pano görünsün: konum, eğim ve görüş açısı ekrana göre (FitCamera).
         // Kamera açısı (Ayarlar › Kamera, 2026-10-26 yasin "belki kamera açısı seçtirilebilir"): Yayın = TV yayın kamerası
         // (yüksek, arkadan; varsayılan, eski tek açı), Alçak = oyuncunun omzunun gerisinden (rakip ve file büyük, derinlik
         // hissi güçlü), Üstten = kuşbakışına yakın (top yeri ve çizgiler en net). Görüş açısı her açıda aynı kuralla ekrana
@@ -317,44 +317,76 @@ namespace BirdieSmash.Game
         int lastW, lastH; Rect lastSafe;
         // Kadraj (2026-10-26, yasin onayı; inceleme 2026-10-26 §1): görüş açısı eskiden simetrikti; dikey telefonda kort ekranın
         // genişliğine takıldığı için kalan dikey pay üstte boş kalıyordu (Yayın'da ekranın ~%30'u, Alçak'ta yarıya yakını).
-        // Yalnız ortalamak boşluğu alta taşırdı. Şimdi:
-        //  - Görüntü düzlemi KAD_EGIM kadar aşağı eğilir (mimari "tilt-shift" düzeltmesi): yakın kenar küçülmez, uzak yarı ve
-        //    rakip büyür (390×845 / 375×667 hesabı, ekran turu r19 ile doğrulandı: rakip boyu Yayın 1,41/1,46×, Alçak 1,62×,
-        //    Üstten 1,14/1,12×). Eğim büyüdükçe dikey nesneler üstte uzar; 20°'de rakibin boy/en oranı %10 artıyor, sınır bu.
-        //  - Yayın ve Üstten bakış noktası eski yerinde. Alçak 5,6 m'den 7 m'ye çıktı ve dip çizgiye yaklaştı (dipten 2 m):
-        //    eski yerinde (r19 adayı) 19,5:9 ekranın %45'i kortun önündeki boş zemin kalıyordu. Hâlâ en alçak açı
-        //    (Yayın 10,5 m), yakın oyuncu en büyük, perspektif en güçlü olanı.
-        //  - Merceği kaydırma (projeksiyon matrisinde eksen dışı merkez): uzak dip çizginin gerisindeki seyirci başları ve
-        //    rakibin sıçrama tepesi skor kutusunun hemen altına oturur; üstte boş bant kalmaz.
-        //  - Genişlik: tekler alanı (+15 cm) her derinlikte ekranda; çiftler koridoru yakın köşelerde kenardan taşabilir
-        //    (teklerde oyun dışı alan). Eskisi çiftler çizgisi + %6 paydı, rakibi ~%18 küçültüyordu.
-        //  - Yakın dip çizgi smaç çubuğunun üstünde kalır (Hud: çubuk etiketi güvenli alanın 30u yukarısında; 6u pay).
-        //    Ekran kortun oranından uzunsa artan pay altta kalır (kortun önündeki zemin, başparmak bölgesi; 19,5:9'da Yayın
-        //    ~160 px, Alçak ~230 px). Uzun ekranı alçak bakışla kortla tam doldurmak bakışı ~10 m'ye çıkarmayı ister (Yayın olur).
-        // Dokunma/kaydırma ışın atışıyla (ScreenPointToRay) ve HUD WorldToScreenPoint ile çalıştığı için özel matris girdiyi bozmaz.
-        public static readonly float[] KAD_EGIM = { 12, 20, 0 };   // KAMERA_SIRA sırasıyla: yayin, alcak, ust (derece)
-        float camTv = .6f, camK;   // dikey yarım açının tanjantı ve eksen dışı kayma (NDC; + = görüntü yukarı)
+        // Onaylanan hedefler (değişmedi): üstte boş bant yok (seyirci başları ve rakibin sıçrama tepesi skor kutusunun hemen
+        // altında), uzak yarı ve rakip r15'e göre ~1,3× büyük, yakın dip çizgi smaç çubuğunun üstünde, tekler alanı (+15 cm)
+        // her derinlikte ekranda (çiftler koridoru yakın köşelerde taşabilir), iPhone SE ve 19,5:9.
+        // İkinci yazım (2026-10-27, kadraj incelemesi, r22 → r23): ilk yazım bu hedeflere görüntü düzlemini KAD_EGIM kadar
+        // fazladan aşağı eğip (12/20°) merceği eksen dışı kaydırarak (projeksiyon matrisinde m12) ulaşıyordu. Matris girdiyi
+        // bozmuyordu (ScreenPointToRay, WorldToScreenPoint, kırpma aynı matrisi kullanır) ama eğim + kaydırma "mimari düzeltmenin"
+        // tersiydi: dikeyler daha çok yatıyor, Alçak 7 m'den 50,6° aşağı 83° geniş açıyla bakıyordu (yakın yarı 305 px, rakip
+        // 64 px, file direği 15° yatık). Şimdi düz perspektif kamera: kaydırma yok (camK = 0), konum ve eğim çözülür:
+        //  - Her açının bir "dipten geri" uzaklığı (KAD_D) var; yükseklik ve eğim ekrana göre aranır: tekler genişliği ekranı
+        //    doldurur, üst nokta skor kutusunun altına oturur, yakın dip çizginin 0,8 m gerisi (oyuncu geri kaçınca ayakları)
+        //    smaç çubuğunun üstüne. Yayın uzaktan (dipten 7 m) dar açıyla bakar: TV yayın kamerası gibi, yakın yarı şişmez.
+        //  - Eğimin tavanı var (KAD_EGIM_AZAMI): uzun ekranı yalnız eğimle doldurmak oyuncuları üstten basık gösterir
+        //    (19,5:9'da Yayın 52°'de rakip boy/en 0,80). Tavana değince fazla pay altta kalır: dip çizginin gerisindeki zemin
+        //    (Yayın 19,5:9 ~80 px, Alçak ~200 px). SE'de tavana değilmez, kort ekranı tam doldurur.
+        //  - Uzaklık gölge mesafesine bağlı: Kalite orta basamağı 25 m; Yayın'da rakibin dip gerisi 24,3 m (dipten 7 m sınır).
+        //  - Çözüm yoksa (çok geniş ekran, ör. iPad) son çare eski kaydırma: üst nokta yine skor kutusunun altına alınır.
+        // Ölçüm (tool modeli + CI r23, 390×845 / 375×667): rapor ve tablo inceleme notunda.
+        public static readonly float[] KAD_D = { 7, 4, 3 };              // KAMERA_SIRA sırasıyla: dipten geri (m)
+        public static readonly float[] KAD_GENIS = { 1, 1, .85f };       // tekler genişliğinin ekrana oranı (Üstten'de yanlarda pay)
+        public static readonly float[] KAD_EGIM_AZAMI = { 47, 47, 64 };  // eğim tavanı (derece)
+        float camTv = .6f, camK;   // dikey yarım açının tanjantı ve eksen dışı kayma (NDC; + = görüntü yukarı; düz kamerada 0)
+        float kD, kF, kNU, kNA, kAsp;   // çözüm sırasında: açı parametreleri ve ekran sınırları (NDC)
         void FitCamera()
         {
             var sa = Screen.safeArea;
             if (Screen.width == lastW && Screen.height == lastH && sa == lastSafe) return; lastW = Screen.width; lastH = Screen.height; lastSafe = sa;
-            camBase = new Vector3(0, 10.5f, -Court.L / 2 - 6.2f); var target = new Vector3(0, .4f, .9f);
-            if (Ayar.kamera == "alcak") { camBase = new Vector3(0, 7f, -Court.L / 2 - 2f); target = new Vector3(0, .9f, 1.6f); }   // 2026-10-26: 5,6 m / dipten 5,4 m idi
-            else if (Ayar.kamera == "ust") { camBase = new Vector3(0, 15.5f, -Court.L / 2 - 2.2f); target = new Vector3(0, 0, .6f); }
-            int ki = System.Array.IndexOf(KAMERA_SIRA, Ayar.kamera); float egim = KAD_EGIM[ki < 0 ? 0 : ki];
-            camRot = Quaternion.LookRotation(target - camBase) * Quaternion.Euler(egim, 0, 0); cam.transform.SetPositionAndRotation(camBase, camRot);
-            float W = Mathf.Max(1, Screen.width), H = Mathf.Max(1, Screen.height), u = Mathf.Min(H / 640f, W / 340f), aspect = W / H;
+            int ki = System.Array.IndexOf(KAMERA_SIRA, Ayar.kamera); if (ki < 0) ki = 0;
+            kD = KAD_D[ki]; kF = KAD_GENIS[ki]; float pAz = KAD_EGIM_AZAMI[ki];
+            float W = Mathf.Max(1, Screen.width), H = Mathf.Max(1, Screen.height), u = Mathf.Min(H / 640f, W / 340f); kAsp = W / H;
             float ust = (H - sa.yMax) + 46 * u, alt = H - sa.yMin - 36 * u;   // ekran pikseli, yukarıdan: skor kutusunun altı, smaç çubuğunun üstü
-            float nUst = 1 - 2 * ust / H, nAlt = 1 - 2 * alt / H;
-            var inv = Quaternion.Inverse(camRot); float th = 0;
-            foreach (float x in new[] { Court.SL - .15f, Court.SR + .15f }) foreach (float y in new[] { 0f, Court.L }) { var l = inv * (Kit.W(x, y, 0) - camBase); th = Mathf.Max(th, Mathf.Abs(l.x / l.z)); }
-            float tUst = Mathf.Max(Tan(inv, Kit.W(Court.MID, -2.3f, 1.8f)), Tan(inv, Kit.W(Court.MID, .4f, 2.6f)));   // seyirci başları, rakibin sıçrama tepesi
-            float tYakin = Tan(inv, Kit.W(Court.MID, Court.L, 0));
-            camTv = Mathf.Max(th / aspect, (tUst - tYakin) / Mathf.Max(.05f, nUst - nAlt)); camK = nUst - tUst / camTv;
+            kNU = 1 - 2 * ust / H; kNA = 1 - 2 * alt / H;
+            // Dış arama: eğim. Payı (yakın nokta alt sınırın üstündeyse +) sıfırlayan eğim; tavanda hâlâ pay varsa tavan.
+            float h, p = pAz, s = Pay(pAz, out h);
+            if (float.IsNaN(s) || s < 0)
+            {
+                float lo = 10, hi = pAz;
+                for (int i = 0; i < 30; i++) { p = (lo + hi) / 2; s = Pay(p, out h); if (float.IsNaN(s) || s > 0) lo = p; else hi = p; }
+                p = hi; s = Pay(p, out h);
+            }
+            float tvW, tU, tY;
+            if (float.IsNaN(h)) { float en = -1e9f; for (float hh = 2; hh <= 45; hh += .5f) { float g = UstFark(hh, p); if (g > en) { en = g; h = hh; } } }
+            Olc(h, p, out tvW, out tU, out tY);
+            camTv = tvW; camK = float.IsNaN(s) ? kNU - tU / tvW : 0;   // son çare dışında kaydırma yok
+            camBase = new Vector3(0, h, -Court.L / 2 - kD); camRot = Quaternion.Euler(p, 0, 0); cam.transform.SetPositionAndRotation(camBase, camRot);
             Projeksiyon(1);
         }
-        float Tan(Quaternion inv, Vector3 p) { var l = inv * (p - camBase); return l.y / Mathf.Max(.01f, l.z); }
-        // Smaç "punch" yakınlaşması ekranın ortasına göre (eksen dışı kaymayla birlikte ölçeklenir).
+        // Konum (0, h, dipten kD geri), eğim p için: tekler genişliğinin gerektirdiği yarım açı tanjantı (tvW) ve üst/alt noktaların
+        // dikey tanjantları. Üst nokta: seyirci başları ya da rakibin sıçrama tepesi; alt: yakın dip çizginin 0,8 m gerisi.
+        void Olc(float h, float p, out float tvW, out float tU, out float tY)
+        {
+            var pos = new Vector3(0, h, -Court.L / 2 - kD); var inv = Quaternion.Inverse(Quaternion.Euler(p, 0, 0)); float th = 0;
+            foreach (float x in new[] { Court.SL - .15f, Court.SR + .15f }) foreach (float y in new[] { 0f, Court.L }) { var l = inv * (Kit.W(x, y, 0) - pos); th = Mathf.Max(th, Mathf.Abs(l.x / Mathf.Max(.01f, l.z))); }
+            tvW = th / kAsp / kF;
+            tU = Mathf.Max(Tan(inv, pos, Kit.W(Court.MID, -2.3f, 1.8f)), Tan(inv, pos, Kit.W(Court.MID, .4f, 2.6f)));
+            tY = Tan(inv, pos, Kit.W(Court.MID, Court.L + .8f, 0));
+        }
+        float UstFark(float h, float p) { float tvW, tU, tY; Olc(h, p, out tvW, out tU, out tY); return tU / tvW - kNU; }   // + = üst nokta sınırın üstünde
+        // Eğim p'de üst noktayı tam sınıra oturtan en yüksek konum (yükseldikçe kort küçülür, fark azalır; tepeden sonra tekdüze),
+        // sonra yakın noktanın alt sınıra payı (NDC). Üst nokta hiçbir yükseklikte sınıra ulaşmıyorsa NaN: eğim artmalı.
+        float Pay(float p, out float h)
+        {
+            h = float.NaN; float a = 45;
+            while (a > 2 && UstFark(a, p) < 0) a -= .5f;
+            if (a <= 2) return float.NaN;
+            float b = a + .5f; for (int i = 0; i < 24; i++) { float m = (a + b) / 2; if (UstFark(m, p) >= 0) a = m; else b = m; }
+            h = a; float tvW, tU, tY; Olc(h, p, out tvW, out tU, out tY); return tY / tvW - kNA;
+        }
+        static float Tan(Quaternion inv, Vector3 pos, Vector3 p) { var l = inv * (p - pos); return l.y / Mathf.Max(.01f, l.z); }
+        // Smaç "punch" yakınlaşması ekranın ortasına göre (eksen dışı kaymayla birlikte ölçeklenir). camK = 0'da bu matris Unity'nin
+        // kendi fieldOfView izdüşümüyle aynıdır; özel matris yalnız son çare kaydırma ve punch için tutuluyor.
         void Projeksiyon(float z)
         {
             var m = Matrix4x4.Perspective(2 * Mathf.Atan(camTv) * Mathf.Rad2Deg, (float)Mathf.Max(1, Screen.width) / Mathf.Max(1, Screen.height), cam.nearClipPlane, cam.farClipPlane);

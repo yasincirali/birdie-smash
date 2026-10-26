@@ -73,7 +73,7 @@ namespace BirdieSmash.Game
                 foreach (var k in new[] { "alcak", "ust", "yayin" })
                 {
                     Ayar.kamera = k; Ayar.saha = "salon"; root.SahaDegisti(); root.KameraDegisti(); root.StartMatch(false, false, false); botAcik = true;
-                    yield return Bekle(60); yield return Cek("kamera_" + k + en);
+                    yield return Bekle(60); yield return Cek("kamera_" + k + en); Kadraj("kamera_" + k + en);
                 }
             }
             yield return Boyut(w0, h0);
@@ -100,7 +100,7 @@ namespace BirdieSmash.Game
             yield return YakinNokta(mdl + "_05_hakemler", CourtView.HAKEM1 + new Vector3(0, .5f, 0), new Vector3(3.2f, .6f, -2.6f));
             yield return YakinNokta(mdl + "_06_servis_hakemi", CourtView.HAKEM2 + new Vector3(0, .5f, 0), new Vector3(-2.8f, .7f, -2.2f));
             botAcik = true;
-            for (int i = 0; i < 10; i++) { yield return Bekle(14); yield return Cek(mdl + "_1" + i + "_ralli"); }
+            for (int i = 0; i < 10; i++) { yield return Bekle(14); yield return Cek(mdl + "_1" + i + "_ralli"); if (i == 2) Kadraj(mdl + "_12_ralli"); }
             botAcik = false;
         }
 
@@ -284,6 +284,28 @@ namespace BirdieSmash.Game
         }
 
         // Tanı: her figürün renderer'ları (tür, açık mı, shader, render kuyruğu, saydamlık), dünya sınırları, baş yüksekliği.
+        // Kadraj ölçümü (2026-10-27, kadraj incelemesi): çizgilerin ekran yüksekliği (piksel, yukarıdan), tekler genişliği, file
+        // bandı, oyuncu boyları (model sınırının tepesi − ayak) ve kamera. r15/r22/r23 karşılaştırma tablosu bu satırlardan.
+        void Kadraj(string ad)
+        {
+            var c = root.cam; float H = Screen.height;
+            System.Func<Vector3, float> y = p => H - c.WorldToScreenPoint(p).y;
+            System.Func<Vector3, float> x = p => c.WorldToScreenPoint(p).x;
+            var sb = new StringBuilder("kadraj " + ad + " · " + Screen.width + "x" + Screen.height);
+            sb.Append(" · uzakDip " + y(Kit.W(Court.MID, 0, 0)).ToString("F0") + " file " + y(Kit.W(Court.MID, Court.NET, 0)).ToString("F0") + " fileUst " + y(Kit.W(Court.MID, Court.NET, Court.NETP)).ToString("F0"));
+            sb.Append(" yakinDip " + y(Kit.W(Court.MID, Court.L, 0)).ToString("F0") + " uzakCiftlerEn " + (x(Kit.W(Court.CW, 0, 0)) - x(Kit.W(0, 0, 0))).ToString("F0") + " yakinTeklerEn " + (x(Kit.W(Court.SR, Court.L, 0)) - x(Kit.W(Court.SL, Court.L, 0))).ToString("F0"));
+            foreach (var pv in FindObjectsByType<PlayerView>(FindObjectsSortMode.None))
+            {
+                if (pv.Model == null || pv.name.StartsWith("hakem")) continue; float tepe = -1; 
+                foreach (var r in pv.Model.GetComponentsInChildren<Renderer>()) if (r.enabled && !(r is TrailRenderer)) tepe = Mathf.Max(tepe, r.bounds.max.y);
+                var ayak = pv.transform.position; ayak.y = 0; var bas = ayak; bas.y = tepe;
+                sb.Append(" " + pv.name + "Boy " + (y(ayak) - y(bas)).ToString("F0") + "@" + y(ayak).ToString("F0"));
+            }
+            var e = c.transform.eulerAngles; var m = c.projectionMatrix;
+            sb.Append(" · kamera " + c.transform.position.ToString("F2") + " eğim " + e.x.ToString("F1") + " fov " + (2 * Mathf.Atan(1 / m.m11) * Mathf.Rad2Deg).ToString("F1") + " m12 " + m.m12.ToString("F3"));
+            rap.AppendLine(sb.ToString()); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
+        }
+
         void Tani(string mdl)
         {
             rap.AppendLine("=== " + mdl + " · ekran " + Screen.width + "x" + Screen.height + " · " + SystemInfo.graphicsDeviceName);
