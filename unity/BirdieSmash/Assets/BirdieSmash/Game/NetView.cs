@@ -8,7 +8,7 @@ namespace BirdieSmash.Game
     public class NetView : MonoBehaviour
     {
         public NetWave net; public float sign = -1;
-        const int NX = 66, NZ = 12; const float DEPTH = .76f, GAIN = 1.8f;
+        const int NX = 66, NZ = 12; const float DEPTH = .76f, GAIN = NetWave.GORSEL;
         Mesh mesh, tapeMesh; Vector3[] v, tv; Color[] c;
 
         public static NetView Build(Transform root, NetWave w)
@@ -41,7 +41,7 @@ namespace BirdieSmash.Game
             for (int j = 0; j < NZ; j++) for (int i = 0; i < NX; i++)
                 {
                     float x = i / (float)(NX - 1) * Court.CW, top = Court.NetLimit(x), z = top - DEPTH + DEPTH * j / (NZ - 1);
-                    float dy = net.At(x, z) * GAIN * sign; var p = Kit.W(x, Court.NET + dy, z); v[j * NX + i] = p;
+                    float dy = net.At(x, z) * GAIN; var p = Kit.W(x, Court.NET + dy, z); v[j * NX + i] = p;   // yön Core'da (NetWave.Impulse yon, 2026-10-26); sign kullanılmaz
                     float gd = Mathf.Exp(-((x - net.gx) * (x - net.gx) + (z - net.gz) * (z - net.gz)) / .18f) * net.glow;
                     c[j * NX + i] = Color.Lerp(new Color(.13f, .14f, .15f, .9f), new Color(1, .85f, .55f, 1), Mathf.Clamp01(gd));
                 }
@@ -50,7 +50,7 @@ namespace BirdieSmash.Game
         {
             for (int i = 0; i < NX; i++)
             {
-                float x = i / (float)(NX - 1) * Court.CW, top = Court.NetLimit(x), wob = (Mathf.Sin(Mathf.PI * x / Court.CW) * net.tape * .02f + net.TapeAt(x) * .05f) * sign;
+                float x = i / (float)(NX - 1) * Court.CW, top = Court.NetLimit(x), wob = Mathf.Sin(Mathf.PI * x / Court.CW) * net.tape * .02f + net.TapeAt(x) * .05f;
                 // Bant 75 mm (BWF); üst kenar kordonla biraz geri kalır (kordon gergin), alt kenar ağla birlikte daha çok oynar.
                 tv[i * 2] = Kit.W(x, Court.NET + wob * 1.2f, top - .073f); tv[i * 2 + 1] = Kit.W(x, Court.NET + wob * .7f, top + .002f);
             }

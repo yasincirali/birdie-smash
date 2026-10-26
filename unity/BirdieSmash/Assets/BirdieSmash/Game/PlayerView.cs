@@ -24,7 +24,9 @@ namespace BirdieSmash.Game
         static readonly Dictionary<string, bool> LOOPS = new Dictionary<string, bool>();
         public bool hakem;
 
-        [System.Serializable] class ClipMeta { public string name; public int poses; public bool loop; }
+        // adim (2026-10-26): ayak işi klibinin bir döngüde taşıdığı yol, modelin kendi ölçeğinde metre (basan ayaktan ölçülür).
+        // Varsa Match.ADIM_BOY'u ezer (oyun ölçeği = adim × SCALE); yoksa 0 gelir ve tahmin değerler kalır.
+        [System.Serializable] class ClipMeta { public string name; public int poses; public bool loop; public float adim; }
         [System.Serializable] class Meta { public ClipMeta[] clips; }
 
         // Görünüm: null alan = FBX'in kendi rengi (cerceve/grip/tel) ya da gizli (bant/bilek).
@@ -49,7 +51,7 @@ namespace BirdieSmash.Game
             if (js != null)
             {
                 var meta = JsonUtility.FromJson<Meta>(js.text);
-                if (meta != null && meta.clips != null) foreach (var c in meta.clips) { if (c.poses > 0) Match.CLIP_N[c.name] = c.poses; LOOPS[c.name] = c.loop; }
+                if (meta != null && meta.clips != null) foreach (var c in meta.clips) { if (c.poses > 0) Match.CLIP_N[c.name] = c.poses; LOOPS[c.name] = c.loop; if (c.adim > 0 && Match.ADIM_BOY.ContainsKey(c.name)) Match.ADIM_BOY[c.name] = c.adim * SCALE; }
             }
             if (prefab != null)
             {
@@ -57,7 +59,7 @@ namespace BirdieSmash.Game
                 anim = model.GetComponentInChildren<Animation>();
                 Paint(gor);
                 if (anim != null && anim["idle"] != null) Sample("idle", 0, null, 0, 1);
-                Calibrate();
+                Calibrate(); AltKatmanKur();
             }
             else Fallback(gor.forma);
             shadow = Kit.Prim(PrimitiveType.Quad, "golge", transform, new Vector3(0, .003f, 0), new Vector3(.9f, .9f, 1), Kit.Clear(new Color(0, 0, 0, .35f), Kit.RadialTex())).transform;
@@ -263,13 +265,40 @@ namespace BirdieSmash.Game
             return Mathf.Clamp01((ph * n - .5f) / (n - 1));
         }
 
-        void Sample(string a, float pa, string b, float pb, float w)
+        // Alt beden katmanı (2026-10-26, yasin "model karakterlerin tüm hareketleri badmintona uygun olmalı"): hazırlık ve vuruş
+        // klipleri bütün bedeni sürüyordu; oyuncu topa koşarken de bacaklar vuruş duruşunda donup zeminde kayıyordu (bot
+        // ölçümü, tool/unity_test: hazırlık/vuruş karelerinin ~%45'inde gövde 0,3 m/s'den hızlı, ortalama 0,9–1,4 m/s). Spor
+        // oyunlarının olağan çözümü: üst beden vuruştan, leğen ve bacaklar ayak işi klibinden. Ayak işi klibinin kopyası
+        // (<ad>_alt) yalnız leğeni (özyinelemesiz) ve uyluk zincirlerini sürer, katman 1'dedir; Legacy Animation katman 1'in
+        // ağırlığını yalnız onun sürdüğü kemiklerden düşer, omurga/kollar/raket vuruş klibinde kalır. Ağırlık gövde hızıyla
+        // açılır (0,5 → 1,4 m/s smoothstep, 12/s yumuşatma: pop yok). Bacakları vuruşun kendisi olan kliplerde (hamle, sıçrama,
+        // servis, split, yorgun) kapalı. Kemikler bulunamazsa kurulmaz: eski davranış birebir. HTML'de karşılığı yok (sprite tek
+        // parça); bu yalnız görünüm, oyun kuralı değil.
+        static readonly string[] AYAK_KLIP = { "chasse_r", "chasse_l", "fwd", "back_r", "back_l" };
+        static readonly HashSet<string> BACAK_VURUS = new HashSet<string> { "lunge", "bh_lunge", "jump", "serve", "serve_gec", "serve_bh", "serve_flick", "split", "yorgun" };
+        bool altVar; float altW, altPh; string altKlip;
+        void AltKatmanKur()
+        {
+            if (anim == null || kHip == null || kThigh.Count < 2) return;
+            var kok = new List<Transform>();   // iç içe uyluk kemikleri (twist) bir kez: üstteki özyinelemeli eklenince altı da gelir
+            foreach (var t in kThigh) { bool alt = false; for (var p = t.parent; p != null; p = p.parent) if (kThigh.Contains(p)) { alt = true; break; } if (!alt) kok.Add(t); }
+            foreach (var c in AYAK_KLIP)
+            {
+                var st = anim[c]; if (st == null || st.clip == null) continue;
+                anim.AddClip(st.clip, c + "_alt"); var a = anim[c + "_alt"]; if (a == null) continue;
+                a.AddMixingTransform(kHip, false); foreach (var t in kok) a.AddMixingTransform(t, true);
+                a.layer = 1; altVar = true;
+            }
+        }
+
+        void Sample(string a, float pa, string b, float pb, float w, string alt = null, float aPh = 0, float aW = 0)
         {
             if (anim == null) return;
             foreach (AnimationState st in anim) st.enabled = false;
             var A = anim[a]; if (A == null) return;
             A.enabled = true; A.weight = w; A.normalizedTime = ClipTime(a, pa);
             if (b != null && w < 1) { var B = anim[b]; if (B != null) { B.enabled = true; B.weight = 1 - w; B.normalizedTime = ClipTime(b, pb); } }
+            if (alt != null && aW > .01f) { var C = anim[alt + "_alt"]; if (C != null) { C.enabled = true; C.weight = aW; C.normalizedTime = ClipTime(alt, aPh); } }
             anim.Sample();
             foreach (AnimationState st in anim) st.enabled = false;
             VekilDuzelt(false);
@@ -390,8 +419,39 @@ namespace BirdieSmash.Game
             // Boşta duruşun genliği nefese bağlı (B4; hız Match.IdleIlerle'de): nefes %70'in altına inince yorgun klibi
             // (eller dizde) %35'e kadar karışır, beden soluklanır. Harmanlama bitmeden karıştırılmaz.
             if (cur == "idle" && blend >= 1 && o.nefes < .7f && anim["yorgun"] != null)
-            { Sample("idle", ph, "yorgun", ph, 1 - .35f * Mathf.Clamp01((.7f - o.nefes) / .7f)); return; }
-            Sample(cur, ph, prev, prevPh, prev == null ? 1 : blend);
+            { Sample("idle", ph, "yorgun", ph, 1 - .35f * Mathf.Clamp01((.7f - o.nefes) / .7f)); FileItin(); return; }
+            {   // alt beden katmanı: vuruş/hazırlık klibinde koşarken bacaklar ayak işinden
+                float gsp = Mathf.Sqrt(o.svx * o.svx + o.svy * o.svy);
+                bool vurus = Match.CLIP_HIT.ContainsKey(cur) && !BACAK_VURUS.Contains(cur);
+                if (o.yuru && o.ayakKlip != null) { altKlip = o.ayakKlip; altPh = o.runPh; }
+                float hedef = altVar && vurus && o.yuru && altKlip != null ? Mathf.SmoothStep(0, 1, Mathf.InverseLerp(.5f, 1.4f, gsp)) : 0;
+                altW += (hedef - altW) * Mathf.Min(1, dt * 12); if (altW < .01f && hedef == 0) altW = 0;
+            }
+            Sample(cur, ph, prev, prevPh, prev == null ? 1 : blend, altKlip, altPh, altW);
+            FileItin();
+        }
+
+        // File düzlemi (2026-10-26, yasin: "objelerde iç içe geçme olmasın"): Core gövde kökünü fileden .25 m uzak tutar
+        // (Match.Engel), ama hamle/file pozlarında ön ayak kökten ~1,5 m öne uzanıyor (oyun ölçeğinde 1,75×) ve fileye
+        // ~1,5 m'den yakın vuruşta ayak/diz file düzlemini geçiyordu. Gerçekte file düzlemini gövdeyle geçmek faul; burada
+        // örneklenen pozun deri kemiklerinden (raket rijit parça, sayılmaz: takip vuruşunda raketin fileyi aşması serbest)
+        // fileye en yakını bulunur ve figür PAY kadar geride kalacak biçimde tümden geri itilir. Kök Core'da kalır (vuruş
+        // menzili değişmez); yalnız görüntü kayar ve kayma pozun en ileri anında ~0–20 cm'dir.
+        const float FILE_PAY_G = .05f; Transform[] deriKemik;
+        void FileItin()
+        {
+            if (hakem || model == null) return;
+            if (deriKemik == null)
+            {
+                var hs = new HashSet<Transform>();
+                foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>(true)) foreach (var b in r.bones) if (b != null) hs.Add(b);
+                deriKemik = new Transform[hs.Count]; hs.CopyTo(deriKemik);
+            }
+            if (deriKemik.Length == 0) return;
+            // dünya z = NET − y: ben z < 0 tarafındayım, rakip z > 0
+            float uc = isMe ? -1e9f : 1e9f; foreach (var b in deriKemik) { float z = b.position.z; uc = isMe ? Mathf.Max(uc, z) : Mathf.Min(uc, z); }
+            float asim = isMe ? uc + FILE_PAY_G : FILE_PAY_G - uc;   // > 0: düzlemi PAY içinde geçen kısım
+            if (asim > 0) transform.position += new Vector3(0, 0, isMe ? -asim : asim);
         }
     }
 }

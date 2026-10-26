@@ -174,7 +174,7 @@ namespace BirdieSmash.Game
             if (s == null) { Gizle(); last = null; trailPts.Clear(); return; }
             float sp = Mathf.Max(1e-6f, s.Speed);
             // --- yön: etek hızın tersine (mantar önde); yeni vuruşta salınım ---
-            bool flip = last != s || lvx * s.vx + lvy * s.vy + lvz * s.vz < 0;
+            bool flip = !s.dead && (last != s || lvx * s.vx + lvy * s.vy + lvz * s.vz < 0);   // yerde salınım yok
             bool takla = SLICE_TAKLA && s.slice;
             if (flip && last != null) wv = (Random.value < .5f ? -1 : 1) * (takla ? 22 : 14);
             if (last != s) trailPts.Clear();
@@ -186,7 +186,23 @@ namespace BirdieSmash.Game
             var up = Mathf.Abs(d.y) < .9f ? Vector3.up : Vector3.right; var e1 = Vector3.Cross(d, up).normalized;
             var dd = Quaternion.AngleAxis(-wob * .35f * Mathf.Rad2Deg, Vector3.Cross(d, e1)) * d;
             var rot = Quaternion.LookRotation(dd, up) * Quaternion.Euler(0, 0, phi * Mathf.Rad2Deg);
-            var pos = Kit.W(s.x, s.y, Mathf.Max(Rc * .6f, s.z));
+            // Mantar merkezi yerden Rc'den aşağı inmez (eskiden Rc*.6: top yere gömülüyordu).
+            var pos = Kit.W(s.x, s.y, Mathf.Max(Rc, s.z));
+            if (s.dead)
+            {
+                // Yere iniş (2026-10-26, "top yerde gerçek gibi"): gerçek top mantarı üstüne düşer, küçük bir sekme yapar,
+                // eteğin üstüne devrilir ve mantarla etek ağzı yere değecek biçimde ~16° eğik yatar. Süre/sekme Core'da
+                // (Shuttle.YerPoz) ki HTML aynı sayıları kullansın. Sekme görselde G katı: 3,2× büyük çizilen topta
+                // fiziksel 5 cm sekme okunmuyor. Devrilme yönü iniş yönü: mantar durur, etek ileri kapaklanır.
+                float hop, dev; Shuttle.YerPoz(s.yerT, s.inVz, out hop, out dev); if (reduce) hop = 0;
+                var f = new Vector3(s.inVx, 0, -s.inVy); if (f.sqrMagnitude < 1e-4f) { float h = Mathf.Sin(s.x * 12.9898f + s.y * 78.233f) * 43758.5f; h -= Mathf.Floor(h); f = new Vector3(Mathf.Cos(h * 6.283f), 0, Mathf.Sin(h * 6.283f)); }
+                f.Normalize();
+                var dRest = -f * Mathf.Cos(Shuttle.YER_EGIM) + Vector3.down * Mathf.Sin(Shuttle.YER_EGIM);
+                var dc = Vector3.SlerpUnclamped(Vector3.down, dRest, reduce ? 1 : dev).normalized; d = dc;
+                var up2 = Mathf.Abs(dc.y) < .9f ? Vector3.up : f;
+                rot = Quaternion.LookRotation(dc, up2) * Quaternion.Euler(0, 0, phi * Mathf.Rad2Deg);
+                pos = Kit.W(s.x, s.y, Rc + hop * G);
+            }
             body.gameObject.SetActive(true); body.SetPositionAndRotation(pos, rot);
             // ayrıntı eşiği: etek ağzı ekranda 3,2 px (640 px referans) altındaysa kenar çizgileri kapanır
             if (cam != null) { float px = PxPerM(pos) * Rt; lines.SetActive(px > 3.2f); }
