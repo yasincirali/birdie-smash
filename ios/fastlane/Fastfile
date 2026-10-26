@@ -218,7 +218,9 @@ platform :ios do
       PLIST
       proj = Xcodeproj::Project.open(xcodeproj)
       hedef = proj.targets.find { |t| t.name == "Unity-iPhone" }
-      hedef.build_configurations.each { |c| c.build_settings["CODE_SIGN_ENTITLEMENTS"] = ent_ad }
+      # 2026-10-26 (koşu 40361775975): göreli ad Unity'nin yazdığı SRCROOT'a (Docker yolu /github/workspace/...) göre
+      # çözüldü, dosya bulunamadı. Bu makinedeki mutlak yol yazılır (dosya tam orada üretildi).
+      hedef.build_configurations.each { |c| c.build_settings["CODE_SIGN_ENTITLEMENTS"] = File.expand_path(File.join(dir, ent_ad)) }
       proj.save
       UI.message("Game Center yetkisi eklendi: #{ent_ad}")
     rescue => e
