@@ -72,14 +72,6 @@ namespace BirdieSmash.Game
                     Ayar.kamera = k; Ayar.saha = "salon"; root.SahaDegisti(); root.KameraDegisti(); root.StartMatch(false, false, false); botAcik = true;
                     yield return Bekle(60); yield return Cek("kamera_" + k + en);
                 }
-                // GEÇİCİ: Alçak için iki aday bakış (yükseklik, dipten geri, eğim); karar sonrası silinir.
-                var aday = new[] { new Vector3(7f, 2f, 20), new Vector3(6.5f, 3f, 15) };
-                for (int i = 0; i < aday.Length; i++)
-                {
-                    GameRoot.kadrajDeneme = aday[i]; Ayar.kamera = "alcak"; root.KameraDegisti(); root.StartMatch(false, false, false); botAcik = true;
-                    yield return Bekle(60); yield return Cek("kamera_alcak_aday" + (i + 1) + en);
-                }
-                GameRoot.kadrajDeneme = null; root.KameraDegisti();
             }
             yield return Boyut(w0, h0);
             Ayar.model = "oyuncak"; Ayar.saha = "salon"; Ayar.kamera = "yayin"; root.SahaDegisti(); root.KameraDegisti();
