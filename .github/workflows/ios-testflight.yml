@@ -156,9 +156,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: unity/BirdieSmash/Library
-          key: unity-library-ios-${{ hashFiles('unity/BirdieSmash/Assets/**', 'unity/BirdieSmash/Packages/**', 'unity/BirdieSmash/ProjectSettings/**') }}
+          # 2026-10-26 gece: v2 öneki. Ekran turunda (unity-ekran.yml, aynı düzen) eski Library önbelleği menüyü USS'siz
+          # derletiyordu; TestFlight build'i de aynı riski taşımasın diye iOS önbelleği de temizden başlar.
+          key: unity-library-ios-v2-${{ hashFiles('unity/BirdieSmash/Assets/**', 'unity/BirdieSmash/Packages/**', 'unity/BirdieSmash/ProjectSettings/**') }}
           restore-keys: |
-            unity-library-ios-
+            unity-library-ios-v2-
 
       - name: Unity iOS build (Xcode projesi)
         # Sürüm sabit: v6 yeni ana sürüm, girdileri bu dosyada denenmedi.
