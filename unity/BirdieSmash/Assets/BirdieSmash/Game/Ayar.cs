@@ -6,7 +6,7 @@
 // HTML → Unity devri (Core/Devir): ilk açılışta kabuğun NSUserDefaults'a yazdığı HTML değerleri bir kez kabul edilir,
 // sonra tuytop_html_devir bayrağı konur. Bayraktan sonra kabuk (eski HTML build'i) bir daha yazmaz.
 // HTML'de karşılığı olmayan Unity anahtarları: tuytop_easy, tuytop_reduce (elle zorlanan; sistem ayarı ayrıca okunur),
-// tuytop_ses, tuytop_dil, tuytop_yazi ('sistem' | 'normal' | 'buyuk'). HTML'den gelen tuytop_fps ('1' = gizli kare hızı
+// tuytop_kamera ('yayin' | 'alcak' | 'ust'; 2026-10-26, yasin "kamera açısı seçtirilebilir"), tuytop_ses, tuytop_dil, tuytop_yazi ('sistem' | 'normal' | 'buyuk'). HTML'den gelen tuytop_fps ('1' = gizli kare hızı
 // göstergesi açık) ve tuytop_basarim (Game/Basarim) aynı adla okunur.
 // Hareketi azalt (2026-10-25 eşitlik turu): HTML yalnız sistemin "Hareketi Azalt"ını izliyordu; Unity ikisini birleştirir:
 // reduce = sistem || elle. Eski Unity kayıtlarında tuytop_reduce hep yazıldığı için 0 "zorlanmadı" sayılır.
@@ -30,7 +30,7 @@ namespace BirdieSmash.Game
     {
         public static bool easy = true, reduce, reduceSecim, reduceSistem, ses = true, kariyerModu, antrenman, sampiyon, fps;
         public static int target = 5, kariyer, bestRally, wins, gorev, puan; public static int devirSayisi = -1;
-        public static string saha = "salon", model = "oyuncak", dil = "tr", yazi = "sistem"; static float yaziSistem = 1;
+        public static string saha = "salon", model = "oyuncak", kamera = "yayin", dil = "tr", yazi = "sistem"; static float yaziSistem = 1;
         public static float YaziK { get { return yazi == "normal" ? 1 : yazi == "buyuk" ? 1.3f : Mathf.Clamp(yaziSistem, .9f, 1.3f); } }
         // Sistem ayarları (hareketi azalt, yazı boyutu) açılışta ve uygulama öne her geldiğinde okunur.
         public static void SistemOku() { reduceSistem = Yerel.HareketAzalt(); reduce = reduceSecim || reduceSistem; yaziSistem = Yerel.YaziOlcek(); }
@@ -54,6 +54,7 @@ namespace BirdieSmash.Game
             easy = EskiInt("tuytop_easy", 1) == 1;
             saha = Str("tuytop_saha", "salon"); if (!CourtView.SAHA.ContainsKey(saha)) saha = "salon";
             model = Str("tuytop_model", "oyuncak"); if (model == "sportif" || model == "aday") model = "rocketbox"; if (model != "oyuncak" && model != "rocketbox") model = "oyuncak";
+            kamera = Str("tuytop_kamera", "yayin"); if (System.Array.IndexOf(GameRoot.KAMERA_SIRA, kamera) < 0) kamera = "yayin";
             reduceSecim = EskiInt("tuytop_reduce", 0) == 1; ses = EskiInt("tuytop_ses", 1) == 1; SistemOku();
             yazi = Str("tuytop_yazi", "sistem"); if (yazi != "normal" && yazi != "buyuk") yazi = "sistem"; fps = Str("tuytop_fps", "0") == "1";
             int pu; puan = int.TryParse(Str("tuytop_puan", "0"), out pu) ? Mathf.Clamp(pu, 0, Ozet.PUAN_AZAMI) : Ozet.PUAN_AZAMI;
@@ -71,7 +72,7 @@ namespace BirdieSmash.Game
         public static void Kaydet()
         {
             kayit.Set("tuytop_v2", Json.Write(new Dictionary<string, object> { { "rally", (double)bestRally }, { "wins", (double)wins }, { "kariyer", (double)kariyer }, { "gorev", (double)gorev }, { "sampiyon", sampiyon } }));
-            PlayerPrefs.SetString("tuytop_len", "len" + target); PlayerPrefs.SetString("tuytop_saha", saha); PlayerPrefs.SetString("tuytop_model", model);
+            PlayerPrefs.SetString("tuytop_len", "len" + target); PlayerPrefs.SetString("tuytop_saha", saha); PlayerPrefs.SetString("tuytop_model", model); PlayerPrefs.SetString("tuytop_kamera", kamera);
             PlayerPrefs.SetString("tuytop_mod", kariyerModu ? "k" : "s"); if (antrenman) PlayerPrefs.SetString("tuytop_antrenman", "1");
             PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0);
             PlayerPrefs.SetString("tuytop_dil", dil); PlayerPrefs.SetString("tuytop_puan", puan.ToString()); PlayerPrefs.SetString("tuytop_yazi", yazi); PlayerPrefs.SetString("tuytop_fps", fps ? "1" : "0");

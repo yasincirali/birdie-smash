@@ -49,6 +49,11 @@ namespace BirdieSmash.Game
                 Ayar.model = "oyuncak"; Ayar.saha = s; root.SahaDegisti(); root.StartMatch(false, false, false); botAcik = true;
                 yield return Bekle(60); yield return Cek("saha_" + s);
             }
+            foreach (var k in new[] { "alcak", "ust", "yayin" })
+            {
+                Ayar.kamera = k; Ayar.saha = "salon"; root.SahaDegisti(); root.KameraDegisti(); root.StartMatch(false, false, false); botAcik = true;
+                yield return Bekle(60); yield return Cek("kamera_" + k);
+            }
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             Application.Quit(0);
         }

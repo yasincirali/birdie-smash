@@ -160,11 +160,20 @@ namespace BirdieSmash.Game
         }
 
         // Dikey ekranda kortun tamamı, iki oyuncu ve rakibin arkasındaki pano görünsün: konum sabit, görüş açısı ekrana göre.
+        // Kamera açısı (Ayarlar › Kamera, 2026-10-26 yasin "belki kamera açısı seçtirilebilir"): Yayın = TV yayın kamerası
+        // (yüksek, arkadan; varsayılan, eski tek açı), Alçak = oyuncunun omzunun gerisinden (rakip ve file büyük, derinlik
+        // hissi güçlü), Üstten = kuşbakışına yakın (top yeri ve çizgiler en net). Görüş açısı her açıda aynı kuralla ekrana
+        // sığdırılır; dokunma/kaydırma ışın atışıyla çözüldüğü için girdi açıdan bağımsız çalışır.
+        public static readonly string[] KAMERA_SIRA = { "yayin", "alcak", "ust" };
+        public static readonly string[] KAMERA_AD = { "Yayın", "Alçak", "Üstten" };
+        public void KameraDegisti() { lastW = 0; }
         int lastW, lastH;
         void FitCamera()
         {
             if (Screen.width == lastW && Screen.height == lastH) return; lastW = Screen.width; lastH = Screen.height;
             camBase = new Vector3(0, 10.5f, -Court.L / 2 - 6.2f); var target = new Vector3(0, .4f, .9f);
+            if (Ayar.kamera == "alcak") { camBase = new Vector3(0, 5.6f, -Court.L / 2 - 5.4f); target = new Vector3(0, .9f, 1.6f); }
+            else if (Ayar.kamera == "ust") { camBase = new Vector3(0, 15.5f, -Court.L / 2 - 2.2f); target = new Vector3(0, 0, .6f); }
             camRot = Quaternion.LookRotation(target - camBase); cam.transform.SetPositionAndRotation(camBase, camRot);
             var pts = new List<Vector3>();
             foreach (float x in new[] { 0f, Court.CW }) foreach (float y in new[] { 0f, Court.L }) { pts.Add(Kit.W(x, y, 0)); }

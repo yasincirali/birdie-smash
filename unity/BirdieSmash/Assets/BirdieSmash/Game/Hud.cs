@@ -260,6 +260,8 @@ namespace BirdieSmash.Game
             Satir(ref y, x, w, "Oyuncu görünümü");
             if (Chip(new Rect(x, y, hw, BH), "Oyuncak 3B", Ayar.model == "oyuncak")) { Ayar.model = "oyuncak"; Ayar.Kaydet(); root.ModelDegisti(); }
             if (Chip(new Rect(x + hw + g, y, hw, BH), "Gerçekçi", Ayar.model == "rocketbox")) { Ayar.model = "rocketbox"; Ayar.Kaydet(); root.ModelDegisti(); } y += BH + g;
+            Satir(ref y, x, w, "Kamera");
+            for (int i = 0; i < 3; i++) if (Chip(new Rect(x + i * (tw + g), y, tw, BH), GameRoot.KAMERA_AD[i], Ayar.kamera == GameRoot.KAMERA_SIRA[i])) { Ayar.kamera = GameRoot.KAMERA_SIRA[i]; Ayar.Kaydet(); root.KameraDegisti(); } y += BH + g;
             Satir(ref y, x, w, "Ses");
             if (Chip(new Rect(x, y, hw, BH), Ayar.ses ? "Ses açık" : "Ses kapalı", Ayar.ses)) { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); }
             // Hareketi azalt: sistem ayarı açıksa her zaman açık (HTML prefers-reduced-motion); kapalıysa buradan zorlanabilir
