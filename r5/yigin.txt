@@ -1,0 +1,13 @@
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+0x00007f5c8d0455b9 in __GI___sigsuspend (set=0x7fff143de460) at ../sysdeps/unix/sysv/linux/sigsuspend.c:26
+
+warning: 26	../sysdeps/unix/sysv/linux/sigsuspend.c: No such file or directory
+
+Thread 1 (Thread 0x7f5c8d3a6740 (LWP 5060) "timeout"):
+#0  0x00007f5c8d0455b9 in __GI___sigsuspend (set=0x7fff143de460) at ../sysdeps/unix/sysv/linux/sigsuspend.c:26
+#1  0x00005631a43edf38 in ?? ()
+#2  0x00007f5c8d02a1ca in __libc_start_call_main (main=main@entry=0x5631a43ed8b0, argc=argc@entry=18, argv=argv@entry=0x7fff143de6d8) at ../sysdeps/nptl/libc_start_call_main.h:58
+#3  0x00007f5c8d02a28b in __libc_start_main_impl (main=0x5631a43ed8b0, argc=18, argv=0x7fff143de6d8, init=<optimized out>, fini=<optimized out>, rtld_fini=<optimized out>, stack_end=0x7fff143de6c8) at ../csu/libc-start.c:360
+#4  0x00005631a43ee285 in ?? ()
+[Inferior 1 (process 5060) detached]
