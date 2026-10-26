@@ -44,6 +44,7 @@ namespace BirdieSmash.Core
         public bool serve, super, netDone, dead, netHit, slice, netCord;
         public float[] ogrHedef;   // antrenman: bu vuruşun düşmesi gereken bant ("Hedefte! ★")
         public string imza;        // rakibin imza vuruşu (Core/Imza): cevap kuralı bu uçuşa bakar
+        public float gecPay = float.NaN;   // 2026-10-26 (Core/Dril, kısa servis görevi): file düzlemini geçerken bant payı (m)
         public float netK;
         public NetPass netPred;   // tahmin edilen file geçişi (canlı uçuş aynı karara varsın)
         public SimResult landPred;

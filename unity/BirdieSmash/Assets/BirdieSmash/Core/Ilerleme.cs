@@ -12,7 +12,7 @@
 // (Tur 1'de kazanılan basamak sayısı) Tur 1'in ilk n basamağına KAZAN olarak yazılır; kariyer = 6 → Tur 1 tamam (Şampiyon
 // forması Ayar'da aynı kuralla) ve Asya Turu açık. Yeni kayıt varken de eski sayı büyükse birleştirilir (eski build'e dönüp
 // ilerleyen oyuncu, güncellemeye geri gelince kaybetmesin). tuytop_v2.kariyer yazılmaya devam eder (Tur1Gecilen).
-// Bilinmeyen alanlar (ileride: usta, gunluk, antrenman) okunup aynen geri yazılır.
+// Bilinmeyen alanlar okunup aynen geri yazılır (2026-10-26: usta, gunluk, antrenman, imzaOku artık bu sürümün alanları).
 // 2026-10-26 karakter (adım 6, Ek A.6): tarz (oyun tarzı kimliği), unvan (seçilen unvan; yoksa kazanılanların en değerlisi),
 // ad (oyuncu adı, yalnız cihazda; boş = "Oyuncu"), smac ve mac (Profil istatistiği: toplam smaç, oynanan maç; cihazda
 // hesaplanır, hiçbir yere gönderilmez). Aynı JSON'da, aynı "bilinmeyeni koru" kuralıyla: eski build bu alanları okumaz ama
@@ -51,6 +51,41 @@ namespace BirdieSmash.Core
         public void MacSay(int smac) { diger["mac"] = (double)(Mac + 1); diger["smac"] = (double)(Smac + Math.Max(0, smac)); }
         // Antrenman sahası (adım 7) gelene kadar 0; unvan koşulu ("Antrenör") buradan okur.
         public int AntrenmanYildiz { get { var o = diger.ContainsKey("antrenman") ? Json.Obj(diger["antrenman"]) : null; int n = 0; if (o != null) foreach (var kv in o) if (kv.Value is double) n += (int)(double)kv.Value; return n; } }
+
+        // ---- 2026-10-26 adım 7–9 alanları (aynı diger sözlüğünde, aynı "bilinmeyeni koru" kuralı) ----
+        // antrenman: {görev id: en iyi yıldız 0–3}. Yıldız en iyi sonuçtur, geri alınmaz; DrilKaydet yalnız yeni yıldız sayısını döner.
+        Dictionary<string, object> Alt(string k) { var o = diger.ContainsKey(k) ? Json.Obj(diger[k]) : null; if (o == null) { o = new Dictionary<string, object>(); diger[k] = o; } return o; }
+        public int DrilYildiz(string id) { var o = diger.ContainsKey("antrenman") ? Json.Obj(diger["antrenman"]) : null; object v; return o != null && o.TryGetValue(id, out v) && v is double ? Math.Max(0, Math.Min(3, (int)(double)v)) : 0; }
+        public int DrilKaydet(string id, int yildiz)
+        {
+            int eski = DrilYildiz(id), y = Math.Max(0, Math.Min(3, yildiz)); if (y <= eski) return 0;
+            Alt("antrenman")[id] = (double)y; return y - eski;
+        }
+        // gunluk: {son: "YYYY-AA-GG" (ödülü alınan son gün), say: toplam kazanılan Günün maçı}. Seri tutulmaz (kural: seri yok).
+        public string GunlukSon { get { var o = diger.ContainsKey("gunluk") ? Json.Obj(diger["gunluk"]) : null; object v; return o != null && o.TryGetValue("son", out v) ? v as string : null; } }
+        public int GunlukSay { get { var o = diger.ContainsKey("gunluk") ? Json.Obj(diger["gunluk"]) : null; object v; return o != null && o.TryGetValue("say", out v) && v is double ? (int)(double)v : 0; } }
+        public bool GunlukAlindi(string tarih) { return GunlukSon == tarih; }
+        // Bugünün ödülü ilk kez mi alındı (true → +40 Tüy, +30 XP). Saat geri alınırsa da aynı gün iki kez sayılmaz.
+        public bool GunlukKazan(string tarih) { if (GunlukAlindi(tarih)) return false; var o = Alt("gunluk"); o["son"] = tarih; o["say"] = (double)(GunlukSay + 1); return true; }
+        // usta: kazanılan Usta yolu basamağı sayısı (= sıradaki basamağın sırası). Kayıpta azalmaz.
+        public int Usta { get { return N("usta"); } }
+        public void UstaIlerle() { diger["usta"] = (double)(Usta + 1); }
+        // Usta yıldızları (Core/UstaYolu): basamak başına kazan + görev. ustaGorev = görevi biten son basamak + 1 (0 = yok).
+        public int UstaYildiz { get { return N("ustaYildiz"); } }
+        public bool UstaGorevBitti(int n) { return N("ustaGorev") == n + 1; }
+        // Usta maçı sonucu: yalnız sıradaki basamak sayılır (eski basamak yeniden oynanmaz). Dönüş: yeni yıldız sayısı.
+        public int UstaIsle(int n, bool won, bool gorev)
+        {
+            if (n != Usta) return 0; int y = 0;
+            if (gorev && !UstaGorevBitti(n)) { diger["ustaGorev"] = (double)(n + 1); y++; }
+            if (won) { UstaIlerle(); y++; }
+            if (y > 0) diger["ustaYildiz"] = (double)(UstaYildiz + y); return y;
+        }
+        // imza: okunan (karşılanan) imza vuruşu toplamı; bs_imza_okur başarımı (15) buradan.
+        public int ImzaOkunan { get { return N("imzaOku"); } }
+        public void ImzaOkuSay(int n) { if (n > 0) diger["imzaOku"] = (double)(ImzaOkunan + n); }
+        // Usta yolu: son turun (Dünya Finalleri) finali kazanılınca açılır.
+        public bool UstaAcik { get { int s = KariyerVeri.Turlar.Length - 1; return s >= 0 && KariyerVeri.Turlar[s].Var && TurAcik(s) && TurBitti(s); } }
 
         public static int Say(int m) { return (m & 1) + (m >> 1 & 1) + (m >> 2 & 1); }
         public int Maske(int g) { return tur[KariyerVeri.TurOf(g)][KariyerVeri.BasOf(g)]; }
@@ -101,7 +136,8 @@ namespace BirdieSmash.Core
                     r.turBitti = true; var tr = KariyerVeri.Turlar[t];
                     bool sonraki = t + 1 < KariyerVeri.Turlar.Length && KariyerVeri.Turlar[t + 1].Var;
                     r.not = t == 0 ? (sonraki ? "Kariyer tamam! Şampiyon forması ve " + KariyerVeri.Turlar[1].ad + " açıldı." : "Kariyer tamam! Şampiyon forması açıldı.")
-                        : sonraki ? tr.ad + " tamam! " + KariyerVeri.Turlar[t + 1].ad + " açıldı." : tr.ad + " tamam! Sonraki tur yakında.";
+                        : sonraki ? tr.ad + " tamam! " + KariyerVeri.Turlar[t + 1].ad + " açıldı."
+                        : t == KariyerVeri.Turlar.Length - 1 && t == KariyerVeri.TUR - 1 ? tr.ad + " tamam! Usta yolu açıldı." : tr.ad + " tamam! Sonraki tur yakında.";
                 }
             }
             else if (!won) r.not = k.yer + " basamağı seni bekliyor.";

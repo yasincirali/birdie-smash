@@ -1,5 +1,5 @@
 {
-"_not": "Kariyer haritası (komple-oyun tasarımı §3.1–3.2, Ek A.4; 2026-10-26). Tur 1 = eski 6 basamak birebir (yer, saha, tarz, g; kayıt tuytop_v2.kariyer bu sırayı sayar, sıra değişmez). uzunluk 0 = oyuncunun seçtiği maç uzunluğu (Tur 1'in bugünkü davranışı). patron = final: rakip imza vuruşunu kullanır. gorev = basamağın sabit görevi (2. yıldız). ep = önerilen ekipman puanı aralığı (6 yuvanın seviye toplamı; öneri, kilit değil). Boş basamak listesi = tur henüz yok (haritada 'Yakında').",
+"_not": "Kariyer haritası (komple-oyun tasarımı §3.1–3.2, Ek A.4; 2026-10-26). Tur 1 = eski 6 basamak birebir (yer, saha, tarz, g; kayıt tuytop_v2.kariyer bu sırayı sayar, sıra değişmez). uzunluk 0 = oyuncunun seçtiği maç uzunluğu (Tur 1'in bugünkü davranışı). patron = final: rakip imza vuruşunu kullanır. gorev = basamağın sabit görevi (2. yıldız). ep = önerilen ekipman puanı aralığı (6 yuvanın seviye toplamı; öneri, kilit değil). Boş basamak listesi = tur henüz yok (haritada 'Yakında'). 2026-10-26 Tur 3–4 (adım 9): tepki/hucum = turun ek zorluğu (§3.2: rakibin tepki gecikmesi ×tepki, smaç/drive seçimi ×hucum; yoksa 1). imza = final olmayan basamakta da imza vuruşu (Tur 4: önceki patronlar imzalarıyla). usta = Usta yolu (kariyer sonrası, sonsuz): her basamak Usta zorluğunda (oyuncu koşar), g = g + adim × çevrim (6 basamak), en çok tavan; uzunluk 5, her 6. basamak final (finalUzunluk, imza). Ölçüm (Denge, pHit .07, n 150–200): g'ler tasarım tablosundan (Tur 3 1,18–1,40, Tur 4 1,30–1,48) düşük, çünkü tepki/hucum ve Tur 4'ün 11 sayısı zorluğu zaten artırıyor; tablo değerleriyle Tur 3 %25–51, Tur 4 %13–29 çıktı (duvar). g tarzdan tarza farklı: File ustası ve Smaşçı zayıf (aynı oran için daha yüksek g), Vex ve Aria güçlü. Usta g 0,6: Usta zorluk (rakip hızı ×3,6/3,2, hata −%37, erişim 1,15 m, ağır çekim az) Kolay g'siyle kıyaslanmaz; Usta botuyla g 1,0 %3–7, 0,6 ~%50, 0,7 ~%35.",
 "turlar": [
   {"id": "yerel", "ad": "Yerel yol", "ep": [6, 12], "basamaklar": [
     {"stil": "file",   "g": 0.88, "yer": "Mahalle salonu",      "saha": "okul",    "uzunluk": 0, "gorev": "ralli"},
@@ -15,7 +15,20 @@
     {"stil": "nova",   "g": 1.19, "yer": "Tokyo",                    "saha": "turnuva", "uzunluk": 5,  "gorev": "perf"},
     {"stil": "duvar",  "g": 1.23, "yer": "Kuala Lumpur yarı finali", "saha": "turnuva", "uzunluk": 5,  "gorev": "drop"},
     {"stil": "nova",   "g": 1.28, "yer": "Kuala Lumpur finali",      "saha": "turnuva", "uzunluk": 11, "gorev": "okudun", "patron": true}]},
-  {"id": "avrupa", "ad": "Avrupa Turu", "ep": [24, 36], "basamaklar": []},
-  {"id": "dunya", "ad": "Dünya Finalleri", "ep": [36, 48], "basamaklar": []}
-]
+  {"id": "avrupa", "ad": "Avrupa Turu", "ep": [24, 36], "tepki": 0.9, "hucum": 1.1, "basamaklar": [
+    {"stil": "vex",    "g": 1.04, "yer": "Kopenhag",               "saha": "salon",   "uzunluk": 5,  "gorev": "perf"},
+    {"stil": "duvar",  "g": 1.12, "yer": "Paris",                  "saha": "turnuva", "uzunluk": 5,  "gorev": "drop"},
+    {"stil": "nova",   "g": 1.16, "yer": "Birmingham",             "saha": "salon",   "uzunluk": 5,  "gorev": "tepe"},
+    {"stil": "vex",    "g": 1.18, "yer": "Madrid",                 "saha": "park",    "uzunluk": 5,  "gorev": "uzan"},
+    {"stil": "smasci", "g": 1.38, "yer": "Berlin yarı finali",     "saha": "turnuva", "uzunluk": 5,  "gorev": "karsila"},
+    {"stil": "vex",    "g": 1.24, "yer": "Londra finali",          "saha": "turnuva", "uzunluk": 11, "gorev": "okudun", "patron": true}]},
+  {"id": "dunya", "ad": "Dünya Finalleri", "ep": [36, 48], "tepki": 0.85, "hucum": 1.15, "basamaklar": [
+    {"stil": "aria",   "g": 1.1,  "yer": "Singapur grup 1",        "saha": "turnuva", "uzunluk": 11, "gorev": "aldat"},
+    {"stil": "duvar",  "g": 1.1,  "yer": "Singapur grup 2",        "saha": "turnuva", "uzunluk": 11, "gorev": "okudun", "imza": true},
+    {"stil": "nova",   "g": 1.16, "yer": "Singapur grup 3",        "saha": "turnuva", "uzunluk": 11, "gorev": "tepe",   "imza": true},
+    {"stil": "file",   "g": 1.5,  "yer": "Singapur çeyrek finali", "saha": "turnuva", "uzunluk": 11, "gorev": "kill"},
+    {"stil": "vex",    "g": 1.14, "yer": "Singapur yarı finali",   "saha": "turnuva", "uzunluk": 11, "gorev": "uzan",   "imza": true},
+    {"stil": "aria",   "g": 1.32, "yer": "Singapur finali",        "saha": "turnuva", "uzunluk": 11, "gorev": "okudun", "patron": true}]}
+],
+"usta": {"g": 0.6, "adim": 0.02, "tavan": 0.72, "tepki": 1, "hucum": 1, "uzunluk": 5, "finalUzunluk": 11}
 }

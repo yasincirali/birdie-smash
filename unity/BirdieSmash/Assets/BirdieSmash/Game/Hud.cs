@@ -251,7 +251,7 @@ namespace BirdieSmash.Game
             if (root.ekran == Ekran.Oyun && !root.paused && Button(new Rect(rx - BH, top, BH, BH), "II")) root.Duraklat();   // Duraklat
             float y = top + 62 * u;
             if (root.rakipKartT > 0 && !ogr) y = RakipKart(M, y);
-            if (ogr) y = OgrKart(M, y);
+            if (ogr && root.ekran == Ekran.Oyun) y = OgrKart(M, y);   // görev sonuç ekranında kart kalkar (Over üstüne binmesin)
             // smaç gücü çubuğu
             {
                 bool dol = M.energy >= 1; string lab = L.T(dol ? "Sıçrayarak smaç hazır" : "Smaç gücü"); var ls = Stil(leftB, Mathf.RoundToInt(12 * fu));
@@ -433,13 +433,15 @@ namespace BirdieSmash.Game
             float w = ColW, x = ColX, iw = w - 24 * u;
             string ilr = a.drill ? L.T(" · Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : a.bilgi != null ? "" : " · " + new string('●', o.n) + new string('○', Match.OGR_TEKRAR - o.n) + " " + o.n + "/" + Match.OGR_TEKRAR;
             string say = L.T("Antrenman {0}/{1}{2}", o.i + 1, o.liste.Count, ilr);
-            string met = (o.izsiz ? L.T("Bir daha, bu sefer iz yok. ") : "") + (a.servis == null && a.bilgi == null && !a.drill && !o.dur ? L.T("Top sana gelince oyun duracak. ") : "") + L.T(a.met);
+            // 2026-10-26 antrenman görevi: sayaç top/isabet ve yıldız eşikleri (sayıyla; yıldız simgesi tek başına okunmaz)
+            if (a.dril != null) say = L.T("Görev · Top {0}/{1} · Hedefte {2} · Yıldız eşikleri {3}", Mathf.Min(o.dene, a.dril.top), a.dril.top, o.isabet, string.Join("/", System.Array.ConvertAll(a.dril.esik, e => e.ToString())));
+            string met = (o.izsiz ? L.T("Bir daha, bu sefer iz yok. ") : "") + (a.servis == null && a.bilgi == null && !a.drill && a.dril == null && !o.dur ? L.T("Top sana gelince oyun duracak. ") : "") + L.T(a.met);
             if (leftWrap == null || leftWrapTaban != left) { leftWrap = new GUIStyle(left) { wordWrap = true }; leftWrapTaban = left; } var ws = leftWrap; var ns = Stil(ws, Mathf.RoundToInt(11 * fu));
             float h1 = ws.CalcHeight(new GUIContent(met), iw), h2 = ns.CalcHeight(new GUIContent(L.T(a.neden)), iw);
             int? hb = M.OgrHedefBolge(a); bool bant = hb.HasValue;
             // canlı okuma: parmak ekrandayken "şu an bıraksan ne çıkar", sonra 2,2 sn "Çıkan"
             string tip; float sp; root.CanliOkuma(out tip, out sp); bool canliVar = root.Parmak && (tip != null || sp > 0); string canli = null; bool ok = false; float igne = -1;
-            if (a.bilgi == null)
+            if (a.bilgi == null && !(a.dril != null && a.dril.olcu == "split"))   // split görevinde vuruş türü ölçülmez: canlı okuma yanıltır
             {
                 if (canliVar) { ok = M.OgrUygunCanli(a, tip, false); igne = sp; canli = (ok ? "✓ " : "✗ ") + L.T("Şu an") + ": " + (tip != null ? L.T(Match.OGR_AD.ContainsKey(tip) ? Match.OGR_AD[tip] : tip) : L.T("Yukarı kaydır")); }
                 else if (o.sonSp >= 0 && M.realClock - o.sonT < 2.2f) { ok = M.OgrUygunCanli(a, o.sonTip, o.sonSlice); igne = o.sonSp; canli = (ok ? "✓ " : "✗ ") + L.T("Çıkan") + ": " + (o.sonTip != null ? (o.sonSlice ? "Slice" : L.T(Match.OGR_AD.ContainsKey(o.sonTip) ? Match.OGR_AD[o.sonTip] : o.sonTip)) : ""); }
@@ -467,7 +469,7 @@ namespace BirdieSmash.Game
             if (canli != null) { GUI.color = canli.StartsWith("✓") ? Kit.Hex("#d8ff5a") : canli.StartsWith("✗") ? Kit.Hex("#ffd27a") : Kit.Hex("#cfe3dc"); GUI.Label(new Rect(x + 12 * u, yy + 2 * u, iw, 20 * u), canli, leftB); GUI.color = Color.white; yy += 22 * u; }
             yy += 10 * u;
             if (a.bilgi != null) { if (Button(new Rect(x + 12 * u, yy, iw, BH), "Anladım, devam", true)) M.OgrBilgiGec(); yy += BH + 8 * u; }
-            if (Button(new Rect(x + 12 * u, yy, iw, BH), "Antrenmanı geç")) root.OgrGec();
+            if (Button(new Rect(x + 12 * u, yy, iw, BH), a.dril != null ? "Görevi bitir" : "Antrenmanı geç")) root.OgrGec();
             return y + h + 8 * u;
         }
 
@@ -475,6 +477,7 @@ namespace BirdieSmash.Game
         {
             Dim(.6f); float x = ColX, w = ColW, y = H * .3f;
             Shadowed(new Rect(x, y, w, 40 * u), L.T("Duraklatıldı"), big, Color.white); y += 46 * u;
+            if (M.Dril != null) Shadowed(new Rect(x, y, w, 24 * u), L.T(M.Dril.ad) + " · " + L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(M.ogr.dene, M.Dril.top), M.Dril.top, M.ogr.isabet), small, Color.white); else
             Shadowed(new Rect(x, y, w, 24 * u), M.sc[0] + " – " + M.sc[1] + " · " + L.T("{0} sayı", M.target) + " · " + L.T("Rakip") + " " + M.RakipAd(false) + (KariyerVeri.Var(M.stil.kariyer) ? " · " + L.T(KariyerVeri.Al(M.stil.kariyer).yer) : ""), small, Color.white); y += 40 * u;
             if (Button(new Rect(x, y, w, BH * 1.1f), "Maça devam et", true)) root.Devam(); y += BH * 1.1f + 10 * u;
             // HTML duraklat satırı: Ses · Maçı baştan başlat · Ana menü (oyun sırasında ses düğmesi yalnız burada)
@@ -489,7 +492,8 @@ namespace BirdieSmash.Game
             Dim(.6f); float x = ColX, w = ColW, y = Mathf.Max(top + 8 * u, Mathf.Min(H * .18f, H - bot - overH - 8 * u)), y0 = y;
             float th = big.CalcHeight(new GUIContent(root.bittiBaslik), w); var bs = root.bittiBaslik.Length > 24 ? mid : big; th = bs.CalcHeight(new GUIContent(root.bittiBaslik), w);
             Shadowed(new Rect(x, y, w, th), root.bittiBaslik, bs, Color.white); y += th + 8 * u;
-            Shadowed(new Rect(x, y, w, 60 * u), M.sc[0] + " – " + M.sc[1], Stil(big, Mathf.RoundToInt(48 * fu)), Color.white); y += 64 * u;
+            if (root.bittiSkor != null) { Shadowed(new Rect(x, y, w, 44 * u), root.bittiSkor, Stil(big, Mathf.RoundToInt(32 * fu)), Color.white); y += 48 * u; }   // görev: "7/12 hedefte"
+            else { Shadowed(new Rect(x, y, w, 60 * u), M.sc[0] + " – " + M.sc[1], Stil(big, Mathf.RoundToInt(48 * fu)), Color.white); y += 64 * u; }
             // Kariyer yıldızları (2026-10-26): dolu/boş yıldız + sayı yazıyla (yalnız simgeye güvenilmez), yeniler ayrıca
             if (!string.IsNullOrEmpty(root.bittiYildiz)) { float yh = small.CalcHeight(new GUIContent(root.bittiYildiz), w); Shadowed(new Rect(x, y, w, yh), root.bittiYildiz, Stil(small, -1, FontStyle.Bold), Kit.Hex("#ffd23a")); y += yh + 6 * u; }
             var od = root.odul;
@@ -509,10 +513,15 @@ namespace BirdieSmash.Game
                   GUI.Label(new Rect(r.x, r.y + 6 * u, r.width, 34 * u), k.deger.ToString(), vs); GUI.Label(new Rect(r.x + 8 * u, r.y + 40 * u, r.width - 16 * u, kh - 44 * u), L.T(k.ad), small); }
               y += kh + 10 * u; }
             if (!string.IsNullOrEmpty(root.bittiIpucu)) { float ph = small.CalcHeight(new GUIContent(root.bittiIpucu), w); Shadowed(new Rect(x, y, w, ph), root.bittiIpucu, small, Color.white); y += ph + 10 * u; }
-            if (Button(new Rect(x, y, w, BH), ayrinti ? "Ayrıntıları gizle" : "Ayrıntılar")) ayrinti = !ayrinti; y += BH + 10 * u;
-            if (ayrinti) { float ih = small.CalcHeight(new GUIContent(root.bittiBilgi), w); Shadowed(new Rect(x, y, w, ih), root.bittiBilgi, small, new Color(1, 1, 1, .8f)); y += ih + 16 * u; }
+            bool ayrintiVar = !string.IsNullOrEmpty(root.bittiBilgi);   // görev sonucunda ayrıntı listesi yok
+            if (ayrintiVar && Button(new Rect(x, y, w, BH), ayrinti ? "Ayrıntıları gizle" : "Ayrıntılar")) ayrinti = !ayrinti; if (ayrintiVar) y += BH + 10 * u;
+            if (ayrinti && ayrintiVar) { float ih = small.CalcHeight(new GUIContent(root.bittiBilgi), w); Shadowed(new Rect(x, y, w, ih), root.bittiBilgi, small, new Color(1, 1, 1, .8f)); y += ih + 16 * u; }
             if (ButtonRaw(new Rect(x, y, w, BH * 1.15f), root.bittiDugme, true)) root.TekrarOyna(); y += BH * 1.15f + 10 * u;
             if (root.bittiIlk) { if (Button(new Rect(x, y, w, BH), "Tam antrenman")) root.Antrenman(); y += BH + 10 * u; }
+            // 2026-10-26: kayıpta önerilen görev (tek düğme, adıyla) ve görev sonucundan görev listesine dönüş
+            var od2 = root.bittiDril != null ? Dril.Bul(root.bittiDril) : null;
+            if (od2 != null) { if (ButtonRaw(new Rect(x, y, w, BH), L.T("Antrenman: {0}", L.T(od2.ad)), false)) root.DrilOyna(od2.id); y += BH + 10 * u; }
+            if (root.mod == Mod.Dril) { if (Button(new Rect(x, y, w, BH), "Antrenman görevleri")) { root.AnaMenu(); if (root.ui != null) root.ui.AntrenmanAc(); } y += BH + 10 * u; }
             if (Button(new Rect(x, y, w, BH), "Ana menü")) root.AnaMenu();
             overH = y + BH - y0;
         }

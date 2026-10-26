@@ -1,0 +1,151 @@
+{
+ "_not": "Antrenman sahası (komple-oyun tasarımı §3.6, Ek A.4; adım 7, 2026-10-26). 8 kısa görev, her biri 12 top (~60–90 sn), skor yok; antrenör topu elle besler (besle: clear = arka sahaya yüksek, smash = gövdeye smaç, gevsek = file üstünde gevşek top, karisik = clear ve drive sırayla; yok = sen servis atarsın). Antrenör topu geri oynamaz: her top tek vuruştur. olcu: alan = vuruş türü (tip) alana düşerse; servis = kısa servis bandı az farkla geçip alana düşerse; aldat = rakip ters yöne çıkar ve top içeri düşerse; karsila = smaç içeri dönerse; kill = file vuruşu içeri düşerse; split = antrenör vururken split step ve topa vurursan. alan = [x0, x1, y0, y1] rakip yarısında metre (y 0 = rakibin dip çizgisi, 6,7 = file); kose = sırayla sol ve sağ köşe. esik = ★ / ★★ / ★★★ için isabet. Ödül yalnız ilk kez alınan yıldızda (Gear.DrilOdul). Metinler Türkçe anahtar, çeviri Lang.UNITY_EK.",
+ "gorevler": [
+  {
+   "id": "derin",
+   "ad": "Derin clear",
+   "ogretir": "Kaydırma hızı",
+   "besle": "clear",
+   "olcu": "alan",
+   "tip": [
+    "clear"
+   ],
+   "alan": [
+    0.46,
+    5.64,
+    0,
+    1.0
+   ],
+   "top": 12,
+   "esik": [
+    4,
+    6,
+    8
+   ],
+   "nasil": "Top başının üstünde. UZUN ve orta hızda yukarı kaydır: top arka banda düşsün."
+  },
+  {
+   "id": "drop",
+   "ad": "File dibi drop",
+   "ogretir": "Yavaş kaydırma",
+   "besle": "clear",
+   "olcu": "alan",
+   "tip": [
+    "drop"
+   ],
+   "alan": [
+    0.46,
+    5.64,
+    5.2,
+    6.7
+   ],
+   "top": 12,
+   "esik": [
+    6,
+    9,
+    11
+   ],
+   "nasil": "Topun üstünden YAVAŞ ve kısa geç: top filenin dibine, yanan banda düşsün."
+  },
+  {
+   "id": "kose",
+   "ad": "Köşe smacı",
+   "ogretir": "Yön",
+   "besle": "clear",
+   "olcu": "alan",
+   "tip": [
+    "smash"
+   ],
+   "kose": true,
+   "alan": [
+    0.46,
+    1.96,
+    0.6,
+    4.4
+   ],
+   "top": 12,
+   "esik": [
+    4,
+    6,
+    8
+   ],
+   "nasil": "HIZLI kaydır ve parmağını yanan köşeye eğ. Köşe her topta yer değiştirir."
+  },
+  {
+   "id": "aldat",
+   "ad": "Slice ve aldatma",
+   "ogretir": "Kavis",
+   "besle": "clear",
+   "olcu": "aldat",
+   "top": 12,
+   "esik": [
+    2,
+    4,
+    6
+   ],
+   "nasil": "Kaydırırken parmağınla bir YAY çiz: antrenör ters yöne çıksın, top içeri düşsün."
+  },
+  {
+   "id": "servis",
+   "ad": "Kısa servis",
+   "ogretir": "Servis",
+   "besle": null,
+   "olcu": "servis",
+   "alan": [
+    3.05,
+    5.64,
+    3.72,
+    4.72
+   ],
+   "top": 12,
+   "esik": [
+    5,
+    8,
+    10
+   ],
+   "nasil": "Oyuncunun önünden yukarı YAVAŞ kaydır: top bandı az farkla geçip servis çizgisinin hemen arkasına düşsün."
+  },
+  {
+   "id": "savunma",
+   "ad": "Savunma",
+   "ogretir": "Uzanma, blok",
+   "besle": "smash",
+   "olcu": "karsila",
+   "top": 12,
+   "esik": [
+    7,
+    10,
+    12
+   ],
+   "nasil": "Antrenör smaç atıyor. Topu ya kısa blokla (parmağını aşağı çek) ya da derine kaldır: ortaya düşen top sayılmaz."
+  },
+  {
+   "id": "kill",
+   "ad": "File öldürme",
+   "ogretir": "Hız",
+   "besle": "gevsek",
+   "olcu": "kill",
+   "top": 12,
+   "esik": [
+    6,
+    9,
+    11
+   ],
+   "nasil": "Top file üstünde gevşek kaldı. HIZLI ve sert kaydır: aşağı vur."
+  },
+  {
+   "id": "split",
+   "ad": "Split step",
+   "ogretir": "Zamanlama",
+   "besle": "karisik",
+   "olcu": "split",
+   "top": 12,
+   "esik": [
+    5,
+    8,
+    10
+   ],
+   "nasil": "Antrenör vurduğu anda ekrana dokun (split step), sonra topa vur."
+  }
+ ]
+}

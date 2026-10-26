@@ -38,6 +38,7 @@ namespace BirdieSmash.Core
         {
             var h = new List<Gorev>(GOREV); var o = new List<Gorev>();
             var kb = stil != null ? KariyerVeri.Al(stil.kariyer) : null; var sabit = kb != null ? GorevBul(kb.gorev) : null;
+            if (kb == null && stil != null && stil.usta >= 0) sabit = GorevBul(UstaYolu.GorevId(stil.usta));   // 2026-10-26 Usta yolu basamağının görevi
             if (sabit != null) { o.Add(new Gorev { id = sabit.id, ad = sabit.ad, hedef = sabit.hedef, say = sabit.say, basamak = true }); h.RemoveAll(g => g.id == sabit.id); }
             while (o.Count < 3) { int i = rng.Next(h.Count); var g = h[i]; h.RemoveAt(i); o.Add(new Gorev { id = g.id, ad = g.ad, hedef = g.hedef, say = g.say }); }
             return o;

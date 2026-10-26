@@ -312,7 +312,7 @@ namespace BirdieSmash.Core
         // Kaybetmek de ilerletir; günün ilk galibiyeti +50; seri ve kaçırma cezası yok.
         // 2026-10-26 kariyer haritası: ilk kez alınan her yıldız +20 Tüy (tasarım §3.1; yıldız kilit açmaz, ödül açar), okunan
         // her imza vuruşu +5 XP (§3.3). İkisi de isteğe bağlı parametre: eski çağrılar ve testler aynı sonucu verir.
-        public OdulSonuc Odul(bool won, bool kariyerIlk, int target, bool easy, int gorevBitti, int perfects, DateTime bugun, int yeniYildiz = 0, int okudun = 0)
+        public OdulSonuc Odul(bool won, bool kariyerIlk, int target, bool easy, int gorevBitti, int perfects, DateTime bugun, int yeniYildiz = 0, int okudun = 0, int ekTuy = 0, int ekXp = 0, string ekAd = null)
         {
             float f = target == 5 ? 1 : target == 11 ? 2 : target == 21 ? 3.5f : 1, zor = easy ? 1 : 1.25f; int mk = Math.Min(10, perfects);
             var o = new OdulSonuc();
@@ -323,8 +323,20 @@ namespace BirdieSmash.Core
             if (kariyerIlk) { o.tuy += 60; o.xp += 40; o.ek.Add("yeni basamak +60"); }
             if (yeniYildiz > 0) { o.tuy += 20 * yeniYildiz; o.ek.Add("yeni yıldız +" + 20 * yeniYildiz); }
             if (okudun > 0) o.xp += 5 * okudun;
+            // 2026-10-26: Günün maçı (+40 Tüy, +30 XP, günde bir kez kazanınca) ve Usta yolu ek ödülü çağırandan; ad ek listesine.
+            if (ekTuy > 0 || ekXp > 0) { o.tuy += ekTuy; o.xp += ekXp; if (ekAd != null) o.ek.Add(ekAd + " +" + ekTuy); }
             o.once = Seviye(); eko.tuy += o.tuy; eko.xp += o.xp; EkoYaz(); o.sonra = Seviye();
             return o;
+        }
+
+        // Antrenman görevi ödülü (2026-10-26, tasarım §3.6): yalnız ilk kez alınan yıldız, yıldız başına +25 Tüy, +30 XP.
+        // Aynı görevi tekrar oynamak ödül vermez (yıldız en iyi sonuçtur); maç ödülü (Odul) antrenmanda hiç yoktur.
+        public const int DRIL_TUY = 25, DRIL_XP = 30;
+        public OdulSonuc DrilOdul(int yeniYildiz)
+        {
+            var o = new OdulSonuc(); o.once = Seviye(); o.sonra = o.once; if (yeniYildiz <= 0) return o;
+            o.tuy = DRIL_TUY * yeniYildiz; o.xp = DRIL_XP * yeniYildiz; o.ek.Add("yeni yıldız +" + o.tuy);
+            eko.tuy += o.tuy; eko.xp += o.xp; EkoYaz(); o.sonra = Seviye(); return o;
         }
     }
 }

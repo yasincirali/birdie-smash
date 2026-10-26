@@ -31,13 +31,16 @@ namespace BirdieSmash.Game
                 m.Add(Yazi("Birdie Smash", 32, "marka-ad")); m.Add(Yazi(L.T("Kaydır, kes, smaçla."), 14, "soluk"));
             }
             var esnek = new VisualElement(); esnek.AddToClassList("esnek"); esnek.pickingMode = PickingMode.Ignore; c.Add(esnek);
-            c.Add(SiradakiKart());
+            // 2026-10-26 Usta yolu: dört tur bittiyse (ve Usta yolu açıksa) "Sıradaki" kartının yerini Usta kartı alır (kendi
+            // Oyna düğmesiyle); finali yeniden oynamak Kariyer haritasından sürer.
+            bool usta = Ayar.antrenman && UstaYolu.Acik(Ayar.ilerleme) && Ayar.ilerleme.HepsiBitti;
+            if (usta && !root.bekleyen) c.Add(UstaKart()); else c.Add(SiradakiKart());
             if (root.bekleyen)
             {
                 c.Add(Dugme(L.T("Maça devam et"), () => root.MacaDon(), "dugme--birincil", null, 19));
                 c.Add(Dugme(L.T("Yeni maç başlat"), () => root.Oyna()));
             }
-            else
+            else if (!usta)
             {
                 var p = Ayar.ilerleme; var kb = KariyerVeri.Al(p.Siradaki());
                 string alt = !Ayar.antrenman ? L.T("İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç") : p.HepsiBitti ? L.Cumle(Career.Line(p)) : L.T("Sıradaki: {0}", L.T(kb.yer));
@@ -48,9 +51,14 @@ namespace BirdieSmash.Game
                     root.Oyna();
                 }, "dugme--birincil", alt, 20));
             }
+            // 2026-10-26 adım 7–8: Günün maçı kartı (tam genişlik: rakip ve değiştirici okunsun) ve ikincil sıra Hızlı maç ·
+            // Antrenman. "Tam antrenman" kartı Antrenman sayfasına taşındı (Temel ders kartı orada, en üstte); ilk açılışta
+            // (antrenman görülmedi) Günün maçı yok: ilk yol tek düğme kalsın (§2.3).
+            if (Ayar.antrenman && !root.bekleyen) c.Add(GunlukOzetKart());
             var row = Satir("ikincil-satir"); c.Add(row);
             row.Add(Dugme(L.T("Hızlı maç"), HizliMacAc, "ikincil-kart", HizliOzet()));
-            row.Add(Dugme(L.T("Tam antrenman"), () => root.Antrenman(), "ikincil-kart", L.T("Vuruş, servis, nefes")));
+            var p2 = Ayar.ilerleme;
+            row.Add(Dugme(L.T("Antrenman"), AntrenmanAc, "ikincil-kart", L.T("{0}/{1} yıldız · Temel ders ve 8 görev", p2.AntrenmanYildiz, Dril.ToplamYildiz)));
         }
 
         string HizliOzet() { return L.T("{0} sayı · {1} · {2}", Ayar.target, L.T(Ayar.easy ? "Kolay" : "Usta"), L.T(CourtView.SAHA[Ayar.saha].ad)); }
@@ -94,7 +102,7 @@ namespace BirdieSmash.Game
             }, "dugme--birincil", HizliOzet(), 19));
         }
 
-        void AltSayfaYenidenKur(string altS) { if (altS == Gezinti.KART) MacKartKur(); else if (altS == Gezinti.YUVA) YuvaSayfaKur(); else HizliKur(); }
+        void AltSayfaYenidenKur(string altS) { if (altS == Gezinti.KART) MacKartKur(); else if (altS == Gezinti.YUVA) YuvaSayfaKur(); else if (altS == Gezinti.DRIL) DrilKartKur(); else if (altS == Gezinti.GUNLUK) GunlukKartKur(); else HizliKur(); }
 
         // Alt sayfa iskeleti (Hızlı maç ve kariyer maç kartı ortak, 2026-10-26): tutamak (aşağı çekince kapanır, iOS kalıbı;
         // ayrıca Kapat, Geri ve zemine dokunma), başlık, kaydırmalı gövde. Dönüş: gövdenin içerik kabı.

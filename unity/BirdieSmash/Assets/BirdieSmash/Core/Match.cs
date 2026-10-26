@@ -63,11 +63,15 @@ namespace BirdieSmash.Core
         // 2026-10-26: imza yalnız patron bayrağıyla ateşlenir. stil.json'daki taban tarz imzayı taşır (harita/maç kartı adını
         // gösterir), serbest maç o taban nesneyi kullandığı için imza kimliğine bakmak yetmez; bayrağı yalnız KariyerVeri.Rakip koyar.
         public bool patron;
+        // 2026-10-26 Tur 3–4 ve Usta yolu (adım 9, §3.2): tepki = rakibin topa çıkış gecikmesi (sn; eskiden sabit .18), hucum =
+        // smaç ve drive seçiminin ağırlık çarpanı (1 = veri olduğu gibi). imzaAra/imzaP = imza sıklığı kuralı (Core/Imza; Günün
+        // maçı "Patron provası" sıklaştırır, maç başı en çok IMZA_AZAMI değişmez). usta = Usta yolu basamağı (-1 değil).
+        public float tepki = .18f, hucum = 1, imzaP = Match.IMZA_P; public int imzaAra = Match.IMZA_ARA, usta = -1;
         public Style Clone() { return (Style)MemberwiseClone(); }
     }
 
     // Kariyer basamağı (veri/kariyer.json): uzunluk 0 = oyuncunun seçtiği maç uzunluğu; gorev = 2. yıldızın sabit görevi.
-    public class Kariyer { public string stil, yer, saha, gorev; public float g; public int tur, basamak, uzunluk; public bool patron; }
+    public class Kariyer { public string stil, yer, saha, gorev; public float g; public int tur, basamak, uzunluk; public bool patron, imza; }
 
     public class ServeBox { public string who; public float x0, x1, y0, y1; }
 
@@ -76,6 +80,8 @@ namespace BirdieSmash.Core
         public bool easy = true, reduce, ilk; public int target = 21; public Style stil; public string saha = "salon";
         public int bestRally; public bool ogr, ogrKisa; public string formaRenk = "#4fb8ff";
         public GearStats gs;   // ekipman çarpanları (Gear.Hesap); null = nötr (bot testleri, eski imza)
+        // 2026-10-26: Günün maçı değiştiricisi (Core/Gunluk; null = yok) ve antrenman görevi (Core/Dril; ogr ile birlikte).
+        public string degistirici; public DrilTanim dril;
     }
 
     public partial class Match
@@ -140,9 +146,11 @@ namespace BirdieSmash.Core
         {
             rng = new Random(seed); easy = o.easy; net.sakin = o.reduce; target = o.ilk ? 5 : o.target; reduce = o.reduce; ilk = o.ilk; saha = o.saha; bestRally = o.bestRally;
             stil = o.stil ?? STIL[STIL_SIRA[rng.Next(3)]]; GS = o.gs ?? GearStats.Notr;
+            if (o.ogr && o.dril != null) { ogrDril = o.dril; o.ogr = true; }
             if (!o.ogr) gorevler = GorevSec();
             me.x = Court.MID; me.y = Court.L - 2.2f; op.x = Court.MID; op.y = 2.2f;
             if (o.ogr) OgrKur(o.ogrKisa);
+            if (!o.ogr) DegistiriciKur(o.degistirici);
             SetupServe();
         }
         // Eski imza (bot testleri): rastgele rakip, serbest maç.
@@ -203,6 +211,7 @@ namespace BirdieSmash.Core
             if (ogr != null) op.svTur = "yuksek";
             op.svClip = SERVIS[op.svTur].klip; me.svClip = "serve_bh";
             if (sc[0] + sc[1] == 0 && ogr == null) serveMsg = "Rakip: " + RakipAd(true);
+            if (Dril != null) { DrilTopBasi(); if (sv == "op") wait = .9f; }   // görev: antrenör yerini alır, top elle gelir
             Emit(Ev.Serve, sv);
         }
 
@@ -271,6 +280,7 @@ namespace BirdieSmash.Core
         {
             s = new Shuttle { x = hx, y = hy, z = hz, vx = vx, vy = vy, vz = vz, from = from, serve = isServe, type = type, super = isSuper, kd = slice ? Shuttle.KD * (1 + .35f * (from == "me" ? GS.slice : 1)) : Shuttle.KD, slice = slice };   // 2026-10-26: Kesici raket / Aldatıcı tarzı slice sapmasını büyütür (GS.slice, nötr 1)
             rally++; maxRally = Math.Max(maxRally, rally);
+            vurusY = hy;   // Günün maçı "file" değiştiricisi: son vuruşun derinliği
             if (from == "op") { opHitAt = clock; split = false; if (splitPending) { splitPending = false; DoSplit(); } } else { split = false; splitPending = false; }
             var h = from == "me" ? me : op;
             h.sw = 1; h.shot = isServe ? "low" : (h.prepShot == "lunge" ? "lunge" : ShotClass(type, hz, hy));
@@ -299,7 +309,7 @@ namespace BirdieSmash.Core
             string recv = s.from == "me" ? "op" : "me"; var P0 = recv == "me" ? me : op;
             float t0 = s.t; foreach (var p in r.path) p.t += t0; r.t += t0;
             s.landPred = r; if (r.net != null) s.netPred = r.net;
-            float react = recv == "me" ? 0 : .18f, spd = recv == "me" ? MeSpd() : OpSpd(); bool blokla = false;
+            float react = recv == "me" ? 0 : stil.tepki, spd = recv == "me" ? MeSpd() : OpSpd(); bool blokla = false;
             if (recv == "op") react = ImzaTepki(react, out blokla);   // duvar blok: tepkisiz çıkış; okunan duvar: geç ve ters
             // Aldatma: kesilen/son anda bırakılan vuruşta rakip geç ve ters yöne çıkar (hold & flick).
             if (recv == "op" && deceive)
@@ -321,11 +331,15 @@ namespace BirdieSmash.Core
             {
                 bool outp = IsOut(r.x, r.y, s.serve); float margin = Math.Abs(SinirPayi(r.x, r.y, s.serve));
                 if ((outp && !(margin < .25f && R01() < .5f)) || (r.net != null && !r.net.ok)) icpt.leave = true;
-                float q = R01(), acc = 0; var K = overhead ? stil.ustK : stil.altK; var Pp = overhead ? stil.ustP : stil.altP; string pk = K[K.Length - 1];
-                for (int i = 0; i < K.Length; i++) { acc += Pp[i]; if (q < acc) { pk = K[i]; break; } }
+                var K = overhead ? stil.ustK : stil.altK; var Pp = overhead ? stil.ustP : stil.altP; string pk = K[K.Length - 1];
+                // hucum (Tur 3–4, Usta): smaç ve drive ağırlığı ×hucum, sonra yeniden ölçeklenir; 1'de eski seçim birebir (aynı R01 çekimi).
+                float top = 0; for (int i = 0; i < K.Length; i++) top += Pp[i] * (K[i] == "smash" || K[i] == "drive" ? stil.hucum : 1);
+                float q = R01(), acc = 0; if (stil.hucum != 1) q *= top;
+                for (int i = 0; i < K.Length; i++) { acc += Pp[i] * (K[i] == "smash" || K[i] == "drive" ? stil.hucum : 1); if (q < acc) { pk = K[i]; break; } }
                 icpt.opType = pk;
                 if (blokla && !icpt.leave) { icpt.imza = "duvarblok"; icpt.imzaBasladi = true; icpt.opType = "drop"; }
                 else ImzaPlanla(t0, cands, need);
+                if (Dril != null) icpt.leave = true;   // görev: antrenör geri oynamaz, her top tek vuruş
             }
         }
 
@@ -451,7 +465,7 @@ namespace BirdieSmash.Core
         public static string ServisTuru(float dx, float dy, float speed) { return speed > 1.0f ? (Hyp(dx, dy) < 95 ? "flick" : "yuksek") : "kisa"; }
         public bool SwipeServe(float dx, float dy, float speed)
         {
-            if (s != null || between || server != "me" || wait > 0 || over || svPending != null) return false; hint = false;
+            if (s != null || between || server != "me" || wait > 0 || over || svPending != null || DrilBitti) return false; hint = false;
             float cx = (serveBox.x0 + serveBox.x1) / 2, r = Clamp(dx / Math.Max(50, Math.Abs(dy)), -1.3f, 1.3f);
             string tur = ServisTuru(dx, dy, speed); float d = tur == "kisa" ? Court.SSL + .45f : tur == "flick" ? 6.0f : 6.2f;
             ServisAt("me", tur, cx + r * 1.5f, Court.NET - d); OgrOlay(null, tur, false, false, speed); return true;
@@ -494,7 +508,7 @@ namespace BirdieSmash.Core
                 type = b;
             }
             // Rakip file önünde arada gevşek top bırakır: sana öldürme şansı.
-            if (type == "drop" && !I.overhead && hy > Court.NET - 2.6f && r0 < .35f)
+            if (type == "drop" && !I.overhead && hy > Court.NET - 2.6f && r0 < .35f / stil.hucum)   // hücumcu rakip gevşek top az bırakır
             {
                 Shuttle.Aim(hx, hy, hz, Court.MID + (R01() - .5f) * 2.4f, Court.NET + 1.0f, true, 1.15f, out vx, out vy, out vz);
                 StartFlight("op", vx, vy, vz, hx, hy, hz, false, "drop", false, q); return;
@@ -520,6 +534,7 @@ namespace BirdieSmash.Core
 
         void OpServe()
         {
+            if (Dril != null) { DrilBesle(); return; }   // görev: antrenör topu elle besler (Core/Dril)
             var b = serveBox; string tur = op.svTur ?? "kisa";
             float tx = b.x0 + .3f + R01() * (b.x1 - b.x0 - .6f), ty = tur == "kisa" ? b.y0 + .5f : b.y1 - .6f; ServisAt("op", tur, tx, ty);
         }
@@ -528,9 +543,16 @@ namespace BirdieSmash.Core
         void Point(string winner, string why, float x, float y)
         {
             if (between) return; between = true;
+            if (Dril != null) why = DrilTop(winner, why);   // görev: top sayılır, yazı topun sonucu
             if (ogr != null && ogr.cagri != null && winner == "op" && s != null && s.from == "op" && OgrA() != null && OgrA().drill) { ogr.cagri = null; ogr.dene++; OgrCagriBitti(); }   // son adım: çağrılan topu kaçırmak da bir deneme
             hakemT = hakemT0 = 1.4f; hakemYon = winner; hakemSO = ogr == null && winner != server;   // servis el değişti mi: baş hakem o zaman yeni servisçinin tarafını gösterir
-            if (ogr == null) { sc[winner == "me" ? 0 : 1]++; server = winner; }                      // antrenmanda skor yok
+            if (ogr == null)                                                                          // antrenmanda skor yok
+            {
+                // 2026-10-26 Günün maçı değiştiricisi: sayı 1 ya da 2 (SayiDegeri); serbest/kariyer maçında hep 1. Tavanı (cap) aşmaz.
+                int deger = degistirici != null ? SayiDegeri(winner) : 1, wi = winner == "me" ? 0 : 1, tavan = target == 21 ? 30 : target == 11 ? 15 : 7;
+                sc[wi] = Math.Min(tavan, sc[wi] + deger); server = winner; sayiNo++;
+                if (deger == 2) Say(null, "cift", Court.MID, Court.NET, 2, "Çift sayı!", 2);
+            }
             if (winner == "me" && s != null && s.from == "me" && s.type == "smash") smacSayi++;
             if (winner == "me" && s != null && s.from == "me" && s.type == "drop") dropSayi++;
             ImzaSifirla();
@@ -545,9 +567,10 @@ namespace BirdieSmash.Core
             {
                 if (Math.Max(a, b) >= target - 1 && a != b && Math.Abs(a - b) <= 1) serveMsg = a > b ? "Maç sayısı" : "Rakibin maç sayısı";
                 else if (a == b && a >= target - 1) serveMsg = "Uzatma: 2 fark gerekiyor";
+                else if (degistirici == "altin" && sayiNo % 3 == 2) serveMsg = ALTIN_YAZI;   // bir sonraki ralli altın: servisten önce yazılır
                 // Sayılar arası bekleme 1,3 → 0,7 sn (HTML 959beb1): ritim düşmesin; antrenman ve rekor sayısı eski süreyi korur.
                 bool kisa = ogr == null && !rekor; kisaBekle = kisa; if (kisa) hakemT = hakemT0 = 1.0f;
-                betweenT = kisa ? .7f : 1.3f;
+                betweenT = kisa ? .7f : Dril != null ? .9f : 1.3f;
             }
         }
         public bool YeniRekor { get { return rekorBuMac; } }
@@ -555,6 +578,7 @@ namespace BirdieSmash.Core
         void Land()
         {
             s.dead = true; string hitter = s.from, other = hitter == "me" ? "op" : "me";
+            DrilDusus();
             if (!s.netHit)
             {
                 Emit(Ev.Floor, hitter, s.type, s.x, s.y, 0, 0, null, null, s.type == "smash");
@@ -565,7 +589,7 @@ namespace BirdieSmash.Core
             bool outp = IsOut(s.x, s.y, s.serve);
             if (ogr != null && s.ogrHedef != null && hitter == "me" && !outp && s.y >= s.ogrHedef[0] && s.y <= s.ogrHedef[1]) { ogr.yildiz++; Say("me", null, s.x, s.y, 0, "Hedefte! ★", 2); }
             if (outp) { if (other == "me") outsLeft++; else if (!s.serve) outsBen++; Point(other, s.serve ? (hitter == "me" ? "Servis hatası" : "Rakip servis hatası") : (hitter == "me" ? "Dışarı" : "Dışarı! Bıraktın, sayı senin"), s.x, s.y); }
-            else { if (s.type == "smash" && hitter == "me") { op.dive = 1; op.yat = true; } Point(hitter, hitter == "me" ? (s.super ? "SIÇRAYARAK SMAÇ SAYISI" : s.type == "smash" ? "SMAÇ SAYISI" : "SAYI!") : "Kaçtı", s.x, s.y); }
+            else { if (s.type == "smash" && hitter == "me" && Dril == null) { op.dive = 1; op.yat = true; } Point(hitter, hitter == "me" ? (s.super ? "SIÇRAYARAK SMAÇ SAYISI" : s.type == "smash" ? "SMAÇ SAYISI" : "SAYI!") : "Kaçtı", s.x, s.y); }
         }
 
         // Oyuncu hareketi: hedefe ivmeyle koşar, yaklaşınca frenler. Kolay modda kesişme noktasına kendi koşar.
@@ -741,7 +765,7 @@ namespace BirdieSmash.Core
                 { s.y = Court.NET + s.agYan * Court.TOP_PAY; if (s.vy * s.agYan < 0) s.vy = -s.vy * .2f; }
                 if (!s.netDone && (py > Court.NET) != (s.y > Court.NET))
                 {
-                    s.netDone = true; float lim = Court.NetLimit(s.x);
+                    s.netDone = true; float lim = Court.NetLimit(s.x); s.gecPay = s.z - lim;
                     if (s.netPred != null ? !s.netPred.ok : s.z <= lim)
                     {
                         // File teması (2026-10-26, yasin "file kritik, bant daha sert kısım, file ise oynak; fileye düştüğünde oyun
@@ -790,6 +814,7 @@ namespace BirdieSmash.Core
                     if (I.opType == "smash" && op.prepClip == "jump" && I.t - s.t < SALINIM["jump"] && I.t - s.t > 0 && !(op.jump > 0)) op.jump = 1 - (SALINIM["jump"] - (I.t - s.t)) * JUMP_HIZ;
                     if (s.t >= I.t) { OpHit(); return; }
                 }
+                else if (Dril != null) { if (op.fakeUntil > clock) MoveAcc(op, op.fakeX, op.y, 1.6f, d); }   // görev: antrenör topu oynamaz, aldatılınca ters adım
                 else
                 {
                     MoveAcc(op, s.landPred.x, s.landPred.y - .4f, 2.2f, d);

@@ -31,7 +31,7 @@ namespace BirdieSmash.Core
         // Şimdi imza kullanılabilir mi; kullanılabilirse hangisi (karma sıradakini verir).
         string ImzaSec()
         {
-            if (stil == null || !stil.patron || stil.imza == null || ogr != null || imzaSay >= IMZA_AZAMI || sc[0] + sc[1] - imzaSonPuan < IMZA_ARA) return null;
+            if (stil == null || !stil.patron || stil.imza == null || ogr != null || imzaSay >= IMZA_AZAMI || sc[0] + sc[1] - imzaSonPuan < stil.imzaAra) return null;
             if (stil.imza == "karma") { var b = KariyerVeri.Imza("karma"); return b != null && b.sira != null && b.sira.Length > 0 ? b.sira[karmaI % b.sira.Length] : null; }
             return stil.imza;
         }
@@ -53,7 +53,7 @@ namespace BirdieSmash.Core
                     foreach (var p in cands) if (p.y > Court.NET - 2.8f && p.z > .5f && p.z < 1.45f && p.t - t0 >= H && need(p, 1.15f) <= p.t) { yeni = p; break; }
                     if (yeni == null) return; break;
             }
-            if (R01() >= IMZA_P) return;
+            if (R01() >= stil.imzaP) return;
             if (yeni != null) { I.t = yeni.t; I.x = yeni.x; I.y = yeni.y; I.z = yeni.z; I.overhead = false; I.kill = false; I.side = float.NaN; }
             I.imza = id; I.imzaBas = I.t - ImzaHazirlik - .05f;
             I.opType = id == "yildirim" ? "smash" : id == "mermi" ? "drive" : "drop";   // sıçrama ve hazırlık pozu buna bakar
@@ -83,7 +83,7 @@ namespace BirdieSmash.Core
             // oyuncunun vurabileceği en erken an: top kendi tarafında ve 3,1 m'nin altında (ReachInfo'nun sınırı; uzaklık hesaba
             // katılmaz, yani gerçek süre bundan uzun olabilir, kısa olamaz)
             float gec = float.NaN; foreach (var p in s.landPred.path) if (p.y > Court.NET + .05f && p.z <= 3.1f) { gec = p.t; break; }
-            if (float.IsNaN(gec) || gec - s.t < ImzaHazirlik + .05f || R01() >= IMZA_P) return;
+            if (float.IsNaN(gec) || gec - s.t < ImzaHazirlik + .05f || R01() >= stil.imzaP) return;
             ImzaBasla(id, 9);   // süre oyuncunun vuruşunda biter
         }
 

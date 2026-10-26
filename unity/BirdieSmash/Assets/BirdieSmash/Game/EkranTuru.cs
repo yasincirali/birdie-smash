@@ -67,6 +67,7 @@ namespace BirdieSmash.Game
             Ayar.model = "oyuncak"; Ayar.saha = "salon"; Ayar.kamera = "yayin"; root.SahaDegisti(); root.KameraDegisti();
             yield return ImzaKare("imza_mermi", KariyerVeri.Global(1, 5), false);
             yield return ImzaKare("imza_duvar_azalt", KariyerVeri.Global(0, 5), true);
+            yield return GorevKare();
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             Application.Quit(0);
         }
@@ -100,6 +101,13 @@ namespace BirdieSmash.Game
             yield return Profil(ui, ek);
             ui.SekmeAc(Sekme.Oyna); ui.HizliMacAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "hizli"); ui.Geri();
             ui.AyarlarAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "ayarlar"); ui.Geri(); yield return Bekle(5);
+            // 2026-10-26 adım 7–8: antrenman sayfası (örnek yıldızlarla), görev kartı, Günün maçı kartı
+            var eskiP = Ayar.ilerleme; var dp = new Ilerleme(); dp.DrilKaydet("derin", 3); dp.DrilKaydet("drop", 2); dp.DrilKaydet("kose", 1); dp.DrilKaydet("servis", 2); Ayar.ilerleme = dp;
+            ui.AntrenmanAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "antrenman");
+            ui.DrilKartAc("kose"); yield return Bekle(20); yield return Cek("menu_" + ek + "gorev_karti"); ui.Geri(); ui.Geri(); yield return Bekle(5);
+            ui.GunlukAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "gunun_maci"); ui.Geri();
+            dp.GunlukKazan(Gunluk.Tarih(System.DateTime.Now)); ui.SekmeAc(Sekme.Kariyer); ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_" + ek + "oyna_gunluk_alindi");
+            Ayar.ilerleme = eskiP; ui.SekmeAc(Sekme.Kariyer); ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
         }
 
         // Harita kareleri: örnek ilerleme (Tur 1'de dört basamak, farklı yıldızlarla), sonra Tur 1 tamam + Tur 2 yarısı.
@@ -114,7 +122,17 @@ namespace BirdieSmash.Game
             var q = new Ilerleme(); for (int b = 0; b < 6; b++) q.tur[0][b] = b % 2 == 0 ? 7 : 3; q.tur[1][0] = 3; q.tur[1][1] = 1; Ayar.ilerleme = q;
             ui.KariyerTurSec(1); yield return Bekle(20); yield return Cek("menu_" + ek + "harita_tur2");
             ui.MacKartAc(KariyerVeri.Global(1, 2)); yield return Bekle(20); yield return Cek("menu_" + ek + "mac_karti_tur2"); ui.Geri();
-            ui.KariyerTurSec(3); yield return Bekle(15); yield return Cek("menu_" + ek + "harita_tur4_yakinda");
+            // 2026-10-26 adım 9: Tur 3 (Avrupa) ve Tur 4 (Dünya Finalleri) örnek ilerlemeyle, Usta yolu kilitli ve açık
+            var r = new Ilerleme(); for (int t = 0; t < 2; t++) for (int b = 0; b < 6; b++) r.tur[t][b] = b % 3 == 0 ? 7 : 3; r.tur[2][0] = 7; r.tur[2][1] = 3; r.tur[2][2] = 1; Ayar.ilerleme = r;
+            ui.KariyerTurSec(2); yield return Bekle(20); yield return Cek("menu_" + ek + "harita_tur3");
+            ui.MacKartAc(KariyerVeri.Global(2, 3)); yield return Bekle(20); yield return Cek("menu_" + ek + "mac_karti_tur3"); ui.Geri();
+            ui.KariyerTurSec(3); yield return Bekle(15); yield return Cek("menu_" + ek + "harita_tur4_kilitli");
+            for (int b = 0; b < 6; b++) r.tur[2][b] = 3; r.tur[3][0] = 7; r.tur[3][1] = 3;
+            ui.KariyerTurSec(3); yield return Bekle(20); yield return Cek("menu_" + ek + "harita_tur4");
+            ui.MacKartAc(KariyerVeri.Global(3, 2)); yield return Bekle(20); yield return Cek("menu_" + ek + "mac_karti_tur4_imza"); ui.Geri();
+            for (int b = 0; b < 6; b++) r.tur[3][b] = 3; r.UstaIsle(0, true, true); r.UstaIsle(1, true, false); r.UstaIsle(2, false, true);
+            ui.KariyerTurSec(3); yield return Bekle(20); yield return Cek("menu_" + ek + "harita_tur4_usta");
+            ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_" + ek + "oyna_usta"); ui.SekmeAc(Sekme.Kariyer);
             Ayar.ilerleme = eski; ui.KariyerTurSec(-1); yield return Bekle(5);
         }
 
@@ -150,6 +168,14 @@ namespace BirdieSmash.Game
             float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 60 && !(root.match.op.imzaT > 0 && root.match.op.imzaId != null)) yield return null;
             yield return Bekle(6); yield return Cek(ad + (root.match.op.imzaT > 0 ? "" : "_yok"));
             botAcik = false; Ayar.ilerleme = eski; Ayar.reduce = r0; Ayar.kariyerModu = km; Ayar.kariyerSecim = -1;
+        }
+        // 2026-10-26: antrenman görevi oynanırken (köşe smacı: hedef köşe, sayaç kartı) ve sonuç ekranı; Günün maçı oynanırken.
+        IEnumerator GorevKare()
+        {
+            root.DrilBaslat("kose"); botAcik = true; yield return Bekle(60 * 6); yield return Cek("gorev_kose_oyun");
+            root.DrilBitir(); float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 10 && root.ekran != Ekran.Bitti) yield return null;
+            yield return Bekle(20); yield return Cek("gorev_sonuc"); botAcik = false;
+            root.GunlukBaslat(); botAcik = true; yield return Bekle(60 * 3); yield return Cek("gunun_maci_oyun"); botAcik = false;
         }
         IEnumerator Bekle(int kare) { for (int i = 0; i < kare; i++) yield return null; }
 

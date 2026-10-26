@@ -74,6 +74,10 @@ namespace BirdieSmash.Game
                 if (!KariyerVeri.Turlar[tu].Var) continue; bool ac = Ayar.ilerleme.TurAcik(tu);
                 Deger(iz, L.T(TurAd(tu)), ac ? Ayar.ilerleme.TurYildiz(tu) + "/18 ★" : L.T("Kilitli"));
             }
+            // 2026-10-26 adım 7–9
+            Deger(iz, L.T("Antrenman yıldızı"), p.AntrenmanYildiz + "/" + Dril.ToplamYildiz);
+            Deger(iz, L.T("Günün maçı"), p.GunlukSay.ToString());
+            if (p.UstaAcik) Deger(iz, L.T("Usta yolu"), p.Usta.ToString());
             if (p.Mac == 0 && Ayar.wins > 0) c.Add(Yazi(L.T("Maç ve smaç sayısı bu sürümden sonra oynanan maçları sayar."), 12, "soluk"));
 
             c.Add(Grup(L.T("Başarımlar")));
@@ -81,6 +85,10 @@ namespace BirdieSmash.Game
             for (int i = 1; i <= Match.KARIYER.Length; i++) BasarimSatir(c, "bs_kariyer_" + i, L.T("Kariyer") + ": " + L.T(Match.KARIYER[i - 1].yer));
             for (int tu = 1; tu < KariyerVeri.Turlar.Length; tu++) if (KariyerVeri.Turlar[tu].Var) BasarimSatir(c, "bs_tur_" + (tu + 1), L.T("{0} finalini kazan", L.T(TurAd(tu))));
             BasarimSatir(c, Basarim.EFSANE, L.T("Seviye 30'a ulaş"));
+            BasarimSatir(c, Basarim.ANTRENOR, L.T("Antrenmanın 24 yıldızını topla"));
+            BasarimSatir(c, Basarim.GUNUN_MACI, L.T("Bir Günün maçını kazan"));
+            BasarimSatir(c, Basarim.USTA6, L.T("Usta yolunda 6 basamak geç"));
+            BasarimSatir(c, Basarim.IMZA_OKUR, L.T("Toplam {0} imza vuruşu oku", Basarim.IMZA_OKUR_HEDEF));
             if (Basarim.acik) { c.Add(Bosluk(6)); c.Add(Dugme(L.T("Game Center · Başarımlar"), () => { Yerel.Hap("tick"); Basarim.Goster(); })); }
             c.Add(Bosluk(20));
         }

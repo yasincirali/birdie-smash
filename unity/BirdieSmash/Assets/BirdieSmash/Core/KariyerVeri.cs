@@ -6,6 +6,10 @@
 // Veri yoksa açık bir hata atılır: sessizce boş kariyerle açılan oyun, eksik dosyayı gizlerdi.
 // Dizin: genel basamak indeksi g = tur·6 + basamak. Tur 1'de bu eski Match.KARIYER indeksiyle aynıdır (tuytop_v2.kariyer
 // ve Style.kariyer anlamını korur).
+// 2026-10-26 Tur 3–4 ve Usta yolu (adım 9): turun ek zorluğu (tepki, hucum; §3.2 "Tur 3 ve 4'te rakip tepki gecikmesi
+// kısalır ve hücum kararı artar": g yalnız hız ve hatayı ölçekliyordu, üst turlar "daha az hata yapan duvar" gibi
+// okunuyordu; daha erken çıkış ve daha çok smaç/drive "daha hızlı oyun" olarak okunur). imza: finalde olmayan basamakta da
+// imza vuruşu (Tur 4'te önceki patronlar). Usta yolu verisi kariyer.json "usta" (Core/UstaYolu).
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,18 +18,21 @@ namespace BirdieSmash.Core
 {
     public class ImzaBilgi { public string id, ad, uyari, cevap, renk; public string[] sira; }
 
-    public class KariyerTur { public string id, ad; public int epMin, epMax; public Kariyer[] b = new Kariyer[0]; public bool Var { get { return b.Length > 0; } } }
+    public class KariyerTur { public string id, ad; public int epMin, epMax; public float tepki = 1, hucum = 1; public Kariyer[] b = new Kariyer[0]; public bool Var { get { return b.Length > 0; } } }
+    // Usta yolu (kariyer.json "usta"): g = g + adim × çevrim, en çok tavan; tepki/hucum Tur 4 gibi ek zorluk.
+    public class UstaVeri { public float g = 1, adim = .02f, tavan = 1.2f, tepki = 1, hucum = 1; public int uzunluk = 5, finalUzunluk = 11; }
 
     public static class KariyerVeri
     {
         public const int TUR = 4, BASAMAK = 6;
         public static Func<string, string> Kaynak;   // ad ("kariyer" | "stil" | "gear" | "karakter") → JSON metni
-        static KariyerTur[] turlar; static Dictionary<string, Style> stil; static Dictionary<string, ImzaBilgi> imza; static string[] sira;
+        static KariyerTur[] turlar; static Dictionary<string, Style> stil; static Dictionary<string, ImzaBilgi> imza; static string[] sira; static UstaVeri usta;
 
         public static KariyerTur[] Turlar { get { Yukle(); return turlar; } }
         public static Dictionary<string, Style> Stil { get { Yukle(); return stil; } }
         public static Dictionary<string, ImzaBilgi> Imzalar { get { Yukle(); return imza; } }
         public static string[] StilSira { get { Yukle(); return sira; } }
+        public static UstaVeri Usta { get { Yukle(); return usta; } }
 
         public static int Global(int tur, int b) { return tur * BASAMAK + b; }
         public static int TurOf(int g) { return g / BASAMAK; }
@@ -34,14 +41,16 @@ namespace BirdieSmash.Core
         public static Kariyer Al(int g) { return Var(g) ? Turlar[TurOf(g)].b[BasOf(g)] : null; }
         public static bool Final(int g) { return BasOf(g) == BASAMAK - 1; }
 
-        // Basamağın rakibi: tarzın kopyası, hız ×g, hata ÷g (bugünkü kural). İmza vuruşu yalnız patronda (final).
+        // Basamağın rakibi: tarzın kopyası, hız ×g, hata ÷g (bugünkü kural). İmza vuruşu patronda (final) ve imza bayraklı
+        // basamakta (Tur 4). Turun ek zorluğu tepki ve hücum çarpanı olarak biner (Tur 1–2'de 1: eski davranış birebir).
         public static Style Rakip(int g)
         {
-            var k = Al(g); var b = Stil[k.stil].Clone(); b.hiz *= k.g; b.hata /= k.g; b.kariyer = g; b.patron = k.patron; if (!k.patron) b.imza = null; return b;
+            var k = Al(g); var t = Turlar[TurOf(g)]; var b = Stil[k.stil].Clone(); b.hiz *= k.g; b.hata /= k.g; b.kariyer = g;
+            b.patron = k.patron || k.imza; if (!b.patron) b.imza = null; b.tepki *= t.tepki; b.hucum *= t.hucum; return b;
         }
         public static ImzaBilgi Imza(string id) { ImzaBilgi b; return id != null && Imzalar.TryGetValue(id, out b) ? b : null; }
 
-        public static void Sifirla() { turlar = null; stil = null; imza = null; sira = null; Gear.VeriSifirla(); Karakter.Sifirla(); }
+        public static void Sifirla() { turlar = null; stil = null; imza = null; sira = null; usta = null; Gear.VeriSifirla(); Karakter.Sifirla(); Dril.Sifirla(); Gunluk.Sifirla(); }
         // 2026-10-26 ekipman v2 ve karakter: gear.json ve karakter.json da aynı kaynaktan (Unity Resources, testte tool/veri).
         public static string Metin(string ad) { return Oku(ad); }
 
@@ -68,12 +77,12 @@ namespace BirdieSmash.Core
             for (int t = 0; t < tj.Count && t < TUR; t++)
             {
                 var d = Json.Obj(tj[t]); var ep = d.ContainsKey("ep") ? Nums(d, "ep") : new float[] { 0, 0 };
-                var tur = new KariyerTur { id = Json.Str(d, "id", "tur" + t), ad = Json.Str(d, "ad", ""), epMin = (int)ep[0], epMax = (int)ep[ep.Length - 1] };
+                var tur = new KariyerTur { id = Json.Str(d, "id", "tur" + t), ad = Json.Str(d, "ad", ""), epMin = (int)ep[0], epMax = (int)ep[ep.Length - 1], tepki = F(d, "tepki", 1), hucum = F(d, "hucum", 1) };
                 var bl = new List<Kariyer>(); var bj = d["basamaklar"] as List<object>;
                 for (int i = 0; bj != null && i < bj.Count && i < BASAMAK; i++)
                 {
                     var b = Json.Obj(bj[i]);
-                    var k = new Kariyer { stil = Json.Str(b, "stil", "duvar"), g = F(b, "g", 1), yer = Json.Str(b, "yer", ""), saha = Json.Str(b, "saha", "salon"), uzunluk = (int)Json.Num(b, "uzunluk", 0), gorev = Json.Str(b, "gorev", null), patron = Json.Bool(b, "patron", false), tur = t, basamak = i };
+                    var k = new Kariyer { stil = Json.Str(b, "stil", "duvar"), g = F(b, "g", 1), yer = Json.Str(b, "yer", ""), saha = Json.Str(b, "saha", "salon"), uzunluk = (int)Json.Num(b, "uzunluk", 0), gorev = Json.Str(b, "gorev", null), patron = Json.Bool(b, "patron", false), imza = Json.Bool(b, "imza", false), tur = t, basamak = i };
                     if (!st.ContainsKey(k.stil)) throw new InvalidOperationException("Birdie Smash: kariyer.json bilinmeyen tarz " + k.stil);
                     bl.Add(k);
                 }
@@ -81,7 +90,12 @@ namespace BirdieSmash.Core
                 tur.b = bl.ToArray(); tl.Add(tur);
             }
             var sl = new List<string>(); object so2; if (so.TryGetValue("sira", out so2)) foreach (var x in (List<object>)so2) sl.Add((string)x);
-            stil = st; imza = im; sira = sl.ToArray(); turlar = tl.ToArray();
+            var u = new UstaVeri(); object uo; if (ko.TryGetValue("usta", out uo))
+            {
+                var d = Json.Obj(uo); u.g = F(d, "g", u.g); u.adim = F(d, "adim", u.adim); u.tavan = F(d, "tavan", u.tavan); u.tepki = F(d, "tepki", 1); u.hucum = F(d, "hucum", 1);
+                u.uzunluk = (int)Json.Num(d, "uzunluk", u.uzunluk); u.finalUzunluk = (int)Json.Num(d, "finalUzunluk", u.finalUzunluk);
+            }
+            stil = st; imza = im; sira = sl.ToArray(); usta = u; turlar = tl.ToArray();
         }
 
         static float F(Dictionary<string, object> d, string k, float def) { return (float)Json.Num(d, k, def); }

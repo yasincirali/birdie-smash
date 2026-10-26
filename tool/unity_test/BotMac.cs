@@ -124,6 +124,7 @@ static class BotMac
         if (gorevN == 0) Fail("görev olayı hiç gelmedi");
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
+        Turlar34(); Drillar(); Gunlukler(); UstaYollari();
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }
@@ -260,6 +261,7 @@ static class BotMac
         var d0 = Match.STIL["duvar"]; if (d0.hiz != 1.08f || d0.hata != .75f || d0.yorK != .7f) Fail("Rocco değerleri veriden farklı okundu");
         var f0 = Match.STIL["file"]; if (f0.geriK != 1.8f || f0.ev != 2.2f) Fail("Mika değerleri veriden farklı okundu");
         if (KariyerVeri.Turlar.Length != 4 || !KariyerVeri.Turlar[1].Var || KariyerVeri.Turlar[1].b[5].uzunluk != 11 || !KariyerVeri.Turlar[1].b[5].patron) Fail("Asya Turu verisi");
+        if (!KariyerVeri.Turlar[2].Var || !KariyerVeri.Turlar[3].Var) Fail("Tur 3–4 verisi yok");
         foreach (var t in KariyerVeri.Turlar) foreach (var k in t.b) if (Match.GorevBul(k.gorev) == null || !Match.STIL.ContainsKey(k.stil)) Fail("bilinmeyen görev/tarz: " + k.yer);
         var M = new Match(5, new MatchOptions { stil = Match.KariyerRakip(1), target = 5 });
         if (M.BasamakGorevi == null || M.BasamakGorevi.id != "karsila" || M.gorevler.Count != 3 || M.gorevler.Select(x => x.id).Distinct().Count() != 3) Fail("basamağın sabit görevi ilk görev olmalı");
@@ -288,9 +290,12 @@ static class BotMac
         var j2 = Ilerleme.Oku(j.Yaz(), 0, false); if (j2.Yaz() != j.Yaz() || !j.Yaz().Contains("\"unvan\":\"x\"")) Fail("kayıt gidiş-dönüş / bilinmeyen alan: " + j.Yaz());
         var bz = Ilerleme.Oku("{\"tur\":[[0,0,1,0,0,0]]}", 0, false); if (bz.Tur1Gecilen() != 3) Fail("sıra tutarlılığı: geçilen basamağın öncekiler de geçilmiş");
         if (Ilerleme.Oku("bozuk{", 1, false).Tur1Gecilen() != 1) Fail("bozuk kayıt eski sayıya düşmeli");
-        // Tur 2 finali: veri yok (Tur 3) → hepsi bitti, Tur 3 "yakında"
+        // 2026-10-26: Tur 3–4 verisi geldi. Asya Turu bitince Avrupa Turu açık (yakında değil); Dünya Finalleri bitince hepsi
+        // bitti ve Usta yolu açık (notu "Usta yolu açıldı").
         var f = Ilerleme.Oku(null, 6, true); for (int b = 0; b < 6; b++) f.Isle(6 + b, true, false, 5, 4, 5);
-        if (!f.HepsiBitti || f.TurAcik(2) || !f.TurYakinda(2) || f.Siradaki() != 11) Fail("Asya Turu bitince Tur 3 yakında");
+        if (f.HepsiBitti || !f.TurAcik(2) || f.TurYakinda(2) || f.Siradaki() != 12 || f.UstaAcik) Fail("Asya Turu bitince Avrupa Turu açılmalı");
+        IlerlemeSonuc son = null; for (int g = 12; g < 24; g++) son = f.Isle(g, true, false, 5, 4, 5);
+        if (!f.HepsiBitti || !f.UstaAcik || !son.turBitti || !son.not.Contains("Usta yolu açıldı") || f.Siradaki() != 23) Fail("Dünya Finalleri bitince Usta yolu açılmalı: " + son.not);
         var tb = Ilerleme.Oku(null, 5, false).Isle(5, true, false, 5, 4, 5); if (!tb.turBitti || !tb.not.Contains("Asya Turu açıldı")) Fail("Tur 1 finali notu: " + tb.not);
         // ödül: yeni yıldız +20 Tüy, okunan imza +5 XP
         var g0 = new Gear(new BellekKayit(), 0); g0.eko.gun = "x"; var o0 = g0.Odul(true, false, 5, true, 0, 0, DateTime.Now);
@@ -460,4 +465,128 @@ static class BotMac
         }
         return n > 0 ? sum / n : 0;
     }
+
+    // ---- 2026-10-26 adım 7–9 ----
+    // Tur 3–4: imza bayrağı, tur ek zorluğu, Tur 1–2 dokunulmadı (tepki/hucum 1), uzunluklar.
+    static void Turlar34()
+    {
+        for (int t = 0; t < 2; t++) if (KariyerVeri.Turlar[t].tepki != 1 || KariyerVeri.Turlar[t].hucum != 1) Fail("Tur " + (t + 1) + " ek zorluk almamalı");
+        var t3 = KariyerVeri.Turlar[2]; var t4 = KariyerVeri.Turlar[3];
+        if (!(t3.tepki < 1 && t3.hucum > 1 && t4.tepki < t3.tepki && t4.hucum > t3.hucum)) Fail("Tur 3–4 ek zorluğu artmalı");
+        if (t3.b[0].stil != "vex" || !t3.b[5].patron || t3.b[5].stil != "vex" || t3.b[5].uzunluk != 11) Fail("Avrupa Turu: Vex yeni rakip ve patron");
+        if (t4.b[0].stil != "aria" || !t4.b[5].patron || t4.b[5].stil != "aria") Fail("Dünya Finalleri: Aria yeni rakip ve patron");
+        foreach (var k in t4.b) if (k.uzunluk != 11) Fail("Dünya Finalleri 11 sayı: " + k.yer);
+        int imzali = 0; foreach (var k in t4.b) if (k.imza) { imzali++; var r = KariyerVeri.Rakip(KariyerVeri.Global(3, k.basamak)); if (!r.patron || r.imza == null) Fail("imza bayraklı basamakta imza yok: " + k.yer); }
+        if (imzali != 3) Fail("Dünya Finalleri'nde 3 imzalı basamak (Rocco, Nova, Vex) olmalı: " + imzali);
+        var r0 = KariyerVeri.Rakip(KariyerVeri.Global(3, 3)); if (r0.patron || r0.imza != null) Fail("imzasız basamakta imza var");
+        var r1 = KariyerVeri.Rakip(KariyerVeri.Global(2, 0)); if (Math.Abs(r1.tepki - Match.STIL["vex"].tepki * t3.tepki) > 1e-5 || Math.Abs(r1.hucum - t3.hucum) > 1e-5) Fail("tur ek zorluğu rakibe binmedi");
+        var y1 = KariyerVeri.Rakip(0); if (y1.tepki != Match.STIL[y1.id].tepki || y1.hucum != 1) Fail("Tur 1 rakibi değişti");
+        foreach (var t in new[] { t3, t4 }) foreach (var k in t.b) if (k.yer.Length == 0 || k.yer.Contains("All England")) Fail("mekân adı");
+        Console.WriteLine("Tur 3–4: Vex/Aria, " + imzali + " imzalı basamak, tepki " + t3.tepki + "/" + t4.tepki + ", hücum " + t3.hucum + "/" + t4.hucum + ", Tur 1–2 aynı");
+    }
+
+    // Antrenman görevleri: her görev 12 topta biter (takılmaz), yıldız eşikleri, kayıt (en iyi, geri alınmaz), ödül yalnız yeni yıldız.
+    static void Drillar()
+    {
+        var R = new Random(5);
+        if (Dril.Liste.Length != 8 || Dril.ToplamYildiz != 24) Fail("8 görev, 24 yıldız olmalı");
+        foreach (var d in Dril.Liste)
+        {
+            var M = new Match(31, new MatchOptions { easy = true, ogr = true, dril = d, target = 5 }); int guard = 0; float t = 0;
+            if (M.Dril != d || M.ogr == null || M.gorevler.Count != 0) Fail("görev antrenman altyapısında açılmadı: " + d.id);
+            while (!M.ogr.bitti && guard++ < 60 * 240)
+            {
+                if (d.olcu == "servis") { if (M.s == null && M.server == "me" && M.wait <= 0 && !M.between && M.svPending == null) M.SwipeServe(0, -60, .5f); }
+                else { Reach re; if (M.ReachInfo(out re) && R.NextDouble() < .2) M.SwipeShot(new SwipeInput { dx = 0, dy = -200, speed = d.id == "drop" ? .5f : d.id == "kill" || d.id == "kose" ? 2.1f : 1.3f, R = 40, dist = 5, curved = d.id == "aldat" }); }
+                if (d.olcu == "split" && M.s != null && M.s.from == "op" && M.clock - M.opHitAt > .15f) M.OnTouchDown();
+                M.Update(1f / 60f); t += 1f / 60f; M.events.Clear();
+                if (M.over) { Fail("görev maç sonuna gitti: " + d.id); break; }
+            }
+            if (!M.ogr.bitti || M.ogr.dene < d.top) Fail("görev 12 topta bitmedi: " + d.id + " top " + M.ogr.dene + " süre " + t.ToString("0"));
+            if (t > 150) Fail("görev çok uzun: " + d.id + " " + t.ToString("0") + " sn");
+            if (M.sc[0] + M.sc[1] != 0) Fail("görevde skor yazıldı: " + d.id);
+            if (d.olcu == "servis" && M.DrilAlan() == null) Fail("kısa servis alanı yok");
+        }
+        var D = Dril.Bul("derin"); if (D.Yildiz(D.esik[0] - 1) != 0 || D.Yildiz(D.esik[0]) != 1 || D.Yildiz(D.esik[2]) != 3 || D.Yildiz(12) != 3) Fail("yıldız eşikleri");
+        // "Görevi bitir": o ana kadarki isabetle biter
+        var B = new Match(32, new MatchOptions { easy = true, ogr = true, dril = D, target = 5 }); for (int i = 0; i < 120; i++) { B.Update(1f / 60f); B.events.Clear(); }
+        B.DrilBitir(); for (int i = 0; i < 300 && !B.ogr.bitti; i++) { B.Update(1f / 60f); B.events.Clear(); } if (!B.ogr.bitti) Fail("görevi bitir çalışmadı");
+        // kayıt ve ödül
+        var p = new Ilerleme();
+        if (p.DrilKaydet("derin", 2) != 2 || p.DrilKaydet("derin", 1) != 0 || p.DrilYildiz("derin") != 2 || p.DrilKaydet("derin", 3) != 1 || p.AntrenmanYildiz != 3) Fail("görev yıldızı en iyi sonuç olmalı, geri alınmamalı");
+        var p2 = Ilerleme.Oku(p.Yaz(), 0, false); if (p2.DrilYildiz("derin") != 3 || p2.AntrenmanYildiz != 3) Fail("görev yıldızı kayıtta kayboldu: " + p.Yaz());
+        var g = new Gear(new BellekKayit(), 0); int tuy0 = g.eko.tuy; var o = g.DrilOdul(2); if (o.tuy != 2 * Gear.DRIL_TUY || o.xp != 2 * Gear.DRIL_XP || g.eko.tuy != tuy0 + 50) Fail("görev ödülü");
+        if (g.DrilOdul(0).tuy != 0) Fail("tekrar oynanan görev ödül vermemeli");
+        // kayıpta öneri: dışarı giden vuruşlar → derin clear; üç yıldızlıysa önerilmez
+        var K = new Match(33, new MatchOptions { easy = true, target = 5 }); K.outsBen = 3; if (Dril.Oner(K, false, new Ilerleme()) != "derin") Fail("kayıpta derin clear önerilmeli");
+        if (Dril.Oner(K, true, null) != null) Fail("galibiyette öneri olmamalı");
+        var p3 = new Ilerleme(); p3.DrilKaydet("derin", 3); if (Dril.Oner(K, false, p3) == "derin") Fail("üç yıldızlı görev önerildi");
+        Console.WriteLine("antrenman görevleri: 8 görev 12 topta biter, yıldız en iyi sonuç, ödül yalnız yeni yıldız (+" + Gear.DRIL_TUY + " Tüy)");
+    }
+
+    // Günün maçı: altın tarih, aynı gün aynı maç, 60 günde arka arkaya aynı değiştirici/rakip yok, hepsi görünür, kancalar.
+    static void Gunlukler()
+    {
+        var a = Gunluk.Bugun(new DateTime(2026, 10, 26, 8, 0, 0)); var b = Gunluk.Bugun(new DateTime(2026, 10, 26, 23, 59, 0));
+        if (a.tarih != "2026-10-26" || a.deg.id != b.deg.id || a.stil != b.stil || a.tohum != b.tohum || a.g != b.g || a.saha != b.saha) Fail("aynı gün aynı maç olmalı");
+        // altın değer: aritmetik değişirse "herkes aynı maç" eski sürümle bozulur (bilinçli değişiklikte burası güncellenir)
+        Console.WriteLine("günün maçı 2026-10-26: " + a.deg.id + " · " + a.stil + " · " + a.saha + " · g " + a.g + " · tohum " + a.tohum);
+        if (a.deg.id != ALTIN_GUN[0] || a.stil != ALTIN_GUN[1] || a.saha != ALTIN_GUN[2]) Fail("Günün maçı altın değeri değişti: " + a.deg.id + "/" + a.stil + "/" + a.saha);
+        var degSay = new Dictionary<string, int>(); var stilSay = new Dictionary<string, int>(); GunlukMac once = null;
+        for (int i = 0; i < 60; i++)
+        {
+            var m = Gunluk.Bugun(new DateTime(2026, 10, 1).AddDays(i));
+            if (once != null && (once.deg.id == m.deg.id || once.stil == m.stil)) Fail("arka arkaya aynı değiştirici/rakip: " + m.tarih);
+            if (m.g < .95f - 1e-4 || m.g > 1.15f + 1e-4 || m.uzunluk != m.deg.uzunluk) Fail("günün maçı g/uzunluk: " + m.tarih);
+            int c; degSay.TryGetValue(m.deg.id, out c); degSay[m.deg.id] = c + 1; stilSay.TryGetValue(m.stil, out c); stilSay[m.stil] = c + 1; once = m;
+        }
+        if (degSay.Count != 6 || stilSay.Count != 6) Fail("60 günde her değiştirici ve rakip görünmeli: " + degSay.Count + "/" + stilSay.Count);
+        foreach (var kv in degSay) if (kv.Value != 10) Fail("değiştirici 6 günlük bloklarla dönmeli: " + kv.Key + " " + kv.Value);
+        // kancalar: altın ralli (her 3. sayı 2), usta (easy kapalı), nefes (yorulma hızlı), patron (imza sık), serbest maç değişmez
+        var g = Gunluk.Bugun(new DateTime(2026, 10, 1)); var st = Gunluk.Rakip(g);
+        if (st.kariyer != -1 || (g.deg.id != "patron" && st.imza != null)) Fail("günün rakibi kariyer dışı, imzasız olmalı");
+        foreach (var id in new[] { "altin", "uzun", "file", "usta", "nefes", "patron" })
+        {
+            var M = new Match(41, new MatchOptions { easy = true, target = 11, stil = Match.STIL["duvar"].Clone(), degistirici = id });
+            if (M.degistirici != id) Fail("değiştirici kurulmadı: " + id);
+            if (id == "usta" && M.easy) Fail("Usta günü Kolay kaldı");
+            if (id == "nefes" && !(M.GS.yorK > 1.3f)) Fail("nefes değiştiricisi yorulmayı hızlandırmadı");
+            if (id == "patron" && (!M.stil.patron || M.stil.imzaAra != 2 || Match.STIL["duvar"].imzaAra == 2)) Fail("patron provası kaynağı değiştirdi ya da kurulmadı");
+            int guard = 0, iki = 0, sayi = 0; var R = new Random(9);
+            while (!M.over && guard++ < 60 * 60 * 30)
+            {
+                Bot(M, 1f / 60f); int s0 = M.sc[0] + M.sc[1]; M.Update(1f / 60f); int d = M.sc[0] + M.sc[1] - s0; if (d > 0) { sayi++; if (d == 2) iki++; if (d > 2) Fail("sayı 2'den büyük"); }
+                M.events.Clear();
+            }
+            if (!M.over) Fail("değiştiricili maç bitmedi: " + id);
+            if (id == "altin" && Math.Abs(iki - sayi / 3) > 1) Fail("altın ralli her 3. sayı 2 değil: " + iki + "/" + sayi);
+            if ((id == "nefes" || id == "usta" || id == "patron") && iki != 0) Fail("çift sayı olmamalı: " + id);
+            if (Math.Max(M.sc[0], M.sc[1]) > 15) Fail("tavan aşıldı: " + id);
+        }
+        var serbest = new Match(41, new MatchOptions { easy = true, target = 11 }); if (serbest.degistirici != null) Fail("serbest maçta değiştirici");
+        var p = new Ilerleme(); if (!p.GunlukKazan("2026-10-26") || p.GunlukKazan("2026-10-26") || !p.GunlukAlindi("2026-10-26") || p.GunlukAlindi("2026-10-27") || !p.GunlukKazan("2026-10-28") || p.GunlukSay != 2) Fail("günün ödülü günde bir kez");
+        if (Ilerleme.Oku(p.Yaz(), 0, false).GunlukSon != "2026-10-28") Fail("günlük kayıt");
+        Console.WriteLine("günün maçı: aynı gün aynı maç, 60 günde 6×10 değiştirici, arka arkaya tekrar yok, ödül günde bir");
+    }
+    static readonly string[] ALTIN_GUN = { "uzun", "vex", "salon" };   // 2026-10-26 ilk ölçüm (Gunluk aritmetiği sabit kaldıkça aynı)
+
+    // Usta yolu: belirlenimci sıra (24'lük çevrimde her basamak bir kez), g tavanı, final 11 sayı + imza, Usta zorluk, kayıt.
+    static void UstaYollari()
+    {
+        var gor = new HashSet<int>(); for (int n = 0; n < UstaYolu.CEVRIM; n++) gor.Add(UstaYolu.Kaynak(n)); if (gor.Count != 24) Fail("Usta çevrimi 24 basamağı dolaşmalı");
+        if (UstaYolu.Kaynak(30) != UstaYolu.Kaynak(30) || UstaYolu.Basamak(7).yer != UstaYolu.Basamak(7).yer) Fail("Usta yolu belirlenimci değil");
+        var u = KariyerVeri.Usta; if (Math.Abs(UstaYolu.Basamak(0).g - u.g) > 1e-4 || UstaYolu.Basamak(100000).g > u.tavan + 1e-4) Fail("Usta g kuralı");
+        var f = UstaYolu.Basamak(5); if (!f.final || f.uzunluk != u.finalUzunluk || UstaYolu.Basamak(4).final) Fail("her 6. basamak final");
+        var r = UstaYolu.Rakip(5); if (r.usta != 5 || r.kariyer != -1 || (r.imza != null) != r.patron) Fail("Usta rakibi");
+        var rn = UstaYolu.Rakip(4); if (rn.imza != null || rn.patron) Fail("final dışı Usta basamağında imza");
+        for (int n = 0; n < 48; n++) { var gid = UstaYolu.GorevId(n); if (Match.GorevBul(gid) == null) Fail("Usta görevi yok: " + n); if (gid == "okudun" && UstaYolu.Rakip(n).imza == null) Fail("imzasız Usta basamağında imza görevi"); }
+        var M = new Match(51, new MatchOptions { easy = false, target = 5, stil = UstaYolu.Rakip(2) }); if (M.BasamakGorevi == null || M.BasamakGorevi.id != UstaYolu.GorevId(2)) Fail("Usta basamak görevi ilk görev olmalı");
+        var p = new Ilerleme(); if (p.UstaAcik) Fail("Usta yolu baştan açık olmamalı");
+        if (p.UstaIsle(0, false, true) != 1 || p.UstaIsle(0, false, true) != 0 || p.Usta != 0 || p.UstaIsle(0, true, true) != 1 || p.Usta != 1 || p.UstaIsle(0, true, true) != 0 || p.UstaYildiz != 2) Fail("Usta yıldızları: görev kayıpta da, bir kez; geçilen basamak sayılmaz");
+        var p2 = Ilerleme.Oku(p.Yaz(), 0, false); if (p2.Usta != 1 || p2.UstaYildiz != 2) Fail("Usta kaydı");
+        p.ImzaOkuSay(3); if (Ilerleme.Oku(p.Yaz(), 0, false).ImzaOkunan != 3) Fail("imza okuma sayacı");
+        if (!Career.Line(Tamam()).StartsWith("Usta yolu: 1. basamak")) Fail("kariyer bitince satır Usta yolunu göstermeli: " + Career.Line(Tamam()));
+        Console.WriteLine("Usta yolu: 24'lük çevrim, g " + u.g + "→" + u.tavan + ", 6'da bir final, kazan + görev yıldızı, kayıt");
+    }
+    static Ilerleme Tamam() { var p = Ilerleme.Oku(null, 6, true); for (int g = 6; g < 24; g++) p.Isle(g, true, false, 5, 4, 5); return p; }
 }

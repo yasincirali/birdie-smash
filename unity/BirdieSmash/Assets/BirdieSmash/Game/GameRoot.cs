@@ -14,6 +14,9 @@ using BirdieSmash.Core;
 namespace BirdieSmash.Game
 {
     public enum Ekran { Menu, Oyun, Bitti }
+    // 2026-10-26 adım 7–9: maçın türü (maç sonu ve "Bir maç daha" buna göre). Normal = kariyer ya da Hızlı maç (Ayar.kariyerModu),
+    // Dril = antrenman görevi (Core/Dril), Gunluk = Günün maçı (Core/Gunluk), Usta = Usta yolu (Core/UstaYolu).
+    public enum Mod { Normal, Dril, Gunluk, Usta }
 
     public class GameRoot : MonoBehaviour
     {
@@ -27,6 +30,9 @@ namespace BirdieSmash.Game
         public OdulSonuc odul; public bool yukseltHazir; bool pencere; float sqT; float psvx, psvy;
         float shake, punch; Vector3 camBase; Quaternion camRot; float camFov; int seed = 1; Light sun; readonly System.Random rnd = new System.Random();
         bool ogrKayit;
+        public Mod mod = Mod.Normal; public string drilId; public GunlukMac gunluk;
+        // Maç sonu ekranının mod farkları: skor satırı (görevde "7/12 hedefte"), önerilen antrenman görevi (kayıpta, Dril.Oner).
+        public string bittiSkor, bittiDril;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot() { if (FindFirstObjectByType<GameRoot>() == null) new GameObject("BirdieSmash").AddComponent<GameRoot>(); }
@@ -99,8 +105,7 @@ namespace BirdieSmash.Game
 
         public void StartMatch(bool ogr, bool kisa, bool ilk)
         {
-            Ayar.GearHesap();
-            var o = new MatchOptions { easy = Ayar.easy, target = Ayar.target, reduce = Ayar.reduce, ilk = ilk, ogr = ogr, ogrKisa = kisa, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA };
+            var o = Secenek(ogr); o.ilk = ilk; o.ogrKisa = kisa;
             // Kariyer (2026-10-26, harita): haritadan seçilen açık basamak, yoksa sıradaki. Uzunluk basamaktan (Tur 1'de 0 =
             // oyuncunun seçimi, bugünkü davranış; Asya Turu 5, finali 11).
             if (Ayar.kariyerModu && !ogr)
@@ -109,14 +114,76 @@ namespace BirdieSmash.Game
                 o.stil = Match.KariyerRakip(g); o.saha = kb.saha; if (kb.uzunluk > 0) o.target = kb.uzunluk;
             }
             else o.stil = Match.STIL[Match.STIL_SIRA[rnd.Next(3)]];
-            match = new Match(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
-            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = ogr ? 0 : 1.5f; erkenN = 0;
+            mod = Mod.Normal; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
+        }
+        MatchOptions Secenek(bool ogr)
+        {
+            Ayar.GearHesap();
+            return new MatchOptions { easy = Ayar.easy, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA };
+        }
+        // Maç kurulumunun ortak kuyruğu (2026-10-26: dört mod aynı yoldan; davranış eski StartMatch'le birebir).
+        void MacKur(int tohum, MatchOptions o)
+        {
+            match = new Match(tohum, o);
+            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; erkenN = 0;
             fx.Temizle(); sfx.CrowdStart(); pencere = false; sfx.SuAlti(false); odul = null; hud.MacBasi(); vitrin.Kapat();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
+            bittiSkor = null; bittiDril = null;
+        }
+
+        // ---- 2026-10-26 antrenman görevi (adım 7) ----
+        // Görev Temel dersin altyapısıyla oynar (ogr + dril): skor yok, antrenör besler, maç sonu ödülü yok; sonuç ekranı ve
+        // ödül (yalnız yeni yıldız) DrilSonu'nda. Ayar.antrenman'a dokunmaz: Temel ders görülmediyse görev onu "geçilmiş" saymaz.
+        public void DrilOyna(string id) { if (Dril.Bul(id) == null) return; hud.Perde(() => DrilBaslat(id)); }
+        public void DrilBaslat(string id)
+        {
+            var d = Dril.Bul(id); if (d == null) return; var o = Secenek(true); o.dril = d; o.easy = true;   // görev vuruşu sınar, koşuyu değil
+            mod = Mod.Dril; drilId = id; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
+        }
+        void DrilSonu()
+        {
+            var M = match; var o = M.ogr; var d = o.dril; var p = Ayar.ilerleme;
+            ekran = Ekran.Bitti; Uyanik(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); bittiIlk = false;
+            int y = d.Yildiz(o.isabet), eski = p.DrilYildiz(d.id), yeni = p.DrilKaydet(d.id, y), enIyi = Mathf.Max(y, eski);
+            odul = Ayar.gear.DrilOdul(yeni); if (odul.sonra > odul.once) Yerel.Hap("flow");
+            if (odul.sonra >= 30) Basarim.Ver(Basarim.EFSANE);
+            if (yeni == 0) odul = null;   // ödülsüz tekrar: "+0 Tüy" satırı yazılmaz
+            if (p.AntrenmanYildiz >= Dril.ToplamYildiz) Basarim.Ver(Basarim.ANTRENOR);
+            yukseltHazir = false; Ayar.Kaydet();
+            bittiBaslik = L.T("Görev bitti") + " · " + L.T(d.ad);
+            bittiSkor = L.T("{0}/{1} hedefte", o.isabet, d.top);
+            bittiYildiz = new string('★', y) + new string('☆', 3 - y) + " · " + L.T("{0}/3 yıldız", y) + (yeni > 0 ? " · " + L.T("{0} yeni", yeni) : enIyi > y ? " · " + L.T("en iyin {0}/3", enIyi) : "");
+            // Sonraki yıldızın eşiği sayıyla (ne yapacağını bilsin); üç yıldızda görev tamam, tekrar ödül vermez (açıkça yazılır).
+            bittiIpucu = enIyi >= 3 ? L.T("Üç yıldız. Tekrar oynamak ödül vermez, pratik olarak kalır.") : L.T("Sonraki yıldız: 12 topta {0} isabet", d.esik[enIyi]) + " · " + L.T(d.ogretir);
+            bittiKart = new List<Ozet.Kart>(); bittiBilgi = ""; hud.ayrinti = false;
+            bittiDugme = L.T(enIyi >= 3 ? "Yeniden oyna" : "Tekrar dene");
+            sfx.MacSonu(yeni > 0); if (yeni > 0) hud.Konfeti();
+        }
+        public void DrilBitir() { if (match != null) match.DrilBitir(); }
+
+        // ---- 2026-10-26 Günün maçı (adım 8) ----
+        // Tarih başlangıç anında alınır: gece yarısını geçen maç başladığı günün maçıdır (ödül o güne yazılır).
+        public void GunlukOyna() { hud.Perde(GunlukBaslat); }
+        public void GunlukBaslat()
+        {
+            var g = Gunluk.Bugun(System.DateTime.Now); var o = Secenek(false);
+            o.stil = Gunluk.Rakip(g); o.saha = g.saha; o.target = g.uzunluk; o.degistirici = g.deg.id;
+            mod = Mod.Gunluk; gunluk = g; MacKur(g.tohum, o);   // tohum tarihten: herkes aynı maçı (aynı rastgele akış) oynar
+        }
+
+        // ---- 2026-10-26 Usta yolu (adım 9) ----
+        public void UstaOyna() { if (!UstaYolu.Acik(Ayar.ilerleme)) return; hud.Perde(UstaBaslat); }
+        public void UstaBaslat()
+        {
+            int n = Ayar.ilerleme.Usta; var b = UstaYolu.Basamak(n); var o = Secenek(false);
+            o.stil = UstaYolu.Rakip(n); o.saha = b.saha; o.target = b.uzunluk; o.easy = false;   // Usta: koşmak da sende
+            mod = Mod.Usta; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
         }
         public void OgrGec()
         {
-            if (match.ogr == null) return; Ayar.antrenman = true; Ayar.Kaydet(); bool kisa = match.ogr.kisa;
+            if (match.ogr == null) return;
+            if (match.ogr.dril != null) { match.DrilBitir(); return; }   // görevde "geç" = görevi bitir (o ana kadarki isabetle)
+            Ayar.antrenman = true; Ayar.Kaydet(); bool kisa = match.ogr.kisa;
             if (kisa) StartMatch(false, false, true); else StartMatch(false, false, false);
         }
         // Duraklatılmış maçtan ana menüye çıkınca maç bekler (HTML anaMenu: M korunur, menüde "Maça devam et").
@@ -133,7 +200,7 @@ namespace BirdieSmash.Game
             ekran = Ekran.Bitti; Uyanik(false); var M = match; bittiIlk = M.ilk; sfx.MacSonu(won); sfx.Ugultu(false, 0);
             if (won) Ayar.wins++;
             if (M.ogr == null && Ayar.ilerleme != null) Ayar.ilerleme.MacSay(M.smashes);   // Profil istatistiği (2026-10-26; cihazda)
-            string kNot = ""; bool kariyerIlk = false; int yeniYildiz = 0; bittiYildiz = null;
+            string kNot = ""; bool kariyerIlk = false; int yeniYildiz = 0; bittiYildiz = null; int ekTuy = 0, ekXp = 0; string ekAd = null; bittiSkor = null;
             if (KariyerVeri.Var(M.stil.kariyer))
             {   // yıldızlar ve açılış Core/Ilerleme'de; Tur 1 sayısı (tuytop_v2.kariyer, başarımlar) ondan türer
                 int g = M.stil.kariyer; var bg = M.BasamakGorevi;
@@ -149,8 +216,26 @@ namespace BirdieSmash.Game
                 int n = Ilerleme.Say(r.maske);
                 bittiYildiz = new string('★', n) + new string('☆', 3 - n) + " · " + L.T("{0}/3 yıldız", n) + (r.yeniYildiz > 0 ? " · " + L.T("{0} yeni", r.yeniYildiz) : "");
             }
+            // 2026-10-26 Usta yolu: sıradaki basamağı kazanmak ilerletir (yeniden oynanan eski basamak yok; sayaç tek yönlü).
+            // İlk galibiyet ödülü kariyerle aynı (+60 Tüy, +40 XP): Usta'da her galibiyet yeni basamaktır (tempo: "yeni şey").
+            if (mod == Mod.Usta && M.stil.usta >= 0)
+            {
+                var p = Ayar.ilerleme; int n = M.stil.usta; var bg = M.BasamakGorevi; bool gorevOnce = p.UstaGorevBitti(n), siradaki = n == p.Usta;
+                yeniYildiz = p.UstaIsle(n, won, bg != null && bg.bitti);   // görev yıldızı kayıpta da (+20 Tüy, kariyerle aynı)
+                if (won && siradaki) { kariyerIlk = true; kNot = "Usta yolu: " + (n + 1) + ". basamak geçildi."; if (p.Usta >= 6) Basarim.Ver(Basarim.USTA6); if (UstaYolu.Basamak(n).final) Yerel.Hap("flow"); }
+                else if (!won) kNot = "Usta yolu seni bekliyor.";
+                if (siradaki)
+                {   // iki yıldız: kazan + basamak görevi (biçim ve sayı yazıyla)
+                    int ys = (won ? 1 : 0) + (p.UstaGorevBitti(n) ? 1 : 0);
+                    bittiYildiz = new string('★', ys) + new string('☆', 2 - ys) + " · " + L.T("{0}/2 yıldız", ys) + (yeniYildiz > 0 ? " · " + L.T("{0} yeni", yeniYildiz) : "");
+                }
+            }
+            // 2026-10-26 Günün maçı: günde bir kez, kazanınca +40 Tüy, +30 XP. Kayıp normal maç ödülünü alır, bugünün ödülü açık kalır.
+            if (mod == Mod.Gunluk && gunluk != null && won && Ayar.ilerleme.GunlukKazan(gunluk.tarih))
+            { ekTuy = Gunluk.OdulTuy; ekXp = Gunluk.OdulXp; ekAd = "Günün maçı"; kNot = "Günün maçı kazanıldı."; Basarim.Ver(Basarim.GUNUN_MACI); }
+            if (M.okudun > 0) { Ayar.ilerleme.ImzaOkuSay(M.okudun); if (Ayar.ilerleme.ImzaOkunan >= Basarim.IMZA_OKUR_HEDEF) Basarim.Ver(Basarim.IMZA_OKUR); }
             // Maç sonu ödülü (HTML ekoOdul): antrenmanda yok (antrenman maç sonu ekranına gelmez). Yeni yıldız +20 Tüy, okunan imza +5 XP.
-            odul = Ayar.gear.Odul(won, kariyerIlk, M.target, M.easy, M.gorevBitti, M.perfects, System.DateTime.Now, yeniYildiz, M.okudun);
+            odul = Ayar.gear.Odul(won, kariyerIlk, M.target, M.easy, M.gorevBitti, M.perfects, System.DateTime.Now, yeniYildiz, M.okudun, ekTuy, ekXp, ekAd);
             if (odul.sonra > odul.once) Yerel.Hap("flow");   // seviye atladın
             if (odul.sonra >= 30) Basarim.Ver(Basarim.EFSANE);
             // "Ekipmanı yükselt": alınabilecek yükseltme ya da (ekipman v2) seviyesi gelmiş, Tüy'ü yeten model varsa.
@@ -161,6 +246,10 @@ namespace BirdieSmash.Game
             bittiBilgi = L.T("Rakip {0} · Görev {1}/3 ({2}) · En uzun ralli {3} · {4} smaç · {5} file vuruşu · {6} mükemmel · {7} aldatma · {8} split step · {9} tepeden · {10} uzanma · {11} kez dışarıyı bıraktın",
                 M.RakipAd(false), M.gorevBitti, bitenler.Count > 0 ? string.Join(", ", bitenler.ToArray()) : L.T("yok"), M.maxRally, M.smashes, M.kills, M.perfects, M.deceives, M.splits, M.tepeden, M.saves, M.outsLeft);
             bittiDugme = L.Cumle(Career.AgainLabel(M.stil.kariyer >= 0, won, Ayar.ilerleme.HepsiBitti ? -1 : Ayar.ilerleme.Siradaki()));
+            if (mod == Mod.Usta) bittiDugme = won ? L.T("Sıradaki Usta basamağı") : L.T("Tekrar dene");
+            else if (mod == Mod.Gunluk) bittiDugme = L.T("Günün maçını yeniden oyna");
+            // Kayıpta bir antrenman görevi önerisi (tasarım §3.6); görev zaten üç yıldızsa önerilmez.
+            bittiDril = Dril.Oner(M, won, Ayar.ilerleme);
             // Özet (Ar-Ge 23 Eki #2): iki kart + ipucu; bittiBilgi artık "Ayrıntılar" ardında (Hud.Over).
             bittiKart = Ozet.Kartlar(M); object ia; string ik = Ozet.Ipucu(M, won, out ia);
             bittiIpucu = ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
@@ -168,7 +257,11 @@ namespace BirdieSmash.Game
             if (won) hud.Konfeti();
         }
         // "Bir maç daha" / "Yeni maç başlat" da smaç perdesiyle (HTML start()).
-        public void TekrarOyna() { hud.Perde(() => StartMatch(false, false, false)); }
+        public void TekrarOyna()
+        {
+            var m = mod;   // perde kapanınca hangi mod: maç sonundaki mod (ekrandaki düğme onu söyledi)
+            hud.Perde(() => { if (m == Mod.Dril) DrilBaslat(drilId); else if (m == Mod.Gunluk) GunlukBaslat(); else if (m == Mod.Usta) UstaBaslat(); else StartMatch(false, false, false); });
+        }
         // Mağaza puanı (Ar-Ge 23 Eki #1): sonuç ekranından 1,5 sn sonra, oyuncu hâlâ oradaysa; yalnız sistem penceresi.
         // İstenmediyse sayılmaz. Apple ayrıca yılda 3 ile sınırlar; TestFlight'ta pencere hiç çıkmaz. Android hattı yok.
         void PuanIste()
@@ -335,8 +428,12 @@ namespace BirdieSmash.Game
                 foreach (var e in match.events) OnEvent(e); match.events.Clear();
                 if (match.bestRally > Ayar.bestRally) { Ayar.bestRally = match.bestRally; Ayar.Kaydet(); }
                 var o = match.ogr;
-                if (o != null && o.bitti && !ogrKayit) { ogrKayit = true; Ayar.antrenman = true; Ayar.Kaydet(); if (!o.kisa) Basarim.Ver(Basarim.ANTRENMAN); }   // geçilen antrenman sayılmaz
-                if (o != null && o.macaGec) StartMatch(false, false, o.kisa);
+                if (o != null && o.dril != null) { if (o.macaGec && !ogrKayit) { ogrKayit = true; DrilSonu(); } }   // görev: "Görev bitti" yazısından sonra sonuç ekranı, maça geçmez
+                else
+                {
+                    if (o != null && o.bitti && !ogrKayit) { ogrKayit = true; Ayar.antrenman = true; Ayar.Kaydet(); if (!o.kisa) Basarim.Ver(Basarim.ANTRENMAN); }   // geçilen antrenman sayılmaz
+                    if (o != null && o.macaGec) StartMatch(false, false, o.kisa);
+                }
             }
             me.Show(match.me, match, dt); op.Show(match.op, match, dt); shuttle.reduce = Ayar.reduce;
             shuttle.Show(match, ekran == Ekran.Menu ? null : match.s, paused ? 0 : dt, previewOn && input.on && !input.hit, previewAt);

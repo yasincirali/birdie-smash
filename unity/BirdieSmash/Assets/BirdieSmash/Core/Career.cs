@@ -16,6 +16,8 @@ namespace BirdieSmash.Core
         // Oyna kartının alt satırı: "2/6 · Asya Turu · Bangkok · File oyuncusu" ya da hepsi bittiyse şampiyon satırı.
         public static string Line(Ilerleme p)
         {
+            // 2026-10-26: dört tur bitince Usta yolu açılır; satır onu gösterir (finali yeniden oynamak haritada kalır).
+            if (p.HepsiBitti && p.UstaAcik) return "Usta yolu: " + (p.Usta + 1) + ". basamak · " + UstaYolu.Basamak(p.Usta).yer;
             if (p.HepsiBitti) return "Şampiyon! Finali yeniden oynarsın";
             int g = p.Siradaki(); var k = KariyerVeri.Al(g);
             return (KariyerVeri.BasOf(g) + 1) + "/" + KariyerVeri.BASAMAK + " · " + KariyerVeri.Turlar[KariyerVeri.TurOf(g)].ad + " · " + k.yer + " · " + Match.STIL[k.stil].ad;

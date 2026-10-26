@@ -46,6 +46,8 @@ namespace BirdieSmash.Game
             Erisim.Etiket(kb, L.T(TurAd(tr)) + (veri ? ", " + L.T("{0}/{1} yıldız", p.TurYildiz(tr), 18) : "") + (!acik ? ", " + KilitNedeni(tr) : ""), "metin");
             if (!veri) { c.Add(Bosluk(20)); return; }
 
+            // 2026-10-26: Usta yolu son turun üstünde (finalden sonra gelir; kilitliyken nedeniyle görünür)
+            if (tr == KariyerVeri.TUR - 1) { c.Add(UstaKart()); var uy = new VisualElement(); uy.AddToClassList("yol"); uy.AddToClassList(p.UstaAcik ? "yol--acik" : "yol--kilit"); uy.pickingMode = PickingMode.Ignore; c.Add(uy); }
             // yol: final üstte, 1. basamak altta
             VisualElement simdiki = null;
             for (int b = KariyerVeri.BASAMAK - 1; b >= 0; b--)
@@ -135,7 +137,7 @@ namespace BirdieSmash.Game
         {
             int g = kartBasamak; if (!KariyerVeri.Var(g)) { AltKapat(); return; }
             var p = Ayar.ilerleme; var kb = KariyerVeri.Al(g); var st = Match.STIL[kb.stil]; int tr = KariyerVeri.TurOf(g), b = KariyerVeri.BasOf(g);
-            bool acik = p.Acik(g), final = KariyerVeri.Final(g); int m = p.Maske(g); var im = final ? KariyerVeri.Imza(st.imza) : null;
+            bool acik = p.Acik(g), final = KariyerVeri.Final(g); int m = p.Maske(g); var im = final || kb.imza ? KariyerVeri.Imza(st.imza) : null;   // Tur 4: önceki patronlar finalden önce de imzalı
             var c = AltSayfaKur(L.T(kb.yer));
             c.Add(Yazi(L.T(TurAd(tr)) + " · " + L.T("{0}. basamak", b + 1) + (final ? " · " + L.T("Final") : ""), 13, "etiket"));
             // rakip: renk yuvarlağı yanında ad ve tarz (renk tek başına anlam taşımaz)
