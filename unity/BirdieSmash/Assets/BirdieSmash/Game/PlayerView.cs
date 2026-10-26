@@ -252,7 +252,12 @@ namespace BirdieSmash.Game
         {
             // Dokulu modelde (Gerçekçi) forma = gövde dokusu × takım rengi + normal: forma dokusu açık gri gövde, koyu gri
             // yaka/raglan/kol ağzı; takım rengi gölgesi ve iki tonlu kesimiyle görünür. Doku yoksa eski düz renk birebir.
-            var govdeTx = modelAdi != null ? Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde") : null;
+            // 2026-10-26 (oyun tasarımı incelemesi, r22 oyuncak_12/15: iki oyuncu da lacivert): oyuncak ailesinin _govde
+            // dokusu renk ATLASI (oyuncak.py, 8×8 düz hücre); forma ağı atlasa girmez ama UV'si bir hücreye (lacivert şort)
+            // düşüyordu → takım rengi × lacivert = iki takım da koyu lacivert. Doku × renk yalnız tinte hazır (açık gri
+            // forma dokusu) modelde: ölçüt normal haritası (_govde_n) — bugün yalnız Gerçekçi. Atlas modeli düz takım rengi.
+            var govdeTx = modelAdi != null && Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde_n") != null
+                ? Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde") : null;
             var formaM = govdeTx != null ? Kit.LitTex(g.forma, govdeTx, .25f) : Kit.Lit(g.forma, .25f);
             if (govdeTx != null)
             {
