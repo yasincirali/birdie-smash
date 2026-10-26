@@ -330,13 +330,15 @@ namespace BirdieSmash.Game
         //    smaç çubuğunun üstüne. Yayın uzaktan (dipten 7 m) dar açıyla bakar: TV yayın kamerası gibi, yakın yarı şişmez.
         //  - Eğimin tavanı var (KAD_EGIM_AZAMI): uzun ekranı yalnız eğimle doldurmak oyuncuları üstten basık gösterir
         //    (19,5:9'da Yayın 52°'de rakip boy/en 0,80). Tavana değince fazla pay altta kalır: dip çizginin gerisindeki zemin
-        //    (Yayın 19,5:9 ~80 px, Alçak ~200 px). SE'de tavana değilmez, kort ekranı tam doldurur.
+        //    (Yayın 19,5:9'da ~30 px). SE'de tavana değilmez, kort ekranı tam doldurur. Uzaklık küçükken (dipten 3–4 m) tavan
+        //    kamerayı 5 m'ye indirip açıyı 85°'ye açıyordu (model taraması); Alçak bu yüzden dipten 5 m, genişlikte %10 taşar.
         //  - Uzaklık gölge mesafesine bağlı: Kalite orta basamağı 25 m; Yayın'da rakibin dip gerisi 24,3 m (dipten 7 m sınır).
         //  - Çözüm yoksa (çok geniş ekran, ör. iPad) son çare eski kaydırma: üst nokta yine skor kutusunun altına alınır.
         // Ölçüm (tool modeli + CI r23, 390×845 / 375×667): rapor ve tablo inceleme notunda.
-        public static readonly float[] KAD_D = { 7, 4, 3 };              // KAMERA_SIRA sırasıyla: dipten geri (m)
-        public static readonly float[] KAD_GENIS = { 1, 1, .85f };       // tekler genişliğinin ekrana oranı (Üstten'de yanlarda pay)
-        public static readonly float[] KAD_EGIM_AZAMI = { 47, 47, 64 };  // eğim tavanı (derece)
+        public static readonly float[] KAD_D = { 7, 5, 3 };              // KAMERA_SIRA sırasıyla: dipten geri (m)
+        public static readonly float[] KAD_GENIS = { 1, 1.1f, .85f };    // tekler(+15 cm) genişliğinin ekrana oranı: Alçak yakın köşede
+                                                                         // ~8 px taşar (oyuncu büyür), Üstten'de yanlarda pay
+        public static readonly float[] KAD_EGIM_AZAMI = { 47, 48, 64 };  // eğim tavanı (derece)
         float camTv = .6f, camK;   // dikey yarım açının tanjantı ve eksen dışı kayma (NDC; + = görüntü yukarı; düz kamerada 0)
         float kD, kF, kNU, kNA, kAsp;   // çözüm sırasında: açı parametreleri ve ekran sınırları (NDC)
         void FitCamera()
