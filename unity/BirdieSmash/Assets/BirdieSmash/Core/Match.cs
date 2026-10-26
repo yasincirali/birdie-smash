@@ -305,7 +305,7 @@ namespace BirdieSmash.Core
                 if (!isServe && h.prepA > .5f && (ps == "low" && c0 == "drive" && hz < 1.3f || ps == "drive" && c0 == "low" && hz > .6f || ps == "kill" && (c0 == "over" && hz <= 1.95f || c0 == "drive" && hz > 1))) h.shot = ps;
             }
             h.hand = isServe ? "fore" : HandOf(h, from, hx, hz);
-            string c = isServe ? (h.svClip ?? "serve") : h.shot == "lunge" ? "lunge" : h.shot == "over" ? (type == "jump" || from == "op" && h.jump > 0 ? "jump" : type == "smash" ? "smash" : type == "drop" && HasClip("drop") ? "drop" : "clear") : h.shot == "drive" ? "drive" : h.shot == "kill" ? "kill" : type == "block" ? "block" : type == "drop" && HasClip("net") ? "net" : "low";
+            string c = isServe ? (h.svClip ?? "serve") : h.shot == "lunge" ? "lunge" : h.shot == "over" ? (type == "jump" || h.jump > 0 ? "jump" : type == "smash" ? "smash" : type == "drop" && HasClip("drop") ? "drop" : "clear") : h.shot == "drive" ? "drive" : h.shot == "kill" ? "kill" : type == "block" ? "block" : type == "drop" && HasClip("net") ? "net" : "low";
             h.clip = ClipHand(c, h.hand);
             // Takip vuruşa göre (fb1b245, denetim #5/#16): smaç/clear 300 ms, drop 200, drive 180, file öldürme 150,
             // net vuruşu 120, blok 100, lift 250; hamle toparlanması 300 ms. Eskiden hepsi 250 ms'ydi.
@@ -449,6 +449,10 @@ namespace BirdieSmash.Core
             else { pstreak = 0; if (flow) { flow = false; Say(null, "flow", Court.MID, Court.NET, 2, "Akış bitti"); } if (q == "poor") Say("me", type, hx, hy, hz, "Sıyırdın"); }
             if (I.lunge) { me.dive = 1; me.yat = false; me.stun = .35f * GS.toparla; saves++; Yor(.15f); if (saves <= 3) Say("me", "lunge", hx, hy, hz, "Uzandın!"); }   // öğretici: maçta ilk 3 kez
             // Kaydırma anı temas anıdır, kalkış önceden bilinmez: figür temasta tepede (jump=.53 → sin(.53π) ≈ 1), sonra iner.
+            // 2026-10-26 gece (AnimOlc): bu yolda gövde temas karesinde yerden 0,5 m tepeye ışınlanıyordu (12 maçta 68 kez).
+            // Hazırlık sıçrama gösteriyorsa (enerji dolu, tepeden) kalkış Prep'te tahmini temas zamanından başlar; temas yine tepede
+            // (kaydırma tahminden erken/geç geldiyse yay tepeye alınır), aradaki fark PlayerView'ın yükseliş tavanıyla (GORSEL_YUKSELIS)
+            // birkaç karede kapanır, ışınlanma olmaz.
             if (type == "jump") me.jump = .53f;
             if (type == "kill") kills++;
             if (type == "smash" || type == "jump") smashes++;
@@ -764,6 +768,11 @@ namespace BirdieSmash.Core
             if (who == "op" && I != null && I.who == "op" && I.imza != null && s != null && !s.dead && s.from != who && I.t - s.t < .7f)
             { o.prepClip = ClipHand(ImzaKlip(I.imza), o.prepHand ?? "fore"); if (I.imza == "yildirim" && o.prepHand == "back") o.prepClip = "bh_over"; }
             if (who == "op" && o.imzaT > 0 && o.imzaId == "duvarblok") { tg = 1; o.prepShot = "drive"; o.prepClip = "block"; o.prepHand = "fore"; o.prepT = float.NaN; }
+            // Sıçrayarak smaç hazırlığında kalkış (2026-10-26 gece): rakipteki gibi tahmini temastan SALINIM_JUMP önce; tepe temasta.
+            // Yalnız görünüm (me.jump'ı oyun kuralı okumaz). Oyuncu sonra yavaş kaydırırsa (clear/drop) temas havada olur ve klip
+            // sıçrama klibidir (StartFlight: h.jump > 0); kaydırmazsa figür sıçrayıp iner.
+            if (who == "me" && o.prepClip == "jump" && tg > 0 && !float.IsNaN(o.prepT) && o.prepT > 0 && o.prepT < SALINIM_JUMP && !(o.jump > 0) && o.sw <= 0)
+                o.jump = 1 - (SALINIM_JUMP - o.prepT) * JUMP_HIZ;
             // rakipte geri salınım sakin akar (~0,4 sn); bizde vuruş penceresi kısa, eski hız kalır. Bırakış hızlı.
             o.prepA += (tg - o.prepA) * Math.Min(1, dt * (tg > 0 && who == "op" ? 4.5f : 9));
         }
@@ -984,6 +993,11 @@ namespace BirdieSmash.Core
         public static float JumpH(Athlete o) { return JumpH(o, false); }
         // hopsuz: split klibi oynarken gövde kaldırması klipten gelir (karakter.py split: ayaklar ~5 cm); dönüşümün hop'u üstüne
         // eklenince ayaklar 15 cm'ye çıkıyordu (kaynak 3–8 cm). 2026-10-26.
+        // Görünen gövde yüksekliğinin yükselme tavanı (m/sn, PlayerView; 2026-10-26 gece). Kaydırma tahmini kalkıştan önce gelirse
+        // (ya da tahmin geç kayarsa) sıçrama yayı ortasından başlıyor, gövde tek karede 0,3–0,5 m yukarı ışınlanıyordu (AnimOlc:
+        // 12 maçta ~67). Görünüm yükselişi 6 m/sn ile sınırlar: 0,5 m ~85 ms'de, smaç donmasının (80–160 ms) içinde biter. İniş
+        // sınırsız (yer çekimi gibi kural eğrisini izler). Kalkış hızı yayın kendisinde ~3 m/sn: normal sıçrama etkilenmez.
+        public const float GORSEL_YUKSELIS = 6f;
         public static float JumpH(Athlete o, bool hopsuz) { return (float)(Math.Sin(Math.Min(1, o.jump) * Math.PI) + (hopsuz ? 0 : Math.Sin(o.hop * Math.PI) * .2)); }
     }
 }

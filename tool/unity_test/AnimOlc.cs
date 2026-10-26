@@ -43,11 +43,11 @@ static class AnimOlc
     static float Hiz(Athlete a) { return a.vAn; }
 #endif
 
-    class Iz { public string cur, prev, altKlip; public float altW; public int lastFrame = -1; public float px = float.NaN, py; public float changeT = -9; public string beforeChange; }
+    class Iz { public float jSon, jGor; public string prepSon; public int prepDegis; public string cur, prev, altKlip; public float altW; public int lastFrame = -1; public float px = float.NaN, py; public float changeT = -9; public string beforeChange; }
     class Sayac
     {
         public int kare, kayan; public double kaymaTop; public Dictionary<string, int> kayanKlip = new Dictionary<string, int>(), klipKare = new Dictionary<string, int>();
-        public Dictionary<string, int> neden = new Dictionary<string, int>(); public Dictionary<string, int> titremeCift = new Dictionary<string, int>(); public int temas, temasFazYanlis, salinimAtla, titreme, isinlanma, pencereKare, pencereKayan;
+        public Dictionary<string, int> neden = new Dictionary<string, int>(); public Dictionary<string, int> titremeCift = new Dictionary<string, int>(); public Dictionary<string, int> uyumsuzCift = new Dictionary<string, int>(); public int dikeyPop; public int prepDegisTop, prepTemas, prepUyumsuz; public Dictionary<string, int> prepCift = new Dictionary<string, int>(); public int temas, temasFazYanlis, salinimAtla, titreme, isinlanma, pencereKare, pencereKayan;
     }
 
     static int Main(string[] args)
@@ -94,6 +94,12 @@ static class AnimOlc
                         }
                     }
                     z.px = a.x; z.py = a.y;
+                    { float j = Match.JumpH(a, c == "split") * .5f; z.jGor = j > z.jGor ? Math.Min(j, z.jGor + Match.GORSEL_YUKSELIS * dt) : j; j = z.jGor;   // PlayerView: görünen gövde yüksekliği
+                      if (Math.Abs(j - z.jSon) > .12f) sc.dikeyPop++; z.jSon = j; }
+                    // hazırlık pozu değişimi: aynı yaklaşımda (temas öncesi) hazırlık klibi kaç kez değişti
+                    bool prepDal = a.sw <= 0 && a.svAnim == null && a.prepA > .08f && a.prepClip != null && Match.CLIP_HIT.ContainsKey(c);
+                    if (prepDal) { if (z.prepSon != null && c != z.prepSon) { z.prepDegis++; Inc(sc.prepCift, z.prepSon + "→" + c); } z.prepSon = c; }
+                    else if (a.sw <= 0 && a.prepA <= .08f) { z.prepSon = null; z.prepDegis = 0; }
                     if (c != z.cur)
                     {
                         if (z.cur != null && c == z.beforeChange && t - z.changeT < .15f) { sc.titreme++; Inc(sc.titremeCift, z.beforeChange + "↔" + z.cur); }
@@ -105,6 +111,7 @@ static class AnimOlc
                     if (e.kind != Ev.Hit || e.serve) continue;
                     var a = e.who == "me" ? M.me : M.op; string c; float ph; M.PickClip(a, e.who == "me", out c, out ph); var sc = S[e.who];
                     float hit; if (!Match.CLIP_HIT.TryGetValue(c, out hit)) continue; sc.temas++;
+                    { var z2 = iz[e.who]; sc.prepDegisTop += z2.prepDegis; if (z2.prepSon != null) { sc.prepTemas++; if (z2.prepSon != c && !(Match.HAMLE.ContainsKey(z2.prepSon) && Match.HAMLE[z2.prepSon] == c) && !(Match.HAMLE.ContainsKey(c) && Match.HAMLE[c] == z2.prepSon)) { sc.prepUyumsuz++; Inc(sc.uyumsuzCift, z2.prepSon + "⇒" + c); } } z2.prepDegis = 0; z2.prepSon = null; }
                     int n; Match.CLIP_N.TryGetValue(c, out n); if (n < 2) n = 8;
                     if (Math.Abs(ph - hit) * n > 1.01f) sc.temasFazYanlis++;
                     // temastan önceki kare aynı klipteyse kaç poz atlandı
@@ -121,6 +128,9 @@ static class AnimOlc
             Console.WriteLine("   kayan kare klibe göre: " + string.Join(", ", sc.kayanKlip.OrderByDescending(k => k.Value).Select(k => k.Key + "=" + k.Value + "/" + sc.klipKare[k.Key])));
             Console.WriteLine("   ayak işi dışı kaymanın nedeni: " + string.Join(", ", sc.neden.OrderByDescending(k => k.Value).Select(k => k.Key + "=" + k.Value)));
             Console.WriteLine("   titreme çiftleri: " + string.Join(", ", sc.titremeCift.OrderByDescending(k => k.Value).Take(8).Select(k => k.Key + "=" + k.Value)));
+            Console.WriteLine("   hazırlık klibi değişimi: temas başına " + (sc.prepDegisTop / (double)Math.Max(1, sc.temas)).ToString("0.00") + ", hazırlık ≠ temas klibi " + sc.prepUyumsuz + "/" + sc.prepTemas + "; en sık: " + string.Join(", ", sc.prepCift.OrderByDescending(k => k.Value).Take(6).Select(k => k.Key + "=" + k.Value)));
+            Console.WriteLine("   hazırlık ⇒ temas uyumsuz: " + string.Join(", ", sc.uyumsuzCift.OrderByDescending(k => k.Value).Take(10).Select(k => k.Key + "=" + k.Value)));
+            Console.WriteLine("   dikey sıçrama (kare başına > 12 cm): " + sc.dikeyPop);
             Console.WriteLine("   temas " + sc.temas + ", temas fazı yanlış " + sc.temasFazYanlis + ", ileri salınımda >2 poz atlayan " + sc.salinimAtla + ", klip titremesi " + sc.titreme + ", ışınlanma " + sc.isinlanma);
         }
         return 0;
