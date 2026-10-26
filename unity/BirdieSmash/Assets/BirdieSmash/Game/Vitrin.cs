@@ -31,7 +31,7 @@ namespace BirdieSmash.Game
         public int odak { get; private set; }
         public string poz { get; private set; }
         public string deneTip, deneSac, deneAyk;
-        Transform bBas, bEl; readonly List<Transform> bAyak = new List<Transform>(); Renderer bGrip; Vector3 camS, hedefS; bool camVar;
+        Transform bBas, bEl; readonly List<Transform> bAyak = new List<Transform>(); Renderer bGrip, bTel; Vector3 camS, hedefS; bool camVar;
 
         public static Vitrin Build(Transform root)
         {
@@ -84,10 +84,10 @@ namespace BirdieSmash.Game
             raketPivot.gameObject.SetActive(false);
             OdakKemikleri();
         }
-        // Yakın plan noktaları: baş, ayaklar, sağ el kemiği ve raket sapı parçası (PlayerView.Calibrate ile aynı ad kuralları).
+        // Yakın plan noktaları: baş, ayaklar, sağ el kemiği, raket sapı ve kafası (PlayerView.Calibrate ile aynı ad kuralları).
         void OdakKemikleri()
         {
-            bBas = null; bEl = null; bAyak.Clear(); bGrip = null; if (fig == null || fig.Model == null) return;
+            bBas = null; bEl = null; bAyak.Clear(); bGrip = null; bTel = null; if (fig == null || fig.Model == null) return;
             foreach (var t in fig.Model.GetComponentsInChildren<Transform>(true))
             {
                 string n = t.name.ToLowerInvariant(); if (n.Contains("__")) continue;
@@ -96,25 +96,83 @@ namespace BirdieSmash.Game
                 bool sag = n.EndsWith(".r") || n.EndsWith("_r") || n.Contains(" r ") || n.Contains("right");
                 if (bEl == null && sag && n.Contains("hand") && !n.Contains("ik") && !n.Contains("slot")) bEl = t;
             }
-            foreach (var r in fig.kanal[1]) if (r != null && PlayerView.Etiket(r.gameObject.name) == "grip") { bGrip = r; break; }
+            foreach (var r in fig.kanal[1])
+            {
+                if (r == null) continue; string e = PlayerView.Etiket(r.gameObject.name);
+                if (bGrip == null && e == "grip") bGrip = r; if (bTel == null && e == "tel") bTel = r;
+            }
+        }
+        // 2026-10-26 (r13 incelemesi): yakın planların uzaklığı kutunun gerçek en-boyuna göre. RT dikey (512×720) ama
+        // Soyunma odasında yatay kutuda ScaleAndCrop ile gösteriliyor; görünen dikey açı kutu genişledikçe daralır (büyük yazıda
+        // kutu %30 boy, daha da geniş). Eski sabit uzaklıkla Ayak planında yalnız çorap görünüyor, ayakkabı kesiliyordu.
+        // kutuOran = kutu genişlik/yükseklik, kutuAlt = alttaki düğmelerin (Yüz·Ayak·Tutuş + oklar) kapladığı oran; ikisini
+        // SoyunmaOdasi düzen değişince yazar. Hedef düğmelerin üstündeki boş alana doğru kaydırılır (yarısından biraz fazlası:
+        // düğmeler yarı saydam, tamamen kaçmak nesneyi küçültür).
+        public float kutuOran = 1.2f, kutuAlt = .35f;
+        const float TAN15 = .26795f;   // fieldOfView 30 → yarım açı 15°
+        void Gorus(out float gx, out float gy)
+        {
+            float ro = rt.width / (float)rt.height, ba = Mathf.Max(.2f, kutuOran);
+            gx = TAN15 * Mathf.Min(ro, ba); gy = TAN15 * Mathf.Min(1, ro / ba);
+        }
+        // yariY/yariX: kadrajda kalması gereken yarı yükseklik/genişlik (metre). Dönen: uzaklık ve bakışın aşağı kayması.
+        float Uzaklik(float yariY, float yariX, out float kayma)
+        {
+            float gx, gy; Gorus(out gx, out gy); float pay = Mathf.Clamp(kutuAlt, 0, .6f) * .6f;
+            float d = Mathf.Max(yariY / (gy * (1 - pay)), yariX / gx); kayma = d * gy * pay; return d;
         }
         // Odağın kamera konumu ve bakış noktası (dünya). Boy oranlı: her beden tipinde aynı kadraj.
         void OdakPoz(out Vector3 cam, out Vector3 hedef)
         {
-            float boy = bBas != null ? Mathf.Max(.8f, bBas.position.y - YER.y) : 1.8f;
+            float boy = bBas != null ? Mathf.Max(.8f, bBas.position.y - YER.y) : 1.8f; float kay;
             cam = YER + new Vector3(0, 1.05f, 6.2f); hedef = YER + new Vector3(0, .95f, 0);
-            if (odak == YUZ && bBas != null) { hedef = bBas.position + Vector3.up * .05f * boy; cam = hedef + new Vector3(0, .03f * boy, .62f * boy); }
+            if (odak == YUZ && bBas != null)
+            {   // baş + saç (afro, topuz kesilmesin): yarı yükseklik ~16 cm
+                var h = bBas.position + Vector3.up * .06f * boy; float d = Uzaklik(.09f * boy, .08f * boy, out kay);
+                cam = h + new Vector3(0, .05f, 1).normalized * d; hedef = h - Vector3.up * kay;
+            }
             else if (odak == AYAK && bAyak.Count > 0)
-            {
-                Vector3 m = Vector3.zero; foreach (var t in bAyak) m += t.position; m /= bAyak.Count; m.y = YER.y + .05f * boy;
-                hedef = m; cam = hedef + new Vector3(0, .22f * boy, .62f * boy);
+            {   // r13: iki ayakkabı + biraz bilek, hafif önden-yandan ve yukarıdan (~25°); ayakkabı ortada. Eski kadraj (0,22 · 0,62
+                // boy) kutuya kırpılınca 40 cm'lik bir pencere bırakıyor, çorap kutuyu dolduruyordu.
+                Vector3 m = Vector3.zero; foreach (var t in bAyak) m += t.position; m /= bAyak.Count; m.y = YER.y + .06f * boy;
+                float d = Uzaklik(.10f * boy, .15f * boy, out kay);
+                cam = m + new Vector3(.35f, .45f, .85f).normalized * d; hedef = m - Vector3.up * kay;
             }
-            else if (odak == TUTUS && (bGrip != null || bEl != null))
+            else if (odak == TUTUS && (bGrip != null || bEl != null)) TutusPoz(boy, out cam, out hedef);
+        }
+        // r13: forehand'de sap kameraya doğru uzanıyor, yüzün önünü kesiyor, beş parmak okunmuyordu. Kamera artık sapa dik
+        // bir yönden bakar (sap kadrajı yatay keser, el ve parmaklar yandan görünür) ve o dik yönlerden, figürün önüne ve
+        // dışına en çok bakan, başı ya da gövdeyi elin önüne (perde) ya da hemen arkasına (yüz arkada) almayan seçilir.
+        // 24 aday, poz durağan olduğu için seçim karede değişmez; sürükleyince kamera yumuşatmayla kayar.
+        void TutusPoz(float boy, out Vector3 cam, out Vector3 hedef)
+        {
+            var gc = bGrip != null && (bGrip.gameObject.activeInHierarchy || bEl == null) ? bGrip.bounds.center : bEl.position;
+            hedef = bEl != null && bGrip != null ? Vector3.Lerp(gc, bEl.position, .35f) : gc;
+            Vector3 u = bTel != null && bTel.gameObject.activeInHierarchy ? bTel.bounds.center - gc : bEl != null ? gc - bEl.position : Vector3.up;
+            u = u.sqrMagnitude > 1e-6f ? u.normalized : Vector3.up;
+            Vector3 e1 = Vector3.Cross(u, Vector3.up); if (e1.sqrMagnitude < 1e-4f) e1 = Vector3.Cross(u, Vector3.forward); e1.Normalize(); var e2 = Vector3.Cross(u, e1);
+            Vector3 dis = hedef - YER; dis.y = 0; dis = dis.sqrMagnitude > 1e-4f ? dis.normalized : Vector3.right;
+            var tercih = (Vector3.forward * .8f + dis * .6f + Vector3.up * .2f).normalized;
+            float kay; float d = Uzaklik(.075f * boy, .1f * boy, out kay);
+            Vector3 bas = bBas != null ? bBas.position + Vector3.up * .06f * boy : YER + Vector3.up * .93f * boy, govde = bas - Vector3.up * .3f * boy;
+            Vector3 en = tercih; float enP = -99;
+            for (int i = 0; i < 24; i++)
             {
-                hedef = bGrip != null && bGrip.gameObject.activeInHierarchy ? bGrip.bounds.center : bEl.position;
-                Vector3 rad = hedef - YER; rad.y = 0; var yon = (rad.sqrMagnitude > 1e-4f ? rad.normalized * .6f : Vector3.zero) + Vector3.forward * .8f + Vector3.up * .15f;
-                cam = hedef + yon.normalized * .5f * boy;
+                float th = i * Mathf.PI * 2 / 24; var dir = e1 * Mathf.Cos(th) + e2 * Mathf.Sin(th);
+                float p = Vector3.Dot(dir, tercih);
+                p -= Engel(bas, hedef, dir, d, .14f * boy) + Engel(govde, hedef, dir, d, .2f * boy);
+                if (dir.y < -.35f) p -= .5f; if ((hedef + dir * d).y < YER.y + .15f) p -= 1;
+                if (p > enP) { enP = p; en = dir; }
             }
+            cam = hedef + en * d; hedef -= Vector3.up * kay;
+        }
+        // Bir nokta kamera ile el arasında (perde: 2) ya da elin hemen arkasında, görüş çizgisine yakınsa (yüz arkada: 0,6) ceza.
+        static float Engel(Vector3 p, Vector3 hedef, Vector3 dir, float d, float yaricap)
+        {
+            var v = p - hedef; float boyunca = Vector3.Dot(v, dir); float dik = (v - dir * boyunca).magnitude;
+            if (boyunca > 0 && boyunca < d && dik < yaricap * 1.3f) return 2;
+            if (boyunca <= 0 && dik < yaricap) return .6f;
+            return 0;
         }
         float raketBoy = .7f;
         // Figürdeki raketin RT içindeki yeri (viewport 0..1; HTML TUR.rkE): Hud rakete dokunuşu (sürüklemeden) raket ekranına çevirir.

@@ -73,7 +73,9 @@
 .satir { flex-direction: row; flex-wrap: wrap; margin-left: -4px; margin-right: -4px; }
 .satir.arali { justify-content: space-between; align-items: center; margin-left: 0; margin-right: 0; flex-wrap: nowrap; }
 /* büyük yazıda (x1.35 üstü) çipler alt alta: metin sarılır, yan yana sıkışmaz */
-.buyuk-yazi .secim { flex-direction: column; }
+/* r13 (2026-10-26): .satir'ın flex-wrap: wrap'ı sütunda da geçerliydi; Yoga uzun metinli Zorluk çiplerini ikinci bir sütuna
+   (ekran dışına, sağ kenarda şerit) taşıyor, ilk çipi boşlukla uzatıyordu. Sütunda sarma yok. */
+.buyuk-yazi .secim { flex-direction: column; flex-wrap: nowrap; }
 .buyuk-yazi .secim .cip { flex-basis: auto; }
 .buyuk-yazi .satir.arali { flex-wrap: wrap; }
 
@@ -143,6 +145,11 @@
 .yildizlar .ikon { margin-right: 2px; }
 .imza-kart { border-color: rgba(255, 210, 58, 0.35); margin-top: 10px; }
 .buyuk-yazi .dugum--sol, .buyuk-yazi .dugum--sag { margin-left: 0; margin-right: 0; }
+/* r13 (2026-10-26): ×2'de rozet + ad + durum ("Locked", "Cleared") yan yana sıkışıyor, ad hece ortasından bölünüyordu
+   ("Champi ons", "tourname nt", "Singap ore"). Büyük yazıda orta sütun satırın çoğunu ister; durum yazısı alt satıra iner
+   (rozetin hizasından sonra). */
+.buyuk-yazi .dugum .basamak-orta { flex-basis: 70%; }
+.buyuk-yazi .dugum .basamak-satir > .yazi { margin-left: 52px; margin-top: 4px; }
 .buyuk-yazi .tur-secici { flex-direction: row; flex-wrap: wrap; }
 .buyuk-yazi .tur-secici .cip { flex-basis: 40%; }
 
@@ -150,7 +157,9 @@
 .vitrin-alan { height: 40%; min-height: 200px; flex-shrink: 0; margin: 0 16px; border-radius: 16px; overflow: hidden; background-color: rgb(14, 29, 32); }
 .vitrin { flex-grow: 1; }
 .vitrin-yazi { position: absolute; top: 8px; right: 10px; -unity-text-align: middle-right; color: rgba(255, 255, 255, 0.75); background-color: rgba(13, 22, 26, 0.6); border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; padding: 3px 8px; }   /* r11: ortadaki yazı raketin ve başın üstüne biniyordu; sağ üst köşe, koyu zemin */
-.vitrin-oklar { position: absolute; left: 8px; right: 8px; bottom: 8px; flex-direction: row; align-items: center; flex-wrap: nowrap; margin: 0; }
+/* r13 (2026-10-26): Yüz·Ayak·Tutuş ve oklar tek alt sütunda (SoyunmaOdasi); büyük yazıda üst üste binmiyorlar. */
+.vitrin-alt { position: absolute; left: 8px; right: 8px; bottom: 8px; flex-direction: column; align-items: stretch; }
+.vitrin-oklar { flex-direction: row; align-items: center; flex-wrap: nowrap; margin: 0; }
 .vitrin-gecis { flex-grow: 1; margin: 0 8px; background-color: rgba(34, 52, 58, 0.9); }
 .soyunma-kaydir { flex-grow: 1; flex-shrink: 1; }
 .renkler { flex-wrap: wrap; margin: 0 -3px; }
@@ -171,11 +180,11 @@
 .onizle-yesil { position: absolute; left: 0; top: 0; bottom: 0; background-color: rgb(216, 255, 90); border-radius: 3px; }
 .onizle-gri { position: absolute; left: 0; top: 0; bottom: 0; background-color: rgb(158, 179, 173); border-radius: 3px; }
 .onizle-kayar { transition-property: width; transition-duration: 0.5s; transition-timing-function: ease-out; }
-.onizle-yuzde { width: 44px; -unity-text-align: middle-right; color: rgb(216, 255, 90); }
+.onizle-yuzde { min-width: 44px; flex-shrink: 0; white-space: nowrap; -unity-text-align: middle-right; color: rgb(216, 255, 90); }   /* r13: ×2'de "+1" / "%" diye kırılıyordu */
 .izgara { flex-direction: row; flex-wrap: wrap; }
 .izgara > .model { flex-basis: 45%; flex-grow: 1; min-height: 64px; margin: 4px; }
 .izgara > .deger-kart { flex-basis: 45%; flex-grow: 1; margin: 4px; }
-.buyuk-yazi .izgara { flex-direction: column; }
+.buyuk-yazi .izgara { flex-direction: column; flex-wrap: nowrap; }   /* r13: sütunda sarma yok (.buyuk-yazi .secim ile aynı neden) */
 .model-renk { position: absolute; left: 8px; top: 8px; }
 .kose-ikon { position: absolute; right: 8px; top: 8px; }
 .tel-satir { flex-direction: row; align-items: center; flex-wrap: nowrap; margin: 0; }
@@ -189,6 +198,13 @@
 .segment { margin: 8px 12px 0 12px; flex-wrap: nowrap; }
 .segment-cip { padding: 8px 6px; }
 .buyuk-yazi .segment { flex-wrap: wrap; }
+/* r13 (2026-10-26): ×2'de dört sütun "C ha ra ct er" diye harf harf sarıyordu (flex-basis 0, satır hiç kırılmıyordu).
+   Büyük yazıda 2×2; etiket tek satır, sığmazsa küçülür (UiOge.Sigdir). Dar çip: ✓ yazının üstünde, yan dolgu az. */
+.buyuk-yazi .segment .segment-cip { flex-basis: 40%; }
+.dar-cip { padding: 6px 4px; }
+.dar-cip .cip-ic { flex-direction: column; }
+.dar-cip .cip-ic .ikon { margin-right: 0; margin-bottom: 2px; }
+.buyuk-yazi .secim .dar-cip { flex-basis: auto; }
 .buyuk-yazi .vitrin-alan { height: 30%; min-height: 160px; }
 .yuva-izgara { margin: 0 -4px; }
 .izgara > .yuva-kare { flex-basis: 30%; flex-grow: 1; margin: 4px; padding: 10px; min-height: 88px; align-items: flex-start; justify-content: flex-start; }
@@ -199,7 +215,7 @@
 .stat-iz { flex-grow: 1; height: 8px; background-color: rgba(255, 255, 255, 0.1); border-radius: 4px; margin: 0 8px; }
 .stat-dolu { position: absolute; left: 0; top: 0; bottom: 0; background-color: rgb(122, 215, 255); border-radius: 4px; }
 .stat-orta { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background-color: rgba(255, 255, 255, 0.55); }
-.stat-deger { width: 30px; -unity-text-align: middle-right; -unity-font-style: bold; flex-shrink: 0; }
+.stat-deger { min-width: 30px; white-space: nowrap; -unity-text-align: middle-right; -unity-font-style: bold; flex-shrink: 0; }   /* r13: ×2'de "5" / "0" diye kırılıyordu */
 .stat-isaret { width: 16px; margin-left: 4px; align-items: center; flex-shrink: 0; }
 .buyuk-yazi .stat-satir { flex-wrap: wrap; }
 .buyuk-yazi .stat-ad { width: 100%; }
@@ -254,7 +270,7 @@
    segment Tip · Saç · Ayakkabı · Ten, tip kartları 2×2, saç biçimleri 5 sütun, ayakkabı satırları, deneme kartı.
    Seçili = kalın camgöbeği çerçeve + ✓ + "Seçili"; denenen = limon çerçeve + "deneniyor" yazısı;
    kilitli = soluk + kilit + "Sv n". Hiçbir durum yalnız renkle verilmez. Dokunma alanları ≥ 44 pt. */
-.vitrin-odak { position: absolute; left: 8px; bottom: 60px; flex-direction: row; flex-wrap: nowrap; margin: 0; }
+.vitrin-odak { flex-direction: row; flex-wrap: nowrap; margin: 0 0 4px 0; align-self: flex-start; }
 .odak-dugme { min-width: 56px; margin-right: 6px; padding: 0 10px; background-color: rgba(34, 52, 58, 0.9); }
 .odak-dugme--secili { background-color: rgb(122, 215, 255); }
 .odak-dugme--secili .dugme-yazi { color: rgb(7, 22, 28); -unity-font-style: bold; }
@@ -270,5 +286,4 @@
 .deneme-kart { padding: 12px; border-width: 2px; border-color: rgb(216, 255, 90); }
 .deneme-birak { margin-top: 8px; }
 .renk--yuvarlak { flex-grow: 0; flex-basis: auto; width: 44px; border-radius: 22px; }
-.buyuk-yazi .vitrin-odak { bottom: 56px; }
 .buyuk-yazi .izgara > .sac-kare { flex-basis: auto; min-height: 48px; }

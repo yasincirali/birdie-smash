@@ -49,7 +49,7 @@ namespace BirdieSmash.Game
                 var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("odak-dugme"); if (sec) d.AddToClassList("odak-dugme--secili");
                 var ic = new VisualElement(); ic.AddToClassList("cip-ic"); ic.pickingMode = PickingMode.Ignore; d.Add(ic);
                 if (sec) ic.Add(Ikon(Ikonlar.Tik, 13, Kit.Hex("#07161c")));
-                ic.Add(Yazi(L.T(ad[i]), 13, "dugme-yazi"));
+                ic.Add(Yazi(L.T(ad[i]), VitrinPx(13), "dugme-yazi"));
                 d.AddManipulator(new Clickable(() => { Tik(); vt.Odak(sec ? Vitrin.TAM : o, o == Vitrin.TUTUS ? vt.poz ?? "drive" : null); SoyunmaGovdeKur(true); }));
                 Erisim.Etiket(d, L.T("Yakın plan: {0}", L.T(ad[i])) + (sec ? ", " + L.T("tüm boya dönmek için yeniden dokun") : ""), "dugme", sec);
                 vitrinOdak.Add(d);
@@ -64,7 +64,8 @@ namespace BirdieSmash.Game
             for (int i = 0; i < 4; i++)
             {
                 string k = TUTUS_KLIP[i]; bool sec = vt.odak == Vitrin.TUTUS && vt.poz == k && vt.hedefGec < 1;
-                s.Add(Cip(L.T(TUTUS_AD[i]), sec, () => { vt.Odak(Vitrin.TUTUS, k); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
+                var d = Cip(L.T(TUTUS_AD[i]), sec, () => { vt.Odak(Vitrin.TUTUS, k); root.sfx.Tik(); SoyunmaGovdeKur(true); });
+                d.AddToClassList("dar-cip"); Sigdir(d); s.Add(d);   // r13: "Backhand" + ✓ çeyrek genişliğe sığsın (segment ile aynı)
             }
         }
 
@@ -80,7 +81,7 @@ namespace BirdieSmash.Game
                     if (karAlt == ii) return; karAlt = ii; var vt = root.vitrin; bool d0 = vt.deneTip != null || vt.deneSac != null || vt.deneAyk != null;
                     vt.deneTip = vt.deneSac = vt.deneAyk = null; if (d0) vt.Yenile(); KarakterOdakAyarla(); SoyunmaGovdeKur(false);
                 });
-                d.AddToClassList("segment-cip"); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; seg.Add(d);
+                d.AddToClassList("segment-cip"); d.AddToClassList("dar-cip"); Sigdir(d); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; seg.Add(d);
             }
             if (Ayar.model != "oyuncak" && karAlt != KAR_TEN) c.Add(Yazi(L.T("Tip, saç biçimi ve ayakkabı modeli Oyuncak modelde görünür (Ayarlar › Oyuncu görünümü). Seçimin kaydedilir."), 12, "soluk"));
             if (karAlt == KAR_TIP) TipSayfa(c); else if (karAlt == KAR_SAC) SacSayfa(c); else if (karAlt == KAR_AYK) AyakkabiSayfa(c); else TenSayfa(c);

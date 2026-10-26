@@ -48,6 +48,27 @@ namespace BirdieSmash.Game
             Erisim.Etiket(d, string.IsNullOrEmpty(alt) ? t : t + ", " + alt, "dugme", secili, a == null);
             return d;
         }
+        // Sığdır (2026-10-26, r13): dar çiplerde (segment, tutuş) tek kelimelik etiket hece ortasından bölünmesin ("Chara cter",
+        // "Shoe s"). Etiket tek satıra alınır; çipin iç genişliğine sığmıyorsa yazı boyutu en çok minOran'a kadar küçülür.
+        // Neden kodda: Unity 6000.0'da USS'te otomatik yazı boyutu yok. Hesap her seferinde taban boyuttan yapılır (şimdiki
+        // boyuttan değil), çip genişliği yazıdan değil satırdan geldiği için GeometryChanged döngüye girmez.
+        void Sigdir(VisualElement d, float minOran = .7f)
+        {
+            var l = d.Q<Label>(null, "dugme-yazi"); if (l == null) return;
+            l.style.whiteSpace = WhiteSpace.NoWrap; l.style.flexShrink = 0f; float taban = l.style.fontSize.value.value;
+            d.RegisterCallback<GeometryChangedEvent>(e => SigdirOlc(d, l, taban, minOran));
+        }
+        static void SigdirOlc(VisualElement d, Label l, float taban, float minOran)
+        {
+            float w = d.contentRect.width; if (float.IsNaN(w) || w <= 1 || taban <= 0) return;
+            var ik = d.Q<Image>(null, "ikon");
+            if (ik != null && ik.parent != null && ik.parent.resolvedStyle.flexDirection == FlexDirection.Row) w -= ik.resolvedStyle.width + ik.resolvedStyle.marginLeft + ik.resolvedStyle.marginRight;
+            float simdi = l.resolvedStyle.fontSize; if (float.IsNaN(simdi) || simdi <= 0) return;
+            var olc = l.MeasureTextSize(l.text, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined);
+            float gen = olc.x * taban / simdi; if (float.IsNaN(gen) || gen <= 0) return;
+            float hedef = Mathf.Clamp(Mathf.Floor(taban * Mathf.Min(1, (w - 2) / gen) * 2) / 2, Mathf.Round(taban * minOran), taban);
+            if (Mathf.Abs(hedef - simdi) > .25f) l.style.fontSize = hedef;
+        }
         Image Ikon(Texture2D t, float pt, Color c)
         {
             var i = new Image { image = t, scaleMode = ScaleMode.ScaleToFit, tintColor = c }; i.AddToClassList("ikon");

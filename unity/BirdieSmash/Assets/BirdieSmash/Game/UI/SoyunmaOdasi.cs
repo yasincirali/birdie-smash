@@ -56,17 +56,35 @@ namespace BirdieSmash.Game
             vitrinIm = new Image { image = vt.rt, scaleMode = ScaleMode.ScaleAndCrop }; vitrinIm.AddToClassList("vitrin"); ust.Add(vitrinIm);
             Erisim.Etiket(vitrinIm, L.T("Oyuncun, 360 derece görünüm"), "resim");
             vitrinIm.RegisterCallback<PointerDownEvent>(VitrinBas); vitrinIm.RegisterCallback<PointerMoveEvent>(VitrinSurukle); vitrinIm.RegisterCallback<PointerUpEvent>(VitrinBirak);
-            vitrinYazi = Yazi("", 12, "vitrin-yazi"); ust.Add(vitrinYazi);
-            var ok = Satir("vitrin-oklar"); ust.Add(ok);
+            vitrinYazi = Yazi("", VitrinPx(12), "vitrin-yazi"); ust.Add(vitrinYazi);
+            // 2026-10-26 (r13 incelemesi): yakın plan düğmeleri ve oklar tek bir alt sütunda (Yüz·Ayak·Tutuş üstte, oklar altta).
+            // Eskiden ikisi ayrı ayrı mutlak konumdaydı (odak satırı alttan 60 pt); büyük yazıda "Raketi incele" iki satıra
+            // çıkınca oklar satırı uzuyor, düğmeler üst üste biniyordu. Sütunda yükseklikler ne olursa olsun çakışmazlar.
+            // Kap ve satırlar dokunuşu geçirir (vitrini sürükleyerek döndürmek boşluklarda da çalışsın).
+            var alt = new VisualElement(); alt.AddToClassList("vitrin-alt"); alt.pickingMode = PickingMode.Ignore; ust.Add(alt);
+            vitrinOdak = Satir("vitrin-odak"); vitrinOdak.pickingMode = PickingMode.Ignore; alt.Add(vitrinOdak);
+            var ok = Satir("vitrin-oklar"); ok.pickingMode = PickingMode.Ignore; alt.Add(ok);
             var sol = new VisualElement(); sol.AddToClassList("dugme"); sol.AddToClassList("ikon-dugme"); sol.Add(Ikon(Ikonlar.Geri, 20, Color.white)); sol.AddManipulator(new Clickable(() => VitrinCevir(-1))); Erisim.Etiket(sol, L.T("Sola çevir"), "dugme"); ok.Add(sol);
-            var orta = Dugme("", () => RaketGorunum(vt.hedefGec < 1), "vitrin-gecis"); ok.Add(orta);
+            var orta = Dugme("", () => RaketGorunum(vt.hedefGec < 1), "vitrin-gecis", null, VitrinPx(16)); ok.Add(orta);
             var sag = new VisualElement(); sag.AddToClassList("dugme"); sag.AddToClassList("ikon-dugme"); sag.Add(Ikon(Ikonlar.Ileri, 20, Color.white)); sag.AddManipulator(new Clickable(() => VitrinCevir(1))); Erisim.Etiket(sag, L.T("Sağa çevir"), "dugme"); ok.Add(sag);
-            vitrinOdak = Satir("vitrin-odak"); ust.Add(vitrinOdak); OdakDugmeleriKur();
+            OdakDugmeleriKur();
+            // Yakın plan kadrajı kutunun en-boyuna ve alttaki düğmelerin payına göre (Vitrin.Uzaklik).
+            ust.RegisterCallback<GeometryChangedEvent>(e => VitrinKutuYaz(ust, alt)); alt.RegisterCallback<GeometryChangedEvent>(e => VitrinKutuYaz(ust, alt));
             soyunmaSegment = Satir("segment"); k.Add(soyunmaSegment); SegmentKur();
             soyunmaKaydir = Kaydirma(k); soyunmaKaydir.AddToClassList("govde-kaydir"); soyunmaKaydir.AddToClassList("soyunma-kaydir");
             soyunmaGovde = soyunmaKaydir.contentContainer; soyunmaGovde.AddToClassList("sekme-icerik");
             if (soyunmaSeg == SEG_KARAKTER && root.vitrin.odak == Vitrin.TAM) KarakterOdakAyarla();   // sekmeye dönüşte (Kapat odağı sıfırladı)
             SoyunmaGovdeKur(false);
+        }
+
+        // Vitrinin üstündeki yazılar (köşe yazısı, Raketi incele, Yüz·Ayak·Tutuş) yazı çarpanını en çok 1,6'ya kadar izler
+        // (simgeler gibi, UiOge.Ikon). Neden (2026-10-26, r13): ×2'de bu yazılar 3D önizlemenin yarısını kapatıyordu; kutu büyük
+        // yazıda zaten %30 boy. 1,6 kat hâlâ büyük yazıdır ve okunur; asıl içerik (gövde) tam çarpanla büyür. Bilinçli HIG sapması.
+        float VitrinPx(float px) { return K > 1.6f ? px * 1.6f / K : px; }
+        void VitrinKutuYaz(VisualElement ust, VisualElement alt)
+        {
+            var vt = root.vitrin; float w = ust.layout.width, h = ust.layout.height; if (vt == null || float.IsNaN(w) || float.IsNaN(h) || h < 1) return;
+            vt.kutuOran = w / h; vt.kutuAlt = float.IsNaN(alt.layout.height) ? .35f : Mathf.Clamp01((alt.layout.height + 8) / h);
         }
 
         // Raket görünümü: vitrin rakete geçer, gövde Görünüm segmentine (raketin renkleri orada); dönüşte segment kalır.
@@ -76,14 +94,16 @@ namespace BirdieSmash.Game
             if (ac && soyunmaSeg != 2) { SegmentBirak(); soyunmaSeg = 2; SegmentKur(); SoyunmaGovdeKur(false); } else SoyunmaGovdeKur(true);
         }
 
-        // Segment: üç çip; seçili ✓ + zemin (yalnız renkle değil), ekran okuyucuda "sekme, seçili".
+        // Segment: dört çip; seçili ✓ + zemin (yalnız renkle değil), ekran okuyucuda "sekme, seçili".
+        // 2026-10-26 (r13): çeyrek genişlikte ✓ yanda + kalın yazı "Chara cter"ı hece ortasından bölüyordu. Artık ✓ yazının
+        // üstünde (.dar-cip), etiket tek satır ve sığmazsa en çok %70'e kadar küçülür (Sigdir); büyük yazıda 2×2.
         void SegmentKur()
         {
             if (soyunmaSegment == null) return; soyunmaSegment.Clear();
             foreach (int i in SEG_SIRA)
             {
                 int ii = i; var d = Cip(L.T(SEG_AD[i]), soyunmaSeg == i, () => { if (soyunmaSeg == ii) return; SoyunmaSegment(ii); });
-                d.AddToClassList("segment-cip"); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; soyunmaSegment.Add(d);
+                d.AddToClassList("segment-cip"); d.AddToClassList("dar-cip"); Sigdir(d); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; soyunmaSegment.Add(d);
             }
         }
 

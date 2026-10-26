@@ -106,6 +106,7 @@ namespace BirdieSmash.Game
             // 2026-10-26 adım 7–8: antrenman sayfası (örnek yıldızlarla), görev kartı, Günün maçı kartı
             var eskiP = Ayar.ilerleme; var dp = new Ilerleme(); dp.DrilKaydet("derin", 3); dp.DrilKaydet("drop", 2); dp.DrilKaydet("kose", 1); dp.DrilKaydet("servis", 2); Ayar.ilerleme = dp;
             ui.AntrenmanAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "antrenman");
+            ui.SayfaSonaKaydir(); yield return Bekle(10); yield return Cek("menu_" + ek + "antrenman_alt");   // r13: aldatıcı vuruş listesi
             ui.DrilKartAc("kose"); yield return Bekle(20); yield return Cek("menu_" + ek + "gorev_karti"); ui.Geri(); ui.Geri(); yield return Bekle(5);
             ui.GunlukAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "gunun_maci"); ui.Geri();
             dp.GunlukKazan(Gunluk.Tarih(System.DateTime.Now)); ui.Kirlet(); ui.SekmeAc(Sekme.Kariyer); ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_" + ek + "oyna_gunluk_alindi");

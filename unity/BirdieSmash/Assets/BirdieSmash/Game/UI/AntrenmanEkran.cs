@@ -18,6 +18,8 @@ namespace BirdieSmash.Game
     {
         string kartDril;
 
+        // EkranTuru için (2026-10-26, r13): açık sayfayı en alta kaydır (antrenmanın altındaki aldatıcı vuruş listesi görünsün).
+        public void SayfaSonaKaydir() { var sv = sayfa != null ? sayfa.Q<ScrollView>() : null; if (sv != null) sv.verticalScroller.value = sv.verticalScroller.highValue; }
         public void AntrenmanAc() { var once = gez.sekme; if (gez.sekme != Sekme.Oyna) gez.SekmeSec(Sekme.Oyna); gez.Ac(Gezinti.ANTRENMAN); Uygula(once, true); }
         public void DrilKartAc(string id) { var once = gez.sekme; kartDril = id; gez.Ac(Gezinti.DRIL); Uygula(once, true); }
         public void GunlukAc() { var once = gez.sekme; gez.Ac(Gezinti.GUNLUK); Uygula(once, true); }
