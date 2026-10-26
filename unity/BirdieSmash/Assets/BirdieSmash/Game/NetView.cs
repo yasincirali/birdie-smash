@@ -1,5 +1,5 @@
 // File: ızgara mesh her karede NetWave'den esnetilir (görsel kazanç 1,8, HTML ile aynı). Çarpma
-// noktası kısa süre parlar; bant kordonu ayrı titrer. Sapma vuranın tersine: top fileyi iter.
+// noktası kısa süre parlar; bant kordonu ayrı titrer (2026-10-26: bant kendi sert yayıyla, çarpma yerinde; NetWave.ta). Sapma vuranın tersine: top fileyi iter.
 using UnityEngine;
 using BirdieSmash.Core;
 
@@ -48,8 +48,9 @@ namespace BirdieSmash.Game
         {
             for (int i = 0; i < NX; i++)
             {
-                float x = i / (float)(NX - 1) * Court.CW, top = Court.NetLimit(x), wob = Mathf.Sin(Mathf.PI * x / Court.CW) * net.tape * .06f * sign;
-                tv[i * 2] = Kit.W(x, Court.NET + wob, top - .038f); tv[i * 2 + 1] = Kit.W(x, Court.NET + wob, top + .002f);
+                float x = i / (float)(NX - 1) * Court.CW, top = Court.NetLimit(x), wob = (Mathf.Sin(Mathf.PI * x / Court.CW) * net.tape * .02f + net.TapeAt(x) * .05f) * sign;
+                // Bant 75 mm (BWF); üst kenar kordonla biraz geri kalır (kordon gergin), alt kenar ağla birlikte daha çok oynar.
+                tv[i * 2] = Kit.W(x, Court.NET + wob * 1.2f, top - .073f); tv[i * 2 + 1] = Kit.W(x, Court.NET + wob * .7f, top + .002f);
             }
         }
 
