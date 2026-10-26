@@ -21,7 +21,15 @@ namespace BirdieSmash.Game
             {"Hareket azaltıldı","Reduced motion"},{"Hareket tam","Full motion"},{"Ses açık","Sound on"},{"Ses kapalı","Sound off"},{"Geri","Back"},
             {"Şimdi kaydır!","Swipe now!"},{"Erken: top parlayınca kaydır","Early: swipe when the shuttle glows"},{"Nefes","Stamina"},{"Yorgun","Tired"},
             {"Kısa kaydırdın","Swipe was short"},{"Yavaş kaydırdın","Swipe was slow"},{"Kıl payı: topun üstünden geç","Close: swipe across the shuttle"},{"Topun uzağından geçtin","You swiped far from the shuttle"},
-            {"Iska · {0}","Miss · {0}"},{"İÇERİ · {0} cm","IN · {0} cm"},{"DIŞARI · {0} cm","OUT · {0} cm"},{"Görev tamam: {0}","Mission done: {0}"}};
+            {"Iska · {0}","Miss · {0}"},{"İÇERİ · {0} cm","IN · {0} cm"},{"DIŞARI · {0} cm","OUT · {0} cm"},{"Görev tamam: {0}","Mission done: {0}"},
+            // 2026-10-26 UI Toolkit menü kabuğu (sekmeler, Kariyer listesi, Profil, Ayarlar grupları; HTML dondurulduğu için yalnız Unity)
+            {"Soyunma odası","Locker room"},{"Profil","Profile"},{"Sıradaki maç","Next match"},{"Kariyer tamam","Career complete"},{"Final","Final"},
+            {"Geçildi","Cleared"},{"ŞİMDİ","NOW"},{"Kilitli","Locked"},{"basamak","stage"},{"Yeniden oyna","Play again"},{"Kapat","Close"},
+            {"Hızlı maç oyna","Play quick match"},{"Rakip her maçta rastgele: Smaşçı, Duvar ya da File oyuncusu.","The opponent is random each match: Smasher, Wall or Net player."},
+            {"İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç","First time: 3-step training, then a 5-point match"},{"Sonraki seviyeye {0} XP","{0} XP to next level"},
+            {"Tel gerginliği","String tension"},{"Tüy","Feathers"},{"Oyun","Game"},{"Hareket","Motion"},{"Yardım","Help"},{"Oyuncu","Player"},
+            {"İstatistikler","Stats"},{"Kazanıldı","Earned"},{"Henüz değil","Not yet"},{"Antrenmanı bitir","Finish the training"},{"Akışa gir","Get into flow"},
+            {"20 vuruşluk ralli","20-shot rally"},{"Sıçrayarak smaç","Jump smash"},{"Bir maçta 3 görev","3 missions in one match"}};
         public static bool En { get { return Ayar.dil == "en"; } }
 
         static void Yukle()

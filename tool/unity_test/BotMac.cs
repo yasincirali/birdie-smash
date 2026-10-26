@@ -116,7 +116,7 @@ static class BotMac
 
         if (gorevN == 0) Fail("görev olayı hiç gelmedi");
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
-        Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler();
+        Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler();
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }
@@ -169,7 +169,10 @@ static class BotMac
     {
         var g = new Gear(new BellekKayit(), 0); g.raket = "agir"; g.tel = 22; g.bileklik = "agir"; g.bant = "odak"; g.forma = "beyaz";
         foreach (var k in g.eko.sv.Keys.ToList()) g.eko.sv[k] = 10;
-        var r = g.Hesap(); float[] html = { 1.31551f, 1.11042f, .95645f, 1.35557f, .82788f, .78f, 1, 4, .85f, 1.06f, 1.04f, 1.448f, 1, .86957f };
+        // 2026-10-26: raket taban katkısı yalnız nötr değere, raket eksisi Sv 10'da %40 küçülür (Core/Gear.Hesap; tasarım §4.5).
+        // HTML dondurulduğu için (yeni özellik yalnız Unity'de) beklenen değerler artık HTML'den değil bu kuraldan; ilk dört
+        // (güç, kontrol, drive, tatlı) değişti, gerisi eski HTML ölçümüyle aynı. Eski HTML: 1.31551, 1.11042, .95645, 1.35557.
+        var r = g.Hesap(); float[] html = { 1.25287f, 1.04006f, .94267f, 1.31231f, .82788f, .78f, 1, 4, .85f, 1.06f, 1.04f, 1.448f, 1, .86957f };
         float[] cs = { r.guc, r.kontrol, r.hiz, r.tatli, r.ton, r.kafa, r.kenar, r.akis, r.yavas, r.rakip, r.kosu, r.enerji, r.toparla, r.yorK };
         for (int i = 0; i < cs.Length; i++) if (Math.Abs(cs[i] - html[i]) > 1e-4) Fail("ekipman çarpanı " + i + ": " + cs[i] + " ≠ HTML " + html[i]);
         float notr = SmacHizi(null), agir = SmacHizi(r);
@@ -177,6 +180,20 @@ static class BotMac
         if (!(agir > notr * 1.1f)) Fail("ağır raket smacı hızlandırmadı");
         var o = new Gear(new BellekKayit(), 0); o.eko.gun = "x"; var od = o.Odul(false, false, 21, true, 0, 0, DateTime.Now);
         if (od.tuy != 53) Fail("21 sayılık yenilgi ödülü 53 Tüy olmalı (JS Math.round): " + od.tuy);
+    }
+    // Menü gezintisi (Core/Gezinti, 2026-10-26): sayfa yığını, geri sırası, sekme değişince yığın boşalır.
+    static void Gezintiler()
+    {
+        var g = new Gezinti();
+        if (g.sekme != Sekme.Oyna || g.Geri()) Fail("gezinti Oyna'da başlamalı, geri bir şey yapmamalı");
+        g.Ac(Gezinti.AYAR); g.Ac(Gezinti.NASIL); g.Ac(Gezinti.NASIL);
+        if (g.Derinlik != 2 || g.Ust != Gezinti.NASIL) Fail("aynı sayfa iki kez yığına girdi: " + g.Derinlik);
+        g.Geri(); if (g.Ust != Gezinti.AYAR) Fail("geri Ayarlar'a dönmeli");
+        g.Geri(); if (g.Derinlik != 0 || g.sekme != Sekme.Oyna) Fail("geri yığını boşaltmalı");
+        g.SekmeSec(Sekme.Kariyer); g.Ac(Gezinti.HIZLI); if (!Gezinti.AltSayfa(g.Ust)) Fail("Hızlı maç alt sayfa olmalı");
+        if (!g.SekmeSec(Sekme.Soyunma) || g.Derinlik != 0) Fail("sekme değişince yığın boşalmalı");
+        if (!g.Geri() || g.sekme != Sekme.Oyna) Fail("Oyna dışındaki sekmeden geri Oyna'ya dönmeli");
+        Console.WriteLine("gezinti: yığın, geri sırası ve sekme değişimi tamam");
     }
     // HTML → Unity devri: kabuğun yazdığı HTML değerleri bir kez kabul edilir, bayrak konur, ikinci açılış dokunmaz.
     static void Devirler()

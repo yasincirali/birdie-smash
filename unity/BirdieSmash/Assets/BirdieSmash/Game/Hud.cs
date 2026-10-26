@@ -16,6 +16,11 @@
 // 5 dokunuş), 360°'de rakete dokununca raket görünümü, seçimlerde titreşim. Yazı boyutu: HTML'de yoktu (tarayıcı Dynamic
 // Type'ı oyun kanvasına taşımıyordu); burada metin ölçeği fu = u · Ayar.YaziK (sistem: iOS tercih edilen boyut, ×0,9–1,3).
 // Yerleşim u ile kalır: ×2'ye kadar ölçek sabit yükseklikli IMGUI satırlarını taşırır; tam Dynamic Type UI Toolkit'le (faz 6).
+// 2026-10-26 (komple-oyun adım 1): menü, Ekipman (Soyunma odası), Ayarlar, Nasıl oynanır ve Lisanslar UI Toolkit'e taşındı
+// (Game/UI). Burada kalanlar: maç içi HUD, duraklat, maç sonu, smaç perdesi, gizli kare hızı göstergesi (tasarım §7.2: HUD az
+// öğeli, Adım 3'ten sonra taşınır). Yukarıdaki "Menü / Ekipman / Ayarlar" satırları o yüzeylerin tarihçesidir.
+// Aynı turda düzeltilen hata: menüdeki Tik() kendini çağırıyordu (sonsuz özyineleme; ‹ › ve renk seçimi çöküyordu),
+// UI'de sfx.Tik + titreşim olarak yazıldı.
 using System.Collections.Generic;
 using UnityEngine;
 using BirdieSmash.Core;
@@ -24,17 +29,16 @@ namespace BirdieSmash.Game
 {
     public class Hud : MonoBehaviour
     {
-        public GameRoot root; public string panel = "ana"; public bool ayrinti;
-        GUIStyle big, mid, small, tiny, btn, btnP, chip, chipOn, card, left, leftB, btnD; float u, fu; Vector2 scroll, ekipScroll;
+        public GameRoot root; public bool ayrinti;
+        GUIStyle big, mid, small, tiny, btn, btnP, chip, chipOn, card, left, leftB, btnD; float u, fu;
         class Float { public string t; public Vector3 w; public float a; public Color c; public float size; public bool sabit; }
         readonly List<Float> floats = new List<Float>(); readonly List<Rect> blocks = new List<Rect>();
-        string ogrMsg; float ogrMsgT; string lisans;
+        string ogrMsg; float ogrMsgT;
         float[] pop = new float[2]; float flash; Color flashC; readonly List<Vector3> cams = new List<Vector3>();
         class HawkV { public float x, y, t; public bool icerde, serve; public int cm; } HawkV hawk;
         Texture2D ring, ringK, glow, disk, bar; Texture2D[] perdeTex; Texture2D topIkon;
         // perde: evre 0 yok, 1 kapanıyor, 2 kapalı, 3 açılıyor
         int perdeEvre; float perdeT; System.Action perdeIs; float perdeAci; float perdeMin = .15f; bool perdeAtla, perdeBek;
-        string sonPanel; float panelT = 1; Texture2D logo; bool logoYok; int ayarDokun; float ayarDokunT; float ayarH = 600;
         static readonly float[][] PERDE_F = { new[] { 2.6f }, new[] { .86f }, new[] { .66f }, new[] { .47f }, new[] { .30f } };
         static readonly string[,] PERDE_C = { { "#a3234b", "#b52a52" }, { "#d84358", "#e85563" }, { "#f9665a", "#ff7a5c" }, { "#ffa04d", "#ffb35a" }, { "#f9d272", "#fde59a" } };
 
@@ -53,9 +57,24 @@ namespace BirdieSmash.Game
         // hazırken dokunuş beklemeyi kısaltır.
         public void Acilis() { perdeEvre = 2; perdeT = 0; perdeIs = null; perdeMin = .6f; perdeAtla = false; }
         public bool PerdeKapali { get { return perdeEvre == 1 || perdeEvre == 2; } }
+        // UI Toolkit menüsü için (UiKok): perde var mı, ne kadar örtüyor (0..1; menü 1 − örtü opaklıkla solar), dokunuşla
+        // beklemeyi kısalt. Perdenin çizimiyle aynı eğriler.
+        public bool PerdeVar { get { return perdeEvre > 0; } }
+        public float PerdeOrtu
+        {
+            get
+            {
+                if (perdeEvre == 2) return 1; if (perdeEvre == 0) return 0; bool rm = Ayar.reduce;
+                if (perdeEvre == 1) return rm ? Mathf.Clamp01(perdeT / .2f) : 1 - Mathf.Pow(1 - Mathf.Clamp01((perdeT - .12f) / .33f), 3);
+                return rm ? 1 - Mathf.Clamp01(perdeT / .25f) : 1 - Mathf.Clamp01(perdeT / .35f);
+            }
+        }
+        public void PerdeAtla() { if (perdeEvre == 2) perdeAtla = true; }
         // Sayı kazanınca üç kıvılcım patlaması 120 ms arayla ekranın üst üçte birinde (HTML burst ×3, 22 parça, 260 px/sn)
         float kivT = -1; public void SayiKivilcim() { kivT = 0; }
-        void Tik() { Tik(); Yerel.Hap("tick"); }
+
+        // GUILayout kullanılmıyor (her şey Rect ile): Layout geçişi atlanır, OnGUI karede bir kez az çalışır (2026-10-26, §7.2).
+        void Awake() { useGUILayout = false; }
 
         void Update()
         {
@@ -71,7 +90,7 @@ namespace BirdieSmash.Game
                 for (int k = once + 1; k <= sonra && k < 3; k++) { var p = root.cam.ScreenToWorldPoint(new Vector3(Screen.width * (.2f + Random.value * .6f), Screen.height * .7f, 6)); root.fx.Burst(p, Kit.Hex(new[] { "#d8ff5a", "#ff7a6b", "#7ad7ff" }[k]), 22, 260, "spark"); }
                 if (kivT > .3f) kivT = -1;
             }
-            panelT += d; if (Ayar.fps) FpsOlc();
+            if (Ayar.fps) FpsOlc();
             PerdeTick(d);
         }
         // ---- gizli kare hızı göstergesi (HTML FPS): üst satır son 1 sn, alt satır o ekranın toplamı; ekran değişince sıfırlanır.
@@ -80,8 +99,7 @@ namespace BirdieSmash.Game
         string FpsEkran()
         {
             if (perdeEvre > 0) return "Perde"; if (root.ekran == Ekran.Bitti) return "Maç sonu"; if (root.ekran == Ekran.Oyun) return root.paused ? "Duraklatma" : "Maç";
-            if (panel == "ekip") return root.vitrin.hedefGec >= 1 ? "Raket 360°" : "Ekipman";
-            return panel == "ayar" ? "Ayarlar" : panel == "nasil" ? "Nasıl oynanır" : panel == "lisans" ? "Lisanslar" : "Menü";
+            return root.ui != null ? root.ui.FpsAdi : "Menü";
         }
         void FpsOlc()
         {
@@ -95,7 +113,7 @@ namespace BirdieSmash.Game
                 fpsYazi = fpsK.Count + " fps · en uzun " + Mathf.RoundToInt(en) + " ms · takılma " + tak + "\n" + ek + ": ort " + (fpsT > 0 ? Mathf.RoundToInt(fpsN / (fpsT / 1000)) : 0) + " fps · en uzun " + Mathf.RoundToInt(fpsEn) + " ms · takılma " + fpsTak + " · " + Mathf.RoundToInt(fpsT / 1000) + " sn";
             }
         }
-        void FpsAc(bool on) { Ayar.fps = on; Ayar.Kaydet(); fpsK.Clear(); fpsEk = ""; fpsYazi = ""; Yerel.Hap("tick"); }
+        public void FpsAc(bool on) { Ayar.fps = on; Ayar.Kaydet(); fpsK.Clear(); fpsEk = ""; fpsYazi = ""; Yerel.Hap("tick"); }
         void FpsCiz()
         {
             if (!Ayar.fps || fpsYazi == "") return; var st = new GUIStyle(tiny) { alignment = TextAnchor.UpperLeft, fontStyle = FontStyle.Bold, wordWrap = false };
@@ -163,13 +181,7 @@ namespace BirdieSmash.Game
                 if (perdeEvre == 2 && Event.current.type == EventType.MouseDown) perdeAtla = true; Event.current.Use();
             }
             if (M == null) { PerdeCiz(); return; }
-            if (root.ekran == Ekran.Menu)
-            {   // panel girişi (HTML pIn: 24 px sağdan, solarak, .22 sn); ana ekranın kendisi kaymaz
-                if (panel != sonPanel) { if (sonPanel != null && panel != "ana") panelT = 0; sonPanel = panel; }
-                float pk = Ayar.reduce ? 1 : Mathf.Clamp01(panelT / .22f); pk = 1 - (1 - pk) * (1 - pk);
-                if (pk < 1) { GUI.contentColor = GUI.backgroundColor = new Color(1, 1, 1, pk); GUI.matrix = Matrix4x4.Translate(new Vector3((1 - pk) * 24 * u, 0, 0)); }
-                Menu(M); GUI.matrix = Matrix4x4.identity; GUI.contentColor = GUI.backgroundColor = Color.white;
-            }
+            if (root.ekran == Ekran.Menu) { }   // menü UI Toolkit'te (UiKok); panel girişi orada USS geçişiyle
             else
             {
                 Play(M);
@@ -184,275 +196,7 @@ namespace BirdieSmash.Game
         float ColW { get { return Mathf.Min(rx - lx, 360 * u); } }
         float ColX { get { return (W - ColW) / 2; } }
 
-        // ---- menü ----
-        void Menu(Match M)
-        {
-            if (panel == "ekip") { Ekipman(); return; }
-            Dim(.55f); float x = ColX, w = ColW, y = top + 12 * u, g = 10 * u;
-            // Alt paneller HTML'deki gibi ayrı sayfa: logo yok, başlık Geri'nin yanında
-            if (panel == "ayar") { Ayarlar(x, top + 8 * u, w, g); return; }
-            if (panel == "lisans") { Lisans(x, top + 8 * u, w); return; }
-            if (panel == "nasil") { Nasil(x, top + 8 * u, w); return; }
-            // HTML .hero: logo (96 px), "Birdie Smash", slogan. "Unity demosu" satırı kalktı: oyuncu iki sürümü görmez.
-            if (logo == null && !logoYok) { logo = Resources.Load<Texture2D>("logo"); logoYok = logo == null; }
-            if (logo != null) { float ls = 84 * u; GUI.DrawTexture(new Rect(W / 2 - ls / 2, y, ls, ls), logo, ScaleMode.ScaleToFit); y += ls + 2 * u; }
-            Shadowed(new Rect(x, y, w, 50 * u), "Birdie Smash", big, Color.white); y += 44 * u;
-            Shadowed(new Rect(x, y, w, 22 * u), L.T("Kaydır, kes, smaçla."), small, new Color(1, 1, 1, .75f)); y += 30 * u;
-            float hw = (w - g) / 2;
-            string serbest = L.T("{0} sayı · {1} · {2}", Ayar.target, L.T(Ayar.easy ? "Kolay" : "Usta"), L.T(CourtView.SAHA[Ayar.saha].ad));
-            if (Chip(new Rect(x, y, hw, BH * 1.25f), L.T("Hızlı maç") + "\n" + serbest, !Ayar.kariyerModu)) { Ayar.kariyerModu = false; Ayar.GearHesap(); Ayar.Kaydet(); }
-            if (Chip(new Rect(x + hw + g, y, hw, BH * 1.25f), L.T("Kariyer") + "\n" + L.Cumle(Career.Line(Ayar.kariyer)), Ayar.kariyerModu)) { Ayar.kariyerModu = true; Ayar.GearHesap(); Ayar.Kaydet(); }
-            y += BH * 1.25f + 6 * u;
-            {   // basamak çubuğu: geçilen dolu, sıradaki çerçeveli (yalnız renkle değil, biçimle de)
-                float bw = (hw - 5 * 4 * u) / 6, bx = x + hw + g;
-                for (int i = 0; i < 6; i++) { var r = new Rect(bx + i * (bw + 4 * u), y, bw, 6 * u); Fill(i == Ayar.kariyer ? new Rect(r.x, r.y - 2 * u, r.width, r.height + 4 * u) : r, i < Ayar.kariyer ? Kit.Hex("#d8ff5a") : i == Ayar.kariyer ? Kit.Hex("#7ad7ff") : new Color(1, 1, 1, .2f)); }
-                y += 16 * u;
-            }
-            // HTML ekran(): bekleyen maç varken tek birincil düğme "Maça devam et", Oyna ikincil "Yeni maç başlat" olur
-            if (root.bekleyen) { if (Button(new Rect(x, y, w, BH * 1.2f), "Maça devam et", true)) root.MacaDon(); y += BH * 1.2f + 6 * u; }
-            if (Button(new Rect(x, y, w, root.bekleyen ? BH : BH * 1.2f), root.bekleyen ? "Yeni maç başlat" : "Oyna", !root.bekleyen)) root.Oyna(); y += (root.bekleyen ? BH : BH * 1.2f) + 4 * u;
-            if (!Ayar.antrenman) { Shadowed(new Rect(x, y, w, 20 * u), L.T("İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç"), tiny, new Color(1, 1, 1, .7f)); y += 20 * u; }
-            y += g; float tw = (w - 2 * g) / 3;
-            int L_, kalan, gerek; Ayar.gear.OyuncuSv(out L_, out kalan, out gerek);
-            string ayarSum = L.T("{0} · {1} sayı · {2}", L.T(Ayar.easy ? "Kolay" : "Usta"), Ayar.target, L.T(CourtView.SAHA[Ayar.saha].ad));
-            string gearSum = L.T("Sv {0}", L_) + " · " + L.T("{0} Tüy", Ayar.gear.eko.tuy) + " · " + L.T(Gear.GEAR["raket"][Ayar.gear.raket].ad);
-            if (ButtonRaw(new Rect(x, y, tw, BH * 1.4f), L.T("Ayarlar") + "\n<size=" + Mathf.RoundToInt(10 * fu) + ">" + ayarSum + "</size>")) { panel = "ayar"; scroll = Vector2.zero; }
-            if (ButtonRaw(new Rect(x + tw + g, y, tw, BH * 1.4f), L.T("Ekipman") + "\n<size=" + Mathf.RoundToInt(10 * fu) + ">" + gearSum + "</size>")) { panel = "ekip"; ekipScroll = Vector2.zero; root.vitrin.Ac(); }
-            if (ButtonRaw(new Rect(x + 2 * (tw + g), y, tw, BH * 1.4f), L.T("Nasıl oynanır") + "\n<size=" + Mathf.RoundToInt(10 * fu) + ">" + L.T("Vuruş, servis, nefes") + "</size>")) { panel = "nasil"; scroll = Vector2.zero; }
-            y += BH * 1.4f + g;
-            if (Ayar.bestRally > 0 || Ayar.wins > 0) { Shadowed(new Rect(x, y, w, 22 * u), L.T("Rekor ralli") + " " + Ayar.bestRally + "   " + L.T("Galibiyet") + " " + Ayar.wins + "   " + L.T("Görev") + " " + Ayar.gorev, small, Color.white); y += 26 * u; }
-            if (Button(new Rect(x, y, w, BH), "Lisanslar ve üçüncü taraf içerik")) { panel = "lisans"; scroll = Vector2.zero; }
-        }
-
-        void Satir(ref float y, float x, float w, string baslik) { Shadowed(new Rect(x, y, w, 22 * u), L.T(baslik), left, new Color(1, 1, 1, .8f)); y += 22 * u; }
-        // Panel başı: Geri + başlık (HTML panel h2)
-        Rect PanelBas(float x, ref float y, float w, string baslik)
-        {
-            if (Button(new Rect(x, y, w * .32f, BH), "‹ Geri")) panel = "ana";
-            var tr = new Rect(x + w * .34f, y, w * .66f, BH); Shadowed(tr, L.T(baslik), mid, Color.white); y += BH + 10 * u; return tr;
-        }
-        void Ayarlar(float x, float y, float w, float g)
-        {
-            var tr = PanelBas(x, ref y, w, "Ayarlar"); blocks.Add(tr);
-            // gizli kare hızı: başlığa 3 sn içinde 5 dokunuş (HTML ile aynı; mağaza kullanıcısı rastlamaz)
-            var ev = Event.current;
-            if (ev.type == EventType.MouseDown && tr.Contains(ev.mousePosition))
-            {
-                if (ayarDokun == 0 || Time.unscaledTime - ayarDokunT > 3) { ayarDokun = 0; ayarDokunT = Time.unscaledTime; }
-                if (++ayarDokun >= 5) { ayarDokun = 0; FpsAc(!Ayar.fps); } ev.Use();
-            }
-            float sh = H - y - bot; var sr = new Rect(x, y, w, sh); blocks.Add(sr); float iw = ayarH > sh ? w - 16 * u : w;
-            scroll = GUI.BeginScrollView(sr, scroll, new Rect(0, 0, iw, ayarH));
-            float yy = 0; AyarGovde(ref yy, iw, g); GUI.EndScrollView(); ayarH = yy + 10 * u;
-        }
-        void AyarGovde(ref float y, float w, float g)
-        {
-            float x = 0, hw = (w - g) / 2, tw = (w - 2 * g) / 3;
-            Satir(ref y, x, w, "Zorluk");
-            if (Chip(new Rect(x, y, hw, BH * 1.2f), "Kolay · topa kendin gidersin, sen vur", Ayar.easy)) { Ayar.easy = true; Ayar.Kaydet(); }
-            if (Chip(new Rect(x + hw + g, y, hw, BH * 1.2f), "Usta · koşmak da sende", !Ayar.easy)) { Ayar.easy = false; Ayar.Kaydet(); } y += BH * 1.2f + g;
-            Satir(ref y, x, w, "Maç uzunluğu");
-            int[] Ls = { 5, 11, 21 }; string[] La = { "5 sayı (hızlı, ~2 dk)", "11 sayı (kısa)", "21 sayı (resmî)" };
-            for (int i = 0; i < 3; i++) if (Chip(new Rect(x + i * (tw + g), y, tw, BH * 1.2f), La[i], Ayar.target == Ls[i])) { Ayar.target = Ls[i]; Ayar.Kaydet(); } y += BH * 1.2f + g;
-            Satir(ref y, x, w, "Saha"); if (Ayar.kariyerModu) { Shadowed(new Rect(x, y, w, 18 * u), L.T("Kariyerde saha basamağa göre gelir."), new GUIStyle(left) { fontSize = Mathf.RoundToInt(11 * fu) }, new Color(1, 1, 1, .6f)); y += 18 * u; }
-            for (int i = 0; i < 4; i++) { var id = CourtView.SIRA[i]; if (Chip(new Rect(x + (i % 2) * (hw + g), y + (i / 2) * (BH + g), hw, BH), CourtView.SAHA[id].ad, Ayar.saha == id)) { Ayar.saha = id; Ayar.Kaydet(); root.SahaDegisti(); } }
-            y += 2 * (BH + g);
-            Satir(ref y, x, w, "Oyuncu görünümü");
-            if (Chip(new Rect(x, y, hw, BH), "Oyuncak 3B", Ayar.model == "oyuncak")) { Ayar.model = "oyuncak"; Ayar.Kaydet(); root.ModelDegisti(); }
-            if (Chip(new Rect(x + hw + g, y, hw, BH), "Gerçekçi", Ayar.model == "rocketbox")) { Ayar.model = "rocketbox"; Ayar.Kaydet(); root.ModelDegisti(); } y += BH + g;
-            Satir(ref y, x, w, "Kamera");
-            for (int i = 0; i < 3; i++) if (Chip(new Rect(x + i * (tw + g), y, tw, BH), GameRoot.KAMERA_AD[i], Ayar.kamera == GameRoot.KAMERA_SIRA[i])) { Ayar.kamera = GameRoot.KAMERA_SIRA[i]; Ayar.Kaydet(); root.KameraDegisti(); } y += BH + g;
-            Satir(ref y, x, w, "Ses");
-            if (Chip(new Rect(x, y, hw, BH), Ayar.ses ? "Ses açık" : "Ses kapalı", Ayar.ses)) { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); }
-            // Hareketi azalt: sistem ayarı açıksa her zaman açık (HTML prefers-reduced-motion); kapalıysa buradan zorlanabilir
-            string ht = Ayar.reduceSistem ? "Hareket azaltıldı · sistem" : Ayar.reduce ? "Hareket azaltıldı" : "Hareket tam";
-            if (Chip(new Rect(x + hw + g, y, hw, BH), ht, Ayar.reduce)) { if (!Ayar.reduceSistem) { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.Kaydet(); } } y += BH + g;
-            Satir(ref y, x, w, "Yazı boyutu");
-            string[] Yk = { "sistem", "normal", "buyuk" }, Ya = { "Sistem", "Normal", "Büyük" };
-            for (int i = 0; i < 3; i++) if (Chip(new Rect(x + i * (tw + g), y, tw, BH), Ya[i], Ayar.yazi == Yk[i])) { Ayar.yazi = Yk[i]; Ayar.Kaydet(); }
-            y += BH + g;
-            Satir(ref y, x, w, "Dil");
-            if (Chip(new Rect(x, y, hw, BH), "Türkçe", Ayar.dil == "tr")) { Ayar.dil = "tr"; Ayar.Kaydet(); }
-            if (Chip(new Rect(x + hw + g, y, hw, BH), "English", Ayar.dil == "en")) { Ayar.dil = "en"; Ayar.Kaydet(); } y += BH + g;
-            // HTML: Game Center girişi varsa "Game Center · Başarımlar" (sıralama tablosu yok)
-            if (Basarim.acik) { if (Button(new Rect(x, y, w, BH), "Game Center · Başarımlar")) { Yerel.Hap("tick"); Basarim.Goster(); } y += BH + g; }
-        }
-        void Lisans(float x, float y, float w)
-        {
-            if (lisans == null) { var t = Resources.Load<TextAsset>("lisanslar"); lisans = t != null ? t.text : "Lisans metni bulunamadı (Resources/lisanslar.txt)."; }
-            PanelBas(x, ref y, w, "Lisanslar");
-            float h = H - y - bot; var r = new Rect(x, y, w, h); blocks.Add(r);
-            GUI.Box(r, GUIContent.none, card);
-            float ch = left.CalcHeight(new GUIContent(lisans), w - 30 * u);
-            scroll = GUI.BeginScrollView(new Rect(x + 6 * u, y + 6 * u, w - 12 * u, h - 12 * u), scroll, new Rect(0, 0, w - 30 * u, ch));
-            GUI.Label(new Rect(0, 0, w - 30 * u, ch), lisans, left); GUI.EndScrollView();
-        }
-        static readonly string[,] NASIL = {
-            {"Koş","Kolay modda oyuncu topa kendisi koşar, senin işin yalnız vuruş; kısa bir dokunuşla yerini değiştirebilirsin. Usta modda koşmak sende: dokun = oraya koş, yavaş sürükle = parmağı izle"},
-            {"Forehand / backhand","Top raket tarafında gelirse forehand, öbür tarafta backhand. Backhand clear kısa kalır, drive yavaşlar, smaç olmaz; topu forehand tarafına alacak şekilde dur"},
-            {"Akış","Üst üste 4 tam orta: çizgiler altın olur, hedef büyür, şarkıya armoni girer"},
-            {"Derinlik","Topun yerdeki gölgesi ve ona bağlı ince çizgi yüksekliği gösterir. Top sana inerken son saniyede yer çizgisi ve büzülen iniş halkası belirir; yeşilse yetişiyorsun"},
-            {"Nefes","Smaç, sıçrama ve uzanma nefes yakar; nefesin düşünce yavaşlarsın ve smaç zayıflar. Clear atıp sayı arasında dinlen. Topu tepeden alırsan smaç dikleşir"},
-            {"Ekipman","Raket, tel gerginliği, bileklik, bant ve forma oyunun dinamiklerini, raket sesini ve titreşimi değiştirir"}};
-        void Nasil(float x, float y, float w)
-        {
-            PanelBas(x, ref y, w, "Nasıl oynanır");
-            if (Button(new Rect(x, y, w, BH), "Antrenmanı yeniden oyna", true)) { panel = "ana"; root.Antrenman(); } y += BH + 8 * u;
-            var ws = new GUIStyle(left) { wordWrap = true }; float ih = w - 24 * u;
-            string ust = L.T("Kaydır = vur, hız = güç. Antrenman vuruşları öğretir; aşağıdakileri öğretmez.");
-            float hh = ws.CalcHeight(new GUIContent(ust), ih) + 10 * u; for (int i = 0; i < NASIL.GetLength(0); i++) hh += 22 * u + ws.CalcHeight(new GUIContent(L.T(NASIL[i, 1])), ih) + 8 * u;
-            float h = Mathf.Min(hh + 12 * u, H - y - bot); var r = new Rect(x, y, w, h); blocks.Add(r); GUI.Box(r, GUIContent.none, card);
-            scroll = GUI.BeginScrollView(new Rect(x + 6 * u, y + 6 * u, w - 12 * u, h - 12 * u), scroll, new Rect(0, 0, w - 30 * u, hh));
-            float yy = 0; float th = ws.CalcHeight(new GUIContent(ust), ih); GUI.Label(new Rect(6 * u, yy, ih, th), ust, ws); yy += th + 10 * u;
-            for (int i = 0; i < NASIL.GetLength(0); i++)
-            {
-                GUI.Label(new Rect(6 * u, yy, ih, 22 * u), L.T(NASIL[i, 0]), leftB); yy += 22 * u; string t = L.T(NASIL[i, 1]); float t2 = ws.CalcHeight(new GUIContent(t), ih);
-                GUI.Label(new Rect(6 * u, yy, ih, t2), t, ws); yy += t2 + 8 * u;
-            }
-            GUI.EndScrollView();
-        }
-
-        // ---- Ekipman: 360° + ekonomi + modeller ----
-        void Ekipman()
-        {
-            Dim(.8f); var vt = root.vitrin; var gr = Ayar.gear; float x = ColX, w = ColW, g = 8 * u, y0 = top + 8 * u;
-            if (Button(new Rect(x, y0, w * .32f, BH), "‹ Geri")) { panel = "ana"; vt.Kapat(); root.GorunumDegisti(); return; }
-            Shadowed(new Rect(x + w * .34f, y0, w * .66f, BH), L.T("Ekipman"), mid, Color.white);
-            float vy = y0 + BH + g, vh = Mathf.Min(H * .34f, w * 1.1f);
-            // 360 görünüm
-            var vr = new Rect(x, vy, w, vh); blocks.Add(vr); GUI.DrawTexture(vr, vt.rt, ScaleMode.ScaleAndCrop);
-            var ev = Event.current;
-            if (ev.type == EventType.MouseDown && vr.Contains(ev.mousePosition)) { vt.suruk = true; sonX = ev.mousePosition.x; sonT = Time.unscaledTime; basP = ev.mousePosition; basT = sonT; ev.Use(); }
-            else if (ev.type == EventType.MouseDrag && vt.suruk)
-            {
-                float dx = ev.mousePosition.x - sonX, dt = Mathf.Max(.008f, Time.unscaledTime - sonT); float deg = dx / w * 360; sonX = ev.mousePosition.x; sonT = Time.unscaledTime;
-                if (vt.hedefGec >= 1) { vt.ra += deg; vt.rv = deg / dt; } else { vt.a += deg; vt.v = deg / dt; } ev.Use();
-            }
-            else if (ev.type == EventType.MouseUp && vt.suruk)
-            {   // HTML: rakete dokunmak (sürüklemeden: < 8 px, < 400 ms) raket görünümünü açar; dokunma yarıçapı kutunun %14'ü
-                vt.suruk = false; Vector2 vp;
-                if (vt.hedefGec < 1 && (ev.mousePosition - basP).magnitude < 8 * u && Time.unscaledTime - basT < .4f && vt.RaketYeri(out vp))
-                {
-                    float s_ = Mathf.Max(vr.width / vt.rt.width, vr.height / vt.rt.height), dw = vt.rt.width * s_, dh = vt.rt.height * s_;   // ScaleAndCrop
-                    var gp = new Vector2(vr.x + (vr.width - dw) / 2 + vp.x * dw, vr.y + (vr.height - dh) / 2 + (1 - vp.y) * dh);
-                    if ((ev.mousePosition - gp).magnitude < vr.width * .14f) { vt.hedefGec = 1; Tik(); }
-                }
-                ev.Use();
-            }
-            float bw = BH * 1.1f, by = vy + vh - BH - 6 * u;
-            if (ButtonRaw(new Rect(x + 6 * u, by, bw, BH), "‹")) { if (vt.hedefGec >= 1) { vt.rv = 0; vt.ra = Mathf.Round(vt.ra / 10) * 10 - 20; } else { vt.v = 0; vt.a = Mathf.Round(vt.a / 15) * 15 - 15; } Tik(); }
-            if (ButtonRaw(new Rect(x + w - bw - 6 * u, by, bw, BH), "›")) { if (vt.hedefGec >= 1) { vt.rv = 0; vt.ra = Mathf.Round(vt.ra / 10) * 10 + 20; } else { vt.v = 0; vt.a = Mathf.Round(vt.a / 15) * 15 + 15; } Tik(); }
-            if (ButtonRaw(new Rect(x + bw + 12 * u, by, w - 2 * bw - 24 * u, BH), L.T(vt.hedefGec >= 1 ? "Oyuncuya dön" : "Raketi incele"))) { vt.hedefGec = vt.hedefGec >= 1 ? 0 : 1; Tik(); }
-            Shadowed(new Rect(x, vy + 4 * u, w, 18 * u), L.T(vt.hedefGec >= 1 ? "Raketin, 360 derece görünüm" : "Oyuncun, 360 derece görünüm"), tiny, new Color(1, 1, 1, .6f));
-            // kaydırılabilir gövde
-            float sy = vy + vh + g, sh = H - sy - bot; var sr = new Rect(x, sy, w, sh); blocks.Add(sr);
-            float iw = w - 16 * u; float ch = EkipYukseklik(iw);
-            ekipScroll = GUI.BeginScrollView(sr, ekipScroll, new Rect(0, 0, iw, ch));
-            float y = 0; EkipGovde(ref y, iw, g); GUI.EndScrollView();
-            ekipH = y;
-        }
-        float sonX, sonT, ekipH = 1200, basT; Vector2 basP;
-        float EkipYukseklik(float iw) { return Mathf.Max(ekipH, 400 * u); }
-        void RenkSira(ref float y, float iw, string ad, string k)
-        {
-            GUI.Label(new Rect(0, y, iw, 18 * u), L.T(ad), left); y += 18 * u; float cs = Mathf.Min(BH, (iw - 7 * 6 * u) / 8);
-            for (int i = 0; i < Vitrin.RAK_SIRA.Length; i++)
-            {
-                string id = Vitrin.RAK_SIRA[i]; var r = new Rect(i * (cs + 6 * u), y, cs, cs); bool on = Ayar.RGOR[k] == id;
-                Fill(r, Kit.Hex(Vitrin.RAK_RENK[id])); if (on) { Tex(new Rect(r.x - 3 * u, r.y - 3 * u, r.width + 6 * u, r.height + 6 * u), ringK, Kit.Hex("#7ad7ff")); GUI.Label(r, "✓", new GUIStyle(mid) { normal = { textColor = id == "beyaz" || id == "limon" ? Color.black : Color.white } }); }
-                if (GUI.Button(r, GUIContent.none, GUIStyle.none)) { Ayar.RGOR[k] = id; Ayar.Kaydet(); Tik(); root.vitrin.Yenile(); }
-            }
-            y += cs + 8 * u;
-        }
-        void EkipGovde(ref float y, float iw, float g)
-        {
-            var gr = Ayar.gear; var vt = root.vitrin; float hw = (iw - g) / 2;
-            if (vt.hedefGec >= 1)
-            {   // raket görünümü (yalnız süs, oyuna etkisi yok)
-                RenkSira(ref y, iw, "Grip", "grip"); RenkSira(ref y, iw, "Kordaj", "tel");
-                GUI.Label(new Rect(0, y, iw, 18 * u), L.T("Desen"), left); y += 18 * u;
-                if (GUI.Button(new Rect(0, y, hw, BH), (Ayar.RGOR["desen"] == "tek" ? "✓ " : "") + L.T("Tek renk"), Ayar.RGOR["desen"] == "tek" ? chipOn : chip)) { Ayar.RGOR["desen"] = "tek"; Ayar.Kaydet(); vt.Yenile(); Tik(); }
-                if (GUI.Button(new Rect(hw + g, y, hw, BH), (Ayar.RGOR["desen"] == "iki" ? "✓ " : "") + L.T("Ana ve çapraz ayrı"), Ayar.RGOR["desen"] == "iki" ? chipOn : chip)) { Ayar.RGOR["desen"] = "iki"; Ayar.Kaydet(); vt.Yenile(); Tik(); }
-                y += BH + 8 * u; if (Ayar.RGOR["desen"] == "iki") RenkSira(ref y, iw, "Çapraz teller", "tel2");
-                y += 6 * u;
-            }
-            // seviye ve Tüy
-            int L_, kalan, gerek; gr.OyuncuSv(out L_, out kalan, out gerek);
-            GUI.Label(new Rect(0, y, hw, 24 * u), L.T("Seviye {0}", L_), leftB); GUI.Label(new Rect(hw, y, hw, 24 * u), L.T("{0} Tüy", gr.eko.tuy), new GUIStyle(leftB) { alignment = TextAnchor.UpperRight }); y += 26 * u;
-            Fill(new Rect(0, y, iw, 8 * u), new Color(1, 1, 1, .1f)); Fill(new Rect(0, y, iw * (gerek > 0 ? kalan / (float)gerek : 1), 8 * u), Kit.Hex("#7ad7ff")); y += 12 * u;
-            var ts = new GUIStyle(left) { fontSize = Mathf.RoundToInt(11 * fu), wordWrap = true };
-            string nt = gerek > 0 ? L.T("Sonraki seviyeye {0} XP · maç kazandıkça Tüy ve XP gelir", gerek - kalan) : L.T("En yüksek seviye");
-            GUI.color = new Color(1, 1, 1, .7f); GUI.Label(new Rect(0, y, iw, 30 * u), nt, ts); GUI.color = Color.white; y += 30 * u;
-            foreach (var Y in Gear.YUVA)
-            {
-                int sv = gr.eko.sv[Y.k]; bool tam = sv >= 10; int f = tam ? 0 : Gear.YUK_FIYAT[sv - 1], gk = tam ? 0 : Gear.YUK_SV[sv - 1]; bool kilit = !tam && L_ < gk, az = !tam && gr.eko.tuy < f;
-                Fill(new Rect(0, y, iw, 1), new Color(1, 1, 1, .08f)); y += 6 * u;
-                GUI.Label(new Rect(0, y, iw * .62f, 22 * u), L.T(Y.ad) + "  " + new string('●', sv) + new string('○', 10 - sv), leftB);
-                string ne = tam ? L.T("Tam") : kilit ? L.T("Sv {0} gerekli", gk) : az ? f + " " + L.T("Tüy") : L.T("Yükselt · {0}", f + " " + L.T("Tüy"));
-                if (ButtonRaw(new Rect(iw * .62f, y, iw * .38f, BH), ne, !tam && !kilit && !az, tam || kilit || az))
-                {
-                    var once = gr.YukDegerler(Y.k, 0);
-                    if (gr.Yukselt(Y.k)) { Ayar.GearHesap(); Ayar.Kaydet(); root.sfx.Yukselt(); Yerel.Hap("flow"); vt.Parlat(Y.k); yukOnce = once; yukK = Y.k; yukT = 0; }
-                }
-                GUI.color = new Color(1, 1, 1, .7f); GUI.Label(new Rect(0, y + 22 * u, iw * .6f, 30 * u), sv + "/10 · " + L.T(Y.n), ts); GUI.color = Color.white;
-                y += Mathf.Max(BH, 52 * u) + 4 * u;
-                if (!tam) y = Onizle(Y.k, y, iw);
-            }
-            // eşit şartlar
-            if (GUI.Button(new Rect(0, y, iw, BH * 1.15f), (gr.eko.esit ? "✓ " : "") + L.T("Eşit şartlar") + "\n<size=" + Mathf.RoundToInt(10 * fu) + ">" + L.T("Serbest maçta yükseltmeler sayılmaz") + "</size>", gr.eko.esit ? chipOn : chip)) { gr.eko.esit = !gr.eko.esit; Ayar.GearHesap(); Ayar.Kaydet(); Yerel.Hap("tick"); }
-            y += BH * 1.15f + 10 * u;
-            GUI.color = new Color(1, 1, 1, .7f); GUI.Label(new Rect(0, y, iw, 30 * u), L.T("Rakete ya da tele dokununca o takımın smaç sesini duyarsın."), ts); GUI.color = Color.white; y += 32 * u;
-            Modeller(ref y, iw, "raket", "Raket");
-            // tel gerginliği
-            GUI.Label(new Rect(0, y, iw, 20 * u), L.T("Tel gerginliği") + " · " + Mathf.RoundToInt(gr.tel) + " lbs", leftB); y += 24 * u;
-            var sr = new Rect(0, y, iw, BH * .7f); float yeni = Mathf.Round(GUI.HorizontalSlider(sr, gr.tel, 18, 32));
-            if (yeni != gr.tel) { gr.tel = yeni; Ayar.GearHesap(); telDegisti = true; }
-            if (telDegisti && Event.current.rawType == EventType.MouseUp) { telDegisti = false; Ayar.Kaydet(); root.sfx.Deneme(); Yerel.Vurus("smash", "perfect", false); }   // HTML: deneme smacı titreşimiyle
-            y += BH * .7f; GUI.color = new Color(1, 1, 1, .7f); GUI.Label(new Rect(0, y, iw, 30 * u), L.T(Gear.TelStats(gr.tel).n), ts); GUI.color = Color.white; y += 30 * u;
-            Modeller(ref y, iw, "bileklik", "Bileklik"); Modeller(ref y, iw, "bant", "Kafa bandı"); Modeller(ref y, iw, "forma", "Forma");
-            var S = Ayar.GS; System.Func<float, string> pct = v => (v >= 1 ? "+" : "−") + Mathf.Abs(Mathf.Round((v - 1) * 100)) + "%";
-            string st = L.T("Güç") + " " + pct(S.guc) + " · " + L.T("Kontrol") + " " + pct(S.kontrol) + " · " + L.T("Drive/file") + " " + pct(S.hiz) + " · " + L.T("Tatlı nokta") + " " + pct(S.tatli) + " · " + L.T("Koşu") + " " + pct(S.kosu) + " · " + L.T("Akış") + " " + L.T("{0} tam orta", S.akis);
-            float sh2 = ts.CalcHeight(new GUIContent(st), iw); GUI.Label(new Rect(0, y, iw, sh2), st, ts); y += sh2 + 20 * u;
-        }
-        bool telDegisti; Dictionary<string, float> yukOnce; string yukK; float yukT;
-        // Yükseltme önizlemesi (HTML yukOnizle): çubuk 1. seviyeden 10. seviyeye; gri = şimdi, yeşil uç = yükseltince.
-        // Yükseltince gri çubuk eski yerinden yeni yerine kayar (HTML yukDoldur; hareketi azalt açıkken anında).
-        float Onizle(string k, float y, float iw)
-        {
-            var gr = Ayar.gear; int sv = gr.eko.sv[k]; var su = gr.YukDegerler(k, 0); var son = gr.YukDegerler(k, 1); var ta = gr.YukDegerler(k, 1 - sv); var tav = gr.YukDegerler(k, 10 - sv);
-            bool var_ = false; var ts = new GUIStyle(left) { fontSize = Mathf.RoundToInt(11 * fu) };
-            foreach (var a in Gear.YUK_ETKI[k])
-            {
-                float d = son[a] / su[a] - 1; if (d < .002f) continue; var_ = true;
-                System.Func<float, float> W_ = v => Mathf.Clamp(4 + (v - ta[a]) / (Mathf.Abs(tav[a] - ta[a]) > 1e-6f ? tav[a] - ta[a] : 1) * 96, 4, 100) / 100;
-                float suW = W_(su[a]); if (yukK == k && yukOnce != null && yukOnce.ContainsKey(a) && !Ayar.reduce && yukT < .5f) suW = Mathf.Lerp(W_(yukOnce[a]), suW, yukT / .5f);
-                GUI.Label(new Rect(0, y, iw * .3f, 16 * u), L.T(Gear.ETKI_AD[a]), ts);
-                var br = new Rect(iw * .3f, y + 5 * u, iw * .55f, 6 * u); Fill(br, new Color(1, 1, 1, .1f)); Fill(new Rect(br.x, br.y, br.width * W_(son[a]), br.height), Kit.Hex("#d8ff5a")); Fill(new Rect(br.x, br.y, br.width * suW, br.height), new Color(.62f, .7f, .68f));
-                GUI.Label(new Rect(iw * .87f, y, iw * .13f, 16 * u), "+" + Mathf.Max(1, Mathf.RoundToInt(d * 100)) + "%", ts); y += 16 * u;
-            }
-            if (yukK == k) { yukT += Time.unscaledDeltaTime * .5f; if (yukT > .5f) yukK = null; }
-            if (var_ && gr.eko.esit) { GUI.color = new Color(1, 1, 1, .6f); GUI.Label(new Rect(0, y, iw, 16 * u), L.T("Eşit şartlar açık: serbest maçta sayılmaz, kariyerde sayılır"), ts); GUI.color = Color.white; y += 16 * u; }
-            return y + (var_ ? 6 * u : 0);
-        }
-        void Modeller(ref float y, float iw, string k, string ad)
-        {
-            var gr = Ayar.gear; GUI.Label(new Rect(0, y, iw, 20 * u), L.T(ad), leftB); y += 22 * u; float hw = (iw - 8 * u) / 2; int i = 0;
-            string cur = k == "raket" ? gr.raket : k == "bileklik" ? gr.bileklik : k == "bant" ? gr.bant : gr.forma;
-            foreach (var kv in Gear.GEAR[k])
-            {
-                var it = kv.Value; var r = new Rect((i % 2) * (hw + 8 * u), y + (i / 2) * (BH * 1.3f + 6 * u), hw, BH * 1.3f); bool on = cur == kv.Key, kilit = it.kilit && !Ayar.sampiyon;
-                string t = (on ? "✓ " : "") + L.T(it.ad) + "\n<size=" + Mathf.RoundToInt(9.5f * fu) + ">" + L.T(it.n) + "</size>";
-                if (kilit) GUI.Label(r, t, btnD);
-                else if (GUI.Button(r, t, on ? chipOn : chip))
-                {
-                    if (k == "raket") gr.raket = kv.Key; else if (k == "bileklik") gr.bileklik = kv.Key; else if (k == "bant") gr.bant = kv.Key; else gr.forma = kv.Key;
-                    Ayar.GearHesap(); Ayar.Kaydet(); root.vitrin.Yenile(); if (k == "raket") { root.sfx.Deneme(); Yerel.Vurus("smash", "perfect", false); } else Tik();
-                }
-                if (it.renk != null) Fill(new Rect(r.x + 4 * u, r.y + 4 * u, 8 * u, 8 * u), Kit.Hex(it.renk));   // renk örneği (ad da yazılı: yalnız renkle değil)
-                i++;
-            }
-            y += ((i + 1) / 2) * (BH * 1.3f + 6 * u) + 6 * u;
-        }
+        // ---- menü: 2026-10-26 UI Toolkit'e taşındı (Game/UI/UiKok ve ekranları). Burada yalnız perde ve gizli kare hızı kaldı.
 
         // ---- maç içi ----
         void Play(Match M)
@@ -726,7 +470,7 @@ namespace BirdieSmash.Game
                 float oh = small.CalcHeight(new GUIContent(t), w); Shadowed(new Rect(x, y, w, oh), t, new GUIStyle(small) { fontStyle = FontStyle.Bold }, Kit.Hex("#ffd23a")); y += oh + 6 * u;
             }
             // HTML oYukselt: yükseltme yapılabiliyorsa maç sonundan doğrudan Ekipman paneline götüren düğme
-            if (od != null && root.yukseltHazir) { if (Button(new Rect(x, y, w, BH), "Ekipmanı yükselt")) { root.AnaMenu(); panel = "ekip"; ekipScroll = Vector2.zero; root.vitrin.Ac(); } y += BH + 10 * u; }
+            if (od != null && root.yukseltHazir) { if (Button(new Rect(x, y, w, BH), "Ekipmanı yükselt")) { root.AnaMenu(); if (root.ui != null) root.ui.SekmeAc(Sekme.Soyunma); } y += BH + 10 * u; }
             // Özet (Ar-Ge 23 Eki #2): iki kart (sayı + adı; renk anlam taşımaz) + bir ipucu, tam liste "Ayrıntılar" ardında.
             // Yükseklikler CalcHeight'tan: metin uzasa da üst üste binmez.
             { int n = root.bittiKart.Count; float g = 10 * u, kw = n > 1 ? (w - g) / 2 : w, kh = 0; var vs = new GUIStyle(big) { fontSize = Mathf.RoundToInt(28 * fu) };

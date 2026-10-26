@@ -37,7 +37,7 @@ depoda ProjectSettings.asset yok.
   `Game/Sfx.cs`: HTML Web Audio sentezinin çevrim dışı karşılığı (raket sesi tel gerginliği ve vuruş türüne göre). `Game/Fx.cs`: tüy/kıvılcım
   parçacıkları, akış ve antrenman bantları. `Game/Vitrin.cs`: ekipman ekranının 360° kamerası. `Game/Lang.cs`: dil.
 - `Game/`: görünüm. Saha temaları + tribün (yalnız rakip arkası) + yayın ışığı + iki hakem (`CourtView`), oyuncular (`PlayerView`, Legacy Animation, normalize zamanla örnekleme), IMGUI HUD, ayarlar (`Ayar`, PlayerPrefs anahtarları HTML'deki `tuytop_*` adlarıyla aynı).
-- `Resources/karakter/oyuncak.fbx` (KayKit Rogue, CC0) ve `rocketbox.fbx` (Microsoft Rocketbox Sports_Male_04, MIT): `tool/karakter/unity_fbx.py` ile üretilir (`BS_MODEL=oyuncak|aday`). Klip aralıkları `<model>_clips.json`; `Editor/KarakterImport.cs` içe alırken böler.
+- `Resources/karakter/oyuncak.fbx` (KayKit Rogue, CC0) ve `rocketbox.fbx` (Microsoft Rocketbox Sports_Male_02 + badminton kiti, MIT; dokular `rocketbox_govde|bas(_n|_mg)` ayrı): `tool/karakter/unity_fbx.py` ile üretilir (`BS_MODEL=oyuncak|aday`). Klip aralıkları `<model>_clips.json`; `Editor/KarakterImport.cs` içe alırken böler.
 - `Resources/lisanslar.txt`: `legal/ucuncu_taraf.md` kopyası; menüdeki Lisanslar ekranı okur.
 - Doğrulama (Unity'siz): `tool/unity_test/` altında mono ile derleme + bot maçları (`BotMac.cs`), ralli kaydı (`RalliKayit.cs`) ve Blender önizlemesi (`onizleme.py`; `YAKIN=1` ile tüy top yakın planı).
 

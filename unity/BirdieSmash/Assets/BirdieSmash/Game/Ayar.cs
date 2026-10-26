@@ -12,6 +12,7 @@
 // reduce = sistem || elle. Eski Unity kayıtlarında tuytop_reduce hep yazıldığı için 0 "zorlanmadı" sayılır.
 // Yazı boyutu: HTML Dynamic Type izlemiyordu (px yazı, text-size-adjust:100%); Unity'de "Sistem" iOS'un tercih edilen
 // yazı boyutunu izler (IMGUI yerleşimi taşmasın diye 0,9–1,3 arası), "Büyük" 1,3. VoiceOver için UI Toolkit (plan faz 6).
+// 2026-10-26: menüler UI Toolkit'e geçti (Game/UI); menüde "Sistem" ×2'ye kadar (MenuYaziK), maç içi HUD ×1,3'te kalır.
 // Önceki Unity demosu (2026-10-24 ilk tur) tuytop_target / tuytop_rally / tuytop_wins / tuytop_kariyer'i ayrı int yazıyordu:
 // ilk açılışta bunlar okunup yeni biçime taşınır, eski anahtar silinmez (geri dönüşte kayıt kaybolmasın).
 using System.Collections.Generic;
@@ -32,6 +33,12 @@ namespace BirdieSmash.Game
         public static int target = 5, kariyer, bestRally, wins, gorev, puan; public static int devirSayisi = -1;
         public static string saha = "salon", model = "oyuncak", kamera = "yayin", dil = "tr", yazi = "sistem"; static float yaziSistem = 1;
         public static float YaziK { get { return yazi == "normal" ? 1 : yazi == "buyuk" ? 1.3f : Mathf.Clamp(yaziSistem, .9f, 1.3f); } }
+        // Menü yazı ölçeği (2026-10-26, UI Toolkit menü kabuğu): flex yerleşimde metin sarılır, kart uzar, gövde kayar; bu
+        // yüzden "Sistem" iOS'un tercih edilen boyutunu ×2'ye kadar izler (HIG Dynamic Type). Maç içi HUD IMGUI'de kaldığı
+        // için YaziK ×1,3 sınırını korur (oyun alanını kapatmasın; tasarım §2.4 bilinçli sapma). "Büyük" iki yüzeyde aynı 1,3.
+        // yaziTest yalnız ekran turu içindir (EkranTuru ×2 karesi), kaydedilmez.
+        public static float yaziTest;
+        public static float MenuYaziK { get { if (yaziTest > 0) return yaziTest; return yazi == "normal" ? 1 : yazi == "buyuk" ? 1.3f : Mathf.Clamp(yaziSistem, .9f, 2f); } }
         // Sistem ayarları (hareketi azalt, yazı boyutu) açılışta ve uygulama öne her geldiğinde okunur.
         public static void SistemOku() { reduceSistem = Yerel.HareketAzalt(); reduce = reduceSecim || reduceSistem; yaziSistem = Yerel.YaziOlcek(); }
         public static Gear gear; public static GearStats GS = GearStats.Notr;
@@ -62,7 +69,9 @@ namespace BirdieSmash.Game
             // Dil: HTML navigator.language 'tr' ile başlıyorsa Türkçe, değilse İngilizce. Unity'de sistem dili; ayarda elle seçilirse tuytop_dil.
             dil = Str("tuytop_dil", Application.systemLanguage == SystemLanguage.Turkish ? "tr" : "en"); if (dil != "tr" && dil != "en") dil = "tr";
             var rg = Json.Obj(Json.Parse(Str("tuytop_raket_gor", null)));
-            if (rg != null) foreach (var k in new List<string>(RGOR.Keys)) { string v = Json.Str(rg, k, null); if (v != null && (k == "desen" ? v == "tek" || v == "capraz" : Vitrin.RAK_RENK.ContainsKey(v))) RGOR[k] = v; }
+            // desen 'tek' | 'iki' (HTML RGOR.desen ile aynı). 2026-10-26: denetim 'capraz' bekliyordu, yazılan değer 'iki' olduğu
+            // için "Ana ve çapraz ayrı" seçimi her açılışta 'tek'e dönüyordu; eski 'capraz' kaydı da 'iki' sayılır.
+            if (rg != null) foreach (var k in new List<string>(RGOR.Keys)) { string v = Json.Str(rg, k, null); if (k == "desen" && v == "capraz") v = "iki"; if (v != null && (k == "desen" ? v == "tek" || v == "iki" : Vitrin.RAK_RENK.ContainsKey(v))) RGOR[k] = v; }
             gear = new Gear(kayit, wins); gear.kariyerModu = kariyerModu;
             if (gear.forma == "sampiyon" && !sampiyon) gear.forma = "mavi";
             GearHesap();

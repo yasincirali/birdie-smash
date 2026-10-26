@@ -3,6 +3,9 @@
 // Yalnız `-bsekran <klasör>` argümanıyla açılır; mağaza build'inde hiç çalışmaz (argüman verilmez).
 // Tur: iki model × saha temaları; menü, maç başı (servis), ralliden kareler (bot oynar: BotMac ile aynı karar), yakın
 // planlar (ben, rakip, hakemler) ve tanı dosyası (rapor.txt: her figürün renderer'ları, shader'ları, sınırları, yönü).
+// 2026-10-26 menü kabuğu (UI Toolkit): her sekme (Oyna, Kariyer, Soyunma odası, Profil), Hızlı maç alt sayfası ve Ayarlar,
+// ×1 ve ×2 yazı ölçeğiyle (Ayar.yaziTest; kaydedilmez), ilk açılış Oyna'sı (logo + antrenman ipucu). Sekmeler UiKok'un
+// açık yöntemleriyle değişir (SekmeAc, HizliMacAc, AyarlarAc, Geri); UI Toolkit arka tampona çizdiği için ReadPixels yakalar.
 // Süre: gerçek zaman (GameRoot dt'yi 0,05 ile sınırlar; yavaş yazılım render'ında maç da yavaşlar, kareler yine anlamlı).
 using System.Collections;
 using System.IO;
@@ -35,7 +38,9 @@ namespace BirdieSmash.Game
             var bekci = new System.Threading.Thread(() => { for (int i = 0; i < 300; i++) { System.Threading.Thread.Sleep(10000); Debug.Log("EkranTuru bekçi: kare " + kare + " adım " + adim); } }); bekci.IsBackground = true; bekci.Start();
             yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
+            yield return MenuTuru();
             Ayar.antrenman = true; Ayar.easy = true; Ayar.target = 5; Ayar.reduce = false;
+            yield return MenuTuru("", true); Ayar.yaziTest = 2; yield return MenuTuru("x2_", true); Ayar.yaziTest = 0; root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
             var modeller = new System.Collections.Generic.List<string> { "oyuncak", "rocketbox" };
             if (Resources.Load<GameObject>("karakter/sade") != null) modeller.Add("sade");
             foreach (var mdl in modeller)
@@ -70,6 +75,20 @@ namespace BirdieSmash.Game
             botAcik = true;
             for (int i = 0; i < 10; i++) { yield return Bekle(14); yield return Cek(mdl + "_1" + i + "_ralli"); }
             botAcik = false;
+        }
+
+        // Menü kareleri: açılış perdesi kalkana kadar bekler (sesler hazırlanınca, en çok 12 sn).
+        IEnumerator MenuTuru(string ek = "ilk_", bool hepsi = false)
+        {
+            var ui = root != null ? root.ui : null; if (ui == null) { Debug.Log("EkranTuru: menü kabuğu yok"); yield break; }
+            float t0 = Time.realtimeSinceStartup; while (root.HudKatman != null && root.HudKatman.PerdeVar && Time.realtimeSinceStartup - t0 < 12) yield return null;
+            ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_" + ek + "oyna");
+            if (!hepsi) yield break;
+            ui.SekmeAc(Sekme.Kariyer); yield return Bekle(20); yield return Cek("menu_" + ek + "kariyer");
+            ui.SekmeAc(Sekme.Soyunma); yield return Bekle(30); yield return Cek("menu_" + ek + "soyunma");
+            ui.SekmeAc(Sekme.Profil); yield return Bekle(20); yield return Cek("menu_" + ek + "profil");
+            ui.SekmeAc(Sekme.Oyna); ui.HizliMacAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "hizli"); ui.Geri();
+            ui.AyarlarAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "ayarlar"); ui.Geri(); yield return Bekle(5);
         }
 
         IEnumerator Bekle(int kare) { for (int i = 0; i < kare; i++) yield return null; }

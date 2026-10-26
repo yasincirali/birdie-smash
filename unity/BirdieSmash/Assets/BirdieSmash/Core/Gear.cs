@@ -136,15 +136,25 @@ namespace BirdieSmash.Core
 
         // Saf hesap (yükseltme önizlemesi bir seviye ilerisini dener). Yuva seviyesi modelin çarpanlarını ölçekler;
         // nötr modelde (Denge, Mavi) yükseltme boşa gitmesin diye raket güç/kontrole +%5, forma koşuya +%4 taban katkı.
+        // 2026-10-26 denge düzeltmesi (komple-oyun tasarımı §4.5): taban katkı bütün modellerin güç ve kontrolüne gidiyordu;
+        // eksisi olan modelde eksi zaten Sv 10'da %60 küçüldüğü için +%5 onu sıfırlıyordu (Esnek şaft Sv 10'da güç 1,01,
+        // kontrol 1,42: "en iyi raket" oluyordu, model seçimi anlamını yitiriyordu). Artık (1) +%5 yalnız modelin nötr
+        // (çarpanı 1) olduğu değere uygulanır, nötr modelde yükseltmenin boşa gitmemesi gerekçesi aynen sürer; (2) raket
+        // eksisinin küçülmesi Sv 10'da %60 değil %40: eksinin en az %60'ı kalır, her modelin artısı ve eksisi görünür kalır.
+        // Sv 10'da: Esnek güç ~0,94, Kafa ağır kontrol ~0,95, Denge güç/kontrol 1,05. Bileklik ve kordaj ölçeği değişmedi
+        // (tasarım yalnız raketi ölçtü). HTML gsHesap 2026-10-26'dan beri dondurulmuş sürümdür (yasin: yeni özellik yalnız
+        // Unity'de), bu düzeltme oraya taşınmadı: iki sürümün raket değerleri bu noktadan sonra bilerek ayrıdır.
+        const float RAKET_EKSI = .4f;
+        static float Taban(float m, float kr) { return Math.Abs(m - 1) < 1e-4f ? 1 + .05f * kr : 1; }
         public GearStats Hesap()
         {
             var r = GEAR["raket"][raket]; var t = TelStats(tel); var b = GEAR["bileklik"][bileklik]; var h = GEAR["bant"][bant]; var f = GEAR["forma"][forma];
             float kr = KSv("raket"), kt = KSv("tel"), kg = KSv("grip"), kb = KSv("bileklik"), kh = KSv("bant"), kf = KSv("forma");
             return new GearStats {
-                guc = (1 + .05f * kr) * Olcek(r.guc.Value, kr, .18f, .6f) * Olcek(t.guc, kt, 0, .5f) * Olcek(b.guc ?? 1, kb, .18f, .6f),
-                kontrol = (1 + .05f * kr) * Olcek(r.kontrol.Value, kr, .18f, .6f) * Olcek(t.kontrol, kt, 0, .5f) * (1 + .15f * kg),
-                hiz = Olcek(r.hiz.Value, kr, .18f, .6f) * Olcek(b.hiz ?? 1, kb, .18f, .6f),
-                tatli = Olcek(r.tatli.Value, kr, .18f, .6f) * Olcek(t.tatli, kt, 0, .5f) * (1 + .15f * kt) * (1 + .10f * kh),
+                guc = Taban(r.guc.Value, kr) * Olcek(r.guc.Value, kr, .18f, RAKET_EKSI) * Olcek(t.guc, kt, 0, .5f) * Olcek(b.guc ?? 1, kb, .18f, .6f),
+                kontrol = Taban(r.kontrol.Value, kr) * Olcek(r.kontrol.Value, kr, .18f, RAKET_EKSI) * Olcek(t.kontrol, kt, 0, .5f) * (1 + .15f * kg),
+                hiz = Olcek(r.hiz.Value, kr, .18f, RAKET_EKSI) * Olcek(b.hiz ?? 1, kb, .18f, .6f),
+                tatli = Olcek(r.tatli.Value, kr, .18f, RAKET_EKSI) * Olcek(t.tatli, kt, 0, .5f) * (1 + .15f * kt) * (1 + .10f * kh),
                 ton = r.ton.Value * t.ton, kafa = r.kafa.Value, kenar = b.kenar ?? 1, akis = h.akis ?? 4, yavas = h.yavas ?? 1, rakip = h.rakip ?? 1,
                 kosu = (1 + .04f * kf) * Olcek(f.kosu ?? 1, kf, .12f, 0), enerji = Olcek(f.enerji ?? 1, kf, .12f, 0),
                 toparla = f.toparla.HasValue ? 1 - (1 - f.toparla.Value) * (1 + .12f * kf) : 1, yorK = 1 / (1 + .15f * kb),
