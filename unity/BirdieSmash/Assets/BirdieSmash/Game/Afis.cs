@@ -18,8 +18,10 @@ namespace BirdieSmash.Game
         static readonly Vector3 YER = new Vector3(-500, 0, 0);
         // Kadraj (metre, YER'e göre). Kamera +z'de, −z'ye bakar; yön 0 = kameraya dönük. Ben: sol önde, sağa (rakibe) 28°
         // dönük; rakip: sağda 1,7 m geride, sola 32° dönük. Kahraman alanı ~375 × 440 pt, dikey açı 30°.
+        // r16: kamera 3,35 m'de iken baş ve raket kadraj dışındaydı (maket ph0'da baş üstte boşlukla görünür); 4,4 m ve
+        // daha alçak bakış: senin oyuncun başından dizine, ayaklar plakanın arkasında.
         public static Vector3 BEN = new Vector3(-.5f, 0, 0), RAKIP = new Vector3(.92f, 0, -1.7f);
-        public static Vector3 KAMERA = new Vector3(.1f, 1.15f, 3.35f), BAKIS = new Vector3(.12f, .98f, -.5f);
+        public static Vector3 KAMERA = new Vector3(.1f, 1.1f, 4.4f), BAKIS = new Vector3(.12f, 1.02f, -.5f);
         public static float BEN_YON = 28, RAKIP_YON = -32, ACI = 30;
         public RenderTexture rt; Camera kam; PlayerView ben, rakip; string benAnah, rakipAnah; float ph;
         Light konturRakip, konturBen;
@@ -34,9 +36,11 @@ namespace BirdieSmash.Game
             cg.transform.position = YER + KAMERA; cg.transform.rotation = Quaternion.LookRotation(BAKIS - KAMERA);
             // Işıklar: önden sol yumuşak anahtar (salon tavan lambaları buraya ulaşmaz), arkadan kontur: rakibe mercan (rakip
             // rengi, a-rival drop-shadow), sana hafif limon (senin taraf). Menzil kısa: yalnız kendi figürünü boyar.
+            // r16: tam arkadan kontur Standard gölgelendiricide görünmüyordu (Fresnel kenar ışığı yok, yalnız sırtı boyar);
+            // dış yana ve hafif geriye alındı, güç arttı: kameraya bakan kenar mercan/limon parlar.
             Isik(g.transform, "afis_anahtar", YER + new Vector3(-2.2f, 2.6f, 3.2f), Color.white, 1.25f, 10);
-            a.konturRakip = Isik(g.transform, "afis_kontur_rakip", YER + RAKIP + new Vector3(.95f, 1.6f, -1.1f), Kit.Hex("#FF5B4A"), 4.2f, 3.2f);
-            a.konturBen = Isik(g.transform, "afis_kontur_ben", YER + BEN + new Vector3(-1.1f, 1.7f, -1.2f), Kit.Hex("#D8FF3A"), 1.6f, 3f);
+            a.konturRakip = Isik(g.transform, "afis_kontur_rakip", YER + RAKIP + new Vector3(1.25f, 1.45f, -.35f), Kit.Hex("#FF5B4A"), 7f, 2.6f);
+            a.konturBen = Isik(g.transform, "afis_kontur_ben", YER + BEN + new Vector3(-1.2f, 1.5f, -.35f), Kit.Hex("#D8FF3A"), 2.6f, 2.4f);
             g.SetActive(false); return a;
         }
         static Light Isik(Transform p, string ad, Vector3 yer, Color c, float guc, float menzil)

@@ -377,16 +377,14 @@
 .karo--genis { flex-grow: 1.25; }
 .karo--altin { border-color: rgba(255, 200, 61, 0.45); -unity-background-scale-mode: stretch-to-fill; }
 .karo--altin .karo-etiket { color: var(--gold); }
+.karo--altin .karo-alt { color: var(--gold); -unity-font-definition: resource("fonts/Barlow-Bold"); }
 .karo-ust { flex-direction: row; align-items: center; }
 .karo-etiket { -unity-font-definition: resource("fonts/Barlow-Bold"); color: var(--mu); letter-spacing: 0.6px; margin-left: 4px; white-space: nowrap; flex-shrink: 1; }
 .karo-deger { -unity-font-definition: resource("fonts/BarlowCondensed-ExtraBoldItalic"); color: var(--tx); margin-top: 1px; }
 .karo-alt-satir { flex-direction: row; align-items: center; }
 .karo-alt { color: var(--mu); margin-left: 3px; }
-.karo-odul { position: absolute; right: 9px; top: 26px; flex-direction: row; align-items: center; }
-.karo-odul-yazi { -unity-font-definition: resource("fonts/BarlowCondensed-BlackItalic"); color: var(--gold); margin-left: 2px; }
 .buyuk-yazi .karo-satir { flex-direction: column; margin: 0; }
 .buyuk-yazi .karo { flex-basis: auto; flex-grow: 0; margin: 4px 0; }
-.buyuk-yazi .karo-odul { position: relative; right: auto; top: auto; margin-top: 2px; }
 
 /* diğer sekmeler: kart başlıkları ve durum etiketleri yön A diliyle (renkler yukarıda değişkenlerden) */
 .durum-simdi { -unity-font-definition: resource("fonts/BarlowCondensed-ExtraBoldItalic"); letter-spacing: 1px; }

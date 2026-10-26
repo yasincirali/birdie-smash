@@ -122,6 +122,10 @@ namespace BirdieSmash.Game
             var ad = Satir("rakip-satir"); ad.pickingMode = PickingMode.Ignore; orta.Add(ad);
             if (final) { ad.Add(Ikon(Ikonlar.Kupa, 16, ALTIN)); }
             var ay = Yazi((b + 1) + ". " + L.T(kb.yer), 16, "kalin"); if (final) ay.style.marginLeft = 4; ad.Add(ay);
+            // r16 (2026-10-26, Barlow): yatay satırda ad tek satır genişliğiyle ölçülüp sonra daralınca iki satıra kırılıyor, yükseklik
+            // tek satırda kalıp alttaki rakip satırına biniyordu ("4. Regional / final"). Taban 0 + büyüme: Yoga genişliği önce
+            // verir, yüksekliği o genişlikle ölçer.
+            ay.style.flexBasis = new StyleLength(0f); ay.style.flexGrow = 1;
             var rk = Satir("rakip-satir"); rk.pickingMode = PickingMode.Ignore; orta.Add(rk);
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);
             rk.Add(Yazi(st.isim + " · " + L.T(st.ad) + (final ? " · " + L.T("Final") : ""), 13, "soluk"));

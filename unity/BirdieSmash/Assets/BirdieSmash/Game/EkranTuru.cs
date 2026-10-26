@@ -207,7 +207,8 @@ namespace BirdieSmash.Game
             var eski = Ayar.ilerleme; var q = new Ilerleme(); q.tur[0][0] = 7; Ayar.ilerleme = q;
             bool r0 = Ayar.reduce, km = Ayar.kariyerModu; string d0 = Ayar.dil; Ayar.reduce = azalt; Ayar.kariyerModu = true; Ayar.kariyerSecim = KariyerVeri.Global(0, 1);
             string y0 = Ayar.yazi; if (yazi > 0) Ayar.yazi = "buyuk"; Ayar.dil = dil;   // sonuç ekranı IMGUI: yaziTest değil YaziK (×1,3)
-            root.StartMatch(false, false, false); botAcik = false; yield return Bekle(10);
+            root.StartMatch(false, false, false); botAcik = false;
+            { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 4) yield return null; }   // r16: maç başı rakip kartı kalksın (gerçek akışta maç sonunda yok)
             root.match.sc[0] = won ? 11 : 7; root.match.sc[1] = won ? 7 : 11; root.EkranBitir(won);
             float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 3.5f) yield return null;
             yield return Cek(ad);

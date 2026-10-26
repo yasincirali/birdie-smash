@@ -115,18 +115,14 @@ namespace BirdieSmash.Game
             d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); a(); })); Erisim.Etiket(d, erisim, "dugme");
             return d;
         }
-        // Günün maçı kutucuğu (a-tile--gold): değiştiricinin adı, sağda "+40" Tüy (alındıysa ✓ simgesi + "Bugün kazandın").
+        // Günün maçı kutucuğu (a-tile--gold): değiştiricinin adı, altında Tüy simgesi + "+40 Tüy" (alındıysa ✓ + "Bugün kazandın").
+        // r16: ödül değerin sağında mutlak konumdaydı (a-tile), "Long rally" gibi uzun adın üstüne biniyordu; alt satıra indi.
         VisualElement GunlukKaro()
         {
             var g = Bugun(); var st = Match.STIL[g.stil]; bool alindi = Ayar.ilerleme.GunlukAlindi(g.tarih);
-            var d = Karo(Ikonlar.Gunes, L.T("Günün maçı"), L.T(g.deg.ad), alindi ? L.T("Bugün kazandın") : null, alindi ? Ikonlar.Tik : null, GunlukAc,
+            var d = Karo(Ikonlar.Gunes, L.T("Günün maçı"), L.T(g.deg.ad), alindi ? L.T("Bugün kazandın") : L.T("+{0} Tüy", Gunluk.OdulTuy), alindi ? Ikonlar.Tik : Ikonlar.Tuy, GunlukAc,
                 L.T("Günün maçı") + ", " + L.T(g.deg.ad) + ", " + L.T("Rakip") + " " + st.isim + ", " + (alindi ? L.T("Bugün kazandın") : L.T("+{0} Tüy", Gunluk.OdulTuy)), "karo--altin");
             d.AddToClassList("karo--genis"); Doku(d, Ikonlar.AltinKaro);
-            if (!alindi)
-            {
-                var od = new VisualElement(); od.AddToClassList("karo-odul"); od.pickingMode = PickingMode.Ignore; d.Add(od);
-                od.Add(Ikon(Ikonlar.Tuy, 15, ALTIN)); od.Add(Yazi("+" + Gunluk.OdulTuy, 18, "karo-odul-yazi"));
-            }
             return d;
         }
 
