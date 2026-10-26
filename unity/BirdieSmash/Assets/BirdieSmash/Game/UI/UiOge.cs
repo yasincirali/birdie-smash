@@ -79,7 +79,7 @@ namespace BirdieSmash.Game
     // Koddan çizilen simgeler (beyaz + alfa; boya Image.tintColor). 96 px, 2×2 örnekleme ile kenar yumuşatma.
     public static class Ikonlar
     {
-        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Gradyan;
+        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Gradyan, YildizDolu, YildizBos;
         static bool hazir;
         public static void Hazirla()
         {
@@ -119,10 +119,24 @@ namespace BirdieSmash.Game
                 bool bas = (x * x + (y - .42f) * (y - .42f)) < .29f * .29f; float sx = x / .72f, sy = (y + .82f) / .72f;
                 bool omuz = sx * sx + sy * sy < 1 && y > -.86f && y < .02f; return bas || omuz;
             });
+            // Kariyer yıldızları (2026-10-26): alınan dolu, alınmayan yalnız çerçeve (renk körlüğü: biçim farkı, renk değil).
+            YildizDolu = Ciz((x, y) => Yildiz(x, y, .92f)); YildizBos = Ciz((x, y) => Yildiz(x, y, .92f) && !Yildiz(x, y, .58f));
             // Oyna sekmesinin zemini: üstte saydam (kort görünür), altta koyu (kartlar okunur). USS'te gradyan yok.
             Gradyan = new Texture2D(1, 64, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             var px = new Color32[64]; for (int i = 0; i < 64; i++) { float t = 1 - i / 63f; float a = Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - .18f) / .62f)) * .9f; px[i] = new Color(8 / 255f, 16 / 255f, 17 / 255f, a); }
             Gradyan.SetPixels32(px); Gradyan.Apply();
+        }
+        // Beş köşeli yıldız (dış yarıçap r, iç .45r): çokgen içinde mi (ışın sayımı).
+        static bool Yildiz(float x, float y, float r)
+        {
+            bool ic = false; int n = 10; y += .06f;
+            for (int i = 0, j = n - 1; i < n; j = i++)
+            {
+                float ai = Mathf.PI / 2 + i * Mathf.PI / 5, aj = Mathf.PI / 2 + j * Mathf.PI / 5, ri = i % 2 == 0 ? r : r * .45f, rj = j % 2 == 0 ? r : r * .45f;
+                float xi = Mathf.Cos(ai) * ri, yi = Mathf.Sin(ai) * ri, xj = Mathf.Cos(aj) * rj, yj = Mathf.Sin(aj) * rj;
+                if ((yi > y) != (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) ic = !ic;
+            }
+            return ic;
         }
         static bool Cizgi(float x, float y, float ax, float ay, float bx, float by, float yari)
         {

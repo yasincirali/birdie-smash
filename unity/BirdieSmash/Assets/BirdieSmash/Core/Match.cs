@@ -23,6 +23,9 @@ namespace BirdieSmash.Core
         public float qx = float.NaN, qy, svx, svy, runPh, adayT, idlePh; public bool yuru; public string ayakKlip, adayAd;
         public float fakeUntil = -9, fakeX;   // aldatılan rakip: bu ana dek ters yöne çıkar
         public float mvx, mvy;   // rakibin koşu hızı (MoveAcc); ben vx/vy kullanırım (RunMe)
+        // İmza vuruşu hazırlığı (Core/Imza, 2026-10-26): imzaT > 0 iken görünüm pozu tutar ve ışığı yakar; imzaId hangisi.
+        public float imzaT; public string imzaId;
+        public float fakeY;   // aldatılan oyuncu (Vex, gölge flick): Kolay'da kendiliğinden koşu bu ana dek yanlış yöne
         public bool HasTarget { get { return !float.IsNaN(tx); } }
     }
 
@@ -31,6 +34,7 @@ namespace BirdieSmash.Core
         public float t, x, y, z, side = float.NaN;
         public string who, opType;
         public bool overhead, kill, lunge, leave;
+        public string imza; public float imzaBas; public bool imzaBasladi;   // rakibin imza vuruşu: hazırlığın başlayacağı uçuş anı
     }
 
     public struct Reach { public bool lunge, over, kill; public float d; }
@@ -40,7 +44,8 @@ namespace BirdieSmash.Core
 
     public struct ShotPlanR { public string type; public float tx, d, val, hx, hy, hz, sp; public bool byAngle, bh, over; }
 
-    public enum Ev { Hit, Net, Tape, Cord, Floor, Point, Text, Split, MatchEnd, Serve, Hawk, Flow, Gorev, Aldat, Perfect, Kurtaris }
+    // Imza: rakip imza vuruşunun hazırlığına başladı (type = imza kimliği, k = hazırlık süresi); Okudun: oyuncu imzayı cevapladı.
+    public enum Ev { Hit, Net, Tape, Cord, Floor, Point, Text, Split, MatchEnd, Serve, Hawk, Flow, Gorev, Aldat, Perfect, Kurtaris, Imza, Okudun }
 
     public class GameEvent
     {
@@ -48,14 +53,21 @@ namespace BirdieSmash.Core
     }
 
     // Rakip kimliği (HTML STIL): global kısa ad, tarz, forma rengi; forma oyuncununkine yakınsa yedek renk.
+    // 2026-10-26 (tasarım Ek A.2): değerler veri/stil.json'dan (KariyerVeri). aldatP: rakibin aldatıcı vuruş olasılığı (Vex),
+    // uyum: oyuncunun son 8 vuruşuna göre yer alma (Aria, en çok .3), imza: patron olduğunda imza vuruşu (Core/Imza).
+    // kariyer: genel basamak indeksi (tur·6 + basamak; Tur 1'de eski indeks), -1 serbest maç.
     public class Style
     {
-        public string id, isim, renk, yedek, ad, ipucu; public string[] ustK, altK; public float[] ustP, altP;
-        public float hiz, hata, ev, yorK = 1, geriK = 1; public int kariyer = -1;
+        public string id, isim, renk, yedek, ad, ipucu, imza; public string[] ustK, altK; public float[] ustP, altP;
+        public float hiz, hata, ev, yorK = 1, geriK = 1, aldatP, uyum; public int kariyer = -1;
+        // 2026-10-26: imza yalnız patron bayrağıyla ateşlenir. stil.json'daki taban tarz imzayı taşır (harita/maç kartı adını
+        // gösterir), serbest maç o taban nesneyi kullandığı için imza kimliğine bakmak yetmez; bayrağı yalnız KariyerVeri.Rakip koyar.
+        public bool patron;
         public Style Clone() { return (Style)MemberwiseClone(); }
     }
 
-    public class Kariyer { public string stil, yer, saha; public float g; }
+    // Kariyer basamağı (veri/kariyer.json): uzunluk 0 = oyuncunun seçtiği maç uzunluğu; gorev = 2. yıldızın sabit görevi.
+    public class Kariyer { public string stil, yer, saha, gorev; public float g; public int tur, basamak, uzunluk; public bool patron; }
 
     public class ServeBox { public string who; public float x0, x1, y0, y1; }
 
@@ -80,7 +92,7 @@ namespace BirdieSmash.Core
         public bool easy = true, reduce, ilk, between, split, splitPending, over, matchDone, hint, deceive, kisaBekle, flow;
         public Action svPending;
         // maç sonu istatistiği (HTML oInfo)
-        public int smashes, kills, perfects, deceives, splits, tepeden, saves, outsLeft, slices, smacSayi, outsBen;   // outsBen: dışarı giden kendi vuruşum (servis hariç), maç sonu ipucu
+        public int smashes, kills, perfects, deceives, splits, tepeden, saves, outsLeft, slices, smacSayi, outsBen, smacKarsila, dropSayi;   // smacKarsila: karşılanan rakip smacı; dropSayi: drop ile alınan sayı (kariyer görevleri)   // outsBen: dışarı giden kendi vuruşum (servis hariç), maç sonu ipucu
         bool nefesUyari, nefesIlk, opUyari, rekorBuMac;
         // hakemler (görünüm okur): baş hakemin el hareketi süresi, kime, servis el değişti mi; servis hakeminin yönü
         public float hakemT, hakemT0 = 1.4f, sjT; public string hakemYon, sjYon; public bool hakemSO;
@@ -115,17 +127,14 @@ namespace BirdieSmash.Core
         // Ayak işi adım boyu (fb1b245): m / döngü; chassé ~0,7 m taşır, eskiden hepsi 1,5 m'de bir dönüp ayak kayıyordu.
         public static readonly Dictionary<string, float> ADIM_BOY = new Dictionary<string, float> { {"chasse_r",.7f},{"chasse_l",.7f},{"fwd",.9f},{"back_r",.8f},{"back_l",.8f} };
 
-        public static readonly Dictionary<string, Style> STIL = new Dictionary<string, Style> {
-            {"smasci", new Style{id="smasci",yorK=1.3f,isim="Blaze",renk="#ff7a6b",yedek="#e8508f",ad="Smaşçı",ipucu="Her baş üstü topu smaçlar. Derin clear atıp blokla al",ustK=new[]{"smash","clear","drop"},ustP=new[]{.62f,.23f,.15f},altK=new[]{"clear","drop","drive"},altP=new[]{.45f,.2f,.35f},hiz=1,hata=1.2f,ev=3.2f}},
-            {"duvar",  new Style{id="duvar",yorK=.7f,isim="Rocco",renk="#3f4fa8",yedek="#ff7a6b",ad="Duvar",ipucu="Her şeyi geri çevirir, az hata yapar. Drop ve slice ile öne çek",ustK=new[]{"smash","clear","drop"},ustP=new[]{.15f,.6f,.25f},altK=new[]{"clear","drop","drive"},altP=new[]{.65f,.25f,.1f},hiz=1.08f,hata=.75f,ev=3.6f}},
-            {"file",   new Style{id="file",yorK=1,geriK=1.8f,isim="Mika",renk="#e8508f",yedek="#3f4fa8",ad="File oyuncusu",ipucu="Fileye yakın durur, drop sever. Arkasına lift ve clear at",ustK=new[]{"smash","clear","drop"},ustP=new[]{.3f,.2f,.5f},altK=new[]{"clear","drop","drive"},altP=new[]{.25f,.6f,.15f},hiz=1,hata=1,ev=2.2f}}};
+        // Tarzlar ve kariyer veriden (2026-10-26, KariyerVeri; değerler eski koddakiyle birebir). Hızlı maçın rastgele rakibi
+        // bugünkü üç tarzdan kalır (Hızlı maç metni öyle söylüyor); yeni tarzlar kariyerde tanıtılır.
+        public static Dictionary<string, Style> STIL { get { return KariyerVeri.Stil; } }
         public static readonly string[] STIL_SIRA = { "smasci", "duvar", "file" };
-        // Kariyer basamakları ve sahaları (mahalle/okul = ahşap, il ve bölge = salon, ulusal ve kupa = turnuva).
-        public static readonly Kariyer[] KARIYER = {
-            new Kariyer{stil="file",g=.88f,yer="Mahalle salonu",saha="okul"}, new Kariyer{stil="smasci",g=.94f,yer="Okul turnuvası",saha="okul"},
-            new Kariyer{stil="duvar",g=1,yer="İl şampiyonası",saha="salon"}, new Kariyer{stil="file",g=1.07f,yer="Bölge finali",saha="salon"},
-            new Kariyer{stil="smasci",g=1.13f,yer="Ulusal lig",saha="turnuva"}, new Kariyer{stil="duvar",g=1.2f,yer="Şampiyonlar kupası",saha="turnuva"}};
-        public static Style KariyerRakip(int i) { var k = KARIYER[i]; var b = STIL[k.stil].Clone(); b.hiz *= k.g; b.hata /= k.g; b.kariyer = i; return b; }
+        // Tur 1 basamakları (mahalle/okul = ahşap, il ve bölge = salon, ulusal ve kupa = turnuva): eski KARIYER dizisi.
+        // tuytop_v2.kariyer, başarımlar ve HTML devri bu altı basamağı sayar.
+        public static Kariyer[] KARIYER { get { return KariyerVeri.Turlar[0].b; } }
+        public static Style KariyerRakip(int g) { return KariyerVeri.Rakip(g); }
 
         public Match(int seed, MatchOptions o)
         {
@@ -182,7 +191,7 @@ namespace BirdieSmash.Core
         void SetupServe()
         {
             if (ogr != null) { var a = OgrA(); if (a != null && a.bilgi == null) server = a.servis != null ? "me" : "op"; if (a != null && a.drill) OgrCagriSec(true); }   // antrenman: servis adımında sen, vuruş adımında antrenör yüksek servisle başlatır
-            s = null; me.vx = me.vy = 0; op.mvx = op.mvy = 0; me.tx = float.NaN; me.stun = 0; rally = 0; between = false; icpt = null; serveMsg = "";
+            s = null; me.vx = me.vy = 0; op.mvx = op.mvy = 0; me.tx = float.NaN; me.stun = 0; rally = 0; between = false; icpt = null; serveMsg = ""; ImzaSifirla(); me.fakeUntil = -9;
             string sv = server, side = ServeSide(sv), rv = sv == "me" ? "op" : "me";
             float[] sb = BoxX(sv, side), rb = BoxX(rv, side);
             if (sv == "me") { me.x = (sb[0] + sb[1]) / 2; me.y = Court.NET + Court.SSL + 1.4f; op.x = (rb[0] + rb[1]) / 2; op.y = Court.NET - Court.SSL - 1.6f; }
@@ -280,6 +289,7 @@ namespace BirdieSmash.Core
             Emit(Ev.Hit, from, type, hx, hy, hz, rally, null, q ?? "good", isSuper); events[events.Count - 1].slice = slice; events[events.Count - 1].serve = isServe;
             if (rally > 2 && rally % 10 == 0) Say(null, null, Court.MID, Court.NET, 2.5f, "Ralli " + rally, 2);
             PlanIntercept();
+            if (from == "op" && !isServe) ImzaDuvar(type);
         }
 
         // Karşılayan için yolu önceden hesapla: baş üstünde alabiliyorsa yüksekte, değilse yere düşmeden en alçak noktada.
@@ -289,7 +299,8 @@ namespace BirdieSmash.Core
             string recv = s.from == "me" ? "op" : "me"; var P0 = recv == "me" ? me : op;
             float t0 = s.t; foreach (var p in r.path) p.t += t0; r.t += t0;
             s.landPred = r; if (r.net != null) s.netPred = r.net;
-            float react = recv == "me" ? 0 : .18f, spd = recv == "me" ? MeSpd() : OpSpd();
+            float react = recv == "me" ? 0 : .18f, spd = recv == "me" ? MeSpd() : OpSpd(); bool blokla = false;
+            if (recv == "op") react = ImzaTepki(react, out blokla);   // duvar blok: tepkisiz çıkış; okunan duvar: geç ve ters
             // Aldatma: kesilen/son anda bırakılan vuruşta rakip geç ve ters yöne çıkar (hold & flick).
             if (recv == "op" && deceive)
             {
@@ -313,6 +324,8 @@ namespace BirdieSmash.Core
                 float q = R01(), acc = 0; var K = overhead ? stil.ustK : stil.altK; var Pp = overhead ? stil.ustP : stil.altP; string pk = K[K.Length - 1];
                 for (int i = 0; i < K.Length; i++) { acc += Pp[i]; if (q < acc) { pk = K[i]; break; } }
                 icpt.opType = pk;
+                if (blokla && !icpt.leave) { icpt.imza = "duvarblok"; icpt.imzaBasladi = true; icpt.opType = "drop"; }
+                else ImzaPlanla(t0, cands, need);
             }
         }
 
@@ -399,6 +412,8 @@ namespace BirdieSmash.Core
             if (type == "jump") me.jump = .53f;
             if (type == "kill") kills++;
             if (type == "smash" || type == "jump") smashes++;
+            if (s.from == "op" && s.type == "smash") smacKarsila++;
+            ImzaCevap(type); VurusKaydet(type);
             me.sw = 1; GorevKontrol();
             string ft = type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type;
             sonTip = type; sonQ = q; sonSlice = slice;   // titreşim deseni (HTML hapHit) uçuş türünü değil vuruşun kendisini ister
@@ -457,7 +472,10 @@ namespace BirdieSmash.Core
 
         void OpHit()
         {
-            var I = icpt; float hx = s.x, hy = s.y, hz = Math.Max(.2f, s.z); float r0 = R01();
+            var I = icpt;
+            if (ogr == null && I.imza != null && I.imzaBasladi && ImzaVurus(I)) return;   // patronun imza vuruşu (Core/Imza)
+            if (ogr == null && MermiIkinci(I)) return;
+            float hx = s.x, hy = s.y, hz = Math.Max(.2f, s.z); float r0 = R01();
             string q = R01() < .12f ? "poor" : R01() < .3f ? "perfect" : "good";
             bool obh = HandOf(op, "op", hx, hz) == "back";
             string type = I.opType ?? (I.overhead ? "clear" : "drop"); if (obh && type == "smash") type = "clear";
@@ -488,6 +506,10 @@ namespace BirdieSmash.Core
             // ve kayboldu (bot ölçümü: rakip file hatası 29 → 4 sayı). Oyuncuyla aynı kural: "poor" vuruşun hızı ±%8 sapar,
             // file ve dışarı hatası kötü vuruştan doğar.
             if (q == "poor") { float k = 1 + (R01() - .5f) * .16f; vx *= k; vy *= k; vz *= k; }
+            // Aldatıcı (Vex, aldatP): son anda yön değiştirir. Kolay'da kendiliğinden koşu bir an ters yöne çıkar (drop'ta
+            // arkaya, alçak clear'da öne); Usta'da koşu oyuncunun, aldatma yalnız vuruşun kendisinde (drop/flick karışımı).
+            if (stil.aldatP > 0 && easy && (type == "drop" || type == "clear" && hz < 1.6f) && R01() < stil.aldatP)
+            { me.fakeUntil = clock + .22f; me.fakeX = me.x; me.fakeY = type == "drop" ? Math.Min(Court.L - .8f, me.y + 1.2f) : Math.Max(Court.NET + 1.2f, me.y - 1.2f); }
             StartFlight("op", vx, vy, vz, hx, hy, hz, false, type, false, q);
         }
 
@@ -505,6 +527,8 @@ namespace BirdieSmash.Core
             hakemT = hakemT0 = 1.4f; hakemYon = winner; hakemSO = ogr == null && winner != server;   // servis el değişti mi: baş hakem o zaman yeni servisçinin tarafını gösterir
             if (ogr == null) { sc[winner == "me" ? 0 : 1]++; server = winner; }                      // antrenmanda skor yok
             if (winner == "me" && s != null && s.from == "me" && s.type == "smash") smacSayi++;
+            if (winner == "me" && s != null && s.from == "me" && s.type == "drop") dropSayi++;
+            ImzaSifirla();
             GorevKontrol();
             Emit(Ev.Point, winner, s != null ? s.type : null, x, y, 0, rally, why, null, s != null && s.super);
             bool rekor = rally > bestRally && rally >= 6;
@@ -545,7 +569,8 @@ namespace BirdieSmash.Core
             var o = me; if (s == null) { o.vx = o.vy = 0; return; }   // servis atılana kadar yerinde (kural)
             if (o.stun > 0) { o.stun -= d; o.vx *= .8f; o.vy *= .8f; return; }
             o.manualT = Math.Max(0, o.manualT - d);
-            if (easy && o.manualT <= 0)
+            if (easy && o.manualT <= 0 && o.fakeUntil > clock) { o.tx = o.fakeX; o.ty = o.fakeY; }   // aldatıldı (Vex, gölge flick)
+            else if (easy && o.manualT <= 0)
             {
                 var I = icpt;
                 if (s.from == "op" && I != null && I.who == "me") { o.tx = Clamp(I.x - HitSide(o, "me", I), -.4f, Court.CW + .4f); o.ty = I.y + (I.lunge ? .6f : .25f); }
@@ -656,6 +681,11 @@ namespace BirdieSmash.Core
                     o.prepClip = ClipHand(o.prepShot == "over" ? (energy >= 1 && o.prepHand != "back" ? "jump" : "clear") : o.prepShot, o.prepHand);
                 }
             }
+            // İmza hazırlığı (Core/Imza): rakip imza pozunu tutar (yıldırımda sıçrama, tülde file bileği, mermide eğik drive,
+            // gölge flick'te drop duruşu: aldatma budur); duvar blokta top karşıdayken blok duruşu.
+            if (who == "op" && I != null && I.who == "op" && I.imza != null && s != null && !s.dead && s.from != who && I.t - s.t < .7f)
+            { o.prepClip = ClipHand(ImzaKlip(I.imza), o.prepHand ?? "fore"); if (I.imza == "yildirim" && o.prepHand == "back") o.prepClip = "bh_over"; }
+            if (who == "op" && o.imzaT > 0 && o.imzaId == "duvarblok") { tg = 1; o.prepShot = "drive"; o.prepClip = "block"; o.prepHand = "fore"; o.prepT = float.NaN; }
             // rakipte geri salınım sakin akar (~0,4 sn); bizde vuruş penceresi kısa, eski hız kalır. Bırakış hızlı.
             o.prepA += (tg - o.prepA) * Math.Min(1, dt * (tg > 0 && who == "op" ? 4.5f : 9));
         }
@@ -742,6 +772,7 @@ namespace BirdieSmash.Core
                 if (s.z <= 0) { s.z = 0; s.inVx = s.vx; s.inVy = s.vy; s.inVz = s.vz; Land(); return; }
             }
             var I = icpt;
+            ImzaTick(I, d);
             if (s.from == "me")
             {
                 if (I != null && I.who == "op" && !I.leave)
@@ -762,7 +793,7 @@ namespace BirdieSmash.Core
             // Ana nokta fileden stil.ev metre (2026-10-26): eskiden y = ev yazılıyordu, yani rakibin dip çizgisinden. "Fileye yakın
             // durur" denen File oyuncusu (ev 2,2) fileden 4,5 m'de en derinde, Duvar (3,6) en önde bekliyordu; üç değer ancak
             // fileden okununca tarifle uyuşur (Mika 2,2 önde, Blaze 3,2, Rocco 3,6 geride; tekler tabanı fileden ~3–3,5 m).
-            else MoveAcc(op, Court.MID, Court.NET - stil.ev, 2.0f, d);
+            else MoveAcc(op, Court.MID, Court.NET - OpEv(), 2.0f, d);   // OpEv: Aria'nın uyumu (Core/Imza), diğerlerinde stil.ev
         }
 
         // Poz seçimi (HTML player()): servis hazırlığı → vuruş takibi → servis duruşu → yorgun → hazırlık (temasa kalan

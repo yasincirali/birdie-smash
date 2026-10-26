@@ -182,7 +182,9 @@ namespace BirdieSmash.Core
 
         // Maç sonu ödülü: 5 sayılık maç için değerler; uzun maç sayı başına adil (11 ×2, 21 ×3,5), Usta ×1,25.
         // Kaybetmek de ilerletir; günün ilk galibiyeti +50; seri ve kaçırma cezası yok.
-        public OdulSonuc Odul(bool won, bool kariyerIlk, int target, bool easy, int gorevBitti, int perfects, DateTime bugun)
+        // 2026-10-26 kariyer haritası: ilk kez alınan her yıldız +20 Tüy (tasarım §3.1; yıldız kilit açmaz, ödül açar), okunan
+        // her imza vuruşu +5 XP (§3.3). İkisi de isteğe bağlı parametre: eski çağrılar ve testler aynı sonucu verir.
+        public OdulSonuc Odul(bool won, bool kariyerIlk, int target, bool easy, int gorevBitti, int perfects, DateTime bugun, int yeniYildiz = 0, int okudun = 0)
         {
             float f = target == 5 ? 1 : target == 11 ? 2 : target == 21 ? 3.5f : 1, zor = easy ? 1 : 1.25f; int mk = Math.Min(10, perfects);
             var o = new OdulSonuc();
@@ -191,6 +193,8 @@ namespace BirdieSmash.Core
             string gun = bugun.Year + "-" + bugun.Month + "-" + bugun.Day;
             if (won && eko.gun != gun) { eko.gun = gun; o.tuy += 50; o.ek.Add("günün ilk galibiyeti +50"); }
             if (kariyerIlk) { o.tuy += 60; o.xp += 40; o.ek.Add("yeni basamak +60"); }
+            if (yeniYildiz > 0) { o.tuy += 20 * yeniYildiz; o.ek.Add("yeni yıldız +" + 20 * yeniYildiz); }
+            if (okudun > 0) o.xp += 5 * okudun;
             o.once = Seviye(); eko.tuy += o.tuy; eko.xp += o.xp; EkoYaz(); o.sonra = Seviye();
             return o;
         }

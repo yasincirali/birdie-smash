@@ -111,6 +111,34 @@
 .ipucu { color: rgb(207, 227, 220); margin-top: 8px; }
 .buyuk-yazi .basamak-satir { flex-wrap: wrap; }
 
+/* Kariyer haritası (2026-10-26, adım 2). Düğüm ≥ 44 yükseklik, rozet 44 x 44. Yol: düğümler sağa sola kırılır (%14),
+   aralarında 4 birimlik çizgi (geçilen kısım limon, gelecek soluk). Durum biçimle de: rozet dolu/halka/kilit, yazı. */
+.tur-secici { margin-top: 10px; margin-bottom: 2px; flex-wrap: nowrap; }
+.tur-cip { padding: 8px 4px; min-width: 44px; }
+.tur-cip--kilit { opacity: 0.75; }
+.tur-kart { margin-top: 8px; margin-bottom: 10px; }
+.dugum { min-height: 44px; padding: 10px 12px; margin: 0; }
+.dugum--sol { margin-right: 14%; }
+.dugum--sag { margin-left: 14%; }
+.dugum.simdiki { border-color: rgb(122, 215, 255); border-width: 2px; }
+.dugum.kilitli { opacity: 0.6; }
+.dugum--final { border-color: rgba(255, 210, 58, 0.45); }
+.dugum--final.simdiki { border-color: rgb(122, 215, 255); }
+.dugum-rozet { width: 44px; height: 44px; border-radius: 22px; align-items: center; justify-content: center; flex-shrink: 0; border-width: 2px; border-color: rgba(255, 255, 255, 0.15); background-color: rgb(26, 38, 41); }
+.dugum-rozet--gecti { background-color: rgb(216, 255, 90); border-color: rgb(216, 255, 90); }
+.dugum-rozet--simdi { border-color: rgb(122, 215, 255); background-color: rgb(14, 29, 32); }
+.dugum-rozet--acik { border-color: rgba(255, 255, 255, 0.5); }
+.yol { width: 4px; height: 18px; align-self: center; border-radius: 2px; margin: 2px 0; }
+.yol--acik { background-color: rgb(216, 255, 90); }
+.yol--kilit { background-color: rgba(255, 255, 255, 0.18); }
+.yildiz-sayac { flex-direction: row; align-items: center; margin: 0; flex-wrap: nowrap; }
+.yildizlar { flex-direction: row; align-items: center; margin: 2px 0 0 0; flex-wrap: nowrap; }
+.yildizlar .ikon { margin-right: 2px; }
+.imza-kart { border-color: rgba(255, 210, 58, 0.35); margin-top: 10px; }
+.buyuk-yazi .dugum--sol, .buyuk-yazi .dugum--sag { margin-left: 0; margin-right: 0; }
+.buyuk-yazi .tur-secici { flex-direction: row; flex-wrap: wrap; }
+.buyuk-yazi .tur-secici .cip { flex-basis: 40%; }
+
 /* Soyunma odası */
 .vitrin-alan { height: 40%; min-height: 200px; flex-shrink: 0; margin: 0 16px; border-radius: 16px; overflow: hidden; background-color: rgb(14, 29, 32); }
 .vitrin { flex-grow: 1; }

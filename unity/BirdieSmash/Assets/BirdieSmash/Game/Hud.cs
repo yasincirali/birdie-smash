@@ -394,8 +394,10 @@ namespace BirdieSmash.Game
             var st = M.stil; float w = ColW, x = ColX, h = 92 * u; var r = new Rect(x, y, w, h); blocks.Add(r); GUI.Box(r, GUIContent.none, card);
             var oc = Kit.Hex(Match.OpRenk(st, Ayar.FORMA)); oc.a = gk; GUI.color = oc; GUI.DrawTexture(new Rect(x, y, 6 * u, h), Texture2D.whiteTexture); GUI.color = Color.white;
             GUI.Label(new Rect(x + 16 * u, y + 8 * u, w - 24 * u, 26 * u), st.isim, new GUIStyle(leftB) { fontSize = Mathf.RoundToInt(20 * fu) });
-            GUI.Label(new Rect(x + 16 * u, y + 34 * u, w - 24 * u, 18 * u), st.kariyer >= 0 ? L.T(st.ad) + " · " + L.T(Match.KARIYER[st.kariyer].yer) : L.T(st.ad), left);
-            GUI.Label(new Rect(x + 16 * u, y + 54 * u, w - 24 * u, 36 * u), L.T(st.ipucu), new GUIStyle(left) { wordWrap = true, fontSize = Mathf.RoundToInt(12 * fu) });
+            var kb = KariyerVeri.Al(st.kariyer); var im = st.patron ? KariyerVeri.Imza(st.imza) : null;   // serbest maçta taban tarz imzayı taşır ama atmaz
+            GUI.Label(new Rect(x + 16 * u, y + 34 * u, w - 24 * u, 18 * u), kb != null ? L.T(st.ad) + " · " + L.T(kb.yer) : L.T(st.ad), left);
+            // Patron (final): ipucu yerine imza vuruşu ve cevabı (tasarım §3.3: kart rakibin tek fikrini söyler; finalde o fikir imzadır)
+            GUI.Label(new Rect(x + 16 * u, y + 54 * u, w - 24 * u, 36 * u), im != null ? L.T(im.ad) + ": " + L.T(im.cevap) : L.T(st.ipucu), new GUIStyle(left) { wordWrap = true, fontSize = Mathf.RoundToInt(12 * fu) });
             GUI.contentColor = GUI.backgroundColor = Color.white;
             if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition)) root.rakipKartT = 0;   // dokununca hemen kapanır
             return y0 + h + 8 * u;
@@ -448,7 +450,7 @@ namespace BirdieSmash.Game
         {
             Dim(.6f); float x = ColX, w = ColW, y = H * .3f;
             Shadowed(new Rect(x, y, w, 40 * u), L.T("Duraklatıldı"), big, Color.white); y += 46 * u;
-            Shadowed(new Rect(x, y, w, 24 * u), M.sc[0] + " – " + M.sc[1] + " · " + L.T("{0} sayı", M.target) + " · " + L.T("Rakip") + " " + M.RakipAd(false) + (M.stil.kariyer >= 0 ? " · " + L.T(Match.KARIYER[M.stil.kariyer].yer) : ""), small, Color.white); y += 40 * u;
+            Shadowed(new Rect(x, y, w, 24 * u), M.sc[0] + " – " + M.sc[1] + " · " + L.T("{0} sayı", M.target) + " · " + L.T("Rakip") + " " + M.RakipAd(false) + (KariyerVeri.Var(M.stil.kariyer) ? " · " + L.T(KariyerVeri.Al(M.stil.kariyer).yer) : ""), small, Color.white); y += 40 * u;
             if (Button(new Rect(x, y, w, BH * 1.1f), "Maça devam et", true)) root.Devam(); y += BH * 1.1f + 10 * u;
             // HTML duraklat satırı: Ses · Maçı baştan başlat · Ana menü (oyun sırasında ses düğmesi yalnız burada)
             if (Chip(new Rect(x, y, w, BH), Ayar.ses ? "Ses açık" : "Ses kapalı", Ayar.ses)) { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); } y += BH + 10 * u;
@@ -463,10 +465,12 @@ namespace BirdieSmash.Game
             float th = big.CalcHeight(new GUIContent(root.bittiBaslik), w); var bs = root.bittiBaslik.Length > 24 ? mid : big; th = bs.CalcHeight(new GUIContent(root.bittiBaslik), w);
             Shadowed(new Rect(x, y, w, th), root.bittiBaslik, bs, Color.white); y += th + 8 * u;
             Shadowed(new Rect(x, y, w, 60 * u), M.sc[0] + " – " + M.sc[1], new GUIStyle(big) { fontSize = Mathf.RoundToInt(48 * fu) }, Color.white); y += 64 * u;
+            // Kariyer yıldızları (2026-10-26): dolu/boş yıldız + sayı yazıyla (yalnız simgeye güvenilmez), yeniler ayrıca
+            if (!string.IsNullOrEmpty(root.bittiYildiz)) { float yh = small.CalcHeight(new GUIContent(root.bittiYildiz), w); Shadowed(new Rect(x, y, w, yh), root.bittiYildiz, new GUIStyle(small) { fontStyle = FontStyle.Bold }, Kit.Hex("#ffd23a")); y += yh + 6 * u; }
             var od = root.odul;
             if (od != null)
             {   // HTML oOdul: +Tüy · +XP (ekler) · Seviye! · Toplam
-                string t = L.T("+{0} Tüy{1} · +{2} XP", od.tuy, "", od.xp) + (od.ek.Count > 0 ? " (" + string.Join(", ", od.ek.ConvertAll(s => L.T(s)).ToArray()) + ")" : "") + (od.sonra > od.once ? L.T(" · Seviye {0}!", od.sonra) : "") + L.T(" · Toplam {0}{1}", Ayar.gear.eko.tuy, " " + L.T("Tüy"));
+                string t = L.T("+{0} Tüy{1} · +{2} XP", od.tuy, "", od.xp) + (od.ek.Count > 0 ? " (" + string.Join(", ", od.ek.ConvertAll(s => L.Cumle(s)).ToArray()) + ")" : "") + (od.sonra > od.once ? L.T(" · Seviye {0}!", od.sonra) : "") + L.T(" · Toplam {0}{1}", Ayar.gear.eko.tuy, " " + L.T("Tüy"));
                 float oh = small.CalcHeight(new GUIContent(t), w); Shadowed(new Rect(x, y, w, oh), t, new GUIStyle(small) { fontStyle = FontStyle.Bold }, Kit.Hex("#ffd23a")); y += oh + 6 * u;
             }
             // HTML oYukselt: yükseltme yapılabiliyorsa maç sonundan doğrudan Ekipman paneline götüren düğme

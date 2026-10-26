@@ -33,7 +33,13 @@ namespace BirdieSmash.Game
             var iz = Satir("izgara"); c.Add(iz);
             Deger(iz, L.T("Rekor ralli"), Ayar.bestRally.ToString()); Deger(iz, L.T("Galibiyet"), Ayar.wins.ToString());
             Deger(iz, L.T("Görev"), Ayar.gorev.ToString());
-            Deger(iz, L.T("Kariyer"), Ayar.sampiyon ? L.T("Şampiyon") : Mathf.Min(Ayar.kariyer + 1, Match.KARIYER.Length) + "/" + Match.KARIYER.Length);
+            Deger(iz, L.T("Kariyer yıldızı"), Ayar.ilerleme.ToplamYildiz + "/" + TurSayisiVeri() * 18);
+            // tur başına yıldızlar (tasarım §2.3 Profil): yalnız verisi olan turlar; kilitli tur "Kilitli" yazısıyla
+            for (int tu = 0; tu < KariyerVeri.Turlar.Length; tu++)
+            {
+                if (!KariyerVeri.Turlar[tu].Var) continue; bool ac = Ayar.ilerleme.TurAcik(tu);
+                Deger(iz, L.T(TurAd(tu)), ac ? Ayar.ilerleme.TurYildiz(tu) + "/18 ★" : L.T("Kilitli"));
+            }
 
             c.Add(Grup(L.T("Başarımlar")));
             for (int i = 0; i < BASARIM.GetLength(0); i++) BasarimSatir(c, BASARIM[i, 0], L.T(BASARIM[i, 1]));

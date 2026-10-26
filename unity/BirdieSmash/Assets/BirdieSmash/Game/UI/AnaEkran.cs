@@ -39,11 +39,12 @@ namespace BirdieSmash.Game
             }
             else
             {
-                int i = Career.Basamak(Ayar.kariyer);
-                string alt = !Ayar.antrenman ? L.T("İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç") : Ayar.sampiyon ? L.Cumle(Career.Line(Ayar.kariyer)) : L.T("Sıradaki: {0}", L.T(Match.KARIYER[i].yer));
+                var p = Ayar.ilerleme; var kb = KariyerVeri.Al(p.Siradaki());
+                string alt = !Ayar.antrenman ? L.T("İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç") : p.HepsiBitti ? L.Cumle(Career.Line(p)) : L.T("Sıradaki: {0}", L.T(kb.yer));
                 c.Add(Dugme(L.T("Oyna"), () =>
                 {
                     if (Ayar.antrenman && !Ayar.kariyerModu) { Ayar.kariyerModu = true; Ayar.GearHesap(); Ayar.Kaydet(); }
+                    Ayar.kariyerSecim = -1;   // büyük Oyna her zaman sıradakini oynatır (haritadan seçilen yeniden oynama değil)
                     root.Oyna();
                 }, "dugme--birincil", alt, 20));
             }
@@ -54,43 +55,36 @@ namespace BirdieSmash.Game
 
         string HizliOzet() { return L.T("{0} sayı · {1} · {2}", Ayar.target, L.T(Ayar.easy ? "Kolay" : "Usta"), L.T(CourtView.SAHA[Ayar.saha].ad)); }
 
-        // "Sıradaki" kartı: rakip rengi yanında adıyla (yalnız renkle değil), basamak çubuğu biçimle (geçilen dolu, şimdiki
-        // uzun ve çerçeveli, gelecek soluk).
+        // "Sıradaki" kartı: rakip rengi yanında adıyla (yalnız renkle değil), yıldızları (dolu/çerçeve + "1/3"), turun basamak
+        // çubuğu biçimle (geçilen dolu, şimdiki uzun ve çerçeveli, gelecek soluk). 2026-10-26: tur ve yıldızlar haritadan
+        // (Ilerleme); dokununca Kariyer sekmesi (harita) açılır.
         VisualElement SiradakiKart()
         {
-            int i = Career.Basamak(Ayar.kariyer); var kb = Match.KARIYER[i]; var st = Match.STIL[kb.stil];
+            var p = Ayar.ilerleme; int g = p.Siradaki(), tr = KariyerVeri.TurOf(g), i = KariyerVeri.BasOf(g); var kb = KariyerVeri.Al(g); var st = Match.STIL[kb.stil];
+            bool tamam = p.HepsiBitti;
             var kart = Kart("siradaki"); kart.AddManipulator(new Clickable(() => SekmeAc(Sekme.Kariyer)));
             var bas = Satir("arali"); kart.Add(bas);
-            bas.Add(Yazi(L.T(Ayar.sampiyon ? "Kariyer tamam" : "Sıradaki maç"), 12, "etiket"));
-            bas.Add(Yazi(L.T("Kariyer") + " " + (i + 1) + "/" + Match.KARIYER.Length, 12, "etiket"));
+            bas.Add(Yazi(L.T(tamam ? "Kariyer tamam" : "Sıradaki maç"), 12, "etiket"));
+            bas.Add(Yazi(L.T(TurAd(tr)) + " " + (i + 1) + "/" + KariyerVeri.BASAMAK, 12, "etiket"));
             kart.Add(Yazi(L.T(kb.yer), 22, "kalin"));
             var rk = Satir("rakip-satir"); kart.Add(rk);
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);
             rk.Add(Yazi(L.T("Rakip") + " " + st.isim + " · " + L.T(st.ad) + " · " + L.T(CourtView.SAHA[kb.saha].ad), 14, "soluk"));
+            var yr = Satir("rakip-satir"); kart.Add(yr); yr.Add(UcYildiz(p.Maske(g), 16)); var yy = Yazi(p.Yildiz(g) + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy);
             var bc = Satir("basamak-cubugu"); bc.pickingMode = PickingMode.Ignore; kart.Add(bc);
-            for (int j = 0; j < Match.KARIYER.Length; j++)
+            for (int j = 0; j < KariyerVeri.BASAMAK; j++)
             {
-                var b = new VisualElement(); b.AddToClassList("basamak"); b.pickingMode = PickingMode.Ignore;
-                b.AddToClassList(j < Ayar.kariyer ? "basamak--gecti" : j == Ayar.kariyer ? "basamak--simdi" : "basamak--kilit"); bc.Add(b);
+                var b = new VisualElement(); b.AddToClassList("basamak"); b.pickingMode = PickingMode.Ignore; int gj = KariyerVeri.Global(tr, j);
+                b.AddToClassList(p.Kazanildi(gj) && gj != g ? "basamak--gecti" : gj == g ? "basamak--simdi" : "basamak--kilit"); bc.Add(b);
             }
-            Erisim.Etiket(kart, L.T(Ayar.sampiyon ? "Kariyer tamam" : "Sıradaki maç") + ", " + L.T(kb.yer) + ", " + L.T("Rakip") + " " + st.isim + ", " + (i + 1) + "/" + Match.KARIYER.Length, "dugme");
+            Erisim.Etiket(kart, L.T(tamam ? "Kariyer tamam" : "Sıradaki maç") + ", " + L.T(TurAd(tr)) + ", " + L.T(kb.yer) + ", " + L.T("Rakip") + " " + st.isim + ", " + (i + 1) + "/" + KariyerVeri.BASAMAK + ", " + L.T("{0}/3 yıldız", p.Yildiz(g)), "dugme");
             return kart;
         }
 
         // ---- Hızlı maç alt sayfası ----
         void HizliKur()
         {
-            altKatman.Clear(); altSayfa = new VisualElement(); altSayfa.AddToClassList("alt-sayfa"); altSayfa.style.paddingBottom = altBosluk + 16; altKatman.Add(altSayfa);
-            // Tutamak: aşağı çekince kapanır (iOS alt sayfa kalıbı); ayrıca Geri ve zemine dokunma.
-            var tut = new VisualElement(); tut.AddToClassList("tutamak-alan"); var cz = new VisualElement(); cz.AddToClassList("tutamak"); cz.pickingMode = PickingMode.Ignore; tut.Add(cz); altSayfa.Add(tut);
-            float basY = 0; bool cek = false;
-            tut.RegisterCallback<PointerDownEvent>(e => { basY = e.position.y; cek = true; tut.CapturePointer(e.pointerId); });
-            tut.RegisterCallback<PointerMoveEvent>(e => { if (cek && e.position.y - basY > 60) { cek = false; tut.ReleasePointer(e.pointerId); AltKapat(); } });
-            tut.RegisterCallback<PointerUpEvent>(e => { cek = false; tut.ReleasePointer(e.pointerId); });
-            var bas = Satir("arali"); altSayfa.Add(bas);
-            var t = Yazi(L.T("Hızlı maç"), 19, "sayfa-baslik"); Erisim.Etiket(t, L.T("Hızlı maç"), "baslik"); bas.Add(t);
-            var kapat = Dugme(L.T("Kapat"), AltKapat, "kucuk-dugme"); bas.Add(kapat);
-            var sv = Kaydirma(altSayfa); sv.AddToClassList("alt-kaydir"); var c = sv.contentContainer;
+            var c = AltSayfaKur(L.T("Hızlı maç"));
             c.Add(Yazi(L.T("Rakip her maçta rastgele: Smaşçı, Duvar ya da File oyuncusu."), 13, "soluk"));
             OyunSecenek(c, true);
             c.Add(Bosluk(8));
@@ -98,6 +92,22 @@ namespace BirdieSmash.Game
             {
                 Ayar.kariyerModu = false; Ayar.GearHesap(); Ayar.Kaydet(); gez.Kapat(Gezinti.HIZLI); Uygula(gez.sekme, false); root.Oyna();
             }, "dugme--birincil", HizliOzet(), 19));
+        }
+
+        // Alt sayfa iskeleti (Hızlı maç ve kariyer maç kartı ortak, 2026-10-26): tutamak (aşağı çekince kapanır, iOS kalıbı;
+        // ayrıca Kapat, Geri ve zemine dokunma), başlık, kaydırmalı gövde. Dönüş: gövdenin içerik kabı.
+        VisualElement AltSayfaKur(string baslik)
+        {
+            altKatman.Clear(); altSayfa = new VisualElement(); altSayfa.AddToClassList("alt-sayfa"); altSayfa.style.paddingBottom = altBosluk + 16; altKatman.Add(altSayfa);
+            var tut = new VisualElement(); tut.AddToClassList("tutamak-alan"); var cz = new VisualElement(); cz.AddToClassList("tutamak"); cz.pickingMode = PickingMode.Ignore; tut.Add(cz); altSayfa.Add(tut);
+            float basY = 0; bool cek = false;
+            tut.RegisterCallback<PointerDownEvent>(e => { basY = e.position.y; cek = true; tut.CapturePointer(e.pointerId); });
+            tut.RegisterCallback<PointerMoveEvent>(e => { if (cek && e.position.y - basY > 60) { cek = false; tut.ReleasePointer(e.pointerId); AltKapat(); } });
+            tut.RegisterCallback<PointerUpEvent>(e => { cek = false; tut.ReleasePointer(e.pointerId); });
+            var bas = Satir("arali"); altSayfa.Add(bas);
+            var t = Yazi(baslik, 19, "sayfa-baslik"); Erisim.Etiket(t, baslik, "baslik"); bas.Add(t);
+            bas.Add(Dugme(L.T("Kapat"), AltKapat, "kucuk-dugme"));
+            var sv = Kaydirma(altSayfa); sv.AddToClassList("alt-kaydir"); return sv.contentContainer;
         }
 
         // Zorluk, maç uzunluğu (ve istenirse saha): Ayarlar ile Hızlı maç aynı işleyiciyi paylaşır (aynı anahtarlar).
@@ -124,7 +134,8 @@ namespace BirdieSmash.Game
         void Degisti()
         {
             for (int i = 0; i < 4; i++) kirli[i] = true; ustKirli = true;
-            if (gez.Acik(Gezinti.HIZLI)) { var eski = altSayfa != null ? altSayfa.Q<ScrollView>() : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; HizliKur(); KaydirmaGeri(altSayfa, of); }
+            string altS = gez.AcikAltSayfa;
+            if (altS != null) { var eski = altSayfa != null ? altSayfa.Q<ScrollView>() : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; if (altS == Gezinti.KART) MacKartKur(); else HizliKur(); KaydirmaGeri(altSayfa, of); }
             string u = gez.Ust; if (u != null && !Gezinti.AltSayfa(u)) { var eski = sayfa.Q<ScrollView>(); Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; SayfaKur(u); KaydirmaGeri(sayfa, of); }
             else if (u == null) { var k = sekmeKok[(int)gez.sekme]; var eski = k.Q<ScrollView>(null, "govde-kaydir") ?? k.Q<ScrollView>(); Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; SekmeKur(gez.sekme); KaydirmaGeri(k, of); }
             if (ustKirli) UstKur();

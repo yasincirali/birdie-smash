@@ -6,6 +6,9 @@
 // 2026-10-26 menü kabuğu (UI Toolkit): her sekme (Oyna, Kariyer, Soyunma odası, Profil), Hızlı maç alt sayfası ve Ayarlar,
 // ×1 ve ×2 yazı ölçeğiyle (Ayar.yaziTest; kaydedilmez), ilk açılış Oyna'sı (logo + antrenman ipucu). Sekmeler UiKok'un
 // açık yöntemleriyle değişir (SekmeAc, HizliMacAc, AyarlarAc, Geri); UI Toolkit arka tampona çizdiği için ReadPixels yakalar.
+// 2026-10-26 kariyer haritası (adım 2–3): örnek ilerlemeyle (kaydedilmez, tur sonunda eskisi geri konur) harita Tur 1,
+// Tur 2 kilitli ve açık, final maç kartı (imza vuruşu satırı), ×1 ve ×2 yazı; maçta patronun imza hazırlığı (ışık + poz),
+// hareket tam ve hareketi azalt.
 // Süre: gerçek zaman (GameRoot dt'yi 0,05 ile sınırlar; yavaş yazılım render'ında maç da yavaşlar, kareler yine anlamlı).
 using System.Collections;
 using System.IO;
@@ -59,6 +62,9 @@ namespace BirdieSmash.Game
                 Ayar.kamera = k; Ayar.saha = "salon"; root.SahaDegisti(); root.KameraDegisti(); root.StartMatch(false, false, false); botAcik = true;
                 yield return Bekle(60); yield return Cek("kamera_" + k);
             }
+            Ayar.model = "oyuncak"; Ayar.saha = "salon"; Ayar.kamera = "yayin"; root.SahaDegisti(); root.KameraDegisti();
+            yield return ImzaKare("imza_mermi", KariyerVeri.Global(1, 5), false);
+            yield return ImzaKare("imza_duvar_azalt", KariyerVeri.Global(0, 5), true);
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             Application.Quit(0);
         }
@@ -85,12 +91,40 @@ namespace BirdieSmash.Game
             ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_" + ek + "oyna");
             if (!hepsi) yield break;
             ui.SekmeAc(Sekme.Kariyer); yield return Bekle(20); yield return Cek("menu_" + ek + "kariyer");
+            yield return Harita(ui, ek);
             ui.SekmeAc(Sekme.Soyunma); yield return Bekle(30); yield return Cek("menu_" + ek + "soyunma");
             ui.SekmeAc(Sekme.Profil); yield return Bekle(20); yield return Cek("menu_" + ek + "profil");
             ui.SekmeAc(Sekme.Oyna); ui.HizliMacAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "hizli"); ui.Geri();
             ui.AyarlarAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "ayarlar"); ui.Geri(); yield return Bekle(5);
         }
 
+        // Harita kareleri: örnek ilerleme (Tur 1'de dört basamak, farklı yıldızlarla), sonra Tur 1 tamam + Tur 2 yarısı.
+        IEnumerator Harita(UiKok ui, string ek)
+        {
+            var eski = Ayar.ilerleme;
+            var p = new Ilerleme(); p.tur[0][0] = 7; p.tur[0][1] = 3; p.tur[0][2] = 5; p.tur[0][3] = 1; Ayar.ilerleme = p;
+            ui.KariyerTurSec(0); yield return Bekle(20); yield return Cek("menu_" + ek + "harita_tur1");
+            ui.KariyerTurSec(1); yield return Bekle(15); yield return Cek("menu_" + ek + "harita_tur2_kilitli");
+            ui.KariyerTurSec(0); ui.MacKartAc(KariyerVeri.Global(0, 4)); yield return Bekle(20); yield return Cek("menu_" + ek + "mac_karti");
+            ui.Geri(); ui.MacKartAc(KariyerVeri.Global(0, 5)); yield return Bekle(20); yield return Cek("menu_" + ek + "mac_karti_final_kilitli"); ui.Geri();
+            var q = new Ilerleme(); for (int b = 0; b < 6; b++) q.tur[0][b] = b % 2 == 0 ? 7 : 3; q.tur[1][0] = 3; q.tur[1][1] = 1; Ayar.ilerleme = q;
+            ui.KariyerTurSec(1); yield return Bekle(20); yield return Cek("menu_" + ek + "harita_tur2");
+            ui.MacKartAc(KariyerVeri.Global(1, 2)); yield return Bekle(20); yield return Cek("menu_" + ek + "mac_karti_tur2"); ui.Geri();
+            ui.KariyerTurSec(3); yield return Bekle(15); yield return Cek("menu_" + ek + "harita_tur4_yakinda");
+            Ayar.ilerleme = eski; ui.KariyerTurSec(-1); yield return Bekle(5);
+        }
+
+        // Patron maçında imza hazırlığı: örnek ilerlemeyle Tur 2 finali (Nova, mermi drive) ya da Tur 1 finali (Rocco, duvar
+        // blok); bot oynar, hazırlık başlayınca (Athlete.imzaT > 0) birkaç kare sonra çekilir. En çok 60 sn beklenir.
+        IEnumerator ImzaKare(string ad, int g, bool azalt)
+        {
+            var eski = Ayar.ilerleme; var q = new Ilerleme(); for (int b = 0; b < 6; b++) q.tur[0][b] = 1; for (int b = 0; b < 5; b++) q.tur[1][b] = 1; Ayar.ilerleme = q;
+            bool r0 = Ayar.reduce, km = Ayar.kariyerModu; Ayar.reduce = azalt; Ayar.kariyerModu = true; Ayar.kariyerSecim = g;
+            root.StartMatch(false, false, false); botAcik = true;
+            float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 60 && !(root.match.op.imzaT > 0 && root.match.op.imzaId != null)) yield return null;
+            yield return Bekle(6); yield return Cek(ad + (root.match.op.imzaT > 0 ? "" : "_yok"));
+            botAcik = false; Ayar.ilerleme = eski; Ayar.reduce = r0; Ayar.kariyerModu = km; Ayar.kariyerSecim = -1;
+        }
         IEnumerator Bekle(int kare) { for (int i = 0; i < kare; i++) yield return null; }
 
         void Update()

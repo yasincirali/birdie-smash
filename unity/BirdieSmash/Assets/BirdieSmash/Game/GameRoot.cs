@@ -18,7 +18,7 @@ namespace BirdieSmash.Game
     public class GameRoot : MonoBehaviour
     {
         public Match match; public Camera cam; public Ekran ekran = Ekran.Menu; public bool paused;
-        public string bittiBaslik, bittiNot, bittiBilgi, bittiDugme, bittiIpucu; public List<Ozet.Kart> bittiKart = new List<Ozet.Kart>(); public bool bittiIlk; public float rakipKartT;
+        public string bittiBaslik, bittiNot, bittiBilgi, bittiDugme, bittiIpucu, bittiYildiz; public List<Ozet.Kart> bittiKart = new List<Ozet.Kart>(); public bool bittiIlk; public float rakipKartT;
         PlayerView me, op, hk1, hk2; public ShuttleView shuttle; NetView net; public Sfx sfx; Hud hud; public Vitrin vitrin; public Fx fx; public Yukleyici yukleyici;
         public bool bekleyen;   // duraklatılmış maç ana menüde bekliyor (HTML ekran(): "Maça devam et")
         // Menü kabuğu (2026-10-26, UI Toolkit; Game/UI/UiKok). Hud maç içi + perde için kalır; menü perdeyi buradan okur.
@@ -101,7 +101,13 @@ namespace BirdieSmash.Game
         {
             Ayar.GearHesap();
             var o = new MatchOptions { easy = Ayar.easy, target = Ayar.target, reduce = Ayar.reduce, ilk = ilk, ogr = ogr, ogrKisa = kisa, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA };
-            if (Ayar.kariyerModu && !ogr) { int i = Career.Basamak(Ayar.kariyer); o.stil = Match.KariyerRakip(i); o.saha = Match.KARIYER[i].saha; }
+            // Kariyer (2026-10-26, harita): haritadan seçilen açık basamak, yoksa sıradaki. Uzunluk basamaktan (Tur 1'de 0 =
+            // oyuncunun seçimi, bugünkü davranış; Asya Turu 5, finali 11).
+            if (Ayar.kariyerModu && !ogr)
+            {
+                int g = Ayar.kariyerSecim >= 0 && Ayar.ilerleme.Acik(Ayar.kariyerSecim) ? Ayar.kariyerSecim : Ayar.ilerleme.Siradaki(); var kb = KariyerVeri.Al(g);
+                o.stil = Match.KariyerRakip(g); o.saha = kb.saha; if (kb.uzunluk > 0) o.target = kb.uzunluk;
+            }
             else o.stil = Match.STIL[Match.STIL_SIRA[rnd.Next(3)]];
             match = new Match(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
             Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = ogr ? 0 : 1.5f; erkenN = 0;
@@ -126,16 +132,21 @@ namespace BirdieSmash.Game
         {
             ekran = Ekran.Bitti; Uyanik(false); var M = match; bittiIlk = M.ilk; sfx.MacSonu(won); sfx.Ugultu(false, 0);
             if (won) Ayar.wins++;
-            string kNot = ""; bool kariyerIlk = false;
-            if (M.stil.kariyer >= 0)
-            {
-                kariyerIlk = won && M.stil.kariyer == Ayar.kariyer;
-                Career.Apply(ref Ayar.kariyer, M.stil.kariyer, won, out kNot);
-                if (Ayar.kariyer >= Match.KARIYER.Length) Ayar.sampiyon = true;
-                if (kariyerIlk) { Basarim.Ver("bs_kariyer_" + Ayar.kariyer); Basarim.Giris(Ayar.kariyer); }   // giriş isteği ilk basamaktan sonra
+            string kNot = ""; bool kariyerIlk = false; int yeniYildiz = 0; bittiYildiz = null;
+            if (KariyerVeri.Var(M.stil.kariyer))
+            {   // yıldızlar ve açılış Core/Ilerleme'de; Tur 1 sayısı (tuytop_v2.kariyer, başarımlar) ondan türer
+                int g = M.stil.kariyer; var bg = M.BasamakGorevi;
+                var r = Ayar.ilerleme.Isle(g, won, bg != null && bg.bitti, M.sc[0], M.sc[1], M.target);
+                kariyerIlk = r.ilkGalibiyet; kNot = r.not; yeniYildiz = r.yeniYildiz;
+                Ayar.kariyer = Ayar.ilerleme.Tur1Gecilen(); if (Ayar.kariyer >= Match.KARIYER.Length) Ayar.sampiyon = true;
+                if (kariyerIlk && KariyerVeri.TurOf(g) == 0) { Basarim.Ver("bs_kariyer_" + Ayar.kariyer); Basarim.Giris(Ayar.kariyer); }   // giriş isteği ilk basamaktan sonra
+                if (r.turBitti) Yerel.Hap("flow");   // tur finali: güçlü desen (HAP'ta "success" yok, en uzun desen "flow")
+                Ayar.kariyerSecim = won ? -1 : g;   // kazanınca "Sıradaki", kaybedince aynı basamak ("Tekrar dene")
+                int n = Ilerleme.Say(r.maske);
+                bittiYildiz = new string('★', n) + new string('☆', 3 - n) + " · " + L.T("{0}/3 yıldız", n) + (r.yeniYildiz > 0 ? " · " + L.T("{0} yeni", r.yeniYildiz) : "");
             }
-            // Maç sonu ödülü (HTML ekoOdul): antrenmanda yok (antrenman maç sonu ekranına gelmez)
-            odul = Ayar.gear.Odul(won, kariyerIlk, M.target, M.easy, M.gorevBitti, M.perfects, System.DateTime.Now);
+            // Maç sonu ödülü (HTML ekoOdul): antrenmanda yok (antrenman maç sonu ekranına gelmez). Yeni yıldız +20 Tüy, okunan imza +5 XP.
+            odul = Ayar.gear.Odul(won, kariyerIlk, M.target, M.easy, M.gorevBitti, M.perfects, System.DateTime.Now, yeniYildiz, M.okudun);
             if (odul.sonra > odul.once) Yerel.Hap("flow");   // seviye atladın
             yukseltHazir = false; foreach (var y in Gear.YUVA) { int sv = Ayar.gear.eko.sv[y.k]; if (sv < 10 && Ayar.gear.eko.tuy >= Gear.YUK_FIYAT[sv - 1] && odul.sonra >= Gear.YUK_SV[sv - 1]) yukseltHazir = true; }
             Ayar.Kaydet();
@@ -143,7 +154,7 @@ namespace BirdieSmash.Game
             var bitenler = new List<string>(); foreach (var g in M.gorevler) if (g.bitti) bitenler.Add(L.Cumle(g.ad));
             bittiBilgi = L.T("Rakip {0} · Görev {1}/3 ({2}) · En uzun ralli {3} · {4} smaç · {5} file vuruşu · {6} mükemmel · {7} aldatma · {8} split step · {9} tepeden · {10} uzanma · {11} kez dışarıyı bıraktın",
                 M.RakipAd(false), M.gorevBitti, bitenler.Count > 0 ? string.Join(", ", bitenler.ToArray()) : L.T("yok"), M.maxRally, M.smashes, M.kills, M.perfects, M.deceives, M.splits, M.tepeden, M.saves, M.outsLeft);
-            bittiDugme = L.Cumle(Career.AgainLabel(M.stil.kariyer >= 0, won, Ayar.kariyer));
+            bittiDugme = L.Cumle(Career.AgainLabel(M.stil.kariyer >= 0, won, Ayar.ilerleme.HepsiBitti ? -1 : Ayar.ilerleme.Siradaki()));
             // Özet (Ar-Ge 23 Eki #2): iki kart + ipucu; bittiBilgi artık "Ayrıntılar" ardında (Hud.Over).
             bittiKart = Ozet.Kartlar(M); object ia; string ik = Ozet.Ipucu(M, won, out ia);
             bittiIpucu = ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
@@ -373,6 +384,8 @@ namespace BirdieSmash.Game
                 case Ev.Aldat: sfx.Aldat(); break;
                 case Ev.Split: sfx.Split(); break;
                 case Ev.Kurtaris: break;
+                case Ev.Imza: sfx.Imza(e.type); Yerel.Hap("tick"); break;   // ışık ve poz PlayerView'de (Athlete.imzaT), yazı Match.Say'den
+                case Ev.Okudun: sfx.Okudun(); Yerel.Hap("flow"); fx.Burst(at, Kit.Hex("#7ad7ff"), 14, 200, "spark"); break;
                 case Ev.Gorev:
                     if (e.who == "ogr") { sfx.OgrTamam(); Yerel.Hap("flow"); break; }
                     Ayar.gorev++; Ayar.Kaydet(); sfx.Gorev(); Yerel.Hap("flow"); if (e.k >= 3 && M.ogr == null) Basarim.Ver(Basarim.GOREV3); hud.Say(L.T("Görev tamam: {0}", L.Cumle(e.text)), Kit.W(Court.MID, Court.NET, 2.4f), Kit.Hex("#ffd23a"), 1.15f, true);

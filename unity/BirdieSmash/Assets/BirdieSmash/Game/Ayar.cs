@@ -3,6 +3,9 @@
 //   tuytop_len      'len5' | 'len11' | 'len21' (varsayılan len5)   tuytop_mod 'k' | 's'   tuytop_saha   tuytop_model
 //   tuytop_gear / tuytop_ekonomi (Core/Gear)   tuytop_raket_gor JSON {grip, tel, tel2, desen}   tuytop_antrenman '1'
 //   tuytop_puan     mağaza puanı istenme sayısı (0..3, HTML puanBak ile ortak)
+//   tuytop_ilerleme (2026-10-26, kariyer haritası) JSON {v, tur: [[maske×6]×4]} (Core/Ilerleme: yıldız bit maskesi). İlk
+//                   açılışta tuytop_v2.kariyer'den taşınır; tuytop_v2.kariyer yazılmaya devam eder (= Tur 1'de geçilen
+//                   basamak; eski build'e dönen oyuncunun kaydı bozulmasın, geri gelince ikisi birleştirilir).
 // HTML → Unity devri (Core/Devir): ilk açılışta kabuğun NSUserDefaults'a yazdığı HTML değerleri bir kez kabul edilir,
 // sonra tuytop_html_devir bayrağı konur. Bayraktan sonra kabuk (eski HTML build'i) bir daha yazmaz.
 // HTML'de karşılığı olmayan Unity anahtarları: tuytop_easy, tuytop_reduce (elle zorlanan; sistem ayarı ayrıca okunur),
@@ -31,6 +34,12 @@ namespace BirdieSmash.Game
     {
         public static bool easy = true, reduce, reduceSecim, reduceSistem, ses = true, kariyerModu, antrenman, sampiyon, fps;
         public static int target = 5, kariyer, bestRally, wins, gorev, puan; public static int devirSayisi = -1;
+        // Kariyer ilerlemesi (yıldızlar, turlar). kariyerSecim: haritadan seçilen basamak (genel indeks); -1 = sıradaki.
+        // Kaydedilmez: haritadan bir basamağı yeniden oynamak "sıradaki"yi değiştirmesin.
+        public static Ilerleme ilerleme = new Ilerleme(); public static int kariyerSecim = -1;
+        // Oyun verisi (Core/KariyerVeri) Resources/veri'den: sahne yüklenmeden, her şeyden önce.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void VeriKaynagi() { KariyerVeri.Kaynak = ad => { var t = Resources.Load<TextAsset>("veri/" + ad); return t != null ? t.text : null; }; KariyerVeri.Sifirla(); }
         public static string saha = "salon", model = "oyuncak", kamera = "yayin", dil = "tr", yazi = "sistem"; static float yaziSistem = 1;
         public static float YaziK { get { return yazi == "normal" ? 1 : yazi == "buyuk" ? 1.3f : Mathf.Clamp(yaziSistem, .9f, 1.3f); } }
         // Menü yazı ölçeği (2026-10-26, UI Toolkit menü kabuğu): flex yerleşimde metin sarılır, kart uzar, gövde kayar; bu
@@ -55,6 +64,7 @@ namespace BirdieSmash.Game
             var b = Json.Obj(Json.Parse(Str("tuytop_v2", null)));
             if (b != null) { bestRally = (int)Json.Num(b, "rally", 0); wins = (int)Json.Num(b, "wins", 0); kariyer = (int)Json.Num(b, "kariyer", 0); gorev = (int)Json.Num(b, "gorev", 0); sampiyon = Json.Bool(b, "sampiyon", false); }
             else { bestRally = EskiInt("tuytop_rally", 0); wins = EskiInt("tuytop_wins", 0); kariyer = EskiInt("tuytop_kariyer", 0); sampiyon = kariyer >= Match.KARIYER.Length; }   // ilk tur Unity kaydını taşı
+            ilerleme = Ilerleme.Oku(Str(Ilerleme.ANAHTAR, null), kariyer, sampiyon); kariyer = ilerleme.Tur1Gecilen(); if (kariyer >= Match.KARIYER.Length) sampiyon = true;
             string len = Str("tuytop_len", null);
             if (len == "len5" || len == "len11" || len == "len21") target = int.Parse(len.Substring(3));
             else { int t = EskiInt("tuytop_target", 5); target = t == 11 || t == 21 ? t : 5; }   // bilinmeyen (eski len7 dahil) 5 olur
@@ -80,6 +90,7 @@ namespace BirdieSmash.Game
         public static void GearHesap() { gear.kariyerModu = kariyerModu; GS = gear.Hesap(); }
         public static void Kaydet()
         {
+            if (ilerleme != null) { kariyer = ilerleme.Tur1Gecilen(); PlayerPrefs.SetString(Ilerleme.ANAHTAR, ilerleme.Yaz()); }
             kayit.Set("tuytop_v2", Json.Write(new Dictionary<string, object> { { "rally", (double)bestRally }, { "wins", (double)wins }, { "kariyer", (double)kariyer }, { "gorev", (double)gorev }, { "sampiyon", sampiyon } }));
             PlayerPrefs.SetString("tuytop_len", "len" + target); PlayerPrefs.SetString("tuytop_saha", saha); PlayerPrefs.SetString("tuytop_model", model); PlayerPrefs.SetString("tuytop_kamera", kamera);
             PlayerPrefs.SetString("tuytop_mod", kariyerModu ? "k" : "s"); if (antrenman) PlayerPrefs.SetString("tuytop_antrenman", "1");

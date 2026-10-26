@@ -39,7 +39,7 @@ namespace BirdieSmash.Game
         {
             get
             {
-                string u = gez.Ust; if (u == Gezinti.AYAR) return "Ayarlar"; if (u == Gezinti.NASIL) return "Nasıl oynanır"; if (u == Gezinti.LISANS) return "Lisanslar"; if (u == Gezinti.HIZLI) return "Hızlı maç";
+                string u = gez.Ust; if (u == Gezinti.AYAR) return "Ayarlar"; if (u == Gezinti.NASIL) return "Nasıl oynanır"; if (u == Gezinti.LISANS) return "Lisanslar"; if (u == Gezinti.HIZLI) return "Hızlı maç"; if (u == Gezinti.KART) return "Maç kartı";
                 if (gez.sekme == Sekme.Soyunma) return root.vitrin.hedefGec >= 1 ? "Raket 360°" : "Ekipman";
                 return gez.sekme == Sekme.Kariyer ? "Kariyer" : gez.sekme == Sekme.Profil ? "Profil" : "Menü";
             }
@@ -138,11 +138,14 @@ namespace BirdieSmash.Game
         public void SekmeAc(Sekme s) { var once = gez.sekme; bool d = gez.SekmeSec(s); if (d) Yerel.Hap("tick"); Uygula(once, d); }
         public void AyarlarAc() { var once = gez.sekme; gez.Ac(Gezinti.AYAR); Uygula(once, true); }
         public void HizliMacAc() { var once = gez.sekme; gez.Ac(Gezinti.HIZLI); Uygula(once, true); }
+        // Kariyer haritası: düğüme dokununca maç kartı (alt sayfa); tur seçici (EkranTuru da kullanır).
+        public void MacKartAc(int g) { var once = gez.sekme; kartBasamak = g; gez.Ac(Gezinti.KART); Uygula(once, true); }
+        public void KariyerTurSec(int t) { kariyerTur = t; kirli[(int)Sekme.Kariyer] = true; if (gez.sekme == Sekme.Kariyer && gez.Ust == null) SekmeKur(Sekme.Kariyer); }
         void SayfaAc(string s) { var once = gez.sekme; gez.Ac(s); Uygula(once, true); }
         public void Geri() { var once = gez.sekme; if (gez.Geri()) { Yerel.Hap("tick"); Uygula(once, true); } }
-        void AltKapat() { var once = gez.sekme; gez.Kapat(Gezinti.HIZLI); Uygula(once, false); }
+        void AltKapat() { var once = gez.sekme; gez.Kapat(Gezinti.HIZLI); gez.Kapat(Gezinti.KART); Uygula(once, false); }
         // Maçtan ana menüye dönüş (GameRoot.AnaMenu): açık sayfalar kapanır, Oyna sekmesi.
-        public void MenuyeDon() { var once = gez.sekme; gez.SekmeSec(Sekme.Oyna); Uygula(once, false); Kirlet(); }
+        public void MenuyeDon() { var once = gez.sekme; kariyerTur = -1; gez.SekmeSec(Sekme.Oyna); Uygula(once, false); Kirlet(); }   // harita yeniden sıradakinin turunu açar (yeni tur açılmış olabilir)
 
         void Uygula(Sekme once, bool anim)
         {
@@ -157,7 +160,8 @@ namespace BirdieSmash.Game
             }
             ust.style.display = tam == null ? DisplayStyle.Flex : DisplayStyle.None;
             if (tam != null) { SayfaKur(tam); sayfa.style.display = DisplayStyle.Flex; if (anim) Giris(sayfa); } else { sayfa.style.display = DisplayStyle.None; sayfa.Clear(); }
-            if (gez.Acik(Gezinti.HIZLI)) { HizliKur(); altKatman.style.display = DisplayStyle.Flex; if (anim) Giris(altSayfa); } else { altKatman.style.display = DisplayStyle.None; altKatman.Clear(); altSayfa = null; }
+            string altS = gez.AcikAltSayfa;
+            if (altS != null) { if (altS == Gezinti.KART) MacKartKur(); else HizliKur(); altKatman.style.display = DisplayStyle.Flex; if (anim) Giris(altSayfa); } else { altKatman.style.display = DisplayStyle.None; altKatman.Clear(); altSayfa = null; }
             kok.EnableInClassList("koyu", s != Sekme.Oyna || tam != null);
             // Vitrin kamerası yalnız Soyunma odası görünürken çizer (bütçe §7.3); çıkınca sahnedeki oyuncu yeni görünüme geçer.
             bool vitrinGerek = s == Sekme.Soyunma && tam == null && root.ekran == Ekran.Menu;

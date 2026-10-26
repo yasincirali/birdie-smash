@@ -1,0 +1,21 @@
+{
+"_not": "Kariyer haritası (komple-oyun tasarımı §3.1–3.2, Ek A.4; 2026-10-26). Tur 1 = eski 6 basamak birebir (yer, saha, tarz, g; kayıt tuytop_v2.kariyer bu sırayı sayar, sıra değişmez). uzunluk 0 = oyuncunun seçtiği maç uzunluğu (Tur 1'in bugünkü davranışı). patron = final: rakip imza vuruşunu kullanır. gorev = basamağın sabit görevi (2. yıldız). ep = önerilen ekipman puanı aralığı (6 yuvanın seviye toplamı; öneri, kilit değil). Boş basamak listesi = tur henüz yok (haritada 'Yakında').",
+"turlar": [
+  {"id": "yerel", "ad": "Yerel yol", "ep": [6, 12], "basamaklar": [
+    {"stil": "file",   "g": 0.88, "yer": "Mahalle salonu",      "saha": "okul",    "uzunluk": 0, "gorev": "ralli"},
+    {"stil": "smasci", "g": 0.94, "yer": "Okul turnuvası",      "saha": "okul",    "uzunluk": 0, "gorev": "karsila"},
+    {"stil": "duvar",  "g": 1.0,  "yer": "İl şampiyonası",      "saha": "salon",   "uzunluk": 0, "gorev": "drop"},
+    {"stil": "file",   "g": 1.07, "yer": "Bölge finali",        "saha": "salon",   "uzunluk": 0, "gorev": "kill"},
+    {"stil": "smasci", "g": 1.13, "yer": "Ulusal lig",          "saha": "turnuva", "uzunluk": 0, "gorev": "uzan"},
+    {"stil": "duvar",  "g": 1.2,  "yer": "Şampiyonlar kupası",  "saha": "turnuva", "uzunluk": 0, "gorev": "okudun", "patron": true}]},
+  {"id": "asya", "ad": "Asya Turu", "ep": [12, 24], "basamaklar": [
+    {"stil": "nova",   "g": 1.05, "yer": "Jakarta",                  "saha": "salon",   "uzunluk": 5,  "gorev": "tepe"},
+    {"stil": "file",   "g": 1.1,  "yer": "Bangkok",                  "saha": "park",    "uzunluk": 5,  "gorev": "aldat"},
+    {"stil": "smasci", "g": 1.15, "yer": "Seul",                     "saha": "salon",   "uzunluk": 5,  "gorev": "karsila"},
+    {"stil": "nova",   "g": 1.19, "yer": "Tokyo",                    "saha": "turnuva", "uzunluk": 5,  "gorev": "perf"},
+    {"stil": "duvar",  "g": 1.23, "yer": "Kuala Lumpur yarı finali", "saha": "turnuva", "uzunluk": 5,  "gorev": "drop"},
+    {"stil": "nova",   "g": 1.28, "yer": "Kuala Lumpur finali",      "saha": "turnuva", "uzunluk": 11, "gorev": "okudun", "patron": true}]},
+  {"id": "avrupa", "ad": "Avrupa Turu", "ep": [24, 36], "basamaklar": []},
+  {"id": "dunya", "ad": "Dünya Finalleri", "ep": [36, 48], "basamaklar": []}
+]
+}

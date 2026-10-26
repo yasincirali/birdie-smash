@@ -1,32 +1,24 @@
-// Kariyer (HTML KARIYER / endMatch): altı basamak, her biri bir mekân ve tarz. Maç sonu ana düğme sıradaki basamağı
-// söyler (Ar-Ge 24 Eki, HTML d682adc; yalnız etiket, işlev aynı: yeni maç). Saf C#: bot testi etiketleri doğrular.
+// Kariyer (HTML KARIYER / endMatch): maç sonu ana düğme sıradaki basamağı söyler (Ar-Ge 24 Eki, HTML d682adc; yalnız
+// etiket, işlev aynı: yeni maç). Saf C#: bot testi etiketleri doğrular.
+// 2026-10-26 kariyer haritası (adım 2): basamak = genel indeks (tur·6 + basamak, KariyerVeri); ilerleme Ilerleme'de
+// (yıldızlar, tur açılışı). Eski tek sayı (tuytop_v2.kariyer) Tur 1'in kazanılan basamak sayısı olarak sürer.
 namespace BirdieSmash.Core
 {
     public static class Career
     {
-        // kariyerAfter: maç sonucu işlendikten sonraki basamak (açılan son basamak indeksi).
-        public static string AgainLabel(bool kariyerMaci, bool won, int kariyerAfter)
+        // sonraki: maç işlendikten sonra sıradaki genel basamak; -1 ya da oynanacak yeni basamak yoksa "Bir maç daha".
+        public static string AgainLabel(bool kariyerMaci, bool won, int sonraki)
         {
-            if (kariyerMaci && won && kariyerAfter < Match.KARIYER.Length) return "Sıradaki: " + Match.KARIYER[kariyerAfter].yer;
+            if (kariyerMaci && won && KariyerVeri.Var(sonraki)) return "Sıradaki: " + KariyerVeri.Al(sonraki).yer;
             if (kariyerMaci && !won) return "Tekrar dene";
             return "Bir maç daha";
         }
-        // Oynanan basamak i kazanıldıysa ve en son açılan basamaksa bir sonraki açılır.
-        public static void Apply(ref int kariyer, int i, bool won, out string note)
+        // Oyna kartının alt satırı: "2/6 · Asya Turu · Bangkok · File oyuncusu" ya da hepsi bittiyse şampiyon satırı.
+        public static string Line(Ilerleme p)
         {
-            note = "";
-            if (won && i == kariyer)
-            {
-                kariyer = i + 1;
-                note = kariyer >= Match.KARIYER.Length ? "Kariyer tamam! Şampiyon forması açıldı." : "Yeni basamak açıldı: " + Match.KARIYER[i + 1].yer + ", rakip " + Match.STIL[Match.KARIYER[i + 1].stil].ad + ".";
-            }
-            else if (!won) note = Match.KARIYER[i].yer + " basamağı seni bekliyor.";
+            if (p.HepsiBitti) return "Şampiyon! Finali yeniden oynarsın";
+            int g = p.Siradaki(); var k = KariyerVeri.Al(g);
+            return (KariyerVeri.BasOf(g) + 1) + "/" + KariyerVeri.BASAMAK + " · " + KariyerVeri.Turlar[KariyerVeri.TurOf(g)].ad + " · " + k.yer + " · " + Match.STIL[k.stil].ad;
         }
-        public static string Line(int kariyer)
-        {
-            if (kariyer >= Match.KARIYER.Length) return "Şampiyon! Son basamağı yeniden oynarsın";
-            var k = Match.KARIYER[kariyer]; return (kariyer + 1) + "/" + Match.KARIYER.Length + " · " + k.yer + " · " + Match.STIL[k.stil].ad;
-        }
-        public static int Basamak(int kariyer) { return System.Math.Min(kariyer, Match.KARIYER.Length - 1); }
     }
 }
