@@ -23,6 +23,11 @@
 // dışarı/file artar; jest okuma (tutma, V, yay yönü); görev havuzu; rakip aldatması Tur 3+/Usta, sıklık ve hazırlık sınırı.
 // 2026-10-26 vuruş anı ağır çekimi (Pencereler()): hız tek karede değil ~0,12 sn'de iner, ~0,15 sn'de çıkar; taban
 // Kolay .45 / Usta .6, Odak bandı aynı oranla; Hareketi azalt zaman çarpanını değiştirmez.
+// 2026-10-27 fizik turu (FizikOlcumleri(), Pencereler() ek): uçuş gerçek tüy topla tutarlı (son hız 6,5–6,9 m/s, hız
+// mesafeyle e^(−x/4,6) düşer, clear Tartaglia biçimi: iniş çıkışın ≥ 1,6 katı, düşüş ≥ 75°, arka çizgiye 1 m'den yakın;
+// smaç inişte çıkışın %25'inden yavaş; drop ve file vuruşu kısa servis çizgisinin önüne), rakibin slice'ı (çevirme)
+// kendi sürüklenmesiyle nişanlanır ve fileye gitmez; ağır çekim rampası pencereden önce biter, vuruşla kapanan pencere
+// PENCERE_VURUS_OUT'ta çıkar (smaç ilk 0,1 sn'de gerçek hızının ≥ %90'ında görünür).
 // Çalıştırma: depo kökünden (KariyerVeri tool/veri'yi çalışma klasöründen yukarı arar).
 using System;
 using System.Collections.Generic;
@@ -133,7 +138,7 @@ static class BotMac
         if (gorevN == 0) Fail("görev olayı hiç gelmedi");
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
-        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); Aldatmalar(); Pencereler();
+        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); Aldatmalar(); Pencereler(); FizikOlcumleri();
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }
@@ -825,5 +830,103 @@ static class BotMac
         var R = new Match(9, new MatchOptions { easy = true, reduce = true }); float enAz = 1; int g = 0;
         while (!R.over && g++ < 60 * 120) { Bot(R, dt, .05); R.Update(dt); enAz = Math.Min(enAz, R.pencereK); R.events.Clear(); }
         if (Math.Abs(enAz - .45f) > 1e-3f) Fail("Hareketi azalt açıkken pencere hızı " + enAz + " (beklenen .45)");
+        // 2026-10-27: rampa pencereden önce biter (pencere açıldığı karede hız tabanda), vuruşla kapanan pencere hızlı çıkar.
+        foreach (var kolay in new[] { true, false })
+        {
+            int acilis = 0, tamTaban = 0, vurus = 0, gecCikis = 0; float oranEnAz = 9, oranTop = 0; int oranN = 0;
+            for (int m = 0; m < 4; m++)
+            {
+                var M = new Match(70 + m, new MatchOptions { easy = kolay, target = 11 }); int gg = 0; bool w0 = false;
+                float izT = 0, izOyun = 0; Shuttle izS = null;
+                while (!M.over && gg++ < 60 * 60 * 15)
+                {
+                    if (!kolay && M.s != null && M.s.from == "op" && M.icpt != null && M.icpt.who == "me") M.RunTo(M.icpt.x + .4f, M.icpt.y, .5f);
+                    var sOnce = M.s; Bot(M, dt, .2);
+                    M.Update(dt); bool w = M.HitWindow();
+                    if (w && !w0) { acilis++; if (M.pencereK <= M.PencereTaban() + .02f) tamTaban++; else if (Environment.GetEnvironmentVariable("PENCERE_IZ") != null) Console.WriteLine("  geç açılış k=" + M.pencereK.ToString("0.00") + " z=" + M.s.z.ToString("0.00") + " y-file=" + (M.s.y - Court.NET).ToString("0.00") + " v=" + M.s.Speed.ToString("0.0") + " tür=" + M.s.type + " t=" + M.s.t.ToString("0.00")); }
+                    w0 = w;
+                    // benim vuruşum: pencere PENCERE_VURUS_OUT (+1 kare) içinde 1'e döner; smaçta ilk 0,1 sn gerçek zamanda geçen
+                    // oyun zamanı (top uçuşunun s.t'si). Vuruş donması (hit-stop, smaçta .08 sn) kasıtlıdır: süre top akınca başlar.
+                    if (M.s != null && M.s != sOnce && M.s.from == "me" && !M.s.serve) { vurus++; izT = -2; izS = M.s; }
+                    else if (izS != null && M.s == izS && (M.s.dead || M.s.netHit || M.slow < 1)) izS = null;   // kısa uçuş (öldürme, file) ve "Kıl payı" ağır çekimi (slow, ayrı kural): ölçülmez
+                    else if (izS != null && M.s == izS && M.freeze <= 0)
+                    {
+                        if (izT == -2) { izT = 0; izOyun = M.s.t; }
+                        else
+                        {
+                            izT += dt;
+                            if (izT > Match.PENCERE_VURUS_OUT + dt * 1.5f && izT < Match.PENCERE_VURUS_OUT + 2.5f * dt && M.pencereK < 1) gecCikis++;
+                            if (izT >= .1f - 1e-4f) { if (izS.type == "smash") { float o = (M.s.t - izOyun) / izT; oranEnAz = Math.Min(oranEnAz, o); oranTop += o; oranN++; } izS = null; }
+                        }
+                    }
+                    M.events.Clear();
+                }
+            }
+            float pay = acilis > 0 ? tamTaban / (float)acilis : 0;
+            Console.WriteLine("pencere " + (kolay ? "kolay" : "usta ") + " maçta: " + acilis + " açılış, tabanda açılan %" + (pay * 100).ToString("0") + "; " + vurus + " vuruş, geç çıkış " + gecCikis + "; smaç ilk 0,1 sn oyun/gerçek zaman ort. " + (oranN > 0 ? (oranTop / oranN).ToString("0.00") : "-") + " en az " + (oranN > 0 ? oranEnAz.ToString("0.00") : "-") + " (" + oranN + " smaç)");
+            if (acilis < 50 || pay < .75f) Fail("ağır çekim rampası pencere açılmadan bitmiyor: %" + (pay * 100).ToString("0"));
+            if (gecCikis > 0) Fail("vuruştan sonra pencere geç kalktı: " + gecCikis);
+            if (oranN == 0 || oranEnAz < .9f) Fail("smaç çıkışta ağır çekimde kalıyor: " + oranEnAz);
+        }
+    }
+
+    // Top fiziği gerçek tüy topla (2026-10-27): Cohen vd. 2015 New J. Phys. 17 063001; arastirma/vurus_biyomekanigi.md §12.
+    // Ayrıntılı tablo: tool/unity_test/FizikOlc.cs.
+    static void FizikOlcumleri()
+    {
+        Func<float, float, float, float, float, float, float, float[]> uc = (hx, hy, hz, vx, vy, vz, kd) =>
+        {   // tepe, tepeye süre, uçuş süresi, iniş-file, düşüş açısı (°), iniş hızı, 3,17 m yol sonrası hız / çıkış hızı
+            float x = hx, y = hy, z = hz, wx = vx, wy = vy, wz = vz, t = 0, ap = hz, tA = 0, yol = 0, v0 = (float)Math.Sqrt(vx * vx + vy * vy + vz * vz), vYari = float.NaN;
+            while (z > 0 && t < 8)
+            {
+                float px = x, py = y, pz = z; Shuttle.Step(ref x, ref y, ref z, ref wx, ref wy, ref wz, kd, Shuttle.DT); t += Shuttle.DT;
+                yol += (float)Math.Sqrt((x - px) * (x - px) + (y - py) * (y - py) + (z - pz) * (z - pz)); if (z > ap) { ap = z; tA = t; }
+                if (float.IsNaN(vYari) && yol >= Shuttle.VT * Shuttle.VT / Shuttle.GR * (float)Math.Log(2)) vYari = (float)Math.Sqrt(wx * wx + wy * wy + wz * wz) / v0;
+            }
+            float vh = (float)Math.Sqrt(wx * wx + wy * wy);
+            return new[] { ap, tA, t, Math.Abs(y - Court.NET), (float)(Math.Atan2(-wz, vh) * 180 / Math.PI), (float)Math.Sqrt(vh * vh + wz * wz), vYari };
+        };
+        Func<float, float, float, float, float, bool, float[]> ben = (hy, hz, sp, dy, energy, kill) =>
+        {
+            var M = new Match(1, new MatchOptions { easy = false }); M.energy = energy;
+            M.s = new Shuttle { x = Court.MID, y = hy, z = hz, vy = 3, vz = -2, from = "op" }; M.me.x = Court.MID - .4f; M.me.y = hy;
+            var P = M.ShotPlan(new SwipeInput { dy = dy, speed = sp, R = 40 }, new Reach { kill = kill }, true);
+            float vx, vy, vz; Shuttle.Aim(P.hx, P.hy, P.hz, P.tx, Court.NET - P.d, P.byAngle, P.val, out vx, out vy, out vz);
+            var r = uc(P.hx, P.hy, P.hz, vx, vy, vz, Shuttle.KD); Array.Resize(ref r, 8); r[7] = (float)Math.Sqrt(vx * vx + vy * vy + vz * vz); return r;
+        };
+        // son hız
+        { float x = 0, y = 0, z = 30, vx = 0, vy = 0, vz = 0; for (int i = 0; i < 240 * 6; i++) Shuttle.Step(ref x, ref y, ref z, ref vx, ref vy, ref vz, Shuttle.KD, Shuttle.DT); if (-vz < 6.5f || -vz > 6.9f) Fail("son hız " + (-vz) + " m/s (tüy top 6,5–6,9)"); }
+        float L = Court.L, N = Court.NET;
+        var cl = ben(L - 1.0f, 2.55f, 1.2f, -150, 0, false);
+        var sm = ben(L - 2.5f, 2.6f, 2.2f, -150, 0, false);
+        var dr = ben(L - 1.5f, 2.5f, .5f, -150, 0, false);
+        var nt = ben(N + .6f, 1.2f, .5f, -150, 0, false);
+        Console.WriteLine("fizik: clear tepe " + cl[0].ToString("0.0") + " m @" + cl[1].ToString("0.00") + " s, uçuş " + cl[2].ToString("0.00") + " s, düşüş " + cl[4].ToString("0") + "°, iniş " + cl[5].ToString("0.0") + " m/s, dip çizgiye " + (L / 2 - cl[3]).ToString("0.00") + " m; smaç " + sm[7].ToString("0") + "→" + sm[5].ToString("0.0") + " m/s, 3,2 m'de ×" + sm[6].ToString("0.00") + "; drop " + dr[3].ToString("0.00") + " m, file vuruşu " + nt[3].ToString("0.00") + " m (tepe " + nt[0].ToString("0.00") + ")");
+        if (cl[0] < 5 || cl[0] > 9.5f) Fail("clear tepesi " + cl[0] + " m");
+        if (cl[2] - cl[1] < 1.6f * cl[1]) Fail("clear Tartaglia değil: çıkış " + cl[1] + " s, iniş " + (cl[2] - cl[1]) + " s");
+        if (cl[4] < 75) Fail("clear düşüşü yatık: " + cl[4] + "°");
+        if (L / 2 - cl[3] > 1.0f || cl[3] > L / 2) Fail("clear dip çizgiye düşmüyor: " + cl[3]);
+        if (sm[5] > .25f * sm[7]) Fail("smaç inişte yavaşlamıyor: " + sm[7] + " → " + sm[5]);
+        if (Math.Abs(sm[6] - .5f) > .08f) Fail("hız 3,2 m'de yarılanmıyor: ×" + sm[6]);
+        if (dr[3] > Court.SSL || nt[3] > Court.SSL) Fail("drop/file vuruşu kısa düşmüyor: " + dr[3] + " / " + nt[3]);
+        if (nt[0] > Court.NETH + .35f) Fail("file vuruşu fazla yüksek: " + nt[0]);
+        // Rakibin slice'ı (çevirme file, Tur 3+): kendi sürüklenmesiyle nişanlanır, fileye gitmez. Maçta seyrek çıkar (rakip
+        // file önünde topu alçakta, z < 0,75 alır; çevirme 0,95–1,75 ister), o yüzden vuruş doğrudan kurulur (yansımayla:
+        // RakipHileVurus özel). Konum ve yükseklik aldatma.json "cevirme" koşulunun bandını tarar.
+        int cev = 0, cevFile = 0; var bf = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+        var tC = Aldatma.Bul("cevirme"); var mVur = typeof(Match).GetMethod("RakipHileVurus", bf);
+        for (int k = 0; k < 60; k++)
+        {
+            var M = new Match(1500 + k, new MatchOptions { easy = k % 2 == 0, target = 11, stil = Match.KariyerRakip(12 + k % 12) });
+            float hy = Court.NET - (.2f + 1.4f * (k % 6) / 5f), hz = .95f + .8f * (k / 6 % 5) / 4f;
+            M.s = new Shuttle { x = Court.MID + (k % 3 - 1) * .8f, y = hy, z = hz, vx = 0, vy = -2, vz = -1, from = "me" }; M.op.x = M.s.x + .3f; M.op.y = hy - .4f;
+            var I = new Intercept { t = 0, x = M.s.x, y = hy, z = hz, who = "op", opType = "drop" }; M.icpt = I;
+            typeof(Match).GetField("hileR", bf).SetValue(M, tC); typeof(Match).GetField("hileI", bf).SetValue(M, I); typeof(Match).GetField("hileBasladi", bf).SetValue(M, true);
+            if (!(bool)mVur.Invoke(M, new object[] { I }) || M.s.from != "op" || !M.s.slice) { Fail("çevirme vuruşu kurulamadı"); break; }
+            cev++; if (M.s.landPred.net != null && !M.s.landPred.net.ok) cevFile++;
+        }
+        Console.WriteLine("rakip slice (çevirme): " + cev + " vuruş, fileye " + cevFile);
+        if (cev == 0) Fail("rakip slice'ı hiç görülmedi");
+        else if (cevFile > cev / 10) Fail("rakip slice'ı fileye gidiyor: " + cevFile + "/" + cev);
     }
 }

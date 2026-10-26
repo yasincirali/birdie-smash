@@ -56,9 +56,17 @@ static class FizikOlc
         foreach (var c in new[] { new { ad = "smash", o = true, y = 2.2f, z = 2.6f }, new { ad = "clear", o = true, y = 1.2f, z = 2.55f }, new { ad = "drop", o = true, y = 1.5f, z = 2.5f }, new { ad = "clear", o = false, y = N - .8f, z = .5f }, new { ad = "drop", o = false, y = N - 1.0f, z = .7f }, new { ad = "drive", o = false, y = N - 3f, z = 1.2f }, new { ad = "drive", o = false, y = N - 2f, z = .2f } })
         {
             float tx = Court.MID, ty, val; bool byAngle = true;
-            switch (c.ad) { case "smash": ty = N + 3.6f + .6f; byAngle = false; val = 52; break; case "drive": ty = N + 4.6f; byAngle = false; val = 22; break; case "drop": ty = N + (c.o ? 1.2f : .9f); val = c.o ? .12f : .75f; break; default: ty = N + L / 2 - .55f; val = c.o ? Match.CLEAR_A : Match.LIFT_A; break; }
+            switch (c.ad) { case "smash": ty = N + 3.6f + .6f; byAngle = false; val = 52; break; case "drive": ty = N + 4.6f; byAngle = false; val = 22; break; case "drop": ty = N + (c.o ? 1.2f : .9f); val = c.o ? Match.DROP_A : .75f; break; default: ty = N + L / 2 - .55f; val = c.o ? Match.CLEAR_A : Match.LIFT_A; break; }
             float vx, vy, vz; Shuttle.Aim(Court.MID, c.y, c.z, tx, ty, byAngle, val, out vx, out vy, out vz);
             Satir("rakip " + c.ad + (c.o ? " üst" : " alt") + " z" + c.z.ToString("0.0"), Court.MID, c.y, c.z, vx, vy, vz, Shuttle.KD);
+        }
+        // slice (2026-10-27): uçuş ×1,35 sürüklenmeyle; nişan aynı kd ile (Aim kd, Imza.AlcakYay kd). "nişan KD" satırı eski
+        // rakip çevirmesi: KD ile nişanlanıp ×1,35 ile uçan top kısa kalır, fileye gider.
+        {
+            float kdS = Shuttle.KD * 1.35f, hy = N - 1.1f, hz = 1.2f, vx, vy, vz;
+            Shuttle.Aim(Court.MID, hy, hz, Court.MID, N + .5f, true, .5f, out vx, out vy, out vz); Satir("rakip çevirme nişan KD", Court.MID, hy, hz, vx, vy, vz, kdS);
+            Shuttle.Aim(Court.MID, hy, hz, Court.MID, N + .5f, true, .5f, out vx, out vy, out vz, kdS); Satir("rakip çevirme nişan kd", Court.MID, hy, hz, vx, vy, vz, kdS);
+            Shuttle.Aim(Court.MID, L - 1.5f, 2.5f, Court.MID, N - 1.2f, true, Match.DROP_A, out vx, out vy, out vz, kdS); Satir("ben slice drop", Court.MID, L - 1.5f, 2.5f, vx, vy, vz, kdS);
         }
         // servisler (SERVIS tablosu, sunucu kısa servis çizgisinin 1,4 m gerisinde, temas .45 m önde)
         foreach (var kv in Match.SERVIS)
