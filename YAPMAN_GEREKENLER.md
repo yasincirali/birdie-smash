@@ -90,7 +90,7 @@ Sıralama tablosu (leaderboard) bilerek yok.
    yerelde sayar, kayıp olmaz.
 1. **ASC › Birdie Smash › Services (ya da Features) › Game Center**: aç.
    Sürüm sayfasında ("App Store" sekmesi) Game Center kutusunu işaretle.
-2. **Achievements › +** ile aşağıdaki 11 başarımı ekle. **Achievement ID
+2. **Achievements › +** ile aşağıdaki 19 başarımı ekle. **Achievement ID
    birebir aynı olmalı** (oyun bu kimlikle gönderir). Hidden: No,
    Achievable More Than Once: No. Görseller `store_listing/game_center/<id>.png`
    (1024×1024). Her birine iki dil ekle: English (birincil) ve Turkish.
@@ -108,8 +108,16 @@ Sıralama tablosu (leaderboard) bilerek yok.
 | bs_ralli_20 | 50 | Marathon Rally / Play a rally of 20 shots. | Maraton ralli / 20 vuruşluk bir ralli oyna. |
 | bs_sicrayan_smac | 30 | Sky Smash / Win a point with a jump smash. | Gökten smaç / Sıçrayarak smaçla sayı kazan. |
 | bs_uc_gorev | 40 | Full Card / Complete all 3 missions in one match. | Tam kart / Bir maçta 3 görevin hepsini bitir. |
+| bs_tur_2 | 80 | Conqueror of Asia / Win the Asia Tour final. | Asya fatihi / Asya Turu finalini kazan. |
+| bs_tur_3 | 100 | European Champion / Win the Europe Tour final. | Avrupa şampiyonu / Avrupa Turu finalini kazan. |
+| bs_tur_4 | 150 | World Champion / Win the World Finals. | Dünya şampiyonu / Dünya Finalleri'ni kazan. |
+| bs_efsane | 50 | Legend / Reach level 30. | Efsane / Seviye 30'a ulaş. |
+| bs_antrenor | 25 | Coach / Earn all 24 training drill stars. | Antrenör / Antrenman görevlerinin 24 yıldızını topla. |
+| bs_gunun_maci | 10 | Match of the Day / Win a Match of the day. | Günün maçı / Bir Günün maçını kazan. |
+| bs_usta_6 | 20 | Master Road / Clear 6 stages on the Master road. | Usta yolu / Usta yolunda 6 basamak geç. |
+| bs_imza_okur | 15 | Signature Reader / Read 10 signature shots in total. | İmza okuru / Toplam 10 imza vuruşu oku. |
 
-Toplam 550 puan (Apple sınırı 1000; ileride eklenecekler için pay bırakıldı).
+Toplam 1000 puan (Apple sınırı 1000; artık yer yok, yeni başarım için puan kaydırmak gerekir). 2026-10-26 (Unity, karakter adımı): bs_tur_2..4 ve bs_efsane eklendi; kod yalnız Unity build'inde verir. 2026-10-26 (Unity, adım 7–9): bs_antrenor, bs_gunun_maci, bs_usta_6, bs_imza_okur eklendi (15 → 19 başarım); bs_tur_3/4 artık kazanılabilir (Tur 3–4 verisi geldi). Görselleri (`store_listing/game_center/<id>.png`) henüz yok: ekleyince yükle. Tanımlanmamış ID oyunu bozmaz, yalnız Game Center'da görünmez.
 Açıklamada ASC iki alan ister (kazanılmadan / kazanılınca); ikisine de aynı
 cümleyi yazabilirsin. Kaydettikten sonra başarımlar TestFlight build'inde
 hemen çalışır; mağaza sürümünde ilk incelemeyle birlikte yayına çıkar.

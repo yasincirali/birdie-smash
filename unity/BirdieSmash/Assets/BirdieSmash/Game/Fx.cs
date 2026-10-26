@@ -128,19 +128,27 @@ namespace BirdieSmash.Game
                 if (M.me.HasTarget) { var a0 = Kit.W(M.me.x, M.me.y, .01f); var b0 = Kit.W(M.me.tx, M.me.ty, .01f); if ((b0 - a0).magnitude > .4f) { kosu.enabled = true; kosu.positionCount = 2; kosu.SetPosition(0, a0); kosu.SetPosition(1, b0); kosuNokta.gameObject.SetActive(true); kosuNokta.position = b0; } }
             }
             // antrenman hedef alanı
-            float[] h = null; var oa = oyun && M != null ? M.OgrA() : null;
-            if (oa != null && oa.servis == null && oa.bilgi == null) { string k = M.OgrIstenen(oa); if (k != null) Match.OGR_HEDEF.TryGetValue(k, out h); }
+            float[] h = HedefAlan(oyun ? M : null);
             hedefBant.gameObject.SetActive(h != null); hedefKenar.enabled = h != null;
             if (h != null)
             {
-                float y0 = h[0], y1 = h[1]; hedefBant.position = Kit.W(Court.MID, (y0 + y1) / 2, .006f); hedefBant.localScale = new Vector3(Court.SR - Court.SL, y1 - y0, 1);
-                hedefKenar.positionCount = 4; hedefKenar.SetPosition(0, Kit.W(Court.SL, y0, .008f)); hedefKenar.SetPosition(1, Kit.W(Court.SR, y0, .008f)); hedefKenar.SetPosition(2, Kit.W(Court.SR, y1, .008f)); hedefKenar.SetPosition(3, Kit.W(Court.SL, y1, .008f));
+                float x0 = h[0], x1 = h[1], y0 = h[2], y1 = h[3]; hedefBant.position = Kit.W((x0 + x1) / 2, (y0 + y1) / 2, .006f); hedefBant.localScale = new Vector3(x1 - x0, y1 - y0, 1);
+                hedefKenar.positionCount = 4; hedefKenar.SetPosition(0, Kit.W(x0, y0, .008f)); hedefKenar.SetPosition(1, Kit.W(x1, y0, .008f)); hedefKenar.SetPosition(2, Kit.W(x1, y1, .008f)); hedefKenar.SetPosition(3, Kit.W(x0, y1, .008f));
             }
+        }
+        // Hedef alanı [x0, x1, y0, y1]: Temel derste vuruş türünün bandı (kort genişliği), antrenman görevinde görevin alanı
+        // (2026-10-26, Core/Dril.DrilAlan: köşe smacında sırayla sol/sağ köşe, kısa serviste servis kutusunun ön bandı).
+        // Alanı olmayan görevde (aldatma, savunma, file öldürme, split) bant çizilmez: ölçü düşüş yerinde değil.
+        static float[] HedefAlan(Match M)
+        {
+            var oa = M != null ? M.OgrA() : null; if (oa == null || oa.bilgi != null) return null;
+            if (oa.dril != null) return M.DrilAlan();
+            if (oa.servis != null) return null; string k = M.OgrIstenen(oa); float[] h;
+            if (k == null || !Match.OGR_HEDEF.TryGetValue(k, out h)) return null; return new[] { Court.SL, Court.SR, h[0], h[1] };
         }
         public Vector3? HedefMerkez(Match M)
         {
-            var oa = M != null ? M.OgrA() : null; if (oa == null || oa.servis != null || oa.bilgi != null) return null; string k = M.OgrIstenen(oa); float[] h;
-            if (k == null || !Match.OGR_HEDEF.TryGetValue(k, out h)) return null; return Kit.W(Court.MID, (h[0] + h[1]) / 2, .01f);
+            var h = HedefAlan(M); if (h == null) return null; return Kit.W((h[0] + h[1]) / 2, (h[2] + h[3]) / 2, .01f);
         }
     }
 }

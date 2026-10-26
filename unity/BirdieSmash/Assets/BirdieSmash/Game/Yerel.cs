@@ -18,6 +18,7 @@ namespace BirdieSmash.Game
         [DllImport("__Internal")] static extern void BirdieTitresim(int[] desen, int n);
         [DllImport("__Internal")] static extern float BirdieYaziOlcek();
         [DllImport("__Internal")] static extern int BirdieHareketAzalt();
+        [DllImport("__Internal")] static extern int BirdieDusukGuc();
 #endif
         static readonly Dictionary<string, int[]> HAP = new Dictionary<string, int[]> {
             {"tick",new[]{8}},{"hit",new[]{14}},{"perfect",new[]{16,10,28}},{"smash",new[]{35,15,55}},{"jump",new[]{45,20,30,20,80}},
@@ -57,6 +58,15 @@ namespace BirdieSmash.Game
         {
 #if UNITY_IOS && !UNITY_EDITOR
             try { return BirdieHareketAzalt() == 1; } catch { return false; }
+#else
+            return false;
+#endif
+        }
+        // iOS düşük güç modu; iOS dışında hep kapalı.
+        public static bool DusukGuc()
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            try { return BirdieDusukGuc() == 1; } catch { return false; }
 #else
             return false;
 #endif

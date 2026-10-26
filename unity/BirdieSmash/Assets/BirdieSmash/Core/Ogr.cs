@@ -12,6 +12,7 @@ namespace BirdieSmash.Core
     public class OgrAdim
     {
         public string bas, met, neden, servis, besle, iz, bilgi; public string[] tip; public bool guc, slice, drill;
+        public DrilTanim dril;   // 2026-10-26 antrenman görevi (Core/Dril): adım tek başına bir görevdir
         public Func<Reach, Shuttle, bool> dur;
     }
 
@@ -20,7 +21,8 @@ namespace BirdieSmash.Core
         public List<OgrAdim> liste; public bool kisa, dur, bitti, macaGec; public int i, n, miss, yildiz; public Shuttle top; public float bitisT, gecisT;
         public string son;   // son vuruşun okunuşu (HUD)
         public float sonSp = -1, sonT = -9; public string sonTip; public bool sonSlice;   // hız bandının iğnesi 2,2 sn son vuruşta kalır
-        public int dene, isabet; public string cagri, cagriSon; public float cagriT;   // "Antrenör ne derse"
+        public int dene, isabet; public string cagri, cagriSon; public float cagriT;   // "Antrenör ne derse"; görevde: top ve isabet sayısı
+        public DrilTanim dril;   // antrenman görevi (Core/Dril); null = Temel ders
         public bool izsiz { get { var a = i < liste.Count ? liste[i] : null; return a != null && a.bilgi == null && !a.drill && n >= 1 && miss < 2; } }
     }
 
@@ -67,6 +69,7 @@ namespace BirdieSmash.Core
         {
             var l = new List<OgrAdim>(); if (kisa) foreach (int i in OGR_ILK) l.Add(OGR_ADIM[i]); else l.AddRange(OGR_ADIM);
             ogr = new Training { liste = l, kisa = kisa }; easy = true;
+            if (ogrDril != null) { DrilKur(ogrDril); ogr.kisa = false; }   // görev: tek adım, Temel dersin listesi kullanılmaz
             var st = STIL["duvar"].Clone(); st.ad = "Antrenör"; st.ipucu = ""; st.hata = .45f; stil = st; energy = 0;
         }
         public OgrAdim OgrA() { return ogr != null && ogr.i < ogr.liste.Count ? ogr.liste[ogr.i] : null; }
@@ -75,7 +78,7 @@ namespace BirdieSmash.Core
         bool OgrDurdur()
         {
             var a = OgrA(); if (a == null) return false; if (ogr.dur) return true;
-            if (a.servis != null || a.bilgi != null || a.drill) return false; if (s == null || s.dead || s.from != "op" || ogr.top == s) return false;
+            if (a.servis != null || a.bilgi != null || a.drill || a.dril != null) return false;   // görevde oyun durmaz if (s == null || s.dead || s.from != "op" || ogr.top == s) return false;
             Reach I; if (!ReachInfo(out I) || !a.dur(I, s)) return false;
             ogr.top = s; ogr.dur = true; return true;
         }
@@ -111,6 +114,7 @@ namespace BirdieSmash.Core
             if (ogr == null) return; ogr.dur = false; var a = OgrA(); if (a == null || a.bilgi != null) return;
             if (sp >= 0) { ogr.sonSp = sp; ogr.sonTip = servis ?? tip; ogr.sonSlice = slice; ogr.sonT = realClock; }
             if (a.drill) { if (tip != null) OgrCagriSonuc(tip); return; }
+            if (a.dril != null) { if (tip != null || servis != null) drVurdu = true; ogr.son = null; return; }   // görev: ölçü topun düşüşünde (Core/Dril)
             ogr.son = (servis != null ? OGR_AD[servis] : tip != null ? (slice ? "Slice" : (OGR_AD.ContainsKey(tip) ? OGR_AD[tip] : tip)) : "") + (OgrUygun(a, tip, servis, slice) ? " ✓" : " ✗");
             if (a.servis != null) { if (servis == null) return; if (servis == a.servis) OgrBasari(a); else OgrIska(a, tip, servis, sp); return; }
             if (tip == null) return;
@@ -165,7 +169,9 @@ namespace BirdieSmash.Core
                 ogr.bitisT -= dt;
                 if (ogr.bitisT <= 0)
                 {
-                    ogr.bitti = true; ogr.gecisT = 1.6f; Say(null, "ogr", Court.MID, Court.NET, 2, ogr.kisa ? "Maç başlıyor!" : "Antrenman bitti. Maç başlıyor!", 3);
+                    ogr.bitti = true; ogr.gecisT = 1.6f;
+                    if (ogr.dril != null) { Say(null, "ogr", Court.MID, Court.NET, 2, "Görev bitti: " + ogr.isabet + "/" + ogr.dril.top, 3); return; }   // görünüm sonuç ekranına geçer (maça değil)
+                    Say(null, "ogr", Court.MID, Court.NET, 2, ogr.kisa ? "Maç başlıyor!" : "Antrenman bitti. Maç başlıyor!", 3);
                     if (!ogr.kisa) Say(null, null, Court.MID, Court.NET + 1, 2, "Antrenör çağrısı " + ogr.isabet + "/" + OGR_CAGRI + " · " + ogr.yildiz + " kez hedefte", 3);
                 }
             }

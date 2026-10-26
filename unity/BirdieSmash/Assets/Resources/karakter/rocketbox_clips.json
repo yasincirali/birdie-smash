@@ -20,7 +20,8 @@
    "poses": 8,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 1.3227
   },
   {
    "name": "smash",
@@ -185,67 +186,72 @@
   {
    "name": "split",
    "first": 679,
-   "last": 691,
+   "last": 697,
    "loop": false,
-   "poses": 5,
+   "poses": 7,
    "hitK": null,
    "hold": null,
    "drop": null
   },
   {
    "name": "chasse_r",
-   "first": 701,
-   "last": 719,
+   "first": 707,
+   "last": 731,
    "loop": true,
-   "poses": 6,
+   "poses": 8,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.5674
   },
   {
    "name": "chasse_l",
-   "first": 729,
-   "last": 747,
+   "first": 741,
+   "last": 765,
    "loop": true,
-   "poses": 6,
+   "poses": 8,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.5674
   },
   {
    "name": "fwd",
-   "first": 757,
-   "last": 775,
+   "first": 775,
+   "last": 799,
    "loop": true,
-   "poses": 6,
+   "poses": 8,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.8167
   },
   {
    "name": "back_r",
-   "first": 785,
-   "last": 803,
+   "first": 809,
+   "last": 833,
    "loop": true,
-   "poses": 6,
+   "poses": 8,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.9026
   },
   {
    "name": "back_l",
-   "first": 813,
-   "last": 831,
+   "first": 843,
+   "last": 867,
    "loop": true,
-   "poses": 6,
+   "poses": 8,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.9026
   },
   {
    "name": "jump",
-   "first": 841,
-   "last": 880,
+   "first": 877,
+   "last": 916,
    "loop": false,
    "poses": 14,
    "hitK": 9,
@@ -254,8 +260,8 @@
   },
   {
    "name": "yorgun",
-   "first": 890,
-   "last": 920,
+   "first": 926,
+   "last": 956,
    "loop": true,
    "poses": 10,
    "hitK": null,
@@ -264,8 +270,8 @@
   },
   {
    "name": "drop",
-   "first": 930,
-   "last": 969,
+   "first": 966,
+   "last": 1005,
    "loop": false,
    "poses": 14,
    "hitK": 9,
@@ -274,19 +280,41 @@
   },
   {
    "name": "net",
-   "first": 979,
-   "last": 1000,
+   "first": 1015,
+   "last": 1036,
    "loop": false,
    "poses": 8,
    "hitK": 4,
    "hold": 2,
    "drop": null
+  },
+  {
+   "name": "kros_r",
+   "first": 1046,
+   "last": 1070,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.9284
+  },
+  {
+   "name": "kros_l",
+   "first": 1080,
+   "last": 1104,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.9284
   }
  ],
  "model": "rocketbox",
  "parts": [
-  "m026_hipoly_81_bones_001__forma",
-  "m026_hipoly_81_bones__ten",
+  "m301_hipoly_81_bones_001__forma",
+  "m301_hipoly_81_bones__ten",
   "raket_kafa__cerceve",
   "raket_koyu__koyu",
   "raket_sap__grip",

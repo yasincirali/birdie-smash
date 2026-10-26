@@ -1,5 +1,5 @@
 // File: ızgara mesh her karede NetWave'den esnetilir (görsel kazanç 1,8, HTML ile aynı). Çarpma
-// noktası kısa süre parlar; bant kordonu ayrı titrer. Sapma vuranın tersine: top fileyi iter.
+// noktası kısa süre parlar; bant kordonu ayrı titrer (2026-10-26: bant kendi sert yayıyla, çarpma yerinde; NetWave.ta). Sapma vuranın tersine: top fileyi iter.
 using UnityEngine;
 using BirdieSmash.Core;
 
@@ -8,7 +8,7 @@ namespace BirdieSmash.Game
     public class NetView : MonoBehaviour
     {
         public NetWave net; public float sign = -1;
-        const int NX = 66, NZ = 12; const float DEPTH = .76f, GAIN = 1.8f;
+        const int NX = 66, NZ = 12; const float DEPTH = .76f, GAIN = NetWave.GORSEL;
         Mesh mesh, tapeMesh; Vector3[] v, tv; Color[] c;
 
         public static NetView Build(Transform root, NetWave w)
@@ -27,7 +27,9 @@ namespace BirdieSmash.Game
                     if (i < NX - 1 && j < NZ - 1) { int a = j * NX + i; tri[k++] = a; tri[k++] = a + NX; tri[k++] = a + 1; tri[k++] = a + 1; tri[k++] = a + NX; tri[k++] = a + NX + 1; }
                 }
             Refresh(); mesh.vertices = v; mesh.uv = uv; mesh.colors = c; mesh.triangles = tri; mesh.RecalculateBounds();
-            Kit.MeshObj("ag", transform, mesh, Kit.Clear(new Color(.92f, .96f, .95f, .8f), Kit.NetTex()));
+            // Ağ koyu kordon (2026-10-26, yasin "saha nizami çizilmeli"): beyaz ağ yeşil zeminde soluk bir şerit gibi okunuyor,
+            // fileyle kısa servis çizgisi karışıyordu. Gerçek filede ağ koyu, yalnız üst bant beyazdır.
+            Kit.MeshObj("ag", transform, mesh, Kit.Clear(Color.white, Kit.NetTex()));
             tapeMesh = new Mesh { name = "bant" }; tapeMesh.MarkDynamic(); tv = new Vector3[NX * 2]; var ttri = new int[(NX - 1) * 6]; k = 0;
             for (int i = 0; i < NX - 1; i++) { int a = i * 2; ttri[k++] = a; ttri[k++] = a + 1; ttri[k++] = a + 2; ttri[k++] = a + 2; ttri[k++] = a + 1; ttri[k++] = a + 3; }
             RefreshTape(); tapeMesh.vertices = tv; tapeMesh.triangles = ttri; tapeMesh.RecalculateBounds();
@@ -39,17 +41,18 @@ namespace BirdieSmash.Game
             for (int j = 0; j < NZ; j++) for (int i = 0; i < NX; i++)
                 {
                     float x = i / (float)(NX - 1) * Court.CW, top = Court.NetLimit(x), z = top - DEPTH + DEPTH * j / (NZ - 1);
-                    float dy = net.At(x, z) * GAIN * sign; var p = Kit.W(x, Court.NET + dy, z); v[j * NX + i] = p;
+                    float dy = net.At(x, z) * GAIN; var p = Kit.W(x, Court.NET + dy, z); v[j * NX + i] = p;   // yön Core'da (NetWave.Impulse yon, 2026-10-26); sign kullanılmaz
                     float gd = Mathf.Exp(-((x - net.gx) * (x - net.gx) + (z - net.gz) * (z - net.gz)) / .18f) * net.glow;
-                    c[j * NX + i] = new Color(1, 1 - .2f * gd, 1 - .5f * gd, .75f + .25f * gd);
+                    c[j * NX + i] = Color.Lerp(new Color(.13f, .14f, .15f, .9f), new Color(1, .85f, .55f, 1), Mathf.Clamp01(gd));
                 }
         }
         void RefreshTape()
         {
             for (int i = 0; i < NX; i++)
             {
-                float x = i / (float)(NX - 1) * Court.CW, top = Court.NetLimit(x), wob = Mathf.Sin(Mathf.PI * x / Court.CW) * net.tape * .06f * sign;
-                tv[i * 2] = Kit.W(x, Court.NET + wob, top - .038f); tv[i * 2 + 1] = Kit.W(x, Court.NET + wob, top + .002f);
+                float x = i / (float)(NX - 1) * Court.CW, top = Court.NetLimit(x), wob = Mathf.Sin(Mathf.PI * x / Court.CW) * net.tape * .02f + net.TapeAt(x) * .05f;
+                // Bant 75 mm (BWF); üst kenar kordonla biraz geri kalır (kordon gergin), alt kenar ağla birlikte daha çok oynar.
+                tv[i * 2] = Kit.W(x, Court.NET + wob * 1.2f, top - .073f); tv[i * 2 + 1] = Kit.W(x, Court.NET + wob * .7f, top + .002f);
             }
         }
 

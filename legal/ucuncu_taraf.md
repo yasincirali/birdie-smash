@@ -2,8 +2,8 @@
 
 Birdie Smash oyuncu figürleri şu açık lisanslı içeriklerden üretilir. Sprite'lar bu modellerden render edilmiştir.
 
-- **Oyuncak 3B**: KayKit Character Pack: Adventurers 1.0, Kay Lousberg (kaylousberg.com). CC0 1.0, atıf gerekmez.
-- **Gerçekçi (Rocketbox)**: Microsoft Rocketbox Avatar Library, Sports_Male_04. MIT License, aşağıdaki metin.
+- **Oyuncak 3B**: MakeHuman veri dosyaları (taban ağ, hedefler, iskelet ağırlıkları; makehumancommunity.org), CC0 1.0, atıf gerekmez. Kıyafet, yüz, saç, ayakkabı ve bantlar Birdie Smash'in kendi geometrisidir (2026-10-26). Önceki sürüm KayKit Character Pack: Adventurers 1.0 (Kay Lousberg, CC0 1.0) arşivde, oyunda kullanılmıyor.
+- **Gerçekçi (Rocketbox)**: Microsoft Rocketbox Avatar Library, Sports_Male_02 (oyun; kıyafet dokusu Birdie Smash'in badminton boyaması, 2026-10-26) ve Sports_Male_04 (HTML sprite). MIT License, aşağıdaki metin.
 - Eski sportif figür: MakeHuman veri dosyaları, CC0 1.0.
 
 ## Microsoft Rocketbox: MIT License

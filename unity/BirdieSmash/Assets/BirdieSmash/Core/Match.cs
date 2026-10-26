@@ -20,8 +20,12 @@ namespace BirdieSmash.Core
         public string clip = "idle", prepClip, shot = "low", hand = "fore", prepShot, prepHand, svClip, svTur;
         public SvAnim svAnim;
         // ayak işi (HTML ayakIsi): yumuşatılmış hız, adım fazı, seçili ayak klibi ve aday klibin süresi
-        public float qx = float.NaN, qy, svx, svy, runPh, adayT, idlePh; public bool yuru; public string ayakKlip, adayAd;
+        public float qx = float.NaN, qy, svx, svy, runPh, adayT, idlePh; public bool yuru, hamleGor, hamleKilit; public string ayakKlip, adayAd;   // hamle*: görünüm (PickClip)
         public float fakeUntil = -9, fakeX;   // aldatılan rakip: bu ana dek ters yöne çıkar
+        public float mvx, mvy;   // rakibin koşu hızı (MoveAcc); ben vx/vy kullanırım (RunMe)
+        // İmza vuruşu hazırlığı (Core/Imza, 2026-10-26): imzaT > 0 iken görünüm pozu tutar ve ışığı yakar; imzaId hangisi.
+        public float imzaT; public string imzaId;
+        public float fakeY;   // aldatılan oyuncu (Vex, gölge flick): Kolay'da kendiliğinden koşu bu ana dek yanlış yöne
         public bool HasTarget { get { return !float.IsNaN(tx); } }
     }
 
@@ -30,16 +34,20 @@ namespace BirdieSmash.Core
         public float t, x, y, z, side = float.NaN;
         public string who, opType;
         public bool overhead, kill, lunge, leave;
+        public string imza; public float imzaBas; public bool imzaBasladi;   // rakibin imza vuruşu: hazırlığın başlayacağı uçuş anı
     }
 
     public struct Reach { public bool lunge, over, kill; public float d; }
 
     // Kaydırma: piksel değerleri 640 px yükseklikli referans ekrana ölçeklenmiş (HTML ile aynı eşikler).
-    public struct SwipeInput { public float dx, dy, speed, dist, R, side; public bool tap, curved; }
+    // 2026-10-26 aldatıcı vuruş jesti (Core/Aldatma.JestOku): bekle = dokunuştan kaydırmaya geçen sn, kavis = yayın yönü
+    // (-1 sola, 0 yok, +1 sağa), kirik = V çizgisi. Verilmezse 0/false: eski kaydırma birebir.
+    public struct SwipeInput { public float dx, dy, speed, dist, R, side, bekle; public bool tap, curved, kirik; public int kavis; }
 
     public struct ShotPlanR { public string type; public float tx, d, val, hx, hy, hz, sp; public bool byAngle, bh, over; }
 
-    public enum Ev { Hit, Net, Tape, Cord, Floor, Point, Text, Split, MatchEnd, Serve, Hawk, Flow, Gorev, Aldat, Perfect, Kurtaris }
+    // Imza: rakip imza vuruşunun hazırlığına başladı (type = imza kimliği, k = hazırlık süresi); Okudun: oyuncu imzayı cevapladı.
+    public enum Ev { Hit, Net, Tape, Cord, Floor, Point, Text, Split, MatchEnd, Serve, Hawk, Flow, Gorev, Aldat, Perfect, Kurtaris, Imza, Okudun }
 
     public class GameEvent
     {
@@ -47,14 +55,25 @@ namespace BirdieSmash.Core
     }
 
     // Rakip kimliği (HTML STIL): global kısa ad, tarz, forma rengi; forma oyuncununkine yakınsa yedek renk.
+    // 2026-10-26 (tasarım Ek A.2): değerler veri/stil.json'dan (KariyerVeri). aldatP: rakibin aldatıcı vuruş olasılığı (Vex),
+    // uyum: oyuncunun son 8 vuruşuna göre yer alma (Aria, en çok .3), imza: patron olduğunda imza vuruşu (Core/Imza).
+    // kariyer: genel basamak indeksi (tur·6 + basamak; Tur 1'de eski indeks), -1 serbest maç.
     public class Style
     {
-        public string id, isim, renk, yedek, ad, ipucu; public string[] ustK, altK; public float[] ustP, altP;
-        public float hiz, hata, ev, yorK = 1, geriK = 1; public int kariyer = -1;
+        public string id, isim, renk, yedek, ad, ipucu, imza; public string[] ustK, altK; public float[] ustP, altP;
+        public float hiz, hata, ev, yorK = 1, geriK = 1, aldatP, uyum; public int kariyer = -1;
+        // 2026-10-26: imza yalnız patron bayrağıyla ateşlenir. stil.json'daki taban tarz imzayı taşır (harita/maç kartı adını
+        // gösterir), serbest maç o taban nesneyi kullandığı için imza kimliğine bakmak yetmez; bayrağı yalnız KariyerVeri.Rakip koyar.
+        public bool patron;
+        // 2026-10-26 Tur 3–4 ve Usta yolu (adım 9, §3.2): tepki = rakibin topa çıkış gecikmesi (sn; eskiden sabit .18), hucum =
+        // smaç ve drive seçiminin ağırlık çarpanı (1 = veri olduğu gibi). imzaAra/imzaP = imza sıklığı kuralı (Core/Imza; Günün
+        // maçı "Patron provası" sıklaştırır, maç başı en çok IMZA_AZAMI değişmez). usta = Usta yolu basamağı (-1 değil).
+        public float tepki = .18f, hucum = 1, imzaP = Match.IMZA_P; public int imzaAra = Match.IMZA_ARA, usta = -1;
         public Style Clone() { return (Style)MemberwiseClone(); }
     }
 
-    public class Kariyer { public string stil, yer, saha; public float g; }
+    // Kariyer basamağı (veri/kariyer.json): uzunluk 0 = oyuncunun seçtiği maç uzunluğu; gorev = 2. yıldızın sabit görevi.
+    public class Kariyer { public string stil, yer, saha, gorev; public float g; public int tur, basamak, uzunluk; public bool patron, imza; }
 
     public class ServeBox { public string who; public float x0, x1, y0, y1; }
 
@@ -63,6 +82,8 @@ namespace BirdieSmash.Core
         public bool easy = true, reduce, ilk; public int target = 21; public Style stil; public string saha = "salon";
         public int bestRally; public bool ogr, ogrKisa; public string formaRenk = "#4fb8ff";
         public GearStats gs;   // ekipman çarpanları (Gear.Hesap); null = nötr (bot testleri, eski imza)
+        // 2026-10-26: Günün maçı değiştiricisi (Core/Gunluk; null = yok) ve antrenman görevi (Core/Dril; ogr ile birlikte).
+        public string degistirici; public DrilTanim dril;
     }
 
     public partial class Match
@@ -79,7 +100,7 @@ namespace BirdieSmash.Core
         public bool easy = true, reduce, ilk, between, split, splitPending, over, matchDone, hint, deceive, kisaBekle, flow;
         public Action svPending;
         // maç sonu istatistiği (HTML oInfo)
-        public int smashes, kills, perfects, deceives, splits, tepeden, saves, outsLeft, slices, smacSayi, outsBen;   // outsBen: dışarı giden kendi vuruşum (servis hariç), maç sonu ipucu
+        public int smashes, kills, perfects, deceives, splits, tepeden, saves, outsLeft, slices, smacSayi, outsBen, smacKarsila, dropSayi;   // smacKarsila: karşılanan rakip smacı; dropSayi: drop ile alınan sayı (kariyer görevleri)   // outsBen: dışarı giden kendi vuruşum (servis hariç), maç sonu ipucu
         bool nefesUyari, nefesIlk, opUyari, rekorBuMac;
         // hakemler (görünüm okur): baş hakemin el hareketi süresi, kime, servis el değişti mi; servis hakeminin yönü
         public float hakemT, hakemT0 = 1.4f, sjT; public string hakemYon, sjYon; public bool hakemSO;
@@ -94,7 +115,7 @@ namespace BirdieSmash.Core
         // Görünüm FBX'in <model>_clips.json'undan günceller; varsayılanlar karakter.py CLIPS ile aynı.
         public static readonly Dictionary<string, int> CLIP_N = new Dictionary<string, int> {
             {"idle",8},{"run",8},{"smash",14},{"clear",14},{"drop",14},{"net",8},{"drive",8},{"kill",7},{"low",8},{"lunge",8},{"serve",20},{"serve_gec",20},{"serve_bh",10},{"serve_flick",10},{"block",6},
-            {"bh_over",10},{"bh_drive",8},{"bh_kill",7},{"bh_low",8},{"bh_lunge",8},{"split",5},{"chasse_r",6},{"chasse_l",6},{"fwd",6},{"back_r",6},{"back_l",6},{"jump",14},{"yorgun",10}};
+            {"bh_over",10},{"bh_drive",8},{"bh_kill",7},{"bh_low",8},{"bh_lunge",8},{"split",7},{"chasse_r",8},{"chasse_l",8},{"fwd",8},{"back_r",8},{"back_l",8},{"jump",14},{"yorgun",10},{"kros_r",8},{"kros_l",8}};
         // Raket HEP sağ elde (yasin 2026-10-19): backhand aynalama değil, kendi klibi.
         public static readonly Dictionary<string, string> BH = new Dictionary<string, string> {
             {"smash","bh_over"},{"clear","bh_over"},{"drop","bh_over"},{"net","bh_low"},{"drive","bh_drive"},{"kill","bh_kill"},{"low","bh_low"},{"lunge","bh_lunge"},{"block","bh_drive"},{"jump","bh_over"}};
@@ -112,27 +133,36 @@ namespace BirdieSmash.Core
         public static bool HasClip(string c) { return CLIP_N.ContainsKey(c); }
         public const float JUMP_HIZ = 1f / .53f;   // sıçrama 0,53 sn: kalkıştan 0,28 sn sonra tepe
         // Ayak işi adım boyu (fb1b245): m / döngü; chassé ~0,7 m taşır, eskiden hepsi 1,5 m'de bir dönüp ayak kayıyordu.
-        public static readonly Dictionary<string, float> ADIM_BOY = new Dictionary<string, float> { {"chasse_r",.7f},{"chasse_l",.7f},{"fwd",.9f},{"back_r",.8f},{"back_l",.8f} };
+        // 2026-10-26 (tüm beden turu, karakter.py dongu()): döngüler yeniden yazıldı; varsayılanlar sade modelin FBX ölçümü
+        // (unity_fbx.py adim × 1,75, uçuş evresi düzeltmeli). Görünüm modelin kendi _clips.json'u ile ezer; listede olmayan klip
+        // ezilmez, o yüzden yeni döngüler (run, kros_*) burada olmalı.
+        public static readonly Dictionary<string, float> ADIM_BOY = new Dictionary<string, float> { {"chasse_r",.99f},{"chasse_l",.99f},{"fwd",1.43f},{"back_r",1.58f},{"back_l",1.58f},{"run",2.31f},{"kros_r",1.63f},{"kros_l",1.63f} };
+        // Döngü/sn tavanı (2026-10-26): 2,6'da chassé (eski 0,7 m) 1,8 m/s'yi, öne adım 2,3 m/s'yi aşınca ayak kayıyordu (bot:
+        // oyuncu öne ort. 3,3, arkaya 3,5 m/s). Yeni bantlarla en hızlı durum ~3,4 döngü/sn (geri 5,2 m/s); tavan yalnız
+        // ışınlanma/çarpışma sıçramalarına karşı.
+        public const float AYAK_TUR_MAX = 3.6f;
+        // Hız bantları (histerezisli, m/s): öne adım → koşu, chassé → çapraz koşu. Kaynak: hızlı yan harekette (≥ ~3 m/s)
+        // oyuncular chassé'yi bırakıp çapraz adımla koşar; öne uzun mesafede koşu adımı. Eşikler döngüyü 2,0–3,0 döngü/sn bandında tutar.
+        public const float KOSU_GIR = 3.2f, KOSU_CIK = 2.7f, KROS_GIR = 2.9f, KROS_CIK = 2.4f;
 
-        public static readonly Dictionary<string, Style> STIL = new Dictionary<string, Style> {
-            {"smasci", new Style{id="smasci",yorK=1.3f,isim="Blaze",renk="#ff7a6b",yedek="#e8508f",ad="Smaşçı",ipucu="Her baş üstü topu smaçlar. Derin clear atıp blokla al",ustK=new[]{"smash","clear","drop"},ustP=new[]{.62f,.23f,.15f},altK=new[]{"clear","drop","drive"},altP=new[]{.45f,.2f,.35f},hiz=1,hata=1.2f,ev=3.2f}},
-            {"duvar",  new Style{id="duvar",yorK=.7f,isim="Rocco",renk="#3f4fa8",yedek="#ff7a6b",ad="Duvar",ipucu="Her şeyi geri çevirir, az hata yapar. Drop ve slice ile öne çek",ustK=new[]{"smash","clear","drop"},ustP=new[]{.15f,.6f,.25f},altK=new[]{"clear","drop","drive"},altP=new[]{.65f,.25f,.1f},hiz=1.08f,hata=.75f,ev=3.6f}},
-            {"file",   new Style{id="file",yorK=1,geriK=1.8f,isim="Mika",renk="#e8508f",yedek="#3f4fa8",ad="File oyuncusu",ipucu="Fileye yakın durur, drop sever. Arkasına lift ve clear at",ustK=new[]{"smash","clear","drop"},ustP=new[]{.3f,.2f,.5f},altK=new[]{"clear","drop","drive"},altP=new[]{.25f,.6f,.15f},hiz=1,hata=1,ev=2.2f}}};
+        // Tarzlar ve kariyer veriden (2026-10-26, KariyerVeri; değerler eski koddakiyle birebir). Hızlı maçın rastgele rakibi
+        // bugünkü üç tarzdan kalır (Hızlı maç metni öyle söylüyor); yeni tarzlar kariyerde tanıtılır.
+        public static Dictionary<string, Style> STIL { get { return KariyerVeri.Stil; } }
         public static readonly string[] STIL_SIRA = { "smasci", "duvar", "file" };
-        // Kariyer basamakları ve sahaları (mahalle/okul = ahşap, il ve bölge = salon, ulusal ve kupa = turnuva).
-        public static readonly Kariyer[] KARIYER = {
-            new Kariyer{stil="file",g=.88f,yer="Mahalle salonu",saha="okul"}, new Kariyer{stil="smasci",g=.94f,yer="Okul turnuvası",saha="okul"},
-            new Kariyer{stil="duvar",g=1,yer="İl şampiyonası",saha="salon"}, new Kariyer{stil="file",g=1.07f,yer="Bölge finali",saha="salon"},
-            new Kariyer{stil="smasci",g=1.13f,yer="Ulusal lig",saha="turnuva"}, new Kariyer{stil="duvar",g=1.2f,yer="Şampiyonlar kupası",saha="turnuva"}};
-        public static Style KariyerRakip(int i) { var k = KARIYER[i]; var b = STIL[k.stil].Clone(); b.hiz *= k.g; b.hata /= k.g; b.kariyer = i; return b; }
+        // Tur 1 basamakları (mahalle/okul = ahşap, il ve bölge = salon, ulusal ve kupa = turnuva): eski KARIYER dizisi.
+        // tuytop_v2.kariyer, başarımlar ve HTML devri bu altı basamağı sayar.
+        public static Kariyer[] KARIYER { get { return KariyerVeri.Turlar[0].b; } }
+        public static Style KariyerRakip(int g) { return KariyerVeri.Rakip(g); }
 
         public Match(int seed, MatchOptions o)
         {
-            rng = new Random(seed); easy = o.easy; target = o.ilk ? 5 : o.target; reduce = o.reduce; ilk = o.ilk; saha = o.saha; bestRally = o.bestRally;
+            rng = new Random(seed); easy = o.easy; net.sakin = o.reduce; target = o.ilk ? 5 : o.target; reduce = o.reduce; ilk = o.ilk; saha = o.saha; bestRally = o.bestRally;
             stil = o.stil ?? STIL[STIL_SIRA[rng.Next(3)]]; GS = o.gs ?? GearStats.Notr;
+            if (o.ogr && o.dril != null) { ogrDril = o.dril; o.ogr = true; }
             if (!o.ogr) gorevler = GorevSec();
             me.x = Court.MID; me.y = Court.L - 2.2f; op.x = Court.MID; op.y = 2.2f;
             if (o.ogr) OgrKur(o.ogrKisa);
+            if (!o.ogr) DegistiriciKur(o.degistirici);
             SetupServe();
         }
         // Eski imza (bot testleri): rastgele rakip, serbest maç.
@@ -143,6 +173,10 @@ namespace BirdieSmash.Core
         static float Hyp(float a, float b) { return (float)Math.Sqrt(a * a + b * b); }
         // Clear/lift kalkış açıları (2026-10-20, HTML ile aynı): ölçülen elit clear çıkışı 42–51 m/s (arastirma/vurus_biyomekanigi.md §2).
         public const float CLEAR_A = .63f, LIFT_A = .80f;
+        // Baş üstü drop açısı .12 → .20 rad (2026-10-26, FizikOlc): 7° ile arka sahadan fileden 1,2 m'ye düşen yörünge yoktu,
+        // çözüm bandın 1 cm altına yapışıyordu (rakip drop'larının %35'i bandı sıyırdı, %10'u fileye). 11,5° ile ~14 m/s,
+        // bant üstü ~15 cm, uçuş ~1,1 s, top fileden sonra dik düşer (gerçek drop: smaç gibi başlar, fileyi az farkla geçer).
+        public const float DROP_A = .20f;
         public static string ClipHand(string c, string hand) { string b; return hand == "back" && BH.TryGetValue(c, out b) ? b : c; }
         // Yazı bütçesi (yasin 2026-10-20): önem 3 her zaman; 2 en az 0,8 s arayla; 1 son yazıdan 1,8 s sonra.
         // Süre gerçek zamanla (realClock) ölçülür, yavaşlatmadan etkilenmez.
@@ -177,7 +211,7 @@ namespace BirdieSmash.Core
         void SetupServe()
         {
             if (ogr != null) { var a = OgrA(); if (a != null && a.bilgi == null) server = a.servis != null ? "me" : "op"; if (a != null && a.drill) OgrCagriSec(true); }   // antrenman: servis adımında sen, vuruş adımında antrenör yüksek servisle başlatır
-            s = null; me.vx = me.vy = 0; me.tx = float.NaN; me.stun = 0; rally = 0; between = false; icpt = null; serveMsg = "";
+            s = null; me.vx = me.vy = 0; op.mvx = op.mvy = 0; me.tx = float.NaN; me.stun = 0; rally = 0; between = false; icpt = null; serveMsg = ""; ImzaSifirla(); me.fakeUntil = -9;
             string sv = server, side = ServeSide(sv), rv = sv == "me" ? "op" : "me";
             float[] sb = BoxX(sv, side), rb = BoxX(rv, side);
             if (sv == "me") { me.x = (sb[0] + sb[1]) / 2; me.y = Court.NET + Court.SSL + 1.4f; op.x = (rb[0] + rb[1]) / 2; op.y = Court.NET - Court.SSL - 1.6f; }
@@ -189,6 +223,7 @@ namespace BirdieSmash.Core
             if (ogr != null) op.svTur = "yuksek";
             op.svClip = SERVIS[op.svTur].klip; me.svClip = "serve_bh";
             if (sc[0] + sc[1] == 0 && ogr == null) serveMsg = "Rakip: " + RakipAd(true);
+            if (Dril != null) { DrilTopBasi(); if (sv == "op") wait = .9f; }   // görev: antrenör yerini alır, top elle gelir
             Emit(Ev.Serve, sv);
         }
 
@@ -253,10 +288,12 @@ namespace BirdieSmash.Core
             I.side = (dF > spd * tt && dB < dF - .3f) ? bh : fh; return I.side;
         }
 
+        float SliceKd(string from, bool slice) { return slice ? Shuttle.KD * (1 + .35f * (from == "me" ? GS.slice : 1)) : Shuttle.KD; }
         void StartFlight(string from, float vx, float vy, float vz, float hx, float hy, float hz, bool isServe, string type, bool isSuper, string q, bool slice = false)
         {
-            s = new Shuttle { x = hx, y = hy, z = hz, vx = vx, vy = vy, vz = vz, from = from, serve = isServe, type = type, super = isSuper, kd = slice ? Shuttle.KD * 1.35f : Shuttle.KD, slice = slice };
+            s = new Shuttle { x = hx, y = hy, z = hz, vx = vx, vy = vy, vz = vz, from = from, serve = isServe, type = type, super = isSuper, kd = SliceKd(from, slice), slice = slice };   // 2026-10-26: Kesici raket / Aldatıcı tarzı slice sapmasını büyütür (GS.slice, nötr 1)
             rally++; maxRally = Math.Max(maxRally, rally);
+            vurusY = hy;   // Günün maçı "file" değiştiricisi: son vuruşun derinliği
             if (from == "op") { opHitAt = clock; split = false; if (splitPending) { splitPending = false; DoSplit(); } } else { split = false; splitPending = false; }
             var h = from == "me" ? me : op;
             h.sw = 1; h.shot = isServe ? "low" : (h.prepShot == "lunge" ? "lunge" : ShotClass(type, hz, hy));
@@ -275,6 +312,7 @@ namespace BirdieSmash.Core
             Emit(Ev.Hit, from, type, hx, hy, hz, rally, null, q ?? "good", isSuper); events[events.Count - 1].slice = slice; events[events.Count - 1].serve = isServe;
             if (rally > 2 && rally % 10 == 0) Say(null, null, Court.MID, Court.NET, 2.5f, "Ralli " + rally, 2);
             PlanIntercept();
+            if (from == "op" && !isServe) ImzaDuvar(type);
         }
 
         // Karşılayan için yolu önceden hesapla: baş üstünde alabiliyorsa yüksekte, değilse yere düşmeden en alçak noktada.
@@ -284,11 +322,13 @@ namespace BirdieSmash.Core
             string recv = s.from == "me" ? "op" : "me"; var P0 = recv == "me" ? me : op;
             float t0 = s.t; foreach (var p in r.path) p.t += t0; r.t += t0;
             s.landPred = r; if (r.net != null) s.netPred = r.net;
-            float react = recv == "me" ? 0 : .18f, spd = recv == "me" ? MeSpd() : OpSpd();
+            float react = recv == "me" ? 0 : stil.tepki, spd = recv == "me" ? MeSpd() : OpSpd(); bool blokla = false;
+            if (recv == "op") react = ImzaTepki(react, out blokla);   // duvar blok: tepkisiz çıkış; okunan duvar: geç ve ters
+            if (recv == "op") react = HileTepki(react, r);   // aldatıcı vuruş (Core/Aldatma): geç ve ters/donuk çıkış
             // Aldatma: kesilen/son anda bırakılan vuruşta rakip geç ve ters yöne çıkar (hold & flick).
             if (recv == "op" && deceive)
             {
-                react += .3f; op.fakeUntil = clock + .32f; op.fakeX = Clamp(2 * Court.MID - r.x, Court.SL, Court.SR); deceive = false; deceives++;
+                react += .3f * GS.slice; op.fakeUntil = clock + .32f * GS.slice; op.fakeX = Clamp(2 * Court.MID - r.x, Court.SL, Court.SR); deceive = false; deceives++;
                 Say("op", null, op.x, op.y, 0, "Aldattın!", 2); Emit(Ev.Aldat, "op", null, op.x, op.y);
             }
             Func<PathPt, float, float> need = (p, reach) => Math.Max(0, Hyp(p.x - P0.x, p.y - P0.y) - reach) / spd + react + t0;
@@ -299,20 +339,29 @@ namespace BirdieSmash.Core
             if (pick == null) foreach (var p in cands) if (p.z > 2.1f && p.z < 2.8f && need(p, 1.15f) <= p.t) { pick = p; overhead = true; break; }
             if (pick == null) for (int i = cands.Count - 1; i >= 0; i--) { var p = cands[i]; if (p.z > .75f) continue; if (need(p, 1.15f) <= p.t) { pick = p; break; } }
             if (pick == null) foreach (var p in cands) if (need(p, 1.15f) <= p.t) { pick = p; break; }
-            if (pick == null && recv == "me") for (int i = cands.Count - 1; i >= 0; i--) { var p = cands[i]; if (p.z > 1.3f) continue; if (need(p, 2.1f) <= p.t) { pick = p; lunge = true; break; } }
+            if (pick == null && recv == "me") for (int i = cands.Count - 1; i >= 0; i--) { var p = cands[i]; if (p.z > 1.3f) continue; if (need(p, 2.1f * GS.uzanma) <= p.t) { pick = p; lunge = true; break; } }
             icpt = pick == null ? null : new Intercept { t = pick.t, x = pick.x, y = pick.y, z = pick.z, who = recv, overhead = overhead, kill = kill, lunge = lunge };
             if (recv == "op" && icpt != null)
             {
                 bool outp = IsOut(r.x, r.y, s.serve); float margin = Math.Abs(SinirPayi(r.x, r.y, s.serve));
                 if ((outp && !(margin < .25f && R01() < .5f)) || (r.net != null && !r.net.ok)) icpt.leave = true;
-                float q = R01(), acc = 0; var K = overhead ? stil.ustK : stil.altK; var Pp = overhead ? stil.ustP : stil.altP; string pk = K[K.Length - 1];
-                for (int i = 0; i < K.Length; i++) { acc += Pp[i]; if (q < acc) { pk = K[i]; break; } }
+                var K = overhead ? stil.ustK : stil.altK; var Pp = overhead ? stil.ustP : stil.altP; string pk = K[K.Length - 1];
+                // hucum (Tur 3–4, Usta): smaç ve drive ağırlığı ×hucum, sonra yeniden ölçeklenir; 1'de eski seçim birebir (aynı R01 çekimi).
+                float top = 0; for (int i = 0; i < K.Length; i++) top += Pp[i] * (K[i] == "smash" || K[i] == "drive" ? stil.hucum : 1);
+                float q = R01(), acc = 0; if (stil.hucum != 1) q *= top;
+                for (int i = 0; i < K.Length; i++) { acc += Pp[i] * (K[i] == "smash" || K[i] == "drive" ? stil.hucum : 1); if (q < acc) { pk = K[i]; break; } }
                 icpt.opType = pk;
+                if (blokla && !icpt.leave) { icpt.imza = "duvarblok"; icpt.imzaBasladi = true; icpt.opType = "drop"; }
+                else ImzaPlanla(t0, cands, need);
+                if (!blokla) RakipHilePlanla(t0);   // Tur 3+ rakibin aldatıcı vuruşu (Core/Aldatma; imzalı topta denemez)
+                if (Dril != null) icpt.leave = true;   // görev: antrenör geri oynamaz, her top tek vuruş
             }
         }
 
         // Split step: rakip vururken küçük bir hop (fb1b245): 200 ms, sıçramanın ~%20'si; eskiden tek karede tam sıçrama.
-        void DoSplit() { split = true; splits++; if (splits <= 2) Say("me", "split", me.x, me.y, .4f, "Split step"); me.hop = 1; Emit(Ev.Split, "me", null, me.x, me.y); if (s != null && s.from == "op") PlanIntercept(); }
+        // 2026-10-26: oyuncunun kendi split'i de split klibini oynatır (splitT, yalnız görünüm). Eskiden yalnız gövde 10 cm
+        // sıçrıyor (hop), bacaklar hazır duruşta kalıyordu.
+        void DoSplit() { split = true; splits++; if (splits <= 2) Say("me", "split", me.x, me.y, .4f, "Split step"); me.hop = 1; if (me.sw <= 0) me.splitT = .3f; Emit(Ev.Split, "me", null, me.x, me.y); if (s != null && s.from == "op") PlanIntercept(); }
 
         // Dokunma anı: rakip vurduktan hemen sonra (0,3 s) dokunmak split step = daha hızlı çıkış.
         public void OnTouchDown()
@@ -328,7 +377,7 @@ namespace BirdieSmash.Core
             R = new Reach();
             if (s == null || s.dead || s.from != "op" || s.y <= Court.NET || s.z < .12f || s.z > 3.1f) return false;
             float d = Hyp(s.x - me.x, s.y - me.y); bool kill = s.y - Court.NET < 2.3f && s.z > Court.NETH + .2f;
-            float R1 = easy ? 1.45f : 1.15f, R2 = easy ? 2.2f : 1.75f;
+            float R1 = easy ? 1.45f : 1.15f, R2 = (easy ? 2.2f : 1.75f) * GS.uzanma;   // uzanma: Duvar tarzı +%6 (2026-10-26)
             if (d <= R1) { R = new Reach { lunge = false, over = s.z > 2.0f, kill = kill, d = d }; return true; }
             if (d <= R2 && s.z < 1.5f) { R = new Reach { lunge = true, d = d }; return true; }
             return false;
@@ -345,16 +394,20 @@ namespace BirdieSmash.Core
             if (sw.tap) type = I.lunge ? "lift" : I.kill ? "kill" : "clear";
             else if (I.lunge) type = "lift"; else if (up < 0) type = "block";
             else if (sp > 1.5f && I.kill) type = "kill";
-            else if (sp > 1.7f) type = P.over ? (P.bh ? "clear" : (energy >= 1 ? "jump" : "smash")) : "drive";
+            else if (sp > 1.7f) type = P.over ? (P.bh ? "clear" : (energy >= 1 ? "jump" : "smash")) : P.hz < .8f ? "lift" : "drive";
+            // Diz altından drive yok (2026-10-26): bant 1,52 m; 0,8 m altından 22 m/s düz vuruş ya fileye gider ya da fileyi geçmek
+            // için dikleşip uzun kaçar (ölçüm: alçak drive'ların %17'si fileye). Gerçekte o yükseklikte sert vuruş hücum lift'idir.
+            // Sınır ShotClass'ın drive eşiğiyle aynı (z > 0,8): klip ile uçuş aynı şeyi anlatır.
             else if (sp < .75f) type = "drop"; else type = "clear";
             float tx = Court.MID + r * 2.4f, d, val; bool byAngle = true;
             switch (type)
             {
                 case "kill": d = 2.6f; byAngle = false; val = 30 * GS.hiz; if (!dry) Yor(.06f); break;
-                case "jump": d = 3.2f; byAngle = false; val = 78 * GS.guc * NefesF(); if (!dry) { energy = 0; Yor(.3f); } break;
-                case "smash": d = 4.2f; byAngle = false; val = 52 * GS.guc * NefesF(); if (!dry) Yor(.18f); break;
+                // 2026-10-26 oyun tarzı (Core/Tarz): smacHiz (Duvar −%4) ve smacYor (Smaşçı +%15 nefes) yalnız smaçta; nötr 1.
+                case "jump": d = 3.2f; byAngle = false; val = 78 * GS.guc * GS.smacHiz * NefesF(); if (!dry) { energy = 0; Yor(.3f * GS.smacYor); } break;
+                case "smash": d = 4.2f; byAngle = false; val = 52 * GS.guc * GS.smacHiz * NefesF(); if (!dry) Yor(.18f * GS.smacYor); break;
                 case "drive": d = 4.6f; byAngle = false; val = (P.bh ? 18 : 22) * GS.hiz; break;
-                case "drop": d = P.over ? 1.2f : 1.0f; val = P.over ? .12f : (Math.Abs(P.hy - Court.NET) < 2.5f ? .75f : .95f); break;
+                case "drop": d = P.over ? 1.2f : 1.0f; val = P.over ? DROP_A : (Math.Abs(P.hy - Court.NET) < 2.5f ? .75f : .95f); break;
                 case "block": d = .9f; val = .6f; tx = P.hx + r * 1.2f; break;
                 case "lift": tx = Court.MID + r * 1.2f; d = 5.4f; val = LIFT_A + .08f; break;
                 default: d = Math.Min(P.bh ? 5.6f : 6.9f, (P.bh ? 4.6f : 5.5f) + (sp - .75f) * 1.4f + (GS.guc - 1) * 3); val = P.over ? CLEAR_A : LIFT_A; break;   // kafa ağır raket clear'i uzatır
@@ -367,17 +420,22 @@ namespace BirdieSmash.Core
         public bool SwipeShot(SwipeInput sw)
         {
             Reach I; if (between || s == null || !ReachInfo(out I)) return false;
-            var PL = ShotPlan(sw, I, false); string type = PL.type; float d = PL.d, val = PL.val, hx = PL.hx, hy = PL.hy, hz = PL.hz; bool bh = PL.bh;
+            var PL = ShotPlan(sw, I, false); var HD = HileSec(sw, I, ref PL); string type = PL.type; float d = PL.d, val = PL.val, hx = PL.hx, hy = PL.hy, hz = PL.hz; bool bh = PL.bh;   // HD: aldatıcı vuruş (Core/Aldatma; null = normal vuruş)
             float cq = sw.dist / sw.R;
-            string q = cq < .4f * GS.tatli ? "perfect" : cq <= 1 ? "good" : easy ? "good" : "poor"; if (I.lunge && q == "perfect") q = "good"; if (sw.tap) q = "good";
+            // Tam orta penceresi: ekipmanın tatli'si × tarzın durum çarpanı (2026-10-26: Smaşçı sıçrayarak smaçta +%5, File ustası
+            // file vuruşunda ve file önündeki drop/blokta +%10; nötr 1).
+            float tk = type == "jump" ? GS.jumpTatli : type == "kill" || ((type == "drop" || type == "block") && Math.Abs(hy - Court.NET) < 2.3f) ? GS.fileTatli : 1;
+            string q = cq < .4f * GS.tatli * tk ? "perfect" : cq <= 1 ? "good" : easy ? "good" : "poor"; if (I.lunge && q == "perfect") q = "good"; if (sw.tap) q = "good";
             // Slice: kavisli kaydırma = raket topu keserek alır; top takla atar, kısa düşer, rakip aldanır.
             bool slice = sw.curved && q != "poor" && (type == "drop" || type == "clear" || type == "drive" || type == "block"); if (slice) { deceive = true; slices++; }
             float sig = ((q == "perfect" ? .1f : q == "good" ? .35f : .9f) + (I.lunge ? .4f : 0)) / GS.kontrol;
+            if (me.nefes < .4f) sig *= GS.yorgunSapma;   // Havlu grip (2026-10-26): nefes azken sapma yarıya iner; nötr 1
+            if (HD != null) HileUygula(HD, ref q, ref slice, ref sig);   // marjinal konum: kötü vuruş olasılığı ve sapma
             Func<float> g = () => (R01() + R01() + R01() - 1.5f) * sig * 1.4f;
             float edge = q == "poor" ? sw.side * .8f * GS.kenar : 0;
             // Tepeden alma: smaç 2,4 m üstünde alınırsa dikleşir ve hızlanır.
             bool tepedenV = (type == "smash" || type == "jump") && s.z > 2.4f; if (tepedenV) { val *= 1.08f; d -= .5f; tepeden++; }
-            float vx, vy, vz; Shuttle.Aim(hx, hy, hz, PL.tx + g() + edge, Court.NET - d + g() * .8f, PL.byAngle, val, out vx, out vy, out vz);
+            float vx, vy, vz; Shuttle.Aim(hx, hy, hz, PL.tx + g() + edge, Court.NET - d + g() * .8f, PL.byAngle, val, out vx, out vy, out vz, SliceKd("me", slice));
             if (q == "poor") { float k = 1 + (R01() - .5f) * .16f; vx *= k; vy *= k; vz *= k; }
             if (q == "perfect")
             {
@@ -391,10 +449,13 @@ namespace BirdieSmash.Core
             if (type == "jump") me.jump = .53f;
             if (type == "kill") kills++;
             if (type == "smash" || type == "jump") smashes++;
+            if (s.from == "op" && s.type == "smash") smacKarsila++;
+            ImzaCevap(type); VurusKaydet(type);
             me.sw = 1; GorevKontrol();
             string ft = type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type;
             sonTip = type; sonQ = q; sonSlice = slice;   // titreşim deseni (HTML hapHit) uçuş türünü değil vuruşun kendisini ister
             StartFlight("me", vx, vy, vz, hx, hy, hz, false, ft, type == "jump", q, slice);
+            if (HD != null) HileSonra(HD);
             OgrOlay(type, null, slice, PL.over, sw.speed);
             return true;
         }
@@ -423,7 +484,7 @@ namespace BirdieSmash.Core
         public static string ServisTuru(float dx, float dy, float speed) { return speed > 1.0f ? (Hyp(dx, dy) < 95 ? "flick" : "yuksek") : "kisa"; }
         public bool SwipeServe(float dx, float dy, float speed)
         {
-            if (s != null || between || server != "me" || wait > 0 || over || svPending != null) return false; hint = false;
+            if (s != null || between || server != "me" || wait > 0 || over || svPending != null || DrilBitti) return false; hint = false;
             float cx = (serveBox.x0 + serveBox.x1) / 2, r = Clamp(dx / Math.Max(50, Math.Abs(dy)), -1.3f, 1.3f);
             string tur = ServisTuru(dx, dy, speed); float d = tur == "kisa" ? Court.SSL + .45f : tur == "flick" ? 6.0f : 6.2f;
             ServisAt("me", tur, cx + r * 1.5f, Court.NET - d); OgrOlay(null, tur, false, false, speed); return true;
@@ -442,17 +503,22 @@ namespace BirdieSmash.Core
             {
                 case "smash": ty = yN(3.6f + R01() * 1.2f); byAngle = false; val = 52; break;
                 case "drive": ty = yN(4.6f); byAngle = false; val = 22; break;
-                case "drop": ty = yN(overhead ? 1.2f : 0.9f); val = overhead ? .12f : .75f; break;
+                case "drop": ty = yN(overhead ? 1.2f : 0.9f); val = overhead ? DROP_A : .75f; break;
                 default: ty = yN(Court.L / 2 - .55f); val = overhead ? CLEAR_A : LIFT_A; break;
             }
         }
 
         void OpHit()
         {
-            var I = icpt; float hx = s.x, hy = s.y, hz = Math.Max(.2f, s.z); float r0 = R01();
+            var I = icpt;
+            if (ogr == null && I.imza != null && I.imzaBasladi && ImzaVurus(I)) return;   // patronun imza vuruşu (Core/Imza)
+            if (ogr == null && RakipHileVurus(I)) return;   // Tur 3+ rakibin aldatıcı vuruşu (Core/Aldatma)
+            if (ogr == null && MermiIkinci(I)) return;
+            float hx = s.x, hy = s.y, hz = Math.Max(.2f, s.z); float r0 = R01();
             string q = R01() < .12f ? "poor" : R01() < .3f ? "perfect" : "good";
             bool obh = HandOf(op, "op", hx, hz) == "back";
             string type = I.opType ?? (I.overhead ? "clear" : "drop"); if (obh && type == "smash") type = "clear";
+            if (type == "drive" && hz <= .8f) type = "clear";   // diz altından drive yok (ShotPlan ile aynı kural): alçak top kaldırılır
             { float n = op.nefes; if (type == "smash" && n < .4f && R01() < (.4f - n) / .4f * .8f) type = "clear"; if (type == "smash") OpYor(.12f); }   // yorgun rakip smaç yerine clear seçer
             float vx, vy, vz;
             if (ogr != null)
@@ -462,7 +528,7 @@ namespace BirdieSmash.Core
                 type = b;
             }
             // Rakip file önünde arada gevşek top bırakır: sana öldürme şansı.
-            if (type == "drop" && !I.overhead && hy > Court.NET - 2.6f && r0 < .35f)
+            if (type == "drop" && !I.overhead && hy > Court.NET - 2.6f && r0 < .35f / stil.hucum)   // hücumcu rakip gevşek top az bırakır
             {
                 Shuttle.Aim(hx, hy, hz, Court.MID + (R01() - .5f) * 2.4f, Court.NET + 1.0f, true, 1.15f, out vx, out vy, out vz);
                 StartFlight("op", vx, vy, vz, hx, hy, hz, false, "drop", false, q); return;
@@ -475,11 +541,20 @@ namespace BirdieSmash.Core
             Shuttle.Aim(hx, hy, hz, tx + g(), ty + g(), byAngle, val, out vx, out vy, out vz);
             var chk = Shuttle.Simulate(hx, hy, hz, vx, vy, vz, false, Shuttle.KD);
             if (chk.net != null && !chk.net.ok && R01() < .9f) Shuttle.Aim(hx, hy, hz, tx, ty, true, Math.Max(.75f, byAngle ? val : .75f), out vx, out vy, out vz);
+            // Kötü vuruş (2026-10-26): Aim artık fileyi hep geçtiği için rakibin file hataları nişan geometrisinden geliyordu
+            // ve kayboldu (bot ölçümü: rakip file hatası 29 → 4 sayı). Oyuncuyla aynı kural: "poor" vuruşun hızı ±%8 sapar,
+            // file ve dışarı hatası kötü vuruştan doğar.
+            if (q == "poor") { float k = 1 + (R01() - .5f) * .16f; vx *= k; vy *= k; vz *= k; }
+            // Aldatıcı (Vex, aldatP): son anda yön değiştirir. Kolay'da kendiliğinden koşu bir an ters yöne çıkar (drop'ta
+            // arkaya, alçak clear'da öne); Usta'da koşu oyuncunun, aldatma yalnız vuruşun kendisinde (drop/flick karışımı).
+            if (stil.aldatP > 0 && easy && (type == "drop" || type == "clear" && hz < 1.6f) && R01() < stil.aldatP)
+            { me.fakeUntil = clock + .22f; me.fakeX = me.x; me.fakeY = type == "drop" ? Math.Min(Court.L - .8f, me.y + 1.2f) : Math.Max(Court.NET + 1.2f, me.y - 1.2f); }
             StartFlight("op", vx, vy, vz, hx, hy, hz, false, type, false, q);
         }
 
         void OpServe()
         {
+            if (Dril != null) { DrilBesle(); return; }   // görev: antrenör topu elle besler (Core/Dril)
             var b = serveBox; string tur = op.svTur ?? "kisa";
             float tx = b.x0 + .3f + R01() * (b.x1 - b.x0 - .6f), ty = tur == "kisa" ? b.y0 + .5f : b.y1 - .6f; ServisAt("op", tur, tx, ty);
         }
@@ -488,10 +563,19 @@ namespace BirdieSmash.Core
         void Point(string winner, string why, float x, float y)
         {
             if (between) return; between = true;
+            if (Dril != null) why = DrilTop(winner, why);   // görev: top sayılır, yazı topun sonucu
             if (ogr != null && ogr.cagri != null && winner == "op" && s != null && s.from == "op" && OgrA() != null && OgrA().drill) { ogr.cagri = null; ogr.dene++; OgrCagriBitti(); }   // son adım: çağrılan topu kaçırmak da bir deneme
             hakemT = hakemT0 = 1.4f; hakemYon = winner; hakemSO = ogr == null && winner != server;   // servis el değişti mi: baş hakem o zaman yeni servisçinin tarafını gösterir
-            if (ogr == null) { sc[winner == "me" ? 0 : 1]++; server = winner; }                      // antrenmanda skor yok
+            if (ogr == null)                                                                          // antrenmanda skor yok
+            {
+                // 2026-10-26 Günün maçı değiştiricisi: sayı 1 ya da 2 (SayiDegeri); serbest/kariyer maçında hep 1. Tavanı (cap) aşmaz.
+                int deger = degistirici != null ? SayiDegeri(winner) : 1, wi = winner == "me" ? 0 : 1, tavan = target == 21 ? 30 : target == 11 ? 15 : 7;
+                sc[wi] = Math.Min(tavan, sc[wi] + deger); server = winner; sayiNo++;
+                if (deger == 2) Say(null, "cift", Court.MID, Court.NET, 2, "Çift sayı!", 2);
+            }
             if (winner == "me" && s != null && s.from == "me" && s.type == "smash") smacSayi++;
+            if (winner == "me" && s != null && s.from == "me" && s.type == "drop") dropSayi++;
+            ImzaSifirla();
             GorevKontrol();
             Emit(Ev.Point, winner, s != null ? s.type : null, x, y, 0, rally, why, null, s != null && s.super);
             bool rekor = rally > bestRally && rally >= 6;
@@ -503,9 +587,10 @@ namespace BirdieSmash.Core
             {
                 if (Math.Max(a, b) >= target - 1 && a != b && Math.Abs(a - b) <= 1) serveMsg = a > b ? "Maç sayısı" : "Rakibin maç sayısı";
                 else if (a == b && a >= target - 1) serveMsg = "Uzatma: 2 fark gerekiyor";
+                else if (degistirici == "altin" && sayiNo % 3 == 2) serveMsg = ALTIN_YAZI;   // bir sonraki ralli altın: servisten önce yazılır
                 // Sayılar arası bekleme 1,3 → 0,7 sn (HTML 959beb1): ritim düşmesin; antrenman ve rekor sayısı eski süreyi korur.
                 bool kisa = ogr == null && !rekor; kisaBekle = kisa; if (kisa) hakemT = hakemT0 = 1.0f;
-                betweenT = kisa ? .7f : 1.3f;
+                betweenT = kisa ? .7f : Dril != null ? .9f : 1.3f;
             }
         }
         public bool YeniRekor { get { return rekorBuMac; } }
@@ -513,6 +598,7 @@ namespace BirdieSmash.Core
         void Land()
         {
             s.dead = true; string hitter = s.from, other = hitter == "me" ? "op" : "me";
+            DrilDusus();
             if (!s.netHit)
             {
                 Emit(Ev.Floor, hitter, s.type, s.x, s.y, 0, 0, null, null, s.type == "smash");
@@ -523,16 +609,17 @@ namespace BirdieSmash.Core
             bool outp = IsOut(s.x, s.y, s.serve);
             if (ogr != null && s.ogrHedef != null && hitter == "me" && !outp && s.y >= s.ogrHedef[0] && s.y <= s.ogrHedef[1]) { ogr.yildiz++; Say("me", null, s.x, s.y, 0, "Hedefte! ★", 2); }
             if (outp) { if (other == "me") outsLeft++; else if (!s.serve) outsBen++; Point(other, s.serve ? (hitter == "me" ? "Servis hatası" : "Rakip servis hatası") : (hitter == "me" ? "Dışarı" : "Dışarı! Bıraktın, sayı senin"), s.x, s.y); }
-            else { if (s.type == "smash" && hitter == "me") { op.dive = 1; op.yat = true; } Point(hitter, hitter == "me" ? (s.super ? "SIÇRAYARAK SMAÇ SAYISI" : s.type == "smash" ? "SMAÇ SAYISI" : "SAYI!") : "Kaçtı", s.x, s.y); }
+            else { if (s.type == "smash" && hitter == "me" && Dril == null) { op.dive = 1; op.yat = true; } Point(hitter, hitter == "me" ? (s.super ? "SIÇRAYARAK SMAÇ SAYISI" : s.type == "smash" ? "SMAÇ SAYISI" : "SAYI!") : "Kaçtı", s.x, s.y); }
         }
 
         // Oyuncu hareketi: hedefe ivmeyle koşar, yaklaşınca frenler. Kolay modda kesişme noktasına kendi koşar.
         void RunMe(float d)
         {
             var o = me; if (s == null) { o.vx = o.vy = 0; return; }   // servis atılana kadar yerinde (kural)
-            if (o.stun > 0) { o.stun -= d; o.vx *= .8f; o.vy *= .8f; return; }
+            if (o.stun > 0) { o.stun -= d; float sk = (float)Math.Pow(.8, d * 60); o.vx *= sk; o.vy *= sk; return; }   // 60 Hz'de kare başına ×.8; 120 Hz'de aynı sönüm (2026-10-26)
             o.manualT = Math.Max(0, o.manualT - d);
-            if (easy && o.manualT <= 0)
+            if (easy && o.manualT <= 0 && o.fakeUntil > clock) { o.tx = o.fakeX; o.ty = o.fakeY; }   // aldatıldı (Vex, gölge flick)
+            else if (easy && o.manualT <= 0)
             {
                 var I = icpt;
                 if (s.from == "op" && I != null && I.who == "me") { o.tx = Clamp(I.x - HitSide(o, "me", I), -.4f, Court.CW + .4f); o.ty = I.y + (I.lunge ? .6f : .25f); }
@@ -540,35 +627,98 @@ namespace BirdieSmash.Core
                 else if (s.from == "me") { o.tx = Court.MID; o.ty = Court.L - 3.3f; }
             }
             float max = MeSpd(), A = (split ? 20 : (easy ? 18 : 14)) * GS.kosu, dvx = 0, dvy = 0;
+            // File ustası tarzı (2026-10-26): arka sahaya (kendi yarının arka yarısı) giden koşu −%5; öne ve yana koşu aynı.
+            if (GS.arkaKosu != 1 && o.HasTarget && o.ty > Court.NET + Court.L / 4 && o.ty > o.y + .2f) max *= GS.arkaKosu;
             if (o.HasTarget) { float dx = o.tx - o.x, dy = o.ty - o.y, dist = Hyp(dx, dy); if (dist > .02f) { float v = Math.Min(max, (float)Math.Sqrt(2 * A * dist)); dvx = dx / dist * v; dvy = dy / dist * v; } else o.tx = float.NaN; }
             float ex = dvx - o.vx, ey = dvy - o.vy, el = Hyp(ex, ey), st = A * d;
             if (el > st) { o.vx += ex / el * st; o.vy += ey / el * st; } else { o.vx = dvx; o.vy = dvy; }
             o.x = Clamp(o.x + o.vx * d, -.6f, Court.CW + .6f); o.y = Clamp(o.y + o.vy * d, Court.NET + .25f, Court.L + 1);
+            Engel(o, true);
+        }
+
+        // Ağ teması adımı (2026-10-26): top ağı s.agSure boyunca yarım sinüsle iter (görünen sapma s.agMax'a kadar), ağ topu
+        // tutar (yan hız 10/s söner, düşüş ağ sürtünmesiyle ~0,6 m/s'de kalır), yavaş top s.agAsili kadar asılı kalır; sonra
+        // ağ topu vuranın tarafına hafifçe geri bırakır. Konum ağın şişkinliğinden okunur: top ağın içinden görünmez.
+        void AgAdim(float h)
+        {
+            s.agT += h; float T = s.agSure, u = s.agT / T;
+            float dsp = u < 1 ? s.agMax * (float)Math.Sin(Math.PI * u) : 0;
+            s.vx *= (float)Math.Exp(-10 * h); s.vz += (-Shuttle.GR * .5f - 8 * s.vz) * h;
+            s.x += s.vx * h; s.z = Math.Max(Court.NetLimit(s.x) - Court.AG_DERIN + .02f, s.z + s.vz * h);
+            net.Zorla(s.x, s.z, -s.agYan * dsp, h);
+            s.y = Court.NET + net.At(s.x, s.z) * NetWave.GORSEL;
+            if (s.agT >= T + s.agAsili) { s.agda = false; s.y = Court.NET + s.agYan * Court.TOP_PAY; s.vy = s.agYan * (.1f + .6f * s.netK); s.vx *= .5f; }
+        }
+
+        // Katı engeller (2026-10-26, iç içe geçme yok): oyuncu gövdesi filenin kendi tarafında (merkez fileden ≥ 0,25 m; rakip
+        // için de, eskiden yalnız ben sınırlıydım), direklerden ve hakem sandalyelerinden r + OYUNCU_R uzakta. Engele doğru hız
+        // bileşeni silinir (itilip geri gelme titremesi olmaz).
+        static void Engel(Athlete o, bool isMe)
+        {
+            if (isMe) o.y = Math.Max(o.y, Court.NET + .25f); else o.y = Math.Min(o.y, Court.NET - .25f);
+            Itin(o, isMe, 0, Court.NET, Court.DIREK_R); Itin(o, isMe, Court.CW, Court.NET, Court.DIREK_R);
+            Itin(o, isMe, Court.BH_X, Court.NET, Court.BH_R); Itin(o, isMe, Court.SH_X, Court.NET + Court.SH_DY, Court.SH_R);
+        }
+        static void Itin(Athlete o, bool isMe, float cx, float cy, float r)
+        {
+            float dx = o.x - cx, dy = o.y - cy, dd = Hyp(dx, dy), m = r + Court.OYUNCU_R; if (dd >= m) return;
+            if (dd < 1e-4f) { dx = 0; dy = isMe ? 1 : -1; dd = 1; }
+            float nx = dx / dd, ny = dy / dd; o.x = cx + nx * m; o.y = cy + ny * m;
+            if (isMe) { float vn = o.vx * nx + o.vy * ny; if (vn < 0) { o.vx -= vn * nx; o.vy -= vn * ny; } }
+            else { float vn = o.mvx * nx + o.mvy * ny; if (vn < 0) { o.mvx -= vn * nx; o.mvy -= vn * ny; } }
         }
 
         static void Move(Athlete o, float x, float y, float step) { float dx = x - o.x, dy = y - o.y, d = Hyp(dx, dy); if (d < 1e-3f) return; float k = Math.Min(1, step / d); o.x += dx * k; o.y += dy * k; }
+        // Rakip ivmeyle koşar (2026-10-26, "hareketler badmintona uygun olmalı"): eski Move hızı tek karede 0'dan 3,5 m/s'ye
+        // çıkarıp hedefte tek karede sıfırlıyordu (bot ölçümü: karelerin %3,2'sinde ivme > 40 m/s², p99 133 m/s²). Gövde ilk
+        // karede tam hızla kayarken ayak işi hızı 120 ms'de yakaladığı için çıkışta ve duruşta ayak kayıyordu; yön değişimi de
+        // anlıktı. Şimdi oyuncunun RunMe kuralı: en çok RAKIP_IVME ile hızlanır/yavaşlar, hedefe √(2·A·mesafe) ile frenler.
+        // 18 m/s² Kolay moddaki oyuncuyla aynı. Ek süre ~v/A ≈ 0,19 s; PlanIntercept'in 0,18 s tepki payı bunu karşılar
+        // (ölçüm: rakibin vuruşta topa uzaklığı değişmedi, bkz. rapor).
+        public const float RAKIP_IVME = 18;
+        static void MoveAcc(Athlete o, float x, float y, float vmax, float d)
+        {
+            float dx = x - o.x, dy = y - o.y, dist = Hyp(dx, dy), dvx = 0, dvy = 0, A = RAKIP_IVME;
+            if (dist > .01f) { float v = Math.Min(vmax, (float)Math.Sqrt(2 * A * dist)); dvx = dx / dist * v; dvy = dy / dist * v; }
+            float ex = dvx - o.mvx, ey = dvy - o.mvy, el = Hyp(ex, ey), st = A * d;
+            if (el > st) { o.mvx += ex / el * st; o.mvy += ey / el * st; } else { o.mvx = dvx; o.mvy = dvy; }
+            float sx = o.mvx * d, sy = o.mvy * d;
+            if (dist <= .01f || Hyp(sx, sy) >= dist && sx * dx + sy * dy > 0) { o.x = x; o.y = y; if (dist <= .01f) { o.mvx = o.mvy = 0; } } else { o.x += sx; o.y += sy; }
+            Engel(o, false);
+        }
 
         // Ayak işi (yasin 2026-10-20 "pırpır yapmak yerine anatomiye uygun"): hız 120 ms yumuşatılır; faz mesafeyle,
-        // adım boyu klibe göre, en çok 2,6 döngü/sn; yürüme 0,9 m/s'de başlar 0,45'te biter; yön klibi 180 ms aynı kalırsa değişir.
+        // adım boyu klibe göre; yürüme 0,9 m/s'de başlar 0,45'te biter; yön klibi 180 ms aynı kalırsa değişir.
+        // 2026-10-26 (tüm beden turu): yumuşatma üstel (1 − e^(−dt/0,12)): min(1, dt/0,12) 60 ve 120 Hz'de farklı eğri
+        // veriyordu. Hız bantları: öne hızlı = run, yana hızlı = kros_*; tüm döngülerde faz 0 = sağ (ya da gidiş yönündeki)
+        // ayağın basışı, bant değişince faz sürer (ayak sıçramaz). Tavan AYAK_TUR_MAX.
         public static void AyakIsi(Athlete q, float dt, bool isMe)
         {
             if (dt <= 0) return;
             if (float.IsNaN(q.qx)) { q.qx = q.x; q.qy = q.y; q.svx = 0; q.svy = 0; }
-            float rx = (q.x - q.qx) / dt, ry = (q.y - q.qy) / dt, a = Math.Min(1, dt / .12f); q.qx = q.x; q.qy = q.y;
+            float rx = (q.x - q.qx) / dt, ry = (q.y - q.qy) / dt, a = 1 - (float)Math.Exp(-dt / .12f); q.qx = q.x; q.qy = q.y;
             if (Hyp(rx, ry) > 12) { rx = ry = 0; q.svx = q.svy = 0; }   // servis dizilişi oyuncuyu ışınlar: adım sayılmaz
             q.svx += (rx - q.svx) * a; q.svy += (ry - q.svy) * a; float sp = Hyp(q.svx, q.svy);
             q.yuru = q.yuru ? sp > .45f : sp > .9f;
             if (q.yuru)
             {
                 float boy; if (q.ayakKlip == null || !ADIM_BOY.TryGetValue(q.ayakKlip, out boy)) boy = 1.5f;
-                q.runPh = (q.runPh + Math.Min(sp / boy, 2.6f) * dt) % 1f;
+                q.runPh = (q.runPh + Math.Min(sp / boy, AYAK_TUR_MAX) * dt) % 1f;
                 float fwdv = isMe ? -q.svy : q.svy, side = isMe ? q.svx : -q.svx;   // oyuncunun kendi bakışında: ileri = fileye
                 string aday = Math.Abs(side) > Math.Abs(fwdv) * 1.15f ? (side > 0 ? "chasse_r" : "chasse_l") : fwdv > 0 ? "fwd" : (side >= 0 ? "back_r" : "back_l");
+                bool kosu = q.ayakKlip == "run", kros = q.ayakKlip == "kros_r" || q.ayakKlip == "kros_l";
+                if (aday == "fwd" && sp > (kosu ? KOSU_CIK : KOSU_GIR) && HasClip("run")) aday = "run";
+                else if ((aday == "chasse_r" || aday == "chasse_l") && sp > (kros ? KROS_CIK : KROS_GIR) && HasClip("kros_r")) aday = aday == "chasse_r" ? "kros_r" : "kros_l";
                 if (q.ayakKlip == null) q.ayakKlip = aday;
+                // Aynı yönün hız bandı değişimi (fwd↔run, chassé↔kros) beklemesiz: faz sürer, histerezis titremeyi zaten keser;
+                // 180 ms bekleme yavaşlarken kros'u 1,5 m/s'ye kadar (0,9 döngü/sn) uzatıyordu.
+                if (aday != q.ayakKlip && q.ayakKlip != null && Aile(aday) == Aile(q.ayakKlip)) { q.ayakKlip = aday; q.adayT = 0; }
                 if (aday != q.ayakKlip) { q.adayT = (q.adayAd == aday ? q.adayT : 0) + dt; q.adayAd = aday; if (q.adayT > .18f) { q.ayakKlip = aday; q.adayT = 0; } } else q.adayT = 0;
             }
             else { q.ayakKlip = null; q.runPh = 0; }
         }
+
+        static string Aile(string c) { return c == "run" ? "fwd" : c == "kros_r" ? "chasse_r" : c == "kros_l" ? "chasse_l" : c; }
 
         // Hazırlık pozu: top yaklaşırken kol geri alınır; poz, vuruş anındaki sınıflamanın aynısıyla seçilir (temasta poz sıçramaz).
         // Drive ve blok kendi hazırlığıyla (ce47f5c): eskiden alçak vuruş klibinden gelip raket yere iniyordu.
@@ -593,6 +743,11 @@ namespace BirdieSmash.Core
                     o.prepClip = ClipHand(o.prepShot == "over" ? (energy >= 1 && o.prepHand != "back" ? "jump" : "clear") : o.prepShot, o.prepHand);
                 }
             }
+            // İmza hazırlığı (Core/Imza): rakip imza pozunu tutar (yıldırımda sıçrama, tülde file bileği, mermide eğik drive,
+            // gölge flick'te drop duruşu: aldatma budur); duvar blokta top karşıdayken blok duruşu.
+            if (who == "op" && I != null && I.who == "op" && I.imza != null && s != null && !s.dead && s.from != who && I.t - s.t < .7f)
+            { o.prepClip = ClipHand(ImzaKlip(I.imza), o.prepHand ?? "fore"); if (I.imza == "yildirim" && o.prepHand == "back") o.prepClip = "bh_over"; }
+            if (who == "op" && o.imzaT > 0 && o.imzaId == "duvarblok") { tg = 1; o.prepShot = "drive"; o.prepClip = "block"; o.prepHand = "fore"; o.prepT = float.NaN; }
             // rakipte geri salınım sakin akar (~0,4 sn); bizde vuruş penceresi kısa, eski hız kalır. Bırakış hızlı.
             o.prepA += (tg - o.prepA) * Math.Min(1, dt * (tg > 0 && who == "op" ? 4.5f : 9));
         }
@@ -626,56 +781,82 @@ namespace BirdieSmash.Core
             foreach (var o in new[] { me, op }) if (o.svAnim != null) { o.svAnim.t += d; if (o.svAnim.t >= o.svAnim.d) { o.svAnim = null; var f = svPending; svPending = null; if (f != null) f(); } }
             if (wait > 0) { wait -= d; if (wait <= 0 && server == "op" && s == null && !between && svPending == null) { wait = 0; OpServe(); } }
             RunMe(d); Prep(me, "me", dt); Prep(op, "op", dt);
-            if (s == null || s.dead) return;
+            if (s == null) return;
+            if (s.dead) { s.yerT += d; return; }   // yerdeki top: sekme + devrilme süresi (Shuttle.YerPoz)
             float rem = d;
             while (rem > 1e-6f)
             {
-                float h = Math.Min(Shuttle.DT, rem); float py = s.y;
+                float h = Math.Min(Shuttle.DT, rem); float py = s.y; rem -= h; s.t += h;
+                if (s.agda) { AgAdim(h); if (s.agda) continue; }   // ağa gömülü: konumu ağ belirler
                 if (s.netHit) { s.vy *= (float)Math.Exp(-4 * h); s.vx *= (float)Math.Exp(-4 * h); }
-                s.Step(h); s.t += h; rem -= h;
+                s.Step(h);
+                // Fileden dönen top filenin düzlemini yeniden geçemez (2026-10-26, iç içe geçme yok): vuranın tarafında, ağa yaslı
+                // iner; ağın alt kenarının altına inince serbest.
+                if (s.netHit && !s.altindan && s.z > Court.NetLimit(s.x) - Court.AG_DERIN - .05f && (s.y - Court.NET) * s.agYan < Court.TOP_PAY)
+                { s.y = Court.NET + s.agYan * Court.TOP_PAY; if (s.vy * s.agYan < 0) s.vy = -s.vy * .2f; }
                 if (!s.netDone && (py > Court.NET) != (s.y > Court.NET))
                 {
-                    s.netDone = true; float lim = Court.NetLimit(s.x);
+                    s.netDone = true; float lim = Court.NetLimit(s.x); s.gecPay = s.z - lim;
                     if (s.netPred != null ? !s.netPred.ok : s.z <= lim)
                     {
-                        float sp = s.Speed, k = Math.Min(1, sp / 55f); net.Impulse(s.x, s.z, sp, false);
-                        // Bant üstüne (üst 3 cm) hızlı çarpan top kordondan karşıya yuvarlanır ve oyunda kalır (BWF: servis dahil).
-                        if (lim - s.z < .03f && Math.Abs(s.vy) > 6)
+                        // File teması (2026-10-26, yasin "file kritik, bant daha sert kısım, file ise oynak; fileye düştüğünde oyun
+                        // animasyonla ilerlemeli"). Geçiş adımında top düzlemi bir adımlık yol kadar (smaçta ~20 cm) aşmış olur;
+                        // eskiden orada kalıp ağın içinden görünüyordu. Şimdi çarpılan parçaya göre:
+                        //  - bandın üst 3 cm'i + hızlı top: kordondan karşıya yuvarlanır (oyunda kalır, BWF servis dahil), bant titrer;
+                        //  - bant (üst 75 mm, gergin kordon): sert ve kısa seker, hızın çoğu ölür, top vuranın tarafına düşer;
+                        //  - ağ: top ağa gömülür, ağ şişer (görünen sapma topun ittiği kadar, smaçta ~30 cm, dropta ~6 cm), top
+                        //    yavaşlar ve ağ boyunca biraz kayar, yavaş top kısa bir an asılı kalır, sonra ağ onu vuranın tarafına
+                        //    bırakır; ağ dalgası serbestçe sürer, top fileye yaslı yere iner ve yerde sekip yan yatar. Sayı top
+                        //    yere değince verilir: düşüş oynar, oyun aniden kesilmez;
+                        //  - ağın alt kenarının altı: top altından geçer (hata), ağa dokunmaz.
+                        float sp = s.Speed, k = Math.Min(1, sp / 55f), yan = py > Court.NET ? 1 : -1, pen = lim - s.z; s.agYan = yan;
+                        if (pen > Court.AG_DERIN) { s.netHit = true; s.altindan = true; s.netK = k; Emit(Ev.Net, s.from, s.type, s.x, Court.NET, s.z, k * .3f); }
+                        else if (pen < .03f && Math.Abs(s.vy) > 6)
                         {
-                            s.vy = (py > Court.NET ? -1 : 1) * 1.3f; s.vx *= .3f; s.vz = .7f; s.netCord = true; net.Impulse(s.x, s.z, sp, true);
+                            s.y = Court.NET - yan * Court.TOP_PAY; s.z = lim + .02f; s.vy = -yan * 1.3f; s.vx *= .3f; s.vz = .7f; s.netCord = true; net.Impulse(s.x, lim, sp, true, -yan);
                             Emit(Ev.Cord, s.from, s.type, s.x, Court.NET, s.z, .3f); Say(null, null, s.x, Court.NET, s.z, "File bandı! Top karşıya yuvarlandı", 2);
+                        }
+                        else if (pen < Court.BANT)
+                        {
+                            net.Impulse(s.x, lim, sp, true, -yan); net.Impulse(s.x, lim - Court.BANT, sp * .3f, false, -yan);
+                            s.y = Court.NET + yan * Court.TOP_PAY; s.vx *= .35f; s.vy = yan * (.25f + .35f * k); s.vz = Math.Max(0, s.vz * .1f) + .25f * (1 - pen / Court.BANT);
+                            s.netHit = true; s.netK = k; Emit(Ev.Net, s.from, s.type, s.x, Court.NET, s.z, k, null, null, true);
                         }
                         else
                         {
-                            // Hızlı top fileyi esnetip geri tükürür, yavaş top yapışıp iner; banda çarpan kordondan yuvarlanır.
-                            bool tape = lim - s.z < .06f; s.vx *= tape ? .4f : .15f; s.vy = (py > Court.NET ? 1 : -1) * (tape ? .25f : .15f + .85f * k);
-                            s.vz = tape ? .3f : Math.Min(0, s.vz * .2f); s.netHit = true; s.netK = k;
-                            Emit(Ev.Net, s.from, s.type, s.x, Court.NET, s.z, k, null, null, tape);
+                            s.agda = true; s.agT = 0; s.agSure = .07f + .08f * k; s.agAsili = (1 - k) * .12f; s.agMax = .05f + .25f * k;
+                            s.y = Court.NET; s.vx *= .3f; s.vz = Math.Min(0, s.vz * .2f); s.netHit = true; s.netK = k; net.glow = Math.Max(net.glow, k);
+                            Emit(Ev.Net, s.from, s.type, s.x, Court.NET, s.z, k, null, null, false);
                         }
                     }
-                    else if (lim - s.z > -.045f && s.z > lim) { net.Impulse(s.x, s.z, s.Speed, true); Emit(Ev.Tape, s.from, s.type, s.x, Court.NET, s.z); Say(null, null, s.x, Court.NET, s.z, "Bandı sıyırdı!"); }
+                    else if (lim - s.z > -.045f && s.z > lim) { net.Impulse(s.x, s.z, s.Speed, true, s.vy > 0 ? 1 : -1); Emit(Ev.Tape, s.from, s.type, s.x, Court.NET, s.z); Say(null, null, s.x, Court.NET, s.z, "Bandı sıyırdı!"); }
                 }
-                if (s.z <= 0) { s.z = 0; Land(); return; }
+                if (s.z <= 0) { s.z = 0; s.inVx = s.vx; s.inVy = s.vy; s.inVz = s.vz; Land(); return; }
             }
             var I = icpt;
+            ImzaTick(I, d); HileTick(I, d);
             if (s.from == "me")
             {
                 if (I != null && I.who == "op" && !I.leave)
                 {
-                    if (op.fakeUntil > clock) Move(op, op.fakeX, op.y, 1.6f * d);
-                    else Move(op, Clamp(I.x + HitSide(op, "op", I), -.4f, Court.CW + .4f), I.y - .3f, OpSpd() * d);
+                    if (op.fakeUntil > clock) MoveAcc(op, op.fakeX, op.y, 1.6f, d);
+                    else MoveAcc(op, Clamp(I.x + HitSide(op, "op", I), -.4f, Court.CW + .4f), I.y - .3f, OpSpd(), d);
                     // tek sıçrama, tepe temasta (ce47f5c): eskiden temastan önce ve sonra iki zıplama
                     if (I.opType == "smash" && op.prepClip == "jump" && I.t - s.t < SALINIM["jump"] && I.t - s.t > 0 && !(op.jump > 0)) op.jump = 1 - (SALINIM["jump"] - (I.t - s.t)) * JUMP_HIZ;
                     if (s.t >= I.t) { OpHit(); return; }
                 }
+                else if (Dril != null) { if (op.fakeUntil > clock) MoveAcc(op, op.fakeX, op.y, 1.6f, d); }   // görev: antrenör topu oynamaz, aldatılınca ters adım
                 else
                 {
-                    Move(op, s.landPred.x, s.landPred.y - .4f, 2.2f * d);
+                    MoveAcc(op, s.landPred.x, s.landPred.y - .4f, 2.2f, d);
                     if (op.dive <= 0 && !IsOut(s.landPred.x, s.landPred.y, s.serve) && !(s.landPred.net != null && !s.landPred.net.ok) && s.t > s.landPred.t - .25f)
                     { op.dive = 1; op.yat = true; Emit(Ev.Kurtaris, "op", null, op.x, op.y); Say("op", null, op.x, op.y, 0, "Kıl payı!"); if (!reduce) { slow = .35f; slowT = .3f; } }
                 }
             }
-            else Move(op, Court.MID, stil.ev, 2.0f * d);
+            // Ana nokta fileden stil.ev metre (2026-10-26): eskiden y = ev yazılıyordu, yani rakibin dip çizgisinden. "Fileye yakın
+            // durur" denen File oyuncusu (ev 2,2) fileden 4,5 m'de en derinde, Duvar (3,6) en önde bekliyordu; üç değer ancak
+            // fileden okununca tarifle uyuşur (Mika 2,2 önde, Blaze 3,2, Rocco 3,6 geride; tekler tabanı fileden ~3–3,5 m).
+            else MoveAcc(op, Court.MID, Court.NET - OpEv(), 2.0f, d);   // OpEv: Aria'nın uyumu (Core/Imza), diğerlerinde stil.ev
         }
 
         // Poz seçimi (HTML player()): servis hazırlığı → vuruş takibi → servis duruşu → yorgun → hazırlık (temasa kalan
@@ -684,12 +865,24 @@ namespace BirdieSmash.Core
         {
             float spd = Hyp(o.svx, o.svy), hit; string who = isMe ? "me" : "op";
             if (o.svAnim != null) { clip = o.svAnim.clip; hit = CLIP_HIT.TryGetValue(clip, out hit) ? hit : .5f; ph = hit * Math.Min(.999f, o.svAnim.t / o.svAnim.d); }   // servis: klip başından temasa
-            else if (o.sw > 0) { clip = o.clip ?? "low"; hit = CLIP_HIT.TryGetValue(clip, out hit) ? hit : .55f; ph = hit + (1 - o.sw) * (1 - hit); }
+            else if (o.sw > 0)
+            {
+                clip = o.clip ?? "low";
+                // Hamleyle gelen alçak vuruş (2026-10-26, tüm beden turu): fileye koşarak gelen oyuncu durup ayakta vurmaz,
+                // son adımı hamledir. Karar temasın ilk karesinde bir kez verilir (takipte hız düşer, klip değişmesin);
+                // hazırlıkta hamle gösterildiyse sürer. Yalnız görünüm: vuruş türü, süresi ve menzili değişmez.
+                if (!o.hamleKilit) { o.hamleKilit = true; o.hamleGor = HAMLE.ContainsKey(clip) && (o.hamleGor || IleriHiz(o, isMe) > HAMLE_GIR); }
+                string hm; if (o.hamleGor && HAMLE.TryGetValue(clip, out hm) && HasClip(hm)) clip = hm;
+                hit = CLIP_HIT.TryGetValue(clip, out hit) ? hit : .55f; ph = hit + (1 - o.sw) * (1 - hit);
+            }
             else if (s == null && !between && server == who && o.svClip != null) { clip = o.svClip; ph = 0; }   // servis duruşu
             else if (!isMe && (s == null || between) && o.nefes < .4f && spd < .4f) { clip = "yorgun"; ph = (clock * .55f) % 1f; }   // nefesi bitmiş rakip sayı arasında eller dizde
             else if (o.prepA > .08f && o.prepClip != null)
             {
-                clip = o.prepClip; hit = CLIP_HIT.TryGetValue(clip, out hit) ? hit : .55f; int hold, n;
+                clip = o.prepClip; o.hamleKilit = false;
+                if (HAMLE.ContainsKey(clip)) { float v = IleriHiz(o, isMe); o.hamleGor = o.hamleGor ? v > HAMLE_CIK : v > HAMLE_GIR; string hm; if (o.hamleGor && HAMLE.TryGetValue(clip, out hm) && HasClip(hm)) clip = hm; }
+                else o.hamleGor = false;
+                hit = CLIP_HIT.TryGetValue(clip, out hit) ? hit : .55f; int hold, n;
                 if (!PREP_KARE.TryGetValue(clip, out hold) || !CLIP_N.TryGetValue(clip, out n)) ph = hit * .9f * Math.Min(1, o.prepA);
                 else
                 {
@@ -698,15 +891,29 @@ namespace BirdieSmash.Core
                     ph = (Math.Min(hitF - 1, (float)Math.Floor(f)) + .5f) / n;   // tam kare (46943a8): komşu kare karışmaz   // temas karesi ancak gerçek temasta (o.sw dalı) gelir
                 }
             }
-            else if (o.splitT > 0 && spd < 1.5f) { clip = "split"; ph = 1 - o.splitT / .3f; }
+            // Split yalnız yerindeyken (2026-10-26): eşik 1,5 m/s'ydi; split pozu ayakları yerinde tutar, gövde 1,5 m/s'ye kadar
+            // kayıyordu (bot ölçümü: split karelerinin rakipte %70'i, bende %44'ü ayak kaymalı). Hareket başlayınca ayak işi klibi.
+            // 2026-10-26 (tüm beden turu): havadaki bölüm (klibin ilk %45'i: kalkış, tepe, iniş) hızdan bağımsız oynar; yarıda
+            // kesilen hop ayakları havada bırakıp ayak işine sıçratıyordu. İnişten sonra hareket varsa ayak işi.
+            else if (o.splitT > 0 && (spd < .6f || o.splitT > .3f * (1 - SPLIT_HAVA))) { clip = "split"; ph = 1 - o.splitT / .3f; }
             else if (o.yuru && o.ayakKlip != null) { clip = o.ayakKlip; ph = o.runPh; }
             else { clip = "idle"; ph = (o.idlePh + (isMe ? 0 : .5f)) % 1f; }
+            if (o.sw <= 0 && !(o.prepA > .08f && o.prepClip != null)) { o.hamleKilit = false; o.hamleGor = false; }
         }
+        public const float SPLIT_HAVA = .45f;
+        // Hamle görünümü: alçak/file vuruşunun hamleli karşılığı ve fileye doğru hız eşiği (m/s, histerezisli). Bot ölçümü
+        // (tool/unity_test, 2026-10-26): fileye koşarak gelen oyuncu temasta 1,5–3 m/s, yerinde vuran < 0,5 m/s.
+        public static readonly Dictionary<string, string> HAMLE = new Dictionary<string, string> { {"low","lunge"},{"net","lunge"},{"bh_low","bh_lunge"} };
+        public const float HAMLE_GIR = 1.4f, HAMLE_CIK = .8f;
+        static float IleriHiz(Athlete o, bool isMe) { return isMe ? -o.svy : o.svy; }   // oyuncunun kendi bakışında fileye doğru
         // Boşta duruş nefese bağlı (Ar-Ge 23 Eki animasyon B4): dolu nefeste eski hız (0,8 döngü/sn), nefes azaldıkça
         // %90'a kadar hızlanır; uzun ralliden sonra beden de soluklanır. Faz birikir (saatle çarpılsa nefes değişince
         // poz sıçrardı). Genlik görünümde: PlayerView boşta pozuna yorgun klibini nefesle karıştırır.
         static void IdleIlerle(Athlete o, float d) { o.idlePh = (o.idlePh + d * .8f * (1 + .9f * (1 - o.nefes))) % 1f; }
         // Görünüm için sıçrama yüksekliği oranı (0..1.2): tam sıçrama sin(jump·π), split step hop'u bunun %20'si.
-        public static float JumpH(Athlete o) { return (float)(Math.Sin(Math.Min(1, o.jump) * Math.PI) + Math.Sin(o.hop * Math.PI) * .2); }
+        public static float JumpH(Athlete o) { return JumpH(o, false); }
+        // hopsuz: split klibi oynarken gövde kaldırması klipten gelir (karakter.py split: ayaklar ~5 cm); dönüşümün hop'u üstüne
+        // eklenince ayaklar 15 cm'ye çıkıyordu (kaynak 3–8 cm). 2026-10-26.
+        public static float JumpH(Athlete o, bool hopsuz) { return (float)(Math.Sin(Math.Min(1, o.jump) * Math.PI) + (hopsuz ? 0 : Math.Sin(o.hop * Math.PI) * .2)); }
     }
 }

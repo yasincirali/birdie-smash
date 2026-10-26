@@ -40,15 +40,18 @@ if [ ! -f "$KK/addons/kaykit_character_pack_adventures/Characters/gltf/Rogue.glb
   T=$(mktemp -d) && git clone -q --depth 1 https://github.com/KayKit-Game-Assets/KayKit-Character-Pack-Adventures-1.0.git "$T/k" \
     && mkdir -p "$KK" && mv "$T/k/addons" "$KK/addons" && echo "kaykit: clone" || echo "kaykit alınamadı"
 fi
-# Gerçekçi oyuncu (tool/karakter/aday.py, BS_MODEL=aday): Microsoft Rocketbox Sports_Male_04 (MIT). Repo çok büyük;
-# yalnız bu avatarın FBX'i ve 6 dokusu raw.githubusercontent'ten alınır.
-RB=$HOME/AnimationLibrary/rocketbox/Sports_Male_04
-if [ ! -f "$RB/Export/Sports_Male_04.fbx" ]; then
-  U=https://raw.githubusercontent.com/microsoft/Microsoft-Rocketbox/master/Assets/Avatars/Professions/Sports_Male_04
-  mkdir -p "$RB/Export" "$RB/Textures" && curl -sSfL -o "$RB/Export/Sports_Male_04.fbx" "$U/Export/Sports_Male_04.fbx" \
-    && for t in body head; do for k in color normal specular; do curl -sSfL -o "$RB/Textures/m026_${t}_${k}.tga" "$U/Textures/m026_${t}_${k}.tga"; done; done \
-    && echo "rocketbox: indirildi" || echo "rocketbox alınamadı"
-fi
+# Gerçekçi oyuncu (tool/karakter/aday.py, BS_MODEL=aday): Microsoft Rocketbox (MIT). Repo çok büyük; yalnız avatarın FBX'i
+# ve 6 dokusu raw.githubusercontent'ten alınır. Sports_Male_02 = oyundaki model (rocketbox_kit.py badminton kıyafetine
+# boyar, 2026-10-26); Sports_Male_04 = HTML'deki eski rocketbox sprite bloğu (BS_ADAY ile yeniden üretmek için).
+for RBA in "Sports_Male_02 m301" "Sports_Male_04 m026"; do
+  set -- $RBA; RB=$HOME/AnimationLibrary/rocketbox/$1
+  if [ ! -f "$RB/Export/$1.fbx" ]; then
+    U=https://raw.githubusercontent.com/microsoft/Microsoft-Rocketbox/master/Assets/Avatars/Professions/$1
+    mkdir -p "$RB/Export" "$RB/Textures" && curl -sSfL -o "$RB/Export/$1.fbx" "$U/Export/$1.fbx" \
+      && for t in body head; do for k in color normal specular; do curl -sSfL -o "$RB/Textures/$2_${t}_${k}.tga" "$U/Textures/$2_${t}_${k}.tga"; done; done \
+      && echo "rocketbox $1: indirildi" || echo "rocketbox $1 alınamadı"
+  fi
+done
 # Unity MCP (CoderGamester/mcp-unity, MIT): sunucu bulutta derlenip kaydedilir. Araçları yalnız mcp-unity paketi
 # kurulu, açık bir Unity Editor'a (WebSocket, UNITY_HOST/UNITY_PORT, varsayılan localhost:8090) bağlanınca çalışır;
 # bulutta Editor yok (Unity indirme/lisans sunucuları ağ politikasında kapalı), yani burada bağlantı bekler.

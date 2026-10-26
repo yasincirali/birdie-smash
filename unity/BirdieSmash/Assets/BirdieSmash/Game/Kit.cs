@@ -19,6 +19,16 @@ namespace BirdieSmash.Game
             var m = new Material(std); m.color = c; m.SetFloat("_Glossiness", smooth); return m;
         }
         public static Material LitTex(Color c, Texture t, float smooth = .25f) { var m = Lit(c, smooth); m.mainTexture = t; return m; }
+        // Standard: teğet uzayı normal haritası (doku içe aktarımda "Normal map" türünde olmalı: KarakterImport) ve
+        // metal/parlaklık haritası (R metal, A smoothness). Anahtar kelimeyi açmadan doku atamak hiçbir şey çizmez.
+        public static void Bump(Material m, Texture n, float scale = 1f)
+        {
+            if (n == null) return; m.SetTexture("_BumpMap", n); m.SetFloat("_BumpScale", scale); m.EnableKeyword("_NORMALMAP");
+        }
+        public static void Gloss(Material m, Texture mg, float scale = 1f)
+        {
+            if (mg == null) return; m.SetTexture("_MetallicGlossMap", mg); m.SetFloat("_GlossMapScale", scale); m.EnableKeyword("_METALLICGLOSSMAP");
+        }
         // Ahşap zemin (okul sahası): boyuna tahta şeritleri, şerit başına hafif ton farkı ve ince derz çizgisi.
         public static Texture2D WoodTex(Color baseC)
         {

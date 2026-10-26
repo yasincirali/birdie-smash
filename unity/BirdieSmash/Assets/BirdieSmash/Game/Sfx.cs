@@ -232,6 +232,10 @@ namespace BirdieSmash.Game
             if (mine) { Cheer(.14f); Arpej(523, new[] { 0, 4, 7, 12 }, .18f, .08f, .07f); if (smacSayisi) Gasp(.09f); }
             else Ton(220, .25f, "sawtooth", .05f);
         }
+        // İmza vuruşu hazırlığı (2026-10-26, Core/Imza): kare + üçgen iki ton, perde imzaya göre (ses de imzayı tanıtır,
+        // yalnız ışığa güvenilmez); okunan imza: kısa yükselen arpej (görev arpejinden bir oktav yukarıda başlar).
+        public void Imza(string id) { float f = id == "yildirim" ? 440 : id == "duvarblok" ? 330 : id == "tuldrop" ? 587 : id == "mermi" ? 392 : 494; Ton(f, .14f, "square", .035f); Ton(f * 1.5f, .2f, "triangle", .05f, .1f); }
+        public void Okudun() { Arpej(784, new[] { 0, 4, 7, 12 }, .12f, .05f, .05f); }
         public void Aldat() { Ton(740, .1f, "triangle", .06f); Ton(988, .12f, "triangle", .06f, .08f); }
         public void Split() { Ton(1200, .04f, "square", .03f); }
         public void Perfect(int pstreak) { Ton(660 * Mathf.Pow(2, Mathf.Min(pstreak, 12) / 12f), .12f, "sine", .06f, .02f); }

@@ -15,6 +15,13 @@ namespace BirdieSmash.Game
     public static class Basarim
     {
         public const string ANTRENMAN = "bs_antrenman", AKIS = "bs_akis", RALLI20 = "bs_ralli_20", SICRAMA = "bs_sicrayan_smac", GOREV3 = "bs_uc_gorev";
+        // 2026-10-26 karakter (tasarım §5.5): tur finalleri bs_tur_2..4 (Tur 1 = bs_kariyer_6) ve Sv 30 "Efsane".
+        public const string EFSANE = "bs_efsane";
+        // 2026-10-26 adım 7–9 (tasarım §5.5; toplam 930 → 1000 puan, App Store Connect sınırı 1000): antrenmanın 24 yıldızı
+        // (25), ilk Günün maçı galibiyeti (10; seri yok, kaçırılan gün yok, tek seferlik), Usta yolunda 6 basamak (20),
+        // toplam 10 imza vuruşu okumak (15; okudun sayacı maç sonunda birikir, Ilerleme.ImzaOkunan).
+        public const string ANTRENOR = "bs_antrenor", GUNUN_MACI = "bs_gunun_maci", USTA6 = "bs_usta_6", IMZA_OKUR = "bs_imza_okur";
+        public const int IMZA_OKUR_HEDEF = 10;
         static Dictionary<string, object> yerel; static bool istendi;
         public static bool acik;   // Game Center girişi tamam: Ayarlar'da "Başarımlar" görünür
 

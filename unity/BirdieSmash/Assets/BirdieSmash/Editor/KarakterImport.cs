@@ -1,6 +1,9 @@
 // Karakter FBX içe aktarımı (Resources/karakter/<model>.fbx: oyuncak = KayKit Rogue, rocketbox = Sports_Male_04):
-// Legacy animasyon, yeniden örnekleme ve sıkıştırma kapalı (3d-animator: "exact baked clips: resample off,
-// compression off"); klipler tool/karakter/unity_fbx.py'nin yazdığı <model>_clips.json'daki kare aralıklarından bölünür.
+// Legacy animasyon, sıkıştırma kapalı. Yeniden örnekleme AÇIK (2026-10-26, Unity ekran turu r8): kapalıyken Unity
+// FBX'in Euler eğrilerini bileşen bileşen ara-değerliyor; Rocketbox (Biped) köprücük/kol açıları ±180° sınırında
+// olduğundan anahtarlar arasında kollar başın arkasına savruluyordu (Blender'da aynı karede eller göğüs hizasında).
+// Örnekleme her kareyi FBX SDK ile doğru sırada çözüp kuaterniyona çevirir; anahtar karelerde değer aynı kalır.
+// Klipler tool/karakter/unity_fbx.py'nin yazdığı <model>_clips.json'daki kare aralıklarından bölünür.
 // Malzeme içe alınır (gömülü doku, InPrefab): deri modellerin yüz/saç dokusu modelin kendisinden gelir; PlayerView
 // yalnız forma/çerçeve parçalarını boyar. Eski tek renkli prototipte (oyuncu.fbx) malzeme kapalıydı, gerek kalmadı.
 // Klip bölme OnPreprocessAnimation'da: defaultClipAnimations (take adı) OnPreprocessModel'de henüz dolu olmayabilir.
@@ -17,12 +20,23 @@ namespace BirdieSmash.EditorTools
 
         bool Karakter() { var p = assetPath.Replace('\\', '/'); return p.Contains("Resources/karakter/") && p.EndsWith(".fbx"); }
 
+        // Resources/karakter dokuları: *_n = normal haritası (aksi hâlde sRGB renk sayılır, normaller bozuk çıkar).
+        // *_mg = doğrusal, alfa smoothness'tır, saydamlık değil. En çok 1024 px (mobil bellek; 4 figür aynı dokuyu paylaşır).
+        void OnPreprocessTexture()
+        {
+            var p = assetPath.Replace('\\', '/'); if (!p.Contains("Resources/karakter/")) return;
+            var ti = (TextureImporter)assetImporter; string ad = Path.GetFileNameWithoutExtension(p);
+            ti.maxTextureSize = 1024; ti.mipmapEnabled = true;
+            if (ad.EndsWith("_n")) { ti.textureType = TextureImporterType.NormalMap; ti.sRGBTexture = false; }
+            else if (ad.EndsWith("_mg")) { ti.textureType = TextureImporterType.Default; ti.sRGBTexture = false; ti.alphaSource = TextureImporterAlphaSource.FromInput; ti.alphaIsTransparency = false; ti.maxTextureSize = 512; }
+        }
+
         void OnPreprocessModel()
         {
             if (!Karakter()) return;
             var mi = (ModelImporter)assetImporter;
             mi.animationType = ModelImporterAnimationType.Legacy;
-            mi.importAnimation = true; mi.resampleCurves = false; mi.animationCompression = ModelImporterAnimationCompression.Off;
+            mi.importAnimation = true; mi.resampleCurves = true; mi.animationCompression = ModelImporterAnimationCompression.Off;
             mi.materialImportMode = ModelImporterMaterialImportMode.ImportStandard; mi.materialLocation = ModelImporterMaterialLocation.InPrefab;
             mi.useFileScale = true; mi.globalScale = 1;
             mi.importBlendShapes = false; mi.importCameras = false; mi.importLights = false;

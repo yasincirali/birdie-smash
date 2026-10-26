@@ -1,0 +1,63 @@
+{
+ "_not": "Günün maçı (komple-oyun tasarımı §3.5, Ek A.4; adım 8, 2026-10-26). Cihazın yerel günü tohumdur (sunucu yok): aynı gün herkes aynı rakip, saha, g ve değiştiriciyle oynar (Core/Gunluk, kendi karma fonksiyonu: System.Random'ın tohum algoritmasına bağlı kalınmaz). Arka arkaya iki gün aynı değiştirici ya da aynı rakip gelmez. Ödül günde bir kez, kazanınca (odul); seri yok, kaçırma cezası yok, özel ödül yok, sıralama tablosu yok. Değiştiricilerin hepsi var olan sistemlerden: sayı değeri (altin, file, uzun), Usta zorluğu (usta), imza sıklığı (patron), nefes (nefes). uzunluk = maç uzunluğu. Metinler Türkçe anahtar, çeviri Lang.UNITY_EK.",
+ "rakipler": [
+  "smasci",
+  "duvar",
+  "file",
+  "nova",
+  "vex",
+  "aria"
+ ],
+ "g": [
+  0.95,
+  1.15
+ ],
+ "sahalar": [
+  "salon",
+  "turnuva",
+  "okul",
+  "park"
+ ],
+ "odul": {
+  "tuy": 40,
+  "xp": 30
+ },
+ "degistiriciler": [
+  {
+   "id": "altin",
+   "ad": "Altın ralli",
+   "aciklama": "Her 3. rallinin sayısı 2",
+   "uzunluk": 11
+  },
+  {
+   "id": "file",
+   "ad": "Yalnız file",
+   "aciklama": "File önünden alınan sayı 2",
+   "uzunluk": 11
+  },
+  {
+   "id": "usta",
+   "ad": "Usta günü",
+   "aciklama": "Usta zorluk: koşmak da sende",
+   "uzunluk": 5
+  },
+  {
+   "id": "patron",
+   "ad": "Patron provası",
+   "aciklama": "Rakip imza vuruşunu sık dener",
+   "uzunluk": 5
+  },
+  {
+   "id": "uzun",
+   "ad": "Uzun ralli",
+   "aciklama": "8 ve daha uzun rallinin sayısı 2",
+   "uzunluk": 11
+  },
+  {
+   "id": "nefes",
+   "ad": "Nefes kısa",
+   "aciklama": "İki oyuncunun da nefesi daha çabuk biter",
+   "uzunluk": 5
+  }
+ ]
+}

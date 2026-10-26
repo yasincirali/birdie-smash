@@ -1,39 +1,29 @@
 === UNITY ===
-Bu sürüm yeni: oyunun tamamı ve menüler baştan Unity ile yapıldı. Kurallar ve kaydırma hareketleri öncekiyle aynı, görüntü 3B.
+Büyük güncelleme: yeni menü, kariyer haritası, karakter odası, gerçekçi saha ve fizik, aldatıcı vuruşlar.
 
 Bu sürümde yeni:
-- Tüy top, saha, tribün, ışıklar ve hakemler 3B. Saha: salon, turnuva, okul, park.
-- Menü, Ayarlar, Kariyer, Antrenman, Ekipman ve maç sonu yeniden yapıldı; menüde logo var.
-- Ekipman: raket, tel gerginliği, bileklik, bant, forma; Tüy ile yükseltilir. 360° görünümde rakete dokununca raket görünümü açılır.
-- Her maçta 3 görev; maç sonunda Tüy ve XP, seviye atlama. Maç sonu: iki sayı, bir ipucu, gerisi "Ayrıntılar"da.
-- Raket sesi tel gerginliğine ve vuruşa göre değişir.
-- Titreşim vuruşa göre değişir (tür, isabet, tel gerginliği); sayı, akış, görev, file ve çizgi kamerasının kendi deseni var.
-- Game Center başarımları: ilk kariyer basamağından sonra giriş ister; Ayarlar > Game Center · Başarımlar.
-- Açılışta ve maça geçerken perde; sesler hazırlanırken dönen tüy top ve "Hazırlanıyor…".
-- Duraklatınca tüm sesler susar; duraklatmada Ses düğmesi. Ana menüye çıkınca maç bekler: "Maça devam et".
-- Ayarlar > Yazı boyutu (Sistem / Normal / Büyük). Hareketi azalt telefonun ayarını da izler.
-- Sayı kazanınca kıvılcımlar, top yere düşünce toz ve halka.
-- İlerlemen taşınır: önceki sürümdeki kariyer, Tüy, ekipman, ayarlar ve başarımlar ilk açılışta bir kez geçer.
-- Ekran yalnız maçta ve antrenmanda açık kalır. Kariyer basamağı açan galibiyette puan penceresi gelebilir (TestFlight'ta görünmez).
-
-Bilerek eksik olanlar:
-- İlerleme yalnız Unity'den önceki son sürüm bir kez açıldıysa taşınır.
-- VoiceOver menülerde çalışmaz (sonraki büyük güncellemede). Yazı en fazla %30 büyür.
+- Yeni menü: alt sekmeler Oyna, Kariyer, Soyunma odası, Profil.
+- Kariyer haritası: Yerel tur, Asya, Avrupa, Dünya Finalleri; yıldızlar, final rakibinin imza vuruşu. Usta yolu.
+- Antrenman dril'leri (yıldızlı) ve Günün maçı.
+- Soyunma odası > Karakter: 4 beden tipi, 11 saç + kel, 5 ayakkabı. Önce dene, sonra Tüy ile al. Ayakkabının bir artısı bir eksisi var.
+- Oyuncu modelleri yenilendi: beş parmaklı raket tutuşu, tüm beden badminton hareketi (split step, hamle, çapraz koşu, ayak kaymıyor).
+- Aldatıcı vuruşlar (Sv 6'dan itibaren): seviye, raket ve pozisyon uygunsa yapılır. Liste: Antrenman sayfasının altı.
+- Hakemler oturur, saha BWF çizgileriyle; file ve bant topa farklı tepki verir.
+- Ayarlar > Kamera: Yayın, Alçak, Üstten. Ayarlar > Oyuncu görünümü: Oyuncak, Gerçekçi, Sade.
+- 120 Hz destekleyen iPhone'da daha akıcı; telefona göre kalite kendini ayarlar.
 
 Nasıl denenir:
-0. Önceki sürümü açtıysan: galibiyet, kariyer basamağı, Tüy, ekipman ve ayarların yerinde olmalı.
-1. Uygulamayı aç: perde kalkmalı, sonra kısa antrenman ve 5 sayılık Kolay maç. Ekran dikey kalmalı.
-2. Servis: yukarı kaydır. Yavaş kısa servis, hızlı kısa flick, hızlı uzun yüksek servis.
-3. Top sana gelince zaman yavaşlar. Yukarı kaydır: yavaş drop, orta clear, hızlı smaç; aşağı blok.
-4. Titreşim: drop hafif, smaç sert olmalı; tel gerginliğini değiştirince his değişmeli. Sayı kazanınca/kaybedince farklı desen.
-5. Maçı bitir: skor, Tüy/XP, iki kart, ipucu ve doğru düğme gelmeli. "Ayrıntılar" açılmalı. "Bir maç daha" perdeyle başlamalı.
-6. Maçta II: sesler susmalı. Ses düğmesini dene. Ana menüye çık: "Maça devam et" kaldığın yerden sürdürmeli.
-7. Kariyerde ilk basamağı geç: Game Center girişi istenmeli. Ayarlar > Game Center · Başarımlar açılmalı.
-8. Ekipman: yükselt, tel gerginliğini değiştir, maçta sesi dinle. 360° figürde rakete dokun: raket görünümü açılmalı.
-9. Ayarlar > Dil > English, Yazı boyutu > Büyük: metinler büyümeli, taşmamalı. Telefonda Hareketi Azalt açıkken ayar "sistem" demeli.
-10. Çentikli telefonda: skor ve düğmeler çentiğin altına girmemeli.
-11. Arka plana atıp geri aç, kilitleyip aç: oyun donmamalı, ses geri gelmeli.
-12. Takılma olursa telefonu ve ne yaptığını yaz.
+1. Uygulamayı aç: ilerlemen yerinde olmalı, alt sekmeler görünmeli.
+2. Kariyer: haritada turları kaydır, bir maç kartını aç, maçı oyna; yıldız gelmeli.
+3. Oyna > Antrenman: bir dril oyna, sonra sayfanın en altında aldatıcı vuruş listesine bak.
+4. Soyunma odası > Karakter: tip, saç, ayakkabı değiştir. Yüz, Ayak, Tutuş düğmeleri yakın çekim yapmalı. Figürü parmağınla döndür.
+5. Kilitli bir saç ya da ayakkabıyı dene: "deneniyor" yazmalı; Tüy yetiyorsa al, yetmiyorsa alınamamalı.
+6. Maçta oyuncuyu izle: koşarken ayaklar yerde kaymamalı, file önünde hamle yapmalı.
+7. Sv 6 üstündeysen file önünde topun üstünde mor yazı çıkınca söylenen hareketi dene: rakip yanlış adım atmalı.
+8. Kavisli yavaş kaydırmayla baş üstü slice drop: top fileyi geçmeli (önceki build'de hep fileye gidiyordu).
+9. Ayarlar > Yazı boyutu > Büyük: sekmeler kelime ortasından bölünmemeli, düğmeler üst üste binmemeli.
+10. Ayarlar > Kamera ve Oyuncu görünümü: her seçenekte maç açılmalı.
+11. Takılma, ısınma ya da garip görüntü olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:

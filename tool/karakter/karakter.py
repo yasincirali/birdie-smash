@@ -43,7 +43,7 @@ SHW=0.13; HIPW=0.085
 # Gerçekçi gövde (yasin 2026-10-23: "insan anatomisine uygun olacak kadar gerçekçi"): MakeHuman tabanı (insan.py, CC0),
 # aynı poz sözlüklerini kullanır. BS_GERCEK=0 eski oyuncak figürü çizer (hakemler şimdilik oyuncak figürde).
 GERCEK=os.environ.get('BS_GERCEK','1')=='1'
-MODEL=os.environ.get('BS_MODEL','insan')   # 'oyuncak' = KayKit gövdeli oyuncak figür (oyuncak.py), aynı pozlar
+MODEL=os.environ.get('BS_MODEL','insan')   # 'oyuncak' = Oyuncak 3B, 2026-10-26 yeniden tasarım: MakeHuman (CC0) atletik gövde + kendi kıyafet/yüz/saç geometrisi (oyuncak.py); 'oyuncak_kaykit' = eski KayKit chibi (arşiv, oyuncak_kaykit.py); 'aday' = Rocketbox (aday.py); 'sade' = Mesh2Motion mankeni (sade.py)
 OY=None
 def build_gercek(p):
     global OY
@@ -52,9 +52,69 @@ def build_gercek(p):
         for o in list(objs): bpy.data.objects.remove(o)
         M_=insan.malzemeler(FORMA,SORT,BEYAZ,BANT,CERCEVE,TEL,SORT)
         if MODEL=='oyuncak': import oyuncak; objs.clear(); OY=oyuncak.Oyuncak(M_)
+        elif MODEL=='oyuncak_kaykit': import oyuncak_kaykit; objs.clear(); OY=oyuncak_kaykit.Oyuncak(M_)   # arşiv: eski KayKit chibi (asset ayrıca gerekir)
         elif MODEL=='aday': import aday; objs.clear(); OY=aday.Aday(M_)   # karşılaştırma: hazır modeller (aday.py)
+        elif MODEL=='sade': import sade; objs.clear(); OY=sade.Sade(M_)   # sade: Mesh2Motion mankeni (CC0), normal oranlı insan
         else: objs.clear(); OY=insan.Oyuncu(M_,stil=os.environ.get('BS_STIL'))
-    objs[:]=OY.kur_poz(p)
+    if not (p.get('fpR') or p.get('fpL')) or not hasattr(OY,'R') or not hasattr(OY,'ao'): objs[:]=OY.kur_poz(p); return
+    AG=_ayak_geo()
+    q=dict(p)
+    for K in 'RL':
+        a=math.radians(p.get('fp'+K,0) or 0)
+        if not a: continue
+        g=AG[K]; piv=g['hb'] if a>0 else g['fb']   # burun yukarı: topuk ekseni; topuk havada: parmak kökü ekseni
+        dz=(g['hz']*math.cos(abs(a))+piv*math.sin(abs(a))-g['hz'])/AG['s']   # taban zeminde kalsın diye bilek bu kadar yükselir (poz birimi)
+        # Eksen noktası yatayda da yerinde kalsın: bilek etrafında dönen topuk/parmak kökü bileğe doğru (topuk havadaysa) ya da
+        # öne (burun yukarıysa) kayar: piv·(1−cos a) + hz·sin a. Eskiden hamlede arka ayağın parmak ucu topuk kalkarken yerde
+        # 19 cm geri sürünüyordu (s5 probu). Bilek ayak yönünde o kadar öne (topuk havada) ya da geri (burun yukarı) kaydırılır.
+        dh=(piv*(1-math.cos(abs(a)))+g['hz']*math.sin(abs(a)))/AG['s']*(1 if a<0 else -1)
+        fd=Vector(p.get('ft'+K,(0,1,0))); fd.z=0; fd=fd.normalized() if fd.length>1e-6 else Vector((0,1,0))
+        an=q['an'+K]; q['an'+K]=(an[0]+fd.x*dh,an[1]+fd.y*dh,an[2]+dz)
+    objs[:]=OY.kur_poz(q); _ayak_cevir(p,AG)
+# Ayak eğimi (2026-10-26, tüm beden turu): modeller ayağı hep dinlenme eğiminde (düz) basar, yalnız yönünü çevirir. Hamlede
+#     "önce topuk", arka ayağın parmak ucunda sürünmesi, smaç temasında arka topuğun kalkması bu yüzden yoktu. Kanal model
+#     dosyalarına girmez (dört model aynı kuralı alsın): poz kurulmadan önce bilek, tabanın zeminde kalacağı kadar yükseltilir
+#     (topuk ya da parmak kökü ekseni, ölçü modelin kendi ayak ağından), kurulduktan sonra ayak kemiği bilekte döndürülür;
+#     topuk kalkıyorsa parmak kemiği ters döndürülür ki parmaklar yerde düz kalsın. Ölçü bir kez alınır (_AG).
+_AG={}
+def _ayak_kemik(K):
+    pb=OY.ao.pose.bones; R=OY.R; ft=R['ft'].format(S=R['S'][K.lower()])
+    uc=[b for b in pb if b.parent and b.parent.name==ft]
+    return pb[ft],(uc[0] if uc else None)
+def _ayak_geo():
+    if _AG.get('oy') is OY: return _AG
+    _AG.clear(); _AG['oy']=OY
+    L=bpy.context.view_layer; mw=OY.ao.matrix_world
+    OY.kur_poz(READY); L.update(); z0=(mw@_ayak_kemik('R')[0].head).z
+    OY.kur_poz(dict(READY,anR=(READY['anR'][0],READY['anR'][1],READY['anR'][2]+.02))); L.update()
+    _AG['s']=max(1e-4,((mw@_ayak_kemik('R')[0].head).z-z0)/.02)   # model birimi / poz birimi (dikeyde)
+    OY.kur_poz(READY); L.update(); dg=bpy.context.evaluated_depsgraph_get()
+    deri=[o for o in OY.kalici if o.type=='MESH' and any(m.type=='ARMATURE' for m in o.modifiers)]
+    for K in 'RL':
+        fb,tb=_ayak_kemik(K); adlar={fb.name}|({tb.name} if tb else set()); pts=[]
+        for o in deri:
+            gi={g.index:g.name for g in o.vertex_groups}; e=o.evaluated_get(dg); me=e.to_mesh(); M=o.matrix_world
+            for v in o.data.vertices:
+                ws=[(g.weight,gi.get(g.group)) for g in v.groups]
+                if ws and max(ws)[1] in adlar and max(ws)[0]>.5: pts.append(M@me.vertices[v.index].co)
+            e.to_mesh_clear()
+        A=mw@fb.head; f=(mw@tb.head-A) if tb else (mw.to_3x3()@(fb.matrix.to_3x3()@Vector((0,1,0)))); f.z=0; f.normalize()   # ileri = parmak kemiğine (Rocketbox ayak kemiğinin y'si tabana bakar)
+        zs=min(p_.z for p_ in pts) if pts else A.z-.05
+        hb=max([(A-p_).dot(f) for p_ in pts if p_.z<zs+.015] or [.05])            # topuğun bilek gerisindeki uzaklığı
+        bl=(mw@tb.head) if tb else A+f*.1; fb_=(bl-A).dot(f)                     # parmak kökü (top) bileğin önünde
+        _AG[K]=dict(hb=hb,fb=fb_,hz=A.z-zs)
+    return _AG
+def _ayak_cevir(p,AG):
+    ao=OY.ao; pb=ao.pose.bones; L=bpy.context.view_layer
+    up=(ao.matrix_world.inverted().to_3x3()@Vector((0,0,1))).normalized()
+    for K in 'RL':
+        a=math.radians(p.get('fp'+K,0) or 0)
+        if not a: continue
+        fb,tb=_ayak_kemik(K); M=fb.matrix.copy(); A=M.translation.copy()
+        f=(tb.head-A) if tb is not None else M.to_3x3()@Vector((0,1,0)); f=f-up*f.dot(up); f.normalize(); lat=f.cross(up).normalized()
+        R=Matrix.Translation(A)@Matrix.Rotation(a,4,lat)@Matrix.Translation(-A); fb.matrix=R@M; L.update()
+        if tb is not None and a<0:
+            T=tb.matrix.copy(); P=T.translation.copy(); tb.matrix=Matrix.Translation(P)@Matrix.Rotation(-a,4,lat)@Matrix.Translation(-P)@T; L.update()
 def build(p):
     """p: poz sözlüğü → sahneye figürü kur"""
     if GERCEK and not p.get('hakem'): return build_gercek(p)
@@ -119,18 +179,27 @@ def build(p):
 
 # ---------- pozlar ----------
 def P_(**k): return k
-READY=dict(root=(0,0,0.40),lean=(0,0.01,0),twist=8,wrR=(0.24,0.22,0.52),elR=(1,-0.2,-0.5),rk=(0.05,0.45,0.85),rkFace=(1,0,0),wrL=(-0.22,0.18,0.48),elL=(-1,-0.3,-0.5),anR=(0.12,-0.02,0.05),anL=(-0.12,0.05,0.05),knR=(0,1,0),knL=(0,1,0),head=(0,0,0),look=(0,1,0))
+# READY (2026-10-26, tüm beden turu, denetim §1): diz 55–69° bükük (çeyrek çömelme) ve gövde 6° GERİYE yatıktı; ayaklar omuz
+#     genişliğinin altındaydı. Hazır duruş: diz ~40–50°, gövde ~10° öne (ağırlık ön tabanda), ayaklar ~1,2 × omuz, sağ ayak çok
+#     hafif geride (vurus_biyomekanigi.md §1). Kök 0,40 → 0,43, lean 0,01 → 0,09, bilekler ±0,12 → ±0,13.
+READY=dict(root=(0,0,0.43),lean=(0,0.09,0),twist=8,wrR=(0.24,0.24,0.53),elR=(1,-0.2,-0.5),rk=(0.05,0.45,0.85),rkFace=(1,0,0),wrL=(-0.22,0.20,0.49),elL=(-1,-0.3,-0.5),anR=(0.13,-0.01,0.05),anL=(-0.13,0.05,0.05),knR=(0,1,0),knL=(0,1,0),head=(0,0,0),look=(0,1,0))
 def _tam(p):
     """Karışımdan önce sonradan eklenen kanalları açık yaz. 2026-10-24 (animasyon denetimi #8, #9): 'pelvis' (leğen dönüşü,
     twist ile aynı işaret) yazılmamışsa eski kural twist·0,35; 'burgu' (ön kol burulmasının ağırlığı, 0..1) yoksa 0.
     Açık yazılmazsa mix() eksik kanalı karşı pozdan kopyalardı: READY'den S_PREP'e ilk karede tam burgu sıçrardı."""
-    if 'pelvis' in p and 'burgu' in p: return p
-    q=dict(p); q.setdefault('pelvis',.35*p.get('twist',0)); q.setdefault('burgu',0.); return q
+    if all(k in p for k in ('pelvis','burgu','fpR','fpL','ftR','ftL')): return p
+    # fpR/fpL (2026-10-26, tüm beden turu): ayak eğimi, derece; + = burun yukarı (topuk basışı), − = topuk havada (parmak
+    # ucunda itiş / arka ayak sürünmesi). Yazılmamışsa 0 = dinlenme eğimi (eski görünüm birebir).
+    q=dict(p); q.setdefault('pelvis',.35*p.get('twist',0)); q.setdefault('burgu',0.); q.setdefault('fpR',0.); q.setdefault('fpL',0.)
+    # ftR/ftL (2026-10-26, tüm beden turu): ayak ucu yönü yazılmamışsa (0,1,0) (build'in varsayılanı). Eskiden mix() eksik kanalı
+    # karşı pozdan kopyaladığı için READY karesi (klibin ilk ve son karesi) vuruşun ayak yönünü taşıyordu: bh_over'ın ilk karesinde
+    # sağ ayak 153° arkaya dönük, diz öne (diz yönü 177°); idle'dan klibe geçişte ayak tek karede dönüyordu.
+    q.setdefault('ftR',(0,1,0)); q.setdefault('ftL',(0,1,0)); return q
 # Raket yönü ve yüzü küre üstünde karışır (2026-10-24): doğrusal karışımda ters yönlü iki anahtarın ortası sıfıra yaklaşıyor,
 # raket ara karede rastgele bir yöne bakıyordu (bh_over'da aşağıdan yukarı salınımın ortası; S_DROP→S_HIT de neredeyse ters).
 # Büyük çember yolu raket başını gerçekteki gibi yandan dolaştırır; yolu anahtarın küçük sapması seçer (S_DROP'ta raket başı
 # hafif dışa, böylece salınım sağ yandan geçer).
-KURE=('rk','rkFace')
+KURE=('rk','rkFace','ftR','ftL','knR','knL')   # ayak ve diz yönleri de (2026-10-26): ters yönlü iki anahtarın doğrusal ortası sıfırdan geçip ayağı/dizi tek karede çeviriyordu
 def _slerp(va,vb,t):
     a=Vector(va); b=Vector(vb)
     if a.length<1e-6 or b.length<1e-6: return tuple(va[i]+(vb[i]-va[i])*t for i in range(3))
@@ -171,6 +240,24 @@ def _an(ks,t,hit,yavas):
             e=ease(u) if (yavas or hit is None) else ease_in(u) if j+1==hit else ease_out(u) if j==hit else ease(u)
             return mix(p0,p1,e)
     return _tam(dict(ks[-1][1]))
+ZEMIN=.05   # basan bileğin poz yüksekliği (READY ve ayak işi tabanı)
+def _adim_kaldir(out,ks,den):
+    """Adım yayı (2026-10-26, tüm beden turu; arastirma/animasyon_denetimi_2026-10-26.md §2): iki anahtarda da yerde olan ayak
+    anahtarlar arasında yer değiştiriyorsa ara karelerde yerden kaldırılır. Eskiden bilek yalnız xy'de karışıyordu: vuruş
+    kliplerinde basan ayak kare arasında 20–67 cm kayıyordu (hamlede sağ ayak öne 0,7 m, toparlanmada geri 0,7 m, yerde).
+    Yay, karenin yol üstündeki konumundan (kolaylaştırılmış e) çıkar: tepe yolun ortasında, yükseklik yolun ~%12'si
+    (3,5–7 poz cm = 6–12 cm oyunda). Anahtar karelere dokunmaz (temas pozları aynen kalır). Komşu iki karede adım atan
+    ayak için ara kare yoktur: o zaman adım pozun kendisine (hazırlık anahtarına) taşınmalıdır, burada uyarı basılır."""
+    for (ta,pa),(tb,pb) in zip(ks,ks[1:]):
+        ia,ib=round(ta*den),round(tb*den)
+        for K in 'RL':
+            A=pa['an'+K]; B=pb['an'+K]; dx,dy=B[0]-A[0],B[1]-A[1]; h=math.hypot(dx,dy)
+            if h<.03 or A[2]>ZEMIN+.025 or B[2]>ZEMIN+.025: continue
+            if ib-ia<2: print(f'adım yayı: {K} ayağı komşu karelerde {h:.2f} birim yer değiştiriyor (kare {ia}→{ib})'); continue
+            lift=min(.07,.025+.12*h)
+            for i in range(ia+1,ib):
+                c=out[i]['an'+K]; e=max(0.,min(1.,((c[0]-A[0])*dx+(c[1]-A[1])*dy)/(h*h)))
+                out[i]['an'+K]=(c[0],c[1],round(c[2]+lift*math.sin(math.pi*e),4))
 def sample(keys,n,loop=False,hit=None,hold=None,drop=None,lead=0,yavas=False):
     """keys: [(t, poz)], t 0..1; n kare. hit/hold/drop: anahtar sırası (keys içindeki indeks).
     lead: leğen kanalı bu kadar kare önden gelir. yavas: temasa yavaşlayarak gir (drop vuruşu)."""
@@ -181,6 +268,7 @@ def sample(keys,n,loop=False,hit=None,hold=None,drop=None,lead=0,yavas=False):
     for (ta,pa),(tb,pb) in zip(ks,ks[1:]):
         assert tb>ta or pa is pb, f'iki farklı anahtar aynı kareye düştü (t={ta})'
     out=Klip(_an(ks,i/den,hit,yavas) for i in range(n))
+    if not loop: _adim_kaldir(out,ks,den)
     # Kalça göğüsten önce (denetim #9): leğen kanalı aynı eğriden lead kare ileriden okunur. İleri salınımda kalça bir kare
     # önce açılır, hazırlıkta da önce döner; göğüs (twist) geride kalır, X-factor görünür. Ayaklar yerde, yalnız leğen.
     # Öne alma bekleme karesinden başlar: ilk kare READY ile birebir kalmalı (idle'dan geçişte kalça sıçramasın); bekleme
@@ -204,15 +292,45 @@ def bukuk(p,aci):
     L=math.sqrt(UA*UA+FA*FA-2*UA*FA*math.cos(math.radians(aci))); d=Vector(p['wrR'])-sh
     if d.length<=L: return p   # zaten bu kadar bükük: uzatmaz
     return D(p,wrR=tuple(round(x,4) for x in sh+d.normalized()*L))
+def dongu(n,eksen,D,duty,dl,lift,taban,ust,root=.40,bob=.012,once='R',kn=None,ft=None,kol=0.,tw=0.,pel=0.):
+    """Ayak işi döngüsü (2026-10-26, tüm beden turu; 3d-animator locomotion §1-§4): yerinde döngüde basan ayak gövdeye göre
+    SABİT HIZLA geriye gider, böylece oyun kökü klibin adım boyu × faz hızıyla ilerlerken ayak yerde durur. Eski kliplerde
+    bilek sin(faz) ile gidip geliyordu: basma ortasında hızlı, uçlarda duran ayak = döngü içinde kayma; adımlar da kısaydı
+    (rocketbox ölçümü: back_l 0,21 m, chassé 0,54 m döngü; oyuncu ortalama 2,4–3,5 m/s koşuyor, faz 2,6 döngü/sn'de
+    kırpılıyordu → %30–80 kayma).
+    eksen: gidiş yönü (poz çerçevesi, +y file); D: döngü başına yol (poz birimi); duty: bir ayağın yerde kaldığı oran;
+    dl: ikinci ayağın faz gecikmesi (0,5 = koşu/yürüyüş, küçük = chassé dörtnalı); lift: salınım tepesi; taban: {'R','L'}
+    ayakların döngü ortasındaki konumu (gövdeye göre); once: fazı 0'da yere basan ayak (bütün ayak işi kliplerinde basış
+    fazı 0 hizalı: klipler arası harmanlamada bacaklar çaprazlanmaz); kol: kol sallama genliği (raket önde kalır);
+    tw/pel: göğüs/leğen karşı dönüşü (sağ ayak öndeyken göğüs sola)."""
+    a=Vector((eksen[0],eksen[1],0)).normalized(); S=D*duty; out=Klip()
+    for i in range(n):
+        ph=i/n; p=dict(ust); zb=0.; s_=dict()
+        for K in 'RL':
+            phi=(ph-(0. if K==once else dl))%1.; c=Vector(taban[K]+(0,))
+            if phi<duty: u=phi/duty; s=S/2-S*u; z=0.; zb+=math.sin(math.pi*u)
+            else: u=(phi-duty)/(1-duty); s=-S/2+S*ease(u); z=lift*math.sin(math.pi*u)
+            q=c+a*s; p['an'+K]=(round(q.x,4),round(q.y,4),round(ZEMIN+z,4)); s_[K]=s
+        sw=(s_['R']-s_['L'])/max(S,1e-4)   # +1: sağ ayak önde (gidiş yönünde)
+        r=ust.get('root',(0,0,root)); p['root']=(r[0],r[1],round(root-bob*min(1.,zb)+bob*.5,4))
+        if kn: p['knR'],p['knL']=kn
+        if ft: p['ftR'],p['ftL']=ft
+        if tw: p['twist']=ust.get('twist',0)+tw*sw
+        if pel: p['pelvis']=ust.get('pelvis',.35*ust.get('twist',0))-pel*sw
+        if kol:
+            wl=ust['wrL']; p['wrL']=(wl[0],round(wl[1]+kol*sw*a.y,4),round(wl[2]+.3*kol*abs(sw),4))   # sağ bacak önde → sol kol önde
+            wr_=ust['wrR']; p['wrR']=(wr_[0],round(wr_[1]-.35*kol*sw*a.y,4),wr_[2])
+        out.append(p)
+    return out
 # --- hazır: hafif zıplayan bekleyiş (8 kare döngü)
-idle=sample([(0,READY),(0.5,D(READY,root=(0,0,0.425),wrR=(0.24,0.22,0.56),wrL=(-0.22,0.18,0.52))),(1,READY)],8,loop=True)
-# --- koşu (8 kare döngü): bacaklar karşıt, kollar karşıt, gövde öne eğik, raket yukarıda
-run=[]
-for i in range(8):
-    ph=i/8*2*math.pi; s=math.sin(ph); c=math.cos(ph)
-    run.append(D(READY,root=(0,0,0.41+0.02*abs(c)),lean=(0,0.06,0),twist=-10*s,
-        anR=(0.11,0.17*s,max(0,0.11*math.sin(ph+0.4))),anL=(-0.11,-0.17*s,max(0,0.11*math.sin(ph+math.pi+0.4))),
-        wrR=(0.26,0.16-0.08*s,0.56),wrL=(-0.20,0.05+0.16*s,0.42+0.08*max(0,s))))
+# idle: hazır duruşta hafif nefes/yaylanma; 2026-10-26: kök ±1,25 → ±0,8 poz cm (diz 55↔69° pompalıyordu; şimdi ~6° salınım)
+idle=sample([(0,READY),(0.5,D(READY,root=(0,0,0.438),wrR=(0.24,0.24,0.56),wrL=(-0.22,0.20,0.52))),(1,READY)],8,loop=True)
+# --- koşu (8 kare döngü, öne hızlı; 2026-10-26 tüm beden turu): dongu() ile basan ayak sabit hızla geri gider; uçuş evreli koşu
+#     (duty 0,38), döngü 1,0 poz (sade modelde ~2,2 m; modelin bacak oranı k ≈ 1,26 ile): 5,2 m/s'de ~2,4 döngü/sn. Gövde öne eğik, kollar karşıt, raket
+#     önde yukarıda (vuruşa hazır). Eski klipte bilek sin(faz) ile gidip geliyordu ve oyunda hiç seçilmiyordu (Unity
+#     AyakIsi yalnız fwd/chassé/back seçerdi); şimdi hızlı öne koşuda seçilir.
+_RUN_UST=D(READY,root=(0,0,.41),lean=(0,0.12,0),twist=0,wrR=(0.26,0.18,0.58),wrL=(-0.20,0.06,0.44))
+run=dongu(8,(0,1),1.0,.38,.5,.09,{'R':(0.10,0.0),'L':(-0.10,0.0)},_RUN_UST,root=.41,bob=.02,kol=.12,tw=10,pel=8)
 # --- smaç (baş üstü, güçlü): hazırlık (raket sırt kaşır, sol el topu gösterir, gövde yay) → temas (kol tam uzanmış,
 #     bilek başın hafif önünde) → devam (raket çapraz aşağı, sol kol çekilmiş) → toparlanma
 # 2026-10-24 (animasyon denetimi #6, #8, #9; arastirma/animasyon_denetimi_2026-10-24.md): raket başı hazırlıkta hep baş
@@ -225,15 +343,19 @@ for i in range(8):
 #     karede (u² eğrisi). pelvis: hazırlıkta kalça göğsün çok gerisinde değil (X-factor ~37°), düşüşte kalça çoktan açık.
 S_PREP=D(READY,root=(0,-0.03,0.40),lean=(0,-0.07,0.01),twist=62,pelvis=25,wrR=(0.20,-0.22,0.86),elR=(1,-0.5,0.3),rk=(-0.2,-0.3,0.93),rkFace=(-1,0,0.2),burgu=1.,wrL=(-0.12,0.22,0.95),elL=(-1,0.2,0),anR=(0.16,-0.14,0.05),anL=(-0.10,0.14,0.05),look=(0,0.4,1),head=(0,-0.02,0))
 S_DROP=D(S_PREP,root=(0,-0.01,0.41),lean=(0,-0.03,0.015),twist=40,pelvis=2,wrR=(0.22,-0.07,0.84),elR=(1,0.6,-0.1),rk=(0.22,-0.48,-0.85),rkFace=(-1,-0.5,0),wrL=(-0.16,0.20,0.80),elL=(-1,0,-0.2),anR=(0.15,-0.12,0.05),look=(0,0.5,0.9))
-S_HIT=D(READY,root=(0,0.02,0.43),lean=(0,0.05,0.02),twist=-12,pelvis=-24,wrR=(0.10,0.20,1.22),elR=(1,0.2,0.3),rk=(0,0.55,0.83),rkFace=(0.3,1,0),burgu=1.,wrL=(-0.20,0.16,0.60),elL=(-1,-0.3,-0.4),anR=(0.12,-0.06,0.05),anL=(-0.12,0.12,0.05),look=(0,0.6,0.8))
-S_FOL=D(READY,root=(0,0.07,0.37),lean=(0,0.13,-0.02),twist=-40,pelvis=-38,wrR=(-0.20,0.28,0.42),elR=(1,0.5,-0.3),rk=(-0.4,0.5,-0.75),rkFace=(1,0.2,0),burgu=1.,wrL=(-0.22,0.02,0.40),elL=(-1,-0.5,-0.3),anR=(0.12,0.20,0.05),anL=(-0.12,0.04,0.05),look=(0,1,-0.2))
+S_HIT=D(READY,root=(0,0.02,0.43),lean=(0,0.05,0.02),twist=-12,pelvis=-24,wrR=(0.10,0.20,1.22),elR=(1,0.2,0.3),rk=(0,0.55,0.83),rkFace=(0.3,1,0),burgu=1.,wrL=(-0.20,0.16,0.60),elL=(-1,-0.3,-0.4),anR=(0.15,-0.12,0.05),fpR=-25,anL=(-0.10,0.14,0.05),look=(0,0.6,0.8))
+S_FOL=D(READY,root=(0,0.07,0.37),lean=(0,0.13,-0.02),twist=-40,pelvis=-38,wrR=(-0.20,0.28,0.42),elR=(1,0.5,-0.3),rk=(-0.4,0.5,-0.75),rkFace=(1,0.2,0),burgu=1.,wrL=(-0.22,0.02,0.40),elL=(-1,-0.5,-0.3),anR=(0.12,0.24,0.05),fpR=8,anL=(-0.10,0.14,0.05),fpL=-15,look=(0,1,-0.2))
+# 2026-10-26 (tüm beden turu, denetim §2.5): düşüşten temasa sağ ayak yerde 6 cm öne, sol ayak 3 cm, takipte sol ayak yerde
+#     0,1 poz (~22 cm) geri kayıyordu. Şimdi sağ ayak temasta yerinde parmak ucunda (fpR −25°: kalça dönerken arka ayak
+#     ön tabanda pivot), sol ayak takip boyunca yerinde basar (topuk kalkık); sağ ayak takipte havadan öne gelir (ara kare
+#     yayı) ve topuktan basar: smacın 'arka ayak öne geçer' ağırlık aktarımı.
 # 14 kare: 0 hazır, 2 kupa (bekleme karesi), 5 düşüş, 9 temas, 11 takip, 13 hazır. Smaç, clear ve jump aynı ızgarada:
 #     ilk 6 kare (hazır→düşüş) üçünde birebir aynı, rakip vuruşu temastan önce okuyamaz.
 OV=lambda k: k/13
 smash=sample([(0,READY),(OV(2),S_PREP),(OV(5),S_DROP),(OV(9),S_HIT),(OV(11),S_FOL),(1,READY)],14,hit=3,hold=1,drop=2,lead=1)
 # --- clear (baş üstü, uzun): aynı yay ama temas başın hafif arkasında, devam öne-yukarı (topu taşır)
 C_HIT=D(S_HIT,wrR=(0.12,-0.02,1.27),rk=(0,0.2,0.98),lean=(0,0,0.02),pelvis=-20)
-C_FOL=D(S_FOL,wrR=(-0.14,0.30,0.62),rk=(-0.5,0.75,0.2),root=(0,0.05,0.40),lean=(0,0.07,0),twist=-30,pelvis=-32,anR=(0.12,0.10,0.05))
+C_FOL=D(S_FOL,wrR=(-0.14,0.30,0.62),rk=(-0.5,0.75,0.2),root=(0,0.05,0.40),lean=(0,0.07,0),twist=-30,pelvis=-32,anR=(0.12,0.12,0.05))
 clear=sample([(0,READY),(OV(2),S_PREP),(OV(5),S_DROP),(OV(9),C_HIT),(OV(11),C_FOL),(1,READY)],14,hit=3,hold=1,drop=2,lead=1)
 # --- drop (denetim #13): clear ile aynı gövde ve ilk 6 kare (aldatma: Badminton Bible "deception"), temasa YAVAŞLAYARAK
 #     girer (kosinüs, u² değil) ve takip kısa: raket temas noktasının biraz önünde durur, gövde clear kadar dönmez.
@@ -250,29 +372,45 @@ DR_HIT=D(READY,twist=0,lean=(0.03,0.03,-0.01),root=(0.03,0.02,0.38),wrR=(0.36,0.
 DR_FOL=D(READY,twist=-8,lean=(0.02,0.04,0),root=(0.02,0.02,0.39),wrR=(0.22,0.40,0.72),elR=(1,0.3,-0.4),rk=(-0.15,0.95,0.25),rkFace=(0,1,0),wrL=(-0.20,0.08,0.52),anR=(0.28,0.06,0.05),anL=(-0.12,0.0,0.05))
 drive=sample([(0,READY),(0.3,DR_PREP),(0.55,DR_HIT),(0.72,DR_FOL),(1,READY)],8,hit=2,hold=1,lead=1)
 # --- file öldürme (kısa, yüksek dürtme): raket önde yüksek, bilek kırar
-K_PREP=D(READY,wrR=(0.22,0.10,0.95),elR=(1,-0.3,-0.4),rk=(0.1,0.3,0.95),rkFace=(0,1,0),lean=(0,0.03,0),look=(0,0.7,0.7))
+# 2026-10-26 (tüm beden turu): öne adım hazırlıktan temasa KOMŞU karelerde atılıyordu (sağ ayak yerde 0,15 poz ≈ 33 cm kayma);
+#     adım hazırlığa taşındı (hazır → hazırlık arası ara karede havadan), temas ve takipte ayaklar yerinde. Takip anahtarı
+#     0,75 → 0,7: dönüş adımının da ara karesi olsun.
+K_PREP=D(READY,wrR=(0.22,0.10,0.95),elR=(1,-0.3,-0.4),rk=(0.1,0.3,0.95),rkFace=(0,1,0),lean=(0,0.05,0),root=(0,0.04,0.41),anR=(0.14,0.14,0.05),anL=(-0.12,0.0,0.05),look=(0,0.7,0.7))
 K_HIT=D(READY,wrR=(0.16,0.34,0.98),elR=(1,-0.2,-0.3),rk=(0.1,0.95,-0.3),rkFace=(0,0.4,1),lean=(0,0.08,0),root=(0,0.05,0.40),anR=(0.14,0.14,0.05),anL=(-0.12,0.0,0.05),look=(0,0.9,0.4))
 K_HIT=bukuk(K_HIT,120)   # denetim #12: kill dirseği önde ve bükük, kısa "tap" (eskiden 171° düz)
 K_FOL=D(K_HIT,wrR=(0.12,0.30,0.88),rk=(0.1,0.9,-0.45))
-kill=sample([(0,READY),(0.3,K_PREP),(0.55,K_HIT),(0.75,K_FOL),(1,READY)],7,hit=2,hold=1,lead=1)
+kill=sample([(0,READY),(0.3,K_PREP),(0.55,K_HIT),(0.7,K_FOL),(1,READY)],7,hit=2,hold=1,lead=1)
 # --- alçak forehand (lift / file önü). 2026-10-21: eski hazırlıkta el kalçanın ARKASINDAYDI (tenis forehand'ı gibi).
 #     Gerçekte raket erken ve önde sunulur: sağ ayak öne adım (topuk önce), gövde dik (20–30° eğim), sol kol dengede
 #     geride uzanır; kısa geri salınım = önkol dışa döner, raket başı elin altına düşer; temas sağ ayağın önünde alçakta,
 #     dirsek hafif bükük; takip kısa, hedefe doğru ileri-yukarı.
-L_PREP=D(READY,twist=10,lean=(0.01,0.03,-0.02),root=(0,0.06,0.36),wrR=(0.28,0.24,0.34),elR=(1,-0.1,-0.3),rk=(0.25,-0.25,-0.93),rkFace=(0,1,0.3),wrL=(-0.26,-0.10,0.48),elL=(-1,-0.4,-0.3),anR=(0.15,0.22,0.06),anL=(-0.12,-0.10,0.05),look=(0.1,1,-0.3))
-L_HIT=D(READY,twist=2,lean=(0.01,0.06,-0.03),root=(0.02,0.12,0.33),wrR=(0.26,0.44,0.26),elR=(1,0.2,-0.2),rk=(0.15,0.75,-0.64),rkFace=(0,0.7,0.7),wrL=(-0.28,-0.18,0.44),elL=(-1,-0.5,-0.2),anR=(0.16,0.34,0.05),anL=(-0.12,-0.14,0.05),look=(0.1,1,-0.3))
-L_FOL=D(READY,twist=-4,lean=(0,0.05,-0.01),root=(0.02,0.11,0.35),wrR=(0.20,0.48,0.56),elR=(1,0.3,-0.3),rk=(0.05,0.55,0.83),rkFace=(0,1,0.3),wrL=(-0.26,-0.16,0.44),anR=(0.16,0.34,0.05),anL=(-0.12,-0.12,0.05))
+# 2026-10-26 (tüm beden turu, denetim §2.3): arka (sol) ayak hazırlıktan temasa yerde 0,15–0,24 poz (0,35–0,5 m) GERİYE
+#     kayıyordu; adımı atan ön ayak hazırlıkta havada asılı duruyordu. Şimdi hazırlıkta iki ayak yerde (ağırlık sola), adım
+#     hazırlıktan temasa ara karede havadan atılır (_adim_kaldir), ön ayak temasta topuktan basar (fpR +14°), arka ayak yerinde
+#     kalır ve topuğu kalkar (fpL −20°: itiş), takipte ön taban düzleşir. Diz ön ayak bileğinin üstünde.
+L_PREP=D(READY,twist=10,lean=(0.01,0.07,-0.02),root=(0,0.04,0.40),wrR=(0.28,0.24,0.37),elR=(1,-0.1,-0.3),rk=(0.25,-0.25,-0.93),rkFace=(0,1,0.3),wrL=(-0.26,-0.10,0.48),elL=(-1,-0.4,-0.3),anR=(0.14,0.04,0.05),anL=(-0.13,0.05,0.05),fpL=-8,look=(0.1,1,-0.3))
+L_HIT=D(READY,twist=2,lean=(0.01,0.08,-0.03),root=(0.02,0.16,0.35),wrR=(0.26,0.44,0.26),elR=(1,0.2,-0.2),rk=(0.15,0.75,-0.64),rkFace=(0,0.7,0.7),wrL=(-0.28,-0.18,0.44),elL=(-1,-0.5,-0.2),anR=(0.16,0.36,0.05),fpR=14,ftR=(0.1,1,0),anL=(-0.12,0.03,0.05),fpL=-20,ftL=(-0.35,1,0),look=(0.1,1,-0.3))
+L_FOL=D(READY,twist=-4,lean=(0,0.07,-0.01),root=(0.02,0.15,0.37),wrR=(0.20,0.48,0.56),elR=(1,0.3,-0.3),rk=(0.05,0.55,0.83),rkFace=(0,1,0.3),wrL=(-0.26,-0.16,0.44),anR=(0.16,0.36,0.05),ftR=(0.1,1,0),anL=(-0.12,0.03,0.05),fpL=-15,ftL=(-0.35,1,0))
 L_HIT=bukuk(L_HIT,150)   # denetim #12: dirsek hafif bükük (171° kilitliydi)
+# 2026-10-26 (fizik denetimi §4.3): low/net'te raket kafası zemine ~5 cm giriyordu; bilek 3,1 poz cm (oyunda ~10 cm) yukarı
+L_HIT=D(L_HIT,wrR=(L_HIT['wrR'][0],L_HIT['wrR'][1],L_HIT['wrR'][2]+.031))
 low=sample([(0,READY),(0.32,L_PREP),(0.55,L_HIT),(0.75,L_FOL),(1,READY)],8,hit=2,hold=1,lead=1)
 # --- net vuruşu (denetim #13): low ile aynı gövde ve aynı ilk 5 kare; takip yok. Raket başı temastan sonra 10-20 cm
 #     ileri gider ve orada kalır (eski 'low' takibi raketi baş hizasına kaldırıyordu: lift için doğru, net için değil).
-N_FOL=bukuk(D(L_HIT,wrR=(0.26,0.47,0.29),rk=(0.15,0.80,-0.58),look=(0.1,1,-0.2)),150)
+N_FOL=bukuk(D(L_HIT,wrR=(0.26,0.47,0.32),rk=(0.15,0.80,-0.58),fpR=4,fpL=-15,look=(0.1,1,-0.2)),150)
 net=sample([(0,READY),(0.32,L_PREP),(0.55,L_HIT),(0.72,N_FOL),(1,READY)],8,hit=2,hold=1,lead=1)
-# --- hamle (lunge): sağ bacak derin öne, sol bacak gergin arkada, raket alçak ve çok önde, sol kol denge için arkada
-LU_HIT=D(READY,twist=10,lean=(0,0.07,-0.04),root=(0,0.24,0.28),wrR=(0.22,0.72,0.16),elR=(1,0.4,0.6),rk=(0.1,0.95,-0.2),rkFace=(0,0.3,1),wrL=(-0.26,-0.20,0.42),elL=(-1,-0.5,0.2),anR=(0.14,0.48,0.05),anL=(-0.12,-0.24,0.07),knR=(0,1,0),knL=(0,1,0),ftL=(-0.3,1,0),look=(0,1,-0.4))
-LU_PREP=D(READY,twist=15,lean=(0,0.08,-0.03),root=(0,0.10,0.37),wrR=(0.28,0.20,0.30),elR=(1,-0.2,0.5),rk=(0.1,0.8,-0.5),rkFace=(0,1,0),wrL=(-0.24,0.0,0.50),anR=(0.14,0.22,0.08),anL=(-0.12,-0.10,0.05))
-LU_HIT=bukuk(LU_HIT,150); LU_FOL=bukuk(D(LU_HIT,wrR=(0.16,0.66,0.30),rk=(0,0.9,0.4)),150)   # denetim #12
-lunge=sample([(0,READY),(0.35,LU_PREP),(0.6,LU_HIT),(0.78,LU_FOL),(1,READY)],8,hit=2,hold=1,lead=1)
+# --- hamle (lunge). 2026-10-26 (tüm beden turu, denetim §2.2): eski klipte arka ayak yerde 0,5 m geriye kayıyor, temasta
+#     bacak boyunu aşıp 16 cm havada kalıyordu (IK kırpması); toparlanmada ön ayak yerde 0,7 m geri sürünüyordu; ayak hiç
+#     topuktan basmıyordu. Şimdi (vurus_biyomekanigi.md §7 "Lunge"): hazırlıkta iki ayak yerde, ağırlık sol ayakta; ön (sağ)
+#     ayak ara karede havadan uzanır, temasta TOPUKTAN basar (fpR +18°), takipte taban düzleşir ve diz en derine iner
+#     (~90°, diz ayak bileğinin üstünde, burnu geçmez); arka ayak yerinde kalır, topuğu kalkık parmak ucunda (fpL −30°),
+#     ayak ucu dışa; gövde dik (~10–15° öne), sol kol arkada denge. Toparlanma: sağ topuktan geri itiş, ön ayak havadan
+#     geri adım (LU_REC), sonra hazır duruş. Ön ayak kökten ~0,5 poz (~1,1 m), iki ayak arası ~1,05 m (sade).
+LU_PREP=D(READY,twist=12,lean=(0,0.08,-0.02),root=(0,0.06,0.40),wrR=(0.28,0.20,0.30),elR=(1,-0.2,0.5),rk=(0.1,0.8,-0.5),rkFace=(0,1,0),wrL=(-0.24,0.0,0.50),anR=(0.14,0.06,0.05),anL=(-0.13,0.04,0.05),fpL=-10)
+LU_HIT=D(READY,twist=10,lean=(0,0.07,-0.03),root=(0,0.28,0.31),wrR=(0.22,0.72,0.16),elR=(1,0.4,0.6),rk=(0.1,0.95,-0.2),rkFace=(0,0.3,1),wrL=(-0.26,-0.20,0.42),elL=(-1,-0.5,0.2),anR=(0.15,0.50,0.05),fpR=18,ftR=(0.1,1,0),anL=(-0.12,0.02,0.05),fpL=-30,ftL=(-0.5,1,0),knR=(0.05,1,0),knL=(-0.2,1,0),look=(0,1,-0.4))
+LU_HIT=bukuk(LU_HIT,150); LU_FOL=bukuk(D(LU_HIT,root=(0,0.32,0.275),wrR=(0.16,0.66,0.30),rk=(0,0.9,0.4),fpR=0,anL=(-0.12,0.04,0.05)),150)   # denetim #12
+LU_REC=D(READY,twist=8,lean=(0,0.08,-0.01),root=(0,0.14,0.39),wrR=(0.22,0.40,0.42),wrL=(-0.24,0.02,0.46),anR=(0.14,0.24,0.12),fpR=-10,ftR=(0.1,1,0),anL=(-0.13,0.05,0.05),fpL=-10,look=(0,1,-0.1))
+lunge=sample([(0,READY),(0.35,LU_PREP),(0.6,LU_HIT),(0.78,LU_FOL),(6/7,LU_REC),(1,READY)],8,hit=2,hold=1,lead=1)
 # --- servisler (2026-10-21, yasin: "kısa servisi bir badminton sporcusu gibi atmalı, uzun servis de buna göre; kısa servis
 #     pozisyonunda flick de atabilmeliyim"; arastirma/reports/Badminton alçak vuruş ve servis.md §servis).
 # kısa servis (backhand): sağ ayak önde, ayaklar omuz genişliğinde kademeli, gövde fileye kare; backhand tutuş,
@@ -296,9 +434,9 @@ serve_flick=sample([(0,SB0),(0.22,SB0),(0.40,SB1),(0.50,SF2),(0.66,SF3),(1,READY
 # yüksek servis (forehand, teklerde uzun): yan duruş, sol ayak önde, ağırlık arka (sağ) ayakta; sol el topu önde omuz
 #     hizasında tutar ve bırakır (atmaz); raket arkada yukarıdan uzun ve gevşek iner; temas ön ayak hizasında alçakta,
 #     önkol rotasyonu; takip sol omzun üstüne, ağırlık öne geçer; temastan sonra arka ayak öne kayar.
-SH0=D(READY,root=(0,-0.03,0.41),twist=55,lean=(0,-0.03,0),anL=(-0.02,0.20,0.05),anR=(0.14,-0.16,0.05),ftL=(0.2,1,0),ftR=(0.9,0.4,0),
+SH0=D(READY,root=(0,-0.03,0.395),twist=55,lean=(0,-0.03,0),anL=(-0.04,0.17,0.05),anR=(0.14,-0.16,0.05),ftL=(0.2,1,0),ftR=(0.9,0.4,0),
       wrR=(0.30,-0.20,0.74),elR=(1,-0.5,0.2),rk=(0.2,-0.5,0.85),rkFace=(1,0,0),wrL=(0.04,0.28,0.68),elL=(-1,0.2,-0.4),shuttle=True,look=(0,1,0))
-SH1=D(SH0,root=(0,-0.02,0.40),twist=45,wrR=(0.30,-0.10,0.36),elR=(1,-0.4,0.2),rk=(0.2,-0.45,-0.87),wrL=(-0.06,0.24,0.62),shuttle=False)
+SH1=D(SH0,root=(0,-0.02,0.39),twist=45,wrR=(0.30,-0.10,0.36),elR=(1,-0.4,0.2),rk=(0.2,-0.45,-0.87),wrL=(-0.06,0.24,0.62),shuttle=False)
 SH2=D(SH1,root=(0,0.04,0.40),twist=12,lean=(0,0.02,0),wrR=(0.18,0.30,0.34),elR=(1,0,0.2),rk=(0.10,0.92,-0.37),rkFace=(0,0.5,0.85),wrL=(-0.14,0.16,0.56))
 SH3=D(SH2,root=(0,0.08,0.41),twist=-35,lean=(0,0.04,0),wrR=(-0.22,0.18,0.92),elR=(1,0.4,0.4),rk=(-0.45,-0.2,0.87),rkFace=(0,1,0),wrL=(-0.20,0.02,0.50),anR=(0.12,0.0,0.07))
 serve=sample([(0,SH0),(0.18,SH0),(0.38,SH1),(0.55,SH2),(0.75,SH3),(1,READY)],20,hit=3,lead=1)
@@ -310,7 +448,9 @@ serve=sample([(0,SH0),(0.18,SH0),(0.38,SH1),(0.55,SH2),(0.75,SH3),(1,READY)],20,
 serve_gec=sample([(0,SB0),(0.06,SB0),(0.24,SH0),(0.42,SH1),(0.58,SH2),(0.77,SH3),(1,READY)],20,hit=4,lead=1)
 # --- blok (ağa yakın kısa itiş): raket göğüs önünde dik, küçük hareket
 # savunma bloğu: geniş alçak duruş, raket bel önünde (diz ile göğüs arası), çok kısa itiş, takip yok
-B_LOW=D(READY,root=(0,-0.02,0.34),lean=(0,0.07,-0.02),anR=(0.20,0.04,0.05),anL=(-0.19,0.0,0.05),wrR=(0.04,0.24,0.46),elR=(1,-0.4,-0.3),rk=(-0.1,0.6,0.8),rkFace=(0,1,0),wrL=(-0.20,0.16,0.42))
+# 2026-10-26: ayaklar ±0,20'den ±0,15'e (blok 6 karede, dönüş komşu karelerde: geniş duruş 0,07 poz ≈ 15 cm kayarak toplanıyordu;
+#     şimdi hazır duruştan ~2 poz cm geniş, alçaklık dizden gelir).
+B_LOW=D(READY,root=(0,-0.01,0.35),lean=(0,0.07,-0.02),anR=(0.15,0.0,0.05),anL=(-0.15,0.04,0.05),knR=(0.25,1,0),knL=(-0.25,1,0),wrR=(0.04,0.24,0.46),elR=(1,-0.4,-0.3),rk=(-0.1,0.6,0.8),rkFace=(0,1,0),wrL=(-0.20,0.16,0.42))
 B_HIT=D(B_LOW,wrR=(0.04,0.34,0.50),rk=(-0.1,0.7,0.7),look=(0,1,0.1))
 block=sample([(0,READY),(0.3,B_LOW),(0.6,B_HIT),(0.8,B_LOW),(1,READY)],6,hit=2,hold=1)
 
@@ -323,10 +463,18 @@ block=sample([(0,READY),(0.3,B_LOW),(0.6,B_HIT),(0.8,B_LOW),(1,READY)],6,hit=2,h
 #     temasa u² ile girer: supinasyonun çoğu son iki karede. BO_PREP yüzü burgu=0 olduğu için işaretsiz; (-0.15,1,0) ile
 #     BO_HIT'e tam ters değil (küre karışımı ortada yön seçebilsin). Takip kısa ve sert: raket temas noktasının hemen
 #     ötesinde durur, yatay dışa savrulmaz (kaynak: "tık" diye biten vuruş).
-BO_PREP=D(READY,twist=-125,lean=(-0.02,-0.06,0.01),wrR=(-0.10,-0.14,0.78),elR=(-0.4,-1,0.8),rk=(-0.2,-0.4,-0.9),rkFace=(-0.15,1,0),wrL=(0.10,0.06,0.52),elL=(1,-0.4,-0.3),anR=(-0.12,-0.24,0.05),anL=(0.04,0.06,0.05),ftR=(-0.6,-1,0),ftL=(0.3,1,0),look=(-0.5,-0.5,0.7))
-BO_HIT=D(READY,twist=-105,lean=(-0.02,-0.03,0.02),wrR=(-0.20,-0.10,1.22),elR=(-0.5,-1,0.6),rk=(-0.2,-0.2,0.96),rkFace=(0,-1,0),burgu=1.,wrL=(0.10,0.08,0.48),anR=(-0.12,-0.24,0.05),anL=(0.04,0.06,0.05),ftR=(-0.6,-1,0),ftL=(0.3,1,0),look=(-0.4,-0.4,0.8))
+# Boş el ve raket eli (2026-10-26, iç içe geçme denetimi): twist −105…−125'te gövdenin önü −x'e bakar; eski wrL (0.10,0.06/0.08)
+#     sırtın arkasında kalıyordu ve READY'ye dönüşte (ara kareler) ön kol gövdenin içinden geçiyordu (oyuncak 3B'de 4–9 cm).
+#     Yeni wrL gövdenin sol-önünde (gövde çerçevesinde ~20 cm sol, ~10 cm ön), dirsek dışa. BO_PREP raket eli çeneye 6 cm
+#     giriyordu: 4 cm sol omuza doğru açıldı. Tüm modeller için aynı poz; HTML sprite'ı yeniden çizilmeli.
+BO_PREP=D(READY,root=(-0.03,-0.08,0.38),twist=-125,lean=(-0.02,-0.06,0.01),wrR=(-0.05,-0.18,0.78),elR=(-0.4,-1,0.8),rk=(-0.2,-0.4,-0.9),rkFace=(-0.15,1,0),wrL=(0.03,-0.22,0.52),elL=(0.6,-0.8,-0.5),anR=(-0.09,-0.19,0.05),anL=(0.04,0.06,0.05),ftR=(-0.6,-1,0),knR=(-0.6,-1,0),ftL=(0.3,1,0),look=(-0.5,-0.5,0.7))
+BO_HIT=D(READY,root=(-0.03,-0.07,0.39),twist=-105,lean=(-0.02,-0.03,0.02),wrR=(-0.20,-0.10,1.22),elR=(-0.5,-1,0.6),rk=(-0.2,-0.2,0.96),rkFace=(0,-1,0),burgu=1.,wrL=(-0.07,-0.21,0.50),elL=(0.3,-0.95,-0.5),anR=(-0.09,-0.19,0.05),anL=(0.04,0.06,0.05),ftR=(-0.6,-1,0),knR=(-0.6,-1,0),ftL=(0.3,1,0),look=(-0.4,-0.4,0.8))
 BO_FOL=D(BO_HIT,twist=-98,lean=(-0.02,-0.02,0.015),wrR=(-0.21,-0.04,1.16),rk=(-0.25,0.12,0.96),rkFace=(0.3,-1,0))
 BO_FOL=bukuk(BO_FOL,158)
+# 2026-10-26 (tüm beden turu): kök hazır duruş yüksekliğindeydi (0,43), sağ ayak kökten 0,27 poz arkada: sağ diz 7° (kilitli,
+#     arka köşeye uzanan düz bacak). Kök arka ayağa doğru 0,08 kaydı, 0,38–0,39'a indi, sağ ayak 5 poz cm
+#     yaklaştı: ağırlık sağ ayakta, diz ~30°. Sağ diz ipucu ayak ucuyla aynı yöne (−0,6,−1): eskiden varsayılan (öne) kalıyor,
+#     ayak arkaya dönükken diz 175° ters yöne bakıyordu.
 # Bekleme kopyası (eski 0,26→0,40 BO_PREP) kalktı: oyun hazırlıkta hold karesinde bekler; kareler ileri salınıma verildi.
 bh_over=sample([(0,READY),(2/9,BO_PREP),(5/9,BO_HIT),(6/9,BO_FOL),(1,READY)],10,hit=2,hold=1,lead=1)
 # --- backhand drive (2026-10-21): başparmak tutuş, dirsek önde ve topa dönük, raket başı arkadan gelir; temas vuran
@@ -341,58 +489,85 @@ BD_HIT=D(BD_PREP,twist=-40,lean=(-0.02,0.04,0),wrR=(-0.20,0.38,0.64),elR=(0.3,1,
 BD_FOL=D(BD_HIT,twist=-32,wrR=(-0.12,0.44,0.66),rk=(-0.15,0.95,0.25))
 bh_drive=sample([(0,READY),(0.3,BD_PREP),(0.55,BD_HIT),(0.72,BD_FOL),(1,READY)],8,hit=2,hold=1,lead=1)
 # --- backhand file öldürme (yüksek, kısa dürtme)
-BK_PREP=D(READY,twist=-20,wrR=(-0.14,0.08,0.92),elR=(0.5,1,0.2),rk=(-0.3,0.2,0.93),rkFace=(0,1,0),lean=(0,0.03,0),look=(-0.3,0.7,0.6))
+BK_PREP=D(READY,twist=-20,wrR=(-0.14,0.08,0.92),elR=(0.5,1,0.2),rk=(-0.3,0.2,0.93),rkFace=(0,1,0),lean=(0,0.05,0),root=(0,0.04,0.41),anR=(0.0,0.14,0.05),anL=(-0.16,0.0,0.05),look=(-0.3,0.7,0.6))   # adım hazırlıkta (kill ile aynı gerekçe)
 BK_HIT=D(READY,twist=-5,wrR=(-0.28,0.34,0.98),elR=(0.4,0.9,0),rk=(-0.4,0.8,-0.4),rkFace=(0,0.4,1),lean=(0,0.08,0),root=(0,0.05,0.40),anR=(0.0,0.14,0.05),anL=(-0.16,0.0,0.05),look=(-0.2,0.9,0.4))
 BK_PREP=bukuk(BK_PREP,140); BK_HIT=bukuk(BK_HIT,120); BK_FOL=bukuk(D(BK_HIT,wrR=(-0.26,0.30,0.88),rk=(-0.4,0.75,-0.55)),135)   # denetim #12
-bh_kill=sample([(0,READY),(0.3,BK_PREP),(0.55,BK_HIT),(0.75,BK_FOL),(1,READY)],7,hit=2,hold=1,lead=1)
+bh_kill=sample([(0,READY),(0.3,BK_PREP),(0.55,BK_HIT),(0.7,BK_FOL),(1,READY)],7,hit=2,hold=1,lead=1)
 # --- backhand alçak (file önü / lift, 2026-10-21): sağ ayak sola-öne adım (backhand köşesine de raket ayağı gider),
 #     başparmak tutuş, dirsek önce yükselip öne çıkar, raket başı arkadan ve elin ALTINDA gelir; gövde dik, sol kol
 #     geride; takip kısa ve hedefe. Eskisinde raket başı önde süpürüyordu.
 # 2. tur: backhand ön köşe = sağ bacakla sola-öne hamle (sol bacakla hamle acemi hatası), gövde ~45° döner, sırt
 #     fileye yarı dönük; dirsek önce yükselip öne çıkar, raket başı elin ALTINDA ve arkada gelir; sol kol hamlenin tersine
 #     geride uzanır; temas öndeki ayağın önünde alçakta; lift'te takip öne-yukarı, file vuruşunda çok kısa.
-BL_PREP=D(READY,twist=-45,lean=(-0.02,0.05,-0.02),root=(-0.06,0.10,0.36),wrR=(-0.16,0.30,0.48),elR=(0.2,1,0.3),rk=(-0.35,-0.10,-0.93),rkFace=(-0.3,0.9,0.3),wrL=(0.10,-0.22,0.46),elL=(1,-0.6,-0.2),anR=(-0.16,0.30,0.08),anL=(0.0,-0.16,0.05),ftR=(-0.5,0.9,0),ftL=(-0.2,1,0),look=(-0.3,1,-0.3))
-BL_HIT=D(BL_PREP,twist=-40,lean=(-0.03,0.07,-0.04),root=(-0.10,0.22,0.29),wrR=(-0.26,0.58,0.26),elR=(0.2,1,0.4),rk=(-0.35,0.55,-0.76),rkFace=(0,0.6,0.8),wrL=(0.18,-0.30,0.42),anR=(-0.22,0.46,0.05),anL=(0.04,-0.20,0.07),knR=(0,1,0),look=(-0.2,1,-0.4))
-BL_FOL=D(BL_HIT,wrR=(-0.22,0.56,0.46),rk=(-0.30,0.70,0.65),rkFace=(0,0.8,0.6))
+# 2026-10-26 (tüm beden turu, denetim §2.3): temasta ön diz 21° (neredeyse düz), arka diz 7° (kilitli): iki bacak da gergin
+#     bir yarılma; arka ayak 0,2 poz geri kayıyordu, sağ ayak hazırlıkta havada asılıydı. Şimdi forehand file vuruşunun
+#     aynası: hazırlıkta iki ayak yerde (sağ ayak ucu sola dönmeye başlar), sağ ayak ara karede sol-öne uzanır, topuktan
+#     basar; sol (arka) ayak yerinde, ucu dışa, topuğu kalkık; ön diz ~70°, gövde ~45° dönük ve dik.
+BL_PREP=D(READY,twist=-40,lean=(-0.02,0.07,-0.02),root=(-0.03,0.05,0.40),wrR=(-0.16,0.30,0.48),elR=(0.2,1,0.3),rk=(-0.35,-0.10,-0.93),rkFace=(-0.3,0.9,0.3),wrL=(0.10,-0.22,0.46),elL=(1,-0.6,-0.2),anR=(0.10,0.06,0.05),anL=(-0.13,0.04,0.05),fpL=-10,ftR=(-0.3,1,0),ftL=(-0.4,1,0),look=(-0.3,1,-0.3))
+BL_HIT=D(BL_PREP,twist=-40,lean=(-0.03,0.08,-0.04),root=(-0.11,0.20,0.32),wrR=(-0.26,0.58,0.26),elR=(0.2,1,0.4),rk=(-0.35,0.55,-0.76),rkFace=(0,0.6,0.8),wrL=(0.18,-0.30,0.42),anR=(-0.18,0.38,0.05),fpR=14,ftR=(-0.5,0.9,0),anL=(-0.12,0.03,0.05),fpL=-25,ftL=(-0.6,0.8,0),knR=(-0.45,1,0),knL=(-0.5,1,0),look=(-0.2,1,-0.4))
+BL_FOL=D(BL_HIT,wrR=(-0.22,0.56,0.46),rk=(-0.30,0.70,0.65),rkFace=(0,0.8,0.6),fpR=0,root=(-0.11,0.21,0.32))
 BL_HIT=bukuk(BL_HIT,150)   # denetim #12 (BL_FOL ve BLU_HIT kendi bileğini yazar, etkilenmez)
 bh_low=sample([(0,READY),(0.32,BL_PREP),(0.55,BL_HIT),(0.75,BL_FOL),(1,READY)],8,hit=2,hold=1,lead=1)
-# --- backhand hamle: sol-öne derin, sağ (raket) bacak öne
-BLU_PREP=D(BL_PREP,root=(-0.06,0.12,0.35),anR=(-0.18,0.34,0.09))
-BLU_HIT=D(BL_HIT,root=(-0.12,0.26,0.27),wrR=(-0.30,0.66,0.18),rk=(-0.30,0.90,-0.30),rkFace=(0,0.3,1),anR=(-0.24,0.52,0.05),anL=(0.06,-0.24,0.07))
-BLU_HIT=bukuk(BLU_HIT,150); BLU_FOL=bukuk(D(BLU_HIT,wrR=(-0.24,0.64,0.30),rk=(-0.3,0.9,0.4)),150)   # denetim #12
-bh_lunge=sample([(0,READY),(0.35,BLU_PREP),(0.6,BLU_HIT),(0.78,BLU_FOL),(1,READY)],8,hit=2,hold=1,lead=1)
+# --- backhand hamle: sol-öne derin, sağ (raket) bacak öne. 2026-10-26: arka ayak yerinde (eskiden 0,3 poz geri kayıyordu),
+#     topuk basışı, takipte diz en derinde (~85°), sağ topuktan itişle havadan geri adım (BLU_REC).
+BLU_PREP=D(BL_PREP,root=(-0.04,0.06,0.40))
+BLU_HIT=D(BL_HIT,root=(-0.14,0.28,0.30),wrR=(-0.30,0.66,0.18),rk=(-0.30,0.90,-0.30),rkFace=(0,0.3,1),anR=(-0.24,0.47,0.05),fpR=18,anL=(-0.11,0.02,0.05),fpL=-30)
+BLU_HIT=bukuk(BLU_HIT,150); BLU_FOL=bukuk(D(BLU_HIT,root=(-0.15,0.31,0.27),wrR=(-0.24,0.64,0.30),rk=(-0.3,0.9,0.4),fpR=0,anL=(-0.11,0.04,0.05)),150)   # denetim #12
+BLU_REC=D(READY,twist=-20,lean=(-0.01,0.08,-0.01),root=(-0.06,0.14,0.39),wrR=(-0.04,0.40,0.46),wrL=(-0.10,-0.06,0.46),anR=(-0.06,0.24,0.12),fpR=-10,ftR=(-0.3,1,0),anL=(-0.13,0.05,0.05),fpL=-10,look=(-0.1,1,-0.1))
+bh_lunge=sample([(0,READY),(0.35,BLU_PREP),(0.6,BLU_HIT),(0.78,BLU_FOL),(6/7,BLU_REC),(1,READY)],8,hit=2,hold=1,lead=1)
 # ================= ayak işi (yasin: "adımlamalar badminton sporunun doğasına uygun olmalı") =================
 # split step: rakip vururken küçük sıçrama, geniş ve alçak iniş
-split=sample([(0,READY),(0.35,D(READY,root=(0,0,0.47),anR=(0.16,0,0.10),anL=(-0.16,0,0.10),wrR=(0.24,0.22,0.58),wrL=(-0.22,0.18,0.54))),(0.65,D(READY,root=(0,0,0.36),anR=(0.20,0,0.05),anL=(-0.20,0,0.05))),(1,READY)],5)
-# chassé (yana kayma): öndeki ayak açılır, arkadaki ayak yanına gelir; gövde alçak, raket yukarıda
+# split step (2026-10-26, tüm beden turu, denetim §1): eski klipte ayaklar havada 13 cm (kaynak 3–8 cm), iniş 0,70 m geniş
+#     (1,8 × omuz; kaynak 1,3–1,5 ×) ve gövde 7 poz cm zıplıyordu. Şimdi: küçük patlayıcı hop (ayaklar ~4 cm), iniş ön tabanla
+#     ~1,4 × omuz genişliğinde, dizler yüklenir, sonra hazır duruşa. 5 kare = anahtarlar (0 hazır, 1 havada, 2 iniş, 3 yüklü,
+#     4 hazır); oyun klibi rakibin temasında başlatır, iniş ~0,15 s sonra (vurus_biyomekanigi.md §1: 0,15–0,2 s).
+SP_HAVA=D(READY,root=(0,0,0.445),anR=(0.15,-0.01,ZEMIN+.03),anL=(-0.15,0.05,ZEMIN+.03),wrR=(0.24,0.24,0.56),wrL=(-0.22,0.20,0.52),knR=(0.2,1,0),knL=(-0.2,1,0))
+SP_INIS=D(READY,root=(0,0.01,0.395),lean=(0,0.06,0),anR=(0.19,-0.01,ZEMIN),anL=(-0.19,0.05,ZEMIN),knR=(0.25,1,0),knL=(-0.25,1,0),ftR=(0.15,1,0),ftL=(-0.15,1,0))
+# 7 kare (2026-10-26): 5 karede yüklü iniş → hazır duruş komşu karelerdeydi, ayaklar yerde 0,07 poz (~15 cm) kayarak
+#     toplanıyordu. Şimdi 0 hazır, 1 kalkış, 2 tepe, 3 iniş (oyunun 0,3 sn'lik split'inde ~0,15 sn), 4 yüklü (ayaklar yükü alırken
+#     ±0,165'e kayar: iniş itişinin ön tabanda dönüşü), 5 ara kare (küçük toplama adımı ~4 cm, _adim_kaldir), 6 hazır.
+split=sample([(0,READY),(1/6,D(SP_HAVA,root=(0,0,0.44),anR=(0.14,-0.01,ZEMIN+.02),anL=(-0.14,0.05,ZEMIN+.02))),(2/6,SP_HAVA),(3/6,SP_INIS),(4/6,D(SP_INIS,root=(0,0.01,0.40),anR=(0.165,-0.01,ZEMIN),anL=(-0.165,0.05,ZEMIN))),(1,READY)],7)
+# chassé (yana kayma, 2026-10-26): dongu() dörtnalı — öndeki ayak açılır ve basar, arkadaki 0,3 döngü sonra yanına gelir
+#     (adım-kapa), ayaklar ÇAPRAZLANMAZ (en dar ara ~0,17 poz: modelin dar kalçasıyla ~18 cm, gal.py taraması), kısa uçuş
+#     evresi. Döngü 0,44 poz ≈ 0,95 m (sade): 2,4 m/s'de 2,5 döngü/sn. Gövde dik ve sabite yakın (zıplama yok; kaynak: kalça yüksekliği neredeyse sabit),
+#     dizler ~35–55°, raket önde yukarıda. Eski klipte kök 0,34'e iniyordu (diz 84–91°), öndeki diz 24°'ye açılıp kilitleniyordu.
 def chasse(sgn):
-    k0=D(READY,root=(0,0,0.39),anR=(sgn*0.14 if sgn>0 else 0.12,0,0.05),anL=(sgn*0.14 if sgn<0 else -0.12,0,0.05),lean=(sgn*0.03,0.02,0))
-    k1=D(k0,root=(0,0,0.41),**({'anR':(0.34,0,0.07)} if sgn>0 else {'anL':(-0.34,0,0.07)}))
-    k2=D(k0,root=(0,0,0.38),**({'anR':(0.34,0,0.05),'anL':(0.06,0,0.06)} if sgn>0 else {'anL':(-0.34,0,0.05),'anR':(-0.06,0,0.06)}))
-    return sample([(0,k0),(0.35,k1),(0.7,k2),(1,k0)],6,loop=True)
+    ust=D(READY,root=(0,0,0.41),lean=(sgn*0.02,0.08,0),wrR=(0.24,0.24,0.58),wrL=(-0.22,0.18,0.52))
+    return dongu(8,(sgn,0),.44,.5,.3,.04,{'R':(0.15,-0.01),'L':(-0.15,0.05)},ust,root=.41,bob=.008,once='R' if sgn>0 else 'L',
+                 kn=((0.25,1,0),(-0.25,1,0)),ft=((0.2,1,0),(-0.2,1,0)))
 chasse_r=chasse(1); chasse_l=chasse(-1)
-# öne adım: kısa, alçak adımlar (hamleye hazırlanır), raket önde yukarıda
-# 2026-10-25: yerdeki ayağın bilek yüksekliği 0'dı (max(0, …) READY'nin 0,05 bilek yüksekliğini atlıyordu; diğer ayak işi
-#     klipleri 0,05 tabanlı). Bilek 5 cm alçak hedeflenince derili ağda ayak her fazda zemine gömülüyordu (Gerçekçi model
-#     -5,7 cm, Unity 1,75× ölçekte ~10 cm). Taban 0,05: kaldırılan ayak eskisi gibi +6 cm'e çıkar, basan ayak zeminde kalır.
-fwd=[]
-for i in range(6):
-    ph=i/6*2*math.pi; s_=math.sin(ph)
-    fwd.append(D(READY,root=(0,0.02,0.38+0.01*abs(math.cos(ph))),lean=(0,0.07,-0.01),twist=-6*s_,anR=(0.11,0.12*s_,0.05+max(0,0.06*math.sin(ph+0.4))),anL=(-0.11,-0.12*s_,0.05+max(0,0.06*math.sin(ph+math.pi+0.4))),wrR=(0.24,0.24,0.60),wrL=(-0.2,0.14,0.46)))
-# arkaya çapraz adım — sağ (forehand) köşe: kalça sağa döner, sol ayak sağın arkasından geçer, sağ ayak geri; raket hazırlıkta
+# öne adım (2026-10-26): kısa, alçak, hızlı adımlar (hamleye hazırlanır), raket önde yukarıda. dongu(): döngü 0,74 poz ≈ 1,3 m,
+#     duty 0,55 (uçuşsuz). 0,62 poz ≈ 1,35 m (sade): 3 m/s'de 2,2 döngü/sn. Hızlı öne koşuda (≥ ~3 m/s) Unity 'run'a geçer.
+_FWD_UST=D(READY,root=(0,0.02,0.41),lean=(0,0.11,-0.01),wrR=(0.24,0.26,0.60),wrL=(-0.20,0.14,0.48))
+fwd=dongu(8,(0,1),.62,.55,.5,.05,{'R':(0.11,0.0),'L':(-0.11,0.02)},_FWD_UST,root=.41,bob=.012,kol=.06,tw=6,pel=5)
+# arkaya adım (2026-10-26). Eski döngüler oyunda 0,21–0,35 m taşıyordu (oyuncu arkaya ort. 3,5 m/s koşuyor: %37+ kayma).
+#     Sağ arka (forehand köşe): gövde sağa döner (göğüs 42°, leğen 30°), raket overhead hazırlığında, sağ ayak önden
+#     arkaya basarak kayar; sol arka (backhand / round-the-head köşe): gövde sola (göğüs −62°, leğen −40°). İkisi de
+#     dongu(): döngü 0,70 poz ≈ 1,55 m (sade), duty 0,45 (kısa uçuş), 3,5 m/s'de 2,3 döngü/sn. Ayak ve diz gövdenin baktığı yöne
+#     dönük (diz ayak ucu doğrultusunda, valgus yok).
 def back(sgn):
-    tw=42*sgn if sgn>0 else -62
-    base=D(READY,twist=tw,lean=(0,-0.04,0),wrR=(0.22,-0.08,0.80) if sgn>0 else (-0.06,-0.06,0.76),elR=(1,-0.4,0.3) if sgn>0 else (-1,-0.3,0.6),rk=(0,-0.4,0.9) if sgn>0 else (-0.3,-0.5,-0.7),wrL=(-0.16,0.16,0.70) if sgn>0 else (0.18,0.0,0.55),look=(0.3*sgn,0.5,0.8))
-    if sgn>0: k1=D(base,anL=(0.10,-0.16,0.07),anR=(0.14,0.0,0.05)); k2=D(base,anL=(0.10,-0.16,0.05),anR=(0.18,-0.30,0.07))
-    else:     k1=D(base,anR=(-0.10,-0.16,0.07),anL=(-0.14,0.0,0.05)); k2=D(base,anR=(-0.10,-0.16,0.05),anL=(-0.18,-0.30,0.07))
-    return sample([(0,base),(0.35,k1),(0.7,k2),(1,base)],6,loop=True)
+    tw=42 if sgn>0 else -62
+    base=D(READY,twist=tw,pelvis=30 if sgn>0 else -40,lean=(0,-0.03,0),wrR=(0.22,-0.08,0.80) if sgn>0 else (-0.06,-0.06,0.76),elR=(1,-0.4,0.3) if sgn>0 else (-1,-0.3,0.6),rk=(0,-0.4,0.9) if sgn>0 else (-0.3,-0.5,-0.7),wrL=(-0.16,0.16,0.70) if sgn>0 else (0.18,0.0,0.55),look=(0.3*sgn,0.5,0.8))
+    yon=((0.55,1,0),(0.35,1,0)) if sgn>0 else ((-0.35,1,0),(-0.55,1,0))
+    return dongu(8,(0,-1),.70,.45,.5,.07,{'R':(0.12,-0.02),'L':(-0.12,0.04)},base,root=.40,bob=.015,kn=yon,ft=yon)
 back_r=back(1); back_l=back(-1)
+# hızlı yana koşu (2026-10-26, yeni): chassé ~2,8 m/s üstünde 3 döngü/sn'yi aşıyor (ayak pırpır ya da kayma). Gerçekte hızlı
+#     yan harekette oyuncu leğeni gidiş yönüne çevirir, çapraz adımla koşar, göğüs ve baş fileye/topa yarı dönük kalır.
+#     Leğen ±50°, göğüs ±25°; dongu() koşusu, ayaklar gidiş doğrultusunda önden-arkadan geçer. Döngü 0,72 poz ≈ 1,6 m (sade),
+#     duty 0,42: 5,2 m/s'de 3,3 döngü/sn. Klipler listenin sonunda (önceki satırlar kaymasın).
+def kros(sgn):
+    ust=D(READY,root=(0,0,0.41),twist=25*sgn,pelvis=50*sgn,lean=(sgn*0.03,0.04,0),wrR=(0.26,0.18,0.60),wrL=(-0.20,0.10,0.48),look=(-0.3*sgn,1,0.1))
+    yon=((sgn*1,0.75,0),(sgn*1,0.75,0))
+    return dongu(8,(sgn,0),.72,.42,.5,.08,{'R':(0.0,-0.05),'L':(0.0,0.08)},ust,root=.41,bob=.018,once='R' if sgn>0 else 'L',kn=yon,ft=yon)
+kros_r=kros(1); kros_l=kros(-1)
 # sıçrayarak smaç: makas — raket bacağı geride, sıçrayışta öne savrulur, sol bacak geriye; iniş sol ayağa. Yükseklik oyunda eklenir (root sabit).
-J_TAKE=D(S_PREP,root=(0,-0.03,0.34),anR=(0.16,-0.18,0.05),anL=(-0.10,0.14,0.05))
+J_TAKE=D(S_PREP,root=(0,-0.03,0.34),anR=(0.16,-0.14,0.05),anL=(-0.10,0.14,0.05))   # ayaklar kupa pozundaki yerinde (eskiden sağ ayak 4 poz cm yerde kayıyordu)
 # Havada raket düşüşü (denetim #6): kalkıştan sonra, makas başlamadan; bacaklar toplanmış, kol S_DROP'ta.
 J_DROP=D(S_DROP,root=(0,-0.01,0.42),anR=(0.15,-0.10,0.14),anL=(-0.11,0.06,0.15),knR=(0,1,0),knL=(0,1,0))
-J_AIR=D(S_HIT,root=(0,0.0,0.42),anR=(0.12,0.22,0.16),anL=(-0.12,-0.22,0.22),knR=(0,1,0),knL=(0,-1,0))
-J_LAND=D(S_FOL,root=(0,0.04,0.36),anR=(0.14,0.16,0.10),anL=(-0.14,-0.10,0.05),ftL=(-0.7,1,0))   # önce sol ayak dışa dönük iner (§3)
+# 2026-10-26 (tüm beden turu, denetim §2.6): sol diz ipucu (0,−1,0) dizi GERİYE büküyordu (diz yönü −178°); makas açıklığı
+#     0,44 poz (~1 m). Şimdi iki diz öne, makas ~0,32 poz (~0,7 m): sağ bacak öne savrulur, sol geride ve bükük (iniş ona).
+J_AIR=D(S_HIT,root=(0,0.0,0.42),anR=(0.09,0.16,0.16),anL=(-0.09,-0.16,0.20),fpR=0,knR=(0,1,0),knL=(0,1,0))
+J_LAND=D(S_FOL,root=(0,0.04,0.385),anR=(0.14,0.16,0.10),anL=(-0.14,-0.10,0.05),ftL=(-0.7,1,0))   # önce sol ayak dışa dönük iner (§3)
 # 14 kare, smaç ızgarası: 2 kupa, 4 çömelme/kalkış, 6 havada düşüş, 9 temas, 11 iniş. Bekleme karesi kupa (2): çömelme
 #     ileri hareketin parçası, oyun kalkışı temastan ~250-300 ms önce başlatır.
 jump=sample([(0,READY),(OV(2),S_PREP),(OV(4),J_TAKE),(OV(6),J_DROP),(OV(9),J_AIR),(OV(11),J_LAND),(1,READY)],14,hit=4,hold=1,drop=3,lead=1)
@@ -400,13 +575,15 @@ jump=sample([(0,READY),(OV(2),S_PREP),(OV(4),J_TAKE),(OV(6),J_DROP),(OV(9),J_AIR
 #     Sayı arasında nefesi bitmiş oyuncu: dizler bükük, gövde öne eğik, iki el dizlerin hemen üstünde, raket sağ elden
 #     aşağı sarkar, baş aşağıda. Omuzlar nefesle iner kalkar (döngü, 10 kare). Klip listenin SONUNA eklenir ki önceki
 #     klip satırları kaymasın ve yalnız bu klip render edilip var olan sheet'e eklenebilsin.
-YG0=D(READY,root=(0,0.02,0.33),lean=(0,0.13,-0.05),twist=0,wrR=(0.13,0.16,0.25),elR=(1,-0.3,0.4),rk=(0.2,0.25,-0.95),rkFace=(1,0,0),
+# 2026-10-26 (fizik §4.3): raket aşağı sarkıyordu (rk z −0,95), kafası zemine ~29 cm giriyordu; şimdi dizin önünde yatay, öne-içe
+YG0=D(READY,root=(0,0.02,0.33),lean=(0,0.13,-0.05),twist=0,wrR=(0.13,0.16,0.25),elR=(1,-0.3,0.4),rk=(-0.35,0.93,-0.10),rkFace=(0,0,1),
       wrL=(-0.13,0.16,0.25),elL=(-1,-0.3,0.4),anR=(0.13,0.0,0.05),anL=(-0.13,0.0,0.05),knR=(0,1,0),knL=(0,1,0),look=(0,1,-0.55))
 YG1=D(YG0,root=(0,0.02,0.345),lean=(0,0.11,-0.03),wrR=(0.13,0.15,0.26),wrL=(-0.13,0.15,0.26),look=(0,1,-0.4))
 yorgun=sample([(0,YG0),(0.45,YG1),(1,YG0)],10,loop=True)
 CLIPS=dict(idle=idle,run=run,smash=smash,clear=clear,drive=drive,kill=kill,low=low,lunge=lunge,serve=serve,serve_gec=serve_gec,serve_bh=serve_bh,serve_flick=serve_flick,block=block,bh_over=bh_over,bh_drive=bh_drive,bh_kill=bh_kill,bh_low=bh_low,bh_lunge=bh_lunge,split=split,chasse_r=chasse_r,chasse_l=chasse_l,fwd=fwd,back_r=back_r,back_l=back_l,jump=jump,yorgun=yorgun,
-    drop=drop,net=net)   # drop/net 2026-10-24 sona eklendi: önceki klip satırları kaymasın
-KEYS=dict(ov=[S_PREP,S_DROP,S_HIT,S_FOL,C_HIT,DP_HIT],sv=[SB0,SB1,SB2,SB3],fl=[SF2,SF3],sh=[SH0,SH1,SH2,SH3],dr=[DR_PREP,DR_HIT,DR_FOL],lo=[L_PREP,L_HIT,L_FOL],bdn=[BD_PREP,BD_HIT,BD_FOL],bln=[BL_PREP,BL_HIT,BL_FOL],X0=[],bo=[BO_PREP,BO_HIT,BO_FOL],bd=[BD_PREP,BD_HIT,BD_FOL],bk=[BK_PREP,BK_HIT],bl=[BL_PREP,BL_HIT,BL_FOL],blu=[BLU_PREP,BLU_HIT],split=[split[1],split[3]],chr=[chasse_r[2],chasse_r[4]],chl=[chasse_l[2],chasse_l[4]],fwd=[fwd[1],fwd[4]],bkr=[back_r[2],back_r[4]],bkl=[back_l[2],back_l[4]],jump=[J_TAKE,J_AIR,J_LAND],yorgun=[YG0,YG1])
+    drop=drop,net=net,   # drop/net 2026-10-24 sona eklendi: önceki klip satırları kaymasın
+    kros_r=kros_r,kros_l=kros_l)   # 2026-10-26: hızlı yana çapraz koşu (Unity); HTML sprite'ı donuk, satırlar kaymaz
+KEYS=dict(ov=[S_PREP,S_DROP,S_HIT,S_FOL,C_HIT,DP_HIT],sv=[SB0,SB1,SB2,SB3],fl=[SF2,SF3],sh=[SH0,SH1,SH2,SH3],dr=[DR_PREP,DR_HIT,DR_FOL],lo=[L_PREP,L_HIT,L_FOL],bdn=[BD_PREP,BD_HIT,BD_FOL],bln=[BL_PREP,BL_HIT,BL_FOL],X0=[],bo=[BO_PREP,BO_HIT,BO_FOL],bd=[BD_PREP,BD_HIT,BD_FOL],bk=[BK_PREP,BK_HIT],bl=[BL_PREP,BL_HIT,BL_FOL],blu=[BLU_PREP,BLU_HIT],split=[split[2],split[4]],chr=[chasse_r[2],chasse_r[4]],chl=[chasse_l[2],chasse_l[4]],fwd=[fwd[1],fwd[4]],bkr=[back_r[2],back_r[4]],bkl=[back_l[2],back_l[4]],jump=[J_TAKE,J_AIR,J_LAND],yorgun=[YG0,YG1])
 
 # ---------- sahne ----------
 bpy.ops.object.light_add(type='SUN',location=(1,-2,4)); sun=bpy.context.object; sun.data.energy=3.2; sun.rotation_euler=(math.radians(40),0,math.radians(20))
@@ -520,7 +697,7 @@ if MODE=='stil':   # arcade tarz önizlemesi: aynı pozlar, 2× hücre (doku), a
     render(f'{OUT}/s_yakin.png')
     pb=OY.ao.pose.bones; mw=OY.ao.matrix_world
     for ad_,bn,osc,yon in (('yuz','head',.28,(0.25,1,0.12)),('elR','wrist.R',.24,(0.6,0.8,0.3)),('elL','wrist.L',.24,(-0.5,0.8,0.3))):
-        bn={'head':OY.R['head'],'wrist.R':OY.R['el'].format(S='R'),'wrist.L':OY.R['el'].format(S='L')}[bn] if MODEL=='aday' else bn; bn=bn if bn in pb else bn.lower(); osc=osc*(2.2 if MODEL=='oyuncak' and bn=='head' else 1.6 if MODEL=='oyuncak' else 1)   # oyuncak: küçük harf kemik, iri baş/el
+        bn={'head':OY.R['head'],'wrist.R':OY.R['el'].format(S='R'),'wrist.L':OY.R['el'].format(S='L')}[bn] if MODEL in ('aday','sade','oyuncak') else bn; bn=bn if bn in pb else bn.lower(); osc=osc*(2.2 if MODEL=='oyuncak_kaykit' and bn=='head' else 1.6 if MODEL=='oyuncak_kaykit' else 1)   # oyuncak_kaykit: küçük harf kemik, iri baş/el; yeni oyuncak UE adlı, gerçek oranlı
         c=mw@pb[bn].head if bn!='head' else mw@((pb[bn].head+pb[bn].tail)/2); d=Vector(yon).normalized(); cam.location=c+d*3; cam.data.ortho_scale=osc
         el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2); sc.render.resolution_x=sc.render.resolution_y=480; render(f'{OUT}/s_{ad_}.png')
     print('STIL DONE'); sys.exit(0)

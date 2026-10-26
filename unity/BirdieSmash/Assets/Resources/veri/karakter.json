@@ -1,0 +1,73 @@
+{
+"_not": "Karakter: oyun tarzı, unvanlar, görünüm (komple-oyun tasarımı §5.1–5.5, Ek A.4; adım 6, 2026-10-26). Güç ekipmandan, tarz karakterden, görünüm ikisinden: tarz ikinci bir güç katmanı değil, artısı ve eksisi olan ücretsiz bir yan seçimdir (yasin varsayılanı kabul etti: puan ağacı yok, karakter = tarz). etki = GearStats üstüne çarpan (Core/Tarz.Uygula; 1'den farklı olanlar yazılır). Görünüm öğelerinde renk null = modelin kendi rengi (var olan oyuncunun görünümü değişmez). Ten tonu baştan hepsi açık (kimlik satılmaz). Tüy ile kozmetik dükkânı adım 10'da; o zamana kadar görünüm seviye ile açılır, açılan hiçbir şey geri alınmaz. Metinler Türkçe anahtar, çeviri Lang.UNITY_EK.",
+"tipler_not": "2026-10-26 karakter tasarımı (yasin: \"tip seçebilme, garip saçlar ... parayla ya da tüyle saç modeli alacak\"). tip = beden tipi, sac_model = saç biçimi: ikisi de YALNIZ görünüş (etki alanı yok, BotMac kilitler; vuruş menzili ve fizik Core'da, beden boyundan bağımsız). sv = açılış seviyesi, fiyat = Tüy (0 = seviye gelince kendiliğinden senin). Alınan bir daha geri alınmaz; sahip olunan tip/saç arasında geçiş ücretsiz. varlik = FBX adı (karakter_varlik_sozlesmesi.md v0): tip → Resources/karakter/oyuncak_<varlik>.fbx (null = oyuncak.fbx, Atlet), saç → sac_<varlik>__sac parçası (null = hiç saç parçası açılmaz: Kel). bant false = bu saçta kafa bandı gizlenir (saçın içinde kalır; sözleşme v1 ölçümü: yalnız afro (bant altında 2,7 cm ezilme gerekir), anime ve rasta bantla uyumlu; FBX _clips.json sac[].bant varsa o kazanır). Kimlik satılmaz (ten tonu kuralı): Atlet ve Atletik kadın baştan ücretsiz; cinsiyet/beden kimliği parayla ya da seviyeyle kilitlenmez, yalnız biçim farkı (Uzun ve ince, Güçlü) kazanılır. Saçta da en az bir uzun saç (At kuyruğu) baştan ücretsiz. paket = ileride kozmetik IAP paketine ayrılmış kimlik (şimdi kullanılmaz; IAP iCloud kaydından sonra). Listenin ilki varsayılandır (var olan oyuncunun görünümü). Gerçek para yok: her şey Tüy ile.",
+"tipler": [
+  {"id": "atlet", "ad": "Atlet",         "n": "Dengeli boy ve omuz",       "sv": 1, "fiyat": 0,   "varlik": null},
+  {"id": "kadin", "ad": "Atletik kadın", "n": "Çevik, dengeli yapı",       "sv": 1, "fiyat": 0,   "varlik": "kadin"},
+  {"id": "uzun",  "ad": "Uzun ve ince",  "n": "Uzun bacak, dar omuz",      "sv": 4, "fiyat": 300, "varlik": "uzun"},
+  {"id": "guclu", "ad": "Güçlü",         "n": "İri gövde, kalın kol",      "sv": 8, "fiyat": 450, "varlik": "guclu"}
+],
+"sac_model": [
+  {"id": "kisa",      "ad": "Kısa kesim",   "sv": 1,  "fiyat": 0,   "varlik": "kisa"},
+  {"id": "yan",       "ad": "Yandan ayrık", "sv": 1,  "fiyat": 0,   "varlik": "yan"},
+  {"id": "atkuyrugu", "ad": "At kuyruğu",   "sv": 1,  "fiyat": 0,   "varlik": "atkuyrugu"},
+  {"id": "kazima",    "ad": "Kazıma",       "sv": 2,  "fiyat": 100, "varlik": "kazima"},
+  {"id": "kel",       "ad": "Kel",          "sv": 2,  "fiyat": 100, "varlik": null},
+  {"id": "topuz",     "ad": "Topuz",        "sv": 5,  "fiyat": 250, "varlik": "topuz"},
+  {"id": "anime",     "ad": "Anime dikenli","sv": 6,  "fiyat": 300, "varlik": "anime"},
+  {"id": "orgu",      "ad": "Örgülü",       "sv": 8,  "fiyat": 350, "varlik": "orgu"},
+  {"id": "afro",      "ad": "Afro",         "sv": 9,  "fiyat": 450, "varlik": "afro", "bant": false},
+  {"id": "rasta",     "ad": "Rasta",        "sv": 11, "fiyat": 500, "varlik": "rasta"},
+  {"id": "mullet",    "ad": "Mullet",       "sv": 13, "fiyat": 700, "varlik": "mullet", "garip": true},
+  {"id": "mohikan",   "ad": "Mohikan",      "sv": 15, "fiyat": 900, "varlik": "mohikan", "garip": true}
+],
+"tarzlar": [
+  {"id": "dengeli", "ad": "Dengeli",     "sv": 1,  "arti": "Artısı da eksisi de yok",                               "eksi": "",                                  "etki": {}},
+  {"id": "smasci",  "ad": "Smaşçı",      "sv": 4,  "arti": "Smaç enerjisi %20 hızlı dolar · sıçrayarak smaçta tatlı nokta +5", "eksi": "Smaç nefesi %15 fazla yakar",       "etki": {"enerji": 1.2, "jumpTatli": 1.05, "smacYor": 1.15}},
+  {"id": "duvar",   "ad": "Duvar",       "sv": 8,  "arti": "Uzanma erişimi +6 · uzanma sonrası toparlanma %15 kısa", "eksi": "Smaç hızı −4",                      "etki": {"uzanma": 1.06, "toparla": 0.85, "smacHiz": 0.96}},
+  {"id": "file",    "ad": "File ustası", "sv": 12, "arti": "File vuruşu ve file önü vuruşta tatlı nokta +10",       "eksi": "Arka sahaya koşu −5",                "etki": {"fileTatli": 1.1, "arkaKosu": 0.95}},
+  {"id": "aldatici","ad": "Aldatıcı",    "sv": 18, "arti": "Slice ve aldatma %10 güçlü",                             "eksi": "Tam orta penceresi −10",             "etki": {"slice": 1.1, "tatli": 0.9}}
+],
+"unvanlar": [
+  {"id": "mahalle",  "ad": "Mahalle oyuncusu", "nasil": "Başlangıç"},
+  {"id": "yerel",    "ad": "Yerel şampiyon",   "nasil": "Yerel yol finalini kazan", "tur": 0},
+  {"id": "asya",     "ad": "Asya fatihi",      "nasil": "Asya Turu finalini kazan", "tur": 1},
+  {"id": "avrupa",   "ad": "Avrupa şampiyonu", "nasil": "Avrupa Turu finalini kazan", "tur": 2},
+  {"id": "dunya",    "ad": "Dünya şampiyonu",  "nasil": "Dünya Finalleri'ni kazan", "tur": 3},
+  {"id": "antrenor", "ad": "Antrenör",         "nasil": "24 antrenman yıldızı topla", "antrenman": 24},
+  {"id": "efsane",   "ad": "Efsane",           "nasil": "Seviye 30'a ulaş", "sv": 30}
+],
+"ten": [
+  {"id": "dogal", "ad": "Modelin rengi", "renk": null,      "sv": 1},
+  {"id": "t1",    "ad": "Açık ton",      "renk": "#f6d7c3", "sv": 1},
+  {"id": "t2",    "ad": "Buğday",        "renk": "#e8b894", "sv": 1},
+  {"id": "t3",    "ad": "Bronz",         "renk": "#c98e66", "sv": 1},
+  {"id": "t4",    "ad": "Esmer",         "renk": "#a86f4c", "sv": 1},
+  {"id": "t5",    "ad": "Koyu",          "renk": "#7a4c33", "sv": 1},
+  {"id": "t6",    "ad": "Çok koyu",      "renk": "#4e3022", "sv": 1}
+],
+"sac": [
+  {"id": "dogal",   "ad": "Modelin rengi", "renk": null,      "sv": 1},
+  {"id": "siyah",   "ad": "Siyah",         "renk": "#1d1b1b", "sv": 1},
+  {"id": "kahve",   "ad": "Kahverengi",    "renk": "#5a3a24", "sv": 1},
+  {"id": "sari",    "ad": "Sarı",          "renk": "#e8c66a", "sv": 1},
+  {"id": "kizil",   "ad": "Kızıl",         "renk": "#b8502a", "sv": 14},
+  {"id": "gri",     "ad": "Gri",           "renk": "#a7adb0", "sv": 16},
+  {"id": "mavi",    "ad": "Mavi",          "renk": "#3b7be2", "sv": 20},
+  {"id": "pembe",   "ad": "Pembe",         "renk": "#e8508f", "sv": 22}
+],
+"ayakkabi": [
+  {"id": "dogal",   "ad": "Modelin rengi", "renk": null,      "sv": 1},
+  {"id": "beyaz",   "ad": "Beyaz",         "renk": "#f2f2ee", "sv": 1},
+  {"id": "siyah",   "ad": "Siyah",         "renk": "#26262b", "sv": 1},
+  {"id": "kirmizi", "ad": "Kırmızı",       "renk": "#e23b3b", "sv": 2},
+  {"id": "limon",   "ad": "Limon",         "renk": "#d8ff5a", "sv": 16},
+  {"id": "mavi",    "ad": "Mavi",          "renk": "#3b7be2", "sv": 20},
+  {"id": "turuncu", "ad": "Turuncu",       "renk": "#ff8a2a", "sv": 26},
+  {"id": "altin",   "ad": "Altın",         "renk": "#ffc94a", "sv": 28}
+],
+"kaplama": [
+  {"id": "model", "ad": "Modelin rengi", "renk": null,      "sv": 1},
+  {"id": "altin", "ad": "Altın",         "renk": "#ffc94a", "sv": 30}
+]
+}

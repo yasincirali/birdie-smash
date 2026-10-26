@@ -1,0 +1,60 @@
+{
+"_not": "Ekipman modelleri ve forma renkleri (komple-oyun tasarımı §4.2, §4.5, §5.2, Ek A.4; ekipman v2, 2026-10-26). Tek kaynak: tool/veri; tool/veri_kopyala.js Unity'ye (Assets/Resources/veri) kopyalar, BotMac ikisinin aynı olduğunu doğrular. Çarpan yazılmayan alan = model o değeri değiştirmez (1). sv = açılış seviyesi, fiyat = Tüy (0 = seviye gelince kendiliğinden açık), eski = 2026-10-26 öncesinde herkese açıktı: var olan oyuncuda açık kalır (tasarım §4.2, 'elimden aldılar' hissi olmasın). Yuva seviyesi (yükseltme) modele değil yuvaya bağlı: model değiştirmek Tüy yakmaz. kumas = forma kumaşı (işlev), renkler = forma rengi (yalnız görünüm). 2026-10-26 ayakkabı modeli (yasin: \"ayakkabı seçebilecek, özelliklerine ve fiyatına göre\"; tasarım §1.3 ayakkabıyı yalnız görünüm sayıyordu, kullanıcı isteğiyle 7. model yuvası oldu): yükseltme seviyesi YOK (ekonomi tavanı 6 yuvaya göre ayarlı), yalnız model; diğer yuvalar gibi yan seçim: her modelin ayakkabı çubuklarında (İlk adım, Çabukluk, Uzanma, Sıçrama, Nefes; 50 nötr) artı ve eksi toplamı ≈ 0, en iyi ayakkabı yok. varlik = FBX parçası ayk_<varlik>__ayakkabi. Ayakkabı RENGİ karakter.json ayakkabi listesinde, ücretsiz görünüm. Ayakkabı modeli güç taşıdığı için hiçbir zaman IAP paketine girmez (güç satılmaz; paket alanı yalnız karakter.json kozmetiklerinde). Metinler Türkçe anahtar, çeviri Lang.UNITY_EK.",
+"modeller": {
+  "raket": [
+    {"id": "denge",  "ad": "Denge",      "n": "Her şeyden biraz",                                 "sv": 1,  "fiyat": 0,    "eski": true, "guc": 1, "kontrol": 1, "hiz": 1, "tatli": 1, "ton": 1, "kafa": 1, "renk": "#e9eef0"},
+    {"id": "hafif",  "ad": "Kafa hafif", "n": "Drive/file +8 · smaç −7 · clear kısa",              "sv": 3,  "fiyat": 300,  "eski": true, "guc": 0.93, "kontrol": 1.05, "hiz": 1.08, "tatli": 1, "ton": 1.1, "kafa": 1.18, "renk": "#7ad7ff"},
+    {"id": "agir",   "ad": "Kafa ağır",  "n": "Smaç +12 · clear uzun · drive −7 · tatlı nokta dar", "sv": 5,  "fiyat": 450,  "eski": true, "guc": 1.12, "kontrol": 0.92, "hiz": 0.93, "tatli": 0.85, "ton": 0.9, "kafa": 0.78, "renk": "#ff9f7a"},
+    {"id": "esnek",  "ad": "Esnek şaft", "n": "Tatlı nokta geniş · sapma az · smaç −10",           "sv": 8,  "fiyat": 650,  "eski": true, "guc": 0.9, "kontrol": 1.3, "hiz": 1, "tatli": 1.3, "ton": 0.95, "kafa": 1, "renk": "#d8ff5a"},
+    {"id": "kesici", "ad": "Kesici",     "n": "Slice ve aldatma %15 güçlü · smaç −8",              "sv": 12, "fiyat": 900,  "guc": 0.92, "kontrol": 1.04, "hiz": 1, "tatli": 0.94, "ton": 1.04, "kafa": 1.06, "slice": 1.15, "renk": "#c9a0ff"},
+    {"id": "hucum",  "ad": "Hücum",      "n": "Güç +6 · drive +4 · tatlı nokta dar · nefes %8 hızlı biter", "sv": 18, "fiyat": 1200, "guc": 1.06, "kontrol": 0.98, "hiz": 1.04, "tatli": 0.88, "ton": 0.94, "kafa": 0.9, "yor": 1.08, "renk": "#ff5a5a"}
+  ],
+  "kordaj": [
+    {"id": "dayanikli", "ad": "Dayanıklı",            "n": "Nötr: gerginlik ne verirse o",           "sv": 1,  "fiyat": 0,   "eski": true},
+    {"id": "multi",     "ad": "Multifilament",        "n": "Tatlı nokta +8 · kontrol −4 · ses tok", "sv": 6,  "fiyat": 400, "tatli": 1.08, "kontrol": 0.96, "ton": 0.97},
+    {"id": "ince",      "ad": "İnce yüksek gerilim",  "n": "Kontrol +8 · güç −4 · ses tiz",         "sv": 11, "fiyat": 800, "kontrol": 1.08, "guc": 0.96, "tatli": 0.98, "ton": 1.05}
+  ],
+  "grip": [
+    {"id": "sentetik", "ad": "Sentetik", "n": "Nötr",                                              "sv": 1, "fiyat": 0,   "eski": true},
+    {"id": "havlu",    "ad": "Havlu",    "n": "Nefesin azken top yarı yarıya az sapar · kontrol −3", "sv": 4, "fiyat": 300, "kontrol": 0.97, "yorgunSapma": 0.5, "doku": "cizgi"},
+    {"id": "kalin",    "ad": "Kalın",    "n": "Kontrol +6 · drive −5",                              "sv": 9, "fiyat": 600, "kontrol": 1.06, "hiz": 0.95}
+  ],
+  "bileklik": [
+    {"id": "yok",   "ad": "Yok",       "n": "—",                                    "sv": 1, "fiyat": 0,   "eski": true},
+    {"id": "pamuk", "ad": "Pamuk",     "n": "Sıyırınca top yarı yarıya az kaçar",   "sv": 2, "fiyat": 300, "eski": true, "kenar": 0.5, "renk": "#e9eef0"},
+    {"id": "agir",  "ad": "Ağırlıklı", "n": "Smaç +4 · drive −4",                   "sv": 7, "fiyat": 500, "eski": true, "guc": 1.04, "hiz": 0.96, "renk": "#3a4a4e"}
+  ],
+  "bant": [
+    {"id": "yok",  "ad": "Yok",        "n": "—",                                             "sv": 1,  "fiyat": 0,   "eski": true},
+    {"id": "ter",  "ad": "Ter bandı",  "n": "Akış 3 tam ortada açılır",                      "sv": 3,  "fiyat": 300, "eski": true, "akis": 3, "renk": "#e9eef0"},
+    {"id": "odak", "ad": "Odak bandı", "n": "Vuruş anı %15 daha yavaş akar · rakip %6 hızlı", "sv": 10, "fiyat": 800, "eski": true, "yavas": 0.85, "rakip": 1.06, "renk": "#ffd23a"}
+  ],
+  "kumas": [
+    {"id": "klasik", "ad": "Klasik",      "n": "Nötr",                                "sv": 1,  "fiyat": 0,   "eski": true, "forma": "mavi"},
+    {"id": "hafif",  "ad": "Hafif",       "n": "Koşu +6",                             "sv": 5,  "fiyat": 400, "eski": true, "forma": "fistik", "kosu": 1.06},
+    {"id": "nefes",  "ad": "Nefes alan",  "n": "Smaç enerjisi %40 hızlı dolar",       "sv": 8,  "fiyat": 600, "eski": true, "forma": "beyaz", "enerji": 1.4},
+    {"id": "esnek",  "ad": "Esnek",       "n": "Uzanma sonrası toparlanma kısa",      "sv": 12, "fiyat": 900, "eski": true, "forma": "mor", "toparla": 0.6}
+  ],
+  "ayakkabi": [
+    {"id": "klasik",   "ad": "Klasik kort", "n": "Nötr: her yüzeyde aynı",                                   "sv": 1,  "fiyat": 0,    "varlik": "klasik"},
+    {"id": "hafif",    "ad": "Hafif hız",   "n": "İlk adım +8 · nefes −8",                                   "sv": 4,  "fiyat": 350,  "varlik": "hafif",    "kosu": 1.048, "yor": 1.05},
+    {"id": "yastikli", "ad": "Yastıklı",    "n": "Sıçrayarak smaçta tatlı nokta +8 (yumuşak iniş) · çabukluk −8", "sv": 7, "fiyat": 450, "varlik": "yastik",   "jumpTatli": 1.048, "toparla": 1.048},
+    {"id": "bilekli",  "ad": "Bilekli",     "n": "Uzanma sonrası toparlanma +8 · ilk adım −8",               "sv": 10, "fiyat": 650,  "varlik": "bilekli",  "toparla": 0.952, "kosu": 0.952},
+    {"id": "karbon",   "ad": "Pro karbon",  "n": "İlk adım +6 · uzanma +4 · nefes −10",                      "sv": 18, "fiyat": 1000, "varlik": "karbon",   "kosu": 1.036, "uzanma": 1.024, "yor": 1.065}
+  ]
+},
+"renkler": [
+  {"id": "mavi",     "ad": "Mavi",     "renk": "#4fb8ff", "sv": 1},
+  {"id": "fistik",   "ad": "Fıstık",   "renk": "#d8ff5a", "sv": 1},
+  {"id": "beyaz",    "ad": "Beyaz",    "renk": "#f2f6f4", "sv": 1},
+  {"id": "mor",      "ad": "Mor",      "renk": "#b48cff", "sv": 1},
+  {"id": "kirmizi",  "ad": "Kırmızı",  "renk": "#ff5a5a", "sv": 2},
+  {"id": "turuncu",  "ad": "Turuncu",  "renk": "#ff9a3c", "sv": 14},
+  {"id": "pembe",    "ad": "Pembe",    "renk": "#ff8fc8", "sv": 16},
+  {"id": "lacivert", "ad": "Lacivert", "renk": "#3f4fa8", "sv": 20},
+  {"id": "yesil",    "ad": "Yeşil",    "renk": "#3fcf8e", "sv": 22},
+  {"id": "siyah",    "ad": "Siyah",    "renk": "#2a2f33", "sv": 26},
+  {"id": "gumus",    "ad": "Gümüş",    "renk": "#c9d3d6", "sv": 28},
+  {"id": "sampiyon", "ad": "Şampiyon", "renk": "#ffc94a", "sv": 1, "kilit": "sampiyon"}
+]
+}

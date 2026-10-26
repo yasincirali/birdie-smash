@@ -1,0 +1,19 @@
+<!-- Birdie Smash menü iskeleti (2026-10-26, Game/UI/UiKok). İçerik koddan dolar (yazı boyutu Dynamic Type çarpanıyla
+     koddan yazıldığı için); burada yalnız katmanlar. Dosya yüklenemezse UiKok.KodIskelet aynı adlarla aynı ağacı kurar.
+     Katmanlar: zemin (Oyna'da gradyan) · gövde [alan (üst şerit, sekme içeriği, tam sayfa) + sekme çubuğu] · alt sayfa ·
+     perde kalkanı (perde varken dokunuşu yutar). -->
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="kok" class="kok tam">
+        <ui:VisualElement name="zemin" class="tam" picking-mode="Ignore" />
+        <ui:VisualElement name="govde" class="govde tam">
+            <ui:VisualElement name="alan" class="alan">
+                <ui:VisualElement name="ust" class="ust-serit" />
+                <ui:VisualElement name="icerik" class="icerik" />
+                <ui:VisualElement name="sayfa" class="sayfa tam" />
+            </ui:VisualElement>
+            <ui:VisualElement name="sekmeler" class="sekme-cubugu" />
+        </ui:VisualElement>
+        <ui:VisualElement name="alt-katman" class="alt-katman tam" />
+        <ui:VisualElement name="kalkan" class="kalkan tam" />
+    </ui:VisualElement>
+</ui:UXML>

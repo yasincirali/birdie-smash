@@ -4,6 +4,13 @@
 // yavaşlayarak durur (v ·0,08^dt), boştayken 18°/sn döner (hareketi azalt açıkken dönmez), ok düğmeleri 15° çevirir.
 // "Raketi incele": 0,6 sn geçişle raket öne gelir ve kendi ekseninde 24°/sn döner; grip, kordaj ve çapraz tel rengi
 // (RAK_RENK, tuytop_raket_gor) yalnız görünümdür. Yükseltmede o yuvanın parçası bir kez limona parlar (turParlat).
+// 2026-10-26 karakter tasarımı (yasin: "yakın açıda görüp upgrade lenecekleri için"): yakın plan (odak) Yüz (baş + saç),
+// Ayak (ayakkabılar), Tutuş (el + raket sapı). Hedef nokta her karede kemikten okunur (figür döndükçe izlenir), kamera
+// üstel yumuşatmayla (~0,4 sn) kayar; hareketi azaltta anında geçer. Tutuşta kendi kendine dönme durur ve figür eli kameraya
+// dönük açıya gelir: el eksenden uzakta, dönerken kamera onu izlemeye kalkarsa görüntü baş döndürür. Yüz ve Ayak eksende,
+// orada dönme sürer (saçı ve ayakkabıyı 360° görmek işin kendisi). poz: tutuş görünümünde vuruş klibinin temas pozu
+// (Forehand drive, Backhand bh_drive, File net, Servis serve). Deneme (deneTip/deneSac/deneAyk): alınmamış bir öğeyi
+// vitrinde giydirir, kayda yazılmaz; Soyunma odasından çıkınca (Kapat) silinir.
 using System.Collections.Generic;
 using UnityEngine;
 using BirdieSmash.Core;
@@ -20,6 +27,11 @@ namespace BirdieSmash.Game
         static readonly Vector3 YER = new Vector3(500, 0, 0);
         public RenderTexture rt; Camera kam; PlayerView fig; Transform raketPivot; string anah;
         public float a, v, ra, rv, gec, hedefGec; public bool suruk; float parlaT = -1; int parlaK;
+        public const int TAM = 0, YUZ = 1, AYAK = 2, TUTUS = 3;
+        public int odak { get; private set; }
+        public string poz { get; private set; }
+        public string deneTip, deneSac, deneAyk;
+        Transform bBas, bEl; readonly List<Transform> bAyak = new List<Transform>(); Renderer bGrip, bTel; Vector3 camS, hedefS; bool camVar;
 
         public static Vitrin Build(Transform root)
         {
@@ -34,11 +46,21 @@ namespace BirdieSmash.Game
         }
 
         public void Ac() { gameObject.SetActive(true); kam.enabled = true; Yenile(); }
-        public void Kapat() { kam.enabled = false; gec = hedefGec = 0; gameObject.SetActive(false); }
+        public void Kapat() { kam.enabled = false; gec = hedefGec = 0; odak = TAM; poz = null; deneTip = deneSac = deneAyk = null; camVar = false; gameObject.SetActive(false); }
+        // Yakın plan seç (aynı odağa ikinci dokunuş Soyunma odasında Tüm boy'a döner). Tutuşa girerken el kameraya döner.
+        public void Odak(int o, string klip = null)
+        {
+            o = Mathf.Clamp(o, TAM, TUTUS); if (o != TAM) hedefGec = 0;
+            if (o == TUTUS && odak != TUTUS) { a = TUTUS_ACI; v = 0; }
+            odak = o; poz = o == TUTUS ? klip : null;
+        }
+        const float TUTUS_ACI = -35;   // sağ el (raket) kameraya dönük, gövde 3/4
         // Ekipman ya da raket görünümü değişince figürü yeniden boya (anahtar: görünümün özeti).
         public void Yenile()
         {
-            var g = PlayerView.Benim(); string k = Ayar.model + g.forma + g.cerceve + g.bant + g.bilek + g.grip + g.tel + g.tel2;
+            var g = PlayerView.Benim();
+            if (deneTip != null) g.tip = deneTip; if (deneSac != null) g.sacModel = deneSac; if (deneAyk != null) g.aykModel = deneAyk;
+            string k = Ayar.model + g.Anahtar();
             if (k == anah && fig != null) return; anah = k;
             if (fig != null) Destroy(fig.gameObject); if (raketPivot != null) Destroy(raketPivot.gameObject);
             fig = PlayerView.Build(transform, Ayar.model, true, g.forma, false, g); fig.transform.position = YER;
@@ -60,6 +82,104 @@ namespace BirdieSmash.Game
                 float boy = Mathf.Max(b.size.x, b.size.y, b.size.z); raketBoy = boy;
             }
             raketPivot.gameObject.SetActive(false);
+            OdakKemikleri();
+        }
+        // Yakın plan noktaları: baş, ayaklar, sağ el kemiği, raket sapı ve kafası (PlayerView.Calibrate ile aynı ad kuralları).
+        void OdakKemikleri()
+        {
+            bBas = null; bEl = null; bAyak.Clear(); bGrip = null; bTel = null; if (fig == null || fig.Model == null) return;
+            foreach (var t in fig.Model.GetComponentsInChildren<Transform>(true))
+            {
+                string n = t.name.ToLowerInvariant(); if (n.Contains("__")) continue;
+                if (bBas == null && (n == "head" || n.EndsWith(" head"))) bBas = t;
+                if (n.Contains("foot") && !n.Contains("step") && !n.Contains("ik") && !n.Contains("roll")) bAyak.Add(t);
+                bool sag = n.EndsWith(".r") || n.EndsWith("_r") || n.Contains(" r ") || n.Contains("right");
+                if (bEl == null && sag && n.Contains("hand") && !n.Contains("ik") && !n.Contains("slot")) bEl = t;
+            }
+            foreach (var r in fig.kanal[1])
+            {
+                if (r == null) continue; string e = PlayerView.Etiket(r.gameObject.name);
+                if (bGrip == null && e == "grip") bGrip = r; if (bTel == null && e == "tel") bTel = r;
+            }
+        }
+        // 2026-10-26 (r13 incelemesi): yakın planların uzaklığı kutunun gerçek en-boyuna göre. RT dikey (512×720) ama
+        // Soyunma odasında yatay kutuda ScaleAndCrop ile gösteriliyor; görünen dikey açı kutu genişledikçe daralır (büyük yazıda
+        // kutu %30 boy, daha da geniş). Eski sabit uzaklıkla Ayak planında yalnız çorap görünüyor, ayakkabı kesiliyordu.
+        // kutuOran = kutu genişlik/yükseklik, kutuAlt = alttaki düğmelerin (Yüz·Ayak·Tutuş + oklar) kapladığı oran; ikisini
+        // SoyunmaOdasi düzen değişince yazar. Hedef düğmelerin üstündeki boş alana doğru kaydırılır (yarısından biraz fazlası:
+        // düğmeler yarı saydam, tamamen kaçmak nesneyi küçültür).
+        public float kutuOran = 1.2f, kutuAlt = .35f;
+        const float TAN15 = .26795f;   // fieldOfView 30 → yarım açı 15°
+        void Gorus(out float gx, out float gy)
+        {
+            float ro = rt.width / (float)rt.height, ba = Mathf.Max(.2f, kutuOran);
+            gx = TAN15 * Mathf.Min(ro, ba); gy = TAN15 * Mathf.Min(1, ro / ba);
+        }
+        // yariY/yariX: kadrajda kalması gereken yarı yükseklik/genişlik (metre). Dönen: uzaklık ve bakışın aşağı kayması.
+        float Uzaklik(float yariY, float yariX, out float kayma)
+        {
+            float gx, gy; Gorus(out gx, out gy); float pay = Mathf.Clamp(kutuAlt, 0, .6f) * .6f;
+            float d = Mathf.Max(yariY / (gy * (1 - pay)), yariX / gx); kayma = d * gy * pay; return d;
+        }
+        // Odağın kamera konumu ve bakış noktası (dünya). Boy oranlı: her beden tipinde aynı kadraj.
+        void OdakPoz(out Vector3 cam, out Vector3 hedef)
+        {
+            float boy = bBas != null ? Mathf.Max(.8f, bBas.position.y - YER.y) : 1.8f; float kay;
+            cam = YER + new Vector3(0, 1.05f, 6.2f); hedef = YER + new Vector3(0, .95f, 0);
+            if (odak == YUZ && bBas != null)
+            {   // baş + saç (afro, topuz kesilmesin): yarı yükseklik ~16 cm
+                var h = bBas.position + Vector3.up * .06f * boy; float d = Uzaklik(.09f * boy, .08f * boy, out kay);
+                cam = h + new Vector3(0, .05f, 1).normalized * d; hedef = h - Vector3.up * kay;
+            }
+            else if (odak == AYAK && bAyak.Count > 0)
+            {   // r13: iki ayakkabı + biraz bilek, hafif önden-yandan ve yukarıdan (~25°); ayakkabı ortada. Eski kadraj (0,22 · 0,62
+                // boy) kutuya kırpılınca 40 cm'lik bir pencere bırakıyor, çorap kutuyu dolduruyordu.
+                Vector3 m = Vector3.zero; foreach (var t in bAyak) m += t.position; m /= bAyak.Count; m.y = YER.y + .06f * boy;
+                // r14: .10/.15 boy hâlâ dardı (Oyuncak modelin ayakkabısı iri, ayaklar açık duruşta; öndeki ayak düğmelerin
+                // altında kaldı). Pencere ~60 × 90 cm: iki ayakkabı ve bileğe kadar baldır.
+                float d = Uzaklik(.17f * boy, .26f * boy, out kay);
+                cam = m + new Vector3(.35f, .38f, .86f).normalized * d; hedef = m - Vector3.up * kay;
+            }
+            else if (odak == TUTUS && (bGrip != null || bEl != null)) TutusPoz(boy, out cam, out hedef);
+        }
+        // r13: forehand'de sap kameraya doğru uzanıyor, yüzün önünü kesiyor, beş parmak okunmuyordu. Kamera artık sapa dik
+        // bir yönden bakar (sap kadrajı yatay keser, el ve parmaklar yandan görünür) ve o dik yönlerden, figürün önüne ve
+        // dışına en çok bakan, başı ya da gövdeyi elin önüne (perde) ya da hemen arkasına (yüz arkada) almayan seçilir.
+        // 72 aday, poz durağan olduğu için seçim karede değişmez; sürükleyince kamera yumuşatmayla kayar.
+        void TutusPoz(float boy, out Vector3 cam, out Vector3 hedef)
+        {
+            var gc = bGrip != null && (bGrip.gameObject.activeInHierarchy || bEl == null) ? bGrip.bounds.center : bEl.position;
+            hedef = bEl != null && bGrip != null ? Vector3.Lerp(gc, bEl.position, .35f) : gc;
+            Vector3 u = bTel != null && bTel.gameObject.activeInHierarchy ? bTel.bounds.center - gc : bEl != null ? gc - bEl.position : Vector3.up;
+            u = u.sqrMagnitude > 1e-6f ? u.normalized : Vector3.up;
+            Vector3 e1 = Vector3.Cross(u, Vector3.up); if (e1.sqrMagnitude < 1e-4f) e1 = Vector3.Cross(u, Vector3.forward); e1.Normalize(); var e2 = Vector3.Cross(u, e1);
+            Vector3 dis = hedef - YER; dis.y = 0; dis = dis.sqrMagnitude > 1e-4f ? dis.normalized : Vector3.right;
+            var tercih = (Vector3.forward * .8f + dis * .6f + Vector3.up * .2f).normalized;
+            float kay; float d = Uzaklik(.075f * boy, .1f * boy, out kay); float gx, gy; Gorus(out gx, out gy);
+            Vector3 bas = bBas != null ? bBas.position + Vector3.up * .06f * boy : YER + Vector3.up * .93f * boy, govde = bas - Vector3.up * .3f * boy;
+            Vector3 en = tercih; float enP = -99;
+            // r14: tam dik halkaya ±20° eğik iki halka eklendi (sap yine kadrajı keser ama baştan kaçacak yer artar); eğik küçük ceza.
+            for (int i = 0; i < 72; i++)
+            {
+                float th = (i % 24) * Mathf.PI * 2 / 24; int j = i / 24 - 1; var dir = e1 * Mathf.Cos(th) + e2 * Mathf.Sin(th);
+                if (j != 0) dir = (dir * Mathf.Cos(.35f) + u * (Mathf.Sin(.35f) * j)).normalized;
+                float p = Vector3.Dot(dir, tercih) - (j != 0 ? .12f : 0);
+                p -= Engel(bas, hedef, dir, d, .14f * boy, gx, gy, 1) + Engel(govde, hedef, dir, d, .2f * boy, gx, gy, 0);
+                if (dir.y < -.35f) p -= .5f; if ((hedef + dir * d).y < YER.y + .15f) p -= 1;
+                if (p > enP) { enP = p; en = dir; }
+            }
+            cam = hedef + en * d; hedef -= Vector3.up * kay;
+        }
+        // Bir nokta kamera ile el arasında ve görüş çizgisine yakınsa perde (2); kadrajın içinde kalıyorsa (kadrajda: 1 ise)
+        // 0,8 ceza. r14: forehand'de yüz elin yanında kadrajda kalıyordu; yalnız "tam arkada" bakmak yetmedi, baş kadrajın
+        // herhangi bir yerinde olmasın. Gövde (forma) arka planda sorun değil, yalnız perde sayılır.
+        static float Engel(Vector3 p, Vector3 hedef, Vector3 dir, float d, float yaricap, float gx, float gy, int kadrajda)
+        {
+            var v = p - hedef; float boyunca = Vector3.Dot(v, dir); float dik = (v - dir * boyunca).magnitude; float derin = d - boyunca;
+            if (derin < .05f) return 0;
+            if (boyunca > 0 && dik < yaricap * 1.3f) return 2;
+            if (kadrajda == 1 && (dik - yaricap * .6f) / derin < Mathf.Max(gx, gy) * 1.1f) return .8f;
+            return 0;
         }
         float raketBoy = .7f;
         // Figürdeki raketin RT içindeki yeri (viewport 0..1; HTML TUR.rkE): Hud rakete dokunuşu (sürüklemeden) raket ekranına çevirir.
@@ -80,16 +200,18 @@ namespace BirdieSmash.Game
         void Update()
         {
             if (fig == null) return; float dt = Mathf.Min(.05f, Time.unscaledDeltaTime); bool rm = Ayar.reduce;
-            if (!suruk) { if (Mathf.Abs(v) > 2) v *= Mathf.Pow(.08f, dt); else v = rm || hedefGec > 0 ? 0 : 18; a += v * dt; }
+            if (!suruk) { if (Mathf.Abs(v) > 2) v *= Mathf.Pow(.08f, dt); else v = rm || hedefGec > 0 || odak == TUTUS ? 0 : 18; a += v * dt; }
             float gd = hedefGec - gec; gec = rm || Mathf.Abs(gd) < .002f ? hedefGec : gec + Mathf.Sign(gd) * Mathf.Min(Mathf.Abs(gd), dt / .6f);
             if (hedefGec == 1 && !suruk) { if (Mathf.Abs(rv) > 2) rv *= Mathf.Pow(.08f, dt); else rv = rm ? 0 : 24; ra += rv * dt; }
-            fig.ShowStatic(YER, a, 0);
+            float hit; if (poz != null && odak == TUTUS) fig.ShowPoz(YER, a, poz, Match.CLIP_HIT.TryGetValue(poz, out hit) ? hit : .5f); else fig.ShowStatic(YER, a, 0);
             // geçiş: figür 0–60%'ta solar/kayar, raket 45–100%'te öne gelir
             float fK = Mathf.Clamp01(gec / .6f), rK = Mathf.Clamp01((gec - .45f) / .55f);
             fig.gameObject.SetActive(fK < .999f); raketPivot.gameObject.SetActive(rK > 0);
             raketPivot.rotation = Quaternion.Euler(0, ra, 0) * Quaternion.Euler(-12, 0, 0); raketPivot.localScale = Vector3.one * Mathf.Lerp(.6f, 1, rK);
-            Vector3 figCam = YER + new Vector3(0, 1.05f, 6.2f), rakCam = raketPivot.position + new Vector3(0, 0, raketBoy * 2.4f + .2f);
-            var cp = Vector3.Lerp(figCam, rakCam, Mathf.SmoothStep(0, 1, gec)); var hedef = Vector3.Lerp(YER + new Vector3(0, .95f, 0), raketPivot.position, Mathf.SmoothStep(0, 1, gec));
+            Vector3 oc, oh; OdakPoz(out oc, out oh);
+            float yk = rm || !camVar ? 1 : 1 - Mathf.Exp(-dt * 7); camS = Vector3.Lerp(camS, oc, yk); hedefS = Vector3.Lerp(hedefS, oh, yk); camVar = true;
+            Vector3 figCam = camS, rakCam = raketPivot.position + new Vector3(0, 0, raketBoy * 2.4f + .2f);
+            var cp = Vector3.Lerp(figCam, rakCam, Mathf.SmoothStep(0, 1, gec)); var hedef = Vector3.Lerp(hedefS, raketPivot.position, Mathf.SmoothStep(0, 1, gec));
             kam.transform.SetPositionAndRotation(cp, Quaternion.LookRotation(hedef - cp));
             if (parlaT >= 0)
             {

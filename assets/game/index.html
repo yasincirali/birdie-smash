@@ -458,7 +458,7 @@ const GR=9.81, VT=6.7, KD=GR/(VT*VT), DT=1/240;
 function step(s,dt){ const kd=s.kd||KD, sp=Math.hypot(s.vx,s.vy,s.vz); s.vx-=kd*sp*s.vx*dt; s.vy-=kd*sp*s.vy*dt; s.vz-=(GR+kd*sp*s.vz)*dt; s.x+=s.vx*dt; s.y+=s.vy*dt; s.z+=s.vz*dt; }
 function simulate(x,y,z,vx,vy,vz,keep=false,kd=KD){ const s={x,y,z,vx,vy,vz,kd}, side=y>NET; let t=0,net=null; const path=keep?[]:null;
   for(let i=0;i<4000;i++){ const py=s.y; step(s,DT); t+=DT; if(keep&&i%4===0) path.push({t,x:s.x,y:s.y,z:s.z});
-    if(!net&&(py>NET)!==(s.y>NET)){ const lim=NETH+(NETP-NETH)*Math.abs(s.x-MID)/MID; net={z:s.z,ok:s.z>lim,t}; if(!net.ok) break; }
+    if(!net&&(py>NET)!==(s.y>NET)){ const lim=NETH+(NETP-NETH)*Math.abs(s.x-MID)/MID; net={z:s.z,ok:s.z>lim,t,lim}; if(!net.ok) break; } /* lim: bant payı = z − lim (aim'in file payı) */
     if(s.z<=0) break; }
   return {x:s.x,y:s.y,t,net,path}; }
 /* Clear/lift kalkış açıları (2026-10-20, yasin: "top dinamiğinde sorun var"). Eski açılar (overhead 0,85 rad ≈ 49°,
@@ -466,14 +466,33 @@ function simulate(x,y,z,vx,vy,vz,keep=false,kd=KD){ const s={x,y,z,vx,vy,vz,kd},
    (Tsai vd. 1997, bkz. arastirma/vurus_biyomekanigi.md §2). 36° overhead clear arka çizgiye ~45–60 m/s ile, tepe
    ~6–7 m'de gider; alttan lift 46° ile fileden arka alana ~6 m tepeyle. Sürüklenme modeli (son hız 6,7 m/s) aynı. */
 const CLEAR_A=.63, LIFT_A=.80;
+/* Baş üstü drop açısı .12 → .20 rad (2026-10-26, ölçüm tool/unity_test/FizikOlc.cs): 7° ile arka sahadan fileden 1,2 m'ye
+   düşen yörünge yoktu, çözüm bandın 1 cm altına yapışıyordu (rakip drop'larının %35'i bandı sıyırdı, %10'u fileye). 11,5° ile
+   ~14 m/s, bant üstü ~15 cm, uçuş ~1,1 sn, top fileden sonra dik düşer. Unity Match.DROP_A ile aynı. */
+const DROP_A=.20;
 /* Belirli hedefe vuruş: açı sabitken hızı ya da hız sabitken açıyı ikiye bölmeyle bulur. */
-function aim(from,tx,ty,mode,val){ const dx=tx-from.x, dy=ty-from.y, R=Math.hypot(dx,dy), ux=dx/R, uy=dy/R;
+/* File payı (2026-10-26, yasin "topun fiziği badmintonun doğasına uygun olmalı"; Unity Shuttle.Aim ile birebir): ikiye bölme
+   menzili sürekli sanıyor ama fileye takılan uçuş "kısa" sayıldığı için çözüm hedefe ulaşamayan vuruşta file sınırına
+   yapışıyordu: baş üstü drop bandı −1 cm'de geçiyordu, file önünden alçak lift/clear 140 m/s'ye (arama tavanı) çıkıp fileye
+   gidiyordu, sıçrayarak smaç %29 fileye. Gerçek oyuncu fileye yakın ve alçaktan topu dik kaldırır, uzaktan smaçta fileyi
+   geçecek açıyı seçer. Çözüm bandı FILE_PAY'den az geçiyorsa (ya da açı modunda menzil 0,3 m'den çok şaşıyorsa): açı modunda
+   açı 0,06 rad adımlarla dikleşir (hız yeniden bulunur); hız modunda hız korunur, bandı FILE_PAY ile geçen en düşük açı seçilir
+   (top biraz derine düşer). Kötü vuruşun hız sapması (poor ±%8) bunun dışında: fileye takmak isabetin sonucu, nişanın değil. */
+const FILE_PAY=.06;
+function aim(from,tx,ty,mode,val){ const dx=tx-from.x, dy=ty-from.y, R=Math.max(1e-3,Math.hypot(dx,dy)), ux=dx/R, uy=dy/R;
   const shoot=(v,a)=>{ const c=Math.cos(a); return [ux*v*c,uy*v*c,v*Math.sin(a)]; };
-  const range=(v,a)=>{ const [vx,vy,vz]=shoot(v,a); const r=simulate(from.x,from.y,from.z,vx,vy,vz); return Math.hypot(r.x-from.x,r.y-from.y); };
+  const sim=(v,a)=>{ const [vx,vy,vz]=shoot(v,a); return simulate(from.x,from.y,from.z,vx,vy,vz); };
+  const range=r=>Math.hypot(r.x-from.x,r.y-from.y), pay=r=>r.net?r.net.z-r.net.lim:-9;
   /* 18 adım (2026-10-24, eskiden 26): hız aralığı 139/2¹⁸ ≈ 0,5 mm/sn, açı ≈ 0,0005°; düşüş yerindeki fark 1 mm'nin altında.
      Her adım bir uçuş benzetimi; vuruş karesinde rakip 2–3 kez nişan alıyor, 8 adım daha az = o karede %30 daha az fizik. */
-  let lo,hi,v,a; if(mode==='angle'){ a=val; lo=1; hi=140; for(let k=0;k<18;k++){ const m=(lo+hi)/2; range(m,a)<R?lo=m:hi=m; } v=(lo+hi)/2; }
-  else { v=val; lo=-1.2; hi=.9; for(let k=0;k<18;k++){ const m=(lo+hi)/2; range(v,m)<R?lo=m:hi=m; } a=(lo+hi)/2; }
+  const hizBul=a=>{ let l=1,h=140; for(let k=0;k<18;k++){ const m=(l+h)/2; range(sim(m,a))<R?l=m:h=m; } return (l+h)/2; };
+  let lo,hi,v,a; if(mode==='angle'){ a=val; v=hizBul(a); }
+  else { v=val; lo=-1.2; hi=.9; for(let k=0;k<18;k++){ const m=(lo+hi)/2; range(sim(v,m))<R?lo=m:hi=m; } a=(lo+hi)/2; }
+  const r0=sim(v,a);
+  if(pay(r0)<FILE_PAY||(mode==='angle'&&Math.abs(range(r0)-R)>.3)){
+    if(mode==='angle'){ const dn=Math.abs(from.y-NET)/Math.max(.05,Math.abs(uy)), a0=Math.max(a+.05,Math.atan2(NETH+FILE_PAY-from.z,dn)+.05);
+      for(let a2=a0;a2<1.45;a2+=.06){ const v2=hizBul(a2), r2=sim(v2,a2); if(pay(r2)>=FILE_PAY&&Math.abs(range(r2)-R)<.3){ v=v2; a=a2; break; } } }
+    else if(pay(sim(v,.9))>=FILE_PAY){ lo=a; hi=.9; for(let k=0;k<14;k++){ const m=(lo+hi)/2; pay(sim(v,m))<FILE_PAY?lo=m:hi=m; } a=hi; } }
   return shoot(v,a); }
 
 /* ---- ses ---- */
@@ -593,17 +612,27 @@ function drumroll(){ for(let k=0;k<9;k++) setTimeout(()=>noise(.03,'bandpass',30
    topun hızına göre tepki vermeli"). Model: sütun başına genlik a[i] (m, +y = bana doğru), 1B sönümlü dalga + yay;
    dikey profil çarpma yüksekliğinde tepe yapan çan (bant ve zemin kenarı sabit). Bant (üst kordon) ayrı, küçük titreşim. */
 const NETN=33; const NETW={a:new Float32Array(NETN),v:new Float32Array(NETN),z:NETH*.5,tape:0,tapeV:0,glow:0,gx:MID,gz:NETH*.5};
-function netImpulse(x,z,sp,tapeOnly=false){ const i=Math.round(x/CW*(NETN-1)); NETW.gx=x; NETW.gz=z;
-  if(tapeOnly){ NETW.tapeV+=Math.min(.9,sp*.03); return; }
+/* İşaretli sapma (2026-10-26, Core NetWave.Impulse yon ile aynı): eskiden hep +y'ye iterdi, file topun gittiği yöne değil
+   hep bana doğru şişiyordu. yon = topun gittiği yön (+1 = +y). NET_GORSEL: çizim sapmayı bu kadar büyütür (netAt·1,8);
+   netZorla topun gördüğü sapmayı bu kazançla yazar ki top ağın şişkinliğinin tam üstünde dursun. Bant/ağ ölçüleri BWF
+   Law 1.5: üstte 75 mm gergin kordonlu bant, altında 760 mm derin ağ, altı boş. */
+const NET_GORSEL=1.8, BANT=.075, AG_DERIN=.76, TOP_PAY=.05 /* topun file düzlemine en yakın merkezi: top 3,2× çizildiği için mantar görüntüde 4,3 cm (Core Court.TOP_PAY) */, netLim=x=>NETH+(NETP-NETH)*Math.abs(x-MID)/MID;
+function netImpulse(x,z,sp,tapeOnly=false,yon=1){ const i=Math.round(x/CW*(NETN-1)); NETW.gx=x; NETW.gz=z; NETW.act=true;
+  if(tapeOnly){ NETW.tapeV+=Math.min(.9,sp*.03)*yon; return; }
   const k=Math.min(1,sp/55); /* smaç ~50 m/s → tam, drop ~6 m/s → %10 */
   NETW.z=Math.max(.15,Math.min(NETH-.1,z)); NETW.glow=Math.max(NETW.glow,k);
-  for(let d=-2;d<=2;d++){ const j=i+d; if(j<=0||j>=NETN-1) continue; NETW.v[j]+=(.3+2.6*k)*Math.exp(-d*d/1.6); } NETW.tapeV+=.12+.5*k; }
-function netStep(dt){ const a=NETW.a,v=NETW.v, c2=120, damp=2.4, k=28; let act=false; /* c2: dalga direğe ~0,35 s'de varır; damp: 3 salınımda söner */
+  for(let d=-2;d<=2;d++){ const j=i+d; if(j<=0||j>=NETN-1) continue; NETW.v[j]+=(.3+2.6*k)*Math.exp(-d*d/1.6)*yon; } NETW.tapeV+=(.12+.5*k)*yon; }
+/* Top ağa gömülürken ağı ona göre biçimlendirir (Core NetWave.Zorla): çarpma sütunu ve iki komşusu, görünen sapma
+   topun ittiği kadar olacak şekilde yazılır; top bırakınca dalga oradan serbestçe sürer. disp: görünen sapma (m, işaretli). */
+function netZorla(x,zz,disp,h){ NETW.z=Math.max(.15,Math.min(NETH-.05,zz)); NETW.gx=x; NETW.gz=NETW.z;
+  const prof=Math.max(.15,1-Math.pow(Math.max(0,NETW.z)/NETH,6)), A=disp/(NET_GORSEL*prof), i=Math.round(x/CW*(NETN-1));
+  for(let d=-2;d<=2;d++){ const j=i+d; if(j<=0||j>=NETN-1) continue; const hd=A*Math.exp(-d*d/1.6); NETW.v[j]=h>0?(hd-NETW.a[j])/h:0; NETW.a[j]=hd; } NETW.act=true; }
+function netStep(dt){ const a=NETW.a,v=NETW.v, c2=120, damp=reduce?12:2.4, k=28; let act=false; /* c2: dalga direğe ~0,35 s'de varır; damp: 3 salınımda söner; hareketi azalt: ×5 sönüm (Core NetWave.sakin) */
   for(let i=1;i<NETN-1;i++){ const lap=a[i-1]-2*a[i]+a[i+1]; v[i]+=(c2*lap-k*a[i]-damp*v[i])*dt; }
   for(let i=1;i<NETN-1;i++){ a[i]+=v[i]*dt; if(Math.abs(a[i])>1e-4||Math.abs(v[i])>1e-3) act=true; }
-  NETW.tapeV+=(-60*NETW.tape-7*NETW.tapeV)*dt; NETW.tape+=NETW.tapeV*dt; NETW.glow=Math.max(0,NETW.glow-dt*1.6); NETW.act=act||Math.abs(NETW.tape)>1e-4; }
+  NETW.tapeV+=(-60*NETW.tape-(reduce?25:7)*NETW.tapeV)*dt; NETW.tape+=NETW.tapeV*dt; NETW.glow=Math.max(0,NETW.glow-dt*1.6); NETW.act=act||Math.abs(NETW.tape)>1e-4; }
 function netAt(x,z){ /* x,z → y sapması (m) */ const f=x/CW*(NETN-1), i=Math.floor(f), t=f-i, a=NETW.a; const ax=(a[Math.max(0,Math.min(NETN-1,i))]||0)*(1-t)+(a[Math.max(0,Math.min(NETN-1,i+1))]||0)*t;
-  const zz=NETW.z, w=.42; const prof=Math.exp(-((z-zz)*(z-zz))/(2*w*w))*(1-Math.pow(z/NETH,6)); /* bantta sıfıra iner, zeminde serbest (file alt kenarı sarkık) */ return ax*prof; }
+  const zz=NETW.z, w=.42; const prof=Math.exp(-((z-zz)*(z-zz))/(2*w*w))*(1-Math.pow(Math.max(0,z)/NETH,6)); /* bantta sıfıra iner, zeminde serbest (file alt kenarı sarkık) */ return ax*prof; }
 const HAP={tick:8,hit:14,perfect:[16,10,28],smash:[35,15,55],jump:[45,20,30,20,80],kill:[30,10,50],net:[20,30,20],win:[20,40,20,40,90],lose:60,flow:[10,30,10,30,10,30,70],hawk:[6,40,6,40,6],poor:[8,20,8]};
 function hap(k){ if(!reduce||k==='win'||k==='lose') buzz(HAP[k]); }
 /* Vuruş titreşimi: el raketi tutuyor, telefon da öyle. Süre vuruşun gücü (smaç uzun ve sert, drop kısacık bir tık),
@@ -1226,7 +1255,7 @@ function rakipKartKapat(){ clearTimeout(rkT); const k=document.getElementById('r
 function serveSide(who){ const even=M.sc[who==='me'?0:1]%2===0; return who==='me'?(even?'R':'L'):(even?'R':'L'); }
 function boxX(who,side){ // o oyuncunun kendi bakışına göre sağ/sol karesinin x aralığı
   const right=who==='me'?[MID,SR]:[SL,MID], left=who==='me'?[SL,MID]:[MID,SR]; return side==='R'?right:left; }
-function setupServe(){ if(M.ogr){ const a=ogrA(M.ogr); if(a&&!a.bilgi) M.server=a.servis?'me':'op'; if(a&&a.drill) ogrCagriSec(true); } /* antrenman: servis adımında sen, vuruş adımında antrenör yüksek servisle başlatır */ M.s=null; M.trail=[]; M.me.vx=M.me.vy=0; M.me.tx=null; M.me.stun=0; M.mark=null; M.rally=0; M.between=false; M.icpt=null; M.serveMsg='';
+function setupServe(){ if(M.ogr){ const a=ogrA(M.ogr); if(a&&!a.bilgi) M.server=a.servis?'me':'op'; if(a&&a.drill) ogrCagriSec(true); } /* antrenman: servis adımında sen, vuruş adımında antrenör yüksek servisle başlatır */ M.s=null; M.trail=[]; M.me.vx=M.me.vy=0; M.op.mvx=M.op.mvy=0; M.me.tx=null; M.me.stun=0; M.mark=null; M.rally=0; M.between=false; M.icpt=null; M.serveMsg='';
   const sv=M.server, side=serveSide(sv), rv=sv==='me'?'op':'me';
   const sb=boxX(sv,side), rb=boxX(rv,side); // çapraz: alıcı kendi aynı adlı karesinde (karşıdan bakınca çapraz düşer)
   const cx=(a)=>(a[0]+a[1])/2;
@@ -1327,7 +1356,7 @@ function plan(who,type,dxAim,hp,overhead){
   switch(type){
     case 'smash': ty=yN(3.6+Math.random()*1.2); mode='speed'; val=M.s&&M.s.superNext?78:52; break; // ~190 km/s amatör smaç
     case 'drive': ty=yN(4.6); mode='speed'; val=22; break;
-    case 'drop': ty=yN(overhead?1.2:0.9); mode='angle'; val=overhead?.12:.75; break;
+    case 'drop': ty=yN(overhead?1.2:0.9); mode='angle'; val=overhead?DROP_A:.75; break;
     default: ty=yN(L/2-.55); mode='angle'; val=overhead?CLEAR_A:LIFT_A; } // clear / lift
   return {tx,ty,mode,val};
 }
@@ -1346,7 +1375,8 @@ function shotPlan(sw,I,s,dry){
   const sp=sw.speed, up=-sw.dy, r=Math.max(-1.3,Math.min(1.3,sw.dx/Math.max(50,Math.abs(sw.dy))));
   const hp={x:s.x,y:s.y,z:Math.max(.2,s.z)}, over=s.z>2.0;
   const hand=handOf(M.me,'me',s.x,s.z), bh=hand==='back';
-  let type; if(sw.tap) type=I.lunge?'lift':I.kill?'kill':'clear'; else if(I.lunge) type='lift'; else if(up<0) type='block'; else if(sp>1.5&&I.kill) type='kill'; else if(sp>1.7) type=over?(bh?'clear':(M.energy>=1?'jump':'smash')):'drive'; else if(sp<.75) type='drop'; else type='clear';
+  let type; if(sw.tap) type=I.lunge?'lift':I.kill?'kill':'clear'; else if(I.lunge) type='lift'; else if(up<0) type='block'; else if(sp>1.5&&I.kill) type='kill'; else if(sp>1.7) type=over?(bh?'clear':(M.energy>=1?'jump':'smash')):hp.z<.8?'lift':'drive'; else if(sp<.75) type='drop'; else type='clear';
+  /* Diz altından drive yok (2026-10-26): bant 1,52 m; 0,8 m altından 22 m/s düz vuruş ya fileye gider ya da dikleşip uzun kaçar (alçak drive'ların %17'si fileye). O yükseklikte sert vuruş hücum lift'idir; sınır shotClass'ın drive eşiğiyle aynı. */
   /* Backhand'den smaç yok: hızlı kaydırış baş üstü backhand'de sert bir clear olur. Backhand clear kısa kalır, backhand drive daha yavaş. */
   let tx=MID+r*2.4, d, mode='angle', val;
   switch(type){
@@ -1354,7 +1384,7 @@ function shotPlan(sw,I,s,dry){
     case 'jump': d=3.2; mode='speed'; val=78*GS.guc*nefesF(); if(!dry){ M.energy=0; yor(.3); } break;
     case 'smash': d=4.2; mode='speed'; val=52*GS.guc*nefesF(); if(!dry) yor(.18); break;
     case 'drive': d=4.6; mode='speed'; val=(bh?18:22)*GS.hiz; break;
-    case 'drop': d=over?1.2:1.0; val=over?.12:(Math.abs(hp.y-NET)<2.5?.75:.95); break; // arkadan alçak drop daha yüksek kavis ister
+    case 'drop': d=over?1.2:1.0; val=over?DROP_A:(Math.abs(hp.y-NET)<2.5?.75:.95); break; // arkadan alçak drop daha yüksek kavis ister
     case 'block': d=.9; val=.6; tx=hp.x+r*1.2; break;
     case 'lift': tx=MID+r*1.2; d=5.4; val=LIFT_A+.08; break;
     default: d=Math.min(bh?5.6:6.9,(bh?4.6:5.5)+(sp-.75)*1.4+(GS.guc-1)*3); val=over?CLEAR_A:LIFT_A; } /* kafa ağır raket clear'ı ~35 cm uzatır, kafa hafif kısaltır */
@@ -1418,7 +1448,7 @@ function swipeServe(sw){ if(M.s||M.between||M.server!=='me'||M.wait>0||M.svPendi
   servisAt('me',tur,cx+r*1.5,NET-d); ogrOlay({servis:tur,sp:sw.speed}); }
 function opHit(){ const s=M.s, I=M.icpt, hp={x:s.x,y:s.y,z:Math.max(.2,s.z)}; let type; const r=Math.random(); M.hitQ=Math.random()<.12?'poor':Math.random()<.3?'perfect':'good';
   if(s.serve&&false){}
-  const obh=handOf(M.op,'op',hp.x,hp.z)==='back'; type=I.opType||(I.overhead?'clear':'drop'); if(obh&&type==='smash') type='clear';
+  const obh=handOf(M.op,'op',hp.x,hp.z)==='back'; type=I.opType||(I.overhead?'clear':'drop'); if(obh&&type==='smash') type='clear'; if(type==='drive'&&hp.z<=.8) type='clear'; /* diz altından drive yok (shotPlan ile aynı kural): alçak top kaldırılır */
   { const n=M.op.nefes??1; if(type==='smash'&&n<.4&&Math.random()<(.4-n)/.4*.8) type='clear'; if(type==='smash') opYor(.12); } /* yorgun rakip smaç yerine clear seçer */
   if(M.ogr){ const a=ogrA(M.ogr); const b=a&&a.drill?(ogrCagriSec(false)==='drive'?'drive':'clear'):(a&&a.besle)||'clear'; if(b==='gevsek'){ const [vx,vy,vz]=aim(hp,MID+(Math.random()-.5)*1.2,NET+1.0,'angle',1.15); startFlight('op',vx,vy,vz,hp,false,'drop'); return; } type=b; } /* antrenör o adımın istediği topu besler */
   /* Rakip file önünde arada gevşek top bırakır: file üstüne kalkar, sana öldürme şansı. */
@@ -1427,6 +1457,8 @@ function opHit(){ const s=M.s, I=M.icpt, hp={x:s.x,y:s.y,z:Math.max(.2,s.z)}; le
   let [vx,vy,vz]=aim(hp,pl.tx+g(),pl.ty+g(),pl.mode,pl.val);
   /* Rakip fileyi çoğunlukla görür: fileye gidecek vuruşu çoğu zaman düzeltir, arada yine takar. */
   const chk=simulate(hp.x,hp.y,hp.z,vx,vy,vz); if(chk.net&&!chk.net.ok&&Math.random()<.9) [vx,vy,vz]=aim(hp,pl.tx,pl.ty-(hp.y<NET?0:0),'angle',Math.max(.75,pl.mode==='angle'?pl.val:.75));
+  /* Kötü vuruş (2026-10-26): aim fileyi hep geçtiği için rakibin file hataları nişan geometrisinden geliyordu ve kayboldu (bot: 29 → 4 sayı). Oyuncuyla aynı kural: poor vuruşun hızı ±%8 sapar. */
+  if(M.hitQ==='poor'){ const k=1+(Math.random()-.5)*.16; vx*=k; vy*=k; vz*=k; }
   startFlight('op',vx,vy,vz,hp,false,type); }
 function opServe(){ const b=M.serveBox, tur=M.op.svTur||'kisa';
   const tx=b.x[0]+.3+Math.random()*(b.x[1]-b.x[0]-.6), ty=tur==='kisa'?b.y[0]+.5:b.y[1]-.6; servisAt('op',tur,tx,ty); }
@@ -1471,7 +1503,7 @@ function runMe(d){ const o=M.me; if(!M.s){ o.vx=o.vy=0; return; } /* servis atı
   if(o.tx!=null){ const dx=o.tx-o.x, dy=o.ty-o.y, dist=Math.hypot(dx,dy); if(dist>.02){ const v=Math.min(max,Math.sqrt(2*A*dist)); dvx=dx/dist*v; dvy=dy/dist*v; } else o.tx=null; }
   const ex=dvx-o.vx, ey=dvy-o.vy, el=Math.hypot(ex,ey), st=A*d; const pvx=o.vx,pvy=o.vy;
   if(el>st){ o.vx+=ex/el*st; o.vy+=ey/el*st; } else { o.vx=dvx; o.vy=dvy; }
-  o.x=Math.max(-.6,Math.min(CW+.6,o.x+o.vx*d)); o.y=Math.max(NET+.25,Math.min(L+1,o.y+o.vy*d));
+  o.x=Math.max(-.6,Math.min(CW+.6,o.x+o.vx*d)); o.y=Math.max(NET+.25,Math.min(L+1,o.y+o.vy*d)); engel(o,true);
   const sp=Math.hypot(o.vx,o.vy), psp=Math.hypot(pvx,pvy);
   o.dust=(o.dust||0)-d; if(sp>2.6&&o.dust<=0){ o.dust=.07; const p=P(o.x,o.y); burst(p.x,p.y,'rgba(220,240,230,.55)',2,40,'dot',15); }
   if(psp>2.4&&(pvx*o.vx+pvy*o.vy)<psp*sp*.2&&!o.sq){ o.sq=.25; squeak(); } o.sq=Math.max(0,(o.sq||0)-d); }
@@ -1483,6 +1515,8 @@ function runTo(sx,sy){ const c=screenToCourt(sx,sy); M.me.tx=Math.max(-.4,Math.m
    ayak işinde ~3–4 adım/sn). Şimdi: hız 120 ms yumuşatılır; döngü 1,5 m'de bir ve en çok 2 döngü/sn (4 adım/sn);
    yürüme 0,9 m/s'de başlar 0,45'te biter (gidip gelme yok); yön klibi ancak 180 ms aynı kalırsa değişir. */
 const ADIM_BOY={chasse_r:.7,chasse_l:.7,fwd:.9,back_r:.8,back_l:.8}; /* m / döngü (tahmin, render'dan ölçülerek kesinleşecek) */
+/* 2026-10-26: model meta'sı klibin ölçülmüş adımını (adim, model ölçeğinde m/döngü) taşıyorsa tahmini ezer; oyun ölçeği ×1,75 (Unity PlayerView ile aynı). */
+for(const c in ADIM_BOY){ const a=SPR_META.clips[c]&&SPR_META.clips[c].adim; if(a>0) ADIM_BOY[c]=a*1.75; }
 function ayakIsi(q,dt,isMe){ if(q.qx==null){ q.qx=q.x; q.qy=q.y; q.svx=0; q.svy=0; }
   let rx=(q.x-q.qx)/dt, ry=(q.y-q.qy)/dt; const a=Math.min(1,dt/.12); q.qx=q.x; q.qy=q.y;
   if(Math.hypot(rx,ry)>12){ rx=ry=0; q.svx=q.svy=0; } /* servis dizilişi oyuncuyu ışınlar: adım sayılmaz */
@@ -1494,7 +1528,33 @@ function ayakIsi(q,dt,isMe){ if(q.qx==null){ q.qx=q.x; q.qy=q.y; q.svx=0; q.svy=
     if(!q.ayakKlip) q.ayakKlip=aday;
     if(aday!==q.ayakKlip){ q.adayT=(q.adayAd===aday?(q.adayT||0):0)+dt; q.adayAd=aday; if(q.adayT>.18){ q.ayakKlip=aday; q.adayT=0; } } else q.adayT=0; }
   else { q.ayakKlip=null; q.runPh=0; } }
+/* Ağ teması adımı (Core Match.AgAdim ile aynı): top ağı agSure boyunca yarım sinüsle iter (görünen sapma agMax'a kadar), ağ
+   topu tutar (yan hız 10/s söner, düşüş ağ sürtünmesiyle ~0,6 m/s'de kalır), yavaş top agAsili kadar asılı kalır; sonra ağ
+   topu vuranın tarafına hafifçe geri bırakır. Konum ağın şişkinliğinden okunur: top ağın içinden görünmez. */
+function agAdim(s,h){ s.agT+=h; const T=s.agSure, u=s.agT/T, dsp=u<1?s.agMax*Math.sin(Math.PI*u):0;
+  s.vx*=Math.exp(-10*h); s.vz+=(-GR*.5-8*s.vz)*h; s.x+=s.vx*h; s.z=Math.max(netLim(s.x)-AG_DERIN+.02,s.z+s.vz*h);
+  netZorla(s.x,s.z,-s.agYan*dsp,h); s.y=NET+netAt(s.x,s.z)*NET_GORSEL;
+  if(s.agT>=T+s.agAsili){ s.agda=false; s.y=NET+s.agYan*TOP_PAY; s.vy=s.agYan*(.1+.6*s.netK); s.vx*=.5; } }
+/* Katı engeller (2026-10-26, yasin "objelerde iç içe geçmeleri de çözmen lazım"; Core Match.Engel ile aynı kural): oyuncu
+   gövdesi filenin kendi tarafında (merkez fileden ≥ 0,25 m; eskiden yalnız ben sınırlıydım), direklerden ve hakem
+   sandalyelerinden r + OYUNCU_R uzakta; engele doğru hız bileşeni silinir. Sandalye yerleri bu dosyanın çizdiği yerdir
+   (hakemler(): baş hakem x −0,5 file hizası, servis hakemi x CW+0,5 fileden 0,2 m benim tarafımda); Unity CourtView kendi
+   yerleşimini kullanır (−0,75 / CW+0,6, −0,1), yarıçaplar aynı. */
+const OYUNCU_R=.32, DIREK_R=.04, ENGEL=[[0,NET,DIREK_R],[CW,NET,DIREK_R],[-.5,NET,.36],[CW+.5,NET+.2,.3]];
+function engel(o,isMe){ if(isMe) o.y=Math.max(o.y,NET+.25); else o.y=Math.min(o.y,NET-.25);
+  for(const [cx,cy,r] of ENGEL){ let dx=o.x-cx, dy=o.y-cy, dd=Math.hypot(dx,dy); const m=r+OYUNCU_R; if(dd>=m) continue;
+    if(dd<1e-4){ dx=0; dy=isMe?1:-1; dd=1; } const nx=dx/dd, ny=dy/dd; o.x=cx+nx*m; o.y=cy+ny*m;
+    const kx=isMe?'vx':'mvx', ky=isMe?'vy':'mvy', vn=(o[kx]||0)*nx+(o[ky]||0)*ny; if(vn<0){ o[kx]-=vn*nx; o[ky]-=vn*ny; } } }
 function move(o,x,y,step){ const dx=x-o.x, dy=y-o.y, d=Math.hypot(dx,dy); if(d<1e-3) return; const k=Math.min(1,step/d); o.x+=dx*k; o.y+=dy*k; }
+/* Rakip ivmeyle koşar (2026-10-26, Unity Match.MoveAcc ile aynı): eski move hızı tek karede 0'dan 3,5 m/s'ye çıkarıp hedefte
+   tek karede sıfırlıyordu (karelerin %3,2'sinde ivme > 40 m/s², p99 133 m/s²); gövde ilk karede tam hızla kayarken ayak işi
+   hızı 120 ms'de yakaladığı için çıkışta ve duruşta ayak kayıyordu. Şimdi oyuncunun runMe kuralı: en çok RAKIP_IVME ile
+   hızlanır/yavaşlar, hedefe √(2·A·mesafe) ile frenler. Ek süre ~v/A ≈ 0,19 sn; planIntercept'in 0,18 sn tepki payı karşılar. */
+const RAKIP_IVME=18;
+function moveAcc(o,x,y,vmax,d){ const dx=x-o.x, dy=y-o.y, dist=Math.hypot(dx,dy), A=RAKIP_IVME; let dvx=0,dvy=0; o.mvx=o.mvx||0; o.mvy=o.mvy||0;
+  if(dist>.01){ const v=Math.min(vmax,Math.sqrt(2*A*dist)); dvx=dx/dist*v; dvy=dy/dist*v; }
+  const ex=dvx-o.mvx, ey=dvy-o.mvy, el=Math.hypot(ex,ey), st=A*d; if(el>st){ o.mvx+=ex/el*st; o.mvy+=ey/el*st; } else { o.mvx=dvx; o.mvy=dvy; }
+  const sx=o.mvx*d, sy=o.mvy*d; if(dist<=.01||(Math.hypot(sx,sy)>=dist&&sx*dx+sy*dy>0)){ o.x=x; o.y=y; if(dist<=.01){ o.mvx=o.mvy=0; } } else { o.x+=sx; o.y+=sy; } engel(o,false); }
 function update(dt){
   if(M&&dt>0){ const o=M.op; if(o.px!=null){ o.vx=(o.x-o.px)/dt; o.vy=(o.y-o.py)/dt; } o.px=o.x; o.py=o.y; [M.me,M.op].forEach(q=>{ ayakIsi(q,dt,q===M.me); q.splitT=Math.max(0,(q.splitT||0)-dt); }); }
   if(freeze>0){ freeze-=dt; return; }
@@ -1524,28 +1584,43 @@ function update(dt){
       if(who==='me'&&s&&!s.dead&&s.from==='op'){ const ri=reachInfo(), yakin=s.y>NET&&Math.hypot(s.x-o.x,s.y-o.y)<2.6; if(ri||yakin){ tg=1; o.prepShot=ri&&ri.lunge?'lunge':shotClass(s.type==='smash'&&s.z<=.8?'block':'',s.z,s.y); if(o.prepShot==='low'&&s.type==='smash') o.prepShot='block'; /* vuruş anındaki sınıflamanın aynısı (o anki top yüksekliği): hazırlık ile vuruş klibi aynı aileden */ o.prepHand=handOf(o,'me',s.x,s.z); o.prepClip=clipHand(o.prepShot==='over'?(M.energy>=1&&o.prepHand!=='back'?'jump':'clear'):o.prepShot,o.prepHand); } }
       o.prepA=(o.prepA||0)+(tg-(o.prepA||0))*Math.min(1,dt*(tg&&who==='op'?4.5:9)); }; /* rakipte geri salınım sakin akar (~0,4 sn); bizde vuruş penceresi kısa, eski hız kalır. Bırakış hızlı. Drive ve blok kendi hazırlığıyla: eskiden alçak vuruş klibinden gelip raket yere iniyor, temasta 1,2–1,6 m fırlıyordu */
     upd(M.me,'me'); upd(M.op,'op'); }
-  const s=M.s; if(!s||s.dead) return;
+  const s=M.s; if(!s) return; if(s.dead){ s.yerT=(s.yerT||0)+d; return; } /* yerdeki top: sekme + devrilme süresi (yerPoz) */
   // canlı fizik: tahminle aynı adım
-  let rem=d; while(rem>1e-6){ const h=Math.min(DT,rem); const py=s.y; if(s.netHit){ s.vy*=Math.exp(-4*h); s.vx*=Math.exp(-4*h); } step(s,h); s.t+=h; rem-=h;
-    if(!s.netDone&&(py>NET)!==(s.y>NET)){ s.netDone=true; const lim=NETH+(NETP-NETH)*Math.abs(s.x-MID)/MID; /* Tahminle canlı uçuş aynı karara varsın: kıl payı geçişte adım farkı sonucu değiştirmesin. */ if(s.netPred?!s.netPred.ok:s.z<=lim){ const sp=Math.hypot(s.vx,s.vy,s.vz), k=Math.min(1,sp/55); netImpulse(s.x,s.z,sp);
-        /* Hızlı top fileyi esnetir ve geri tükürür (0,2–1 m/s), yavaş top sadece yapışıp iner; bant kenarına çarpan (lim-z<6 cm) kordondan yuvarlanır */
-        /* Bant üstüne (üst 3 cm) hızlı çarpan top kordondan karşıya yuvarlanır ve oyunda kalır; servis de dahil (BWF:
-           fileye değip geçen top geçerlidir). Önceden banda değen her top vurana geri dönüyordu. Tahmin bunu bilmez:
-           karşı oyuncu için gerçek hayattaki gibi şanslı, alınması zor bir top. */
-        if(lim-s.z<.03&&Math.abs(s.vy)>6){ s.vy=(py>NET?-1:1)*1.3; s.vx*=.3; s.vz=.7; s.netCord=true; netImpulse(s.x,s.z,sp,true); netThud(.3,true); hap('net');
+  let rem=d; while(rem>1e-6){ const h=Math.min(DT,rem); const py=s.y; rem-=h; s.t+=h;
+    if(s.agda){ agAdim(s,h); if(s.agda) continue; } /* ağa gömülü: konumu ağ belirler */
+    if(s.netHit){ s.vy*=Math.exp(-4*h); s.vx*=Math.exp(-4*h); } step(s,h);
+    /* Fileden dönen top filenin düzlemini yeniden geçemez (2026-10-26, iç içe geçme yok): vuranın tarafında ağa yaslı iner;
+       ağın alt kenarının altına inince serbest. */
+    if(s.netHit&&!s.altindan&&s.z>netLim(s.x)-AG_DERIN-.05&&(s.y-NET)*s.agYan<TOP_PAY){ s.y=NET+s.agYan*TOP_PAY; if(s.vy*s.agYan<0) s.vy=-s.vy*.2; }
+    if(!s.netDone&&(py>NET)!==(s.y>NET)){ s.netDone=true; const lim=netLim(s.x); /* Tahminle canlı uçuş aynı karara varsın: kıl payı geçişte adım farkı sonucu değiştirmesin. */ if(s.netPred?!s.netPred.ok:s.z<=lim){
+        /* File teması (2026-10-26, yasin "file kritik, bant daha sert kısım, file ise oynak; fileye düştüğünde oyun animasyonla
+           ilerlemeli"; Core Match.Update ile aynı sayılar). Geçiş adımında top düzlemi bir adımlık yol kadar (smaçta ~20 cm)
+           aşmış olur; eskiden orada kalıp ağın içinden görünüyordu. Çarpılan parçaya göre:
+           - bandın üst 3 cm'i + hızlı top: kordondan karşıya yuvarlanır (oyunda kalır, BWF servis dahil), bant titrer;
+           - bant (üst 75 mm, gergin kordon): sert ve kısa seker, hızın çoğu ölür, top vuranın tarafına düşer;
+           - ağ: top ağa gömülür, ağ şişer (görünen sapma smaçta ~30 cm, dropta ~6 cm), top yavaşlar, ağ boyunca biraz kayar,
+             yavaş top kısa bir an asılı kalır, sonra ağ onu vuranın tarafına bırakır; top fileye yaslı yere iner, yerde sekip
+             yan yatar. Sayı top yere değince verilir: düşüş oynar, oyun aniden kesilmez;
+           - ağın alt kenarının altı: top altından geçer (hata), ağa dokunmaz. */
+        const sp=Math.hypot(s.vx,s.vy,s.vz), k=Math.min(1,sp/55), yan=py>NET?1:-1, pen=lim-s.z; s.agYan=yan;
+        if(pen>AG_DERIN){ s.netHit=true; s.altindan=true; s.netK=k; netThud(k*.3,false); }
+        else if(pen<.03&&Math.abs(s.vy)>6){ s.y=NET-yan*TOP_PAY; s.z=lim+.02; s.vy=-yan*1.3; s.vx*=.3; s.vz=.7; s.netCord=true; netImpulse(s.x,lim,sp,true,-yan); netThud(.3,true); hap('net');
           const p=P(s.x,NET,s.z); txt(Tr('File bandı! Top karşıya yuvarlandı'),p.x,p.y-36,'#ffd27a',17,2); }
-        else { const tape=lim-s.z<.06; s.vx*=tape?.4:.15; s.vy=(py>NET?1:-1)*(tape?.25:.15+.85*k); s.vz=tape?.3:Math.min(0,s.vz*.2); s.netHit=true; s.netK=k;
-        const p=P(s.x,NET,s.z); burst(p.x,p.y,'#ffffff',4+Math.round(8*k),60+90*k,'feather'); netThud(k,tape); hap('net'); } }
-      else if(lim-s.z>-.045&&s.z>lim){ /* bandı sıyırdı: top geçti ama kordon titredi */ netImpulse(s.x,s.z,Math.hypot(s.vx,s.vy,s.vz),true); const p=P(s.x,NET,s.z); txt(Tr('Bandı sıyırdı!'),p.x,p.y-36,'#ffd27a',18); tone(1900,.05,'triangle',.05); } }
-    if(s.z<=0){ s.z=0; land(); return; } }
+        else if(pen<BANT){ netImpulse(s.x,lim,sp,true,-yan); netImpulse(s.x,lim-BANT,sp*.3,false,-yan);
+          s.y=NET+yan*TOP_PAY; s.vx*=.35; s.vy=yan*(.25+.35*k); s.vz=Math.max(0,s.vz*.1)+.25*(1-pen/BANT); s.netHit=true; s.netK=k;
+          const p=P(s.x,NET,s.z); burst(p.x,p.y,'#ffffff',4+Math.round(8*k),60+90*k,'feather'); netThud(k,true); hap('net'); }
+        else { s.agda=true; s.agT=0; s.agSure=.07+.08*k; s.agAsili=(1-k)*.12; s.agMax=.05+.25*k; s.y=NET; s.vx*=.3; s.vz=Math.min(0,s.vz*.2); s.netHit=true; s.netK=k; NETW.glow=Math.max(NETW.glow,k); NETW.act=true;
+          const p=P(s.x,NET,s.z); burst(p.x,p.y,'#ffffff',4+Math.round(8*k),60+90*k,'feather'); netThud(k,false); hap('net'); } }
+      else if(lim-s.z>-.045&&s.z>lim){ /* bandı sıyırdı: top geçti ama kordon titredi */ netImpulse(s.x,s.z,Math.hypot(s.vx,s.vy,s.vz),true,s.vy>0?1:-1); const p=P(s.x,NET,s.z); txt(Tr('Bandı sıyırdı!'),p.x,p.y-36,'#ffd27a',18); tone(1900,.05,'triangle',.05); } }
+    if(s.z<=0){ s.z=0; s.inVx=s.vx; s.inVy=s.vy; s.inVz=s.vz; land(); return; } }
   const sp=P(s.x,s.y,s.z); M.trail.push(sp); if(M.trail.length>(s.type==='smash'?14:8)) M.trail.shift();
   const I=M.icpt;
-  if(s.from==='me'){ if(I&&I.who==='op'&&!I.leave){ if(M.op.fakeUntil>M.clock) move(M.op,M.op.fakeX,M.op.y,1.6*d); else move(M.op,Math.max(-.4,Math.min(CW+.4,I.x+hitSide(M.op,'op',I,s))),I.y-.3,opSpd()*d); /* rakip de aynı kural (onun sağı = -x) */
+  if(s.from==='me'){ if(I&&I.who==='op'&&!I.leave){ if(M.op.fakeUntil>M.clock) moveAcc(M.op,M.op.fakeX,M.op.y,1.6,d); else moveAcc(M.op,Math.max(-.4,Math.min(CW+.4,I.x+hitSide(M.op,'op',I,s))),I.y-.3,opSpd(),d); /* rakip de aynı kural (onun sağı = -x) */
       if(I.opType==='smash'&&M.op.prepClip==='jump'&&I.t-s.t<SALINIM.jump&&I.t-s.t>0&&!(M.op.jump>0)) M.op.jump=1-(SALINIM.jump-(I.t-s.t))*JUMP_HIZ; /* tek sıçrama, tepe temasta (eskiden temastan önce ve sonra iki zıplama) */
       if(s.t>=I.t){ opHit(); return; } }
-    else { move(M.op,s.landPred.x,s.landPred.y-.4,2.2*d); if(!M.op.dive&&s.landPred&&!isOut(s.landPred.x,s.landPred.y,s.serve)&&!(s.landPred.net&&!s.landPred.net.ok)&&s.t>s.landPred.t-.25){ M.op.dive=1; M.op.yat=1; const p=P(M.op.x,M.op.y); txt(Tr('Kıl payı!'),p.x,p.y-40,'#ffd27a',20); if(!reduce){ slow=.35; slowT=.3; } } }
+    else { moveAcc(M.op,s.landPred.x,s.landPred.y-.4,2.2,d); if(!M.op.dive&&s.landPred&&!isOut(s.landPred.x,s.landPred.y,s.serve)&&!(s.landPred.net&&!s.landPred.net.ok)&&s.t>s.landPred.t-.25){ M.op.dive=1; M.op.yat=1; const p=P(M.op.x,M.op.y); txt(Tr('Kıl payı!'),p.x,p.y-40,'#ffd27a',20); if(!reduce){ slow=.35; slowT=.3; } } }
   }
-  else { move(M.op,MID,M.stil.ev,2.0*d); }
+  else { moveAcc(M.op,MID,NET-M.stil.ev,2.0,d); } /* ana nokta fileden stil.ev m (2026-10-26): eskiden y=ev, yani rakibin dip çizgisinden yazılıyordu; "fileye yakın durur" denen Mika (2,2) fileden 4,5 m'de en derinde, Duvar (3,6) en önde bekliyordu. Üç değer ancak fileden okununca tarifle uyuşur. */
 }
 function lineMargin(x,y,serve){ const b=sinir(serve); return Math.min(Math.abs(x-b.x[0]),Math.abs(x-b.x[1]),Math.abs(y-b.y[0]),Math.abs(y-b.y[1])); } /* çizgi kamerası ne zaman açılsın: merkezin sınıra uzaklığı */
 function land(){ const s=M.s; s.dead=true; const at={x:s.x,y:s.y}; const hitter=s.from, other=hitter==='me'?'op':'me';
@@ -1757,7 +1832,7 @@ function player(o,col,isMe){ const v=isMe?'me':'op'; const SC_=SPR.clip[v]; if(!
     if(hold==null||!c0) ph=hit*.9*Math.min(1,o.prepA);
     else { const hitF=Math.floor(hit*c0.n), sal=SALINIM[clip]||SALINIM_V; let f=Math.min(1,o.prepA)*hold;
       if(o.prepT!=null&&o.prepT<sal) f=hold+(hitF-hold)*(1-o.prepT/sal); ph=(Math.min(hitF-1,Math.floor(f))+.5)/c0.n; } }
-  else if((o.splitT||0)>0&&spd<1.5){ clip='split'; ph=1-o.splitT/.3; }
+  else if((o.splitT||0)>0&&spd<.6){ clip='split'; ph=1-o.splitT/.3; } /* split yalnız yerindeyken (2026-10-26): 1,5 m/s'ye kadar gövde split pozunda kayıyordu (rakipte split karelerinin %70'i) */
   else if(o.yuru&&o.ayakKlip){ clip=o.ayakKlip; ph=o.runPh||0; } /* badminton ayak işi: yana chassé, öne kısa adım, arkaya çapraz adım; seçim ayakIsi()'nde */
   else { clip='idle'; ph=(now*.8+(isMe?0:.5))%1; }
   /* Komşu kareleri kesirle karıştırma denendi (2026-10-20) ve kaldırıldı: iki poz üst üste binince karakter hayalet gibi
@@ -1789,20 +1864,35 @@ function satirla(t,x,y,maxw,lh){ const k=t.split(' '); let l='';
   for(const w of k){ const d=l?l+' '+w:w; if(ctx.measureText(d).width>maxw&&l){ ctx.fillText(l,x,y); y+=lh; l=w; } else l=d; }
   if(l){ ctx.fillText(l,x,y); y+=lh; } return y; }
 const SHM={s:null,d:[0,1,0],wob:0,wv:0,phi:0,t:0,vx:0,vy:0,vz:0};
+/* Yere iniş (2026-10-26, Core Shuttle.YerPoz ile aynı): top mantarı üstüne düşer (iniş hızına göre en çok 5 cm sekme +
+   %25'lik ikinci küçük sekme), ilk sekmenin ortasında eteğin üstüne devrilmeye başlar (0,3 sn, u²) ve mantarla etek ağzı
+   yere değecek biçimde ~16° eğik yatar (sönümlü küçük geri tepme). */
+const YER_EGIM=.284;
+function yerPoz(t,vInis){ const h0=Math.min(.05,.0062*Math.abs(vInis||0)), T1=2*Math.sqrt(2*Math.max(1e-4,h0)/GR), T2=T1*.5; let hop=0;
+  if(t<T1){ const u=t/T1; hop=4*h0*u*(1-u); } else if(t<T1+T2){ const u=(t-T1)/T2; hop=h0*.25*4*u*(1-u); }
+  const d0=T1*.45, dT=.3, uu=Math.max(0,Math.min(1,(t-d0)/dT)); let dev=uu*uu; const te=t-d0-dT; if(te>0) dev-=.07*Math.exp(-14*te)*Math.sin(32*te); return [hop,dev]; }
 function shuttleModel(s,zz){ const now=performance.now()/1000, dt=Math.min(.05,Math.max(0,now-(SHM.t||now))); SHM.t=now;
   const sp=Math.hypot(s.vx,s.vy,s.vz)||1e-6, tgt=[-s.vx/sp,-s.vy/sp,-s.vz/sp]; /* etek hızın tersine: mantar önde */
-  const flip=SHM.s!==s||(SHM.vx*s.vx+SHM.vy*s.vy+SHM.vz*s.vz)<0; /* yeni vuruş: hız yön değiştirdi */
+  const flip=!s.dead&&(SHM.s!==s||(SHM.vx*s.vx+SHM.vy*s.vy+SHM.vz*s.vz)<0); /* yeni vuruş: hız yön değiştirdi; yerde salınım yok */
   if(flip&&SHM.s){ SHM.wv=(Math.random()<.5?-1:1)*14; } SHM.s=s; SHM.vx=s.vx; SHM.vy=s.vy; SHM.vz=s.vz;
   const k=reduce?1:1-Math.exp(-dt/.02); for(let i=0;i<3;i++) SHM.d[i]+=(tgt[i]-SHM.d[i])*k; /* ~20 ms dönüş */
   const dl=Math.hypot(...SHM.d)||1; SHM.d=SHM.d.map(v=>v/dl);
   SHM.wv+=(-SHM.wob*260-SHM.wv*18)*dt; SHM.wob+=SHM.wv*dt; if(reduce) SHM.wob=0; /* sönümlü salınım ~80 ms */
   SHM.phi+=dt*Math.min(40,sp*1.6)*(s.dead?0:1);   /* etek dönüşü: hızla artar */
-  const G=3.2; /* okunurluk büyütmesi: gerçek top 6,6 cm. 4,4 idi (yasin 2026-10-22 "fazla mı büyük"): oyuncu 1,75× çizildiği için top oyuncuya göre 2,5× büyük kalıyor, kafası kadar görünüyordu. 3,2 ile oyuncuya oranı 1/14 (gerçek 1/26), tüyler hâlâ seçiliyor; 2,6 denendi, uzak tarafta tüy ayrıntısı kayboluyor */
+  const G=3.2, Rc0=.0135*G; let zc=Math.max(Rc0,s.z); /* mantar merkezi yerden Rc'den aşağı inmez (top yere gömülmesin) */
+  if(s.dead){ /* yerde: devrilme yönü iniş yönü (mantar durur, etek ileri kapaklanır); sekme görselde G katı (3,2× çizilen topta 5 cm okunmuyor) */
+    const [hop,dev]=yerPoz(s.yerT||0,s.inVz); let fx=s.inVx||0, fy=s.inVy||0, fl=Math.hypot(fx,fy);
+    if(fl<1e-2){ let hh=Math.sin(s.x*12.9898+s.y*78.233)*43758.5; hh-=Math.floor(hh); fx=Math.cos(hh*6.283); fy=Math.sin(hh*6.283); fl=1; }
+    fx/=fl; fy/=fl; const w=reduce?1:dev;
+    /* dik (etek yukarı) → yatık: düzlemsel ara değer, w > 1 geri tepmede hafif aşar */
+    const a0=Math.PI/2, a1=YER_EGIM, ang=a0+(a1-a0)*w; SHM.d=[fx*Math.cos(ang),fy*Math.cos(ang),Math.sin(ang)]; SHM.wob=0; SHM.wv=0;
+    zc=Rc0+(reduce?0:hop)*G; }
+  /* G: okunurluk büyütmesi: gerçek top 6,6 cm. 4,4 idi (yasin 2026-10-22 "fazla mı büyük"): oyuncu 1,75× çizildiği için top oyuncuya göre 2,5× büyük kalıyor, kafası kadar görünüyordu. 3,2 ile oyuncuya oranı 1/14 (gerçek 1/26), tüyler hâlâ seçiliyor; 2,6 denendi, uzak tarafta tüy ayrıntısı kayboluyor */
   let d=SHM.d; const up=Math.abs(d[2])<.9?[0,0,1]:[1,0,0];
   const cr=(u,v)=>[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]], nr=v=>{const l=Math.hypot(...v)||1; return v.map(q=>q/l);};
   let e1=nr(cr(d,up)), e2=cr(d,e1);
   if(SHM.wob){ const c=Math.cos(SHM.wob*.35), sn=Math.sin(SHM.wob*.35); d=nr(d.map((v,i)=>v*c+e1[i]*sn)); e1=nr(cr(d,up)); e2=cr(d,e1); }
-  const W3=(o,a,b2,c3)=>P(s.x+o[0],s.y+o[1],s.z+o[2]), add=(...vs)=>vs.reduce((m,v)=>[m[0]+v[0],m[1]+v[1],m[2]+v[2]],[0,0,0]), mul=(v,k2)=>v.map(q=>q*k2);
+  const W3=(o,a,b2,c3)=>P(s.x+o[0],s.y+o[1],zc+o[2]), add=(...vs)=>vs.reduce((m,v)=>[m[0]+v[0],m[1]+v[1],m[2]+v[2]],[0,0,0]), mul=(v,k2)=>v.map(q=>q*k2);
   const L=.066*G, Rt=.032*G, Rb=.012*G, Rc=.0135*G;
   const ghosts=(!reduce&&sp>18)?Math.min(3,Math.floor(sp/18)):0;
   for(let gi=ghosts;gi>=0;gi--){ /* hareket bulanıklığı: bir karelik yolun gerisinde soluk kopyalar */
