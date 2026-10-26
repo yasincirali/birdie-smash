@@ -69,3 +69,9 @@ extern "C" int BirdieHareketAzalt(void)
 {
     return UIAccessibilityIsReduceMotionEnabled() ? 1 : 0;
 }
+
+// Düşük güç modu (2026-10-26, ProMotion 120 Hz önerisi): açıkken maç 60 Hz'de kalır (pil isteği kullanıcının).
+extern "C" int BirdieDusukGuc(void)
+{
+    return [[NSProcessInfo processInfo] isLowPowerModeEnabled] ? 1 : 0;
+}

@@ -572,7 +572,7 @@ namespace BirdieSmash.Core
         void RunMe(float d)
         {
             var o = me; if (s == null) { o.vx = o.vy = 0; return; }   // servis atılana kadar yerinde (kural)
-            if (o.stun > 0) { o.stun -= d; o.vx *= .8f; o.vy *= .8f; return; }
+            if (o.stun > 0) { o.stun -= d; float sk = (float)Math.Pow(.8, d * 60); o.vx *= sk; o.vy *= sk; return; }   // 60 Hz'de kare başına ×.8; 120 Hz'de aynı sönüm (2026-10-26)
             o.manualT = Math.Max(0, o.manualT - d);
             if (easy && o.manualT <= 0 && o.fakeUntil > clock) { o.tx = o.fakeX; o.ty = o.fakeY; }   // aldatıldı (Vex, gölge flick)
             else if (easy && o.manualT <= 0)

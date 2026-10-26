@@ -4,7 +4,7 @@
 //   Ekipman: 360° figür (sürükle, ‹ › 15°, "Raketi incele"), raket görünümü (grip, kordaj, desen, çapraz tel), seviye ve Tüy,
 //   altı yuva yükseltmesi (önizleme çubukları: gri şimdi, yeşil yükseltince), "Eşit şartlar", modeller ve tel gerginliği,
 //   istatistik satırı. Ayarlar (+ Unity: dil). Nasıl oynanır. Lisanslar.
-//   Maç: skor kutusu (sayı alınca büyür), servis noktası, sol üst kutu (Ralli · Görev n/3 · hedef · rakip), smaç gücü çubuğu
+//   Maç: skor kutusu (sayı alınca büyür), servis noktası, sol üst kutu (Ralli 3'ten sonra · 3 görev noktası), smaç gücü çubuğu
 //   ("Sıçrayarak smaç hazır" turuncu nabız), servis şeridi (altta), vuruş halesi + etiket, hedef önizleme adı, parmak izi,
 //   çizgi kamerası dairesi, tribün flaşları, ekran parlaması, antrenman kartı (hız bandı ve iğne, bilgi adımı çerçevesi,
 //   antrenör çağrısı, iz), maç sonu (Tüy/XP ödülü, yükseltme hazır), duraklat, smaç perdesi.
@@ -34,7 +34,20 @@ namespace BirdieSmash.Game
         class Float { public string t; public Vector3 w; public float a; public Color c; public float size; public bool sabit; }
         readonly List<Float> floats = new List<Float>(); readonly List<Rect> blocks = new List<Rect>();
         string ogrMsg; float ogrMsgT;
-        float[] pop = new float[2]; float flash; Color flashC; readonly List<Vector3> cams = new List<Vector3>();
+        // Biçim önbelleği (2026-10-26, 120 Hz önerisinin ön şartı "60'ta uzun kare sıfır"): OnGUI her karede onlarca
+        // new GUIStyle üretiyordu; çöp toplayıcı ara ara uzun kare yapıyordu. Aynı (taban, boy, kalınlık) biçimi bir kez
+        // kurulur. Dönen biçim paylaşılır: üstünde alan DEĞİŞTİRME (gerekirse yeni anahtar ekle).
+        readonly Dictionary<long, GUIStyle> stilOn = new Dictionary<long, GUIStyle>(); readonly Dictionary<GUIStyle, int> stilNo = new Dictionary<GUIStyle, int>();
+        GUIStyle Stil(GUIStyle b, int boy, FontStyle fs = (FontStyle)(-1))
+        {
+            int no; if (!stilNo.TryGetValue(b, out no)) { no = stilNo.Count + 1; stilNo[b] = no; }
+            long key = ((long)no << 32) | ((long)(boy + 1) << 4) | ((long)fs + 1 & 15); GUIStyle st;
+            if (!stilOn.TryGetValue(key, out st)) { st = new GUIStyle(b); if (boy > 0) st.fontSize = boy; if ((int)fs >= 0) st.fontStyle = fs; stilOn[key] = st; }
+            return st;
+        }
+        GUIStyle leftWrap, leftWrapTaban; // her karede yeni taban S() önbelleğini şişirirdi
+        public void StilSifirla() { stilOn.Clear(); stilNo.Clear(); }
+        float ralliPop; int sonRalli; float[] pop = new float[2]; float flash; Color flashC; readonly List<Vector3> cams = new List<Vector3>();
         class HawkV { public float x, y, t; public bool icerde, serve; public int cm; } HawkV hawk;
         Texture2D ring, ringK, glow, disk, bar; Texture2D[] perdeTex; Texture2D topIkon;
         // perde: evre 0 yok, 1 kapanıyor, 2 kapalı, 3 açılıyor
@@ -80,7 +93,7 @@ namespace BirdieSmash.Game
         {
             float d = Time.unscaledDeltaTime; for (int i = floats.Count - 1; i >= 0; i--) { floats[i].a += d; if (floats[i].a > 1.2f) floats.RemoveAt(i); }
             if (ogrMsgT > 0) ogrMsgT -= d;
-            pop[0] = Mathf.Max(0, pop[0] - d * 3); pop[1] = Mathf.Max(0, pop[1] - d * 3); flash = Mathf.Max(0, flash - d * 2.2f);
+            ralliPop = Mathf.Max(0, ralliPop - d * 4); pop[0] = Mathf.Max(0, pop[0] - d * 3); pop[1] = Mathf.Max(0, pop[1] - d * 3); flash = Mathf.Max(0, flash - d * 2.2f);
             for (int i = cams.Count - 1; i >= 0; i--) { var c = cams[i]; c.z += d; cams[i] = c; if (c.z > .5f) cams.RemoveAt(i); }
             if (hawk != null) { hawk.t += d; if (hawk.t > 1.5f) hawk = null; }
             if (konfetiT >= 0) { int once = Mathf.FloorToInt(konfetiT / .13f); konfetiT += d; int sonra = Mathf.FloorToInt(konfetiT / .13f); if (sonra > once && once < 6) { var c = new[] { "#d8ff5a", "#ff7a6b", "#7ad7ff" }[once % 3]; var p = root.cam.ScreenToWorldPoint(new Vector3(Screen.width * (.15f + Random.value * .7f), Screen.height * (.5f + Random.value * .3f), 6)); root.fx.Burst(p, Kit.Hex(c), 30, 300, "spark"); } if (konfetiT > 1) konfetiT = -1; }
@@ -136,17 +149,17 @@ namespace BirdieSmash.Game
         static Texture2D Solid(Color c) { var t = new Texture2D(1, 1); t.SetPixel(0, 0, c); t.Apply(); return t; }
         void Styles()
         {
-            float nu = Mathf.Min(Screen.height / 640f, Screen.width / 340f), nf = nu * Ayar.YaziK; if (big != null && Mathf.Abs(nu - u) < .001f && Mathf.Abs(nf - fu) < .001f) return; u = nu; fu = nf;
+            float nu = Mathf.Min(Screen.height / 640f, Screen.width / 340f), nf = nu * Ayar.YaziK; if (big != null && Mathf.Abs(nu - u) < .001f && Mathf.Abs(nf - fu) < .001f) return; u = nu; fu = nf; StilSifirla(); // eski boyutun önbelleği yeni tabanla karışmasın
             big = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(32 * fu), fontStyle = FontStyle.Bold, alignment = TextAnchor.MiddleCenter, wordWrap = true };
-            mid = new GUIStyle(big) { fontSize = Mathf.RoundToInt(19 * fu) };
-            small = new GUIStyle(big) { fontSize = Mathf.RoundToInt(13 * fu), fontStyle = FontStyle.Normal };
-            tiny = new GUIStyle(small) { fontSize = Mathf.RoundToInt(11 * fu) };
+            mid = Stil(big, Mathf.RoundToInt(19 * fu));
+            small = Stil(big, Mathf.RoundToInt(13 * fu), FontStyle.Normal);
+            tiny = Stil(small, Mathf.RoundToInt(11 * fu));
             left = new GUIStyle(small) { alignment = TextAnchor.UpperLeft }; leftB = new GUIStyle(left) { fontStyle = FontStyle.Bold, fontSize = Mathf.RoundToInt(15 * fu) };
             btn = new GUIStyle(GUI.skin.button) { fontSize = Mathf.RoundToInt(15 * fu), fontStyle = FontStyle.Bold, wordWrap = true };
             btn.normal.background = Solid(Kit.Hex("#22343a")); btn.hover.background = btn.active.background = Solid(Kit.Hex("#2e464e")); btn.normal.textColor = btn.hover.textColor = btn.active.textColor = Color.white;
             btnD = new GUIStyle(btn); btnD.normal.background = btnD.hover.background = btnD.active.background = Solid(Kit.Hex("#1a2629")); btnD.normal.textColor = btnD.hover.textColor = btnD.active.textColor = new Color(1, 1, 1, .45f);
             btnP = new GUIStyle(btn); btnP.normal.background = Solid(Kit.Hex("#d8ff5a")); btnP.hover.background = btnP.active.background = Solid(Kit.Hex("#e6ff8c")); btnP.normal.textColor = btnP.hover.textColor = btnP.active.textColor = Kit.Hex("#0d1a12");
-            chip = new GUIStyle(btn) { fontSize = Mathf.RoundToInt(13 * fu), fontStyle = FontStyle.Normal }; chipOn = new GUIStyle(chip) { fontStyle = FontStyle.Bold };
+            chip = Stil(btn, Mathf.RoundToInt(13 * fu), FontStyle.Normal); chipOn = Stil(chip, -1, FontStyle.Bold);
             chipOn.normal.background = chipOn.hover.background = chipOn.active.background = Solid(Kit.Hex("#7ad7ff")); chipOn.normal.textColor = chipOn.hover.textColor = chipOn.active.textColor = Kit.Hex("#07161c");
             card = new GUIStyle(GUI.skin.box); card.normal.background = Solid(new Color(.04f, .08f, .09f, .86f));
             if (ring == null) { ring = Kit.RingTex(128, 5); ringK = Kit.RingTex(128, 3); glow = Kit.RadialTex(64); disk = Kit.RingTex(128, 128); bar = Solid(Color.white); }
@@ -207,17 +220,29 @@ namespace BirdieSmash.Game
             float cx = W / 2, sy = top; var kr = new Rect(cx - 62 * u, sy, 124 * u, 34 * u); Fill(kr, new Color(8 / 255f, 16 / 255f, 17 / 255f, .7f));
             if (!ogr)
             {
-                var s0 = new GUIStyle(big) { fontSize = Mathf.RoundToInt(24 * fu * (1 + .5f * Mathf.Sin(pop[0] * Mathf.PI))) }; var s1 = new GUIStyle(big) { fontSize = Mathf.RoundToInt(24 * fu * (1 + .5f * Mathf.Sin(pop[1] * Mathf.PI))) };
-                Shadowed(new Rect(cx - 60 * u, sy - 6 * u, 60 * u, 46 * u), M.sc[0].ToString(), s0, Kit.Hex(gs.forma)); Shadowed(new Rect(cx - 10 * u, sy, 20 * u, 34 * u), "–", new GUIStyle(big) { fontSize = Mathf.RoundToInt(24 * fu) }, Kit.Hex("#9dbab3"));
+                var s0 = Stil(big, Mathf.RoundToInt(24 * fu * (1 + .5f * Mathf.Sin(pop[0] * Mathf.PI)))); var s1 = Stil(big, Mathf.RoundToInt(24 * fu * (1 + .5f * Mathf.Sin(pop[1] * Mathf.PI))));
+                Shadowed(new Rect(cx - 60 * u, sy - 6 * u, 60 * u, 46 * u), M.sc[0].ToString(), s0, Kit.Hex(gs.forma)); Shadowed(new Rect(cx - 10 * u, sy, 20 * u, 34 * u), "–", Stil(big, Mathf.RoundToInt(24 * fu)), Kit.Hex("#9dbab3"));
                 Shadowed(new Rect(cx, sy - 6 * u, 60 * u, 46 * u), M.sc[1].ToString(), s1, Kit.Hex("#ff7a6b"));
                 Fill(new Rect(cx + (M.server == "me" ? -54 : 50) * u, sy + 15 * u, 5 * u, 5 * u), M.server == "me" ? Kit.Hex(gs.forma) : Kit.Hex("#ff7a6b"));   // servis noktası
-                // sol üst kutu
-                var bs = new GUIStyle(left) { fontSize = Mathf.RoundToInt(11 * fu), fontStyle = FontStyle.Bold };
-                string l3 = L.T("{0} sayı · {1}", M.target, M.RakipAd(false)); float bw = Mathf.Max(bs.CalcSize(new GUIContent(l3)).x, 60 * u) + 14 * u;
-                Fill(new Rect(lx - 10 * u, top + 2 * u, bw, 54 * u), new Color(8 / 255f, 16 / 255f, 17 / 255f, .72f));
-                GUI.color = Kit.Hex("#9dbab3"); GUI.Label(new Rect(lx - 4 * u, top + 6 * u, bw, 16 * u), L.T("Ralli {0}", M.rally), new GUIStyle(bs) { fontSize = Mathf.RoundToInt(12 * fu) });
-                GUI.color = new Color(1, .82f, .23f, .9f); GUI.Label(new Rect(lx - 4 * u, top + 22 * u, bw, 16 * u), L.T("Görev {0}/3", M.gorevBitti), bs);
-                GUI.color = Kit.Hex("#9dbab3"); GUI.Label(new Rect(lx - 4 * u, top + 37 * u, bw, 16 * u), l3, bs); GUI.color = Color.white;
+                // sol üst kutu (2026-10-26, yasin Ar-Ge önerisi "ekle"): "{hedef} sayı · rakip" satırı kalktı (duraklat
+                // ekranında zaten yazıyor); ralli sayacı ralli 3'ü geçince belirir ve her vuruşta skorun pop diliyle hafifçe
+                // büyür (hareketi azaltta büyümez); "Görev n/3" yerine 3 nokta: biten dolu disk, kalan halka (biçimle de okunur).
+                var bs = Stil(left, Mathf.RoundToInt(11 * fu), FontStyle.Bold);
+                if (M.rally != sonRalli) { if (M.rally > 3 && !Ayar.reduce) ralliPop = 1; sonRalli = M.rally; }
+                bool ralliVar = M.rally > 3; float bw = 64 * u, bh = ralliVar ? 40 * u : 22 * u;
+                Fill(new Rect(lx - 10 * u, top + 2 * u, bw, bh), new Color(8 / 255f, 16 / 255f, 17 / 255f, .72f));
+                float gy = top + 8 * u;
+                if (ralliVar)
+                {
+                    GUI.color = Kit.Hex("#9dbab3"); GUI.Label(new Rect(lx - 4 * u, top + 4 * u, bw + 20 * u, 18 * u), L.T("Ralli {0}", M.rally), Stil(bs, Mathf.RoundToInt(12 * fu * (1 + .25f * Mathf.Sin(ralliPop * Mathf.PI)))));
+                    gy = top + 26 * u;
+                }
+                for (int i = 0; i < 3; i++)
+                {
+                    bool bitti = i < M.gorevBitti; var r = new Rect(lx - 3 * u + i * 16 * u, gy, 10 * u, 10 * u);
+                    Tex(r, bitti ? disk : ringK, new Color(1, .82f, .23f, bitti ? .95f : .7f));
+                }
+                GUI.color = Color.white;
             }
             else Shadowed(kr, L.T("Antrenman"), mid, Color.white);
             // tribün flaşları
@@ -229,7 +254,7 @@ namespace BirdieSmash.Game
             if (ogr) y = OgrKart(M, y);
             // smaç gücü çubuğu
             {
-                bool dol = M.energy >= 1; string lab = L.T(dol ? "Sıçrayarak smaç hazır" : "Smaç gücü"); var ls = new GUIStyle(leftB) { fontSize = Mathf.RoundToInt(12 * fu) };
+                bool dol = M.energy >= 1; string lab = L.T(dol ? "Sıçrayarak smaç hazır" : "Smaç gücü"); var ls = Stil(leftB, Mathf.RoundToInt(12 * fu));
                 float lw = ls.CalcSize(new GUIContent(lab)).x, bx = lx + lw + 10 * u, bw = Mathf.Max(40 * u, rx - bx), by = H - bot - 12 * u;
                 bool isaret = ogr && M.OgrA() != null && M.OgrA().bilgi == "guc";
                 GUI.color = dol ? Kit.Hex("#ff8a3c") : Kit.Hex("#cfe3dc"); GUI.Label(new Rect(lx, by - 8 * u, lw + 4 * u, 22 * u), lab, ls); GUI.color = Color.white;
@@ -246,7 +271,7 @@ namespace BirdieSmash.Game
             {
                 // HTML txt: yaylı büyüme (k = 1 + 2,7(q−1)³ + 1,7(q−1)²), .8 sn sonra solar
                 float q = Mathf.Min(1, f.a * 5), k = 1 + 2.7f * Mathf.Pow(q - 1, 3) + 1.7f * Mathf.Pow(q - 1, 2), a = f.a > .8f ? 1 - (f.a - .8f) / .4f : 1;
-                var c = f.c; c.a = Mathf.Clamp01(a); var st = new GUIStyle(mid) { fontSize = Mathf.Max(1, Mathf.RoundToInt(19 * fu * f.size * (.5f + .5f * k))) };
+                var c = f.c; c.a = Mathf.Clamp01(a); var st = Stil(mid, Mathf.Max(1, Mathf.RoundToInt(19 * fu * f.size * (.5f + .5f * k))));
                 float yy;
                 if (f.sabit) yy = H * (f.c == Kit.Hex("#ff7a6b") ? .56f : .4f);
                 else { var sp = root.cam.WorldToScreenPoint(f.w + Vector3.up * (.6f + f.a * .5f)); if (sp.z < 0) continue; yy = Mathf.Clamp(H - sp.y - 20 * u, top + 60 * u, H - bot - 80 * u); }
@@ -338,7 +363,7 @@ namespace BirdieSmash.Game
                 if (o.cagri == null || M.s == null || M.s.dead || M.s.from != "op") return;
                 var p = root.cam.WorldToScreenPoint(Kit.W(M.me.x, M.me.y, 0)); float yy = Mathf.Min(H - p.y - 120 * K, H * .62f), b = Ayar.reduce ? 1 : 1 + .06f * Mathf.Max(0, 1 - (M.realClock - o.cagriT) * 3);
                 Shadowed(new Rect(lx, yy - 44 * K, rx - lx, 20 * K), L.T("Antrenör diyor"), new GUIStyle(small) { fontStyle = FontStyle.Bold, fontSize = Mathf.RoundToInt(12 * fu) }, Kit.Hex("#cfe3dc"));
-                Shadowed(new Rect(lx, yy - 24 * K, rx - lx, 40 * K), L.T(Match.OGR_AD[o.cagri]).ToUpper() + "!", new GUIStyle(big) { fontSize = Mathf.RoundToInt(30 * fu * b) }, Kit.Hex("#d8ff5a"));
+                Shadowed(new Rect(lx, yy - 24 * K, rx - lx, 40 * K), L.T(Match.OGR_AD[o.cagri]).ToUpper() + "!", Stil(big, Mathf.RoundToInt(30 * fu * b)), Kit.Hex("#d8ff5a"));
                 return;
             }
             if (o.n >= 1 && o.miss < 2) return;   // ustalık: ikinci deneme izsiz
@@ -378,7 +403,7 @@ namespace BirdieSmash.Game
             if (h.t > .36f) { float q = Mathf.Min(1, (h.t - .36f) / .12f), rc = .013f * S * q; Tex(new Rect(cx - rc, cy - rc, 2 * rc, 2 * rc), disk, h.icerde ? new Color(.85f, 1, .35f, .95f * fade) : new Color(1, .48f, .42f, .95f * fade)); }
             Tex(new Rect(cx - R - 2, cy - R - 2, 2 * R + 4, 2 * R + 4), ringK, new Color(1, 1, 1, fade));
             Shadowed(new Rect(cx - 100 * u, cy - R - 22 * u, 200 * u, 16 * u), L.T("ÇİZGİ KAMERASI"), tiny, new Color(.62f, .73f, .7f, fade));
-            if (h.t > .36f) Shadowed(new Rect(cx - 150 * u, cy + R + 6 * u, 300 * u, 28 * u), L.T(h.icerde ? "İÇERİ" : "DIŞARI") + " · " + h.cm + " cm", new GUIStyle(mid) { fontSize = Mathf.RoundToInt(20 * fu) }, h.icerde ? new Color(.85f, 1, .35f, fade) : new Color(1, .48f, .42f, fade));
+            if (h.t > .36f) Shadowed(new Rect(cx - 150 * u, cy + R + 6 * u, 300 * u, 28 * u), L.T(h.icerde ? "İÇERİ" : "DIŞARI") + " · " + h.cm + " cm", Stil(mid, Mathf.RoundToInt(20 * fu)), h.icerde ? new Color(.85f, 1, .35f, fade) : new Color(1, .48f, .42f, fade));
         }
         void NefesYazi(Athlete o, bool isMe, Match M)
         {
@@ -393,7 +418,7 @@ namespace BirdieSmash.Game
             GUI.contentColor = GUI.backgroundColor = new Color(1, 1, 1, gk);
             var st = M.stil; float w = ColW, x = ColX, h = 92 * u; var r = new Rect(x, y, w, h); blocks.Add(r); GUI.Box(r, GUIContent.none, card);
             var oc = Kit.Hex(Match.OpRenk(st, Ayar.FORMA)); oc.a = gk; GUI.color = oc; GUI.DrawTexture(new Rect(x, y, 6 * u, h), Texture2D.whiteTexture); GUI.color = Color.white;
-            GUI.Label(new Rect(x + 16 * u, y + 8 * u, w - 24 * u, 26 * u), st.isim, new GUIStyle(leftB) { fontSize = Mathf.RoundToInt(20 * fu) });
+            GUI.Label(new Rect(x + 16 * u, y + 8 * u, w - 24 * u, 26 * u), st.isim, Stil(leftB, Mathf.RoundToInt(20 * fu)));
             var kb = KariyerVeri.Al(st.kariyer); var im = st.patron ? KariyerVeri.Imza(st.imza) : null;   // serbest maçta taban tarz imzayı taşır ama atmaz
             GUI.Label(new Rect(x + 16 * u, y + 34 * u, w - 24 * u, 18 * u), kb != null ? L.T(st.ad) + " · " + L.T(kb.yer) : L.T(st.ad), left);
             // Patron (final): ipucu yerine imza vuruşu ve cevabı (tasarım §3.3: kart rakibin tek fikrini söyler; finalde o fikir imzadır)
@@ -409,7 +434,7 @@ namespace BirdieSmash.Game
             string ilr = a.drill ? L.T(" · Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : a.bilgi != null ? "" : " · " + new string('●', o.n) + new string('○', Match.OGR_TEKRAR - o.n) + " " + o.n + "/" + Match.OGR_TEKRAR;
             string say = L.T("Antrenman {0}/{1}{2}", o.i + 1, o.liste.Count, ilr);
             string met = (o.izsiz ? L.T("Bir daha, bu sefer iz yok. ") : "") + (a.servis == null && a.bilgi == null && !a.drill && !o.dur ? L.T("Top sana gelince oyun duracak. ") : "") + L.T(a.met);
-            var ws = new GUIStyle(left) { wordWrap = true }; var ns = new GUIStyle(ws) { fontSize = Mathf.RoundToInt(11 * fu) };
+            if (leftWrap == null || leftWrapTaban != left) { leftWrap = new GUIStyle(left) { wordWrap = true }; leftWrapTaban = left; } var ws = leftWrap; var ns = Stil(ws, Mathf.RoundToInt(11 * fu));
             float h1 = ws.CalcHeight(new GUIContent(met), iw), h2 = ns.CalcHeight(new GUIContent(L.T(a.neden)), iw);
             int? hb = M.OgrHedefBolge(a); bool bant = hb.HasValue;
             // canlı okuma: parmak ekrandayken "şu an bıraksan ne çıkar", sonra 2,2 sn "Çıkan"
@@ -423,7 +448,7 @@ namespace BirdieSmash.Game
             float h = 12 * u + 18 * u + 24 * u + h1 + 6 * u + h2 + (bant ? 34 * u : 0) + (canli != null ? 22 * u : 0) + 10 * u + BH + (a.bilgi != null ? BH + 8 * u : 0) + 10 * u;
             var r = new Rect(x, y, w, h); blocks.Add(r); GUI.Box(r, GUIContent.none, card);
             float yy = y + 10 * u;
-            GUI.Label(new Rect(x + 12 * u, yy, iw, 18 * u), say, new GUIStyle(left) { fontSize = Mathf.RoundToInt(11 * fu) }); yy += 18 * u;
+            GUI.Label(new Rect(x + 12 * u, yy, iw, 18 * u), say, Stil(left, Mathf.RoundToInt(11 * fu))); yy += 18 * u;
             GUI.Label(new Rect(x + 12 * u, yy, iw, 24 * u), L.T(a.bas), leftB); yy += 24 * u;
             GUI.Label(new Rect(x + 12 * u, yy, iw, h1), met, ws); yy += h1 + 6 * u;
             var nc = GUI.color; GUI.color = new Color(1, 1, 1, .7f); GUI.Label(new Rect(x + 12 * u, yy, iw, h2), L.T(a.neden), ns); GUI.color = nc; yy += h2;
@@ -434,7 +459,7 @@ namespace BirdieSmash.Game
                 {
                     float b1 = i < sinir.Length ? sinir[i] : Match.OGR_MAX; var zr = new Rect(bx + bwid * b0 / Match.OGR_MAX, yy, bwid * (b1 - b0) / Match.OGR_MAX - 2 * u, 22 * u); bool hed = i == hb.Value;
                     Fill(zr, hed ? new Color(.85f, 1, .35f, .28f) : new Color(1, 1, 1, .08f)); if (hed) Cerceve(zr, new Color(.85f, 1, .35f, .8f), 1.5f);
-                    GUI.Label(zr, (hed ? "▸ " : "") + L.T(adlar[i]), new GUIStyle(tiny) { fontStyle = hed ? FontStyle.Bold : FontStyle.Normal }); b0 = b1;
+                    GUI.Label(zr, (hed ? "▸ " : "") + L.T(adlar[i]), Stil(tiny, -1, hed ? FontStyle.Bold : FontStyle.Normal)); b0 = b1;
                 }
                 if (igne >= 0) { float ix = bx + bwid * Mathf.Min(igne, Match.OGR_MAX) / Match.OGR_MAX; Fill(new Rect(ix - 1.5f * u, yy - 4 * u, 3 * u, 30 * u), Color.white); }
                 yy += 28 * u;
@@ -464,20 +489,20 @@ namespace BirdieSmash.Game
             Dim(.6f); float x = ColX, w = ColW, y = Mathf.Max(top + 8 * u, Mathf.Min(H * .18f, H - bot - overH - 8 * u)), y0 = y;
             float th = big.CalcHeight(new GUIContent(root.bittiBaslik), w); var bs = root.bittiBaslik.Length > 24 ? mid : big; th = bs.CalcHeight(new GUIContent(root.bittiBaslik), w);
             Shadowed(new Rect(x, y, w, th), root.bittiBaslik, bs, Color.white); y += th + 8 * u;
-            Shadowed(new Rect(x, y, w, 60 * u), M.sc[0] + " – " + M.sc[1], new GUIStyle(big) { fontSize = Mathf.RoundToInt(48 * fu) }, Color.white); y += 64 * u;
+            Shadowed(new Rect(x, y, w, 60 * u), M.sc[0] + " – " + M.sc[1], Stil(big, Mathf.RoundToInt(48 * fu)), Color.white); y += 64 * u;
             // Kariyer yıldızları (2026-10-26): dolu/boş yıldız + sayı yazıyla (yalnız simgeye güvenilmez), yeniler ayrıca
-            if (!string.IsNullOrEmpty(root.bittiYildiz)) { float yh = small.CalcHeight(new GUIContent(root.bittiYildiz), w); Shadowed(new Rect(x, y, w, yh), root.bittiYildiz, new GUIStyle(small) { fontStyle = FontStyle.Bold }, Kit.Hex("#ffd23a")); y += yh + 6 * u; }
+            if (!string.IsNullOrEmpty(root.bittiYildiz)) { float yh = small.CalcHeight(new GUIContent(root.bittiYildiz), w); Shadowed(new Rect(x, y, w, yh), root.bittiYildiz, Stil(small, -1, FontStyle.Bold), Kit.Hex("#ffd23a")); y += yh + 6 * u; }
             var od = root.odul;
             if (od != null)
             {   // HTML oOdul: +Tüy · +XP (ekler) · Seviye! · Toplam
                 string t = L.T("+{0} Tüy{1} · +{2} XP", od.tuy, "", od.xp) + (od.ek.Count > 0 ? " (" + string.Join(", ", od.ek.ConvertAll(s => L.Cumle(s)).ToArray()) + ")" : "") + (od.sonra > od.once ? L.T(" · Seviye {0}!", od.sonra) : "") + L.T(" · Toplam {0}{1}", Ayar.gear.eko.tuy, " " + L.T("Tüy"));
-                float oh = small.CalcHeight(new GUIContent(t), w); Shadowed(new Rect(x, y, w, oh), t, new GUIStyle(small) { fontStyle = FontStyle.Bold }, Kit.Hex("#ffd23a")); y += oh + 6 * u;
+                float oh = small.CalcHeight(new GUIContent(t), w); Shadowed(new Rect(x, y, w, oh), t, Stil(small, -1, FontStyle.Bold), Kit.Hex("#ffd23a")); y += oh + 6 * u;
             }
             // HTML oYukselt: yükseltme yapılabiliyorsa maç sonundan doğrudan Ekipman paneline götüren düğme
             if (od != null && root.yukseltHazir) { if (Button(new Rect(x, y, w, BH), "Ekipmanı yükselt")) { root.AnaMenu(); if (root.ui != null) root.ui.SekmeAc(Sekme.Soyunma); } y += BH + 10 * u; }
             // Özet (Ar-Ge 23 Eki #2): iki kart (sayı + adı; renk anlam taşımaz) + bir ipucu, tam liste "Ayrıntılar" ardında.
             // Yükseklikler CalcHeight'tan: metin uzasa da üst üste binmez.
-            { int n = root.bittiKart.Count; float g = 10 * u, kw = n > 1 ? (w - g) / 2 : w, kh = 0; var vs = new GUIStyle(big) { fontSize = Mathf.RoundToInt(28 * fu) };
+            { int n = root.bittiKart.Count; float g = 10 * u, kw = n > 1 ? (w - g) / 2 : w, kh = 0; var vs = Stil(big, Mathf.RoundToInt(28 * fu));
               foreach (var k in root.bittiKart) kh = Mathf.Max(kh, small.CalcHeight(new GUIContent(L.T(k.ad)), kw - 16 * u));
               kh += 36 * u + 14 * u;
               for (int i = 0; i < n; i++) { var r = new Rect(x + i * (kw + g), y, kw, kh); GUI.Box(r, GUIContent.none, card); var k = root.bittiKart[i];
@@ -513,7 +538,7 @@ namespace BirdieSmash.Game
             if (perdeBek && root.yukleyici != null)
             {   // HTML perdeBekle: ortada dönen tüy top, altında "Hazırlanıyor…"
                 float ts = Mathf.Min(W, H) * .26f; GUI.DrawTexture(new Rect(c.x - ts / 2, c.y - ts / 2, ts, ts), root.yukleyici.rt);
-                string t = L.T("Hazırlanıyor…"); var ps = new GUIStyle(small) { fontStyle = FontStyle.Bold }; var sz = ps.CalcSize(new GUIContent(t));
+                string t = L.T("Hazırlanıyor…"); var ps = Stil(small, -1, FontStyle.Bold); var sz = ps.CalcSize(new GUIContent(t));
                 var pr = new Rect(c.x - sz.x / 2 - 14 * u, c.y + ts / 2 + 6 * u, sz.x + 28 * u, sz.y + 10 * u); Fill(pr, new Color(0, 0, 0, .45f)); GUI.Label(pr, t, ps);
             }
         }

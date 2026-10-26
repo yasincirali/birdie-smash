@@ -36,7 +36,7 @@ namespace BirdieSmash.EditorTools
                 if (opt.scenes.Length == 0) throw new Exception("Build listesinde sahne yok (DemoKurulum.Kur)");
                 var rep = BuildPipeline.BuildPlayer(opt);
                 if (rep.summary.result != BuildResult.Succeeded) throw new Exception("BuildPlayer: " + rep.summary.result + ", hata " + rep.summary.totalErrors);
-                PlistSifreleme(Path.Combine(path, "Info.plist"));
+                PlistSifreleme(Path.Combine(path, "Info.plist")); PlistProMotion(Path.Combine(path, "Info.plist"));
                 Debug.Log("Birdie Smash iOS Xcode projesi: " + path);
                 EditorApplication.Exit(0);
             }
@@ -88,6 +88,12 @@ namespace BirdieSmash.EditorTools
             PlayerSettings.iOS.requiresFullScreen = true;
             PlayerSettings.iOS.appleEnableAutomaticSigning = false;   // imza fastlane match'ten; Xcode otomatik imzaya kalkışmasın
             PlayerSettings.statusBarHidden = true;
+            // Açılış (2026-10-26, yasin Ar-Ge önerisi "ekle"): Unity açılış ekranı kapalı (Unity 6 Personal'da serbest);
+            // arka plan açılış perdesinin dış halkasıyla aynı renk (Hud PERDE_C[0,0] #a3234b), oyunun ilk karesine siyah
+            // kare girmeden geçilsin. iOS açılış görüntüsü de aynı düz renk.
+            var perde = new Color(0xa3 / 255f, 0x23 / 255f, 0x4b / 255f);
+            PlayerSettings.SplashScreen.show = false; PlayerSettings.SplashScreen.showUnityLogo = false; PlayerSettings.SplashScreen.backgroundColor = perde;
+            IosAcilisRengi(perde);
             var ikon = AssetDatabase.LoadAssetAtPath<Texture2D>(Icon);
             // Unknown grubu = "Default Icon": Unity tüm iOS boylarını bundan üretir. fastlane ayrıca Flutter'ın
             // AppIcon.appiconset'ini Xcode projesine kopyalar (1024'lük ikon alfa kanalsız kalsın diye).
@@ -106,6 +112,29 @@ namespace BirdieSmash.EditorTools
             int i = t.LastIndexOf("</dict>", StringComparison.Ordinal);
             if (i < 0) return;
             File.WriteAllText(plist, t.Substring(0, i) + "\t<key>ITSAppUsesNonExemptEncryption</key>\n\t<false/>\n" + t.Substring(i));
+        }
+
+        // iOS varsayılan açılış görüntüsünün arka planı ProjectSettings'te (iOSLaunchScreenBackgroundColor); public API yok,
+        // SerializedObject ile yazılır. Alan adı bulunamazsa uyarı verir, build sürer (renk Unity varsayılanı kalır).
+        static void IosAcilisRengi(Color c)
+        {
+            var ps = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset");
+            if (ps == null || ps.Length == 0) { Debug.LogWarning("ProjectSettings.asset okunamadı"); return; }
+            var so = new SerializedObject(ps[0]); bool ok = false;
+            var t = so.FindProperty("iOSLaunchScreenType"); if (t != null) { t.intValue = 0; ok = true; }   // 0 = Default (düz renk)
+            var b = so.FindProperty("iOSLaunchScreenBackgroundColor"); if (b != null) { b.colorValue = c; ok = true; }
+            var bp = so.FindProperty("iOSLaunchScreeniPadBackgroundColor"); if (bp != null) bp.colorValue = c;
+            if (!ok) Debug.LogWarning("iOS açılış rengi alanı yok"); so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // ProMotion: iPhone'da 60 Hz üstü için Info.plist'te CADisableMinimumFrameDurationOnPhone = true şart (Apple);
+        // Unity'nin Xcode çıktısı yazmıyorsa eklenir.
+        static void PlistProMotion(string plist)
+        {
+            if (!File.Exists(plist)) return; var t = File.ReadAllText(plist);
+            if (t.Contains("CADisableMinimumFrameDurationOnPhone")) { Debug.Log("ProMotion anahtarı Unity çıktısında var"); return; }
+            int i = t.LastIndexOf("</dict>", StringComparison.Ordinal); if (i < 0) return;
+            File.WriteAllText(plist, t.Substring(0, i) + "\t<key>CADisableMinimumFrameDurationOnPhone</key>\n\t<true/>\n" + t.Substring(i));
         }
 
         static string Arg(string name)
