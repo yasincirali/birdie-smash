@@ -317,7 +317,7 @@ namespace BirdieSmash.Core
                     tx = me.x < Court.MID ? Court.SR - .6f : Court.SL + .6f; AlcakYay(hx, hy, hz, tx, Court.NET + .6f, .55f, out vx, out vy, out vz);
                     fx = Clamp(2 * Court.MID - tx, Court.SL, Court.SR); break;
                 default:   // çevirme: bandı sıyıran takla atan top
-                    tx = Clamp(hx + (R01() - .5f) * 1.2f, Court.SL + .3f, Court.SR - .3f); AlcakYay(hx, hy, hz, tx, Court.NET + .5f, .5f, out vx, out vy, out vz); sl = true; break;
+                    tx = Clamp(hx + (R01() - .5f) * 1.2f, Court.SL + .3f, Court.SR - .3f); AlcakYay(hx, hy, hz, tx, Court.NET + .5f, .5f, out vx, out vy, out vz, SliceKd("op", true)); sl = true; break;   // nişan uçuşun kendi sürüklenmesiyle (Imza.AlcakYay)
             }
             if (easy) { me.fakeUntil = clock + sure; me.fakeX = fx; me.fakeY = fy; }
             StartFlight("op", vx, vy, vz, hx, hy, hz, false, type, false, "good", sl); hileTop = s; return true;

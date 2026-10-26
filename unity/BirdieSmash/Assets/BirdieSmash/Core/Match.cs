@@ -293,6 +293,7 @@ namespace BirdieSmash.Core
         {
             s = new Shuttle { x = hx, y = hy, z = hz, vx = vx, vy = vy, vz = vz, from = from, serve = isServe, type = type, super = isSuper, kd = SliceKd(from, slice), slice = slice };   // 2026-10-26: Kesici raket / Aldatıcı tarzı slice sapmasını büyütür (GS.slice, nötr 1)
             rally++; maxRally = Math.Max(maxRally, rally);
+            if (from == "me") pencereVurus = true;   // vuruşla kapanan pencere hızlı çıkar (PencereAdim)
             vurusY = hy;   // Günün maçı "file" değiştiricisi: son vuruşun derinliği
             if (from == "op") { opHitAt = clock; split = false; if (splitPending) { splitPending = false; DoSplit(); } } else { split = false; splitPending = false; }
             var h = from == "me" ? me : op;
@@ -375,11 +376,19 @@ namespace BirdieSmash.Core
         public bool ReachInfo(out Reach R)
         {
             R = new Reach();
-            if (s == null || s.dead || s.from != "op" || s.y <= Court.NET || s.z < .12f || s.z > 3.1f) return false;
-            float d = Hyp(s.x - me.x, s.y - me.y); bool kill = s.y - Court.NET < 2.3f && s.z > Court.NETH + .2f;
+            if (s == null || s.dead || s.from != "op") return false;
+            return Erisim(s.x, s.y, s.z, me.x, me.y, out R);
+        }
+        // Erişim kuralı topun ve oyuncunun herhangi bir konumu için (2026-10-27): ReachInfo canlı topa, PencereYakin birkaç
+        // adım sonraki konumlarına sorar; iki yer aynı kuralı okusun.
+        bool Erisim(float x, float y, float z, float mx, float my, out Reach R)
+        {
+            R = new Reach();
+            if (y <= Court.NET || z < .12f || z > 3.1f) return false;
+            float d = Hyp(x - mx, y - my); bool kill = y - Court.NET < 2.3f && z > Court.NETH + .2f;
             float R1 = easy ? 1.45f : 1.15f, R2 = (easy ? 2.2f : 1.75f) * GS.uzanma;   // uzanma: Duvar tarzı +%6 (2026-10-26)
-            if (d <= R1) { R = new Reach { lunge = false, over = s.z > 2.0f, kill = kill, d = d }; return true; }
-            if (d <= R2 && s.z < 1.5f) { R = new Reach { lunge = true, d = d }; return true; }
+            if (d <= R1) { R = new Reach { lunge = false, over = z > 2.0f, kill = kill, d = d }; return true; }
+            if (d <= R2 && z < 1.5f) { R = new Reach { lunge = true, d = d }; return true; }
             return false;
         }
         public bool HitWindow() { Reach r; return ReachInfo(out r); }
@@ -759,15 +768,48 @@ namespace BirdieSmash.Core
         // Hareketi azalt artık burada yok (eskiden .7 sabitti): erişilebilirlik ayarı zorluğu değiştirmez, oyuncuyu daha
         // hızlı oyuna sokuyordu; azaltma yalnız sarsıntı/yakınlaşma/parçacıkta. Maç sayısı ve "Kıl payı" ağır çekimi (slow)
         // bundan ayrıdır, değişmedi.
-        public const float PENCERE_KOLAY = .45f, PENCERE_USTA = .6f, PENCERE_IN = .12f, PENCERE_OUT = .15f;
+        // 2026-10-27 (fizik turu; ölçüm BotMac Pencereler/FizikOlcumleri): yumuşak giriş/çıkışın iki yan etkisi vardı.
+        //  1) Giriş rampası pencerenin İÇİNDE oynuyordu: top erişime girdiğinde hız hâlâ 1'di ve rampa boyunca ~0,09 sn oyun
+        //     zamanı tabanın üstünde aktı. Erişimde 0,2 sn (oyun zamanı) kalan bir top Kolay'da .45 tabanla gerçek zamanda
+        //     0,44 sn kalmalıyken 0,37 sn kalıyordu (eski .3 anlık: 0,67 sn); kaydırmaya ayrılan süre %16 kısaydı. Şimdi rampa
+        //     top erişime girmeden başlar (PencereYakin): top rampanın tükettiği oyun zamanı (PencereOn) içinde erişime
+        //     girecekse hız inmeye başlar, pencere açıldığında taban tamdır. Parlama/su altı sesi yine HitWindow'da.
+        //  2) Çıkış rampası benim vuruşumdan sonra da 0,15 sn sürüyordu, yani topun en hızlı anında: tüy topun hızı mesafeyle
+        //     üstel düşer, her ~3,2 m'de yarılanır (Cohen, Darbois Texier, Quéré, Clanet 2015 "The physics of badminton",
+        //     New J. Phys. 17 063001; arastirma/vurus_biyomekanigi.md §12). 52 m/s smaç ilk 0,1 sn'de ekranda 3,5 m yerine
+        //     2,5 m gidiyordu (%29 yavaş görünüyordu). Vuruşla kapanan pencere PENCERE_VURUS_OUT'ta çıkar (3 kare; tek karelik
+        //     sıçrama değil), vuruşsuz kapanan pencere (top geçti, yere düştü) eskisi gibi PENCERE_OUT.
+        public const float PENCERE_KOLAY = .45f, PENCERE_USTA = .6f, PENCERE_IN = .12f, PENCERE_OUT = .15f, PENCERE_VURUS_OUT = .05f;
         public float pencereK = 1;   // şu anki vuruş penceresi zaman çarpanı (1 = gerçek hız)
+        bool pencereVurus;           // pencere benim vuruşumla kapandı: hızlı çıkış
         public float PencereTaban() { return (easy ? PENCERE_KOLAY : PENCERE_USTA) * GS.yavas; }
+        // Giriş rampasının tükettiği oyun zamanı: hız 1'den tabana doğrusal iner, ortalama (1 + taban) / 2.
+        public float PencereOn() { return PENCERE_IN * (1 + Math.Min(1, PencereTaban())) / 2; }
         public float PencereAdim(float dt, bool pencere)
         {
             float taban = Math.Min(1, PencereTaban()), hedef = pencere ? taban : 1, aralik = Math.Max(1e-4f, 1 - taban);
+            if (pencere) pencereVurus = false;
             if (pencereK > hedef) pencereK = Math.Max(hedef, pencereK - aralik * dt / PENCERE_IN);
-            else if (pencereK < hedef) pencereK = Math.Min(hedef, pencereK + aralik * dt / PENCERE_OUT);
+            else if (pencereK < hedef) pencereK = Math.Min(hedef, pencereK + aralik * dt / (pencereVurus ? PENCERE_VURUS_OUT : PENCERE_OUT));
+            if (pencereK >= 1) pencereVurus = false;
             return pencereK;
+        }
+        // Pencere açık ya da top PencereOn içinde erişime girecek: top canlı uçuşun adımıyla (kd dahil), oyuncu o anki hızıyla
+        // ilerletilir (Kolay'da oyuncu topa koşar; yalnız top ilerletilince açılışların ~%30'unda rampa yarımdı).
+        public bool PencereYakin()
+        {
+            Reach R; if (ReachInfo(out R)) return true;
+            if (s == null || s.dead || s.from != "op" || s.agda || s.netHit || between) return false;
+            float on = PencereOn(), sp = s.Speed + Hyp(me.vx, me.vy), uzak = Hyp(s.x - me.x, s.y - me.y) - (easy ? 2.2f : 1.75f) * GS.uzanma;
+            if (uzak > sp * on + .05f) return false;   // bu sürede erişime varamaz: tahmine gerek yok
+            float x = s.x, y = s.y, z = s.z, vx = s.vx, vy = s.vy, vz = s.vz;
+            for (float t = 0; t < on + .02f; t += Shuttle.DT)   // +20 ms: rampa kare adımıyla iner, bir kare geç biter
+            {
+                Shuttle.Step(ref x, ref y, ref z, ref vx, ref vy, ref vz, s.kd, Shuttle.DT);
+                if (z <= 0) return false;
+                if (Erisim(x, y, z, me.x + me.vx * (t + Shuttle.DT), me.y + me.vy * (t + Shuttle.DT), out R)) return true;
+            }
+            return false;
         }
 
         public void Update(float dt)
@@ -775,10 +817,13 @@ namespace BirdieSmash.Core
             realClock += dt;
             if (dt > 0) { if (!float.IsNaN(op.px)) { op.vx = (op.x - op.px) / dt; op.vy = (op.y - op.py) / dt; } op.px = op.x; op.py = op.y; }
             foreach (var q in new[] { me, op }) { AyakIsi(q, dt, q == me); q.splitT = Math.Max(0, q.splitT - dt); }
+            // Pencere çarpanı donmadan önce ilerler (2026-10-27): smaç/tam orta donması (hit-stop) sırasında vuruşla kapanan
+            // pencerenin çıkışı biter, top donmadan gerçek hızında çıkar; eskiden çıkış donmadan sonra başlıyordu.
+            float pk = PencereAdim(dt, PencereYakin());
             if (freeze > 0) { freeze -= dt; return; }
             if (ogr != null && OgrDurdur()) return;   // antrenman: top vuruş yerine gelince oyun durur, parmak hareketi gösterilir
             if (slowT > 0) { slowT -= dt; if (slowT <= 0) slow = 1; }
-            float d = dt * slow * PencereAdim(dt, HitWindow());
+            float d = dt * slow * pk;
             if (hakemT > 0) hakemT -= dt;
             if (sjYon == null) sjYon = server;
             if (sjYon != server && !(hakemT > hakemT0 * 1.1f / 1.4f)) { sjT += dt; if (sjT >= .5f || reduce) { sjYon = server; sjT = 0; } }   // servis hakemi yeni servisçiye ~0,3 sn sonra döner

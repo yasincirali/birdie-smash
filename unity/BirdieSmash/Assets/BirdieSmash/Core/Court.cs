@@ -34,6 +34,13 @@ namespace BirdieSmash.Core
     {
         // Tüy top: yerçekimi + hızın karesiyle sürüklenme, son hız ~6,7 m/s. Top hızlı çıkar,
         // çabuk yavaşlar, neredeyse dik düşer. DT 1/240: tahmin ile canlı uçuş aynı adımı kullanır.
+        // Kaynak (2026-10-27 fizik denetimi, tool/unity_test/FizikOlc.cs): a = −g ẑ − (g/U∞²)|v|v; tüy topta U∞ 6,5–6,9 m/s
+        // (Cohen, Darbois Texier, Quéré, Clanet 2015 "The physics of badminton", New J. Phys. 17 063001; JSSM 2009 8:657).
+        // Aerodinamik boy U∞²/g = 4,6 m: hız mesafeyle e^(−x/4,6) düşer, ~3,2 m'de yarılanır; yörünge "Tartaglia" biçimi:
+        // çıkış dik ve hızlı, tepeden sonra dikey asimptota yakın iniş (ölçülen clear: tepe 0,67 s, iniş 1,56 s, düşüş 83°,
+        // inişte 6,5 m/s). Top vuruştan sonra ~20 ms'de mantar-önde döner, ~80 ms salınır (Darbois Texier, Cohen, Quéré,
+        // Clanet 2012 "Shuttlecock dynamics", Procedia Eng. 34; görünüm ShuttleView). Dönüş ve Magnus modelde yok: slice
+        // yalnız sürüklenmeyi büyütür (SliceKd).
         public const float GR = 9.81f, VT = 6.7f, KD = GR / (VT * VT), DT = 1f / 240f;
 
         public float x, y, z, vx, vy, vz, kd = KD, t;
