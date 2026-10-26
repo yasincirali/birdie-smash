@@ -73,7 +73,7 @@ jobs:
             -force-glcore -logFile "$RUNNER_TEMP/ekran/player.log" -bsekran "$RUNNER_TEMP/ekran" &
           # Takılma tanısı: 150 sn sonra hâlâ ilk karelerdeyse yığın dökümü (gdb, tüm iş parçacıkları).
           sleep 150
-          P=$(pgrep -f "BirdieSmash -screen" | head -1)
+          P=$(pgrep -x BirdieSmash | head -1)
           if [ -n "$P" ]; then sudo gdb -p "$P" -batch -ex "thread apply all bt 25" > "$RUNNER_TEMP/ekran/yigin.txt" 2>&1 || true; fi
           wait || echo "oyuncu çıkış kodu $?"
           ls -la "$RUNNER_TEMP/ekran"

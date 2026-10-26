@@ -3,7 +3,7 @@
 // Yalnız `-bsekran <klasör>` argümanıyla açılır; mağaza build'inde hiç çalışmaz (argüman verilmez).
 // Tur: iki model × saha temaları; menü, maç başı (servis), ralliden kareler (bot oynar: BotMac ile aynı karar), yakın
 // planlar (ben, rakip, hakemler) ve tanı dosyası (rapor.txt: her figürün renderer'ları, shader'ları, sınırları, yönü).
-// Süre: Time.captureDeltaTime = 1/30; render hızı ne olursa olsun simülasyon aynı adımla ilerler.
+// Süre: gerçek zaman (GameRoot dt'yi 0,05 ile sınırlar; yavaş yazılım render'ında maç da yavaşlar, kareler yine anlamlı).
 using System.Collections;
 using System.IO;
 using System.Text;
@@ -29,7 +29,7 @@ namespace BirdieSmash.Game
 
         IEnumerator Start()
         {
-            Directory.CreateDirectory(dir); Time.captureDeltaTime = 1f / 30;
+            Directory.CreateDirectory(dir); QualitySettings.vSyncCount = 0;   // xvfb ekranı 0 Hz: dikey eşitleme ilk karede bekletiyordu (tahmin)
             Debug.Log("EkranTuru başladı: " + dir);
             // Bekçi: ana döngü takılırsa nerede takıldığını günlükten görmek için 10 sn'de bir kare sayısı ve son adım.
             var bekci = new System.Threading.Thread(() => { for (int i = 0; i < 300; i++) { System.Threading.Thread.Sleep(10000); Debug.Log("EkranTuru bekçi: kare " + kare + " adım " + adim); } }); bekci.IsBackground = true; bekci.Start();
