@@ -11,6 +11,10 @@ Bu sürümde yeni:
 - Hakemler oturur, saha BWF çizgileriyle; file ve bant topa farklı tepki verir.
 - Ayarlar > Kamera: Yayın, Alçak, Üstten. Ayarlar > Oyuncu görünümü: Oyuncak, Gerçekçi, Sade.
 - 120 Hz destekleyen iPhone'da daha akıcı; telefona göre kalite kendini ayarlar.
+- Maç görüntüsü: kort ekranı daha iyi dolduruyor. Üstteki boş siyah alan kalktı, karşı yarı ve rakip daha büyük (üç kamerada da).
+- Vuruş anındaki ağır çekim daha hafif ve yumuşak: oyun birden yavaşlayıp birden hızlanmıyor, yavaşça girip çıkıyor.
+- "Hareket azaltıldı" seçiliyken oyunun hızı artık değişmiyor. Bu ayar yalnız sarsıntıyı, yakınlaşmayı ve parçacıkları azaltır.
+- Oyna sekmesi: "Oyna" düğmesinin altındaki "Sıradaki: …" yazısı kalktı (yer zaten kartta yazıyor). "Sıradaki maç" kartına dokununca o maçın kartı açılır.
 
 Nasıl denenir:
 1. Uygulamayı aç: ilerlemen yerinde olmalı, alt sekmeler görünmeli.
@@ -23,7 +27,11 @@ Nasıl denenir:
 8. Kavisli yavaş kaydırmayla baş üstü slice drop: top fileyi geçmeli (önceki build'de hep fileye gidiyordu).
 9. Ayarlar > Yazı boyutu > Büyük: sekmeler kelime ortasından bölünmemeli, düğmeler üst üste binmemeli.
 10. Ayarlar > Kamera ve Oyuncu görünümü: her seçenekte maç açılmalı.
-11. Takılma, ısınma ya da garip görüntü olursa telefonu ve ekranı yaz.
+11. Ayarlar > Kamera'da üç açıyı da dene: skor kutusunun altında boş siyah bant olmamalı, arkadaki seyirci skorun hemen altında başlamalı, rakip öncekinden büyük görünmeli. Senin arkandaki çizgi "Smaç gücü" çubuğunun üstünde kalmalı.
+12. Birkaç ralli oyna: vuruş anında oyun yumuşakça yavaşlamalı, vuruştan sonra yumuşakça hızlanmalı. Topa yine yetişebiliyor musun, akıcı mı? Kolay ve Usta'da ayrı ayrı bak. Zor gelirse yaz.
+13. Ayarlar'da hareket düğmesini "Hareket azaltıldı" yap, bir maç oyna: oyun hızı ayar kapalıyken olduğu gibi olmalı.
+14. Oyna sekmesinde "Sıradaki maç" kartına dokun: o maçın kartı (yıldız koşulları, Oyna düğmesi) açılmalı. Büyük "Oyna" düğmesinin altında yazı olmamalı.
+15. Takılma, ısınma ya da garip görüntü olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:

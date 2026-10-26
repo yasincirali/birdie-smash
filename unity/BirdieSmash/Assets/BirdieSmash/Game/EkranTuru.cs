@@ -61,11 +61,27 @@ namespace BirdieSmash.Game
                 Ayar.model = "oyuncak"; Ayar.saha = s; root.SahaDegisti(); root.StartMatch(false, false, false); botAcik = true;
                 yield return Bekle(60); yield return Cek("saha_" + s);
             }
-            foreach (var k in new[] { "alcak", "ust", "yayin" })
+            // 2026-10-26 kadraj: her açı iki ekran oranında: 390×845 (19,5:9, uzun ekran; ad eki yok, eski karelerle aynı ad) ve
+            // 375×667 (iPhone SE, 16:9; "_se"). Pencere boyu turun içinde değişir, sonunda eskisine döner.
+            int w0 = Screen.width, h0 = Screen.height;
+            foreach (var en in new[] { "", "_se" })
             {
-                Ayar.kamera = k; Ayar.saha = "salon"; root.SahaDegisti(); root.KameraDegisti(); root.StartMatch(false, false, false); botAcik = true;
-                yield return Bekle(60); yield return Cek("kamera_" + k);
+                if (en == "_se") yield return Boyut(375, 667);
+                foreach (var k in new[] { "alcak", "ust", "yayin" })
+                {
+                    Ayar.kamera = k; Ayar.saha = "salon"; root.SahaDegisti(); root.KameraDegisti(); root.StartMatch(false, false, false); botAcik = true;
+                    yield return Bekle(60); yield return Cek("kamera_" + k + en);
+                }
+                // GEÇİCİ: Alçak için iki aday bakış (yükseklik, dipten geri, eğim); karar sonrası silinir.
+                var aday = new[] { new Vector3(7f, 2f, 20), new Vector3(6.5f, 3f, 15) };
+                for (int i = 0; i < aday.Length; i++)
+                {
+                    GameRoot.kadrajDeneme = aday[i]; Ayar.kamera = "alcak"; root.KameraDegisti(); root.StartMatch(false, false, false); botAcik = true;
+                    yield return Bekle(60); yield return Cek("kamera_alcak_aday" + (i + 1) + en);
+                }
+                GameRoot.kadrajDeneme = null; root.KameraDegisti();
             }
+            yield return Boyut(w0, h0);
             Ayar.model = "oyuncak"; Ayar.saha = "salon"; Ayar.kamera = "yayin"; root.SahaDegisti(); root.KameraDegisti();
             yield return ImzaKare("imza_mermi", KariyerVeri.Global(1, 5), false);
             yield return ImzaKare("imza_duvar_azalt", KariyerVeri.Global(0, 5), true);
@@ -192,6 +208,12 @@ namespace BirdieSmash.Game
             root.GunlukBaslat(); botAcik = true; yield return Bekle(60 * 3); yield return Cek("gunun_maci_oyun"); botAcik = false;
         }
         IEnumerator Bekle(int kare) { for (int i = 0; i < kare; i++) yield return null; }
+        IEnumerator Boyut(int w, int h)
+        {
+            Screen.SetResolution(w, h, FullScreenMode.Windowed);
+            for (int i = 0; i < 120 && (Screen.width != w || Screen.height != h); i++) yield return null;
+            yield return Bekle(10); rap.AppendLine("ekran boyu istendi " + w + "x" + h + " · oldu " + Screen.width + "x" + Screen.height);
+        }
 
         void Update()
         {
@@ -235,7 +257,7 @@ namespace BirdieSmash.Game
         IEnumerator YakinNokta(string ad, Vector3 hedef, Vector3 ofset)
         {
             yield return new WaitForEndOfFrame();
-            var g = new GameObject("yakin_kamera"); var c = g.AddComponent<Camera>(); c.CopyFrom(root.cam); c.fieldOfView = 40;
+            var g = new GameObject("yakin_kamera"); var c = g.AddComponent<Camera>(); c.CopyFrom(root.cam); c.ResetProjectionMatrix(); c.fieldOfView = 40;   // ana kamera özel (eksen dışı) matris taşır, 2026-10-26
             g.transform.position = hedef + ofset; g.transform.LookAt(hedef);
             var rt = new RenderTexture(720, 960, 24); c.targetTexture = rt; c.Render();
             var prev = RenderTexture.active; RenderTexture.active = rt;

@@ -28,7 +28,7 @@ namespace BirdieSmash.Game
         public UiKok ui; public Hud HudKatman { get { return hud; } }
         GameObject court; Renderer akisR; string courtId, modelId, gorunumId;
         public OdulSonuc odul; public bool yukseltHazir; bool pencere; float sqT; float psvx, psvy;
-        float shake, punch; Vector3 camBase; Quaternion camRot; float camFov; int seed = 1; Light sun; readonly System.Random rnd = new System.Random();
+        float shake, punch; Vector3 camBase; Quaternion camRot; int seed = 1; Light sun; readonly System.Random rnd = new System.Random();
         bool ogrKayit;
         public Mod mod = Mod.Normal; public string drilId; public GunlukMac gunluk;
         // Maç sonu ekranının mod farkları: skor satırı (görevde "7/12 hedefte"), önerilen antrenman görevi (kayıpta, Dril.Oner).
@@ -280,20 +280,51 @@ namespace BirdieSmash.Game
         public static readonly string[] KAMERA_SIRA = { "yayin", "alcak", "ust" };
         public static readonly string[] KAMERA_AD = { "Yayın", "Alçak", "Üstten" };
         public void KameraDegisti() { lastW = 0; }
-        int lastW, lastH;
+        int lastW, lastH; Rect lastSafe;
+        // Kadraj (2026-10-26, yasin onayı; inceleme 2026-10-26 §1): görüş açısı eskiden simetrikti; dikey telefonda kort ekranın
+        // genişliğine takıldığı için kalan dikey pay üstte boş kalıyordu (Yayın'da ekranın ~%30'u, Alçak'ta yarıya yakını).
+        // Yalnız ortalamak boşluğu alta taşırdı. Şimdi:
+        //  - Bakış noktası (camBase) her açıda eski yerinde: açıların karakteri ve örtüşmeler aynı. Görüntü düzlemi KAD_EGIM kadar
+        //    aşağı eğilir (mimari "tilt-shift" düzeltmesi): yakın kenar küçülmez, uzak yarı ve rakip büyür (390×845 ve
+        //    375×667 için hesap: rakip boyu Yayın 1,41/1,46×, Alçak 1,57×, Üstten 1,14/1,12×). Eğim büyüdükçe dikey nesneler
+        //    üstte uzar; 20°'de rakibin boy/en oranı %10 artıyor, sınır bu.
+        //  - Merceği kaydırma (projeksiyon matrisinde eksen dışı merkez): uzak dip çizginin gerisindeki seyirci başları ve
+        //    rakibin sıçrama tepesi skor kutusunun hemen altına oturur; üstte boş bant kalmaz.
+        //  - Genişlik: tekler alanı (+15 cm) her derinlikte ekranda; çiftler koridoru yakın köşelerde kenardan taşabilir
+        //    (teklerde oyun dışı alan). Eskisi çiftler çizgisi + %6 paydı, rakibi ~%18 küçültüyordu.
+        //  - Yakın dip çizgi smaç çubuğunun üstünde kalır (Hud: çubuk etiketi güvenli alanın 30u yukarısında; 6u pay).
+        //    Ekran kortun oranından uzunsa (19,5:9, alçak bakış) artan pay altta kalır: kortun önündeki zemin, başparmak
+        //    bölgesi. Alçak bakışla uzun ekranı kortla doldurmak bakışı ~10 m'ye çıkarmayı ister (Yayın olur), bu yüzden yapılmadı.
+        // Dokunma/kaydırma ışın atışıyla (ScreenPointToRay) ve HUD WorldToScreenPoint ile çalıştığı için özel matris girdiyi bozmaz.
+        public static readonly float[] KAD_EGIM = { 12, 20, 0 };   // KAMERA_SIRA sırasıyla: yayin, alcak, ust (derece)
+        public static Vector3? kadrajDeneme;   // GEÇİCİ (2026-10-26 kadraj turu): yalnız EkranTuru; yükseklik, dipten geri, eğim
+        float camTv = .6f, camK;   // dikey yarım açının tanjantı ve eksen dışı kayma (NDC; + = görüntü yukarı)
         void FitCamera()
         {
-            if (Screen.width == lastW && Screen.height == lastH) return; lastW = Screen.width; lastH = Screen.height;
+            var sa = Screen.safeArea;
+            if (Screen.width == lastW && Screen.height == lastH && sa == lastSafe) return; lastW = Screen.width; lastH = Screen.height; lastSafe = sa;
             camBase = new Vector3(0, 10.5f, -Court.L / 2 - 6.2f); var target = new Vector3(0, .4f, .9f);
             if (Ayar.kamera == "alcak") { camBase = new Vector3(0, 5.6f, -Court.L / 2 - 5.4f); target = new Vector3(0, .9f, 1.6f); }
             else if (Ayar.kamera == "ust") { camBase = new Vector3(0, 15.5f, -Court.L / 2 - 2.2f); target = new Vector3(0, 0, .6f); }
-            camRot = Quaternion.LookRotation(target - camBase); cam.transform.SetPositionAndRotation(camBase, camRot);
-            var pts = new List<Vector3>();
-            foreach (float x in new[] { 0f, Court.CW }) foreach (float y in new[] { 0f, Court.L }) { pts.Add(Kit.W(x, y, 0)); }
-            pts.Add(Kit.W(Court.MID, 0.4f, 2.6f)); pts.Add(Kit.W(Court.MID, Court.L + .8f, 0)); pts.Add(Kit.W(Court.MID, -1.3f, .9f));
-            float aspect = (float)Screen.width / Mathf.Max(1, Screen.height), tv = 0;
-            foreach (var p in pts) { var l = Quaternion.Inverse(camRot) * (p - camBase); tv = Mathf.Max(tv, Mathf.Abs(l.y / l.z), Mathf.Abs(l.x / l.z) / aspect); }
-            camFov = 2 * Mathf.Atan(tv * 1.06f) * Mathf.Rad2Deg; cam.fieldOfView = camFov;
+            int ki = System.Array.IndexOf(KAMERA_SIRA, Ayar.kamera); float egim = KAD_EGIM[ki < 0 ? 0 : ki];
+            if (kadrajDeneme.HasValue) { var d = kadrajDeneme.Value; camBase = new Vector3(0, d.x, -Court.L / 2 - d.y); egim = d.z; }
+            camRot = Quaternion.LookRotation(target - camBase) * Quaternion.Euler(egim, 0, 0); cam.transform.SetPositionAndRotation(camBase, camRot);
+            float W = Mathf.Max(1, Screen.width), H = Mathf.Max(1, Screen.height), u = Mathf.Min(H / 640f, W / 340f), aspect = W / H;
+            float ust = (H - sa.yMax) + 46 * u, alt = H - sa.yMin - 36 * u;   // ekran pikseli, yukarıdan: skor kutusunun altı, smaç çubuğunun üstü
+            float nUst = 1 - 2 * ust / H, nAlt = 1 - 2 * alt / H;
+            var inv = Quaternion.Inverse(camRot); float th = 0;
+            foreach (float x in new[] { Court.SL - .15f, Court.SR + .15f }) foreach (float y in new[] { 0f, Court.L }) { var l = inv * (Kit.W(x, y, 0) - camBase); th = Mathf.Max(th, Mathf.Abs(l.x / l.z)); }
+            float tUst = Mathf.Max(Tan(inv, Kit.W(Court.MID, -2.3f, 1.8f)), Tan(inv, Kit.W(Court.MID, .4f, 2.6f)));   // seyirci başları, rakibin sıçrama tepesi
+            float tYakin = Tan(inv, Kit.W(Court.MID, Court.L, 0));
+            camTv = Mathf.Max(th / aspect, (tUst - tYakin) / Mathf.Max(.05f, nUst - nAlt)); camK = nUst - tUst / camTv;
+            Projeksiyon(1);
+        }
+        float Tan(Quaternion inv, Vector3 p) { var l = inv * (p - camBase); return l.y / Mathf.Max(.01f, l.z); }
+        // Smaç "punch" yakınlaşması ekranın ortasına göre (eksen dışı kaymayla birlikte ölçeklenir).
+        void Projeksiyon(float z)
+        {
+            var m = Matrix4x4.Perspective(2 * Mathf.Atan(camTv) * Mathf.Rad2Deg, (float)Mathf.Max(1, Screen.width) / Mathf.Max(1, Screen.height), cam.nearClipPlane, cam.farClipPlane);
+            m.m00 *= z; m.m11 *= z; m.m12 = -camK * z; cam.projectionMatrix = m;
         }
 
         // ---- kaydırma girdisi: piksel → 640 px yükseklikli referans (HTML eşikleri aynen geçerli) ----
@@ -450,7 +481,7 @@ namespace BirdieSmash.Game
             Hakemler();
             shake *= Mathf.Pow(.002f, dt); punch = 1 + (punch - 1) * Mathf.Pow(.0005f, dt); if (punch < 1) punch = 1;
             var j = shake > .01f ? (Vector3)(Random.insideUnitCircle * shake * .012f) : Vector3.zero;
-            cam.transform.SetPositionAndRotation(camBase + camRot * j, camRot); cam.fieldOfView = camFov / punch;
+            cam.transform.SetPositionAndRotation(camBase + camRot * j, camRot); Projeksiyon(punch);
         }
 
         // Baş hakem sayı bitince skoru girer (başı eğilir); servis el değişince yeni servisçinin tarafına döner. Servis hakemi

@@ -752,6 +752,24 @@ namespace BirdieSmash.Core
             o.prepA += (tg - o.prepA) * Math.Min(1, dt * (tg > 0 && who == "op" ? 4.5f : 9));
         }
 
+        // Vuruş anı ağır çekimi (2026-10-26, yasin onayı; inceleme 2026-10-25): hız tek karede düşüp kalkınca her dönüş
+        // "ağır, yapışkan" hissettiriyor ve smacın hızını öldürüyordu. Hız pencere açılınca PENCERE_IN sn'de iner, kapanınca
+        // PENCERE_OUT sn'de çıkar (gerçek zamanla, doğrusal). Taban hafifledi: Kolay .3 → .45, Usta .45 → .6; Odak bandı
+        // (GS.yavas) aynı oranla çarpar. Ağır çekim tamamen kalkmaz: telefonda kaydırmaya yetişmek için gerekli.
+        // Hareketi azalt artık burada yok (eskiden .7 sabitti): erişilebilirlik ayarı zorluğu değiştirmez, oyuncuyu daha
+        // hızlı oyuna sokuyordu; azaltma yalnız sarsıntı/yakınlaşma/parçacıkta. Maç sayısı ve "Kıl payı" ağır çekimi (slow)
+        // bundan ayrıdır, değişmedi.
+        public const float PENCERE_KOLAY = .45f, PENCERE_USTA = .6f, PENCERE_IN = .12f, PENCERE_OUT = .15f;
+        public float pencereK = 1;   // şu anki vuruş penceresi zaman çarpanı (1 = gerçek hız)
+        public float PencereTaban() { return (easy ? PENCERE_KOLAY : PENCERE_USTA) * GS.yavas; }
+        public float PencereAdim(float dt, bool pencere)
+        {
+            float taban = Math.Min(1, PencereTaban()), hedef = pencere ? taban : 1, aralik = Math.Max(1e-4f, 1 - taban);
+            if (pencereK > hedef) pencereK = Math.Max(hedef, pencereK - aralik * dt / PENCERE_IN);
+            else if (pencereK < hedef) pencereK = Math.Min(hedef, pencereK + aralik * dt / PENCERE_OUT);
+            return pencereK;
+        }
+
         public void Update(float dt)
         {
             realClock += dt;
@@ -760,7 +778,7 @@ namespace BirdieSmash.Core
             if (freeze > 0) { freeze -= dt; return; }
             if (ogr != null && OgrDurdur()) return;   // antrenman: top vuruş yerine gelince oyun durur, parmak hareketi gösterilir
             if (slowT > 0) { slowT -= dt; if (slowT <= 0) slow = 1; }
-            float d = dt * slow * (HitWindow() ? (reduce ? .7f : (easy ? .3f : .45f) * GS.yavas) : 1);
+            float d = dt * slow * PencereAdim(dt, HitWindow());
             if (hakemT > 0) hakemT -= dt;
             if (sjYon == null) sjYon = server;
             if (sjYon != server && !(hakemT > hakemT0 * 1.1f / 1.4f)) { sjT += dt; if (sjT >= .5f || reduce) { sjYon = server; sjT = 0; } }   // servis hakemi yeni servisçiye ~0,3 sn sonra döner

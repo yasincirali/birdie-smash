@@ -1,6 +1,6 @@
 // Oyna sekmesi ve Hızlı maç alt sayfası (tasarım §2.2–2.3, 2026-10-26).
 // Ana yol bir dokunuş: "Sıradaki" kartı (kariyerin açık basamağı: yer, rakip, saha, basamak çubuğu) ve altında tek parlak
-// düğme "Oyna" (başparmak bölgesi, alt üçte bir). Kartın kendisine dokunmak Kariyer sekmesini açar.
+// düğme "Oyna" (başparmak bölgesi, alt üçte bir). Kartın kendisine dokunmak o maçın kartını açar (2026-10-26; eskiden Kariyer sekmesi).
 // Mod eşlemesi (tuytop_mod aynı anahtar, aynı anlam: "son oynanan mod"): eskiden ana menüde Hızlı maç / Kariyer çipleri
 // vardı ve Oyna seçili modu başlatıyordu. Şimdi mod hangi düğmeye basıldığından gelir: büyük Oyna kariyeri, Hızlı maç alt
 // sayfasındaki düğme serbest maçı başlatır; ikisi de Ayar.kariyerModu'nu yazar (eşit şartlar ve maç sonu "Bir maç daha"
@@ -42,8 +42,10 @@ namespace BirdieSmash.Game
             }
             else if (!usta)
             {
-                var p = Ayar.ilerleme; var kb = KariyerVeri.Al(p.Siradaki());
-                string alt = !Ayar.antrenman ? L.T("İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç") : p.HepsiBitti ? L.Cumle(Career.Line(p)) : L.T("Sıradaki: {0}", L.T(kb.yer));
+                // 2026-10-26 (yasin onayı, inceleme 2026-10-26 §2): "Sıradaki: {yer}" alt yazısı kalktı; yer hemen üstteki kartta
+                // yazıyordu ("Local gym" iki kez). İlk açılış yazısı kalır (orada bilgi veriyor), kariyer bitince şampiyon satırı da.
+                var p = Ayar.ilerleme;
+                string alt = !Ayar.antrenman ? L.T("İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç") : p.HepsiBitti ? L.Cumle(Career.Line(p)) : null;
                 c.Add(Dugme(L.T("Oyna"), () =>
                 {
                     if (Ayar.antrenman && !Ayar.kariyerModu) { Ayar.kariyerModu = true; Ayar.GearHesap(); Ayar.Kaydet(); }
@@ -65,12 +67,13 @@ namespace BirdieSmash.Game
 
         // "Sıradaki" kartı: rakip rengi yanında adıyla (yalnız renkle değil), yıldızları (dolu/çerçeve + "1/3"), turun basamak
         // çubuğu biçimle (geçilen dolu, şimdiki uzun ve çerçeveli, gelecek soluk). 2026-10-26: tur ve yıldızlar haritadan
-        // (Ilerleme); dokununca Kariyer sekmesi (harita) açılır.
+        // (Ilerleme). Dokununca o maçın kartı (yıldız koşulları, Oyna) açılır (2026-10-26, yasin onayı): karttan haritaya
+        // düşmek şaşırtıyordu, oyuncu maçı ya da ayrıntıyı bekliyor; harita Kariyer sekmesinden.
         VisualElement SiradakiKart()
         {
             var p = Ayar.ilerleme; int g = p.Siradaki(), tr = KariyerVeri.TurOf(g), i = KariyerVeri.BasOf(g); var kb = KariyerVeri.Al(g); var st = Match.STIL[kb.stil];
             bool tamam = p.HepsiBitti;
-            var kart = Kart("siradaki"); kart.AddManipulator(new Clickable(() => SekmeAc(Sekme.Kariyer)));
+            var kart = Kart("siradaki"); kart.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); MacKartAc(g); }));
             var bas = Satir("arali"); kart.Add(bas);
             bas.Add(Yazi(L.T(tamam ? "Kariyer tamam" : "Sıradaki maç"), 12, "etiket"));
             bas.Add(Yazi(L.T(TurAd(tr)) + " " + (i + 1) + "/" + KariyerVeri.BASAMAK, 12, "etiket"));
