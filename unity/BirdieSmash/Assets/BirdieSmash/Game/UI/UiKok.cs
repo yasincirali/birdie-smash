@@ -180,7 +180,7 @@ namespace BirdieSmash.Game
         }
 
         // Durum değişti: hepsi kirli, görünen hemen yeniden kurulur.
-        void Kirlet() { for (int i = 0; i < 4; i++) kirli[i] = true; ustKirli = true; var once = gez.sekme; Uygula(once, false); }
+        public void Kirlet() { for (int i = 0; i < 4; i++) kirli[i] = true; ustKirli = true; var once = gez.sekme; Uygula(once, false); }
 
         void HepsiniKur()
         {

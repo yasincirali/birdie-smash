@@ -40,8 +40,8 @@ namespace BirdieSmash.Game
             for (int s2 = L_ + 1; s2 <= 30; s2++)
             {
                 var ac = Karakter.Acilanlar(s2); if (ac.Count == 0) continue;
-                var adlar = new List<string>(); foreach (var a in ac) adlar.Add(L.T(a));
-                var sa = Yazi(L.T("Sıradaki açılış · Sv {0}", s2) + ": " + string.Join(", ", adlar.ToArray()), 13, "ipucu"); Erisim.Etiket(sa, sa.text, "metin"); kart.Add(sa); break;
+                var adlar = new List<string>(); foreach (var a in Karakter.AcilanlarTurlu(s2)) adlar.Add(a[0] != null ? L.T(a[0]) + ": " + L.T(a[1]) : L.T(a[1]));
+                var sa = Yazi(L.T("Sıradaki açılış · Sv {0}", s2) + ": " + string.Join(" · ", adlar.ToArray()), 13, "ipucu"); Erisim.Etiket(sa, sa.text, "metin"); kart.Add(sa); break;
             }
 
             // ad (yalnız cihazda)

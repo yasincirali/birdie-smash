@@ -30,7 +30,7 @@ namespace BirdieSmash.Game
             var bas = Satir("arali"); c.Add(bas);
             bas.Add(Yazi(L.T("Görevler"), 13, "etiket")); bas.Add(YildizSayac(pr.AntrenmanYildiz, Dril.ToplamYildiz, 15));
             // Temel ders: ilk açılıştaki antrenmanın tamamı (eski "Tam antrenman" kartı)
-            c.Add(Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", L.T("Vuruş, servis, nefes") + " · " + L.T("15 adım, skor yok")));
+            var td = Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", L.T("Vuruş, servis, nefes") + " · " + L.T("15 adım, skor yok")); td.AddToClassList("tam-genislik"); c.Add(td);
             c.Add(Yazi(L.T("Her görev 12 top, skor yok. Antrenör topu besler, sen tek bir vuruşu çalışırsın. Yıldız en iyi sonucundur, geri alınmaz."), 13, "soluk"));
             foreach (var d in Dril.Liste) c.Add(DrilSatir(d));
             c.Add(Bosluk(24));

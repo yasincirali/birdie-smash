@@ -44,7 +44,7 @@ namespace BirdieSmash.Game
             yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             yield return MenuTuru();
-            Ayar.antrenman = true; Ayar.easy = true; Ayar.target = 5; Ayar.reduce = false;
+            Ayar.antrenman = true; Ayar.easy = true; Ayar.target = 5; Ayar.reduce = false; if (root.ui != null) root.ui.Kirlet();   // r11: Oyna sekmesi ilk açılış kurulumunda kalıyordu
             yield return MenuTuru("", true); Ayar.yaziTest = 2; yield return MenuTuru("x2_", true); Ayar.yaziTest = 0; root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
             var modeller = new System.Collections.Generic.List<string> { "oyuncak", "rocketbox" };
             if (Resources.Load<GameObject>("karakter/sade") != null) modeller.Add("sade");
@@ -106,8 +106,8 @@ namespace BirdieSmash.Game
             ui.AntrenmanAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "antrenman");
             ui.DrilKartAc("kose"); yield return Bekle(20); yield return Cek("menu_" + ek + "gorev_karti"); ui.Geri(); ui.Geri(); yield return Bekle(5);
             ui.GunlukAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "gunun_maci"); ui.Geri();
-            dp.GunlukKazan(Gunluk.Tarih(System.DateTime.Now)); ui.SekmeAc(Sekme.Kariyer); ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_" + ek + "oyna_gunluk_alindi");
-            Ayar.ilerleme = eskiP; ui.SekmeAc(Sekme.Kariyer); ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
+            dp.GunlukKazan(Gunluk.Tarih(System.DateTime.Now)); ui.Kirlet(); ui.SekmeAc(Sekme.Kariyer); ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_" + ek + "oyna_gunluk_alindi");
+            Ayar.ilerleme = eskiP; ui.Kirlet(); ui.SekmeAc(Sekme.Kariyer); ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
         }
 
         // Harita kareleri: örnek ilerleme (Tur 1'de dört basamak, farklı yıldızlarla), sonra Tur 1 tamam + Tur 2 yarısı.
@@ -132,8 +132,8 @@ namespace BirdieSmash.Game
             ui.MacKartAc(KariyerVeri.Global(3, 2)); yield return Bekle(20); yield return Cek("menu_" + ek + "mac_karti_tur4_imza"); ui.Geri();
             for (int b = 0; b < 6; b++) r.tur[3][b] = 3; r.UstaIsle(0, true, true); r.UstaIsle(1, true, false); r.UstaIsle(2, false, true);
             ui.KariyerTurSec(3); yield return Bekle(20); yield return Cek("menu_" + ek + "harita_tur4_usta");
-            ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_" + ek + "oyna_usta"); ui.SekmeAc(Sekme.Kariyer);
-            Ayar.ilerleme = eski; ui.KariyerTurSec(-1); yield return Bekle(5);
+            ui.Kirlet(); ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_" + ek + "oyna_usta"); ui.SekmeAc(Sekme.Kariyer);
+            Ayar.ilerleme = eski; ui.Kirlet(); ui.KariyerTurSec(-1); yield return Bekle(5);
         }
 
         // Soyunma odası (2026-10-26, ekipman v2 + karakter): Tarz ve Görünüm segmentleri, raket ve kordaj yuva sayfaları (model

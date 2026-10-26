@@ -98,6 +98,10 @@
 .ikincil-satir { margin-top: 6px; flex-wrap: nowrap; }
 .ikincil-kart { flex-grow: 1; flex-basis: 0; margin: 4px; min-height: 64px; border-radius: 14px; }
 .buyuk-yazi .ikincil-satir { flex-direction: column; }
+/* r11 (büyük yazı): sütunda flex-basis 0 kartı 64 px'e sabitliyor, başlık alt yazının üstüne biniyordu. Sütunda ve tam
+   genişlikte kart içeriği kadar uzar. */
+.buyuk-yazi .ikincil-kart { flex-basis: auto; flex-grow: 0; }
+.ikincil-kart.tam-genislik { flex-basis: auto; flex-grow: 0; }
 
 /* Kariyer */
 .basamak-kart.simdiki { border-color: rgb(122, 215, 255); border-width: 2px; }
@@ -120,6 +124,9 @@
 .dugum { min-height: 44px; padding: 10px 12px; margin: 0; }
 .dugum--sol { margin-right: 14%; }
 .dugum--sag { margin-left: 14%; }
+/* r11: büyük yazıda %14 kırılma "Singapore"u hece ortasından bölüyordu; yol düz iner. */
+.buyuk-yazi .dugum--sol { margin-right: 0; }
+.buyuk-yazi .dugum--sag { margin-left: 0; }
 .dugum.simdiki { border-color: rgb(122, 215, 255); border-width: 2px; }
 .dugum.kilitli { opacity: 0.6; }
 .dugum--final { border-color: rgba(255, 210, 58, 0.45); }
@@ -142,7 +149,7 @@
 /* Soyunma odası */
 .vitrin-alan { height: 40%; min-height: 200px; flex-shrink: 0; margin: 0 16px; border-radius: 16px; overflow: hidden; background-color: rgb(14, 29, 32); }
 .vitrin { flex-grow: 1; }
-.vitrin-yazi { position: absolute; top: 8px; left: 0; right: 0; -unity-text-align: middle-center; color: rgba(255, 255, 255, 0.6); }
+.vitrin-yazi { position: absolute; top: 8px; right: 10px; -unity-text-align: middle-right; color: rgba(255, 255, 255, 0.75); background-color: rgba(13, 22, 26, 0.6); border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; padding: 3px 8px; }   /* r11: ortadaki yazı raketin ve başın üstüne biniyordu; sağ üst köşe, koyu zemin */
 .vitrin-oklar { position: absolute; left: 8px; right: 8px; bottom: 8px; flex-direction: row; align-items: center; flex-wrap: nowrap; margin: 0; }
 .vitrin-gecis { flex-grow: 1; margin: 0 8px; background-color: rgba(34, 52, 58, 0.9); }
 .soyunma-kaydir { flex-grow: 1; flex-shrink: 1; }

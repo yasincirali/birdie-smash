@@ -81,6 +81,18 @@ namespace BirdieSmash.Core
 
         // Seviye açılış tablosu (tasarım §5.2): bu seviyede açılan model, tarz ve görünüm adları (Profil "sıradaki açılış",
         // tempo simülasyonu). Türkçe ad; ekranda L.T ile çevrilir.
+        // Profil "Sıradaki açılış" satırı için (2026-10-26 r11): renk adları tek başına belirsizdi ("Pamuk, Kırmızı, Kırmızı" =
+        // forma rengi ve raket kaplaması); renk ve görünüm öğeleri türüyle birlikte döner: {tür etiketi ya da null, ad}.
+        public static List<string[]> AcilanlarTurlu(int sv)
+        {
+            var l = new List<string[]>(); if (sv <= 1) return l;
+            foreach (var y in Gear.MODEL_YUVA) foreach (var m in Gear.GEAR[y].Values) if (m.sv == sv) l.Add(new[] { null, m.ad });
+            foreach (var t in Tarzlar) if (t.sv == sv) l.Add(new[] { "Tarz", t.ad });
+            foreach (var m in Gear.RENK.Values) if (m.sv == sv && !m.kilit) l.Add(new[] { "Forma rengi", m.ad });
+            foreach (var k in GORUNUM_KAT) foreach (var o in Gorunum(k)) if (o.sv == sv) l.Add(new[] { k == "ten" ? "Ten tonu" : k == "sac" ? "Saç rengi" : k == "ayakkabi" ? "Ayakkabı" : "Raket kaplaması", o.ad });
+            foreach (var u in Unvanlar) if (u.sv == sv) l.Add(new[] { "Unvan", u.ad });
+            return l;
+        }
         public static List<string> Acilanlar(int sv)
         {
             var l = new List<string>();
