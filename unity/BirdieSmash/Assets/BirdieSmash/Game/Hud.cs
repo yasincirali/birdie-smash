@@ -260,7 +260,7 @@ namespace BirdieSmash.Game
             if (hawk != null) HawkCiz(M);
             if (root.ekran == Ekran.Oyun && !root.paused && Button(new Rect(rx - BH, top, BH, BH), "II")) root.Duraklat();   // Duraklat
             float y = top + 62 * u;
-            if (root.rakipKartT > 0 && !ogr) y = RakipKart(M, y);
+            if (root.rakipKartT > 0 && !ogr && root.ekran == Ekran.Oyun) y = RakipKart(M, y);   // r17: sonuç ekranının altından okunuyordu
             if (ogr && root.ekran == Ekran.Oyun) y = OgrKart(M, y);   // görev sonuç ekranında kart kalkar (Over üstüne binmesin)
             // smaç gücü çubuğu
             {

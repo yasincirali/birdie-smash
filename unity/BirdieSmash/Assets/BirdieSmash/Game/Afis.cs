@@ -23,6 +23,9 @@ namespace BirdieSmash.Game
         public static Vector3 BEN = new Vector3(-.5f, 0, 0), RAKIP = new Vector3(.92f, 0, -1.7f);
         public static Vector3 KAMERA = new Vector3(.1f, 1.1f, 4.4f), BAKIS = new Vector3(.12f, 1.02f, -.5f);
         public static float BEN_YON = 28, RAKIP_YON = -32, ACI = 30;
+        // r17: −z'ye bakan kameranın ekran sağı dünya −x'tir; sabitler ekran gözüyle yazıldığı için (sol = ben) dünya
+        // konumuna Ek() ile çevrilir (x ve yön işareti döner). r16–r17'de sen sağda, rakip solda çıkıyordu.
+        static Vector3 Ek(Vector3 v) { return new Vector3(-v.x, v.y, v.z); }
         public RenderTexture rt; Camera kam; PlayerView ben, rakip; string benAnah, rakipAnah; float ph;
         Light konturRakip, konturBen;
 
@@ -33,14 +36,14 @@ namespace BirdieSmash.Game
             var cg = new GameObject("afis_kamera"); cg.transform.SetParent(g.transform, false); a.kam = cg.AddComponent<Camera>();
             a.kam.targetTexture = a.rt; a.kam.clearFlags = CameraClearFlags.SolidColor; a.kam.backgroundColor = new Color(0, 0, 0, 0);
             a.kam.fieldOfView = ACI; a.kam.nearClipPlane = .1f; a.kam.farClipPlane = 15; a.kam.enabled = false; a.kam.allowHDR = false;
-            cg.transform.position = YER + KAMERA; cg.transform.rotation = Quaternion.LookRotation(BAKIS - KAMERA);
+            cg.transform.position = YER + Ek(KAMERA); cg.transform.rotation = Quaternion.LookRotation(Ek(BAKIS) - Ek(KAMERA));
             // Işıklar: önden sol yumuşak anahtar (salon tavan lambaları buraya ulaşmaz), arkadan kontur: rakibe mercan (rakip
             // rengi, a-rival drop-shadow), sana hafif limon (senin taraf). Menzil kısa: yalnız kendi figürünü boyar.
             // r16: tam arkadan kontur Standard gölgelendiricide görünmüyordu (Fresnel kenar ışığı yok, yalnız sırtı boyar);
             // dış yana ve hafif geriye alındı, güç arttı: kameraya bakan kenar mercan/limon parlar.
-            Isik(g.transform, "afis_anahtar", YER + new Vector3(-2.2f, 2.6f, 3.2f), Color.white, 1.25f, 10);
-            a.konturRakip = Isik(g.transform, "afis_kontur_rakip", YER + RAKIP + new Vector3(1.25f, 1.45f, -.35f), Kit.Hex("#FF5B4A"), 7f, 2.6f);
-            a.konturBen = Isik(g.transform, "afis_kontur_ben", YER + BEN + new Vector3(-1.2f, 1.5f, -.35f), Kit.Hex("#D8FF3A"), 2.6f, 2.4f);
+            Isik(g.transform, "afis_anahtar", YER + Ek(new Vector3(-2.2f, 2.6f, 3.2f)), Color.white, 1.25f, 10);
+            a.konturRakip = Isik(g.transform, "afis_kontur_rakip", YER + Ek(RAKIP + new Vector3(1.25f, 1.45f, -.35f)), Kit.Hex("#FF5B4A"), 7f, 2.6f);
+            a.konturBen = Isik(g.transform, "afis_kontur_ben", YER + Ek(BEN + new Vector3(-1.2f, 1.5f, -.35f)), Kit.Hex("#D8FF3A"), 2.6f, 2.4f);
             g.SetActive(false); return a;
         }
         static Light Isik(Transform p, string ad, Vector3 yer, Color c, float guc, float menzil)
@@ -82,8 +85,8 @@ namespace BirdieSmash.Game
         void Goster(float dt)
         {
             if (!Ayar.reduce) ph += dt * .45f;   // boşta duruş yavaş: nefes (yön A "oyuncu nefes alır")
-            if (ben != null) ben.ShowPoz(YER + BEN, BEN_YON, "idle", ph);
-            if (rakip != null) rakip.ShowPoz(YER + RAKIP, RAKIP_YON, "idle", ph + .37f);
+            if (ben != null) ben.ShowPoz(YER + Ek(BEN), -BEN_YON, "idle", ph);
+            if (rakip != null) rakip.ShowPoz(YER + Ek(RAKIP), -RAKIP_YON, "idle", ph + .37f);
         }
         void Update() { Goster(Mathf.Min(.05f, Time.unscaledDeltaTime)); }
     }
