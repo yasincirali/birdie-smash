@@ -4,6 +4,7 @@ Birdie Smash oyuncu figürleri şu açık lisanslı içeriklerden üretilir. Spr
 
 - **Oyuncak 3B**: KayKit Character Pack: Adventurers 1.0, Kay Lousberg (kaylousberg.com). CC0 1.0, atıf gerekmez.
 - **Gerçekçi (Rocketbox)**: Microsoft Rocketbox Avatar Library, Sports_Male_04. MIT License, aşağıdaki metin.
+- **Sade**: Mesh2Motion (github.com/Mesh2Motion/mesh2motion-app) insan mankeni ve iskeleti (model-human, rig-human). CC0 1.0, atıf gerekmez.
 - Eski sportif figür: MakeHuman veri dosyaları, CC0 1.0.
 
 ## Microsoft Rocketbox: MIT License

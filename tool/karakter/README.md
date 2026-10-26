@@ -44,6 +44,13 @@ BS_MODEL=oyuncak python3 -I karakter.py -- /tmp/oy tur && python3 -I tur_js.py /
 cd ../.. && python3 -I tool/karakter/gom.py oyuncak /tmp/oy/spr.js /tmp/oy/tur.js
 ```
 
+- **Sade** (2026-10-26, yasin: oyuncağın iri başı yüksek kameradan gövdeyi örtüyordu, "normal oranlı, sade insan"):
+  `sade.py`, Mesh2Motion mankeni + aynı paketin UE adlı iskeleti (CC0; `tool/bulut_kurulum.sh` → `~/AnimationLibrary/mesh2motion`,
+  `BS_M2M`). İskelet mankene paketin kendi konumunda oturur; deri otomatik ağırlık (bone heat, ağırlıksız köşe 0). Ağ düzlemlerle
+  kesilip düz renkli bölgelere ayrılır (forma, sort, ten, beyaz çorap, taban ayakkabı, sac kabuğu, bilek, bant). Basan taban her klipte
+  0,4–0,5 cm (`BS_SADE_DZ`; koşunun z=0 bileği 0,05'e kırpılır, `BS_SADE_BILEK`). Uç (leaf) kemikleri silinir: FBX 5,2 MB.
+  `BS_MODEL=sade python3 -I tool/karakter/unity_fbx.py -- /tmp/sd sade` → `sade.fbx` + `sade_clips.json` (Resources/karakter).
+
 Oyunda her model ayrı `<script type="application/json" id="bs_model_<ad>">` bloğunda; oyun yalnız seçili olanı
 ayrıştırır (`tuytop_model`, Ayarlar › Oyuncu görünümü). Hızlı önizleme: `stil` modu, 360° için `BS_TUR_N=8 BS_ONIZLEME=1`.
 `aday.py`: hazır modelleri (Rocketbox, VRM) aynı pozlarla deneme (karşılaştırma sayfası için).

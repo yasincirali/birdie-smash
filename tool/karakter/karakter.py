@@ -43,7 +43,7 @@ SHW=0.13; HIPW=0.085
 # Gerçekçi gövde (yasin 2026-10-23: "insan anatomisine uygun olacak kadar gerçekçi"): MakeHuman tabanı (insan.py, CC0),
 # aynı poz sözlüklerini kullanır. BS_GERCEK=0 eski oyuncak figürü çizer (hakemler şimdilik oyuncak figürde).
 GERCEK=os.environ.get('BS_GERCEK','1')=='1'
-MODEL=os.environ.get('BS_MODEL','insan')   # 'oyuncak' = KayKit gövdeli oyuncak figür (oyuncak.py), aynı pozlar
+MODEL=os.environ.get('BS_MODEL','insan')   # 'oyuncak' = KayKit gövdeli oyuncak figür (oyuncak.py), aynı pozlar; 'aday' = Rocketbox (aday.py); 'sade' = Mesh2Motion mankeni (sade.py)
 OY=None
 def build_gercek(p):
     global OY
@@ -53,6 +53,7 @@ def build_gercek(p):
         M_=insan.malzemeler(FORMA,SORT,BEYAZ,BANT,CERCEVE,TEL,SORT)
         if MODEL=='oyuncak': import oyuncak; objs.clear(); OY=oyuncak.Oyuncak(M_)
         elif MODEL=='aday': import aday; objs.clear(); OY=aday.Aday(M_)   # karşılaştırma: hazır modeller (aday.py)
+        elif MODEL=='sade': import sade; objs.clear(); OY=sade.Sade(M_)   # sade: Mesh2Motion mankeni (CC0), normal oranlı insan
         else: objs.clear(); OY=insan.Oyuncu(M_,stil=os.environ.get('BS_STIL'))
     objs[:]=OY.kur_poz(p)
 def build(p):
@@ -520,7 +521,7 @@ if MODE=='stil':   # arcade tarz önizlemesi: aynı pozlar, 2× hücre (doku), a
     render(f'{OUT}/s_yakin.png')
     pb=OY.ao.pose.bones; mw=OY.ao.matrix_world
     for ad_,bn,osc,yon in (('yuz','head',.28,(0.25,1,0.12)),('elR','wrist.R',.24,(0.6,0.8,0.3)),('elL','wrist.L',.24,(-0.5,0.8,0.3))):
-        bn={'head':OY.R['head'],'wrist.R':OY.R['el'].format(S='R'),'wrist.L':OY.R['el'].format(S='L')}[bn] if MODEL=='aday' else bn; bn=bn if bn in pb else bn.lower(); osc=osc*(2.2 if MODEL=='oyuncak' and bn=='head' else 1.6 if MODEL=='oyuncak' else 1)   # oyuncak: küçük harf kemik, iri baş/el
+        bn={'head':OY.R['head'],'wrist.R':OY.R['el'].format(S='R'),'wrist.L':OY.R['el'].format(S='L')}[bn] if MODEL in ('aday','sade') else bn; bn=bn if bn in pb else bn.lower(); osc=osc*(2.2 if MODEL=='oyuncak' and bn=='head' else 1.6 if MODEL=='oyuncak' else 1)   # oyuncak: küçük harf kemik, iri baş/el
         c=mw@pb[bn].head if bn!='head' else mw@((pb[bn].head+pb[bn].tail)/2); d=Vector(yon).normalized(); cam.location=c+d*3; cam.data.ortho_scale=osc
         el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2); sc.render.resolution_x=sc.render.resolution_y=480; render(f'{OUT}/s_{ad_}.png')
     print('STIL DONE'); sys.exit(0)
