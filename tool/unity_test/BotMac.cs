@@ -4,6 +4,9 @@
 // türü de atılır, iki oyuncunun nefesi düşer ve dolar, sayı arası 0,7 sn (rekorda 1,3), hazırlıkta temas karesi temastan
 // önce gösterilmez, sıçrayarak smaç temasta tepede, hamlede gövde yatmaz, ilk açılış antrenmanı 3 adım + 5 sayılık maç,
 // kariyer düğme etiketi, NaN yok.
+// 2026-10-27 oyun incelemesi (OyunIncelemesi()): Hızlı maç rakibi oyuncunun sıradaki kariyer basamağının g'sinde
+// (KariyerVeri.Serbest; ilk açılışın ilk maçı da), Usta yolu dışındaki Usta maçında rakip g × usta.carpan (Match.UstaGucu),
+// Kolay ve Usta yolu dokunulmaz; denge kapısı: botla (pHit .07) Tur 1 ilk basamağı ≥ %70, Tur 1 Usta (Usta botu) ≥ %20.
 // 2026-10-25: HTML → Unity ilerleme devri (Core/Devir: bir kez, bayrak, normalize), maç sonu özeti (Core/Ozet: öncelik
 // sırası, ipucu), mağaza puanı koşulu, boşta duruşun nefese bağlı hızı.
 // 2026-10-24 tam geçiş: ekipman çarpanları HTML gsHesap ile aynı (node ile ölçülen değerler), ağır raket smacı gerçekten
@@ -131,11 +134,47 @@ static class BotMac
         if (gaps.Count == 0 || Math.Abs(gaps.OrderBy(x => x).ElementAt(gaps.Count / 2) - .7f) > .05f) Fail("sayı arası 0,7 sn değil");
 
         if (gorevN == 0) Fail("görev olayı hiç gelmedi");
+        OyunIncelemesi();   // 2026-10-27 (ayrı satır: ek kontrol listesi başka dallarda da büyüyor)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
         Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); Aldatmalar(); Pencereler();
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
+    }
+
+    // 2026-10-27 oyun incelemesi: seviyeye göre rakip, Usta gücü, denge kapısı (kariyer.json notu).
+    static void OyunIncelemesi()
+    {
+        var p = new Ilerleme(); var t = Match.STIL["smasci"]; var sb = KariyerVeri.Serbest("smasci", p); float g0 = KariyerVeri.Al(0).g;
+        if (Math.Abs(sb.hiz - t.hiz * g0) > 1e-5 || Math.Abs(sb.hata - t.hata / g0) > 1e-5 || sb.kariyer != -1 || sb.patron || t.hiz != Match.STIL["smasci"].hiz) Fail("Hızlı maç rakibi sıradaki basamağın g'sinde olmalı (taban değişmeden)");
+        if (KariyerVeri.Serbest("duvar", null).hiz != Match.STIL["duvar"].hiz) Fail("ilerleme yoksa taban tarz");
+        float k = KariyerVeri.Usta.carpan; var st = Match.KariyerRakip(2);
+        var mu = new Match(3, new MatchOptions { easy = false, stil = st, target = 5 }); var mk = new Match(3, new MatchOptions { easy = true, stil = st, target = 5 });
+        var my = new Match(3, new MatchOptions { easy = false, stil = UstaYolu.Rakip(0), target = 5 });
+        if (Math.Abs(mu.stil.hiz - st.hiz * k) > 1e-5 || Math.Abs(mu.stil.hata - st.hata / k) > 1e-5 || mk.stil.hiz != st.hiz || my.stil.hiz != UstaYolu.Rakip(0).hiz || st.hiz != Match.KariyerRakip(2).hiz) Fail("Usta gücü: yalnız Usta yolu dışındaki Usta maçı, kaynak tarz değişmez");
+        var gm = new Match(3, new MatchOptions { easy = true, stil = st, target = 5, degistirici = "usta" }); if (Math.Abs(gm.stil.hiz - st.hiz * k) > 1e-5) Fail("Günün maçı Usta: rakip gücü Usta çarpanıyla");
+        int kz = 0, ku = 0, n = 24;
+        for (int m = 0; m < n; m++)
+        {
+            foreach (bool easy in new[] { true, false })
+            {
+                var M = new Match(900 + m, new MatchOptions { easy = easy, stil = Match.KariyerRakip(easy ? 0 : 1), target = 5 }); int guard = 0;
+                while (!M.over && guard++ < 60 * 60 * 20) { Bot(M, 1f / 60f, easy ? .07 : .12); if (!easy) UstaKos(M); M.Update(1f / 60f); M.events.Clear(); }
+                if (M.sc[0] > M.sc[1]) { if (easy) kz++; else ku++; }
+            }
+        }
+        if (kz < n * .7) Fail("Tur 1 ilk basamak Kolay botla %" + (100 * kz / n) + " (≥ %70)");
+        if (ku < n * .2) Fail("Tur 1 2. basamak Usta botla %" + (100 * ku / n) + " (≥ %20)");
+        Console.WriteLine("oyun incelemesi: Hızlı maç rakibi g " + g0 + " (sıradaki basamak), Usta çarpanı " + k + "; Tur 1/1 Kolay %" + (100 * kz / n) + ", Tur 1/2 Usta %" + (100 * ku / n));
+    }
+    // Usta botu (Denge.UstaKos ile aynı): rakip vurduktan ~0,25 sn sonra topun alınacağı yere (±30 cm), vuruştan sonra ortaya.
+    static Shuttle kosTop; static float kosGecik;
+    static void UstaKos(Match M)
+    {
+        if (M.s == null || M.s.dead) return;
+        if (M.s != kosTop) { kosTop = M.s; kosGecik = (float)(.25 + rng.NextDouble() * .12); if (M.s.from == "me") M.RunTo(Court.MID, Court.NET + 3.3f, .8f); }
+        if (M.s.from == "op" && kosGecik > 0 && M.clock - M.opHitAt >= kosGecik && M.icpt != null && M.icpt.who == "me")
+        { kosGecik = -1; M.RunTo(M.icpt.x + (float)(rng.NextDouble() - .5) * .6f, M.icpt.y + (float)(rng.NextDouble() - .5) * .6f, 1.2f); }
     }
 
     // İlk açılış: 3 adım (kısa servis, clear, smaç), sonra 5 sayılık Kolay ilk maç.
@@ -264,7 +303,7 @@ static class BotMac
             if (a != b) Fail("veri kopyası farklı: " + ad + ".json (node tool/veri_kopyala.js)");
         }
         string[] stil = { "file", "smasci", "duvar", "file", "smasci", "duvar" }, yer = { "Mahalle salonu", "Okul turnuvası", "İl şampiyonası", "Bölge finali", "Ulusal lig", "Şampiyonlar kupası" }, saha = { "okul", "okul", "salon", "salon", "turnuva", "turnuva" };
-        float[] g = { .88f, .94f, 1, 1.07f, 1.13f, 1.2f };
+        float[] g = { .62f, .66f, .77f, .75f, .79f, .84f };   // 2026-10-27: g yeniden ölçüldü (kariyer.json notu); yer, sıra, tarz, saha birebir
         for (int i = 0; i < 6; i++) { var k = Match.KARIYER[i]; if (k.stil != stil[i] || k.yer != yer[i] || k.saha != saha[i] || Math.Abs(k.g - g[i]) > 1e-6 || k.uzunluk != 0) Fail("Tur 1 basamağı " + i + " değişti"); }
         var b0 = Match.STIL["smasci"]; if (b0.isim != "Blaze" || b0.ustP[0] != .62f || b0.hata != 1.2f || b0.ev != 3.2f || b0.yorK != 1.3f) Fail("Blaze değerleri veriden farklı okundu");
         var d0 = Match.STIL["duvar"]; if (d0.hiz != 1.08f || d0.hata != .75f || d0.yorK != .7f) Fail("Rocco değerleri veriden farklı okundu");
@@ -546,7 +585,7 @@ static class BotMac
         {
             var m = Gunluk.Bugun(new DateTime(2026, 10, 1).AddDays(i));
             if (once != null && (once.deg.id == m.deg.id || once.stil == m.stil)) Fail("arka arkaya aynı değiştirici/rakip: " + m.tarih);
-            if (m.g < .95f - 1e-4 || m.g > 1.15f + 1e-4 || m.uzunluk != m.deg.uzunluk) Fail("günün maçı g/uzunluk: " + m.tarih);
+            if (m.g < .72f - 1e-4 || m.g > .88f + 1e-4 || m.uzunluk != m.deg.uzunluk) Fail("günün maçı g/uzunluk: " + m.tarih);
             int c; degSay.TryGetValue(m.deg.id, out c); degSay[m.deg.id] = c + 1; stilSay.TryGetValue(m.stil, out c); stilSay[m.stil] = c + 1; once = m;
         }
         if (degSay.Count != 6 || stilSay.Count != 6) Fail("60 günde her değiştirici ve rakip görünmeli: " + degSay.Count + "/" + stilSay.Count);
