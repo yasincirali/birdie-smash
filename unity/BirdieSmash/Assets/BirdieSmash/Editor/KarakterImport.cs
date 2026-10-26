@@ -20,6 +20,17 @@ namespace BirdieSmash.EditorTools
 
         bool Karakter() { var p = assetPath.Replace('\\', '/'); return p.Contains("Resources/karakter/") && p.EndsWith(".fbx"); }
 
+        // Resources/karakter dokuları: *_n = normal haritası (aksi hâlde sRGB renk sayılır, normaller bozuk çıkar).
+        // *_mg = doğrusal, alfa smoothness'tır, saydamlık değil. En çok 1024 px (mobil bellek; 4 figür aynı dokuyu paylaşır).
+        void OnPreprocessTexture()
+        {
+            var p = assetPath.Replace('\\', '/'); if (!p.Contains("Resources/karakter/")) return;
+            var ti = (TextureImporter)assetImporter; string ad = Path.GetFileNameWithoutExtension(p);
+            ti.maxTextureSize = 1024; ti.mipmapEnabled = true;
+            if (ad.EndsWith("_n")) { ti.textureType = TextureImporterType.NormalMap; ti.sRGBTexture = false; }
+            else if (ad.EndsWith("_mg")) { ti.textureType = TextureImporterType.Default; ti.sRGBTexture = false; ti.alphaSource = TextureImporterAlphaSource.FromInput; ti.alphaIsTransparency = false; ti.maxTextureSize = 512; }
+        }
+
         void OnPreprocessModel()
         {
             if (!Karakter()) return;

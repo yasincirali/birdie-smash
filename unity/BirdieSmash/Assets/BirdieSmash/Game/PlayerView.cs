@@ -198,12 +198,30 @@ namespace BirdieSmash.Game
         {
             if (asil == null) return null; string n = asil.name.ToLowerInvariant(); string ek = n.Contains("body") ? "_govde" : n.Contains("head") ? "_bas" : null;
             if (ek == null) return null; var tx = Resources.Load<Texture2D>("karakter/" + modelAdi + ek); if (tx == null) return null;
-            Material m; if (!dokuM.TryGetValue(modelAdi + ek, out m)) dokuM[modelAdi + ek] = m = Kit.LitTex(Color.white, tx, .18f); return m;
+            Material m;
+            if (!dokuM.TryGetValue(modelAdi + ek, out m))
+            {
+                dokuM[modelAdi + ek] = m = Kit.LitTex(Color.white, tx, .18f);
+                // 2026-10-26: Gerçekçi model düz/çamurlu görünüyordu (yalnız renk dokusu): kıvrım/kas/yüz normalden,
+                // ten/kumaş/ayakkabı farkı parlaklık haritasından. Dosya yoksa (oyuncak, sade) eski malzeme birebir.
+                Kit.Bump(m, Resources.Load<Texture2D>("karakter/" + modelAdi + ek + "_n"));
+                Kit.Gloss(m, Resources.Load<Texture2D>("karakter/" + modelAdi + ek + "_mg"));
+            }
+            return m;
         }
         static readonly Dictionary<string, Material> dokuM = new Dictionary<string, Material>();
         void Paint(Gorunum g)
         {
-            var formaM = Kit.Lit(g.forma, .25f); var M = new Dictionary<string, Material> { { "forma", formaM } };
+            // Dokulu modelde (Gerçekçi) forma = gövde dokusu × takım rengi + normal: forma dokusu açık gri gövde, koyu gri
+            // yaka/raglan/kol ağzı; takım rengi gölgesi ve iki tonlu kesimiyle görünür. Doku yoksa eski düz renk birebir.
+            var govdeTx = modelAdi != null ? Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde") : null;
+            var formaM = govdeTx != null ? Kit.LitTex(g.forma, govdeTx, .25f) : Kit.Lit(g.forma, .25f);
+            if (govdeTx != null)
+            {
+                Kit.Bump(formaM, Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde_n"));
+                Kit.Gloss(formaM, Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde_mg"));
+            }
+            var M = new Dictionary<string, Material> { { "forma", formaM } };
             if (g.cerceve.HasValue) M["cerceve"] = Kit.Lit(g.cerceve.Value, .6f);
             if (g.bant.HasValue) M["bant"] = Kit.Lit(g.bant.Value, .2f); if (g.bilek.HasValue) M["bilek"] = Kit.Lit(g.bilek.Value, .2f);
             if (g.grip.HasValue) M["grip"] = Kit.Lit(g.grip.Value, .15f); if (g.tel.HasValue) M["tel"] = Kit.Lit(g.tel.Value, .5f); if (g.tel2.HasValue) M["tel2"] = Kit.Lit(g.tel2.Value, .5f);
@@ -401,7 +419,7 @@ namespace BirdieSmash.Game
             float dive = (o.yat ? o.dive : 0) * (o.x < Court.MID ? -1 : 1) * .26f * (isMe ? 1 : -1);
             yaw.localRotation = Quaternion.Euler(0, isMe ? 0 : 180, 0) * Quaternion.Euler(0, 0, -(dive + lean) * Mathf.Rad2Deg) * calib;
             shadow.position = Kit.W(o.x, o.y, .003f); shadow.localScale = Vector3.one * (.9f - j * .8f);
-            ShowRing(o.nefes, dt, M.reduce);
+            ShowRing(o.nefes, dt, M.reduce); ImzaIsik(o, M.reduce, dt);
             if (yay != null)
             {
                 yay.emitting = o.sw > .3f && !M.reduce; float a = Mathf.Clamp01(o.sw) * .5f;
@@ -429,6 +447,36 @@ namespace BirdieSmash.Game
             }
             Sample(cur, ph, prev, prevPh, prev == null ? 1 : blend, altKlip, altPh, altW);
             FileItin();
+        }
+
+        // İmza vuruşu hazırlığı (2026-10-26, Core/Imza; tasarım §3.3 kural 1): raket kafasında imzanın renginde ışık küresi +
+        // nokta ışık (poz Match.Prep'te tutulur, ses Sfx.Imza'da: anlam yalnız renkle verilmez). Hareketi azaltta ışık sabit
+        // kalır; parlama (ilk an büyüyüp küçülme) ve nabız kalkar. Mermi drive'da gövde 12 cm eğilir (yere eğilir).
+        Transform imzaKure; Light imzaIsik; Material imzaMat; float imzaA, imzaYas; string imzaRenkId;
+        void ImzaIsik(Athlete o, bool reduce, float dt)
+        {
+            bool on = !hakem && o.imzaT > 0 && o.imzaId != null;
+            if (!on && imzaKure == null) return;
+            if (imzaKure == null)
+            {
+                imzaMat = Kit.Additive(Color.white);
+                var g = Kit.Prim(PrimitiveType.Sphere, "imza_isik", kafa != null ? kafa : (model != null ? model : transform), kafa != null ? Vector3.zero : new Vector3(.35f, 1.5f, 0), Vector3.one * .32f, imzaMat);
+                var col = g.GetComponent<Collider>(); if (col != null) Destroy(col);
+                var r = g.GetComponent<Renderer>(); r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; r.receiveShadows = false;
+                imzaKure = g.transform; if (kafa != null) imzaKure.localScale = Vector3.one * (.32f / Mathf.Max(.01f, kafa.lossyScale.x));
+                imzaIsik = g.AddComponent<Light>(); imzaIsik.type = LightType.Point; imzaIsik.range = 2.2f; imzaIsik.shadows = LightShadows.None;
+            }
+            if (on && imzaRenkId != o.imzaId)
+            {
+                imzaRenkId = o.imzaId; var b = KariyerVeri.Imza(o.imzaId); var c = Kit.Hex(b != null ? b.renk : "#ffffff"); imzaMat.color = c; imzaIsik.color = c; imzaYas = 0;
+            }
+            imzaA = Mathf.MoveTowards(imzaA, on ? 1 : 0, dt / .08f); imzaYas += dt;
+            bool gor = imzaA > 0.001f; imzaKure.gameObject.SetActive(gor); if (!gor) { imzaRenkId = null; return; }
+            float puls = reduce ? 1 : 1 + .18f * Mathf.Sin(imzaYas * 18) + Mathf.Max(0, .6f * (1 - imzaYas / .15f));   // nabız + ilk parlama
+            var cc = imzaMat.color; cc.a = .9f * imzaA; imzaMat.color = cc;
+            float s0 = kafa != null ? .32f / Mathf.Max(.01f, kafa.lossyScale.x) : .32f; imzaKure.localScale = Vector3.one * s0 * puls * imzaA;
+            imzaIsik.intensity = 2.2f * imzaA * (reduce ? 1 : puls);
+            if (o.imzaId == "mermi" && on) transform.position += Vector3.down * .12f * imzaA;
         }
 
         // File düzlemi (2026-10-26, yasin: "objelerde iç içe geçme olmasın"): Core gövde kökünü fileden .25 m uzak tutar

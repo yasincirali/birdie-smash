@@ -20,7 +20,8 @@
    "poses": 8,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.0
   },
   {
    "name": "smash",
@@ -200,7 +201,8 @@
    "poses": 6,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.3095
   },
   {
    "name": "chasse_l",
@@ -210,7 +212,8 @@
    "poses": 6,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.3095
   },
   {
    "name": "fwd",
@@ -220,7 +223,8 @@
    "poses": 6,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.7663
   },
   {
    "name": "back_r",
@@ -230,7 +234,8 @@
    "poses": 6,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.1986
   },
   {
    "name": "back_l",
@@ -240,7 +245,8 @@
    "poses": 6,
    "hitK": null,
    "hold": null,
-   "drop": null
+   "drop": null,
+   "adim": 0.1189
   },
   {
    "name": "jump",
@@ -285,8 +291,8 @@
  ],
  "model": "rocketbox",
  "parts": [
-  "m026_hipoly_81_bones_001__forma",
-  "m026_hipoly_81_bones__ten",
+  "m301_hipoly_81_bones_001__forma",
+  "m301_hipoly_81_bones__ten",
   "raket_kafa__cerceve",
   "raket_koyu__koyu",
   "raket_sap__grip",
