@@ -42,6 +42,9 @@ namespace BirdieSmash.Game
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = Kit.Hex("#6f8590"); RenderSettings.ambientEquatorColor = Kit.Hex("#3b4c55"); RenderSettings.ambientGroundColor = Kit.Hex("#1a2420");
             QualitySettings.shadowDistance = 40;
+            // 4× MSAA (2026-10-26, yasin "saha nizami çizilmeli"): 4 cm'lik saha çizgileri uzak yarıda 1 pikselin altına iniyor,
+            // kenar yumuşatma yokken kırık/kesik görünüyordu. Karo tabanlı mobil GPU'larda 4× MSAA ucuz.
+            QualitySettings.antiAliasing = 4; cam.allowMSAA = true;
             shuttle = ShuttleView.Build(transform); shuttle.cam = cam; sfx = Sfx.Build(transform, cg.transform);
             vitrin = Vitrin.Build(transform); fx = Fx.Build(transform, cam); yukleyici = Yukleyici.Build(transform);
             hud = gameObject.AddComponent<Hud>(); hud.root = this; hud.Acilis();
@@ -322,10 +325,10 @@ namespace BirdieSmash.Game
         {
             var M = match; float yaw = 90, tilt = 0;
             if (M.hakemT > 0 && !Ayar.reduce) { float e = (M.hakemT0 - M.hakemT) * 1.4f / M.hakemT0; if (M.hakemSO) yaw = 90 + (M.hakemYon == "me" ? 30 : -30) * Mathf.Clamp01(e * 3); else if (e < 1.05f) tilt = 14 * Mathf.Sin(Mathf.Clamp01(e) * Mathf.PI); }
-            hk1.ShowSit(CourtView.HAKEM1, yaw, tilt);
+            hk1.ShowSit(CourtView.HAKEM1, yaw, tilt, CourtView.AYAKLIK_Y, CourtView.AYAKLIK_ILERI);
             string yeni = M.server, eski = M.sjYon ?? yeni; float k = eski != yeni && M.sjT > 0 ? Mathf.Clamp01(M.sjT / .5f) : 0;
             float a0 = eski == "me" ? -125 : -55, a1 = yeni == "me" ? -125 : -55;
-            hk2.ShowSit(CourtView.HAKEM2, Mathf.Lerp(a0, a1, k), 0);
+            hk2.ShowSit(CourtView.HAKEM2, Mathf.Lerp(a0, a1, k), 0, 0, .42f);
         }
 
         // Ayakkabı gıcırtısı ve toz (HTML runMe): hızlı koşarken yön sertçe değişince; koşu > 2,6 m/sn'de 70 ms'de bir toz.

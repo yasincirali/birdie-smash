@@ -58,11 +58,14 @@ namespace BirdieSmash.Game
                 int i = v.Count; v.Add(a - n); v.Add(a + n); v.Add(b + n); v.Add(b - n);
                 tr.AddRange(new[] { i, i + 2, i + 1, i, i + 3, i + 2 });
             };
-            float L = Court.L, CW = Court.CW, N = Court.NET;
-            seg(0, 0, CW, 0); seg(0, L, CW, L); seg(0, 0, 0, L); seg(CW, 0, CW, L);
-            seg(Court.SL, 0, Court.SL, L); seg(Court.SR, 0, Court.SR, L);
-            seg(0, N - Court.SSL, CW, N - Court.SSL); seg(0, N + Court.SSL, CW, N + Court.SSL);
-            seg(0, .76f, CW, .76f); seg(0, L - .76f, CW, L - .76f);
+            // BWF Kural 1: ölçüler çizgilerin dış kenarına, çizgi sınırladığı alana dahil. Bu yüzden çizgi ekseni kendi
+            // alanının içine yarım genişlik (2 cm) kayar: dış sınır içeri, tekler kenarı tekler alanına, kısa servis ve
+            // çiftler uzun servis çizgisi servis karesine. Orta çizgi iki servis karesinin ortak sınırı, ortadan geçer.
+            float L = Court.L, CW = Court.CW, N = Court.NET, e = w / 2;
+            seg(0, e, CW, e); seg(0, L - e, CW, L - e); seg(e, 0, e, L); seg(CW - e, 0, CW - e, L);
+            seg(Court.SL + e, 0, Court.SL + e, L); seg(Court.SR - e, 0, Court.SR - e, L);
+            seg(0, N - Court.SSL - e, CW, N - Court.SSL - e); seg(0, N + Court.SSL + e, CW, N + Court.SSL + e);
+            seg(0, .76f + e, CW, .76f + e); seg(0, L - .76f - e, CW, L - .76f - e);
             seg(Court.MID, 0, Court.MID, N - Court.SSL); seg(Court.MID, N + Court.SSL, Court.MID, L);
             var m = new Mesh { name = "cizgiler" }; m.SetVertices(v); m.SetTriangles(tr, 0); m.RecalculateNormals(); m.RecalculateBounds();
             Kit.MeshObj("cizgiler", k, m, Kit.Lit(new Color(.95f, .97f, .95f), .2f)).GetComponent<Renderer>().receiveShadows = true;
@@ -107,10 +110,12 @@ namespace BirdieSmash.Game
         }
 
         // Baş hakem: filenin bir ucunda (x −0,75), 1,5 m oturaklı yüksek sandalye (BWF tesis şartnamesi: oturma yüksekliği
-        // fileyle aynı, ~1,55 m), sırtlık ve 0,93 m ayaklık; servis hakemi karşı uçta (x CW+0,6) 0,45 m normal sandalyede,
+        // fileyle aynı, ~1,55 m), sırtlık ve ayaklık; servis hakemi karşı uçta (x CW+0,6) 0,45 m normal sandalyede,
         // önünde 1,15 m servis ölçeri. HAKEM1/2 = oturak üst yüzü (PlayerView.ShowSit kalçayı buraya oturtur).
         // 2026-10-26: eskiden yüksek sandalyenin oturağı yoktu, hakem ayaklığın üstünde ayakta duruyordu.
-        public const float BH_X = -.75f, SH_X = Court.CW + .6f, BH_Z = 1.5f, SH_Z = .45f;
+        // Ayaklık oturağın 0,5 m altında (2026-10-26): 0,93 m'deyken oturak−ayaklık 0,6 m'ydi, 1,75 m'lik insanın diz–taban
+        // boyu ~0,5 m; ayaklar boşlukta sallanıyordu. Ayaklık oturağın önünde 0,42 m (diz izdüşümü).
+        public const float BH_X = -.75f, SH_X = Court.CW + .6f, BH_Z = 1.5f, SH_Z = .45f, AYAKLIK_Y = BH_Z - .48f, AYAKLIK_ILERI = .42f;
         public static readonly Vector3 HAKEM1 = Kit.W(BH_X, Court.NET, BH_Z + .03f), HAKEM2 = Kit.W(SH_X, Court.NET - .1f, SH_Z + .025f);
         static void Sandalyeler(Transform k)
         {
@@ -120,7 +125,8 @@ namespace BirdieSmash.Game
                 Kit.Prim(PrimitiveType.Cylinder, "ayak", g, Kit.W(x0 + dx, N + dy, BH_Z / 2), new Vector3(.035f, BH_Z / 2, .035f), metal);
             Kit.Prim(PrimitiveType.Cube, "oturak", g, Kit.W(x0, N, BH_Z), new Vector3(.5f, .05f, .5f), koyu);
             Kit.Prim(PrimitiveType.Cube, "sirtlik", g, Kit.W(x0 - .24f, N, BH_Z + .3f), new Vector3(.04f, .55f, .5f), koyu);
-            Kit.Prim(PrimitiveType.Cube, "ayaklik", g, Kit.W(x0 + .42f, N, .93f), new Vector3(.3f, .04f, .5f), metal);
+            Kit.Prim(PrimitiveType.Cube, "ayaklik", g, Kit.W(x0 + AYAKLIK_ILERI, N, AYAKLIK_Y - .02f), new Vector3(.3f, .04f, .5f), metal);
+            foreach (float dy in new[] { -.22f, .22f }) Kit.Prim(PrimitiveType.Cube, "ayaklik_kol", g, Kit.W(x0 + (.2f + AYAKLIK_ILERI) / 2, N + dy, AYAKLIK_Y - .02f), new Vector3(AYAKLIK_ILERI - .2f + .04f, .025f, .025f), metal);
             for (int i = 1; i <= 3; i++) Kit.Prim(PrimitiveType.Cube, "basamak", g, Kit.W(x0 + .24f, N, BH_Z * i / 4), new Vector3(.06f, .03f, .46f), metal);
             float x1 = SH_X;
             foreach (float dx in new[] { -.17f, .17f }) foreach (float dy in new[] { -.17f, .17f })

@@ -276,24 +276,82 @@ namespace BirdieSmash.Game
         }
 
         // Hakem: oturur (BWF: baş hakem file hizasında yüksek sandalyede, servis hakemi karşıda normal sandalyede; yasin build
-        // 38 "hakemler yok": eskiden ayaklığın üstünde ayakta, sırtı korta dönüktü). Boşta pozu üstüne kalça 90° öne, diz 90°
-        // geri: uyluk kemikleri karakterin sağ ekseni etrafında −90°, baldırlar +90° (dünya ekseninde, üç iskelette aynı).
-        // Sonra kalça kemiği oturağın üstüne (oturak + 0,08 m), oturağın gerisine (0,1 m) taşınır. yaw derece.
-        public void ShowSit(Vector3 oturak, float yawDeg, float tiltDeg)
+        // 38 "hakemler yok": eskiden ayaklığın üstünde ayakta, sırtı korta dönüktü).
+        // 2026-10-26 (yasin: "hakemler fizik kurallarına uygun şekilde sandalyelerinde oturmalı"): eski sürüm boşta pozuna
+        // sabit ±88° ekliyordu; boşta pozu badminton hazır duruşu (dizler kırık, gövde öne eğik) olduğundan dizler havada,
+        // ayaklar ayaklığın üstünde boşlukta kalıyordu. Şimdi oturuş eklem hedeflerinden kurulur, her iskelette aynı:
+        //  1) gövde dikleştirilir (kalça→baş ekseni düşey, 6° geriye: sırtlığa yaslanır),
+        //  2) kalça eklemleri oturak yüzünün uyluk kalınlığı kadar üstüne, sırtlığın önüne (oturak merkezinin 0,1 m gerisi),
+        //  3) iki kemik IK ile ayak bileği destek yüzüne (ayaklık ya da zemin + bilek yüksekliği), diz öne-yukarı,
+        //  4) eller uylukların üstüne (dizden 1/3 geride), dirsek dışa-geriye.
+        // ayakY: ayakların bastığı yüzeyin dünya yüksekliği; ayakIleri: ayakların oturak merkezinden ilerideki mesafesi.
+        Transform[] kBacak, kKol;   // [sol uyluk, sol baldır, sol ayak, sağ uyluk, sağ baldır, sağ ayak]; kol: üst, ön, el
+        static Transform Cocuk(Transform t, System.Func<string, bool> ok)
+        {
+            foreach (Transform c in t) { var n = c.name.ToLowerInvariant(); if (!n.Contains("__") && ok(n)) return c; }
+            foreach (Transform c in t) { var r = Cocuk(c, ok); if (r != null) return r; }
+            return null;
+        }
+        void ZincirKur()
+        {
+            kBacak = new Transform[6]; kKol = new Transform[6];
+            foreach (var t in kThigh) { var n = t.name.ToLowerInvariant(); int i = Sol(n) ? 0 : Sag(n) ? 3 : -1; if (i < 0 || kBacak[i] != null) continue;
+                kBacak[i] = t; kBacak[i + 1] = Cocuk(t, m => m.Contains("calf") || m.Contains("lowerleg"));
+                if (kBacak[i + 1] != null) kBacak[i + 2] = Cocuk(kBacak[i + 1], m => m.Contains("foot") && !m.Contains("ik") && !m.Contains("roll")); }
+            foreach (var t in model.GetComponentsInChildren<Transform>(true))
+            {
+                var n = t.name.ToLowerInvariant(); if (n.Contains("__") || !n.Contains("upperarm")) continue; int i = Sol(n) ? 0 : Sag(n) ? 3 : -1; if (i < 0 || kKol[i] != null) continue;
+                kKol[i] = t; kKol[i + 1] = Cocuk(t, m => m.Contains("forearm") || m.Contains("lowerarm"));
+                if (kKol[i + 1] != null) kKol[i + 2] = Cocuk(kKol[i + 1], m => (m.Contains("hand") || m.Contains("wrist")) && !m.Contains("ik") && !m.Contains("slot"));
+            }
+        }
+        // İki kemikli IK: a (omuz/kalça) → b (dirsek/diz) → c (el/bilek) zinciri c hedefe, b kutup yönüne bükülür.
+        static void IK(Transform a, Transform b, Transform c, Vector3 hedef, Vector3 kutup)
+        {
+            if (a == null || b == null || c == null) return;
+            float la = (b.position - a.position).magnitude, lb = (c.position - b.position).magnitude; Vector3 d = hedef - a.position;
+            float L = Mathf.Clamp(d.magnitude, Mathf.Abs(la - lb) + 1e-3f, la + lb - 1e-3f); Vector3 u = d.normalized;
+            float ca = Mathf.Clamp((la * la + L * L - lb * lb) / (2 * la * L), -1, 1);
+            Vector3 p = Vector3.ProjectOnPlane(kutup, u).normalized; if (p.sqrMagnitude < 1e-6f) p = Vector3.ProjectOnPlane(Vector3.up, u).normalized;
+            Vector3 diz = a.position + u * (la * ca) + p * (la * Mathf.Sqrt(1 - ca * ca));
+            a.rotation = Quaternion.FromToRotation(b.position - a.position, diz - a.position) * a.rotation;
+            b.rotation = Quaternion.FromToRotation(c.position - b.position, a.position + u * L - b.position) * b.rotation;
+        }
+        public void ShowSit(Vector3 oturak, float yawDeg, float tiltDeg, float ayakY = 0, float ayakIleri = .4f)
         {
             yaw.localRotation = Quaternion.Euler(0, yawDeg, 0) * calib;
+            transform.position = Vector3.zero;
             if (anim != null) Sample("idle", .25f, null, 0, 1); cur = "idle";
-            if (kHip != null && kThigh.Count > 0)
+            if (kHip == null || kThigh.Count == 0) { transform.position = oturak; shadow.position = new Vector3(oturak.x, .003f, oturak.z); return; }
+            if (kBacak == null) ZincirKur();
+            Vector3 ileri = yaw.forward, sag = yaw.right;
+            // Bilek yüksekliği ve boy, ayakta boşta pozundan (taban y=0'da).
+            float bilek = kBacak[2] != null ? Mathf.Max(.04f, kBacak[2].position.y) : .08f, boy = kHead != null ? kHead.position.y : 1.6f, olc = boy / 1.6f;
+            // 1) gövde dik, hafif geri
+            if (kHead != null)
             {
-                Vector3 sagE = yaw.right;
-                foreach (var t in kThigh) t.rotation = Quaternion.AngleAxis(-88, sagE) * t.rotation;
-                foreach (var t in kCalf) t.rotation = Quaternion.AngleAxis(88, sagE) * t.rotation;
-                if (kHead != null && tiltDeg != 0) kHead.rotation = Quaternion.AngleAxis(tiltDeg, sagE) * kHead.rotation;
-                transform.position = Vector3.zero;
-                Vector3 kal = kHip.position, hedef = oturak + Vector3.up * .08f - yaw.forward * .1f;
-                transform.position = hedef - kal;
+                Vector3 dik = Quaternion.AngleAxis(-6, sag) * Vector3.up;
+                kHip.rotation = Quaternion.FromToRotation(kHead.position - kHip.position, dik) * kHip.rotation;
             }
-            else transform.position = oturak;
+            if (kHead != null && tiltDeg != 0) kHead.rotation = Quaternion.AngleAxis(tiltDeg, sag) * kHead.rotation;
+            // 2) kalça eklemlerinin ortası oturağa (uyluk kalınlığı ~0,08 m × ölçek)
+            Vector3 kalca = kBacak[0] != null && kBacak[3] != null ? (kBacak[0].position + kBacak[3].position) / 2 : kHip.position;
+            Vector3 hedef = oturak + Vector3.up * (.085f * olc) - ileri * .1f;
+            transform.position = hedef - kalca;
+            // 3) bacaklar: bilek destek yüzüne, dizler öne-yukarı; ayaklar kalça genişliğinde, hafif açık
+            for (int s = 0; s < 2; s++)
+            {
+                var th = kBacak[s * 3]; if (th == null) continue; float yon = s == 0 ? -1 : 1;
+                Vector3 bas = oturak + ileri * ayakIleri + sag * (yon * .13f * olc); bas.y = ayakY + bilek;
+                IK(th, kBacak[s * 3 + 1], kBacak[s * 3 + 2], bas, ileri + Vector3.up * .6f);
+            }
+            // 4) eller uylukların üstünde
+            for (int s = 0; s < 2; s++)
+            {
+                var ua = kKol[s * 3]; var th = kBacak[s * 3]; var kn = kBacak[s * 3 + 1]; if (ua == null || th == null || kn == null) continue; float yon = s == 0 ? -1 : 1;
+                Vector3 el = Vector3.Lerp(th.position, kn.position, .62f) + Vector3.up * (.09f * olc) + sag * (yon * .02f);
+                IK(ua, kKol[s * 3 + 1], kKol[s * 3 + 2], el, sag * yon * .5f - ileri);
+            }
             shadow.position = new Vector3(transform.position.x, .003f, transform.position.z);
         }
         public void ShowStatic(Vector3 pos, float yawDeg, float tiltDeg)
