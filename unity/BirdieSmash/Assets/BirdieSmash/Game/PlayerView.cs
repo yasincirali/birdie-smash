@@ -621,6 +621,7 @@ namespace BirdieSmash.Game
         public string TaniKlip { get { return cur; } }
         public float TaniAlt { get { return altW; } }
         public float TaniFaz { get { return lastPh; } }
+        public Vector3 TaniKafa { get { return kafa != null ? kafa.position : Vector3.zero; } }   // raket kafası (tel yüzeyinin merkezi)
         Transform raketSap;
         public bool TaniAyak(out Vector3 sol, out Vector3 sag, out Vector3 el, out float sapEl)
         {

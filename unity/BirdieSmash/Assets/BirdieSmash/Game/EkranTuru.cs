@@ -100,14 +100,15 @@ namespace BirdieSmash.Game
             yield return YakinNokta(mdl + "_05_hakemler", CourtView.HAKEM1 + new Vector3(0, .5f, 0), new Vector3(3.2f, .6f, -2.6f));
             yield return YakinNokta(mdl + "_06_servis_hakemi", CourtView.HAKEM2 + new Vector3(0, .5f, 0), new Vector3(-2.8f, .7f, -2.2f));
             botAcik = true; iz = new StringBuilder();
-            iz.AppendLine("kare,t,dt,kim,klip,faz,alt,vAn,x,y,solx,soly,solz,sagx,sagy,sagz,elx,ely,elz,sapEl,pencere,donuk");
+            iz.AppendLine("kare,t,dt,kim,klip,faz,alt,vAn,x,y,solx,soly,solz,sagx,sagy,sagz,elx,ely,elz,sapEl,pencere,donuk,sw,kafax,kafay,kafaz,topx,topy,topz");
             for (int i = 0; i < 10; i++) { yield return Bekle(14); yield return Cek(mdl + "_1" + i + "_ralli"); }
             yield return Serit(mdl, true); yield return Serit(mdl, false);
             File.WriteAllText(Path.Combine(dir, mdl + "_anim_iz.csv"), iz.ToString()); iz = null;
             botAcik = false;
         }
         // Animasyon izi (2026-10-26 gece, build 40 incelemesi): ralli kareleri ve şerit boyunca HER karede iki oyuncunun klibi,
-        // fazı, alt katman ağırlığı, ayak bileği/el kemiği dünya konumu ve raket sapının ele uzaklığı (<model>_anim_iz.csv).
+        // fazı, alt katman ağırlığı, ayak bileği/el kemiği dünya konumu, raket sapının ele uzaklığı, raket kafası ve top
+        // (temas karesinde kafa–top aralığı: salınım topa değiyor mu) (<model>_anim_iz.csv).
         // Ayak kayması ve raket kayması gerçek Unity pozundan buradan ölçülür (Core taklidi değil).
         StringBuilder iz;
         static string F(float v) { return v.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture); }
@@ -121,7 +122,8 @@ namespace BirdieSmash.Game
                 if (!pv.TaniAyak(out l, out r, out e, out se)) continue;
                 float vAn = 0; var f = typeof(Athlete).GetField("vAn"); if (f != null) vAn = (float)f.GetValue(a);
                 iz.AppendLine(Time.frameCount + "," + F(Time.realtimeSinceStartup) + "," + F(Mathf.Min(.05f, Time.unscaledDeltaTime)) + "," + (pv.isMe ? "me" : "op") + "," + pv.TaniKlip + "," + F(pv.TaniFaz) + "," + F(pv.TaniAlt) + "," + F(vAn) + "," + F(a.x) + "," + F(a.y) + ","
-                    + F(l.x) + "," + F(l.y) + "," + F(l.z) + "," + F(r.x) + "," + F(r.y) + "," + F(r.z) + "," + F(e.x) + "," + F(e.y) + "," + F(e.z) + "," + F(se) + "," + (M.HitWindow() ? 1 : 0) + "," + (M.freeze > 0 ? 1 : 0));
+                    + F(l.x) + "," + F(l.y) + "," + F(l.z) + "," + F(r.x) + "," + F(r.y) + "," + F(r.z) + "," + F(e.x) + "," + F(e.y) + "," + F(e.z) + "," + F(se) + "," + (M.HitWindow() ? 1 : 0) + "," + (M.freeze > 0 ? 1 : 0)
+                    + "," + F(a.sw) + "," + F(pv.TaniKafa.x) + "," + F(pv.TaniKafa.y) + "," + F(pv.TaniKafa.z) + "," + (M.s != null ? F(Kit.W(M.s.x, M.s.y, M.s.z).x) + "," + F(Kit.W(M.s.x, M.s.y, M.s.z).y) + "," + F(Kit.W(M.s.x, M.s.y, M.s.z).z) : ",,"));
             }
         }
         // Şerit: bir vuruşun hazırlığından takibine ardışık kareler, figürü yandan izleyen ikinci kamerayla (oyun durmaz).
