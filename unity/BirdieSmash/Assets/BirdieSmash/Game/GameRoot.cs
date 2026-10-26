@@ -22,7 +22,7 @@ namespace BirdieSmash.Game
     {
         public Match match; public Camera cam; public Ekran ekran = Ekran.Menu; public bool paused;
         public string bittiBaslik, bittiNot, bittiBilgi, bittiDugme, bittiIpucu, bittiYildiz; public List<Ozet.Kart> bittiKart = new List<Ozet.Kart>(); public bool bittiIlk; public float rakipKartT;
-        PlayerView me, op, hk1, hk2; public ShuttleView shuttle; NetView net; public Sfx sfx; Hud hud; public Vitrin vitrin; public Fx fx; public Yukleyici yukleyici;
+        PlayerView me, op, hk1, hk2; public ShuttleView shuttle; NetView net; public Sfx sfx; Hud hud; public Vitrin vitrin; public Afis afis; public Fx fx; public Yukleyici yukleyici;
         public bool bekleyen;   // duraklatılmış maç ana menüde bekliyor (HTML ekran(): "Maça devam et")
         // Menü kabuğu (2026-10-26, UI Toolkit; Game/UI/UiKok). Hud maç içi + perde için kalır; menü perdeyi buradan okur.
         public UiKok ui; public Hud HudKatman { get { return hud; } }
@@ -33,6 +33,23 @@ namespace BirdieSmash.Game
         public Mod mod = Mod.Normal; public string drilId; public GunlukMac gunluk;
         // Maç sonu ekranının mod farkları: skor satırı (görevde "7/12 hedefte"), önerilen antrenman görevi (kayıpta, Dril.Oner).
         public string bittiSkor, bittiDril;
+        // 2026-10-26 maç sonu yön A (Hud.Over): ekranın parçaları ayrı alanlarda (eskiden tek başlık + yıldız dizgesi). Başlık
+        // (GALİBİYET), üst satır (tur · basamak · yer), yıldız maskesi (kalıcı, -1 = yıldızsız mod) ve bu maçta yeni gelenler,
+        // her yıldızın koşulu, açılan şey (ilk galibiyetin notu), büyük düğmenin alt satırı (sıradaki basamak ve rakip).
+        // Eski alanlar (bittiBaslik, bittiYildiz) yazılmaya devam eder: başka okuyan yoksa da ekran turu raporu ve geri dönüş için.
+        public bool bittiKazandi; public int bittiMaske = -1, bittiYeniMaske, bittiYildizN = 3, bittiG = -1;
+        public string bittiBas, bittiUst, bittiAltNot, bittiAcilan, bittiDugmeAlt; public string[] bittiKosul;
+        void BittiSifirla() { bittiKazandi = false; bittiMaske = -1; bittiYeniMaske = 0; bittiYildizN = 3; bittiG = -1; bittiBas = bittiUst = bittiAltNot = bittiAcilan = bittiDugmeAlt = null; bittiKosul = null; }
+        // Karşılaşılan basamak (g) için üst satır ve sonraki basamağın düğme alt satırı.
+        void BittiKariyer(int g, bool won, Match M)
+        {
+            bittiG = g; var kb = KariyerVeri.Al(g);
+            bittiUst = L.T(UiKok.TurAd(KariyerVeri.TurOf(g))) + " · " + (KariyerVeri.BasOf(g) + 1) + "/" + KariyerVeri.BASAMAK + " · " + L.T(kb.yer);
+            var gv = M.BasamakGorevi;
+            bittiKosul = new[] { L.T("Kazan"), gv != null ? L.Cumle(gv.ad) : L.T("Basamak görevi"), L.T("Rakip ≤ {0}", Ilerleme.FarkSiniri(M.target)) };
+            var p = Ayar.ilerleme; int n = won && !p.HepsiBitti ? p.Siradaki() : g;
+            if (KariyerVeri.Var(n)) { var nk = KariyerVeri.Al(n); bittiDugmeAlt = L.T(nk.yer) + " · " + Match.STIL[nk.stil].isim; }
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Boot() { if (FindFirstObjectByType<GameRoot>() == null) new GameObject("BirdieSmash").AddComponent<GameRoot>(); }
@@ -54,7 +71,7 @@ namespace BirdieSmash.Game
             // iniyor, MSAA yokken kırık/kesik görünüyordu. MSAA, gölge ve çözünürlük cihaza göre Kalite'de.
             Kalite.Kur(gameObject, cam);
             shuttle = ShuttleView.Build(transform); shuttle.cam = cam; sfx = Sfx.Build(transform, cg.transform);
-            vitrin = Vitrin.Build(transform); fx = Fx.Build(transform, cam); yukleyici = Yukleyici.Build(transform);
+            vitrin = Vitrin.Build(transform); afis = Afis.Build(transform); fx = Fx.Build(transform, cam); yukleyici = Yukleyici.Build(transform);
             hud = gameObject.AddComponent<Hud>(); hud.root = this; hud.Acilis();
             sfx.sakin = () => hud.PerdeKapali || ekran != Ekran.Oyun || paused || match == null || match.between || match.s == null;
             Basarim.Esitle(Ayar.kariyer, Ayar.bestRally); Basarim.Giris(Ayar.kariyer);
@@ -126,7 +143,7 @@ namespace BirdieSmash.Game
         {
             match = new Match(tohum, o);
             Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; erkenN = 0;
-            fx.Temizle(); sfx.CrowdStart(); pencere = false; sfx.SuAlti(false); odul = null; hud.MacBasi(); vitrin.Kapat();
+            fx.Temizle(); sfx.CrowdStart(); pencere = false; sfx.SuAlti(false); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
         }
@@ -151,6 +168,9 @@ namespace BirdieSmash.Game
             if (p.AntrenmanYildiz >= Dril.ToplamYildiz) Basarim.Ver(Basarim.ANTRENOR);
             yukseltHazir = false; Ayar.Kaydet();
             bittiBaslik = L.T("Görev bitti") + " · " + L.T(d.ad);
+            BittiSifirla(); bittiKazandi = y > 0; bittiBas = L.T("Görev bitti"); bittiUst = L.T("Antrenman") + " · " + L.T(d.ad);
+            bittiMaske = (1 << y) - 1; bittiYeniMaske = yeni > 0 ? ((1 << y) - 1) & ~((1 << eski) - 1) : 0;
+            bittiKosul = new string[Dril.YILDIZ]; for (int i = 0; i < Dril.YILDIZ; i++) bittiKosul[i] = L.T("{0}/{1} hedefte", d.esik[i], d.top);
             bittiSkor = L.T("{0}/{1} hedefte", o.isabet, d.top);
             bittiYildiz = new string('★', y) + new string('☆', 3 - y) + " · " + L.T("{0}/3 yıldız", y) + (yeni > 0 ? " · " + L.T("{0} yeni", yeni) : enIyi > y ? " · " + L.T("en iyin {0}/3", enIyi) : "");
             // Sonraki yıldızın eşiği sayıyla (ne yapacağını bilsin); üç yıldızda görev tamam, tekrar ödül vermez (açıkça yazılır).
@@ -201,6 +221,7 @@ namespace BirdieSmash.Game
             if (won) Ayar.wins++;
             if (M.ogr == null && Ayar.ilerleme != null) Ayar.ilerleme.MacSay(M.smashes);   // Profil istatistiği (2026-10-26; cihazda)
             string kNot = ""; bool kariyerIlk = false; int yeniYildiz = 0; bittiYildiz = null; int ekTuy = 0, ekXp = 0; string ekAd = null; bittiSkor = null;
+            BittiSifirla(); bittiKazandi = won;
             if (KariyerVeri.Var(M.stil.kariyer))
             {   // yıldızlar ve açılış Core/Ilerleme'de; Tur 1 sayısı (tuytop_v2.kariyer, başarımlar) ondan türer
                 int g = M.stil.kariyer; var bg = M.BasamakGorevi;
@@ -215,6 +236,7 @@ namespace BirdieSmash.Game
                 Ayar.kariyerSecim = won ? -1 : g;   // kazanınca "Sıradaki", kaybedince aynı basamak ("Tekrar dene")
                 int n = Ilerleme.Say(r.maske);
                 bittiYildiz = new string('★', n) + new string('☆', 3 - n) + " · " + L.T("{0}/3 yıldız", n) + (r.yeniYildiz > 0 ? " · " + L.T("{0} yeni", r.yeniYildiz) : "");
+                bittiMaske = r.maske; bittiYeniMaske = r.yeniMaske; BittiKariyer(g, won, M);
             }
             // 2026-10-26 Usta yolu: sıradaki basamağı kazanmak ilerletir (yeniden oynanan eski basamak yok; sayaç tek yönlü).
             // İlk galibiyet ödülü kariyerle aynı (+60 Tüy, +40 XP): Usta'da her galibiyet yeni basamaktır (tempo: "yeni şey").
@@ -228,6 +250,9 @@ namespace BirdieSmash.Game
                 {   // iki yıldız: kazan + basamak görevi (biçim ve sayı yazıyla)
                     int ys = (won ? 1 : 0) + (p.UstaGorevBitti(n) ? 1 : 0);
                     bittiYildiz = new string('★', ys) + new string('☆', 2 - ys) + " · " + L.T("{0}/2 yıldız", ys) + (yeniYildiz > 0 ? " · " + L.T("{0} yeni", yeniYildiz) : "");
+                    var bg2 = M.BasamakGorevi; bittiYildizN = 2; bittiMaske = (won ? 1 : 0) | (p.UstaGorevBitti(n) ? 2 : 0); bittiYeniMaske = (won && siradaki ? 1 : 0) | (!gorevOnce && p.UstaGorevBitti(n) ? 2 : 0);
+                    bittiKosul = new[] { L.T("Kazan"), bg2 != null ? L.Cumle(bg2.ad) : L.T("Basamak görevi") };
+                    bittiUst = L.T("Usta yolu") + " · " + L.T("{0}. basamak", n + 1) + " · " + L.T(UstaYolu.Basamak(n).yer);
                 }
             }
             // 2026-10-26 Günün maçı: günde bir kez, kazanınca +40 Tüy, +30 XP. Kayıp normal maç ödülünü alır, bugünün ödülü açık kalır.
@@ -242,6 +267,12 @@ namespace BirdieSmash.Game
             yukseltHazir = false; foreach (var y in Gear.YUVA) { int sv = Ayar.gear.eko.sv[y.k]; if (sv < 10 && Ayar.gear.eko.tuy >= Gear.YUK_FIYAT[sv - 1] && odul.sonra >= Gear.YUK_SV[sv - 1] || Ayar.gear.AlinabilirVar(y.m)) yukseltHazir = true; }
             Ayar.Kaydet();
             bittiBaslik = L.T(won ? "Kazandın" : "Bu sefer rakip aldı") + (kNot != "" ? " · " + L.Cumle(kNot) : "");
+            // "Galibiyet" anahtarı tr_en.json'da istatistik etiketi ("Wins"); başlıkta "Victory" olmalı (r16), sözlük HTML'in
+            // birebir kopyası olduğu için orada değiştirilmez.
+            bittiBas = won ? (L.En ? "Victory" : "Galibiyet") : L.T("Bu sefer rakip aldı");
+            if (kNot != "") { if (kariyerIlk) bittiAcilan = L.Cumle(kNot); else bittiAltNot = L.Cumle(kNot); }
+            if (mod == Mod.Gunluk && gunluk != null) bittiUst = L.T("Günün maçı") + " · " + L.T(gunluk.deg.ad);
+            else if (bittiUst == null && M.ogr == null) bittiUst = L.T("Hızlı maç") + " · " + L.T("Rakip") + " " + M.RakipAd(false);
             var bitenler = new List<string>(); foreach (var g in M.gorevler) if (g.bitti) bitenler.Add(L.Cumle(g.ad));
             bittiBilgi = L.T("Rakip {0} · Görev {1}/3 ({2}) · En uzun ralli {3} · {4} smaç · {5} file vuruşu · {6} mükemmel · {7} aldatma · {8} split step · {9} tepeden · {10} uzanma · {11} kez dışarıyı bıraktın",
                 M.RakipAd(false), M.gorevBitti, bitenler.Count > 0 ? string.Join(", ", bitenler.ToArray()) : L.T("yok"), M.maxRally, M.smashes, M.kills, M.perfects, M.deceives, M.splits, M.tepeden, M.saves, M.outsLeft);
@@ -256,6 +287,9 @@ namespace BirdieSmash.Game
             if (Ozet.PuanIste(won, kariyerIlk, Ayar.wins, Ayar.puan)) { CancelInvoke("PuanIste"); Invoke("PuanIste", 1.5f); }
             if (won) hud.Konfeti();
         }
+        // Yalnız ekran turu (EkranTuru, -bsekran) için: sonuç ekranını maçı sonuna kadar oynatmadan görmek (2026-10-26, yön A
+        // sonuç ekranı). Mağaza build'inde çağıran yok; EndMatch'in kendisi değişmez, tur gerçek akışın sonucunu çeker.
+        public void EkranBitir(bool won) { EndMatch(won); }
         // "Bir maç daha" / "Yeni maç başlat" da smaç perdesiyle (HTML start()).
         public void TekrarOyna()
         {

@@ -1,5 +1,5 @@
 === UNITY ===
-Büyük güncelleme: yeni menü, kariyer haritası, karakter odası, gerçekçi saha ve fizik, aldatıcı vuruşlar.
+Büyük güncelleme: yeni görünüm "Yayın Gecesi", yeni menü, kariyer haritası, karakter odası, gerçekçi saha ve fizik, aldatıcı vuruşlar.
 
 Bu sürümde yeni:
 - Yeni menü: alt sekmeler Oyna, Kariyer, Soyunma odası, Profil.
@@ -14,7 +14,8 @@ Bu sürümde yeni:
 - Maç görüntüsü: kort ekranı daha iyi dolduruyor. Üstteki boş siyah alan kalktı, karşı yarı ve rakip daha büyük (üç kamerada da).
 - Vuruş anındaki ağır çekim daha hafif ve yumuşak: oyun birden yavaşlayıp birden hızlanmıyor, yavaşça girip çıkıyor.
 - "Hareket azaltıldı" seçiliyken oyunun hızı artık değişmiyor. Bu ayar yalnız sarsıntıyı, yakınlaşmayı ve parçacıkları azaltır.
-- Oyna sekmesi: "Oyna" düğmesinin altındaki "Sıradaki: …" yazısı kalktı (yer zaten kartta yazıyor). "Sıradaki maç" kartına dokununca o maçın kartı açılır.
+- Yeni görünüm "Yayın Gecesi": koyu lacivert zemin, limon yeşili düğmeler, yeni yazı tipi. Oyna sekmesinde sen ve rakibin karşı karşıya duran afişi, maç sonunda büyük GALİBİYET ekranı, düşen yıldızlar ve Tüy sayacı.
+- Oyna sekmesi: "Oyna" düğmesinin altındaki "Sıradaki: …" yazısı kalktı; yerine maçın sayısı, sahası ve zorluğu yazıyor. "Sıradaki maç" plakasına dokununca o maçın kartı açılır. Üstteki profil kısayolu Profil sekmesini açar.
 
 Nasıl denenir:
 1. Uygulamayı aç: ilerlemen yerinde olmalı, alt sekmeler görünmeli.
@@ -30,8 +31,9 @@ Nasıl denenir:
 11. Ayarlar > Kamera'da üç açıyı da dene: skor kutusunun altında boş siyah bant olmamalı, arkadaki seyirci skorun hemen altında başlamalı, rakip öncekinden büyük görünmeli. Senin arkandaki çizgi "Smaç gücü" çubuğunun üstünde kalmalı.
 12. Birkaç ralli oyna: vuruş anında oyun yumuşakça yavaşlamalı, vuruştan sonra yumuşakça hızlanmalı. Topa yine yetişebiliyor musun, akıcı mı? Kolay ve Usta'da ayrı ayrı bak. Zor gelirse yaz.
 13. Ayarlar'da hareket düğmesini "Hareket azaltıldı" yap, bir maç oyna: oyun hızı ayar kapalıyken olduğu gibi olmalı.
-14. Oyna sekmesinde "Sıradaki maç" kartına dokun: o maçın kartı (yıldız koşulları, Oyna düğmesi) açılmalı. Büyük "Oyna" düğmesinin altında yazı olmamalı.
-15. Takılma, ısınma ya da garip görüntü olursa telefonu ve ekranı yaz.
+14. Oyna sekmesinde "Sıradaki maç" plakasına dokun: o maçın kartı (yıldız koşulları, Oyna düğmesi) açılmalı. Büyük "Oyna" düğmesinin altında "Sıradaki" yazmamalı, sayı · saha · zorluk yazmalı.
+15. Bir maçı kazan, bir maçı kaybet: maç sonunda GALİBİYET ya da yenilgi ekranı, yıldızlar tek tek düşmeli, Tüy sayacı saymalı. SIRADAKİ düğmesi sonraki maça götürmeli.
+16. Takılma, ısınma ya da garip görüntü olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:

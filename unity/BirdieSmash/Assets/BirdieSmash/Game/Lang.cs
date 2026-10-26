@@ -14,7 +14,9 @@ namespace BirdieSmash.Game
     {
         static Dictionary<string, string> d; static List<KeyValuePair<Regex, string>> kalip;
         static readonly Dictionary<string, string> UNITY_EK = new Dictionary<string, string> {
-            {"Hedefte! ★","On target! ★"},{"İz geri geldi","Trail is back"},{"Lisanslar","Licences"},{"Yazı boyutu","Text size"},{"Sistem","System"},{"Normal","Normal"},{"Büyük","Large"},
+            {"Hedefte! ★","On target! ★"},
+            // 2026-10-26 yön A sonuç ekranı ve Oyna afişi: yalnız Unity tasarımında olan kısa etiketler.
+            {"Sen","You"},{"Rakip ≤ {0}","Opponent ≤ {0}"},{"yıldız","stars"},{"Rastgele rakip","Random opponent"},{"Seviye atladın","Level up"},{"İz geri geldi","Trail is back"},{"Lisanslar","Licences"},{"Yazı boyutu","Text size"},{"Sistem","System"},{"Normal","Normal"},{"Büyük","Large"},
             {"Game Center · Başarımlar","Game Center · Achievements"},{"Hareket azaltıldı · sistem","Reduced motion · system"},
             {"Dil","Language"},{"Lisanslar ve üçüncü taraf içerik","Licences and third-party content"},{"Duraklatıldı","Paused"},{"Yeni maç başlat","Start a new match"},
             {"Ana menü","Main menu"},{"Tam antrenman","Full training"},{"Antrenmanı geç","Skip training"},{"Anladım, devam","Got it, continue"},

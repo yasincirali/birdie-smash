@@ -71,7 +71,7 @@ namespace BirdieSmash.Game
 
         static int TurSayisiVeri() { int n = 0; foreach (var t in KariyerVeri.Turlar) if (t.Var) n++; return n; }
         static readonly string[] TUR_YEDEK = { "Yerel yol", "Asya Turu", "Avrupa Turu", "Dünya Finalleri" };
-        static string TurAd(int t) { return t < KariyerVeri.Turlar.Length ? KariyerVeri.Turlar[t].ad : TUR_YEDEK[t]; }
+        public static string TurAd(int t) { return t < KariyerVeri.Turlar.Length ? KariyerVeri.Turlar[t].ad : TUR_YEDEK[t]; }
         static int EkipmanPuani() { int n = 0; foreach (var kv in Ayar.gear.eko.sv) n += kv.Value; return n; }
 
         string KilitNedeni(int t)
@@ -81,13 +81,13 @@ namespace BirdieSmash.Game
             return L.T("{0} finalini kazan", L.T(TurAd(t - 1)));
         }
 
-        // Tur seçici çipi: seçili = camgöbeği zemin (yazı ve ✓ ile), kilitli = kilit simgesi, bitmiş = kupa simgesi.
+        // Tur seçici çipi: seçili = açık zemin (2026-10-26 Yayın Gecesi; eskiden camgöbeği) (yazı ve ✓ ile), kilitli = kilit simgesi, bitmiş = kupa simgesi.
         VisualElement TurCip(int t)
         {
             var p = Ayar.ilerleme; bool secili = t == kariyerTur, acik = p.TurAcik(t), bitti = acik && p.TurBitti(t);
             var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("cip"); d.AddToClassList("tur-cip"); if (secili) d.AddToClassList("cip--secili"); if (!acik) d.AddToClassList("tur-cip--kilit");
             var ic = new VisualElement(); ic.AddToClassList("cip-ic"); ic.pickingMode = PickingMode.Ignore; d.Add(ic);
-            var renk = secili ? Kit.Hex("#07161c") : Color.white;
+            var renk = secili ? MUREKKEP : Color.white;
             if (!acik) ic.Add(Ikon(Ikonlar.Kilit, 14, renk)); else if (bitti) ic.Add(Ikon(Ikonlar.Kupa, 14, renk)); else if (secili) ic.Add(Ikon(Ikonlar.Tik, 14, renk));
             ic.Add(Yazi(L.T("Tur {0}", t + 1), 14, "dugme-yazi"));
             int tt = t; d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); KariyerTurSec(tt); }));
@@ -122,6 +122,10 @@ namespace BirdieSmash.Game
             var ad = Satir("rakip-satir"); ad.pickingMode = PickingMode.Ignore; orta.Add(ad);
             if (final) { ad.Add(Ikon(Ikonlar.Kupa, 16, ALTIN)); }
             var ay = Yazi((b + 1) + ". " + L.T(kb.yer), 16, "kalin"); if (final) ay.style.marginLeft = 4; ad.Add(ay);
+            // r16 (2026-10-26, Barlow): yatay satırda ad tek satır genişliğiyle ölçülüp sonra daralınca iki satıra kırılıyor, yükseklik
+            // tek satırda kalıp alttaki rakip satırına biniyordu ("4. Regional / final"). Taban 0 + büyüme: Yoga genişliği önce
+            // verir, yüksekliği o genişlikle ölçer.
+            ay.style.flexBasis = new StyleLength(0f); ay.style.flexGrow = 1;
             var rk = Satir("rakip-satir"); rk.pickingMode = PickingMode.Ignore; orta.Add(rk);
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);
             rk.Add(Yazi(st.isim + " · " + L.T(st.ad) + (final ? " · " + L.T("Final") : ""), 13, "soluk"));
