@@ -296,8 +296,10 @@ namespace BirdieSmash.Game
                 var yes = new VisualElement(); yes.AddToClassList("onizle-yesil"); yes.style.width = Length.Percent(W_(son[a])); iz.Add(yes);
                 var gri = new VisualElement(); gri.AddToClassList("onizle-gri"); iz.Add(gri);
                 float hedef = W_(su[a]);
-                if (kay && yukOnce.ContainsKey(a)) { gri.style.width = Length.Percent(W_(yukOnce[a])); gri.AddToClassList("onizle-kayar"); gri.schedule.Execute(() => gri.style.width = Length.Percent(hedef)).StartingIn(33); }
-                else gri.style.width = Length.Percent(hedef);
+                // 2026-10-27 performans turu 2: kayma genişlik geçişiydi (0,5 sn boyunca her karede Yoga yerleşimi); şimdi genişlik
+                // baştan hedefte, eski değerden yatay ölçekle (sol kenardan) 1'e geçer: yalnız dönüşüm, yerleşim değişmez.
+                gri.style.width = Length.Percent(hedef);
+                if (kay && yukOnce.ContainsKey(a) && hedef > 0) { float s0 = Mathf.Clamp(W_(yukOnce[a]) / hedef, 0, 4); gri.style.scale = new Scale(new Vector3(s0, 1, 1)); gri.AddToClassList("onizle-kayar"); gri.schedule.Execute(() => gri.style.scale = new Scale(Vector3.one)).StartingIn(33); }
                 r.Add(Yazi("+" + Mathf.Max(1, Mathf.RoundToInt(d * 100)) + "%", 12, "onizle-yuzde"));
                 Erisim.Etiket(r, L.T(Gear.ETKI_AD[a]) + " +" + Mathf.Max(1, Mathf.RoundToInt(d * 100)) + "%", "metin");
             }

@@ -211,7 +211,7 @@
 .onizle-iz { flex-grow: 1; height: 6px; background-color: rgba(255, 255, 255, 0.1); border-radius: 3px; margin: 0 8px; }
 .onizle-yesil { position: absolute; left: 0; top: 0; bottom: 0; background-color: var(--sun); border-radius: 3px; }
 .onizle-gri { position: absolute; left: 0; top: 0; bottom: 0; background-color: var(--mu); border-radius: 3px; }
-.onizle-kayar { transition-property: width; transition-duration: 0.5s; transition-timing-function: ease-out; }
+.onizle-kayar { transform-origin: 0 50%; transition-property: scale; transition-duration: 0.5s; transition-timing-function: ease-out; }   /* 2026-10-27: width yerine scale (yerleşim her karede yeniden hesaplanmasın) */
 .onizle-yuzde { min-width: 44px; flex-shrink: 0; white-space: nowrap; -unity-text-align: middle-right; color: var(--sun); }   /* r13: ×2'de "+1" / "%" diye kırılıyordu */
 .izgara { flex-direction: row; flex-wrap: wrap; }
 .izgara > .model { flex-basis: 45%; flex-grow: 1; min-height: 64px; margin: 4px; }
