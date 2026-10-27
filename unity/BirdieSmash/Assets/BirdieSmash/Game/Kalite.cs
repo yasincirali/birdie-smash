@@ -2,6 +2,7 @@
 //   2 yüksek: 4× MSAA, yumuşak gölge, gölge mesafesi 40 m, yerel çözünürlük
 //   1 orta  : 2× MSAA, sert gölge, 25 m, çözünürlük ×0,85
 //   0 düşük : MSAA yok, gerçek zamanlı gölge yok (oyuncuların disk gölgesi kalır), 2 kemik ağırlık, çözünürlük ×0,7
+//             (2026-10-27: açılışta 0 ise mip'li dokular yarı çözünürlük; gölge haritası 2'de yüksek, 1'de orta, kararlı sığdırma)
 // Başlangıç basamağı donanımdan (bellek, çekirdek, GPU belleği) tahmin edilir; maç sırasında son 3 sn'nin ortalama kare
 // süresi 1/50 sn'yi aşarsa bir basamak iner (en çok 5 sn'de bir), 20 sn boyunca 1/58'in altında kalırsa bir basamak çıkar
 // (başlangıç basamağının üstüne çıkmaz). Çözünürlük yalnız inişte değişir: her geçişte yeniden boyutlama takılma yapar.
@@ -44,7 +45,29 @@ namespace BirdieSmash.Game
             if (mem > 0 && mem < 2500 || cek <= 4) b = 1;
             if (mem > 0 && mem < 1800 || cek <= 2 || gpu > 0 && gpu < 400) b = 0;
             Kilitli = System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-bsekran") >= 0; if (Kilitli) b = 2;
-            k.tavan = b; k.Uygula(b, true); return k;
+            k.tavan = b; k.Uygula(b, true);
+            // Düşük basamakta (2 çekirdek ya da < 1,8 GB: iPhone 6s/SE 1. nesil) mip'li dokular yarı çözünürlükte yüklenir: 1024'lük
+            // atlas 512 olur, doku belleği ~¼. Yalnız açılışta: oturum içinde değişirse bütün dokular yeniden yüklenir (takılma).
+            if (b == 0) MipSiniri(1);
+            return k;
+        }
+        static void MipSiniri(int n)
+        {
+#if UNITY_2022_2_OR_NEWER
+            QualitySettings.globalTextureMipmapLimit = n;
+#else
+            QualitySettings.masterTextureLimit = n;
+#endif
+        }
+        // Ekran turu tanısı (2026-10-27): uygulanan kalite.
+        public static string Tani
+        {
+            get
+            {
+                return "basamak " + Basamak + " · MSAA " + QualitySettings.antiAliasing + " · gölge " + QualitySettings.shadows + " " + QualitySettings.shadowResolution + " " + QualitySettings.shadowDistance + " m · aniso "
+                    + QualitySettings.anisotropicFiltering + " · kemik " + QualitySettings.skinWeights + " · hedef " + Application.targetFrameRate + " fps · vSync " + QualitySettings.vSyncCount
+                    + " · çözünürlük " + Screen.width + "x" + Screen.height + " · bellek " + SystemInfo.systemMemorySize + " MB · çekirdek " + SystemInfo.processorCount;
+            }
         }
 
         void Uygula(int b, bool cozunurluk)
@@ -54,6 +77,12 @@ namespace BirdieSmash.Game
             QualitySettings.shadows = b == 2 ? ShadowQuality.All : b == 1 ? ShadowQuality.HardOnly : ShadowQuality.Disable;
             QualitySettings.shadowDistance = b == 2 ? 40 : 25; QualitySettings.shadowCascades = 1;
             QualitySettings.skinWeights = b == 0 ? SkinWeights.TwoBones : SkinWeights.FourBones;
+            // 2026-10-27 performans turu 2: gölge haritası boyu ve izdüşümü açıkça (depoda QualitySettings.asset yok; Unity'nin
+            // iOS varsayılan düzeyi neyse oydu). Kamera artık topu izleyip eğiliyor: kararlı sığdırma (StableFit) gölge kenarının
+            // kamera dönerken titremesini keser; 2'de yüksek (yumuşak kenar daha az bulanık), 1'de orta. Anizotropi doku başına
+            // (ahşap zemin 4×, file 4×); 0'da kapalı.
+            QualitySettings.shadowResolution = b == 2 ? ShadowResolution.High : ShadowResolution.Medium; QualitySettings.shadowProjection = ShadowProjection.StableFit;
+            QualitySettings.anisotropicFiltering = b > 0 ? AnisotropicFiltering.Enable : AnisotropicFiltering.Disable;
             if (cozunurluk && !Application.isEditor && natW > 0)
             {
                 float s = b == 2 ? 1 : b == 1 ? .85f : .7f;

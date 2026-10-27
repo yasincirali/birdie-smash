@@ -1031,7 +1031,7 @@ namespace BirdieSmash.Game
                         bool dilim = dil % 2 == 0;
                         px[y * n + x] = ic ? (Color32)(dilim ? c2 : c1) : new Color32(0, 0, 0, 0);
                     }
-                t.SetPixels32(px); t.Apply(); perdeTex[i] = t;
+                t.SetPixels32(px); t.Apply(false, true); perdeTex[i] = t;   // CPU kopyası bırakılır: 5 × 256 KB (2026-10-27 performans)
             }
         }
         // ---- ekran turu (EkranTuru): perdenin bir anını dondur (zaman, evre, açılış mı, hareketi azalt dışarıdan), sonra bırak.

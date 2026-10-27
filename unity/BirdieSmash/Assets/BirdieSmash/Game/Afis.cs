@@ -32,7 +32,7 @@ namespace BirdieSmash.Game
         public static Afis Build(Transform root)
         {
             var g = new GameObject("afis"); g.transform.SetParent(root, false); var a = g.AddComponent<Afis>();
-            a.rt = new RenderTexture(640, 748, 16, RenderTextureFormat.ARGB32) { name = "afis", antiAliasing = Kalite.Basamak > 0 ? 2 : 1 };
+            a.rt = new RenderTexture(640, 748, 16, RenderTextureFormat.ARGB32) { name = "afis", antiAliasing = Kalite.Basamak > 0 ? 2 : 1, memorylessMode = RenderTextureMemoryless.MSAA };   // çok örnekli tampon karo belleğinde (Vitrin notu)
             var cg = new GameObject("afis_kamera"); cg.transform.SetParent(g.transform, false); a.kam = cg.AddComponent<Camera>();
             a.kam.targetTexture = a.rt; a.kam.clearFlags = CameraClearFlags.SolidColor; a.kam.backgroundColor = new Color(0, 0, 0, 0);
             a.kam.fieldOfView = ACI; a.kam.nearClipPlane = .1f; a.kam.farClipPlane = 15; a.kam.enabled = false; a.kam.allowHDR = false;

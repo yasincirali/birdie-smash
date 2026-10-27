@@ -38,7 +38,10 @@ namespace BirdieSmash.Game
         public static Vitrin Build(Transform root)
         {
             var g = new GameObject("vitrin"); g.transform.SetParent(root, false); var vt = g.AddComponent<Vitrin>();
-            vt.rt = new RenderTexture(512, 720, 16) { name = "vitrin" };
+            // 2026-10-27 performans turu 2: dönen figürün silüeti MSAA'sız RT'de her karede merdivenleniyordu (18°/sn dönüş, kenar
+            // pırpırı). Kalite basamağına göre 4×/2×/yok; çok örnekli tampon iOS'ta "memoryless" (yalnız çözülmüş görüntü bellekte:
+            // 512×720×4 B×4 örnek ≈ 5,6 MB karo belleğinde kalır, RAM'e yazılmaz). Afiş de aynı.
+            vt.rt = new RenderTexture(512, 720, 16) { name = "vitrin", antiAliasing = Kalite.Basamak == 2 ? 4 : Kalite.Basamak == 1 ? 2 : 1, memorylessMode = RenderTextureMemoryless.MSAA };
             var cg = new GameObject("vitrin_kamera"); cg.transform.SetParent(g.transform, false); vt.kam = cg.AddComponent<Camera>();
             vt.kam.targetTexture = vt.rt; vt.kam.clearFlags = CameraClearFlags.SolidColor; vt.kam.backgroundColor = Kit.Hex("#261A30");   // 2026-10-27 yön C: kart rengi (eski koyu camgöbeği #0e1d20 menüde tek soğuk leke kalıyordu)
             vt.kam.fieldOfView = 30; vt.kam.nearClipPlane = .05f; vt.kam.farClipPlane = 20; vt.kam.enabled = false;

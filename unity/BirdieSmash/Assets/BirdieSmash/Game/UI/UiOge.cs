@@ -306,6 +306,7 @@ namespace BirdieSmash.Game
         }
         // Şekil dokusu: ic(x, y, içe pay) şeklin içinde mi; renk(x, y) dolgu; cerceveKalin > 0 ise kenarda ince çerçeve.
         // 2×2 örnekleme ile kenar yumuşatma. y aşağıdan yukarı (Texture2D satır sırası).
+        // Apply(false, true): GPU'ya yüklenince CPU kopyası bırakılır (2026-10-27 performans; dokular bir kez çizilir, okunmaz).
         static Texture2D Sekil(int w, int h, Func<float, float, float, bool> ic, Func<float, float, Color> renk, Color cerceve, float cerceveKalin)
         {
             var t = new Texture2D(w, h, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
@@ -322,7 +323,7 @@ namespace BirdieSmash.Game
                     Color c = renk(x + .5f, y + .5f); if (kenar > 0) c = Color.Lerp(c, new Color(Mathf.Lerp(c.r, cerceve.r, cerceve.a), Mathf.Lerp(c.g, cerceve.g, cerceve.a), Mathf.Lerp(c.b, cerceve.b, cerceve.a), Mathf.Max(c.a, cerceve.a)), kenar / (float)say);
                     c.a *= say / 4f; px[y * w + x] = c;
                 }
-            t.SetPixels32(px); t.Apply(); return t;
+            t.SetPixels32(px); t.Apply(false, true); return t;
         }
         // Çokgen içinde mi (x0,y0,x1,y1,... simge birimi −1..1; ışın sayımı).
         static bool IcindeMi(float x, float y, float[] p)
@@ -362,7 +363,7 @@ namespace BirdieSmash.Game
                     for (int sy = 0; sy < 2; sy++) for (int sx = 0; sx < 2; sx++) { float fx = (x + .25f + .5f * sx) / n * 2 - 1, fy = (y + .25f + .5f * sy) / n * 2 - 1; if (ic(fx, fy)) say++; }
                     px[y * n + x] = new Color32(255, 255, 255, (byte)(say * 255 / 4));
                 }
-            t.SetPixels32(px); t.Apply(); return t;
+            t.SetPixels32(px); t.Apply(false, true); return t;
         }
     }
 }
