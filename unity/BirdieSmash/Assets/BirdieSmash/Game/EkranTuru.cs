@@ -224,10 +224,10 @@ namespace BirdieSmash.Game
             var g = new GameObject("klip_serit"); var pv = PlayerView.Build(g.transform, mdl, true, Kit.Hex("#3aa0ff"));
             Vector3 pos = Kit.W(-1.6f, Court.NET + 3.5f, 0), hedef = pos + Vector3.up * 1.0f;   // yan çizginin 1,6 m dışı, kendi yarım: kortta oyuncu yok, ışık aynı
             yield return null;
-            // Süre (koşu turu 1500 sn; r42 832 sn sürdü): ayak işi şeritleri yalnız varsayılan modelde, 1150 sn'den sonra şerit yok.
+            // Süre (koşu turu 2400 sn; r42 832 sn sürdü): ayak işi şeritleri yalnız varsayılan modelde, 2000 sn'den sonra şerit yok.
             foreach (var clip in KLIP_SERIT)
             {
-                if (pv.Model == null || Time.realtimeSinceStartup > 1150) { rap.AppendLine("klip_poz " + mdl + " · süre sınırı, kalan şeritler atlandı"); break; }
+                if (pv.Model == null || Time.realtimeSinceStartup > 2000) { rap.AppendLine("klip_poz " + mdl + " · süre sınırı, kalan şeritler atlandı"); break; }
                 if (mdl != "oyuncak" && Match.ADIM_BOY.ContainsKey(clip)) continue;
                 int n; if (!Match.CLIP_N.TryGetValue(clip, out n)) n = 8; float hit; bool vurus = Match.CLIP_HIT.TryGetValue(clip, out hit); int hitF = vurus ? Mathf.FloorToInt(hit * n) : -1;
                 var ph = new float[6];
