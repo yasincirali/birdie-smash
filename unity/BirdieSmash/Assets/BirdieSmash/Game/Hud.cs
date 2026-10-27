@@ -532,8 +532,12 @@ namespace BirdieSmash.Game
         Font fSiyah, fEkstra, fYari, fKalin; float aS = -1, aK = -1;
         GUIStyle aBas, aUst, aSkor, aAd, aKosul, aSatir, aSayi, aLv, aUnl, aCta, aCtaAlt, aDug, aIpucu, aKutuS, aKutuIkon, aKutuLimon, aCtaS, aIz;
         float overT0 = -1; bool overAcik; int yildizHap;
-        static readonly Color A_INK = Kit.Hex("#070B1F"), A_LIMON = Kit.Hex("#D8FF3A"), A_LIMON_KOYU = Kit.Hex("#0B1206"), A_ALTIN = Kit.Hex("#FFC83D"), A_MERCAN = Kit.Hex("#FF5B4A"),
-            A_YAZI = Kit.Hex("#F4F6FF"), A_SOLUK = Kit.Hex("#A3ABD1"), A_NAVY = Kit.Hex("#10173A"), A_NAVY3 = Kit.Hex("#263169");
+        // 2026-10-27 yön C "Gün Batımı Salonu" (yasin karar kartı): menü USS kökündeki değerler. Adlar A'dan; anlam: A_LIMON yalnız
+        // "sen" (senin skorun, halkan, "SEN", GALİBİYET başlığı, senin özet sayıların), A_TURUNCU ilerleme ve kazanım (ışınlar,
+        // ✓, XP, seviye, açılan kart, basamak çizgisi), A_MERCAN rakip (değeri orkide: birincil eylemin turuncusundan ayrı).
+        static readonly Color A_INK = Kit.Hex("#1A1221"), A_LIMON = Kit.Hex("#C9EE4B"), A_LIMON_KOYU = Kit.Hex("#141A08"), A_ALTIN = Kit.Hex("#F9D272"), A_MERCAN = Kit.Hex("#E99BFF"),
+            A_YAZI = Kit.Hex("#F3EAEE"), A_SOLUK = Kit.Hex("#CBB8C5"), A_NAVY = Kit.Hex("#261A30"), A_NAVY3 = Kit.Hex("#33233F");
+        static readonly Color A_TURUNCU = Kit.Hex("#FFA04D"), A_CTA_MUREKKEP = Kit.Hex("#1E0A0C"), A_CTA_OK = Kit.Hex("#FF8A57");
         GUIStyle AStil(Font f, float px, TextAnchor hiza, bool sar)
         {
             var st = new GUIStyle(GUI.skin.label) { font = f, fontSize = Mathf.Max(8, Mathf.RoundToInt(px)), alignment = hiza, wordWrap = sar, richText = false, fontStyle = FontStyle.Normal, clipping = TextClipping.Overflow };
@@ -554,12 +558,12 @@ namespace BirdieSmash.Game
             aKosul = AStil(fKalin, 12 * k, TextAnchor.UpperLeft, true); aSatir = AStil(fYari, 16 * k, TextAnchor.MiddleLeft, false);
             aSayi = AStil(fSiyah, 26 * k, TextAnchor.MiddleRight, false); aLv = AStil(fEkstra, 16 * k, TextAnchor.MiddleCenter, false);
             aUnl = AStil(fKalin, 15 * k, TextAnchor.MiddleLeft, true); aCta = AStil(fSiyah, 40 * k, TextAnchor.UpperLeft, false);
-            aCtaAlt = AStil(fYari, 14 * k, TextAnchor.UpperLeft, false); aDug = AStil(fKalin, 16 * k, TextAnchor.MiddleCenter, true);
+            aCtaAlt = AStil(fKalin, 15 * k, TextAnchor.UpperLeft, false);   // 2026-10-27 yön C: alt satır kalın 15 (SemiBold 14 %78 APCA sınırındaydı) aDug = AStil(fKalin, 16 * k, TextAnchor.MiddleCenter, true);
             aIpucu = AStil(fYari, 13 * k, TextAnchor.UpperCenter, true); aIz = AStil(fKalin, 12 * k, TextAnchor.MiddleLeft, false);
             int r = Mathf.Max(4, Mathf.RoundToInt(16 * s)), ri = Mathf.Max(3, Mathf.RoundToInt(9 * s));
             aKutuS = AKutu(Ikonlar.Kutu(r, new Color(A_NAVY.r, A_NAVY.g, A_NAVY.b, .92f), new Color(1, 1, 1, .12f), Mathf.Max(1, s)), r + 2);
             aKutuIkon = AKutu(Ikonlar.Kutu(ri, A_NAVY3, new Color(1, 1, 1, 0), 0), ri + 2);
-            aKutuLimon = AKutu(Ikonlar.Kutu(r, new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, .08f), new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, .6f), Mathf.Max(1.5f, 1.5f * s)), r + 2);
+            aKutuLimon = AKutu(Ikonlar.Kutu(r, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .08f), new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .6f), Mathf.Max(1.5f, 1.5f * s)), r + 2);
             int eg = Mathf.Max(4, Mathf.RoundToInt(14 * s)), ch = Mathf.Max(20, Mathf.RoundToInt(80 * s));
             aCtaS = AKutu(Ikonlar.EgikDugme(eg * 2 + 8, ch, eg), 0); aCtaS.border = new RectOffset(eg + 4, eg + 4, 0, 0);
         }
@@ -592,7 +596,7 @@ namespace BirdieSmash.Game
             if (R.bittiKazandi && !rm)
             {
                 var c = new Vector2(W / 2, y + 120 * s); float sz = 900 * s; var m = GUI.matrix; GUIUtility.RotateAroundPivot(Time.unscaledTime * 12f, c);
-                Tex(new Rect(c.x - sz / 2, c.y - sz / 2, sz, sz), Ikonlar.Isinlar, new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, .13f * Mathf.Clamp01(t / .4f))); GUI.matrix = m;
+                Tex(new Rect(c.x - sz / 2, c.y - sz / 2, sz, sz), Ikonlar.Isinlar, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .10f * Mathf.Clamp01(t / .4f)));   // yön C: güneş ışınları turuncu, %13 → %10 GUI.matrix = m;
             }
             if (!string.IsNullOrEmpty(R.bittiUst)) { string us = UiKok.Buyuk(R.bittiUst); float uh = aUst.CalcHeight(new GUIContent(us), w); Yaz(new Rect(x, y, w, uh), us, aUst, A_SOLUK, al); y += uh + 4 * s; }
             // başlık: yaylanarak (1,25 → 1), hareketi azaltta yalnız solma
@@ -629,7 +633,7 @@ namespace BirdieSmash.Game
                 {
                     float ik = 26 * s, ph = 14 * s, tw = w - ik - ph * 3, uh = Mathf.Max(aUnl.CalcHeight(new GUIContent(R.bittiAcilan), tw), ik) + 16 * s; var r = new Rect(x, y, w, uh);
                     float ua = rm ? al : Mathf.Clamp01((t - 1.9f) / .3f); KutuCiz(r, aKutuLimon, ua);
-                    Tex(new Rect(r.x + ph, r.y + (uh - ik) / 2, ik, ik), Ikonlar.AcikKilit, new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, ua));
+                    Tex(new Rect(r.x + ph, r.y + (uh - ik) / 2, ik, ik), Ikonlar.AcikKilit, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, ua));
                     Yaz(new Rect(r.x + ph * 2 + ik, r.y + 8 * s, tw, uh - 16 * s), R.bittiAcilan, aUnl, A_YAZI, ua); y += uh + 10 * s;
                 }
                 if (!string.IsNullOrEmpty(R.bittiIpucu)) { float ph = aIpucu.CalcHeight(new GUIContent(R.bittiIpucu), w); Yaz(new Rect(x, y, w, ph), R.bittiIpucu, aIpucu, A_SOLUK, al); y += ph + 8 * s; }
@@ -694,7 +698,7 @@ namespace BirdieSmash.Game
                 GUI.matrix = m;
                 string ks = R.bittiKosul != null && i < R.bittiKosul.Length ? R.bittiKosul[i] : ""; float ik = 13 * s, tw = col - ik - 8 * s, h = aKosul.CalcHeight(new GUIContent(ks), tw);
                 float tx = c.x - Mathf.Min(tw, aKosul.CalcSize(new GUIContent(ks)).x) / 2 + ik / 2 + 2 * s, ty = y + rowH + 8 * s, ka = rm ? al : Mathf.Clamp01((t - .3f) / .3f);
-                Tex(new Rect(tx - ik - 3 * s, ty + 1 * s, ik, ik), var_ ? Ikonlar.Tik : Ikonlar.Carpi, var_ ? new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, ka) : new Color(A_SOLUK.r, A_SOLUK.g, A_SOLUK.b, ka));
+                Tex(new Rect(tx - ik - 3 * s, ty + 1 * s, ik, ik), var_ ? Ikonlar.Tik : Ikonlar.Carpi, var_ ? new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, ka) : new Color(A_SOLUK.r, A_SOLUK.g, A_SOLUK.b, ka));
                 Yaz(new Rect(tx, ty, tw, h), ks, aKosul, var_ ? A_YAZI : A_SOLUK, ka); kh = Mathf.Max(kh, h);
             }
             return y + rowH + 8 * s + kh + 14 * s;
@@ -716,13 +720,13 @@ namespace BirdieSmash.Game
             int L_, kalan, gerek; Ayar.gear.OyuncuSv(out L_, out kalan, out gerek);
             float son = gerek > 0 ? kalan / (float)gerek : 1, bas = lv ? 0 : Mathf.Clamp01((kalan - od.xp) / (float)Mathf.Max(1, gerek)), dol = lv ? (e < .5f ? Mathf.Lerp(.3f, 1, e * 2) : Mathf.Lerp(0, son, (e - .5f) * 2)) : Mathf.Lerp(bas, son, e);
             var bar = new Rect(x + p + ik + 10 * s, yy + rh / 2 - 5 * s, rx_ - xw - 10 * s - (x + p + ik + 10 * s), 10 * s);
-            Fill(bar, new Color(1, 1, 1, .12f * al)); Fill(new Rect(bar.x, bar.y, bar.width * Mathf.Clamp01(dol), bar.height), new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, al));
+            Fill(bar, new Color(1, 1, 1, .12f * al)); Fill(new Rect(bar.x, bar.y, bar.width * Mathf.Clamp01(dol), bar.height), new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, al));
             Yaz(new Rect(rx_ - xw, yy, xw, rh), xs, aSayi, A_YAZI, al); yy += rh;
             if (lv)
             {
                 float la = rm ? al : Mathf.Clamp01((t - t1 - .9f) / .25f); string ls = UiKok.Buyuk(L.T("Seviye atladın")) + " · " + L.T("Sv {0}", od.sonra);
                 float lw = aLv.CalcSize(new GUIContent(ls)).x, ik2 = 14 * s, lx0 = x + (w - lw - ik2 - 4 * s) / 2;
-                Tex(new Rect(lx0, yy + 6 * s + (20 * s - ik2) / 2, ik2, ik2), Ikonlar.Yukari, new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, la)); Yaz(new Rect(lx0 + ik2 + 4 * s, yy + 6 * s, lw, 20 * s), ls, aLv, A_LIMON, la); yy += 26 * s;
+                Tex(new Rect(lx0, yy + 6 * s + (20 * s - ik2) / 2, ik2, ik2), Ikonlar.Yukari, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, la)); Yaz(new Rect(lx0 + ik2 + 4 * s, yy + 6 * s, lw, 20 * s), ls, aLv, A_TURUNCU, la); yy += 26 * s;
             }
             Yaz(new Rect(x + p, yy + 6 * s, w - 2 * p, ah), alt, aIpucu, A_SOLUK, al);
             return y + h + 10 * s;
@@ -738,7 +742,7 @@ namespace BirdieSmash.Game
             for (int j = 0; j < KariyerVeri.BASAMAK; j++)
             {
                 int gj = KariyerVeri.Global(tr, j); var r = new Rect(bx + j * (pw + 5 * s), y + h / 2 - 2.5f * s, pw, 5 * s);
-                if (gj == sira) Tex(r, Ikonlar.Serit, new Color(1, 1, 1, al)); else Fill(r, p.Kazanildi(gj) ? new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, al) : new Color(1, 1, 1, .14f * al));
+                if (gj == sira) Tex(r, Ikonlar.Serit, new Color(1, 1, 1, al)); else Fill(r, p.Kazanildi(gj) ? new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, al) : new Color(1, 1, 1, .14f * al));
             }
             return y + h + 10 * s;
         }
@@ -771,10 +775,10 @@ namespace BirdieSmash.Game
             var m = GUI.matrix; if (bas && !Ayar.reduce) GUIUtility.ScaleAroundPivot(new Vector2(.96f, .96f), r.center);
             KutuCiz(r, aCtaS, al);
             float ci = 52 * s; var cst = Sigdir(aCta, t, r.width - ci - 48 * s); float th = cst.CalcHeight(new GUIContent(t), r.width - ci - 48 * s), ah = string.IsNullOrEmpty(alt) ? 0 : aCtaAlt.CalcHeight(new GUIContent(alt), r.width), ty = r.y + (r.height - th - ah) / 2;
-            Yaz(new Rect(r.x + 24 * s, ty, r.width - ci - 48 * s, th), t, cst, A_LIMON_KOYU, al);
-            if (ah > 0) Yaz(new Rect(r.x + 24 * s, ty + th, r.width - ci - 48 * s, ah), alt, aCtaAlt, new Color(A_LIMON_KOYU.r, A_LIMON_KOYU.g, A_LIMON_KOYU.b, .78f), al);
-            var cr = new Rect(r.xMax - 24 * s - ci, r.y + (r.height - ci) / 2, ci, ci); Tex(cr, disk, new Color(A_LIMON_KOYU.r, A_LIMON_KOYU.g, A_LIMON_KOYU.b, al));
-            Tex(new Rect(cr.x + ci * .3f, cr.y + ci * .3f, ci * .4f, ci * .4f), Ikonlar.Ileri, new Color(A_LIMON.r, A_LIMON.g, A_LIMON.b, al));
+            Yaz(new Rect(r.x + 24 * s, ty, r.width - ci - 48 * s, th), t, cst, A_CTA_MUREKKEP, al);
+            if (ah > 0) Yaz(new Rect(r.x + 24 * s, ty + th, r.width - ci - 48 * s, ah), alt, aCtaAlt, A_CTA_MUREKKEP, al);   // yön C: tam opak (Lc ≥ 60)
+            var cr = new Rect(r.xMax - 24 * s - ci, r.y + (r.height - ci) / 2, ci, ci); Tex(cr, disk, new Color(A_CTA_MUREKKEP.r, A_CTA_MUREKKEP.g, A_CTA_MUREKKEP.b, al));
+            Tex(new Rect(cr.x + ci * .3f, cr.y + ci * .3f, ci * .4f, ci * .4f), Ikonlar.Ileri, new Color(A_CTA_OK.r, A_CTA_OK.g, A_CTA_OK.b, al));
             GUI.matrix = m;
             bool b = GUI.Button(r, GUIContent.none, GUIStyle.none); if (b) Yerel.Hap("tick"); return b;
         }

@@ -101,7 +101,7 @@ namespace BirdieSmash.Game
         void BasarimSatir(VisualElement c, string id, string ad)
         {
             bool var_ = Basarim.Var(id); var r = Satir("basarim"); if (!var_) r.AddToClassList("kilitli"); c.Add(r);
-            r.Add(Ikon(var_ ? Ikonlar.Tik : Ikonlar.Kilit, 20, var_ ? LIMON : SOLUK));
+            r.Add(Ikon(var_ ? Ikonlar.Tik : Ikonlar.Kilit, 20, var_ ? TURUNCU : SOLUK));
             r.Add(Yazi(ad, 15, "esnek-yatay")); string d = L.T(var_ ? "Kazanıldı" : "Henüz değil"); r.Add(Yazi(d, 12, var_ ? "durum-gecti" : "durum-kilit"));
             Erisim.Etiket(r, ad + ", " + d, "metin");
         }

@@ -74,7 +74,7 @@ namespace BirdieSmash.Game
 
         // Büyük eğik düğme (a-cta): limon gradyanlı eğik doku (9 dilim), solda dar italik başlık + alt satır, sağda koyu daire
         // içinde oynat simgesi. Işık süpürmesi: 3,2 sn'de bir soldan sağa, tek öğe (her düğmede değil); hareketi azaltta hiç
-        // başlamaz. Basınca .96 ölçek (USS :active) ve hafif titreşim. Dokunma alanı ≥ 80 pt.
+        // başlamaz (2026-10-27 yön C: döngü değil, girişte bir kez; Supur). Basınca .96 ölçek (USS :active) ve hafif titreşim. Dokunma alanı ≥ 80 pt.
         VisualElement BuyukDugme(string t, string alt, System.Action a)
         {
             var d = new VisualElement(); d.AddToClassList("cta"); Doku(d, Ikonlar.EgikLimon);
@@ -82,7 +82,7 @@ namespace BirdieSmash.Game
             var yz = new VisualElement(); yz.AddToClassList("cta-yazilar"); yz.pickingMode = PickingMode.Ignore; d.Add(yz);
             yz.Add(Baslik(t, 40, "cta-baslik"));
             if (!string.IsNullOrEmpty(alt)) yz.Add(Yazi(alt, 14, "cta-alt"));
-            var ik = new VisualElement(); ik.AddToClassList("cta-ikon"); ik.pickingMode = PickingMode.Ignore; ik.Add(Ikon(Ikonlar.Oyna, 24, LIMON)); d.Add(ik);
+            var ik = new VisualElement(); ik.AddToClassList("cta-ikon"); ik.pickingMode = PickingMode.Ignore; ik.Add(Ikon(Ikonlar.Oyna, 24, CTA_OK)); d.Add(ik);   // 2026-10-27 yön C: koyu daire içinde turuncu ok
             d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); a(); }));
             Erisim.Etiket(d, string.IsNullOrEmpty(alt) ? t : t + ", " + alt, "dugme");
             if (!Ayar.reduce) Supur(sup);
@@ -99,9 +99,14 @@ namespace BirdieSmash.Game
             {
                 if (sup.panel == null || Ayar.reduce) { sup.style.display = DisplayStyle.None; if (is_ != null) is_.Pause(); return; }
                 if (root.ekran != Ekran.Menu || gez.sekme != Sekme.Oyna || gez.Ust != null && !Gezinti.AltSayfa(gez.Ust)) return;
-                float f = Mathf.Repeat(Time.realtimeSinceStartup - t0 - 1, 3.2f) / 3.2f;   // %70'i bekleme, %30'u geçiş
-                float k = f < .7f ? 0 : Mathf.SmoothStep(0, 1, (f - .7f) / .3f);
-                sup.style.left = Length.Percent(Mathf.Lerp(-40, 130, k));
+                // 2026-10-27 yön C mikro hareket (araştırma §4.3: "girişte bir kez ışık süpürmesi, döngü yok"; ekranda tek döngü
+                // afişin nefesi): süpürme menü kurulunca bir kez, 0,6 sn bekleyip 0,9 sn'de geçer, sonra durur. Eskiden 3,2 sn'de bir
+                // döngüydü ve style.left yazıyordu (her adımda yerleşim); artık yalnız translate (USS left −40% sabit). Yüzde
+                // translate öğenin kendi genişliğine göredir: düğmenin %170'i = süpürmenin (%30) 5,67 katı.
+                float e = (Time.realtimeSinceStartup - t0 - .6f) / .9f; if (e < 0) return;
+                float k = Mathf.SmoothStep(0, 1, Mathf.Clamp01(e));
+                sup.style.translate = new Translate(Length.Percent(k * 566.7f), 0);
+                if (e >= 1) { sup.style.display = DisplayStyle.None; is_.Pause(); }
             }).Every(33);
         }
 
