@@ -21,7 +21,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 1.2726
+   "adim": 0.7498
   },
   {
    "name": "smash",
@@ -202,7 +202,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.5371
+   "adim": 0.2886
   },
   {
    "name": "chasse_l",
@@ -213,7 +213,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.5371
+   "adim": 0.2886
   },
   {
    "name": "fwd",
@@ -224,7 +224,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.7854
+   "adim": 0.4423
   },
   {
    "name": "back_r",
@@ -235,7 +235,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.8665
+   "adim": 0.47
   },
   {
    "name": "back_l",
@@ -246,7 +246,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.8665
+   "adim": 0.47
   },
   {
    "name": "jump",
@@ -297,7 +297,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.8913
+   "adim": 0.5037
   },
   {
    "name": "kros_l",
@@ -308,7 +308,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.8913
+   "adim": 0.6218
   }
  ],
  "model": "oyuncak_kadin",
@@ -347,7 +347,7 @@
  },
  "tip": {
   "id": "kadin",
-  "boy": 0.96,
+  "boy": 0.87,
   "sac": "atkuyrugu",
   "ayakkabi": "klasik",
   "sacRenk": "#3a2416"

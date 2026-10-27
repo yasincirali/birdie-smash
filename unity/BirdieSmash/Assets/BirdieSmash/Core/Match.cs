@@ -17,6 +17,12 @@ namespace BirdieSmash.Core
         public float tx = float.NaN, ty;
         public float sw, swHiz = 4, dive, jump, hop, stun, prepA, splitT, manualT, prepT = float.NaN, nefes = 1;
         public bool yat;
+        // Figürün kendi adım boyu (2026-10-27, oyuncak oranı: tiplerin bacak boyu %35'e dek farklı; ADIM_BOY statik ve son
+        // yüklenen figürünkiydi, öbür oyuncunun ayağı kayıyordu). PlayerView yazar; null ise ADIM_BOY (Core testleri, HTML).
+        public Dictionary<string, float> adimBoy;
+        // Adım tavanı (tur/sn) aynı nedenle figürün: kısa bacak aynı hızda daha sık adım atar (oyuncak atlet chassé adımı 0,57 m,
+        // eski 0,99 m; 3,6 tavanla 2 m/s üstünde ayak kayardı). NaN = AYAK_TUR_MAX.
+        public float ayakTurMax = float.NaN;
         public string clip = "idle", prepClip, shot = "low", hand = "fore", prepShot, prepHand, svClip, svTur;
         public SvAnim svAnim;
         // ayak işi (HTML ayakIsi): yumuşatılmış hız, adım fazı, seçili ayak klibi ve aday klibin süresi
@@ -846,11 +852,13 @@ namespace BirdieSmash.Core
             }
             if (q.yuru)
             {
-                float boy; if (q.ayakKlip == null || !ADIM_BOY.TryGetValue(q.ayakKlip, out boy)) boy = 1.5f;
+                // 2026-10-27 birleşik: adım boyu oyuncunun kendi modelinden (ekran/model, q.adimBoy), faz işaretli eksen hızıyla (ekran/kosu)
+                float boy; if (q.ayakKlip == null || !((q.adimBoy != null && q.adimBoy.TryGetValue(q.ayakKlip, out boy)) || ADIM_BOY.TryGetValue(q.ayakKlip, out boy))) boy = 1.5f;
                 float gy, gi; GovdeCerceve(ayan, aileri, q.donusAyak, out gy, out gi);
                 float ey, ei; KlipEkseni(q.ayakKlip, out ey, out ei);
                 float yol = q.ayakKlip == null ? q.vAn : gy * ey + gi * ei;   // klip eksenine düşen işaretli hız
-                float tur = Math.Max(-AYAK_TUR_MAX, Math.Min(AYAK_TUR_MAX, yol / boy));
+                float turMax = float.IsNaN(q.ayakTurMax) ? AYAK_TUR_MAX : q.ayakTurMax;
+                float tur = Math.Max(-turMax, Math.Min(turMax, yol / boy));
                 q.runPh = q.runPh + tur * dt; q.runPh -= (float)Math.Floor(q.runPh);
                 float fwdv = isMe ? -q.svy : q.svy, side = isMe ? q.svx : -q.svx;   // oyuncunun kendi bakışında: ileri = fileye
                 float sy, si; GovdeCerceve(side, fwdv, q.donusAyak, out sy, out si);   // bacakların baktığı yöne göre

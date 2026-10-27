@@ -2,7 +2,7 @@
 
 Birdie Smash oyuncu figürleri şu açık lisanslı içeriklerden üretilir. Sprite'lar bu modellerden render edilmiştir.
 
-- **Oyuncak 3B**: MakeHuman veri dosyaları (taban ağ, hedefler, iskelet ağırlıkları; makehumancommunity.org), CC0 1.0, atıf gerekmez. Kıyafet, yüz, saç, ayakkabı ve bantlar Birdie Smash'in kendi geometrisidir (2026-10-26). Önceki sürüm KayKit Character Pack: Adventurers 1.0 (Kay Lousberg, CC0 1.0) arşivde, oyunda kullanılmıyor.
+- **Oyuncak 3B**: MakeHuman veri dosyaları (taban ağ, hedefler, iskelet ağırlıkları; makehumancommunity.org), CC0 1.0, atıf gerekmez. Kıyafet, yüz, saç, ayakkabı ve bantlar Birdie Smash'in kendi geometrisidir (2026-10-26). 2026-10-27 oyuncak oranı: yüz aynı paketteki 'child' yaş hedefleriyle karışır (yine MakeHuman CC0); oran dönüşümü kendi kodumuz, yeni kaynak yok. Önceki sürüm KayKit Character Pack: Adventurers 1.0 (Kay Lousberg, CC0 1.0) arşivde, oyunda kullanılmıyor.
 - **Gerçekçi (Rocketbox)**: Microsoft Rocketbox Avatar Library, Sports_Male_02 (oyun; kıyafet dokusu Birdie Smash'in badminton boyaması, 2026-10-26) ve Sports_Male_04 (HTML sprite). MIT License, aşağıdaki metin.
 - Eski sportif figür: MakeHuman veri dosyaları, CC0 1.0.
 - **Yazı tipleri (2026-10-26, arayüz yönü Yayın Gecesi)**: Barlow ve Barlow Condensed (Jeremy Tribby, The Barlow Project Authors; github.com/jpt/barlow, Google Fonts). Menüde ve maç sonu ekranında kullanılan dosyalar: Barlow Medium, SemiBold, Bold; Barlow Condensed ExtraBold Italic, Black Italic. SIL Open Font License 1.1, aşağıdaki metin. Yazı tipleri değiştirilmeden, uygulamanın içinde gömülü dağıtılır.

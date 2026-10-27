@@ -33,8 +33,8 @@ koordinatından çizilir (`insan.py` `_yuz_dugum`). 360° ve hakemler aynı `BS_
 ## İki model (2026-10-24, yasin: "iki modeli de seçenek sun, defaultta gerçekçi olmayan olsun")
 
 - **Oyuncak 3B** (varsayılan, 2026-10-26 yeniden tasarım; yasin: "fiziksel olarak gerçekçiye yakınsat, modellerimiz iyi
-  görünmeli"): `oyuncak.py`. KayKit chibi'nin iri başı yüksek kameradan gövdeyi örtüyordu; şimdi ~7,3 baş boyunda atletik
-  gövde (MakeHuman CC0 taban ağ + makro hedefler: kas .78, kilo .36; baş ×1.07, göz bölgesi ×1.24, el ×1.06 — stilize
+  görünmeli"): `oyuncak.py`. KayKit chibi'nin iri başı yüksek kameradan gövdeyi örtüyordu; 2026-10-26'da ~7,3 baş boyunda atletik
+  gövde (2026-10-27'den beri oyuncak oranı, aşağıda) (MakeHuman CC0 taban ağ + makro hedefler: kas .78, kilo .36; baş ×1.07, göz bölgesi ×1.24, el ×1.06 — stilize
   ama oransal). Kıyafet ayrı ağ değil, deri ağın kendisi alanlarla kesilip (yaka V'si, raglan biye, kol/etek/şort/çorap
   çizgisi) bölge başına normal yönünde kalınlaştırılır ve sınır basamağı duvar yüzlerle köprülenir: kıyafet deriyle aynı
   ağırlıkları taşır, smaç/hamlede ayrılmaz, yırtılmaz. Ayrı parçalar: göz (sklera/iris/bebek + ışık), kaş/kirpik şeridi,
@@ -43,6 +43,31 @@ koordinatından çizilir (`insan.py` `_yuz_dugum`). 360° ve hakemler aynı `BS_
   foot/ball/thigh/calf), parmaklar 3 boğum, iki elde (2026-10-26 tutuş turu; aşağıda). Ball kemiği taban altından 0,02 birim
   yukarıda (PlayerView.Zemin 3,5 cm sözleşmesi). Ayarlar `BS_OY_*` ortam değişkenleri.
   `BS_MODEL=oyuncak python3 -I tool/karakter/unity_fbx.py -- /tmp/oy oyuncak` → `oyuncak.fbx` + `oyuncak_clips.json`.
+  - **Oyuncak oranı** (2026-10-27, yasin: "Oyuncak 3B daha tıknaz sevimli karikatür tipler olmalıydı"): ~7 baş boylu
+    gövde yerine ~3,4–3,5 baş boyu. Parçalar (kıyafet kesimi, yüz, saç, bant, ayakkabı) gerçek oranlı gövdede kurulur, sonra
+    hepsi `_oran()` ile kemik kemik bükülür: kemik yönü korunur, eksen boyunca kısalır, kesitte kalınlaşır (`govde`, `kol`,
+    `bacak`, `boyun`, `klav`), baş çene hizasından (`bas`), el bilekten (`el`), ayak+ayakkabı ayak bileğinden (`ayak`, ayakkabıya
+    ek en/yükseklik) büyür; zincirde çocuğun yeni başı ebeveynin dönüşümünden gelir (eklemde deri yırtılmaz). Yüz MakeHuman
+    'child' yaş hedefleriyle baş bölgesinde karışır (`BS_OY_COCUK` .85; yuvarlak yanak, küçük burun), göz ×1,42, kaş yukarıda,
+    dudak ağız köşelerinden kurulan elips alanla kesilir. Saç kabuğu bandın üstünde ×1,6 kalın (`sac_ayk.HACIM_W` biçime göre),
+    ek parçalar baş merkezinden ×1,18. Son ölçek bacaktan değil tipin boyundan (`boy`, ten tepesi; saç hariç).
+    Dinlenme duruşu ölçümü (model birimi, ×1,75 = oyun metresi; `idle` pozu, raket hariç):
+
+    | tip | boy eski → yeni | gövde eni (kollar dahil) eski → yeni | omuz eski → yeni | baş boyu |
+    |---|---|---|---|---|
+    | atlet | 0,925 → 0,945 | 0,493 → 0,587 | 0,230 → 0,312 | 3,42 |
+    | kadın | 0,914 → 0,827 (−%12,5) | 0,434 → 0,429 (−%27) | 0,174 → 0,185 | 3,56 |
+    | uzun  | 0,914 → 1,070 (+%13) | 0,468 → 0,582 | 0,194 → 0,264 | 3,46 |
+    | güçlü | 0,932 → 0,919 | 0,527 → 0,731 (+%25) | 0,256 → 0,418 | 3,49 |
+
+    (yüzdeler atlete göre; eskide tipler arası boy farkı ≤ %2, en farkı ≤ %12 idi). Gövde ~8k üçgen (eski 7,3k: bacak bir
+    kademe az sadeleşir, kalınlaşan bacakta çokgen diz görünüyordu).
+    Temas yayı: kısa kol ve alçak omuzla raket kafası temas karesinde eski modelden aşağıda. Önlemler: boy +%8, raket 1,0
+    (eski 0,8), yüz önündeki bilek hedefi iri başın dışına itilir (`OyIskelet.hedef`), servis kliplerinde iki bilek 0,12
+    birim yukarı (Core servisi 0,82–1,02 m'den atar). Kalan fark (eski kafa konumuna uzaklık, oyun metresi, 19 vuruş klibi):
+    medyan 0,25–0,31, p90 0,31–0,36; en büyük bh_kill (0,5–1,4 m, raket yana yatıyor). Unity uzanma katmanı
+    (`PlayerView.Uzan`) bu farkı kol IK'sıyla kapatır; gerçek raket–top p90'ı ekran turunun `*_temas.csv`'sinden okunur.
+    Tanı: `unity_fbx.py` her temas karesinin kafa konumunu `<ad>_kafa.json`'a yazar (Resources'a kopyalanmaz).
   - **Performans bütçesi** (yasin: "her telefonda akıcı"; ekranda 4 figür): gövde ~7,3–7,4k üçgen (govde+forma+bant+bilek; raket ayrıca ~1k),
     seçili saç (0,5–1,7k) + ayakkabı çifti (1,2–1,8k) ile ekrandaki en ağır figür ~10,7k; 53 kemik (iki elde 5×3 parmak:
     tutuş ve servis kıskacı kemikle okunsun diye), FBX ~2,9 MB (`BS_OY_ANIMSADE` 0,01 anahtar sadeleştirmesi; kayıpsız, 6,3 →

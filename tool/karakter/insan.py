@@ -21,11 +21,12 @@ def _hedef(V,ad,w):
         if not l.strip() or l[0]=='#': continue
         i,x,y,z=l.split(); i=int(i); V[i][0]+=w*float(x); V[i][1]+=w*float(y); V[i][2]+=w*float(z)
 
-def govde(boy=1.0, kas=.6, kilo=.45, cins=1., boyh=.5, etnik=(1/3,1/3,1/3)):
+def govde(boy=1.0, kas=.6, kilo=.45, cins=1., boyh=.5, etnik=(1/3,1/3,1/3), yas='young'):
     """Genç, atletik insan. kas/kilo 0..1 (0.5 = ortalama). boy: metre cinsinden ayakta boy. cins 1 erkek, 0 kadın
     (MakeHuman makro cinsiyet karışımı); boyh: makro boy (0,5 = hedef yok; oranları değiştirir, boy sonra ölçeklenir);
     etnik: (caucasian, african, asian) ağırlıkları. Varsayılanlar 2026-10-26 öncesi gövdeyi birebir verir (oyuncak tip
-    'atlet', insan.Oyuncu)."""
+    'atlet', insan.Oyuncu). yas: MakeHuman yaş makrosu ('young' varsayılan; oyuncak oranı yüz için 'child' gövdesini
+    de kurar, yalnız baş bölgesinde karıştırır: oyuncak._govde)."""
     V,F=_obj()
     def ikili(v):  # MakeHuman makro karışımı: min/average/max arası doğrusal
         return {'min':max(0,1-2*v),'average':1-abs(2*v-1),'max':max(0,2*v-1)}
@@ -34,13 +35,13 @@ def govde(boy=1.0, kas=.6, kilo=.45, cins=1., boyh=.5, etnik=(1/3,1/3,1/3)):
         if gw<=0: continue
         for km,kw in K.items():
             for wm,ww in W.items():
-                _hedef(V,f'universal-{g}-young-{km}muscle-{wm}weight',gw*kw*ww)
-        for e,ew in zip(('caucasian','african','asian'),etnik): _hedef(V,f'{e}-{g}-young',gw*ew)
+                _hedef(V,f'universal-{g}-{yas}-{km}muscle-{wm}weight',gw*kw*ww)
+        for e,ew in zip(('caucasian','african','asian'),etnik): _hedef(V,f'{e}-{g}-{yas}',gw*ew)
         for km,kw in K.items():
             for wm,ww in W.items():
-                _hedef(V,f'proportions/{g}-young-{km}muscle-{wm}weight-idealproportions',gw*kw*ww*.6)
+                _hedef(V,f'proportions/{g}-{yas}-{km}muscle-{wm}weight-idealproportions',gw*kw*ww*.6)
                 for hm,hw in (('max',max(0,2*boyh-1)),('min',max(0,1-2*boyh))):
-                    _hedef(V,f'height/{g}-young-{km}muscle-{wm}weight-{hm}height',gw*kw*ww*hw)
+                    _hedef(V,f'height/{g}-{yas}-{km}muscle-{wm}weight-{hm}height',gw*kw*ww*hw)
     # Y yukarı dm → Z yukarı m; ayak tabanı z=0, boy ölçeklenir
     P=[Vector((-x,z,y)) for x,y,z in V]   # yüz +Y'ye, sağ el +X'e (karakter.py ile aynı eksenler)
     bi=sorted({i for f in F['body'] for i in f}); zmin=min(P[i].z for i in bi); zmax=max(P[i].z for i in bi); s=boy/(zmax-zmin)

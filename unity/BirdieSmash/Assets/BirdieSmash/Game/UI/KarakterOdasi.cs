@@ -83,8 +83,24 @@ namespace BirdieSmash.Game
                 });
                 d.AddToClassList("segment-cip"); d.AddToClassList("dar-cip"); Sigdir(d); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; seg.Add(d);
             }
-            if (Ayar.model != "oyuncak" && karAlt != KAR_TEN) c.Add(Yazi(L.T("Tip, saç biçimi ve ayakkabı modeli Oyuncak modelde görünür (Ayarlar › Oyuncu görünümü). Seçimin kaydedilir."), 12, "soluk"));
+            if (!Ayar.VaryantGorunur && karAlt != KAR_TEN) ModelUyari(c);
             if (karAlt == KAR_TIP) TipSayfa(c); else if (karAlt == KAR_SAC) SacSayfa(c); else if (karAlt == KAR_AYK) AyakkabiSayfa(c); else TenSayfa(c);
+        }
+
+        // 2026-10-27 (yasin build 41: "3B model kaybolmuş, seçmeme rağmen görmedim"): Gerçekçi ya da Sade seçiliyken tip, saç
+        // biçimi ve ayakkabı modeli için ne vitrinde ne maçta parça yok (o FBX'lerde bulunmaz); eskiden bunu 12 pt gri tek satır
+        // söylüyordu, dokunuş "deneniyor" yazıp figürü değiştirmiyordu. Şimdi sayfanın başında kart: neden görünmediği, hangi
+        // modelde göründüğü ve tek dokunuşla Oyuncak 3B'ye geçiş (Ayarlar'daki seçimin aynısı, kayda yazılır). Seçimler yine
+        // kaydedilir ve alınabilir (Oyuncak 3B'ye geçince görünür); ürün yalan söylemez: deneme vitrinde görünmediği için kart
+        // denemenin üstünde durur. Renkler (saç rengi Sade'de de görünür) bu karta girmez.
+        void ModelUyari(VisualElement c)
+        {
+            int i = System.Array.IndexOf(Ayar.MODELLER, Ayar.model); string ad = L.T(i >= 0 ? Ayar.MODEL_AD[i] : Ayar.model);
+            var kart = Kart("deneme-kart"); c.Add(kart);
+            kart.Add(Yazi(L.T("Bu modelde görünmez"), 15, "kalin"));
+            kart.Add(Yazi(L.T("Şu an {0} modeli seçili. Beden tipi, saç biçimi ve ayakkabı modeli yalnız Oyuncak 3B'de görünür; seçimin kaydedilir.", ad), 13, "ipucu"));
+            kart.Add(Dugme(L.T("Oyuncak 3B'ye geç"), () => { Ayar.model = "oyuncak"; Ayar.Kaydet(); root.ModelDegisti(); Tik(); SoyunmaGovdeKur(true); }, "dugme--birincil", L.T("Ayarlar › Oyuncu görünümü"), 16));
+            Erisim.Etiket(kart, L.T("Bu modelde görünmez") + ". " + L.T("Şu an {0} modeli seçili. Beden tipi, saç biçimi ve ayakkabı modeli yalnız Oyuncak 3B'de görünür; seçimin kaydedilir.", ad), "metin");
         }
 
         // Kozmetik öğenin durumu: yazı + simge (✓ seçili, kilit kilitli). Fiyatı 0 olan sahip öğe "Ücretsiz", alınmış "Senin".
