@@ -1135,6 +1135,8 @@ static class BotMac
         if (opAltFh * 2 < opAlt) Fail("vuruş: rakip alçak vuruşların çoğunu backhand vuruyor (%" + (100f * opAltFh / Math.Max(1, opAlt)).ToString("0") + ")");
         foreach (var need in new[] { "smash", "clear", "drop", "jump", "bh_over", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge" })
             if (!gor.Contains(need)) Fail("vuruş: hiç görülmeyen vuruş klibi " + need);
+    }
+
     // Yüksek top kadrajı (2026-10-27, yasin build 41: "Top yükseldiğinde kadrajdan çıkıyor"; Core/Kadraj). Bot maçlarının
     // uçuşlarını (60 Hz) her kamera açısında ve ekranda izdüşürür: top skor kutusunun altındaki sınırın üstünde mi (skor
     // bandı) ya da ekranın dışında mı; yüksek uçuşların (tepe > 5 m) tepesi görünüyor mu. Önce = takip yok (build 41),
