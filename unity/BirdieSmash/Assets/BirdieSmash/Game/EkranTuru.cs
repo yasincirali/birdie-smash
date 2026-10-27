@@ -87,6 +87,7 @@ namespace BirdieSmash.Game
             yield return SonucKare("sonuc_buyuk_galibiyet", true, false, 2, "en");   // HUD ×1,3 sınırında (Ayar.YaziK); "Büyük" yazı
             yield return SonucKare("sonuc_tr_galibiyet", true, false, 0, "tr");
             yield return SonucKare("sonuc_yenilgi", false, false, 0, "en");
+            yield return FileKare();   // 2026-10-27 ekran/file: file yakın planı (ayrı satır, başka dallar da bu listeye ekliyor)
             yield return MenuSahne();
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             Application.Quit(0);
@@ -276,6 +277,59 @@ namespace BirdieSmash.Game
             Ayar.ilerleme = eski; Ayar.reduce = r0; Ayar.kariyerModu = km; Ayar.kariyerSecim = -1; Ayar.yazi = y0; Ayar.dil = d0;
             root.AnaMenu(); yield return Bekle(5);
         }
+        // ---- ekran/file (2026-10-27, yasin "file de standartlarda olmalı bant kısmı daha sert ama file hareketli olacak") ----
+        // File yakın planı: dinlenik (ölçüler köşelerden rapora), ağa smaç (şişkinliğin tepesi ve 0,45 sn sonra yayılan dalga),
+        // bant teması (bant az ve hızlı titrer, ağ az oynar), Hareketi azalt'ta aynı dalga (genlik ×0,35, zamanlama aynı).
+        // Maç duraklatılır ve 1/240 sn adımlarla elle yürütülür: CI'da kare hızı düşük, an kareye bağlı kalmasın. Oyuncular
+        // kadrajdan çekilir. Sayılar: görünen ağ/bant tepesi (m), yenilenen köşe, durulma ve uyku süresi (benzetim sn).
+        IEnumerator FileKare()
+        {
+            Ayar.model = "oyuncak"; Ayar.saha = "salon"; root.SahaDegisti(); root.StartMatch(false, false, false); botAcik = false;
+            yield return Bekle(30);
+            var M = root.match; var nv = FindFirstObjectByType<NetView>(); if (nv == null) { rap.AppendLine("file: NetView YOK"); yield break; }
+            root.paused = true; M.wait = 999; M.s = null; M.me.y = Court.L - .4f; M.op.y = .4f;
+            for (int i = 0; i < 2400 && (M.net.active || M.net.glow > 0); i++) M.Update(1 / 240f);
+            yield return Bekle(3);
+            rap.AppendLine("=== file (ekran/file) · " + nv.Olcu());
+            int u0 = nv.UykuKare; yield return Bekle(10); rap.AppendLine("file dinlenik: 10 karede uyuyan " + (nv.UykuKare - u0) + " · son yenilenen köşe " + nv.SonGuncel);
+            Vector3 hedef = Kit.W(Court.MID - .5f, Court.NET, 1.05f), ofset = new Vector3(1.5f, .35f, -2.3f);
+            yield return YakinNokta("file_01_dinlenik", hedef, ofset);
+            // ağa smaç: 50 m/s, 1,0 m yükseklikte, file önünde 0,3 m'den
+            yield return FileAt(M, nv, "file_02_ag_tepe", "file_03_ag_dalga", Court.MID - .5f, 1.0f, 50, hedef, ofset, false);
+            yield return FileAt(M, nv, "file_04_bant", null, Court.MID - .5f, Court.NetLimit(Court.MID - .5f) - .04f, 20, hedef, ofset, false);
+            yield return FileAt(M, nv, "file_05_ag_dalga_azalt", null, Court.MID - .5f, 1.0f, 50, hedef, ofset, true);
+            M.net.sakin = Ayar.reduce; root.paused = false; M.wait = 0;
+        }
+        IEnumerator FileAt(Match M, NetView nv, string ad1, string ad2, float x, float z, float hiz, Vector3 hedef, Vector3 ofset, bool azalt)
+        {
+            M.net.sakin = azalt; M.between = false; M.wait = 999; M.me.y = Court.L - .4f; M.op.y = .4f;
+            var s = new Shuttle { x = x, y = Court.NET + .3f, z = z, vy = -hiz, from = "me", type = "smash", kd = Shuttle.KD };
+            s.landPred = Shuttle.Simulate(s.x, s.y, s.z, s.vx, s.vy, s.vz, true, s.kd); s.netPred = null; M.s = s;
+            float t = 0, tHit = -1, agTepe = 0, bantTepe = 0, durul = -1, uyku = -1; string tur = "?";
+            System.Func<float> agMax = () => { float m = 0; for (int i = 0; i <= 40; i++) { float xx = i / 40f * Court.CW, top = Court.NetLimit(xx); for (int j = 0; j < 10; j++) m = Mathf.Max(m, Mathf.Abs(M.net.Gorunen(xx, top - Court.BANT - (Court.AG_DERIN - Court.BANT) * (j + .5f) / 10))); } return m; };
+            System.Func<float> bantMax = () => { float m = 0; for (int i = 0; i <= 40; i++) m = Mathf.Max(m, Mathf.Abs(M.net.BantAt(i / 40f * Court.CW))); return m; };
+            // tepe anı: ağda temastan 0,07 sn sonra (şişkinlik en derin), bantta 0,03 sn sonra
+            float an1 = z < Court.NetLimit(x) - Court.BANT ? .07f : .03f;
+            for (int k = 0; k < 240 * 3 && (tHit < 0 || t - tHit < an1); k++) { if (M.s != null && !M.s.dead) M.Update(1 / 240f); else M.net.Advance(1 / 240f); t += 1 / 240f; if (tHit < 0 && M.s != null && (M.s.netHit || M.s.netCord)) { tHit = t; tur = M.s.agda ? "ağ" : M.s.netCord ? "kordon" : "bant"; } }
+            float a1 = agMax(), b1 = bantMax(); yield return Bekle(2);
+            int gunc = nv.SonGuncel; yield return YakinNokta(ad1, hedef, ofset);
+            string sat = "file " + ad1 + ": tür " + tur + " hız " + hiz + " · tepe anı ağ " + (a1 * 100).ToString("0.0") + " cm bant " + (b1 * 1000).ToString("0.0") + " mm · yenilenen köşe " + gunc + "/792";
+            float a2 = -1;
+            for (int k = 0; k < 240 * 6; k++)
+            {
+                if (M.s != null && !M.s.dead) M.Update(1 / 240f); else M.net.Advance(1 / 240f); t += 1 / 240f;
+                float am = agMax(), bm = bantMax(); agTepe = Mathf.Max(agTepe, am); bantTepe = Mathf.Max(bantTepe, bm);
+                if (ad2 != null && a2 < 0 && t - tHit >= .45f) { a2 = am; yield return Bekle(2); sat += " · 0,45 sn ağ " + (am * 100).ToString("0.0") + " cm köşe " + nv.SonGuncel; yield return YakinNokta(ad2, hedef, ofset); }
+                if (am > .001f) durul = -1; else if (durul < 0) durul = t - tHit;
+                if (M.net.active || M.net.glow > 0) uyku = -1; else if (uyku < 0) { uyku = t - tHit; break; }
+            }
+            int u0 = nv.UykuKare; yield return Bekle(5);
+            rap.AppendLine(sat + " · en çok ağ " + (agTepe * 100).ToString("0.0") + " cm bant " + (bantTepe * 1000).ToString("0.0") + " mm oran " + (bantTepe / Mathf.Max(1e-5f, agTepe)).ToString("0.000")
+                + " · ağ durulma (<1 mm) " + durul.ToString("0.00") + " s uyku " + uyku.ToString("0.00") + " s · sonra 5 karede uyuyan " + (nv.UykuKare - u0) + (azalt ? " · Hareketi azalt" : ""));
+            M.s = null;
+        }
+        // ---- ekran/file sonu ----
+
         // 2026-10-26 gece (yasin build 40: "menüler sahaya iç içe geçmiş"): maçtan menüye dönüşte menünün arkası. Ana kamera
         // menüde sahneyi çizmemeli (cullingMask 0), Oyna'nın fonu oyuncusuz bulanık salon karesi olmalı; saha değişince fon
         // yenilenmeli; duraklatıp Ana menü'ye çıkınca (bekleyen maç) Oyna "Maça devam et" göstermeli. Her karede kameranın

@@ -680,9 +680,14 @@ namespace BirdieSmash.Core
             float dsp = u < 1 ? s.agMax * (float)Math.Sin(Math.PI * u) : 0;
             s.vx *= (float)Math.Exp(-10 * h); s.vz += (-Shuttle.GR * .5f - 8 * s.vz) * h;
             s.x += s.vx * h; s.z = Math.Max(Court.NetLimit(s.x) - Court.AG_DERIN + .02f, s.z + s.vz * h);
-            net.Zorla(s.x, s.z, -s.agYan * dsp, h);
-            s.y = Court.NET + net.At(s.x, s.z) * NetWave.GORSEL;
-            if (s.agT >= T + s.agAsili) { s.agda = false; s.y = Court.NET + s.agYan * Court.TOP_PAY; s.vy = s.agYan * (.1f + .6f * s.netK); s.vx *= .5f; }
+            // 2026-10-27 (yasin "file hareketli olacak"): top ağı yalnız tepeye kadar zorlar (u < 0,5); sonra ağ kendi yayıyla
+            // geri döner, top üstünde taşınır. Eskiden ağ topla birlikte düze geri yazılıyordu, serbest dalga kalmıyordu
+            // (1,1 m ötede tepenin %5'i); şimdi geri dönüş ağdan dalga olarak yayılır. Zamanlama (agSure, agAsili) aynı.
+            // Top merkezi ağ yüzeyinin vuranın tarafında TOP_PAY kadar gerisinde (mantar ağa yaslı): eskiden yüzeyin tam üstündeydi,
+            // bırakışta 5 cm vuranın tarafına sıçrıyordu.
+            if (u < .5f) net.Zorla(s.x, s.z, -s.agYan * dsp, h);
+            s.y = Court.NET + net.Gorunen(s.x, s.z) + s.agYan * Court.TOP_PAY;   // 2026-10-27: görünen ağ (bant + Hareketi azalt dahil)
+            if (s.agT >= T + s.agAsili) { s.agda = false; s.y = Court.NET + net.Gorunen(s.x, s.z) + s.agYan * Court.TOP_PAY; s.vy = s.agYan * (.1f + .6f * s.netK); s.vx *= .5f; }
         }
 
         // Katı engeller (2026-10-26, iç içe geçme yok): oyuncu gövdesi filenin kendi tarafında (merkez fileden ≥ 0,25 m; rakip
@@ -905,8 +910,10 @@ namespace BirdieSmash.Core
                 s.Step(h);
                 // Fileden dönen top filenin düzlemini yeniden geçemez (2026-10-26, iç içe geçme yok): vuranın tarafında, ağa yaslı
                 // iner; ağın alt kenarının altına inince serbest.
-                if (s.netHit && !s.altindan && s.z > Court.NetLimit(s.x) - Court.AG_DERIN - .05f && (s.y - Court.NET) * s.agYan < Court.TOP_PAY)
-                { s.y = Court.NET + s.agYan * Court.TOP_PAY; if (s.vy * s.agYan < 0) s.vy = -s.vy * .2f; }
+                // 2026-10-27: düzlem değil ağın görünen yüzeyi (ağ topu bıraktığında henüz geri dönmemiş olabilir; geri dönerken
+                // topu vuranın tarafına iter).
+                if (s.netHit && !s.altindan && s.z > Court.NetLimit(s.x) - Court.AG_DERIN - .05f)
+                { float yuz = Court.NET + net.Gorunen(s.x, s.z); if ((s.y - yuz) * s.agYan < Court.TOP_PAY) { s.y = yuz + s.agYan * Court.TOP_PAY; if (s.vy * s.agYan < 0) s.vy = -s.vy * .2f; } }
                 if (!s.netDone && (py > Court.NET) != (s.y > Court.NET))
                 {
                     s.netDone = true; float lim = Court.NetLimit(s.x); s.gecPay = s.z - lim;
@@ -938,7 +945,7 @@ namespace BirdieSmash.Core
                         else
                         {
                             s.agda = true; s.agT = 0; s.agSure = .07f + .08f * k; s.agAsili = (1 - k) * .12f; s.agMax = .05f + .25f * k;
-                            s.y = Court.NET; s.vx *= .3f; s.vz = Math.Min(0, s.vz * .2f); s.netHit = true; s.netK = k; net.glow = Math.Max(net.glow, k);
+                            s.y = Court.NET + yan * Court.TOP_PAY; s.vx *= .3f; s.vz = Math.Min(0, s.vz * .2f); s.netHit = true; s.netK = k; net.glow = Math.Max(net.glow, k);
                             Emit(Ev.Net, s.from, s.type, s.x, Court.NET, s.z, k, null, null, false);
                         }
                     }

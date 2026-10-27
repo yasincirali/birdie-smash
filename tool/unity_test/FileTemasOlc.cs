@@ -1,5 +1,7 @@
 // File teması ölçümü + parite (2026-10-26, yasin "file kritik, bant daha sert, file oynak"): aynı durumları Match.Update ile
 // yürütür; tool/unity_test/file_temas_parite.js aynı durumları index.html'in kendi kodundan yürütür, iki çıktı (son sütun hariç) aynı olmalı.
+// 2026-10-27 (ekran/file): HTML donuk, Unity file dinamiği ayrıldı (NetWave başlığı, parabol sarkma). Sonuç sütunları (cord, alt,
+// hit, tIn) hâlâ aynı olmalı; sonY, maxKarsi, maxA artık HTML'le aynı değil. agIci görünen ağ yüzeyine göre (NetWave.Gorunen).
 //   mcs -out:ft.exe tool/unity_test/FileTemasOlc.cs unity/BirdieSmash/Assets/BirdieSmash/Core/*.cs && mono ft.exe
 using System; using BirdieSmash.Core;
 static class FileTemasOlc {
@@ -24,7 +26,7 @@ static class FileTemasOlc {
       M.s = s; float t = 0, maxUzak = 0, maxA = 0, tAg = 0; bool karsi = false; float minZ = 9, maxIc = -1;
       for (int f = 0; f < 600 && !s.dead; f++) { M.Update(1 / 60f); t += 1 / 60f;
         float uz = -(s.y - Court.NET); if (uz > maxUzak) maxUzak = uz; if (s.agda) tAg = t;
-        if (s.netHit && !s.agda && !s.altindan && s.z > Court.NetLimit(s.x) - Court.AG_DERIN) { float ic = (M.net.At(s.x, s.z) * NetWave.GORSEL - (s.y - Court.NET)) * s.agYan; if (ic > maxIc) maxIc = ic; }
+        if (s.netHit && !s.agda && !s.altindan && s.z > Court.NetLimit(s.x) - Court.AG_DERIN) { float ic = (M.net.Gorunen(s.x, s.z) - (s.y - Court.NET)) * s.agYan; if (ic > maxIc) maxIc = ic; }
         foreach (var v in M.net.a) maxA = Math.Max(maxA, Math.Abs(v));
         if (iz && ci == 0) Console.WriteLine("  " + t.ToString("0.000") + " y" + (s.y - Court.NET).ToString("+0.000;-0.000") + " z" + s.z.ToString("0.000") + (s.agda ? " AG" : ""));
       }

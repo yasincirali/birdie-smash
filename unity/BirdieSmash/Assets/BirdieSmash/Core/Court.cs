@@ -15,10 +15,17 @@ namespace BirdieSmash.Core
         public const float L = 13.4f, CW = 6.1f, NET = L / 2f, SL = .46f, SR = CW - .46f, SSL = 1.98f;
         public const float NETH = 1.524f, NETP = 1.55f, MID = CW / 2f;
 
-        public static float NetLimit(float x) { return NETH + (NETP - NETH) * Math.Abs(x - MID) / MID; }
+        // Bandın üst kenarı (2026-10-27, BWF Law 1.4–1.5, yasin "file de standartlarda olmalı"): gergin kordon iki direk arasında
+        // sarkar; sarkan gergin kordon parabol çizer (eğimi ortada sıfır). Eskiden ortada kırılan V idi (iki doğru, ortada
+        // 0,85 mm/10 cm kırık; çeyrekte 1,537 m). Uçlar ve orta aynı: ortada 1,524, çift yan çizgideki direkte 1,55 m;
+        // çeyrekte 1,5305 m (fark ≤ 6,5 mm, file payı kuralları aynı fonksiyonu okur).
+        public static float NetLimit(float x) { float u = (x - MID) / MID; return NETH + (NETP - NETH) * u * u; }
         // File parçaları (BWF Law 1.5): üstte 75 mm gergin kordonlu bant, altında 760 mm derin ağ (alt kenarı bandın 0,76 m
         // altında); altı boş. 2026-10-26: top bantta sert sekip hızını kaybeder, ağda gömülür (Match ağ teması).
         public const float BANT = .075f, AG_DERIN = .76f;
+        // Ağ gözü (BWF Law 1.3: koyu, ince kordon, göz 15–20 mm): görünüm dokusu bu adımla tekrar eder (eskiden 40 mm).
+        // File eni CW (6,1 m, direkler çift yan çizgide x 0 ve CW): ağ ve bant direk merkezine kadar uzanır, uçta boşluk yok.
+        public const float AG_GOZ = .019f;
         // Fileden ayrılan top merkezinin file düzlemine en yakın mesafesi: gerçek mantar yarıçapı 13,5 mm, ama top 3,2×
         // okunurluk ölçeğinde çizildiği için (ShuttleView.G) mantar görüntüde 4,3 cm; 2 cm ile top ağın içinde görünüyordu.
         public const float TOP_PAY = .05f;
