@@ -31,7 +31,7 @@ namespace BirdieSmash.Game
         public int odak { get; private set; }
         public string poz { get; private set; }
         public string deneTip, deneSac, deneAyk;
-        Transform bBas, bEl; readonly List<Transform> bAyak = new List<Transform>(); Renderer bGrip, bTel, bSac; Vector3 camS, hedefS; bool camVar;
+        Transform bBas, bEl, bParmak; readonly List<Transform> bAyak = new List<Transform>(); Renderer bGrip, bTel, bSac, bGovde; Vector3 camS, hedefS; bool camVar;
         public PlayerView Fig { get { return fig; } }   // ekran turu tanısı (VaryantOzet)
 
         public static Vitrin Build(Transform root)
@@ -88,7 +88,7 @@ namespace BirdieSmash.Game
         // Yakın plan noktaları: baş, ayaklar, sağ el kemiği, raket sapı ve kafası (PlayerView.Calibrate ile aynı ad kuralları).
         void OdakKemikleri()
         {
-            bBas = null; bEl = null; bAyak.Clear(); bGrip = null; bTel = null; bSac = null; if (fig == null || fig.Model == null) return;
+            bBas = null; bEl = null; bParmak = null; bAyak.Clear(); bGrip = null; bTel = null; bSac = null; bGovde = null; if (fig == null || fig.Model == null) return;
             bSac = fig.SacRenderer();
             foreach (var t in fig.Model.GetComponentsInChildren<Transform>(true))
             {
@@ -97,7 +97,9 @@ namespace BirdieSmash.Game
                 if (n.Contains("foot") && !n.Contains("step") && !n.Contains("ik") && !n.Contains("roll")) bAyak.Add(t);
                 bool sag = n.EndsWith(".r") || n.EndsWith("_r") || n.Contains(" r ") || n.Contains("right");
                 if (bEl == null && sag && n.Contains("hand") && !n.Contains("ik") && !n.Contains("slot")) bEl = t;
+                if (bParmak == null && n == "middle_01_r") bParmak = t;
             }
+            foreach (var r in fig.Model.GetComponentsInChildren<Renderer>(true)) if (bGovde == null && PlayerView.Etiket(r.gameObject.name) == "govde") bGovde = r;
             foreach (var r in fig.kanal[1])
             {
                 if (r == null) continue; string e = PlayerView.Etiket(r.gameObject.name);
@@ -131,6 +133,14 @@ namespace BirdieSmash.Game
             if (odak == YUZ && bBas != null)
             {   // baş + saç (afro, topuz kesilmesin): yarı yükseklik ~16 cm
                 var h = bBas.position + Vector3.up * .06f * boy; float yy = .09f * boy, yx = .08f * boy;
+                // 2026-10-27 oyuncak oranı (~3,4 baş boyu): pencere boy oranlıydı, iri başta yüz ve saç kadrajdan taşıyordu.
+                // Baş büyükse (baş kemiğinden ten tepesine > %14 boy; gerçek oranlı modellerde ~%10, kadraj aynen) pencere
+                // başın kendisinden kurulur: çene (kemiğin 0,62·üst altı) ile tepe (+%12 saç payı) arası.
+                float bu; if (IriBas(boy, out bu))
+                {
+                    float alt0 = bBas.position.y - .62f * bu, ust0 = bBas.position.y + 1.12f * bu;
+                    h = new Vector3(bBas.position.x, (alt0 + ust0) * .5f, bBas.position.z); yy = (ust0 - alt0) * .5f; yx = .8f * bu;
+                }
                 // 2026-10-27 (r42 menu_karakter_sac_deneme): Afro denenince saçın tepesi kadrajın üstünden taşıyordu; sabit pencere
                 // kısa saça göre kuruluydu, hacimli saç kesilince kısa kesimden ayırt edilmiyordu. Pencere açık saç parçasının
                 // tepesini kapsayacak kadar yukarı büyür, alt kenar (yüz) yerinde kalır; kısa saçta eski kadraj birebir (yalnız büyür).
@@ -154,6 +164,11 @@ namespace BirdieSmash.Game
             }
             else if (odak == TUTUS && (bGrip != null || bEl != null)) TutusPoz(boy, out cam, out hedef);
         }
+        // Baş kemiğinden ten tepesine yükseklik (gövde ağı sınırı; saç ayrı parça, dahil değil) boyun %14'ünden büyükse iri baş.
+        bool IriBas(float boy, out float ust)
+        {
+            ust = bGovde != null && bBas != null ? bGovde.bounds.max.y - bBas.position.y : 0; return ust > .14f * boy;
+        }
         // r13: forehand'de sap kameraya doğru uzanıyor, yüzün önünü kesiyor, beş parmak okunmuyordu. Kamera artık sapa dik
         // bir yönden bakar (sap kadrajı yatay keser, el ve parmaklar yandan görünür) ve o dik yönlerden, figürün önüne ve
         // dışına en çok bakan, başı ya da gövdeyi elin önüne (perde) ya da hemen arkasına (yüz arkada) almayan seçilir.
@@ -167,7 +182,10 @@ namespace BirdieSmash.Game
             Vector3 e1 = Vector3.Cross(u, Vector3.up); if (e1.sqrMagnitude < 1e-4f) e1 = Vector3.Cross(u, Vector3.forward); e1.Normalize(); var e2 = Vector3.Cross(u, e1);
             Vector3 dis = hedef - YER; dis.y = 0; dis = dis.sqrMagnitude > 1e-4f ? dis.normalized : Vector3.right;
             var tercih = (Vector3.forward * .8f + dis * .6f + Vector3.up * .2f).normalized;
-            float kay; float d = Uzaklik(.075f * boy, .1f * boy, out kay); float gx, gy; Gorus(out gx, out gy);
+            // oyuncak oranında el 1,45× (avuç ~15 cm): boy oranlı pencere eli kesiyordu; avuç boyundan kurulur (gerçek oranlıda aynen)
+            float yyT = .075f * boy, yxT = .1f * boy, ustT; if (IriBas(boy, out ustT) && bParmak != null && bEl != null)
+            { float pl = (bParmak.position - bEl.position).magnitude; yyT = Mathf.Max(yyT, 1.25f * pl); yxT = Mathf.Max(yxT, 1.65f * pl); }
+            float kay; float d = Uzaklik(yyT, yxT, out kay); float gx, gy; Gorus(out gx, out gy);
             Vector3 bas = bBas != null ? bBas.position + Vector3.up * .06f * boy : YER + Vector3.up * .93f * boy, govde = bas - Vector3.up * .3f * boy;
             Vector3 en = tercih; float enP = -99;
             // r14: tam dik halkaya ±20° eğik iki halka eklendi (sap yine kadrajı keser ama baştan kaçacak yer artar); eğik küçük ceza.

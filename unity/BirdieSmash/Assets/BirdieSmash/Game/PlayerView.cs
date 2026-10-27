@@ -1,5 +1,6 @@
 // Oyuncu: Blender figürünün FBX'i (tool/karakter/unity_fbx.py → Resources/karakter/<model>.fbx). Ayarlar › Oyuncu görünümü:
-// "oyuncak" (Oyuncak 3B, varsayılan; 2026-10-26'dan beri MakeHuman CC0 tabanlı stilize figür, eskiden KayKit Rogue CC0),
+// "oyuncak" (Oyuncak 3B, varsayılan; 2026-10-26'dan beri MakeHuman CC0 tabanlı figür, 2026-10-27'den beri ~3,4 baş boylu tıknaz
+// oyuncak oranı ve dört silüeti ayrı tip; eskiden KayKit Rogue CC0),
 // "rocketbox" (Gerçekçi, Microsoft Rocketbox Sports_Male_04, MIT) ve 2026-10-27'den beri "sade" (Sade, Mesh2Motion CC0). İkisi de iskeletli; 26 klip Legacy Animation olarak normalize zamanla
 // örneklenir: klip ve faz Match.PickClip'ten gelir (HTML player() ile aynı karar), vuruş anı topla kare kare eşleşir.
 // Faz → klip zamanı: sprite kare k'yı (k+.5)/n fazında gösterir; FBX'te pozlar eşit aralıklı olduğu için aynı faz aynı
@@ -84,7 +85,7 @@ namespace BirdieSmash.Game
             if (js != null)
             {
                 var meta = JsonUtility.FromJson<Meta>(js.text); tipMeta = meta != null && meta.tip != null && !string.IsNullOrEmpty(meta.tip.id) ? meta.tip : null; sacMeta = meta != null ? meta.sac : null;
-                if (meta != null && meta.clips != null) foreach (var c in meta.clips) { if (c.poses > 0) Match.CLIP_N[c.name] = c.poses; LOOPS[c.name] = c.loop; if (c.adim > 0 && Match.ADIM_BOY.ContainsKey(c.name)) Match.ADIM_BOY[c.name] = c.adim * SCALE; }
+                if (meta != null && meta.clips != null) foreach (var c in meta.clips) { if (c.poses > 0) Match.CLIP_N[c.name] = c.poses; LOOPS[c.name] = c.loop; if (c.adim > 0 && Match.ADIM_BOY.ContainsKey(c.name)) { Match.ADIM_BOY[c.name] = c.adim * SCALE; adimBoy[c.name] = c.adim * SCALE; } }
             }
             if (prefab != null)
             {
@@ -343,6 +344,7 @@ namespace BirdieSmash.Game
         // 2026-10-27: Karakter v3'ten (51f396a) beri dört oyuncak FBX'inin her birinde 11 saç + 5 ayakkabı parçası var (eski not
         // "bugünkü oyuncak.fbx'te yok" geçersiz). Gerçekçi ve sade modelde parça yok: sözlükler boş, hiçbir şey değişmez.
         bool sacBantGizle; TipMeta tipMeta; SacMeta[] sacMeta;
+        readonly Dictionary<string, float> adimBoy = new Dictionary<string, float>();
         // Açılan parçalar (tanı ve vitrin kadrajı): istenen bulunamayıp varsayılana düşüldüyse istenenden farklıdır.
         public string AcikSac { get; private set; }
         public string AcikAyk { get; private set; }
@@ -601,6 +603,11 @@ namespace BirdieSmash.Game
         float jGor;
         public void Show(Athlete o, Match M, float dt)
         {
+            if (adimBoy.Count > 0)
+            {   // kendi bacağının adımı ve adım tavanı (Match.Athlete.adimBoy/ayakTurMax notu): tavan chassé adımı 0,99 m'den
+                // kısaysa o oranda yükselir (en çok 6 tur/sn); gerçek oranlı modellerde adım ≥ 0,99, tavan aynen 3,6
+                o.adimBoy = adimBoy; float ch; o.ayakTurMax = adimBoy.TryGetValue("chasse_r", out ch) && ch > .05f ? Mathf.Clamp(Match.AYAK_TUR_MAX * .99f / ch, Match.AYAK_TUR_MAX, 6f) : float.NaN;
+            }
             // Sıçrama: sin(jump·π) (tepe temasta), split step küçük hop (%20). 0,5 m ≈ HTML'deki 16 px/28 px-m ölçeği.
             string clip; float ph; M.PickClip(o, isMe, out clip, out ph);   // önce: split klibi kendi hop'unu taşır (Match.JumpH hopsuz)
             float j = Match.JumpH(o, clip == "split" && anim != null && anim["split"] != null) * .5f;

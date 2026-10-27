@@ -17,6 +17,12 @@ namespace BirdieSmash.Core
         public float tx = float.NaN, ty;
         public float sw, swHiz = 4, dive, jump, hop, stun, prepA, splitT, manualT, prepT = float.NaN, nefes = 1;
         public bool yat;
+        // Figürün kendi adım boyu (2026-10-27, oyuncak oranı: tiplerin bacak boyu %35'e dek farklı; ADIM_BOY statik ve son
+        // yüklenen figürünkiydi, öbür oyuncunun ayağı kayıyordu). PlayerView yazar; null ise ADIM_BOY (Core testleri, HTML).
+        public Dictionary<string, float> adimBoy;
+        // Adım tavanı (tur/sn) aynı nedenle figürün: kısa bacak aynı hızda daha sık adım atar (oyuncak atlet chassé adımı 0,57 m,
+        // eski 0,99 m; 3,6 tavanla 2 m/s üstünde ayak kayardı). NaN = AYAK_TUR_MAX.
+        public float ayakTurMax = float.NaN;
         public string clip = "idle", prepClip, shot = "low", hand = "fore", prepShot, prepHand, svClip, svTur;
         public SvAnim svAnim;
         // ayak işi (HTML ayakIsi): yumuşatılmış hız, adım fazı, seçili ayak klibi ve aday klibin süresi
@@ -746,8 +752,8 @@ namespace BirdieSmash.Core
             q.yuru = q.yuru ? q.vAn > YURU_CIK : q.vAn > YURU_GIR;
             if (q.yuru)
             {
-                float boy; if (q.ayakKlip == null || !ADIM_BOY.TryGetValue(q.ayakKlip, out boy)) boy = 1.5f;
-                q.runPh = (q.runPh + Math.Min(q.vAn / boy, AYAK_TUR_MAX) * dt) % 1f;
+                float boy; if (q.ayakKlip == null || !((q.adimBoy != null && q.adimBoy.TryGetValue(q.ayakKlip, out boy)) || ADIM_BOY.TryGetValue(q.ayakKlip, out boy))) boy = 1.5f;
+                q.runPh = (q.runPh + Math.Min(q.vAn / boy, float.IsNaN(q.ayakTurMax) ? AYAK_TUR_MAX : q.ayakTurMax) * dt) % 1f;
                 float fwdv = isMe ? -q.svy : q.svy, side = isMe ? q.svx : -q.svx;   // oyuncunun kendi bakışında: ileri = fileye
                 string aday = Math.Abs(side) > Math.Abs(fwdv) * 1.15f ? (side > 0 ? "chasse_r" : "chasse_l") : fwdv > 0 ? "fwd" : (side >= 0 ? "back_r" : "back_l");
                 bool kosu = q.ayakKlip == "run", kros = q.ayakKlip == "kros_r" || q.ayakKlip == "kros_l";

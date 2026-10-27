@@ -17,7 +17,17 @@ def _ss(a,b,x):
 SAC_IDS=('kisa','kazima','yan','atkuyrugu','topuz','afro','mohikan','anime','orgu','rasta','mullet')
 AYK_IDS=('klasik','hafif','yastik','bilekli','karbon')
 BANT_KAL=E('BS_OY_BANTKAL','.006')   # bandın deriden yüksekliği: saç bandın altında bu kalınlığa ezilir (gerçekte de ezer)
-BANT_SIK=E('BS_OY_BANTSIK','.011')   # bundan fazla ezmek gereken saçta bant gizlenir (afro, dikenler): ezik göze batar
+BANT_SIK=E('BS_OY_BANTSIK','.013')   # bundan fazla ezmek gereken saçta bant gizlenir (afro, dikenler): ezik göze batar. 2026-10-27: 1,1 → 1,3 cm
+# (çocuk yüzü karışımında kafatası biçimi değişti, kısa/yan saçta ezme 0,9 → 1,2 cm; varsayılan saçta bant görünür kalsın)
+# Saç hacmi (2026-10-27, oyuncak oranı; yasin: "tıknaz sevimli karikatür"): iri başta gerçek kalınlıktaki kabuk kask gibi
+# ince duruyor, arkadan ve yüksek kameradan biçim okunmuyordu. Kabuk kalınlığı bant çizgisinin üstünde hv'ye çıkar
+# (bant hizasında eski kalınlık: bant aynı saçlarda görünür kalır), ek parçalar
+# (at kuyruğu, topuz, diken, dread, örgü, yele) baş merkezinden 1+(hv−1)·0,3 ile büyür. hv = 1+(HACIM−1)·HACIM_W[biçim]:
+# zaten hacimli (afro) ve kafaya yatık biçimler (kazıma, örgü) az büyür, yoksa afro kafadan iri, kazıma kabarık olurdu.
+# HACIM oyuncak.py'den tipin 'hacim' değeriyle gelir; 1 = eski kalınlık.
+HACIM=1.
+HACIM_W={'kisa':1.,'kazima':.25,'yan':1.,'atkuyrugu':.8,'topuz':.8,'afro':.3,'mohikan':.5,'anime':.9,'orgu':.3,'rasta':.8,'mullet':1.}
+_HV=[1.]
 
 class Bas:
     """baş çerçevesi: göz ortası gm, göz arası gd, tepe; kafa derisi BVH (tam çözünürlük, sadeleştirmeden önce)"""
@@ -96,7 +106,10 @@ def kabuk(B,zh,kal_f,ad,yumusat=2,alt=.7,sirt=False):
     kd=KDTree(len(sinir))
     for i,c in enumerate(sinir): kd.insert(c,i)
     kd.balance()
-    yeni_co=[(v,v.co+v.normal*kal_f(v.co.copy(),v.normal.copy(),kd.find(v.co)[2])) for v in bm.verts]
+    # hacim bandın üstünde artar (alt kenarda eski kalınlık): bant eski ezme payıyla oturur, kütle tepede ve tepe arkasında
+    bc=Vector((0,gm.y-.085,gm.z+E('BS_OY_BANT','.050'))); bz=Vector((0,-.30,1)).normalized()
+    hvf=lambda c: 1+(_HV[0]-1)*_ss(.012,.045,(c-bc).dot(bz))   # bandın üst kenarından (yarı yükseklik 1,2 cm) başlar
+    yeni_co=[(v,v.co+v.normal*kal_f(v.co.copy(),v.normal.copy(),kd.find(v.co)[2])*hvf(v.co)) for v in bm.verts]
     for v,c in yeni_co: v.co=c
     me=bpy.data.meshes.new(ad); bm.to_mesh(me); bm.free()
     o=bpy.data.objects.new(ad,me); bpy.context.scene.collection.objects.link(o)
@@ -231,7 +244,7 @@ def aralik_son(saclar,govde,pay):
     return top
 def _sac_kur(B,sid):
     """id → nesne (malzeme/UV/ağırlık sonra). Ölçüler gerçek metre (1,80 m tasarım), baş BAS ile büyütülmüş."""
-    gm,gd,top=B.gm,B.gd,B.top; ek=[]
+    gm,gd,top=B.gm,B.gd,B.top; ek=[]; _HV[0]=1+(HACIM-1)*HACIM_W.get(sid,1.)
     if sid=='kisa':
         o=kabuk(B,cizgi(B),kal_kisa(B),'sac_kisa')
     elif sid=='kazima':
@@ -351,6 +364,11 @@ def _sac_kur(B,sid):
             return .014*ar+.006*_ss(gm.z-.07,gm.z-.13,c.z)*_ss(gm.y-.11,gm.y-.15,c.y)
         o=kabuk(B,zh,kal_kisa(B,T=.015,percem=.010,oluk=.003,ek=ekf),'sac_mullet',sirt=True,alt=.6)
     else: raise KeyError(sid)
+    sk=1+(_HV[0]-1)*.3
+    for e in ek:
+        if e is None: continue
+        for v in e.data.vertices: v.co=B.Hc+(v.co-B.Hc)*sk
+    o['hv']=_HV[0]
     nk=len(o.data.vertices); o=_birlestir(o,ek); o['kabuk_n']=nk   # join etkin nesnenin köşelerini başa koyar
     return o
 
