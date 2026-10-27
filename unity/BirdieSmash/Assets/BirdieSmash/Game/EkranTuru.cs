@@ -487,6 +487,13 @@ namespace BirdieSmash.Game
                     + " · eğim " + root.kadrajEgim.ToString("F1") + "° (tavan " + root.kam.egimAzami.ToString("F1") + ") görüş ×" + root.kadrajGenis.ToString("F2") + " · işaret " + (isr != null ? isr.SonAlfa.ToString("F2") : "-")
                     + " · yakinDip " + dy.ToString("F0") + " · azalt " + Ayar.reduce);
                 File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
+                // Tur 2 (GameRoot.KadrajSifirla): top tepedeyken duraklat › Ana menü; menünün ilk karesinde kamera düz olmalı (salon fonu
+                // eğik/uzak çekilmesin). Satır: eğim 0.0, görüş ×1.00, kamera eğimi = çözüm eğimi. Kare: menu_kadraj_donus (fon düz).
+                if (ben && !azalt && ek == "yayin")
+                {
+                    float egOnce = root.kadrajEgim; root.Duraklat(); root.AnaMenu(); root.ui.SekmeAc(Sekme.Kariyer); root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(30); yield return Cek("menu_kadraj_donus");
+                    rap.AppendLine("kadraj_menuye_donus · önce eğim " + egOnce.ToString("F1") + "° · şimdi eğim " + root.kadrajEgim.ToString("F1") + "° görüş ×" + root.kadrajGenis.ToString("F2") + " kamera x " + root.cam.transform.eulerAngles.x.ToString("F1") + "° (çözüm " + root.kam.p.ToString("F1") + "°)");
+                }
             }
             Ayar.reduce = r0;
         }

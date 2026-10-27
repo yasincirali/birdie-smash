@@ -208,7 +208,7 @@ namespace BirdieSmash.Game
             if (kisa) StartMatch(false, false, true); else StartMatch(false, false, false);
         }
         // Duraklatılmış maçtan ana menüye çıkınca maç bekler (HTML anaMenu: M korunur, menüde "Maça devam et").
-        public void AnaMenu() { bekleyen = ekran == Ekran.Oyun && paused && match != null && match.ogr == null; ekran = Ekran.Menu; paused = false; Uyanik(false); if (ui != null) ui.MenuyeDon(); sfx.SuAlti(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); AudioListener.pause = false; }
+        public void AnaMenu() { bekleyen = ekran == Ekran.Oyun && paused && match != null && match.ogr == null; ekran = Ekran.Menu; paused = false; KadrajSifirla(); Uyanik(false); if (ui != null) ui.MenuyeDon(); sfx.SuAlti(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); AudioListener.pause = false; }
         public void MacaDon() { if (!bekleyen) return; bekleyen = false; ekran = Ekran.Oyun; paused = true; Devam(); }
         // Duraklatınca tüm ses susar (HTML AC.suspend), devamda kaldığı yerden sürer.
         public void Duraklat() { if (ekran == Ekran.Oyun && !paused) { paused = true; Uyanik(false); input.Reset(); sfx.Ugultu(false, 0); AudioListener.pause = true; } }
@@ -370,6 +370,14 @@ namespace BirdieSmash.Game
             var M = match; bool kapali = Ayar.reduce || ekran == Ekran.Menu || M == null;
             kadrajEgim = takip.Egim(kam, kapali ? null : M.s, M != null ? M.clock : 0, kapali);
             kadrajGenis = Kadraj.Genis(kam, kadrajEgim); camRot = Quaternion.Euler(kam.p - kadrajEgim, 0, 0);
+        }
+        // Menüye dönüşte kadraj hemen düz (tur 2 inceleme): Oyna'nın bulanık salon fonu (UiKok.SalonCek) menünün ilk karesinde ana
+        // kameradan çekiliyor; UiKok bu Update'ten önce koşarsa duraklatmada (top havadayken) ya da maç sonunda kalan eğim ve
+        // görüş açısı fona giriyordu ve perde kalkmadan fon yeniden çekilmiyordu.
+        void KadrajSifirla()
+        {
+            takip.Egim(kam, null, 0, true); kadrajEgim = 0; kadrajGenis = 1; camRot = Quaternion.Euler(kam.p, 0, 0);
+            if (cam != null) { cam.transform.SetPositionAndRotation(camBase, camRot); Projeksiyon(1); }
         }
         // Smaç "punch" yakınlaşması ekranın ortasına göre (eksen dışı kaymayla birlikte ölçeklenir). camK = 0'da bu matris Unity'nin
         // kendi fieldOfView izdüşümüyle aynıdır; özel matris yalnız son çare kaydırma ve punch için tutuluyor.
