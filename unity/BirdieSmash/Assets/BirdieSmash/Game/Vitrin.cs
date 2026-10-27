@@ -33,6 +33,7 @@ namespace BirdieSmash.Game
         public string deneTip, deneSac, deneAyk;
         Transform bBas, bEl, bParmak; readonly List<Transform> bAyak = new List<Transform>(); Renderer bGrip, bTel, bSac, bGovde; Vector3 camS, hedefS; bool camVar;
         public PlayerView Fig { get { return fig; } }   // ekran turu tanısı (VaryantOzet)
+        public Camera Kam { get { return kam; } }       // ekran turu: bölge rengi vitrin RT'sinden örneklenir (2026-10-27)
 
         public static Vitrin Build(Transform root)
         {

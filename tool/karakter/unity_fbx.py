@@ -178,6 +178,11 @@ for nm, at in (('bas__isaret', hc), ('goz__isaret', hc + Vector((0, .2, 0)))):
     me = bpy.data.meshes.new(nm); me.from_pydata([(0, 0, 0), (.001, 0, 0), (0, .001, 0)], [], [(0, 1, 2)])
     mk = bpy.data.objects.new(nm, me); sc.collection.objects.link(mk); mk.parent = root; mk.location = at
 
+# Aksesuar parçaları (2026-10-27, Gerçekçi: şort, beş ayakkabı modeli, oturtulmuş bant/bileklik): klipler pişirildikten
+# sonra, deri ağı bölünerek (aday.Aday.aksesuar). Adları zaten "<ad>__<etiket>"; FBX'e ve parts listesine girer.
+if hasattr(OY, 'aksesuar'):
+    ek = OY.aksesuar(); kalici += ek
+    for o in ek: print('aksesuar', o.name, len(o.data.vertices), [m.name for m in o.data.materials])
 if not getattr(OY, 'doku_gomme', True):   # model dokusunu Unity Resources'tan okuyorsa (Rocketbox kit) FBX'e gömme: boyut
     for o in kalici:
         for m in o.data.materials:

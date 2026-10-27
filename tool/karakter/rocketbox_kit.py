@@ -21,7 +21,16 @@ KIT = os.path.expanduser('~/AnimationLibrary/rocketbox/_kit')
 CORAP_UST, LASTIK = .125, .022     # m (dinlenme pozu, kaynak ölçeği): çorap ağzı ayak bileğinin ~5 cm üstü, lastik bandı
 TABAN_PLAKA, CIVI_UCU = .0080, -.0118   # m: krampon plakasının altı ve çivi ucu (yan görünüşten ölçüldü)
 FORMA_GRI, YAKA_GRI = .90, .46     # oyun bununla takım rengini çarpar (sportif figürde de %80-90 gri)
-SORT_RENK = np.array((.075, .095, .15))
+SORT_RENK = np.array((.075, .095, .15))   # eski düz lacivert (2026-10-27'ye dek dokuya basılıydı; oyunun varsayılan şort rengi bu)
+# 2026-10-27 (yasin: "Gerçekçi de vücut özellikleri değil de sadece aksesuarlar değişmeli ... şort tişört"): şort da forma
+# gibi tinte hazır açık gri × kıvrım; oyun seçilen şort rengiyle (yoksa SORT_RENK'e denk lacivertle) çarpar. Şort yüzleri
+# rocketbox_aksesuar.py'de ayrı ağa (__sort) alınır, ten ağında bu pikseller artık çizilmez.
+SORT_GRI = .86
+# Forma kumaşları (Ekipman › Forma kumaşı; işlevi Core/Gear'de): her kumaşın forması ayrı renk dokusu (rocketbox_forma_<id>),
+# yalnız forma pikselleri değişir. İri biçim maç kamerasından (oyuncu ~100 px) okunsun, ince desen vitrin yakın planında:
+# klasik = düz (rocketbox_govde), hafif = koyu yan paneller + mikro delik, nefes = göğüs/sırtta çift şerit + delikli
+# havalandırma bölgesi, esnek = çapraz kuşak + ince kaburga. Parlaklık farkı (esnek parlak, hafif mat) PlayerView'da.
+KUMASLAR = ('hafif', 'nefes', 'esnek')
 SOKET_AYAK = ('Foot', 'Toe0')
 
 # sınıflar
@@ -50,15 +59,18 @@ def _sinif(o):
     return out
 
 
-def _rasterle(o, W, sinif):
-    """UV uzayında piksel başına: sınıf (-1 boş), dinlenme dünyası z, yüz normali z"""
+def _rasterle(o, W, sinif, xy=False):
+    """UV uzayında piksel başına: sınıf (-1 boş), dinlenme dünyası z, yüz normali z (xy=True: ayrıca dinlenme x ve y;
+    forma kumaş desenleri gövdedeki yere göre çizilir)"""
     me = o.data; me.calc_loop_triangles(); uv = me.uv_layers.active.data; mw = o.matrix_world
     S = np.full((W, W), -1, np.int8); Z = np.zeros((W, W), np.float32); NZ = np.zeros((W, W), np.float32)
+    X = np.zeros((W, W), np.float32) if xy else None; Y = np.zeros((W, W), np.float32) if xy else None
     P = [mw @ v.co for v in me.vertices]
     for t in me.loop_triangles:
         c = sinif.get(t.polygon_index)
         if c is None: continue
         q = np.array([(uv[l].uv.x * W, (1 - uv[l].uv.y) * W) for l in t.loops]); zz = np.array([P[me.loops[l].vertex_index].z for l in t.loops])
+        if xy: xx_ = np.array([P[me.loops[l].vertex_index].x for l in t.loops]); yy_ = np.array([P[me.loops[l].vertex_index].y for l in t.loops])
         x0, y0 = np.floor(q.min(0)).astype(int); x1, y1 = np.ceil(q.max(0)).astype(int)
         x0, y0 = max(x0, 0), max(y0, 0); x1, y1 = min(x1, W - 1), min(y1, W - 1)
         if x1 < x0 or y1 < y0: continue
@@ -71,7 +83,9 @@ def _rasterle(o, W, sinif):
         yy, xx = (ys[m] - .5).astype(int), (xs[m] - .5).astype(int)
         S[yy, xx] = c; Z[yy, xx] = l1[m] * zz[0] + l2[m] * zz[1] + l3[m] * zz[2]
         NZ[yy, xx] = (mw.to_3x3() @ t.normal).normalized().z
-    return S, Z, NZ
+        if xy:
+            X[yy, xx] = l1[m] * xx_[0] + l2[m] * xx_[1] + l3[m] * xx_[2]; Y[yy, xx] = l1[m] * yy_[0] + l2[m] * yy_[1] + l3[m] * yy_[2]
+    return (S, Z, NZ, X, Y) if xy else (S, Z, NZ)
 
 
 def _blur(a, s):
@@ -129,12 +143,12 @@ def dokular(o):
     'sinif'} (yollar + yüz sınıfları). Dokular önbellekte varsa yeniden üretilmez (sınıflar her seferinde hesaplanır)."""
     os.makedirs(KIT, exist_ok=True)
     sinif = _sinif(o)
-    yol = {k: os.path.join(KIT, f'rb_{k}.png') for k in ('renk', 'normal', 'parlak', 'bas_parlak')}
+    yol = {k: os.path.join(KIT, f'rb_{k}.png') for k in ('renk', 'normal', 'parlak', 'bas_parlak') + tuple('forma_' + q for q in KUMASLAR)}
     src = lambda n: glob.glob(os.path.join(KAYNAK, 'Textures', f'*_{n}.tga'))[0]
-    ham = os.path.join(KIT, 'surum.txt'); SURUM = '10'
+    ham = os.path.join(KIT, 'surum.txt'); SURUM = '11'
     if not (all(os.path.exists(p) for p in yol.values()) and os.path.exists(ham) and open(ham).read() == SURUM):
         C = _oku(src('body_color')); N = _oku(src('body_normal')); W = C.shape[0]
-        S, Z, NZ = _rasterle(o, W, sinif); cov = S >= 0
+        S, Z, NZ, X, Y = _rasterle(o, W, sinif, xy=True); cov = S >= 0
         L = C @ np.array((.3, .59, .11), np.float32)
         out = C.copy(); nout = N.copy()
         # forma + yaka: düz gri × kıvrım. Yaka = kaynağın turuncu yaka/raglan şeritleri (göğüsteki kırmızı logo hariç)
@@ -151,7 +165,7 @@ def dokular(o):
         out[fm] = g[fm, None]
         # şort
         sm = S == SORT
-        r = _kivrim(N, sm); out[sm] = (SORT_RENK[None, :] * r[sm, None])
+        r = _kivrim(N, sm); out[sm] = (SORT_GRI * r[sm, None])
         # bacak: ten / lastik / beyaz çorap. Baldır teni ön kol adasından örneklenir (aynı kıllı, düz ten; diz şeridini
         # aynalamak baldıra ikinci bir diz kapağı gölgesi basıyordu), üst kenarda diz şeridinin son satırlarına karışır.
         from scipy.ndimage import map_coordinates
@@ -208,10 +222,37 @@ def dokular(o):
         _yaz(np.repeat(P_[..., None], 3, -1), yol['parlak']); _yaz(np.repeat(HP[..., None], 3, -1), yol['bas_parlak'])
         out = _doldur(out, cov); nout = _doldur(nout, cov)
         _yaz(out, yol['renk']); _yaz(nout, yol['normal'])
+        for q in KUMASLAR: _yaz(_doldur(_kumas(out, fm, X, Y, Z, q), cov), yol['forma_' + q])
         np.save(os.path.join(KIT, 'sinif.npy'), S)
         open(ham, 'w').write(SURUM)
     return dict(renk=yol['renk'], normal=yol['normal'], parlak=yol['parlak'], bas_renk=src('head_color'), bas_normal=src('head_normal'),
                 bas_parlak=yol['bas_parlak'], sinif=sinif)
+
+
+def _kumas(out, fm, X, Y, Z, q):
+    """forma piksellerine kumaş deseni (kaynak ölçeği, dinlenme pozu: yüz -y'ye bakar, gövde |x| < ~0,19 m, koltuk altı
+    z ~1,42). Çarpan 1'in altında kalır: oyun dokuyu takım rengiyle çarpar, desen her renkte koyu-açık olarak okunur."""
+    H, W = fm.shape; yy, xx = np.mgrid[0:H, 0:W]; k = np.ones((H, W), np.float32)
+    ax = np.abs(X); govde = fm & (ax < .19)
+    def yumusak(m, s=1.2): return np.clip(_blur(m.astype(np.float32), s), 0, 1)
+    if q == 'hafif':
+        yan = govde & (ax > .115) & (Z < 1.43) & (Z > .97)
+        k *= 1 - .42 * yumusak(yan)
+        delik = ((xx % 8) - 3.5) ** 2 + ((yy % 8) - 3.5) ** 2 < 2.6 ** 2
+        k = np.where(fm, k * np.where(delik, .84, 1.), k)
+    elif q == 'nefes':
+        serit = govde & (((Z > 1.315) & (Z < 1.345)) | ((Z > 1.37) & (Z < 1.39)))
+        k *= 1 - .45 * yumusak(serit)
+        hava = govde & (Z > 1.0) & (Z < 1.29) & (ax < .09)
+        delik = ((xx % 12) - 5.5) ** 2 + ((yy % 12) - 5.5) ** 2 < 3.2 ** 2
+        k = np.where(hava & delik, k * .80, k)
+    elif q == 'esnek':
+        d = (X * .78 - (Z - 1.2) * .62)   # sağ omuzdan sol kalçaya kuşak (önde ve arkada aynı)
+        kusak = govde & (np.abs(d) < .028)
+        k *= 1 - .36 * yumusak(kusak, 2.0)
+        kab = .965 + .035 * np.cos(2 * np.pi * (xx + yy) / 7.0)   # ince çapraz kaburga
+        k = np.where(fm, k * kab, k)
+    o2 = out.copy(); o2[fm] = out[fm] * k[fm, None]; return o2
 
 
 def taban_duzle(o):
@@ -230,9 +271,10 @@ def unity_cikti(hedef, olcu=1024):
     Rocketbox kaynağı ve Unity aynı kural), *_mg.png (Standard _MetallicGlossMap: R metal=0, A smoothness)."""
     from PIL import Image
     src = lambda n: glob.glob(os.path.join(KAYNAK, 'Textures', f'*_{n}.tga'))[0]
-    for ad, p, tur in (('govde', os.path.join(KIT, 'rb_renk.png'), 'jpg'), ('bas', src('head_color'), 'jpg'),
+    for ad, p, tur in ((('govde', os.path.join(KIT, 'rb_renk.png'), 'jpg'), ('bas', src('head_color'), 'jpg'),
                        ('govde_n', os.path.join(KIT, 'rb_normal.png'), 'png'), ('bas_n', src('head_normal'), 'png'),
-                       ('govde_mg', os.path.join(KIT, 'rb_parlak.png'), 'mg'), ('bas_mg', os.path.join(KIT, 'rb_bas_parlak.png'), 'mg')):
+                       ('govde_mg', os.path.join(KIT, 'rb_parlak.png'), 'mg'), ('bas_mg', os.path.join(KIT, 'rb_bas_parlak.png'), 'mg'))
+                      + tuple(('forma_' + q, os.path.join(KIT, f'rb_forma_{q}.png'), 'jpg') for q in KUMASLAR)):
         im = Image.open(p).convert('RGB').resize((olcu, olcu), Image.LANCZOS)
         out = os.path.join(hedef, 'rocketbox_' + ad + ('.jpg' if tur == 'jpg' else '.png'))
         if tur == 'jpg': im.save(out, quality=92)

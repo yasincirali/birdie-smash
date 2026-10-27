@@ -62,7 +62,7 @@ namespace BirdieSmash.Game
         // GSE = yalnız ekipman (5 çubuk ve yükseltme önizlemesi bunu anlatır), GS = ekipman + oyun tarzı (maç fiziği bunu
         // okur). Tarz ekipman kartına girmez: güç ekipmandan, tarz karakterden (tasarım §5.1).
         public static Gear gear; public static GearStats GS = GearStats.Notr, GSE = GearStats.Notr;
-        public static readonly Dictionary<string, string> GORUNUM = new Dictionary<string, string> { { "ten", "dogal" }, { "sac", "dogal" }, { "ayakkabi", "dogal" }, { "kaplama", "model" } };
+        public static readonly Dictionary<string, string> GORUNUM = new Dictionary<string, string> { { "ten", "dogal" }, { "sac", "dogal" }, { "ayakkabi", "dogal" }, { "kaplama", "model" }, { "sort", "dogal" } };   // sort: 2026-10-27 şort rengi (Gerçekçi, Sade)
         public static readonly Dictionary<string, string> KOZ = new Dictionary<string, string> { { Kozmetik.TIP, "atlet" }, { Kozmetik.SAC, "kisa" } };
         public static readonly Dictionary<string, string> RGOR = new Dictionary<string, string> { { "grip", "siyah" }, { "tel", "beyaz" }, { "tel2", "kirmizi" }, { "desen", "tek" } };
         public static string FORMA { get { return GS.forma; } }
@@ -120,8 +120,13 @@ namespace BirdieSmash.Game
             return sadeVar == 1;
         }
         static int sadeVar = -1;
-        // Beden tipi, saç biçimi ve ayakkabı MODELİ parçaları yalnız oyuncak ailesinin FBX'lerinde (oyuncak_<tip>.fbx) var.
+        // Beden tipi ve saç biçimi parçaları yalnız oyuncak ailesinin FBX'lerinde (oyuncak_<tip>.fbx) var.
         public static bool VaryantGorunur { get { return model == "oyuncak"; } }
+        // 2026-10-27 (yasin: "Gerçekçi de vücut özellikleri değil de sadece aksesuarlar değişmeli"): Gerçekçi'de beden/yüz/saç
+        // tek, ama beş ayakkabı modeli (rocketbox.fbx ayk_<varlik>__ayakkabi) ve şort ağı var. Sade'de şort ağı var, ayakkabı
+        // modeli yok (renk taban parçasında görünür). Oyuncak'ta şort gövde atlasında: şort rengi orada görünmez, sunulmaz.
+        public static bool AykModelGorunur { get { return model == "oyuncak" || model == "rocketbox"; } }
+        public static bool SortGorunur { get { return model == "rocketbox" || model == "sade"; } }
         public static void GearHesap() { gear.kariyerModu = kariyerModu; GSE = gear.Hesap(); GS = Karakter.Uygula(GSE, Tarz); AldatmaKur(); }
         // Aldatıcı vuruşlar (2026-10-26, Core/Aldatma): seviye kapısı maça buradan gider (her maç kurulumunda GearHesap çağrılır);
         // ilk fırsat açıklaması bir kez gösterilir, görülenler ilerleme kaydında (tuytop_ilerleme.aldatmaGor).

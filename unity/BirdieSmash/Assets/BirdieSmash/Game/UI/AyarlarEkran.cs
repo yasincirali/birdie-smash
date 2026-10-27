@@ -34,7 +34,9 @@ namespace BirdieSmash.Game
                 string id = Ayar.MODELLER[i]; if (!Ayar.ModelVar(id)) continue;
                 m.Add(Cip(L.T(Ayar.MODEL_AD[i]), Ayar.model == id, () => { Ayar.model = id; Ayar.Kaydet(); root.ModelDegisti(); Degisti(); }));
             }
-            if (!Ayar.VaryantGorunur) c.Add(Yazi(L.T("Beden tipi, saç biçimi ve ayakkabı modeli yalnız Oyuncak 3B'de görünür."), 13, "ipucu"));
+            // 2026-10-27: Gerçekçi'de ayakkabı modeli, şort ve kumaş da görünür; not neyin sabit neyin değiştiğini söyler.
+            if (Ayar.model == "rocketbox") c.Add(Yazi(L.T("Gerçekçi: beden, yüz ve saç sabit; ayakkabı, forma, şort, kafa bandı, bileklik ve raket değişir."), 13, "ipucu"));
+            else if (!Ayar.VaryantGorunur) c.Add(Yazi(L.T("Beden tipi, saç biçimi ve ayakkabı modeli yalnız Oyuncak 3B'de görünür."), 13, "ipucu"));
             c.Add(Grup(L.T("Kamera"))); var km = Satir(); c.Add(km);
             for (int i = 0; i < GameRoot.KAMERA_SIRA.Length; i++)
             {

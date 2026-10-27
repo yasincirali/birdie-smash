@@ -724,6 +724,34 @@ static class BotMac
         if (Karakter.AcilanlarTurlu(16).Any(a => a[0] == "Ayakkabı")) Fail("ayakkabı RENGİ 'Ayakkabı rengi' etiketiyle olmalı");
         Console.WriteLine("karakter: " + T.Length + " tip (" + bedava + " ücretsiz), " + S.Length + " saç biçimi (garip ≥ " + garipMin + " Tüy), 5 ayakkabı nötr toplamlı, kozmetik güç vermez, kapı/taşıma/rakip tamam");
         KarakterVarliklari(T, S);
+        GercekciAksesuar();
+    }
+    // 2026-10-27 (yasin: "Gerçekçi de vücut özellikleri değil de sadece aksesuarlar değişmeli kafa bandı forma bileklik ayakkabı
+    // şort tişört raket"): Gerçekçi'de sunulan her aksesuar seçeneğinin bir parçası olmalı. rocketbox.fbx'te ve _clips.json
+    // parts'ta: şort ağı (rb_sort__sort), her ayakkabı modelinin ayk_<varlik>__ayakkabi parçası, kafa bandı ve bileklik;
+    // her kumaşın (klasik hariç) forma dokusu Resources'ta; şort renk listesi geçerli (ilki modelin rengi, Sv 1, kimlikler
+    // tekil, renk biçimi #rrggbb), Karakter.GORUNUM_KAT'ta ve yalnız görünüş (karakter.json'da güç alanı yok). Ekran turu
+    // (EkranTuru.Gercekci) aynı seçimleri Unity'de açık parça, aktif renderer ve bölge rengiyle ölçer.
+    static void GercekciAksesuar()
+    {
+        string R = "unity/BirdieSmash/Assets/Resources/karakter/";
+        var js = Json.Obj(Json.Parse(System.IO.File.ReadAllText(R + "rocketbox_clips.json")));
+        var parts = new HashSet<string>(((List<object>)js["parts"]).Select(x => (string)x));
+        string fbx = System.Text.Encoding.ASCII.GetString(System.IO.File.ReadAllBytes(R + "rocketbox.fbx"));
+        var gerek = new List<string> { "rb_sort__sort", "rb_bant__bant", "rb_bileklik__bilek" };
+        gerek.AddRange(Gear.GEAR["ayakkabi"].Values.Select(a => "ayk_" + (a.varlik ?? a.id) + "__ayakkabi"));
+        foreach (var g in gerek) { if (!parts.Contains(g)) Fail("rocketbox_clips.json'da parça yok: " + g); if (fbx.IndexOf(g, StringComparison.Ordinal) < 0) Fail("rocketbox.fbx'te düğüm yok: " + g); }
+        foreach (var y in new[] { "ayk_ust", "rb_sort" }) if (fbx.IndexOf(y, StringComparison.Ordinal) < 0) Fail("rocketbox.fbx'te malzeme yok: " + y);
+        int doku = 0;
+        foreach (var k in Gear.GEAR["kumas"].Values) { if (k.id == "klasik") continue; if (!System.IO.File.Exists(R + "rocketbox_forma_" + k.id + ".jpg")) Fail("kumaşın forma dokusu yok: " + k.id); else doku++; }
+        var so = Karakter.Gorunum("sort");
+        if (so.Length < 5 || so[0].renk != null || so[0].sv != 1) Fail("şort rengi: en az 5 öğe, ilki modelin rengi (Sv 1)");
+        if (so.Select(o => o.id).Distinct().Count() != so.Length) Fail("şort rengi kimlikleri tekil değil");
+        foreach (var o in so) if (o.renk != null && !System.Text.RegularExpressions.Regex.IsMatch(o.renk, "^#[0-9a-f]{6}$")) Fail("şort rengi biçimi: " + o.id + " " + o.renk);
+        if (!Karakter.GORUNUM_KAT.Contains("sort")) Fail("şort rengi GORUNUM_KAT'ta yok (kayıt/açılış listesi)");
+        var veri = Json.Obj(Json.Parse(System.IO.File.ReadAllText("tool/veri/karakter.json")));
+        foreach (var x in (List<object>)veri["sort"]) { var d = Json.Obj(x); foreach (var alan in new[] { "etki", "guc", "kontrol", "hiz", "kosu", "enerji" }) if (d.ContainsKey(alan)) Fail("şort renginde güç alanı: " + alan); }
+        Console.WriteLine("gerçekçi aksesuar: " + gerek.Count + " parça (json + FBX), " + doku + " kumaş dokusu, " + so.Length + " şort rengi");
     }
     // 2026-10-27 (yasin build 41: "3B model kaybolmuş, seçmeme rağmen görmedim"): Soyunma odasının sattığı her görünüm öğesinin
     // gerçekten bir parçası olmalı (sahte öğe yok). Her beden tipinin FBX'i ve _clips.json'u Resources/karakter'de; dört oyuncak

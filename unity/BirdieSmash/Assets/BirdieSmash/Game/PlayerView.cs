@@ -43,12 +43,15 @@ namespace BirdieSmash.Game
         // Görünüm: null alan = FBX'in kendi rengi (cerceve/grip/tel) ya da gizli (bant/bilek).
         public class Gorunum
         {
-            public Color forma; public Color? cerceve, bant, bilek, grip, tel, tel2, ten, sac, ayakkabi; public bool gripCizgi;
+            public Color forma; public Color? cerceve, bant, bilek, grip, tel, tel2, ten, sac, ayakkabi, sort; public bool gripCizgi;
+            // 2026-10-27 Gerçekçi aksesuarları: sort = şort rengi (null = modelin varsayılanı), kumas = forma kumaşı (Gear "kumas";
+            // dokulu modelde formanın deseni ve parlaklığı, null = klasik).
+            public string kumas;
             // 2026-10-26: tip (Kozmetik.TIP), saç biçimi (Kozmetik.SAC) ve ayakkabı modeli (Gear "ayakkabi") kimlikleri; null =
             // varsayılan (listenin ilki: hakemler ve eski çağrılar bugünkü görünüşle kalır).
             public string tip, sacModel, aykModel;
             // Sahnedeki figürü yeniden kurmak gerekip gerekmediğinin özeti (GameRoot, Vitrin).
-            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel; }
+            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas; }
         }
         static Color? Renk(string h) { return h != null ? Kit.Hex(h) : (Color?)null; }
         public static Gorunum Benim()
@@ -57,7 +60,8 @@ namespace BirdieSmash.Game
             return new Gorunum { forma = Kit.Hex(gs.forma), cerceve = Kit.Hex(kp ?? gs.raketRenk), bant = gs.bant != null ? Kit.Hex(gs.bant) : (Color?)null, bilek = gs.bileklik != null ? Kit.Hex(gs.bileklik) : (Color?)null,
                 grip = Kit.Hex(Vitrin.RAK_RENK[r["grip"]]), tel = Kit.Hex(Vitrin.RAK_RENK[r["tel"]]), tel2 = Kit.Hex(Vitrin.RAK_RENK[r["desen"] == "iki" ? r["tel2"] : r["tel"]]),
                 ten = Renk(Ayar.GorunumRenk("ten")), sac = Renk(Ayar.GorunumRenk("sac")), ayakkabi = Renk(Ayar.GorunumRenk("ayakkabi")), gripCizgi = gs.gripDoku == "cizgi",
-                tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.gear != null ? Ayar.gear.ayakkabi : null };
+                tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.gear != null ? Ayar.gear.ayakkabi : null,
+                sort = Renk(Ayar.GorunumRenk("sort")), kumas = Ayar.gear != null ? Ayar.gear.kumas : null };
         }
         // Rakip (2026-10-26): tip, saç biçimi/rengi, ten ve ayakkabı stil.json'daki gorunum'dan (rakip kimliği: Blaze hep dikenli
         // kızıl saçlı). Forma ve raket bugünkü gibi; veri yoksa bugünkü görünüş.
@@ -259,13 +263,27 @@ namespace BirdieSmash.Game
             // forma dokusu) modelde: ölçüt normal haritası (_govde_n) — bugün yalnız Gerçekçi. Atlas modeli düz takım rengi.
             var govdeTx = modelAdi != null && Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde_n") != null
                 ? Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde") : null;
-            var formaM = govdeTx != null ? Kit.LitTex(g.forma, govdeTx, .25f) : Kit.Lit(g.forma, .25f);
+            // 2026-10-27 forma kumaşı görünür (yasin: "forma tişört"): dokulu modelde kumaşın kendi forma dokusu
+            // (<model>_forma_<kumas>: rocketbox_kit.py _kumas; hafif yan panel + delik, nefes çift şerit, esnek çapraz kuşak) ve
+            // parlaklığı. Dosya yoksa (klasik, ya da doku üretilmemiş model) gövde dokusu: bugünkü görünüş birebir.
+            var formaTx = govdeTx != null && g.kumas != null ? Resources.Load<Texture2D>("karakter/" + modelAdi + "_forma_" + g.kumas) : null;
+            var formaM = govdeTx != null ? Kit.LitTex(g.forma, formaTx ?? govdeTx, .25f) : Kit.Lit(g.forma, .25f);
             if (govdeTx != null)
             {
                 Kit.Bump(formaM, Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde_n"));
-                Kit.Gloss(formaM, Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde_mg"));
+                Kit.Gloss(formaM, Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde_mg"), KumasParlak(g.kumas));
             }
             var M = new Dictionary<string, Material> { { "forma", formaM } };
+            // Şort (2026-10-27): Gerçekçi'de ayrı derili ağ (rb_sort__sort, doku açık gri) → doku × şort rengi, seçim yoksa eski
+            // lacivert (SORT_VARSAYILAN; doku 2026-10-27'ye dek bu rengi basılı taşıyordu). Düz renkli modelde (Sade) yalnız
+            // oyuncu seçtiyse boyanır; seçim yoksa FBX'in kendi rengi. Hakem şortu aşağıda ayrıca lacivert (#0a1530).
+            if (govdeTx != null)
+            {
+                var sm = Kit.LitTex(g.sort ?? Kit.Hex(SORT_VARSAYILAN), govdeTx, .2f); Kit.Bump(sm, Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde_n"));
+                Kit.Gloss(sm, Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde_mg")); M["sort"] = sm;
+            }
+            else if (g.sort.HasValue) M["sort"] = Kit.Lit(g.sort.Value, .2f);
+            aykDoku = govdeTx;
             if (g.cerceve.HasValue) M["cerceve"] = Kit.Lit(g.cerceve.Value, .6f);
             if (g.bant.HasValue) M["bant"] = Kit.Lit(g.bant.Value, .2f); if (g.bilek.HasValue) M["bilek"] = Kit.Lit(g.bilek.Value, .2f);
             if (g.grip.HasValue) M["grip"] = g.gripCizgi ? Kit.LitTex(g.grip.Value, CizgiDoku(), .1f) : Kit.Lit(g.grip.Value, .15f); if (g.tel.HasValue) M["tel"] = Kit.Lit(g.tel.Value, .5f); if (g.tel2.HasValue) M["tel2"] = Kit.Lit(g.tel2.Value, .5f);
@@ -303,6 +321,11 @@ namespace BirdieSmash.Game
             }
         }
         Transform kafa; TrailRenderer yay;
+        // Varsayılan şort: SORT_RENK (rocketbox_kit, düz lacivert .075/.095/.15) ÷ doku grisi .86 (gamma uzayında çarpım).
+        public const string SORT_VARSAYILAN = "#161c2c";
+        // Kumaşın parlaklık çarpanı (_GlossMapScale): esnek (likralı) parlak, hafif (delikli örgü) mat. Bilinmeyen = 1.
+        public static float KumasParlak(string k) { return k == "esnek" ? 1.35f : k == "hafif" ? .8f : k == "nefes" ? .9f : 1f; }
+        Texture2D aykDoku;
         bool DokuluMu(Renderer r) { foreach (var a in r.sharedMaterials) if (DokuMalzeme(a) != null) return true; return false; }
         // Havlu grip: sapı saran açık-koyu şerit (16×64, tekrar eden; bir kez üretilir, tüm figürler paylaşır).
         static Texture2D cizgi;
@@ -342,7 +365,8 @@ namespace BirdieSmash.Game
         // (çizim çağrısı sıfır, deri hesabı da yok). Seçilen parça bu FBX'te yoksa varsayılanın (listenin ilki) parçası, o da
         // yoksa ilk bulunan: figür hiçbir zaman saçsız/ayakkabısız kalmaz. Kazıtılmış (varlik null) bilerek hiçbirini açmaz.
         // 2026-10-27: Karakter v3'ten (51f396a) beri dört oyuncak FBX'inin her birinde 11 saç + 5 ayakkabı parçası var (eski not
-        // "bugünkü oyuncak.fbx'te yok" geçersiz). Gerçekçi ve sade modelde parça yok: sözlükler boş, hiçbir şey değişmez.
+        // "bugünkü oyuncak.fbx'te yok" geçersiz). Sade modelde parça yok: sözlükler boş, hiçbir şey değişmez. 2026-10-27'den beri
+        // Gerçekçi'de beş ayakkabı parçası var (rocketbox_aksesuar.py; saç yok: saç dokuda, beden tek).
         bool sacBantGizle; TipMeta tipMeta; SacMeta[] sacMeta;
         readonly Dictionary<string, float> adimBoy = new Dictionary<string, float>();
         // Açılan parçalar (tanı ve vitrin kadrajı): istenen bulunamayıp varsayılana düşüldüyse istenenden farklıdır.
@@ -416,6 +440,9 @@ namespace BirdieSmash.Game
         // Ayakkabı (sözleşme §3): iki malzeme yuvası. "ayk_ust" (saya) seçili ayakkabı rengiyle boyanır (null = FBX'in açık
         // rengi), "oy_body" (taban, bağcık, topuk) gövde atlasına bağlanır (DokuMalzeme), boyanmaz: kontrast kaybolmasın.
         // Eski (__taban) etiketli modellerde boyama aynen M["taban"] ile sürer.
+        // 2026-10-27 Gerçekçi (rocketbox_aksesuar.py): beş ayakkabı modeli aynı yuva adlarıyla; saya dokulu: gövde dokusu (beyaz
+        // saya, gri parçalar) × renk + normal (seçim yoksa beyaz = dokunun kendisi), taban "m301_body" (klasik: kauçuk, doku) ya
+        // da "ayk_alt_*" (FBX'in düz rengi: beyaz ince/kalın taban, kömür karbon) boyanmaz.
         void AyakkabiBoya(Renderer r, Color? c)
         {
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
@@ -423,7 +450,12 @@ namespace BirdieSmash.Game
             for (int k = 0; k < arr.Length; k++)
             {
                 if (arr[k] == null) continue;
-                if (arr[k].name.StartsWith("ayk_ust")) { if (c.HasValue) { arr[k] = Kit.Lit(c.Value, .3f); degisti = true; } }
+                if (arr[k].name.StartsWith("ayk_ust") && aykDoku != null)
+                {
+                    var um = Kit.LitTex(c ?? Color.white, aykDoku, .3f); Kit.Bump(um, Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde_n"));
+                    Kit.Gloss(um, Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde_mg")); arr[k] = um; degisti = true;
+                }
+                else if (arr[k].name.StartsWith("ayk_ust")) { if (c.HasValue) { arr[k] = Kit.Lit(c.Value, .3f); degisti = true; } }
                 else { var dm = DokuMalzeme(arr[k]); if (dm != null) { arr[k] = dm; degisti = true; } }
             }
             if (degisti) r.sharedMaterials = arr;
