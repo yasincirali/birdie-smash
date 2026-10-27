@@ -390,3 +390,36 @@
 
 /* diğer sekmeler: kart başlıkları ve durum etiketleri yön A diliyle (renkler yukarıda değişkenlerden) */
 .durum-simdi { -unity-font-definition: resource("fonts/BarlowCondensed-ExtraBoldItalic"); letter-spacing: 1px; }
+
+/* ===== 2026-10-27 duyarlı yerleşim (yasin build 41: "her telefonda açıkça gözükmeli"; Game/UI/Duyarli.cs) =====
+   Yalnız ölçü; renk ve yazı ailesi değişmez. .kisa: güvenli alan düşülünce panel yüksekliği < 700 (iPhone SE, 8 Plus,
+   ekran zoom'u). Küçülen yalnız süs ve boşluk; dokunma alanı ≥ 44, sekme ≥ 46. .genis: panel eni ≥ 500 (iPad). */
+.kisa .ust-serit { min-height: 50px; }
+.kisa .sayfa-basi { min-height: 50px; }
+.kisa .oyna-icerik { padding-top: 4px; padding-bottom: 6px; }
+.kisa .oyna-sahne { min-height: 72px; }
+.kisa .marka { margin-top: 0; }
+.kisa .logo { width: 60px; height: 60px; }
+.kisa .plaka { padding: 10px 14px 12px 14px; margin-bottom: 6px; }
+.kisa .plaka-meta { margin-top: 4px; }
+.kisa .plaka .basamak-cubugu { margin-top: 8px; }
+.kisa .cta { min-height: 68px; padding: 8px 18px 10px 22px; margin: 2px 0 8px 0; }
+.kisa .cta-ikon { width: 46px; height: 46px; border-radius: 23px; }
+.kisa .karo { min-height: 56px; padding: 7px 10px; }
+.kisa .vitrin-alan { height: 36%; min-height: 176px; }
+.kisa.buyuk-yazi .vitrin-alan { height: 28%; min-height: 150px; }
+.kisa .sekme-cubugu { padding-top: 4px; }
+.kisa .sekme { min-height: 46px; margin-bottom: 4px; }
+.kisa .alt-sayfa { max-height: 94%; }
+.kisa .tutamak-alan { height: 22px; }
+.kisa .tur-kart { margin-top: 4px; margin-bottom: 6px; }
+.kisa .segment { margin-top: 6px; }
+/* Alt sayfanın birincil eylemi kaydırmanın dışında, dipte (Duyarli.cs kural 4); kaydırma onun için küçülür. */
+.alt-eylem { flex-shrink: 0; margin-top: 10px; margin-bottom: 0; }
+.alt-sayfa { flex-direction: column; }
+/* iPad: içerik sütunu 560 (UiKok.SutunYaz alan'ın yan payını yazar), alt sayfa aynı genişlikte ortada; sekme çubuğu tam
+   genişlik, öğeler ortada en çok 140 birim (iPadOS sekme çubuğu kalıbı; telefonda dörde bölünür). */
+.genis .alt-katman { align-items: center; }
+.genis .alt-sayfa { width: 100%; max-width: 560px; }
+.genis .sekme-cubugu { justify-content: center; }
+.genis .sekme { max-width: 140px; }

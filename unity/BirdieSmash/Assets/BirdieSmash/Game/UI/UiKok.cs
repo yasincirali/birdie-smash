@@ -10,7 +10,8 @@
 // Ölçek: ScaleWithScreenSize, referans 375 pt genişlik (iPhone SE/mini). Neden ConstantPhysicalSize değil (tasarım Ek A.7
 // öyle diyordu): Screen.dpi 3× iPhone'larda yuvarlanmış, CI'daki xvfb'de 0 geliyor; genişliğe göre ölçek her telefonda
 // panel birimini ≥ 1 pt yapar, böylece 44 birimlik düğme en dar telefonda da ≥ 44 pt kalır. Geniş ekranda (iPad) yüksekliğe
-// göre ölçeklenir.
+// göre ölçeklenir. 2026-10-27: eşleme ekran boyu değişince yeniden seçilir; kısa ekran (SE) ve geniş ekran (iPad) boyut
+// sınıfları, güvenli alanın katman konumlarına yazılması ve afişin boşluğa oturması Duyarli.cs'de.
 // Performans (§7): menü ağacı yalnız bir şey değişince yeniden kurulur; Update'te ayırma yok (yalnız karşılaştırma ve
 // değişince stil yazma). Maçta menü kökü display:none (çizim ve dokunma yok).
 // Perde: IMGUI perdesi ile UI Toolkit panelinin çizim sırası sürüme göre değişebilir; menü perdenin örtüsüyle birlikte solar
@@ -97,6 +98,7 @@ namespace BirdieSmash.Game
             sayfa.RegisterCallback<PointerDownEvent>(e => { kenarX = e.position.x - sayfa.worldBound.x < 24 ? e.position.x : -1; }, TrickleDown.TrickleDown);
             sayfa.RegisterCallback<PointerMoveEvent>(e => { if (kenarX >= 0 && e.position.x - kenarX > 70) { kenarX = -1; Geri(); } }, TrickleDown.TrickleDown);
             sayfa.RegisterCallback<PointerUpEvent>(e => kenarX = -1, TrickleDown.TrickleDown);
+            DuyarliGuncelle();   // 2026-10-27: boyut sınıfı (kısa / geniş) ilk kurulumdan önce: kodda yazılan boyutlar ona bakar (Duyarli.cs)
             HepsiniKur(); kuruldu = true;
         }
 
@@ -135,14 +137,27 @@ namespace BirdieSmash.Game
 
         // Güvenli alan (Screen.safeArea) panel birimine: kök genişliği / ekran genişliği. Üst ve yanlar kökte, alt sekme
         // çubuğunda ve alt sayfada (zeminleri ev çizgisinin altına uzansın, düğmeler uzanmasın).
-        float altBosluk;
+        // 2026-10-27: güvenli alan Guvenli.Alan'dan (ekran turu çentik taklidi); ekran boyu değişince ölçek eşlemesi ve boyut
+        // sınıfı yenilenir, sınıf değiştiyse menü baştan kurulur (Duyarli.cs).
+        float altBosluk; VisualElement govde; Vector3 guvPay;
         void GuvenliAlan()
         {
+            if (DuyarliGuncelle()) HepsiniKur();
             float pw = doc.rootVisualElement.layout.width; if (float.IsNaN(pw) || pw <= 0 || Screen.width <= 0) return;
-            var sa = Screen.safeArea; if (sa == sonSafe && Mathf.Abs(pw - sonPanelW) < .5f) return; sonSafe = sa; sonPanelW = pw;
+            var sa = Guvenli.Alan; if (sa == sonSafe && Mathf.Abs(pw - sonPanelW) < .5f) return; sonSafe = sa; sonPanelW = pw;
             float s = pw / Screen.width;
-            kok.style.paddingTop = Mathf.Max(0, Screen.height - sa.yMax) * s; kok.style.paddingLeft = Mathf.Max(0, sa.xMin) * s; kok.style.paddingRight = Mathf.Max(0, Screen.width - sa.xMax) * s;
+            // 2026-10-27 (duyarlı yerleşim): payı kökün dolgusu (padding) taşıyordu; oysa gövde, alt katman ve perde kalkanı kökün
+            // MUTLAK konumlu çocukları (.tam, left/top/right/bottom 0) ve Yoga mutlak çocuğu ebeveynin dolgusuna değil kenarına
+            // göre yerleştirir (CSS ile aynı): çentikli telefonda üst şerit çentiğin altına giriyordu (CI karesi güvenli alansız
+            // olduğu için görünmüyordu). Pay artık bu katmanların kendi konumunda; zemin tam taşar (süs, kenara kadar).
+            float pu = Mathf.Max(0, Screen.height - sa.yMax) * s, ps = Mathf.Max(0, sa.xMin) * s, pr = Mathf.Max(0, Screen.width - sa.xMax) * s;
+            kok.style.paddingTop = 0f; kok.style.paddingLeft = 0f; kok.style.paddingRight = 0f;
+            if (govde == null) govde = kok.Q<VisualElement>("govde");
+            if (govde != null) { govde.style.top = pu; govde.style.left = ps; govde.style.right = pr; }
+            altKatman.style.top = pu; altKatman.style.left = ps; altKatman.style.right = pr;
+            guvPay = new Vector3(pu, ps, pr);
             altBosluk = Mathf.Max(0, sa.yMin) * s; sekmeCubugu.style.paddingBottom = altBosluk; if (altSayfa != null) altSayfa.style.paddingBottom = altBosluk + 16;
+            SutunYaz(pw);
         }
 
         // ---- gezinti ----

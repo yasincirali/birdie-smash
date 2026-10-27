@@ -189,7 +189,7 @@ namespace BirdieSmash.Game
         float H, W, top, bot, lx, rx, BH; Rect safe;
         void Layout()
         {
-            W = Screen.width; H = Screen.height; safe = Screen.safeArea;
+            W = Screen.width; H = Screen.height; safe = Guvenli.Alan;   // 2026-10-27: ekran turu çentik taklidi (Game/UI/Duyarli.cs)
             top = H - safe.yMax + 8 * u; bot = safe.yMin + 10 * u; lx = Mathf.Max(safe.xMin, 0) + 16 * u; rx = W - Mathf.Max(W - safe.xMax, 0) - 16 * u;
             BH = Mathf.Max(46 * u, 44 * H / 640f);
         }
@@ -579,9 +579,14 @@ namespace BirdieSmash.Game
         // düğmesini ekran dışına itiyordu. Bir karede ölçülen yükseklik ekranı aşarsa sonraki kare her şey 0,05 adımla
         // küçülür (en çok ×0,7; düğmeler yine ≥ 44 pt, BH). Yalnız küçülür, ekran her açılışta 1'den başlar (sallanma yok).
         float sigK = 1;
+        public string SonucTani { get; private set; }   // ekran turu (EkranTuru.DuyarliTuru): ölçü, yazı ve taşma
         void Over(Match M)
         {
-            var R = root; float s = Mathf.Min(W / 390f, H / 844f) * sigK, k = s * Ayar.YaziK; YayinStil(s, k);
+            // 2026-10-27 (duyarlı yerleşim): yerleşim ölçüsü s en-boyun küçüğüyle (390 × 844 tasarım karesi) kalır, ama YAZI telefonda
+            // (en/boy < 0,62) 11 pt'nin altına inmez: SE'de (375 × 667) s = 0,79 idi, 12'lik satırlar (üst satır, SEN/rakip adı,
+            // yıldız koşulları) 9,5 pt çıkıyordu. W/375 ≈ ekranın pt başına pikseli (en dar iPhone 375 pt; daha geniş telefonda
+            // biraz fazla), 11/12 · W/375 tabanı 12'lik satırı en az 11 pt yapar. Sığmazsa sigK yalnız boşluğu ve süsü küçültür.
+            var R = root; float s = Mathf.Min(W / 390f, H / 844f) * sigK, kt = W / H < .62f ? Mathf.Max(s, 11f / 12f * W / 375f) : s, k = kt * Ayar.YaziK; YayinStil(s, k);
             float t = overT0 < 0 ? 99 : Time.unscaledTime - overT0; bool rm = Ayar.reduce;
             var o0 = GUI.color; GUI.color = new Color(A_INK.r, A_INK.g, A_INK.b, .82f); GUI.DrawTexture(new Rect(-W, 0, W * 3, H), Texture2D.whiteTexture); GUI.color = o0;
             // r16: .82'de maç başı rakip kartı ve skor tabelası arkadan okunuyordu; yayın grafiği gibi tam kapalı zemin.
@@ -658,7 +663,8 @@ namespace BirdieSmash.Game
                 if (ADugme(new Rect(x + hw + gap, yb, hw, bh), L.T("Ana menü"), al)) root.AnaMenu();
             }
             else if (ADugme(new Rect(x, yb, w, bh), L.T("Ana menü"), al)) root.AnaMenu();
-            float son = yb + bh, sinir = H - bot;
+            float son = yb + bh, sinir = H - bot; SonucTani = "sonuç " + W + "x" + H + " · s " + s.ToString("F2") + " sigK " + sigK.ToString("F2") + " yazı ×" + k.ToString("F2") + " (12'lik satır " + Mathf.RoundToInt(12 * k) + " px)"
+                + " · alt düğme dibi " + son.ToString("F0") + " / sınır " + sinir.ToString("F0") + (son > sinir + 1 ? " · TAŞIYOR" : "") + " · üst " + top.ToString("F0") + " alt pay " + bot.ToString("F0");
             if (Event.current.type == EventType.Repaint && son > sinir + 1 && sigK > .7f)
                 sigK = Mathf.Max(.7f, Mathf.Floor(sigK * (sinir - top) / Mathf.Max(1, son - top) * 20) / 20);
         }
