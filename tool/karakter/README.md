@@ -128,6 +128,11 @@ koordinatından çizilir (`insan.py` `_yuz_dugum`). 360° ve hakemler aynı `BS_
   - normal + parlaklık haritaları (`rocketbox_govde_n.png`, `_mg.png` …; Unity tarafı için C# yaması gerekir, rapor);
   - mobil bütçe: 28 yüz kemiği başa katılır (52 kemik), köşe başına ≤4 ağırlık, FBX doku gömmez (4,5 MB), 8,1k üçgen gövde;
   - temas katmanı (`aday.Temas`): el/ön kol gövdeden, raket gövde/bacak/sol koldan dışarı, taban zemine; ortak pozlara dokunmaz.
+  - 2026-10-27 aksesuarlar (yasin: "Gerçekçi de vücut özellikleri değil de sadece aksesuarlar değişmeli"; `rocketbox_aksesuar.py`,
+    klipler pişirildikten sonra `aday.Aday.aksesuar`): şort `rb_sort__sort` (doku açık gri, oyun × şort rengi), beş ayakkabı
+    `ayk_<varlik>__ayakkabi` (klasik, hafif dar + ince beyaz taban, yastik kalın beyaz taban, bilekli yakalık, karbon kömür
+    taban; saya `ayk_ust` doku × renk), başa oturan bant ve ön kola oturan bileklik (deriye ışın). Forma kumaşları
+    `rocketbox_forma_<hafif|nefes|esnek>.jpg` (`rocketbox_kit._kumas`). FBX 5,5 MB. Ön izleme: Cycles, bpy (Unity'siz).
   `BS_MODEL=aday python3 -I unity_fbx.py -- /tmp/rb rocketbox && python3 -I rocketbox_kit.py -- /tmp/rb` → Resources/karakter.
   `BS_ADAY=~/AnimationLibrary/rocketbox/Sports_Male_04/Export/Sports_Male_04.fbx` eski atletli modeli birebir kurar (HTML sprite bloğu).
 

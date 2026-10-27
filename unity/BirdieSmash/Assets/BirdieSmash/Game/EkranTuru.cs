@@ -68,6 +68,7 @@ namespace BirdieSmash.Game
                 yield return Mac(mdl);
             }
             yield return Varyantlar();   // 2026-10-27 model/varyant turu (ekran/model)
+            yield return Gercekci();     // 2026-10-27 Gerçekçi aksesuarları (ekran/gercekci)
             foreach (var s in new[] { "turnuva", "okul", "park" })
             {
                 Ayar.model = "oyuncak"; Ayar.saha = s; root.SahaDegisti(); root.StartMatch(false, false, false); botAcik = true;
@@ -637,6 +638,140 @@ namespace BirdieSmash.Game
             root.GorunumDegisti(); root.ModelDegisti(); root.AnaMenu(); ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
         }
+        // ---- Gerçekçi aksesuarları (2026-10-27, ekran/gercekci) ----
+        // yasin: "Gerçekçi de vücut özellikleri değil de sadece aksesuarlar değişmeli kafa bandı forma bileklik ayakkabı şort
+        // tişört raket". Gerçekçi seçiliyken Karakter sayfaları (Ayakkabı, Kıyafet) ve her aksesuarın her seçeneği vitrinde
+        // (ön yüz, dönme durur: hareketi azalt), sonra üç takım maçta (oyun kamerası + önden/arkadan yakın plan). Her kare için
+        // rapora "gerçekçi" satırı: VaryantOzet (FBX, açık ayakkabı parçası, aktif renderer) + bölge başına ekrandan örneklenen
+        // renk ve malzemenin rengi (forma, şort, ayakkabı, bant, bileklik, raket çerçevesi; parça kapalıysa "yok"). Bir seçimin
+        // figüre yansıyıp yansımadığı bu sayılarla okunur. Seçim yalnız bu tur için, sonunda geri konur (kayda yazılmaz).
+        // Sv 1 renkleri kullanılır: CI oyuncusu düşük seviyede, kilitli renk GorunumRenk'te null döner.
+        static readonly string[,] GERCEKCI_MAC = {   // forma rengi, kumaş, şort, bant, bileklik, ayakkabı modeli, ayakkabı rengi
+            { "fistik", "hafif", "siyah", "odak", "agir", "karbon", "siyah" }, { "mor", "esnek", "beyaz", "ter", "pamuk", "bilekli", "beyaz" },
+            { "mavi", "klasik", "dogal", "yok", "yok", "klasik", "dogal" } };
+        IEnumerator Gercekci()
+        {
+            var ui = root.ui; var gr = Ayar.gear; if (ui == null || gr == null) yield break;
+            string m0 = Ayar.model, ay0 = gr.ayakkabi, b0 = gr.bant, bl0 = gr.bileklik, k0 = gr.kumas, r0 = gr.renk, s0 = Ayar.GORUNUM["sort"], ar0 = Ayar.GORUNUM["ayakkabi"], g0 = Ayar.RGOR["grip"], t0 = Ayar.RGOR["tel"];
+            bool rd0 = Ayar.reduce, rs0 = Ayar.reduceSecim;
+            rap.AppendLine("=== gerçekçi aksesuarlar (vitrin: önden, dönme kapalı; maç: seçim) · ekran " + Screen.width + "x" + Screen.height);
+            Ayar.model = "rocketbox"; gr.ayakkabi = "klasik"; gr.bant = gr.bileklik = "yok"; gr.kumas = "klasik"; gr.renk = "mavi"; Ayar.GORUNUM["sort"] = Ayar.GORUNUM["ayakkabi"] = "dogal";
+            Ayar.reduce = Ayar.reduceSecim = true; root.GorunumDegisti(); root.ModelDegisti(); root.AnaMenu(); yield return Bekle(10);
+            ui.SekmeAc(Sekme.Soyunma); yield return Bekle(20);
+            var vt = root.vitrin;
+            ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(30); yield return Cek("model_gercekci_karakter_ayakkabi");
+            foreach (var a in Gear.GEAR["ayakkabi"].Values)
+            {
+                ui.KarakterDene("ayakkabi", a.id); vt.a = 20; vt.v = 0; yield return Bekle(25); yield return Cek("model_gercekci_vitrin_ayakkabi_" + a.id);
+                GSatir("vitrin ayakkabi=" + a.id + " (beklenen parça " + (a.varlik ?? a.id) + ")", vt.Fig, vt.Kam, vt.rt);
+            }
+            ui.KarakterDene("ayakkabi", "klasik");
+            foreach (var r in new[] { "siyah", "beyaz" })
+            {
+                Ayar.GORUNUM["ayakkabi"] = r; vt.Yenile(); vt.a = 20; vt.v = 0; yield return Bekle(20); yield return Cek("model_gercekci_vitrin_ayakkabi_renk_" + r);
+                GSatir("vitrin ayakkabı rengi=" + r, vt.Fig, vt.Kam, vt.rt);
+            }
+            Ayar.GORUNUM["ayakkabi"] = "dogal";
+            ui.KarakterAc(UiKok.KAR_KIYAFET); yield return Bekle(30); yield return Cek("model_gercekci_karakter_kiyafet");
+            vt.Odak(Vitrin.TAM);
+            foreach (var r in new[] { "mavi", "fistik", "mor" }) { gr.renk = r; Ayar.GearHesap(); yield return GVitrin("forma_" + r, 0); }
+            gr.renk = "beyaz"; Ayar.GearHesap();
+            foreach (var k in Gear.GEAR["kumas"].Values) { gr.kumas = k.id; Ayar.GearHesap(); yield return GVitrin("kumas_" + k.id, 0); yield return GVitrin("kumas_" + k.id + "_arka", 180); }
+            gr.kumas = "klasik"; gr.renk = "mavi"; Ayar.GearHesap();
+            foreach (var o in Karakter.Gorunum("sort")) { if (o.sv > 1) continue; Ayar.GORUNUM["sort"] = o.id; yield return GVitrin("sort_" + o.id, 0); }
+            Ayar.GORUNUM["sort"] = "dogal";
+            vt.Odak(Vitrin.YUZ);
+            foreach (var m in Gear.GEAR["bant"].Values) { gr.bant = m.id; Ayar.GearHesap(); yield return GVitrin("bant_" + m.id, 0); yield return GVitrin("bant_" + m.id + "_yan", 70); }
+            gr.bant = "yok";
+            foreach (var m in Gear.GEAR["bileklik"].Values) { gr.bileklik = m.id; Ayar.GearHesap(); vt.Odak(Vitrin.TUTUS, "drive"); yield return GVitrin("bileklik_" + m.id, float.NaN); }
+            gr.bileklik = "yok"; Ayar.GearHesap();
+            foreach (var g in new[] { new[] { "siyah", "beyaz" }, new[] { "kirmizi", "limon" } })
+            { Ayar.RGOR["grip"] = g[0]; Ayar.RGOR["tel"] = g[1]; vt.Odak(Vitrin.TUTUS, "drive"); yield return GVitrin("raket_" + g[0] + "_" + g[1], float.NaN); }
+            Ayar.RGOR["grip"] = g0; Ayar.RGOR["tel"] = t0; vt.Odak(Vitrin.TAM);
+            // Sade (ucuz yol): şort rengi düz renk parçada; Karakter sayfaları
+            if (Ayar.ModelVar("sade"))
+            {
+                Ayar.model = "sade"; root.ModelDegisti(); ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(30); yield return Cek("model_sade_karakter_ayakkabi");
+                ui.KarakterAc(UiKok.KAR_KIYAFET); yield return Bekle(20); yield return Cek("model_sade_karakter_kiyafet");
+                foreach (var r in new[] { "dogal", "beyaz" }) { Ayar.GORUNUM["sort"] = r; yield return GVitrin("sort_" + r, 0, "sade"); }
+                Ayar.GORUNUM["sort"] = "dogal"; Ayar.model = "rocketbox"; root.ModelDegisti();
+            }
+            ui.SoyunmaSegment(0); yield return Bekle(5);
+            // maçta: seçim olarak (GameRoot.Kur yolu)
+            Ayar.reduce = rd0; Ayar.reduceSecim = rs0;
+            for (int i = 0; i < GERCEKCI_MAC.GetLength(0); i++)
+            {
+                gr.renk = GERCEKCI_MAC[i, 0]; gr.kumas = GERCEKCI_MAC[i, 1]; Ayar.GORUNUM["sort"] = GERCEKCI_MAC[i, 2]; gr.bant = GERCEKCI_MAC[i, 3]; gr.bileklik = GERCEKCI_MAC[i, 4];
+                gr.ayakkabi = GERCEKCI_MAC[i, 5]; Ayar.GORUNUM["ayakkabi"] = GERCEKCI_MAC[i, 6]; Ayar.GearHesap();
+                root.StartMatch(false, false, false); botAcik = false; yield return Bekle(45);
+                string ad = "model_gercekci_mac_" + (i + 1); yield return Cek(ad);
+                var ben = Ben(); string tanim = "forma " + gr.renk + " kumaş " + gr.kumas + " şort " + Ayar.GORUNUM["sort"] + " bant " + gr.bant + " bileklik " + gr.bileklik + " ayk " + gr.ayakkabi + "/" + Ayar.GORUNUM["ayakkabi"];
+                if (ben == null) { rap.AppendLine("gerçekçi maç " + (i + 1) + " · FİGÜR YOK"); continue; }
+                var p = ben.transform.position + Vector3.up * .95f;
+                yield return GYakin(ad + "_on", ben, p, new Vector3(.9f, .3f, 2.6f), "maç " + (i + 1) + " önden · " + tanim);
+                yield return GYakin(ad + "_arka", ben, p, new Vector3(-.7f, .6f, -2.6f), "maç " + (i + 1) + " arkadan · " + tanim);
+            }
+            gr.ayakkabi = ay0; gr.bant = b0; gr.bileklik = bl0; gr.kumas = k0; gr.renk = r0; Ayar.GORUNUM["sort"] = s0; Ayar.GORUNUM["ayakkabi"] = ar0; Ayar.model = m0;
+            root.GorunumDegisti(); root.ModelDegisti(); root.AnaMenu(); ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
+            File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
+        }
+        // Vitrin karesi: figür yeniden kurulur, açı a (NaN = odağın kendi açısı, Tutuş), dönme kapalı; ekran + bölge satırı.
+        IEnumerator GVitrin(string ad, float aci, string mdl = "gercekci")
+        {
+            var vt = root.vitrin; vt.Yenile(); if (!float.IsNaN(aci)) vt.a = aci; vt.v = 0; yield return Bekle(20);
+            yield return Cek("model_" + mdl + "_vitrin_" + ad); GSatir("vitrin " + (mdl == "gercekci" ? "" : mdl + " ") + ad, vt.Fig, vt.Kam, vt.rt);
+        }
+        IEnumerator GYakin(string ad, PlayerView pv, Vector3 hedef, Vector3 ofset, string tanim)
+        {
+            yield return new WaitForEndOfFrame();
+            var g = new GameObject("gercekci_kamera"); var c = g.AddComponent<Camera>(); c.CopyFrom(root.cam); c.ResetProjectionMatrix(); c.fieldOfView = 40;
+            g.transform.position = hedef + ofset; g.transform.LookAt(hedef);
+            var rt = new RenderTexture(720, 960, 24); c.targetTexture = rt; c.aspect = 720f / 960; c.Render();
+            var prev = RenderTexture.active; RenderTexture.active = rt;
+            var tex = new Texture2D(720, 960, TextureFormat.RGB24, false); tex.ReadPixels(new Rect(0, 0, 720, 960), 0, 0); tex.Apply(); RenderTexture.active = prev;
+            File.WriteAllBytes(Path.Combine(dir, ad + ".png"), tex.EncodeToPNG()); Destroy(tex);
+            GSatir(tanim, pv, c, rt);
+            c.targetTexture = null; Destroy(g); rt.Release(); Destroy(rt);
+        }
+        // Bölge renkleri: her bölgenin bir noktası kameraya izdüşürülür, RT'den 5×5 ortalama (gamma, #rrggbb). Nokta: forma ve
+        // bant/bileklik parçanın sınır merkezi (önden bakışta yüzeyine düşer), şort sol uyluğun üst beşte biri, ayakkabı sol ayak
+        // ile parmak kemiği arası (iki ayağın ortası boşluktur). Yanına malzemenin rengi (doku × renk çarpanı).
+        void GSatir(string ad, PlayerView pv, Camera c, RenderTexture rt)
+        {
+            if (pv == null || pv.Model == null) { rap.AppendLine("gerçekçi " + ad + " · FİGÜR YOK"); return; }
+            string oz = pv.VaryantOzet(); var tex = new Texture2D(rt.width, rt.height, TextureFormat.RGB24, false); var prev = RenderTexture.active; RenderTexture.active = rt;
+            tex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0); tex.Apply(); RenderTexture.active = prev;
+            System.Func<Vector3, string> Orn = w =>
+            {
+                var sp = c.WorldToScreenPoint(w); if (sp.z <= 0) return "arkada";
+                int x0 = Mathf.RoundToInt(sp.x * rt.width / Mathf.Max(1, c.pixelWidth)), y0 = Mathf.RoundToInt(sp.y * rt.height / Mathf.Max(1, c.pixelHeight));
+                if (x0 < 2 || y0 < 2 || x0 >= rt.width - 2 || y0 >= rt.height - 2) return "kadraj dışı";
+                Color s_ = Color.clear; for (int dx = -2; dx <= 2; dx++) for (int dy = -2; dy <= 2; dy++) s_ += tex.GetPixel(x0 + dx, y0 + dy); s_ /= 25;
+                return "#" + ColorUtility.ToHtmlStringRGB(s_).ToLowerInvariant();
+            };
+            Transform ayak = null, parmak = null, uyluk = null, baldir = null;
+            foreach (var t in pv.Model.GetComponentsInChildren<Transform>())
+            {
+                string n = t.name.ToLowerInvariant(); if (n.Contains("__")) continue; bool sol = n.EndsWith("_l") || n.EndsWith(".l") || n.Contains(" l ");
+                if (!sol) continue;
+                if (ayak == null && n.Contains("foot") && !n.Contains("step")) ayak = t; if (parmak == null && (n.Contains("toe") || n.Contains("ball"))) parmak = t;
+                if (uyluk == null && (n.Contains("thigh") || n.Contains("upperleg"))) uyluk = t; if (baldir == null && (n.Contains("calf") || n.Contains("lowerleg"))) baldir = t;
+            }
+            var sb = new StringBuilder("gerçekçi " + ad + " · " + oz + " · bölge");
+            foreach (var bolge in new[] { "forma", "sort", "ayakkabi", "bant", "bilek", "cerceve" })
+            {
+                Renderer r = null; foreach (var x in pv.Model.GetComponentsInChildren<Renderer>()) if (x.enabled && !(x is TrailRenderer) && PlayerView.Etiket(x.gameObject.name) == bolge) { r = x; break; }
+                if (r == null) { sb.Append(" " + bolge + " yok"); continue; }
+                Vector3 w = r.bounds.center;
+                if (bolge == "ayakkabi" && ayak != null) w = parmak != null ? Vector3.Lerp(ayak.position, parmak.position, .6f) : ayak.position;
+                if (bolge == "sort" && uyluk != null && baldir != null) w = Vector3.Lerp(uyluk.position, baldir.position, .2f);
+                var m = r.sharedMaterial; string mr = m != null && m.HasProperty("_Color") ? "#" + ColorUtility.ToHtmlStringRGB(m.color).ToLowerInvariant() : "-";
+                string tx = m != null && m.mainTexture != null ? " " + m.mainTexture.name : "";
+                sb.Append(" " + bolge + " " + Orn(w) + " (malzeme " + mr + tx + (r.sharedMaterials.Length > 1 ? " +" + (r.sharedMaterials.Length - 1) : "") + ")");
+            }
+            Destroy(tex); rap.AppendLine(sb.ToString()); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
+        }
+
         // Oyuncak oranı turu (2026-10-27, yasin: "Oyuncak 3B daha tıknaz sevimli karikatür tipler olmalıydı"): dört tip yan
         // yana (maç kamerası, önden, arkadan-yüksekten) ve 11 saç bir ızgarada (arkadan, yüksek kameradan, önden). Figürler
         // maç sahnesinde geçici bir düğümün altında kurulur (Ben() onları saymaz), benim figürüm çekim boyunca gizli.

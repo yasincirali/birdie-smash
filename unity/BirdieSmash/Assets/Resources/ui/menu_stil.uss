@@ -333,6 +333,8 @@
 .denenen { border-width: 2px; border-color: var(--sky); }
 .ayk-satir { padding: 10px 12px; min-height: 56px; margin: 4px 0; }
 .deneme-kart { padding: 12px; border-width: 2px; border-color: var(--sky); }
+/* 2026-10-27 Gerçekçi/Sade "tek beden" bilgi kartı: deneme kartından sakin (ince çerçeve), ikincil düğmeli */
+.bilgi-kart { padding: 12px; margin-bottom: 8px; border-width: 1px; border-color: var(--sky); }
 .deneme-birak { margin-top: 8px; }
 .renk--yuvarlak { flex-grow: 0; flex-basis: auto; width: 44px; border-radius: 22px; }
 .buyuk-yazi .izgara > .sac-kare { flex-basis: auto; min-height: 48px; }

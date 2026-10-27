@@ -69,5 +69,17 @@
 "kaplama": [
   {"id": "model", "ad": "Modelin rengi", "renk": null,      "sv": 1},
   {"id": "altin", "ad": "Altın",         "renk": "#ffc94a", "sv": 30}
+],
+"sort_not": "2026-10-27 şort rengi (yasin: Gerçekçi'de beden sabit, aksesuarlar değişsin: şort, tişört, ayakkabı, bant, bileklik, raket). Yalnız görünüş, ücretsiz; Gerçekçi (doku × renk) ve Sade (düz renk) modelde görünür, Oyuncak'ta şort gövde atlasında olduğu için sunulmaz (Ayar.SortGorunur). Modelin rengi = Gerçekçi'de eski lacivert, Sade'de FBX rengi.",
+"sort": [
+  {"id": "dogal",   "ad": "Modelin rengi", "renk": null,      "sv": 1},
+  {"id": "siyah",   "ad": "Siyah",         "renk": "#26262b", "sv": 1},
+  {"id": "beyaz",   "ad": "Beyaz",         "renk": "#f2f2ee", "sv": 1},
+  {"id": "gri",     "ad": "Gri",           "renk": "#8a9096", "sv": 1},
+  {"id": "kirmizi", "ad": "Kırmızı",       "renk": "#e23b3b", "sv": 4},
+  {"id": "mavi",    "ad": "Mavi",          "renk": "#3b7be2", "sv": 8},
+  {"id": "limon",   "ad": "Limon",         "renk": "#d8ff5a", "sv": 12},
+  {"id": "mor",     "ad": "Mor",           "renk": "#8a5ae2", "sv": 18},
+  {"id": "altin",   "ad": "Altın",         "renk": "#ffc94a", "sv": 28}
 ]
 }

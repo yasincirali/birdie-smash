@@ -313,6 +313,11 @@
  ],
  "model": "rocketbox",
  "parts": [
+  "ayk_bilekli__ayakkabi",
+  "ayk_hafif__ayakkabi",
+  "ayk_karbon__ayakkabi",
+  "ayk_klasik__ayakkabi",
+  "ayk_yastik__ayakkabi",
   "m301_hipoly_81_bones_001__forma",
   "m301_hipoly_81_bones__ten",
   "raket_kafa__cerceve",
@@ -321,7 +326,8 @@
   "raket_tel2__tel2",
   "raket_tel__tel",
   "rb_bant__bant",
-  "rb_bileklik__bilek"
+  "rb_bileklik__bilek",
+  "rb_sort__sort"
  ],
  "raket": {
   "kemik": "Bip01 R Hand",
