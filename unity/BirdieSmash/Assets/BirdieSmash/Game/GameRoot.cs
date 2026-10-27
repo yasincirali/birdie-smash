@@ -355,7 +355,7 @@ namespace BirdieSmash.Game
         readonly Kadraj.Takip takip = new Kadraj.Takip();
         void FitCamera()
         {
-            var sa = Screen.safeArea;
+            var sa = Guvenli.Alan;   // 2026-10-27: menü ve HUD ile aynı kaynak (ekran turunun çentik taklidi kadrajı da kapsasın)
             if (Screen.width == lastW && Screen.height == lastH && sa == lastSafe) return; lastW = Screen.width; lastH = Screen.height; lastSafe = sa;
             int ki = System.Array.IndexOf(KAMERA_SIRA, Ayar.kamera); if (ki < 0) ki = 0;
             kam = Kadraj.Coz(Screen.width, Screen.height, sa.x, sa.y, sa.width, sa.height, ki);
