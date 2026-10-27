@@ -142,7 +142,7 @@ static class BotMac
         OyunIncelemesi();   // 2026-10-27 (ayrı satır: ek kontrol listesi başka dallarda da büyüyor)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
-        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); Aldatmalar(); Pencereler(); FizikOlcumleri();
+        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }
@@ -968,4 +968,47 @@ static class BotMac
         if (cev == 0) Fail("rakip slice'ı hiç görülmedi");
         else if (cevFile > cev / 10) Fail("rakip slice'ı fileye gidiyor: " + cevFile + "/" + cev);
     }
+
+    // Ayak işi (2026-10-26 gece, build 40 incelemesi; ayrıntılı ölçüm tool/unity_test/AnimOlc): ayak işi klibinin fazı
+    // gövdenin bu karede kat ettiği yolla ilerler (faz hızı × adım boyu = gövde hızı; eskiden yumuşatılmış hızla, kalkış
+    // ve duruşta 1,5–2 m/s kayma), vuruş donmasında poz donar, tabana varışta gövde sallanmaz (boşta ↔ öne adım titremesi),
+    // görünen gövde dikeyde ışınlanmaz (sıçrayarak smaçta yay ortasından başlıyordu; Match.GORSEL_YUKSELIS).
+    static void AyakIsleri()
+    {
+        const float dt = 1f / 60f; int kare = 0, kayan = 0, titreme = 0, donmaKayma = 0, dikey = 0;
+        for (int m = 0; m < 4; m++)
+        {
+            var M = new Match(400 + m, new MatchOptions { easy = m != 3, target = 5 }); int g = 0;
+            var px = new float[2]; var py = new float[2]; var ph0 = new float[2]; var son = new string[2]; var once = new string[2]; var degT = new float[2]; var jg = new float[2]; float t = 0;
+            for (int i = 0; i < 2; i++) { px[i] = float.NaN; degT[i] = -9; }
+            while (!M.over && g++ < 60 * 60 * 20)
+            {
+                Bot(M, dt); bool donuk = M.freeze > 0; M.Update(dt); t += dt;
+                for (int i = 0; i < 2; i++)
+                {
+                    var a = i == 0 ? M.me : M.op; string c; float ph; M.PickClip(a, i == 0, out c, out ph);
+                    float v = float.IsNaN(px[i]) ? 0 : Hyp(a.x - px[i], a.y - py[i]) / dt;
+                    float boy; bool ayak = Match.ADIM_BOY.TryGetValue(c, out boy);
+                    if (ayak && son[i] == c && v < 12 && !M.between && M.s != null)
+                    {
+                        float dph = ph - ph0[i]; if (dph < 0) dph += 1;
+                        kare++; if (Math.Abs(dph * boy / dt - v) > .3f) kayan++;
+                    }
+                    // donmada vuruş (temas karesi) ve karşı oyuncunun split'i başlayabilir; boşta pozuna düşmek ya da ayak işi klibine geçmek olmaz
+                    if (donuk && son[i] != null && c != son[i] && !M.between && (c == "idle" || Match.ADIM_BOY.ContainsKey(c))) donmaKayma++;
+                    if (c != son[i]) { if (son[i] != null && (c == "idle" && once[i] == "fwd" || c == "fwd" && once[i] == "idle") && c == once[i] && t - degT[i] < .15f) titreme++; once[i] = son[i]; son[i] = c; degT[i] = t; }
+                    { float j = Match.JumpH(a, c == "split") * .5f, j1 = j > jg[i] ? Math.Min(j, jg[i] + Match.GORSEL_YUKSELIS * dt) : j; if (Math.Abs(j1 - jg[i]) > .12f) dikey++; jg[i] = j1; }   // PlayerView gövde yüksekliği
+                    px[i] = a.x; py[i] = a.y; ph0[i] = ph;
+                }
+                M.events.Clear();
+            }
+        }
+        float oran = 100f * kayan / Math.Max(1, kare);
+        Console.WriteLine("ayak işi: " + kare + " kare, faz/gövde hızı farkı > 0,3 m/s %" + oran.ToString("0.0") + ", boşta↔öne adım titremesi " + titreme + ", donmada boşta/ayak işine geçiş " + donmaKayma + ", görünen gövdede kare başına > 12 cm dikey sıçrama " + dikey);
+        if (oran > 3) Fail("ayak işi fazı gövde hızını izlemiyor: %" + oran.ToString("0.0"));
+        if (titreme > 40) Fail("tabanda boşta↔öne adım titremesi: " + titreme);
+        if (donmaKayma > 0) Fail("vuruş donmasında boşta/ayak işi klibine geçti: " + donmaKayma);
+        if (dikey > 0) Fail("gövde dikeyde ışınlandı (sıçrama yayı ortasından başladı): " + dikey);
+    }
+    static float Hyp(float x, float y) { return (float)Math.Sqrt(x * x + y * y); }
 }

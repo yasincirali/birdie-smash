@@ -15,6 +15,7 @@
 // deneme kartları (normal ve x2_ büyük yazı; deneme kayda yazılmaz, segmentten çıkınca silinir).
 // Süre: gerçek zaman (GameRoot dt'yi 0,05 ile sınırlar; yavaş yazılım render'ında maç da yavaşlar, kareler yine anlamlı).
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEngine;
@@ -100,9 +101,60 @@ namespace BirdieSmash.Game
             yield return Yakin(mdl + "_04_rakip", root.match.op, false);
             yield return YakinNokta(mdl + "_05_hakemler", CourtView.HAKEM1 + new Vector3(0, .5f, 0), new Vector3(3.2f, .6f, -2.6f));
             yield return YakinNokta(mdl + "_06_servis_hakemi", CourtView.HAKEM2 + new Vector3(0, .5f, 0), new Vector3(-2.8f, .7f, -2.2f));
-            botAcik = true;
+            botAcik = true; iz = new StringBuilder(); temasSay = 0; temasN.Clear();
+            temas = new StringBuilder("kim,klip,sw,once,sonra,uzanW,pay,dirsek,hedefx,hedefy,hedefz,kafax,kafay,kafaz\n");
+            iz.AppendLine("kare,t,dt,kim,klip,faz,alt,vAn,x,y,solx,soly,solz,sagx,sagy,sagz,elx,ely,elz,sapEl,pencere,donuk,sw,kafax,kafay,kafaz,topx,topy,topz,kilit,uzanW,uzanSonra,dirsek");
             for (int i = 0; i < 10; i++) { yield return Bekle(14); yield return Cek(mdl + "_1" + i + "_ralli"); if (i == 2) Kadraj(mdl + "_12_ralli"); }
+            yield return Serit(mdl, true); yield return Serit(mdl, false);
+            File.WriteAllText(Path.Combine(dir, mdl + "_anim_iz.csv"), iz.ToString()); iz = null;
+            // Temas örneklemi (2026-10-27 gece, uzanma katmanı): ralli sürer, 70 temasa ya da 60 sn'ye dek yalnız temas kareleri.
+            { float t0 = Time.realtimeSinceStartup; while (temasSay < 70 && Time.realtimeSinceStartup - t0 < 60) yield return null; }
+            File.WriteAllText(Path.Combine(dir, mdl + "_temas.csv"), temas.ToString()); temas = null;
             botAcik = false;
+        }
+        // Animasyon izi (2026-10-26 gece, build 40 incelemesi): ralli kareleri ve şerit boyunca HER karede iki oyuncunun klibi,
+        // fazı, alt katman ağırlığı, ayak bileği/el kemiği dünya konumu, raket sapının ele uzaklığı, raket kafası ve top
+        // (temas karesinde kafa–top aralığı: salınım topa değiyor mu) (<model>_anim_iz.csv).
+        // Ayak kayması ve raket kayması gerçek Unity pozundan buradan ölçülür (Core taklidi değil).
+        StringBuilder iz, temas; int temasSay; readonly Dictionary<bool, int> temasN = new Dictionary<bool, int>();
+        // Temas karesi: Athlete.tmN değiştiği ilk karede raket kafasının temas noktasına uzaklığı, katmandan önce (once = klibin
+        // kendi pozu) ve sonra; aynı kare, aynı top. Servis dışarıda (uzanma servise uygulanmaz).
+        void TemasIz(PlayerView pv, Athlete a, Match M)
+        {
+            int n; if (!temasN.TryGetValue(pv.isMe, out n)) n = a.tmN; temasN[pv.isMe] = a.tmN;
+            if (temas == null || a.tmN == n || a.sw <= 0 || (M.s != null && M.s.serve)) return;
+            var h = Kit.W(a.tmX, a.tmY, a.tmZ); var k = pv.TaniKafa; temasSay++;
+            temas.AppendLine((pv.isMe ? "me" : "op") + "," + pv.TaniKlip + "," + F(a.sw) + "," + F(pv.TaniUzanOnce) + "," + F(pv.TaniUzanSonra) + "," + F(pv.TaniUzanW) + "," + F(pv.TaniUzanPay) + "," + F(pv.TaniDirsek)
+                + "," + F(h.x) + "," + F(h.y) + "," + F(h.z) + "," + F(k.x) + "," + F(k.y) + "," + F(k.z));
+        }
+        static string F(float v) { return v.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture); }
+        void LateUpdate()
+        {
+            if ((iz == null && temas == null) || root == null || root.match == null || root.ekran != Ekran.Oyun) return;
+            var M = root.match;
+            foreach (var pv in FindObjectsByType<PlayerView>(FindObjectsSortMode.None))
+            {
+                if (pv.hakem) continue; var a = pv.isMe ? M.me : M.op; Vector3 l, r, e; float se;
+                TemasIz(pv, a, M); if (iz == null) continue;
+                if (!pv.TaniAyak(out l, out r, out e, out se)) continue;
+                float vAn = 0; var f = typeof(Athlete).GetField("vAn"); if (f != null) vAn = (float)f.GetValue(a);
+                iz.AppendLine(Time.frameCount + "," + F(Time.realtimeSinceStartup) + "," + F(Mathf.Min(.05f, Time.unscaledDeltaTime)) + "," + (pv.isMe ? "me" : "op") + "," + pv.TaniKlip + "," + F(pv.TaniFaz) + "," + F(pv.TaniAlt) + "," + F(vAn) + "," + F(a.x) + "," + F(a.y) + ","
+                    + F(l.x) + "," + F(l.y) + "," + F(l.z) + "," + F(r.x) + "," + F(r.y) + "," + F(r.z) + "," + F(e.x) + "," + F(e.y) + "," + F(e.z) + "," + F(se) + "," + (M.HitWindow() ? 1 : 0) + "," + (M.freeze > 0 ? 1 : 0)
+                    + "," + F(a.sw) + "," + F(pv.TaniKafa.x) + "," + F(pv.TaniKafa.y) + "," + F(pv.TaniKafa.z) + "," + (M.s != null ? F(Kit.W(M.s.x, M.s.y, M.s.z).x) + "," + F(Kit.W(M.s.x, M.s.y, M.s.z).y) + "," + F(Kit.W(M.s.x, M.s.y, M.s.z).z) : ",,") + "," + F(pv.TaniKilit) + "," + F(pv.TaniUzanW) + "," + F(pv.TaniUzanSonra) + "," + F(pv.TaniDirsek));
+            }
+        }
+        // Şerit: bir vuruşun hazırlığından takibine ardışık kareler, figürü yandan izleyen ikinci kamerayla (oyun durmaz).
+        // Hazırlık başlayınca (prepA > .3) 18 kare, her karede bir çekim; sonra bir araya getirmek turun dışında (Python).
+        IEnumerator Serit(string mdl, bool ben)
+        {
+            float t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 40) { var a0 = ben ? root.match.me : root.match.op; if (a0.prepA > .3f && a0.sw <= 0 && root.match.s != null) break; yield return null; }
+            for (int i = 0; i < 18; i++)
+            {
+                var a = ben ? root.match.me : root.match.op; var p = Kit.W(a.x, a.y, 0) + Vector3.up * 1.0f; float s = ben ? 1 : -1;
+                yield return YakinNokta(mdl + "_serit_" + (ben ? "ben" : "rakip") + "_" + i.ToString("00"), p, new Vector3(3.4f, .5f, 1.2f * s));
+                yield return null;
+            }
         }
 
         // Menü kareleri: açılış perdesi kalkana kadar bekler (sesler hazırlanınca, en çok 12 sn).

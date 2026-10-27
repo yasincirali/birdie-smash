@@ -20,12 +20,15 @@ namespace BirdieSmash.Core
         public string clip = "idle", prepClip, shot = "low", hand = "fore", prepShot, prepHand, svClip, svTur;
         public SvAnim svAnim;
         // ayak işi (HTML ayakIsi): yumuşatılmış hız, adım fazı, seçili ayak klibi ve aday klibin süresi
-        public float qx = float.NaN, qy, svx, svy, runPh, adayT, idlePh; public bool yuru, hamleGor, hamleKilit; public string ayakKlip, adayAd;   // hamle*: görünüm (PickClip)
+        public float qx = float.NaN, qy, svx, svy, vAn, runPh, adayT, idlePh, splitCik; public bool yuru, hamleGor, hamleKilit; public string ayakKlip, adayAd;   // hamle*: görünüm (PickClip)
         public float fakeUntil = -9, fakeX;   // aldatılan rakip: bu ana dek ters yöne çıkar
         public float mvx, mvy;   // rakibin koşu hızı (MoveAcc); ben vx/vy kullanırım (RunMe)
         // İmza vuruşu hazırlığı (Core/Imza, 2026-10-26): imzaT > 0 iken görünüm pozu tutar ve ışığı yakar; imzaId hangisi.
         public float imzaT; public string imzaId;
         public float fakeY;   // aldatılan oyuncu (Vex, gölge flick): Kolay'da kendiliğinden koşu bu ana dek yanlış yöne
+        // Temas noktası (yalnız görünüm, 2026-10-27 gece; PlayerView uzanma katmanı): son vuruşun kort koordinatı ve sayacı.
+        // StartFlight yazar, kural okumaz. Raket kafası temas karesinde buraya oturtulur.
+        public float tmX, tmY, tmZ; public int tmN;
         public bool HasTarget { get { return !float.IsNaN(tx); } }
     }
 
@@ -141,6 +144,9 @@ namespace BirdieSmash.Core
         // oyuncu öne ort. 3,3, arkaya 3,5 m/s). Yeni bantlarla en hızlı durum ~3,4 döngü/sn (geri 5,2 m/s); tavan yalnız
         // ışınlanma/çarpışma sıçramalarına karşı.
         public const float AYAK_TUR_MAX = 3.6f;
+        // Yürüme eşikleri (m/s, anlık hız, histerezisli). 0,9/0,45 idi (yumuşatılmış hız titrediği için yüksek); faz yolla
+        // ilerlediği için yavaş adım kaymaz, kısalır. 0,9'un altında boşta/hazırlık pozu yerinde kayıyordu (AnimOlc).
+        public const float YURU_GIR = .6f, YURU_CIK = .3f;
         // Hız bantları (histerezisli, m/s): öne adım → koşu, chassé → çapraz koşu. Kaynak: hızlı yan harekette (≥ ~3 m/s)
         // oyuncular chassé'yi bırakıp çapraz adımla koşar; öne uzun mesafede koşu adımı. Eşikler döngüyü 2,0–3,0 döngü/sn bandında tutar.
         public const float KOSU_GIR = 3.2f, KOSU_CIK = 2.7f, KROS_GIR = 2.9f, KROS_CIK = 2.4f;
@@ -308,13 +314,14 @@ namespace BirdieSmash.Core
             vurusY = hy;   // Günün maçı "file" değiştiricisi: son vuruşun derinliği
             if (from == "op") { opHitAt = clock; split = false; if (splitPending) { splitPending = false; DoSplit(); } } else { split = false; splitPending = false; }
             var h = from == "me" ? me : op;
+            h.tmX = hx; h.tmY = hy; h.tmZ = hz; h.tmN++;
             h.sw = 1; h.shot = isServe ? "low" : (h.prepShot == "lunge" ? "lunge" : ShotClass(type, hz, hy));
             {   // sınır bölgesinde gösterilen hazırlık kazanır: poz temasta sıçramasın (file önünde smaç = kısa öldürme salınımı)
                 string ps = h.prepShot, c0 = h.shot;
                 if (!isServe && h.prepA > .5f && (ps == "low" && c0 == "drive" && hz < 1.3f || ps == "drive" && c0 == "low" && hz > .6f || ps == "kill" && (c0 == "over" && hz <= 1.95f || c0 == "drive" && hz > 1))) h.shot = ps;
             }
             h.hand = isServe ? "fore" : HandOf(h, from, hx, hz);
-            string c = isServe ? (h.svClip ?? "serve") : h.shot == "lunge" ? "lunge" : h.shot == "over" ? (type == "jump" || from == "op" && h.jump > 0 ? "jump" : type == "smash" ? "smash" : type == "drop" && HasClip("drop") ? "drop" : "clear") : h.shot == "drive" ? "drive" : h.shot == "kill" ? "kill" : type == "block" ? "block" : type == "drop" && HasClip("net") ? "net" : "low";
+            string c = isServe ? (h.svClip ?? "serve") : h.shot == "lunge" ? "lunge" : h.shot == "over" ? (type == "jump" || h.jump > 0 ? "jump" : type == "smash" ? "smash" : type == "drop" && HasClip("drop") ? "drop" : "clear") : h.shot == "drive" ? "drive" : h.shot == "kill" ? "kill" : type == "block" ? "block" : type == "drop" && HasClip("net") ? "net" : "low";
             h.clip = ClipHand(c, h.hand);
             // Takip vuruşa göre (fb1b245, denetim #5/#16): smaç/clear 300 ms, drop 200, drive 180, file öldürme 150,
             // net vuruşu 120, blok 100, lift 250; hamle toparlanması 300 ms. Eskiden hepsi 250 ms'ydi.
@@ -466,6 +473,10 @@ namespace BirdieSmash.Core
             else { pstreak = 0; if (flow) { flow = false; Say(null, "flow", Court.MID, Court.NET, 2, "Akış bitti"); } if (q == "poor") Say("me", type, hx, hy, hz, "Sıyırdın"); }
             if (I.lunge) { me.dive = 1; me.yat = false; me.stun = .35f * GS.toparla; saves++; Yor(.15f); if (saves <= 3) Say("me", "lunge", hx, hy, hz, "Uzandın!"); }   // öğretici: maçta ilk 3 kez
             // Kaydırma anı temas anıdır, kalkış önceden bilinmez: figür temasta tepede (jump=.53 → sin(.53π) ≈ 1), sonra iner.
+            // 2026-10-26 gece (AnimOlc): bu yolda gövde temas karesinde yerden 0,5 m tepeye ışınlanıyordu (12 maçta 68 kez).
+            // Hazırlık sıçrama gösteriyorsa (enerji dolu, tepeden) kalkış Prep'te tahmini temas zamanından başlar; temas yine tepede
+            // (kaydırma tahminden erken/geç geldiyse yay tepeye alınır), aradaki fark PlayerView'ın yükseliş tavanıyla (GORSEL_YUKSELIS)
+            // birkaç karede kapanır, ışınlanma olmaz.
             if (type == "jump") me.jump = .53f;
             if (type == "kill") kills++;
             if (type == "smash" || type == "jump") smashes++;
@@ -649,7 +660,11 @@ namespace BirdieSmash.Core
             float max = MeSpd(), A = (split ? 20 : (easy ? 18 : 14)) * GS.kosu, dvx = 0, dvy = 0;
             // File ustası tarzı (2026-10-26): arka sahaya (kendi yarının arka yarısı) giden koşu −%5; öne ve yana koşu aynı.
             if (GS.arkaKosu != 1 && o.HasTarget && o.ty > Court.NET + Court.L / 4 && o.ty > o.y + .2f) max *= GS.arkaKosu;
-            if (o.HasTarget) { float dx = o.tx - o.x, dy = o.ty - o.y, dist = Hyp(dx, dy); if (dist > .02f) { float v = Math.Min(max, (float)Math.Sqrt(2 * A * dist)); dvx = dx / dist * v; dvy = dy / dist * v; } else o.tx = float.NaN; }
+            // Varış (2026-10-26 gece, AnimOlc): hedefe 2 cm kala hız hâlâ ~1,2 m/s (ivme sınırı frenlemeyi kare kare geciktirir);
+            // hedef silinip gövde 4 cm taşıyor, Kolay'ın otomatik hedefi her kare yeniden konduğu için geri dönüyordu: tabanda
+            // ~5 Hz, ±4 cm sallanma ve boşta ↔ öne adım klip titremesi (maç başına ~200). Varışta yavaş gövde durur (rakibin
+            // MoveAcc'ı gibi); hızlı geçişte (≥ 1,5 m/s, hedef koşu sırasında yer değiştirdi) eski sönüm sürer.
+            if (o.HasTarget) { float dx = o.tx - o.x, dy = o.ty - o.y, dist = Hyp(dx, dy); if (dist > .02f) { float v = Math.Min(max, (float)Math.Sqrt(2 * A * dist)); dvx = dx / dist * v; dvy = dy / dist * v; } else { o.tx = float.NaN; if (Hyp(o.vx, o.vy) < 1.5f) o.vx = o.vy = 0; } }
             float ex = dvx - o.vx, ey = dvy - o.vy, el = Hyp(ex, ey), st = A * d;
             if (el > st) { o.vx += ex / el * st; o.vy += ey / el * st; } else { o.vx = dvx; o.vy = dvy; }
             o.x = Clamp(o.x + o.vx * d, -.6f, Court.CW + .6f); o.y = Clamp(o.y + o.vy * d, Court.NET + .25f, Court.L + 1);
@@ -708,7 +723,7 @@ namespace BirdieSmash.Core
         }
 
         // Ayak işi (yasin 2026-10-20 "pırpır yapmak yerine anatomiye uygun"): hız 120 ms yumuşatılır; faz mesafeyle,
-        // adım boyu klibe göre; yürüme 0,9 m/s'de başlar 0,45'te biter; yön klibi 180 ms aynı kalırsa değişir.
+        // adım boyu klibe göre; yürüme YURU_GIR'de başlar YURU_CIK'ta biter (0,9/0,45 idi); yön klibi 180 ms aynı kalırsa değişir.
         // 2026-10-26 (tüm beden turu): yumuşatma üstel (1 − e^(−dt/0,12)): min(1, dt/0,12) 60 ve 120 Hz'de farklı eğri
         // veriyordu. Hız bantları: öne hızlı = run, yana hızlı = kros_*; tüm döngülerde faz 0 = sağ (ya da gidiş yönündeki)
         // ayağın basışı, bant değişince faz sürer (ayak sıçramaz). Tavan AYAK_TUR_MAX.
@@ -717,13 +732,22 @@ namespace BirdieSmash.Core
             if (dt <= 0) return;
             if (float.IsNaN(q.qx)) { q.qx = q.x; q.qy = q.y; q.svx = 0; q.svy = 0; }
             float rx = (q.x - q.qx) / dt, ry = (q.y - q.qy) / dt, a = 1 - (float)Math.Exp(-dt / .12f); q.qx = q.x; q.qy = q.y;
-            if (Hyp(rx, ry) > 12) { rx = ry = 0; q.svx = q.svy = 0; }   // servis dizilişi oyuncuyu ışınlar: adım sayılmaz
+            if (Hyp(rx, ry) > 12) { rx = ry = 0; q.svx = q.svy = 0; q.vAn = 0; }   // servis dizilişi oyuncuyu ışınlar: adım sayılmaz
             q.svx += (rx - q.svx) * a; q.svy += (ry - q.svy) * a; float sp = Hyp(q.svx, q.svy);
-            q.yuru = q.yuru ? sp > .45f : sp > .9f;
+            // Faz GERÇEK yolla (2026-10-26 gece, build 40 incelemesi; tool/unity_test/AnimOlc): faz yumuşatılmış hızla
+            // ilerliyordu. Gövde 14–18 m/s² ile hızlandığı için 120 ms'lik yumuşatma 1,5–2 m/s geride kalıyor: duruşta gövde
+            // dururken ayaklar ~0,3 sn 2 m/s koşmaya devam ediyor (yerinde koşu), kalkışta gövde 3–5 m/s giderken bacaklar
+            // 1–2 m/s adımlıyor ya da hâlâ boşta/servis pozunda (kayma). Ölçüm: bende ayak işi karelerinin %85–95'i > 0,3 m/s
+            // kaymalı. Şimdi faz = bu karede kat edilen yol / adım boyu (vAn: anlık hız; süzgeç yok, 30 ms'lik süzgeç bile
+            // ivmede 0,5 m/s kaydırıyordu; RunMe/MoveAcc ivme sınırlı olduğu için hız zaten pürüzsüz, sıçramaya karşı
+            // ışınlanma eşiği ve AYAK_TUR_MAX). Yürüme kararı da vAn'dan (kalkışta adım hemen başlar, duruşta ayak hemen
+            // durur). Yön klibi ve gövde eğimi yine yumuşatılmış hızdan (svx/svy): yön titremesini kesen o.
+            q.vAn = Hyp(rx, ry);
+            q.yuru = q.yuru ? q.vAn > YURU_CIK : q.vAn > YURU_GIR;
             if (q.yuru)
             {
                 float boy; if (q.ayakKlip == null || !ADIM_BOY.TryGetValue(q.ayakKlip, out boy)) boy = 1.5f;
-                q.runPh = (q.runPh + Math.Min(sp / boy, AYAK_TUR_MAX) * dt) % 1f;
+                q.runPh = (q.runPh + Math.Min(q.vAn / boy, AYAK_TUR_MAX) * dt) % 1f;
                 float fwdv = isMe ? -q.svy : q.svy, side = isMe ? q.svx : -q.svx;   // oyuncunun kendi bakışında: ileri = fileye
                 string aday = Math.Abs(side) > Math.Abs(fwdv) * 1.15f ? (side > 0 ? "chasse_r" : "chasse_l") : fwdv > 0 ? "fwd" : (side >= 0 ? "back_r" : "back_l");
                 bool kosu = q.ayakKlip == "run", kros = q.ayakKlip == "kros_r" || q.ayakKlip == "kros_l";
@@ -768,6 +792,11 @@ namespace BirdieSmash.Core
             if (who == "op" && I != null && I.who == "op" && I.imza != null && s != null && !s.dead && s.from != who && I.t - s.t < .7f)
             { o.prepClip = ClipHand(ImzaKlip(I.imza), o.prepHand ?? "fore"); if (I.imza == "yildirim" && o.prepHand == "back") o.prepClip = "bh_over"; }
             if (who == "op" && o.imzaT > 0 && o.imzaId == "duvarblok") { tg = 1; o.prepShot = "drive"; o.prepClip = "block"; o.prepHand = "fore"; o.prepT = float.NaN; }
+            // Sıçrayarak smaç hazırlığında kalkış (2026-10-26 gece): rakipteki gibi tahmini temastan SALINIM_JUMP önce; tepe temasta.
+            // Yalnız görünüm (me.jump'ı oyun kuralı okumaz). Oyuncu sonra yavaş kaydırırsa (clear/drop) temas havada olur ve klip
+            // sıçrama klibidir (StartFlight: h.jump > 0); kaydırmazsa figür sıçrayıp iner.
+            if (who == "me" && o.prepClip == "jump" && tg > 0 && !float.IsNaN(o.prepT) && o.prepT > 0 && o.prepT < SALINIM_JUMP && !(o.jump > 0) && o.sw <= 0)
+                o.jump = 1 - (SALINIM_JUMP - o.prepT) * JUMP_HIZ;
             // rakipte geri salınım sakin akar (~0,4 sn); bizde vuruş penceresi kısa, eski hız kalır. Bırakış hızlı.
             o.prepA += (tg - o.prepA) * Math.Min(1, dt * (tg > 0 && who == "op" ? 4.5f : 9));
         }
@@ -823,11 +852,21 @@ namespace BirdieSmash.Core
             return false;
         }
 
+        // Ayak işi karenin SONUNDA, gövde bu karede yürüdükten sonra (2026-10-26 gece, AnimOlc): eskiden başta ölçülüyordu;
+        // faz bir kare geriden geliyor, 14–18 m/s² ivmede ayak ~0,3 m/s kayıyordu. Vuruş donması (freeze, smaç/mükemmel
+        // 60–160 ms) boyunca ayak işi ve split sayacı da durur: gövde kıpırdamadığı için anlık hız 0 çıkıp figür donmanın
+        // ortasında boşta pozuna geçerdi, split donmada bitip ayak işine atlıyordu; poz donmayla birlikte donar. Yalnız
+        // görünüm: AyakIsi'nin ve splitT'nin yazdığı alanları oyun kuralı okumaz.
         public void Update(float dt)
+        {
+            bool donuk = freeze > 0;
+            Adim(dt);
+            if (!donuk) foreach (var q in new[] { me, op }) { AyakIsi(q, dt, q == me); q.splitT = Math.Max(0, q.splitT - dt); if (q.splitT <= 0) q.splitCik = 0; }
+        }
+        void Adim(float dt)
         {
             realClock += dt;
             if (dt > 0) { if (!float.IsNaN(op.px)) { op.vx = (op.x - op.px) / dt; op.vy = (op.y - op.py) / dt; } op.px = op.x; op.py = op.y; }
-            foreach (var q in new[] { me, op }) { AyakIsi(q, dt, q == me); q.splitT = Math.Max(0, q.splitT - dt); }
             // Pencere çarpanı donmadan önce ilerler (2026-10-27): smaç/tam orta donması (hit-stop) sırasında vuruşla kapanan
             // pencerenin çıkışı biter, top donmadan gerçek hızında çıkar; eskiden çıkış donmadan sonra başlıyordu.
             float pk = PencereAdim(dt, PencereYakin());
@@ -969,12 +1008,38 @@ namespace BirdieSmash.Core
             // kayıyordu (bot ölçümü: split karelerinin rakipte %70'i, bende %44'ü ayak kaymalı). Hareket başlayınca ayak işi klibi.
             // 2026-10-26 (tüm beden turu): havadaki bölüm (klibin ilk %45'i: kalkış, tepe, iniş) hızdan bağımsız oynar; yarıda
             // kesilen hop ayakları havada bırakıp ayak işine sıçratıyordu. İnişten sonra hareket varsa ayak işi.
-            else if (o.splitT > 0 && (spd < .6f || o.splitT > .3f * (1 - SPLIT_HAVA))) { clip = "split"; ph = 1 - o.splitT / .3f; }
-            else if (o.yuru && o.ayakKlip != null) { clip = o.ayakKlip; ph = o.runPh; }
-            else { clip = "idle"; ph = (o.idlePh + (isMe ? 0 : .5f)) % 1f; }
+            // Split'ten çıkış kalıcı (2026-10-26 gece, AnimOlc): hız 0,6 m/s çevresinde gidip gelince split ile ayak işi arasında
+            // 0,15 sn içinde geri dönen geçişler (rakipte maç başına ~60) pozu titretiyordu. Çıkılan anın splitT'si tutulur;
+            // yeni split (splitT = 0,3) ondan büyük olduğundan yeniden girer.
+            else if (o.splitT > 0 && o.splitT > o.splitCik && (o.vAn < .6f || o.splitT > .3f * (1 - SPLIT_HAVA))) { clip = "split"; ph = 1 - o.splitT / .3f; }
+            else if (o.yuru && o.ayakKlip != null) { if (o.splitT > 0) o.splitCik = o.splitT; clip = o.ayakKlip; ph = o.runPh; }
+            else { if (o.splitT > 0 && o.splitT <= .3f * (1 - SPLIT_HAVA)) o.splitCik = o.splitT; clip = "idle"; ph = (o.idlePh + (isMe ? 0 : .5f)) % 1f; }
             if (o.sw <= 0 && !(o.prepA > .08f && o.prepClip != null)) { o.hamleKilit = false; o.hamleGor = false; }
         }
         public const float SPLIT_HAVA = .45f;
+        // Katman ağırlığının yaklaşma hızı (1/sn, üstel). 12 idi (%95'e 250 ms): koşuya kalkışta ağırlık yükselene dek
+        // bacaklar vuruş duruşunda kayıyordu (AnimOlc: ayak işi dışı kaymanın yarısı). 25/sn: %95'e 120 ms, tek karede sıçrama yok.
+        public const float ALT_HIZ = 25;
+        // Alt beden katmanının hedef ağırlığı (PlayerView.AltKatmanKur; 2026-10-26 gece Core'a taşındı ki ölçüm aracı
+        // tool/unity_test/AnimOlc ve görünüm aynı kuralı okusun). Vuruş/hazırlık klibinde koşarken leğen ve bacaklar ayak işi
+        // klibinden. Bacakları vuruşun kendisi olan kliplerde kapalı, şu istisnalarla:
+        //  - hamle (lunge): yaklaşırken (o.sw = 0) açık; son adım ve takip hamle klibinin (2026-10-26);
+        //  - servis: temastan sonra (o.sw > 0) açık: servisçi topa bakıp tabana döner, servis duruşu 3–5 m/s kayıyordu;
+        //  - sıçrama: yerdeyken (kalkıştan önce, inişten sonra) açık; havada kapalı (bacaklar sıçramanın).
+        // Ağırlık anlık hızla (vAn) 0,3 → 0,9 m/s smoothstep: eskiden yumuşatılmış hızla 0,5 → 1,4 idi, kalkışın ilk ~0,2
+        // sn'si (gövde 3 m/s'ye çıkarken) bacaklar vuruş duruşunda kayıyordu. Ayak işi fazı yolla ilerlediği için düşük hızda
+        // da adım kaymaz (yalnız kısalır).
+        public static readonly HashSet<string> BACAK_VURUS = new HashSet<string> { "lunge", "bh_lunge", "jump", "serve", "serve_gec", "serve_bh", "serve_flick", "split", "yorgun" };
+        public static float AltHedef(Athlete o, string clip)
+        {
+            if (!o.yuru || o.ayakKlip == null || !CLIP_HIT.ContainsKey(clip)) return 0;
+            if (BACAK_VURUS.Contains(clip))
+            {
+                bool hamle = clip == "lunge" || clip == "bh_lunge", servis = clip.StartsWith("serve"), sicrama = clip == "jump";
+                if (!(hamle && o.sw <= 0 || servis && o.sw > 0 && o.svAnim == null || sicrama && o.jump <= 0)) return 0;
+            }
+            float u = Math.Max(0, Math.Min(1, (o.vAn - .3f) / .6f)); return u * u * (3 - 2 * u);
+        }
         // Hamle görünümü: alçak/file vuruşunun hamleli karşılığı ve fileye doğru hız eşiği (m/s, histerezisli). Bot ölçümü
         // (tool/unity_test, 2026-10-26): fileye koşarak gelen oyuncu temasta 1,5–3 m/s, yerinde vuran < 0,5 m/s.
         public static readonly Dictionary<string, string> HAMLE = new Dictionary<string, string> { {"low","lunge"},{"net","lunge"},{"bh_low","bh_lunge"} };
@@ -988,6 +1053,11 @@ namespace BirdieSmash.Core
         public static float JumpH(Athlete o) { return JumpH(o, false); }
         // hopsuz: split klibi oynarken gövde kaldırması klipten gelir (karakter.py split: ayaklar ~5 cm); dönüşümün hop'u üstüne
         // eklenince ayaklar 15 cm'ye çıkıyordu (kaynak 3–8 cm). 2026-10-26.
+        // Görünen gövde yüksekliğinin yükselme tavanı (m/sn, PlayerView; 2026-10-26 gece). Kaydırma tahmini kalkıştan önce gelirse
+        // (ya da tahmin geç kayarsa) sıçrama yayı ortasından başlıyor, gövde tek karede 0,3–0,5 m yukarı ışınlanıyordu (AnimOlc:
+        // 12 maçta ~67). Görünüm yükselişi 6 m/sn ile sınırlar: 0,5 m ~85 ms'de, smaç donmasının (80–160 ms) içinde biter. İniş
+        // sınırsız (yer çekimi gibi kural eğrisini izler). Kalkış hızı yayın kendisinde ~3 m/sn: normal sıçrama etkilenmez.
+        public const float GORSEL_YUKSELIS = 6f;
         public static float JumpH(Athlete o, bool hopsuz) { return (float)(Math.Sin(Math.Min(1, o.jump) * Math.PI) + (hopsuz ? 0 : Math.Sin(o.hop * Math.PI) * .2)); }
     }
 }
