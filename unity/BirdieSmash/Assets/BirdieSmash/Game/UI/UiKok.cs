@@ -128,6 +128,7 @@ namespace BirdieSmash.Game
             GuvenliAlan();
             var hud = root.HudKatman; float o = hud != null ? hud.PerdeOrtu : 0; bool pv = hud != null && hud.PerdeVar;
             if (Mathf.Abs(o - sonOrtu) > .01f || (o == 0 && sonOrtu != 0)) { sonOrtu = o; kok.style.opacity = 1 - o; }
+            PerdeKaymaUygula(hud);   // 2026-10-27 perde v2: içerik solarken 12 pt aşağı (yalnız translate)
             if (pv != kalkanAcik) { kalkanAcik = pv; kalkan.style.display = pv ? DisplayStyle.Flex : DisplayStyle.None; if (!pv) salonKirli = true; }   // perde kalkınca fon bir kez daha (açılışta sahne perde altında kuruluyor olabilir)
             SahneCiz(pv || o > 0, true);   // perde açılırken/kapanırken menü solar: altında maç sahnesi görünmeli
             if (Input.GetKeyDown(KeyCode.Escape) && !pv) Geri();   // Android geri tuşu
@@ -173,6 +174,7 @@ namespace BirdieSmash.Game
                     var im = sekmeDugme[i].Q<Image>(null, "sekme-ikon"); if (im != null) im.tintColor = on ? TURUNCU : SOLUK;   // seçili: limon dolgu üstünde koyu simge; 2026-10-27 yön C: dolgu yok, turuncu simge
                 }
             }
+            GostergeYerlestir(anim && s != once);   // 2026-10-27 yön C: üst çizgi yeni sekmeye yayla kayar
             ust.style.display = tam == null ? DisplayStyle.Flex : DisplayStyle.None;
             if (tam != null) { SayfaKur(tam); sayfa.style.display = DisplayStyle.Flex; if (anim) Giris(sayfa); } else { sayfa.style.display = DisplayStyle.None; sayfa.Clear(); }
             string altS = gez.AcikAltSayfa;
@@ -219,6 +221,7 @@ namespace BirdieSmash.Game
                 sekmeCubugu.Add(d);
             }
             if (altBosluk > 0) sekmeCubugu.style.paddingBottom = altBosluk;
+            GostergeKur();
             for (int i = 0; i < 4; i++) kirli[i] = true; ustKirli = true; Uygula(gez.sekme, false);
         }
 
@@ -385,6 +388,48 @@ namespace BirdieSmash.Game
         }
 
         void Tik() { root.sfx.Tik(); Yerel.Hap("tick"); }
+
+        // ---- 2026-10-27 yön C mikro hareketler (araştırma §4.3; yalnız translate/opacity, ekranda tek döngü afişin nefesi) ----
+        // Sekme göstergesi: tek bir 3 pt turuncu çizgi sekme çubuğunun üstünde; seçim değişince yeni sekmeye 180 ms'de kayar
+        // (dış öğe x, ease-out), iç öğe 90 ms'de 4 pt yükselip iner: tüy top yayı. Konum sekmenin yerleşiminden okunur (çubuğun
+        // yerleşimi ekran/duyarli dalında değişebilir; buradaki hesap ondan bağımsız). Gösterge yerleşene kadar (ilk kare) her
+        // sekmenin kendi çizgisi görünür; yerleşince .gosterge-var onları gizler. Hareketi azaltta geçiş 0 sn (USS .az-hareket).
+        VisualElement gosterge, gostergeIc;
+        void GostergeKur()
+        {
+            gosterge = new VisualElement(); gosterge.AddToClassList("sekme-gosterge"); gosterge.pickingMode = PickingMode.Ignore;
+            gostergeIc = new VisualElement(); gostergeIc.AddToClassList("sekme-gosterge-ic"); gostergeIc.pickingMode = PickingMode.Ignore; gosterge.Add(gostergeIc);
+            sekmeCubugu.Add(gosterge); sekmeCubugu.RemoveFromClassList("gosterge-var");
+            if (!gostergeOlay) { gostergeOlay = true; sekmeCubugu.RegisterCallback<GeometryChangedEvent>(e => GostergeYerlestir(false)); }   // çubuk bir kez kurulur, olay bir kez
+        }
+        bool gostergeOlay;
+        void GostergeYerlestir(bool anim)
+        {
+            if (gosterge == null || gosterge.parent != sekmeCubugu) return; var d = sekmeDugme[(int)gez.sekme]; if (d == null) return;
+            var lb = d.layout; if (float.IsNaN(lb.width) || lb.width <= 0) return;
+            float w = Mathf.Round(lb.width * .44f), x = lb.x + (lb.width - w) / 2; bool az = !anim || Ayar.reduce;
+            gosterge.EnableInClassList("anisiz", az); if (Mathf.Abs(gosterge.resolvedStyle.width - w) > .5f) gosterge.style.width = w;
+            gosterge.style.translate = new Translate(x, 0);
+            if (!az) { gostergeIc.style.translate = new Translate(0, -4); gostergeIc.schedule.Execute(() => gostergeIc.style.translate = new Translate(0, 0)).StartingIn(90); }
+            sekmeCubugu.AddToClassList("gosterge-var");
+        }
+        public string GostergeTani { get { return gosterge == null ? "yok" : "x " + gosterge.resolvedStyle.translate.x.ToString("F0") + " w " + gosterge.resolvedStyle.width.ToString("F0") + " sekme " + gez.sekme; } }
+        // Perde v2 kapanışı: menü içeriği solarken 12 pt aşağı kayar (Hud.PerdeKayma); sekme çubuğu yerinde kalır.
+        float sonKayma;
+        void PerdeKaymaUygula(Hud hud)
+        {
+            float k = hud != null ? hud.PerdeKayma : 0; if (Mathf.Abs(k - sonKayma) < .01f && !(k == 0 && sonKayma != 0)) return;
+            sonKayma = k; icerik.style.translate = new Translate(0, 12 * k);
+        }
+        // Uçan topun çıkış noktası: düğmenin ortası, panel biriminden ekran pikseline (IMGUI düzeni, sol üst köşe).
+        void PerdeKaynakYaz(VisualElement v)
+        {
+            var hud = root.HudKatman; if (hud == null || v == null || doc == null) return; float pw = doc.rootVisualElement.layout.width;
+            if (float.IsNaN(pw) || pw <= 0 || Screen.width <= 0) return; float k = Screen.width / pw; var c = v.worldBound.center;
+            hud.PerdeKaynak(new Vector2(c.x * k, c.y * k));
+        }
+        // Ekran turu: Oyna sekmesindeki büyük düğmeyi kaynak yap (yoksa Hud alt ortayı kullanır).
+        public void PerdeKaynakCta() { if (sekmeKok[0] != null) PerdeKaynakYaz(sekmeKok[0].Q<VisualElement>(null, "cta")); }
 
         // Ekran okuyucu köprüsü için (Erisilebilirlik.cs TODO): görünür etiketli öğeler.
         public void ErisimAgaci(List<Erisim.Dugum> liste) { liste.Clear(); Erisim.Topla(kok, liste); }

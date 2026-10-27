@@ -83,7 +83,7 @@ namespace BirdieSmash.Game
             yz.Add(Baslik(t, 40, "cta-baslik"));
             if (!string.IsNullOrEmpty(alt)) yz.Add(Yazi(alt, 14, "cta-alt"));
             var ik = new VisualElement(); ik.AddToClassList("cta-ikon"); ik.pickingMode = PickingMode.Ignore; ik.Add(Ikon(Ikonlar.Oyna, 24, CTA_OK)); d.Add(ik);   // 2026-10-27 yön C: koyu daire içinde turuncu ok
-            d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); a(); }));
+            d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); PerdeKaynakYaz(d); a(); }));   // 2026-10-27: perde v2'nin 3B topu buradan kalkar
             Erisim.Etiket(d, string.IsNullOrEmpty(alt) ? t : t + ", " + alt, "dugme");
             if (!Ayar.reduce) Supur(sup);
             return d;

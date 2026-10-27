@@ -292,6 +292,12 @@
 .sekme--secili .sekme-ikon { opacity: 1; }
 .sekme-yazi { -unity-text-align: middle-center; color: var(--mu); margin-top: 3px; -unity-font-definition: resource("fonts/Barlow-SemiBold"); }
 .sekme--secili .sekme-yazi { color: var(--sun); -unity-font-definition: resource("fonts/Barlow-Bold"); }
+/* 2026-10-27 yön C mikro hareket: tek sekme göstergesi (UiKok GostergeYerlestir). Yalnız translate; genişlik yalnız yerleşim
+   değişince yazılır. Hareketi azaltta süre 0. */
+.sekme-gosterge { position: absolute; left: 0; top: 0; height: 3px; transition-property: translate; transition-duration: 0.18s; transition-timing-function: ease-out; }
+.sekme-gosterge-ic { flex-grow: 1; border-radius: 2px; background-color: var(--sun); transition-property: translate; transition-duration: 0.09s; transition-timing-function: ease-out; }
+.sekme-gosterge.anisiz, .az-hareket .sekme-gosterge, .az-hareket .sekme-gosterge-ic { transition-duration: 0s; }
+.gosterge-var .sekme--secili .sekme-cizgi { display: none; }
 
 /* alt sayfa (Hızlı maç) */
 .alt-sayfa { background-color: var(--navy); border-top-width: 1px; border-color: var(--ln); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 0 16px 16px 16px; max-height: 88%; }

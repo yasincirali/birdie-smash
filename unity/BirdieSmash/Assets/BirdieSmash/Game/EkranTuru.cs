@@ -13,6 +13,8 @@
 // örnek ilerlemeyle Profil (ad, unvan, maç/smaç); ×1 ve ×2 yazı.
 // 2026-10-26 karakter tasarımı: Karakter › Tip/Saç/Ayakkabı/Ten, yakın planlar (yüz, ayak, tutuş forehand/backhand) ve
 // deneme kartları (normal ve x2_ büyük yazı; deneme kayda yazılmaz, segmentten çıkınca silinir).
+// 2026-10-27 yön C: perde v2 (gecis_kapanis_*, gecis_kapali, gecis_bekle, gecis_acilis_*, gecis_azalt_*) ve açılış anı
+// (acilis_*, acilis_bekle, acilis_patlama_*, acilis_azalt) dondurulmuş anlarla; rapor.txt'de sayılar ve gerçek açılış süresi.
 // Süre: gerçek zaman (GameRoot dt'yi 0,05 ile sınırlar; yavaş yazılım render'ında maç da yavaşlar, kareler yine anlamlı).
 using System.Collections;
 using System.Collections.Generic;
@@ -46,12 +48,13 @@ namespace BirdieSmash.Game
             var bekci = new System.Threading.Thread(() => { for (int i = 0; i < 300; i++) { System.Threading.Thread.Sleep(10000); Debug.Log("EkranTuru bekçi: kare " + kare + " adım " + adim); } }); bekci.IsBackground = true; bekci.Start();
             yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
-            yield return MenuTuru();
+            yield return MenuTuru(); if (root.HudKatman != null) rap.AppendLine("açılış süresi (gerçek, CI yazılım render'ı): " + root.HudKatman.AcilisTani);
             Ayar.antrenman = true; Ayar.easy = true; Ayar.target = 5; Ayar.reduce = false; if (root.ui != null) root.ui.Kirlet();   // r11: Oyna sekmesi ilk açılış kurulumunda kalıyordu
             yield return MenuTuru("", true); Ayar.yaziTest = 2; yield return MenuTuru("x2_", true); Ayar.yaziTest = 0; root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
             // 2026-10-26 yön A: Türkçe Oyna (CI dili İngilizce; Barlow'da ş, ğ, İ, ı karelerde görünsün), sonra eski dile dönülür.
             { string d0 = Ayar.dil; Ayar.dil = "tr"; root.ui.SekmeAc(Sekme.Kariyer); root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_tr_oyna");
               Ayar.yaziTest = 2; yield return Bekle(20); yield return Cek("menu_x2_tr_oyna"); Ayar.yaziTest = 0; Ayar.dil = d0; root.ui.SekmeAc(Sekme.Kariyer); root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(5); }
+            yield return PerdeTuru();   // 2026-10-27 yön C: perde v2 ve açılış anı kareleri
             var modeller = new System.Collections.Generic.List<string> { "oyuncak", "rocketbox" };
             if (Resources.Load<GameObject>("karakter/sade") != null) modeller.Add("sade");
             foreach (var mdl in modeller)
@@ -293,6 +296,33 @@ namespace BirdieSmash.Game
             root.MacaDon(); yield return Bekle(30); yield return Cek("bekleyen_devam"); rap.AppendLine("bekleyen_devam · " + ui.SahneDurumu);
             root.AnaMenu(); yield return Bekle(10);
         }
+        // 2026-10-27 yön C "Gün Batımı Salonu" perde v2 ve açılış anı: perdenin anları dondurularak çekilir (Hud.PerdeKare;
+        // CI'da kare hızı düşük, gerçek zamanlı yakalama rastgele bir ana düşerdi). Ad eki = perde saati (ms). Her karenin sayıları
+        // (top yeri/boyu/yönü, menü örtüsü, kayma, kaynak) rapora. Önce sekme göstergesinin konumu (kayma animasyonu karede
+        // görünmez, sayıyla).
+        IEnumerator PerdeTuru()
+        {
+            var hud = root.HudKatman; var ui = root.ui; if (hud == null || ui == null) yield break;
+            ui.SekmeAc(Sekme.Kariyer); yield return Bekle(20); rap.AppendLine("sekme göstergesi (Kariyer) · " + ui.GostergeTani);
+            ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); rap.AppendLine("sekme göstergesi (Oyna) · " + ui.GostergeTani);
+            bool r0 = Ayar.reduce; Ayar.reduce = false;
+            foreach (var k in new[] { .03f, .10f, .16f, .24f, .32f, .40f }) { ui.PerdeKaynakCta(); hud.PerdeKare(false, 1, k); yield return PerdeCek("gecis_kapanis_" + Ms(k)); }
+            hud.PerdeKare(false, 2, .3f); yield return PerdeCek("gecis_kapali");
+            hud.PerdeKare(false, 2, 1f, true); yield return PerdeCek("gecis_bekle");
+            foreach (var k in new[] { .08f, .18f, .28f }) { hud.PerdeKare(false, 3, k); yield return PerdeCek("gecis_acilis_" + Ms(k)); }
+            Ayar.reduce = true;
+            hud.PerdeKare(false, 1, .1f); yield return PerdeCek("gecis_azalt_kapanis_0100");
+            hud.PerdeKare(false, 2, .3f); yield return PerdeCek("gecis_azalt_kapali");
+            hud.PerdeKare(false, 3, .12f); yield return PerdeCek("gecis_azalt_acilis_0120");
+            Ayar.reduce = false;
+            foreach (var k in new[] { 0f, .10f, .25f, .40f, .55f, .65f }) { hud.PerdeKare(true, 2, k); yield return PerdeCek("acilis_" + Ms(k)); }
+            hud.PerdeKare(true, 2, 0, true); yield return PerdeCek("acilis_bekle");
+            foreach (var k in new[] { .08f, .18f }) { hud.PerdeKare(true, 3, k); yield return PerdeCek("acilis_patlama_" + Ms(k)); }
+            Ayar.reduce = true; hud.PerdeKare(true, 2, .3f); yield return PerdeCek("acilis_azalt");
+            Ayar.reduce = r0; hud.PerdeBirak(); yield return Bekle(10);
+        }
+        IEnumerator PerdeCek(string ad) { yield return Bekle(4); yield return Cek(ad); rap.AppendLine(ad + " · " + root.HudKatman.PerdeTani); }
+        static string Ms(float t) { return Mathf.RoundToInt(t * 1000).ToString("0000"); }
         IEnumerator Bekle(int kare) { for (int i = 0; i < kare; i++) yield return null; }
         IEnumerator Boyut(int w, int h)
         {
