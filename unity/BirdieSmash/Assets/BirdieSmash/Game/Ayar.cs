@@ -114,7 +114,10 @@ namespace BirdieSmash.Game
         public static bool ModelVar(string m)
         {
             if (m == "oyuncak" || m == "rocketbox") return true;
-            if (m != "sade") return false; if (sadeVar < 0) sadeVar = Resources.Load<GameObject>("karakter/sade") != null ? 1 : 0; return sadeVar == 1;
+            if (m != "sade") return false; // Tur 2: varlık sınaması küçük sade_clips.json ile (FBX ile hep birlikte gelir; PlayerView onu da okur): FBX'i yüklemek
+            // (ağ + 26 klip, ~2 MB) Sade seçmeyen oyuncuda da her açılışta Ayar.Yukle'de belleğe alıyordu.
+            if (sadeVar < 0) { var js = Resources.Load<TextAsset>("karakter/sade_clips"); sadeVar = js != null ? 1 : 0; if (js != null) Resources.UnloadAsset(js); }
+            return sadeVar == 1;
         }
         static int sadeVar = -1;
         // Beden tipi, saç biçimi ve ayakkabı MODELİ parçaları yalnız oyuncak ailesinin FBX'lerinde (oyuncak_<tip>.fbx) var.
