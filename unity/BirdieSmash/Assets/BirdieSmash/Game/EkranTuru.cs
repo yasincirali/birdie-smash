@@ -78,8 +78,10 @@ namespace BirdieSmash.Game
                 {
                     Ayar.kamera = k; Ayar.saha = "salon"; root.SahaDegisti(); root.KameraDegisti(); root.StartMatch(false, false, false); botAcik = true;
                     yield return Bekle(60); yield return Cek("kamera_" + k + en); Kadraj("kamera_" + k + en);
+                    yield return KadrajTepe(k + en, false);   // 2026-10-27 yüksek top (Core/Kadraj)
                 }
             }
+            yield return KadrajTepeEk(w0, h0);
             yield return Boyut(w0, h0);
             Ayar.model = "oyuncak"; Ayar.saha = "salon"; Ayar.kamera = "yayin"; root.SahaDegisti(); root.KameraDegisti();
             yield return ImzaKare("imza_mermi", KariyerVeri.Global(1, 5), false);
@@ -392,6 +394,47 @@ namespace BirdieSmash.Game
             root.AnaMenu(); yield return Bekle(30); yield return Cek("menu_bekleyen_oyna"); rap.AppendLine("menu_bekleyen_oyna · " + ui.SahneDurumu + " · bekleyen " + root.bekleyen);
             root.MacaDon(); yield return Bekle(30); yield return Cek("bekleyen_devam"); rap.AppendLine("bekleyen_devam · " + ui.SahneDurumu);
             root.AnaMenu(); yield return Bekle(10);
+        }
+        // Yüksek top kadrajı (2026-10-27, yasin build 41 "Top yükseldiğinde kadrajdan çıkıyor"; Core/Kadraj). Gerçek bir clear
+        // (BotMac FizikOlcumleri'nin clear'ı: dip çizginin 1 m önünden, 2,55 m'den; tepe ~7 m) ve aynalanmış hâli (rakibin dip
+        // çizgiden clear'ı) tepe anında çekilir: kadraj_tepe_ben_<açı><ek>.png, kadraj_tepe_rakip_<açı><ek>.png. Rapor satırı
+        // topun ekran konumunu iki yoldan yazar (Unity kamerası ve Core/Kadraj modeli: aynı olmalı, BotMac sayıları buna dayanır),
+        // üst sınırı (skor kutusunun altı), takip eğimini, görüş çarpanını, işaretin alfasını ve yakın dip çizginin yerini.
+        IEnumerator KadrajTepe(string ek, bool azalt)
+        {
+            bool r0 = Ayar.reduce; Ayar.reduce = azalt; string a = azalt ? "_azalt" : "";
+            foreach (var kim in new[] { "ben", "rakip" })
+            {
+                root.StartMatch(false, false, false); botAcik = false; yield return Bekle(20);
+                var M = root.match; bool ben = kim == "ben"; float L = Court.L;
+                M.s = new Shuttle { x = Court.MID, y = L - 1f, z = 2.55f, vy = 3, vz = -2, from = "op" }; M.me.x = Court.MID - .4f; M.me.y = L - 1f;
+                var P = M.ShotPlan(new SwipeInput { dy = -150, speed = 1.2f, R = 40 }, new Reach(), true); M.s = null;
+                float hx = P.hx, hy = ben ? P.hy : L - P.hy, ty = ben ? Court.NET - P.d : Court.NET + P.d, tx = ben ? P.tx : 2 * Court.MID - P.tx, vx, vy, vz;
+                if (!ben) { hx = 2 * Court.MID - hx; M.op.x = hx + .4f; M.op.y = hy; }
+                Shuttle.Aim(hx, hy, P.hz, tx, ty, P.byAngle, P.val, out vx, out vy, out vz);
+                var sf = typeof(Match).GetMethod("StartFlight", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                sf.Invoke(M, new object[] { ben ? "me" : "op", vx, vy, vz, hx, hy, P.hz, false, "clear", false, "good", false });
+                float t0 = Time.realtimeSinceStartup;
+                while (M.s != null && M.s.vz > 0 && Time.realtimeSinceStartup - t0 < 8) yield return null;
+                string ad = "kadraj_tepe_" + kim + "_" + ek + a; yield return Cek(ad);
+                var s = M.s; if (s == null) { rap.AppendLine(ad + " · top yok"); continue; }
+                var w = root.cam.WorldToScreenPoint(Kit.W(s.x, s.y, s.z)); float H = Screen.height, sx, sy, dx, dy;
+                BirdieSmash.Core.Kadraj.Izdus(root.kam, root.kadrajEgim, s.x, s.y, s.z, out sx, out sy); BirdieSmash.Core.Kadraj.Izdus(root.kam, root.kadrajEgim, Court.MID, L, 0, out dx, out dy);
+                var isr = FindFirstObjectByType<KadrajIsaret>();
+                bool gor = sy >= root.kam.ustPx && sy <= H && sx >= 0 && sx <= Screen.width;
+                rap.AppendLine("kadraj_tepe " + ad + " · " + Screen.width + "x" + Screen.height + " · top z " + s.z.ToString("F2") + " (" + s.x.ToString("F1") + ", " + s.y.ToString("F1") + ") ekran Unity " + w.x.ToString("F0") + "," + (H - w.y).ToString("F0")
+                    + " model " + sx.ToString("F0") + "," + sy.ToString("F0") + " · üst sınır " + root.kam.ustPx.ToString("F0") + " alt " + root.kam.altPx.ToString("F0") + " · " + (gor ? "GÖRÜNÜR" : "DIŞARIDA")
+                    + " · eğim " + root.kadrajEgim.ToString("F1") + "° (tavan " + root.kam.egimAzami.ToString("F1") + ") görüş ×" + root.kadrajGenis.ToString("F2") + " · işaret " + (isr != null ? isr.SonAlfa.ToString("F2") : "-")
+                    + " · yakinDip " + dy.ToString("F0") + " · azalt " + Ayar.reduce);
+                File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
+            }
+            Ayar.reduce = r0;
+        }
+        // Hareketi azalt (takip yok, işaret var) 390×845 Yayın'da ve Pro Max (430×932) Yayın'da.
+        IEnumerator KadrajTepeEk(int w0, int h0)
+        {
+            yield return Boyut(w0, h0); Ayar.kamera = "yayin"; root.KameraDegisti(); yield return KadrajTepe("yayin", true);
+            yield return Boyut(430, 932); root.KameraDegisti(); yield return KadrajTepe("yayin_pm", false);
         }
         IEnumerator Bekle(int kare) { for (int i = 0; i < kare; i++) yield return null; }
         IEnumerator Boyut(int w, int h)
