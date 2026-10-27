@@ -594,12 +594,12 @@ namespace BirdieSmash.Game
                         bool smac = mine && e.type == "smash";
                         sfx.Point(mine, smac, (int)e.k); hud.Pop(mine ? 0 : 1); Yerel.Hap(mine ? "win" : "lose");
                         // düşüş yerinde toz ve kazananın renginde dalga; benim sayımda üst bantta üç renkli kıvılcım (HTML point)
-                        if (e.x != 0 || e.y != 0) { var yer = Kit.W(e.x, e.y, .05f); fx.Burst(yer, new Color(.9f, 1, .94f, .7f), 14, 140, "dot"); fx.Dalga(yer, mine ? limon : Kit.Hex("#ff7a6b"), 70); }
+                        if (e.x != 0 || e.y != 0) { var yer = Kit.W(e.x, e.y, .05f); fx.Burst(yer, new Color(.9f, 1, .94f, .7f), 14, 140, "dot"); fx.Dalga(yer, mine ? limon : Kit.Hex(Hud.RAKIP_HUD), 70); }
                         if (mine) hud.SayiKivilcim();
                         if (mine && e.big && M.ogr == null) Basarim.Ver(Basarim.SICRAMA);   // sıçrayarak smaçla alınan sayı
                         if (smac) { if (!rm) shake = Mathf.Max(shake, 10); hud.Flash(.35f, limon); }
                         if (mine && (e.k >= 8 || e.type == "smash")) hud.Kamera();
-                        hud.Say(L.Cumle(e.text), Kit.W(Court.MID, mine ? Court.NET - 2 : Court.NET + 2, 1.5f), mine ? limon : Kit.Hex("#ff7a6b"), mine ? 1.6f : 1.4f, true);
+                        hud.Say(L.Cumle(e.text), Kit.W(Court.MID, mine ? Court.NET - 2 : Court.NET + 2, 1.5f), mine ? limon : Kit.Hex(Hud.RAKIP_HUD), mine ? 1.6f : 1.4f, true);
                         if (M.ogr != null && M.s != null && M.s.ogrHedef != null) { }
                         break;
                     }

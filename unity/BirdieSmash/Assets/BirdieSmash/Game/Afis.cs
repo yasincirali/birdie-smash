@@ -42,8 +42,10 @@ namespace BirdieSmash.Game
             // r16: tam arkadan kontur Standard gölgelendiricide görünmüyordu (Fresnel kenar ışığı yok, yalnız sırtı boyar);
             // dış yana ve hafif geriye alındı, güç arttı: kameraya bakan kenar mercan/limon parlar.
             Isik(g.transform, "afis_anahtar", YER + Ek(new Vector3(-2.2f, 2.6f, 3.2f)), Color.white, 1.25f, 10);
-            a.konturRakip = Isik(g.transform, "afis_kontur_rakip", YER + Ek(RAKIP + new Vector3(1.25f, 1.45f, -.35f)), Kit.Hex("#FF5B4A"), 7f, 2.6f);
-            a.konturBen = Isik(g.transform, "afis_kontur_ben", YER + Ek(BEN + new Vector3(-1.2f, 1.5f, -.35f)), Kit.Hex("#D8FF3A"), 2.6f, 2.4f);
+            // 2026-10-27 yön C: rakip konturu orkide (UiKok.RAKIP; mercan birincil eylemin turuncu ailesine düşüyordu), sana limon
+            // (UiKok.LIMON, C'nin kırılmış limonu). Güçler aynı: orkide mercandan biraz açık, kontur yine okunur.
+            a.konturRakip = Isik(g.transform, "afis_kontur_rakip", YER + Ek(RAKIP + new Vector3(1.25f, 1.45f, -.35f)), UiKok.RAKIP, 7f, 2.6f);
+            a.konturBen = Isik(g.transform, "afis_kontur_ben", YER + Ek(BEN + new Vector3(-1.2f, 1.5f, -.35f)), UiKok.LIMON, 2.6f, 2.4f);
             g.SetActive(false); return a;
         }
         static Light Isik(Transform p, string ad, Vector3 yer, Color c, float guc, float menzil)

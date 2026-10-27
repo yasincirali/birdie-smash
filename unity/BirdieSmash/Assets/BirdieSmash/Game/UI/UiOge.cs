@@ -18,8 +18,17 @@ namespace BirdieSmash.Game
     {
         // 2026-10-26 Yayın Gecesi paleti (menu_stil.uss kök değişkenleriyle aynı değerler; kodda boyanan simgeler ve dokular için).
         // CAMGOBEGI adı geriye uyum için kaldı: seçili/şimdi rengi artık limon (bkz. menu_stil.uss başı); GOK ikincil veri.
-        public static readonly Color LIMON = Kit.Hex("#D8FF3A"), CAMGOBEGI = Kit.Hex("#D8FF3A"), GOK = Kit.Hex("#5FC8FF"), MERCAN = Kit.Hex("#FF5B4A"), ALTIN = Kit.Hex("#FFC83D"),
-            SOLUK = Kit.Hex("#A3ABD1"), KOYU = Kit.Hex("#0B1206"), MUREKKEP = Kit.Hex("#070B1F"), YAZI = Kit.Hex("#F4F6FF");
+        // 2026-10-27 yön C "Gün Batımı Salonu" (yasin karar kartı): değerler USS kökündeki C değerleri. Adlar aynı kaldı (başka
+        // dallar bu adları kullanıyor): CAMGOBEGI = TURUNCU = seçili/şimdi/ilerleme; LIMON yalnız "sen"; MERCAN = rakip (değeri
+        // orkide, birincil eylemin turuncu ailesinden ayrılsın diye; neden ve ölçü menu_stil.uss başında); KOYU = sıcak
+        // koyu yazı/simge (turuncu ve limon üstünde Lc 63 / 86); MUREKKEP = zemin.
+        public static readonly Color LIMON = Kit.Hex("#C9EE4B"), CAMGOBEGI = Kit.Hex("#FFA04D"), GOK = Kit.Hex("#8FC6FF"), MERCAN = Kit.Hex("#E99BFF"), ALTIN = Kit.Hex("#F9D272"),
+            SOLUK = Kit.Hex("#CBB8C5"), KOYU = Kit.Hex("#2A0F12"), MUREKKEP = Kit.Hex("#1A1221"), YAZI = Kit.Hex("#F3EAEE");
+        public static readonly Color TURUNCU = Kit.Hex("#FFA04D"), CTA_MUREKKEP = Kit.Hex("#1E0A0C"), CTA_OK = Kit.Hex("#FF8A57"), RAKIP = Kit.Hex("#E99BFF");
+        // Birincil eylem degradesi (yön C: taslakta yatay #FF7A5C → #FFA04D). Dokuda dikey, çünkü 9 dilimde yan dilimler
+        // sabit kalır, orta gerilir: dikey degrade her genişlikte aynı görünür. Alt ton #FF7A5C değil #FF9458: alt satır
+        // (14–15 pt) koyu yazı orada durur; #FF7A5C üstünde Lc 53 (sınırın altı), #FF9458 üstünde 60,7, altı satırın ortasında 62.
+        public static readonly Color CTA_UST = Kit.Hex("#FFB25E"), CTA_ORTA = Kit.Hex("#FFA04D"), CTA_ALT = Kit.Hex("#FF9458");
 
         public const float YAZI_MIN = 11;
         Label Yazi(string t, float px, string cls = null)
@@ -204,7 +213,7 @@ namespace BirdieSmash.Game
         }
 
         // ---- Yayın Gecesi dokuları ----
-        static readonly Color NAVY = Kit.Hex("#10173A"), NAVY2 = Kit.Hex("#1A2350"), INK = Kit.Hex("#070B1F");
+        static readonly Color NAVY = Kit.Hex("#261A30"), NAVY2 = Kit.Hex("#33233F"), INK = Kit.Hex("#1A1221");   // 2026-10-27 yön C: kart, düğme, zemin (adlar A'dan)
         static void YayinDokulari()
         {
             // Oyna zemini (yön A a-fade): üstte koyu (durum çubuğu ve üst şerit okunsun), ortada saydama yakın (afiş ve salon),
@@ -235,9 +244,12 @@ namespace BirdieSmash.Game
             });
             // OYNA düğmesi (a-cta): eğik kenarlı (sol kenar "/" 14 pt, sağ kenar aynı), dikey gradyan #E6FF73 → #D8FF3A (%55) →
             // #B9E61F, altta 4 pt koyu iç gölge. 9 dilim: yan dilimler 16 pt (32 doku pikseli), yükseklik 80 pt.
-            EgikLimon = Egik(96, 160, 28, Kit.Hex("#E6FF73"), Kit.Hex("#D8FF3A"), Kit.Hex("#B9E61F"), 8);
+            // 2026-10-27 yön C: limon yerine gün batımı degradesi (UiKok.CTA_UST/ORTA/ALT, yukarıda); ad geriye uyum için aynı.
+            EgikLimon = Egik(96, 160, 28, UiKok.CTA_UST, UiKok.CTA_ORTA, UiKok.CTA_ALT, 8);
             // Etiket şeridi (a-kick "SIRADAKİ MAÇ"): düz limon, küçük eğim (−12°), 22 pt.
-            EgikLimonKucuk = Egik(32, 44, 9, Kit.Hex("#D8FF3A"), Kit.Hex("#D8FF3A"), Kit.Hex("#D8FF3A"), 0);
+            // 2026-10-27 yön C: dolgusuz altın çerçeve + altın yazı (C taslağı .etk span); ekranda tek doygun dolgu OYNA kalsın.
+            EgikLimonKucuk = Sekil(32, 44, (x, y, ic) => { float yt = 44 - y, sol = 9 * (1 - yt / 44), sag = 32 - 9 * (yt / 44); return x >= sol + ic && x <= sag - ic && yt >= ic && yt <= 44 - ic; },
+                (x, y) => new Color(UiKok.ALTIN.r, UiKok.ALTIN.g, UiKok.ALTIN.b, .10f), new Color(UiKok.ALTIN.r, UiKok.ALTIN.g, UiKok.ALTIN.b, 1), 3);
             // Yayın plakası (a-plate): üç köşe 14 pt yuvarlak, sağ alt 18 pt kesik; soldan sağa navy2 → navy; 1 pt ince çerçeve.
             Plaka = Sekil(96, 96, (x, y, ic) => PlakaIc(x, y, 96, 96, ic), (x, y) => Color.Lerp(new Color(NAVY2.r, NAVY2.g, NAVY2.b, .97f), new Color(NAVY.r, NAVY.g, NAVY.b, .95f), x / 96f), new Color(1, 1, 1, .12f), 2);
             // Şimdiki basamak (a-pips .cur): limon / soluk limon çapraz çizgi; düz renk yerine desen, yalnız renkle değil.
@@ -245,7 +257,7 @@ namespace BirdieSmash.Game
             var sp = new Color32[96 * 10]; for (int y = 0; y < 10; y++) for (int x = 0; x < 96; x++) { bool on = Mathf.Repeat(x + y * .36f, 12) < 6; sp[y * 96 + x] = on ? (Color32)LIMON_D : (Color32)new Color(LIMON_D.r, LIMON_D.g, LIMON_D.b, .35f); }
             Serit.SetPixels32(sp); Serit.Apply();
             // Günün maçı kutucuğu (a-tile--gold): sol üstten altın %16 → %60'ta lacivert. Köşe yuvarlaması USS border-radius'ta.
-            AltinKaro = Sekil(64, 64, (x, y, ic) => true, (x, y) => { float k = Mathf.Clamp01(((x / 64f) + (1 - y / 64f)) / 2 / .6f); return Color.Lerp(Color.Lerp(NAVY, Kit.Hex("#FFC83D"), .16f), NAVY, k); }, Color.clear, 0);
+            AltinKaro = Sekil(64, 64, (x, y, ic) => true, (x, y) => { float k = Mathf.Clamp01(((x / 64f) + (1 - y / 64f)) / 2 / .6f); return Color.Lerp(Color.Lerp(NAVY, UiKok.ALTIN, .16f), NAVY, k); }, Color.clear, 0);
             // Işık süpürmesi (a-cta::after): beyaz, eğik, iki yandan sönen bant.
             Parilti = Sekil(64, 64, (x, y, ic) => true, (x, y) => { float k = (x - (y - 32) * .36f) / 64f; float a = Mathf.Clamp01(1 - Mathf.Abs(k - .5f) * 2); return new Color(1, 1, 1, a * a * .55f); }, Color.clear, 0);
             // Maç sonu ışınları (a-rays): 18 ışın, merkezden dışa sönen; Hud döndürür (hareketi azaltta yok).
@@ -256,7 +268,7 @@ namespace BirdieSmash.Game
             }, Color.clear, 0);
             Isik = Kit.RadialTex(64);
         }
-        static readonly Color LIMON_D = Kit.Hex("#D8FF3A");
+        static readonly Color LIMON_D = Kit.Hex("#FFA04D");   // 2026-10-27 yön C: şimdiki basamak deseni turuncu (seçili/şimdi rengi); ad A'dan
         // Yuvarlak köşeli kutu (r doku pikseli) + ince çerçeve: IMGUI maç sonu kartları ve düğmeleri için (GUIStyle.border = r+2,
         // 9 dilim). IMGUI'de 1 doku pikseli = 1 ekran pikseli olduğu için Hud ölçek değişince yeniden üretir.
         public static Texture2D Kutu(int r, Color dolgu, Color cerceve, float kalin)
@@ -269,7 +281,7 @@ namespace BirdieSmash.Game
             }, (x, y) => dolgu, cerceve, kalin);
         }
         // Eğik limon düğme dokusu istenen ekran ölçeğinde (IMGUI: yan dilim = egim + 2 piksel).
-        public static Texture2D EgikDugme(int w, int h, int egim) { return Egik(w, h, egim, Kit.Hex("#E6FF73"), Kit.Hex("#D8FF3A"), Kit.Hex("#B9E61F"), Mathf.Max(1, h / 20)); }
+        public static Texture2D EgikDugme(int w, int h, int egim) { return Egik(w, h, egim, UiKok.CTA_UST, UiKok.CTA_ORTA, UiKok.CTA_ALT, Mathf.Max(1, h / 20)); }   // 2026-10-27 yön C degradesi
         // Eğik dikdörtgen: sol kenar alttan üste sağa (14 pt), sağ kenar alttan üste sağa; gradyan üst, orta (%55), alt; altta iç gölge.
         static Texture2D Egik(int w, int h, int egim, Color ust, Color orta, Color alt, int golge)
         {
