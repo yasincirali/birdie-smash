@@ -31,6 +31,9 @@
 // smaç inişte çıkışın %25'inden yavaş; drop ve file vuruşu kısa servis çizgisinin önüne), rakibin slice'ı (çevirme)
 // kendi sürüklenmesiyle nişanlanır ve fileye gitmez; ağır çekim rampası pencereden önce biter, vuruşla kapanan pencere
 // PENCERE_VURUS_OUT'ta çıkar (smaç ilk 0,1 sn'de gerçek hızının ≥ %90'ında görünür).
+// 2026-10-27 yüksek top kadrajı (Kadrajlar(), Core/Kadraj): bot uçuşları 7 ekran × 3 açıda izdüşülür; takip topu skor
+// kutusunun üstünde/ekran dışında bırakan kareleri azaltmalı, eğim ≤ tavan, açısal hız ≤ 30°/s, hareketi azaltta eğim 0,
+// eğim geçmişe bağlı değil (aynı uçuş iki takipte aynı), tepesi görünmeyen yüksek uçuşta ekran dışı işareti çıkar.
 // Çalıştırma: depo kökünden (KariyerVeri tool/veri'yi çalışma klasöründen yukarı arar).
 using System;
 using System.Collections.Generic;
@@ -143,6 +146,7 @@ static class BotMac
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
         Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
+        Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }
@@ -1009,6 +1013,105 @@ static class BotMac
         if (titreme > 40) Fail("tabanda boşta↔öne adım titremesi: " + titreme);
         if (donmaKayma > 0) Fail("vuruş donmasında boşta/ayak işi klibine geçti: " + donmaKayma);
         if (dikey > 0) Fail("gövde dikeyde ışınlandı (sıçrama yayı ortasından başladı): " + dikey);
+    }
+    // Yüksek top kadrajı (2026-10-27, yasin build 41: "Top yükseldiğinde kadrajdan çıkıyor"; Core/Kadraj). Bot maçlarının
+    // uçuşlarını (60 Hz) her kamera açısında ve ekranda izdüşürür: top skor kutusunun altındaki sınırın üstünde mi (skor
+    // bandı) ya da ekranın dışında mı; yüksek uçuşların (tepe > 5 m) tepesi görünüyor mu. Önce = takip yok (build 41),
+    // sonra = Kadraj.Takip; hareketi azaltta takip yok, kalan kareler ekran dışı işaretiyle gösterilir (sayılır).
+    // Takibin bedeli de ölçülür: yakın dip çizginin 0,8 m gerisi smaç çubuğunun altına kaç kare iner, en çok kaç px;
+    // eğimin en büyük açısal hızı (°/s).
+    static void Kadrajlar()
+    {
+        const float dt = 1f / 60f; var kareler = new List<Shuttle>(); var saatler = new List<float>(); benler = new List<float[]>();
+        for (int m = 0; m < 8; m++)
+        {
+            var M = new Match(700 + m, new MatchOptions { easy = m % 3 != 2, target = 11, stil = m % 4 == 3 ? Match.KariyerRakip(6 + m) : null }); int g = 0;
+            while (!M.over && g++ < 60 * 60 * 20)
+            {
+                Bot(M, dt); M.Update(dt); M.events.Clear();
+                kareler.Add(M.s == null ? null : M.s.Clone()); saatler.Add(M.clock); benler.Add(new[] { M.me.x, M.me.y });
+            }
+        }
+        // ekranlar: ad, pt genişlik/yükseklik, güvenli alan üst/alt (pt). CI = EkranTuru penceresi (güvenli alan tam ekran).
+        var ekr = new[] {
+            new object[] { "CI 390x845", 390f, 845f, 0f, 0f }, new object[] { "CI SE 375x667", 375f, 667f, 0f, 0f },
+            new object[] { "iPhone 390x844", 390f, 844f, 47f, 34f }, new object[] { "SE 375x667", 375f, 667f, 20f, 0f },
+            new object[] { "Pro Max 430x932", 430f, 932f, 59f, 34f }, new object[] { "iPad 820x1180", 820f, 1180f, 24f, 20f },
+            new object[] { "iPad 4:3 768x1024", 768f, 1024f, 20f, 0f } };
+        string[] ac = { "Yayın", "Alçak", "Üstten" };
+        int ucusKare = 0; foreach (var s in kareler) if (s != null && !s.dead) ucusKare++;
+        // uçuşun gerçekten ulaştığı tepe (tahmin edilen değil: yükselirken karşılanan top tepesine varmaz)
+        var tepe = new Dictionary<object, float>(); foreach (var s in kareler) if (s != null && !s.dead && s.landPred != null) { float z; tepe.TryGetValue(s.landPred, out z); tepe[s.landPred] = Math.Max(z, s.z); }
+        int yuksekN = tepe.Values.Count(z => z > 5); tepeler = tepe;
+        Console.WriteLine("kadraj: " + kareler.Count + " kare, uçuşta " + ucusKare + ", yüksek uçuş (tepe > 5 m) " + yuksekN);
+        foreach (var e in ekr)
+            for (int ki = 0; ki < 3; ki++)
+            {
+                float W = (float)e[1], H = (float)e[2], su = (float)e[3], sa = (float)e[4];
+                var c = Kadraj.Coz(W, H, 0, sa, W, H - su - sa, ki);
+                var r0 = KadrajSay(c, kareler, saatler, false); var r1 = KadrajSay(c, kareler, saatler, true);
+                Console.WriteLine("kadraj " + ((string)e[0]).PadRight(18) + ac[ki].PadRight(7) + " önce: bant " + Yuzde(r0[0], ucusKare) + " dışarı " + Yuzde(r0[1], ucusKare) + " tepe görünmez " + r0[2] + "/" + yuksekN
+                    + " · sonra: bant " + Yuzde(r1[0], ucusKare) + " dışarı " + Yuzde(r1[1], ucusKare) + " tepe görünmez " + r1[2] + "/" + yuksekN + " (işaretle ya da yandan " + r1[6] + ")"
+                    + " · eğim en çok " + r1[3].ToString("0.0") + "° (tavan " + c.egimAzami.ToString("0.0") + "), görüş ×" + r1[9].ToString("0.00") + ", hız en çok " + r1[4].ToString("0") + "°/s (p99 " + r1[8].ToString("0") + "), ayaklar çubuk altında " + Yuzde(r0[5], kareler.Count) + " → " + Yuzde(r1[5], kareler.Count) + " en çok " + r0[7].ToString("0") + " → " + r1[7].ToString("0") + " px");
+                if (r1[0] + r1[1] > r0[0] + r0[1]) Fail("kadraj takibi topu daha çok dışarıda bırakıyor: " + e[0] + " " + ac[ki]);
+                if (r1[4] > Kadraj.HIZ_AZAMI + .5f) Fail("kadraj eğimi çok hızlı: " + r1[4] + "°/s " + e[0] + " " + ac[ki]);
+                if (r1[3] > c.egimAzami + 1e-3f || r1[9] > Kadraj.GENIS_AZAMI + 1e-3f) Fail("kadraj eğimi tavanı aştı: " + r1[3]);
+                if (r1[6] < r1[2]) Fail("tepesi görünmeyen uçuşta işaret yok: " + e[0] + " " + ac[ki]);
+            }
+        // EkranTuru kadraj_tepe_* kareleriyle aynı uçuş (clear ve aynası), tepe anında: CI turunun beklenen sayıları
+        foreach (var e in new[] { new[] { 390f, 845 }, new[] { 375f, 667 }, new[] { 430f, 932 } })
+            for (int ki = 0; ki < 3; ki++)
+                foreach (bool ben in new[] { true, false })
+                {
+                    var c = Kadraj.Coz(e[0], e[1], 0, 0, e[0], e[1], ki); var M = new Match(1, new MatchOptions { easy = true, target = 11 }); float L = Court.L;
+                    M.s = new Shuttle { x = Court.MID, y = L - 1f, z = 2.55f, vy = 3, vz = -2, from = "op" }; M.me.x = Court.MID - .4f; M.me.y = L - 1f;
+                    var P = M.ShotPlan(new SwipeInput { dy = -150, speed = 1.2f, R = 40 }, new Reach(), true); M.s = null;
+                    float hx = P.hx, hy = ben ? P.hy : L - P.hy, ty = ben ? Court.NET - P.d : Court.NET + P.d, tx = ben ? P.tx : 2 * Court.MID - P.tx, vx, vy, vz;
+                    if (!ben) hx = 2 * Court.MID - hx;
+                    Shuttle.Aim(hx, hy, P.hz, tx, ty, P.byAngle, P.val, out vx, out vy, out vz);
+                    typeof(Match).GetMethod("StartFlight", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(M, new object[] { ben ? "me" : "op", vx, vy, vz, hx, hy, P.hz, false, "clear", false, "good", false });
+                    var T = new Kadraj.Takip(); float eg = 0; int g = 0;
+                    while (M.s != null && M.s.vz > 0 && g++ < 600) { M.Update(1f / 60); M.events.Clear(); eg = T.Egim(c, M.s, M.clock, false); }
+                    if (M.s == null) { Fail("kadraj tepe uçuşu kurulamadı"); continue; }
+                    float sx0, sy0, sx1, sy1; Kadraj.Izdus(c, 0, M.s.x, M.s.y, M.s.z, out sx0, out sy0); Kadraj.Izdus(c, eg, M.s.x, M.s.y, M.s.z, out sx1, out sy1);
+                    Console.WriteLine("kadraj_tepe " + (ben ? "ben " : "rakip ") + e[0] + "x" + e[1] + " " + ac[ki] + ": z " + M.s.z.ToString("0.00") + " y " + M.s.y.ToString("0.0") + " · ekran y önce " + sy0.ToString("0") + " sonra " + sy1.ToString("0") + " (üst sınır " + c.ustPx.ToString("0") + ") eğim " + eg.ToString("0.0") + "° görüş ×" + Kadraj.Genis(c, eg).ToString("0.00"));
+                }
+        // hareketi azalt: eğim her zaman 0
+        { var c = Kadraj.Coz(390, 844, 0, 34, 390, 844 - 81, 0); var T = new Kadraj.Takip(); float en = 0; for (int i = 0; i < kareler.Count; i++) en = Math.Max(en, T.Egim(c, kareler[i], saatler[i], true)); if (en != 0) Fail("hareketi azaltta kamera eğildi: " + en); }
+        // durumsuzluk: aynı uçuş iki ayrı takipte (biri ortadan başlar) aynı eğimi verir
+        {
+            var c = Kadraj.Coz(390, 845, 0, 0, 390, 845, 0); var A = new Kadraj.Takip(); var B = new Kadraj.Takip(); int fark = 0;
+            int bas = kareler.Count / 3; for (int i = 0; i < kareler.Count; i++) { float a = A.Egim(c, kareler[i], saatler[i], false); if (i < bas) continue; float b = B.Egim(c, kareler[i], saatler[i], false); if (i > bas + 300 && Math.Abs(a - b) > 1e-4f) fark++; }
+            if (fark > 0) Fail("kadraj eğimi geçmişe bağlı: " + fark + " kare");
+        }
+    }
+    static Dictionary<object, float> tepeler; static List<float[]> benler;
+    static string Yuzde(float n, int t) { return (100f * n / Math.Max(1, t)).ToString("0.0") + "%"; }
+    // [0] skor bandında (sınırın üstü, ekran içi) kare, [1] ekran dışı kare, [2] tepesi skor kutusunun altında görünmeyen yüksek uçuş,
+    // [3] en büyük eğim, [4] en büyük açısal hız (°/s; [8] p99), [5] oyuncunun ayakları smaç çubuğunun altında kare, [9] görüş çarpanı, [6] tepesi görünmezken işaret çıkan uçuş, [7] en çok px
+    static float[] KadrajSay(Kadraj.Kamera c, List<Shuttle> kareler, List<float> saatler, bool takip)
+    {
+        var T = new Kadraj.Takip(); var r = new float[10]; var hizlar = new List<float>(); float onceE = 0; object son = null; bool yuksek = false, gorundu = false, isaret = false; float ap = 0;
+        bool yanDisari = false;   // tepesi yalnız yandan dışarıda (kort dışına giden geniş vuruş): üst kenar işareti onu göstermez
+        Action kapat = () => { if (yuksek && !gorundu) { r[2]++; if (isaret || yanDisari) r[6]++; } };
+        for (int i = 0; i < kareler.Count; i++)
+        {
+            var s = kareler[i]; float e = takip ? T.Egim(c, s, saatler[i], false) : 0;
+            if (i > 0) { float v = Math.Abs(e - onceE) * 60; r[4] = Math.Max(r[4], v); if (v > .01f) hizlar.Add(v); } onceE = e; r[3] = Math.Max(r[3], e);
+            float yx, yy; if (Kadraj.Izdus(c, e, benler[i][0], benler[i][1], 0, out yx, out yy) && yy > c.altPx + .5f) { r[5]++; r[7] = Math.Max(r[7], yy - c.altPx); }   // oyuncunun ayakları smaç çubuğunun altında
+            r[9] = Math.Max(r[9], Kadraj.Genis(c, e));
+            object u = s != null ? (object)s.landPred : null;
+            if (!ReferenceEquals(u, son)) { kapat(); son = u; yanDisari = false; gorundu = false; isaret = false; ap = 0; if (u != null) tepeler.TryGetValue(u, out ap); yuksek = ap > 5; }
+            if (s == null || s.dead) continue;
+            float sx, sy; bool on = Kadraj.Izdus(c, e, s.x, s.y, s.z, out sx, out sy);
+            bool disari = !on || sy < 0 || sy > c.H || sx < 0 || sx > c.W, bant = !disari && sy < c.ustPx;
+            if (disari) r[1]++; else if (bant) r[0]++;
+            float ix, ia;
+            if (yuksek && s.z > ap - .3f && !disari && !bant) gorundu = true;   // tepe çevresinde (son 30 cm) görünür bir kare
+            if (yuksek && s.z > ap - .3f && on && sy >= c.ustPx && (sx < 0 || sx > c.W)) yanDisari = true;
+            if (yuksek && s.z > ap - .3f && (disari || bant) && Kadraj.Isaret(c, e, s, out ix, out ia) && ia > .5f) isaret = true;
+        }
+        kapat(); hizlar.Sort(); r[8] = hizlar.Count > 0 ? hizlar[(int)(hizlar.Count * .99f)] : 0; return r;
     }
     static float Hyp(float x, float y) { return (float)Math.Sqrt(x * x + y * y); }
 }
