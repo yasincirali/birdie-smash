@@ -567,9 +567,12 @@ namespace BirdieSmash.Game
             transform.position = Kit.W(o.x, o.y, 0) + Vector3.up * j;
             // Gövde dik (ce47f5c): hamlede yatma yok; yalnız kıl payı kurtarışta (yat) en çok 15°. Koşu eğimi ±0,08 rad (~4,6°;
             // Ar-Ge 23 Eki B3: render edilmiş figürü düz resim gibi yatırmak sahte görünür, ayaklar yerden kalkar).
-            float lean = Mathf.Clamp(o.svx * .02f, -.08f, .08f) * (isMe ? 1 : -1);
+            // 2026-10-27 (ekran/kosu): gövde gidişe döner (Match.AyakIsi, Athlete.donus; arka sahaya yan dönük, ön köşeye
+            // köşeye bakarak). Eğim gövdenin kendi yanına göre: dönükken dünya x'inden eğilmek öne/arkaya yatırırdı.
+            float donR = o.donus * Mathf.Deg2Rad, yanK = isMe ? o.svx : -o.svx, ileriK = isMe ? -o.svy : o.svy;
+            float lean = Mathf.Clamp((yanK * Mathf.Cos(donR) - ileriK * Mathf.Sin(donR)) * .02f, -.08f, .08f);
             float dive = (o.yat ? o.dive : 0) * (o.x < Court.MID ? -1 : 1) * .26f * (isMe ? 1 : -1);
-            yaw.localRotation = Quaternion.Euler(0, isMe ? 0 : 180, 0) * Quaternion.Euler(0, 0, -(dive + lean) * Mathf.Rad2Deg) * calib;
+            yaw.localRotation = Quaternion.Euler(0, (isMe ? 0 : 180) + o.donus, 0) * Quaternion.Euler(0, 0, -(dive + lean) * Mathf.Rad2Deg) * calib;
             shadow.position = Kit.W(o.x, o.y, .003f); shadow.localScale = Vector3.one * (.9f - j * .8f);
             ShowRing(o.nefes, dt, M.reduce); ImzaIsik(o, M.reduce, dt);
             if (yay != null)
@@ -598,8 +601,26 @@ namespace BirdieSmash.Game
             }
             hazirKafa = UzanHazir(o, M) ? KafaVurusta(cur) : null;   // ana örneklemeden önce: önbellekte yoksa vuruş karesi örneklenir
             Sample(cur, ph, prev, prevPh, prev == null ? 1 : Mathf.SmoothStep(0, 1, blend), altKlip, altPh, altW);   // smoothstep (2026-10-26): doğrusal ağırlık geçişin başında ve sonunda hız kırığı veriyordu
+            KalcaDonus(o);   // ana örneklemeden hemen sonra: uzanma kalçayı kaydırmadan, ayak kilidi IK'dan önce
             Uzan(o, M, j);   // kayma ve kalça: ayak kilidinden önce (kilit kalça kaymasını ayakta geri alır)
             FileItin(); AyakKilit(dt); HazirNefes(o, M); UzanKol();
+        }
+
+        // Kalça–omuz ayrışması (2026-10-27, ekran/kosu): hazırlıkta koşarken gövde fileye döner (Athlete.donus), bacaklar
+        // gidişte kalır (Athlete.donusAyak, ayak işi klibi o çerçevede seçildi). Fark leğene verilir, omurganın ilk iki
+        // kemiğinde geri alınır: göğüs, kollar ve raket vuruş klibinin pozunda, bacaklar gidiş yönünde. Ağırlık bacakların
+        // ayak işinden gelen payı (ayak işi klibi gösteriliyorsa 1, vuruş klibinde alt katman ağırlığı). Omurga ya da leğen
+        // bulunamazsa (ya da omurga leğenin çocuğu değilse) hiçbir şey yapılmaz (bütün beden dönerdi).
+        public float TaniKalca;
+        void KalcaDonus(Athlete o)
+        {
+            TaniKalca = 0;
+            if (hakem || kHip == null || kOmurga.Count == 0 || !kOmurga[0].IsChildOf(kHip)) return;   // omurga leğenin altında değilse geri alınamaz
+            float w = cur != null && Match.ADIM_BOY.ContainsKey(cur) ? 1 : altKlip != null ? altW : 0;
+            float d = (o.donusAyak - o.donus) * w; if (Mathf.Abs(d) < .05f) return;
+            Vector3 up = yaw.up; kHip.rotation = Quaternion.AngleAxis(d, up) * kHip.rotation;
+            int n = Mathf.Min(2, kOmurga.Count); for (int i = 0; i < n; i++) kOmurga[i].rotation = Quaternion.AngleAxis(-d / n, up) * kOmurga[i].rotation;
+            TaniKalca = d;
         }
 
         // Uzanma katmanı (2026-10-27 gece; koordinatör kararı, ekran turu ölçümü: temas karesinde raket kafası topa 0,6–1,5 m

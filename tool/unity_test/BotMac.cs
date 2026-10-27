@@ -143,6 +143,7 @@ static class BotMac
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
         Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
+        KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }
@@ -991,8 +992,13 @@ static class BotMac
                     float boy; bool ayak = Match.ADIM_BOY.TryGetValue(c, out boy);
                     if (ayak && son[i] == c && v < 12 && !M.between && M.s != null)
                     {
-                        float dph = ph - ph0[i]; if (dph < 0) dph += 1;
-                        kare++; if (Math.Abs(dph * boy / dt - v) > .3f) kayan++;
+                        // 2026-10-27 (ekran/kosu): faz işaretli ve klibin eksenine düşen hızla ilerler (ters gidişte geri sarar);
+                        // karşılaştırma gövde hızının o eksendeki bileşeniyle. Eksene dik bileşen (yön farkı) KosuYonleri'nde.
+                        float dph = ph - ph0[i]; dph -= (float)Math.Floor(dph + .5f);
+                        float ey, ei; Match.KlipEkseni(c, out ey, out ei); double r = a.donusAyak * Math.PI / 180;
+                        float vx = (a.x - px[i]) / dt, vy = (a.y - py[i]) / dt, yan = i == 0 ? vx : -vx, ileri = i == 0 ? -vy : vy;
+                        float vEk = yan * (ey * (float)Math.Cos(r) + ei * (float)Math.Sin(r)) + ileri * (-ey * (float)Math.Sin(r) + ei * (float)Math.Cos(r));
+                        kare++; if (Math.Abs(dph * boy / dt - vEk) > .3f) kayan++;
                     }
                     // donmada vuruş (temas karesi) ve karşı oyuncunun split'i başlayabilir; boşta pozuna düşmek ya da ayak işi klibine geçmek olmaz
                     if (donuk && son[i] != null && c != son[i] && !M.between && (c == "idle" || Match.ADIM_BOY.ContainsKey(c))) donmaKayma++;
@@ -1009,6 +1015,69 @@ static class BotMac
         if (titreme > 40) Fail("tabanda boşta↔öne adım titremesi: " + titreme);
         if (donmaKayma > 0) Fail("vuruş donmasında boşta/ayak işi klibine geçti: " + donmaKayma);
         if (dikey > 0) Fail("gövde dikeyde ışınlandı (sıçrama yayı ortasından başladı): " + dikey);
+    }
+    // Koşu yönü (2026-10-27, ekran/kosu; yasin build 41: "oyuncu arka arkaya koşarken garip koşuyor"). AyakIsleri faz
+    // hızının BÜYÜKLÜĞÜNE bakıyordu; burada bacakları süren klibin gidiş VEKTÖRÜ (klip ekseni, Athlete.donusAyak kadar
+    // dönük; faz hızı × adım boyu) gövdenin gerçek hız vektörüyle karşılaştırılır: fark yerdeki ayağın kayması. Vuruş
+    // klibinde koşarken bacaklar alt katmandan (Match.AltHedef > .5 ise ayakKlip/runPh) sayılır. Ölçülenler (60 ve 120 Hz):
+    //  - vektör kayma ortalaması ve > 0,3 m/s kare oranı (önce ben 2,0 m/s / %87, rakip 1,0 m/s / %75);
+    //  - ters adım: bacaklar gövdenin gittiği yönün tersine adımlıyor (önce maç başına ~300 kare: hamleden geri çekilmede ileri koşu);
+    //  - geri çekilme (gidiş fileden > 120°, > 2 m/s): yan dönük (|donusAyak| > 45°) pay, fileye bakıp geri geri (back_*) pay
+    //    (önce %0 / %82–86);
+    //  - temasta gövde dönüşü (vuruş klipleri fileye bakarak çizildi) ve dönüş hızı tavanı (Match.DON_AZAMI: tek karede dönme yok).
+    static void KosuYonleri()
+    {
+        foreach (float hz in new[] { 60f, 120f })
+        {
+            float dt = 1f / hz; var R = new Random(7);
+            int kare = 0, kay3 = 0, ters = 0, geri = 0, geriYan = 0, geriSirt = 0, donAsim = 0; double kayTop = 0; var temas = new List<float>();
+            for (int m = 0; m < 6; m++)
+            {
+                var M = new Match(300 + m, new MatchOptions { easy = m % 3 != 2, target = 11 }); int g = 0;
+                var px = new[] { float.NaN, float.NaN }; var py = new float[2]; var ph0 = new float[2]; var c0 = new string[2]; var d0 = new float[2];
+                while (!M.over && g++ < (int)(hz * 60 * 30))
+                {
+                    if (M.s == null && M.server == "me" && M.wait <= 0 && !M.between && M.svPending == null && R.NextDouble() < .05) M.SwipeServe((float)(R.NextDouble() * 160 - 80), -200, 1.8f);
+                    Reach rc; if (M.ReachInfo(out rc) && R.NextDouble() < .12) M.SwipeShot(new SwipeInput { dx = (float)(R.NextDouble() * 200 - 100), dy = -(float)(80 + R.NextDouble() * 220), speed = R.NextDouble() < .5 ? 1.2f : 2.2f, R = 40, dist = (float)(R.NextDouble() * 60), side = R.NextDouble() < .5 ? -1 : 1 });
+                    M.Update(dt);
+                    for (int i = 0; i < 2; i++)
+                    {
+                        var a = i == 0 ? M.me : M.op; bool isMe = i == 0; string c; float ph; M.PickClip(a, isMe, out c, out ph);
+                        if (!Match.ADIM_BOY.ContainsKey(c) && a.ayakKlip != null && Match.AltHedef(a, c) > .5f) { c = a.ayakKlip; ph = a.runPh; }
+                        bool isin = !float.IsNaN(px[i]) && Hyp(a.x - px[i], a.y - py[i]) > 12 * dt;   // servis dizilişi ışınlar: dönüş sıfırlanır
+                        if (!isin && !float.IsNaN(px[i]) && (Math.Abs(a.donusAyak - d0[i]) > Match.DON_AZAMI * dt + .01f || Math.Abs(a.donusAyak - a.donus) > Match.DON_KALCA + .01f)) donAsim++;
+                        float ey, ei, boy; Match.KlipEkseni(c, out ey, out ei);
+                        if (!float.IsNaN(px[i]) && c == c0[i] && (ey != 0 || ei != 0) && Match.ADIM_BOY.TryGetValue(c, out boy) && !M.between && M.s != null)
+                        {
+                            float vx = (a.x - px[i]) / dt, vy = (a.y - py[i]) / dt, yan = isMe ? vx : -vx, ileri = isMe ? -vy : vy, v = Hyp(yan, ileri);
+                            if (v < 12)
+                            {
+                                float dph = ph - ph0[i]; dph -= (float)Math.Floor(dph + .5f);
+                                double r = a.donusAyak * Math.PI / 180; float fc = (float)Math.Cos(r), fs = (float)Math.Sin(r);
+                                float ax = ey * fc + ei * fs, ay = -ey * fs + ei * fc, cv = dph * boy / dt, k = Hyp(yan - ax * cv, ileri - ay * cv);
+                                kare++; kayTop += k; if (k > .3f) kay3++;
+                                if (v > .6f && (ax * yan + ay * ileri) * cv < 0) ters++;
+                                if (v > 2 && Math.Abs(Math.Atan2(yan, ileri)) > 120 * Math.PI / 180) { geri++; if (Math.Abs(a.donusAyak) > 45) geriYan++; if (c.StartsWith("back")) geriSirt++; }
+                            }
+                        }
+                        px[i] = a.x; py[i] = a.y; ph0[i] = ph; c0[i] = c; d0[i] = a.donusAyak;
+                    }
+                    foreach (var e in M.events) if (e.kind == Ev.Hit && !(M.s != null && M.s.serve)) temas.Add(Math.Abs((e.who == "me" ? M.me : M.op).donus));
+                    M.events.Clear();
+                }
+            }
+            temas.Sort(); float t90 = temas.Count > 0 ? temas[(int)(temas.Count * .9)] : 0, ort = (float)(kayTop / Math.Max(1, kare)), o3 = 100f * kay3 / Math.Max(1, kare);
+            float yanP = 100f * geriYan / Math.Max(1, geri), sirtP = 100f * geriSirt / Math.Max(1, geri);
+            Console.WriteLine("koşu yönü " + hz + " Hz: " + kare + " kare, vektör kayma ort " + ort.ToString("0.00") + " m/s, > 0,3 m/s %" + o3.ToString("0.0") + ", ters adım " + ters
+                + "; geri çekilme " + geri + " kare: yan dönük %" + yanP.ToString("0") + ", fileye bakıp geri geri %" + sirtP.ToString("0") + "; temasta gövde dönüşü p90 " + t90.ToString("0.0") + "°, dönüş tavanı aşımı " + donAsim);
+            if (ort > .45f) Fail("koşu: bacak klibinin yönü gövdenin gidişini izlemiyor, ort. kayma " + ort.ToString("0.00") + " m/s");
+            if (o3 > 30) Fail("koşu: ayak işi karelerinin %" + o3.ToString("0") + "'inde > 0,3 m/s kayma");
+            if (ters > 0) Fail("koşu: ters adım (bacaklar gidişin tersine) " + ters + " kare");
+            if (geri < 200) Fail("koşu: geri çekilme ölçülemedi (" + geri + " kare)");
+            else { if (yanP < 70) Fail("koşu: arka sahaya yan dönmeden gidiyor (yan dönük %" + yanP.ToString("0") + ")"); if (sirtP > 10) Fail("koşu: arka sahaya fileye bakıp geri geri (%" + sirtP.ToString("0") + ")"); }
+            if (t90 > 5) Fail("koşu: temasta gövde dönük (p90 " + t90.ToString("0.0") + "°)");
+            if (donAsim > 0) Fail("koşu: dönüş hızı/kalça ayrışması tavanı aşıldı " + donAsim);
+        }
     }
     static float Hyp(float x, float y) { return (float)Math.Sqrt(x * x + y * y); }
 }
