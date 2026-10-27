@@ -172,12 +172,15 @@ namespace BirdieSmash.Core
         }
 
         // Alçak yay: verilen açıdan başla, fileyi geçmiyorsa açıyı büyüt (top hiç fileye gitmez; imza hatayla bozulmaz).
-        static void AlcakYay(float hx, float hy, float hz, float tx, float ty, float a, out float vx, out float vy, out float vz)
+        // kd (2026-10-27): uçuşun gerçek sürüklenmesi. Rakibin "çevirme" file aldatması slice'tır (SliceKd ×1,35) ama nişan ve file
+        // denetimi KD ile alınıyordu: top hedefin kısasına düşüp fileye gidiyordu (ölçüm: Tur 3+ çevirmelerin %61'i fileye).
+        // Varsayılan KD, diğer çağrılar birebir aynı.
+        static void AlcakYay(float hx, float hy, float hz, float tx, float ty, float a, out float vx, out float vy, out float vz, float kd = Shuttle.KD)
         {
-            for (int i = 0; i < 6; i++) { Shuttle.Aim(hx, hy, hz, tx, ty, true, a + i * .12f, out vx, out vy, out vz); if (FileGecer(hx, hy, hz, vx, vy, vz)) return; }
-            Shuttle.Aim(hx, hy, hz, tx, ty, true, 1.1f, out vx, out vy, out vz);
+            for (int i = 0; i < 6; i++) { Shuttle.Aim(hx, hy, hz, tx, ty, true, a + i * .12f, out vx, out vy, out vz, kd); if (FileGecer(hx, hy, hz, vx, vy, vz, kd)) return; }
+            Shuttle.Aim(hx, hy, hz, tx, ty, true, 1.1f, out vx, out vy, out vz, kd);
         }
-        static bool FileGecer(float hx, float hy, float hz, float vx, float vy, float vz) { var c = Shuttle.Simulate(hx, hy, hz, vx, vy, vz, false, Shuttle.KD); return c.net == null || c.net.ok; }
+        static bool FileGecer(float hx, float hy, float hz, float vx, float vy, float vz, float kd = Shuttle.KD) { var c = Shuttle.Simulate(hx, hy, hz, vx, vy, vz, false, kd); return c.net == null || c.net.ok; }
 
         void ImzaSifirla() { op.imzaT = 0; op.imzaId = null; duvarBlokla = false; imzaOkundu = false; mermiIkinci = false; }
 

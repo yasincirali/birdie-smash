@@ -14,6 +14,17 @@
 // davulu, sevinç/iç çekiş, yön değişiminde ayakkabı gıcırtısı, parmak hızıyla raket uğultusu (canlı bandpass).
 // Web Audio'daki son kompresör yok (Unity mikserinde yok; düzeyler HTML'deki kazançlarla).
 // Titreşim: desen burada hesaplanır (Desen, HTML hapHit), Yerel.Vurus iOS eklentisiyle çalar (Plugins/iOS/BirdieYerel.mm).
+// 2026-10-27 his turu (yasin: "sesle ilgili sen kendin tatmin edici şekilde ilerle, ben gerçekçi sesler eklerim ilerde"):
+//  - Kayıtlı ses kancası: Assets/Resources/ses/<ad>.wav|ogg|mp3 varsa o ad için sentez yerine kayıt çalar, kod değişmez.
+//    Aynı adın çeşitlemeleri <ad>_1, <ad>_2 … (sırayla, ilk eksikte durur) rastgele seçilir. Adlar KAYIT_ADLARI'nda; vuruşta
+//    önce isabetli ad (vurus_smash_perfect), yoksa türün adı (vurus_smash). Rakibin vuruşu aynı kaydı kısık ve 3 kHz
+//    süzgeçli kaynaktan çalar (sentezdeki uzaklık kuralı). Kayıt yoksa ses birebir eski sentezdir. Lisans: yalnız CC0 ya
+//    da kendi kaydımız, bildirimi legal/ucuncu_taraf.md (repo kuralı).
+//  - Vuruşun gücü sese biner: topun çıkış hızı (m/s) kazancı ve perdeyi hafifçe değiştirir (yavaş drop kısık ve bir tık
+//    tiz, 60 m/s smaç dolu ve tok); smaç/file vuruşu/sıçrayarak smaçta altta kısa bir gövde darbesi (80 → 45 Hz, 70 ms):
+//    telefon hoparlöründe duyulmaz ama kulaklıkta "punch" verir, iOS hoparlöründe tiz katman zaten taşıyor.
+//  - Seyirci ralliye tepki verir: 8, 12, 16 … vuruşta yükselen "ooo" (gerilim), 10+ vuruşluk ralliden sonra alkış
+//    (ralli uzadıkça uzun ve gür); kısa ralli eski sevinç sesiyle kalır (her sayıda alkış ucuzlar).
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -91,7 +102,7 @@ namespace BirdieSmash.Game
 
     public class Sfx : MonoBehaviour
     {
-        AudioSource src; AudioLowPassFilter suAlti; float suHedef = 22000; System.Random rnd = new System.Random(5); int seed = 11;
+        AudioSource src, opSrc; readonly AudioSource[] vurusSrc = new AudioSource[4]; int vurusSira; AudioLowPassFilter suAlti; float suHedef = 22000; System.Random rnd = new System.Random(5); int seed = 11;
         AudioSource crowd; float crowdHedef; Swoosh swo;
         readonly Dictionary<string, AudioClip[]> vses = new Dictionary<string, AudioClip[]>(); readonly Dictionary<string, AudioClip> cache = new Dictionary<string, AudioClip>();
         static readonly int[] PENTA = { 0, 2, 4, 7, 9 };
@@ -107,12 +118,18 @@ namespace BirdieSmash.Game
         void Init(Transform listener)
         {
             src = gameObject.AddComponent<AudioSource>(); src.playOnAwake = false; src.spatialBlend = 0;
+            // Vuruşlar perdeli çaldığı için ayrı kaynaklardan (PlayOneShot perde almaz); 4 kaynak üst üste binen vuruşa yeter.
+            for (int i = 0; i < vurusSrc.Length; i++) { vurusSrc[i] = gameObject.AddComponent<AudioSource>(); vurusSrc[i].playOnAwake = false; vurusSrc[i].spatialBlend = 0; }
+            // Rakibin kayıtlı vuruşu: ayrı nesnede 3 kHz alçak geçiren (AudioLowPassFilter nesnedeki tüm kaynaklara uygulanır).
+            var og = new GameObject("rakip_ses"); og.transform.SetParent(transform, false); opSrc = og.AddComponent<AudioSource>(); opSrc.playOnAwake = false; opSrc.spatialBlend = 0;
+            var olp = og.AddComponent<AudioLowPassFilter>(); olp.cutoffFrequency = 3000;
             suAlti = listener.gameObject.AddComponent<AudioLowPassFilter>(); suAlti.cutoffFrequency = 22000; suAlti.lowpassResonanceQ = 1;
             // seyirci: 2 sn döngü gürültü, bandpass 520 (Q .8) → lowpass 1400
             var sy = new Synth(2, 3); var bp = new Synth.Biquad("bandpass", 520, .8f); var lp = new Synth.Biquad("lowpass", 1400, .707f);
             for (int i = 0; i < sy.buf.Length; i++) sy.buf[i] = lp.Run(bp.Run(sy.R()));
             Yumusat(sy.buf, 2000);
-            crowd = gameObject.AddComponent<AudioSource>(); crowd.clip = sy.Clip("seyirci", 3); crowd.loop = true; crowd.volume = 0; crowd.playOnAwake = false; crowd.Play();
+            var ks = Kayit("seyirci");
+            crowd = gameObject.AddComponent<AudioSource>(); crowd.clip = ks != null ? ks[0] : sy.Clip("seyirci", 3); crowd.loop = true; crowd.volume = 0; crowd.playOnAwake = false; crowd.Play();
             var sg = new GameObject("ugultu"); sg.transform.SetParent(transform, false); swo = sg.AddComponent<Swoosh>();
             Isit();   // açılış perdesi bu sıra bitene kadar kapalı kalır (Hazir)
         }
@@ -183,14 +200,44 @@ namespace BirdieSmash.Game
         void Arpej(float f0, int[] semi, float d, float v, float ara) { src.PlayOneShot(Bir("a" + f0 + string.Join(",", semi) + d + v + ara, s => { for (int i = 0; i < semi.Length; i++) s.Tone(i * ara, f0 * Mathf.Pow(2, semi[i] / 12f), d, "triangle", v); }, semi.Length * ara + d + .05f)); }
 
         // ---- olaylar (HTML çağrı yerleri) ----
-        public void Hit(string type, string q, bool slice, bool super_, bool serve, bool mine, int rally, bool flow)
+        // hiz: topun çıkış hızı (m/s; 0 = bilinmiyor, eski düzey). Güç katsayısı p: 12 m/s drop ≈ 0, 60 m/s smaç = 1.
+        public void Hit(string type, string q, bool slice, bool super_, bool serve, bool mine, int rally, bool flow, float hiz = 0)
         {
-            src.PlayOneShot(Vurus(type, q, slice, super_, serve, !mine));
+            float p = hiz > 0 ? Mathf.Clamp01((hiz - 12) / 48f) : .5f, kaz = .8f + .35f * p, perde = 1.03f - .06f * p + (float)(rnd.NextDouble() - .5) * .02f;
+            string t = Tur(type), kayitAd = serve ? "vurus_servis" : slice ? "vurus_slice" : "vurus_" + t;
+            var kv = Kayit(kayitAd + "_" + q) ?? Kayit(kayitAd);
+            if (kv != null) { var c = kv[rnd.Next(kv.Length)]; if (mine) VurusCal(c, kaz, perde); else { opSrc.pitch = perde; opSrc.PlayOneShot(c, .5f * kaz); } }
+            else if (mine) VurusCal(Vurus(type, q, slice, super_, serve, false), kaz, perde);
+            else { var k = Kaynak(); k.pitch = perde; k.PlayOneShot(Vurus(type, q, slice, super_, serve, true), kaz); }
+            if (mine && !serve && (type == "smash" || type == "jump" || type == "kill")) Govde(.5f + .5f * p * (super_ ? 1.3f : 1));
+            if (rally >= 8 && rally % 4 == 0 && !serve) Ooo(Mathf.Min(1, (rally - 4) / 16f));
             RallyNote(rally - 1, mine, mine && flow);
             if (rally >= 6) Kick(.12f + Mathf.Min(.12f, rally * .008f));
             if (Tur(type) == "smash" && (type == "smash" || type == "jump")) Whistle();
             crowdHedef = .01f + Mathf.Min(.06f, rally * .0045f);
             if (rally > 2 && rally % 5 == 0) Ton(523 * Mathf.Pow(2, Mathf.Min(rally, 30) / 24f), .2f, "triangle", .07f);
+        }
+        AudioSource Kaynak() { var k = vurusSrc[vurusSira]; vurusSira = (vurusSira + 1) % vurusSrc.Length; return k; }
+        void VurusCal(AudioClip c, float kaz, float perde) { var k = Kaynak(); k.pitch = perde; k.PlayOneShot(c, kaz); }
+        // Gövde darbesi: alçak sinüs süpürmesi, iki düzeyde önbellekte (kazanç oynatmada).
+        void Govde(float v) { if (Kayitli("govde", v)) return; src.PlayOneShot(Bir("govde", s => s.Sweep(0, .09f, "sine", t => 80 * Mathf.Pow(45f / 80, Mathf.Min(1, t / .07f)), t => .32f * (t < .002f ? t / .002f : Mathf.Pow(.0005f, Mathf.Min(1, (t - .002f) / .08f)))), .1f), Mathf.Min(1.3f, v)); }
+        // Seyirci "ooo": geniş formant (380 → 620 Hz), 0,9 sn kabarıp söner; şiddet ralli uzunluğuyla.
+        void Ooo(float k) { if (Kayitli("ooo", .5f + .5f * k)) return; src.PlayOneShot(Bir("ooo", s => { s.NoiseSweep(0, .9f, 380, 620, 1.6f, .09f, false, u => Mathf.Sin(Mathf.PI * Mathf.Min(1, u * 1.3f)) * (1 - u * .4f)); s.NoiseSweep(0, .9f, 900, 1150, 2.2f, .035f, false, u => Mathf.Sin(Mathf.PI * Mathf.Min(1, u * 1.3f))); }, .95f), .5f + .5f * k); }
+        // Alkış: rastgele zamanlı el çırpışları (her biri 4–7 ms gürültü, bandpass 900–2600 Hz), yoğunluk başta yüksek, sonda
+        // seyrek. Ralli uzunluğuna göre iki boy (kısa 1,4 sn, uzun 2,4 sn); her boy iki çekimle önbellekte.
+        void Alkis(bool uzun)
+        {
+            if (Kayitli(uzun ? "alkis_uzun" : "alkis")) return;
+            float sure = uzun ? 2.4f : 1.4f; int cek = rnd.Next(2);
+            src.PlayOneShot(Bir("alkis" + uzun + cek, s =>
+            {
+                var r = new System.Random(uzun ? 41 + cek : 17 + cek); int n = uzun ? 260 : 130;
+                for (int i = 0; i < n; i++)
+                {
+                    float u = (float)Mathf.Pow((float)r.NextDouble(), 1.7f), t = u * sure;
+                    s.Burst(t, .004f + (float)r.NextDouble() * .003f, "bandpass", 900 + (float)r.NextDouble() * 1700, (.05f + (float)r.NextDouble() * .05f) * (1 - u * .6f), 1.2f, 2);
+                }
+            }, sure + .1f), .9f);
         }
         // Ekipman ekranında rakete/tele dokununca o takımın smaç sesi (HTML racketHit({type:'smash',q:'perfect'})).
         public void Deneme() { src.PlayOneShot(Vurus("smash", "perfect", false, false, false, false)); }
@@ -200,12 +247,13 @@ namespace BirdieSmash.Game
             src.PlayOneShot(Bir("r" + f + mine + harm, s => { s.Tone(0, f, .32f, "triangle", mine ? .05f : .03f); s.Tone(.01f, f * 2, .18f, "sine", mine ? .02f : .01f); if (harm) { s.Tone(.04f, f * 1.5f, .4f, "sine", .03f); s.Tone(.08f, f * 2.52f, .3f, "sine", .015f); } }, .5f));
         }
         void Kick(float v) { src.PlayOneShot(Bir("k" + v.ToString("0.000"), s => s.Sweep(0, .25f, "sine", t => 130 * Mathf.Pow(42f / 130, Mathf.Min(1, t / .14f)), t => v * Mathf.Pow(.0001f / v, Mathf.Min(1, t / .22f))), .26f)); }
-        void Whistle() { src.PlayOneShot(Bir("duduk", s => s.Sweep(0, .52f, "sine", t => 2600 * Mathf.Pow(700f / 2600, Mathf.Min(1, t / .45f)), t => .025f * Mathf.Pow(.004f, Mathf.Min(1, t / .5f))), .53f)); }
-        public void Squeak() { src.PlayOneShot(Bir("gicirti", s => s.Sweep(0, .13f, "sine", t => t < .06f ? Mathf.Lerp(2300, 3400, t / .06f) : Mathf.Lerp(3400, 2800, Mathf.Min(1, (t - .06f) / .04f)), t => .025f * Mathf.Pow(.004f, Mathf.Min(1, t / .12f))), .14f)); }
-        public void Floor(bool big) { Gurultu(.05f, "lowpass", big ? 600 : 1100, big ? .25f : .12f); if (big) Kick(.18f); }
+        void Whistle() { if (Kayitli("duduk", .6f)) return; src.PlayOneShot(Bir("duduk", s => s.Sweep(0, .52f, "sine", t => 2600 * Mathf.Pow(700f / 2600, Mathf.Min(1, t / .45f)), t => .025f * Mathf.Pow(.004f, Mathf.Min(1, t / .5f))), .53f)); }
+        public void Squeak() { if (Kayitli("gicirti", .8f)) return; src.PlayOneShot(Bir("gicirti", s => s.Sweep(0, .13f, "sine", t => t < .06f ? Mathf.Lerp(2300, 3400, t / .06f) : Mathf.Lerp(3400, 2800, Mathf.Min(1, (t - .06f) / .04f)), t => .025f * Mathf.Pow(.004f, Mathf.Min(1, t / .12f))), .14f)); }
+        public void Floor(bool big) { if (Kayitli(big ? "yer_sert" : "yer", big ? 1 : .7f)) { if (big) Kick(.18f); return; } Gurultu(.05f, "lowpass", big ? 600 : 1100, big ? .25f : .12f); if (big) Kick(.18f); }
         // file: k 0 drop … 1 smaç; smaçta ağ "puf" diye yutar, dropta yalnız hışırtı; bant kordon tınlar
         public void Net(float k, bool tape)
         {
+            if (Kayitli(tape ? "file_bant" : "file", .5f + .5f * k)) return;
             src.PlayOneShot(Bir("file" + k.ToString("0.0") + tape, s =>
             {
                 s.Burst(0, .05f + .1f * k, "lowpass", 260 + 240 * k, .05f + .22f * k, 1, 4); s.Burst(0, .08f, "bandpass", 1400, .03f + .05f * k, 2, 4);
@@ -213,23 +261,31 @@ namespace BirdieSmash.Game
                 if (tape) s.Tone(0, 1500, .09f, "triangle", .06f);
             }, .5f));
         }
-        public void Bant() { Ton(1900, .05f, "triangle", .05f); }
+        public void Bant() { if (Kayitli("bant", .7f)) return; Ton(1900, .05f, "triangle", .05f); }
         public void Hawk(bool icerde)
         {
+            if (Kayitli(icerde ? "hawk_ici" : "hawk_disari")) { Gasp(.07f, .38f); return; }
             src.PlayOneShot(Bir("davul", s => { for (int k = 0; k < 9; k++) s.Burst(k * .038f, .03f, "bandpass", 300, .06f + k * .008f, 1.5f, 4); }, .4f));
             src.PlayOneShot(Bir("hawk" + icerde, s => s.Tone(.38f, icerde ? 880 : 330, .3f, "triangle", .07f), .75f)); Gasp(.07f, .38f);
         }
         public void Gasp(float v, float delay = 0)
         {
+            if (delay == 0 && Kayitli("ic_cekis", v / .09f)) return;
             src.PlayOneShot(Bir("ic" + v + delay, s => s.NoiseSweep(delay, .8f, 380, 900, 2, v, false, u => u < .1875f ? u / .1875f : Mathf.Pow(.0001f, (u - .1875f) / .8125f)), delay + .85f));
         }
         public void Cheer(float v)
         {
+            if (Kayitli("cosku", v / .18f)) return;
             src.PlayOneShot(Bir("cosku" + v, s => { var b = new Synth.Biquad("bandpass", 1200, .6f); int n = (int)(Synth.SR * 1.2f); for (int i = 0; i < n; i++) s.buf[i] += b.Run(s.R() * Mathf.Sin(Mathf.PI * i / n) * (.6f + .4f * Mathf.Sin(i / 900f))) * v; }, 1.25f));
         }
-        public void Point(bool mine, bool smacSayisi)
+        // ralli: sayının vuruş sayısı (0 = bilinmiyor). Uzun ralliyi seyirci alkışlar (kimin aldığından bağımsız; rakibin
+        // sayısında kısa alkış, benim sayımda sevinçle birlikte).
+        public void Point(bool mine, bool smacSayisi, int ralli = 0)
         {
-            if (mine) { Cheer(.14f); Arpej(523, new[] { 0, 4, 7, 12 }, .18f, .08f, .07f); if (smacSayisi) Gasp(.09f); }
+            if (ralli >= 10) Alkis(ralli >= 18);
+            if (mine && Kayitli("sayi_ben")) { if (smacSayisi) Gasp(.09f); return; }
+            if (!mine && Kayitli("sayi_rakip")) return;
+            if (mine) { if (ralli < 10) Cheer(.14f); Arpej(523, new[] { 0, 4, 7, 12 }, .18f, .08f, .07f); if (smacSayisi) Gasp(.09f); }
             else Ton(220, .25f, "sawtooth", .05f);
         }
         // İmza vuruşu hazırlığı (2026-10-26, Core/Imza): kare + üçgen iki ton, perde imzaya göre (ses de imzayı tanıtır,
@@ -246,11 +302,25 @@ namespace BirdieSmash.Game
         public void Tik(float f = 880) { Ton(f, .05f, "triangle", .04f); }
         public void Iyi() { Ton(784, .12f, "triangle", .05f); }
         public void Hedefte() { Ton(1320, .1f, "triangle", .05f); }
-        public void Iska() { Gurultu(.05f, "highpass", 1200, .05f); }
+        public void Iska() { if (Kayitli("iska", .6f)) return; Gurultu(.05f, "highpass", 1200, .05f); }
         public void MacSonu(bool won) { crowdHedef = .004f; SuAlti(false); if (won) Cheer(.18f); }
         // Vuruş penceresi: ses su altındaymış gibi boğulur (lowpass 750 Hz), vuruşla açılır; girişte alçak bir "vuuu".
         public void SuAlti(bool on) { if (on && suHedef > 1000) Gurultu(.25f, "lowpass", 300, .08f); suHedef = on ? 750 : 22000; }
         public void Ugultu(bool on, float sp) { swo.Ayarla(on, sp); }
+
+        // ---- kayıtlı ses kancası (yukarıdaki başlık notu) ----
+        public static readonly string[] KAYIT_ADLARI = { "vurus_smash", "vurus_clear", "vurus_drive", "vurus_drop", "vurus_servis", "vurus_slice", "govde", "file", "file_bant", "bant", "yer", "yer_sert",
+            "seyirci", "ooo", "alkis", "alkis_uzun", "cosku", "ic_cekis", "duduk", "gicirti", "hawk_ici", "hawk_disari", "sayi_ben", "sayi_rakip", "iska" };
+        readonly Dictionary<string, AudioClip[]> kayit = new Dictionary<string, AudioClip[]>();
+        // Yoksa null (sonuç önbellekte: Resources.Load ad başına bir kez sorulur).
+        AudioClip[] Kayit(string ad)
+        {
+            AudioClip[] v; if (kayit.TryGetValue(ad, out v)) return v;
+            var l = new List<AudioClip>(); var c = Resources.Load<AudioClip>("ses/" + ad); if (c != null) l.Add(c);
+            for (int i = 1; i <= 8; i++) { var ci = Resources.Load<AudioClip>("ses/" + ad + "_" + i); if (ci == null) break; l.Add(ci); }
+            v = l.Count > 0 ? l.ToArray() : null; kayit[ad] = v; return v;
+        }
+        bool Kayitli(string ad, float kaz = 1) { var v = Kayit(ad); if (v == null) return false; src.PlayOneShot(v[rnd.Next(v.Length)], Mathf.Min(1.5f, kaz)); return true; }
 
         void Update()
         {

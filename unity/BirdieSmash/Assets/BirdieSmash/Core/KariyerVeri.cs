@@ -20,7 +20,8 @@ namespace BirdieSmash.Core
 
     public class KariyerTur { public string id, ad; public int epMin, epMax; public float tepki = 1, hucum = 1; public Kariyer[] b = new Kariyer[0]; public bool Var { get { return b.Length > 0; } } }
     // Usta yolu (kariyer.json "usta"): g = g + adim × çevrim, en çok tavan; tepki/hucum Tur 4 gibi ek zorluk.
-    public class UstaVeri { public float g = 1, adim = .02f, tavan = 1.2f, tepki = 1, hucum = 1; public int uzunluk = 5, finalUzunluk = 11; }
+    // carpan (2026-10-27): Usta yolu dışındaki Usta maçlarında (Hızlı maç, kariyer, Günün maçı "Usta") rakibin g çarpanı (Match.UstaGucu).
+    public class UstaVeri { public float g = 1, adim = .02f, tavan = 1.2f, tepki = 1, hucum = 1, carpan = 1; public int uzunluk = 5, finalUzunluk = 11; }
 
     public static class KariyerVeri
     {
@@ -47,6 +48,16 @@ namespace BirdieSmash.Core
         {
             var k = Al(g); var t = Turlar[TurOf(g)]; var b = Stil[k.stil].Clone(); b.hiz *= k.g; b.hata /= k.g; b.kariyer = g;
             b.patron = k.patron || k.imza; if (!b.patron) b.imza = null; b.tepki *= t.tepki; b.hucum *= t.hucum; return b;
+        }
+        // Hızlı maç rakibi (2026-10-27, oyun incelemesi): eskiden taban tarz g 1 ile geliyordu: ilk açılışın 5 sayılık ilk maçı
+        // da bu yoldan (kariyer modu kapalı), yeni oyuncu ekipmansız (EP 6) kariyerin 3.–5. basamağı gücünde bir Smaşçı'yla
+        // karşılaşabiliyordu; kariyeri bitiren oyuncu için de aynı rakip hiç zorlaşmıyordu. Şimdi oyuncunun sıradaki kariyer
+        // basamağının g'si (seviyesinde eşleşme); kariyer bitince son basamağın g'si. Tarzın kendisi, patron değil (imza ateşlenmez), kariyer dışı.
+        public static Style Serbest(string id, Ilerleme p)
+        {
+            var b = Stil[id].Clone(); b.patron = false; b.kariyer = -1; if (p == null) return b;   // imza alanı tabandaki gibi kalır: patron bayrağı yoksa ateşlenmez
+            var k = Al(p.Siradaki()); if (k == null) return b;   // Siradaki: kariyer bitince açık son turun finali
+            b.hiz *= k.g; b.hata /= k.g; return b;
         }
         public static ImzaBilgi Imza(string id) { ImzaBilgi b; return id != null && Imzalar.TryGetValue(id, out b) ? b : null; }
 
@@ -92,7 +103,7 @@ namespace BirdieSmash.Core
             var sl = new List<string>(); object so2; if (so.TryGetValue("sira", out so2)) foreach (var x in (List<object>)so2) sl.Add((string)x);
             var u = new UstaVeri(); object uo; if (ko.TryGetValue("usta", out uo))
             {
-                var d = Json.Obj(uo); u.g = F(d, "g", u.g); u.adim = F(d, "adim", u.adim); u.tavan = F(d, "tavan", u.tavan); u.tepki = F(d, "tepki", 1); u.hucum = F(d, "hucum", 1);
+                var d = Json.Obj(uo); u.g = F(d, "g", u.g); u.adim = F(d, "adim", u.adim); u.tavan = F(d, "tavan", u.tavan); u.tepki = F(d, "tepki", 1); u.hucum = F(d, "hucum", 1); u.carpan = F(d, "carpan", 1);
                 u.uzunluk = (int)Json.Num(d, "uzunluk", u.uzunluk); u.finalUzunluk = (int)Json.Num(d, "finalUzunluk", u.finalUzunluk);
             }
             stil = st; imza = im; sira = sl.ToArray(); usta = u; turlar = tl.ToArray();

@@ -89,13 +89,16 @@ namespace BirdieSmash.Game
             return d;
         }
         // Işık süpürmesi: konum yüzde olarak (düğme genişliğinden bağımsız), 33 ms adımla; düğme panelden çıkınca durur.
-        static void Supur(VisualElement sup)
+        // 2026-10-26 gece: menü gizliyken (maçta kök display:none) ya da başka sekmedeyken de 30 Hz stil yazıyordu (yerleşim
+        // kirlenir); görünmüyorsa adım atlanır. Ağaç yeniden kurulunca eski öğe panelden düşer ve iş durur (sızıntı yok).
+        void Supur(VisualElement sup)
         {
             float t0 = Time.realtimeSinceStartup;
             IVisualElementScheduledItem is_ = null;
             is_ = sup.schedule.Execute(() =>
             {
                 if (sup.panel == null || Ayar.reduce) { sup.style.display = DisplayStyle.None; if (is_ != null) is_.Pause(); return; }
+                if (root.ekran != Ekran.Menu || gez.sekme != Sekme.Oyna || gez.Ust != null && !Gezinti.AltSayfa(gez.Ust)) return;
                 float f = Mathf.Repeat(Time.realtimeSinceStartup - t0 - 1, 3.2f) / 3.2f;   // %70'i bekleme, %30'u geçiş
                 float k = f < .7f ? 0 : Mathf.SmoothStep(0, 1, (f - .7f) / .3f);
                 sup.style.left = Length.Percent(Mathf.Lerp(-40, 130, k));
@@ -137,7 +140,9 @@ namespace BirdieSmash.Game
             bool tamam = p.HepsiBitti;
             var kart = new VisualElement(); kart.AddToClassList("plaka"); Doku(kart, Ikonlar.Plaka); // 2026-10-26 (yasin onayı, ekran/inceleme ile aynı davranış): plakaya dokunmak o basamağın maç kartını açar; kariyer
             // bittiyse (sıradaki basamak yok) Kariyer sekmesi.
-            kart.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); if (tamam) SekmeAc(Sekme.Kariyer); else MacKartAc(g); }));
+            // Birleşme (2026-10-26, A + Ar-Ge) titreşimi iki yola da koymuştu; SekmeAc sekme değişince zaten "tick" verir: Kariyer
+            // yolunda iki titreşim olmasın diye yalnız maç kartı yolunda.
+            kart.AddManipulator(new Clickable(() => { if (tamam) SekmeAc(Sekme.Kariyer); else { Yerel.Hap("tick"); MacKartAc(g); } }));
             var bas = new VisualElement(); bas.AddToClassList("plaka-ust"); bas.pickingMode = PickingMode.Ignore; kart.Add(bas);
             var serit = new VisualElement(); serit.AddToClassList("serit"); Doku(serit, Ikonlar.EgikLimonKucuk); serit.pickingMode = PickingMode.Ignore; bas.Add(serit);
             serit.Add(Yazi(Buyuk(L.T(tamam ? "Kariyer tamam" : "Sıradaki maç")), 13, "serit-yazi"));

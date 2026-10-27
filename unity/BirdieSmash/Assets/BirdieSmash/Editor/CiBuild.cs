@@ -85,6 +85,9 @@ namespace BirdieSmash.EditorTools
             PlayerSettings.allowedAutorotateToPortrait = true; PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
             PlayerSettings.allowedAutorotateToLandscapeLeft = false; PlayerSettings.allowedAutorotateToLandscapeRight = false;
             // iPad'de dikey kilit için tam ekran şart (Apple: çoklu pencere destekleyen uygulama tüm yönleri ister).
+            // 2026-10-26 (build 40, App Store Connect ITMS-90068): Unity varsayılanı iOS 13.0; Nisan 2027'den itibaren 15.0 altı
+            // yüklenemez. Flutter hattı (ios/Runner.xcodeproj) zaten 15.0, iki hat aynı alt sınırı taşır.
+            PlayerSettings.iOS.targetOSVersionString = "15.0";
             PlayerSettings.iOS.requiresFullScreen = true;
             PlayerSettings.iOS.appleEnableAutomaticSigning = false;   // imza fastlane match'ten; Xcode otomatik imzaya kalkışmasın
             PlayerSettings.statusBarHidden = true;

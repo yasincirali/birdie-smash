@@ -15,6 +15,7 @@
 // deneme kartları (normal ve x2_ büyük yazı; deneme kayda yazılmaz, segmentten çıkınca silinir).
 // Süre: gerçek zaman (GameRoot dt'yi 0,05 ile sınırlar; yavaş yazılım render'ında maç da yavaşlar, kareler yine anlamlı).
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEngine;
@@ -73,7 +74,7 @@ namespace BirdieSmash.Game
                 foreach (var k in new[] { "alcak", "ust", "yayin" })
                 {
                     Ayar.kamera = k; Ayar.saha = "salon"; root.SahaDegisti(); root.KameraDegisti(); root.StartMatch(false, false, false); botAcik = true;
-                    yield return Bekle(60); yield return Cek("kamera_" + k + en);
+                    yield return Bekle(60); yield return Cek("kamera_" + k + en); Kadraj("kamera_" + k + en);
                 }
             }
             yield return Boyut(w0, h0);
@@ -86,6 +87,7 @@ namespace BirdieSmash.Game
             yield return SonucKare("sonuc_buyuk_galibiyet", true, false, 2, "en");   // HUD ×1,3 sınırında (Ayar.YaziK); "Büyük" yazı
             yield return SonucKare("sonuc_tr_galibiyet", true, false, 0, "tr");
             yield return SonucKare("sonuc_yenilgi", false, false, 0, "en");
+            yield return MenuSahne();
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             Application.Quit(0);
         }
@@ -99,9 +101,60 @@ namespace BirdieSmash.Game
             yield return Yakin(mdl + "_04_rakip", root.match.op, false);
             yield return YakinNokta(mdl + "_05_hakemler", CourtView.HAKEM1 + new Vector3(0, .5f, 0), new Vector3(3.2f, .6f, -2.6f));
             yield return YakinNokta(mdl + "_06_servis_hakemi", CourtView.HAKEM2 + new Vector3(0, .5f, 0), new Vector3(-2.8f, .7f, -2.2f));
-            botAcik = true;
-            for (int i = 0; i < 10; i++) { yield return Bekle(14); yield return Cek(mdl + "_1" + i + "_ralli"); }
+            botAcik = true; iz = new StringBuilder(); temasSay = 0; temasN.Clear();
+            temas = new StringBuilder("kim,klip,sw,once,sonra,uzanW,pay,dirsek,hedefx,hedefy,hedefz,kafax,kafay,kafaz\n");
+            iz.AppendLine("kare,t,dt,kim,klip,faz,alt,vAn,x,y,solx,soly,solz,sagx,sagy,sagz,elx,ely,elz,sapEl,pencere,donuk,sw,kafax,kafay,kafaz,topx,topy,topz,kilit,uzanW,uzanSonra,dirsek");
+            for (int i = 0; i < 10; i++) { yield return Bekle(14); yield return Cek(mdl + "_1" + i + "_ralli"); if (i == 2) Kadraj(mdl + "_12_ralli"); }
+            yield return Serit(mdl, true); yield return Serit(mdl, false);
+            File.WriteAllText(Path.Combine(dir, mdl + "_anim_iz.csv"), iz.ToString()); iz = null;
+            // Temas örneklemi (2026-10-27 gece, uzanma katmanı): ralli sürer, 70 temasa ya da 60 sn'ye dek yalnız temas kareleri.
+            { float t0 = Time.realtimeSinceStartup; while (temasSay < 70 && Time.realtimeSinceStartup - t0 < 60) yield return null; }
+            File.WriteAllText(Path.Combine(dir, mdl + "_temas.csv"), temas.ToString()); temas = null;
             botAcik = false;
+        }
+        // Animasyon izi (2026-10-26 gece, build 40 incelemesi): ralli kareleri ve şerit boyunca HER karede iki oyuncunun klibi,
+        // fazı, alt katman ağırlığı, ayak bileği/el kemiği dünya konumu, raket sapının ele uzaklığı, raket kafası ve top
+        // (temas karesinde kafa–top aralığı: salınım topa değiyor mu) (<model>_anim_iz.csv).
+        // Ayak kayması ve raket kayması gerçek Unity pozundan buradan ölçülür (Core taklidi değil).
+        StringBuilder iz, temas; int temasSay; readonly Dictionary<bool, int> temasN = new Dictionary<bool, int>();
+        // Temas karesi: Athlete.tmN değiştiği ilk karede raket kafasının temas noktasına uzaklığı, katmandan önce (once = klibin
+        // kendi pozu) ve sonra; aynı kare, aynı top. Servis dışarıda (uzanma servise uygulanmaz).
+        void TemasIz(PlayerView pv, Athlete a, Match M)
+        {
+            int n; if (!temasN.TryGetValue(pv.isMe, out n)) n = a.tmN; temasN[pv.isMe] = a.tmN;
+            if (temas == null || a.tmN == n || a.sw <= 0 || (M.s != null && M.s.serve)) return;
+            var h = Kit.W(a.tmX, a.tmY, a.tmZ); var k = pv.TaniKafa; temasSay++;
+            temas.AppendLine((pv.isMe ? "me" : "op") + "," + pv.TaniKlip + "," + F(a.sw) + "," + F(pv.TaniUzanOnce) + "," + F(pv.TaniUzanSonra) + "," + F(pv.TaniUzanW) + "," + F(pv.TaniUzanPay) + "," + F(pv.TaniDirsek)
+                + "," + F(h.x) + "," + F(h.y) + "," + F(h.z) + "," + F(k.x) + "," + F(k.y) + "," + F(k.z));
+        }
+        static string F(float v) { return v.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture); }
+        void LateUpdate()
+        {
+            if ((iz == null && temas == null) || root == null || root.match == null || root.ekran != Ekran.Oyun) return;
+            var M = root.match;
+            foreach (var pv in FindObjectsByType<PlayerView>(FindObjectsSortMode.None))
+            {
+                if (pv.hakem) continue; var a = pv.isMe ? M.me : M.op; Vector3 l, r, e; float se;
+                TemasIz(pv, a, M); if (iz == null) continue;
+                if (!pv.TaniAyak(out l, out r, out e, out se)) continue;
+                float vAn = 0; var f = typeof(Athlete).GetField("vAn"); if (f != null) vAn = (float)f.GetValue(a);
+                iz.AppendLine(Time.frameCount + "," + F(Time.realtimeSinceStartup) + "," + F(Mathf.Min(.05f, Time.unscaledDeltaTime)) + "," + (pv.isMe ? "me" : "op") + "," + pv.TaniKlip + "," + F(pv.TaniFaz) + "," + F(pv.TaniAlt) + "," + F(vAn) + "," + F(a.x) + "," + F(a.y) + ","
+                    + F(l.x) + "," + F(l.y) + "," + F(l.z) + "," + F(r.x) + "," + F(r.y) + "," + F(r.z) + "," + F(e.x) + "," + F(e.y) + "," + F(e.z) + "," + F(se) + "," + (M.HitWindow() ? 1 : 0) + "," + (M.freeze > 0 ? 1 : 0)
+                    + "," + F(a.sw) + "," + F(pv.TaniKafa.x) + "," + F(pv.TaniKafa.y) + "," + F(pv.TaniKafa.z) + "," + (M.s != null ? F(Kit.W(M.s.x, M.s.y, M.s.z).x) + "," + F(Kit.W(M.s.x, M.s.y, M.s.z).y) + "," + F(Kit.W(M.s.x, M.s.y, M.s.z).z) : ",,") + "," + F(pv.TaniKilit) + "," + F(pv.TaniUzanW) + "," + F(pv.TaniUzanSonra) + "," + F(pv.TaniDirsek));
+            }
+        }
+        // Şerit: bir vuruşun hazırlığından takibine ardışık kareler, figürü yandan izleyen ikinci kamerayla (oyun durmaz).
+        // Hazırlık başlayınca (prepA > .3) 18 kare, her karede bir çekim; sonra bir araya getirmek turun dışında (Python).
+        IEnumerator Serit(string mdl, bool ben)
+        {
+            float t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < 40) { var a0 = ben ? root.match.me : root.match.op; if (a0.prepA > .3f && a0.sw <= 0 && root.match.s != null) break; yield return null; }
+            for (int i = 0; i < 18; i++)
+            {
+                var a = ben ? root.match.me : root.match.op; var p = Kit.W(a.x, a.y, 0) + Vector3.up * 1.0f; float s = ben ? 1 : -1;
+                yield return YakinNokta(mdl + "_serit_" + (ben ? "ben" : "rakip") + "_" + i.ToString("00"), p, new Vector3(3.4f, .5f, 1.2f * s));
+                yield return null;
+            }
         }
 
         // Menü kareleri: açılış perdesi kalkana kadar bekler (sesler hazırlanınca, en çok 12 sn).
@@ -109,7 +162,7 @@ namespace BirdieSmash.Game
         {
             var ui = root != null ? root.ui : null; if (ui == null) { Debug.Log("EkranTuru: menü kabuğu yok"); yield break; }
             float t0 = Time.realtimeSinceStartup; while (root.HudKatman != null && root.HudKatman.PerdeVar && Time.realtimeSinceStartup - t0 < 12) yield return null;
-            ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_" + ek + "oyna");
+            ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_" + ek + "oyna"); rap.AppendLine("menu_" + ek + "oyna · " + ui.SahneDurumu);
             if (!hepsi) yield break;
             ui.SekmeAc(Sekme.Kariyer); yield return Bekle(20); yield return Cek("menu_" + ek + "kariyer");
             yield return Harita(ui, ek);
@@ -223,6 +276,23 @@ namespace BirdieSmash.Game
             Ayar.ilerleme = eski; Ayar.reduce = r0; Ayar.kariyerModu = km; Ayar.kariyerSecim = -1; Ayar.yazi = y0; Ayar.dil = d0;
             root.AnaMenu(); yield return Bekle(5);
         }
+        // 2026-10-26 gece (yasin build 40: "menüler sahaya iç içe geçmiş"): maçtan menüye dönüşte menünün arkası. Ana kamera
+        // menüde sahneyi çizmemeli (cullingMask 0), Oyna'nın fonu oyuncusuz bulanık salon karesi olmalı; saha değişince fon
+        // yenilenmeli; duraklatıp Ana menü'ye çıkınca (bekleyen maç) Oyna "Maça devam et" göstermeli. Her karede kameranın
+        // durumu rapora yazılır (görüntüde gözden kaçarsa sayı yakalar).
+        IEnumerator MenuSahne()
+        {
+            var ui = root.ui; if (ui == null) yield break;
+            ui.SekmeAc(Sekme.Kariyer); ui.SekmeAc(Sekme.Oyna); yield return Bekle(30); yield return Cek("menu_macsonu_oyna"); rap.AppendLine("menu_macsonu_oyna · " + ui.SahneDurumu);
+            ui.SekmeAc(Sekme.Kariyer); yield return Bekle(20); yield return Cek("menu_macsonu_kariyer"); rap.AppendLine("menu_macsonu_kariyer · " + ui.SahneDurumu);
+            ui.SekmeAc(Sekme.Soyunma); yield return Bekle(30); yield return Cek("menu_macsonu_soyunma"); rap.AppendLine("menu_macsonu_soyunma · " + ui.SahneDurumu);
+            string s0 = Ayar.saha; Ayar.saha = "park"; root.SahaDegisti(); ui.SekmeAc(Sekme.Oyna); yield return Bekle(30); yield return Cek("menu_park_oyna"); rap.AppendLine("menu_park_oyna · " + ui.SahneDurumu);
+            Ayar.saha = s0; root.SahaDegisti(); yield return Bekle(5);
+            root.StartMatch(false, false, false); botAcik = true; yield return Bekle(60); botAcik = false; root.Duraklat(); yield return Bekle(10); yield return Cek("duraklat");
+            root.AnaMenu(); yield return Bekle(30); yield return Cek("menu_bekleyen_oyna"); rap.AppendLine("menu_bekleyen_oyna · " + ui.SahneDurumu + " · bekleyen " + root.bekleyen);
+            root.MacaDon(); yield return Bekle(30); yield return Cek("bekleyen_devam"); rap.AppendLine("bekleyen_devam · " + ui.SahneDurumu);
+            root.AnaMenu(); yield return Bekle(10);
+        }
         IEnumerator Bekle(int kare) { for (int i = 0; i < kare; i++) yield return null; }
         IEnumerator Boyut(int w, int h)
         {
@@ -284,6 +354,28 @@ namespace BirdieSmash.Game
         }
 
         // Tanı: her figürün renderer'ları (tür, açık mı, shader, render kuyruğu, saydamlık), dünya sınırları, baş yüksekliği.
+        // Kadraj ölçümü (2026-10-27, kadraj incelemesi): çizgilerin ekran yüksekliği (piksel, yukarıdan), tekler genişliği, file
+        // bandı, oyuncu boyları (model sınırının tepesi − ayak) ve kamera. r15/r22/r27 karşılaştırma tablosu bu satırlardan.
+        void Kadraj(string ad)
+        {
+            var c = root.cam; float H = Screen.height;
+            System.Func<Vector3, float> y = p => H - c.WorldToScreenPoint(p).y;
+            System.Func<Vector3, float> x = p => c.WorldToScreenPoint(p).x;
+            var sb = new StringBuilder("kadraj " + ad + " · " + Screen.width + "x" + Screen.height);
+            sb.Append(" · uzakDip " + y(Kit.W(Court.MID, 0, 0)).ToString("F0") + " file " + y(Kit.W(Court.MID, Court.NET, 0)).ToString("F0") + " fileUst " + y(Kit.W(Court.MID, Court.NET, Court.NETP)).ToString("F0"));
+            sb.Append(" yakinDip " + y(Kit.W(Court.MID, Court.L, 0)).ToString("F0") + " uzakCiftlerEn " + (x(Kit.W(Court.CW, 0, 0)) - x(Kit.W(0, 0, 0))).ToString("F0") + " yakinTeklerEn " + (x(Kit.W(Court.SR, Court.L, 0)) - x(Kit.W(Court.SL, Court.L, 0))).ToString("F0"));
+            foreach (var pv in FindObjectsByType<PlayerView>(FindObjectsSortMode.None))
+            {
+                if (pv.Model == null || pv.name.StartsWith("hakem")) continue; float tepe = -1; 
+                foreach (var r in pv.Model.GetComponentsInChildren<Renderer>()) if (r.enabled && !(r is TrailRenderer)) tepe = Mathf.Max(tepe, r.bounds.max.y);
+                var ayak = pv.transform.position; ayak.y = 0; var bas = ayak; bas.y = tepe;
+                sb.Append(" " + pv.name + "Boy " + (y(ayak) - y(bas)).ToString("F0") + "@" + y(ayak).ToString("F0"));
+            }
+            var e = c.transform.eulerAngles; var m = c.projectionMatrix;
+            sb.Append(" · kamera " + c.transform.position.ToString("F2") + " eğim " + e.x.ToString("F1") + " fov " + (2 * Mathf.Atan(1 / m.m11) * Mathf.Rad2Deg).ToString("F1") + " m12 " + m.m12.ToString("F3"));
+            rap.AppendLine(sb.ToString()); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
+        }
+
         void Tani(string mdl)
         {
             rap.AppendLine("=== " + mdl + " · ekran " + Screen.width + "x" + Screen.height + " · " + SystemInfo.graphicsDeviceName);

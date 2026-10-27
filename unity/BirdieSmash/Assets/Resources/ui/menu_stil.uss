@@ -25,6 +25,8 @@
 }
 
 .tam { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+/* 2026-10-26 gece: kök ve tam sayfa zemini artık OPAK ve koddan satır içi yazılır (UiKok.Uygula, GECE / INK_); aşağıdaki
+   saydam değerler eziliyor. Neden: menü saydamken canlı maç sahnesi kartların arasından görünüyordu (yasin build 40). */
 .kok { flex-grow: 1; background-color: rgba(0, 0, 0, 0); }
 .kok.koyu { background-color: rgba(7, 11, 31, 0.92); }   /* yön A: diğer sekmelerde gece zemini (salon çok soluk seçilir) */
 .kok.koyu #zemin { display: none; }

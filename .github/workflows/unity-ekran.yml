@@ -35,9 +35,11 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: unity/BirdieSmash/Library
-          key: unity-library-linux-${{ hashFiles('unity/BirdieSmash/Assets/**', 'unity/BirdieSmash/Packages/**') }}
+          # 2026-10-26 gece (ekran/menu): r24'ten beri birçok dalda menü USS'siz çıktı (kod değişmeyen dallarda da); önbellek
+          # şüphesi: v2 öneki temiz Library ile başlar.
+          key: unity-library-linux-v2-${{ hashFiles('unity/BirdieSmash/Assets/**', 'unity/BirdieSmash/Packages/**') }}
           restore-keys: |
-            unity-library-linux-
+            unity-library-linux-v2-
 
       - name: Unity Linux oyuncusu
         uses: game-ci/unity-builder@v4.8.2
@@ -58,7 +60,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: unity/BirdieSmash/Library
-          key: unity-library-linux-${{ hashFiles('unity/BirdieSmash/Assets/**', 'unity/BirdieSmash/Packages/**') }}
+          key: unity-library-linux-v2-${{ hashFiles('unity/BirdieSmash/Assets/**', 'unity/BirdieSmash/Packages/**') }}
 
       - name: xvfb altında ekran turu
         run: |

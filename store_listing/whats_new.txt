@@ -1,39 +1,33 @@
 === UNITY ===
-Büyük güncelleme: yeni görünüm "Yayın Gecesi", yeni menü, kariyer haritası, karakter odası, gerçekçi saha ve fizik, aldatıcı vuruşlar.
+Düzeltme sürümü: menüler, kamera, vuruş zamanlaması, oyuncu hareketi, denge ve ses.
 
-Bu sürümde yeni:
-- Yeni menü: alt sekmeler Oyna, Kariyer, Soyunma odası, Profil.
-- Kariyer haritası: Yerel tur, Asya, Avrupa, Dünya Finalleri; yıldızlar, final rakibinin imza vuruşu. Usta yolu.
-- Antrenman dril'leri (yıldızlı) ve Günün maçı.
-- Soyunma odası > Karakter: 4 beden tipi, 11 saç + kel, 5 ayakkabı. Önce dene, sonra Tüy ile al. Ayakkabının bir artısı bir eksisi var.
-- Oyuncu modelleri yenilendi: beş parmaklı raket tutuşu, tüm beden badminton hareketi (split step, hamle, çapraz koşu, ayak kaymıyor).
-- Aldatıcı vuruşlar (Sv 6'dan itibaren): seviye, raket ve pozisyon uygunsa yapılır. Liste: Antrenman sayfasının altı.
-- Hakemler oturur, saha BWF çizgileriyle; file ve bant topa farklı tepki verir.
-- Ayarlar > Kamera: Yayın, Alçak, Üstten. Ayarlar > Oyuncu görünümü: Oyuncak, Gerçekçi, Sade.
-- 120 Hz destekleyen iPhone'da daha akıcı; telefona göre kalite kendini ayarlar.
-- Maç görüntüsü: kort ekranı daha iyi dolduruyor. Üstteki boş siyah alan kalktı, karşı yarı ve rakip daha büyük (üç kamerada da).
-- Vuruş anındaki ağır çekim daha hafif ve yumuşak: oyun birden yavaşlayıp birden hızlanmıyor, yavaşça girip çıkıyor.
-- "Hareket azaltıldı" seçiliyken oyunun hızı artık değişmiyor. Bu ayar yalnız sarsıntıyı, yakınlaşmayı ve parçacıkları azaltır.
-- Yeni görünüm "Yayın Gecesi": koyu lacivert zemin, limon yeşili düğmeler, yeni yazı tipi. Oyna sekmesinde sen ve rakibin karşı karşıya duran afişi, maç sonunda büyük GALİBİYET ekranı, düşen yıldızlar ve Tüy sayacı.
-- Oyna sekmesi: "Oyna" düğmesinin altındaki "Sıradaki: …" yazısı kalktı; yerine maçın sayısı, sahası ve zorluğu yazıyor. "Sıradaki maç" plakasına dokununca o maçın kartı açılır. Üstteki profil kısayolu Profil sekmesini açar.
+Bu sürümde düzeltilen:
+- Menüler sahayla iç içe görünüyordu: menü tasarımı hiç yüklenmiyordu. Artık menüler kendi koyu zemininde, saha arkada görünmüyor; Oyna sekmesinde bulanık salon fonu var.
+- Kamera: görüntü artık eğik değil, düz bir yayın kamerası. Rakip ve karşı yarı daha büyük, file net görünüyor.
+- Vuruş anındaki ağır çekim artık top sana gerçekten yaklaştığında başlıyor ve vuruştan hemen sonra bitiyor. Rakibin çevirme vuruşu da fileyi geçiyor.
+- Oyuncu hareketi: koşarken ayaklar yerde kaymıyor, adımlar hıza göre. Oyuncu topa kolunu ve gövdesini uzatıyor; raket topa değiyor (önceden topla raket arası 1 metreyi bulabiliyordu). Sıçrayarak smaçta oyuncu birden yukarı zıplamıyor.
+- Forma ve şort renkleri seçtiğin renkte çıkıyor.
+- Kariyer zorluğu dengelendi, Usta modu kazanılabilir, Hızlı maç senin seviyende.
+- Daha dolu vuruş sesleri: sert vuruş daha yüksek ve tok, smaçta gümleme; uzun rallide seyirci "ooo" der, sayı sonrası alkış.
+- Telefonu kilitleyince ya da başka uygulamaya geçince maç duraklıyor.
+- iOS 15 ve üstü gerekiyor (Apple uyarısı).
+
+Önceki sürümden kalanlar: Yayın Gecesi görünümü, kariyer haritası, Soyunma odası karakter seçimi, aldatıcı vuruşlar (Sv 6+), üç kamera açısı.
 
 Nasıl denenir:
-1. Uygulamayı aç: ilerlemen yerinde olmalı, alt sekmeler görünmeli.
-2. Kariyer: haritada turları kaydır, bir maç kartını aç, maçı oyna; yıldız gelmeli.
-3. Oyna > Antrenman: bir dril oyna, sonra sayfanın en altında aldatıcı vuruş listesine bak.
-4. Soyunma odası > Karakter: tip, saç, ayakkabı değiştir. Yüz, Ayak, Tutuş düğmeleri yakın çekim yapmalı. Figürü parmağınla döndür.
-5. Kilitli bir saç ya da ayakkabıyı dene: "deneniyor" yazmalı; Tüy yetiyorsa al, yetmiyorsa alınamamalı.
-6. Maçta oyuncuyu izle: koşarken ayaklar yerde kaymamalı, file önünde hamle yapmalı.
-7. Sv 6 üstündeysen file önünde topun üstünde mor yazı çıkınca söylenen hareketi dene: rakip yanlış adım atmalı.
-8. Kavisli yavaş kaydırmayla baş üstü slice drop: top fileyi geçmeli (önceki build'de hep fileye gidiyordu).
-9. Ayarlar > Yazı boyutu > Büyük: sekmeler kelime ortasından bölünmemeli, düğmeler üst üste binmemeli.
-10. Ayarlar > Kamera ve Oyuncu görünümü: her seçenekte maç açılmalı.
-11. Ayarlar > Kamera'da üç açıyı da dene: skor kutusunun altında boş siyah bant olmamalı, arkadaki seyirci skorun hemen altında başlamalı, rakip öncekinden büyük görünmeli. Senin arkandaki çizgi "Smaç gücü" çubuğunun üstünde kalmalı.
-12. Birkaç ralli oyna: vuruş anında oyun yumuşakça yavaşlamalı, vuruştan sonra yumuşakça hızlanmalı. Topa yine yetişebiliyor musun, akıcı mı? Kolay ve Usta'da ayrı ayrı bak. Zor gelirse yaz.
-13. Ayarlar'da hareket düğmesini "Hareket azaltıldı" yap, bir maç oyna: oyun hızı ayar kapalıyken olduğu gibi olmalı.
-14. Oyna sekmesinde "Sıradaki maç" plakasına dokun: o maçın kartı (yıldız koşulları, Oyna düğmesi) açılmalı. Büyük "Oyna" düğmesinin altında "Sıradaki" yazmamalı, sayı · saha · zorluk yazmalı.
-15. Bir maçı kazan, bir maçı kaybet: maç sonunda GALİBİYET ya da yenilgi ekranı, yıldızlar tek tek düşmeli, Tüy sayacı saymalı. SIRADAKİ düğmesi sonraki maça götürmeli.
-16. Takılma, ısınma ya da garip görüntü olursa telefonu ve ekranı yaz.
+1. Uygulamayı aç: ilerlemen yerinde olmalı. Ana menüde arkada saha ve oyuncular görünmemeli; yazılar, düğmeler ve alt sekmeler düzgün kutularda olmalı.
+2. Oyna, Kariyer, Soyunma odası, Profil sekmelerini tek tek aç: hiçbirinde menü sahayla üst üste binmemeli.
+3. Bir maç başlat. Görüntü düz olmalı, kort yamuk görünmemeli. Rakip rahat görünmeli.
+4. Ayarlar > Kamera'da Yayın, Alçak, Üstten'i dene: üçünde de maç açılmalı, rakip ve file net görünmeli.
+5. Birkaç ralli oyna: ağır çekim top sana yaklaşınca başlamalı, vurunca hemen normal hıza dönmeli. Erken ya da geç geliyorsa yaz.
+6. Oyuncunu izle: koşarken ayaklar kaymamalı, topa uzanırken kol ve gövde topa doğru gitmeli, raket topa değiyor gibi görünmeli.
+7. Sıçrayarak smaç at: oyuncu yumuşakça sıçramalı, havaya fırlamamalı.
+8. Soyunma odasında forma rengini değiştir, maça gir: oyuncunun forması o renkte olmalı.
+9. Kariyerde birkaç maç oyna: zor ama kazanılabilir olmalı. Hızlı maç çok kolay ya da çok zor gelirse yaz.
+10. Sesi açık oyna: sert vuruşlar daha tok, smaç gümlemeli; uzun rallide seyirci tepki vermeli.
+11. Maç sırasında telefonu kilitle, geri aç: maç duraklamış olmalı.
+12. Ayarlar > Yazı boyutu > Büyük: menüde yazılar taşmamalı, düğmeler üst üste binmemeli.
+13. Takılma, ısınma ya da garip görüntü olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:
