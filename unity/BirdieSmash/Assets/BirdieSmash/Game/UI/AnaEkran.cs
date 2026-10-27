@@ -94,7 +94,10 @@ namespace BirdieSmash.Game
         // kirlenir); görünmüyorsa adım atlanır. Ağaç yeniden kurulunca eski öğe panelden düşer ve iş durur (sızıntı yok).
         void Supur(VisualElement sup)
         {
-            float t0 = Time.realtimeSinceStartup;
+            // Saat menü GERÇEKTEN göründüğünde başlar (tur 2 inceleme): soğuk açılışta menü açılış perdesinin (en az ,95 sn) altında,
+            // maçtan dönüşte geçiş perdesinin altında kuruluyor; kurulumdan sayınca süpürme (,6 + ,9 sn) çoğu kez perdenin
+            // arkasında geçip hiç görülmüyordu.
+            float t0 = -1;
             IVisualElementScheduledItem is_ = null;
             is_ = sup.schedule.Execute(() =>
             {
@@ -104,6 +107,7 @@ namespace BirdieSmash.Game
                 // afişin nefesi): süpürme menü kurulunca bir kez, 0,6 sn bekleyip 0,9 sn'de geçer, sonra durur. Eskiden 3,2 sn'de bir
                 // döngüydü ve style.left yazıyordu (her adımda yerleşim); artık yalnız translate (USS left −40% sabit). Yüzde
                 // translate öğenin kendi genişliğine göredir: düğmenin %170'i = süpürmenin (%30) 5,67 katı.
+                if (t0 < 0) { var hud = root.HudKatman; if (hud != null && (hud.PerdeVar || hud.PerdeOrtu > 0)) return; t0 = Time.realtimeSinceStartup; }
                 float e = (Time.realtimeSinceStartup - t0 - .6f) / .9f; if (e < 0) return;
                 float k = Mathf.SmoothStep(0, 1, Mathf.Clamp01(e));
                 sup.style.translate = new Translate(Length.Percent(k * 566.7f), 0);
