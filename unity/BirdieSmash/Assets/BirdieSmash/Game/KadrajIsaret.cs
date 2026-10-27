@@ -29,6 +29,8 @@ namespace BirdieSmash.Game
         }
         static float Kenar(Vector2 p, Vector2 a, Vector2 b) { var v = b - a; var n = new Vector2(-v.y, v.x).normalized; return Vector2.Dot(p - a, n); }
 
+        // GUILayout kullanılmıyor: Layout olayı (OnGUI'nin her karedeki ikinci çağrısı) atlanır (Hud ile aynı; tur 2 inceleme).
+        void Awake() { useGUILayout = false; }
         void OnGUI()
         {
             GUI.depth = 1;   // Hud'un (perde, duraklat) arkasında

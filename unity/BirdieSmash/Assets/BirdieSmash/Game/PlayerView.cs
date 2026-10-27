@@ -603,11 +603,11 @@ namespace BirdieSmash.Game
         float jGor;
         public void Show(Athlete o, Match M, float dt)
         {
-            if (adimBoy.Count > 0)
-            {   // kendi bacağının adımı ve adım tavanı (Match.Athlete.adimBoy/ayakTurMax notu): tavan chassé adımı 0,99 m'den
-                // kısaysa o oranda yükselir (en çok 6 tur/sn); gerçek oranlı modellerde adım ≥ 0,99, tavan aynen 3,6
-                o.adimBoy = adimBoy; float ch; o.ayakTurMax = adimBoy.TryGetValue("chasse_r", out ch) && ch > .05f ? Mathf.Clamp(Match.AYAK_TUR_MAX * .99f / ch, Match.AYAK_TUR_MAX, 6f) : float.NaN;
-            }
+            // kendi bacağının adımı ve adım tavanı (Match.Athlete.adimBoy/ayakTurMax notu): tavan chassé adımı 0,99 m'den
+            // kısaysa o oranda yükselir (en çok 6 tur/sn); gerçek oranlı modellerde adım ≥ 0,99, tavan aynen 3,6.
+            // Tur 2: her karede yazılır (adım boyu yoksa null/NaN): menü arkasındaki maç model değişiminden sonra da sürüyor,
+            // eski figürün sözlüğü sporcuda kalıyordu.
+            { float ch; o.adimBoy = adimBoy.Count > 0 ? adimBoy : null; o.ayakTurMax = adimBoy.TryGetValue("chasse_r", out ch) && ch > .05f ? Mathf.Clamp(Match.AYAK_TUR_MAX * .99f / ch, Match.AYAK_TUR_MAX, 6f) : float.NaN; }
             // Sıçrama: sin(jump·π) (tepe temasta), split step küçük hop (%20). 0,5 m ≈ HTML'deki 16 px/28 px-m ölçeği.
             string clip; float ph; M.PickClip(o, isMe, out clip, out ph);   // önce: split klibi kendi hop'unu taşır (Match.JumpH hopsuz)
             float j = Match.JumpH(o, clip == "split" && anim != null && anim["split"] != null) * .5f;
