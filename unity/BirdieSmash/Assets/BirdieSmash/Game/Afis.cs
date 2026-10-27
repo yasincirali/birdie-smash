@@ -59,7 +59,7 @@ namespace BirdieSmash.Game
         // rakipSt null: rakip yok (ilk açılış: önce antrenman); afişte yalnız sen.
         public void Ac(Style rakipSt, Color rakipForma)
         {
-            if (!gameObject.activeSelf) gameObject.SetActive(true); kam.enabled = true; Yenile(rakipSt, rakipForma);
+            if (!gameObject.activeSelf) gameObject.SetActive(true); kam.enabled = true; durgun = 0; Yenile(rakipSt, rakipForma);
         }
         public void Kapat() { if (kam != null) kam.enabled = false; gameObject.SetActive(false); }
 
@@ -79,7 +79,7 @@ namespace BirdieSmash.Game
                 if (rakipSt != null) { rakip = PlayerView.Build(transform, Ayar.model, false, rakipForma, false, PlayerView.Rakip(rakipSt, rakipForma)); GolgeKapat(rakip); }
                 rakipAnah = rk;
             }
-            konturRakip.enabled = rakip != null;
+            konturRakip.enabled = rakip != null; durgun = 0;   // figür değişmiş olabilir: yeniden çiz
             Goster(0);
         }
         static void GolgeKapat(PlayerView p) { var g = p.transform.Find("golge"); if (g != null) g.gameObject.SetActive(false); }
@@ -90,6 +90,15 @@ namespace BirdieSmash.Game
             if (ben != null) ben.ShowPoz(YER + Ek(BEN), -BEN_YON, "idle", ph);
             if (rakip != null) rakip.ShowPoz(YER + Ek(RAKIP), -RAKIP_YON, "idle", ph + .37f);
         }
-        void Update() { Goster(Mathf.Min(.05f, Time.unscaledDeltaTime)); }
+        // Durağan afiş çizilmez (2026-10-27 performans turu 2): hareketi azaltta figürler durur (ph ilerlemez, ShowPoz örneklemez)
+        // ama kamera her karede iki derili figürü üç piksel ışıkla 640×748 MSAA RT'ye yeniden çiziyordu. Poz ya da figür
+        // değişince (ph ilerler ya da Yenile figürü kurar) iki kare çizilir, sonra kamera kapanır; RT son görüntüyü tutar.
+        float sonPh = float.NaN; int durgun;
+        void Update()
+        {
+            Goster(Mathf.Min(.05f, Time.unscaledDeltaTime));
+            if (ph != sonPh) { sonPh = ph; durgun = 0; } else durgun++;
+            bool ciz = durgun < 2; if (kam.enabled != ciz) kam.enabled = ciz;
+        }
     }
 }

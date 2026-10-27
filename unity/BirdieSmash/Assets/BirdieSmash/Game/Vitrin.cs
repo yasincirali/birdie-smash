@@ -50,7 +50,7 @@ namespace BirdieSmash.Game
             g.SetActive(false); return vt;
         }
 
-        public void Ac() { gameObject.SetActive(true); kam.enabled = true; Yenile(); }
+        public void Ac() { gameObject.SetActive(true); kam.enabled = true; durgun = 0; Yenile(); }
         public void Kapat() { kam.enabled = false; gec = hedefGec = 0; odak = TAM; poz = null; deneTip = deneSac = deneAyk = null; camVar = false; gameObject.SetActive(false); }
         // Yakın plan seç (aynı odağa ikinci dokunuş Soyunma odasında Tüm boy'a döner). Tutuşa girerken el kameraya döner.
         public void Odak(int o, string klip = null)
@@ -253,6 +253,15 @@ namespace BirdieSmash.Game
                 if (parlaK == 1) foreach (var r in raketPivot.GetComponentsInChildren<Renderer>()) foreach (var m in r.materials) { if (k > 0) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", new Color(.85f, 1, .35f) * k * 1.2f); } else m.SetColor("_EmissionColor", Color.black); }
                 if (parlaT >= .9f) parlaT = -1;
             }
+            // Durağan vitrin çizilmez (2026-10-27 performans turu 2): hareketi azaltta, Tutuş yakın planında ve sürükleme
+            // bırakılıp yavaşlama bitince görüntü kare kare aynı; kamera yine de figürü her karede 4× MSAA RT'ye çiziyordu.
+            // Figür, açılar, geçiş, poz, kamera ve parlama aynıysa iki kare sonra kamera kapanır (RT son görüntüyü tutar);
+            // biri değişince aynı karede açılır.
+            var kr = kam.transform.rotation;
+            bool ayni = fig == sonFig && a == sonA && ra == sonRa && gec == sonGec && ReferenceEquals(poz, sonPoz) && odak == sonOdak && cp == sonCp && kr == sonRot && parlaT < 0;
+            if (ayni) durgun++; else { durgun = 0; sonFig = fig; sonA = a; sonRa = ra; sonGec = gec; sonPoz = poz; sonOdak = odak; sonCp = cp; sonRot = kr; }
+            bool ciz = durgun < 2; if (kam.enabled != ciz) kam.enabled = ciz;
         }
+        PlayerView sonFig; float sonA = float.NaN, sonRa, sonGec; string sonPoz; int sonOdak = -1, durgun; Vector3 sonCp; Quaternion sonRot;
     }
 }
