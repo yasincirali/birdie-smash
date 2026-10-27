@@ -21,10 +21,13 @@ namespace BirdieSmash.Game
         public static readonly Color LIMON = Kit.Hex("#D8FF3A"), CAMGOBEGI = Kit.Hex("#D8FF3A"), GOK = Kit.Hex("#5FC8FF"), MERCAN = Kit.Hex("#FF5B4A"), ALTIN = Kit.Hex("#FFC83D"),
             SOLUK = Kit.Hex("#A3ABD1"), KOYU = Kit.Hex("#0B1206"), MUREKKEP = Kit.Hex("#070B1F"), YAZI = Kit.Hex("#F4F6FF");
 
+        public const float YAZI_MIN = 11;
         Label Yazi(string t, float px, string cls = null)
         {
             var l = new Label(t); l.AddToClassList("yazi"); if (cls != null) l.AddToClassList(cls);
-            l.style.fontSize = Mathf.Round(px * K); l.pickingMode = PickingMode.Ignore;
+            // 2026-10-27 (duyarlı yerleşim): taban ne olursa olsun en az 11 birim (panel birimi telefonda ≥ 1 pt; Apple HIG en küçük
+            // okunur boy 11 pt). Eskiden kilit rozetleri 10, "Sistem" ×0,9'da 11'lik etiketler 10 çıkıyordu.
+            l.style.fontSize = Mathf.Max(YAZI_MIN, Mathf.Round(px * K)); l.pickingMode = PickingMode.Ignore;
             if (SembolVar(t)) { l.AddToClassList("sembol"); if (temaFontVar) l.style.unityFontDefinition = temaFont; }
             return l;
         }
@@ -65,7 +68,7 @@ namespace BirdieSmash.Game
             float simdi = l.resolvedStyle.fontSize; if (float.IsNaN(simdi) || simdi <= 0) return;
             float en = 0; foreach (var k in l.text.Split(' ')) { if (k.Length == 0) continue; var o = l.MeasureTextSize(k, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined); if (o.x > en) en = o.x; }
             float gen = en * taban / simdi; if (float.IsNaN(gen) || gen <= 0) return;
-            float hedef = Mathf.Clamp(Mathf.Floor(taban * Mathf.Min(1, (w - 2) / gen) * 2) / 2, Mathf.Round(taban * minOran), taban);
+            float hedef = Mathf.Clamp(Mathf.Floor(taban * Mathf.Min(1, (w - 2) / gen) * 2) / 2, Mathf.Min(taban, Mathf.Max(YAZI_MIN, Mathf.Round(taban * minOran))), taban);   // 2026-10-27: küçülme de 11'in altına inmez
             if (Mathf.Abs(hedef - simdi) > .25f) l.style.fontSize = hedef;
         }
         // Dokulu öğe (eğik plaka, gradyan): arka plan dokusu koddan, dilim değerleri USS'te (sınıf).
@@ -112,7 +115,7 @@ namespace BirdieSmash.Game
             float simdi = l.resolvedStyle.fontSize; if (float.IsNaN(simdi) || simdi <= 0) return;
             var olc = l.MeasureTextSize(l.text, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined);
             float gen = olc.x * taban / simdi; if (float.IsNaN(gen) || gen <= 0) return;
-            float hedef = Mathf.Clamp(Mathf.Floor(taban * Mathf.Min(1, (w - 2) / gen) * 2) / 2, Mathf.Round(taban * minOran), taban);
+            float hedef = Mathf.Clamp(Mathf.Floor(taban * Mathf.Min(1, (w - 2) / gen) * 2) / 2, Mathf.Min(taban, Mathf.Max(YAZI_MIN, Mathf.Round(taban * minOran))), taban);   // 2026-10-27: küçülme de 11'in altına inmez
             if (Mathf.Abs(hedef - simdi) > .25f) l.style.fontSize = hedef;
         }
         Image Ikon(Texture2D t, float pt, Color c)

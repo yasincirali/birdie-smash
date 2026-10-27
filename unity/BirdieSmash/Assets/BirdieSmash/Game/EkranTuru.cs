@@ -93,6 +93,7 @@ namespace BirdieSmash.Game
             yield return SonucKare("sonuc_tr_galibiyet", true, false, 0, "tr");
             yield return SonucKare("sonuc_yenilgi", false, false, 0, "en");
             yield return FileKare();   // 2026-10-27 ekran/file: file yakın planı (ayrı satır, başka dallar da bu listeye ekliyor)
+            yield return DuyarliTuru();   // 2026-10-27 duyarlı yerleşim: SE / 13 / Pro Max / iPad, çentik taklidi, taşma denetimi
             yield return MenuSahne();
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             Application.Quit(0);
@@ -490,6 +491,53 @@ namespace BirdieSmash.Game
             yield return Boyut(w0, h0); Ayar.kamera = "yayin"; root.KameraDegisti(); yield return KadrajTepe("yayin", true);
             yield return Boyut(430, 932); root.KameraDegisti(); yield return KadrajTepe("yayin_pm", false);
         }
+        // ---- 2026-10-27 duyarlı yerleşim (yasin build 41: "menüler ve sayfalar responsive, her telefonda açıkça gözükmeli") ----
+        // Dört cihaz boyu, pencere pt cinsinden (1 piksel = 1 pt) ve güvenli alan taklidi (Guvenli.test; xvfb'de Screen.safeArea
+        // tam ekran): SE 375×667 (çentik yok, durum çubuğu gizli: 0/0), iPhone 13 390×844 (47/34), Pro Max 430×932 (59/34), iPad
+        // 768×1024 (24/20). Her boyda ana sayfalar, alt sayfalar ve sonuç ekranı; SE'de ayrıca ×2 yazı ve "Büyük" sonuç. Her
+        // menü karesinde UiKok.TasmaDenetimi rapor.txt'ye "taşma <kare> · … · N sorun" satırı ve sorun listesini yazar; sonuç
+        // karesinde Hud.SonucTani. Sonda toplam: "duyarlı özet". Kare adı menu_<boy>_<sayfa> (eski menu_* kareleri 390×845,
+        // güvenli alansız: karşılaştırma için aynen kalır).
+        static readonly string[] D_AD = { "se", "13", "pm", "ipad" };
+        static readonly int[] D_W = { 375, 390, 430, 768 }, D_H = { 667, 844, 932, 1024 }, D_UST = { 0, 47, 59, 24 }, D_ALT = { 0, 34, 34, 20 };
+        int dKare, dSorun;
+        IEnumerator DuyarliTuru()
+        {
+            var ui = root.ui; if (ui == null) yield break;
+            int w0 = Screen.width, h0 = Screen.height; dKare = 0; dSorun = 0;
+            for (int i = 0; i < D_AD.Length; i++)
+            {
+                Guvenli.test = true; Guvenli.ust = D_UST[i]; Guvenli.alt = D_ALT[i]; Guvenli.sol = 0; Guvenli.sag = 0;
+                yield return Boyut(D_W[i], D_H[i]); if (Screen.width != D_W[i] || Screen.height != D_H[i]) rap.AppendLine("duyarlı " + D_AD[i] + ": pencere istenen boyda değil, kareler yine çekilir");
+                yield return DuyarliSayfalar(ui, "menu_" + D_AD[i] + "_");
+                if (D_AD[i] == "se") { Ayar.yaziTest = 2; yield return Bekle(10); yield return DuyarliSayfalar(ui, "menu_se_x2_", true); Ayar.yaziTest = 0; yield return Bekle(10); }
+                yield return SonucKare("sonuc_" + D_AD[i], true, false, 0, "en"); rap.AppendLine("sonuc_" + D_AD[i] + " · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok"));
+                if (D_AD[i] == "se") { yield return SonucKare("sonuc_se_buyuk", true, false, 2, "en"); rap.AppendLine("sonuc_se_buyuk · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok")); }
+                root.StartMatch(false, false, false); botAcik = true; yield return Bekle(60); yield return Cek("oyun_" + D_AD[i]); botAcik = false; root.AnaMenu(); yield return Bekle(10);
+            }
+            Guvenli.test = false; yield return Boyut(w0, h0); ui.SekmeAc(Sekme.Oyna); yield return Bekle(10);
+            rap.AppendLine("duyarlı özet · " + dKare + " menü karesi · " + dSorun + " sorun"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
+        }
+        IEnumerator DuyarliSayfalar(UiKok ui, string ek, bool kisaca = false)
+        {
+            ui.SekmeAc(Sekme.Kariyer); ui.SekmeAc(Sekme.Oyna); yield return DCek(ui, ek + "oyna");
+            ui.SekmeAc(Sekme.Kariyer); yield return DCek(ui, ek + "kariyer");
+            ui.MacKartAc(KariyerVeri.Global(0, 0)); yield return DCek(ui, ek + "mac_karti"); ui.Geri();
+            ui.SekmeAc(Sekme.Soyunma); yield return DCek(ui, ek + "soyunma", 30);
+            if (!kisaca) { ui.SoyunmaSegment(UiKok.SEG_KARAKTER); yield return DCek(ui, ek + "karakter", 30); ui.SoyunmaSegment(0); yield return Bekle(5); }
+            ui.SekmeAc(Sekme.Profil); yield return DCek(ui, ek + "profil");
+            ui.SekmeAc(Sekme.Oyna); ui.HizliMacAc(); yield return DCek(ui, ek + "hizli"); ui.Geri();
+            ui.AyarlarAc(); yield return DCek(ui, ek + "ayarlar"); ui.Geri(); yield return Bekle(5);
+            if (kisaca) yield break;
+            ui.AntrenmanAc(); yield return DCek(ui, ek + "antrenman");
+            ui.DrilKartAc("kose"); yield return DCek(ui, ek + "gorev_karti"); ui.Geri(); ui.Geri(); yield return Bekle(5);
+            ui.GunlukAc(); yield return DCek(ui, ek + "gunun_maci"); ui.Geri(); yield return Bekle(5);
+        }
+        IEnumerator DCek(UiKok ui, string ad, int bekle = 20)
+        {
+            yield return Bekle(bekle); yield return Cek(ad); int n; rap.AppendLine(ui.TasmaDenetimi(ad, out n)); dKare++; dSorun += n;
+        }
+
         IEnumerator Bekle(int kare) { for (int i = 0; i < kare; i++) yield return null; }
         IEnumerator Boyut(int w, int h)
         {

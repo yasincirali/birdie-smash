@@ -173,15 +173,15 @@ namespace BirdieSmash.Game
             YildizSatir(c, (m & Ilerleme.FARK) != 0, L.T("Farkla kazan: rakip en çok {0} sayı", Ilerleme.FarkSiniri(uz)));
             var tv = KariyerVeri.Turlar[tr];
             c.Add(Yazi(L.T("Önerilen ekipman puanı {0}–{1} · seninki {2}", tv.epMin, tv.epMax, EkipmanPuani()) + " · " + L.T("öneri, kilit değil"), 12, "soluk"));
-            c.Add(Bosluk(6));
+            // 2026-10-27: Oyna / Kilitli kaydırmanın dışında, sayfanın dibinde (Duyarli.cs, kural 4)
             if (acik)
             {
-                c.Add(Dugme(L.T(p.Kazanildi(g) ? "Yeniden oyna" : "Oyna") + ": " + L.T(kb.yer), () =>
+                AltEylem(Dugme(L.T(p.Kazanildi(g) ? "Yeniden oyna" : "Oyna") + ": " + L.T(kb.yer), () =>
                 {
                     Ayar.kariyerModu = true; Ayar.kariyerSecim = g; Ayar.GearHesap(); Ayar.Kaydet(); gez.Kapat(Gezinti.KART); Uygula(gez.sekme, false); root.Oyna();
                 }, "dugme--birincil", null, 19));
             }
-            else c.Add(Pasif(L.T("Kilitli"), b > 0 && p.TurAcik(tr) ? L.T("Önce {0} basamağını kazan", L.T(KariyerVeri.Al(g - 1).yer)) : KilitNedeni(tr)));
+            else AltEylem(Pasif(L.T("Kilitli"), b > 0 && p.TurAcik(tr) ? L.T("Önce {0} basamağını kazan", L.T(KariyerVeri.Al(g - 1).yer)) : KilitNedeni(tr)));
         }
 
         void YildizSatir(VisualElement c, bool var_, string ad)

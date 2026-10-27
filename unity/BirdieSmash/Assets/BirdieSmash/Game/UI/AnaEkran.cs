@@ -37,6 +37,7 @@ namespace BirdieSmash.Game
                 m.Add(Yazi("Birdie Smash", 34, "marka-ad")); m.Add(Yazi(L.T("Kaydır, kes, smaçla."), 15, "soluk"));
             }
             var esnek = new VisualElement(); esnek.AddToClassList("esnek"); esnek.AddToClassList("oyna-sahne"); esnek.pickingMode = PickingMode.Ignore; c.Add(esnek);
+            oynaSahne = esnek; esnek.RegisterCallback<GeometryChangedEvent>(e => AfisYerlestir());   // 2026-10-27: afiş bu boşluğa oturur (Duyarli.cs)
             // 2026-10-26 Usta yolu: dört tur bittiyse (ve Usta yolu açıksa) "Sıradaki" kartının yerini Usta kartı alır (kendi
             // Oyna düğmesiyle); finali yeniden oynamak Kariyer haritasından sürer.
             bool usta = Ayar.antrenman && UstaYolu.Acik(Ayar.ilerleme) && Ayar.ilerleme.HepsiBitti;
@@ -80,7 +81,7 @@ namespace BirdieSmash.Game
             var d = new VisualElement(); d.AddToClassList("cta"); Doku(d, Ikonlar.EgikLimon);
             var sup = new Image { image = Ikonlar.Parilti, scaleMode = ScaleMode.StretchToFill }; sup.AddToClassList("cta-supurme"); sup.pickingMode = PickingMode.Ignore; d.Add(sup);
             var yz = new VisualElement(); yz.AddToClassList("cta-yazilar"); yz.pickingMode = PickingMode.Ignore; d.Add(yz);
-            yz.Add(Baslik(t, 40, "cta-baslik"));
+            yz.Add(Baslik(t, Px(40, 34), "cta-baslik"));   // kısa ekranda (SE) 34: düğme 80 yerine ~70 pt, afişe yer kalır
             if (!string.IsNullOrEmpty(alt)) yz.Add(Yazi(alt, 14, "cta-alt"));
             var ik = new VisualElement(); ik.AddToClassList("cta-ikon"); ik.pickingMode = PickingMode.Ignore; ik.Add(Ikon(Ikonlar.Oyna, 24, LIMON)); d.Add(ik);
             d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); a(); }));
@@ -147,7 +148,7 @@ namespace BirdieSmash.Game
             var serit = new VisualElement(); serit.AddToClassList("serit"); Doku(serit, Ikonlar.EgikLimonKucuk); serit.pickingMode = PickingMode.Ignore; bas.Add(serit);
             serit.Add(Yazi(Buyuk(L.T(tamam ? "Kariyer tamam" : "Sıradaki maç")), 13, "serit-yazi"));
             bas.Add(Yazi(Buyuk(L.T(TurAd(tr))) + " · " + (i + 1) + "/" + KariyerVeri.BASAMAK, 12, "plaka-tur"));
-            kart.Add(Baslik(L.T(kb.yer), 38, "plaka-baslik"));
+            kart.Add(Baslik(L.T(kb.yer), Px(38, 32), "plaka-baslik"));
             var rk = new VisualElement(); rk.AddToClassList("plaka-meta"); rk.pickingMode = PickingMode.Ignore; kart.Add(rk);
             var sol = new VisualElement(); sol.AddToClassList("plaka-rakip"); sol.pickingMode = PickingMode.Ignore; rk.Add(sol);
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.AddToClassList("plaka-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); sol.Add(nok);
@@ -170,8 +171,7 @@ namespace BirdieSmash.Game
             var c = AltSayfaKur(L.T("Hızlı maç"));
             c.Add(Yazi(L.T("Rakip her maçta rastgele: Smaşçı, Duvar ya da File oyuncusu."), 13, "soluk"));
             OyunSecenek(c, true);
-            c.Add(Bosluk(8));
-            c.Add(Dugme(L.T("Hızlı maç oyna"), () =>
+            AltEylem(Dugme(L.T("Hızlı maç oyna"), () =>
             {
                 Ayar.kariyerModu = false; Ayar.GearHesap(); Ayar.Kaydet(); gez.Kapat(Gezinti.HIZLI); Uygula(gez.sekme, false); root.Oyna();
             }, "dugme--birincil", HizliOzet(), 19));

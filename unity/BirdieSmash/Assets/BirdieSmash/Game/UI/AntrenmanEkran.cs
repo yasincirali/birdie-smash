@@ -65,9 +65,8 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Yıldızlar")));
             for (int i = 0; i < Dril.YILDIZ; i++) YildizSatir(c, y > i, L.T("12 topta {0} isabet", d.esik[i]));
             var od = Yazi(L.T("Her yeni yıldız +{0} Tüy, +{1} XP. Aynı yıldızı ikinci kez almak ödül vermez.", Gear.DRIL_TUY, Gear.DRIL_XP), 12, "soluk"); Erisim.Etiket(od, od.text, "metin"); c.Add(od);
-            c.Add(Bosluk(6));
             string id = d.id;
-            c.Add(Dugme(L.T(y > 0 ? "Yeniden oyna" : "Başla") + ": " + L.T(d.ad), () => { gez.AltKapat(); Uygula(gez.sekme, false); root.DrilOyna(id); }, "dugme--birincil", null, 19));
+            AltEylem(Dugme(L.T(y > 0 ? "Yeniden oyna" : "Başla") + ": " + L.T(d.ad), () => { gez.AltKapat(); Uygula(gez.sekme, false); root.DrilOyna(id); }, "dugme--birincil", null, 19));
         }
 
         // ---- Günün maçı ----
@@ -108,8 +107,7 @@ namespace BirdieSmash.Game
             var od = Yazi(alindi ? "✓ " + L.T("Bugünün ödülü alındı. Yarın yenisi.") : L.T("Kazanınca bir kez: +{0} Tüy, +{1} XP", Gunluk.OdulTuy, Gunluk.OdulXp), 14, alindi ? "durum-gecti" : "altin");
             Erisim.Etiket(od, od.text, "metin"); c.Add(od);
             var kural = Yazi(L.T("Seri yok: bir günü kaçırırsan hiçbir şey kaybetmezsin. Kaybetmek de normal maç ödülünü verir."), 12, "soluk"); Erisim.Etiket(kural, kural.text, "metin"); c.Add(kural);
-            c.Add(Bosluk(6));
-            c.Add(Dugme(L.T(alindi ? "Yeniden oyna" : "Oyna") + ": " + L.T("Günün maçı"), () => { gez.AltKapat(); Uygula(gez.sekme, false); root.GunlukOyna(); }, "dugme--birincil", null, 19));
+            AltEylem(Dugme(L.T(alindi ? "Yeniden oyna" : "Oyna") + ": " + L.T("Günün maçı"), () => { gez.AltKapat(); Uygula(gez.sekme, false); root.GunlukOyna(); }, "dugme--birincil", null, 19));
         }
 
         // ---- Usta yolu ----
