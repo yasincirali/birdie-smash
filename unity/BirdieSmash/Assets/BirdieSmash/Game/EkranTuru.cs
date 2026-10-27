@@ -20,6 +20,8 @@
 // 2026-10-27 koşu ve vuruş tutarlılığı (ekran/kosu): geri çekilme şeridi (<model>_geri_NN: arka sahaya giderken yan dönüş),
 // rapor.txt'de kare kare "kosu_geri" ve model başına "kosu_ozet" satırları (Unity pozundan yerdeki ayak kayması), her vuruş ×
 // taraf ve ayak işi klibi için 6 karelik poz şeridi (<model>_klip_<klip>.png; "klip_poz" satırı: temas karesi, el yanı).
+// 2026-10-27 performans turu 2: PerfTuru (Game/KareOlcum): "perf" satırları (kare süresi p50/p95/p99, kare başı GC; GÖRELİ),
+// "perf_tani" (durağan afiş/vitrin kamerası) ve "perf_doku" (yüklü dokuların boyu, biçimi, mip'i).
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -101,6 +103,7 @@ namespace BirdieSmash.Game
             yield return FileKare();   // 2026-10-27 ekran/file: file yakın planı (ayrı satır, başka dallar da bu listeye ekliyor)
             yield return DuyarliTuru();   // 2026-10-27 duyarlı yerleşim: SE / 13 / Pro Max / iPad, çentik taklidi, taşma denetimi
             yield return MenuSahne();
+            yield return PerfTuru();   // 2026-10-27 performans turu 2 (kare süresi ve GC, GÖRELİ; ayrı satır)
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             Application.Quit(0);
         }
@@ -443,6 +446,53 @@ namespace BirdieSmash.Game
         // menüde sahneyi çizmemeli (cullingMask 0), Oyna'nın fonu oyuncusuz bulanık salon karesi olmalı; saha değişince fon
         // yenilenmeli; duraklatıp Ana menü'ye çıkınca (bekleyen maç) Oyna "Maça devam et" göstermeli. Her karede kameranın
         // durumu rapora yazılır (görüntüde gözden kaçarsa sayı yakalar).
+        // Performans turu 2 (2026-10-27, yasin: "Texturelar ve animasyonlar her yerde smooth ve performanslı akıcı olmalı"):
+        // Game/KareOlcum ile bölüm bölüm kare süresi p50/p95/p99 ve kare başı GC. Bölümler: menü Oyna (afiş), Soyunma (vitrin),
+        // hareketi azaltta Oyna (afiş durağan: kamera kapanmalı), gerçek perde (Oyna → maç kurulumu perde altında), her modelde
+        // bot rallisi (anim izi ve temas kaydı kapalı: ölçüyü kirletmesin) ve açılış perdesi. Yazılım GL: sayılar GÖRELİ.
+        // Rapor satırları "perf ...", "perf_tani ..."; kare yok (görüntü diğer turlarda).
+        IEnumerator PerfTuru()
+        {
+            var ui = root.ui; var hud = root.HudKatman; if (ui == null || hud == null) yield break;
+            var ol = gameObject.GetComponent<KareOlcum>(); if (ol == null) ol = gameObject.AddComponent<KareOlcum>();
+            string m0 = Ayar.model; bool r0 = Ayar.reduce; int t0 = Ayar.target; iz = null; temas = null; botAcik = false;
+            Ayar.target = 21;   // ölçüm sırasında maç bitmesin (ekran turu 5 sayıyla oynuyor)
+            rap.AppendLine("=== perf (GÖRELİ: yazılım GL; bölümler ve turlar arası karşılaştırma) · ekran " + Screen.width + "x" + Screen.height + " · " + Kalite.Tani);
+            root.AnaMenu(); ui.SekmeAc(Sekme.Kariyer); ui.SekmeAc(Sekme.Oyna); yield return Bekle(30);
+            ol.Basla(); yield return Bekle(150); rap.AppendLine(ol.Bitir("menu_oyna"));
+            ui.SekmeAc(Sekme.Soyunma); yield return Bekle(30);
+            ol.Basla(); yield return Bekle(120); rap.AppendLine(ol.Bitir("menu_soyunma"));
+            rap.AppendLine("perf_tani soyunma · vitrin kamera " + (root.vitrin.Kam != null && root.vitrin.Kam.enabled ? "çiziyor" : "durgun"));
+            Ayar.reduce = true; ui.SekmeAc(Sekme.Oyna); yield return Bekle(30);
+            ol.Basla(); yield return Bekle(90); rap.AppendLine(ol.Bitir("menu_oyna_azalt"));
+            rap.AppendLine("perf_tani azalt · afiş kamera " + (root.afis.Ciziyor ? "ÇİZİYOR (beklenen: durgun)" : "durgun"));
+            Ayar.reduce = r0; yield return Bekle(10);
+            ol.Basla(); root.Oyna(); yield return null;
+            for (int i = 0; i < 900 && hud.PerdeVar; i++) yield return null;
+            rap.AppendLine(ol.Bitir("perde_oyna"));
+            var modeller = new List<string> { "oyuncak", "rocketbox" }; if (Resources.Load<GameObject>("karakter/sade") != null) modeller.Add("sade");
+            foreach (var mdl in modeller)
+            {
+                Ayar.model = mdl; root.ModelDegisti(); root.StartMatch(false, false, false); botAcik = true; yield return Bekle(60);
+                ol.Basla(); yield return Bekle(240); rap.AppendLine(ol.Bitir("ralli_" + mdl));
+                botAcik = false;
+            }
+            Ayar.model = m0; Ayar.target = t0; root.ModelDegisti(); root.AnaMenu(); yield return Bekle(20);
+            ol.Basla(); hud.Acilis(); yield return null;
+            for (int i = 0; i < 900 && hud.PerdeVar; i++) yield return null;
+            rap.AppendLine(ol.Bitir("acilis"));
+            // Yüklü dokular (DokuAyar içe aktarmasının oyuncuya ulaştığının kanıtı): boy, biçim, mip, okunabilirlik, bellek. Linux'ta
+            // biçim DXT/BC (ASTC yalnız iOS); boy ve mip platformdan bağımsız. 128 px altı kod dokuları sayılmaz.
+            long topB = 0; int dn = 0;
+            foreach (var t in Resources.FindObjectsOfTypeAll<Texture2D>())
+            {
+                if (t == null || t.width < 128 && t.height < 128 || (t.hideFlags & HideFlags.HideAndDontSave) == HideFlags.HideAndDontSave && string.IsNullOrEmpty(t.name)) continue;
+                long b = UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(t); topB += b; dn++;
+                rap.AppendLine("perf_doku " + (string.IsNullOrEmpty(t.name) ? "(adsız)" : t.name) + " " + t.width + "x" + t.height + " " + t.format + " mip " + t.mipmapCount + " okunur " + t.isReadable + " süzme " + t.filterMode + " aniso " + t.anisoLevel + " · " + (b / 1024) + " KB");
+            }
+            rap.AppendLine("perf_doku toplam " + dn + " doku · " + (topB / 1024) + " KB (GetRuntimeMemorySizeLong; geliştirme dışı oyuncuda 0 olabilir)");
+            File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
+        }
         IEnumerator MenuSahne()
         {
             var ui = root.ui; if (ui == null) yield break;

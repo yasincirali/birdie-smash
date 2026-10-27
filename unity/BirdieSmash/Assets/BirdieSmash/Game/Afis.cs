@@ -56,6 +56,7 @@ namespace BirdieSmash.Game
         }
 
         public bool Acik { get { return gameObject.activeSelf; } }
+        public bool Ciziyor { get { return Acik && kam != null && kam.enabled; } }   // ekran turu (perf_tani)
         // rakipSt null: rakip yok (ilk açılış: önce antrenman); afişte yalnız sen.
         public void Ac(Style rakipSt, Color rakipForma)
         {
