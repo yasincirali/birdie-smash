@@ -300,6 +300,17 @@ namespace BirdieSmash.Core
             if (type == "smash" || z > 1.95f) return "over"; if (type == "drive" && z > .8f) return "drive";
             if (Math.Abs(y - Court.NET) < 2.3f && z > Court.NETH) return "kill"; if (z > .8f && type != "block" && type != "lift") return "drive"; return "low";
         }
+        // Hazırlığın eli (2026-10-27, ekran/kosu; yasin "adımlamalar backhand ve forehand ..."): HandOf topun o anki yerine
+        // göre oyuncunun kendi konumundan bakıyordu; oyuncu kesişme noktasına koşarken göreli yan değişip hazırlık pozu
+        // forehand↔backhand atlıyordu (VurusOlc 12 maç: hazırlıkta el değişimi bende 265, rakipte 286 / ~1100 temas; sonra 42 / 6, temasta el
+        // değişimi 2 → 30 / 6 → 8: atlama hazırlığın ortasından temasın kendisine kayar, vuruş hareketi onu örter). Koşu
+        // planlıysa (rakip; Kolay'da kendiliğinden koşan ben) el, planın seçtiği vuruş tarafından (HitSide: karar bir kez
+        // verilir) gelir; temasta yine HandOf (gerçek temas noktası) karar verir. Plan yoksa (elle koşu) eski kural.
+        string PrepEl(Athlete o, string who, float sx, float sz, Intercept I)
+        {
+            bool plan = I != null && I.who == who && !float.IsNaN(I.side) && (who == "op" ? o.fakeUntil <= clock : easy && o.manualT <= 0 && o.fakeUntil <= clock);
+            return plan ? (I.side * (who == "me" ? 1 : -1) < 0 ? "back" : "fore") : HandOf(o, who, sx, sz);
+        }
         // Pozisyon: forehand tarafı önde; forehand noktasına yetişemiyorsa backhand noktası. Karar bir kez verilir.
         float HitSide(Athlete o, string who, Intercept I)
         {
@@ -870,7 +881,7 @@ namespace BirdieSmash.Core
             if (s != null && !s.dead && s.from != who && I != null && I.who == who && I.t - s.t < .7f)
             {
                 tg = 1; o.prepT = I.t - s.t; o.prepShot = I.lunge ? "lunge" : ShotClass(who == "op" ? (I.opType ?? "") : "", I.z, I.y);
-                o.prepHand = HandOf(o, who, I.x, I.z);
+                o.prepHand = PrepEl(o, who, I.x, I.z, I);
                 o.prepClip = ClipHand(o.prepShot == "over" ? (who == "op" && I.opType == "smash" && o.prepHand != "back" ? "jump" : who == "op" && I.opType == "drop" && HasClip("drop") ? "drop" : "clear") : o.prepShot, o.prepHand);
             }
             else if (s == null && server == who) { tg = .6f; o.prepShot = "low"; o.prepClip = "serve"; }   // servisçi topu elinde tutar
@@ -881,7 +892,7 @@ namespace BirdieSmash.Core
                 {
                     tg = 1; o.prepShot = has && ri.lunge ? "lunge" : ShotClass(s.type == "smash" && s.z <= .8f ? "block" : "", s.z, s.y);
                     if (o.prepShot == "low" && s.type == "smash") o.prepShot = "block";
-                    o.prepHand = HandOf(o, "me", s.x, s.z);
+                    o.prepHand = PrepEl(o, "me", s.x, s.z, I);
                     o.prepClip = ClipHand(o.prepShot == "over" ? (energy >= 1 && o.prepHand != "back" ? "jump" : "clear") : o.prepShot, o.prepHand);
                 }
             }
@@ -1052,7 +1063,12 @@ namespace BirdieSmash.Core
                 if (I != null && I.who == "op" && !I.leave)
                 {
                     if (op.fakeUntil > clock) MoveAcc(op, op.fakeX, op.y, 1.6f, d);
-                    else MoveAcc(op, Clamp(I.x + HitSide(op, "op", I), -.4f, Court.CW + .4f), I.y - .3f, OpSpd(), d);
+                    // Hedef = I.x − taraf (2026-10-27, ekran/kosu): HitSide forehand/backhand noktasını I.x − taraf diye ölçer (dF/dB),
+                    // ben de öyle koşarım (RunMe). Burada (HTML'den beri) I.x + taraf yazılıydı: rakibin "forehand" noktası topu
+                    // onun soluna koyuyordu (rakibin sağı −x). Ölçüm (VurusOlc 12 maç): rakibin alçak vuruşları bh_low 345 / low 41,
+                    // hazırlıkta el değişimi 286; düzeltmeyle low 226 / bh_low 24, el değişimi 92 (PrepEl ile 6). Denge kapısı: Tur 1 Kolay
+                    // %83 → %87, Usta %37 → %41 (BotMac; kapı ≥ %70 / ≥ %20).
+                    else MoveAcc(op, Clamp(I.x - HitSide(op, "op", I), -.4f, Court.CW + .4f), I.y - .3f, OpSpd(), d);
                     // tek sıçrama, tepe temasta (ce47f5c): eskiden temastan önce ve sonra iki zıplama
                     if (I.opType == "smash" && op.prepClip == "jump" && I.t - s.t < SALINIM["jump"] && I.t - s.t > 0 && !(op.jump > 0)) op.jump = 1 - (SALINIM["jump"] - (I.t - s.t)) * JUMP_HIZ;
                     if (s.t >= I.t) { OpHit(); return; }
@@ -1092,7 +1108,10 @@ namespace BirdieSmash.Core
             else if (o.prepA > .08f && o.prepClip != null)
             {
                 clip = o.prepClip; o.hamleKilit = false;
-                if (HAMLE.ContainsKey(clip)) { float v = IleriHiz(o, isMe); o.hamleGor = o.hamleGor ? v > HAMLE_CIK : v > HAMLE_GIR; string hm; if (o.hamleGor && HAMLE.TryGetValue(clip, out hm) && HasClip(hm)) clip = hm; }
+                // Hamleden çıkış temasa HAMLE_TUT'tan az kala yok (2026-10-27, ekran/kosu): kesişme noktasına varan oyuncu
+                // yavaşlayınca hamle hazırlığı son anda ayakta alçak vuruşa dönüyordu (VurusOlc 12 maç: rakipte lunge→low 163,
+                // temasların %15'i); temas yine hamleyle (o.sw dalı hamleGor'u sürdürür).
+                if (HAMLE.ContainsKey(clip)) { float v = IleriHiz(o, isMe); bool tut = !float.IsNaN(o.prepT) && o.prepT < HAMLE_TUT; o.hamleGor = o.hamleGor ? v > HAMLE_CIK || tut : v > HAMLE_GIR; string hm; if (o.hamleGor && HAMLE.TryGetValue(clip, out hm) && HasClip(hm)) clip = hm; }
                 else o.hamleGor = false;
                 hit = CLIP_HIT.TryGetValue(clip, out hit) ? hit : .55f; int hold, n;
                 if (!PREP_KARE.TryGetValue(clip, out hold) || !CLIP_N.TryGetValue(clip, out n)) ph = hit * .9f * Math.Min(1, o.prepA);
@@ -1142,7 +1161,7 @@ namespace BirdieSmash.Core
         // Hamle görünümü: alçak/file vuruşunun hamleli karşılığı ve fileye doğru hız eşiği (m/s, histerezisli). Bot ölçümü
         // (tool/unity_test, 2026-10-26): fileye koşarak gelen oyuncu temasta 1,5–3 m/s, yerinde vuran < 0,5 m/s.
         public static readonly Dictionary<string, string> HAMLE = new Dictionary<string, string> { {"low","lunge"},{"net","lunge"},{"bh_low","bh_lunge"} };
-        public const float HAMLE_GIR = 1.4f, HAMLE_CIK = .8f;
+        public const float HAMLE_GIR = 1.4f, HAMLE_CIK = .8f, HAMLE_TUT = .4f;
         static float IleriHiz(Athlete o, bool isMe) { return isMe ? -o.svy : o.svy; }   // oyuncunun kendi bakışında fileye doğru
         // Boşta duruş nefese bağlı (Ar-Ge 23 Eki animasyon B4): dolu nefeste eski hız (0,8 döngü/sn), nefes azaldıkça
         // %90'a kadar hızlanır; uzun ralliden sonra beden de soluklanır. Faz birikir (saatle çarpılsa nefes değişince

@@ -144,6 +144,7 @@ static class BotMac
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
         Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
         KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
+        VurusTutarliligi();   // 2026-10-27 ekran/kosu
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }
@@ -1078,6 +1079,57 @@ static class BotMac
             if (t90 > 5) Fail("koşu: temasta gövde dönük (p90 " + t90.ToString("0.0") + "°)");
             if (donAsim > 0) Fail("koşu: dönüş hızı/kalça ayrışması tavanı aşıldı " + donAsim);
         }
+    }
+    // Vuruş tutarlılığı (2026-10-27, ekran/kosu; yasin "animasyon tutarsızlıklarını gözden geçir ... backhand ve forehand
+    // smaç, drive, net drop clear"). Bot maçlarında gösterilen hazırlık klibi kare kare izlenir:
+    //  - hazırlıkta el değişimi (forehand ↔ backhand pozu, raket bir yandan öbürüne): önce bende 265, rakipte 286 / ~1100 temas;
+    //  - hazırlıktan temasa el değişimi; hamle hazırlığından ayakta alçak vuruşa dönüş (rakipte önce lunge→low 163);
+    //  - temasta taraf: forehand klibi top belirgin solda (alçakta > 0,25 m, üstte > 0,6 m) / backhand top sağda;
+    //  - rakibin alçak vuruşlarında forehand payı (önce %11: HitSide işaret hatası, Match rakip koşusu);
+    //  - her vuruş × taraf klibi en az bir kez görülür (ekran turu şeritleri bunları gösterir).
+    static void VurusTutarliligi()
+    {
+        const float dt = 1f / 60; var R = new Random(7); var gor = new HashSet<string>();
+        int[] temas = new int[2], elDeg = new int[2], temasEl = new int[2], hamleDus = new int[2], tarafYanlis = new int[2]; int opAlt = 0, opAltFh = 0;
+        for (int m = 0; m < 8; m++)
+        {
+            var M = new Match(300 + m, new MatchOptions { easy = m % 3 != 2, target = 11 }); int g = 0; var son = new string[2]; var sonPrep = new string[2];
+            while (!M.over && g++ < 60 * 60 * 30)
+            {
+                if (M.s == null && M.server == "me" && M.wait <= 0 && !M.between && M.svPending == null && R.NextDouble() < .05) { double u = R.NextDouble(); if (u < .45) M.SwipeServe((float)(R.NextDouble() * 80 - 40), -60, .6f); else M.SwipeServe((float)(R.NextDouble() * 160 - 80), -200, 1.8f); }
+                Reach rc; if (M.ReachInfo(out rc) && R.NextDouble() < .12) { double k = R.NextDouble(); M.SwipeShot(new SwipeInput { dx = (float)(R.NextDouble() * 200 - 100), dy = R.NextDouble() < .08 ? 120 : -(float)(80 + R.NextDouble() * 220), speed = k < .2 ? .5f : k < .65 ? 1.2f : 2.2f, R = 40, dist = (float)(R.NextDouble() * 60), side = R.NextDouble() < .5 ? -1 : 1 }); }
+                M.Update(dt);
+                for (int i = 0; i < 2; i++)
+                {
+                    var a = i == 0 ? M.me : M.op; string c; float ph; M.PickClip(a, i == 0, out c, out ph);
+                    bool prep = a.sw <= 0 && a.svAnim == null && a.prepA > .08f && a.prepClip != null && Match.CLIP_HIT.ContainsKey(c) && !c.StartsWith("serve");
+                    if (prep && son[i] != null && son[i] != c) { if (son[i].StartsWith("bh_") != c.StartsWith("bh_")) elDeg[i]++; if ((son[i] == "lunge" && c == "low") || (son[i] == "bh_lunge" && c == "bh_low")) hamleDus[i]++; }
+                    if (prep) sonPrep[i] = c; son[i] = prep ? c : a.sw > 0 ? son[i] : null;
+                }
+                foreach (var e in M.events)
+                {
+                    if (e.kind != Ev.Hit || e.serve) continue; int i = e.who == "me" ? 0 : 1; var a = i == 0 ? M.me : M.op; string c = a.clip; temas[i]++; gor.Add(c);
+                    if (a.hamleGor && Match.HAMLE.ContainsKey(c)) gor.Add(Match.HAMLE[c]);
+                    bool bh = c.StartsWith("bh_"); float yan = (a.tmX - a.x) * (i == 0 ? 1 : -1);
+                    if (!bh && yan < -(a.tmZ > 1.95f ? .6f : .25f) || bh && yan > .1f) tarafYanlis[i]++;
+                    if (sonPrep[i] != null && sonPrep[i].StartsWith("bh_") != bh) temasEl[i]++; sonPrep[i] = null;
+                    if (i == 1 && (c == "low" || c == "bh_low" || c == "net" || c == "bh_drive" || c == "drive")) { opAlt++; if (!bh) opAltFh++; }
+                }
+                M.events.Clear();
+            }
+        }
+        Console.WriteLine("vuruş tutarlılığı: temas ben/rakip " + temas[0] + "/" + temas[1] + ", hazırlıkta el değişimi " + elDeg[0] + "/" + elDeg[1] + ", hazırlık→temas el değişimi " + temasEl[0] + "/" + temasEl[1]
+            + ", hamleden ayakta vuruşa dönüş " + hamleDus[0] + "/" + hamleDus[1] + ", temasta yanlış taraf " + tarafYanlis[0] + "/" + tarafYanlis[1] + ", rakip alçak vuruşta forehand %" + (100f * opAltFh / Math.Max(1, opAlt)).ToString("0"));
+        for (int i = 0; i < 2; i++)
+        {
+            if (elDeg[i] > temas[i] / 12) Fail("vuruş: hazırlıkta forehand↔backhand atlıyor " + elDeg[i] + "/" + temas[i]);
+            if (temasEl[i] > temas[i] / 20) Fail("vuruş: hazırlıktan temasa el değişiyor " + temasEl[i] + "/" + temas[i]);
+            if (tarafYanlis[i] > 0) Fail("vuruş: temasta top öbür yanda " + tarafYanlis[i]);
+        }
+        if (hamleDus[1] > temas[1] / 10) Fail("vuruş: rakip hamle hazırlığından ayakta vuruşa dönüyor " + hamleDus[1]);
+        if (opAltFh * 2 < opAlt) Fail("vuruş: rakip alçak vuruşların çoğunu backhand vuruyor (%" + (100f * opAltFh / Math.Max(1, opAlt)).ToString("0") + ")");
+        foreach (var need in new[] { "smash", "clear", "drop", "jump", "bh_over", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge" })
+            if (!gor.Contains(need)) Fail("vuruş: hiç görülmeyen vuruş klibi " + need);
     }
     static float Hyp(float x, float y) { return (float)Math.Sqrt(x * x + y * y); }
 }
