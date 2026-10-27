@@ -27,6 +27,7 @@ namespace BirdieSmash.EditorTools
             {
                 string path = Arg("-customBuildPath") ?? "build/iOS/iOS";
                 DemoKurulum.Kur();   // sahne Assets/Scenes/Demo.unity + build listesi + shader/girdi ayarları (CI kopyası taze)
+                DokuAyar.Denetle();  // 2026-10-27: her doku ASTC/boy/mip hedefinde mi (değilse yeniden içe aktarır, günlüğe satır basar)
                 Ayarla(Arg("-buildVersion"));
                 var opt = new BuildPlayerOptions
                 {
@@ -51,6 +52,7 @@ namespace BirdieSmash.EditorTools
             {
                 string path = Arg("-customBuildPath") ?? "build/StandaloneLinux64/BirdieSmash";
                 DemoKurulum.Kur();
+                DokuAyar.Denetle();  // ekran turu da aynı boy/mip/süzmeyle çizsin (ASTC yalnız iOS/Android'de; Linux'ta DXT)
                 PlayerSettings.productName = "Birdie Smash"; PlayerSettings.companyName = "Birdie Smash";
 #pragma warning disable 618
                 PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.Mono2x);
