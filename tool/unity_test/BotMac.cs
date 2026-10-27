@@ -150,6 +150,7 @@ static class BotMac
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
         FileStandart();   // 2026-10-27 ekran/file (ayrı satır: liste başka dallarda da büyüyor)
+        AdimTipleri();   // 2026-10-27 birleşik dal incelemesi: figürün kendi adım boyu (ekran/model) × işaretli faz (ekran/kosu)
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }
@@ -1062,6 +1063,53 @@ static class BotMac
     //  - geri çekilme (gidiş fileden > 120°, > 2 m/s): yan dönük (|donusAyak| > 45°) pay, fileye bakıp geri geri (back_*) pay
     //    (önce %0 / %82–86);
     //  - temasta gövde dönüşü (vuruş klipleri fileye bakarak çizildi) ve dönüş hızı tavanı (Match.DON_AZAMI: tek karede dönme yok).
+    // Birleşik dal incelemesi (2026-10-27 tur 2): KosuYonleri varsayılan adım boyuyla (0,99 m chassé) ölçer; oyuncak tipleri
+    // kendi adımını (PlayerView.adimBoy = _clips.json adim × 1,75) ve tavanını (ayakTurMax = 3,6 × 0,99 / chassé, en çok 6)
+    // taşır. En kısa adımlı tipte (kadın: chassé 0,51 m) tavan neredeyse hiç dolmamalı (dolarsa ayak kayar) ve kayma
+    // varsayılanınkiyle aynı kalmalı. Adım sıklığı (adım/sn = 2 × tur/sn) rapora yazılır: tasarım sorusu (oyuncak "seğirtir").
+    static void AdimTipleri()
+    {
+        const float dt = 1f / 60f, S = 1.75f;
+        var tipler = new[] { new object[] { "varsayılan", null }, new object[] { "oyuncak kadın", new[] { .289f, .442f, .47f, .75f, .504f, .622f } } };
+        double kayRef = -1, tvRef = -1;   // varsayılanda da tavan %2 kadar dolar (hızlı kros): kıyas ona göre
+        foreach (var tp in tipler)
+        {
+            var v = (float[])tp[1]; Dictionary<string, float> d = null; float turMax = float.NaN;
+            if (v != null) { d = new Dictionary<string, float> { {"chasse_r",v[0]*S},{"chasse_l",v[0]*S},{"fwd",v[1]*S},{"back_r",v[2]*S},{"back_l",v[2]*S},{"run",v[3]*S},{"kros_r",v[4]*S},{"kros_l",v[5]*S} }; turMax = Math.Max(Match.AYAK_TUR_MAX, Math.Min(6f, Match.AYAK_TUR_MAX * .99f / d["chasse_r"])); }
+            float tmax = float.IsNaN(turMax) ? Match.AYAK_TUR_MAX : turMax; var tur = new List<float>(); int kare = 0, tavanda = 0; double kay = 0;
+            for (int m = 0; m < 3; m++)
+            {
+                var M = new Match(300 + m, new MatchOptions { easy = m % 3 != 2, target = 11 }); foreach (var at in new[] { M.me, M.op }) { at.adimBoy = d; at.ayakTurMax = turMax; }
+                var px = new[] { float.NaN, float.NaN }; var py = new float[2]; var ph0 = new float[2]; var c0 = new string[2]; int g = 0;
+                while (!M.over && g++ < 60 * 60 * 20)
+                {
+                    Bot(M, dt); M.Update(dt); M.events.Clear();
+                    for (int i = 0; i < 2; i++)
+                    {
+                        var at = i == 0 ? M.me : M.op; bool isMe = i == 0; string c; float ph; M.PickClip(at, isMe, out c, out ph);
+                        float ey, ei; Match.KlipEkseni(c, out ey, out ei);
+                        if (ey == 0 && ei == 0 && at.ayakKlip != null && Match.AltHedef(at, c) > .5f) { c = at.ayakKlip; ph = at.runPh; Match.KlipEkseni(c, out ey, out ei); }
+                        if (!float.IsNaN(px[i]) && !M.between && M.s != null && c == c0[i] && (ey != 0 || ei != 0))
+                        {
+                            float vx = (at.x - px[i]) / dt, vy = (at.y - py[i]) / dt, side = isMe ? vx : -vx, fwd = isMe ? -vy : vy;
+                            if (side * side + fwd * fwd < 144)
+                            {
+                                float dph = ph - ph0[i]; dph -= (float)Math.Floor(dph + .5f); float t = Math.Abs(dph) / dt, boy;
+                                if (d == null || !d.TryGetValue(c, out boy)) boy = Match.ADIM_BOY[c];
+                                double r = at.donusAyak * Math.PI / 180; float fs = (float)Math.Sin(r), fc = (float)Math.Cos(r), ax = ey * fc + ei * fs, ay = -ey * fs + ei * fc, cv = dph * boy / dt;
+                                kare++; tur.Add(t); if (t >= tmax - .01f) tavanda++; kay += Math.Sqrt((side - ax * cv) * (side - ax * cv) + (fwd - ay * cv) * (fwd - ay * cv));
+                            }
+                        }
+                        ph0[i] = ph; c0[i] = c; px[i] = at.x; py[i] = at.y;
+                    }
+                }
+            }
+            tur.Sort(); double ko = kay / Math.Max(1, kare), tv = 100.0 * tavanda / Math.Max(1, kare);
+            Console.WriteLine("adım tipi " + tp[0] + ": tavan " + tmax.ToString("0.00") + " tur/sn, " + kare + " kare, tavanda %" + tv.ToString("0.0") + ", kayma ort " + ko.ToString("0.00") + " m/s, adım/sn p50 " + (2 * tur[tur.Count / 2]).ToString("0.0") + " p90 " + (2 * tur[tur.Count * 9 / 10]).ToString("0.0") + " p99 " + (2 * tur[tur.Count * 99 / 100]).ToString("0.0"));
+            if (kayRef < 0) kayRef = ko; else if (ko > kayRef + .05) Fail("kısa adımlı tipte ayak kayması arttı: " + ko.ToString("0.00") + " > " + kayRef.ToString("0.00"));
+            if (tvRef < 0) tvRef = tv; else if (tv > tvRef + 1) Fail("adım tavanı dolu kare %" + tv.ToString("0.0") + " > varsayılan %" + tvRef.ToString("0.0") + " + 1 (" + tp[0] + "): ayak kayar");
+        }
+    }
     static void KosuYonleri()
     {
         foreach (float hz in new[] { 60f, 120f })
