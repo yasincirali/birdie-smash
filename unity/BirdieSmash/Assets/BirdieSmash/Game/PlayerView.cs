@@ -588,7 +588,7 @@ namespace BirdieSmash.Game
             // Boşta duruşun genliği nefese bağlı (B4; hız Match.IdleIlerle'de): nefes %70'in altına inince yorgun klibi
             // (eller dizde) %35'e kadar karışır, beden soluklanır. Harmanlama bitmeden karıştırılmaz.
             if (cur == "idle" && blend >= 1 && o.nefes < .7f && anim["yorgun"] != null)
-            { Sample("idle", ph, "yorgun", ph, 1 - .35f * Mathf.Clamp01((.7f - o.nefes) / .7f)); FileItin(); AyakKilit(dt); return; }
+            { Sample("idle", ph, "yorgun", ph, 1 - .35f * Mathf.Clamp01((.7f - o.nefes) / .7f)); uzanVar = false; kalcaKay = Vector3.zero; FileItin(); AyakKilit(dt); return; }
             {   // alt beden katmanı: vuruş/hazırlık klibinde koşarken bacaklar ayak işinden. Hangi klipte ve ne ağırlıkla:
                 // Match.AltHedef (hamle yaklaşırken, servis temastan sonra, sıçrama yerdeyken; anlık hızla). 2026-10-26 gece Core'a
                 // taşındı: ölçüm aracı (tool/unity_test/AnimOlc) aynı kuralı okur.
@@ -598,7 +598,8 @@ namespace BirdieSmash.Game
             }
             hazirKafa = UzanHazir(o, M) ? KafaVurusta(cur) : null;   // ana örneklemeden önce: önbellekte yoksa vuruş karesi örneklenir
             Sample(cur, ph, prev, prevPh, prev == null ? 1 : Mathf.SmoothStep(0, 1, blend), altKlip, altPh, altW);   // smoothstep (2026-10-26): doğrusal ağırlık geçişin başında ve sonunda hız kırığı veriyordu
-            FileItin(); AyakKilit(dt); HazirNefes(o, M); Uzan(o, M, j);
+            Uzan(o, M, j);   // kayma ve kalça: ayak kilidinden önce (kilit kalça kaymasını ayakta geri alır)
+            FileItin(); AyakKilit(dt); HazirNefes(o, M); UzanKol();
         }
 
         // Uzanma katmanı (2026-10-27 gece; koordinatör kararı, ekran turu ölçümü: temas karesinde raket kafası topa 0,6–1,5 m
@@ -612,7 +613,8 @@ namespace BirdieSmash.Game
         //    sabit kayma UZAN_CIK sn'de söner (takip klibin kendi yayıyla sürer). Servis: kayma yok (top elden, poz servis klibi).
         //  - Yetişmezse: kol boyunu aşan pay UZAN_PAY0'dan UZAN_PAY1'e dek ağırlığı sıfıra indirir (gergin kol takılıp kalmaz).
         // Durum yok sayılır: ağırlık τ'nun ve temastan geçen sürenin fonksiyonu; tek bellek temas karesinde ölçülen kayma.
-        const float UZAN_GIR = .15f, UZAN_CIK = .1f, UZAN_EGIM = 10f, UZAN_EGIM_PAY = .35f, UZAN_PAY0 = .12f, UZAN_PAY1 = .45f;
+        const float UZAN_GIR = .15f, UZAN_CIK = .1f, UZAN_EGIM = 20f, UZAN_EGIM_PAY = .6f, UZAN_PAY0 = .45f, UZAN_PAY1 = .8f,
+            UZAN_KALCA = .45f, UZAN_KALCA_MAX = .2f, UZAN_BILEK = 40f;
         Vector3? hazirKafa; int uzanN = -1; float uzanS0; Vector3 uzanD;
         readonly Dictionary<string, Vector3> vurusKafa = new Dictionary<string, Vector3>();
         public float TaniUzanW, TaniUzanOnce = -1, TaniUzanSonra = -1, TaniDirsek, TaniUzanPay;
@@ -641,12 +643,17 @@ namespace BirdieSmash.Game
             float f = M.clock * 1.6f * 2 * Mathf.PI + (isMe ? 0 : 1.7f);
             var t = kOmurga[0]; t.rotation = Quaternion.AngleAxis(1.5f * A * Mathf.Sin(f), yaw.right) * Quaternion.AngleAxis(1f * A * Mathf.Sin(f * .5f), yaw.up) * t.rotation;
         }
+        // 1. adım (ana örneklemenin hemen ardından, ayak kilidinden önce): kayma D ve ağırlık w; kalça kaymanın yatay payının
+        // UZAN_KALCA'sı kadar (en çok UZAN_KALCA_MAX) hedefe, hedef alçaksa aşağı. Ayaklar AyakKilit'te kalça kaymasını geri
+        // alan IK ile yerinde kalır (kalça önden gider, ayak basılı). Kol, omurga ve bilek 2. adımda (UzanKol).
+        bool uzanVar; float uzanW; Vector3 uzanHedef, uzanKafaHedef, kalcaKay;
         void Uzan(Athlete o, Match M, float j)
         {
+            uzanVar = false; kalcaKay = Vector3.zero;
             TaniUzanW = 0; TaniUzanOnce = TaniUzanSonra = -1; TaniDirsek = 0; TaniUzanPay = 0;
             if (hakem || kafa == null || model == null) return;
             if (kKol == null) ZincirKur();
-            Transform S = kKol[3], E = kKol[4], H = kKol[5]; if (S == null || E == null || H == null) return;
+            if (kKol[3] == null || kKol[4] == null || kKol[5] == null) return;
             Vector3 hedef, D; float w;
             bool servis = M.s != null && M.s.serve && M.s.from == Kim;
             if (o.sw > 0 && o.tmN > 0)
@@ -666,26 +673,44 @@ namespace BirdieSmash.Game
             }
             else return;
             if (w <= 1e-3f || D.sqrMagnitude < 1e-6f) return;
-            Vector3 k0 = kafa.position, kHedef = k0 + D * w;
-            // Omurga eğimi: omuzu kaymanın yönüne, açının UZAN_EGIM_PAY'ı kadar (en çok UZAN_EGIM°), alttan üste iki kemiğe bölünür.
+            uzanVar = true; uzanW = w; uzanHedef = hedef; uzanKafaHedef = kafa.position + D * w;
+            if (kHip != null)
+            {
+                Vector3 y = new Vector3(D.x, 0, D.z) * (w * UZAN_KALCA); if (y.magnitude > UZAN_KALCA_MAX) y = y.normalized * UZAN_KALCA_MAX;
+                kalcaKay = y + Vector3.up * Mathf.Max(-UZAN_KALCA_MAX, Mathf.Min(0, D.y * w * UZAN_KALCA));
+                kHip.position += kalcaKay;
+            }
+        }
+        // 2. adım: omurga eğimi (gereken açının UZAN_EGIM_PAY'ı, en çok UZAN_EGIM°), kol IK (el dünya dönüşünü korur), kalan
+        // aralık için bilek: raket kafası el çevresinde hedefe döner (en çok UZAN_BILEK°; vuruşta bilek kırılması budur).
+        void UzanKol()
+        {
+            if (!uzanVar) return;
+            Transform S = kKol[3], E = kKol[4], H = kKol[5]; float w = uzanW; Vector3 kHedef = uzanKafaHedef;
             if (kOmurga.Count > 0)
             {
-                Vector3 g = kOmurga[0].position, a = S.position - g, b = a + D * w; Vector3 ek = Vector3.Cross(a, b);
+                Vector3 g = kOmurga[0].position, a = S.position - g, b = a + (kHedef - kafa.position); Vector3 ek = Vector3.Cross(a, b);
                 float th = Mathf.Min(Vector3.Angle(a, b) * UZAN_EGIM_PAY, UZAN_EGIM);
                 if (ek.sqrMagnitude > 1e-8f && th > .01f) { int n = Mathf.Min(2, kOmurga.Count); for (int i = 0; i < n; i++) kOmurga[i].rotation = Quaternion.AngleAxis(th / n, ek.normalized) * kOmurga[i].rotation; }
             }
             Vector3 H1 = H.position, Hd = H1 + (kHedef - kafa.position);
             float la = (E.position - S.position).magnitude, lb = (H.position - E.position).magnitude, pay = (Hd - S.position).magnitude - (la + lb);
             TaniUzanPay = pay;
-            if (pay > UZAN_PAY0) Hd = H1 + (Hd - H1) * (1 - Mathf.SmoothStep(0, 1, (pay - UZAN_PAY0) / (UZAN_PAY1 - UZAN_PAY0)));
+            float f = pay > UZAN_PAY0 ? 1 - Mathf.SmoothStep(0, 1, (pay - UZAN_PAY0) / (UZAN_PAY1 - UZAN_PAY0)) : 1;   // yetişilmez: söner
+            Hd = H1 + (Hd - H1) * f; kHedef = kafa.position + (kHedef - kafa.position) * f;
             Vector3 orta = (S.position + H1) * .5f, kutup = E.position - orta, ekO = (H1 - S.position).normalized;
             var rot = H.rotation;
             IK(S, E, H, Hd, kutup.sqrMagnitude > 1e-6f ? kutup : -yaw.up);
             H.rotation = rot;
+            {   // bilek
+                Vector3 v = kafa.position - H.position, v2 = kHedef - H.position; Vector3 ek = Vector3.Cross(v, v2);
+                float aci = Mathf.Min(Vector3.Angle(v, v2), UZAN_BILEK);
+                if (ek.sqrMagnitude > 1e-8f && aci > .01f) H.rotation = Quaternion.AngleAxis(aci, ek.normalized) * H.rotation;
+            }
             // Dirsek dönmesi: kutup yönünün IK öncesi ve sonrası (omuz–el eksenine dik düzlemde) açısı; 90°'den büyükse ters büküm.
             Vector3 ekS = (H.position - S.position).normalized, k1 = Vector3.ProjectOnPlane(E.position - (S.position + H.position) * .5f, ekS), k0p = Vector3.ProjectOnPlane(kutup, ekO);
             TaniDirsek = k1.sqrMagnitude > 1e-8f && k0p.sqrMagnitude > 1e-8f ? Vector3.Angle(k0p, k1) : 0;
-            TaniUzanW = w; TaniUzanSonra = (hedef - kafa.position).magnitude;
+            TaniUzanW = w * f; TaniUzanSonra = (uzanHedef - kafa.position).magnitude;
         }
 
         // İmza vuruşu hazırlığı (2026-10-26, Core/Imza; tasarım §3.3 kural 1): raket kafasında imzanın renginde ışık küresi +
@@ -738,7 +763,7 @@ namespace BirdieSmash.Game
             for (int i = 0; i < 2; i++)
             {
                 Transform th = kBacak[i * 3], kn = kBacak[i * 3 + 1], ft = kBacak[i * 3 + 2]; if (th == null || kn == null || ft == null) continue;
-                Vector3 A = ft.position; bool yerde = A.y < bilek0[i] + KILIT_Y;
+                Vector3 A = ft.position - kalcaKay; bool yerde = A.y < bilek0[i] + KILIT_Y;   // A: kalça kaymasından önceki (klibin) ayak yeri
                 if (yerde && !kilitli[i] && kilitO[i].sqrMagnitude < 1e-6f) { kilitli[i] = true; kilitP[i] = A; }
                 else if (yerde && !kilitli[i]) { kilitli[i] = true; kilitP[i] = A + kilitO[i]; }   // bırakılış sönmeden yeniden bastı: kaldığı yerden
                 Vector3 O = Vector3.zero;
@@ -746,11 +771,11 @@ namespace BirdieSmash.Game
                 {
                     O = new Vector3(kilitP[i].x - A.x, 0, kilitP[i].z - A.z);
                     // Gerilince bırakılır, fark söner; yarım metreden büyükse gövde ışınlandı (servis dizilişi): ayak hemen yerine.
-                    if (!yerde || O.magnitude > KILIT_MAX) { kilitli[i] = false; kilitO[i] = O.magnitude > .5f ? Vector3.zero : O; if (kilitO[i] == Vector3.zero) continue; }
+                    if (!yerde || O.magnitude > KILIT_MAX) { kilitli[i] = false; kilitO[i] = O.magnitude > .5f ? Vector3.zero : O; O = kilitO[i]; }
                     else kilitO[i] = O;
                 }
-                if (!kilitli[i]) { kilitO[i] *= Mathf.Exp(-dt * KILIT_BIRAK); O = kilitO[i]; if (O.sqrMagnitude < 1e-6f) { kilitO[i] = Vector3.zero; continue; } }
-                if (O.sqrMagnitude < 1e-8f) continue;
+                else if (!kilitli[i]) { kilitO[i] *= Mathf.Exp(-dt * KILIT_BIRAK); if (kilitO[i].sqrMagnitude < 1e-6f) kilitO[i] = Vector3.zero; O = kilitO[i]; }
+                if (O.sqrMagnitude < 1e-8f && kalcaKay.sqrMagnitude < 1e-8f) continue;
                 var rot = ft.rotation; Vector3 kutup = kn.position - (th.position + A) * .5f;
                 IK(th, kn, ft, A + O, kutup.sqrMagnitude > 1e-6f ? kutup : yaw.forward);
                 ft.rotation = rot;
