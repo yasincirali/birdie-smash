@@ -474,7 +474,11 @@ namespace BirdieSmash.Game
             foreach (var mdl in modeller)
             {
                 Ayar.model = mdl; root.ModelDegisti(); root.StartMatch(false, false, false); botAcik = true; yield return Bekle(60);
+                foreach (var pv in FindObjectsByType<PlayerView>(FindObjectsSortMode.None)) { pv.TaniDegisim = pv.TaniAra = pv.TaniPop = 0; pv.TaniDusen = 0; }
                 ol.Basla(); yield return Bekle(240); rap.AppendLine(ol.Bitir("ralli_" + mdl));
+                foreach (var pv in FindObjectsByType<PlayerView>(FindObjectsSortMode.None))
+                    if (!pv.hakem && pv.transform.parent == root.transform)
+                        rap.AppendLine("perf_gecis " + mdl + " " + (pv.isMe ? "ben" : "rakip") + " · klip değişimi " + pv.TaniDegisim + " · geçiş sürerken " + pv.TaniAra + " · tek karede düşen ağırlık toplam " + pv.TaniDusen.ToString("0.00") + " · %25 üstü pop " + pv.TaniPop + " (eski kuralda geçiş sürerken her değişim düşerdi; GecisOlc)");
                 botAcik = false;
             }
             Ayar.model = m0; Ayar.target = t0; root.ModelDegisti(); root.AnaMenu(); yield return Bekle(20);

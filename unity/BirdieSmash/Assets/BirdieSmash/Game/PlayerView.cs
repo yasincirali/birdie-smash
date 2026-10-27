@@ -26,7 +26,7 @@ namespace BirdieSmash.Game
 {
     public class PlayerView : MonoBehaviour
     {
-        public bool isMe; Transform model, yaw; Animation anim; string cur, prev; float blend = 1, blendS = .08f, prevPh, lastPh;
+        public bool isMe; Transform model, yaw; Animation anim; string cur, prev, prev2; float blend = 1, blendS = .08f, prevPh, lastPh, prev2Ph, prev2Pay;
         Transform fbRacket, shadow; LineRenderer ringBg, ringFg; float ringA;
         const float SCALE = 1.75f;   // sprite sürümündeki 1,75 kat okunurluk büyütmesi
         static readonly Dictionary<string, bool> LOOPS = new Dictionary<string, bool>();
@@ -550,13 +550,23 @@ namespace BirdieSmash.Game
             var l = new List<AnimationState>(); foreach (AnimationState st in anim) l.Add(st); durumlar = l.ToArray(); return durumlar;
         }
         int ornekNo;   // her Sample'da artar: ShowSit "pozum hâlâ benim" diye bakar
-        void Sample(string a, float pa, string b, float pb, float w, string alt = null, float aPh = 0, float aW = 0)
+        // c (prev2): harmanlama sürerken gelen değişimde sönen üçüncü poz; eski karışımın (1 − w) payının cPay kadarı (Show notu).
+        void Sample(string a, float pa, string b, float pb, float w, string alt = null, float aPh = 0, float aW = 0, string c = null, float pc = 0, float cPay = 0)
         {
             if (anim == null) return;
             ornekNo++; var tum = Durumlar(); for (int i = 0; i < tum.Length; i++) tum[i].enabled = false;
             var A = D(a); if (A == null) return;
             A.enabled = true; A.weight = w; A.normalizedTime = ClipTime(a, pa);
-            if (b != null && w < 1) { var B = D(b); if (B != null) { B.enabled = true; B.weight = 1 - w; B.normalizedTime = ClipTime(b, pb); } }
+            if (b != null && w < 1)
+            {
+                var B = D(b);
+                if (B != null)
+                {
+                    float wb = 1 - w; var C2 = c != null && cPay > .001f && c != a && c != b ? D(c) : null;
+                    if (C2 != null) { C2.enabled = true; C2.weight = wb * cPay; C2.normalizedTime = ClipTime(c, pc); wb *= 1 - cPay; }
+                    B.enabled = true; B.weight = wb; B.normalizedTime = ClipTime(b, pb);
+                }
+            }
             if (alt != null && aW > .01f) { var C = D(AltAd(alt)); if (C != null) { C.enabled = true; C.weight = aW; C.normalizedTime = ClipTime(alt, aPh); } }
             anim.Sample();
             for (int i = 0; i < tum.Length; i++) tum[i].enabled = false;
@@ -700,9 +710,29 @@ namespace BirdieSmash.Game
             if (clip != cur)
             {
                 bool takip = cur != null && Match.CLIP_HIT.ContainsKey(cur) && !Match.CLIP_HIT.ContainsKey(clip);   // vuruş → hazır duruş/ayak
-                prev = cur; prevPh = lastPh; cur = clip; blend = 0; blendS = takip ? .2f : .08f;
+                // Harmanlama sürerken gelen değişim (2026-10-27 performans turu 2; ölçüm tool/unity_test/GecisOlc, Core bot maçı; kural orada kopya): klip
+                // değişimlerinin %22'si (120 Hz'de %25) önceki 0,08/0,2 sn'lik geçiş bitmeden geliyordu (split → chassé → kros,
+                // fwd → back → chassé); eski kodda o anki karışımın "prev" payı (ortalama %46–52) tek karede düşüyordu: pop.
+                // Şimdi (1) aynı klibe geri dönüşte geçiş ters çevrilir (blend → 1 − blend, ağırlıklar sürekli), (2) başka klipte
+                // ekranın o anki iki pozu (cur ve prev) birlikte söner: prev2 = prev, payı karışım içindeki oranı. Dördüncü poz
+                // gelirse en eskisi (prev2) düşer. Ölçüm: %25'ten büyük tek kare düşüşü 1198 → 80 (60 Hz), 1459 → 137 (120 Hz),
+                // toplam düşen ağırlık −%94 / −%92.
+                TaniDegisim++; if (prev != null && blend < 1) TaniAra++;
+                if (prev != null && blend < 1 && clip == prev) { prev = cur; prevPh = lastPh; cur = clip; blend = 1 - blend; prev2 = null; }
+                else
+                {
+                    if (prev != null && blend < 1)
+                    {
+                        float wc = Mathf.SmoothStep(0, 1, blend), wp = (1 - wc) * (1 - (prev2 != null ? prev2Pay : 0));
+                        float dus = (1 - wc) * (prev2 != null ? prev2Pay : 0); TaniDusen += dus; if (dus > .25f) TaniPop++;
+                        prev2 = prev; prev2Ph = prevPh; prev2Pay = wc + wp > 1e-4f ? wp / (wc + wp) : 0;
+                    }
+                    else prev2 = null;
+                    prev = cur; prevPh = lastPh; cur = clip; blend = 0;
+                }
+                blendS = takip ? .2f : .08f;
             }
-            blend = Mathf.Min(1, blend + dt / blendS); lastPh = ph;
+            blend = Mathf.Min(1, blend + dt / blendS); lastPh = ph; if (blend >= 1) prev2 = null;
             // Boşta duruşun genliği nefese bağlı (B4; hız Match.IdleIlerle'de): nefes %70'in altına inince yorgun klibi
             // (eller dizde) %35'e kadar karışır, beden soluklanır. Harmanlama bitmeden karıştırılmaz.
             if (cur == "idle" && blend >= 1 && o.nefes < .7f && D("yorgun") != null)
@@ -715,7 +745,7 @@ namespace BirdieSmash.Game
                 altW += (hedef - altW) * (1 - Mathf.Exp(-dt * Match.ALT_HIZ)); if (altW < .01f && hedef == 0) altW = 0;   // üstel: 60/120 Hz aynı eğri
             }
             hazirKafa = UzanHazir(o, M) ? KafaVurusta(cur) : null;   // ana örneklemeden önce: önbellekte yoksa vuruş karesi örneklenir
-            Sample(cur, ph, prev, prevPh, prev == null ? 1 : Mathf.SmoothStep(0, 1, blend), altKlip, altPh, altW);   // smoothstep (2026-10-26): doğrusal ağırlık geçişin başında ve sonunda hız kırığı veriyordu
+            Sample(cur, ph, prev, prevPh, prev == null ? 1 : Mathf.SmoothStep(0, 1, blend), altKlip, altPh, altW, prev2, prev2Ph, prev2Pay);   // smoothstep (2026-10-26): doğrusal ağırlık geçişin başında ve sonunda hız kırığı veriyordu
             KalcaDonus(o);   // ana örneklemeden hemen sonra: uzanma kalçayı kaydırmadan, ayak kilidi IK'dan önce
             Uzan(o, M, j);   // kayma ve kalça: ayak kilidinden önce (kilit kalça kaymasını ayakta geri alır)
             FileItin(); AyakKilit(dt); HazirNefes(o, M); UzanKol();
@@ -923,6 +953,9 @@ namespace BirdieSmash.Game
         // bileğinin ve sağ elin dünya konumu, raket sapının ele uzaklığı. Ayak kayması = yerdeki ayağın kareler arası yatay
         // hızı; raket kayması = sapın el kemiğinden uzaklığı (rijit parça elle birlikte gitmeli). Oyunda çağıran yok.
         public string TaniKlip { get { return cur; } }
+        // Klip geçişi tanısı (2026-10-27 performans turu 2; ekran turu "perf_gecis"): değişim, geçiş sürerken değişim, tek karede
+        // düşen poz ağırlığının toplamı ve %25'i aşan düşüş (pop) sayısı. Oyunda okuyan yok.
+        public int TaniDegisim, TaniAra, TaniPop; public float TaniDusen;
         public float TaniAlt { get { return altW; } }
         public float TaniFaz { get { return lastPh; } }
         public Vector3 TaniKafa { get { return kafa != null ? kafa.position : Vector3.zero; } }   // raket kafası (tel yüzeyinin merkezi)
