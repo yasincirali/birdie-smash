@@ -14,6 +14,9 @@
 // 2026-10-26 karakter tasarımı: Karakter › Tip/Saç/Ayakkabı/Ten, yakın planlar (yüz, ayak, tutuş forehand/backhand) ve
 // deneme kartları (normal ve x2_ büyük yazı; deneme kayda yazılmaz, segmentten çıkınca silinir).
 // Süre: gerçek zaman (GameRoot dt'yi 0,05 ile sınırlar; yavaş yazılım render'ında maç da yavaşlar, kareler yine anlamlı).
+// 2026-10-27 koşu ve vuruş tutarlılığı (ekran/kosu): geri çekilme şeridi (<model>_geri_NN: arka sahaya giderken yan dönüş),
+// rapor.txt'de kare kare "kosu_geri" ve model başına "kosu_ozet" satırları (Unity pozundan yerdeki ayak kayması), her vuruş ×
+// taraf ve ayak işi klibi için 6 karelik poz şeridi (<model>_klip_<klip>.png; "klip_poz" satırı: temas karesi, el yanı).
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -103,14 +106,16 @@ namespace BirdieSmash.Game
             yield return YakinNokta(mdl + "_06_servis_hakemi", CourtView.HAKEM2 + new Vector3(0, .5f, 0), new Vector3(-2.8f, .7f, -2.2f));
             botAcik = true; iz = new StringBuilder(); temasSay = 0; temasN.Clear();
             temas = new StringBuilder("kim,klip,sw,once,sonra,uzanW,pay,dirsek,hedefx,hedefy,hedefz,kafax,kafay,kafaz\n");
-            iz.AppendLine("kare,t,dt,kim,klip,faz,alt,vAn,x,y,solx,soly,solz,sagx,sagy,sagz,elx,ely,elz,sapEl,pencere,donuk,sw,kafax,kafay,kafaz,topx,topy,topz,kilit,uzanW,uzanSonra,dirsek");
+            iz.AppendLine("kare,t,dt,kim,klip,faz,alt,vAn,x,y,solx,soly,solz,sagx,sagy,sagz,elx,ely,elz,sapEl,pencere,donuk,sw,kafax,kafay,kafaz,topx,topy,topz,kilit,uzanW,uzanSonra,dirsek,donus,donusAyak,kalca");
             for (int i = 0; i < 10; i++) { yield return Bekle(14); yield return Cek(mdl + "_1" + i + "_ralli"); if (i == 2) Kadraj(mdl + "_12_ralli"); }
             yield return Serit(mdl, true); yield return Serit(mdl, false);
-            File.WriteAllText(Path.Combine(dir, mdl + "_anim_iz.csv"), iz.ToString()); iz = null;
+            yield return GeriSerit(mdl);   // 2026-10-27 ekran/kosu
+            File.WriteAllText(Path.Combine(dir, mdl + "_anim_iz.csv"), iz.ToString()); iz = null; KosuOzet(mdl);
             // Temas örneklemi (2026-10-27 gece, uzanma katmanı): ralli sürer, 70 temasa ya da 60 sn'ye dek yalnız temas kareleri.
             { float t0 = Time.realtimeSinceStartup; while (temasSay < 70 && Time.realtimeSinceStartup - t0 < 60) yield return null; }
             File.WriteAllText(Path.Combine(dir, mdl + "_temas.csv"), temas.ToString()); temas = null;
             botAcik = false;
+            yield return KlipSeritleri(mdl);   // 2026-10-27 ekran/kosu
         }
         // Animasyon izi (2026-10-26 gece, build 40 incelemesi): ralli kareleri ve şerit boyunca HER karede iki oyuncunun klibi,
         // fazı, alt katman ağırlığı, ayak bileği/el kemiği dünya konumu, raket sapının ele uzaklığı, raket kafası ve top
@@ -140,8 +145,103 @@ namespace BirdieSmash.Game
                 float vAn = 0; var f = typeof(Athlete).GetField("vAn"); if (f != null) vAn = (float)f.GetValue(a);
                 iz.AppendLine(Time.frameCount + "," + F(Time.realtimeSinceStartup) + "," + F(Mathf.Min(.05f, Time.unscaledDeltaTime)) + "," + (pv.isMe ? "me" : "op") + "," + pv.TaniKlip + "," + F(pv.TaniFaz) + "," + F(pv.TaniAlt) + "," + F(vAn) + "," + F(a.x) + "," + F(a.y) + ","
                     + F(l.x) + "," + F(l.y) + "," + F(l.z) + "," + F(r.x) + "," + F(r.y) + "," + F(r.z) + "," + F(e.x) + "," + F(e.y) + "," + F(e.z) + "," + F(se) + "," + (M.HitWindow() ? 1 : 0) + "," + (M.freeze > 0 ? 1 : 0)
-                    + "," + F(a.sw) + "," + F(pv.TaniKafa.x) + "," + F(pv.TaniKafa.y) + "," + F(pv.TaniKafa.z) + "," + (M.s != null ? F(Kit.W(M.s.x, M.s.y, M.s.z).x) + "," + F(Kit.W(M.s.x, M.s.y, M.s.z).y) + "," + F(Kit.W(M.s.x, M.s.y, M.s.z).z) : ",,") + "," + F(pv.TaniKilit) + "," + F(pv.TaniUzanW) + "," + F(pv.TaniUzanSonra) + "," + F(pv.TaniDirsek));
+                    + "," + F(a.sw) + "," + F(pv.TaniKafa.x) + "," + F(pv.TaniKafa.y) + "," + F(pv.TaniKafa.z) + "," + (M.s != null ? F(Kit.W(M.s.x, M.s.y, M.s.z).x) + "," + F(Kit.W(M.s.x, M.s.y, M.s.z).y) + "," + F(Kit.W(M.s.x, M.s.y, M.s.z).z) : ",,") + "," + F(pv.TaniKilit) + "," + F(pv.TaniUzanW) + "," + F(pv.TaniUzanSonra) + "," + F(pv.TaniDirsek)
+                    + "," + F(a.donus) + "," + F(a.donusAyak) + "," + F(pv.TaniKalca));
+                KosuIz(pv, a, l, r);
             }
+        }
+
+        // ---- Koşu (2026-10-27, ekran/kosu) ----
+        // Geri çekilme: kendi çerçevede gidiş fileden > 120°, anlık hız > 2 m/s. Unity pozundan yerdeki ayak kayması: alçak
+        // ayağın (bilek y < en alçak + 3 cm) kareler arası yatay hızı; bot ölçümü (BotMac KosuYonleri) Core'dan, bu gerçek iskeletten.
+        class KosuSay { public int geri, yan, sirt, ileri; public double geriKay, ileriKay; public int geriKayN, ileriKayN; public Vector3 l0, r0; public bool var; }
+        readonly Dictionary<bool, KosuSay> kosu = new Dictionary<bool, KosuSay>();
+        static bool Geri(Athlete a, bool isMe, out float th)
+        {
+            float yan = isMe ? a.svx : -a.svx, ileri = isMe ? -a.svy : a.svy; th = Mathf.Atan2(yan, ileri) * Mathf.Rad2Deg;
+            return a.vAn > 2 && Mathf.Abs(th) > 120;
+        }
+        void KosuIz(PlayerView pv, Athlete a, Vector3 l, Vector3 r)
+        {
+            KosuSay k; if (!kosu.TryGetValue(pv.isMe, out k)) kosu[pv.isMe] = k = new KosuSay();
+            float dt = Mathf.Max(1e-3f, Mathf.Min(.05f, Time.unscaledDeltaTime)), th;
+            if (k.var && root.match.freeze <= 0)
+            {
+                bool solAlt = l.y < r.y; Vector3 p = solAlt ? l : r, p0 = solAlt ? k.l0 : k.r0;
+                float kay = new Vector2(p.x - p0.x, p.z - p0.z).magnitude / dt; bool yerde = Mathf.Abs(l.y - r.y) > .03f;
+                if (Geri(a, pv.isMe, out th))
+                {
+                    k.geri++; if (Mathf.Abs(a.donusAyak) > 45) k.yan++; if (pv.TaniKlip != null && pv.TaniKlip.StartsWith("back")) k.sirt++;
+                    if (yerde && kay < 12) { k.geriKay += kay; k.geriKayN++; }
+                }
+                else if (a.vAn > 2 && Mathf.Abs(th) < 60 && yerde && kay < 12) { k.ileri++; k.ileriKay += kay; k.ileriKayN++; }
+            }
+            k.l0 = l; k.r0 = r; k.var = true;
+        }
+        void KosuOzet(string mdl)
+        {
+            foreach (var kv in kosu)
+            {
+                var k = kv.Value;
+                rap.AppendLine("kosu_ozet " + mdl + " " + (kv.Key ? "ben" : "rakip") + " · geri çekilme " + k.geri + " kare, yan dönük %" + (100f * k.yan / Mathf.Max(1, k.geri)).ToString("F0")
+                    + ", fileye bakıp geri geri (back_*) %" + (100f * k.sirt / Mathf.Max(1, k.geri)).ToString("F0") + ", yerdeki ayak kayması ort " + (k.geriKay / Mathf.Max(1, k.geriKayN)).ToString("F2")
+                    + " m/s · öne koşu " + k.ileri + " kare, ayak kayması ort " + (k.ileriKay / Mathf.Max(1, k.ileriKayN)).ToString("F2") + " m/s");
+            }
+            kosu.Clear(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
+        }
+        // Geri çekilme şeridi: ben arka sahaya giderken (en çok 40 sn beklenir) 12 kare, arka-sağ yukarıdan (dönüş ve gidiş
+        // birlikte görünür); her karede klip, faz, gövde/bacak dönüşü, kalça farkı, gidiş açısı ve hız rapora.
+        IEnumerator GeriSerit(string mdl)
+        {
+            float t0 = Time.realtimeSinceStartup, th = 0; var M = root.match;
+            while (Time.realtimeSinceStartup - t0 < 40 && !(M.s != null && !M.between && Geri(M.me, true, out th))) yield return null;
+            if (!Geri(M.me, true, out th)) { rap.AppendLine("kosu_geri " + mdl + " · 40 sn'de geri çekilme olmadı"); yield break; }
+            PlayerView ben = null; foreach (var pv in FindObjectsByType<PlayerView>(FindObjectsSortMode.None)) if (pv.isMe && !pv.hakem) ben = pv;
+            for (int i = 0; i < 12; i++)
+            {
+                var a = M.me; Geri(a, true, out th); var p = Kit.W(a.x, a.y, 0) + Vector3.up * 1.0f;
+                rap.AppendLine("kosu_geri " + mdl + " " + i.ToString("00") + " · klip " + (ben != null ? ben.TaniKlip : "-") + " faz " + (ben != null ? ben.TaniFaz.ToString("F2") : "-") + " gövde " + a.donus.ToString("F0") + "° bacak " + a.donusAyak.ToString("F0")
+                    + "° kalça " + (ben != null ? ben.TaniKalca.ToString("F0") : "-") + "° gidiş " + th.ToString("F0") + "° hız " + a.vAn.ToString("F1") + " ayakKlip " + a.ayakKlip + " hazırlık " + a.prepA.ToString("F2"));
+                yield return YakinNokta(mdl + "_geri_" + i.ToString("00"), p, new Vector3(3.0f, 2.2f, -3.4f));
+                yield return null;
+            }
+            File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
+        }
+        // Klip şeritleri: her vuruş × taraf ve ayak işi klibi, maç dışı bir figürle (ShowPoz: yalnız klip, katman/IK yok) 6
+        // kare yan yana (1920×480). Vuruş kliplerinde kareler hazırlıktan takibe eşit aralıklı, temas karesi dahil; döngülerde
+        // faz 0..5/6. "klip_poz" satırı: temas karesi ve sağ elin gövdeye göre yanı (+ sağ: forehand, − sol: backhand çaprazı).
+        static readonly string[] KLIP_SERIT = { "smash", "clear", "drop", "jump", "bh_over", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge", "block", "serve", "serve_bh", "serve_flick",
+            "fwd", "run", "chasse_r", "chasse_l", "kros_r", "kros_l", "back_r", "back_l", "split" };
+        IEnumerator KlipSeritleri(string mdl)
+        {
+            var g = new GameObject("klip_serit"); var pv = PlayerView.Build(g.transform, mdl, true, Kit.Hex("#3aa0ff"));
+            Vector3 pos = Kit.W(-1.6f, Court.NET + 3.5f, 0), hedef = pos + Vector3.up * 1.0f;   // yan çizginin 1,6 m dışı, kendi yarım: kortta oyuncu yok, ışık aynı
+            yield return null;
+            // Süre (koşu turu 1500 sn; r42 832 sn sürdü): ayak işi şeritleri yalnız varsayılan modelde, 1150 sn'den sonra şerit yok.
+            foreach (var clip in KLIP_SERIT)
+            {
+                if (pv.Model == null || Time.realtimeSinceStartup > 1150) { rap.AppendLine("klip_poz " + mdl + " · süre sınırı, kalan şeritler atlandı"); break; }
+                if (mdl != "oyuncak" && Match.ADIM_BOY.ContainsKey(clip)) continue;
+                int n; if (!Match.CLIP_N.TryGetValue(clip, out n)) n = 8; float hit; bool vurus = Match.CLIP_HIT.TryGetValue(clip, out hit); int hitF = vurus ? Mathf.FloorToInt(hit * n) : -1;
+                var ph = new float[6];
+                for (int i = 0; i < 6; i++) ph[i] = vurus || !Match.ADIM_BOY.ContainsKey(clip) ? (Mathf.RoundToInt(i * (n - 1) / 5f) + .5f) / n : i / 6f;
+                if (hitF >= 0) { int en = 0; for (int i = 1; i < 6; i++) if (Mathf.Abs(ph[i] * n - .5f - hitF) < Mathf.Abs(ph[en] * n - .5f - hitF)) en = i; ph[en] = (hitF + .5f) / n; }
+                yield return new WaitForEndOfFrame();
+                var cg = new GameObject("klip_kamera"); var c = cg.AddComponent<Camera>(); c.CopyFrom(root.cam); c.ResetProjectionMatrix(); c.fieldOfView = 42;
+                cg.transform.position = pos + new Vector3(1.5f, .8f, 3.2f); cg.transform.LookAt(hedef);
+                var rt = new RenderTexture(1920, 480, 24); c.targetTexture = rt; var sb = new StringBuilder("klip_poz " + mdl + " " + clip + " · n " + n + " temas karesi " + hitF + " · el yanı");
+                for (int i = 0; i < 6; i++)
+                {
+                    pv.ShowPoz(pos, 0, clip, ph[i]); c.rect = new Rect(i / 6f, 0, 1 / 6f, 1); c.Render();
+                    Vector3 l, r, e; float se; if (pv.TaniAyak(out l, out r, out e, out se)) sb.Append(" " + (e.x - pos.x).ToString("F2") + (Mathf.Abs(ph[i] * n - .5f - hitF) < .01f ? "*" : ""));
+                }
+                var prev = RenderTexture.active; RenderTexture.active = rt;
+                var tex = new Texture2D(1920, 480, TextureFormat.RGB24, false); tex.ReadPixels(new Rect(0, 0, 1920, 480), 0, 0); tex.Apply();
+                RenderTexture.active = prev; c.targetTexture = null;
+                File.WriteAllBytes(Path.Combine(dir, mdl + "_klip_" + clip + ".png"), tex.EncodeToPNG());
+                Destroy(tex); Destroy(cg); rt.Release(); Destroy(rt); rap.AppendLine(sb.ToString());
+            }
+            Destroy(g); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
         }
         // Şerit: bir vuruşun hazırlığından takibine ardışık kareler, figürü yandan izleyen ikinci kamerayla (oyun durmaz).
         // Hazırlık başlayınca (prepA > .3) 18 kare, her karede bir çekim; sonra bir araya getirmek turun dışında (Python).
