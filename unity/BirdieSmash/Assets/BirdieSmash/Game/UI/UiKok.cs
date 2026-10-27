@@ -264,7 +264,8 @@ namespace BirdieSmash.Game
             var av = new VisualElement(); av.AddToClassList("ust-avatar"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); av.Add(Ikon(Ikonlar.Kisi, 24, KOYU)); hap.Add(av);
             var sv = new VisualElement(); sv.AddToClassList("ust-sv"); sv.pickingMode = PickingMode.Ignore; hap.Add(sv);
             sv.Add(Yazi(L.T("Sv {0}", L_), 18, "rakam"));
-            var c = Cubuk(gerek > 0 ? kalan / (float)gerek : 1, TURUNCU, 5);   // 2026-10-27 yön C: ilerleme turuncu (limon yalnız sen: avatar halkası) c.AddToClassList("ust-xp"); sv.Add(c);
+            var c = Cubuk(gerek > 0 ? kalan / (float)gerek : 1, TURUNCU, 5);   // 2026-10-27 yön C: ilerleme turuncu (limon yalnız sen: avatar halkası)
+            c.AddToClassList("ust-xp"); sv.Add(c);   // tur 2: yorumun içinde kalmıştı, üst çubuğun XP şeridi hiç eklenmiyordu
             hap.AddManipulator(new Clickable(() => SekmeAc(Sekme.Profil)));
             Erisim.Etiket(hap, L.T("Seviye {0}", L_) + (gerek > 0 ? ", " + L.T("Sonraki seviyeye {0} XP", gerek - kalan) : "") + ", " + L.T("Profil"), "dugme");
             var tuy = new VisualElement(); tuy.AddToClassList("ust-hap"); tuy.AddToClassList("tuy-hap"); tuy.pickingMode = PickingMode.Ignore; ust.Add(tuy);

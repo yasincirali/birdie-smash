@@ -589,7 +589,10 @@ namespace BirdieSmash.Game
             aKosul = AStil(fKalin, 12 * k, TextAnchor.UpperLeft, true); aSatir = AStil(fYari, 16 * k, TextAnchor.MiddleLeft, false);
             aSayi = AStil(fSiyah, 26 * k, TextAnchor.MiddleRight, false); aLv = AStil(fEkstra, 16 * k, TextAnchor.MiddleCenter, false);
             aUnl = AStil(fKalin, 15 * k, TextAnchor.MiddleLeft, true); aCta = AStil(fSiyah, 40 * k, TextAnchor.UpperLeft, false);
-            aCtaAlt = AStil(fKalin, 15 * k, TextAnchor.UpperLeft, false);   // 2026-10-27 yön C: alt satır kalın 15 (SemiBold 14 %78 APCA sınırındaydı) aDug = AStil(fKalin, 16 * k, TextAnchor.MiddleCenter, true);
+            aCtaAlt = AStil(fKalin, 15 * k, TextAnchor.UpperLeft, false);   // 2026-10-27 yön C: alt satır kalın 15 (SemiBold 14 %78 APCA sınırındaydı)
+            // 2026-10-27 tur 2: aDug ataması yukarıdaki yorumun sonuna yapışmıştı (yorum içinde kaldı): aDug null, sonuç ekranının
+            // ikincil düğmeleri (Tekrar/Ana menü) OnGUI'de NullReference atıyordu, ekrandan çıkılamıyordu.
+            aDug = AStil(fKalin, 16 * k, TextAnchor.MiddleCenter, true);
             aIpucu = AStil(fYari, 13 * k, TextAnchor.UpperCenter, true); aIz = AStil(fKalin, 12 * k, TextAnchor.MiddleLeft, false);
             int r = Mathf.Max(4, Mathf.RoundToInt(16 * s)), ri = Mathf.Max(3, Mathf.RoundToInt(9 * s));
             aKutuS = AKutu(Ikonlar.Kutu(r, new Color(A_NAVY.r, A_NAVY.g, A_NAVY.b, .92f), new Color(1, 1, 1, .12f), Mathf.Max(1, s)), r + 2);
@@ -632,7 +635,8 @@ namespace BirdieSmash.Game
             if (R.bittiKazandi && !rm)
             {
                 var c = new Vector2(W / 2, y + 120 * s); float sz = 900 * s; var m = GUI.matrix; GUIUtility.RotateAroundPivot(Time.unscaledTime * 12f, c);
-                Tex(new Rect(c.x - sz / 2, c.y - sz / 2, sz, sz), Ikonlar.Isinlar, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .10f * Mathf.Clamp01(t / .4f)));   // yön C: güneş ışınları turuncu, %13 → %10 GUI.matrix = m;
+                Tex(new Rect(c.x - sz / 2, c.y - sz / 2, sz, sz), Ikonlar.Isinlar, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .10f * Mathf.Clamp01(t / .4f)));   // yön C: güneş ışınları turuncu, %13 → %10
+                GUI.matrix = m;   // tur 2: bu satır da yorumun içinde kalmıştı: ışınların dönüşü sonuç ekranının tamamını döndürüyordu
             }
             if (!string.IsNullOrEmpty(R.bittiUst)) { string us = UiKok.Buyuk(R.bittiUst); float uh = aUst.CalcHeight(new GUIContent(us), w); Yaz(new Rect(x, y, w, uh), us, aUst, A_SOLUK, al); y += uh + 4 * s; }
             // başlık: yaylanarak (1,25 → 1), hareketi azaltta yalnız solma
