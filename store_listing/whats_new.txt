@@ -1,33 +1,30 @@
 === UNITY ===
-Düzeltme sürümü: menüler, kamera, vuruş zamanlaması, oyuncu hareketi, denge ve ses.
+Yeni görünüm "Gün Batımı", yeni oyuncak karakterler, gerçekçi koşu ve file, yüksek topu takip eden kamera.
 
-Bu sürümde düzeltilen:
-- Menüler sahayla iç içe görünüyordu: menü tasarımı hiç yüklenmiyordu. Artık menüler kendi koyu zemininde, saha arkada görünmüyor; Oyna sekmesinde bulanık salon fonu var.
-- Kamera: görüntü artık eğik değil, düz bir yayın kamerası. Rakip ve karşı yarı daha büyük, file net görünüyor.
-- Vuruş anındaki ağır çekim artık top sana gerçekten yaklaştığında başlıyor ve vuruştan hemen sonra bitiyor. Rakibin çevirme vuruşu da fileyi geçiyor.
-- Oyuncu hareketi: koşarken ayaklar yerde kaymıyor, adımlar hıza göre. Oyuncu topa kolunu ve gövdesini uzatıyor; raket topa değiyor (önceden topla raket arası 1 metreyi bulabiliyordu). Sıçrayarak smaçta oyuncu birden yukarı zıplamıyor.
-- Forma ve şort renkleri seçtiğin renkte çıkıyor.
-- Kariyer zorluğu dengelendi, Usta modu kazanılabilir, Hızlı maç senin seviyende.
-- Daha dolu vuruş sesleri: sert vuruş daha yüksek ve tok, smaçta gümleme; uzun rallide seyirci "ooo" der, sayı sonrası alkış.
-- Telefonu kilitleyince ya da başka uygulamaya geçince maç duraklıyor.
-- iOS 15 ve üstü gerekiyor (Apple uyarısı).
-
-Önceki sürümden kalanlar: Yayın Gecesi görünümü, kariyer haritası, Soyunma odası karakter seçimi, aldatıcı vuruşlar (Sv 6+), üç kamera açısı.
+Bu sürümde yeni:
+- Gün Batımı: menüler sıcak mor zeminde, daha az göz yorar. Turuncu = seçili ve OYNA, limon = sen, orkide = rakip.
+- Açılış: ikondaki güneş canlanır, 3B top konup raketle fırlar. Dokununca atlanır.
+- Maça geçiş: OYNA'dan 3B top uçar, bir bant ekranı süpürür; süre aynı.
+- Oyuncak 3B karakterler tıknaz ve sevimli. Dört beden tipi ve saçlar artık belirgin farklı.
+- Ayarlar > Oyuncu görünümü'ne "Sade" eklendi. Gerçekçi ve Sade'de beden, saç, ayakkabı görünmez; Soyunma odası bunu söyler ve Oyuncak 3B'ye geçirir.
+- Koşu: geriye giderken oyuncu yan döner (çapraz adım), ayaklar kaymaz, ani yön değişiminde bacaklar ters koşmaz.
+- Vuruşlar: forehand ve backhand hazırlık sırasında yer değiştirmiyor; rakip alçak topları forehand'den karşılıyor.
+- Yüksek top: kamera hafifçe yukarı bakıp genişler, top ekrandan çıkmaz. Hareket azaltıldıysa kamera sabit kalır, üstte ok gösterilir.
+- File BWF ölçüsünde: ince ağ, beyaz bant. Bant sert, ağ topun vurduğu yerden dalgalanır.
+- Menüler küçük (SE) ve büyük telefonlarda, iPad'de düzgün; çentik altında kalan bir şey yok, sayfa düğmeleri alt kenara sabit.
 
 Nasıl denenir:
-1. Uygulamayı aç: ilerlemen yerinde olmalı. Ana menüde arkada saha ve oyuncular görünmemeli; yazılar, düğmeler ve alt sekmeler düzgün kutularda olmalı.
-2. Oyna, Kariyer, Soyunma odası, Profil sekmelerini tek tek aç: hiçbirinde menü sahayla üst üste binmemeli.
-3. Bir maç başlat. Görüntü düz olmalı, kort yamuk görünmemeli. Rakip rahat görünmeli.
-4. Ayarlar > Kamera'da Yayın, Alçak, Üstten'i dene: üçünde de maç açılmalı, rakip ve file net görünmeli.
-5. Birkaç ralli oyna: ağır çekim top sana yaklaşınca başlamalı, vurunca hemen normal hıza dönmeli. Erken ya da geç geliyorsa yaz.
-6. Oyuncunu izle: koşarken ayaklar kaymamalı, topa uzanırken kol ve gövde topa doğru gitmeli, raket topa değiyor gibi görünmeli.
-7. Sıçrayarak smaç at: oyuncu yumuşakça sıçramalı, havaya fırlamamalı.
-8. Soyunma odasında forma rengini değiştir, maça gir: oyuncunun forması o renkte olmalı.
-9. Kariyerde birkaç maç oyna: zor ama kazanılabilir olmalı. Hızlı maç çok kolay ya da çok zor gelirse yaz.
-10. Sesi açık oyna: sert vuruşlar daha tok, smaç gümlemeli; uzun rallide seyirci tepki vermeli.
-11. Maç sırasında telefonu kilitle, geri aç: maç duraklamış olmalı.
-12. Ayarlar > Yazı boyutu > Büyük: menüde yazılar taşmamalı, düğmeler üst üste binmemeli.
-13. Takılma, ısınma ya da garip görüntü olursa telefonu ve ekranı yaz.
+1. Uygulamayı soğuk aç: açılış koyu mor olmalı, güneş, top ve raket izi, sonra menü. Bir saniyeden uzun sürmemeli; dokununca geçmeli.
+2. Menülerde gez: sekme çizgisi yeni sekmeye kaymalı, yazılar rahat okunmalı, çentiğin altında yazı olmamalı.
+3. Hızlı maç ve maç kartını aç: OYNA düğmesi kaydırmadan görünmeli.
+4. OYNA'ya bas: top uçmalı, bant ekranı süpürüp maçı açmalı.
+5. Soyunma odası > Karakter: dört tipi ve saçları dene; figür belirgin değişmeli. Maça gir: aynı görünmeli.
+6. Ayarlar > Oyuncu görünümü > Sade ve Gerçekçi: maç açılmalı; Soyunma odası uyarı göstermeli.
+7. Rakip clear atınca arkaya koş: oyuncu yan dönerek gitmeli, ayaklar kaymamalı.
+8. Fileye vur: ağ dalgalanmalı, bant neredeyse kıpırdamamalı.
+9. Yüksek clear at ya da karşıla: top ekranın üstünden çıkmamalı, kamera sarsmamalı.
+10. Küçük telefonun varsa (SE) menüleri ve maç sonunu kontrol et.
+11. Takılma, ısınma ya da garip görüntü olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:
