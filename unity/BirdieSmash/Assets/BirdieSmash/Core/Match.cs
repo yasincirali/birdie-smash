@@ -984,7 +984,9 @@ namespace BirdieSmash.Core
         {
             bool donuk = freeze > 0;
             Adim(dt);
-            if (!donuk) foreach (var q in new[] { me, op }) { AyakIsi(q, dt, q == me); q.splitT = Math.Max(0, q.splitT - dt); if (q.splitT <= 0) q.splitCik = 0; }
+            // 2026-10-27 performans turu 2: foreach (new[] { me, op }) her karede iki dizi ayırıyordu (karede 96 B, 120 Hz'de ~11 KB/sn;
+            // mono ölçümü scratchpad AyirmaOlc). Sıra aynı (önce ben, sonra rakip): davranış birebir.
+            if (!donuk) for (int i = 0; i < 2; i++) { var q = i == 0 ? me : op; AyakIsi(q, dt, q == me); q.splitT = Math.Max(0, q.splitT - dt); if (q.splitT <= 0) q.splitCik = 0; }
         }
         void Adim(float dt)
         {
@@ -1014,7 +1016,7 @@ namespace BirdieSmash.Core
             clock += d; me.dive = Math.Max(0, me.dive - d * 1.5f); me.jump = Math.Max(0, me.jump - d * JUMP_HIZ); op.jump = Math.Max(0, op.jump - d * JUMP_HIZ);
             IdleIlerle(me, d); IdleIlerle(op, d);
             me.sw = Math.Max(0, me.sw - d * me.swHiz); op.sw = Math.Max(0, op.sw - d * op.swHiz); me.hop = Math.Max(0, me.hop - d * 5); op.dive = Math.Max(0, op.dive - d * 1.5f);
-            foreach (var o in new[] { me, op }) if (o.svAnim != null) { o.svAnim.t += d; if (o.svAnim.t >= o.svAnim.d) { o.svAnim = null; var f = svPending; svPending = null; if (f != null) f(); } }
+            for (int oi = 0; oi < 2; oi++) { var o = oi == 0 ? me : op; if (o.svAnim != null) { o.svAnim.t += d; if (o.svAnim.t >= o.svAnim.d) { o.svAnim = null; var f = svPending; svPending = null; if (f != null) f(); } } }   // ayırmasız (yukarıdaki not)
             if (wait > 0) { wait -= d; if (wait <= 0 && server == "op" && s == null && !between && svPending == null) { wait = 0; OpServe(); } }
             RunMe(d); Prep(me, "me", dt); Prep(op, "op", dt);
             if (s == null) return;
