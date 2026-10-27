@@ -149,6 +149,7 @@ static class BotMac
         KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
+        FileStandart();   // 2026-10-27 ekran/file (ayrı satır: liste başka dallarda da büyüyor)
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }
@@ -1233,5 +1234,99 @@ static class BotMac
         }
         kapat(); hizlar.Sort(); r[8] = hizlar.Count > 0 ? hizlar[(int)(hizlar.Count * .99f)] : 0; return r;
     }
+    // ---- ekran/file (2026-10-27, yasin "file de standartlarda olmalı bant kısmı daha sert ama file hareketli olacak") ----
+    // BWF Law 1 ölçüleri (en 6,1, derinlik 0,76, bant 75 mm, göz 15–20 mm, orta 1,524, direk 1,55, sarkma pürüzsüz, uçlar
+    // direkte); standart ağ teması (50 m/s smaç, 1,0 m): ağ görünür şişer, dalga 1,1 m öteye varır, bant ağın ≤ %3'ü kadar
+    // oynar ve ağ bandın altında bandla birlikte (yırtılma yok), durulma ve uyku süresi, uyuyan dizi sıfır; bant teması:
+    // bant küçük, hızlı (en az iki işaret değişimi) ve çabuk söner; hıza göre büyüklük; kural bölgeleri bant yüksekliğiyle
+    // tutarlı (ortada ve direğe yakın); Hareketi azalt yalnız genliği ×0,35 yapar; belirlenimci; Advance ayırma yapmaz.
+    class FileIz { public float agTepe, bantTepe, yirtik, uzakTepe, uzakT = -1, merkezT = -1, merkezTepe, durul = -1, bantDurul = -1, uyku = -1, iz; public int isaret; public Shuttle s; public Match M; public float[] a1; }
+    static FileIz FileVur(float x, float z, float hiz, bool sakin, float uzakDx = 1.1f)
+    {
+        var M = new Match(1, new MatchOptions { easy = false, target = 21, reduce = sakin });
+        var s = new Shuttle { x = x, y = Court.NET + .3f, z = z, vy = -hiz, from = "me", type = "smash", kd = Shuttle.KD };
+        s.landPred = Shuttle.Simulate(s.x, s.y, s.z, s.vx, s.vy, s.vz, true, s.kd); s.netPred = null; M.s = s;
+        var r = new FileIz { s = s, M = M }; float t = 0, tHit = -1, onceki = 0; const float h = 1 / 240f;
+        for (int f = 0; f < 240 * 6; f++)
+        {
+            if (M.s != null && !M.s.dead) M.Update(h); else M.net.Advance(h);
+            t += h; if (tHit < 0 && M.net.active) tHit = t; if (tHit < 0) continue;
+            float ag = 0, bant = 0;
+            for (int i = 0; i <= 64; i++)
+            {
+                float xx = i / 64f * Court.CW, top = Court.NetLimit(xx), alt = top - Court.BANT, b = M.net.BantAt(xx); bant = Math.Max(bant, Math.Abs(b));
+                r.yirtik = Math.Max(r.yirtik, Math.Abs(M.net.Gorunen(xx, alt) - b));
+                float sut = 0; for (int j = 0; j < 12; j++) sut = Math.Max(sut, Math.Abs(M.net.Gorunen(xx, alt - (Court.AG_DERIN - Court.BANT) * (j + .5f) / 12))); ag = Math.Max(ag, sut);
+            }
+            Func<float, float> sutun = xx => { float m = 0, alt = Court.NetLimit(xx) - Court.BANT; for (int j = 0; j < 12; j++) m = Math.Max(m, Math.Abs(M.net.Gorunen(xx, alt - (Court.AG_DERIN - Court.BANT) * (j + .5f) / 12))); return m; };
+            float mz = sutun(x), uz = sutun(x + uzakDx);
+            if (mz > r.merkezTepe) { r.merkezTepe = mz; r.merkezT = t - tHit; }
+            if (uz > r.uzakTepe) { r.uzakTepe = uz; r.uzakT = t - tHit; }
+            float bc = M.net.BantAt(x); if (Math.Abs(bc) > 2e-4f) { if (onceki != 0 && Math.Sign(bc) != Math.Sign(onceki) && t - tHit < .35f) r.isaret++; onceki = bc; }
+            r.agTepe = Math.Max(r.agTepe, ag); r.bantTepe = Math.Max(r.bantTepe, bant);
+            if (ag > .001f) r.durul = -1; else if (r.durul < 0) r.durul = t - tHit;
+            if (bant > .0005f) r.bantDurul = -1; else if (r.bantDurul < 0) r.bantDurul = t - tHit;
+            if (M.net.active || M.net.glow > 0) r.uyku = -1; else if (r.uyku < 0) r.uyku = t - tHit;
+            if (Math.Abs(t - tHit - .3f) < h / 2) r.a1 = (float[])M.net.a.Clone();
+        }
+        foreach (var v in M.net.a) r.iz += Math.Abs(v); foreach (var v in M.net.ta) r.iz += Math.Abs(v);
+        return r;
+    }
+    static void FileStandart()
+    {
+        // ölçüler (BWF Law 1.2–1.5)
+        if (Court.CW != 6.1f || Court.NETH != 1.524f || Court.NETP != 1.55f || Court.BANT != .075f || Court.AG_DERIN != .76f) Fail("file ölçüleri BWF değil");
+        if (Court.AG_GOZ < .015f || Court.AG_GOZ > .020f) Fail("ağ gözü 15–20 mm değil: " + Court.AG_GOZ);
+        float orta = Court.NetLimit(Court.MID), d0 = Court.NetLimit(0), d1 = Court.NetLimit(Court.CW), kirik = Math.Abs(Court.NetLimit(Court.MID + .1f) - orta);
+        if (Math.Abs(orta - 1.524f) > 1e-4f || Math.Abs(d0 - 1.55f) > 1e-4f || Math.Abs(d1 - 1.55f) > 1e-4f) Fail("file yüksekliği: orta " + orta + " direk " + d0 + "/" + d1);
+        if (kirik > 1e-4f) Fail("file ortada kırık (sarkma V): 10 cm'de " + kirik * 1000 + " mm");
+        for (float x = Court.MID; x < Court.CW; x += .05f) if (Court.NetLimit(x + .05f) < Court.NetLimit(x) - 1e-6f) Fail("file sarkması tek yönlü değil @" + x);
+        if (NetWave.Kolon(0) != 0 || NetWave.Kolon(Court.CW) != NetWave.N - 1) Fail("file uçları direkte değil");
+        Console.WriteLine("file ölçü: en " + Court.CW + " m, orta " + orta.ToString("0.000") + " direk " + d0.ToString("0.000") + " sarkma " + ((d0 - orta) * 1000).ToString("0") + " mm (çeyrekte " + Court.NetLimit(Court.MID / 2).ToString("0.0000") + "), derinlik " + Court.AG_DERIN + ", bant " + Court.BANT * 1000 + " mm, göz " + Court.AG_GOZ * 1000 + " mm");
+        // standart ağ teması
+        var S = FileVur(Court.MID, 1.0f, 50, false);
+        Console.WriteLine("file standart (smaç 50 m/s ağa): ağ " + (S.agTepe * 100).ToString("0.0") + " cm, bant " + (S.bantTepe * 1000).ToString("0.0") + " mm, oran " + (S.bantTepe / S.agTepe).ToString("0.000") + ", ağ-bant yırtık " + (S.yirtik * 1000).ToString("0.0") + " mm, 1,1 m öte " + (S.uzakTepe * 100).ToString("0.0") + " cm @" + S.uzakT.ToString("0.00") + " s (merkez @" + S.merkezT.ToString("0.00") + "), durulma " + S.durul.ToString("0.00") + " s, uyku " + S.uyku.ToString("0.00") + " s");
+        if (!S.s.netHit || S.s.netCord || S.s.altindan) Fail("standart smaç ağa değmedi");
+        if (S.agTepe < .15f || S.agTepe > .35f) Fail("ağ şişkinliği " + S.agTepe);
+        if (S.bantTepe < .001f || S.bantTepe > .03f * S.agTepe) Fail("bant/ağ oranı: bant " + S.bantTepe + " ağ " + S.agTepe);
+        if (S.yirtik > .001f) Fail("ağ bandın altından ayrılıyor: " + S.yirtik);
+        if (S.uzakTepe < .15f * S.merkezTepe || S.uzakT < S.merkezT + .2f) Fail("dalga yayılmıyor: " + S.uzakTepe + " @" + S.uzakT);
+        if (S.durul < 0 || S.durul > 3f) Fail("ağ durulmuyor: " + S.durul);
+        if (S.uyku < 0 || S.uyku > 4f) Fail("file uyumuyor: " + S.uyku);
+        if (S.M.net.active || S.iz != 0 || S.M.net.lo <= S.M.net.hi) Fail("uyuyan file düz değil: " + S.iz);
+        // bant teması (lim − 4 cm, 20 m/s)
+        var B = FileVur(Court.MID, Court.NetLimit(Court.MID) - .04f, 20, false);
+        Console.WriteLine("file bant (20 m/s, bandın 4 cm altı): bant " + (B.bantTepe * 1000).ToString("0.0") + " mm, ağ " + (B.agTepe * 100).ToString("0.0") + " cm, ilk 0,35 sn işaret değişimi " + B.isaret + ", bant durulma " + B.bantDurul.ToString("0.00") + " s, uyku " + B.uyku.ToString("0.00") + " s");
+        if (!B.s.netHit || B.s.agda || B.s.netCord || B.s.y < Court.NET) Fail("bant teması bant sekmesi değil");
+        if (B.bantTepe < .003f || B.bantTepe > .012f) Fail("bant genliği " + B.bantTepe);
+        if (B.isaret < 2) Fail("bant hızlı titremiyor: " + B.isaret);
+        if (B.bantDurul < 0 || B.bantDurul > .4f) Fail("bant çabuk sönmüyor: " + B.bantDurul);
+        if (B.agTepe > .03f) Fail("bant teması ağı çok oynatıyor: " + B.agTepe);
+        // hıza göre
+        var D = FileVur(Court.MID, 1.0f, 6, false);
+        if (!(D.agTepe > .02f && D.agTepe < .6f * S.agTepe)) Fail("ağ şişkinliği hıza göre değil: drop " + D.agTepe + " smaç " + S.agTepe);
+        // kural bölgeleri bant yüksekliğiyle tutarlı (ortada ve direğe yakın)
+        foreach (float x in new[] { .5f, Court.MID, Court.CW - .5f })
+        {
+            float lim = Court.NetLimit(x);
+            var k1 = FileVur(x, lim + .02f, 20, false).s; if (k1.netHit || k1.netCord) Fail("bandın 2 cm üstü değdi @" + x);
+            var k2 = FileVur(x, lim - .014f, 30, false).s; if (!k2.netCord) Fail("kordon bölgesi (bandın üst 3 cm'i) yuvarlanmadı @" + x);
+            var k3 = FileVur(x, lim - .05f, 20, false).s; if (!k3.netHit || k3.netCord || k3.agda) Fail("bant bölgesi (75 mm) sekmedi @" + x);
+            var k4 = FileVur(x, lim - .2f, 20, false).s; if (!k4.netHit || k4.altindan) Fail("ağ bölgesi ağa değmedi @" + x);
+            var k5 = FileVur(x, lim - Court.AG_DERIN - .1f, 20, false).s; if (!k5.altindan) Fail("ağ altı altından geçmedi @" + x);
+        }
+        // Hareketi azalt: genlik ×AZALT, dinamik aynı
+        var R = FileVur(Court.MID, 1.0f, 50, true);
+        float oran = R.agTepe / S.agTepe; bool ayni = R.a1 != null && S.a1 != null && R.uyku == S.uyku; if (ayni) for (int i = 0; i < NetWave.N; i++) if (R.a1[i] != S.a1[i]) ayni = false;
+        Console.WriteLine("file Hareketi azalt: ağ " + (R.agTepe * 100).ToString("0.0") + " cm (oran " + oran.ToString("0.000") + "), bant " + (R.bantTepe * 1000).ToString("0.0") + " mm, dinamik aynı " + ayni);
+        if (Math.Abs(oran - NetWave.AZALT) > .02f) Fail("Hareketi azalt genlik oranı " + oran);
+        if (!ayni) Fail("Hareketi azalt file dinamiğini değiştiriyor");
+        // belirlenimci, ayırma yok
+        var S2 = FileVur(Court.MID, 1.0f, 50, false); if (S2.iz != S.iz || S2.agTepe != S.agTepe || S2.uyku != S.uyku) Fail("file belirlenimci değil");
+        var w = new NetWave(); w.Impulse(Court.MID, 1.0f, 50, false, -1); w.Advance(1 / 60f);
+        long a0 = GC.GetAllocatedBytesForCurrentThread(); for (int f = 0; f < 120; f++) w.Advance(1 / 60f); long al = GC.GetAllocatedBytesForCurrentThread() - a0;
+        if (al != 0) Fail("NetWave.Advance ayırma yapıyor: " + al + " B");
+    }
+    // ---- ekran/file sonu ----
     static float Hyp(float x, float y) { return (float)Math.Sqrt(x * x + y * y); }
 }
