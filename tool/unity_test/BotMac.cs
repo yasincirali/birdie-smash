@@ -715,6 +715,37 @@ static class BotMac
         var ac4 = Karakter.AcilanlarTurlu(4); if (!ac4.Any(a => a[0] == "Tip" && a[1] == "Uzun ve ince") || !ac4.Any(a => a[0] == "Ayakkabı" && a[1] == "Hafif hız")) Fail("Sv 4 açılışı tip ve ayakkabı içermeli");
         if (Karakter.AcilanlarTurlu(16).Any(a => a[0] == "Ayakkabı")) Fail("ayakkabı RENGİ 'Ayakkabı rengi' etiketiyle olmalı");
         Console.WriteLine("karakter: " + T.Length + " tip (" + bedava + " ücretsiz), " + S.Length + " saç biçimi (garip ≥ " + garipMin + " Tüy), 5 ayakkabı nötr toplamlı, kozmetik güç vermez, kapı/taşıma/rakip tamam");
+        KarakterVarliklari(T, S);
+    }
+    // 2026-10-27 (yasin build 41: "3B model kaybolmuş, seçmeme rağmen görmedim"): Soyunma odasının sattığı her görünüm öğesinin
+    // gerçekten bir parçası olmalı (sahte öğe yok). Her beden tipinin FBX'i ve _clips.json'u Resources/karakter'de; dört oyuncak
+    // FBX'inin her birinde her saç biçimi (sac_<varlik>__sac) ve ayakkabı modeli (ayk_<varlik>__ayakkabi) hem _clips.json
+    // parts listesinde hem FBX'in düğüm adlarında (ikili dosyada ad dizgisi) var; tipin varsayılan saç/ayakkabısı geçerli;
+    // Ayarlar'ın üç modeli (oyuncak, rocketbox, sade) FBX'iyle var. Ekran turu (EkranTuru.Varyantlar) aynı şeyi Unity'de
+    // açılan parça ve aktif renderer sayısıyla ölçer; bu kapı Unity'siz, her derlemede.
+    static void KarakterVarliklari(KozmetikOge[] T, KozmetikOge[] S)
+    {
+        string R = "unity/BirdieSmash/Assets/Resources/karakter/"; if (!System.IO.Directory.Exists(R)) { Fail("Resources/karakter bulunamadı (depo kökünden koş)"); return; }
+        int parca = 0;
+        foreach (var m in new[] { "oyuncak", "rocketbox", "sade" }) if (!System.IO.File.Exists(R + m + ".fbx") || !System.IO.File.Exists(R + m + "_clips.json")) Fail("Ayarlar modeli eksik: " + m);
+        foreach (var t in T)
+        {
+            string ad = "oyuncak" + (t.varlik != null ? "_" + t.varlik : "");
+            if (!System.IO.File.Exists(R + ad + ".fbx") || !System.IO.File.Exists(R + ad + "_clips.json")) { Fail("beden tipinin FBX'i yok: " + t.id + " → " + ad); continue; }
+            var js = Json.Obj(Json.Parse(System.IO.File.ReadAllText(R + ad + "_clips.json")));
+            var parts = new HashSet<string>(((List<object>)js["parts"]).Select(x => (string)x));
+            string fbx = System.Text.Encoding.ASCII.GetString(System.IO.File.ReadAllBytes(R + ad + ".fbx"));
+            var tip = js.ContainsKey("tip") ? Json.Obj(js["tip"]) : null;
+            if (tip == null || Json.Str(tip, "id", null) != t.id) Fail(ad + "_clips.json tip kimliği " + (tip != null ? Json.Str(tip, "id", "?") : "yok") + " ≠ " + t.id);
+            else
+            {
+                if (Kozmetik.Bul(Kozmetik.SAC, Json.Str(tip, "sac", null)) == null) Fail(ad + ": tipin varsayılan saçı bilinmiyor " + Json.Str(tip, "sac", null));
+                if (!Gear.GEAR["ayakkabi"].Values.Any(a => (a.varlik ?? a.id) == Json.Str(tip, "ayakkabi", null))) Fail(ad + ": tipin varsayılan ayakkabısı bilinmiyor " + Json.Str(tip, "ayakkabi", null));
+            }
+            var gerek = S.Where(o => o.varlik != null).Select(o => "sac_" + o.varlik + "__sac").Concat(Gear.GEAR["ayakkabi"].Values.Select(a => "ayk_" + (a.varlik ?? a.id) + "__ayakkabi"));
+            foreach (var g in gerek) { parca++; if (!parts.Contains(g)) Fail(ad + "_clips.json'da parça yok: " + g); if (fbx.IndexOf(g, StringComparison.Ordinal) < 0) Fail(ad + ".fbx'te düğüm yok: " + g); }
+        }
+        Console.WriteLine("karakter varlıkları: " + T.Length + " tip FBX'i, " + parca + " saç/ayakkabı parçası (json + FBX), Ayarlar'da 3 model dosyasıyla");
     }
 
     // 2026-10-26 aldatıcı vuruşlar (Core/Aldatma): her vuruş seviyesinin altında, ekipmansız ve kötü konumda reddedilir, üçü

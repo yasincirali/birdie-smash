@@ -13,6 +13,7 @@
 // örnek ilerlemeyle Profil (ad, unvan, maç/smaç); ×1 ve ×2 yazı.
 // 2026-10-26 karakter tasarımı: Karakter › Tip/Saç/Ayakkabı/Ten, yakın planlar (yüz, ayak, tutuş forehand/backhand) ve
 // deneme kartları (normal ve x2_ büyük yazı; deneme kayda yazılmaz, segmentten çıkınca silinir).
+// 2026-10-27 model/varyant turu (Varyantlar): her tip/saç/ayakkabı vitrinde ve her tip maçta, "varyant" rapor satırları.
 // Süre: gerçek zaman (GameRoot dt'yi 0,05 ile sınırlar; yavaş yazılım render'ında maç da yavaşlar, kareler yine anlamlı).
 using System.Collections;
 using System.Collections.Generic;
@@ -60,6 +61,7 @@ namespace BirdieSmash.Game
                 yield return Bekle(40); yield return Cek(mdl + "_01_menu");
                 yield return Mac(mdl);
             }
+            yield return Varyantlar();   // 2026-10-27 model/varyant turu (ekran/model)
             foreach (var s in new[] { "turnuva", "okul", "park" })
             {
                 Ayar.model = "oyuncak"; Ayar.saha = s; root.SahaDegisti(); root.StartMatch(false, false, false); botAcik = true;
@@ -292,6 +294,93 @@ namespace BirdieSmash.Game
             root.AnaMenu(); yield return Bekle(30); yield return Cek("menu_bekleyen_oyna"); rap.AppendLine("menu_bekleyen_oyna · " + ui.SahneDurumu + " · bekleyen " + root.bekleyen);
             root.MacaDon(); yield return Bekle(30); yield return Cek("bekleyen_devam"); rap.AppendLine("bekleyen_devam · " + ui.SahneDurumu);
             root.AnaMenu(); yield return Bekle(10);
+        }
+        // 2026-10-27 model/varyant turu (yasin build 41: "3B model kaybolmuş, seçmeme rağmen görmedim"). r42'de tip ve saç
+        // denemesi vitrinde uygulanıyordu ama göze farkı küçüktü (Güçlü omuz +%11, Afro saç sınırı kısa kesimden yalnız birkaç
+        // cm geniş, tepesi Yüz kadrajından taşıyordu) ve Gerçekçi/Sade'de hiç parça yok. Burada her beden tipi, saç biçimi ve
+        // ayakkabı modeli vitrinde (oyuncunun dokunuşuyla aynı yol: deneme) ve her tip maçta (seçim olarak, bir saç ve ayakkabıyla)
+        // çekilir; her kare için rapora "varyant" satırı: PlayerView.VaryantOzet (yüklenen FBX, açık saç/ayakkabı parçası, aktif
+        // renderer, baş yüksekliği, omuz, saç/ayakkabı sınırı), serinin ilkine göre fark ve beklenen parça açılmadıysa
+        // "PARÇA YOK" / renderer yoksa "GÖRÜNMEZ". Sonra Gerçekçi seçiliyken Karakter sayfası (uyarı kartı) ve Ayarlar, Sade
+        // maçı, modeller arası gidiş-dönüşten sonra maçta figür. Oyuncunun seçimi sonunda geri konur, kayda yazılmaz.
+        static readonly string[,] VARYANT_MAC = { { "atlet", "afro", "karbon" }, { "kadin", "topuz", "hafif" }, { "uzun", "mohikan", "bilekli" }, { "guclu", "rasta", "yastikli" } };
+        IEnumerator Varyantlar()
+        {
+            var ui = root.ui; if (ui == null || Ayar.gear == null) yield break;
+            string m0 = Ayar.model, t0 = Ayar.KOZ[Kozmetik.TIP], s0 = Ayar.KOZ[Kozmetik.SAC], a0 = Ayar.gear.ayakkabi;
+            rap.AppendLine("=== varyantlar (vitrin: deneme yolu, maç: seçim) · ekran " + Screen.width + "x" + Screen.height);
+            Ayar.model = "oyuncak"; Ayar.KOZ[Kozmetik.TIP] = "atlet"; Ayar.KOZ[Kozmetik.SAC] = "kisa"; Ayar.gear.ayakkabi = "klasik"; root.GorunumDegisti(); root.ModelDegisti();
+            root.AnaMenu(); yield return Bekle(10); ui.SekmeAc(Sekme.Soyunma); yield return Bekle(20);
+            VaryantTaban t = null;
+            ui.KarakterAc(UiKok.KAR_TIP); yield return Bekle(20);
+            foreach (var o in Kozmetik.Liste(Kozmetik.TIP))
+            {
+                ui.KarakterDene(Kozmetik.TIP, o.id); yield return Bekle(25); yield return Cek("model_vitrin_tip_" + o.id);
+                VaryantSatir("vitrin tip=" + o.id, root.vitrin.Fig, PlayerView.ModelYolu("oyuncak", o.id), null, null, ref t);
+            }
+            t = null; ui.KarakterAc(UiKok.KAR_SAC); yield return Bekle(30);
+            foreach (var o in Kozmetik.Liste(Kozmetik.SAC))
+            {
+                ui.KarakterDene(Kozmetik.SAC, o.id); yield return Bekle(20); yield return Cek("model_vitrin_sac_" + o.id);
+                VaryantSatir("vitrin sac=" + o.id, root.vitrin.Fig, null, o.varlik ?? "yok", null, ref t);
+            }
+            t = null; ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(30);
+            foreach (var a in Gear.GEAR["ayakkabi"].Values)
+            {
+                ui.KarakterDene("ayakkabi", a.id); yield return Bekle(25); yield return Cek("model_vitrin_ayk_" + a.id);
+                VaryantSatir("vitrin ayk=" + a.id, root.vitrin.Fig, null, null, a.varlik ?? a.id, ref t);
+            }
+            ui.SoyunmaSegment(0); yield return Bekle(5);
+            // maçta: seçim olarak (Ayar.KOZ + ayakkabı modeli), GameRoot.Kur yolu; yakın plan önden ve arkadan
+            t = null;
+            for (int i = 0; i < VARYANT_MAC.GetLength(0); i++)
+            {
+                string tip = VARYANT_MAC[i, 0], sac = VARYANT_MAC[i, 1], ayk = VARYANT_MAC[i, 2];
+                Ayar.KOZ[Kozmetik.TIP] = tip; Ayar.KOZ[Kozmetik.SAC] = sac; Ayar.gear.ayakkabi = ayk;
+                root.StartMatch(false, false, false); botAcik = false; yield return Bekle(45);
+                yield return Yakin("model_mac_" + tip, root.match.me, true);
+                var ka = Gear.GEAR["ayakkabi"][ayk];
+                VaryantSatir("maç tip=" + tip + " sac=" + sac + " ayk=" + ayk, Ben(), PlayerView.ModelYolu("oyuncak", tip), Kozmetik.Bul(Kozmetik.SAC, sac).varlik, ka.varlik ?? ka.id, ref t);
+            }
+            // başka model seçiliyken: Karakter sayfası uyarı kartı (deneme figürü değiştirmez) ve Ayarlar'daki üç model
+            Ayar.KOZ[Kozmetik.TIP] = "atlet"; Ayar.KOZ[Kozmetik.SAC] = "kisa"; Ayar.gear.ayakkabi = "klasik";
+            Ayar.model = "rocketbox"; root.GorunumDegisti(); root.ModelDegisti(); root.AnaMenu(); yield return Bekle(10);
+            ui.SekmeAc(Sekme.Soyunma); yield return Bekle(20); ui.KarakterAc(UiKok.KAR_TIP); yield return Bekle(10); ui.KarakterDene(Kozmetik.TIP, "guclu"); yield return Bekle(30); yield return Cek("model_gercekci_karakter_uyari");
+            t = null; VaryantSatir("vitrin gerçekçi tip=guclu (parça beklenmez)", root.vitrin.Fig, "rocketbox", null, null, ref t);
+            ui.SoyunmaSegment(0); ui.AyarlarAc(); yield return Bekle(20); yield return Cek("model_ayarlar_gercekci"); ui.Geri(); yield return Bekle(5);
+            // Sade maçta ve modeller arası gidiş-dönüş (rocketbox → sade → oyuncak): figür her seferinde çiziliyor mu
+            foreach (var mdl in new[] { "sade", "oyuncak" })
+            {
+                if (!Ayar.ModelVar(mdl)) continue;
+                Ayar.model = mdl; root.ModelDegisti(); root.StartMatch(false, false, false); botAcik = false; yield return Bekle(45);
+                yield return Cek("model_gecis_" + mdl); t = null; VaryantSatir("maç geçiş model=" + mdl, Ben(), mdl, null, null, ref t);
+                root.AnaMenu(); yield return Bekle(20); ui.SekmeAc(Sekme.Soyunma); yield return Bekle(20); yield return Cek("model_gecis_" + mdl + "_vitrin");
+                t = null; VaryantSatir("vitrin geçiş model=" + mdl, root.vitrin.Fig, mdl, null, null, ref t);
+            }
+            Ayar.KOZ[Kozmetik.TIP] = t0; Ayar.KOZ[Kozmetik.SAC] = s0; Ayar.gear.ayakkabi = a0; Ayar.model = m0;
+            root.GorunumDegisti(); root.ModelDegisti(); root.AnaMenu(); ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
+            File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
+        }
+        class VaryantTaban { public float bas, omuz; public Vector3 sac; }
+        // Sahnedeki benim figürüm (GameRoot'un doğrudan çocuğu; vitrin ve afiş figürleri kendi düğümlerinin altında).
+        PlayerView Ben() { foreach (Transform c in root.transform) { var pv = c.GetComponent<PlayerView>(); if (pv != null && pv.isMe && !pv.hakem) return pv; } return null; }
+        void VaryantSatir(string ad, PlayerView pv, string prefab, string sac, string ayk, ref VaryantTaban t)
+        {
+            if (pv == null) { rap.AppendLine("varyant " + ad + " · FİGÜR YOK"); return; }
+            float b, o; Vector3 sb; int n; string oz = pv.VaryantOzet(out b, out o, out sb, out n);
+            var ci = System.Globalization.CultureInfo.InvariantCulture; var sorun = new StringBuilder();
+            if (n == 0 || !pv.gameObject.activeInHierarchy) sorun.Append(" GÖRÜNMEZ");
+            if (prefab != null && pv.PrefabAdi != prefab) sorun.Append(" PARÇA YOK prefab " + pv.PrefabAdi + "≠" + prefab);
+            if (sac != null && (pv.AcikSac ?? "yok") != sac) sorun.Append(" PARÇA YOK saç " + (pv.AcikSac ?? "yok") + "≠" + sac);
+            if (ayk != null && (pv.AcikAyk ?? "yok") != ayk) sorun.Append(" PARÇA YOK ayk " + (pv.AcikAyk ?? "yok") + "≠" + ayk);
+            string fark = "";
+            if (t == null) t = new VaryantTaban { bas = b, omuz = o, sac = sb };
+            else
+            {
+                System.Func<float, float, string> Y = (x, x0) => x > 0 && x0 > 0 ? ((x / x0 - 1) * 100).ToString("+0.0;-0.0;0.0", ci) + "%" : "-";
+                fark = " · fark (serinin ilkine göre) baş " + Y(b, t.bas) + " omuz " + Y(o, t.omuz) + " saç gen " + Y(Mathf.Max(sb.x, sb.z), Mathf.Max(t.sac.x, t.sac.z)) + " saç boy " + Y(sb.y, t.sac.y);
+            }
+            rap.AppendLine("varyant " + ad + " · " + oz + fark + (sorun.Length > 0 ? " ·" + sorun : " · tamam"));
         }
         IEnumerator Bekle(int kare) { for (int i = 0; i < kare; i++) yield return null; }
         IEnumerator Boyut(int w, int h)

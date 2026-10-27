@@ -1,6 +1,6 @@
-// Oyuncu: Blender figürünün FBX'i (tool/karakter/unity_fbx.py → Resources/karakter/<model>.fbx). İki model, HTML'deki
-// Ayarlar › Oyuncu görünümü ile aynı: "oyuncak" (Oyuncak 3B, KayKit Rogue CC0, varsayılan) ve "rocketbox" (Gerçekçi,
-// Microsoft Rocketbox Sports_Male_04, MIT). İkisi de iskeletli; 26 klip Legacy Animation olarak normalize zamanla
+// Oyuncu: Blender figürünün FBX'i (tool/karakter/unity_fbx.py → Resources/karakter/<model>.fbx). Ayarlar › Oyuncu görünümü:
+// "oyuncak" (Oyuncak 3B, varsayılan; 2026-10-26'dan beri MakeHuman CC0 tabanlı stilize figür, eskiden KayKit Rogue CC0),
+// "rocketbox" (Gerçekçi, Microsoft Rocketbox Sports_Male_04, MIT) ve 2026-10-27'den beri "sade" (Sade, Mesh2Motion CC0). İkisi de iskeletli; 26 klip Legacy Animation olarak normalize zamanla
 // örneklenir: klip ve faz Match.PickClip'ten gelir (HTML player() ile aynı karar), vuruş anı topla kare kare eşleşir.
 // Faz → klip zamanı: sprite kare k'yı (k+.5)/n fazında gösterir; FBX'te pozlar eşit aralıklı olduğu için aynı faz aynı
 // pozu verir (döngülü kliplerde kapanış pozu ek). Klip değişiminde 0,08 s harmanlama; vuruş klibinden boşta/ayak
@@ -88,7 +88,7 @@ namespace BirdieSmash.Game
             }
             if (prefab != null)
             {
-                modelAdi = DokuAdi(prefab.name, modelAd); model = Instantiate(prefab, yaw).transform; model.localPosition = Vector3.zero; model.localScale = Vector3.one * SCALE;
+                PrefabAdi = prefab.name; modelAdi = DokuAdi(prefab.name, modelAd); model = Instantiate(prefab, yaw).transform; model.localPosition = Vector3.zero; model.localScale = Vector3.one * SCALE;
                 anim = model.GetComponentInChildren<Animation>();
                 Varyant(gor); Paint(gor);
                 if (anim != null && anim["idle"] != null) Sample("idle", 0, null, 0, 1);
@@ -340,8 +340,13 @@ namespace BirdieSmash.Game
         // Saç ve ayakkabı parçaları: sac_<varlik>__sac, ayk_<varlik>__ayakkabi. Tam olarak biri açık, diğerleri SetActive(false)
         // (çizim çağrısı sıfır, deri hesabı da yok). Seçilen parça bu FBX'te yoksa varsayılanın (listenin ilki) parçası, o da
         // yoksa ilk bulunan: figür hiçbir zaman saçsız/ayakkabısız kalmaz. Kazıtılmış (varlik null) bilerek hiçbirini açmaz.
-        // Bugünkü oyuncak.fbx'te bu parçalar yok: sözlükler boş, hiçbir şey değişmez (bant da gizlenmez).
+        // 2026-10-27: Karakter v3'ten (51f396a) beri dört oyuncak FBX'inin her birinde 11 saç + 5 ayakkabı parçası var (eski not
+        // "bugünkü oyuncak.fbx'te yok" geçersiz). Gerçekçi ve sade modelde parça yok: sözlükler boş, hiçbir şey değişmez.
         bool sacBantGizle; TipMeta tipMeta; SacMeta[] sacMeta;
+        // Açılan parçalar (tanı ve vitrin kadrajı): istenen bulunamayıp varsayılana düşüldüyse istenenden farklıdır.
+        public string AcikSac { get; private set; }
+        public string AcikAyk { get; private set; }
+        public string PrefabAdi { get; private set; }
         void Varyant(Gorunum g)
         {
             var sac = new Dictionary<string, GameObject>(); var ayk = new Dictionary<string, GameObject>();
@@ -354,13 +359,49 @@ namespace BirdieSmash.Game
             // Seçim yoksa (hakem, eski çağrı) ya da seçilen parça bu FBX'te yoksa tipin varsayılanı (sözleşme §6.2: _clips.json tip).
             var so = g.sacModel != null ? Kozmetik.Bul(Kozmetik.SAC, g.sacModel) : null; var sv = Kozmetik.Oge(Kozmetik.SAC, null);
             string sacVars = tipMeta != null && !string.IsNullOrEmpty(tipMeta.sac) ? tipMeta.sac : sv != null ? sv.varlik : null;
-            string acik = VaryantAc(sac, so != null ? so.varlik : sacVars, so != null && so.varlik == null, sacVars);
+            string acik = VaryantAc(sac, so != null ? so.varlik : sacVars, so != null && so.varlik == null, sacVars); AcikSac = acik;
             bool bant = so == null || so.bant; if (acik != null && sacMeta != null) foreach (var m in sacMeta) if (m != null && m.id == acik) bant = m.bant;   // FBX'in ölçtüğü kazanır
             sacBantGizle = acik != null && !bant;   // bant yalnız o saç gerçekten takılıysa gizlenir
             GearModel am = null; if (g.aykModel != null) Gear.GEAR["ayakkabi"].TryGetValue(g.aykModel, out am);
             GearModel av; Gear.GEAR["ayakkabi"].TryGetValue(Gear.Varsayilan("ayakkabi"), out av);
             string aykVars = tipMeta != null && !string.IsNullOrEmpty(tipMeta.ayakkabi) ? tipMeta.ayakkabi : av != null ? av.varlik ?? av.id : null;
-            VaryantAc(ayk, am != null ? am.varlik ?? am.id : aykVars, false, aykVars);
+            AcikAyk = VaryantAc(ayk, am != null ? am.varlik ?? am.id : aykVars, false, aykVars);
+        }
+        // Tanı satırı (2026-10-27, yasin build 41: "3B model kaybolmuş, seçmeme rağmen görmedim"): hangi FBX yüklendi, hangi
+        // saç/ayakkabı parçası açık, kaç renderer gerçekten çiziliyor (açık + etkin, iz hariç), baş yüksekliği ve omuz genişliği
+        // (kemikten: AABB figür döndükçe değişir, kemik aralığı değişmez), açık saç ve ayakkabı parçasının sınırı. Ekran turu
+        // her tip/saç/ayakkabı için vitrinde ve maçta yazar; bir seçimin görünüşe gerçekten yansıyıp yansımadığı sayıyla okunur.
+        public string VaryantOzet() { float b, o; Vector3 sb; int n; return VaryantOzet(out b, out o, out sb, out n); }
+        public string VaryantOzet(out float basY, out float omuzG, out Vector3 sacBoyut, out int aktif)
+        {
+            basY = omuzG = -1; sacBoyut = Vector3.zero; aktif = 0;
+            if (model == null) return "MODEL YOK";
+            int n = 0; Bounds sacB = new Bounds(), aykB = new Bounds(); bool sv = false, av = false; Transform bas = null, ol = null, or_ = null;
+            foreach (var r in model.GetComponentsInChildren<Renderer>())
+            {
+                if (r is TrailRenderer || !r.enabled) continue; n++; string tag = Etiket(r.gameObject.name);
+                if (tag == "sac") { if (!sv) { sacB = r.bounds; sv = true; } else sacB.Encapsulate(r.bounds); }
+                if (tag == "ayakkabi" || tag == "taban") { if (!av) { aykB = r.bounds; av = true; } else aykB.Encapsulate(r.bounds); }
+            }
+            foreach (var t in model.GetComponentsInChildren<Transform>())
+            {
+                string k = t.name.ToLowerInvariant(); if (k.Contains("__")) continue;
+                if (bas == null && (k == "head" || k.EndsWith(" head"))) bas = t;
+                if (ol == null && (k == "upperarm_l" || k == "upperarm.l" || k.EndsWith(" l upperarm"))) ol = t;
+                if (or_ == null && (k == "upperarm_r" || k == "upperarm.r" || k.EndsWith(" r upperarm"))) or_ = t;
+            }
+            aktif = n; if (bas != null) basY = bas.position.y - transform.position.y; if (ol != null && or_ != null) omuzG = Vector3.Distance(ol.position, or_.position); if (sv) sacBoyut = sacB.size;
+            var ci = System.Globalization.CultureInfo.InvariantCulture; System.Func<Vector3, string> V = v => v.x.ToString("0.00", ci) + "×" + v.y.ToString("0.00", ci) + "×" + v.z.ToString("0.00", ci);
+            return "prefab " + PrefabAdi + " · tip " + (tipMeta != null ? tipMeta.id : "-") + " · saç " + (AcikSac ?? "yok") + " · ayk " + (AcikAyk ?? "yok") + " · aktif renderer " + n
+                + " · baş " + (bas != null ? (bas.position.y - transform.position.y).ToString("0.000", ci) : "-") + " · omuz " + (ol != null && or_ != null ? Vector3.Distance(ol.position, or_.position).ToString("0.000", ci) : "-")
+                + " · saç sınır " + (sv ? V(sacB.size) : "-") + " · ayk sınır " + (av ? V(aykB.size) : "-");
+        }
+        // Vitrinin Yüz planı: açık saç parçası (afro, topuz kadrajdan taşmasın diye kadraj saçın sınırına göre kurulur).
+        public Renderer SacRenderer()
+        {
+            if (model == null) return null;
+            foreach (var r in model.GetComponentsInChildren<Renderer>()) if (r.enabled && !(r is TrailRenderer) && Etiket(r.gameObject.name) == "sac") return r;
+            return null;
         }
         static string VaryantAc(Dictionary<string, GameObject> d, string istenen, bool hicbiri, string varsayilan)
         {

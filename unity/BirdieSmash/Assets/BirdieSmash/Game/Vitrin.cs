@@ -31,7 +31,8 @@ namespace BirdieSmash.Game
         public int odak { get; private set; }
         public string poz { get; private set; }
         public string deneTip, deneSac, deneAyk;
-        Transform bBas, bEl; readonly List<Transform> bAyak = new List<Transform>(); Renderer bGrip, bTel; Vector3 camS, hedefS; bool camVar;
+        Transform bBas, bEl; readonly List<Transform> bAyak = new List<Transform>(); Renderer bGrip, bTel, bSac; Vector3 camS, hedefS; bool camVar;
+        public PlayerView Fig { get { return fig; } }   // ekran turu tanısı (VaryantOzet)
 
         public static Vitrin Build(Transform root)
         {
@@ -87,7 +88,8 @@ namespace BirdieSmash.Game
         // Yakın plan noktaları: baş, ayaklar, sağ el kemiği, raket sapı ve kafası (PlayerView.Calibrate ile aynı ad kuralları).
         void OdakKemikleri()
         {
-            bBas = null; bEl = null; bAyak.Clear(); bGrip = null; bTel = null; if (fig == null || fig.Model == null) return;
+            bBas = null; bEl = null; bAyak.Clear(); bGrip = null; bTel = null; bSac = null; if (fig == null || fig.Model == null) return;
+            bSac = fig.SacRenderer();
             foreach (var t in fig.Model.GetComponentsInChildren<Transform>(true))
             {
                 string n = t.name.ToLowerInvariant(); if (n.Contains("__")) continue;
@@ -128,7 +130,17 @@ namespace BirdieSmash.Game
             cam = YER + new Vector3(0, 1.05f, 6.2f); hedef = YER + new Vector3(0, .95f, 0);
             if (odak == YUZ && bBas != null)
             {   // baş + saç (afro, topuz kesilmesin): yarı yükseklik ~16 cm
-                var h = bBas.position + Vector3.up * .06f * boy; float d = Uzaklik(.09f * boy, .08f * boy, out kay);
+                var h = bBas.position + Vector3.up * .06f * boy; float yy = .09f * boy, yx = .08f * boy;
+                // 2026-10-27 (r42 menu_karakter_sac_deneme): Afro denenince saçın tepesi kadrajın üstünden taşıyordu; sabit pencere
+                // kısa saça göre kuruluydu, hacimli saç kesilince kısa kesimden ayırt edilmiyordu. Pencere açık saç parçasının
+                // tepesini kapsayacak kadar yukarı büyür, alt kenar (yüz) yerinde kalır; kısa saçta eski kadraj birebir (yalnız büyür).
+                if (bSac != null && bSac.gameObject.activeInHierarchy)
+                {
+                    var sb = bSac.bounds; float ust = sb.max.y + .015f * boy, alt = h.y - yy;   // alt kenar (yüz) yerinde kalır
+                    if (ust > h.y + yy) { float yeniY = (ust - alt) * .5f; h.y = (ust + alt) * .5f; yy = Mathf.Max(yy, yeniY); }
+                    // genişlik bilerek sabit: figür döndükçe dünya sınırı (AABB) yatayda değişir, kadraj nabız gibi atardı
+                }
+                float d = Uzaklik(yy, yx, out kay);
                 cam = h + new Vector3(0, .05f, 1).normalized * d; hedef = h - Vector3.up * kay;
             }
             else if (odak == AYAK && bAyak.Count > 0)

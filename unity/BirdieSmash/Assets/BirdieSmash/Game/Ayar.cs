@@ -83,7 +83,10 @@ namespace BirdieSmash.Game
             else { int t = EskiInt("tuytop_target", 5); target = t == 11 || t == 21 ? t : 5; }   // bilinmeyen (eski len7 dahil) 5 olur
             easy = EskiInt("tuytop_easy", 1) == 1;
             saha = Str("tuytop_saha", "salon"); if (!CourtView.SAHA.ContainsKey(saha)) saha = "salon";
-            model = Str("tuytop_model", "oyuncak"); if (model == "sportif" || model == "aday") model = "rocketbox"; if (model != "oyuncak" && model != "rocketbox") model = "oyuncak";
+            // 2026-10-27 (yasin build 41: "3B model kaybolmuş, seçmeme rağmen görmedim"): build 40 notu Ayarlar'da "Sade" vaat
+            // ediyordu, Resources'ta sade.fbx vardı (ekran turu her turda maçını çekiyor) ama seçenek yoktu ve "sade" kaydı burada
+            // oyuncak'a dönüyordu. Artık geçerli model (MODELLER); FBX'i olmayan build'de yine oyuncak'a düşer.
+            model = Str("tuytop_model", "oyuncak"); if (model == "sportif" || model == "aday") model = "rocketbox"; if (!ModelVar(model)) model = "oyuncak";
             kamera = Str("tuytop_kamera", "yayin"); if (System.Array.IndexOf(GameRoot.KAMERA_SIRA, kamera) < 0) kamera = "yayin";
             reduceSecim = EskiInt("tuytop_reduce", 0) == 1; ses = EskiInt("tuytop_ses", 1) == 1; SistemOku();
             yazi = Str("tuytop_yazi", "sistem"); if (yazi != "normal" && yazi != "buyuk") yazi = "sistem"; fps = Str("tuytop_fps", "0") == "1";
@@ -106,6 +109,16 @@ namespace BirdieSmash.Game
             GearHesap();
             Kaydet();
         }
+        // Ayarlar › Oyuncu görünümü seçenekleri (kimlik, etiket). Sade yalnız FBX'i build'deyse (Resources) gösterilir.
+        public static readonly string[] MODELLER = { "oyuncak", "rocketbox", "sade" }, MODEL_AD = { "Oyuncak 3B", "Gerçekçi", "Sade" };
+        public static bool ModelVar(string m)
+        {
+            if (m == "oyuncak" || m == "rocketbox") return true;
+            if (m != "sade") return false; if (sadeVar < 0) sadeVar = Resources.Load<GameObject>("karakter/sade") != null ? 1 : 0; return sadeVar == 1;
+        }
+        static int sadeVar = -1;
+        // Beden tipi, saç biçimi ve ayakkabı MODELİ parçaları yalnız oyuncak ailesinin FBX'lerinde (oyuncak_<tip>.fbx) var.
+        public static bool VaryantGorunur { get { return model == "oyuncak"; } }
         public static void GearHesap() { gear.kariyerModu = kariyerModu; GSE = gear.Hesap(); GS = Karakter.Uygula(GSE, Tarz); AldatmaKur(); }
         // Aldatıcı vuruşlar (2026-10-26, Core/Aldatma): seviye kapısı maça buradan gider (her maç kurulumunda GearHesap çağrılır);
         // ilk fırsat açıklaması bir kez gösterilir, görülenler ilerleme kaydında (tuytop_ilerleme.aldatmaGor).
