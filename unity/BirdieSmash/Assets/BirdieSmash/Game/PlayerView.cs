@@ -321,6 +321,8 @@ namespace BirdieSmash.Game
             }
         }
         Transform kafa; TrailRenderer yay;
+        readonly Gradient yayGrad = new Gradient(); readonly GradientAlphaKey[] yayS = new GradientAlphaKey[2]; float yayA = -1;
+        static readonly GradientColorKey[] YAY_RENK = { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) };
         // Varsayılan şort: SORT_RENK (rocketbox_kit, düz lacivert .075/.095/.15) ÷ doku grisi .86 (gamma uzayında çarpım).
         public const string SORT_VARSAYILAN = "#161c2c";
         // Kumaşın parlaklık çarpanı (_GlossMapScale): esnek (likralı) parlak, hafif (delikli örgü) mat. Bilinmeyen = 1.
@@ -479,7 +481,7 @@ namespace BirdieSmash.Game
         {
             transform.position = pos; yaw.localRotation = Quaternion.Euler(0, yawDeg, 0) * calib;
             if (shadow != null) shadow.position = new Vector3(pos.x, .003f, pos.z);
-            if (anim == null) return; if (anim[clip] == null) clip = "idle";
+            if (anim == null) return; if (D(clip) == null) clip = "idle";
             if (cur == clip && pozK == clip && Mathf.Abs(pozP - ph) < 1e-4f) return;
             cur = clip; pozK = clip; pozP = ph; Sample(clip, ph, null, 0, 1);
         }
@@ -526,18 +528,38 @@ namespace BirdieSmash.Game
                 a.AddMixingTransform(kHip, false); foreach (var t in kok) a.AddMixingTransform(t, true);
                 a.layer = 1; altVar = true;
             }
+            durum.Clear(); durumlar = null;   // yeni _alt durumları eklendi
         }
 
+        // Durum önbelleği (2026-10-27 performans turu 2): anim["ad"] her çağrıda yerelden yeni bir AnimationState sarmalayıcısı
+        // döndürür, foreach (AnimationState in anim) bir sayaç nesnesi, alt + "_alt" yeni bir dizgi: figür başına karede ~12
+        // ayırma, dört figür (iki oyuncu + iki hakem) ve afiş/vitrinle karede ~60. Durumlar ad başına bir kez sorulur (yoksa null
+        // da saklanır: klip listesi yalnız AltKatmanKur'da değişir, orada önbellek sıfırlanır), tüm durumlar dizide tutulur.
+        readonly Dictionary<string, AnimationState> durum = new Dictionary<string, AnimationState>(); AnimationState[] durumlar;
+        static readonly Dictionary<string, string> ALT_AD = new Dictionary<string, string>();
+        static string AltAd(string klip) { string a; if (!ALT_AD.TryGetValue(klip, out a)) ALT_AD[klip] = a = klip + "_alt"; return a; }
+        AnimationState D(string ad)
+        {
+            if (anim == null || ad == null) return null; AnimationState st;
+            if (!durum.TryGetValue(ad, out st)) { st = anim[ad]; durum[ad] = st; }
+            return st;
+        }
+        AnimationState[] Durumlar()
+        {
+            if (durumlar != null) return durumlar;
+            var l = new List<AnimationState>(); foreach (AnimationState st in anim) l.Add(st); durumlar = l.ToArray(); return durumlar;
+        }
+        int ornekNo;   // her Sample'da artar: ShowSit "pozum hâlâ benim" diye bakar
         void Sample(string a, float pa, string b, float pb, float w, string alt = null, float aPh = 0, float aW = 0)
         {
             if (anim == null) return;
-            foreach (AnimationState st in anim) st.enabled = false;
-            var A = anim[a]; if (A == null) return;
+            ornekNo++; var tum = Durumlar(); for (int i = 0; i < tum.Length; i++) tum[i].enabled = false;
+            var A = D(a); if (A == null) return;
             A.enabled = true; A.weight = w; A.normalizedTime = ClipTime(a, pa);
-            if (b != null && w < 1) { var B = anim[b]; if (B != null) { B.enabled = true; B.weight = 1 - w; B.normalizedTime = ClipTime(b, pb); } }
-            if (alt != null && aW > .01f) { var C = anim[alt + "_alt"]; if (C != null) { C.enabled = true; C.weight = aW; C.normalizedTime = ClipTime(alt, aPh); } }
+            if (b != null && w < 1) { var B = D(b); if (B != null) { B.enabled = true; B.weight = 1 - w; B.normalizedTime = ClipTime(b, pb); } }
+            if (alt != null && aW > .01f) { var C = D(AltAd(alt)); if (C != null) { C.enabled = true; C.weight = aW; C.normalizedTime = ClipTime(alt, aPh); } }
             anim.Sample();
-            foreach (AnimationState st in anim) st.enabled = false;
+            for (int i = 0; i < tum.Length; i++) tum[i].enabled = false;
             VekilDuzelt(false);
         }
 
@@ -588,7 +610,19 @@ namespace BirdieSmash.Game
             a.rotation = Quaternion.FromToRotation(b.position - a.position, diz - a.position) * a.rotation;
             b.rotation = Quaternion.FromToRotation(c.position - b.position, a.position + u * L - b.position) * b.rotation;
         }
+        // Oturuş bir kez (2026-10-27 performans turu 2): hakemler rallide kıpırdamaz ama her karede idle örneklenip dört IK
+        // çözülüyordu (iki figür × iki Sample + kalça/baş/4 zincir). Girdiler (oturak, açılar, ayak yeri) aynı, araya başka
+        // örnekleme girmemiş (ornekNo) ve kök yerinden oynamamışsa poz zaten kemiklerde: dönülür. Skor girişi ve servis
+        // dönüşü açıyı değiştirdiği karelerde aynen yeniden kurulur.
+        Vector3 sitO, sitKonum; Vector4 sitK; Quaternion sitYaw; int sitNo = -1;
         public void ShowSit(Vector3 oturak, float yawDeg, float tiltDeg, float ayakY = 0, float ayakIleri = .4f)
+        {
+            var sk = new Vector4(yawDeg, tiltDeg, ayakY, ayakIleri);
+            if (sitNo == ornekNo && sitO == oturak && sitK == sk && transform.position == sitKonum && yaw.localRotation == sitYaw) return;
+            ShowSitKur(oturak, yawDeg, tiltDeg, ayakY, ayakIleri);
+            sitO = oturak; sitK = sk; sitNo = ornekNo; sitKonum = transform.position; sitYaw = yaw.localRotation;
+        }
+        void ShowSitKur(Vector3 oturak, float yawDeg, float tiltDeg, float ayakY, float ayakIleri)
         {
             yaw.localRotation = Quaternion.Euler(0, yawDeg, 0) * calib;
             transform.position = Vector3.zero;
@@ -642,7 +676,7 @@ namespace BirdieSmash.Game
             { float ch; o.adimBoy = adimBoy.Count > 0 ? adimBoy : null; o.ayakTurMax = adimBoy.TryGetValue("chasse_r", out ch) && ch > .05f ? Mathf.Clamp(Match.AYAK_TUR_MAX * .99f / ch, Match.AYAK_TUR_MAX, 6f) : float.NaN; }
             // Sıçrama: sin(jump·π) (tepe temasta), split step küçük hop (%20). 0,5 m ≈ HTML'deki 16 px/28 px-m ölçeği.
             string clip; float ph; M.PickClip(o, isMe, out clip, out ph);   // önce: split klibi kendi hop'unu taşır (Match.JumpH hopsuz)
-            float j = Match.JumpH(o, clip == "split" && anim != null && anim["split"] != null) * .5f;
+            float j = Match.JumpH(o, clip == "split" && anim != null && D("split") != null) * .5f;
             jGor = j > jGor ? Mathf.MoveTowards(jGor, j, Match.GORSEL_YUKSELIS * dt) : j; j = jGor;   // yükseliş tavanı: ışınlanma yok
             transform.position = Kit.W(o.x, o.y, 0) + Vector3.up * j;
             // Gövde dik (ce47f5c): hamlede yatma yok; yalnız kıl payı kurtarışta (yat) en çok 15°. Koşu eğimi ±0,08 rad (~4,6°;
@@ -658,10 +692,11 @@ namespace BirdieSmash.Game
             if (yay != null)
             {
                 yay.emitting = o.sw > .3f && !M.reduce; float a = Mathf.Clamp01(o.sw) * .5f;
-                yay.colorGradient = new Gradient { colorKeys = new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) }, alphaKeys = new[] { new GradientAlphaKey(a, 0), new GradientAlphaKey(0, 1) } };
+                // 2026-10-27: renk eğrisi her karede yeni Gradient + iki dizi idi; yalnız alfa değişince ve aynı nesneyle
+                if (Mathf.Abs(a - yayA) > .002f) { yayA = a; yayS[0] = new GradientAlphaKey(a, 0); yayS[1] = new GradientAlphaKey(0, 1); yayGrad.SetKeys(YAY_RENK, yayS); yay.colorGradient = yayGrad; }
             }
             if (anim == null) { if (fbRacket != null) fbRacket.localRotation = Quaternion.Euler(0, 0, o.sw > 0 ? -140 * (1 - o.sw) + 40 : 20 - 40 * o.prepA); return; }
-            if (anim[clip] == null) clip = "idle";
+            if (D(clip) == null) clip = "idle";
             if (clip != cur)
             {
                 bool takip = cur != null && Match.CLIP_HIT.ContainsKey(cur) && !Match.CLIP_HIT.ContainsKey(clip);   // vuruş → hazır duruş/ayak
@@ -670,7 +705,7 @@ namespace BirdieSmash.Game
             blend = Mathf.Min(1, blend + dt / blendS); lastPh = ph;
             // Boşta duruşun genliği nefese bağlı (B4; hız Match.IdleIlerle'de): nefes %70'in altına inince yorgun klibi
             // (eller dizde) %35'e kadar karışır, beden soluklanır. Harmanlama bitmeden karıştırılmaz.
-            if (cur == "idle" && blend >= 1 && o.nefes < .7f && anim["yorgun"] != null)
+            if (cur == "idle" && blend >= 1 && o.nefes < .7f && D("yorgun") != null)
             { Sample("idle", ph, "yorgun", ph, 1 - .35f * Mathf.Clamp01((.7f - o.nefes) / .7f)); uzanVar = false; kalcaKay = Vector3.zero; FileItin(); AyakKilit(dt); return; }
             {   // alt beden katmanı: vuruş/hazırlık klibinde koşarken bacaklar ayak işinden. Hangi klipte ve ne ağırlıkla:
                 // Match.AltHedef (hamle yaklaşırken, servis temastan sonra, sıçrama yerdeyken; anlık hızla). 2026-10-26 gece Core'a
@@ -729,7 +764,7 @@ namespace BirdieSmash.Game
         Vector3? KafaVurusta(string clip)
         {
             Vector3 v; if (vurusKafa.TryGetValue(clip, out v)) return v;
-            float hit; if (anim == null || anim[clip] == null || !Match.CLIP_HIT.TryGetValue(clip, out hit)) return null;
+            float hit; if (anim == null || D(clip) == null || !Match.CLIP_HIT.TryGetValue(clip, out hit)) return null;
             Sample(clip, hit, null, 0, 1); v = yaw.InverseTransformPoint(kafa.position); vurusKafa[clip] = v; return v;
         }
         // Hazırlık tutuşu canlı (2026-10-27 gece, ölçüm: hazırlık pozu tek karede ~0,5 sn donuk, "takıldı" okunuyordu): tutuş
