@@ -92,11 +92,11 @@ namespace BirdieSmash.Game
             yield return ImzaKare("imza_mermi", KariyerVeri.Global(1, 5), false);
             yield return ImzaKare("imza_duvar_azalt", KariyerVeri.Global(0, 5), true);
             yield return GorevKare();
-            yield return SonucKare("sonuc_galibiyet", true, false, 0, "en");
+            yield return SonucKare("sonuc_galibiyet", true, false, 0, "en");   rap.AppendLine("sonuc_galibiyet · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok"));   // tur 2: matris düz, ikincil düğme stili var olmalı
             yield return SonucKare("sonuc_galibiyet_azalt", true, true, 0, "en");
             yield return SonucKare("sonuc_buyuk_galibiyet", true, false, 2, "en");   // HUD ×1,3 sınırında (Ayar.YaziK); "Büyük" yazı
             yield return SonucKare("sonuc_tr_galibiyet", true, false, 0, "tr");
-            yield return SonucKare("sonuc_yenilgi", false, false, 0, "en");
+            yield return SonucKare("sonuc_yenilgi", false, false, 0, "en");   rap.AppendLine("sonuc_yenilgi · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok"));   // tur 2: matris düz, ikincil düğme stili var olmalı
             yield return FileKare();   // 2026-10-27 ekran/file: file yakın planı (ayrı satır, başka dallar da bu listeye ekliyor)
             yield return DuyarliTuru();   // 2026-10-27 duyarlı yerleşim: SE / 13 / Pro Max / iPad, çentik taklidi, taşma denetimi
             yield return MenuSahne();
