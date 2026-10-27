@@ -4,7 +4,7 @@
 // (oyuncu oturumda bir kez bile girmez). Ayarlar › Nasıl oynanır / Lisanslar tam sayfa, Hızlı maç kurulumu alt sayfa.
 // Gezinti kuralı Core/Gezinti'de (saf C#, test edilir); burası yalnız görünüm.
 // Kurulum çalışma zamanında: UIDocument + PanelSettings (Resources/ui/PanelSettings varsa o; Editor'de DemoKurulum üretir,
-// shader başvurusu için; yoksa ScriptableObject.CreateInstance), iskelet Resources/ui/menu.uxml (yoksa koddan, aynı adlarla), biçim Resources/ui/menu.uss,
+// shader başvurusu için; yoksa ScriptableObject.CreateInstance), iskelet Resources/ui/menu.uxml (yoksa koddan, aynı adlarla), biçim Resources/ui/menu_stil.uss (2026-10-26 gece: eski adı menu.uss, aşağıda neden),
 // varsayılan tema Resources/ui/tema.tss (yoksa yerleşik yazı tipine düşülür). Editor API'si yok: sahne dosyasız kurulum
 // (GameRoot gibi) her Unity sürümünde aynı sonucu versin.
 // Ölçek: ScaleWithScreenSize, referans 375 pt genişlik (iPhone SE/mini). Neden ConstantPhysicalSize değil (tasarım Ek A.7
@@ -71,12 +71,17 @@ namespace BirdieSmash.Game
             Ikonlar.Hazirla(); K = Ayar.MenuYaziK; sonDil = Ayar.dil;
             var r = doc.rootVisualElement; r.pickingMode = PickingMode.Ignore;
             r.style.position = Position.Absolute; r.style.left = 0f; r.style.top = 0f; r.style.right = 0f; r.style.bottom = 0f;   // tam ekran (UIDocument kökü)
-            var uss = Resources.Load<StyleSheet>("ui/menu"); if (uss != null) r.styleSheets.Add(uss); else Debug.LogWarning("Birdie Smash: Resources/ui/menu.uss yok");
+            // 2026-10-26 gece (yasin build 40 "menüler sahaya iç içe"; CI r24–r36): biçim sayfası eskiden "ui/menu" adıyla
+            // yükleniyordu, oysa aynı yolda menu.uxml de var ve VisualTreeAsset içinde bir StyleSheet alt varlığı (satır içi
+            // stiller) taşır. Resources.Load<StyleSheet>("ui/menu") içe aktarma sırasına göre o boş sayfayı döndürebiliyordu:
+            // menü kuralsız (saydam, yerleşimsiz, siyah yazı) çıkıyor, maç sahnesi arkadan görünüyordu. Ad ayrıldı (menu_stil),
+            // yine de sayfa adıyla doğrulanır; kural yoksa yüksek sesle günlüğe yazılır.
+            var uss = StilSayfasi(); if (uss != null) r.styleSheets.Add(uss); else Debug.LogError("Birdie Smash: Resources/ui/menu_stil.uss yok ya da boş");
             kok = r.Q<VisualElement>("kok");
             if (kok == null) { kok = KodIskelet(); r.Add(kok); }
             zemin = kok.Q<VisualElement>("zemin"); alan = kok.Q<VisualElement>("alan"); ust = kok.Q<VisualElement>("ust"); icerik = kok.Q<VisualElement>("icerik");
             sayfa = kok.Q<VisualElement>("sayfa"); sekmeCubugu = kok.Q<VisualElement>("sekmeler"); altKatman = kok.Q<VisualElement>("alt-katman"); kalkan = kok.Q<VisualElement>("kalkan");
-            // 2026-10-26 Yayın Gecesi: gövde yazı tipi Barlow (Resources/fonts, OFL). Sınıf kuralları (menu.uss) kalın ve başlık
+            // 2026-10-26 Yayın Gecesi: gövde yazı tipi Barlow (Resources/fonts, OFL). Sınıf kuralları (menu_stil.uss) kalın ve başlık
             // dosyalarını seçer; kökteki satır içi değer, USS çözülemezse ya da tema yoksa da Barlow'a düşülsün diye.
             var barlow = Resources.Load<Font>("fonts/Barlow-Medium");
             if (barlow != null) kok.style.unityFontDefinition = FontDefinition.FromFont(barlow);
@@ -114,16 +119,17 @@ namespace BirdieSmash.Game
             if (gor != sonGorunur)
             {
                 sonGorunur = gor; kok.style.display = gor ? DisplayStyle.Flex : DisplayStyle.None;
-                if (gor) Kirlet();   // maçta Tüy, XP, kariyer değişmiş olabilir; vitrin Uygula'da açılır
+                if (gor) { Kirlet(); salonKirli = true; }   // maçta Tüy, XP, kariyer değişmiş olabilir; vitrin Uygula'da açılır; salon fonu yeniden çekilir
             }
-            if (!gor) { if (root.afis.Acik) root.afis.Kapat(); return; }
+            if (!gor) { if (root.afis.Acik) root.afis.Kapat(); SahneCiz(true, false); return; }
             if (!temaFontVar) TemaFontOku();
             float k = Ayar.MenuYaziK; if (Mathf.Abs(k - K) > .001f || sonDil != Ayar.dil) { K = k; sonDil = Ayar.dil; HepsiniKur(); }
             if (Ayar.reduce != sonReduce) { sonReduce = Ayar.reduce; kok.EnableInClassList("az-hareket", sonReduce); }
             GuvenliAlan();
             var hud = root.HudKatman; float o = hud != null ? hud.PerdeOrtu : 0; bool pv = hud != null && hud.PerdeVar;
             if (Mathf.Abs(o - sonOrtu) > .01f || (o == 0 && sonOrtu != 0)) { sonOrtu = o; kok.style.opacity = 1 - o; }
-            if (pv != kalkanAcik) { kalkanAcik = pv; kalkan.style.display = pv ? DisplayStyle.Flex : DisplayStyle.None; }
+            if (pv != kalkanAcik) { kalkanAcik = pv; kalkan.style.display = pv ? DisplayStyle.Flex : DisplayStyle.None; if (!pv) salonKirli = true; }   // perde kalkınca fon bir kez daha (açılışta sahne perde altında kuruluyor olabilir)
+            SahneCiz(pv || o > 0, true);   // perde açılırken/kapanırken menü solar: altında maç sahnesi görünmeli
             if (Input.GetKeyDown(KeyCode.Escape) && !pv) Geri();   // Android geri tuşu
         }
 
@@ -171,7 +177,11 @@ namespace BirdieSmash.Game
             if (tam != null) { SayfaKur(tam); sayfa.style.display = DisplayStyle.Flex; if (anim) Giris(sayfa); } else { sayfa.style.display = DisplayStyle.None; sayfa.Clear(); }
             string altS = gez.AcikAltSayfa;
             if (altS != null) { AltSayfaYenidenKur(altS); altKatman.style.display = DisplayStyle.Flex; if (anim) Giris(altSayfa); } else { altKatman.style.display = DisplayStyle.None; altKatman.Clear(); altSayfa = null; }
-            kok.EnableInClassList("koyu", s != Sekme.Oyna || tam != null);
+            bool koyu = s != Sekme.Oyna || tam != null; kok.EnableInClassList("koyu", koyu);
+            // 2026-10-26 gece: kök her sekmede opak (Oyna: mürekkep, salon fonu üstünde; diğerleri yön A a-bgnight #0B1130), tam
+            // sayfa mürekkep. Satır içi (USS'te değil): r24'te USS'teki değişiklikle bütün sayfa biçimsiz çıktı, kök neden
+            // ayrılana kadar zemin koddan (eski USS değerleri saydamdı; satır içi değer onları ezer).
+            kok.style.backgroundColor = koyu ? GECE : INK_; sayfa.style.backgroundColor = INK_;
             // Vitrin kamerası yalnız Soyunma odası görünürken çizer (bütçe §7.3); çıkınca sahnedeki oyuncu yeni görünüme geçer.
             bool vitrinGerek = s == Sekme.Soyunma && tam == null && root.ekran == Ekran.Menu;
             if (!vitrinGerek && root.vitrin.gameObject.activeSelf) { root.vitrin.Kapat(); if (root.ekran == Ekran.Menu) root.GorunumDegisti(); }
@@ -254,6 +264,8 @@ namespace BirdieSmash.Game
         Image afisImg; Label vsYazi;
         void ZeminKur()
         {
+            // 2026-10-26 gece: en arkada bulanık salon görüntüsü (SalonCek); canlı sahne menünün arkasında artık çizilmez.
+            salonImg = new Image { scaleMode = ScaleMode.ScaleAndCrop, tintColor = new Color(.78f, .8f, .9f, 1) }; salonImg.AddToClassList("tam"); salonImg.AddToClassList("salon"); salonImg.pickingMode = PickingMode.Ignore; zemin.Add(salonImg);
             var fl = new Image { image = Ikonlar.Isik, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(LIMON.r, LIMON.g, LIMON.b, .32f) }; fl.AddToClassList("isik-sol"); fl.pickingMode = PickingMode.Ignore; zemin.Add(fl);
             var fr = new Image { image = Ikonlar.Isik, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(GOK.r, GOK.g, GOK.b, .30f) }; fr.AddToClassList("isik-sag"); fr.pickingMode = PickingMode.Ignore; zemin.Add(fr);
             var zi = new Image { image = Ikonlar.Gradyan, scaleMode = ScaleMode.StretchToFill }; zi.pickingMode = PickingMode.Ignore; zi.AddToClassList("tam"); zemin.Add(zi);
@@ -261,11 +273,15 @@ namespace BirdieSmash.Game
             vsYazi = new Label("VS"); vsYazi.AddToClassList("yazi"); vsYazi.AddToClassList("vs"); vsYazi.pickingMode = PickingMode.Ignore; zemin.Add(vsYazi);
         }
         // Afiş: Oyna görünürken açık. Rakip = Oyna'daki büyük düğmenin oynatacağı maçın rakibi (bekleyen maç, Usta yolu ya da
-        // kariyerin sıradaki basamağı); ilk açılışta (antrenman görülmedi) rakip yok, "VS" de yok.
+        // kariyerin sıradaki basamağı); ilk açılışta (antrenman görülmedi) afiş hiç çizilmez (aşağıda; eskiden rakipsiz, yalnız sen).
         void AfisGuncelle(bool gerek)
         {
             var a = root.afis; if (a == null) return;
-            if (!gerek) { if (a.Acik) a.Kapat(); return; }
+            // 2026-10-26 gece: ilk açılışta (antrenman görülmedi) Oyna'nın kahramanı logo ve ad; afişin "sen" figürü r22'de
+            // "Birdie Smash" yazısının ve logonun üstüne biniyordu (menu_ilk_oyna). Afiş ilk maçtan sonra gelir.
+            bool goster = gerek && Ayar.antrenman;
+            if (afisImg != null) afisImg.style.display = goster ? DisplayStyle.Flex : DisplayStyle.None;
+            if (!goster) { if (a.Acik) a.Kapat(); if (vsYazi != null) vsYazi.style.display = DisplayStyle.None; return; }
             Style st = null;
             if (root.bekleyen && root.match != null) st = root.match.stil;
             else if (Ayar.antrenman && UstaYolu.Acik(Ayar.ilerleme) && Ayar.ilerleme.HepsiBitti) st = UstaYolu.Rakip(Ayar.ilerleme.Usta);
@@ -273,6 +289,82 @@ namespace BirdieSmash.Game
             a.Ac(st, st != null ? Kit.Hex(Match.OpRenk(st, Ayar.FORMA)) : Color.white);
             if (vsYazi != null) vsYazi.style.display = st != null ? DisplayStyle.Flex : DisplayStyle.None;
         }
+
+        // ---- 2026-10-26 gece (yasin, build 40, gerçek iPhone: "Menüler de sahaya iç içe geçmiş görünüyor") ----
+        // Kök neden: menü kökü saydamdı (Oyna'da tamamen, diğer sekmelerde %92, tam sayfada %96 örtü) ve ana kamera menüde
+        // maç sahnesini her kare çizmeyi sürdürüyordu. Oyna'da afişin iki büyük figürü canlı kortun, kortta duran iki küçük
+        // oyuncunun ve hakemlerin önüne biniyordu (aynı oyuncu iki kez: afişte büyük, kortta küçük); Kariyer, Soyunma ve
+        // Profil'de kort çizgileri ve oyuncular kartların arasından seçiliyordu. Yön A taslağı bunu istemiyor: Oyna'da salon
+        // bulanık bir fon (a-arena, arena_blur), diğer sekmelerde düz gece zemini (a-bgnight); figür yalnız afişte.
+        // Çözüm: (1) menü kökü her sekmede opak (satır içi, Uygula; ayrıca biçim sayfası yanlış yükleniyordu: StilSayfasi); (2) menü görünür ve perde yokken ana kamera yalnız temizler
+        // (cullingMask 0: sahne çizilmez, pil ve GPU da kazanır; kamera kapatılmaz ki arka tampon her karede tanımlı kalsın);
+        // (3) Oyna'nın fonu, sahnenin oyuncusuz bir karesi: menü açılınca (ya da saha, bakış, model, ekran boyu değişince)
+        // bir kez küçük bir RT'ye çizilir, iki kez yarıya indirilerek bulanıklaştırılır ve Image olarak gösterilir.
+        RenderTexture salonRt; Image salonImg; bool salonKirli = true; string salonSaha, salonKamera, salonModel; int salonW, salonH, sahneMaske; bool maskeVar;
+        readonly List<Renderer> salonGizli = new List<Renderer>();
+        // ciz: ana kamera sahneyi çizsin mi (maçta ve perde varken evet). menu: menü görünür; Oyna'daysa salon fonu gerekirse
+        // perde açılırken de çekilir (perde kalkınca canlı korttan bulanık fona sıçrama olmasın).
+        void SahneCiz(bool ciz, bool menu)
+        {
+            var c = root.cam; if (c == null) return;
+            if (!maskeVar) { maskeVar = true; sahneMaske = c.cullingMask; }   // r24: −1 (Everything) bekçi değeriyle karışıyordu, maçta maske 0 kalıyordu
+            int m = ciz ? sahneMaske : 0; if (c.cullingMask != m) c.cullingMask = m;
+            if (menu && sekmeKok[0] != null && gez.sekme == Sekme.Oyna)
+            {
+                if (salonSaha != Ayar.saha || salonKamera != Ayar.kamera || salonModel != Ayar.model || salonW != Screen.width || salonH != Screen.height) salonKirli = true;
+                if (salonKirli) SalonCek();
+            }
+        }
+        void SalonCek()
+        {
+            var c = root.cam; if (Screen.width <= 0 || Screen.height <= 0) return;
+            salonKirli = false; salonSaha = Ayar.saha; salonKamera = Ayar.kamera; salonModel = Ayar.model; salonW = Screen.width; salonH = Screen.height;
+            int w = 192, h = Mathf.Max(8, Mathf.RoundToInt(192f * Screen.height / Screen.width));
+            // Oyuncular (ben, rakip, hakemler: kökün doğrudan çocukları) bu karede gizli; afiş ve vitrin figürleri kendi
+            // düğümlerinin altında ve zaten uzakta (±500 m). Görünen renderer'lar kapatılıp geri açılır (etkinlik değişmez:
+            // Animator ve PlayerView durumu bozulmaz).
+            salonGizli.Clear();
+            foreach (Transform t in root.transform)
+                if (t.GetComponent<PlayerView>() != null) foreach (var r in t.GetComponentsInChildren<Renderer>()) if (r.enabled) { r.enabled = false; salonGizli.Add(r); }
+            var etkin = RenderTexture.active;
+            var a = RenderTexture.GetTemporary(w, h, 24, RenderTextureFormat.ARGB32); a.filterMode = FilterMode.Bilinear;
+            var eskiHedef = c.targetTexture; int eskiMaske = c.cullingMask; c.cullingMask = sahneMaske; c.targetTexture = a; c.Render(); c.targetTexture = eskiHedef; c.cullingMask = eskiMaske;
+            foreach (var r in salonGizli) if (r != null) r.enabled = true; salonGizli.Clear();
+            var b = RenderTexture.GetTemporary(w / 2, h / 2, 0, RenderTextureFormat.ARGB32); b.filterMode = FilterMode.Bilinear; Graphics.Blit(a, b);
+            var d = RenderTexture.GetTemporary(w / 4, h / 4, 0, RenderTextureFormat.ARGB32); d.filterMode = FilterMode.Bilinear; Graphics.Blit(b, d);
+            if (salonRt == null || salonRt.width != w / 2 || salonRt.height != h / 2)
+            {
+                if (salonRt != null) { salonRt.Release(); Destroy(salonRt); }
+                salonRt = new RenderTexture(w / 2, h / 2, 0, RenderTextureFormat.ARGB32) { name = "menu_salon", filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
+            }
+            Graphics.Blit(d, salonRt);   // dörtte birden yarıya geri: bilinear büyütme blokları yumuşatır
+            RenderTexture.active = etkin; RenderTexture.ReleaseTemporary(a); RenderTexture.ReleaseTemporary(b); RenderTexture.ReleaseTemporary(d);
+            if (salonImg != null) { salonImg.image = salonRt; salonImg.MarkDirtyRepaint(); }
+        }
+        // Ekran turu tanısı (EkranTuru.MenuSahne): ana kamera ne çiziyor, salon fonu var mı.
+        public string SahneDurumu { get { var c = root.cam; return "ana kamera " + (c == null ? "yok" : (c.enabled ? "açık" : "kapalı") + " maske " + c.cullingMask) + " · salon " + (salonRt != null ? salonRt.width + "x" + salonRt.height + " " + salonSaha : "yok")
+            + " · stil " + doc.rootVisualElement.styleSheets.count + " " + StilTani(doc.rootVisualElement.styleSheets.count > 0 ? doc.rootVisualElement.styleSheets[0] : null)
+            + " · tema " + StilTani(doc.panelSettings != null ? doc.panelSettings.themeStyleSheet : null)
+            + " zemin " + zemin.resolvedStyle.position + " kök renk " + kok.resolvedStyle.backgroundColor; } }
+        static StyleSheet StilSayfasi()
+        {
+            var ss = Resources.Load<StyleSheet>("ui/menu_stil");
+            if (ss == null || ss.name != "menu_stil") foreach (var a in Resources.LoadAll<StyleSheet>("ui")) if (a.name == "menu_stil") { ss = a; break; }
+            if (ss != null) Debug.Log("Birdie Smash: menü biçimi " + StilTani(ss));
+            return ss;
+        }
+        // r24–r36 tanısı: CI'da menü USS'siz çıkıyor; içe aktarılan sayfanın hata bayrağı ve kural sayısı (iç alanlar, yansıma).
+        static string StilTani(StyleSheet ss)
+        {
+            if (ss == null) return "yok";
+            var sb = new System.Text.StringBuilder(ss.name);
+            var t = typeof(StyleSheet); var bf = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+            foreach (var ad in new[] { "importedWithErrors", "importedWithWarnings", "contentHash" }) { var pr = t.GetProperty(ad, bf); if (pr != null) try { sb.Append(" " + ad + "=" + pr.GetValue(ss)); } catch { } }
+            foreach (var ad in new[] { "rules", "complexSelectors", "m_Rules", "m_ComplexSelectors", "imports", "m_Imports" }) { var f = t.GetField(ad, bf); if (f != null) try { var v = f.GetValue(ss) as System.Array; sb.Append(" " + ad + "=" + (v == null ? "null" : v.Length.ToString())); } catch { } var pr = t.GetProperty(ad, bf); if (pr != null) try { var v = pr.GetValue(ss) as System.Array; sb.Append(" " + ad + "=" + (v == null ? "null" : v.Length.ToString())); } catch { } }
+            return sb.ToString();
+        }
+        static readonly Color GECE = new Color(11 / 255f, 17 / 255f, 48 / 255f, 1), INK_ = new Color(7 / 255f, 11 / 255f, 31 / 255f, 1);
+        void OnDestroy() { if (salonRt != null) { salonRt.Release(); Destroy(salonRt); } }
 
         // Tam sayfa başı: "‹ Geri" (44 pt) + başlık.
         Label SayfaBasi(VisualElement ebeveyn, string baslik)
