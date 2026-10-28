@@ -26,7 +26,7 @@ namespace BirdieSmash.Core
         public string clip = "idle", prepClip, shot = "low", hand = "fore", prepShot, prepHand, svClip, svTur;
         public SvAnim svAnim;
         // ayak işi (HTML ayakIsi): yumuşatılmış hız, adım fazı, seçili ayak klibi ve aday klibin süresi
-        public float qx = float.NaN, qy, svx, svy, vAn, runPh, adayT, idlePh, splitCik; public bool yuru, hamleGor, hamleKilit; public string ayakKlip, adayAd;   // hamle*: görünüm (PickClip)
+        public float qx = float.NaN, qy, svx, svy, vAn, runPh, adayT, idlePh, splitCik, ayakSure; public bool yuru, hamleGor, hamleKilit; public string ayakKlip, adayAd;   // hamle*: görünüm (PickClip)
         // Gövde dönüşü (2026-10-27, ekran/kosu; yalnız görünüm): figürün fileye göre yaw'ı (derece, + = sağa döner, sağ omuz
         // geriye). Match.AyakIsi yazar, PlayerView uygular; kural okumaz. donSektor: 0 öne, 1 sağ/geri-sağ, −1 sol/geri-sol.
         // donusAyak: leğen ve bacakların yaw'ı (ayak işi klibi bu çerçevede seçilir); hazırlıkta gövde fileye dönerken bacaklar
@@ -878,12 +878,19 @@ namespace BirdieSmash.Core
                 // 180 ms bekleme yavaşlarken kros'u 1,5 m/s'ye kadar (0,9 döngü/sn) uzatıyordu.
                 // Dönüş sürerken (hedefe > 10°) de beklemesiz: gövde dönerken eski eksende kalan klip ayağı yana sürüklüyordu
                 // (180 ms × 5 m/s ≈ 0,9 m). Tam dönüşte gidiş klip eksenine hizalı olduğundan yön titremesi zaten yok.
-                if (aday != q.ayakKlip && (ters || donuyor || Aile(aday) == Aile(q.ayakKlip))) { q.ayakKlip = aday; q.adayT = 0; }
-                if (aday != q.ayakKlip) { q.adayT = (q.adayAd == aday ? q.adayT : 0) + dt; q.adayAd = aday; if (q.adayT > .18f) { q.ayakKlip = aday; q.adayT = 0; } } else q.adayT = 0;
+                // Ters ve dönüş geçişi en az AYAK_KALIS sn sonra (2026-10-28): eşikler kare başı hızla okunduğundan 120 Hz'de
+                // fwd↔back_r/back_l 0,08 sn içinde gidip geliyordu (Titre ölçümü: geri dönüş 60 Hz'de 63, 120 Hz'de 142; adım
+                // "kekelemesi"). Bekleme saniyeyle, kare hızından bağımsız; aynı ailenin hız bandı değişimi histerezisle zaten kesilir.
+                // 0,05 sn: geri dönüş 60/120 Hz 42/40; kayma ve yan dönük geri çekilme değişmedi. 0,1 sn kaymayı 0,23 → 0,27 m/s
+                // ve fileye bakarak geri geri yürümeyi %2 → %6 artırıyordu (dönüş gecikiyor).
+                q.ayakSure += dt;
+                if (aday != q.ayakKlip && (Aile(aday) == Aile(q.ayakKlip) || (ters || donuyor) && q.ayakSure >= AYAK_KALIS)) { q.ayakKlip = aday; q.adayT = 0; q.ayakSure = 0; }
+                if (aday != q.ayakKlip) { q.adayT = (q.adayAd == aday ? q.adayT : 0) + dt; q.adayAd = aday; if (q.adayT > .18f) { q.ayakKlip = aday; q.adayT = 0; q.ayakSure = 0; } } else q.adayT = 0;
             }
-            else { q.ayakKlip = null; q.runPh = 0; }
+            else { q.ayakKlip = null; q.runPh = 0; q.ayakSure = 0; }
         }
 
+        public const float AYAK_KALIS = .05f;   // sn: ters/dönüş geçişinden önce şimdiki ayak klibinde en az kalış
         static string Aile(string c) { return c == "run" ? "fwd" : c == "kros_r" ? "chasse_r" : c == "kros_l" ? "chasse_l" : c; }
 
         // Hazırlık pozu: top yaklaşırken kol geri alınır; poz, vuruş anındaki sınıflamanın aynısıyla seçilir (temasta poz sıçramaz).

@@ -155,9 +155,11 @@ namespace BirdieSmash.Core
 
         // ---- oyuncu ----
         // Bir vuruşun üç kapısı, şimdiki top ve konum için (jest hariç). HUD, BotMac ve SwipeShot aynı denetimi kullanır.
-        public HileDenetim HileDenetle(HileTanim t)
+        public HileDenetim HileDenetle(HileTanim t) { return HileDenetle(t, new HileDenetim()); }
+        // D doldurulur ve döner: HUD her kare HileFirsat'ı sorar, tek nesne yeniden kullanılır (kare başı ayırma yok, 2026-10-28).
+        HileDenetim HileDenetle(HileTanim t, HileDenetim D)
         {
-            var D = new HileDenetim { t = t };
+            D.t = t; D.ok = false; D.neden = null; D.kosul = null; D.pay = 0;
             if (oyuncuSv < t.sv) { D.neden = "seviye"; return D; }
             if (!Aldatma.Ekipman(t, GS)) { D.neden = "ekipman"; return D; }
             Reach I; if (s == null || s.dead || s.from != "op" || !ReachInfo(out I)) { D.neden = "baglam"; return D; }
@@ -180,9 +182,10 @@ namespace BirdieSmash.Core
         public HileTanim HileFirsat()
         {
             if (s == null || s.dead || s.from != "op" || between || ogr != null && ogr.dur) return null;
-            var L = Aldatma.Liste; for (int i = L.Length - 1; i >= 0; i--) if (HileDenetle(L[i]).ok) return L[i];
+            var L = Aldatma.Liste; for (int i = L.Length - 1; i >= 0; i--) if (HileDenetle(L[i], hileFirsatD).ok) return L[i];
             return null;
         }
+        readonly HileDenetim hileFirsatD = new HileDenetim();
 
         // SwipeShot'ın başında: jest bir vuruşa uyuyorsa üç kapı; geçerse planı vuruşun planıyla değiştirir. Kapı kapalıysa
         // plan aynen kalır (jestin normal vuruşu). Rakibin aldatmasını geri çevirmek de burada sayılır.

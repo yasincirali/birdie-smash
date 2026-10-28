@@ -379,11 +379,14 @@ namespace BirdieSmash.Game
             var hf = M.HileFirsat();
             if (hf != null)
             {
-                string ht = "◆ " + L.T(hf.ad) + " · " + L.T(hf.jest); var hs = new GUIStyle(Stil(small, Mathf.RoundToInt(11 * fu), FontStyle.Bold)) { wordWrap = true };
-                float hw = Mathf.Min(rx - lx, 300 * u), hx = Mathf.Clamp(px - hw / 2, lx, Mathf.Max(lx, rx - hw)), hh = hs.CalcHeight(Ic(ht), hw);
-                Shadowed(new Rect(hx, py - R - 28 * u - hh, hw, hh), ht, hs, Kit.Hex("#c9a0ff"));
+                // Metin ve stil vuruş/yazı boyu değişince kurulur; pencere açıkken her kare yeni dize ve GUIStyle ayırmaz (2026-10-28).
+                int hb = Mathf.RoundToInt(11 * fu);
+                if (hf != hfSon || hb != hfBoy || hfStil == null) { hfSon = hf; hfBoy = hb; hfYazi = "◆ " + L.T(hf.ad) + " · " + L.T(hf.jest); hfStil = new GUIStyle(Stil(small, hb, FontStyle.Bold)) { wordWrap = true }; }
+                float hw = Mathf.Min(rx - lx, 300 * u), hx = Mathf.Clamp(px - hw / 2, lx, Mathf.Max(lx, rx - hw)), hh = hfStil.CalcHeight(Ic(hfYazi), hw);
+                Shadowed(new Rect(hx, py - R - 28 * u - hh, hw, hh), hfYazi, hfStil, HF_RENK);
             }
         }
+        HileTanim hfSon; int hfBoy; string hfYazi; GUIStyle hfStil; static readonly Color HF_RENK = new Color(0xc9 / 255f, 0xa0 / 255f, 1f);   // #c9a0ff
         static readonly Dictionary<string, string> PREV_TR = new Dictionary<string, string> { { "lift", "Lift" }, { "kill", "File vuruşu" }, { "jump", "Sıçrayarak smaç" }, { "smash", "Smaç" }, { "block", "Blok" }, { "drive", "Drive" }, { "drop", "Drop" }, { "clear", "Clear" } };
         void HedefYazi(Match M)
         {
