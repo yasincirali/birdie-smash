@@ -19,7 +19,7 @@ namespace BirdieSmash.Game
     public class Kalite : MonoBehaviour
     {
         public static int Basamak { get; private set; } = 2;
-        int tavan; float top, sayac, inisBekle, iyiSure; int natW, natH; Camera cam; public static bool Kilitli;
+        int tavan; float top, sayac, inisBekle, iyiSure, topY, sayY; bool sonYuksek; int natW, natH; Camera cam; public static bool Kilitli;
         GameRoot root; bool yuksekKapali; float gucBak; bool dusukGuc;
         static int EkranHz()
         {
@@ -33,10 +33,17 @@ namespace BirdieSmash.Game
         {
             gucBak -= Time.unscaledDeltaTime; if (gucBak <= 0) { gucBak = 5; dusukGuc = Yerel.DusukGuc(); }
             bool oyunda = root != null && root.ekran == Ekran.Oyun && !root.paused;
+            // Menü yalnız hareket sürerken yüksek hızda (2026-10-28, yasin "her yerde smooth"): kaydırma, sürükleme, USS geçişi
+            // ya da perde HAREKET_SURE içinde olduysa ProMotion'da 120, durunca 60 (pil). Durağan menü eskisi gibi 60.
+            bool menuHareket = !oyunda && Time.unscaledTime - hareketSon < HAREKET_SURE;
             int hz = EkranHz(), hedef = 60;
-            if (oyunda && !Kilitli && !yuksekKapali && !dusukGuc && Basamak == 2 && tavan == 2 && hz >= 90) hedef = Mathf.Min(120, hz);
+            if ((oyunda || menuHareket) && !Kilitli && !yuksekKapali && !dusukGuc && Basamak == 2 && tavan == 2 && hz >= 90) hedef = Mathf.Min(120, hz);
             if (Application.targetFrameRate != hedef) Application.targetFrameRate = hedef;
         }
+
+        const float HAREKET_SURE = .5f; static float hareketSon = -99;
+        // Menü bir şey kıpırdattığında çağırır (UiKok: dokunma/sürükleme/tekerlek/USS geçişi; Hud: perde).
+        public static void Hareket() { hareketSon = Time.unscaledTime; }
 
         public static Kalite Kur(GameObject g, Camera cam)
         {
@@ -95,10 +102,19 @@ namespace BirdieSmash.Game
             KareHedefi();
             if (Kilitli) return;
             float dt = Time.unscaledDeltaTime; if (dt <= 0 || dt > .5f) return;   // arka plandan dönüş gibi tek uzun kareleri sayma
-            top += dt; sayac++; inisBekle -= dt;
+            inisBekle -= dt;
+            // Yüksek hız kareleri ayrı ortalanır: menü 120 ile 60 arasında gidip gelince karışık pencere (60'ın 16,7 ms'si)
+            // 120'yi tutamıyor sanıp maçta da kapatırdı. Hedef değiştiği kare iki tarafa da sayılmaz (geçiş karesi).
+            bool yuksek = Application.targetFrameRate > 60; if (yuksek != sonYuksek) { sonYuksek = yuksek; return; }
+            if (yuksek)
+            {
+                topY += dt; sayY++; if (topY < 3) return;
+                float oy = topY / sayY; topY = 0; sayY = 0; if (oy > 1 / 100f) yuksekKapali = true;   // 120'yi tutamıyor: 60'a dön, kaliteye dokunma
+                return;
+            }
+            top += dt; sayac++;
             if (top < 3) return;
             float ort = top / sayac; top = 0; sayac = 0;
-            if (Application.targetFrameRate > 60) { if (ort > 1 / 100f) yuksekKapali = true; return; }   // 120'yi tutamıyor: 60'a dön, kaliteye dokunma
             if (ort > 1 / 50f && Basamak > 0 && inisBekle <= 0) { Uygula(Basamak - 1, true); inisBekle = 5; iyiSure = 0; return; }
             if (ort < 1 / 58f) { iyiSure += 3; if (iyiSure >= 20 && Basamak < tavan) { Uygula(Basamak + 1, false); iyiSure = 0; } }
             else iyiSure = 0;

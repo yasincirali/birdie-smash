@@ -170,6 +170,7 @@ namespace BirdieSmash.Game
         void PerdeTick(float d)
         {
             if (perdeEvre == 0) return;
+            Kalite.Hareket();   // perde ve açılış süresince menü tarafında da yüksek kare hızı (Kalite)
             if (perdeSabit >= 0) { perdeT = perdeSabit; TopPozYaz(); return; }   // ekran turu: kare dondurulmuş (PerdeKare)
             perdeT += d; perdeAci += d * 1.2f;
             if (perdeEvre == 1 && perdeT >= (Ayar.reduce ? .2f : .45f)) { perdeEvre = 2; perdeT = 0; if (perdeIs != null) { perdeIs(); perdeIs = null; } }

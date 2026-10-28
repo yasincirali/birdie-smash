@@ -150,6 +150,7 @@ namespace BirdieSmash.Game
         {
             var sv = new ScrollView(ScrollViewMode.Vertical); sv.AddToClassList("kaydir"); sv.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
             sv.verticalScrollerVisibility = ScrollerVisibility.Hidden; sv.touchScrollBehavior = ScrollView.TouchScrollBehavior.Elastic;
+            sv.verticalScroller.valueChanged += v => Kalite.Hareket();   // parmak kalktıktan sonra süren eylemsiz kayma da yüksek hızda (Kalite)
             if (tamBoy) sv.contentViewport.RegisterCallback<GeometryChangedEvent>(e => { float h = sv.contentViewport.layout.height; if (!float.IsNaN(h)) sv.contentContainer.style.minHeight = h; });
             ebeveyn.Add(sv); return sv;
         }
