@@ -6,7 +6,10 @@ Bu sürümde yeni:
 - Açılış: ikondaki güneş canlanır, 3B top konup raketle fırlar. Dokununca atlanır.
 - Maça geçiş: OYNA'dan 3B top uçar, bir bant ekranı süpürür; süre aynı.
 - Oyuncak 3B karakterler tıknaz ve sevimli. Dört beden tipi ve saçlar artık belirgin farklı.
-- Ayarlar > Oyuncu görünümü'ne "Sade" eklendi. Gerçekçi ve Sade'de beden, saç, ayakkabı görünmez; Soyunma odası bunu söyler ve Oyuncak 3B'ye geçirir.
+- Ayarlar > Oyuncu görünümü'ne "Sade" eklendi.
+- Gerçekçi: beden aynı kalır, aksesuarlar değişir. Kafa bandı, bileklik, beş ayakkabı modeli, şort rengi ve forma kumaşı artık maçta görünür. Karakter odasında Ayakkabı ve Kıyafet sekmeleri var.
+- Daha akıcı: klip geçişlerinde sıçrama yok, maç sırasında takılma azaldı, menü arkası durağanken pil harcamaz, dokular telefona uygun sıkıştırıldı.
+- Maç sonu ekranı ve XP şeridi düzeltildi; menüye dönünce kamera sıfırlanır.
 - Koşu: geriye giderken oyuncu yan döner (çapraz adım), ayaklar kaymaz, ani yön değişiminde bacaklar ters koşmaz.
 - Vuruşlar: forehand ve backhand hazırlık sırasında yer değiştirmiyor; rakip alçak topları forehand'den karşılıyor.
 - Yüksek top: kamera hafifçe yukarı bakıp genişler, top ekrandan çıkmaz. Hareket azaltıldıysa kamera sabit kalır, üstte ok gösterilir.
@@ -19,12 +22,13 @@ Nasıl denenir:
 3. Hızlı maç ve maç kartını aç: OYNA düğmesi kaydırmadan görünmeli.
 4. OYNA'ya bas: top uçmalı, bant ekranı süpürüp maçı açmalı.
 5. Soyunma odası > Karakter: dört tipi ve saçları dene; figür belirgin değişmeli. Maça gir: aynı görünmeli.
-6. Ayarlar > Oyuncu görünümü > Sade ve Gerçekçi: maç açılmalı; Soyunma odası uyarı göstermeli.
-7. Rakip clear atınca arkaya koş: oyuncu yan dönerek gitmeli, ayaklar kaymamalı.
-8. Fileye vur: ağ dalgalanmalı, bant neredeyse kıpırdamamalı.
-9. Yüksek clear at ya da karşıla: top ekranın üstünden çıkmamalı, kamera sarsmamalı.
-10. Küçük telefonun varsa (SE) menüleri ve maç sonunu kontrol et.
-11. Takılma, ısınma ya da garip görüntü olursa telefonu ve ekranı yaz.
+6. Ayarlar > Oyuncu görünümü > Gerçekçi: Soyunma odası > Karakter'de ayakkabı, şort rengi ve formayı değiştir. Maçta kafa bandı, bileklik ve seçtiğin ayakkabı görünmeli; beden değişmemeli.
+7. Sade'yi seç: maç açılmalı.
+8. Rakip clear atınca arkaya koş: oyuncu yan dönerek gitmeli, ayaklar kaymamalı.
+9. Fileye vur: ağ dalgalanmalı, bant neredeyse kıpırdamamalı.
+10. Yüksek clear at ya da karşıla: top ekranın üstünden çıkmamalı, kamera sarsmamalı.
+11. Küçük telefonun varsa (SE) menüleri ve maç sonunu kontrol et.
+12. Takılma, ısınma ya da garip görüntü olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:
