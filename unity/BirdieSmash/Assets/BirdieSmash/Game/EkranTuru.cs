@@ -27,6 +27,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UIElements;
 using BirdieSmash.Core;
 
 namespace BirdieSmash.Game
@@ -59,9 +60,10 @@ namespace BirdieSmash.Game
             yield return MenuTuru(); if (root.HudKatman != null) rap.AppendLine("açılış süresi (gerçek, CI yazılım render'ı): " + root.HudKatman.AcilisTani);
             Ayar.antrenman = true; Ayar.easy = true; Ayar.target = 5; Ayar.reduce = false; if (root.ui != null) root.ui.Kirlet();   // r11: Oyna sekmesi ilk açılış kurulumunda kalıyordu
             yield return MenuTuru("", true); Ayar.yaziTest = 2; yield return MenuTuru("x2_", true); Ayar.yaziTest = 0; root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
-            // 2026-10-26 yön A: Türkçe Oyna (CI dili İngilizce; Barlow'da ş, ğ, İ, ı karelerde görünsün), sonra eski dile dönülür.
-            { string d0 = Ayar.dil; Ayar.dil = "tr"; root.ui.SekmeAc(Sekme.Kariyer); root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(20); yield return Cek("menu_tr_oyna");
-              Ayar.yaziTest = 2; yield return Bekle(20); yield return Cek("menu_x2_tr_oyna"); Ayar.yaziTest = 0; Ayar.dil = d0; root.ui.SekmeAc(Sekme.Kariyer); root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(5); }
+            // 2026-10-26 yön A: Türkçe Oyna (CI dili İngilizce), sonra eski dile dönülür. 2026-10-29: yalnız Oyna değil bütün menü
+            // turu Türkçe de (normal ve ×2), yazı taraması iki dilde de çalışsın (YaziTara).
+            { string d0 = Ayar.dil; Ayar.dil = "tr"; root.ui.Kirlet(); yield return MenuTuru("tr_", true); Ayar.yaziTest = 2; yield return MenuTuru("x2_tr_", true);
+              Ayar.yaziTest = 0; Ayar.dil = d0; root.ui.Kirlet(); root.ui.SekmeAc(Sekme.Kariyer); root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(5); }
             yield return PerdeTuru();   // 2026-10-27 yön C: perde v2 ve açılış anı kareleri
             var modeller = new System.Collections.Generic.List<string> { "oyuncak", "rocketbox" };
             if (Resources.Load<GameObject>("karakter/sade") != null) modeller.Add("sade");
@@ -1001,7 +1003,42 @@ namespace BirdieSmash.Game
             var t = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false); RenderTexture.active = null;
             t.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0); t.Apply();
             File.WriteAllBytes(Path.Combine(dir, ad + ".png"), t.EncodeToPNG()); Destroy(t);
+            YaziTara(ad);
         }
+
+        // 2026-10-29 yazı taraması (yasin: "tüm alternatif dillerde wordingler ve ekranda aldıkları alanlar düzgün olmalı").
+        // Gözle 600 kareye bakmak "MATCH OF THE DA" gibi tek harflik kesilmeyi kaçırıyordu (r51–r53). Her karede görünen her
+        // menü yazısı kendi metniyle ölçülür: tek satırlıksa ölçülen genişlik kutusundan, çok satırlıksa ölçülen yükseklik
+        // kutusundan 1,5 birimden fazla büyükse "kesik"; kutu ekranın dışına taşıyorsa "taşma"; İngilizce arayüzde Türkçe harf
+        // (ç ğ ı İ ö ş ü) kalan metin "çevrilmemiş". Sonuç yazi_tasma.txt (kare başına satır); maç içi IMGUI HUD bunun dışında.
+        readonly StringBuilder tasma = new StringBuilder(); int tasmaSay;
+        void YaziTara(string ad)
+        {
+            var k = root != null && root.ui != null ? root.ui.KokEleman : null; if (k == null || k.panel == null) return;
+            float pw = k.layout.width, ph = k.layout.height; if (float.IsNaN(pw) || pw <= 0) return;
+            bool en = Ayar.dil == "en"; var gorulen = new HashSet<string>();
+            k.Query<TextElement>().ForEach(te =>
+            {
+                string m = te.text; if (string.IsNullOrEmpty(m) || m.Trim().Length == 0) return;
+                for (VisualElement e = te; e != null; e = e.parent)
+                    if (e.resolvedStyle.display == DisplayStyle.None || e.resolvedStyle.visibility == Visibility.Hidden || e.resolvedStyle.opacity < .05f) return;
+                var cr = te.contentRect; if (float.IsNaN(cr.width) || cr.width <= 0) return;
+                var wb = te.worldBound; if (wb.yMax < 0 || wb.yMin > ph) return;   // kaydırmanın dışında kalan satır görünmüyor
+                string neden = null;
+                bool tek = te.resolvedStyle.whiteSpace == WhiteSpace.NoWrap;
+                var o = tek ? te.MeasureTextSize(m, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined)
+                            : te.MeasureTextSize(m, cr.width, VisualElement.MeasureMode.Exactly, 0, VisualElement.MeasureMode.Undefined);
+                if (tek && o.x > cr.width + 1.5f) neden = "kesik genişlik " + o.x.ToString("F0") + ">" + cr.width.ToString("F0");
+                else if (o.y > cr.height + 1.5f) neden = "kesik yükseklik " + o.y.ToString("F0") + ">" + cr.height.ToString("F0");
+                else if (wb.xMin < -1 || wb.xMax > pw + 1) neden = "taşma x " + wb.xMin.ToString("F0") + ".." + wb.xMax.ToString("F0") + " / " + pw.ToString("F0");
+                if (neden == null && en && m.IndexOfAny(TR_HARF) >= 0) neden = "çevrilmemiş";
+                if (neden == null || !gorulen.Add(m + neden)) return;
+                string sinif = string.Join(".", te.GetClasses()); string tm = m.Replace("\n", " ⏎ ");
+                tasma.AppendLine(ad + " · " + neden + " · ." + sinif + " · \"" + tm + "\""); tasmaSay++;
+            });
+            File.WriteAllText(Path.Combine(dir, "yazi_tasma.txt"), "toplam " + tasmaSay + "\n" + tasma);
+        }
+        static readonly char[] TR_HARF = { 'ç', 'ğ', 'ı', 'İ', 'ö', 'ş', 'ü', 'Ç', 'Ğ', 'Ö', 'Ş', 'Ü' };
 
         // Yakın plan: ana kamerayı bir kareliğine figürün önüne al (HUD'suz, ayrı kamera ile RenderTexture'a).
         IEnumerator Yakin(string ad, Athlete o, bool ben)

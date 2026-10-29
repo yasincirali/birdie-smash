@@ -384,6 +384,9 @@ namespace BirdieSmash.Game
             if (salonImg != null) { salonImg.image = salonRt; salonImg.MarkDirtyRepaint(); }
         }
         // Ekran turu tanısı (EkranTuru.MenuSahne): ana kamera ne çiziyor, salon fonu var mı.
+        // 2026-10-29 (yasin: "tüm alternatif dillerde wordingler ve ekranda aldıkları alanlar düzgün olmalı"): ekran turu
+        // her karede bu kökün yazılarını ölçer (EkranTuru.YaziTara).
+        public VisualElement KokEleman { get { return doc != null ? doc.rootVisualElement : null; } }
         public string SahneDurumu { get { var c = root.cam; return "ana kamera " + (c == null ? "yok" : (c.enabled ? "açık" : "kapalı") + " maske " + c.cullingMask) + " · salon " + (salonRt != null ? salonRt.width + "x" + salonRt.height + " " + salonSaha : "yok")
             + " · stil " + doc.rootVisualElement.styleSheets.count + " " + StilTani(doc.rootVisualElement.styleSheets.count > 0 ? doc.rootVisualElement.styleSheets[0] : null)
             + " · tema " + StilTani(doc.panelSettings != null ? doc.panelSettings.themeStyleSheet : null)
