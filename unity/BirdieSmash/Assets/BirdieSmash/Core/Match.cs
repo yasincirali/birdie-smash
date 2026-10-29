@@ -47,7 +47,7 @@ namespace BirdieSmash.Core
     {
         public float t, x, y, z, side = float.NaN;
         public string who, opType;
-        public bool overhead, kill, lunge, leave;
+        public bool overhead, kill, lunge, leave, zor;   // zor: rakip topa son anda yetişti (Baski), dönüşü gevşek
         public string imza; public float imzaBas; public bool imzaBasladi;   // rakibin imza vuruşu: hazırlığın başlayacağı uçuş anı
     }
 
@@ -239,7 +239,7 @@ namespace BirdieSmash.Core
         void SetupServe()
         {
             if (ogr != null) { var a = OgrA(); if (a != null && a.bilgi == null) server = a.servis != null ? "me" : "op"; if (a != null && a.drill) OgrCagriSec(true); }   // antrenman: servis adımında sen, vuruş adımında antrenör yüksek servisle başlatır
-            s = null; me.vx = me.vy = 0; op.mvx = op.mvy = 0; me.tx = float.NaN; me.stun = 0; rally = 0; between = false; icpt = null; serveMsg = ""; ImzaSifirla(); me.fakeUntil = -9;
+            s = null; me.vx = me.vy = 0; op.mvx = op.mvy = 0; me.tx = float.NaN; me.stun = 0; rally = 0; driveSeri = 0; between = false; icpt = null; serveMsg = ""; ImzaSifirla(); me.fakeUntil = -9;
             string sv = server, side = ServeSide(sv), rv = sv == "me" ? "op" : "me";
             float[] sb = BoxX(sv, side), rb = BoxX(rv, side);
             if (sv == "me") { me.x = (sb[0] + sb[1]) / 2; me.y = Court.NET + Court.SSL + 1.4f; op.x = (rb[0] + rb[1]) / 2; op.y = Court.NET - Court.SSL - 1.6f; }
@@ -330,8 +330,11 @@ namespace BirdieSmash.Core
         float SliceKd(string from, bool slice) { return slice ? Shuttle.KD * (1 + .35f * (from == "me" ? GS.slice : 1)) : Shuttle.KD; }
         void StartFlight(string from, float vx, float vy, float vz, float hx, float hy, float hz, bool isServe, string type, bool isSuper, string q, bool slice = false)
         {
-            s = new Shuttle { x = hx, y = hy, z = hz, vx = vx, vy = vy, vz = vz, from = from, serve = isServe, type = type, super = isSuper, kd = SliceKd(from, slice), slice = slice };   // 2026-10-26: Kesici raket / Aldatıcı tarzı slice sapmasını büyütür (GS.slice, nötr 1)
+            string oncekiVurus = s != null ? s.vurus : null;
+            s = new Shuttle { x = hx, y = hy, z = hz, vx = vx, vy = vy, vz = vz, from = from, serve = isServe, type = type, super = isSuper, kd = SliceKd(from, slice), slice = slice, vurus = vurusAdi ?? type }; vurusAdi = null;   // 2026-10-26: Kesici raket / Aldatıcı tarzı slice sapmasını büyütür (GS.slice, nötr 1)
             rally++; maxRally = Math.Max(maxRally, rally);
+            driveSeri = s.vurus == "drive" && oncekiVurus == "drive" ? driveSeri + 1 : 0;
+            if (driveSeri == 2) Say(null, null, Court.MID, Court.NET, 2.2f, "Drive düellosu!", 2);   // üçüncü drive
             if (from == "me") pencereVurus = true;   // vuruşla kapanan pencere hızlı çıkar (PencereAdim)
             vurusY = hy;   // Günün maçı "file" değiştiricisi: son vuruşun derinliği
             if (from == "op") { opHitAt = clock; split = false; if (splitPending) { splitPending = false; DoSplit(); } } else { split = false; splitPending = false; }
@@ -350,11 +353,45 @@ namespace BirdieSmash.Core
             h.swHiz = 1 / (isServe ? .25f : h.shot == "lunge" ? .3f : type == "block" ? .1f : h.shot == "over" ? (type == "drop" ? .2f : .3f) : h.shot == "drive" ? .18f : h.shot == "kill" ? .15f : type == "drop" ? .12f : .25f);
             var oth = from == "me" ? op : me; if (oth.sw <= 0) oth.splitT = .3f;   // rakip vururken split step
             if (type == "smash" && !reduce) freeze = Math.Max(freeze, isSuper ? .16f : .08f);
-            Emit(Ev.Hit, from, type, hx, hy, hz, rally, null, q ?? "good", isSuper); events[events.Count - 1].slice = slice; events[events.Count - 1].serve = isServe;
+            // text = vuruşun adı (2026-10-29): GameRoot file önü kill'e kendi hissini verir (uçuş türü yine "smash")
+            Emit(Ev.Hit, from, type, hx, hy, hz, rally, s.vurus, q ?? "good", isSuper); events[events.Count - 1].slice = slice; events[events.Count - 1].serve = isServe;
             if (rally > 2 && rally % 10 == 0) Say(null, null, Court.MID, Court.NET, 2.5f, "Ralli " + rally, 2);
             PlanIntercept();
             if (from == "op" && !isServe) ImzaDuvar(type);
         }
+
+        // Baskı (2026-10-29, yasin: "file önü smaç, drive ve fake trickshot'larda oyun dinamiği değişmeli"). Önceden rakip
+        // her topa aynı 0,18 sn tepki testiyle bakıyor, yetiştiği smaçı da yavaş clear'ı da aynı kalitede (%12 kötü) dönüyordu:
+        // sert vuruş ya sayıydı ya hiçbir şey. Şimdi topa son anda yetişen rakip (pay = vuruş anı − gereken an) savunmaya
+        // geçer: tarzının seçimi yerine kısa blok ya da kısa lift, %50 kötü, sapma ×1,6. Kötü dönüş file önüne ya da orta
+        // sahaya düşer, oyuncunun bir sonraki vuruşu öldürme fırsatıdır (HUD çift halka). Eşikler (sn): smaç/sıçrama/file
+        // önü .22, drive .16 (hızlı ama düz; gövdeye gelir), başarılı aldatma .30 (rakip geç ve ters çıkmıştır).
+        // Ölçüm BotMac Baskilar(): baskı oranı, baskıdan sonraki sayı oranı.
+        public const float BASKI_SMAC = .22f, BASKI_DRIVE = .16f, BASKI_HILE = .30f;
+        public int baskiSayisi;   // maç boyunca rakibin baskıyla döndüğü top (Profil/ölçüm)
+        void Baski(Intercept I, float enRahat, bool hile)
+        {
+            if (I.leave || s == null || Dril != null || ogr != null) return;
+            if (s.from == "op")
+            {   // oyuncu: tarz seçimi yok, yalnız işaret (SwipeShot sapması); eşikler aynı, aldatma Core/Aldatma'nın kendi yolunda
+                string vo = s.vurus ?? s.type; float po = enRahat;
+                if ((vo == "smash" || vo == "jump") && po < BASKI_SMAC || vo == "drive" && po < BASKI_DRIVE) I.zor = true;
+                return;
+            }
+            string v = s.vurus ?? s.type; float pay = enRahat;
+            float esik = hile ? BASKI_HILE : v == "smash" || v == "jump" || v == "kill" ? BASKI_SMAC : v == "drive" ? BASKI_DRIVE : -1;
+            if (pay >= esik) return;
+            I.zor = true; baskiSayisi++;
+            // Rakibin Plan'ında "block" yok (oyuncunun ShotPlan'ında var): blok = file önüne düşen drop; "block" yazınca
+            // default dala düşüp derin lift oluyordu (bot ölçümü: baskılı dönüş fileden 5,2 m, baskısız 3,4 m).
+            I.opType = I.overhead ? "clear" : v == "drive" || I.z < .9f ? "drop" : (R01() < .5f ? "drop" : "lift");
+        }
+        // Drive düellosu: drive'a drive dönen rakip tempoyu tutar; ardışık her drive %5 hızlanır (en çok +%20). Önceden drive
+        // sıradan bir top gibiydi; şimdi iki oyuncu file boyunda hızlanan bir alışverişe girer ve önce yavaşlayan kaybeder.
+        // driveSeri = bu vuruştan önce arka arkaya kaç drive gitti (StartFlight sayar, ralli başında 0).
+        public int driveSeri;
+        public const float DRIVE_ARTIS = .05f, DRIVE_TAVAN = .2f;
+        float DriveHiz() { return 1 + Math.Min(DRIVE_TAVAN, DRIVE_ARTIS * (s != null && s.vurus == "drive" ? driveSeri + 1 : 0)); }
 
         // Karşılayan için yolu önceden hesapla: baş üstünde alabiliyorsa yüksekte, değilse yere düşmeden en alçak noktada.
         void PlanIntercept()
@@ -365,11 +402,13 @@ namespace BirdieSmash.Core
             s.landPred = r; if (r.net != null) s.netPred = r.net;
             float react = recv == "me" ? 0 : stil.tepki, spd = recv == "me" ? MeSpd() : OpSpd(); bool blokla = false;
             if (recv == "op") react = ImzaTepki(react, out blokla);   // duvar blok: tepkisiz çıkış; okunan duvar: geç ve ters
+            float react0 = react;
             if (recv == "op") react = HileTepki(react, r);   // aldatıcı vuruş (Core/Aldatma): geç ve ters/donuk çıkış
+            bool hileGeldi = react > react0 + 1e-4f;
             // Aldatma: kesilen/son anda bırakılan vuruşta rakip geç ve ters yöne çıkar (hold & flick).
             if (recv == "op" && deceive)
             {
-                react += .3f * GS.slice; op.fakeUntil = clock + .32f * GS.slice; op.fakeX = Clamp(2 * Court.MID - r.x, Court.SL, Court.SR); deceive = false; deceives++;
+                react += .3f * GS.slice; op.fakeUntil = clock + .32f * GS.slice; op.fakeX = Clamp(2 * Court.MID - r.x, Court.SL, Court.SR); deceive = false; deceives++; hileGeldi = true;
                 Say("op", null, op.x, op.y, 0, "Aldattın!", 2); Emit(Ev.Aldat, "op", null, op.x, op.y);
             }
             Func<PathPt, float, float> need = (p, reach) => Math.Max(0, Hyp(p.x - P0.x, p.y - P0.y) - reach) / spd + react + t0;
@@ -378,10 +417,17 @@ namespace BirdieSmash.Core
             PathPt pick = null; bool overhead = false, kill = false, lunge = false;
             if (recv == "me") foreach (var p in cands) if (Math.Abs(p.y - Court.NET) < 2.3f && p.z > Court.NETH + .2f && p.z < 2.6f && need(p, 1.15f) <= p.t) { pick = p; kill = true; break; }
             if (pick == null) foreach (var p in cands) if (p.z > 2.1f && p.z < 2.8f && need(p, 1.15f) <= p.t) { pick = p; overhead = true; break; }
+            // Drive göğüs boyunda karşılanır (2026-10-29, drive düellosu): önceden aşağıdaki kural drive'ı da diz altına (z ~0,2)
+            // düşürüp kaldırtıyordu, drive'a drive hiç dönmüyordu (ölçüm: 367 drive'ın hiçbiri). Yetişilebilen ilk 0,9–1,8 m nokta.
+            if (pick == null && s.vurus == "drive") foreach (var p in cands) if (p.z >= .9f && p.z <= 1.8f && need(p, 1.15f) <= p.t) { pick = p; break; }
             if (pick == null) for (int i = cands.Count - 1; i >= 0; i--) { var p = cands[i]; if (p.z > .75f) continue; if (need(p, 1.15f) <= p.t) { pick = p; break; } }
             if (pick == null) foreach (var p in cands) if (need(p, 1.15f) <= p.t) { pick = p; break; }
             if (pick == null && recv == "me") for (int i = cands.Count - 1; i >= 0; i--) { var p = cands[i]; if (p.z > 1.3f) continue; if (need(p, 2.1f * GS.uzanma) <= p.t) { pick = p; lunge = true; break; } }
             icpt = pick == null ? null : new Intercept { t = pick.t, x = pick.x, y = pick.y, z = pick.z, who = recv, overhead = overhead, kill = kill, lunge = lunge };
+            // Baskı payı = topun yolundaki EN rahat noktanın payı (vuruş anı − gereken an). Seçilen nokta çoğu kez "yetişilen ilk
+            // nokta"dır, payı tanımı gereği ~0; rahatlığı o değil yolun en iyi noktası söyler.
+            float enRahat = -9; foreach (var p in cands) enRahat = Math.Max(enRahat, p.t - need(p, lunge ? 2.1f * GS.uzanma : 1.15f));
+            if (recv == "me" && icpt != null) Baski(icpt, enRahat, false);
             if (recv == "op" && icpt != null)
             {
                 bool outp = IsOut(r.x, r.y, s.serve); float margin = Math.Abs(SinirPayi(r.x, r.y, s.serve));
@@ -392,6 +438,7 @@ namespace BirdieSmash.Core
                 float q = R01(), acc = 0; if (stil.hucum != 1) q *= top;
                 for (int i = 0; i < K.Length; i++) { acc += Pp[i] * (K[i] == "smash" || K[i] == "drive" ? stil.hucum : 1); if (q < acc) { pk = K[i]; break; } }
                 icpt.opType = pk;
+                Baski(icpt, enRahat, hileGeldi);
                 if (blokla && !icpt.leave) { icpt.imza = "duvarblok"; icpt.imzaBasladi = true; icpt.opType = "drop"; }
                 else ImzaPlanla(t0, cands, need);
                 if (!blokla) RakipHilePlanla(t0);   // Tur 3+ rakibin aldatıcı vuruşu (Core/Aldatma; imzalı topta denemez)
@@ -455,7 +502,7 @@ namespace BirdieSmash.Core
                 // 2026-10-26 oyun tarzı (Core/Tarz): smacHiz (Duvar −%4) ve smacYor (Smaşçı +%15 nefes) yalnız smaçta; nötr 1.
                 case "jump": d = 3.2f; byAngle = false; val = 78 * GS.guc * GS.smacHiz * NefesF(); if (!dry) { energy = 0; Yor(.3f * GS.smacYor); } break;
                 case "smash": d = 4.2f; byAngle = false; val = 52 * GS.guc * GS.smacHiz * NefesF(); if (!dry) Yor(.18f * GS.smacYor); break;
-                case "drive": d = 4.6f; byAngle = false; val = (P.bh ? 18 : 22) * GS.hiz; break;
+                case "drive": d = 4.6f; byAngle = false; val = (P.bh ? 18 : 22) * GS.hiz * DriveHiz(); break;   // drive düellosu (DriveHiz)
                 case "drop": d = P.over ? 1.2f : 1.0f; val = P.over ? DROP_A : (Math.Abs(P.hy - Court.NET) < 2.5f ? .75f : .95f); break;
                 case "block": d = .9f; val = .6f; tx = P.hx + r * 1.2f; break;
                 case "lift": tx = Court.MID + r * 1.2f; d = 5.4f; val = LIFT_A + .08f; break;
@@ -465,6 +512,7 @@ namespace BirdieSmash.Core
         }
 
         // Kesişten vuruş: yön = parmağın yönü, hız = güç ve tür, topun merkezine uzaklık = isabet.
+        string vurusAdi;   // StartFlight'a giden vuruş adı (Shuttle.vurus); bir kez kullanılır
         public string sonTip, sonQ; public bool sonSlice;   // son SwipeShot: tür (jump/kill/lift/block dahil), isabet, slice
         public bool SwipeShot(SwipeInput sw)
         {
@@ -477,7 +525,9 @@ namespace BirdieSmash.Core
             string q = cq < .4f * GS.tatli * tk ? "perfect" : cq <= 1 ? "good" : easy ? "good" : "poor"; if (I.lunge && q == "perfect") q = "good"; if (sw.tap) q = "good";
             // Slice: kavisli kaydırma = raket topu keserek alır; top takla atar, kısa düşer, rakip aldanır.
             bool slice = sw.curved && q != "poor" && (type == "drop" || type == "clear" || type == "drive" || type == "block"); if (slice) { deceive = true; slices++; }
-            float sig = ((q == "perfect" ? .1f : q == "good" ? .35f : .9f) + (I.lunge ? .4f : 0)) / GS.kontrol;
+            // Baskı oyuncuya da (2026-10-29): rakibin smaç/drive'ına son anda yetişince sapma +.35 (bot ölçümü: yalnız rakibe
+            // baskı Tur 1 Kolay kazanmayı %87 → %100 yaptı; iki yönlü baskıyla denge kapısına döner).
+            float sig = ((q == "perfect" ? .1f : q == "good" ? .35f : .9f) + (I.lunge ? .4f : 0) + (icpt != null && icpt.who == "me" && icpt.zor ? .35f : 0)) / GS.kontrol;
             if (me.nefes < .4f) sig *= GS.yorgunSapma;   // Havlu grip (2026-10-26): nefes azken sapma yarıya iner; nötr 1
             if (HD != null) HileUygula(HD, ref q, ref slice, ref sig);   // marjinal konum: kötü vuruş olasılığı ve sapma
             Func<float> g = () => (R01() + R01() + R01() - 1.5f) * sig * 1.4f;
@@ -507,7 +557,7 @@ namespace BirdieSmash.Core
             me.sw = 1; GorevKontrol();
             string ft = type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type;
             sonTip = type; sonQ = q; sonSlice = slice;   // titreşim deseni (HTML hapHit) uçuş türünü değil vuruşun kendisini ister
-            StartFlight("me", vx, vy, vz, hx, hy, hz, false, ft, type == "jump", q, slice);
+            vurusAdi = type; StartFlight("me", vx, vy, vz, hx, hy, hz, false, ft, type == "jump", q, slice);
             if (HD != null) HileSonra(HD);
             OgrOlay(type, null, slice, PL.over, sw.speed);
             return true;
@@ -569,6 +619,10 @@ namespace BirdieSmash.Core
             if (ogr == null && MermiIkinci(I)) return;
             float hx = s.x, hy = s.y, hz = Math.Max(.2f, s.z); float r0 = R01();
             string q = R01() < .12f ? "poor" : R01() < .3f ? "perfect" : "good";
+            if (I.zor) { q = R01() < .5f ? "poor" : "good"; Say("op", null, hx, hy, 0, "Zor kurtardı", 1); }   // Baski: son anda yetişti
+            // Drive düellosu: gelen drive'a, top drive yüksekliğindeyse rakip %55 drive ile döner (tarz seçiminin yerine).
+            bool gelenDrive = s.from == "me" && s.vurus == "drive";
+            if (!I.zor && gelenDrive && !I.overhead && hz > .8f && hz < 2f && R01() < .55f) I.opType = "drive";
             bool obh = HandOf(op, "op", hx, hz) == "back";
             string type = I.opType ?? (I.overhead ? "clear" : "drop"); if (obh && type == "smash") type = "clear";
             if (type == "drive" && hz <= .8f) type = "clear";   // diz altından drive yok (ShotPlan ile aynı kural): alçak top kaldırılır
@@ -587,9 +641,11 @@ namespace BirdieSmash.Core
                 StartFlight("op", vx, vy, vz, hx, hy, hz, false, "drop", false, q); return;
             }
             float tx, ty, val; bool byAngle; Plan(type, (R01() * 2 - 1) * .8f, I.overhead, out tx, out ty, out byAngle, out val);
+            if (type == "drive") val *= DriveHiz();
             if (obh && type == "clear") ty = Math.Max(ty, Court.NET + 1.2f);   // backhand clear'ı kısa kalır
             // geride kalınca rakip daha çok hata yapar (lastik bant); yorgunken sapma büyür
             float hata = stil.hata * (.5f + (easy ? .3f : 0) + (obh ? .35f : 0) + Math.Min(.9f, Behind() * .15f)) * (1 + (1 - OpNefesF()) * 3);
+            if (I.zor) { hata *= 1.6f; if (type == "lift" || type == "clear") ty = Math.Max(Court.NET + 2.2f, ty - 1.4f); }   // baskıda dönüş kısa kalır
             Func<float> g = () => (R01() - .5f) * hata;
             Shuttle.Aim(hx, hy, hz, tx + g(), ty + g(), byAngle, val, out vx, out vy, out vz);
             var chk = Shuttle.Simulate(hx, hy, hz, vx, vy, vz, false, Shuttle.KD);
@@ -662,7 +718,7 @@ namespace BirdieSmash.Core
             bool outp = IsOut(s.x, s.y, s.serve);
             if (ogr != null && s.ogrHedef != null && hitter == "me" && !outp && s.y >= s.ogrHedef[0] && s.y <= s.ogrHedef[1]) { ogr.yildiz++; Say("me", null, s.x, s.y, 0, "Hedefte! ★", 2); }
             if (outp) { if (other == "me") outsLeft++; else if (!s.serve) outsBen++; Point(other, s.serve ? (hitter == "me" ? "Servis hatası" : "Rakip servis hatası") : (hitter == "me" ? "Dışarı" : "Dışarı! Bıraktın, sayı senin"), s.x, s.y); }
-            else { if (s.type == "smash" && hitter == "me" && Dril == null) { op.dive = 1; op.yat = true; } Point(hitter, hitter == "me" ? (s.super ? "SIÇRAYARAK SMAÇ SAYISI" : s.type == "smash" ? "SMAÇ SAYISI" : "SAYI!") : "Kaçtı", s.x, s.y); }
+            else { if (s.type == "smash" && hitter == "me" && Dril == null) { op.dive = 1; op.yat = true; } Point(hitter, hitter == "me" ? (s.super ? "SIÇRAYARAK SMAÇ SAYISI" : s.vurus == "kill" ? "FİLE ÖNÜ SAYISI" : s.type == "smash" ? "SMAÇ SAYISI" : "SAYI!") : "Kaçtı", s.x, s.y); }
         }
 
         // Oyuncu hareketi: hedefe ivmeyle koşar, yaklaşınca frenler. Kolay modda kesişme noktasına kendi koşar.
@@ -1101,7 +1157,9 @@ namespace BirdieSmash.Core
                 else
                 {
                     MoveAcc(op, s.landPred.x, s.landPred.y - .4f, 2.2f, d);
-                    if (op.dive <= 0 && !IsOut(s.landPred.x, s.landPred.y, s.serve) && !(s.landPred.net != null && !s.landPred.net.ok) && s.t > s.landPred.t - .25f)
+                    // File önü kill (2026-10-29): rakip yetişemediği için atlayıp "Kıl payı!" ağır çekimi oynuyordu; kill'de
+                    // kıl payı yok, top anında yere çakılır (ağır çekim ve yazı atlanır, sayı yazısı "FİLE ÖNÜ SAYISI").
+                    if (op.dive <= 0 && s.vurus != "kill" && !IsOut(s.landPred.x, s.landPred.y, s.serve) && !(s.landPred.net != null && !s.landPred.net.ok) && s.t > s.landPred.t - .25f)
                     { op.dive = 1; op.yat = true; Emit(Ev.Kurtaris, "op", null, op.x, op.y); Say("op", null, op.x, op.y, 0, "Kıl payı!"); if (!reduce) { slow = .35f; slowT = .3f; } }
                 }
             }

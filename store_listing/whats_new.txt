@@ -1,10 +1,15 @@
 === UNITY ===
-Öğretici yazılar oyunu öğrenince söner; halkalar renk körü için biçimle de ayrışır.
+File önü smaç, drive ve aldatma artık oyunu değiştiriyor; öğretici yazılar oyunu öğrenince söner.
 
 Bu sürümde yeni:
 - Maç başı ipucu, servis talimatı ve topun yanındaki vuruş yazısı ilk 3 galibiyete kadar görünür, sonra söner. Ekran temiz kalır.
 - Top halkası biçimle de anlatır: düz halka = normal vuruş, kesik halka = uzan (uzak top), çift halka = file üstü öldürücü vuruş.
 - Hızlı maçta "Usta · koşmak da sende"yi ya da Usta yolunu ilk kez oynayınca "Dokun: oraya koş" bir kez görünür.
+- Sert smaç, hızlı drive ya da aldatma rakibi zorlarsa rakip "Zor kurtardı" der ve topu çoğu zaman filenin dibine bırakır: öldürme fırsatı.
+- Rakip de seni zorlayabilir: son anda yetiştiğin topta vuruşun daha çok sapar.
+- Drive'a drive dönülünce düello başlar: her drive biraz hızlanır, üçüncüde "Drive düellosu!" yazar.
+- File önü öldürücü vuruş artık kendi sayısı: "FİLE ÖNÜ SAYISI", ağır çekimsiz, sert ve kısa titreşim.
+- Aldatma (rakibin ya da seninki) elde kısa bir tık olarak da hissedilir.
 - İlk servisteki görev listesi ve Antrenman değişmedi.
 - Önceki sürümdeki Gün Batımı menüler, yeni karakterler, koşu, file ve kamera düzeltmeleri bu sürümde de var.
 
@@ -16,7 +21,10 @@ Nasıl denenir:
 5. Ayarlar > Hareket "Hareket azaltıldı" iken halka nabız atmamalı ama biçimi (kesik, çift) kalmalı.
 6. Hızlı maçta "Usta · koşmak da sende"yi seçip oyna: ilk sayılarda "Dokun: oraya koş" görünmeli; sonraki Usta maçında görünmemeli.
 7. Yeni kurulumda (ya da henüz 3 galibiyetin yoksa) yazılar eskisi gibi görünmeli.
-8. Garip bir şey olursa telefonu ve ekranı yaz.
+8. Rakip fileye yakınken sert smaç at: bazen "Zor kurtardı" yazmalı ve top filenin dibine düşmeli. Oraya koşup öldür.
+9. File üstündeki topa vurup sayı al: "FİLE ÖNÜ SAYISI" yazmalı, ağır çekim olmamalı.
+10. Göğüs hizasındaki topa yatay kaydırarak drive at, rakip drive ile dönerse devam et: üçüncü drive'da "Drive düellosu!" yazmalı.
+11. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:

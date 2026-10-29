@@ -143,6 +143,7 @@ static class BotMac
 
         if (gorevN == 0) Fail("görev olayı hiç gelmedi");
         OyunIncelemesi();   // 2026-10-27 (ayrı satır: ek kontrol listesi başka dallarda da büyüyor)
+        Baskilar();   // 2026-10-29 baskı, drive düellosu, file önü kill (ayrı satır)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
         Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
@@ -179,6 +180,42 @@ static class BotMac
         if (kz < n * .7) Fail("Tur 1 ilk basamak Kolay botla %" + (100 * kz / n) + " (≥ %70)");
         if (ku < n * .2) Fail("Tur 1 2. basamak Usta botla %" + (100 * ku / n) + " (≥ %20)");
         Console.WriteLine("oyun incelemesi: Hızlı maç rakibi g " + g0 + " (sıradaki basamak), Usta çarpanı " + k + "; Tur 1/1 Kolay %" + (100 * kz / n) + ", Tur 1/2 Usta %" + (100 * ku / n));
+    }
+    // 2026-10-29 (yasin: "file önü smaç, drive ve fake trickshot'larda oyun dinamiği değişmeli"): Match.Baski iki yönlü,
+    // baskıyla dönen rakip topu oyuncuya daha kısa (fileye yakın) gelir: rastgele bot gevşek topu sayıya çeviremediği için
+    // sayı oranı değil, mekanik etki ölçülür (yakalama noktasının fileye uzaklığı, baskısız dönüşe göre); drive düellosu
+    // hızlanır (+%5/drive, ≤ %20); file önü kill "FİLE ÖNÜ SAYISI" yazar ve "Kıl payı" (Kurtaris) çıkarmaz.
+    static void Baskilar()
+    {
+        int opZor = 0, benZor = 0, zorN = 0, normN = 0; float zorUz = 0, normUz = 0; int killSayi = 0, killKurtaris = 0, driveTepe = 0; float driveHizTepe = 0;
+        for (int m = 0; m < 30; m++)
+        {
+            var M = new Match(4100 + m, new MatchOptions { easy = true, stil = Match.KariyerRakip(1), target = 11 }); int guard = 0; Intercept son = null, onceki = null;
+            while (!M.over && guard++ < 60 * 60 * 30)
+            {
+                Bot(M, 1f / 60f, .12); M.Update(1f / 60f);
+                if (M.icpt != null && M.icpt != son)
+                {
+                    onceki = son; son = M.icpt; if (son.zor) { if (son.who == "op") opZor++; else benZor++; }
+                    if (son.who == "me" && onceki != null && onceki.who == "op" && M.s != null) { float uz = Math.Abs(son.y - Court.NET); if (onceki.zor) { zorN++; zorUz += uz; } else { normN++; normUz += uz; } }
+                }
+                if (M.s != null && M.s.vurus == "drive") { driveTepe = Math.Max(driveTepe, M.driveSeri); if (M.driveSeri >= 2) driveHizTepe = Math.Max(driveHizTepe, M.s.Speed); }
+                foreach (var e in M.events)
+                {
+                    if (e.kind == Ev.Kurtaris && M.s != null && M.s.vurus == "kill") killKurtaris++;
+                    if (e.kind != Ev.Point) continue;
+                    if (e.text == "FİLE ÖNÜ SAYISI") killSayi++;
+                }
+                M.events.Clear();
+            }
+        }
+        float zu = zorN > 0 ? zorUz / zorN : 0, nu = normN > 0 ? normUz / normN : 0;
+        if (opZor == 0 || benZor == 0) Fail("Baskı iki yönlü olmalı (rakip " + opZor + ", ben " + benZor + ")");
+        if (zorN < 20 || zu >= nu - .3f) Fail("Baskıyla dönen rakip topu fileye daha yakın gelmeli (" + zu.ToString("F2") + " m, baskısız " + nu.ToString("F2") + " m, n " + zorN + ")");
+        if (killSayi == 0) Fail("File önü kill sayısı \"FİLE ÖNÜ SAYISI\" yazmalı");
+        if (killKurtaris > 0) Fail("File önü kill'de \"Kıl payı\" olmamalı (" + killKurtaris + ")");
+        if (driveTepe < 2) Fail("Drive düellosu oluşmalı (en uzun seri " + driveTepe + ")");
+        Console.WriteLine("baskı: 30 maç, rakip baskıda " + opZor + " · ben " + benZor + " · baskılı dönüş fileden " + zu.ToString("F2") + " m (baskısız " + nu.ToString("F2") + " m) · file önü sayısı " + killSayi + " · drive serisi en çok " + driveTepe + " (hız tepe " + driveHizTepe.ToString("F1") + " m/s)");
     }
     // Usta botu (Denge.UstaKos ile aynı): rakip vurduktan ~0,25 sn sonra topun alınacağı yere (±30 cm), vuruştan sonra ortaya.
     static Shuttle kosTop; static float kosGecik;
