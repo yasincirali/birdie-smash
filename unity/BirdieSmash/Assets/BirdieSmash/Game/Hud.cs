@@ -572,7 +572,7 @@ namespace BirdieSmash.Game
         // Dar antrenman kartı: [başlık · sayaç] [?] [Bitir] tek satır (44 pt düğmeler), altında hız bandı ve canlı okuma.
         float OgrKartDar(Match M, OgrAdim a, float y, float x, float w, float iw, bool bant, int? hb, string canli, float igne)
         {
-            var o = M.ogr; float bw = BH, bitW = Mathf.Max(BH, small.CalcSize(Ic(L.T("Bitir"))).x + 20 * u);
+            var o = M.ogr; float bw = BH, bitW = Mathf.Max(BH, btn.CalcSize(Ic(L.T("Bitir"))).x + 24 * u);   // düğmenin kendi yazı stiliyle (small ile ölçünce "Finis h" kırılıyordu)
             float h = 8 * u + BH + (bant ? 30 * u : 0) + (canli != null ? 22 * u : 0) + 8 * u;
             var r = new Rect(x, y, w, h); blocks.Add(r); Fill(r, new Color(9 / 255f, 16 / 255f, 17 / 255f, .62f));
             float yy = y + 8 * u, tw = iw - bw - bitW - 12 * u;
