@@ -161,7 +161,42 @@ jobs:
             unity-library-ios-
 
       - name: Unity iOS build (Xcode projesi)
+        id: unity1
         # Sürüm sabit: v6 yeni ana sürüm, girdileri bu dosyada denenmedi.
+        # continue-on-error: kırılırsa sonraki adım IL2CPP çökmesi mi diye bakar; değilse iş orada kırılır.
+        continue-on-error: true
+        uses: game-ci/unity-builder@v4.8.2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          unityVersion: 6000.0.58f2
+          targetPlatform: iOS
+          projectPath: unity/BirdieSmash
+          buildMethod: BirdieSmash.EditorTools.CiBuild.iOS
+          # Sürüm adı/build numarası fastlane'de (TestFlight son numara + 1); git etiketi aranmasın.
+          versioning: None
+
+      # IL2CPP yeniden denemesi (2026-10-29, Ar-Ge 3): il2cpp --convert-to-cpp ara sıra SIGSEGV (exit 139) ile düşüyor,
+      # aynı commit yeniden denemede geçiyor (25 Eki run 45, 29 Eki PR #7). CiBuild.iOS yalnız günlükte "il2cpp" ve
+      # "Segmentation fault" aynı iletideyse build/iOS/il2cpp_cokme.txt yazar. Yalnız o zaman, yalnız bir kez yeniden
+      # denenir; C# derleme hatası ya da başka kırılma burada kırmızı kalır.
+      - name: IL2CPP çökmesi mi?
+        id: cokme
+        if: steps.unity1.outcome == 'failure'
+        run: |
+          if [ -f build/iOS/il2cpp_cokme.txt ]; then
+            echo "::warning::IL2CPP çöktü (Segmentation fault); bir kez yeniden deneniyor"
+            sudo rm -rf build/iOS
+            echo "yeniden=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Unity iOS build kırıldı (IL2CPP çökmesi değil, yeniden denenmez)"
+            exit 1
+          fi
+
+      - name: Unity iOS build (yeniden deneme)
+        if: steps.cokme.outputs.yeniden == 'true'
         uses: game-ci/unity-builder@v4.8.2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
