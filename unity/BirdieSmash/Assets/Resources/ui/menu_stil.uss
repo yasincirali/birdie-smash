@@ -10,7 +10,9 @@
    Yazı tipi (2026-10-29 Tüycükler, yasin "menüdeki iyileştirmeleri ekle"; eskisi Barlow / Barlow Condensed italik): gövde
    Nunito (SemiBold; kalın: Bold / ExtraBold), başlık ve rakam Baloo 2 ExtraBold (.baslik, .rakam). Neden: eğik dar yayın
    yazısı "spor yayını" diyordu; yuvarlak kalın yazı oyunun neşeli diline ve çocuk oyunculara uyar, Türkçe harfler iki
-   dosyada da var. OFL 1.1, Resources/fonts (değişken yazı tipinden sabit ağırlık, Baloo yalnız Latin).
+   dosyada da var. OFL 1.1, Resources/fonts (değişken yazı tipinden sabit ağırlık, Baloo yalnız Latin). r51: Baloo'nun satır
+   yüksekliği 1,60 em idi (Devanagari payı), iki satırlık başlıkların arası açılıyordu; dosyaya üst 900 / alt 260 (1,16 em;
+   Türkçe büyük harf noktaları 849'a kadar) yazıldı. UI Toolkit'te line-height yok, bu yüzden dosyada.
    Neden -unity-font-style: bold yerine ayrı dosya: tek ağırlıklı bir Font'ta kalın istenirse TextCore sahte kalınlık
    (SDF şişirme) uygular; gerçek ağırlık dosyası daha net. Bu yüzden "kalın" sınıfları ayrı dosyayı seçer, stil normal kalır.
    ★ ✓ ✗ glifleri bu yazı tiplerinde de yok: simgeler dokudan (UiOge Ikonlar), metinde bu karakterler kullanılmaz.
@@ -488,4 +490,6 @@
 .plaka { -unity-slice-bottom: 34; }
 .vs { text-shadow: 0 3px 0 rgba(30, 10, 12, 0.85); }
 .az-hareket .dugme:active, .az-hareket .cta:active, .az-hareket .ikon-dugme:active { translate: 0 0; }
+/* r51: Nunito ExtraBold Barlow Bold'dan geniş, "MATCH OF THE DAY" kutucukta kesiliyordu: harf aralığı daraldı. */
+.karo-etiket { letter-spacing: 0.1px; }
 .serit { -unity-slice-left: 22; -unity-slice-right: 22; }   /* SIRADAKİ şeridi artık hap (UiOge EgikLimonKucuk) */
