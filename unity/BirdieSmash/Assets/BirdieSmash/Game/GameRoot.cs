@@ -137,7 +137,7 @@ namespace BirdieSmash.Game
         MatchOptions Secenek(bool ogr)
         {
             Ayar.GearHesap();
-            return new MatchOptions { easy = Ayar.easy, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA };
+            return new MatchOptions { easy = Ayar.easy, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0 };
         }
         // Maç kurulumunun ortak kuyruğu (2026-10-26: dört mod aynı yoldan; davranış eski StartMatch'le birebir).
         void MacKur(int tohum, MatchOptions o)
@@ -226,6 +226,10 @@ namespace BirdieSmash.Game
             if (won) Ayar.wins++;
             if (!M.easy && M.ogr == null) Ayar.kosIpucu = true;   // Hud.KosIpucu: koşu sende ilk maç ipucu bir kez
             if (M.ogr == null && Ayar.ilerleme != null) Ayar.ilerleme.MacSay(M.smashes);   // Profil istatistiği (2026-10-26; cihazda)
+            // Yardım kademesi (Core/Ilerleme.Yardim): Usta yolu dışındaki her maç. Kayıpta sonuç ekranı söyler (gizli kolaylık değil).
+            int yardim0 = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0;
+            if (M.ogr == null && Ayar.ilerleme != null && M.stil.usta < 0) Ayar.ilerleme.YardimIsle(won);
+            bool yumusadi = Ayar.ilerleme != null && Ayar.ilerleme.Yardim > yardim0;
             string kNot = ""; bool kariyerIlk = false; int yeniYildiz = 0; bittiYildiz = null; int ekTuy = 0, ekXp = 0; string ekAd = null; bittiSkor = null;
             BittiSifirla(); bittiKazandi = won;
             if (KariyerVeri.Var(M.stil.kariyer))
@@ -277,6 +281,7 @@ namespace BirdieSmash.Game
             // birebir kopyası olduğu için orada değiştirilmez.
             bittiBas = won ? (L.En ? "Victory" : "Galibiyet") : L.T("Bu sefer rakip aldı");
             if (kNot != "") { if (kariyerIlk) bittiAcilan = L.Cumle(kNot); else bittiAltNot = L.Cumle(kNot); }
+            if (yumusadi) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Sıradaki maçta rakip biraz yavaşlayacak.");
             if (mod == Mod.Gunluk && gunluk != null) bittiUst = L.T("Günün maçı") + " · " + L.T(gunluk.deg.ad);
             else if (bittiUst == null && M.ogr == null) bittiUst = L.T("Hızlı maç") + " · " + L.T("Rakip") + " " + M.RakipAd(false);
             var bitenler = new List<string>(); foreach (var g in M.gorevler) if (g.bitti) bitenler.Add(L.Cumle(g.ad));

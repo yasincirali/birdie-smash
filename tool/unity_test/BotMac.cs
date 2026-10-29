@@ -144,6 +144,7 @@ static class BotMac
         if (gorevN == 0) Fail("görev olayı hiç gelmedi");
         OyunIncelemesi();   // 2026-10-27 (ayrı satır: ek kontrol listesi başka dallarda da büyüyor)
         Baskilar();   // 2026-10-29 baskı, drive düellosu, file önü kill (ayrı satır)
+        Yardimlar();   // 2026-10-29 kayıpta rakip yumuşar (ayrı satır)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
         Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
@@ -180,6 +181,32 @@ static class BotMac
         if (kz < n * .7) Fail("Tur 1 ilk basamak Kolay botla %" + (100 * kz / n) + " (≥ %70)");
         if (ku < n * .2) Fail("Tur 1 2. basamak Usta botla %" + (100 * ku / n) + " (≥ %20)");
         Console.WriteLine("oyun incelemesi: Hızlı maç rakibi g " + g0 + " (sıradaki basamak), Usta çarpanı " + k + "; Tur 1/1 Kolay %" + (100 * kz / n) + ", Tur 1/2 Usta %" + (100 * ku / n));
+    }
+    // 2026-10-29 (yasin: çocuklar onun hesabında zorlandı): Ilerleme.Yardim kayıpta artar, galibiyette azalır, kayda yazılır;
+    // Match rakibi ×YardimK yumuşatır, Usta yolu ve antrenman değişmez; zayıf botla en üst kademe galibiyet oranını belirgin artırır.
+    static void Yardimlar()
+    {
+        var p = new Ilerleme();
+        for (int i = 0; i < 6; i++) p.YardimIsle(false);
+        if (p.Yardim != Ilerleme.YARDIM_AZAMI) Fail("yardım tavanı " + p.Yardim);
+        p.YardimIsle(true); if (p.Yardim != Ilerleme.YARDIM_AZAMI - 1) Fail("galibiyet bir kademe geri almalı");
+        var q = Ilerleme.Oku(p.Yaz(), 0, false); if (q.Yardim != p.Yardim) Fail("yardım kayda yazılmıyor");
+        for (int i = 0; i < 9; i++) q.YardimIsle(true); if (q.Yardim != 0) Fail("yardım tabanı 0");
+        var st = Match.KariyerRakip(0); float k = Ilerleme.YardimK(3);
+        var m3 = new Match(5, new MatchOptions { easy = true, stil = st, target = 5, yardim = 3 });
+        var mu = new Match(5, new MatchOptions { easy = false, stil = UstaYolu.Rakip(0), target = 5, yardim = 3 });
+        if (Math.Abs(m3.stil.hiz - st.hiz * k) > 1e-5 || Math.Abs(m3.stil.hata - st.hata / k) > 1e-5 || st.hiz != Match.KariyerRakip(0).hiz) Fail("yardım rakibi ×k yumuşatmalı, kaynak tarz değişmez");
+        if (mu.stil.hiz != UstaYolu.Rakip(0).hiz) Fail("Usta yolunda yardım yok");
+        int w0 = 0, w4 = 0, n = 20;
+        for (int m = 0; m < n; m++)
+            foreach (int y in new[] { 0, Ilerleme.YARDIM_AZAMI })
+            {
+                var M = new Match(700 + m, new MatchOptions { easy = true, stil = Match.KariyerRakip(3), target = 11, yardim = y }); int guard = 0;
+                while (!M.over && guard++ < 60 * 60 * 30) { Bot(M, 1f / 60f, .035); M.Update(1f / 60f); M.events.Clear(); }
+                if (M.sc[0] > M.sc[1]) { if (y == 0) w0++; else w4++; }
+            }
+        if (w4 < w0 + n / 5) Fail("en üst yardım zayıf botun galibiyetini artırmıyor: %" + 100 * w0 / n + " → %" + 100 * w4 / n);
+        Console.WriteLine("yardım: zayıf bot (pHit .035) Tur 1/4 Kolay 11 sayı %" + 100 * w0 / n + " → %" + 100 * w4 / n + " (kademe " + Ilerleme.YARDIM_AZAMI + ", k " + Ilerleme.YardimK(Ilerleme.YARDIM_AZAMI) + ")");
     }
     // 2026-10-29 (yasin: "file önü smaç, drive ve fake trickshot'larda oyun dinamiği değişmeli"): Match.Baski iki yönlü,
     // baskıyla dönen rakip topu oyuncuya daha kısa (fileye yakın) gelir: rastgele bot gevşek topu sayıya çeviremediği için

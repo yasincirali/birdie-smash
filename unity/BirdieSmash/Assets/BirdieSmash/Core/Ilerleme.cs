@@ -49,6 +49,16 @@ namespace BirdieSmash.Core
         public int Smac { get { return N("smac"); } }
         public int Mac { get { return N("mac"); } }
         public void MacSay(int smac) { diger["mac"] = (double)(Mac + 1); diger["smac"] = (double)(Smac + Math.Max(0, smac)); }
+        // Yardım (2026-10-29, yasin: "benim hesabımdan oynattığım çocuklar zor olduğunu söyledi"): rakibin gücü hesabın
+        // ilerlemesine bağlı (Hızlı maç sıradaki basamağın g'si, kariyer basamağın kendisi); ilerlemiş bir hesapta yeni ya da
+        // küçük bir oyuncu her maçı kaybediyordu. Kaybedilen her maç bir kademe ekler, kazanılan her maç bir kademe geri alır
+        // (0–YARDIM_AZAMI); maçta rakibin hızı ×YardimK, hatası ÷YardimK (Match.YardimUygula). Ölçüm (zayıf bot, pHit .035,
+        // Kolay, 11 sayı): ilk basamakta k 1 → %22, k ,7 → %42, k ,6 → %72. Kazanınca hemen geri döner: güçlü oyuncu tek
+        // kayıpta rakibi kalıcı olarak yumuşatmaz. Usta yolu (bilerek seçilen sonsuz merdiven) ve antrenman sayılmaz.
+        public const int YARDIM_AZAMI = 4;
+        public int Yardim { get { return Math.Max(0, Math.Min(YARDIM_AZAMI, N("yardim"))); } }
+        public void YardimIsle(bool won) { diger["yardim"] = (double)Math.Max(0, Math.Min(YARDIM_AZAMI, Yardim + (won ? -1 : 1))); }
+        public static float YardimK(int y) { return 1 - .1f * Math.Max(0, Math.Min(YARDIM_AZAMI, y)); }
         // Antrenman sahası (adım 7) gelene kadar 0; unvan koşulu ("Antrenör") buradan okur.
         public int AntrenmanYildiz { get { var o = diger.ContainsKey("antrenman") ? Json.Obj(diger["antrenman"]) : null; int n = 0; if (o != null) foreach (var kv in o) if (kv.Value is double) n += (int)(double)kv.Value; return n; } }
 

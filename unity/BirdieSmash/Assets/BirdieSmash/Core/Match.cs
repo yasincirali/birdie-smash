@@ -98,6 +98,7 @@ namespace BirdieSmash.Core
         public GearStats gs;   // ekipman çarpanları (Gear.Hesap); null = nötr (bot testleri, eski imza)
         // 2026-10-26: Günün maçı değiştiricisi (Core/Gunluk; null = yok) ve antrenman görevi (Core/Dril; ogr ile birlikte).
         public string degistirici; public DrilTanim dril;
+        public int yardim;   // 2026-10-29: Ilerleme.Yardim kademesi (0 = yok); Usta yolu ve antrenmanda uygulanmaz
     }
 
     public partial class Match
@@ -180,7 +181,7 @@ namespace BirdieSmash.Core
             me.x = Court.MID; me.y = Court.L - 2.2f; op.x = Court.MID; op.y = 2.2f;
             if (o.ogr) OgrKur(o.ogrKisa);
             if (!o.ogr) DegistiriciKur(o.degistirici);
-            UstaGucu();
+            UstaGucu(); YardimUygula(o.yardim);
             SetupServe();
         }
         // Usta zorluğu (2026-10-27, oyun incelemesi): Usta'da oyuncu koşar, erişim 1,15 m, ağır çekim az; rakibin gücü (g) Kolay
@@ -191,6 +192,13 @@ namespace BirdieSmash.Core
         void UstaGucu()
         {
             if (easy || ogr != null || stil.usta >= 0) return; float k = KariyerVeri.Usta.carpan; if (k == 1) return;
+            stil = stil.Clone(); stil.hiz *= k; stil.hata /= k;
+        }
+        // Yardım kademesi (Ilerleme.Yardim notu): Usta çarpanıyla aynı ölçek, onun üstüne. Kaynak tarz değişmez (Clone).
+        public int yardim;
+        void YardimUygula(int y)
+        {
+            if (y <= 0 || ogr != null || stil.usta >= 0) return; yardim = Math.Min(y, Ilerleme.YARDIM_AZAMI); float k = Ilerleme.YardimK(y);
             stil = stil.Clone(); stil.hiz *= k; stil.hata /= k;
         }
         // Eski imza (bot testleri): rastgele rakip, serbest maç.
