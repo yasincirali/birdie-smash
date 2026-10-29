@@ -24,6 +24,27 @@ from mathutils import Vector, Matrix, Quaternion
 E=lambda k,d: float(os.environ.get(k,d))
 PARMAK=('thumb','index','middle','ring','pinky')
 
+class Adlar:
+    """kemik adları. 'ue' (Oyuncak 3B, UE adlı iskelet) varsayılan. 'rb' (2026-10-29, Gerçekçi = Rocketbox Bip01): yasin
+    "tutuş da elin içinden geçiyor" dedi; Gerçekçi model parmakları tek açıyla büküp sapı el kemiğinin %60'ına koyuyordu
+    (ölçüm: sap deriye 2,3 cm giriyor, avuç ve orta/yüzük parmağı sapın içinde). Aynı tutuş katmanı ad eşlemesiyle
+    kullanılır: Finger0..4 = başparmak..serçe, boğumlar '', '1', '2'; köşe grupları kemikle aynı adda."""
+    def __init__(s,tur='ue'): s.tur=tur
+    def el(s,k): return f'hand_{k}' if s.tur=='ue' else f'Bip01 {k.upper()} Hand'
+    def onkol(s,k): return f'lowerarm_{k}' if s.tur=='ue' else f'Bip01 {k.upper()} Forearm'
+    def p(s,f,j,k):
+        return f'{f}_0{j}_{k}' if s.tur=='ue' else f'Bip01 {k.upper()} Finger{PARMAK.index(f)}'+('','1','2')[j-1]
+    def coz(s,nm):
+        """köşe grubu / kemik adı → (bölüm, el): bölüm 'avuc' ya da parmak adı; ikisi de değilse None"""
+        if s.tur=='ue':
+            m=re.match(r'(thumb|index|middle|ring|pinky)_0\d_([rl])$',nm)
+            if m: return m.group(1),m.group(2)
+            m=re.match(r'hand_([rl])$',nm); return ('avuc',m.group(1)) if m else None
+        m=re.match(r'Bip01 ([RL]) Finger(\d)\d?$',nm)
+        if m: return PARMAK[int(m.group(2))],m.group(1).lower()
+        m=re.match(r'Bip01 ([RL]) Hand$',nm); return ('avuc',m.group(1).lower()) if m else None
+UE=Adlar()
+
 # klip → tutuş. Ön: el sıkışma (forehand). bh: başparmak (backhand, başparmak geniş arka yüzde). kil: file önü öldürme
 # (panhandle'a yakın, yüz fileye). parmak: file vuruşu, parmak uçlarıyla kontrol, el sapta yukarı kayar.
 KLIP_TUTUS={'bh_over':'bh','bh_drive':'bh','bh_kill':'bh','bh_low':'bh','bh_lunge':'bh','block':'bh','serve_bh':'bh',
@@ -57,19 +78,19 @@ def _ss(a,b,x):
 class El:
     """Bir elin dinlenme ölçüleri (el kemiği yerel çerçevesinde): r radyal (başparmak yanı), a uzun eksen (bilek → orta
     parmak kökü), n avuç normali. Parmak kalınlığı ve avuç derinliği deri ağından ölçülür."""
-    def __init__(s,ao,k,govde,avuc_dunya):
-        s.k=k; B=ao.data.bones; s.ao=ao
-        hb=B[f'hand_{k}']; s.hb=hb; M=hb.matrix_local; Mi=M.inverted(); R3=M.to_3x3(); Ri=R3.inverted()
+    def __init__(s,ao,k,govde,avuc_dunya,ad=UE):
+        s.k=k; B=ao.data.bones; s.ao=ao; s.ad=ad
+        hb=B[ad.el(k)]; s.hb=hb; M=hb.matrix_local; Mi=M.inverted(); R3=M.to_3x3(); Ri=R3.inverted()
         W=hb.head_local
         loc=lambda p: Mi@p
-        mi,mm,mr,mp=(B[f'{f}_01_{k}'].head_local for f in ('index','middle','ring','pinky'))
+        mi,mm,mr,mp=(B[ad.p(f,1,k)].head_local for f in ('index','middle','ring','pinky'))
         a=(Ri@(mm-W)).normalized(); n=(Ri@Vector(avuc_dunya)).normalized(); n=(n-a*n.dot(a)).normalized()
         r=a.cross(n) if k=='r' else n.cross(a)
         if r.dot(Ri@(mi-mp))<0: r=-r
         s.a,s.n,s.r=a,n,r
         s.Lp=(mm-W).length; s.wp=(mi-mp).length
-        s.mcp={f:loc(B[f'{f}_01_{k}'].head_local) for f in PARMAK}
-        s.uzun={f:sum(B[f'{f}_0{j}_{k}'].length for j in (1,2,3)) for f in PARMAK}
+        s.mcp={f:loc(B[ad.p(f,1,k)].head_local) for f in PARMAK}
+        s.uzun={f:sum(B[ad.p(f,j,k)].length for j in (1,2,3)) for f in PARMAK}
         s.rot=lambda v: R3@v
         # deri ölçüsü (dinlenme ağı): parmak yarıçapı (kemik çizgisine medyan uzaklık), avucun avuç yüzü derinliği
         gi={g.index:g.name for g in govde.vertex_groups}; me=govde.data
@@ -77,11 +98,11 @@ class El:
         for v in me.vertices:
             if not v.groups: continue
             g=max(v.groups,key=lambda x:x.weight); nm=gi[g.group]
-            m_=re.match(r'(thumb|index|middle|ring|pinky)_0(\d)_'+k+'$',nm)
-            if m_ and g.weight>.6:
+            m_=ad.coz(nm)
+            if m_ and m_[1]==k and m_[0]!='avuc' and g.weight>.6:
                 b=B[nm]; h,t=b.head_local,b.tail_local; d=t-h; u=max(0.,min(1.,(v.co-h).dot(d)/d.length_squared))
-                kal[m_.group(1)].append((v.co-(h+d*u)).length)
-            elif nm==f'hand_{k}' and g.weight>.6:
+                kal[m_[0]].append((v.co-(h+d*u)).length)
+            elif nm==ad.el(k) and g.weight>.6:
                 q=loc(v.co); avuc.append(q)
         s.yaricap={f:(sorted(x)[len(x)//2] if x else .006) for f,x in kal.items()}
         s.avuc_pts=avuc
@@ -158,14 +179,14 @@ def _seg_eksen(P0,P1,C,h,n=6):
 class Parmaklar:
     """parmak boğumlarını sap silindirine sarar, sol elde çimdik kurar. Çözüm her poz için açı sözlüğüdür (kemik adı →
     yerel kuaterniyon); uygula() bunları rotation_quaternion'a yazar."""
-    def __init__(s,ao,el_r,el_l):
-        s.ao=ao; s.el={'r':el_r,'l':el_l}; s.ekR={'r':{},'l':{}}
+    def __init__(s,ao,el_r,el_l,ad=UE):
+        s.ao=ao; s.ad=ad; s.el={'r':el_r,'l':el_l}; s.ekR={'r':{},'l':{}}; s.kof={}
         B=ao.data.bones; s.flex={}; s.rel={}; s.boy={}; s.yan={}
         for k,el in s.el.items():
             nw=el.rot(el.n)   # dinlenme (armatür) avuç normali
             for f in PARMAK:
                 for j in (1,2,3):
-                    nm=f'{f}_0{j}_{k}'; b=B[nm]; d=(b.tail_local-b.head_local).normalized()
+                    nm=ad.p(f,j,k); s.kof[nm]=k; b=B[nm]; d=(b.tail_local-b.head_local).normalized()
                     # başparmak avuca değil işaret parmağının köküne doğru kapanır: avuç normali ile radyalin karışımı
                     nn=(nw-el.rot(el.r)*.6).normalized() if f=='thumb' else nw
                     s.flex[nm]=(b.matrix_local.to_3x3().inverted()@d.cross(nn).normalized()).normalized()   # +açı = kapanma
@@ -180,11 +201,11 @@ class Parmaklar:
             out.append((M.translation.copy(),(M@Vector((0,s.boy[nm],0))),M))
         return out
     def Hm(s,k):
-        return s.ao.matrix_world@s.ao.pose.bones[f'hand_{k}'].matrix
+        return s.ao.matrix_world@s.ao.pose.bones[s.ad.el(k)].matrix
     def uygula(s,k=None):
         pb=s.ao.pose.bones
         for nm,q in s.Q.items():
-            if k and not nm.endswith('_'+k): continue
+            if k and s.kof.get(nm)!=k: continue
             pb[nm].rotation_mode='QUATERNION'; pb[nm].rotation_quaternion=q
     def q(s,nm,aci,yan=0.):
         q=Quaternion(s.flex[nm],aci)
@@ -198,7 +219,7 @@ class Parmaklar:
             R=Rs+el.yaricap[f]+gev+s.ekR[k].get(f,0.)
             ab=math.radians(P['isaret']) if f=='index' else math.radians({'middle':0,'ring':-3,'pinky':-6}[f])
             ust=dict(index=(85,95,70),middle=(90,105,75),ring=(90,105,75),pinky=(95,105,75))[f]
-            zn=[f'{f}_0{j}_{k}' for j in (1,2,3)]; Q={}
+            zn=[s.ad.p(f,j,k) for j in (1,2,3)]; Q={}
             # Sargı bir en iyileme: MCP açısı a1 ve PIP açısı a2 (DIP = 0,7·PIP, anatomik bağ) taranır; ceza = parmak
             # kemik çizgisinin sap ekseninden R'nin içine girmesi (×60, kare) + R'den uzaklığı (×1, kare; parmak sapa
             # yaslansın). Boğum boğum "değene kadar bük" kuralları çapraz sapta kırılıyordu: sap parmak düzlemini eğik
@@ -262,26 +283,26 @@ class Parmaklar:
         nw=(R3@el.n).normalized(); rw=(R3@el.r).normalized()
         nperp=(nw-h*nw.dot(h)).normalized(); rperp=(rw-h*rw.dot(h)).normalized()
         R=Rs+el.yaricap['thumb']+gev+s.ekR[k].get('thumb',0.)
-        J=(H@s.rel[f'thumb_01_{k}']).translation; tJ=(J-C).dot(h)
+        J=(H@s.rel[s.ad.p('thumb',1,k)]).translation; tJ=(J-C).dot(h)
         if bicim=='duz':
             hed=C+h*(tJ+.62*el.uzun['thumb'])+(rperp*.80+nperp*.20).normalized()*R
         elif bicim=='uc':
             hed=C+h*(tJ+.55*el.uzun['thumb'])+(nperp*.55+rperp*.45).normalized()*(R+.002)
         else:
             hed=C+h*(tJ+.45*el.uzun['thumb'])+(nperp*.70+rperp*.30).normalized()*(R+.2*el.yaricap['middle'])
-        zn=[f'thumb_0{j}_{k}' for j in (1,2,3)]
+        zn=[s.ad.p('thumb',j,k) for j in (1,2,3)]
         sin={zn[1]:(math.radians(-5),math.radians(55 if bicim!='duz' else 22)),zn[2]:(math.radians(-10),math.radians(60 if bicim!='duz' else 12))}
         s._ccd(k,zn,hed,sin,serbest0=True,tur=10)
     def rahat(s,k,kat=1.):
         """boş el: hafif kıvrık, serçeye doğru artan (doğal dinlenme kaskadı)"""
         for f,ac in dict(index=(12,20,10),middle=(16,26,14),ring=(20,30,16),pinky=(24,34,18),thumb=(6,10,8)).items():
-            for j,a in zip((1,2,3),ac): s.Q[f'{f}_0{j}_{k}']=s.q(f'{f}_0{j}_{k}',math.radians(a*kat))
+            for j,a in zip((1,2,3),ac): s.Q[s.ad.p(f,j,k)]=s.q(s.ad.p(f,j,k),math.radians(a*kat))
     def cimdik(s,k,P,u=None):
         """sol el çimdik: işaret ve başparmak pedleri P'nin iki yanında (u yönünde; aralarında tüy duvarı), diğerleri
         gevşek kıvrık"""
         s.rahat(k,1.5)
         el=s.el[k]; R3=s.Hm(k).to_3x3().normalized(); nw=(R3@el.n).normalized(); rw=u if u is not None else (R3@el.r).normalized()
-        zi=[f'index_0{j}_{k}' for j in (1,2,3)]; zt=[f'thumb_0{j}_{k}' for j in (1,2,3)]
+        zi=[s.ad.p('index',j,k) for j in (1,2,3)]; zt=[s.ad.p('thumb',j,k) for j in (1,2,3)]
         s._ccd(k,zi,P+rw*(el.yaricap['index']+.0012),{zi[0]:(0.,math.radians(80)),zi[1]:(0.,math.radians(80)),zi[2]:(0.,math.radians(35))})
         s._ccd(k,zt,P-rw*(el.yaricap['thumb']+.0012),{zt[1]:(math.radians(-5),math.radians(40)),zt[2]:(math.radians(-15),math.radians(30))},serbest0=True)
 
@@ -299,8 +320,8 @@ def _aci_ok(f,T,nd):
 class Tutus:
     """Oyuncak 3B'nin raket eli. kur(): iskelet ve deri hazır olunca bir kez. Her pozda: hazirla(T) (super().uygula'dan
     önce, ön kol burulma hedefi), el(T) (sonra: bilek, raket çerçevesi T['_rk'], T['_fn'], T['_el']), parmak(T)."""
-    def __init__(s,ao,govde,avuc,raket_s,gr_kat):
-        s.ao=ao; s.govde=govde; s.el={k:El(ao,k,govde,avuc[k]) for k in 'rl'}; s.P=Parmaklar(ao,s.el['r'],s.el['l'])
+    def __init__(s,ao,govde,avuc,raket_s,gr_kat,ad=UE):
+        s.ao=ao; s.govde=govde; s.ad=ad; s.el={k:El(ao,k,govde,avuc[k],ad) for k in 'rl'}; s.P=Parmaklar(ao,s.el['r'],s.el['l'],ad)
         s.gr=.0135*raket_s*gr_kat; s.y0=-.20*raket_s*.55   # insan.raket: sap yarıçapı ve sap dibinin raket yerel y'si
         s.bilgi=None; s.asim=0.; s.son={}
     def _sinif(s):
@@ -310,9 +331,8 @@ class Tutus:
         for v in o.data.vertices:
             if not v.groups: continue
             g=max(v.groups,key=lambda x:x.weight); nm=gi[g.group]
-            m_=re.match(r'(thumb|index|middle|ring|pinky)_0\d_r$',nm)
-            if m_: vk[v.index]=m_.group(1)
-            elif nm=='hand_r': vk[v.index]='avuc'
+            m_=s.ad.coz(nm)
+            if m_ and m_[1]=='r': vk[v.index]=m_[0]
         s._vk=vk; return vk
     def deri(s,T):
         """deri ağında sap silindirine işaretli uzaklık (model birimi; <0 içeride), sapın el bölgesinde. Döner {bölüm: min}"""
@@ -361,8 +381,8 @@ class Tutus:
     def el_kur(s,T):
         """bilek: el = istenen yön, eklem sınırında kırpılmış; raket çerçevesi elden"""
         ao=s.ao; pb=ao.pose.bones; B=ao.data.bones; L=bpy.context.view_layer; el=s.el['r']
-        la=pb['lowerarm_r']; hb=pb['hand_r']
-        Rrel=B['lowerarm_r'].matrix_local.to_3x3().inverted()@B['hand_r'].matrix_local.to_3x3()
+        nla,nhb=s.ad.onkol('r'),s.ad.el('r'); la=pb[nla]; hb=pb[nhb]
+        Rrel=B[nla].matrix_local.to_3x3().inverted()@B[nhb].matrix_local.to_3x3()
         N=la.matrix.to_3x3().normalized()@Rrel
         Q=(N.inverted()@s.Rb).to_quaternion()
         f=(N.inverted()@(la.matrix.to_3x3().normalized()@Vector((0,1,0)))).normalized()

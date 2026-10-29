@@ -36,6 +36,17 @@ class AdayIskelet(insan.Iskelet):
                 if n in T: T[n]=T[n]+dz
         return T
     def uygula(s,T):
+        # Tutuş katmanı (2026-10-29, tutus.py; yasin: "tutuş da elin içinden geçiyor"): Oyuncak'la aynı sıra. hazirla raketin
+        # istediği yönden avucun bakacağı yönü çıkarır (ön kol burulması bunu hedefler), el_kur bileği o yöne kırpılmış
+        # sınırla kurar ve raket çerçevesini elden yazar (T['_el'], T['_rk'], T['_fn']), parmak sapı sarar.
+        tut=getattr(s,'tut',None)
+        s._uygula0(tut.hazirla(T) if tut else T)
+        if tut:
+            tut.el_kur(T)
+            if getattr(s,'parmak_coz',True): tut.parmak(T,None)
+            else: tut.P.uygula()
+            bpy.context.view_layer.update()
+    def _uygula0(s,T):
         ao=s.ao; pb=ao.pose.bones; L=bpy.context.view_layer
         for b in pb: b.matrix_basis=Matrix()
         L.update()
@@ -171,7 +182,9 @@ class Temas:
             for v in (-.6,0,.6): P.append(palm+x*(u*b_)+rk*(cy+v*a_))
         return P
     def raket(s,T):
-        palm=s.A.avuc()
+        # tutuş katmanında raket elden kurulur (T['_el'] sap kökü, T['_rk'], T['_fn']); denetim o raketle yapılır, düzeltme
+        # yine pozun isteğine (T['rk']) uygulanır ve uygula() raketi elden yeniden çıkarır
+        tt='_el' in T; palm=T['_el'] if tt else s.A.avuc(); rk0=T['_rk'] if tt else T['rk']; f0=T['_fn'] if tt else T['rkFace']
         To=s._agac({'govde','bacak','elL','kolL','ustL','ustR'})
         def acik(rk,yuz):
             en=9.
@@ -180,17 +193,17 @@ class Temas:
                 if loc is None: continue
                 en=min(en,d if (p-loc).dot(s._yon(To,loc,nr))>=0 else -d)
             return en
-        a0=acik(T['rk'],T['rkFace'])
+        a0=acik(rk0,f0)
         if a0>=s.PAY_RAKET: return False
-        rk=T['rk'].normalized(); u=rk.orthogonal().normalized(); v=rk.cross(u); en=(a0,0,None)
+        rk=rk0.normalized(); u=rk.orthogonal().normalized(); v=rk.cross(u); en=(a0,0,None)
         for deg in range(4,44,4):
             for j in range(12):
                 ax=(u*math.cos(j*math.pi/6)+v*math.sin(j*math.pi/6)).normalized(); R=Matrix.Rotation(math.radians(deg),3,ax)
-                a=acik(R@rk,R@T['rkFace'])
+                a=acik(R@rk,R@f0)
                 if a>en[0]+1e-4: en=(a,deg,R)
             if en[0]>=s.PAY_RAKET: break
         if en[2] is None: return False
-        T['rk']=en[2]@rk; T['rkFace']=en[2]@T['rkFace']; s.rapor['raket']=max(s.rapor.get('raket',0),en[1]); return True
+        T['rk']=en[2]@T['rk'].normalized(); T['rkFace']=en[2]@T['rkFace']; s.rapor['raket']=max(s.rapor.get('raket',0),en[1]); return True
     def ayaklar(s,T):
         ao=s.A.ao; pb=ao.pose.bones; L=bpy.context.view_layer; mw=ao.matrix_world; kalan={}
         for K in 'RL':
@@ -269,7 +282,21 @@ class Aday:
         s.kalici=mesh; s.M=M; s.I=AdayIskelet(ao,R); s.gecici=[]; s.boy=.49/.49; s.R=R; s.stil={}
         s.temas=Temas(s) if os.environ.get('BS_RB_TEMAS','1' if s.kit else '0')=='1' else None
         s.doku_gomme=not s.kit   # kit: Unity dokuları Resources'tan okur (PlayerView.DokuMalzeme); FBX'e gömülmez (boyut)
-        s.olc=olc
+        s.olc=olc; s.klip_bilgi=None
+        if os.environ.get('BS_ADAY_RIG','rocketbox')=='rocketbox' and os.environ.get('BS_RB_TUTUS','1')=='1':
+            # tutuş katmanı (AdayIskelet.uygula notu). Sap yarıçapı ×0,62: s=1 raketin sapı oyunda 4,7 cm çaplıydı (gerçek
+            # sap + grip ~2,7–3 cm); gerçek oranlı elde parmaklar o kalınlığı saramıyordu. Oyunda yeni çap 2,9 cm (Oyuncak'la
+            # aynı görünen kalınlık). Raket geometrisi de bu çarpanla kurulur (insan.RAKET_LOD, unity_fbx aynı modülü okur).
+            import tutus
+            grk=float(os.environ.get('BS_RB_SAP','.62')); insan.RAKET_LOD=dict(insan.RAKET_LOD or {},gr=grk)
+            bn=ao.data.bones; avuc={}
+            for k in 'RL':
+                w=bn[f'Bip01 {k} Hand'].head_local; a=bn[f'Bip01 {k} Finger1'].head_local-w; b_=bn[f'Bip01 {k} Finger4'].head_local-w
+                n=a.cross(b_).normalized(); th=bn[f'Bip01 {k} Finger02'].tail_local-w
+                if n.dot(th)<0: n=-n
+                avuc[k.lower()]=n
+            ten=next(o for o in mesh if str(o.get('tag'))=='ten')
+            s.I.tut=tutus.Tutus(ao,ten,avuc,1.0,grk,tutus.Adlar('rb'))
     def aksesuar(s):
         """2026-10-27 (yasin: Gerçekçi'de beden sabit, aksesuarlar değişsin): klipler pişirildikten SONRA çağrılır
         (unity_fbx.py, dışa aktarmadan önce): şort ve ayakkabı ten ağından ayrılır, beş ayakkabı modeli, başa/ön kola
@@ -279,6 +306,7 @@ class Aday:
         import rocketbox_aksesuar
         ten=next(o for o in s.kalici if str(o.get('tag'))=='ten'); return rocketbox_aksesuar.uygula(s.ao,ten,s.olc)
     def parmak(s):
+        if getattr(s.I,'tut',None): return   # tutuş katmanı parmakları uygula() içinde kurar
         pb=s.ao.pose.bones
         if 'Bip01 R Finger1' in pb:   # parmaklar: raket elinde sapı sarar, boştaki el yarı açık (iskeletin yerel X'i bükme ekseni)
             # kit: 45° (2026-10-26 ölçümü: 65°'de sapın içinde kalan el köşesi boşta 28 / smaçta 43, 45°'de 14 / 31; sap
@@ -300,11 +328,14 @@ class Aday:
         return s.ao.matrix_world@p
     def kur_poz(s,p):
         for o in s.gecici: bpy.data.objects.remove(o)
-        s.gecici=[]; T=s.I.hedef(p)
+        s.gecici=[]; T=s.I.hedef(p); tut=getattr(s.I,'tut',None)
+        if tut: tut.bilgi=s.klip_bilgi
         if s.temas: s.temas.coz(T)
         else: s.I.uygula(T); s.parmak()
         s.T=T; pb=s.ao.pose.bones
-        nes,s.kafa=insan.raket(s.avuc(),T['rk'],T['rkFace'],1.0,s.M); s.gecici+=nes
+        if tut: nes,s.kafa=insan.raket(T['_el'],T['_rk'],T['_fn'],1.0,s.M)
+        else: nes,s.kafa=insan.raket(s.avuc(),T['rk'],T['rkFace'],1.0,s.M)
+        s.gecici+=nes
         return s.kalici+s.gecici
 
 YUZ_KEMIK=('Eye','Jaw','Lip','Tongue','Mouth','Masseter','Caninus','Cheek','Eyebrow','Nose','Upperlip')
