@@ -1,0 +1,3 @@
+toplam 2
+menu_tr_ayarlar · kelime bölündü 58>36 · .unity-text-element.unity-label.yazi.dugme-yazi · "Oyuncak 3B"
+model_ayarlar_gercekci · kelime bölündü 57>34 · .unity-text-element.unity-label.yazi.dugme-yazi · "Realistic"
