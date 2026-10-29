@@ -571,6 +571,8 @@ namespace BirdieSmash.Game
         IEnumerator DuyarliTuru()
         {
             var ui = root.ui; if (ui == null) yield break;
+            // Önceki bölüm (FileKare) maçta biter: menüye dönmeden ilk boy (SE) maç karesini ölçüyordu (r44: 0 öğe).
+            root.AnaMenu(); yield return Bekle(10);
             int w0 = Screen.width, h0 = Screen.height; dKare = 0; dSorun = 0;
             for (int i = 0; i < D_AD.Length; i++)
             {
@@ -676,6 +678,7 @@ namespace BirdieSmash.Game
                 Ayar.KOZ[Kozmetik.TIP] = tip; Ayar.KOZ[Kozmetik.SAC] = sac; Ayar.gear.ayakkabi = ayk;
                 root.StartMatch(false, false, false); botAcik = false; yield return Bekle(45);
                 yield return Yakin("model_mac_" + tip, root.match.me, true);
+                { var bv = Ben(); if (bv != null) rap.AppendLine("servis eli " + tip + " · klip " + bv.TaniKlip + " · inme " + bv.TaniServisIn.ToString("0.000") + " m"); }
                 var ka = Gear.GEAR["ayakkabi"][ayk];
                 VaryantSatir("maç tip=" + tip + " sac=" + sac + " ayk=" + ayk, Ben(), PlayerView.ModelYolu("oyuncak", tip), Kozmetik.Bul(Kozmetik.SAC, sac).varlik, ka.varlik ?? ka.id, ref t);
             }

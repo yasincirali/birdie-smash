@@ -748,7 +748,7 @@ namespace BirdieSmash.Game
             Sample(cur, ph, prev, prevPh, prev == null ? 1 : Mathf.SmoothStep(0, 1, blend), altKlip, altPh, altW, prev2, prev2Ph, prev2Pay);   // smoothstep (2026-10-26): doğrusal ağırlık geçişin başında ve sonunda hız kırığı veriyordu
             KalcaDonus(o);   // ana örneklemeden hemen sonra: uzanma kalçayı kaydırmadan, ayak kilidi IK'dan önce
             Uzan(o, M, j);   // kayma ve kalça: ayak kilidinden önce (kilit kalça kaymasını ayakta geri alır)
-            FileItin(); AyakKilit(dt); HazirNefes(o, M); UzanKol();
+            FileItin(); AyakKilit(dt); HazirNefes(o, M); UzanKol(); ServisEller();
         }
 
         // Kalça–omuz ayrışması (2026-10-27, ekran/kosu): hazırlıkta koşarken gövde fileye döner (Athlete.donus), bacaklar
@@ -877,6 +877,28 @@ namespace BirdieSmash.Game
             Vector3 ekS = (H.position - S.position).normalized, k1 = Vector3.ProjectOnPlane(E.position - (S.position + H.position) * .5f, ekS), k0p = Vector3.ProjectOnPlane(kutup, ekO);
             TaniDirsek = k1.sqrMagnitude > 1e-8f && k0p.sqrMagnitude > 1e-8f ? Vector3.Angle(k0p, k1) : 0;
             TaniUzanW = w * f; TaniUzanSonra = (uzanHedef - kafa.position).magnitude;
+        }
+
+        // Kısa/flick servis duruşunda eller çeneden aşağıda (2026-10-28, ekran turu r44 model_mac_*): klipler ortak iskelette
+        // göğüs hizasında tutuşla pişirilir; tıknaz oyuncakta (kısa gövde, büyük baş) aynı açılar sağ eli çeneye, raket sapını
+        // yüzün önüne getiriyordu. El, sağ omuzdan SERVIS_EL_PAY (dünya m) aşağıya inene kadar iki el birlikte (tüy sol elde,
+        // raket–top ilişkisi korunur) iki kemik IK ile indirilir; el dünya dönüşleri korunur. Gerçekçi ve Sade'de el zaten
+        // aşağıda (inme 0). Yalnız görünüm: servis temas noktası ve süresi Core'da.
+        const float SERVIS_EL_PAY = .12f; public float TaniServisIn;
+        void ServisEller()
+        {
+            TaniServisIn = 0;
+            if (hakem || kKol == null || (cur != "serve_bh" && cur != "serve_flick")) return;
+            Transform rS = kKol[3], rE = kKol[4], rH = kKol[5]; if (rS == null || rE == null || rH == null) return;
+            float d = rH.position.y - (rS.position.y - SERVIS_EL_PAY); if (d <= 1e-3f) return;
+            Vector3 asagi = -yaw.up * d;
+            for (int s = 1; s >= 0; s--)
+            {
+                Transform S = kKol[s * 3], E = kKol[s * 3 + 1], H = kKol[s * 3 + 2]; if (S == null || E == null || H == null) continue;
+                Vector3 orta = (S.position + H.position) * .5f, kutup = E.position - orta; var rot = H.rotation;
+                IK(S, E, H, H.position + asagi, kutup.sqrMagnitude > 1e-6f ? kutup : -yaw.up); H.rotation = rot;
+            }
+            TaniServisIn = d;
         }
 
         // İmza vuruşu hazırlığı (2026-10-26, Core/Imza; tasarım §3.3 kural 1): raket kafasında imzanın renginde ışık küresi +
