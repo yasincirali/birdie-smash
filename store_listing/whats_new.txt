@@ -1,17 +1,20 @@
 === UNITY ===
-Maç sonunda kazandığın Tüyler uçuşarak bakiyene konuyor. İngilizce ve Türkçe menülerde kesilen ya da taşan yazı kalmadı.
+Açılış ve maça geçiş animasyonu yeniden eski (HTML) hâlinde: dönen gün batımı halkaları ve smaçla uçan top.
 
 Bu sürümde yeni:
-- Maç sonu: kazandığın Tüy kadar tüycük ekranın ortasından uçup Tüy kutusuna giriyor; her biri girince kutu zıplıyor ve "+N" sayısı artıyor. Hareketi azalt açıksa uçuş yok, sayı doğrudan yazılır.
-- Menülerdeki yazılar iki dilde de tarandı: ana ekran kutucuk başlıkları ("Günün maçı", "Hızlı maç"), "deneniyor" etiketi, kilitli renklerdeki "Sv/Lv" yazısı, tel gerginliği − / + düğmeleri ve kariyer final basamağı artık kesilmiyor.
-- Yeni oyuncu görünümü Tüycük ve yeni menü görünümü (önceki sürümden).
+- Uygulama açılırken ekran dönen halkalarla kaplı başlar, hazır olunca halkalar ortaya doğru küçülüp menüyü açar.
+- Oyna'ya basınca top hız çizgileriyle sol alttan sağ üste uçar, halkalar ortadan büyüyüp ekranı kapatır, maç hazır olunca küçülerek açılır.
+- Hazırlık uzarsa halkaların ortasında dönen tüy top ve "Hazırlanıyor…" yazısı görünür.
+- Maç içinde servis yazısı artık ortada tek satırlık küçük bir kutu; kortu kapatmıyor, alttan kesilmiyor.
+- Antrenman görevlerinde talimat yalnız ilk toptan önce açık; oynarken üstte yalnız görev adı, sayaç ve hız bandı kalır. Talimatı "?" açar, "Bitir" görevi bitirir.
+- Maç sonunda uçan Tüyler ve iki dilde yazı düzeltmeleri (önceki sürümden).
 
 Nasıl denenir:
-1. Bir maç kazan: maç sonunda tüycükler ortadan uçup Tüy kutusuna girmeli, sayı tüy girdikçe artmalı.
-2. Ayarlar'da Dil'i İngilizce yap, ana ekrana bak: kutucuk başlıkları ("Match of the day", "Quick match") tam görünmeli, gerekiyorsa iki satıra inmeli.
-3. Soyunma odası > Karakter'de bir beden tipine dokun: "deneniyor" yazısı kartın dışına taşmamalı.
-4. Telefonun Ayarlar > Ekran ve Parlaklık > Metin Boyutu'nu en büyüğe çek, oyunu aç: Soyunma odası'nda kilitli renkler, tel gerginliği − / + düğmeleri ve Kariyer haritasındaki "Şampiyonlar kupası" tam okunmalı.
-5. Ayarlar > Erişilebilirlik > Hareketi Azalt açıkken maç kazan: tüyler uçmamalı, Tüy sayısı hemen yazmalı.
+1. Uygulamayı tamamen kapatıp aç: önce gül rengi ekran, sonra dönen halkalar, ardından menü gelmeli; arada siyah ya da koyu mor kare olmamalı.
+2. Oyna'ya bas: top hız çizgileriyle uçmalı, halkalar ekranı kapatmalı, sonra açılıp maç başlamalı.
+3. Bir maçta servis beklerken alttaki kutuya bak: tek satır, küçük olmalı, yazı kesilmemeli.
+4. Antrenman > bir görev (ör. Köşe smacı): ilk toptan sonra üstte yalnız dar bir şerit kalmalı, hedef köşe görünmeli; "?" talimatı açmalı.
+5. Ayarlar > Erişilebilirlik > Hareketi Azalt açıkken açılışı dene: halkalar dönmeden yalnız belirip solmalı, top uçmamalı.
 6. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===

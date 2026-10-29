@@ -116,10 +116,9 @@ namespace BirdieSmash.EditorTools
             // Açılış (2026-10-26, yasin Ar-Ge önerisi "ekle"): Unity açılış ekranı kapalı (Unity 6 Personal'da serbest);
             // arka plan açılış perdesinin dış halkasıyla aynı renk (Hud PERDE_C[0,0] #a3234b), oyunun ilk karesine siyah
             // kare girmeden geçilsin. iOS açılış görüntüsü de aynı düz renk.
-            // 2026-10-27 yön C (yasin karar kartı) + Apple HIG Launching ("açılış ekranı ilk ekranla neredeyse aynı"): açılış
-            // perdesi artık C zemininde başlıyor (Hud.PERDE_ZEMIN = menü zemini #1A1221); iOS açılışı = motorun ilk karesi =
-            // menünün zemini, arada renk sıçraması yok. Eski #a3234b gül rengi perdenin iç halkasına kaydı.
-            var perde = new Color(0x1a / 255f, 0x12 / 255f, 0x21 / 255f);
+            // 2026-10-27'de yön C ile #1A1221'e çekilmişti; 2026-10-29 (yasin: "html zamanlarındaki gibi olmalı") perde yeniden
+            // HTML'deki halkalı diskle açıldığı için açılış rengi yine dış halka #a3234b (Apple HIG: ilk kareyle aynı renk).
+            var perde = new Color(0xa3 / 255f, 0x23 / 255f, 0x4b / 255f);
             PlayerSettings.SplashScreen.show = false; PlayerSettings.SplashScreen.showUnityLogo = false; PlayerSettings.SplashScreen.backgroundColor = perde;
             IosAcilisRengi(perde);
             var ikon = AssetDatabase.LoadAssetAtPath<Texture2D>(Icon);
