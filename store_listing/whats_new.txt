@@ -1,34 +1,22 @@
 === UNITY ===
-Yeni görünüm "Gün Batımı", yeni oyuncak karakterler, gerçekçi koşu ve file, yüksek topu takip eden kamera.
+Öğretici yazılar oyunu öğrenince söner; halkalar renk körü için biçimle de ayrışır.
 
 Bu sürümde yeni:
-- Gün Batımı: menüler sıcak mor zeminde, daha az göz yorar. Turuncu = seçili ve OYNA, limon = sen, orkide = rakip.
-- Açılış: ikondaki güneş canlanır, 3B top konup raketle fırlar. Dokununca atlanır.
-- Maça geçiş: OYNA'dan 3B top uçar, bir bant ekranı süpürür; süre aynı.
-- Oyuncak 3B karakterler tıknaz ve sevimli. Dört beden tipi ve saçlar artık belirgin farklı.
-- Ayarlar > Oyuncu görünümü'ne "Sade" eklendi.
-- Gerçekçi: beden aynı kalır, aksesuarlar değişir. Kafa bandı, bileklik, beş ayakkabı modeli, şort rengi ve forma kumaşı artık maçta görünür. Karakter odasında Ayakkabı ve Kıyafet sekmeleri var.
-- Daha akıcı: klip geçişlerinde sıçrama yok, maç sırasında takılma azaldı, menü arkası durağanken pil harcamaz, dokular telefona uygun sıkıştırıldı.
-- Maç sonu ekranı ve XP şeridi düzeltildi; menüye dönünce kamera sıfırlanır.
-- Koşu: geriye giderken oyuncu yan döner (çapraz adım), ayaklar kaymaz, ani yön değişiminde bacaklar ters koşmaz.
-- Vuruşlar: forehand ve backhand hazırlık sırasında yer değiştirmiyor; rakip alçak topları forehand'den karşılıyor.
-- Yüksek top: kamera hafifçe yukarı bakıp genişler, top ekrandan çıkmaz. Hareket azaltıldıysa kamera sabit kalır, üstte ok gösterilir.
-- File BWF ölçüsünde: ince ağ, beyaz bant. Bant sert, ağ topun vurduğu yerden dalgalanır.
-- Menüler küçük (SE) ve büyük telefonlarda, iPad'de düzgün; çentik altında kalan bir şey yok, sayfa düğmeleri alt kenara sabit.
+- Maç başı ipucu, servis talimatı ve topun yanındaki vuruş yazısı ilk 3 galibiyete kadar görünür, sonra söner. Ekran temiz kalır.
+- Top halkası biçimle de anlatır: düz halka = normal vuruş, kesik halka = uzan (uzak top), çift halka = file üstü öldürücü vuruş.
+- Hızlı maçta "Usta · koşmak da sende"yi ya da Usta yolunu ilk kez oynayınca "Dokun: oraya koş" bir kez görünür.
+- İlk servisteki görev listesi ve Antrenman değişmedi.
+- Önceki sürümdeki Gün Batımı menüler, yeni karakterler, koşu, file ve kamera düzeltmeleri bu sürümde de var.
 
 Nasıl denenir:
-1. Uygulamayı soğuk aç: açılış koyu mor olmalı, güneş, top ve raket izi, sonra menü. Bir saniyeden uzun sürmemeli; dokununca geçmeli.
-2. Menülerde gez: sekme çizgisi yeni sekmeye kaymalı, yazılar rahat okunmalı, çentiğin altında yazı olmamalı.
-3. Hızlı maç ve maç kartını aç: OYNA düğmesi kaydırmadan görünmeli.
-4. OYNA'ya bas: top uçmalı, bant ekranı süpürüp maçı açmalı.
-5. Soyunma odası > Karakter: dört tipi ve saçları dene; figür belirgin değişmeli. Maça gir: aynı görünmeli.
-6. Ayarlar > Oyuncu görünümü > Gerçekçi: Soyunma odası > Karakter'de ayakkabı, şort rengi ve formayı değiştir. Maçta kafa bandı, bileklik ve seçtiğin ayakkabı görünmeli; beden değişmemeli.
-7. Sade'yi seç: maç açılmalı.
-8. Rakip clear atınca arkaya koş: oyuncu yan dönerek gitmeli, ayaklar kaymamalı.
-9. Fileye vur: ağ dalgalanmalı, bant neredeyse kıpırdamamalı.
-10. Yüksek clear at ya da karşıla: top ekranın üstünden çıkmamalı, kamera sarsmamalı.
-11. Küçük telefonun varsa (SE) menüleri ve maç sonunu kontrol et.
-12. Takılma, ısınma ya da garip görüntü olursa telefonu ve ekranı yaz.
+1. 3 maçtan fazla kazandıysan bir maç aç: altta ipucu yazısı, servis şeridinde "Yukarı kaydır…" satırı ve topun yanında "forehand: kaydır" gibi yazı olmamalı.
+2. Top yanına gelince halkaya bak: normal topta düz halka görünmeli.
+3. Uzaktaki topa uzanırken halka kesik kesik ve turuncu olmalı.
+4. Filenin hemen üstündeki topta iki iç içe halka görünmeli.
+5. Ayarlar > Hareket "Hareket azaltıldı" iken halka nabız atmamalı ama biçimi (kesik, çift) kalmalı.
+6. Hızlı maçta "Usta · koşmak da sende"yi seçip oyna: ilk sayılarda "Dokun: oraya koş" görünmeli; sonraki Usta maçında görünmemeli.
+7. Yeni kurulumda (ya da henüz 3 galibiyetin yoksa) yazılar eskisi gibi görünmeli.
+8. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:
