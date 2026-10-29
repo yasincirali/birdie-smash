@@ -96,6 +96,19 @@ namespace BirdieSmash.Core
             foreach (var u in Unvanlar) if (u.sv == sv) l.Add(new[] { "Unvan", u.ad });
             return l;
         }
+        // Maç sonu "Seviye atladın" satırı (2026-10-29, yasin "leveller daha anlaşılır olacak"): seviye atlamak önce yalnız
+        // "Sv n" yazıyordu, ne açıldığı Profil'de saklıydı. (once, sonra] aralığında açılan her şey, aldatma vuruşları dahil
+        // (Aldatma.Liste, seviye kapısı; ekipman şartı ayrıca Aldatma ekranında). Türkçe ad, ekranda L.T.
+        public static List<string> AcilanAralik(int once, int sonra)
+        {
+            var l = new List<string>();
+            for (int sv = once + 1; sv <= sonra; sv++)
+            {
+                foreach (var a in AcilanlarTurlu(sv)) l.Add(a[1]);
+                foreach (var t in Aldatma.Liste) if (t.sv == sv) l.Add(t.ad);
+            }
+            return l;
+        }
         public static List<string> Acilanlar(int sv)
         {
             var l = new List<string>();

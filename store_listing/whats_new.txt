@@ -10,6 +10,9 @@ Bu sürümde yeni:
 - Drive'a drive dönülünce düello başlar: her drive biraz hızlanır, üçüncüde "Drive düellosu!" yazar.
 - File önü öldürücü vuruş artık kendi sayısı: "FİLE ÖNÜ SAYISI", ağır çekimsiz, sert ve kısa titreşim.
 - Aldatma (rakibin ya da seninki) elde kısa bir tık olarak da hissedilir.
+- Seviye daha anlaşılır: maç sonunda "Sv 4 · 120/300 XP" yazar; seviye atlayınca neyin açıldığı adıyla görünür.
+- Soyunma odasında ekipman yuvası artık "Kademe 3/10" (oyuncu seviyesiyle karışmasın).
+- Kariyer haritasında kilitli basamak nedenini söyler: "3. basamaktan sonra".
 - İlk servisteki görev listesi ve Antrenman değişmedi.
 - Önceki sürümdeki Gün Batımı menüler, yeni karakterler, koşu, file ve kamera düzeltmeleri bu sürümde de var.
 
@@ -24,7 +27,9 @@ Nasıl denenir:
 8. Rakip fileye yakınken sert smaç at: bazen "Zor kurtardı" yazmalı ve top filenin dibine düşmeli. Oraya koşup öldür.
 9. File üstündeki topa vurup sayı al: "FİLE ÖNÜ SAYISI" yazmalı, ağır çekim olmamalı.
 10. Göğüs hizasındaki topa yatay kaydırarak drive at, rakip drive ile dönerse devam et: üçüncü drive'da "Drive düellosu!" yazmalı.
-11. Garip bir şey olursa telefonu ve ekranı yaz.
+11. Bir maç bitir: sonuç kartında "Sv n · x/y XP" yazmalı; seviye atladıysan altında "Açıldı: …" görünmeli.
+12. Kariyer haritasında kilitli bir basamağa bak: "n. basamaktan sonra" yazmalı.
+13. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:

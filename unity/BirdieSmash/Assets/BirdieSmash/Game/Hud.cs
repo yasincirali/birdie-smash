@@ -782,7 +782,13 @@ namespace BirdieSmash.Game
             float p = 14 * s, ik = 30 * s, rh = 34 * s, t1 = YildizAn(Mathf.Max(0, Ilerleme.Say(root.bittiYeniMaske))) + .1f, e = rm ? 1 : Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - t1) / .9f));
             bool lv = od.sonra > od.once; string ek = od.ek.Count > 0 ? string.Join(" · ", od.ek.ConvertAll(q => L.Cumle(q)).ToArray()) : null;
             string top_ = L.T(" · Toplam {0}{1}", Ayar.gear.eko.tuy, " " + L.T("Tüy")); if (top_.StartsWith(" · ")) top_ = top_.Substring(3);
-            string alt = ek != null ? ek + " · " + top_ : top_; float ah = aIpucu.CalcHeight(Ic(alt), w - 2 * p);
+            // Seviye çubuğu sayıyla da okunur (2026-10-29): "Sv 4 · 120/300 XP"; seviye atlanınca açılanlar adıyla
+            // (en çok 3 ad + "+n"), Profil'e gitmeden.
+            int L0, kalan0, gerek0; Ayar.gear.OyuncuSv(out L0, out kalan0, out gerek0);
+            string svYazi = L.T("Sv {0}", L0) + (gerek0 > 0 ? " · " + kalan0 + "/" + gerek0 + " XP" : "");
+            string acil = null;
+            if (lv) { var ac = Karakter.AcilanAralik(od.once, od.sonra); if (ac.Count > 0) { var ad3 = ac.GetRange(0, Mathf.Min(3, ac.Count)).ConvertAll(q => L.T(q)); acil = L.T("Açıldı: {0}", string.Join(" · ", ad3.ToArray()) + (ac.Count > 3 ? " +" + (ac.Count - 3) : "")); } }
+            string alt = (acil != null ? acil + "\n" : "") + svYazi + " · " + (ek != null ? ek + " · " + top_ : top_); float ah = aIpucu.CalcHeight(Ic(alt), w - 2 * p);
             float h = p + rh + 6 * s + rh + (lv ? 26 * s : 0) + 6 * s + ah + p; var r = new Rect(x, y, w, h); KutuCiz(r, aKutuS, al);
             float yy = y + p, rx_ = x + w - p;
             KutuCiz(new Rect(x + p, yy + (rh - ik) / 2, ik, ik), aKutuIkon, al); Tex(new Rect(x + p + ik * .2f, yy + (rh - ik) / 2 + ik * .2f, ik * .6f, ik * .6f), Ikonlar.Tuy, new Color(A_ALTIN.r, A_ALTIN.g, A_ALTIN.b, al));
@@ -790,7 +796,7 @@ namespace BirdieSmash.Game
             Yaz(new Rect(rx_ - 120 * s, yy, 120 * s, rh), "+" + Mathf.RoundToInt(od.tuy * e), aSayi, A_ALTIN, al); yy += rh + 6 * s;
             KutuCiz(new Rect(x + p, yy + (rh - ik) / 2, ik, ik), aKutuIkon, al); Yaz(new Rect(x + p, yy + (rh - ik) / 2, ik, ik), "XP", Stil(aLv, Mathf.RoundToInt(13 * aK)), A_YAZI, al);
             string xs = "+" + Mathf.RoundToInt(od.xp * e); float xw = aSayi.CalcSize(Ic("+" + od.xp)).x + 4 * s;
-            int L_, kalan, gerek; Ayar.gear.OyuncuSv(out L_, out kalan, out gerek);
+            int kalan = kalan0, gerek = gerek0;
             float son = gerek > 0 ? kalan / (float)gerek : 1, bas = lv ? 0 : Mathf.Clamp01((kalan - od.xp) / (float)Mathf.Max(1, gerek)), dol = lv ? (e < .5f ? Mathf.Lerp(.3f, 1, e * 2) : Mathf.Lerp(0, son, (e - .5f) * 2)) : Mathf.Lerp(bas, son, e);
             var bar = new Rect(x + p + ik + 10 * s, yy + rh / 2 - 5 * s, rx_ - xw - 10 * s - (x + p + ik + 10 * s), 10 * s);
             Fill(bar, new Color(1, 1, 1, .12f * al)); Fill(new Rect(bar.x, bar.y, bar.width * Mathf.Clamp01(dol), bar.height), new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, al));

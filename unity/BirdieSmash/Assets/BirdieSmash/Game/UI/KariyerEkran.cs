@@ -130,7 +130,9 @@ namespace BirdieSmash.Game
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);
             rk.Add(Yazi(st.isim + " · " + L.T(st.ad) + (final ? " · " + L.T("Final") : ""), 13, "soluk"));
             var yr = Satir("rakip-satir"); yr.pickingMode = PickingMode.Ignore; orta.Add(yr); yr.Add(UcYildiz(p.Maske(g), 16)); var yy = Yazi(ys + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy);
-            string durum = L.T(gecti ? "Geçildi" : simdi ? "ŞİMDİ" : acik ? "Açık" : "Kilitli");
+            // Kilitli basamak nedenini söyler (2026-10-29, "leveller daha anlaşılır"): yalnız "Kilitli" yazınca neyin açacağı
+            // maç kartına dokunmadan görünmüyordu. Tur açıksa kilidi önceki basamak tutar; tur kilitliyse neden tur seçicide.
+            string durum = kilit && b > 0 && p.TurAcik(KariyerVeri.TurOf(g)) ? L.T("{0}. basamaktan sonra", b) : L.T(gecti ? "Geçildi" : simdi ? "ŞİMDİ" : acik ? "Açık" : "Kilitli");
             // r13 (2026-10-26): ×2'de rozet + ad + durum yan yana sıkışıyor, ad hece ortasından bölünüyordu ("Champi ons",
             // "Singap ore"); USS'teki sarma denemesi (flex-basis %70) Yoga'da satırı kırmadı. Büyük yazıda durum orta sütunun
             // altına iner, ad satırın tamamını alır.
