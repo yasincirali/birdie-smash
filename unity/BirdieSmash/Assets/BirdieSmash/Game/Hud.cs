@@ -791,9 +791,15 @@ namespace BirdieSmash.Game
             string alt = (acil != null ? acil + "\n" : "") + svYazi + " · " + (ek != null ? ek + " · " + top_ : top_); float ah = aIpucu.CalcHeight(Ic(alt), w - 2 * p);
             float h = p + rh + 6 * s + rh + (lv ? 26 * s : 0) + 6 * s + ah + p; var r = new Rect(x, y, w, h); KutuCiz(r, aKutuS, al);
             float yy = y + p, rx_ = x + w - p;
-            KutuCiz(new Rect(x + p, yy + (rh - ik) / 2, ik, ik), aKutuIkon, al); Tex(new Rect(x + p + ik * .2f, yy + (rh - ik) / 2 + ik * .2f, ik * .6f, ik * .6f), Ikonlar.Tuy, new Color(A_ALTIN.r, A_ALTIN.g, A_ALTIN.b, al));
+            // 2026-10-29 (yasin: "Tüy kazanımları güzel bir animasyonla gösterilmeli, uçuşup bakiyeye giren tüycükler gibi"):
+            // sayaç artık tüyler kutuya kondukça artar (TuyUcus); kutu her konuşta hafifçe şişer. Hareketi azaltta sayaç eskisi gibi.
+            int tn = TuyAdet(od.tuy); float var_ = rm || od.tuy <= 0 ? 1 : TuyVaran(t, t1, tn) / (float)tn;
+            var kutuR = new Rect(x + p, yy + (rh - ik) / 2, ik, ik); float sis = rm ? 1 : 1 + .22f * TuyNabiz(t, t1, tn);
+            var mk = GUI.matrix; GUIUtility.ScaleAroundPivot(new Vector2(sis, sis), kutuR.center);
+            KutuCiz(kutuR, aKutuIkon, al); Tex(new Rect(x + p + ik * .2f, yy + (rh - ik) / 2 + ik * .2f, ik * .6f, ik * .6f), Ikonlar.Tuy, new Color(A_ALTIN.r, A_ALTIN.g, A_ALTIN.b, al));
+            GUI.matrix = mk; tuyHedef = kutuR.center;
             Yaz(new Rect(x + p + ik + 10 * s, yy, w * .5f, rh), L.T("Tüy"), aSatir, A_YAZI, al);
-            Yaz(new Rect(rx_ - 120 * s, yy, 120 * s, rh), "+" + Mathf.RoundToInt(od.tuy * e), aSayi, A_ALTIN, al); yy += rh + 6 * s;
+            Yaz(new Rect(rx_ - 120 * s, yy, 120 * s, rh), "+" + Mathf.RoundToInt(od.tuy * (rm ? e : var_)), aSayi, A_ALTIN, al); yy += rh + 6 * s;
             KutuCiz(new Rect(x + p, yy + (rh - ik) / 2, ik, ik), aKutuIkon, al); Yaz(new Rect(x + p, yy + (rh - ik) / 2, ik, ik), "XP", Stil(aLv, Mathf.RoundToInt(13 * aK)), A_YAZI, al);
             string xs = "+" + Mathf.RoundToInt(od.xp * e); float xw = aSayi.CalcSize(Ic("+" + od.xp)).x + 4 * s;
             int kalan = kalan0, gerek = gerek0;
@@ -808,7 +814,39 @@ namespace BirdieSmash.Game
                 Tex(new Rect(lx0, yy + 6 * s + (20 * s - ik2) / 2, ik2, ik2), Ikonlar.Yukari, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, la)); Yaz(new Rect(lx0 + ik2 + 4 * s, yy + 6 * s, lw, 20 * s), ls, aLv, A_TURUNCU, la); yy += 26 * s;
             }
             Yaz(new Rect(x + p, yy + 6 * s, w - 2 * p, ah), alt, aIpucu, A_SOLUK, al);
+            if (!rm && od.tuy > 0) TuyUcus(t, t1, tn, new Vector2(W / 2f, y - 70 * s), tuyHedef, s, al);   // kartın üstünde (sonra çizilir)
             return y + h + 10 * s;
+        }
+        // Uçan tüyler (2026-10-29): yıldızların altından (kartın üstü) çıkar, yayla dönerek Tüy kutusuna konar. Adet tutarla
+        // büyür ama 4–14 arasında kalır (çok tüy ekranı boğar, az tüy "ödül" demez). Her tüyün çıkışı .06 sn arayla, uçuşu
+        // .55 sn; ilki eski sayaçla aynı anda (t1 + .1) konar, sonuncusu t1 + .9'da: süre eskisiyle aynı. Yön ve yay tüy
+        // başına sabit sözde rastgele (i'den), kare hızından bağımsız: ekran turu aynı anı hep aynı çizer.
+        Vector2 tuyHedef;
+        const float TUY_UCUS = .55f;
+        static int TuyAdet(int tuy) { return Mathf.Clamp(4 + tuy / 10, 4, 14); }
+        static float TuyKonus(int i, float t1, int n) { return t1 + .1f + .8f * (n <= 1 ? 0 : i / (float)(n - 1)); }
+        static int TuyVaran(float t, float t1, int n) { int k = 0; for (int i = 0; i < n; i++) if (t >= TuyKonus(i, t1, n)) k++; return k; }
+        static float TuyNabiz(float t, float t1, int n)
+        {
+            float en = 0; for (int i = 0; i < n; i++) { float d = t - TuyKonus(i, t1, n); if (d >= 0 && d < .25f) en = Mathf.Max(en, 1 - d / .25f); }
+            return en;
+        }
+        void TuyUcus(float t, float t1, int n, Vector2 bas, Vector2 hedef, float s, float al)
+        {
+            if (Event.current.type != EventType.Repaint) return;
+            for (int i = 0; i < n; i++)
+            {
+                float k = TuyKonus(i, t1, n), u = (t - (k - TUY_UCUS)) / TUY_UCUS; if (u <= 0 || u >= 1) continue;
+                float h1 = Mathf.Repeat(Mathf.Sin(i * 12.9898f) * 43758.5453f, 1), h2 = Mathf.Repeat(Mathf.Sin(i * 78.233f) * 12345.678f, 1);
+                var p0 = bas + new Vector2((h1 - .5f) * 160 * s, (h2 - .5f) * 30 * s);
+                var p1 = new Vector2(Mathf.Lerp(p0.x, hedef.x, .35f) + (h2 - .5f) * 120 * s, Mathf.Min(p0.y, hedef.y) - (40 + 50 * h1) * s);   // yay tepesi
+                float e = u * u * (3 - 2 * u), a = 1 - e;
+                var q = a * a * p0 + 2 * a * e * p1 + e * e * hedef;
+                float sz = Mathf.Lerp(26, 16, e) * s, gor = Mathf.Clamp01(u / .15f) * al, don = (h1 - .5f) * 80 + 540 * u * (h2 < .5f ? 1 : -1);
+                var m = GUI.matrix; GUIUtility.RotateAroundPivot(don, q);
+                Tex(new Rect(q.x - sz / 2, q.y - sz / 2, sz, sz), Ikonlar.Tuy, new Color(A_ALTIN.r, A_ALTIN.g, A_ALTIN.b, gor));
+                GUI.matrix = m;
+            }
         }
         // Turun basamak çizgisi (a-road): geçilen limon, şimdiki çizgili, gelecek soluk; yanında "3/6" (yalnız renkle değil).
         float YolCiz(float x, float y, float w, float s, float al)

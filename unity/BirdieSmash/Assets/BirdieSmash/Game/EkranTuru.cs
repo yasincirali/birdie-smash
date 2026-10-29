@@ -389,7 +389,10 @@ namespace BirdieSmash.Game
             root.StartMatch(false, false, false); botAcik = false;
             { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 4) yield return null; }   // r16: maç başı rakip kartı kalksın (gerçek akışta maç sonunda yok)
             root.match.sc[0] = won ? 11 : 7; root.match.sc[1] = won ? 7 : 11; root.EkranBitir(won);
-            float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 3.5f) yield return null;
+            float t0 = Time.realtimeSinceStartup;
+            if (ad == "sonuc_galibiyet" || ad == "sonuc_tr_galibiyet")   // 2026-10-29 uçan tüyler (Hud.TuyUcus): yolda iki an
+                foreach (var an in new[] { 1.0f, 1.35f }) { while (Time.realtimeSinceStartup - t0 < an) yield return null; yield return Cek(ad + "_tuy_" + an.ToString("F2").Replace(",", ".")); }
+            while (Time.realtimeSinceStartup - t0 < 3.5f) yield return null;
             yield return Cek(ad);
             Ayar.ilerleme = eski; Ayar.reduce = r0; Ayar.kariyerModu = km; Ayar.kariyerSecim = -1; Ayar.yazi = y0; Ayar.dil = d0;
             root.AnaMenu(); yield return Bekle(5);
