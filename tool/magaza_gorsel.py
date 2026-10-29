@@ -5,7 +5,7 @@
 #   python3 tool/magaza_gorsel.py <kare klasörü> [çıktı = store_listing/gorsel]
 # Çıktı: <çıktı>/<dil>/<boy>/<NN>_<ad>.jpg, boy 6.9 (1320×2868) ve 6.5 (1284×2778). JPEG %92: PNG kare başı ~4 MB, depo
 # büyümesin; App Store ikisini de kabul eder, saydamlık yok.
-# Yerleşim: üstte Gün Batımı zemini (#1A1221, menüyle aynı) üstünde başlık (Barlow Condensed ExtraBold Italic, oyunun
+# Yerleşim: üstte Gün Batımı zemini (#1A1221, menüyle aynı) üstünde başlık (Baloo 2 ExtraBold, 2026-10-29 Tüycükler, oyunun
 # başlık yazısı) ve güneş turuncusu çizgi; altta oyun karesi %80 ölçekte, yuvarlak köşeli. Kare kırpılmaz: HUD (skor,
 # ralli) okunur kalır.
 # 6,5": aynı tuval 1284 genişliğe ölçeklenir (yükseklik 2790), ortadan 2778'e kırpılır (en-boy farkı %0,4; yalnız zemin
@@ -33,7 +33,7 @@ def yuvarla(im, r):
 
 def tuval(kare, metin):
     c = Image.new('RGB', (W, H), ZEMIN); d = ImageDraw.Draw(c)
-    f = ImageFont.truetype(os.path.join(FONT, 'BarlowCondensed-ExtraBoldItalic.ttf'), 132)
+    f = ImageFont.truetype(os.path.join(FONT, 'Baloo2-ExtraBold.ttf'), 132)
     ust = 150; d.multiline_text((W // 2, ust), metin, font=f, fill=YAZI, anchor='ma', align='center', spacing=10)
     alt = d.multiline_textbbox((W // 2, ust), metin, font=f, anchor='ma', align='center', spacing=10)[3]
     d.rounded_rectangle((W // 2 - 70, alt + 40, W // 2 + 70, alt + 52), 6, fill=GUNES)

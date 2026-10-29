@@ -6,7 +6,7 @@ Birdie Smash oyuncu figürleri şu açık lisanslı içeriklerden üretilir. Spr
 - **Gerçekçi (Rocketbox)**: Microsoft Rocketbox Avatar Library, Sports_Male_02 (oyun; kıyafet dokusu Birdie Smash'in badminton boyaması, 2026-10-26) ve Sports_Male_04 (HTML sprite). MIT License, aşağıdaki metin.
   2026-10-27 aksesuarları (`tool/karakter/rocketbox_aksesuar.py`, `rocketbox_kit.py`): şort ve beş ayakkabı modeli aynı paketin ağından türetilmiş parçalar (MIT, aynı metin); kafa bandı, bileklik, bilekli ayakkabı yakalığı ve forma kumaş desenleri (`rocketbox_forma_*.jpg`) Birdie Smash'in kendi bpy/numpy üretimi. Yeni üçüncü taraf kaynak yok.
 - Eski sportif figür: MakeHuman veri dosyaları, CC0 1.0.
-- **Yazı tipleri (2026-10-26, arayüz yönü Yayın Gecesi)**: Barlow ve Barlow Condensed (Jeremy Tribby, The Barlow Project Authors; github.com/jpt/barlow, Google Fonts). Menüde ve maç sonu ekranında kullanılan dosyalar: Barlow Medium, SemiBold, Bold; Barlow Condensed ExtraBold Italic, Black Italic. SIL Open Font License 1.1, aşağıdaki metin. Yazı tipleri değiştirilmeden, uygulamanın içinde gömülü dağıtılır.
+- **Yazı tipleri (2026-10-29, Tüycükler menü dili)**: Baloo 2 (The Baloo 2 Project Authors, EkType; github.com/EkType/Baloo2) ve Nunito (The Nunito Project Authors; github.com/googlefonts/nunito), Google Fonts. Kullanılan dosyalar: Baloo 2 ExtraBold (yalnız Latin karakterlere indirilmiş), Nunito SemiBold, Bold, ExtraBold (değişken yazı tipinden sabit ağırlık örnekleri). SIL Open Font License 1.1, aşağıdaki metin; ayrılmış yazı tipi adı yok. Uygulamanın içinde gömülü dağıtılır.
 
 ## Microsoft Rocketbox: MIT License
 
@@ -30,9 +30,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## Barlow, Barlow Condensed: SIL Open Font License 1.1
+## Baloo 2, Nunito: SIL Open Font License 1.1
 
-Copyright 2017 The Barlow Project Authors (https://github.com/jpt/barlow)
+Copyright 2019 The Baloo 2 Project Authors (https://github.com/EkType/Baloo2)
+Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:

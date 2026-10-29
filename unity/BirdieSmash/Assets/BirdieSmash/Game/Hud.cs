@@ -590,7 +590,7 @@ namespace BirdieSmash.Game
         // ödül alanının yerine iki özet kartı ve tam liste gelir (eski ekranda özet kartları hep açıktı; yer kalmadı).
         // Hareket: ışınlar döner (30 sn'de bir tur), başlık yaylanır, yıldızlar sırayla iner (her yenisi hafif titreşim), Tüy
         // sayar. Hareketi azalt: ışın ve iniş yok, sayılar son değerinde, bütün içerik .25 sn'de solarak gelir.
-        // Yazı: Barlow (OFL, Resources/fonts); boyut fu ile (Dynamic Type ×1,3'e kadar, HUD sınırı). ★ ✓ ✗ glif değil doku.
+        // Yazı: 2026-10-29 Baloo 2 + Nunito (OFL, Resources/fonts; eskisi Barlow); boyut fu ile (Dynamic Type ×1,3'e kadar, HUD sınırı). ★ ✓ ✗ glif değil doku.
         Font fSiyah, fEkstra, fYari, fKalin; float aS = -1, aK = -1;
         GUIStyle aBas, aUst, aSkor, aAd, aKosul, aSatir, aSayi, aLv, aUnl, aCta, aCtaAlt, aDug, aIpucu, aKutuS, aKutuIkon, aKutuLimon, aCtaS, aIz;
         float overT0 = -1; bool overAcik; int yildizHap;
@@ -611,8 +611,8 @@ namespace BirdieSmash.Game
             if (Mathf.Abs(s - aS) < .001f && Mathf.Abs(k - aK) < .001f && aBas != null) return; aS = s; aK = k;
             if (fSiyah == null)
             {
-                fSiyah = Resources.Load<Font>("fonts/BarlowCondensed-BlackItalic"); fEkstra = Resources.Load<Font>("fonts/BarlowCondensed-ExtraBoldItalic");
-                fYari = Resources.Load<Font>("fonts/Barlow-SemiBold"); fKalin = Resources.Load<Font>("fonts/Barlow-Bold");
+                fSiyah = Resources.Load<Font>("fonts/Baloo2-ExtraBold"); fEkstra = Resources.Load<Font>("fonts/Baloo2-ExtraBold");
+                fYari = Resources.Load<Font>("fonts/Nunito-Bold"); fKalin = Resources.Load<Font>("fonts/Nunito-ExtraBold");
             }
             Ikonlar.Hazirla();
             aBas = AStil(fSiyah, 74 * k, TextAnchor.MiddleCenter, true); aUst = AStil(fKalin, 12 * k, TextAnchor.MiddleCenter, true);
@@ -1031,7 +1031,7 @@ namespace BirdieSmash.Game
             }
             if (yA > 0)
             {   // marka adı (ikon ile aynı yazı ailesi), aşağıdan 8 pt gelir
-                if (fBaslik == null) fBaslik = Resources.Load<Font>("fonts/BarlowCondensed-BlackItalic");
+                if (fBaslik == null) fBaslik = Resources.Load<Font>("fonts/Baloo2-ExtraBold");
                 if (aMarka == null || Mathf.Abs(aMarkaFu - fu) > .001f)
                 { aMarkaFu = fu; aMarka = new GUIStyle(big) { fontSize = Mathf.RoundToInt(26 * fu), fontStyle = FontStyle.Normal, alignment = TextAnchor.MiddleCenter, wordWrap = false }; if (fBaslik != null) aMarka.font = fBaslik; }
                 var st_ = aMarka;

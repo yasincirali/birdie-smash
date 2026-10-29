@@ -88,9 +88,9 @@ namespace BirdieSmash.Game
             kok.RegisterCallback<TransitionRunEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
             zemin = kok.Q<VisualElement>("zemin"); alan = kok.Q<VisualElement>("alan"); ust = kok.Q<VisualElement>("ust"); icerik = kok.Q<VisualElement>("icerik");
             sayfa = kok.Q<VisualElement>("sayfa"); sekmeCubugu = kok.Q<VisualElement>("sekmeler"); altKatman = kok.Q<VisualElement>("alt-katman"); kalkan = kok.Q<VisualElement>("kalkan");
-            // 2026-10-26 Yayın Gecesi: gövde yazı tipi Barlow (Resources/fonts, OFL). Sınıf kuralları (menu_stil.uss) kalın ve başlık
-            // dosyalarını seçer; kökteki satır içi değer, USS çözülemezse ya da tema yoksa da Barlow'a düşülsün diye.
-            var barlow = Resources.Load<Font>("fonts/Barlow-Medium");
+            // 2026-10-26 Yayın Gecesi: gövde yazı tipi (2026-10-29 Tüycükler: Nunito; eskisi Barlow; Resources/fonts, OFL). Sınıf kuralları (menu_stil.uss) kalın ve başlık
+            // dosyalarını seçer; kökteki satır içi değer, USS çözülemezse ya da tema yoksa da gövde yazısına düşülsün diye.
+            var barlow = Resources.Load<Font>("fonts/Nunito-SemiBold");
             if (barlow != null) kok.style.unityFontDefinition = FontDefinition.FromFont(barlow);
             else if (temaYok)
             {   // tema yoksa yazı tipi de yok: yerleşik çalışma zamanı yazı tipi (Unity 2022.2+ adı LegacyRuntime.ttf)
