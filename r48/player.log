@@ -1,0 +1,555 @@
+The selected window backend is x11 
+Mono path[0] = '/home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/Managed'
+Mono config path = '/home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/etc'
+Input System module state changed to: Initialized.
+Display 0 'screen': 800x1300 (primary device).
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+Desktop is 800 x 1300 @ 0 Hz
+Initialize engine version: 6000.0.58f2 (92dee566b325)
+[Subsystems] Discovering subsystems at path /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/UnitySubsystems
+Forcing GfxDevice: OpenGL Core
+kGfxThreadingModeClientWorkerNativeJobs is not supported on OpenGL Core. Reverting to kGfxThreadingModeClientWorkerJobs instead.
+GfxDevice: creating device client; kGfxThreadingModeClientWorkerJobs
+Renderer: llvmpipe (LLVM 20.1.2, 256 bits)
+Vendor:   Mesa
+Version:  4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.4
+GLES:     0
+ GL_3DFX_texture_compression_FXT1 GL_AMD_conservative_depth GL_AMD_draw_buffers_blend GL_AMD_gpu_shader_int64 GL_AMD_multi_draw_indirect GL_AMD_pinned_memory GL_AMD_query_buffer_object GL_AMD_seamless_cubemap_per_texture GL_AMD_shader_stencil_export GL_AMD_shader_trinary_minmax GL_AMD_texture_texture4 GL_AMD_vertex_shader_layer GL_AMD_vertex_shader_viewport_index GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ARB_ES2_compatibility GL_ARB_ES3_1_compatibility GL_ARB_ES3_2_compatibility GL_ARB_ES3_compatibility GL_ARB_arrays_of_arrays GL_ARB_base_instance GL_ARB_blend_func_extended GL_ARB_buffer_storage GL_ARB_clear_buffer_object GL_ARB_clear_texture GL_ARB_clip_control GL_ARB_compressed_texture_pixel_storage GL_ARB_compute_shader GL_ARB_conditional_render_inverted GL_ARB_conservative_depth GL_ARB_copy_buffer GL_ARB_copy_image GL_ARB_cull_distance GL_ARB_debug_output GL_ARB_depth_buffer_float GL_ARB_depth_clamp GL_ARB_derivative_control GL_ARB_direct_state_access GL_ARB_draw_buffers GL_A
+RB_draw_buffers_blend GL_ARB_draw_elements_base_vertex GL_ARB_draw_indirect GL_ARB_draw_instanced GL_ARB_enhanced_layouts GL_ARB_explicit_attrib_location GL_ARB_explicit_uniform_location GL_ARB_fragment_coord_conventions GL_ARB_fragment_layer_viewport GL_ARB_fragment_shader GL_ARB_framebuffer_no_attachments GL_ARB_framebuffer_object GL_ARB_framebuffer_sRGB GL_ARB_get_program_binary GL_ARB_get_texture_sub_image GL_ARB_gl_spirv GL_ARB_gpu_shader5 GL_ARB_gpu_shader_fp64 GL_ARB_gpu_shader_int64 GL_ARB_half_float_pixel GL_ARB_half_float_vertex GL_ARB_indirect_parameters GL_ARB_instanced_arrays GL_ARB_internalformat_query GL_ARB_internalformat_query2 GL_ARB_invalidate_subdata GL_ARB_map_buffer_alignment GL_ARB_map_buffer_range GL_ARB_multi_bind GL_ARB_multi_draw_indirect GL_ARB_occlusion_query2 GL_ARB_parallel_shader_compile GL_ARB_pipeline_statistics_query GL_ARB_pixel_buffer_object GL_ARB_point_sprite GL_ARB_polygon_offset_clamp GL_ARB_post_depth_coverage GL_ARB_program_interface_query GL_ARB_provoking_vertex GL
+_ARB_query_buffer_object GL_ARB_robust_buffer_access_behavior GL_ARB_robustness GL_ARB_sample_shading GL_ARB_sampler_objects GL_ARB_seamless_cube_map GL_ARB_seamless_cubemap_per_texture GL_ARB_separate_shader_objects GL_ARB_shader_atomic_counter_ops GL_ARB_shader_atomic_counters GL_ARB_shader_ballot GL_ARB_shader_bit_encoding GL_ARB_shader_clock GL_ARB_shader_draw_parameters GL_ARB_shader_group_vote GL_ARB_shader_image_load_store GL_ARB_shader_image_size GL_ARB_shader_objects GL_ARB_shader_precision GL_ARB_shader_stencil_export GL_ARB_shader_storage_buffer_object GL_ARB_shader_subroutine GL_ARB_shader_texture_image_samples GL_ARB_shader_texture_lod GL_ARB_shader_viewport_layer_array GL_ARB_shading_language_420pack GL_ARB_shading_language_include GL_ARB_shading_language_packing GL_ARB_spirv_extensions GL_ARB_stencil_texturing GL_ARB_sync GL_ARB_tessellation_shader GL_ARB_texture_barrier GL_ARB_texture_border_clamp GL_ARB_texture_buffer_object GL_ARB_texture_buffer_object_rgb32 GL_ARB_texture_buffer_range GL_A
+RB_texture_compression_bptc GL_ARB_texture_compression_rgtc GL_ARB_texture_cube_map_array GL_ARB_texture_filter_anisotropic GL_ARB_texture_filter_minmax GL_ARB_texture_float GL_ARB_texture_gather GL_ARB_texture_mirror_clamp_to_edge GL_ARB_texture_multisample GL_ARB_texture_non_power_of_two GL_ARB_texture_query_levels GL_ARB_texture_query_lod GL_ARB_texture_rectangle GL_ARB_texture_rg GL_ARB_texture_rgb10_a2ui GL_ARB_texture_stencil8 GL_ARB_texture_storage GL_ARB_texture_storage_multisample GL_ARB_texture_swizzle GL_ARB_texture_view GL_ARB_timer_query GL_ARB_transform_feedback2 GL_ARB_transform_feedback3 GL_ARB_transform_feedback_instanced GL_ARB_transform_feedback_overflow_query GL_ARB_uniform_buffer_object GL_ARB_vertex_array_bgra GL_ARB_vertex_array_object GL_ARB_vertex_attrib_64bit GL_ARB_vertex_attrib_binding GL_ARB_vertex_buffer_object GL_ARB_vertex_shader GL_ARB_vertex_type_10f_11f_11f_rev GL_ARB_vertex_type_2_10_10_10_rev GL_ARB_viewport_array GL_ARM_shader_framebuffer_fetch_depth_stencil GL_ATI_blend
+_equation_separate GL_ATI_meminfo GL_ATI_texture_float GL_ATI_texture_mirror_once GL_EXT_EGL_image_storage GL_EXT_EGL_image_storage_compression GL_EXT_EGL_sync GL_EXT_abgr GL_EXT_blend_equation_separate GL_EXT_debug_label GL_EXT_draw_buffers2 GL_EXT_draw_instanced GL_EXT_framebuffer_blit GL_EXT_framebuffer_multisample GL_EXT_framebuffer_multisample_blit_scaled GL_EXT_framebuffer_object GL_EXT_framebuffer_sRGB GL_EXT_memory_object GL_EXT_memory_object_fd GL_EXT_packed_depth_stencil GL_EXT_packed_float GL_EXT_pixel_buffer_object GL_EXT_polygon_offset_clamp GL_EXT_provoking_vertex GL_EXT_shader_clock GL_EXT_shader_framebuffer_fetch GL_EXT_shader_framebuffer_fetch_non_coherent GL_EXT_shader_image_load_formatted GL_EXT_shader_integer_mix GL_EXT_texture_array GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc GL_EXT_texture_filter_anisotropic GL_EXT_texture_filter_minmax GL_EXT_texture_integer GL_EXT_texture_mirror_clamp GL_EXT_texture_sRGB GL_EXT_texture_sRGB_R8 GL_EXT
+_texture_sRGB_RG8 GL_EXT_texture_sRGB_decode GL_EXT_texture_shadow_lod GL_EXT_texture_shared_exponent GL_EXT_texture_snorm GL_EXT_texture_storage GL_EXT_texture_swizzle GL_EXT_timer_query GL_EXT_transform_feedback GL_EXT_vertex_array_bgra GL_EXT_vertex_attrib_64bit GL_IBM_multimode_draw_arrays GL_INTEL_shader_atomic_float_minmax GL_KHR_blend_equation_advanced GL_KHR_blend_equation_advanced_coherent GL_KHR_context_flush_control GL_KHR_debug GL_KHR_no_error GL_KHR_parallel_shader_compile GL_KHR_robust_buffer_access_behavior GL_KHR_robustness GL_KHR_texture_compression_astc_ldr GL_KHR_texture_compression_astc_sliced_3d GL_MESA_framebuffer_flip_y GL_MESA_pack_invert GL_MESA_shader_integer_functions GL_MESA_texture_signed_rgba GL_NVX_gpu_memory_info GL_NV_alpha_to_coverage_dither_control GL_NV_conditional_render GL_NV_copy_image GL_NV_depth_clamp GL_NV_packed_depth_stencil GL_NV_shader_atomic_float GL_NV_texture_barrier GL_OES_EGL_image GL_OVR_multiview GL_OVR_multiview2 GL_S3_s3tc
+OPENGL LOG: Creating OpenGL 4.5 graphics device ; Context level  <OpenGL 4.5> ; Context handle 62786112
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+FMOD failed to initialize the output device.: "Error initializing output device. " (60)
+Forced to initialize FMOD to to the device driver's system output rate 48000, this may impact performance and/or give inconsistent experiences compared to selected sample rate 48000
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+FMOD failed to initialize the output device.: "Error initializing output device. " (60)
+FMOD failed to initialize any audio devices, running on emulated software output with no sound. Please check your audio drivers and/or hardware for malfunction.
+Begin MonoManager ReloadAssembly
+- Loaded All Assemblies, in  0.085 seconds
+- Finished resetting the current domain, in  0.003 seconds
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Default vsync count 1
+requesting resize 390 x 845
+resizing window to 390 x 845
+Desktop is 800 x 1300 @ 0 Hz
+UnloadTime: 0.511303 ms
+Birdie Smash: menü biçimi menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-209522396 rules=326 complexSelectors=346 m_Rules=326 m_ComplexSelectors=346 imports=0
+EkranTuru başladı: /home/runner/work/_temp/ekran
+requesting resize 390 x 845
+resizing window to 390 x 845
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru GameRoot True
+EkranTuru kare 2 t=9.5 → 00_ilk_kare
+EkranTuru kare 23 t=10.1 → menu_ilk_oyna
+EkranTuru bekçi: kare 28 adım menu_ilk_oyna
+EkranTuru kare 43 t=14.7 → menu_oyna
+EkranTuru kare 63 t=16.3 → menu_kariyer
+EkranTuru kare 83 t=16.8 → menu_harita_tur1
+EkranTuru kare 98 t=18.2 → menu_harita_tur2_kilitli
+EkranTuru kare 118 t=18.7 → menu_mac_karti
+EkranTuru kare 138 t=19.1 → menu_mac_karti_final_kilitli
+EkranTuru kare 158 t=19.7 → menu_harita_tur2
+EkranTuru kare 178 t=20.3 → menu_mac_karti_tur2
+EkranTuru kare 198 t=20.6 → menu_harita_tur3
+EkranTuru kare 218 t=21.2 → menu_mac_karti_tur3
+EkranTuru kare 233 t=21.5 → menu_harita_tur4_kilitli
+EkranTuru kare 253 t=21.8 → menu_harita_tur4
+EkranTuru kare 273 t=22.1 → menu_mac_karti_tur4_imza
+EkranTuru kare 293 t=23.0 → menu_harita_tur4_usta
+EkranTuru bekçi: kare 295 adım menu_harita_tur4_usta
+EkranTuru kare 313 t=25.6 → menu_oyna_usta
+EkranTuru kare 348 t=29.0 → menu_soyunma
+EkranTuru kare 368 t=31.0 → menu_soyunma_tarz
+EkranTuru kare 388 t=32.4 → menu_soyunma_gorunum
+EkranTuru bekçi: kare 412 adım menu_soyunma_gorunum
+EkranTuru kare 418 t=34.1 → menu_karakter_tip
+EkranTuru kare 448 t=36.5 → menu_karakter_tip_deneme
+EkranTuru kare 488 t=40.5 → menu_karakter_sac_yuz
+EkranTuru kare 528 t=43.1 → menu_karakter_sac_deneme
+EkranTuru bekçi: kare 537 adım menu_karakter_sac_deneme
+EkranTuru kare 568 t=45.7 → menu_karakter_ayakkabi_ayak
+EkranTuru kare 598 t=47.9 → menu_karakter_ayakkabi_deneme
+EkranTuru kare 628 t=49.7 → menu_karakter_ten
+EkranTuru kare 668 t=52.6 → menu_yakin_tutus_forehand
+EkranTuru bekçi: kare 686 adım menu_yakin_tutus_forehand
+EkranTuru kare 708 t=55.1 → menu_yakin_tutus_backhand
+EkranTuru kare 738 t=57.2 → menu_yuva_raket
+EkranTuru kare 763 t=58.7 → menu_yuva_kordaj
+EkranTuru kare 788 t=60.0 → menu_profil
+EkranTuru kare 808 t=60.3 → menu_profil_ornek
+EkranTuru kare 833 t=61.9 → menu_hizli
+EkranTuru kare 853 t=63.1 → menu_ayarlar
+EkranTuru bekçi: kare 859 adım menu_ayarlar
+EkranTuru kare 878 t=64.2 → menu_antrenman
+EkranTuru kare 888 t=64.4 → menu_antrenman_alt
+EkranTuru kare 908 t=64.8 → menu_gorev_karti
+EkranTuru kare 933 t=66.5 → menu_gunun_maci
+EkranTuru kare 953 t=67.7 → menu_oyna_gunluk_alindi
+EkranTuru kare 978 t=69.2 → menu_x2_oyna
+EkranTuru kare 998 t=69.6 → menu_x2_kariyer
+EkranTuru kare 1018 t=70.2 → menu_x2_harita_tur1
+EkranTuru kare 1033 t=70.5 → menu_x2_harita_tur2_kilitli
+EkranTuru kare 1053 t=70.8 → menu_x2_mac_karti
+EkranTuru kare 1073 t=71.2 → menu_x2_mac_karti_final_kilitli
+EkranTuru kare 1093 t=71.5 → menu_x2_harita_tur2
+EkranTuru kare 1113 t=71.9 → menu_x2_mac_karti_tur2
+EkranTuru kare 1133 t=72.2 → menu_x2_harita_tur3
+EkranTuru kare 1153 t=72.6 → menu_x2_mac_karti_tur3
+EkranTuru kare 1168 t=72.8 → menu_x2_harita_tur4_kilitli
+EkranTuru kare 1188 t=73.2 → menu_x2_harita_tur4
+EkranTuru kare 1208 t=73.5 → menu_x2_mac_karti_tur4_imza
+EkranTuru bekçi: kare 1224 adım menu_x2_mac_karti_tur4_imza
+EkranTuru kare 1228 t=73.9 → menu_x2_harita_tur4_usta
+EkranTuru kare 1248 t=75.1 → menu_x2_oyna_usta
+EkranTuru kare 1283 t=76.9 → menu_x2_soyunma
+EkranTuru kare 1303 t=78.3 → menu_x2_soyunma_tarz
+EkranTuru kare 1323 t=79.4 → menu_x2_soyunma_gorunum
+EkranTuru kare 1353 t=81.1 → menu_x2_karakter_tip
+EkranTuru kare 1383 t=83.0 → menu_x2_karakter_tip_deneme
+EkranTuru bekçi: kare 1392 adım menu_x2_karakter_tip_deneme
+EkranTuru kare 1423 t=85.7 → menu_x2_karakter_sac_yuz
+EkranTuru kare 1463 t=88.2 → menu_x2_karakter_sac_deneme
+EkranTuru kare 1503 t=90.6 → menu_x2_karakter_ayakkabi_ayak
+EkranTuru kare 1533 t=92.3 → menu_x2_karakter_ayakkabi_deneme
+EkranTuru bekçi: kare 1557 adım menu_x2_karakter_ayakkabi_deneme
+EkranTuru kare 1563 t=94.1 → menu_x2_karakter_ten
+EkranTuru kare 1603 t=96.6 → menu_x2_yakin_tutus_forehand
+EkranTuru kare 1643 t=99.1 → menu_x2_yakin_tutus_backhand
+EkranTuru kare 1673 t=101.2 → menu_x2_yuva_raket
+EkranTuru kare 1698 t=102.7 → menu_x2_yuva_kordaj
+EkranTuru kare 1723 t=103.6 → menu_x2_profil
+EkranTuru bekçi: kare 1732 adım menu_x2_profil
+EkranTuru kare 1743 t=104.0 → menu_x2_profil_ornek
+EkranTuru kare 1768 t=105.3 → menu_x2_hizli
+EkranTuru kare 1788 t=106.0 → menu_x2_ayarlar
+EkranTuru kare 1813 t=106.6 → menu_x2_antrenman
+EkranTuru kare 1823 t=106.8 → menu_x2_antrenman_alt
+EkranTuru kare 1843 t=107.6 → menu_x2_gorev_karti
+EkranTuru kare 1868 t=110.0 → menu_x2_gunun_maci
+EkranTuru kare 1888 t=111.2 → menu_x2_oyna_gunluk_alindi
+EkranTuru kare 1918 t=113.0 → menu_tr_oyna
+EkranTuru bekçi: kare 1930 adım menu_tr_oyna
+EkranTuru kare 1938 t=114.3 → menu_x2_tr_oyna
+EkranTuru kare 1987 t=116.6 → gecis_kapanis_0030
+EkranTuru kare 1991 t=118.1 → gecis_kapanis_0100
+EkranTuru kare 1995 t=119.1 → gecis_kapanis_0160
+EkranTuru kare 1999 t=120.1 → gecis_kapanis_0240
+EkranTuru kare 2003 t=121.0 → gecis_kapanis_0320
+EkranTuru kare 2007 t=122.0 → gecis_kapanis_0400
+EkranTuru kare 2011 t=122.8 → gecis_kapali
+EkranTuru kare 2015 t=123.7 → gecis_bekle
+EkranTuru bekçi: kare 2015 adım gecis_bekle
+EkranTuru kare 2019 t=124.6 → gecis_acilis_0080
+EkranTuru kare 2023 t=125.4 → gecis_acilis_0180
+EkranTuru kare 2027 t=126.3 → gecis_acilis_0280
+EkranTuru kare 2031 t=127.1 → gecis_azalt_kapanis_0100
+EkranTuru kare 2035 t=127.7 → gecis_azalt_kapali
+EkranTuru kare 2039 t=128.4 → gecis_azalt_acilis_0120
+EkranTuru kare 2043 t=129.2 → acilis_0000
+EkranTuru kare 2047 t=130.0 → acilis_0100
+EkranTuru kare 2051 t=130.9 → acilis_0250
+EkranTuru kare 2055 t=131.8 → acilis_0400
+EkranTuru kare 2059 t=132.8 → acilis_0550
+EkranTuru kare 2063 t=133.8 → acilis_0650
+EkranTuru bekçi: kare 2063 adım acilis_0650
+EkranTuru kare 2067 t=134.8 → acilis_bekle
+EkranTuru kare 2071 t=135.8 → acilis_patlama_0080
+EkranTuru kare 2075 t=136.7 → acilis_patlama_0180
+EkranTuru kare 2079 t=137.5 → acilis_azalt
+EkranTuru kare 2129 t=140.7 → oyuncak_01_menu
+EkranTuru bekçi: kare 2150 adım oyuncak_01_menu
+EkranTuru kare 2174 t=148.2 → oyuncak_02_servis_once
+EkranTuru kare 2194 t=152.8 → oyuncak_10_ralli
+EkranTuru bekçi: kare 2200 adım oyuncak_10_ralli
+EkranTuru kare 2208 t=155.0 → oyuncak_11_ralli
+EkranTuru kare 2222 t=157.2 → oyuncak_12_ralli
+EkranTuru kare 2236 t=159.4 → oyuncak_13_ralli
+EkranTuru kare 2250 t=161.6 → oyuncak_14_ralli
+EkranTuru bekçi: kare 2263 adım oyuncak_14_ralli
+EkranTuru kare 2264 t=163.8 → oyuncak_15_ralli
+EkranTuru kare 2278 t=166.0 → oyuncak_16_ralli
+EkranTuru kare 2292 t=168.2 → oyuncak_17_ralli
+EkranTuru kare 2306 t=170.4 → oyuncak_18_ralli
+EkranTuru kare 2320 t=172.6 → oyuncak_19_ralli
+EkranTuru bekçi: kare 2323 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 2349 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 2383 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 2448 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 2512 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 2577 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 2641 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 2706 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 2765 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 2787 adım oyuncak_19_ralli
+EkranTuru kare 2829 t=272.5 → rocketbox_01_menu
+EkranTuru bekçi: kare 2837 adım rocketbox_01_menu
+EkranTuru kare 2874 t=280.0 → rocketbox_02_servis_once
+EkranTuru bekçi: kare 2887 adım rocketbox_02_servis_once
+EkranTuru kare 2894 t=284.9 → rocketbox_10_ralli
+EkranTuru kare 2908 t=287.2 → rocketbox_11_ralli
+EkranTuru kare 2922 t=289.6 → rocketbox_12_ralli
+EkranTuru kare 2936 t=291.9 → rocketbox_13_ralli
+EkranTuru bekçi: kare 2947 adım rocketbox_13_ralli
+EkranTuru kare 2950 t=294.2 → rocketbox_14_ralli
+EkranTuru kare 2964 t=296.6 → rocketbox_15_ralli
+EkranTuru kare 2978 t=298.9 → rocketbox_16_ralli
+EkranTuru kare 2992 t=301.3 → rocketbox_17_ralli
+EkranTuru kare 3006 t=303.6 → rocketbox_18_ralli
+EkranTuru bekçi: kare 3006 adım rocketbox_18_ralli
+EkranTuru kare 3020 t=306.0 → rocketbox_19_ralli
+EkranTuru bekçi: kare 3045 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 3081 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 3122 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 3181 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 3241 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 3300 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 3359 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 3417 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 3457 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 3487 adım rocketbox_19_ralli
+EkranTuru kare 3508 t=407.1 → sade_01_menu
+EkranTuru bekçi: kare 3549 adım sade_01_menu
+EkranTuru kare 3553 t=414.3 → sade_02_servis_once
+EkranTuru kare 3573 t=418.8 → sade_10_ralli
+EkranTuru kare 3587 t=421.0 → sade_11_ralli
+EkranTuru kare 3601 t=423.3 → sade_12_ralli
+EkranTuru bekçi: kare 3604 adım sade_12_ralli
+EkranTuru kare 3615 t=425.6 → sade_13_ralli
+EkranTuru kare 3629 t=427.8 → sade_14_ralli
+EkranTuru kare 3643 t=430.0 → sade_15_ralli
+EkranTuru kare 3657 t=432.3 → sade_16_ralli
+EkranTuru bekçi: kare 3666 adım sade_16_ralli
+EkranTuru kare 3671 t=434.5 → sade_17_ralli
+EkranTuru kare 3685 t=436.7 → sade_18_ralli
+EkranTuru kare 3699 t=438.9 → sade_19_ralli
+EkranTuru bekçi: kare 3713 adım sade_19_ralli
+EkranTuru bekçi: kare 3748 adım sade_19_ralli
+EkranTuru bekçi: kare 3792 adım sade_19_ralli
+EkranTuru bekçi: kare 3855 adım sade_19_ralli
+EkranTuru bekçi: kare 3919 adım sade_19_ralli
+EkranTuru bekçi: kare 3981 adım sade_19_ralli
+EkranTuru bekçi: kare 4044 adım sade_19_ralli
+EkranTuru bekçi: kare 4106 adım sade_19_ralli
+EkranTuru bekçi: kare 4160 adım sade_19_ralli
+EkranTuru bekçi: kare 4234 adım sade_19_ralli
+EkranTuru kare 4249 t=534.6 → model_vitrin_tip_atlet
+EkranTuru kare 4274 t=536.0 → model_vitrin_tip_kadin
+EkranTuru kare 4299 t=537.4 → model_vitrin_tip_uzun
+EkranTuru kare 4324 t=538.9 → model_vitrin_tip_guclu
+EkranTuru kare 4374 t=542.1 → model_vitrin_sac_kisa
+EkranTuru kare 4394 t=543.5 → model_vitrin_sac_yan
+EkranTuru bekçi: kare 4399 adım model_vitrin_sac_yan
+EkranTuru kare 4414 t=544.8 → model_vitrin_sac_atkuyrugu
+EkranTuru kare 4434 t=546.1 → model_vitrin_sac_kazima
+EkranTuru kare 4454 t=547.3 → model_vitrin_sac_kel
+EkranTuru kare 4474 t=548.6 → model_vitrin_sac_topuz
+EkranTuru kare 4494 t=550.0 → model_vitrin_sac_anime
+EkranTuru kare 4514 t=551.4 → model_vitrin_sac_orgu
+EkranTuru kare 4534 t=552.7 → model_vitrin_sac_afro
+EkranTuru bekçi: kare 4549 adım model_vitrin_sac_afro
+EkranTuru kare 4554 t=554.2 → model_vitrin_sac_rasta
+EkranTuru kare 4574 t=555.6 → model_vitrin_sac_mullet
+EkranTuru kare 4594 t=556.9 → model_vitrin_sac_mohikan
+EkranTuru kare 4649 t=560.4 → model_vitrin_ayk_klasik
+EkranTuru kare 4674 t=562.0 → model_vitrin_ayk_hafif
+EkranTuru kare 4699 t=563.6 → model_vitrin_ayk_yastikli
+EkranTuru bekçi: kare 4702 adım model_vitrin_ayk_yastikli
+EkranTuru kare 4724 t=565.2 → model_vitrin_ayk_bilekli
+EkranTuru kare 4749 t=566.8 → model_vitrin_ayk_karbon
+EkranTuru bekçi: kare 4798 adım model_vitrin_ayk_karbon
+EkranTuru bekçi: kare 4857 adım model_vitrin_ayk_karbon
+EkranTuru bekçi: kare 4917 adım model_vitrin_ayk_karbon
+EkranTuru kare 4946 t=599.0 → model_dizilis_mac
+EkranTuru bekçi: kare 4958 adım model_dizilis_mac
+EkranTuru kare 5031 t=612.0 → model_gercekci_karakter_uyari
+EkranTuru kare 5051 t=612.7 → model_ayarlar_gercekci
+EkranTuru bekçi: kare 5062 adım model_ayarlar_gercekci
+EkranTuru kare 5101 t=620.0 → model_gecis_sade
+EkranTuru kare 5141 t=622.5 → model_gecis_sade_vitrin
+EkranTuru bekçi: kare 5150 adım model_gecis_sade_vitrin
+EkranTuru kare 5186 t=629.2 → model_gecis_oyuncak
+EkranTuru kare 5226 t=631.8 → model_gecis_oyuncak_vitrin
+EkranTuru bekçi: kare 5269 adım model_gecis_oyuncak_vitrin
+EkranTuru kare 5291 t=635.1 → model_gercekci_karakter_ayakkabi
+EkranTuru kare 5316 t=636.6 → model_gercekci_vitrin_ayakkabi_klasik
+EkranTuru kare 5341 t=637.2 → model_gercekci_vitrin_ayakkabi_hafif
+EkranTuru kare 5366 t=637.7 → model_gercekci_vitrin_ayakkabi_yastikli
+EkranTuru kare 5391 t=638.2 → model_gercekci_vitrin_ayakkabi_bilekli
+EkranTuru kare 5416 t=638.8 → model_gercekci_vitrin_ayakkabi_karbon
+EkranTuru kare 5436 t=639.2 → model_gercekci_vitrin_ayakkabi_renk_siyah
+EkranTuru kare 5456 t=639.6 → model_gercekci_vitrin_ayakkabi_renk_beyaz
+EkranTuru kare 5486 t=640.2 → model_gercekci_karakter_kiyafet
+EkranTuru kare 5506 t=640.7 → model_gercekci_vitrin_forma_mavi
+EkranTuru kare 5526 t=641.1 → model_gercekci_vitrin_forma_fistik
+EkranTuru kare 5546 t=641.6 → model_gercekci_vitrin_forma_mor
+EkranTuru kare 5566 t=642.0 → model_gercekci_vitrin_kumas_klasik
+EkranTuru kare 5586 t=642.5 → model_gercekci_vitrin_kumas_klasik_arka
+EkranTuru kare 5606 t=642.9 → model_gercekci_vitrin_kumas_hafif
+EkranTuru kare 5626 t=643.3 → model_gercekci_vitrin_kumas_hafif_arka
+EkranTuru kare 5646 t=643.8 → model_gercekci_vitrin_kumas_nefes
+EkranTuru bekçi: kare 5648 adım model_gercekci_vitrin_kumas_nefes
+EkranTuru kare 5666 t=644.2 → model_gercekci_vitrin_kumas_nefes_arka
+EkranTuru kare 5686 t=644.7 → model_gercekci_vitrin_kumas_esnek
+EkranTuru kare 5706 t=645.1 → model_gercekci_vitrin_kumas_esnek_arka
+EkranTuru kare 5726 t=645.6 → model_gercekci_vitrin_sort_dogal
+EkranTuru kare 5746 t=646.0 → model_gercekci_vitrin_sort_siyah
+EkranTuru kare 5766 t=646.5 → model_gercekci_vitrin_sort_beyaz
+EkranTuru kare 5786 t=646.9 → model_gercekci_vitrin_sort_gri
+EkranTuru kare 5806 t=647.4 → model_gercekci_vitrin_bant_yok
+EkranTuru kare 5826 t=647.9 → model_gercekci_vitrin_bant_yok_yan
+EkranTuru kare 5846 t=648.3 → model_gercekci_vitrin_bant_ter
+EkranTuru kare 5866 t=648.8 → model_gercekci_vitrin_bant_ter_yan
+EkranTuru kare 5886 t=649.3 → model_gercekci_vitrin_bant_odak
+EkranTuru kare 5906 t=649.8 → model_gercekci_vitrin_bant_odak_yan
+EkranTuru kare 5926 t=650.2 → model_gercekci_vitrin_bileklik_yok
+EkranTuru kare 5946 t=650.6 → model_gercekci_vitrin_bileklik_pamuk
+EkranTuru kare 5966 t=651.0 → model_gercekci_vitrin_bileklik_agir
+EkranTuru kare 5986 t=651.5 → model_gercekci_vitrin_raket_siyah_beyaz
+EkranTuru kare 6006 t=651.9 → model_gercekci_vitrin_raket_kirmizi_limon
+EkranTuru kare 6036 t=652.5 → model_sade_karakter_ayakkabi
+EkranTuru kare 6056 t=652.9 → model_sade_karakter_kiyafet
+EkranTuru kare 6076 t=653.3 → model_sade_vitrin_sort_dogal
+EkranTuru kare 6096 t=653.7 → model_sade_vitrin_sort_beyaz
+EkranTuru bekçi: kare 6098 adım model_sade_vitrin_sort_beyaz
+EkranTuru kare 6146 t=661.2 → model_gercekci_mac_1
+EkranTuru bekçi: kare 6158 adım model_gercekci_mac_1
+EkranTuru kare 6193 t=669.7 → model_gercekci_mac_2
+EkranTuru bekçi: kare 6214 adım model_gercekci_mac_2
+EkranTuru kare 6240 t=678.1 → model_gercekci_mac_3
+EkranTuru bekçi: kare 6274 adım model_gercekci_mac_3
+EkranTuru kare 6307 t=689.2 → saha_turnuva
+EkranTuru bekçi: kare 6336 adım saha_turnuva
+EkranTuru kare 6367 t=698.3 → saha_okul
+EkranTuru bekçi: kare 6405 adım saha_okul
+EkranTuru kare 6427 t=706.9 → saha_park
+EkranTuru bekçi: kare 6471 adım saha_park
+EkranTuru kare 6487 t=716.1 → kamera_alcak
+EkranTuru kare 6521 t=721.3 → kadraj_tepe_ben_alcak
+EkranTuru bekçi: kare 6537 adım kadraj_tepe_ben_alcak
+EkranTuru kare 6555 t=726.5 → kadraj_tepe_rakip_alcak
+EkranTuru bekçi: kare 6601 adım kadraj_tepe_rakip_alcak
+EkranTuru kare 6615 t=736.0 → kamera_ust
+EkranTuru kare 6649 t=741.4 → kadraj_tepe_ben_ust
+EkranTuru bekçi: kare 6664 adım kadraj_tepe_ben_ust
+EkranTuru kare 6683 t=746.8 → kadraj_tepe_rakip_ust
+EkranTuru bekçi: kare 6727 adım kadraj_tepe_rakip_ust
+EkranTuru kare 6743 t=756.3 → kamera_yayin
+EkranTuru kare 6777 t=761.7 → kadraj_tepe_ben_yayin
+EkranTuru bekçi: kare 6804 adım kadraj_tepe_ben_yayin
+EkranTuru kare 6807 t=764.3 → menu_kadraj_donus
+EkranTuru kare 6841 t=769.4 → kadraj_tepe_rakip_yayin
+requesting resize 375 x 667
+resizing window to 375 x 667
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru bekçi: kare 6872 adım kadraj_tepe_rakip_yayin
+EkranTuru kare 6912 t=779.3 → kamera_alcak_se
+EkranTuru bekçi: kare 6945 adım kamera_alcak_se
+EkranTuru kare 6946 t=784.0 → kadraj_tepe_ben_alcak_se
+EkranTuru kare 6980 t=788.6 → kadraj_tepe_rakip_alcak_se
+EkranTuru bekçi: kare 7017 adım kadraj_tepe_rakip_alcak_se
+EkranTuru kare 7040 t=797.1 → kamera_ust_se
+EkranTuru kare 7074 t=801.8 → kadraj_tepe_ben_ust_se
+EkranTuru bekçi: kare 7088 adım kadraj_tepe_ben_ust_se
+EkranTuru kare 7108 t=806.5 → kadraj_tepe_rakip_ust_se
+EkranTuru bekçi: kare 7160 adım kadraj_tepe_rakip_ust_se
+EkranTuru kare 7168 t=814.8 → kamera_yayin_se
+EkranTuru kare 7202 t=819.6 → kadraj_tepe_ben_yayin_se
+EkranTuru bekçi: kare 7232 adım kadraj_tepe_ben_yayin_se
+EkranTuru kare 7236 t=824.3 → kadraj_tepe_rakip_yayin_se
+requesting resize 390 x 845
+resizing window to 390 x 845
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru kare 7281 t=831.3 → kadraj_tepe_ben_yayin_azalt
+EkranTuru bekçi: kare 7297 adım kadraj_tepe_ben_yayin_azalt
+EkranTuru kare 7315 t=836.6 → kadraj_tepe_rakip_yayin_azalt
+requesting resize 430 x 932
+resizing window to 430 x 932
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru bekçi: kare 7355 adım kadraj_tepe_rakip_yayin_azalt
+EkranTuru kare 7360 t=844.6 → kadraj_tepe_ben_yayin_pm
+EkranTuru kare 7394 t=850.6 → kadraj_tepe_rakip_yayin_pm
+requesting resize 390 x 845
+resizing window to 390 x 845
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru bekçi: kare 7413 adım kadraj_tepe_rakip_yayin_pm
+EkranTuru bekçi: kare 7477 adım kadraj_tepe_rakip_yayin_pm
+EkranTuru bekçi: kare 7539 adım kadraj_tepe_rakip_yayin_pm
+EkranTuru bekçi: kare 7602 adım kadraj_tepe_rakip_yayin_pm
+EkranTuru bekçi: kare 7664 adım kadraj_tepe_rakip_yayin_pm
+EkranTuru bekçi: kare 7726 adım kadraj_tepe_rakip_yayin_pm
+EkranTuru kare 7786 t=913.5 → imza_mermi_yok
+EkranTuru bekçi: kare 7787 adım imza_mermi_yok
+EkranTuru bekçi: kare 7848 adım imza_mermi_yok
+EkranTuru bekçi: kare 7908 adım imza_mermi_yok
+EkranTuru bekçi: kare 7969 adım imza_mermi_yok
+EkranTuru bekçi: kare 8029 adım imza_mermi_yok
+EkranTuru bekçi: kare 8090 adım imza_mermi_yok
+EkranTuru bekçi: kare 8150 adım imza_mermi_yok
+EkranTuru kare 8157 t=974.9 → imza_duvar_azalt_yok
+EkranTuru bekçi: kare 8212 adım imza_duvar_azalt_yok
+EkranTuru bekçi: kare 8276 adım imza_duvar_azalt_yok
+EkranTuru bekçi: kare 8338 adım imza_duvar_azalt_yok
+EkranTuru bekçi: kare 8401 adım imza_duvar_azalt_yok
+EkranTuru bekçi: kare 8465 adım imza_duvar_azalt_yok
+EkranTuru kare 8517 t=1032.1 → gorev_kose_oyun
+EkranTuru bekçi: kare 8527 adım gorev_kose_oyun
+EkranTuru kare 8573 t=1041.2 → gorev_sonuc
+EkranTuru bekçi: kare 8589 adım gorev_sonuc
+EkranTuru bekçi: kare 8652 adım gorev_sonuc
+EkranTuru bekçi: kare 8719 adım gorev_sonuc
+EkranTuru kare 8753 t=1069.2 → gunun_maci_oyun
+EkranTuru bekçi: kare 8783 adım gunun_maci_oyun
+EkranTuru kare 8806 t=1077.2 → sonuc_galibiyet
+EkranTuru bekçi: kare 8853 adım sonuc_galibiyet
+EkranTuru kare 8864 t=1085.4 → sonuc_galibiyet_azalt
+EkranTuru kare 8921 t=1093.5 → sonuc_buyuk_galibiyet
+EkranTuru bekçi: kare 8923 adım sonuc_buyuk_galibiyet
+EkranTuru kare 8978 t=1101.5 → sonuc_tr_galibiyet
+EkranTuru bekçi: kare 8996 adım sonuc_tr_galibiyet
+EkranTuru kare 9036 t=1109.7 → sonuc_yenilgi
+EkranTuru bekçi: kare 9065 adım sonuc_yenilgi
+requesting resize 375 x 667
+resizing window to 375 x 667
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru bekçi: kare 9136 adım sonuc_yenilgi
+EkranTuru kare 9148 t=1124.5 → menu_se_oyna
+EkranTuru kare 9168 t=1124.9 → menu_se_kariyer
+EkranTuru kare 9188 t=1125.3 → menu_se_mac_karti
+EkranTuru kare 9218 t=1126.8 → menu_se_soyunma
+EkranTuru kare 9248 t=1128.5 → menu_se_karakter
+EkranTuru kare 9273 t=1129.1 → menu_se_profil
+EkranTuru kare 9293 t=1130.2 → menu_se_hizli
+EkranTuru kare 9313 t=1130.7 → menu_se_ayarlar
+EkranTuru kare 9338 t=1131.5 → menu_se_antrenman
+EkranTuru kare 9358 t=1131.8 → menu_se_gorev_karti
+EkranTuru kare 9383 t=1133.2 → menu_se_gunun_maci
+EkranTuru bekçi: kare 9393 adım menu_se_gunun_maci
+EkranTuru kare 9418 t=1135.2 → menu_se_x2_oyna
+EkranTuru kare 9438 t=1135.7 → menu_se_x2_kariyer
+EkranTuru kare 9458 t=1136.0 → menu_se_x2_mac_karti
+EkranTuru kare 9488 t=1137.6 → menu_se_x2_soyunma
+EkranTuru kare 9508 t=1138.3 → menu_se_x2_profil
+EkranTuru kare 9528 t=1139.4 → menu_se_x2_hizli
+EkranTuru kare 9548 t=1139.9 → menu_se_x2_ayarlar
+EkranTuru bekçi: kare 9588 adım menu_se_x2_ayarlar
+EkranTuru kare 9622 t=1148.3 → sonuc_se
+EkranTuru bekçi: kare 9666 adım sonuc_se
+EkranTuru kare 9686 t=1156.5 → sonuc_se_buyuk
+EkranTuru bekçi: kare 9743 adım sonuc_se_buyuk
+EkranTuru kare 9751 t=1164.9 → oyun_se
+requesting resize 390 x 844
+resizing window to 390 x 844
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru kare 9792 t=1167.5 → menu_13_oyna
+EkranTuru kare 9812 t=1168.0 → menu_13_kariyer
+EkranTuru kare 9832 t=1168.3 → menu_13_mac_karti
+EkranTuru kare 9862 t=1170.0 → menu_13_soyunma
+EkranTuru kare 9892 t=1171.7 → menu_13_karakter
+EkranTuru kare 9917 t=1172.4 → menu_13_profil
+EkranTuru kare 9937 t=1173.6 → menu_13_hizli
+EkranTuru bekçi: kare 9947 adım menu_13_hizli
+EkranTuru kare 9957 t=1174.0 → menu_13_ayarlar
+EkranTuru kare 9982 t=1174.6 → menu_13_antrenman
+EkranTuru kare 10002 t=1175.0 → menu_13_gorev_karti
+EkranTuru kare 10027 t=1176.4 → menu_13_gunun_maci
+EkranTuru bekçi: kare 10081 adım menu_13_gunun_maci
+EkranTuru kare 10086 t=1184.5 → sonuc_13
+EkranTuru kare 10151 t=1193.5 → oyun_13
+EkranTuru bekçi: kare 10153 adım oyun_13
+requesting resize 430 x 932
+resizing window to 430 x 932
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru kare 10192 t=1196.3 → menu_pm_oyna
+EkranTuru kare 10212 t=1196.8 → menu_pm_kariyer
+EkranTuru kare 10232 t=1197.1 → menu_pm_mac_karti
+EkranTuru kare 10262 t=1198.8 → menu_pm_soyunma
+EkranTuru kare 10292 t=1200.7 → menu_pm_karakter
+EkranTuru kare 10317 t=1201.4 → menu_pm_profil
+EkranTuru kare 10337 t=1202.6 → menu_pm_hizli
+EkranTuru kare 10357 t=1203.0 → menu_pm_ayarlar
+EkranTuru kare 10382 t=1203.6 → menu_pm_antrenman
+EkranTuru bekçi: kare 10393 adım menu_pm_antrenman
+EkranTuru kare 10402 t=1204.0 → menu_pm_gorev_karti
+EkranTuru kare 10427 t=1205.5 → menu_pm_gunun_maci
+EkranTuru kare 10479 t=1213.5 → sonuc_pm
+EkranTuru bekçi: kare 10481 adım sonuc_pm
+EkranTuru bekçi: kare 10543 adım sonuc_pm
+EkranTuru kare 10544 t=1224.0 → oyun_pm
+requesting resize 768 x 1024
+resizing window to 768 x 1024
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru kare 10585 t=1227.2 → menu_ipad_oyna
+EkranTuru kare 10605 t=1227.8 → menu_ipad_kariyer
+EkranTuru kare 10625 t=1228.4 → menu_ipad_mac_karti
+EkranTuru kare 10655 t=1230.4 → menu_ipad_soyunma
+EkranTuru kare 10685 t=1232.5 → menu_ipad_karakter
+EkranTuru kare 10710 t=1233.4 → menu_ipad_profil
+EkranTuru bekçi: kare 10716 adım menu_ipad_profil
+EkranTuru kare 10730 t=1235.0 → menu_ipad_hizli
+EkranTuru kare 10750 t=1235.6 → menu_ipad_ayarlar
+EkranTuru kare 10775 t=1236.4 → menu_ipad_antrenman
+EkranTuru kare 10795 t=1237.0 → menu_ipad_gorev_karti
+EkranTuru kare 10820 t=1239.0 → menu_ipad_gunun_maci
+EkranTuru bekçi: kare 10839 adım menu_ipad_gunun_maci
+EkranTuru kare 10850 t=1247.0 → sonuc_ipad
+EkranTuru bekçi: kare 10876 adım sonuc_ipad
+EkranTuru bekçi: kare 10910 adım sonuc_ipad
+EkranTuru kare 10915 t=1265.1 → oyun_ipad
+requesting resize 390 x 845
+resizing window to 390 x 845
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru kare 10976 t=1269.4 → menu_macsonu_oyna
+EkranTuru kare 10996 t=1269.8 → menu_macsonu_kariyer
+EkranTuru kare 11026 t=1271.5 → menu_macsonu_soyunma
+EkranTuru kare 11056 t=1273.3 → menu_park_oyna
+EkranTuru bekçi: kare 11064 adım menu_park_oyna
+EkranTuru bekçi: kare 11129 adım menu_park_oyna
+EkranTuru kare 11131 t=1284.0 → duraklat
+EkranTuru kare 11161 t=1286.0 → menu_bekleyen_oyna
+EkranTuru kare 11191 t=1290.6 → bekleyen_devam
+EkranTuru bekçi: kare 11242 adım bekleyen_devam
+EkranTuru bekçi: kare 11411 adım bekleyen_devam
+EkranTuru bekçi: kare 11664 adım bekleyen_devam
+EkranTuru bekçi: kare 11727 adım bekleyen_devam
+EkranTuru bekçi: kare 11791 adım bekleyen_devam
+EkranTuru bekçi: kare 11854 adım bekleyen_devam
+EkranTuru bekçi: kare 11918 adım bekleyen_devam
+EkranTuru bekçi: kare 11982 adım bekleyen_devam
+EkranTuru bekçi: kare 12042 adım bekleyen_devam
+EkranTuru bekçi: kare 12103 adım bekleyen_devam
+EkranTuru bekçi: kare 12162 adım bekleyen_devam
+EkranTuru bekçi: kare 12221 adım bekleyen_devam
+EkranTuru bekçi: kare 12281 adım bekleyen_devam
+EkranTuru bekçi: kare 12344 adım bekleyen_devam
+EkranTuru bekçi: kare 12407 adım bekleyen_devam
+EkranTuru bekçi: kare 12469 adım bekleyen_devam
+EkranTuru bekçi: kare 12531 adım bekleyen_devam
+EkranTuru bekçi: kare 12605 adım bekleyen_devam
+[Physics::Module] Cleanup current backned.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
