@@ -302,7 +302,8 @@ namespace BirdieSmash.Game
                 // 2026-10-26 r11: İngilizce ve büyük yazıda ipucu iki satıra iner; sabit 20 px kutu üst satırı kesiyordu.
                 // Yükseklik metinden ölçülür, alt kenar smaç çubuğu etiketinin hemen üstünde sabit kalır.
                 string ip = L.T(!Ogretici ? "Dokun: oraya koş" : M.easy ? "Top parlayınca kaydır: yön ve güç senin" : "Dokun: oraya koş · Top parlayınca kaydır");
-                float ih = tiny.CalcHeight(Ic(ip), rx - lx); Shadowed(new Rect(lx, hy + 16 * u - ih, rx - lx, ih + 2 * u), ip, tiny, Kit.Hex("#9dbab3"));
+                // 2026-10-29: tek satır (Sigdir); iki satıra inince smaç çubuğu etiketine biniyor ve alttan kesik görünüyordu.
+                var ist = Sigdir(Stil(tiny, -1, FontStyle.Bold), ip, rx - lx); float ih = ist.CalcSize(Ic(ip)).y; Shadowed(new Rect(lx, hy + 14 * u - ih, rx - lx, ih + 2 * u), ip, ist, Kit.Hex("#cfe3dc"));
             }
             if (M.s == null && !M.between && M.svPending == null && !ogr) ServisSeridi(M, hy);
             if (M.HitWindow() && (!ogr || !M.ogr.dur) && !M.easy) { }
@@ -335,18 +336,26 @@ namespace BirdieSmash.Game
         // Koşu sende (Kolay kapalı ya da Usta yolu) ilk kez oynanıyorsa, 3 galibiyeti geçmiş oyuncuya da "Dokun: oraya koş"
         // o maçta bir kez görünür: yeni bir denetimdir. Maç bitince tuytop_kos_ipucu yazılır (GameRoot.EndMatch).
         static bool KosIpucu(Match M) { return !M.easy && !Ayar.kosIpucu; }
+        // Servis şeridi (2026-10-29, yasin: "maç içinde çıkan yazı alttan kesiliyor ama yine de büyük alan kaplıyor, makul geri
+        // bildirimlerle vermeliyiz"): eskiden 4–6 satırlık sarılan kutu (servis + kaydırma talimatı + "Rakip: …" + görev listesi)
+        // kortun alt çeyreğini örtüyor, büyük yazıda ve İngilizcede alttan kesiliyordu. Şimdi ortada tek bir hap: her satır tek
+        // satıra sığdırılır (Sigdir), en çok üç satır. "Rakip: …" satırı kalktı (rakip kartı ve skor tabelası zaten söylüyor);
+        // görevler yalnız ilk serviste tek satır kısaltılmış; talimat yalnız Öğretici dönemde ve ilk serviste.
         void ServisSeridi(Match M, float hy)
         {
-            var sat = new List<KeyValuePair<string, Color>>(); bool ilk = M.sc[0] + M.sc[1] < 2;
+            var sat = new List<KeyValuePair<string, Color>>(); bool ilk = M.sc[0] + M.sc[1] == 0;
             string side = L.T(M.ServeSideOf(M.server) == "R" ? "sağ" : "sol");
             sat.Add(new KeyValuePair<string, Color>(M.server == "me" ? L.T("Servis sende · {0} kare", side) : L.T("Rakip servis atıyor · {0} kare", side), Color.white));
-            if (M.server == "me" && ilk && Ogretici) sat.Add(new KeyValuePair<string, Color>(L.T("Yukarı kaydır: yavaş kısa · sert fiske flick · hızlı uzun yüksek"), Kit.Hex("#cfe3dc")));
-            if (!string.IsNullOrEmpty(M.serveMsg)) sat.Add(new KeyValuePair<string, Color>(L.Cumle(M.stil != null && M.stil.ad != null ? M.serveMsg.Replace("(" + M.stil.ad + ")", "(" + L.T(M.stil.ad) + ")") : M.serveMsg), Kit.Hex("#ffd27a")));   // r11: tarz adı (Smaşçı) çevrilmeden kalıyordu
-            if (M.sc[0] + M.sc[1] == 0 && M.gorevler.Count > 0) { var ad = new List<string>(); foreach (var g in M.gorevler) ad.Add(L.Cumle(g.ad)); sat.Add(new KeyValuePair<string, Color>(L.T("Görev: ") + string.Join(" · ", ad.ToArray()), Kit.Hex("#ffd23a"))); }
-            var st = new GUIStyle(small) { wordWrap = true }; var st0 = new GUIStyle(st) { fontStyle = FontStyle.Bold, fontSize = Mathf.RoundToInt(14 * fu) };
-            float ww = Mathf.Min(rx - lx, 380 * u), hh = 12 * u; foreach (var s in sat) hh += (s.Value == Color.white ? st0 : st).CalcHeight(Ic(s.Key), ww - 16 * u);
-            float y0 = H - bot - 30 * u - hh; Fill(new Rect(W / 2 - ww / 2, y0, ww, hh), new Color(9 / 255f, 16 / 255f, 17 / 255f, .74f));
-            float yy = y0 + 6 * u; foreach (var s in sat) { var stt = s.Value == Color.white ? st0 : st; float h = stt.CalcHeight(Ic(s.Key), ww - 16 * u); GUI.color = s.Value; GUI.Label(new Rect(W / 2 - ww / 2 + 8 * u, yy, ww - 16 * u, h), s.Key, stt); yy += h; }
+            if (!string.IsNullOrEmpty(M.serveMsg) && !M.serveMsg.StartsWith("Rakip: ")) sat.Add(new KeyValuePair<string, Color>(L.Cumle(M.serveMsg), Kit.Hex("#ffd27a")));
+            else if (M.server == "me" && M.sc[0] + M.sc[1] < 2 && Ogretici) sat.Add(new KeyValuePair<string, Color>(L.T("Yukarı kaydır: yavaş kısa · hızlı uzun"), Kit.Hex("#cfe3dc")));
+            if (ilk && M.gorevler.Count > 0) { var ad = new List<string>(); foreach (var g in M.gorevler) ad.Add(L.Cumle(g.ad)); sat.Add(new KeyValuePair<string, Color>(L.T("Görev: ") + string.Join(" · ", ad.ToArray()), Kit.Hex("#ffd23a"))); }
+            var st0 = Stil(small, Mathf.RoundToInt(14 * fu), FontStyle.Bold); var st = Stil(small, Mathf.RoundToInt(12 * fu));
+            float enW = Mathf.Min(rx - lx, 380 * u) - 24 * u, ww = 0, hh = 10 * u; var stiller = new GUIStyle[sat.Count];
+            for (int i = 0; i < sat.Count; i++) { var b0 = i == 0 ? st0 : st; var f = Sigdir(b0, sat[i].Key, enW); stiller[i] = f; var sz = f.CalcSize(Ic(sat[i].Key)); ww = Mathf.Max(ww, Mathf.Min(sz.x, enW)); hh += sz.y; }
+            ww += 24 * u; float y0 = H - bot - 30 * u - hh; var kutu = new Rect(W / 2 - ww / 2, y0, ww, hh);
+            Fill(kutu, new Color(9 / 255f, 16 / 255f, 17 / 255f, .74f));
+            float yy = y0 + 5 * u;
+            for (int i = 0; i < sat.Count; i++) { float h = stiller[i].CalcSize(Ic(sat[i].Key)).y; GUI.color = sat[i].Value; GUI.Label(new Rect(kutu.x + 12 * u, yy, ww - 24 * u, h), sat[i].Key, new GUIStyle(stiller[i]) { alignment = TextAnchor.MiddleCenter, wordWrap = false, clipping = TextClipping.Overflow }); yy += h; }
             GUI.color = Color.white;
         }
         // Vuruş halesi (HTML shuttle(): reachInfo varken): R·1,3 ışıma, nabız atan halka (uzanmada turuncu), iç altın halka R·.33,
@@ -522,29 +531,59 @@ namespace BirdieSmash.Game
                 else if (o.sonSp >= 0 && M.realClock - o.sonT < 2.2f) { ok = M.OgrUygunCanli(a, o.sonTip, o.sonSlice); igne = o.sonSp; canli = (ok ? "✓ " : "✗ ") + L.T("Çıkan") + ": " + (o.sonTip != null ? (o.sonSlice ? "Slice" : L.T(Match.OGR_AD.ContainsKey(o.sonTip) ? Match.OGR_AD[o.sonTip] : o.sonTip)) : ""); }
                 else if (a.drill && o.cagri != null && M.s != null && M.s.from == "op") canli = L.T("Antrenör: ") + L.T(Match.OGR_AD[o.cagri]);
             }
+            // Dar kart (2026-10-29, yasin: "antrenman kısmında instructionlar ekranı kaplıyor hiç bir şey görünmüyor"): tam kart
+            // ekranın üst yarısını, yani hedef köşelerin ve rakip sahasının olduğu yeri örtüyordu. Talimat yalnız adımın ilk topundan
+            // önce ya da "?" ile açılır; oynarken tek satır başlık + sayaç, hız bandı ve canlı okuma kalır (asıl geri bildirim).
+            // Bilgi adımları (Anladım, devam) oyun durduğu için tam kalır.
+            string adimAnah = o.i + "/" + (a.dril != null ? a.dril.id : "");
+            if (adimAnah != ogrAdimAnah) { ogrAdimAnah = adimAnah; ogrDetay = false; }
+            bool ilkTop = a.dril != null || a.drill ? o.dene == 0 : o.n == 0 && o.miss == 0;
+            bool kompakt = a.bilgi == null && !ilkTop && !ogrDetay;
+            if (kompakt) return OgrKartDar(M, a, y, x, w, iw, bant, hb, canli, igne);
             float h = 12 * u + 18 * u + 24 * u + h1 + 6 * u + h2 + (bant ? 34 * u : 0) + (canli != null ? 22 * u : 0) + 10 * u + BH + (a.bilgi != null ? BH + 8 * u : 0) + 10 * u;
             var r = new Rect(x, y, w, h); blocks.Add(r); GUI.Box(r, GUIContent.none, card);
+            if (a.bilgi == null && !ilkTop && Button(new Rect(x + w - 12 * u - BH, y + 6 * u, BH, BH), "−")) ogrDetay = false;
             float yy = y + 10 * u;
             GUI.Label(new Rect(x + 12 * u, yy, iw, 18 * u), say, Stil(left, Mathf.RoundToInt(11 * fu))); yy += 18 * u;
             GUI.Label(new Rect(x + 12 * u, yy, iw, 24 * u), L.T(a.bas), leftB); yy += 24 * u;
             GUI.Label(new Rect(x + 12 * u, yy, iw, h1), met, ws); yy += h1 + 6 * u;
             var nc = GUI.color; GUI.color = new Color(1, 1, 1, .7f); GUI.Label(new Rect(x + 12 * u, yy, iw, h2), L.T(a.neden), ns); GUI.color = nc; yy += h2;
-            if (bant)
-            {   // hız bandı: bölgeler oyunun kendi eşikleri; hedef bölge ▸ ile ve çerçeveyle (yalnız renkle değil)
-                yy += 6 * u; var sinir = Match.OgrBolgeSinir(a); var adlar = Match.OgrBolgeAd(a); float bx = x + 12 * u, bwid = iw, b0 = 0;
-                for (int i = 0; i < adlar.Length; i++)
-                {
-                    float b1 = i < sinir.Length ? sinir[i] : Match.OGR_MAX; var zr = new Rect(bx + bwid * b0 / Match.OGR_MAX, yy, bwid * (b1 - b0) / Match.OGR_MAX - 2 * u, 22 * u); bool hed = i == hb.Value;
-                    Fill(zr, hed ? new Color(.85f, 1, .35f, .28f) : new Color(1, 1, 1, .08f)); if (hed) Cerceve(zr, new Color(.85f, 1, .35f, .8f), 1.5f);
-                    GUI.Label(zr, (hed ? "▸ " : "") + L.T(adlar[i]), Stil(tiny, -1, hed ? FontStyle.Bold : FontStyle.Normal)); b0 = b1;
-                }
-                if (igne >= 0) { float ix = bx + bwid * Mathf.Min(igne, Match.OGR_MAX) / Match.OGR_MAX; Fill(new Rect(ix - 1.5f * u, yy - 4 * u, 3 * u, 30 * u), Color.white); }
-                yy += 28 * u;
-            }
+            if (bant) { yy += 6 * u; HizBandi(a, hb.Value, igne, x + 12 * u, yy, iw); yy += 28 * u; }
             if (canli != null) { GUI.color = canli.StartsWith("✓") ? Kit.Hex("#d8ff5a") : canli.StartsWith("✗") ? Kit.Hex("#ffd27a") : Kit.Hex("#cfe3dc"); GUI.Label(new Rect(x + 12 * u, yy + 2 * u, iw, 20 * u), canli, leftB); GUI.color = Color.white; yy += 22 * u; }
             yy += 10 * u;
             if (a.bilgi != null) { if (Button(new Rect(x + 12 * u, yy, iw, BH), "Anladım, devam", true)) M.OgrBilgiGec(); yy += BH + 8 * u; }
             if (Button(new Rect(x + 12 * u, yy, iw, BH), a.dril != null ? "Görevi bitir" : "Antrenmanı geç")) root.OgrGec();
+            return y + h + 8 * u;
+        }
+
+        string ogrAdimAnah; bool ogrDetay;
+        // hız bandı: bölgeler oyunun kendi eşikleri; hedef bölge ▸ ile ve çerçeveyle (yalnız renkle değil)
+        void HizBandi(OgrAdim a, int hb, float igne, float bx, float yy, float bwid)
+        {
+            var sinir = Match.OgrBolgeSinir(a); var adlar = Match.OgrBolgeAd(a); float b0 = 0;
+            for (int i = 0; i < adlar.Length; i++)
+            {
+                float b1 = i < sinir.Length ? sinir[i] : Match.OGR_MAX; var zr = new Rect(bx + bwid * b0 / Match.OGR_MAX, yy, bwid * (b1 - b0) / Match.OGR_MAX - 2 * u, 22 * u); bool hed = i == hb;
+                Fill(zr, hed ? new Color(.85f, 1, .35f, .28f) : new Color(1, 1, 1, .08f)); if (hed) Cerceve(zr, new Color(.85f, 1, .35f, .8f), 1.5f);
+                string ad = (hed ? "▸ " : "") + L.T(adlar[i]); GUI.Label(zr, ad, Sigdir(Stil(tiny, -1, hed ? FontStyle.Bold : FontStyle.Normal), ad, zr.width - 2)); b0 = b1;
+            }
+            if (igne >= 0) { float ix = bx + bwid * Mathf.Min(igne, Match.OGR_MAX) / Match.OGR_MAX; Fill(new Rect(ix - 1.5f * u, yy - 4 * u, 3 * u, 30 * u), Color.white); }
+        }
+        // Dar antrenman kartı: [başlık · sayaç] [?] [Bitir] tek satır (44 pt düğmeler), altında hız bandı ve canlı okuma.
+        float OgrKartDar(Match M, OgrAdim a, float y, float x, float w, float iw, bool bant, int? hb, string canli, float igne)
+        {
+            var o = M.ogr; float bw = BH, bitW = Mathf.Max(BH, small.CalcSize(Ic(L.T("Bitir"))).x + 20 * u);
+            float h = 8 * u + BH + (bant ? 30 * u : 0) + (canli != null ? 22 * u : 0) + 8 * u;
+            var r = new Rect(x, y, w, h); blocks.Add(r); Fill(r, new Color(9 / 255f, 16 / 255f, 17 / 255f, .62f));
+            float yy = y + 8 * u, tw = iw - bw - bitW - 12 * u;
+            string sayac = a.dril != null ? L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(o.dene, a.dril.top), a.dril.top, o.isabet) : a.drill ? L.T("Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : o.n + "/" + Match.OGR_TEKRAR;
+            string bas = L.T(a.bas); var bs = Sigdir(leftB, bas, tw); GUI.Label(new Rect(x + 12 * u, yy, tw, BH * .58f), bas, bs);
+            var ss = Sigdir(Stil(left, Mathf.RoundToInt(11 * fu)), sayac, tw); GUI.Label(new Rect(x + 12 * u, yy + BH * .55f, tw, BH * .45f), sayac, ss);
+            if (Button(new Rect(x + w - 12 * u - bitW - bw - 6 * u, yy, bw, BH), "?")) ogrDetay = true;
+            if (Button(new Rect(x + w - 12 * u - bitW, yy, bitW, BH), "Bitir")) root.OgrGec();
+            yy += BH;
+            if (bant) { yy += 6 * u; HizBandi(a, hb.Value, igne, x + 12 * u, yy, iw); yy += 24 * u; }
+            if (canli != null) { GUI.color = canli.StartsWith("✓") ? Kit.Hex("#d8ff5a") : canli.StartsWith("✗") ? Kit.Hex("#ffd27a") : Kit.Hex("#cfe3dc"); GUI.Label(new Rect(x + 12 * u, yy + 2 * u, iw, 20 * u), canli, Sigdir(leftB, canli, iw)); GUI.color = Color.white; }
             return y + h + 8 * u;
         }
 
