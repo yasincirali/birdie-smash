@@ -5,13 +5,17 @@ Bu sürümde yeni:
 - Uygulama açılırken ekran dönen halkalarla kaplı başlar, hazır olunca halkalar ortaya doğru küçülüp menüyü açar.
 - Oyna'ya basınca top hız çizgileriyle sol alttan sağ üste uçar, halkalar ortadan büyüyüp ekranı kapatır, maç hazır olunca küçülerek açılır.
 - Hazırlık uzarsa halkaların ortasında dönen tüy top ve "Hazırlanıyor…" yazısı görünür.
+- Maç içinde servis yazısı artık ortada tek satırlık küçük bir kutu; kortu kapatmıyor, alttan kesilmiyor.
+- Antrenman görevlerinde talimat yalnız ilk toptan önce açık; oynarken üstte yalnız görev adı, sayaç ve hız bandı kalır. Talimatı "?" açar, "Bitir" görevi bitirir.
 - Maç sonunda uçan Tüyler ve iki dilde yazı düzeltmeleri (önceki sürümden).
 
 Nasıl denenir:
 1. Uygulamayı tamamen kapatıp aç: önce gül rengi ekran, sonra dönen halkalar, ardından menü gelmeli; arada siyah ya da koyu mor kare olmamalı.
 2. Oyna'ya bas: top hız çizgileriyle uçmalı, halkalar ekranı kapatmalı, sonra açılıp maç başlamalı.
-3. Ayarlar > Erişilebilirlik > Hareketi Azalt açıkken aynısını dene: halkalar dönmeden yalnız belirip solmalı, top uçmamalı.
-4. Garip bir şey olursa telefonu ve ekranı yaz.
+3. Bir maçta servis beklerken alttaki kutuya bak: tek satır, küçük olmalı, yazı kesilmemeli.
+4. Antrenman > bir görev (ör. Köşe smacı): ilk toptan sonra üstte yalnız dar bir şerit kalmalı, hedef köşe görünmeli; "?" talimatı açmalı.
+5. Ayarlar > Erişilebilirlik > Hareketi Azalt açıkken açılışı dene: halkalar dönmeden yalnız belirip solmalı, top uçmamalı.
+6. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:
