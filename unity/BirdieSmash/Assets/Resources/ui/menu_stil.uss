@@ -114,6 +114,9 @@
    (ekran dışına, sağ kenarda şerit) taşıyor, ilk çipi boşlukla uzatıyordu. Sütunda sarma yok. */
 .buyuk-yazi .secim { flex-direction: column; flex-wrap: nowrap; }
 .buyuk-yazi .secim .cip { flex-basis: auto; }
+/* 2026-10-28 (r45, SE ×2): sütunda tek duran çip (Hareket, Ses, Eşit şartlar) basis 0 ile yazının bir satır boyuna
+   ezilip kesiliyordu (34 > 22). Büyük yazıda her çip içeriği kadar. */
+.buyuk-yazi .cip { flex-basis: auto; }
 .buyuk-yazi .satir.arali { flex-wrap: wrap; }
 
 /* kart */
