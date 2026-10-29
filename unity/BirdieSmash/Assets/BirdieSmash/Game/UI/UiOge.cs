@@ -163,7 +163,7 @@ namespace BirdieSmash.Game
         // 2026-10-26 Yayın Gecesi: simgeler (tüy, şimşek, hedef, güneş, çarpı, açık kilit) ve şekil dokuları (eğik düğme,
         // yayın plakası, etiket şeridi, basamak çizgisi, altın kutucuk, ışık süpürmesi, ışın). Hepsi 2× çözünürlükte (1 pt =
         // 2 doku pikseli; USS'te -unity-slice-scale: 0.5), açılışta bir kez; her biri birkaç KB.
-        public static Texture2D Tuy, Simsek, Hedef, Gunes, Carpi, AcikKilit, EgikLimon, EgikLimonKucuk, Plaka, Serit, AltinKaro, Parilti, Isinlar, Isik;
+        public static Texture2D Tuy, Simsek, Hedef, Gunes, Carpi, AcikKilit, EgikLimon, EgikLimonKucuk, Plaka, Serit, AltinKaro, Parilti, Isinlar, Isik, GunesDisk, AltinIz;
         static bool hazir;
         public static void Hazirla()
         {
@@ -268,6 +268,31 @@ namespace BirdieSmash.Game
                 float isin = Mathf.Repeat(a, 20) < 7 ? 1 : 0; float maske = Mathf.Clamp01((.7f - r) / .5f); return new Color(1, 1, 1, isin * maske * Mathf.Clamp01(r * 4));
             }, Color.clear, 0);
             Isik = Kit.RadialTex(64);
+            // 2026-10-29 (yasin: "uygulama içi sanat tasarımı splashteki loading'i örnek alacak"): açılış perdesinin güneş diski
+            // tek dokuda (Hud.PERDE_C renkleri, 24 dilim, iç halkalar 24-gen; yarıçaplar Hud.PERDE_F'in iç halkaları, en dışta
+            // ince gül halkası). Menü zemininde, Kariyer'in şimdiki basamak rozetinde aynı disk: açılıştan menüye tek resim dili.
+            // Kenarlar 1 piksel yumuşatılır (perde dokusu keskin, ama orada 96 pt; burada ekran boyu).
+            {
+                const int n = 512, N = 24; var px2 = new Color32[n * n]; var R = new float[5]; R[0] = 1;
+                for (int i = 1; i < 5; i++) R[i] = Hud.PERDE_F[i][0] / Hud.PERDE_F[1][0] * .87f;
+                float sec = Mathf.PI * 2 / N, pk = 1.5f / n;
+                for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
+                    {
+                        float dx = (x + .5f) / n * 2 - 1, dy = (y + .5f) / n * 2 - 1, r = Mathf.Sqrt(dx * dx + dy * dy), a = Mathf.Atan2(dy, dx); if (a < 0) a += Mathf.PI * 2;
+                        bool dilim = Mathf.FloorToInt(a / sec) % 2 == 0; float lok = Mathf.Repeat(a - Mathf.PI / N, sec) - sec / 2, rg = r * Mathf.Cos(lok) / Mathf.Cos(sec / 2);
+                        Color c = Color.clear;   // dıştan içe: her halka bir öncekinin üstüne kenar yumuşatmasıyla biner (ara çizgi kalmaz)
+                        for (int i = 0; i < 5; i++)
+                        {
+                            float ka = Mathf.Clamp01((R[i] - (i == 0 ? r : rg)) / pk + .5f); if (ka <= 0) break;
+                            var ci = Kit.Hex(Hud.PERDE_C[i, dilim ? 1 : 0]); c = i == 0 ? new Color(ci.r, ci.g, ci.b, ka) : new Color(Mathf.Lerp(c.r, ci.r, ka), Mathf.Lerp(c.g, ci.g, ka), Mathf.Lerp(c.b, ci.b, ka), c.a);
+                        }
+                        px2[y * n + x] = c;
+                    }
+                GunesDisk = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+                GunesDisk.SetPixels32(px2); GunesDisk.Apply(false, true);
+            }
+            // Raket izi (perde P_IZ #F9D272): soldan sağa belirip uca doğru parlayan altın çizgi; bant kenarının yanında.
+            AltinIz = Sekil(128, 8, (x, y, ic) => true, (x, y) => { float k = x / 128f, d = 1 - Mathf.Abs(y - 4) / 4f; return new Color(UiKok.ALTIN.r, UiKok.ALTIN.g, UiKok.ALTIN.b, k * k * Mathf.Clamp01(d * 1.6f)); }, Color.clear, 0);
         }
         static readonly Color LIMON_D = Kit.Hex("#FFA04D");   // 2026-10-27 yön C: şimdiki basamak deseni turuncu (seçili/şimdi rengi); ad A'dan
         // Yuvarlak köşeli kutu (r doku pikseli) + ince çerçeve: IMGUI maç sonu kartları ve düğmeleri için (GUIStyle.border = r+2,

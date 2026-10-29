@@ -117,7 +117,10 @@ namespace BirdieSmash.Game
             int gg = g; kart.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); MacKartAc(gg); }));
             var r = Satir("basamak-satir"); r.pickingMode = PickingMode.Ignore; kart.Add(r);
             var roz = new VisualElement(); roz.AddToClassList("dugum-rozet"); roz.AddToClassList(gecti ? "dugum-rozet--gecti" : simdi ? "dugum-rozet--simdi" : acik ? "dugum-rozet--acik" : "dugum-rozet--kilit"); roz.pickingMode = PickingMode.Ignore; r.Add(roz);
-            roz.Add(Ikon(gecti ? Ikonlar.Tik : simdi ? Ikonlar.Halka : acik ? Ikonlar.Oyna : Ikonlar.Kilit, 22, gecti ? KOYU : simdi ? CAMGOBEGI : acik ? Color.white : SOLUK));
+            // 2026-10-29 açılış dili: şimdiki basamak rozeti perdenin güneş diski (UiOge Ikonlar.GunesDisk), üstünde koyu halka;
+            // "şimdi" yine biçimle (disk + halka simgesi + "ŞİMDİ" yazısı), yalnız renkle değil.
+            if (simdi) roz.style.backgroundImage = new StyleBackground(Ikonlar.GunesDisk);
+            roz.Add(Ikon(gecti ? Ikonlar.Tik : simdi ? Ikonlar.Halka : acik ? Ikonlar.Oyna : Ikonlar.Kilit, 22, gecti ? KOYU : simdi ? KOYU : acik ? Color.white : SOLUK));
             var orta = new VisualElement(); orta.AddToClassList("basamak-orta"); orta.pickingMode = PickingMode.Ignore; r.Add(orta);
             var ad = Satir("rakip-satir"); ad.pickingMode = PickingMode.Ignore; orta.Add(ad);
             if (final) { ad.Add(Ikon(Ikonlar.Kupa, 16, ALTIN)); }

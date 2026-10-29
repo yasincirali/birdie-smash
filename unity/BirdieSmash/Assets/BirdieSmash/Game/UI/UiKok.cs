@@ -290,13 +290,29 @@ namespace BirdieSmash.Game
         Image afisImg; Label vsYazi;
         void ZeminKur()
         {
-            // 2026-10-26 gece: en arkada bulanık salon görüntüsü (SalonCek); canlı sahne menünün arkasında artık çizilmez.
-            salonImg = new Image { scaleMode = ScaleMode.ScaleAndCrop, tintColor = new Color(.9f, .8f, .86f, 1) }; salonImg.AddToClassList("tam"); salonImg.AddToClassList("salon"); salonImg.pickingMode = PickingMode.Ignore; zemin.Add(salonImg);   // 2026-10-27 yön C: sıcak ton (A: soğuk .78/.8/.9)
-            var fl = new Image { image = Ikonlar.Isik, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(TURUNCU.r, TURUNCU.g, TURUNCU.b, .30f) }; fl.AddToClassList("isik-sol"); fl.pickingMode = PickingMode.Ignore; zemin.Add(fl);
-            var fr = new Image { image = Ikonlar.Isik, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(RAKIP.r, RAKIP.g, RAKIP.b, .22f) }; fr.AddToClassList("isik-sag"); fr.pickingMode = PickingMode.Ignore; zemin.Add(fr);
+            // 2026-10-29 (yasin: "menüler düzeltilecek, uygulama içi sanat tasarımı splashteki loading'i örnek alacak"): bulanık
+            // salon fotoğrafı ve iki projektör ışığı yerine açılış perdesinin dili, düz ve grafik: mürekkep zemin, afişin
+            // arkasında batan güneş diski (perdeyle aynı halkalar, çok yavaş döner; hareketi azaltta durur), altında kart
+            // renginde diyagonal bant ve 4 pt turuncu kenarı, kenar boyunca altın raket izi. Fotoğraf her en-boyda farklı
+            // kırpılıyor ve figürlerin arkasında gürültü oluyordu; düz şekil afişi öne çıkarır, perde → menü geçişi aynı resim.
+            // Salon fonu artık çekilmez (salonImg null: SahneCiz atlar, ana kamera menüde yine yalnız temizler).
+            gunesImg = new Image { image = Ikonlar.GunesDisk, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(1, 1, 1, .62f) }; gunesImg.AddToClassList("gunes-disk"); gunesImg.pickingMode = PickingMode.Ignore; zemin.Add(gunesImg);
+            var bant = new VisualElement(); bant.AddToClassList("zemin-bant"); bant.pickingMode = PickingMode.Ignore; zemin.Add(bant);
+            var iz = new Image { image = Ikonlar.AltinIz, scaleMode = ScaleMode.StretchToFill }; iz.AddToClassList("zemin-iz"); iz.pickingMode = PickingMode.Ignore; zemin.Add(iz);
+            zemin.RegisterCallback<GeometryChangedEvent>(e => GunesYerlestir());
+            zemin.schedule.Execute(() => { if (gunesImg == null || Ayar.reduce) return; gunesAci = Mathf.Repeat(gunesAci + 3 * .05f, 360); gunesImg.style.rotate = new Rotate(new Angle(gunesAci)); }).Every(50);
             var zi = new Image { image = Ikonlar.Gradyan, scaleMode = ScaleMode.StretchToFill }; zi.pickingMode = PickingMode.Ignore; zi.AddToClassList("tam"); zemin.Add(zi);
             afisImg = new Image { image = root.afis.rt, scaleMode = ScaleMode.ScaleAndCrop }; afisImg.AddToClassList("afis"); afisImg.pickingMode = PickingMode.Ignore; zemin.Add(afisImg);
             vsYazi = new Label("VS"); vsYazi.AddToClassList("yazi"); vsYazi.AddToClassList("vs"); vsYazi.pickingMode = PickingMode.Ignore; zemin.Add(vsYazi);
+        }
+        Image gunesImg; float gunesAci;
+        // Güneş diski kare kalmalı (USS yüzdesi genişlik/yükseklik ayrı ölçer): genişliğin 1,25 katı, afişin ortasında
+        // (afiş üst %8, boy %54 → merkez %35), yatayda ortalı; kenarları ekrandan taşar (batan güneş, tam daire değil).
+        void GunesYerlestir()
+        {
+            if (gunesImg == null) return; var r = zemin.contentRect; if (r.width <= 0 || r.height <= 0) return;
+            float d = Mathf.Max(r.width * 1.25f, r.height * .5f); gunesImg.style.width = d; gunesImg.style.height = d;
+            gunesImg.style.left = (r.width - d) / 2; gunesImg.style.top = r.height * .35f - d / 2;
         }
         // Afiş: Oyna görünürken açık. Rakip = Oyna'daki büyük düğmenin oynatacağı maçın rakibi (bekleyen maç, Usta yolu ya da
         // kariyerin sıradaki basamağı); ilk açılışta (antrenman görülmedi) afiş hiç çizilmez (aşağıda; eskiden rakipsiz, yalnız sen).
@@ -335,7 +351,7 @@ namespace BirdieSmash.Game
             var c = root.cam; if (c == null) return;
             if (!maskeVar) { maskeVar = true; sahneMaske = c.cullingMask; }   // r24: −1 (Everything) bekçi değeriyle karışıyordu, maçta maske 0 kalıyordu
             int m = ciz ? sahneMaske : 0; if (c.cullingMask != m) c.cullingMask = m;
-            if (menu && sekmeKok[0] != null && gez.sekme == Sekme.Oyna)
+            if (menu && salonImg != null && sekmeKok[0] != null && gez.sekme == Sekme.Oyna)   // 2026-10-29: salon fonu kalktı (ZeminKur), null
             {
                 if (salonSaha != Ayar.saha || salonKamera != Ayar.kamera || salonModel != Ayar.model || salonW != Screen.width || salonH != Screen.height) salonKirli = true;
                 if (salonKirli) SalonCek();

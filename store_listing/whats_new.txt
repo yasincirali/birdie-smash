@@ -10,6 +10,7 @@ Bu sürümde yeni:
 - Drive'a drive dönülünce düello başlar: her drive biraz hızlanır, üçüncüde "Drive düellosu!" yazar.
 - File önü öldürücü vuruş artık kendi sayısı: "FİLE ÖNÜ SAYISI", ağır çekimsiz, sert ve kısa titreşim.
 - Aldatma (rakibin ya da seninki) elde kısa bir tık olarak da hissedilir.
+- Ana ekran açılışın resim diliyle: bulanık salon fotoğrafı yerine afişin arkasında batan güneş diski, diyagonal bant ve altın raket izi. Kariyerde sıradaki basamak da güneş diski.
 - Seviye daha anlaşılır: maç sonunda "Sv 4 · 120/300 XP" yazar; seviye atlayınca neyin açıldığı adıyla görünür.
 - Soyunma odasında ekipman yuvası artık "Kademe 3/10" (oyuncu seviyesiyle karışmasın).
 - Kariyer haritasında kilitli basamak nedenini söyler: "3. basamaktan sonra".
@@ -29,7 +30,8 @@ Nasıl denenir:
 10. Göğüs hizasındaki topa yatay kaydırarak drive at, rakip drive ile dönerse devam et: üçüncü drive'da "Drive düellosu!" yazmalı.
 11. Bir maç bitir: sonuç kartında "Sv n · x/y XP" yazmalı; seviye atladıysan altında "Açıldı: …" görünmeli.
 12. Kariyer haritasında kilitli bir basamağa bak: "n. basamaktan sonra" yazmalı.
-13. Garip bir şey olursa telefonu ve ekranı yaz.
+13. Ana ekrana bak: rakip afişinin arkasında halkalı güneş diski yavaşça dönmeli (Hareket azaltıldı açıkken durmalı), altında turuncu kenarlı bant olmalı.
+14. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:

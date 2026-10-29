@@ -71,8 +71,8 @@ namespace BirdieSmash.Game
         Texture2D ring, ringK, ringKesik, glow, disk, bar; Texture2D[] perdeTex;
         // perde: evre 0 yok, 1 kapanıyor, 2 kapalı, 3 açılıyor
         int perdeEvre; float perdeT; System.Action perdeIs; float perdeAci; float perdeMin = .15f; bool perdeAtla, perdeBek;
-        static readonly float[][] PERDE_F = { new[] { 2.6f }, new[] { .86f }, new[] { .66f }, new[] { .47f }, new[] { .30f } };
-        static readonly string[,] PERDE_C = { { "#a3234b", "#b52a52" }, { "#d84358", "#e85563" }, { "#f9665a", "#ff7a5c" }, { "#ffa04d", "#ffb35a" }, { "#f9d272", "#fde59a" } };
+        public static readonly float[][] PERDE_F = { new[] { 2.6f }, new[] { .86f }, new[] { .66f }, new[] { .47f }, new[] { .30f } };
+        public static readonly string[,] PERDE_C = { { "#a3234b", "#b52a52" }, { "#d84358", "#e85563" }, { "#f9665a", "#ff7a5c" }, { "#ffa04d", "#ffb35a" }, { "#f9d272", "#fde59a" } };
 
         // 2026-10-27 yön C (koordinatör: maç HUD'u da C'ye uysun): rakip vurgusu (skor, servis noktası, rakibin sayı yazısı ve
         // dalgası) mercan #ff7a6b yerine orkide; limon "sen" olarak kalır. Skor kutusunda (kort üstünde %70 koyu) orkide Lc −53,6
