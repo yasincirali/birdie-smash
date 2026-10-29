@@ -1,19 +1,18 @@
 === UNITY ===
-Yeni oyuncu görünümü: Tüycük. Menüler de yuvarlak yazılı, neşeli yeni görünümde.
+Maç sonunda kazandığın Tüyler uçuşarak bakiyene konuyor. İngilizce ve Türkçe menülerde kesilen ya da taşan yazı kalmadı.
 
 Bu sürümde yeni:
-- Ayarlar > Oyuncu görünümü'nde yeni seçenek: Tüycük. Yumurta gövdeli, tüy tepeli, kocaman gözlü bir karakter. Oyuncak 3B'nin bütün hareketlerini kullanıyor, raketi sağ elinde tutuyor. Gövde rengi formanın rengi.
-- Eski modeller (Oyuncak 3B, Gerçekçi, Sade) aynen duruyor, varsayılan yine Oyuncak 3B.
-- Menülerde yuvarlak yazılar ve kabarık, basınca aşağı inen düğmeler (önceki sürümden).
+- Maç sonu: kazandığın Tüy kadar tüycük ekranın ortasından uçup Tüy kutusuna giriyor; her biri girince kutu zıplıyor ve "+N" sayısı artıyor. Hareketi azalt açıksa uçuş yok, sayı doğrudan yazılır.
+- Menülerdeki yazılar iki dilde de tarandı: ana ekran kutucuk başlıkları ("Günün maçı", "Hızlı maç"), "deneniyor" etiketi, kilitli renklerdeki "Sv/Lv" yazısı, tel gerginliği − / + düğmeleri ve kariyer final basamağı artık kesilmiyor.
+- Yeni oyuncu görünümü Tüycük ve yeni menü görünümü (önceki sürümden).
 
 Nasıl denenir:
-1. Ayarlar > Oyuncu görünümü > Tüycük seç.
-2. Soyunma odası'nda karakteri döndür: raket sağ elinde olmalı, el sapı tutmalı.
-3. Soyunma odası > Karakter'de ayakkabı ve renk değiştir: Tüycük'ün gövdesi ve ayakkabısı değişmeli.
-4. Bir maç oyna: smaç, backhand, file vuruşu ve öne uzanmada raket elden kopmamalı, kollar gövdenin içine girmemeli.
-5. Rakip de Tüycük olmalı ve rengi senden farklı olmalı.
-6. Oyuncak 3B'ye geri dön: eski karakter aynen gelmeli.
-7. Garip bir şey olursa telefonu ve ekranı yaz.
+1. Bir maç kazan: maç sonunda tüycükler ortadan uçup Tüy kutusuna girmeli, sayı tüy girdikçe artmalı.
+2. Ayarlar'da Dil'i İngilizce yap, ana ekrana bak: kutucuk başlıkları ("Match of the day", "Quick match") tam görünmeli, gerekiyorsa iki satıra inmeli.
+3. Soyunma odası > Karakter'de bir beden tipine dokun: "deneniyor" yazısı kartın dışına taşmamalı.
+4. Telefonun Ayarlar > Ekran ve Parlaklık > Metin Boyutu'nu en büyüğe çek, oyunu aç: Soyunma odası'nda kilitli renkler, tel gerginliği − / + düğmeleri ve Kariyer haritasındaki "Şampiyonlar kupası" tam okunmalı.
+5. Ayarlar > Erişilebilirlik > Hareketi Azalt açıkken maç kazan: tüyler uçmamalı, Tüy sayısı hemen yazmalı.
+6. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:

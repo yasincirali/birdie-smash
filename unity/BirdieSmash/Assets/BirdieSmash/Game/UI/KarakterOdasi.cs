@@ -200,7 +200,7 @@ namespace BirdieSmash.Game
                 var du = Kozmetik.Durum(gr, Kozmetik.TIP, o.id, sec); string id = o.id; Texture2D ik; string durum = KozDurum(Kozmetik.TIP, o, du, out ik);
                 var k = Kart("koz-kart"); k.AddToClassList("dugme"); if (du == ModelDurum.Secili) k.AddToClassList("secili"); if (du == ModelDurum.Kilitli) k.AddToClassList("kilitli"); if (dn == o.id) k.AddToClassList("denenen");
                 k.Add(Yazi(L.T(o.ad), 16, "kalin")); if (!string.IsNullOrEmpty(o.n)) k.Add(Yazi(L.T(o.n), 12, "ipucu"));
-                var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; k.Add(dr); if (ik != null) { var i = Ikon(ik, 13, du == ModelDurum.Secili ? TURUNCU : SOLUK); i.style.marginRight = 4; dr.Add(i); }
+                var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; dr.style.flexWrap = Wrap.Wrap; k.Add(dr); if (ik != null) { var i = Ikon(ik, 13, du == ModelDurum.Secili ? TURUNCU : SOLUK); i.style.marginRight = 4; dr.Add(i); }   // r55: " · deneniyor" dar kartta alta sarar
                 dr.Add(Yazi(durum, 12, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"));
                 if (dn == o.id && du != ModelDurum.Secili) dr.Add(Yazi(" · " + L.T("deneniyor"), 12, "durum-simdi"));
                 k.AddManipulator(new Clickable(() => KozDokun(Kozmetik.TIP, id)));
@@ -221,7 +221,7 @@ namespace BirdieSmash.Game
                 var du = Kozmetik.Durum(gr, Kozmetik.SAC, o.id, sec); string id = o.id; Texture2D ik; string durum = KozDurum(Kozmetik.SAC, o, du, out ik);
                 var k = Kart("sac-kare"); k.AddToClassList("dugme"); if (du == ModelDurum.Secili) k.AddToClassList("secili"); if (du == ModelDurum.Kilitli) k.AddToClassList("kilitli"); if (dn == o.id) k.AddToClassList("denenen");
                 k.Add(Yazi(L.T(o.ad), 12, "kalin"));
-                var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; k.Add(dr); if (ik != null) { var i = Ikon(ik, 11, du == ModelDurum.Secili ? TURUNCU : SOLUK); i.style.marginRight = 2; dr.Add(i); }
+                var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; dr.style.flexWrap = Wrap.Wrap; k.Add(dr); if (ik != null) { var i = Ikon(ik, 11, du == ModelDurum.Secili ? TURUNCU : SOLUK); i.style.marginRight = 2; dr.Add(i); }   // r55: " · deneniyor" dar kartta alta sarar
                 dr.Add(Yazi(du == ModelDurum.Kilitli ? L.T("Sv {0}", o.sv) : durum, 10, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"));
                 k.AddManipulator(new Clickable(() => KozDokun(Kozmetik.SAC, id)));
                 Erisim.Etiket(k, L.T("Saç modeli") + ", " + L.T(o.ad) + ", " + durum + (dn == o.id ? ", " + L.T("deneniyor") : ""), "dugme", du == ModelDurum.Secili);

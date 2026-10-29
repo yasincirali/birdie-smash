@@ -495,3 +495,12 @@
 /* r52: 0,1 de yetmedi ("MATCH OF THE DA"); kutucuğun yan payı 10 → 7. */
 .karo { padding-left: 7px; padding-right: 7px; }
 .serit { -unity-slice-left: 22; -unity-slice-right: 22; }   /* SIRADAKİ şeridi artık hap (UiOge EgikLimonKucuk) */
+
+/* r55 (2026-10-29, dil/alan taraması EkranTuru.YaziTara): kesilen yazı kalmasın.
+   Karo etiketi cümle düzeninde ve sarılabilir ("Match of the day" 105 px'e tek satırda sığmıyordu, yazı 11'in altına inmez).
+   ×2'de kilitli renk kutusu ("Lv 20") ve ± düğmesi yazıyla büyür; dokunma alanı yine en az 44. */
+.karo-etiket { white-space: normal; flex-shrink: 1; flex-grow: 1; flex-basis: 0; }
+/* r56: .dugme ortaya hizaladığı için üst satır içerik genişliğinde kalıyor, taban 0 etiket harf harf alt alta diziliyordu. */
+.karo-ust { align-self: stretch; }
+.buyuk-yazi .renk { height: auto; min-height: 44px; padding-top: 4px; padding-bottom: 4px; }
+.buyuk-yazi .ikon-dugme { height: auto; min-height: 44px; width: auto; min-width: 44px; }

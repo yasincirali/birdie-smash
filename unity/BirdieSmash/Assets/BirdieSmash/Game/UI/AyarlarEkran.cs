@@ -26,13 +26,16 @@ namespace BirdieSmash.Game
             c.Add(Yazi(L.T("Oyun"), 17, "bolum")); OyunSecenek(c, false);
             c.Add(Yazi(L.T("Görünüm"), 17, "bolum"));
             c.Add(Grup(L.T("Oyuncu görünümü"))); var m = Satir(); c.Add(m);
+            // r56 (2026-10-29): Tüycük'le dört çip tek satırda "Oyun cak 3B" diye bölünüyordu (tarama: kelime 58 > 36 px); 2×2 sarar.
+            m.style.flexWrap = Wrap.Wrap;
             // 2026-10-27 (yasin build 41: "3B model kaybolmuş, seçmeme rağmen görmedim"): Sade üçüncü seçenek (build 40 notu
             // vaat ediyordu, FBX vardı, çip yoktu). Karakter odasındaki tip/saç/ayakkabı modeli yalnız Oyuncak 3B'de görünür;
             // başka model seçiliyken bu, küçük gri notla değil, çiplerin hemen altında açıkça yazılır.
             for (int i = 0; i < Ayar.MODELLER.Length; i++)
             {
                 string id = Ayar.MODELLER[i]; if (!Ayar.ModelVar(id)) continue;
-                m.Add(Cip(L.T(Ayar.MODEL_AD[i]), Ayar.model == id, () => { Ayar.model = id; Ayar.Kaydet(); root.ModelDegisti(); Degisti(); }));
+                var ci = Cip(L.T(Ayar.MODEL_AD[i]), Ayar.model == id, () => { Ayar.model = id; Ayar.Kaydet(); root.ModelDegisti(); Degisti(); });
+                ci.style.flexBasis = new StyleLength(new Length(40, LengthUnit.Percent)); m.Add(ci);
             }
             // 2026-10-27: Gerçekçi'de ayakkabı modeli, şort ve kumaş da görünür; not neyin sabit neyin değiştiğini söyler.
             if (Ayar.model == "rocketbox") c.Add(Yazi(L.T("Gerçekçi: beden, yüz ve saç sabit; ayakkabı, forma, şort, kafa bandı, bileklik ve raket değişir."), 13, "ipucu"));

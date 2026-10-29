@@ -123,13 +123,15 @@ namespace BirdieSmash.Game
             roz.Add(Ikon(gecti ? Ikonlar.Tik : simdi ? Ikonlar.Halka : acik ? Ikonlar.Oyna : Ikonlar.Kilit, 22, gecti ? KOYU : simdi ? KOYU : acik ? Color.white : SOLUK));
             var orta = new VisualElement(); orta.AddToClassList("basamak-orta"); orta.pickingMode = PickingMode.Ignore; r.Add(orta);
             var ad = Satir("rakip-satir"); ad.pickingMode = PickingMode.Ignore; orta.Add(ad);
-            if (final) { ad.Add(Ikon(Ikonlar.Kupa, 16, ALTIN)); }
-            var ay = Yazi((b + 1) + ". " + L.T(kb.yer), 16, "kalin"); if (final) ay.style.marginLeft = 4; ad.Add(ay);
+            // r55 (2026-10-29): kupa simgesi ad satırındayken ×2 Türkçe'de "6. Şampiyonlar kupası" üç satıra kırılıp iki satırlık
+            // yükseklikte kesiliyordu (tarama 132>88). Ad satırı her basamakta tek yazı; kupa alttaki stil satırının başına geçti.
+            var ay = Yazi((b + 1) + ". " + L.T(kb.yer), 16, "kalin"); ad.Add(ay);
             // r16 (2026-10-26, Barlow): yatay satırda ad tek satır genişliğiyle ölçülüp sonra daralınca iki satıra kırılıyor, yükseklik
             // tek satırda kalıp alttaki rakip satırına biniyordu ("4. Regional / final"). Taban 0 + büyüme: Yoga genişliği önce
             // verir, yüksekliği o genişlikle ölçer.
             ay.style.flexBasis = new StyleLength(0f); ay.style.flexGrow = 1;
             var rk = Satir("rakip-satir"); rk.pickingMode = PickingMode.Ignore; orta.Add(rk);
+            if (final) { var ku = Ikon(Ikonlar.Kupa, 14, ALTIN); ku.style.marginRight = 4; rk.Add(ku); }
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);
             rk.Add(Yazi(st.isim + " · " + L.T(st.ad) + (final ? " · " + L.T("Final") : ""), 13, "soluk"));
             var yr = Satir("rakip-satir"); yr.pickingMode = PickingMode.Ignore; orta.Add(yr); yr.Add(UcYildiz(p.Maske(g), 16)); var yy = Yazi(ys + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy);
