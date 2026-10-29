@@ -31,6 +31,9 @@
 // smaç inişte çıkışın %25'inden yavaş; drop ve file vuruşu kısa servis çizgisinin önüne), rakibin slice'ı (çevirme)
 // kendi sürüklenmesiyle nişanlanır ve fileye gitmez; ağır çekim rampası pencereden önce biter, vuruşla kapanan pencere
 // PENCERE_VURUS_OUT'ta çıkar (smaç ilk 0,1 sn'de gerçek hızının ≥ %90'ında görünür).
+// 2026-10-27 yüksek top kadrajı (Kadrajlar(), Core/Kadraj): bot uçuşları 7 ekran × 3 açıda izdüşülür; takip topu skor
+// kutusunun üstünde/ekran dışında bırakan kareleri azaltmalı, eğim ≤ tavan, açısal hız ≤ 30°/s, hareketi azaltta eğim 0,
+// eğim geçmişe bağlı değil (aynı uçuş iki takipte aynı), tepesi görünmeyen yüksek uçuşta ekran dışı işareti çıkar.
 // Çalıştırma: depo kökünden (KariyerVeri tool/veri'yi çalışma klasöründen yukarı arar).
 using System;
 using System.Collections.Generic;
@@ -143,6 +146,11 @@ static class BotMac
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
         Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
+        KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
+        VurusTutarliligi();   // 2026-10-27 ekran/kosu
+        Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
+        FileStandart();   // 2026-10-27 ekran/file (ayrı satır: liste başka dallarda da büyüyor)
+        AdimTipleri();   // 2026-10-27 birleşik dal incelemesi: figürün kendi adım boyu (ekran/model) × işaretli faz (ekran/kosu)
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }
@@ -715,6 +723,65 @@ static class BotMac
         var ac4 = Karakter.AcilanlarTurlu(4); if (!ac4.Any(a => a[0] == "Tip" && a[1] == "Uzun ve ince") || !ac4.Any(a => a[0] == "Ayakkabı" && a[1] == "Hafif hız")) Fail("Sv 4 açılışı tip ve ayakkabı içermeli");
         if (Karakter.AcilanlarTurlu(16).Any(a => a[0] == "Ayakkabı")) Fail("ayakkabı RENGİ 'Ayakkabı rengi' etiketiyle olmalı");
         Console.WriteLine("karakter: " + T.Length + " tip (" + bedava + " ücretsiz), " + S.Length + " saç biçimi (garip ≥ " + garipMin + " Tüy), 5 ayakkabı nötr toplamlı, kozmetik güç vermez, kapı/taşıma/rakip tamam");
+        KarakterVarliklari(T, S);
+        GercekciAksesuar();
+    }
+    // 2026-10-27 (yasin: "Gerçekçi de vücut özellikleri değil de sadece aksesuarlar değişmeli kafa bandı forma bileklik ayakkabı
+    // şort tişört raket"): Gerçekçi'de sunulan her aksesuar seçeneğinin bir parçası olmalı. rocketbox.fbx'te ve _clips.json
+    // parts'ta: şort ağı (rb_sort__sort), her ayakkabı modelinin ayk_<varlik>__ayakkabi parçası, kafa bandı ve bileklik;
+    // her kumaşın (klasik hariç) forma dokusu Resources'ta; şort renk listesi geçerli (ilki modelin rengi, Sv 1, kimlikler
+    // tekil, renk biçimi #rrggbb), Karakter.GORUNUM_KAT'ta ve yalnız görünüş (karakter.json'da güç alanı yok). Ekran turu
+    // (EkranTuru.Gercekci) aynı seçimleri Unity'de açık parça, aktif renderer ve bölge rengiyle ölçer.
+    static void GercekciAksesuar()
+    {
+        string R = "unity/BirdieSmash/Assets/Resources/karakter/";
+        var js = Json.Obj(Json.Parse(System.IO.File.ReadAllText(R + "rocketbox_clips.json")));
+        var parts = new HashSet<string>(((List<object>)js["parts"]).Select(x => (string)x));
+        string fbx = System.Text.Encoding.ASCII.GetString(System.IO.File.ReadAllBytes(R + "rocketbox.fbx"));
+        var gerek = new List<string> { "rb_sort__sort", "rb_bant__bant", "rb_bileklik__bilek" };
+        gerek.AddRange(Gear.GEAR["ayakkabi"].Values.Select(a => "ayk_" + (a.varlik ?? a.id) + "__ayakkabi"));
+        foreach (var g in gerek) { if (!parts.Contains(g)) Fail("rocketbox_clips.json'da parça yok: " + g); if (fbx.IndexOf(g, StringComparison.Ordinal) < 0) Fail("rocketbox.fbx'te düğüm yok: " + g); }
+        foreach (var y in new[] { "ayk_ust", "rb_sort" }) if (fbx.IndexOf(y, StringComparison.Ordinal) < 0) Fail("rocketbox.fbx'te malzeme yok: " + y);
+        int doku = 0;
+        foreach (var k in Gear.GEAR["kumas"].Values) { if (k.id == "klasik") continue; if (!System.IO.File.Exists(R + "rocketbox_forma_" + k.id + ".jpg")) Fail("kumaşın forma dokusu yok: " + k.id); else doku++; }
+        var so = Karakter.Gorunum("sort");
+        if (so.Length < 5 || so[0].renk != null || so[0].sv != 1) Fail("şort rengi: en az 5 öğe, ilki modelin rengi (Sv 1)");
+        if (so.Select(o => o.id).Distinct().Count() != so.Length) Fail("şort rengi kimlikleri tekil değil");
+        foreach (var o in so) if (o.renk != null && !System.Text.RegularExpressions.Regex.IsMatch(o.renk, "^#[0-9a-f]{6}$")) Fail("şort rengi biçimi: " + o.id + " " + o.renk);
+        if (!Karakter.GORUNUM_KAT.Contains("sort")) Fail("şort rengi GORUNUM_KAT'ta yok (kayıt/açılış listesi)");
+        var veri = Json.Obj(Json.Parse(System.IO.File.ReadAllText("tool/veri/karakter.json")));
+        foreach (var x in (List<object>)veri["sort"]) { var d = Json.Obj(x); foreach (var alan in new[] { "etki", "guc", "kontrol", "hiz", "kosu", "enerji" }) if (d.ContainsKey(alan)) Fail("şort renginde güç alanı: " + alan); }
+        Console.WriteLine("gerçekçi aksesuar: " + gerek.Count + " parça (json + FBX), " + doku + " kumaş dokusu, " + so.Length + " şort rengi");
+    }
+    // 2026-10-27 (yasin build 41: "3B model kaybolmuş, seçmeme rağmen görmedim"): Soyunma odasının sattığı her görünüm öğesinin
+    // gerçekten bir parçası olmalı (sahte öğe yok). Her beden tipinin FBX'i ve _clips.json'u Resources/karakter'de; dört oyuncak
+    // FBX'inin her birinde her saç biçimi (sac_<varlik>__sac) ve ayakkabı modeli (ayk_<varlik>__ayakkabi) hem _clips.json
+    // parts listesinde hem FBX'in düğüm adlarında (ikili dosyada ad dizgisi) var; tipin varsayılan saç/ayakkabısı geçerli;
+    // Ayarlar'ın üç modeli (oyuncak, rocketbox, sade) FBX'iyle var. Ekran turu (EkranTuru.Varyantlar) aynı şeyi Unity'de
+    // açılan parça ve aktif renderer sayısıyla ölçer; bu kapı Unity'siz, her derlemede.
+    static void KarakterVarliklari(KozmetikOge[] T, KozmetikOge[] S)
+    {
+        string R = "unity/BirdieSmash/Assets/Resources/karakter/"; if (!System.IO.Directory.Exists(R)) { Fail("Resources/karakter bulunamadı (depo kökünden koş)"); return; }
+        int parca = 0;
+        foreach (var m in new[] { "oyuncak", "rocketbox", "sade" }) if (!System.IO.File.Exists(R + m + ".fbx") || !System.IO.File.Exists(R + m + "_clips.json")) Fail("Ayarlar modeli eksik: " + m);
+        foreach (var t in T)
+        {
+            string ad = "oyuncak" + (t.varlik != null ? "_" + t.varlik : "");
+            if (!System.IO.File.Exists(R + ad + ".fbx") || !System.IO.File.Exists(R + ad + "_clips.json")) { Fail("beden tipinin FBX'i yok: " + t.id + " → " + ad); continue; }
+            var js = Json.Obj(Json.Parse(System.IO.File.ReadAllText(R + ad + "_clips.json")));
+            var parts = new HashSet<string>(((List<object>)js["parts"]).Select(x => (string)x));
+            string fbx = System.Text.Encoding.ASCII.GetString(System.IO.File.ReadAllBytes(R + ad + ".fbx"));
+            var tip = js.ContainsKey("tip") ? Json.Obj(js["tip"]) : null;
+            if (tip == null || Json.Str(tip, "id", null) != t.id) Fail(ad + "_clips.json tip kimliği " + (tip != null ? Json.Str(tip, "id", "?") : "yok") + " ≠ " + t.id);
+            else
+            {
+                if (Kozmetik.Bul(Kozmetik.SAC, Json.Str(tip, "sac", null)) == null) Fail(ad + ": tipin varsayılan saçı bilinmiyor " + Json.Str(tip, "sac", null));
+                if (!Gear.GEAR["ayakkabi"].Values.Any(a => (a.varlik ?? a.id) == Json.Str(tip, "ayakkabi", null))) Fail(ad + ": tipin varsayılan ayakkabısı bilinmiyor " + Json.Str(tip, "ayakkabi", null));
+            }
+            var gerek = S.Where(o => o.varlik != null).Select(o => "sac_" + o.varlik + "__sac").Concat(Gear.GEAR["ayakkabi"].Values.Select(a => "ayk_" + (a.varlik ?? a.id) + "__ayakkabi"));
+            foreach (var g in gerek) { parca++; if (!parts.Contains(g)) Fail(ad + "_clips.json'da parça yok: " + g); if (fbx.IndexOf(g, StringComparison.Ordinal) < 0) Fail(ad + ".fbx'te düğüm yok: " + g); }
+        }
+        Console.WriteLine("karakter varlıkları: " + T.Length + " tip FBX'i, " + parca + " saç/ayakkabı parçası (json + FBX), Ayarlar'da 3 model dosyasıyla");
     }
 
     // 2026-10-26 aldatıcı vuruşlar (Core/Aldatma): her vuruş seviyesinin altında, ekipmansız ve kötü konumda reddedilir, üçü
@@ -991,8 +1058,13 @@ static class BotMac
                     float boy; bool ayak = Match.ADIM_BOY.TryGetValue(c, out boy);
                     if (ayak && son[i] == c && v < 12 && !M.between && M.s != null)
                     {
-                        float dph = ph - ph0[i]; if (dph < 0) dph += 1;
-                        kare++; if (Math.Abs(dph * boy / dt - v) > .3f) kayan++;
+                        // 2026-10-27 (ekran/kosu): faz işaretli ve klibin eksenine düşen hızla ilerler (ters gidişte geri sarar);
+                        // karşılaştırma gövde hızının o eksendeki bileşeniyle. Eksene dik bileşen (yön farkı) KosuYonleri'nde.
+                        float dph = ph - ph0[i]; dph -= (float)Math.Floor(dph + .5f);
+                        float ey, ei; Match.KlipEkseni(c, out ey, out ei); double r = a.donusAyak * Math.PI / 180;
+                        float vx = (a.x - px[i]) / dt, vy = (a.y - py[i]) / dt, yan = i == 0 ? vx : -vx, ileri = i == 0 ? -vy : vy;
+                        float vEk = yan * (ey * (float)Math.Cos(r) + ei * (float)Math.Sin(r)) + ileri * (-ey * (float)Math.Sin(r) + ei * (float)Math.Cos(r));
+                        kare++; if (Math.Abs(dph * boy / dt - vEk) > .3f) kayan++;
                     }
                     // donmada vuruş (temas karesi) ve karşı oyuncunun split'i başlayabilir; boşta pozuna düşmek ya da ayak işi klibine geçmek olmaz
                     if (donuk && son[i] != null && c != son[i] && !M.between && (c == "idle" || Match.ADIM_BOY.ContainsKey(c))) donmaKayma++;
@@ -1010,5 +1082,360 @@ static class BotMac
         if (donmaKayma > 0) Fail("vuruş donmasında boşta/ayak işi klibine geçti: " + donmaKayma);
         if (dikey > 0) Fail("gövde dikeyde ışınlandı (sıçrama yayı ortasından başladı): " + dikey);
     }
+    // Koşu yönü (2026-10-27, ekran/kosu; yasin build 41: "oyuncu arka arkaya koşarken garip koşuyor"). AyakIsleri faz
+    // hızının BÜYÜKLÜĞÜNE bakıyordu; burada bacakları süren klibin gidiş VEKTÖRÜ (klip ekseni, Athlete.donusAyak kadar
+    // dönük; faz hızı × adım boyu) gövdenin gerçek hız vektörüyle karşılaştırılır: fark yerdeki ayağın kayması. Vuruş
+    // klibinde koşarken bacaklar alt katmandan (Match.AltHedef > .5 ise ayakKlip/runPh) sayılır. Ölçülenler (60 ve 120 Hz):
+    //  - vektör kayma ortalaması ve > 0,3 m/s kare oranı (önce ben 2,0 m/s / %87, rakip 1,0 m/s / %75);
+    //  - ters adım: bacaklar gövdenin gittiği yönün tersine adımlıyor (önce maç başına ~300 kare: hamleden geri çekilmede ileri koşu);
+    //  - geri çekilme (gidiş fileden > 120°, > 2 m/s): yan dönük (|donusAyak| > 45°) pay, fileye bakıp geri geri (back_*) pay
+    //    (önce %0 / %82–86);
+    //  - temasta gövde dönüşü (vuruş klipleri fileye bakarak çizildi) ve dönüş hızı tavanı (Match.DON_AZAMI: tek karede dönme yok).
+    // Birleşik dal incelemesi (2026-10-27 tur 2): KosuYonleri varsayılan adım boyuyla (0,99 m chassé) ölçer; oyuncak tipleri
+    // kendi adımını (PlayerView.adimBoy = _clips.json adim × 1,75) ve tavanını (ayakTurMax = 3,6 × 0,99 / chassé, en çok 6)
+    // taşır. En kısa adımlı tipte (kadın: chassé 0,51 m) tavan neredeyse hiç dolmamalı (dolarsa ayak kayar) ve kayma
+    // varsayılanınkiyle aynı kalmalı. Adım sıklığı (adım/sn = 2 × tur/sn) rapora yazılır: tasarım sorusu (oyuncak "seğirtir").
+    static void AdimTipleri()
+    {
+        const float dt = 1f / 60f, S = 1.75f;
+        var tipler = new[] { new object[] { "varsayılan", null }, new object[] { "oyuncak kadın", new[] { .289f, .442f, .47f, .75f, .504f, .622f } } };
+        double kayRef = -1, tvRef = -1;   // varsayılanda da tavan %2 kadar dolar (hızlı kros): kıyas ona göre
+        foreach (var tp in tipler)
+        {
+            var v = (float[])tp[1]; Dictionary<string, float> d = null; float turMax = float.NaN;
+            if (v != null) { d = new Dictionary<string, float> { {"chasse_r",v[0]*S},{"chasse_l",v[0]*S},{"fwd",v[1]*S},{"back_r",v[2]*S},{"back_l",v[2]*S},{"run",v[3]*S},{"kros_r",v[4]*S},{"kros_l",v[5]*S} }; turMax = Math.Max(Match.AYAK_TUR_MAX, Math.Min(6f, Match.AYAK_TUR_MAX * .99f / d["chasse_r"])); }
+            float tmax = float.IsNaN(turMax) ? Match.AYAK_TUR_MAX : turMax; var tur = new List<float>(); int kare = 0, tavanda = 0; double kay = 0;
+            for (int m = 0; m < 3; m++)
+            {
+                var M = new Match(300 + m, new MatchOptions { easy = m % 3 != 2, target = 11 }); foreach (var at in new[] { M.me, M.op }) { at.adimBoy = d; at.ayakTurMax = turMax; }
+                var px = new[] { float.NaN, float.NaN }; var py = new float[2]; var ph0 = new float[2]; var c0 = new string[2]; int g = 0;
+                while (!M.over && g++ < 60 * 60 * 20)
+                {
+                    Bot(M, dt); M.Update(dt); M.events.Clear();
+                    for (int i = 0; i < 2; i++)
+                    {
+                        var at = i == 0 ? M.me : M.op; bool isMe = i == 0; string c; float ph; M.PickClip(at, isMe, out c, out ph);
+                        float ey, ei; Match.KlipEkseni(c, out ey, out ei);
+                        if (ey == 0 && ei == 0 && at.ayakKlip != null && Match.AltHedef(at, c) > .5f) { c = at.ayakKlip; ph = at.runPh; Match.KlipEkseni(c, out ey, out ei); }
+                        if (!float.IsNaN(px[i]) && !M.between && M.s != null && c == c0[i] && (ey != 0 || ei != 0))
+                        {
+                            float vx = (at.x - px[i]) / dt, vy = (at.y - py[i]) / dt, side = isMe ? vx : -vx, fwd = isMe ? -vy : vy;
+                            if (side * side + fwd * fwd < 144)
+                            {
+                                float dph = ph - ph0[i]; dph -= (float)Math.Floor(dph + .5f); float t = Math.Abs(dph) / dt, boy;
+                                if (d == null || !d.TryGetValue(c, out boy)) boy = Match.ADIM_BOY[c];
+                                double r = at.donusAyak * Math.PI / 180; float fs = (float)Math.Sin(r), fc = (float)Math.Cos(r), ax = ey * fc + ei * fs, ay = -ey * fs + ei * fc, cv = dph * boy / dt;
+                                kare++; tur.Add(t); if (t >= tmax - .01f) tavanda++; kay += Math.Sqrt((side - ax * cv) * (side - ax * cv) + (fwd - ay * cv) * (fwd - ay * cv));
+                            }
+                        }
+                        ph0[i] = ph; c0[i] = c; px[i] = at.x; py[i] = at.y;
+                    }
+                }
+            }
+            tur.Sort(); double ko = kay / Math.Max(1, kare), tv = 100.0 * tavanda / Math.Max(1, kare);
+            Console.WriteLine("adım tipi " + tp[0] + ": tavan " + tmax.ToString("0.00") + " tur/sn, " + kare + " kare, tavanda %" + tv.ToString("0.0") + ", kayma ort " + ko.ToString("0.00") + " m/s, adım/sn p50 " + (2 * tur[tur.Count / 2]).ToString("0.0") + " p90 " + (2 * tur[tur.Count * 9 / 10]).ToString("0.0") + " p99 " + (2 * tur[tur.Count * 99 / 100]).ToString("0.0"));
+            if (kayRef < 0) kayRef = ko; else if (ko > kayRef + .05) Fail("kısa adımlı tipte ayak kayması arttı: " + ko.ToString("0.00") + " > " + kayRef.ToString("0.00"));
+            if (tvRef < 0) tvRef = tv; else if (tv > tvRef + 1) Fail("adım tavanı dolu kare %" + tv.ToString("0.0") + " > varsayılan %" + tvRef.ToString("0.0") + " + 1 (" + tp[0] + "): ayak kayar");
+        }
+    }
+    static void KosuYonleri()
+    {
+        foreach (float hz in new[] { 60f, 120f })
+        {
+            float dt = 1f / hz; var R = new Random(7);
+            int kare = 0, kay3 = 0, ters = 0, geri = 0, geriYan = 0, geriSirt = 0, donAsim = 0; double kayTop = 0; var temas = new List<float>();
+            for (int m = 0; m < 6; m++)
+            {
+                var M = new Match(300 + m, new MatchOptions { easy = m % 3 != 2, target = 11 }); int g = 0;
+                var px = new[] { float.NaN, float.NaN }; var py = new float[2]; var ph0 = new float[2]; var c0 = new string[2]; var d0 = new float[2];
+                while (!M.over && g++ < (int)(hz * 60 * 30))
+                {
+                    if (M.s == null && M.server == "me" && M.wait <= 0 && !M.between && M.svPending == null && R.NextDouble() < .05) M.SwipeServe((float)(R.NextDouble() * 160 - 80), -200, 1.8f);
+                    Reach rc; if (M.ReachInfo(out rc) && R.NextDouble() < .12) M.SwipeShot(new SwipeInput { dx = (float)(R.NextDouble() * 200 - 100), dy = -(float)(80 + R.NextDouble() * 220), speed = R.NextDouble() < .5 ? 1.2f : 2.2f, R = 40, dist = (float)(R.NextDouble() * 60), side = R.NextDouble() < .5 ? -1 : 1 });
+                    M.Update(dt);
+                    for (int i = 0; i < 2; i++)
+                    {
+                        var a = i == 0 ? M.me : M.op; bool isMe = i == 0; string c; float ph; M.PickClip(a, isMe, out c, out ph);
+                        if (!Match.ADIM_BOY.ContainsKey(c) && a.ayakKlip != null && Match.AltHedef(a, c) > .5f) { c = a.ayakKlip; ph = a.runPh; }
+                        bool isin = !float.IsNaN(px[i]) && Hyp(a.x - px[i], a.y - py[i]) > 12 * dt;   // servis dizilişi ışınlar: dönüş sıfırlanır
+                        if (!isin && !float.IsNaN(px[i]) && (Math.Abs(a.donusAyak - d0[i]) > Match.DON_AZAMI * dt + .01f || Math.Abs(a.donusAyak - a.donus) > Match.DON_KALCA + .01f)) donAsim++;
+                        float ey, ei, boy; Match.KlipEkseni(c, out ey, out ei);
+                        if (!float.IsNaN(px[i]) && c == c0[i] && (ey != 0 || ei != 0) && Match.ADIM_BOY.TryGetValue(c, out boy) && !M.between && M.s != null)
+                        {
+                            float vx = (a.x - px[i]) / dt, vy = (a.y - py[i]) / dt, yan = isMe ? vx : -vx, ileri = isMe ? -vy : vy, v = Hyp(yan, ileri);
+                            if (v < 12)
+                            {
+                                float dph = ph - ph0[i]; dph -= (float)Math.Floor(dph + .5f);
+                                double r = a.donusAyak * Math.PI / 180; float fc = (float)Math.Cos(r), fs = (float)Math.Sin(r);
+                                float ax = ey * fc + ei * fs, ay = -ey * fs + ei * fc, cv = dph * boy / dt, k = Hyp(yan - ax * cv, ileri - ay * cv);
+                                kare++; kayTop += k; if (k > .3f) kay3++;
+                                if (v > .6f && (ax * yan + ay * ileri) * cv < 0) ters++;
+                                if (v > 2 && Math.Abs(Math.Atan2(yan, ileri)) > 120 * Math.PI / 180) { geri++; if (Math.Abs(a.donusAyak) > 45) geriYan++; if (c.StartsWith("back")) geriSirt++; }
+                            }
+                        }
+                        px[i] = a.x; py[i] = a.y; ph0[i] = ph; c0[i] = c; d0[i] = a.donusAyak;
+                    }
+                    foreach (var e in M.events) if (e.kind == Ev.Hit && !(M.s != null && M.s.serve)) temas.Add(Math.Abs((e.who == "me" ? M.me : M.op).donus));
+                    M.events.Clear();
+                }
+            }
+            temas.Sort(); float t90 = temas.Count > 0 ? temas[(int)(temas.Count * .9)] : 0, ort = (float)(kayTop / Math.Max(1, kare)), o3 = 100f * kay3 / Math.Max(1, kare);
+            float yanP = 100f * geriYan / Math.Max(1, geri), sirtP = 100f * geriSirt / Math.Max(1, geri);
+            Console.WriteLine("koşu yönü " + hz + " Hz: " + kare + " kare, vektör kayma ort " + ort.ToString("0.00") + " m/s, > 0,3 m/s %" + o3.ToString("0.0") + ", ters adım " + ters
+                + "; geri çekilme " + geri + " kare: yan dönük %" + yanP.ToString("0") + ", fileye bakıp geri geri %" + sirtP.ToString("0") + "; temasta gövde dönüşü p90 " + t90.ToString("0.0") + "°, dönüş tavanı aşımı " + donAsim);
+            if (ort > .45f) Fail("koşu: bacak klibinin yönü gövdenin gidişini izlemiyor, ort. kayma " + ort.ToString("0.00") + " m/s");
+            if (o3 > 30) Fail("koşu: ayak işi karelerinin %" + o3.ToString("0") + "'inde > 0,3 m/s kayma");
+            if (ters > 0) Fail("koşu: ters adım (bacaklar gidişin tersine) " + ters + " kare");
+            if (geri < 200) Fail("koşu: geri çekilme ölçülemedi (" + geri + " kare)");
+            else { if (yanP < 70) Fail("koşu: arka sahaya yan dönmeden gidiyor (yan dönük %" + yanP.ToString("0") + ")"); if (sirtP > 10) Fail("koşu: arka sahaya fileye bakıp geri geri (%" + sirtP.ToString("0") + ")"); }
+            if (t90 > 5) Fail("koşu: temasta gövde dönük (p90 " + t90.ToString("0.0") + "°)");
+            if (donAsim > 0) Fail("koşu: dönüş hızı/kalça ayrışması tavanı aşıldı " + donAsim);
+        }
+    }
+    // Vuruş tutarlılığı (2026-10-27, ekran/kosu; yasin "animasyon tutarsızlıklarını gözden geçir ... backhand ve forehand
+    // smaç, drive, net drop clear"). Bot maçlarında gösterilen hazırlık klibi kare kare izlenir:
+    //  - hazırlıkta el değişimi (forehand ↔ backhand pozu, raket bir yandan öbürüne): önce bende 265, rakipte 286 / ~1100 temas;
+    //  - hazırlıktan temasa el değişimi; hamle hazırlığından ayakta alçak vuruşa dönüş (rakipte önce lunge→low 163);
+    //  - temasta taraf: forehand klibi top belirgin solda (alçakta > 0,25 m, üstte > 0,6 m) / backhand top sağda;
+    //  - rakibin alçak vuruşlarında forehand payı (önce %11: HitSide işaret hatası, Match rakip koşusu);
+    //  - her vuruş × taraf klibi en az bir kez görülür (ekran turu şeritleri bunları gösterir).
+    static void VurusTutarliligi()
+    {
+        const float dt = 1f / 60; var R = new Random(7); var gor = new HashSet<string>();
+        int[] temas = new int[2], elDeg = new int[2], temasEl = new int[2], hamleDus = new int[2], tarafYanlis = new int[2]; int opAlt = 0, opAltFh = 0;
+        for (int m = 0; m < 8; m++)
+        {
+            var M = new Match(300 + m, new MatchOptions { easy = m % 3 != 2, target = 11 }); int g = 0; var son = new string[2]; var sonPrep = new string[2];
+            while (!M.over && g++ < 60 * 60 * 30)
+            {
+                if (M.s == null && M.server == "me" && M.wait <= 0 && !M.between && M.svPending == null && R.NextDouble() < .05) { double u = R.NextDouble(); if (u < .45) M.SwipeServe((float)(R.NextDouble() * 80 - 40), -60, .6f); else M.SwipeServe((float)(R.NextDouble() * 160 - 80), -200, 1.8f); }
+                Reach rc; if (M.ReachInfo(out rc) && R.NextDouble() < .12) { double k = R.NextDouble(); M.SwipeShot(new SwipeInput { dx = (float)(R.NextDouble() * 200 - 100), dy = R.NextDouble() < .08 ? 120 : -(float)(80 + R.NextDouble() * 220), speed = k < .2 ? .5f : k < .65 ? 1.2f : 2.2f, R = 40, dist = (float)(R.NextDouble() * 60), side = R.NextDouble() < .5 ? -1 : 1 }); }
+                M.Update(dt);
+                for (int i = 0; i < 2; i++)
+                {
+                    var a = i == 0 ? M.me : M.op; string c; float ph; M.PickClip(a, i == 0, out c, out ph);
+                    bool prep = a.sw <= 0 && a.svAnim == null && a.prepA > .08f && a.prepClip != null && Match.CLIP_HIT.ContainsKey(c) && !c.StartsWith("serve");
+                    if (prep && son[i] != null && son[i] != c) { if (son[i].StartsWith("bh_") != c.StartsWith("bh_")) elDeg[i]++; if ((son[i] == "lunge" && c == "low") || (son[i] == "bh_lunge" && c == "bh_low")) hamleDus[i]++; }
+                    if (prep) sonPrep[i] = c; son[i] = prep ? c : a.sw > 0 ? son[i] : null;
+                }
+                foreach (var e in M.events)
+                {
+                    if (e.kind != Ev.Hit || e.serve) continue; int i = e.who == "me" ? 0 : 1; var a = i == 0 ? M.me : M.op; string c = a.clip; temas[i]++; gor.Add(c);
+                    if (a.hamleGor && Match.HAMLE.ContainsKey(c)) gor.Add(Match.HAMLE[c]);
+                    bool bh = c.StartsWith("bh_"); float yan = (a.tmX - a.x) * (i == 0 ? 1 : -1);
+                    if (!bh && yan < -(a.tmZ > 1.95f ? .6f : .25f) || bh && yan > .1f) tarafYanlis[i]++;
+                    if (sonPrep[i] != null && sonPrep[i].StartsWith("bh_") != bh) temasEl[i]++; sonPrep[i] = null;
+                    if (i == 1 && (c == "low" || c == "bh_low" || c == "net" || c == "bh_drive" || c == "drive")) { opAlt++; if (!bh) opAltFh++; }
+                }
+                M.events.Clear();
+            }
+        }
+        Console.WriteLine("vuruş tutarlılığı: temas ben/rakip " + temas[0] + "/" + temas[1] + ", hazırlıkta el değişimi " + elDeg[0] + "/" + elDeg[1] + ", hazırlık→temas el değişimi " + temasEl[0] + "/" + temasEl[1]
+            + ", hamleden ayakta vuruşa dönüş " + hamleDus[0] + "/" + hamleDus[1] + ", temasta yanlış taraf " + tarafYanlis[0] + "/" + tarafYanlis[1] + ", rakip alçak vuruşta forehand %" + (100f * opAltFh / Math.Max(1, opAlt)).ToString("0"));
+        for (int i = 0; i < 2; i++)
+        {
+            if (elDeg[i] > temas[i] / 12) Fail("vuruş: hazırlıkta forehand↔backhand atlıyor " + elDeg[i] + "/" + temas[i]);
+            if (temasEl[i] > temas[i] / 20) Fail("vuruş: hazırlıktan temasa el değişiyor " + temasEl[i] + "/" + temas[i]);
+            if (tarafYanlis[i] > 0) Fail("vuruş: temasta top öbür yanda " + tarafYanlis[i]);
+        }
+        if (hamleDus[1] > temas[1] / 10) Fail("vuruş: rakip hamle hazırlığından ayakta vuruşa dönüyor " + hamleDus[1]);
+        if (opAltFh * 2 < opAlt) Fail("vuruş: rakip alçak vuruşların çoğunu backhand vuruyor (%" + (100f * opAltFh / Math.Max(1, opAlt)).ToString("0") + ")");
+        foreach (var need in new[] { "smash", "clear", "drop", "jump", "bh_over", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge" })
+            if (!gor.Contains(need)) Fail("vuruş: hiç görülmeyen vuruş klibi " + need);
+    }
+
+    // Yüksek top kadrajı (2026-10-27, yasin build 41: "Top yükseldiğinde kadrajdan çıkıyor"; Core/Kadraj). Bot maçlarının
+    // uçuşlarını (60 Hz) her kamera açısında ve ekranda izdüşürür: top skor kutusunun altındaki sınırın üstünde mi (skor
+    // bandı) ya da ekranın dışında mı; yüksek uçuşların (tepe > 5 m) tepesi görünüyor mu. Önce = takip yok (build 41),
+    // sonra = Kadraj.Takip; hareketi azaltta takip yok, kalan kareler ekran dışı işaretiyle gösterilir (sayılır).
+    // Takibin bedeli de ölçülür: yakın dip çizginin 0,8 m gerisi smaç çubuğunun altına kaç kare iner, en çok kaç px;
+    // eğimin en büyük açısal hızı (°/s).
+    static void Kadrajlar()
+    {
+        const float dt = 1f / 60f; var kareler = new List<Shuttle>(); var saatler = new List<float>(); benler = new List<float[]>();
+        for (int m = 0; m < 8; m++)
+        {
+            var M = new Match(700 + m, new MatchOptions { easy = m % 3 != 2, target = 11, stil = m % 4 == 3 ? Match.KariyerRakip(6 + m) : null }); int g = 0;
+            while (!M.over && g++ < 60 * 60 * 20)
+            {
+                Bot(M, dt); M.Update(dt); M.events.Clear();
+                kareler.Add(M.s == null ? null : M.s.Clone()); saatler.Add(M.clock); benler.Add(new[] { M.me.x, M.me.y });
+            }
+        }
+        // ekranlar: ad, pt genişlik/yükseklik, güvenli alan üst/alt (pt). CI = EkranTuru penceresi (güvenli alan tam ekran).
+        var ekr = new[] {
+            new object[] { "CI 390x845", 390f, 845f, 0f, 0f }, new object[] { "CI SE 375x667", 375f, 667f, 0f, 0f },
+            new object[] { "iPhone 390x844", 390f, 844f, 47f, 34f }, new object[] { "SE 375x667", 375f, 667f, 20f, 0f },
+            new object[] { "Pro Max 430x932", 430f, 932f, 59f, 34f }, new object[] { "iPad 820x1180", 820f, 1180f, 24f, 20f },
+            new object[] { "iPad 4:3 768x1024", 768f, 1024f, 20f, 0f } };
+        string[] ac = { "Yayın", "Alçak", "Üstten" };
+        int ucusKare = 0; foreach (var s in kareler) if (s != null && !s.dead) ucusKare++;
+        // uçuşun gerçekten ulaştığı tepe (tahmin edilen değil: yükselirken karşılanan top tepesine varmaz)
+        var tepe = new Dictionary<object, float>(); foreach (var s in kareler) if (s != null && !s.dead && s.landPred != null) { float z; tepe.TryGetValue(s.landPred, out z); tepe[s.landPred] = Math.Max(z, s.z); }
+        int yuksekN = tepe.Values.Count(z => z > 5); tepeler = tepe;
+        Console.WriteLine("kadraj: " + kareler.Count + " kare, uçuşta " + ucusKare + ", yüksek uçuş (tepe > 5 m) " + yuksekN);
+        foreach (var e in ekr)
+            for (int ki = 0; ki < 3; ki++)
+            {
+                float W = (float)e[1], H = (float)e[2], su = (float)e[3], sa = (float)e[4];
+                var c = Kadraj.Coz(W, H, 0, sa, W, H - su - sa, ki);
+                var r0 = KadrajSay(c, kareler, saatler, false); var r1 = KadrajSay(c, kareler, saatler, true);
+                Console.WriteLine("kadraj " + ((string)e[0]).PadRight(18) + ac[ki].PadRight(7) + " önce: bant " + Yuzde(r0[0], ucusKare) + " dışarı " + Yuzde(r0[1], ucusKare) + " tepe görünmez " + r0[2] + "/" + yuksekN
+                    + " · sonra: bant " + Yuzde(r1[0], ucusKare) + " dışarı " + Yuzde(r1[1], ucusKare) + " tepe görünmez " + r1[2] + "/" + yuksekN + " (işaretle ya da yandan " + r1[6] + ")"
+                    + " · eğim en çok " + r1[3].ToString("0.0") + "° (tavan " + c.egimAzami.ToString("0.0") + "), görüş ×" + r1[9].ToString("0.00") + ", hız en çok " + r1[4].ToString("0") + "°/s (p99 " + r1[8].ToString("0") + "), ayaklar çubuk altında " + Yuzde(r0[5], kareler.Count) + " → " + Yuzde(r1[5], kareler.Count) + " en çok " + r0[7].ToString("0") + " → " + r1[7].ToString("0") + " px");
+                if (r1[0] + r1[1] > r0[0] + r0[1]) Fail("kadraj takibi topu daha çok dışarıda bırakıyor: " + e[0] + " " + ac[ki]);
+                if (r1[4] > Kadraj.HIZ_AZAMI + .5f) Fail("kadraj eğimi çok hızlı: " + r1[4] + "°/s " + e[0] + " " + ac[ki]);
+                if (r1[3] > c.egimAzami + 1e-3f || r1[9] > Kadraj.GENIS_AZAMI + 1e-3f) Fail("kadraj eğimi tavanı aştı: " + r1[3]);
+                if (r1[6] < r1[2]) Fail("tepesi görünmeyen uçuşta işaret yok: " + e[0] + " " + ac[ki]);
+            }
+        // EkranTuru kadraj_tepe_* kareleriyle aynı uçuş (clear ve aynası), tepe anında: CI turunun beklenen sayıları
+        foreach (var e in new[] { new[] { 390f, 845 }, new[] { 375f, 667 }, new[] { 430f, 932 } })
+            for (int ki = 0; ki < 3; ki++)
+                foreach (bool ben in new[] { true, false })
+                {
+                    var c = Kadraj.Coz(e[0], e[1], 0, 0, e[0], e[1], ki); var M = new Match(1, new MatchOptions { easy = true, target = 11 }); float L = Court.L;
+                    M.s = new Shuttle { x = Court.MID, y = L - 1f, z = 2.55f, vy = 3, vz = -2, from = "op" }; M.me.x = Court.MID - .4f; M.me.y = L - 1f;
+                    var P = M.ShotPlan(new SwipeInput { dy = -150, speed = 1.2f, R = 40 }, new Reach(), true); M.s = null;
+                    float hx = P.hx, hy = ben ? P.hy : L - P.hy, ty = ben ? Court.NET - P.d : Court.NET + P.d, tx = ben ? P.tx : 2 * Court.MID - P.tx, vx, vy, vz;
+                    if (!ben) hx = 2 * Court.MID - hx;
+                    Shuttle.Aim(hx, hy, P.hz, tx, ty, P.byAngle, P.val, out vx, out vy, out vz);
+                    typeof(Match).GetMethod("StartFlight", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).Invoke(M, new object[] { ben ? "me" : "op", vx, vy, vz, hx, hy, P.hz, false, "clear", false, "good", false });
+                    var T = new Kadraj.Takip(); float eg = 0; int g = 0;
+                    while (M.s != null && M.s.vz > 0 && g++ < 600) { M.Update(1f / 60); M.events.Clear(); eg = T.Egim(c, M.s, M.clock, false); }
+                    if (M.s == null) { Fail("kadraj tepe uçuşu kurulamadı"); continue; }
+                    float sx0, sy0, sx1, sy1; Kadraj.Izdus(c, 0, M.s.x, M.s.y, M.s.z, out sx0, out sy0); Kadraj.Izdus(c, eg, M.s.x, M.s.y, M.s.z, out sx1, out sy1);
+                    Console.WriteLine("kadraj_tepe " + (ben ? "ben " : "rakip ") + e[0] + "x" + e[1] + " " + ac[ki] + ": z " + M.s.z.ToString("0.00") + " y " + M.s.y.ToString("0.0") + " · ekran y önce " + sy0.ToString("0") + " sonra " + sy1.ToString("0") + " (üst sınır " + c.ustPx.ToString("0") + ") eğim " + eg.ToString("0.0") + "° görüş ×" + Kadraj.Genis(c, eg).ToString("0.00"));
+                }
+        // hareketi azalt: eğim her zaman 0
+        { var c = Kadraj.Coz(390, 844, 0, 34, 390, 844 - 81, 0); var T = new Kadraj.Takip(); float en = 0; for (int i = 0; i < kareler.Count; i++) en = Math.Max(en, T.Egim(c, kareler[i], saatler[i], true)); if (en != 0) Fail("hareketi azaltta kamera eğildi: " + en); }
+        // durumsuzluk: aynı uçuş iki ayrı takipte (biri ortadan başlar) aynı eğimi verir
+        {
+            var c = Kadraj.Coz(390, 845, 0, 0, 390, 845, 0); var A = new Kadraj.Takip(); var B = new Kadraj.Takip(); int fark = 0;
+            int bas = kareler.Count / 3; for (int i = 0; i < kareler.Count; i++) { float a = A.Egim(c, kareler[i], saatler[i], false); if (i < bas) continue; float b = B.Egim(c, kareler[i], saatler[i], false); if (i > bas + 300 && Math.Abs(a - b) > 1e-4f) fark++; }
+            if (fark > 0) Fail("kadraj eğimi geçmişe bağlı: " + fark + " kare");
+        }
+    }
+    static Dictionary<object, float> tepeler; static List<float[]> benler;
+    static string Yuzde(float n, int t) { return (100f * n / Math.Max(1, t)).ToString("0.0") + "%"; }
+    // [0] skor bandında (sınırın üstü, ekran içi) kare, [1] ekran dışı kare, [2] tepesi skor kutusunun altında görünmeyen yüksek uçuş,
+    // [3] en büyük eğim, [4] en büyük açısal hız (°/s; [8] p99), [5] oyuncunun ayakları smaç çubuğunun altında kare, [9] görüş çarpanı, [6] tepesi görünmezken işaret çıkan uçuş, [7] en çok px
+    static float[] KadrajSay(Kadraj.Kamera c, List<Shuttle> kareler, List<float> saatler, bool takip)
+    {
+        var T = new Kadraj.Takip(); var r = new float[10]; var hizlar = new List<float>(); float onceE = 0; object son = null; bool yuksek = false, gorundu = false, isaret = false; float ap = 0;
+        bool yanDisari = false;   // tepesi yalnız yandan dışarıda (kort dışına giden geniş vuruş): üst kenar işareti onu göstermez
+        Action kapat = () => { if (yuksek && !gorundu) { r[2]++; if (isaret || yanDisari) r[6]++; } };
+        for (int i = 0; i < kareler.Count; i++)
+        {
+            var s = kareler[i]; float e = takip ? T.Egim(c, s, saatler[i], false) : 0;
+            if (i > 0) { float v = Math.Abs(e - onceE) * 60; r[4] = Math.Max(r[4], v); if (v > .01f) hizlar.Add(v); } onceE = e; r[3] = Math.Max(r[3], e);
+            float yx, yy; if (Kadraj.Izdus(c, e, benler[i][0], benler[i][1], 0, out yx, out yy) && yy > c.altPx + .5f) { r[5]++; r[7] = Math.Max(r[7], yy - c.altPx); }   // oyuncunun ayakları smaç çubuğunun altında
+            r[9] = Math.Max(r[9], Kadraj.Genis(c, e));
+            object u = s != null ? (object)s.landPred : null;
+            if (!ReferenceEquals(u, son)) { kapat(); son = u; yanDisari = false; gorundu = false; isaret = false; ap = 0; if (u != null) tepeler.TryGetValue(u, out ap); yuksek = ap > 5; }
+            if (s == null || s.dead) continue;
+            float sx, sy; bool on = Kadraj.Izdus(c, e, s.x, s.y, s.z, out sx, out sy);
+            bool disari = !on || sy < 0 || sy > c.H || sx < 0 || sx > c.W, bant = !disari && sy < c.ustPx;
+            if (disari) r[1]++; else if (bant) r[0]++;
+            float ix, ia;
+            if (yuksek && s.z > ap - .3f && !disari && !bant) gorundu = true;   // tepe çevresinde (son 30 cm) görünür bir kare
+            if (yuksek && s.z > ap - .3f && on && sy >= c.ustPx && (sx < 0 || sx > c.W)) yanDisari = true;
+            if (yuksek && s.z > ap - .3f && (disari || bant) && Kadraj.Isaret(c, e, s, out ix, out ia) && ia > .5f) isaret = true;
+        }
+        kapat(); hizlar.Sort(); r[8] = hizlar.Count > 0 ? hizlar[(int)(hizlar.Count * .99f)] : 0; return r;
+    }
+    // ---- ekran/file (2026-10-27, yasin "file de standartlarda olmalı bant kısmı daha sert ama file hareketli olacak") ----
+    // BWF Law 1 ölçüleri (en 6,1, derinlik 0,76, bant 75 mm, göz 15–20 mm, orta 1,524, direk 1,55, sarkma pürüzsüz, uçlar
+    // direkte); standart ağ teması (50 m/s smaç, 1,0 m): ağ görünür şişer, dalga 1,1 m öteye varır, bant ağın ≤ %3'ü kadar
+    // oynar ve ağ bandın altında bandla birlikte (yırtılma yok), durulma ve uyku süresi, uyuyan dizi sıfır; bant teması:
+    // bant küçük, hızlı (en az iki işaret değişimi) ve çabuk söner; hıza göre büyüklük; kural bölgeleri bant yüksekliğiyle
+    // tutarlı (ortada ve direğe yakın); Hareketi azalt yalnız genliği ×0,35 yapar; belirlenimci; Advance ayırma yapmaz.
+    class FileIz { public float agTepe, bantTepe, yirtik, uzakTepe, uzakT = -1, merkezT = -1, merkezTepe, durul = -1, bantDurul = -1, uyku = -1, iz; public int isaret; public Shuttle s; public Match M; public float[] a1; }
+    static FileIz FileVur(float x, float z, float hiz, bool sakin, float uzakDx = 1.1f)
+    {
+        var M = new Match(1, new MatchOptions { easy = false, target = 21, reduce = sakin });
+        var s = new Shuttle { x = x, y = Court.NET + .3f, z = z, vy = -hiz, from = "me", type = "smash", kd = Shuttle.KD };
+        s.landPred = Shuttle.Simulate(s.x, s.y, s.z, s.vx, s.vy, s.vz, true, s.kd); s.netPred = null; M.s = s;
+        var r = new FileIz { s = s, M = M }; float t = 0, tHit = -1, onceki = 0; const float h = 1 / 240f;
+        for (int f = 0; f < 240 * 6; f++)
+        {
+            if (M.s != null && !M.s.dead) M.Update(h); else M.net.Advance(h);
+            t += h; if (tHit < 0 && M.net.active) tHit = t; if (tHit < 0) continue;
+            float ag = 0, bant = 0;
+            for (int i = 0; i <= 64; i++)
+            {
+                float xx = i / 64f * Court.CW, top = Court.NetLimit(xx), alt = top - Court.BANT, b = M.net.BantAt(xx); bant = Math.Max(bant, Math.Abs(b));
+                r.yirtik = Math.Max(r.yirtik, Math.Abs(M.net.Gorunen(xx, alt) - b));
+                float sut = 0; for (int j = 0; j < 12; j++) sut = Math.Max(sut, Math.Abs(M.net.Gorunen(xx, alt - (Court.AG_DERIN - Court.BANT) * (j + .5f) / 12))); ag = Math.Max(ag, sut);
+            }
+            Func<float, float> sutun = xx => { float m = 0, alt = Court.NetLimit(xx) - Court.BANT; for (int j = 0; j < 12; j++) m = Math.Max(m, Math.Abs(M.net.Gorunen(xx, alt - (Court.AG_DERIN - Court.BANT) * (j + .5f) / 12))); return m; };
+            float mz = sutun(x), uz = sutun(x + uzakDx);
+            if (mz > r.merkezTepe) { r.merkezTepe = mz; r.merkezT = t - tHit; }
+            if (uz > r.uzakTepe) { r.uzakTepe = uz; r.uzakT = t - tHit; }
+            float bc = M.net.BantAt(x); if (Math.Abs(bc) > 2e-4f) { if (onceki != 0 && Math.Sign(bc) != Math.Sign(onceki) && t - tHit < .35f) r.isaret++; onceki = bc; }
+            r.agTepe = Math.Max(r.agTepe, ag); r.bantTepe = Math.Max(r.bantTepe, bant);
+            if (ag > .001f) r.durul = -1; else if (r.durul < 0) r.durul = t - tHit;
+            if (bant > .0005f) r.bantDurul = -1; else if (r.bantDurul < 0) r.bantDurul = t - tHit;
+            if (M.net.active || M.net.glow > 0) r.uyku = -1; else if (r.uyku < 0) r.uyku = t - tHit;
+            if (Math.Abs(t - tHit - .3f) < h / 2) r.a1 = (float[])M.net.a.Clone();
+        }
+        foreach (var v in M.net.a) r.iz += Math.Abs(v); foreach (var v in M.net.ta) r.iz += Math.Abs(v);
+        return r;
+    }
+    static void FileStandart()
+    {
+        // ölçüler (BWF Law 1.2–1.5)
+        if (Court.CW != 6.1f || Court.NETH != 1.524f || Court.NETP != 1.55f || Court.BANT != .075f || Court.AG_DERIN != .76f) Fail("file ölçüleri BWF değil");
+        if (Court.AG_GOZ < .015f || Court.AG_GOZ > .020f) Fail("ağ gözü 15–20 mm değil: " + Court.AG_GOZ);
+        float orta = Court.NetLimit(Court.MID), d0 = Court.NetLimit(0), d1 = Court.NetLimit(Court.CW), kirik = Math.Abs(Court.NetLimit(Court.MID + .1f) - orta);
+        if (Math.Abs(orta - 1.524f) > 1e-4f || Math.Abs(d0 - 1.55f) > 1e-4f || Math.Abs(d1 - 1.55f) > 1e-4f) Fail("file yüksekliği: orta " + orta + " direk " + d0 + "/" + d1);
+        if (kirik > 1e-4f) Fail("file ortada kırık (sarkma V): 10 cm'de " + kirik * 1000 + " mm");
+        for (float x = Court.MID; x < Court.CW; x += .05f) if (Court.NetLimit(x + .05f) < Court.NetLimit(x) - 1e-6f) Fail("file sarkması tek yönlü değil @" + x);
+        if (NetWave.Kolon(0) != 0 || NetWave.Kolon(Court.CW) != NetWave.N - 1) Fail("file uçları direkte değil");
+        Console.WriteLine("file ölçü: en " + Court.CW + " m, orta " + orta.ToString("0.000") + " direk " + d0.ToString("0.000") + " sarkma " + ((d0 - orta) * 1000).ToString("0") + " mm (çeyrekte " + Court.NetLimit(Court.MID / 2).ToString("0.0000") + "), derinlik " + Court.AG_DERIN + ", bant " + Court.BANT * 1000 + " mm, göz " + Court.AG_GOZ * 1000 + " mm");
+        // standart ağ teması
+        var S = FileVur(Court.MID, 1.0f, 50, false);
+        Console.WriteLine("file standart (smaç 50 m/s ağa): ağ " + (S.agTepe * 100).ToString("0.0") + " cm, bant " + (S.bantTepe * 1000).ToString("0.0") + " mm, oran " + (S.bantTepe / S.agTepe).ToString("0.000") + ", ağ-bant yırtık " + (S.yirtik * 1000).ToString("0.0") + " mm, 1,1 m öte " + (S.uzakTepe * 100).ToString("0.0") + " cm @" + S.uzakT.ToString("0.00") + " s (merkez @" + S.merkezT.ToString("0.00") + "), durulma " + S.durul.ToString("0.00") + " s, uyku " + S.uyku.ToString("0.00") + " s");
+        if (!S.s.netHit || S.s.netCord || S.s.altindan) Fail("standart smaç ağa değmedi");
+        if (S.agTepe < .15f || S.agTepe > .35f) Fail("ağ şişkinliği " + S.agTepe);
+        if (S.bantTepe < .001f || S.bantTepe > .03f * S.agTepe) Fail("bant/ağ oranı: bant " + S.bantTepe + " ağ " + S.agTepe);
+        if (S.yirtik > .001f) Fail("ağ bandın altından ayrılıyor: " + S.yirtik);
+        if (S.uzakTepe < .15f * S.merkezTepe || S.uzakT < S.merkezT + .2f) Fail("dalga yayılmıyor: " + S.uzakTepe + " @" + S.uzakT);
+        if (S.durul < 0 || S.durul > 3f) Fail("ağ durulmuyor: " + S.durul);
+        if (S.uyku < 0 || S.uyku > 4f) Fail("file uyumuyor: " + S.uyku);
+        if (S.M.net.active || S.iz != 0 || S.M.net.lo <= S.M.net.hi) Fail("uyuyan file düz değil: " + S.iz);
+        // bant teması (lim − 4 cm, 20 m/s)
+        var B = FileVur(Court.MID, Court.NetLimit(Court.MID) - .04f, 20, false);
+        Console.WriteLine("file bant (20 m/s, bandın 4 cm altı): bant " + (B.bantTepe * 1000).ToString("0.0") + " mm, ağ " + (B.agTepe * 100).ToString("0.0") + " cm, ilk 0,35 sn işaret değişimi " + B.isaret + ", bant durulma " + B.bantDurul.ToString("0.00") + " s, uyku " + B.uyku.ToString("0.00") + " s");
+        if (!B.s.netHit || B.s.agda || B.s.netCord || B.s.y < Court.NET) Fail("bant teması bant sekmesi değil");
+        if (B.bantTepe < .003f || B.bantTepe > .012f) Fail("bant genliği " + B.bantTepe);
+        if (B.isaret < 2) Fail("bant hızlı titremiyor: " + B.isaret);
+        if (B.bantDurul < 0 || B.bantDurul > .4f) Fail("bant çabuk sönmüyor: " + B.bantDurul);
+        if (B.agTepe > .03f) Fail("bant teması ağı çok oynatıyor: " + B.agTepe);
+        // hıza göre
+        var D = FileVur(Court.MID, 1.0f, 6, false);
+        if (!(D.agTepe > .02f && D.agTepe < .6f * S.agTepe)) Fail("ağ şişkinliği hıza göre değil: drop " + D.agTepe + " smaç " + S.agTepe);
+        // kural bölgeleri bant yüksekliğiyle tutarlı (ortada ve direğe yakın)
+        foreach (float x in new[] { .5f, Court.MID, Court.CW - .5f })
+        {
+            float lim = Court.NetLimit(x);
+            var k1 = FileVur(x, lim + .02f, 20, false).s; if (k1.netHit || k1.netCord) Fail("bandın 2 cm üstü değdi @" + x);
+            var k2 = FileVur(x, lim - .014f, 30, false).s; if (!k2.netCord) Fail("kordon bölgesi (bandın üst 3 cm'i) yuvarlanmadı @" + x);
+            var k3 = FileVur(x, lim - .05f, 20, false).s; if (!k3.netHit || k3.netCord || k3.agda) Fail("bant bölgesi (75 mm) sekmedi @" + x);
+            var k4 = FileVur(x, lim - .2f, 20, false).s; if (!k4.netHit || k4.altindan) Fail("ağ bölgesi ağa değmedi @" + x);
+            var k5 = FileVur(x, lim - Court.AG_DERIN - .1f, 20, false).s; if (!k5.altindan) Fail("ağ altı altından geçmedi @" + x);
+        }
+        // Hareketi azalt: genlik ×AZALT, dinamik aynı
+        var R = FileVur(Court.MID, 1.0f, 50, true);
+        float oran = R.agTepe / S.agTepe; bool ayni = R.a1 != null && S.a1 != null && R.uyku == S.uyku; if (ayni) for (int i = 0; i < NetWave.N; i++) if (R.a1[i] != S.a1[i]) ayni = false;
+        Console.WriteLine("file Hareketi azalt: ağ " + (R.agTepe * 100).ToString("0.0") + " cm (oran " + oran.ToString("0.000") + "), bant " + (R.bantTepe * 1000).ToString("0.0") + " mm, dinamik aynı " + ayni);
+        if (Math.Abs(oran - NetWave.AZALT) > .02f) Fail("Hareketi azalt genlik oranı " + oran);
+        if (!ayni) Fail("Hareketi azalt file dinamiğini değiştiriyor");
+        // belirlenimci, ayırma yok
+        var S2 = FileVur(Court.MID, 1.0f, 50, false); if (S2.iz != S.iz || S2.agTepe != S.agTepe || S2.uyku != S.uyku) Fail("file belirlenimci değil");
+        var w = new NetWave(); w.Impulse(Court.MID, 1.0f, 50, false, -1); w.Advance(1 / 60f);
+        long a0 = GC.GetAllocatedBytesForCurrentThread(); for (int f = 0; f < 120; f++) w.Advance(1 / 60f); long al = GC.GetAllocatedBytesForCurrentThread() - a0;
+        if (al != 0) Fail("NetWave.Advance ayırma yapıyor: " + al + " B");
+    }
+    // ---- ekran/file sonu ----
     static float Hyp(float x, float y) { return (float)Math.Sqrt(x * x + y * y); }
 }

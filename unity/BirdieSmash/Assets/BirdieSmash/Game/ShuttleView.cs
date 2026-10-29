@@ -27,6 +27,9 @@ namespace BirdieSmash.Game
         Transform body; GameObject lines; readonly GameObject[] ghosts = new GameObject[3]; Material[] ghostM = new Material[3];
         Transform shadow; Material shadowM; LineRenderer trail, hLine, gLine, ring, ringS, prevRing, prevX1, prevX2; Transform ringFill; Material ringFillM, ringSM, prevM;
         readonly List<Vector3> trailPts = new List<Vector3>();
+        // İzin son uygulanan biçimi (renk, kalınlık, saydamlık) ve yeniden kullanılan anahtar dizileri.
+        readonly Gradient izGrad = new Gradient(); readonly GradientColorKey[] izRenk = new GradientColorKey[2];
+        readonly GradientAlphaKey[] izSaydam = new GradientAlphaKey[2]; Color izC = new Color(-1, 0, 0, 0); float izW = -1, izA = -1;
         Shuttle last; Vector3 d = Vector3.forward; float wob, wv, phi, lvx, lvy, lvz;
         public Camera cam; public bool reduce;
         public Vector3 BodyPos { get { return body.position; } }
@@ -219,12 +222,19 @@ namespace BirdieSmash.Game
             trail.enabled = trailPts.Count > 1;
             if (trail.enabled)
             {
-                trail.positionCount = trailPts.Count; trail.SetPositions(trailPts.ToArray());
+                // 2026-10-27 performans turu 2: her uçuş karesinde ToArray + yeni AnimationCurve + yeni Gradient (yönetilen ve
+                // yerel ayırma, karede ~6 nesne) yerine noktalar tek tek (en çok 14, ayırmasız); eğri ve renk yalnız biçim (akış/süper/smaç/düz) değişince.
+                int n = trailPts.Count; trail.positionCount = n; for (int i = 0; i < n; i++) trail.SetPosition(i, trailPts[i]);
                 Color c; float w, a;
                 if (M.flow && s.from == "me") { c = new Color(1, .82f, .23f); w = 2.5f; a = .9f; } else if (s.super) { c = new Color(1, .47f, .16f); w = 10; a = .9f; }
                 else if (s.type == "smash") { c = new Color(.85f, 1, .35f); w = 6; a = .8f; } else { c = Color.white; w = 2.5f; a = .3f; }
-                trail.widthCurve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(1, w / 28f));
-                trail.colorGradient = new Gradient { colorKeys = new[] { new GradientColorKey(c, 0), new GradientColorKey(c, 1) }, alphaKeys = new[] { new GradientAlphaKey(0, 0), new GradientAlphaKey(a, 1) } };
+                if (c != izC || w != izW || a != izA)
+                {
+                    izC = c; izW = w; izA = a;
+                    trail.widthCurve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(1, w / 28f));
+                    izRenk[0] = new GradientColorKey(c, 0); izRenk[1] = new GradientColorKey(c, 1); izSaydam[0] = new GradientAlphaKey(0, 0); izSaydam[1] = new GradientAlphaKey(a, 1);
+                    izGrad.SetKeys(izRenk, izSaydam); trail.colorGradient = izGrad;
+                }
             }
             // --- gölge + yükseklik çizgisi ---
             float zz = Mathf.Max(0, s.z); shadow.gameObject.SetActive(true); shadow.position = Kit.W(s.x, s.y, .005f);

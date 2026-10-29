@@ -3,6 +3,9 @@
 # chibi) oyuncak_kaykit.py'de arşivde (BS_MODEL=oyuncak_kaykit); model kimliği "oyuncak" aynı kalır (Unity ayarı ve
 # tuytop_model anahtarı değişmez), Resources/karakter/oyuncak.fbx bunun yerine geçer.
 #
+# 3. tasarım (2026-10-27, yasin: "Oyuncak 3B daha tıknaz sevimli karikatür tipler olmalıydı"): aşağıdaki gerçek oranlı
+# gövde yalnız kurulum tabanıdır; parçalar kurulduktan sonra _oran() ile ~3,4 baş boylu oyuncak oranına bükülür (TIPLER
+# notu, README "Oyuncak oranı"). Aşağıdaki "baş %7 / el %6" maddeleri 2. tasarımın kaydıdır; şimdiki değerler TIPLER'de.
 # Tasarım kararları (stilize atlet: Badminton League / Tennis Clash / Mario Tennis çizgisi):
 #  - Gövde gerçek oranlı: MakeHuman taban ağı + makro hedefler (CC0; insan.govde, genç erkek, kaslı, ince). Baş %7 büyütülür
 #    (~7,1 baş boy; gerçekte ~7,5): yakın planda sevimli, yüksek kameradan gövdeyi örtmez (eski oyuncağın sorunu).
@@ -28,24 +31,43 @@ from mathutils.bvhtree import BVHTree
 import insan, aday
 R_UE=aday.RIG['ue']
 E=lambda k,d: float(os.environ.get(k,d))
-BOY=1.80                       # tasarım gerçek metrede; sonda bacak 0,49 birime ölçeklenir (insan/sade/aday ile aynı)
+BOY=1.80                       # tasarım gerçek metrede (MakeHuman); _oran sonrası tipin boyuna (TIP['boy'], model birimi) ölçeklenir
 # Oyuncu tipleri (2026-10-26, yasin: "tip seçebilme ... karakterin tasarımına ekstra önem"): aynı iskelet adları, aynı
-# klipler; her tip kendi FBX'i (oyuncak_<tip>.fbx; atlet = oyuncak.fbx, geriye uyum). Yüksek kameradan silüetle ayrılsınlar
-# diye kütle/omuz/boy ve saç farklı; yüz yakın planda aynı stilize dil (iri göz, sakin gülüş). boy: oyundaki boy çarpanı
-# (bacak 0,49 × boy; pozlar insan.Iskelet.hedef'te bacak oranıyla büyür, raket yolu tipe göre ölçeklenir). ±%4'te tutuldu:
-# vuruş yüksekliği oyun mantığında sabit, raket başı tipler arasında en çok ~9 cm kayar.
-# kasK/kirpik: kaş genişliği ve üst kirpik şeridi (kadın tipinde ince kaş, belirgin kirpik; ilk dizilişte yüzler aynıydı).
+# klipler; her tip kendi FBX'i (oyuncak_<tip>.fbx; atlet = oyuncak.fbx, geriye uyum). Yüz yakın planda aynı stilize dil
+# (iri göz, sakin gülüş). kasK/kirpik: kaş genişliği ve üst kirpik şeridi (kadın tipinde ince kaş, belirgin kirpik).
+# Oyuncak oranı (2026-10-27, yasin: "Oyuncak 3B daha tıknaz sevimli karikatür tipler olmalıydı"): ~7 baş boylu atletik
+# gövde gerçekçi modelin yanında ikinci bir gerçekçi model gibi duruyordu. Şimdi ~3,1–3,5 baş boyu: iri baş, tıknaz gövde,
+# kısa sağlam uzuvlar, iri el ve ayak. Oran _oran() ile kemik kemik kurulur (kemik yönü korunur, eksen boyunca kısalır,
+# kesitte kalınlaşır); kıyafet, yüz, saç ve ayakkabı gerçek oranlı gövdede kurulduktan SONRA aynı dönüşümle bükülür
+# (ölçüleri gerçek metrede ayarlanmış kurallar bozulmaz). Tipler yüksek kameradan silüetle ayrılsın diye boy ve en
+# ≥%10 farklı (ölçüm README "Oyuncak oranı" tablosu):
+#  boy  : son boy, model biriminde (ten tepesi − taban altı; saç hariç). atlet 1,00 · kadın 0,87 · uzun 1,13 · güçlü 0,97
+#         (oyunda ×1,75: 1,75 / 1,52 / 1,98 / 1,70 m; eski atlet 0,925. Kısa kol ve alçak omuzla temas yayı 0,3 m iniyordu,
+#         boy +%8, kol ekseni 0,80–0,90 ve raket 0,97–1,0 ile
+#         baş üstü vuruşlarda eski yayın 2–9 cm altına döner, omuz altı vuruşlarda 0,1–0,35 m aşağıda kalır (Unity
+#         uzanma katmanı kapatır; büyük raket alçak vuruş ve serviste kafayı zemine sokuyordu): unity_fbx <ad>_kafa.json)
+#  bas/el/ayak: baş (çene hizası, baş ortasından), el (bilekten), ayak+ayakkabı (ayak bileğinden) düzgün büyütme
+#  govde=(eksen, en x, derinlik y) omurga ve leğen; kalcaR leğenin enine ek çarpanı; boyun=(eksen, kesit)
+#  klav: köprücük boyu (omuz genişliği); kol/bacak=(eksen, kesit)
+#  raket: raket ölçeği (kısa kolda temas yayı aşağı inmesin diye eski 0,8'den büyük; unity_fbx ölçer: <ad>_kafa.json)
+#  hacim: saç hacmi (kabuk kalınlığı ve ek parçalar; biçime göre ağırlık sac_ayk.HACIM_W)
+# omuz/kalca: makro gövdenin omuz/kalça genişliği (ilk tip turu, kesimden önce); kas/kilo/boyh/cins: MakeHuman makroları.
 TIPLER={
- 'atlet':dict(cins=1.,kas=.78,kilo=.36,boyh=.5,etnik=(1/3,1/3,1/3),boy=1.00,bas=1.07,el=1.06,sac='kisa',sacRenk='#2b1d14'),
- 'guclu':dict(cins=1.,kas=1.,kilo=.74,boyh=.4,etnik=(.25,.55,.20),boy=1.00,bas=1.04,el=1.10,omuz=1.10,kalca=1.03,sac='kazima',sacRenk='#1d1b1b'),
- 'kadin':dict(kasK=.52,kirpik=1.45,cins=0.,kas=.70,kilo=.42,boyh=.6,etnik=(.30,.15,.55),boy=.96,bas=1.09,el=1.03,omuz=.95,kalca=1.05,sac='atkuyrugu',sacRenk='#3a2416'),
- 'uzun': dict(cins=1.,kas=.48,kilo=.04,boyh=1.,etnik=(.60,.20,.20),boy=1.04,bas=1.04,el=1.06,omuz=.95,kalca=.97,sac='yan',sacRenk='#6b4a2e'),
+ 'atlet':dict(cins=1.,kas=.78,kilo=.36,boyh=.5,etnik=(1/3,1/3,1/3),sac='kisa',sacRenk='#2b1d14',
+              boy=1.0,bas=1.95,el=1.45,ayak=1.42,govde=(.80,1.22,1.15),kalcaR=1.,boyun=(.45,1.2),klav=1.15,kol=(.84,1.30),bacak=(.52,1.36),raket=1.0,hacim=1.6),
+ 'guclu':dict(cins=1.,kas=1.,kilo=.74,boyh=.4,etnik=(.25,.55,.20),omuz=1.10,kalca=1.03,sac='kazima',sacRenk='#1d1b1b',
+              boy=.97,bas=1.80,el=1.62,ayak=1.52,govde=(.76,1.46,1.30),kalcaR=1.08,boyun=(.35,1.5),klav=1.35,kol=(.80,1.55),bacak=(.47,1.58),raket=1.0,hacim=1.6),
+ 'kadin':dict(kasK=.45,kirpik=1.45,cins=0.,kas=.70,kilo=.42,boyh=.6,etnik=(.30,.15,.55),omuz=.95,kalca=1.05,sac='atkuyrugu',sacRenk='#3a2416',
+              boy=.87,bas=2.0,el=1.36,ayak=1.32,govde=(.78,1.06,1.05),kalcaR=1.12,boyun=(.5,1.1),klav=1.0,kol=(.84,1.12),bacak=(.54,1.22),raket=.97,hacim=1.6),
+ 'uzun': dict(cins=1.,kas=.48,kilo=.04,boyh=1.,etnik=(.60,.20,.20),omuz=.95,kalca=.97,sac='yan',sacRenk='#6b4a2e',
+              boy=1.13,bas=2.35,el=1.40,ayak=1.40,govde=(.84,1.06,1.02),kalcaR=.95,boyun=(.62,1.05),klav=1.08,kol=(.90,1.08),bacak=(.56,1.14),raket=1.0,hacim=1.6),
 }
 TIP_ID=os.environ.get('BS_OY_TIP','atlet'); TIP=TIPLER[TIP_ID]
 KAS,KILO=E('BS_OY_KAS',TIP['kas']),E('BS_OY_KILO',TIP['kilo'])
-BAS=E('BS_OY_BAS',TIP['bas'])       # baş büyütmesi (1 = gerçek)
-GOZ=E('BS_OY_GOZ','1.24')       # göz bölgesi büyütmesi
+BAS=E('BS_OY_BAS',TIP['bas'])       # baş büyütmesi (1 = gerçek; _oran)
+GOZ=E('BS_OY_GOZ','1.42')       # göz bölgesi büyütmesi (oyuncak oranında 1,24 → 1,42: iri başta gerçek oranlı göz küçük duruyordu)
 EL=E('BS_OY_EL',TIP['el'])
+AYAK=E('BS_OY_AYAK',TIP['ayak'])
 ORAN=E('BS_OY_ORAN','.185')      # gövde ağı sadeleştirme oranı (MakeHuman 26,7k üçgen)
 
 # ---------- MakeHuman → UE kemik eşlemesi ----------
@@ -96,6 +118,30 @@ def _govde():
         s=sum(a.values())
         if s>0:
             for k in a: a[k]/=s
+    # sevimli yüz (2026-10-27 oyuncak oranı): genç yetişkin yüzü iri başta yaşlı/asık duruyordu. Aynı tipin MakeHuman
+    # 'child' gövdesi kurulur, yalnız baş bölgesinde (baş ağırlığıyla) karıştırılır: yuvarlak yanak, küçük burun ve çene,
+    # geniş alın. Çocuk başı baş ekleminden tepeye aynı yüksekliğe ölçeklenip hizalanır (boy/konum gövdeden gelir).
+    # Topoloji aynı (MakeHuman taban ağı), eklemler karışık ağdan yeniden ölçülür.
+    CK=E('BS_OY_COCUK',TIP.get('cocuk',.85))
+    if CK>0:
+        Pc,_=insan.govde(BOY,KAS,KILO,TIP['cins'],TIP['boyh'],TIP['etnik'],yas='child'); _,Jc=insan.eklemler(Pc)
+        hy,hc=J['head____head'],Jc['head____head']
+        ty=max(P[i].z for i in range(len(P)) if UW[i].get('head',0)>.9); tc=max(Pc[i].z for i in range(len(P)) if UW[i].get('head',0)>.9)
+        sk=(ty-hy.z)/(tc-hc.z)
+        for i in range(len(P)):
+            w=UW[i].get('head',0)
+            if w>0: P[i]=P[i]+(hy+(Pc[i]-hc)*sk-P[i])*(w*CK)
+        d,J=insan.eklemler(P)
+    # düğme burun (2026-10-27): burnun ucu (yüzün en önü, göz ile ağız arası) çevresinde 3 cm içinde, burun ucunun üstünde
+    # (burun kanadı ve üst dudak yerinde: ilk denemede dudak üstü çöküyordu) burun yüze doğru %45 küçülür (iri başta gerçek oranlı burun yüzün en baskın biçimiydi)
+    NB=E('BS_OY_BURUN','.55')
+    if NB<1:
+        ey,mz=J['eye.R____head'],(J['oris03.L____head'].z+J['oris03.R____head'].z)/2
+        on=[i for i in range(len(P)) if UW[i].get('head',0)>.9 and abs(P[i].x)<.012 and mz<P[i].z<ey.z]
+        uc=max((P[i] for i in on),key=lambda p:p.y); taban=uc-Vector((0,.024,0)); R_=.030
+        for i in range(len(P)):
+            dd=(P[i]-uc).length
+            if dd<R_ and P[i].y>taban.y and P[i].z>uc.z-.004: P[i]=taban+(P[i]-taban)*(1-(1-NB)*(1-_ss(.4*R_,R_,dd))*_ss(uc.z-.004,uc.z+.006,P[i].z))
     j=lambda k: J[k].copy()
     # tip silüeti: omuz kuşağı genişliği (göğüs/sırt x'te ölçeklenir, kollar omuzla birlikte dışa kayar) ve kalça genişliği
     # (bacaklar dışa kayar). Makro hedefler kas/kiloyla hacmi verir ama yüksek kameradan "geniş omuz" / "dar omuz, geniş
@@ -113,23 +159,8 @@ def _govde():
         for i,p in enumerate(P): P[i]=don(p,UW[i])
         for k in list(J):
             u=ue_ad(k.split('____')[0]); J[k]=don(J[k],{u:1.})
-    # stilize: baş boyun tabanından, eller bilekten büyür (ağırlıkla yumuşak geçiş); göz bölgesi göz merkezinden
-    piv=j('neck03____tail')
+    # baş ve el büyütmesi burada değil (2026-10-27 oyuncak oranı): bütün parçalar kurulduktan sonra _oran() ile yapılır
     def olc(p,mer,k,w): return mer+(p-mer)*(1+(k-1)*w)
-    for i,p in enumerate(P):
-        w=UW[i].get('head',0);
-        if w>0: P[i]=olc(p,piv,BAS,w)
-    for k in list(J):
-        if ue_ad(k.split('____')[0])=='head' and not k.startswith('neck'): J[k]=olc(J[k],piv,BAS,1.)
-    for yan,mh in (('_r','R'),('_l','L')):
-        pv=j(f'wrist.{mh}____head')
-        el={'hand','thumb','index','middle','ring','pinky'}
-        for i,p in enumerate(P):
-            w=sum(v for u,v in UW[i].items() if u.endswith(yan) and u.split('_')[0] in el)
-            if w>0: P[i]=olc(P[i],pv,EL,w)
-        for k in list(J):
-            b=ue_ad(k.split('____')[0])
-            if b.endswith(yan) and b.split('_')[0] in el and not k.startswith('wrist'): J[k]=olc(J[k],pv,EL,1.)
     # göz bölgesi: göz merkezinden 2,6 cm içinde düzgün azalan büyütme (göz kapakları ve küre birlikte)
     for mh in ('L','R'):
         c=J[f'eye.{mh}____head'].copy(); R_=.026
@@ -147,7 +178,7 @@ def _govde():
     gozv={i for g in ('helper-l-eye','helper-r-eye') for f in F.get(g,[]) for i in f}
     for mh,g in (('L','helper-l-eye'),('R','helper-r-eye')):
         gv=[P[i] for f in F[g] for i in f]; c=sum(gv,Vector())/len(gv); r=max((p-c).length for p in gv)
-        du,dl=E('BS_OY_KAPAK','.24')*r,E('BS_OY_KAPAK_ALT','.08')*r
+        du,dl=E('BS_OY_KAPAK','.30')*r,E('BS_OY_KAPAK_ALT','.08')*r
         for i,p in enumerate(P):
             if i in gozv or p.y<c.y-.2*r: continue
             dx,dz=p.x-c.x,p.z-c.z; ro=math.hypot(dx*.8,dz)
@@ -155,6 +186,78 @@ def _govde():
             w=1-_ss(.75*r,2.0*r,ro)
             P[i]=p+Vector((0,0,du*w if dz>0 else -dl*w))
     return P,F,UW,J
+
+# ---------- oyuncak oranı (2026-10-27) ----------
+def _dis(u,v): return Matrix(((u.x*v.x,u.x*v.y,u.x*v.z),(u.y*v.x,u.y*v.y,u.y*v.z),(u.z*v.x,u.z*v.y,u.z*v.z)))
+def _eksen_A(d,a,rx,ry=None):
+    """kemik ekseni d boyunca a, kesitte rx (x'e yakın dik eksen) ve ry kadar ölçekleyen doğrusal dönüşüm"""
+    d=d.normalized(); ry=rx if ry is None else ry
+    ex=Vector((1,0,0))-d*d.x
+    if ex.length<1e-3: ex=Vector((0,1,0))-d*d.y
+    ex.normalize(); ey=d.cross(ex)
+    return _dis(d,d)*a+_dis(ex,ex)*rx+_dis(ey,ey)*ry
+def _kemik_seg(u):
+    """UE kemiği → oran parçası (parmaklar el, ball ayak, kök leğen)"""
+    for yan in ('_r','_l'):
+        if u.endswith(yan):
+            b=u[:-2]
+            if b=='hand' or b.split('_')[0] in ('thumb','index','middle','ring','pinky'): return 'hand'+yan
+            if b in ('foot','ball'): return 'foot'+yan
+            return b+yan
+    return u if u in ('spine_01','spine_02','spine_03','neck_01','head') else 'pelvis'
+def oran_donusumleri(J,piv,T):
+    """kemik başına afin dönüşüm {parça: (eski baş, yeni baş, A)}. Zincir: çocuğun yeni başı = ebeveynin dönüşümüyle
+    eski başı; böylece eklemde iki dönüşüm aynı noktayı verir ve ağırlıkla karışan deri eklemde yırtılmaz. Kök (kalça
+    merkezi) yerinde; taban sonra eski yerine kaydırılır."""
+    j=lambda k: J[k+'____head'].copy()
+    hipc=(j('upperleg01.R')+j('upperleg01.L'))/2
+    ga,gx,gy=T['govde']; ba,br=T['boyun']; ka,kr=T['kol']; la,lr=T['bacak']
+    D={}
+    def ekle(ad,ust,h,A):
+        if ust is None: hp=h.copy()
+        else: h0,hp0,A0=D[ust]; hp=hp0+A0@(h-h0)
+        D[ad]=(h,hp,A)
+    ekle('pelvis',None,hipc,_eksen_A(j('spine04')-hipc,ga,gx*T['kalcaR'],gy))
+    ekle('spine_01','pelvis',j('spine04'),_eksen_A(j('spine03')-j('spine04'),ga,gx,gy))
+    ekle('spine_02','spine_01',j('spine03'),_eksen_A(j('spine02')-j('spine03'),ga,gx,gy))
+    ekle('spine_03','spine_02',j('spine02'),_eksen_A(j('neck01')-j('spine02'),ga,gx,gy))
+    ekle('neck_01','spine_03',j('neck01'),_eksen_A(piv-j('neck01'),ba,br))
+    ekle('head','neck_01',piv,Matrix.Identity(3)*BAS)
+    for k,m in (('r','R'),('l','L')):
+        ekle('clavicle_'+k,'spine_03',j(f'clavicle.{m}'),_eksen_A(j(f'upperarm01.{m}')-j(f'clavicle.{m}'),T['klav'],kr))
+        ekle('upperarm_'+k,'clavicle_'+k,j(f'upperarm01.{m}'),_eksen_A(j(f'lowerarm01.{m}')-j(f'upperarm01.{m}'),ka,kr))
+        ekle('lowerarm_'+k,'upperarm_'+k,j(f'lowerarm01.{m}'),_eksen_A(j(f'wrist.{m}')-j(f'lowerarm01.{m}'),ka,kr))
+        ekle('hand_'+k,'lowerarm_'+k,j(f'wrist.{m}'),Matrix.Identity(3)*EL)
+        ekle('thigh_'+k,'pelvis',j(f'upperleg01.{m}'),_eksen_A(j(f'lowerleg01.{m}')-j(f'upperleg01.{m}'),la,lr))
+        ekle('calf_'+k,'thigh_'+k,j(f'lowerleg01.{m}'),_eksen_A(j(f'foot.{m}')-j(f'lowerleg01.{m}'),la,lr*.94))
+        ekle('foot_'+k,'calf_'+k,j(f'foot.{m}'),Matrix.Identity(3)*AYAK)
+    return D
+def oran_uygula(D,parcalar,J,ek_ayk=None):
+    """dönüşümleri ağırlıkla karıştırıp parçalara ve eklemlere uygular (doğrusal karışım: eklem başlarında süreklidir).
+    Ağırlıksız parçalar: bileklik ön kola, ötekiler (göz, kaş, kirpik, ışık, bant) başa. ek_ayk: ayakkabıya ayağın
+    üstüne ek düzgün olmayan büyütme (en, boy, yükseklik; ayak bileğinden) — ayakkabı tıknaz, ayak bileği aynı yerde."""
+    def T(seg,p,o=None):
+        h,hp,A=D[seg]; q=hp+A@(p-h)
+        if ek_ayk and o is not None and o.get('tag')=='ayakkabi' and seg.startswith('foot'):
+            q=hp+Vector(((q-hp).x*ek_ayk[0],(q-hp).y*ek_ayk[1],(q-hp).z*ek_ayk[2]))
+        return q
+    for o in parcalar:
+        Mw=o.matrix_world.copy(); Mi=Mw.inverted(); gi={g.index:g.name for g in o.vertex_groups}
+        varsay='lowerarm_r' if o.name.startswith('oy_bilek') else 'head'
+        for v in o.data.vertices:
+            acc={}
+            for g in v.groups:
+                n=gi[g.group]
+                if n=='koru' or g.weight<=0: continue
+                sg=_kemik_seg(n); acc[sg]=acc.get(sg,0)+g.weight
+            tw=sum(acc.values())
+            p=Mw@v.co
+            if tw<=1e-6: q=T(varsay,p,o)
+            else: q=sum((T(sg,p,o)*(w/tw) for sg,w in acc.items()),Vector())
+            v.co=Mi@q
+        o.data.update()
+    for k in list(J):
+        J[k]=T(_kemik_seg(ue_ad(k.split('____')[0])),J[k])
 
 # ---------- alan kesimi ----------
 def _anahtar(c): return (round(c.x,5),round(c.y,5),round(c.z,5))
@@ -352,8 +455,29 @@ class OyIskelet(aday.AdayIskelet):
             if a[2]<zmin: p['an'+K]=(a[0],a[1],zmin)
         T=super().hedef(p); dz=Vector((0,0,s.dz))
         for n in s.POZ: T[n]=T[n]+dz
+        # Servis yüksekliği (2026-10-27 oyuncak oranı): kısa kol ve alçak omuzla servis temasında raket kafası 0,2 m'ye
+        # (oyunda) iniyordu; Core servisi 0,82–1,02 m'den atar ve serviste uzanma katmanı yok. Servis kliplerinde iki bilek
+        # birlikte BS_OY_SERVISYUK kadar (dirsek %60) yükselir (top tutan sol elle raket arasındaki ilişki aynı kalır).
+        bilgi=getattr(s.tut,'bilgi',None) if s.tut else None
+        sy=E('BS_OY_SERVISYUK','.12')
+        if sy>0 and bilgi and str(bilgi[0]) in ('serve','serve_gec','serve_bh'):   # flick yukarı bakan raketle zaten Core yüksekliğinde (1,0 m)
+            for K in 'RL':
+                T['el'+K]=T['el'+K]+Vector((0,0,sy*.6)); T['wr'+K]=T['wr'+K]+Vector((0,0,sy))   # IK'sız: dirsek yeniden çözülünce kol düzlemi dönüp raket karşı yana geçiyordu
+        # İri baş (2026-10-27 oyuncak oranı): yüz önündeki bilek hedefleri (bh_kill, block, file) başın içine düşüyordu;
+        # çözücü eli dışarı itince raket ters dönüyordu (bh_kill raket kafası 1,2 m kaydı). Hedef baş küresinin (ağın
+        # %80'lik yarıçapı + el payı) dışına, baş merkezinden radyal itilir; dirsek yeniden çözülür.
+        if getattr(s,'bas_r',None):
+            Rb=(s.headc-s.neck).rotation_difference(T['head']-T['neck']).to_matrix(); c=T['neck']+Rb@s.bas_v; rr=s.bas_r+E('BS_OY_BASPAY','.045')
+            for K in 'RL':
+                sh,wr=T['sh'+K],T['wr'+K]; d=wr-c
+                if d.length<rr:
+                    yon=d.normalized() if d.length>1e-4 else Vector((0,1,0))   # radyal (öne eğik itme denendi: bh_kill raketi daha çok yatıyordu)
+                    w2=c+yon*rr; el,w2=insan._ik(sh,w2,s.UA,s.FA,T['el'+K]-(sh+wr)/2); T['el'+K]=el; T['wr'+K]=w2
         T['_top']=bool(p.get('shuttle'))
         return T
+    def bas_kur(s,c,r):
+        """baş küresi (dinlenme): merkez boyun ekleminden göreli, yarıçap"""
+        s.bas_v=c-s.neck; s.bas_r=r
     def uygula(s,T):
         T2=s.tut.hazirla(T) if s.tut else T
         super().uygula(T2)
@@ -480,7 +604,10 @@ class Oyuncak:
             yuz=v.co.y>gm.y-.04 and v.co.z>gm.z-.12 and abs(v.co.x)<.075
             kulak=abs(v.co.x)>.07 and gm.z-.06<v.co.z<gm.z+.06 and gm.y-.16<v.co.y<gm.y-.02
             el=sum(g.weight for g in v.groups if gad[g.group].startswith(EL_K))>.5
-            kg.add([v.index],E('BS_OY_YUZKORU','.12') if yuz else E('BS_OY_ELKORU','.4') if el else .45 if kulak else 1.,'REPLACE')
+            # bacak (2026-10-27 oyuncak oranı): kesitte 1,36× kalınlaşan bacakta sadeleştirilmiş ağın yüzleri köşeli (diz
+            # ve baldır çokgen) duruyordu; bacak bir kademe az sadeleşir
+            bac=sum(g.weight for g in v.groups if gad[g.group].startswith(('thigh_','calf_')))>.5
+            kg.add([v.index],E('BS_OY_YUZKORU','.12') if yuz else E('BS_OY_ELKORU','.4') if el else .45 if kulak else E('BS_OY_BACAKKORU','.55') if bac else 1.,'REPLACE')
         dm=govde.modifiers.new('d','DECIMATE'); dm.ratio=ORAN; dm.vertex_group='koru'; dm.vertex_group_factor=1.; dm.use_symmetry=True; dm.symmetry_axis='X'   # simetrik çökertme: iki yan aynı kenar akışı, ince şerit üçgen azalır
         bpy.ops.object.select_all(action='DESELECT'); bpy.context.view_layer.objects.active=govde; govde.select_set(True)
         bpy.ops.object.modifier_apply(modifier=dm.name)
@@ -502,10 +629,17 @@ class Oyuncak:
             kes(bm,sec,fn)
         sira=['ten','forma','serit','sort','corap','ayakkabi','biye']
         for f in bm.faces: f.material_index=sira.index(K.bolge(f.calc_center_median(),yuz_grup(f)))
-        # dudak: ağız çevresindeki ten yüzleri (yüzün önü, göz altında 5-7 cm)
+        # dudak (2026-10-27 oyuncak oranı): ağız köşelerinden (oris03) kurulan gülen elips alanla kesilir. Eskiden yüz yüz
+        # seçiliyordu (göz altında 6,6–8,6 cm kutusu): 1,95× başta testere dişli dikdörtgen leke oluyordu, çocuk yüzü
+        # karışımında da ağzın yeri kayıyordu.
+        ka_,kb_=J['oris03.L____head'],J['oris03.R____head']; ac=(ka_+kb_)/2; ax_=(ka_-kb_).length/2*E('BS_OY_DUDEN','1.2'); az_=E('BS_OY_DUDYUK','.0065')
+        egri=E('BS_OY_GULUSE','5.')
+        def f_dud(c): return (c.x/ax_)**2+((c.z-ac.z-egri*c.x*c.x+.0015)/az_)**2-1
+        on_yuz=[f for f in bm.faces if f.material_index==0 and abs(f.calc_center_median().x)<ax_*1.6 and abs(f.calc_center_median().z-ac.z)<.03 and f.calc_center_median().y>gm.y-.02]
+        kes(bm,on_yuz,f_dud)
         for f in bm.faces:
             c=f.calc_center_median()
-            if f.material_index==0 and abs(c.x)<E('BS_OY_DUDX','.022') and gm.z-E('BS_OY_DUD1','.086')<c.z<gm.z-E('BS_OY_DUD0','.066') and c.y>gm.y-.005 and f.normal.y>.3: f.material_index=len(sira)
+            if f.material_index==0 and c.y>gm.y-.02 and f.normal.y>.2 and f_dud(c)<0: f.material_index=len(sira)
         sira.append('dudak')
         # --- ayakkabı ayrı saya (aşağıda): ayağın bu bölgesi silinir (çıplak ayak şişirilince parmaklar ve oluklar
         #     görünüyordu); çorabın alt kenarı sayanın içinde kalır
@@ -593,8 +727,8 @@ class Oyuncak:
             gd=(J['eye.L____head']-J['eye.R____head']).length
             us=[.16,.30,.45,.60,.75,.90]; ks=[]
             for u in us:
-                t=(u-.16)/.74; ks.append((sx*u*gd,gm.z+gd*(.40+.20*t-.16*t*t)))
-            parca.append(_serit(hb,ks,[gd*w*E('BS_OY_KASK',TIP.get('kasK',.85)) for w in (.085,.095,.09,.08,.065,.045)],.0022,'oy_kas'+mh,mats['kas'],'kas',ymin=c.y))
+                t=(u-.16)/.74; ks.append((sx*u*gd,gm.z+gd*(E('BS_OY_KASZ','.50')+.20*t-.16*t*t)))   # oyuncak oranı: kaş yukarıda (.40'ta iri gözün üstüne basıp asık bakıyordu)
+            parca.append(_serit(hb,ks,[gd*w*E('BS_OY_KASK',TIP.get('kasK',.70)) for w in (.085,.095,.09,.08,.065,.045)],.0022,'oy_kas'+mh,mats['kas'],'kas',ymin=c.y))
         # saç, bant, ayakkabı çeşitleri (sac_ayk.py; 2026-10-26 tip/saç/ayakkabı seçimi). Saçlar ve ayakkabılar 'oy_' ile
         # başlamaz: aşağıdaki atlas birleştirmesine girmez, her biri ayrı nesne kalır (Unity yalnız seçileni açar).
         import sac_ayk as SA
@@ -602,6 +736,7 @@ class Oyuncak:
         bant,halka=SA.bant(Bh,mats['bant'],_halka_r); parca.append(bant)
         r_,g_,b_=(int(TIP['sacRenk'][i:i+2],16)/255 for i in (1,3,5)); lin=lambda x: x/12.92 if x<=.04045 else ((x+.055)/1.055)**2.4
         mats['sac'].node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value=(lin(r_),lin(g_),lin(b_),1); mats['sac'].diffuse_color=(lin(r_),lin(g_),lin(b_),1)
+        SA.HACIM=E('BS_OY_SACHACIM',TIP['hacim'])   # oyuncak oranı: iri başta ince kabuk kask gibi duruyordu (sac_ayk.HACIM_W)
         s.saclar,s.sac_bant=SA.saclar(Bh,mats['sac'],halka); parca+=list(s.saclar.values())
         # bileklik: sağ ön kolun bileğe yakın kesiti
         ar,aw=J['lowerarm01.R____head'],J['wrist.R____head']; d=(aw-ar); dn=d.normalized(); c0=aw-dn*.045
@@ -609,6 +744,24 @@ class Oyuncak:
         bil=_halka_r('oy_bilek',cc,dn,[v.co.copy() for v in me.vertices if (v.co-c0).length<.08],.042,.006,mats['bilek'],'bilek',n=20,pay=.0015); parca.append(bil)
         yaka=[v.co.copy() for v in me.vertices if any(K.an[k].z-.01<v.co.z<K.an[k].z+.10 and (Vector((v.co.x,v.co.y))-Vector((K.an[k].x,K.an[k].y))).length<.075 for k in 'rl')]
         s.ayakkabilar,alt=SA.ayakkabilar(aykco,J,K.an,yaka,_mat); parca+=list(s.ayakkabilar.values())
+        # --- oyuncak oranı (2026-10-27): parçalar gerçek oranlı gövdede kuruldu; şimdi hepsi aynı kemik dönüşümüyle bükülür.
+        #     Baş pivotu çene hizasında, baş ortasında: baş yukarı/öne/yana büyür, çene göğse inmez (boyun tabanından
+        #     büyütmede 1,75× çene köprücüğün altına iniyordu).
+        hv=[P[i] for i in range(len(P)) if UW[i].get('head',0)>.9]
+        ey=J['eye.R____head']
+        cene=min(p.z for p in hv if p.y>ey.y-.03 and abs(p.x)<.02)
+        piv=Vector((0,(min(p.y for p in hv)+max(p.y for p in hv))/2,cene))
+        Dn=oran_donusumleri(J,piv,TIP)
+        oran_uygula(Dn,parca,J,ek_ayk=(E('BS_OY_AYKEN','1.14'),E('BS_OY_AYKBOY','.94'),E('BS_OY_AYKYUK','1.18')))   # tıknaz: geniş, kısa burun, yüksek taban/saya
+        alt_y=min((o.matrix_world@v.co).z for o in s.ayakkabilar.values() for v in o.data.vertices)
+        dzt=alt-alt_y   # taban altı eski yerine (ball kemiği ve PlayerView.Zemin sözleşmesi tabandan ölçülür)
+        for o in parca: o.matrix_world=Matrix.Translation((0,0,dzt))@o.matrix_world
+        for k_ in J: J[k_]=J[k_]+Vector((0,0,dzt))
+        ten_tepe=max((govde.matrix_world@v.co).z for v in govde.data.vertices)
+        s.olc_on=TIP['boy']/(ten_tepe-alt)   # son ölçek: ten tepesi − taban altı = tipin boyu (saç hariç: saç seçimi ölçeği değiştirmez)
+        gw=[govde.matrix_world@v.co for v in govde.data.vertices]; eyw=J['eye.R____head']
+        bas_boy=ten_tepe-min(q.z for q in gw if q.z>J['neck01____head'].z and abs(q.x)<.02 and q.y>eyw.y-.03)   # çene → tepe
+        print('oyuncak oran: boy (tasarım m)',round(ten_tepe-alt,3),'baş',round(bas_boy,3),'baş boyu',round((ten_tepe-alt)/bas_boy,2),'ölçek',round(s.olc_on,4))
         s.taban_alt=alt
         # --- iskelet (UE adları, MakeHuman eklemlerinde)
         arm=bpy.data.armatures.new('oy_isk'); ao=bpy.data.objects.new('oy_isk',arm); bpy.context.scene.collection.objects.link(ao)
@@ -637,7 +790,7 @@ class Oyuncak:
             tb=sum((jh(f'toe{t}-1.{m}') for t in range(1,6)),Vector())/5
             # ball kemiğinin başı taban altından 3,66 cm (gerçek) yukarıda: Unity PlayerView.Zemin en alçak ayak kemiğini
             # zeminin 3,5 cm üstüne koyar (1,75 ölçekte 2,0 birim = 3,66 cm gerçek); boşta düz basan taban böylece zemine oturur
-            bh=Vector((tb.x,tb.y,alt+.035/1.75/((.49)/((jh(f'lowerleg01.{m}')-jh(f'upperleg01.{m}')).length+(jh(f'foot.{m}')-jh(f'lowerleg01.{m}')).length))))
+            bh=Vector((tb.x,tb.y,alt+.035/1.75/s.olc_on))
             kemik(f'foot_{k}',jh(f'foot.{m}'),bh,f'calf_{k}')
             tt=sum((jt(f'toe{t}-1.{m}') for t in range(1,6)),Vector())/5
             kemik(f'ball_{k}',bh,Vector((tt.x,tt.y+.02,bh.z)),f'foot_{k}')
@@ -691,9 +844,10 @@ class Oyuncak:
             bpy.ops.object.mode_set(mode='OBJECT')
         ag=[v for v in me.vertices if not any(g.weight>1e-4 for g in v.groups)]
         print('oyuncak: ağırlıksız köşe',len(ag),'/',len(me.vertices))
-        # --- ölçek: bacak 0,49 (insan.Oyuncu/aday/sade ile aynı)
-        bn=ao.data.bones; bacak=(bn['calf_r'].head_local-bn['thigh_r'].head_local).length+(bn['foot_r'].head_local-bn['calf_r'].head_local).length
-        olc=E('BS_OY_OLC',.49*TIP['boy']/bacak); s.olc=olc
+        # --- ölçek: tipin boyu (2026-10-27; eskiden bacak 0,49 × boy: oyuncak oranında bacak kısa, boy bacaktan okunmaz).
+        #     Pozlar insan.Iskelet.hedef'te yine bacak oranıyla ölçeklenir (kalça yüksekliği bacağa uyar).
+        bn=ao.data.bones
+        olc=E('BS_OY_OLC',s.olc_on); s.olc=olc
         D=Matrix.Scale(olc,4)
         for o in [ao]+parca: o.matrix_world=D@o.matrix_world
         bpy.context.view_layer.update()
@@ -785,7 +939,7 @@ class Oyuncak:
         gor=set(map(id,s.gorunen()))
         for o in son:   # seçili olmayan çeşit render'da ve görünümde gizli (FBX'e yine girer: unity_fbx açar)
             if id(o) not in gor: o.hide_render=True; o.hide_set(True)
-        s.meta_ek={'tip':{'id':TIP_ID,'boy':TIP['boy'],'sac':TIP['sac'],'ayakkabi':'klasik','sacRenk':TIP['sacRenk']},
+        s.meta_ek={'tip':{'id':TIP_ID,'boy':round(TIP['boy']/TIPLER['atlet']['boy'],3),'sac':TIP['sac'],'ayakkabi':'klasik','sacRenk':TIP['sacRenk']},
                    'sac':[{'id':k,'bant':bool(s.sac_bant[k])} for k in s.saclar],'ayakkabi':[{'id':k} for k in s.ayakkabilar]}
         tri=sum(len(p.vertices)-2 for o in son if o.get('tag') not in ('sac','ayakkabi') for p in o.data.polygons)
         print('oyuncak: parçalar',sorted((o.name,o['tag'],sum(len(p.vertices)-2 for p in o.data.polygons)) for o in son),'üçgen',tri,'ölçek',round(olc,4),
@@ -796,11 +950,16 @@ class Oyuncak:
         h_ank=bn['foot_r'].head_local.z-s.taban_z
         dz=E('BS_OY_DZ',h_ank-.09*k_+.004)
         s.M=M; s.I=OyIskelet(ao,avuc,dz); s.ao=ao; s.R=R_UE; s.gecici=[]; s.boy=1.0; s.stil={}
+        hg=ana.vertex_groups['head'].index
+        hvs=[v.co.copy() for v in ana.data.vertices if any(g.group==hg and g.weight>.6 for g in v.groups)]
+        hc_=sum(hvs,Vector())/len(hvs); s.I.bas_kur(hc_,sorted((p_-hc_).length for p_ in hvs)[int(.8*len(hvs))])
         # raket örnek noktaları (yerel çerçevede bir kez): çerçeve, şaft, sap; teller çerçevenin içinde kalır
         # raket ölçeği (2026-10-26): s=1,0 raketi 0,675 birim = oyunda 1,18 m yapıyordu (1,72 m oyuncunun yanında; serviste ve
         # alçak vuruşta kafa zemine 10-20 cm giriyordu). Gerçekçi oranlı gövdede 0,8 (~94 cm): gerçeğinden (67,5 cm) hâlâ iri,
         # yüksek kameradan okunur. unity_fbx.py OY.raket_s'yi okur; diğer modeller 1,0.
-        s.raket_s=E('BS_OY_RAKET','.8')
+        # Oyuncak oranında (2026-10-27) omuz alçak, kol kısa: tipin 'raket' değeri (0,97–1,0) temas yayını eski yüksekliğe
+        # yaklaştırır; kalan fark Unity uzanma katmanında (PlayerView.Uzan). Ölçüm: unity_fbx <ad>_kafa.json.
+        s.raket_s=E('BS_OY_RAKET',TIP['raket'])
         # tutuş (tutus.py): sap yarıçapı oyuncakta ×0,78 (oyunda 3,8 → 2,9 cm çap; 1,4× büyük raketin sapı elin yanında kalın
         # duruyor, parmaklar sapı sarmıyordu; gerçek sap+grip ~2,7 cm). Yüksek kameradan fark yok, yakın planda tutuş okunur.
         grk=E('BS_OY_SAP','.78'); insan.RAKET_LOD['gr']=grk

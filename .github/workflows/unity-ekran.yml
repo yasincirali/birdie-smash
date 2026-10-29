@@ -71,7 +71,9 @@ jobs:
           mkdir -p "$RUNNER_TEMP/ekran"
           export LIBGL_ALWAYS_SOFTWARE=1
           sudo apt-get install -y -qq gdb > /dev/null || true
-          timeout 1500 xvfb-run -a -s "-screen 0 600x1300x24" "$EXE" -screen-width 390 -screen-height 845 -screen-fullscreen 0 \
+          # 2026-10-27 (duyarlı yerleşim): ekran 800 genişlik; EkranTuru.DuyarliTuru 768×1024 (iPad) pencere açar, 600 dar kalıyordu.
+          # 2026-10-27 ikinci tur: altı dal yeni kare ekledi (r42 832 sn); sınır 1500 → 2400 sn, iş sınırı 60 dk.
+          timeout 2400 xvfb-run -a -s "-screen 0 800x1300x24" "$EXE" -screen-width 390 -screen-height 845 -screen-fullscreen 0 \
             -force-glcore -logFile "$RUNNER_TEMP/ekran/player.log" -bsekran "$RUNNER_TEMP/ekran" &
           # Takılma tanısı: 150 sn sonra hâlâ ilk karelerdeyse yığın dökümü (gdb, tüm iş parçacıkları).
           sleep 150

@@ -269,6 +269,15 @@ class Aday:
         s.kalici=mesh; s.M=M; s.I=AdayIskelet(ao,R); s.gecici=[]; s.boy=.49/.49; s.R=R; s.stil={}
         s.temas=Temas(s) if os.environ.get('BS_RB_TEMAS','1' if s.kit else '0')=='1' else None
         s.doku_gomme=not s.kit   # kit: Unity dokuları Resources'tan okur (PlayerView.DokuMalzeme); FBX'e gömülmez (boyut)
+        s.olc=olc
+    def aksesuar(s):
+        """2026-10-27 (yasin: Gerçekçi'de beden sabit, aksesuarlar değişsin): klipler pişirildikten SONRA çağrılır
+        (unity_fbx.py, dışa aktarmadan önce): şort ve ayakkabı ten ağından ayrılır, beş ayakkabı modeli, başa/ön kola
+        oturan bant ve bileklik (rocketbox_aksesuar.py). Pozlama sırasında yapılmaz: Temas katmanı gövdenin köşe
+        numaralarını kurulumda tutar, ağ bölünürse kayar. Yalnız kit modelinde (Sports_Male_02); eski 04 aynen."""
+        if not s.kit: return []
+        import rocketbox_aksesuar
+        ten=next(o for o in s.kalici if str(o.get('tag'))=='ten'); return rocketbox_aksesuar.uygula(s.ao,ten,s.olc)
     def parmak(s):
         pb=s.ao.pose.bones
         if 'Bip01 R Finger1' in pb:   # parmaklar: raket elinde sapı sarar, boştaki el yarı açık (iskeletin yerel X'i bükme ekseni)

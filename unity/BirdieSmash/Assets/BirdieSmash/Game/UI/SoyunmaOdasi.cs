@@ -182,7 +182,7 @@ namespace BirdieSmash.Game
             var bol = Satir("seviye-bolme"); bol.pickingMode = PickingMode.Ignore; kart.Add(bol);
             for (int i = 0; i < 10; i++) { var b = new VisualElement(); b.AddToClassList("bolme"); b.AddToClassList("bolme--kucuk"); if (i < sv) b.AddToClassList("bolme--dolu"); b.pickingMode = PickingMode.Ignore; bol.Add(b); }
             var alt = Satir("rakip-satir"); alt.pickingMode = PickingMode.Ignore; kart.Add(alt); alt.Add(Yazi(L.T("Sv {0}/10", sv), 12, "soluk"));
-            if (hazir) { var h = Ikon(Ikonlar.Yukari, 12, LIMON); h.style.marginLeft = 6; alt.Add(h); var hy = Yazi(L.T("Hazır"), 12, "durum-gecti"); hy.style.marginLeft = 2; alt.Add(hy); }
+            if (hazir) { var h = Ikon(Ikonlar.Yukari, 12, TURUNCU); h.style.marginLeft = 6; alt.Add(h); var hy = Yazi(L.T("Hazır"), 12, "durum-gecti"); hy.style.marginLeft = 2; alt.Add(hy); }
             kart.AddManipulator(new Clickable(() => { Tik(); YuvaAc(Y.k); }));
             Erisim.Etiket(kart, L.T(Y.ad) + ", " + L.T(m.ad) + ", " + L.T("Sv {0}/10", sv) + (hazir ? ", " + L.T("yükseltme ya da yeni model hazır") : ""), "dugme");
             return kart;
@@ -202,7 +202,7 @@ namespace BirdieSmash.Game
                 var dg = Yazi(v[i].ToString(), 12, "stat-deger"); r.Add(dg);
                 int fark = karsi != null ? v[i] - karsi[i] : 0; string yon = "";
                 var isk = new VisualElement(); isk.AddToClassList("stat-isaret"); isk.pickingMode = PickingMode.Ignore; r.Add(isk);
-                if (fark != 0) { isk.Add(Ikon(fark > 0 ? Ikonlar.Yukari : Ikonlar.Asagi, 12, fark > 0 ? LIMON : MERCAN)); yon = ", " + L.T(fark > 0 ? "artı {0}" : "eksi {0}", Mathf.Abs(fark)); }
+                if (fark != 0) { isk.Add(Ikon(fark > 0 ? Ikonlar.Yukari : Ikonlar.Asagi, 12, fark > 0 ? TURUNCU : MERCAN)); yon = ", " + L.T(fark > 0 ? "artı {0}" : "eksi {0}", Mathf.Abs(fark)); }
                 Erisim.Etiket(r, L.T(AD[i]) + " " + v[i] + yon, "metin");
                 if (canli) { canliDolgu.Add(dl); canliDeger.Add(dg); }
             }
@@ -233,7 +233,7 @@ namespace BirdieSmash.Game
             var kart = Kart("model-kart"); if (du == ModelDurum.Secili) kart.AddToClassList("secili"); if (du == ModelDurum.Kilitli) kart.AddToClassList("kilitli"); c.Add(kart);
             var bas = Satir("arali"); kart.Add(bas); bas.Add(Yazi(L.T(m.ad), 16, "kalin"));
             var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; bas.Add(dr); string durum;
-            if (du == ModelDurum.Secili) { dr.Add(Ikon(Ikonlar.Tik, 14, LIMON)); durum = L.T("Seçili"); }
+            if (du == ModelDurum.Secili) { dr.Add(Ikon(Ikonlar.Tik, 14, TURUNCU)); durum = L.T("Seçili"); }
             else if (du == ModelDurum.Kilitli) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = L.T("Sv {0} gerekli", m.sv); }
             else if (du == ModelDurum.Alinir) durum = m.fiyat + " " + L.T("Tüy"); else durum = L.T("Senin");
             var dy = Yazi(durum, 12, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
@@ -296,8 +296,10 @@ namespace BirdieSmash.Game
                 var yes = new VisualElement(); yes.AddToClassList("onizle-yesil"); yes.style.width = Length.Percent(W_(son[a])); iz.Add(yes);
                 var gri = new VisualElement(); gri.AddToClassList("onizle-gri"); iz.Add(gri);
                 float hedef = W_(su[a]);
-                if (kay && yukOnce.ContainsKey(a)) { gri.style.width = Length.Percent(W_(yukOnce[a])); gri.AddToClassList("onizle-kayar"); gri.schedule.Execute(() => gri.style.width = Length.Percent(hedef)).StartingIn(33); }
-                else gri.style.width = Length.Percent(hedef);
+                // 2026-10-27 performans turu 2: kayma genişlik geçişiydi (0,5 sn boyunca her karede Yoga yerleşimi); şimdi genişlik
+                // baştan hedefte, eski değerden yatay ölçekle (sol kenardan) 1'e geçer: yalnız dönüşüm, yerleşim değişmez.
+                gri.style.width = Length.Percent(hedef);
+                if (kay && yukOnce.ContainsKey(a) && hedef > 0) { float s0 = Mathf.Clamp(W_(yukOnce[a]) / hedef, 0, 4); gri.style.scale = new Scale(new Vector3(s0, 1, 1)); gri.AddToClassList("onizle-kayar"); gri.schedule.Execute(() => gri.style.scale = new Scale(Vector3.one)).StartingIn(33); }
                 r.Add(Yazi("+" + Mathf.Max(1, Mathf.RoundToInt(d * 100)) + "%", 12, "onizle-yuzde"));
                 Erisim.Etiket(r, L.T(Gear.ETKI_AD[a]) + " +" + Mathf.Max(1, Mathf.RoundToInt(d * 100)) + "%", "metin");
             }
@@ -355,11 +357,11 @@ namespace BirdieSmash.Game
                 var kart = Kart("tarz-kart"); if (secili) kart.AddToClassList("secili"); if (!acik) kart.AddToClassList("kilitli"); c.Add(kart);
                 var bas = Satir("arali"); bas.pickingMode = PickingMode.Ignore; kart.Add(bas); bas.Add(Yazi(L.T(t.ad), 17, "kalin"));
                 var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; bas.Add(dr); string durum;
-                if (secili) { dr.Add(Ikon(Ikonlar.Tik, 14, LIMON)); durum = L.T("Seçili"); }
+                if (secili) { dr.Add(Ikon(Ikonlar.Tik, 14, TURUNCU)); durum = L.T("Seçili"); }
                 else if (!acik) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = L.T("Sv {0} gerekli", t.sv); }
                 else durum = L.T("Seç");
                 var dy = Yazi(durum, 12, secili ? "durum-gecti" : acik ? "durum-simdi" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
-                if (!string.IsNullOrEmpty(t.arti)) TarzSatir(kart, Ikonlar.Yukari, LIMON, L.T("Artı") + ": " + L.T(t.arti));
+                if (!string.IsNullOrEmpty(t.arti)) TarzSatir(kart, Ikonlar.Yukari, TURUNCU, L.T("Artı") + ": " + L.T(t.arti));
                 if (!string.IsNullOrEmpty(t.eksi)) TarzSatir(kart, Ikonlar.Asagi, MERCAN, L.T("Eksi") + ": " + L.T(t.eksi));
                 if (acik && !secili) kart.AddManipulator(new Clickable(() =>
                 {
@@ -385,7 +387,8 @@ namespace BirdieSmash.Game
                 OrnekSira(c, L.T("Forma rengi"), fr, gr.renk, id => { gr.renk = id; Ayar.GearHesap(); Ayar.Kaydet(); });
                 c.Add(Yazi(L.T("Forma rengi yalnız görünüştür; işlevi kumaş verir (Ekipman › Forma kumaşı)."), 12, "soluk"));
                 // Ten, saç ve ayakkabı 2026-10-26'dan beri Karakter'de (kişiye ait olanlar bir yerde); buradan bir dokunuşla gidilir.
-                c.Add(Dugme(L.T("Tip, saç, ayakkabı ve ten · Karakter"), () => { Tik(); SoyunmaSegment(SEG_KARAKTER); }, null, L.T("Yakın planda dene, Tüy ile al")));
+                // 2026-10-27: Gerçekçi/Sade'de Karakter'in sayfaları ayakkabı ve kıyafet (beden tek): düğme ne bulacağını söylesin.
+                c.Add(Dugme(L.T(Ayar.VaryantGorunur ? "Tip, saç, ayakkabı ve ten · Karakter" : "Ayakkabı, şort ve aksesuar · Karakter"), () => { Tik(); SoyunmaSegment(SEG_KARAKTER); }, null, L.T("Yakın planda dene, Tüy ile al")));
             }
             // raket: kaplama (çerçeve) + grip/kordaj/desen (yalnız süs, oyuna etkisi yok)
             var kl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("kaplama")) kl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });

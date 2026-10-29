@@ -4,6 +4,9 @@
 // Cork/Lines) ayrı bir kamerayla RenderTexture'a çizilir (sahneden 500 m uzakta, kortu görmez). Logo pozu: mantar sağ
 // altta (44°), etek sol üstte; eksen dönüşü 2,4 rad/sn (HTML TS_HIZ: daha hızlısı göze geri dönüyor gibi görünüyordu),
 // üstüne düzlem içi ±9° salınım (1,2 sn). Hareketi azalt: dönme ve salınım yok, tek poz. Kamera yalnız görünürken açık.
+// 2026-10-27 perde v2 ve açılış anı (Hud): aynı top uçarken de kullanılır. Hud her kare Poz(yön, dönüş) yazar: ekrandaki
+// yön (mantar o yöne bakar; uçan top mantarı önde uçar) ve eksen dönüşü (gerçek tüy top uçarken kendi ekseninde döner).
+// Poz yazılmayan karede bekleme dönüşüne döner. Hareketi azaltta dönüş yine yok.
 using UnityEngine;
 
 namespace BirdieSmash.Game
@@ -12,6 +15,8 @@ namespace BirdieSmash.Game
     {
         static readonly Vector3 YER = new Vector3(-500, 0, 0);
         public RenderTexture rt; Camera kam; Transform eksen, top; float faz, t; bool acik;
+        float pozAci, pozDonus; int pozKare = -10;
+        public void Poz(float aciDerece, float donusRadSn) { pozAci = aciDerece; pozDonus = donusRadSn; pozKare = Time.frameCount; }
 
         public static Yukleyici Build(Transform root)
         {
@@ -43,8 +48,9 @@ namespace BirdieSmash.Game
         void Update()
         {
             if (!acik) return; float dt = Mathf.Min(.05f, Time.unscaledDeltaTime); bool rm = Ayar.reduce; t += dt;
-            if (!rm) faz += dt * 2.4f;
-            float aci = -44 + (rm ? 0 : 9 * Mathf.Sin(t * Mathf.PI / 1.2f));   // ekranda mantar sağ alta bakar
+            bool poz = Time.frameCount - pozKare <= 1;   // Hud.Update bu Update'ten önce ya da sonra koşabilir: bir kare tolerans
+            if (!rm) faz += dt * (poz ? pozDonus : 2.4f);
+            float aci = poz ? pozAci : -44 + (rm ? 0 : 9 * Mathf.Sin(t * Mathf.PI / 1.2f));   // ekranda mantar sağ alta bakar
             var yon = new Vector3(Mathf.Cos(aci * Mathf.Deg2Rad), Mathf.Sin(aci * Mathf.Deg2Rad), -.35f);   // biraz kameraya dönük: 3B okunsun
             eksen.rotation = Quaternion.LookRotation(yon.normalized, Vector3.forward * -1);
             top.localRotation = Quaternion.AngleAxis(faz * Mathf.Rad2Deg, Vector3.forward);

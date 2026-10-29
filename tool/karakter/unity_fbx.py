@@ -121,7 +121,7 @@ def ayak_kemikleri(k):
     return out or [b for b in pb if 'foot' in b.name.lower() and (' ' + k.upper() + ' ') in b.name]
 AYAK = {k: ayak_kemikleri(k) for k in 'rl'}
 adim_iz = {}
-bones = {}; prevq = {}; pprev = {}; cur_frame = [1]; rq = [None]; rhata = [0.]
+bones = {}; prevq = {}; pprev = {}; cur_frame = [1]; rq = [None]; rhata = [0.]; kafa_iz = {}
 for f, pose in timeline:
     cur_frame[0] = f
     # klip bilgisi (2026-10-26, tutus.py): raket tutuşu klibe göre seçilir (forehand/backhand/file), parmak gerilimi
@@ -134,6 +134,9 @@ for f, pose in timeline:
         z = {k: min((mw_ @ b.head).z for b in AYAK[k]) for k in 'rl'}
         xy = {k: (mw_ @ AYAK[k][0].head).xy.copy() for k in 'rl'}
         adim_iz.setdefault(fklip[f], []).append((z, xy))
+    hk = getattr(CLIPS[fklip[f]], 'hit', None)
+    if hk is not None and fkare[f] == hk and getattr(OY, 'kafa', None) is not None:   # temas karesinde raket kafası (tanı: <ad>_kafa.json)
+        kafa_iz[fklip[f]] = [round(x, 4) for x in Vector(OY.kafa)]
     W = insan.son_raket.copy(); piv.matrix_world = W; bpy.context.view_layer.update()
     rhata[0] = max(rhata[0], (piv.matrix_world.translation - W.translation).length)   # kemiğe göre çözüm dünyayı tutmalı
     loc, q, s_ = piv.matrix_basis.decompose()
@@ -175,6 +178,11 @@ for nm, at in (('bas__isaret', hc), ('goz__isaret', hc + Vector((0, .2, 0)))):
     me = bpy.data.meshes.new(nm); me.from_pydata([(0, 0, 0), (.001, 0, 0), (0, .001, 0)], [], [(0, 1, 2)])
     mk = bpy.data.objects.new(nm, me); sc.collection.objects.link(mk); mk.parent = root; mk.location = at
 
+# Aksesuar parçaları (2026-10-27, Gerçekçi: şort, beş ayakkabı modeli, oturtulmuş bant/bileklik): klipler pişirildikten
+# sonra, deri ağı bölünerek (aday.Aday.aksesuar). Adları zaten "<ad>__<etiket>"; FBX'e ve parts listesine girer.
+if hasattr(OY, 'aksesuar'):
+    ek = OY.aksesuar(); kalici += ek
+    for o in ek: print('aksesuar', o.name, len(o.data.vertices), [m.name for m in o.data.materials])
 if not getattr(OY, 'doku_gomme', True):   # model dokusunu Unity Resources'tan okuyorsa (Rocketbox kit) FBX'e gömme: boyut
     for o in kalici:
         for m in o.data.materials:
@@ -216,4 +224,8 @@ meta.update(getattr(OY, 'meta_ek', {}))   # oyuncak: tip, saç ve ayakkabı list
 print('raket pivot en büyük konum hatası', rhata[0])
 meta['hit'] = ns.get('CLIP_HIT_JS') or {}
 json.dump(meta, open(os.path.join(OUT, AD + '_clips.json'), 'w'), indent=1, ensure_ascii=False)
+# Tanı (2026-10-27, oyuncak oran turu): temas karesinde raket kafası, model biriminde (yaw-yerel, kök kalça altında). Uzanma
+# katmanı (PlayerView.Uzan) klibin kafa yayından temas noktasına öteler; tip/oran değişince bu yay ne kadar kaydı burada
+# ölçülür. Unity okumaz (Resources'a kopyalanmaz).
+json.dump({'kafa': kafa_iz, 'scale': 1.75}, open(os.path.join(OUT, AD + '_kafa.json'), 'w'), indent=1)
 print('FBX', fbx, os.path.getsize(fbx), 'kemik', len(pb), 'parça', len(meta['parts']), 'kare', frame, 'klip', len(meta['clips']))

@@ -19,7 +19,7 @@ namespace BirdieSmash.Core
     public static class Karakter
     {
         static TarzBilgi[] tarzlar; static UnvanBilgi[] unvanlar; static Dictionary<string, GorunumOge[]> gorunum;
-        public static readonly string[] GORUNUM_KAT = { "ten", "sac", "ayakkabi", "kaplama" };
+        public static readonly string[] GORUNUM_KAT = { "ten", "sac", "ayakkabi", "kaplama", "sort" };   // sort: 2026-10-27 şort rengi
         public static TarzBilgi[] Tarzlar { get { Yukle(); return tarzlar; } }
         public static UnvanBilgi[] Unvanlar { get { Yukle(); return unvanlar; } }
         public static GorunumOge[] Gorunum(string kat) { Yukle(); GorunumOge[] a; return gorunum.TryGetValue(kat, out a) ? a : new GorunumOge[0]; }
@@ -92,7 +92,7 @@ namespace BirdieSmash.Core
             foreach (var o in Kozmetik.Acilan(Kozmetik.TIP, sv)) l.Add(new[] { "Tip", o.ad });
             foreach (var o in Kozmetik.Acilan(Kozmetik.SAC, sv)) l.Add(new[] { "Saç modeli", o.ad });
             foreach (var m in Gear.RENK.Values) if (m.sv == sv && !m.kilit) l.Add(new[] { "Forma rengi", m.ad });
-            foreach (var k in GORUNUM_KAT) foreach (var o in Gorunum(k)) if (o.sv == sv) l.Add(new[] { k == "ten" ? "Ten tonu" : k == "sac" ? "Saç rengi" : k == "ayakkabi" ? "Ayakkabı rengi" : "Raket kaplaması", o.ad });
+            foreach (var k in GORUNUM_KAT) foreach (var o in Gorunum(k)) if (o.sv == sv) l.Add(new[] { k == "ten" ? "Ten tonu" : k == "sac" ? "Saç rengi" : k == "ayakkabi" ? "Ayakkabı rengi" : k == "sort" ? "Şort rengi" : "Raket kaplaması", o.ad });
             foreach (var u in Unvanlar) if (u.sv == sv) l.Add(new[] { "Unvan", u.ad });
             return l;
         }

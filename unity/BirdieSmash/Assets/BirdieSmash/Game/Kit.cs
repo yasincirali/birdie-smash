@@ -30,16 +30,19 @@ namespace BirdieSmash.Game
             if (mg == null) return; m.SetTexture("_MetallicGlossMap", mg); m.SetFloat("_GlossMapScale", scale); m.EnableKeyword("_METALLICGLOSSMAP");
         }
         // Ahşap zemin (okul sahası): boyuna tahta şeritleri, şerit başına hafif ton farkı ve ince derz çizgisi.
+        // 2026-10-27 performans turu 2: doku 1×9 tekrarla kortun boyunca yatık açıda görülür; bilinear'da mip sınırı uzak
+        // yarıda yatay bir bant gibi kayıyor, derzler pırpır ediyordu. Trilinear + 4× anizotropi (QualitySettings
+        // anisotropicFiltering Kalite'de "doku başına" açık); kort çizgileri doku değil ağ, onları MSAA yumuşatır.
         public static Texture2D WoodTex(Color baseC)
         {
-            const int W = 64, H = 64; var t = new Texture2D(W, H, TextureFormat.RGBA32, true); t.wrapMode = TextureWrapMode.Repeat; t.filterMode = FilterMode.Bilinear;
+            const int W = 64, H = 64; var t = new Texture2D(W, H, TextureFormat.RGBA32, true); t.wrapMode = TextureWrapMode.Repeat; t.filterMode = FilterMode.Trilinear; t.anisoLevel = 4;
             var px = new Color32[W * H]; var rnd = new System.Random(3); var tone = new float[8]; for (int i = 0; i < 8; i++) tone[i] = .92f + (float)rnd.NextDouble() * .14f;
             for (int y = 0; y < H; y++) for (int x = 0; x < W; x++)
                 {
                     int sh = x / 8; float k = tone[sh] * (1 + .03f * Mathf.Sin(y * .7f + sh * 3)); if (x % 8 == 0) k *= .8f;
                     px[y * W + x] = new Color(baseC.r * k, baseC.g * k, baseC.b * k, 1);
                 }
-            t.SetPixels32(px); t.Apply(true); return t;
+            t.SetPixels32(px); t.Apply(true, true); return t;
         }
 
         // Saydam, iki yüzlü, köşe rengi çarpan (file, iz, gölge): Sprites/Default her yapıda bulunur.

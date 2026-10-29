@@ -73,6 +73,7 @@ namespace BirdieSmash.Game
             shuttle = ShuttleView.Build(transform); shuttle.cam = cam; sfx = Sfx.Build(transform, cg.transform);
             vitrin = Vitrin.Build(transform); afis = Afis.Build(transform); fx = Fx.Build(transform, cam); yukleyici = Yukleyici.Build(transform);
             hud = gameObject.AddComponent<Hud>(); hud.root = this; hud.Acilis();
+            gameObject.AddComponent<KadrajIsaret>().root = this;   // yüksek top: ekran dışı işareti (Core/Kadraj)
             sfx.sakin = () => hud.PerdeKapali || ekran != Ekran.Oyun || paused || match == null || match.between || match.s == null;
             Basarim.Esitle(Ayar.kariyer, Ayar.bestRally); Basarim.Giris(Ayar.kariyer);
             match = new Match(1, new MatchOptions { easy = Ayar.easy, target = Ayar.target, saha = Ayar.saha });   // menü arkasında duran sahne
@@ -207,7 +208,7 @@ namespace BirdieSmash.Game
             if (kisa) StartMatch(false, false, true); else StartMatch(false, false, false);
         }
         // Duraklatılmış maçtan ana menüye çıkınca maç bekler (HTML anaMenu: M korunur, menüde "Maça devam et").
-        public void AnaMenu() { bekleyen = ekran == Ekran.Oyun && paused && match != null && match.ogr == null; ekran = Ekran.Menu; paused = false; Uyanik(false); if (ui != null) ui.MenuyeDon(); sfx.SuAlti(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); AudioListener.pause = false; }
+        public void AnaMenu() { bekleyen = ekran == Ekran.Oyun && paused && match != null && match.ogr == null; ekran = Ekran.Menu; paused = false; KadrajSifirla(); Uyanik(false); if (ui != null) ui.MenuyeDon(); sfx.SuAlti(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); AudioListener.pause = false; }
         public void MacaDon() { if (!bekleyen) return; bekleyen = false; ekran = Ekran.Oyun; paused = true; Devam(); }
         // Duraklatınca tüm ses susar (HTML AC.suspend), devamda kaldığı yerden sürer.
         public void Duraklat() { if (ekran == Ekran.Oyun && !paused) { paused = true; Uyanik(false); input.Reset(); sfx.Ugultu(false, 0); AudioListener.pause = true; } }
@@ -340,63 +341,49 @@ namespace BirdieSmash.Game
         //  - Çözüm yoksa (çok geniş ekran, ör. iPad) son çare eski kaydırma: üst nokta yine skor kutusunun altına alınır.
         // Ölçüm (model + CI r27, 390×845 / 375×667; EkranTuru "kadraj" satırları): Yayın 19,5:9 yükseklik 13,7 m, eğim 47°, açı 44°;
         // uzak çiftler eni r15 187 → 268 px (1,43×), 1,75 m rakip 53 → 71 px (1,34×), file bandı 52 → 63 px, direk eğikliği −9°.
-        public static readonly float[] KAD_D = { 7, 5, 3 };              // KAMERA_SIRA sırasıyla: dipten geri (m)
-        public static readonly float[] KAD_GENIS = { 1, 1.1f, .85f };    // tekler(+15 cm) genişliğinin ekrana oranı: Alçak yakın köşede
+        // Üçüncü yazım (2026-10-27 öğleden sonra, yasin build 41 "Top yükseldiğinde kadrajdan çıkıyor"): çözüm Core/Kadraj'a taşındı
+        // (aynı sayılar, BotMac mono'da ölçebilsin; 390×845 ve SE'de r42 kadraj satırlarıyla birebir), üstüne yüksek top takibi:
+        // kamera topun uçuş yolundan hesaplanan eğimle yukarı bakar, görüş açısı yakın dip çizgiyi smaç çubuğunda tutacak kadar
+        // açılır (Kadraj.Takip/Genis; gerekçe ve ölçüm Kadraj.cs başında). Hareketi azaltta eğim yok, yalnız ekran dışı işareti
+        // (KadrajIsaret). Konum hiç değişmez; eğim ve görüş açısı her karede yalnız buradan yazılır.
+        public static readonly float[] KAD_D = Kadraj.D;                  // KAMERA_SIRA sırasıyla: dipten geri (m)
+        public static readonly float[] KAD_GENIS = Kadraj.GENIS;          // tekler(+15 cm) genişliğinin ekrana oranı: Alçak yakın köşede
                                                                          // ~8 px taşar (oyuncu büyür), Üstten'de yanlarda pay
-        public static readonly float[] KAD_EGIM_AZAMI = { 47, 48, 64 };  // eğim tavanı (derece)
+        public static readonly float[] KAD_EGIM_AZAMI = Kadraj.EGIM_AZAMI; // eğim tavanı (derece)
         float camTv = .6f, camK;   // dikey yarım açının tanjantı ve eksen dışı kayma (NDC; + = görüntü yukarı; düz kamerada 0)
-        float kD, kF, kNU, kNA, kAsp;   // çözüm sırasında: açı parametreleri ve ekran sınırları (NDC)
+        public Kadraj.Kamera kam; public float kadrajEgim, kadrajGenis = 1;   // çözüm ve bu karenin takip eğimi (°) / görüş çarpanı
+        readonly Kadraj.Takip takip = new Kadraj.Takip();
         void FitCamera()
         {
-            var sa = Screen.safeArea;
+            var sa = Guvenli.Alan;   // 2026-10-27: menü ve HUD ile aynı kaynak (ekran turunun çentik taklidi kadrajı da kapsasın)
             if (Screen.width == lastW && Screen.height == lastH && sa == lastSafe) return; lastW = Screen.width; lastH = Screen.height; lastSafe = sa;
             int ki = System.Array.IndexOf(KAMERA_SIRA, Ayar.kamera); if (ki < 0) ki = 0;
-            kD = KAD_D[ki]; kF = KAD_GENIS[ki]; float pAz = KAD_EGIM_AZAMI[ki];
-            float W = Mathf.Max(1, Screen.width), H = Mathf.Max(1, Screen.height), u = Mathf.Min(H / 640f, W / 340f); kAsp = W / H;
-            float ust = (H - sa.yMax) + 46 * u, alt = H - sa.yMin - 36 * u;   // ekran pikseli, yukarıdan: skor kutusunun altı, smaç çubuğunun üstü
-            kNU = 1 - 2 * ust / H; kNA = 1 - 2 * alt / H;
-            // Dış arama: eğim. Payı (yakın nokta alt sınırın üstündeyse +) sıfırlayan eğim; tavanda hâlâ pay varsa tavan.
-            float h, p = pAz, s = Pay(pAz, out h);
-            if (float.IsNaN(s) || s < 0)
-            {
-                float lo = 10, hi = pAz;
-                for (int i = 0; i < 30; i++) { p = (lo + hi) / 2; s = Pay(p, out h); if (float.IsNaN(s) || s > 0) lo = p; else hi = p; }
-                p = hi; s = Pay(p, out h);
-            }
-            float tvW, tU, tY;
-            if (float.IsNaN(h)) { float en = -1e9f; for (float hh = 2; hh <= 45; hh += .5f) { float g = UstFark(hh, p); if (g > en) { en = g; h = hh; } } }
-            Olc(h, p, out tvW, out tU, out tY);
-            camTv = tvW; camK = float.IsNaN(s) ? kNU - tU / tvW : 0;   // son çare dışında kaydırma yok
-            camBase = new Vector3(0, h, -Court.L / 2 - kD); camRot = Quaternion.Euler(p, 0, 0); cam.transform.SetPositionAndRotation(camBase, camRot);
-            Projeksiyon(1);
+            kam = Kadraj.Coz(Screen.width, Screen.height, sa.x, sa.y, sa.width, sa.height, ki);
+            camTv = kam.tv; camK = kam.k; takip.Egim(kam, null, 0, true);   // açı/ekran değişince takip sıfırdan
+            camBase = new Vector3(0, kam.h, kam.Z); camRot = Quaternion.Euler(kam.p, 0, 0); cam.transform.SetPositionAndRotation(camBase, camRot);
+            kadrajEgim = 0; kadrajGenis = 1; Projeksiyon(1);
         }
-        // Konum (0, h, dipten kD geri), eğim p için: tekler genişliğinin gerektirdiği yarım açı tanjantı (tvW) ve üst/alt noktaların
-        // dikey tanjantları. Üst nokta: seyirci başları ya da rakibin sıçrama tepesi; alt: yakın dip çizginin 0,8 m gerisi.
-        void Olc(float h, float p, out float tvW, out float tU, out float tY)
+        // Takip: maçta (sonuç ekranında da, top yere inerken) uçuşun eğimi; menüde ve hareketi azaltta 0. Saat Match.clock:
+        // duraklatınca kamera da durur, ağır çekimde yavaşlar.
+        void KadrajTakip()
         {
-            var pos = new Vector3(0, h, -Court.L / 2 - kD); var inv = Quaternion.Inverse(Quaternion.Euler(p, 0, 0)); float th = 0;
-            foreach (float x in new[] { Court.SL - .15f, Court.SR + .15f }) foreach (float y in new[] { 0f, Court.L }) { var l = inv * (Kit.W(x, y, 0) - pos); th = Mathf.Max(th, Mathf.Abs(l.x / Mathf.Max(.01f, l.z))); }
-            tvW = th / kAsp / kF;
-            tU = Mathf.Max(Tan(inv, pos, Kit.W(Court.MID, -2.3f, 1.8f)), Tan(inv, pos, Kit.W(Court.MID, .4f, 2.6f)));
-            tY = Tan(inv, pos, Kit.W(Court.MID, Court.L + .8f, 0));
+            var M = match; bool kapali = Ayar.reduce || ekran == Ekran.Menu || M == null;
+            kadrajEgim = takip.Egim(kam, kapali ? null : M.s, M != null ? M.clock : 0, kapali);
+            kadrajGenis = Kadraj.Genis(kam, kadrajEgim); camRot = Quaternion.Euler(kam.p - kadrajEgim, 0, 0);
         }
-        float UstFark(float h, float p) { float tvW, tU, tY; Olc(h, p, out tvW, out tU, out tY); return tU / tvW - kNU; }   // + = üst nokta sınırın üstünde
-        // Eğim p'de üst noktayı tam sınıra oturtan en yüksek konum (yükseldikçe kort küçülür, fark azalır; tepeden sonra tekdüze),
-        // sonra yakın noktanın alt sınıra payı (NDC). Üst nokta hiçbir yükseklikte sınıra ulaşmıyorsa NaN: eğim artmalı.
-        float Pay(float p, out float h)
+        // Menüye dönüşte kadraj hemen düz (tur 2 inceleme): Oyna'nın bulanık salon fonu (UiKok.SalonCek) menünün ilk karesinde ana
+        // kameradan çekiliyor; UiKok bu Update'ten önce koşarsa duraklatmada (top havadayken) ya da maç sonunda kalan eğim ve
+        // görüş açısı fona giriyordu ve perde kalkmadan fon yeniden çekilmiyordu.
+        void KadrajSifirla()
         {
-            h = float.NaN; float a = 45;
-            while (a > 2 && UstFark(a, p) < 0) a -= .5f;
-            if (a <= 2) return float.NaN;
-            float b = a + .5f; for (int i = 0; i < 24; i++) { float m = (a + b) / 2; if (UstFark(m, p) >= 0) a = m; else b = m; }
-            h = a; float tvW, tU, tY; Olc(h, p, out tvW, out tU, out tY); return tY / tvW - kNA;
+            takip.Egim(kam, null, 0, true); kadrajEgim = 0; kadrajGenis = 1; camRot = Quaternion.Euler(kam.p, 0, 0);
+            if (cam != null) { cam.transform.SetPositionAndRotation(camBase, camRot); Projeksiyon(1); }
         }
-        static float Tan(Quaternion inv, Vector3 pos, Vector3 p) { var l = inv * (p - pos); return l.y / Mathf.Max(.01f, l.z); }
         // Smaç "punch" yakınlaşması ekranın ortasına göre (eksen dışı kaymayla birlikte ölçeklenir). camK = 0'da bu matris Unity'nin
         // kendi fieldOfView izdüşümüyle aynıdır; özel matris yalnız son çare kaydırma ve punch için tutuluyor.
         void Projeksiyon(float z)
         {
-            var m = Matrix4x4.Perspective(2 * Mathf.Atan(camTv) * Mathf.Rad2Deg, (float)Mathf.Max(1, Screen.width) / Mathf.Max(1, Screen.height), cam.nearClipPlane, cam.farClipPlane);
+            var m = Matrix4x4.Perspective(2 * Mathf.Atan(camTv * kadrajGenis) * Mathf.Rad2Deg, (float)Mathf.Max(1, Screen.width) / Mathf.Max(1, Screen.height), cam.nearClipPlane, cam.farClipPlane);
             m.m00 *= z; m.m11 *= z; m.m12 = -camK * z; cam.projectionMatrix = m;
         }
 
@@ -554,7 +541,7 @@ namespace BirdieSmash.Game
             Hakemler();
             shake *= Mathf.Pow(.002f, dt); punch = 1 + (punch - 1) * Mathf.Pow(.0005f, dt); if (punch < 1) punch = 1;
             var j = shake > .01f ? (Vector3)(Random.insideUnitCircle * shake * .012f) : Vector3.zero;
-            cam.transform.SetPositionAndRotation(camBase + camRot * j, camRot); Projeksiyon(punch);
+            KadrajTakip(); cam.transform.SetPositionAndRotation(camBase + camRot * j, camRot); Projeksiyon(punch);
         }
 
         // Baş hakem sayı bitince skoru girer (başı eğilir); servis el değişince yeni servisçinin tarafına döner. Servis hakemi
@@ -615,12 +602,12 @@ namespace BirdieSmash.Game
                         bool smac = mine && e.type == "smash";
                         sfx.Point(mine, smac, (int)e.k); hud.Pop(mine ? 0 : 1); Yerel.Hap(mine ? "win" : "lose");
                         // düşüş yerinde toz ve kazananın renginde dalga; benim sayımda üst bantta üç renkli kıvılcım (HTML point)
-                        if (e.x != 0 || e.y != 0) { var yer = Kit.W(e.x, e.y, .05f); fx.Burst(yer, new Color(.9f, 1, .94f, .7f), 14, 140, "dot"); fx.Dalga(yer, mine ? limon : Kit.Hex("#ff7a6b"), 70); }
+                        if (e.x != 0 || e.y != 0) { var yer = Kit.W(e.x, e.y, .05f); fx.Burst(yer, new Color(.9f, 1, .94f, .7f), 14, 140, "dot"); fx.Dalga(yer, mine ? limon : Kit.Hex(Hud.RAKIP_HUD), 70); }
                         if (mine) hud.SayiKivilcim();
                         if (mine && e.big && M.ogr == null) Basarim.Ver(Basarim.SICRAMA);   // sıçrayarak smaçla alınan sayı
                         if (smac) { if (!rm) shake = Mathf.Max(shake, 10); hud.Flash(.35f, limon); }
                         if (mine && (e.k >= 8 || e.type == "smash")) hud.Kamera();
-                        hud.Say(L.Cumle(e.text), Kit.W(Court.MID, mine ? Court.NET - 2 : Court.NET + 2, 1.5f), mine ? limon : Kit.Hex("#ff7a6b"), mine ? 1.6f : 1.4f, true);
+                        hud.Say(L.Cumle(e.text), Kit.W(Court.MID, mine ? Court.NET - 2 : Court.NET + 2, 1.5f), mine ? limon : Kit.Hex(Hud.RAKIP_HUD), mine ? 1.6f : 1.4f, true);
                         if (M.ogr != null && M.s != null && M.s.ogrHedef != null) { }
                         break;
                     }

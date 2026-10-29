@@ -62,7 +62,7 @@ namespace BirdieSmash.Game
         // GSE = yalnız ekipman (5 çubuk ve yükseltme önizlemesi bunu anlatır), GS = ekipman + oyun tarzı (maç fiziği bunu
         // okur). Tarz ekipman kartına girmez: güç ekipmandan, tarz karakterden (tasarım §5.1).
         public static Gear gear; public static GearStats GS = GearStats.Notr, GSE = GearStats.Notr;
-        public static readonly Dictionary<string, string> GORUNUM = new Dictionary<string, string> { { "ten", "dogal" }, { "sac", "dogal" }, { "ayakkabi", "dogal" }, { "kaplama", "model" } };
+        public static readonly Dictionary<string, string> GORUNUM = new Dictionary<string, string> { { "ten", "dogal" }, { "sac", "dogal" }, { "ayakkabi", "dogal" }, { "kaplama", "model" }, { "sort", "dogal" } };   // sort: 2026-10-27 şort rengi (Gerçekçi, Sade)
         public static readonly Dictionary<string, string> KOZ = new Dictionary<string, string> { { Kozmetik.TIP, "atlet" }, { Kozmetik.SAC, "kisa" } };
         public static readonly Dictionary<string, string> RGOR = new Dictionary<string, string> { { "grip", "siyah" }, { "tel", "beyaz" }, { "tel2", "kirmizi" }, { "desen", "tek" } };
         public static string FORMA { get { return GS.forma; } }
@@ -83,7 +83,10 @@ namespace BirdieSmash.Game
             else { int t = EskiInt("tuytop_target", 5); target = t == 11 || t == 21 ? t : 5; }   // bilinmeyen (eski len7 dahil) 5 olur
             easy = EskiInt("tuytop_easy", 1) == 1;
             saha = Str("tuytop_saha", "salon"); if (!CourtView.SAHA.ContainsKey(saha)) saha = "salon";
-            model = Str("tuytop_model", "oyuncak"); if (model == "sportif" || model == "aday") model = "rocketbox"; if (model != "oyuncak" && model != "rocketbox") model = "oyuncak";
+            // 2026-10-27 (yasin build 41: "3B model kaybolmuş, seçmeme rağmen görmedim"): build 40 notu Ayarlar'da "Sade" vaat
+            // ediyordu, Resources'ta sade.fbx vardı (ekran turu her turda maçını çekiyor) ama seçenek yoktu ve "sade" kaydı burada
+            // oyuncak'a dönüyordu. Artık geçerli model (MODELLER); FBX'i olmayan build'de yine oyuncak'a düşer.
+            model = Str("tuytop_model", "oyuncak"); if (model == "sportif" || model == "aday") model = "rocketbox"; if (!ModelVar(model)) model = "oyuncak";
             kamera = Str("tuytop_kamera", "yayin"); if (System.Array.IndexOf(GameRoot.KAMERA_SIRA, kamera) < 0) kamera = "yayin";
             reduceSecim = EskiInt("tuytop_reduce", 0) == 1; ses = EskiInt("tuytop_ses", 1) == 1; SistemOku();
             yazi = Str("tuytop_yazi", "sistem"); if (yazi != "normal" && yazi != "buyuk") yazi = "sistem"; fps = Str("tuytop_fps", "0") == "1";
@@ -106,6 +109,24 @@ namespace BirdieSmash.Game
             GearHesap();
             Kaydet();
         }
+        // Ayarlar › Oyuncu görünümü seçenekleri (kimlik, etiket). Sade yalnız FBX'i build'deyse (Resources) gösterilir.
+        public static readonly string[] MODELLER = { "oyuncak", "rocketbox", "sade" }, MODEL_AD = { "Oyuncak 3B", "Gerçekçi", "Sade" };
+        public static bool ModelVar(string m)
+        {
+            if (m == "oyuncak" || m == "rocketbox") return true;
+            if (m != "sade") return false; // Tur 2: varlık sınaması küçük sade_clips.json ile (FBX ile hep birlikte gelir; PlayerView onu da okur): FBX'i yüklemek
+            // (ağ + 26 klip, ~2 MB) Sade seçmeyen oyuncuda da her açılışta Ayar.Yukle'de belleğe alıyordu.
+            if (sadeVar < 0) { var js = Resources.Load<TextAsset>("karakter/sade_clips"); sadeVar = js != null ? 1 : 0; if (js != null) Resources.UnloadAsset(js); }
+            return sadeVar == 1;
+        }
+        static int sadeVar = -1;
+        // Beden tipi ve saç biçimi parçaları yalnız oyuncak ailesinin FBX'lerinde (oyuncak_<tip>.fbx) var.
+        public static bool VaryantGorunur { get { return model == "oyuncak"; } }
+        // 2026-10-27 (yasin: "Gerçekçi de vücut özellikleri değil de sadece aksesuarlar değişmeli"): Gerçekçi'de beden/yüz/saç
+        // tek, ama beş ayakkabı modeli (rocketbox.fbx ayk_<varlik>__ayakkabi) ve şort ağı var. Sade'de şort ağı var, ayakkabı
+        // modeli yok (renk taban parçasında görünür). Oyuncak'ta şort gövde atlasında: şort rengi orada görünmez, sunulmaz.
+        public static bool AykModelGorunur { get { return model == "oyuncak" || model == "rocketbox"; } }
+        public static bool SortGorunur { get { return model == "rocketbox" || model == "sade"; } }
         public static void GearHesap() { gear.kariyerModu = kariyerModu; GSE = gear.Hesap(); GS = Karakter.Uygula(GSE, Tarz); AldatmaKur(); }
         // Aldatıcı vuruşlar (2026-10-26, Core/Aldatma): seviye kapısı maça buradan gider (her maç kurulumunda GearHesap çağrılır);
         // ilk fırsat açıklaması bir kez gösterilir, görülenler ilerleme kaydında (tuytop_ilerleme.aldatmaGor).

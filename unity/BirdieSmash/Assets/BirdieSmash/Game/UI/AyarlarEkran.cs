@@ -1,6 +1,6 @@
 // Ayarlar (⚙), Nasıl oynanır, Lisanslar (2026-10-26). İçerik bugünkü IMGUI AyarGovde ile aynı, gruplu liste olarak:
 //   Oyun: zorluk, maç uzunluğu (kariyere de uygulanır; saha yalnız serbest maçta anlamlı olduğu için Hızlı maç'a taşındı).
-//   Görünüm: oyuncu görünümü (Ayar.model, root.ModelDegisti), kamera (Ayar.kamera, GameRoot.KAMERA_SIRA/KAMERA_AD,
+//   Görünüm: oyuncu görünümü (Ayar.model: Oyuncak 3B, Gerçekçi, Sade; root.ModelDegisti), kamera (Ayar.kamera, GameRoot.KAMERA_SIRA/KAMERA_AD,
 //   root.KameraDegisti), yazı boyutu, hareketi azalt (sistem açıksa her zaman açık, kapalıysa buradan zorlanır).
 //   Ses. Dil. Game Center · Başarımlar (girişliyse). Yardım: Nasıl oynanır ›, Antrenmanı yeniden oyna, Lisanslar ›.
 // Anahtarlar aynı (tuytop_*), işleyiciler aynı. Gizli kare hızı göstergesi: başlığa 3 sn içinde 5 dokunuş (HTML ile aynı).
@@ -26,8 +26,17 @@ namespace BirdieSmash.Game
             c.Add(Yazi(L.T("Oyun"), 17, "bolum")); OyunSecenek(c, false);
             c.Add(Yazi(L.T("Görünüm"), 17, "bolum"));
             c.Add(Grup(L.T("Oyuncu görünümü"))); var m = Satir(); c.Add(m);
-            m.Add(Cip(L.T("Oyuncak 3B"), Ayar.model == "oyuncak", () => { Ayar.model = "oyuncak"; Ayar.Kaydet(); root.ModelDegisti(); Degisti(); }));
-            m.Add(Cip(L.T("Gerçekçi"), Ayar.model == "rocketbox", () => { Ayar.model = "rocketbox"; Ayar.Kaydet(); root.ModelDegisti(); Degisti(); }));
+            // 2026-10-27 (yasin build 41: "3B model kaybolmuş, seçmeme rağmen görmedim"): Sade üçüncü seçenek (build 40 notu
+            // vaat ediyordu, FBX vardı, çip yoktu). Karakter odasındaki tip/saç/ayakkabı modeli yalnız Oyuncak 3B'de görünür;
+            // başka model seçiliyken bu, küçük gri notla değil, çiplerin hemen altında açıkça yazılır.
+            for (int i = 0; i < Ayar.MODELLER.Length; i++)
+            {
+                string id = Ayar.MODELLER[i]; if (!Ayar.ModelVar(id)) continue;
+                m.Add(Cip(L.T(Ayar.MODEL_AD[i]), Ayar.model == id, () => { Ayar.model = id; Ayar.Kaydet(); root.ModelDegisti(); Degisti(); }));
+            }
+            // 2026-10-27: Gerçekçi'de ayakkabı modeli, şort ve kumaş da görünür; not neyin sabit neyin değiştiğini söyler.
+            if (Ayar.model == "rocketbox") c.Add(Yazi(L.T("Gerçekçi: beden, yüz ve saç sabit; ayakkabı, forma, şort, kafa bandı, bileklik ve raket değişir."), 13, "ipucu"));
+            else if (!Ayar.VaryantGorunur) c.Add(Yazi(L.T("Beden tipi, saç biçimi ve ayakkabı modeli yalnız Oyuncak 3B'de görünür."), 13, "ipucu"));
             c.Add(Grup(L.T("Kamera"))); var km = Satir(); c.Add(km);
             for (int i = 0; i < GameRoot.KAMERA_SIRA.Length; i++)
             {

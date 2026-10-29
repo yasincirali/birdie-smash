@@ -32,7 +32,7 @@ namespace BirdieSmash.Game
         public static Afis Build(Transform root)
         {
             var g = new GameObject("afis"); g.transform.SetParent(root, false); var a = g.AddComponent<Afis>();
-            a.rt = new RenderTexture(640, 748, 16, RenderTextureFormat.ARGB32) { name = "afis", antiAliasing = Kalite.Basamak > 0 ? 2 : 1 };
+            a.rt = new RenderTexture(640, 748, 16, RenderTextureFormat.ARGB32) { name = "afis", antiAliasing = Kalite.Basamak > 0 ? 2 : 1, memorylessMode = RenderTextureMemoryless.MSAA };   // çok örnekli tampon karo belleğinde (Vitrin notu)
             var cg = new GameObject("afis_kamera"); cg.transform.SetParent(g.transform, false); a.kam = cg.AddComponent<Camera>();
             a.kam.targetTexture = a.rt; a.kam.clearFlags = CameraClearFlags.SolidColor; a.kam.backgroundColor = new Color(0, 0, 0, 0);
             a.kam.fieldOfView = ACI; a.kam.nearClipPlane = .1f; a.kam.farClipPlane = 15; a.kam.enabled = false; a.kam.allowHDR = false;
@@ -42,8 +42,10 @@ namespace BirdieSmash.Game
             // r16: tam arkadan kontur Standard gölgelendiricide görünmüyordu (Fresnel kenar ışığı yok, yalnız sırtı boyar);
             // dış yana ve hafif geriye alındı, güç arttı: kameraya bakan kenar mercan/limon parlar.
             Isik(g.transform, "afis_anahtar", YER + Ek(new Vector3(-2.2f, 2.6f, 3.2f)), Color.white, 1.25f, 10);
-            a.konturRakip = Isik(g.transform, "afis_kontur_rakip", YER + Ek(RAKIP + new Vector3(1.25f, 1.45f, -.35f)), Kit.Hex("#FF5B4A"), 7f, 2.6f);
-            a.konturBen = Isik(g.transform, "afis_kontur_ben", YER + Ek(BEN + new Vector3(-1.2f, 1.5f, -.35f)), Kit.Hex("#D8FF3A"), 2.6f, 2.4f);
+            // 2026-10-27 yön C: rakip konturu orkide (UiKok.RAKIP; mercan birincil eylemin turuncu ailesine düşüyordu), sana limon
+            // (UiKok.LIMON, C'nin kırılmış limonu). Güçler aynı: orkide mercandan biraz açık, kontur yine okunur.
+            a.konturRakip = Isik(g.transform, "afis_kontur_rakip", YER + Ek(RAKIP + new Vector3(1.25f, 1.45f, -.35f)), UiKok.RAKIP, 7f, 2.6f);
+            a.konturBen = Isik(g.transform, "afis_kontur_ben", YER + Ek(BEN + new Vector3(-1.2f, 1.5f, -.35f)), UiKok.LIMON, 2.6f, 2.4f);
             g.SetActive(false); return a;
         }
         static Light Isik(Transform p, string ad, Vector3 yer, Color c, float guc, float menzil)
@@ -54,10 +56,11 @@ namespace BirdieSmash.Game
         }
 
         public bool Acik { get { return gameObject.activeSelf; } }
+        public bool Ciziyor { get { return Acik && kam != null && kam.enabled; } }   // ekran turu (perf_tani)
         // rakipSt null: rakip yok (ilk açılış: önce antrenman); afişte yalnız sen.
         public void Ac(Style rakipSt, Color rakipForma)
         {
-            if (!gameObject.activeSelf) gameObject.SetActive(true); kam.enabled = true; Yenile(rakipSt, rakipForma);
+            if (!gameObject.activeSelf) gameObject.SetActive(true); kam.enabled = true; durgun = 0; Yenile(rakipSt, rakipForma);
         }
         public void Kapat() { if (kam != null) kam.enabled = false; gameObject.SetActive(false); }
 
@@ -77,7 +80,7 @@ namespace BirdieSmash.Game
                 if (rakipSt != null) { rakip = PlayerView.Build(transform, Ayar.model, false, rakipForma, false, PlayerView.Rakip(rakipSt, rakipForma)); GolgeKapat(rakip); }
                 rakipAnah = rk;
             }
-            konturRakip.enabled = rakip != null;
+            konturRakip.enabled = rakip != null; durgun = 0;   // figür değişmiş olabilir: yeniden çiz
             Goster(0);
         }
         static void GolgeKapat(PlayerView p) { var g = p.transform.Find("golge"); if (g != null) g.gameObject.SetActive(false); }
@@ -88,6 +91,15 @@ namespace BirdieSmash.Game
             if (ben != null) ben.ShowPoz(YER + Ek(BEN), -BEN_YON, "idle", ph);
             if (rakip != null) rakip.ShowPoz(YER + Ek(RAKIP), -RAKIP_YON, "idle", ph + .37f);
         }
-        void Update() { Goster(Mathf.Min(.05f, Time.unscaledDeltaTime)); }
+        // Durağan afiş çizilmez (2026-10-27 performans turu 2): hareketi azaltta figürler durur (ph ilerlemez, ShowPoz örneklemez)
+        // ama kamera her karede iki derili figürü üç piksel ışıkla 640×748 MSAA RT'ye yeniden çiziyordu. Poz ya da figür
+        // değişince (ph ilerler ya da Yenile figürü kurar) iki kare çizilir, sonra kamera kapanır; RT son görüntüyü tutar.
+        float sonPh = float.NaN; int durgun;
+        void Update()
+        {
+            Goster(Mathf.Min(.05f, Time.unscaledDeltaTime));
+            if (ph != sonPh) { sonPh = ph; durgun = 0; } else durgun++;
+            bool ciz = durgun < 2; if (kam.enabled != ciz) kam.enabled = ciz;
+        }
     }
 }

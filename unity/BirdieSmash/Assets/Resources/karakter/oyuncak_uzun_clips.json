@@ -21,7 +21,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 1.3738
+   "adim": 0.991
   },
   {
    "name": "smash",
@@ -202,7 +202,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.5819
+   "adim": 0.3937
   },
   {
    "name": "chasse_l",
@@ -213,7 +213,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.5819
+   "adim": 0.3937
   },
   {
    "name": "fwd",
@@ -224,7 +224,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.8485
+   "adim": 0.6094
   },
   {
    "name": "back_r",
@@ -235,7 +235,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.9387
+   "adim": 0.6635
   },
   {
    "name": "back_l",
@@ -246,7 +246,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.9387
+   "adim": 0.6635
   },
   {
    "name": "jump",
@@ -297,7 +297,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.9656
+   "adim": 0.6777
   },
   {
    "name": "kros_l",
@@ -308,7 +308,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.9656
+   "adim": 0.7205
   }
  ],
  "model": "oyuncak_uzun",
@@ -347,7 +347,7 @@
  },
  "tip": {
   "id": "uzun",
-  "boy": 1.04,
+  "boy": 1.13,
   "sac": "yan",
   "ayakkabi": "klasik",
   "sacRenk": "#6b4a2e"

@@ -10,7 +10,8 @@
 // Ölçek: ScaleWithScreenSize, referans 375 pt genişlik (iPhone SE/mini). Neden ConstantPhysicalSize değil (tasarım Ek A.7
 // öyle diyordu): Screen.dpi 3× iPhone'larda yuvarlanmış, CI'daki xvfb'de 0 geliyor; genişliğe göre ölçek her telefonda
 // panel birimini ≥ 1 pt yapar, böylece 44 birimlik düğme en dar telefonda da ≥ 44 pt kalır. Geniş ekranda (iPad) yüksekliğe
-// göre ölçeklenir.
+// göre ölçeklenir. 2026-10-27: eşleme ekran boyu değişince yeniden seçilir; kısa ekran (SE) ve geniş ekran (iPad) boyut
+// sınıfları, güvenli alanın katman konumlarına yazılması ve afişin boşluğa oturması Duyarli.cs'de.
 // Performans (§7): menü ağacı yalnız bir şey değişince yeniden kurulur; Update'te ayırma yok (yalnız karşılaştırma ve
 // değişince stil yazma). Maçta menü kökü display:none (çizim ve dokunma yok).
 // Perde: IMGUI perdesi ile UI Toolkit panelinin çizim sırası sürüme göre değişebilir; menü perdenin örtüsüyle birlikte solar
@@ -79,6 +80,12 @@ namespace BirdieSmash.Game
             var uss = StilSayfasi(); if (uss != null) r.styleSheets.Add(uss); else Debug.LogError("Birdie Smash: Resources/ui/menu_stil.uss yok ya da boş");
             kok = r.Q<VisualElement>("kok");
             if (kok == null) { kok = KodIskelet(); r.Add(kok); }
+            // Menü kıpırdarken ekran hızı yükselir (Kalite.Hareket, 2026-10-28): dokunma, basılı sürükleme, tekerlek ve
+            // her USS geçişi (sekme çizgisi, sayfa kayması, düğme). TrickleDown: alt öğeler olayı tüketse de kök duyar.
+            kok.RegisterCallback<PointerDownEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
+            kok.RegisterCallback<PointerMoveEvent>(e => { if (e.pressedButtons != 0) Kalite.Hareket(); }, TrickleDown.TrickleDown);
+            kok.RegisterCallback<WheelEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
+            kok.RegisterCallback<TransitionRunEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
             zemin = kok.Q<VisualElement>("zemin"); alan = kok.Q<VisualElement>("alan"); ust = kok.Q<VisualElement>("ust"); icerik = kok.Q<VisualElement>("icerik");
             sayfa = kok.Q<VisualElement>("sayfa"); sekmeCubugu = kok.Q<VisualElement>("sekmeler"); altKatman = kok.Q<VisualElement>("alt-katman"); kalkan = kok.Q<VisualElement>("kalkan");
             // 2026-10-26 Yayın Gecesi: gövde yazı tipi Barlow (Resources/fonts, OFL). Sınıf kuralları (menu_stil.uss) kalın ve başlık
@@ -97,6 +104,7 @@ namespace BirdieSmash.Game
             sayfa.RegisterCallback<PointerDownEvent>(e => { kenarX = e.position.x - sayfa.worldBound.x < 24 ? e.position.x : -1; }, TrickleDown.TrickleDown);
             sayfa.RegisterCallback<PointerMoveEvent>(e => { if (kenarX >= 0 && e.position.x - kenarX > 70) { kenarX = -1; Geri(); } }, TrickleDown.TrickleDown);
             sayfa.RegisterCallback<PointerUpEvent>(e => kenarX = -1, TrickleDown.TrickleDown);
+            DuyarliGuncelle();   // 2026-10-27: boyut sınıfı (kısa / geniş) ilk kurulumdan önce: kodda yazılan boyutlar ona bakar (Duyarli.cs)
             HepsiniKur(); kuruldu = true;
         }
 
@@ -128,6 +136,7 @@ namespace BirdieSmash.Game
             GuvenliAlan();
             var hud = root.HudKatman; float o = hud != null ? hud.PerdeOrtu : 0; bool pv = hud != null && hud.PerdeVar;
             if (Mathf.Abs(o - sonOrtu) > .01f || (o == 0 && sonOrtu != 0)) { sonOrtu = o; kok.style.opacity = 1 - o; }
+            PerdeKaymaUygula(hud);   // 2026-10-27 perde v2: içerik solarken 12 pt aşağı (yalnız translate)
             if (pv != kalkanAcik) { kalkanAcik = pv; kalkan.style.display = pv ? DisplayStyle.Flex : DisplayStyle.None; if (!pv) salonKirli = true; }   // perde kalkınca fon bir kez daha (açılışta sahne perde altında kuruluyor olabilir)
             SahneCiz(pv || o > 0, true);   // perde açılırken/kapanırken menü solar: altında maç sahnesi görünmeli
             if (Input.GetKeyDown(KeyCode.Escape) && !pv) Geri();   // Android geri tuşu
@@ -135,14 +144,27 @@ namespace BirdieSmash.Game
 
         // Güvenli alan (Screen.safeArea) panel birimine: kök genişliği / ekran genişliği. Üst ve yanlar kökte, alt sekme
         // çubuğunda ve alt sayfada (zeminleri ev çizgisinin altına uzansın, düğmeler uzanmasın).
-        float altBosluk;
+        // 2026-10-27: güvenli alan Guvenli.Alan'dan (ekran turu çentik taklidi); ekran boyu değişince ölçek eşlemesi ve boyut
+        // sınıfı yenilenir, sınıf değiştiyse menü baştan kurulur (Duyarli.cs).
+        float altBosluk; VisualElement govde; Vector3 guvPay;
         void GuvenliAlan()
         {
+            if (DuyarliGuncelle()) HepsiniKur();
             float pw = doc.rootVisualElement.layout.width; if (float.IsNaN(pw) || pw <= 0 || Screen.width <= 0) return;
-            var sa = Screen.safeArea; if (sa == sonSafe && Mathf.Abs(pw - sonPanelW) < .5f) return; sonSafe = sa; sonPanelW = pw;
+            var sa = Guvenli.Alan; if (sa == sonSafe && Mathf.Abs(pw - sonPanelW) < .5f) return; sonSafe = sa; sonPanelW = pw;
             float s = pw / Screen.width;
-            kok.style.paddingTop = Mathf.Max(0, Screen.height - sa.yMax) * s; kok.style.paddingLeft = Mathf.Max(0, sa.xMin) * s; kok.style.paddingRight = Mathf.Max(0, Screen.width - sa.xMax) * s;
+            // 2026-10-27 (duyarlı yerleşim): payı kökün dolgusu (padding) taşıyordu; oysa gövde, alt katman ve perde kalkanı kökün
+            // MUTLAK konumlu çocukları (.tam, left/top/right/bottom 0) ve Yoga mutlak çocuğu ebeveynin dolgusuna değil kenarına
+            // göre yerleştirir (CSS ile aynı): çentikli telefonda üst şerit çentiğin altına giriyordu (CI karesi güvenli alansız
+            // olduğu için görünmüyordu). Pay artık bu katmanların kendi konumunda; zemin tam taşar (süs, kenara kadar).
+            float pu = Mathf.Max(0, Screen.height - sa.yMax) * s, ps = Mathf.Max(0, sa.xMin) * s, pr = Mathf.Max(0, Screen.width - sa.xMax) * s;
+            kok.style.paddingTop = 0f; kok.style.paddingLeft = 0f; kok.style.paddingRight = 0f;
+            if (govde == null) govde = kok.Q<VisualElement>("govde");
+            if (govde != null) { govde.style.top = pu; govde.style.left = ps; govde.style.right = pr; }
+            altKatman.style.top = pu; altKatman.style.left = ps; altKatman.style.right = pr;
+            guvPay = new Vector3(pu, ps, pr);
             altBosluk = Mathf.Max(0, sa.yMin) * s; sekmeCubugu.style.paddingBottom = altBosluk; if (altSayfa != null) altSayfa.style.paddingBottom = altBosluk + 16;
+            SutunYaz(pw);
         }
 
         // ---- gezinti ----
@@ -170,9 +192,10 @@ namespace BirdieSmash.Game
                 if (sekmeDugme[i] != null)
                 {
                     sekmeDugme[i].EnableInClassList("sekme--secili", on); var b = sekmeDugme[i].userData as ErisimBilgi; if (b != null) b.secili = on;
-                    var im = sekmeDugme[i].Q<Image>(null, "sekme-ikon"); if (im != null) im.tintColor = on ? KOYU : SOLUK;   // seçili: limon dolgu üstünde koyu simge
+                    var im = sekmeDugme[i].Q<Image>(null, "sekme-ikon"); if (im != null) im.tintColor = on ? TURUNCU : SOLUK;   // seçili: limon dolgu üstünde koyu simge; 2026-10-27 yön C: dolgu yok, turuncu simge
                 }
             }
+            GostergeYerlestir(anim && s != once);   // 2026-10-27 yön C: üst çizgi yeni sekmeye yayla kayar
             ust.style.display = tam == null ? DisplayStyle.Flex : DisplayStyle.None;
             if (tam != null) { SayfaKur(tam); sayfa.style.display = DisplayStyle.Flex; if (anim) Giris(sayfa); } else { sayfa.style.display = DisplayStyle.None; sayfa.Clear(); }
             string altS = gez.AcikAltSayfa;
@@ -181,6 +204,7 @@ namespace BirdieSmash.Game
             // 2026-10-26 gece: kök her sekmede opak (Oyna: mürekkep, salon fonu üstünde; diğerleri yön A a-bgnight #0B1130), tam
             // sayfa mürekkep. Satır içi (USS'te değil): r24'te USS'teki değişiklikle bütün sayfa biçimsiz çıktı, kök neden
             // ayrılana kadar zemin koddan (eski USS değerleri saydamdı; satır içi değer onları ezer).
+            // 2026-10-27 yön C: GECE ve INK_ ikisi de C zemini #1A1221 (aşağıda); iOS açılışı ve perde zemini de aynı renk.
             kok.style.backgroundColor = koyu ? GECE : INK_; sayfa.style.backgroundColor = INK_;
             // Vitrin kamerası yalnız Soyunma odası görünürken çizer (bütçe §7.3); çıkınca sahnedeki oyuncu yeni görünüme geçer.
             bool vitrinGerek = s == Sekme.Soyunma && tam == null && root.ekran == Ekran.Menu;
@@ -212,12 +236,13 @@ namespace BirdieSmash.Game
             {
                 var s = (Sekme)i; var d = new VisualElement(); d.AddToClassList("sekme"); sekmeDugme[i] = d;
                 var cizgi = new VisualElement(); cizgi.AddToClassList("sekme-cizgi"); cizgi.pickingMode = PickingMode.Ignore; d.Add(cizgi);
-                var im = Ikon(ik[i], 22, s == gez.sekme ? KOYU : SOLUK); im.AddToClassList("sekme-ikon"); d.Add(im);
+                var im = Ikon(ik[i], 22, s == gez.sekme ? TURUNCU : SOLUK); im.AddToClassList("sekme-ikon"); d.Add(im);
                 string ad = L.T(SEKME_AD[i]); if (etiket) d.Add(Yazi(ad, 11, "sekme-yazi"));
                 d.AddManipulator(new Clickable(() => SekmeAc(s))); Erisim.Etiket(d, ad, "sekme", s == gez.sekme);
                 sekmeCubugu.Add(d);
             }
             if (altBosluk > 0) sekmeCubugu.style.paddingBottom = altBosluk;
+            GostergeKur();
             for (int i = 0; i < 4; i++) kirli[i] = true; ustKirli = true; Uygula(gez.sekme, false);
         }
 
@@ -245,7 +270,8 @@ namespace BirdieSmash.Game
             var av = new VisualElement(); av.AddToClassList("ust-avatar"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); av.Add(Ikon(Ikonlar.Kisi, 24, KOYU)); hap.Add(av);
             var sv = new VisualElement(); sv.AddToClassList("ust-sv"); sv.pickingMode = PickingMode.Ignore; hap.Add(sv);
             sv.Add(Yazi(L.T("Sv {0}", L_), 18, "rakam"));
-            var c = Cubuk(gerek > 0 ? kalan / (float)gerek : 1, LIMON, 5); c.AddToClassList("ust-xp"); sv.Add(c);
+            var c = Cubuk(gerek > 0 ? kalan / (float)gerek : 1, TURUNCU, 5);   // 2026-10-27 yön C: ilerleme turuncu (limon yalnız sen: avatar halkası)
+            c.AddToClassList("ust-xp"); sv.Add(c);   // tur 2: yorumun içinde kalmıştı, üst çubuğun XP şeridi hiç eklenmiyordu
             hap.AddManipulator(new Clickable(() => SekmeAc(Sekme.Profil)));
             Erisim.Etiket(hap, L.T("Seviye {0}", L_) + (gerek > 0 ? ", " + L.T("Sonraki seviyeye {0} XP", gerek - kalan) : "") + ", " + L.T("Profil"), "dugme");
             var tuy = new VisualElement(); tuy.AddToClassList("ust-hap"); tuy.AddToClassList("tuy-hap"); tuy.pickingMode = PickingMode.Ignore; ust.Add(tuy);
@@ -265,9 +291,9 @@ namespace BirdieSmash.Game
         void ZeminKur()
         {
             // 2026-10-26 gece: en arkada bulanık salon görüntüsü (SalonCek); canlı sahne menünün arkasında artık çizilmez.
-            salonImg = new Image { scaleMode = ScaleMode.ScaleAndCrop, tintColor = new Color(.78f, .8f, .9f, 1) }; salonImg.AddToClassList("tam"); salonImg.AddToClassList("salon"); salonImg.pickingMode = PickingMode.Ignore; zemin.Add(salonImg);
-            var fl = new Image { image = Ikonlar.Isik, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(LIMON.r, LIMON.g, LIMON.b, .32f) }; fl.AddToClassList("isik-sol"); fl.pickingMode = PickingMode.Ignore; zemin.Add(fl);
-            var fr = new Image { image = Ikonlar.Isik, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(GOK.r, GOK.g, GOK.b, .30f) }; fr.AddToClassList("isik-sag"); fr.pickingMode = PickingMode.Ignore; zemin.Add(fr);
+            salonImg = new Image { scaleMode = ScaleMode.ScaleAndCrop, tintColor = new Color(.9f, .8f, .86f, 1) }; salonImg.AddToClassList("tam"); salonImg.AddToClassList("salon"); salonImg.pickingMode = PickingMode.Ignore; zemin.Add(salonImg);   // 2026-10-27 yön C: sıcak ton (A: soğuk .78/.8/.9)
+            var fl = new Image { image = Ikonlar.Isik, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(TURUNCU.r, TURUNCU.g, TURUNCU.b, .30f) }; fl.AddToClassList("isik-sol"); fl.pickingMode = PickingMode.Ignore; zemin.Add(fl);
+            var fr = new Image { image = Ikonlar.Isik, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(RAKIP.r, RAKIP.g, RAKIP.b, .22f) }; fr.AddToClassList("isik-sag"); fr.pickingMode = PickingMode.Ignore; zemin.Add(fr);
             var zi = new Image { image = Ikonlar.Gradyan, scaleMode = ScaleMode.StretchToFill }; zi.pickingMode = PickingMode.Ignore; zi.AddToClassList("tam"); zemin.Add(zi);
             afisImg = new Image { image = root.afis.rt, scaleMode = ScaleMode.ScaleAndCrop }; afisImg.AddToClassList("afis"); afisImg.pickingMode = PickingMode.Ignore; zemin.Add(afisImg);
             vsYazi = new Label("VS"); vsYazi.AddToClassList("yazi"); vsYazi.AddToClassList("vs"); vsYazi.pickingMode = PickingMode.Ignore; zemin.Add(vsYazi);
@@ -363,7 +389,8 @@ namespace BirdieSmash.Game
             foreach (var ad in new[] { "rules", "complexSelectors", "m_Rules", "m_ComplexSelectors", "imports", "m_Imports" }) { var f = t.GetField(ad, bf); if (f != null) try { var v = f.GetValue(ss) as System.Array; sb.Append(" " + ad + "=" + (v == null ? "null" : v.Length.ToString())); } catch { } var pr = t.GetProperty(ad, bf); if (pr != null) try { var v = pr.GetValue(ss) as System.Array; sb.Append(" " + ad + "=" + (v == null ? "null" : v.Length.ToString())); } catch { } }
             return sb.ToString();
         }
-        static readonly Color GECE = new Color(11 / 255f, 17 / 255f, 48 / 255f, 1), INK_ = new Color(7 / 255f, 11 / 255f, 31 / 255f, 1);
+        // 2026-10-27 yön C: GECE (diğer sekmeler) ve INK_ (Oyna, tam sayfa) mor-kahve zemin; ikisi aynı ton, Oyna'da salon fonu üstte.
+        static readonly Color GECE = new Color(0x1A / 255f, 0x12 / 255f, 0x21 / 255f, 1), INK_ = new Color(0x1A / 255f, 0x12 / 255f, 0x21 / 255f, 1);
         void OnDestroy() { if (salonRt != null) { salonRt.Release(); Destroy(salonRt); } }
 
         // Tam sayfa başı: "‹ Geri" (44 pt) + başlık.
@@ -383,6 +410,48 @@ namespace BirdieSmash.Game
         }
 
         void Tik() { root.sfx.Tik(); Yerel.Hap("tick"); }
+
+        // ---- 2026-10-27 yön C mikro hareketler (araştırma §4.3; yalnız translate/opacity, ekranda tek döngü afişin nefesi) ----
+        // Sekme göstergesi: tek bir 3 pt turuncu çizgi sekme çubuğunun üstünde; seçim değişince yeni sekmeye 180 ms'de kayar
+        // (dış öğe x, ease-out), iç öğe 90 ms'de 4 pt yükselip iner: tüy top yayı. Konum sekmenin yerleşiminden okunur (çubuğun
+        // yerleşimi ekran/duyarli dalında değişebilir; buradaki hesap ondan bağımsız). Gösterge yerleşene kadar (ilk kare) her
+        // sekmenin kendi çizgisi görünür; yerleşince .gosterge-var onları gizler. Hareketi azaltta geçiş 0 sn (USS .az-hareket).
+        VisualElement gosterge, gostergeIc;
+        void GostergeKur()
+        {
+            gosterge = new VisualElement(); gosterge.AddToClassList("sekme-gosterge"); gosterge.pickingMode = PickingMode.Ignore;
+            gostergeIc = new VisualElement(); gostergeIc.AddToClassList("sekme-gosterge-ic"); gostergeIc.pickingMode = PickingMode.Ignore; gosterge.Add(gostergeIc);
+            sekmeCubugu.Add(gosterge); sekmeCubugu.RemoveFromClassList("gosterge-var");
+            if (!gostergeOlay) { gostergeOlay = true; sekmeCubugu.RegisterCallback<GeometryChangedEvent>(e => GostergeYerlestir(false)); }   // çubuk bir kez kurulur, olay bir kez
+        }
+        bool gostergeOlay;
+        void GostergeYerlestir(bool anim)
+        {
+            if (gosterge == null || gosterge.parent != sekmeCubugu) return; var d = sekmeDugme[(int)gez.sekme]; if (d == null) return;
+            var lb = d.layout; if (float.IsNaN(lb.width) || lb.width <= 0) return;
+            float w = Mathf.Round(lb.width * .44f), x = lb.x + (lb.width - w) / 2; bool az = !anim || Ayar.reduce;
+            gosterge.EnableInClassList("anisiz", az); if (Mathf.Abs(gosterge.resolvedStyle.width - w) > .5f) gosterge.style.width = w;
+            gosterge.style.translate = new Translate(x, 0);
+            if (!az) { gostergeIc.style.translate = new Translate(0, -4); gostergeIc.schedule.Execute(() => gostergeIc.style.translate = new Translate(0, 0)).StartingIn(90); }
+            sekmeCubugu.AddToClassList("gosterge-var");
+        }
+        public string GostergeTani { get { return gosterge == null ? "yok" : "x " + gosterge.resolvedStyle.translate.x.ToString("F0") + " w " + gosterge.resolvedStyle.width.ToString("F0") + " sekme " + gez.sekme; } }
+        // Perde v2 kapanışı: menü içeriği solarken 12 pt aşağı kayar (Hud.PerdeKayma); sekme çubuğu yerinde kalır.
+        float sonKayma;
+        void PerdeKaymaUygula(Hud hud)
+        {
+            float k = hud != null ? hud.PerdeKayma : 0; if (Mathf.Abs(k - sonKayma) < .01f && !(k == 0 && sonKayma != 0)) return;
+            sonKayma = k; icerik.style.translate = new Translate(0, 12 * k);
+        }
+        // Uçan topun çıkış noktası: düğmenin ortası, panel biriminden ekran pikseline (IMGUI düzeni, sol üst köşe).
+        void PerdeKaynakYaz(VisualElement v)
+        {
+            var hud = root.HudKatman; if (hud == null || v == null || doc == null) return; float pw = doc.rootVisualElement.layout.width;
+            if (float.IsNaN(pw) || pw <= 0 || Screen.width <= 0) return; float k = Screen.width / pw; var c = v.worldBound.center;
+            hud.PerdeKaynak(new Vector2(c.x * k, c.y * k));
+        }
+        // Ekran turu: Oyna sekmesindeki büyük düğmeyi kaynak yap (yoksa Hud alt ortayı kullanır).
+        public void PerdeKaynakCta() { if (sekmeKok[0] != null) PerdeKaynakYaz(sekmeKok[0].Q<VisualElement>(null, "cta")); }
 
         // Ekran okuyucu köprüsü için (Erisilebilirlik.cs TODO): görünür etiketli öğeler.
         public void ErisimAgaci(List<Erisim.Dugum> liste) { liste.Clear(); Erisim.Topla(kok, liste); }

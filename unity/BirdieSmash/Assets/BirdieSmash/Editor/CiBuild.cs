@@ -27,6 +27,7 @@ namespace BirdieSmash.EditorTools
             {
                 string path = Arg("-customBuildPath") ?? "build/iOS/iOS";
                 DemoKurulum.Kur();   // sahne Assets/Scenes/Demo.unity + build listesi + shader/girdi ayarları (CI kopyası taze)
+                DokuAyar.Denetle();  // 2026-10-27: her doku ASTC/boy/mip hedefinde mi (değilse yeniden içe aktarır, günlüğe satır basar)
                 Ayarla(Arg("-buildVersion"));
                 var opt = new BuildPlayerOptions
                 {
@@ -51,6 +52,7 @@ namespace BirdieSmash.EditorTools
             {
                 string path = Arg("-customBuildPath") ?? "build/StandaloneLinux64/BirdieSmash";
                 DemoKurulum.Kur();
+                DokuAyar.Denetle();  // ekran turu da aynı boy/mip/süzmeyle çizsin (ASTC yalnız iOS/Android'de; Linux'ta DXT)
                 PlayerSettings.productName = "Birdie Smash"; PlayerSettings.companyName = "Birdie Smash";
 #pragma warning disable 618
                 PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.Mono2x);
@@ -94,7 +96,10 @@ namespace BirdieSmash.EditorTools
             // Açılış (2026-10-26, yasin Ar-Ge önerisi "ekle"): Unity açılış ekranı kapalı (Unity 6 Personal'da serbest);
             // arka plan açılış perdesinin dış halkasıyla aynı renk (Hud PERDE_C[0,0] #a3234b), oyunun ilk karesine siyah
             // kare girmeden geçilsin. iOS açılış görüntüsü de aynı düz renk.
-            var perde = new Color(0xa3 / 255f, 0x23 / 255f, 0x4b / 255f);
+            // 2026-10-27 yön C (yasin karar kartı) + Apple HIG Launching ("açılış ekranı ilk ekranla neredeyse aynı"): açılış
+            // perdesi artık C zemininde başlıyor (Hud.PERDE_ZEMIN = menü zemini #1A1221); iOS açılışı = motorun ilk karesi =
+            // menünün zemini, arada renk sıçraması yok. Eski #a3234b gül rengi perdenin iç halkasına kaydı.
+            var perde = new Color(0x1a / 255f, 0x12 / 255f, 0x21 / 255f);
             PlayerSettings.SplashScreen.show = false; PlayerSettings.SplashScreen.showUnityLogo = false; PlayerSettings.SplashScreen.backgroundColor = perde;
             IosAcilisRengi(perde);
             var ikon = AssetDatabase.LoadAssetAtPath<Texture2D>(Icon);
