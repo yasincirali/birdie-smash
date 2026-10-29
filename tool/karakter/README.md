@@ -148,6 +148,13 @@ cd ../.. && python3 -I tool/karakter/gom.py oyuncak /tmp/oy/spr.js /tmp/oy/tur.j
   kesilip düz renkli bölgelere ayrılır (forma, sort, ten, beyaz çorap, taban ayakkabı, sac kabuğu, bilek, bant). Basan taban her klipte
   0,4–0,5 cm (`BS_SADE_DZ`; koşunun z=0 bileği 0,05'e kırpılır, `BS_SADE_BILEK`). Uç (leaf) kemikleri silinir: FBX 5,2 MB.
   `BS_MODEL=sade python3 -I tool/karakter/unity_fbx.py -- /tmp/sd sade` → `sade.fbx` + `sade_clips.json` (Resources/karakter).
+- **Tüycük** (2026-10-29, yasin: "oyuncu modellerimi değiştirme; yeni 3D model önerin varsa yeni seçenek olarak ekle"): `tuycuk.py`,
+  `Oyuncak`'tan türer; iskelet, bütün klipler, çözücü, tutuş katmanı ve ayakkabılar Oyuncak 3B'nin aynısı, yalnız görünen ağ kendi
+  tasarımımız (IP yok): tek parça yumurta gövde (yüz + karın çıkartması, perçem 3 yaprak), tüp kol/bacak, eldiven el. Gövde rengi
+  formadır (Unity `forma` etiketi), karın `karin` etiketi (formanın açığı), atlas `tuycuk_govde.png`. Eller yumurtaya gömülüyordu:
+  çözücü itme sınırı `BS_TC_MAXIT` 0,16 (Oyuncak 0,07; bh_over hazırlık karesinde 26 → 15 cm kalan, temas karesinde 0,07 cm).
+  `BS_MODEL=tuycuk python3 -I tool/karakter/unity_fbx.py -- /tmp/tc tuycuk` → `tuycuk.fbx` + `tuycuk_clips.json` + `tuycuk_govde.png`.
+  Önizleme (ölçüm satırlı): `python3 -I tool/karakter/tuycuk_onizleme.py -- <klasör>`.
 
 Oyunda her model ayrı `<script type="application/json" id="bs_model_<ad>">` bloğunda; oyun yalnız seçili olanı
 ayrıştırır (`tuytop_model`, Ayarlar › Oyuncu görünümü). Hızlı önizleme: `stil` modu, 360° için `BS_TUR_N=8 BS_ONIZLEME=1`.
