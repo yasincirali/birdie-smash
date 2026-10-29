@@ -39,50 +39,78 @@ namespace BirdieSmash.Game
                 yield return MgKariyer(dil + "_03_kariyer");
                 yield return MgKarakter(dil + "_04_karakter");
                 Ayar.saha = "turnuva"; root.SahaDegisti();
-                yield return ImzaKare(dil + "_05_imza", KariyerVeri.Global(1, 5), false);
-                rap.AppendLine("magaza " + dil + "_05_imza · rakip imza hazırlığı " + (root.match != null && root.match.op.imzaT > 0 ? "VAR" : "yok (ad _yok ekli)"));
+                yield return MgImza(dil + "_05_imza", KariyerVeri.Global(1, 5));
                 root.AnaMenu(); yield return Bekle(10);
             }
             Guvenli.test = false; Ayar.wins = wins0; Ayar.kosIpucu = kos0; Ayar.fps = fps0; Ayar.dil = d0; Ayar.saha = "salon"; root.SahaDegisti();
             yield return Boyut(w0, h0);
         }
 
-        // Smaç anı: rakip yüksek clear atar (KadrajTepe'deki gibi plandan), oyuncu Kolay'da topun altına koşar, enerji dolu
-        // (sıçrayarak smaç), top baş üstü pencereye girince hızlı aşağı kaydırma. Temastan 1 ve 3 kare sonra iki aday kare (_a/_b);
-        // CI'da kare hızı düşük, hangisinin daha iyi okunduğu betikte değil gözle seçilir. Skor 9–7 (maçın ortası).
+        // r47 dersi (2026-10-29): CI'da kare hızı düşük (xvfb + yazılım GL, birkaç fps), maç gerçek zamanla ilerlediği için 90 sn'de
+        // ralli 4'te kaldı; elle kurulan smaç topu maç başı rakip kartı sürerken uçmadı; imza hazırlığı 60 sn'de gelmedi.
+        // Çözüm: sahneler maçı kare başına 30 adım (1/60 sn) ileri sarar, bot oynar; aranan an gelince sarma durur ve kare
+        // normal akışta çekilir. Ralli sayısı, skor ve imza hazırlığı gerçek oyundan gelir (uydurma yok), yalnız beklenmez.
+        IEnumerator IleriSar(System.Func<Match, bool> dur, float enCok, bool smacla = false)
+        {
+            var M = root.match; root.rakipKartT = 0; float t0 = Time.realtimeSinceStartup;
+            while (Time.realtimeSinceStartup - t0 < enCok)
+            {
+                for (int i = 0; i < 30; i++)
+                {
+                    if (M.over || dur(M)) yield break;
+                    if (BotAdim(M, smacla)) yield break;   // smaç atıldı: o anı normal akışta göstermek için dur
+                    M.Update(1f / 60f); M.events.Clear();
+                }
+                yield return null;
+            }
+        }
+        // Mağaza botu: servis kısa/uzun karışık; topa yetişince hep vurur (rastgele bot rallileri 4–5'te bitiriyordu), çoğunlukla
+        // güvenli clear/drop (sim: maks ralli 228–409, 12'ye ~680 adım; smaç ~1000 adım, imza ~400–950). smacla: rakipten gelen baş üstü topta enerji doluyken sıçrayarak smaç (true döner).
+        bool BotAdim(Match M, bool smacla)
+        {
+            if (M.s == null && M.server == "me" && M.wait <= 0 && !M.between && M.svPending == null) { M.SwipeServe((float)(rng.NextDouble() * 40 - 20), -70, 1.6f); return false; }
+            Reach R; if (M.s == null || M.s.from != "op" || !M.ReachInfo(out R)) return false;
+            if (smacla && R.over && Mathf.Abs(M.me.y - Court.NET) > 3) { M.energy = 1; return M.SwipeShot(new SwipeInput { dx = 20, dy = -230, speed = 2.4f, R = 40, dist = 4, side = 1 }); }
+            if (smacla) M.energy = Mathf.Min(M.energy, .9f);   // smaç anına kadar enerji harcanmasın diye sıçrama yok
+            M.SwipeShot(new SwipeInput { dx = (float)(rng.NextDouble() * 120 - 60), dy = -(float)(140 + rng.NextDouble() * 80), speed = 1.2f, R = 40, dist = 4, side = rng.NextDouble() < .5 ? -1 : 1 });
+            return false;
+        }
+
+        // Smaç anı: Turnuva salonu, skor 9–7 (maçın ortası); bot ralli oynar, rakipten ilk baş üstü topta enerji dolu sıçrayarak
+        // smaç. Temastan 1 ve 3 kare sonra iki aday (_a/_b); hangisinin daha iyi okunduğu betikte değil gözle seçilir.
         IEnumerator MgSmac(string ad)
         {
             Ayar.saha = "turnuva"; root.SahaDegisti(); root.StartMatch(false, false, false); botAcik = false;
-            { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 4) yield return null; }   // maç başı rakip kartı kalksın
-            var M = root.match; M.sc[0] = 9; M.sc[1] = 7; float L = Court.L;
-            M.s = new Shuttle { x = Court.MID, y = L - 1f, z = 2.55f, vy = 3, vz = -2, from = "op" }; M.me.x = Court.MID - .4f; M.me.y = L - 1f;
-            var P = M.ShotPlan(new SwipeInput { dy = -150, speed = 1.2f, R = 40 }, new Reach(), true); M.s = null;
-            float hx = 2 * Court.MID - P.hx, hy = L - P.hy, ty = Court.NET + P.d, tx = 2 * Court.MID - P.tx, vx, vy, vz;
-            M.op.x = hx + .4f; M.op.y = hy; M.between = false; M.wait = 0;
-            Shuttle.Aim(hx, hy, P.hz, tx, ty, P.byAngle, P.val, out vx, out vy, out vz);
-            var sf = typeof(Match).GetMethod("StartFlight", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            sf.Invoke(M, new object[] { "op", vx, vy, vz, hx, hy, P.hz, false, "clear", false, "good", false });
-            float t0 = Time.realtimeSinceStartup; bool vurdu = false; string tip = "-";
-            while (Time.realtimeSinceStartup - t0 < 12 && M.s != null && !vurdu)
-            {
-                M.energy = 1; Reach R;
-                if (M.s.from == "op" && M.ReachInfo(out R) && R.over)
-                    vurdu = M.SwipeShot(new SwipeInput { dx = 20, dy = -230, speed = 2.4f, R = 40, dist = 4, side = 1 });
-                if (vurdu) tip = M.sonTip; else yield return null;
-            }
+            var M = root.match; M.sc[0] = 9; M.sc[1] = 7; M.sonTip = null;
+            yield return IleriSar(m => false, 60, true);
+            bool vurdu = M.sonTip != null; string tip = M.sonTip ?? "-";
             yield return Bekle(1); yield return Cek(ad + "_a"); yield return Bekle(2); yield return Cek(ad + "_b");
-            rap.AppendLine("magaza " + ad + " · " + (vurdu ? "vuruş " + tip + " (" + M.sonQ + ")" : "VURUŞ OLMADI (top pencereye girmedi)") + " · " + Screen.width + "x" + Screen.height);
+            rap.AppendLine("magaza " + ad + " · " + (vurdu ? "vuruş " + tip + " (" + M.sonQ + ")" : "VURUŞ OLMADI") + " · skor " + M.sc[0] + "–" + M.sc[1] + " · " + Screen.width + "x" + Screen.height);
         }
 
         // Uzun ralli + seyirci: Turnuva salonunda bot oynar; ralli 12'ye varınca, top filenin üstünde uçarken çekilir. En çok
-        // 90 sn; varmazsa en uzun rallinin sonundaki an çekilir ve rapor bunu söyler (sayı uydurulmaz: HUD'daki ralli gerçek).
+        // 90 sn gerçek zaman (ileri sarılarak dakikalarca oyun); varmazsa o anki kare çekilir ve rapor bunu söyler.
         IEnumerator MgRalli(string ad)
         {
-            Ayar.saha = "turnuva"; root.SahaDegisti(); root.StartMatch(false, false, false); botAcik = true;
-            var M = root.match; float t0 = Time.realtimeSinceStartup;
-            while (Time.realtimeSinceStartup - t0 < 90 && !(M.rally >= 12 && M.s != null && !M.s.dead && M.s.z > 1.6f && Mathf.Abs(M.s.y - Court.NET) < 2.5f)) yield return null;
-            int r = M.rally; yield return Cek(ad); botAcik = false;
+            Ayar.saha = "turnuva"; root.SahaDegisti(); root.StartMatch(false, false, false); botAcik = false;
+            var M = root.match;
+            yield return IleriSar(m => m.rally >= 12 && m.s != null && !m.s.dead && m.s.z > 1.6f && Mathf.Abs(m.s.y - Court.NET) < 2.5f, 90);
+            int r = M.rally; yield return Cek(ad);
             rap.AppendLine("magaza " + ad + " · ralli " + r + " (en uzun " + M.maxRally + ")" + (r >= 12 ? "" : " · HEDEF 12'YE VARMADI"));
+        }
+
+        // İmza vuruşu: patron basamağında rakibin imza hazırlığı (ışık + poz) başlayınca çekilir (EkranTuru.ImzaKare'nin ileri
+        // saran hâli; o tur gerçek zamanda bekler, burada 60 sn yetmedi).
+        IEnumerator MgImza(string ad, int g)
+        {
+            var eski = Ayar.ilerleme; var q = new Ilerleme(); for (int b = 0; b < 6; b++) q.tur[0][b] = 1; for (int b = 0; b < 5; b++) q.tur[1][b] = 1; Ayar.ilerleme = q;
+            bool km = Ayar.kariyerModu; Ayar.kariyerModu = true; Ayar.kariyerSecim = g;
+            root.StartMatch(false, false, false); botAcik = false;
+            root.match.sc[0] = 4; root.match.sc[1] = 3;   // imza puan aralığı (stil.imzaAra 4) dolsun: uzun rallilerde sayı az düşer
+            yield return IleriSar(m => m.op.imzaT > 0 && m.op.imzaId != null, 60);
+            bool var_ = root.match.op.imzaT > 0; yield return Bekle(4); yield return Cek(ad + (var_ ? "" : "_yok"));
+            rap.AppendLine("magaza " + ad + " · rakip imza hazırlığı " + (var_ ? "VAR (" + root.match.op.imzaId + ")" : "yok (ad _yok ekli)"));
+            Ayar.ilerleme = eski; Ayar.kariyerModu = km; Ayar.kariyerSecim = -1;
         }
 
         // Kariyer haritası: örnek ilerleme (Tur 1 bitmiş, Tur 2 yarısı; EkranTuru.Harita ile aynı); Tur 2 görünür.
