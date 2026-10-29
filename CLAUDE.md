@@ -35,3 +35,20 @@ onay beklemeden yap, sonunda Türkçe özetle; push saatleri kuralı (hafta içi
 - Karakter: `tool/karakter/` (bpy, IK rig, 22 klip × 2 bakış → sprite sheet, oyuna base64 gömülü). Raket HEP sağ elde: backhand ayrı klip, aynalama yok. Ayak işi badminton: split step, chassé, öne adım, arkaya çapraz. Render.lar
   `/mnt/project-files/birdie-smash/` altında; oyuna girişi (sprite ya da
   three.js) henüz kararlaştırılmadı.
+
+## Skill ve MCP yönlendirmesi (yasin 2026-10-29: "Unity oyuna Unity, Flutter'a Flutter")
+
+Kod yazmadan önce ilgili skill çağrılır; uymuyorsa özette "skill dışı" yazılır.
+
+| İş | Skill | MCP |
+|---|---|---|
+| Unity oyun/menü/kamera/fizik/iOS hattı (`unity/`) | `birdie-unity` | `mcp-unity` (yalnız PC, açık Editor; kurulum skill'de); bulutta doğrulama `birdie-unity` merdiveni |
+| Karakter, rig, klip (`tool/karakter/`) | `birdie-karakter`, `3d-animator` | `blender` (yalnız PC) |
+| Flutter kabuğu (`lib/`, `ios/`, WebView, haptic, devir kanalı) | `flutter-architecture`, `flutter-expert` ⚠️, `flutter-testing` | `dart` |
+| Menü/ekran tasarımı, UI cilası | `ui-ux-pro-max`, `emil-design-eng` | `ui-ux-pro-mcp` |
+| Kod keşfi (her iş) | — | `codebase-memory-mcp` önce (`search_graph`, `trace_path`), sonra grep |
+
+`flutter-expert` Bloc/GoRouter önerir; kabuk tek ekran, yönlendirme yok. Bulutta
+skill'ler ve `codebase-memory`/`dart`/`ui-ux-pro` sunucuları sandikapp'in
+`tool/bulut_kurulum.sh` betiğiyle her thread'e açılır.
+
