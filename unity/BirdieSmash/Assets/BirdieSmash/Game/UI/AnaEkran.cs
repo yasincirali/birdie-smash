@@ -115,12 +115,13 @@ namespace BirdieSmash.Game
             }).Every(33);
         }
 
-        // Kutucuk (a-tile): üstte simge + BÜYÜK küçük etiket, ortada dar italik değer, altta açıklama (isteğe bağlı simge).
+        // Kutucuk (a-tile): üstte simge + küçük etiket (r55: büyük harf kalktı, "MATCH OF THE DAY" Nunito ExtraBold 11 px'te 105 px'e
+        // sığmıyor, yazı 11'in altına küçülmüyor; cümle düzeninde iki satıra sarılabilir), ortada dar italik değer, altta açıklama (isteğe bağlı simge).
         VisualElement Karo(Texture2D ikon, string etiket, string deger, string alt, Texture2D altIkon, System.Action a, string erisim, string cls = null)
         {
             var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("karo"); if (cls != null) d.AddToClassList(cls);
             var ust_ = new VisualElement(); ust_.AddToClassList("karo-ust"); ust_.pickingMode = PickingMode.Ignore; d.Add(ust_);
-            ust_.Add(Ikon(ikon, 13, cls == "karo--altin" ? ALTIN : SOLUK)); var et = Yazi(Buyuk(etiket), 11, "karo-etiket"); ust_.Add(et);
+            ust_.Add(Ikon(ikon, 13, cls == "karo--altin" ? ALTIN : SOLUK)); var et = Yazi(etiket, 11, "karo-etiket"); ust_.Add(et);
             d.Add(Yazi(deger, 20, "karo-deger"));
             if (!string.IsNullOrEmpty(alt))
             {
