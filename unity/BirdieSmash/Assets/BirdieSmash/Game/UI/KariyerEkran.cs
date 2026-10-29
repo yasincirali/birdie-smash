@@ -140,7 +140,10 @@ namespace BirdieSmash.Game
             // "Singap ore"); USS'teki sarma denemesi (flex-basis %70) Yoga'da satırı kırmadı. Büyük yazıda durum orta sütunun
             // altına iner, ad satırın tamamını alır.
             var dz = Yazi(durum, 12, gecti ? "durum-gecti" : simdi ? "durum-simdi" : acik ? "durum-gecti" : "durum-kilit");
-            if (K >= 1.35f) { dz.style.marginTop = 4; orta.Add(dz); } else r.Add(dz);
+            // r48 (2026-10-29): kilit nedeni ("5. basamaktan sonra") sağda uzun bir sütun oluyor, adı üç satıra kırıyordu
+            // ("6. Kuala / Lumpur / finali"); neden de büyük yazıdaki gibi orta sütunun altına iner.
+            bool nedenli = kilit && durum != L.T("Kilitli");
+            if (K >= 1.35f || nedenli) { dz.style.marginTop = 4; orta.Add(dz); } else r.Add(dz);
             Erisim.Etiket(kart, L.T(TurAd(KariyerVeri.TurOf(g))) + ", " + (b + 1) + ". " + L.T("basamak") + ", " + L.T(kb.yer) + ", " + st.isim + (final ? ", " + L.T("Final") : "") + ", " + L.T("{0}/3 yıldız", ys) + ", " + durum, "dugme", simdi);
             return kart;
         }
