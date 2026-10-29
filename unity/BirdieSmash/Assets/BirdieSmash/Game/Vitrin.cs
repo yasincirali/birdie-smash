@@ -145,6 +145,14 @@ namespace BirdieSmash.Game
                     float alt0 = bBas.position.y - .62f * bu, ust0 = bBas.position.y + 1.12f * bu;
                     h = new Vector3(bBas.position.x, (alt0 + ust0) * .5f, bBas.position.z); yy = (ust0 - alt0) * .5f; yx = .8f * bu;
                 }
+                // 2026-10-29 Tüycük: baş ve gövde tek yumurta; yüz (gözler) baş kemiğinin altında, boyun hizasında. Baş kemiğinden
+                // kurulan pencere gözleri kesip yumurtanın tepesini gösteriyordu. Pencere model biriminden (baş kemiği dinlenmede
+                // .78; tuycuk.py): gülüşün altı .54 ile perçem tepesi 1,10 arası.
+                if (Tuycuk)
+                {
+                    float u = (bBas.position.y - YER.y) / .78f, alt0 = YER.y + .54f * u, ust0 = YER.y + 1.10f * u;
+                    h = new Vector3(bBas.position.x, (alt0 + ust0) * .5f, bBas.position.z); yy = (ust0 - alt0) * .5f; yx = .30f * u;
+                }
                 // 2026-10-27 (r42 menu_karakter_sac_deneme): Afro denenince saçın tepesi kadrajın üstünden taşıyordu; sabit pencere
                 // kısa saça göre kuruluydu, hacimli saç kesilince kısa kesimden ayırt edilmiyordu. Pencere açık saç parçasının
                 // tepesini kapsayacak kadar yukarı büyür, alt kenar (yüz) yerinde kalır; kısa saçta eski kadraj birebir (yalnız büyür).
@@ -168,6 +176,7 @@ namespace BirdieSmash.Game
             }
             else if (odak == TUTUS && (bGrip != null || bEl != null)) TutusPoz(boy, out cam, out hedef);
         }
+        bool Tuycuk { get { return fig != null && fig.PrefabAdi == "tuycuk"; } }
         // Baş kemiğinden ten tepesine yükseklik (gövde ağı sınırı; saç ayrı parça, dahil değil) boyun %14'ünden büyükse iri baş.
         bool IriBas(float boy, out float ust)
         {
@@ -187,7 +196,7 @@ namespace BirdieSmash.Game
             Vector3 dis = hedef - YER; dis.y = 0; dis = dis.sqrMagnitude > 1e-4f ? dis.normalized : Vector3.right;
             var tercih = (Vector3.forward * .8f + dis * .6f + Vector3.up * .2f).normalized;
             // oyuncak oranında el 1,45× (avuç ~15 cm): boy oranlı pencere eli kesiyordu; avuç boyundan kurulur (gerçek oranlıda aynen)
-            float yyT = .075f * boy, yxT = .1f * boy, ustT; if (IriBas(boy, out ustT) && bParmak != null && bEl != null)
+            float yyT = .075f * boy, yxT = .1f * boy, ustT; if ((IriBas(boy, out ustT) || Tuycuk) && bParmak != null && bEl != null)   // Tüycük: eldiven Oyuncak eli kadar iri
             { float pl = (bParmak.position - bEl.position).magnitude; yyT = Mathf.Max(yyT, 1.25f * pl); yxT = Mathf.Max(yxT, 1.65f * pl); }
             float kay; float d = Uzaklik(yyT, yxT, out kay); float gx, gy; Gorus(out gx, out gy);
             Vector3 bas = bBas != null ? bBas.position + Vector3.up * .06f * boy : YER + Vector3.up * .93f * boy, govde = bas - Vector3.up * .3f * boy;
