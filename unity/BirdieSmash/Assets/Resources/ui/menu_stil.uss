@@ -7,11 +7,15 @@
    yıldız; gök #5FC8FF ikincil veri (stat çubuğu, deneme); yazı #F4F6FF, soluk #A3ABD1.
    Kontrast (WCAG): limon/lacivert 15.2:1, koyu yazı/limon 16.6:1, soluk/lacivert 7.7:1, mercan/lacivert 5.7:1,
    altın/lacivert 11.3:1. Mercan üstünde beyaz 3.1:1 olduğu için mercan zeminde koyu yazı.
-   Yazı tipi: Barlow (gövde: Medium; kalın: Bold) ve Barlow Condensed ExtraBold/Black Italic (başlık, rakam; .baslik,
-   .rakam). OFL 1.1, Resources/fonts (TTF, dinamik: Türkçe ğ ş ı İ ç ö ü dosyada var, atlasa ihtiyaç anında girer).
+   Yazı tipi (2026-10-29 Tüycükler, yasin "menüdeki iyileştirmeleri ekle"; eskisi Barlow / Barlow Condensed italik): gövde
+   Nunito (SemiBold; kalın: Bold / ExtraBold), başlık ve rakam Baloo 2 ExtraBold (.baslik, .rakam). Neden: eğik dar yayın
+   yazısı "spor yayını" diyordu; yuvarlak kalın yazı oyunun neşeli diline ve çocuk oyunculara uyar, Türkçe harfler iki
+   dosyada da var. OFL 1.1, Resources/fonts (değişken yazı tipinden sabit ağırlık, Baloo yalnız Latin). r51: Baloo'nun satır
+   yüksekliği 1,60 em idi (Devanagari payı), iki satırlık başlıkların arası açılıyordu; dosyaya üst 900 / alt 260 (1,16 em;
+   Türkçe büyük harf noktaları 849'a kadar) yazıldı. UI Toolkit'te line-height yok, bu yüzden dosyada.
    Neden -unity-font-style: bold yerine ayrı dosya: tek ağırlıklı bir Font'ta kalın istenirse TextCore sahte kalınlık
-   (SDF şişirme) uygular; gerçek Bold dosyası daha net. Bu yüzden "kalın" sınıfları Bold dosyasını seçer, stil normal kalır.
-   ★ ✓ ✗ glifleri Barlow'da yok: simgeler dokudan (UiOge Ikonlar), metinde bu karakterler kullanılmaz.
+   (SDF şişirme) uygular; gerçek ağırlık dosyası daha net. Bu yüzden "kalın" sınıfları ayrı dosyayı seçer, stil normal kalır.
+   ★ ✓ ✗ glifleri bu yazı tiplerinde de yok: simgeler dokudan (UiOge Ikonlar), metinde bu karakterler kullanılmaz.
    Yazı boyutu burada yok: USS'te em/rem olmadığı için Dynamic Type çarpanıyla koddan yazılır (UiOge.Yazi).
    Birim: panel birimi (ScaleWithScreenSize, 375 genişlik) >= 1 pt; dokunma alanı en az 44.
    Eğik plaka, eğimli düğme, gradyan ve ışık süpürmesi UI Toolkit'te yok (skew, clip-path, gradient, box-shadow): koddan
@@ -53,15 +57,15 @@
 .alt-katman { display: none; background-color: rgba(10, 6, 14, 0.6); justify-content: flex-end; }
 .kalkan { display: none; background-color: rgba(0, 0, 0, 0); }
 
-.yazi { -unity-font-definition: resource("fonts/Barlow-Medium"); color: var(--tx); white-space: normal; -unity-text-align: upper-left; margin: 0; padding: 0; flex-shrink: 1; }
-.kalin { -unity-font-definition: resource("fonts/Barlow-Bold"); }
+.yazi { -unity-font-definition: resource("fonts/Nunito-SemiBold"); color: var(--tx); white-space: normal; -unity-text-align: upper-left; margin: 0; padding: 0; flex-shrink: 1; }
+.kalin { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .soluk { color: var(--mu); }
-.altin { color: var(--gold); -unity-font-definition: resource("fonts/Barlow-Bold"); }
-.etiket { color: var(--mu); -unity-font-definition: resource("fonts/Barlow-Bold"); letter-spacing: 0.5px; }
+.altin { color: var(--gold); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+.etiket { color: var(--mu); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); letter-spacing: 0.5px; }
 .grup { color: rgba(255, 255, 255, 0.8); margin-top: 14px; margin-bottom: 6px; }
-.grup-kalin { color: var(--tx); -unity-font-definition: resource("fonts/Barlow-Bold"); margin-top: 16px; margin-bottom: 4px; }
-.bolum { color: var(--tx); -unity-font-definition: resource("fonts/Barlow-Bold"); margin-top: 22px; margin-bottom: 2px; }
-.sekme-baslik { -unity-font-definition: resource("fonts/Barlow-Bold"); margin-bottom: 4px; }
+.grup-kalin { color: var(--tx); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); margin-top: 16px; margin-bottom: 4px; }
+.bolum { color: var(--tx); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); margin-top: 22px; margin-bottom: 2px; }
+.sekme-baslik { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); margin-bottom: 4px; }
 .sekme-icerik { padding: 8px 16px 16px 16px; }
 .esnek { flex-grow: 1; min-height: 12px; }
 .esnek-yatay { flex-grow: 1; flex-shrink: 1; margin-left: 10px; }
@@ -82,13 +86,13 @@
 }
 .dugme:active { background-color: var(--navy3); scale: 0.98 0.98; }
 .dugme-ic { align-items: center; }
-.dugme-yazi { -unity-font-definition: resource("fonts/Barlow-Bold"); -unity-text-align: middle-center; }
+.dugme-yazi { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); -unity-text-align: middle-center; }
 .dugme-alt { color: var(--mu); -unity-text-align: middle-center; margin-top: 2px; }
 .dugme--birincil { background-color: var(--sun); min-height: 60px; border-radius: 16px; margin-top: 10px; border-width: 0; }
-.dugme--birincil .dugme-yazi { -unity-font-definition: resource("fonts/BarlowCondensed-ExtraBoldItalic"); letter-spacing: 0.5px; }   /* yön A: birincil başlık dar italik */
+.dugme--birincil .dugme-yazi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); letter-spacing: 0.5px; }   /* yön A: birincil başlık dar italik */
 .dugme--birincil:active { background-color: rgb(255, 178, 94); }
 .dugme--birincil .dugme-yazi { color: var(--cta-ink); }
-.dugme--birincil .dugme-alt { color: var(--cta-ink); -unity-font-definition: resource("fonts/Barlow-Bold"); }   /* C: alt satır tam opak + kalın (APCA ≥ 60) */
+.dugme--birincil .dugme-alt { color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }   /* C: alt satır tam opak + kalın (APCA ≥ 60) */
 .dugme--pasif { background-color: rgb(34, 24, 41); }
 .dugme--pasif .dugme-yazi, .dugme--pasif .dugme-alt { color: rgba(255, 255, 255, 0.55); }
 .ikon-dugme { width: 44px; height: 44px; padding: 0; align-items: center; justify-content: center; border-radius: 22px; background-color: rgba(38, 26, 48, 0.78); border-color: var(--ln); margin: 0; }
@@ -102,10 +106,10 @@
 .cip-ic { flex-direction: row; align-items: center; justify-content: center; }
 .cip-ic .ikon { margin-right: 6px; }
 .cip-yazilar { flex-shrink: 1; align-items: center; }
-.cip .dugme-yazi { -unity-font-definition: resource("fonts/Barlow-Medium"); }
+.cip .dugme-yazi { -unity-font-definition: resource("fonts/Nunito-SemiBold"); }
 .cip--secili { background-color: var(--tx); border-color: var(--tx); }
 .cip--secili:active { background-color: var(--tx); }
-.cip--secili .dugme-yazi { color: var(--ink); -unity-font-definition: resource("fonts/Barlow-Bold"); }
+.cip--secili .dugme-yazi { color: var(--ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .cip--secili .dugme-alt { color: rgba(26, 18, 33, 0.85); }
 .satir { flex-direction: row; flex-wrap: wrap; margin-left: -4px; margin-right: -4px; }
 .satir.arali { justify-content: space-between; align-items: center; margin-left: 0; margin-right: 0; flex-wrap: nowrap; }
@@ -129,7 +133,7 @@
 .oyna-icerik { padding: 8px 16px 10px 16px; }
 .marka { align-items: center; margin-top: 8px; }
 .logo { width: 84px; height: 84px; }
-.marka-ad { -unity-font-definition: resource("fonts/BarlowCondensed-BlackItalic"); -unity-text-align: middle-center; margin-top: 2px; }
+.marka-ad { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); -unity-text-align: middle-center; margin-top: 2px; }
 .marka .soluk { -unity-text-align: middle-center; }
 .siradaki { border-color: rgba(249, 210, 114, 0.30); }
 .rakip-satir { flex-direction: row; align-items: center; margin-top: 4px; flex-wrap: nowrap; margin-left: 0; margin-right: 0; }
@@ -151,8 +155,8 @@
 .basamak-satir { flex-direction: row; align-items: center; margin: 0; flex-wrap: nowrap; }
 .basamak-rozet { width: 36px; align-items: center; flex-shrink: 0; }
 .basamak-orta { flex-grow: 1; flex-shrink: 1; margin-left: 8px; margin-right: 8px; }
-.durum-gecti { color: var(--sun); -unity-font-definition: resource("fonts/Barlow-Bold"); flex-shrink: 0; }
-.durum-simdi { color: var(--sun); -unity-font-definition: resource("fonts/Barlow-Bold"); flex-shrink: 0; }
+.durum-gecti { color: var(--sun); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); flex-shrink: 0; }
+.durum-simdi { color: var(--sun); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); flex-shrink: 0; }
 .durum-kilit { color: var(--mu); flex-shrink: 0; }
 .ipucu { color: var(--mu2); margin-top: 8px; }
 .buyuk-yazi .basamak-satir { flex-wrap: wrap; }
@@ -253,7 +257,7 @@
 .stat-iz { flex-grow: 1; height: 8px; background-color: rgba(255, 255, 255, 0.1); border-radius: 4px; margin: 0 8px; }
 .stat-dolu { position: absolute; left: 0; top: 0; bottom: 0; background-color: var(--sky); border-radius: 4px; }
 .stat-orta { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background-color: rgba(255, 255, 255, 0.55); }
-.stat-deger { min-width: 30px; white-space: nowrap; -unity-text-align: middle-right; -unity-font-definition: resource("fonts/Barlow-Bold"); flex-shrink: 0; }   /* r13: ×2'de "5" / "0" diye kırılıyordu */
+.stat-deger { min-width: 30px; white-space: nowrap; -unity-text-align: middle-right; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); flex-shrink: 0; }   /* r13: ×2'de "5" / "0" diye kırılıyordu */
 .stat-isaret { width: 16px; margin-left: 4px; align-items: center; flex-shrink: 0; }
 .buyuk-yazi .stat-satir { flex-wrap: wrap; }
 .buyuk-yazi .stat-ad { width: 100%; }
@@ -263,21 +267,21 @@
 .model-dugme { margin-top: 8px; }
 .esnek-yatay-sifir { flex-grow: 1; flex-shrink: 1; }
 .renk--kilit { opacity: 0.55; }
-.renk-kilit-yazi { -unity-text-align: middle-center; -unity-font-definition: resource("fonts/Barlow-Bold"); margin-top: 1px; }
+.renk-kilit-yazi { -unity-text-align: middle-center; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); margin-top: 1px; }
 .ad-alan { margin: 0 0 4px 0; }
 .ad-alan .unity-base-text-field__input { min-height: 44px; background-color: var(--navy2); color: var(--tx); border-radius: 12px; border-width: 1px; border-color: rgba(255, 255, 255, 0.12); padding: 8px 12px; -unity-text-align: middle-left; }
 
 /* Profil */
 .profil-ust { flex-direction: row; align-items: center; margin: 0 0 8px 0; flex-wrap: nowrap; }
 .avatar { width: 56px; height: 56px; border-radius: 28px; align-items: center; justify-content: center; flex-shrink: 0; }
-.deger { -unity-font-definition: resource("fonts/Barlow-Bold"); color: var(--lime); }
+.deger { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); color: var(--lime); }
 .basarim { flex-direction: row; align-items: center; min-height: 44px; margin: 0; padding: 4px 0; border-bottom-width: 1px; border-color: rgba(255, 255, 255, 0.06); flex-wrap: nowrap; }
 .basarim.kilitli { opacity: 0.7; }
 .basarim .esnek-yatay { margin-right: 8px; }
 
 /* Ayarlar ve sayfalar */
 .sayfa-basi { flex-direction: row; align-items: center; min-height: 56px; padding: 0 16px; }
-.sayfa-baslik { -unity-font-definition: resource("fonts/Barlow-Bold"); flex-shrink: 1; }
+.sayfa-baslik { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); flex-shrink: 1; }
 .nasil-baslik { margin-top: 12px; margin-bottom: 2px; }
 
 /* sekme çubuğu (49 + alt güvenli alan); seçili = üst çizgi + kalın yazı + tam opak simge */
@@ -293,8 +297,8 @@
 .sekme--secili .sekme-cizgi { display: flex; }
 .sekme-ikon { opacity: 1; }
 .sekme--secili .sekme-ikon { opacity: 1; }
-.sekme-yazi { -unity-text-align: middle-center; color: var(--mu); margin-top: 3px; -unity-font-definition: resource("fonts/Barlow-SemiBold"); }
-.sekme--secili .sekme-yazi { color: var(--sun); -unity-font-definition: resource("fonts/Barlow-Bold"); }
+.sekme-yazi { -unity-text-align: middle-center; color: var(--mu); margin-top: 3px; -unity-font-definition: resource("fonts/Nunito-Bold"); }
+.sekme--secili .sekme-yazi { color: var(--sun); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 /* 2026-10-27 yön C mikro hareket: tek sekme göstergesi (UiKok GostergeYerlestir). Yalnız translate; genişlik yalnız yerleşim
    değişince yazılır. Hareketi azaltta süre 0. */
 .sekme-gosterge { position: absolute; left: 0; top: 0; height: 3px; transition-property: translate; transition-duration: 0.18s; transition-timing-function: ease-out; }
@@ -325,7 +329,7 @@
 .vitrin-odak { flex-direction: row; flex-wrap: nowrap; margin: 0 0 4px 0; align-self: flex-start; }
 .odak-dugme { min-width: 56px; margin-right: 6px; padding: 0 10px; background-color: rgba(51, 35, 63, 0.9); }
 .odak-dugme--secili { background-color: var(--tx); }
-.odak-dugme--secili .dugme-yazi { color: var(--ink); -unity-font-definition: resource("fonts/Barlow-Bold"); }
+.odak-dugme--secili .dugme-yazi { color: var(--ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .alt-segment { margin: 4px 0 8px 0; }
 .koz-izgara { margin: 0 -4px; }
 .izgara > .koz-kart { flex-basis: 45%; flex-grow: 1; margin: 4px; padding: 12px; min-height: 96px; align-items: flex-start; justify-content: flex-start; }
@@ -343,12 +347,12 @@
 .buyuk-yazi .izgara > .sac-kare { flex-basis: auto; min-height: 48px; }
 
 /* ===== 2026-10-26 arayüz yönü A "Yayın Gecesi" (faz 1: belirteçler, yazı tipleri, Oyna) =====
-   Yazı aileleri: .baslik = Barlow Condensed ExtraBold Italic (yayın başlığı, BÜYÜK harf koddan), .rakam = Black Italic
+   Yazı aileleri: .baslik = (2026-10-29) Baloo 2 ExtraBold (BÜYÜK harf koddan), .rakam = aynı dosya
    (sayılar: Sv, Tüy, skor). Ölçüler yön A telefon kalıbından (390 genişlik), panel 375: aynı pt değerleri. */
-.baslik { -unity-font-definition: resource("fonts/BarlowCondensed-ExtraBoldItalic"); letter-spacing: 0.2px; }
-.rakam { -unity-font-definition: resource("fonts/BarlowCondensed-BlackItalic"); white-space: nowrap; flex-shrink: 0; }
-.kalin-yari { -unity-font-definition: resource("fonts/Barlow-SemiBold"); }
-.sayfa-baslik { -unity-font-definition: resource("fonts/BarlowCondensed-ExtraBoldItalic"); letter-spacing: 0.3px; }
+.baslik { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); letter-spacing: 0.2px; }
+.rakam { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); white-space: nowrap; flex-shrink: 0; }
+.kalin-yari { -unity-font-definition: resource("fonts/Nunito-Bold"); }
+.sayfa-baslik { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); letter-spacing: 0.3px; }
 .grup-kalin, .bolum { letter-spacing: 0.3px; }
 
 /* üst şerit hapları (a-top): 44 pt yükseklik, yarı saydam lacivert, ince çerçeve */
@@ -368,7 +372,7 @@
 .isik-sol { position: absolute; left: -120px; top: -80px; width: 300px; height: 300px; }
 .isik-sag { position: absolute; right: -120px; top: -80px; width: 300px; height: 300px; }
 .afis { position: absolute; left: 0; right: 0; top: 8%; height: 54%; }
-.vs { position: absolute; left: 55%; top: 31%; -unity-font-definition: resource("fonts/BarlowCondensed-BlackItalic"); font-size: 44px; color: var(--tx);
+.vs { position: absolute; left: 55%; top: 31%; -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); font-size: 44px; color: var(--tx);
       text-shadow: 0 0 12px rgba(255, 160, 77, 0.85); -unity-text-outline-width: 0; }
 .buyuk-yazi .afis { opacity: 0.45; }
 .buyuk-yazi .vs { display: none; }
@@ -380,13 +384,13 @@
          -unity-background-scale-mode: stretch-to-fill; }
 .plaka-ust { flex-direction: row; align-items: center; flex-wrap: wrap; margin: -2px 0 6px 0; }
 .serit { padding: 4px 12px 3px 12px; margin-right: 10px; -unity-slice-left: 10; -unity-slice-right: 10; -unity-slice-top: 0; -unity-slice-bottom: 0; -unity-slice-scale: 0.5px; }
-.serit-yazi { -unity-font-definition: resource("fonts/BarlowCondensed-ExtraBoldItalic"); color: var(--gold); letter-spacing: 1.4px; white-space: nowrap; }
-.plaka-tur { -unity-font-definition: resource("fonts/Barlow-Bold"); color: var(--mu); letter-spacing: 1.4px; }
+.serit-yazi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--gold); letter-spacing: 1.4px; white-space: nowrap; }
+.plaka-tur { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); color: var(--mu); letter-spacing: 1.4px; }
 .plaka-baslik { color: var(--tx); margin: 0; }
 .plaka-meta { flex-direction: row; align-items: center; justify-content: space-between; margin-top: 8px; }
 .plaka-rakip { flex-direction: row; align-items: center; flex-shrink: 1; flex-grow: 1; margin-right: 8px; }
 .plaka-nokta { width: 10px; height: 10px; border-radius: 5px; border-width: 0; }
-.plaka-rakip-yazi { -unity-font-definition: resource("fonts/Barlow-SemiBold"); flex-shrink: 1; }
+.plaka-rakip-yazi { -unity-font-definition: resource("fonts/Nunito-Bold"); flex-shrink: 1; }
 .plaka .yildizlar { flex-shrink: 0; }
 .plaka .basamak-cubugu { margin-top: 10px; }
 .plaka .basamak { height: 5px; border-radius: 3px; margin-right: 5px; background-color: rgba(255, 255, 255, 0.14); }
@@ -401,8 +405,8 @@
        transition-property: scale; transition-duration: 0.16s; transition-timing-function: ease-out; }
 .cta:active { scale: 0.97 0.97; transition-duration: 0.08s; }   /* C mikro: basış 0,97 / 80 ms, bırakış 160 ms (hedef durumun süresi geçerli) */
 .cta-yazilar { flex-grow: 1; flex-shrink: 1; }
-.cta-baslik { -unity-font-definition: resource("fonts/BarlowCondensed-BlackItalic"); color: var(--cta-ink); letter-spacing: 0.8px; }
-.cta-alt { -unity-font-definition: resource("fonts/Barlow-Bold"); color: var(--cta-ink); margin-top: 2px; }   /* C: alt satır tam opak kalın (araştırma: %78 SemiBold APCA sınırındaydı) */
+.cta-baslik { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--cta-ink); letter-spacing: 0.8px; }
+.cta-alt { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); color: var(--cta-ink); margin-top: 2px; }   /* C: alt satır tam opak kalın (araştırma: %78 SemiBold APCA sınırındaydı) */
 .cta-ikon { width: 52px; height: 52px; border-radius: 26px; background-color: var(--cta-ink); align-items: center; justify-content: center; flex-shrink: 0; margin-left: 10px; padding-left: 3px; }
 .cta-supurme { position: absolute; top: 0; bottom: 0; left: -40%; width: 30%; }
 
@@ -413,17 +417,17 @@
 .karo--genis { flex-grow: 1.25; }
 .karo--altin { border-color: rgba(249, 210, 114, 0.45); -unity-background-scale-mode: stretch-to-fill; }
 .karo--altin .karo-etiket { color: var(--gold); }
-.karo--altin .karo-alt { color: var(--gold); -unity-font-definition: resource("fonts/Barlow-Bold"); }
+.karo--altin .karo-alt { color: var(--gold); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .karo-ust { flex-direction: row; align-items: center; }
-.karo-etiket { -unity-font-definition: resource("fonts/Barlow-Bold"); color: var(--mu); letter-spacing: 0.6px; margin-left: 4px; white-space: nowrap; flex-shrink: 1; }
-.karo-deger { -unity-font-definition: resource("fonts/BarlowCondensed-ExtraBoldItalic"); color: var(--tx); margin-top: 1px; }
+.karo-etiket { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); color: var(--mu); letter-spacing: 0.6px; margin-left: 4px; white-space: nowrap; flex-shrink: 1; }
+.karo-deger { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--tx); margin-top: 1px; }
 .karo-alt-satir { flex-direction: row; align-items: center; }
 .karo-alt { color: var(--mu); margin-left: 3px; }
 .buyuk-yazi .karo-satir { flex-direction: column; margin: 0; }
 .buyuk-yazi .karo { flex-basis: auto; flex-grow: 0; margin: 4px 0; }
 
 /* diğer sekmeler: kart başlıkları ve durum etiketleri yön A diliyle (renkler yukarıda değişkenlerden) */
-.durum-simdi { -unity-font-definition: resource("fonts/BarlowCondensed-ExtraBoldItalic"); letter-spacing: 1px; }
+.durum-simdi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); letter-spacing: 1px; }
 
 /* ===== 2026-10-27 duyarlı yerleşim (yasin build 41: "her telefonda açıkça gözükmeli"; Game/UI/Duyarli.cs) =====
    Yalnız ölçü; renk ve yazı ailesi değişmez. .kisa: güvenli alan düşülünce panel yüksekliği < 700 (iPhone SE, 8 Plus,
@@ -457,3 +461,35 @@
 .genis .alt-sayfa { width: 100%; max-width: 560px; }
 .genis .sekme-cubugu { justify-content: center; }
 .genis .sekme { max-width: 140px; }
+
+/* ===== 2026-10-29 Tüycükler menü dili (yasin: "menüdeki iyileştirmeleri ekle", oyuncu modellerine dokunmadan; artifact
+   3vu7JypgDVbQgaHhd7nzt4). Renk ve yerleşim aynı (Gün Batımı); değişen biçim: köşeler daha yuvarlak, düğme ve kartların
+   altında koyu bir "dudak" (3–5 pt alt kenar), basınca 2 pt aşağı iner ve dudak incelir: dokunulabilir olan kabarık durur.
+   Neden alt kenar ve box-shadow değil: UI Toolkit'te gölge yok; alt kenar yerleşimi değiştirmeden aynı etkiyi verir.
+   Dokunma alanı değişmez (min-height kenarı da sayar). Hareketi azaltta aşağı inme yok, yalnız renk. ===== */
+.dugme { border-radius: 16px; border-bottom-width: 3px; border-bottom-color: rgba(0, 0, 0, 0.38); transition-property: background-color, scale, translate; }
+.dugme:active { scale: 1 1; translate: 0 2px; border-bottom-width: 1px; }
+.dugme--birincil { border-radius: 22px; border-bottom-width: 5px; border-bottom-color: rgb(196, 96, 42); }
+.dugme--birincil:active { border-bottom-width: 2px; translate: 0 3px; }
+.ikon-dugme { border-bottom-width: 1px; }
+.ikon-dugme:active { translate: 0 1px; }
+.cip { border-radius: 16px; }
+.cip--secili { border-bottom-color: rgb(196, 170, 182); }
+.kart { border-radius: 20px; border-bottom-width: 3px; border-bottom-color: rgba(0, 0, 0, 0.34); }
+.karo { border-radius: 18px; border-bottom-width: 3px; border-bottom-color: rgba(0, 0, 0, 0.36); }
+.dugum { border-radius: 20px; }
+.renk { border-radius: 14px; }
+.ust-hap { border-bottom-width: 2px; border-bottom-color: rgba(0, 0, 0, 0.35); }
+.vitrin-alan { border-radius: 22px; }
+.alt-sayfa { border-top-left-radius: 26px; border-top-right-radius: 26px; }
+.yuva-dugme { border-radius: 16px; }
+/* OYNA ve plaka dokuları (UiOge Egik, PlakaIc) artık yuvarlak köşeli; köşe yarıçapı dikey dilime de girer, yoksa yükseklik
+   değişince köşe esner. */
+.cta { -unity-slice-top: 34; -unity-slice-bottom: 44; }
+.cta:active { scale: 1 1; translate: 0 3px; }
+.plaka { -unity-slice-bottom: 34; }
+.vs { text-shadow: 0 3px 0 rgba(30, 10, 12, 0.85); }
+.az-hareket .dugme:active, .az-hareket .cta:active, .az-hareket .ikon-dugme:active { translate: 0 0; }
+/* r51: Nunito ExtraBold Barlow Bold'dan geniş, "MATCH OF THE DAY" kutucukta kesiliyordu: harf aralığı daraldı. */
+.karo-etiket { letter-spacing: 0.1px; }
+.serit { -unity-slice-left: 22; -unity-slice-right: 22; }   /* SIRADAKİ şeridi artık hap (UiOge EgikLimonKucuk) */

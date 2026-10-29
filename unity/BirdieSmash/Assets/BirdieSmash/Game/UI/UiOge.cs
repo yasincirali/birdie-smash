@@ -246,13 +246,16 @@ namespace BirdieSmash.Game
             // OYNA düğmesi (a-cta): eğik kenarlı (sol kenar "/" 14 pt, sağ kenar aynı), dikey gradyan #E6FF73 → #D8FF3A (%55) →
             // #B9E61F, altta 4 pt koyu iç gölge. 9 dilim: yan dilimler 16 pt (32 doku pikseli), yükseklik 80 pt.
             // 2026-10-27 yön C: limon yerine gün batımı degradesi (UiKok.CTA_UST/ORTA/ALT, yukarıda); ad geriye uyum için aynı.
-            EgikLimon = Egik(96, 160, 28, UiKok.CTA_UST, UiKok.CTA_ORTA, UiKok.CTA_ALT, 8);
+            // 2026-10-29 Tüycükler: Egik artık eğik değil, yuvarlak köşeli jöle düğme (aşağıda); ad ve dilimler geriye uyum için aynı.
+            EgikLimon = Egik(96, 160, 28, UiKok.CTA_UST, UiKok.CTA_ORTA, UiKok.CTA_ALT, 10);
             // Etiket şeridi (a-kick "SIRADAKİ MAÇ"): düz limon, küçük eğim (−12°), 22 pt.
             // 2026-10-27 yön C: dolgusuz altın çerçeve + altın yazı (C taslağı .etk span); ekranda tek doygun dolgu OYNA kalsın.
-            EgikLimonKucuk = Sekil(32, 44, (x, y, ic) => { float yt = 44 - y, sol = 9 * (1 - yt / 44), sag = 32 - 9 * (yt / 44); return x >= sol + ic && x <= sag - ic && yt >= ic && yt <= 44 - ic; },
+            // 2026-10-29 Tüycükler: eğik şerit yerine hap (yarıçap 20 doku pikseli; USS .serit yan dilimi 22). Dolgusuz altın çerçeve aynı.
+            EgikLimonKucuk = Sekil(48, 44, (x, y, ic) => YuvarlakIc(x, y, 48, 44, 20, ic),
                 (x, y) => new Color(UiKok.ALTIN.r, UiKok.ALTIN.g, UiKok.ALTIN.b, .10f), new Color(UiKok.ALTIN.r, UiKok.ALTIN.g, UiKok.ALTIN.b, 1), 3);
             // Yayın plakası (a-plate): üç köşe 14 pt yuvarlak, sağ alt 18 pt kesik; soldan sağa navy2 → navy; 1 pt ince çerçeve.
-            Plaka = Sekil(96, 96, (x, y, ic) => PlakaIc(x, y, 96, 96, ic), (x, y) => Color.Lerp(new Color(NAVY2.r, NAVY2.g, NAVY2.b, .97f), new Color(NAVY.r, NAVY.g, NAVY.b, .95f), x / 96f), new Color(1, 1, 1, .12f), 2);
+            // 2026-10-29 Tüycükler: sağ alt kesik kalktı, dört köşe yuvarlak; altta 6 doku pikseli (3 pt) koyu "dudak" (jöle kart).
+            Plaka = Sekil(96, 96, (x, y, ic) => PlakaIc(x, y, 96, 96, ic), (x, y) => { var c = Color.Lerp(new Color(NAVY2.r, NAVY2.g, NAVY2.b, .97f), new Color(NAVY.r, NAVY.g, NAVY.b, .95f), x / 96f); return y < 6 ? Color.Lerp(c, new Color(0, 0, 0, c.a), .4f) : c; }, new Color(1, 1, 1, .12f), 2);
             // Şimdiki basamak (a-pips .cur): limon / soluk limon çapraz çizgi; düz renk yerine desen, yalnız renkle değil.
             Serit = new Texture2D(96, 10, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             var sp = new Color32[96 * 10]; for (int y = 0; y < 10; y++) for (int x = 0; x < 96; x++) { bool on = Mathf.Repeat(x + y * .36f, 12) < 6; sp[y * 96 + x] = on ? (Color32)LIMON_D : (Color32)new Color(LIMON_D.r, LIMON_D.g, LIMON_D.b, .35f); }
@@ -308,28 +311,24 @@ namespace BirdieSmash.Game
         }
         // Eğik limon düğme dokusu istenen ekran ölçeğinde (IMGUI: yan dilim = egim + 2 piksel).
         public static Texture2D EgikDugme(int w, int h, int egim) { return Egik(w, h, egim, UiKok.CTA_UST, UiKok.CTA_ORTA, UiKok.CTA_ALT, Mathf.Max(1, h / 20)); }   // 2026-10-27 yön C degradesi
-        // Eğik dikdörtgen: sol kenar alttan üste sağa (14 pt), sağ kenar alttan üste sağa; gradyan üst, orta (%55), alt; altta iç gölge.
+        // 2026-10-29 Tüycükler (yasin: menüler neşeli dilde, "sadece renk değil"): eskiden eğik dikdörtgendi (sol ve sağ kenar
+        // egim kadar yatık). Şimdi yuvarlak köşeli (yarıçap egim + 4, yan dilim egim + 4'e sığar; IMGUI çağıranı aynı kalır),
+        // gradyan aynı; altta golge kadar koyu "dudak" (%30 siyah, eski iç gölgeden belirgin): düğme kabarık ve basılabilir okunur.
         static Texture2D Egik(int w, int h, int egim, Color ust, Color orta, Color alt, int golge)
         {
-            return Sekil(w, h, (x, y, ic) =>
-            {
-                float yt = h - y, sol = egim * (1 - yt / h), sag = w - egim * (yt / h);
-                return x >= sol + ic && x <= sag - ic && yt >= ic && yt <= h - ic;
-            }, (x, y) =>
+            float r = Mathf.Min(egim + 4, h / 2f, w / 2f);
+            return Sekil(w, h, (x, y, ic) => YuvarlakIc(x, y, w, h, r, ic), (x, y) =>
             {
                 float v = 1 - y / (float)h; Color c = v < .55f ? Color.Lerp(ust, orta, v / .55f) : Color.Lerp(orta, alt, (v - .55f) / .45f);
-                if (golge > 0 && y < golge) c = Color.Lerp(c, Color.black, .18f); return c;
+                if (golge > 0 && y < golge) c = Color.Lerp(c, Color.black, .30f); return c;
             }, Color.clear, 0);
         }
-        static bool PlakaIc(float x, float y, int w, int h, float ic)
+        static bool YuvarlakIc(float x, float y, float w, float h, float r, float ic)
         {
-            float r = 28, kes = 36; float yt = h - y;   // yt: yukarıdan
-            if (x < ic || x > w - ic || yt < ic || yt > h - ic) return false;
-            if (x + yt > w + h - kes - ic * .6f) return false;   // sağ alt kesik
-            float cx = x < r ? r : x > w - r ? w - r : x, cy = yt < r ? r : yt > h - r ? h - r : yt;
-            bool sagAlt = x > w - r && yt > h - r; if (sagAlt) return true;
-            float dx = x - cx, dy = yt - cy; return dx * dx + dy * dy <= (r - ic) * (r - ic);
+            if (x < ic || x > w - ic || y < ic || y > h - ic) return false;
+            float cx = Mathf.Clamp(x, r, w - r), cy = Mathf.Clamp(y, r, h - r), dx = x - cx, dy = y - cy; return dx * dx + dy * dy <= (r - ic) * (r - ic);
         }
+        static bool PlakaIc(float x, float y, int w, int h, float ic) { return YuvarlakIc(x, y, w, h, 28, ic); }   // 2026-10-29: kesik köşe kalktı
         // Şekil dokusu: ic(x, y, içe pay) şeklin içinde mi; renk(x, y) dolgu; cerceveKalin > 0 ise kenarda ince çerçeve.
         // 2×2 örnekleme ile kenar yumuşatma. y aşağıdan yukarı (Texture2D satır sırası).
         // Apply(false, true): GPU'ya yüklenince CPU kopyası bırakılır (2026-10-27 performans; dokular bir kez çizilir, okunmaz).

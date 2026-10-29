@@ -1,21 +1,20 @@
 === UNITY ===
-Gerçekçi oyuncu raketi artık parmaklarıyla tutuyor; üst üste kaybedince rakip biraz yavaşlıyor.
+Menüler yeni, neşeli bir görünüme geçti: yuvarlak yazılar ve kabarık, basılabilir düğmeler.
 
 Bu sürümde yeni:
-- Gerçekçi modelde raket sapı artık elin içinden geçmiyor: beş parmak sapı sarıyor, forehand, backhand ve file vuruşunda tutuş değişiyor. Sap biraz inceldi.
-- Yeni ya da küçük oyuncular için yardım: kaybettiğin her maçtan sonra sıradaki rakip biraz yavaşlar ve daha çok hata yapar (en çok 4 kademe). Kazandıkça rakip eski gücüne döner. Sonuç ekranı bunu söyler. Usta yolu değişmez.
-- Önceki sürümdeki file önü smaç, drive düellosu, sönen öğretici yazılar, güneş diskli ana ekran ve seviye yazıları bu sürümde de var.
+- Bütün menülerde yazı tipi değişti: başlıklar yuvarlak ve kalın, metinler daha okunaklı. Türkçe harfler tam.
+- Düğmeler ve kartlar yuvarlak köşeli, altlarında koyu bir kenar var; basınca hafifçe aşağı iniyorlar. OYNA düğmesi artık eğik değil.
+- Açılış, maça giriş perdesi, renkler, menü yerleşimi ve oyuncu modelleri aynı.
+- Önceki sürümdeki raket tutuşu ve kaybedince kolaylaşan rakip bu sürümde de var.
 
 Nasıl denenir:
-1. Ayarlar > Oyuncu görünümü > Gerçekçi seç. Soyunma odası > Görünüm > Yakın plan: Tutuş. Parmaklar sapın etrafında olmalı, sap avucun içinden geçmemeli.
-2. Aynı ekranda figürü sağa sola çevir: sap hiçbir açıdan elin içinden görünmemeli.
-3. Gerçekçi modelle bir maç oyna: smaç, drive, backhand ve file vuruşunda raket elde kalmalı, elden kopmamalı.
-4. Bir maçı bilerek kaybet: sonuç ekranında "Sıradaki maçta rakip biraz yavaşlayacak." yazmalı.
-5. Sonraki maçta rakip daha yavaş koşmalı, daha sık hata yapmalı. Üst üste kaybettikçe biraz daha kolaylaşmalı.
-6. Bir maç kazan: o yazı çıkmamalı, rakip bir kademe güçlenmeli.
-7. Usta yolunda kaybedince o yazı çıkmamalı.
-8. Oyuncak modelde tutuş eskisi gibi olmalı.
-9. Garip bir şey olursa telefonu ve ekranı yaz.
+1. Uygulamayı aç: açılış eskisi gibi oynamalı, BIRDIE SMASH yazısı yuvarlak harflerle çıkmalı.
+2. Ana ekranda OYNA düğmesine basılı tut: düğme biraz aşağı inmeli, bırakınca geri gelmeli.
+3. Kariyer, Soyunma odası, Profil ve Ayarlar'ı tek tek aç: yazılar kesilmemeli, üst üste binmemeli.
+4. Türkçe harflere bak (ş, ğ, ı, İ): hepsi aynı yazı tipinde görünmeli, kutu ya da farklı harf olmamalı.
+5. Telefonun Ayarlar > Ekran > Metin boyutu'nu büyüt ve menülere yeniden bak: düğme yazıları sığmalı.
+6. Bir maç oyna: skor ve maç sonu yazıları yeni yazı tipinde olmalı, oyuncular eskisi gibi.
+7. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:
