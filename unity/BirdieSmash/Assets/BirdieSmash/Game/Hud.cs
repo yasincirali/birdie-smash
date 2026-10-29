@@ -68,7 +68,7 @@ namespace BirdieSmash.Game
         public void StilSifirla() { stilOn.Clear(); stilNo.Clear(); }
         float ralliPop; int sonRalli; float[] pop = new float[2]; float flash; Color flashC; readonly List<Vector3> cams = new List<Vector3>();
         class HawkV { public float x, y, t; public bool icerde, serve; public int cm; } HawkV hawk;
-        Texture2D ring, ringK, glow, disk, bar; Texture2D[] perdeTex;
+        Texture2D ring, ringK, ringKesik, glow, disk, bar; Texture2D[] perdeTex;
         // perde: evre 0 yok, 1 kapanıyor, 2 kapalı, 3 açılıyor
         int perdeEvre; float perdeT; System.Action perdeIs; float perdeAci; float perdeMin = .15f; bool perdeAtla, perdeBek;
         static readonly float[][] PERDE_F = { new[] { 2.6f }, new[] { .86f }, new[] { .66f }, new[] { .47f }, new[] { .30f } };
@@ -214,7 +214,7 @@ namespace BirdieSmash.Game
             chip = Stil(btn, Mathf.RoundToInt(13 * fu), FontStyle.Normal); chipOn = Stil(chip, -1, FontStyle.Bold);
             chipOn.normal.background = chipOn.hover.background = chipOn.active.background = Solid(Kit.Hex("#7ad7ff")); chipOn.normal.textColor = chipOn.hover.textColor = chipOn.active.textColor = Kit.Hex("#07161c");
             card = new GUIStyle(GUI.skin.box); card.normal.background = Solid(new Color(.04f, .08f, .09f, .86f));
-            if (ring == null) { ring = Kit.RingTex(128, 5); ringK = Kit.RingTex(128, 3); glow = Kit.RadialTex(64); disk = Kit.RingTex(128, 128); bar = Solid(Color.white); }
+            if (ring == null) { ring = Kit.RingTex(128, 5); ringK = Kit.RingTex(128, 3); ringKesik = Kit.RingKesikTex(128, 6, 12); glow = Kit.RadialTex(64); disk = Kit.RingTex(128, 128); bar = Solid(Color.white); }
         }
 
         static void Shadowed(Rect r, string t, GUIStyle s, Color c)
@@ -315,11 +315,11 @@ namespace BirdieSmash.Game
                 if (isaret) { float nab = Ayar.reduce ? 1 : .6f + .4f * Mathf.Sin(Time.unscaledTime * 6); Cerceve(new Rect(lx - 10 * u, by - 13 * u, rx - lx + 20 * u, 26 * u), new Color(.85f, 1, .35f, nab), 3); }
             }
             float hy = H - bot - 34 * u;
-            if (M.sc[0] + M.sc[1] < 2 && M.s != null && !ogr)
+            if (M.sc[0] + M.sc[1] < 2 && M.s != null && !ogr && (Ogretici || KosIpucu(M)))
             {
                 // 2026-10-26 r11: İngilizce ve büyük yazıda ipucu iki satıra iner; sabit 20 px kutu üst satırı kesiyordu.
                 // Yükseklik metinden ölçülür, alt kenar smaç çubuğu etiketinin hemen üstünde sabit kalır.
-                string ip = L.T(M.easy ? "Top parlayınca kaydır: yön ve güç senin" : "Dokun: oraya koş · Top parlayınca kaydır");
+                string ip = L.T(!Ogretici ? "Dokun: oraya koş" : M.easy ? "Top parlayınca kaydır: yön ve güç senin" : "Dokun: oraya koş · Top parlayınca kaydır");
                 float ih = tiny.CalcHeight(Ic(ip), rx - lx); Shadowed(new Rect(lx, hy + 16 * u - ih, rx - lx, ih + 2 * u), ip, tiny, Kit.Hex("#9dbab3"));
             }
             if (M.s == null && !M.between && M.svPending == null && !ogr) ServisSeridi(M, hy);
@@ -344,12 +344,21 @@ namespace BirdieSmash.Game
         {
             k *= u; Fill(new Rect(r.x, r.y, r.width, k), c); Fill(new Rect(r.x, r.yMax - k, r.width, k), c); Fill(new Rect(r.x, r.y, k, r.height), c); Fill(new Rect(r.xMax - k, r.y, k, r.height), c);
         }
+        // Öğretici yazılar (2026-10-29, Ar-Ge 1, yasin "yap"): maç başı ipucu, servis talimatı ve topun yanındaki vuruş etiketi
+        // 3 galibiyete kadar görünür, sonra söner. On maçtan sonra oyuncu onları okumuyor ama göz tam vuruş anında yazıya
+        // kayıyordu; servis şeridi kortun altını kapatıyordu. wins < 3: kaybeden yeni oyuncu henüz öğrenmemiştir, yazılar
+        // kalır. Halka, rengi ve biçimi kalır (anlamı onlar taşır); ilk servisteki görev listesi kalır (her maçta yeni bilgi).
+        // Antrenman kendi kartıyla öğretir, bu kuraldan etkilenmez; ayarda seçenek yok (bilinçli: tek davranış).
+        public static bool Ogretici { get { return Ayar.wins < 3; } }
+        // Koşu sende (Kolay kapalı ya da Usta yolu) ilk kez oynanıyorsa, 3 galibiyeti geçmiş oyuncuya da "Dokun: oraya koş"
+        // o maçta bir kez görünür: yeni bir denetimdir. Maç bitince tuytop_kos_ipucu yazılır (GameRoot.EndMatch).
+        static bool KosIpucu(Match M) { return !M.easy && !Ayar.kosIpucu; }
         void ServisSeridi(Match M, float hy)
         {
             var sat = new List<KeyValuePair<string, Color>>(); bool ilk = M.sc[0] + M.sc[1] < 2;
             string side = L.T(M.ServeSideOf(M.server) == "R" ? "sağ" : "sol");
             sat.Add(new KeyValuePair<string, Color>(M.server == "me" ? L.T("Servis sende · {0} kare", side) : L.T("Rakip servis atıyor · {0} kare", side), Color.white));
-            if (M.server == "me" && ilk) sat.Add(new KeyValuePair<string, Color>(L.T("Yukarı kaydır: yavaş kısa · sert fiske flick · hızlı uzun yüksek"), Kit.Hex("#cfe3dc")));
+            if (M.server == "me" && ilk && Ogretici) sat.Add(new KeyValuePair<string, Color>(L.T("Yukarı kaydır: yavaş kısa · sert fiske flick · hızlı uzun yüksek"), Kit.Hex("#cfe3dc")));
             if (!string.IsNullOrEmpty(M.serveMsg)) sat.Add(new KeyValuePair<string, Color>(L.Cumle(M.stil != null && M.stil.ad != null ? M.serveMsg.Replace("(" + M.stil.ad + ")", "(" + L.T(M.stil.ad) + ")") : M.serveMsg), Kit.Hex("#ffd27a")));   // r11: tarz adı (Smaşçı) çevrilmeden kalıyordu
             if (M.sc[0] + M.sc[1] == 0 && M.gorevler.Count > 0) { var ad = new List<string>(); foreach (var g in M.gorevler) ad.Add(L.Cumle(g.ad)); sat.Add(new KeyValuePair<string, Color>(L.T("Görev: ") + string.Join(" · ", ad.ToArray()), Kit.Hex("#ffd23a"))); }
             var st = new GUIStyle(small) { wordWrap = true }; var st0 = new GUIStyle(st) { fontStyle = FontStyle.Bold, fontSize = Mathf.RoundToInt(14 * fu) };
@@ -366,14 +375,22 @@ namespace BirdieSmash.Game
             var sp = root.cam.WorldToScreenPoint(Kit.W(M.s.x, M.s.y, M.s.z)); if (sp.z < 0) return; float px = sp.x, py = H - sp.y, R = root.HitR() * RefK;
             float pul = Ayar.reduce ? 1 : 1 + Mathf.Sin(Time.unscaledTime * 1000 / 60) * .06f;
             Tex(new Rect(px - R * 1.3f, py - R * 1.3f, R * 2.6f, R * 2.6f), glow, new Color(.85f, 1, .35f, .35f));
-            Tex(new Rect(px - R * pul, py - R * pul, 2 * R * pul, 2 * R * pul), ring, I.lunge ? Kit.Hex("#ff9f7a") : Kit.Hex("#d8ff5a"));
+            // Biçim de anlam taşır (2026-10-29, renk körü; etiket 3 galibiyetten sonra söndüğü için tek ipucu halka):
+            // düz halka = normal vuruş, kesik halka = uzan (uzak top), çift halka = file üstü (öldürücü vuruş).
+            // Hareketi azalt açıkken nabız durur, biçim kalır.
+            Color hc = I.kill ? Kit.Hex("#ffd27a") : I.lunge ? Kit.Hex("#ff9f7a") : Kit.Hex("#d8ff5a");
+            Tex(new Rect(px - R * pul, py - R * pul, 2 * R * pul, 2 * R * pul), I.lunge ? ringKesik : ring, hc);
+            if (I.kill) { float r2 = R * .8f * pul; Tex(new Rect(px - r2, py - r2, 2 * r2, 2 * r2), ringK, hc); }
             Tex(new Rect(px - R * .33f, py - R * .33f, R * .66f, R * .66f), ringK, new Color(1, .82f, .23f, .9f));
             if (M.ogr != null) return;
+            if (Ogretici)
+            {
             string hnd = Match.HandOfPublic(M.me, "me", M.s.x, M.s.z) == "back" ? "backhand" : "forehand";
             string tag = I.kill ? L.T("file üstü: hızlı kaydır") : I.lunge ? L.T("uzak: uzan") : I.over ? (hnd == "backhand" ? L.T("baş üstü backhand: smaç yok") : L.T("baş üstü: hızlı kaydır = smaç")) : hnd + L.T(": kaydır");
             // r11: topun yanındaki etiket sağ kenarda kesiliyordu; kutu ekran kenarları içinde tutulur.
             float tx = Mathf.Clamp(px - 120 * u, lx, Mathf.Max(lx, rx - 240 * u));
-            Shadowed(new Rect(tx, py - R - 26 * u, 240 * u, 18 * u), tag, Stil(small, Mathf.RoundToInt(12 * fu), FontStyle.Bold), I.kill ? Kit.Hex("#ffd27a") : I.lunge ? Kit.Hex("#ff9f7a") : Kit.Hex("#d8ff5a"));
+            Shadowed(new Rect(tx, py - R - 26 * u, 240 * u, 18 * u), tag, Stil(small, Mathf.RoundToInt(12 * fu), FontStyle.Bold), hc);
+            }
             // Aldatıcı vuruş penceresi (2026-10-26, Core/Aldatma): şu an seviye, ekipman ve konum tutuyorsa vuruşun adı ve jesti,
             // etiketin üstünde. ◆ işareti + metin (yalnız renkle değil), mor = slice/aldatma rengi (Kesici raket). Pencereyi öğretir;
             // jest yapılmazsa normal vuruş çıkar, ceza yok. Büyük yazıda sarılır, kutu ekran kenarı içinde.
@@ -384,7 +401,7 @@ namespace BirdieSmash.Game
                 int hb = Mathf.RoundToInt(11 * fu);
                 if (hf != hfSon || hb != hfBoy || hfStil == null) { hfSon = hf; hfBoy = hb; hfYazi = "◆ " + L.T(hf.ad) + " · " + L.T(hf.jest); hfStil = new GUIStyle(Stil(small, hb, FontStyle.Bold)) { wordWrap = true }; }
                 float hw = Mathf.Min(rx - lx, 300 * u), hx = Mathf.Clamp(px - hw / 2, lx, Mathf.Max(lx, rx - hw)), hh = hfStil.CalcHeight(Ic(hfYazi), hw);
-                Shadowed(new Rect(hx, py - R - 28 * u - hh, hw, hh), hfYazi, hfStil, HF_RENK);
+                Shadowed(new Rect(hx, py - R - (Ogretici ? 28 : 8) * u - hh, hw, hh), hfYazi, hfStil, HF_RENK);
             }
         }
         HileTanim hfSon; int hfBoy; string hfYazi; GUIStyle hfStil; static readonly Color HF_RENK = new Color(0xc9 / 255f, 0xa0 / 255f, 1f);   // #c9a0ff

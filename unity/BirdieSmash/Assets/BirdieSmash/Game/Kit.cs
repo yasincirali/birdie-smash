@@ -118,6 +118,19 @@ namespace BirdieSmash.Game
                 { float r = Mathf.Sqrt((x + .5f - n / 2f) * (x + .5f - n / 2f) + (y + .5f - n / 2f) * (y + .5f - n / 2f)); float a = Mathf.Clamp01(kalin / 2 - Mathf.Abs(r - (R - kalin / 2)) + .5f); px[y * n + x] = new Color32(255, 255, 255, (byte)(a * 255)); }
             t.SetPixels32(px); t.Apply(); return t;
         }
+        // Kesik halka (2026-10-29, Ar-Ge 1): uzanma halesi yalnız turuncu rengiyle "düz halka"dan ayrılıyordu; renk körü oyuncu için
+        // biçim de ayrışır (HIG: yalnız renkle anlam yok). parca = kesik sayısı; her parçanın %60'ı dolu, köşeler yumuşak.
+        public static Texture2D RingKesikTex(int n, float kalin, int parca)
+        {
+            var t = new Texture2D(n, n, TextureFormat.RGBA32, false); t.wrapMode = TextureWrapMode.Clamp; var px = new Color32[n * n]; float R = n / 2f - 1, yay = n * Mathf.PI / parca;
+            for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
+                {
+                    float dx = x + .5f - n / 2f, dy = y + .5f - n / 2f, r = Mathf.Sqrt(dx * dx + dy * dy), a = Mathf.Clamp01(kalin / 2 - Mathf.Abs(r - (R - kalin / 2)) + .5f);
+                    float f = Mathf.Repeat((Mathf.Atan2(dy, dx) + Mathf.PI) / (2 * Mathf.PI) * parca, 1), kenar = Mathf.Min(f, .6f - f) * yay;   // parça kenarına uzaklık (px)
+                    a *= Mathf.Clamp01(kenar + .5f); px[y * n + x] = new Color32(255, 255, 255, (byte)(a * 255));
+                }
+            t.SetPixels32(px); t.Apply(); return t;
+        }
         // flat: yere yatık (iniş halkası, yer çizgisi); değilse kameraya dönük (iz, yükseklik çizgisi).
         public static LineRenderer Line(string name, Transform parent, Material m, bool loop = false, bool flat = false)
         {
