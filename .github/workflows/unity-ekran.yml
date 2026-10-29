@@ -21,7 +21,7 @@ permissions:
 jobs:
   ekran:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90   # 2026-10-29: mağaza kareleri ayrı oyuncu çalıştırması (~10-20 dk eklenir)
     steps:
       - uses: actions/checkout@v4
 
@@ -82,6 +82,20 @@ jobs:
           wait || echo "oyuncu çıkış kodu $?"
           ls -la "$RUNNER_TEMP/ekran"
           grep -E "EkranTuru|Exception|Error" "$RUNNER_TEMP/ekran/player.log" | grep -v ALSA | tail -60 || true
+
+      # Mağaza görselleri adım 1 (2026-10-29, Game/MagazaTuru.cs): ayrı oyuncu çalıştırması, 6,9" boyunda (1320×2868)
+      # pencere; xvfb ekranı ondan büyük açılır. Kareler ekran/magaza/ altına; 6,5" ve başlık yazısı tool/magaza_gorsel.py.
+      - name: mağaza kareleri
+        if: always()
+        run: |
+          EXE=$(ls build/StandaloneLinux64/BirdieSmash* | grep -v '_Data' | head -1)
+          [ -n "$EXE" ] || { echo "oyuncu yok"; exit 0; }
+          mkdir -p "$RUNNER_TEMP/ekran/magaza"
+          export LIBGL_ALWAYS_SOFTWARE=1
+          timeout 1500 xvfb-run -a -s "-screen 0 1400x3000x24" "$EXE" -screen-width 390 -screen-height 845 -screen-fullscreen 0 \
+            -force-glcore -logFile "$RUNNER_TEMP/ekran/magaza/player.log" -bsekran "$RUNNER_TEMP/ekran/magaza" -bskip magaza || echo "mağaza oyuncusu çıkış kodu $?"
+          ls -la "$RUNNER_TEMP/ekran/magaza"
+          grep -E "EkranTuru|Exception|Error" "$RUNNER_TEMP/ekran/magaza/player.log" | grep -v ALSA | tail -30 || true
 
       - uses: actions/upload-artifact@v4
         if: always()

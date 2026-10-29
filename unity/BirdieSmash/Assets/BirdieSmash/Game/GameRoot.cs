@@ -224,6 +224,7 @@ namespace BirdieSmash.Game
         {
             ekran = Ekran.Bitti; Uyanik(false); var M = match; bittiIlk = M.ilk; sfx.MacSonu(won); sfx.Ugultu(false, 0);
             if (won) Ayar.wins++;
+            if (!M.easy && M.ogr == null) Ayar.kosIpucu = true;   // Hud.KosIpucu: koşu sende ilk maç ipucu bir kez
             if (M.ogr == null && Ayar.ilerleme != null) Ayar.ilerleme.MacSay(M.smashes);   // Profil istatistiği (2026-10-26; cihazda)
             string kNot = ""; bool kariyerIlk = false; int yeniYildiz = 0; bittiYildiz = null; int ekTuy = 0, ekXp = 0; string ekAd = null; bittiSkor = null;
             BittiSifirla(); bittiKazandi = won;
@@ -576,14 +577,17 @@ namespace BirdieSmash.Game
                     sfx.Hit(e.type, e.quality, e.slice, e.big, e.serve, mine, (int)e.k, M.flow, M.s != null ? M.s.Speed : 0);   // hız: vuruşun gücü sese biner (Sfx 2026-10-27)
                     fx.Burst(at, Color.white, e.type == "smash" ? 10 : 5, e.type == "smash" ? 220 : 120, "feather");
                     fx.Dalga(at, e.type == "smash" ? limon : Color.white, e.type == "smash" ? 90 : 46);
-                    if (e.type == "smash") { if (!rm) { shake = Mathf.Max(shake, e.big ? 12 : 6); punch = Mathf.Max(punch, e.big ? 1.09f : 1.05f); } hud.Flash(e.big ? .5f : .2f, e.big ? new Color(1, .55f, .24f) : limon); }
+                    // File önü kill (2026-10-29, "file önü smaç oyunu değiştirsin"): Core onu smaç diye uçurur, gerçek adı e.text'te.
+                    // Kısa ve sert: sarsıntı smaçtan büyük, yakınlaşma küçük (file dibinde kadraj kaymasın), halo rengi altın.
+                    bool kill = e.text == "kill";
+                    if (e.type == "smash") { if (!rm) { shake = Mathf.Max(shake, e.big ? 12 : kill ? 9 : 6); punch = Mathf.Max(punch, e.big ? 1.09f : kill ? 1.03f : 1.05f); } hud.Flash(e.big ? .5f : .2f, e.big ? new Color(1, .55f, .24f) : kill ? Kit.Hex("#ffd27a") : limon); }
                     if (mine) fx.Streak(at, M.flow ? Kit.Hex("#ffd23a") : Color.white, e.type == "smash" ? 16 : M.flow ? 12 : 6);
                     if (!mine && e.type == "smash") Yerel.Hap("tick");   // rakibin smacı: kısa tık (onun vuruşu titremez)
                     if (e.k >= 20 && M.ogr == null) Basarim.Ver(Basarim.RALLI20);
                     break;
                 case Ev.Perfect: sfx.Perfect((int)e.k); fx.Burst(at, limon, 18, 280, "spark"); break;
                 case Ev.Flow: sfx.Akis(); Yerel.Hap("flow"); if (M.ogr == null) Basarim.Ver(Basarim.AKIS); break;
-                case Ev.Aldat: sfx.Aldat(); break;
+                case Ev.Aldat: sfx.Aldat(); Yerel.Hap("tick"); break;   // aldatma okunsun diye elde de hissedilir (hareketi azaltta yok)
                 case Ev.Split: sfx.Split(); break;
                 case Ev.Kurtaris: break;
                 case Ev.Imza: sfx.Imza(e.type); Yerel.Hap("tick"); break;   // ışık ve poz PlayerView'de (Athlete.imzaT), yazı Match.Say'den

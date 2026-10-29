@@ -181,10 +181,10 @@ namespace BirdieSmash.Game
             kart.Add(Yazi(L.T(Y.ad), 12, "soluk")); kart.Add(Yazi(L.T(m.ad), 15, "kalin"));
             var bol = Satir("seviye-bolme"); bol.pickingMode = PickingMode.Ignore; kart.Add(bol);
             for (int i = 0; i < 10; i++) { var b = new VisualElement(); b.AddToClassList("bolme"); b.AddToClassList("bolme--kucuk"); if (i < sv) b.AddToClassList("bolme--dolu"); b.pickingMode = PickingMode.Ignore; bol.Add(b); }
-            var alt = Satir("rakip-satir"); alt.pickingMode = PickingMode.Ignore; kart.Add(alt); alt.Add(Yazi(L.T("Sv {0}/10", sv), 12, "soluk"));
+            var alt = Satir("rakip-satir"); alt.pickingMode = PickingMode.Ignore; kart.Add(alt); alt.Add(Yazi(L.T("Kademe {0}/10", sv), 12, "soluk"));
             if (hazir) { var h = Ikon(Ikonlar.Yukari, 12, TURUNCU); h.style.marginLeft = 6; alt.Add(h); var hy = Yazi(L.T("Hazır"), 12, "durum-gecti"); hy.style.marginLeft = 2; alt.Add(hy); }
             kart.AddManipulator(new Clickable(() => { Tik(); YuvaAc(Y.k); }));
-            Erisim.Etiket(kart, L.T(Y.ad) + ", " + L.T(m.ad) + ", " + L.T("Sv {0}/10", sv) + (hazir ? ", " + L.T("yükseltme ya da yeni model hazır") : ""), "dugme");
+            Erisim.Etiket(kart, L.T(Y.ad) + ", " + L.T(m.ad) + ", " + L.T("Kademe {0}/10", sv) + (hazir ? ", " + L.T("yükseltme ya da yeni model hazır") : ""), "dugme");
             return kart;
         }
 
@@ -264,7 +264,7 @@ namespace BirdieSmash.Game
             var kart = Kart("yuva"); c.Add(kart);
             var r = Satir("yuva-satir"); kart.Add(r);
             var sol = new VisualElement(); sol.AddToClassList("yuva-sol"); sol.pickingMode = PickingMode.Ignore; r.Add(sol);
-            sol.Add(Yazi(L.T("Yuva seviyesi"), 15, "kalin"));
+            sol.Add(Yazi(L.T("Yuva kademesi"), 15, "kalin"));
             var bol = Satir("seviye-bolme"); bol.pickingMode = PickingMode.Ignore; sol.Add(bol);
             for (int i = 0; i < 10; i++) { var b = new VisualElement(); b.AddToClassList("bolme"); if (i < sv) b.AddToClassList("bolme--dolu"); b.pickingMode = PickingMode.Ignore; bol.Add(b); }
             sol.Add(Yazi(sv + "/10 · " + L.T(Y.n), 12, "soluk"));

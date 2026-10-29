@@ -117,7 +117,10 @@ namespace BirdieSmash.Game
             int gg = g; kart.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); MacKartAc(gg); }));
             var r = Satir("basamak-satir"); r.pickingMode = PickingMode.Ignore; kart.Add(r);
             var roz = new VisualElement(); roz.AddToClassList("dugum-rozet"); roz.AddToClassList(gecti ? "dugum-rozet--gecti" : simdi ? "dugum-rozet--simdi" : acik ? "dugum-rozet--acik" : "dugum-rozet--kilit"); roz.pickingMode = PickingMode.Ignore; r.Add(roz);
-            roz.Add(Ikon(gecti ? Ikonlar.Tik : simdi ? Ikonlar.Halka : acik ? Ikonlar.Oyna : Ikonlar.Kilit, 22, gecti ? KOYU : simdi ? CAMGOBEGI : acik ? Color.white : SOLUK));
+            // 2026-10-29 açılış dili: şimdiki basamak rozeti perdenin güneş diski (UiOge Ikonlar.GunesDisk), üstünde koyu halka;
+            // "şimdi" yine biçimle (disk + halka simgesi + "ŞİMDİ" yazısı), yalnız renkle değil.
+            if (simdi) roz.style.backgroundImage = new StyleBackground(Ikonlar.GunesDisk);
+            roz.Add(Ikon(gecti ? Ikonlar.Tik : simdi ? Ikonlar.Halka : acik ? Ikonlar.Oyna : Ikonlar.Kilit, 22, gecti ? KOYU : simdi ? KOYU : acik ? Color.white : SOLUK));
             var orta = new VisualElement(); orta.AddToClassList("basamak-orta"); orta.pickingMode = PickingMode.Ignore; r.Add(orta);
             var ad = Satir("rakip-satir"); ad.pickingMode = PickingMode.Ignore; orta.Add(ad);
             if (final) { ad.Add(Ikon(Ikonlar.Kupa, 16, ALTIN)); }
@@ -130,12 +133,17 @@ namespace BirdieSmash.Game
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);
             rk.Add(Yazi(st.isim + " · " + L.T(st.ad) + (final ? " · " + L.T("Final") : ""), 13, "soluk"));
             var yr = Satir("rakip-satir"); yr.pickingMode = PickingMode.Ignore; orta.Add(yr); yr.Add(UcYildiz(p.Maske(g), 16)); var yy = Yazi(ys + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy);
-            string durum = L.T(gecti ? "Geçildi" : simdi ? "ŞİMDİ" : acik ? "Açık" : "Kilitli");
+            // Kilitli basamak nedenini söyler (2026-10-29, "leveller daha anlaşılır"): yalnız "Kilitli" yazınca neyin açacağı
+            // maç kartına dokunmadan görünmüyordu. Tur açıksa kilidi önceki basamak tutar; tur kilitliyse neden tur seçicide.
+            string durum = kilit && b > 0 && p.TurAcik(KariyerVeri.TurOf(g)) ? L.T("{0}. basamaktan sonra", b) : L.T(gecti ? "Geçildi" : simdi ? "ŞİMDİ" : acik ? "Açık" : "Kilitli");
             // r13 (2026-10-26): ×2'de rozet + ad + durum yan yana sıkışıyor, ad hece ortasından bölünüyordu ("Champi ons",
             // "Singap ore"); USS'teki sarma denemesi (flex-basis %70) Yoga'da satırı kırmadı. Büyük yazıda durum orta sütunun
             // altına iner, ad satırın tamamını alır.
             var dz = Yazi(durum, 12, gecti ? "durum-gecti" : simdi ? "durum-simdi" : acik ? "durum-gecti" : "durum-kilit");
-            if (K >= 1.35f) { dz.style.marginTop = 4; orta.Add(dz); } else r.Add(dz);
+            // r48 (2026-10-29): kilit nedeni ("5. basamaktan sonra") sağda uzun bir sütun oluyor, adı üç satıra kırıyordu
+            // ("6. Kuala / Lumpur / finali"); neden de büyük yazıdaki gibi orta sütunun altına iner.
+            bool nedenli = kilit && durum != L.T("Kilitli");
+            if (K >= 1.35f || nedenli) { dz.style.marginTop = 4; orta.Add(dz); } else r.Add(dz);
             Erisim.Etiket(kart, L.T(TurAd(KariyerVeri.TurOf(g))) + ", " + (b + 1) + ". " + L.T("basamak") + ", " + L.T(kb.yer) + ", " + st.isim + (final ? ", " + L.T("Final") : "") + ", " + L.T("{0}/3 yıldız", ys) + ", " + durum, "dugme", simdi);
             return kart;
         }

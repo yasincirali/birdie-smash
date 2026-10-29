@@ -253,6 +253,9 @@ namespace BirdieSmash.Core
             react += D.t.tepki * k; op.fakeUntil = clock + D.t.adim * k;
             op.fakeX = D.t.yon == "ayna" ? Clamp(2 * Court.MID - r.x, Court.SL, Court.SR) : op.x;
             deceives++; Emit(Ev.Aldat, "op", D.t.id, op.x, op.y, 0, k); GorevKontrol();
+            // 2026-10-29 (yasin: fake trickshot'ta dinamik değişmeli): aldatılan rakibin ters/donuk anı ağır çekimle okunur
+            // (×.55, .28 sn; hareketi azaltta yok). Üstüne Match.Baski: geç kalan rakip gevşek döner.
+            if (!reduce) { slow = Math.Min(slow, .55f); slowT = Math.Max(slowT, .28f); }
             return react;
         }
 

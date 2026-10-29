@@ -21,11 +21,24 @@ namespace BirdieSmash.EditorTools
         const string Icon = "Assets/BirdieSmash/Icon/AppIcon.png";   // Flutter ikonunun kopyası (ios/Runner/.../Icon-App-1024x1024@1x.png)
 
         // unity-builder: -customBuildPath <workspace>/build/iOS/iOS (klasör = Xcode projesi)
+        // IL2CPP çökme izi (2026-10-29, Ar-Ge 3): `il2cpp --convert-to-cpp` runner'da ara sıra SIGSEGV ile düşüyor (25 Eki
+        // run 45, 29 Eki PR #7 ilk derleme; ikisi de aynı commit'te yeniden denemede geçti). Unity hatayı tek günlük iletisinde
+        // komut satırı + "Segmentation fault (core dumped)" olarak basar. İkisi aynı iletideyse build klasörünün yanına
+        // il2cpp_cokme.txt yazılır; ios-testflight.yml yalnız bu dosya varsa bir kez yeniden dener. Derleme (C#) hatası bu
+        // izi taşımaz, yeniden denenmez: gerçek hata gizlenmesin.
+        static bool il2cppCokme;
+        static void GunlukDinle(string msg, string iz, LogType tip)
+        {
+            if (tip == LogType.Log || tip == LogType.Warning || msg == null) return;
+            if (msg.IndexOf("il2cpp", StringComparison.OrdinalIgnoreCase) >= 0 && msg.IndexOf("Segmentation fault", StringComparison.Ordinal) >= 0) il2cppCokme = true;
+        }
+
         public static void iOS()
         {
+            string path = Arg("-customBuildPath") ?? "build/iOS/iOS";
+            Application.logMessageReceivedThreaded += GunlukDinle;
             try
             {
-                string path = Arg("-customBuildPath") ?? "build/iOS/iOS";
                 DemoKurulum.Kur();   // sahne Assets/Scenes/Demo.unity + build listesi + shader/girdi ayarları (CI kopyası taze)
                 DokuAyar.Denetle();  // 2026-10-27: her doku ASTC/boy/mip hedefinde mi (değilse yeniden içe aktarır, günlüğe satır basar)
                 Ayarla(Arg("-buildVersion"));
@@ -41,7 +54,14 @@ namespace BirdieSmash.EditorTools
                 Debug.Log("Birdie Smash iOS Xcode projesi: " + path);
                 EditorApplication.Exit(0);
             }
-            catch (Exception e) { Debug.LogError("Birdie Smash CI build kırıldı: " + e); EditorApplication.Exit(1); }
+            catch (Exception e)
+            {
+                Debug.LogError("Birdie Smash CI build kırıldı: " + e);
+                if (il2cppCokme)
+                    try { File.WriteAllText(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(path)), "il2cpp_cokme.txt"), "il2cpp Segmentation fault\n"); Debug.Log("Birdie Smash: IL2CPP çökmesi işaretlendi (il2cpp_cokme.txt)"); }
+                    catch (Exception e2) { Debug.LogWarning("il2cpp_cokme.txt yazılamadı: " + e2.Message); }
+                EditorApplication.Exit(1);
+            }
         }
 
         // Ekran görüntüsü hattı (unity-ekran.yml, 2026-10-25): aynı sahne Linux oyuncusu olarak (Mono, hızlı derleme);
