@@ -1033,6 +1033,9 @@ namespace BirdieSmash.Game
                             : te.MeasureTextSize(m, cr.width, VisualElement.MeasureMode.Exactly, 0, VisualElement.MeasureMode.Undefined);
                 if (tek && o.x > cr.width + 1.5f) neden = "kesik genişlik " + o.x.ToString("F0") + ">" + cr.width.ToString("F0");
                 else if (o.y > cr.height + 1.5f) neden = "kesik yükseklik " + o.y.ToString("F0") + ">" + cr.height.ToString("F0");
+                // r55: sarılan yazıda dar kutu kelimeyi harf harf bölünce (ana ekran karo etiketi dikey harf dizisine dönmüştü)
+                // yükseklik ölçüsü tutarlı kalıyor; kelime kutudan genişse ayrı yakalanır.
+                else if (!tek && KelimeBolundu(te, m, cr.width, out float kw)) neden = "kelime bölündü " + kw.ToString("F0") + ">" + cr.width.ToString("F0");
                 else if (wb.xMin < -1 || wb.xMax > pw + 1) neden = "taşma x " + wb.xMin.ToString("F0") + ".." + wb.xMax.ToString("F0") + " / " + pw.ToString("F0");
                 if (neden == null && en && m.IndexOfAny(TR_HARF) >= 0) neden = "çevrilmemiş";
                 if (neden == null || !gorulen.Add(m + neden)) return;
@@ -1040,6 +1043,16 @@ namespace BirdieSmash.Game
                 tasma.AppendLine(ad + " · " + neden + " · ." + sinif + " · \"" + tm + "\""); tasmaSay++;
             });
             File.WriteAllText(Path.Combine(dir, "yazi_tasma.txt"), "toplam " + tasmaSay + "\n" + tasma);
+        }
+        static bool KelimeBolundu(TextElement te, string m, float w, out float enGenis)
+        {
+            enGenis = 0;
+            foreach (var k in m.Split(new[] { ' ', '\n', '\t' }, System.StringSplitOptions.RemoveEmptyEntries))
+            {
+                float x = te.MeasureTextSize(k, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined).x;
+                if (x > enGenis) enGenis = x;
+            }
+            return enGenis > w + 1.5f;
         }
         static readonly char[] TR_HARF = { 'ç', 'ğ', 'ı', 'İ', 'ö', 'ş', 'ü', 'Ç', 'Ğ', 'Ö', 'Ş', 'Ü' };
 
