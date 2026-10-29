@@ -1013,21 +1013,26 @@ namespace BirdieSmash.Game
             }
             var o = GUI.color; GUI.color = new Color(1, 1, 1, al); GUI.DrawTexture(new Rect(p.x - boy / 2, p.y - boy / 2, boy, boy), y.rt); GUI.color = o;
         }
+        // Halka dokuları. 2026-10-29: 512² ve kenar yumuşatmalı (HTML tuvali keskin çiziyordu; 256² ikili maske tam ekran
+        // diskte basamaklı kenar ve dilim sınırı veriyordu, r58 karesi). Kenar ve dilim sınırı piksel uzaklığıyla harmanlanır.
         void PerdeDoku()
         {
-            perdeTex = new Texture2D[5]; const int N = 24, n = 256;
+            perdeTex = new Texture2D[5]; const int N = 24, n = 512; float sec = Mathf.PI * 2 / N, yar = n / 2f;
             for (int i = 0; i < 5; i++)
             {
-                var t = new Texture2D(n, n, TextureFormat.RGBA32, false); t.wrapMode = TextureWrapMode.Clamp; Color c1 = Kit.Hex(PERDE_C[i, 0]), c2 = Kit.Hex(PERDE_C[i, 1]); var px = new Color32[n * n];
+                var t = new Texture2D(n, n, TextureFormat.RGBA32, false); t.wrapMode = TextureWrapMode.Clamp; t.filterMode = FilterMode.Bilinear; Color c1 = Kit.Hex(PERDE_C[i, 0]), c2 = Kit.Hex(PERDE_C[i, 1]); var px = new Color32[n * n];
                 for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
                     {
                         float dx = (x + .5f) / n * 2 - 1, dy = (y + .5f) / n * 2 - 1, r = Mathf.Sqrt(dx * dx + dy * dy), a = Mathf.Atan2(dy, dx); if (a < 0) a += Mathf.PI * 2;
-                        int dil = Mathf.FloorToInt(a / (Mathf.PI * 2) * N);
-                        bool ic; if (i == 0) ic = r <= 1; else { float aa = a - Mathf.PI / N; float sec = Mathf.PI * 2 / N; float lok = Mathf.Repeat(aa, sec) - sec / 2; ic = r * Mathf.Cos(lok) <= Mathf.Cos(sec / 2); }   // iç halkalar 24-gen
-                        bool dilim = dil % 2 == 0;
-                        px[y * n + x] = ic ? (Color32)(dilim ? c2 : c1) : new Color32(0, 0, 0, 0);
+                        float kenar;   // kenara içeriden uzaklık (piksel)
+                        if (i == 0) kenar = (1 - r) * yar;
+                        else { float lok = Mathf.Repeat(a - Mathf.PI / N, sec) - sec / 2; kenar = (Mathf.Cos(sec / 2) - r * Mathf.Cos(lok)) * yar; }   // iç halkalar 24-gen
+                        float al = Mathf.Clamp01(kenar + .5f); if (al <= 0) { px[y * n + x] = new Color32(0, 0, 0, 0); continue; }
+                        float f = a / sec; int dil = Mathf.FloorToInt(f); float sinir = Mathf.Min(f - dil, dil + 1 - f) * sec * r * yar;   // dilim sınırına uzaklık (piksel)
+                        Color bu = dil % 2 == 0 ? c2 : c1, kom = dil % 2 == 0 ? c1 : c2; var c = Color.Lerp(kom, bu, Mathf.Clamp01(sinir + .5f)); c.a = al;
+                        px[y * n + x] = c;
                     }
-                t.SetPixels32(px); t.Apply(false, true); perdeTex[i] = t;   // CPU kopyası bırakılır: 5 × 256 KB (2026-10-27 performans)
+                t.SetPixels32(px); t.Apply(false, true); perdeTex[i] = t;   // CPU kopyası bırakılır: 5 × 1 MB, yalnız GPU'da
             }
         }
         // ---- ekran turu (EkranTuru): perdenin bir anını dondur (zaman, evre, açılış mı, hareketi azalt dışarıdan), sonra bırak.
