@@ -1,0 +1,1014 @@
+=== acilis · ekran 390x845 · llvmpipe (LLVM 20.1.2, 256 bits)
+-- hakem poz (3.66, -0.07, 0.09) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.32, 0.28, -0.16) (0.78, 0.60, 0.77) kemik 53 mesh 1531
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (3.30, 0.29, -0.18) (0.65, 0.53, 0.64) kemik 53 mesh 1463
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (3.30, 0.29, -0.18) (0.66, 0.53, 0.65) kemik 53 mesh 1613
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.30, 0.28, -0.14) (0.53, 0.48, 0.51) kemik 53 mesh 1288
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.30, 0.29, -0.18) (0.70, 0.54, 0.69) kemik 53 mesh 1277
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.87, 1.40, 0.27) (0.67, 0.39, 0.66) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.52, 0.57, 0.23) (0.13, 0.09, 0.13) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (3.76, 0.80, 0.18) (0.74, 0.76, 0.84) kemik 53 mesh 253
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (3.66, 0.85, 0.11) (1.06, 1.61, 1.03) kemik 53 mesh 4055
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.68, 1.36, 0.11) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık False/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (3.18, 1.26, 0.09) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.42, 1.42, -0.13) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.52, 0.64, 0.24) (0.48, 0.36, 0.28)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (3.11, 0.55, 0.14) (0.84, 0.18, 0.18)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.35, 0.52, 0.11) (0.35, 0.10, 0.10)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.52, 0.64, 0.24) (0.42, 0.31, 0.24)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.52, 0.64, 0.24) (0.43, 0.31, 0.23)
+   MeshRenderer Sphere__mantar açık False/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (3.17, 1.18, 0.08) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.92, 1.41, 0.31) (1.01, 0.89, 0.99) kemik 53 mesh 374
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.93, 1.39, 0.32) (1.11, 0.90, 1.09) kemik 53 mesh 726
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.88, 1.29, 0.27) (0.87, 0.80, 0.84) kemik 53 mesh 469
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.85, 1.35, 0.24) (0.74, 0.64, 0.73) kemik 53 mesh 351
+   SkinnedMeshRenderer sac_kisa__sac açık True/True Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.86, 1.37, 0.26) (0.74, 0.66, 0.72) kemik 53 mesh 384
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.89, 1.39, 0.27) (0.82, 0.77, 0.80) kemik 53 mesh 448
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.85, 1.33, 0.24) (0.79, 0.77, 0.77) kemik 53 mesh 452
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.86, 1.33, 0.24) (0.79, 0.70, 0.77) kemik 53 mesh 1364
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.87, 1.33, 0.25) (0.89, 0.75, 0.87) kemik 53 mesh 1559
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.88, 1.42, 0.27) (0.79, 0.80, 0.77) kemik 53 mesh 446
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.86, 1.37, 0.25) (0.77, 0.70, 0.75) kemik 53 mesh 398
+   toplam sınır (3.71, 0.91, 0.16) boyut (1.55, 1.87, 1.41) · ileri (0.72, -0.17, 0.67) yukarı (0.13, 0.99, 0.11)
+-- rakip poz (-1.30, 0.00, 3.58) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-1.30, 0.09, 3.49) (0.91, 0.66, 0.86) kemik 53 mesh 1505
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.28, 0.05, 3.46) (0.78, 0.45, 0.54) kemik 53 mesh 1459
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.28, 0.05, 3.46) (0.81, 0.57, 0.77) kemik 53 mesh 1620
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.28, 0.06, 3.47) (0.81, 0.56, 0.76) kemik 53 mesh 1219
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.28, 0.05, 3.47) (0.84, 0.58, 0.77) kemik 53 mesh 1289
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.30, 1.44, 3.62) (0.43, 0.25, 0.52) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.79, 0.84, 3.32) (0.05, 0.05, 0.06) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(1.000, 0.478, 0.420, 1.000) mode 0 tex yok sınır (-1.34, 0.87, 3.67) (1.32, 0.79, 0.72) kemik 53 mesh 324
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.31, 0.80, 3.49) (1.56, 1.65, 0.98) kemik 53 mesh 4093
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.30, 1.39, 3.61) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-1.54, 1.35, 3.10) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.25, 1.45, 3.26) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (-1.68, 1.75, 2.87) (0.07, 0.51, 0.47)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (-1.68, 1.75, 2.87) (1.00, 1.00, 1.00)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-1.68, 1.17, 3.06) (0.05, 0.82, 0.31)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.68, 0.94, 3.14) (0.04, 0.35, 0.15)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.68, 1.75, 2.87) (0.04, 0.44, 0.42)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.68, 1.75, 2.87) (0.04, 0.46, 0.41)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-1.54, 1.27, 3.08) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.31, 1.48, 3.69) (0.60, 0.66, 0.71) kemik 53 mesh 363
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.31, 1.46, 3.70) (0.69, 0.65, 0.78) kemik 53 mesh 710
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.35, 3.68) (0.46, 0.59, 0.71) kemik 53 mesh 477
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.40, 3.62) (0.43, 0.47, 0.57) kemik 53 mesh 335
+   SkinnedMeshRenderer sac_kisa__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.43, 3.62) (0.44, 0.53, 0.57) kemik 53 mesh 400
+   SkinnedMeshRenderer sac_mohikan__sac açık True/True Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.45, 3.64) (0.41, 0.58, 0.61) kemik 53 mesh 469
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.38, 3.63) (0.44, 0.60, 0.62) kemik 53 mesh 454
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.38, 3.63) (0.45, 0.52, 0.60) kemik 53 mesh 1388
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.38, 3.65) (0.55, 0.57, 0.66) kemik 53 mesh 1523
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.47, 3.63) (0.43, 0.61, 0.59) kemik 53 mesh 457
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.42, 3.62) (0.43, 0.52, 0.58) kemik 53 mesh 399
+   toplam sınır (-1.36, 1.00, 3.23) boyut (1.65, 2.50, 1.73) · ileri (-0.13, -0.17, 0.98) yukarı (-0.02, 0.99, 0.17)
+-- hakem poz (-3.80, 0.98, 0.01) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.40, 1.31, 0.03) (0.67, 0.59, 0.56) kemik 53 mesh 1531
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-3.36, 1.32, 0.03) (0.56, 0.52, 0.47) kemik 53 mesh 1463
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-3.36, 1.32, 0.02) (0.56, 0.53, 0.48) kemik 53 mesh 1613
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.35, 1.32, 0.00) (0.46, 0.47, 0.42) kemik 53 mesh 1288
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.36, 1.32, 0.03) (0.59, 0.54, 0.51) kemik 53 mesh 1277
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-4.07, 2.45, -0.01) (0.60, 0.39, 0.46) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.77, 1.62, -0.18) (0.11, 0.09, 0.10) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (-3.96, 1.86, -0.02) (0.56, 0.76, 0.86) kemik 53 mesh 253
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-3.85, 1.90, -0.01) (1.01, 1.62, 0.92) kemik 53 mesh 4055
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.83, 2.42, 0.01) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık False/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-3.41, 2.32, -0.26) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.49, 2.48, 0.06) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.95, 1.68, -0.76) (0.48, 0.36, 0.42)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-3.39, 1.60, -0.34) (0.65, 0.17, 0.62)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.56, 1.56, -0.18) (0.29, 0.10, 0.27)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.95, 1.68, -0.76) (0.41, 0.31, 0.35)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.95, 1.68, -0.76) (0.42, 0.31, 0.36)
+   MeshRenderer Sphere__mantar açık False/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-3.40, 2.23, -0.26) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.15, 2.46, -0.02) (0.93, 0.89, 0.67) kemik 53 mesh 374
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.16, 2.45, -0.02) (0.99, 0.90, 0.75) kemik 53 mesh 726
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.09, 2.34, 0.00) (0.86, 0.80, 0.50) kemik 53 mesh 469
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.05, 2.40, 0.00) (0.70, 0.64, 0.47) kemik 53 mesh 351
+   SkinnedMeshRenderer sac_kisa__sac açık True/True Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.07, 2.43, -0.01) (0.70, 0.66, 0.47) kemik 53 mesh 384
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.09, 2.44, 0.00) (0.80, 0.77, 0.49) kemik 53 mesh 448
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.04, 2.39, -0.01) (0.76, 0.77, 0.48) kemik 53 mesh 452
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.05, 2.39, 0.00) (0.75, 0.70, 0.50) kemik 53 mesh 1364
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.07, 2.39, 0.00) (0.80, 0.75, 0.60) kemik 53 mesh 1559
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.09, 2.47, -0.01) (0.77, 0.80, 0.47) kemik 53 mesh 446
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.06, 2.43, 0.00) (0.74, 0.70, 0.47) kemik 53 mesh 398
+   toplam sınır (-3.86, 1.96, -0.01) boyut (1.59, 1.89, 0.92) · ileri (-0.98, -0.17, -0.13) yukarı (-0.17, 0.99, -0.02)
+-- ben poz (1.30, 0.00, -3.38) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.19, 0.07, -3.32) (0.75, 0.64, 1.04) kemik 53 mesh 1531
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (1.18, 0.04, -3.29) (0.68, 0.55, 0.95) kemik 53 mesh 1463
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (1.18, 0.04, -3.29) (0.69, 0.55, 0.95) kemik 53 mesh 1613
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.19, 0.04, -3.28) (0.58, 0.45, 0.86) kemik 53 mesh 1288
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.18, 0.04, -3.30) (0.72, 0.57, 0.96) kemik 53 mesh 1277
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.29, 1.48, -3.45) (0.45, 0.33, 0.58) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.39, 0.87, -3.19) (0.09, 0.09, 0.10) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.310, 0.722, 1.000, 1.000) mode 0 tex yok sınır (1.35, 0.83, -3.45) (0.97, 0.72, 0.83) kemik 53 mesh 253
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (1.27, 0.77, -3.33) (1.10, 1.74, 0.99) kemik 53 mesh 4055
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.30, 1.44, -3.41) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (0.77, 0.74, -2.74) (0.19, 0.18, 0.21)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.25, 1.50, -3.07) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (0.45, 0.46, -2.94) (0.55, 0.51, 0.18)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (0.45, 0.46, -2.94) (1.00, 1.00, 1.00)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (0.96, 0.77, -3.06) (0.73, 0.48, 0.22)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.149, 0.149, 0.169, 1.000) mode 0 tex yok sınır (1.16, 0.90, -3.11) (0.31, 0.22, 0.11)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.45, 0.46, -2.94) (0.48, 0.45, 0.14)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.45, 0.46, -2.94) (0.49, 0.44, 0.14)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (0.77, 0.66, -2.73) (0.07, 0.07, 0.08)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.30, 1.52, -3.52) (0.65, 0.80, 0.84) kemik 53 mesh 374
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.30, 1.51, -3.53) (0.73, 0.80, 0.91) kemik 53 mesh 726
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.32, 1.39, -3.51) (0.49, 0.72, 0.81) kemik 53 mesh 469
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.31, 1.42, -3.46) (0.47, 0.58, 0.68) kemik 53 mesh 351
+   SkinnedMeshRenderer sac_kisa__sac açık True/True Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.30, 1.46, -3.46) (0.45, 0.51, 0.54) kemik 53 mesh 384
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.32, 1.48, -3.49) (0.49, 0.71, 0.76) kemik 53 mesh 448
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.30, 1.41, -3.46) (0.47, 0.71, 0.72) kemik 53 mesh 452
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.31, 1.41, -3.47) (0.49, 0.64, 0.72) kemik 53 mesh 1364
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.32, 1.41, -3.49) (0.60, 0.68, 0.77) kemik 53 mesh 1559
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.31, 1.50, -3.47) (0.47, 0.74, 0.72) kemik 53 mesh 446
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.30, 1.45, -3.46) (0.48, 0.64, 0.70) kemik 53 mesh 398
+   toplam sınır (0.89, 0.84, -3.22) boyut (1.88, 2.17, 1.55) · ileri (0.13, -0.17, -0.98) yukarı (0.02, 0.99, -0.17)
+menu_ilk_oyna · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-156215505 rules=350 complexSelectors=372 m_Rules=350 m_ComplexSelectors=372 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+açılış süresi (gerçek, CI yazılım render'ı): kapalı 6.13 sn · toplam 6.38 sn (hedef ≥ .95: .70 + .25; ses geç hazırsa hazır + .35)
+menu_oyna · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-156215505 rules=350 complexSelectors=372 m_Rules=350 m_ComplexSelectors=372 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+menu_x2_oyna · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-156215505 rules=350 complexSelectors=372 m_Rules=350 m_ComplexSelectors=372 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+menu_tr_oyna · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-156215505 rules=350 complexSelectors=372 m_Rules=350 m_ComplexSelectors=372 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+menu_x2_tr_oyna · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-156215505 rules=350 complexSelectors=372 m_Rules=350 m_ComplexSelectors=372 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+sekme göstergesi (Kariyer) · x 124 w 38 sekme Kariyer
+sekme göstergesi (Oyna) · x 34 w 38 sekme Oyna
+gecis_kapanis_0030 · evre 1 geçiş t 0.03 ortü 0.05 kayma 0.05 · top yok · kaynak (195,603) · bekle False · azalt False
+gecis_kapanis_0100 · evre 1 geçiş t 0.10 ortü 0.51 kayma 0.51 · top (224,361) boy 71 açı 80 dönüş 18.0 op 1.00 · kaynak (195,604) · bekle False · azalt False
+gecis_kapanis_0160 · evre 1 geçiş t 0.16 ortü 1.00 kayma 1.00 · top (288,133) boy 63 açı 68 dönüş 18.0 op 1.00 · kaynak (195,609) · bekle False · azalt False
+gecis_kapanis_0240 · evre 1 geçiş t 0.24 ortü 1.00 kayma 1.00 · top (375,-13) boy 55 açı 49 dönüş 18.0 op 1.00 · kaynak (195,615) · bekle False · azalt False
+gecis_kapanis_0320 · evre 1 geçiş t 0.32 ortü 1.00 kayma 1.00 · top (430,-63) boy 51 açı 35 dönüş 18.0 op 1.00 · kaynak (195,615) · bekle False · azalt False
+gecis_kapanis_0400 · evre 1 geçiş t 0.40 ortü 1.00 kayma 1.00 · top yok · kaynak (195,615) · bekle False · azalt False
+gecis_kapali · evre 2 geçiş t 0.30 ortü 1.00 kayma 0.00 · top yok · kaynak (195,615) · bekle False · azalt False
+gecis_bekle · evre 2 geçiş t 1.00 ortü 1.00 kayma 0.00 · top (195,422) boy 110 açı -44 dönüş 0.0 op 1.00 serbest · kaynak (195,615) · bekle True · azalt False
+gecis_acilis_0080 · evre 3 geçiş t 0.08 ortü 0.95 kayma 0.00 · top yok · kaynak (195,615) · bekle False · azalt False
+gecis_acilis_0180 · evre 3 geçiş t 0.18 ortü 0.46 kayma 0.00 · top yok · kaynak (195,615) · bekle False · azalt False
+gecis_acilis_0280 · evre 3 geçiş t 0.28 ortü 0.03 kayma 0.00 · top yok · kaynak (195,615) · bekle False · azalt False
+gecis_azalt_kapanis_0100 · evre 1 geçiş t 0.10 ortü 0.50 kayma 0.00 · top yok · kaynak (195,615) · bekle False · azalt True
+gecis_azalt_kapali · evre 2 geçiş t 0.30 ortü 1.00 kayma 0.00 · top yok · kaynak (195,615) · bekle False · azalt True
+gecis_azalt_acilis_0120 · evre 3 geçiş t 0.12 ortü 0.52 kayma 0.00 · top yok · kaynak (195,615) · bekle False · azalt True
+acilis_0000 · evre 2 açılış t 0.00 ortü 1.00 kayma 0.00 · top yok · kaynak (195,615) · bekle False · azalt False
+acilis_0100 · evre 2 açılış t 0.10 ortü 1.00 kayma 0.00 · top yok · kaynak (195,615) · bekle False · azalt False
+acilis_0250 · evre 2 açılış t 0.25 ortü 1.00 kayma 0.00 · top (99,309) boy 76 açı 57 dönüş 9.7 op 1.00 · kaynak (195,615) · bekle False · azalt False
+acilis_0400 · evre 2 açılış t 0.40 ortü 1.00 kayma 0.00 · top (179,335) boy 90 açı -70 dönüş 3.2 op 1.00 · kaynak (195,615) · bekle False · azalt False
+acilis_0550 · evre 2 açılış t 0.55 ortü 1.00 kayma 0.00 · top (195,388) boy 94 açı -49 dönüş 0.2 op 1.00 · kaynak (195,615) · bekle False · azalt False
+acilis_0650 · evre 2 açılış t 0.65 ortü 1.00 kayma 0.00 · top (201,377) boy 89 açı 21 dönüş 20.0 op 1.00 · kaynak (195,615) · bekle False · azalt False
+acilis_bekle · evre 2 açılış t 1.60 ortü 1.00 kayma 0.00 · top (195,389) boy 94 açı -44 dönüş 0.0 op 1.00 serbest · kaynak (195,615) · bekle True · azalt False
+acilis_patlama_0080 · evre 3 açılış t 0.08 ortü 0.90 kayma 0.00 · top (357,59) boy 71 açı 64 dönüş 20.0 op 1.00 · kaynak (195,615) · bekle False · azalt False
+acilis_patlama_0180 · evre 3 açılış t 0.18 ortü 0.48 kayma 0.00 · top yok · kaynak (195,615) · bekle False · azalt False
+acilis_azalt · evre 2 açılış t 0.30 ortü 1.00 kayma 0.00 · top (195,389) boy 94 açı -44 dönüş 0.0 op 1.00 · kaynak (195,615) · bekle False · azalt True
+=== oyuncak · ekran 390x845 · llvmpipe (LLVM 20.1.2, 256 bits)
+-- rakip poz (-1.30, 0.00, 3.58) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-1.29, 0.09, 3.49) (0.84, 0.53, 0.61) kemik 53 mesh 1505
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.28, 0.05, 3.46) (0.80, 0.56, 0.77) kemik 53 mesh 1459
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.28, 0.05, 3.46) (0.81, 0.57, 0.77) kemik 53 mesh 1620
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.28, 0.06, 3.47) (0.81, 0.56, 0.76) kemik 53 mesh 1219
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.28, 0.05, 3.47) (0.84, 0.58, 0.77) kemik 53 mesh 1289
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.30, 1.43, 3.62) (0.43, 0.25, 0.52) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.79, 0.83, 3.32) (0.05, 0.06, 0.06) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.247, 0.310, 0.659, 1.000) mode 0 tex yok sınır (-1.34, 0.86, 3.67) (1.31, 0.80, 0.72) kemik 53 mesh 324
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_guclu_govde 512 sınır (-1.31, 0.80, 3.49) (1.56, 1.65, 0.99) kemik 53 mesh 4093
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.30, 1.39, 3.61) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-1.54, 1.35, 3.10) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.25, 1.45, 3.26) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (-1.69, 1.72, 2.83) (0.06, 0.52, 0.48)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (-1.69, 1.71, 2.82) (1.00, 1.01, 1.02)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-1.68, 1.15, 3.04) (0.05, 0.81, 0.34)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.68, 0.93, 3.13) (0.04, 0.34, 0.16)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.69, 1.72, 2.83) (0.04, 0.45, 0.43)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.69, 1.72, 2.83) (0.04, 0.46, 0.42)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-1.54, 1.27, 3.08) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.31, 1.47, 3.69) (0.60, 0.66, 0.71) kemik 53 mesh 363
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.31, 1.46, 3.70) (0.69, 0.65, 0.78) kemik 53 mesh 710
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.35, 3.68) (0.46, 0.59, 0.71) kemik 53 mesh 477
+   SkinnedMeshRenderer sac_kazima__sac açık True/True Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.39, 3.61) (0.41, 0.46, 0.54) kemik 53 mesh 335
+   SkinnedMeshRenderer sac_kisa__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.42, 3.62) (0.44, 0.53, 0.57) kemik 53 mesh 400
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.44, 3.65) (0.44, 0.58, 0.62) kemik 53 mesh 469
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.37, 3.63) (0.44, 0.60, 0.62) kemik 53 mesh 454
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.38, 3.63) (0.45, 0.52, 0.60) kemik 53 mesh 1388
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.38, 3.65) (0.55, 0.57, 0.66) kemik 53 mesh 1523
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.29, 1.47, 3.63) (0.43, 0.61, 0.59) kemik 53 mesh 457
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.114, 0.106, 0.106, 1.000) mode 0 tex oyuncak_sac 128 sınır (-1.30, 1.42, 3.62) (0.43, 0.52, 0.58) kemik 53 mesh 399
+   toplam sınır (-1.36, 0.99, 3.20) boyut (1.66, 2.46, 1.79) · ileri (-0.13, -0.17, 0.98) yukarı (-0.02, 0.99, 0.17)
+-- hakem poz (-3.80, 0.98, 0.01) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.40, 1.31, 0.03) (0.67, 0.59, 0.56) kemik 53 mesh 1531
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-3.36, 1.32, 0.03) (0.56, 0.52, 0.47) kemik 53 mesh 1463
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-3.36, 1.32, 0.02) (0.56, 0.53, 0.48) kemik 53 mesh 1613
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.35, 1.32, 0.00) (0.46, 0.47, 0.42) kemik 53 mesh 1288
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.36, 1.32, 0.03) (0.59, 0.54, 0.51) kemik 53 mesh 1277
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-4.07, 2.45, -0.01) (0.60, 0.39, 0.46) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.77, 1.62, -0.18) (0.11, 0.09, 0.10) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (-3.96, 1.86, -0.02) (0.56, 0.76, 0.86) kemik 53 mesh 253
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (-3.85, 1.90, -0.01) (1.01, 1.62, 0.92) kemik 53 mesh 4055
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.83, 2.42, 0.01) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık False/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-3.41, 2.32, -0.26) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.49, 2.48, 0.06) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.95, 1.68, -0.76) (0.48, 0.36, 0.42)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-3.39, 1.60, -0.34) (0.65, 0.17, 0.62)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.56, 1.56, -0.18) (0.29, 0.10, 0.27)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.95, 1.68, -0.76) (0.41, 0.31, 0.35)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.95, 1.68, -0.76) (0.42, 0.31, 0.36)
+   MeshRenderer Sphere__mantar açık False/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-3.40, 2.23, -0.26) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.15, 2.46, -0.02) (0.93, 0.89, 0.67) kemik 53 mesh 374
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.16, 2.45, -0.02) (0.99, 0.90, 0.75) kemik 53 mesh 726
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.09, 2.34, 0.00) (0.86, 0.80, 0.50) kemik 53 mesh 469
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.05, 2.40, 0.00) (0.70, 0.64, 0.47) kemik 53 mesh 351
+   SkinnedMeshRenderer sac_kisa__sac açık True/True Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.07, 2.43, -0.01) (0.70, 0.66, 0.47) kemik 53 mesh 384
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.09, 2.44, 0.00) (0.80, 0.77, 0.49) kemik 53 mesh 448
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.04, 2.39, -0.01) (0.76, 0.77, 0.48) kemik 53 mesh 452
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.05, 2.39, 0.00) (0.75, 0.70, 0.50) kemik 53 mesh 1364
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.07, 2.39, 0.00) (0.80, 0.75, 0.60) kemik 53 mesh 1559
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.09, 2.47, -0.01) (0.77, 0.80, 0.47) kemik 53 mesh 446
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (-4.06, 2.43, 0.00) (0.74, 0.70, 0.47) kemik 53 mesh 398
+   toplam sınır (-3.86, 1.96, -0.01) boyut (1.59, 1.89, 0.92) · ileri (-0.98, -0.17, -0.13) yukarı (-0.17, 0.99, -0.02)
+-- hakem poz (3.66, -0.07, 0.09) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.32, 0.28, -0.16) (0.78, 0.60, 0.77) kemik 53 mesh 1531
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (3.30, 0.29, -0.18) (0.65, 0.53, 0.64) kemik 53 mesh 1463
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (3.30, 0.29, -0.18) (0.66, 0.53, 0.65) kemik 53 mesh 1613
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.30, 0.28, -0.14) (0.53, 0.48, 0.51) kemik 53 mesh 1288
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.30, 0.29, -0.18) (0.70, 0.54, 0.69) kemik 53 mesh 1277
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.87, 1.40, 0.27) (0.67, 0.39, 0.66) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.52, 0.57, 0.23) (0.13, 0.09, 0.13) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (3.76, 0.80, 0.18) (0.74, 0.76, 0.84) kemik 53 mesh 253
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (3.66, 0.85, 0.11) (1.06, 1.61, 1.03) kemik 53 mesh 4055
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.68, 1.36, 0.11) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık False/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (3.18, 1.26, 0.09) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.42, 1.42, -0.13) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.52, 0.64, 0.24) (0.48, 0.36, 0.28)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (3.11, 0.55, 0.14) (0.84, 0.18, 0.18)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.35, 0.52, 0.11) (0.35, 0.10, 0.10)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.52, 0.64, 0.24) (0.42, 0.31, 0.24)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.52, 0.64, 0.24) (0.43, 0.31, 0.23)
+   MeshRenderer Sphere__mantar açık False/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (3.17, 1.18, 0.08) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.92, 1.41, 0.31) (1.01, 0.89, 0.99) kemik 53 mesh 374
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.93, 1.39, 0.32) (1.11, 0.90, 1.09) kemik 53 mesh 726
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.88, 1.29, 0.27) (0.87, 0.80, 0.84) kemik 53 mesh 469
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.85, 1.35, 0.24) (0.74, 0.64, 0.73) kemik 53 mesh 351
+   SkinnedMeshRenderer sac_kisa__sac açık True/True Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.86, 1.37, 0.26) (0.74, 0.66, 0.72) kemik 53 mesh 384
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.89, 1.39, 0.27) (0.82, 0.77, 0.80) kemik 53 mesh 448
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.85, 1.33, 0.24) (0.79, 0.77, 0.77) kemik 53 mesh 452
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.86, 1.33, 0.24) (0.79, 0.70, 0.77) kemik 53 mesh 1364
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.87, 1.33, 0.25) (0.89, 0.75, 0.87) kemik 53 mesh 1559
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.88, 1.42, 0.27) (0.79, 0.80, 0.77) kemik 53 mesh 446
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (3.86, 1.37, 0.25) (0.77, 0.70, 0.75) kemik 53 mesh 398
+   toplam sınır (3.71, 0.91, 0.16) boyut (1.55, 1.87, 1.41) · ileri (0.72, -0.17, 0.67) yukarı (0.13, 0.99, 0.11)
+-- ben poz (1.30, 0.00, -3.38) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.19, 0.07, -3.32) (0.75, 0.64, 1.04) kemik 53 mesh 1531
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (1.18, 0.04, -3.29) (0.68, 0.55, 0.95) kemik 53 mesh 1463
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (1.18, 0.04, -3.29) (0.69, 0.55, 0.95) kemik 53 mesh 1613
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.19, 0.04, -3.28) (0.58, 0.45, 0.86) kemik 53 mesh 1288
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.18, 0.04, -3.30) (0.72, 0.57, 0.96) kemik 53 mesh 1277
+   SkinnedMeshRenderer oy_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.29, 1.48, -3.46) (0.46, 0.32, 0.58) kemik 53 mesh 128
+   SkinnedMeshRenderer oy_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.39, 0.87, -3.19) (0.09, 0.09, 0.10) kemik 53 mesh 80
+   SkinnedMeshRenderer oy_forma__forma açık True/True Standard q2000 renk RGBA(0.310, 0.722, 1.000, 1.000) mode 0 tex yok sınır (1.35, 0.83, -3.45) (0.97, 0.72, 0.83) kemik 53 mesh 253
+   SkinnedMeshRenderer oy_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex oyuncak_govde 512 sınır (1.27, 0.77, -3.34) (1.11, 1.74, 0.99) kemik 53 mesh 4055
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.30, 1.44, -3.41) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (0.77, 0.74, -2.74) (0.19, 0.18, 0.21)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.25, 1.50, -3.07) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (0.45, 0.47, -2.95) (0.55, 0.51, 0.18)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (0.45, 0.47, -2.95) (1.00, 1.00, 1.00)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (0.96, 0.78, -3.07) (0.73, 0.47, 0.21)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.149, 0.149, 0.169, 1.000) mode 0 tex yok sınır (1.16, 0.90, -3.12) (0.32, 0.22, 0.11)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.45, 0.47, -2.95) (0.48, 0.44, 0.15)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.45, 0.47, -2.95) (0.49, 0.44, 0.15)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (0.77, 0.66, -2.73) (0.07, 0.07, 0.08)
+   SkinnedMeshRenderer sac_afro__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.30, 1.52, -3.52) (0.65, 0.80, 0.85) kemik 53 mesh 374
+   SkinnedMeshRenderer sac_anime__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.31, 1.51, -3.54) (0.74, 0.80, 0.92) kemik 53 mesh 726
+   SkinnedMeshRenderer sac_atkuyrugu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.32, 1.39, -3.52) (0.50, 0.71, 0.81) kemik 53 mesh 469
+   SkinnedMeshRenderer sac_kazima__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.31, 1.42, -3.47) (0.47, 0.58, 0.68) kemik 53 mesh 351
+   SkinnedMeshRenderer sac_kisa__sac açık True/True Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.29, 1.46, -3.46) (0.46, 0.52, 0.55) kemik 53 mesh 384
+   SkinnedMeshRenderer sac_mohikan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.32, 1.48, -3.49) (0.49, 0.71, 0.76) kemik 53 mesh 448
+   SkinnedMeshRenderer sac_mullet__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.30, 1.41, -3.47) (0.48, 0.71, 0.72) kemik 53 mesh 452
+   SkinnedMeshRenderer sac_orgu__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.31, 1.41, -3.48) (0.50, 0.64, 0.72) kemik 53 mesh 1364
+   SkinnedMeshRenderer sac_rasta__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.32, 1.41, -3.50) (0.61, 0.68, 0.77) kemik 53 mesh 1559
+   SkinnedMeshRenderer sac_topuz__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.31, 1.50, -3.47) (0.47, 0.74, 0.72) kemik 53 mesh 446
+   SkinnedMeshRenderer sac_yan__sac açık True/False Standard q2000 renk RGBA(0.169, 0.114, 0.078, 1.000) mode 0 tex oyuncak_sac 128 sınır (1.30, 1.45, -3.47) (0.48, 0.64, 0.70) kemik 53 mesh 398
+   toplam sınır (0.89, 0.83, -3.22) boyut (1.88, 2.17, 1.55) · ileri (0.13, -0.17, -0.98) yukarı (0.02, 0.99, -0.17)
+kadraj oyuncak_12_ralli · 390x845 · uzakDip 179 file 387 fileUst 324 yakinDip 724 uzakCiftlerEn 268 yakinTeklerEn 369 rakipBoy 85@236 benBoy 81@548 · kamera (0.00, 13.69, -13.70) eğim 46.9 fov 43.8 m12 0.000
+kosu_geri oyuncak 00 · klip kros_l faz 0.00 gövde -52° bacak -52° kalça 0° gidiş -143° hız 5.2 ayakKlip kros_l hazırlık 0.00
+kosu_geri oyuncak 01 · klip kros_l faz 0.22 gövde -53° bacak -53° kalça 0° gidiş -143° hız 5.2 ayakKlip kros_l hazırlık 0.00
+kosu_geri oyuncak 02 · klip kros_l faz 0.43 gövde -53° bacak -53° kalça 0° gidiş -143° hız 5.2 ayakKlip kros_l hazırlık 0.00
+kosu_geri oyuncak 03 · klip kros_l faz 0.65 gövde -53° bacak -53° kalça 0° gidiş -143° hız 5.2 ayakKlip kros_l hazırlık 0.00
+kosu_geri oyuncak 04 · klip kros_l faz 0.87 gövde -53° bacak -53° kalça 0° gidiş -143° hız 5.2 ayakKlip kros_l hazırlık 0.00
+kosu_geri oyuncak 05 · klip kros_l faz 0.08 gövde -53° bacak -53° kalça 0° gidiş -143° hız 5.2 ayakKlip kros_l hazırlık 0.00
+kosu_geri oyuncak 06 · klip kros_l faz 0.30 gövde -53° bacak -53° kalça 0° gidiş -143° hız 5.2 ayakKlip kros_l hazırlık 0.00
+kosu_geri oyuncak 07 · klip kros_l faz 0.51 gövde -53° bacak -53° kalça 0° gidiş -143° hız 5.2 ayakKlip kros_l hazırlık 0.00
+kosu_geri oyuncak 08 · klip kros_l faz 0.73 gövde -53° bacak -53° kalça 0° gidiş -143° hız 5.2 ayakKlip kros_l hazırlık 0.00
+kosu_geri oyuncak 09 · klip kros_l faz 0.92 gövde -53° bacak -53° kalça 0° gidiş -143° hız 4.7 ayakKlip kros_l hazırlık 0.00
+kosu_geri oyuncak 10 · klip kros_l faz 0.08 gövde -53° bacak -53° kalça 0° gidiş -143° hız 3.8 ayakKlip kros_l hazırlık 0.00
+kosu_geri oyuncak 11 · klip kros_l faz 0.20 gövde -53° bacak -53° kalça 0° gidiş -143° hız 2.9 ayakKlip kros_l hazırlık 0.00
+kosu_ozet oyuncak rakip · geri çekilme 42 kare, yan dönük %88, fileye bakıp geri geri (back_*) %0, yerdeki ayak kayması ort 2.05 m/s · öne koşu 27 kare, ayak kayması ort 0.16 m/s
+kosu_ozet oyuncak ben · geri çekilme 43 kare, yan dönük %95, fileye bakıp geri geri (back_*) %0, yerdeki ayak kayması ort 3.47 m/s · öne koşu 22 kare, ayak kayması ort 1.20 m/s
+klip_poz oyuncak smash · n 14 temas karesi 9 · el yanı 0.39 0.43 0.46 0.22* -0.14 0.39
+klip_poz oyuncak clear · n 14 temas karesi 9 · el yanı 0.39 0.43 0.46 0.28* -0.09 0.39
+klip_poz oyuncak drop · n 14 temas karesi 9 · el yanı 0.39 0.43 0.46 0.28* 0.19 0.39
+klip_poz oyuncak jump · n 14 temas karesi 9 · el yanı 0.39 0.42 0.45 0.22* -0.14 0.39
+klip_poz oyuncak bh_over · n 10 temas karesi 5 · el yanı 0.39 -0.03 -0.24 -0.27* -0.08 0.39
+klip_poz oyuncak drive · n 8 temas karesi 4 · el yanı 0.39 0.48 0.54 0.54* 0.34 0.39
+klip_poz oyuncak bh_drive · n 8 temas karesi 4 · el yanı 0.39 0.10 -0.22 -0.28* 0.10 0.39
+klip_poz oyuncak kill · n 7 temas karesi 3 · el yanı 0.39 0.40 0.28* 0.23 0.29 0.39
+klip_poz oyuncak bh_kill · n 7 temas karesi 3 · el yanı 0.39 0.13 -0.19* -0.19 0.11 0.39
+klip_poz oyuncak low · n 8 temas karesi 4 · el yanı 0.39 0.41 0.43 0.37* 0.33 0.39
+klip_poz oyuncak bh_low · n 8 temas karesi 4 · el yanı 0.39 0.09 -0.27 -0.37* 0.02 0.39
+klip_poz oyuncak net · n 8 temas karesi 4 · el yanı 0.39 0.42 0.43 0.37* 0.38 0.39
+klip_poz oyuncak lunge · n 8 temas karesi 4 · el yanı 0.39 0.42 0.39 0.25* 0.33 0.39
+klip_poz oyuncak bh_lunge · n 8 temas karesi 4 · el yanı 0.39 0.09 -0.29 -0.37* -0.06 0.39
+klip_poz oyuncak block · n 6 temas karesi 3 · el yanı 0.39 0.24 0.11 0.11* 0.11 0.39
+klip_poz oyuncak serve · n 20 temas karesi 10 · el yanı 0.54 0.55 0.52 0.30* -0.13 0.41
+klip_poz oyuncak serve_bh · n 10 temas karesi 5 · el yanı 0.05 0.05 0.08 0.05* 0.13 0.41
+klip_poz oyuncak serve_flick · n 10 temas karesi 5 · el yanı 0.08 0.08 0.08 0.07* 0.11 0.39
+klip_poz oyuncak fwd · n 8 temas karesi -1 · el yanı 0.40 0.39 0.38 0.38 0.38 0.39
+klip_poz oyuncak run · n 8 temas karesi -1 · el yanı 0.48 0.47 0.44 0.44 0.46 0.48
+klip_poz oyuncak chasse_r · n 8 temas karesi -1 · el yanı 0.39 0.39 0.39 0.39 0.39 0.39
+klip_poz oyuncak chasse_l · n 8 temas karesi -1 · el yanı 0.39 0.39 0.39 0.39 0.39 0.39
+klip_poz oyuncak kros_r · n 8 temas karesi -1 · el yanı 0.43 0.43 0.43 0.43 0.43 0.43
+klip_poz oyuncak kros_l · n 8 temas karesi -1 · el yanı 0.42 0.42 0.42 0.42 0.42 0.42
+klip_poz oyuncak back_r · n 8 temas karesi -1 · el yanı 0.43 0.43 0.43 0.43 0.43 0.43
+klip_poz oyuncak back_l · n 8 temas karesi -1 · el yanı -0.12 -0.12 -0.12 -0.12 -0.12 -0.12
+klip_poz oyuncak split · n 7 temas karesi -1 · el yanı 0.39 0.39 0.39 0.39 0.39 0.39
+=== rocketbox · ekran 390x845 · llvmpipe (LLVM 20.1.2, 256 bits)
+-- hakem poz (3.66, -0.35, 0.09) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (3.25, 0.16, -0.19) (0.61, 0.39, 0.60) kemik 52 mesh 1196
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (3.25, 0.16, -0.20) (0.60, 0.38, 0.59) kemik 52 mesh 1244
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (3.25, 0.16, -0.20) (0.60, 0.38, 0.60) kemik 52 mesh 1252
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (3.24, 0.15, -0.18) (0.51, 0.32, 0.53) kemik 52 mesh 1150
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (3.25, 0.16, -0.20) (0.63, 0.39, 0.62) kemik 52 mesh 1228
+   SkinnedMeshRenderer m301_hipoly_81_bones_001__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex rocketbox_govde 1024 sınır (3.81, 0.92, 0.23) (0.61, 0.68, 0.68) kemik 52 mesh 462
+   SkinnedMeshRenderer m301_hipoly_81_bones__ten açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_bas 1024 sınır (3.56, 0.82, 0.01) (0.84, 1.45, 0.73) kemik 52 mesh 3242
+   SkinnedMeshRenderer rb_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.81, 1.41, 0.22) (0.34, 0.19, 0.33) kemik 52 mesh 192
+   SkinnedMeshRenderer rb_bileklik__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.47, 0.70, 0.14) (0.15, 0.13, 0.14) kemik 52 mesh 256
+   SkinnedMeshRenderer rb_sort__sort açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (3.64, 0.52, 0.09) (0.66, 0.44, 0.62) kemik 52 mesh 268
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.61, 1.27, 0.04) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.65, 1.10, -0.32) (0.45, 0.51, 0.33)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (3.14, 0.82, -0.09) (0.70, 0.43, 0.35)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.34, 0.70, -0.01) (0.30, 0.20, 0.17)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.65, 1.10, -0.32) (0.39, 0.44, 0.28)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.65, 1.10, -0.32) (0.39, 0.44, 0.28)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.35, 1.29, -0.19) (0.00, 0.00, 0.00)
+   toplam sınır (3.52, 0.75, 0.03) boyut (1.18, 1.58, 1.08) · ileri (0.73, -0.07, 0.68) yukarı (0.05, 1.00, 0.05)
+-- rakip poz (-1.30, 0.00, 3.58) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-1.29, 0.12, 3.50) (0.58, 0.25, 0.51) kemik 52 mesh 1196
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-1.28, 0.11, 3.50) (0.58, 0.22, 0.43) kemik 52 mesh 1244
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-1.28, 0.12, 3.50) (0.58, 0.24, 0.51) kemik 52 mesh 1252
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-1.28, 0.12, 3.50) (0.58, 0.24, 0.51) kemik 52 mesh 1150
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-1.28, 0.12, 3.50) (0.60, 0.25, 0.53) kemik 52 mesh 1228
+   SkinnedMeshRenderer m301_hipoly_81_bones_001__forma açık True/True Standard q2000 renk RGBA(1.000, 0.478, 0.420, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-1.29, 1.30, 3.65) (0.91, 0.69, 0.42) kemik 52 mesh 462
+   SkinnedMeshRenderer m301_hipoly_81_bones__ten açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_bas 1024 sınır (-1.28, 0.97, 3.42) (1.06, 1.80, 0.61) kemik 52 mesh 3242
+   SkinnedMeshRenderer rb_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.29, 1.76, 3.58) (0.22, 0.13, 0.27) kemik 52 mesh 192
+   SkinnedMeshRenderer rb_bileklik__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.65, 1.25, 3.28) (0.11, 0.12, 0.12) kemik 52 mesh 256
+   SkinnedMeshRenderer rb_sort__sort açık True/True Standard q2000 renk RGBA(0.086, 0.110, 0.173, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-1.28, 0.78, 3.59) (0.52, 0.51, 0.53) kemik 52 mesh 268
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.29, 1.61, 3.51) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (-1.45, 2.04, 2.67) (0.16, 0.55, 0.52)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (-1.44, 2.02, 2.66) (1.02, 1.03, 1.02)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-1.53, 1.53, 2.99) (0.15, 0.73, 0.49)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.56, 1.33, 3.12) (0.08, 0.31, 0.22)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.45, 2.04, 2.67) (0.13, 0.48, 0.45)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.45, 2.04, 2.67) (0.13, 0.49, 0.45)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.24, 1.64, 3.16) (0.00, 0.00, 0.00)
+   toplam sınır (-1.35, 1.27, 3.01) boyut (1.21, 2.54, 1.71) · ileri (-0.13, -0.07, 0.99) yukarı (-0.01, 1.00, 0.07)
+-- ben poz (1.30, 0.00, -3.38) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (1.15, 0.12, -3.32) (0.60, 0.29, 0.92) kemik 52 mesh 1196
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (1.15, 0.12, -3.32) (0.59, 0.28, 0.91) kemik 52 mesh 1244
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (1.15, 0.12, -3.32) (0.60, 0.28, 0.92) kemik 52 mesh 1252
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (1.15, 0.11, -3.32) (0.40, 0.25, 0.89) kemik 52 mesh 1150
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (1.15, 0.12, -3.32) (0.62, 0.28, 0.94) kemik 52 mesh 1228
+   SkinnedMeshRenderer m301_hipoly_81_bones_001__forma açık True/True Standard q2000 renk RGBA(0.310, 0.722, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (1.29, 1.24, -3.39) (0.72, 0.67, 0.54) kemik 52 mesh 462
+   SkinnedMeshRenderer m301_hipoly_81_bones__ten açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_bas 1024 sınır (1.21, 0.94, -3.35) (0.82, 1.82, 0.82) kemik 52 mesh 3242
+   SkinnedMeshRenderer rb_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.29, 1.73, -3.36) (0.24, 0.16, 0.30) kemik 52 mesh 192
+   SkinnedMeshRenderer rb_bileklik__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.33, 1.29, -3.07) (0.13, 0.13, 0.14) kemik 52 mesh 256
+   SkinnedMeshRenderer rb_sort__sort açık True/True Standard q2000 renk RGBA(0.086, 0.110, 0.173, 1.000) mode 0 tex rocketbox_govde 1024 sınır (1.25, 0.75, -3.31) (0.52, 0.56, 0.58) kemik 52 mesh 268
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.29, 1.61, -3.31) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (0.52, 0.67, -3.05) (0.55, 0.53, 0.09)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (0.52, 0.67, -3.05) (1.00, 1.00, 1.00)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (1.03, 1.01, -3.03) (0.72, 0.50, 0.05)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.149, 0.149, 0.169, 1.000) mode 0 tex yok sınır (1.23, 1.15, -3.03) (0.31, 0.22, 0.04)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.52, 0.67, -3.05) (0.48, 0.47, 0.06)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.52, 0.67, -3.05) (0.48, 0.46, 0.06)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.24, 1.64, -2.96) (0.00, 0.00, 0.00)
+   toplam sınır (0.84, 0.92, -3.17) boyut (1.63, 1.87, 1.24) · ileri (0.13, -0.07, -0.99) yukarı (0.01, 1.00, -0.07)
+-- hakem poz (-3.80, 0.71, 0.01) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-3.30, 1.18, 0.01) (0.49, 0.39, 0.45) kemik 52 mesh 1196
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-3.30, 1.18, 0.01) (0.48, 0.38, 0.44) kemik 52 mesh 1244
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-3.30, 1.18, 0.01) (0.48, 0.38, 0.44) kemik 52 mesh 1252
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-3.30, 1.17, 0.00) (0.38, 0.32, 0.41) kemik 52 mesh 1150
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-3.30, 1.18, 0.01) (0.50, 0.39, 0.46) kemik 52 mesh 1228
+   SkinnedMeshRenderer m301_hipoly_81_bones_001__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex rocketbox_govde 1024 sınır (-3.96, 1.97, -0.01) (0.44, 0.68, 0.65) kemik 52 mesh 462
+   SkinnedMeshRenderer m301_hipoly_81_bones__ten açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex rocketbox_bas 1024 sınır (-3.71, 1.85, 0.00) (0.85, 1.49, 0.51) kemik 52 mesh 3242
+   SkinnedMeshRenderer rb_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-4.00, 2.47, 0.00) (0.29, 0.19, 0.22) kemik 52 mesh 192
+   SkinnedMeshRenderer rb_bileklik__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.69, 1.75, -0.14) (0.14, 0.13, 0.09) kemik 52 mesh 256
+   SkinnedMeshRenderer rb_sort__sort açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (-3.79, 1.57, 0.00) (0.54, 0.44, 0.45) kemik 52 mesh 268
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.73, 2.32, 0.02) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.75, 2.13, -0.24) (0.54, 0.50, 0.16)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-3.28, 1.85, -0.14) (0.76, 0.42, 0.18)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.49, 1.75, -0.10) (0.32, 0.19, 0.09)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.75, 2.13, -0.24) (0.47, 0.44, 0.12)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.75, 2.13, -0.24) (0.48, 0.44, 0.13)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.38, 2.35, 0.07) (0.00, 0.00, 0.00)
+   toplam sınır (-3.61, 1.79, -0.01) boyut (1.13, 1.62, 0.65) · ileri (-0.99, -0.07, -0.13) yukarı (-0.07, 1.00, -0.01)
+kadraj rocketbox_12_ralli · 390x845 · uzakDip 177 file 385 fileUst 322 yakinDip 722 uzakCiftlerEn 268 yakinTeklerEn 369 rakipBoy 103@282 benBoy 95@664 · kamera (0.00, 13.69, -13.70) eğim 47.0 fov 43.8 m12 0.000
+kosu_geri rocketbox 00 · klip kill faz 1.00 gövde 0° bacak -60° kalça -59° gidiş -169° hız 2.7 ayakKlip chasse_l hazırlık 0.17
+kosu_geri rocketbox 01 · klip kill faz 0.07 gövde 0° bacak -60° kalça -60° gidiş -169° hız 3.6 ayakKlip kros_l hazırlık 0.09
+kosu_geri rocketbox 02 · klip kros_l faz 0.50 gövde -45° bacak -71° kalça -26° gidiş -169° hız 4.5 ayakKlip kros_l hazırlık 0.05
+kosu_geri rocketbox 03 · klip kros_l faz 0.66 gövde -65° bacak -76° kalça -11° gidiş -169° hız 5.2 ayakKlip kros_l hazırlık 0.03
+kosu_geri rocketbox 04 · klip kros_l faz 0.82 gövde -74° bacak -78° kalça -4° gidiş -169° hız 5.2 ayakKlip kros_l hazırlık 0.02
+kosu_geri rocketbox 05 · klip kros_l faz 0.98 gövde -77° bacak -79° kalça -2° gidiş -169° hız 5.2 ayakKlip kros_l hazırlık 0.01
+kosu_geri rocketbox 06 · klip kros_l faz 0.14 gövde -78° bacak -79° kalça -1° gidiş -169° hız 5.2 ayakKlip kros_l hazırlık 0.00
+kosu_geri rocketbox 07 · klip kros_l faz 0.30 gövde -79° bacak -79° kalça 0° gidiş -169° hız 5.2 ayakKlip kros_l hazırlık 0.00
+kosu_geri rocketbox 08 · klip kros_l faz 0.46 gövde -79° bacak -79° kalça 0° gidiş -169° hız 5.2 ayakKlip kros_l hazırlık 0.00
+kosu_geri rocketbox 09 · klip kros_l faz 0.62 gövde -79° bacak -79° kalça 0° gidiş -169° hız 5.2 ayakKlip kros_l hazırlık 0.00
+kosu_geri rocketbox 10 · klip kros_l faz 0.77 gövde -79° bacak -79° kalça 0° gidiş -169° hız 5.1 ayakKlip kros_l hazırlık 0.00
+kosu_geri rocketbox 11 · klip kros_l faz 0.90 gövde -79° bacak -79° kalça 0° gidiş -169° hız 4.2 ayakKlip kros_l hazırlık 0.00
+kosu_ozet rocketbox rakip · geri çekilme 0 kare, yan dönük %0, fileye bakıp geri geri (back_*) %0, yerdeki ayak kayması ort 0.00 m/s · öne koşu 21 kare, ayak kayması ort 0.22 m/s
+kosu_ozet rocketbox ben · geri çekilme 46 kare, yan dönük %96, fileye bakıp geri geri (back_*) %0, yerdeki ayak kayması ort 3.16 m/s · öne koşu 41 kare, ayak kayması ort 1.28 m/s
+klip_poz rocketbox smash · n 14 temas karesi 9 · el yanı 0.35 0.37 0.44 0.18* -0.20 0.35
+klip_poz rocketbox clear · n 14 temas karesi 9 · el yanı 0.35 0.37 0.44 0.24* -0.13 0.35
+klip_poz rocketbox drop · n 14 temas karesi 9 · el yanı 0.35 0.37 0.44 0.23* 0.14 0.35
+klip_poz rocketbox jump · n 14 temas karesi 9 · el yanı 0.35 0.38 0.41 0.18* -0.19 0.35
+klip_poz rocketbox bh_over · n 10 temas karesi 5 · el yanı 0.35 0.09 -0.13 -0.23* -0.03 0.35
+klip_poz rocketbox drive · n 8 temas karesi 4 · el yanı 0.35 0.46 0.52 0.56* 0.30 0.35
+klip_poz rocketbox bh_drive · n 8 temas karesi 4 · el yanı 0.35 0.06 -0.29 -0.36* 0.02 0.35
+klip_poz rocketbox kill · n 7 temas karesi 3 · el yanı 0.35 0.34 0.23* 0.17 0.21 0.35
+klip_poz rocketbox bh_kill · n 7 temas karesi 3 · el yanı 0.35 0.26 -0.18* -0.22 0.01 0.35
+klip_poz rocketbox low · n 8 temas karesi 4 · el yanı 0.35 0.38 0.38 0.34* 0.28 0.35
+klip_poz rocketbox bh_low · n 8 temas karesi 4 · el yanı 0.35 0.04 -0.38 -0.52* -0.07 0.35
+klip_poz rocketbox net · n 8 temas karesi 4 · el yanı 0.35 0.39 0.40 0.34* 0.35 0.35
+klip_poz rocketbox lunge · n 8 temas karesi 4 · el yanı 0.35 0.39 0.33 0.16* 0.28 0.35
+klip_poz rocketbox bh_lunge · n 8 temas karesi 4 · el yanı 0.35 0.03 -0.41 -0.61* -0.18 0.35
+klip_poz rocketbox block · n 6 temas karesi 3 · el yanı 0.35 0.18 0.04 0.04* 0.04 0.35
+klip_poz rocketbox serve · n 20 temas karesi 10 · el yanı 0.53 0.54 0.50 0.24* -0.30 0.35
+klip_poz rocketbox serve_bh · n 10 temas karesi 5 · el yanı 0.00 0.00 0.03 0.01* 0.10 0.35
+klip_poz rocketbox serve_flick · n 10 temas karesi 5 · el yanı 0.00 0.00 0.03 -0.02* 0.07 0.35
+klip_poz rocketbox split · n 7 temas karesi -1 · el yanı 0.35 0.35 0.35 0.35 0.35 0.35
+=== sade · ekran 390x845 · llvmpipe (LLVM 20.1.2, 256 bits)
+-- rakip poz (-1.30, 0.00, 3.58) model ölçek (1.75, 1.75, 1.75)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (-1.56, 1.95, 2.89) (0.06, 0.53, 0.50)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (-1.56, 1.95, 2.89) (1.00, 1.00, 1.00)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-1.56, 1.39, 3.14) (0.06, 0.80, 0.39)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.56, 1.17, 3.23) (0.05, 0.34, 0.19)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.56, 1.95, 2.89) (0.04, 0.46, 0.44)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.56, 1.95, 2.89) (0.04, 0.47, 0.43)
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.30, 1.54, 3.58) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-1.36, 1.48, 3.34) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.25, 1.56, 3.23) (0.00, 0.00, 0.00)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-1.36, 1.40, 3.33) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sade_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.30, 1.66, 3.60) (0.23, 0.13, 0.26) kemik 53 mesh 539
+   SkinnedMeshRenderer sade_beyaz__beyaz açık True/True Standard q2000 renk RGBA(0.950, 0.950, 0.930, 1.000) mode 0 tex yok sınır (-1.29, 0.17, 3.58) (0.47, 0.15, 0.23) kemik 53 mesh 264
+   SkinnedMeshRenderer sade_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.62, 1.20, 3.31) (0.13, 0.13, 0.12) kemik 53 mesh 130
+   SkinnedMeshRenderer sade_forma__forma açık True/True Standard q2000 renk RGBA(1.000, 0.478, 0.420, 1.000) mode 0 tex yok sınır (-1.30, 1.24, 3.68) (0.79, 0.75, 0.62) kemik 53 mesh 1548
+   SkinnedMeshRenderer sade_sac__sac açık True/True Standard q2000 renk RGBA(0.722, 0.314, 0.165, 1.000) mode 0 tex yok sınır (-1.30, 1.67, 3.61) (0.22, 0.23, 0.26) kemik 53 mesh 472
+   SkinnedMeshRenderer sade_sort__sort açık True/True Standard q2000 renk RGBA(0.020, 0.025, 0.060, 1.000) mode 0 tex yok sınır (-1.29, 0.79, 3.63) (0.43, 0.46, 0.44) kemik 53 mesh 670
+   SkinnedMeshRenderer sade_taban__taban açık True/True Standard q2000 renk RGBA(0.780, 0.080, 0.100, 1.000) mode 0 tex yok sınır (-1.28, 0.05, 3.49) (0.58, 0.26, 0.44) kemik 53 mesh 616
+   SkinnedMeshRenderer sade_ten__ten açık True/True Standard q2000 renk RGBA(0.910, 0.722, 0.580, 1.000) mode 0 tex yok sınır (-1.28, 0.98, 3.45) (1.03, 1.61, 0.66) kemik 53 mesh 8293
+   toplam sınır (-1.41, 1.18, 3.19) boyut (1.29, 2.53, 1.60) · ileri (-0.13, -0.07, 0.99) yukarı (-0.01, 1.00, 0.07)
+-- hakem poz (3.65, -0.34, 0.08) model ölçek (1.75, 1.75, 1.75)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.79, 1.13, -0.06) (0.52, 0.53, 0.21)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (3.26, 0.77, 0.03) (0.71, 0.56, 0.19)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.45, 0.62, 0.06) (0.31, 0.26, 0.11)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.78, 1.13, -0.06) (0.45, 0.47, 0.18)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.79, 1.13, -0.06) (0.46, 0.47, 0.17)
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.65, 1.19, 0.08) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık False/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (3.41, 1.14, 0.00) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.39, 1.22, -0.15) (0.00, 0.00, 0.00)
+   MeshRenderer Sphere__mantar açık False/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (3.41, 1.06, -0.01) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sade_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.87, 1.31, 0.27) (0.33, 0.17, 0.32) kemik 53 mesh 539
+   SkinnedMeshRenderer sade_beyaz__beyaz açık True/True Standard q2000 renk RGBA(0.950, 0.950, 0.930, 1.000) mode 0 tex yok sınır (3.32, 0.17, -0.13) (0.29, 0.13, 0.32) kemik 53 mesh 264
+   SkinnedMeshRenderer sade_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.48, 0.68, 0.13) (0.18, 0.14, 0.18) kemik 53 mesh 130
+   SkinnedMeshRenderer sade_forma__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (3.85, 0.84, 0.26) (0.60, 0.78, 0.59) kemik 53 mesh 1548
+   SkinnedMeshRenderer sade_sac__sac açık True/True Standard q2000 renk RGBA(0.050, 0.030, 0.020, 1.000) mode 0 tex yok sınır (3.88, 1.32, 0.28) (0.35, 0.29, 0.34) kemik 53 mesh 472
+   SkinnedMeshRenderer sade_sort__sort açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (3.65, 0.54, 0.10) (0.56, 0.27, 0.52) kemik 53 mesh 670
+   SkinnedMeshRenderer sade_taban__taban açık True/True Standard q2000 renk RGBA(0.780, 0.080, 0.100, 1.000) mode 0 tex yok sınır (3.22, 0.13, -0.20) (0.46, 0.25, 0.49) kemik 53 mesh 616
+   SkinnedMeshRenderer sade_ten__ten açık True/True Standard q2000 renk RGBA(0.800, 0.550, 0.400, 1.000) mode 0 tex yok sınır (3.61, 0.82, 0.07) (0.87, 1.29, 0.74) kemik 53 mesh 8293
+   toplam sınır (3.57, 0.74, 0.05) boyut (1.16, 1.46, 1.01) · ileri (0.73, -0.07, 0.68) yukarı (0.05, 1.00, 0.05)
+-- ben poz (1.30, 0.00, -3.38) model ölçek (1.75, 1.75, 1.75)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (0.55, 0.70, -3.05) (0.55, 0.52, 0.13)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (0.55, 0.70, -3.05) (1.00, 1.00, 1.00)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (1.05, 1.02, -3.14) (0.74, 0.51, 0.18)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.149, 0.149, 0.169, 1.000) mode 0 tex yok sınır (1.25, 1.15, -3.18) (0.32, 0.24, 0.10)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.55, 0.70, -3.05) (0.48, 0.46, 0.10)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.55, 0.70, -3.05) (0.49, 0.46, 0.10)
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.30, 1.54, -3.38) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (0.96, 1.05, -3.06) (0.18, 0.17, 0.19)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.25, 1.56, -3.03) (0.00, 0.00, 0.00)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (0.96, 0.97, -3.05) (0.07, 0.06, 0.07)
+   SkinnedMeshRenderer sade_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.29, 1.63, -3.38) (0.24, 0.16, 0.28) kemik 53 mesh 539
+   SkinnedMeshRenderer sade_beyaz__beyaz açık True/True Standard q2000 renk RGBA(0.950, 0.950, 0.930, 1.000) mode 0 tex yok sınır (1.19, 0.16, -3.35) (0.24, 0.18, 0.60) kemik 53 mesh 264
+   SkinnedMeshRenderer sade_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.30, 1.21, -3.14) (0.13, 0.14, 0.15) kemik 53 mesh 130
+   SkinnedMeshRenderer sade_forma__forma açık True/True Standard q2000 renk RGBA(0.310, 0.722, 1.000, 1.000) mode 0 tex yok sınır (1.31, 1.16, -3.46) (0.69, 0.73, 0.60) kemik 53 mesh 1548
+   SkinnedMeshRenderer sade_sac__sac açık True/True Standard q2000 renk RGBA(0.050, 0.030, 0.020, 1.000) mode 0 tex yok sınır (1.29, 1.64, -3.39) (0.23, 0.26, 0.29) kemik 53 mesh 472
+   SkinnedMeshRenderer sade_sort__sort açık True/True Standard q2000 renk RGBA(0.020, 0.025, 0.060, 1.000) mode 0 tex yok sınır (1.27, 0.74, -3.33) (0.44, 0.48, 0.51) kemik 53 mesh 670
+   SkinnedMeshRenderer sade_taban__taban açık True/True Standard q2000 renk RGBA(0.780, 0.080, 0.100, 1.000) mode 0 tex yok sınır (1.14, 0.05, -3.27) (0.39, 0.30, 0.87) kemik 53 mesh 616
+   SkinnedMeshRenderer sade_ten__ten açık True/True Standard q2000 renk RGBA(0.800, 0.550, 0.400, 1.000) mode 0 tex yok sınır (1.24, 0.94, -3.29) (0.78, 1.64, 0.69) kemik 53 mesh 8293
+   toplam sınır (0.85, 0.83, -3.16) boyut (1.61, 1.87, 1.21) · ileri (0.13, -0.07, -0.99) yukarı (0.01, 1.00, -0.07)
+-- hakem poz (-3.79, 0.71, 0.01) model ölçek (1.75, 1.75, 1.75)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.00, 2.16, -0.37) (0.54, 0.53, 0.16)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-3.45, 1.80, -0.17) (0.67, 0.54, 0.34)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.63, 1.66, -0.08) (0.30, 0.25, 0.16)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.00, 2.16, -0.37) (0.47, 0.46, 0.13)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.00, 2.16, -0.37) (0.47, 0.46, 0.13)
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.79, 2.25, 0.01) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık False/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-3.55, 2.20, -0.05) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.44, 2.27, 0.06) (0.00, 0.00, 0.00)
+   MeshRenderer Sphere__mantar açık False/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-3.54, 2.11, -0.05) (0.00, 0.00, 0.00)
+   SkinnedMeshRenderer sade_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-4.08, 2.37, -0.01) (0.28, 0.17, 0.24) kemik 53 mesh 539
+   SkinnedMeshRenderer sade_beyaz__beyaz açık True/True Standard q2000 renk RGBA(0.950, 0.950, 0.930, 1.000) mode 0 tex yok sınır (-3.40, 1.19, 0.00) (0.14, 0.13, 0.31) kemik 53 mesh 264
+   SkinnedMeshRenderer sade_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.69, 1.72, -0.13) (0.15, 0.14, 0.14) kemik 53 mesh 130
+   SkinnedMeshRenderer sade_forma__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (-4.04, 1.90, -0.01) (0.53, 0.78, 0.70) kemik 53 mesh 1548
+   SkinnedMeshRenderer sade_sac__sac açık True/True Standard q2000 renk RGBA(0.050, 0.030, 0.020, 1.000) mode 0 tex yok sınır (-4.09, 2.37, -0.01) (0.32, 0.29, 0.23) kemik 53 mesh 472
+   SkinnedMeshRenderer sade_sort__sort açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (-3.82, 1.60, 0.00) (0.48, 0.28, 0.38) kemik 53 mesh 670
+   SkinnedMeshRenderer sade_taban__taban açık True/True Standard q2000 renk RGBA(0.780, 0.080, 0.100, 1.000) mode 0 tex yok sınır (-3.27, 1.15, 0.00) (0.34, 0.25, 0.39) kemik 53 mesh 616
+   SkinnedMeshRenderer sade_ten__ten açık True/True Standard q2000 renk RGBA(0.800, 0.550, 0.400, 1.000) mode 0 tex yok sınır (-3.79, 1.86, -0.01) (0.89, 1.32, 0.49) kemik 53 mesh 8293
+   toplam sınır (-3.70, 1.77, -0.01) boyut (1.21, 1.50, 0.70) · ileri (-0.99, -0.07, -0.13) yukarı (-0.07, 1.00, -0.01)
+kadraj sade_12_ralli · 390x845 · uzakDip 177 file 385 fileUst 322 yakinDip 722 uzakCiftlerEn 268 yakinTeklerEn 369 rakipBoy 69@229 benBoy 93@534 · kamera (0.00, 13.69, -13.70) eğim 47.0 fov 43.8 m12 0.000
+kosu_geri sade 00 · klip chasse_r faz 0.01 gövde 29° bacak 28° kalça -1° gidiş 140° hız 2.0 ayakKlip chasse_r hazırlık 0.01
+kosu_geri sade 01 · klip kros_r faz 0.15 gövde 42° bacak 42° kalça 0° gidiş 142° hız 2.9 ayakKlip kros_r hazırlık 0.00
+kosu_geri sade 02 · klip kros_r faz 0.27 gövde 48° bacak 48° kalça 0° gidiş 142° hız 3.8 ayakKlip kros_r hazırlık 0.00
+kosu_geri sade 03 · klip kros_r faz 0.41 gövde 50° bacak 50° kalça 0° gidiş 142° hız 4.7 ayakKlip kros_r hazırlık 0.00
+kosu_geri sade 04 · klip kros_r faz 0.57 gövde 51° bacak 51° kalça 0° gidiş 142° hız 5.2 ayakKlip kros_r hazırlık 0.00
+kosu_geri sade 05 · klip kros_r faz 0.73 gövde 52° bacak 52° kalça 0° gidiş 142° hız 5.2 ayakKlip kros_r hazırlık 0.00
+kosu_geri sade 06 · klip kros_r faz 0.89 gövde 52° bacak 52° kalça 0° gidiş 142° hız 5.2 ayakKlip kros_r hazırlık 0.00
+kosu_geri sade 07 · klip chasse_r faz 0.95 gövde 51° bacak 51° kalça 0° gidiş 142° hız 1.7 ayakKlip chasse_r hazırlık 0.00
+kosu_geri sade 08 · klip chasse_r faz 0.03 gövde 48° bacak 48° kalça 0° gidiş 142° hız 1.6 ayakKlip chasse_r hazırlık 0.00
+kosu_geri sade 09 · klip chasse_r faz 0.10 gövde 42° bacak 42° kalça 0° gidiş 142° hız 1.5 ayakKlip chasse_r hazırlık 0.00
+kosu_geri sade 10 · klip chasse_r faz 0.17 gövde 34° bacak 34° kalça 0° gidiş 142° hız 1.4 ayakKlip chasse_r hazırlık 0.00
+kosu_geri sade 11 · klip chasse_r faz 0.22 gövde 25° bacak 25° kalça 0° gidiş 142° hız 1.3 ayakKlip chasse_r hazırlık 0.00
+kosu_ozet sade rakip · geri çekilme 0 kare, yan dönük %0, fileye bakıp geri geri (back_*) %0, yerdeki ayak kayması ort 0.00 m/s · öne koşu 28 kare, ayak kayması ort 0.36 m/s
+kosu_ozet sade ben · geri çekilme 42 kare, yan dönük %90, fileye bakıp geri geri (back_*) %0, yerdeki ayak kayması ort 2.42 m/s · öne koşu 39 kare, ayak kayması ort 1.11 m/s
+klip_poz sade smash · n 14 temas karesi 9 · el yanı 0.31 0.31 0.37 0.15* -0.18 0.31
+klip_poz sade clear · n 14 temas karesi 9 · el yanı 0.31 0.31 0.37 0.21* -0.13 0.31
+klip_poz sade drop · n 14 temas karesi 9 · el yanı 0.31 0.31 0.37 0.19* 0.11 0.31
+klip_poz sade jump · n 14 temas karesi 9 · el yanı 0.31 0.29 0.34 0.15* -0.18 0.31
+klip_poz sade bh_over · n 10 temas karesi 5 · el yanı 0.31 0.04 -0.09 -0.16* -0.04 0.31
+klip_poz sade drive · n 8 temas karesi 4 · el yanı 0.31 0.40 0.51 0.52* 0.31 0.31
+klip_poz sade bh_drive · n 8 temas karesi 4 · el yanı 0.31 0.02 -0.28 -0.36* 0.02 0.31
+klip_poz sade kill · n 7 temas karesi 3 · el yanı 0.31 0.31 0.17* 0.12 0.20 0.31
+klip_poz sade bh_kill · n 7 temas karesi 3 · el yanı 0.31 0.00 -0.20* -0.26 -0.03 0.31
+klip_poz sade low · n 8 temas karesi 4 · el yanı 0.31 0.34 0.35 0.30* 0.26 0.31
+klip_poz sade bh_low · n 8 temas karesi 4 · el yanı 0.31 -0.01 -0.36 -0.51* -0.12 0.31
+klip_poz sade net · n 8 temas karesi 4 · el yanı 0.31 0.34 0.35 0.30* 0.31 0.31
+klip_poz sade lunge · n 8 temas karesi 4 · el yanı 0.31 0.34 0.29 0.12* 0.23 0.31
+klip_poz sade bh_lunge · n 8 temas karesi 4 · el yanı 0.31 -0.02 -0.39 -0.58* -0.19 0.31
+klip_poz sade block · n 6 temas karesi 3 · el yanı 0.31 0.15 0.00 0.00* 0.00 0.31
+klip_poz sade serve · n 20 temas karesi 10 · el yanı 0.48 0.48 0.43 0.19* -0.30 0.31
+klip_poz sade serve_bh · n 10 temas karesi 5 · el yanı -0.02 -0.02 -0.02 -0.02* 0.05 0.31
+klip_poz sade serve_flick · n 10 temas karesi 5 · el yanı -0.02 -0.02 -0.02 -0.02* 0.02 0.31
+klip_poz sade split · n 7 temas karesi -1 · el yanı 0.31 0.31 0.31 0.31 0.31 0.31
+=== varyantlar (vitrin: deneme yolu, maç: seçim) · ekran 390x845
+varyant vitrin tip=atlet · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.42×0.57×0.58 · ayk sınır 0.61×0.40×0.58 · tamam
+varyant vitrin tip=kadin · prefab oyuncak_kadin · tip kadin · saç kisa · ayk klasik · aktif renderer 11 · baş 1.136 · omuz 0.324 · saç sınır 0.41×0.48×0.52 · ayk sınır 0.54×0.31×0.50 · fark (serinin ilkine göre) baş -11.0% omuz -40.7% saç gen -10.2% saç boy -15.6% · tamam
+varyant vitrin tip=uzun · prefab oyuncak_uzun · tip uzun · saç kisa · ayk klasik · aktif renderer 11 · baş 1.462 · omuz 0.462 · saç sınır 0.61×0.64×0.72 · ayk sınır 0.63×0.44×0.74 · fark (serinin ilkine göre) baş +14.5% omuz -15.4% saç gen +23.5% saç boy +12.4% · tamam
+varyant vitrin tip=guclu · prefab oyuncak_guclu · tip guclu · saç kisa · ayk klasik · aktif renderer 11 · baş 1.238 · omuz 0.732 · saç sınır 0.58×0.53×0.64 · ayk sınır 0.81×0.45×0.86 · fark (serinin ilkine göre) baş -3.0% omuz +34.0% saç gen +10.4% saç boy -8.3% · tamam
+varyant vitrin sac=kisa · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.67×0.57×0.67 · ayk sınır 0.66×0.40×0.80 · tamam
+varyant vitrin sac=yan · prefab oyuncak · tip atlet · saç yan · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.67×0.57×0.64 · ayk sınır 0.63×0.40×0.79 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -0.2% saç boy -1.0% · tamam
+varyant vitrin sac=atkuyrugu · prefab oyuncak · tip atlet · saç atkuyrugu · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.76×0.63×0.65 · ayk sınır 0.60×0.40×0.78 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +13.0% saç boy +10.3% · tamam
+varyant vitrin sac=kazima · prefab oyuncak · tip atlet · saç kazima · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.64×0.51×0.54 · ayk sınır 0.56×0.40×0.75 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -5.6% saç boy -11.2% · tamam
+varyant vitrin sac=kel · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 10 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.51×0.40×0.72 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=topuz · prefab oyuncak · tip atlet · saç topuz · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.62×0.67×0.44 · ayk sınır 0.49×0.40×0.67 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -7.6% saç boy +16.0% · tamam
+varyant vitrin sac=anime · prefab oyuncak · tip atlet · saç anime · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.78×0.71×0.66 · ayk sınır 0.53×0.40×0.62 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +15.6% saç boy +24.0% · tamam
+varyant vitrin sac=orgu · prefab oyuncak · tip atlet · saç orgu · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.59×0.57×0.44 · ayk sınır 0.59×0.40×0.62 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -12.2% saç boy -1.4% · tamam
+varyant vitrin sac=afro · prefab oyuncak · tip atlet · saç afro · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.78×0.72×0.67 · ayk sınır 0.65×0.40×0.64 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +15.9% saç boy +25.0% · tamam
+varyant vitrin sac=rasta · prefab oyuncak · tip atlet · saç rasta · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.72×0.60×0.63 · ayk sınır 0.70×0.40×0.66 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +6.3% saç boy +4.7% · tamam
+varyant vitrin sac=mullet · prefab oyuncak · tip atlet · saç mullet · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.67×0.64×0.58 · ayk sınır 0.74×0.40×0.68 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -0.8% saç boy +10.7% · tamam
+varyant vitrin sac=mohikan · prefab oyuncak · tip atlet · saç mohikan · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.70×0.63×0.62 · ayk sınır 0.77×0.40×0.68 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +3.6% saç boy +9.6% · tamam
+varyant vitrin ayk=klasik · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.65×0.57×0.68 · ayk sınır 0.79×0.40×0.64 · tamam
+varyant vitrin ayk=hafif · prefab oyuncak · tip atlet · saç kisa · ayk hafif · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.62×0.57×0.68 · ayk sınır 0.77×0.40×0.59 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -0.2% saç boy 0.0% · tamam
+varyant vitrin ayk=yastikli · prefab oyuncak · tip atlet · saç kisa · ayk yastik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.56×0.57×0.66 · ayk sınır 0.76×0.41×0.54 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -3.0% saç boy 0.0% · tamam
+varyant vitrin ayk=bilekli · prefab oyuncak · tip atlet · saç kisa · ayk bilekli · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.49×0.57×0.63 · ayk sınır 0.73×0.47×0.54 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -8.0% saç boy 0.0% · tamam
+varyant vitrin ayk=karbon · prefab oyuncak · tip atlet · saç kisa · ayk karbon · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.42×0.57×0.58 · ayk sınır 0.62×0.40×0.52 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -14.3% saç boy 0.0% · tamam
+servis eli atlet · klip serve_bh · inme 0.236 m
+varyant maç tip=atlet sac=afro ayk=karbon · prefab oyuncak · tip atlet · saç afro · ayk karbon · aktif renderer 11 · baş 1.270 · omuz 0.546 · saç sınır 0.63×0.65×0.69 · ayk sınır 0.57×0.45×0.86 · tamam
+servis eli kadin · klip serve_bh · inme 0.199 m
+varyant maç tip=kadin sac=topuz ayk=hafif · prefab oyuncak_kadin · tip kadin · saç topuz · ayk hafif · aktif renderer 11 · baş 1.127 · omuz 0.324 · saç sınır 0.37×0.52×0.49 · ayk sınır 0.46×0.35×0.70 · fark (serinin ilkine göre) baş -11.3% omuz -40.7% saç gen -28.3% saç boy -20.4% · tamam
+servis eli uzun · klip serve_bh · inme 0.211 m
+varyant maç tip=uzun sac=mohikan ayk=bilekli · prefab oyuncak_uzun · tip uzun · saç mohikan · ayk bilekli · aktif renderer 11 · baş 1.450 · omuz 0.462 · saç sınır 0.52×0.64×0.65 · ayk sınır 0.58×0.55×1.02 · fark (serinin ilkine göre) baş +14.1% omuz -15.4% saç gen -6.0% saç boy -1.4% · tamam
+servis eli guclu · klip serve_bh · inme 0.237 m
+varyant maç tip=guclu sac=rasta ayk=yastikli · prefab oyuncak_guclu · tip guclu · saç rasta · ayk yastik · aktif renderer 11 · baş 1.233 · omuz 0.732 · saç sınır 0.55×0.49×0.57 · ayk sınır 0.76×0.51×0.93 · fark (serinin ilkine göre) baş -3.0% omuz +34.0% saç gen -16.4% saç boy -23.9% · tamam
+varyant dizilis tip=atlet · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.46×0.57×0.61 · ayk sınır 0.66×0.40×0.50 · tamam
+siluet tip=atlet · boy 1.74 m · en 1.24 m (raket hariç)
+varyant dizilis tip=kadin · prefab oyuncak_kadin · tip kadin · saç atkuyrugu · ayk klasik · aktif renderer 11 · baş 1.131 · omuz 0.324 · saç sınır 0.38×0.57×0.62 · ayk sınır 0.55×0.31×0.38 · fark (serinin ilkine göre) baş -11.0% omuz -40.7% saç gen +2.3% saç boy -1.5% · tamam
+siluet tip=kadin · boy 1.50 m · en 1.22 m (raket hariç)
+varyant dizilis tip=uzun · prefab oyuncak_uzun · tip uzun · saç yan · ayk klasik · aktif renderer 11 · baş 1.455 · omuz 0.462 · saç sınır 0.50×0.64×0.66 · ayk sınır 0.62×0.44×0.56 · fark (serinin ilkine göre) baş +14.5% omuz -15.4% saç gen +8.5% saç boy +11.4% · tamam
+siluet tip=uzun · boy 1.98 m · en 2.36 m (raket hariç)
+varyant dizilis tip=guclu · prefab oyuncak_guclu · tip guclu · saç kazima · ayk klasik · aktif renderer 11 · baş 1.233 · omuz 0.732 · saç sınır 0.41×0.46×0.54 · ayk sınır 0.79×0.45×0.53 · fark (serinin ilkine göre) baş -3.0% omuz +34.0% saç gen -10.7% saç boy -19.3% · tamam
+siluet tip=guclu · boy 1.62 m · en 3.56 m (raket hariç)
+varyant sac izgara sac=kisa · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.46×0.57×0.61 · ayk sınır 0.66×0.40×0.50 · tamam
+varyant sac izgara sac=yan · prefab oyuncak · tip atlet · saç yan · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.45×0.57×0.60 · ayk sınır 0.66×0.40×0.50 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -0.8% saç boy -1.0% · tamam
+varyant sac izgara sac=atkuyrugu · prefab oyuncak · tip atlet · saç atkuyrugu · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.44×0.63×0.72 · ayk sınır 0.66×0.40×0.50 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +17.3% saç boy +10.3% · tamam
+varyant sac izgara sac=kazima · prefab oyuncak · tip atlet · saç kazima · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.43×0.51×0.58 · ayk sınır 0.66×0.40×0.50 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -4.7% saç boy -11.2% · tamam
+varyant sac izgara sac=kel · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 10 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.66×0.40×0.50 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=topuz · prefab oyuncak · tip atlet · saç topuz · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.43×0.67×0.61 · ayk sınır 0.66×0.40×0.50 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +0.7% saç boy +16.0% · tamam
+varyant sac izgara sac=anime · prefab oyuncak · tip atlet · saç anime · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.72×0.71×0.83 · ayk sınır 0.66×0.40×0.50 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +35.8% saç boy +24.0% · tamam
+varyant sac izgara sac=orgu · prefab oyuncak · tip atlet · saç orgu · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.45×0.57×0.61 · ayk sınır 0.66×0.40×0.50 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +0.4% saç boy -1.4% · tamam
+varyant sac izgara sac=afro · prefab oyuncak · tip atlet · saç afro · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.64×0.72×0.76 · ayk sınır 0.66×0.40×0.50 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +24.1% saç boy +25.0% · tamam
+varyant sac izgara sac=rasta · prefab oyuncak · tip atlet · saç rasta · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.54×0.60×0.66 · ayk sınır 0.66×0.40×0.50 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +8.3% saç boy +4.7% · tamam
+varyant sac izgara sac=mullet · prefab oyuncak · tip atlet · saç mullet · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.44×0.64×0.61 · ayk sınır 0.66×0.40×0.50 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +0.3% saç boy +10.7% · tamam
+varyant sac izgara sac=mohikan · prefab oyuncak · tip atlet · saç mohikan · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.43×0.63×0.65 · ayk sınır 0.66×0.40×0.50 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +5.9% saç boy +9.6% · tamam
+varyant vitrin gerçekçi tip=guclu (parça beklenmez) · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.55×0.22×0.63 · tamam
+varyant maç geçiş model=sade · prefab sade · tip - · saç yok · ayk yok · aktif renderer 13 · baş 1.478 · omuz 0.355 · saç sınır 0.23×0.26×0.29 · ayk sınır 0.38×0.30×0.95 · tamam
+varyant vitrin geçiş model=sade · prefab sade · tip - · saç yok · ayk yok · aktif renderer 13 · baş 1.515 · omuz 0.355 · saç sınır 0.28×0.23×0.30 · ayk sınır 0.55×0.26×0.68 · tamam
+varyant maç geçiş model=oyuncak · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 11 · baş 1.270 · omuz 0.546 · saç sınır 0.46×0.51×0.55 · ayk sınır 0.58×0.45×0.86 · tamam
+varyant vitrin geçiş model=oyuncak · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 11 · baş 1.280 · omuz 0.546 · saç sınır 0.65×0.57×0.68 · ayk sınır 0.68×0.40×0.78 · tamam
+=== gerçekçi aksesuarlar (vitrin: önden, dönme kapalı; maç: seçim) · ekran 390x845
+gerçekçi vitrin ayakkabi=klasik (beklenen parça klasik) · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.637 · omuz 0.453 · saç sınır - · ayk sınır 0.55×0.21×0.58 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi #dcf0fb (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin ayakkabi=hafif (beklenen parça hafif) · prefab rocketbox · tip - · saç yok · ayk hafif · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.55×0.22×0.58 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi #dcf0fb (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin ayakkabi=yastikli (beklenen parça yastik) · prefab rocketbox · tip - · saç yok · ayk yastik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.57×0.22×0.60 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi #e0f5fd (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin ayakkabi=bilekli (beklenen parça bilekli) · prefab rocketbox · tip - · saç yok · ayk bilekli · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.55×0.23×0.58 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi #dcf1fb (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin ayakkabi=karbon (beklenen parça karbon) · prefab rocketbox · tip - · saç yok · ayk karbon · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.55×0.22×0.58 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi #dcf0fb (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin ayakkabı rengi=siyah · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.55×0.22×0.58 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi #505764 (malzeme #26262b rocketbox_govde +1) bant yok bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin ayakkabı rengi=beyaz · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.55×0.22×0.58 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi #d4e8f2 (malzeme #f2f2ee rocketbox_govde +1) bant yok bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin forma_mavi · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #497fa7 (malzeme #4fb8ff rocketbox_govde) sort #353d4b (malzeme #161c2c rocketbox_govde) ayakkabi #eefdff (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #646977 (malzeme #e9eef0)
+gerçekçi vitrin forma_fistik · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #829f57 (malzeme #d8ff5a rocketbox_govde) sort #353d4b (malzeme #161c2c rocketbox_govde) ayakkabi #eefdff (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #646977 (malzeme #e9eef0)
+gerçekçi vitrin forma_mor · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #736aa7 (malzeme #b48cff rocketbox_govde) sort #353d4b (malzeme #161c2c rocketbox_govde) ayakkabi #eefdff (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #646977 (malzeme #e9eef0)
+gerçekçi vitrin kumas_klasik · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #8d9ba2 (malzeme #f2f6f4 rocketbox_govde) sort #353d4b (malzeme #161c2c rocketbox_govde) ayakkabi #eefdff (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #646977 (malzeme #e9eef0)
+gerçekçi vitrin kumas_klasik_arka · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #91a0a8 (malzeme #f2f6f4 rocketbox_govde) sort #20242c (malzeme #161c2c rocketbox_govde) ayakkabi #81929d (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #4f5161 (malzeme #e9eef0)
+gerçekçi vitrin kumas_hafif · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #859399 (malzeme #f2f6f4 rocketbox_forma_hafif) sort #353d4b (malzeme #161c2c rocketbox_govde) ayakkabi #eefdff (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #646977 (malzeme #e9eef0)
+gerçekçi vitrin kumas_hafif_arka · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #89989e (malzeme #f2f6f4 rocketbox_forma_hafif) sort #20242c (malzeme #161c2c rocketbox_govde) ayakkabi #81929d (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #4f5161 (malzeme #e9eef0)
+gerçekçi vitrin kumas_nefes · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #89979e (malzeme #f2f6f4 rocketbox_forma_nefes) sort #353d4b (malzeme #161c2c rocketbox_govde) ayakkabi #eefdff (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #646977 (malzeme #e9eef0)
+gerçekçi vitrin kumas_nefes_arka · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #8b9aa1 (malzeme #f2f6f4 rocketbox_forma_nefes) sort #20242c (malzeme #161c2c rocketbox_govde) ayakkabi #81929d (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #4f5161 (malzeme #e9eef0)
+gerçekçi vitrin kumas_esnek · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #87949a (malzeme #f2f6f4 rocketbox_forma_esnek) sort #353d4b (malzeme #161c2c rocketbox_govde) ayakkabi #eefdff (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #646977 (malzeme #e9eef0)
+gerçekçi vitrin kumas_esnek_arka · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #6b757a (malzeme #f2f6f4 rocketbox_forma_esnek) sort #20242c (malzeme #161c2c rocketbox_govde) ayakkabi #81929d (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #4f5161 (malzeme #e9eef0)
+gerçekçi vitrin sort_dogal · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #497fa7 (malzeme #4fb8ff rocketbox_govde) sort #353d4b (malzeme #161c2c rocketbox_govde) ayakkabi #eefdff (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #646977 (malzeme #e9eef0)
+gerçekçi vitrin sort_siyah · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #497fa7 (malzeme #4fb8ff rocketbox_govde) sort #3d424b (malzeme #26262b rocketbox_govde) ayakkabi #eefdff (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #646977 (malzeme #e9eef0)
+gerçekçi vitrin sort_beyaz · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #497fa7 (malzeme #4fb8ff rocketbox_govde) sort #a2b2bb (malzeme #f2f2ee rocketbox_govde) ayakkabi #eefdff (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #646977 (malzeme #e9eef0)
+gerçekçi vitrin sort_gri · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma #497fa7 (malzeme #4fb8ff rocketbox_govde) sort #6f7c88 (malzeme #8a9096 rocketbox_govde) ayakkabi #eefdff (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve #646977 (malzeme #e9eef0)
+gerçekçi vitrin bant_yok · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi kadraj dışı (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin bant_yok_yan · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.41×0.22×0.68 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi kadraj dışı (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin bant_ter · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 10 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi kadraj dışı (malzeme #ffffff rocketbox_govde +1) bant #ab9389 (malzeme #e9eef0) bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin bant_ter_yan · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 10 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.41×0.22×0.68 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi kadraj dışı (malzeme #ffffff rocketbox_govde +1) bant #b6c8d4 (malzeme #e9eef0) bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin bant_odak · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 10 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.58×0.22×0.44 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi kadraj dışı (malzeme #ffffff rocketbox_govde +1) bant #ab9389 (malzeme #ffd23a) bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin bant_odak_yan · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 10 · baş 1.628 · omuz 0.453 · saç sınır - · ayk sınır 0.41×0.22×0.68 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi kadraj dışı (malzeme #ffffff rocketbox_govde +1) bant #c3b659 (malzeme #ffd23a) bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin bileklik_yok · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.556 · omuz 0.453 · saç sınır - · ayk sınır 0.75×0.24×0.94 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi kadraj dışı (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin bileklik_pamuk · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 10 · baş 1.556 · omuz 0.453 · saç sınır - · ayk sınır 0.75×0.24×0.94 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi kadraj dışı (malzeme #ffffff rocketbox_govde +1) bant yok bilek #44535d (malzeme #e9eef0) cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin bileklik_agir · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 10 · baş 1.556 · omuz 0.453 · saç sınır - · ayk sınır 0.75×0.24×0.94 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi kadraj dışı (malzeme #ffffff rocketbox_govde +1) bant yok bilek #222b31 (malzeme #3a4a4e) cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin raket_siyah_beyaz · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.556 · omuz 0.453 · saç sınır - · ayk sınır 0.75×0.24×0.94 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi kadraj dışı (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin raket_kirmizi_limon · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.556 · omuz 0.453 · saç sınır - · ayk sınır 0.75×0.24×0.94 · bölge forma kadraj dışı (malzeme #4fb8ff rocketbox_govde) sort kadraj dışı (malzeme #161c2c rocketbox_govde) ayakkabi kadraj dışı (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin sade sort_dogal · prefab sade · tip - · saç yok · ayk yok · aktif renderer 13 · baş 1.509 · omuz 0.355 · saç sınır 0.22×0.23×0.26 · ayk sınır 0.58×0.26×0.44 · bölge forma #335b79 (malzeme #4fb8ff) sort #212530 (malzeme #05060f) ayakkabi yok bant yok bilek yok cerceve #8d9ea8 (malzeme #e9eef0)
+gerçekçi vitrin sade sort_beyaz · prefab sade · tip - · saç yok · ayk yok · aktif renderer 13 · baş 1.509 · omuz 0.355 · saç sınır 0.22×0.23×0.26 · ayk sınır 0.58×0.26×0.44 · bölge forma #335b79 (malzeme #4fb8ff) sort #a9bbc5 (malzeme #f2f2ee) ayakkabi yok bant yok bilek yok cerceve #8d9ea8 (malzeme #e9eef0)
+gerçekçi maç 1 önden · forma fistik kumaş hafif şort siyah bant odak bileklik agir ayk karbon/siyah · prefab rocketbox · tip - · saç yok · ayk karbon · aktif renderer 11 · baş 1.598 · omuz 0.453 · saç sınır - · ayk sınır 0.37×0.25×0.94 · bölge forma #465a37 (malzeme #d8ff5a rocketbox_forma_hafif) sort #2a2f35 (malzeme #26262b rocketbox_govde) ayakkabi #36302c (malzeme #26262b rocketbox_govde +1) bant #383531 (malzeme #ffd23a) bilek #283137 (malzeme #3a4a4e) cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi maç 1 arkadan · forma fistik kumaş hafif şort siyah bant odak bileklik agir ayk karbon/siyah · prefab rocketbox · tip - · saç yok · ayk karbon · aktif renderer 11 · baş 1.598 · omuz 0.453 · saç sınır - · ayk sınır 0.37×0.26×0.94 · bölge forma #657e47 (malzeme #d8ff5a rocketbox_forma_hafif) sort #363a41 (malzeme #26262b rocketbox_govde) ayakkabi #4f5258 (malzeme #26262b rocketbox_govde +1) bant #78753c (malzeme #ffd23a) bilek #2e3825 (malzeme #3a4a4e) cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi maç 2 önden · forma mor kumaş esnek şort beyaz bant ter bileklik pamuk ayk bilekli/beyaz · prefab rocketbox · tip - · saç yok · ayk bilekli · aktif renderer 11 · baş 1.598 · omuz 0.453 · saç sınır - · ayk sınır 0.37×0.27×0.94 · bölge forma #43446a (malzeme #b48cff rocketbox_forma_esnek) sort #69777d (malzeme #f2f2ee rocketbox_govde) ayakkabi #36302c (malzeme #f2f2ee rocketbox_govde +1) bant #373430 (malzeme #e9eef0) bilek #55656e (malzeme #e9eef0) cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi maç 2 arkadan · forma mor kumaş esnek şort beyaz bant ter bileklik pamuk ayk bilekli/beyaz · prefab rocketbox · tip - · saç yok · ayk bilekli · aktif renderer 11 · baş 1.598 · omuz 0.453 · saç sınır - · ayk sınır 0.37×0.27×0.94 · bölge forma #474466 (malzeme #b48cff rocketbox_forma_esnek) sort #93a1a7 (malzeme #f2f2ee rocketbox_govde) ayakkabi #7c868a (malzeme #f2f2ee rocketbox_govde +1) bant #708089 (malzeme #e9eef0) bilek #2d2c40 (malzeme #e9eef0) cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi maç 3 önden · forma mavi kumaş klasik şort dogal bant yok bileklik yok ayk klasik/dogal · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.598 · omuz 0.453 · saç sınır - · ayk sınır 0.37×0.25×0.94 · bölge forma #2d4f6a (malzeme #4fb8ff rocketbox_govde) sort #262c35 (malzeme #161c2c rocketbox_govde) ayakkabi #36302c (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi maç 3 arkadan · forma mavi kumaş klasik şort dogal bant yok bileklik yok ayk klasik/dogal · prefab rocketbox · tip - · saç yok · ayk klasik · aktif renderer 9 · baş 1.598 · omuz 0.453 · saç sınır - · ayk sınır 0.37×0.26×0.94 · bölge forma #3b698d (malzeme #4fb8ff rocketbox_govde) sort #2e3542 (malzeme #161c2c rocketbox_govde) ayakkabi #859095 (malzeme #ffffff rocketbox_govde +1) bant yok bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+=== tüycük · ekran 390x845
+varyant tüycük vitrin · prefab tuycuk · tip - · saç yok · ayk klasik · aktif renderer 11 · baş 1.281 · omuz 0.546 · saç sınır - · ayk sınır 0.62×0.40×0.59 · tamam
+varyant tüycük vitrin ayk=klasik · prefab tuycuk · tip - · saç yok · ayk klasik · aktif renderer 11 · baş 1.275 · omuz 0.546 · saç sınır - · ayk sınır 0.65×0.40×0.66 · tamam
+varyant tüycük vitrin ayk=hafif · prefab tuycuk · tip - · saç yok · ayk hafif · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.63×0.40×0.65 · fark (serinin ilkine göre) baş +0.1% omuz 0.0% saç gen - saç boy - · tamam
+varyant tüycük vitrin ayk=yastikli · prefab tuycuk · tip - · saç yok · ayk yastik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.68×0.41×0.66 · fark (serinin ilkine göre) baş +0.1% omuz 0.0% saç gen - saç boy - · tamam
+varyant tüycük vitrin ayk=bilekli · prefab tuycuk · tip - · saç yok · ayk bilekli · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.70×0.47×0.72 · fark (serinin ilkine göre) baş +0.1% omuz 0.0% saç gen - saç boy - · tamam
+varyant tüycük vitrin ayk=karbon · prefab tuycuk · tip - · saç yok · ayk karbon · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.64×0.40×0.66 · fark (serinin ilkine göre) baş +0.1% omuz 0.0% saç gen - saç boy - · tamam
+gerçekçi vitrin tuycuk forma_mavi · prefab tuycuk · tip - · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.66×0.40×0.50 · bölge forma #4883b0 (malzeme #4fb8ff) sort yok ayakkabi #c4d7e5 (malzeme #e6e8eb +1) bant yok bilek yok cerceve #76808b (malzeme #e9eef0)
+gerçekçi vitrin tuycuk forma_fistik · prefab tuycuk · tip - · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.66×0.40×0.50 · bölge forma #86a659 (malzeme #d8ff5a) sort yok ayakkabi #c4d7e5 (malzeme #e6e8eb +1) bant yok bilek yok cerceve #76808b (malzeme #e9eef0)
+gerçekçi vitrin tuycuk forma_mor · prefab tuycuk · tip - · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.66×0.40×0.50 · bölge forma #766db0 (malzeme #b48cff) sort yok ayakkabi #c4d7e5 (malzeme #e6e8eb +1) bant yok bilek yok cerceve #76808b (malzeme #e9eef0)
+gerçekçi vitrin tuycuk arka · prefab tuycuk · tip - · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.66×0.40×0.50 · bölge forma #4f90c2 (malzeme #4fb8ff) sort yok ayakkabi #2d516d (malzeme #e6e8eb +1) bant yok bilek yok cerceve #535566 (malzeme #e9eef0)
+gerçekçi vitrin tuycuk yuz · prefab tuycuk · tip - · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.66×0.40×0.50 · bölge forma #4a86b4 (malzeme #4fb8ff) sort yok ayakkabi kadraj dışı (malzeme #e6e8eb +1) bant yok bilek yok cerceve #8d9aa3 (malzeme #e9eef0)
+gerçekçi vitrin tuycuk bant_ter · prefab tuycuk · tip - · saç yok · ayk klasik · aktif renderer 12 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.66×0.40×0.50 · bölge forma #4a86b4 (malzeme #4fb8ff) sort yok ayakkabi kadraj dışı (malzeme #e6e8eb +1) bant #5eb1f0 (malzeme #e9eef0) bilek yok cerceve #8d9aa3 (malzeme #e9eef0)
+gerçekçi vitrin tuycuk tutus_drive · prefab tuycuk · tip - · saç yok · ayk klasik · aktif renderer 12 · baş 1.246 · omuz 0.546 · saç sınır - · ayk sınır 0.80×0.42×0.95 · bölge forma #3b6e96 (malzeme #4fb8ff) sort yok ayakkabi #5dace9 (malzeme #e6e8eb +1) bant kadraj dışı (malzeme #e9eef0) bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin tuycuk tutus_bh_drive · prefab tuycuk · tip - · saç yok · ayk klasik · aktif renderer 12 · baş 1.237 · omuz 0.546 · saç sınır - · ayk sınır 0.80×0.53×0.67 · bölge forma #559bd1 (malzeme #4fb8ff) sort yok ayakkabi #5baded (malzeme #e6e8eb +1) bant kadraj dışı (malzeme #e9eef0) bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin tuycuk tutus_net · prefab tuycuk · tip - · saç yok · ayk klasik · aktif renderer 12 · baş 1.214 · omuz 0.546 · saç sınır - · ayk sınır 0.60×0.45×0.94 · bölge forma #4985b3 (malzeme #4fb8ff) sort yok ayakkabi #80909c (malzeme #e6e8eb +1) bant kadraj dışı (malzeme #e9eef0) bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+gerçekçi vitrin tuycuk tutus_serve · prefab tuycuk · tip - · saç yok · ayk klasik · aktif renderer 12 · baş 1.253 · omuz 0.546 · saç sınır - · ayk sınır 0.95×0.49×0.58 · bölge forma #68c1ff (malzeme #4fb8ff) sort yok ayakkabi #a1b3bf (malzeme #e6e8eb +1) bant kadraj dışı (malzeme #e9eef0) bilek yok cerceve kadraj dışı (malzeme #e9eef0)
+=== tuycuk · ekran 390x845 · llvmpipe (LLVM 20.1.2, 256 bits)
+-- rakip poz (-1.30, 0.00, 3.58) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-1.29, 0.07, 3.50) (0.76, 0.59, 0.77) kemik 53 mesh 1531
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex tuycuk_govde 512 sınır (-1.28, 0.04, 3.47) (0.67, 0.50, 0.69) kemik 53 mesh 1463
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex tuycuk_govde 512 sınır (-1.28, 0.04, 3.47) (0.67, 0.50, 0.69) kemik 53 mesh 1613
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-1.28, 0.04, 3.47) (0.66, 0.40, 0.50) kemik 53 mesh 1288
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-1.28, 0.04, 3.48) (0.70, 0.52, 0.70) kemik 53 mesh 1277
+   SkinnedMeshRenderer tc_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.29, 1.41, 3.57) (0.74, 0.40, 0.72) kemik 53 mesh 240
+   SkinnedMeshRenderer tc_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.71, 0.86, 3.36) (0.24, 0.24, 0.18) kemik 53 mesh 144
+   SkinnedMeshRenderer tc_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex tuycuk_govde 512 sınır (-1.28, 0.86, 3.23) (0.99, 0.73, 0.50) kemik 53 mesh 1844
+   SkinnedMeshRenderer tc_karin__karin açık True/True Standard q2000 renk RGBA(0.964, 0.725, 0.824, 1.000) mode 0 tex yok sınır (-1.29, 0.72, 3.42) (0.58, 0.31, 0.28) kemik 53 mesh 217
+   SkinnedMeshRenderer tc_tuy__forma açık True/True Standard q2000 renk RGBA(0.910, 0.314, 0.561, 1.000) mode 0 tex yok sınır (-1.29, 0.95, 3.59) (1.20, 1.85, 1.01) kemik 53 mesh 2104
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.30, 1.44, 3.61) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-1.57, 1.33, 3.19) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-1.25, 1.50, 3.27) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (-1.61, 1.72, 2.79) (0.10, 0.53, 0.50)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (-1.61, 1.71, 2.78) (1.00, 1.01, 1.02)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-1.60, 1.17, 3.05) (0.06, 0.79, 0.40)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.59, 0.95, 3.15) (0.05, 0.34, 0.19)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.61, 1.72, 2.79) (0.08, 0.46, 0.44)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-1.61, 1.72, 2.79) (0.08, 0.47, 0.43)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-1.56, 1.25, 3.18) (0.00, 0.00, 0.00)
+   toplam sınır (-1.40, 1.00, 3.18) boyut (1.42, 2.45, 1.82) · ileri (-0.13, -0.17, 0.98) yukarı (-0.02, 0.99, 0.17)
+-- ben poz (1.30, 0.00, -3.38) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.19, 0.07, -3.32) (0.75, 0.64, 1.04) kemik 53 mesh 1531
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex tuycuk_govde 512 sınır (1.18, 0.04, -3.29) (0.68, 0.55, 0.95) kemik 53 mesh 1463
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex tuycuk_govde 512 sınır (1.18, 0.04, -3.29) (0.69, 0.55, 0.95) kemik 53 mesh 1613
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.19, 0.04, -3.28) (0.58, 0.45, 0.86) kemik 53 mesh 1288
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (1.18, 0.04, -3.30) (0.72, 0.57, 0.96) kemik 53 mesh 1277
+   SkinnedMeshRenderer tc_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.29, 1.41, -3.45) (0.75, 0.30, 0.72) kemik 53 mesh 240
+   SkinnedMeshRenderer tc_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (1.45, 0.90, -3.02) (0.18, 0.26, 0.27) kemik 53 mesh 144
+   SkinnedMeshRenderer tc_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex tuycuk_govde 512 sınır (1.09, 0.87, -3.01) (0.75, 0.80, 0.61) kemik 53 mesh 1844
+   SkinnedMeshRenderer tc_karin__karin açık True/True Standard q2000 renk RGBA(0.724, 0.889, 1.000, 1.000) mode 0 tex yok sınır (1.23, 0.71, -3.17) (0.62, 0.35, 0.36) kemik 53 mesh 217
+   SkinnedMeshRenderer tc_tuy__forma açık True/True Standard q2000 renk RGBA(0.310, 0.722, 1.000, 1.000) mode 0 tex yok sınır (1.29, 0.89, -3.41) (1.09, 1.82, 1.10) kemik 53 mesh 2104
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.30, 1.44, -3.41) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık True/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (0.77, 0.74, -2.74) (0.19, 0.18, 0.21)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (1.25, 1.50, -3.07) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık True/True Standard q2000 renk RGBA(0.914, 0.933, 0.941, 1.000) mode 0 tex yok sınır (0.56, 0.41, -2.68) (0.46, 0.27, 0.43)
+   TrailRenderer raket_kafa__cerceve açık True/True Legacy Shaders/Particles/Additive q3000 renk - mode - tex yok sınır (0.56, 0.41, -2.68) (1.00, 1.00, 1.00)
+   MeshRenderer raket_koyu__koyu açık True/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (1.07, 0.72, -2.79) (0.74, 0.47, 0.21)
+   MeshRenderer raket_sap__grip açık True/True Standard q2000 renk RGBA(0.149, 0.149, 0.169, 1.000) mode 0 tex yok sınır (1.28, 0.85, -2.84) (0.32, 0.21, 0.11)
+   MeshRenderer raket_tel2__tel2 açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.56, 0.41, -2.68) (0.40, 0.23, 0.38)
+   MeshRenderer raket_tel__tel açık True/True Standard q2000 renk RGBA(0.949, 0.949, 0.933, 1.000) mode 0 tex yok sınır (0.56, 0.41, -2.68) (0.41, 0.23, 0.37)
+   MeshRenderer Sphere__mantar açık True/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (0.77, 0.66, -2.73) (0.07, 0.07, 0.08)
+   toplam sınır (0.95, 0.78, -3.07) boyut (1.77, 2.05, 1.79) · ileri (0.13, -0.17, -0.98) yukarı (0.02, 0.99, -0.17)
+-- hakem poz (-3.80, 0.98, 0.01) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.40, 1.31, 0.03) (0.67, 0.59, 0.56) kemik 53 mesh 1531
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex tuycuk_govde 512 sınır (-3.36, 1.32, 0.03) (0.56, 0.52, 0.47) kemik 53 mesh 1463
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex tuycuk_govde 512 sınır (-3.36, 1.32, 0.02) (0.56, 0.53, 0.48) kemik 53 mesh 1613
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.35, 1.32, 0.00) (0.46, 0.47, 0.42) kemik 53 mesh 1288
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (-3.36, 1.32, 0.03) (0.59, 0.54, 0.51) kemik 53 mesh 1277
+   SkinnedMeshRenderer tc_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-4.00, 2.39, 0.00) (0.71, 0.30, 0.74) kemik 53 mesh 240
+   SkinnedMeshRenderer tc_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.81, 1.62, -0.19) (0.24, 0.20, 0.21) kemik 53 mesh 144
+   SkinnedMeshRenderer tc_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex tuycuk_govde 512 sınır (-3.63, 1.83, 0.00) (0.45, 0.91, 0.50) kemik 53 mesh 1844
+   SkinnedMeshRenderer tc_karin__karin açık True/True Standard q2000 renk RGBA(0.616, 0.633, 0.675, 1.000) mode 0 tex yok sınır (-3.66, 1.78, 0.02) (0.30, 0.34, 0.58) kemik 53 mesh 217
+   SkinnedMeshRenderer tc_tuy__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (-3.92, 1.99, -0.01) (1.14, 1.72, 0.91) kemik 53 mesh 2104
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.83, 2.42, 0.01) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık False/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (-3.41, 2.32, -0.26) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (-3.49, 2.48, 0.06) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.93, 1.64, -0.74) (0.49, 0.32, 0.45)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (-3.39, 1.58, -0.34) (0.67, 0.13, 0.61)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-3.56, 1.56, -0.18) (0.29, 0.08, 0.27)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.93, 1.64, -0.74) (0.42, 0.28, 0.38)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (-2.93, 1.64, -0.74) (0.43, 0.27, 0.39)
+   MeshRenderer Sphere__mantar açık False/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (-3.40, 2.23, -0.26) (0.00, 0.00, 0.00)
+   toplam sınır (-3.78, 1.93, -0.01) boyut (1.43, 1.83, 0.91) · ileri (-0.98, -0.17, -0.13) yukarı (-0.17, 0.99, -0.02)
+-- hakem poz (3.66, -0.07, 0.09) model ölçek (1.75, 1.75, 1.75)
+   SkinnedMeshRenderer ayk_bilekli__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.32, 0.28, -0.16) (0.78, 0.60, 0.77) kemik 53 mesh 1531
+   SkinnedMeshRenderer ayk_hafif__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex tuycuk_govde 512 sınır (3.30, 0.29, -0.18) (0.65, 0.53, 0.64) kemik 53 mesh 1463
+   SkinnedMeshRenderer ayk_karbon__ayakkabi açık True/False Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex tuycuk_govde 512 sınır (3.30, 0.29, -0.18) (0.66, 0.53, 0.65) kemik 53 mesh 1613
+   SkinnedMeshRenderer ayk_klasik__ayakkabi açık True/True Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.30, 0.28, -0.14) (0.53, 0.48, 0.51) kemik 53 mesh 1288
+   SkinnedMeshRenderer ayk_yastik__ayakkabi açık True/False Standard q2000 renk RGBA(0.900, 0.910, 0.920, 1.000) mode 0 tex yok sınır (3.30, 0.29, -0.18) (0.70, 0.54, 0.69) kemik 53 mesh 1277
+   SkinnedMeshRenderer tc_bant__bant açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.81, 1.34, 0.21) (0.91, 0.30, 0.91) kemik 53 mesh 240
+   SkinnedMeshRenderer tc_bilek__bilek açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.55, 0.57, 0.26) (0.28, 0.20, 0.28) kemik 53 mesh 144
+   SkinnedMeshRenderer tc_govde__govde açık True/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex tuycuk_govde 512 sınır (3.50, 0.78, 0.03) (0.58, 0.90, 0.51) kemik 53 mesh 1844
+   SkinnedMeshRenderer tc_karin__karin açık True/True Standard q2000 renk RGBA(0.616, 0.633, 0.675, 1.000) mode 0 tex yok sınır (3.55, 0.72, 0.00) (0.55, 0.34, 0.58) kemik 53 mesh 217
+   SkinnedMeshRenderer tc_tuy__forma açık True/True Standard q2000 renk RGBA(0.039, 0.082, 0.188, 1.000) mode 0 tex yok sınır (3.77, 0.94, 0.19) (1.21, 1.70, 1.20) kemik 53 mesh 2104
+   MeshRenderer bas__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.68, 1.36, 0.11) (0.00, 0.00, 0.00)
+   MeshRenderer Cone__tuy açık False/True Standard q2000 renk RGBA(0.970, 0.970, 0.950, 1.000) mode 0 tex yok sınır (3.18, 1.26, 0.09) (0.00, 0.00, 0.00)
+   MeshRenderer goz__isaret açık False/True Standard q2000 renk RGBA(1.000, 1.000, 1.000, 1.000) mode 0 tex yok sınır (3.42, 1.42, -0.13) (0.00, 0.00, 0.00)
+   MeshRenderer raket_kafa__cerceve açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.51, 0.60, 0.21) (0.47, 0.32, 0.30)
+   MeshRenderer raket_koyu__koyu açık False/True Standard q2000 renk RGBA(0.120, 0.140, 0.200, 1.000) mode 0 tex yok sınır (3.11, 0.54, 0.14) (0.84, 0.14, 0.16)
+   MeshRenderer raket_sap__grip açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (3.35, 0.52, 0.11) (0.35, 0.09, 0.10)
+   MeshRenderer raket_tel2__tel2 açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.51, 0.60, 0.21) (0.41, 0.27, 0.26)
+   MeshRenderer raket_tel__tel açık False/True Standard q2000 renk RGBA(0.850, 0.850, 0.850, 1.000) mode 0 tex yok sınır (2.51, 0.60, 0.21) (0.42, 0.27, 0.25)
+   MeshRenderer Sphere__mantar açık False/True Standard q2000 renk RGBA(0.750, 0.600, 0.400, 1.000) mode 0 tex yok sınır (3.17, 1.18, 0.08) (0.00, 0.00, 0.00)
+   toplam sınır (3.65, 0.89, 0.13) boyut (1.44, 1.81, 1.34) · ileri (0.72, -0.17, 0.67) yukarı (0.13, 0.99, 0.11)
+varyant tüycük maç · prefab tuycuk · tip - · saç yok · ayk klasik · aktif renderer 11 · baş 1.270 · omuz 0.546 · saç sınır - · ayk sınır 0.58×0.45×0.86 · tamam
+kadraj kamera_alcak · 390x845 · uzakDip 170 file 375 fileUst 307 yakinDip 744 uzakCiftlerEn 270 yakinTeklerEn 412 benBoy 96@651 rakipBoy 83@264 · kamera (0.02, 11.19, -11.71) eğim 46.6 fov 49.3 m12 0.000
+kadraj_tepe kadraj_tepe_ben_alcak · 390x845 · top z 6.97 (3.1, 4.3) ekran Unity 195,67 model 195,67 · üst sınır 53 alt 804 · GÖRÜNÜR · eğim 4.3° (tavan 6.8) görüş ×1.22 · işaret 0.06 · yakinDip 748 · azalt False
+kadraj_tepe kadraj_tepe_rakip_alcak · 390x845 · top z 6.97 (3.1, 9.1) ekran Unity 195,90 model 195,90 · üst sınır 53 alt 804 · GÖRÜNÜR · eğim 1.1° (tavan 6.8) görüş ×1.05 · işaret 0.00 · yakinDip 742 · azalt False
+kadraj kamera_ust · 390x845 · uzakDip 177 file 409 fileUst 365 yakinDip 752 uzakCiftlerEn 250 yakinTeklerEn 313 rakipBoy 61@288 benBoy 30@666 · kamera (0.00, 15.33, -9.70) eğim 58.5 fov 51.0 m12 0.000
+kadraj_tepe kadraj_tepe_ben_ust · 390x845 · top z 6.97 (3.1, 4.3) ekran Unity 195,76 model 195,76 · üst sınır 53 alt 804 · GÖRÜNÜR · eğim 1.3° (tavan 6.9) görüş ×1.06 · işaret 0.00 · yakinDip 754 · azalt False
+kadraj_tepe kadraj_tepe_rakip_ust · 390x845 · top z 6.97 (3.1, 9.1) ekran Unity 195,271 model 195,271 · üst sınır 53 alt 804 · GÖRÜNÜR · eğim 0.0° (tavan 6.9) görüş ×1.00 · işaret 0.00 · yakinDip 752 · azalt False
+kadraj kamera_yayin · 390x845 · uzakDip 177 file 385 fileUst 322 yakinDip 722 uzakCiftlerEn 268 yakinTeklerEn 369 rakipBoy 79@275 benBoy 74@716 · kamera (0.00, 13.69, -13.70) eğim 47.0 fov 43.8 m12 0.000
+kadraj_tepe kadraj_tepe_ben_yayin · 390x845 · top z 6.97 (3.1, 4.3) ekran Unity 195,68 model 195,68 · üst sınır 53 alt 804 · GÖRÜNÜR · eğim 3.6° (tavan 7.4) görüş ×1.13 · işaret 0.02 · yakinDip 753 · azalt False
+kadraj_menuye_donus · önce eğim 3.6° · şimdi eğim 0.0° görüş ×1.00 kamera x 47.0° (çözüm 47.0°)
+kadraj_tepe kadraj_tepe_rakip_yayin · 390x845 · top z 6.97 (3.1, 9.1) ekran Unity 195,116 model 195,116 · üst sınır 53 alt 804 · GÖRÜNÜR · eğim 0.0° (tavan 7.4) görüş ×1.00 · işaret 0.00 · yakinDip 723 · azalt False
+ekran boyu istendi 375x667 · oldu 375x667
+kadraj kamera_alcak_se · 375x667 · uzakDip 140 file 278 fileUst 213 yakinDip 571 uzakCiftlerEn 216 yakinTeklerEn 390 rakipBoy 83@207 benBoy 97@439 · kamera (0.00, 8.30, -11.70) eğim 39.9 fov 51.6 m12 0.000
+kadraj_tepe kadraj_tepe_ben_alcak_se · 375x667 · top z 6.97 (3.1, 4.3) ekran Unity 188,58 model 188,58 · üst sınır 48 alt 629 · GÖRÜNÜR · eğim 6.5° (tavan 6.9) görüş ×1.33 · işaret 0.08 · yakinDip 581 · azalt False
+kadraj_tepe kadraj_tepe_rakip_alcak_se · 375x667 · top z 6.97 (3.1, 9.1) ekran Unity 188,60 model 188,60 · üst sınır 48 alt 629 · GÖRÜNÜR · eğim 5.2° (tavan 6.9) görüş ×1.26 · işaret 0.02 · yakinDip 579 · azalt False
+kadraj kamera_ust_se · 375x667 · uzakDip 250 file 360 fileUst 325 yakinDip 586 uzakCiftlerEn 137 yakinTeklerEn 239 rakipBoy 42@263 benBoy 46@451 · kamera (0.00, 10.37, -9.70) eğim 43.4 fov 75.8 m12 0.000
+kadraj_tepe kadraj_tepe_ben_ust_se · 375x667 · top z 6.97 (3.1, 4.3) ekran Unity 188,59 model 188,59 · üst sınır 48 alt 629 · GÖRÜNÜR · eğim 5.0° (tavan 7.5) görüş ×1.23 · işaret 0.06 · yakinDip 584 · azalt False
+kadraj_tepe kadraj_tepe_rakip_ust_se · 375x667 · top z 6.97 (3.1, 9.1) ekran Unity 188,80 model 188,80 · üst sınır 48 alt 629 · GÖRÜNÜR · eğim 1.2° (tavan 7.5) görüş ×1.05 · işaret 0.00 · yakinDip 580 · azalt False
+kadraj kamera_yayin_se · 375x667 · uzakDip 146 file 299 fileUst 236 yakinDip 579 uzakCiftlerEn 227 yakinTeklerEn 354 rakipBoy 80@220 benBoy 87@416 · kamera (0.00, 10.59, -13.70) eğim 40.1 fov 43.6 m12 0.000
+kadraj_tepe kadraj_tepe_ben_yayin_se · 375x667 · top z 6.97 (3.1, 4.3) ekran Unity 188,59 model 188,59 · üst sınır 48 alt 629 · GÖRÜNÜR · eğim 4.7° (tavan 6.1) görüş ×1.27 · işaret 0.07 · yakinDip 587 · azalt False
+kadraj_tepe kadraj_tepe_rakip_yayin_se · 375x667 · top z 6.97 (3.1, 9.1) ekran Unity 188,65 model 188,65 · üst sınır 48 alt 629 · GÖRÜNÜR · eğim 2.3° (tavan 6.1) görüş ×1.13 · işaret 0.00 · yakinDip 584 · azalt False
+ekran boyu istendi 390x845 · oldu 390x845
+kadraj_tepe kadraj_tepe_ben_yayin_azalt · 390x845 · top z 6.97 (3.1, 4.3) ekran Unity 195,-54 model 195,-54 · üst sınır 53 alt 804 · DIŞARIDA · eğim 0.0° (tavan 7.4) görüş ×1.00 · işaret 1.00 · yakinDip 722 · azalt True
+kadraj_tepe kadraj_tepe_rakip_yayin_azalt · 390x845 · top z 6.97 (3.1, 9.1) ekran Unity 195,115 model 195,115 · üst sınır 53 alt 804 · GÖRÜNÜR · eğim 0.0° (tavan 7.4) görüş ×1.00 · işaret 0.00 · yakinDip 722 · azalt True
+ekran boyu istendi 430x932 · oldu 430x932
+kadraj_tepe kadraj_tepe_ben_yayin_pm · 430x932 · top z 6.97 (3.1, 4.3) ekran Unity 215,75 model 215,75 · üst sınır 58 alt 886 · GÖRÜNÜR · eğim 3.6° (tavan 7.5) görüş ×1.13 · işaret 0.03 · yakinDip 830 · azalt False
+kadraj_tepe kadraj_tepe_rakip_yayin_pm · 430x932 · top z 6.97 (3.1, 9.1) ekran Unity 215,127 model 215,127 · üst sınır 58 alt 886 · GÖRÜNÜR · eğim 0.0° (tavan 7.5) görüş ×1.00 · işaret 0.00 · yakinDip 797 · azalt False
+ekran boyu istendi 390x845 · oldu 390x845
+sonuc_galibiyet · sonuç 390x845 · s 0.95 sigK 0.95 yazı ×0.95 (12'lik satır 11 px) · matris düz · ikincil düğme stili var · alt düğme dibi 834 / sınır 834 · üst 9 alt pay 11
+sonuc_yenilgi · sonuç 390x845 · s 1.00 sigK 1.00 yazı ×1.00 (12'lik satır 12 px) · matris düz · ikincil düğme stili var · alt düğme dibi 834 / sınır 834 · üst 9 alt pay 11
+=== file (ekran/file) · file ölçü: en 6.100 m (x 0.00..6.10, direkler 0 ve 6.1) · üst orta 1.524 direk 1.550 sarkma 26 mm · derinlik 0.760 · bant 75 mm · göz 19 mm · alt kenar en düşük 0.764
+file dinlenik: 10 karede uyuyan 10 · son yenilenen köşe 0
+file file_02_ag_tepe: tür ağ hız 50 · tepe anı ağ 22.8 cm bant 3.7 mm · yenilenen köşe 360/792 · 0,45 sn ağ 6.2 cm köşe 672 · en çok ağ 21.8 cm bant 4.1 mm oran 0.019 · ağ durulma (<1 mm) 2.58 s uyku 3.11 s · sonra 5 karede uyuyan 3
+file file_04_bant: tür bant hız 20 · tepe anı ağ 1.7 cm bant 4.6 mm · yenilenen köşe 360/792 · en çok ağ 1.9 cm bant 3.8 mm oran 0.204 · ağ durulma (<1 mm) 1.54 s uyku 2.23 s · sonra 5 karede uyuyan 3
+file file_05_ag_dalga_azalt: tür ağ hız 50 · tepe anı ağ 8.0 cm bant 1.3 mm · yenilenen köşe 360/792 · en çok ağ 7.6 cm bant 1.4 mm oran 0.019 · ağ durulma (<1 mm) 1.95 s uyku 3.11 s · sonra 5 karede uyuyan 3 · Hareketi azalt
+ekran boyu istendi 375x667 · oldu 375x667
+taşma menu_se_oyna · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×1.00 · 32 öğe · 2 sorun
+   ! yazı sığmıyor 112>97 · "MATCH OF THE DAY" · [44,512 97x16]
+   ! yazı sığmıyor 80>77 · "QUICK MATCH" · [174,512 77x16]
+taşma menu_se_kariyer · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×1.00 · 56 öğe · 0 sorun
+taşma menu_se_mac_karti · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×1.00 · 26 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Play: Local gym · Play · [10,614 86x49]
+   ! dokunma alanı çakışıyor: Play: Local gym · Career · [100,614 86x49]
+   ! dokunma alanı çakışıyor: Play: Local gym · Locker room · [190,614 85x49]
+   ! dokunma alanı çakışıyor: Play: Local gym · Profile · [279,614 86x49]
+taşma menu_se_soyunma · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×1.00 · 80 öğe · 0 sorun
+taşma menu_se_karakter · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×1.00 · 60 öğe · 0 sorun
+taşma menu_se_profil · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×1.00 · 101 öğe · 0 sorun
+taşma menu_se_hizli · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×1.00 · 36 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Play · [10,614 86x49]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Career · [100,614 86x49]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Locker room · [190,614 85x49]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Profile · [279,614 86x49]
+taşma menu_se_ayarlar · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×1.00 · 67 öğe · 0 sorun
+taşma menu_se_antrenman · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×1.00 · 101 öğe · 3 sorun
+   ! yazı kabından taşıyor · "Lv 15" · [322,1586 31x17]
+   ! yazı kabından taşıyor · "Lv 19" · [322,1806 31x17]
+   ! yazı kabından taşıyor · "Lv 25" · [322,2002 31x17]
+taşma menu_se_gorev_karti · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×1.00 · 24 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Start: Corner smash · Play · [10,614 86x49]
+   ! dokunma alanı çakışıyor: Start: Corner smash · Career · [100,614 86x49]
+   ! dokunma alanı çakışıyor: Start: Corner smash · Locker room · [190,614 85x49]
+   ! dokunma alanı çakışıyor: Start: Corner smash · Profile · [279,614 86x49]
+taşma menu_se_gunun_maci · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×1.00 · 21 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Play: Match of the day · Play · [10,614 86x49]
+   ! dokunma alanı çakışıyor: Play: Match of the day · Career · [100,614 86x49]
+   ! dokunma alanı çakışıyor: Play: Match of the day · Locker room · [190,614 85x49]
+   ! dokunma alanı çakışıyor: Play: Match of the day · Profile · [279,614 86x49]
+taşma menu_se_x2_oyna · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×2.00 · 28 öğe · 0 sorun
+taşma menu_se_x2_kariyer · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×2.00 · 52 öğe · 0 sorun
+taşma menu_se_x2_mac_karti · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×2.00 · 22 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Play: Local gym · Play · [10,617 86x46]
+   ! dokunma alanı çakışıyor: Play: Local gym · Career · [100,617 86x46]
+   ! dokunma alanı çakışıyor: Play: Local gym · Locker room · [190,617 85x46]
+   ! dokunma alanı çakışıyor: Play: Local gym · Profile · [279,617 86x46]
+taşma menu_se_x2_soyunma · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×2.00 · 76 öğe · 0 sorun
+taşma menu_se_x2_profil · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×2.00 · 97 öğe · 0 sorun
+taşma menu_se_x2_hizli · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×2.00 · 32 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Play · [10,617 86x46]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Career · [100,617 86x46]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Locker room · [190,617 85x46]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Profile · [279,617 86x46]
+taşma menu_se_x2_ayarlar · ekran 375x667 · panel 375x667 · 1 birim 1.00 pt · güvenli üst 0 alt 0 · kısa · yazı ×2.00 · 63 öğe · 0 sorun
+sonuc_se · sonuç 375x667 · s 0.59 sigK 0.75 yazı ×0.92 (12'lik satır 11 px) · matris düz · ikincil düğme stili var · alt düğme dibi 657 / sınır 657 · üst 8 alt pay 10
+sonuc_se_buyuk · sonuç 375x667 · s 0.55 sigK 0.70 yazı ×1.19 (12'lik satır 14 px) · matris düz · ikincil düğme stili var · alt düğme dibi 880 / sınır 657 · TAŞIYOR · üst 8 alt pay 10
+ekran boyu istendi 390x844 · oldu 390x844
+taşma menu_13_oyna · ekran 390x844 · panel 375x812 · 1 birim 1.04 pt · güvenli üst 45 alt 33 · yazı ×1.00 · 32 öğe · 1 sorun
+   ! yazı sığmıyor 112>105 · "MATCH OF THE DAY" · [41,614 105x15]
+taşma menu_13_kariyer · ekran 390x844 · panel 375x812 · 1 birim 1.04 pt · güvenli üst 45 alt 33 · yazı ×1.00 · 56 öğe · 0 sorun
+taşma menu_13_mac_karti · ekran 390x844 · panel 375x812 · 1 birim 1.04 pt · güvenli üst 45 alt 33 · yazı ×1.00 · 26 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Play: Local gym · Play · [10,723 87x50]
+   ! dokunma alanı çakışıyor: Play: Local gym · Career · [100,723 86x50]
+   ! dokunma alanı çakışıyor: Play: Local gym · Locker room · [189,723 87x50]
+   ! dokunma alanı çakışıyor: Play: Local gym · Profile · [280,723 86x50]
+taşma menu_13_soyunma · ekran 390x844 · panel 375x812 · 1 birim 1.04 pt · güvenli üst 45 alt 33 · yazı ×1.00 · 80 öğe · 0 sorun
+taşma menu_13_karakter · ekran 390x844 · panel 375x812 · 1 birim 1.04 pt · güvenli üst 45 alt 33 · yazı ×1.00 · 60 öğe · 0 sorun
+taşma menu_13_profil · ekran 390x844 · panel 375x812 · 1 birim 1.04 pt · güvenli üst 45 alt 33 · yazı ×1.00 · 101 öğe · 0 sorun
+taşma menu_13_hizli · ekran 390x844 · panel 375x812 · 1 birim 1.04 pt · güvenli üst 45 alt 33 · yazı ×1.00 · 36 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Play · [10,723 87x50]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Career · [100,723 86x50]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Locker room · [189,723 87x50]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Profile · [280,723 86x50]
+taşma menu_13_ayarlar · ekran 390x844 · panel 375x812 · 1 birim 1.04 pt · güvenli üst 45 alt 33 · yazı ×1.00 · 67 öğe · 0 sorun
+taşma menu_13_antrenman · ekran 390x844 · panel 375x812 · 1 birim 1.04 pt · güvenli üst 45 alt 33 · yazı ×1.00 · 101 öğe · 4 sorun
+   ! yazı kabından taşıyor · "Lv 12" · [322,1459 31x17]
+   ! yazı kabından taşıyor · "Lv 15" · [322,1632 31x17]
+   ! yazı kabından taşıyor · "Lv 19" · [322,1852 31x17]
+   ! yazı kabından taşıyor · "Lv 25" · [322,2049 31x17]
+taşma menu_13_gorev_karti · ekran 390x844 · panel 375x812 · 1 birim 1.04 pt · güvenli üst 45 alt 33 · yazı ×1.00 · 24 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Start: Corner smash · Play · [10,723 87x50]
+   ! dokunma alanı çakışıyor: Start: Corner smash · Career · [100,723 86x50]
+   ! dokunma alanı çakışıyor: Start: Corner smash · Locker room · [189,723 87x50]
+   ! dokunma alanı çakışıyor: Start: Corner smash · Profile · [280,723 86x50]
+taşma menu_13_gunun_maci · ekran 390x844 · panel 375x812 · 1 birim 1.04 pt · güvenli üst 45 alt 33 · yazı ×1.00 · 21 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Play: Match of the day · Play · [10,723 87x50]
+   ! dokunma alanı çakışıyor: Play: Match of the day · Career · [100,723 86x50]
+   ! dokunma alanı çakışıyor: Play: Match of the day · Locker room · [189,723 87x50]
+   ! dokunma alanı çakışıyor: Play: Match of the day · Profile · [280,723 86x50]
+sonuc_13 · sonuç 390x844 · s 0.75 sigK 0.75 yazı ×0.95 (12'lik satır 11 px) · matris düz · ikincil düğme stili var · alt düğme dibi 799 / sınır 799 · üst 56 alt pay 45
+ekran boyu istendi 430x932 · oldu 430x932
+taşma menu_pm_oyna · ekran 430x932 · panel 375x813 · 1 birim 1.15 pt · güvenli üst 51 alt 30 · yazı ×1.00 · 32 öğe · 1 sorun
+   ! yazı sığmıyor 112>104 · "MATCH OF THE DAY" · [41,619 104x16]
+taşma menu_pm_kariyer · ekran 430x932 · panel 375x813 · 1 birim 1.15 pt · güvenli üst 51 alt 30 · yazı ×1.00 · 56 öğe · 0 sorun
+taşma menu_pm_mac_karti · ekran 430x932 · panel 375x813 · 1 birim 1.15 pt · güvenli üst 51 alt 30 · yazı ×1.00 · 26 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Play: Local gym · Play · [10,727 86x50]
+   ! dokunma alanı çakışıyor: Play: Local gym · Career · [99,727 86x50]
+   ! dokunma alanı çakışıyor: Play: Local gym · Locker room · [189,727 86x50]
+   ! dokunma alanı çakışıyor: Play: Local gym · Profile · [279,727 86x50]
+taşma menu_pm_soyunma · ekran 430x932 · panel 375x813 · 1 birim 1.15 pt · güvenli üst 51 alt 30 · yazı ×1.00 · 80 öğe · 0 sorun
+taşma menu_pm_karakter · ekran 430x932 · panel 375x813 · 1 birim 1.15 pt · güvenli üst 51 alt 30 · yazı ×1.00 · 60 öğe · 0 sorun
+taşma menu_pm_profil · ekran 430x932 · panel 375x813 · 1 birim 1.15 pt · güvenli üst 51 alt 30 · yazı ×1.00 · 101 öğe · 0 sorun
+taşma menu_pm_hizli · ekran 430x932 · panel 375x813 · 1 birim 1.15 pt · güvenli üst 51 alt 30 · yazı ×1.00 · 36 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Play · [10,727 86x50]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Career · [99,727 86x50]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Locker room · [189,727 86x50]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Profile · [279,727 86x50]
+taşma menu_pm_ayarlar · ekran 430x932 · panel 375x813 · 1 birim 1.15 pt · güvenli üst 51 alt 30 · yazı ×1.00 · 67 öğe · 0 sorun
+taşma menu_pm_antrenman · ekran 430x932 · panel 375x813 · 1 birim 1.15 pt · güvenli üst 51 alt 30 · yazı ×1.00 · 101 öğe · 4 sorun
+   ! yazı kabından taşıyor · "Lv 12" · [322,1467 31x17]
+   ! yazı kabından taşıyor · "Lv 15" · [323,1638 31x17]
+   ! yazı kabından taşıyor · "Lv 19" · [323,1857 31x17]
+   ! yazı kabından taşıyor · "Lv 25" · [322,2052 31x17]
+taşma menu_pm_gorev_karti · ekran 430x932 · panel 375x813 · 1 birim 1.15 pt · güvenli üst 51 alt 30 · yazı ×1.00 · 24 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Start: Corner smash · Play · [10,727 86x50]
+   ! dokunma alanı çakışıyor: Start: Corner smash · Career · [99,727 86x50]
+   ! dokunma alanı çakışıyor: Start: Corner smash · Locker room · [189,727 86x50]
+   ! dokunma alanı çakışıyor: Start: Corner smash · Profile · [279,727 86x50]
+taşma menu_pm_gunun_maci · ekran 430x932 · panel 375x813 · 1 birim 1.15 pt · güvenli üst 51 alt 30 · yazı ×1.00 · 21 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Play: Match of the day · Play · [10,727 86x50]
+   ! dokunma alanı çakışıyor: Play: Match of the day · Career · [99,727 86x50]
+   ! dokunma alanı çakışıyor: Play: Match of the day · Locker room · [189,727 86x50]
+   ! dokunma alanı çakışıyor: Play: Match of the day · Profile · [279,727 86x50]
+sonuc_pm · sonuç 430x932 · s 0.77 sigK 0.70 yazı ×1.05 (12'lik satır 13 px) · matris düz · ikincil düğme stili var · alt düğme dibi 885 / sınır 885 · üst 69 alt pay 47
+ekran boyu istendi 768x1024 · oldu 768x1024
+taşma menu_ipad_oyna · ekran 768x1024 · panel 609x812 · 1 birim 1.26 pt · güvenli üst 19 alt 16 · geniş · yazı ×1.00 · 32 öğe · 0 sorun
+taşma menu_ipad_kariyer · ekran 768x1024 · panel 609x812 · 1 birim 1.26 pt · güvenli üst 19 alt 16 · geniş · yazı ×1.00 · 56 öğe · 0 sorun
+taşma menu_ipad_mac_karti · ekran 768x1024 · panel 609x812 · 1 birim 1.26 pt · güvenli üst 19 alt 16 · geniş · yazı ×1.00 · 26 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Play: Local gym · Play · [17,740 140x50]
+   ! dokunma alanı çakışıyor: Play: Local gym · Career · [162,740 140x50]
+   ! dokunma alanı çakışıyor: Play: Local gym · Locker room · [307,740 140x50]
+   ! dokunma alanı çakışıyor: Play: Local gym · Profile · [452,740 140x50]
+taşma menu_ipad_soyunma · ekran 768x1024 · panel 609x812 · 1 birim 1.26 pt · güvenli üst 19 alt 16 · geniş · yazı ×1.00 · 80 öğe · 0 sorun
+taşma menu_ipad_karakter · ekran 768x1024 · panel 609x812 · 1 birim 1.26 pt · güvenli üst 19 alt 16 · geniş · yazı ×1.00 · 60 öğe · 0 sorun
+taşma menu_ipad_profil · ekran 768x1024 · panel 609x812 · 1 birim 1.26 pt · güvenli üst 19 alt 16 · geniş · yazı ×1.00 · 101 öğe · 0 sorun
+taşma menu_ipad_hizli · ekran 768x1024 · panel 609x812 · 1 birim 1.26 pt · güvenli üst 19 alt 16 · geniş · yazı ×1.00 · 36 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Play · [17,740 140x50]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Career · [162,740 140x50]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Locker room · [307,740 140x50]
+   ! dokunma alanı çakışıyor: Play quick match, 5 points · Easy · Hall · Profile · [452,740 140x50]
+taşma menu_ipad_ayarlar · ekran 768x1024 · panel 609x812 · 1 birim 1.26 pt · güvenli üst 19 alt 16 · geniş · yazı ×1.00 · 67 öğe · 0 sorun
+taşma menu_ipad_antrenman · ekran 768x1024 · panel 609x812 · 1 birim 1.26 pt · güvenli üst 19 alt 16 · geniş · yazı ×1.00 · 101 öğe · 0 sorun
+taşma menu_ipad_gorev_karti · ekran 768x1024 · panel 609x812 · 1 birim 1.26 pt · güvenli üst 19 alt 16 · geniş · yazı ×1.00 · 24 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Start: Corner smash · Play · [17,740 140x50]
+   ! dokunma alanı çakışıyor: Start: Corner smash · Career · [162,740 140x50]
+   ! dokunma alanı çakışıyor: Start: Corner smash · Locker room · [307,740 140x50]
+   ! dokunma alanı çakışıyor: Start: Corner smash · Profile · [452,740 140x50]
+taşma menu_ipad_gunun_maci · ekran 768x1024 · panel 609x812 · 1 birim 1.26 pt · güvenli üst 19 alt 16 · geniş · yazı ×1.00 · 21 öğe · 4 sorun
+   ! dokunma alanı çakışıyor: Play: Match of the day · Play · [17,740 140x50]
+   ! dokunma alanı çakışıyor: Play: Match of the day · Career · [162,740 140x50]
+   ! dokunma alanı çakışıyor: Play: Match of the day · Locker room · [307,740 140x50]
+   ! dokunma alanı çakışıyor: Play: Match of the day · Profile · [452,740 140x50]
+sonuc_ipad · sonuç 768x1024 · s 1.09 sigK 0.90 yazı ×1.09 (12'lik satır 13 px) · matris düz · ikincil düğme stili var · alt düğme dibi 988 / sınır 988 · üst 37 alt pay 36
+ekran boyu istendi 390x845 · oldu 390x845
+duyarlı özet · 51 menü karesi · 87 sorun
+menu_macsonu_oyna · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-156215505 rules=350 complexSelectors=372 m_Rules=350 m_ComplexSelectors=372 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+menu_macsonu_kariyer · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-156215505 rules=350 complexSelectors=372 m_Rules=350 m_ComplexSelectors=372 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+menu_macsonu_soyunma · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-156215505 rules=350 complexSelectors=372 m_Rules=350 m_ComplexSelectors=372 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+menu_park_oyna · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-156215505 rules=350 complexSelectors=372 m_Rules=350 m_ComplexSelectors=372 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+menu_bekleyen_oyna · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-156215505 rules=350 complexSelectors=372 m_Rules=350 m_ComplexSelectors=372 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000) · bekleyen True
+bekleyen_devam · ana kamera açık maske -1 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-156215505 rules=350 complexSelectors=372 m_Rules=350 m_ComplexSelectors=372 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+=== perf (GÖRELİ: yazılım GL; bölümler ve turlar arası karşılaştırma) · ekran 390x845 · basamak 2 · MSAA 4 · gölge All High 40 m · aniso Enable · kemik FourBones · hedef 60 fps · vSync 0 · çözünürlük 390x845 · bellek 15988 MB · çekirdek 4
+perf menu_oyna · kare 149 · dt ms p50 58.1 p95 59.6 p99 63.5 en 64.3 ort 58.3 · p99/p50 1.09 · takılma (>2×p50) 0 · GC kare başı ort 0 B p95 0 B · ayırmasız kare %100 · GC toplama 0 · kaynak mono farkı · basamak 2 · MSAA 4 · gölge All High 40 m · aniso Enable · kemik FourBones · hedef 60 fps · vSync 0 · çözünürlük 390x845 · bellek 15988 MB · çekirdek 4 · GÖRELİ (yazılım GL)
+perf menu_soyunma · kare 119 · dt ms p50 56.1 p95 57.3 p99 58.7 en 58.8 ort 56.2 · p99/p50 1.05 · takılma (>2×p50) 0 · GC kare başı ort 0 B p95 0 B · ayırmasız kare %100 · GC toplama 0 · kaynak mono farkı · basamak 2 · MSAA 4 · gölge All High 40 m · aniso Enable · kemik FourBones · hedef 60 fps · vSync 0 · çözünürlük 390x845 · bellek 15988 MB · çekirdek 4 · GÖRELİ (yazılım GL)
+perf_tani soyunma · vitrin kamera çiziyor
+perf menu_oyna_azalt · kare 89 · dt ms p50 16.7 p95 16.7 p99 16.7 en 16.7 ort 16.7 · p99/p50 1.00 · takılma (>2×p50) 0 · GC kare başı ort 0 B p95 0 B · ayırmasız kare %100 · GC toplama 0 · kaynak mono farkı · basamak 2 · MSAA 4 · gölge All High 40 m · aniso Enable · kemik FourBones · hedef 60 fps · vSync 0 · çözünürlük 390x845 · bellek 15988 MB · çekirdek 4 · GÖRELİ (yazılım GL)
+perf_tani azalt · afiş kamera durgun
+perf perde_oyna · kare 21 · dt ms p50 167.4 p95 235.1 p99 238.8 en 238.8 ort 168.3 · p99/p50 1.43 · takılma (>2×p50) 0 · GC kare başı ort 20870 B p95 32768 B · ayırmasız kare %14 · GC toplama 0 · kaynak mono farkı · basamak 2 · MSAA 4 · gölge All High 40 m · aniso Enable · kemik FourBones · hedef 60 fps · vSync 0 · çözünürlük 390x845 · bellek 15988 MB · çekirdek 4 · GÖRELİ (yazılım GL)
+perf ralli_oyuncak · kare 239 · dt ms p50 155.8 p95 160.3 p99 162.8 en 177.3 ort 155.3 · p99/p50 1.04 · takılma (>2×p50) 0 · GC kare başı ort 1113 B p95 4096 B · ayırmasız kare %86 · GC toplama 0 · kaynak mono farkı · basamak 2 · MSAA 4 · gölge All High 40 m · aniso Enable · kemik FourBones · hedef 60 fps · vSync 0 · çözünürlük 390x845 · bellek 15988 MB · çekirdek 4 · GÖRELİ (yazılım GL)
+perf_gecis oyuncak ben · klip değişimi 53 · geçiş sürerken 21 · tek karede düşen ağırlık toplam 0.67 · %25 üstü pop 1 (eski kuralda geçiş sürerken her değişim düşerdi; GecisOlc)
+perf_gecis oyuncak rakip · klip değişimi 22 · geçiş sürerken 4 · tek karede düşen ağırlık toplam 0.10 · %25 üstü pop 0 (eski kuralda geçiş sürerken her değişim düşerdi; GecisOlc)
+perf ralli_rocketbox · kare 239 · dt ms p50 168.0 p95 172.5 p99 176.2 en 176.8 ort 168.1 · p99/p50 1.05 · takılma (>2×p50) 0 · GC kare başı ort 2210 B p95 12288 B · ayırmasız kare %68 · GC toplama 0 · kaynak mono farkı · basamak 2 · MSAA 4 · gölge All High 40 m · aniso Enable · kemik FourBones · hedef 60 fps · vSync 0 · çözünürlük 390x845 · bellek 15988 MB · çekirdek 4 · GÖRELİ (yazılım GL)
+perf_gecis rocketbox ben · klip değişimi 53 · geçiş sürerken 17 · tek karede düşen ağırlık toplam 0.15 · %25 üstü pop 0 (eski kuralda geçiş sürerken her değişim düşerdi; GecisOlc)
+perf_gecis rocketbox rakip · klip değişimi 30 · geçiş sürerken 9 · tek karede düşen ağırlık toplam 0.30 · %25 üstü pop 0 (eski kuralda geçiş sürerken her değişim düşerdi; GecisOlc)
+perf ralli_sade · kare 239 · dt ms p50 160.7 p95 163.6 p99 165.0 en 168.1 ort 160.7 · p99/p50 1.03 · takılma (>2×p50) 0 · GC kare başı ort 7112 B p95 8192 B · ayırmasız kare %73 · GC toplama 0 · kaynak mono farkı · basamak 2 · MSAA 4 · gölge All High 40 m · aniso Enable · kemik FourBones · hedef 60 fps · vSync 0 · çözünürlük 390x845 · bellek 15988 MB · çekirdek 4 · GÖRELİ (yazılım GL)
+perf_gecis sade rakip · klip değişimi 14 · geçiş sürerken 1 · tek karede düşen ağırlık toplam 0.00 · %25 üstü pop 0 (eski kuralda geçiş sürerken her değişim düşerdi; GecisOlc)
+perf_gecis sade ben · klip değişimi 31 · geçiş sürerken 4 · tek karede düşen ağırlık toplam 0.00 · %25 üstü pop 0 (eski kuralda geçiş sürerken her değişim düşerdi; GecisOlc)
+perf ralli_tuycuk · kare 239 · dt ms p50 155.5 p95 160.1 p99 165.0 en 172.4 ort 155.4 · p99/p50 1.06 · takılma (>2×p50) 0 · GC kare başı ort 514 B p95 4096 B · ayırmasız kare %90 · GC toplama 0 · kaynak mono farkı · basamak 2 · MSAA 4 · gölge All High 40 m · aniso Enable · kemik FourBones · hedef 60 fps · vSync 0 · çözünürlük 390x845 · bellek 15988 MB · çekirdek 4 · GÖRELİ (yazılım GL)
+perf_gecis tuycuk rakip · klip değişimi 29 · geçiş sürerken 8 · tek karede düşen ağırlık toplam 0.20 · %25 üstü pop 0 (eski kuralda geçiş sürerken her değişim düşerdi; GecisOlc)
+perf_gecis tuycuk ben · klip değişimi 61 · geçiş sürerken 20 · tek karede düşen ağırlık toplam 0.52 · %25 üstü pop 0 (eski kuralda geçiş sürerken her değişim düşerdi; GecisOlc)
+perf acilis · kare 6 · dt ms p50 204.8 p95 237.2 p99 237.2 en 237.2 ort 196.3 · p99/p50 1.16 · takılma (>2×p50) 0 · GC kare başı ort 682 B p95 4096 B · ayırmasız kare %83 · GC toplama 0 · kaynak mono farkı · basamak 2 · MSAA 4 · gölge All High 40 m · aniso Enable · kemik FourBones · hedef 60 fps · vSync 0 · çözünürlük 390x845 · bellek 15988 MB · çekirdek 4 · GÖRELİ (yazılım GL)
+perf_doku (adsız) 1024x1024 Alpha8 mip 1 okunur True süzme Bilinear aniso 1 · 1024 KB
+perf_doku (adsız) 1024x1024 Alpha8 mip 1 okunur True süzme Bilinear aniso 1 · 1024 KB
+perf_doku (adsız) 1024x1024 Alpha8 mip 1 okunur True süzme Bilinear aniso 1 · 1024 KB
+perf_doku (adsız) 1024x1024 Alpha8 mip 1 okunur True süzme Bilinear aniso 1 · 1024 KB
+perf_doku (adsız) 1024x1024 Alpha8 mip 1 okunur True süzme Bilinear aniso 1 · 1024 KB
+perf_doku (adsız) 256x256 RGBA32 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku (adsız) 256x256 RGBA32 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku (adsız) 256x256 RGBA32 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku (adsız) 256x256 RGBA32 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku (adsız) 256x256 RGBA32 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku (adsız) 128x128 RGBA32 mip 1 okunur True süzme Bilinear aniso 1 · 64 KB
+perf_doku (adsız) 128x128 RGBA32 mip 1 okunur True süzme Bilinear aniso 1 · 64 KB
+perf_doku (adsız) 128x128 RGBA32 mip 1 okunur True süzme Bilinear aniso 1 · 64 KB
+perf_doku (adsız) 128x128 RGBA32 mip 1 okunur True süzme Bilinear aniso 1 · 64 KB
+perf_doku (adsız) 1024x1024 Alpha8 mip 1 okunur True süzme Bilinear aniso 1 · 1024 KB
+perf_doku (adsız) 1024x1024 Alpha8 mip 1 okunur True süzme Bilinear aniso 1 · 1024 KB
+perf_doku (adsız) 1024x1024 Alpha8 mip 1 okunur True süzme Bilinear aniso 1 · 1024 KB
+perf_doku (adsız) 1024x1024 Alpha8 mip 1 okunur True süzme Bilinear aniso 1 · 1024 KB
+perf_doku (adsız) 128x8 RGBA32 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku (adsız) 512x512 RGBA32 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku (adsız) 256x256 RGBA32 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku (adsız) 96x160 RGBA32 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku UnityNHxRoughness 256x64 R16 mip 1 okunur True süzme Bilinear aniso 0 · 32 KB
+perf_doku UnityAttenuation 1024x1 R16 mip 1 okunur True süzme Bilinear aniso 0 · 2 KB
+perf_doku UnityGrayscaleRamp 256x2 RGBA32 mip 1 okunur True süzme Bilinear aniso 0 · 2 KB
+perf_doku Soft 128x128 Alpha8 mip 8 okunur False süzme Bilinear aniso 0 · 0 KB
+perf_doku Font Texture 256x256 Alpha8 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku Font Texture 256x256 Alpha8 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku Font Texture 256x256 Alpha8 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku Font Texture 256x256 Alpha8 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku Font Texture 256x256 Alpha8 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku oyuncak_govde 512x512 DXT1 mip 10 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku oyuncak_guclu_govde 512x512 DXT1 mip 10 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku oyuncak_kadin_govde 512x512 DXT1 mip 10 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku oyuncak_sac 128x128 DXT1 mip 8 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku oyuncak_uzun_govde 512x512 DXT1 mip 10 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku rocketbox_bas 1024x1024 DXT1 mip 11 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku rocketbox_bas_mg 512x512 DXT5 mip 10 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku rocketbox_bas_n 512x512 DXT5 mip 10 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku rocketbox_forma_esnek 1024x1024 DXT1 mip 11 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku rocketbox_forma_hafif 1024x1024 DXT1 mip 11 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku rocketbox_forma_nefes 1024x1024 DXT1 mip 11 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku rocketbox_govde 1024x1024 DXT1 mip 11 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku rocketbox_govde_mg 512x512 DXT5 mip 10 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku rocketbox_govde_n 512x512 DXT5 mip 10 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku tuycuk_govde 512x512 DXT1 mip 10 okunur False süzme Trilinear aniso 1 · 0 KB
+perf_doku logo 192x192 DXT5 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku Font Texture 256x256 Alpha8 mip 1 okunur False süzme Bilinear aniso 1 · 0 KB
+perf_doku toplam 48 doku · 9508 KB (GetRuntimeMemorySizeLong; geliştirme dışı oyuncuda 0 olabilir)
