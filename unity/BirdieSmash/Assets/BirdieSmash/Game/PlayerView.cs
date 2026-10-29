@@ -1,7 +1,9 @@
 // Oyuncu: Blender figürünün FBX'i (tool/karakter/unity_fbx.py → Resources/karakter/<model>.fbx). Ayarlar › Oyuncu görünümü:
 // "oyuncak" (Oyuncak 3B, varsayılan; 2026-10-26'dan beri MakeHuman CC0 tabanlı figür, 2026-10-27'den beri ~3,4 baş boylu tıknaz
 // oyuncak oranı ve dört silüeti ayrı tip; eskiden KayKit Rogue CC0),
-// "rocketbox" (Gerçekçi, Microsoft Rocketbox Sports_Male_04, MIT) ve 2026-10-27'den beri "sade" (Sade, Mesh2Motion CC0). İkisi de iskeletli; 26 klip Legacy Animation olarak normalize zamanla
+// "rocketbox" (Gerçekçi, Microsoft Rocketbox Sports_Male_04, MIT), 2026-10-27'den beri "sade" (Sade, Mesh2Motion CC0) ve
+// 2026-10-29'dan beri "tuycuk" (Tüycük: Oyuncak atlet iskeleti ve klipleri, kendi yumurta gövdeli ağı; tool/karakter/tuycuk.py;
+// gövde __forma takım rengi, __karin onun açığı, ayakkabılar Oyuncak'ın ayk_* parçaları). Hepsi iskeletli; 26 klip Legacy Animation olarak normalize zamanla
 // örneklenir: klip ve faz Match.PickClip'ten gelir (HTML player() ile aynı karar), vuruş anı topla kare kare eşleşir.
 // Faz → klip zamanı: sprite kare k'yı (k+.5)/n fazında gösterir; FBX'te pozlar eşit aralıklı olduğu için aynı faz aynı
 // pozu verir (döngülü kliplerde kapanış pozu ek). Klip değişiminde 0,08 s harmanlama; vuruş klibinden boşta/ayak
@@ -283,6 +285,9 @@ namespace BirdieSmash.Game
                 Kit.Gloss(sm, Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde_mg")); M["sort"] = sm;
             }
             else if (g.sort.HasValue) M["sort"] = Kit.Lit(g.sort.Value, .2f);
+            // Karın (2026-10-29, Tüycük: tc_karin__karin): gövde forma rengiyle boyandığı için karın aynı rengin açığı (beyaza %60);
+            // rakip ve hakem de kendi renklerinin açığını alır. Etiket yalnız Tüycük'te var: diğer modeller birebir aynı.
+            M["karin"] = Kit.Lit(Color.Lerp(g.forma, Color.white, .6f), .3f);
             aykDoku = govdeTx;
             if (g.cerceve.HasValue) M["cerceve"] = Kit.Lit(g.cerceve.Value, .6f);
             if (g.bant.HasValue) M["bant"] = Kit.Lit(g.bant.Value, .2f); if (g.bilek.HasValue) M["bilek"] = Kit.Lit(g.bilek.Value, .2f);

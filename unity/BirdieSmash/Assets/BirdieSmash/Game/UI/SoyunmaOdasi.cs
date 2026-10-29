@@ -388,7 +388,8 @@ namespace BirdieSmash.Game
                 c.Add(Yazi(L.T("Forma rengi yalnız görünüştür; işlevi kumaş verir (Ekipman › Forma kumaşı)."), 12, "soluk"));
                 // Ten, saç ve ayakkabı 2026-10-26'dan beri Karakter'de (kişiye ait olanlar bir yerde); buradan bir dokunuşla gidilir.
                 // 2026-10-27: Gerçekçi/Sade'de Karakter'in sayfaları ayakkabı ve kıyafet (beden tek): düğme ne bulacağını söylesin.
-                c.Add(Dugme(L.T(Ayar.VaryantGorunur ? "Tip, saç, ayakkabı ve ten · Karakter" : "Ayakkabı, şort ve aksesuar · Karakter"), () => { Tik(); SoyunmaSegment(SEG_KARAKTER); }, null, L.T("Yakın planda dene, Tüy ile al")));
+                // 2026-10-29: Tüycük'te şort yok; düğme bulunmayan şeyi vaat etmesin.
+                c.Add(Dugme(L.T(Ayar.VaryantGorunur ? "Tip, saç, ayakkabı ve ten · Karakter" : Ayar.model == "tuycuk" ? "Ayakkabı ve aksesuar · Karakter" : "Ayakkabı, şort ve aksesuar · Karakter"), () => { Tik(); SoyunmaSegment(SEG_KARAKTER); }, null, L.T("Yakın planda dene, Tüy ile al")));
             }
             // raket: kaplama (çerçeve) + grip/kordaj/desen (yalnız süs, oyuna etkisi yok)
             var kl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("kaplama")) kl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });

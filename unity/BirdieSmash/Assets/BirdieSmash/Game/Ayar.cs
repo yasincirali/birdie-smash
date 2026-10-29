@@ -110,23 +110,28 @@ namespace BirdieSmash.Game
             GearHesap();
             Kaydet();
         }
-        // Ayarlar › Oyuncu görünümü seçenekleri (kimlik, etiket). Sade yalnız FBX'i build'deyse (Resources) gösterilir.
-        public static readonly string[] MODELLER = { "oyuncak", "rocketbox", "sade" }, MODEL_AD = { "Oyuncak 3B", "Gerçekçi", "Sade" };
+        // Ayarlar › Oyuncu görünümü seçenekleri (kimlik, etiket). Sade ve Tüycük yalnız FBX'i build'deyse (Resources) gösterilir.
+        // 2026-10-29 Tüycük (yasin: "Oyuncu modellerimi değiştirme" → "yeni 3d model önerin varsa yeni seçenek olarak ekle"):
+        // dördüncü seçenek sona eklendi; var olan sıra ve varsayılan "oyuncak" değişmez. Kayıt değeri "tuycuk"; FBX'i olmayan
+        // build'de Yukle onu bilinmeyen model gibi oyuncak'a düşürür.
+        public static readonly string[] MODELLER = { "oyuncak", "rocketbox", "sade", "tuycuk" }, MODEL_AD = { "Oyuncak 3B", "Gerçekçi", "Sade", "Tüycük" };
         public static bool ModelVar(string m)
         {
             if (m == "oyuncak" || m == "rocketbox") return true;
-            if (m != "sade") return false; // Tur 2: varlık sınaması küçük sade_clips.json ile (FBX ile hep birlikte gelir; PlayerView onu da okur): FBX'i yüklemek
-            // (ağ + 26 klip, ~2 MB) Sade seçmeyen oyuncuda da her açılışta Ayar.Yukle'de belleğe alıyordu.
-            if (sadeVar < 0) { var js = Resources.Load<TextAsset>("karakter/sade_clips"); sadeVar = js != null ? 1 : 0; if (js != null) Resources.UnloadAsset(js); }
-            return sadeVar == 1;
+            if (m != "sade" && m != "tuycuk") return false; // Tur 2: varlık sınaması küçük <model>_clips.json ile (FBX ile hep birlikte gelir; PlayerView onu da okur): FBX'i
+            // yüklemek (ağ + 26 klip, ~2 MB) o modeli seçmeyen oyuncuda da her açılışta Ayar.Yukle'de belleğe alıyordu.
+            int v;
+            if (!modelVar.TryGetValue(m, out v)) { var js = Resources.Load<TextAsset>("karakter/" + m + "_clips"); v = js != null ? 1 : 0; if (js != null) Resources.UnloadAsset(js); modelVar[m] = v; }
+            return v == 1;
         }
-        static int sadeVar = -1;
+        static readonly Dictionary<string, int> modelVar = new Dictionary<string, int>();
         // Beden tipi ve saç biçimi parçaları yalnız oyuncak ailesinin FBX'lerinde (oyuncak_<tip>.fbx) var.
         public static bool VaryantGorunur { get { return model == "oyuncak"; } }
         // 2026-10-27 (yasin: "Gerçekçi de vücut özellikleri değil de sadece aksesuarlar değişmeli"): Gerçekçi'de beden/yüz/saç
         // tek, ama beş ayakkabı modeli (rocketbox.fbx ayk_<varlik>__ayakkabi) ve şort ağı var. Sade'de şort ağı var, ayakkabı
         // modeli yok (renk taban parçasında görünür). Oyuncak'ta şort gövde atlasında: şort rengi orada görünmez, sunulmaz.
-        public static bool AykModelGorunur { get { return model == "oyuncak" || model == "rocketbox"; } }
+        // Tüycük (2026-10-29) Oyuncak'ın beş ayakkabı parçasını aynı ayak kemikleriyle taşır: model görünür. Şortu yok (tek parça gövde).
+        public static bool AykModelGorunur { get { return model == "oyuncak" || model == "rocketbox" || model == "tuycuk"; } }
         public static bool SortGorunur { get { return model == "rocketbox" || model == "sade"; } }
         public static void GearHesap() { gear.kariyerModu = kariyerModu; GSE = gear.Hesap(); GS = Karakter.Uygula(GSE, Tarz); AldatmaKur(); }
         // Aldatıcı vuruşlar (2026-10-26, Core/Aldatma): seviye kapısı maça buradan gider (her maç kurulumunda GearHesap çağrılır);

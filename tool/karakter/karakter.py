@@ -55,6 +55,7 @@ def build_gercek(p):
         elif MODEL=='oyuncak_kaykit': import oyuncak_kaykit; objs.clear(); OY=oyuncak_kaykit.Oyuncak(M_)   # arşiv: eski KayKit chibi (asset ayrıca gerekir)
         elif MODEL=='aday': import aday; objs.clear(); OY=aday.Aday(M_)   # karşılaştırma: hazır modeller (aday.py)
         elif MODEL=='sade': import sade; objs.clear(); OY=sade.Sade(M_)   # sade: Mesh2Motion mankeni (CC0), normal oranlı insan
+        elif MODEL=='tuycuk': import tuycuk; objs.clear(); OY=tuycuk.Tuycuk(M_)   # Tüycük (2026-10-29): Oyuncak iskeleti + klipleri, yumurta gövdeli yeni ağ (tuycuk.py)
         else: objs.clear(); OY=insan.Oyuncu(M_,stil=os.environ.get('BS_STIL'))
     if not (p.get('fpR') or p.get('fpL')) or not hasattr(OY,'R') or not hasattr(OY,'ao'): objs[:]=OY.kur_poz(p); return
     AG=_ayak_geo()
@@ -697,7 +698,7 @@ if MODE=='stil':   # arcade tarz önizlemesi: aynı pozlar, 2× hücre (doku), a
     render(f'{OUT}/s_yakin.png')
     pb=OY.ao.pose.bones; mw=OY.ao.matrix_world
     for ad_,bn,osc,yon in (('yuz','head',.28,(0.25,1,0.12)),('elR','wrist.R',.24,(0.6,0.8,0.3)),('elL','wrist.L',.24,(-0.5,0.8,0.3))):
-        bn={'head':OY.R['head'],'wrist.R':OY.R['el'].format(S='R'),'wrist.L':OY.R['el'].format(S='L')}[bn] if MODEL in ('aday','sade','oyuncak') else bn; bn=bn if bn in pb else bn.lower(); osc=osc*(2.2 if MODEL=='oyuncak_kaykit' and bn=='head' else 1.6 if MODEL=='oyuncak_kaykit' else 1)   # oyuncak_kaykit: küçük harf kemik, iri baş/el; yeni oyuncak UE adlı, gerçek oranlı
+        bn={'head':OY.R['head'],'wrist.R':OY.R['el'].format(S='R'),'wrist.L':OY.R['el'].format(S='L')}[bn] if MODEL in ('aday','sade','oyuncak','tuycuk') else bn; bn=bn if bn in pb else bn.lower(); osc=osc*(2.2 if MODEL=='oyuncak_kaykit' and bn=='head' else 1.6 if MODEL=='oyuncak_kaykit' else 1)   # oyuncak_kaykit: küçük harf kemik, iri baş/el; yeni oyuncak UE adlı, gerçek oranlı
         c=mw@pb[bn].head if bn!='head' else mw@((pb[bn].head+pb[bn].tail)/2); d=Vector(yon).normalized(); cam.location=c+d*3; cam.data.ortho_scale=osc
         el=math.atan2(d.z,math.hypot(d.x,d.y)); cam.rotation_euler=(math.pi/2-el,0,math.atan2(d.y,d.x)+math.pi/2); sc.render.resolution_x=sc.render.resolution_y=480; render(f'{OUT}/s_{ad_}.png')
     print('STIL DONE'); sys.exit(0)

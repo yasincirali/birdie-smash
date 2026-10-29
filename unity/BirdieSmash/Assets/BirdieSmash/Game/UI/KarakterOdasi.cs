@@ -27,8 +27,9 @@ namespace BirdieSmash.Game
         // kafa bandı forma bileklik ayakkabı şort tişört raket"): Gerçekçi'de beden/yüz/saç tek, Tip/Saç/Ten sayfası yok;
         // Ayakkabı (beş model görünür) ve Kıyafet (forma rengi + kumaşı, şort rengi, kafa bandı, bileklik, raket). Sade'de beden
         // ve saç biçimi tek; Ayakkabı (renk görünür, model görünmez: kart söyler), Kıyafet ve Ten (ten + saç rengi düz renk
-        // parçalarda görünür). Oyuncak 3B'nin dört sayfası aynen.
-        public static int[] KarSayfalar() { return Ayar.model == "rocketbox" ? new[] { KAR_AYK, KAR_KIYAFET } : Ayar.model == "sade" ? new[] { KAR_AYK, KAR_KIYAFET, KAR_TEN } : new[] { KAR_TIP, KAR_SAC, KAR_AYK, KAR_TEN }; }
+        // parçalarda görünür). Oyuncak 3B'nin dört sayfası aynen. Tüycük (2026-10-29): beden, yüz ve perçem tek; ten ve saç yok
+        // (gövdenin rengi forma rengi) → Ayakkabı (beş model görünür) ve Kıyafet (forma = tüy rengi, bant, bileklik, raket; şort yok).
+        public static int[] KarSayfalar() { return Ayar.model == "rocketbox" || Ayar.model == "tuycuk" ? new[] { KAR_AYK, KAR_KIYAFET } : Ayar.model == "sade" ? new[] { KAR_AYK, KAR_KIYAFET, KAR_TEN } : new[] { KAR_TIP, KAR_SAC, KAR_AYK, KAR_TEN }; }
         static int KarGecerli(int a) { var l = KarSayfalar(); return System.Array.IndexOf(l, a) >= 0 ? a : l[0]; }
 
         // EkranTuru için: Karakter segmentinde alt sayfa aç (bu modelde olmayan sayfa istenirse modelin ilk sayfası).
@@ -100,8 +101,9 @@ namespace BirdieSmash.Game
         // sayfanın işi kıyafet seçmek, model değiştirmek değil).
         void TekBedenKart(VisualElement c)
         {
-            bool rb = Ayar.model == "rocketbox"; string bas = rb ? L.T("Gerçekçi: tek beden") : L.T("Sade: tek beden");
+            bool rb = Ayar.model == "rocketbox", tc = Ayar.model == "tuycuk"; string bas = rb ? L.T("Gerçekçi: tek beden") : tc ? L.T("Tüycük: tek beden") : L.T("Sade: tek beden");
             string metin = rb ? L.T("Beden, yüz ve saç bu modelde sabit. Ayakkabı, forma, şort, kafa bandı, bileklik ve raket değişir. Beden tipi ve saç biçimi Oyuncak 3B'de.")
+                : tc ? L.T("Beden, yüz ve tüy perçemi bu modelde sabit. Tüy rengi forma renginden gelir; ayakkabı, kafa bandı, bileklik ve raket değişir. Beden tipi ve saç biçimi Oyuncak 3B'de.")
                 : L.T("Beden ve saç biçimi bu modelde sabit. Forma, şort, ayakkabı rengi, ten, saç rengi, kafa bandı, bileklik ve raket değişir. Beden tipi ve saç biçimi Oyuncak 3B'de.");
             var kart = Kart("bilgi-kart"); c.Add(kart);
             kart.Add(Yazi(bas, 15, "kalin")); kart.Add(Yazi(metin, 13, "ipucu"));
@@ -291,13 +293,19 @@ namespace BirdieSmash.Game
         {
             var gr = Ayar.gear; int sv = gr.Seviye();
             var fr = new List<Ornek>(); foreach (var m in Gear.RENK.Values) fr.Add(new Ornek { id = m.id, ad = m.ad, renk = m.renk, acik = gr.RenkAcik(m.id, Ayar.sampiyon), neden = m.kilit ? L.T("Kariyeri bitirince açılır") : L.T("Sv {0} gerekli", m.sv), kisa = m.kilit ? "" : L.T("Sv {0}", m.sv) });
-            OrnekSira(c, L.T("Forma rengi"), fr, gr.renk, id => { gr.renk = id; Ayar.GearHesap(); Ayar.Kaydet(); });
-            var sl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("sort")) sl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
-            OrnekSira(c, L.T("Şort rengi"), sl, Ayar.GORUNUM["sort"], id => { Ayar.GORUNUM["sort"] = id; Ayar.Kaydet(); });
+            // Tüycük (2026-10-29): forma rengi gövdenin tüy rengidir (karın onun açığı); şort ağı yok, şort satırı gösterilmez (yalnız
+            // görünen seçim sunulur). Gerçekçi ve Sade'de satırlar aynen.
+            bool tc = Ayar.model == "tuycuk";
+            OrnekSira(c, L.T(tc ? "Tüy rengi (forma)" : "Forma rengi"), fr, gr.renk, id => { gr.renk = id; Ayar.GearHesap(); Ayar.Kaydet(); });
+            if (Ayar.SortGorunur)
+            {
+                var sl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("sort")) sl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
+                OrnekSira(c, L.T("Şort rengi"), sl, Ayar.GORUNUM["sort"], id => { Ayar.GORUNUM["sort"] = id; Ayar.Kaydet(); });
+            }
             c.Add(Yazi(L.T("Renkler yalnız görünüştür, ücretsiz."), 12, "soluk"));
             c.Add(Grup(L.T("Takılı olanlar")));
-            KiyafetSatir(c, "forma", L.T(Ayar.model == "rocketbox" ? "Formanın deseni ve parlaklığı kumaşa göre değişir." : "Kumaşın işlevi maçta; bu modelde forma düz renk."));
-            KiyafetSatir(c, "bant", L.T("Alında görünür."));
+            KiyafetSatir(c, "forma", L.T(Ayar.model == "rocketbox" ? "Formanın deseni ve parlaklığı kumaşa göre değişir." : tc ? "Kumaşın işlevi maçta; Tüycük'ün tüyü forma renginde, karnı onun açığı." : "Kumaşın işlevi maçta; bu modelde forma düz renk."));
+            KiyafetSatir(c, "bant", L.T(tc ? "Perçemin altında görünür." : "Alında görünür."));
             KiyafetSatir(c, "bileklik", L.T("Raket kolunun bileğinde görünür."));
             c.Add(Dugme(L.T("Raket ve kaplaması · Görünüm"), () => { Tik(); SoyunmaSegment(2); }, null, L.T("Grip, kordaj ve desen rengi orada")));
         }

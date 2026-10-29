@@ -73,6 +73,7 @@ namespace BirdieSmash.Game
             }
             yield return Varyantlar();   // 2026-10-27 model/varyant turu (ekran/model)
             yield return Gercekci();     // 2026-10-27 Gerçekçi aksesuarları (ekran/gercekci)
+            yield return TuycukTuru();   // 2026-10-29 Tüycük (dördüncü model; maçla biter, AnaMenu'ye döner)
             foreach (var s in new[] { "turnuva", "okul", "park" })
             {
                 Ayar.model = "oyuncak"; Ayar.saha = s; root.SahaDegisti(); root.StartMatch(false, false, false); botAcik = true;
@@ -473,6 +474,7 @@ namespace BirdieSmash.Game
             for (int i = 0; i < 900 && hud.PerdeVar; i++) yield return null;
             rap.AppendLine(ol.Bitir("perde_oyna"));
             var modeller = new List<string> { "oyuncak", "rocketbox" }; if (Resources.Load<GameObject>("karakter/sade") != null) modeller.Add("sade");
+            if (Ayar.ModelVar("tuycuk")) modeller.Add("tuycuk");   // 2026-10-29: Tüycük'ün ralli kare süresi de ölçülsün (sona eklenir, diğer satırlar aynı)
             foreach (var mdl in modeller)
             {
                 Ayar.model = mdl; root.ModelDegisti(); root.StartMatch(false, false, false); botAcik = true; yield return Bekle(60);
@@ -778,6 +780,56 @@ namespace BirdieSmash.Game
                 yield return GYakin(ad + "_arka", ben, p, new Vector3(-.7f, .6f, -2.6f), "maç " + (i + 1) + " arkadan · " + tanim);
             }
             gr.ayakkabi = ay0; gr.bant = b0; gr.bileklik = bl0; gr.kumas = k0; gr.renk = r0; Ayar.GORUNUM["sort"] = s0; Ayar.GORUNUM["ayakkabi"] = ar0; Ayar.model = m0;
+            root.GorunumDegisti(); root.ModelDegisti(); root.AnaMenu(); ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
+            File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
+        }
+        // ---- Tüycük (2026-10-29) ----
+        // yasin: "Oyuncu modellerimi değiştirme" → "yeni 3d model önerin varsa yeni seçenek olarak ekle". Diğer modellerin bölümleri
+        // ve kare adları değişmez; bu bölüm yalnız Tüycük'ü çeker: Oyna menüsü (afiş figürü), Soyunma vitrini, Karakter sayfaları
+        // (Ayakkabı: beş model, Kıyafet), vitrinde üç forma rengi (tüy rengi; karın açığı), arkadan, kafa bandı, tutuş (forehand,
+        // backhand: raket sağ eldivende), sonra maç (servis öncesi, ben/rakip yakın plan, üç ralli karesi). Her vitrin/maç karesine
+        // "varyant tüycük" satırı (VaryantOzet: yüklenen FBX tuycuk mu, açık ayakkabı parçası, aktif renderer) ve GSatir bölge
+        // renkleri. FBX build'de yoksa bölüm atlanır. Maçla biter: sonunda root.AnaMenu() (maçla biten bölümden sonra menü
+        // bölümü bozuluyordu). Seçimler yalnız bu tur için, sonunda geri konur (kayda yazılmaz).
+        IEnumerator TuycukTuru()
+        {
+            var ui = root.ui; var gr = Ayar.gear; if (ui == null || gr == null) yield break;
+            if (!Ayar.ModelVar("tuycuk")) { rap.AppendLine("=== tüycük · FBX yok, bölüm atlandı"); yield break; }
+            string m0 = Ayar.model, r0 = gr.renk, b0 = gr.bant, bl0 = gr.bileklik, ay0 = gr.ayakkabi; bool rd0 = Ayar.reduce, rs0 = Ayar.reduceSecim;
+            rap.AppendLine("=== tüycük · ekran " + Screen.width + "x" + Screen.height);
+            Ayar.model = "tuycuk"; gr.renk = "mavi"; gr.ayakkabi = "klasik"; gr.bant = gr.bileklik = "yok"; Ayar.GearHesap(); root.GorunumDegisti(); root.ModelDegisti();
+            root.AnaMenu(); ui.SekmeAc(Sekme.Kariyer); ui.SekmeAc(Sekme.Oyna); yield return Bekle(40); yield return Cek("tuycuk_01_menu");
+            ui.SekmeAc(Sekme.Soyunma); yield return Bekle(30); yield return Cek("tuycuk_01_soyunma");
+            VaryantTaban t = null; VaryantSatir("tüycük vitrin", root.vitrin.Fig, "tuycuk", null, null, ref t);
+            Ayar.reduce = Ayar.reduceSecim = true; var vt = root.vitrin;
+            ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(30); yield return Cek("model_tuycuk_karakter_ayakkabi");
+            t = null;
+            foreach (var a in Gear.GEAR["ayakkabi"].Values)
+            {
+                ui.KarakterDene("ayakkabi", a.id); vt.a = 20; vt.v = 0; yield return Bekle(25); yield return Cek("model_tuycuk_vitrin_ayakkabi_" + a.id);
+                VaryantSatir("tüycük vitrin ayk=" + a.id, vt.Fig, "tuycuk", null, a.varlik ?? a.id, ref t);
+            }
+            ui.KarakterDene("ayakkabi", "klasik");
+            ui.KarakterAc(UiKok.KAR_KIYAFET); yield return Bekle(30); yield return Cek("model_tuycuk_karakter_kiyafet");
+            vt.Odak(Vitrin.TAM);
+            foreach (var r in new[] { "mavi", "fistik", "mor" }) { gr.renk = r; Ayar.GearHesap(); yield return GVitrin("forma_" + r, 0, "tuycuk"); }
+            gr.renk = "mavi"; Ayar.GearHesap(); yield return GVitrin("arka", 180, "tuycuk");
+            vt.Odak(Vitrin.YUZ); yield return GVitrin("yuz", 0, "tuycuk");
+            gr.bant = "ter"; Ayar.GearHesap(); yield return GVitrin("bant_ter", 0, "tuycuk"); gr.bant = "yok";
+            gr.bileklik = "pamuk"; Ayar.GearHesap();
+            foreach (var k in new[] { "drive", "bh_drive", "net", "serve" }) { vt.Odak(Vitrin.TUTUS, k); yield return GVitrin("tutus_" + k, float.NaN, "tuycuk"); }
+            gr.bileklik = "yok"; Ayar.GearHesap(); vt.Odak(Vitrin.TAM);
+            ui.SoyunmaSegment(0); yield return Bekle(5);
+            Ayar.reduce = rd0; Ayar.reduceSecim = rs0;
+            root.StartMatch(false, false, false); botAcik = false; yield return Bekle(45);
+            yield return Cek("tuycuk_02_servis_once"); Tani("tuycuk");
+            t = null; VaryantSatir("tüycük maç", Ben(), "tuycuk", null, "klasik", ref t);
+            yield return Yakin("tuycuk_03_ben", root.match.me, true);
+            yield return Yakin("tuycuk_04_rakip", root.match.op, false);
+            botAcik = true;
+            for (int i = 0; i < 3; i++) { yield return Bekle(14); yield return Cek("tuycuk_1" + i + "_ralli"); }
+            botAcik = false;
+            gr.renk = r0; gr.bant = b0; gr.bileklik = bl0; gr.ayakkabi = ay0; Ayar.model = m0; Ayar.GearHesap();
             root.GorunumDegisti(); root.ModelDegisti(); root.AnaMenu(); ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
         }

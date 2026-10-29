@@ -491,5 +491,7 @@
 .vs { text-shadow: 0 3px 0 rgba(30, 10, 12, 0.85); }
 .az-hareket .dugme:active, .az-hareket .cta:active, .az-hareket .ikon-dugme:active { translate: 0 0; }
 /* r51: Nunito ExtraBold Barlow Bold'dan geniş, "MATCH OF THE DAY" kutucukta kesiliyordu: harf aralığı daraldı. */
-.karo-etiket { letter-spacing: 0.1px; }
+.karo-etiket { letter-spacing: 0; }
+/* r52: 0,1 de yetmedi ("MATCH OF THE DA"); kutucuğun yan payı 10 → 7. */
+.karo { padding-left: 7px; padding-right: 7px; }
 .serit { -unity-slice-left: 22; -unity-slice-right: 22; }   /* SIRADAKİ şeridi artık hap (UiOge EgikLimonKucuk) */
