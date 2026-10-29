@@ -1,19 +1,18 @@
 === UNITY ===
-Menüler yeni, neşeli bir görünüme geçti: yuvarlak yazılar ve kabarık, basılabilir düğmeler.
+Yeni oyuncu görünümü: Tüycük. Menüler de yuvarlak yazılı, neşeli yeni görünümde.
 
 Bu sürümde yeni:
-- Bütün menülerde yazı tipi değişti: başlıklar yuvarlak ve kalın, metinler daha okunaklı. Türkçe harfler tam.
-- Düğmeler ve kartlar yuvarlak köşeli, altlarında koyu bir kenar var; basınca hafifçe aşağı iniyorlar. OYNA düğmesi artık eğik değil.
-- Açılış, maça giriş perdesi, renkler, menü yerleşimi ve oyuncu modelleri aynı.
-- Önceki sürümdeki raket tutuşu ve kaybedince kolaylaşan rakip bu sürümde de var.
+- Ayarlar > Oyuncu görünümü'nde yeni seçenek: Tüycük. Yumurta gövdeli, tüy tepeli, kocaman gözlü bir karakter. Oyuncak 3B'nin bütün hareketlerini kullanıyor, raketi sağ elinde tutuyor. Gövde rengi formanın rengi.
+- Eski modeller (Oyuncak 3B, Gerçekçi, Sade) aynen duruyor, varsayılan yine Oyuncak 3B.
+- Menülerde yuvarlak yazılar ve kabarık, basınca aşağı inen düğmeler (önceki sürümden).
 
 Nasıl denenir:
-1. Uygulamayı aç: açılış eskisi gibi oynamalı, BIRDIE SMASH yazısı yuvarlak harflerle çıkmalı.
-2. Ana ekranda OYNA düğmesine basılı tut: düğme biraz aşağı inmeli, bırakınca geri gelmeli.
-3. Kariyer, Soyunma odası, Profil ve Ayarlar'ı tek tek aç: yazılar kesilmemeli, üst üste binmemeli.
-4. Türkçe harflere bak (ş, ğ, ı, İ): hepsi aynı yazı tipinde görünmeli, kutu ya da farklı harf olmamalı.
-5. Telefonun Ayarlar > Ekran > Metin boyutu'nu büyüt ve menülere yeniden bak: düğme yazıları sığmalı.
-6. Bir maç oyna: skor ve maç sonu yazıları yeni yazı tipinde olmalı, oyuncular eskisi gibi.
+1. Ayarlar > Oyuncu görünümü > Tüycük seç.
+2. Soyunma odası'nda karakteri döndür: raket sağ elinde olmalı, el sapı tutmalı.
+3. Soyunma odası > Karakter'de ayakkabı ve renk değiştir: Tüycük'ün gövdesi ve ayakkabısı değişmeli.
+4. Bir maç oyna: smaç, backhand, file vuruşu ve öne uzanmada raket elden kopmamalı, kollar gövdenin içine girmemeli.
+5. Rakip de Tüycük olmalı ve rengi senden farklı olmalı.
+6. Oyuncak 3B'ye geri dön: eski karakter aynen gelmeli.
 7. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===
