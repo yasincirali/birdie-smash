@@ -40,7 +40,9 @@ namespace BirdieSmash.Game
         // 2026-10-26 karakter varlık sözleşmesi §5: tip (varsayılan saç/ayakkabı, saç rengi) ve saç başına bant uyumu.
         [System.Serializable] class TipMeta { public string id, sac, ayakkabi, sacRenk; public float boy; }
         [System.Serializable] class SacMeta { public string id; public bool bant = true; }
-        [System.Serializable] class Meta { public ClipMeta[] clips; public TipMeta tip; public SacMeta[] sac; }
+        // bant: kafa bandı halkası, bas__isaret'e göre model biriminde (dz yukarı, df ileri, r yarıçap; unity_fbx.py Blender'da ölçer).
+        [System.Serializable] public class BantMeta { public float dz, df, r; }
+        [System.Serializable] class Meta { public ClipMeta[] clips; public TipMeta tip; public SacMeta[] sac; public BantMeta bant; }
 
         // Görünüm: null alan = FBX'in kendi rengi (cerceve/grip/tel) ya da gizli (bant/bilek).
         public class Gorunum
@@ -92,7 +94,7 @@ namespace BirdieSmash.Game
             var js = Resources.Load<TextAsset>("karakter/" + yol + "_clips") ?? Resources.Load<TextAsset>("karakter/" + modelAd + "_clips");
             if (js != null)
             {
-                var meta = JsonUtility.FromJson<Meta>(js.text); tipMeta = meta != null && meta.tip != null && !string.IsNullOrEmpty(meta.tip.id) ? meta.tip : null; sacMeta = meta != null ? meta.sac : null;
+                var meta = JsonUtility.FromJson<Meta>(js.text); tipMeta = meta != null && meta.tip != null && !string.IsNullOrEmpty(meta.tip.id) ? meta.tip : null; sacMeta = meta != null ? meta.sac : null; bantMeta = meta != null && meta.bant != null && meta.bant.r > 0 ? meta.bant : null;
                 if (meta != null && meta.clips != null) foreach (var c in meta.clips) { if (c.poses > 0) Match.CLIP_N[c.name] = c.poses; LOOPS[c.name] = c.loop; if (c.adim > 0 && Match.ADIM_BOY.ContainsKey(c.name)) { Match.ADIM_BOY[c.name] = c.adim * SCALE; adimBoy[c.name] = c.adim * SCALE; } }
             }
             if (prefab != null)
@@ -102,7 +104,7 @@ namespace BirdieSmash.Game
                 Varyant(gor); Paint(gor);
                 if (anim != null && anim["idle"] != null) Sample("idle", 0, null, 0, 1);
                 Calibrate(); AltKatmanKur();
-                if (!hakem) aksesuar = Aksesuar.Kur(model, kHead, Vector3.up, gor.sapka, gor.yuz, gor.forma, gor.sac);
+                if (!hakem) aksesuar = Aksesuar.Kur(model, kHead, Vector3.up, bantMeta, gor.sapka, gor.yuz, gor.forma, gor.sac);
                 if (!hakem && kThigh.Count > 0)
                 {   // ayak kilidi: boşta pozunda (taban y=0'da) bilek yüksekliği
                     ZincirKur(); bilek0 = new float[2];
@@ -329,7 +331,7 @@ namespace BirdieSmash.Game
             }
         }
         Transform kafa; TrailRenderer yay;
-        Transform aksesuar; public Transform AksesuarKok { get { return aksesuar; } }
+        BantMeta bantMeta; Transform aksesuar; public Transform AksesuarKok { get { return aksesuar; } }
         readonly Gradient yayGrad = new Gradient(); readonly GradientAlphaKey[] yayS = new GradientAlphaKey[2]; float yayA = -1;
         static readonly GradientColorKey[] YAY_RENK = { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) };
         // Varsayılan şort: SORT_RENK (rocketbox_kit, düz lacivert .075/.095/.15) ÷ doku grisi .86 (gamma uzayında çarpım).

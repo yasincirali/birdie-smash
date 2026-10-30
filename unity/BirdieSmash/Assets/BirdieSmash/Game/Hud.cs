@@ -1080,7 +1080,7 @@ namespace BirdieSmash.Game
         // (derece, y aşağı, saat yönü +; bekleme 44° = mantar sağ altta, HTML TS_LOGO). Kare indeksi eksen fazından: 16 tüy
         // olduğu için 22,5°'de tekrar eder, 16 kare o aralığı böler. Top ortalanır: mantar, merkezden yön boyunca topun yarı
         // boyu (.56 kare; mantar (39,36) → etek ucu ~(280,270)) ileride. HTML'deki +.2 boy kayması yok (yasin: "top ortada").
-        const float SERIT_BOY = 1f;   // çizilmiş top karenin ~%90.ı: RT dönemindeki topla aynı görünen boy (r61 karesi ~115 px / 390)
+        const float SERIT_BOY = 1f;   // çizilmiş top karenin ~%90'ı: RT dönemindeki topla aynı görünen boy (r61 karesi ~115 px / 390)
         void SeritCiz(Yukleyici y, Vector2 p, float k, float yon, float faz)
         {
             const float AXP = Mathf.PI * 2 / 16; int fi = Mathf.FloorToInt(Mathf.Repeat(faz, AXP) / AXP * 16) % 16;

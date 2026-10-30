@@ -18,14 +18,25 @@ namespace BirdieSmash.Game
         public static bool Var(string id) { return !string.IsNullOrEmpty(id) && id != "yok"; }
 
         // Baş çerçevesini ölçer ve aksesuarları kurar. Dönüş: kök (kafa kemiğinin çocuğu) ya da null.
-        public static Transform Kur(Transform model, Transform kafa, Vector3 dikey, string sapka, string yuz, Color forma, Color? sac)
+        // 2026-10-30 r65: BakeMesh yolu baş merkezini modelin ölçeksiz yerel koordinatında verdi (oyuncak: merkez y .83, baş
+        // gerçekte ~1,5 m; gerçekçi 1,01): aksesuar gövdenin içinde kaldı, hiçbir karede görünmedi. Şimdi çapa bas__isaret
+        // (VekilDuzelt'ten sonra baş kemiğine oturan, kalibrasyonun kullandığı işaret) ve cetvel goz__isaret: Blender'da tam
+        // .2 birim önde, aradaki dünya uzaklığı / .2 = model biriminin dünya karşılığı. Bant halkasının işarete göre yeri ve
+        // yarıçapı _clips.json "bant" alanından (Blender ölçümü). Alan yoksa eski BakeMesh yolu yedek.
+        public static Transform Kur(Transform model, Transform kafa, Vector3 dikey, PlayerView.BantMeta bant, string sapka, string yuz, Color forma, Color? sac)
         {
             if (model == null || kafa == null || (!Var(sapka) && !Var(yuz))) return null;
-            Vector3 c; float r; if (!BantHalkasi(model, dikey, out c, out r)) return null;
             Transform bas = null, goz = null;
             foreach (var t in model.GetComponentsInChildren<Transform>(true)) { if (t.name.StartsWith("bas__")) bas = t; else if (t.name.StartsWith("goz__")) goz = t; }
             Vector3 ileri = bas != null && goz != null ? Vector3.ProjectOnPlane(goz.position - bas.position, dikey) : Vector3.zero;
             if (ileri.sqrMagnitude < 1e-8f) ileri = Vector3.ProjectOnPlane(model.forward, dikey);
+            Vector3 c; float r;
+            if (bant != null && bas != null && goz != null)
+            {
+                float s = (goz.position - bas.position).magnitude / .2f;
+                c = bas.position + dikey.normalized * bant.dz * s + ileri.normalized * bant.df * s; r = bant.r * s;
+            }
+            else if (!BantHalkasi(model, dikey, out c, out r)) return null;
             var kok = new GameObject("aksesuar").transform; kok.SetParent(kafa, true);
             kok.position = c; kok.rotation = Quaternion.LookRotation(ileri.normalized, dikey.normalized);
             float ls = kafa.lossyScale.x; kok.localScale = Vector3.one * (r / Mathf.Max(1e-5f, ls));
