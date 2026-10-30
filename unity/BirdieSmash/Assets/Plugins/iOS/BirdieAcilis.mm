@@ -103,7 +103,7 @@ static void bsPerdeKur(UIWindow *unity)
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     BOOL r = [super application:application didFinishLaunchingWithOptions:launchOptions];
-    @try { bsPerdeKur(self.window); } @catch (NSException *e) { bsPerde = nil; bsT0 = -1; }
+    bsPerdeKur(self.window);   // UnityFramework Objective-C istisnaları kapalı derlenir (@try yok); bsPerdeKur dosya yoksa sessizce döner
     return r;
 }
 @end
