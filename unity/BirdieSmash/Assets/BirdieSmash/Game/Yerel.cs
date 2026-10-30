@@ -20,6 +20,8 @@ namespace BirdieSmash.Game
         [DllImport("__Internal")] static extern int BirdieHareketAzalt();
         [DllImport("__Internal")] static extern int BirdieDusukGuc();
         [DllImport("__Internal")] static extern int BirdieDigerSesCaliyor();
+        [DllImport("__Internal")] static extern float BirdieAcilisSure();
+        [DllImport("__Internal")] static extern void BirdieAcilisBitir();
 #endif
         static readonly Dictionary<string, int[]> HAP = new Dictionary<string, int[]> {
             {"tick",new[]{8}},{"hit",new[]{14}},{"perfect",new[]{16,10,28}},{"smash",new[]{35,15,55}},{"jump",new[]{45,20,30,20,80}},
@@ -53,6 +55,25 @@ namespace BirdieSmash.Game
             try { float k = BirdieYaziOlcek(); return k > 0 ? k : 1; } catch { return 1; }
 #else
             return 1;
+#endif
+        }
+        // Motor açılmadan gösterilen yerel açılış perdesi (Plugins/iOS/BirdieAcilis.mm): açıldığından beri geçen süre (sn),
+        // kapalıysa −1. Hud perde açısını ve Yukleyici top fazını bundan yazar ki devirde görüntü kaymasın. Editor'de hep −1.
+        static bool acilisBitti;
+        public static float AcilisSure()
+        {
+            if (acilisBitti) return -1;
+#if UNITY_IOS && !UNITY_EDITOR
+            try { float t = BirdieAcilisSure(); if (t < 0) acilisBitti = true; return t; } catch { acilisBitti = true; return -1; }
+#else
+            acilisBitti = true; return -1;
+#endif
+        }
+        public static void AcilisBitir()
+        {
+            if (acilisBitti) return; acilisBitti = true;
+#if UNITY_IOS && !UNITY_EDITOR
+            try { BirdieAcilisBitir(); } catch { }
 #endif
         }
         // Başka uygulama ses çalıyor mu (menü müziği başlamasın; Sfx.MuzikIsle). Editor'de ve iOS dışında hayır.

@@ -167,6 +167,16 @@ namespace BirdieSmash.Game
             Kalite.Hareket();   // perde ve açılış süresince menü tarafında da yüksek kare hızı (Kalite)
             if (perdeSabit >= 0) { perdeT = perdeSabit; TopPozYaz(); return; }   // ekran turu: kare dondurulmuş (PerdeKare)
             perdeT += d; perdeAci += d * 1.2f;
+            // Yerel açılış perdesi (2026-10-30, yasin "splash gifi ilk açıldığı andan itibaren başlamalı"; BirdieAcilis.mm): iOS
+            // perdesi motor açılmadan döner; açıkken açı onun süresinden yazılır (aynı 1,2 rad/sn), Unity perdesi kesintisiz
+            // (< 50 ms) 6 kare çizince ya da perde açılmaya başlarken kaldırılır. Altında birebir aynı görüntü olduğu için devir
+            // görünmez; ilk karelerin takılması (doku üretimi, motorun ısınması) yerel perdenin arkasında kalır.
+            float ys = Yerel.AcilisSure();
+            if (ys >= 0)
+            {
+                if (perdeAcilis && !Ayar.reduce) perdeAci = ys * 1.2f;
+                if (!perdeAcilis || perdeEvre != 2 || acilisIyi >= 6) Yerel.AcilisBitir();
+            }
             if (perdeEvre == 1 && perdeT >= (Ayar.reduce ? .2f : .45f)) { perdeEvre = 2; perdeT = 0; if (perdeIs != null) { perdeIs(); perdeIs = null; } }
             else if (perdeEvre == 2)
             {   // HTML perde 'kapali': sesler hazır değilse bekler (8 sn sonra yine açılır); .6 sn'den uzun beklemede dönen top
@@ -990,7 +1000,7 @@ namespace BirdieSmash.Game
         // hazır değilse .6 sn sonra ortada dönen top + "Hazırlanıyor…". Açılma 350 ms küçülme (ease-in-out).
         // Açılış (soğuk açılış): kapalı diskle başlar (iOS açılış rengi = dış halka #a3234b, CiBuild), en az .6 sn, sonra aynı küçülme.
         // Hareketi azalt: ölçek/dönme/uçuş yok, 200 ms belirme ve 250 ms solma. Top HTML'deki çizilmiş tüy top (Yukleyici.serit, 2026-10-30).
-        bool perdeAcilis, kaynakVar; float acilisBek, perdeSabit = -1; Vector2 perdeKaynak;
+        bool perdeAcilis, kaynakVar; int acilisIyi; float acilisBek, perdeSabit = -1; Vector2 perdeKaynak;
         float acilisT0 = -1, acilisAcT = -1, acilisSonT = -1;   // ekran turu: gerçek açılışın süreleri (sn)
         public string AcilisTani { get { return acilisT0 < 0 ? "yok" : "kapalı " + (acilisAcT < 0 ? "?" : (acilisAcT - acilisT0).ToString("F2")) + " sn · toplam " + (acilisSonT < 0 ? "?" : (acilisSonT - acilisT0).ToString("F2")) + " sn (hedef ≥ .95: .60 + .35; ses geç hazırsa hazır + .35)"; } }
         static float EaseOut3(float x) { return 1 - Mathf.Pow(1 - Mathf.Clamp01(x), 3); }
@@ -1039,6 +1049,7 @@ namespace BirdieSmash.Game
         void PerdeCiz()
         {
             if (perdeEvre == 0) return; if (perdeTex == null) PerdeDoku();
+            if (Event.current.type == EventType.Repaint) acilisIyi = Time.unscaledDeltaTime < .05f ? acilisIyi + 1 : 0;
             blocks.Add(new Rect(0, 0, W, H));
             float sc, al; DiskOlcek(out sc, out al);
             if (sc > .001f && al > .001f)

@@ -1,30 +1,17 @@
 === UNITY ===
-Vuruş laboratuvarı, yeni Soyunma odası (şapkalar, gözlükler, yeni saçlar) ve menü müziği.
+Açılış: dönen tüy top uygulamaya dokunduğun anda ekranda, oyun yüklenirken de dönmeye devam ediyor.
 
 Bu sürümde yeni:
-- Antrenman 21 göreve çıktı, sahadaki yere göre üç grupta: Arka saha (savunma ve atak clear, düz ve çapraz drop, düz, çapraz ve dik smaç), File önü (file dibi, çapraz file, lift, kısa servis, flick), Orta saha (drive, blok, push, savunma, split step, Çeşitle).
-- Her topun ardından altta bir kart: vuruşun adı, hedefte mi ya da neden olmadı, fileyi kaç cm geçtiği, fileye ya da dip çizgiye uzaklığı ve hızı.
-- Son iki topun yolu kortta çizgi olarak kalır.
-- Görev satırında son 5 oturumun isabet çizgisi.
-- Soyunma odası iki bölüm: Oyun (tarz, ekipman, ayakkabı tabanı) ve Görünüm (beden, yüz, saç, şapka, ayakkabı, renk). Görünüm'deki hiçbir şey maçı etkilemez.
-- 7 şapka (kep, ters kep, bere, kulaklık, tavşan kulağı, büyücü şapkası, şövalye kaskı) ve 5 yüz aksesuarı (güneş gözlüğü, yuvarlak gözlük, yüz boyası, bıyık, korsan bandı). Her oyuncu görünümünde takılır, Tüy ile alınır.
-- 5 yeni saç (Oyuncak 3B): Kirpi, İki örgü, Uzay topuzu, Pompadur, Ananas.
-- Açılış ekranında dönen top ortada, tam ve keskin.
-- Menüde müzik çalar; maç başlarken söner, seyirci sesi gelir. Ayarlar'da ayrı "Müzik" düğmesi var. Başka bir uygulamada müzik dinliyorsan oyunun müziği başlamaz.
+- Açılış ekranında top ilk andan ortada duruyor ve oyun yüklenirken dönüyor; önceden bir iki saniye düz renk bekleniyordu.
+- Perde halkaları ve top yüklemeden oyuna geçerken kaymadan sürüyor.
 
 Nasıl denenir:
-1. Uygulamayı aç: açılıştaki tüy top ortada dönmeli, kenarı kesik görünmemeli.
-2. Oyna > Antrenman: görevler Arka saha, File önü, Orta saha başlıklarıyla gruplanmış olmalı.
-3. Bir görev oyna (ör. Düz drop): her vuruştan sonra altta kart çıkmalı (✓ ya da ✗, vuruşun adı, ölçüler); topun yolu kortta çizgi olarak kalmalı.
-4. Görevi bitirip listeye dön: o görevin satırında küçük çubuklar ve "Son oturum: %…" yazısı görünmeli.
-5. Soyunma odası: üstte yalnız Oyun ve Görünüm olmalı. Oyun'da en üstte tarz, en altta Ayakkabı tabanı olmalı.
-6. Görünüm > Şapka: bir şapkaya dokun, vitrinde başında görünmeli; Tüy yetiyorsa al. Yüz > Güneş gözlüğü için de aynısı.
-7. Ayarlar'dan Gerçekçi görünüme geçip şapka ve gözlüğün orada da göründüğüne bak.
-8. Görünüm > Ayakkabı: başka bir sahip olduğun ayakkabının görünüşünü seç; Oyun'daki taban değişmemeli.
-9. Menüde müzik duyulmalı. Oyna'ya bas: perde kapanırken müzik sönmeli, maçta müzik olmamalı. Ana menüye dönünce müzik geri gelmeli.
-10. Ayarlar > Ses bölümünde "Müzik açık"a bas: "Müzik kapalı" olmalı ve müzik susmalı; vuruş ve menü sesleri sürmeli.
-11. Müzik uygulamasında bir şarkı çalarken oyunu aç: şarkı sürmeli, oyunun müziği başlamamalı.
-12. Garip bir şey olursa telefonu ve ekranı yaz.
+1. Uygulamayı tamamen kapat (uygulama değiştiriciden yukarı kaydır), sonra simgeye dokun.
+2. İlk görüntüde ortada tüy top olmalı; hemen etrafında halkalar belirmeli ve top kendi ekseninde dönmeli.
+3. Menü gelene kadar top takılmadan dönmeli, bir an durup yeniden başlamamalı; perde açılırken top diskle birlikte küçülmeli.
+4. Ayarlar > Erişilebilirlik > Hareket > Hareketi Azalt açıkken aynı denemeyi yap: top ve halkalar dönmeden durmalı.
+5. Menüde müzik, Soyunma odası ve antrenman önceki sürümdeki gibi çalışmalı.
+6. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:
