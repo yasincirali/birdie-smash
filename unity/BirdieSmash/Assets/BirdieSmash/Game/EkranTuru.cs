@@ -761,6 +761,7 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(30); yield return Cek("model_gercekci_karakter_ayakkabi");
             ui.KarakterAc(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "kep"); yield return Bekle(40); yield return Cek("model_gercekci_sapka_kep"); rap.AppendLine("gerçekçi sapka=kep · " + AksTani());
             ui.KarakterAc(UiKok.KAR_TEN); ui.KarakterDene(Kozmetik.YUZ, "gunes"); yield return Bekle(40); yield return Cek("model_gercekci_yuz_gunes"); rap.AppendLine("gerçekçi yuz=gunes · " + AksTani());
+            foreach (var yid in new[] { "biyik", "boya" }) { ui.KarakterDene(Kozmetik.YUZ, yid); yield return Bekle(30); yield return Cek("model_gercekci_yuz_" + yid); }   // Gerçekçi'nin dar yüzünde (Aksesuar.Yuz)
             foreach (var a in Gear.GEAR["ayakkabi"].Values)
             {
                 ui.KarakterDene("ayakkabi", a.id); vt.a = 20; vt.v = 0; yield return Bekle(25); yield return Cek("model_gercekci_vitrin_ayakkabi_" + a.id);

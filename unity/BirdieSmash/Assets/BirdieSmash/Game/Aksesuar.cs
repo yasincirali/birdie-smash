@@ -45,7 +45,7 @@ namespace BirdieSmash.Game
             kok.position = c; kok.rotation = Quaternion.LookRotation(ileri.normalized, dikey.normalized);
             float ls = kafa.lossyScale.x; kok.localScale = new Vector3(yan, ust, (on + arka) * .5f) * (r / Mathf.Max(1e-5f, ls));
             if (Var(sapka)) Sapka(kok, sapka, forma);
-            if (Var(yuz)) Yuz(kok, yuz, forma);
+            if (Var(yuz)) Yuz(kok, yuz, forma, on > 1);   // elipsoit oranı yalnız Oyuncak'larda: tombul yüz, öne çıkan dudak
             foreach (var rd in kok.GetComponentsInChildren<Renderer>()) rd.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             return kok;
         }
@@ -144,7 +144,7 @@ namespace BirdieSmash.Game
             }
         }
 
-        static void Yuz(Transform k, string id, Color forma)
+        static void Yuz(Transform k, string id, Color forma, bool oyuncak)
         {
             var siyah = Mat(new Color(.06f, .06f, .08f), .7f);
             switch (id)
@@ -165,7 +165,13 @@ namespace BirdieSmash.Game
                 case "biyik":
                     {
                         var kahve = Mat(new Color(.22f, .13f, .07f), .15f);
-                        foreach (int sx in new[] { -1, 1 }) P(PrimitiveType.Capsule, k, new Vector3(.2f * sx, -.86f, .94f), new Vector3(.18f, .2f, .16f), kahve, new Vector3(0, 18 * sx, 72 * sx));
+                        // 2026-10-30 (ekran turu r70: bıyık ve boya yüzün içinde kalıyordu): dört Oyuncak FBX'inde yüz yüzeyi Blender'da
+                        // birim başa göre ölçüldü (bpy, FBX'teki bas/goz işaretlerinden): burun ucu y −.78…−.84 z ≈1.08, dudak üstü x ±.18
+                        // y −.9 z .98–1.04, yanak x .5 y −.62…−.74 z .81–.93. Bıyık dudak üstüne (yarıçap .08, arka yüzü yüzeyde), boya
+                        // yanağın önüne. Gerçekçi'de yüz dar (yanak z ≈.68, dudak üstü ≈.85): eski bıyık yerinde kalır, boya içeri çekilir.
+                        // Sade ve Tüycük ölçülemedi (yüz ayrı parça değil), Gerçekçi değerleriyle kalır.
+                        float y = oyuncak ? -.9f : -.86f, z = oyuncak ? 1.06f : .94f;
+                        foreach (int sx in new[] { -1, 1 }) P(PrimitiveType.Capsule, k, new Vector3(.2f * sx, y, z), new Vector3(.18f, .2f, .16f), kahve, new Vector3(0, 18 * sx, 72 * sx));
                         break;
                     }
                 case "korsan":
@@ -174,11 +180,11 @@ namespace BirdieSmash.Game
                     break;
                 case "boya":
                     {
-                        var c1 = Mat(forma, .1f); var c2 = Mat(Color.white, .1f);
+                        var c1 = Mat(forma, .1f); var c2 = Mat(Color.white, .1f); float z = oyuncak ? .92f : .74f;
                         foreach (int sx in new[] { -1, 1 })
                         {
-                            P(PrimitiveType.Cube, k, new Vector3(.5f * sx, -.62f, .84f), new Vector3(.36f, .07f, .04f), c1, new Vector3(0, 32 * sx, 0));
-                            P(PrimitiveType.Cube, k, new Vector3(.5f * sx, -.74f, .82f), new Vector3(.34f, .07f, .04f), c2, new Vector3(0, 32 * sx, 0));
+                            P(PrimitiveType.Cube, k, new Vector3(.5f * sx, -.62f, z), new Vector3(.36f, .07f, .05f), c1, new Vector3(0, 32 * sx, 0));
+                            P(PrimitiveType.Cube, k, new Vector3(.5f * sx, -.74f, z - .02f), new Vector3(.34f, .07f, .05f), c2, new Vector3(0, 32 * sx, 0));
                         }
                         break;
                     }
