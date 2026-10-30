@@ -60,6 +60,9 @@ namespace BirdieSmash.Core
         public float[] ogrHedef;   // antrenman: bu vuruşun düşmesi gereken bant ("Hedefte! ★")
         public string imza;        // rakibin imza vuruşu (Core/Imza): cevap kuralı bu uçuşa bakar
         public float gecPay = float.NaN;   // 2026-10-26 (Core/Dril, kısa servis görevi): file düzlemini geçerken bant payı (m)
+        // 2026-10-30 vuruş laboratuvarı (Core/Dril): vuruş noktası, çıkış hızı (m/s), uçuşun tepe yüksekliği (m) ve servis türü
+        // (kisa / flick / yuksek; servis değilse null). Sonuç kartı ve görev koşulları bunları okur; uçuşu değiştirmez.
+        public float hx, hy, hz, v0, zTepe; public string servisTur;
         public float netK;
         public NetPass netPred;   // tahmin edilen file geçişi (canlı uçuş aynı karara varsın)
         public SimResult landPred;

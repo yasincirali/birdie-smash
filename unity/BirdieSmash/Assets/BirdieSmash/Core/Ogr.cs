@@ -61,9 +61,9 @@ namespace BirdieSmash.Core
         }
         public static readonly Dictionary<string, float[]> OGR_HEDEF = new Dictionary<string, float[]> {
             {"clear",new[]{0f,2.4f}},{"lift",new[]{0f,2.8f}},{"slice",new[]{0f,4.2f}},{"drop",new[]{Court.NET-2.2f,Court.NET}},{"block",new[]{Court.NET-2.2f,Court.NET}},
-            {"smash",new[]{.5f,Court.NET-1.2f}},{"jump",new[]{.5f,Court.NET-1.2f}},{"drive",new[]{.5f,4.6f}},{"kill",new[]{Court.NET-4.2f,Court.NET}}};
+            {"smash",new[]{.5f,Court.NET-1.2f}},{"jump",new[]{.5f,Court.NET-1.2f}},{"drive",new[]{.5f,4.6f}},{"push",new[]{1.6f,4.6f}},{"kill",new[]{Court.NET-4.2f,Court.NET}}};
         public static readonly Dictionary<string, string> OGR_AD = new Dictionary<string, string> {
-            {"kisa","Kısa servis"},{"flick","Flick servis"},{"yuksek","Yüksek servis"},{"clear","Clear"},{"lift","Lift"},{"drop","Drop"},{"drive","Drive"},{"smash","Smaç"},{"jump","Sıçrayarak smaç"},{"kill","File vuruşu"},{"block","Blok"},{"slice","Slice"}};
+            {"kisa","Kısa servis"},{"flick","Flick servis"},{"yuksek","Yüksek servis"},{"clear","Clear"},{"lift","Lift"},{"drop","Drop"},{"drive","Drive"},{"smash","Smaç"},{"jump","Sıçrayarak smaç"},{"kill","File vuruşu"},{"block","Blok"},{"push","Push"},{"slice","Slice"}};
 
         void OgrKur(bool kisa)
         {

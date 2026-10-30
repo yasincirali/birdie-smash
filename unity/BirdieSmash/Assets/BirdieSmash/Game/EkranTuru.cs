@@ -291,7 +291,7 @@ namespace BirdieSmash.Game
             ui.SekmeAc(Sekme.Oyna); ui.HizliMacAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "hizli"); ui.Geri();
             ui.AyarlarAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "ayarlar"); ui.Geri(); yield return Bekle(5);
             // 2026-10-26 adım 7–8: antrenman sayfası (örnek yıldızlarla), görev kartı, Günün maçı kartı
-            var eskiP = Ayar.ilerleme; var dp = new Ilerleme(); dp.DrilKaydet("derin", 3); dp.DrilKaydet("drop", 2); dp.DrilKaydet("kose", 1); dp.DrilKaydet("servis", 2); Ayar.ilerleme = dp;
+            var eskiP = Ayar.ilerleme; var dp = new Ilerleme(); dp.DrilKaydet("derin", 3); dp.DrilKaydet("drop", 2); dp.DrilKaydet("kose", 1); dp.DrilKaydet("servis", 2); foreach (var gy in new[] { 4, 6, 6, 8, 9 }) dp.DrilGecmisEkle("derin", gy, 12); foreach (var gy in new[] { 3, 5 }) dp.DrilGecmisEkle("drop", gy, 12); Ayar.ilerleme = dp;   // 2026-10-30: ilerleme çizgisi
             ui.AntrenmanAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "antrenman");
             ui.SayfaSonaKaydir(); yield return Bekle(10); yield return Cek("menu_" + ek + "antrenman_alt");   // r13: aldatıcı vuruş listesi
             ui.DrilKartAc("kose"); yield return Bekle(20); yield return Cek("menu_" + ek + "gorev_karti"); ui.Geri(); ui.Geri(); yield return Bekle(5);
@@ -374,6 +374,10 @@ namespace BirdieSmash.Game
         IEnumerator GorevKare()
         {
             root.DrilBaslat("kose"); botAcik = true; yield return Bekle(60 * 6); yield return Cek("gorev_kose_oyun");
+            // 2026-10-30 vuruş laboratuvarı: düz drop oynanırken sonuç kartı ve top izi (bot ilk topları vurur)
+            root.DrilBitir(); { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 10 && root.ekran != Ekran.Bitti) yield return null; }
+            root.DrilBaslat("drop"); botAcik = true; { float t1 = Time.realtimeSinceStartup; int n0 = root.match.drOlcumNo; while (Time.realtimeSinceStartup - t1 < 40 && root.match.drOlcumNo < n0 + 2) yield return null; }
+            yield return Bekle(10); yield return Cek("gorev_lab_kart"); rap.AppendLine("gorev_lab_kart · ölçüm " + (root.match.drOlcum != null ? root.match.drOlcum.ad + " " + root.match.drOlcum.hedef : "yok"));
             root.DrilBitir(); float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 10 && root.ekran != Ekran.Bitti) yield return null;
             yield return Bekle(20); yield return Cek("gorev_sonuc"); botAcik = false;
             root.GunlukBaslat(); botAcik = true; yield return Bekle(60 * 3); yield return Cek("gunun_maci_oyun"); botAcik = false;

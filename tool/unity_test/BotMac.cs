@@ -614,15 +614,16 @@ static class BotMac
     static void Drillar()
     {
         var R = new Random(5);
-        if (Dril.Liste.Length != 8 || Dril.ToplamYildiz != 24) Fail("8 görev, 24 yıldız olmalı");
+        if (Dril.Liste.Length != 21 || Dril.ToplamYildiz != 63) Fail("21 görev, 63 yıldız olmalı (vuruş laboratuvarı, 2026-10-30)");
+        foreach (var d in Dril.Liste) if (Array.IndexOf(Dril.GRUP, d.grup) < 0) Fail("görevin grubu yok: " + d.id);
         foreach (var d in Dril.Liste)
         {
             var M = new Match(31, new MatchOptions { easy = true, ogr = true, dril = d, target = 5 }); int guard = 0; float t = 0;
             if (M.Dril != d || M.ogr == null || M.gorevler.Count != 0) Fail("görev antrenman altyapısında açılmadı: " + d.id);
             while (!M.ogr.bitti && guard++ < 60 * 240)
             {
-                if (d.olcu == "servis") { if (M.s == null && M.server == "me" && M.wait <= 0 && !M.between && M.svPending == null) M.SwipeServe(0, -60, .5f); }
-                else { Reach re; if (M.ReachInfo(out re) && R.NextDouble() < .2) M.SwipeShot(new SwipeInput { dx = 0, dy = -200, speed = d.id == "drop" ? .5f : d.id == "kill" || d.id == "kose" ? 2.1f : 1.3f, R = 40, dist = 5, curved = d.id == "aldat" }); }
+                if (d.olcu == "servis") { if (M.s == null && M.server == "me" && M.wait <= 0 && !M.between && M.svPending == null) M.SwipeServe(0, -60, d.servis == "flick" ? 1.4f : .5f); }
+                else { Reach re; if (M.ReachInfo(out re) && R.NextDouble() < .2) M.SwipeShot(new SwipeInput { dx = 0, dy = d.id == "blok" ? 120 : -200, speed = d.tip != null && Array.IndexOf(d.tip, "drop") >= 0 ? .5f : d.id == "kill" || d.id == "kose" || d.tip != null && (Array.IndexOf(d.tip, "smash") >= 0 || Array.IndexOf(d.tip, "drive") >= 0) ? 2.1f : 1.3f, R = 40, dist = 5, curved = d.id == "aldat" }); }
                 if (d.olcu == "split" && M.s != null && M.s.from == "op" && M.clock - M.opHitAt > .15f) M.OnTouchDown();
                 M.Update(1f / 60f); t += 1f / 60f; M.events.Clear();
                 if (M.over) { Fail("görev maç sonuna gitti: " + d.id); break; }

@@ -249,7 +249,7 @@ namespace BirdieSmash.Game
         void Play(Match M)
         {
             var gs = Ayar.GS; bool ogr = M.ogr != null;
-            Halo(M); Iz(M); if (ogr) OgrIz(M); HedefYazi(M);
+            Halo(M); Iz(M); TopIzi(M); if (ogr) OgrIz(M); HedefYazi(M);
             // skor kutusu: sayı alınca büyür (HTML pop: 24·(1+.5·sin(pop·π)))
             float cx = W / 2, sy = top; var kr = new Rect(cx - 62 * u, sy, 124 * u, 34 * u); Fill(kr, new Color(8 / 255f, 16 / 255f, 17 / 255f, .7f));
             if (!ogr)
@@ -296,6 +296,7 @@ namespace BirdieSmash.Game
                 if (M.energy > 0) Fill(new Rect(bx, by, bw * Mathf.Min(1, M.energy), 8 * u), dol ? new Color(1, .54f, .24f, Ayar.reduce ? 1 : .75f + .25f * Mathf.Sin(Time.unscaledTime * 1000 / 160)) : Kit.Hex("#d8ff5a"));
                 if (isaret) { float nab = Ayar.reduce ? 1 : .6f + .4f * Mathf.Sin(Time.unscaledTime * 6); Cerceve(new Rect(lx - 10 * u, by - 13 * u, rx - lx + 20 * u, 26 * u), new Color(.85f, 1, .35f, nab), 3); }
             }
+            if (M.Dril != null && root.ekran == Ekran.Oyun) VurusKart(M, H - bot - 30 * u);
             float hy = H - bot - 34 * u;
             if (M.sc[0] + M.sc[1] < 2 && M.s != null && !ogr && (Ogretici || KosIpucu(M)))
             {
@@ -396,7 +397,7 @@ namespace BirdieSmash.Game
             }
         }
         HileTanim hfSon; int hfBoy; string hfYazi; GUIStyle hfStil; static readonly Color HF_RENK = new Color(0xc9 / 255f, 0xa0 / 255f, 1f);   // #c9a0ff
-        static readonly Dictionary<string, string> PREV_TR = new Dictionary<string, string> { { "lift", "Lift" }, { "kill", "File vuruşu" }, { "jump", "Sıçrayarak smaç" }, { "smash", "Smaç" }, { "block", "Blok" }, { "drive", "Drive" }, { "drop", "Drop" }, { "clear", "Clear" } };
+        static readonly Dictionary<string, string> PREV_TR = new Dictionary<string, string> { { "lift", "Lift" }, { "kill", "File vuruşu" }, { "jump", "Sıçrayarak smaç" }, { "smash", "Smaç" }, { "block", "Blok" }, { "drive", "Drive" }, { "push", "Push" }, { "drop", "Drop" }, { "clear", "Clear" } };
         void HedefYazi(Match M)
         {
             if (root.previewOn && root.Parmak && !root.ParmakVurdu)
@@ -416,6 +417,55 @@ namespace BirdieSmash.Game
                 var c = hit ? new Color(.85f, 1, .35f, (1 - age) * .9f) : new Color(1, 1, 1, (1 - age) * .55f); float wpx = ((hit ? 14 : 9) * (1 - age) + 1) * RefK;
                 Cizgi(new Vector2(a.x * RefK, a.y * RefK), new Vector2(b.x * RefK, b.y * RefK), wpx, c);
             }
+        }
+        // Vuruş laboratuvarı (2026-10-30): oyuncunun son iki topunun yolu kortta kalır (yenisi limon, öncekisi soluk beyaz),
+        // düştüğü yer noktayla. Dünya noktaları tutulur, her karede yeniden yansıtılır (kamera kayınca iz yerinde kalsın).
+        readonly List<List<Vector3>> izler = new List<List<Vector3>>(); Shuttle izTop;
+        void TopIzi(Match M)
+        {
+            if (M.Dril == null) { izler.Clear(); izTop = null; return; }
+            var s = M.s;
+            if (Event.current.type == EventType.Repaint && s != null && s.from == "me" && s.z > 0)
+            {
+                if (s != izTop) { izTop = s; izler.Add(new List<Vector3>()); if (izler.Count > 2) izler.RemoveAt(0); }
+                var l = izler[izler.Count - 1]; var p = Kit.W(s.x, s.y, s.z); if (l.Count == 0 || (l[l.Count - 1] - p).sqrMagnitude > .04f) l.Add(p);
+            }
+            for (int k = 0; k < izler.Count; k++)
+            {
+                var l = izler[k]; bool yeni = k == izler.Count - 1; var c = yeni ? new Color(.85f, 1, .35f, .8f) : new Color(1, 1, 1, .35f);
+                Vector2 on = Vector2.zero; bool acik = false;
+                foreach (var w in l)
+                {
+                    var sp = root.cam.WorldToScreenPoint(w); if (sp.z <= 0) { acik = false; continue; }
+                    var q = new Vector2(sp.x, H - sp.y); if (acik) Cizgi(on, q, (yeni ? 3 : 2) * u, c); on = q; acik = true;
+                }
+                if (acik && (!yeni || izTop == null || izTop.dead || izTop.z <= 0)) Tex(new Rect(on.x - 5 * u, on.y - 5 * u, 10 * u, 10 * u), disk, c);
+            }
+        }
+        // Vuruş sonuç kartı: her topun ardından 3,5 sn; ilk satır ✓/✗ ve vuruşun adı, ikinci satır ölçüler (file payı, çizgiye
+        // uzaklık, hız). Durum yalnız renkle değil işaretle de okunur; satırlar Sigdir ile sığar (Dynamic Type).
+        int vkNo = -1; float vkT; string vk1, vk2;
+        void VurusKart(Match M, float alt)
+        {
+            var o = M.drOlcum; if (o == null) return;
+            if (M.drOlcumNo != vkNo)
+            {
+                vkNo = M.drOlcumNo; vkT = Time.unscaledTime;
+                vk1 = (o.hedef ? "✓ " : "✗ ") + L.T(o.ad) + " · " + (o.hedef ? L.T("hedefte") : L.T(o.neden ?? "Alana düşmedi"));
+                var p = new List<string>();
+                if (!o.file && !float.IsNaN(o.gec)) p.Add(L.T("Fileyi {0} cm geçti", Mathf.Max(0, Mathf.RoundToInt(o.gec * 100))));
+                if (!o.file && !o.disari) p.Add(L.T(o.dip ? "Dip çizgiye {0} m" : "Fileye {0} m", o.mesafe.ToString("0.0", L.En ? System.Globalization.CultureInfo.InvariantCulture : new System.Globalization.CultureInfo("tr-TR"))));
+                p.Add(L.T("{0} km/s", Mathf.RoundToInt(o.hiz)));
+                vk2 = string.Join(" · ", p.ToArray());
+            }
+            float t = Time.unscaledTime - vkT; if (t > 3.5f) return;
+            float a = Ayar.reduce ? 1 : Mathf.Clamp01(Mathf.Min(t / .15f, (3.5f - t) / .4f));
+            float w = rx - lx, iw = w - 24 * u; var s1 = Sigdir(leftB, vk1, iw); var s2 = Sigdir(Stil(left, Mathf.RoundToInt(12 * fu)), vk2, iw);
+            float h1 = s1.CalcSize(Ic(vk1)).y, h2 = s2.CalcSize(Ic(vk2)).y, h = h1 + h2 + 16 * u; var r = new Rect(lx, alt - h, w, h);
+            Fill(r, new Color(9 / 255f, 16 / 255f, 17 / 255f, .72f * a));
+            Fill(new Rect(r.x, r.y, 4 * u, h), o.hedef ? new Color(.85f, 1, .35f, a) : new Color(1, .82f, .48f, a));
+            GUI.color = o.hedef ? new Color(.85f, 1, .35f, a) : new Color(1, .82f, .48f, a); GUI.Label(new Rect(r.x + 14 * u, r.y + 7 * u, iw, h1), vk1, s1);
+            GUI.color = new Color(.81f, .89f, .86f, a); GUI.Label(new Rect(r.x + 14 * u, r.y + 8 * u + h1, iw, h2), vk2, s2); GUI.color = Color.white;
         }
         void Cizgi(Vector2 a, Vector2 b, float w, Color c)
         {

@@ -157,7 +157,7 @@ namespace BirdieSmash.Game
             if (isitSira.Count == 0 || (sakin != null && !sakin())) return;
             for (int i = 0; i < 2 && isitSira.Count > 0; i++) { var f = isitSira.Dequeue(); try { f(); } catch (System.Exception) { } }
         }
-        static string Tur(string type) { return type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : HITMIX.ContainsKey(type ?? "") ? type : "clear"; }
+        static string Tur(string type) { return type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type == "push" ? "drive" : HITMIX.ContainsKey(type ?? "") ? type : "clear"; }
         AudioClip Vurus(string type, string q, bool slice, bool super_, bool serve, bool op)
         {
             var GS = Ayar.GS; type = Tur(type);
@@ -333,7 +333,7 @@ namespace BirdieSmash.Game
         public void CrowdSus() { crowdHedef = 0; }
 
         // Titreşim deseni (HTML hapHit): süre vuruşun gücü, gerginlik dokusu. Yerel.Vurus çalar.
-        public static readonly Dictionary<string, int> HIT_MS = new Dictionary<string, int> { { "smash", 44 }, { "jump", 62 }, { "kill", 26 }, { "drive", 28 }, { "clear", 32 }, { "drop", 9 }, { "lift", 24 }, { "block", 12 } };
+        public static readonly Dictionary<string, int> HIT_MS = new Dictionary<string, int> { { "smash", 44 }, { "jump", 62 }, { "kill", 26 }, { "drive", 28 }, { "clear", 32 }, { "drop", 9 }, { "lift", 24 }, { "block", 12 }, { "push", 16 } };
         public static int[] Desen(string type, string q, bool slice, float T)
         {
             float k = Mathf.Pow(26 / T, .45f); int ms; HIT_MS.TryGetValue(type ?? "", out ms); if (ms == 0) ms = 28; int d = Mathf.RoundToInt(ms * k); int[] p;

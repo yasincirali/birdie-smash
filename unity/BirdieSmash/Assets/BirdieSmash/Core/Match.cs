@@ -209,6 +209,10 @@ namespace BirdieSmash.Core
         static float Hyp(float a, float b) { return (float)Math.Sqrt(a * a + b * b); }
         // Clear/lift kalkış açıları (2026-10-20, HTML ile aynı): ölçülen elit clear çıkışı 42–51 m/s (arastirma/vurus_biyomekanigi.md §2).
         public const float CLEAR_A = .63f, LIFT_A = .80f;
+        // Atak clear (2026-10-30, vuruş laboratuvarı; yasin: "vuruşlar arasındaki farkı maç içinde de varyasyonları kullanmak
+        // adına"): baş üstünde hızlı ama smaç eşiğinin altında (sp 1,45–1,7) kaydırma alçak ve hızlı clear olur; rakibin raketinin
+        // üstünden geçer, rakibe dönme zamanı az kalır. Yavaş/orta kaydırma eskisi gibi yüksek (savunma) clear.
+        public const float ATAK_CLEAR_A = .40f, ATAK_CLEAR_SP = 1.45f;
         // Baş üstü drop açısı .12 → .20 rad (2026-10-26, FizikOlc): 7° ile arka sahadan fileden 1,2 m'ye düşen yörünge yoktu,
         // çözüm bandın 1 cm altına yapışıyordu (rakip drop'larının %35'i bandı sıyırdı, %10'u fileye). 11,5° ile ~14 m/s,
         // bant üstü ~15 cm, uçuş ~1,1 s, top fileden sonra dik düşer (gerçek drop: smaç gibi başlar, fileyi az farkla geçer).
@@ -339,7 +343,8 @@ namespace BirdieSmash.Core
         void StartFlight(string from, float vx, float vy, float vz, float hx, float hy, float hz, bool isServe, string type, bool isSuper, string q, bool slice = false)
         {
             string oncekiVurus = s != null ? s.vurus : null;
-            s = new Shuttle { x = hx, y = hy, z = hz, vx = vx, vy = vy, vz = vz, from = from, serve = isServe, type = type, super = isSuper, kd = SliceKd(from, slice), slice = slice, vurus = vurusAdi ?? type }; vurusAdi = null;   // 2026-10-26: Kesici raket / Aldatıcı tarzı slice sapmasını büyütür (GS.slice, nötr 1)
+            s = new Shuttle { x = hx, y = hy, z = hz, vx = vx, vy = vy, vz = vz, from = from, serve = isServe, type = type, super = isSuper, kd = SliceKd(from, slice), slice = slice, vurus = vurusAdi ?? type,
+                hx = hx, hy = hy, hz = hz, zTepe = hz, v0 = (float)Math.Sqrt(vx * vx + vy * vy + vz * vz), servisTur = isServe ? servisTurSon : null }; vurusAdi = null;   // 2026-10-26: Kesici raket / Aldatıcı tarzı slice sapmasını büyütür (GS.slice, nötr 1)
             rally++; maxRally = Math.Max(maxRally, rally);
             driveSeri = s.vurus == "drive" && oncekiVurus == "drive" ? driveSeri + 1 : 0;
             if (driveSeri == 2) Say(null, null, Court.MID, Court.NET, 2.2f, "Drive düellosu!", 2);   // üçüncü drive
@@ -496,13 +501,21 @@ namespace BirdieSmash.Core
             P.bh = HandOf(me, "me", s.x, s.z) == "back";
             string type;
             if (sw.tap) type = I.lunge ? "lift" : I.kill ? "kill" : "clear";
-            else if (I.lunge) type = "lift"; else if (up < 0) type = "block";
+            // 2026-10-30 (vuruş laboratuvarı): aşağı çekiş uzanırken de bloktur; eskiden uzanmada her kaydırma lift oluyordu, smacı
+            // file önüne bırakmanın yolu yoktu ("Blok" görevi ölçümü: 178 topun 138'i lift).
+            else if (up < 0) type = "block"; else if (I.lunge) type = "lift";
             else if (sp > 1.5f && I.kill) type = "kill";
             else if (sp > 1.7f) type = P.over ? (P.bh ? "clear" : (energy >= 1 ? "jump" : "smash")) : P.hz < .8f ? "lift" : "drive";
             // Diz altından drive yok (2026-10-26): bant 1,52 m; 0,8 m altından 22 m/s düz vuruş ya fileye gider ya da fileyi geçmek
             // için dikleşip uzun kaçar (ölçüm: alçak drive'ların %17'si fileye). Gerçekte o yükseklikte sert vuruş hücum lift'idir.
             // Sınır ShotClass'ın drive eşiğiyle aynı (z > 0,8): klip ile uçuş aynı şeyi anlatır.
-            else if (sp < .75f) type = "drop"; else type = "clear";
+            else if (sp < .75f) type = "drop";
+            // Push (2026-10-30, vuruş laboratuvarı): file önünde (≤ 2,6 m) göğüs-baş hizasındaki topa orta hızlı kaydırma düz ve
+            // yumuşak iter, rakibin orta sahasına. Eskiden bu kaydırma alttan clear'di; aynı yerden 22 m/s drive ise fileyi geçmek
+            // için dikleşip dışarı uçuyordu (ölçüm: push görevinde topların %34'ü dışarı).
+            // Bandın dibinde (< 0,35 m) aynı kaydırma eskisi gibi alttan clear (lift): orada itilen top fileye takılır.
+            else if (!P.over && P.hz >= .8f && Math.Abs(P.hy - Court.NET) >= .35f && Math.Abs(P.hy - Court.NET) < 2.6f) type = "push";
+            else type = "clear";
             float tx = Court.MID + r * 2.4f, d, val; bool byAngle = true;
             switch (type)
             {
@@ -514,7 +527,8 @@ namespace BirdieSmash.Core
                 case "drop": d = P.over ? 1.2f : 1.0f; val = P.over ? DROP_A : (Math.Abs(P.hy - Court.NET) < 2.5f ? .75f : .95f); break;
                 case "block": d = .9f; val = .6f; tx = P.hx + r * 1.2f; break;
                 case "lift": tx = Court.MID + r * 1.2f; d = 5.4f; val = LIFT_A + .08f; break;
-                default: d = Math.Min(P.bh ? 5.6f : 6.9f, (P.bh ? 4.6f : 5.5f) + (sp - .75f) * 1.4f + (GS.guc - 1) * 3); val = P.over ? CLEAR_A : LIFT_A; break;   // kafa ağır raket clear'i uzatır
+                case "push": d = 3.3f; byAngle = false; val = 11 * GS.hiz; break;
+                default: d = Math.Min(P.bh ? 5.6f : 6.9f, (P.bh ? 4.6f : 5.5f) + (sp - .75f) * 1.4f + (GS.guc - 1) * 3); val = P.over ? (sp >= ATAK_CLEAR_SP && !P.bh ? ATAK_CLEAR_A : CLEAR_A) : LIFT_A; break;   // kafa ağır raket clear'i uzatır
             }
             P.type = type; P.tx = tx; P.d = d; P.val = val; P.byAngle = byAngle; return P;
         }
@@ -563,7 +577,7 @@ namespace BirdieSmash.Core
             if (s.from == "op" && s.type == "smash") smacKarsila++;
             ImzaCevap(type); VurusKaydet(type);
             me.sw = 1; GorevKontrol();
-            string ft = type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type;
+            string ft = type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type == "push" ? "drive" : type;
             sonTip = type; sonQ = q; sonSlice = slice;   // titreşim deseni (HTML hapHit) uçuş türünü değil vuruşun kendisini ister
             vurusAdi = type; StartFlight("me", vx, vy, vz, hx, hy, hz, false, ft, type == "jump", q, slice);
             if (HD != null) HileSonra(HD);
@@ -576,6 +590,7 @@ namespace BirdieSmash.Core
         // duruş, uzun salınım). Kural (BWF Law 9): temas 1,15 m altında. Servis klibi temas anına kadar oynar, top temas
         // karesinde çıkar. Hareket: yavaş = kısa, kısa ve sert fiske = flick, uzun ve hızlı = yüksek.
         public class Servis { public string klip; public float sure, z, aci; }
+        string servisTurSon;   // StartFlight'a giden servis türü (Shuttle.servisTur)
         public static readonly Dictionary<string, Servis> SERVIS = new Dictionary<string, Servis> {
             {"kisa", new Servis{klip="serve_bh",sure=.32f,z=1.0f,aci=.36f}}, {"flick", new Servis{klip="serve_flick",sure=.32f,z=1.02f,aci=.52f}}, {"yuksek", new Servis{klip="serve",sure=.56f,z=.82f,aci=1.0f}}};
         void ServisAt(string who, string tur, float tx, float ty)
@@ -586,7 +601,7 @@ namespace BirdieSmash.Core
             o.svClip = klip; o.svAnim = new SvAnim { clip = klip, t = 0, d = reduce ? sure * .6f : sure };
             svPending = () =>
             {
-                float vx, vy, vz; Shuttle.Aim(hx, hy, hz, tx, ty, true, S.aci, out vx, out vy, out vz);
+                float vx, vy, vz; Shuttle.Aim(hx, hy, hz, tx, ty, true, S.aci, out vx, out vy, out vz); servisTurSon = tur;
                 if (tur == "flick" && (who == "op" || R01() < .75f)) deceive = who == "me";   // çoğu flick rakibi kısa servise hazırlıksız yakalar
                 StartFlight(who, vx, vy, vz, hx, hy, hz, true, tur == "kisa" ? "drop" : "clear", false, "good");
                 if (tur == "flick" && who == "op") Say("me", null, me.x, me.y, 0, "Flick servis!", 2);
@@ -1098,7 +1113,7 @@ namespace BirdieSmash.Core
                 float h = Math.Min(Shuttle.DT, rem); float py = s.y; rem -= h; s.t += h;
                 if (s.agda) { AgAdim(h); if (s.agda) continue; }   // ağa gömülü: konumu ağ belirler
                 if (s.netHit) { s.vy *= (float)Math.Exp(-4 * h); s.vx *= (float)Math.Exp(-4 * h); }
-                s.Step(h);
+                s.Step(h); if (s.z > s.zTepe) s.zTepe = s.z;
                 // Fileden dönen top filenin düzlemini yeniden geçemez (2026-10-26, iç içe geçme yok): vuranın tarafında, ağa yaslı
                 // iner; ağın alt kenarının altına inince serbest.
                 // 2026-10-27: düzlem değil ağın görünen yüzeyi (ağ topu bıraktığında henüz geri dönmemiş olabilir; geri dönerken

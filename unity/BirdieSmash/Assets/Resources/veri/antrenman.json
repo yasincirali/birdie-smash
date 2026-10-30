@@ -1,10 +1,10 @@
 {
- "_not": "Antrenman sahası (komple-oyun tasarımı §3.6, Ek A.4; adım 7, 2026-10-26). 8 kısa görev, her biri 12 top (~60–90 sn), skor yok; antrenör topu elle besler (besle: clear = arka sahaya yüksek, smash = gövdeye smaç, gevsek = file üstünde gevşek top, karisik = clear ve drive sırayla; yok = sen servis atarsın). Antrenör topu geri oynamaz: her top tek vuruştur. olcu: alan = vuruş türü (tip) alana düşerse; servis = kısa servis bandı az farkla geçip alana düşerse; aldat = rakip ters yöne çıkar ve top içeri düşerse; karsila = smaç içeri dönerse; kill = file vuruşu içeri düşerse; split = antrenör vururken split step ve topa vurursan. alan = [x0, x1, y0, y1] rakip yarısında metre (y 0 = rakibin dip çizgisi, 6,7 = file); kose = sırayla sol ve sağ köşe. esik = ★ / ★★ / ★★★ için isabet. Ödül yalnız ilk kez alınan yıldızda (Gear.DrilOdul). Metinler Türkçe anahtar, çeviri Lang.UNITY_EK.",
+ "_not": "Antrenman sahası (komple-oyun tasarımı §3.6, Ek A.4; adım 7, 2026-10-26). 8 kısa görev, her biri 12 top (~60–90 sn), skor yok; antrenör topu elle besler (besle: clear = arka sahaya yüksek, smash = gövdeye smaç, gevsek = file üstünde gevşek top, karisik = clear ve drive sırayla; yok = sen servis atarsın). Antrenör topu geri oynamaz: her top tek vuruştur. olcu: alan = vuruş türü (tip) alana düşerse; servis = kısa servis bandı az farkla geçip alana düşerse; aldat = rakip ters yöne çıkar ve top içeri düşerse; karsila = smaç içeri dönerse; kill = file vuruşu içeri düşerse; split = antrenör vururken split step ve topa vurursan. alan = [x0, x1, y0, y1] rakip yarısında metre (y 0 = rakibin dip çizgisi, 6,7 = file); kose = sırayla sol ve sağ köşe. esik = ★ / ★★ / ★★★ için isabet. Ödül yalnız ilk kez alınan yıldızda (Gear.DrilOdul). Metinler Türkçe anahtar, çeviri Lang.UNITY_EK. 2026-10-30 vuruş laboratuvarı: grup (arka / file / orta) ve isteğe bağlı koşullar: yon duz/capraz (vuruş noktasıyla düşüşün yan kayması ≤ 1 m / ≥ 1,6 m), vurus [a, b] (vuruş noktasının fileye uzaklığı, m), tepe [a, b] (uçuşun tepe yüksekliği, m), gec (file payı en çok, m), servis kisa/flick. Yeni beslemeler: file (file dibine alçak top), yarim (ön-orta sahaya düz top), orta (orta sahaya yüksek top), cesit (rastgele, üst üste aynı değil); olcu cesit = aynı vuruşu üst üste atmadan içeri.",
  "gorevler": [
   {
    "id": "derin",
-   "ad": "Derin clear",
-   "ogretir": "Kaydırma hızı",
+   "ad": "Savunma clear",
+   "ogretir": "Yüksek ve dibe",
    "besle": "clear",
    "olcu": "alan",
    "tip": [
@@ -19,15 +19,48 @@
    "top": 12,
    "esik": [
     4,
-    6,
-    8
+    5,
+    7
    ],
-   "nasil": "Top başının üstünde. UZUN ve orta hızda yukarı kaydır: top arka banda düşsün."
+   "nasil": "Top başının üstünde. UZUN ve orta hızda yukarı kaydır: top yükseğe çıkıp arka banda düşsün. Yüksek clear sana yerine dönme zamanı kazandırır.",
+   "grup": "arka",
+   "tepe": [
+    6.0,
+    99
+   ]
+  },
+  {
+   "grup": "arka",
+   "ad": "Atak clear",
+   "ogretir": "Alçak ve hızlı",
+   "besle": "clear",
+   "olcu": "alan",
+   "tip": [
+    "clear"
+   ],
+   "alan": [
+    0.46,
+    5.64,
+    0,
+    1.5
+   ],
+   "tepe": [
+    0,
+    6.0
+   ],
+   "esik": [
+    3,
+    4,
+    5
+   ],
+   "nasil": "Baş üstünde HIZLI kaydır ama smaç kadar değil (hız bandında Orta ile Hızlı arası): top alçak ve hızlı gidip dibe düşsün. Alçak clear rakibi geri koşturur.",
+   "id": "atak_clear",
+   "top": 12
   },
   {
    "id": "drop",
-   "ad": "File dibi drop",
-   "ogretir": "Yavaş kaydırma",
+   "ad": "Düz drop",
+   "ogretir": "Yavaş kaydırma, düz",
    "besle": "clear",
    "olcu": "alan",
    "tip": [
@@ -42,10 +75,37 @@
    "top": 12,
    "esik": [
     6,
-    9,
-    11
+    7,
+    9
    ],
-   "nasil": "Topun üstünden YAVAŞ ve kısa geç: top filenin dibine, yanan banda düşsün."
+   "nasil": "Topun üstünden YAVAŞ ve kısa, düz yukarı geç: top aynı çizgide filenin dibine, yanan banda düşsün.",
+   "grup": "arka",
+   "yon": "duz"
+  },
+  {
+   "grup": "arka",
+   "ad": "Çapraz drop",
+   "ogretir": "Yavaş kaydırma, çapraz",
+   "besle": "clear",
+   "olcu": "alan",
+   "tip": [
+    "drop"
+   ],
+   "yon": "capraz",
+   "alan": [
+    0.46,
+    5.64,
+    5.0,
+    6.7
+   ],
+   "esik": [
+    4,
+    6,
+    8
+   ],
+   "nasil": "YAVAŞ kaydır ve parmağını karşı köşeye eğ: top kortu çaprazına geçip file dibine düşsün.",
+   "id": "capraz_drop",
+   "top": 12
   },
   {
    "id": "kose",
@@ -69,7 +129,86 @@
     6,
     8
    ],
-   "nasil": "HIZLI kaydır ve parmağını yanan köşeye eğ. Köşe her topta yer değiştirir."
+   "nasil": "HIZLI kaydır ve parmağını yanan köşeye eğ. Köşe her topta yer değiştirir.",
+   "grup": "arka"
+  },
+  {
+   "grup": "arka",
+   "ad": "Düz smaç",
+   "ogretir": "Hız, düz çizgi",
+   "besle": "clear",
+   "olcu": "alan",
+   "tip": [
+    "smash"
+   ],
+   "yon": "duz",
+   "alan": [
+    0.46,
+    5.64,
+    0.5,
+    5.2
+   ],
+   "esik": [
+    4,
+    6,
+    8
+   ],
+   "nasil": "HIZLI ve düz yukarı kaydır: smaç aynı çizgide, kenar çizgisine paralel insin.",
+   "id": "duz_smac",
+   "top": 12
+  },
+  {
+   "grup": "arka",
+   "ad": "Çapraz smaç",
+   "ogretir": "Hız, çapraz",
+   "besle": "clear",
+   "olcu": "alan",
+   "tip": [
+    "smash"
+   ],
+   "yon": "capraz",
+   "alan": [
+    0.46,
+    5.64,
+    0.5,
+    5.2
+   ],
+   "esik": [
+    3,
+    5,
+    7
+   ],
+   "nasil": "HIZLI kaydır ve parmağını karşı tarafa eğ: smaç kortu çaprazına geçsin.",
+   "id": "capraz_smac",
+   "top": 12
+  },
+  {
+   "grup": "arka",
+   "ad": "Dik smaç",
+   "ogretir": "Orta sahadan, dik",
+   "besle": "orta",
+   "olcu": "alan",
+   "tip": [
+    "smash"
+   ],
+   "vurus": [
+    2.3,
+    3.6
+   ],
+   "alan": [
+    0.46,
+    5.64,
+    2.4,
+    6.7
+   ],
+   "esik": [
+    7,
+    9,
+    11
+   ],
+   "nasil": "Antrenör orta sahaya yüksek top atıyor. Topun altına gir ve HIZLI kaydır: orta sahadan vurulan smaç dik iner, rakibin ön ve orta sahasına düşer.",
+   "id": "dik_smac",
+   "top": 12
   },
   {
    "id": "aldat",
@@ -83,7 +222,105 @@
     4,
     6
    ],
-   "nasil": "Kaydırırken parmağınla bir YAY çiz: antrenör ters yöne çıksın, top içeri düşsün."
+   "nasil": "Kaydırırken parmağınla bir YAY çiz: antrenör ters yöne çıksın, top içeri düşsün.",
+   "grup": "arka"
+  },
+  {
+   "grup": "file",
+   "ad": "File dibi",
+   "ogretir": "Net shot, bandı sıyır",
+   "besle": "file",
+   "olcu": "alan",
+   "tip": [
+    "drop",
+    "block"
+   ],
+   "yon": "duz",
+   "gec": 0.3,
+   "alan": [
+    0.46,
+    5.64,
+    5.5,
+    6.7
+   ],
+   "esik": [
+    4,
+    5,
+    7
+   ],
+   "nasil": "Top filenin dibine düşüyor. Bandın altında YAVAŞ ve kısa it: top bandı az farkla geçip hemen dibe düşsün.",
+   "id": "file_dibi",
+   "top": 12
+  },
+  {
+   "grup": "file",
+   "ad": "Çapraz file",
+   "ogretir": "Net shot, çapraz",
+   "besle": "file",
+   "olcu": "alan",
+   "tip": [
+    "drop",
+    "block"
+   ],
+   "yon": "capraz",
+   "alan": [
+    0.46,
+    5.64,
+    5.2,
+    6.7
+   ],
+   "esik": [
+    3,
+    5,
+    7
+   ],
+   "nasil": "Top file dibinde. YAVAŞ kaydır ve parmağını karşıya eğ: top fileye paralel karşı köşeye düşsün.",
+   "id": "capraz_file",
+   "top": 12
+  },
+  {
+   "id": "kill",
+   "ad": "File öldürme",
+   "ogretir": "Hız",
+   "besle": "gevsek",
+   "olcu": "kill",
+   "top": 12,
+   "esik": [
+    6,
+    9,
+    11
+   ],
+   "nasil": "Top file üstünde gevşek kaldı. HIZLI ve sert kaydır: aşağı vur.",
+   "grup": "file"
+  },
+  {
+   "grup": "file",
+   "ad": "Lift",
+   "ogretir": "Dibe kaldır",
+   "besle": "file",
+   "olcu": "alan",
+   "tip": [
+    "lift",
+    "clear"
+   ],
+   "alan": [
+    0.46,
+    5.64,
+    0,
+    1.6
+   ],
+   "esik": [
+    4,
+    6,
+    8
+   ],
+   "nasil": "Top file dibinde, bandın altında. ORTA hızda yukarı kaydır: top yükselip rakibin dip çizgisine düşsün. Alttan vurulan clear da lifttir.",
+   "id": "lift",
+   "top": 12,
+   "vurus": [
+    0,
+    2.6
+   ]
   },
   {
    "id": "servis",
@@ -103,7 +340,55 @@
     8,
     10
    ],
-   "nasil": "Oyuncunun önünden yukarı YAVAŞ kaydır: top bandı az farkla geçip servis çizgisinin hemen arkasına düşsün."
+   "nasil": "Oyuncunun önünden yukarı YAVAŞ kaydır: top bandı az farkla geçip servis çizgisinin hemen arkasına düşsün.",
+   "grup": "file"
+  },
+  {
+   "grup": "file",
+   "ad": "Flick servis",
+   "ogretir": "Aynı duruş, dibe",
+   "besle": null,
+   "olcu": "servis",
+   "servis": "flick",
+   "alan": [
+    0.46,
+    5.64,
+    0,
+    1.5
+   ],
+   "esik": [
+    5,
+    7,
+    9
+   ],
+   "nasil": "Kısa servis duruşundan KISA ve SERT bir fiske: top rakibin başının üstünden servis kutusunun dibine düşsün.",
+   "id": "flick",
+   "top": 12
+  },
+  {
+   "grup": "orta",
+   "ad": "Drive",
+   "ogretir": "Düz ve hızlı",
+   "besle": "drive",
+   "olcu": "alan",
+   "tip": [
+    "drive"
+   ],
+   "gec": 0.6,
+   "alan": [
+    0.46,
+    5.64,
+    0.6,
+    4.4
+   ],
+   "esik": [
+    6,
+    9,
+    11
+   ],
+   "nasil": "Top göğüs hizasında geliyor. HIZLI ve düz kaydır: top fileyi alçak geçip orta-arka sahaya insin.",
+   "id": "drive",
+   "top": 12
   },
   {
    "id": "savunma",
@@ -117,21 +402,56 @@
     10,
     12
    ],
-   "nasil": "Antrenör smaç atıyor. Topu ya kısa blokla (parmağını aşağı çek) ya da derine kaldır: ortaya düşen top sayılmaz."
+   "nasil": "Antrenör smaç atıyor. Topu ya kısa blokla (parmağını aşağı çek) ya da derine kaldır: ortaya düşen top sayılmaz.",
+   "grup": "orta"
   },
   {
-   "id": "kill",
-   "ad": "File öldürme",
-   "ogretir": "Hız",
-   "besle": "gevsek",
-   "olcu": "kill",
-   "top": 12,
+   "grup": "orta",
+   "ad": "Blok",
+   "ogretir": "Smacı kısa karşıla",
+   "besle": "smash",
+   "olcu": "alan",
+   "tip": [
+    "block"
+   ],
+   "alan": [
+    0.46,
+    5.64,
+    4.7,
+    6.7
+   ],
    "esik": [
-    6,
-    9,
+    10,
+    11,
+    12
+   ],
+   "nasil": "Antrenör smaç atıyor. Parmağını AŞAĞI çek: raket topu yumuşak karşılasın, top filenin önüne düşsün.",
+   "id": "blok",
+   "top": 12
+  },
+  {
+   "grup": "orta",
+   "ad": "Push",
+   "ogretir": "Ön sahadan orta sahaya",
+   "besle": "yarim",
+   "olcu": "alan",
+   "tip": [
+    "push"
+   ],
+   "alan": [
+    0.46,
+    5.64,
+    1.6,
+    4.6
+   ],
+   "esik": [
+    8,
+    10,
     11
    ],
-   "nasil": "Top file üstünde gevşek kaldı. HIZLI ve sert kaydır: aşağı vur."
+   "nasil": "Top ön sahana göğüs hizasında geliyor. ORTA hızda kaydır (hız bandında Orta): raket topu düz ve yumuşak itsin, top rakibin orta sahasına düşsün.",
+   "id": "push",
+   "top": 12
   },
   {
    "id": "split",
@@ -145,7 +465,23 @@
     8,
     10
    ],
-   "nasil": "Antrenör vurduğu anda ekrana dokun (split step), sonra topa vur."
+   "nasil": "Antrenör vurduğu anda ekrana dokun (split step), sonra topa vur.",
+   "grup": "orta"
+  },
+  {
+   "grup": "orta",
+   "ad": "Çeşitle",
+   "ogretir": "Antrenör ne derse",
+   "besle": "cesit",
+   "olcu": "cesit",
+   "esik": [
+    8,
+    10,
+    11
+   ],
+   "nasil": "Antrenör her topu başka yere atıyor. Her topta başka bir vuruş seç ve içeri düşür: aynı vuruşu üst üste atarsan sayılmaz.",
+   "id": "cesit",
+   "top": 12
   }
  ]
 }

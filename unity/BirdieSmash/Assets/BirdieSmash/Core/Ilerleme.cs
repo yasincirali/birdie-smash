@@ -71,6 +71,20 @@ namespace BirdieSmash.Core
             int eski = DrilYildiz(id), y = Math.Max(0, Math.Min(3, yildiz)); if (y <= eski) return 0;
             Alt("antrenman")[id] = (double)y; return y - eski;
         }
+        // antrenmanGecmis (2026-10-30, vuruş laboratuvarı): {görev id: son 5 oturumun isabet yüzdesi}. Yıldız en iyi sonucu
+        // tutar; gelişimi bu satır gösterir (görev satırındaki küçük çizgi). 4 toptan kısa bırakılan oturum yazılmaz.
+        public const int GECMIS = 5;
+        public List<int> DrilGecmis(string id)
+        {
+            var l = new List<int>(); var o = diger.ContainsKey("antrenmanGecmis") ? Json.Obj(diger["antrenmanGecmis"]) : null; object v;
+            if (o != null && o.TryGetValue(id, out v) && v is List<object>) foreach (var x in (List<object>)v) if (x is double) l.Add(Math.Max(0, Math.Min(100, (int)(double)x)));
+            return l;
+        }
+        public void DrilGecmisEkle(string id, int isabet, int top)
+        {
+            if (top < 4) return; var l = DrilGecmis(id); l.Add((int)Math.Round(100.0 * isabet / top)); while (l.Count > GECMIS) l.RemoveAt(0);
+            var a = new List<object>(); foreach (var x in l) a.Add((double)x); Alt("antrenmanGecmis")[id] = a;
+        }
         // gunluk: {son: "YYYY-AA-GG" (ödülü alınan son gün), say: toplam kazanılan Günün maçı}. Seri tutulmaz (kural: seri yok).
         public string GunlukSon { get { var o = diger.ContainsKey("gunluk") ? Json.Obj(diger["gunluk"]) : null; object v; return o != null && o.TryGetValue("son", out v) ? v as string : null; } }
         public int GunlukSay { get { var o = diger.ContainsKey("gunluk") ? Json.Obj(diger["gunluk"]) : null; object v; return o != null && o.TryGetValue("say", out v) && v is double ? (int)(double)v : 0; } }

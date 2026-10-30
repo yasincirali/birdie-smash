@@ -1,7 +1,7 @@
 // Antrenman sayfası, görev kartı, Günün maçı kartı ve Usta yolu kartı (komple-oyun tasarımı §3.5–3.6, §3.2; adım 7–9,
 // 2026-10-26). Hepsi Oyna sekmesinden açılır; Usta kartı Kariyer haritasında Tur 4 sekmesinin altında da durur.
 // Antrenman (tam sayfa): en üstte Temel ders (15 adımlı etkileşimli antrenman, eski "Tam antrenman" kartı: davranışı aynı,
-// root.Antrenman), altında 8 görev satırı. Satırda görevin adı, ne öğrettiği, üç yıldızı (dolu/çerçeve) ve "2/3" yazısı:
+// root.Antrenman), altında görev satırları (2026-10-30: 21 görev, üç saha grubunda; satırda son 5 oturumun çizgisi). Satırda görevin adı, ne öğrettiği, üç yıldızı (dolu/çerçeve) ve "2/3" yazısı:
 // yıldız yalnız simgeyle okunmaz (HIG renk körlüğü). Satıra dokunmak görev kartını (alt sayfa) açar: nasıl yapılır, üç
 // yıldızın eşiği sayıyla, ödül kuralı ("yalnız yeni yıldız") ve Başla.
 // Günün maçı kartı: rakip (renk noktası + adı + tarzı), değiştirici (adı ve tek cümlelik kuralı), saha, uzunluk, ödülün
@@ -34,7 +34,12 @@ namespace BirdieSmash.Game
             // Temel ders: ilk açılıştaki antrenmanın tamamı (eski "Tam antrenman" kartı)
             var td = Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", L.T("Vuruş, servis, nefes") + " · " + L.T("15 adım, skor yok")); td.AddToClassList("tam-genislik"); c.Add(td);
             c.Add(Yazi(L.T("Her görev 12 top, skor yok. Antrenör topu besler, sen tek bir vuruşu çalışırsın. Yıldız en iyi sonucundur, geri alınmaz."), 13, "soluk"));
-            foreach (var d in Dril.Liste) c.Add(DrilSatir(d));
+            // 2026-10-30 vuruş laboratuvarı: görevler kortta çalıştığı yere göre gruplanır (arka saha, file önü, orta saha).
+            for (int g = 0; g < Dril.GRUP.Length; g++)
+            {
+                c.Add(Grup(L.T(Dril.GRUP_AD[g])));
+                foreach (var d in Dril.Liste) if (d.grup == Dril.GRUP[g]) c.Add(DrilSatir(d));
+            }
             AldatmaBolum(c);   // 2026-10-26 aldatıcı vuruşlar: kilitliler de görünür, ne açtığıyla (Game/UI/AldatmaListe)
             c.Add(Bosluk(24));
         }
@@ -48,9 +53,24 @@ namespace BirdieSmash.Game
             orta.Add(Yazi(L.T(d.ad), 16, "kalin"));
             orta.Add(Yazi(L.T(d.ogretir), 13, "soluk"));
             var yr = Satir("rakip-satir"); yr.pickingMode = PickingMode.Ignore; orta.Add(yr); yr.Add(UcYildiz((1 << y) - 1, 16)); var yy = Yazi(y + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy);
+            // İlerleme çizgisi: son 5 oturumun isabet yüzdesi küçük çubuklarla (en yenisi sağda, dolu limon) ve sayıyla
+            // (yalnız biçimle değil yazıyla da okunur). Yıldız gibi geri alınmaz bir şey değil, yalnız gidişatı gösterir.
+            var gec = pr.DrilGecmis(d.id); string gecYazi = null;
+            if (gec.Count > 0)
+            {
+                var gr = Satir("rakip-satir"); gr.pickingMode = PickingMode.Ignore; gr.style.alignItems = Align.FlexEnd; gr.style.marginTop = 4; orta.Add(gr);
+                for (int i = 0; i < gec.Count; i++)
+                {
+                    var b = new VisualElement(); b.pickingMode = PickingMode.Ignore; bool son = i == gec.Count - 1;
+                    b.style.width = 6; b.style.height = 3 + 15 * gec[i] / 100f; b.style.marginRight = 3; b.style.borderTopLeftRadius = b.style.borderTopRightRadius = 2;
+                    b.style.backgroundColor = son ? Kit.Hex("#d8ff5a") : new Color(1, 1, 1, .35f); gr.Add(b);
+                }
+                gecYazi = gec.Count > 1 ? L.T("Son {0} oturum: %{1} → %{2}", gec.Count, gec[0], gec[gec.Count - 1]) : L.T("Son oturum: %{0}", gec[0]);
+                var gy = Yazi(gecYazi, 12, "soluk"); gy.style.marginLeft = 6; gr.Add(gy);
+            }
             string durum = L.T(y >= 3 ? "Tamam" : y > 0 ? "Devam" : "Yeni");
             r.Add(Yazi(durum, 12, y >= 3 ? "durum-gecti" : y > 0 ? "durum-simdi" : "durum-kilit"));
-            Erisim.Etiket(kart, L.T("Görev") + ", " + L.T(d.ad) + ", " + L.T(d.ogretir) + ", " + L.T("{0}/3 yıldız", y) + ", " + durum, "dugme");
+            Erisim.Etiket(kart, L.T("Görev") + ", " + L.T(d.ad) + ", " + L.T(d.ogretir) + ", " + L.T("{0}/3 yıldız", y) + (gecYazi != null ? ", " + gecYazi : "") + ", " + durum, "dugme");
             return kart;
         }
 
