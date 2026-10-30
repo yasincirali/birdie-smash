@@ -258,6 +258,7 @@ namespace BirdieSmash.Game
             else
             {
                 Play(M);
+                if (root.geriT > 0 && !root.paused && root.ekran == Ekran.Oyun) GeriCiz();
                 if (root.paused) Pause(M);
                 if (root.ekran == Ekran.Bitti) Over(M);
             }
@@ -265,6 +266,27 @@ namespace BirdieSmash.Game
             PerdeCiz(); FpsCiz();
         }
 
+        // Geri sayım rakamı (GameRoot.geriT): Tüycükler dili, Baloo; her rakam büyüyüp oturur, hareketi azaltta yalnız görünür.
+        // Boy kısa kenara göre (her ekranda ortada, kesilmez: clipping yok, kutu yazının iki katı).
+        GUIStyle geriSt; float geriPx;
+        void GeriCiz()
+        {
+            float px = Mathf.Min(W, H) * .26f;
+            if (geriSt == null || Mathf.Abs(px - geriPx) > .5f)
+            {
+                geriPx = px; var f = fSiyah != null ? fSiyah : Resources.Load<Font>("fonts/Baloo2-ExtraBold");
+                geriSt = new GUIStyle(GUI.skin.label) { font = f, fontSize = Mathf.RoundToInt(px), alignment = TextAnchor.MiddleCenter, wordWrap = false, clipping = TextClipping.Overflow };
+                geriSt.padding = new RectOffset(0, 0, 0, 0);
+            }
+            float adim = GameRoot.GERI / 3; int n = Mathf.Clamp(Mathf.CeilToInt(root.geriT / adim), 1, 3);
+            float e = 1 - (root.geriT - (n - 1) * adim) / adim;   // bu rakamın 0..1 evresi
+            float k = Ayar.reduce ? 1 : 1.35f - .35f * (1 - (1 - Mathf.Clamp01(e / .35f)) * (1 - Mathf.Clamp01(e / .35f)));
+            float a = Ayar.reduce ? 1 : Mathf.Clamp01(e / .12f) * (e > .85f ? Mathf.Clamp01((1 - e) / .15f) : 1);
+            var r0 = new Rect(W / 2 - px, H * .42f - px, px * 2, px * 2);
+            var m = GUI.matrix; GUIUtility.ScaleAroundPivot(new Vector2(k, k), r0.center);
+            GUI.color = new Color(0, 0, 0, .45f * a); GUI.Label(new Rect(r0.x + 3, r0.y + 4, r0.width, r0.height), Sayi(n), geriSt);
+            GUI.color = new Color(.79f, .93f, .29f, a); GUI.Label(r0, Sayi(n), geriSt); GUI.color = Color.white; GUI.matrix = m;
+        }
         void Dim(float a) { GUI.color = new Color(0, 0, 0, a); GUI.DrawTexture(new Rect(-W, 0, W * 3, H), Texture2D.whiteTexture); GUI.color = Color.white; }   // panel kayarken kenar açık kalmasın
         float ColW { get { return Mathf.Min(rx - lx, 360 * u); } }
         float ColX { get { return (W - ColW) / 2; } }

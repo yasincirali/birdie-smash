@@ -54,7 +54,7 @@ namespace BirdieSmash.Game
             Debug.Log("EkranTuru başladı: " + dir);
             // Bekçi: ana döngü takılırsa nerede takıldığını günlükten görmek için 10 sn'de bir kare sayısı ve son adım.
             var bekci = new System.Threading.Thread(() => { for (int i = 0; i < 300; i++) { System.Threading.Thread.Sleep(10000); Debug.Log("EkranTuru bekçi: kare " + kare + " adım " + adim); } }); bekci.IsBackground = true; bekci.Start();
-            yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
+            GameRoot.geriKapali = true; yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
             if (kip == "magaza") { yield return MagazaTuru(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }   // 2026-10-29: mağaza kareleri (Game/MagazaTuru.cs)
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             yield return MenuTuru(); if (root.HudKatman != null) rap.AppendLine("açılış süresi (gerçek, CI yazılım render'ı): " + root.HudKatman.AcilisTani);
@@ -541,6 +541,8 @@ namespace BirdieSmash.Game
             root.StartMatch(false, false, false); botAcik = true; yield return Bekle(60); botAcik = false; root.Duraklat(); yield return Bekle(10); yield return Cek("duraklat");
             root.AnaMenu(); yield return Bekle(30); yield return Cek("menu_bekleyen_oyna"); rap.AppendLine("menu_bekleyen_oyna · " + ui.SahneDurumu + " · bekleyen " + root.bekleyen);
             root.MacaDon(); yield return Bekle(30); yield return Cek("bekleyen_devam"); rap.AppendLine("bekleyen_devam · " + ui.SahneDurumu);
+            // 2026-10-30 geri sayım: maç başı / duraklatmadan dönüş rakamı ("3" büyürken, "1" oturmuş)
+            root.geriT = GameRoot.GERI * .9f; yield return null; yield return Cek("geri_sayim_3"); root.geriT = GameRoot.GERI * .2f; yield return null; yield return Cek("geri_sayim_1"); root.geriT = 0;
             root.AnaMenu(); yield return Bekle(10);
         }
         // Yüksek top kadrajı (2026-10-27, yasin build 41 "Top yükseldiğinde kadrajdan çıkıyor"; Core/Kadraj). Gerçek bir clear
