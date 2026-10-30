@@ -25,6 +25,9 @@
 //    telefon hoparlöründe duyulmaz ama kulaklıkta "punch" verir, iOS hoparlöründe tiz katman zaten taşıyor.
 //  - Seyirci ralliye tepki verir: 8, 12, 16 … vuruşta yükselen "ooo" (gerilim), 10+ vuruşluk ralliden sonra alkış
 //    (ralli uzadıkça uzun ve gür); kısa ralli eski sevinç sesiyle kalır (her sayıda alkış ucuzlar).
+// 2026-10-30 menü müziği (Ar-Ge 30 Eki #1, yasin "1-2 yap", aday "B"): MenuMuzik aşağıda. Yalnız menüde; maçta müzik yok
+// (perde kapanırken söner, seyirci yükselir). Ayrı "Müzik" çipi (tuytop_muzik, varsayılan açık); başka uygulama ses
+// çalıyorsa başlamaz (iOS secondaryAudioShouldBeSilencedHint). Hareketi azalt müziği etkilemez (hareket değil ses).
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -69,10 +72,10 @@ namespace BirdieSmash.Game
             }
         }
         // HTML tone(): kazanç v'den d sonunda .0001'e üstel.
-        public void Tone(float t, float f, float d, string type, float v)
+        public void Tone(float t, float f, float d, string type, float v, Biquad flt = null)
         {
             int s0 = (int)(t * SR), n = (int)((d + .02f) * SR); float ph = 0;
-            for (int i = 0; i < n && s0 + i < buf.Length; i++) { float tt = i / (float)SR; ph += f / SR; float g = tt < d ? v * Mathf.Pow(.0001f / v, tt / d) : 0; buf[s0 + i] += Wave(type, ph) * g; }
+            for (int i = 0; i < n && s0 + i < buf.Length; i++) { float tt = i / (float)SR; ph += f / SR; float g = tt < d ? v * Mathf.Pow(.0001f / v, tt / d) : 0; float x = Wave(type, ph) * g; if (flt != null) x = flt.Run(x); buf[s0 + i] += x; }
         }
         // Frekansı değişen ton (düdük, gıcırtı, davul): fn(tt) Hz, gn(tt) kazanç.
         public void Sweep(float t, float d, string type, System.Func<float, float> fn, System.Func<float, float> gn)
@@ -104,6 +107,11 @@ namespace BirdieSmash.Game
     {
         AudioSource src, opSrc; readonly AudioSource[] vurusSrc = new AudioSource[4]; int vurusSira; AudioLowPassFilter suAlti; float suHedef = 22000; System.Random rnd = new System.Random(5); int seed = 11;
         AudioSource crowd; float crowdHedef; Swoosh swo;
+        // Menü müziği: döngü ilk açılışta arka iş parçacığında sentezlenir (≈1,1 M örnek), clip ana iş parçacığında kurulur.
+        // menude GameRoot'tan: menüdeyken ve perde menüyü örtmüyorken. Düzey .25: döngü .8 tepeye normalize, menü tık
+        // sesleri (.04–.06) üstünde duyulsun diye müzik tepesi ≈.2'de kalır.
+        public System.Func<bool> menude; AudioSource muzik; float[] muzikVeri; volatile bool muzikHazir; float muzikDuzey, digerT; bool muzikCalar, digerCaliyor;
+        const float MUZIK_DUZEY = .25f;
         readonly Dictionary<string, AudioClip[]> vses = new Dictionary<string, AudioClip[]>(); readonly Dictionary<string, AudioClip> cache = new Dictionary<string, AudioClip>();
         static readonly int[] PENTA = { 0, 2, 4, 7, 9 };
         class Mix { public float a, str, frm, crk, ring, hiss; }
@@ -132,6 +140,7 @@ namespace BirdieSmash.Game
             crowd = gameObject.AddComponent<AudioSource>(); crowd.clip = ks != null ? ks[0] : sy.Clip("seyirci", 3); crowd.loop = true; crowd.volume = 0; crowd.playOnAwake = false; crowd.Play();
             var sg = new GameObject("ugultu"); sg.transform.SetParent(transform, false); swo = sg.AddComponent<Swoosh>();
             Isit();   // açılış perdesi bu sıra bitene kadar kapalı kalır (Hazir)
+            var th = new System.Threading.Thread(() => { try { muzikVeri = MenuMuzik.TuyPop(); muzikHazir = true; } catch { } }); th.IsBackground = true; th.Start();
         }
         // döngü dikişinde tık olmasın: baş ve son karışır
         static void Yumusat(float[] b, int n) { for (int i = 0; i < n; i++) { float k = i / (float)n; b[i] = b[i] * k + b[b.Length - n + i] * (1 - k); } }
@@ -328,7 +337,28 @@ namespace BirdieSmash.Game
             float dt = Time.unscaledDeltaTime; bool sessiz = !Ayar.ses;
             crowd.volume += ((sessiz ? 0 : crowdHedef * 3.5f) - crowd.volume) * (1 - Mathf.Exp(-dt / .4f));   // Web Audio setTargetAtTime(.4)
             float tc = suHedef < 1000 ? .05f : .02f; suAlti.cutoffFrequency += (suHedef - suAlti.cutoffFrequency) * (1 - Mathf.Exp(-dt / tc));
+            MuzikIsle(dt);
         }
+        // Menü müziği: açılır .8 sn'de (yumuşak giriş), söner .35 sn'de (perdenin kapanışı ≈.4 sn; maç sesi müziğin üstüne
+        // binmesin). Sönünce duraklatılır, menüye dönünce kaldığı yerden sürer. Başka uygulamanın sesi 2 sn'de bir sorulur:
+        // oyuncu menüdeyken Spotify'ı açarsa müzik çekilir, kapatırsa geri gelir.
+        void MuzikIsle(float dt)
+        {
+            if (muzik == null)
+            {
+                if (!muzikHazir) return;
+                var c = AudioClip.Create("menu_muzik", muzikVeri.Length, 1, Synth.SR, false); c.SetData(muzikVeri, 0); muzikVeri = null;
+                muzik = gameObject.AddComponent<AudioSource>(); muzik.clip = c; muzik.loop = true; muzik.volume = 0; muzik.playOnAwake = false; muzik.spatialBlend = 0;
+            }
+            bool menu = menude != null && menude();
+            if (menu && (digerT -= dt) <= 0) { digerT = 2; digerCaliyor = Yerel.DigerSesCaliyor(); }
+            bool ac = menu && Ayar.muzik && Ayar.ses && !digerCaliyor;
+            muzikDuzey += ((ac ? MUZIK_DUZEY : 0) - muzikDuzey) * (1 - Mathf.Exp(-dt / (ac ? .8f : .35f)));
+            if (ac && !muzikCalar) { if (muzik.time > 0) muzik.UnPause(); else muzik.Play(); muzikCalar = true; }
+            else if (!ac && muzikCalar && muzikDuzey < .002f) { muzik.Pause(); muzikCalar = false; muzikDuzey = 0; }
+            muzik.volume = muzikDuzey;
+        }
+        void OnApplicationFocus(bool odak) { if (odak) digerT = 0; }
         public void CrowdStart() { crowdHedef = .01f; }
         public void CrowdSus() { crowdHedef = 0; }
 
@@ -361,6 +391,48 @@ namespace BirdieSmash.Game
                 float x = bq.Run((float)(r.NextDouble() * 2 - 1)) * g * 2;
                 for (int c = 0; c < ch; c++) data[i + c] = x;
             }
+        }
+    }
+
+    // "Tüy Pop" menü döngüsü (yasin 2026-10-30 seçimi; dinleme sayfasındaki aday B, /mnt/project-files/birdie-smash/muzik/ezgi.py
+    // aday_b'nin birebir kopyası): 112 BPM, 12 ölçü (≈25,7 sn), F–G–Em–Am ×3. Her vuruşta sinüs davul (130 → 42 Hz; güçlü
+    // vuruşta .30, zayıfta .18), zayıf vuruşta el çırpma (bandpass 1500 gürültü), vuruş arası sinüs bas; akor tonlarından
+    // sekizlik arpej (kare, .22 sn, alçak geçiren 2400 Hz); 5. ölçüden ezgi (üçgen) iki kez. Dosya yok, lisans sorusu yok.
+    // Dikişsiz: tampon 2 sn uzun sentezlenir, döngü sonunu aşan kuyruk başa eklenir (çalan nota başta sönerek sürer).
+    public static class MenuMuzik
+    {
+        static readonly Dictionary<char, int> NOT = new Dictionary<char, int> { { 'C', 0 }, { 'D', 2 }, { 'E', 4 }, { 'F', 5 }, { 'G', 7 }, { 'A', 9 }, { 'B', 11 } };
+        static int M(string s) { return 12 * (s[s.Length - 1] - '0' + 1) + NOT[s[0]] + (s.IndexOf('#') >= 0 ? 1 : 0); }
+        static float Hz(int m) { return 440 * Mathf.Pow(2, (m - 69) / 12f); }
+        public static float[] TuyPop()
+        {
+            float b = 60f / 112, L = 12 * 4 * b; int N = Mathf.RoundToInt(L * Synth.SR); var S = new Synth(L + 2, 21);
+            string[] bas = { "F2", "G2", "E2", "A2" }; string[][] ak = { new[] { "F3", "A3", "C4" }, new[] { "G3", "B3", "D4" }, new[] { "E3", "G3", "B3" }, new[] { "A3", "C4", "E4" } };
+            for (int k = 0; k < 12; k++)
+            {
+                float t0 = k * 4 * b; int kb = M(bas[k % 4]); var a = ak[k % 4];
+                for (int j = 0; j < 4; j++)
+                {
+                    float v = j % 2 == 0 ? .30f : .18f;
+                    S.Sweep(t0 + j * b, .25f, "sine", t => 130 * Mathf.Pow(42f / 130, Mathf.Min(1, t / .14f)), t => v * Mathf.Pow(.0001f / v, Mathf.Min(1, t / .22f)));
+                    if (j % 2 == 1) S.Burst(t0 + j * b, .12f, "bandpass", 1500, .20f, .9f, 3);
+                    S.Decay(t0 + j * b + .5f * b, Hz(kb), "sine", .26f, .30f);
+                }
+                int a0 = M(a[0]) + 12, a1 = M(a[1]) + 12, a2 = M(a[2]) + 12; int[] arp = { a0, a1, a2, a1, a0 + 12, a2, a1, a2 };
+                for (int j = 0; j < 8; j++) S.Tone(t0 + j * b / 2, Hz(arp[j]), .22f, "square", .05f, new Synth.Biquad("lowpass", 2400, .8f));
+            }
+            string[] ezgi = { "A5 1", "G5 .5", "E5 .5", "G5 1", "C6 1", "B5 .5", "A5 .5", "G5 1", "D5 2", "E5 .5", "G5 .5", "B5 1", "A5 .5", "G5 .5", "E5 1", "A5 .5", "C6 .5", "A5 1", "E5 2" };
+            float te = 4 * 4 * b;
+            for (int r = 0; r < 2; r++)
+                foreach (var e in ezgi)
+                {
+                    var p = e.Split(' '); float d = float.Parse(p[1], System.Globalization.CultureInfo.InvariantCulture) * b;
+                    S.Decay(te, Hz(M(p[0])), "triangle", .13f, Mathf.Min(.7f, d * 1.2f)); te += d;
+                }
+            var o = new float[N]; float tepe = 1e-6f;
+            for (int i = 0; i < N; i++) { float x = S.buf[i] + (i + N < S.buf.Length ? S.buf[i + N] : 0); o[i] = x; tepe = Mathf.Max(tepe, Mathf.Abs(x)); }
+            float g = .8f / tepe; for (int i = 0; i < N; i++) o[i] *= g;
+            return o;
         }
     }
 }

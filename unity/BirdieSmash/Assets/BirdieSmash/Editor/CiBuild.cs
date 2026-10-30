@@ -113,6 +113,8 @@ namespace BirdieSmash.EditorTools
             PlayerSettings.iOS.requiresFullScreen = true;
             PlayerSettings.iOS.appleEnableAutomaticSigning = false;   // imza fastlane match'ten; Xcode otomatik imzaya kalkışmasın
             PlayerSettings.statusBarHidden = true;
+            // Oyuncunun kendi müziği susmasın (2026-10-30 menü müziği): Ambient oturum; menü müziği başka ses varken çalmaz (Yerel).
+            PlayerSettings.muteOtherAudioSources = false;
             // Açılış (2026-10-26, yasin Ar-Ge önerisi "ekle"): Unity açılış ekranı kapalı (Unity 6 Personal'da serbest);
             // arka plan açılış perdesinin dış halkasıyla aynı renk (Hud PERDE_C[0,0] #a3234b), oyunun ilk karesine siyah
             // kare girmeden geçilsin. iOS açılış görüntüsü de aynı düz renk.

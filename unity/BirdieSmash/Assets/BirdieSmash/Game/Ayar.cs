@@ -18,7 +18,7 @@
 // HTML → Unity devri (Core/Devir): ilk açılışta kabuğun NSUserDefaults'a yazdığı HTML değerleri bir kez kabul edilir,
 // sonra tuytop_html_devir bayrağı konur. Bayraktan sonra kabuk (eski HTML build'i) bir daha yazmaz.
 // HTML'de karşılığı olmayan Unity anahtarları: tuytop_easy, tuytop_reduce (elle zorlanan; sistem ayarı ayrıca okunur),
-// tuytop_kamera ('yayin' | 'alcak' | 'ust'; 2026-10-26, yasin "kamera açısı seçtirilebilir"), tuytop_ses, tuytop_dil, tuytop_yazi ('sistem' | 'normal' | 'buyuk'). HTML'den gelen tuytop_fps ('1' = gizli kare hızı
+// tuytop_kamera ('yayin' | 'alcak' | 'ust'; 2026-10-26, yasin "kamera açısı seçtirilebilir"), tuytop_ses, tuytop_muzik ('1' varsayılan; 2026-10-30 menü müziği), tuytop_dil, tuytop_yazi ('sistem' | 'normal' | 'buyuk'). HTML'den gelen tuytop_fps ('1' = gizli kare hızı
 // göstergesi açık) ve tuytop_basarim (Game/Basarim) aynı adla okunur.
 // Hareketi azalt (2026-10-25 eşitlik turu): HTML yalnız sistemin "Hareketi Azalt"ını izliyordu; Unity ikisini birleştirir:
 // reduce = sistem || elle. Eski Unity kayıtlarında tuytop_reduce hep yazıldığı için 0 "zorlanmadı" sayılır.
@@ -41,7 +41,7 @@ namespace BirdieSmash.Game
 
     public static class Ayar
     {
-        public static bool easy = true, reduce, reduceSecim, reduceSistem, ses = true, kariyerModu, antrenman, sampiyon, fps, kosIpucu;
+        public static bool easy = true, reduce, reduceSecim, reduceSistem, ses = true, muzik = true, kariyerModu, antrenman, sampiyon, fps, kosIpucu;
         public static int target = 5, kariyer, bestRally, wins, gorev, puan; public static int devirSayisi = -1;
         // Kariyer ilerlemesi (yıldızlar, turlar). kariyerSecim: haritadan seçilen basamak (genel indeks); -1 = sıradaki.
         // Kaydedilmez: haritadan bir basamağı yeniden oynamak "sıradaki"yi değiştirmesin.
@@ -93,7 +93,7 @@ namespace BirdieSmash.Game
             // oyuncak'a dönüyordu. Artık geçerli model (MODELLER); FBX'i olmayan build'de yine oyuncak'a düşer.
             model = Str("tuytop_model", "oyuncak"); if (model == "sportif" || model == "aday") model = "rocketbox"; if (!ModelVar(model)) model = "oyuncak";
             kamera = Str("tuytop_kamera", "yayin"); if (System.Array.IndexOf(GameRoot.KAMERA_SIRA, kamera) < 0) kamera = "yayin";
-            reduceSecim = EskiInt("tuytop_reduce", 0) == 1; ses = EskiInt("tuytop_ses", 1) == 1; SistemOku();
+            reduceSecim = EskiInt("tuytop_reduce", 0) == 1; ses = EskiInt("tuytop_ses", 1) == 1; muzik = EskiInt("tuytop_muzik", 1) == 1; SistemOku();
             yazi = Str("tuytop_yazi", "sistem"); if (yazi != "normal" && yazi != "buyuk") yazi = "sistem"; fps = Str("tuytop_fps", "0") == "1";
             int pu; puan = int.TryParse(Str("tuytop_puan", "0"), out pu) ? Mathf.Clamp(pu, 0, Ozet.PUAN_AZAMI) : Ozet.PUAN_AZAMI;
             kariyerModu = Str("tuytop_mod", "s") == "k"; antrenman = Str("tuytop_antrenman", "0") == "1";
@@ -161,7 +161,7 @@ namespace BirdieSmash.Game
             kayit.Set("tuytop_v2", Json.Write(new Dictionary<string, object> { { "rally", (double)bestRally }, { "wins", (double)wins }, { "kariyer", (double)kariyer }, { "gorev", (double)gorev }, { "sampiyon", sampiyon } }));
             PlayerPrefs.SetString("tuytop_len", "len" + target); PlayerPrefs.SetString("tuytop_saha", saha); PlayerPrefs.SetString("tuytop_model", model); PlayerPrefs.SetString("tuytop_kamera", kamera);
             PlayerPrefs.SetString("tuytop_mod", kariyerModu ? "k" : "s"); if (antrenman) PlayerPrefs.SetString("tuytop_antrenman", "1");
-            PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0); if (kosIpucu) PlayerPrefs.SetInt("tuytop_kos_ipucu", 1);
+            PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0); PlayerPrefs.SetInt("tuytop_muzik", muzik ? 1 : 0); if (kosIpucu) PlayerPrefs.SetInt("tuytop_kos_ipucu", 1);
             PlayerPrefs.SetString("tuytop_dil", dil); PlayerPrefs.SetString("tuytop_puan", puan.ToString()); PlayerPrefs.SetString("tuytop_yazi", yazi); PlayerPrefs.SetString("tuytop_fps", fps ? "1" : "0");
             var rg = new Dictionary<string, object>(); foreach (var kv in RGOR) rg[kv.Key] = kv.Value; PlayerPrefs.SetString("tuytop_raket_gor", Json.Write(rg));
             var gv = new Dictionary<string, object>(); foreach (var kv in GORUNUM) gv[kv.Key] = kv.Value; foreach (var kv in KOZ) gv[kv.Key] = kv.Value; gv["ayk_gor"] = AYK_GOR; PlayerPrefs.SetString("tuytop_gorunum", Json.Write(gv));

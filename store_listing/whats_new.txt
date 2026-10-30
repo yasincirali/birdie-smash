@@ -1,5 +1,5 @@
 === UNITY ===
-Vuruş laboratuvarı ve yeni Soyunma odası: oyunu etkileyenler ve görünüş ayrı, şapkalar, gözlükler ve yeni saçlar.
+Vuruş laboratuvarı, yeni Soyunma odası (şapkalar, gözlükler, yeni saçlar) ve menü müziği.
 
 Bu sürümde yeni:
 - Antrenman 21 göreve çıktı, sahadaki yere göre üç grupta: Arka saha (savunma ve atak clear, düz ve çapraz drop, düz, çapraz ve dik smaç), File önü (file dibi, çapraz file, lift, kısa servis, flick), Orta saha (drive, blok, push, savunma, split step, Çeşitle).
@@ -10,6 +10,7 @@ Bu sürümde yeni:
 - 7 şapka (kep, ters kep, bere, kulaklık, tavşan kulağı, büyücü şapkası, şövalye kaskı) ve 5 yüz aksesuarı (güneş gözlüğü, yuvarlak gözlük, yüz boyası, bıyık, korsan bandı). Her oyuncu görünümünde takılır, Tüy ile alınır.
 - 5 yeni saç (Oyuncak 3B): Kirpi, İki örgü, Uzay topuzu, Pompadur, Ananas.
 - Açılış ekranında dönen top ortada, tam ve keskin.
+- Menüde müzik çalar; maç başlarken söner, seyirci sesi gelir. Ayarlar'da ayrı "Müzik" düğmesi var. Başka bir uygulamada müzik dinliyorsan oyunun müziği başlamaz.
 
 Nasıl denenir:
 1. Uygulamayı aç: açılıştaki tüy top ortada dönmeli, kenarı kesik görünmemeli.
@@ -20,7 +21,10 @@ Nasıl denenir:
 6. Görünüm > Şapka: bir şapkaya dokun, vitrinde başında görünmeli; Tüy yetiyorsa al. Yüz > Güneş gözlüğü için de aynısı.
 7. Ayarlar'dan Gerçekçi görünüme geçip şapka ve gözlüğün orada da göründüğüne bak.
 8. Görünüm > Ayakkabı: başka bir sahip olduğun ayakkabının görünüşünü seç; Oyun'daki taban değişmemeli.
-9. Garip bir şey olursa telefonu ve ekranı yaz.
+9. Menüde müzik duyulmalı. Oyna'ya bas: perde kapanırken müzik sönmeli, maçta müzik olmamalı. Ana menüye dönünce müzik geri gelmeli.
+10. Ayarlar > Ses bölümünde "Müzik açık"a bas: "Müzik kapalı" olmalı ve müzik susmalı; vuruş ve menü sesleri sürmeli.
+11. Müzik uygulamasında bir şarkı çalarken oyunu aç: şarkı sürmeli, oyunun müziği başlamamalı.
+12. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:
