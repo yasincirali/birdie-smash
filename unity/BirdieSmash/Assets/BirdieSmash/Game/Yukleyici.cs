@@ -64,7 +64,8 @@ namespace BirdieSmash.Game
         {
             if (!acik) return; float dt = Mathf.Min(.05f, Time.unscaledDeltaTime); bool rm = Ayar.reduce;
             bool poz = Time.frameCount - pozKare <= 1;   // Hud.Update bu Update'ten önce ya da sonra koşabilir: bir kare tolerans
-            if (TestFaz >= 0) faz = TestFaz; else if (!rm) faz += dt * (poz ? pozDonus : 2.4f);
+            float ys = Yerel.AcilisSure();   // yerel açılış perdesi açıkken faz onun süresinden (BirdieAcilis.mm, aynı 2,4 rad/sn)
+            if (TestFaz >= 0) faz = TestFaz; else if (ys >= 0 && !rm) faz = ys * 2.4f; else if (!rm) faz += dt * (poz ? pozDonus : 2.4f);
             // 2026-10-30: bekleme pozunda düzlem içi ±9° salınım kalktı (yasin: top "tam durmalı", yalnız kendi ekseninde dönmeli).
             float aci = poz ? pozAci : -44;   // ekranda mantar sağ alta bakar
             var yon = new Vector3(Mathf.Cos(aci * Mathf.Deg2Rad), Mathf.Sin(aci * Mathf.Deg2Rad), -.35f);   // biraz kameraya dönük: 3B okunsun

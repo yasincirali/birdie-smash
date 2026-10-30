@@ -122,7 +122,7 @@ namespace BirdieSmash.EditorTools
             // HTML'deki halkalı diskle açıldığı için açılış rengi yine dış halka #a3234b (Apple HIG: ilk kareyle aynı renk).
             var perde = new Color(0xa3 / 255f, 0x23 / 255f, 0x4b / 255f);
             PlayerSettings.SplashScreen.show = false; PlayerSettings.SplashScreen.showUnityLogo = false; PlayerSettings.SplashScreen.backgroundColor = perde;
-            IosAcilisRengi(perde);
+            IosAcilisRengi(perde); IosAcilisTopu();
             var ikon = AssetDatabase.LoadAssetAtPath<Texture2D>(Icon);
             // Unknown grubu = "Default Icon": Unity tüm iOS boylarını bundan üretir. fastlane ayrıca Flutter'ın
             // AppIcon.appiconset'ini Xcode projesine kopyalar (1024'lük ikon alfa kanalsız kalsın diye).
@@ -154,6 +154,26 @@ namespace BirdieSmash.EditorTools
             var b = so.FindProperty("iOSLaunchScreenBackgroundColor"); if (b != null) { b.colorValue = c; ok = true; }
             var bp = so.FindProperty("iOSLaunchScreeniPadBackgroundColor"); if (bp != null) bp.colorValue = c;
             if (!ok) Debug.LogWarning("iOS açılış rengi alanı yok"); so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Açılış ekranında dönen topun 0. karesi (2026-10-30, yasin "splash gifi ilk açıldığı andan itibaren başlamalı"): düz renk
+        // üstünde ortada, yerel perdenin (Plugins/iOS/BirdieAcilis.mm) ilk karesiyle aynı yer ve boy; dokunuştan sonraki ilk
+        // görüntüde top zaten durur, motor açılmadan dönmeye başlar. Görsel kare: ekranın kısa kenarının %50'si, top Hud
+        // geometrisiyle (merkezden .026·m yukarı, boy .3·m) içine çizilmiş (Editor/acilis_top.png, scratchpad üreteci).
+        // "Görsel ve arka plan (göreli)" tipi; alan adları public API'de olmadığı için SerializedObject. Bulunamazsa düz renk kalır.
+        const string AcilisTop = "Assets/BirdieSmash/Editor/acilis_top.png";
+        static void IosAcilisTopu()
+        {
+            var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(AcilisTop);
+            if (tex == null) { Debug.LogWarning("Birdie Smash: açılış topu yok (" + AcilisTop + ")"); return; }
+            var ps = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset");
+            if (ps == null || ps.Length == 0) return;
+            var so = new SerializedObject(ps[0]);
+            foreach (var ad in new[] { "iOSLaunchScreenType", "iOSLaunchScreeniPadType" }) { var t = so.FindProperty(ad); if (t != null) t.intValue = 1; else Debug.LogWarning("alan yok: " + ad); }   // 1 = ImageAndBackgroundRelative
+            foreach (var ad in new[] { "iOSLaunchScreenFillPct", "iOSLaunchScreeniPadFillPct" }) { var f = so.FindProperty(ad); if (f != null) f.floatValue = 50; else Debug.LogWarning("alan yok: " + ad); }
+            so.ApplyModifiedPropertiesWithoutUndo();
+            PlayerSettings.iOS.SetLaunchScreenImage(tex, iOSLaunchScreenImageType.iPhonePortraitImage);
+            PlayerSettings.iOS.SetLaunchScreenImage(tex, iOSLaunchScreenImageType.iPadImage);
         }
 
         // ProMotion: iPhone'da 60 Hz üstü için Info.plist'te CADisableMinimumFrameDurationOnPhone = true şart (Apple);
