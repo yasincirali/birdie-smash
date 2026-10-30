@@ -605,7 +605,19 @@ namespace BirdieSmash.Game
                 if (D_AD[i] == "se") { Ayar.yaziTest = 2; yield return Bekle(10); yield return DuyarliSayfalar(ui, "menu_se_x2_", true); Ayar.yaziTest = 0; yield return Bekle(10); }
                 yield return SonucKare("sonuc_" + D_AD[i], true, false, 0, "en"); rap.AppendLine("sonuc_" + D_AD[i] + " · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok"));
                 if (D_AD[i] == "se") { yield return SonucKare("sonuc_se_buyuk", true, false, 2, "en"); rap.AppendLine("sonuc_se_buyuk · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok")); }
-                root.StartMatch(false, false, false); botAcik = true; yield return Bekle(60); yield return Cek("oyun_" + D_AD[i]); botAcik = false; root.AnaMenu(); yield return Bekle(10);
+                root.StartMatch(false, false, false); botAcik = true; yield return Bekle(60); yield return Cek("oyun_" + D_AD[i]); botAcik = false;
+                // 2026-10-30 (yasin: sayıdan sonra çıkan yazı alttan üstten kesik): sayı yazısı tepe boyunda (≈0,2 sn), normal ve
+                // en büyük yazıda; Hud.Kirpilan = bu karelerde kutusuna sığmayıp büyütülen etiket sayısı.
+                for (int yz = 0; yz < (D_AD[i] == "se" ? 2 : 1); yz++)
+                {
+                    string yz0 = Ayar.yazi; if (yz == 1) { Ayar.yazi = "buyuk"; yield return Bekle(5); }   // maç HUD'u en çok ×1,3 (Ayar.YaziK)
+                    var hk = root.HudKatman; int k0 = Hud.Kirpilan;
+                    if (hk != null) { hk.Say(L.Cumle("Smaçla sayı aldın, çok sertti!"), Vector3.zero, Kit.Hex("#d8ff5a"), 1.6f, true); hk.Say(L.Cumle("Rakip bu sefer aldı"), Vector3.zero, Kit.Hex(Hud.RAKIP_HUD), 1.4f, true); }
+                    float t2 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t2 < .22f) yield return null;
+                    string ad = "oyun_" + D_AD[i] + (yz == 1 ? "_buyuk" : "") + "_sayi_yazi"; yield return Cek(ad); rap.AppendLine(ad + " · kırpılacak etiket " + (Hud.Kirpilan - k0));
+                    Ayar.yazi = yz0;
+                }
+                root.AnaMenu(); yield return Bekle(10);
             }
             Guvenli.test = false; yield return Boyut(w0, h0); ui.SekmeAc(Sekme.Oyna); yield return Bekle(10);
             rap.AppendLine("duyarlı özet · " + dKare + " menü karesi · " + dSorun + " sorun"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());

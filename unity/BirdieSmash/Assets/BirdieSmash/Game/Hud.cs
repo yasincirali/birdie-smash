@@ -209,8 +209,23 @@ namespace BirdieSmash.Game
             if (ring == null) { ring = Kit.RingTex(128, 5); ringK = Kit.RingTex(128, 3); ringKesik = Kit.RingKesikTex(128, 6, 12); glow = Kit.RadialTex(64); disk = Kit.RingTex(128, 128); bar = Solid(Color.white); }
         }
 
+        // 2026-10-30 (yasin: "maç içi sayılardan sonra çıkan yazı alttan üstten kesik gözüküyor ... başka boyuttaki ekranlarda da
+        // düzgün gözükmeli"): IMGUI etiketi kutusunun dışını kırpar. Kutular sabit (ör. 46·u) ama yazı boyu fu = u · YaziK ile ve
+        // vuruş yazısının büyüme çarpanıyla (×1,6 · 1,05) büyüyor; büyük yazıda satır yüksekliği kutuyu aşıp harfin tepesi ve
+        // altı kesiliyordu, iki satıra kırılan uzun yazı ise ortadan kırpılıyordu. Artık yazının gerçek yüksekliği kutudan
+        // büyükse kutu hizasına göre büyür (ortalı: iki yana, üst hizalı: aşağı, alt hizalı: yukarı). Kırpılma sayısı ekran
+        // turunun raporuna gider (Kirpilan).
+        public static int Kirpilan;
+        static Rect Sigdir(Rect r, string t, GUIStyle s)
+        {
+            float need = s.CalcHeight(Ic(t), r.width); if (need <= r.height + .5f) return r;
+            Kirpilan++; float ek = need - r.height; var a = s.alignment;
+            bool ust = a == TextAnchor.UpperLeft || a == TextAnchor.UpperCenter || a == TextAnchor.UpperRight, alt = a == TextAnchor.LowerLeft || a == TextAnchor.LowerCenter || a == TextAnchor.LowerRight;
+            return new Rect(r.x, ust ? r.y : alt ? r.y - ek : r.y - ek / 2, r.width, need);
+        }
         static void Shadowed(Rect r, string t, GUIStyle s, Color c)
         {
+            r = Sigdir(r, t, s);
             var o = GUI.color; GUI.color = new Color(0, 0, 0, c.a * .6f); GUI.Label(new Rect(r.x + 2, r.y + 2, r.width, r.height), t, s);
             GUI.color = c; GUI.Label(r, t, s); GUI.color = o;
         }
@@ -330,6 +345,7 @@ namespace BirdieSmash.Game
                 // 2026-10-26 r11: görev kartı ekranın üstünü kaplar; "Alana düşmedi" gibi yazı kartın düğmesinin üstüne biniyordu.
                 // Kartla çakışan yazı kartın hemen altına iner (blocks = bu karede çizilen kart ve düğmeler).
                 if (ogr) foreach (var bl in blocks) if (bl.width > (rx - lx) * .6f && yy < bl.yMax && yy + 46 * u > bl.yMin) yy = bl.yMax + 4 * u;
+                st = Sigdir(st, f.t, rx - lx);   // tek satır kalsın (iki satıra kırılınca skorun/kartın üstüne biniyordu)
                 Shadowed(new Rect(lx, yy, rx - lx, 46 * u), f.t, st, c);
             }
             if (ogrMsgT > 0 && ogrMsg != null) { var c = Kit.Hex("#d8ff5a"); c.a = Mathf.Clamp01(ogrMsgT * 2); Shadowed(new Rect(lx, H * .5f, rx - lx, 60 * u), ogrMsg, mid, c); }
