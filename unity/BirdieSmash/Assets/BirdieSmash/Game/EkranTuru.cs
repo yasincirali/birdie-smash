@@ -397,6 +397,8 @@ namespace BirdieSmash.Game
             root.DrilBitir(); { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 10 && root.ekran != Ekran.Bitti) yield return null; }
             // 2026-10-30 ilk top kartı (yasin: "ilk vuruşta yazılar çok yer kaplıyor"): görev başlar başlamaz, bot vurmadan
             botAcik = false; root.DrilBaslat("drop"); yield return Bekle(40); yield return Cek("gorev_ilk_top");
+            // 2026-10-30 görev gösterimi: ilk top vuruş yerinde durur, hareket canlanır (en çok 8 sn bekle)
+            { float tg0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - tg0 < 8 && !(root.match.ogr != null && root.match.ogr.dur)) yield return null; yield return Bekle(20); yield return Cek("gorev_gosterim"); rap.AppendLine("gorev_gosterim · dur " + (root.match.ogr != null && root.match.ogr.dur)); }
             botAcik = true; { float t1 = Time.realtimeSinceStartup; int n0 = root.match.drOlcumNo; while (Time.realtimeSinceStartup - t1 < 40 && root.match.drOlcumNo < n0 + 2) yield return null; }
             yield return Bekle(10); yield return Cek("gorev_lab_kart"); rap.AppendLine("gorev_lab_kart · ölçüm " + (root.match.drOlcum != null ? root.match.drOlcum.ad + " " + root.match.drOlcum.hedef : "yok"));
             root.DrilBitir(); float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 10 && root.ekran != Ekran.Bitti) yield return null;

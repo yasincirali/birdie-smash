@@ -680,7 +680,7 @@ namespace BirdieSmash.Game
             {
                 float b1 = i < sinir.Length ? sinir[i] : Match.OGR_MAX; var zr = new Rect(bx + bwid * b0 / Match.OGR_MAX, yy, bwid * (b1 - b0) / Match.OGR_MAX - 2 * u, 22 * u); bool hed = i == hb;
                 Fill(zr, hed ? new Color(.85f, 1, .35f, .28f) : new Color(1, 1, 1, .08f)); if (hed) Cerceve(zr, new Color(.85f, 1, .35f, .8f), 1.5f);
-                string ad = (hed ? "▸ " : "") + L.T(adlar[i]); GUI.Label(zr, ad, Glif(Sigdir(Stil(tiny, -1, hed ? FontStyle.Bold : FontStyle.Normal), ad, zr.width - 2), ad)); b0 = b1;
+                string ad = (hed ? "› " : "") + L.T(adlar[i]); GUI.Label(zr, ad, Glif(Sigdir(Stil(tiny, -1, hed ? FontStyle.Bold : FontStyle.Normal), ad, zr.width - 2), ad)); b0 = b1;
             }
             if (igne >= 0) { float ix = bx + bwid * Mathf.Min(igne, Match.OGR_MAX) / Match.OGR_MAX; Fill(new Rect(ix - 1.5f * u, yy - 4 * u, 3 * u, 30 * u), Color.white); }
         }
