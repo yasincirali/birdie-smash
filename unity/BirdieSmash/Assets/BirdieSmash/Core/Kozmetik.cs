@@ -88,7 +88,7 @@ namespace BirdieSmash.Core
                             sv = (int)Json.Num(d, "sv", 1), fiyat = (int)Json.Num(d, "fiyat", 0), bant = Json.Bool(d, "bant", true), garip = Json.Bool(d, "garip", false) });
                     }
                 if (l.Count == 0 || l[0].fiyat != 0 || l[0].sv != 1) throw new InvalidOperationException("Birdie Smash: karakter.json " + k + " ilk öğesi ücretsiz ve Sv 1 olmalı (varsayılan)");
-                v[k == "tipler" ? TIP : SAC] = l.ToArray();
+                v[k == "tipler" ? TIP : k] = l.ToArray();
             }
             var r = new Dictionary<string, RakipGorunum>();
             var so = Json.Obj(Json.Parse(KariyerVeri.Metin("stil"))); var ss = so != null && so.ContainsKey("stiller") ? Json.Obj(so["stiller"]) : null;

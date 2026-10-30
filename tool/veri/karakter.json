@@ -22,9 +22,9 @@
   {"id": "mohikan",   "ad": "Mohikan",      "sv": 15, "fiyat": 900, "varlik": "mohikan", "garip": true},
   {"id": "kirpi", "ad": "Kirpi", "sv": 3, "fiyat": 150, "varlik": "kirpi"},
   {"id": "iki_orgu", "ad": "İki örgü", "sv": 4, "fiyat": 200, "varlik": "iki_orgu"},
-  {"id": "uzay", "ad": "Uzay topuzu", "sv": 7, "fiyat": 350, "varlik": "uzay", "garip": true},
-  {"id": "pompadur", "ad": "Pompadur", "sv": 10, "fiyat": 500, "varlik": "pompadur", "garip": true},
-  {"id": "ananas", "ad": "Ananas", "sv": 12, "fiyat": 650, "varlik": "ananas", "garip": true}
+  {"id": "uzay", "ad": "Uzay topuzu", "sv": 7, "fiyat": 350, "varlik": "uzay"},
+  {"id": "pompadur", "ad": "Pompadur", "sv": 10, "fiyat": 500, "varlik": "pompadur"},
+  {"id": "ananas", "ad": "Ananas", "sv": 12, "fiyat": 750, "varlik": "ananas", "garip": true}
 ],
 "aksesuar_not": "2026-10-30 Soyunma › Görünüm (yasin onayı): şapka ve yüz aksesuarları YALNIZ görünüş (güç alanı yasak, Kozmetik kilitler), Tüy ve seviyeyle; gerçek para yok. Her modelde görünür: parçalar Unity'de kafa kemiğine bağlanan basit geometriler (Game/Aksesuar.cs), bant halkasından ölçülen baş çerçevesinde. Hacimli saç (afro, topuz, anime…) şapkanın altında kısa kesime döner. İlk öğe 'yok' ücretsiz varsayılan.",
 "sapka": [

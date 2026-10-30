@@ -723,7 +723,7 @@ static class BotMac
         // (1) veri: yalnız görünüş, ilk öğe ücretsiz varsayılan, başta 1–2 tip ücretsiz, fiyatlar makul, garip saç pahalı
         var veri = Json.Obj(Json.Parse(System.IO.File.ReadAllText("tool/veri/karakter.json")));
         string[] guc = { "etki", "guc", "kontrol", "hiz", "tatli", "kosu", "enerji", "toparla", "yor", "uzanma", "jumpTatli", "slice", "akis" };
-        foreach (var k in new[] { "tipler", "sac_model" }) foreach (var x in (List<object>)veri[k]) { var d = Json.Obj(x); foreach (var alan in guc) if (d.ContainsKey(alan)) Fail("kozmetikte güç alanı: " + k + "/" + Json.Str(d, "id", "?") + "." + alan); }
+        foreach (var k in new[] { "tipler", "sac_model", "sapka", "yuz" }) foreach (var x in (List<object>)veri[k]) { var d = Json.Obj(x); foreach (var alan in guc) if (d.ContainsKey(alan)) Fail("kozmetikte güç alanı: " + k + "/" + Json.Str(d, "id", "?") + "." + alan); }
         var T = Kozmetik.Liste(Kozmetik.TIP); var S = Kozmetik.Liste(Kozmetik.SAC);
         if (T.Length != 4 || T[0].id != "atlet" || T[0].varlik != null) Fail("4 tip, ilki Atlet (oyuncak.fbx)");
         int bedava = T.Count(t => t.fiyat == 0 && t.sv == 1); if (bedava < 1 || bedava > 2) Fail("başta 1–2 tip ücretsiz olmalı: " + bedava);
@@ -733,6 +733,12 @@ static class BotMac
         int garipMin = S.Where(o => o.garip).Select(o => o.fiyat).DefaultIfEmpty(0).Min(), sadeMax = S.Where(o => !o.garip).Select(o => o.fiyat).Max();
         if (S.Count(o => o.garip) < 2 || garipMin <= sadeMax) Fail("garip saçlar en pahalılar olmalı: " + garipMin + " ≤ " + sadeMax);
         if (S.Distinct().Count() != S.Select(o => o.id).Distinct().Count() || S.Where(o => o.varlik != null).Select(o => o.varlik).Distinct().Count() != S.Count(o => o.varlik != null)) Fail("saç kimlik/varlık tekrarı");
+        // (1b) şapka ve yüz aksesuarı (2026-10-30): ilki "yok" ücretsiz varsayılan, en az 7 şapka ve 5 yüz, fiyat kuralı aynı
+        var SA = Kozmetik.Liste(Kozmetik.SAPKA); var YU = Kozmetik.Liste(Kozmetik.YUZ);
+        if (SA.Length < 8 || YU.Length < 6 || SA[0].id != "yok" || YU[0].id != "yok" || SA[0].fiyat != 0 || YU[0].fiyat != 0) Fail("şapka/yüz: ilki 'yok' ücretsiz, en az 7 şapka ve 5 yüz");
+        foreach (var o in SA.Concat(YU)) if (o.fiyat < 0 || o.fiyat > 1000 || (o.sv == 1 && o.fiyat > 0) || o.paket != null) Fail("aksesuar fiyat/kapı: " + o.id);
+        { var ga = SvGear(14, 2000); var ha = ga.Hesap(); if (!Kozmetik.Al(ga, Kozmetik.SAPKA, "sovalye", "yok") || !Kozmetik.Al(ga, Kozmetik.YUZ, "gunes", "yok")) Fail("Sv 14'te şövalye kaskı ve güneş gözlüğü alınmalı");
+          var hb = ga.Hesap(); if (Gear.Cubuklar(ha).Zip(Gear.Cubuklar(hb), (p, q) => p - q).Any(v => v != 0)) Fail("aksesuar alımı gücü değiştirdi"); }
         // (2) kozmetik GearStats'a dokunmaz: aynı ekipmanla hesap birebir (seçim Ayar'da, Gear'de değil; Kozmetik.Al yalnız Tüy)
         var g0 = SvGear(30, 9000); var h0 = g0.Hesap();
         if (!Kozmetik.Al(g0, Kozmetik.SAC, "mohikan", "kisa") || g0.eko.tuy != 9000 - Kozmetik.Bul(Kozmetik.SAC, "mohikan").fiyat) Fail("Sv 30'da Mohikan alınmalı");

@@ -1,21 +1,26 @@
 === UNITY ===
-Açılış ve maça geçiş animasyonu yeniden eski (HTML) hâlinde: dönen gün batımı halkaları ve smaçla uçan top.
+Vuruş laboratuvarı ve yeni Soyunma odası: oyunu etkileyenler ve görünüş ayrı, şapkalar, gözlükler ve yeni saçlar.
 
 Bu sürümde yeni:
-- Uygulama açılırken ekran dönen halkalarla kaplı başlar, hazır olunca halkalar ortaya doğru küçülüp menüyü açar.
-- Oyna'ya basınca top hız çizgileriyle sol alttan sağ üste uçar, halkalar ortadan büyüyüp ekranı kapatır, maç hazır olunca küçülerek açılır.
-- Hazırlık uzarsa halkaların ortasında dönen tüy top ve "Hazırlanıyor…" yazısı görünür.
-- Maç içinde servis yazısı artık ortada tek satırlık küçük bir kutu; kortu kapatmıyor, alttan kesilmiyor.
-- Antrenman görevlerinde talimat yalnız ilk toptan önce açık; oynarken üstte yalnız görev adı, sayaç ve hız bandı kalır. Talimatı "?" açar, "Bitir" görevi bitirir.
-- Maç sonunda uçan Tüyler ve iki dilde yazı düzeltmeleri (önceki sürümden).
+- Antrenman 21 göreve çıktı, sahadaki yere göre üç grupta: Arka saha (savunma ve atak clear, düz ve çapraz drop, düz, çapraz ve dik smaç), File önü (file dibi, çapraz file, lift, kısa servis, flick), Orta saha (drive, blok, push, savunma, split step, Çeşitle).
+- Her topun ardından altta bir kart: vuruşun adı, hedefte mi ya da neden olmadı, fileyi kaç cm geçtiği, fileye ya da dip çizgiye uzaklığı ve hızı.
+- Son iki topun yolu kortta çizgi olarak kalır.
+- Görev satırında son 5 oturumun isabet çizgisi.
+- Soyunma odası iki bölüm: Oyun (tarz, ekipman, ayakkabı tabanı) ve Görünüm (beden, yüz, saç, şapka, ayakkabı, renk). Görünüm'deki hiçbir şey maçı etkilemez.
+- 7 şapka (kep, ters kep, bere, kulaklık, tavşan kulağı, büyücü şapkası, şövalye kaskı) ve 5 yüz aksesuarı (güneş gözlüğü, yuvarlak gözlük, yüz boyası, bıyık, korsan bandı). Her oyuncu görünümünde takılır, Tüy ile alınır.
+- 5 yeni saç (Oyuncak 3B): Kirpi, İki örgü, Uzay topuzu, Pompadur, Ananas.
+- Açılış ekranında dönen top ortada, tam ve keskin.
 
 Nasıl denenir:
-1. Uygulamayı tamamen kapatıp aç: önce gül rengi ekran, sonra dönen halkalar, ardından menü gelmeli; arada siyah ya da koyu mor kare olmamalı.
-2. Oyna'ya bas: top hız çizgileriyle uçmalı, halkalar ekranı kapatmalı, sonra açılıp maç başlamalı.
-3. Bir maçta servis beklerken alttaki kutuya bak: tek satır, küçük olmalı, yazı kesilmemeli.
-4. Antrenman > bir görev (ör. Köşe smacı): ilk toptan sonra üstte yalnız dar bir şerit kalmalı, hedef köşe görünmeli; "?" talimatı açmalı.
-5. Ayarlar > Erişilebilirlik > Hareketi Azalt açıkken açılışı dene: halkalar dönmeden yalnız belirip solmalı, top uçmamalı.
-6. Garip bir şey olursa telefonu ve ekranı yaz.
+1. Uygulamayı aç: açılıştaki tüy top ortada dönmeli, kenarı kesik görünmemeli.
+2. Oyna > Antrenman: görevler Arka saha, File önü, Orta saha başlıklarıyla gruplanmış olmalı.
+3. Bir görev oyna (ör. Düz drop): her vuruştan sonra altta kart çıkmalı (✓ ya da ✗, vuruşun adı, ölçüler); topun yolu kortta çizgi olarak kalmalı.
+4. Görevi bitirip listeye dön: o görevin satırında küçük çubuklar ve "Son oturum: %…" yazısı görünmeli.
+5. Soyunma odası: üstte yalnız Oyun ve Görünüm olmalı. Oyun'da en üstte tarz, en altta Ayakkabı tabanı olmalı.
+6. Görünüm > Şapka: bir şapkaya dokun, vitrinde başında görünmeli; Tüy yetiyorsa al. Yüz > Güneş gözlüğü için de aynısı.
+7. Ayarlar'dan Gerçekçi görünüme geçip şapka ve gözlüğün orada da göründüğüne bak.
+8. Görünüm > Ayakkabı: başka bir sahip olduğun ayakkabının görünüşünü seç; Oyun'daki taban değişmemeli.
+9. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:
