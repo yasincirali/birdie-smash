@@ -348,6 +348,9 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_TEN); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_ten");
             ui.SoyunmaSegment(2); ui.VitrinOdak(Vitrin.TUTUS, "drive"); yield return Bekle(40); yield return Cek("menu_" + ek + "yakin_tutus_forehand");
             ui.VitrinOdak(Vitrin.TUTUS, "bh_drive"); yield return Bekle(40); yield return Cek("menu_" + ek + "yakin_tutus_backhand");
+            // 2026-10-30 raket incelemesi: şaft ve boğaz (raket_koyu) da kopyada mı; dönüşün iki açısı
+            ui.RaketIncele(true); yield return Bekle(60); yield return Cek("menu_" + ek + "raket_incele"); yield return Bekle(45); yield return Cek("menu_" + ek + "raket_incele_2");
+            ui.RaketIncele(false); yield return Bekle(30);
             ui.SoyunmaSegment(0); yield return Bekle(10);
             ui.YuvaAc("raket"); yield return Bekle(20); yield return Cek("menu_" + ek + "yuva_raket"); ui.Geri(); yield return Bekle(5);
             ui.YuvaAc("tel"); yield return Bekle(20); yield return Cek("menu_" + ek + "yuva_kordaj"); ui.Geri(); yield return Bekle(5);
@@ -381,7 +384,9 @@ namespace BirdieSmash.Game
             root.DrilBaslat("kose"); botAcik = true; yield return Bekle(60 * 6); yield return Cek("gorev_kose_oyun");
             // 2026-10-30 vuruş laboratuvarı: düz drop oynanırken sonuç kartı ve top izi (bot ilk topları vurur)
             root.DrilBitir(); { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 10 && root.ekran != Ekran.Bitti) yield return null; }
-            root.DrilBaslat("drop"); botAcik = true; { float t1 = Time.realtimeSinceStartup; int n0 = root.match.drOlcumNo; while (Time.realtimeSinceStartup - t1 < 40 && root.match.drOlcumNo < n0 + 2) yield return null; }
+            // 2026-10-30 ilk top kartı (yasin: "ilk vuruşta yazılar çok yer kaplıyor"): görev başlar başlamaz, bot vurmadan
+            botAcik = false; root.DrilBaslat("drop"); yield return Bekle(40); yield return Cek("gorev_ilk_top");
+            botAcik = true; { float t1 = Time.realtimeSinceStartup; int n0 = root.match.drOlcumNo; while (Time.realtimeSinceStartup - t1 < 40 && root.match.drOlcumNo < n0 + 2) yield return null; }
             yield return Bekle(10); yield return Cek("gorev_lab_kart"); rap.AppendLine("gorev_lab_kart · ölçüm " + (root.match.drOlcum != null ? root.match.drOlcum.ad + " " + root.match.drOlcum.hedef : "yok"));
             root.DrilBitir(); float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 10 && root.ekran != Ekran.Bitti) yield return null;
             yield return Bekle(20); yield return Cek("gorev_sonuc"); botAcik = false;

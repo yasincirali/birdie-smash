@@ -72,7 +72,14 @@ namespace BirdieSmash.Game
             fig.ShowStatic(YER, 0, 0);
             // raket kopyası: rijit raket parçaları (deri ağı olmayan, etiketi raket kanalında) pivotun altına
             raketPivot = new GameObject("raket360").transform; raketPivot.SetParent(transform, false);
-            var parts = new List<Renderer>(); foreach (var r in fig.kanal[1]) if (!(r is SkinnedMeshRenderer)) parts.Add(r);
+            // 2026-10-30 (yasin: "raketi incele dediğimizde raketin iskeleti gözükmüyor, sadece başı ve grip kısmı"): kopya
+            // eskiden boyama kanalından (kanal[1]: cerceve/grip/tel/tel2) kuruluyordu; şaft ve boğaz (raket_koyu__koyu) kendi
+            // FBX rengini koruduğu için o kanalda değil, incelemede raket havada kopuk bir kafa ile sap gibi kalıyordu. Artık
+            // raketin bütün rijit parçaları (adı raket_ ile başlayan, deri ağı olmayan) alınır.
+            var parts = new List<Renderer>();
+            if (fig.Model != null) foreach (var r in fig.Model.GetComponentsInChildren<Renderer>(true))
+                if (!(r is SkinnedMeshRenderer) && r.enabled && r.gameObject.name.StartsWith("raket_")) parts.Add(r);
+            if (parts.Count == 0) foreach (var r in fig.kanal[1]) if (!(r is SkinnedMeshRenderer)) parts.Add(r);
             if (parts.Count > 0)
             {
                 var b = parts[0].bounds; foreach (var r in parts) b.Encapsulate(r.bounds);

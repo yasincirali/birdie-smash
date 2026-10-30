@@ -598,11 +598,14 @@ namespace BirdieSmash.Game
             string adimAnah = o.i + "/" + (a.dril != null ? a.dril.id : "");
             if (adimAnah != ogrAdimAnah) { ogrAdimAnah = adimAnah; ogrDetay = false; }
             bool ilkTop = a.dril != null || a.drill ? o.dene == 0 : o.n == 0 && o.miss == 0;
-            bool kompakt = a.bilgi == null && !ilkTop && !ogrDetay;
-            if (kompakt) return OgrKartDar(M, a, y, x, w, iw, bant, hb, canli, igne);
+            // 2026-10-30 (yasin: "ilk vuruşta da yazılar çok yer kaplıyor"): ilk top da dar karttır; tam kartın sayaç satırı,
+            // "neden" paragrafı ve ayrı Görevi bitir satırı yerine başlık satırının altında yalnız talimat (met) durur. Neden ve
+            // yıldız eşikleri "?" ile açılan tam kartta kalır.
+            bool kompakt = a.bilgi == null && !ogrDetay;
+            if (kompakt) return OgrKartDar(M, a, y, x, w, iw, bant, hb, canli, igne, ilkTop ? met : null);
             float h = 12 * u + 18 * u + 24 * u + h1 + 6 * u + h2 + (bant ? 34 * u : 0) + (canli != null ? 22 * u : 0) + 10 * u + BH + (a.bilgi != null ? BH + 8 * u : 0) + 10 * u;
             var r = new Rect(x, y, w, h); blocks.Add(r); GUI.Box(r, GUIContent.none, card);
-            if (a.bilgi == null && !ilkTop && Button(new Rect(x + w - 12 * u - BH, y + 6 * u, BH, BH), "−")) ogrDetay = false;
+            if (a.bilgi == null && Button(new Rect(x + w - 12 * u - BH, y + 6 * u, BH, BH), "−")) ogrDetay = false;
             float yy = y + 10 * u;
             GUI.Label(new Rect(x + 12 * u, yy, iw, 18 * u), say, Stil(left, Mathf.RoundToInt(11 * fu))); yy += 18 * u;
             GUI.Label(new Rect(x + 12 * u, yy, iw, 24 * u), L.T(a.bas), leftB); yy += 24 * u;
@@ -630,10 +633,12 @@ namespace BirdieSmash.Game
             if (igne >= 0) { float ix = bx + bwid * Mathf.Min(igne, Match.OGR_MAX) / Match.OGR_MAX; Fill(new Rect(ix - 1.5f * u, yy - 4 * u, 3 * u, 30 * u), Color.white); }
         }
         // Dar antrenman kartı: [başlık · sayaç] [?] [Bitir] tek satır (44 pt düğmeler), altında hız bandı ve canlı okuma.
-        float OgrKartDar(Match M, OgrAdim a, float y, float x, float w, float iw, bool bant, int? hb, string canli, float igne)
+        float OgrKartDar(Match M, OgrAdim a, float y, float x, float w, float iw, bool bant, int? hb, string canli, float igne, string met = null)
         {
             var o = M.ogr; float bw = BH, bitW = Mathf.Max(BH, btn.CalcSize(Ic(L.T("Bitir"))).x + 24 * u);   // düğmenin kendi yazı stiliyle (small ile ölçünce "Finis h" kırılıyordu)
-            float h = 8 * u + BH + (bant ? 30 * u : 0) + (canli != null ? 22 * u : 0) + 8 * u;
+            var ms = met != null && leftWrap != null ? Stil(leftWrap, Mathf.RoundToInt(12 * fu)) : null;   // leftWrap: çağıran OgrKart kurar (sarmalı)
+            float hm = ms != null ? ms.CalcHeight(Ic(met), iw) + 4 * u : 0;
+            float h = 8 * u + BH + hm + (bant ? 30 * u : 0) + (canli != null ? 22 * u : 0) + 8 * u;
             var r = new Rect(x, y, w, h); blocks.Add(r); Fill(r, new Color(9 / 255f, 16 / 255f, 17 / 255f, .62f));
             float yy = y + 8 * u, tw = iw - bw - bitW - 12 * u;
             string sayac = a.dril != null ? L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(o.dene, a.dril.top), a.dril.top, o.isabet) : a.drill ? L.T("Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : o.n + "/" + Match.OGR_TEKRAR;
@@ -642,6 +647,7 @@ namespace BirdieSmash.Game
             if (Button(new Rect(x + w - 12 * u - bitW - bw - 6 * u, yy, bw, BH), "?")) ogrDetay = true;
             if (Button(new Rect(x + w - 12 * u - bitW, yy, bitW, BH), "Bitir")) root.OgrGec();
             yy += BH;
+            if (ms != null) { GUI.Label(new Rect(x + 12 * u, yy + 2 * u, iw, hm), met, ms); yy += hm; }
             if (bant) { yy += 6 * u; HizBandi(a, hb.Value, igne, x + 12 * u, yy, iw); yy += 24 * u; }
             if (canli != null) { GUI.color = canli.StartsWith("✓") ? Kit.Hex("#d8ff5a") : canli.StartsWith("✗") ? Kit.Hex("#ffd27a") : Kit.Hex("#cfe3dc"); GUI.Label(new Rect(x + 12 * u, yy + 2 * u, iw, 20 * u), canli, Sigdir(leftB, canli, iw)); GUI.color = Color.white; }
             return y + h + 8 * u;

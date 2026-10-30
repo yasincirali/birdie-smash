@@ -98,6 +98,7 @@ namespace BirdieSmash.Game
             vt.kutuOran = w / h; vt.kutuAlt = float.IsNaN(alt.layout.height) ? .35f : Mathf.Clamp01((alt.layout.height + 8) / h);
         }
 
+        public void RaketIncele(bool ac) { RaketGorunum(ac); }   // EkranTuru
         // Raket görünümü: vitrin rakete geçer, gövde Görünüm segmentine (raketin renkleri orada); dönüşte segment kalır.
         void RaketGorunum(bool ac)
         {
