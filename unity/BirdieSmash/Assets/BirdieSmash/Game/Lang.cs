@@ -70,9 +70,12 @@ namespace BirdieSmash.Game
             kalip.Sort((a, b) => b.Key.ToString().Length.CompareTo(a.Key.ToString().Length));   // uzun (daha belirli) kalıp önce
         }
         // HTML Tr(k, ...a): anahtar çevrilir, sonra {i} yer tutucuları doldurulur.
+        // Ekran turu (2026-10-30 dil turu, yasin: "menülerde dillere göre butonları ve metinleri ... universal olmalı"): İngilizcede
+        // sözlükte olmayan anahtarlar (koddan değişkenle gelen adlar dahil) toplanır, rapora yazılır. Oyunda kapalı.
+        public static bool EksikTopla; public static readonly HashSet<string> Eksik = new HashSet<string>();
         public static string T(string k, params object[] a)
         {
-            string v = k; if (En) { Yukle(); string e; if (d.TryGetValue(k, out e)) v = e; }
+            string v = k; if (En) { Yukle(); string e; if (d.TryGetValue(k, out e)) v = e; else if (EksikTopla && k != null && k.Length > 1 && Eksik.Count < 500 && Regex.IsMatch(k, "[a-zçğıöşü]", RegexOptions.IgnoreCase)) Eksik.Add(k); }
             if (a != null && a.Length > 0) v = Regex.Replace(v, @"\{(\d+)\}", m => { int i = int.Parse(m.Groups[1].Value); return i < a.Length ? System.Convert.ToString(a[i]) : m.Value; });
             return v;
         }

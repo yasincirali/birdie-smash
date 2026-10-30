@@ -203,6 +203,9 @@ namespace BirdieSmash.Game
             if (tam != null) { SayfaKur(tam); sayfa.style.display = DisplayStyle.Flex; if (anim) Giris(sayfa); } else { sayfa.style.display = DisplayStyle.None; sayfa.Clear(); }
             string altS = gez.AcikAltSayfa;
             if (altS != null) { AltSayfaYenidenKur(altS); altKatman.style.display = DisplayStyle.Flex; if (anim) Giris(altSayfa); } else { altKatman.style.display = DisplayStyle.None; altKatman.Clear(); altSayfa = null; }
+            // Alt sayfa sekme çubuğunu örter (iOS sayfa kalıbı; 2026-10-30 dil turu: maç kartı, Hızlı maç, görev ve günün maçı
+            // sayfalarının alt düğmesi sekmelerin üstüne biniyordu, sekmeler de dokunuşu alıyordu: "dokunma alanı çakışıyor").
+            sekmeCubugu.style.visibility = altS != null ? Visibility.Hidden : Visibility.Visible;
             bool koyu = s != Sekme.Oyna || tam != null; kok.EnableInClassList("koyu", koyu);
             // 2026-10-26 gece: kök her sekmede opak (Oyna: mürekkep, salon fonu üstünde; diğerleri yön A a-bgnight #0B1130), tam
             // sayfa mürekkep. Satır içi (USS'te değil): r24'te USS'teki değişiklikle bütün sayfa biçimsiz çıktı, kök neden

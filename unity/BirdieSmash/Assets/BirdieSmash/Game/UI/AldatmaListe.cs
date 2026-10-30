@@ -29,7 +29,8 @@ namespace BirdieSmash.Game
             orta.Add(Yazi(L.T(t.ad), 16, "kalin"));
             orta.Add(Yazi(L.T(t.kisa), 13, "soluk"));
             string durum = acik ? "✓ " + L.T("Açık") : !svOk ? L.T("Sv {0}", t.sv) : L.T("Ekipman gerekli");
-            if (!svOk) { var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); var dy = Yazi(durum, 12, "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy); r.Add(dr); }
+            if (!svOk) { var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; dr.style.flexShrink = 0f;   // kilit + "Lv 15" daralmasın (2026-10-30 dil turu: İngilizce kabından taşıyordu)
+                dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); var dy = Yazi(durum, 12, "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy); r.Add(dr); }
             else r.Add(Yazi(durum, 12, acik ? "durum-gecti" : "durum-kilit"));
             string s1 = (svOk ? "✓ " : "✗ ") + L.T("Seviye") + ": " + (svOk ? L.T("Sv {0}", t.sv) : L.T("Sv {0} gerekli", t.sv));
             string s2 = (ekOk ? "✓ " : "✗ ") + L.T("Ekipman") + ": " + L.T(t.ekAd);
