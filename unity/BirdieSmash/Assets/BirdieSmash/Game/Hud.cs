@@ -962,7 +962,17 @@ namespace BirdieSmash.Game
         {
             p = Vector2.zero; boy = 0; aci = 0; donus = 0; al = 1; serbest = false; float W_ = Screen.width, H_ = Screen.height;
             if (perdeEvre == 0) return false;
-            if (perdeBek) { p = new Vector2(W_ / 2, H_ / 2 - Mathf.Min(W_, H_) * .026f); boy = Mathf.Min(W_, H_) * .26f; serbest = true; return true; }
+            // 2026-10-30 (yasin: "Açılış perdesi içerisindeki top kendi ekseni etrafında dönerek ve tam durması lazım"): açılışta
+            // top kapalı disk boyunca ortada durur ve kendi ekseninde döner (yer değiştirmez, sallanmaz); açılırken diskle birlikte
+            // küçülür. Geçişte (maça giriş) eskisi gibi yalnız bekleme uzarsa görünür. Boy tam piksel: RT kesirli dikdörtgene
+            // çizilince kenarları bulanıklaşıyordu.
+            bool acilisTop = perdeAcilis && (perdeEvre == 2 || perdeEvre == 3);
+            if (perdeBek || acilisTop)
+            {
+                float s = 1;
+                if (perdeEvre == 3) { float sc, a; DiskOlcek(out sc, out a); if (Ayar.reduce) al = a; else s = sc; }
+                p = new Vector2(Mathf.Round(W_ / 2), Mathf.Round(H_ / 2 - Mathf.Min(W_, H_) * .026f)); boy = Mathf.Round(Mathf.Min(W_, H_) * .3f * s); serbest = true; return boy > 2 && al > 0;
+            }
             if (perdeAcilis || perdeEvre != 1 || Ayar.reduce) return false;
             float t = perdeT / UCUS_SN; if (t >= 1) return false;
             p = Vector2.Lerp(UcusA, UcusB, EaseOut3(t)); var d = UcusB - UcusA;

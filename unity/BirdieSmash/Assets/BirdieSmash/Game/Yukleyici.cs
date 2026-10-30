@@ -3,7 +3,7 @@
 // HTML'de Blender'da çizilmiş 16 karelik eksen dönüşü vardı; Unity'de maçtaki 3B topun aynı ağı (ShuttleView.Feathers/
 // Cork/Lines) ayrı bir kamerayla RenderTexture'a çizilir (sahneden 500 m uzakta, kortu görmez). Logo pozu: mantar sağ
 // altta (44°), etek sol üstte; eksen dönüşü 2,4 rad/sn (HTML TS_HIZ: daha hızlısı göze geri dönüyor gibi görünüyordu),
-// üstüne düzlem içi ±9° salınım (1,2 sn). Hareketi azalt: dönme ve salınım yok, tek poz. Kamera yalnız görünürken açık.
+// üstüne düzlem içi ±9° salınım (1,2 sn; 2026-10-30 kalktı: top yerinde durur). Hareketi azalt: dönme yok, tek poz. Kamera yalnız görünürken açık.
 // 2026-10-27 perde v2 ve açılış anı (Hud): aynı top uçarken de kullanılır. Hud her kare Poz(yön, dönüş) yazar: ekrandaki
 // yön (mantar o yöne bakar; uçan top mantarı önde uçar) ve eksen dönüşü (gerçek tüy top uçarken kendi ekseninde döner).
 // Poz yazılmayan karede bekleme dönüşüne döner. Hareketi azaltta dönüş yine yok.
@@ -13,19 +13,24 @@ namespace BirdieSmash.Game
 {
     public class Yukleyici : MonoBehaviour
     {
-        static readonly Vector3 YER = new Vector3(-500, 0, 0);
-        public RenderTexture rt; Camera kam; Transform eksen, top; float faz, t; bool acik;
+        // 2026-10-30: Afis de (-500, 0, 0)'daydı; yükleyici kamerası afişin parçasını topun yanında çiziyordu (yasin: "top cismi
+        // kesik, tam ve net gözükmüyor"). Ayrı yer.
+        static readonly Vector3 YER = new Vector3(-620, 0, 0);
+        public RenderTexture rt; Camera kam; Transform eksen, top; float faz; bool acik;
         float pozAci, pozDonus; int pozKare = -10;
         public void Poz(float aciDerece, float donusRadSn) { pozAci = aciDerece; pozDonus = donusRadSn; pozKare = Time.frameCount; }
 
         public static Yukleyici Build(Transform root)
         {
             var g = new GameObject("yukleyici"); g.transform.SetParent(root, false); var y = g.AddComponent<Yukleyici>();
-            y.rt = new RenderTexture(256, 256, 16) { name = "yukleyici" };
+            // 512² + 4× MSAA (256² ve kenar yumuşatmasız: tam ekran perdenin %30'una büyütülünce bulanık ve basamaklıydı).
+            y.rt = new RenderTexture(512, 512, 16) { name = "yukleyici", antiAliasing = 4 };
             var cg = new GameObject("yukleyici_kamera"); cg.transform.SetParent(g.transform, false); y.kam = cg.AddComponent<Camera>();
             y.kam.targetTexture = y.rt; y.kam.clearFlags = CameraClearFlags.SolidColor; y.kam.backgroundColor = new Color(0, 0, 0, 0);
+            // Kadraj: top (boy L = .21, etek çapı .2) her açıda kareye sığsın. .62 m'de yarım yükseklik .14 idi, köşegen pozda
+            // etek kenardan kesiliyordu; .82 m'de .19 (topun en geniş yarı izdüşümü ~.15 + pay).
             y.kam.fieldOfView = 26; y.kam.nearClipPlane = .05f; y.kam.farClipPlane = 3; y.kam.enabled = false;
-            cg.transform.SetPositionAndRotation(YER + new Vector3(0, 0, -.62f), Quaternion.identity);
+            cg.transform.SetPositionAndRotation(YER + new Vector3(0, 0, -.82f), Quaternion.identity);
             var lg = new GameObject("yukleyici_isik"); lg.transform.SetParent(g.transform, false); lg.transform.position = YER + new Vector3(-.5f, .6f, -.8f);
             var l = lg.AddComponent<Light>(); l.type = LightType.Point; l.range = 4; l.intensity = 1.4f;
             y.eksen = new GameObject("eksen").transform; y.eksen.SetParent(g.transform, false); y.eksen.position = YER;
@@ -36,21 +41,24 @@ namespace BirdieSmash.Game
             var co = Kit.MeshObj("mantar", y.top, ShuttleView.Cork(), mantar); co.GetComponent<MeshRenderer>().sharedMaterials = new[] { mantar, serit };
             Kit.MeshObj("cizgiler", y.top, ShuttleView.Lines(), Kit.Unlit(new Color(.33f, .37f, .40f)));
             // topun ortası pivota: ağ mantardan (z=0) eteğe (−L) uzanır
-            y.top.localPosition = new Vector3(0, 0, ShuttleView.L * .45f);
+            // Ağırlık merkezi değil, görünen kütlenin ortası pivota: mantar ucundan (+Rc) etek ağzına (−L) orta nokta. Eksen
+            // dönüşü bu noktanın çevresinde: top yerinde döner, kayıyormuş gibi görünmez.
+            y.top.localPosition = new Vector3(0, 0, (ShuttleView.L - ShuttleView.Rc) * .5f);
             g.SetActive(false); return y;
         }
 
         public void Goster(bool on)
         {
-            if (on == acik) return; acik = on; gameObject.SetActive(on); kam.enabled = on; if (on) t = 0;
+            if (on == acik) return; acik = on; gameObject.SetActive(on); kam.enabled = on;
         }
 
         void Update()
         {
-            if (!acik) return; float dt = Mathf.Min(.05f, Time.unscaledDeltaTime); bool rm = Ayar.reduce; t += dt;
+            if (!acik) return; float dt = Mathf.Min(.05f, Time.unscaledDeltaTime); bool rm = Ayar.reduce;
             bool poz = Time.frameCount - pozKare <= 1;   // Hud.Update bu Update'ten önce ya da sonra koşabilir: bir kare tolerans
             if (!rm) faz += dt * (poz ? pozDonus : 2.4f);
-            float aci = poz ? pozAci : -44 + (rm ? 0 : 9 * Mathf.Sin(t * Mathf.PI / 1.2f));   // ekranda mantar sağ alta bakar
+            // 2026-10-30: bekleme pozunda düzlem içi ±9° salınım kalktı (yasin: top "tam durmalı", yalnız kendi ekseninde dönmeli).
+            float aci = poz ? pozAci : -44;   // ekranda mantar sağ alta bakar
             var yon = new Vector3(Mathf.Cos(aci * Mathf.Deg2Rad), Mathf.Sin(aci * Mathf.Deg2Rad), -.35f);   // biraz kameraya dönük: 3B okunsun
             eksen.rotation = Quaternion.LookRotation(yon.normalized, Vector3.forward * -1);
             top.localRotation = Quaternion.AngleAxis(faz * Mathf.Rad2Deg, Vector3.forward);
