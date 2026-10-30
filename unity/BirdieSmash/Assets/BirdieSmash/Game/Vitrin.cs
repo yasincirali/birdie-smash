@@ -87,7 +87,7 @@ namespace BirdieSmash.Game
                 foreach (var r in parts) { string t = PlayerView.Etiket(r.gameObject.name); if (t == "grip") grip = r.bounds.center; if (t == "tel") head = r.bounds.center; }
                 raketPivot.position = YER + new Vector3(0, 1.1f, 0);
                 var ic = new GameObject("ic").transform; ic.SetParent(raketPivot, false);
-                foreach (var r in parts) { var c = Instantiate(r.gameObject, r.transform.position, r.transform.rotation, ic); c.transform.localScale = r.transform.lossyScale; foreach (Transform ch in c.transform) Destroy(ch.gameObject); }
+                foreach (var r in parts) { var c = Instantiate(r.gameObject, r.transform.position, r.transform.rotation, ic); c.name = r.gameObject.name; c.transform.localScale = r.transform.lossyScale; foreach (Transform ch in c.transform) Destroy(ch.gameObject); }
                 // raketin ortası pivota, sap aşağı / kafa yukarı
                 foreach (Transform ch in ic) ch.position += raketPivot.position - b.center;
                 var ax = (head - grip).sqrMagnitude > 1e-6f ? (head - grip).normalized : Vector3.up; ic.localRotation = Quaternion.FromToRotation(ax, Vector3.up);
@@ -277,6 +277,9 @@ namespace BirdieSmash.Game
                 if (nv.sqrMagnitude > 1e-12f) yuzN = nv.normalized;
             }
         }
+        // 2026-10-30 r80: kopyalar "raket_tel__tel(Clone)" adını alıyordu, Etiket "tel(Clone)" döndü; hiçbir parça tanınmadı,
+        // yüz normali varsayılan (ileri) kaldı, parça kadrajları da tüm rakete düştü (kafa/kordaj yandan, grip/şaft yüzden göründü).
+        // Kopyanın adı aslınınki yapılır (yukarıda Instantiate).
         // Parça seç (null = tüm raket: eski 360° dönüş). parla: aynı parça yeniden seçilse de parlasın (şekil değişince).
         public void RaketParca(string p, bool parla = false)
         {
