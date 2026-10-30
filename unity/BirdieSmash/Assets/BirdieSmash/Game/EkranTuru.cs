@@ -697,12 +697,12 @@ namespace BirdieSmash.Game
                 VaryantSatir("vitrin ayk=" + a.id, root.vitrin.Fig, null, null, a.varlik ?? a.id, ref t);
             }
             // 2026-10-30 şapka ve yüz aksesuarları (Game/Aksesuar): yakın plan yüz; rapor satırı kökün dünya ölçeği (= baş yarıçapı)
-            // Dönme kapalı (Gerçekçi karesi gibi): dönen vitrin yüz karelerini arkadan yakalıyordu (r67), gözlük görünmüyordu.
+            // Dönme kapalı ve açı 30° (önden üç çeyrek): dönen/donan vitrin yüz karelerini arkadan yakalıyordu (r67, r69), gözlük görünmüyordu.
             bool aksRd = Ayar.reduce, aksRs = Ayar.reduceSecim; Ayar.reduce = Ayar.reduceSecim = true;
             ui.KarakterAc(UiKok.KAR_SAPKA); yield return Bekle(30);
-            foreach (var o in Kozmetik.Liste(Kozmetik.SAPKA)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.SAPKA, o.id); yield return Bekle(20); yield return Cek("model_vitrin_sapka_" + o.id); rap.AppendLine("vitrin sapka=" + o.id + " · " + AksTani()); }
+            foreach (var o in Kozmetik.Liste(Kozmetik.SAPKA)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.SAPKA, o.id); yield return Bekle(20); root.vitrin.a = 30; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_sapka_" + o.id); rap.AppendLine("vitrin sapka=" + o.id + " · " + AksTani()); }
             ui.KarakterAc(UiKok.KAR_TEN); yield return Bekle(30);
-            foreach (var o in Kozmetik.Liste(Kozmetik.YUZ)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.YUZ, o.id); yield return Bekle(20); yield return Cek("model_vitrin_yuz_" + o.id); rap.AppendLine("vitrin yuz=" + o.id + " · " + AksTani()); }
+            foreach (var o in Kozmetik.Liste(Kozmetik.YUZ)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.YUZ, o.id); yield return Bekle(20); root.vitrin.a = 30; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_yuz_" + o.id); rap.AppendLine("vitrin yuz=" + o.id + " · " + AksTani()); }
             Ayar.reduce = aksRd; Ayar.reduceSecim = aksRs;
             ui.SoyunmaSegment(0); yield return Bekle(5);
             // maçta: seçim olarak (Ayar.KOZ + ayakkabı modeli), GameRoot.Kur yolu; yakın plan önden ve arkadan
