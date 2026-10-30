@@ -308,12 +308,16 @@ namespace BirdieSmash.Game
         void ParcaPoz(out Vector3 cam, out Vector3 hedef)
         {
             hedef = raketPivot.position; cam = hedef + new Vector3(0, 0, raketBoy * 2.4f + .2f); Bounds b;
-            string et = parca == "kordaj" ? "tel" : parca != null ? PARCA_ET[parca][0] : null;   // kafa/çerçeve: çerçeve kutusu (T-bağlantı dahil)
+            // r81: kafa ve kordaj tel kutusuyla (çerçeve kutusu şaftı da kapsadığı için kafa küçük kalıyordu), çerçeve çerçeve kutusuyla
+            string et = parca == "kordaj" || parca == "kafa" ? "tel" : parca != null ? PARCA_ET[parca][0] : null;
             if (et == null || !parcaB.TryGetValue(et, out b)) return;
             var m = raketPivot.TransformPoint(b.center); var sz = b.size; float kay;
             // raket dikey: kutunun Y'si ekranda dikey; yatayda kalan en büyük eksen
-            float yy = sz.y * .5f * (parca == "grip" || parca == "saft" ? .62f : 1.12f), yx = Mathf.Max(sz.x, sz.z) * .5f * 1.15f;
-            if (parca == "grip" || parca == "saft") yx = Mathf.Max(yx, yy * .55f);
+            // r81 kadraj payı: kordaj ve kafa telden %40 geniş (çerçeve tüpü ve parıltı sığsın), şaft tamamı, grip boyunun %80'i
+            // ve yanında yer (yalnız siyah bir çubuk görünüyordu)
+            bool ince = parca == "grip" || parca == "saft";
+            float yy = sz.y * .5f * (parca == "grip" ? .8f : parca == "saft" ? 1.05f : 1.4f), yx = Mathf.Max(sz.x, sz.z) * .5f * 1.4f;
+            if (ince) yx = Mathf.Max(yx, yy * .45f);
             float d = Uzaklik(Mathf.Max(.02f, yy), Mathf.Max(.02f, yx), out kay);
             cam = m + new Vector3(0, .06f, 1).normalized * d; hedef = m - Vector3.up * kay;
         }
