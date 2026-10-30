@@ -301,7 +301,7 @@ namespace BirdieSmash.Game
             bittiDril = Dril.Oner(M, won, Ayar.ilerleme);
             // Özet (Ar-Ge 23 Eki #2): iki kart + ipucu; bittiBilgi artık "Ayrıntılar" ardında (Hud.Over).
             bittiKart = Ozet.Kartlar(M); object ia; string ik = Ozet.Ipucu(M, won, out ia);
-            bittiIpucu = ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
+            bittiIpucu = ik == null ? null : ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
             if (Ozet.PuanIste(won, kariyerIlk, Ayar.wins, Ayar.puan)) { CancelInvoke("PuanIste"); Invoke("PuanIste", 1.5f); }
             if (won) hud.Konfeti();
         }

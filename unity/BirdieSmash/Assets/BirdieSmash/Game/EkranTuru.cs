@@ -627,6 +627,8 @@ namespace BirdieSmash.Game
                     if (hk != null) { hk.Say(L.Cumle("Smaçla sayı aldın, çok sertti!"), Vector3.zero, Kit.Hex("#d8ff5a"), 1.6f, true); hk.Say(L.Cumle("Rakip bu sefer aldı"), Vector3.zero, Kit.Hex(Hud.RAKIP_HUD), 1.4f, true); }
                     float t2 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t2 < .22f) yield return null;
                     string ad = "oyun_" + D_AD[i] + (yz == 1 ? "_buyuk" : "") + "_sayi_yazi"; yield return Cek(ad); rap.AppendLine(ad + " · kırpılacak etiket " + (Hud.Kirpilan - k0));
+                    // 2026-10-30 Ar-Ge #1: Tüycükler dilinde duraklat ekranı her boyda (SE'de büyük yazıyla da)
+                    root.Duraklat(); yield return Bekle(5); yield return Cek("duraklat_" + D_AD[i] + (yz == 1 ? "_buyuk" : "")); root.Devam(); yield return Bekle(2);
                     Ayar.yazi = yz0;
                 }
                 root.AnaMenu(); yield return Bekle(10);
