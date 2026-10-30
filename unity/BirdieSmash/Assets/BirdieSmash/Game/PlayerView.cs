@@ -42,8 +42,9 @@ namespace BirdieSmash.Game
         [System.Serializable] class SacMeta { public string id; public bool bant = true; }
         // bant: kafa bandı halkası, bas__isaret'e göre model biriminde (dz yukarı, df ileri, r yarıçap; unity_fbx.py Blender'da ölçer).
         // yan/ust/on/arka: baş elipsoidi, r'ye oran (bant yüksekliğinde yan, ön, arka; bant merkezinden tepe). 0 = küre (1).
-        // Oyuncak başı yumurta (r65 ölçümü: ön 1,25r, arka 1,03r, yan ,83r, tepe ,74r): küre çerçevede şapka başın üstünde
-        // top gibi duruyor, gözlük/boya/bıyık başın içinde kalıyordu. Gerçekçi/Sade/Tüycük küreyle oturuyor, alan yok.
+        // Oyuncak başı yumurta: küre çerçevede (r66) gözlük/boya/bıyık başın içinde kalıyordu. Yalnız kafatası (ön 1,25r, arka
+        // 1,03r, yan ,83r, tepe ,74r; r67) şapkayı saçın içine gömdü: şapka saçın üstüne oturur, oranlar baş + kısa saçtan
+        // (yan ,92r, tepe 1,11r, arka 1,13r) küçük payla; ön yüzden (saçsız). Gerçekçi/Sade/Tüycük küreyle oturuyor, alan yok.
         [System.Serializable] public class BantMeta { public float dz, df, r, yan, ust, on, arka; }
         [System.Serializable] class Meta { public ClipMeta[] clips; public TipMeta tip; public SacMeta[] sac; public BantMeta bant; }
 
