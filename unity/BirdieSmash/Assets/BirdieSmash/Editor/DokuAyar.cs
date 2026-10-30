@@ -47,6 +47,9 @@ namespace BirdieSmash.EditorTools
                 if (ad.EndsWith("_mg")) return new Hedef { sinif = "maske", bicim = TextureImporterFormat.ASTC_6x6, boy = 512, mip = true, suzme = FilterMode.Trilinear, aniso = 1 };
                 return new Hedef { sinif = "karakter", bicim = TextureImporterFormat.ASTC_6x6, boy = 1024, mip = true, suzme = FilterMode.Trilinear, aniso = 1 };
             }
+            // açılış tüy topu (4×4 kare, 1200×1196): arayüz sınıfının 1024 sınırı kareleri 256'ya küçültürdü; perde topu küçük
+            // de çizildiği için mip açık (küçültmede pırıltı yok).
+            if (ad == "tuy_don") return new Hedef { sinif = "tuy", bicim = TextureImporterFormat.ASTC_4x4, boy = 2048, mip = true, suzme = FilterMode.Trilinear, aniso = 1, npotYok = true };
             return new Hedef { sinif = "arayuz", bicim = TextureImporterFormat.ASTC_4x4, boy = 1024, mip = false, suzme = FilterMode.Bilinear, npotYok = true };
         }
 

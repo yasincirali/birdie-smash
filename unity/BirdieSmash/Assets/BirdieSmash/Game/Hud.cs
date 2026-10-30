@@ -989,7 +989,7 @@ namespace BirdieSmash.Game
         // çizgileriyle (−.1W, .85H) → (1.1W, .12H) 280 ms'de uçar (mantar önde, ease-out). Kapalıyken halkalar döner; ses/sahne
         // hazır değilse .6 sn sonra ortada dönen top + "Hazırlanıyor…". Açılma 350 ms küçülme (ease-in-out).
         // Açılış (soğuk açılış): kapalı diskle başlar (iOS açılış rengi = dış halka #a3234b, CiBuild), en az .6 sn, sonra aynı küçülme.
-        // Hareketi azalt: ölçek/dönme/uçuş yok, 200 ms belirme ve 250 ms solma. Top maçtaki 3B tüy top (Yukleyici RT).
+        // Hareketi azalt: ölçek/dönme/uçuş yok, 200 ms belirme ve 250 ms solma. Top HTML'deki çizilmiş tüy top (Yukleyici.serit, 2026-10-30).
         bool perdeAcilis, kaynakVar; float acilisBek, perdeSabit = -1; Vector2 perdeKaynak;
         float acilisT0 = -1, acilisAcT = -1, acilisSonT = -1;   // ekran turu: gerçek açılışın süreleri (sn)
         public string AcilisTani { get { return acilisT0 < 0 ? "yok" : "kapalı " + (acilisAcT < 0 ? "?" : (acilisAcT - acilisT0).ToString("F2")) + " sn · toplam " + (acilisSonT < 0 ? "?" : (acilisSonT - acilisT0).ToString("F2")) + " sn (hedef ≥ .95: .60 + .35; ses geç hazırsa hazır + .35)"; } }
@@ -1071,7 +1071,24 @@ namespace BirdieSmash.Game
                     Cizgi(a, a - dir * l, Mathf.Max(1.5f, Lw * .018f), new Color(1, 1, 1, .8f));
                 }
             }
-            var o = GUI.color; GUI.color = new Color(1, 1, 1, al); GUI.DrawTexture(new Rect(p.x - boy / 2, p.y - boy / 2, boy, boy), y.rt); GUI.color = o;
+            var o = GUI.color; GUI.color = new Color(1, 1, 1, al);
+            if (y.serit != null) SeritCiz(y, p, boy * SERIT_BOY, serbest ? 44f : -aci, y.Faz);
+            else GUI.DrawTexture(new Rect(p.x - boy / 2, p.y - boy / 2, boy, boy), y.rt);
+            GUI.color = o;
+        }
+        // HTML tuyCiz ile aynı kare: 300×299 kare, mantar (39,36)'da, karede mantarın yönü −135° (sol üst). yon: ekrandaki yön
+        // (derece, y aşağı, saat yönü +; bekleme 44° = mantar sağ altta, HTML TS_LOGO). Kare indeksi eksen fazından: 16 tüy
+        // olduğu için 22,5°'de tekrar eder, 16 kare o aralığı böler. Top ortalanır: mantar, merkezden yön boyunca topun yarı
+        // boyu (.56 kare; mantar (39,36) → etek ucu ~(280,270)) ileride. HTML'deki +.2 boy kayması yok (yasin: "top ortada").
+        const float SERIT_BOY = 1f;   // çizilmiş top karenin ~%90.ı: RT dönemindeki topla aynı görünen boy (r61 karesi ~115 px / 390)
+        void SeritCiz(Yukleyici y, Vector2 p, float k, float yon, float faz)
+        {
+            const float AXP = Mathf.PI * 2 / 16; int fi = Mathf.FloorToInt(Mathf.Repeat(faz, AXP) / AXP * 16) % 16;
+            float s = k / 300f, r = yon * Mathf.Deg2Rad; var cork = p + new Vector2(Mathf.Cos(r), Mathf.Sin(r)) * .56f * k;
+            var m = GUI.matrix; GUIUtility.RotateAroundPivot(yon + 135f, cork);
+            var uv = new Rect((fi % 4) * .25f, 1 - (fi / 4 + 1) * .25f, .25f, .25f);
+            GUI.DrawTextureWithTexCoords(new Rect(cork.x - 39 * s, cork.y - 36 * s, 300 * s, 299 * s), y.serit, uv, true);
+            GUI.matrix = m;
         }
         // Halka dokuları. 2026-10-29: 512² ve kenar yumuşatmalı (HTML tuvali keskin çiziyordu; 256² ikili maske tam ekran
         // diskte basamaklı kenar ve dilim sınırı veriyordu, r58 karesi). Kenar ve dilim sınırı piksel uzaklığıyla harmanlanır.

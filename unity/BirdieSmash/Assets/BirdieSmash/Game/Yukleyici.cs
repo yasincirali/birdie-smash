@@ -16,6 +16,11 @@ namespace BirdieSmash.Game
         // 2026-10-30: Afis de (-500, 0, 0)'daydı; yükleyici kamerası afişin parçasını topun yanında çiziyordu (yasin: "top cismi
         // kesik, tam ve net gözükmüyor"). Ayrı yer.
         static readonly Vector3 YER = new Vector3(-620, 0, 0);
+        // 2026-10-30 (yasin: "maç içi değil, daha estetik; sanatsal ve göz doyurucu diye tasarlamıştık ilk halini"): açılış ve
+        // perdedeki top yeniden HTML'deki çizilmiş tüy top (Blender, beyaz kontur, fıstık yeşili bant, yarı saydam tüyler;
+        // HTML TUY_SPIN şeridi 16 × 300×299, burada 4×4 ızgara Resources/ui/tuy_don). Varsa Hud onu çizer ve 3B kamera hiç
+        // açılmaz; yoksa (eski kopya) 3B RT yedeği. Faz hesabı (dönüş, poz, hareketi azalt) aynı.
+        public Texture2D serit; public float Faz { get { return faz; } }
         public RenderTexture rt; Camera kam; Transform eksen, top; float faz; bool acik;
         float pozAci, pozDonus; int pozKare = -10;
         // Ekran turu (EkranTuru) için: >= 0 iken dönüş fazı sabit (rad). CI kare hızı düşük; akıcı GIF için faz kare kare yazılır.
@@ -46,12 +51,13 @@ namespace BirdieSmash.Game
             // Ağırlık merkezi değil, görünen kütlenin ortası pivota: mantar ucundan (+Rc) etek ağzına (−L) orta nokta. Eksen
             // dönüşü bu noktanın çevresinde: top yerinde döner, kayıyormuş gibi görünmez.
             y.top.localPosition = new Vector3(0, 0, (ShuttleView.L - ShuttleView.Rc) * .5f);
+            y.serit = Resources.Load<Texture2D>("ui/tuy_don");
             g.SetActive(false); return y;
         }
 
         public void Goster(bool on)
         {
-            if (on == acik) return; acik = on; gameObject.SetActive(on); kam.enabled = on;
+            if (on == acik) return; acik = on; gameObject.SetActive(on); kam.enabled = on && serit == null;
         }
 
         void Update()
