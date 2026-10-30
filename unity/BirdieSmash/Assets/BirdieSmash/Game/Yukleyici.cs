@@ -18,6 +18,8 @@ namespace BirdieSmash.Game
         static readonly Vector3 YER = new Vector3(-620, 0, 0);
         public RenderTexture rt; Camera kam; Transform eksen, top; float faz; bool acik;
         float pozAci, pozDonus; int pozKare = -10;
+        // Ekran turu (EkranTuru) için: >= 0 iken dönüş fazı sabit (rad). CI kare hızı düşük; akıcı GIF için faz kare kare yazılır.
+        public static float TestFaz = -1;
         public void Poz(float aciDerece, float donusRadSn) { pozAci = aciDerece; pozDonus = donusRadSn; pozKare = Time.frameCount; }
 
         public static Yukleyici Build(Transform root)
@@ -56,7 +58,7 @@ namespace BirdieSmash.Game
         {
             if (!acik) return; float dt = Mathf.Min(.05f, Time.unscaledDeltaTime); bool rm = Ayar.reduce;
             bool poz = Time.frameCount - pozKare <= 1;   // Hud.Update bu Update'ten önce ya da sonra koşabilir: bir kare tolerans
-            if (!rm) faz += dt * (poz ? pozDonus : 2.4f);
+            if (TestFaz >= 0) faz = TestFaz; else if (!rm) faz += dt * (poz ? pozDonus : 2.4f);
             // 2026-10-30: bekleme pozunda düzlem içi ±9° salınım kalktı (yasin: top "tam durmalı", yalnız kendi ekseninde dönmeli).
             float aci = poz ? pozAci : -44;   // ekranda mantar sağ alta bakar
             var yon = new Vector3(Mathf.Cos(aci * Mathf.Deg2Rad), Mathf.Sin(aci * Mathf.Deg2Rad), -.35f);   // biraz kameraya dönük: 3B okunsun
