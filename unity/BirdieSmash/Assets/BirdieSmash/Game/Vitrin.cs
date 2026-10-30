@@ -248,21 +248,33 @@ namespace BirdieSmash.Game
         static readonly Dictionary<string, float> PARCA_ACI = new Dictionary<string, float> { { "kafa", 12 }, { "cerceve", 55 }, { "saft", 70 }, { "grip", 80 }, { "kordaj", 0 } };
         void ParcaOlc(Transform ic)
         {
-            parcaB.Clear(); Renderer telR = null;
+            parcaB.Clear();
             foreach (var r in ic.GetComponentsInChildren<Renderer>())
             {
                 string e = PlayerView.Etiket(r.gameObject.name); if (e == "") continue; var bw = r.bounds;
                 var lb = new Bounds(raketPivot.InverseTransformPoint(bw.center), Vector3.zero);
                 foreach (var k in new[] { -1, 1 }) foreach (var l in new[] { -1, 1 }) foreach (var m in new[] { -1, 1 }) lb.Encapsulate(raketPivot.InverseTransformPoint(bw.center + Vector3.Scale(bw.extents, new Vector3(k, l, m))));
                 Bounds o; if (parcaB.TryGetValue(e, out o)) { o.Encapsulate(lb); parcaB[e] = o; } else parcaB[e] = lb;
-                if (e == "tel" && telR == null) telR = r;
             }
-            // kordaj yüzü: tel ağının en ince ekseni (pivot uzayında)
-            var mf = telR != null ? telR.GetComponent<MeshFilter>() : null;
-            if (mf != null && mf.sharedMesh != null)
+            // kordaj yüzü: tel ağının köşelerinin yatay (xz) dağılımında en dar yön (pivot uzayında; raket ekseni pivotun Y'si).
+            // 2026-10-30: ilk sürüm mesh kutusunun en ince eksenini alıyordu; ekran turunda kordaj ve kafa yakın planı raketi
+            // yandan (çizgi gibi), grip/şaft yakın planı yüzden gösterdi: o eksen yüzün içindeydi (90° kayma). Köşe dağılımı
+            // FBX eksen ve ölçek kuralından bağımsız.
+            double sxx = 0, szz = 0, sxz = 0, mx = 0, mz = 0; int n = 0; var pts = new List<Vector3>();
+            foreach (var r in ic.GetComponentsInChildren<MeshFilter>())
             {
-                var sz = mf.sharedMesh.bounds.size; int en = sz.x <= sz.y && sz.x <= sz.z ? 0 : sz.y <= sz.z ? 1 : 2; var ax = Vector3.zero; ax[en] = 1;
-                yuzN = raketPivot.InverseTransformDirection(telR.transform.TransformDirection(ax)).normalized;
+                string e = PlayerView.Etiket(r.gameObject.name); if ((e != "tel" && e != "tel2") || r.sharedMesh == null) continue;
+                foreach (var v in r.sharedMesh.vertices) pts.Add(raketPivot.InverseTransformPoint(r.transform.TransformPoint(v)));
+            }
+            foreach (var q in pts) { mx += q.x; mz += q.z; n++; }
+            if (n > 8)
+            {
+                mx /= n; mz /= n;
+                foreach (var q in pts) { double dx = q.x - mx, dz = q.z - mz; sxx += dx * dx; szz += dz * dz; sxz += dx * dz; }
+                // 2x2 kovaryansın küçük öz değerinin öz vektörü
+                double tr = sxx + szz, det = sxx * szz - sxz * sxz, l = tr / 2 - System.Math.Sqrt(System.Math.Max(0, tr * tr / 4 - det));
+                var nv = System.Math.Abs(sxz) > 1e-12 ? new Vector3((float)(l - szz), 0, (float)sxz) : (sxx < szz ? Vector3.right : Vector3.forward);
+                if (nv.sqrMagnitude > 1e-12f) yuzN = nv.normalized;
             }
         }
         // Parça seç (null = tüm raket: eski 360° dönüş). parla: aynı parça yeniden seçilse de parlasın (şekil değişince).

@@ -139,6 +139,8 @@ namespace BirdieSmash.Game
         void OdakDugmeleriKur()
         {
             if (vitrinOdak == null) return; vitrinOdak.Clear(); var vt = root.vitrin;
+            // raket tezgâhında figür görünmez: Yüz/Ayak/Tutuş anlamsız, parça rayı aşağıda (2026-10-30)
+            if (vt.hedefGec >= 1) return;
             var ad = new[] { "Yüz", "Ayak", "Tutuş" }; var od = new[] { Vitrin.YUZ, Vitrin.AYAK, Vitrin.TUTUS };
             for (int i = 0; i < 3; i++)
             {

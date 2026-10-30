@@ -351,7 +351,7 @@ namespace BirdieSmash.Game
             // 2026-10-30 raket incelemesi: şaft ve boğaz (raket_koyu) da kopyada mı; dönüşün iki açısı
             ui.RaketIncele(true); yield return Bekle(60); yield return Cek("menu_" + ek + "raket_incele"); yield return Bekle(45); yield return Cek("menu_" + ek + "raket_incele_2");
             // 2026-10-30 raket tezgâhı: her parça kendi kadrajında, sonra üç kafa şekli (kordaj iki renkli: teller şekle uyuyor mu)
-            foreach (var pr in new[] { "kafa", "cerceve", "saft", "grip", "kordaj" }) { ui.RaketParcaSec(pr); yield return Bekle(50); yield return Cek("menu_" + ek + "tezgah_" + pr); }
+            foreach (var pr in new[] { "kafa", "cerceve", "saft", "grip", "kordaj" }) { ui.RaketParcaSec(pr); yield return Bekle(90); yield return Cek("menu_" + ek + "tezgah_" + pr); }
             string k0 = Ayar.RGOR["kafa"], d0 = Ayar.RGOR["desen"], s0 = Ayar.RGOR["saft"];
             Ayar.RGOR["desen"] = "iki"; Ayar.RGOR["saft"] = "mavi";
             foreach (var sk in RaketSekil.SIRA)
