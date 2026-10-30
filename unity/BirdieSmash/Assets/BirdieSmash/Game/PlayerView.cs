@@ -87,6 +87,19 @@ namespace BirdieSmash.Game
             o = r.aykRenk != null ? Karakter.Oge("ayakkabi", r.aykRenk) : null; if (o != null) g.ayakkabi = Renk(o.renk);
             return g;
         }
+        // Uzak raketin kordajı (2026-10-30, yasin: "rakibin bazen raketi içi beyaz dolgu şeklinde gözüküyor"): maç kamerasından
+        // rakip ~10 m ötede; 22 + 21 tel arası (~6 mm) ekranda bir pikselden dar, çoklu örnekleme telleri tek bir beyaz yüzeye
+        // ortalıyor, raket dolu disk gibi görünüyordu (gölgesi de dolu). Gerçek yayında uzak kordaj ince bir pus: teller saydam
+        // (alfa .3, ışıksız) ve gölge düşürmez. Yalnız maçtaki rakipte; yakın plan (vitrin, afiş) ve senin raketin aynı kalır.
+        public void KordajSeyrek()
+        {
+            foreach (var r in model.GetComponentsInChildren<Renderer>(true))
+            {
+                string tag = Etiket(r.gameObject.name); if (tag != "tel" && tag != "tel2") continue;
+                var c = r.sharedMaterial != null && r.sharedMaterial.HasProperty("_Color") ? r.sharedMaterial.color : r.sharedMaterial != null && r.sharedMaterial.HasProperty("_BaseColor") ? r.sharedMaterial.GetColor("_BaseColor") : Color.white;
+                r.sharedMaterial = Kit.Clear(new Color(c.r, c.g, c.b, .3f)); r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
+        }
         public static PlayerView Build(Transform root, string model, bool isMe, Color forma, bool hakem = false, Gorunum gor = null)
         {
             var g = new GameObject(hakem ? "hakem" : isMe ? "ben" : "rakip"); g.transform.SetParent(root, false);

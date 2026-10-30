@@ -112,7 +112,7 @@ namespace BirdieSmash.Game
                 modelId = Ayar.model;
             }
             if (op != null) Destroy(op.gameObject);
-            var opR = Kit.Hex(Match.OpRenk(M.stil, Ayar.FORMA)); op = PlayerView.Build(transform, Ayar.model, false, opR, false, PlayerView.Rakip(M.stil, opR));   // 2026-10-26: rakibin tipi/saçı/ayakkabısı stil.json gorunum
+            var opR = Kit.Hex(Match.OpRenk(M.stil, Ayar.FORMA)); op = PlayerView.Build(transform, Ayar.model, false, opR, false, PlayerView.Rakip(M.stil, opR)); op.KordajSeyrek();   // 2026-10-26: rakibin tipi/saçı/ayakkabısı stil.json gorunum
             if (net != null) Destroy(net.gameObject); net = NetView.Build(transform, M.net);
             input.Reset(); lastW = 0;
         }
