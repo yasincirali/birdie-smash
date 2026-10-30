@@ -60,8 +60,10 @@ namespace BirdieSmash.Game
             public string tip, sacModel, aykModel;
             // 2026-10-30 Soyunma › Görünüm: şapka ve yüz aksesuarı kimlikleri (Kozmetik.SAPKA / YUZ; null ya da "yok" = takılı değil).
             public string sapka, yuz;
+            // 2026-10-30 Dolap › Raket: kafa şekli (RaketSekil; null/"oval" = FBX'in kendi kafası) ve şaft rengi (null = FBX rengi).
+            public string kafa; public Color? saft;
             // Sahnedeki figürü yeniden kurmak gerekip gerekmediğinin özeti (GameRoot, Vitrin).
-            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz; }
+            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + kafa + saft; }
         }
         static Color? Renk(string h) { return h != null ? Kit.Hex(h) : (Color?)null; }
         public static Gorunum Benim()
@@ -71,7 +73,8 @@ namespace BirdieSmash.Game
                 grip = Kit.Hex(Vitrin.RAK_RENK[r["grip"]]), tel = Kit.Hex(Vitrin.RAK_RENK[r["tel"]]), tel2 = Kit.Hex(Vitrin.RAK_RENK[r["desen"] == "iki" ? r["tel2"] : r["tel"]]),
                 ten = Renk(Ayar.GorunumRenk("ten")), sac = Renk(Ayar.GorunumRenk("sac")), ayakkabi = Renk(Ayar.GorunumRenk("ayakkabi")), gripCizgi = gs.gripDoku == "cizgi",
                 tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.AykGorunum, sapka = Ayar.KOZ[Kozmetik.SAPKA], yuz = Ayar.KOZ[Kozmetik.YUZ],
-                sort = Renk(Ayar.GorunumRenk("sort")), kumas = Ayar.gear != null ? Ayar.gear.kumas : null };
+                sort = Renk(Ayar.GorunumRenk("sort")), kumas = Ayar.gear != null ? Ayar.gear.kumas : null,
+                kafa = r["kafa"], saft = r["saft"] != "model" && Vitrin.RAK_RENK.ContainsKey(r["saft"]) ? Kit.Hex(Vitrin.RAK_RENK[r["saft"]]) : (Color?)null };
         }
         // Rakip (2026-10-26): tip, saç biçimi/rengi, ten ve ayakkabı stil.json'daki gorunum'dan (rakip kimliği: Blaze hep dikenli
         // kızıl saçlı). Forma ve raket bugünkü gibi; veri yoksa bugünkü görünüş.
@@ -83,6 +86,19 @@ namespace BirdieSmash.Game
             o = r.ten != null ? Karakter.Oge("ten", r.ten) : null; if (o != null) g.ten = Renk(o.renk);
             o = r.aykRenk != null ? Karakter.Oge("ayakkabi", r.aykRenk) : null; if (o != null) g.ayakkabi = Renk(o.renk);
             return g;
+        }
+        // Uzak raketin kordajı (2026-10-30, yasin: "rakibin bazen raketi içi beyaz dolgu şeklinde gözüküyor"): maç kamerasından
+        // rakip ~10 m ötede; 22 + 21 tel arası (~6 mm) ekranda bir pikselden dar, çoklu örnekleme telleri tek bir beyaz yüzeye
+        // ortalıyor, raket dolu disk gibi görünüyordu (gölgesi de dolu). Gerçek yayında uzak kordaj ince bir pus: teller saydam
+        // (alfa .3, ışıksız) ve gölge düşürmez. Yalnız maçtaki rakipte; yakın plan (vitrin, afiş) ve senin raketin aynı kalır.
+        public void KordajSeyrek()
+        {
+            foreach (var r in model.GetComponentsInChildren<Renderer>(true))
+            {
+                string tag = Etiket(r.gameObject.name); if (tag != "tel" && tag != "tel2") continue;
+                var c = r.sharedMaterial != null && r.sharedMaterial.HasProperty("_Color") ? r.sharedMaterial.color : r.sharedMaterial != null && r.sharedMaterial.HasProperty("_BaseColor") ? r.sharedMaterial.GetColor("_BaseColor") : Color.white;
+                r.sharedMaterial = Kit.Clear(new Color(c.r, c.g, c.b, .3f)); r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            }
         }
         public static PlayerView Build(Transform root, string model, bool isMe, Color forma, bool hakem = false, Gorunum gor = null)
         {
@@ -105,7 +121,7 @@ namespace BirdieSmash.Game
             {
                 PrefabAdi = prefab.name; modelAdi = DokuAdi(prefab.name, modelAd); model = Instantiate(prefab, yaw).transform; model.localPosition = Vector3.zero; model.localScale = Vector3.one * SCALE;
                 anim = model.GetComponentInChildren<Animation>();
-                Varyant(gor); Paint(gor);
+                Varyant(gor); Paint(gor); if (!hakem) RaketSekil.Uygula(model, gor.kafa);
                 if (anim != null && anim["idle"] != null) Sample("idle", 0, null, 0, 1);
                 Calibrate(); AltKatmanKur();
                 if (!hakem) aksesuar = Aksesuar.Kur(model, kHead, Vector3.up, bantMeta, gor.sapka, gor.yuz, gor.forma, gor.sac);
@@ -299,6 +315,7 @@ namespace BirdieSmash.Game
             M["karin"] = Kit.Lit(Color.Lerp(g.forma, Color.white, .6f), .3f);
             aykDoku = govdeTx;
             if (g.cerceve.HasValue) M["cerceve"] = Kit.Lit(g.cerceve.Value, .6f);
+            if (g.saft.HasValue) M["koyu"] = Kit.Lit(g.saft.Value, .45f);   // şaft, boğaz ve dip kapağı (raket_koyu__koyu)
             if (g.bant.HasValue) M["bant"] = Kit.Lit(g.bant.Value, .2f); if (g.bilek.HasValue) M["bilek"] = Kit.Lit(g.bilek.Value, .2f);
             if (g.grip.HasValue) M["grip"] = g.gripCizgi ? Kit.LitTex(g.grip.Value, CizgiDoku(), .1f) : Kit.Lit(g.grip.Value, .15f); if (g.tel.HasValue) M["tel"] = Kit.Lit(g.tel.Value, .5f); if (g.tel2.HasValue) M["tel2"] = Kit.Lit(g.tel2.Value, .5f);
             if (g.ten.HasValue) M["ten"] = Kit.Lit(g.ten.Value, .3f); if (g.sac.HasValue) M["sac"] = Kit.Lit(g.sac.Value, .2f); if (g.ayakkabi.HasValue) M["taban"] = Kit.Lit(g.ayakkabi.Value, .25f);

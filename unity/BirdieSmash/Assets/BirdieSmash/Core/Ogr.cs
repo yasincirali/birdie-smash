@@ -21,7 +21,7 @@ namespace BirdieSmash.Core
         public List<OgrAdim> liste; public bool kisa, dur, bitti, macaGec; public int i, n, miss, yildiz; public Shuttle top; public float bitisT, gecisT;
         public string son;   // son vuruşun okunuşu (HUD)
         public float sonSp = -1, sonT = -9; public string sonTip; public bool sonSlice;   // hız bandının iğnesi 2,2 sn son vuruşta kalır
-        public int dene, isabet; public string cagri, cagriSon; public float cagriT;   // "Antrenör ne derse"; görevde: top ve isabet sayısı
+        public int dene, isabet; public string cagri, cagriSon; public float cagriT; public bool gosterildi;   // "Antrenör ne derse"; görevde: top ve isabet sayısı
         public DrilTanim dril;   // antrenman görevi (Core/Dril); null = Temel ders
         public bool izsiz { get { var a = i < liste.Count ? liste[i] : null; return a != null && a.bilgi == null && !a.drill && n >= 1 && miss < 2; } }
     }
@@ -78,9 +78,39 @@ namespace BirdieSmash.Core
         bool OgrDurdur()
         {
             var a = OgrA(); if (a == null) return false; if (ogr.dur) return true;
-            if (a.servis != null || a.bilgi != null || a.drill || a.dril != null) return false;   // görevde oyun durmaz if (s == null || s.dead || s.from != "op" || ogr.top == s) return false;
+            // 2026-10-30: s/ogr.top denetimi bir birleştirmede yorumun içinde kalmıştı (1afe7e2a); geri alındı.
+            if (a.servis != null || a.bilgi != null || a.drill) return false; if (s == null || s.dead || s.from != "op" || ogr.top == s) return false;
+            // Görevde (vuruş laboratuvarı) oyun yalnız İLK topta bir kez durur ve hareket gösterilir (2026-10-30, yasin: "antrenmanda
+            // da vuruş için gereken aksiyonu göstermeli bir kere, sonrasında oyuncu denesin"); sonraki toplar durmadan gelir.
+            if (a.dril != null)
+            {
+                if (ogr.gosterildi || ogr.dene > 0 || a.iz == null) return false; Reach J; if (!ReachInfo(out J) || !DrilDur(a, J)) return false;
+                ogr.top = s; ogr.dur = true; ogr.gosterildi = true; return true;
+            }
             Reach I; if (!ReachInfo(out I) || !a.dur(I, s)) return false;
             ogr.top = s; ogr.dur = true; return true;
+        }
+        // Görevin gösterim topunda durma anı: Temel dersin aynı vuruştaki koşulu (OGR_ADIM dur).
+        bool DrilDur(OgrAdim a, Reach I)
+        {
+            string t = a.dril.olcu == "kill" ? "kill" : a.dril.olcu == "karsila" ? "block" : a.slice ? "clear" : a.tip != null && a.tip.Length > 0 ? a.tip[0] : null;
+            switch (t)
+            {
+                case "clear": case "smash": case "jump": return I.over || a.dril.besle == "orta" && !I.lunge;
+                case "drop": return a.dril.besle == "clear" ? I.over : !I.kill;
+                case "kill": return I.kill;
+                case "drive": return !I.over && !I.lunge && !I.kill;
+                case "lift": return !I.over && s.z < 1.4f;
+                default: return true;
+            }
+        }
+        // Görevin hareketi (HUD hayalet iz): Temel dersteki aynı vuruşun izi. Karışık görevlerde (split, çeşit) ve push'ta yok.
+        public static string DrilIz(DrilTanim d)
+        {
+            if (d.olcu == "servis") return (d.servis ?? "kisa") == "flick" ? "fiske" : "yavas";
+            if (d.olcu == "aldat") return "yay"; if (d.olcu == "kill") return "hizli"; if (d.olcu == "karsila") return "asagi";
+            if (d.olcu == "split" || d.olcu == "cesit" || d.tip == null || d.tip.Length == 0) return null;
+            switch (d.tip[0]) { case "clear": case "lift": return "uzun"; case "drop": return "yavas"; case "smash": case "jump": case "drive": return "hizli"; case "block": return "asagi"; default: return null; }
         }
         public bool OgrUygunCanli(OgrAdim a, string tip, bool slice)
         {

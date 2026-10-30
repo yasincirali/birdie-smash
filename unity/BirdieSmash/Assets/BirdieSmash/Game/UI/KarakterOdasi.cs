@@ -24,19 +24,22 @@ namespace BirdieSmash.Game
         // 2026-10-30 Görünüm segmenti (eski Karakter): Beden · Yüz · Saç · Şapka · Ayakkabı · Renk. Yüz = ten + yüz aksesuarı
         // (gözlük, bıyık, korsan bandı, yüz boyası); Şapka her modelde; Renk = forma, şort ve raket görünüşü (eski Kıyafet ve
         // eski Görünüm segmenti). Ayakkabı sayfası yalnız görünüşü seçer, taban Oyun'da. Sabitlerin değeri korunur (EkranTuru).
-        static readonly string[] KAR_AD = { "Beden", "Saç", "Ayakkabı", "Yüz", "Renk", "Şapka" };
-        public const int KAR_TIP = 0, KAR_SAC = 1, KAR_AYK = 2, KAR_TEN = 3, KAR_KIYAFET = 4, KAR_SAPKA = 5;
+        // 2026-10-30 Dolap (öneri artifact seçenek A): kategori şeridi vitrinin hemen altında, sabit (gövde kayar); Raket kendi
+        // kategorisi (KAR_RAKET): seçilince vitrin raket tezgâhına geçer, parça şeridi (Kafa şekli · Çerçeve · Şaft · Grip ·
+        // Kordaj) kamerayı o bölgeye götürür. Renk sayfası artık yalnız forma, şort ve takılı kıyafet.
+        static readonly string[] KAR_AD = { "Beden", "Saç", "Ayakkabı", "Yüz", "Forma", "Şapka", "Raket" };
+        public const int KAR_TIP = 0, KAR_SAC = 1, KAR_AYK = 2, KAR_TEN = 3, KAR_KIYAFET = 4, KAR_SAPKA = 5, KAR_RAKET = 6;
         // Alt sayfalar modele göre (2026-10-27, yasin: "Gerçekçi de vücut özellikleri değil de sadece aksesuarlar değişmeli
         // kafa bandı forma bileklik ayakkabı şort tişört raket"): Gerçekçi'de beden/yüz/saç tek, Tip/Saç/Ten sayfası yok;
         // Ayakkabı (beş model görünür) ve Kıyafet (forma rengi + kumaşı, şort rengi, kafa bandı, bileklik, raket). Sade'de beden
         // ve saç biçimi tek; Ayakkabı (renk görünür, model görünmez: kart söyler), Kıyafet ve Ten (ten + saç rengi düz renk
         // parçalarda görünür). Oyuncak 3B'nin dört sayfası aynen. Tüycük (2026-10-29): beden, yüz ve perçem tek; ten ve saç yok
         // (gövdenin rengi forma rengi) → Ayakkabı (beş model görünür) ve Kıyafet (forma = tüy rengi, bant, bileklik, raket; şort yok).
-        public static int[] KarSayfalar() { return Ayar.VaryantGorunur ? new[] { KAR_TIP, KAR_TEN, KAR_SAC, KAR_SAPKA, KAR_AYK, KAR_KIYAFET } : new[] { KAR_TEN, KAR_SAPKA, KAR_AYK, KAR_KIYAFET }; }
+        public static int[] KarSayfalar() { return Ayar.VaryantGorunur ? new[] { KAR_TIP, KAR_TEN, KAR_SAC, KAR_SAPKA, KAR_AYK, KAR_KIYAFET, KAR_RAKET } : new[] { KAR_TEN, KAR_SAPKA, KAR_AYK, KAR_KIYAFET, KAR_RAKET }; }
         static int KarGecerli(int a) { var l = KarSayfalar(); return System.Array.IndexOf(l, a) >= 0 ? a : l[0]; }
 
         // EkranTuru için: Karakter segmentinde alt sayfa aç (bu modelde olmayan sayfa istenirse modelin ilk sayfası).
-        public void KarakterAc(int alt) { SegmentBirak(); karAlt = KarGecerli(Mathf.Clamp(alt, 0, KAR_SAPKA)); SoyunmaSegment(SEG_KARAKTER); KarakterOdakAyarla(); SoyunmaGovdeKur(false); }
+        public void KarakterAc(int alt) { SegmentBirak(); karAlt = KarGecerli(Mathf.Clamp(alt, 0, KAR_RAKET)); SoyunmaSegment(SEG_KARAKTER); KarakterOdakAyarla(); KategoriKur(); SoyunmaGovdeKur(false); }
         public void VitrinOdak(int o, string klip = null) { root.vitrin.Odak(o, klip); SoyunmaGovdeKur(true); }
         // EkranTuru için: bir öğeyi vitrinde dene (kat: Kozmetik.TIP, Kozmetik.SAC ya da "ayakkabi").
         public void KarakterDene(string kat, string id) { Dene(kat, id); }
@@ -49,12 +52,95 @@ namespace BirdieSmash.Game
         }
         bool DenemeVar() { var vt = root.vitrin; return vt.deneTip != null || vt.deneSac != null || vt.deneAyk != null || vt.deneSapka != null || vt.deneYuz != null; }
         void DenemeSil() { var vt = root.vitrin; vt.deneTip = vt.deneSac = vt.deneAyk = vt.deneSapka = vt.deneYuz = null; }
-        void KarakterOdakAyarla() { var vt = root.vitrin; if (vt != null) vt.Odak(karAlt == KAR_SAC || karAlt == KAR_SAPKA || karAlt == KAR_TEN ? Vitrin.YUZ : karAlt == KAR_AYK ? Vitrin.AYAK : Vitrin.TAM); }
+        // Kategori kamerayı çağırır (araştırma: her kategorinin bir kadrajı); Raket vitrini tezgâha geçirir, diğerleri figüre döndürür.
+        void KarakterOdakAyarla()
+        {
+            var vt = root.vitrin; if (vt == null) return;
+            if (karAlt == KAR_RAKET) { vt.Odak(Vitrin.TAM); vt.hedefGec = 1; vt.RaketParca(raketParca); return; }
+            vt.hedefGec = 0; vt.Odak(karAlt == KAR_SAC || karAlt == KAR_SAPKA || karAlt == KAR_TEN ? Vitrin.YUZ : karAlt == KAR_AYK ? Vitrin.AYAK : Vitrin.TAM);
+        }
+
+        // Kategori şeridi (vitrinin altında, sabit): seçili ✓ + zemin, ekran okuyucuda "sekme, seçili". 7 kategori 4 + 3 satır.
+        void KategoriKur()
+        {
+            if (soyunmaSegment == null) return; soyunmaSegment.Clear(); karAlt = KarGecerli(karAlt);
+            foreach (int i in KarSayfalar())
+            {
+                int ii = i; var d = Cip(L.T(KAR_AD[i]), karAlt == i, () => KategoriSec(ii));
+                d.AddToClassList("segment-cip"); d.AddToClassList("dar-cip"); Sigdir(d); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; soyunmaSegment.Add(d);
+            }
+        }
+        void KategoriSec(int i)
+        {
+            if (karAlt == i) { if (i == KAR_RAKET && raketParca != null) { raketParca = null; root.vitrin.RaketParca(null); SoyunmaGovdeKur(true); } return; }
+            karAlt = i; var vt = root.vitrin; bool d0 = DenemeVar(); DenemeSil(); if (d0) vt.Yenile(); Tik();
+            KarakterOdakAyarla(); KategoriKur(); SoyunmaGovdeKur(false);
+        }
+
+        // ---- Raket tezgâhı (2026-10-30) ----
+        // Parça şeridi: Tüm raket · Kafa şekli · Çerçeve · Şaft · Grip · Kordaj. Seçilen parça vitrinde kadraja gelir ve bir kez
+        // parlar (Vitrin.RaketParca); rakette bir parçaya dokunmak da onu seçer (kısayol, tek yol değil). Seçenekler yalnız
+        // görünüş (Dolap kuralı): kafa şekli, çerçeve kaplaması, şaft rengi, grip rengi, kordaj rengi ve deseni.
+        string raketParca;
+        static readonly string[] PARCA = { null, "kafa", "cerceve", "saft", "grip", "kordaj" };
+        static readonly string[] PARCA_AD = { "Tüm raket", "Kafa şekli", "Çerçeve", "Şaft", "Grip", "Kordaj" };
+        public void RaketParcaSec(string p) { raketParca = p; root.vitrin.RaketParca(p); Tik(); SoyunmaGovdeKur(true); }   // EkranTuru + vitrin dokunuşu
+        void RaketSayfa(VisualElement c)
+        {
+            var s = Satir("segment"); s.AddToClassList("alt-segment"); s.AddToClassList("parca-ray"); c.Add(s);
+            for (int i = 0; i < PARCA.Length; i++)
+            {
+                string p = PARCA[i]; bool sec = raketParca == p;
+                var d = Cip(L.T(PARCA_AD[i]), sec, () => { if (raketParca != p) RaketParcaSec(p); });
+                d.AddToClassList("segment-cip"); d.AddToClassList("dar-cip"); Sigdir(d); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; s.Add(d);
+            }
+            var gr = Ayar.gear; int sv = gr.Seviye(); string ps = raketParca;
+            if (ps == null || ps == "kafa") KafaSekliSira(c);
+            if (ps == null || ps == "cerceve")
+            {
+                var kl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("kaplama")) kl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
+                OrnekSira(c, L.T("Çerçeve kaplaması"), kl, Ayar.GORUNUM["kaplama"], id => { Ayar.GORUNUM["kaplama"] = id; Ayar.Kaydet(); });
+            }
+            if (ps == null || ps == "saft") SaftSira(c);
+            if (ps == null || ps == "grip") RenkSira(c, "Grip", "grip");
+            if (ps == null || ps == "kordaj")
+            {
+                RenkSira(c, "Kordaj", "tel");
+                c.Add(Grup(L.T("Desen"))); var ds = Satir(); c.Add(ds);
+                ds.Add(Cip(L.T("Tek renk"), Ayar.RGOR["desen"] == "tek", () => { Ayar.RGOR["desen"] = "tek"; Ayar.Kaydet(); root.vitrin.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
+                ds.Add(Cip(L.T("Ana ve çapraz ayrı"), Ayar.RGOR["desen"] == "iki", () => { Ayar.RGOR["desen"] = "iki"; Ayar.Kaydet(); root.vitrin.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
+                if (Ayar.RGOR["desen"] == "iki") RenkSira(c, "Çapraz teller", "tel2");
+            }
+            c.Add(Yazi(L.T("Raketin görünüşü oyunu etkilemez. Raketin gücü ve kordaj gerginliği Atölye'de."), 12, "soluk"));
+        }
+        // Kafa şekli: üç biçim, örnek kare içinde biçimin kendisi çizili (yalnız adla değil); seçili ✓ + kalın çerçeve.
+        void KafaSekliSira(VisualElement c)
+        {
+            string cur = Ayar.RGOR["kafa"]; c.Add(Grup(L.T("Kafa şekli") + " · " + L.T(RaketSekil.Ad(cur)))); var s = Satir("renkler"); c.Add(s);
+            foreach (var id in RaketSekil.SIRA)
+            {
+                bool on = cur == id; string k = id;
+                var d = new VisualElement(); d.AddToClassList("renk"); d.AddToClassList("sekil-ornek"); if (on) d.AddToClassList("renk--secili"); d.style.backgroundColor = Kit.Hex("#33233F");
+                d.Add(Ikon(RaketSekil.Ikon(id), 30, on ? TURUNCU : Color.white));
+                var y = Yazi(L.T(RaketSekil.Ad(id)), 10, "renk-kilit-yazi"); y.style.color = Color.white; d.Add(y);
+                if (!on) d.AddManipulator(new Clickable(() => { Ayar.RGOR["kafa"] = k; Ayar.Kaydet(); Tik(); root.vitrin.Yenile(); root.vitrin.RaketParca("kafa", true); SoyunmaGovdeKur(true); }));
+                Erisim.Etiket(d, L.T("Kafa şekli") + ", " + L.T(RaketSekil.Ad(id)), "dugme", on); s.Add(d);
+            }
+        }
+        // Şaft rengi: "Modelin rengi" (FBX'teki koyu gri) + raket renkleri.
+        void SaftSira(VisualElement c)
+        {
+            var l = new List<Ornek> { new Ornek { id = "model", ad = "Modelin rengi", renk = null, acik = true } };
+            foreach (var id in Vitrin.RAK_SIRA) l.Add(new Ornek { id = id, ad = Vitrin.RAK_AD[id], renk = Vitrin.RAK_RENK[id], acik = true });
+            OrnekSira(c, L.T("Şaft"), l, Ayar.RGOR["saft"], id => { Ayar.RGOR["saft"] = id; Ayar.Kaydet(); });
+        }
 
         // Vitrinin sol altı: Yüz · Ayak · Tutuş. Seçili ✓ ve açık zemin; aynısına dokunmak Tüm boy'a döner.
         void OdakDugmeleriKur()
         {
             if (vitrinOdak == null) return; vitrinOdak.Clear(); var vt = root.vitrin;
+            // raket tezgâhında figür görünmez: Yüz/Ayak/Tutuş anlamsız, parça rayı aşağıda (2026-10-30)
+            if (vt.hedefGec >= 1) return;
             var ad = new[] { "Yüz", "Ayak", "Tutuş" }; var od = new[] { Vitrin.YUZ, Vitrin.AYAK, Vitrin.TUTUS };
             for (int i = 0; i < 3; i++)
             {
@@ -69,35 +155,12 @@ namespace BirdieSmash.Game
             }
         }
 
-        // Raket bölümü: tutuş görünümü. Kamera ele yaklaşır, figür o vuruşun temas pozunda durur (raket hep sağ elde).
-        static readonly string[] TUTUS_AD = { "Forehand", "Backhand", "File", "Servis" }, TUTUS_KLIP = { "drive", "bh_drive", "net", "serve" };
-        void TutusSecici(VisualElement c)
-        {
-            var vt = root.vitrin; c.Add(Grup(L.T("Tutuşa yakından bak"))); var s = Satir(); c.Add(s);
-            for (int i = 0; i < 4; i++)
-            {
-                string k = TUTUS_KLIP[i]; bool sec = vt.odak == Vitrin.TUTUS && vt.poz == k && vt.hedefGec < 1;
-                var d = Cip(L.T(TUTUS_AD[i]), sec, () => { vt.Odak(Vitrin.TUTUS, k); root.sfx.Tik(); SoyunmaGovdeKur(true); });
-                d.AddToClassList("dar-cip"); Sigdir(d); s.Add(d);   // r13: "Backhand" + ✓ çeyrek genişliğe sığsın (segment ile aynı)
-            }
-        }
-
         // ---- Karakter gövdesi ----
         void KarakterGovde(VisualElement c)
         {
             // raket görünümünde (vitrin rakette) yalnız raketin görünüşü: forma ve şapka figür görünmezken seçilmez
-            if (root.vitrin.hedefGec >= 1) { GorunumRozet(c); GorunumGovde(c, true); return; }
-            SeviyeSatiri(c); karAlt = KarGecerli(karAlt); GorunumRozet(c);
-            var seg = Satir("segment"); seg.AddToClassList("alt-segment"); c.Add(seg);
-            foreach (int i in KarSayfalar())
-            {
-                int ii = i; var d = Cip(L.T(KAR_AD[i]), karAlt == i, () =>
-                {
-                    if (karAlt == ii) return; karAlt = ii; var vt = root.vitrin; bool d0 = DenemeVar();
-                    DenemeSil(); if (d0) vt.Yenile(); KarakterOdakAyarla(); SoyunmaGovdeKur(false);
-                });
-                d.AddToClassList("segment-cip"); d.AddToClassList("dar-cip"); Sigdir(d); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; seg.Add(d);
-            }
+            karAlt = KarGecerli(karAlt); GorunumRozet(c);
+            if (karAlt == KAR_RAKET) { RaketSayfa(c); return; }
             if (!Ayar.VaryantGorunur) TekBedenKart(c);
             if (!Ayar.AykModelGorunur && karAlt == KAR_AYK) ModelUyari(c);
             if (karAlt == KAR_TIP) TipSayfa(c); else if (karAlt == KAR_SAC) SacSayfa(c); else if (karAlt == KAR_AYK) AyakkabiSayfa(c); else if (karAlt == KAR_KIYAFET) KiyafetSayfa(c);
@@ -370,7 +433,7 @@ namespace BirdieSmash.Game
             KiyafetSatir(c, "forma", L.T(Ayar.model == "rocketbox" ? "Formanın deseni ve parlaklığı kumaşa göre değişir." : tc ? "Kumaşın işlevi maçta; Tüycük'ün tüyü forma renginde, karnı onun açığı." : "Kumaşın işlevi maçta; bu modelde forma düz renk."));
             KiyafetSatir(c, "bant", L.T(tc ? "Perçemin altında görünür." : "Alında görünür."));
             KiyafetSatir(c, "bileklik", L.T("Raket kolunun bileğinde görünür."));
-            c.Add(Grup(L.T("Raket"))); GorunumGovde(c, false);
+            c.Add(Yazi(L.T("Raketin görünüşü Raket kategorisinde."), 12, "soluk"));
         }
         // Ekipman yuvasının takılı modeli: ad + görünüş notu + yuva sayfasına geçiş (44 pt düğme; durum yazıyla, renkle değil).
         void KiyafetSatir(VisualElement c, string yk, string not)
@@ -379,9 +442,9 @@ namespace BirdieSmash.Game
             string ad = m != null ? L.T(m.ad) : id; bool yok = id == "yok";
             var k = Kart("ayk-satir"); c.Add(k);
             var b = Satir("arali"); b.pickingMode = PickingMode.Ignore; k.Add(b); b.Add(Yazi(L.T(Y.ad), 15, "kalin")); b.Add(Yazi(yok ? L.T("Takılı değil") : ad, 12, yok ? "durum-kilit" : "durum-gecti"));
-            k.Add(Yazi(yok ? L.T("Oyun'dan takınca figürde görünür.") : not, 12, "ipucu"));
-            k.Add(Dugme(L.T("{0} · Oyun", L.T(Y.ad)), () => { Tik(); YuvaAc(Y.k); }, null, null, 14));
-            Erisim.Etiket(k, L.T(Y.ad) + ", " + (yok ? L.T("Takılı değil") : ad) + ", " + (yok ? L.T("Oyun'dan takınca figürde görünür.") : not), "metin");
+            k.Add(Yazi(yok ? L.T("Atölye'den takınca figürde görünür.") : not, 12, "ipucu"));
+            k.Add(Dugme(L.T("{0} · Atölye", L.T(Y.ad)), () => { Tik(); YuvaAc(Y.k); }, null, null, 14));
+            Erisim.Etiket(k, L.T(Y.ad) + ", " + (yok ? L.T("Takılı değil") : ad) + ", " + (yok ? L.T("Atölye'den takınca figürde görünür.") : not), "metin");
         }
     }
 }

@@ -22,6 +22,10 @@ namespace BirdieSmash.Game
     {
         public Match match; public Camera cam; public Ekran ekran = Ekran.Menu; public bool paused;
         public string bittiBaslik, bittiNot, bittiBilgi, bittiDugme, bittiIpucu, bittiYildiz; public List<Ozet.Kart> bittiKart = new List<Ozet.Kart>(); public bool bittiIlk; public float rakipKartT;
+        // Geri sayım (2026-10-30, yasin "1 ok" + "maç başlarken de bir geri sayım"): maç başında ve ralli sürerken duraklatmadan
+        // dönüşte oyun 3-2-1 boyunca donuk durur, top yerinde görünür. Toplam 1,2 sn: maç başında rakip kartıyla (1,5 sn) üst
+        // üste biner, maç başını uzatmaz. Antrenmanda ve öğretici maçta yok; sayı arasındaki duraklatmadan dönüşte yok (top yok).
+        public const float GERI = 1.2f; public float geriT; public static bool geriKapali;   // geriKapali: yalnız ekran turu (kare sayımları geri sayımsız)
         PlayerView me, op, hk1, hk2; public ShuttleView shuttle; NetView net; public Sfx sfx; Hud hud; public Vitrin vitrin; public Afis afis; public Fx fx; public Yukleyici yukleyici;
         public bool bekleyen;   // duraklatılmış maç ana menüde bekliyor (HTML ekran(): "Maça devam et")
         // Menü kabuğu (2026-10-26, UI Toolkit; Game/UI/UiKok). Hud maç içi + perde için kalır; menü perdeyi buradan okur.
@@ -108,7 +112,7 @@ namespace BirdieSmash.Game
                 modelId = Ayar.model;
             }
             if (op != null) Destroy(op.gameObject);
-            var opR = Kit.Hex(Match.OpRenk(M.stil, Ayar.FORMA)); op = PlayerView.Build(transform, Ayar.model, false, opR, false, PlayerView.Rakip(M.stil, opR));   // 2026-10-26: rakibin tipi/saçı/ayakkabısı stil.json gorunum
+            var opR = Kit.Hex(Match.OpRenk(M.stil, Ayar.FORMA)); op = PlayerView.Build(transform, Ayar.model, false, opR, false, PlayerView.Rakip(M.stil, opR)); op.KordajSeyrek();   // 2026-10-26: rakibin tipi/saçı/ayakkabısı stil.json gorunum
             if (net != null) Destroy(net.gameObject); net = NetView.Build(transform, M.net);
             input.Reset(); lastW = 0;
         }
@@ -144,7 +148,7 @@ namespace BirdieSmash.Game
         void MacKur(int tohum, MatchOptions o)
         {
             match = new Match(tohum, o);
-            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; erkenN = 0;
+            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0;
             fx.Temizle(); sfx.CrowdStart(); pencere = false; sfx.SuAlti(false); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
@@ -215,7 +219,7 @@ namespace BirdieSmash.Game
         public void MacaDon() { if (!bekleyen) return; bekleyen = false; ekran = Ekran.Oyun; paused = true; Devam(); }
         // Duraklatınca tüm ses susar (HTML AC.suspend), devamda kaldığı yerden sürer.
         public void Duraklat() { if (ekran == Ekran.Oyun && !paused) { paused = true; Uyanik(false); input.Reset(); sfx.Ugultu(false, 0); AudioListener.pause = true; } }
-        public void Devam() { paused = false; AudioListener.pause = false; if (ekran == Ekran.Oyun) Uyanik(true); }
+        public void Devam() { paused = false; AudioListener.pause = false; input.Reset(); if (ekran == Ekran.Oyun) { Uyanik(true); if (match != null && match.s != null && match.ogr == null && !geriKapali) geriT = GERI; } }
         void OnApplicationPause(bool p) { if (p) Duraklat(); }   // arka plana geçince kendiliğinden duraklar; top bir anda üstüne düşmez
         // Odak kaybı da duraklatır (2026-10-27, oyun incelemesi): Denetim Merkezi/Bildirim Merkezi açılması, gelen arama afişi,
         // Siri ve sistem uyarısı uygulamayı arka plana atmadan yalnız etkinliği alır (iOS willResignActive); oyun sürerken top
@@ -297,7 +301,7 @@ namespace BirdieSmash.Game
             bittiDril = Dril.Oner(M, won, Ayar.ilerleme);
             // Özet (Ar-Ge 23 Eki #2): iki kart + ipucu; bittiBilgi artık "Ayrıntılar" ardında (Hud.Over).
             bittiKart = Ozet.Kartlar(M); object ia; string ik = Ozet.Ipucu(M, won, out ia);
-            bittiIpucu = ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
+            bittiIpucu = ik == null ? null : ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
             if (Ozet.PuanIste(won, kariyerIlk, Ayar.wins, Ayar.puan)) { CancelInvoke("PuanIste"); Invoke("PuanIste", 1.5f); }
             if (won) hud.Konfeti();
         }
@@ -530,7 +534,14 @@ namespace BirdieSmash.Game
             float dt = Mathf.Min(.05f, Time.unscaledDeltaTime);
             if (ekran == Ekran.Oyun && !paused)
             {
-                ReadInput(); match.Update(dt); if (rakipKartT > 0) rakipKartT -= dt;
+                if (rakipKartT > 0) rakipKartT -= dt;
+                if (geriT > 0)
+                {
+                    int once = Mathf.CeilToInt(geriT / (GERI / 3)); geriT -= dt; int sonra = geriT > 0 ? Mathf.CeilToInt(geriT / (GERI / 3)) : 0;
+                    if (sonra != once) { if (sonra > 0) { sfx.Tik(660); Yerel.Hap("tick"); } else sfx.Tik(990); }
+                    if (geriT <= 0) { geriT = 0; input.Reset(); }
+                }
+                else { ReadInput(); match.Update(dt); }
                 bool w = match.HitWindow(); if (w != pencere) { pencere = w; if (!Ayar.reduce) sfx.SuAlti(w); if (w) { sfx.Tik(); Yerel.Hap("tick"); } }   // vuruş penceresi: su altı
                 Gicirti(dt);
                 foreach (var e in match.events) OnEvent(e); match.events.Clear();
@@ -544,8 +555,8 @@ namespace BirdieSmash.Game
                 }
             }
             me.Show(match.me, match, dt); op.Show(match.op, match, dt); shuttle.reduce = Ayar.reduce;
-            shuttle.Show(match, ekran == Ekran.Menu ? null : match.s, paused ? 0 : dt, previewOn && input.on && !input.hit, previewAt);
-            fx.Tick(match, paused ? 0 : dt, ekran == Ekran.Oyun);
+            shuttle.Show(match, ekran == Ekran.Menu ? null : match.s, paused || geriT > 0 ? 0 : dt, previewOn && input.on && !input.hit, previewAt);
+            fx.Tick(match, paused || geriT > 0 ? 0 : dt, ekran == Ekran.Oyun);
             if (akisR != null) { bool on = ekran == Ekran.Oyun && match.flow; akisR.enabled = on; if (on) akisR.material.color = new Color(1, .886f, .47f, Ayar.reduce ? .9f : .75f + .25f * Mathf.Sin(Time.unscaledTime * 1000 / 180f)); }
             Hakemler();
             shake *= Mathf.Pow(.002f, dt); punch = 1 + (punch - 1) * Mathf.Pow(.0005f, dt); if (punch < 1) punch = 1;

@@ -247,7 +247,8 @@
 /* r14: 2×2'de yer var; ✓ yine yanda, yoksa seçili satır ötekinden uzun kalıyordu. */
 .buyuk-yazi .dar-cip .cip-ic { flex-direction: row; }
 .buyuk-yazi .dar-cip .cip-ic .ikon { margin-right: 6px; margin-bottom: 0; }
-.buyuk-yazi .vitrin-alan { height: 30%; min-height: 160px; }
+.buyuk-yazi .vitrin-alan { height: 36%; min-height: 190px; }   /* 2026-10-30 dil turu: ×2 yazıda vitrin düğmelerle doluyor, oyuncu görünmüyordu; vitrin yazı değil, küçülmez */
+.buyuk-yazi .vitrin-yazi { display: none; }   /* seçili odak düğmesi ve parça rayı aynı bilgiyi verir; ×2'de odak düğmelerinin üstüne biniyordu */
 .yuva-izgara { margin: 0 -4px; }
 .izgara > .yuva-kare { flex-basis: 30%; flex-grow: 1; margin: 4px; padding: 10px; min-height: 88px; align-items: flex-start; justify-content: flex-start; }
 .bolme--kucuk { width: 7px; height: 5px; margin-right: 2px; }
@@ -450,7 +451,7 @@
 .kisa .cta-ikon { width: 46px; height: 46px; border-radius: 23px; }
 .kisa .karo { min-height: 56px; padding: 7px 10px; }
 .kisa .vitrin-alan { height: 36%; min-height: 176px; }
-.kisa.buyuk-yazi .vitrin-alan { height: 28%; min-height: 150px; }
+.kisa.buyuk-yazi .vitrin-alan { height: 34%; min-height: 180px; }
 .kisa .sekme-cubugu { padding-top: 4px; }
 .kisa .sekme { min-height: 46px; margin-bottom: 4px; }
 .kisa .alt-sayfa { max-height: 94%; }
@@ -509,3 +510,12 @@
 .karo-ust { align-self: stretch; }
 .buyuk-yazi .renk { height: auto; min-height: 44px; padding-top: 4px; padding-bottom: 4px; }
 .buyuk-yazi .ikon-dugme { height: auto; min-height: 44px; width: auto; min-width: 44px; }
+
+/* 2026-10-30 Dolap: kategori şeridi vitrinin altında sabit (eski Oyun|Görünüm segmentinin yeri); 7 kategori 4 + 3 satır.
+   Raket tezgâhının parça şeridi gövdenin başında, 6 parça 3 + 3. Kafa şekli örneği biçim simgesi + ad (yalnız renk değil). */
+.kategori-ray { flex-wrap: wrap; margin-bottom: 4px; }
+.kategori-ray .segment-cip { flex-basis: 22%; flex-grow: 1; margin-bottom: 4px; }
+.parca-ray .segment-cip { flex-basis: 30%; }
+.sekil-ornek { height: 64px; flex-basis: 28%; }
+.buyuk-yazi .kategori-ray .segment-cip { flex-basis: 40%; }
+.buyuk-yazi .sekil-ornek { height: auto; min-height: 64px; }

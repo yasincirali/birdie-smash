@@ -54,7 +54,7 @@ namespace BirdieSmash.Game
             Debug.Log("EkranTuru başladı: " + dir);
             // Bekçi: ana döngü takılırsa nerede takıldığını günlükten görmek için 10 sn'de bir kare sayısı ve son adım.
             var bekci = new System.Threading.Thread(() => { for (int i = 0; i < 300; i++) { System.Threading.Thread.Sleep(10000); Debug.Log("EkranTuru bekçi: kare " + kare + " adım " + adim); } }); bekci.IsBackground = true; bekci.Start();
-            yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
+            GameRoot.geriKapali = true; L.EksikTopla = true; yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
             if (kip == "magaza") { yield return MagazaTuru(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }   // 2026-10-29: mağaza kareleri (Game/MagazaTuru.cs)
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             yield return MenuTuru(); if (root.HudKatman != null) rap.AppendLine("açılış süresi (gerçek, CI yazılım render'ı): " + root.HudKatman.AcilisTani);
@@ -109,6 +109,7 @@ namespace BirdieSmash.Game
             yield return DuyarliTuru();   // 2026-10-27 duyarlı yerleşim: SE / 13 / Pro Max / iPad, çentik taklidi, taşma denetimi
             yield return MenuSahne();
             yield return PerfTuru();   // 2026-10-27 performans turu 2 (kare süresi ve GC, GÖRELİ; ayrı satır)
+            rap.AppendLine("çeviri eksik (İngilizce, tur boyunca) · " + L.Eksik.Count); foreach (var e in L.Eksik) rap.AppendLine("   ! çeviri yok · \"" + e + "\"");
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             Application.Quit(0);
         }
@@ -346,9 +347,22 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_ayakkabi_ayak");
             ui.KarakterDene("ayakkabi", "karbon"); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_ayakkabi_deneme");
             ui.KarakterAc(UiKok.KAR_TEN); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_ten");
-            ui.SoyunmaSegment(2); ui.VitrinOdak(Vitrin.TUTUS, "drive"); yield return Bekle(40); yield return Cek("menu_" + ek + "yakin_tutus_forehand");
+            ui.KarakterAc(UiKok.KAR_KIYAFET); ui.VitrinOdak(Vitrin.TUTUS, "drive"); yield return Bekle(40); yield return Cek("menu_" + ek + "yakin_tutus_forehand");
             ui.VitrinOdak(Vitrin.TUTUS, "bh_drive"); yield return Bekle(40); yield return Cek("menu_" + ek + "yakin_tutus_backhand");
-            ui.SoyunmaSegment(0); yield return Bekle(10);
+            // 2026-10-30 raket incelemesi: şaft ve boğaz (raket_koyu) da kopyada mı; dönüşün iki açısı
+            ui.RaketIncele(true); yield return Bekle(60); yield return Cek("menu_" + ek + "raket_incele"); yield return Bekle(45); yield return Cek("menu_" + ek + "raket_incele_2");
+            // 2026-10-30 raket tezgâhı: her parça kendi kadrajında, sonra üç kafa şekli (kordaj iki renkli: teller şekle uyuyor mu)
+            foreach (var pr in new[] { "kafa", "cerceve", "saft", "grip", "kordaj" }) { ui.RaketParcaSec(pr); yield return Bekle(90); yield return Cek("menu_" + ek + "tezgah_" + pr); }
+            string k0 = Ayar.RGOR["kafa"], d0 = Ayar.RGOR["desen"], s0 = Ayar.RGOR["saft"];
+            Ayar.RGOR["desen"] = "iki"; Ayar.RGOR["saft"] = "mavi";
+            foreach (var sk in RaketSekil.SIRA)
+            {
+                Ayar.RGOR["kafa"] = sk; root.vitrin.Yenile(); ui.RaketParcaSec("kafa"); yield return Bekle(50); yield return Cek("menu_" + ek + "tezgah_sekil_" + sk);
+                ui.RaketParcaSec("kordaj"); yield return Bekle(50); yield return Cek("menu_" + ek + "tezgah_sekil_" + sk + "_kordaj");
+            }
+            ui.RaketIncele(false); yield return Bekle(10); Ayar.RGOR["kafa"] = "kalp"; root.vitrin.Yenile(); ui.VitrinOdak(Vitrin.TUTUS, "drive"); yield return Bekle(50); yield return Cek("menu_" + ek + "tutus_kalp");
+            Ayar.RGOR["kafa"] = k0; Ayar.RGOR["desen"] = d0; Ayar.RGOR["saft"] = s0; root.vitrin.Yenile(); ui.RaketParcaSec(null);
+            ui.SoyunmaSegment(0); yield return Bekle(20); yield return Cek("menu_" + ek + "atolye");
             ui.YuvaAc("raket"); yield return Bekle(20); yield return Cek("menu_" + ek + "yuva_raket"); ui.Geri(); yield return Bekle(5);
             ui.YuvaAc("tel"); yield return Bekle(20); yield return Cek("menu_" + ek + "yuva_kordaj"); ui.Geri(); yield return Bekle(5);
         }
@@ -381,7 +395,11 @@ namespace BirdieSmash.Game
             root.DrilBaslat("kose"); botAcik = true; yield return Bekle(60 * 6); yield return Cek("gorev_kose_oyun");
             // 2026-10-30 vuruş laboratuvarı: düz drop oynanırken sonuç kartı ve top izi (bot ilk topları vurur)
             root.DrilBitir(); { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 10 && root.ekran != Ekran.Bitti) yield return null; }
-            root.DrilBaslat("drop"); botAcik = true; { float t1 = Time.realtimeSinceStartup; int n0 = root.match.drOlcumNo; while (Time.realtimeSinceStartup - t1 < 40 && root.match.drOlcumNo < n0 + 2) yield return null; }
+            // 2026-10-30 ilk top kartı (yasin: "ilk vuruşta yazılar çok yer kaplıyor"): görev başlar başlamaz, bot vurmadan
+            botAcik = false; root.DrilBaslat("drop"); yield return Bekle(40); yield return Cek("gorev_ilk_top");
+            // 2026-10-30 görev gösterimi: ilk top vuruş yerinde durur, hareket canlanır (en çok 8 sn bekle)
+            { float tg0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - tg0 < 8 && !(root.match.ogr != null && root.match.ogr.dur)) yield return null; yield return Bekle(20); yield return Cek("gorev_gosterim"); rap.AppendLine("gorev_gosterim · dur " + (root.match.ogr != null && root.match.ogr.dur)); }
+            botAcik = true; { float t1 = Time.realtimeSinceStartup; int n0 = root.match.drOlcumNo; while (Time.realtimeSinceStartup - t1 < 40 && root.match.drOlcumNo < n0 + 2) yield return null; }
             yield return Bekle(10); yield return Cek("gorev_lab_kart"); rap.AppendLine("gorev_lab_kart · ölçüm " + (root.match.drOlcum != null ? root.match.drOlcum.ad + " " + root.match.drOlcum.hedef : "yok"));
             root.DrilBitir(); float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 10 && root.ekran != Ekran.Bitti) yield return null;
             yield return Bekle(20); yield return Cek("gorev_sonuc"); botAcik = false;
@@ -526,6 +544,8 @@ namespace BirdieSmash.Game
             root.StartMatch(false, false, false); botAcik = true; yield return Bekle(60); botAcik = false; root.Duraklat(); yield return Bekle(10); yield return Cek("duraklat");
             root.AnaMenu(); yield return Bekle(30); yield return Cek("menu_bekleyen_oyna"); rap.AppendLine("menu_bekleyen_oyna · " + ui.SahneDurumu + " · bekleyen " + root.bekleyen);
             root.MacaDon(); yield return Bekle(30); yield return Cek("bekleyen_devam"); rap.AppendLine("bekleyen_devam · " + ui.SahneDurumu);
+            // 2026-10-30 geri sayım: maç başı / duraklatmadan dönüş rakamı ("3" büyürken, "1" oturmuş)
+            root.geriT = GameRoot.GERI * .9f; yield return null; yield return Cek("geri_sayim_3"); root.geriT = GameRoot.GERI * .2f; yield return null; yield return Cek("geri_sayim_1"); root.geriT = 0;
             root.AnaMenu(); yield return Bekle(10);
         }
         // Yüksek top kadrajı (2026-10-27, yasin build 41 "Top yükseldiğinde kadrajdan çıkıyor"; Core/Kadraj). Gerçek bir clear
@@ -600,7 +620,21 @@ namespace BirdieSmash.Game
                 if (D_AD[i] == "se") { Ayar.yaziTest = 2; yield return Bekle(10); yield return DuyarliSayfalar(ui, "menu_se_x2_", true); Ayar.yaziTest = 0; yield return Bekle(10); }
                 yield return SonucKare("sonuc_" + D_AD[i], true, false, 0, "en"); rap.AppendLine("sonuc_" + D_AD[i] + " · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok"));
                 if (D_AD[i] == "se") { yield return SonucKare("sonuc_se_buyuk", true, false, 2, "en"); rap.AppendLine("sonuc_se_buyuk · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok")); }
-                root.StartMatch(false, false, false); botAcik = true; yield return Bekle(60); yield return Cek("oyun_" + D_AD[i]); botAcik = false; root.AnaMenu(); yield return Bekle(10);
+                root.StartMatch(false, false, false); botAcik = true; yield return Bekle(60); yield return Cek("oyun_" + D_AD[i]); botAcik = false;
+                // 2026-10-30 (yasin: sayıdan sonra çıkan yazı alttan üstten kesik): sayı yazısı tepe boyunda (≈0,2 sn), normal ve
+                // en büyük yazıda; Hud.Kirpilan = bu karelerde kutusuna sığmayıp büyütülen etiket sayısı.
+                for (int yz = 0; yz < (D_AD[i] == "se" ? 2 : 1); yz++)
+                {
+                    string yz0 = Ayar.yazi; if (yz == 1) { Ayar.yazi = "buyuk"; yield return Bekle(5); }   // maç HUD'u en çok ×1,3 (Ayar.YaziK)
+                    var hk = root.HudKatman; int k0 = Hud.Kirpilan;
+                    if (hk != null) { hk.Say(L.Cumle("Smaçla sayı aldın, çok sertti!"), Vector3.zero, Kit.Hex("#d8ff5a"), 1.6f, true); hk.Say(L.Cumle("Rakip bu sefer aldı"), Vector3.zero, Kit.Hex(Hud.RAKIP_HUD), 1.4f, true); }
+                    float t2 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t2 < .22f) yield return null;
+                    string ad = "oyun_" + D_AD[i] + (yz == 1 ? "_buyuk" : "") + "_sayi_yazi"; yield return Cek(ad); rap.AppendLine(ad + " · kırpılacak etiket " + (Hud.Kirpilan - k0));
+                    // 2026-10-30 Ar-Ge #1: Tüycükler dilinde duraklat ekranı her boyda (SE'de büyük yazıyla da)
+                    root.Duraklat(); yield return Bekle(5); yield return Cek("duraklat_" + D_AD[i] + (yz == 1 ? "_buyuk" : "")); root.Devam(); yield return Bekle(2);
+                    Ayar.yazi = yz0;
+                }
+                root.AnaMenu(); yield return Bekle(10);
             }
             Guvenli.test = false; yield return Boyut(w0, h0); ui.SekmeAc(Sekme.Oyna); yield return Bekle(10);
             rap.AppendLine("duyarlı özet · " + dKare + " menü karesi · " + dSorun + " sorun"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
@@ -611,6 +645,7 @@ namespace BirdieSmash.Game
             ui.SekmeAc(Sekme.Kariyer); yield return DCek(ui, ek + "kariyer");
             ui.MacKartAc(KariyerVeri.Global(0, 0)); yield return DCek(ui, ek + "mac_karti"); ui.Geri();
             ui.SekmeAc(Sekme.Soyunma); yield return DCek(ui, ek + "soyunma", 30);
+            ui.SekmeAc(Sekme.Atolye); yield return DCek(ui, ek + "atolye", 20);
             if (!kisaca) { ui.SoyunmaSegment(UiKok.SEG_KARAKTER); yield return DCek(ui, ek + "karakter", 30); ui.SoyunmaSegment(0); yield return Bekle(5); }
             ui.SekmeAc(Sekme.Profil); yield return DCek(ui, ek + "profil");
             ui.SekmeAc(Sekme.Oyna); ui.HizliMacAc(); yield return DCek(ui, ek + "hizli"); ui.Geri();

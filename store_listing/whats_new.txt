@@ -1,17 +1,32 @@
 === UNITY ===
-Açılış: dönen tüy top uygulamaya dokunduğun anda ekranda, oyun yüklenirken de dönmeye devam ediyor.
+Dolap ve Atölye ayrıldı, raket tezgâhı geldi: raketin her parçasını yakından görüp değiştirebilirsin.
 
 Bu sürümde yeni:
-- Açılış ekranında top ilk andan ortada duruyor ve oyun yüklenirken dönüyor; önceden bir iki saniye düz renk bekleniyordu.
-- Perde halkaları ve top yüklemeden oyuna geçerken kaymadan sürüyor.
+- Alt çubukta Dolap (görünüş) ve Atölye (yükseltmeler) ayrı. Dolap'taki hiçbir seçim oyunu etkilemez.
+- Dolap > Raket: Kafa şekli, Çerçeve, Şaft, Grip, Kordaj. Parçaya dokununca kamera o parçaya gider ve parça parlar.
+- Yeni kafa şekilleri: Oval, İzometrik, Kalp. Şaftın rengi de seçilebiliyor.
+- Raketi incelerken şaft artık görünüyor.
+- Antrenmanın ilk topunda yazı kartı küçüldü; açıklama ? düğmesinde.
+- Maçta sayıdan sonra çıkan yazılar artık kesik görünmüyor.
+- Duraklat ekranı ve maç içi yazılar yeni yazı tipinde; düğmeler maç sonundaki gibi.
+- Vuruş laboratuvarında her görevin ilk topunda oyun bir kez durur ve gereken kaydırma gösterilir; sonra sen denersin.
+- Rakibin raketi artık içi beyaz dolu disk gibi görünmüyor.
+- Galibiyet ekranında yıldız satırını tekrar eden görev satırı kalktı.
+- Maç başlarken ve top havadayken duraklatmadan dönünce kısa bir 3-2-1 geri sayımı var.
 
 Nasıl denenir:
-1. Uygulamayı tamamen kapat (uygulama değiştiriciden yukarı kaydır), sonra simgeye dokun.
-2. İlk görüntüde ortada tüy top olmalı; hemen etrafında halkalar belirmeli ve top kendi ekseninde dönmeli.
-3. Menü gelene kadar top takılmadan dönmeli, bir an durup yeniden başlamamalı; perde açılırken top diskle birlikte küçülmeli.
-4. Ayarlar > Erişilebilirlik > Hareket > Hareketi Azalt açıkken aynı denemeyi yap: top ve halkalar dönmeden durmalı.
-5. Menüde müzik, Soyunma odası ve antrenman önceki sürümdeki gibi çalışmalı.
-6. Garip bir şey olursa telefonu ve ekranı yaz.
+1. Alt çubukta Dolap'a dokun. Kategorilerden Saç'ı seç: kamera yüze yaklaşmalı.
+2. Raket'i seç. Raket ekranın ortasına gelmeli, şaftı ve sapı tam görünmeli.
+3. Grip'e dokun: raket yan döner, sap büyür ve kısa bir an parlar. Kordaj'a dokun: teller tam karşıdan görünür.
+4. Kafa şekli > Kalp'i seç. Teller kalbin içinde kalmalı, dışarı taşmamalı. Sonra Forma'ya dönüp Tutuş'a bak: elindeki raket de kalp olmalı.
+5. Atölye'ye geç: yuvalar, seviye ve tarz burada. Bir yuvaya dokununca sayfası açılmalı.
+6. Bir maç oyna: sayıdan sonra çıkan yazının üstü ve altı kesilmemeli. Ayarlar'da yazıyı Büyük yapıp tekrar bak.
+7. Antrenmanda bir görev aç: ilk topta kart tek satır başlık ve kısa talimat olmalı.
+8. Bir maç başlat: 3-2-1 sayılmalı, sonra oyun başlamalı. Ralli sürerken II ile duraklat, Devam'a bas: yine 3-2-1, top havada beklemeli.
+9. Maçta II'ye bas: Duraklat ekranı koyu zeminde, büyük turuncu Maça devam et düğmesiyle açılmalı, yazılar eğik olmamalı.
+10. Maçta rakibin raketine bak: kafanın içi beyaz dolu görünmemeli, teller hafif saydam olmalı.
+11. Antrenman > Görevler'den Drop'u aç: ilk topta oyun durmalı, ekranda nasıl kaydıracağın canlanmalı. Kaydırınca oyun sürmeli, sonraki toplarda durmamalı.
+12. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:

@@ -199,6 +199,12 @@ Her dil için (sağ üst dil menüsü) ilgili klasördeki dosyayı yapıştır:
 - Fiyat: **Pricing and Availability › Free**.
 - Ekran görüntüleri: parça 2.
 
+### E. Erişilebilirlik etiketleri (2026-10-30, Ar-Ge #2)
+
+- [ ] App Store Connect › Birdie Smash › **Accessibility** › iPhone: yalnız **Reduced Motion** ve
+  **Differentiate Without Color Alone** işaretle, diğerleri boş kalsın. Gerekçe ve kanıt:
+  `store_listing/erisilebilirlik.md`.
+
 ### Açık sorular (senin kararın)
 
 1. **Destek e-postası ve Support URL.** Support URL ASC'de zorunlu. Seçenekler:

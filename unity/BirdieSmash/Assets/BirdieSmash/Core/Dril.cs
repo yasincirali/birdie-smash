@@ -100,7 +100,7 @@ namespace BirdieSmash.Core
         void DrilKur(DrilTanim d)
         {
             var a = new OgrAdim { bas = d.ad, met = d.nasil, neden = d.ogretir, dril = d, besle = d.besle, servis = d.olcu == "servis" ? d.servis ?? "kisa" : null, slice = d.olcu == "aldat" };
-            a.tip = d.olcu == "kill" ? new[] { "kill" } : d.olcu == "karsila" ? new[] { "block", "lift" } : d.tip;
+            a.tip = d.olcu == "kill" ? new[] { "kill" } : d.olcu == "karsila" ? new[] { "block", "lift" } : d.tip; a.iz = DrilIz(d);
             ogr.liste = new List<OgrAdim> { a }; ogr.dril = d;
         }
 

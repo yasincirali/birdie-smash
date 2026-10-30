@@ -361,7 +361,7 @@ static class BotMac
         var B = new Match(2, new MatchOptions { easy = true, target = 5 }); B.maxRally = 3; k = Ozet.Kartlar(B);
         if (k.Count != 1 || k[0].ad != "En uzun ralli") Fail("boş maçta tek kart en uzun ralli olmalı");
         if (Ozet.Ipucu(B, false, out a) != "Dışarı gidecek topu bırak: sayı senin olur.") Fail("yenilgi ipucu bırakma olmalı");
-        string w = Ozet.Ipucu(B, true, out a); if (B.gorevler.Count > 0 && w != "Bu maçta kalan görev: {0}") Fail("galibiyet ipucu kalan görev olmalı: " + w);
+        string w = Ozet.Ipucu(B, true, out a); if (w != null) Fail("galibiyette ipucu olmamalı (yıldız satırının tekrarı): " + w);
         if (!Ozet.PuanIste(true, true, 1, 0) || !Ozet.PuanIste(true, false, 3, 2) || Ozet.PuanIste(true, false, 4, 0) || Ozet.PuanIste(false, true, 3, 0) || Ozet.PuanIste(true, true, 3, 3))
             Fail("puan koşulu: basamak ya da 3. galibiyet, en çok 3");
         // boşta duruş: yorgun oyuncunun fazı daha hızlı ilerler
