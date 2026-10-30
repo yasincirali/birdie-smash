@@ -28,11 +28,13 @@ namespace BirdieSmash.Game
         public GameRoot root;
         UIDocument doc; bool temaYok;
         VisualElement kok, zemin, alan, ust, icerik, sayfa, sekmeCubugu, altKatman, altSayfa, kalkan;
-        readonly VisualElement[] sekmeKok = new VisualElement[4]; readonly VisualElement[] sekmeDugme = new VisualElement[4];
-        readonly bool[] kirli = { true, true, true, true }; bool ustKirli = true;
+        const int SEKME_N = 5;
+        readonly VisualElement[] sekmeKok = new VisualElement[SEKME_N]; readonly VisualElement[] sekmeDugme = new VisualElement[SEKME_N];
+        readonly bool[] kirli = { true, true, true, true, true }; bool ustKirli = true;
         readonly Gezinti gez = new Gezinti();
         float kenarX = -1; float K = 1; Rect sonSafe; float sonPanelW = -1, sonOrtu = -1; bool sonGorunur = true, sonReduce, kalkanAcik, kuruldu; string sonDil;
-        static readonly string[] SEKME_AD = { "Oyna", "Kariyer", "Soyunma odası", "Profil" };
+        static readonly string[] SEKME_AD = { "Oyna", "Kariyer", "Dolap", "Profil", "Atölye" };
+        static readonly Sekme[] SEKME_SIRA = { Sekme.Oyna, Sekme.Kariyer, Sekme.Soyunma, Sekme.Atolye, Sekme.Profil };   // çubukta görünen sıra
 
         public Sekme AktifSekme { get { return gez.sekme; } }
         // Gizli kare hızı göstergesinin ekran adı (Hud.FpsEkran; HTML ile aynı adlar, çevrilmez).
@@ -41,7 +43,8 @@ namespace BirdieSmash.Game
             get
             {
                 string u = gez.Ust; if (u == Gezinti.AYAR) return "Ayarlar"; if (u == Gezinti.NASIL) return "Nasıl oynanır"; if (u == Gezinti.LISANS) return "Lisanslar"; if (u == Gezinti.HIZLI) return "Hızlı maç"; if (u == Gezinti.KART) return "Maç kartı"; if (u == Gezinti.YUVA) return "Yuva"; if (u == Gezinti.ANTRENMAN) return "Antrenman"; if (u == Gezinti.DRIL) return "Görev kartı"; if (u == Gezinti.GUNLUK) return "Günün maçı";
-                if (gez.sekme == Sekme.Soyunma) return root.vitrin.hedefGec >= 1 ? "Raket 360°" : soyunmaSeg == 1 ? "Tarz" : soyunmaSeg == 2 ? "Görünüm" : soyunmaSeg == SEG_KARAKTER ? "Karakter" : "Ekipman";
+                if (gez.sekme == Sekme.Soyunma) return root.vitrin.hedefGec >= 1 ? "Raket tezgâhı" : "Dolap";
+                if (gez.sekme == Sekme.Atolye) return "Atölye";
                 return gez.sekme == Sekme.Kariyer ? "Kariyer" : gez.sekme == Sekme.Profil ? "Profil" : "Menü";
             }
         }
@@ -97,7 +100,7 @@ namespace BirdieSmash.Game
                 try { var f = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"); if (f != null) kok.style.unityFontDefinition = FontDefinition.FromFont(f); } catch (System.Exception) { }
             }
             ZeminKur();
-            for (int i = 0; i < 4; i++) { sekmeKok[i] = new VisualElement(); sekmeKok[i].AddToClassList("sekme-kok"); sekmeKok[i].AddToClassList("tam"); icerik.Add(sekmeKok[i]); }
+            for (int i = 0; i < SEKME_N; i++) { sekmeKok[i] = new VisualElement(); sekmeKok[i].AddToClassList("sekme-kok"); sekmeKok[i].AddToClassList("tam"); icerik.Add(sekmeKok[i]); }
             altKatman.RegisterCallback<PointerDownEvent>(e => { if (e.target == altKatman) AltKapat(); });
             kalkan.RegisterCallback<PointerDownEvent>(e => { if (root.HudKatman != null) root.HudKatman.PerdeAtla(); e.StopPropagation(); });
             // iOS sol kenardan kaydırma = Geri (tam sayfada; maçta yok, menü maçta gizli). Kenar 24 pt, 70 pt sağa çekiş.
@@ -186,7 +189,7 @@ namespace BirdieSmash.Game
             var s = gez.sekme; string ustS = gez.Ust; bool tamSayfa = ustS != null && !Gezinti.AltSayfa(ustS);
             // Yığındaki son tam sayfa (alt sayfa açıkken altında duran)
             string tam = null; if (tamSayfa) tam = ustS; else if (gez.Derinlik > 1) tam = gez.Acik(Gezinti.LISANS) ? Gezinti.LISANS : gez.Acik(Gezinti.NASIL) ? Gezinti.NASIL : gez.Acik(Gezinti.AYAR) ? Gezinti.AYAR : gez.Acik(Gezinti.ANTRENMAN) ? Gezinti.ANTRENMAN : null;
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < SEKME_N; i++)
             {
                 bool on = (int)s == i; sekmeKok[i].style.display = on && tam == null ? DisplayStyle.Flex : DisplayStyle.None;
                 if (sekmeDugme[i] != null)
@@ -225,16 +228,16 @@ namespace BirdieSmash.Game
         }
 
         // Durum değişti: hepsi kirli, görünen hemen yeniden kurulur.
-        public void Kirlet() { for (int i = 0; i < 4; i++) kirli[i] = true; ustKirli = true; var once = gez.sekme; Uygula(once, false); }
+        public void Kirlet() { for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true; var once = gez.sekme; Uygula(once, false); }
 
         void HepsiniKur()
         {
             sekmeCubugu.Clear(); kok.EnableInClassList("buyuk-yazi", K >= 1.35f);   // büyük yazıda çipler ve ızgaralar alt alta (USS)
             bool etiket = K <= 1.5f;   // ×1,5 üstünde sekme etiketi kalkar, simge + ekran okuyucu etiketi kalır (§2.4)
-            var ik = new[] { Ikonlar.Oyna, Ikonlar.Kupa, Ikonlar.Raket, Ikonlar.Kisi };
-            for (int i = 0; i < 4; i++)
+            var ik = new[] { Ikonlar.Oyna, Ikonlar.Kupa, Ikonlar.Tisort, Ikonlar.Kisi, Ikonlar.Raket };
+            foreach (var s in SEKME_SIRA)
             {
-                var s = (Sekme)i; var d = new VisualElement(); d.AddToClassList("sekme"); sekmeDugme[i] = d;
+                int i = (int)s; var d = new VisualElement(); d.AddToClassList("sekme"); sekmeDugme[i] = d;
                 var cizgi = new VisualElement(); cizgi.AddToClassList("sekme-cizgi"); cizgi.pickingMode = PickingMode.Ignore; d.Add(cizgi);
                 var im = Ikon(ik[i], 22, s == gez.sekme ? TURUNCU : SOLUK); im.AddToClassList("sekme-ikon"); d.Add(im);
                 string ad = L.T(SEKME_AD[i]); if (etiket) d.Add(Yazi(ad, 11, "sekme-yazi"));
@@ -243,7 +246,7 @@ namespace BirdieSmash.Game
             }
             if (altBosluk > 0) sekmeCubugu.style.paddingBottom = altBosluk;
             GostergeKur();
-            for (int i = 0; i < 4; i++) kirli[i] = true; ustKirli = true; Uygula(gez.sekme, false);
+            for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true; Uygula(gez.sekme, false);
         }
 
         void SekmeKur(Sekme s)
@@ -254,6 +257,7 @@ namespace BirdieSmash.Game
                 case Sekme.Oyna: OynaKur(k); break;
                 case Sekme.Kariyer: KariyerKur(k); break;
                 case Sekme.Soyunma: SoyunmaKur(k); break;
+                case Sekme.Atolye: AtolyeKur(k); break;
                 default: ProfilKur(k); break;
             }
         }

@@ -51,7 +51,7 @@ namespace BirdieSmash.Game
         }
 
         public void Ac() { gameObject.SetActive(true); kam.enabled = true; durgun = 0; Yenile(); }
-        public void Kapat() { kam.enabled = false; gec = hedefGec = 0; odak = TAM; poz = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = null; camVar = false; gameObject.SetActive(false); }
+        public void Kapat() { kam.enabled = false; gec = hedefGec = 0; parca = null; raKay = false; odak = TAM; poz = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = null; camVar = false; gameObject.SetActive(false); }
         // Yakın plan seç (aynı odağa ikinci dokunuş Soyunma odasında Tüm boy'a döner). Tutuşa girerken el kameraya döner.
         public void Odak(int o, string klip = null)
         {
@@ -92,6 +92,7 @@ namespace BirdieSmash.Game
                 foreach (Transform ch in ic) ch.position += raketPivot.position - b.center;
                 var ax = (head - grip).sqrMagnitude > 1e-6f ? (head - grip).normalized : Vector3.up; ic.localRotation = Quaternion.FromToRotation(ax, Vector3.up);
                 float boy = Mathf.Max(b.size.x, b.size.y, b.size.z); raketBoy = boy;
+                ParcaOlc(ic);
             }
             raketPivot.gameObject.SetActive(false);
             OdakKemikleri();
@@ -232,6 +233,75 @@ namespace BirdieSmash.Game
             return 0;
         }
         float raketBoy = .7f;
+
+        // ---- Raket tezgâhı (2026-10-30, Dolap › Raket; öneri artifact "bölge kamerası + parlayan çerçeve") ----
+        // Araştırma (Wilson Custom Racket Shop): raket bölgelere ayrılır, seçilen bölge büyük görünür. Parça seçilince kendi
+        // dönüş durur, raket o parçayı en iyi gösteren açıya yumuşakça döner (kordaj tam karşıdan, grip ve şaft yandan, kafa şekli
+        // hafif açıdan) ve kamera o bölgeye yaklaşır; parça bir kez limona parlar. Sürükleyerek döndürmek yine serbest.
+        // Ölçüler kopya kurulurken pivot uzayında bir kez alınır (raket rijit). Hareketi azaltta geçiş anında, parlama yok.
+        string parca; float raHedef; bool raKay, rakVar; Vector3 rakCamS, rakHedefS; string[] parlaEt;
+        readonly Dictionary<string, Bounds> parcaB = new Dictionary<string, Bounds>(); Vector3 yuzN = Vector3.forward;
+        public string Parca { get { return parca; } }
+        static readonly Dictionary<string, string[]> PARCA_ET = new Dictionary<string, string[]> {
+            { "kafa", new[] { "cerceve" } }, { "cerceve", new[] { "cerceve" } }, { "saft", new[] { "koyu" } }, { "grip", new[] { "grip" } }, { "kordaj", new[] { "tel", "tel2" } } };
+        // parçanın en iyi göründüğü açı: yüz normaline göre (0 = kordaj tam karşıda)
+        static readonly Dictionary<string, float> PARCA_ACI = new Dictionary<string, float> { { "kafa", 12 }, { "cerceve", 55 }, { "saft", 70 }, { "grip", 80 }, { "kordaj", 0 } };
+        void ParcaOlc(Transform ic)
+        {
+            parcaB.Clear(); Renderer telR = null;
+            foreach (var r in ic.GetComponentsInChildren<Renderer>())
+            {
+                string e = PlayerView.Etiket(r.gameObject.name); if (e == "") continue; var bw = r.bounds;
+                var lb = new Bounds(raketPivot.InverseTransformPoint(bw.center), Vector3.zero);
+                foreach (var k in new[] { -1, 1 }) foreach (var l in new[] { -1, 1 }) foreach (var m in new[] { -1, 1 }) lb.Encapsulate(raketPivot.InverseTransformPoint(bw.center + Vector3.Scale(bw.extents, new Vector3(k, l, m))));
+                Bounds o; if (parcaB.TryGetValue(e, out o)) { o.Encapsulate(lb); parcaB[e] = o; } else parcaB[e] = lb;
+                if (e == "tel" && telR == null) telR = r;
+            }
+            // kordaj yüzü: tel ağının en ince ekseni (pivot uzayında)
+            var mf = telR != null ? telR.GetComponent<MeshFilter>() : null;
+            if (mf != null && mf.sharedMesh != null)
+            {
+                var sz = mf.sharedMesh.bounds.size; int en = sz.x <= sz.y && sz.x <= sz.z ? 0 : sz.y <= sz.z ? 1 : 2; var ax = Vector3.zero; ax[en] = 1;
+                yuzN = raketPivot.InverseTransformDirection(telR.transform.TransformDirection(ax)).normalized;
+            }
+        }
+        // Parça seç (null = tüm raket: eski 360° dönüş). parla: aynı parça yeniden seçilse de parlasın (şekil değişince).
+        public void RaketParca(string p, bool parla = false)
+        {
+            if (p != null && !PARCA_ET.ContainsKey(p)) p = null; bool yeni = p != parca; parca = p;
+            if (p != null && (yeni || parla))
+            {
+                float phi = Mathf.Atan2(yuzN.x, yuzN.z) * Mathf.Rad2Deg; raHedef = -phi + PARCA_ACI[p]; raKay = true; rv = 0;
+                if (!Ayar.reduce) { parlaK = 1; parlaEt = PARCA_ET[p]; parlaT = 0; }
+            }
+            if (p == null && yeni) { raKay = false; }
+            durgun = 0;
+        }
+        // Tezgâhta dokunulan parça (viewport 0..1, yarıçap viewport genişliği oranı): en yakın parça merkezi.
+        public string ParcaYeri(Vector2 vp, float yaricap)
+        {
+            if (raketPivot == null || !raketPivot.gameObject.activeInHierarchy) return null; string en = null; float enD = yaricap * yaricap;
+            foreach (var kv in new[] { new KeyValuePair<string, string>("grip", "grip"), new KeyValuePair<string, string>("koyu", "saft"), new KeyValuePair<string, string>("tel", "kordaj"), new KeyValuePair<string, string>("cerceve", "cerceve") })
+            {
+                Bounds b; if (!parcaB.TryGetValue(kv.Key, out b)) continue; var p = kam.WorldToViewportPoint(raketPivot.TransformPoint(b.center)); if (p.z < 0) continue;
+                float dx = p.x - vp.x, dy = (p.y - vp.y) * kam.aspect, d = dx * dx + dy * dy; if (kv.Key == "cerceve") d *= 1.6f;   // çerçeve kordajla aynı merkezde: kordaj öne
+                if (d < enD) { enD = d; en = kv.Value; }
+            }
+            return en;
+        }
+        // Tezgâh kamerası: parça yoksa eski kadraj (tüm raket), varsa parçanın kutusuna göre (alt düğme payı Uzaklik'ta).
+        void ParcaPoz(out Vector3 cam, out Vector3 hedef)
+        {
+            hedef = raketPivot.position; cam = hedef + new Vector3(0, 0, raketBoy * 2.4f + .2f); Bounds b;
+            string et = parca == "kordaj" ? "tel" : parca != null ? PARCA_ET[parca][0] : null;   // kafa/çerçeve: çerçeve kutusu (T-bağlantı dahil)
+            if (et == null || !parcaB.TryGetValue(et, out b)) return;
+            var m = raketPivot.TransformPoint(b.center); var sz = b.size; float kay;
+            // raket dikey: kutunun Y'si ekranda dikey; yatayda kalan en büyük eksen
+            float yy = sz.y * .5f * (parca == "grip" || parca == "saft" ? .62f : 1.12f), yx = Mathf.Max(sz.x, sz.z) * .5f * 1.15f;
+            if (parca == "grip" || parca == "saft") yx = Mathf.Max(yx, yy * .55f);
+            float d = Uzaklik(Mathf.Max(.02f, yy), Mathf.Max(.02f, yx), out kay);
+            cam = m + new Vector3(0, .06f, 1).normalized * d; hedef = m - Vector3.up * kay;
+        }
         // Figürdeki raketin RT içindeki yeri (viewport 0..1; HTML TUR.rkE): Hud rakete dokunuşu (sürüklemeden) raket ekranına çevirir.
         public bool RaketYeri(out Vector2 vp)
         {
@@ -252,7 +322,13 @@ namespace BirdieSmash.Game
             if (fig == null) return; float dt = Mathf.Min(.05f, Time.unscaledDeltaTime); bool rm = Ayar.reduce;
             if (!suruk) { if (Mathf.Abs(v) > 2) v *= Mathf.Pow(.08f, dt); else v = rm || hedefGec > 0 || odak == TUTUS ? 0 : 18; a += v * dt; }
             float gd = hedefGec - gec; gec = rm || Mathf.Abs(gd) < .002f ? hedefGec : gec + Mathf.Sign(gd) * Mathf.Min(Mathf.Abs(gd), dt / .6f);
-            if (hedefGec == 1 && !suruk) { if (Mathf.Abs(rv) > 2) rv *= Mathf.Pow(.08f, dt); else rv = rm ? 0 : 24; ra += rv * dt; }
+            if (hedefGec == 1 && !suruk)
+            {
+                if (raKay) { rv = 0; float fark = Mathf.DeltaAngle(ra, raHedef); ra = rm ? raHedef : ra + fark * (1 - Mathf.Exp(-dt * 6)); if (Mathf.Abs(fark) < .3f) { ra = raHedef; raKay = false; } }
+                else if (Mathf.Abs(rv) > 2) rv *= Mathf.Pow(.08f, dt); else rv = rm || parca != null ? 0 : 24;
+                ra += rv * dt;
+            }
+            if (suruk) raKay = false;
             float hit; if (poz != null && odak == TUTUS) fig.ShowPoz(YER, a, poz, Match.CLIP_HIT.TryGetValue(poz, out hit) ? hit : .5f); else fig.ShowStatic(YER, a, 0);
             // geçiş: figür 0–60%'ta solar/kayar, raket 45–100%'te öne gelir
             float fK = Mathf.Clamp01(gec / .6f), rK = Mathf.Clamp01((gec - .45f) / .55f);
@@ -260,13 +336,14 @@ namespace BirdieSmash.Game
             raketPivot.rotation = Quaternion.Euler(0, ra, 0) * Quaternion.Euler(-12, 0, 0); raketPivot.localScale = Vector3.one * Mathf.Lerp(.6f, 1, rK);
             Vector3 oc, oh; OdakPoz(out oc, out oh);
             float yk = rm || !camVar ? 1 : 1 - Mathf.Exp(-dt * 7); camS = Vector3.Lerp(camS, oc, yk); hedefS = Vector3.Lerp(hedefS, oh, yk); camVar = true;
-            Vector3 figCam = camS, rakCam = raketPivot.position + new Vector3(0, 0, raketBoy * 2.4f + .2f);
-            var cp = Vector3.Lerp(figCam, rakCam, Mathf.SmoothStep(0, 1, gec)); var hedef = Vector3.Lerp(hedefS, raketPivot.position, Mathf.SmoothStep(0, 1, gec));
+            Vector3 rc, rh; ParcaPoz(out rc, out rh); float ryk = rm || !rakVar ? 1 : 1 - Mathf.Exp(-dt * 7); rakCamS = Vector3.Lerp(rakCamS, rc, ryk); rakHedefS = Vector3.Lerp(rakHedefS, rh, ryk); rakVar = true;
+            Vector3 figCam = camS, rakCam = rakCamS;
+            var cp = Vector3.Lerp(figCam, rakCam, Mathf.SmoothStep(0, 1, gec)); var hedef = Vector3.Lerp(hedefS, rakHedefS, Mathf.SmoothStep(0, 1, gec));
             kam.transform.SetPositionAndRotation(cp, Quaternion.LookRotation(hedef - cp));
             if (parlaT >= 0)
             {
                 parlaT += dt; float k = parlaT < .9f ? Mathf.Sin(parlaT / .9f * Mathf.PI) : 0; fig.Parlat(parlaK, k);
-                if (parlaK == 1) foreach (var r in raketPivot.GetComponentsInChildren<Renderer>()) foreach (var m in r.materials) { if (k > 0) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", new Color(.85f, 1, .35f) * k * 1.2f); } else m.SetColor("_EmissionColor", Color.black); }
+                if (parlaK == 1) foreach (var r in raketPivot.GetComponentsInChildren<Renderer>()) if (parlaEt == null || System.Array.IndexOf(parlaEt, PlayerView.Etiket(r.gameObject.name)) >= 0) foreach (var m in r.materials) { if (k > 0) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", new Color(.85f, 1, .35f) * k * 1.2f); } else m.SetColor("_EmissionColor", Color.black); }
                 if (parlaT >= .9f) parlaT = -1;
             }
             // Durağan vitrin çizilmez (2026-10-27 performans turu 2): hareketi azaltta, Tutuş yakın planında ve sürükleme
@@ -274,7 +351,7 @@ namespace BirdieSmash.Game
             // Figür, açılar, geçiş, poz, kamera ve parlama aynıysa iki kare sonra kamera kapanır (RT son görüntüyü tutar);
             // biri değişince aynı karede açılır.
             var kr = kam.transform.rotation;
-            bool ayni = fig == sonFig && a == sonA && ra == sonRa && gec == sonGec && ReferenceEquals(poz, sonPoz) && odak == sonOdak && cp == sonCp && kr == sonRot && parlaT < 0;
+            bool ayni = !raKay && fig == sonFig && a == sonA && ra == sonRa && gec == sonGec && ReferenceEquals(poz, sonPoz) && odak == sonOdak && cp == sonCp && kr == sonRot && parlaT < 0;
             if (ayni) durgun++; else { durgun = 0; sonFig = fig; sonA = a; sonRa = ra; sonGec = gec; sonPoz = poz; sonOdak = odak; sonCp = cp; sonRot = kr; }
             bool ciz = durgun < 2; if (kam.enabled != ciz) kam.enabled = ciz;
         }

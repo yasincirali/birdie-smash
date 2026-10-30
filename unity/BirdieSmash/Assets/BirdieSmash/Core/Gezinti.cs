@@ -1,7 +1,7 @@
 // Menü gezintisi (komple-oyun tasarımı §2.1–2.2, adım 1; 2026-10-26). Saf C#: Unity'siz test edilir (tool/unity_test/BotMac).
 // Neden ayrı: geri davranışı (sol üst "‹ Geri", iOS kenar kaydırması, Android geri tuşu = Escape) üç yerden gelir; kural
 // tek yerde olsun ki üçü aynı sonucu versin.
-//   · 4 sekme (Oyna, Kariyer, Soyunma odası, Profil). Sekme değişince açık sayfalar kapanır (iOS sekme çubuğu kalıbı).
+//   · 5 sekme (Oyna, Kariyer, Dolap, Atölye, Profil; 2026-10-30'a kadar 4: Soyunma odası tekti). Sekme değişince açık sayfalar kapanır (iOS sekme çubuğu kalıbı).
 //   · Sayfa yığını: Ayarlar (⚙) → Nasıl oynanır / Lisanslar; alt sayfa (Hızlı maç kurulumu, kariyer maç kartı) yığının
 //     en üstünde durur. Aynı anda tek alt sayfa: yenisi açılınca öteki kapanır (iki sheet üst üste binmez; 2026-10-26).
 //   · Geri: önce en üstteki sayfa kapanır; yığın boşsa Oyna dışındaki sekmeden Oyna'ya döner; Oyna'da geri bir şey yapmaz
@@ -14,7 +14,10 @@ using System.Collections.Generic;
 
 namespace BirdieSmash.Core
 {
-    public enum Sekme { Oyna = 0, Kariyer = 1, Soyunma = 2, Profil = 3 }
+    // 2026-10-30 (yasin onayı, öneri artifact PN6wKhLj3ymqgEqLGzgWvZ seçenek A): Soyunma odası ikiye ayrıldı. Soyunma = "Dolap"
+    // (yalnız görünüş, 3B vitrin), Atolye (yuvalar, seviye, tarz, taban; oyunu etkileyen her şey). Değerler korunur (eski
+    // çağrılar ve dizi dizinleri); çubukta görünen sıra UiKok.SEKME_SIRA: Oyna, Kariyer, Dolap, Atölye, Profil.
+    public enum Sekme { Oyna = 0, Kariyer = 1, Soyunma = 2, Profil = 3, Atolye = 4 }
 
     public class Gezinti
     {

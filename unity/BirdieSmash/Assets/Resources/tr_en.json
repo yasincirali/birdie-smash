@@ -532,5 +532,20 @@
 "İki örgü": "Two braids",
 "Uzay topuzu": "Space buns",
 "Pompadur": "Pompadour",
-"Ananas": "Pineapple"
+"Ananas": "Pineapple",
+"Dolap": "Wardrobe",
+"Atölye": "Workshop",
+"Tüm raket": "Whole racket",
+"Kafa şekli": "Head shape",
+"Çerçeve": "Frame",
+"Şaft": "Shaft",
+"Oval": "Oval",
+"İzometrik": "Isometric",
+"Kalp": "Heart",
+"Çerçeve kaplaması": "Frame finish",
+"Raketin görünüşü oyunu etkilemez. Raketin gücü ve kordaj gerginliği Atölye'de.": "The racket's look does not affect play. Racket power and string tension are in the Workshop.",
+"Raketin görünüşü Raket kategorisinde.": "The racket's look is under Racket.",
+"{0} · Atölye": "{0} · Workshop",
+"Atölye'den takınca figürde görünür.": "Shows on the player once you fit it in the Workshop.",
+"Çubuklar ekipmanı anlatır, 50 nötr. Oyun tarzı çubuklara girmez. Görünüş Dolap'ta, oyunu etkilemez.": "Bars describe your gear, 50 is neutral. Your play style does not change the bars. Looks are in the Wardrobe and do not affect play."
 }

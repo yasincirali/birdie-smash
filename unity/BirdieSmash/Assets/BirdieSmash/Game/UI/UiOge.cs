@@ -159,7 +159,7 @@ namespace BirdieSmash.Game
     // Koddan çizilen simgeler (beyaz + alfa; boya Image.tintColor). 96 px, 2×2 örnekleme ile kenar yumuşatma.
     public static class Ikonlar
     {
-        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Gradyan, YildizDolu, YildizBos, Yukari, Asagi;
+        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Tisort, Gradyan, YildizDolu, YildizBos, Yukari, Asagi;
         // 2026-10-26 Yayın Gecesi: simgeler (tüy, şimşek, hedef, güneş, çarpı, açık kilit) ve şekil dokuları (eğik düğme,
         // yayın plakası, etiket şeridi, basamak çizgisi, altın kutucuk, ışık süpürmesi, ışın). Hepsi 2× çözünürlükte (1 pt =
         // 2 doku pikseli; USS'te -unity-slice-scale: 0.5), açılışta bir kez; her biri birkaç KB.
@@ -197,6 +197,12 @@ namespace BirdieSmash.Game
                 bool cerceve = Mathf.Abs(e - 1) * .45f < .07f; bool sap = Cizgi(x, y, 0, -.3f, 0, -.92f, .09f);
                 bool tel = e < 1 && (Mathf.Repeat(x + 1, .21f) < .035f || Mathf.Repeat(y + 1, .21f) < .035f);
                 return cerceve || sap || tel;
+            });
+            // Dolap sekmesi (2026-10-30): tişört; omuzlar ve kollar yatay, yaka oyuğu. Atölye sekmesi raket simgesini alır.
+            Tisort = Ciz((x, y) =>
+            {
+                bool govde = Mathf.Abs(x) < .42f && y > -.78f && y < .55f; bool kol = y < .55f && y > .1f && Mathf.Abs(x) < .82f && (y - .1f) > (Mathf.Abs(x) - .42f) * -.2f && Mathf.Abs(x) - .42f < (y - .05f) * .9f;
+                bool yaka = x * x + (y - .62f) * (y - .62f) < .2f * .2f; return (govde || kol) && !yaka;
             });
             Kisi = Ciz((x, y) =>
             {

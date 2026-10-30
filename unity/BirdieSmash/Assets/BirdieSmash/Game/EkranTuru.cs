@@ -346,12 +346,22 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_ayakkabi_ayak");
             ui.KarakterDene("ayakkabi", "karbon"); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_ayakkabi_deneme");
             ui.KarakterAc(UiKok.KAR_TEN); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_ten");
-            ui.SoyunmaSegment(2); ui.VitrinOdak(Vitrin.TUTUS, "drive"); yield return Bekle(40); yield return Cek("menu_" + ek + "yakin_tutus_forehand");
+            ui.KarakterAc(UiKok.KAR_KIYAFET); ui.VitrinOdak(Vitrin.TUTUS, "drive"); yield return Bekle(40); yield return Cek("menu_" + ek + "yakin_tutus_forehand");
             ui.VitrinOdak(Vitrin.TUTUS, "bh_drive"); yield return Bekle(40); yield return Cek("menu_" + ek + "yakin_tutus_backhand");
             // 2026-10-30 raket incelemesi: şaft ve boğaz (raket_koyu) da kopyada mı; dönüşün iki açısı
             ui.RaketIncele(true); yield return Bekle(60); yield return Cek("menu_" + ek + "raket_incele"); yield return Bekle(45); yield return Cek("menu_" + ek + "raket_incele_2");
-            ui.RaketIncele(false); yield return Bekle(30);
-            ui.SoyunmaSegment(0); yield return Bekle(10);
+            // 2026-10-30 raket tezgâhı: her parça kendi kadrajında, sonra üç kafa şekli (kordaj iki renkli: teller şekle uyuyor mu)
+            foreach (var pr in new[] { "kafa", "cerceve", "saft", "grip", "kordaj" }) { ui.RaketParcaSec(pr); yield return Bekle(50); yield return Cek("menu_" + ek + "tezgah_" + pr); }
+            string k0 = Ayar.RGOR["kafa"], d0 = Ayar.RGOR["desen"], s0 = Ayar.RGOR["saft"];
+            Ayar.RGOR["desen"] = "iki"; Ayar.RGOR["saft"] = "mavi";
+            foreach (var sk in RaketSekil.SIRA)
+            {
+                Ayar.RGOR["kafa"] = sk; root.vitrin.Yenile(); ui.RaketParcaSec("kafa"); yield return Bekle(50); yield return Cek("menu_" + ek + "tezgah_sekil_" + sk);
+                ui.RaketParcaSec("kordaj"); yield return Bekle(50); yield return Cek("menu_" + ek + "tezgah_sekil_" + sk + "_kordaj");
+            }
+            ui.RaketIncele(false); yield return Bekle(10); Ayar.RGOR["kafa"] = "kalp"; root.vitrin.Yenile(); ui.VitrinOdak(Vitrin.TUTUS, "drive"); yield return Bekle(50); yield return Cek("menu_" + ek + "tutus_kalp");
+            Ayar.RGOR["kafa"] = k0; Ayar.RGOR["desen"] = d0; Ayar.RGOR["saft"] = s0; root.vitrin.Yenile(); ui.RaketParcaSec(null);
+            ui.SoyunmaSegment(0); yield return Bekle(20); yield return Cek("menu_" + ek + "atolye");
             ui.YuvaAc("raket"); yield return Bekle(20); yield return Cek("menu_" + ek + "yuva_raket"); ui.Geri(); yield return Bekle(5);
             ui.YuvaAc("tel"); yield return Bekle(20); yield return Cek("menu_" + ek + "yuva_kordaj"); ui.Geri(); yield return Bekle(5);
         }
@@ -628,6 +638,7 @@ namespace BirdieSmash.Game
             ui.SekmeAc(Sekme.Kariyer); yield return DCek(ui, ek + "kariyer");
             ui.MacKartAc(KariyerVeri.Global(0, 0)); yield return DCek(ui, ek + "mac_karti"); ui.Geri();
             ui.SekmeAc(Sekme.Soyunma); yield return DCek(ui, ek + "soyunma", 30);
+            ui.SekmeAc(Sekme.Atolye); yield return DCek(ui, ek + "atolye", 20);
             if (!kisaca) { ui.SoyunmaSegment(UiKok.SEG_KARAKTER); yield return DCek(ui, ek + "karakter", 30); ui.SoyunmaSegment(0); yield return Bekle(5); }
             ui.SekmeAc(Sekme.Profil); yield return DCek(ui, ek + "profil");
             ui.SekmeAc(Sekme.Oyna); ui.HizliMacAc(); yield return DCek(ui, ek + "hizli"); ui.Geri();

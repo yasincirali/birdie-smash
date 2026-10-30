@@ -68,7 +68,10 @@ namespace BirdieSmash.Game
         // model Görünüm'de, sahip olunan ayakkabılardan. "taban" = tabanla aynı model (eski kayıtların görünüşü değişmez).
         public static string AYK_GOR = "taban";
         public static string AykGorunum { get { return gear == null ? null : AYK_GOR != "taban" && gear.Sahip("ayakkabi", AYK_GOR) ? AYK_GOR : gear.ayakkabi; } }
-        public static readonly Dictionary<string, string> RGOR = new Dictionary<string, string> { { "grip", "siyah" }, { "tel", "beyaz" }, { "tel2", "kirmizi" }, { "desen", "tek" } };
+        // 2026-10-30 Dolap › Raket: kafa ("oval" | "izometrik" | "kalp"; Game/RaketSekil) ve şaft ("model" = FBX'in koyu grisi ya da
+        // bir raket rengi). Aynı anahtarda (tuytop_raket_gor) yeni alan: eski kayıtta yoksa varsayılan, eski sürüm bilmediği
+        // alanı yok sayar (Json okuyucu yalnız RGOR'daki anahtarları arar).
+        public static readonly Dictionary<string, string> RGOR = new Dictionary<string, string> { { "grip", "siyah" }, { "tel", "beyaz" }, { "tel2", "kirmizi" }, { "desen", "tek" }, { "kafa", "oval" }, { "saft", "model" } };
         public static string FORMA { get { return GS.forma; } }
         static readonly PrefsKayit kayit = new PrefsKayit();
 
@@ -102,7 +105,7 @@ namespace BirdieSmash.Game
             var rg = Json.Obj(Json.Parse(Str("tuytop_raket_gor", null)));
             // desen 'tek' | 'iki' (HTML RGOR.desen ile aynı). 2026-10-26: denetim 'capraz' bekliyordu, yazılan değer 'iki' olduğu
             // için "Ana ve çapraz ayrı" seçimi her açılışta 'tek'e dönüyordu; eski 'capraz' kaydı da 'iki' sayılır.
-            if (rg != null) foreach (var k in new List<string>(RGOR.Keys)) { string v = Json.Str(rg, k, null); if (k == "desen" && v == "capraz") v = "iki"; if (v != null && (k == "desen" ? v == "tek" || v == "iki" : Vitrin.RAK_RENK.ContainsKey(v))) RGOR[k] = v; }
+            if (rg != null) foreach (var k in new List<string>(RGOR.Keys)) { string v = Json.Str(rg, k, null); if (k == "desen" && v == "capraz") v = "iki"; if (v != null && (k == "desen" ? v == "tek" || v == "iki" : k == "kafa" ? System.Array.IndexOf(RaketSekil.SIRA, v) >= 0 : k == "saft" ? v == "model" || Vitrin.RAK_RENK.ContainsKey(v) : Vitrin.RAK_RENK.ContainsKey(v))) RGOR[k] = v; }
             gear = new Gear(kayit, wins); gear.kariyerModu = kariyerModu;
             if (gear.renk == "sampiyon" && !sampiyon) gear.renk = "mavi";   // v1 kuralı (forma = Şampiyon), artık renkte
             // Görünüm (karakter): bilinmeyen değer varsayılana düşer; seviyesi düşmüş gibi görünen değer (bozuk XP) silinmez,
