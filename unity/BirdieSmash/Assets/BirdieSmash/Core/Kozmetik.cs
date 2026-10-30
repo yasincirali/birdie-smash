@@ -25,8 +25,9 @@ namespace BirdieSmash.Core
 
     public static class Kozmetik
     {
-        public const string TIP = "tip", SAC = "sac_model";
-        public static readonly string[] KAT = { TIP, SAC };
+        // 2026-10-30 Soyunma › Görünüm: şapka ve yüz aksesuarı (yalnız görünüş, aynı sahiplik ve fiyat kuralı; ilk öğe "yok").
+        public const string TIP = "tip", SAC = "sac_model", SAPKA = "sapka", YUZ = "yuz";
+        public static readonly string[] KAT = { TIP, SAC, SAPKA, YUZ };
         static Dictionary<string, KozmetikOge[]> veri; static Dictionary<string, RakipGorunum> rakip;
         public static void Sifirla() { veri = null; rakip = null; }
 
@@ -74,7 +75,7 @@ namespace BirdieSmash.Core
             if (veri != null) return;
             var o = Json.Obj(Json.Parse(KariyerVeri.Metin("karakter"))); if (o == null) throw new InvalidOperationException("Birdie Smash: veri/karakter.json okunamadı");
             var v = new Dictionary<string, KozmetikOge[]>();
-            foreach (var k in new[] { "tipler", SAC })
+            foreach (var k in new[] { "tipler", SAC, SAPKA, YUZ })
             {
                 var l = new List<KozmetikOge>(); var a = o.ContainsKey(k) ? o[k] as List<object> : null;
                 if (a != null) foreach (var x in a)

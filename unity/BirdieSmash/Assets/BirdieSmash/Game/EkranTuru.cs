@@ -330,8 +330,13 @@ namespace BirdieSmash.Game
         // kartları, 5 çubuk, ▲/▼). Oyuncunun kendi kaydıyla: seçim değiştirilmez, yalnız bakılır; sonunda Ekipman'a dönülür.
         IEnumerator Soyunma(UiKok ui, string ek)
         {
-            ui.SoyunmaSegment(1); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_tarz");
+            // 2026-10-30 Oyun | Görünüm: Oyun (tarz üstte, sonda ayakkabı tabanı), Görünüm › Renk ve raket, şapka ve yüz denemesi
+            ui.SoyunmaSegment(0); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_oyun");
+            ui.SayfaSonaKaydir(); yield return Bekle(10); yield return Cek("menu_" + ek + "soyunma_oyun_taban");
             ui.SoyunmaSegment(2); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_gorunum");
+            ui.KarakterAc(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "kep"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_sapka_kep");
+            ui.KarakterDene(Kozmetik.SAPKA, "buyucu"); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_sapka_buyucu");
+            ui.KarakterAc(UiKok.KAR_TEN); ui.KarakterDene(Kozmetik.YUZ, "gunes"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_yuz_gunes");
             // 2026-10-26 karakter tasarımı: Karakter alt sayfaları (Tip, Saç, Ayakkabı, Ten), yakın planlar (Yüz, Ayak, Tutuş:
             // kamera yumuşak geçişini bitirsin diye 40 kare) ve deneme kartı (alınmamış öğe vitrinde, kayda yazılmaz).
             ui.KarakterAc(UiKok.KAR_TIP); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_tip");
@@ -656,6 +661,11 @@ namespace BirdieSmash.Game
         // "PARÇA YOK" / renderer yoksa "GÖRÜNMEZ". Sonra Gerçekçi seçiliyken Karakter sayfası (uyarı kartı) ve Ayarlar, Sade
         // maçı, modeller arası gidiş-dönüşten sonra maçta figür. Oyuncunun seçimi sonunda geri konur, kayda yazılmaz.
         static readonly string[,] VARYANT_MAC = { { "atlet", "afro", "karbon" }, { "kadin", "topuz", "hafif" }, { "uzun", "mohikan", "bilekli" }, { "guclu", "rasta", "yastikli" } };
+        string AksTani()
+        {
+            var f = root.vitrin.Fig; var k = f != null ? f.AksesuarKok : null; if (k == null) return "aksesuar yok";
+            return "parça " + k.GetComponentsInChildren<Renderer>().Length + " · baş r " + k.lossyScale.x.ToString("0.000") + " · merkez y " + k.position.y.ToString("0.00");
+        }
         IEnumerator Varyantlar()
         {
             var ui = root.ui; if (ui == null || Ayar.gear == null) yield break;
@@ -682,6 +692,11 @@ namespace BirdieSmash.Game
                 ui.KarakterDene("ayakkabi", a.id); yield return Bekle(25); yield return Cek("model_vitrin_ayk_" + a.id);
                 VaryantSatir("vitrin ayk=" + a.id, root.vitrin.Fig, null, null, a.varlik ?? a.id, ref t);
             }
+            // 2026-10-30 şapka ve yüz aksesuarları (Game/Aksesuar): yakın plan yüz; rapor satırı kökün dünya ölçeği (= baş yarıçapı)
+            ui.KarakterAc(UiKok.KAR_SAPKA); yield return Bekle(30);
+            foreach (var o in Kozmetik.Liste(Kozmetik.SAPKA)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.SAPKA, o.id); yield return Bekle(20); yield return Cek("model_vitrin_sapka_" + o.id); rap.AppendLine("vitrin sapka=" + o.id + " · " + AksTani()); }
+            ui.KarakterAc(UiKok.KAR_TEN); yield return Bekle(30);
+            foreach (var o in Kozmetik.Liste(Kozmetik.YUZ)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.YUZ, o.id); yield return Bekle(20); yield return Cek("model_vitrin_yuz_" + o.id); rap.AppendLine("vitrin yuz=" + o.id + " · " + AksTani()); }
             ui.SoyunmaSegment(0); yield return Bekle(5);
             // maçta: seçim olarak (Ayar.KOZ + ayakkabı modeli), GameRoot.Kur yolu; yakın plan önden ve arkadan
             t = null;
@@ -737,6 +752,8 @@ namespace BirdieSmash.Game
             ui.SekmeAc(Sekme.Soyunma); yield return Bekle(20);
             var vt = root.vitrin;
             ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(30); yield return Cek("model_gercekci_karakter_ayakkabi");
+            ui.KarakterAc(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "kep"); yield return Bekle(40); yield return Cek("model_gercekci_sapka_kep"); rap.AppendLine("gerçekçi sapka=kep · " + AksTani());
+            ui.KarakterAc(UiKok.KAR_TEN); ui.KarakterDene(Kozmetik.YUZ, "gunes"); yield return Bekle(40); yield return Cek("model_gercekci_yuz_gunes"); rap.AppendLine("gerçekçi yuz=gunes · " + AksTani());
             foreach (var a in Gear.GEAR["ayakkabi"].Values)
             {
                 ui.KarakterDene("ayakkabi", a.id); vt.a = 20; vt.v = 0; yield return Bekle(25); yield return Cek("model_gercekci_vitrin_ayakkabi_" + a.id);
@@ -812,6 +829,7 @@ namespace BirdieSmash.Game
             VaryantTaban t = null; VaryantSatir("tüycük vitrin", root.vitrin.Fig, "tuycuk", null, null, ref t);
             Ayar.reduce = Ayar.reduceSecim = true; var vt = root.vitrin;
             ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(30); yield return Cek("model_tuycuk_karakter_ayakkabi");
+            ui.KarakterAc(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "tavsan"); yield return Bekle(40); yield return Cek("model_tuycuk_sapka_tavsan"); rap.AppendLine("tüycük sapka=tavsan · " + AksTani());
             t = null;
             foreach (var a in Gear.GEAR["ayakkabi"].Values)
             {

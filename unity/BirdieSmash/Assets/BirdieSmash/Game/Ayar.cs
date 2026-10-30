@@ -63,7 +63,11 @@ namespace BirdieSmash.Game
         // okur). Tarz ekipman kartına girmez: güç ekipmandan, tarz karakterden (tasarım §5.1).
         public static Gear gear; public static GearStats GS = GearStats.Notr, GSE = GearStats.Notr;
         public static readonly Dictionary<string, string> GORUNUM = new Dictionary<string, string> { { "ten", "dogal" }, { "sac", "dogal" }, { "ayakkabi", "dogal" }, { "kaplama", "model" }, { "sort", "dogal" } };   // sort: 2026-10-27 şort rengi (Gerçekçi, Sade)
-        public static readonly Dictionary<string, string> KOZ = new Dictionary<string, string> { { Kozmetik.TIP, "atlet" }, { Kozmetik.SAC, "kisa" } };
+        public static readonly Dictionary<string, string> KOZ = new Dictionary<string, string> { { Kozmetik.TIP, "atlet" }, { Kozmetik.SAC, "kisa" }, { Kozmetik.SAPKA, "yok" }, { Kozmetik.YUZ, "yok" } };
+        // Ayakkabı görünüşü (2026-10-30, Soyunma Oyun/Görünüm ayrımı): taban (güç) Gear "ayakkabi" seçimi Oyun'da; figürde görünen
+        // model Görünüm'de, sahip olunan ayakkabılardan. "taban" = tabanla aynı model (eski kayıtların görünüşü değişmez).
+        public static string AYK_GOR = "taban";
+        public static string AykGorunum { get { return gear == null ? null : AYK_GOR != "taban" && gear.Sahip("ayakkabi", AYK_GOR) ? AYK_GOR : gear.ayakkabi; } }
         public static readonly Dictionary<string, string> RGOR = new Dictionary<string, string> { { "grip", "siyah" }, { "tel", "beyaz" }, { "tel2", "kirmizi" }, { "desen", "tek" } };
         public static string FORMA { get { return GS.forma; } }
         static readonly PrefsKayit kayit = new PrefsKayit();
@@ -107,6 +111,7 @@ namespace BirdieSmash.Game
             if (gv != null) foreach (var k in new List<string>(GORUNUM.Keys)) { string v = Json.Str(gv, k, null); if (v != null && System.Array.Exists(Karakter.Gorunum(k), o => o.id == v)) GORUNUM[k] = v; }
             // Tip ve saç biçimi: kayıtta yoksa varsayılan; varsa sahip sayılır (Kozmetik.Koru: hiçbir seçim elden alınmaz).
             foreach (var k in Kozmetik.KAT) KOZ[k] = Kozmetik.Koru(gear, k, gv != null ? Json.Str(gv, k, Kozmetik.Varsayilan(k)) : Kozmetik.Varsayilan(k));
+            AYK_GOR = gv != null ? Json.Str(gv, "ayk_gor", "taban") : "taban";
             GearHesap();
             Kaydet();
         }
@@ -159,7 +164,7 @@ namespace BirdieSmash.Game
             PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0); if (kosIpucu) PlayerPrefs.SetInt("tuytop_kos_ipucu", 1);
             PlayerPrefs.SetString("tuytop_dil", dil); PlayerPrefs.SetString("tuytop_puan", puan.ToString()); PlayerPrefs.SetString("tuytop_yazi", yazi); PlayerPrefs.SetString("tuytop_fps", fps ? "1" : "0");
             var rg = new Dictionary<string, object>(); foreach (var kv in RGOR) rg[kv.Key] = kv.Value; PlayerPrefs.SetString("tuytop_raket_gor", Json.Write(rg));
-            var gv = new Dictionary<string, object>(); foreach (var kv in GORUNUM) gv[kv.Key] = kv.Value; foreach (var kv in KOZ) gv[kv.Key] = kv.Value; PlayerPrefs.SetString("tuytop_gorunum", Json.Write(gv));
+            var gv = new Dictionary<string, object>(); foreach (var kv in GORUNUM) gv[kv.Key] = kv.Value; foreach (var kv in KOZ) gv[kv.Key] = kv.Value; gv["ayk_gor"] = AYK_GOR; PlayerPrefs.SetString("tuytop_gorunum", Json.Write(gv));
             if (gear != null) { gear.GearYaz(); gear.EkoYaz(); }
             PlayerPrefs.Save();
         }

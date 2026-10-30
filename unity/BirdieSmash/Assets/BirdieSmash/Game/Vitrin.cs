@@ -30,7 +30,7 @@ namespace BirdieSmash.Game
         public const int TAM = 0, YUZ = 1, AYAK = 2, TUTUS = 3;
         public int odak { get; private set; }
         public string poz { get; private set; }
-        public string deneTip, deneSac, deneAyk;
+        public string deneTip, deneSac, deneAyk, deneSapka, deneYuz;
         Transform bBas, bEl, bParmak; readonly List<Transform> bAyak = new List<Transform>(); Renderer bGrip, bTel, bSac, bGovde; Vector3 camS, hedefS; bool camVar;
         public PlayerView Fig { get { return fig; } }   // ekran turu tanısı (VaryantOzet)
         public Camera Kam { get { return kam; } }       // ekran turu: bölge rengi vitrin RT'sinden örneklenir (2026-10-27)
@@ -51,7 +51,7 @@ namespace BirdieSmash.Game
         }
 
         public void Ac() { gameObject.SetActive(true); kam.enabled = true; durgun = 0; Yenile(); }
-        public void Kapat() { kam.enabled = false; gec = hedefGec = 0; odak = TAM; poz = null; deneTip = deneSac = deneAyk = null; camVar = false; gameObject.SetActive(false); }
+        public void Kapat() { kam.enabled = false; gec = hedefGec = 0; odak = TAM; poz = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = null; camVar = false; gameObject.SetActive(false); }
         // Yakın plan seç (aynı odağa ikinci dokunuş Soyunma odasında Tüm boy'a döner). Tutuşa girerken el kameraya döner.
         public void Odak(int o, string klip = null)
         {
@@ -64,7 +64,7 @@ namespace BirdieSmash.Game
         public void Yenile()
         {
             var g = PlayerView.Benim();
-            if (deneTip != null) g.tip = deneTip; if (deneSac != null) g.sacModel = deneSac; if (deneAyk != null) g.aykModel = deneAyk;
+            if (deneTip != null) g.tip = deneTip; if (deneSac != null) g.sacModel = deneSac; if (deneAyk != null) g.aykModel = deneAyk; if (deneSapka != null) g.sapka = deneSapka; if (deneYuz != null) g.yuz = deneYuz;
             string k = Ayar.model + g.Anahtar();
             if (k == anah && fig != null) return; anah = k;
             if (fig != null) Destroy(fig.gameObject); if (raketPivot != null) Destroy(raketPivot.gameObject);

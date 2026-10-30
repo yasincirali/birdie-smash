@@ -19,7 +19,31 @@
   {"id": "afro",      "ad": "Afro",         "sv": 9,  "fiyat": 450, "varlik": "afro", "bant": false},
   {"id": "rasta",     "ad": "Rasta",        "sv": 11, "fiyat": 500, "varlik": "rasta"},
   {"id": "mullet",    "ad": "Mullet",       "sv": 13, "fiyat": 700, "varlik": "mullet", "garip": true},
-  {"id": "mohikan",   "ad": "Mohikan",      "sv": 15, "fiyat": 900, "varlik": "mohikan", "garip": true}
+  {"id": "mohikan",   "ad": "Mohikan",      "sv": 15, "fiyat": 900, "varlik": "mohikan", "garip": true},
+  {"id": "kirpi", "ad": "Kirpi", "sv": 3, "fiyat": 150, "varlik": "kirpi"},
+  {"id": "iki_orgu", "ad": "İki örgü", "sv": 4, "fiyat": 200, "varlik": "iki_orgu"},
+  {"id": "uzay", "ad": "Uzay topuzu", "sv": 7, "fiyat": 350, "varlik": "uzay", "garip": true},
+  {"id": "pompadur", "ad": "Pompadur", "sv": 10, "fiyat": 500, "varlik": "pompadur", "garip": true},
+  {"id": "ananas", "ad": "Ananas", "sv": 12, "fiyat": 650, "varlik": "ananas", "garip": true}
+],
+"aksesuar_not": "2026-10-30 Soyunma › Görünüm (yasin onayı): şapka ve yüz aksesuarları YALNIZ görünüş (güç alanı yasak, Kozmetik kilitler), Tüy ve seviyeyle; gerçek para yok. Her modelde görünür: parçalar Unity'de kafa kemiğine bağlanan basit geometriler (Game/Aksesuar.cs), bant halkasından ölçülen baş çerçevesinde. Hacimli saç (afro, topuz, anime…) şapkanın altında kısa kesime döner. İlk öğe 'yok' ücretsiz varsayılan.",
+"sapka": [
+  {"id": "yok", "ad": "Şapka yok", "sv": 1, "fiyat": 0},
+  {"id": "kep", "ad": "Kep", "sv": 2, "fiyat": 80},
+  {"id": "kep_ters", "ad": "Ters kep", "sv": 2, "fiyat": 80},
+  {"id": "bere", "ad": "Bere", "sv": 3, "fiyat": 120},
+  {"id": "kulaklik", "ad": "Kulaklık", "sv": 5, "fiyat": 200},
+  {"id": "tavsan", "ad": "Tavşan kulağı", "sv": 7, "fiyat": 300, "garip": true},
+  {"id": "buyucu", "ad": "Büyücü şapkası", "sv": 10, "fiyat": 500, "garip": true},
+  {"id": "sovalye", "ad": "Şövalye kaskı", "sv": 14, "fiyat": 800, "garip": true}
+],
+"yuz": [
+  {"id": "yok", "ad": "Aksesuar yok", "sv": 1, "fiyat": 0},
+  {"id": "gunes", "ad": "Güneş gözlüğü", "sv": 2, "fiyat": 80},
+  {"id": "yuvarlak", "ad": "Yuvarlak gözlük", "sv": 3, "fiyat": 120},
+  {"id": "boya", "ad": "Yüz boyası", "sv": 4, "fiyat": 150},
+  {"id": "biyik", "ad": "Kalın bıyık", "sv": 6, "fiyat": 250, "garip": true},
+  {"id": "korsan", "ad": "Korsan bandı", "sv": 9, "fiyat": 400, "garip": true}
 ],
 "tarzlar": [
   {"id": "dengeli", "ad": "Dengeli",     "sv": 1,  "arti": "Artısı da eksisi de yok",                               "eksi": "",                                  "etki": {}},

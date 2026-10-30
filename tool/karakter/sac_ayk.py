@@ -14,7 +14,8 @@ def _ss(a,b,x):
     t=max(0.,min(1.,(x-a)/(b-a))) if b!=a else (1. if x>=a else 0.); return t*t*(3-2*t)
 
 # id → (bant uyumu ön kararı yerine ölçülür: sikistir()). Sıra = mağaza sırası (ucuzdan pahalıya değil, görünüş akrabalığı).
-SAC_IDS=('kisa','kazima','yan','atkuyrugu','topuz','afro','mohikan','anime','orgu','rasta','mullet')
+SAC_IDS=('kisa','kazima','yan','atkuyrugu','topuz','afro','mohikan','anime','orgu','rasta','mullet',
+        'kirpi','ananas','uzay','pompadur','iki_orgu')   # 2026-10-30 Soyunma › Görünüm: eğlenceli saçlar (yasin)
 AYK_IDS=('klasik','hafif','yastik','bilekli','karbon')
 BANT_KAL=E('BS_OY_BANTKAL','.006')   # bandın deriden yüksekliği: saç bandın altında bu kalınlığa ezilir (gerçekte de ezer)
 BANT_SIK=E('BS_OY_BANTSIK','.013')   # bundan fazla ezmek gereken saçta bant gizlenir (afro, dikenler): ezik göze batar. 2026-10-27: 1,1 → 1,3 cm
@@ -26,7 +27,7 @@ BANT_SIK=E('BS_OY_BANTSIK','.013')   # bundan fazla ezmek gereken saçta bant gi
 # zaten hacimli (afro) ve kafaya yatık biçimler (kazıma, örgü) az büyür, yoksa afro kafadan iri, kazıma kabarık olurdu.
 # HACIM oyuncak.py'den tipin 'hacim' değeriyle gelir; 1 = eski kalınlık.
 HACIM=1.
-HACIM_W={'kisa':1.,'kazima':.25,'yan':1.,'atkuyrugu':.8,'topuz':.8,'afro':.3,'mohikan':.5,'anime':.9,'orgu':.3,'rasta':.8,'mullet':1.}
+HACIM_W={'kisa':1.,'kazima':.25,'yan':1.,'atkuyrugu':.8,'topuz':.8,'afro':.3,'mohikan':.5,'anime':.9,'orgu':.3,'rasta':.8,'mullet':1.,'kirpi':.8,'ananas':.3,'uzay':.8,'pompadur':.9,'iki_orgu':.8}
 _HV=[1.]
 
 class Bas:
@@ -363,6 +364,59 @@ def _sac_kur(B,sid):
             ar=_ss(gm.y-.11,gm.y-.15,c.y)*_ss(gm.z-.02,gm.z-.10,c.z)
             return .014*ar+.006*_ss(gm.z-.07,gm.z-.13,c.z)*_ss(gm.y-.11,gm.y-.15,c.y)
         o=kabuk(B,zh,kal_kisa(B,T=.015,percem=.010,oluk=.003,ek=ekf),'sac_mullet',sirt=True,alt=.6)
+    elif sid=='kirpi':
+        # kirpi: kısa kabuk + başın her yanına 34 kısa, kalın tabanlı koni (anime'den kısa ve sık; yüze inmez)
+        o=kabuk(B,cizgi(B,alin=.055),kal_kisa(B,T0=.004,T=.012,percem=.004,oluk=.002),'sac_kirpi')
+        bm=bmesh.new()
+        for el in (32,48,64,80):
+            n_az=int(5+9*math.cos(math.radians(el)))
+            for k in range(n_az):
+                az=40+280*k/max(1,n_az-1) if el<40 else 360*k/n_az+17*el
+                p,n=B.yuzey(B.yon(az,el)); d=(n+Vector((0,-.35,.15))).normalized()
+                Lk=.026+.010*math.sin(k*2.3+el)
+                uc=p+d*Lk
+                if uc.z<gm.z+.03 and uc.y>gm.y-.06: continue   # alın önüne diken yok
+                tup(bm,[p-n*.008,p+d*Lk*.45,uc],[.013,.0075,0.],kenar=5)
+        ek.append(_ek_nesne(bm,'sac_kirpi_ek'))
+    elif sid=='ananas':
+        # ananas: yanlar kazıma, tepede yapraklar gibi açılan 9 tutam (tepe noktasından dışa ve yukarı)
+        o=kabuk(B,cizgi(B,alin=.056),lambda c,n,db: .0014*_ss(0,.004,db)+.0032,'sac_ananas',yumusat=1)
+        bm=bmesh.new(); Q,n0=B.yuzey(B.yon(160,80))
+        tup(bm,[Q-n0*.004,Q+n0*.020],[.026,.022],kenar=8,uc=False)
+        # iki kat: içte 5 dik, dışta 8 açık yaprak (geniş tabanlı, uçta incelir; ilk deneme süpürge gibi ince kalmıştı)
+        for k in range(13):
+            ic=k<5; a=math.radians((72*k+20) if ic else (45*(k-5))); acil=.25 if ic else .85
+            d=(n0*1.0+Vector((math.cos(a),math.sin(a),0))*acil).normalized(); b0=Q+n0*.016
+            Lk=.105 if ic else .085
+            yol=[b0,b0+d*Lk*.45+Vector((0,0,.012)),b0+d*Lk*.8,b0+d*Lk+Vector((0,0,-.012*acil))]
+            tup(bm,yol,[.018,.015,.009,0.],kenar=6)
+        ek.append(_ek_nesne(bm,'sac_ananas_ek'))
+    elif sid=='uzay':
+        # uzay topuzu: geriye taranmış ince kabuk + tepenin iki yanında iki topuz (kulakların üstünde değil, tepede)
+        o=kabuk(B,cizgi(B,alin=.060,sakak=.010),kal_kisa(B,T0=.0035,T=.007,percem=0.,oluk=.0012,frek=(26,0),ramp_r=.012),'sac_uzay')
+        bm=bmesh.new()
+        for az in (115,245):
+            Q,n=B.yuzey(B.yon(az,58))
+            tup(bm,[Q-n*.004,Q+n*.012],[.020,.018],kenar=8,uc=False)
+            elipsoid(bm,Q+n*.032,(.034,.034,.031),u=10,v=7,ek=lambda d: .05*math.sin(5*math.atan2(d.y,d.x)+3*d.z))
+        ek.append(_ek_nesne(bm,'sac_uzay_ek'))
+    elif sid=='pompadur':
+        # pompadur: yanlar kısa, alnın üstünde öne ve yukarı kabaran büyük kütle (kalınlık önde 4,5 cm'ye çıkar)
+        def ekf(c,n,ramp,y):
+            on=_ss(gm.y-.04,gm.y+.02,c.y)*_ss(gm.z+.02,gm.z+.08,c.z)*math.exp(-(c.x/.055)**2)
+            return .036*on*ramp
+        o=kabuk(B,cizgi(B,alin=.054),kal_kisa(B,T=.014,percem=.006,oluk=.0025,ek=ekf),'sac_pompadur',yumusat=3)
+    elif sid=='iki_orgu':
+        # iki örgü: ortadan ayrık ince kabuk + iki yandan sarkan boğumlu örgü (omuzun önünde biter: smaçta sırta girmez)
+        o=kabuk(B,cizgi(B,alin=.060,sakak=.010),kal_kisa(B,T0=.0035,T=.008,percem=0.,oluk=.0012,frek=(26,0),ramp_r=.012),'sac_iki_orgu')
+        bm=bmesh.new()
+        for az in (110,250):
+            Q,n=B.yuzey(B.yon(az,18)); yan=Vector((1 if az<180 else -1,0,0))
+            yol=[Q-n*.004,Q+n*.012+Vector((0,-.006,-.012))]
+            for j in range(1,8): yol.append(yol[1]+yan*.008*j/7+Vector((0,.004*j,-.022*j)))
+            rs=[.014,.015]+[(.012 if k%2==0 else .009) for k in range(6)]+[.004]
+            tup(bm,yol,rs,kenar=6)
+        ek.append(_ek_nesne(bm,'sac_iki_orgu_ek'))
     else: raise KeyError(sid)
     sk=1+(_HV[0]-1)*.3
     for e in ek:
