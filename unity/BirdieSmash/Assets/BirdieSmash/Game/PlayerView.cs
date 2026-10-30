@@ -41,7 +41,10 @@ namespace BirdieSmash.Game
         [System.Serializable] class TipMeta { public string id, sac, ayakkabi, sacRenk; public float boy; }
         [System.Serializable] class SacMeta { public string id; public bool bant = true; }
         // bant: kafa bandı halkası, bas__isaret'e göre model biriminde (dz yukarı, df ileri, r yarıçap; unity_fbx.py Blender'da ölçer).
-        [System.Serializable] public class BantMeta { public float dz, df, r; }
+        // yan/ust/on/arka: baş elipsoidi, r'ye oran (bant yüksekliğinde yan, ön, arka; bant merkezinden tepe). 0 = küre (1).
+        // Oyuncak başı yumurta (r65 ölçümü: ön 1,25r, arka 1,03r, yan ,83r, tepe ,74r): küre çerçevede şapka başın üstünde
+        // top gibi duruyor, gözlük/boya/bıyık başın içinde kalıyordu. Gerçekçi/Sade/Tüycük küreyle oturuyor, alan yok.
+        [System.Serializable] public class BantMeta { public float dz, df, r, yan, ust, on, arka; }
         [System.Serializable] class Meta { public ClipMeta[] clips; public TipMeta tip; public SacMeta[] sac; public BantMeta bant; }
 
         // Görünüm: null alan = FBX'in kendi rengi (cerceve/grip/tel) ya da gizli (bant/bilek).

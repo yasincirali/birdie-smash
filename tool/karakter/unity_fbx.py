@@ -230,6 +230,9 @@ if _bo is not None and hb is not None:
     bpy.context.scene.frame_set(meta['clips'][0]['first']); _dg = bpy.context.evaluated_depsgraph_get(); _e = _bo.evaluated_get(_dg)
     _p = [_e.matrix_world @ v.co for v in _e.data.vertices]; _c = sum(_p, Vector()) / len(_p)
     meta['bant'] = {'dz': round(_c.z - hc.z, 4), 'df': round(_c.y - hc.y, 4), 'r': round(sum((q - _c).to_2d().length for q in _p) / len(_p), 4)}
+    # Oyuncak başı yumurta: elipsoit oranları (r'ye göre; Unity Aksesuar). Atlet başından ölçüldü (2026-10-30), dört tip aynı
+    # baş ağını ölçekliyor; diğer modellerde küre (alan yok).
+    if AD.startswith('oyuncak'): meta['bant'].update({'yan': 0.83, 'ust': 0.74, 'on': 1.25, 'arka': 1.03})
     print('bant', meta['bant'])
 json.dump(meta, open(os.path.join(OUT, AD + '_clips.json'), 'w'), indent=1, ensure_ascii=False)
 # Tanı (2026-10-27, oyuncak oran turu): temas karesinde raket kafası, model biriminde (yaw-yerel, kök kalça altında). Uzanma

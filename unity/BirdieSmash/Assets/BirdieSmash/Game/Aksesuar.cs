@@ -37,9 +37,13 @@ namespace BirdieSmash.Game
                 c = bas.position + dikey.normalized * bant.dz * s + ileri.normalized * bant.df * s; r = bant.r * s;
             }
             else if (!BantHalkasi(model, dikey, out c, out r)) return null;
+            // Elipsoit (BantMeta yan/ust/on/arka): birim baş (yan x, tepe y, ön z) ölçülen başa gerilir, merkez öne/arkaya kayar.
+            float yan = 1, ust = 1, on = 1, arka = 1;
+            if (bant != null && bant.yan > 0 && bant.ust > 0 && bant.on > 0 && bant.arka > 0) { yan = bant.yan; ust = bant.ust; on = bant.on; arka = bant.arka; }
+            c += ileri.normalized * r * (on - arka) * .5f;
             var kok = new GameObject("aksesuar").transform; kok.SetParent(kafa, true);
             kok.position = c; kok.rotation = Quaternion.LookRotation(ileri.normalized, dikey.normalized);
-            float ls = kafa.lossyScale.x; kok.localScale = Vector3.one * (r / Mathf.Max(1e-5f, ls));
+            float ls = kafa.lossyScale.x; kok.localScale = new Vector3(yan, ust, (on + arka) * .5f) * (r / Mathf.Max(1e-5f, ls));
             if (Var(sapka)) Sapka(kok, sapka, forma);
             if (Var(yuz)) Yuz(kok, yuz, forma);
             foreach (var rd in kok.GetComponentsInChildren<Renderer>()) rd.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
