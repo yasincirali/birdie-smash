@@ -9,6 +9,7 @@ Bu sürümde yeni:
 - Antrenmanın ilk topunda yazı kartı küçüldü; açıklama ? düğmesinde.
 - Maçta sayıdan sonra çıkan yazılar artık kesik görünmüyor.
 - Duraklat ekranı ve maç içi yazılar yeni yazı tipinde; düğmeler maç sonundaki gibi.
+- Vuruş laboratuvarında her görevin ilk topunda oyun bir kez durur ve gereken kaydırma gösterilir; sonra sen denersin.
 - Rakibin raketi artık içi beyaz dolu disk gibi görünmüyor.
 - Galibiyet ekranında yıldız satırını tekrar eden görev satırı kalktı.
 - Maç başlarken ve top havadayken duraklatmadan dönünce kısa bir 3-2-1 geri sayımı var.
@@ -24,7 +25,8 @@ Nasıl denenir:
 8. Bir maç başlat: 3-2-1 sayılmalı, sonra oyun başlamalı. Ralli sürerken II ile duraklat, Devam'a bas: yine 3-2-1, top havada beklemeli.
 9. Maçta II'ye bas: Duraklat ekranı koyu zeminde, büyük turuncu Maça devam et düğmesiyle açılmalı, yazılar eğik olmamalı.
 10. Maçta rakibin raketine bak: kafanın içi beyaz dolu görünmemeli, teller hafif saydam olmalı.
-11. Garip bir şey olursa telefonu ve ekranı yaz.
+11. Antrenman > Görevler'den Drop'u aç: ilk topta oyun durmalı, ekranda nasıl kaydıracağın canlanmalı. Kaydırınca oyun sürmeli, sonraki toplarda durmamalı.
+12. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:

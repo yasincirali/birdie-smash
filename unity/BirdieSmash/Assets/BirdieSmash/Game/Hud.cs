@@ -559,7 +559,9 @@ namespace BirdieSmash.Game
                 Shadowed(new Rect(lx, yy - 24 * K, rx - lx, 40 * K), L.T(Match.OGR_AD[o.cagri]).ToUpper() + "!", Stil(big, Mathf.RoundToInt(30 * fu * b)), Kit.Hex("#d8ff5a"));
                 return;
             }
-            if (o.n >= 1 && o.miss < 2) return;   // ustalık: ikinci deneme izsiz
+            // görev: hareket yalnız ilk topta bir kez gösterilir (Core OgrDurdur gösterim topu; serviste ilk servis), sonra oyuncu dener
+            if (a.dril != null) { if (a.iz == null || (a.servis != null ? o.dene > 0 : !o.dur)) return; }
+            else if (o.n >= 1 && o.miss < 2) return;   // ustalık: ikinci deneme izsiz
             Vector2 o0;
             if (a.servis != null) { if (M.s != null || M.svPending != null) return; var p = root.cam.WorldToScreenPoint(Kit.W(M.me.x, M.me.y, .9f)); o0 = new Vector2(p.x, H - p.y + 30 * K); }
             else { if (!o.dur || M.s == null) return; var p = root.cam.WorldToScreenPoint(Kit.W(M.s.x, M.s.y, M.s.z)); o0 = new Vector2(p.x, H - p.y + (a.iz == "asagi" ? -50 : 45) * K); }
@@ -570,6 +572,7 @@ namespace BirdieSmash.Game
             System.Func<float, Vector2> nk = t => { float uu = 1 - t; return uu * uu * o0 + 2 * uu * t * c + t * t * e; };
             for (int i = 0; i < 24; i += 2) Cizgi(nk(i / 24f), nk((i + 1) / 24f), 3 * K, new Color(1, 1, 1, .75f));
             Ok(nk(.97f), e, Color.white, true);
+            if (a.dril != null) { var bs = Stil(small, Mathf.RoundToInt(13 * fu), FontStyle.Bold); string bt = L.T("Böyle kaydır, sonra sen dene"); float lx2 = Mathf.Clamp(o0.x + 24 * K, lx, rx - 200 * K); Shadowed(new Rect(lx2, (o0.y + e.y) / 2 - 10 * K, 200 * K, 20 * K), bt, bs, Kit.Hex("#d8ff5a")); }
             float dur = hiz + .7f, tt = Ayar.reduce ? 1 : Mathf.Min(1, (now % dur) / hiz); var q = nk(tt); float r = 11 * K;
             Tex(new Rect(q.x - r - 2, q.y - r - 2, 2 * r + 4, 2 * r + 4), disk, new Color(8 / 255f, 16 / 255f, 17 / 255f, .8f)); Tex(new Rect(q.x - r, q.y - r, 2 * r, 2 * r), disk, new Color(.85f, 1, .35f, .95f));
         }
