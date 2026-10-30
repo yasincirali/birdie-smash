@@ -330,15 +330,20 @@
   "raket_tel2__tel2",
   "raket_tel__tel",
   "sac_afro__sac",
+  "sac_ananas__sac",
   "sac_anime__sac",
   "sac_atkuyrugu__sac",
+  "sac_iki_orgu__sac",
   "sac_kazima__sac",
+  "sac_kirpi__sac",
   "sac_kisa__sac",
   "sac_mohikan__sac",
   "sac_mullet__sac",
   "sac_orgu__sac",
+  "sac_pompadur__sac",
   "sac_rasta__sac",
   "sac_topuz__sac",
+  "sac_uzay__sac",
   "sac_yan__sac"
  ],
  "raket": {
@@ -395,6 +400,26 @@
   },
   {
    "id": "mullet",
+   "bant": true
+  },
+  {
+   "id": "kirpi",
+   "bant": true
+  },
+  {
+   "id": "ananas",
+   "bant": true
+  },
+  {
+   "id": "uzay",
+   "bant": true
+  },
+  {
+   "id": "pompadur",
+   "bant": false
+  },
+  {
+   "id": "iki_orgu",
    "bant": true
   }
  ],
