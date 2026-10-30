@@ -21,6 +21,7 @@ namespace BirdieSmash.Game
         // (25), ilk Günün maçı galibiyeti (10; seri yok, kaçırılan gün yok, tek seferlik), Usta yolunda 6 basamak (20),
         // toplam 10 imza vuruşu okumak (15; okudun sayacı maç sonunda birikir, Ilerleme.ImzaOkunan).
         public const string ANTRENOR = "bs_antrenor", GUNUN_MACI = "bs_gunun_maci", USTA6 = "bs_usta_6", IMZA_OKUR = "bs_imza_okur";
+        public const int ANTRENOR_YILDIZ = 24;
         public const int IMZA_OKUR_HEDEF = 10;
         static Dictionary<string, object> yerel; static bool istendi;
         public static bool acik;   // Game Center girişi tamam: Ayarlar'da "Başarımlar" görünür

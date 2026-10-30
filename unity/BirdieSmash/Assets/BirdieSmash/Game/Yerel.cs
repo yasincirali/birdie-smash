@@ -19,6 +19,7 @@ namespace BirdieSmash.Game
         [DllImport("__Internal")] static extern float BirdieYaziOlcek();
         [DllImport("__Internal")] static extern int BirdieHareketAzalt();
         [DllImport("__Internal")] static extern int BirdieDusukGuc();
+        [DllImport("__Internal")] static extern int BirdieDigerSesCaliyor();
 #endif
         static readonly Dictionary<string, int[]> HAP = new Dictionary<string, int[]> {
             {"tick",new[]{8}},{"hit",new[]{14}},{"perfect",new[]{16,10,28}},{"smash",new[]{35,15,55}},{"jump",new[]{45,20,30,20,80}},
@@ -52,6 +53,15 @@ namespace BirdieSmash.Game
             try { float k = BirdieYaziOlcek(); return k > 0 ? k : 1; } catch { return 1; }
 #else
             return 1;
+#endif
+        }
+        // Başka uygulama ses çalıyor mu (menü müziği başlamasın; Sfx.MuzikIsle). Editor'de ve iOS dışında hayır.
+        public static bool DigerSesCaliyor()
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            try { return BirdieDigerSesCaliyor() == 1; } catch { return false; }
+#else
+            return false;
 #endif
         }
         public static bool HareketAzalt()

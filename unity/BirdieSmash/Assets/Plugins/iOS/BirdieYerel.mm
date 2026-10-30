@@ -5,8 +5,12 @@
 //      sürümündeki dokuyu (vuruş türü, tel gerginliği, sıyırma, slice) aynen hisseder. Core Haptics gerekmedi.
 //   2) Dynamic Type: sistemin tercih edilen yazı boyutu (UIContentSizeCategory) gövde metni oranı olarak (L = 1).
 //   3) Hareketi azalt: UIAccessibilityIsReduceMotionEnabled (HTML prefers-reduced-motion karşılığı).
+//   4) Başka uygulamanın sesi (2026-10-30, menü müziği): AVAudioSession secondaryAudioShouldBeSilencedHint. Unity oturumu
+//      Ambient kategoride (PlayerSettings.muteOtherAudioSources = false, CiBuild) açtığı için oyuncunun müziği susmaz;
+//      ipucu "evet" derse menü müziği hiç başlamaz.
 // ARC açık ya da kapalı derlenir: üreteçler bir kez ayrılır ve hiç bırakılmaz, bloklar yalnız sayı yakalar.
 #import <UIKit/UIKit.h>
+#import <AVFoundation/AVFoundation.h>
 
 static UIImpactFeedbackGenerator *bsAgir = nil, *bsOrta = nil, *bsHafif = nil;
 static UISelectionFeedbackGenerator *bsSecim = nil;
@@ -74,4 +78,9 @@ extern "C" int BirdieHareketAzalt(void)
 extern "C" int BirdieDusukGuc(void)
 {
     return [[NSProcessInfo processInfo] isLowPowerModeEnabled] ? 1 : 0;
+}
+
+extern "C" int BirdieDigerSesCaliyor(void)
+{
+    return [[AVAudioSession sharedInstance] secondaryAudioShouldBeSilencedHint] ? 1 : 0;
 }

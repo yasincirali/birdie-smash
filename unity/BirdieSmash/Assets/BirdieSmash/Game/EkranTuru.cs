@@ -291,7 +291,7 @@ namespace BirdieSmash.Game
             ui.SekmeAc(Sekme.Oyna); ui.HizliMacAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "hizli"); ui.Geri();
             ui.AyarlarAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "ayarlar"); ui.Geri(); yield return Bekle(5);
             // 2026-10-26 adım 7–8: antrenman sayfası (örnek yıldızlarla), görev kartı, Günün maçı kartı
-            var eskiP = Ayar.ilerleme; var dp = new Ilerleme(); dp.DrilKaydet("derin", 3); dp.DrilKaydet("drop", 2); dp.DrilKaydet("kose", 1); dp.DrilKaydet("servis", 2); Ayar.ilerleme = dp;
+            var eskiP = Ayar.ilerleme; var dp = new Ilerleme(); dp.DrilKaydet("derin", 3); dp.DrilKaydet("drop", 2); dp.DrilKaydet("kose", 1); dp.DrilKaydet("servis", 2); foreach (var gy in new[] { 4, 6, 6, 8, 9 }) dp.DrilGecmisEkle("derin", gy, 12); foreach (var gy in new[] { 3, 5 }) dp.DrilGecmisEkle("drop", gy, 12); Ayar.ilerleme = dp;   // 2026-10-30: ilerleme çizgisi
             ui.AntrenmanAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "antrenman");
             ui.SayfaSonaKaydir(); yield return Bekle(10); yield return Cek("menu_" + ek + "antrenman_alt");   // r13: aldatıcı vuruş listesi
             ui.DrilKartAc("kose"); yield return Bekle(20); yield return Cek("menu_" + ek + "gorev_karti"); ui.Geri(); ui.Geri(); yield return Bekle(5);
@@ -330,8 +330,13 @@ namespace BirdieSmash.Game
         // kartları, 5 çubuk, ▲/▼). Oyuncunun kendi kaydıyla: seçim değiştirilmez, yalnız bakılır; sonunda Ekipman'a dönülür.
         IEnumerator Soyunma(UiKok ui, string ek)
         {
-            ui.SoyunmaSegment(1); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_tarz");
+            // 2026-10-30 Oyun | Görünüm: Oyun (tarz üstte, sonda ayakkabı tabanı), Görünüm › Renk ve raket, şapka ve yüz denemesi
+            ui.SoyunmaSegment(0); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_oyun");
+            ui.SayfaSonaKaydir(); yield return Bekle(10); yield return Cek("menu_" + ek + "soyunma_oyun_taban");
             ui.SoyunmaSegment(2); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_gorunum");
+            ui.KarakterAc(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "kep"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_sapka_kep");
+            ui.KarakterDene(Kozmetik.SAPKA, "buyucu"); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_sapka_buyucu");
+            ui.KarakterAc(UiKok.KAR_TEN); ui.KarakterDene(Kozmetik.YUZ, "gunes"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_yuz_gunes");
             // 2026-10-26 karakter tasarımı: Karakter alt sayfaları (Tip, Saç, Ayakkabı, Ten), yakın planlar (Yüz, Ayak, Tutuş:
             // kamera yumuşak geçişini bitirsin diye 40 kare) ve deneme kartı (alınmamış öğe vitrinde, kayda yazılmaz).
             ui.KarakterAc(UiKok.KAR_TIP); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_tip");
@@ -374,6 +379,10 @@ namespace BirdieSmash.Game
         IEnumerator GorevKare()
         {
             root.DrilBaslat("kose"); botAcik = true; yield return Bekle(60 * 6); yield return Cek("gorev_kose_oyun");
+            // 2026-10-30 vuruş laboratuvarı: düz drop oynanırken sonuç kartı ve top izi (bot ilk topları vurur)
+            root.DrilBitir(); { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 10 && root.ekran != Ekran.Bitti) yield return null; }
+            root.DrilBaslat("drop"); botAcik = true; { float t1 = Time.realtimeSinceStartup; int n0 = root.match.drOlcumNo; while (Time.realtimeSinceStartup - t1 < 40 && root.match.drOlcumNo < n0 + 2) yield return null; }
+            yield return Bekle(10); yield return Cek("gorev_lab_kart"); rap.AppendLine("gorev_lab_kart · ölçüm " + (root.match.drOlcum != null ? root.match.drOlcum.ad + " " + root.match.drOlcum.hedef : "yok"));
             root.DrilBitir(); float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 10 && root.ekran != Ekran.Bitti) yield return null;
             yield return Bekle(20); yield return Cek("gorev_sonuc"); botAcik = false;
             root.GunlukBaslat(); botAcik = true; yield return Bekle(60 * 3); yield return Cek("gunun_maci_oyun"); botAcik = false;
@@ -637,6 +646,10 @@ namespace BirdieSmash.Game
             Ayar.reduce = false;
             foreach (var k in new[] { 0f, .10f, .25f, .40f, .55f, .65f }) { hud.PerdeKare(true, 2, k); yield return PerdeCek("acilis_" + Ms(k)); }
             hud.PerdeKare(true, 2, 0, true); yield return PerdeCek("acilis_bekle");
+            // 2026-10-30 (yasin: "gif takılmamalı, maçtaki topun aynısını 3B dönerken görmeliyim"): bekleme pozunda tam bir eksen
+            // turu, 66 kare (40 ms → 2,64 sn/tur ≈ 2,4 rad/sn, oyundaki hız). Faz sabitlenir; GIF döngüsü dikişsiz.
+            for (int i = 0; i < 66; i++) { Yukleyici.TestFaz = i * Mathf.PI * 2 / 66; hud.PerdeKare(true, 2, 0, true); yield return Bekle(2); yield return Cek("acilis_tur_" + i.ToString("00")); }
+            Yukleyici.TestFaz = -1;
             foreach (var k in new[] { .08f, .18f }) { hud.PerdeKare(true, 3, k); yield return PerdeCek("acilis_patlama_" + Ms(k)); }
             Ayar.reduce = true; hud.PerdeKare(true, 2, .3f); yield return PerdeCek("acilis_azalt");
             Ayar.reduce = r0; hud.PerdeBirak(); yield return Bekle(10);
@@ -652,6 +665,11 @@ namespace BirdieSmash.Game
         // "PARÇA YOK" / renderer yoksa "GÖRÜNMEZ". Sonra Gerçekçi seçiliyken Karakter sayfası (uyarı kartı) ve Ayarlar, Sade
         // maçı, modeller arası gidiş-dönüşten sonra maçta figür. Oyuncunun seçimi sonunda geri konur, kayda yazılmaz.
         static readonly string[,] VARYANT_MAC = { { "atlet", "afro", "karbon" }, { "kadin", "topuz", "hafif" }, { "uzun", "mohikan", "bilekli" }, { "guclu", "rasta", "yastikli" } };
+        string AksTani()
+        {
+            var f = root.vitrin.Fig; var k = f != null ? f.AksesuarKok : null; if (k == null) return "aksesuar yok";
+            return "parça " + k.GetComponentsInChildren<Renderer>().Length + " · baş r " + k.lossyScale.x.ToString("0.000") + " · merkez y " + k.position.y.ToString("0.00");
+        }
         IEnumerator Varyantlar()
         {
             var ui = root.ui; if (ui == null || Ayar.gear == null) yield break;
@@ -678,6 +696,14 @@ namespace BirdieSmash.Game
                 ui.KarakterDene("ayakkabi", a.id); yield return Bekle(25); yield return Cek("model_vitrin_ayk_" + a.id);
                 VaryantSatir("vitrin ayk=" + a.id, root.vitrin.Fig, null, null, a.varlik ?? a.id, ref t);
             }
+            // 2026-10-30 şapka ve yüz aksesuarları (Game/Aksesuar): yakın plan yüz; rapor satırı kökün dünya ölçeği (= baş yarıçapı)
+            // Dönme kapalı ve açı 30° (önden üç çeyrek): dönen/donan vitrin yüz karelerini arkadan yakalıyordu (r67, r69), gözlük görünmüyordu.
+            bool aksRd = Ayar.reduce, aksRs = Ayar.reduceSecim; Ayar.reduce = Ayar.reduceSecim = true;
+            ui.KarakterAc(UiKok.KAR_SAPKA); yield return Bekle(30);
+            foreach (var o in Kozmetik.Liste(Kozmetik.SAPKA)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.SAPKA, o.id); yield return Bekle(20); root.vitrin.a = 30; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_sapka_" + o.id); rap.AppendLine("vitrin sapka=" + o.id + " · " + AksTani()); }
+            ui.KarakterAc(UiKok.KAR_TEN); yield return Bekle(30);
+            foreach (var o in Kozmetik.Liste(Kozmetik.YUZ)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.YUZ, o.id); yield return Bekle(20); root.vitrin.a = 30; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_yuz_" + o.id); rap.AppendLine("vitrin yuz=" + o.id + " · " + AksTani()); }
+            Ayar.reduce = aksRd; Ayar.reduceSecim = aksRs;
             ui.SoyunmaSegment(0); yield return Bekle(5);
             // maçta: seçim olarak (Ayar.KOZ + ayakkabı modeli), GameRoot.Kur yolu; yakın plan önden ve arkadan
             t = null;
@@ -733,6 +759,9 @@ namespace BirdieSmash.Game
             ui.SekmeAc(Sekme.Soyunma); yield return Bekle(20);
             var vt = root.vitrin;
             ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(30); yield return Cek("model_gercekci_karakter_ayakkabi");
+            ui.KarakterAc(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "kep"); yield return Bekle(40); yield return Cek("model_gercekci_sapka_kep"); rap.AppendLine("gerçekçi sapka=kep · " + AksTani());
+            ui.KarakterAc(UiKok.KAR_TEN); ui.KarakterDene(Kozmetik.YUZ, "gunes"); yield return Bekle(40); yield return Cek("model_gercekci_yuz_gunes"); rap.AppendLine("gerçekçi yuz=gunes · " + AksTani());
+            foreach (var yid in new[] { "biyik", "boya" }) { ui.KarakterDene(Kozmetik.YUZ, yid); yield return Bekle(30); yield return Cek("model_gercekci_yuz_" + yid); }   // Gerçekçi'nin dar yüzünde (Aksesuar.Yuz)
             foreach (var a in Gear.GEAR["ayakkabi"].Values)
             {
                 ui.KarakterDene("ayakkabi", a.id); vt.a = 20; vt.v = 0; yield return Bekle(25); yield return Cek("model_gercekci_vitrin_ayakkabi_" + a.id);
@@ -808,6 +837,7 @@ namespace BirdieSmash.Game
             VaryantTaban t = null; VaryantSatir("tüycük vitrin", root.vitrin.Fig, "tuycuk", null, null, ref t);
             Ayar.reduce = Ayar.reduceSecim = true; var vt = root.vitrin;
             ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(30); yield return Cek("model_tuycuk_karakter_ayakkabi");
+            ui.KarakterAc(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "tavsan"); yield return Bekle(40); yield return Cek("model_tuycuk_sapka_tavsan"); rap.AppendLine("tüycük sapka=tavsan · " + AksTani());
             t = null;
             foreach (var a in Gear.GEAR["ayakkabi"].Values)
             {

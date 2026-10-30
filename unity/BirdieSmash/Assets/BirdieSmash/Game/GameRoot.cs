@@ -74,6 +74,7 @@ namespace BirdieSmash.Game
             vitrin = Vitrin.Build(transform); afis = Afis.Build(transform); fx = Fx.Build(transform, cam); yukleyici = Yukleyici.Build(transform);
             hud = gameObject.AddComponent<Hud>(); hud.root = this; hud.Acilis();
             gameObject.AddComponent<KadrajIsaret>().root = this;   // yüksek top: ekran dışı işareti (Core/Kadraj)
+            sfx.menude = () => ekran == Ekran.Menu && !hud.PerdeKapali;   // menü müziği: perde kapanırken söner, maçta yok
             sfx.sakin = () => hud.PerdeKapali || ekran != Ekran.Oyun || paused || match == null || match.between || match.s == null;
             Basarim.Esitle(Ayar.kariyer, Ayar.bestRally); Basarim.Giris(Ayar.kariyer);
             match = new Match(1, new MatchOptions { easy = Ayar.easy, target = Ayar.target, saha = Ayar.saha });   // menü arkasında duran sahne
@@ -163,10 +164,12 @@ namespace BirdieSmash.Game
             var M = match; var o = M.ogr; var d = o.dril; var p = Ayar.ilerleme;
             ekran = Ekran.Bitti; Uyanik(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); bittiIlk = false;
             int y = d.Yildiz(o.isabet), eski = p.DrilYildiz(d.id), yeni = p.DrilKaydet(d.id, y), enIyi = Mathf.Max(y, eski);
+            p.DrilGecmisEkle(d.id, o.isabet, Mathf.Min(o.dene, d.top));
             odul = Ayar.gear.DrilOdul(yeni); if (odul.sonra > odul.once) Yerel.Hap("flow");
             if (odul.sonra >= 30) Basarim.Ver(Basarim.EFSANE);
             if (yeni == 0) odul = null;   // ödülsüz tekrar: "+0 Tüy" satırı yazılmaz
-            if (p.AntrenmanYildiz >= Dril.ToplamYildiz) Basarim.Ver(Basarim.ANTRENOR);
+            // 2026-10-30: görev 8 → 21 (63 yıldız); başarım App Store Connect metnindeki gibi 24 yıldızda kalır.
+            if (p.AntrenmanYildiz >= Basarim.ANTRENOR_YILDIZ) Basarim.Ver(Basarim.ANTRENOR);
             yukseltHazir = false; Ayar.Kaydet();
             bittiBaslik = L.T("Görev bitti") + " · " + L.T(d.ad);
             BittiSifirla(); bittiKazandi = y > 0; bittiBas = L.T("Görev bitti"); bittiUst = L.T("Antrenman") + " · " + L.T(d.ad);

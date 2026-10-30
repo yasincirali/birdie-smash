@@ -20,6 +20,7 @@
 // Tempo kipi maç oynamaz: galibiyet olasılığı sabit (%60, tasarım §5.7 varsayımı), Odul() gerçek ekonomi fonksiyonu.
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using BirdieSmash.Core;
 
 static class Denge
@@ -230,7 +231,10 @@ static class Denge
         if (d.olcu == "servis")
         {
             if (M.s == null && M.server == "me" && M.wait <= 0 && !M.between && M.svPending == null && rng.NextDouble() < .05)
-                M.SwipeServe((float)(N01() * 25 * b), -60, (float)Math.Max(.1, .55 + N01() * .3 * b));
+            {
+                if (d.servis == "flick") M.SwipeServe((float)(N01() * 25 * b), (float)(-60 + N01() * 15 * b), (float)Math.Max(.1, 1.4 + N01() * .3 * b));
+                else M.SwipeServe((float)(N01() * 25 * b), -60, (float)Math.Max(.1, .55 + N01() * .3 * b));
+            }
             return;
         }
         if (M.s != null && M.s != sonTop && M.s.from == "op") { sonTop = M.s; splitGecik = (float)(.2 + N01() * .09 * b); }
@@ -238,8 +242,19 @@ static class Denge
         Reach R;
         if (!M.ReachInfo(out R) || rng.NextDouble() >= .15) return;
         float sp = 1.2f, dy = -200, dx = (float)(N01() * 50 * b); bool cur = false;
+        // 2026-10-30 vuruş laboratuvarı: yön isteyen görevde bot parmağını hedefe eğer (düz: vuruş noktasının hizası, çapraz:
+        // karşı köşe); dx px → tx = orta + dx/200 · 2,4 m (ShotPlan).
+        if (d.yon != null) { float hx = M.s != null ? M.s.x : Court.MID, tx = d.yon == "duz" ? hx : hx < Court.MID ? Court.SR - .8f : Court.SL + .8f; dx = (float)((tx - Court.MID) / 2.4f * 200 + N01() * 45 * b); }
         switch (d.id)
         {
+            case "atak_clear": sp = (float)(1.55 + N01() * .12 * b); break;
+            case "capraz_drop": case "file_dibi": case "capraz_file": sp = (float)(.45 + N01() * .2 * b); break;
+            case "duz_smac": case "capraz_smac": case "dik_smac": sp = (float)(2.1 + N01() * .3 * b); break;
+            case "lift": sp = (float)(1.2 + N01() * .3 * b); break;
+            case "drive": sp = (float)(2.0 + N01() * .25 * b); break;
+            case "push": sp = (float)(1.2 + N01() * .25 * b); break;
+            case "blok": dy = 120; break;
+            case "cesit": { double u = rng.NextDouble(); sp = (float)((u < .33 ? .45 : u < .66 ? 1.3 : 2.0) + N01() * .2 * b); break; }
             case "derin": sp = (float)(1.3 + N01() * .3 * b); break;
             case "drop": sp = (float)(.45 + N01() * .2 * b); break;
             case "kose":
@@ -273,6 +288,28 @@ static class Denge
             for (int i = 0; i <= d.top; i++) l += " " + dag[i]; Console.WriteLine(l);
         }
     }
+    // 2026-10-30 vuruş laboratuvarı tanısı: bir görevin her topunun ölçümü (ad, tepe, file payı, düşüş) ve kaçan topların
+    // nedeni dağılımı (görev koşulu ayarı için: hangi koşul botu tutuyor).
+    static void LabTani(string id, int n)
+    {
+        var d = BirdieSmash.Core.Dril.Bul(id); var neden = new Dictionary<string, int>(); var adlar = new Dictionary<string, int>(); var fi = typeof(Match).GetField("drNeden", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var tepe = new List<float>(); var gec = new List<float>(); var yDus = new List<float>(); var hyL = new List<float>(); var hzL = new List<float>();
+        for (int m = 0; m < n; m++)
+        {
+            var M = new Match(9000 + m, new MatchOptions { easy = true, ogr = true, dril = d, target = 5 }); int guard = 0, no = 0; sonTop = null; splitGecik = -1;
+            while (!M.ogr.bitti && guard++ < 60 * 300)
+            {
+                DrilBot(M, d); M.Update(1f / 60f); M.events.Clear();
+                if (M.drOlcumNo != no) { no = M.drOlcumNo; var o = M.drOlcum; var t = M.s; string k = (string)fi.GetValue(M) ?? (o.hedef ? "HEDEF" : o.file ? "file" : o.disari ? "dışarı" : "?");
+                    neden[k] = neden.ContainsKey(k) ? neden[k] + 1 : 1; adlar[o.ad + "/" + t.vurus + "/" + t.type] = adlar.ContainsKey(o.ad + "/" + t.vurus + "/" + t.type) ? adlar[o.ad + "/" + t.vurus + "/" + t.type] + 1 : 1;
+                    tepe.Add(t.zTepe); if (!float.IsNaN(t.gecPay)) gec.Add(t.gecPay); yDus.Add(t.y); hyL.Add(t.hy - Court.NET); hzL.Add(t.hz); }
+            }
+        }
+        Func<List<float>, string> q = l => { if (l.Count == 0) return "-"; l.Sort(); return string.Format("p10 {0:0.00} p50 {1:0.00} p90 {2:0.00}", l[l.Count / 10], l[l.Count / 2], l[l.Count * 9 / 10]); };
+        Console.WriteLine(id + ": nedenler " + string.Join(", ", neden.Select(kv => kv.Key + " " + kv.Value)));
+        Console.WriteLine("  adlar " + string.Join(", ", adlar.Select(kv => kv.Key + " " + kv.Value)));
+        Console.WriteLine("  tepe " + q(tepe) + " | file payı " + q(gec) + " | düşüş y " + q(yDus) + " | vuruş fileye " + q(hyL) + " | vuruş z " + q(hzL));
+    }
     static int EP(Gear g) { int s = 0; foreach (var v in g.eko.sv.Values) s += v; return s; }
 
     static int Main(string[] a)
@@ -287,6 +324,7 @@ static class Denge
             int nm = a.Length > 1 ? int.Parse(a[1]) : 40; var ids = new List<string>(); foreach (var t in Karakter.Tarzlar) ids.Add(t.id);
             Tablo("Oyun tarzı × tur", ids.ToArray(), (id, ep) => Karakter.Uygula(Ekipman(ep), id), nm, 5); return 0;
         }
+        if (a.Length > 1 && a[0] == "lab") { LabTani(a[1], a.Length > 2 ? int.Parse(a[2]) : 20); return 0; }
         if (a.Length > 0 && a[0] == "dril") { if (a.Length > 2) BECERI = double.Parse(a[2], System.Globalization.CultureInfo.InvariantCulture); DrilTablo(a.Length > 1 ? int.Parse(a[1]) : 100); return 0; }
         // 2026-10-26 ayar ölçümü: mono denge.exe olc <tarz> <g1,g2,..> <tepki> <hucum> <sayı> <n> [imza] [usta]
         // (tek tarzın birkaç g'deki galibiyet oranı; tur g'lerini ayarlamak için, pHit .07, EP tur ortası 30)

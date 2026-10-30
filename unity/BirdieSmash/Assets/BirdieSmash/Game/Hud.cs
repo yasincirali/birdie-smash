@@ -249,7 +249,7 @@ namespace BirdieSmash.Game
         void Play(Match M)
         {
             var gs = Ayar.GS; bool ogr = M.ogr != null;
-            Halo(M); Iz(M); if (ogr) OgrIz(M); HedefYazi(M);
+            Halo(M); Iz(M); TopIzi(M); if (ogr) OgrIz(M); HedefYazi(M);
             // skor kutusu: sayı alınca büyür (HTML pop: 24·(1+.5·sin(pop·π)))
             float cx = W / 2, sy = top; var kr = new Rect(cx - 62 * u, sy, 124 * u, 34 * u); Fill(kr, new Color(8 / 255f, 16 / 255f, 17 / 255f, .7f));
             if (!ogr)
@@ -296,6 +296,7 @@ namespace BirdieSmash.Game
                 if (M.energy > 0) Fill(new Rect(bx, by, bw * Mathf.Min(1, M.energy), 8 * u), dol ? new Color(1, .54f, .24f, Ayar.reduce ? 1 : .75f + .25f * Mathf.Sin(Time.unscaledTime * 1000 / 160)) : Kit.Hex("#d8ff5a"));
                 if (isaret) { float nab = Ayar.reduce ? 1 : .6f + .4f * Mathf.Sin(Time.unscaledTime * 6); Cerceve(new Rect(lx - 10 * u, by - 13 * u, rx - lx + 20 * u, 26 * u), new Color(.85f, 1, .35f, nab), 3); }
             }
+            if (M.Dril != null && root.ekran == Ekran.Oyun) VurusKart(M, H - bot - 30 * u);
             float hy = H - bot - 34 * u;
             if (M.sc[0] + M.sc[1] < 2 && M.s != null && !ogr && (Ogretici || KosIpucu(M)))
             {
@@ -396,7 +397,7 @@ namespace BirdieSmash.Game
             }
         }
         HileTanim hfSon; int hfBoy; string hfYazi; GUIStyle hfStil; static readonly Color HF_RENK = new Color(0xc9 / 255f, 0xa0 / 255f, 1f);   // #c9a0ff
-        static readonly Dictionary<string, string> PREV_TR = new Dictionary<string, string> { { "lift", "Lift" }, { "kill", "File vuruşu" }, { "jump", "Sıçrayarak smaç" }, { "smash", "Smaç" }, { "block", "Blok" }, { "drive", "Drive" }, { "drop", "Drop" }, { "clear", "Clear" } };
+        static readonly Dictionary<string, string> PREV_TR = new Dictionary<string, string> { { "lift", "Lift" }, { "kill", "File vuruşu" }, { "jump", "Sıçrayarak smaç" }, { "smash", "Smaç" }, { "block", "Blok" }, { "drive", "Drive" }, { "push", "Push" }, { "drop", "Drop" }, { "clear", "Clear" } };
         void HedefYazi(Match M)
         {
             if (root.previewOn && root.Parmak && !root.ParmakVurdu)
@@ -416,6 +417,55 @@ namespace BirdieSmash.Game
                 var c = hit ? new Color(.85f, 1, .35f, (1 - age) * .9f) : new Color(1, 1, 1, (1 - age) * .55f); float wpx = ((hit ? 14 : 9) * (1 - age) + 1) * RefK;
                 Cizgi(new Vector2(a.x * RefK, a.y * RefK), new Vector2(b.x * RefK, b.y * RefK), wpx, c);
             }
+        }
+        // Vuruş laboratuvarı (2026-10-30): oyuncunun son iki topunun yolu kortta kalır (yenisi limon, öncekisi soluk beyaz),
+        // düştüğü yer noktayla. Dünya noktaları tutulur, her karede yeniden yansıtılır (kamera kayınca iz yerinde kalsın).
+        readonly List<List<Vector3>> izler = new List<List<Vector3>>(); Shuttle izTop;
+        void TopIzi(Match M)
+        {
+            if (M.Dril == null) { izler.Clear(); izTop = null; return; }
+            var s = M.s;
+            if (Event.current.type == EventType.Repaint && s != null && s.from == "me" && s.z > 0)
+            {
+                if (s != izTop) { izTop = s; izler.Add(new List<Vector3>()); if (izler.Count > 2) izler.RemoveAt(0); }
+                var l = izler[izler.Count - 1]; var p = Kit.W(s.x, s.y, s.z); if (l.Count == 0 || (l[l.Count - 1] - p).sqrMagnitude > .04f) l.Add(p);
+            }
+            for (int k = 0; k < izler.Count; k++)
+            {
+                var l = izler[k]; bool yeni = k == izler.Count - 1; var c = yeni ? new Color(.85f, 1, .35f, .8f) : new Color(1, 1, 1, .35f);
+                Vector2 on = Vector2.zero; bool acik = false;
+                foreach (var w in l)
+                {
+                    var sp = root.cam.WorldToScreenPoint(w); if (sp.z <= 0) { acik = false; continue; }
+                    var q = new Vector2(sp.x, H - sp.y); if (acik) Cizgi(on, q, (yeni ? 3 : 2) * u, c); on = q; acik = true;
+                }
+                if (acik && (!yeni || izTop == null || izTop.dead || izTop.z <= 0)) Tex(new Rect(on.x - 5 * u, on.y - 5 * u, 10 * u, 10 * u), disk, c);
+            }
+        }
+        // Vuruş sonuç kartı: her topun ardından 3,5 sn; ilk satır ✓/✗ ve vuruşun adı, ikinci satır ölçüler (file payı, çizgiye
+        // uzaklık, hız). Durum yalnız renkle değil işaretle de okunur; satırlar Sigdir ile sığar (Dynamic Type).
+        int vkNo = -1; float vkT; string vk1, vk2;
+        void VurusKart(Match M, float alt)
+        {
+            var o = M.drOlcum; if (o == null) return;
+            if (M.drOlcumNo != vkNo)
+            {
+                vkNo = M.drOlcumNo; vkT = Time.unscaledTime;
+                vk1 = (o.hedef ? "✓ " : "✗ ") + L.T(o.ad) + " · " + (o.hedef ? L.T("hedefte") : L.T(o.neden ?? "Alana düşmedi"));
+                var p = new List<string>();
+                if (!o.file && !float.IsNaN(o.gec)) p.Add(L.T("Fileyi {0} cm geçti", Mathf.Max(0, Mathf.RoundToInt(o.gec * 100))));
+                if (!o.file && !o.disari) p.Add(L.T(o.dip ? "Dip çizgiye {0} m" : "Fileye {0} m", o.mesafe.ToString("0.0", L.En ? System.Globalization.CultureInfo.InvariantCulture : new System.Globalization.CultureInfo("tr-TR"))));
+                p.Add(L.T("{0} km/s", Mathf.RoundToInt(o.hiz)));
+                vk2 = string.Join(" · ", p.ToArray());
+            }
+            float t = Time.unscaledTime - vkT; if (t > 3.5f) return;
+            float a = Ayar.reduce ? 1 : Mathf.Clamp01(Mathf.Min(t / .15f, (3.5f - t) / .4f));
+            float w = rx - lx, iw = w - 24 * u; var s1 = Sigdir(leftB, vk1, iw); var s2 = Sigdir(Stil(left, Mathf.RoundToInt(12 * fu)), vk2, iw);
+            float h1 = s1.CalcSize(Ic(vk1)).y, h2 = s2.CalcSize(Ic(vk2)).y, h = h1 + h2 + 16 * u; var r = new Rect(lx, alt - h, w, h);
+            Fill(r, new Color(9 / 255f, 16 / 255f, 17 / 255f, .72f * a));
+            Fill(new Rect(r.x, r.y, 4 * u, h), o.hedef ? new Color(.85f, 1, .35f, a) : new Color(1, .82f, .48f, a));
+            GUI.color = o.hedef ? new Color(.85f, 1, .35f, a) : new Color(1, .82f, .48f, a); GUI.Label(new Rect(r.x + 14 * u, r.y + 7 * u, iw, h1), vk1, s1);
+            GUI.color = new Color(.81f, .89f, .86f, a); GUI.Label(new Rect(r.x + 14 * u, r.y + 8 * u + h1, iw, h2), vk2, s2); GUI.color = Color.white;
         }
         void Cizgi(Vector2 a, Vector2 b, float w, Color c)
         {
@@ -939,7 +989,7 @@ namespace BirdieSmash.Game
         // çizgileriyle (−.1W, .85H) → (1.1W, .12H) 280 ms'de uçar (mantar önde, ease-out). Kapalıyken halkalar döner; ses/sahne
         // hazır değilse .6 sn sonra ortada dönen top + "Hazırlanıyor…". Açılma 350 ms küçülme (ease-in-out).
         // Açılış (soğuk açılış): kapalı diskle başlar (iOS açılış rengi = dış halka #a3234b, CiBuild), en az .6 sn, sonra aynı küçülme.
-        // Hareketi azalt: ölçek/dönme/uçuş yok, 200 ms belirme ve 250 ms solma. Top maçtaki 3B tüy top (Yukleyici RT).
+        // Hareketi azalt: ölçek/dönme/uçuş yok, 200 ms belirme ve 250 ms solma. Top HTML'deki çizilmiş tüy top (Yukleyici.serit, 2026-10-30).
         bool perdeAcilis, kaynakVar; float acilisBek, perdeSabit = -1; Vector2 perdeKaynak;
         float acilisT0 = -1, acilisAcT = -1, acilisSonT = -1;   // ekran turu: gerçek açılışın süreleri (sn)
         public string AcilisTani { get { return acilisT0 < 0 ? "yok" : "kapalı " + (acilisAcT < 0 ? "?" : (acilisAcT - acilisT0).ToString("F2")) + " sn · toplam " + (acilisSonT < 0 ? "?" : (acilisSonT - acilisT0).ToString("F2")) + " sn (hedef ≥ .95: .60 + .35; ses geç hazırsa hazır + .35)"; } }
@@ -962,7 +1012,17 @@ namespace BirdieSmash.Game
         {
             p = Vector2.zero; boy = 0; aci = 0; donus = 0; al = 1; serbest = false; float W_ = Screen.width, H_ = Screen.height;
             if (perdeEvre == 0) return false;
-            if (perdeBek) { p = new Vector2(W_ / 2, H_ / 2 - Mathf.Min(W_, H_) * .026f); boy = Mathf.Min(W_, H_) * .26f; serbest = true; return true; }
+            // 2026-10-30 (yasin: "Açılış perdesi içerisindeki top kendi ekseni etrafında dönerek ve tam durması lazım"): açılışta
+            // top kapalı disk boyunca ortada durur ve kendi ekseninde döner (yer değiştirmez, sallanmaz); açılırken diskle birlikte
+            // küçülür. Geçişte (maça giriş) eskisi gibi yalnız bekleme uzarsa görünür. Boy tam piksel: RT kesirli dikdörtgene
+            // çizilince kenarları bulanıklaşıyordu.
+            bool acilisTop = perdeAcilis && (perdeEvre == 2 || perdeEvre == 3);
+            if (perdeBek || acilisTop)
+            {
+                float s = 1;
+                if (perdeEvre == 3) { float sc, a; DiskOlcek(out sc, out a); if (Ayar.reduce) al = a; else s = sc; }
+                p = new Vector2(Mathf.Round(W_ / 2), Mathf.Round(H_ / 2 - Mathf.Min(W_, H_) * .026f)); boy = Mathf.Round(Mathf.Min(W_, H_) * .3f * s); serbest = true; return boy > 2 && al > 0;
+            }
             if (perdeAcilis || perdeEvre != 1 || Ayar.reduce) return false;
             float t = perdeT / UCUS_SN; if (t >= 1) return false;
             p = Vector2.Lerp(UcusA, UcusB, EaseOut3(t)); var d = UcusB - UcusA;
@@ -1011,7 +1071,24 @@ namespace BirdieSmash.Game
                     Cizgi(a, a - dir * l, Mathf.Max(1.5f, Lw * .018f), new Color(1, 1, 1, .8f));
                 }
             }
-            var o = GUI.color; GUI.color = new Color(1, 1, 1, al); GUI.DrawTexture(new Rect(p.x - boy / 2, p.y - boy / 2, boy, boy), y.rt); GUI.color = o;
+            var o = GUI.color; GUI.color = new Color(1, 1, 1, al);
+            if (y.serit != null) SeritCiz(y, p, boy * SERIT_BOY, serbest ? 44f : -aci, y.Faz);
+            else GUI.DrawTexture(new Rect(p.x - boy / 2, p.y - boy / 2, boy, boy), y.rt);
+            GUI.color = o;
+        }
+        // HTML tuyCiz ile aynı kare: 300×299 kare, mantar (39,36)'da, karede mantarın yönü −135° (sol üst). yon: ekrandaki yön
+        // (derece, y aşağı, saat yönü +; bekleme 44° = mantar sağ altta, HTML TS_LOGO). Kare indeksi eksen fazından: 16 tüy
+        // olduğu için 22,5°'de tekrar eder, 16 kare o aralığı böler. Top ortalanır: mantar, merkezden yön boyunca topun yarı
+        // boyu (.56 kare; mantar (39,36) → etek ucu ~(280,270)) ileride. HTML'deki +.2 boy kayması yok (yasin: "top ortada").
+        const float SERIT_BOY = 1f;   // çizilmiş top karenin ~%90'ı: RT dönemindeki topla aynı görünen boy (r61 karesi ~115 px / 390)
+        void SeritCiz(Yukleyici y, Vector2 p, float k, float yon, float faz)
+        {
+            const float AXP = Mathf.PI * 2 / 16; int fi = Mathf.FloorToInt(Mathf.Repeat(faz, AXP) / AXP * 16) % 16;
+            float s = k / 300f, r = yon * Mathf.Deg2Rad; var cork = p + new Vector2(Mathf.Cos(r), Mathf.Sin(r)) * .56f * k;
+            var m = GUI.matrix; GUIUtility.RotateAroundPivot(yon + 135f, cork);
+            var uv = new Rect((fi % 4) * .25f, 1 - (fi / 4 + 1) * .25f, .25f, .25f);
+            GUI.DrawTextureWithTexCoords(new Rect(cork.x - 39 * s, cork.y - 36 * s, 300 * s, 299 * s), y.serit, uv, true);
+            GUI.matrix = m;
         }
         // Halka dokuları. 2026-10-29: 512² ve kenar yumuşatmalı (HTML tuvali keskin çiziyordu; 256² ikili maske tam ekran
         // diskte basamaklı kenar ve dilim sınırı veriyordu, r58 karesi). Kenar ve dilim sınırı piksel uzaklığıyla harmanlanır.

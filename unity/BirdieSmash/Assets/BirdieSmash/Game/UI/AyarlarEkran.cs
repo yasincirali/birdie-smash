@@ -55,7 +55,11 @@ namespace BirdieSmash.Game
             string ht = Ayar.reduceSistem ? "Hareket azaltıldı · sistem" : Ayar.reduce ? "Hareket azaltıldı" : "Hareket tam";
             c.Add(Cip(L.T(ht), Ayar.reduce, Ayar.reduceSistem ? (System.Action)null : () => { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.Kaydet(); Degisti(); }));
             c.Add(Yazi(L.T("Ses"), 17, "bolum"));
-            c.Add(Cip(L.T(Ayar.ses ? "Ses açık" : "Ses kapalı"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Degisti(); }));
+            // Müzik ayrı çip (2026-10-30): sesi açık tutup yalnız menü müziğini kapatmak isteyen için. Ses kapalıyken müzik de
+            // susar (dinleyici kısık), çip seçimi korunur.
+            var sr = Satir(); c.Add(sr);
+            sr.Add(Cip(L.T(Ayar.ses ? "Ses açık" : "Ses kapalı"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Degisti(); }));
+            sr.Add(Cip(L.T(Ayar.muzik ? "Müzik açık" : "Müzik kapalı"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.Kaydet(); Degisti(); }));
             c.Add(Yazi(L.T("Dil"), 17, "bolum")); var dl = Satir(); c.Add(dl);
             dl.Add(Cip("Türkçe", Ayar.dil == "tr", () => { Ayar.dil = "tr"; Ayar.Kaydet(); }));
             dl.Add(Cip("English", Ayar.dil == "en", () => { Ayar.dil = "en"; Ayar.Kaydet(); }));

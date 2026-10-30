@@ -331,6 +331,11 @@
 .odak-dugme--secili { background-color: var(--tx); }
 .odak-dugme--secili .dugme-yazi { color: var(--ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .alt-segment { margin: 4px 0 8px 0; }
+/* 2026-10-30 Görünüm alt sayfaları altıya çıktı (Beden · Yüz · Saç · Şapka · Ayakkabı · Renk): iki satır üçer; büyük yazıda
+   ikişer (segment kuralı). Tek satırda altı çip 390 pt'de "Ayakkabı"yı %70'in altına küçültüyordu. */
+.alt-segment { flex-wrap: wrap; }
+.alt-segment .segment-cip { flex-basis: 30%; flex-grow: 1; margin-bottom: 4px; }
+.izgara > .koz-kart--kisa { min-height: 64px; }
 .koz-izgara { margin: 0 -4px; }
 .izgara > .koz-kart { flex-basis: 45%; flex-grow: 1; margin: 4px; padding: 12px; min-height: 96px; align-items: flex-start; justify-content: flex-start; }
 .izgara > .sac-kare { flex-basis: 17%; flex-grow: 1; margin: 3px; padding: 6px 4px; min-height: 64px; min-width: 56px; align-items: center; justify-content: center; }
