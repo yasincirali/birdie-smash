@@ -1,19 +1,19 @@
 === UNITY ===
-Bu sürümde maç ekranı menülerle aynı görünüme geçti ve duraklatınca maçı yanlışlıkla baştan başlatmak artık zor.
+Bu sürümde açılış ve geçişler daha akıcı.
 
 Bu sürümde yeni:
-- Maçtaki skor kutusu, sol üstteki ralli/görev kutusu ve smaç gücü çubuğu artık yuvarlak köşeli; smaç gücü çubuğu daha kalın, maç sırasında daha kolay okunuyor.
-- Sağ üstteki duraklat düğmesi yuvarlak bir düğme oldu.
-- Duraklatınca "Maçı baştan başlat"a bir kez dokunmak artık maçı silmiyor: düğme turuncu çerçeveyle "Emin misin? Bir kez daha dokun" yazar, ikinci dokunuşta maç baştan başlar. Skor hâlâ 0–0 ise tek dokunuş yeter.
+- Uygulamaya dokununca dönen tüy top ve halkalar hemen başlıyor; motor yüklenirken de takılmadan dönüyor. Yükleme bitince ana menü açılıyor.
+- Maça geçerken perde kapandığında halkalar maç hazırlanırken de akıcı dönüyor; perde ancak oyun akıcı çizmeye başlayınca açılıyor, maçın ilk anı takılmıyor.
+- Dolap'tan başka sekmeye geçerken bir şey değişmediyse sahne yeniden kurulmuyor; geçiş takılmıyor.
 
 Nasıl denenir:
-1. Bir maç başlat: üstteki skor kutusu ve sol üstteki kutu yuvarlak köşeli olmalı; senin sayın formanın renginde, rakibinki mor kalmalı.
-2. Birkaç vuruş yap: alttaki smaç gücü çubuğu kalın ve uçları yuvarlak dolmalı; dolunca turuncu yanıp sönmeli.
-3. Sağ üstteki yuvarlak duraklat düğmesine bas: duraklat ekranı açılmalı.
-4. Birkaç sayı oynadıktan sonra duraklat ve "Maçı baştan başlat"a bir kez dokun: maç baştan BAŞLAMAMALI, düğme "Emin misin? Bir kez daha dokun" yazmalı. Hemen bir kez daha dokun: maç 0–0'dan başlamalı.
-5. Aynı şeyi yap ama ikinci dokunuş için 3 saniye bekle: düğme eski yazısına dönmeli.
-6. Maçın en başında (0–0) duraklat ve "Maçı baştan başlat"a dokun: tek dokunuşta baştan başlamalı.
-7. Garip bir şey olursa telefonu ve ekranı yaz.
+1. Uygulamayı tamamen kapat (uygulama değiştiriciden yukarı kaydır) ve simgesine dokun: dönen top ve halkalar hemen başlamalı, arada siyah ekran ya da duran görüntü olmamalı.
+2. Yükleme bitince perde açılmalı ve doğrudan ana menü gelmeli.
+3. Oyna'ya dokunup maça geç: perde kapanınca halkalar durmadan dönmeli; perde açılınca maç akıcı başlamalı.
+4. Maç bitince "Bir maç daha" ile tekrar gir: aynı akıcılık olmalı.
+5. Dolap'a gir, hiçbir şey değiştirmeden Oyna, Kariyer, Profil sekmelerine geç: geçişler takılmamalı.
+6. Ayarlar'da sistemin "Hareketi Azalt" ayarı açıkken uygulamayı aç: halkalar dönmeden durmalı, yine siyah ekran olmamalı.
+7. Uygulama açılmazsa ya da siyah ekranda kalırsa kapatıp tekrar aç ve bize yaz (ikinci açılışta eski yol kullanılır).
 
 === HTML ===
 Bu sürümde yeni:
