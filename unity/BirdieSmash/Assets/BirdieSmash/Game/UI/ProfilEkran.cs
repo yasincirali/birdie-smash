@@ -28,7 +28,7 @@ namespace BirdieSmash.Game
             var un = Karakter.Gosterilen(p, L_, p.AntrenmanYildiz); var tz = Karakter.Tarz(Ayar.Tarz);
             var kart = Kart(); c.Add(kart);
             var r = Satir("profil-ust"); kart.Add(r);
-            var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(Ayar.FORMA); av.Add(Ikon(Ikonlar.Kisi, 30, KOYU)); r.Add(av);
+            var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 30); r.Add(av);
             var ad = new VisualElement(); ad.AddToClassList("esnek-yatay"); r.Add(ad);
             ad.Add(Yazi(p.Ad ?? L.T("Oyuncu"), 19, "kalin")); ad.Add(Yazi(L.T(un.ad), 14, "altin"));
             ad.Add(Yazi(L.T("Seviye {0}", L_) + " · " + L.T("Tarz") + ": " + L.T(tz.ad), 14, "soluk"));

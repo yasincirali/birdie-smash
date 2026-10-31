@@ -220,7 +220,76 @@ namespace BirdieSmash.Game
             AfisGuncelle(s == Sekme.Oyna && tam == null && root.ekran == Ekran.Menu);
             if (tam == null && kirli[(int)s]) SekmeKur(s);
             if (tam == null && s != once && anim) Giris(sekmeKok[(int)s]);
+            // portre: Dolap'ta görünüm değişince üst çubuğun avatarı da yenilensin (sekme değişiminde yoklanır)
+            string pa = Ayar.model + PlayerView.Benim().Anahtar(); if (pa != portreAnah) { portreAnah = pa; ustKirli = true; kirli[(int)Sekme.Profil] = true; }
             if (ustKirli) UstKur();
+        }
+        string portreAnah;
+
+        // ---- Ödül anları (2026-10-31, sanat yönü ilk paketi; yasin "yap") ----
+        // Tüy ve seviye eskiden sessizce bir sayı olarak değişiyordu. Menüye dönüşte (üst çubuk yeniden kurulurken) Tüy arttıysa
+        // ortadan sayaca altı tüy uçar ve sayı tıklayarak artar; seviye arttıysa bir kez tam ekran "Seviye N" anı açılanları
+        // gösterir. İlk kurulumda (önceki değer yok) ve hareketi azaltta uçuş/sayma yok, sayı doğrudan yazılır; seviye anı
+        // hareketi azaltta da açılır (bilgi taşır), yalnız büyüme ve sırayla belirme kapalıdır.
+        static int gosterilenTuy = -1, gosterilenSv = -1;
+        void OdulAnlari(VisualElement tuy, Label tz, int hedef, int sv)
+        {
+            int once = gosterilenTuy, svOnce = gosterilenSv; gosterilenTuy = hedef; gosterilenSv = sv;
+            if (root.ekran != Ekran.Menu) return;
+            if (once >= 0 && hedef > once && !Ayar.reduce)
+            {
+                tz.text = Sayi(once);
+                tz.schedule.Execute(() => TuyUcur(tuy, tz, once, hedef)).StartingIn(250);   // yerleşim bitsin (hedefin yeri)
+            }
+            if (svOnce > 0 && sv > svOnce) kok.schedule.Execute(() => SeviyeAni(svOnce, sv)).StartingIn(once >= 0 && hedef > once && !Ayar.reduce ? 1100 : 200);
+        }
+        void TuyUcur(VisualElement tuy, Label tz, int once, int hedef)
+        {
+            var kb = kok.worldBound; var hb = tuy.worldBound; if (float.IsNaN(hb.x) || kb.width < 1) { tz.text = Sayi(hedef); return; }
+            Vector2 bas = new Vector2(kb.width * .5f, kb.height * .45f), son = new Vector2(hb.x - kb.x + 18, hb.y - kb.y + hb.height * .5f);
+            for (int i = 0; i < 6; i++)
+            {
+                var f = Ikon(Ikonlar.Tuy, 26, ALTIN); f.pickingMode = PickingMode.Ignore; f.style.position = Position.Absolute; kok.Add(f);
+                var sap = new Vector2((i - 2.5f) * 18, (i % 2 == 0 ? -1 : 1) * 14); int gec = i * 60;
+                f.style.left = bas.x + sap.x; f.style.top = bas.y + sap.y; f.style.opacity = 0f;
+                var fi = f;
+                fi.experimental.animation.Start(0f, 1f, 520 + gec, (v, t) =>
+                {
+                    float k = Mathf.Clamp01((t * (520 + gec) - gec) / 520f); float e = k * k * (3 - 2 * k);   // yumuşak başla, yumuşak dur
+                    var p = Vector2.Lerp(bas + sap, son, e) + new Vector2(0, -60 * Mathf.Sin(e * Mathf.PI));       // hafif yay
+                    v.style.left = p.x - 13; v.style.top = p.y - 13; v.style.opacity = k <= 0 ? 0 : k < .85f ? 1 : (1 - k) / .15f;
+                    v.style.scale = new Scale(Vector3.one * Mathf.Lerp(1.15f, .7f, e));
+                }).OnCompleted(() => fi.RemoveFromHierarchy());
+            }
+            tz.experimental.animation.Start(0f, 1f, 820, (v, t) =>
+            {
+                float k = Mathf.Clamp01((t - .35f) / .65f); tz.text = Sayi(Mathf.RoundToInt(Mathf.Lerp(once, hedef, k * (2 - k))));
+            }).OnCompleted(() => { tz.text = Sayi(hedef); root.sfx.Tik(1320); Yerel.Hap("tick"); });
+            tuy.experimental.animation.Start(0f, 1f, 820, (v, t) => { float k = t < .6f ? 0 : (t - .6f) / .4f; v.style.scale = new Scale(Vector3.one * (1 + .12f * Mathf.Sin(k * Mathf.PI))); })
+                .OnCompleted(() => tuy.style.scale = StyleKeyword.Null);
+        }
+        VisualElement seviyeAni;
+        void SeviyeAni(int once, int sv)
+        {
+            if (seviyeAni != null) seviyeAni.RemoveFromHierarchy();
+            var o = new VisualElement(); o.AddToClassList("seviye-ani"); seviyeAni = o; kok.Add(o);
+            System.Action kapat = () => { if (seviyeAni == o) seviyeAni = null; o.RemoveFromHierarchy(); };
+            o.AddManipulator(new Clickable(kapat));
+            var ic = new VisualElement(); ic.AddToClassList("seviye-ic"); o.Add(ic);
+            ic.Add(Yazi(Buyuk(L.T("Seviye atladın")), 15, "seviye-ust"));
+            var sayi = Yazi(L.T("Sv {0}", sv), 64, "rakam"); sayi.AddToClassList("seviye-sayi"); ic.Add(sayi);
+            var acilan = Karakter.AcilanAralik(once, sv); var liste = new VisualElement(); liste.AddToClassList("seviye-liste"); ic.Add(liste);
+            if (acilan.Count > 0) liste.Add(Yazi(L.T("Açıldı"), 13, "soluk"));
+            int n = 0; foreach (var a in acilan) { if (n == 6) { liste.Add(Yazi(L.T("ve {0} öğe daha", acilan.Count - 6), 14, "soluk")); break; } var y = Yazi(L.T(a), 17); y.AddToClassList("seviye-oge"); liste.Add(y); n++; }
+            var d = Dugme(L.T("Dolap'a bak"), () => { kapat(); SekmeAc(Sekme.Soyunma); }, "cta"); ic.Add(d);
+            ic.Add(Dugme(L.T("Tamam"), kapat));
+            Erisim.Etiket(ic, L.T("Seviye atladın") + ", " + L.T("Sv {0}", sv) + (acilan.Count > 0 ? ", " + L.T("Açıldı") + ": " + string.Join(", ", acilan.ConvertAll(x => L.T(x))) : ""), "metin");
+            root.sfx.Tik(990); Yerel.Hap("win");
+            if (Ayar.reduce) return;
+            o.style.opacity = 0f; o.experimental.animation.Start(0f, 1f, 220, (v, t) => v.style.opacity = t);
+            sayi.style.scale = new Scale(Vector3.one * 1.4f);
+            sayi.experimental.animation.Start(0f, 1f, 420, (v, t) => { float e = 1 - Mathf.Pow(1 - t, 3); v.style.scale = new Scale(Vector3.one * Mathf.Lerp(1.4f, 1f, e)); });
+            int j = 0; foreach (var c in liste.Children()) { var cc = c; int gec = 260 + 60 * j++; cc.style.opacity = 0f; cc.schedule.Execute(() => cc.experimental.animation.Start(0f, 1f, 200, (v, t) => v.style.opacity = t)).StartingIn(gec); }
         }
 
         // Giriş: 24 pt sağdan, solarak, .22 sn (HTML pIn ile aynı); hareketi azaltta USS geçişi 0 sn, yalnız görünür olur.
@@ -274,7 +343,7 @@ namespace BirdieSmash.Game
             ustKirli = false; ust.Clear(); var gr = Ayar.gear; int L_, kalan, gerek; gr.OyuncuSv(out L_, out kalan, out gerek);
             var sol = new VisualElement(); sol.AddToClassList("ust-sol"); ust.Add(sol);
             var hap = new VisualElement(); hap.AddToClassList("ust-hap"); hap.AddToClassList("profil-hap"); sol.Add(hap);
-            var av = new VisualElement(); av.AddToClassList("ust-avatar"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); av.Add(Ikon(Ikonlar.Kisi, 24, KOYU)); hap.Add(av);
+            var av = new VisualElement(); av.AddToClassList("ust-avatar"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 24); hap.Add(av);
             var sv = new VisualElement(); sv.AddToClassList("ust-sv"); sv.pickingMode = PickingMode.Ignore; hap.Add(sv);
             sv.Add(Yazi(L.T("Sv {0}", L_), 18, "rakam"));
             var c = Cubuk(gerek > 0 ? kalan / (float)gerek : 1, TURUNCU, 5);   // 2026-10-27 yön C: ilerleme turuncu (limon yalnız sen: avatar halkası)
@@ -284,6 +353,7 @@ namespace BirdieSmash.Game
             var tuy = new VisualElement(); tuy.AddToClassList("ust-hap"); tuy.AddToClassList("tuy-hap"); tuy.pickingMode = PickingMode.Ignore; ust.Add(tuy);
             tuy.Add(Ikon(Ikonlar.Tuy, 20, ALTIN)); var tz = Yazi(Sayi(gr.eko.tuy), 20, "rakam"); tz.AddToClassList("ust-tuy"); tuy.Add(tz);
             Erisim.Etiket(tuy, L.T("{0} Tüy", gr.eko.tuy), "metin");
+            OdulAnlari(tuy, tz, gr.eko.tuy, L_);
             var ayar = new VisualElement(); ayar.AddToClassList("dugme"); ayar.AddToClassList("ikon-dugme"); ayar.Add(Ikon(Ikonlar.Disli, 22, SOLUK));
             ayar.AddManipulator(new Clickable(AyarlarAc)); Erisim.Etiket(ayar, L.T("Ayarlar"), "dugme"); ust.Add(ayar);
         }

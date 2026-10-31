@@ -31,6 +31,12 @@ namespace BirdieSmash.Game
         public static readonly Color CTA_UST = Kit.Hex("#FFB25E"), CTA_ORTA = Kit.Hex("#FFA04D"), CTA_ALT = Kit.Hex("#FF9458");
 
         public const float YAZI_MIN = 11;
+        // Avatar içi (2026-10-31): karakter portresi (Portre) varsa dairenin içinde, yoksa eski insan simgesi.
+        void AvatarIc(VisualElement av, Texture portre, int ikonPx)
+        {
+            if (portre == null) { av.Add(Ikon(Ikonlar.Kisi, ikonPx, KOYU)); return; }
+            av.AddToClassList("avatar--portre"); var im = new Image { image = portre, scaleMode = ScaleMode.ScaleAndCrop }; im.AddToClassList("avatar-resim"); im.pickingMode = PickingMode.Ignore; av.Add(im);
+        }
         Label Yazi(string t, float px, string cls = null)
         {
             var l = new Label(t); l.AddToClassList("yazi"); if (cls != null) l.AddToClassList(cls);
