@@ -43,6 +43,8 @@ namespace BirdieSmash.Game
         public void VitrinOdak(int o, string klip = null) { root.vitrin.Odak(o, klip); SoyunmaGovdeKur(true); }
         // EkranTuru için: bir öğeyi vitrinde dene (kat: Kozmetik.TIP, Kozmetik.SAC ya da "ayakkabi").
         public void KarakterDene(string kat, string id) { Dene(kat, id); }
+        // EkranTuru için: denemeleri silmeden kategori değiştir (K2: deneme kategoriler arasında kalır).
+        public void KategoriGec(int i) { KategoriSec(KarGecerli(i)); }
 
         // Segmentten çıkınca deneme silinir, kamera tüm boya döner (deneme kayda yazılmadığı için başka sayfada kafa karıştırmasın).
         void SegmentBirak()
@@ -66,14 +68,22 @@ namespace BirdieSmash.Game
             if (soyunmaSegment == null) return; soyunmaSegment.Clear(); karAlt = KarGecerli(karAlt);
             foreach (int i in KarSayfalar())
             {
-                int ii = i; var d = Cip(L.T(KAR_AD[i]), karAlt == i, () => KategoriSec(ii));
+                int ii = i; var d = Cip(L.T(KAR_AD[i]), karAlt == i, () => KategoriSec(ii), KategoriDeneniyor(i) ? L.T("deneniyor") : null);
                 d.AddToClassList("segment-cip"); d.AddToClassList("dar-cip"); Sigdir(d); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; soyunmaSegment.Add(d);
             }
+        }
+        // Kategoride bir deneme var mı (K2): denemeler kategoriler arasında kaldığı için şerit hangisinde olduğunu yazıyla söyler.
+        bool KategoriDeneniyor(int i)
+        {
+            var vt = root.vitrin; if (vt == null) return false;
+            return i == KAR_TIP ? vt.deneTip != null : i == KAR_SAC ? vt.deneSac != null : i == KAR_SAPKA ? vt.deneSapka != null : i == KAR_TEN ? vt.deneYuz != null : i == KAR_AYK && vt.deneAyk != null;
         }
         void KategoriSec(int i)
         {
             if (karAlt == i) { if (i == KAR_RAKET && raketParca != null) { raketParca = null; root.vitrin.RaketParca(null); SoyunmaGovdeKur(true); } return; }
-            karAlt = i; var vt = root.vitrin; bool d0 = DenemeVar(); DenemeSil(); if (d0) vt.Yenile(); Tik();
+            // 2026-10-31 (K2): denemeler kategori değişince silinmez; birkaç kategoride denenen parçalar alttaki çubukta birlikte
+            // alınır ("Hepsini al"). Segmentten çıkınca (SegmentBirak) yine silinir.
+            karAlt = i; Tik();
             KarakterOdakAyarla(); KategoriKur(); SoyunmaGovdeKur(false);
         }
 
@@ -161,6 +171,7 @@ namespace BirdieSmash.Game
             // raket görünümünde (vitrin rakette) yalnız raketin görünüşü: forma ve şapka figür görünmezken seçilmez
             karAlt = KarGecerli(karAlt); GorunumRozet(c);
             if (karAlt == KAR_RAKET) { RaketSayfa(c); return; }
+            KombinSatir(c);
             if (!Ayar.VaryantGorunur) TekBedenKart(c);
             if (!Ayar.AykModelGorunur && karAlt == KAR_AYK) ModelUyari(c);
             if (karAlt == KAR_TIP) TipSayfa(c); else if (karAlt == KAR_SAC) SacSayfa(c); else if (karAlt == KAR_AYK) AyakkabiSayfa(c); else if (karAlt == KAR_KIYAFET) KiyafetSayfa(c);
@@ -259,8 +270,15 @@ namespace BirdieSmash.Game
             if (du == ModelDurum.Kilitli) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); }
             var dy = Yazi(du == ModelDurum.Kilitli ? L.T("Sv {0} gerekli", sv) : fiyat + " " + L.T("Tüy"), 12, "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
             Erisim.Etiket(kart, L.T("Deneniyor: {0}", L.T(ad)) + ", " + (du == ModelDurum.Kilitli ? L.T("Sv {0} gerekli", sv) : fiyat + " " + L.T("Tüy")), "metin");
+            // 2026-10-31 (K4): Dolap'ta satın alma düğmesi alttaki sabit çubukta (Kombin.cs DenemeCubukKur); kart bilgi ve geri
+            // alma için. Atölye'nin taban bölümünde alt çubuk yok, düğme kartta kalır.
             string cta = L.T("{0} · {1} Tüy ile al", L.T(ad), fiyat);
-            if (du == ModelDurum.Kilitli) kart.Add(Pasif(cta, L.T("Sv {0}'da açılır · seviye atladıkça", sv)));
+            if (gez.sekme == Sekme.Soyunma)
+            {
+                if (du == ModelDurum.Kilitli) kart.Add(Yazi(L.T("Sv {0}'da açılır · seviye atladıkça", sv), 12, "ipucu"));
+                else if (!alOlur) kart.Add(Yazi(L.T("{0} Tüy daha gerekli", fiyat - Ayar.gear.eko.tuy), 12, "ipucu"));
+            }
+            else if (du == ModelDurum.Kilitli) kart.Add(Pasif(cta, L.T("Sv {0}'da açılır · seviye atladıkça", sv)));
             else if (alOlur) kart.Add(Dugme(cta, () => KozAl(kat, id), "dugme--birincil", L.T("Bir kez alınır, hep senin"), 16));
             else kart.Add(Pasif(cta, L.T("{0} Tüy daha gerekli", fiyat - Ayar.gear.eko.tuy)));
             kart.Add(Dugme(L.T("Denemeyi bırak"), () => DenemeBirak(kat), "deneme-birak"));

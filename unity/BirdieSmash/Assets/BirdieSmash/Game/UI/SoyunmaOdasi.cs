@@ -98,6 +98,8 @@ namespace BirdieSmash.Game
             soyunmaSeg = SEG_KARAKTER; soyunmaSegment = Satir("segment"); soyunmaSegment.AddToClassList("kategori-ray"); k.Add(soyunmaSegment); KategoriKur();
             soyunmaKaydir = Kaydirma(k); soyunmaKaydir.AddToClassList("govde-kaydir"); soyunmaKaydir.AddToClassList("soyunma-kaydir");
             soyunmaGovde = soyunmaKaydir.contentContainer; soyunmaGovde.AddToClassList("sekme-icerik");
+            // K4 (2026-10-31): satın alma alt çubuğu kaydırma alanının dışında, ekranın altında sabit (Kombin.cs).
+            denemeCubuk = new VisualElement(); denemeCubuk.AddToClassList("deneme-cubuk"); denemeCubuk.style.display = DisplayStyle.None; k.Add(denemeCubuk);
             if (root.vitrin.odak == Vitrin.TAM) KarakterOdakAyarla();   // sekmeye dönüşte (Kapat odağı ve raket görünümünü sıfırladı)
             SoyunmaGovdeKur(false);
         }
@@ -188,6 +190,7 @@ namespace BirdieSmash.Game
             if (gecis != null) { var gy = gecis.Q<Label>(); string gt = L.T(raketG ? "Oyuncuya dön" : "Raketi incele"); if (gy != null) { gy.text = gt; var gc_ = gecis; gecis.schedule.Execute(() => SigdirOlc(gc_, gy, Mathf.Round(VitrinPx(16) * K), .75f)); } Erisim.Etiket(gecis, gt, "dugme"); }
             var c = soyunmaGovde; c.Clear();
             KarakterGovde(c); c.Add(Bosluk(20));
+            DenemeCubukKur();
             if (of.y > 0) { soyunmaKaydir.scrollOffset = of; var sk = soyunmaKaydir; sk.schedule.Execute(() => sk.scrollOffset = of).StartingIn(33); }
         }
 

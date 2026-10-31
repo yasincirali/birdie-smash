@@ -1,19 +1,23 @@
 === UNITY ===
-Bu sürümde açılış ve geçişler daha akıcı.
+Bu sürümde Usta modu daha oynanabilir, Dolap daha hızlı.
 
 Bu sürümde yeni:
-- Uygulamaya dokununca dönen tüy top ve halkalar hemen başlıyor; motor yüklenirken de takılmadan dönüyor. Yükleme bitince ana menü açılıyor.
-- Maça geçerken perde kapandığında halkalar maç hazırlanırken de akıcı dönüyor; perde ancak oyun akıcı çizmeye başlayınca açılıyor, maçın ilk anı takılmıyor.
-- Dolap'tan başka sekmeye geçerken bir şey değişmediyse sahne yeniden kurulmuyor; geçiş takılmıyor.
+- Usta modunda rakip vurunca ayağının altında iki halka çıkıyor: düz halkanın içindeysen tam vuruş, kesik halkadaysan uzanıp daha zayıf ve sapmalı vurursun. Ekranda "Uzandın!" yazar.
+- Usta modunda top sana gelirken de başka bir yere dokunup koşabiliyorsun (eskiden vuruş anında koşu emri alınmıyordu).
+- Biraz erken kaydırırsan vuruş artık boşa gitmiyor; top yetişince kaydırman uygulanıyor.
+- İlk Usta maçında kısa bir "Usta: koşu senin" kartı çıkıyor, ilk sayıdan sonra kayboluyor.
+- Dolap'ta üç kombin yuvası: görünüşünü kaydet, tek dokunuşla giy. "Rastgele" sahip olduklarından yeni bir görünüş seçer.
+- Dolap'ta denediğin parçalar kategori değiştirince silinmiyor; altta sabit çubukta toplanıyor, "Hepsini al" ile birlikte alınıyor.
+- İlk maçından sonra "Oyuncunu seç" ekranı: altı hazır oyuncu, Rastgele, "Bununla oyna" ya da "Atla".
 
 Nasıl denenir:
-1. Uygulamayı tamamen kapat (uygulama değiştiriciden yukarı kaydır) ve simgesine dokun: dönen top ve halkalar hemen başlamalı, arada siyah ekran ya da duran görüntü olmamalı.
-2. Yükleme bitince perde açılmalı ve doğrudan ana menü gelmeli.
-3. Oyna'ya dokunup maça geç: perde kapanınca halkalar durmadan dönmeli; perde açılınca maç akıcı başlamalı.
-4. Maç bitince "Bir maç daha" ile tekrar gir: aynı akıcılık olmalı.
-5. Dolap'a gir, hiçbir şey değiştirmeden Oyna, Kariyer, Profil sekmelerine geç: geçişler takılmamalı.
-6. Ayarlar'da sistemin "Hareketi Azalt" ayarı açıkken uygulamayı aç: halkalar dönmeden durmalı, yine siyah ekran olmamalı.
-7. Uygulama açılmazsa ya da siyah ekranda kalırsa kapatıp tekrar aç ve bize yaz (ikinci açılışta eski yol kullanılır).
+1. Ayarlar'dan zorluğu Usta yap, bir maç başlat: ilk sayıya kadar üstte "Usta: koşu senin" kartı görünmeli.
+2. Rakip vurduğunda ayağının altındaki iki halkaya bak. Topa kesik halkada yetiş ve kaydır: "Uzandın!" yazmalı, vuruş biraz zayıf olmalı.
+3. Top sana gelirken kortun boş bir yerine dokun: oyuncun oraya koşmalı.
+4. Top sana ulaşmadan bir an önce kaydır: vuruş yine çıkmalı ("Erken" yazmamalı).
+5. Dolap'ta Şapka'dan bir şapkaya dokun (dene), sonra Yüz'e geçip bir aksesuar dene: alttaki çubukta ikisi birden yazmalı; Tüy'ün yetiyorsa "Hepsini al" ile ikisini birden al.
+6. Dolap'ta "Kombin 1"e dokun (kaydeder), bir şey değiştir, sonra tekrar "Kombin 1"e dokun: eski görünüş geri gelmeli. "Rastgele"ye dokun: yalnız sahip olduğun parçalardan bir görünüş çıkmalı.
+7. Uygulamayı silip yeniden kur (ya da yeni bir hesapla) ve ilk maçını bitir: menüye dönünce "Oyuncunu seç" açılmalı. Bir karta dokununca üstteki oyuncu hemen değişmeli; "Atla" eski görünüşe döndürmeli.
 
 === HTML ===
 Bu sürümde yeni:

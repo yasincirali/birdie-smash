@@ -338,6 +338,8 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "kep"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_sapka_kep");
             ui.KarakterDene(Kozmetik.SAPKA, "buyucu"); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_sapka_buyucu");
             ui.KarakterAc(UiKok.KAR_TEN); ui.KarakterDene(Kozmetik.YUZ, "gunes"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_yuz_gunes");
+            // 2026-10-31 K2/K4: deneme kategoriler arasında kalır (yüz + şapka), alt çubuk "Hepsini al"; kombin satırı gövdenin başında
+            ui.KategoriGec(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "kep"); yield return Bekle(40); yield return Cek("menu_" + ek + "dolap_hepsini_al");
             // 2026-10-26 karakter tasarımı: Karakter alt sayfaları (Tip, Saç, Ayakkabı, Ten), yakın planlar (Yüz, Ayak, Tutuş:
             // kamera yumuşak geçişini bitirsin diye 40 kare) ve deneme kartı (alınmamış öğe vitrinde, kayda yazılmaz).
             ui.KarakterAc(UiKok.KAR_TIP); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_tip");
@@ -561,6 +563,10 @@ namespace BirdieSmash.Game
             bool e0 = Ayar.easy; Ayar.easy = false; root.HudKatman.UstaKartSifirla(); root.StartMatch(false, false, false); botAcik = true;
             yield return Bekle(20); yield return Cek("usta_kart"); yield return Bekle(70); yield return Cek("usta_halka"); botAcik = false;
             Ayar.easy = e0; root.HudKatman.UstaKartSifirla(); root.AnaMenu(); yield return Bekle(10);
+            // 2026-10-31 K1: ilk maçtan sonra "Oyuncunu seç" (turda kendiliğinden açılmaz; burada elle), bir kart seçili, sonra Atla
+            ui.OyuncuSecAc(); yield return Bekle(40); yield return Cek("oyuncu_sec");
+            ui.OyuncuSecHazir(1); yield return Bekle(40); yield return Cek("oyuncu_sec_kart");
+            ui.OyuncuSecAtla(); yield return Bekle(20); PlayerPrefs.DeleteKey("tuytop_oyuncu_sec");
         }
         // Yüksek top kadrajı (2026-10-27, yasin build 41 "Top yükseldiğinde kadrajdan çıkıyor"; Core/Kadraj). Gerçek bir clear
         // (BotMac FizikOlcumleri'nin clear'ı: dip çizginin 1 m önünden, 2,55 m'den; tepe ~7 m) ve aynalanmış hâli (rakibin dip

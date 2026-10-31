@@ -21,8 +21,8 @@ namespace BirdieSmash.Core
 
     public class Gezinti
     {
-        public const string AYAR = "ayar", NASIL = "nasil", LISANS = "lisans", HIZLI = "hizli", KART = "kart", YUVA = "yuva", ANTRENMAN = "antrenman", DRIL = "dril", GUNLUK = "gunluk";
-        static readonly string[] ALT = { HIZLI, KART, YUVA, DRIL, GUNLUK };
+        public const string AYAR = "ayar", NASIL = "nasil", LISANS = "lisans", HIZLI = "hizli", KART = "kart", YUVA = "yuva", ANTRENMAN = "antrenman", DRIL = "dril", GUNLUK = "gunluk", SEC = "oyuncusec";
+        static readonly string[] ALT = { HIZLI, KART, YUVA, DRIL, GUNLUK, SEC };   // SEC: ilk maçtan sonra "Oyuncunu seç" (2026-10-31)
         public Sekme sekme = Sekme.Oyna;
         readonly List<string> yigin = new List<string>();
 
