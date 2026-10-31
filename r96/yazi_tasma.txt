@@ -1,0 +1,5 @@
+toplam 4
+menu_x2_soyunma_gorunum · kesik genişlik 130>122 · .unity-text-element.unity-label.yazi.dugme-yazi · "Whole racket"
+menu_x2_raket_incele · kesik genişlik 130>122 · .unity-text-element.unity-label.yazi.dugme-yazi · "Whole racket"
+menu_x2_raket_incele_2 · kesik genişlik 130>122 · .unity-text-element.unity-label.yazi.dugme-yazi · "Whole racket"
+menu_x2_antrenman_alt · kelime bölündü 255>214 · .unity-text-element.unity-label.yazi.kalin · "Behind-the-back rescue"
