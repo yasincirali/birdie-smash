@@ -1,0 +1,505 @@
+[New LWP 5282]
+[New LWP 5280]
+[New LWP 5279]
+[New LWP 5278]
+[New LWP 5277]
+[New LWP 5276]
+[New LWP 5275]
+[New LWP 5274]
+[New LWP 5273]
+[New LWP 5272]
+[New LWP 5271]
+[New LWP 5270]
+[New LWP 5269]
+[New LWP 5268]
+[New LWP 5262]
+[New LWP 5261]
+[New LWP 5260]
+[New LWP 5259]
+[New LWP 5258]
+[New LWP 5257]
+[New LWP 5256]
+[New LWP 5255]
+[New LWP 5254]
+[New LWP 5253]
+[New LWP 5252]
+[New LWP 5251]
+[New LWP 5250]
+[New LWP 5249]
+[New LWP 5248]
+[New LWP 5247]
+[New LWP 5246]
+[New LWP 5245]
+[New LWP 5244]
+[New LWP 5243]
+[New LWP 5242]
+[New LWP 5241]
+[New LWP 5239]
+[New LWP 5237]
+[New LWP 5236]
+[New LWP 5235]
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+0x00007fb37352c0cb in __recvmsg_syscall (flags=0, msg=0x7fff05e26600, fd=8) at ../sysdeps/unix/sysv/linux/recvmsg.c:27
+
+warning: 27	../sysdeps/unix/sysv/linux/recvmsg.c: No such file or directory
+
+Thread 41 (Thread 0x7fb3733ff6c0 (LWP 5235) "AssetGarbageCol"):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374aef9e0 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#4  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 40 (Thread 0x7fb3723fe6c0 (LWP 5236) "AssetGarbageCol"):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374aef9e0 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#4  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 39 (Thread 0x7fb3713fd6c0 (LWP 5237) "AssetGarbageCol"):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374aef9e0 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#4  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 38 (Thread 0x7fb2dffff6c0 (LWP 5239) "SDLTimer"):
+#0  0x00007fb373498e51 in __futex_abstimed_wait_common64 (private=<optimized out>, cancel=true, abstime=0x0, op=393, expected=0, futex_word=0x2c4401c0) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=<optimized out>, abstime=0x0, clockid=0, expected=0, futex_word=0x2c4401c0) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0x2c4401c0, expected=expected@entry=0, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=<optimized out>) at ./nptl/futex-internal.c:139
+#3  0x00007fb3734a4fff in do_futex_wait (sem=sem@entry=0x2c4401c0, abstime=0x0, clockid=0) at ./nptl/sem_waitcommon.c:111
+#4  0x00007fb3734a5098 in __new_sem_wait_slow64 (sem=0x2c4401c0, abstime=0x0, clockid=0) at ./nptl/sem_waitcommon.c:183
+#5  0x00007fb375c339f9 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#6  0x00007fb375c33760 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#7  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#8  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 37 (Thread 0x7fb2dddff6c0 (LWP 5241) "Finalizer"):
+#0  0x00007fb373498e51 in __futex_abstimed_wait_common64 (private=<optimized out>, cancel=true, abstime=0x0, op=393, expected=0, futex_word=0x7fb2de9b3438) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=<optimized out>, abstime=0x0, clockid=0, expected=0, futex_word=0x7fb2de9b3438) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0x7fb2de9b3438, expected=expected@entry=0, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=<optimized out>) at ./nptl/futex-internal.c:139
+#3  0x00007fb3734a4fff in do_futex_wait (sem=sem@entry=0x7fb2de9b3438, abstime=0x0, clockid=0) at ./nptl/sem_waitcommon.c:111
+#4  0x00007fb3734a5098 in __new_sem_wait_slow64 (sem=0x7fb2de9b3438, abstime=0x0, clockid=0) at ./nptl/sem_waitcommon.c:183
+#5  0x00007fb2de63975c in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#6  0x00007fb2de602f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#7  0x00007fb2de602ded in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#8  0x00007fb2de67bfc0 in GC_inner_start_routine () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#9  0x00007fb2de67bc51 in GC_start_routine () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#10 0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#11 0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 36 (Thread 0x7fb2ddbfe6c0 (LWP 5242) "Job.Worker 0"):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 35 (Thread 0x7fb2d7fff6c0 (LWP 5243) "Job.Worker 1"):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 34 (Thread 0x7fb2d6ffe6c0 (LWP 5244) "Job.Worker 2"):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 33 (Thread 0x7fb2d5ffd6c0 (LWP 5245) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 32 (Thread 0x7fb2d4ffc6c0 (LWP 5246) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 31 (Thread 0x7fb2d3ffb6c0 (LWP 5247) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 30 (Thread 0x7fb2d2ffa6c0 (LWP 5248) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 29 (Thread 0x7fb2d1ff96c0 (LWP 5249) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 28 (Thread 0x7fb2d0ff86c0 (LWP 5250) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 27 (Thread 0x7fb2cfff76c0 (LWP 5251) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 26 (Thread 0x7fb2ceff66c0 (LWP 5252) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 25 (Thread 0x7fb2cdff56c0 (LWP 5253) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 24 (Thread 0x7fb2ccff46c0 (LWP 5254) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 23 (Thread 0x7fb2cbff36c0 (LWP 5255) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 22 (Thread 0x7fb2caff26c0 (LWP 5256) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 21 (Thread 0x7fb2c9ff16c0 (LWP 5257) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 20 (Thread 0x7fb2c8ff06c0 (LWP 5258) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 19 (Thread 0x7fb2c7fef6c0 (LWP 5259) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 18 (Thread 0x7fb2c6fee6c0 (LWP 5260) "Background Job."):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374a92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374a95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 17 (Thread 0x7fb2c5fed6c0 (LWP 5261) "BatchDeleteObje"):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374bb23c7 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374ac7823 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#5  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 16 (Thread 0x7fb2c4fec6c0 (LWP 5262) "Loading.AsyncRe"):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb3748cd130 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#4  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 15 (Thread 0x7fb2b6bff6c0 (LWP 5268) "llvmpipe-0"):
+#0  0x00007fb2a8ed317b in ?? ()
+#1  0x4040000040400000 in ?? ()
+#2  0x4040000040400000 in ?? ()
+#3  0x00009ff500001fb5 in ?? ()
+#4  0x000000004effffff in ?? ()
+#5  0x3eaea8003eaea800 in ?? ()
+#6  0x3eaea8003eaea800 in ?? ()
+#7  0x3eaea8003eaea800 in ?? ()
+#8  0x3eaea8003eaea800 in ?? ()
+#9  0x3e9090003e909000 in ?? ()
+#10 0x3e9090003e909000 in ?? ()
+#11 0x3e9090003e909000 in ?? ()
+#12 0x3e9090003e909000 in ?? ()
+#13 0x3e4cc0003e4cc000 in ?? ()
+#14 0x3e4cc0003e4cc000 in ?? ()
+#15 0x3e4cc0003e4cc000 in ?? ()
+#16 0x3e4cc0003e4cc000 in ?? ()
+#17 0x000001217fffffff in ?? ()
+#18 0x0000012100000120 in ?? ()
+#19 0x0000012300000122 in ?? ()
+#20 0x0000012300000122 in ?? ()
+#21 0x4040000040400000 in ?? ()
+#22 0x4040000040400000 in ?? ()
+#23 0x4040000040400000 in ?? ()
+#24 0x4040000040400000 in ?? ()
+
+Thread 14 (Thread 0x7fb2b5bfe6c0 (LWP 5269) "llvmpipe-1"):
+#0  futex_wait (private=0, expected=432792, futex_word=0x2c727d44) at ../sysdeps/nptl/futex-internal.h:146
+#1  futex_wait_simple (private=0, expected=432792, futex_word=0x2c727d44) at ../sysdeps/nptl/futex-internal.h:177
+#2  ___pthread_barrier_wait (barrier=0x2c727d40) at ./nptl/pthread_barrier_wait.c:184
+#3  0x00007fb2c19671ad in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#4  0x00007fb2c1c6670b in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#5  0x00007fb2c1999e0c in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#6  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#7  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 13 (Thread 0x7fb2b4bfd6c0 (LWP 5270) "llvmpipe-2"):
+#0  0x00007fb2a8ed3449 in ?? ()
+#1  0xffffffffffffffff in ?? ()
+#2  0xffffffffffffffff in ?? ()
+#3  0x00009ff500001fb5 in ?? ()
+#4  0x000000014effffff in ?? ()
+#5  0x3eaea8003eaea800 in ?? ()
+#6  0x3eaea8003eaea800 in ?? ()
+#7  0x3eaea8003eaea800 in ?? ()
+#8  0x3eaea8003eaea800 in ?? ()
+#9  0x3e9090003e909000 in ?? ()
+#10 0x3e9090003e909000 in ?? ()
+#11 0x3e9090003e909000 in ?? ()
+#12 0x3e9090003e909000 in ?? ()
+#13 0x3e4cc0003e4cc000 in ?? ()
+#14 0x3e4cc0003e4cc000 in ?? ()
+#15 0x3e4cc0003e4cc000 in ?? ()
+#16 0x3e4cc0003e4cc000 in ?? ()
+#17 0x000000a1000000a0 in ?? ()
+#18 0x000000a1000000a0 in ?? ()
+#19 0x000000a3000000a2 in ?? ()
+#20 0x000000a3000000a2 in ?? ()
+#21 0x4040000040400000 in ?? ()
+#22 0x4040000040400000 in ?? ()
+#23 0x4040000040400000 in ?? ()
+#24 0x4040000040400000 in ?? ()
+
+Thread 12 (Thread 0x7fb2abfff6c0 (LWP 5271) "llvmpipe-3"):
+#0  0x00007fb2a8ed34c3 in ?? ()
+#1  0xffffffff00000000 in ?? ()
+#2  0xffffffff00000000 in ?? ()
+#3  0x00009ff500001fb5 in ?? ()
+#4  0x000000014effffff in ?? ()
+#5  0x3eaea8003eaea800 in ?? ()
+#6  0x3eaea8003eaea800 in ?? ()
+#7  0x3eaea8003eaea800 in ?? ()
+#8  0x3eaea8003eaea800 in ?? ()
+#9  0x3e9090003e909000 in ?? ()
+#10 0x3e9090003e909000 in ?? ()
+#11 0x3e9090003e909000 in ?? ()
+#12 0x3e9090003e909000 in ?? ()
+#13 0x3e4cc0003e4cc000 in ?? ()
+#14 0x3e4cc0003e4cc000 in ?? ()
+#15 0x3e4cc0003e4cc000 in ?? ()
+#16 0x3e4cc0003e4cc000 in ?? ()
+#17 0x000000c5000000c4 in ?? ()
+#18 0x000000c5000000c4 in ?? ()
+#19 0x000000c7000000c6 in ?? ()
+#20 0x000000c7000000c6 in ?? ()
+#21 0x4040000040400000 in ?? ()
+#22 0x4040000040400000 in ?? ()
+#23 0x4040000040400000 in ?? ()
+#24 0x4040000040400000 in ?? ()
+
+Thread 11 (Thread 0x7fb2b3bfc6c0 (LWP 5272) "BirdieSmash"):
+#0  0x00007fb373498e51 in __futex_abstimed_wait_common64 (private=32690, cancel=true, abstime=0x0, op=393, expected=0, futex_word=0x2c72d100) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=32690, abstime=0x0, clockid=0, expected=0, futex_word=0x2c72d100) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0x2c72d100, expected=expected@entry=0, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x00007fb37349b8cd in __pthread_cond_wait_common (abstime=0x0, clockid=0, mutex=0x2c72d0b0, cond=0x2c72d0d8) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_wait (cond=0x2c72d0d8, mutex=0x2c72d0b0) at ./nptl/pthread_cond_wait.c:627
+#5  0x00007fb2c1999edd in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#6  0x00007fb2c1c6253b in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#7  0x00007fb2c1999e0c in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#8  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#9  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 10 (Thread 0x7fb2b2bfb6c0 (LWP 5273) "BirdieSmash"):
+#0  0x00007fb373498e51 in __futex_abstimed_wait_common64 (private=32690, cancel=true, abstime=0x0, op=393, expected=0, futex_word=0x2c72d100) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=32690, abstime=0x0, clockid=0, expected=0, futex_word=0x2c72d100) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0x2c72d100, expected=expected@entry=0, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x00007fb37349b8cd in __pthread_cond_wait_common (abstime=0x0, clockid=0, mutex=0x2c72d0b0, cond=0x2c72d0d8) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_wait (cond=0x2c72d0d8, mutex=0x2c72d0b0) at ./nptl/pthread_cond_wait.c:627
+#5  0x00007fb2c1999edd in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#6  0x00007fb2c1c6253b in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#7  0x00007fb2c1999e0c in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#8  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#9  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 9 (Thread 0x7fb2b1bfa6c0 (LWP 5274) "BirdieSmash"):
+#0  0x00007fb373498e51 in __futex_abstimed_wait_common64 (private=32690, cancel=true, abstime=0x0, op=393, expected=0, futex_word=0x2c72d100) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=32690, abstime=0x0, clockid=0, expected=0, futex_word=0x2c72d100) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0x2c72d100, expected=expected@entry=0, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x00007fb37349b8cd in __pthread_cond_wait_common (abstime=0x0, clockid=0, mutex=0x2c72d0b0, cond=0x2c72d0d8) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_wait (cond=0x2c72d0d8, mutex=0x2c72d0b0) at ./nptl/pthread_cond_wait.c:627
+#5  0x00007fb2c1999edd in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#6  0x00007fb2c1c6253b in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#7  0x00007fb2c1999e0c in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#8  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#9  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 8 (Thread 0x7fb2aaffe6c0 (LWP 5275) "BirdieSmash"):
+#0  0x00007fb373498e51 in __futex_abstimed_wait_common64 (private=32690, cancel=true, abstime=0x0, op=393, expected=0, futex_word=0x2c72d100) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=32690, abstime=0x0, clockid=0, expected=0, futex_word=0x2c72d100) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0x2c72d100, expected=expected@entry=0, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x00007fb37349b8cd in __pthread_cond_wait_common (abstime=0x0, clockid=0, mutex=0x2c72d0b0, cond=0x2c72d0d8) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_wait (cond=0x2c72d0d8, mutex=0x2c72d0b0) at ./nptl/pthread_cond_wait.c:627
+#5  0x00007fb2c1999edd in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#6  0x00007fb2c1c6253b in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#7  0x00007fb2c1999e0c in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#8  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#9  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 7 (Thread 0x7fb2a9ffd6c0 (LWP 5276) "BirdieS:disk$0"):
+#0  0x00007fb373498e51 in __futex_abstimed_wait_common64 (private=0, cancel=true, abstime=0x0, op=393, expected=0, futex_word=0x2c7140f8) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=0, abstime=0x0, clockid=0, expected=0, futex_word=0x2c7140f8) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0x2c7140f8, expected=expected@entry=0, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x00007fb37349b8cd in __pthread_cond_wait_common (abstime=0x0, clockid=0, mutex=0x2c7140a0, cond=0x2c7140d0) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_wait (cond=0x2c7140d0, mutex=0x2c7140a0) at ./nptl/pthread_cond_wait.c:627
+#5  0x00007fb2c1999edd in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#6  0x00007fb2c1965fbb in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#7  0x00007fb2c1999e0c in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#8  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#9  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 6 (Thread 0x7fb287fff6c0 (LWP 5277) "UnityGfxDeviceW"):
+#0  0x00007fb373498e51 in __futex_abstimed_wait_common64 (private=1, cancel=true, abstime=0x0, op=393, expected=0, futex_word=0x7fb25930d680) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=1, abstime=0x0, clockid=0, expected=0, futex_word=0x7fb25930d680) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0x7fb25930d680, expected=expected@entry=0, clockid=clockid@entry=0, abstime=abstime@entry=0x0, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x00007fb37349b8cd in __pthread_cond_wait_common (abstime=0x0, clockid=0, mutex=0x7fb25930d630, cond=0x7fb25930d658) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_wait (cond=0x7fb25930d658, mutex=0x7fb25930d630) at ./nptl/pthread_cond_wait.c:627
+#5  0x00007fb2c1999edd in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#6  0x00007fb2c1c6317b in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#7  0x00007fb2c1c5e3a8 in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#8  0x00007fb2c1c63766 in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#9  0x00007fb2c1c6384c in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#10 0x00007fb2c1c984f8 in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#11 0x00007fb2c2287107 in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#12 0x00007fb2c2287df6 in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#13 0x00007fb2c1c9c613 in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#14 0x00007fb2c1823ee0 in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#15 0x00007fb2c18246ad in ?? () from /lib/x86_64-linux-gnu/libgallium-25.2.8-0ubuntu0.24.04.4.so
+#16 0x00007fb374eaddb9 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#17 0x00007fb374e8baed in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#18 0x00007fb375894113 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#19 0x00007fb375889ecf in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#20 0x00007fb3758967e0 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#21 0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#22 0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#23 0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 5 (Thread 0x7fb2dc1ff6c0 (LWP 5278) "BirdieSmash"):
+#0  0x00007fb3734ecbdf in __GI___clock_nanosleep (clock_id=clock_id@entry=0, flags=flags@entry=0, req=req@entry=0x7fb2dc1fee20, rem=rem@entry=0x0) at ../sysdeps/unix/sysv/linux/clock_nanosleep.c:78
+#1  0x00007fb3734f9b27 in __GI___nanosleep (req=req@entry=0x7fb2dc1fee20, rem=rem@entry=0x0) at ../sysdeps/unix/sysv/linux/nanosleep.c:25
+#2  0x00007fb3735299bc in usleep (useconds=<optimized out>) at ../sysdeps/posix/usleep.c:31
+#3  0x00007fb37404dbdc in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37401a7d8 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#5  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#6  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 4 (Thread 0x7fb2dc0fe6c0 (LWP 5279) "BirdieSmash"):
+#0  0x00007fb3734ecbdf in __GI___clock_nanosleep (clock_id=clock_id@entry=0, flags=flags@entry=0, req=req@entry=0x7fb2dc0fde20, rem=rem@entry=0x0) at ../sysdeps/unix/sysv/linux/clock_nanosleep.c:78
+#1  0x00007fb3734f9b27 in __GI___nanosleep (req=req@entry=0x7fb2dc0fde20, rem=rem@entry=0x0) at ../sysdeps/unix/sysv/linux/nanosleep.c:25
+#2  0x00007fb3735299bc in usleep (useconds=<optimized out>) at ../sysdeps/posix/usleep.c:31
+#3  0x00007fb37404dbdc in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007fb37401a7d8 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#5  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#6  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 3 (Thread 0x7fb2c3feb6c0 (LWP 5280) "Loading.Preload"):
+#0  syscall () at ../sysdeps/unix/sysv/linux/x86_64/syscall.S:38
+#1  0x00007fb374b07ae9 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007fb374bb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007fb37349cb84 in start_thread (arg=<optimized out>) at ./nptl/pthread_create.c:447
+#4  0x00007fb373529ecc in clone3 () at ../sysdeps/unix/sysv/linux/x86_64/clone3.S:78
+
+Thread 2 (Thread 0x7fb2863ff6c0 (LWP 5282) "BirdieSmash"):
+#0  0x00007fb373498e51 in __futex_abstimed_wait_common64 (private=32691, cancel=true, abstime=0x7fb2863fe708, op=137, expected=0, futex_word=0x7fb2de9b3fa0) at ./nptl/futex-internal.c:57
+#1  __futex_abstimed_wait_common (cancel=true, private=32691, abstime=0x7fb2863fe708, clockid=0, expected=0, futex_word=0x7fb2de9b3fa0) at ./nptl/futex-internal.c:87
+#2  __GI___futex_abstimed_wait_cancelable64 (futex_word=futex_word@entry=0x7fb2de9b3fa0, expected=expected@entry=0, clockid=clockid@entry=1, abstime=abstime@entry=0x7fb2863fe708, private=private@entry=0) at ./nptl/futex-internal.c:139
+#3  0x00007fb37349bd6e in __pthread_cond_wait_common (abstime=0x7fb2863fe708, clockid=1, mutex=0x7fb2de9b3f50, cond=0x7fb2de9b3f78) at ./nptl/pthread_cond_wait.c:503
+#4  ___pthread_cond_timedwait64 (cond=0x7fb2de9b3f78, mutex=0x7fb2de9b3f50, abstime=0x7fb2863fe708) at ./nptl/pthread_cond_wait.c:652
+#5  0x00007fb2de64d303 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#6  0x00007fb2de65648c in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#7  0x00007fb2de5fc78d in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#8  0x00007fb2de5ac8f8 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#9  0x0000000041afec76 in ?? ()
+#10 0x00007fb28573c480 in ?? ()
+#11 0x00007fb285883360 in ?? ()
+#12 0x00007fb285883360 in ?? ()
+#13 0x00007fb285883360 in ?? ()
+#14 0x0000000000002710 in ?? ()
+#15 0x00007fb22c02d0e0 in ?? ()
+#16 0x00007fb2863fe9c0 in ?? ()
+#17 0x00007fb2863fe870 in ?? ()
+#18 0x00007fb286fb0d20 in ?? ()
+#19 0x0000000041afebcc in ?? ()
+#20 0x000000000000000e in ?? ()
+#21 0x0000000041538fe0 in ?? ()
+#22 0x00007fb2a84d57e0 in ?? ()
+#23 0x0000000041afeabc in ?? ()
+#24 0x00007fb286fe8060 in ?? ()
+
+Thread 1 (Thread 0x7fb375f0ff00 (LWP 5234) "BirdieSmash"):
+#0  0x00007fb37352c0cb in __recvmsg_syscall (flags=0, msg=0x7fff05e26600, fd=8) at ../sysdeps/unix/sysv/linux/recvmsg.c:27
+#1  __libc_recvmsg (fd=8, msg=0x7fff05e26600, flags=0) at ../sysdeps/unix/sysv/linux/recvmsg.c:41
+#2  0x00007fb370133f1a in ?? () from /lib/x86_64-linux-gnu/libxcb.so.1
+#3  0x00007fb370135048 in ?? () from /lib/x86_64-linux-gnu/libxcb.so.1
+#4  0x00007fb370191ad6 in ?? () from /lib/x86_64-linux-gnu/libX11.so.6
+#5  0x00007fb370191c61 in ?? () from /lib/x86_64-linux-gnu/libX11.so.6
+#6  0x00007fb370195a5a in _XEventsQueued () from /lib/x86_64-linux-gnu/libX11.so.6
+#7  0x00007fb370170ae2 in XCheckIfEvent () from /lib/x86_64-linux-gnu/libX11.so.6
+#8  0x00007fb375c7c2bf in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#9  0x00007fb375c2999b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#10 0x00007fb374dd756f in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#11 0x00007fb374da5f1a in PlayerMain(int, char**) () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#12 0x00007fb37342a1ca in __libc_start_call_main (main=main@entry=0x201170 <main>, argc=argc@entry=12, argv=argv@entry=0x7fff05e27a88) at ../sysdeps/nptl/libc_start_call_main.h:58
+#13 0x00007fb37342a28b in __libc_start_main_impl (main=0x201170 <main>, argc=12, argv=0x7fff05e27a88, init=<optimized out>, fini=<optimized out>, rtld_fini=<optimized out>, stack_end=0x7fff05e27a78) at ../csu/libc-start.c:360
+#14 0x0000000000201029 in _start ()
+[Inferior 1 (process 5234) detached]

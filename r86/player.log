@@ -1,0 +1,1215 @@
+The selected window backend is x11 
+Mono path[0] = '/home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/Managed'
+Mono config path = '/home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/etc'
+Input System module state changed to: Initialized.
+Display 0 'screen': 800x1300 (primary device).
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+Desktop is 800 x 1300 @ 0 Hz
+Initialize engine version: 6000.0.58f2 (92dee566b325)
+[Subsystems] Discovering subsystems at path /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/UnitySubsystems
+Forcing GfxDevice: OpenGL Core
+kGfxThreadingModeClientWorkerNativeJobs is not supported on OpenGL Core. Reverting to kGfxThreadingModeClientWorkerJobs instead.
+GfxDevice: creating device client; kGfxThreadingModeClientWorkerJobs
+Renderer: llvmpipe (LLVM 20.1.2, 256 bits)
+Vendor:   Mesa
+Version:  4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.4
+GLES:     0
+ GL_3DFX_texture_compression_FXT1 GL_AMD_conservative_depth GL_AMD_draw_buffers_blend GL_AMD_gpu_shader_int64 GL_AMD_multi_draw_indirect GL_AMD_pinned_memory GL_AMD_query_buffer_object GL_AMD_seamless_cubemap_per_texture GL_AMD_shader_stencil_export GL_AMD_shader_trinary_minmax GL_AMD_texture_texture4 GL_AMD_vertex_shader_layer GL_AMD_vertex_shader_viewport_index GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ARB_ES2_compatibility GL_ARB_ES3_1_compatibility GL_ARB_ES3_2_compatibility GL_ARB_ES3_compatibility GL_ARB_arrays_of_arrays GL_ARB_base_instance GL_ARB_blend_func_extended GL_ARB_buffer_storage GL_ARB_clear_buffer_object GL_ARB_clear_texture GL_ARB_clip_control GL_ARB_compressed_texture_pixel_storage GL_ARB_compute_shader GL_ARB_conditional_render_inverted GL_ARB_conservative_depth GL_ARB_copy_buffer GL_ARB_copy_image GL_ARB_cull_distance GL_ARB_debug_output GL_ARB_depth_buffer_float GL_ARB_depth_clamp GL_ARB_derivative_control GL_ARB_direct_state_access GL_ARB_draw_buffers GL_A
+RB_draw_buffers_blend GL_ARB_draw_elements_base_vertex GL_ARB_draw_indirect GL_ARB_draw_instanced GL_ARB_enhanced_layouts GL_ARB_explicit_attrib_location GL_ARB_explicit_uniform_location GL_ARB_fragment_coord_conventions GL_ARB_fragment_layer_viewport GL_ARB_fragment_shader GL_ARB_framebuffer_no_attachments GL_ARB_framebuffer_object GL_ARB_framebuffer_sRGB GL_ARB_get_program_binary GL_ARB_get_texture_sub_image GL_ARB_gl_spirv GL_ARB_gpu_shader5 GL_ARB_gpu_shader_fp64 GL_ARB_gpu_shader_int64 GL_ARB_half_float_pixel GL_ARB_half_float_vertex GL_ARB_indirect_parameters GL_ARB_instanced_arrays GL_ARB_internalformat_query GL_ARB_internalformat_query2 GL_ARB_invalidate_subdata GL_ARB_map_buffer_alignment GL_ARB_map_buffer_range GL_ARB_multi_bind GL_ARB_multi_draw_indirect GL_ARB_occlusion_query2 GL_ARB_parallel_shader_compile GL_ARB_pipeline_statistics_query GL_ARB_pixel_buffer_object GL_ARB_point_sprite GL_ARB_polygon_offset_clamp GL_ARB_post_depth_coverage GL_ARB_program_interface_query GL_ARB_provoking_vertex GL
+_ARB_query_buffer_object GL_ARB_robust_buffer_access_behavior GL_ARB_robustness GL_ARB_sample_shading GL_ARB_sampler_objects GL_ARB_seamless_cube_map GL_ARB_seamless_cubemap_per_texture GL_ARB_separate_shader_objects GL_ARB_shader_atomic_counter_ops GL_ARB_shader_atomic_counters GL_ARB_shader_ballot GL_ARB_shader_bit_encoding GL_ARB_shader_clock GL_ARB_shader_draw_parameters GL_ARB_shader_group_vote GL_ARB_shader_image_load_store GL_ARB_shader_image_size GL_ARB_shader_objects GL_ARB_shader_precision GL_ARB_shader_stencil_export GL_ARB_shader_storage_buffer_object GL_ARB_shader_subroutine GL_ARB_shader_texture_image_samples GL_ARB_shader_texture_lod GL_ARB_shader_viewport_layer_array GL_ARB_shading_language_420pack GL_ARB_shading_language_include GL_ARB_shading_language_packing GL_ARB_spirv_extensions GL_ARB_stencil_texturing GL_ARB_sync GL_ARB_tessellation_shader GL_ARB_texture_barrier GL_ARB_texture_border_clamp GL_ARB_texture_buffer_object GL_ARB_texture_buffer_object_rgb32 GL_ARB_texture_buffer_range GL_A
+RB_texture_compression_bptc GL_ARB_texture_compression_rgtc GL_ARB_texture_cube_map_array GL_ARB_texture_filter_anisotropic GL_ARB_texture_filter_minmax GL_ARB_texture_float GL_ARB_texture_gather GL_ARB_texture_mirror_clamp_to_edge GL_ARB_texture_multisample GL_ARB_texture_non_power_of_two GL_ARB_texture_query_levels GL_ARB_texture_query_lod GL_ARB_texture_rectangle GL_ARB_texture_rg GL_ARB_texture_rgb10_a2ui GL_ARB_texture_stencil8 GL_ARB_texture_storage GL_ARB_texture_storage_multisample GL_ARB_texture_swizzle GL_ARB_texture_view GL_ARB_timer_query GL_ARB_transform_feedback2 GL_ARB_transform_feedback3 GL_ARB_transform_feedback_instanced GL_ARB_transform_feedback_overflow_query GL_ARB_uniform_buffer_object GL_ARB_vertex_array_bgra GL_ARB_vertex_array_object GL_ARB_vertex_attrib_64bit GL_ARB_vertex_attrib_binding GL_ARB_vertex_buffer_object GL_ARB_vertex_shader GL_ARB_vertex_type_10f_11f_11f_rev GL_ARB_vertex_type_2_10_10_10_rev GL_ARB_viewport_array GL_ARM_shader_framebuffer_fetch_depth_stencil GL_ATI_blend
+_equation_separate GL_ATI_meminfo GL_ATI_texture_float GL_ATI_texture_mirror_once GL_EXT_EGL_image_storage GL_EXT_EGL_image_storage_compression GL_EXT_EGL_sync GL_EXT_abgr GL_EXT_blend_equation_separate GL_EXT_debug_label GL_EXT_draw_buffers2 GL_EXT_draw_instanced GL_EXT_framebuffer_blit GL_EXT_framebuffer_multisample GL_EXT_framebuffer_multisample_blit_scaled GL_EXT_framebuffer_object GL_EXT_framebuffer_sRGB GL_EXT_memory_object GL_EXT_memory_object_fd GL_EXT_packed_depth_stencil GL_EXT_packed_float GL_EXT_pixel_buffer_object GL_EXT_polygon_offset_clamp GL_EXT_provoking_vertex GL_EXT_shader_clock GL_EXT_shader_framebuffer_fetch GL_EXT_shader_framebuffer_fetch_non_coherent GL_EXT_shader_image_load_formatted GL_EXT_shader_integer_mix GL_EXT_texture_array GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc GL_EXT_texture_filter_anisotropic GL_EXT_texture_filter_minmax GL_EXT_texture_integer GL_EXT_texture_mirror_clamp GL_EXT_texture_sRGB GL_EXT_texture_sRGB_R8 GL_EXT
+_texture_sRGB_RG8 GL_EXT_texture_sRGB_decode GL_EXT_texture_shadow_lod GL_EXT_texture_shared_exponent GL_EXT_texture_snorm GL_EXT_texture_storage GL_EXT_texture_swizzle GL_EXT_timer_query GL_EXT_transform_feedback GL_EXT_vertex_array_bgra GL_EXT_vertex_attrib_64bit GL_IBM_multimode_draw_arrays GL_INTEL_shader_atomic_float_minmax GL_KHR_blend_equation_advanced GL_KHR_blend_equation_advanced_coherent GL_KHR_context_flush_control GL_KHR_debug GL_KHR_no_error GL_KHR_parallel_shader_compile GL_KHR_robust_buffer_access_behavior GL_KHR_robustness GL_KHR_texture_compression_astc_ldr GL_KHR_texture_compression_astc_sliced_3d GL_MESA_framebuffer_flip_y GL_MESA_pack_invert GL_MESA_shader_integer_functions GL_MESA_texture_signed_rgba GL_NVX_gpu_memory_info GL_NV_alpha_to_coverage_dither_control GL_NV_conditional_render GL_NV_copy_image GL_NV_depth_clamp GL_NV_packed_depth_stencil GL_NV_shader_atomic_float GL_NV_texture_barrier GL_OES_EGL_image GL_OVR_multiview GL_OVR_multiview2 GL_S3_s3tc
+OPENGL LOG: Creating OpenGL 4.5 graphics device ; Context level  <OpenGL 4.5> ; Context handle 746729312
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+FMOD failed to initialize the output device.: "Error initializing output device. " (60)
+Forced to initialize FMOD to to the device driver's system output rate 48000, this may impact performance and/or give inconsistent experiences compared to selected sample rate 48000
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+FMOD failed to initialize the output device.: "Error initializing output device. " (60)
+FMOD failed to initialize any audio devices, running on emulated software output with no sound. Please check your audio drivers and/or hardware for malfunction.
+Begin MonoManager ReloadAssembly
+- Loaded All Assemblies, in  0.079 seconds
+- Finished resetting the current domain, in  0.003 seconds
+[Physics::Module] Selected backend.
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Default vsync count 1
+requesting resize 390 x 845
+resizing window to 390 x 845
+Desktop is 800 x 1300 @ 0 Hz
+UnloadTime: 0.519958 ms
+Birdie Smash: menü biçimi menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-461258972 rules=364 complexSelectors=386 m_Rules=364 m_ComplexSelectors=386 imports=0
+EkranTuru başladı: /home/runner/work/_temp/ekran
+requesting resize 390 x 845
+resizing window to 390 x 845
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru GameRoot True
+EkranTuru kare 2 t=8.9 → 00_ilk_kare
+EkranTuru kare 25 t=9.8 → menu_ilk_oyna
+EkranTuru kare 45 t=13.6 → menu_oyna
+EkranTuru bekçi: kare 47 adım menu_oyna
+EkranTuru kare 65 t=15.2 → menu_kariyer
+EkranTuru kare 85 t=15.7 → menu_harita_tur1
+EkranTuru kare 100 t=16.5 → menu_harita_tur2_kilitli
+EkranTuru kare 120 t=17.1 → menu_mac_karti
+EkranTuru kare 140 t=17.4 → menu_mac_karti_final_kilitli
+EkranTuru kare 160 t=18.0 → menu_harita_tur2
+EkranTuru kare 180 t=18.4 → menu_mac_karti_tur2
+EkranTuru kare 200 t=18.7 → menu_harita_tur3
+EkranTuru kare 220 t=19.1 → menu_mac_karti_tur3
+EkranTuru kare 235 t=19.3 → menu_harita_tur4_kilitli
+EkranTuru kare 255 t=19.7 → menu_harita_tur4
+EkranTuru kare 275 t=20.0 → menu_mac_karti_tur4_imza
+EkranTuru kare 295 t=20.6 → menu_harita_tur4_usta
+EkranTuru kare 315 t=23.2 → menu_oyna_usta
+EkranTuru bekçi: kare 317 adım menu_oyna_usta
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 350 t=26.8 → menu_soyunma
+EkranTuru kare 370 t=28.5 → menu_soyunma_oyun
+EkranTuru kare 380 t=28.7 → menu_soyunma_oyun_taban
+EkranTuru kare 400 t=30.0 → menu_soyunma_gorunum
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 440 t=32.4 → menu_karakter_sapka_kep
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 470 t=33.5 → menu_karakter_sapka_buyucu
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 481 adım menu_karakter_sapka_buyucu
+EkranTuru kare 510 t=34.9 → menu_karakter_yuz_gunes
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 540 t=36.2 → menu_karakter_tip
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 570 t=37.5 → menu_karakter_tip_deneme
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 610 t=39.1 → menu_karakter_sac_yuz
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 650 t=40.4 → menu_karakter_sac_deneme
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 690 t=41.7 → menu_karakter_ayakkabi_ayak
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 720 t=42.7 → menu_karakter_ayakkabi_deneme
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 749 adım menu_karakter_ayakkabi_deneme
+EkranTuru kare 750 t=44.0 → menu_karakter_ten
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 780 t=45.1 → menu_karakter_ten_t1
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 810 t=46.1 → menu_karakter_ten_t5
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 850 t=47.6 → menu_yakin_tutus_forehand
+EkranTuru kare 890 t=49.0 → menu_yakin_tutus_backhand
+EkranTuru kare 950 t=50.7 → menu_raket_incele
+EkranTuru kare 995 t=51.7 → menu_raket_incele_2
+EkranTuru kare 1085 t=53.9 → menu_tezgah_kafa
+EkranTuru bekçi: kare 1087 adım menu_tezgah_kafa
+EkranTuru kare 1175 t=55.9 → menu_tezgah_cerceve
+EkranTuru kare 1265 t=57.7 → menu_tezgah_saft
+EkranTuru kare 1355 t=59.5 → menu_tezgah_grip
+EkranTuru kare 1445 t=61.4 → menu_tezgah_kordaj
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 1495 t=62.6 → menu_tezgah_sekil_oval
+EkranTuru kare 1545 t=63.8 → menu_tezgah_sekil_oval_kordaj
+EkranTuru bekçi: kare 1552 adım menu_tezgah_sekil_oval_kordaj
+EkranTuru kare 1595 t=65.4 → menu_tezgah_sekil_izometrik
+EkranTuru kare 1645 t=67.0 → menu_tezgah_sekil_izometrik_kordaj
+EkranTuru kare 1695 t=68.5 → menu_tezgah_sekil_kalp
+EkranTuru kare 1745 t=70.0 → menu_tezgah_sekil_kalp_kordaj
+EkranTuru kare 1805 t=72.0 → menu_tutus_kalp
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 1825 t=72.4 → menu_atolye
+EkranTuru kare 1845 t=72.8 → menu_yuva_raket
+EkranTuru kare 1870 t=73.2 → menu_yuva_kordaj
+EkranTuru kare 1895 t=73.9 → menu_profil
+EkranTuru bekçi: kare 1899 adım menu_profil
+EkranTuru kare 1915 t=74.2 → menu_profil_ornek
+EkranTuru kare 1940 t=76.1 → menu_hizli
+EkranTuru kare 1960 t=77.3 → menu_ayarlar
+EkranTuru kare 1985 t=78.6 → menu_antrenman
+EkranTuru kare 1995 t=78.8 → menu_antrenman_alt
+EkranTuru kare 2015 t=79.1 → menu_gorev_karti
+EkranTuru kare 2040 t=80.6 → menu_gunun_maci
+EkranTuru kare 2060 t=81.8 → menu_oyna_gunluk_alindi
+EkranTuru kare 2085 t=83.2 → menu_x2_oyna
+EkranTuru kare 2105 t=83.7 → menu_x2_kariyer
+EkranTuru bekçi: kare 2121 adım menu_x2_kariyer
+EkranTuru kare 2125 t=84.0 → menu_x2_harita_tur1
+EkranTuru kare 2140 t=84.3 → menu_x2_harita_tur2_kilitli
+EkranTuru kare 2160 t=84.6 → menu_x2_mac_karti
+EkranTuru kare 2180 t=85.0 → menu_x2_mac_karti_final_kilitli
+EkranTuru kare 2200 t=85.3 → menu_x2_harita_tur2
+EkranTuru kare 2220 t=85.7 → menu_x2_mac_karti_tur2
+EkranTuru kare 2240 t=86.0 → menu_x2_harita_tur3
+EkranTuru kare 2260 t=86.3 → menu_x2_mac_karti_tur3
+EkranTuru kare 2275 t=86.6 → menu_x2_harita_tur4_kilitli
+EkranTuru kare 2295 t=87.0 → menu_x2_harita_tur4
+EkranTuru kare 2315 t=87.3 → menu_x2_mac_karti_tur4_imza
+EkranTuru kare 2335 t=87.6 → menu_x2_harita_tur4_usta
+EkranTuru kare 2355 t=89.1 → menu_x2_oyna_usta
+EkranTuru kare 2390 t=92.0 → menu_x2_soyunma
+EkranTuru kare 2410 t=92.6 → menu_x2_soyunma_oyun
+EkranTuru kare 2420 t=92.8 → menu_x2_soyunma_oyun_taban
+EkranTuru bekçi: kare 2433 adım menu_x2_soyunma_oyun_taban
+EkranTuru kare 2440 t=94.1 → menu_x2_soyunma_gorunum
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 2480 t=96.2 → menu_x2_karakter_sapka_kep
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 2510 t=97.3 → menu_x2_karakter_sapka_buyucu
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 2550 t=98.6 → menu_x2_karakter_yuz_gunes
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 2580 t=100.3 → menu_x2_karakter_tip
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 2610 t=101.6 → menu_x2_karakter_tip_deneme
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 2650 t=103.4 → menu_x2_karakter_sac_yuz
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 2665 adım menu_x2_karakter_sac_yuz
+EkranTuru kare 2690 t=104.8 → menu_x2_karakter_sac_deneme
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 2730 t=106.2 → menu_x2_karakter_ayakkabi_ayak
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 2760 t=107.0 → menu_x2_karakter_ayakkabi_deneme
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 2790 t=108.2 → menu_x2_karakter_ten
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 2820 t=109.4 → menu_x2_karakter_ten_t1
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 2850 t=110.3 → menu_x2_karakter_ten_t5
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 2890 t=111.6 → menu_x2_yakin_tutus_forehand
+EkranTuru kare 2930 t=113.0 → menu_x2_yakin_tutus_backhand
+EkranTuru bekçi: kare 2969 adım menu_x2_yakin_tutus_backhand
+EkranTuru kare 2990 t=114.4 → menu_x2_raket_incele
+EkranTuru kare 3035 t=115.4 → menu_x2_raket_incele_2
+EkranTuru kare 3125 t=117.7 → menu_x2_tezgah_kafa
+EkranTuru kare 3215 t=119.8 → menu_x2_tezgah_cerceve
+EkranTuru kare 3305 t=121.5 → menu_x2_tezgah_saft
+EkranTuru kare 3395 t=123.2 → menu_x2_tezgah_grip
+EkranTuru bekçi: kare 3429 adım menu_x2_tezgah_grip
+EkranTuru kare 3485 t=125.2 → menu_x2_tezgah_kordaj
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 3535 t=126.5 → menu_x2_tezgah_sekil_oval
+EkranTuru kare 3585 t=127.7 → menu_x2_tezgah_sekil_oval_kordaj
+EkranTuru kare 3635 t=129.2 → menu_x2_tezgah_sekil_izometrik
+EkranTuru kare 3685 t=130.7 → menu_x2_tezgah_sekil_izometrik_kordaj
+EkranTuru kare 3735 t=132.1 → menu_x2_tezgah_sekil_kalp
+EkranTuru kare 3785 t=133.6 → menu_x2_tezgah_sekil_kalp_kordaj
+EkranTuru bekçi: kare 3799 adım menu_x2_tezgah_sekil_kalp_kordaj
+EkranTuru kare 3845 t=135.4 → menu_x2_tutus_kalp
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 3865 t=135.8 → menu_x2_atolye
+EkranTuru kare 3885 t=136.2 → menu_x2_yuva_raket
+EkranTuru kare 3910 t=136.6 → menu_x2_yuva_kordaj
+EkranTuru kare 3935 t=137.0 → menu_x2_profil
+EkranTuru kare 3955 t=137.4 → menu_x2_profil_ornek
+EkranTuru kare 3980 t=138.7 → menu_x2_hizli
+EkranTuru kare 4000 t=139.4 → menu_x2_ayarlar
+EkranTuru kare 4025 t=140.0 → menu_x2_antrenman
+EkranTuru kare 4035 t=140.2 → menu_x2_antrenman_alt
+EkranTuru kare 4055 t=140.5 → menu_x2_gorev_karti
+EkranTuru kare 4080 t=142.0 → menu_x2_gunun_maci
+EkranTuru kare 4100 t=143.2 → menu_x2_oyna_gunluk_alindi
+EkranTuru bekçi: kare 4112 adım menu_x2_oyna_gunluk_alindi
+EkranTuru kare 4130 t=145.0 → menu_tr_oyna
+EkranTuru kare 4150 t=145.4 → menu_tr_kariyer
+EkranTuru kare 4170 t=146.4 → menu_tr_harita_tur1
+EkranTuru kare 4185 t=146.6 → menu_tr_harita_tur2_kilitli
+EkranTuru kare 4205 t=147.0 → menu_tr_mac_karti
+EkranTuru kare 4225 t=147.3 → menu_tr_mac_karti_final_kilitli
+EkranTuru kare 4245 t=147.7 → menu_tr_harita_tur2
+EkranTuru kare 4265 t=148.0 → menu_tr_mac_karti_tur2
+EkranTuru kare 4285 t=148.3 → menu_tr_harita_tur3
+EkranTuru kare 4305 t=148.7 → menu_tr_mac_karti_tur3
+EkranTuru kare 4320 t=148.9 → menu_tr_harita_tur4_kilitli
+EkranTuru kare 4340 t=149.3 → menu_tr_harita_tur4
+EkranTuru kare 4360 t=149.6 → menu_tr_mac_karti_tur4_imza
+EkranTuru kare 4380 t=150.0 → menu_tr_harita_tur4_usta
+EkranTuru kare 4400 t=151.1 → menu_tr_oyna_usta
+EkranTuru kare 4435 t=152.2 → menu_tr_soyunma
+EkranTuru kare 4455 t=152.6 → menu_tr_soyunma_oyun
+EkranTuru kare 4465 t=152.8 → menu_tr_soyunma_oyun_taban
+EkranTuru kare 4485 t=153.4 → menu_tr_soyunma_gorunum
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 4503 adım menu_tr_soyunma_gorunum
+EkranTuru kare 4525 t=154.8 → menu_tr_karakter_sapka_kep
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 4555 t=155.9 → menu_tr_karakter_sapka_buyucu
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 4595 t=157.3 → menu_tr_karakter_yuz_gunes
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 4625 t=158.3 → menu_tr_karakter_tip
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 4655 t=159.3 → menu_tr_karakter_tip_deneme
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 4695 t=160.7 → menu_tr_karakter_sac_yuz
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 4735 t=162.1 → menu_tr_karakter_sac_deneme
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 4775 t=163.4 → menu_tr_karakter_ayakkabi_ayak
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 4795 adım menu_tr_karakter_ayakkabi_ayak
+EkranTuru kare 4805 t=164.3 → menu_tr_karakter_ayakkabi_deneme
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 4835 t=165.3 → menu_tr_karakter_ten
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 4865 t=166.2 → menu_tr_karakter_ten_t1
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 4895 t=167.2 → menu_tr_karakter_ten_t5
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 4935 t=168.6 → menu_tr_yakin_tutus_forehand
+EkranTuru kare 4975 t=170.1 → menu_tr_yakin_tutus_backhand
+EkranTuru kare 5035 t=171.6 → menu_tr_raket_incele
+EkranTuru kare 5080 t=172.6 → menu_tr_raket_incele_2
+EkranTuru bekçi: kare 5134 adım menu_tr_raket_incele_2
+EkranTuru kare 5170 t=174.7 → menu_tr_tezgah_kafa
+EkranTuru kare 5260 t=176.7 → menu_tr_tezgah_cerceve
+EkranTuru kare 5350 t=178.5 → menu_tr_tezgah_saft
+EkranTuru kare 5440 t=180.2 → menu_tr_tezgah_grip
+EkranTuru kare 5530 t=182.3 → menu_tr_tezgah_kordaj
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 5580 t=183.6 → menu_tr_tezgah_sekil_oval
+EkranTuru bekçi: kare 5592 adım menu_tr_tezgah_sekil_oval
+EkranTuru kare 5630 t=185.0 → menu_tr_tezgah_sekil_oval_kordaj
+EkranTuru kare 5680 t=186.6 → menu_tr_tezgah_sekil_izometrik
+EkranTuru kare 5730 t=188.1 → menu_tr_tezgah_sekil_izometrik_kordaj
+EkranTuru kare 5780 t=189.5 → menu_tr_tezgah_sekil_kalp
+EkranTuru kare 5830 t=191.0 → menu_tr_tezgah_sekil_kalp_kordaj
+EkranTuru kare 5890 t=193.1 → menu_tr_tutus_kalp
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 5910 t=193.5 → menu_tr_atolye
+EkranTuru kare 5930 t=193.9 → menu_tr_yuva_raket
+EkranTuru bekçi: kare 5936 adım menu_tr_yuva_raket
+EkranTuru kare 5955 t=194.3 → menu_tr_yuva_kordaj
+EkranTuru kare 5980 t=194.7 → menu_tr_profil
+EkranTuru kare 6000 t=195.1 → menu_tr_profil_ornek
+EkranTuru kare 6025 t=196.3 → menu_tr_hizli
+EkranTuru kare 6045 t=196.8 → menu_tr_ayarlar
+EkranTuru kare 6070 t=197.4 → menu_tr_antrenman
+EkranTuru kare 6080 t=197.6 → menu_tr_antrenman_alt
+EkranTuru kare 6100 t=197.9 → menu_tr_gorev_karti
+EkranTuru kare 6125 t=199.3 → menu_tr_gunun_maci
+EkranTuru kare 6145 t=200.5 → menu_tr_oyna_gunluk_alindi
+EkranTuru kare 6170 t=202.0 → menu_x2_tr_oyna
+EkranTuru kare 6190 t=202.4 → menu_x2_tr_kariyer
+EkranTuru kare 6210 t=202.8 → menu_x2_tr_harita_tur1
+EkranTuru kare 6225 t=203.0 → menu_x2_tr_harita_tur2_kilitli
+EkranTuru kare 6245 t=203.4 → menu_x2_tr_mac_karti
+EkranTuru kare 6265 t=203.7 → menu_x2_tr_mac_karti_final_kilitli
+EkranTuru bekçi: kare 6280 adım menu_x2_tr_mac_karti_final_kilitli
+EkranTuru kare 6285 t=204.1 → menu_x2_tr_harita_tur2
+EkranTuru kare 6305 t=204.4 → menu_x2_tr_mac_karti_tur2
+EkranTuru kare 6325 t=204.7 → menu_x2_tr_harita_tur3
+EkranTuru kare 6345 t=205.1 → menu_x2_tr_mac_karti_tur3
+EkranTuru kare 6360 t=205.3 → menu_x2_tr_harita_tur4_kilitli
+EkranTuru kare 6380 t=205.7 → menu_x2_tr_harita_tur4
+EkranTuru kare 6400 t=206.0 → menu_x2_tr_mac_karti_tur4_imza
+EkranTuru kare 6420 t=206.4 → menu_x2_tr_harita_tur4_usta
+EkranTuru kare 6440 t=207.6 → menu_x2_tr_oyna_usta
+EkranTuru kare 6475 t=208.7 → menu_x2_tr_soyunma
+EkranTuru kare 6495 t=209.1 → menu_x2_tr_soyunma_oyun
+EkranTuru kare 6505 t=209.3 → menu_x2_tr_soyunma_oyun_taban
+EkranTuru kare 6525 t=209.8 → menu_x2_tr_soyunma_gorunum
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 6565 t=211.1 → menu_x2_tr_karakter_sapka_kep
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 6595 t=212.2 → menu_x2_tr_karakter_sapka_buyucu
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 6635 t=213.5 → menu_x2_tr_karakter_yuz_gunes
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 6648 adım menu_x2_tr_karakter_yuz_gunes
+EkranTuru kare 6665 t=214.5 → menu_x2_tr_karakter_tip
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 6695 t=215.5 → menu_x2_tr_karakter_tip_deneme
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 6735 t=216.8 → menu_x2_tr_karakter_sac_yuz
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 6775 t=218.1 → menu_x2_tr_karakter_sac_deneme
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 6815 t=219.3 → menu_x2_tr_karakter_ayakkabi_ayak
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 6845 t=220.1 → menu_x2_tr_karakter_ayakkabi_deneme
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 6875 t=221.1 → menu_x2_tr_karakter_ten
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 6905 t=222.0 → menu_x2_tr_karakter_ten_t1
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 6935 t=223.0 → menu_x2_tr_karakter_ten_t5
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 6965 adım menu_x2_tr_karakter_ten_t5
+EkranTuru kare 6975 t=224.3 → menu_x2_tr_yakin_tutus_forehand
+EkranTuru kare 7015 t=225.6 → menu_x2_tr_yakin_tutus_backhand
+EkranTuru kare 7075 t=227.1 → menu_x2_tr_raket_incele
+EkranTuru kare 7120 t=228.0 → menu_x2_tr_raket_incele_2
+EkranTuru kare 7210 t=230.1 → menu_x2_tr_tezgah_kafa
+EkranTuru kare 7300 t=232.0 → menu_x2_tr_tezgah_cerceve
+EkranTuru kare 7390 t=233.7 → menu_x2_tr_tezgah_saft
+EkranTuru bekçi: kare 7403 adım menu_x2_tr_tezgah_saft
+EkranTuru kare 7480 t=235.4 → menu_x2_tr_tezgah_grip
+EkranTuru kare 7570 t=237.4 → menu_x2_tr_tezgah_kordaj
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 7620 t=238.7 → menu_x2_tr_tezgah_sekil_oval
+EkranTuru kare 7670 t=240.0 → menu_x2_tr_tezgah_sekil_oval_kordaj
+EkranTuru kare 7720 t=241.5 → menu_x2_tr_tezgah_sekil_izometrik
+EkranTuru kare 7770 t=242.9 → menu_x2_tr_tezgah_sekil_izometrik_kordaj
+EkranTuru bekçi: kare 7804 adım menu_x2_tr_tezgah_sekil_izometrik_kordaj
+EkranTuru kare 7820 t=244.4 → menu_x2_tr_tezgah_sekil_kalp
+EkranTuru kare 7870 t=245.8 → menu_x2_tr_tezgah_sekil_kalp_kordaj
+EkranTuru kare 7930 t=247.8 → menu_x2_tr_tutus_kalp
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 7950 t=248.2 → menu_x2_tr_atolye
+EkranTuru kare 7970 t=248.5 → menu_x2_tr_yuva_raket
+EkranTuru kare 7995 t=248.9 → menu_x2_tr_yuva_kordaj
+EkranTuru kare 8020 t=249.4 → menu_x2_tr_profil
+EkranTuru kare 8040 t=249.7 → menu_x2_tr_profil_ornek
+EkranTuru kare 8065 t=251.0 → menu_x2_tr_hizli
+EkranTuru kare 8085 t=251.5 → menu_x2_tr_ayarlar
+EkranTuru kare 8110 t=252.1 → menu_x2_tr_antrenman
+EkranTuru kare 8120 t=252.2 → menu_x2_tr_antrenman_alt
+EkranTuru kare 8140 t=252.6 → menu_x2_tr_gorev_karti
+EkranTuru bekçi: kare 8163 adım menu_x2_tr_gorev_karti
+EkranTuru kare 8165 t=254.1 → menu_x2_tr_gunun_maci
+EkranTuru kare 8185 t=255.3 → menu_x2_tr_oyna_gunluk_alindi
+EkranTuru kare 8239 t=257.9 → gecis_kapanis_0030
+EkranTuru kare 8243 t=258.7 → gecis_kapanis_0100
+EkranTuru kare 8247 t=259.5 → gecis_kapanis_0160
+EkranTuru kare 8251 t=260.3 → gecis_kapanis_0240
+EkranTuru kare 8255 t=261.2 → gecis_kapanis_0320
+EkranTuru kare 8259 t=262.0 → gecis_kapanis_0400
+EkranTuru kare 8263 t=262.8 → gecis_kapali
+EkranTuru kare 8267 t=263.6 → gecis_bekle
+EkranTuru bekçi: kare 8267 adım gecis_bekle
+EkranTuru kare 8271 t=264.4 → gecis_acilis_0080
+EkranTuru kare 8275 t=265.3 → gecis_acilis_0180
+EkranTuru kare 8279 t=266.1 → gecis_acilis_0280
+EkranTuru kare 8283 t=266.9 → gecis_azalt_kapanis_0100
+EkranTuru kare 8287 t=267.5 → gecis_azalt_kapali
+EkranTuru kare 8291 t=268.2 → gecis_azalt_acilis_0120
+EkranTuru kare 8295 t=269.0 → acilis_0000
+EkranTuru kare 8299 t=269.8 → acilis_0100
+EkranTuru kare 8303 t=270.6 → acilis_0250
+EkranTuru kare 8307 t=271.4 → acilis_0400
+EkranTuru kare 8311 t=272.3 → acilis_0550
+EkranTuru kare 8315 t=273.1 → acilis_0650
+EkranTuru kare 8319 t=273.9 → acilis_bekle
+EkranTuru bekçi: kare 8319 adım acilis_bekle
+EkranTuru kare 8321 t=274.3 → acilis_tur_00
+EkranTuru kare 8323 t=274.8 → acilis_tur_01
+EkranTuru kare 8325 t=275.2 → acilis_tur_02
+EkranTuru kare 8327 t=275.6 → acilis_tur_03
+EkranTuru kare 8329 t=276.0 → acilis_tur_04
+EkranTuru kare 8331 t=276.4 → acilis_tur_05
+EkranTuru kare 8333 t=276.9 → acilis_tur_06
+EkranTuru kare 8335 t=277.3 → acilis_tur_07
+EkranTuru kare 8337 t=277.7 → acilis_tur_08
+EkranTuru kare 8339 t=278.1 → acilis_tur_09
+EkranTuru kare 8341 t=278.5 → acilis_tur_10
+EkranTuru kare 8343 t=278.9 → acilis_tur_11
+EkranTuru kare 8345 t=279.4 → acilis_tur_12
+EkranTuru kare 8347 t=279.8 → acilis_tur_13
+EkranTuru kare 8349 t=280.2 → acilis_tur_14
+EkranTuru kare 8351 t=280.6 → acilis_tur_15
+EkranTuru kare 8353 t=281.0 → acilis_tur_16
+EkranTuru kare 8355 t=281.5 → acilis_tur_17
+EkranTuru kare 8357 t=281.9 → acilis_tur_18
+EkranTuru kare 8359 t=282.3 → acilis_tur_19
+EkranTuru kare 8361 t=282.7 → acilis_tur_20
+EkranTuru kare 8363 t=283.1 → acilis_tur_21
+EkranTuru kare 8365 t=283.6 → acilis_tur_22
+EkranTuru kare 8367 t=284.0 → acilis_tur_23
+EkranTuru bekçi: kare 8367 adım acilis_tur_23
+EkranTuru kare 8369 t=284.4 → acilis_tur_24
+EkranTuru kare 8371 t=284.8 → acilis_tur_25
+EkranTuru kare 8373 t=285.2 → acilis_tur_26
+EkranTuru kare 8375 t=285.6 → acilis_tur_27
+EkranTuru kare 8377 t=286.1 → acilis_tur_28
+EkranTuru kare 8379 t=286.5 → acilis_tur_29
+EkranTuru kare 8381 t=286.9 → acilis_tur_30
+EkranTuru kare 8383 t=287.3 → acilis_tur_31
+EkranTuru kare 8385 t=287.7 → acilis_tur_32
+EkranTuru kare 8387 t=288.2 → acilis_tur_33
+EkranTuru kare 8389 t=288.6 → acilis_tur_34
+EkranTuru kare 8391 t=289.0 → acilis_tur_35
+EkranTuru kare 8393 t=289.4 → acilis_tur_36
+EkranTuru kare 8395 t=289.8 → acilis_tur_37
+EkranTuru kare 8397 t=290.2 → acilis_tur_38
+EkranTuru kare 8399 t=290.7 → acilis_tur_39
+EkranTuru kare 8401 t=291.1 → acilis_tur_40
+EkranTuru kare 8403 t=291.5 → acilis_tur_41
+EkranTuru kare 8405 t=291.9 → acilis_tur_42
+EkranTuru kare 8407 t=292.3 → acilis_tur_43
+EkranTuru kare 8409 t=292.8 → acilis_tur_44
+EkranTuru kare 8411 t=293.2 → acilis_tur_45
+EkranTuru kare 8413 t=293.6 → acilis_tur_46
+EkranTuru bekçi: kare 8413 adım acilis_tur_46
+EkranTuru kare 8415 t=294.0 → acilis_tur_47
+EkranTuru kare 8417 t=294.4 → acilis_tur_48
+EkranTuru kare 8419 t=294.8 → acilis_tur_49
+EkranTuru kare 8421 t=295.3 → acilis_tur_50
+EkranTuru kare 8423 t=295.7 → acilis_tur_51
+EkranTuru kare 8425 t=296.1 → acilis_tur_52
+EkranTuru kare 8427 t=296.5 → acilis_tur_53
+EkranTuru kare 8429 t=296.9 → acilis_tur_54
+EkranTuru kare 8431 t=297.3 → acilis_tur_55
+EkranTuru kare 8433 t=297.8 → acilis_tur_56
+EkranTuru kare 8435 t=298.2 → acilis_tur_57
+EkranTuru kare 8437 t=298.6 → acilis_tur_58
+EkranTuru kare 8439 t=299.0 → acilis_tur_59
+EkranTuru kare 8441 t=299.4 → acilis_tur_60
+EkranTuru kare 8443 t=299.8 → acilis_tur_61
+EkranTuru kare 8445 t=300.3 → acilis_tur_62
+EkranTuru kare 8447 t=300.7 → acilis_tur_63
+EkranTuru kare 8449 t=301.1 → acilis_tur_64
+EkranTuru kare 8451 t=301.5 → acilis_tur_65
+EkranTuru kare 8455 t=302.3 → acilis_patlama_0080
+EkranTuru kare 8459 t=303.1 → acilis_patlama_0180
+EkranTuru kare 8463 t=303.9 → acilis_azalt
+EkranTuru bekçi: kare 8463 adım acilis_azalt
+EkranTuru kare 8513 t=307.1 → oyuncak_01_menu
+EkranTuru kare 8558 t=313.8 → oyuncak_02_servis_once
+EkranTuru bekçi: kare 8558 adım oyuncak_02_servis_once
+EkranTuru kare 8578 t=318.4 → oyuncak_10_ralli
+EkranTuru kare 8592 t=320.5 → oyuncak_11_ralli
+EkranTuru kare 8606 t=322.7 → oyuncak_12_ralli
+EkranTuru bekçi: kare 8614 adım oyuncak_12_ralli
+EkranTuru kare 8620 t=324.9 → oyuncak_13_ralli
+EkranTuru kare 8634 t=327.0 → oyuncak_14_ralli
+EkranTuru kare 8648 t=329.2 → oyuncak_15_ralli
+EkranTuru kare 8662 t=331.3 → oyuncak_16_ralli
+EkranTuru kare 8676 t=333.5 → oyuncak_17_ralli
+EkranTuru bekçi: kare 8678 adım oyuncak_17_ralli
+EkranTuru kare 8690 t=335.7 → oyuncak_18_ralli
+EkranTuru kare 8704 t=337.9 → oyuncak_19_ralli
+EkranTuru bekçi: kare 8743 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 8783 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 8830 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 8875 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 8940 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 9005 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 9071 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 9137 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 9201 adım oyuncak_19_ralli
+EkranTuru bekçi: kare 9250 adım oyuncak_19_ralli
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 9272 adım oyuncak_19_ralli
+EkranTuru kare 9309 t=450.0 → rocketbox_01_menu
+EkranTuru bekçi: kare 9333 adım rocketbox_01_menu
+EkranTuru kare 9354 t=457.4 → rocketbox_02_servis_once
+EkranTuru kare 9374 t=462.1 → rocketbox_10_ralli
+EkranTuru bekçi: kare 9384 adım rocketbox_10_ralli
+EkranTuru kare 9388 t=464.5 → rocketbox_11_ralli
+EkranTuru kare 9402 t=466.8 → rocketbox_12_ralli
+EkranTuru kare 9416 t=469.2 → rocketbox_13_ralli
+EkranTuru kare 9430 t=471.5 → rocketbox_14_ralli
+EkranTuru kare 9444 t=473.8 → rocketbox_15_ralli
+EkranTuru bekçi: kare 9444 adım rocketbox_15_ralli
+EkranTuru kare 9458 t=476.2 → rocketbox_16_ralli
+EkranTuru kare 9472 t=478.6 → rocketbox_17_ralli
+EkranTuru kare 9486 t=481.0 → rocketbox_18_ralli
+EkranTuru kare 9500 t=483.3 → rocketbox_19_ralli
+EkranTuru bekçi: kare 9501 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 9526 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 9574 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 9635 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 9696 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 9734 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 9794 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 9853 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 9913 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 9974 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 10035 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 10092 adım rocketbox_19_ralli
+EkranTuru bekçi: kare 10109 adım rocketbox_19_ralli
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 10149 t=610.2 → sade_01_menu
+EkranTuru bekçi: kare 10173 adım sade_01_menu
+EkranTuru kare 10194 t=617.3 → sade_02_servis_once
+EkranTuru kare 10214 t=621.7 → sade_10_ralli
+EkranTuru kare 10228 t=623.9 → sade_11_ralli
+EkranTuru bekçi: kare 10228 adım sade_11_ralli
+EkranTuru kare 10242 t=626.2 → sade_12_ralli
+EkranTuru kare 10256 t=628.3 → sade_13_ralli
+EkranTuru kare 10270 t=630.4 → sade_14_ralli
+EkranTuru kare 10284 t=632.6 → sade_15_ralli
+EkranTuru bekçi: kare 10293 adım sade_15_ralli
+EkranTuru kare 10298 t=634.8 → sade_16_ralli
+EkranTuru kare 10312 t=637.0 → sade_17_ralli
+EkranTuru kare 10326 t=639.2 → sade_18_ralli
+EkranTuru kare 10340 t=641.4 → sade_19_ralli
+EkranTuru bekçi: kare 10356 adım sade_19_ralli
+EkranTuru bekçi: kare 10404 adım sade_19_ralli
+EkranTuru bekçi: kare 10453 adım sade_19_ralli
+EkranTuru bekçi: kare 10489 adım sade_19_ralli
+EkranTuru bekçi: kare 10553 adım sade_19_ralli
+EkranTuru bekçi: kare 10617 adım sade_19_ralli
+EkranTuru bekçi: kare 10680 adım sade_19_ralli
+EkranTuru bekçi: kare 10744 adım sade_19_ralli
+EkranTuru bekçi: kare 10808 adım sade_19_ralli
+EkranTuru bekçi: kare 10870 adım sade_19_ralli
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 10938 adım sade_19_ralli
+EkranTuru kare 10963 t=744.8 → model_vitrin_tip_atlet
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 10988 t=745.6 → model_vitrin_tip_kadin
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11013 t=746.4 → model_vitrin_tip_uzun
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11038 t=747.3 → model_vitrin_tip_guclu
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11088 t=749.0 → model_vitrin_sac_kisa
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11108 t=749.7 → model_vitrin_sac_yan
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11128 t=750.4 → model_vitrin_sac_atkuyrugu
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11148 t=751.1 → model_vitrin_sac_kazima
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11168 t=751.8 → model_vitrin_sac_kel
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11188 t=752.5 → model_vitrin_sac_topuz
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11208 t=753.2 → model_vitrin_sac_anime
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11228 t=753.9 → model_vitrin_sac_orgu
+EkranTuru bekçi: kare 11228 adım model_vitrin_sac_orgu
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11248 t=754.6 → model_vitrin_sac_afro
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11268 t=755.4 → model_vitrin_sac_rasta
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11288 t=756.1 → model_vitrin_sac_mullet
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11308 t=756.8 → model_vitrin_sac_mohikan
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11328 t=757.5 → model_vitrin_sac_kirpi
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11348 t=758.2 → model_vitrin_sac_iki_orgu
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11368 t=758.9 → model_vitrin_sac_uzay
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11388 t=759.6 → model_vitrin_sac_pompadur
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11408 t=760.4 → model_vitrin_sac_ananas
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11463 t=762.1 → model_vitrin_ayk_klasik
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11488 t=763.0 → model_vitrin_ayk_hafif
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11513 t=763.8 → model_vitrin_ayk_yastikli
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 11519 adım model_vitrin_ayk_yastikli
+EkranTuru kare 11538 t=764.6 → model_vitrin_ayk_bilekli
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11563 t=765.4 → model_vitrin_ayk_karbon
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11617 t=766.6 → model_vitrin_sapka_kep
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11641 t=767.1 → model_vitrin_sapka_kep_ters
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11665 t=767.6 → model_vitrin_sapka_bere
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11689 t=768.0 → model_vitrin_sapka_kulaklik
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11713 t=768.4 → model_vitrin_sapka_tavsan
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11737 t=768.9 → model_vitrin_sapka_buyucu
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11761 t=769.3 → model_vitrin_sapka_sovalye
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11815 t=770.3 → model_vitrin_yuz_gunes
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11839 t=770.7 → model_vitrin_yuz_yuvarlak
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11863 t=771.2 → model_vitrin_yuz_boya
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11887 t=771.6 → model_vitrin_yuz_biyik
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 11911 t=772.1 → model_vitrin_yuz_korsan
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 11929 adım model_vitrin_yuz_korsan
+EkranTuru bekçi: kare 11992 adım model_vitrin_yuz_korsan
+EkranTuru bekçi: kare 12053 adım model_vitrin_yuz_korsan
+EkranTuru kare 12108 t=803.3 → model_dizilis_mac
+EkranTuru bekçi: kare 12109 adım model_dizilis_mac
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 12159 adım model_dizilis_mac
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12193 t=815.6 → model_gercekci_karakter_uyari
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12213 t=816.3 → model_ayarlar_gercekci
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12263 t=823.2 → model_gecis_sade
+EkranTuru bekçi: kare 12272 adım model_gecis_sade
+EkranTuru kare 12303 t=825.3 → model_gecis_sade_vitrin
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12348 t=831.9 → model_gecis_oyuncak
+EkranTuru kare 12388 t=834.0 → model_gecis_oyuncak_vitrin
+EkranTuru bekçi: kare 12388 adım model_gecis_oyuncak_vitrin
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12453 t=836.5 → model_gercekci_karakter_ayakkabi
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12493 t=837.3 → model_gercekci_sapka_kep
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12533 t=838.0 → model_gercekci_yuz_gunes
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12563 t=838.6 → model_gercekci_yuz_biyik
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12593 t=839.2 → model_gercekci_yuz_boya
+EkranTuru kare 12618 t=839.6 → model_gercekci_vitrin_ayakkabi_klasik
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12643 t=840.1 → model_gercekci_vitrin_ayakkabi_hafif
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12668 t=840.6 → model_gercekci_vitrin_ayakkabi_yastikli
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12693 t=841.1 → model_gercekci_vitrin_ayakkabi_bilekli
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12718 t=841.6 → model_gercekci_vitrin_ayakkabi_karbon
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12738 t=842.0 → model_gercekci_vitrin_ayakkabi_renk_siyah
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12758 t=842.4 → model_gercekci_vitrin_ayakkabi_renk_beyaz
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12788 t=843.0 → model_gercekci_karakter_kiyafet
+EkranTuru kare 12808 t=843.4 → model_gercekci_vitrin_forma_mavi
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12828 t=843.7 → model_gercekci_vitrin_forma_fistik
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 12840 adım model_gercekci_vitrin_forma_fistik
+EkranTuru kare 12848 t=844.1 → model_gercekci_vitrin_forma_mor
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12868 t=844.5 → model_gercekci_vitrin_kumas_klasik
+EkranTuru kare 12888 t=844.9 → model_gercekci_vitrin_kumas_klasik_arka
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12908 t=845.3 → model_gercekci_vitrin_kumas_hafif
+EkranTuru kare 12928 t=845.6 → model_gercekci_vitrin_kumas_hafif_arka
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12948 t=846.0 → model_gercekci_vitrin_kumas_nefes
+EkranTuru kare 12968 t=846.4 → model_gercekci_vitrin_kumas_nefes_arka
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 12988 t=846.8 → model_gercekci_vitrin_kumas_esnek
+EkranTuru kare 13008 t=847.1 → model_gercekci_vitrin_kumas_esnek_arka
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13028 t=847.5 → model_gercekci_vitrin_sort_dogal
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13048 t=847.9 → model_gercekci_vitrin_sort_siyah
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13068 t=848.3 → model_gercekci_vitrin_sort_beyaz
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13088 t=848.7 → model_gercekci_vitrin_sort_gri
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13108 t=849.1 → model_gercekci_vitrin_bant_yok
+EkranTuru kare 13128 t=849.5 → model_gercekci_vitrin_bant_yok_yan
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13148 t=849.9 → model_gercekci_vitrin_bant_ter
+EkranTuru kare 13168 t=850.3 → model_gercekci_vitrin_bant_ter_yan
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13188 t=850.7 → model_gercekci_vitrin_bant_odak
+EkranTuru kare 13208 t=851.1 → model_gercekci_vitrin_bant_odak_yan
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13228 t=851.4 → model_gercekci_vitrin_bileklik_yok
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13248 t=851.8 → model_gercekci_vitrin_bileklik_pamuk
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13268 t=852.2 → model_gercekci_vitrin_bileklik_agir
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13288 t=852.5 → model_gercekci_vitrin_raket_siyah_beyaz
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13308 t=852.9 → model_gercekci_vitrin_raket_kirmizi_limon
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13338 t=853.4 → model_sade_karakter_ayakkabi
+EkranTuru kare 13358 t=853.8 → model_sade_karakter_kiyafet
+EkranTuru bekçi: kare 13367 adım model_sade_karakter_kiyafet
+EkranTuru kare 13378 t=854.2 → model_sade_vitrin_sort_dogal
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13398 t=854.5 → model_sade_vitrin_sort_beyaz
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13448 t=861.8 → model_gercekci_mac_1
+EkranTuru bekçi: kare 13457 adım model_gercekci_mac_1
+EkranTuru kare 13495 t=870.1 → model_gercekci_mac_2
+EkranTuru bekçi: kare 13515 adım model_gercekci_mac_2
+EkranTuru kare 13542 t=878.4 → model_gercekci_mac_3
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13589 t=882.5 → tuycuk_01_menu
+EkranTuru kare 13619 t=883.6 → tuycuk_01_soyunma
+EkranTuru bekçi: kare 13632 adım tuycuk_01_soyunma
+EkranTuru kare 13649 t=884.5 → model_tuycuk_karakter_ayakkabi
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13689 t=885.2 → model_tuycuk_sapka_tavsan
+EkranTuru kare 13714 t=885.7 → model_tuycuk_vitrin_ayakkabi_klasik
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13739 t=886.2 → model_tuycuk_vitrin_ayakkabi_hafif
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13764 t=886.6 → model_tuycuk_vitrin_ayakkabi_yastikli
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13789 t=887.1 → model_tuycuk_vitrin_ayakkabi_bilekli
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13814 t=887.6 → model_tuycuk_vitrin_ayakkabi_karbon
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13844 t=888.1 → model_tuycuk_karakter_kiyafet
+EkranTuru kare 13864 t=888.5 → model_tuycuk_vitrin_forma_mavi
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13884 t=888.9 → model_tuycuk_vitrin_forma_fistik
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13904 t=889.2 → model_tuycuk_vitrin_forma_mor
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13924 t=889.6 → model_tuycuk_vitrin_arka
+EkranTuru kare 13944 t=890.0 → model_tuycuk_vitrin_yuz
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru kare 13964 t=890.3 → model_tuycuk_vitrin_bant_ter
+EkranTuru kare 13984 t=890.7 → model_tuycuk_vitrin_tutus_drive
+EkranTuru kare 14004 t=891.1 → model_tuycuk_vitrin_tutus_bh_drive
+EkranTuru kare 14024 t=891.5 → model_tuycuk_vitrin_tutus_net
+EkranTuru kare 14044 t=891.9 → model_tuycuk_vitrin_tutus_serve
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 14064 adım model_tuycuk_vitrin_tutus_serve
+EkranTuru kare 14094 t=898.6 → tuycuk_02_servis_once
+EkranTuru kare 14112 t=902.3 → tuycuk_10_ralli
+EkranTuru bekçi: kare 14123 adım tuycuk_10_ralli
+EkranTuru kare 14126 t=904.4 → tuycuk_11_ralli
+EkranTuru kare 14140 t=906.6 → tuycuk_12_ralli
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 14189 adım tuycuk_12_ralli
+EkranTuru kare 14205 t=916.5 → saha_turnuva
+EkranTuru bekçi: kare 14256 adım saha_turnuva
+EkranTuru kare 14265 t=925.2 → saha_okul
+EkranTuru kare 14325 t=933.6 → saha_park
+EkranTuru bekçi: kare 14327 adım saha_park
+EkranTuru kare 14385 t=942.8 → kamera_alcak
+EkranTuru bekçi: kare 14392 adım kamera_alcak
+EkranTuru kare 14419 t=948.0 → kadraj_tepe_ben_alcak
+EkranTuru kare 14453 t=953.1 → kadraj_tepe_rakip_alcak
+EkranTuru bekçi: kare 14458 adım kadraj_tepe_rakip_alcak
+EkranTuru kare 14513 t=962.4 → kamera_ust
+EkranTuru bekçi: kare 14523 adım kamera_ust
+EkranTuru kare 14547 t=967.7 → kadraj_tepe_ben_ust
+EkranTuru kare 14581 t=972.9 → kadraj_tepe_rakip_ust
+EkranTuru bekçi: kare 14587 adım kadraj_tepe_rakip_ust
+EkranTuru kare 14641 t=982.2 → kamera_yayin
+EkranTuru bekçi: kare 14652 adım kamera_yayin
+EkranTuru kare 14675 t=987.4 → kadraj_tepe_ben_yayin
+EkranTuru kare 14705 t=990.4 → menu_kadraj_donus
+EkranTuru bekçi: kare 14729 adım menu_kadraj_donus
+EkranTuru kare 14739 t=995.5 → kadraj_tepe_rakip_yayin
+requesting resize 375 x 667
+resizing window to 375 x 667
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru bekçi: kare 14800 adım kadraj_tepe_rakip_yayin
+EkranTuru kare 14810 t=1005.1 → kamera_alcak_se
+EkranTuru kare 14844 t=1009.7 → kadraj_tepe_ben_alcak_se
+EkranTuru bekçi: kare 14876 adım kadraj_tepe_ben_alcak_se
+EkranTuru kare 14878 t=1014.2 → kadraj_tepe_rakip_alcak_se
+EkranTuru kare 14938 t=1022.6 → kamera_ust_se
+EkranTuru bekçi: kare 14947 adım kamera_ust_se
+EkranTuru kare 14972 t=1027.3 → kadraj_tepe_ben_ust_se
+EkranTuru kare 15006 t=1032.0 → kadraj_tepe_rakip_ust_se
+EkranTuru bekçi: kare 15020 adım kadraj_tepe_rakip_ust_se
+EkranTuru kare 15066 t=1039.9 → kamera_yayin_se
+EkranTuru bekçi: kare 15096 adım kamera_yayin_se
+EkranTuru kare 15100 t=1044.5 → kadraj_tepe_ben_yayin_se
+EkranTuru kare 15134 t=1049.2 → kadraj_tepe_rakip_yayin_se
+requesting resize 390 x 845
+resizing window to 390 x 845
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru bekçi: kare 15165 adım kadraj_tepe_rakip_yayin_se
+EkranTuru kare 15179 t=1056.1 → kadraj_tepe_ben_yayin_azalt
+EkranTuru kare 15213 t=1061.3 → kadraj_tepe_rakip_yayin_azalt
+requesting resize 430 x 932
+resizing window to 430 x 932
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru bekçi: kare 15228 adım kadraj_tepe_rakip_yayin_azalt
+EkranTuru kare 15258 t=1069.1 → kadraj_tepe_ben_yayin_pm
+EkranTuru bekçi: kare 15286 adım kadraj_tepe_ben_yayin_pm
+EkranTuru kare 15292 t=1075.0 → kadraj_tepe_rakip_yayin_pm
+requesting resize 390 x 845
+resizing window to 390 x 845
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru bekçi: kare 15348 adım kadraj_tepe_rakip_yayin_pm
+EkranTuru bekçi: kare 15411 adım kadraj_tepe_rakip_yayin_pm
+EkranTuru bekçi: kare 15474 adım kadraj_tepe_rakip_yayin_pm
+EkranTuru bekçi: kare 15536 adım kadraj_tepe_rakip_yayin_pm
+EkranTuru bekçi: kare 15599 adım kadraj_tepe_rakip_yayin_pm
+EkranTuru bekçi: kare 15662 adım kadraj_tepe_rakip_yayin_pm
+EkranTuru kare 15688 t=1138.0 → imza_mermi_yok
+EkranTuru bekçi: kare 15725 adım imza_mermi_yok
+EkranTuru bekçi: kare 15787 adım imza_mermi_yok
+EkranTuru bekçi: kare 15848 adım imza_mermi_yok
+EkranTuru bekçi: kare 15910 adım imza_mermi_yok
+EkranTuru bekçi: kare 15972 adım imza_mermi_yok
+EkranTuru kare 16032 t=1193.7 → imza_duvar_azalt
+EkranTuru bekçi: kare 16032 adım imza_duvar_azalt
+EkranTuru bekçi: kare 16098 adım imza_duvar_azalt
+EkranTuru bekçi: kare 16162 adım imza_duvar_azalt
+EkranTuru bekçi: kare 16227 adım imza_duvar_azalt
+EkranTuru bekçi: kare 16291 adım imza_duvar_azalt
+EkranTuru bekçi: kare 16355 adım imza_duvar_azalt
+EkranTuru kare 16392 t=1249.6 → gorev_kose_oyun
+EkranTuru bekçi: kare 16420 adım gorev_kose_oyun
+EkranTuru kare 16466 t=1261.1 → gorev_ilk_top
+EkranTuru bekçi: kare 16484 adım gorev_ilk_top
+EkranTuru kare 16496 t=1265.8 → gorev_gosterim
+EkranTuru bekçi: kare 16549 adım gorev_gosterim
+EkranTuru bekçi: kare 16613 adım gorev_gosterim
+EkranTuru kare 16660 t=1291.2 → gorev_lab_kart
+EkranTuru bekçi: kare 16678 adım gorev_lab_kart
+EkranTuru kare 16714 t=1299.6 → gorev_sonuc
+EkranTuru bekçi: kare 16742 adım gorev_sonuc
+EkranTuru bekçi: kare 16809 adım gorev_sonuc
+EkranTuru bekçi: kare 16874 adım gorev_sonuc
+EkranTuru kare 16894 t=1327.1 → gunun_maci_oyun
+EkranTuru kare 16932 t=1332.7 → sonuc_galibiyet_tuy_1.00
+EkranTuru kare 16932 t=1333.0 → sonuc_galibiyet_tuy_1.35
+EkranTuru bekçi: kare 16940 adım sonuc_galibiyet_tuy_1.35
+EkranTuru kare 16949 t=1335.3 → sonuc_galibiyet
+EkranTuru kare 17008 t=1343.4 → sonuc_galibiyet_azalt
+EkranTuru bekçi: kare 17015 adım sonuc_galibiyet_azalt
+EkranTuru kare 17067 t=1351.6 → sonuc_buyuk_galibiyet
+EkranTuru bekçi: kare 17086 adım sonuc_buyuk_galibiyet
+EkranTuru kare 17109 t=1357.3 → sonuc_tr_galibiyet_tuy_1.00
+EkranTuru kare 17109 t=1357.6 → sonuc_tr_galibiyet_tuy_1.35
+EkranTuru kare 17126 t=1359.8 → sonuc_tr_galibiyet
+EkranTuru bekçi: kare 17158 adım sonuc_tr_galibiyet
+EkranTuru kare 17185 t=1368.0 → sonuc_yenilgi
+EkranTuru bekçi: kare 17227 adım sonuc_yenilgi
+requesting resize 375 x 667
+resizing window to 375 x 667
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru kare 17297 t=1382.4 → menu_se_oyna
+EkranTuru kare 17317 t=1382.8 → menu_se_kariyer
+EkranTuru kare 17337 t=1383.2 → menu_se_mac_karti
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 17348 adım menu_se_mac_karti
+EkranTuru kare 17367 t=1384.6 → menu_se_soyunma
+EkranTuru kare 17387 t=1385.0 → menu_se_atolye
+EkranTuru kare 17417 t=1385.8 → menu_se_karakter
+EkranTuru kare 17442 t=1386.3 → menu_se_profil
+EkranTuru kare 17462 t=1387.4 → menu_se_hizli
+EkranTuru kare 17482 t=1387.8 → menu_se_ayarlar
+EkranTuru kare 17507 t=1388.9 → menu_se_antrenman
+EkranTuru kare 17527 t=1389.2 → menu_se_gorev_karti
+EkranTuru kare 17552 t=1390.6 → menu_se_gunun_maci
+EkranTuru kare 17587 t=1392.5 → menu_se_x2_oyna
+EkranTuru kare 17607 t=1393.0 → menu_se_x2_kariyer
+EkranTuru kare 17627 t=1393.3 → menu_se_x2_mac_karti
+EkranTuru bekçi: kare 17652 adım menu_se_x2_mac_karti
+EkranTuru kare 17657 t=1394.2 → menu_se_x2_soyunma
+EkranTuru kare 17677 t=1394.5 → menu_se_x2_atolye
+EkranTuru kare 17697 t=1394.9 → menu_se_x2_profil
+EkranTuru kare 17717 t=1396.0 → menu_se_x2_hizli
+EkranTuru kare 17737 t=1396.4 → menu_se_x2_ayarlar
+EkranTuru bekçi: kare 17806 adım menu_se_x2_ayarlar
+EkranTuru kare 17812 t=1404.8 → sonuc_se
+EkranTuru kare 17877 t=1412.9 → sonuc_se_buyuk
+EkranTuru bekçi: kare 17888 adım sonuc_se_buyuk
+EkranTuru kare 17942 t=1421.4 → oyun_se
+EkranTuru kare 17946 t=1421.9 → oyun_se_sayi_yazi
+EkranTuru kare 17951 t=1422.7 → duraklat_se
+EkranTuru kare 17960 t=1423.9 → oyun_se_buyuk_sayi_yazi
+EkranTuru bekçi: kare 17960 adım oyun_se_buyuk_sayi_yazi
+EkranTuru kare 17965 t=1424.7 → duraklat_se_buyuk
+requesting resize 390 x 844
+resizing window to 390 x 844
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru kare 18008 t=1427.5 → menu_13_oyna
+EkranTuru kare 18028 t=1427.9 → menu_13_kariyer
+EkranTuru kare 18048 t=1428.3 → menu_13_mac_karti
+EkranTuru kare 18078 t=1429.2 → menu_13_soyunma
+EkranTuru kare 18098 t=1429.6 → menu_13_atolye
+EkranTuru kare 18128 t=1430.5 → menu_13_karakter
+EkranTuru kare 18153 t=1431.0 → menu_13_profil
+EkranTuru kare 18173 t=1432.1 → menu_13_hizli
+EkranTuru kare 18193 t=1432.6 → menu_13_ayarlar
+EkranTuru kare 18218 t=1433.2 → menu_13_antrenman
+EkranTuru kare 18238 t=1433.5 → menu_13_gorev_karti
+EkranTuru bekçi: kare 18247 adım menu_13_gorev_karti
+EkranTuru kare 18263 t=1434.9 → menu_13_gunun_maci
+EkranTuru kare 18322 t=1442.8 → sonuc_13
+EkranTuru bekçi: kare 18333 adım sonuc_13
+EkranTuru kare 18387 t=1452.0 → oyun_13
+EkranTuru kare 18391 t=1452.6 → oyun_13_sayi_yazi
+EkranTuru kare 18396 t=1453.4 → duraklat_13
+EkranTuru bekçi: kare 18399 adım duraklat_13
+requesting resize 430 x 932
+resizing window to 430 x 932
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru kare 18439 t=1456.5 → menu_pm_oyna
+EkranTuru kare 18459 t=1457.0 → menu_pm_kariyer
+EkranTuru kare 18479 t=1457.3 → menu_pm_mac_karti
+EkranTuru kare 18509 t=1458.3 → menu_pm_soyunma
+EkranTuru kare 18529 t=1458.7 → menu_pm_atolye
+EkranTuru kare 18559 t=1459.6 → menu_pm_karakter
+EkranTuru kare 18584 t=1460.1 → menu_pm_profil
+EkranTuru kare 18604 t=1461.4 → menu_pm_hizli
+EkranTuru kare 18624 t=1461.9 → menu_pm_ayarlar
+EkranTuru kare 18649 t=1462.5 → menu_pm_antrenman
+EkranTuru kare 18669 t=1462.9 → menu_pm_gorev_karti
+EkranTuru bekçi: kare 18689 adım menu_pm_gorev_karti
+EkranTuru kare 18694 t=1464.3 → menu_pm_gunun_maci
+EkranTuru kare 18747 t=1472.3 → sonuc_pm
+EkranTuru bekçi: kare 18760 adım sonuc_pm
+EkranTuru kare 18812 t=1482.8 → oyun_pm
+EkranTuru kare 18816 t=1483.5 → oyun_pm_sayi_yazi
+EkranTuru bekçi: kare 18818 adım oyun_pm_sayi_yazi
+EkranTuru kare 18821 t=1484.4 → duraklat_pm
+requesting resize 768 x 1024
+resizing window to 768 x 1024
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru kare 18864 t=1487.9 → menu_ipad_oyna
+EkranTuru kare 18884 t=1488.5 → menu_ipad_kariyer
+EkranTuru kare 18904 t=1489.0 → menu_ipad_mac_karti
+EkranTuru kare 18934 t=1490.6 → menu_ipad_soyunma
+EkranTuru kare 18954 t=1491.1 → menu_ipad_atolye
+EkranTuru kare 18984 t=1492.6 → menu_ipad_karakter
+EkranTuru kare 19009 t=1493.3 → menu_ipad_profil
+EkranTuru bekçi: kare 19019 adım menu_ipad_profil
+EkranTuru kare 19029 t=1494.8 → menu_ipad_hizli
+EkranTuru kare 19049 t=1495.4 → menu_ipad_ayarlar
+EkranTuru kare 19074 t=1496.2 → menu_ipad_antrenman
+EkranTuru kare 19094 t=1496.8 → menu_ipad_gorev_karti
+EkranTuru kare 19119 t=1498.7 → menu_ipad_gunun_maci
+EkranTuru bekçi: kare 19142 adım menu_ipad_gunun_maci
+EkranTuru kare 19151 t=1506.6 → sonuc_ipad
+EkranTuru bekçi: kare 19181 adım sonuc_ipad
+EkranTuru kare 19216 t=1522.1 → oyun_ipad
+EkranTuru kare 19219 t=1522.9 → oyun_ipad_sayi_yazi
+EkranTuru bekçi: kare 19223 adım oyun_ipad_sayi_yazi
+EkranTuru kare 19224 t=1524.2 → duraklat_ipad
+requesting resize 390 x 845
+resizing window to 390 x 845
+Desktop is 800 x 1300 @ 0 Hz
+EkranTuru kare 19287 t=1528.9 → menu_macsonu_oyna
+EkranTuru kare 19307 t=1529.3 → menu_macsonu_kariyer
+EkranTuru kare 19337 t=1530.3 → menu_macsonu_soyunma
+EkranTuru kare 19367 t=1532.0 → menu_park_oyna
+EkranTuru bekçi: kare 19384 adım menu_park_oyna
+EkranTuru kare 19442 t=1542.8 → duraklat
+EkranTuru bekçi: kare 19457 adım duraklat
+EkranTuru kare 19472 t=1544.9 → menu_bekleyen_oyna
+EkranTuru kare 19502 t=1549.3 → bekleyen_devam
+EkranTuru kare 19503 t=1549.7 → geri_sayim_3
+EkranTuru kare 19504 t=1549.8 → geri_sayim_1
+EkranTuru bekçi: kare 19575 adım geri_sayim_1
+EkranTuru bekçi: kare 19792 adım geri_sayim_1
+EkranTuru bekçi: kare 20011 adım geri_sayim_1
+EkranTuru bekçi: kare 20076 adım geri_sayim_1
+EkranTuru bekçi: kare 20141 adım geri_sayim_1
+EkranTuru bekçi: kare 20206 adım geri_sayim_1
+EkranTuru bekçi: kare 20272 adım geri_sayim_1
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 20335 adım geri_sayim_1
+EkranTuru bekçi: kare 20395 adım geri_sayim_1
+EkranTuru bekçi: kare 20456 adım geri_sayim_1
+EkranTuru bekçi: kare 20518 adım geri_sayim_1
+EkranTuru bekçi: kare 20579 adım geri_sayim_1
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 20642 adım geri_sayim_1
+EkranTuru bekçi: kare 20707 adım geri_sayim_1
+EkranTuru bekçi: kare 20770 adım geri_sayim_1
+EkranTuru bekçi: kare 20833 adım geri_sayim_1
+EkranTuru bekçi: kare 20896 adım geri_sayim_1
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+EkranTuru bekçi: kare 20960 adım geri_sayim_1
+EkranTuru bekçi: kare 21025 adım geri_sayim_1
+EkranTuru bekçi: kare 21090 adım geri_sayim_1
+EkranTuru bekçi: kare 21157 adım geri_sayim_1
+Not allowed to access vertices on mesh 'raket_tel2__tel2' (isReadable is false; Read/Write must be enabled in import settings)
+Not allowed to access vertices on mesh 'raket_tel__tel' (isReadable is false; Read/Write must be enabled in import settings)
+[Physics::Module] Cleanup current backned.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input System polling thread exited.
+Input System module state changed to: Shutdown.
