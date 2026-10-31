@@ -114,7 +114,7 @@ namespace BirdieSmash.Game
             var c = AltSayfaKur(L.T("Günün maçı"));
             c.Add(Yazi(L.T("Bugün herkes aynı maçı oynar."), 13, "etiket"));
             var rr = Satir("profil-ust"); c.Add(rr);
-            var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(st.renk); av.Add(Ikon(Ikonlar.Kisi, 30, KOYU)); rr.Add(av);
+            var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(st.renk); AvatarIc(av, Portre.Rakip(st), 30); rr.Add(av);
             var ra = new VisualElement(); ra.AddToClassList("esnek-yatay"); rr.Add(ra);
             ra.Add(Yazi(st.isim, 20, "kalin")); ra.Add(Yazi(L.T(st.ad), 14, "soluk"));
             Erisim.Etiket(rr, L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad), "metin");

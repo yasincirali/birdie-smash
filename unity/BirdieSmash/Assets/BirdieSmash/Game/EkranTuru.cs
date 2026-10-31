@@ -54,7 +54,7 @@ namespace BirdieSmash.Game
             Debug.Log("EkranTuru başladı: " + dir);
             // Bekçi: ana döngü takılırsa nerede takıldığını günlükten görmek için 10 sn'de bir kare sayısı ve son adım.
             var bekci = new System.Threading.Thread(() => { for (int i = 0; i < 300; i++) { System.Threading.Thread.Sleep(10000); Debug.Log("EkranTuru bekçi: kare " + kare + " adım " + adim); } }); bekci.IsBackground = true; bekci.Start();
-            GameRoot.geriKapali = true; L.EksikTopla = true; yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
+            GameRoot.geriKapali = true; UiKok.OdulAnlariKapali = true; L.EksikTopla = true; yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
             if (kip == "magaza") { yield return MagazaTuru(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }   // 2026-10-29: mağaza kareleri (Game/MagazaTuru.cs)
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             yield return MenuTuru(); if (root.HudKatman != null) rap.AppendLine("açılış süresi (gerçek, CI yazılım render'ı): " + root.HudKatman.AcilisTani);
@@ -347,6 +347,12 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_ayakkabi_ayak");
             ui.KarakterDene("ayakkabi", "karbon"); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_ayakkabi_deneme");
             ui.KarakterAc(UiKok.KAR_TEN); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_ten");
+            // 2026-10-31 ten tonu Oyuncak atlasına uygulanıyor mu (yasin: "Ten renkleri değiştirilemiyor"): açık ve koyu ton
+            { string tn0 = Ayar.GORUNUM["ten"];
+              foreach (var tn in new[] { "t1", "t5" }) { Ayar.GORUNUM["ten"] = tn; root.vitrin.Yenile(); ui.KarakterAc(UiKok.KAR_TEN); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_ten_" + tn); rap.AppendLine("ten " + tn + " model " + Ayar.model + " · " + PlayerView.TenTani);
+                var tsb = new StringBuilder(); foreach (var rr in root.vitrin.Fig.GetComponentsInChildren<Renderer>()) if (rr.enabled && !rr.name.StartsWith("raket")) foreach (var mm in rr.sharedMaterials) tsb.Append(rr.name + "=" + (mm == null ? "-" : mm.name + "/" + (mm.mainTexture != null ? mm.mainTexture.name : "dokusuz") + "/" + ColorUtility.ToHtmlStringRGB(mm.color)) + " ");
+                rap.AppendLine("ten_fig " + tn + " · " + tsb); }
+              Ayar.GORUNUM["ten"] = tn0; root.vitrin.Yenile(); rap.AppendLine("vitrin rt " + root.vitrin.rt.width + "x" + root.vitrin.rt.height + " ekran " + Screen.width + "x" + Screen.height); }
             ui.KarakterAc(UiKok.KAR_KIYAFET); ui.VitrinOdak(Vitrin.TUTUS, "drive"); yield return Bekle(40); yield return Cek("menu_" + ek + "yakin_tutus_forehand");
             ui.VitrinOdak(Vitrin.TUTUS, "bh_drive"); yield return Bekle(40); yield return Cek("menu_" + ek + "yakin_tutus_backhand");
             // 2026-10-30 raket incelemesi: şaft ve boğaz (raket_koyu) da kopyada mı; dönüşün iki açısı
@@ -374,7 +380,11 @@ namespace BirdieSmash.Game
             var eski = Ayar.ilerleme;
             var p = new Ilerleme(); for (int t = 0; t < 2; t++) for (int b = 0; b < 6; b++) p.tur[t][b] = 7;
             p.Ad = "Yasin"; p.Unvan = "yerel"; for (int i = 0; i < 12; i++) p.MacSay(3); Ayar.ilerleme = p;
-            ui.SekmeAc(Sekme.Oyna); ui.SekmeAc(Sekme.Profil); yield return Bekle(20); yield return Cek("menu_" + ek + "profil_ornek");
+            ui.Kirlet(); ui.SekmeAc(Sekme.Oyna); ui.SekmeAc(Sekme.Profil);   // sekme önbelleği eski ilerlemeyle kalmasın (r89: "Player", tek unvan) yield return Bekle(20); yield return Cek("menu_" + ek + "profil_ornek");
+            // 2026-10-31: bütün turlar bitmiş (beş unvan çipi tek satıra sığmıyordu, IMG_1517)
+            for (int t = 0; t < p.tur.Length; t++) for (int b = 0; b < p.tur[t].Length; b++) p.tur[t][b] = 7;
+            p.Unvan = "asya"; ui.Kirlet(); ui.SekmeAc(Sekme.Oyna); ui.SekmeAc(Sekme.Profil); yield return Bekle(20); yield return Cek("menu_" + ek + "profil_tum");
+            ui.SeviyeAniTur(4, 6); yield return Bekle(40); yield return Cek("menu_" + ek + "seviye_ani"); ui.SeviyeAniKapat();   // 2026-10-31 seviye atlama anı
             Ayar.ilerleme = eski; ui.SekmeAc(Sekme.Oyna); ui.SekmeAc(Sekme.Profil); yield return Bekle(5);
         }
 

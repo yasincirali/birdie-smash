@@ -121,7 +121,7 @@ namespace BirdieSmash.Game
             {
                 PrefabAdi = prefab.name; modelAdi = DokuAdi(prefab.name, modelAd); model = Instantiate(prefab, yaw).transform; model.localPosition = Vector3.zero; model.localScale = Vector3.one * SCALE;
                 anim = model.GetComponentInChildren<Animation>();
-                Varyant(gor); Paint(gor); if (!hakem) RaketSekil.Uygula(model, gor.kafa);
+                tenAtlas = gor.ten; Varyant(gor); Paint(gor); if (!hakem) RaketSekil.Uygula(model, gor.kafa);   // ten önce: Varyant gövde atlasını Paint'ten önce bağlıyor
                 if (anim != null && anim["idle"] != null) Sample("idle", 0, null, 0, 1);
                 Calibrate(); AltKatmanKur();
                 if (!hakem) aksesuar = Aksesuar.Kur(model, kHead, Vector3.up, bantMeta, gor.sapka, gor.yuz, gor.forma, gor.sac);
@@ -268,10 +268,13 @@ namespace BirdieSmash.Game
         {
             if (asil == null) return null; string n = asil.name.ToLowerInvariant(); string ek = n.Contains("body") ? "_govde" : n.Contains("head") ? "_bas" : null;
             if (ek == null) return null; var tx = Resources.Load<Texture2D>("karakter/" + modelAdi + ek); if (tx == null) return null;
+            string anahtar = modelAdi + ek; bool tenli = ek == "_govde" && tenAtlas.HasValue && modelAdi.StartsWith("oyuncak");
+            if (tenli) anahtar += "#" + ColorUtility.ToHtmlStringRGB(tenAtlas.Value);
             Material m;
-            if (!dokuM.TryGetValue(modelAdi + ek, out m))
+            if (!dokuM.TryGetValue(anahtar, out m))
             {
-                dokuM[modelAdi + ek] = m = Kit.LitTex(Color.white, tx, .18f);
+                if (tenli) tx = TenliAtlas(tx, tenAtlas.Value);
+                dokuM[anahtar] = m = Kit.LitTex(Color.white, tx, .18f);
                 // 2026-10-26: Gerçekçi model düz/çamurlu görünüyordu (yalnız renk dokusu): kıvrım/kas/yüz normalden,
                 // ten/kumaş/ayakkabı farkı parlaklık haritasından. Dosya yoksa (oyuncak, sade) eski malzeme birebir.
                 Kit.Bump(m, Resources.Load<Texture2D>("karakter/" + modelAdi + ek + "_n"));
@@ -280,8 +283,43 @@ namespace BirdieSmash.Game
             return m;
         }
         static readonly Dictionary<string, Material> dokuM = new Dictionary<string, Material>();
+        // 2026-10-31 (yasin: "Ten renkleri değiştirilemiyor"): Oyuncak ailesinde ten ayrı parça değil, gövde ağının renk
+        // atlasında bir hücre. "__ten" etiketi olmadığı için ten tonu hiçbir şeye bağlanmıyordu. Atlas GPU'da bir RT'ye
+        // kopyalanıp okunur (doku Read/Write kapalı ve ASTC: DokuAyar), ten hücreleri seçilen tona boyanır, sonuç model+ton
+        // başına bir kez üretilir. Ton yoksa ("Modelin rengi") atlas aynen.
+        // r93 düzeltmesi: ilk yazım her modelde teni 221,179,151 sandı; Blender'da ağın UV'leri ölçülünce (yüzey alanı payı)
+        // modeller üç ten hücresini farklı rollerde kullanıyor: oyuncak 129,97,63 (%55), güçlü 209,160,142 (%67), kadın ve
+        // uzun 221,179,151 (%36 / %61). Diğer ikisi o modelde küçük ayrıntı (dudak, kulak içi). Bu yüzden atlas başına asıl
+        // ten hücresi tabloda; üç hücre de seçilen tona asıl tene oranlarıyla boyanır (ayrıntı tenden açık/koyu kalır).
+        // Atlas yeniden üretilip roller değişirse tabloyu tool/karakter ölçümüyle güncelle.
+        Color? tenAtlas; public static string TenTani = "yok";   // ekran turu tanısı
+        static readonly Color32[] TEN_HUCRE = { new Color32(221, 179, 151, 255), new Color32(209, 160, 142, 255), new Color32(129, 97, 63, 255) };
+        static Color32 AsilTen(string atlas)
+        {
+            if (atlas == "oyuncak_govde") return TEN_HUCRE[2];
+            if (atlas == "oyuncak_guclu_govde") return TEN_HUCRE[1];
+            return TEN_HUCRE[0];
+        }
+        static bool Yakin(Color32 a, Color32 b) { return Mathf.Abs(a.r - b.r) <= 8 && Mathf.Abs(a.g - b.g) <= 8 && Mathf.Abs(a.b - b.b) <= 8; }
+        static byte Oran(byte ton, byte hucre, byte asil) { return (byte)Mathf.Clamp(Mathf.RoundToInt(ton * (float)hucre / Mathf.Max(1, asil)), 0, 255); }
+        static Texture2D TenliAtlas(Texture2D kaynak, Color ten)
+        {
+            int w = kaynak.width, h = kaynak.height;
+            var rt = RenderTexture.GetTemporary(w, h, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+            Graphics.Blit(kaynak, rt); var once = RenderTexture.active; RenderTexture.active = rt;
+            var t = new Texture2D(w, h, TextureFormat.RGBA32, true, false) { name = kaynak.name + "_ten", filterMode = kaynak.filterMode, anisoLevel = kaynak.anisoLevel, wrapMode = kaynak.wrapMode };
+            t.ReadPixels(new Rect(0, 0, w, h), 0, 0, false); RenderTexture.active = once; RenderTexture.ReleaseTemporary(rt);
+            Color32 tn = ten, asil = AsilTen(kaynak.name); var yeni = new Color32[TEN_HUCRE.Length];
+            for (int k = 0; k < TEN_HUCRE.Length; k++) { var c = TEN_HUCRE[k]; yeni[k] = new Color32(Oran(tn.r, c.r, asil.r), Oran(tn.g, c.g, asil.g), Oran(tn.b, c.b, asil.b), 255); }
+            var px = t.GetPixels32(); int say = 0;
+            for (int i = 0; i < px.Length; i++) for (int k = 0; k < TEN_HUCRE.Length; k++) if (Yakin(px[i], TEN_HUCRE[k])) { px[i] = yeni[k]; if (Yakin(TEN_HUCRE[k], asil)) say++; break; }
+            TenTani = kaynak.name + " " + w + "x" + h + " asıl ten " + asil.r + "," + asil.g + "," + asil.b + " → " + tn.r + "," + tn.g + "," + tn.b + " eşleşen " + say;
+            if (say == 0) { Object.Destroy(t); return kaynak; }   // atlasta ten hücresi yok: dokuya dokunma
+            t.SetPixels32(px); t.Apply(true, true); return t;
+        }
         void Paint(Gorunum g)
         {
+            tenAtlas = g.ten;
             // Dokulu modelde (Gerçekçi) forma = gövde dokusu × takım rengi + normal: forma dokusu açık gri gövde, koyu gri
             // yaka/raglan/kol ağzı; takım rengi gölgesi ve iki tonlu kesimiyle görünür. Doku yoksa eski düz renk birebir.
             // 2026-10-26 (oyun tasarımı incelemesi, r22 oyuncak_12/15: iki oyuncu da lacivert): oyuncak ailesinin _govde

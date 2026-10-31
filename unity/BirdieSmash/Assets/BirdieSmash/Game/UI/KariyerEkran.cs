@@ -133,7 +133,9 @@ namespace BirdieSmash.Game
             var rk = Satir("rakip-satir"); rk.pickingMode = PickingMode.Ignore; orta.Add(rk);
             if (final) { var ku = Ikon(Ikonlar.Kupa, 14, ALTIN); ku.style.marginRight = 4; rk.Add(ku); }
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);
-            rk.Add(Yazi(st.isim + " · " + L.T(st.ad) + (final ? " · " + L.T("Final") : ""), 13, "soluk"));
+            // 2026-10-31 (mağaza turu tr_03: "Nova · Drive'cı · Final" iki satıra sarıp 18 pt satırda kesiliyordu): üstteki
+            // başlıktaki gibi taban 0 + büyüme, yükseklik verilen genişlikle ölçülür.
+            var rky = Yazi(st.isim + " · " + L.T(st.ad) + (final ? " · " + L.T("Final") : ""), 13, "soluk"); rky.style.flexBasis = new StyleLength(0f); rky.style.flexGrow = 1; rky.style.flexShrink = 1; rk.Add(rky);
             var yr = Satir("rakip-satir"); yr.pickingMode = PickingMode.Ignore; orta.Add(yr); yr.Add(UcYildiz(p.Maske(g), 16)); var yy = Yazi(ys + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy);
             // Kilitli basamak nedenini söyler (2026-10-29, "leveller daha anlaşılır"): yalnız "Kilitli" yazınca neyin açacağı
             // maç kartına dokunmadan görünmüyordu. Tur açıksa kilidi önceki basamak tutar; tur kilitliyse neden tur seçicide.
@@ -160,7 +162,7 @@ namespace BirdieSmash.Game
             c.Add(Yazi(L.T(TurAd(tr)) + " · " + L.T("{0}. basamak", b + 1) + (final ? " · " + L.T("Final") : ""), 13, "etiket"));
             // rakip: renk yuvarlağı yanında ad ve tarz (renk tek başına anlam taşımaz)
             var rr = Satir("profil-ust"); c.Add(rr);
-            var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(st.renk); av.Add(Ikon(Ikonlar.Kisi, 30, KOYU)); rr.Add(av);
+            var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(st.renk); AvatarIc(av, Portre.Rakip(st), 30); rr.Add(av);
             var ra = new VisualElement(); ra.AddToClassList("esnek-yatay"); rr.Add(ra);
             ra.Add(Yazi(st.isim, 20, "kalin")); ra.Add(Yazi(L.T(st.ad), 14, "soluk"));
             Erisim.Etiket(rr, L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad), "metin");

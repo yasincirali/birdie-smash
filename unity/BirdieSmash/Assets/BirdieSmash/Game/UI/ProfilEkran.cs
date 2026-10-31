@@ -28,7 +28,7 @@ namespace BirdieSmash.Game
             var un = Karakter.Gosterilen(p, L_, p.AntrenmanYildiz); var tz = Karakter.Tarz(Ayar.Tarz);
             var kart = Kart(); c.Add(kart);
             var r = Satir("profil-ust"); kart.Add(r);
-            var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(Ayar.FORMA); av.Add(Ikon(Ikonlar.Kisi, 30, KOYU)); r.Add(av);
+            var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 30); r.Add(av);
             var ad = new VisualElement(); ad.AddToClassList("esnek-yatay"); r.Add(ad);
             ad.Add(Yazi(p.Ad ?? L.T("Oyuncu"), 19, "kalin")); ad.Add(Yazi(L.T(un.ad), 14, "altin"));
             ad.Add(Yazi(L.T("Seviye {0}", L_) + " · " + L.T("Tarz") + ": " + L.T(tz.ad), 14, "soluk"));
@@ -53,12 +53,15 @@ namespace BirdieSmash.Game
 
             // unvanlar
             c.Add(Grup(L.T("Unvan")));
-            var kz = Karakter.Kazanilan(p, L_, p.AntrenmanYildiz); var us = Satir(); c.Add(us);
+            var kz = Karakter.Kazanilan(p, L_, p.AntrenmanYildiz); var us = Satir("cip-sarar"); c.Add(us);   // 2026-10-31 (yasin IMG_1517): 5 unvan eşit dar çipe sıkışıp harf harf bölünüyordu; çip yazısı kadar geniş, sığmayan alt satıra
             foreach (var u in kz) { string id = u.id; us.Add(Cip(L.T(u.ad), u.id == un.id, () => { p.Unvan = id; Ayar.Kaydet(); kirli[(int)Sekme.Profil] = true; SekmeKur(Sekme.Profil); })); }
             foreach (var u in Karakter.Unvanlar)
             {
                 if (kz.Contains(u)) continue; var ur = Satir("basarim"); ur.AddToClassList("kilitli"); c.Add(ur);
-                ur.Add(Ikon(Ikonlar.Kilit, 18, SOLUK)); ur.Add(Yazi(L.T(u.ad), 15, "esnek-yatay")); ur.Add(Yazi(L.T(u.nasil), 12, "durum-kilit"));
+                ur.Add(Ikon(Ikonlar.Kilit, 18, SOLUK));
+                // 2026-10-31 (SE ×2 turu: ad ve koşul yan yana sığmayıp "champion" harf harf bölünüyordu): ad üstte, koşul altında
+                var us2 = new VisualElement(); us2.AddToClassList("esnek-yatay"); us2.pickingMode = PickingMode.Ignore; ur.Add(us2);
+                us2.Add(Yazi(L.T(u.ad), 15)); us2.Add(Yazi(L.T(u.nasil), 12, "soluk"));
                 Erisim.Etiket(ur, L.T("Unvan") + " " + L.T(u.ad) + ", " + L.T("Kilitli") + ", " + L.T(u.nasil), "metin");
             }
 

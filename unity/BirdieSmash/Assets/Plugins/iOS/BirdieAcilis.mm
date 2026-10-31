@@ -102,8 +102,18 @@ static void bsPerdeKur(UIWindow *unity)
 @implementation BirdieAppController
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    // 2026-10-31 (yasin: "splash'te gife hemen girmiyor, 1,5–2 sn siyah bekletiyor"): perde super'den SONRA kuruluyordu.
+    // super (UnityAppController) motoru eşzamanlı başlatır ve kendi penceresini görünür yapar; sistem açılış ekranı o an
+    // kalkıyor, Unity görünümü ilk kareye dek siyah kalıyordu. Perde artık super'den ÖNCE görünür; super'den sonra
+    // sahne tabanlı yaşam döngüsünde pencere Unity'nin sahnesine bağlanır ve yeniden öne alınır.
+    bsPerdeKur(nil);   // UnityFramework Objective-C istisnaları kapalı derlenir (@try yok); bsPerdeKur dosya yoksa sessizce döner
     BOOL r = [super application:application didFinishLaunchingWithOptions:launchOptions];
-    bsPerdeKur(self.window);   // UnityFramework Objective-C istisnaları kapalı derlenir (@try yok); bsPerdeKur dosya yoksa sessizce döner
+    if (bsPerde == nil) bsPerdeKur(self.window);
+    else
+    {
+        if (@available(iOS 13.0, *)) { if (bsPerde.windowScene == nil && self.window.windowScene != nil) bsPerde.windowScene = self.window.windowScene; }
+        bsPerde.hidden = NO; [CATransaction flush];
+    }
     return r;
 }
 @end

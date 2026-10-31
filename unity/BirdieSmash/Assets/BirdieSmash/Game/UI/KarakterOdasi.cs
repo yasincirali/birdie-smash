@@ -293,12 +293,12 @@ namespace BirdieSmash.Game
         {
             var gr = Ayar.gear; string sec = Ayar.KOZ[Kozmetik.SAC], dn = root.vitrin.deneSac; int sv = gr.Seviye();
             c.Add(Grup(L.T("Saç modeli · {0}", L.T(Kozmetik.Oge(Kozmetik.SAC, dn ?? sec).ad))));
-            var iz = Satir("izgara"); iz.AddToClassList("koz-izgara"); c.Add(iz);
+            var iz = Satir("izgara"); iz.AddToClassList("koz-izgara"); c.Add(iz); int ks = 0;
             foreach (var o in Kozmetik.Liste(Kozmetik.SAC))
             {
                 var du = Kozmetik.Durum(gr, Kozmetik.SAC, o.id, sec); string id = o.id; Texture2D ik; string durum = KozDurum(Kozmetik.SAC, o, du, out ik);
                 var k = Kart("sac-kare"); k.AddToClassList("dugme"); if (du == ModelDurum.Secili) k.AddToClassList("secili"); if (du == ModelDurum.Kilitli) k.AddToClassList("kilitli"); if (dn == o.id) k.AddToClassList("denenen");
-                k.Add(Yazi(L.T(o.ad), 12, "kalin"));
+                k.Add(Yazi(L.T(o.ad), 12, "kalin")); KucukResim(k, Kozmetik.SAC, id, ks++, 52);
                 var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; dr.style.flexWrap = Wrap.Wrap; k.Add(dr); if (ik != null) { var i = Ikon(ik, 11, du == ModelDurum.Secili ? TURUNCU : SOLUK); i.style.marginRight = 2; dr.Add(i); }   // r55: " · deneniyor" dar kartta alta sarar
                 dr.Add(Yazi(du == ModelDurum.Kilitli ? L.T("Sv {0}", o.sv) : durum, 10, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"));
                 k.AddManipulator(new Clickable(() => KozDokun(Kozmetik.SAC, id)));
@@ -366,17 +366,28 @@ namespace BirdieSmash.Game
             OrnekSira(c, L.T("Ayakkabı rengi"), l, Ayar.GORUNUM["ayakkabi"], id => { Ayar.GORUNUM["ayakkabi"] = id; Ayar.Kaydet(); }, true);
         }
 
+        // Kartın üstüne öğe takılı baş portresi (Portre.Dene). Önbellekteyse hemen; değilse kart sırasına göre 1 karede bir çizilir
+        // (17 saçı aynı karede kurmak sayfa açılışını takıltırdı). Hareketi azalt açıksa da aynı: belirme geçişsiz.
+        void KucukResim(VisualElement k, string kat, string id, int sira, float px)
+        {
+            var im = new Image { scaleMode = ScaleMode.ScaleToFit, pickingMode = PickingMode.Ignore }; im.AddToClassList("koz-resim");
+            im.style.height = px; k.Insert(0, im);
+            var hazir = Portre.DeneHazir(kat, id); if (hazir != null) { im.image = hazir; return; }
+            im.AddToClassList("koz-resim--bekle");
+            im.schedule.Execute(() => { if (im.panel == null) return; im.image = Portre.Dene(kat, id); im.RemoveFromClassList("koz-resim--bekle"); }).StartingIn(30 + 34 * sira);
+        }
+
         // ---- Şapka ve yüz aksesuarı: 2 sütunlu kart ızgarası (Tip sayfasıyla aynı akış: dokun = dene, sahipse seç) ----
         void KozIzgara(VisualElement c, string kat, string baslik, string dn)
         {
             var gr = Ayar.gear; string sec = Ayar.KOZ[kat];
             c.Add(Grup(L.T(baslik) + " · " + L.T(Kozmetik.Oge(kat, dn ?? sec).ad)));
-            var iz = Satir("izgara"); iz.AddToClassList("koz-izgara"); c.Add(iz);
+            var iz = Satir("izgara"); iz.AddToClassList("koz-izgara"); c.Add(iz); int ks = 0;
             foreach (var o in Kozmetik.Liste(kat))
             {
                 var du = Kozmetik.Durum(gr, kat, o.id, sec); string id = o.id; Texture2D ik; string durum = KozDurum(kat, o, du, out ik);
                 var k = Kart("koz-kart"); k.AddToClassList("dugme"); k.AddToClassList("koz-kart--kisa"); if (du == ModelDurum.Secili) k.AddToClassList("secili"); if (du == ModelDurum.Kilitli) k.AddToClassList("kilitli"); if (dn == o.id) k.AddToClassList("denenen");
-                k.Add(Yazi(L.T(o.ad), 15, "kalin"));
+                k.Add(Yazi(L.T(o.ad), 15, "kalin")); KucukResim(k, kat, id, ks++, 72);
                 var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; dr.style.flexWrap = Wrap.Wrap; k.Add(dr); if (ik != null) { var i = Ikon(ik, 13, du == ModelDurum.Secili ? TURUNCU : SOLUK); i.style.marginRight = 4; dr.Add(i); }
                 dr.Add(Yazi(durum, 12, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"));
                 if (dn == o.id && du != ModelDurum.Secili) dr.Add(Yazi(" · " + L.T("deneniyor"), 12, "durum-simdi"));

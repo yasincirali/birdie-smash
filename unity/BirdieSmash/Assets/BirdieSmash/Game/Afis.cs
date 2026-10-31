@@ -32,7 +32,7 @@ namespace BirdieSmash.Game
         public static Afis Build(Transform root)
         {
             var g = new GameObject("afis"); g.transform.SetParent(root, false); var a = g.AddComponent<Afis>();
-            a.rt = new RenderTexture(640, 748, 16, RenderTextureFormat.ARGB32) { name = "afis", antiAliasing = Kalite.Basamak > 0 ? 2 : 1, memorylessMode = RenderTextureMemoryless.MSAA };   // çok örnekli tampon karo belleğinde (Vitrin notu)
+            a.rt = YeniRt(640, 748);   // ilk boy; Oyna sekmesi yerleşince Cozunurluk kutunun piksel boyuna getirir (Vitrin notu)
             var cg = new GameObject("afis_kamera"); cg.transform.SetParent(g.transform, false); a.kam = cg.AddComponent<Camera>();
             a.kam.targetTexture = a.rt; a.kam.clearFlags = CameraClearFlags.SolidColor; a.kam.backgroundColor = new Color(0, 0, 0, 0);
             a.kam.fieldOfView = ACI; a.kam.nearClipPlane = .1f; a.kam.farClipPlane = 15; a.kam.enabled = false; a.kam.allowHDR = false;
@@ -45,8 +45,28 @@ namespace BirdieSmash.Game
             // 2026-10-27 yön C: rakip konturu orkide (UiKok.RAKIP; mercan birincil eylemin turuncu ailesine düşüyordu), sana limon
             // (UiKok.LIMON, C'nin kırılmış limonu). Güçler aynı: orkide mercandan biraz açık, kontur yine okunur.
             a.konturRakip = Isik(g.transform, "afis_kontur_rakip", YER + Ek(RAKIP + new Vector3(1.25f, 1.45f, -.35f)), UiKok.RAKIP, 7f, 2.6f);
+            // 2026-10-31 (inceleme 31 Eki 12:10, r86 menu_13_oyna): yüzler zeminden koyu kalıyordu (anahtar sol üstte, yüzler
+            // 3/4 sağa dönük). Önden, kameranın hafif altından zayıf beyaz dolgu; menzil afiş figürleriyle sınırlı, konturlar aynı.
+            Isik(g.transform, "afis_dolgu", YER + Ek(new Vector3(KAMERA.x, .75f, 3.2f)), Color.white, .55f, 7);
             a.konturBen = Isik(g.transform, "afis_kontur_ben", YER + Ek(BEN + new Vector3(-1.2f, 1.5f, -.35f)), UiKok.LIMON, 2.6f, 2.4f);
             g.SetActive(false); return a;
+        }
+        static RenderTexture YeniRt(int w, int h)
+        {
+            return new RenderTexture(w, h, 16, RenderTextureFormat.ARGB32) { name = "afis", antiAliasing = Kalite.Basamak > 0 ? 2 : 1, memorylessMode = RenderTextureMemoryless.MSAA };   // çok örnekli tampon karo belleğinde
+        }
+        // 2026-10-31 (inceleme 31 Eki 12:10 madde 1): RT sabit 640×748 idi; kahraman alanı 3× ekranda ~1,75 kat büyütülüp
+        // bulanıklaşıyordu (Dolap vitrinindeki sorunun aynısı). RT artık kutunun ekran pikseli boyunda, en-boy 640:748 sabit
+        // (Duyarli.AfisYerlestir kutuyu bu orana göre kurar). Uzun kenar kalite basamağına göre 1600/1280/768 (düşük basamakta
+        // ~1×). Boy %6'dan az değişirse RT yeniden kurulmaz.
+        public void Cozunurluk(float ph)
+        {
+            if (float.IsNaN(ph) || ph < 64) return;
+            float ust = Kalite.Basamak == 2 ? 1600 : Kalite.Basamak == 1 ? 1280 : 768;
+            int h = Mathf.RoundToInt(Mathf.Min(ph, ust)), w = Mathf.RoundToInt(h * 640f / 748f);
+            if (rt != null && Mathf.Abs(h - rt.height) < rt.height * .06f) return;
+            var eski = rt; rt = YeniRt(w, h); kam.targetTexture = rt;
+            if (eski != null) { eski.Release(); Destroy(eski); }
         }
         static Light Isik(Transform p, string ad, Vector3 yer, Color c, float guc, float menzil)
         {

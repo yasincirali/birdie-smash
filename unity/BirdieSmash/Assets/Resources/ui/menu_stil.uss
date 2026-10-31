@@ -112,6 +112,9 @@
 .cip--secili .dugme-yazi { color: var(--ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .cip--secili .dugme-alt { color: rgba(26, 18, 33, 0.85); }
 .satir { flex-direction: row; flex-wrap: wrap; margin-left: -4px; margin-right: -4px; }
+/* 2026-10-31: sayısı değişen çip satırı (Profil › Unvan): basis 0 tüm çipleri tek satırda eşit dar paylara bölüp sözcükleri
+   harf harf kırıyordu. Burada çip yazısı kadar geniş başlar, satır sarar, kalan yer büyüyerek paylaşılır. */
+.satir.cip-sarar > .cip { flex-basis: auto; }
 .satir.arali { justify-content: space-between; align-items: center; margin-left: 0; margin-right: 0; flex-wrap: nowrap; }
 /* büyük yazıda (x1.35 üstü) çipler alt alta: metin sarılır, yan yana sıkışmaz */
 /* r13 (2026-10-26): .satir'ın flex-wrap: wrap'ı sütunda da geçerliydi; Yoga uzun metinli Zorluk çiplerini ikinci bir sütuna
@@ -193,7 +196,7 @@
 .buyuk-yazi .tur-secici .cip { flex-basis: 40%; }
 
 /* Soyunma odası */
-.vitrin-alan { height: 40%; min-height: 200px; flex-shrink: 0; margin: 0 16px; border-radius: 16px; overflow: hidden; background-color: var(--navy); }
+.vitrin-alan { height: 50%; min-height: 220px; flex-shrink: 0; margin: 0 16px; border-radius: 16px; overflow: hidden; background-color: var(--navy); }
 .vitrin { flex-grow: 1; }
 .vitrin-yazi { position: absolute; top: 8px; right: 10px; -unity-text-align: middle-right; color: rgba(255, 255, 255, 0.75); background-color: rgba(26, 18, 33, 0.6); border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; padding: 3px 8px; }   /* r11: ortadaki yazı raketin ve başın üstüne biniyordu; sağ üst köşe, koyu zemin */
 /* r13 (2026-10-26): Yüz·Ayak·Tutuş ve oklar tek alt sütunda (SoyunmaOdasi); büyük yazıda üst üste binmiyorlar. */
@@ -344,6 +347,12 @@
 .koz-kart.secili, .sac-kare.secili, .ayk-satir.secili { border-width: 2px; border-color: var(--sun); }
 .koz-kart.kilitli, .sac-kare.kilitli, .ayk-satir.kilitli { opacity: 0.7; }
 .denenen { border-width: 2px; border-color: var(--sky); }
+/* 2026-10-31 sanat paketi 1: saç/şapka/yüz kartlarında öğe takılı baş portresi (Portre.Dene). Çizilene dek soluk zemin,
+   sonra .2 sn belirir; Hareketi azaltta geçiş yok. Yazı ve durum altta kalır (adı okumadan da seçilebilsin). */
+.koz-resim { align-self: stretch; margin-bottom: 4px; border-radius: 10px; background-color: rgba(255, 255, 255, 0.06); opacity: 1; transition-property: opacity; transition-duration: 0.2s; }
+.koz-resim--bekle { opacity: 0.35; }
+.az-hareket .koz-resim { transition-duration: 0s; }
+.buyuk-yazi .izgara > .sac-kare .koz-resim { width: 64px; align-self: center; }
 .ayk-satir { padding: 10px 12px; min-height: 56px; margin: 4px 0; }
 .deneme-kart { padding: 12px; border-width: 2px; border-color: var(--sky); }
 /* 2026-10-27 Gerçekçi/Sade "tek beden" bilgi kartı: deneme kartından sakin (ince çerçeve), ikincil düğmeli */
@@ -365,6 +374,9 @@
 .ust-hap { flex-direction: row; align-items: center; min-height: 44px; border-radius: 22px; background-color: rgba(38, 26, 48, 0.72); border-width: 1px; border-color: var(--ln); }
 .profil-hap { padding: 3px 14px 3px 3px; flex-shrink: 1; transition-property: scale; transition-duration: 0.08s; }
 .profil-hap:active { scale: 0.97 0.97; }
+/* 2026-10-31 portre: daire kırpar (UI Toolkit yuvarlak köşeyi overflow: hidden ile maskeler) */
+.avatar--portre { overflow: hidden; }
+.avatar-resim { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 .ust-avatar { width: 38px; height: 38px; border-radius: 19px; border-width: 2px; border-color: var(--lime); align-items: center; justify-content: center; flex-shrink: 0; }
 .ust-sv { margin-left: 10px; flex-shrink: 1; }
 .tuy-hap { padding: 0 14px 0 10px; margin-right: 10px; flex-shrink: 0; }
@@ -450,7 +462,7 @@
 .kisa .cta { min-height: 68px; padding: 8px 18px 10px 22px; margin: 2px 0 8px 0; }
 .kisa .cta-ikon { width: 46px; height: 46px; border-radius: 23px; }
 .kisa .karo { min-height: 56px; padding: 7px 10px; }
-.kisa .vitrin-alan { height: 36%; min-height: 176px; }
+.kisa .vitrin-alan { height: 42%; min-height: 190px; }   /* 2026-10-31 sanat paketi 1: %40→%50 (kısa ekranda %36→%42); karakter sayfanın yıldızı, liste kayar */
 .kisa.buyuk-yazi .vitrin-alan { height: 34%; min-height: 180px; }
 .kisa .sekme-cubugu { padding-top: 4px; }
 .kisa .sekme { min-height: 46px; margin-bottom: 4px; }
@@ -519,3 +531,12 @@
 .sekil-ornek { height: 64px; flex-basis: 28%; }
 .buyuk-yazi .kategori-ray .segment-cip { flex-basis: 40%; }
 .buyuk-yazi .sekil-ornek { height: auto; min-height: 64px; }
+
+/* 2026-10-31 seviye anı: tam ekran, mürekkep zemin; ortada sütun (sekme çubuğu ve üst çubuk altta kalır, dokununca kapanır) */
+.seviye-ani { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(26, 18, 33, 0.94); align-items: center; justify-content: center; padding: 24px; }
+.seviye-ic { align-items: center; width: 100%; max-width: 360px; }
+.seviye-ust { color: var(--lime); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); letter-spacing: 2px; }
+.seviye-sayi { color: var(--tx); margin: 4px 0 14px 0; }
+.seviye-liste { align-items: center; margin-bottom: 20px; }
+.seviye-oge { color: var(--tx); -unity-text-align: middle-center; white-space: normal; margin: 2px 0; }
+.seviye-ic .dugme { align-self: stretch; margin-top: 8px; }

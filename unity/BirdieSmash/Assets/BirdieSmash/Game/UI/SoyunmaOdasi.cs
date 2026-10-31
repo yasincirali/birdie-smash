@@ -122,6 +122,9 @@ namespace BirdieSmash.Game
         {
             var vt = root.vitrin; float w = ust.layout.width, h = ust.layout.height; if (vt == null || float.IsNaN(w) || float.IsNaN(h) || h < 1) return;
             vt.kutuOran = w / h; vt.kutuAlt = float.IsNaN(alt.layout.height) ? .35f : Mathf.Clamp01((alt.layout.height + 8) / h);
+            // RT kutunun ekran pikseli boyunda (panel birimi × ekran/panel oranı): büyütme bulanıklığı ve kırpma yok
+            var kok = ust.panel != null ? ust.panel.visualTree : null; float pp = kok != null && kok.layout.width > 1 ? Screen.width / kok.layout.width : 1;
+            vt.Cozunurluk(w * pp, h * pp); if (vitrinIm != null && vitrinIm.image != vt.rt) vitrinIm.image = vt.rt;
         }
 
         public void RaketIncele(bool ac) { RaketGorunum(ac); }   // EkranTuru

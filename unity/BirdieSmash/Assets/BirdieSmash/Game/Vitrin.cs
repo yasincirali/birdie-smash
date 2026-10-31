@@ -41,13 +41,42 @@ namespace BirdieSmash.Game
             // 2026-10-27 performans turu 2: dönen figürün silüeti MSAA'sız RT'de her karede merdivenleniyordu (18°/sn dönüş, kenar
             // pırpırı). Kalite basamağına göre 4×/2×/yok; çok örnekli tampon iOS'ta "memoryless" (yalnız çözülmüş görüntü bellekte:
             // 512×720×4 B×4 örnek ≈ 5,6 MB karo belleğinde kalır, RAM'e yazılmaz). Afiş de aynı.
-            vt.rt = new RenderTexture(512, 720, 16) { name = "vitrin", antiAliasing = Kalite.Basamak == 2 ? 4 : Kalite.Basamak == 1 ? 2 : 1, memorylessMode = RenderTextureMemoryless.MSAA };
+            vt.rt = YeniRt(512, 720);   // ilk boy; Dolap kutusu ölçülünce Cozunurluk kutunun piksel boyuna getirir
             var cg = new GameObject("vitrin_kamera"); cg.transform.SetParent(g.transform, false); vt.kam = cg.AddComponent<Camera>();
             vt.kam.targetTexture = vt.rt; vt.kam.clearFlags = CameraClearFlags.SolidColor; vt.kam.backgroundColor = Kit.Hex("#261A30");   // 2026-10-27 yön C: kart rengi (eski koyu camgöbeği #0e1d20 menüde tek soğuk leke kalıyordu)
             vt.kam.fieldOfView = 30; vt.kam.nearClipPlane = .05f; vt.kam.farClipPlane = 20; vt.kam.enabled = false;
             // dolgu ışığı: noktasal, kamera yanında (sahnenin tavan lambaları buraya ulaşmaz)
             var lg = new GameObject("vitrin_isik"); lg.transform.SetParent(g.transform, false); lg.transform.position = YER + new Vector3(-1.5f, 3, 3); var l = lg.AddComponent<Light>(); l.type = LightType.Point; l.range = 12; l.intensity = 1.6f;
+            // 2026-10-31 sanat paketi 1 (yasin "yap"): Dolap düz mor zeminde figür "boşlukta" duruyordu. Üç şey sahne kurar:
+            // (1) arkada sıcak kenar ışığı: silüet zeminden ayrılır (saç/omuz kenarı); (2) yerde yumuşak güneş rengi spot:
+            // figür bir sahnenin üstünde durur, gölge quad'ı bunun içinde okunur; (3) başın arkasında geniş, soluk mor hale:
+            // düz renk yerine derinlik. Hepsi Sprites/Default ve tek noktasal ışık; ek gölge/post yok (bütçe §7.3).
+            var kg = new GameObject("vitrin_kenar"); kg.transform.SetParent(g.transform, false); kg.transform.position = YER + new Vector3(1.3f, 2.3f, -1.8f);
+            var kl = kg.AddComponent<Light>(); kl.type = LightType.Point; kl.range = 5.5f; kl.intensity = 1.25f; kl.color = Kit.Hex("#FFD7A3"); kl.shadows = LightShadows.None;
+            var tex = Kit.RadialTex();
+            var spot = Kit.Prim(PrimitiveType.Quad, "vitrin_spot", g.transform, YER + new Vector3(0, .002f, 0), new Vector3(2.6f, 2.6f, 1), Kit.Clear(new Color(1f, .82f, .45f, .16f), tex));
+            spot.transform.rotation = Quaternion.Euler(90, 0, 0); spot.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var hale = Kit.Prim(PrimitiveType.Quad, "vitrin_hale", g.transform, YER + new Vector3(0, 1.25f, -2.2f), new Vector3(5.5f, 5.5f, 1), Kit.Clear(new Color(.55f, .38f, .68f, .55f), tex));
+            hale.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             g.SetActive(false); return vt;
+        }
+
+        // 2026-10-31 (yasin: "görsel değişiklik menüsünde raket ve karakter net gözükmüyor"): RT sabit 512×720 dikeydi, Dolap'ta
+        // ekran genişliğinde yatay kutuda ScaleAndCrop ile ~2,3× büyütülüp üstü altı kırpılıyordu (3× iPhone'da kutu ~1179×900 px).
+        // RT artık kutunun gerçek piksel boyunda, uzun kenar kalite basamağına göre sınırlı (1600/1280/960; bellek: 1600×1200
+        // renk ~7,3 MB, MSAA tamponu memoryless). Boy %6'dan az değişirse RT yeniden kurulmaz (düzen titremesi).
+        public void Cozunurluk(float pw, float ph)
+        {
+            if (float.IsNaN(pw) || float.IsNaN(ph) || pw < 32 || ph < 32) return;
+            float ust = Kalite.Basamak == 2 ? 1600 : Kalite.Basamak == 1 ? 1280 : 960, k = Mathf.Min(1, ust / Mathf.Max(pw, ph));
+            int w = Mathf.Max(256, Mathf.RoundToInt(pw * k)), h = Mathf.Max(256, Mathf.RoundToInt(ph * k));
+            if (rt != null && Mathf.Abs(w - rt.width) < rt.width * .06f && Mathf.Abs(h - rt.height) < rt.height * .06f) return;
+            var eski = rt; rt = YeniRt(w, h); kam.targetTexture = rt;
+            if (eski != null) { eski.Release(); Destroy(eski); }
+        }
+        static RenderTexture YeniRt(int w, int h)
+        {
+            return new RenderTexture(w, h, 16) { name = "vitrin", antiAliasing = Kalite.Basamak == 2 ? 4 : Kalite.Basamak == 1 ? 2 : 1, memorylessMode = RenderTextureMemoryless.MSAA };
         }
 
         public void Ac() { gameObject.SetActive(true); kam.enabled = true; durgun = 0; Yenile(); }
