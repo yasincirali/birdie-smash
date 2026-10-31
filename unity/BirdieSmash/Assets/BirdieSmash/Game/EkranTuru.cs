@@ -349,7 +349,7 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_TEN); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_ten");
             // 2026-10-31 ten tonu Oyuncak atlasına uygulanıyor mu (yasin: "Ten renkleri değiştirilemiyor"): açık ve koyu ton
             { string tn0 = Ayar.GORUNUM["ten"];
-              foreach (var tn in new[] { "t1", "t5" }) { Ayar.GORUNUM["ten"] = tn; root.vitrin.Yenile(); ui.KarakterAc(UiKok.KAR_TEN); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_ten_" + tn); }
+              foreach (var tn in new[] { "t1", "t5" }) { Ayar.GORUNUM["ten"] = tn; root.vitrin.Yenile(); ui.KarakterAc(UiKok.KAR_TEN); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_ten_" + tn); rap.AppendLine("ten " + tn + " model " + Ayar.model + " · " + PlayerView.TenTani); }
               Ayar.GORUNUM["ten"] = tn0; root.vitrin.Yenile(); rap.AppendLine("vitrin rt " + root.vitrin.rt.width + "x" + root.vitrin.rt.height + " ekran " + Screen.width + "x" + Screen.height); }
             ui.KarakterAc(UiKok.KAR_KIYAFET); ui.VitrinOdak(Vitrin.TUTUS, "drive"); yield return Bekle(40); yield return Cek("menu_" + ek + "yakin_tutus_forehand");
             ui.VitrinOdak(Vitrin.TUTUS, "bh_drive"); yield return Bekle(40); yield return Cek("menu_" + ek + "yakin_tutus_backhand");

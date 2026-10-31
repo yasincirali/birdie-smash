@@ -288,7 +288,7 @@ namespace BirdieSmash.Game
         // ten tonu hiçbir şeye bağlanmıyordu. Atlas GPU'da bir RT'ye kopyalanıp okunur (doku Read/Write kapalı ve ASTC: DokuAyar),
         // ten ve dudak hücreleri seçilen tona boyanır (dudak tenle aynı oranda koyu kalır), sonuç model+ton başına bir kez üretilir.
         // Hücre konumu modelden modele değişiyor; renkle bulunur, atlas yeniden üretilse de tutar. Ton yoksa ("Doğal") atlas aynen.
-        Color? tenAtlas;
+        Color? tenAtlas; public static string TenTani = "yok";   // ekran turu tanısı
         static readonly Color32 ATLAS_TEN = new Color32(221, 179, 151, 255), ATLAS_DUDAK = new Color32(209, 160, 142, 255);
         static bool Yakin(Color32 a, Color32 b) { return Mathf.Abs(a.r - b.r) <= 8 && Mathf.Abs(a.g - b.g) <= 8 && Mathf.Abs(a.b - b.b) <= 8; }
         static Texture2D TenliAtlas(Texture2D kaynak, Color ten)
@@ -301,6 +301,8 @@ namespace BirdieSmash.Game
             Color32 tn = ten, du = new Color32((byte)(tn.r * 209 / 221), (byte)(tn.g * 160 / 179), (byte)(tn.b * 142 / 151), 255);
             var px = t.GetPixels32(); int say = 0;
             for (int i = 0; i < px.Length; i++) { if (Yakin(px[i], ATLAS_TEN)) { px[i] = tn; say++; } else if (Yakin(px[i], ATLAS_DUDAK)) px[i] = du; }
+            var ornek = new System.Text.StringBuilder(); for (int y = 32; y < h; y += 64) for (int x = 32; x < w; x += 64) { var c = px[y * w + x]; if (c.r + c.g + c.b > 30) ornek.Append(c.r + "," + c.g + "," + c.b + " "); }
+            TenTani = kaynak.name + " " + w + "x" + h + " renk uzayı " + QualitySettings.activeColorSpace + " eşleşen " + say + " · hücreler " + ornek;
             if (say == 0) { Object.Destroy(t); return kaynak; }   // atlasta ten hücresi yok: dokuya dokunma
             t.SetPixels32(px); t.Apply(true, true); return t;
         }
