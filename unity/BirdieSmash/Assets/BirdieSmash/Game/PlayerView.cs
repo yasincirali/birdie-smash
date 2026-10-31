@@ -268,10 +268,13 @@ namespace BirdieSmash.Game
         {
             if (asil == null) return null; string n = asil.name.ToLowerInvariant(); string ek = n.Contains("body") ? "_govde" : n.Contains("head") ? "_bas" : null;
             if (ek == null) return null; var tx = Resources.Load<Texture2D>("karakter/" + modelAdi + ek); if (tx == null) return null;
+            string anahtar = modelAdi + ek; bool tenli = ek == "_govde" && tenAtlas.HasValue && modelAdi.StartsWith("oyuncak");
+            if (tenli) anahtar += "#" + ColorUtility.ToHtmlStringRGB(tenAtlas.Value);
             Material m;
-            if (!dokuM.TryGetValue(modelAdi + ek, out m))
+            if (!dokuM.TryGetValue(anahtar, out m))
             {
-                dokuM[modelAdi + ek] = m = Kit.LitTex(Color.white, tx, .18f);
+                if (tenli) tx = TenliAtlas(tx, tenAtlas.Value);
+                dokuM[anahtar] = m = Kit.LitTex(Color.white, tx, .18f);
                 // 2026-10-26: Gerçekçi model düz/çamurlu görünüyordu (yalnız renk dokusu): kıvrım/kas/yüz normalden,
                 // ten/kumaş/ayakkabı farkı parlaklık haritasından. Dosya yoksa (oyuncak, sade) eski malzeme birebir.
                 Kit.Bump(m, Resources.Load<Texture2D>("karakter/" + modelAdi + ek + "_n"));
@@ -280,8 +283,30 @@ namespace BirdieSmash.Game
             return m;
         }
         static readonly Dictionary<string, Material> dokuM = new Dictionary<string, Material>();
+        // 2026-10-31 (yasin: "Ten renkleri değiştirilemiyor"): Oyuncak ailesinde ten ayrı parça değil, gövde ağının renk
+        // atlasında bir hücre (oyuncak.py oy_ten → sRGB 221,179,151; dudak oy_dudak 209,160,142). "__ten" etiketi olmadığı için
+        // ten tonu hiçbir şeye bağlanmıyordu. Atlas GPU'da bir RT'ye kopyalanıp okunur (doku Read/Write kapalı ve ASTC: DokuAyar),
+        // ten ve dudak hücreleri seçilen tona boyanır (dudak tenle aynı oranda koyu kalır), sonuç model+ton başına bir kez üretilir.
+        // Hücre konumu modelden modele değişiyor; renkle bulunur, atlas yeniden üretilse de tutar. Ton yoksa ("Doğal") atlas aynen.
+        Color? tenAtlas;
+        static readonly Color32 ATLAS_TEN = new Color32(221, 179, 151, 255), ATLAS_DUDAK = new Color32(209, 160, 142, 255);
+        static bool Yakin(Color32 a, Color32 b) { return Mathf.Abs(a.r - b.r) <= 8 && Mathf.Abs(a.g - b.g) <= 8 && Mathf.Abs(a.b - b.b) <= 8; }
+        static Texture2D TenliAtlas(Texture2D kaynak, Color ten)
+        {
+            int w = kaynak.width, h = kaynak.height;
+            var rt = RenderTexture.GetTemporary(w, h, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+            Graphics.Blit(kaynak, rt); var once = RenderTexture.active; RenderTexture.active = rt;
+            var t = new Texture2D(w, h, TextureFormat.RGBA32, true, false) { name = kaynak.name + "_ten", filterMode = kaynak.filterMode, anisoLevel = kaynak.anisoLevel, wrapMode = kaynak.wrapMode };
+            t.ReadPixels(new Rect(0, 0, w, h), 0, 0, false); RenderTexture.active = once; RenderTexture.ReleaseTemporary(rt);
+            Color32 tn = ten, du = new Color32((byte)(tn.r * 209 / 221), (byte)(tn.g * 160 / 179), (byte)(tn.b * 142 / 151), 255);
+            var px = t.GetPixels32(); int say = 0;
+            for (int i = 0; i < px.Length; i++) { if (Yakin(px[i], ATLAS_TEN)) { px[i] = tn; say++; } else if (Yakin(px[i], ATLAS_DUDAK)) px[i] = du; }
+            if (say == 0) { Object.Destroy(t); return kaynak; }   // atlasta ten hücresi yok: dokuya dokunma
+            t.SetPixels32(px); t.Apply(true, true); return t;
+        }
         void Paint(Gorunum g)
         {
+            tenAtlas = g.ten;
             // Dokulu modelde (Gerçekçi) forma = gövde dokusu × takım rengi + normal: forma dokusu açık gri gövde, koyu gri
             // yaka/raglan/kol ağzı; takım rengi gölgesi ve iki tonlu kesimiyle görünür. Doku yoksa eski düz renk birebir.
             // 2026-10-26 (oyun tasarımı incelemesi, r22 oyuncak_12/15: iki oyuncu da lacivert): oyuncak ailesinin _govde
