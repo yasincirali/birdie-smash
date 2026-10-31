@@ -1,21 +1,18 @@
 === UNITY ===
-Bu sürüm daha akıcı ve daha az pil harcayan bir sürüm; görünüşte büyük bir değişiklik yok.
+Bu sürümde maç ekranı menülerle aynı görünüme geçti ve duraklatınca maçı yanlışlıkla baştan başlatmak artık zor.
 
 Bu sürümde yeni:
-- Uzun oynayınca oyun yavaşlamasın diye vuruş ve sayı efektleri artık her seferinde yeni bellek açmıyor; maç aralarında kullanılmayan bellek boşaltılıyor.
-- Telefon zorlanırsa görüntü kalitesi artık ralli ortasında değil, sayı arasında düşüyor: rallide ani takılma ya da görüntü sıçraması olmamalı.
-- Ana sayfadaki maç afişi daha az çiziliyor: menüde beklerken telefon daha az ısınmalı.
-- Dolap'taki küçük yüz resimleri ekranda görünür oldukça tek tek çiziliyor; kaydırırken takılma azalmalı.
-- Dolap'ta karakteri çevirirken parmağın ekrandan kayarsa karakter takılı kalmıyor.
-- Görev tamamlanınca kayıt sayı arasında yapılıyor; uygulama arka plana geçince ilerleme hemen kaydediliyor.
+- Maçtaki skor kutusu, sol üstteki ralli/görev kutusu ve smaç gücü çubuğu artık yuvarlak köşeli; smaç gücü çubuğu daha kalın, maç sırasında daha kolay okunuyor.
+- Sağ üstteki duraklat düğmesi yuvarlak bir düğme oldu.
+- Duraklatınca "Maçı baştan başlat"a bir kez dokunmak artık maçı silmiyor: düğme turuncu çerçeveyle "Emin misin? Bir kez daha dokun" yazar, ikinci dokunuşta maç baştan başlar. Skor hâlâ 0–0 ise tek dokunuş yeter.
 
 Nasıl denenir:
-1. Arka arkaya en az 5 maç oyna: son maç da ilki kadar akıcı olmalı, ses ve efektler aynı görünmeli (top yere düşünce koyu leke, smaçta yeşil çatlaklar, vuruşta halka).
-2. Uzun bir rallide oyunun takılıp takılmadığına bak; takılırsa hangi telefonda olduğunu yaz.
-3. Ana sayfada (Oyna) bir dakika bekle: afişteki oyuncular yavaşça nefes almaya devam etmeli, telefon ısınmamalı.
-4. Dolap > Saç'a gidip listeyi hızlı kaydır: küçük yüz resimleri sırayla belirmeli, kaydırma akıcı kalmalı.
-5. Dolap'ta karakteri parmakla çevirirken parmağı ekranın kenarından dışarı kaydır ya da Denetim Merkezi'ni aç: geri dönünce karakter kendi kendine yavaşça dönmeye devam etmeli.
-6. Bir antrenman görevini tamamla, sonra uygulamayı hemen kapat ve aç: görev sayısı korunmuş olmalı.
+1. Bir maç başlat: üstteki skor kutusu ve sol üstteki kutu yuvarlak köşeli olmalı; senin sayın formanın renginde, rakibinki mor kalmalı.
+2. Birkaç vuruş yap: alttaki smaç gücü çubuğu kalın ve uçları yuvarlak dolmalı; dolunca turuncu yanıp sönmeli.
+3. Sağ üstteki yuvarlak duraklat düğmesine bas: duraklat ekranı açılmalı.
+4. Birkaç sayı oynadıktan sonra duraklat ve "Maçı baştan başlat"a bir kez dokun: maç baştan BAŞLAMAMALI, düğme "Emin misin? Bir kez daha dokun" yazmalı. Hemen bir kez daha dokun: maç 0–0'dan başlamalı.
+5. Aynı şeyi yap ama ikinci dokunuş için 3 saniye bekle: düğme eski yazısına dönmeli.
+6. Maçın en başında (0–0) duraklat ve "Maçı baştan başlat"a dokun: tek dokunuşta baştan başlamalı.
 7. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===

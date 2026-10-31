@@ -69,6 +69,33 @@ namespace BirdieSmash.Game
         float ralliPop; int sonRalli; float[] pop = new float[2]; float flash; Color flashC; readonly List<Vector3> cams = new List<Vector3>();
         class HawkV { public float x, y, t; public bool icerde, serve; public int cm; } HawkV hawk;
         Texture2D ring, ringK, ringKesik, glow, disk, bar; Texture2D[] perdeTex;
+        // Maç göstergesi Tüycükler diline (2026-10-31 Ar-Ge UI/UX #1, yasin "yap"; defter Pnfx5sknsw9PuWQ2MB9fGY): skor kutusu,
+        // sol üst ralli/görev kutusu ve smaç rayı keskin köşeli düz dikdörtgendi, menüler ve duraklat yuvarlak kartlarla
+        // konuşurken maç başka oyun gibi duruyordu. Renkler ve anlam aynı kaldı: senin sayın forma rengin (Dolap seçimi, bilerek
+        // limon değil), rakip orkide, görev 3 nokta; yalnız biçim yuvarlandı ve smaç rayı 8 → 12 birim kalınlaştı (maç hızında
+        // ince şerit zor okunuyordu). Geri sayıma halka eklenmedi: rakam zaten büyüyüp oturuyor, ikinci hareket gürültü olurdu.
+        // Dokular u değişince yeniden üretilir (IMGUI'de 1 doku pikseli = 1 ekran pikseli); eskisi yok edilir (sızıntı olmasın).
+        GUIStyle hudKutu, hudRay; Texture2D hudKutuT, hudRayT;
+        void HudKutular()
+        {
+            if (hudKutuT != null) Destroy(hudKutuT); if (hudRayT != null) Destroy(hudRayT);
+            int r = Mathf.Max(3, Mathf.RoundToInt(8 * u));   // dilim r+2 ≤ en alçak kutunun (22·u) yarısı
+            hudKutuT = Ikonlar.Kutu(r, new Color(8 / 255f, 16 / 255f, 17 / 255f, .7f), new Color(1, 1, 1, .1f), Mathf.Max(1, u * .75f));
+            hudKutu = AKutu(hudKutuT, r + 2);
+            int rr = Mathf.Max(2, Mathf.RoundToInt(6 * u) - 2);   // ray 12·u: dilim rr+2 = yarı yükseklik, iki uç tam yuvarlak
+            hudRayT = Ikonlar.Kutu(rr, Color.white, new Color(1, 1, 1, 0), 0);
+            hudRay = AKutu(hudRayT, rr + 2);
+        }
+        void Boya(Rect r, GUIStyle st, Color c) { if (Event.current.type != EventType.Repaint) return; var g = GUI.color; GUI.color = c; st.Draw(r, false, false, false, false); GUI.color = g; }
+        // Yuvarlak duraklat düğmesi (kare "II" yazılı düğme yerine): koyu disk + ince halka + iki çubuk; ≥ 44 pt (BH).
+        bool DuraklatDugme(Rect r)
+        {
+            blocks.Add(r); bool bas = r.Contains(Event.current.mousePosition) && Input.GetMouseButton(0);
+            Tex(r, disk, new Color(8 / 255f, 16 / 255f, 17 / 255f, bas ? .85f : .7f)); Tex(r, ringK, new Color(1, 1, 1, .22f));
+            float cw = r.width * .11f, chh = r.height * .36f, cx = r.center.x, cy = r.center.y - chh / 2;
+            Fill(new Rect(cx - cw * 1.6f, cy, cw, chh), Color.white); Fill(new Rect(cx + cw * .6f, cy, cw, chh), Color.white);
+            return GUI.Button(r, GUIContent.none, GUIStyle.none);
+        }
         // perde: evre 0 yok, 1 kapanıyor, 2 kapalı, 3 açılıyor
         int perdeEvre; float perdeT; System.Action perdeIs; float perdeAci; float perdeMin = .15f; bool perdeAtla, perdeBek;
         public static readonly float[][] PERDE_F = { new[] { 2.6f }, new[] { .86f }, new[] { .66f }, new[] { .47f }, new[] { .30f } };
@@ -215,6 +242,7 @@ namespace BirdieSmash.Game
             chip = Stil(btn, Mathf.RoundToInt(13 * fu), FontStyle.Normal); chipOn = Stil(chip, -1, FontStyle.Bold);
             chipOn.normal.background = chipOn.hover.background = chipOn.active.background = Solid(Kit.Hex("#7ad7ff")); chipOn.normal.textColor = chipOn.hover.textColor = chipOn.active.textColor = Kit.Hex("#07161c");
             card = new GUIStyle(GUI.skin.box); card.normal.background = Solid(new Color(.04f, .08f, .09f, .86f));
+            HudKutular();
             if (ring == null) { ring = Kit.RingTex(128, 5); ringK = Kit.RingTex(128, 3); ringKesik = Kit.RingKesikTex(128, 6, 12); glow = Kit.RadialTex(64); disk = Kit.RingTex(128, 128); bar = Solid(Color.white); }
         }
 
@@ -317,7 +345,7 @@ namespace BirdieSmash.Game
             var gs = Ayar.GS; bool ogr = M.ogr != null;
             Halo(M); Iz(M); TopIzi(M); if (ogr) OgrIz(M); HedefYazi(M);
             // skor kutusu: sayı alınca büyür (HTML pop: 24·(1+.5·sin(pop·π)))
-            float cx = W / 2, sy = top; var kr = new Rect(cx - 62 * u, sy, 124 * u, 34 * u); Fill(kr, new Color(8 / 255f, 16 / 255f, 17 / 255f, .7f));
+            float cx = W / 2, sy = top; var kr = new Rect(cx - 62 * u, sy, 124 * u, 34 * u); Boya(kr, hudKutu, Color.white);
             if (!ogr)
             {
                 var s0 = Stil(big, Mathf.RoundToInt(24 * fu * (1 + .5f * Mathf.Sin(pop[0] * Mathf.PI)))); var s1 = Stil(big, Mathf.RoundToInt(24 * fu * (1 + .5f * Mathf.Sin(pop[1] * Mathf.PI))));
@@ -330,7 +358,7 @@ namespace BirdieSmash.Game
                 var bs = Stil(left, Mathf.RoundToInt(11 * fu), FontStyle.Bold);
                 if (M.rally != sonRalli) { if (M.rally > 3 && !Ayar.reduce) ralliPop = 1; sonRalli = M.rally; }
                 bool ralliVar = M.rally > 3; float bw = 64 * u, bh = ralliVar ? 40 * u : 22 * u;
-                Fill(new Rect(lx - 10 * u, top + 2 * u, bw, bh), new Color(8 / 255f, 16 / 255f, 17 / 255f, .72f));
+                Boya(new Rect(lx - 10 * u, top + 2 * u, bw, bh), hudKutu, Color.white);
                 float gy = top + 8 * u;
                 if (ralliVar)
                 {
@@ -348,7 +376,7 @@ namespace BirdieSmash.Game
             // tribün flaşları
             foreach (var c in cams) { if (c.z < 0) continue; float a = 1 - c.z / .5f; Tex(new Rect(c.x * W - 10 * RefK, H - (H - (top + c.y * RefK)) - 10 * RefK, 20 * RefK, 20 * RefK), glow, new Color(1, 1, 1, a)); }
             if (hawk != null) HawkCiz(M);
-            if (root.ekran == Ekran.Oyun && !root.paused && Button(new Rect(rx - BH, top, BH, BH), "II")) root.Duraklat();   // Duraklat
+            if (root.ekran == Ekran.Oyun && !root.paused && DuraklatDugme(new Rect(rx - BH, top, BH, BH))) root.Duraklat();   // Duraklat
             float y = top + 62 * u;
             if (root.rakipKartT > 0 && !ogr && root.ekran == Ekran.Oyun) y = RakipKart(M, y);   // r17: sonuç ekranının altından okunuyordu
             if (ogr && root.ekran == Ekran.Oyun) y = OgrKart(M, y);   // görev sonuç ekranında kart kalkar (Over üstüne binmesin)
@@ -358,8 +386,14 @@ namespace BirdieSmash.Game
                 float lw = ls.CalcSize(Ic(lab)).x, bx = lx + lw + 10 * u, bw = Mathf.Max(40 * u, rx - bx), by = H - bot - 12 * u;
                 bool isaret = ogr && M.OgrA() != null && M.OgrA().bilgi == "guc";
                 GUI.color = dol ? Kit.Hex("#ff8a3c") : Kit.Hex("#cfe3dc"); Etk(new Rect(lx, by - 8 * u, lw + 4 * u, 22 * u), lab, ls); GUI.color = Color.white;
-                Fill(new Rect(bx, by, bw, 8 * u), new Color(1, 1, 1, .12f));
-                if (M.energy > 0) Fill(new Rect(bx, by, bw * Mathf.Min(1, M.energy), 8 * u), dol ? new Color(1, .54f, .24f, Ayar.reduce ? 1 : .75f + .25f * Mathf.Sin(Time.unscaledTime * 1000 / 160)) : Kit.Hex("#d8ff5a"));
+                // ray 12·u (eskisi 8·u), merkezi aynı yerde; dolgu tam boy yuvarlak çizilip doluluk genişliğinde kırpılır (uç dolunca yuvarlanır)
+                var ry = new Rect(bx, by - 2 * u, bw, 12 * u); Boya(ry, hudRay, new Color(1, 1, 1, .14f));
+                if (M.energy > 0)
+                {
+                    GUI.BeginGroup(new Rect(ry.x, ry.y, ry.width * Mathf.Min(1, M.energy), ry.height));
+                    Boya(new Rect(0, 0, ry.width, ry.height), hudRay, dol ? new Color(1, .54f, .24f, Ayar.reduce ? 1 : .75f + .25f * Mathf.Sin(Time.unscaledTime * 1000 / 160)) : Kit.Hex("#d8ff5a"));
+                    GUI.EndGroup();
+                }
                 if (isaret) { float nab = Ayar.reduce ? 1 : .6f + .4f * Mathf.Sin(Time.unscaledTime * 6); Cerceve(new Rect(lx - 10 * u, by - 13 * u, rx - lx + 20 * u, 26 * u), new Color(.85f, 1, .35f, nab), 3); }
             }
             if (M.Dril != null && root.ekran == Ekran.Oyun) VurusKart(M, H - bot - 30 * u);
@@ -717,6 +751,7 @@ namespace BirdieSmash.Game
         // ekran boyu dört düz renk bloktu (r71 duraklat). Koyu mürekkep örtü, Baloo başlık, Nunito bilgi satırı; "Maça devam et"
         // maç sonundaki büyük turuncu düğme (alt satırında skor), diğerleri lacivert yuvarlak ADugme, hepsi kart genişliğinde.
         // Ses düğmesi durumu yazıyla söyler (yalnız renkle değil). Dikey: blok ortada, sığmazsa üstten başlar, alt güvenli alanı aşmaz.
+        float bastanOnayT = -1;
         void Pause(Match M)
         {
             float s = Mathf.Min(W / 390f, H / 844f), kt = W / H < .62f ? Mathf.Max(s, 11f / 12f * W / 375f) : s, k = kt * Ayar.YaziK; YayinStil(s, k);
@@ -737,10 +772,24 @@ namespace BirdieSmash.Game
                 Yaz(new Rect(sx, y, aw + 2, sh), a0, aSkor, A_LIMON, 1); Yaz(new Rect(sx + aw, y, bw + 2, sh), b0, aSkor, A_YAZI, 1); y += sh;
             }
             Yaz(new Rect(x, y, w, ih), bilgi, aIpucu, A_SOLUK, 1); y += ih + 22 * s;
-            if (BuyukDugme(new Rect(x, y, w, ctaH), ct, null, s, 1)) root.Devam(); y += ctaH + 12 * s;
+            if (BuyukDugme(new Rect(x, y, w, ctaH), ct, null, s, 1)) { bastanOnayT = -1; root.Devam(); } y += ctaH + 12 * s;
             // HTML duraklat satırı: Ses · Maçı baştan başlat · Ana menü (oyun sırasında ses düğmesi yalnız burada)
             if (ADugme(new Rect(x, y, w, bh), L.T(Ayar.ses ? "Ses açık" : "Ses kapalı"), 1)) { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Yerel.Hap("tick"); } y += bh + gap;
-            if (ADugme(new Rect(x, y, w, bh), L.T("Maçı baştan başlat"), 1)) root.TekrarOyna(); y += bh + gap;
+            // "Maçı baştan başlat" onayı (2026-10-31 Ar-Ge UI/UX #2, yasin "yap"): Devam'ın hemen altında tek dokunuşta skoru
+            // siliyordu. Maç ilerlemişse (skor 0–0 değil / antrenmanda atılmış top var) ilk dokunuş düğmeyi turuncu çerçeveye ve
+            // "Emin misin? Bir kez daha dokun" yazısına çevirir (renk + yazı, yalnız renk değil); 2,5 sn içinde ikinci dokunuş
+            // başlatır, süre geçerse düğme eski hâline döner. 0–0'da onay yok (kaybedilecek bir şey yok). Simge sırası önerisi
+            // reddedildi: yazılı üç satır her dilde daha okunur.
+            bool ilerledi = M.Dril != null ? M.ogr != null && M.ogr.dene > 0 : M.sc[0] + M.sc[1] > 0, onay = bastanOnayT >= 0 && Time.unscaledTime - bastanOnayT < 2.5f;
+            var rb = new Rect(x, y, w, bh);
+            bool bastan = ADugme(rb, L.T(onay ? "Emin misin? Bir kez daha dokun" : "Maçı baştan başlat"), 1);
+            if (onay) KutuCiz(rb, aKutuLimon, 1);   // lacivert kutunun üstüne turuncu çerçeve
+            if (bastan)
+            {
+                if (!ilerledi || onay) { bastanOnayT = -1; root.TekrarOyna(); }
+                else { bastanOnayT = Time.unscaledTime; Yerel.Hap("tick"); }
+            }
+            y += bh + gap;
             if (ADugme(new Rect(x, y, w, bh), L.T("Ana menü"), 1)) root.AnaMenu();
         }
 
