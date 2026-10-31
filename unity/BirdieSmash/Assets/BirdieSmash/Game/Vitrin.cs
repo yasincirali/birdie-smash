@@ -80,7 +80,7 @@ namespace BirdieSmash.Game
         }
 
         public void Ac() { gameObject.SetActive(true); kam.enabled = true; durgun = 0; Yenile(); }
-        public void Kapat() { kam.enabled = false; gec = hedefGec = 0; parca = null; raKay = false; odak = TAM; poz = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = null; camVar = false; gameObject.SetActive(false); }
+        public void Kapat() { kam.enabled = false; suruk = false; gec = hedefGec = 0; parca = null; raKay = false; odak = TAM; poz = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = null; camVar = false; gameObject.SetActive(false); }
         // Yakın plan seç (aynı odağa ikinci dokunuş Soyunma odasında Tüm boy'a döner). Tutuşa girerken el kameraya döner.
         public void Odak(int o, string klip = null)
         {

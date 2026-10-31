@@ -374,7 +374,26 @@ namespace BirdieSmash.Game
             im.style.height = px; k.Insert(0, im);
             var hazir = Portre.DeneHazir(kat, id); if (hazir != null) { im.image = hazir; return; }
             im.AddToClassList("koz-resim--bekle");
-            im.schedule.Execute(() => { if (im.panel == null) return; im.image = Portre.Dene(kat, id); im.RemoveFromClassList("koz-resim--bekle"); }).StartingIn(30 + 34 * sira);
+            // 2026-10-31 (Unity incelemesi, Orta): her küçük resim ana iş parçacığında bir FBX figürü kurup çiziyor. Önceden
+            // sıraya göre 34 ms arayla hepsi (17 saç) çiziliyordu; kaydırırken kare kaçabiliyordu. Artık yalnız görünen kart
+            // çizilir ve bütün ızgara için en çok ~45 ms'de bir resim (kare başına en çok bir figür); görünmeyen bekler.
+            IVisualElementScheduledItem is_ = null;
+            is_ = im.schedule.Execute(() =>
+            {
+                if (im.panel == null) { is_.Pause(); return; }
+                float simdi = Time.realtimeSinceStartup; if (simdi - sonKucuk < .045f || !Gorunur(im)) return;
+                sonKucuk = simdi; is_.Pause(); im.image = Portre.Dene(kat, id); im.RemoveFromClassList("koz-resim--bekle");
+            }).StartingIn(30 + 10 * sira).Every(50);
+        }
+        static float sonKucuk = -1;
+        // Kaydırma alanının görünen kısmıyla kesişiyor mu (alan yoksa panel). Biraz pay: hemen altındaki satır da hazırlansın.
+        static bool Gorunur(VisualElement e)
+        {
+            var wb = e.worldBound; if (float.IsNaN(wb.width) || wb.width <= 0) return false;
+            VisualElement p = e.parent; while (p != null && !(p is ScrollView)) p = p.parent;
+            var alan = p is ScrollView sv ? sv.contentViewport.worldBound : e.panel.visualTree.worldBound;
+            alan.yMin -= 40; alan.yMax += 120;
+            return wb.Overlaps(alan);
         }
 
         // ---- Şapka ve yüz aksesuarı: 2 sütunlu kart ızgarası (Tip sayfasıyla aynı akış: dokun = dene, sahipse seç) ----

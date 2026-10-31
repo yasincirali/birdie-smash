@@ -106,12 +106,19 @@ namespace BirdieSmash.Game
             var pv = g.AddComponent<PlayerView>(); pv.isMe = isMe; pv.hakem = hakem; pv.Init(model, gor ?? new Gorunum { forma = forma, cerceve = Kit.Hex("#e9eef0") }); return pv;
         }
 
+        // 2026-10-31 (Unity incelemesi D9): UnityEngine.Object'te `??` Unity'nin null karşılaştırmasını atlar; Resources.Load
+        // bugün gerçek null döndürdüğü için çalışıyordu, ama yok edilmiş nesnede sessizce yanlış dala gider. Açık kontrol.
+        static T IlkBulunan<T>(params string[] yollar) where T : Object
+        {
+            foreach (var y in yollar) { var o = Resources.Load<T>(y); if (o != null) return o; }
+            return null;
+        }
         void Init(string modelAd, Gorunum gor)
         {
             yaw = new GameObject("yon").transform; yaw.SetParent(transform, false);
             string yol = ModelYolu(modelAd, gor.tip);
-            var prefab = Resources.Load<GameObject>("karakter/" + yol) ?? Resources.Load<GameObject>("karakter/" + modelAd) ?? Resources.Load<GameObject>("karakter/oyuncak");
-            var js = Resources.Load<TextAsset>("karakter/" + yol + "_clips") ?? Resources.Load<TextAsset>("karakter/" + modelAd + "_clips");
+            var prefab = IlkBulunan<GameObject>("karakter/" + yol, "karakter/" + modelAd, "karakter/oyuncak");
+            var js = IlkBulunan<TextAsset>("karakter/" + yol + "_clips", "karakter/" + modelAd + "_clips");
             if (js != null)
             {
                 var meta = JsonUtility.FromJson<Meta>(js.text); tipMeta = meta != null && meta.tip != null && !string.IsNullOrEmpty(meta.tip.id) ? meta.tip : null; sacMeta = meta != null ? meta.sac : null; bantMeta = meta != null && meta.bant != null && meta.bant.r > 0 ? meta.bant : null;
@@ -271,9 +278,17 @@ namespace BirdieSmash.Game
             string anahtar = modelAdi + ek; bool tenli = ek == "_govde" && tenAtlas.HasValue && modelAdi.StartsWith("oyuncak");
             if (tenli) anahtar += "#" + ColorUtility.ToHtmlStringRGB(tenAtlas.Value);
             Material m;
-            if (!dokuM.TryGetValue(anahtar, out m))
+            if (tenli) { tenSira.Remove(anahtar); tenSira.Add(anahtar); }
+            if (!dokuM.TryGetValue(anahtar, out m) || m == null)
             {
-                if (tenli) tx = TenliAtlas(tx, tenAtlas.Value);
+                if (tenli)
+                {
+                    tx = TenliAtlas(tx, tenAtlas.Value);
+                    // 2026-10-31 (Unity incelemesi O3): her model × ton bir atlas kopyası (~1,3 MB) üretir ve statik sözlük
+                    // onu sonsuza dek tutuyordu. En eski tonlar sözlükten düşer; yok etmek yerine bırakılır, çünkü sahnedeki bir
+                    // figür hâlâ kullanıyor olabilir. Menüye dönüşteki UnloadUnusedAssets kullanılmayanı boşaltır.
+                    while (tenSira.Count > TEN_LRU) { dokuM.Remove(tenSira[0]); tenSira.RemoveAt(0); }
+                }
                 dokuM[anahtar] = m = Kit.LitTex(Color.white, tx, .18f);
                 // 2026-10-26: Gerçekçi model düz/çamurlu görünüyordu (yalnız renk dokusu): kıvrım/kas/yüz normalden,
                 // ten/kumaş/ayakkabı farkı parlaklık haritasından. Dosya yoksa (oyuncak, sade) eski malzeme birebir.
@@ -283,6 +298,7 @@ namespace BirdieSmash.Game
             return m;
         }
         static readonly Dictionary<string, Material> dokuM = new Dictionary<string, Material>();
+        static readonly List<string> tenSira = new List<string>(); const int TEN_LRU = 6;
         // 2026-10-31 (yasin: "Ten renkleri değiştirilemiyor"): Oyuncak ailesinde ten ayrı parça değil, gövde ağının renk
         // atlasında bir hücre. "__ten" etiketi olmadığı için ten tonu hiçbir şeye bağlanmıyordu. Atlas GPU'da bir RT'ye
         // kopyalanıp okunur (doku Read/Write kapalı ve ASTC: DokuAyar), ten hücreleri seçilen tona boyanır, sonuç model+ton
@@ -535,6 +551,7 @@ namespace BirdieSmash.Game
         }
         // Saç (sözleşme §3): tel/AO dokusu (oyuncak_sac, gri tonlu) × saç rengi; seçim yoksa tipin varsayılan rengi (_clips.json
         // tip.sacRenk), o da yoksa FBX malzemesi. Doku yoksa düz renk (AO kaybolur, görünüş yine düzgün).
+        static readonly Dictionary<string, Material> sacM = new Dictionary<string, Material>();
         void SacBoya(Renderer r, Color? c)
         {
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
@@ -542,7 +559,11 @@ namespace BirdieSmash.Game
             var tx = Resources.Load<Texture2D>("karakter/oyuncak_sac"); if (!renk.HasValue && tx == null) return;
             if (tx != null) tx.wrapMode = TextureWrapMode.Repeat;   // tel dokusu UV'de 1'i aşar; .meta içe aktarma ayarına bağlı kalmasın
             Color rk = renk ?? (r.sharedMaterial != null ? r.sharedMaterial.color : Color.gray);
-            var m = tx != null ? Kit.LitTex(rk, tx, .2f) : Kit.Lit(rk, .2f);
+            // 2026-10-31 (Unity incelemesi Y1): 16 saç parçasının her biri ayrı Material açıyordu (figür başına 16, her
+            // saç/renk değişikliğinde yeniden). Renk + doku başına tek malzeme paylaşılır; saç malzemesine sonradan
+            // yazan kod yok (parlatma yalnız raket, kanal boyası forma/raket), bu yüzden paylaşmak görünüşü değiştirmez.
+            string sk = ColorUtility.ToHtmlStringRGBA(rk) + (tx != null ? "t" : "d"); Material m;
+            if (!sacM.TryGetValue(sk, out m) || m == null) sacM[sk] = m = tx != null ? Kit.LitTex(rk, tx, .2f) : Kit.Lit(rk, .2f);
             var arr = r.sharedMaterials; for (int k = 0; k < arr.Length; k++) arr[k] = m; if (arr.Length == 0) arr = new[] { m }; r.sharedMaterials = arr;
         }
         // Vitrin tutuş görünümü (Soyunma odası › Raket: Forehand · Backhand · File · Servis): klibin temas pozunda durur; yalnız

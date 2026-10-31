@@ -103,11 +103,21 @@ namespace BirdieSmash.Game
             konturRakip.enabled = rakip != null; durgun = 0;   // figür değişmiş olabilir: yeniden çiz
             Goster(0);
         }
-        static void GolgeKapat(PlayerView p) { var g = p.transform.Find("golge"); if (g != null) g.gameObject.SetActive(false); }
+        // 2026-10-31 (Unity incelemesi Y2): afiş figürleri gölge düşürüyordu; afiş kamerası her çizimde bir gölge haritası
+        // geçişi daha yapıyordu. Afişte zemin yok, gölge görünmüyor: disk gölgesi ve gerçek zamanlı gölge kapalı.
+        static void GolgeKapat(PlayerView p)
+        {
+            var g = p.transform.Find("golge"); if (g != null) g.gameObject.SetActive(false);
+            foreach (var r in p.GetComponentsInChildren<Renderer>(true)) { r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; r.receiveShadows = false; }
+        }
 
+        // 2026-10-31 (Unity incelemesi Y2): nefes ph'yi her kare ilerlettiği için "durağan afiş çizilmez" kuralı hiç
+        // devreye girmiyordu; Oyna sekmesinde afiş kamerası 60/120 fps çiziyordu. Nefes çok yavaş (.45 döngü/sn), 20 Hz'de
+        // adımlamak gözle ayırt edilmiyor; aradaki karelerde ph sabit kalır ve kamera kapanır (çizim ~⅓–⅙).
+        const float NEFES_ADIM = 1 / 20f; float nefesBirik;
         void Goster(float dt)
         {
-            if (!Ayar.reduce) ph += dt * .45f;   // boşta duruş yavaş: nefes (yön A "oyuncu nefes alır")
+            if (!Ayar.reduce) { nefesBirik += dt; if (nefesBirik >= NEFES_ADIM) { ph += nefesBirik * .45f; nefesBirik = 0; } }   // boşta duruş yavaş: nefes (yön A "oyuncu nefes alır")
             if (ben != null) ben.ShowPoz(YER + Ek(BEN), -BEN_YON, "idle", ph);
             if (rakip != null) rakip.ShowPoz(YER + Ek(RAKIP), -RAKIP_YON, "idle", ph + .37f);
         }
@@ -118,7 +128,7 @@ namespace BirdieSmash.Game
         void Update()
         {
             Goster(Mathf.Min(.05f, Time.unscaledDeltaTime));
-            if (ph != sonPh) { sonPh = ph; durgun = 0; } else durgun++;
+            if (ph != sonPh) { sonPh = ph; durgun = durgun > 0 ? 1 : 0; } else durgun++;   // nefes adımı tek kare; figür kurulumu (Yenile/Ac durgun=0) iki kare
             bool ciz = durgun < 2; if (kam.enabled != ciz) kam.enabled = ciz;
         }
     }

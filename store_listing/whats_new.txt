@@ -1,29 +1,22 @@
 === UNITY ===
-Karakterin artık her yerde: üst çubukta, Profil'de ve rakip kartlarında kendi yüzün görünüyor. Dolap daha büyük ve daha net.
+Bu sürüm daha akıcı ve daha az pil harcayan bir sürüm; görünüşte büyük bir değişiklik yok.
 
 Bu sürümde yeni:
-- Ten tonu seçimi artık karakterin yüzünde ve ellerinde görünüyor.
-- Dolap'ta karakter ve raket ekran çözünürlüğünde çiziliyor, bulanık değil. Vitrin daha büyük, arkasında ışık ve sahne var.
-- Saç, şapka ve yüz aksesuarı kartlarında o öğe takılı küçük bir yüz resmi var.
-- Üst çubukta, Profil'de, Kariyer'de ve Günün maçı kartında genel simge yerine karakter portreleri.
-- Maç sonunda kazandığın tüyler sayaca uçuyor; seviye atlayınca açılan öğeler bir ekranda gösteriliyor.
-- Maç öncesi afiş daha net, yüzler önden aydınlatılıyor.
-- İlk açılışta tek bir "İlk maçın" kartı var; diğer kutular ilk maçtan sonra açılıyor.
-- Profil'de unvanlar ve Kariyer'de rakip adı artık harf harf bölünmüyor.
-- Açılışta siyah ekran beklemeden doğrudan dönen top görünüyor.
+- Uzun oynayınca oyun yavaşlamasın diye vuruş ve sayı efektleri artık her seferinde yeni bellek açmıyor; maç aralarında kullanılmayan bellek boşaltılıyor.
+- Telefon zorlanırsa görüntü kalitesi artık ralli ortasında değil, sayı arasında düşüyor: rallide ani takılma ya da görüntü sıçraması olmamalı.
+- Ana sayfadaki maç afişi daha az çiziliyor: menüde beklerken telefon daha az ısınmalı.
+- Dolap'taki küçük yüz resimleri ekranda görünür oldukça tek tek çiziliyor; kaydırırken takılma azalmalı.
+- Dolap'ta karakteri çevirirken parmağın ekrandan kayarsa karakter takılı kalmıyor.
+- Görev tamamlanınca kayıt sayı arasında yapılıyor; uygulama arka plana geçince ilerleme hemen kaydediliyor.
 
 Nasıl denenir:
-1. Uygulamayı kapatıp aç: siyah ekran olmadan hemen dönen top görünmeli.
-2. Dolap > Ten'e git, farklı bir ton seç: yüz ve eller o renge dönmeli.
-3. Dolap'ta karakteri ve Raket'i incele: kenarlar keskin olmalı, arkada hafif ışık halesi ve yerde ışık lekesi görünmeli.
-4. Dolap > Saç'a geç: her kartta o saçla küçük bir yüz resmi belirmeli. Şapka ve yüz aksesuarında da aynı.
-5. Üst çubuktaki yuvarlak resme ve Profil kartına bak: kendi karakterinin yüzü olmalı. Saç değiştirince oradaki resim de değişmeli.
-6. Profil'de unvanlar satırına bak: hiçbir unvan harf harf alt satıra kırılmamalı. Ayarlar'da yazıyı Büyük yapıp tekrar bak.
-7. Kariyer'de rakip satırlarının adı ve tarzı kesilmeden okunmalı.
-8. Bir maç kazan: maç sonunda tüyler sayaca uçmalı, sayı artmalı. Seviye atlarsan açılan öğeler listelenmeli; Dolap'a bak düğmesi Dolap'ı açmalı.
-9. Maç öncesi afişte iki oyuncunun yüzü net ve aydınlık olmalı.
-10. Hareketi azalt açıkken tüy uçuşu ve geçişler olmadan sayı hemen güncellenmeli.
-11. Garip bir şey olursa telefonu ve ekranı yaz.
+1. Arka arkaya en az 5 maç oyna: son maç da ilki kadar akıcı olmalı, ses ve efektler aynı görünmeli (top yere düşünce koyu leke, smaçta yeşil çatlaklar, vuruşta halka).
+2. Uzun bir rallide oyunun takılıp takılmadığına bak; takılırsa hangi telefonda olduğunu yaz.
+3. Ana sayfada (Oyna) bir dakika bekle: afişteki oyuncular yavaşça nefes almaya devam etmeli, telefon ısınmamalı.
+4. Dolap > Saç'a gidip listeyi hızlı kaydır: küçük yüz resimleri sırayla belirmeli, kaydırma akıcı kalmalı.
+5. Dolap'ta karakteri parmakla çevirirken parmağı ekranın kenarından dışarı kaydır ya da Denetim Merkezi'ni aç: geri dönünce karakter kendi kendine yavaşça dönmeye devam etmeli.
+6. Bir antrenman görevini tamamla, sonra uygulamayı hemen kapat ve aç: görev sayısı korunmuş olmalı.
+7. Garip bir şey olursa telefonu ve ekranı yaz.
 
 === HTML ===
 Bu sürümde yeni:
