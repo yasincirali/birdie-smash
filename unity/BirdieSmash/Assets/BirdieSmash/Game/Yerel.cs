@@ -22,6 +22,7 @@ namespace BirdieSmash.Game
         [DllImport("__Internal")] static extern int BirdieDigerSesCaliyor();
         [DllImport("__Internal")] static extern float BirdieAcilisSure();
         [DllImport("__Internal")] static extern void BirdieAcilisBitir();
+        [DllImport("__Internal")] static extern void BirdieAcilisGoster(float aci, float topGecikme, string yazi, float yaziOlcek);
 #endif
         static readonly Dictionary<string, int[]> HAP = new Dictionary<string, int[]> {
             {"tick",new[]{8}},{"hit",new[]{14}},{"perfect",new[]{16,10,28}},{"smash",new[]{35,15,55}},{"jump",new[]{45,20,30,20,80}},
@@ -74,6 +75,16 @@ namespace BirdieSmash.Game
             if (acilisBitti) return; acilisBitti = true;
 #if UNITY_IOS && !UNITY_EDITOR
             try { BirdieAcilisBitir(); } catch { }
+#endif
+        }
+        // Maça geçiş (2026-10-31 akşam, yasin "maça geçiş anı ... takılma olmamalı"): Hud perdesi kapandığı karede aynı perde
+        // yerel katmanda aynı açıyla açılır; maç kurulurken ana iş parçacığı dursa da halkalar render sunucusunda döner. Top ve
+        // "Hazırlanıyor…" topGecikme sn sonra (Hud perdeBek ile aynı .6 sn). Unity perdeyi açarken AcilisBitir kaldırır.
+        // iOS dışında (Editor, CI ekran turu) bir şey yapmaz: Unity perdesi eskisi gibi tek başına çizer.
+        public static void PerdeGoster(float aci, float topGecikme, string yazi, float yaziOlcek)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            try { BirdieAcilisGoster(aci, topGecikme, yazi, yaziOlcek); acilisBitti = false; } catch { }
 #endif
         }
         // Başka uygulama ses çalıyor mu (menü müziği başlamasın; Sfx.MuzikIsle). Editor'de ve iOS dışında hayır.

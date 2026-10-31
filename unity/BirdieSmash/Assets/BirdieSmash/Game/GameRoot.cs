@@ -118,7 +118,15 @@ namespace BirdieSmash.Game
         }
 
         public void ModelDegisti() { modelId = null; Kur(match); vitrin.Yenile(); }
-        public void GorunumDegisti() { Ayar.GearHesap(); Kur(match); vitrin.Yenile(); }
+        // 2026-10-31 akşam (yasin: "menüdeki tıklamalar geçişler akıcı olmalı"): Dolap'tan her çıkışta Kur(match) rakibi ve
+        // fileyi sıfırdan kuruyordu (FBX örnekleme, malzemeler); hiçbir şey değişmese de sekme geçişi bir kare takılıyordu.
+        // Görünüm anahtarı ve model aynıysa sahne kurulmaz; ekipman hesabı yine yapılır.
+        public void GorunumDegisti()
+        {
+            Ayar.GearHesap();
+            if (me == null || modelId != Ayar.model || gorunumId != PlayerView.Benim().Anahtar()) Kur(match);
+            vitrin.Yenile();
+        }
         public void SahaDegisti() { if (ekran != Ekran.Oyun) { match.saha = Ayar.saha; Kur(match); } }
 
         // Perde (HTML start(): perde({hazir, ortunce: maciKur})): disk kapanınca maç kurulur, sonra açılır.
