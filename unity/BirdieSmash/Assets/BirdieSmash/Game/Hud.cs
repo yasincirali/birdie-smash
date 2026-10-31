@@ -391,7 +391,8 @@ namespace BirdieSmash.Game
             if (root.ekran == Ekran.Oyun && !root.paused && DuraklatDugme(new Rect(rx - BH, top, BH, BH))) root.Duraklat();   // Duraklat
             float y = top + 62 * u;
             if (root.rakipKartT > 0 && !ogr && root.ekran == Ekran.Oyun) y = RakipKart(M, y);   // r17: sonuç ekranının altından okunuyordu
-            if (ogr && root.ekran == Ekran.Oyun) y = OgrKart(M, y);   // görev sonuç ekranında kart kalkar (Over üstüne binmesin)
+            if (ogr && root.ekran == Ekran.Oyun) y = OgrKart(M, y);
+            if (!ogr && root.ekran == Ekran.Oyun) y = UstaKart(M, y);   // görev sonuç ekranında kart kalkar (Over üstüne binmesin)
             // smaç gücü çubuğu
             {
                 bool dol = M.energy >= 1; string lab = L.T(dol ? "Sıçrayarak smaç hazır" : "Smaç gücü"); var ls = Stil(leftB, Mathf.RoundToInt(12 * fu));
@@ -483,15 +484,15 @@ namespace BirdieSmash.Game
             // Biçim de anlam taşır (2026-10-29, renk körü; etiket 3 galibiyetten sonra söndüğü için tek ipucu halka):
             // düz halka = normal vuruş, kesik halka = uzan (uzak top), çift halka = file üstü (öldürücü vuruş).
             // Hareketi azalt açıkken nabız durur, biçim kalır.
-            Color hc = I.kill ? Kit.Hex("#ffd27a") : I.lunge ? Kit.Hex("#ff9f7a") : Kit.Hex("#d8ff5a");
-            Tex(new Rect(px - R * pul, py - R * pul, 2 * R * pul, 2 * R * pul), I.lunge ? ringKesik : ring, hc);
+            Color hc = I.kill ? Kit.Hex("#ffd27a") : I.lunge || I.uzan ? Kit.Hex("#ff9f7a") : Kit.Hex("#d8ff5a");
+            Tex(new Rect(px - R * pul, py - R * pul, 2 * R * pul, 2 * R * pul), I.lunge || I.uzan ? ringKesik : ring, hc);
             if (I.kill) { float r2 = R * .8f * pul; Tex(new Rect(px - r2, py - r2, 2 * r2, 2 * r2), ringK, hc); }
             Tex(new Rect(px - R * .33f, py - R * .33f, R * .66f, R * .66f), ringK, new Color(1, .82f, .23f, .9f));
             if (M.ogr != null) return;
             if (Ogretici)
             {
             string hnd = Match.HandOfPublic(M.me, "me", M.s.x, M.s.z) == "back" ? "backhand" : "forehand";
-            string tag = I.kill ? L.T("file üstü: hızlı kaydır") : I.lunge ? L.T("uzak: uzan") : I.over ? (hnd == "backhand" ? L.T("baş üstü backhand: smaç yok") : L.T("baş üstü: hızlı kaydır = smaç")) : hnd + L.T(": kaydır");
+            string tag = I.kill ? L.T("file üstü: hızlı kaydır") : I.lunge || I.uzan ? L.T("uzak: uzan") : I.over ? (hnd == "backhand" ? L.T("baş üstü backhand: smaç yok") : L.T("baş üstü: hızlı kaydır = smaç")) : hnd + L.T(": kaydır");
             // r11: topun yanındaki etiket sağ kenarda kesiliyordu; kutu ekran kenarları içinde tutulur.
             float tx = Mathf.Clamp(px - 120 * u, lx, Mathf.Max(lx, rx - 240 * u));
             Shadowed(new Rect(tx, py - R - 26 * u, 240 * u, 18 * u), tag, Stil(small, Mathf.RoundToInt(12 * fu), FontStyle.Bold), hc);
@@ -660,6 +661,27 @@ namespace BirdieSmash.Game
             if (o.nefes >= .4f || M.ogr != null) return;
             var sp = root.cam.WorldToScreenPoint(Kit.W(o.x + (isMe ? .9f : -.9f), o.y, 0)); if (sp.z < 0) return;
             Shadowed(new Rect(sp.x - 50 * u, H - sp.y - 10 * u, 100 * u, 20 * u), L.T(isMe ? "Nefes" : "Yorgun"), small, Kit.Hex("#ff9f7a"));
+        }
+        // İlk Usta maçı kartı (2026-10-31 Ar-Ge U4, yasin "ilerle ve devam et"): Usta'ya ilk giren oyuncu ana ekrandaki tek satır
+        // dışında koşunun kendisinde olduğunu, nasıl koşulduğunu ve iki halkanın anlamını bilmiyordu. Yalnız ilk Usta maçında,
+        // ilk sayı bitene dek görünür (oyunu durdurmaz, ralli başlayınca da okunur); sonra tuytop_usta_kart ile bir daha çıkmaz.
+        const string USTA_KART = "tuytop_usta_kart"; int ustaKart = -1; GUIStyle ustaKartSt;
+        public void UstaKartSifirla() { PlayerPrefs.DeleteKey(USTA_KART); ustaKart = -1; }   // ekran turu
+        float UstaKart(Match M, float y)
+        {
+            if (M.easy || M.Dril != null) return y;
+            if (ustaKart < 0) ustaKart = PlayerPrefs.GetInt(USTA_KART, 0);
+            if (ustaKart > 0) return y;
+            if (M.sc[0] + M.sc[1] > 0) { ustaKart = 1; PlayerPrefs.SetInt(USTA_KART, 1); PlayerPrefs.Save(); return y; }
+            if (ustaKartSt == null || ustaKartSt.fontSize != Mathf.RoundToInt(13 * fu)) ustaKartSt = new GUIStyle(left) { wordWrap = true, fontSize = Mathf.RoundToInt(13 * fu) };
+            float w = ColW, x = ColX, iw = w - 32 * u;
+            string bas = L.T("Usta: koşu senin"), metin = L.T("Kortta bir yere dokun, oyuncun oraya koşar. Top parlayınca kaydır.") + "\n" + L.T("Düz halkanın içindeysen tam vuruş, kesik halkadaysan uzanırsın.");
+            var bs = Stil(leftB, Mathf.RoundToInt(18 * fu)); float bh = bs.CalcHeight(Ic(bas), iw), mh = ustaKartSt.CalcHeight(Ic(metin), iw), h = bh + mh + 24 * u;
+            var r = new Rect(x, y, w, h); GUI.Box(r, GUIContent.none, card);
+            var o = GUI.color; GUI.color = Kit.Hex("#d8ff5a"); GUI.DrawTexture(new Rect(x, y, 6 * u, h), Texture2D.whiteTexture); GUI.color = o;
+            Etk(new Rect(x + 16 * u, y + 8 * u, iw, bh), bas, bs);
+            GUI.Label(new Rect(x + 16 * u, y + 12 * u + bh, iw, mh), metin, ustaKartSt);
+            return y + h + 8 * u;
         }
         float RakipKart(Match M, float y)
         {

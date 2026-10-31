@@ -557,6 +557,10 @@ namespace BirdieSmash.Game
             // 2026-10-30 geri sayım: maç başı / duraklatmadan dönüş rakamı ("3" büyürken, "1" oturmuş)
             root.geriT = GameRoot.GERI * .9f; yield return null; yield return Cek("geri_sayim_3"); root.geriT = GameRoot.GERI * .2f; yield return null; yield return Cek("geri_sayim_1"); root.geriT = 0;
             root.AnaMenu(); yield return Bekle(10);
+            // 2026-10-31 Usta (Ar-Ge U1/U4): ilk Usta maçı kartı ve oyuncunun ayağındaki iki erişim halkası
+            bool e0 = Ayar.easy; Ayar.easy = false; root.HudKatman.UstaKartSifirla(); root.StartMatch(false, false, false); botAcik = true;
+            yield return Bekle(20); yield return Cek("usta_kart"); yield return Bekle(70); yield return Cek("usta_halka"); botAcik = false;
+            Ayar.easy = e0; root.HudKatman.UstaKartSifirla(); root.AnaMenu(); yield return Bekle(10);
         }
         // Yüksek top kadrajı (2026-10-27, yasin build 41 "Top yükseldiğinde kadrajdan çıkıyor"; Core/Kadraj). Gerçek bir clear
         // (BotMac FizikOlcumleri'nin clear'ı: dip çizginin 1 m önünden, 2,55 m'den; tepe ~7 m) ve aynalanmış hâli (rakibin dip

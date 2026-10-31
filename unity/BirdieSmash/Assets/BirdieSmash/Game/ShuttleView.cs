@@ -25,7 +25,7 @@ namespace BirdieSmash.Game
         public const float G = 3.2f, L = .066f * G, Rt = .032f * G, Rb = .012f * G, Rc = .0135f * G;
         public static bool SLICE_TAKLA = true;
         Transform body; GameObject lines; readonly GameObject[] ghosts = new GameObject[3]; Material[] ghostM = new Material[3];
-        Transform shadow; Material shadowM; LineRenderer trail, hLine, gLine, ring, ringS, prevRing, prevX1, prevX2; Transform ringFill; Material ringFillM, ringSM, prevM;
+        Transform shadow; Material shadowM; LineRenderer trail, hLine, gLine, ring, ringS, prevRing, prevX1, prevX2; Transform ringFill; Material ringFillM, ringSM, prevM; LineRenderer erIc, erDis;
         readonly List<Vector3> trailPts = new List<Vector3>();
         // İzin son uygulanan biçimi (renk, kalınlık, saydamlık) ve yeniden kullanılan anahtar dizileri.
         readonly Gradient izGrad = new Gradient(); readonly GradientColorKey[] izRenk = new GradientColorKey[2];
@@ -63,6 +63,10 @@ namespace BirdieSmash.Game
             ring = Kit.Line("inis", transform, Kit.Clear(new Color(1, 1, 1, .45f), dash34), true, true); ring.textureMode = LineTextureMode.Tile; ring.widthMultiplier = .05f;
             ringSM = Kit.Clear(new Color(1, 1, 1, .5f)); ringS = Kit.Line("inis_halka", transform, ringSM, true, true); ringS.widthMultiplier = .05f;
             ringFillM = Kit.Clear(new Color(1, 1, 1, .18f)); ringFill = Kit.MeshObj("inis_dolgu", transform, Disc(), ringFillM).transform;
+            // Usta erişim halkaları (2026-10-31 U1): oyuncunun ayağında iç halka (düz, limon) = tam vuruş, kesik dış halka (turuncu)
+            // = uzanma (Match.USTA_UZAN). Rakip topu bu yana gelirken görünür; anlam biçimde de var (düz/kesik), yalnız renkte değil.
+            erIc = Kit.Line("erisim_ic", transform, Kit.Clear(new Color(.77f, .93f, .25f, .35f)), true, true); erIc.widthMultiplier = .035f;
+            erDis = Kit.Line("erisim_dis", transform, Kit.Clear(new Color(1, .6f, .24f, .5f), dash34), true, true); erDis.textureMode = LineTextureMode.Tile; erDis.widthMultiplier = .035f;
             prevM = Kit.Clear(new Color(.847f, 1, .353f, .8f), dash);
             prevRing = Kit.Line("hedef", transform, prevM, true, true); prevRing.textureMode = LineTextureMode.Tile; prevRing.widthMultiplier = .06f;
             var pm = Kit.Clear(new Color(.847f, 1, .353f, .8f));
@@ -168,7 +172,7 @@ namespace BirdieSmash.Game
         void Gizle()
         {
             body.gameObject.SetActive(false); shadow.gameObject.SetActive(false); foreach (var g in ghosts) g.SetActive(false);
-            trail.enabled = hLine.enabled = gLine.enabled = ring.enabled = ringS.enabled = prevRing.enabled = prevX1.enabled = prevX2.enabled = false; ringFill.gameObject.SetActive(false);
+            trail.enabled = hLine.enabled = gLine.enabled = ring.enabled = ringS.enabled = prevRing.enabled = prevX1.enabled = prevX2.enabled = false; if (erIc != null) erIc.enabled = erDis.enabled = false; ringFill.gameObject.SetActive(false);
         }
 
         // M: maç (iniş halkası, akış), preview: parmak ekrandayken tahmini düşüş (null = yok)
@@ -253,6 +257,14 @@ namespace BirdieSmash.Game
                 bool near = Mathf.Sqrt((lp.x - M.me.x) * (lp.x - M.me.x) + (lp.y - M.me.y) * (lp.y - M.me.y)) <= (M.easy ? 1.45f : 1.15f);
                 if (rem < .9f) { float f2 = Mathf.Max(0, rem / .9f); ringS.enabled = true; Kit.Ellipse(ringS, q, (9 + 18 * f2) / 28, (9 + 18 * f2) / 28); ringSM.color = near ? new Color(.85f, 1, .35f, .7f) : new Color(1, 1, 1, .5f); }
                 if (rem < .35f) { ringFill.gameObject.SetActive(true); ringFill.position = q; ringFill.localScale = Vector3.one * 9f / 28; ringFillM.color = near ? new Color(.85f, 1, .35f, .25f) : new Color(1, 1, 1, .18f); }
+            }
+            // --- Usta erişim halkaları ---
+            bool er = !M.easy && M.ogr == null && s.from == "op" && !s.dead && s.y > Court.NET - 1;
+            erIc.enabled = erDis.enabled = er;
+            if (er)
+            {
+                var mp = Kit.W(M.me.x, M.me.y, .007f); float r1 = M.ErisimIc, r2 = r1 + Match.USTA_UZAN;
+                Kit.Ellipse(erIc, mp, r1, r1); Kit.Ellipse(erDis, mp, r2, r2);
             }
             // --- hedef önizleme ---
             prevRing.enabled = prevX1.enabled = prevX2.enabled = previewOn;
