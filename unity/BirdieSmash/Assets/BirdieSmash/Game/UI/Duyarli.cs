@@ -138,6 +138,13 @@ namespace BirdieSmash.Game
                         if (l.resolvedStyle.whiteSpace == WhiteSpace.NoWrap)
                         { var m = l.MeasureTextSize(l.text, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined); if (m.x > cw + 2) Sorun(sb, ref sorun, "yazı sığmıyor " + m.x.ToString("F0") + ">" + cw.ToString("F0"), Ad(v), r); }
                         else { var m = l.MeasureTextSize(l.text, cw, VisualElement.MeasureMode.AtMost, 0, VisualElement.MeasureMode.Undefined); if (m.y > chh + 2) Sorun(sb, ref sorun, "yazı kesik " + m.y.ToString("F0") + ">" + chh.ToString("F0"), Ad(v), r); }
+                        // 2026-10-31 (yasin IMG_1517, Profil unvanları "Mahal/le/oyunc/usu"): en uzun sözcük kaba sığmıyorsa sarma onu
+                        // harf harf böler; yükseklik sığdığı için "kesik" yakalamıyordu.
+                        if (l.resolvedStyle.whiteSpace != WhiteSpace.NoWrap)
+                        {
+                            string uzun = ""; foreach (var sz in l.text.Split(' ', '\n')) if (sz.Length > uzun.Length) uzun = sz;
+                            if (uzun.Length > 1) { var mw = l.MeasureTextSize(uzun, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined); if (mw.x > cw + 2) Sorun(sb, ref sorun, "sözcük bölünüyor \"" + uzun + "\" " + mw.x.ToString("F0") + ">" + cw.ToString("F0"), Ad(v), r); }
+                        }
                     }
                     var e = v.hierarchy.parent; if (e != null && (r.xMax > e.worldBound.xMax + 6 || r.xMin < e.worldBound.xMin - 6)) Sorun(sb, ref sorun, "yazı kabından taşıyor", Ad(v), r);
                     continue;

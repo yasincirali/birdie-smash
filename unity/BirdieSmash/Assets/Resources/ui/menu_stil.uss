@@ -112,6 +112,9 @@
 .cip--secili .dugme-yazi { color: var(--ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .cip--secili .dugme-alt { color: rgba(26, 18, 33, 0.85); }
 .satir { flex-direction: row; flex-wrap: wrap; margin-left: -4px; margin-right: -4px; }
+/* 2026-10-31: sayısı değişen çip satırı (Profil › Unvan): basis 0 tüm çipleri tek satırda eşit dar paylara bölüp sözcükleri
+   harf harf kırıyordu. Burada çip yazısı kadar geniş başlar, satır sarar, kalan yer büyüyerek paylaşılır. */
+.satir.cip-sarar > .cip { flex-basis: auto; }
 .satir.arali { justify-content: space-between; align-items: center; margin-left: 0; margin-right: 0; flex-wrap: nowrap; }
 /* büyük yazıda (x1.35 üstü) çipler alt alta: metin sarılır, yan yana sıkışmaz */
 /* r13 (2026-10-26): .satir'ın flex-wrap: wrap'ı sütunda da geçerliydi; Yoga uzun metinli Zorluk çiplerini ikinci bir sütuna

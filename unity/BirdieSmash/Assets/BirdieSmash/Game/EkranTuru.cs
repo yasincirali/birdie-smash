@@ -379,6 +379,9 @@ namespace BirdieSmash.Game
             var p = new Ilerleme(); for (int t = 0; t < 2; t++) for (int b = 0; b < 6; b++) p.tur[t][b] = 7;
             p.Ad = "Yasin"; p.Unvan = "yerel"; for (int i = 0; i < 12; i++) p.MacSay(3); Ayar.ilerleme = p;
             ui.SekmeAc(Sekme.Oyna); ui.SekmeAc(Sekme.Profil); yield return Bekle(20); yield return Cek("menu_" + ek + "profil_ornek");
+            // 2026-10-31: bütün turlar bitmiş (beş unvan çipi tek satıra sığmıyordu, IMG_1517)
+            for (int t = 0; t < p.tur.Length; t++) for (int b = 0; b < p.tur[t].Length; b++) p.tur[t][b] = 7;
+            p.Unvan = "asya"; ui.SekmeAc(Sekme.Oyna); ui.SekmeAc(Sekme.Profil); yield return Bekle(20); yield return Cek("menu_" + ek + "profil_tum");
             Ayar.ilerleme = eski; ui.SekmeAc(Sekme.Oyna); ui.SekmeAc(Sekme.Profil); yield return Bekle(5);
         }
 

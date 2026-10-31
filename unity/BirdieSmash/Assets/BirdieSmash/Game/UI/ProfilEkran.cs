@@ -53,7 +53,7 @@ namespace BirdieSmash.Game
 
             // unvanlar
             c.Add(Grup(L.T("Unvan")));
-            var kz = Karakter.Kazanilan(p, L_, p.AntrenmanYildiz); var us = Satir(); c.Add(us);
+            var kz = Karakter.Kazanilan(p, L_, p.AntrenmanYildiz); var us = Satir("cip-sarar"); c.Add(us);   // 2026-10-31 (yasin IMG_1517): 5 unvan eşit dar çipe sıkışıp harf harf bölünüyordu; çip yazısı kadar geniş, sığmayan alt satıra
             foreach (var u in kz) { string id = u.id; us.Add(Cip(L.T(u.ad), u.id == un.id, () => { p.Unvan = id; Ayar.Kaydet(); kirli[(int)Sekme.Profil] = true; SekmeKur(Sekme.Profil); })); }
             foreach (var u in Karakter.Unvanlar)
             {
