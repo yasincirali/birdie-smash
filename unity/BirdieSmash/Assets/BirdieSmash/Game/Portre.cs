@@ -71,6 +71,7 @@ namespace BirdieSmash.Game
             isik.type = LightType.Point; isik.range = 4; isik.intensity = 1.7f; isik.shadows = LightShadows.None; isik.renderMode = LightRenderMode.ForcePixel; isik.enabled = false;
         }
 
+        static bool RaketAlti(Transform t, Transform kok) { for (; t != null && t != kok; t = t.parent) if (t.name.ToLowerInvariant().StartsWith("raket")) return true; return false; }
         static RenderTexture Ciz(PlayerView.Gorunum g, bool ben, int boy)
         {
             Kur();
@@ -78,7 +79,8 @@ namespace BirdieSmash.Game
             try
             {
                 fig.ShowStatic(YER, ben ? 18 : -18, 0);   // üç çeyrek, kameraya dönük (yön 0 = kameraya)
-                foreach (var r in fig.GetComponentsInChildren<Renderer>(true)) if (r.gameObject.name == "golge") r.enabled = false;
+                // gölge ve raket portreye girmez (r94: rakip portresinde raket sapı yüzün önünden geçiyordu)
+                foreach (var r in fig.GetComponentsInChildren<Renderer>(true)) { if (r.gameObject.name == "golge" || r is TrailRenderer || RaketAlti(r.transform, fig.transform)) r.enabled = false; }
                 Transform bas = null;
                 foreach (var tr in fig.GetComponentsInChildren<Transform>(true))
                 { string n = tr.name.ToLowerInvariant(); if (n.Contains("__")) continue; if (n == "head" || n.EndsWith(" head")) { bas = tr; break; } }
