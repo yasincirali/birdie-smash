@@ -121,7 +121,7 @@ namespace BirdieSmash.Game
             {
                 PrefabAdi = prefab.name; modelAdi = DokuAdi(prefab.name, modelAd); model = Instantiate(prefab, yaw).transform; model.localPosition = Vector3.zero; model.localScale = Vector3.one * SCALE;
                 anim = model.GetComponentInChildren<Animation>();
-                Varyant(gor); Paint(gor); if (!hakem) RaketSekil.Uygula(model, gor.kafa);
+                tenAtlas = gor.ten; Varyant(gor); Paint(gor); if (!hakem) RaketSekil.Uygula(model, gor.kafa);   // ten önce: Varyant gövde atlasını Paint'ten önce bağlıyor
                 if (anim != null && anim["idle"] != null) Sample("idle", 0, null, 0, 1);
                 Calibrate(); AltKatmanKur();
                 if (!hakem) aksesuar = Aksesuar.Kur(model, kHead, Vector3.up, bantMeta, gor.sapka, gor.yuz, gor.forma, gor.sac);
