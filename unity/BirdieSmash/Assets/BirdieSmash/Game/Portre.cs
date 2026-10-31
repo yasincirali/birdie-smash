@@ -13,10 +13,15 @@ namespace BirdieSmash.Game
     public static class Portre
     {
         static readonly Vector3 YER = new Vector3(600, 0, 0);
-        const int BOY = 256, SINIR = 8;
+        const int BOY = 256, SINIR = 8, KBOY = 160, KSINIR = 40;
         static Transform kok; static Camera kam; static Light isik;
         static readonly Dictionary<string, RenderTexture> rt = new Dictionary<string, RenderTexture>();
         static readonly List<string> sira = new List<string>();
+        // Dolap küçük resimleri (2026-10-31, sanat paketi 1): saç/şapka/yüz kartları yalnız adla anlatılıyordu ("Anime", "Ananas"
+        // ne demek?). Her kart oyuncunun bugünkü görünüşüne o öğe takılmış bir baş portresi gösterir. Ayrı ve daha büyük bir
+        // önbellek (17 saç + 8 şapka + 6 yüz sığsın, 160² ≈ 100 KB her biri, MSAA'sız): portrelerle birbirini atmasınlar.
+        static readonly Dictionary<string, RenderTexture> krt = new Dictionary<string, RenderTexture>();
+        static readonly List<string> ksira = new List<string>();
 
         public static Texture Benim() { var g = PlayerView.Benim(); return Al("ben|" + Ayar.model + g.Anahtar(), g, true); }
         public static Texture Rakip(Style st)
@@ -25,13 +30,32 @@ namespace BirdieSmash.Game
             return Al("rk|" + Ayar.model + st.isim + st.ad + g.Anahtar(), g, false);
         }
 
-        static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben)
+        // Kozmetik.SAC / SAPKA / YUZ öğesi takılı bugünkü görünüş. Saç küçük resminde şapka çıkarılır (saç görünsün).
+        static PlayerView.Gorunum DeneGorunum(string kat, string id)
         {
-            RenderTexture t; if (rt.TryGetValue(anahtar, out t) && t != null && t.IsCreated()) return t;
-            try { t = Ciz(g, ben); } catch (System.Exception e) { Debug.LogWarning("Birdie Smash portre çizilemedi: " + e.Message); return null; }
+            var g = PlayerView.Benim();
+            if (kat == Kozmetik.SAC) { g.sacModel = id; g.sapka = null; } else if (kat == Kozmetik.SAPKA) g.sapka = id; else if (kat == Kozmetik.YUZ) g.yuz = id;
+            return g;
+        }
+        static string DeneAnahtar(string kat, string id, PlayerView.Gorunum g) { return "kc|" + kat + "|" + id + "|" + Ayar.model + g.Anahtar(); }
+        // Önbellekte varsa hemen döner (kart kurulurken çizim beklemesin); yoksa null: çağıran Dene'yi sırayla, kare kare çağırır.
+        public static Texture DeneHazir(string kat, string id)
+        {
+            var g = DeneGorunum(kat, id); RenderTexture t; return krt.TryGetValue(DeneAnahtar(kat, id, g), out t) && t != null && t.IsCreated() ? t : null;
+        }
+        public static Texture Dene(string kat, string id)
+        {
+            var g = DeneGorunum(kat, id); return Al(DeneAnahtar(kat, id, g), g, true, KBOY, krt, ksira, KSINIR);
+        }
+
+        static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben) { return Al(anahtar, g, ben, BOY, rt, sira, SINIR); }
+        static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben, int boy, Dictionary<string, RenderTexture> on, List<string> sr, int sinir)
+        {
+            RenderTexture t; if (on.TryGetValue(anahtar, out t) && t != null && t.IsCreated()) return t;
+            try { t = Ciz(g, ben, boy); } catch (System.Exception e) { Debug.LogWarning("Birdie Smash portre çizilemedi: " + e.Message); return null; }
             if (t == null) return null;
-            rt[anahtar] = t; sira.Remove(anahtar); sira.Add(anahtar);
-            while (sira.Count > SINIR) { var e = sira[0]; sira.RemoveAt(0); RenderTexture o; if (rt.TryGetValue(e, out o) && o != null) { o.Release(); Object.Destroy(o); } rt.Remove(e); }
+            on[anahtar] = t; sr.Remove(anahtar); sr.Add(anahtar);
+            while (sr.Count > sinir) { var e = sr[0]; sr.RemoveAt(0); RenderTexture o; if (on.TryGetValue(e, out o) && o != null) { o.Release(); Object.Destroy(o); } on.Remove(e); }
             return t;
         }
 
@@ -47,7 +71,7 @@ namespace BirdieSmash.Game
             isik.type = LightType.Point; isik.range = 4; isik.intensity = 1.7f; isik.shadows = LightShadows.None; isik.renderMode = LightRenderMode.ForcePixel; isik.enabled = false;
         }
 
-        static RenderTexture Ciz(PlayerView.Gorunum g, bool ben)
+        static RenderTexture Ciz(PlayerView.Gorunum g, bool ben, int boy)
         {
             Kur();
             var fig = PlayerView.Build(kok, Ayar.model, ben, g.forma, false, g);
@@ -67,8 +91,11 @@ namespace BirdieSmash.Game
                 var hedef = new Vector3(bas != null ? bas.position.x : YER.x, orta, bas != null ? bas.position.z : YER.z);
                 kam.transform.position = hedef + new Vector3(0, yari * .12f, d); kam.transform.LookAt(hedef);
                 isik.transform.position = hedef + new Vector3(-.6f, .5f, .9f); isik.enabled = true;
-                var t = new RenderTexture(BOY, BOY, 16, RenderTextureFormat.ARGB32) { name = "portre", antiAliasing = 4 };
-                kam.targetTexture = t; kam.Render(); kam.targetTexture = null; isik.enabled = false;
+                // 4× MSAA geçici yüzeye çizilir, MSAA'sız kalıcı dokuya çözülür: bellekte kalan yalnız boy² × 4 bayt
+                var gec = RenderTexture.GetTemporary(boy, boy, 16, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 4);
+                kam.targetTexture = gec; kam.Render(); kam.targetTexture = null; isik.enabled = false;
+                var t = new RenderTexture(boy, boy, 0, RenderTextureFormat.ARGB32) { name = "portre" }; t.Create();
+                Graphics.Blit(gec, t); RenderTexture.ReleaseTemporary(gec);
                 return t;
             }
             finally { fig.gameObject.SetActive(false); Object.Destroy(fig.gameObject); }

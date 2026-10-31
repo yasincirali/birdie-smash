@@ -47,6 +47,17 @@ namespace BirdieSmash.Game
             vt.kam.fieldOfView = 30; vt.kam.nearClipPlane = .05f; vt.kam.farClipPlane = 20; vt.kam.enabled = false;
             // dolgu ışığı: noktasal, kamera yanında (sahnenin tavan lambaları buraya ulaşmaz)
             var lg = new GameObject("vitrin_isik"); lg.transform.SetParent(g.transform, false); lg.transform.position = YER + new Vector3(-1.5f, 3, 3); var l = lg.AddComponent<Light>(); l.type = LightType.Point; l.range = 12; l.intensity = 1.6f;
+            // 2026-10-31 sanat paketi 1 (yasin "yap"): Dolap düz mor zeminde figür "boşlukta" duruyordu. Üç şey sahne kurar:
+            // (1) arkada sıcak kenar ışığı: silüet zeminden ayrılır (saç/omuz kenarı); (2) yerde yumuşak güneş rengi spot:
+            // figür bir sahnenin üstünde durur, gölge quad'ı bunun içinde okunur; (3) başın arkasında geniş, soluk mor hale:
+            // düz renk yerine derinlik. Hepsi Sprites/Default ve tek noktasal ışık; ek gölge/post yok (bütçe §7.3).
+            var kg = new GameObject("vitrin_kenar"); kg.transform.SetParent(g.transform, false); kg.transform.position = YER + new Vector3(1.3f, 2.3f, -1.8f);
+            var kl = kg.AddComponent<Light>(); kl.type = LightType.Point; kl.range = 5.5f; kl.intensity = 1.25f; kl.color = Kit.Hex("#FFD7A3"); kl.shadows = LightShadows.None;
+            var tex = Kit.RadialTex();
+            var spot = Kit.Prim(PrimitiveType.Quad, "vitrin_spot", g.transform, YER + new Vector3(0, .002f, 0), new Vector3(2.6f, 2.6f, 1), Kit.Clear(new Color(1f, .82f, .45f, .16f), tex));
+            spot.transform.rotation = Quaternion.Euler(90, 0, 0); spot.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var hale = Kit.Prim(PrimitiveType.Quad, "vitrin_hale", g.transform, YER + new Vector3(0, 1.25f, -2.2f), new Vector3(5.5f, 5.5f, 1), Kit.Clear(new Color(.55f, .38f, .68f, .55f), tex));
+            hale.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             g.SetActive(false); return vt;
         }
 
