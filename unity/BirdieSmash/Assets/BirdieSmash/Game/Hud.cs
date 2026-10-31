@@ -116,11 +116,11 @@ namespace BirdieSmash.Game
         // Tribün flaşları (HTML M.cams): sayı kazanınca 26 küçük flaş ekranın üst bandında, .5 sn.
         public void Kamera() { for (int k = 0; k < 26; k++) cams.Add(new Vector3(Random.value, 8 + Random.value * 48, -Random.value * .6f)); }
         float konfetiT = -1; public void Konfeti() { konfetiT = 0; }
-        bool bosalt;
+        bool bosalt; float hazirT = -1; const int AKICI_KARE = 8; const float AKICI_AZAMI = 2f;
         public void Perde(System.Action ortunce) { perdeIs = ortunce; perdeEvre = 1; perdeT = 0; perdeMin = .15f; perdeAtla = false; perdeAcilis = false; acilisBek = 0; }
         // Açılış perdesi (HTML perde({kapali:true, min:.6})): oyun kapalı perdeyle açılır, vuruş sesleri hazırlanınca kalkar;
         // hazırken dokunuş beklemeyi kısaltır.
-        public void Acilis() { perdeEvre = 2; perdeT = 0; perdeIs = null; perdeMin = .6f; perdeAtla = false; perdeAcilis = true; acilisBek = 0; perdeAci = 0; acilisT0 = Time.realtimeSinceStartup; acilisAcT = acilisSonT = -1; }
+        public void Acilis() { perdeEvre = 2; perdeT = 0; hazirT = -1; acilisIyi = 0; perdeIs = null; perdeMin = .6f; perdeAtla = false; perdeAcilis = true; acilisBek = 0; perdeAci = 0; acilisT0 = Time.realtimeSinceStartup; acilisAcT = acilisSonT = -1; }
         public bool PerdeKapali { get { return perdeEvre == 1 || perdeEvre == 2; } }
         // UI Toolkit menüsü için (UiKok): perde var mı, ne kadar örtüyor (0..1; menü 1 − örtü opaklıkla solar), dokunuşla
         // beklemeyi kısalt. Perdenin çizimiyle aynı eğriler.
@@ -199,13 +199,20 @@ namespace BirdieSmash.Game
             // perdesi motor açılmadan döner; açıkken açı onun süresinden yazılır (aynı 1,2 rad/sn), Unity perdesi kesintisiz
             // (< 50 ms) 6 kare çizince ya da perde açılmaya başlarken kaldırılır. Altında birebir aynı görüntü olduğu için devir
             // görünmez; ilk karelerin takılması (doku üretimi, motorun ısınması) yerel perdenin arkasında kalır.
+            // 2026-10-31 akşam: yerel perde artık kapalı evrenin tamamında üstte kalır (önceden 6 akıcı karede kalkıyordu; sonraki
+            // takılmalar Unity perdesinde görünüyordu) ve Unity perdeyi açmaya başladığı karede kalkar. Maça geçişte de kullanılır.
             float ys = Yerel.AcilisSure();
             if (ys >= 0)
             {
-                if (perdeAcilis && !Ayar.reduce) perdeAci = ys * 1.2f;
-                if (!perdeAcilis || perdeEvre != 2 || acilisIyi >= 6) Yerel.AcilisBitir();
+                if (!Ayar.reduce) perdeAci = ys * 1.2f;
+                if (perdeEvre != 2) Yerel.AcilisBitir();
             }
-            if (perdeEvre == 1 && perdeT >= (Ayar.reduce ? .2f : .45f)) { perdeEvre = 2; perdeT = 0; if (perdeIs != null) { perdeIs(); perdeIs = null; bosalt = true; } }
+            if (perdeEvre == 1 && perdeT >= (Ayar.reduce ? .2f : .45f))
+            {
+                perdeEvre = 2; perdeT = 0; acilisIyi = 0; hazirT = -1;
+                Yerel.PerdeGoster(perdeAci, .6f, L.T("Hazırlanıyor…"), Ayar.YaziK);
+                if (perdeIs != null) { perdeIs(); perdeIs = null; bosalt = true; }
+            }
             else if (perdeEvre == 2)
             {
                 // 2026-10-31 (Unity incelemesi Y1): oyun tek sahnede yaşıyor ve koddan üretilen malzeme/doku/mesh hiç
@@ -216,7 +223,12 @@ namespace BirdieSmash.Game
                 bool hazir = root.Hazir() || perdeT > 8;
                 perdeBek = !hazir && perdeT > .6f;
                 float min = Ayar.reduce && perdeMin < .5f ? .05f : perdeMin;
-                if (hazir && (perdeT >= min || perdeAtla)) { perdeEvre = 3; perdeT = 0; perdeBek = false; if (perdeAcilis) acilisAcT = Time.realtimeSinceStartup; }
+                // Akıcılık kapısı: perde ancak son AKICI_KARE kare 25 ms'nin altındaysa açılır (maç kurulumu, ilk gölgelendirici
+                // derlemesi, boşaltma perdenin arkasında biter; açılış animasyonu takılmaz). Yavaş cihaz kapıyı hiç geçemezse
+                // hazır olduktan AKICI_AZAMI sn sonra yine açılır.
+                if (hazir && hazirT < 0) hazirT = perdeT;
+                bool akici = acilisIyi >= AKICI_KARE || perdeSabit >= 0 || (hazirT >= 0 && perdeT - hazirT > AKICI_AZAMI);
+                if (hazir && akici && (perdeT >= min || perdeAtla)) { perdeEvre = 3; perdeT = 0; perdeBek = false; Yerel.AcilisBitir(); if (perdeAcilis) acilisAcT = Time.realtimeSinceStartup; }
             }
             else if (perdeEvre == 3 && perdeT >= (Ayar.reduce ? .25f : .35f)) { perdeEvre = 0; kaynakVar = false; if (perdeAcilis && acilisSonT < 0) acilisSonT = Time.realtimeSinceStartup; }
             if (perdeEvre != 2) perdeBek = false;
@@ -1193,7 +1205,7 @@ namespace BirdieSmash.Game
         void PerdeCiz()
         {
             if (perdeEvre == 0) return; if (perdeTex == null) PerdeDoku();
-            if (Event.current.type == EventType.Repaint) acilisIyi = Time.unscaledDeltaTime < .05f ? acilisIyi + 1 : 0;
+            if (Event.current.type == EventType.Repaint) acilisIyi = Time.unscaledDeltaTime < .025f ? acilisIyi + 1 : 0;
             blocks.Add(new Rect(0, 0, W, H));
             float sc, al; DiskOlcek(out sc, out al);
             if (sc > .001f && al > .001f)
