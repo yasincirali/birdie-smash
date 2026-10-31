@@ -73,7 +73,7 @@ jobs:
       - name: Select stable Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: latest-stable
+          xcode-version: "^26.0"   # 2026-10-31: 26.x sabit (ASC Nisan 2026 itibarıyla Xcode 26 ister; latest-stable Xcode 27 + iOS 27 SDK pencere boyutu değişikliğine kendiliğinden geçerdi). Son başarılı yükleme Xcode_26.6
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -132,6 +132,7 @@ jobs:
           name: birdiesmash-ios-ipa
           path: ios/build/*.ipa
           if-no-files-found: ignore
+          retention-days: 1   # 2026-10-31: depo herkese açık; imzalı, yayınlanmamış IPA herkesçe indirilebiliyordu. 1 gün hata ayıklamaya yeter
 
   # ---- Unity yolu -------------------------------------------------------------------------------
   # 1/2: Xcode projesini ubuntu'da üret. Neden ubuntu: Unity Editor'ü macOS runner'a kurmak her
@@ -248,7 +249,7 @@ jobs:
       - name: Select stable Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: latest-stable
+          xcode-version: "^26.0"   # 2026-10-31: 26.x sabit (ASC Nisan 2026 itibarıyla Xcode 26 ister; latest-stable Xcode 27 + iOS 27 SDK pencere boyutu değişikliğine kendiliğinden geçerdi). Son başarılı yükleme Xcode_26.6
 
       - name: Set up Ruby (fastlane)
         uses: ruby/setup-ruby@v1
@@ -283,3 +284,4 @@ jobs:
           name: birdiesmash-unity-ios-ipa
           path: ios/build/*.ipa
           if-no-files-found: ignore
+          retention-days: 1   # 2026-10-31: depo herkese açık; imzalı, yayınlanmamış IPA herkesçe indirilebiliyordu. 1 gün hata ayıklamaya yeter

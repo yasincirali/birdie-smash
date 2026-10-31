@@ -70,8 +70,11 @@ Notlar:
   (`UNITY_SERIAL`) eklenir. Unity 6 Personal'da açılış logosu zorunlu değil.
 - Lisans dosyası zamanla yenilenebilir; CI "license" hatasıyla kırılırsa Hub'da lisansı
   yenile ve 3–4. adımı tekrarla.
-- Unity build'inde **Game Center yok** ve önceki (HTML) sürümdeki ilerleme taşınmaz;
-  testçiler ilk açılış gibi başlar. Mağaza sürümü henüz yok, gerçek kullanıcı etkilenmez.
+- Unity build'inde Game Center kodu var (Ayarlar/Profil › Game Center · Başarımlar, `Basarim`);
+  ama yetki yalnız provizyon profili Game Center taşıyorsa build'e girer (Fastfile sessizce atlar).
+  Mağaza açıklaması başarım vaat ettiği için aşağıdaki Game Center adımları gönderimden önce şart
+  (Apple kuralı 2023-08-16: Game Center sunan uygulama yetkiyi taşır ve ASC'de kurulu olur).
+  HTML sürümündeki ilerleme kabuk devriyle taşınır (`Devir.cs`). (2026-10-31 düzeltme; eskisi: "Game Center yok".)
 - Bilgisayarda açmak için: Unity Hub › Add › `unity/BirdieSmash` klasörü (README orada).
 
 ## Game Center başarımları (2026-10-23, Ar-Ge önerisi, yasin "yap")

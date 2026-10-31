@@ -556,7 +556,7 @@ namespace BirdieSmash.Game
                 if (o.cagri == null || M.s == null || M.s.dead || M.s.from != "op") return;
                 var p = root.cam.WorldToScreenPoint(Kit.W(M.me.x, M.me.y, 0)); float yy = Mathf.Min(H - p.y - 120 * K, H * .62f), b = Ayar.reduce ? 1 : 1 + .06f * Mathf.Max(0, 1 - (M.realClock - o.cagriT) * 3);
                 Shadowed(new Rect(lx, yy - 44 * K, rx - lx, 20 * K), L.T("Antrenör diyor"), Stil(small, Mathf.RoundToInt(12 * fu), FontStyle.Bold), Kit.Hex("#cfe3dc"));
-                Shadowed(new Rect(lx, yy - 24 * K, rx - lx, 40 * K), L.T(Match.OGR_AD[o.cagri]).ToUpper() + "!", Stil(big, Mathf.RoundToInt(30 * fu * b)), Kit.Hex("#d8ff5a"));
+                Shadowed(new Rect(lx, yy - 24 * K, rx - lx, 40 * K), UiKok.Buyuk(L.T(Match.OGR_AD[o.cagri])) + "!", Stil(big, Mathf.RoundToInt(30 * fu * b)), Kit.Hex("#d8ff5a"));
                 return;
             }
             // görev: hareket yalnız ilk topta bir kez gösterilir (Core OgrDurdur gösterim topu; serviste ilk servis), sonra oyuncu dener
