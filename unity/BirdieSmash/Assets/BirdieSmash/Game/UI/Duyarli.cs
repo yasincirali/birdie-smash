@@ -93,6 +93,11 @@ namespace BirdieSmash.Game
             float h = A / (1 - AFIS_ALT_PAY), w = h * asp; if (w > z.width) { w = z.width; h = w / asp; }
             float sol = (z.width - w) / 2, ust_ = plaka - (1 - AFIS_ALT_PAY) * h;
             afisImg.style.left = sol; afisImg.style.right = StyleKeyword.Auto; afisImg.style.top = ust_; afisImg.style.width = w; afisImg.style.height = h;
+            if (root.afis != null)
+            {   // RT kutunun ekran pikseli boyunda (panel birimi × ekran/panel oranı)
+                float pp = doc.rootVisualElement.layout.width > 1 ? Screen.width / doc.rootVisualElement.layout.width : 1;
+                root.afis.Cozunurluk(h * pp); if (afisImg.image != root.afis.rt) afisImg.image = root.afis.rt;
+            }
             // VS: 390×845 tasarım karesindeki yeri (kutunun %55 sağı, %42,6 aşağısı), boyu kutuyla (438 birimde 44)
             vsYazi.style.left = sol + .55f * w; vsYazi.style.top = ust_ + .426f * h; vsYazi.style.fontSize = Mathf.Round(44 * Mathf.Clamp(h / 438f, .75f, 1.1f));
         }

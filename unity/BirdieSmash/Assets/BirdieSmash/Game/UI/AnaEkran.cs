@@ -41,7 +41,11 @@ namespace BirdieSmash.Game
             // 2026-10-26 Usta yolu: dört tur bittiyse (ve Usta yolu açıksa) "Sıradaki" kartının yerini Usta kartı alır (kendi
             // Oyna düğmesiyle); finali yeniden oynamak Kariyer haritasından sürer.
             bool usta = Ayar.antrenman && UstaYolu.Acik(Ayar.ilerleme) && Ayar.ilerleme.HepsiBitti;
-            if (usta && !root.bekleyen) c.Add(UstaKart()); else c.Add(SiradakiKart());
+            // 2026-10-31 (yasin "yap", inceleme 31 Eki 12:10 madde 2): ilk açılışta plaka "Sıradaki maç · Mika" diyordu ama OYNA
+            // önce antrenmanı açıyor; üç kutucuk da ilk yolu bölüyordu. Öğretici bitene kadar (hiç galibiyet yok ve antrenman
+            // görülmedi) tek kart ilk maçın ne olduğunu söyler, kutucuklar yok. Galibiyeti olan (devirle gelen dahil) aynı ekranı görür.
+            bool ilk = !Ayar.antrenman && Ayar.wins == 0 && !root.bekleyen;
+            if (ilk) c.Add(IlkKart()); else if (usta && !root.bekleyen) c.Add(UstaKart()); else c.Add(SiradakiKart());
             if (root.bekleyen)
             {
                 c.Add(BuyukDugme(L.T("Maça devam et"), null, () => root.MacaDon()));
@@ -52,7 +56,7 @@ namespace BirdieSmash.Game
                 // 2026-10-26 (yasin onayı, inceleme 2026-10-26 §2): "Sıradaki: {yer}" alt yazısı kalktı; yer hemen üstteki plakada
                 // yazıyordu. A tasarımında alt satır maçın biçimini söyler (sayı · saha · zorluk), ilk açılış ve şampiyon satırı kalır.
                 var p = Ayar.ilerleme; var kb = KariyerVeri.Al(p.Siradaki());
-                string alt = !Ayar.antrenman ? L.T("İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç") : p.HepsiBitti ? L.Cumle(Career.Line(p))
+                string alt = ilk ? null : !Ayar.antrenman ? L.T("İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç") : p.HepsiBitti ? L.Cumle(Career.Line(p))
                     : L.T("{0} sayı", kb.uzunluk > 0 ? kb.uzunluk : Ayar.target) + " · " + L.T(CourtView.SAHA[kb.saha].ad) + " · " + L.T(Ayar.easy ? "Kolay" : "Usta");
                 c.Add(BuyukDugme(L.T("Oyna"), alt, () =>
                 {
@@ -63,12 +67,21 @@ namespace BirdieSmash.Game
             }
             // 2026-10-26 adım 7–8: Günün maçı · Hızlı maç · Antrenman. "Tam antrenman" kartı Antrenman sayfasında (Temel ders);
             // ilk açılışta (antrenman görülmedi) Günün maçı yok: ilk yol tek düğme kalsın (§2.3).
+            if (ilk) return;
             var row = Satir("karo-satir"); c.Add(row);
             if (Ayar.antrenman && !root.bekleyen) row.Add(GunlukKaro());
             row.Add(Karo(Ikonlar.Simsek, L.T("Hızlı maç"), L.T("{0} sayı", Ayar.target), L.T("Rastgele rakip"), null, HizliMacAc, L.T("Hızlı maç") + ", " + HizliOzet()));
             var p2 = Ayar.ilerleme;
             row.Add(Karo(Ikonlar.Hedef, L.T("Antrenman"), p2.AntrenmanYildiz + "/" + Dril.ToplamYildiz, L.T("yıldız"), Ikonlar.YildizDolu, AntrenmanAc,
                 L.T("Antrenman") + ", " + L.T("{0}/{1} yıldız · Temel ders ve {2} görev", p2.AntrenmanYildiz, Dril.ToplamYildiz, Dril.Liste.Length)));
+        }
+
+        // İlk maç kartı (yalnız ilk açılış): plakanın yerinde, rakip ve basamak çizgisi yok (henüz kariyer başlamadı).
+        VisualElement IlkKart()
+        {
+            var kart = Kart("ilk-kart"); kart.Add(Yazi(L.T("İlk maçın"), 20, "kalin"));
+            kart.Add(Yazi(L.T("3 adım antrenman, sonra 5 sayı"), 15, "soluk"));
+            Erisim.Etiket(kart, L.T("İlk maçın") + ", " + L.T("3 adım antrenman, sonra 5 sayı"), "metin"); return kart;
         }
 
         string HizliOzet() { return L.T("{0} sayı · {1} · {2}", Ayar.target, L.T(Ayar.easy ? "Kolay" : "Usta"), L.T(CourtView.SAHA[Ayar.saha].ad)); }
