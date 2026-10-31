@@ -246,7 +246,9 @@ namespace BirdieSmash.Game
                 tz.text = Sayi(once);
                 tz.schedule.Execute(() => TuyUcur(tuy, tz, once, hedef)).StartingIn(250);   // yerleşim bitsin (hedefin yeri)
             }
-            if (svOnce > 0 && sv > svOnce) kok.schedule.Execute(() => SeviyeAni(svOnce, sv)).StartingIn(once >= 0 && hedef > once && !Ayar.reduce ? 1100 : 200);
+            // D7 (2026-10-31): gecikmeli seviye anı, oyuncu 1,1 sn içinde maça girerse maçın üstünde titreşim/ses çalıyordu;
+            // çalıştığı anda hâlâ menüde mi diye bakılır.
+            if (svOnce > 0 && sv > svOnce) kok.schedule.Execute(() => { if (root.ekran == Ekran.Menu && !OdulAnlariKapali) SeviyeAni(svOnce, sv); }).StartingIn(once >= 0 && hedef > once && !Ayar.reduce ? 1100 : 200);
         }
         void TuyUcur(VisualElement tuy, Label tz, int once, int hedef)
         {
@@ -382,7 +384,8 @@ namespace BirdieSmash.Game
             var bant = new VisualElement(); bant.AddToClassList("zemin-bant"); bant.pickingMode = PickingMode.Ignore; zemin.Add(bant);
             var iz = new Image { image = Ikonlar.AltinIz, scaleMode = ScaleMode.StretchToFill }; iz.AddToClassList("zemin-iz"); iz.pickingMode = PickingMode.Ignore; zemin.Add(iz);
             zemin.RegisterCallback<GeometryChangedEvent>(e => GunesYerlestir());
-            zemin.schedule.Execute(() => { if (gunesImg == null || Ayar.reduce) return; gunesAci = Mathf.Repeat(gunesAci + 3 * .05f, 360); gunesImg.style.rotate = new Rotate(new Angle(gunesAci)); }).Every(50);
+            // O2 (2026-10-31): güneş diski yalnız menüde döner; maçta zamanlayıcı her 50 ms stil yazıp yerleşimi kirletiyordu.
+            zemin.schedule.Execute(() => { if (gunesImg == null || Ayar.reduce || root.ekran != Ekran.Menu || zemin.resolvedStyle.display == DisplayStyle.None) return; gunesAci = Mathf.Repeat(gunesAci + 3 * .05f, 360); gunesImg.style.rotate = new Rotate(new Angle(gunesAci)); }).Every(50);
             var zi = new Image { image = Ikonlar.Gradyan, scaleMode = ScaleMode.StretchToFill }; zi.pickingMode = PickingMode.Ignore; zi.AddToClassList("tam"); zemin.Add(zi);
             afisImg = new Image { image = root.afis.rt, scaleMode = ScaleMode.ScaleAndCrop }; afisImg.AddToClassList("afis"); afisImg.pickingMode = PickingMode.Ignore; zemin.Add(afisImg);
             vsYazi = new Label("VS"); vsYazi.AddToClassList("yazi"); vsYazi.AddToClassList("vs"); vsYazi.pickingMode = PickingMode.Ignore; zemin.Add(vsYazi);

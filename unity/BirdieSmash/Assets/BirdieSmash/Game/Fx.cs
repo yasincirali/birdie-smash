@@ -16,7 +16,8 @@ namespace BirdieSmash.Game
         class Mark { public Vector3 p; public float t; public bool big; public float[] cr; public Transform leke; public LineRenderer halka; public LineRenderer[] catlak; }
         class Wave { public Vector3 p; public float t, max; public Color c; public LineRenderer l; }
         readonly List<Mark> marks = new List<Mark>(); readonly List<Wave> waves = new List<Wave>();
-        ParticleSystem tuy, kivilcim, cizgi; Material lekeM; Camera cam;
+        ParticleSystem tuy, kivilcim, cizgi; Material lekeM, beyazM, catlakM; Camera cam; MaterialPropertyBlock lekeMpb;
+        static readonly int RENK = Shader.PropertyToID("_Color");
         LineRenderer kosu, erisim, hedefKenar; Transform kosuNokta, hedefBant; Material hedefM;
 
         public static Fx Build(Transform root, Camera cam)
@@ -40,6 +41,10 @@ namespace BirdieSmash.Game
             kivilcim = PS("kivilcim", Kit.Additive(Color.white, YildizTex()), ParticleSystemRenderMode.Billboard);
             cizgi = PS("cizgi", Kit.Additive(Color.white, Kit.RadialTex()), ParticleSystemRenderMode.Stretch); var cm = cizgi.main; cm.gravityModifier = 0;
             lekeM = Kit.Clear(new Color(10 / 255f, 30 / 255f, 26 / 255f, .45f), Kit.RadialTex());
+            // 2026-10-31 (Unity incelemesi Y1): dalga, iz halkası ve çatlak her olayda yeni Material açıyordu; tek sahnede
+            // UnloadUnusedAssets çağrılmadığı için maç başına yüzlerce malzeme birikiyordu. Renk zaten LineRenderer köşe
+            // rengiyle veriliyor (Sprites/Default köşe × malzeme), bu yüzden üç malzeme paylaşılır; leke solması MPB ile.
+            beyazM = Kit.Clear(Color.white); catlakM = Kit.Clear(new Color(.847f, 1, .353f, .6f)); lekeMpb = new MaterialPropertyBlock();
             var mavi = new Color(79 / 255f, 184 / 255f, 1, .5f);
             kosu = Kit.Line("kosu", transform, Kit.Clear(mavi, Kit.DashTex(2, 5)), false, true); kosu.textureMode = LineTextureMode.Tile; kosu.widthMultiplier = .04f;
             kosuNokta = Kit.Prim(PrimitiveType.Quad, "kosu_nokta", transform, Vector3.zero, new Vector3(.3f, .3f, 1), Kit.Clear(new Color(mavi.r, mavi.g, mavi.b, .6f), Kit.RadialTex())).transform; kosuNokta.rotation = Quaternion.Euler(90, 0, 0);
@@ -82,16 +87,16 @@ namespace BirdieSmash.Game
         }
         public void Dalga(Vector3 at, Color c, float maxPx)
         {
-            if (Ayar.reduce) return; var l = Kit.Line("dalga", transform, Kit.Clear(Color.white), true); waves.Add(new Wave { p = at, max = maxPx / 28f, c = c, l = l });
+            if (Ayar.reduce) return; var l = Kit.Line("dalga", transform, beyazM, true); waves.Add(new Wave { p = at, max = maxPx / 28f, c = c, l = l });
         }
         public void Iz(float x, float y, bool big)
         {
             var m = new Mark { p = Kit.W(x, y, .007f), big = big, cr = new float[big ? 5 : 0] }; for (int i = 0; i < m.cr.Length; i++) m.cr[i] = Random.value * 6.28f;
             m.leke = Kit.Prim(PrimitiveType.Quad, "iz", transform, m.p, Vector3.one, lekeM).transform; m.leke.rotation = Quaternion.Euler(90, 0, 0);
             m.leke.localScale = new Vector3((big ? 9 : 5) / 28f * 2.6f, (big ? 9 : 5) / 28f * 2.6f, 1);
-            m.halka = Kit.Line("iz_halka", transform, Kit.Clear(Color.white), true, true); m.halka.widthMultiplier = .04f;
+            m.halka = Kit.Line("iz_halka", transform, beyazM, true, true); m.halka.widthMultiplier = .04f;
             m.catlak = new LineRenderer[m.cr.Length];
-            for (int i = 0; i < m.cr.Length; i++) { var l = Kit.Line("catlak", transform, Kit.Clear(new Color(.847f, 1, .353f, .6f)), false, true); l.widthMultiplier = .03f; l.positionCount = 2; l.SetPosition(0, m.p); l.SetPosition(1, m.p + new Vector3(Mathf.Cos(m.cr[i]), 0, Mathf.Sin(m.cr[i])) * 18 / 28f); m.catlak[i] = l; }
+            for (int i = 0; i < m.cr.Length; i++) { var l = Kit.Line("catlak", transform, catlakM, false, true); l.widthMultiplier = .03f; l.positionCount = 2; l.SetPosition(0, m.p); l.SetPosition(1, m.p + new Vector3(Mathf.Cos(m.cr[i]), 0, Mathf.Sin(m.cr[i])) * 18 / 28f); m.catlak[i] = l; }
             marks.Add(m);
         }
         public void Temizle()
@@ -105,7 +110,7 @@ namespace BirdieSmash.Game
             for (int i = marks.Count - 1; i >= 0; i--)
             {
                 var m = marks[i]; m.t += dt; float a = Mathf.Max(0, 1 - m.t / 3);
-                var mm = m.leke.GetComponent<Renderer>(); mm.material.color = new Color(10 / 255f, 30 / 255f, 26 / 255f, .45f * a * 1.4f);
+                var mm = m.leke.GetComponent<Renderer>(); lekeMpb.SetColor(RENK, new Color(10 / 255f, 30 / 255f, 26 / 255f, .45f * a * 1.4f)); mm.SetPropertyBlock(lekeMpb);
                 m.halka.enabled = m.t < .5f; if (m.halka.enabled) { Kit.Ellipse(m.halka, m.p, (8 + m.t * 80) / 28f, (8 + m.t * 80) / 28f); m.halka.startColor = m.halka.endColor = new Color(1, 1, 1, (.5f - m.t) * 1.6f); }
                 foreach (var l in m.catlak) l.startColor = l.endColor = new Color(.847f, 1, .353f, .6f * a);
                 if (m.t >= 3) { Destroy(m.leke.gameObject); Destroy(m.halka.gameObject); foreach (var l in m.catlak) Destroy(l.gameObject); marks.RemoveAt(i); }

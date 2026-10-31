@@ -220,7 +220,8 @@ namespace BirdieSmash.Game
         // Duraklatınca tüm ses susar (HTML AC.suspend), devamda kaldığı yerden sürer.
         public void Duraklat() { if (ekran == Ekran.Oyun && !paused) { paused = true; Uyanik(false); input.Reset(); sfx.Ugultu(false, 0); AudioListener.pause = true; } }
         public void Devam() { paused = false; AudioListener.pause = false; input.Reset(); if (ekran == Ekran.Oyun) { Uyanik(true); if (match != null && match.s != null && match.ogr == null && !geriKapali) geriT = GERI; } }
-        void OnApplicationPause(bool p) { if (p) Duraklat(); }   // arka plana geçince kendiliğinden duraklar; top bir anda üstüne düşmez
+        // D5 (2026-10-31): arka planda iOS uygulamayı uyarısız kapatabilir; bekleyen kayıt ve PlayerPrefs diske yazılır.
+        void OnApplicationPause(bool p) { if (p) { Duraklat(); BekleyenKayit(); PlayerPrefs.Save(); } }   // arka plana geçince kendiliğinden duraklar; top bir anda üstüne düşmez
         // Odak kaybı da duraklatır (2026-10-27, oyun incelemesi): Denetim Merkezi/Bildirim Merkezi açılması, gelen arama afişi,
         // Siri ve sistem uyarısı uygulamayı arka plana atmadan yalnız etkinliği alır (iOS willResignActive); oyun sürerken top
         // oyuncunun göremediği anda yere düşüyordu. Duraklat menüde ve maç sonunda hiçbir şey yapmaz. Yalnız telefonda: masaüstü
@@ -528,10 +529,15 @@ namespace BirdieSmash.Game
             if (ic) M.OgrBilgiGec(); return true;
         }
 
+        // 2026-10-31 (Unity incelemesi O1): görev tamamlanınca tam kayıt (JSON + ~20 PlayerPrefs anahtarı) vuruş anında yapılıyordu;
+        // tek kare takılma. Sayı arasına, duraklatmaya ya da menüye ertelenir; arka plana geçişte de yazılır (OnApplicationPause).
+        bool kaydetBekle;
+        void BekleyenKayit() { if (!kaydetBekle) return; kaydetBekle = false; Ayar.Kaydet(); }
         void Update()
         {
             FitCamera();
             float dt = Mathf.Min(.05f, Time.unscaledDeltaTime);
+            if (kaydetBekle && (ekran != Ekran.Oyun || paused || match == null || match.between)) BekleyenKayit();
             if (ekran == Ekran.Oyun && !paused)
             {
                 if (rakipKartT > 0) rakipKartT -= dt;
@@ -613,7 +619,7 @@ namespace BirdieSmash.Game
                 case Ev.Okudun: sfx.Okudun(); Yerel.Hap("flow"); fx.Burst(at, Kit.Hex("#7ad7ff"), 14, 200, "spark"); break;
                 case Ev.Gorev:
                     if (e.who == "ogr") { sfx.OgrTamam(); Yerel.Hap("flow"); break; }
-                    Ayar.gorev++; Ayar.Kaydet(); sfx.Gorev(); Yerel.Hap("flow"); if (e.k >= 3 && M.ogr == null) Basarim.Ver(Basarim.GOREV3); hud.Say(L.T("Görev tamam: {0}", L.Cumle(e.text)), Kit.W(Court.MID, Court.NET, 2.4f), Kit.Hex("#ffd23a"), 1.15f, true);
+                    Ayar.gorev++; kaydetBekle = true; sfx.Gorev(); Yerel.Hap("flow"); if (e.k >= 3 && M.ogr == null) Basarim.Ver(Basarim.GOREV3); hud.Say(L.T("Görev tamam: {0}", L.Cumle(e.text)), Kit.W(Court.MID, Court.NET, 2.4f), Kit.Hex("#ffd23a"), 1.15f, true);
                     fx.Burst(Kit.W(Court.MID, Court.NET - 1, 2.4f), Kit.Hex("#ffd23a"), 16, 220, "spark"); break;
                 case Ev.Net: net.sign = mine ? -1 : 1; sfx.Net(e.k, e.big); Yerel.Hap("net"); fx.Burst(at, Color.white, 4 + Mathf.RoundToInt(8 * e.k), 60 + 90 * e.k, "feather"); break;
                 case Ev.Cord: net.sign = mine ? -1 : 1; sfx.Net(.3f, true); Yerel.Hap("net"); break;

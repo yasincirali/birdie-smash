@@ -52,6 +52,9 @@ namespace BirdieSmash.Game
         static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben, int boy, Dictionary<string, RenderTexture> on, List<string> sr, int sinir)
         {
             RenderTexture t; if (on.TryGetValue(anahtar, out t) && t != null && t.IsCreated()) return t;
+            // D6 (2026-10-31): RT içeriği kaybolmuşsa (arka plandan dönüş, bellek baskısı) eski nesne yok edilmeden yerine yenisi
+            // konuyordu; bellek sızıntısı. Önce eskisi bırakılır.
+            if (t != null) { t.Release(); Object.Destroy(t); on.Remove(anahtar); }
             try { t = Ciz(g, ben, boy); } catch (System.Exception e) { Debug.LogWarning("Birdie Smash portre çizilemedi: " + e.Message); return null; }
             if (t == null) return null;
             on[anahtar] = t; sr.Remove(anahtar); sr.Add(anahtar);
@@ -94,11 +97,15 @@ namespace BirdieSmash.Game
                 kam.transform.position = hedef + new Vector3(0, yari * .12f, d); kam.transform.LookAt(hedef);
                 isik.transform.position = hedef + new Vector3(-.6f, .5f, .9f); isik.enabled = true;
                 // 4× MSAA geçici yüzeye çizilir, MSAA'sız kalıcı dokuya çözülür: bellekte kalan yalnız boy² × 4 bayt
+                // D6: Render istisna atarsa geçici yüzey de bırakılsın (finally)
                 var gec = RenderTexture.GetTemporary(boy, boy, 16, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 4);
-                kam.targetTexture = gec; kam.Render(); kam.targetTexture = null; isik.enabled = false;
-                var t = new RenderTexture(boy, boy, 0, RenderTextureFormat.ARGB32) { name = "portre" }; t.Create();
-                Graphics.Blit(gec, t); RenderTexture.ReleaseTemporary(gec);
-                return t;
+                try
+                {
+                    kam.targetTexture = gec; kam.Render();
+                    var t = new RenderTexture(boy, boy, 0, RenderTextureFormat.ARGB32) { name = "portre" }; t.Create();
+                    Graphics.Blit(gec, t); return t;
+                }
+                finally { kam.targetTexture = null; isik.enabled = false; RenderTexture.ReleaseTemporary(gec); }
             }
             finally { fig.gameObject.SetActive(false); Object.Destroy(fig.gameObject); }
         }

@@ -78,6 +78,9 @@ namespace BirdieSmash.Game
             vitrinIm = new Image { image = vt.rt, scaleMode = ScaleMode.ScaleAndCrop }; vitrinIm.AddToClassList("vitrin"); ust.Add(vitrinIm);
             Erisim.Etiket(vitrinIm, L.T("Oyuncun, 360 derece görünüm"), "resim");
             vitrinIm.RegisterCallback<PointerDownEvent>(VitrinBas); vitrinIm.RegisterCallback<PointerMoveEvent>(VitrinSurukle); vitrinIm.RegisterCallback<PointerUpEvent>(VitrinBirak);
+            // 2026-10-31 (Unity incelemesi O4): sürükleme iptal edilirse (sistem hareketi, ikinci parmak, yakalama kaybı) PointerUp
+            // gelmiyordu; suruk açık kalıp vitrin kendiliğinden dönmeyi bırakıyordu. İptal ve yakalama kaybı da bırakma sayılır.
+            vitrinIm.RegisterCallback<PointerCancelEvent>(e => VitrinIptal()); vitrinIm.RegisterCallback<PointerCaptureOutEvent>(e => VitrinIptal());
             vitrinYazi = Yazi("", VitrinPx(12), "vitrin-yazi"); ust.Add(vitrinYazi);
             // 2026-10-26 (r13 incelemesi): yakın plan düğmeleri ve oklar tek bir alt sütunda (Yüz·Ayak·Tutuş üstte, oklar altta).
             // Eskiden ikisi ayrı ayrı mutlak konumdaydı (odak satırı alttan 60 pt); büyük yazıda "Raketi incele" iki satıra
@@ -153,6 +156,7 @@ namespace BirdieSmash.Game
             float dx = e.position.x - vSonX, dt = Mathf.Max(.008f, Time.unscaledTime - vSonT); float deg = dx / w * 360; vSonX = e.position.x; vSonT = Time.unscaledTime;
             if (vt.hedefGec >= 1) { vt.ra += deg; vt.rv = deg / dt; } else { vt.a += deg; vt.v = deg / dt; }
         }
+        void VitrinIptal() { if (!vBasili) return; vBasili = false; root.vitrin.suruk = false; }
         void VitrinBirak(PointerUpEvent e)
         {
             var vt = root.vitrin; if (!vBasili) return; vBasili = false; vt.suruk = false; vitrinIm.ReleasePointer(e.pointerId);

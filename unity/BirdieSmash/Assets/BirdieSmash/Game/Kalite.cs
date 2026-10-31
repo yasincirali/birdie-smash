@@ -97,10 +97,22 @@ namespace BirdieSmash.Game
             }
         }
 
+        // 2026-10-31 (Unity incelemesi O5): basamak değişimi Screen.SetResolution ve MSAA'yı değiştirir; ralli sürerken bu bir
+        // kare takılma ve görüntü sıçraması demek (tam da oyuncunun topa baktığı an). Ralli sürüyorsa istek bekletilir ve sayı
+        // arasında, duraklatmada ya da menüde uygulanır. Bekleyen istek varken yenisi gelirse son istek geçerli.
+        int bekleyenB = -1; bool bekleyenCoz;
+        bool RalliSuruyor { get { var M = root != null ? root.match : null; return root != null && root.ekran == Ekran.Oyun && !root.paused && M != null && !M.between && M.s != null; } }
+        void Iste(int b, bool cozunurluk)
+        {
+            if (!RalliSuruyor) { Uygula(b, cozunurluk); bekleyenB = -1; return; }
+            bekleyenCoz = bekleyenB >= 0 ? bekleyenCoz || cozunurluk : cozunurluk; bekleyenB = b;
+        }
+
         void Update()
         {
             KareHedefi();
             if (Kilitli) return;
+            if (bekleyenB >= 0 && !RalliSuruyor) { Uygula(bekleyenB, bekleyenCoz); bekleyenB = -1; }
             float dt = Time.unscaledDeltaTime; if (dt <= 0 || dt > .5f) return;   // arka plandan dönüş gibi tek uzun kareleri sayma
             inisBekle -= dt;
             // Yüksek hız kareleri ayrı ortalanır: menü 120 ile 60 arasında gidip gelince karışık pencere (60'ın 16,7 ms'si)
@@ -115,8 +127,8 @@ namespace BirdieSmash.Game
             top += dt; sayac++;
             if (top < 3) return;
             float ort = top / sayac; top = 0; sayac = 0;
-            if (ort > 1 / 50f && Basamak > 0 && inisBekle <= 0) { Uygula(Basamak - 1, true); inisBekle = 5; iyiSure = 0; return; }
-            if (ort < 1 / 58f) { iyiSure += 3; if (iyiSure >= 20 && Basamak < tavan) { Uygula(Basamak + 1, false); iyiSure = 0; } }
+            if (ort > 1 / 50f && Basamak > 0 && inisBekle <= 0) { Iste(Basamak - 1, true); inisBekle = 5; iyiSure = 0; return; }
+            if (ort < 1 / 58f) { iyiSure += 3; if (iyiSure >= 20 && Basamak < tavan) { Iste(Basamak + 1, false); iyiSure = 0; } }
             else iyiSure = 0;
         }
     }

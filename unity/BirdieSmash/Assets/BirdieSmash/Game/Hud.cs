@@ -89,6 +89,7 @@ namespace BirdieSmash.Game
         // Tribün flaşları (HTML M.cams): sayı kazanınca 26 küçük flaş ekranın üst bandında, .5 sn.
         public void Kamera() { for (int k = 0; k < 26; k++) cams.Add(new Vector3(Random.value, 8 + Random.value * 48, -Random.value * .6f)); }
         float konfetiT = -1; public void Konfeti() { konfetiT = 0; }
+        bool bosalt;
         public void Perde(System.Action ortunce) { perdeIs = ortunce; perdeEvre = 1; perdeT = 0; perdeMin = .15f; perdeAtla = false; perdeAcilis = false; acilisBek = 0; }
         // Açılış perdesi (HTML perde({kapali:true, min:.6})): oyun kapalı perdeyle açılır, vuruş sesleri hazırlanınca kalkar;
         // hazırken dokunuş beklemeyi kısaltır.
@@ -177,9 +178,14 @@ namespace BirdieSmash.Game
                 if (perdeAcilis && !Ayar.reduce) perdeAci = ys * 1.2f;
                 if (!perdeAcilis || perdeEvre != 2 || acilisIyi >= 6) Yerel.AcilisBitir();
             }
-            if (perdeEvre == 1 && perdeT >= (Ayar.reduce ? .2f : .45f)) { perdeEvre = 2; perdeT = 0; if (perdeIs != null) { perdeIs(); perdeIs = null; } }
+            if (perdeEvre == 1 && perdeT >= (Ayar.reduce ? .2f : .45f)) { perdeEvre = 2; perdeT = 0; if (perdeIs != null) { perdeIs(); perdeIs = null; bosalt = true; } }
             else if (perdeEvre == 2)
-            {   // HTML perde 'kapali': sesler hazır değilse bekler (8 sn sonra yine açılır); .6 sn'den uzun beklemede dönen top
+            {
+                // 2026-10-31 (Unity incelemesi Y1): oyun tek sahnede yaşıyor ve koddan üretilen malzeme/doku/mesh hiç
+                // boşaltılmıyordu (figür yeniden kurulumu, Dolap, eski efektler). Perde kapalıyken, maç kurulduktan bir kare
+                // sonra (Destroy kare sonunda işlenir) kullanılmayanlar boşaltılır; olası takılma perdenin arkasında kalır.
+                if (bosalt) { bosalt = false; Resources.UnloadUnusedAssets(); }
+                // HTML perde 'kapali': sesler hazır değilse bekler (8 sn sonra yine açılır); .6 sn'den uzun beklemede dönen top
                 bool hazir = root.Hazir() || perdeT > 8;
                 perdeBek = !hazir && perdeT > .6f;
                 float min = Ayar.reduce && perdeMin < .5f ? .05f : perdeMin;
@@ -190,7 +196,9 @@ namespace BirdieSmash.Game
             TopPozYaz();
         }
 
-        static Texture2D Solid(Color c) { var t = new Texture2D(1, 1); t.SetPixel(0, 0, c); t.Apply(); return t; }
+        // D4 (2026-10-31): Styles() boyut/yazı ölçeği her değiştiğinde 7 yeni 1×1 doku açıyor, eskileri yok etmiyordu. Renk başına bir doku.
+        static readonly Dictionary<Color, Texture2D> solidler = new Dictionary<Color, Texture2D>();
+        static Texture2D Solid(Color c) { Texture2D t; if (solidler.TryGetValue(c, out t) && t != null) return t; t = new Texture2D(1, 1); t.SetPixel(0, 0, c); t.Apply(); solidler[c] = t; return t; }
         void Styles()
         {
             float nu = Mathf.Min(Screen.height / 640f, Screen.width / 340f), nf = nu * Ayar.YaziK; if (big != null && Mathf.Abs(nu - u) < .001f && Mathf.Abs(nf - fu) < .001f) return; u = nu; fu = nf; StilSifirla(); // eski boyutun önbelleği yeni tabanla karışmasın

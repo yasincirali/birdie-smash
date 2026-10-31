@@ -144,6 +144,13 @@ namespace BirdieSmash.Game
             l.positionCount = n; for (int i = 0; i < n; i++) { float a = i * Mathf.PI * 2 / n; l.SetPosition(i, c + new Vector3(Mathf.Cos(a) * rx, 0, Mathf.Sin(a) * rz)); }
         }
 
-        public static Color Hex(string h) { Color c; return ColorUtility.TryParseHtmlString(h, out c) ? c : Color.magenta; }
+        // D1 (2026-10-31): HUD her OnGUI'de (kare başına birkaç kez) aynı sabit dizileri ayrıştırıyordu. Sonuç dize başına önbellekte;
+        // dizeler kaynakta sabit (palet), sözlük küçük kalır. Yalnız ana iş parçacığından çağrılır.
+        static readonly System.Collections.Generic.Dictionary<string, Color> hexOnbellek = new System.Collections.Generic.Dictionary<string, Color>();
+        public static Color Hex(string h)
+        {
+            Color c; if (h == null) return Color.magenta; if (hexOnbellek.TryGetValue(h, out c)) return c;
+            if (!ColorUtility.TryParseHtmlString(h, out c)) c = Color.magenta; if (hexOnbellek.Count < 512) hexOnbellek[h] = c; return c;
+        }
     }
 }
