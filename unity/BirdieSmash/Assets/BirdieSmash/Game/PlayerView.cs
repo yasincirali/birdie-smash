@@ -284,13 +284,24 @@ namespace BirdieSmash.Game
         }
         static readonly Dictionary<string, Material> dokuM = new Dictionary<string, Material>();
         // 2026-10-31 (yasin: "Ten renkleri değiştirilemiyor"): Oyuncak ailesinde ten ayrı parça değil, gövde ağının renk
-        // atlasında bir hücre (oyuncak.py oy_ten → sRGB 221,179,151; dudak oy_dudak 209,160,142). "__ten" etiketi olmadığı için
-        // ten tonu hiçbir şeye bağlanmıyordu. Atlas GPU'da bir RT'ye kopyalanıp okunur (doku Read/Write kapalı ve ASTC: DokuAyar),
-        // ten ve dudak hücreleri seçilen tona boyanır (dudak tenle aynı oranda koyu kalır), sonuç model+ton başına bir kez üretilir.
-        // Hücre konumu modelden modele değişiyor; renkle bulunur, atlas yeniden üretilse de tutar. Ton yoksa ("Doğal") atlas aynen.
+        // atlasında bir hücre. "__ten" etiketi olmadığı için ten tonu hiçbir şeye bağlanmıyordu. Atlas GPU'da bir RT'ye
+        // kopyalanıp okunur (doku Read/Write kapalı ve ASTC: DokuAyar), ten hücreleri seçilen tona boyanır, sonuç model+ton
+        // başına bir kez üretilir. Ton yoksa ("Modelin rengi") atlas aynen.
+        // r93 düzeltmesi: ilk yazım her modelde teni 221,179,151 sandı; Blender'da ağın UV'leri ölçülünce (yüzey alanı payı)
+        // modeller üç ten hücresini farklı rollerde kullanıyor: oyuncak 129,97,63 (%55), güçlü 209,160,142 (%67), kadın ve
+        // uzun 221,179,151 (%36 / %61). Diğer ikisi o modelde küçük ayrıntı (dudak, kulak içi). Bu yüzden atlas başına asıl
+        // ten hücresi tabloda; üç hücre de seçilen tona asıl tene oranlarıyla boyanır (ayrıntı tenden açık/koyu kalır).
+        // Atlas yeniden üretilip roller değişirse tabloyu tool/karakter ölçümüyle güncelle.
         Color? tenAtlas; public static string TenTani = "yok";   // ekran turu tanısı
-        static readonly Color32 ATLAS_TEN = new Color32(221, 179, 151, 255), ATLAS_DUDAK = new Color32(209, 160, 142, 255);
+        static readonly Color32[] TEN_HUCRE = { new Color32(221, 179, 151, 255), new Color32(209, 160, 142, 255), new Color32(129, 97, 63, 255) };
+        static Color32 AsilTen(string atlas)
+        {
+            if (atlas == "oyuncak_govde") return TEN_HUCRE[2];
+            if (atlas == "oyuncak_guclu_govde") return TEN_HUCRE[1];
+            return TEN_HUCRE[0];
+        }
         static bool Yakin(Color32 a, Color32 b) { return Mathf.Abs(a.r - b.r) <= 8 && Mathf.Abs(a.g - b.g) <= 8 && Mathf.Abs(a.b - b.b) <= 8; }
+        static byte Oran(byte ton, byte hucre, byte asil) { return (byte)Mathf.Clamp(Mathf.RoundToInt(ton * (float)hucre / Mathf.Max(1, asil)), 0, 255); }
         static Texture2D TenliAtlas(Texture2D kaynak, Color ten)
         {
             int w = kaynak.width, h = kaynak.height;
@@ -298,11 +309,11 @@ namespace BirdieSmash.Game
             Graphics.Blit(kaynak, rt); var once = RenderTexture.active; RenderTexture.active = rt;
             var t = new Texture2D(w, h, TextureFormat.RGBA32, true, false) { name = kaynak.name + "_ten", filterMode = kaynak.filterMode, anisoLevel = kaynak.anisoLevel, wrapMode = kaynak.wrapMode };
             t.ReadPixels(new Rect(0, 0, w, h), 0, 0, false); RenderTexture.active = once; RenderTexture.ReleaseTemporary(rt);
-            Color32 tn = ten, du = new Color32((byte)(tn.r * 209 / 221), (byte)(tn.g * 160 / 179), (byte)(tn.b * 142 / 151), 255);
+            Color32 tn = ten, asil = AsilTen(kaynak.name); var yeni = new Color32[TEN_HUCRE.Length];
+            for (int k = 0; k < TEN_HUCRE.Length; k++) { var c = TEN_HUCRE[k]; yeni[k] = new Color32(Oran(tn.r, c.r, asil.r), Oran(tn.g, c.g, asil.g), Oran(tn.b, c.b, asil.b), 255); }
             var px = t.GetPixels32(); int say = 0;
-            for (int i = 0; i < px.Length; i++) { if (Yakin(px[i], ATLAS_TEN)) { px[i] = tn; say++; } else if (Yakin(px[i], ATLAS_DUDAK)) px[i] = du; }
-            var ornek = new System.Text.StringBuilder(); for (int y = 32; y < h; y += 64) for (int x = 32; x < w; x += 64) { var c = px[y * w + x]; if (c.r + c.g + c.b > 30) ornek.Append(c.r + "," + c.g + "," + c.b + " "); }
-            TenTani = kaynak.name + " " + w + "x" + h + " renk uzayı " + QualitySettings.activeColorSpace + " eşleşen " + say + " · hücreler " + ornek;
+            for (int i = 0; i < px.Length; i++) for (int k = 0; k < TEN_HUCRE.Length; k++) if (Yakin(px[i], TEN_HUCRE[k])) { px[i] = yeni[k]; if (Yakin(TEN_HUCRE[k], asil)) say++; break; }
+            TenTani = kaynak.name + " " + w + "x" + h + " asıl ten " + asil.r + "," + asil.g + "," + asil.b + " → " + tn.r + "," + tn.g + "," + tn.b + " eşleşen " + say;
             if (say == 0) { Object.Destroy(t); return kaynak; }   // atlasta ten hücresi yok: dokuya dokunma
             t.SetPixels32(px); t.Apply(true, true); return t;
         }

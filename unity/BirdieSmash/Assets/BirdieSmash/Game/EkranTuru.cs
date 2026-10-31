@@ -54,7 +54,7 @@ namespace BirdieSmash.Game
             Debug.Log("EkranTuru başladı: " + dir);
             // Bekçi: ana döngü takılırsa nerede takıldığını günlükten görmek için 10 sn'de bir kare sayısı ve son adım.
             var bekci = new System.Threading.Thread(() => { for (int i = 0; i < 300; i++) { System.Threading.Thread.Sleep(10000); Debug.Log("EkranTuru bekçi: kare " + kare + " adım " + adim); } }); bekci.IsBackground = true; bekci.Start();
-            GameRoot.geriKapali = true; L.EksikTopla = true; yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
+            GameRoot.geriKapali = true; UiKok.OdulAnlariKapali = true; L.EksikTopla = true; yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
             if (kip == "magaza") { yield return MagazaTuru(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }   // 2026-10-29: mağaza kareleri (Game/MagazaTuru.cs)
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             yield return MenuTuru(); if (root.HudKatman != null) rap.AppendLine("açılış süresi (gerçek, CI yazılım render'ı): " + root.HudKatman.AcilisTani);
@@ -384,6 +384,7 @@ namespace BirdieSmash.Game
             // 2026-10-31: bütün turlar bitmiş (beş unvan çipi tek satıra sığmıyordu, IMG_1517)
             for (int t = 0; t < p.tur.Length; t++) for (int b = 0; b < p.tur[t].Length; b++) p.tur[t][b] = 7;
             p.Unvan = "asya"; ui.Kirlet(); ui.SekmeAc(Sekme.Oyna); ui.SekmeAc(Sekme.Profil); yield return Bekle(20); yield return Cek("menu_" + ek + "profil_tum");
+            ui.SeviyeAniTur(4, 6); yield return Bekle(40); yield return Cek("menu_" + ek + "seviye_ani"); ui.SeviyeAniKapat();   // 2026-10-31 seviye atlama anı
             Ayar.ilerleme = eski; ui.SekmeAc(Sekme.Oyna); ui.SekmeAc(Sekme.Profil); yield return Bekle(5);
         }
 

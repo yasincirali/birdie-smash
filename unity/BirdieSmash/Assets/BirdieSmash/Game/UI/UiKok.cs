@@ -232,10 +232,15 @@ namespace BirdieSmash.Game
         // gösterir. İlk kurulumda (önceki değer yok) ve hareketi azaltta uçuş/sayma yok, sayı doğrudan yazılır; seviye anı
         // hareketi azaltta da açılır (bilgi taşır), yalnız büyüme ve sırayla belirme kapalıdır.
         static int gosterilenTuy = -1, gosterilenSv = -1;
+        // Ekran turu örnek ilerlemeler kurup bozar: tüy/seviye anı orada kendiliğinden açılırsa sonraki kareleri (dil değişse de)
+        // örtüyordu (r93). Tur bunu kapatır, anı yalnız SeviyeAniTur ile bir kez çeker.
+        public static bool OdulAnlariKapali;
+        public void SeviyeAniTur(int once, int sv) { SeviyeAni(once, sv); }
+        public void SeviyeAniKapat() { if (seviyeAni != null) { seviyeAni.RemoveFromHierarchy(); seviyeAni = null; } }
         void OdulAnlari(VisualElement tuy, Label tz, int hedef, int sv)
         {
             int once = gosterilenTuy, svOnce = gosterilenSv; gosterilenTuy = hedef; gosterilenSv = sv;
-            if (root.ekran != Ekran.Menu) return;
+            if (root.ekran != Ekran.Menu || OdulAnlariKapali) return;
             if (once >= 0 && hedef > once && !Ayar.reduce)
             {
                 tz.text = Sayi(once);
@@ -300,7 +305,7 @@ namespace BirdieSmash.Game
         }
 
         // Durum değişti: hepsi kirli, görünen hemen yeniden kurulur.
-        public void Kirlet() { for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true; var once = gez.sekme; Uygula(once, false); }
+        public void Kirlet() { SeviyeAniKapat(); for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true; var once = gez.sekme; Uygula(once, false); }
 
         void HepsiniKur()
         {
