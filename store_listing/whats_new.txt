@@ -19,6 +19,12 @@ Nasıl denenir:
 6. Dolap'ta "Kombin 1"e dokun (kaydeder), bir şey değiştir, sonra tekrar "Kombin 1"e dokun: eski görünüş geri gelmeli. "Rastgele"ye dokun: yalnız sahip olduğun parçalardan bir görünüş çıkmalı.
 7. Uygulamayı silip yeniden kur (ya da yeni bir hesapla) ve ilk maçını bitir: menüye dönünce "Oyuncunu seç" açılmalı. Bir karta dokununca üstteki oyuncu hemen değişmeli; "Atla" eski görünüşe döndürmeli.
 
+Önceki sürümden (açılış ve geçiş akıcılığı):
+- Uygulamaya dokununca dönen tüy top ve halkalar hemen başlıyor; yükleme bitince ana menü açılıyor.
+- Maça geçerken perde kapandığında halkalar akıcı dönüyor; perde oyun akıcı çizmeye başlayınca açılıyor.
+8. Uygulamayı tamamen kapatıp aç: dönen top hemen başlamalı, siyah ekran olmamalı; yükleme bitince ana menü gelmeli.
+9. Oyna'ya dokunup maça geç: perde kapanınca halkalar durmadan dönmeli, maç akıcı başlamalı.
+
 === HTML ===
 Bu sürümde yeni:
 - Unity sürümüne hazırlık: ilerlemen (kariyer, Tüy, ekipman, ayarlar) telefonda ikinci bir yere de kaydediliyor. Bir sonraki büyük güncelleme (Unity, 3B) bunu bir kez okuyup ilerlemeni taşıyacak.
