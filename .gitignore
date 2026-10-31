@@ -28,3 +28,13 @@ tmp/
 !.claude/skills/
 .claude/skills/brag/assets/music/*.mp3
 __pycache__/
+# İmza ve lisans dosyaları (2026-10-31, mağaza denetimi D1): yanlışlıkla commit edilmesin; depo herkese açık
+*.p12
+*.p8
+*.cer
+*.mobileprovision
+*.provisionprofile
+*.keystore
+*.jks
+*.ulf
+*.alf
