@@ -58,7 +58,10 @@ namespace BirdieSmash.Game
             foreach (var u in Karakter.Unvanlar)
             {
                 if (kz.Contains(u)) continue; var ur = Satir("basarim"); ur.AddToClassList("kilitli"); c.Add(ur);
-                ur.Add(Ikon(Ikonlar.Kilit, 18, SOLUK)); ur.Add(Yazi(L.T(u.ad), 15, "esnek-yatay")); ur.Add(Yazi(L.T(u.nasil), 12, "durum-kilit"));
+                ur.Add(Ikon(Ikonlar.Kilit, 18, SOLUK));
+                // 2026-10-31 (SE ×2 turu: ad ve koşul yan yana sığmayıp "champion" harf harf bölünüyordu): ad üstte, koşul altında
+                var us2 = new VisualElement(); us2.AddToClassList("esnek-yatay"); us2.pickingMode = PickingMode.Ignore; ur.Add(us2);
+                us2.Add(Yazi(L.T(u.ad), 15)); us2.Add(Yazi(L.T(u.nasil), 12, "soluk"));
                 Erisim.Etiket(ur, L.T("Unvan") + " " + L.T(u.ad) + ", " + L.T("Kilitli") + ", " + L.T(u.nasil), "metin");
             }
 
