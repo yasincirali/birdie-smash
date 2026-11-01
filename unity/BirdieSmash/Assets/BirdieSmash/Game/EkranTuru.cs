@@ -377,7 +377,7 @@ namespace BirdieSmash.Game
             // seviye ister; tur geçici olarak xp'yi Sv 30'a çıkarır ve geri koyar (kayda yazmaz).
             {
                 int xp0 = Ayar.gear.eko.xp; string kp0 = Ayar.GORUNUM["kaplama"]; Ayar.gear.eko.xp = 1000000;
-                foreach (var o in Karakter.Gorunum("kaplama")) if (o.parla) { Ayar.GORUNUM["kaplama"] = o.id; root.vitrin.Yenile(); ui.VitrinOdak(Vitrin.TUTUS, "drive"); yield return Bekle(50); yield return Cek("menu_" + ek + "raket_isin_" + o.id); }
+                foreach (var o in Karakter.Gorunum("kaplama")) if (o.parla) { Ayar.GORUNUM["kaplama"] = o.id; root.vitrin.Yenile(); ui.RaketIncele(true); yield return Bekle(60); yield return Cek("menu_" + ek + "raket_isin_" + o.id); ui.RaketIncele(false); }   // r112: tutuş kadrajı raket kafasını kesiyordu; inceleme görünümü bütün raketi gösterir
                 if (ek == "") { Ayar.GORUNUM["kaplama"] = "isin_gok"; root.vitrin.Yenile(); ui.RaketParcaSec("cerceve"); yield return Bekle(60); yield return Cek("menu_tezgah_isin"); ui.RaketParcaSec(null); }
                 Ayar.gear.eko.xp = xp0; Ayar.GORUNUM["kaplama"] = kp0;
             }

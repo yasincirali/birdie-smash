@@ -5,7 +5,11 @@
 #
 # Koordinatlar doğrudan Unity birim çerçevesinde (dönüşüm yok):
 #   · BAŞ (tur 0): bant düzlemi y = 0, baş yarıçapı 1 (yan/üst/ön elipsoit oranları oyunda uygulanır), +z ön, tepe y ≈ 1.
-#     KayKit şapkaları r107 turunda +.2 yukarıda oturdu; buradaki ölçüler o tura göre seçildi (taç tepeye, hale başın üstüne).
+#     KayKit şapkaları r107 turunda +.2 yukarıda oturdu. r112 (ekran turu): ilk ölçüler (taç bandı .62–.86, kulak/boynuz
+#     tabanı .62–.72) saçın içinde kaldı; yakın planda yalnız taç dişlerinin ucu göründü, kedi kulağı hiç görünmedi. Saç
+#     tepesi bu çerçevede ~1,1–1,25 (KayKit kabukları başı 1,4–1,6'ya kadar sarıyor). Şimdi taç saçın üstüne oturur
+#     (.98–1.24, dişler 1.62), kulak ve boynuz tabanı ~.9'da saça gömülü, gövdesi saçın üstünde; hale 1.78'de. Vitrin
+#     yakın planı aksesuar kökünün sınırını da kadraja alır (Vitrin.OdakPoz).
 #   · SIRT (tur 1): birim = omuz eni, köken omuz ortası sırt yüzeyinde, +y yukarı, -z arkaya. altY > -.8 olduğu için kanat ve
 #     jetpack sallanmaz (PelerinSalinim yalnız uzun pelerinde).
 # Düz gölgeleme: her üçgen kendi normalini taşır (KayKit'in köşeli görünüşü). Python 3, bağımlılık yok.
@@ -80,6 +84,15 @@ def silindir(ag, renk, alt, ust, r, n=10):
         ag.dortgen(renk, P(alt, i), P(alt, i + 1), P(ust, i + 1), P(ust, i))
         ag.ucgen(renk, P(alt, i + 1), P(alt, i), tuple(alt)); ag.ucgen(renk, P(ust, i), P(ust, i + 1), tuple(ust))
 
+def kesik(ag, renk, alt, ust, r0, r1, n=8):
+    """Kesik koni (alt yarıçap r0, üst r1), kapaksız: boynuz gibi zincirlenir, eklemi bir sonraki parça örter."""
+    ax = [ust[i] - alt[i] for i in range(3)]; L = math.sqrt(sum(x * x for x in ax)); ax = [x / L for x in ax]
+    t = [1, 0, 0] if abs(ax[0]) < .9 else [0, 1, 0]
+    e1 = [ax[1] * t[2] - ax[2] * t[1], ax[2] * t[0] - ax[0] * t[2], ax[0] * t[1] - ax[1] * t[0]]; l1 = math.sqrt(sum(x * x for x in e1)); e1 = [x / l1 for x in e1]
+    e2 = [ax[1] * e1[2] - ax[2] * e1[1], ax[2] * e1[0] - ax[0] * e1[2], ax[0] * e1[1] - ax[1] * e1[0]]
+    P = lambda o, r, i: tuple(o[k] + r * (math.cos(2 * math.pi * i / n) * e1[k] + math.sin(2 * math.pi * i / n) * e2[k]) for k in range(3))
+    for i in range(n): ag.dortgen(renk, P(alt, r0, i), P(alt, r0, i + 1), P(ust, r1, i + 1), P(ust, r1, i))
+
 def kutu(ag, renk, a, b):
     x0, y0, z0 = a; x1, y1, z1 = b
     v = [(x0, y0, z0), (x1, y0, z0), (x1, y1, z0), (x0, y1, z0), (x0, y0, z1), (x1, y0, z1), (x1, y1, z1), (x0, y1, z1)]
@@ -96,7 +109,7 @@ def ayna(nokta): return [(-x, y) for x, y in nokta]
 # ---- kalemler ----
 def tac():
     ag = Ag(); A, K, M = '#f5c542', '#d64545', '#3f7be0'
-    n = 10; R0, R1, y0, y1 = .62, .58, .62, .86
+    n = 12; R0, R1, y0, y1 = .86, .80, .98, 1.24
     for i in range(n):
         a0 = 2 * math.pi * i / n; a1 = 2 * math.pi * (i + 1) / n
         p = lambda R, y, a: (R * math.cos(a), y, R * math.sin(a))
@@ -104,25 +117,28 @@ def tac():
         ag.dortgen(A, p(R1 - .06, y1, a0), p(R1 - .06, y1, a1), p(R0 - .06, y0, a1), p(R0 - .06, y0, a0))
         ag.dortgen(A, p(R1, y1, a0), p(R1, y1, a1), p(R1 - .06, y1, a1), p(R1 - .06, y1, a0))
     for i in range(5):   # beş diş, biri tam önde
-        a = math.pi / 2 + 2 * math.pi * i / 5; x, z = .58 * math.cos(a), .58 * math.sin(a)
-        koni(ag, A, (x, .84, z), (x * 1.04, 1.14, z * 1.04), .12, 6)
-        koni(ag, K if i % 2 == 0 else M, (x * 1.12, .70, z * 1.12), (x * 1.2, .74, z * 1.2), .07, 6)   # mücevher
+        a = math.pi / 2 + 2 * math.pi * i / 5; x, z = .80 * math.cos(a), .80 * math.sin(a)
+        koni(ag, A, (x, 1.22, z), (x * 1.06, 1.62, z * 1.06), .17, 6)
+        koni(ag, A, (x * 1.06, 1.62, z * 1.06), (x * 1.06, 1.70, z * 1.06), .05, 6)   # diş ucunda top
+        koni(ag, K if i % 2 == 0 else M, (x * 1.06, 1.08, z * 1.06), (x * 1.16, 1.12, z * 1.16), .09, 6)   # mücevher
     ag.yaz('tac', 0)
 
 def hale():
-    ag = Ag(); halka(ag, '#ffe27a', .52, .055, 1.38, 28, 8); ag.yaz('hale', 0)
+    ag = Ag(); halka(ag, '#ffe27a', .60, .07, 1.78, 32, 8); ag.yaz('hale', 0)
 
 def seytan():
     ag = Ag(); K = '#c8262f'
     for s in (-1, 1):   # iki kıvrık boynuz: üç parçalı koni zinciri
-        p0 = (s * .42, .62, .18); p1 = (s * .55, .9, .14); p2 = (s * .52, 1.12, .02)
-        silindir(ag, K, p0, p1, .13, 8); koni(ag, K, p1, p2, .13, 8)
+        y = [(s * .50, .90, .22), (s * .66, 1.18, .22), (s * .74, 1.40, .16), (s * .70, 1.58, .06), (s * .60, 1.70, -.04)]
+        r = [.18, .15, .11, .07]
+        for i in range(3): kesik(ag, K, y[i], y[i + 1], r[i], r[i + 1], 8)
+        koni(ag, K, y[3], y[4], r[3], 8)
     ag.yaz('seytan', 0)
 
 def kedi():
     ag = Ag(); D, I = '#2b2b33', '#f2a1b5'
     for s in (-1, 1):
-        x = s * .5; b = (x - s * .2, .72, .05); c = (x + s * .2, .72, -.05); u = (x + s * .08, 1.2, .02)
+        x = s * .58; b = (x - s * .28, .92, .08); c = (x + s * .26, .92, -.06); u = (x + s * .10, 1.62, .02)
         on = .06
         ag.ucgen(D, b, c, u); ag.ucgen(D, (b[0], b[1], b[2] - on), (u[0], u[1], u[2] - on), (c[0], c[1], c[2] - on))
         ag.dortgen(D, b, (b[0], b[1], b[2] - on), (c[0], c[1], c[2] - on), c)
@@ -133,17 +149,22 @@ def kedi():
         ag.ucgen(I, (bb[0], bb[1], bb[2] + d), (cc[0], cc[1], cc[2] + d), (uu[0], uu[1], uu[2] + d))
     ag.yaz('kedi', 0)
 
-KANAT = [(.12, .05), (.45, .42), (.85, .78), (1.25, .95), (1.42, .72), (1.3, .38), (1.12, .12), (.88, -.08), (.62, -.2), (.35, -.18)]
+# r112: düz kenarlı melek kanadı yakın planda beyaz bir leke gibi okundu. Arka kenar artık tüy uçları (uç/çentik sırası)
+# ve iki iç katman (örtü tüyleri) taşır: siluet tek bakışta "kanat" der. Yelpaze üçgenleme kökten; çentikler köke daha
+# yakın olduğu için çokgen kökten yıldız biçimli kalır.
+KANAT = [(.12, .05), (.40, .42), (.80, .80), (1.22, 1.0), (1.48, .80), (1.40, .52), (1.30, .56), (1.30, .28), (1.17, .36),
+         (1.14, .06), (1.0, .18), (.94, -.12), (.80, .04), (.72, -.24), (.58, -.06), (.48, -.24), (.36, -.08), (.26, -.14)]
 YARASA = [(.12, .05), (.5, .5), (1.0, .85), (1.45, .82), (1.3, .45), (1.1, .5), (.98, .15), (.78, .22), (.6, -.08), (.4, .05), (.25, -.15)]
 
-def kanat(id_, renk, nokta, ikinci=None):
+def kanat(id_, renk, nokta, katman=()):
     ag = Ag(); zf = lambda x, y: -.10 - .30 * abs(x) - .05 * max(0, y)
     for s in (-1, 1):
         nn = nokta if s > 0 else list(reversed(ayna(nokta)))
         levha(ag, renk, nn, .045, zf)
-        if ikinci:   # tüy sırası: biraz içeride, öne yakın ikinci katman (koyu ton)
-            sk = [(x * .78, y * .78 - .04) for x, y in nokta]; sk = sk if s > 0 else list(reversed(ayna(sk)))
-            levha(ag, ikinci, sk, .03, lambda x, y: zf(x, y) + .035)
+        for k, (kr, olcek) in enumerate(katman):   # örtü tüyleri: içe doğru küçülen, öne yakın katmanlar (ton farkı)
+            sk = [(.12 + (x - .12) * olcek, .05 + (y - .05) * olcek + .04 * (k + 1)) for x, y in nokta]
+            sk = sk if s > 0 else list(reversed(ayna(sk)))
+            levha(ag, kr, sk, .03, lambda x, y, k=k: zf(x, y) + .03 * (k + 1))
     kutu(ag, renk, (-.14, -.06, -.16), (.14, .16, -.06))   # iki kanadı bağlayan kök
     ag.yaz(id_, 1)
 
@@ -160,7 +181,7 @@ def jetpack():
 
 KALEM = {
     'tac': tac, 'hale': hale, 'seytan': seytan, 'kedi': kedi,
-    'melek_kanat': lambda: kanat('melek_kanat', '#f6f3ea', KANAT, '#d9d4c6'),
+    'melek_kanat': lambda: kanat('melek_kanat', '#f6f3ea', KANAT, (('#dcd5c4', .70), ('#fffdf6', .42))),
     'yarasa_kanat': lambda: kanat('yarasa_kanat', '#3b2547', YARASA),
     'jetpack': jetpack,
 }
