@@ -20,6 +20,28 @@ Yalnız yasin'in yapabileceği adımlar. Sıra önemlidir (Harçlıklarım ile a
 6. `main`'e ilk birleşme → "iOS — TestFlight" build'i yükler. TestFlight'ta dahili
    gruba kendini ekle; davet linki ASC › TestFlight › harici grup "Public Link".
 
+## Tüy satın alma ve iCloud kaydı (2026-11-01, yasin: "paywall ile tüy aldırma ya da IAP altyapısı"; karar: önce iCloud)
+
+Kod hazır: dört Tüy paketi (Unity IAP, StoreKit), işlem defteri, iCloud anahtar-değer yedeği. Mağazada ürün olmadıkça dükkân
+"şu an satın alınamıyor" der, fiyat uydurmaz; aşağıdakiler bitince kendiliğinden açılır.
+
+1. **developer.apple.com › Identifiers › com.birdiesmash.app**: *iCloud* yeteneğini aç (yalnız *Key-value storage* yeter,
+   CloudKit kapsayıcısı gerekmez). Kaydet. Sonra match profilini yenile: Actions'ta iOS build'i bir kez koş ya da
+   `fastlane match appstore --force` (profil yeni yetkiyi taşımazsa Fastfile iCloud yetkisini eklemez, build yine geçer).
+2. **App Store Connect › Agreements, Tax, and Banking**: *Paid Apps* sözleşmesi etkin olmalı (sandık için imzalıysa aynı hesap).
+3. **App Store Connect › Birdie Smash › Monetization › In-App Purchases**: dört **Consumable** ürün, kimlikler birebir:
+
+   | Product ID | Ad (TR / EN) | Önerilen fiyat |
+   |---|---|---|
+   | `com.birdiesmash.app.tuy1000` | Bir avuç Tüy / A handful of Feathers | 0,99 $ |
+   | `com.birdiesmash.app.tuy3500` | Tüy kesesi / Feather pouch | 2,99 $ |
+   | `com.birdiesmash.app.tuy8000` | Tüy sandığı / Feather chest | 5,99 $ |
+   | `com.birdiesmash.app.tuy20000` | Tüy hazinesi / Feather hoard | 11,99 $ |
+
+   Her üründe inceleme ekran görüntüsü olarak TF'deki Tüy dükkânı sayfası yeter. Ürünleri bir sonraki sürüme iliştir.
+4. **Sandbox testi**: Ayarlar › App Store › Sandbox hesabı ile TF build'inde üst çubuktaki Tüy sayacına dokun → paket al →
+   Tüy cüzdana eklenmeli. Uygulamayı silip yeniden kur → iCloud açıksa ilerleme ve aldığın Tüy geri gelmeli.
+
 ## Sonra
 
 - Uygulama ikonu (şu an Flutter varsayılanı).
