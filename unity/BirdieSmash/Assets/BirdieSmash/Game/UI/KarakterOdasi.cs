@@ -115,7 +115,7 @@ namespace BirdieSmash.Game
             if (ps == null || ps == "kafa") KafaSekliSira(c);
             if (ps == null || ps == "cerceve")
             {
-                var kl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("kaplama")) kl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
+                var kl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("kaplama")) kl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, parla = o.parla, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
                 OrnekSira(c, L.T("Çerçeve kaplaması"), kl, Ayar.GORUNUM["kaplama"], id => { Ayar.GORUNUM["kaplama"] = id; Ayar.Kaydet(); });
             }
             if (ps == null || ps == "saft") SaftSira(c);
@@ -333,7 +333,7 @@ namespace BirdieSmash.Game
             var go = Kozmetik.Oge(Kozmetik.SAC, dn ?? sec);
             if (go != null && !go.bant && Ayar.gear.bant != "yok") c.Add(Yazi(L.T("{0} saçta kafa bandı görünmez (saçın içinde kalır); bandın etkisi sürer.", L.T(go.ad)), 12, "soluk"));
             if (dn != null) { var o = Kozmetik.Oge(Kozmetik.SAC, dn); DenemeKart(c, Kozmetik.SAC, dn, o.ad, o.fiyat, o.sv, Kozmetik.Durum(gr, Kozmetik.SAC, dn, sec), Kozmetik.AlOlur(gr, Kozmetik.SAC, dn, sec)); }
-            var l = new List<Ornek>(); foreach (var o in Karakter.Gorunum("sac")) l.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
+            var l = new List<Ornek>(); foreach (var o in Karakter.Gorunum("sac")) l.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, parla = o.parla, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
             OrnekSira(c, L.T("Saç rengi"), l, Ayar.GORUNUM["sac"], id => { Ayar.GORUNUM["sac"] = id; Ayar.Kaydet(); }, true);
         }
 
@@ -485,7 +485,7 @@ namespace BirdieSmash.Game
             // Sade (2026-10-27): saç biçimi tek, saç kabuğu düz renkli parça: saç rengi burada (Saç sayfası Sade'de yok).
             if (Ayar.model == "sade")
             {
-                var sl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("sac")) sl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
+                var sl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("sac")) sl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, parla = o.parla, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
                 OrnekSira(c, L.T("Saç rengi"), sl, Ayar.GORUNUM["sac"], id => { Ayar.GORUNUM["sac"] = id; Ayar.Kaydet(); }, true);
             }
         }

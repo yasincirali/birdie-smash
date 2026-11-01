@@ -422,7 +422,7 @@ namespace BirdieSmash.Game
         }
 
         // ---- Görünüm segmenti (karakter, adım 6) ----
-        class Ornek { public string id, ad, renk, neden, kisa; public bool acik; }   // kisa: kilitli karede görünen kısa koşul ("Sv 14")
+        class Ornek { public string id, ad, renk, neden, kisa; public bool acik, parla; }   // parla: ışın/mistik öğe (köşede ◆, etikette "parlar")   // kisa: kilitli karede görünen kısa koşul ("Sv 14")
 
         // Renk örnekleri: kare (44 pt) + seçili ✓ ve kalın çerçeve; "modelin rengi" kişi simgesiyle; kilitli kilit + "Sv n".
         // Başlıkta seçilenin adı (renk körlüğü: hangisinin seçili olduğu yazıyla da okunur).
@@ -439,8 +439,9 @@ namespace BirdieSmash.Game
                 if (on) d.Add(Ikon(Ikonlar.Tik, 18, ik));
                 else if (!o.acik) { d.Add(Ikon(Ikonlar.Kilit, 14, ik)); if (!string.IsNullOrEmpty(o.kisa)) { var sy = Yazi(o.kisa, 10, "renk-kilit-yazi"); sy.style.color = ik; d.Add(sy); } }
                 else if (o.renk == null) d.Add(Ikon(Ikonlar.Kisi, 18, SOLUK));
+                if (o.parla) { d.AddToClassList("renk--isin"); var pz = Yazi("◆", 11, "renk-isin-isaret"); pz.style.color = ik; d.Add(pz); }
                 if (o.acik && !on) d.AddManipulator(new Clickable(() => { sec(id); Tik(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
-                Erisim.Etiket(d, baslik + ", " + L.T(o.ad) + (o.acik ? "" : ", " + o.neden), "dugme", on, !o.acik); s.Add(d);
+                Erisim.Etiket(d, baslik + ", " + L.T(o.ad) + (o.parla ? ", " + L.T("parlar") : "") + (o.acik ? "" : ", " + o.neden), "dugme", on, !o.acik); s.Add(d);
             }
         }
 

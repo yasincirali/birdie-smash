@@ -199,21 +199,25 @@ platform :ios do
     # kırıldı; varsayım yanlıştı. Yetki artık yalnız match'in kurduğu profil onu gerçekten taşıyorsa yazılır.
     # App ID'de Game Center açılıp profil yenilenince (setup-match) kendiliğinden devreye girer.
     profil_yolu = ENV["sigh_#{BUNDLE_ID}_appstore_profile-path"].to_s
-    profil_gc = !profil_yolu.empty? && File.exist?(profil_yolu) &&
-                sh("security cms -D -i #{profil_yolu.shellescape}", log: false).include?("com.apple.developer.game-center")
+    profil_metin = !profil_yolu.empty? && File.exist?(profil_yolu) ? sh("security cms -D -i #{profil_yolu.shellescape}", log: false) : ""
+    profil_gc = profil_metin.include?("com.apple.developer.game-center")
+    # 2026-11-01 iCloud anahtar-değer deposu (bulut kaydı, Game/Bulut.cs): yalnız profil taşıyorsa eklenir; yoksa oyun kaydı
+    # yalnız cihazda tutar (eski davranış), build kırılmaz. App ID'de iCloud açılıp profil yenilenince kendiliğinden gelir.
+    profil_kv = profil_metin.include?("com.apple.developer.ubiquity-kvstore-identifier")
     UI.important("Profil Game Center yetkisi taşımıyor: başarımlar bu build'de kapalı") unless profil_gc
+    UI.important("Profil iCloud (anahtar-değer) yetkisi taşımıyor: bulut kaydı bu build'de kapalı") unless profil_kv
     begin
-      raise "profil Game Center taşımıyor" unless profil_gc
+      raise "profil Game Center ya da iCloud taşımıyor" unless profil_gc || profil_kv
       require "xcodeproj"
       ent_ad = "BirdieSmash.entitlements"
+      gc_satir = profil_gc ? "\t<key>com.apple.developer.game-center</key>\n\t<true/>\n" : ""
+      kv_satir = profil_kv ? "\t<key>com.apple.developer.ubiquity-kvstore-identifier</key>\n\t<string>$(TeamIdentifierPrefix)$(CFBundleIdentifier)</string>\n" : ""
       File.write(File.join(dir, ent_ad), <<~PLIST)
         <?xml version="1.0" encoding="UTF-8"?>
         <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
         <dict>
-        	<key>com.apple.developer.game-center</key>
-        	<true/>
-        </dict>
+        #{gc_satir}#{kv_satir}</dict>
         </plist>
       PLIST
       proj = Xcodeproj::Project.open(xcodeproj)
@@ -222,9 +226,9 @@ platform :ios do
       # çözüldü, dosya bulunamadı. Bu makinedeki mutlak yol yazılır (dosya tam orada üretildi).
       hedef.build_configurations.each { |c| c.build_settings["CODE_SIGN_ENTITLEMENTS"] = File.expand_path(File.join(dir, ent_ad)) }
       proj.save
-      UI.message("Game Center yetkisi eklendi: #{ent_ad}")
+      UI.message("Yetkiler eklendi (#{ent_ad}): Game Center #{profil_gc}, iCloud KV #{profil_kv}")
     rescue => e
-      UI.important("Game Center yetkisi eklenmedi (başarımlar çalışmaz): #{e.message}")
+      UI.important("Yetki dosyası eklenmedi (başarımlar ve bulut kaydı çalışmaz): #{e.message}")
       # 2026-10-26 (koşu 40393369125): Unity Social API'yi görünce kendi BirdieSmash.entitlements'ını yazıp
       # CODE_SIGN_ENTITLEMENTS'a Docker yolunu koyuyor. Profil Game Center taşımıyorsa o ayar hem bulunamayan
       # dosyaya hem de profilde olmayan yetkiye işaret eder; temizlenir ki arşiv kırılmasın (oyun başarımsız yüklenir).

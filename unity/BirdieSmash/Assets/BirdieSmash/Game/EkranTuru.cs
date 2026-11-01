@@ -374,8 +374,17 @@ namespace BirdieSmash.Game
                 ui.RaketParcaSec("kordaj"); yield return Bekle(50); yield return Cek("menu_" + ek + "tezgah_sekil_" + sk + "_kordaj");
             }
             ui.RaketIncele(false); yield return Bekle(10); Ayar.RGOR["kafa"] = "kalp"; root.vitrin.Yenile(); ui.VitrinOdak(Vitrin.TUTUS, "drive"); yield return Bekle(50); yield return Cek("menu_" + ek + "tutus_kalp");
+            // 2026-11-01 ışın raketleri: her ışın kaplaması tutuş kadrajında (çerçeve çekirdeği, hale, kordaj parlaması). Kaplama
+            // seviye ister; tur geçici olarak xp'yi Sv 30'a çıkarır ve geri koyar (kayda yazmaz).
+            {
+                int xp0 = Ayar.gear.eko.xp; string kp0 = Ayar.GORUNUM["kaplama"]; Ayar.gear.eko.xp = 1000000;
+                foreach (var o in Karakter.Gorunum("kaplama")) if (o.parla) { Ayar.GORUNUM["kaplama"] = o.id; root.vitrin.Yenile(); ui.RaketIncele(true); yield return Bekle(60); yield return Cek("menu_" + ek + "raket_isin_" + o.id); ui.RaketIncele(false); }   // r112: tutuş kadrajı raket kafasını kesiyordu; inceleme görünümü bütün raketi gösterir
+                if (ek == "") { Ayar.GORUNUM["kaplama"] = "isin_gok"; root.vitrin.Yenile(); ui.RaketParcaSec("cerceve"); yield return Bekle(60); yield return Cek("menu_tezgah_isin"); ui.RaketParcaSec(null); }
+                Ayar.gear.eko.xp = xp0; Ayar.GORUNUM["kaplama"] = kp0;
+            }
             Ayar.RGOR["kafa"] = k0; Ayar.RGOR["desen"] = d0; Ayar.RGOR["saft"] = s0; root.vitrin.Yenile(); ui.RaketParcaSec(null);
             ui.SoyunmaSegment(0); yield return Bekle(20); yield return Cek("menu_" + ek + "atolye");
+            if (ek == "") { ui.DukkanAc(); yield return Bekle(120); yield return Cek("menu_dukkan"); ui.Geri(); yield return Bekle(10); }   // 2026-11-01 Tüy dükkânı (Editor sahte mağazası fiyat verir)
             ui.YuvaAc("raket"); yield return Bekle(20); yield return Cek("menu_" + ek + "yuva_raket"); ui.Geri(); yield return Bekle(5);
             ui.YuvaAc("tel"); yield return Bekle(20); yield return Cek("menu_" + ek + "yuva_kordaj"); ui.Geri(); yield return Bekle(5);
         }
@@ -820,6 +829,12 @@ namespace BirdieSmash.Game
             root.StartMatch(false, false, false); botAcik = false; yield return Bekle(45);
             yield return Yakin("model_mac_pelerin", root.match.me, true);
             Ayar.KOZ[Kozmetik.SIRT] = "yok"; Ayar.KOZ[Kozmetik.SAPKA] = "yok";
+            // ışın raketi maçta: renkli salınım izi ralli sırasında (botla birkaç saniye oynatılır)
+            {
+                int xp0 = Ayar.gear.eko.xp; string kp0 = Ayar.GORUNUM["kaplama"]; Ayar.gear.eko.xp = 1000000; Ayar.GORUNUM["kaplama"] = "isin_kizil";
+                root.StartMatch(false, false, false); botAcik = true; yield return Bekle(150); yield return Cek("model_mac_isin_ralli"); yield return Yakin("model_mac_isin", root.match.me, true); botAcik = false;
+                Ayar.gear.eko.xp = xp0; Ayar.GORUNUM["kaplama"] = kp0;
+            }
             yield return Dizilis();
             // başka model seçiliyken: Karakter sayfası uyarı kartı (deneme figürü değiştirmez) ve Ayarlar'daki üç model
             Ayar.KOZ[Kozmetik.TIP] = "atlet"; Ayar.KOZ[Kozmetik.SAC] = "kisa"; Ayar.gear.ayakkabi = "klasik";

@@ -32,16 +32,20 @@
   {"id": "kep", "ad": "Kep", "sv": 2, "fiyat": 80, "nadir": "siradan"},
   {"id": "kep_ters", "ad": "Ters kep", "sv": 2, "fiyat": 80, "nadir": "siradan"},
   {"id": "bere", "ad": "Bere", "sv": 3, "fiyat": 120, "nadir": "siradan"},
+  {"id": "kedi", "ad": "Kedi kulağı", "sv": 4, "fiyat": 150, "nadir": "nadir", "varlik": "ozel"},
   {"id": "kulaklik", "ad": "Kulaklık", "sv": 5, "fiyat": 200, "nadir": "nadir"},
   {"id": "tavsan", "ad": "Tavşan kulağı", "sv": 7, "fiyat": 300, "garip": true, "nadir": "nadir"},
   {"id": "ayi", "ad": "Ayı başlığı", "sv": 8, "fiyat": 450, "nadir": "nadir", "varlik": "kaykit"},
+  {"id": "seytan", "ad": "Şeytan boynuzu", "sv": 9, "fiyat": 450, "nadir": "nadir", "varlik": "ozel"},
   {"id": "buyucu", "ad": "Büyücü şapkası", "sv": 10, "fiyat": 500, "garip": true, "nadir": "destansi"},
   {"id": "yildiz", "ad": "Yıldız şapkası", "sv": 11, "fiyat": 600, "nadir": "destansi", "varlik": "kaykit"},
   {"id": "demir", "ad": "Demir miğfer", "sv": 12, "fiyat": 700, "nadir": "destansi", "varlik": "kaykit"},
   {"id": "boynuz", "ad": "Boynuzlu miğfer", "sv": 13, "fiyat": 800, "nadir": "destansi", "varlik": "kaykit"},
   {"id": "sovalye", "ad": "Şövalye kaskı", "sv": 14, "fiyat": 800, "garip": true, "nadir": "destansi"},
+  {"id": "tac", "ad": "Taç", "sv": 15, "fiyat": 900, "nadir": "destansi", "varlik": "ozel"},
   {"id": "kapson", "ad": "Gölge kapşonu", "sv": 16, "fiyat": 900, "nadir": "mistik", "varlik": "kaykit", "renk": "#2A2236"},
-  {"id": "kemik_buyucu", "ad": "Gece büyücüsü", "sv": 18, "fiyat": 1000, "nadir": "mistik", "varlik": "kaykit", "renk": "#22265A"}
+  {"id": "kemik_buyucu", "ad": "Gece büyücüsü", "sv": 18, "fiyat": 1000, "nadir": "mistik", "varlik": "kaykit", "renk": "#22265A"},
+  {"id": "hale", "ad": "Melek halesi", "sv": 19, "fiyat": 1000, "nadir": "mistik", "varlik": "ozel"}
 ],
 "sevinc_not": "2026-11-01 Dolap › Sevinç (Ar-Ge K3, yasin 'maç sonunda da sevinç kategorisi kısmını gönder'): sayı kazanınca ve maç sonunda oyuncunun yaptığı hareket. YALNIZ görünüş (güç alanı yasak), Tüy ve seviyeyle. Klip değil, kemik üstü işlemsel poz (Game/PlayerView Sevinc): her modelde aynı çalışır. Kaybeden maç sonunda hep 'iyi oyundu' (raketi rakibe kaldırır), satılmaz. İlk öğe ücretsiz varsayılan.",
 "sevinc": [
@@ -70,10 +74,13 @@
   {"id": "yok", "ad": "Sırt boş", "sv": 1, "fiyat": 0},
   {"id": "gezgin_pelerin", "ad": "Gezgin pelerini", "sv": 3, "fiyat": 150, "nadir": "siradan", "varlik": "kaykit"},
   {"id": "ayi_pelerin", "ad": "Kürk pelerin", "sv": 6, "fiyat": 350, "nadir": "nadir", "varlik": "kaykit"},
+  {"id": "jetpack", "ad": "Jetpack", "sv": 10, "fiyat": 600, "nadir": "destansi", "varlik": "ozel"},
   {"id": "sovalye_pelerin", "ad": "Şövalye pelerini", "sv": 12, "fiyat": 700, "nadir": "destansi", "varlik": "kaykit"},
+  {"id": "yarasa_kanat", "ad": "Yarasa kanadı", "sv": 14, "fiyat": 800, "nadir": "destansi", "varlik": "ozel"},
   {"id": "yildiz_pelerin", "ad": "Yıldız pelerini", "sv": 15, "fiyat": 850, "nadir": "mistik", "varlik": "kaykit", "renk": "#2C2C78"},
   {"id": "golge_pelerin", "ad": "Gölge pelerini", "sv": 17, "fiyat": 950, "nadir": "mistik", "varlik": "kaykit", "renk": "#231A2E"},
-  {"id": "ruh_pelerin", "ad": "Ruh omuzluğu", "sv": 20, "fiyat": 1000, "nadir": "mistik", "varlik": "kaykit", "renk": "#2FB3A2"}
+  {"id": "ruh_pelerin", "ad": "Ruh omuzluğu", "sv": 20, "fiyat": 1000, "nadir": "mistik", "varlik": "kaykit", "renk": "#2FB3A2"},
+  {"id": "melek_kanat", "ad": "Melek kanadı", "sv": 22, "fiyat": 1000, "nadir": "mistik", "varlik": "ozel"}
 ],
 "tarzlar": [
   {"id": "dengeli", "ad": "Dengeli",     "sv": 1,  "arti": "Artısı da eksisi de yok",                               "eksi": "",                                  "etki": {}},
@@ -125,6 +132,12 @@
 ],
 "kaplama": [
   {"id": "model", "ad": "Modelin rengi", "renk": null,      "sv": 1},
+  {"id": "gece",   "ad": "Gece",          "renk": "#232a3d", "sv": 3},
+  {"id": "mercan", "ad": "Mercan",        "renk": "#ff7a59", "sv": 5},
+  {"id": "isin_gok",    "ad": "Gök ışını",    "renk": "#4fd2ff", "sv": 8,  "parla": true},
+  {"id": "isin_kizil",  "ad": "Kızıl ışın",   "renk": "#ff3448", "sv": 12, "parla": true},
+  {"id": "isin_zumrut", "ad": "Zümrüt ışın",  "renk": "#3dff86", "sv": 16, "parla": true},
+  {"id": "isin_mor",    "ad": "Mor plazma",   "renk": "#b26bff", "sv": 20, "parla": true},
   {"id": "altin", "ad": "Altın",         "renk": "#ffc94a", "sv": 30}
 ],
 "sort_not": "2026-10-27 şort rengi (yasin: Gerçekçi'de beden sabit, aksesuarlar değişsin: şort, tişört, ayakkabı, bant, bileklik, raket). Yalnız görünüş, ücretsiz; Gerçekçi (doku × renk) ve Sade (düz renk) modelde görünür, Oyuncak'ta şort gövde atlasında olduğu için sunulmaz (Ayar.SortGorunur). Modelin rengi = Gerçekçi'de eski lacivert, Sade'de FBX rengi.",

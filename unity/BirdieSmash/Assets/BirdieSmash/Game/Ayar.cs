@@ -74,12 +74,14 @@ namespace BirdieSmash.Game
         public static readonly Dictionary<string, string> RGOR = new Dictionary<string, string> { { "grip", "siyah" }, { "tel", "beyaz" }, { "tel2", "kirmizi" }, { "desen", "tek" }, { "kafa", "oval" }, { "saft", "model" } };
         public static string FORMA { get { return GS.forma; } }
         static readonly PrefsKayit kayit = new PrefsKayit();
+        public static IKayit Kayit { get { return kayit; } }   // 2026-11-01 Tüy dükkânı defteri (Core/TuyDukkan)
 
         static int EskiInt(string k, int d) { try { return PlayerPrefs.HasKey(k) ? PlayerPrefs.GetInt(k, d) : d; } catch { return d; } }
         static string Str(string k, string d) { try { return PlayerPrefs.HasKey(k) ? PlayerPrefs.GetString(k, d) : d; } catch { return d; } }
 
         public static void Yukle()
         {
+            Bulut.Esitle();   // 2026-11-01 iCloud: yeni kurulumda ilerleme buluttan gelir; HTML devrinden ve okumadan önce
             devirSayisi = Devir.Kabul(kayit);   // Kaydet'ten önce: HTML değeri Unity varsayılanıyla ezilmesin
             var b = Json.Obj(Json.Parse(Str("tuytop_v2", null)));
             if (b != null) { bestRally = (int)Json.Num(b, "rally", 0); wins = (int)Json.Num(b, "wins", 0); kariyer = (int)Json.Num(b, "kariyer", 0); gorev = (int)Json.Num(b, "gorev", 0); sampiyon = Json.Bool(b, "sampiyon", false); }
@@ -160,6 +162,8 @@ namespace BirdieSmash.Game
         }
         // Seçili saç boyası parlıyor mu (mistik boyalar; seviyesi gelmemişse GorunumRenk gibi yok sayılır).
         public static bool SacParla { get { string id; if (!GORUNUM.TryGetValue("sac", out id)) return false; var o = Karakter.Oge("sac", id); return o != null && o.parla && o.renk != null && (gear == null || o.sv <= gear.Seviye()); } }
+        // Seçili raket kaplaması ışın mı (parla = ışın; seviyesi gelmemişse yok sayılır).
+        public static bool KaplamaIsin { get { string id; if (!GORUNUM.TryGetValue("kaplama", out id)) return false; var o = Karakter.Oge("kaplama", id); return o != null && o.parla && o.renk != null && (gear == null || o.sv <= gear.Seviye()); } }
         public static void Kaydet()
         {
             if (ilerleme != null) { kariyer = ilerleme.Tur1Gecilen(); PlayerPrefs.SetString(Ilerleme.ANAHTAR, ilerleme.Yaz()); }

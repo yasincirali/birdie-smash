@@ -206,6 +206,17 @@ namespace BirdieSmash.Game
                     if (ust > h.y + yy) { float yeniY = (ust - alt) * .5f; h.y = (ust + alt) * .5f; yy = Mathf.Max(yy, yeniY); }
                     // genişlik bilerek sabit: figür döndükçe dünya sınırı (AABB) yatayda değişir, kadraj nabız gibi atardı
                 }
+                // 2026-11-01 (r112 model_vitrin_sapka_*): taç dişleri, hale ve kulaklar saçın üstünde; pencere yalnız saça göre
+                // büyüyünce hale kadraj dışında kaldı, taç yalnız dişlerinin ucuyla göründü. Aynı kural aksesuar köküne: pencere
+                // takılı şapkanın tepesini de kapsayacak kadar yukarı büyür, yüz yerinde kalır. Şapka yokken kök yok, kadraj aynen.
+                var ak = fig != null ? fig.AksesuarKok : null;
+                if (ak != null && ak.gameObject.activeInHierarchy)
+                {
+                    float ust = float.MinValue;
+                    foreach (var r in ak.GetComponentsInChildren<Renderer>()) if (r.enabled) ust = Mathf.Max(ust, r.bounds.max.y);
+                    ust += .06f * boy; float alt = h.y - yy;   // r115: .015 payla hale kadrajın üst kenarına yapıştı
+                    if (ust > h.y + yy) { float yeniY = (ust - alt) * .5f; h.y = (ust + alt) * .5f; yy = Mathf.Max(yy, yeniY); }
+                }
                 float d = Uzaklik(yy, yx, out kay);
                 cam = h + new Vector3(0, .05f, 1).normalized * d; hedef = h - Vector3.up * kay;
             }
