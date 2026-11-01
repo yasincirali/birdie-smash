@@ -743,7 +743,7 @@ static class BotMac
         foreach (var o in SA.Concat(SI))
         {
             if (o.nadir != null && !new[] { "siradan", "nadir", "destansi", "mistik" }.Contains(o.nadir)) Fail("nadirlik bilinmiyor: " + o.id);
-            if (o.varlik == "kaykit" && !System.IO.File.Exists("unity/BirdieSmash/Assets/Resources/karakter/aks/" + o.id + ".bytes")) Fail("hazır ağ yok: " + o.id);
+            if ((o.varlik == "kaykit" || o.varlik == "ozel") && !System.IO.File.Exists("unity/BirdieSmash/Assets/Resources/karakter/aks/" + o.id + ".bytes")) Fail("hazır ağ yok: " + o.id);
             if (o.id != "yok" && o.nadir == null) Fail("nadirlik eksik: " + o.id);
         }
         { var gs = SvGear(20, 5000); if (!Kozmetik.Al(gs, Kozmetik.SIRT, "ruh_pelerin", "yok") || gs.eko.tuy != 5000 - Kozmetik.Bul(Kozmetik.SIRT, "ruh_pelerin").fiyat) Fail("Sv 20'de ruh omuzluğu alınmalı"); }
