@@ -1,0 +1,13 @@
+ekran boyu istendi 1320x2868 · oldu 1320x2868
+magaza tr_01_smac · vuruş jump (perfect) · skor 9–7 · 1320x2868
+magaza tr_02_ralli · ralli 12 (en uzun 12)
+magaza tr_03_kariyer · taşma tr_03_kariyer · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 58 öğe · 0 sorun
+magaza tr_04_karakter · taşma tr_04_karakter · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 76 öğe · 1 sorun
+   ! sözcük bölünüyor "olduklarından" 76>68 · "sahip olduklarından" · [285,647 68x49]
+magaza tr_05_imza · rakip imza hazırlığı VAR (mermi)
+magaza en_01_smac · vuruş jump (perfect) · skor 9–7 · 1320x2868
+magaza en_02_ralli · ralli 12 (en uzun 12)
+magaza en_03_kariyer · taşma en_03_kariyer · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 58 öğe · 0 sorun
+magaza en_04_karakter · taşma en_04_karakter · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 76 öğe · 0 sorun
+magaza en_05_imza · rakip imza hazırlığı VAR (mermi)
+ekran boyu istendi 390x845 · oldu 390x845
