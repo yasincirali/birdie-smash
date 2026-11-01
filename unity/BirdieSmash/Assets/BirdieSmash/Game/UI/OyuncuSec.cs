@@ -75,8 +75,10 @@ namespace BirdieSmash.Game
                 k.AddManipulator(new Clickable(() => { oyuncuSecSecili = ii; HazirUygula(HAZIR[ii]); Tik(); OyuncuSecKur(); }));
                 Erisim.Etiket(k, L.T(h[0]) + ", " + alt, "dugme", on); iz.Add(k);
             }
-            c.Add(Dugme(L.T("Rastgele"), () => { oyuncuSecSecili = Random.Range(0, HAZIR.Length); HazirUygula(HAZIR[oyuncuSecSecili]); Tik(); OyuncuSecKur(); }, null, L.T("yalnız açık parçalardan"), 15));
-            c.Add(Dugme(L.T("Atla"), OyuncuSecAtla, "kucuk-dugme", null, 14));
+            // r100: alt sayfa vitrini fazla örtüyordu; Rastgele ve Atla tek satırda (büyük yazıda alt alta, USS).
+            var ds = Satir("arali"); ds.AddToClassList("hazir-dugmeler"); c.Add(ds);
+            var rd = Dugme(L.T("Rastgele"), () => { oyuncuSecSecili = Random.Range(0, HAZIR.Length); HazirUygula(HAZIR[oyuncuSecSecili]); Tik(); OyuncuSecKur(); }, null, null, 15); rd.AddToClassList("hazir-dugme"); ds.Add(rd);
+            var at = Dugme(L.T("Atla"), OyuncuSecAtla, null, null, 15); at.AddToClassList("hazir-dugme"); ds.Add(at);
             AltEylem(Dugme(L.T("Bununla oyna"), () => { root.sfx.Yukselt(); Yerel.Hap("tick"); OyuncuSecKapat(); }, "dugme--birincil", null, 19));
         }
         // EkranTuru için: bir kartı seç / Atla.

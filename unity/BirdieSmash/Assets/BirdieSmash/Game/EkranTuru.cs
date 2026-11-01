@@ -561,7 +561,10 @@ namespace BirdieSmash.Game
             root.AnaMenu(); yield return Bekle(10);
             // 2026-10-31 Usta (Ar-Ge U1/U4): ilk Usta maçı kartı ve oyuncunun ayağındaki iki erişim halkası
             bool e0 = Ayar.easy; Ayar.easy = false; root.HudKatman.UstaKartSifirla(); root.StartMatch(false, false, false); botAcik = true;
-            yield return Bekle(20); yield return Cek("usta_kart"); yield return Bekle(70); yield return Cek("usta_halka"); botAcik = false;
+            yield return Bekle(20); yield return Cek("usta_kart");
+            // halkalar yalnız rakibin vuruşundan sonra (top bize gelirken): o ana kadar bekle (en çok ~10 sn)
+            for (int bk = 0; bk < 600 && !(root.match.s != null && root.match.s.from == "op" && !root.match.s.dead && root.match.s.y > Court.NET - 1 && root.match.s.t > .25f); bk++) yield return null;
+            yield return Cek("usta_halka"); botAcik = false;
             Ayar.easy = e0; root.HudKatman.UstaKartSifirla(); root.AnaMenu(); yield return Bekle(10);
             // 2026-10-31 K1: ilk maçtan sonra "Oyuncunu seç" (turda kendiliğinden açılmaz; burada elle), bir kart seçili, sonra Atla
             ui.OyuncuSecAc(); yield return Bekle(40); yield return Cek("oyuncu_sec");
