@@ -729,7 +729,7 @@ static class BotMac
         int bedava = T.Count(t => t.fiyat == 0 && t.sv == 1); if (bedava < 1 || bedava > 2) Fail("başta 1–2 tip ücretsiz olmalı: " + bedava);
         if (Kozmetik.Bul(Kozmetik.TIP, "kadin") == null || Kozmetik.Bul(Kozmetik.TIP, "kadin").fiyat != 0 || Kozmetik.Bul(Kozmetik.TIP, "kadin").sv != 1) Fail("kimlik satılmaz: Atletik kadın baştan ücretsiz olmalı");
         if (S.Length < 10 || S[0].fiyat != 0 || S.Count(o => o.varlik == null) != 1) Fail("en az 10 saç biçimi, ilki ücretsiz, bir tane kazıtılmış (parçasız)");
-        foreach (var o in T.Concat(S)) { if (o.fiyat < 0 || o.fiyat > 1000 || (o.sv == 1 && o.fiyat > 0)) Fail("kozmetik fiyat/kapı: " + o.id + " " + o.fiyat + " Sv " + o.sv); if (o.paket != null) Fail("paket alanı şimdilik boş olmalı (IAP yok): " + o.id); }
+        foreach (var o in T.Concat(S)) { if (o.fiyat < 0 || o.fiyat > 2500 || (o.sv == 1 && o.fiyat > 0)) Fail("kozmetik fiyat/kapı: " + o.id + " " + o.fiyat + " Sv " + o.sv); if (o.paket != null) Fail("paket alanı şimdilik boş olmalı (IAP yok): " + o.id); }
         int garipMin = S.Where(o => o.garip).Select(o => o.fiyat).DefaultIfEmpty(0).Min(), sadeMax = S.Where(o => !o.garip).Select(o => o.fiyat).Max();
         if (S.Count(o => o.garip) < 2 || garipMin <= sadeMax) Fail("garip saçlar en pahalılar olmalı: " + garipMin + " ≤ " + sadeMax);
         if (S.Distinct().Count() != S.Select(o => o.id).Distinct().Count() || S.Where(o => o.varlik != null).Select(o => o.varlik).Distinct().Count() != S.Count(o => o.varlik != null)) Fail("saç kimlik/varlık tekrarı");
@@ -739,12 +739,25 @@ static class BotMac
         // (1c) sırt (2026-11-01): ilki "yok" ücretsiz; hazır ağlar (varlik kaykit) Resources/karakter/aks/<id>.bytes olarak var; nadirlik dört sınıftan biri
         var SI = Kozmetik.Liste(Kozmetik.SIRT);
         if (SI.Length < 4 || SI[0].id != "yok" || SI[0].fiyat != 0) Fail("sırt: ilki 'yok' ücretsiz, en az 3 pelerin");
-        foreach (var o in SA.Concat(YU).Concat(SI)) if (o.fiyat < 0 || o.fiyat > 1000 || (o.sv == 1 && o.fiyat > 0) || o.paket != null) Fail("aksesuar fiyat/kapı: " + o.id);
+        foreach (var o in SA.Concat(YU).Concat(SI)) if (o.fiyat < 0 || o.fiyat > 2500 || (o.sv == 1 && o.fiyat > 0) || o.paket != null) Fail("aksesuar fiyat/kapı: " + o.id);
         foreach (var o in SA.Concat(SI))
         {
             if (o.nadir != null && !new[] { "siradan", "nadir", "destansi", "mistik" }.Contains(o.nadir)) Fail("nadirlik bilinmiyor: " + o.id);
             if ((o.varlik == "kaykit" || o.varlik == "ozel") && !System.IO.File.Exists("unity/BirdieSmash/Assets/Resources/karakter/aks/" + o.id + ".bytes")) Fail("hazır ağ yok: " + o.id);
             if (o.id != "yok" && o.nadir == null) Fail("nadirlik eksik: " + o.id);
+        }
+        // (1d) Tüy dengesi (2026-11-01, yasin: "hemen her şeyi alabilememesi lazım"; tool/ekonomi_denge.py): nadirlik bantları
+        // birbirine karışmaz (her sınıfın en ucuzu bir alt sınıfın en pahalısından pahalı) ve kozmetik kataloğu, Sv 30'a gelen
+        // ücretsiz oyuncunun güçten artan Tüy'ünün (~19.000) en az iki katıdır: oyuncu seçer, her şeyi toplayamaz.
+        {
+            string[] sinif = { "siradan", "nadir", "destansi", "mistik" };
+            for (int i = 1; i < sinif.Length; i++)
+            {
+                var alt = SA.Concat(SI).Where(o => o.nadir == sinif[i - 1]).Select(o => o.fiyat); var ust = SA.Concat(SI).Where(o => o.nadir == sinif[i]).Select(o => o.fiyat);
+                if (alt.Any() && ust.Any() && ust.Min() < alt.Max()) Fail("nadirlik bandı karışık: " + sinif[i] + " en ucuz " + ust.Min() + " < " + sinif[i - 1] + " en pahalı " + alt.Max());
+            }
+            int katalog = Kozmetik.KAT.Sum(kat => Kozmetik.Liste(kat).Sum(o => o.fiyat));
+            if (katalog < 40000) Fail("kozmetik kataloğu çok ucuz, ücretsiz oyuncu her şeyi toplar: " + katalog);
         }
         { var gs = SvGear(20, 5000); if (!Kozmetik.Al(gs, Kozmetik.SIRT, "ruh_pelerin", "yok") || gs.eko.tuy != 5000 - Kozmetik.Bul(Kozmetik.SIRT, "ruh_pelerin").fiyat) Fail("Sv 20'de ruh omuzluğu alınmalı"); }
         { var gs = SvGear(5, 5000); if (Kozmetik.Al(gs, Kozmetik.SIRT, "yildiz_pelerin", "yok")) Fail("seviye kapısı Tüy ile aşılmamalı (sırt)"); }
@@ -773,7 +786,7 @@ static class BotMac
             var re = Json.Obj(Json.Parse(r[0])); if ((int)Json.Num(re, "tuy", 0) != 3510 || (int)Json.Num(re, "xp", 0) != 80 || TuyDukkan.Toplam(r[1]) != 3500) Fail("bulut: birleşme Tüy'ü eklemeli, XP'yi korumalı");
             if (BulutKayit.Karsilastir(r[0], bul, r[1]) != BulutKayit.Karar.Yaz) Fail("bulut: birleşmeden sonra tekrar eklememeli");
         }
-        { var ga = SvGear(14, 2000); var ha = ga.Hesap(); if (!Kozmetik.Al(ga, Kozmetik.SAPKA, "sovalye", "yok") || !Kozmetik.Al(ga, Kozmetik.YUZ, "gunes", "yok")) Fail("Sv 14'te şövalye kaskı ve güneş gözlüğü alınmalı");
+        { var ga = SvGear(14, Kozmetik.Bul(Kozmetik.SAPKA, "sovalye").fiyat + Kozmetik.Bul(Kozmetik.YUZ, "gunes").fiyat + 200); var ha = ga.Hesap(); if (!Kozmetik.Al(ga, Kozmetik.SAPKA, "sovalye", "yok") || !Kozmetik.Al(ga, Kozmetik.YUZ, "gunes", "yok")) Fail("Sv 14'te şövalye kaskı ve güneş gözlüğü alınmalı");
           var hb = ga.Hesap(); if (Gear.Cubuklar(ha).Zip(Gear.Cubuklar(hb), (p, q) => p - q).Any(v => v != 0)) Fail("aksesuar alımı gücü değiştirdi"); }
         // (2) kozmetik GearStats'a dokunmaz: aynı ekipmanla hesap birebir (seçim Ayar'da, Gear'de değil; Kozmetik.Al yalnız Tüy)
         var g0 = SvGear(30, 9000); var h0 = g0.Hesap();
@@ -783,8 +796,8 @@ static class BotMac
         var y = SvGear(1, 5000);
         if (Kozmetik.Durum(y, Kozmetik.TIP, "uzun", "atlet") != ModelDurum.Kilitli || Kozmetik.Al(y, Kozmetik.TIP, "uzun", "atlet") || y.eko.tuy != 5000) Fail("Sv 1'de Uzun ve ince kilitli olmalı");
         if (!Kozmetik.Sahip(y, Kozmetik.TIP, "kadin") || !Kozmetik.Sahip(y, Kozmetik.SAC, "atkuyrugu") || !Kozmetik.Sahip(y, Kozmetik.SAC, "yan") || Kozmetik.Sahip(y, Kozmetik.SAC, "afro")) Fail("başlangıç kozmetikleri");
-        var y4 = SvGear(4, 320);
-        if (Kozmetik.Durum(y4, Kozmetik.TIP, "uzun", "atlet") != ModelDurum.Alinir || !Kozmetik.Al(y4, Kozmetik.TIP, "uzun", "atlet") || y4.eko.tuy != 20 || !Kozmetik.Sahip(y4, Kozmetik.TIP, "uzun")) Fail("Sv 4'te Uzun ve ince 300 Tüy ile alınmalı");
+        var y4 = SvGear(4, Kozmetik.Bul(Kozmetik.TIP, "uzun").fiyat + 20);
+        if (Kozmetik.Durum(y4, Kozmetik.TIP, "uzun", "atlet") != ModelDurum.Alinir || !Kozmetik.Al(y4, Kozmetik.TIP, "uzun", "atlet") || y4.eko.tuy != 20 || !Kozmetik.Sahip(y4, Kozmetik.TIP, "uzun")) Fail("Sv 4'te Uzun ve ince kendi fiyatıyla alınmalı");
         if (Kozmetik.Al(y4, Kozmetik.TIP, "uzun", "atlet") || Kozmetik.Durum(y4, Kozmetik.TIP, "uzun", "uzun") != ModelDurum.Secili) Fail("aynı tip iki kez alındı / seçili durumu");
         var y4b = SvGear(5, 100); if (Kozmetik.AlOlur(y4b, Kozmetik.SAC, "topuz", "kisa") || Kozmetik.Al(y4b, Kozmetik.SAC, "topuz", "kisa") || y4b.eko.tuy != 100) Fail("Tüy yetmeden alındı");
         // (4) kayıt ve taşıma: alınan kalıcı (tuytop_ekonomi.acik), seçili öğe korunur, bilinmeyen varsayılana düşer
