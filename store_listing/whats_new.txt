@@ -1,31 +1,25 @@
 === UNITY ===
-Bu sürümde Usta modunda yerini almak kolaylaştı, Dolap'a Sevinç geldi.
+Bu sürümde Dolap'a pelerinler, yeni şapkalar ve nadirlik geldi.
 
 Bu sürümde yeni:
-- Usta modunda topun geleceği yere yakın bir yere dokununca oyuncun tam noktayı değil, o topa vurmak için en iyi duruş yerini bulup oraya koşuyor. Parmağını sürüklersen yine istediğin noktaya ince ayar yapabilirsin.
-- Usta modunda sen vurduktan sonra oyuncun kendiliğinden kortun ortasına dönüyor. Başka bir yere dokunursan dönüşü bırakıp oraya gider.
-- Usta modunda durman gereken yer yerde iki ayak izi olarak görünüyor; oraya varınca izlerin içi doluyor. Maçın ilk iki varışında "Yerindesin" yazıyor.
-- Kolay modda hiçbir şey değişmedi; kariyeri Kolay'da da sonuna kadar oynayabilirsin.
-- Dolap'ta yeni "Sevinç" kategorisi: sayıyı ve maçı kazanınca oyuncunun yaptığı hareketi seç (Yumruk, Kollar havada, El salla, Zafer, Reverans…). İlk ikisi ücretsiz, diğerleri seviye ve Tüy ile. Maçı kaybedince oyuncun raketini rakibe kaldırıp "iyi oyundu" der. Rakip de sayı alınca sevinir.
+- Dolap'ta yeni "Sırt" kategorisi: Gezgin, Kürk, Şövalye, Yıldız ve Gölge pelerini ile Ruh omuzluğu. Pelerinler koşarken arkaya savrulur, durunca yerine iner.
+- Altı yeni şapka: Ayı başlığı, Yıldız şapkası, Demir miğfer, Boynuzlu miğfer, Gölge kapşonu ve Gece büyücüsü.
+- Her eşyanın kartında nadirliği yazıyor: Sıradan, Nadir, Destansı ya da ◆ Mistik. Mistik eşyalar altın çerçeveli ve hafifçe parlıyor.
+- Dolap kategorileri tek satırda, yana kaydırılarak seçiliyor; eşyalar üç sütunda, aynı anda daha çok eşya görünüyor.
+- Hareketi azalt açıksa pelerin sallanmaz.
 
 Nasıl denenir:
-1. Zorluğu Usta yap, bir maç başlat. Rakip vurunca yerde iki ayak izi görünmeli.
-2. Ayak izlerinin biraz yanına (tam üstüne değil) dokun: oyuncun ayak izlerinin üstüne koşmalı, izlerin içi dolmalı ve "Yerindesin" yazmalı.
-3. Kortun uzak, boş bir yerine dokun: oyuncun tam dokunduğun yere gitmeli.
-4. Topu vur ve hiçbir şeye dokunma: oyuncun kortun ortasına dönmeli. Dönerken bir yere dokun: oraya gitmeli.
-5. Zorluğu Kolay'a al ve bir kariyer maçı oyna: oyun eskisi gibi olmalı, galibiyet kariyeri ilerletmeli.
-6. Dolap › Sevinç'e gir: üstteki oyuncu seçili hareketi tekrar tekrar yapmalı. Başka bir karta dokun: hareket değişmeli.
-7. Bir maç oyna: sayı kazanınca oyuncun kısa bir sevinç yapmalı, rakip sayı alınca o sevinmeli. Maçı kazanınca zafer hareketi, kaybedince raketi rakibe kaldırma görünmeli.
+1. Dolap'a gir, kategori şeridini sola kaydır: Sırt görünmeli. Dokununca oyuncu arkasını dönmeli.
+2. Bir pelerine dokun: oyuncunun sırtında görünmeli, kartta "deneniyor" yazmalı. Alttaki çubukta fiyatı çıkmalı.
+3. Şapka'da yeni şapkaları sırayla dene: başın üstüne oturmalı, yüzün içine girmemeli. Dört oyuncu görünümünde de (Ayarlar › Oyuncu görünümü) bak.
+4. Bir pelerin alıp maç oyna: koşarken pelerin arkaya açılmalı, durunca inmeli; oyun takılmamalı.
+5. Ayarlar'dan Hareketi azalt'ı aç: pelerin sabit kalmalı.
+6. Yazı boyutunu büyüt: kartlar tek sütuna geçmeli, yazılar taşmamalı.
 
-Önceki sürümden (Usta ve Dolap):
-- Usta'da ayağın altında iki erişim halkası, vuruş anında da koşabilme, erken kaydırmanın boşa gitmemesi, ilk Usta maçında kısa kart.
-- Dolap'ta üç kombin yuvası ve Rastgele, kategoriler arası denemeler ve "Hepsini al", ilk maçtan sonra "Oyuncunu seç".
-
-Önceki sürümden (açılış ve geçiş akıcılığı):
-- Uygulamaya dokununca dönen tüy top ve halkalar hemen başlıyor; yükleme bitince ana menü açılıyor.
-- Maça geçerken perde kapandığında halkalar akıcı dönüyor; perde oyun akıcı çizmeye başlayınca açılıyor.
-8. Uygulamayı tamamen kapatıp aç: dönen top hemen başlamalı, siyah ekran olmamalı; yükleme bitince ana menü gelmeli.
-9. Oyna'ya dokunup maça geç: perde kapanınca halkalar durmadan dönmeli, maç akıcı başlamalı.
+Önceki sürümden (Usta ve Sevinç):
+- Usta'da akıllı adım, merkeze dönüş ve duruş ayak izi; Dolap'ta Sevinç kategorisi (sayı ve maç sonu hareketi).
+- Usta'da erişim halkaları, vuruşta koşabilme; Dolap'ta kombin yuvaları, "Hepsini al", "Oyuncunu seç".
+- Uygulamaya dokununca dönen tüy top hemen başlıyor; maça geçiş akıcı.
 
 === HTML ===
 Bu sürümde yeni:

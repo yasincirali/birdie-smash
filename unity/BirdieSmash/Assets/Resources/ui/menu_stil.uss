@@ -341,7 +341,13 @@
 .alt-segment .segment-cip { flex-basis: 30%; flex-grow: 1; margin-bottom: 4px; }
 .izgara > .koz-kart--kisa { min-height: 64px; }
 .koz-izgara { margin: 0 -4px; }
-.izgara > .koz-kart { flex-basis: 45%; flex-grow: 1; margin: 4px; padding: 12px; min-height: 96px; align-items: flex-start; justify-content: flex-start; }
+.izgara > .koz-kart { flex-basis: 30%; flex-grow: 1; margin: 4px; padding: 8px; min-height: 96px; align-items: flex-start; justify-content: flex-start; }
+.koz-nadir { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); letter-spacing: 0.6px; margin-top: 2px; }
+.koz-nadir--siradan { color: var(--mu); }
+.koz-nadir--nadir { color: var(--sky); }
+.koz-nadir--destansi { color: var(--coral); }
+.koz-nadir--mistik { color: var(--gold); }
+.koz-kart--mistik { border-width: 1px; border-color: rgba(249, 210, 114, 0.55); background-color: rgb(52, 38, 50); }
 .izgara > .sac-kare { flex-basis: 17%; flex-grow: 1; margin: 3px; padding: 6px 4px; min-height: 64px; min-width: 56px; align-items: center; justify-content: center; }
 .sac-kare .yazi { -unity-text-align: middle-center; white-space: normal; }
 .koz-kart.secili, .sac-kare.secili, .ayk-satir.secili { border-width: 2px; border-color: var(--sun); }
@@ -525,11 +531,14 @@
 
 /* 2026-10-30 Dolap: kategori şeridi vitrinin altında sabit (eski Oyun|Görünüm segmentinin yeri); 7 kategori 4 + 3 satır.
    Raket tezgâhının parça şeridi gövdenin başında, 6 parça 3 + 3. Kafa şekli örneği biçim simgesi + ad (yalnız renk değil). */
-.kategori-ray { flex-wrap: wrap; margin-bottom: 4px; }
-.kategori-ray .segment-cip { flex-basis: 22%; flex-grow: 1; margin-bottom: 4px; }
+.kategori-ray { flex-wrap: nowrap; margin: 8px 12px 4px 12px; flex-shrink: 0; }
+.kategori-ray .segment-cip { flex-basis: auto; flex-grow: 0; flex-shrink: 0; margin-right: 6px; padding: 8px 14px; min-height: 44px; }
+/* 2026-11-01 Dolap yenilemesi: kategori şeridi tek satır yatay kaydırma (dokuz kategori), ızgara 3 sütun, nadirlik yazısı. */
+.kategori-kaydir { flex-shrink: 0; flex-grow: 0; }
+.kategori-kaydir .unity-scroll-view__content-container { flex-direction: row; }
 .parca-ray .segment-cip { flex-basis: 30%; }
 .sekil-ornek { height: 64px; flex-basis: 28%; }
-.buyuk-yazi .kategori-ray .segment-cip { flex-basis: 40%; }
+.buyuk-yazi .kategori-ray { flex-wrap: nowrap; }
 .buyuk-yazi .sekil-ornek { height: auto; min-height: 64px; }
 
 /* 2026-10-31 seviye anı: tam ekran, mürekkep zemin; ortada sütun (sekme çubuğu ve üst çubuk altta kalır, dokununca kapanır) */

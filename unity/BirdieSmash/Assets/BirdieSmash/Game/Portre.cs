@@ -34,7 +34,7 @@ namespace BirdieSmash.Game
         static PlayerView.Gorunum DeneGorunum(string kat, string id)
         {
             var g = PlayerView.Benim();
-            if (kat == Kozmetik.SAC) { g.sacModel = id; g.sapka = null; } else if (kat == Kozmetik.SAPKA) g.sapka = id; else if (kat == Kozmetik.YUZ) g.yuz = id;
+            if (kat == Kozmetik.SAC) { g.sacModel = id; g.sapka = null; } else if (kat == Kozmetik.SAPKA) g.sapka = id; else if (kat == Kozmetik.YUZ) g.yuz = id; else if (kat == Kozmetik.SIRT) g.sirt = id;
             return g;
         }
         static string DeneAnahtar(string kat, string id, PlayerView.Gorunum g) { return "kc|" + kat + "|" + id + "|" + Ayar.model + g.Anahtar(); }
@@ -45,17 +45,17 @@ namespace BirdieSmash.Game
         }
         public static Texture Dene(string kat, string id)
         {
-            var g = DeneGorunum(kat, id); return Al(DeneAnahtar(kat, id, g), g, true, KBOY, krt, ksira, KSINIR);
+            var g = DeneGorunum(kat, id); return Al(DeneAnahtar(kat, id, g), g, true, KBOY, krt, ksira, KSINIR, kat == Kozmetik.SIRT);
         }
 
         static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben) { return Al(anahtar, g, ben, BOY, rt, sira, SINIR); }
-        static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben, int boy, Dictionary<string, RenderTexture> on, List<string> sr, int sinir)
+        static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben, int boy, Dictionary<string, RenderTexture> on, List<string> sr, int sinir, bool arka = false)
         {
             RenderTexture t; if (on.TryGetValue(anahtar, out t) && t != null && t.IsCreated()) return t;
             // D6 (2026-10-31): RT içeriği kaybolmuşsa (arka plandan dönüş, bellek baskısı) eski nesne yok edilmeden yerine yenisi
             // konuyordu; bellek sızıntısı. Önce eskisi bırakılır.
             if (t != null) { t.Release(); Object.Destroy(t); on.Remove(anahtar); }
-            try { t = Ciz(g, ben, boy); } catch (System.Exception e) { Debug.LogWarning("Birdie Smash portre çizilemedi: " + e.Message); return null; }
+            try { t = Ciz(g, ben, boy, arka); } catch (System.Exception e) { Debug.LogWarning("Birdie Smash portre çizilemedi: " + e.Message); return null; }
             if (t == null) return null;
             on[anahtar] = t; sr.Remove(anahtar); sr.Add(anahtar);
             while (sr.Count > sinir) { var e = sr[0]; sr.RemoveAt(0); RenderTexture o; if (on.TryGetValue(e, out o) && o != null) { o.Release(); Object.Destroy(o); } on.Remove(e); }
@@ -75,13 +75,14 @@ namespace BirdieSmash.Game
         }
 
         static bool RaketAlti(Transform t, Transform kok) { for (; t != null && t != kok; t = t.parent) if (t.name.ToLowerInvariant().StartsWith("raket")) return true; return false; }
-        static RenderTexture Ciz(PlayerView.Gorunum g, bool ben, int boy)
+        // arka (2026-11-01 Sırt): pelerin küçük resmi arkadan üç çeyrek, baştan beline kadar (pelerin sırtta, yüzden görünmez).
+        static RenderTexture Ciz(PlayerView.Gorunum g, bool ben, int boy, bool arka = false)
         {
             Kur();
             var fig = PlayerView.Build(kok, Ayar.model, ben, g.forma, false, g);
             try
             {
-                fig.ShowStatic(YER, ben ? 18 : -18, 0);   // üç çeyrek, kameraya dönük (yön 0 = kameraya)
+                fig.ShowStatic(YER, arka ? 155 : ben ? 18 : -18, 0);   // üç çeyrek, kameraya dönük (yön 0 = kameraya)
                 // gölge ve raket portreye girmez (r94: rakip portresinde raket sapı yüzün önünden geçiyordu)
                 foreach (var r in fig.GetComponentsInChildren<Renderer>(true)) { if (r.gameObject.name == "golge" || r is TrailRenderer || RaketAlti(r.transform, fig.transform)) r.enabled = false; }
                 Transform bas = null;
@@ -91,7 +92,7 @@ namespace BirdieSmash.Game
                 if (ust == float.MinValue) ust = YER.y + 1.8f;
                 float bY = bas != null ? bas.position.y : ust - .35f; if (ust < bY + .1f) ust = bY + .3f;
                 // kadraj: çene (baş kemiğinin biraz altı) ile tepe arası; tepe payı %8
-                float alt = bY - (ust - bY) * .35f, yari = (ust - alt) * .5f * 1.08f, orta = (ust + alt) * .5f;
+                float alt = bY - (ust - bY) * (arka ? 2.6f : .35f), yari = (ust - alt) * .5f * 1.08f, orta = (ust + alt) * .5f;
                 float d = yari / Mathf.Tan(kam.fieldOfView * .5f * Mathf.Deg2Rad);
                 var hedef = new Vector3(bas != null ? bas.position.x : YER.x, orta, bas != null ? bas.position.z : YER.z);
                 kam.transform.position = hedef + new Vector3(0, yari * .12f, d); kam.transform.LookAt(hedef);

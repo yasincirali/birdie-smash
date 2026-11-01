@@ -45,7 +45,7 @@ namespace BirdieSmash.Game
 {
     public partial class UiKok
     {
-        Image vitrinIm; Label vitrinYazi, telYazi, telNot; VisualElement soyunmaGovde, soyunmaSegment; ScrollView soyunmaKaydir;
+        Image vitrinIm; Label vitrinYazi, telYazi, telNot; VisualElement soyunmaGovde, soyunmaSegment; ScrollView soyunmaKaydir, kategoriKaydir;
         Dictionary<string, float> yukOnce; string yukK; bool telDegisti;
         Vector2 vBas; float vBasT, vSonX, vSonT; bool vBasili;
         int soyunmaSeg; string yuvaAcik = "raket";
@@ -95,7 +95,10 @@ namespace BirdieSmash.Game
             OdakDugmeleriKur();
             // Yakın plan kadrajı kutunun en-boyuna ve alttaki düğmelerin payına göre (Vitrin.Uzaklik).
             ust.RegisterCallback<GeometryChangedEvent>(e => VitrinKutuYaz(ust, alt)); alt.RegisterCallback<GeometryChangedEvent>(e => VitrinKutuYaz(ust, alt));
-            soyunmaSeg = SEG_KARAKTER; soyunmaSegment = Satir("segment"); soyunmaSegment.AddToClassList("kategori-ray"); k.Add(soyunmaSegment); KategoriKur();
+            // 2026-11-01: kategori şeridi tek satır, yatay kayar (dokuz kategori iki-üç satır çip olup vitrini küçültüyordu).
+            kategoriKaydir = new ScrollView(ScrollViewMode.Horizontal); kategoriKaydir.AddToClassList("kategori-kaydir");
+            kategoriKaydir.horizontalScrollerVisibility = ScrollerVisibility.Hidden; kategoriKaydir.verticalScrollerVisibility = ScrollerVisibility.Hidden; k.Add(kategoriKaydir);
+            soyunmaSeg = SEG_KARAKTER; soyunmaSegment = Satir("segment"); soyunmaSegment.AddToClassList("kategori-ray"); kategoriKaydir.Add(soyunmaSegment); KategoriKur();
             soyunmaKaydir = Kaydirma(k); soyunmaKaydir.AddToClassList("govde-kaydir"); soyunmaKaydir.AddToClassList("soyunma-kaydir");
             soyunmaGovde = soyunmaKaydir.contentContainer; soyunmaGovde.AddToClassList("sekme-icerik");
             // K4 (2026-10-31): satın alma alt çubuğu kaydırma alanının dışında, ekranın altında sabit (Kombin.cs).
