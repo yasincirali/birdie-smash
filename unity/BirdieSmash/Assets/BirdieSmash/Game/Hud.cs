@@ -316,7 +316,8 @@ namespace BirdieSmash.Game
             else
             {
                 // Zafer anında maç göstergesi (skor kutusu, duraklat) çizilmez: r110'da afiş başlığının arkasından okunuyordu; skor kartta.
-                if (!(root.ekran == Ekran.Bitti && root.ZaferVar && !ayrinti)) Play(M);
+                // Kayıp kartında da (r110: "Your serve · left court" kartın altından okunuyordu): sonuç ekranında hiç çizilmez.
+                if (root.ekran != Ekran.Bitti) Play(M);
                 if (root.geriT > 0 && !root.paused && root.ekran == Ekran.Oyun) GeriCiz();
                 if (root.paused) Pause(M);
                 if (root.ekran == Ekran.Bitti) Over(M);
@@ -935,7 +936,8 @@ namespace BirdieSmash.Game
             // biraz fazla), 11/12 · W/375 tabanı 12'lik satırı en az 11 pt yapar. Sığmazsa sigK yalnız boşluğu ve süsü küçültür.
             var R = root; float s = Mathf.Min(W / 390f, H / 844f) * sigK, kt = W / H < .62f ? Mathf.Max(s, 11f / 12f * W / 375f) : s, k = kt * Ayar.YaziK; YayinStil(s, k);
             float t = overT0 < 0 ? 99 : Time.unscaledTime - overT0; bool rm = Ayar.reduce;
-            bool ayr = ayrinti && !string.IsNullOrEmpty(R.bittiBilgi), hero = R.ZaferVar && !ayr;   // Ayrıntılar açıkken tam kart (yer gerekir)
+            bool ayr = ayrinti && !string.IsNullOrEmpty(R.bittiBilgi), hero = R.ZaferVar && !ayr && !(heroUst > 0 && heroAlt - heroUst < .18f);   // Ayrıntılar açıkken tam kart (yer gerekir);
+            // r110 sonuc_se_buyuk: büyük yazıda SE'de bant %2'ye iniyordu, karakter görünmüyordu. Bant %18'den darsa tam kart (kamera yine kazananda).
             float w = Mathf.Min(rx - lx, 420 * s), x = (W - w) / 2, y = top + 14 * s, al = rm ? Mathf.Clamp01(t / .25f) : 1;
             float yKart = hero ? H - bot - (heroH > 0 ? heroH : (1 - ZAFER_ALT0) * H - bot) : 0;
             if (hero)
