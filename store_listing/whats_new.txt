@@ -1,26 +1,25 @@
 === UNITY ===
-Bu sürümde Usta modu daha oynanabilir, Dolap daha hızlı.
+Bu sürümde Usta modunda yerini almak kolaylaştı, Dolap'a Sevinç geldi.
 
 Bu sürümde yeni:
-- Usta modunda rakip vurunca ayağının altında iki halka çıkıyor: düz halkanın içindeysen tam vuruş, kesik halkadaysan uzanıp daha zayıf ve sapmalı vurursun. Ekranda "Uzandın!" yazar.
-- Usta modunda top sana gelirken de başka bir yere dokunup koşabiliyorsun (eskiden vuruş anında koşu emri alınmıyordu).
-- Biraz erken kaydırırsan vuruş artık boşa gitmiyor; top yetişince kaydırman uygulanıyor.
-- İlk Usta maçında kısa bir "Usta: koşu senin" kartı çıkıyor, ilk sayıdan sonra kayboluyor.
-- Dolap'ta üç kombin yuvası: görünüşünü kaydet, tek dokunuşla giy. "Rastgele" sahip olduklarından yeni bir görünüş seçer.
-- Dolap'ta denediğin parçalar kategori değiştirince silinmiyor; altta sabit çubukta toplanıyor, "Hepsini al" ile birlikte alınıyor.
-- İlk maçından sonra "Oyuncunu seç" ekranı: altı hazır oyuncu, Rastgele, "Bununla oyna" ya da "Atla".
-- Dolap'ta yeni "Sevinç" kategorisi: sayıyı kazanınca ve maçı kazanınca oyuncunun yaptığı hareketi seç (Yumruk, Kollar havada, El salla, Zafer, Reverans…). İlk ikisi ücretsiz, diğerleri seviye ve Tüy ile. Maçı kaybedince oyuncun raketini rakibe kaldırıp "iyi oyundu" der. Rakip de sayı alınca sevinir.
+- Usta modunda topun geleceği yere yakın bir yere dokununca oyuncun tam noktayı değil, o topa vurmak için en iyi duruş yerini bulup oraya koşuyor. Parmağını sürüklersen yine istediğin noktaya ince ayar yapabilirsin.
+- Usta modunda sen vurduktan sonra oyuncun kendiliğinden kortun ortasına dönüyor. Başka bir yere dokunursan dönüşü bırakıp oraya gider.
+- Usta modunda durman gereken yer yerde iki ayak izi olarak görünüyor; oraya varınca izlerin içi doluyor. Maçın ilk iki varışında "Yerindesin" yazıyor.
+- Kolay modda hiçbir şey değişmedi; kariyeri Kolay'da da sonuna kadar oynayabilirsin.
+- Dolap'ta yeni "Sevinç" kategorisi: sayıyı ve maçı kazanınca oyuncunun yaptığı hareketi seç (Yumruk, Kollar havada, El salla, Zafer, Reverans…). İlk ikisi ücretsiz, diğerleri seviye ve Tüy ile. Maçı kaybedince oyuncun raketini rakibe kaldırıp "iyi oyundu" der. Rakip de sayı alınca sevinir.
 
 Nasıl denenir:
-1. Ayarlar'dan zorluğu Usta yap, bir maç başlat: ilk sayıya kadar üstte "Usta: koşu senin" kartı görünmeli.
-2. Rakip vurduğunda ayağının altındaki iki halkaya bak. Topa kesik halkada yetiş ve kaydır: "Uzandın!" yazmalı, vuruş biraz zayıf olmalı.
-3. Top sana gelirken kortun boş bir yerine dokun: oyuncun oraya koşmalı.
-4. Top sana ulaşmadan bir an önce kaydır: vuruş yine çıkmalı ("Erken" yazmamalı).
-5. Dolap'ta Şapka'dan bir şapkaya dokun (dene), sonra Yüz'e geçip bir aksesuar dene: alttaki çubukta ikisi birden yazmalı; Tüy'ün yetiyorsa "Hepsini al" ile ikisini birden al.
-6. Dolap'ta "Kombin 1"e dokun (kaydeder), bir şey değiştir, sonra tekrar "Kombin 1"e dokun: eski görünüş geri gelmeli. "Rastgele"ye dokun: yalnız sahip olduğun parçalardan bir görünüş çıkmalı.
-7. Uygulamayı silip yeniden kur (ya da yeni bir hesapla) ve ilk maçını bitir: menüye dönünce "Oyuncunu seç" açılmalı. Bir karta dokununca üstteki oyuncu hemen değişmeli; "Atla" eski görünüşe döndürmeli.
-8. Dolap › Sevinç'e gir: üstteki oyuncu seçili hareketi tekrar tekrar yapmalı. Başka bir karta dokun: hareket değişmeli.
-9. Bir maç oyna: sayı kazanınca oyuncun kısa bir sevinç yapmalı (seçtiğin hareket), rakip sayı alınca o sevinmeli. Maçı kazanınca zafer hareketi, kaybedince raketi rakibe kaldırma görünmeli.
+1. Zorluğu Usta yap, bir maç başlat. Rakip vurunca yerde iki ayak izi görünmeli.
+2. Ayak izlerinin biraz yanına (tam üstüne değil) dokun: oyuncun ayak izlerinin üstüne koşmalı, izlerin içi dolmalı ve "Yerindesin" yazmalı.
+3. Kortun uzak, boş bir yerine dokun: oyuncun tam dokunduğun yere gitmeli.
+4. Topu vur ve hiçbir şeye dokunma: oyuncun kortun ortasına dönmeli. Dönerken bir yere dokun: oraya gitmeli.
+5. Zorluğu Kolay'a al ve bir kariyer maçı oyna: oyun eskisi gibi olmalı, galibiyet kariyeri ilerletmeli.
+6. Dolap › Sevinç'e gir: üstteki oyuncu seçili hareketi tekrar tekrar yapmalı. Başka bir karta dokun: hareket değişmeli.
+7. Bir maç oyna: sayı kazanınca oyuncun kısa bir sevinç yapmalı, rakip sayı alınca o sevinmeli. Maçı kazanınca zafer hareketi, kaybedince raketi rakibe kaldırma görünmeli.
+
+Önceki sürümden (Usta ve Dolap):
+- Usta'da ayağın altında iki erişim halkası, vuruş anında da koşabilme, erken kaydırmanın boşa gitmemesi, ilk Usta maçında kısa kart.
+- Dolap'ta üç kombin yuvası ve Rastgele, kategoriler arası denemeler ve "Hepsini al", ilk maçtan sonra "Oyuncunu seç".
 
 Önceki sürümden (açılış ve geçiş akıcılığı):
 - Uygulamaya dokununca dönen tüy top ve halkalar hemen başlıyor; yükleme bitince ana menü açılıyor.
