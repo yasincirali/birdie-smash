@@ -286,11 +286,15 @@ namespace BirdieSmash.Game
             { ekTuy = Gunluk.OdulTuy; ekXp = Gunluk.OdulXp; ekAd = "Günün maçı"; kNot = "Günün maçı kazanıldı."; Basarim.Ver(Basarim.GUNUN_MACI); }
             if (M.okudun > 0) { Ayar.ilerleme.ImzaOkuSay(M.okudun); if (Ayar.ilerleme.ImzaOkunan >= Basarim.IMZA_OKUR_HEDEF) Basarim.Ver(Basarim.IMZA_OKUR); }
             // Maç sonu ödülü (HTML ekoOdul): antrenmanda yok (antrenman maç sonu ekranına gelmez). Yeni yıldız +20 Tüy, okunan imza +5 XP.
+            bool hazirOnce = YukseltAlinir(Ayar.gear.Seviye());   // ödülden önce: bu maç yeni bir şey açtı mı
             odul = Ayar.gear.Odul(won, kariyerIlk, M.target, M.easy, M.gorevBitti, M.perfects, System.DateTime.Now, yeniYildiz, M.okudun, ekTuy, ekXp, ekAd);
             if (odul.sonra > odul.once) Yerel.Hap("flow");   // seviye atladın
             if (odul.sonra >= 30) Basarim.Ver(Basarim.EFSANE);
             // "Ekipmanı yükselt": alınabilecek yükseltme ya da (ekipman v2) seviyesi gelmiş, Tüy'ü yeten model varsa.
-            yukseltHazir = false; foreach (var y in Gear.YUVA) { int sv = Ayar.gear.eko.sv[y.k]; if (sv < 10 && Ayar.gear.eko.tuy >= Gear.YUK_FIYAT[sv - 1] && odul.sonra >= Gear.YUK_SV[sv - 1] || Ayar.gear.AlinabilirVar(y.m)) yukseltHazir = true; }
+            // 2026-11-01 (Ar-Ge 19:40 #1, yasin "yap dediklerini ilerlet"): yalnız bu maçın Tüy'ü/seviyesi bir yükseltmeyi ya da modeli
+            // ilk kez alınabilir yaptıysa. Önce her maçta (Tüy biriktiren oyuncuda hep) çıkıyordu; oyuncu düğmeyi görmez oluyordu.
+            // Atölye sekmesindeki "yükseltme ya da yeni model hazır" satırı değişmedi.
+            yukseltHazir = !hazirOnce && YukseltAlinir(odul.sonra);
             Ayar.Kaydet();
             bittiBaslik = L.T(won ? "Kazandın" : "Bu sefer rakip aldı") + (kNot != "" ? " · " + L.Cumle(kNot) : "");
             // "Galibiyet" anahtarı tr_en.json'da istatistik etiketi ("Wins"); başlıkta "Victory" olmalı (r16), sözlük HTML'in
@@ -313,6 +317,11 @@ namespace BirdieSmash.Game
             bittiIpucu = ik == null ? null : ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
             if (Ozet.PuanIste(won, kariyerIlk, Ayar.wins, Ayar.puan)) { CancelInvoke("PuanIste"); Invoke("PuanIste", 1.5f); }
             if (won) hud.Konfeti();
+        }
+        bool YukseltAlinir(int seviye)
+        {
+            foreach (var y in Gear.YUVA) { int sv = Ayar.gear.eko.sv[y.k]; if (sv < 10 && Ayar.gear.eko.tuy >= Gear.YUK_FIYAT[sv - 1] && seviye >= Gear.YUK_SV[sv - 1] || Ayar.gear.AlinabilirVar(y.m)) return true; }
+            return false;
         }
         // Yalnız ekran turu (EkranTuru, -bsekran) için: sonuç ekranını maçı sonuna kadar oynatmadan görmek (2026-10-26, yön A
         // sonuç ekranı). Mağaza build'inde çağıran yok; EndMatch'in kendisi değişmez, tur gerçek akışın sonucunu çeker.
@@ -398,14 +407,15 @@ namespace BirdieSmash.Game
         // görüş açısı fona giriyordu ve perde kalkmadan fon yeniden çekilmiyordu.
         void KadrajSifirla()
         {
-            takip.Egim(kam, null, 0, true); kadrajEgim = 0; kadrajGenis = 1; camRot = Quaternion.Euler(kam.p, 0, 0);
+            zaferK = 0; takip.Egim(kam, null, 0, true); kadrajEgim = 0; kadrajGenis = 1; camRot = Quaternion.Euler(kam.p, 0, 0);
             if (cam != null) { cam.transform.SetPositionAndRotation(camBase, camRot); Projeksiyon(1); }
         }
         // Smaç "punch" yakınlaşması ekranın ortasına göre (eksen dışı kaymayla birlikte ölçeklenir). camK = 0'da bu matris Unity'nin
         // kendi fieldOfView izdüşümüyle aynıdır; özel matris yalnız son çare kaydırma ve punch için tutuluyor.
-        void Projeksiyon(float z)
+        void Projeksiyon(float z) { Projeksiyon(z, camTv * kadrajGenis); }
+        void Projeksiyon(float z, float tv)
         {
-            var m = Matrix4x4.Perspective(2 * Mathf.Atan(camTv * kadrajGenis) * Mathf.Rad2Deg, (float)Mathf.Max(1, Screen.width) / Mathf.Max(1, Screen.height), cam.nearClipPlane, cam.farClipPlane);
+            var m = Matrix4x4.Perspective(2 * Mathf.Atan(tv) * Mathf.Rad2Deg, (float)Mathf.Max(1, Screen.width) / Mathf.Max(1, Screen.height), cam.nearClipPlane, cam.farClipPlane);
             m.m00 *= z; m.m11 *= z; m.m12 = -camK * z; cam.projectionMatrix = m;
         }
 
@@ -574,7 +584,7 @@ namespace BirdieSmash.Game
                     if (sonra != once) { if (sonra > 0) { sfx.Tik(660); Yerel.Hap("tick"); } else sfx.Tik(990); }
                     if (geriT <= 0) { geriT = 0; input.Reset(); }
                 }
-                else { ReadInput(); match.Update(dt); }
+                else { ZaferAtla(); ReadInput(); match.Update(dt); }
                 bool w = match.HitWindow(); if (w != pencere) { pencere = w; if (!Ayar.reduce) sfx.SuAlti(w); if (w) { sfx.Tik(); Yerel.Hap("tick"); } }   // vuruş penceresi: su altı
                 Gicirti(dt);
                 foreach (var e in match.events) OnEvent(e); match.events.Clear();
@@ -596,7 +606,53 @@ namespace BirdieSmash.Game
             Hakemler();
             shake *= Mathf.Pow(.002f, dt); punch = 1 + (punch - 1) * Mathf.Pow(.0005f, dt); if (punch < 1) punch = 1;
             var j = shake > .01f ? (Vector3)(Random.insideUnitCircle * shake * .012f) : Vector3.zero;
-            KadrajTakip(); cam.transform.SetPositionAndRotation(camBase + camRot * j, camRot); Projeksiyon(punch);
+            KadrajTakip(); var kp = camBase + camRot * j; var kq = camRot; float ktv = camTv * kadrajGenis;
+            ZaferKamera(dt, ref kp, ref kq, ref ktv); cam.transform.SetPositionAndRotation(kp, kq); Projeksiyon(punch, ktv);
+        }
+
+        // ---- Zafer anı (2026-11-01 Ar-Ge 11:40 #1 + #2, yasin "Yap dediklerini yap ama tüy kazanımı ve level atlanırsa o bilgi
+        // net şekilde gözlenebilmeli"). Son sayıdan sonra kamera yayın açısından kazanan oyuncuya (sana) yan-önden yaklaşır; maç
+        // sonu hareketi (Kozmetik.MAC_SONU) ve pelerin/şapka bu anda görünür. Kart ekranın altına oturur (Hud.Over kahraman
+        // yerleşimi), karakter üstteki boşlukta kalır: kamera karakteri o boşluğa sığdırır (Hud.zaferUst/zaferAlt, ekranın
+        // üstten oranı). Kurallar (12:10 incelemesi):
+        //  - Süre uzamaz: yaklaşma Match'in var olan 1,4 sn'lik maç sonu beklemesinin içinde (.9 sn, ölçeksiz saat, ağır çekimden
+        //    bağımsız); kart geldikten sonra kamera orada kalır.
+        //  - Dokununca geç: bekleme sırasında dokunuş kartı hemen getirir, kamera kesmeyle yerine geçer.
+        //  - Kayıpta yok: kamera yayın açısında kalır (kaybı yakından izletmek cezalandırır; Match.cs ağır çekim kuralıyla aynı).
+        //  - Hareketi azalt: kayma yok, kesme.
+        // Açı: yan-ön 70° (önden 35° file direği ve rakip yarısını kadraja sokuyordu; r108'de 55° kamerayı file düzlemine, hakem
+        // sandalyelerinin yanına taşıyordu; 70°'de yan çizginin dışında, filenin berisinde), 8° yukarıdan. Görüş 40° (yayın açısının ~44°'ü; karakter dar açıda basık görünmez).
+        public bool ZaferVar { get { var M = match; return M != null && M.ogr == null && M.matchDone && M.sc[0] > M.sc[1] && (ekran == Ekran.Oyun || ekran == Ekran.Bitti); } }
+        float zaferK, zaferYon; const float ZAFER_SURE = .9f, ZAFER_YAN = 70, ZAFER_YUKSEK = 8, ZAFER_BOY = 1.95f;
+        static readonly float ZAFER_TV = Mathf.Tan(20 * Mathf.Deg2Rad);
+        void ZaferKamera(float dt, ref Vector3 p, ref Quaternion q, ref float tv)
+        {
+            if (!ZaferVar) { zaferK = 0; return; }
+            if (zaferK <= 0) zaferYon = match.me.x >= Court.MID ? 1 : -1;   // oyuncunun bulunduğu yanın dışından: arkasında kort kalır
+            zaferK = Ayar.reduce ? 1 : Mathf.MoveTowards(zaferK, 1, dt / ZAFER_SURE);
+            // r108: döndürmeyi ayrı yumuşatmak yolda boş zemine ve hakem sandalyesine baktırıyordu; bakış noktası da kaysın
+            // (yayın kamerasının yere baktığı noktadan karaktere), kamera yol boyunca hep oraya baksın.
+            float e = Mathf.SmoothStep(0, 1, zaferK); Vector3 zp, zb; ZaferCekim(out zp, out zb);
+            var f = q * Vector3.forward; var h0 = p + f * (f.y < -.05f ? -p.y / f.y : 20);
+            p = Vector3.Lerp(p, zp, e); q = Quaternion.LookRotation(Vector3.Lerp(h0, zb, e) - p, Vector3.up); tv = Mathf.Lerp(tv, ZAFER_TV, e);
+        }
+        // Karakter (ayak 0, tepe ZAFER_BOY: şapka ve pelerin dahil) ekranın [zaferUst, zaferAlt] bandına %85 doluluk ile oturur.
+        void ZaferCekim(out Vector3 pos, out Vector3 bak)
+        {
+            float ust = hud != null ? hud.zaferUst : .12f, alt = hud != null ? hud.zaferAlt : .5f;
+            float nt = 1 - 2 * ust, nb = 1 - 2 * alt, bant = Mathf.Max(.25f, nt - nb), orta = (nt + nb) / 2;
+            float d = Mathf.Clamp(ZAFER_BOY / (ZAFER_TV * bant * .85f), 3.5f, 9.5f);
+            var ayak = Kit.W(match.me.x, match.me.y, 0); float a = ZAFER_YAN * Mathf.Deg2Rad, el = ZAFER_YUKSEK * Mathf.Deg2Rad;
+            var yon = new Vector3(zaferYon * Mathf.Sin(a) * Mathf.Cos(el), Mathf.Sin(el), Mathf.Cos(a) * Mathf.Cos(el));   // +z = file yönü (karakterin önü)
+            var merkez = ayak + Vector3.up * (ZAFER_BOY / 2); pos = merkez + yon * d;
+            bak = merkez - Vector3.up * (orta * d * ZAFER_TV);   // bant ortası ekranın ortası değilse bakış o kadar kayar
+        }
+        // Maç sonu beklemesinde dokunuş: kart hemen gelir, kamera kesmeyle yerine (ilk .25 sn sayılmaz: son vuruşun parmağı).
+        void ZaferAtla()
+        {
+            var M = match; if (ekran != Ekran.Oyun || paused || M == null || !M.matchDone || !M.between || M.betweenT > 1.15f) return;
+            bool down = Input.touchCount > 0 ? Input.GetTouch(0).phase == TouchPhase.Began : Input.GetMouseButtonDown(0);
+            if (!down) return; M.betweenT = 0; if (ZaferVar) zaferK = 1;
         }
 
         // Baş hakem sayı bitince skoru girer (başı eğilir); servis el değişince yeni servisçinin tarafına döner. Servis hakemi

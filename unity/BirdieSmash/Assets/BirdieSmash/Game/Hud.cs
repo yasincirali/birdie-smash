@@ -315,7 +315,9 @@ namespace BirdieSmash.Game
             if (root.ekran == Ekran.Menu) { }   // menü UI Toolkit'te (UiKok); panel girişi orada USS geçişiyle
             else
             {
-                Play(M);
+                // Zafer anında maç göstergesi (skor kutusu, duraklat) çizilmez: r110'da afiş başlığının arkasından okunuyordu; skor kartta.
+                // Kayıp kartında da (r110: "Your serve · left court" kartın altından okunuyordu): sonuç ekranında hiç çizilmez.
+                if (root.ekran != Ekran.Bitti) Play(M);
                 if (root.geriT > 0 && !root.paused && root.ekran == Ekran.Oyun) GeriCiz();
                 if (root.paused) Pause(M);
                 if (root.ekran == Ekran.Bitti) Over(M);
@@ -898,7 +900,13 @@ namespace BirdieSmash.Game
         {
             bool b = root.ekran == Ekran.Bitti;
             if (b && !overAcik) { overT0 = Time.unscaledTime; yildizHap = 0; sigK = 1; }
-            overAcik = b; if (!b || Ayar.reduce) return;
+            overAcik = b;
+            // Zafer kamerasının bandı (GameRoot.ZaferCekim): kart gelmeden tahmin, gelince ölçülen yer; kamera zıplamasın diye yumuşak.
+            float hu = b && heroUst > 0 ? heroUst : ZAFER_UST0, ha = b && heroAlt > 0 ? heroAlt : ZAFER_ALT0, dz = Time.unscaledDeltaTime * .6f;
+            if (!root.ZaferVar) { zaferUst = hu; zaferAlt = ha; heroUst = heroAlt = heroH = -1; }
+            else if (Ayar.reduce) { zaferUst = hu; zaferAlt = ha; }
+            else { zaferUst = Mathf.MoveTowards(zaferUst, hu, dz); zaferAlt = Mathf.MoveTowards(zaferAlt, ha, dz); }
+            if (!b || Ayar.reduce) return;
             float t = Time.unscaledTime - overT0;
             for (int i = 0; i < 3; i++) if ((root.bittiYeniMaske & (1 << i)) != 0 && (yildizHap & (1 << i)) == 0 && t >= YildizAn(i) + .2f) { yildizHap |= 1 << i; Yerel.Hap("tick"); }
         }
@@ -908,6 +916,18 @@ namespace BirdieSmash.Game
         // küçülür (en çok ×0,7; düğmeler yine ≥ 44 pt, BH). Yalnız küçülür, ekran her açılışta 1'den başlar (sallanma yok).
         float sigK = 1;
         public string SonucTani { get; private set; }   // ekran turu (EkranTuru.DuyarliTuru): ölçü, yazı ve taşma
+        // Kahraman yerleşimi (2026-11-01, zafer anı; GameRoot.ZaferKamera): kazanınca kart ekranın altına oturur, üstte başlık,
+        // aradaki boşlukta kamera karakteri gösterir. Kartın yüksekliği bir önceki karede ölçülür (IMGUI önce çizer), kart altta
+        // biter, karakter kalan bandın tamamını alır. zaferUst/zaferAlt: bandın ekranın üstünden oranı (kamera okur).
+        public float zaferUst = ZAFER_UST0, zaferAlt = ZAFER_ALT0; float heroUst = -1, heroAlt = -1, heroH = -1;
+        const float ZAFER_UST0 = .12f, ZAFER_ALT0 = .40f;
+        Texture2D zeminGecis;
+        Texture2D ZeminGecis()
+        {   // üstte saydam, altta tam: kartın üst kenarındaki geçiş (karakterin ayakları yumuşakça kartın altına girer)
+            if (zeminGecis != null) return zeminGecis; zeminGecis = new Texture2D(1, 32, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var px = new Color[32]; for (int i = 0; i < 32; i++) { float u = 1 - i / 31f; px[i] = new Color(1, 1, 1, Mathf.SmoothStep(0, 1, u)); }
+            zeminGecis.SetPixels(px); zeminGecis.Apply(); return zeminGecis;
+        }
         void Over(Match M)
         {
             // 2026-10-27 (duyarlı yerleşim): yerleşim ölçüsü s en-boyun küçüğüyle (390 × 844 tasarım karesi) kalır, ama YAZI telefonda
@@ -916,13 +936,25 @@ namespace BirdieSmash.Game
             // biraz fazla), 11/12 · W/375 tabanı 12'lik satırı en az 11 pt yapar. Sığmazsa sigK yalnız boşluğu ve süsü küçültür.
             var R = root; float s = Mathf.Min(W / 390f, H / 844f) * sigK, kt = W / H < .62f ? Mathf.Max(s, 11f / 12f * W / 375f) : s, k = kt * Ayar.YaziK; YayinStil(s, k);
             float t = overT0 < 0 ? 99 : Time.unscaledTime - overT0; bool rm = Ayar.reduce;
-            var o0 = GUI.color; GUI.color = new Color(A_INK.r, A_INK.g, A_INK.b, .82f); GUI.DrawTexture(new Rect(-W, 0, W * 3, H), Texture2D.whiteTexture); GUI.color = o0;
-            // r16: .82'de maç başı rakip kartı ve skor tabelası arkadan okunuyordu; yayın grafiği gibi tam kapalı zemin.
-            o0 = GUI.color; GUI.color = new Color(A_INK.r, A_INK.g, A_INK.b, .5f); GUI.DrawTexture(new Rect(-W, 0, W * 3, H), Texture2D.whiteTexture); GUI.color = o0;
+            bool ayr = ayrinti && !string.IsNullOrEmpty(R.bittiBilgi), hero = R.ZaferVar && !ayr && !(sigK <= .7f && heroUst > 0 && heroAlt - heroUst < .18f);   // Ayrıntılar açıkken tam kart (yer gerekir);
+            // r110 sonuc_se_buyuk: büyük yazıda SE'de bant %2'ye iniyordu, karakter görünmüyordu. Bant %18'den darsa tam kart (kamera yine kazananda).
+            // r114: ilk karede (sigK = 1, kart henüz küçülmemişken) bant dar ölçülüp her ekranda tam karta düşüyordu; önce küçülme denenir.
             float w = Mathf.Min(rx - lx, 420 * s), x = (W - w) / 2, y = top + 14 * s, al = rm ? Mathf.Clamp01(t / .25f) : 1;
-            bool ayr = ayrinti && !string.IsNullOrEmpty(R.bittiBilgi);
-            // ışınlar (a-rays): yalnız galibiyette, hareketi azaltta yok
-            if (R.bittiKazandi && !rm)
+            float yKart = hero ? H - bot - (heroH > 0 ? heroH : (1 - ZAFER_ALT0) * H - bot) : 0;
+            if (hero)
+            {   // üstte başlık için hafif koyuluk (ters geçiş), kartın üstünde 70 px'lik geçiş, kart bölgesi tam mürekkep
+                var o1 = GUI.color; GUI.color = new Color(A_INK.r, A_INK.g, A_INK.b, .55f); GUI.DrawTextureWithTexCoords(new Rect(-W, -H * .02f, W * 3, H * .24f), ZeminGecis(), new Rect(0, 1, 1, -1));
+                float gz = 70 * s, yz = yKart - 18 * s; GUI.color = new Color(A_INK.r, A_INK.g, A_INK.b, .94f); GUI.DrawTexture(new Rect(-W, yz - gz, W * 3, gz), ZeminGecis(), ScaleMode.StretchToFill);
+                GUI.DrawTexture(new Rect(-W, yz, W * 3, H - yz + 2), Texture2D.whiteTexture); GUI.color = o1;
+            }
+            else
+            {
+                var o0 = GUI.color; GUI.color = new Color(A_INK.r, A_INK.g, A_INK.b, .82f); GUI.DrawTexture(new Rect(-W, 0, W * 3, H), Texture2D.whiteTexture); GUI.color = o0;
+                // r16: .82'de maç başı rakip kartı ve skor tabelası arkadan okunuyordu; yayın grafiği gibi tam kapalı zemin.
+                o0 = GUI.color; GUI.color = new Color(A_INK.r, A_INK.g, A_INK.b, .5f); GUI.DrawTexture(new Rect(-W, 0, W * 3, H), Texture2D.whiteTexture); GUI.color = o0;
+            }
+            // ışınlar (a-rays): yalnız galibiyette, hareketi azaltta yok; kahraman yerleşiminde yok (karakterin üstüne binerdi)
+            if (R.bittiKazandi && !rm && !hero)
             {
                 var c = new Vector2(W / 2, y + 120 * s); float sz = 900 * s; var m = GUI.matrix; GUIUtility.RotateAroundPivot(Time.unscaledTime * 12f, c);
                 Tex(new Rect(c.x - sz / 2, c.y - sz / 2, sz, sz), Ikonlar.Isinlar, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .10f * Mathf.Clamp01(t / .4f)));   // yön C: güneş ışınları turuncu, %13 → %10
@@ -931,7 +963,7 @@ namespace BirdieSmash.Game
             if (!string.IsNullOrEmpty(R.bittiUst)) { string us = UiKok.Buyuk(R.bittiUst); float uh = aUst.CalcHeight(Ic(us), w); Yaz(new Rect(x, y, w, uh), us, aUst, A_SOLUK, al); y += uh + 4 * s; }
             // başlık: yaylanarak (1,25 → 1), hareketi azaltta yalnız solma
             {
-                string bs = UiKok.Buyuk(R.bittiBas ?? R.bittiBaslik ?? ""); var st = Sigdir(R.bittiKazandi && bs.Length <= 12 ? aBas : Stil(aBas, Mathf.RoundToInt(46 * k)), bs, w);
+                string bs = UiKok.Buyuk(R.bittiBas ?? R.bittiBaslik ?? ""); var st = Sigdir(hero ? Stil(aBas, Mathf.RoundToInt(56 * k)) : R.bittiKazandi && bs.Length <= 12 ? aBas : Stil(aBas, Mathf.RoundToInt(46 * k)), bs, w);   // r109: kahramanda 56 (74'lük başlık yüzü örtüyordu)
                 float th = st.CalcHeight(Ic(bs), w); var r = new Rect(x, y, w, th);
                 float e = rm ? 1 : GeriYay(t / .35f), sc = rm ? 1 : Mathf.LerpUnclamped(1.25f, 1, e); var m = GUI.matrix; GUIUtility.ScaleAroundPivot(new Vector2(sc, sc), r.center);
                 var g = GUI.color; GUI.color = new Color(0, 0, 0, .45f * al); GUI.Label(new Rect(r.x, r.y + 5 * s, r.width, r.height), bs, st);
@@ -939,11 +971,20 @@ namespace BirdieSmash.Game
                 y += th + 2 * s;
             }
             if (!string.IsNullOrEmpty(R.bittiAltNot)) { float nh = aIpucu.CalcHeight(Ic(R.bittiAltNot), w); Yaz(new Rect(x, y, w, nh), R.bittiAltNot, aIpucu, A_SOLUK, al); y += nh + 6 * s; }
+            if (hero)
+            {   // r108: başlığın altında ayrı bant + uzun kart → bant ekranın %7'si. r109: bant ekranın tepesinden başlayınca başlık
+                // karakterin yüzünü örttü. Şimdi kart kısa (açılan kart, ipucu, tur çizgisi yok), başlık 56; bant başlığın alt
+                // kenarından (başlık en çok kafanın tepesine değer) kartın üstüne.
+                if (yKart < y + 10 * s) yKart = y + 10 * s;
+                if (Event.current.type == EventType.Repaint) { heroUst = (y - 6 * s) / H; heroAlt = (yKart - 20 * s) / H; }
+                y = yKart;
+            }
+            float yIcerik = y;
             // skor: halka + sayı – sayı + halka; adlar halkaların altında
             if (R.bittiSkor != null) { float sh = aSkor.CalcHeight(Ic(R.bittiSkor), w); Yaz(new Rect(x, y, w, sh), R.bittiSkor, aSkor, A_YAZI, al); y += sh + 10 * s; }
             else
             {
-                string a = Sayi(M.sc[0]), b = Sayi(M.sc[1]); float aw = aSkor.CalcSize(Ic(a)).x, bw = aSkor.CalcSize(Ic(b)).x, dw = 30 * s, f = 48 * s, gp = 12 * s;
+                string a = Sayi(M.sc[0]), b = Sayi(M.sc[1]); float aw = aSkor.CalcSize(Ic(a)).x, bw = aSkor.CalcSize(Ic(b)).x, dw = 30 * s, f = (hero ? 36 : 48) * s, gp = 12 * s;
                 float tw = f + gp + aw + dw + bw + gp + f, cx = W / 2 - tw / 2, sh = Mathf.Max(f, aSkor.CalcHeight(Ic(a), 200));
                 Yuz(new Rect(cx, y + (sh - f) / 2, f, f), A_LIMON, al, false); cx += f + gp;
                 Yaz(new Rect(cx, y, aw, sh), a, aSkor, A_LIMON, al); cx += aw; Yaz(new Rect(cx, y, dw, sh), "–", aSkor, A_SOLUK, al); cx += dw;
@@ -951,27 +992,35 @@ namespace BirdieSmash.Game
                 float nx0 = W / 2 - tw / 2, ah = aAd.CalcHeight(Ic("S"), 100);
                 Yaz(new Rect(nx0 - 20 * s, y + sh + 3 * s, f + 40 * s, ah), UiKok.Buyuk(L.T("Sen")), aAd, A_LIMON, al);
                 Yaz(new Rect(cx - 30 * s, y + sh + 3 * s, f + 60 * s, ah), UiKok.Buyuk(M.RakipAd(false)), aAd, A_SOLUK, al);
-                y += sh + ah + 12 * s;
+                y += sh + ah + (hero ? 6 : 12) * s;
             }
-            var od = R.odul;
+            var od = R.odul; float blokH0 = AltBlokH(R, od, ayr, w, s);
             if (ayr) y = AyrintiCiz(x, y, w, s, al);
             else
             {
-                if (R.bittiMaske >= 0) y = YildizCiz(x, y, w, s, t, rm, al);
+                if (R.bittiMaske >= 0) y = YildizCiz(x, y, w, s, t, rm, al, hero ? .5f : 1);
                 if (od != null) y = OdulCiz(od, x, y, w, s, t, rm, al);
-                if (!string.IsNullOrEmpty(R.bittiAcilan))
+                // Kahraman düzeninde açılan basamak kartı yok: büyük düğmenin alt satırı aynı şeyi söyler ("Sıradaki · İl şampiyonası")
+                if (!hero && !string.IsNullOrEmpty(R.bittiAcilan))
                 {
                     float ik = 26 * s, ph = 14 * s, tw = w - ik - ph * 3, uh = Mathf.Max(aUnl.CalcHeight(Ic(R.bittiAcilan), tw), ik) + 16 * s; var r = new Rect(x, y, w, uh);
                     float ua = rm ? al : Mathf.Clamp01((t - 1.9f) / .3f); KutuCiz(r, aKutuLimon, ua);
                     Tex(new Rect(r.x + ph, r.y + (uh - ik) / 2, ik, ik), Ikonlar.AcikKilit, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, ua));
                     Yaz(new Rect(r.x + ph * 2 + ik, r.y + 8 * s, tw, uh - 16 * s), R.bittiAcilan, aUnl, A_YAZI, ua); y += uh + 10 * s;
                 }
-                if (!string.IsNullOrEmpty(R.bittiIpucu)) { float ph = aIpucu.CalcHeight(Ic(R.bittiIpucu), w); Yaz(new Rect(x, y, w, ph), R.bittiIpucu, aIpucu, A_SOLUK, al); y += ph + 8 * s; }
-                if (R.bittiG >= 0) y = YolCiz(x, y, w, s, al);
+                // İpucu ve tur çizgisi isteğe bağlı: düğmelerle çakışacaksa çizilmez (Tüy/XP/seviye kartı hiç düşmez; yasin 1 Kas
+                // "tüy kazanımı ve level atlanırsa o bilgi net şekilde gözlenebilmeli"). İpucu Ayrıntılar'da da okunur.
+                float ipH = string.IsNullOrEmpty(R.bittiIpucu) ? 0 : aIpucu.CalcHeight(Ic(R.bittiIpucu), w) + 8 * s, yolH = R.bittiG >= 0 ? 26 * s : 0;
+                if (!hero && ipH > 0 && y + ipH + blokH0 <= H - bot) { Yaz(new Rect(x, y, w, ipH - 8 * s), R.bittiIpucu, aIpucu, A_SOLUK, al); y += ipH; }
+                if (!hero && yolH > 0 && y + yolH + blokH0 <= H - bot) y = YolCiz(x, y, w, s, al);
             }
-            // ---- alt blok: büyük düğme, ikincil düğmeler, Ayrıntılar · Ana menü ----
+            float yIcerikSon = y;
+            // ---- alt blok: büyük düğme, en çok bir ikincil düğme, Ayrıntılar · Ana menü yazı bağlantısı ----
+            // 2026-11-01 (Ar-Ge 11:40 #2, yasin "yap"): beş eylem "ne yapmalıyım?" yükü getiriyordu. Kartta tek ikincil kalır; öncelik
+            // önerilen antrenman (kaybın nedenine bağlı) > ekipman yükselt > tam antrenman > antrenman görevleri. Hepsi Ayrıntılar
+            // açıkken görünür (eski dizilim, sığmazsa ikişer yan yana).
             var od2 = R.bittiDril != null ? Dril.Bul(R.bittiDril) : null; bool ayrintiVar = !string.IsNullOrEmpty(R.bittiBilgi);
-            bool yuk = od != null && R.yukseltHazir; int nIk = (yuk ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (od2 != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0);
+            bool yuk = od != null && R.yukseltHazir; int nTum = (yuk ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (od2 != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0), nIk = ayr ? nTum : Mathf.Min(1, nTum);
             float bh = Mathf.Max(BH, 50 * s), gap = 8 * s;
             string ct = UiKok.Buyuk(CtaBaslik(R.bittiDugme, R.bittiDugmeAlt)); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), cah = string.IsNullOrEmpty(R.bittiDugmeAlt) ? 0 : aCtaAlt.CalcHeight(Ic(R.bittiDugmeAlt), w);
             float ctaH = Mathf.Max(80 * s, cth + cah + 22 * s), blokH = ctaH + 12 * s + nIk * (bh + gap) + bh;
@@ -981,19 +1030,23 @@ namespace BirdieSmash.Game
             float yb = Mathf.Max(y + 6 * s, H - bot - blokH);
             if (BuyukDugme(new Rect(x, yb, w, ctaH), ct, R.bittiDugmeAlt, s, al)) root.TekrarOyna(); yb += ctaH + 12 * s;
             int ki = 0; float kw = cift ? (w - gap) / 2 : w;
-            if (yuk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Ekipmanı yükselt"), al)) { root.AnaMenu(); if (root.ui != null) root.ui.SekmeAc(Sekme.Atolye); } }
-            if (R.bittiIlk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Tam antrenman"), al)) root.Antrenman(); }
-            if (od2 != null) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman: {0}", L.T(od2.ad)), al)) root.DrilOyna(od2.id); }
-            if (R.mod == Mod.Dril) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman görevleri"), al)) { root.AnaMenu(); if (root.ui != null) root.ui.AntrenmanAc(); } }
+            if (od2 != null && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman: {0}", L.T(od2.ad)), al)) root.DrilOyna(od2.id); }
+            if (yuk && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Ekipmanı yükselt"), al)) { root.AnaMenu(); if (root.ui != null) root.ui.SekmeAc(Sekme.Atolye); } }
+            if (R.bittiIlk && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Tam antrenman"), al)) root.Antrenman(); }
+            if (R.mod == Mod.Dril && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman görevleri"), al)) { root.AnaMenu(); if (root.ui != null) root.ui.AntrenmanAc(); } }
             if (ayrintiVar)
             {
                 float hw = (w - gap) / 2;
-                if (ADugme(new Rect(x, yb, hw, bh), L.T(ayrinti ? "Ayrıntıları gizle" : "Ayrıntılar"), al)) { ayrinti = !ayrinti; Yerel.Hap("tick"); }
-                if (ADugme(new Rect(x + hw + gap, yb, hw, bh), L.T("Ana menü"), al)) root.AnaMenu();
+                if (Baglanti(new Rect(x, yb, hw, bh), L.T(ayrinti ? "Ayrıntıları gizle" : "Ayrıntılar"), al)) { ayrinti = !ayrinti; Yerel.Hap("tick"); }
+                if (Baglanti(new Rect(x + hw + gap, yb, hw, bh), L.T("Ana menü"), al)) root.AnaMenu();
             }
-            else if (ADugme(new Rect(x, yb, w, bh), L.T("Ana menü"), al)) root.AnaMenu();
-            float son = yb + bh, sinir = H - bot; SonucTani = "sonuç " + W + "x" + H + " · s " + s.ToString("F2") + " sigK " + sigK.ToString("F2") + " yazı ×" + k.ToString("F2") + " (12'lik satır " + Mathf.RoundToInt(12 * k) + " px)"
+            else if (Baglanti(new Rect(x, yb, w, bh), L.T("Ana menü"), al)) root.AnaMenu();
+            float son = yb + bh, sinir = H - bot;
+            // ölçü içerik + alt blok (r108: son − yIcerik aradaki boşluğu da sayıyordu, boşluk kendini koruyordu)
+            if (hero && Event.current.type == EventType.Repaint) heroH = Mathf.Max(0, yIcerikSon - yIcerik) + 6 * s + blokH;
+            SonucTani = "sonuç " + W + "x" + H + " · s " + s.ToString("F2") + " sigK " + sigK.ToString("F2") + " yazı ×" + k.ToString("F2") + " (12'lik satır " + Mathf.RoundToInt(12 * k) + " px)"
                 + " · matris " + (GUI.matrix.isIdentity ? "düz" : "DÖNÜK") + " · ikincil düğme stili " + (aDug != null ? "var" : "YOK")   // tur 2: yoruma yapışan satırların kilidi
+                + (hero ? " · kahraman bandı %" + (zaferUst * 100).ToString("F0") + "–" + (zaferAlt * 100).ToString("F0") : "") + " · ikincil " + nIk + "/" + nTum
                 + " · alt düğme dibi " + son.ToString("F0") + " / sınır " + sinir.ToString("F0") + (son > sinir + 1 ? " · TAŞIYOR" : "") + " · üst " + top.ToString("F0") + " alt pay " + bot.ToString("F0");
             if (Event.current.type == EventType.Repaint && son > sinir + 1 && sigK > .7f)
                 sigK = Mathf.Max(.7f, Mathf.Floor(sigK * (sinir - top) / Mathf.Max(1, son - top) * 20) / 20);
@@ -1016,12 +1069,12 @@ namespace BirdieSmash.Game
             float p = r.width * .2f; Tex(new Rect(r.x + p, r.y + p, r.width - 2 * p, r.height - 2 * p), Ikonlar.Kisi, new Color(A_YAZI.r, A_YAZI.g, A_YAZI.b, .85f * a));
         }
         // Üç büyük yıldız (a-bigstars): ortadaki büyük; alınan dolu altın + parıltı, alınmayan çerçeve; altında koşul (✓/✗ + yazı).
-        float YildizCiz(float x, float y, float w, float s, float t, bool rm, float al)
-        {
-            var R = root; int n = Mathf.Clamp(R.bittiYildizN, 1, 3); float col = Mathf.Min(112 * s, w / n), rowH = 92 * s, x0 = W / 2 - col * n / 2, kh = 0;
+        float YildizCiz(float x, float y, float w, float s, float t, bool rm, float al, float ol = 1)
+        {   // ol: kahraman yerleşiminde .6 (yıldızlar küçük, koşul yazısı aynı boy: anlam yazıda da)
+            var R = root; int n = Mathf.Clamp(R.bittiYildizN, 1, 3); float col = Mathf.Min(112 * s, w / n), rowH = 92 * s * ol, x0 = W / 2 - col * n / 2, kh = 0;
             for (int i = 0; i < n; i++)
             {
-                bool var_ = (R.bittiMaske & (1 << i)) != 0, yeni = (R.bittiYeniMaske & (1 << i)) != 0; float sz = (n == 3 && i == 1 ? 92 : 72) * s;
+                bool var_ = (R.bittiMaske & (1 << i)) != 0, yeni = (R.bittiYeniMaske & (1 << i)) != 0; float sz = (n == 3 && i == 1 ? 92 : 72) * s * ol;
                 float a = rm ? al : yeni ? Mathf.Clamp01((t - YildizAn(i)) / .28f) : Mathf.Clamp01((t - .25f) / .3f);
                 float sc = rm || !yeni ? 1 : Mathf.LerpUnclamped(1.8f, 1, GeriYay(a)); var c = new Vector2(x0 + col * (i + .5f), y + rowH - sz / 2);
                 var m = GUI.matrix; GUIUtility.ScaleAroundPivot(new Vector2(sc, sc), c);
@@ -1033,22 +1086,25 @@ namespace BirdieSmash.Game
                 Tex(new Rect(tx - ik - 3 * s, ty + 1 * s, ik, ik), var_ ? Ikonlar.Tik : Ikonlar.Carpi, var_ ? new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, ka) : new Color(A_SOLUK.r, A_SOLUK.g, A_SOLUK.b, ka));
                 Yaz(new Rect(tx, ty, tw, h), ks, aKosul, var_ ? A_YAZI : A_SOLUK, ka); kh = Mathf.Max(kh, h);
             }
-            return y + rowH + 8 * s + kh + 14 * s;
+            return y + rowH + 8 * s + kh + (ol < 1 ? 8 : 14) * s;
         }
         // Ödül kartı (a-rew): Tüy sayarak (yıldızlardan sonra .9 sn), XP çubuğu aynı sürede dolar, seviye atladıysan satır.
         float OdulCiz(OdulSonuc od, float x, float y, float w, float s, float t, bool rm, float al)
         {
             float p = 14 * s, ik = 30 * s, rh = 34 * s, t1 = YildizAn(Mathf.Max(0, Ilerleme.Say(root.bittiYeniMaske))) + .1f, e = rm ? 1 : Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - t1) / .9f));
             bool lv = od.sonra > od.once; string ek = od.ek.Count > 0 ? string.Join(" · ", od.ek.ConvertAll(q => L.Cumle(q)).ToArray()) : null;
-            string top_ = L.T(" · Toplam {0}{1}", Ayar.gear.eko.tuy, " " + L.T("Tüy")); if (top_.StartsWith(" · ")) top_ = top_.Substring(3);
             // Seviye çubuğu sayıyla da okunur (2026-10-29): "Sv 4 · 120/300 XP"; seviye atlanınca açılanlar adıyla
             // (en çok 3 ad + "+n"), Profil'e gitmeden.
             int L0, kalan0, gerek0; Ayar.gear.OyuncuSv(out L0, out kalan0, out gerek0);
             string svYazi = L.T("Sv {0}", L0) + (gerek0 > 0 ? " · " + kalan0 + "/" + gerek0 + " XP" : "");
             string acil = null;
             if (lv) { var ac = Karakter.AcilanAralik(od.once, od.sonra); if (ac.Count > 0) { var ad3 = ac.GetRange(0, Mathf.Min(3, ac.Count)).ConvertAll(q => L.T(q)); acil = L.T("Açıldı: {0}", string.Join(" · ", ad3.ToArray()) + (ac.Count > 3 ? " +" + (ac.Count - 3) : "")); } }
-            string alt = (acil != null ? acil + "\n" : "") + svYazi + " · " + (ek != null ? ek + " · " + top_ : top_); float ah = aIpucu.CalcHeight(Ic(alt), w - 2 * p);
-            float h = p + rh + 6 * s + rh + (lv ? 26 * s : 0) + 6 * s + ah + p; var r = new Rect(x, y, w, h); KutuCiz(r, aKutuS, al);
+            // 2026-11-01 (yasin: "tüy kazanımı ve level atlanırsa o bilgi net şekilde gözlenebilmeli"): toplam Tüy artık alt yazıda
+            // değil, Tüy satırında kazanılanla birlikte sayar; seviye atlamak kartın içinde turuncu çerçeveli kendi şeridi (ok + yazı +
+            // yeni seviye büyük), yaylanarak gelir. Alt yazıda yalnız seviye çubuğunun sayısı, ek ödül ve açılanlar kalır.
+            string alt = (acil != null ? acil + "\n" : "") + svYazi + (ek != null ? " · " + ek : ""); float ah = aIpucu.CalcHeight(Ic(alt), w - 2 * p);
+            float lvH = lv ? 48 * s : 0;
+            float h = p + rh + 6 * s + rh + (lv ? lvH + 8 * s : 0) + 6 * s + ah + p; var r = new Rect(x, y, w, h); KutuCiz(r, aKutuS, al);
             float yy = y + p, rx_ = x + w - p;
             // 2026-10-29 (yasin: "Tüy kazanımları güzel bir animasyonla gösterilmeli, uçuşup bakiyeye giren tüycükler gibi"):
             // sayaç artık tüyler kutuya kondukça artar (TuyUcus); kutu her konuşta hafifçe şişer. Hareketi azaltta sayaç eskisi gibi.
@@ -1057,8 +1113,11 @@ namespace BirdieSmash.Game
             var mk = GUI.matrix; GUIUtility.ScaleAroundPivot(new Vector2(sis, sis), kutuR.center);
             KutuCiz(kutuR, aKutuIkon, al); Tex(new Rect(x + p + ik * .2f, yy + (rh - ik) / 2 + ik * .2f, ik * .6f, ik * .6f), Ikonlar.Tuy, new Color(A_ALTIN.r, A_ALTIN.g, A_ALTIN.b, al));
             GUI.matrix = mk; tuyHedef = kutuR.center;
-            Yaz(new Rect(x + p + ik + 10 * s, yy, w * .5f, rh), L.T("Tüy"), aSatir, A_YAZI, al);
-            Yaz(new Rect(rx_ - 120 * s, yy, 120 * s, rh), "+" + Mathf.RoundToInt(od.tuy * (rm ? e : var_)), aSayi, A_ALTIN, al); yy += rh + 6 * s;
+            int kaz = Mathf.RoundToInt(od.tuy * (rm ? e : var_)), topN = Ayar.gear.eko.tuy - od.tuy + kaz;
+            float lx_ = x + p + ik + 10 * s, tyw = aSatir.CalcSize(Ic(L.T("Tüy"))).x;
+            Yaz(new Rect(lx_, yy, tyw, rh), L.T("Tüy"), aSatir, A_YAZI, al);
+            Yaz(new Rect(lx_ + tyw + 8 * s, yy + 1 * s, w * .45f, rh), L.T("Toplam {0}", topN), Stil(aIz, Mathf.RoundToInt(13 * aK)), A_SOLUK, al);
+            Yaz(new Rect(rx_ - 120 * s, yy, 120 * s, rh), "+" + kaz, aSayi, A_ALTIN, al); yy += rh + 6 * s;
             KutuCiz(new Rect(x + p, yy + (rh - ik) / 2, ik, ik), aKutuIkon, al); Yaz(new Rect(x + p, yy + (rh - ik) / 2, ik, ik), "XP", Stil(aLv, Mathf.RoundToInt(13 * aK)), A_YAZI, al);
             string xs = "+" + Mathf.RoundToInt(od.xp * e); float xw = aSayi.CalcSize(Ic("+" + od.xp)).x + 4 * s;
             int kalan = kalan0, gerek = gerek0;
@@ -1067,10 +1126,16 @@ namespace BirdieSmash.Game
             Fill(bar, new Color(1, 1, 1, .12f * al)); Fill(new Rect(bar.x, bar.y, bar.width * Mathf.Clamp01(dol), bar.height), new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, al));
             Yaz(new Rect(rx_ - xw, yy, xw, rh), xs, aSayi, A_YAZI, al); yy += rh;
             if (lv)
-            {
-                float la = rm ? al : Mathf.Clamp01((t - t1 - .9f) / .25f); string ls = UiKok.Buyuk(L.T("Seviye atladın")) + " · " + L.T("Sv {0}", od.sonra);
-                float lw = aLv.CalcSize(Ic(ls)).x, ik2 = 14 * s, lx0 = x + (w - lw - ik2 - 4 * s) / 2;
-                Tex(new Rect(lx0, yy + 6 * s + (20 * s - ik2) / 2, ik2, ik2), Ikonlar.Yukari, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, la)); Yaz(new Rect(lx0 + ik2 + 4 * s, yy + 6 * s, lw, 20 * s), ls, aLv, A_TURUNCU, la); yy += 26 * s;
+            {   // seviye şeridi: XP çubuğu dolup taşınca (t1 + .9) yaylanarak (1,25 → 1) gelir; hareketi azaltta yalnız solma
+                float la = rm ? al : Mathf.Clamp01((t - t1 - .9f) / .25f), lsc = rm ? 1 : Mathf.LerpUnclamped(1.25f, 1, GeriYay(Mathf.Clamp01((t - t1 - .9f) / .35f)));
+                var lr = new Rect(x + p, yy + 8 * s, w - 2 * p, lvH); var lm = GUI.matrix; GUIUtility.ScaleAroundPivot(new Vector2(lsc, lsc), lr.center);
+                KutuCiz(lr, aKutuLimon, la);
+                string ls = UiKok.Buyuk(L.T("Seviye atladın")), lsv = L.T("Sv {0}", od.sonra); var lst = Stil(aLv, Mathf.RoundToInt(17 * aK)); var nst = Stil(aSayi, Mathf.RoundToInt(24 * aK));
+                float ik2 = 22 * s, lw = lst.CalcSize(Ic(ls)).x, nw = nst.CalcSize(Ic(lsv)).x, tw2 = ik2 + 8 * s + lw + 12 * s + nw, lx0 = lr.center.x - tw2 / 2;
+                Tex(new Rect(lx0, lr.center.y - ik2 / 2, ik2, ik2), Ikonlar.Yukari, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, la));
+                Yaz(new Rect(lx0 + ik2 + 8 * s, lr.y, lw, lvH), ls, lst, A_TURUNCU, la);
+                Yaz(new Rect(lx0 + ik2 + 20 * s + lw, lr.y, nw, lvH), lsv, nst, A_YAZI, la);
+                GUI.matrix = lm; yy += lvH + 8 * s;
             }
             Yaz(new Rect(x + p, yy + 6 * s, w - 2 * p, ah), alt, aIpucu, A_SOLUK, al);
             if (!rm && od.tuy > 0) TuyUcus(t, t1, tn, new Vector2(W / 2f, y - 70 * s), tuyHedef, s, al);   // kartın üstünde (sonra çizilir)
@@ -1157,6 +1222,23 @@ namespace BirdieSmash.Game
             Tex(new Rect(cr.x + ci * .3f, cr.y + ci * .3f, ci * .4f, ci * .4f), Ikonlar.Ileri, new Color(A_CTA_OK.r, A_CTA_OK.g, A_CTA_OK.b, al));
             GUI.matrix = m;
             bool b = GUI.Button(r, GUIContent.none, GUIStyle.none); if (b) Yerel.Hap("tick"); return b;
+        }
+        // Alt bloğun yüksekliği (büyük düğme + ikincil + bağlantı satırı): isteğe bağlı satırlar çizilmeden önce yer var mı diye.
+        float AltBlokH(GameRoot R, OdulSonuc od, bool ayr, float w, float s)
+        {
+            float bh = Mathf.Max(BH, 50 * s), gap = 8 * s; bool yuk = od != null && R.yukseltHazir;
+            int nTum = (yuk ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (R.bittiDril != null && Dril.Bul(R.bittiDril) != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0), nIk = ayr ? nTum : Mathf.Min(1, nTum);
+            string ct = UiKok.Buyuk(CtaBaslik(R.bittiDugme, R.bittiDugmeAlt)); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), cah = string.IsNullOrEmpty(R.bittiDugmeAlt) ? 0 : aCtaAlt.CalcHeight(Ic(R.bittiDugmeAlt), w);
+            return Mathf.Max(80 * s, cth + cah + 22 * s) + 12 * s + nIk * (bh + gap) + bh + 6 * s;
+        }
+        // Yazı bağlantısı (2026-11-01): Ayrıntılar · Ana menü kutusuz, soluk yazı + ince alt çizgi; dokunma alanı yine ≥ 44 pt (BH).
+        bool Baglanti(Rect r, string t, float al)
+        {
+            blocks.Add(r); bool bas = r.Contains(Event.current.mousePosition) && Input.GetMouseButton(0);
+            var st = Sigdir(aDug, t, r.width - 16); var c = bas ? A_YAZI : A_SOLUK; Yaz(new Rect(r.x + 8, r.y, r.width - 16, r.height), t, st, c, al);
+            float tw = Mathf.Min(r.width - 16, st.CalcSize(Ic(t)).x), uy = r.center.y + st.fontSize * .62f;
+            Fill(new Rect(r.center.x - tw / 2, uy, tw, Mathf.Max(1, st.fontSize * .07f)), new Color(c.r, c.g, c.b, .5f * al));
+            return GUI.Button(r, GUIContent.none, GUIStyle.none);
         }
         // İkincil düğme (a-res2): lacivert yuvarlak kutu, kalın yazı; ≥ 44 pt (BH) ve ≥ 50 tasarım pikseli.
         bool ADugme(Rect r, string t, float al)
