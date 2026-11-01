@@ -918,7 +918,7 @@ namespace BirdieSmash.Game
         // aradaki boşlukta kamera karakteri gösterir. Kartın yüksekliği bir önceki karede ölçülür (IMGUI önce çizer), kart altta
         // biter, karakter kalan bandın tamamını alır. zaferUst/zaferAlt: bandın ekranın üstünden oranı (kamera okur).
         public float zaferUst = ZAFER_UST0, zaferAlt = ZAFER_ALT0; float heroUst = -1, heroAlt = -1, heroH = -1;
-        const float ZAFER_UST0 = .14f, ZAFER_ALT0 = .40f;
+        const float ZAFER_UST0 = .04f, ZAFER_ALT0 = .42f;
         Texture2D zeminGecis;
         Texture2D ZeminGecis()
         {   // üstte saydam, altta tam: kartın üst kenarındaki geçiş (karakterin ayakları yumuşakça kartın altına girer)
@@ -968,9 +968,10 @@ namespace BirdieSmash.Game
             }
             if (!string.IsNullOrEmpty(R.bittiAltNot)) { float nh = aIpucu.CalcHeight(Ic(R.bittiAltNot), w); Yaz(new Rect(x, y, w, nh), R.bittiAltNot, aIpucu, A_SOLUK, al); y += nh + 6 * s; }
             if (hero)
-            {   // başlık bitti, karakter bandı başlar; kart en az 40 px bant bırakır (sığmazsa sigK küçültür)
-                if (yKart < y + 40 * s) yKart = y + 40 * s;
-                if (Event.current.type == EventType.Repaint) { heroUst = (y + 4 * s) / H; heroAlt = (yKart - 24 * s) / H; }
+            {   // Afiş düzeni (r108): başlık karakterin üstüne biner (gölgeli), karakter bandı ekranın üstünden kartın üstüne dek.
+                // Başlığın altında ayrı bant kartı sıkıştırıyordu (bant ekranın %7'si kalıyordu). Kart başlığa en çok değer.
+                if (yKart < y + 10 * s) yKart = y + 10 * s;
+                if (Event.current.type == EventType.Repaint) { heroUst = top / H; heroAlt = (yKart - 24 * s) / H; }
                 y = yKart;
             }
             float yIcerik = y;
@@ -992,9 +993,10 @@ namespace BirdieSmash.Game
             if (ayr) y = AyrintiCiz(x, y, w, s, al);
             else
             {
-                if (R.bittiMaske >= 0) y = YildizCiz(x, y, w, s, t, rm, al, hero ? .6f : 1);
+                if (R.bittiMaske >= 0) y = YildizCiz(x, y, w, s, t, rm, al, hero ? .5f : 1);
                 if (od != null) y = OdulCiz(od, x, y, w, s, t, rm, al);
-                if (!string.IsNullOrEmpty(R.bittiAcilan))
+                // Kahraman düzeninde açılan basamak kartı yok: büyük düğmenin alt satırı aynı şeyi söyler ("Sıradaki · İl şampiyonası")
+                if (!hero && !string.IsNullOrEmpty(R.bittiAcilan))
                 {
                     float ik = 26 * s, ph = 14 * s, tw = w - ik - ph * 3, uh = Mathf.Max(aUnl.CalcHeight(Ic(R.bittiAcilan), tw), ik) + 16 * s; var r = new Rect(x, y, w, uh);
                     float ua = rm ? al : Mathf.Clamp01((t - 1.9f) / .3f); KutuCiz(r, aKutuLimon, ua);
@@ -1004,9 +1006,10 @@ namespace BirdieSmash.Game
                 // İpucu ve tur çizgisi isteğe bağlı: düğmelerle çakışacaksa çizilmez (Tüy/XP/seviye kartı hiç düşmez; yasin 1 Kas
                 // "tüy kazanımı ve level atlanırsa o bilgi net şekilde gözlenebilmeli"). İpucu Ayrıntılar'da da okunur.
                 float ipH = string.IsNullOrEmpty(R.bittiIpucu) ? 0 : aIpucu.CalcHeight(Ic(R.bittiIpucu), w) + 8 * s, yolH = R.bittiG >= 0 ? 26 * s : 0;
-                if (ipH > 0 && y + ipH + blokH0 <= H - bot) { Yaz(new Rect(x, y, w, ipH - 8 * s), R.bittiIpucu, aIpucu, A_SOLUK, al); y += ipH; }
-                if (yolH > 0 && y + yolH + blokH0 <= H - bot) y = YolCiz(x, y, w, s, al);
+                if (!hero && ipH > 0 && y + ipH + blokH0 <= H - bot) { Yaz(new Rect(x, y, w, ipH - 8 * s), R.bittiIpucu, aIpucu, A_SOLUK, al); y += ipH; }
+                if (!hero && yolH > 0 && y + yolH + blokH0 <= H - bot) y = YolCiz(x, y, w, s, al);
             }
+            float yIcerikSon = y;
             // ---- alt blok: büyük düğme, en çok bir ikincil düğme, Ayrıntılar · Ana menü yazı bağlantısı ----
             // 2026-11-01 (Ar-Ge 11:40 #2, yasin "yap"): beş eylem "ne yapmalıyım?" yükü getiriyordu. Kartta tek ikincil kalır; öncelik
             // önerilen antrenman (kaybın nedenine bağlı) > ekipman yükselt > tam antrenman > antrenman görevleri. Hepsi Ayrıntılar
@@ -1034,7 +1037,8 @@ namespace BirdieSmash.Game
             }
             else if (Baglanti(new Rect(x, yb, w, bh), L.T("Ana menü"), al)) root.AnaMenu();
             float son = yb + bh, sinir = H - bot;
-            if (hero && Event.current.type == EventType.Repaint) heroH = Mathf.Max(0, son - yIcerik);
+            // ölçü içerik + alt blok (r108: son − yIcerik aradaki boşluğu da sayıyordu, boşluk kendini koruyordu)
+            if (hero && Event.current.type == EventType.Repaint) heroH = Mathf.Max(0, yIcerikSon - yIcerik) + 6 * s + blokH;
             SonucTani = "sonuç " + W + "x" + H + " · s " + s.ToString("F2") + " sigK " + sigK.ToString("F2") + " yazı ×" + k.ToString("F2") + " (12'lik satır " + Mathf.RoundToInt(12 * k) + " px)"
                 + " · matris " + (GUI.matrix.isIdentity ? "düz" : "DÖNÜK") + " · ikincil düğme stili " + (aDug != null ? "var" : "YOK")   // tur 2: yoruma yapışan satırların kilidi
                 + (hero ? " · kahraman bandı %" + (zaferUst * 100).ToString("F0") + "–" + (zaferAlt * 100).ToString("F0") : "") + " · ikincil " + nIk + "/" + nTum

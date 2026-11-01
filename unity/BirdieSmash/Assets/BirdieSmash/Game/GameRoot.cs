@@ -611,30 +611,32 @@ namespace BirdieSmash.Game
         //  - Dokununca geç: bekleme sırasında dokunuş kartı hemen getirir, kamera kesmeyle yerine geçer.
         //  - Kayıpta yok: kamera yayın açısında kalır (kaybı yakından izletmek cezalandırır; Match.cs ağır çekim kuralıyla aynı).
         //  - Hareketi azalt: kayma yok, kesme.
-        // Açı: yan-ön 55° (önden 35° file direği ve rakip yarısını kadraja sokuyordu; 55°'de kamera yan çizginin dışında, file
-        // düzleminin berisinde kalır), 8° yukarıdan. Görüş 40° (yayın açısının ~44°'ü; karakter dar açıda basık görünmez).
+        // Açı: yan-ön 70° (önden 35° file direği ve rakip yarısını kadraja sokuyordu; r108'de 55° kamerayı file düzlemine, hakem
+        // sandalyelerinin yanına taşıyordu; 70°'de yan çizginin dışında, filenin berisinde), 8° yukarıdan. Görüş 40° (yayın açısının ~44°'ü; karakter dar açıda basık görünmez).
         public bool ZaferVar { get { var M = match; return M != null && M.ogr == null && M.matchDone && M.sc[0] > M.sc[1] && (ekran == Ekran.Oyun || ekran == Ekran.Bitti); } }
-        float zaferK, zaferYon; const float ZAFER_SURE = .9f, ZAFER_YAN = 55, ZAFER_YUKSEK = 8, ZAFER_BOY = 1.95f;
+        float zaferK, zaferYon; const float ZAFER_SURE = .9f, ZAFER_YAN = 70, ZAFER_YUKSEK = 8, ZAFER_BOY = 1.95f;
         static readonly float ZAFER_TV = Mathf.Tan(20 * Mathf.Deg2Rad);
         void ZaferKamera(float dt, ref Vector3 p, ref Quaternion q, ref float tv)
         {
             if (!ZaferVar) { zaferK = 0; return; }
             if (zaferK <= 0) zaferYon = match.me.x >= Court.MID ? 1 : -1;   // oyuncunun bulunduğu yanın dışından: arkasında kort kalır
             zaferK = Ayar.reduce ? 1 : Mathf.MoveTowards(zaferK, 1, dt / ZAFER_SURE);
-            float e = Mathf.SmoothStep(0, 1, zaferK); Vector3 zp; Quaternion zq; ZaferCekim(out zp, out zq);
-            p = Vector3.Lerp(p, zp, e); q = Quaternion.Slerp(q, zq, e); tv = Mathf.Lerp(tv, ZAFER_TV, e);
+            // r108: döndürmeyi ayrı yumuşatmak yolda boş zemine ve hakem sandalyesine baktırıyordu; bakış noktası da kaysın
+            // (yayın kamerasının yere baktığı noktadan karaktere), kamera yol boyunca hep oraya baksın.
+            float e = Mathf.SmoothStep(0, 1, zaferK); Vector3 zp, zb; ZaferCekim(out zp, out zb);
+            var f = q * Vector3.forward; var h0 = p + f * (f.y < -.05f ? -p.y / f.y : 20);
+            p = Vector3.Lerp(p, zp, e); q = Quaternion.LookRotation(Vector3.Lerp(h0, zb, e) - p, Vector3.up); tv = Mathf.Lerp(tv, ZAFER_TV, e);
         }
         // Karakter (ayak 0, tepe ZAFER_BOY: şapka ve pelerin dahil) ekranın [zaferUst, zaferAlt] bandına %85 doluluk ile oturur.
-        void ZaferCekim(out Vector3 pos, out Quaternion rot)
+        void ZaferCekim(out Vector3 pos, out Vector3 bak)
         {
             float ust = hud != null ? hud.zaferUst : .12f, alt = hud != null ? hud.zaferAlt : .5f;
             float nt = 1 - 2 * ust, nb = 1 - 2 * alt, bant = Mathf.Max(.25f, nt - nb), orta = (nt + nb) / 2;
-            float d = Mathf.Clamp(ZAFER_BOY / (ZAFER_TV * bant * .85f), 3.5f, 11f);
+            float d = Mathf.Clamp(ZAFER_BOY / (ZAFER_TV * bant * .85f), 3.5f, 9.5f);
             var ayak = Kit.W(match.me.x, match.me.y, 0); float a = ZAFER_YAN * Mathf.Deg2Rad, el = ZAFER_YUKSEK * Mathf.Deg2Rad;
             var yon = new Vector3(zaferYon * Mathf.Sin(a) * Mathf.Cos(el), Mathf.Sin(el), Mathf.Cos(a) * Mathf.Cos(el));   // +z = file yönü (karakterin önü)
             var merkez = ayak + Vector3.up * (ZAFER_BOY / 2); pos = merkez + yon * d;
-            var bak = merkez - Vector3.up * (orta * d * ZAFER_TV);   // bant ortası ekranın ortası değilse bakış o kadar kayar
-            rot = Quaternion.LookRotation(bak - pos, Vector3.up);
+            bak = merkez - Vector3.up * (orta * d * ZAFER_TV);   // bant ortası ekranın ortası değilse bakış o kadar kayar
         }
         // Maç sonu beklemesinde dokunuş: kart hemen gelir, kamera kesmeyle yerine (ilk .25 sn sayılmaz: son vuruşun parmağı).
         void ZaferAtla()
