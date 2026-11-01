@@ -80,6 +80,7 @@ namespace BirdieSmash.Game
 
         public static void Yukle()
         {
+            Bulut.Esitle();   // 2026-11-01 iCloud: yeni kurulumda ilerleme buluttan gelir; HTML devrinden ve okumadan önce
             devirSayisi = Devir.Kabul(kayit);   // Kaydet'ten önce: HTML değeri Unity varsayılanıyla ezilmesin
             var b = Json.Obj(Json.Parse(Str("tuytop_v2", null)));
             if (b != null) { bestRally = (int)Json.Num(b, "rally", 0); wins = (int)Json.Num(b, "wins", 0); kariyer = (int)Json.Num(b, "kariyer", 0); gorev = (int)Json.Num(b, "gorev", 0); sampiyon = Json.Bool(b, "sampiyon", false); }

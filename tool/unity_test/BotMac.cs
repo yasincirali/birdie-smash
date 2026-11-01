@@ -748,6 +748,20 @@ static class BotMac
         }
         { var gs = SvGear(20, 5000); if (!Kozmetik.Al(gs, Kozmetik.SIRT, "ruh_pelerin", "yok") || gs.eko.tuy != 5000 - Kozmetik.Bul(Kozmetik.SIRT, "ruh_pelerin").fiyat) Fail("Sv 20'de ruh omuzluğu alınmalı"); }
         { var gs = SvGear(5, 5000); if (Kozmetik.Al(gs, Kozmetik.SIRT, "yildiz_pelerin", "yok")) Fail("seviye kapısı Tüy ile aşılmamalı (sırt)"); }
+        // (1d) bulut kaydı (2026-11-01): yeni kurulum buluttan yüklenir; büyük XP kazanır; aynı XP'de bulutta fazla Tüy harcamayı geri vermez
+        {
+            var yerel = new Dictionary<string, string> { { "tuytop_ekonomi", "{\"tuy\":120,\"xp\":900}" }, { "tuytop_ilerleme", "{\"a\":1}" } };
+            var yInt = new Dictionary<string, int> { { "tuytop_usta_kart", 1 }, { "tuytop_wins", 7 } };
+            string g = BulutKayit.Goruntu(k => yerel.ContainsKey(k) ? yerel[k] : null, k => yInt.ContainsKey(k) ? yInt[k] : (int?)null);
+            if (g == null || BulutKayit.Karsilastir(null, g) != BulutKayit.Karar.Yukle) Fail("bulut: yeni kurulum buluttan yüklenmeli");
+            if (BulutKayit.Karsilastir("{\"tuy\":5,\"xp\":100}", g) != BulutKayit.Karar.Yukle) Fail("bulut: büyük XP kazanmalı");
+            if (BulutKayit.Karsilastir("{\"tuy\":10,\"xp\":900}", g) != BulutKayit.Karar.Yaz) Fail("bulut: aynı XP'de yerel kazanmalı (harcanan Tüy geri gelmez)");
+            if (BulutKayit.Karsilastir(null, null) != BulutKayit.Karar.Bos) Fail("bulut: ikisi de boşsa dokunma");
+            var acilan = new Dictionary<string, string>(); var acInt = new Dictionary<string, int>();
+            BulutKayit.Ac(g, (k, v) => acilan[k] = v, (k, v) => acInt[k] = v);
+            if (acilan.Count != 2 || acilan["tuytop_ekonomi"] != yerel["tuytop_ekonomi"] || acInt["tuytop_wins"] != 7 || acInt["tuytop_usta_kart"] != 1) Fail("bulut: görüntü birebir açılmalı");
+            if (BulutKayit.Goruntu(k => k == "tuytop_ses" ? "1" : null, k => null) != null) Fail("bulut: cihaz tercihi buluta gitmemeli");
+        }
         { var ga = SvGear(14, 2000); var ha = ga.Hesap(); if (!Kozmetik.Al(ga, Kozmetik.SAPKA, "sovalye", "yok") || !Kozmetik.Al(ga, Kozmetik.YUZ, "gunes", "yok")) Fail("Sv 14'te şövalye kaskı ve güneş gözlüğü alınmalı");
           var hb = ga.Hesap(); if (Gear.Cubuklar(ha).Zip(Gear.Cubuklar(hb), (p, q) => p - q).Any(v => v != 0)) Fail("aksesuar alımı gücü değiştirdi"); }
         // (2) kozmetik GearStats'a dokunmaz: aynı ekipmanla hesap birebir (seçim Ayar'da, Gear'de değil; Kozmetik.Al yalnız Tüy)
