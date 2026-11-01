@@ -351,6 +351,10 @@ namespace BirdieSmash.Core
             if (from == "me") pencereVurus = true;   // vuruşla kapanan pencere hızlı çıkar (PencereAdim)
             vurusY = hy;   // Günün maçı "file" değiştiricisi: son vuruşun derinliği
             if (from == "op") { opHitAt = clock; split = false; if (splitPending) { splitPending = false; DoSplit(); } } else { split = false; splitPending = false; }
+            // Usta merkeze dönüş (2026-11-01, Ar-Ge P2): vuruştan sonra oyuncu orta tabana kendiliğinden süzülür (Kolay'ın RunMe
+            // hedefiyle aynı nokta); yeni bir dokunuş hedefi değiştirir. Eskiden vuruş sonrası toparlanma da tamamen elle idi ve
+            // oyuncu her rallide iki kez konum seçiyordu; zorluk topa gitmekte kalsın, geri dönüş angarya olmasın.
+            if (from == "me" && !isServe && !easy && ogr == null) { me.tx = Court.MID; me.ty = Court.L - 3.3f; me.manualT = 0; }
             var h = from == "me" ? me : op;
             h.tmX = hx; h.tmY = hy; h.tmZ = hz; h.tmN++;
             h.sw = 1; h.shot = isServe ? "low" : (h.prepShot == "lunge" ? "lunge" : ShotClass(type, hz, hy));
@@ -629,6 +633,32 @@ namespace BirdieSmash.Core
         public void RunTo(float x, float y, float manualFor)
         {
             me.tx = Clamp(x, -.4f, Court.CW + .4f); me.ty = Clamp(y, Court.NET + .3f, Court.L + .8f); me.manualT = manualFor;
+        }
+        // Usta konumlanma (2026-11-01, yasin "pozisyonlamak aşırı zor"; Ar-Ge P1 "Akıllı adım"). Ham dokunuş noktasına koşmak
+        // oyuncuya iki tahmin yükler: topun nereye ineceği ve vuruş için onun YANINDA nerede durulacağı (forehand payı HitSide).
+        // File önü dik kamerada ekranda küçük olduğu için ikinci tahmin piksel avına dönüyordu. Artık topun duruş noktasının
+        // ADIM_MIKNATIS içine dokunuş oraya çekilir (Brawl Stars'ın dokunarak nişanı gibi): ne zaman ve hangi yöne gidileceği
+        // oyuncunun kararı kalır; Usta'nın dar erişimi (1,15 m) ve sıkı zamanlaması değişmez. Sürükleme (GameRoot) mıknatıssız:
+        // ince ayar. Duruş noktası Kolay'ın kendiliğinden koşusunun hedefiyle aynı formül (RunMe), iki kip aynı yeri "doğru" sayar.
+        public const float ADIM_MIKNATIS = 1.6f, YERINDE = .35f;
+        public bool DurusNoktasi(out float x, out float y)
+        {
+            x = y = 0; if (s == null || s.dead || s.from != "op") return false;
+            var I = icpt;
+            if (I != null && I.who == "me") { x = Clamp(I.x - HitSide(me, "me", I), -.4f, Court.CW + .4f); y = I.y + (I.lunge ? .6f : .25f); return true; }
+            if (s.landPred != null && s.landPred.y > Court.NET && !(s.landPred.net != null && !s.landPred.net.ok)) { x = s.landPred.x; y = s.landPred.y + .3f; return true; }
+            return false;
+        }
+        public bool AkilliAdim(float x, float y, float manualFor)
+        {
+            float dx, dy; bool cek = DurusNoktasi(out dx, out dy) && Hyp(x - dx, y - dy) <= ADIM_MIKNATIS;
+            if (cek) { x = dx; y = dy; }
+            RunTo(x, y, manualFor); return cek;
+        }
+        // Duruş noktasında mı (ShuttleView ayak izi işareti, GameRoot "Yerindesin")
+        public bool Yerinde()
+        {
+            float x, y; return DurusNoktasi(out x, out y) && Hyp(me.x - x, me.y - y) <= YERINDE;
         }
 
         void Plan(string type, float dxAim, bool overhead, out float tx, out float ty, out bool byAngle, out float val)

@@ -156,7 +156,7 @@ namespace BirdieSmash.Game
         void MacKur(int tohum, MatchOptions o)
         {
             match = new Match(tohum, o);
-            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0;
+            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; yerN = 0; yerTop = null;
             fx.Temizle(); sfx.CrowdStart(); pencere = false; sfx.SuAlti(false); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
@@ -411,7 +411,7 @@ namespace BirdieSmash.Game
 
         // ---- kaydırma girdisi: piksel → 640 px yükseklikli referans (HTML eşikleri aynen geçerli) ----
         class Swipe { public bool on, hit, moved; public float minD = 1e9f; public List<Vector3> tr = new List<Vector3>(); public Vector2 p0; public float t0; public void Reset() { on = hit = moved = false; minD = 1e9f; tr.Clear(); } }
-        readonly Swipe input = new Swipe(); int erkenN;
+        readonly Swipe input = new Swipe(); int erkenN, yerN; Shuttle yerTop;
         float Ref { get { return 640f / Mathf.Max(1, Screen.height); } }
         Vector2 RefPos(Vector2 screen) { return new Vector2(screen.x * Ref, (Screen.height - screen.y) * Ref); }   // y aşağı
 
@@ -487,7 +487,7 @@ namespace BirdieSmash.Game
                 // (topun yanındaki dokunuş vuruş kaydırmasının başıdır). Eskiden pencere açılınca hareket kilitleniyordu; araştırılan
                 // raket oyunlarının hiçbiri vuruş anında hareketi kilitlemiyor. Hedef zaten varana dek sürer (Usta'da manualT
                 // yalnız Kolay'ın kendiliğinden koşusunu bastırır).
-                Vector2 c; if (!M.easy && M.s != null && (!M.HitWindow() || Vector2.Distance(q, BallRef()) > HitR() * 2.2f) && CourtPoint(pos, out c)) M.RunTo(c.x, c.y, 1.4f);
+                Vector2 c; if (!M.easy && M.s != null && (!M.HitWindow() || Vector2.Distance(q, BallRef()) > HitR() * 2.2f) && CourtPoint(pos, out c)) M.AkilliAdim(c.x, c.y, 1.4f);   // 2026-11-01 P1: duruş noktasına mıknatıs
             }
             else if (held && input.on)
             {
@@ -495,7 +495,8 @@ namespace BirdieSmash.Game
                 while (input.tr.Count > 2 && now - input.tr[0].z > 300) input.tr.RemoveAt(0);
                 if (Vector2.Distance(q, input.p0) > 18) input.moved = true;
                 float segSpeed = Vector2.Distance(q, prev) / Mathf.Max(8, now - prev.z); sfx.Ugultu(true, segSpeed);
-                Vector2 c; if (!M.easy && M.s != null && !M.HitWindow() && !input.hit && segSpeed < .6f && CourtPoint(pos, out c)) M.RunTo(c.x, c.y, 1.4f);
+                // Sürükleme mıknatıssız ince ayardır; parmak kıpırdamadan basılı kalınca dokunuşun mıknatıslı hedefini ezmesin (input.moved).
+                Vector2 c; if (!M.easy && M.s != null && !M.HitWindow() && !input.hit && input.moved && segSpeed < .6f && CourtPoint(pos, out c)) M.RunTo(c.x, c.y, 1.4f);
                 // Erken kaydırma tamponu (2026-10-31 U3): pencere açılmadan yapılan belirgin kaydırma saklanır, pencere ERKEN_MS
                 // içinde açılırsa vuruş olur (en iyi "good": topu kesmeden geçmiş sayılır). Platform oyunlarının görünmez toleransı;
                 // Usta'da süre kısa.
@@ -588,6 +589,8 @@ namespace BirdieSmash.Game
             }
             me.Show(match.me, match, dt); op.Show(match.op, match, dt); shuttle.reduce = Ayar.reduce;
             shuttle.Show(match, ekran == Ekran.Menu ? null : match.s, paused || geriT > 0 ? 0 : dt, previewOn && input.on && !input.hit, previewAt);
+            // Usta duruş işareti yazıyla da (P3): maçın ilk iki varışında "Yerindesin"; sonra yalnız ayak izinin dolması (sessiz HUD).
+            if (ekran == Ekran.Oyun && !match.easy && match.ogr == null && yerN < 2 && match.s != null && match.s != yerTop && match.Yerinde()) { yerTop = match.s; yerN++; hud.Say(L.T("Yerindesin"), Kit.W(match.me.x, match.me.y, 1.6f), Kit.Hex("#d8ff5a")); }
             fx.Tick(match, paused || geriT > 0 ? 0 : dt, ekran == Ekran.Oyun);
             if (akisR != null) { bool on = ekran == Ekran.Oyun && match.flow; akisR.enabled = on; if (on) akisR.material.color = new Color(1, .886f, .47f, Ayar.reduce ? .9f : .75f + .25f * Mathf.Sin(Time.unscaledTime * 1000 / 180f)); }
             Hakemler();
