@@ -315,7 +315,8 @@ namespace BirdieSmash.Game
             if (root.ekran == Ekran.Menu) { }   // menü UI Toolkit'te (UiKok); panel girişi orada USS geçişiyle
             else
             {
-                Play(M);
+                // Zafer anında maç göstergesi (skor kutusu, duraklat) çizilmez: r110'da afiş başlığının arkasından okunuyordu; skor kartta.
+                if (!(root.ekran == Ekran.Bitti && root.ZaferVar && !ayrinti)) Play(M);
                 if (root.geriT > 0 && !root.paused && root.ekran == Ekran.Oyun) GeriCiz();
                 if (root.paused) Pause(M);
                 if (root.ekran == Ekran.Bitti) Over(M);
