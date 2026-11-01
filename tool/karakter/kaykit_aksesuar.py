@@ -116,6 +116,16 @@ def birim(p, R, tur):
     d = p - Vector((R['om'].x, R['arkaY'], R['om'].z))
     return (-d.x / R['w'], d.z / R['w'], -d.y / R['w'])
 
+# Oyun içi oturtma (r105 ekran turu, 2026-11-01): KayKit maceracısının başı bizimkinden kısa, kenarlar oyuncakta kaşa/göze
+# iniyordu (miğfer çubuğu ağza) → baş kalemleri birim başta +.2 yukarı. KayKit pelerinleri omuz eninin ±2,3 katı açılıp
+# etek gibi duruyordu → sırt kalemleri enine .7; yarım pelerin (ruh) yana taştığı için .6 ve derinlikte .8.
+DUZELT = {'ruh_pelerin': (.6, 1, .8, 0)}
+def duzelt(id_, tur, p, n):
+    sx, sy, sz, dy = DUZELT.get(id_, (1, 1, 1, .2) if tur == 0 else (.7, 1, 1, 0))
+    q = (p[0] * sx, p[1] * sy + dy, p[2] * sz)
+    m = (n[0] / sx, n[1] / sy, n[2] / sz); L = sum(x * x for x in m) ** .5 or 1
+    return q, tuple(x / L for x in m)
+
 def renkler(o):
     img = None
     for m in o.data.materials:
@@ -146,6 +156,7 @@ def disa(id_, yol, ad, tur, R):
             p = birim(M @ me.vertices[k].co, R, tur)
             nn = (N @ (me.loops[l].normal if hasattr(me.loops[l], 'normal') else me.vertices[k].normal)).normalized()
             n = (-nn.x, nn.z, -nn.y)
+            p, n = duzelt(id_, tur, p, n)
             key = (tuple(round(x, 5) for x in p), tuple(round(x, 2) for x in n))
             if key not in idx: idx[key] = len(pos); pos.append(p); nor.append(n)
             uc.append(idx[key])
