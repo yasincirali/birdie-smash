@@ -14,7 +14,8 @@ namespace BirdieSmash.Core
     public class TarzBilgi { public string id, ad, arti, eksi; public int sv = 1; public Dictionary<string, float> etki = new Dictionary<string, float>(); }
     public class UnvanBilgi { public string id, ad, nasil; public int tur = -1, sv, antrenman; }
     // Görünüm öğesi: renk null = modelin kendi rengi.
-    public class GorunumOge { public string id, ad, renk; public int sv = 1; }
+    // parla (2026-11-01 mistik saç boyaları): renk hafifçe kendinden ışır (Alev, Buz, Yıldız tozu); yalnız görünüş.
+    public class GorunumOge { public string id, ad, renk; public int sv = 1; public bool parla; }
 
     public static class Karakter
     {
@@ -141,7 +142,7 @@ namespace BirdieSmash.Core
             foreach (var k in GORUNUM_KAT)
             {
                 var l = new List<GorunumOge>(); var a = o.ContainsKey(k) ? o[k] as List<object> : null;
-                if (a != null) foreach (var x in a) { var d = Json.Obj(x); l.Add(new GorunumOge { id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), renk = Json.Str(d, "renk", null), sv = (int)Json.Num(d, "sv", 1) }); }
+                if (a != null) foreach (var x in a) { var d = Json.Obj(x); l.Add(new GorunumOge { id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), renk = Json.Str(d, "renk", null), sv = (int)Json.Num(d, "sv", 1), parla = Json.Bool(d, "parla", false) }); }
                 g[k] = l.ToArray();
             }
             if (tl.Count == 0 || tl[0].etki.Count != 0) throw new InvalidOperationException("Birdie Smash: karakter.json ilk tarz etkisiz (Dengeli) olmalı");

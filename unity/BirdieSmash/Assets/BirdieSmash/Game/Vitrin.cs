@@ -30,10 +30,10 @@ namespace BirdieSmash.Game
         public const int TAM = 0, YUZ = 1, AYAK = 2, TUTUS = 3;
         public int odak { get; private set; }
         public string poz { get; private set; }
-        public string deneTip, deneSac, deneAyk, deneSapka, deneYuz, deneSevinc, deneMacSonu;   // sevinç denemeleri figürü değiştirmez, önizlemede oynar
+        public string deneTip, deneSac, deneAyk, deneSapka, deneYuz, deneSevinc, deneMacSonu, deneSirt;   // sevinç denemeleri figürü değiştirmez, önizlemede oynar
         // Kozmetik kategorisine göre deneme alanı (kategori → alan eşlemesi tek yerde; "ayakkabi" ayakkabı modeli).
-        public string DeneAl(string kat) { return kat == Kozmetik.TIP ? deneTip : kat == Kozmetik.SAC ? deneSac : kat == Kozmetik.SAPKA ? deneSapka : kat == Kozmetik.YUZ ? deneYuz : kat == Kozmetik.SEVINC ? deneSevinc : kat == Kozmetik.MAC_SONU ? deneMacSonu : deneAyk; }
-        public void DeneYaz(string kat, string id) { if (kat == Kozmetik.TIP) deneTip = id; else if (kat == Kozmetik.SAC) deneSac = id; else if (kat == Kozmetik.SAPKA) deneSapka = id; else if (kat == Kozmetik.YUZ) deneYuz = id; else if (kat == Kozmetik.SEVINC) deneSevinc = id; else if (kat == Kozmetik.MAC_SONU) deneMacSonu = id; else deneAyk = id; }
+        public string DeneAl(string kat) { return kat == Kozmetik.TIP ? deneTip : kat == Kozmetik.SAC ? deneSac : kat == Kozmetik.SAPKA ? deneSapka : kat == Kozmetik.YUZ ? deneYuz : kat == Kozmetik.SEVINC ? deneSevinc : kat == Kozmetik.MAC_SONU ? deneMacSonu : kat == Kozmetik.SIRT ? deneSirt : deneAyk; }
+        public void DeneYaz(string kat, string id) { if (kat == Kozmetik.TIP) deneTip = id; else if (kat == Kozmetik.SAC) deneSac = id; else if (kat == Kozmetik.SAPKA) deneSapka = id; else if (kat == Kozmetik.YUZ) deneYuz = id; else if (kat == Kozmetik.SEVINC) deneSevinc = id; else if (kat == Kozmetik.MAC_SONU) deneMacSonu = id; else if (kat == Kozmetik.SIRT) deneSirt = id; else deneAyk = id; }
         Transform bBas, bEl, bParmak; readonly List<Transform> bAyak = new List<Transform>(); Renderer bGrip, bTel, bSac, bGovde; Vector3 camS, hedefS; bool camVar;
         public PlayerView Fig { get { return fig; } }   // ekran turu tanısı (VaryantOzet)
         public Camera Kam { get { return kam; } }       // ekran turu: bölge rengi vitrin RT'sinden örneklenir (2026-10-27)
@@ -87,7 +87,7 @@ namespace BirdieSmash.Game
         public string sevinc; float sevincT;
         public void Sevinc(string id) { if (sevinc != id) sevincT = 0; sevinc = id; if (id == null) ShowStaticSifirla(); }
         void ShowStaticSifirla() { if (fig != null) fig.ShowStatic(YER, a, 0); }
-        public void Kapat() { sevinc = null; kam.enabled = false; suruk = false; gec = hedefGec = 0; parca = null; raKay = false; odak = TAM; poz = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = deneSevinc = deneMacSonu = null; camVar = false; gameObject.SetActive(false); }
+        public void Kapat() { sevinc = null; kam.enabled = false; suruk = false; gec = hedefGec = 0; parca = null; raKay = false; odak = TAM; poz = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = deneSevinc = deneMacSonu = deneSirt = null; camVar = false; gameObject.SetActive(false); }
         // Yakın plan seç (aynı odağa ikinci dokunuş Soyunma odasında Tüm boy'a döner). Tutuşa girerken el kameraya döner.
         public void Odak(int o, string klip = null)
         {
@@ -100,7 +100,7 @@ namespace BirdieSmash.Game
         public void Yenile()
         {
             var g = PlayerView.Benim();
-            if (deneTip != null) g.tip = deneTip; if (deneSac != null) g.sacModel = deneSac; if (deneAyk != null) g.aykModel = deneAyk; if (deneSapka != null) g.sapka = deneSapka; if (deneYuz != null) g.yuz = deneYuz;
+            if (deneTip != null) g.tip = deneTip; if (deneSac != null) g.sacModel = deneSac; if (deneAyk != null) g.aykModel = deneAyk; if (deneSapka != null) g.sapka = deneSapka; if (deneYuz != null) g.yuz = deneYuz; if (deneSirt != null) g.sirt = deneSirt;
             string k = Ayar.model + g.Anahtar();
             if (k == anah && fig != null) return; anah = k;
             if (fig != null) Destroy(fig.gameObject); if (raketPivot != null) Destroy(raketPivot.gameObject);

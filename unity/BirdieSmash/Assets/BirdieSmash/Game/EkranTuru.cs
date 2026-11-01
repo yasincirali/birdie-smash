@@ -745,6 +745,13 @@ namespace BirdieSmash.Game
             var f = root.vitrin.Fig; var k = f != null ? f.AksesuarKok : null; if (k == null) return "aksesuar yok";
             return "parça " + k.GetComponentsInChildren<Renderer>().Length + " · baş r " + k.lossyScale.x.ToString("0.000") + " · merkez y " + k.position.y.ToString("0.00");
         }
+        // Sırt kökü: dünya ölçeği x = omuz genişliği, y = boy oranı; omuz yüksekliği (kök y − figür tabanı) ve alt ucun yerden yüksekliği.
+        string SirtTani()
+        {
+            var f = root.vitrin.Fig; var k = f != null ? f.SirtKok : null; if (k == null) return "sırt yok";
+            var b = new Bounds(k.position, Vector3.zero); foreach (var r in k.GetComponentsInChildren<Renderer>()) b.Encapsulate(r.bounds);
+            return "omuz " + k.lossyScale.x.ToString("0.000") + " · boy " + k.lossyScale.y.ToString("0.000") + " · kök y " + (k.position.y - f.transform.position.y).ToString("0.00") + " · alt uç y " + (b.min.y - f.transform.position.y).ToString("0.00");
+        }
         IEnumerator Varyantlar()
         {
             var ui = root.ui; if (ui == null || Ayar.gear == null) yield break;
@@ -778,6 +785,10 @@ namespace BirdieSmash.Game
             foreach (var o in Kozmetik.Liste(Kozmetik.SAPKA)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.SAPKA, o.id); yield return Bekle(20); root.vitrin.a = 30; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_sapka_" + o.id); rap.AppendLine("vitrin sapka=" + o.id + " · " + AksTani()); }
             ui.KarakterAc(UiKok.KAR_TEN); yield return Bekle(30);
             foreach (var o in Kozmetik.Liste(Kozmetik.YUZ)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.YUZ, o.id); yield return Bekle(20); root.vitrin.a = 30; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_yuz_" + o.id); rap.AppendLine("vitrin yuz=" + o.id + " · " + AksTani()); }
+            // 2026-11-01 Sırt: KayKit pelerinleri (Aksesuar.Sirt) arkadan üç çeyrek; sayfanın kendisi (tek satır şerit, 3 sütun, nadirlik) ayrıca
+            ui.KarakterAc(UiKok.KAR_SIRT); yield return Bekle(30); yield return Cek("menu_karakter_sirt");
+            foreach (var o in Kozmetik.Liste(Kozmetik.SIRT)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.SIRT, o.id); yield return Bekle(20); root.vitrin.a = 150; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_sirt_" + o.id); rap.AppendLine("vitrin sirt=" + o.id + " · " + SirtTani()); }
+            ui.KarakterDene(Kozmetik.SIRT, "yildiz_pelerin"); ui.KarakterDene(Kozmetik.SAPKA, "kapson"); yield return Bekle(20); root.vitrin.a = 200; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("menu_karakter_sirt_hepsini_al");
             Ayar.reduce = aksRd; Ayar.reduceSecim = aksRs;
             ui.SoyunmaSegment(0); yield return Bekle(5);
             // maçta: seçim olarak (Ayar.KOZ + ayakkabı modeli), GameRoot.Kur yolu; yakın plan önden ve arkadan
@@ -792,6 +803,11 @@ namespace BirdieSmash.Game
                 var ka = Gear.GEAR["ayakkabi"][ayk];
                 VaryantSatir("maç tip=" + tip + " sac=" + sac + " ayk=" + ayk, Ben(), PlayerView.ModelYolu("oyuncak", tip), Kozmetik.Bul(Kozmetik.SAC, sac).varlik, ka.varlik ?? ka.id, ref t);
             }
+            // pelerin maçta (koşu salınımı, yakın plan önden ve arkadan): seçim olarak
+            Ayar.KOZ[Kozmetik.SIRT] = "golge_pelerin"; Ayar.KOZ[Kozmetik.SAPKA] = "kapson";
+            root.StartMatch(false, false, false); botAcik = false; yield return Bekle(45);
+            yield return Yakin("model_mac_pelerin", root.match.me, true);
+            Ayar.KOZ[Kozmetik.SIRT] = "yok"; Ayar.KOZ[Kozmetik.SAPKA] = "yok";
             yield return Dizilis();
             // başka model seçiliyken: Karakter sayfası uyarı kartı (deneme figürü değiştirmez) ve Ayarlar'daki üç model
             Ayar.KOZ[Kozmetik.TIP] = "atlet"; Ayar.KOZ[Kozmetik.SAC] = "kisa"; Ayar.gear.ayakkabi = "klasik";
@@ -835,6 +851,7 @@ namespace BirdieSmash.Game
             var vt = root.vitrin;
             ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(30); yield return Cek("model_gercekci_karakter_ayakkabi");
             ui.KarakterAc(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "kep"); yield return Bekle(40); yield return Cek("model_gercekci_sapka_kep"); rap.AppendLine("gerçekçi sapka=kep · " + AksTani());
+            ui.KarakterAc(UiKok.KAR_SIRT); ui.KarakterDene(Kozmetik.SIRT, "sovalye_pelerin"); yield return Bekle(40); root.vitrin.a = 150; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_gercekci_sirt"); rap.AppendLine("gerçekçi sirt · " + SirtTani());
             ui.KarakterAc(UiKok.KAR_TEN); ui.KarakterDene(Kozmetik.YUZ, "gunes"); yield return Bekle(40); yield return Cek("model_gercekci_yuz_gunes"); rap.AppendLine("gerçekçi yuz=gunes · " + AksTani());
             foreach (var yid in new[] { "biyik", "boya" }) { ui.KarakterDene(Kozmetik.YUZ, yid); yield return Bekle(30); yield return Cek("model_gercekci_yuz_" + yid); }   // Gerçekçi'nin dar yüzünde (Aksesuar.Yuz)
             foreach (var a in Gear.GEAR["ayakkabi"].Values)
@@ -913,6 +930,7 @@ namespace BirdieSmash.Game
             Ayar.reduce = Ayar.reduceSecim = true; var vt = root.vitrin;
             ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(30); yield return Cek("model_tuycuk_karakter_ayakkabi");
             ui.KarakterAc(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "tavsan"); yield return Bekle(40); yield return Cek("model_tuycuk_sapka_tavsan"); rap.AppendLine("tüycük sapka=tavsan · " + AksTani());
+            ui.KarakterAc(UiKok.KAR_SIRT); ui.KarakterDene(Kozmetik.SIRT, "yildiz_pelerin"); yield return Bekle(40); root.vitrin.a = 150; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_tuycuk_sirt"); rap.AppendLine("tüycük sirt · " + SirtTani());
             t = null;
             foreach (var a in Gear.GEAR["ayakkabi"].Values)
             {

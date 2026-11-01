@@ -47,7 +47,7 @@ namespace BirdieSmash.Game
             var gr = Ayar.gear;
             if (Kozmetik.Sahip(gr, Kozmetik.TIP, h[1])) Ayar.KOZ[Kozmetik.TIP] = h[1];
             if (Kozmetik.Sahip(gr, Kozmetik.SAC, h[2])) Ayar.KOZ[Kozmetik.SAC] = h[2];
-            Ayar.KOZ[Kozmetik.SAPKA] = Kozmetik.Varsayilan(Kozmetik.SAPKA); Ayar.KOZ[Kozmetik.YUZ] = Kozmetik.Varsayilan(Kozmetik.YUZ);
+            Ayar.KOZ[Kozmetik.SAPKA] = Kozmetik.Varsayilan(Kozmetik.SAPKA); Ayar.KOZ[Kozmetik.YUZ] = Kozmetik.Varsayilan(Kozmetik.YUZ); Ayar.KOZ[Kozmetik.SIRT] = Kozmetik.Varsayilan(Kozmetik.SIRT);
             Ayar.GORUNUM["sac"] = h[3]; Ayar.GORUNUM["ten"] = h[4]; Ayar.GORUNUM["ayakkabi"] = h[8];
             if (gr.RenkAcik(h[5], Ayar.sampiyon)) gr.renk = h[5];
             Ayar.RGOR["grip"] = h[6]; Ayar.RGOR["tel"] = h[7];

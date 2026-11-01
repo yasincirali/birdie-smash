@@ -8,6 +8,7 @@
 // Yalnız görünüş: maçta hiçbir hesaba girmez (Core/Kozmetik güç alanını yasaklar).
 using System.Collections.Generic;
 using UnityEngine;
+using BirdieSmash.Core;
 
 namespace BirdieSmash.Game
 {
@@ -81,6 +82,7 @@ namespace BirdieSmash.Game
 
         static void Sapka(Transform k, string id, Color forma)
         {
+            if (HazirAg(k, id)) return;
             var fm = Mat(forma, .3f); var koyu = Mat(Color.Lerp(forma, Color.black, .45f), .3f);
             switch (id)
             {
@@ -189,6 +191,127 @@ namespace BirdieSmash.Game
                         break;
                     }
             }
+        }
+
+        // ---- Hazır 3B eşyalar (2026-11-01, yasin: "internette hazır bedava ürünleri kullanabilirsin"; karar: yalnız bedava) ----
+        // KayKit Adventurers 1.0 ve Skeletons 1.0 (CC0) şapka ve pelerinleri, tool/karakter/kaykit_aksesuar.py ile birim
+        // çerçevede Resources/karakter/aks/<id>.bytes olarak yazılır (biçim betiğin başında). Renk başına bir alt ağ, düz
+        // malzeme: doku yok, sıkıştırma/mipmap paleti bulandırmaz, sahnedeki yordamsal aksesuarlarla aynı ışık.
+        public class HazirVeri { public Mesh mesh; public Material[] mats; public int tur; public float altY; }
+        static readonly Dictionary<string, HazirVeri> hazir = new Dictionary<string, HazirVeri>();
+        public static HazirVeri Hazir(string id)
+        {
+            if (!Var(id)) return null;
+            HazirVeri h; if (hazir.TryGetValue(id, out h)) return h;
+            var ta = Resources.Load<TextAsset>("karakter/aks/" + id); h = null;
+            if (ta != null)
+            {
+                try { h = Coz(ta.bytes); }
+                catch (System.Exception e) { Debug.LogWarning("aksesuar " + id + ": " + e.Message); h = null; }
+                Resources.UnloadAsset(ta);
+            }
+            if (h != null) Boya(h, Kozmetik.Bul(Kozmetik.SAPKA, id) ?? Kozmetik.Bul(Kozmetik.SIRT, id));
+            hazir[id] = h; return h;
+        }
+        // Veri rengi (karakter.json "renk") en çok üçgenli alt ağın rengi olur; mistik öğede o alt ağ hafifçe kendinden ışır
+        // (Standard _EMISSION, raket parlamasıyla aynı yol): gece renkli pelerin karanlık sahnede kaybolmasın, "büyülü" okunsun.
+        static void Boya(HazirVeri h, KozmetikOge o)
+        {
+            if (o == null || h.mats.Length == 0) return;
+            int ana = 0, enc = -1; for (int a = 0; a < h.mats.Length; a++) { int n = (int)h.mesh.GetIndexCount(a); if (n > enc) { enc = n; ana = a; } }
+            if (o.renk != null) h.mats[ana].color = Kit.Hex(o.renk);
+            if (o.nadir == "mistik") { var m = h.mats[ana]; m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", m.color * .45f); m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None; }
+        }
+        static HazirVeri Coz(byte[] b)
+        {
+            using (var r = new System.IO.BinaryReader(new System.IO.MemoryStream(b)))
+            {
+                if (new string(r.ReadChars(4)) != "BSA1") throw new System.Exception("biçim");
+                var h = new HazirVeri { tur = r.ReadByte() }; int n = r.ReadUInt16();
+                var v = new Vector3[n]; var nr = new Vector3[n]; float alt = 0;
+                for (int i = 0; i < n; i++)
+                {
+                    v[i] = new Vector3(r.ReadSingle(), r.ReadSingle(), r.ReadSingle()); nr[i] = new Vector3(r.ReadSingle(), r.ReadSingle(), r.ReadSingle());
+                    alt = Mathf.Min(alt, v[i].y);
+                }
+                int alt_n = r.ReadByte(); var tris = new List<int[]>(); var mats = new Material[alt_n];
+                for (int a = 0; a < alt_n; a++)
+                {
+                    var c = new Color32(r.ReadByte(), r.ReadByte(), r.ReadByte(), r.ReadByte()); int tn = r.ReadUInt16(); var t = new int[tn * 3];
+                    for (int i = 0; i < t.Length; i++) t[i] = r.ReadUInt16();
+                    tris.Add(t); mats[a] = Mat(c, .2f);
+                }
+                // iki yüz: pelerinler tek düzlem, şapka içi de görünür olabilir (IkiYuz ile aynı kural, alt ağ başına)
+                var vv = new List<Vector3>(v); var nn = new List<Vector3>(nr);
+                for (int i = 0; i < n; i++) { vv.Add(v[i]); nn.Add(-nr[i]); }
+                var m = new Mesh { name = "aks" }; m.SetVertices(vv); m.SetNormals(nn); m.subMeshCount = alt_n;
+                for (int a = 0; a < alt_n; a++)
+                {
+                    var t = tris[a]; var o = new int[t.Length * 2];
+                    for (int i = 0; i < t.Length; i += 3) { o[i] = t[i]; o[i + 1] = t[i + 1]; o[i + 2] = t[i + 2]; o[t.Length + i] = t[i] + n; o[t.Length + i + 1] = t[i + 2] + n; o[t.Length + i + 2] = t[i + 1] + n; }
+                    m.SetTriangles(o, a);
+                }
+                m.RecalculateBounds(); h.mesh = m; h.mats = mats; h.altY = alt; return h;
+            }
+        }
+        // PlayerView.Sol/Sag ile aynı ad kuralı (dört modelin kemik adları)
+        static bool Sol(string n) { return n.EndsWith(".l") || n.EndsWith("_l") || n.Contains(" l ") || n.Contains("left"); }
+        static bool Sag(string n) { return n.EndsWith(".r") || n.EndsWith("_r") || n.Contains(" r ") || n.Contains("right"); }
+        static GameObject HazirObj(Transform k, HazirVeri h)
+        {
+            var g = Kit.MeshObj("aks", k, h.mesh, h.mats[0], true); g.GetComponent<MeshRenderer>().sharedMaterials = h.mats; return g;
+        }
+        static bool HazirAg(Transform k, string id)
+        {
+            var h = Hazir(id); if (h == null || h.tur != 0) return false; HazirObj(k, h); return true;
+        }
+
+        // Sırt eşyası (pelerin): göğüs kemiğine (boynun ebeveyni) bağlanır. Çerçeve: omuz çizgisi ortası (upperarm sol/sağ),
+        // birim = omuz genişliği, z=0 sırt yüzeyi (omuz yüksekliğinde gövdenin en arka noktası; BakeMesh bir kez). KayKit
+        // pelerini figürün topuğuna iner (3 baş boylu gövde); bizim modellerde koşuyu ve hamleyi kapatmasın diye boyu, alt ucu
+        // omuz yüksekliğinin %45'inde (diz arkası) kalacak kadar kısaltılır; omuzluk gibi kısa parçalar olduğu gibi kalır.
+        public static Transform Sirt(Transform model, Vector3 dikey, string id)
+        {
+            var h = Hazir(id); if (model == null || h == null || h.tur != 1) return null;
+            Transform bas = null, goz = null, ol = null, or_ = null, boyun = null;
+            foreach (var t in model.GetComponentsInChildren<Transform>(true))
+            {
+                string n = t.name.ToLowerInvariant();
+                if (t.name.StartsWith("bas__")) bas = t; else if (t.name.StartsWith("goz__")) goz = t;
+                if (n.Contains("__")) continue;
+                if (n.Contains("upperarm")) { if (Sol(n)) ol = t; else if (Sag(n)) or_ = t; }
+                if (boyun == null && n.Contains("neck")) boyun = t;
+            }
+            if (ol == null || or_ == null || boyun == null || boyun.parent == null) return null;
+            Vector3 up = dikey.normalized;
+            Vector3 ileri = bas != null && goz != null ? Vector3.ProjectOnPlane(goz.position - bas.position, up) : Vector3.zero;
+            if (ileri.sqrMagnitude < 1e-8f) ileri = Vector3.ProjectOnPlane(model.forward, up);
+            ileri.Normalize(); var sag = Vector3.Cross(up, ileri);
+            Vector3 om = (ol.position + or_.position) * .5f; float w = Vector3.ProjectOnPlane(ol.position - or_.position, up).magnitude;
+            if (w < 1e-4f) return null;
+            float arka = 0; bool bulundu = false;
+            foreach (var rd in model.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                if (!rd.enabled || rd.sharedMesh == null) continue;
+                string et = PlayerView.Etiket(rd.gameObject.name); if (et == "bant" || et == "bilek" || rd.name.StartsWith("raket")) continue;
+                var m = new Mesh(); rd.BakeMesh(m, true); var M = Matrix4x4.TRS(rd.transform.position, rd.transform.rotation, Vector3.one);
+                foreach (var v in m.vertices)
+                {
+                    var d = M.MultiplyPoint3x4(v) - om;
+                    if (Mathf.Abs(Vector3.Dot(d, up)) > .12f * w || Mathf.Abs(Vector3.Dot(d, sag)) > .3f * w) continue;
+                    float z = Vector3.Dot(d, ileri); if (!bulundu || z < arka) { arka = z; bulundu = true; }
+                }
+                Object.Destroy(m);
+            }
+            if (!bulundu) arka = -.25f * w;
+            float omuzY = Vector3.Dot(om - model.position, up);
+            float boy = h.altY < -.8f ? Mathf.Min(1f, .55f * omuzY / (w * -h.altY)) : 1f;
+            var kok = new GameObject("sirt").transform; kok.SetParent(boyun.parent, true);
+            kok.position = om + ileri * (arka - .01f * w); kok.rotation = Quaternion.LookRotation(ileri, up);
+            float ls = boyun.parent.lossyScale.x; kok.localScale = new Vector3(w, w * boy, w) / Mathf.Max(1e-5f, ls);
+            HazirObj(kok, h);
+            if (h.altY < -.8f) kok.gameObject.AddComponent<PelerinSalinim>();
+            return kok;
         }
 
         // Sarım yönü elle tutturulmaz: her ağ iki yüzlü yazılır (arka yüz ters normalle ayrı köşeler), hangi taraftan bakılsa dolu.

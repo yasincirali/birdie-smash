@@ -63,7 +63,7 @@ namespace BirdieSmash.Game
         // okur). Tarz ekipman kartına girmez: güç ekipmandan, tarz karakterden (tasarım §5.1).
         public static Gear gear; public static GearStats GS = GearStats.Notr, GSE = GearStats.Notr;
         public static readonly Dictionary<string, string> GORUNUM = new Dictionary<string, string> { { "ten", "dogal" }, { "sac", "dogal" }, { "ayakkabi", "dogal" }, { "kaplama", "model" }, { "sort", "dogal" } };   // sort: 2026-10-27 şort rengi (Gerçekçi, Sade)
-        public static readonly Dictionary<string, string> KOZ = new Dictionary<string, string> { { Kozmetik.TIP, "atlet" }, { Kozmetik.SAC, "kisa" }, { Kozmetik.SAPKA, "yok" }, { Kozmetik.YUZ, "yok" }, { Kozmetik.SEVINC, "yumruk" }, { Kozmetik.MAC_SONU, "zafer" } };
+        public static readonly Dictionary<string, string> KOZ = new Dictionary<string, string> { { Kozmetik.TIP, "atlet" }, { Kozmetik.SAC, "kisa" }, { Kozmetik.SAPKA, "yok" }, { Kozmetik.YUZ, "yok" }, { Kozmetik.SEVINC, "yumruk" }, { Kozmetik.SIRT, "yok" }, { Kozmetik.MAC_SONU, "zafer" } };
         // Ayakkabı görünüşü (2026-10-30, Soyunma Oyun/Görünüm ayrımı): taban (güç) Gear "ayakkabi" seçimi Oyun'da; figürde görünen
         // model Görünüm'de, sahip olunan ayakkabılardan. "taban" = tabanla aynı model (eski kayıtların görünüşü değişmez).
         public static string AYK_GOR = "taban";
@@ -158,6 +158,8 @@ namespace BirdieSmash.Game
             string id; if (!GORUNUM.TryGetValue(kat, out id)) return null; var o = Karakter.Oge(kat, id);
             return o != null && (gear == null || o.sv <= gear.Seviye()) ? o.renk : null;
         }
+        // Seçili saç boyası parlıyor mu (mistik boyalar; seviyesi gelmemişse GorunumRenk gibi yok sayılır).
+        public static bool SacParla { get { string id; if (!GORUNUM.TryGetValue("sac", out id)) return false; var o = Karakter.Oge("sac", id); return o != null && o.parla && o.renk != null && (gear == null || o.sv <= gear.Seviye()); } }
         public static void Kaydet()
         {
             if (ilerleme != null) { kariyer = ilerleme.Tur1Gecilen(); PlayerPrefs.SetString(Ilerleme.ANAHTAR, ilerleme.Yaz()); }
