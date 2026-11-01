@@ -570,9 +570,17 @@ namespace BirdieSmash.Game
             for (int bk = 0; bk < 600 && !(root.match.s != null && root.match.s.from == "op" && !root.match.s.dead && root.match.s.y > Court.NET - 1 && root.match.s.t > .25f); bk++) yield return null;
             yield return Cek("usta_halka");
             // 2026-11-01 P3: duruş ayak izi dolu (oyuncu yerinde) karesi; bot yerine varmazsa yine çeker (rapor satırı söyler)
-            { bool y = false; for (int bk = 0; bk < 900 && !(y = root.match.Yerinde()); bk++) yield return null; yield return Cek("usta_durus"); rap.AppendLine("usta_durus · yerinde " + y); }
+            // r104: tur botu kendi noktasına koştuğu için hiç "yerinde" olmuyordu; burada bot durur, oyuncu gibi duruş noktasına dokunulur.
+            {
+                botAcik = false; bool y = false; float dx, dy;
+                for (int bk = 0; bk < 300 && !root.match.DurusNoktasi(out dx, out dy); bk++) yield return null;
+                if (root.match.DurusNoktasi(out dx, out dy)) root.match.AkilliAdim(dx + .5f, dy + .3f, 1.4f);
+                for (int bk = 0; bk < 120 && !(y = root.match.Yerinde()); bk++) yield return null;
+                yield return Cek("usta_durus"); rap.AppendLine("usta_durus · yerinde " + y); botAcik = true;
+            }
             // 2026-11-01 Sevinç maçta: benim sayımdan sonraki bekleme (en çok ~25 sn bot oyunu)
-            { int sk0 = root.match.sc[0]; for (int bk = 0; bk < 1500 && root.match.sc[0] == sk0; bk++) yield return null; yield return Bekle(14); yield return Cek("sevinc_sayi"); }
+            // r104: bot benim sayımı beklerken maç bitiyordu; herhangi bir sayıdan sonra (rakibin sevinci de aynı kod) çekilir.
+            { int sk0 = root.match.sc[0] + root.match.sc[1]; for (int bk = 0; bk < 1500 && root.match.sc[0] + root.match.sc[1] == sk0 && !root.match.matchDone; bk++) yield return null; yield return Bekle(14); yield return Cek("sevinc_sayi"); rap.AppendLine("sevinc_sayi · " + root.match.sc[0] + "-" + root.match.sc[1]); }
             botAcik = false;
             Ayar.easy = e0; root.HudKatman.UstaKartSifirla(); root.AnaMenu(); yield return Bekle(10);
             // 2026-10-31 K1: ilk maçtan sonra "Oyuncunu seç" (turda kendiliğinden açılmaz; burada elle), bir kart seçili, sonra Atla

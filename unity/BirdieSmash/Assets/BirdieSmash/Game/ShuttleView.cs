@@ -70,7 +70,7 @@ namespace BirdieSmash.Game
             // Usta duruş işareti (2026-11-01 Ar-Ge P3): topu karşılamak için durulacak yer yerde iki ayak izi. Varılmadıkça yalnız
             // çerçeve (beyaz), oraya gelince içi dolar (limon): "yerindesin" biçimle de okunur, yalnız renkle değil (HIG renk körlüğü).
             ayakM = Kit.Clear(new Color(1, 1, 1, .55f)); ayakL = Kit.Line("durus_sol", transform, ayakM, true, true); ayakR = Kit.Line("durus_sag", transform, ayakM, true, true);
-            ayakL.widthMultiplier = ayakR.widthMultiplier = .025f;
+            ayakL.widthMultiplier = ayakR.widthMultiplier = .035f;
             ayakDolguM = Kit.Clear(new Color(.85f, 1, .35f, .45f));
             ayakDolguL = Kit.MeshObj("durus_dolgu_sol", transform, Disc(), ayakDolguM).transform; ayakDolguR = Kit.MeshObj("durus_dolgu_sag", transform, Disc(), ayakDolguM).transform;
             prevM = Kit.Clear(new Color(.847f, 1, .353f, .8f), dash);
@@ -185,7 +185,7 @@ namespace BirdieSmash.Game
             if (ayakL == null) return;
             ayakL.enabled = ayakR.enabled = on; ayakDolguL.gameObject.SetActive(on && yerinde); ayakDolguR.gameObject.SetActive(on && yerinde);
             if (!on) return;
-            const float ara = .12f, rx = .055f, rz = .12f;
+            const float ara = .17f, rx = .085f, rz = .19f;   // r104: küçük izler uzaktan "00" gibi okunuyordu
             var l = Kit.W(x - ara, y, .009f); var r = Kit.W(x + ara, y, .009f);
             Kit.Ellipse(ayakL, l, rx, rz, 24); Kit.Ellipse(ayakR, r, rx, rz, 24);
             ayakM.color = yerinde ? new Color(.85f, 1, .35f, .9f) : new Color(1, 1, 1, .55f);

@@ -95,7 +95,7 @@ namespace BirdieSmash.Game
             if (o == TUTUS && odak != TUTUS) { a = TUTUS_ACI; v = 0; }
             odak = o; poz = o == TUTUS ? klip : null;
         }
-        const float TUTUS_ACI = -35;   // sağ el (raket) kameraya dönük, gövde 3/4
+        const float TUTUS_ACI = -35, SEVINC_ACI = -20;   // sağ el (raket) kameraya dönük, gövde 3/4
         // Ekipman ya da raket görünümü değişince figürü yeniden boya (anahtar: görünümün özeti).
         public void Yenile()
         {
@@ -377,6 +377,9 @@ namespace BirdieSmash.Game
         {
             if (fig == null) return; float dt = Mathf.Min(.05f, Time.unscaledDeltaTime); bool rm = Ayar.reduce;
             if (!suruk) { if (Mathf.Abs(v) > 2) v *= Mathf.Pow(.08f, dt); else v = rm || hedefGec > 0 || odak == TUTUS ? 0 : 18; a += v * dt; }
+            // Sevinç önizlemesi (r104: dönen vitrin hareketi yandan gösteriyordu, kollar okunmuyordu): dönüş durur, figür 3/4 öne
+            // döner; sürüklenirse oyuncunun açısı kalır.
+            if (sevinc != null && !suruk && Mathf.Abs(v) <= 2) { v = 0; float fk = Mathf.DeltaAngle(a, SEVINC_ACI); a = rm ? SEVINC_ACI : a + fk * (1 - Mathf.Exp(-dt * 6)); }
             float gd = hedefGec - gec; gec = rm || Mathf.Abs(gd) < .002f ? hedefGec : gec + Mathf.Sign(gd) * Mathf.Min(Mathf.Abs(gd), dt / .6f);
             if (hedefGec == 1 && !suruk)
             {
