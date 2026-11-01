@@ -286,11 +286,15 @@ namespace BirdieSmash.Game
             { ekTuy = Gunluk.OdulTuy; ekXp = Gunluk.OdulXp; ekAd = "Günün maçı"; kNot = "Günün maçı kazanıldı."; Basarim.Ver(Basarim.GUNUN_MACI); }
             if (M.okudun > 0) { Ayar.ilerleme.ImzaOkuSay(M.okudun); if (Ayar.ilerleme.ImzaOkunan >= Basarim.IMZA_OKUR_HEDEF) Basarim.Ver(Basarim.IMZA_OKUR); }
             // Maç sonu ödülü (HTML ekoOdul): antrenmanda yok (antrenman maç sonu ekranına gelmez). Yeni yıldız +20 Tüy, okunan imza +5 XP.
+            bool hazirOnce = YukseltAlinir(Ayar.gear.Seviye());   // ödülden önce: bu maç yeni bir şey açtı mı
             odul = Ayar.gear.Odul(won, kariyerIlk, M.target, M.easy, M.gorevBitti, M.perfects, System.DateTime.Now, yeniYildiz, M.okudun, ekTuy, ekXp, ekAd);
             if (odul.sonra > odul.once) Yerel.Hap("flow");   // seviye atladın
             if (odul.sonra >= 30) Basarim.Ver(Basarim.EFSANE);
             // "Ekipmanı yükselt": alınabilecek yükseltme ya da (ekipman v2) seviyesi gelmiş, Tüy'ü yeten model varsa.
-            yukseltHazir = false; foreach (var y in Gear.YUVA) { int sv = Ayar.gear.eko.sv[y.k]; if (sv < 10 && Ayar.gear.eko.tuy >= Gear.YUK_FIYAT[sv - 1] && odul.sonra >= Gear.YUK_SV[sv - 1] || Ayar.gear.AlinabilirVar(y.m)) yukseltHazir = true; }
+            // 2026-11-01 (Ar-Ge 19:40 #1, yasin "yap dediklerini ilerlet"): yalnız bu maçın Tüy'ü/seviyesi bir yükseltmeyi ya da modeli
+            // ilk kez alınabilir yaptıysa. Önce her maçta (Tüy biriktiren oyuncuda hep) çıkıyordu; oyuncu düğmeyi görmez oluyordu.
+            // Atölye sekmesindeki "yükseltme ya da yeni model hazır" satırı değişmedi.
+            yukseltHazir = !hazirOnce && YukseltAlinir(odul.sonra);
             Ayar.Kaydet();
             bittiBaslik = L.T(won ? "Kazandın" : "Bu sefer rakip aldı") + (kNot != "" ? " · " + L.Cumle(kNot) : "");
             // "Galibiyet" anahtarı tr_en.json'da istatistik etiketi ("Wins"); başlıkta "Victory" olmalı (r16), sözlük HTML'in
@@ -313,6 +317,11 @@ namespace BirdieSmash.Game
             bittiIpucu = ik == null ? null : ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
             if (Ozet.PuanIste(won, kariyerIlk, Ayar.wins, Ayar.puan)) { CancelInvoke("PuanIste"); Invoke("PuanIste", 1.5f); }
             if (won) hud.Konfeti();
+        }
+        bool YukseltAlinir(int seviye)
+        {
+            foreach (var y in Gear.YUVA) { int sv = Ayar.gear.eko.sv[y.k]; if (sv < 10 && Ayar.gear.eko.tuy >= Gear.YUK_FIYAT[sv - 1] && seviye >= Gear.YUK_SV[sv - 1] || Ayar.gear.AlinabilirVar(y.m)) return true; }
+            return false;
         }
         // Yalnız ekran turu (EkranTuru, -bsekran) için: sonuç ekranını maçı sonuna kadar oynatmadan görmek (2026-10-26, yön A
         // sonuç ekranı). Mağaza build'inde çağıran yok; EndMatch'in kendisi değişmez, tur gerçek akışın sonucunu çeker.
