@@ -226,7 +226,7 @@ namespace BirdieSmash.Game
         public void AnaMenu() { bekleyen = ekran == Ekran.Oyun && paused && match != null && match.ogr == null; ekran = Ekran.Menu; paused = false; KadrajSifirla(); Uyanik(false); if (ui != null) ui.MenuyeDon(); sfx.SuAlti(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); AudioListener.pause = false; }
         public void MacaDon() { if (!bekleyen) return; bekleyen = false; ekran = Ekran.Oyun; paused = true; Devam(); }
         // Duraklatınca tüm ses susar (HTML AC.suspend), devamda kaldığı yerden sürer.
-        public void Duraklat() { if (ekran == Ekran.Oyun && !paused) { paused = true; Uyanik(false); input.Reset(); sfx.Ugultu(false, 0); AudioListener.pause = true; } }
+        public void Duraklat() { if (ekran == Ekran.Oyun && !paused) { paused = true; erkenT = 0; Uyanik(false); input.Reset(); sfx.Ugultu(false, 0); AudioListener.pause = true; } }
         public void Devam() { paused = false; AudioListener.pause = false; input.Reset(); if (ekran == Ekran.Oyun) { Uyanik(true); if (match != null && match.s != null && match.ogr == null && !geriKapali) geriT = GERI; } }
         // D5 (2026-10-31): arka planda iOS uygulamayı uyarısız kapatabilir; bekleyen kayıt ve PlayerPrefs diske yazılır.
         void OnApplicationPause(bool p) { if (p) { Duraklat(); BekleyenKayit(); PlayerPrefs.Save(); } }   // arka plana geçince kendiliğinden duraklar; top bir anda üstüne düşmez
@@ -472,13 +472,22 @@ namespace BirdieSmash.Game
             if (Input.touchCount > 0) { var t = Input.GetTouch(0); pos = t.position; down = t.phase == TouchPhase.Began; up = t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled; held = !down && !up; }
             else { pos = Input.mousePosition; down = Input.GetMouseButtonDown(0); up = Input.GetMouseButtonUp(0); held = Input.GetMouseButton(0) && !down; }
             float now = Time.unscaledTime * 1000; var q = RefPos(pos); var M = match;
+            if (erkenT > 0)
+            {
+                if (now - erkenT > (M.easy ? ERKEN_MS_KOLAY : ERKEN_MS_USTA) || M.s != erkenTop || M.s == null || M.s.dead || input.hit) erkenT = 0;
+                else if (M.HitWindow()) { erkenT = 0; if (M.SwipeShot(erkenSw)) { input.hit = true; Yerel.Vurus(M.sonTip, M.sonQ, M.sonSlice); } }
+            }
             if (down)
             {
                 if (hud.Blocks(new Vector2(pos.x, Screen.height - pos.y))) return;   // HUD düğmesine dokunuş kaydırma değil
                 if (M.ogr != null && BilgiDokun(pos)) return;   // antrenman bilgi adımı: işaretli alana dokun
                 if (rakipKartT > 0) { rakipKartT = 0; }
                 input.Reset(); input.on = true; input.p0 = q; input.t0 = now; input.tr.Add(new Vector3(q.x, q.y, now)); M.OnTouchDown(); sfx.Ugultu(true, 0);
-                Vector2 c; if (!M.easy && M.s != null && !M.HitWindow() && CourtPoint(pos, out c)) M.RunTo(c.x, c.y, 1.4f);
+                // Usta koşusu (2026-10-31 U2): vuruş penceresinde de koşu emri alınır, yeter ki dokunuş topun yakınında olmasın
+                // (topun yanındaki dokunuş vuruş kaydırmasının başıdır). Eskiden pencere açılınca hareket kilitleniyordu; araştırılan
+                // raket oyunlarının hiçbiri vuruş anında hareketi kilitlemiyor. Hedef zaten varana dek sürer (Usta'da manualT
+                // yalnız Kolay'ın kendiliğinden koşusunu bastırır).
+                Vector2 c; if (!M.easy && M.s != null && (!M.HitWindow() || Vector2.Distance(q, BallRef()) > HitR() * 2.2f) && CourtPoint(pos, out c)) M.RunTo(c.x, c.y, 1.4f);
             }
             else if (held && input.on)
             {
@@ -487,6 +496,14 @@ namespace BirdieSmash.Game
                 if (Vector2.Distance(q, input.p0) > 18) input.moved = true;
                 float segSpeed = Vector2.Distance(q, prev) / Mathf.Max(8, now - prev.z); sfx.Ugultu(true, segSpeed);
                 Vector2 c; if (!M.easy && M.s != null && !M.HitWindow() && !input.hit && segSpeed < .6f && CourtPoint(pos, out c)) M.RunTo(c.x, c.y, 1.4f);
+                // Erken kaydırma tamponu (2026-10-31 U3): pencere açılmadan yapılan belirgin kaydırma saklanır, pencere ERKEN_MS
+                // içinde açılırsa vuruş olur (en iyi "good": topu kesmeden geçmiş sayılır). Platform oyunlarının görünmez toleransı;
+                // Usta'da süre kısa.
+                if (!input.hit && M.s != null && !M.s.dead && M.s.from == "op" && !(M.ogr != null && M.ogr.dur) && !M.HitWindow() && Vector2.Distance(q, input.p0) > 70)
+                {
+                    float edx, edy, esp; SwipeVec(out edx, out edy, out esp);
+                    if (esp > .45f) { erkenSw = Jest(new SwipeInput { dx = edx, dy = edy, speed = esp, dist = HitR() * .9f, R = HitR(), curved = Curved() }); erkenT = now; erkenTop = M.s; }
+                }
                 if (!input.hit && M.s != null && !M.s.dead && M.s.from == "op" && M.HitWindow())
                 {
                     var sr = BallRef(); float side;
@@ -521,12 +538,13 @@ namespace BirdieSmash.Game
                         hud.Say(L.T("Iska · {0}", L.T(neden)), Kit.W(M.me.x, M.me.y, 1.6f), Kit.Hex("#ffd27a")); sfx.Iska();
                     }
                 }
-                else if (!input.hit && !M.s.dead && M.s.from == "op" && !M.HitWindow() && far > 60 && erkenN < 3) { erkenN++; hud.Say(L.T("Erken: top parlayınca kaydır"), Kit.W(M.me.x, M.me.y, 1.6f), Kit.Hex("#ffd27a")); }   // maç başına en çok 3 kez
+                else if (!input.hit && erkenT <= 0 && !M.s.dead && M.s.from == "op" && !M.HitWindow() && far > 60 && erkenN < 3) { erkenN++; hud.Say(L.T("Erken: top parlayınca kaydır"), Kit.W(M.me.x, M.me.y, 1.6f), Kit.Hex("#ffd27a")); }   // maç başına en çok 3 kez
                 else if (M.easy && !input.hit && !M.HitWindow() && far < 18 && now - input.t0 < 250)
                 { Vector2 c; if (CourtPoint(pos, out c)) M.RunTo(c.x, c.y, .7f); }   // Kolay'da kısa dokunuş yer değiştirir
             }
         }
         public float trSon;
+        const float ERKEN_MS_KOLAY = 120, ERKEN_MS_USTA = 80; SwipeInput erkenSw; float erkenT; Shuttle erkenTop;
         // Bilgi adımı (HTML ogrBilgiDokun): nefes halkası (ayak çevresi, 34u+22 × 16u+22 px) ya da alttaki smaç gücü çubuğu.
         bool BilgiDokun(Vector2 pos)
         {

@@ -540,3 +540,25 @@
 .seviye-liste { align-items: center; margin-bottom: 20px; }
 .seviye-oge { color: var(--tx); -unity-text-align: middle-center; white-space: normal; margin: 2px 0; }
 .seviye-ic .dugme { align-self: stretch; margin-top: 8px; }
+
+/* 2026-10-31 Dolap K2 + K4 (Game/UI/Kombin.cs). Kombin yuvaları dar çip (44 pt), dört yan yana; büyük yazıda ikişer.
+   Alt çubuk: kaydırma alanının dışında, sabit; kart rengi + üst çizgi, deneme rengi gök (deneme-kart ile aynı anlam). */
+.kombin-satir { flex-wrap: wrap; }
+.kombin-cip { flex-basis: 22%; flex-grow: 1; min-height: 44px; }
+.buyuk-yazi .kombin-cip { flex-basis: 40%; }
+.kombin-kaydet { margin: 4px 4px 8px 4px; }
+.deneme-cubuk { flex-shrink: 0; margin: 0 16px 6px 16px; padding: 6px 8px; border-radius: 16px; background-color: var(--navy); border-width: 2px; border-color: var(--sky); }
+.deneme-cubuk-dugmeler { margin-top: 0; align-items: center; }
+.deneme-cubuk-al { flex-grow: 1; margin-right: 8px; }
+.deneme-cubuk .deneme-birak { margin-top: 0; min-width: 88px; }
+.buyuk-yazi .deneme-cubuk-dugmeler { flex-direction: column; align-items: stretch; }
+.buyuk-yazi .deneme-cubuk-al { margin-right: 0; margin-bottom: 6px; }
+/* 2026-10-31 K1 "Oyuncunu seç" (Game/UI/OyuncuSec.cs): altı hazır kart 3×2 (büyük yazıda 2 sütun); seçili ✓ + turuncu çerçeve. */
+.hazir-izgara { flex-wrap: wrap; margin: 6px 0; }
+.hazir-kart { flex-basis: 30%; flex-grow: 1; margin: 4px; padding: 10px; min-height: 44px; }
+.hazir-kart.secili { border-width: 2px; border-color: var(--sun); }
+.buyuk-yazi .hazir-kart { flex-basis: 45%; }
+.hazir-dugmeler { margin-top: 4px; }
+.hazir-dugme { flex-grow: 1; flex-basis: 0; margin: 4px; }
+.buyuk-yazi .hazir-dugmeler { flex-direction: column; align-items: stretch; }
+.hazir-kart { padding: 8px; }

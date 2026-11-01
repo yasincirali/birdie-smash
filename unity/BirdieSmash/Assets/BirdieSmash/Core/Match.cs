@@ -51,7 +51,7 @@ namespace BirdieSmash.Core
         public string imza; public float imzaBas; public bool imzaBasladi;   // rakibin imza vuruşu: hazırlığın başlayacağı uçuş anı
     }
 
-    public struct Reach { public bool lunge, over, kill; public float d; }
+    public struct Reach { public bool lunge, over, kill, uzan; public float d; }   // uzan: Usta'da baş üstü topa iç halkanın dışından kurtarış (USTA_UZAN)
 
     // Kaydırma: piksel değerleri 640 px yükseklikli referans ekrana ölçeklenmiş (HTML ile aynı eşikler).
     // 2026-10-26 aldatıcı vuruş jesti (Core/Aldatma.JestOku): bekle = dokunuştan kaydırmaya geçen sn, kavis = yayın yönü
@@ -489,8 +489,16 @@ namespace BirdieSmash.Core
             float R1 = easy ? 1.45f : 1.15f, R2 = (easy ? 2.2f : 1.75f) * GS.uzanma;   // uzanma: Duvar tarzı +%6 (2026-10-26)
             if (d <= R1) { R = new Reach { lunge = false, over = z > 2.0f, kill = kill, d = d }; return true; }
             if (d <= R2 && z < 1.5f) { R = new Reach { lunge = true, d = d }; return true; }
+            // Usta uzanma halkası (2026-10-31, Ar-Ge "Usta modu ve Dolap" U1, yasin "ilerle ve devam et"; araştırma: TopSpin 2K25
+            // konumu kademeli okur, Tennis Clash'te en sık şikâyet "karakter kıpırdamadı, yetişemedim"). Alçak topa uzanma (R2) zaten
+            // vardı; baş/omuz hizasındaki topta 1,15 m'nin dışı doğrudan sayı kaybıydı. Artık R1 + USTA_UZAN içinde kurtarış:
+            // vuruş olur ama en iyi "good", sapma +UZAN_SAPMA, nefes yanar. Kolay birebir aynı (1,45 m zaten geniş).
+            if (!easy && d <= R1 + USTA_UZAN && z >= 1.5f && z <= 2.6f) { R = new Reach { uzan = true, over = z > 2.0f, d = d }; return true; }
             return false;
         }
+        public const float USTA_UZAN = .4f, UZAN_SAPMA = .3f;   // bot ölçümü (Tur 1/2 Usta, 200 maç): uzanmasız %49, .3 %58, .4 %57, .5 %67
+        public float ErisimIc { get { return easy ? 1.45f : 1.15f; } }   // görünüm: Usta erişim halkaları (ShuttleView)
+        public int uzanSay;
         public bool HitWindow() { Reach r; return ReachInfo(out r); }
 
         // Vuruş planı: kaydırmadan tür + hedef. Gerçek vuruş ve canlı önizleme (dry) aynı fonksiyonu kullanır.
@@ -544,12 +552,12 @@ namespace BirdieSmash.Core
             // Tam orta penceresi: ekipmanın tatli'si × tarzın durum çarpanı (2026-10-26: Smaşçı sıçrayarak smaçta +%5, File ustası
             // file vuruşunda ve file önündeki drop/blokta +%10; nötr 1).
             float tk = type == "jump" ? GS.jumpTatli : type == "kill" || ((type == "drop" || type == "block") && Math.Abs(hy - Court.NET) < 2.3f) ? GS.fileTatli : 1;
-            string q = cq < .4f * GS.tatli * tk ? "perfect" : cq <= 1 ? "good" : easy ? "good" : "poor"; if (I.lunge && q == "perfect") q = "good"; if (sw.tap) q = "good";
+            string q = cq < .4f * GS.tatli * tk ? "perfect" : cq <= 1 ? "good" : easy ? "good" : "poor"; if ((I.lunge || I.uzan) && q == "perfect") q = "good"; if (sw.tap) q = "good";
             // Slice: kavisli kaydırma = raket topu keserek alır; top takla atar, kısa düşer, rakip aldanır.
             bool slice = sw.curved && q != "poor" && (type == "drop" || type == "clear" || type == "drive" || type == "block"); if (slice) { deceive = true; slices++; }
             // Baskı oyuncuya da (2026-10-29): rakibin smaç/drive'ına son anda yetişince sapma +.35 (bot ölçümü: yalnız rakibe
             // baskı Tur 1 Kolay kazanmayı %87 → %100 yaptı; iki yönlü baskıyla denge kapısına döner).
-            float sig = ((q == "perfect" ? .1f : q == "good" ? .35f : .9f) + (I.lunge ? .4f : 0) + (icpt != null && icpt.who == "me" && icpt.zor ? .35f : 0)) / GS.kontrol;
+            float sig = ((q == "perfect" ? .1f : q == "good" ? .35f : .9f) + (I.lunge ? .4f : 0) + (I.uzan ? UZAN_SAPMA : 0) + (icpt != null && icpt.who == "me" && icpt.zor ? .35f : 0)) / GS.kontrol;
             if (me.nefes < .4f) sig *= GS.yorgunSapma;   // Havlu grip (2026-10-26): nefes azken sapma yarıya iner; nötr 1
             if (HD != null) HileUygula(HD, ref q, ref slice, ref sig);   // marjinal konum: kötü vuruş olasılığı ve sapma
             Func<float> g = () => (R01() + R01() + R01() - 1.5f) * sig * 1.4f;
@@ -565,6 +573,7 @@ namespace BirdieSmash.Core
                 Say("me", type, hx, hy, hz, type == "jump" ? "SIÇRAYARAK SMAÇ" : type == "smash" ? "SMAÇ!" : type == "kill" ? "FİLE VURUŞU" : pstreak > 1 ? "Tam orta ×" + pstreak : (bh && (type == "clear" || type == "drive") ? "Backhand, tam orta" : "Tam orta"), (type == "jump" || type == "smash" || type == "kill" || pstreak >= 3) ? 2 : 1);
             }
             else { pstreak = 0; if (flow) { flow = false; Say(null, "flow", Court.MID, Court.NET, 2, "Akış bitti"); } if (q == "poor") Say("me", type, hx, hy, hz, "Sıyırdın"); }
+            if (I.uzan) { Yor(.08f); if (++uzanSay <= 3) Say("me", "lunge", hx, hy, hz, "Uzandın!"); }
             if (I.lunge) { me.dive = 1; me.yat = false; me.stun = .35f * GS.toparla; saves++; Yor(.15f); if (saves <= 3) Say("me", "lunge", hx, hy, hz, "Uzandın!"); }   // öğretici: maçta ilk 3 kez
             // Kaydırma anı temas anıdır, kalkış önceden bilinmez: figür temasta tepede (jump=.53 → sin(.53π) ≈ 1), sonra iner.
             // 2026-10-26 gece (AnimOlc): bu yolda gövde temas karesinde yerden 0,5 m tepeye ışınlanıyordu (12 maçta 68 kez).
