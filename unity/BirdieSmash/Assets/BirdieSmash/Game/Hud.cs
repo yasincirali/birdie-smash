@@ -936,8 +936,9 @@ namespace BirdieSmash.Game
             // biraz fazla), 11/12 · W/375 tabanı 12'lik satırı en az 11 pt yapar. Sığmazsa sigK yalnız boşluğu ve süsü küçültür.
             var R = root; float s = Mathf.Min(W / 390f, H / 844f) * sigK, kt = W / H < .62f ? Mathf.Max(s, 11f / 12f * W / 375f) : s, k = kt * Ayar.YaziK; YayinStil(s, k);
             float t = overT0 < 0 ? 99 : Time.unscaledTime - overT0; bool rm = Ayar.reduce;
-            bool ayr = ayrinti && !string.IsNullOrEmpty(R.bittiBilgi), hero = R.ZaferVar && !ayr && !(heroUst > 0 && heroAlt - heroUst < .18f);   // Ayrıntılar açıkken tam kart (yer gerekir);
+            bool ayr = ayrinti && !string.IsNullOrEmpty(R.bittiBilgi), hero = R.ZaferVar && !ayr && !(sigK <= .7f && heroUst > 0 && heroAlt - heroUst < .18f);   // Ayrıntılar açıkken tam kart (yer gerekir);
             // r110 sonuc_se_buyuk: büyük yazıda SE'de bant %2'ye iniyordu, karakter görünmüyordu. Bant %18'den darsa tam kart (kamera yine kazananda).
+            // r114: ilk karede (sigK = 1, kart henüz küçülmemişken) bant dar ölçülüp her ekranda tam karta düşüyordu; önce küçülme denenir.
             float w = Mathf.Min(rx - lx, 420 * s), x = (W - w) / 2, y = top + 14 * s, al = rm ? Mathf.Clamp01(t / .25f) : 1;
             float yKart = hero ? H - bot - (heroH > 0 ? heroH : (1 - ZAFER_ALT0) * H - bot) : 0;
             if (hero)
