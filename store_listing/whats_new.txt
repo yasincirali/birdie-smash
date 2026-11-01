@@ -1,21 +1,23 @@
 === UNITY ===
-Bu sürümde Dolap'a pelerinler, yeni şapkalar ve nadirlik geldi.
+Bu sürümde maç sonu yenilendi: kazanınca karakterini görüyorsun.
 
 Bu sürümde yeni:
-- Dolap'ta yeni "Sırt" kategorisi: Gezgin, Kürk, Şövalye, Yıldız ve Gölge pelerini ile Ruh omuzluğu. Pelerinler koşarken arkaya savrulur, durunca yerine iner.
-- Altı yeni şapka: Ayı başlığı, Yıldız şapkası, Demir miğfer, Boynuzlu miğfer, Gölge kapşonu ve Gece büyücüsü.
-- Her eşyanın kartında nadirliği yazıyor: Sıradan, Nadir, Destansı ya da ◆ Mistik. Mistik eşyalar altın çerçeveli ve hafifçe parlıyor.
-- Dolap kategorileri tek satırda, yana kaydırılarak seçiliyor; eşyalar üç sütunda, aynı anda daha çok eşya görünüyor.
-- Üç parlayan saç boyası: Alev, Buz ve Yıldız tozu (Dolap › Saç rengi; seviye 12, 18 ve 24).
-- Hareketi azalt açıksa pelerin sallanmaz.
+- Maçı kazanınca kamera oyuncuna döner; seçtiğin maç sonu hareketi, pelerinin ve şapkan görünür. Bekleme süresi uzamadı; ekrana dokunursan sonuç hemen gelir. Kaybedince kamera dönmez.
+- Sonuç kartı ekranın alt kısmında; karakter üstte kalıyor.
+- Kazandığın Tüy ve toplam Tüy aynı satırda sayıyor. Seviye atlarsan kartın içinde büyük turuncu "Seviye atladın · Sv n" şeridi çıkıyor.
+- Altta tek büyük düğme ve en çok bir ikinci düğme var; "Ayrıntılar" ve "Ana menü" yazı bağlantısı oldu. Diğer seçenekler Ayrıntılar'ın içinde.
 
 Nasıl denenir:
-1. Dolap'a gir, kategori şeridini sola kaydır: Sırt görünmeli. Dokununca oyuncu arkasını dönmeli.
-2. Bir pelerine dokun: oyuncunun sırtında görünmeli, kartta "deneniyor" yazmalı. Alttaki çubukta fiyatı çıkmalı.
-3. Şapka'da yeni şapkaları sırayla dene: başın üstüne oturmalı, yüzün içine girmemeli. Dört oyuncu görünümünde de (Ayarlar › Oyuncu görünümü) bak.
-4. Bir pelerin alıp maç oyna: koşarken pelerin arkaya açılmalı, durunca inmeli; oyun takılmamalı.
-5. Ayarlar'dan Hareketi azalt'ı aç: pelerin sabit kalmalı.
-6. Yazı boyutunu büyüt: kartlar tek sütuna geçmeli, yazılar taşmamalı.
+1. Bir maç kazan: son sayıdan sonra kamera oyuncuna yaklaşmalı, maç sonu hareketin ve pelerin görünmeli; kart altta açılmalı.
+2. Bir maçı daha kazan ama son sayıdan hemen sonra ekrana dokun: sonuç kartı beklemeden gelmeli.
+3. Kartta Tüy satırına bak: "+sayı" ile "Toplam" birlikte artmalı.
+4. Seviye atlayacağın bir maçta: XP çubuğu dolunca turuncu "Seviye atladın" şeridi görünmeli.
+5. Bir maç kaybet: kamera dönmemeli, kart eskisi gibi tam ekran; altta tek büyük düğme ve en çok bir ikinci düğme olmalı.
+6. "Ayrıntılar"a dokun: diğer seçenekler (Ekipmanı yükselt, antrenmanlar) orada görünmeli.
+7. Ayarlar'dan Hareketi azalt'ı aç ve kazan: kamera kaymadan doğrudan oyuncuya geçmeli.
+
+Önceki sürümden (Dolap: Sırt ve şapkalar):
+- Sırt kategorisi (pelerinler), altı yeni şapka, nadirlik, parlayan saç boyaları.
 
 Önceki sürümden (Usta ve Sevinç):
 - Usta'da akıllı adım, merkeze dönüş ve duruş ayak izi; Dolap'ta Sevinç kategorisi (sayı ve maç sonu hareketi).
