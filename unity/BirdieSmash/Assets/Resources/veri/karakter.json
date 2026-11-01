@@ -108,7 +108,10 @@
   {"id": "kizil",   "ad": "Kızıl",         "renk": "#b8502a", "sv": 14},
   {"id": "gri",     "ad": "Gri",           "renk": "#a7adb0", "sv": 16},
   {"id": "mavi",    "ad": "Mavi",          "renk": "#3b7be2", "sv": 20},
-  {"id": "pembe",   "ad": "Pembe",         "renk": "#e8508f", "sv": 22}
+  {"id": "pembe",   "ad": "Pembe",         "renk": "#e8508f", "sv": 22},
+  {"id": "alev",    "ad": "Alev",          "renk": "#ff6a2b", "sv": 12, "parla": true},
+  {"id": "buz",     "ad": "Buz",           "renk": "#8fe3ff", "sv": 18, "parla": true},
+  {"id": "yildiz_tozu", "ad": "Yıldız tozu", "renk": "#a98bff", "sv": 24, "parla": true}
 ],
 "ayakkabi": [
   {"id": "dogal",   "ad": "Modelin rengi", "renk": null,      "sv": 1},

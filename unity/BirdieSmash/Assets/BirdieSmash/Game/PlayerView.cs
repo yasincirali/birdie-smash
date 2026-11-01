@@ -62,10 +62,11 @@ namespace BirdieSmash.Game
             public string sapka, yuz;
             // 2026-11-01 Dolap › Sırt: pelerin/omuzluk (Kozmetik.SIRT; hazır KayKit ağı, Aksesuar.Sirt).
             public string sirt;
+            public bool sacParla;   // 2026-11-01 mistik saç boyası: saç malzemesi hafifçe kendinden ışır
             // 2026-10-30 Dolap › Raket: kafa şekli (RaketSekil; null/"oval" = FBX'in kendi kafası) ve şaft rengi (null = FBX rengi).
             public string kafa; public Color? saft;
             // Sahnedeki figürü yeniden kurmak gerekip gerekmediğinin özeti (GameRoot, Vitrin).
-            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kafa + saft; }
+            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kafa + saft + (sacParla ? "|p" : ""); }
         }
         static Color? Renk(string h) { return h != null ? Kit.Hex(h) : (Color?)null; }
         public static Gorunum Benim()
@@ -74,7 +75,7 @@ namespace BirdieSmash.Game
             return new Gorunum { forma = Kit.Hex(gs.forma), cerceve = Kit.Hex(kp ?? gs.raketRenk), bant = gs.bant != null ? Kit.Hex(gs.bant) : (Color?)null, bilek = gs.bileklik != null ? Kit.Hex(gs.bileklik) : (Color?)null,
                 grip = Kit.Hex(Vitrin.RAK_RENK[r["grip"]]), tel = Kit.Hex(Vitrin.RAK_RENK[r["tel"]]), tel2 = Kit.Hex(Vitrin.RAK_RENK[r["desen"] == "iki" ? r["tel2"] : r["tel"]]),
                 ten = Renk(Ayar.GorunumRenk("ten")), sac = Renk(Ayar.GorunumRenk("sac")), ayakkabi = Renk(Ayar.GorunumRenk("ayakkabi")), gripCizgi = gs.gripDoku == "cizgi",
-                tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.AykGorunum, sapka = Ayar.KOZ[Kozmetik.SAPKA], yuz = Ayar.KOZ[Kozmetik.YUZ], sirt = Ayar.KOZ[Kozmetik.SIRT],
+                tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.AykGorunum, sapka = Ayar.KOZ[Kozmetik.SAPKA], yuz = Ayar.KOZ[Kozmetik.YUZ], sirt = Ayar.KOZ[Kozmetik.SIRT], sacParla = Ayar.SacParla,
                 sort = Renk(Ayar.GorunumRenk("sort")), kumas = Ayar.gear != null ? Ayar.gear.kumas : null,
                 kafa = r["kafa"], saft = r["saft"] != "model" && Vitrin.RAK_RENK.ContainsKey(r["saft"]) ? Kit.Hex(Vitrin.RAK_RENK[r["saft"]]) : (Color?)null };
         }
@@ -375,14 +376,14 @@ namespace BirdieSmash.Game
             if (g.saft.HasValue) M["koyu"] = Kit.Lit(g.saft.Value, .45f);   // şaft, boğaz ve dip kapağı (raket_koyu__koyu)
             if (g.bant.HasValue) M["bant"] = Kit.Lit(g.bant.Value, .2f); if (g.bilek.HasValue) M["bilek"] = Kit.Lit(g.bilek.Value, .2f);
             if (g.grip.HasValue) M["grip"] = g.gripCizgi ? Kit.LitTex(g.grip.Value, CizgiDoku(), .1f) : Kit.Lit(g.grip.Value, .15f); if (g.tel.HasValue) M["tel"] = Kit.Lit(g.tel.Value, .5f); if (g.tel2.HasValue) M["tel2"] = Kit.Lit(g.tel2.Value, .5f);
-            if (g.ten.HasValue) M["ten"] = Kit.Lit(g.ten.Value, .3f); if (g.sac.HasValue) M["sac"] = Kit.Lit(g.sac.Value, .2f); if (g.ayakkabi.HasValue) M["taban"] = Kit.Lit(g.ayakkabi.Value, .25f);
+            if (g.ten.HasValue) M["ten"] = Kit.Lit(g.ten.Value, .3f); if (g.sac.HasValue) { M["sac"] = Kit.Lit(g.sac.Value, .2f); if (g.sacParla) Parlat(M["sac"]); } if (g.ayakkabi.HasValue) M["taban"] = Kit.Lit(g.ayakkabi.Value, .25f);
             bool bantGizle = sacBantGizle;
             foreach (var r in model.GetComponentsInChildren<Renderer>(true))
             {
                 string tag = Etiket(r.gameObject.name);
                 // hakemde raket ve top (pozla kurulan rijit parçalar = deri ağı olmayan MeshRenderer'lar) gizli
                 if (tag == "ayakkabi") { AyakkabiBoya(r, g.ayakkabi); continue; }
-                if (tag == "sac" && r.gameObject.name.StartsWith("sac_")) { SacBoya(r, g.sac); continue; }
+                if (tag == "sac" && r.gameObject.name.StartsWith("sac_")) { SacBoya(r, g.sac, g.sacParla); continue; }
                 if (tag == "isaret" || (tag == "bant" && (!g.bant.HasValue || bantGizle)) || (tag == "bilek" && !g.bilek.HasValue) || (hakem && !(r is SkinnedMeshRenderer))) { r.enabled = false; continue; }
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
                 int kn = tag == "forma" ? 0 : tag == "cerceve" || tag == "grip" || tag == "tel" || tag == "tel2" ? 1 : tag == "bant" ? 2 : tag == "bilek" ? 3 : -1; if (kn >= 0) kanal[kn].Add(r);
@@ -555,7 +556,8 @@ namespace BirdieSmash.Game
         // Saç (sözleşme §3): tel/AO dokusu (oyuncak_sac, gri tonlu) × saç rengi; seçim yoksa tipin varsayılan rengi (_clips.json
         // tip.sacRenk), o da yoksa FBX malzemesi. Doku yoksa düz renk (AO kaybolur, görünüş yine düzgün).
         static readonly Dictionary<string, Material> sacM = new Dictionary<string, Material>();
-        void SacBoya(Renderer r, Color? c)
+        static void Parlat(Material m) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", m.color * .5f); m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None; }
+        void SacBoya(Renderer r, Color? c, bool parla = false)
         {
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             Color? renk = c ?? (tipMeta != null && !string.IsNullOrEmpty(tipMeta.sacRenk) ? Kit.Hex(tipMeta.sacRenk) : (Color?)null);
@@ -565,8 +567,8 @@ namespace BirdieSmash.Game
             // 2026-10-31 (Unity incelemesi Y1): 16 saç parçasının her biri ayrı Material açıyordu (figür başına 16, her
             // saç/renk değişikliğinde yeniden). Renk + doku başına tek malzeme paylaşılır; saç malzemesine sonradan
             // yazan kod yok (parlatma yalnız raket, kanal boyası forma/raket), bu yüzden paylaşmak görünüşü değiştirmez.
-            string sk = ColorUtility.ToHtmlStringRGBA(rk) + (tx != null ? "t" : "d"); Material m;
-            if (!sacM.TryGetValue(sk, out m) || m == null) sacM[sk] = m = tx != null ? Kit.LitTex(rk, tx, .2f) : Kit.Lit(rk, .2f);
+            string sk = ColorUtility.ToHtmlStringRGBA(rk) + (tx != null ? "t" : "d") + (parla ? "p" : ""); Material m;
+            if (!sacM.TryGetValue(sk, out m) || m == null) { sacM[sk] = m = tx != null ? Kit.LitTex(rk, tx, .2f) : Kit.Lit(rk, .2f); if (parla) Parlat(m); }
             var arr = r.sharedMaterials; for (int k = 0; k < arr.Length; k++) arr[k] = m; if (arr.Length == 0) arr = new[] { m }; r.sharedMaterials = arr;
         }
         // Vitrin tutuş görünümü (Soyunma odası › Raket: Forehand · Backhand · File · Servis): klibin temas pozunda durur; yalnız

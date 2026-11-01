@@ -158,6 +158,8 @@ namespace BirdieSmash.Game
             string id; if (!GORUNUM.TryGetValue(kat, out id)) return null; var o = Karakter.Oge(kat, id);
             return o != null && (gear == null || o.sv <= gear.Seviye()) ? o.renk : null;
         }
+        // Seçili saç boyası parlıyor mu (mistik boyalar; seviyesi gelmemişse GorunumRenk gibi yok sayılır).
+        public static bool SacParla { get { string id; if (!GORUNUM.TryGetValue("sac", out id)) return false; var o = Karakter.Oge("sac", id); return o != null && o.parla && o.renk != null && (gear == null || o.sv <= gear.Seviye()); } }
         public static void Kaydet()
         {
             if (ilerleme != null) { kariyer = ilerleme.Tur1Gecilen(); PlayerPrefs.SetString(Ilerleme.ANAHTAR, ilerleme.Yaz()); }

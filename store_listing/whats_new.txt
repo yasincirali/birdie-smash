@@ -6,6 +6,7 @@ Bu sürümde yeni:
 - Altı yeni şapka: Ayı başlığı, Yıldız şapkası, Demir miğfer, Boynuzlu miğfer, Gölge kapşonu ve Gece büyücüsü.
 - Her eşyanın kartında nadirliği yazıyor: Sıradan, Nadir, Destansı ya da ◆ Mistik. Mistik eşyalar altın çerçeveli ve hafifçe parlıyor.
 - Dolap kategorileri tek satırda, yana kaydırılarak seçiliyor; eşyalar üç sütunda, aynı anda daha çok eşya görünüyor.
+- Üç parlayan saç boyası: Alev, Buz ve Yıldız tozu (Dolap › Saç rengi; seviye 12, 18 ve 24).
 - Hareketi azalt açıksa pelerin sallanmaz.
 
 Nasıl denenir:
