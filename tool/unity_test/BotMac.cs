@@ -736,7 +736,18 @@ static class BotMac
         // (1b) şapka ve yüz aksesuarı (2026-10-30): ilki "yok" ücretsiz varsayılan, en az 7 şapka ve 5 yüz, fiyat kuralı aynı
         var SA = Kozmetik.Liste(Kozmetik.SAPKA); var YU = Kozmetik.Liste(Kozmetik.YUZ);
         if (SA.Length < 8 || YU.Length < 6 || SA[0].id != "yok" || YU[0].id != "yok" || SA[0].fiyat != 0 || YU[0].fiyat != 0) Fail("şapka/yüz: ilki 'yok' ücretsiz, en az 7 şapka ve 5 yüz");
-        foreach (var o in SA.Concat(YU)) if (o.fiyat < 0 || o.fiyat > 1000 || (o.sv == 1 && o.fiyat > 0) || o.paket != null) Fail("aksesuar fiyat/kapı: " + o.id);
+        // (1c) sırt (2026-11-01): ilki "yok" ücretsiz; hazır ağlar (varlik kaykit) Resources/karakter/aks/<id>.bytes olarak var; nadirlik dört sınıftan biri
+        var SI = Kozmetik.Liste(Kozmetik.SIRT);
+        if (SI.Length < 4 || SI[0].id != "yok" || SI[0].fiyat != 0) Fail("sırt: ilki 'yok' ücretsiz, en az 3 pelerin");
+        foreach (var o in SA.Concat(YU).Concat(SI)) if (o.fiyat < 0 || o.fiyat > 1000 || (o.sv == 1 && o.fiyat > 0) || o.paket != null) Fail("aksesuar fiyat/kapı: " + o.id);
+        foreach (var o in SA.Concat(SI))
+        {
+            if (o.nadir != null && !new[] { "siradan", "nadir", "destansi", "mistik" }.Contains(o.nadir)) Fail("nadirlik bilinmiyor: " + o.id);
+            if (o.varlik == "kaykit" && !System.IO.File.Exists("unity/BirdieSmash/Assets/Resources/karakter/aks/" + o.id + ".bytes")) Fail("hazır ağ yok: " + o.id);
+            if (o.id != "yok" && o.nadir == null) Fail("nadirlik eksik: " + o.id);
+        }
+        { var gs = SvGear(20, 5000); if (!Kozmetik.Al(gs, Kozmetik.SIRT, "ruh_pelerin", "yok") || gs.eko.tuy != 5000 - Kozmetik.Bul(Kozmetik.SIRT, "ruh_pelerin").fiyat) Fail("Sv 20'de ruh omuzluğu alınmalı"); }
+        { var gs = SvGear(5, 5000); if (Kozmetik.Al(gs, Kozmetik.SIRT, "yildiz_pelerin", "yok")) Fail("seviye kapısı Tüy ile aşılmamalı (sırt)"); }
         { var ga = SvGear(14, 2000); var ha = ga.Hesap(); if (!Kozmetik.Al(ga, Kozmetik.SAPKA, "sovalye", "yok") || !Kozmetik.Al(ga, Kozmetik.YUZ, "gunes", "yok")) Fail("Sv 14'te şövalye kaskı ve güneş gözlüğü alınmalı");
           var hb = ga.Hesap(); if (Gear.Cubuklar(ha).Zip(Gear.Cubuklar(hb), (p, q) => p - q).Any(v => v != 0)) Fail("aksesuar alımı gücü değiştirdi"); }
         // (2) kozmetik GearStats'a dokunmaz: aynı ekipmanla hesap birebir (seçim Ayar'da, Gear'de değil; Kozmetik.Al yalnız Tüy)
