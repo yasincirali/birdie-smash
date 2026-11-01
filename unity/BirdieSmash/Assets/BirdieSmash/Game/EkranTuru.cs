@@ -572,7 +572,7 @@ namespace BirdieSmash.Game
             // 2026-11-01 P3: duruş ayak izi dolu (oyuncu yerinde) karesi; bot yerine varmazsa yine çeker (rapor satırı söyler)
             { bool y = false; for (int bk = 0; bk < 900 && !(y = root.match.Yerinde()); bk++) yield return null; yield return Cek("usta_durus"); rap.AppendLine("usta_durus · yerinde " + y); }
             // 2026-11-01 Sevinç maçta: benim sayımdan sonraki bekleme (en çok ~25 sn bot oyunu)
-            { int s0 = root.match.sc[0]; for (int bk = 0; bk < 1500 && root.match.sc[0] == s0; bk++) yield return null; yield return Bekle(14); yield return Cek("sevinc_sayi"); }
+            { int sk0 = root.match.sc[0]; for (int bk = 0; bk < 1500 && root.match.sc[0] == sk0; bk++) yield return null; yield return Bekle(14); yield return Cek("sevinc_sayi"); }
             botAcik = false;
             Ayar.easy = e0; root.HudKatman.UstaKartSifirla(); root.AnaMenu(); yield return Bekle(10);
             // 2026-10-31 K1: ilk maçtan sonra "Oyuncunu seç" (turda kendiliğinden açılmaz; burada elle), bir kart seçili, sonra Atla
