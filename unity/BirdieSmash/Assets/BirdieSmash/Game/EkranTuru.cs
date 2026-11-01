@@ -105,6 +105,7 @@ namespace BirdieSmash.Game
             yield return SonucKare("sonuc_buyuk_galibiyet", true, false, 2, "en");   // HUD ×1,3 sınırında (Ayar.YaziK); "Büyük" yazı
             yield return SonucKare("sonuc_tr_galibiyet", true, false, 0, "tr");
             yield return SonucKare("sonuc_yenilgi", false, false, 0, "en");   rap.AppendLine("sonuc_yenilgi · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok"));   // tur 2: matris düz, ikincil düğme stili var olmalı
+            yield return SonucKare("sonuc_seviye", true, false, 0, "tr");   rap.AppendLine("sonuc_seviye · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok"));   // 2026-11-01 seviye şeridi
             yield return FileKare();   // 2026-10-27 ekran/file: file yakın planı (ayrı satır, başka dallar da bu listeye ekliyor)
             yield return DuyarliTuru();   // 2026-10-27 duyarlı yerleşim: SE / 13 / Pro Max / iPad, çentik taklidi, taşma denetimi
             yield return MenuSahne();
@@ -431,7 +432,18 @@ namespace BirdieSmash.Game
             string y0 = Ayar.yazi; if (yazi > 0) Ayar.yazi = "buyuk"; Ayar.dil = dil;   // sonuç ekranı IMGUI: yaziTest değil YaziK (×1,3)
             root.StartMatch(false, false, false); botAcik = false;
             { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 4) yield return null; }   // r16: maç başı rakip kartı kalksın (gerçek akışta maç sonunda yok)
-            root.match.sc[0] = won ? 11 : 7; root.match.sc[1] = won ? 7 : 11; root.EkranBitir(won);
+            // 2026-11-01 zafer anı: galibiyet gerçek maç sonu akışından geçer (matchDone + 1,4 sn bekleme → MatchEnd), kamera o
+            // sürede kazanana döner; ilk karede yolun iki anı çekilir. sonuc_seviye: XP seviye eşiğinin hemen altında (seviye şeridi).
+            if (ad == "sonuc_seviye") { int L, k, gr; Ayar.gear.OyuncuSv(out L, out k, out gr); if (gr > 0) Ayar.gear.eko.xp += gr - k - 5; }
+            root.match.sc[0] = won ? 11 : 7; root.match.sc[1] = won ? 7 : 11;
+            if (won)
+            {
+                var m = root.match; m.matchDone = true; m.between = true; m.betweenT = 1.4f; float tz = Time.realtimeSinceStartup;
+                if (ad == "sonuc_galibiyet") foreach (var an in new[] { .45f, 1.0f }) { while (Time.realtimeSinceStartup - tz < an) yield return null; yield return Cek("zafer_an_" + an.ToString("F2").Replace(",", ".")); }
+                while (root.ekran != Ekran.Bitti && Time.realtimeSinceStartup - tz < 6) yield return null;
+                if (root.ekran != Ekran.Bitti) { rap.AppendLine(ad + " · maç sonu akışı gelmedi, doğrudan bitiriliyor"); root.EkranBitir(true); }
+            }
+            else root.EkranBitir(false);
             float t0 = Time.realtimeSinceStartup;
             if (ad == "sonuc_galibiyet" || ad == "sonuc_tr_galibiyet")   // 2026-10-29 uçan tüyler (Hud.TuyUcus): yolda iki an
                 foreach (var an in new[] { 1.0f, 1.35f }) { while (Time.realtimeSinceStartup - t0 < an) yield return null; yield return Cek(ad + "_tuy_" + an.ToString("F2").Replace(",", ".")); }
