@@ -63,7 +63,7 @@ namespace BirdieSmash.Game
         // okur). Tarz ekipman kartına girmez: güç ekipmandan, tarz karakterden (tasarım §5.1).
         public static Gear gear; public static GearStats GS = GearStats.Notr, GSE = GearStats.Notr;
         public static readonly Dictionary<string, string> GORUNUM = new Dictionary<string, string> { { "ten", "dogal" }, { "sac", "dogal" }, { "ayakkabi", "dogal" }, { "kaplama", "model" }, { "sort", "dogal" } };   // sort: 2026-10-27 şort rengi (Gerçekçi, Sade)
-        public static readonly Dictionary<string, string> KOZ = new Dictionary<string, string> { { Kozmetik.TIP, "atlet" }, { Kozmetik.SAC, "kisa" }, { Kozmetik.SAPKA, "yok" }, { Kozmetik.YUZ, "yok" } };
+        public static readonly Dictionary<string, string> KOZ = new Dictionary<string, string> { { Kozmetik.TIP, "atlet" }, { Kozmetik.SAC, "kisa" }, { Kozmetik.SAPKA, "yok" }, { Kozmetik.YUZ, "yok" }, { Kozmetik.SEVINC, "yumruk" }, { Kozmetik.MAC_SONU, "zafer" } };
         // Ayakkabı görünüşü (2026-10-30, Soyunma Oyun/Görünüm ayrımı): taban (güç) Gear "ayakkabi" seçimi Oyun'da; figürde görünen
         // model Görünüm'de, sahip olunan ayakkabılardan. "taban" = tabanla aynı model (eski kayıtların görünüşü değişmez).
         public static string AYK_GOR = "taban";

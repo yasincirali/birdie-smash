@@ -582,5 +582,19 @@
 "yalnız açık parçalardan": "only from unlocked items",
 "Atla": "Skip",
 "Bununla oyna": "Play with this",
-"Henüz alınamaz": "Not available yet"
+"Henüz alınamaz": "Not available yet",
+"Sevinç": "Celebrate",
+"Sayı sevinci": "Point celebration",
+"Maç sonu": "Match end",
+"Sayıyı kazanınca, sayılar arasında bir an.": "When you win a point, for a moment between points.",
+"Maçı kazanınca. Kaybedince oyuncun raketini rakibe kaldırıp \"iyi oyundu\" der.": "When you win the match. When you lose, your player raises the racket to the opponent: \"good game\".",
+"Sevinçler yalnız görünüştür, oyunu etkilemez. Rakip de sayı alınca kendi sevincini yapar.": "Celebrations are looks only and don't affect play. The opponent celebrates their points too.",
+"Yumruk": "Fist pump",
+"Kollar havada": "Arms up",
+"El salla": "Wave",
+"Rakete alkış": "Racket clap",
+"Zıpla ve dön": "Jump and spin",
+"Zafer": "Victory",
+"Seyirciyi selamla": "Salute the crowd",
+"Reverans": "Bow"
 }

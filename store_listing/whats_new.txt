@@ -9,6 +9,7 @@ Bu sürümde yeni:
 - Dolap'ta üç kombin yuvası: görünüşünü kaydet, tek dokunuşla giy. "Rastgele" sahip olduklarından yeni bir görünüş seçer.
 - Dolap'ta denediğin parçalar kategori değiştirince silinmiyor; altta sabit çubukta toplanıyor, "Hepsini al" ile birlikte alınıyor.
 - İlk maçından sonra "Oyuncunu seç" ekranı: altı hazır oyuncu, Rastgele, "Bununla oyna" ya da "Atla".
+- Dolap'ta yeni "Sevinç" kategorisi: sayıyı kazanınca ve maçı kazanınca oyuncunun yaptığı hareketi seç (Yumruk, Kollar havada, El salla, Zafer, Reverans…). İlk ikisi ücretsiz, diğerleri seviye ve Tüy ile. Maçı kaybedince oyuncun raketini rakibe kaldırıp "iyi oyundu" der. Rakip de sayı alınca sevinir.
 
 Nasıl denenir:
 1. Ayarlar'dan zorluğu Usta yap, bir maç başlat: ilk sayıya kadar üstte "Usta: koşu senin" kartı görünmeli.
@@ -18,6 +19,8 @@ Nasıl denenir:
 5. Dolap'ta Şapka'dan bir şapkaya dokun (dene), sonra Yüz'e geçip bir aksesuar dene: alttaki çubukta ikisi birden yazmalı; Tüy'ün yetiyorsa "Hepsini al" ile ikisini birden al.
 6. Dolap'ta "Kombin 1"e dokun (kaydeder), bir şey değiştir, sonra tekrar "Kombin 1"e dokun: eski görünüş geri gelmeli. "Rastgele"ye dokun: yalnız sahip olduğun parçalardan bir görünüş çıkmalı.
 7. Uygulamayı silip yeniden kur (ya da yeni bir hesapla) ve ilk maçını bitir: menüye dönünce "Oyuncunu seç" açılmalı. Bir karta dokununca üstteki oyuncu hemen değişmeli; "Atla" eski görünüşe döndürmeli.
+8. Dolap › Sevinç'e gir: üstteki oyuncu seçili hareketi tekrar tekrar yapmalı. Başka bir karta dokun: hareket değişmeli.
+9. Bir maç oyna: sayı kazanınca oyuncun kısa bir sevinç yapmalı (seçtiğin hareket), rakip sayı alınca o sevinmeli. Maçı kazanınca zafer hareketi, kaybedince raketi rakibe kaldırma görünmeli.
 
 Önceki sürümden (açılış ve geçiş akıcılığı):
 - Uygulamaya dokununca dönen tüy top ve halkalar hemen başlıyor; yükleme bitince ana menü açılıyor.

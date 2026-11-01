@@ -828,7 +828,7 @@ namespace BirdieSmash.Game
             // Boşta duruşun genliği nefese bağlı (B4; hız Match.IdleIlerle'de): nefes %70'in altına inince yorgun klibi
             // (eller dizde) %35'e kadar karışır, beden soluklanır. Harmanlama bitmeden karıştırılmaz.
             if (cur == "idle" && blend >= 1 && o.nefes < .7f && D("yorgun") != null)
-            { Sample("idle", ph, "yorgun", ph, 1 - .35f * Mathf.Clamp01((.7f - o.nefes) / .7f)); uzanVar = false; kalcaKay = Vector3.zero; FileItin(); AyakKilit(dt); return; }
+            { Sample("idle", ph, "yorgun", ph, 1 - .35f * Mathf.Clamp01((.7f - o.nefes) / .7f)); uzanVar = false; kalcaKay = Vector3.zero; FileItin(); AyakKilit(dt); Sevinc(M, dt); return; }
             {   // alt beden katmanı: vuruş/hazırlık klibinde koşarken bacaklar ayak işinden. Hangi klipte ve ne ağırlıkla:
                 // Match.AltHedef (hamle yaklaşırken, servis temastan sonra, sıçrama yerdeyken; anlık hızla). 2026-10-26 gece Core'a
                 // taşındı: ölçüm aracı (tool/unity_test/AnimOlc) aynı kuralı okur.
@@ -840,7 +840,94 @@ namespace BirdieSmash.Game
             Sample(cur, ph, prev, prevPh, prev == null ? 1 : Mathf.SmoothStep(0, 1, blend), altKlip, altPh, altW, prev2, prev2Ph, prev2Pay);   // smoothstep (2026-10-26): doğrusal ağırlık geçişin başında ve sonunda hız kırığı veriyordu
             KalcaDonus(o);   // ana örneklemeden hemen sonra: uzanma kalçayı kaydırmadan, ayak kilidi IK'dan önce
             Uzan(o, M, j);   // kayma ve kalça: ayak kilidinden önce (kilit kalça kaymasını ayakta geri alır)
-            FileItin(); AyakKilit(dt); HazirNefes(o, M); UzanKol(); ServisEller();
+            FileItin(); AyakKilit(dt); HazirNefes(o, M); UzanKol(); ServisEller(); Sevinc(M, dt);
+        }
+
+        // ---- Sevinç (2026-11-01, Ar-Ge K3; yasin "maç sonunda da sevinç kategorisi kısmını gönder") ----
+        // Sayıyı kazanan oyuncu sayılar arası beklemede kısa bir hareket yapar; maç bitince kazanan zafer hareketini, kaybeden
+        // "iyi oyundu"yu (raketi rakibe kaldırıp başını eğer) döngüde yapar. Klip değil: örneklenen pozun üstüne kemik işlemi
+        // (iki kemik IK kollar, omurga eğimi, sıçrama ve dönüş), bu yüzden dört modelde de yeni FBX'siz çalışır. Ağırlık 0→1→0
+        // yumuşak; ralli başlayınca (between bitti) .15 sn'de söner, servis pozuna karışmaz. Hareketi azaltta sıçrama, dönüş ve
+        // salınım yok, kollar yalnız kalkar. Oyuncunun seçimi Ayar.KOZ (Dolap › Sevinç); rakip hep varsayılanı yapar.
+        // Raket her zaman sağ elde (kural): sağ kol raketi taşır, el sallama ve alkış sol elle.
+        string sevId; float sevT = -1, sevW; bool sevDongu; int sevTop = -1;
+        public const float SEVINC_SURE = 1.0f;
+        void Sevinc(Match M, float dt)
+        {
+            if (hakem || anim == null) return;
+            int top = M.sc[0] + M.sc[1];
+            if (M.ogr != null) { sevT = -1; sevTop = top; return; }
+            if (sevTop < 0 || top < sevTop) sevTop = top;   // ilk kare ya da yeni maç
+            if (top > sevTop)
+            {
+                sevTop = top; bool benimki = isMe == (M.server == "me");
+                if (M.matchDone) { bool kazandim = isMe ? M.sc[0] > M.sc[1] : M.sc[1] > M.sc[0]; sevId = kazandim ? (isMe ? Secim(Kozmetik.MAC_SONU) : "zafer") : "iyi_oyun"; sevDongu = true; sevT = 0; }
+                else if (benimki) { sevId = isMe ? Secim(Kozmetik.SEVINC) : "yumruk"; sevDongu = false; sevT = 0; }
+            }
+            if (sevT < 0) { sevW = 0; return; }
+            sevT += dt;
+            bool surer = sevDongu ? M.matchDone : M.between && sevT < SEVINC_SURE;
+            float hedef = surer ? 1 : 0; sevW = Mathf.MoveTowards(sevW, hedef, dt / (surer ? .15f : .15f));
+            if (!surer && sevW <= 0) { sevT = -1; return; }
+            SevincPoz(sevId, sevT, sevW, M.reduce);
+        }
+        static string Secim(string kat) { string v; return Ayar.KOZ.TryGetValue(kat, out v) && v != null ? v : Kozmetik.Varsayilan(kat); }
+        // Vitrin önizlemesi (Dolap › Sevinç): boşta pozunun üstüne, döngüde.
+        public void ShowSevinc(Vector3 pos, float yawDeg, string id, float t)
+        {
+            transform.position = pos; yaw.localRotation = Quaternion.Euler(0, yawDeg, 0) * calib;
+            shadow.position = new Vector3(pos.x, .003f, pos.z);
+            if (anim == null) return; Sample("idle", .25f, null, 0, 1); cur = "_sevinc";   // ShowStatic çıkışta boşta pozunu yeniden örneklesin
+            float d = id == "iyi_oyun" || id == "zafer" || id == "selam" || id == "egil" ? 2.4f : 1.6f, tt = t % d;
+            float w = Mathf.Clamp01(Mathf.Min(tt / .15f, (d - tt) / .25f));
+            SevincPoz(id, tt, w, Ayar.reduce);
+        }
+        readonly Quaternion[] sevKayit = new Quaternion[6]; readonly Transform[] sevKem = new Transform[6];
+        void SevincPoz(string id, float t, float w, bool rm)
+        {
+            if (kKol == null) ZincirKur(); if (kKol == null || w <= 0.001f) return;
+            Transform SU = kKol[3], SE = kKol[4], SH = kKol[5], LU = kKol[0], LE = kKol[1], LH = kKol[2];
+            Vector3 up = yaw.up, ri = yaw.right, fw = yaw.forward;
+            float salla = rm ? 0 : 1;
+            // sıçrama ve dönüş (kök): ağırlıkla
+            float hop = 0, don = 0, egil = 0;
+            switch (id)
+            {
+                case "kollar": hop = .06f * Mathf.Abs(Mathf.Sin(t * 7)); break;
+                case "zafer": hop = .09f * Mathf.Abs(Mathf.Sin(t * 6)); break;
+                case "zipla": hop = .22f * Mathf.Sin(Mathf.Clamp01(t / .6f) * Mathf.PI); don = 360 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .6f)); break;
+                case "egil": egil = 32 * Mathf.SmoothStep(0, 1, Mathf.Clamp01((t % 2.4f) / .5f)); break;
+                case "iyi_oyun": egil = 10 * Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - .35f) / .4f)); break;
+            }
+            transform.position += up * hop * w * salla;
+            if (don != 0 && salla > 0) yaw.localRotation = Quaternion.AngleAxis(don, Vector3.up) * yaw.localRotation;
+            // kayıt (yerel dönüşler): IK tam ağırlıkla çözülür, sonra kayıtla harmanlanır
+            var kem = sevKem; kem[0] = SU; kem[1] = SE; kem[2] = LU; kem[3] = LE; kem[4] = kOmurga.Count > 0 ? kOmurga[0] : null; kem[5] = null;   // kare başı ayırma yok
+            for (int i = 0; i < kem.Length; i++) if (kem[i] != null) sevKayit[i] = kem[i].localRotation;
+            if (egil > 0 && kOmurga.Count > 0) { var sp = kOmurga[0]; sp.rotation = Quaternion.AngleAxis(egil, ri) * sp.rotation; }
+            float L = SU != null && SE != null && SH != null ? (SE.position - SU.position).magnitude + (SH.position - SE.position).magnitude : .5f;
+            Vector3 sR = SU != null ? SU.position : Vector3.zero, sL = LU != null ? LU.position : Vector3.zero;
+            float s = Mathf.Sin(t * 14) * salla;
+            switch (id)
+            {
+                case "yumruk":   // raketli el yukarı itilir (iki kez), sol yumruk göğüste
+                    IK(SU, SE, SH, sR + up * L * (.78f + .1f * Mathf.Max(0, s)) + ri * L * .12f + fw * L * .18f, ri - fw * .4f);
+                    IK(LU, LE, LH, sL + fw * L * .4f - up * L * .25f + ri * L * .3f, -up - ri * .3f); break;
+                case "kollar": case "zafer": case "zipla":   // iki kol V
+                    IK(SU, SE, SH, sR + up * L * .82f + ri * L * .42f + fw * L * .05f, ri - fw * .3f);
+                    IK(LU, LE, LH, sL + up * L * .82f - ri * L * .42f + fw * L * .05f, -ri - fw * .3f); break;
+                case "el_salla": case "selam":   // sol el yukarıda sallanır, raket yanda; selam: raket de hafif kalkar
+                    IK(LU, LE, LH, sL + up * L * .8f - ri * L * (.3f + .16f * Mathf.Sin(t * 10) * salla) + fw * L * .12f, -ri - fw * .3f);
+                    if (id == "selam") IK(SU, SE, SH, sR + up * L * .55f + ri * L * .45f + fw * L * .15f, ri - fw * .3f); break;
+                case "alkis":   // sol el raketin teline vurur (göğüs önünde)
+                    { Vector3 orta = (sR + sL) * .5f + fw * L * .55f - up * L * .1f; float ac = L * (.1f + .1f * (1 + s) * .5f);
+                      IK(SU, SE, SH, orta + ri * ac, -up + ri); IK(LU, LE, LH, orta - ri * ac, -up - ri); } break;
+                case "egil":     // reverans: raketli kol göğse, sol kol yanda
+                    IK(SU, SE, SH, (sR + sL) * .5f + fw * L * .3f - up * L * .15f, -up + ri); break;
+                case "iyi_oyun": // raket rakibe doğru kalkar (fileden selam)
+                    IK(SU, SE, SH, sR + fw * L * .7f + up * L * .45f + ri * L * .1f, ri - up * .3f); break;
+            }
+            if (w < .999f) for (int i = 0; i < kem.Length; i++) if (kem[i] != null) kem[i].localRotation = Quaternion.Slerp(sevKayit[i], kem[i].localRotation, w);
         }
 
         // Kalça–omuz ayrışması (2026-10-27, ekran/kosu): hazırlıkta koşarken gövde fileye döner (Athlete.donus), bacaklar

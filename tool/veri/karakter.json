@@ -37,6 +37,20 @@
   {"id": "buyucu", "ad": "Büyücü şapkası", "sv": 10, "fiyat": 500, "garip": true},
   {"id": "sovalye", "ad": "Şövalye kaskı", "sv": 14, "fiyat": 800, "garip": true}
 ],
+"sevinc_not": "2026-11-01 Dolap › Sevinç (Ar-Ge K3, yasin 'maç sonunda da sevinç kategorisi kısmını gönder'): sayı kazanınca ve maç sonunda oyuncunun yaptığı hareket. YALNIZ görünüş (güç alanı yasak), Tüy ve seviyeyle. Klip değil, kemik üstü işlemsel poz (Game/PlayerView Sevinc): her modelde aynı çalışır. Kaybeden maç sonunda hep 'iyi oyundu' (raketi rakibe kaldırır), satılmaz. İlk öğe ücretsiz varsayılan.",
+"sevinc": [
+  {"id": "yumruk", "ad": "Yumruk", "sv": 1, "fiyat": 0},
+  {"id": "kollar", "ad": "Kollar havada", "sv": 1, "fiyat": 0},
+  {"id": "el_salla", "ad": "El salla", "sv": 3, "fiyat": 120},
+  {"id": "alkis", "ad": "Rakete alkış", "sv": 5, "fiyat": 200},
+  {"id": "zipla", "ad": "Zıpla ve dön", "sv": 8, "fiyat": 350}
+],
+"mac_sonu": [
+  {"id": "zafer", "ad": "Zafer", "sv": 1, "fiyat": 0},
+  {"id": "selam", "ad": "Seyirciyi selamla", "sv": 2, "fiyat": 100},
+  {"id": "egil", "ad": "Reverans", "sv": 4, "fiyat": 150},
+  {"id": "zipla", "ad": "Zıpla ve dön", "sv": 10, "fiyat": 400}
+],
 "yuz": [
   {"id": "yok", "ad": "Aksesuar yok", "sv": 1, "fiyat": 0},
   {"id": "gunes", "ad": "Güneş gözlüğü", "sv": 2, "fiyat": 80},

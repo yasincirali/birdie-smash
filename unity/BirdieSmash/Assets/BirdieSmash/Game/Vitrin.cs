@@ -30,7 +30,10 @@ namespace BirdieSmash.Game
         public const int TAM = 0, YUZ = 1, AYAK = 2, TUTUS = 3;
         public int odak { get; private set; }
         public string poz { get; private set; }
-        public string deneTip, deneSac, deneAyk, deneSapka, deneYuz;
+        public string deneTip, deneSac, deneAyk, deneSapka, deneYuz, deneSevinc, deneMacSonu;   // sevinç denemeleri figürü değiştirmez, önizlemede oynar
+        // Kozmetik kategorisine göre deneme alanı (kategori → alan eşlemesi tek yerde; "ayakkabi" ayakkabı modeli).
+        public string DeneAl(string kat) { return kat == Kozmetik.TIP ? deneTip : kat == Kozmetik.SAC ? deneSac : kat == Kozmetik.SAPKA ? deneSapka : kat == Kozmetik.YUZ ? deneYuz : kat == Kozmetik.SEVINC ? deneSevinc : kat == Kozmetik.MAC_SONU ? deneMacSonu : deneAyk; }
+        public void DeneYaz(string kat, string id) { if (kat == Kozmetik.TIP) deneTip = id; else if (kat == Kozmetik.SAC) deneSac = id; else if (kat == Kozmetik.SAPKA) deneSapka = id; else if (kat == Kozmetik.YUZ) deneYuz = id; else if (kat == Kozmetik.SEVINC) deneSevinc = id; else if (kat == Kozmetik.MAC_SONU) deneMacSonu = id; else deneAyk = id; }
         Transform bBas, bEl, bParmak; readonly List<Transform> bAyak = new List<Transform>(); Renderer bGrip, bTel, bSac, bGovde; Vector3 camS, hedefS; bool camVar;
         public PlayerView Fig { get { return fig; } }   // ekran turu tanısı (VaryantOzet)
         public Camera Kam { get { return kam; } }       // ekran turu: bölge rengi vitrin RT'sinden örneklenir (2026-10-27)
@@ -80,7 +83,11 @@ namespace BirdieSmash.Game
         }
 
         public void Ac() { gameObject.SetActive(true); kam.enabled = true; durgun = 0; Yenile(); }
-        public void Kapat() { kam.enabled = false; suruk = false; gec = hedefGec = 0; parca = null; raKay = false; odak = TAM; poz = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = null; camVar = false; gameObject.SetActive(false); }
+        // Sevinç önizlemesi (2026-11-01): id verilince figür o hareketi döngüde yapar; null = boşta. Sevinç sayfasından çıkınca silinir.
+        public string sevinc; float sevincT;
+        public void Sevinc(string id) { if (sevinc != id) sevincT = 0; sevinc = id; if (id == null) ShowStaticSifirla(); }
+        void ShowStaticSifirla() { if (fig != null) fig.ShowStatic(YER, a, 0); }
+        public void Kapat() { sevinc = null; kam.enabled = false; suruk = false; gec = hedefGec = 0; parca = null; raKay = false; odak = TAM; poz = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = deneSevinc = deneMacSonu = null; camVar = false; gameObject.SetActive(false); }
         // Yakın plan seç (aynı odağa ikinci dokunuş Soyunma odasında Tüm boy'a döner). Tutuşa girerken el kameraya döner.
         public void Odak(int o, string klip = null)
         {
@@ -378,7 +385,9 @@ namespace BirdieSmash.Game
                 ra += rv * dt;
             }
             if (suruk) raKay = false;
-            float hit; if (poz != null && odak == TUTUS) fig.ShowPoz(YER, a, poz, Match.CLIP_HIT.TryGetValue(poz, out hit) ? hit : .5f); else fig.ShowStatic(YER, a, 0);
+            float hit; if (poz != null && odak == TUTUS) fig.ShowPoz(YER, a, poz, Match.CLIP_HIT.TryGetValue(poz, out hit) ? hit : .5f);
+            else if (sevinc != null) { sevincT += dt; fig.ShowSevinc(YER, a, sevinc, sevincT); }   // Dolap › Sevinç önizlemesi (döngü)
+            else fig.ShowStatic(YER, a, 0);
             // geçiş: figür 0–60%'ta solar/kayar, raket 45–100%'te öne gelir
             float fK = Mathf.Clamp01(gec / .6f), rK = Mathf.Clamp01((gec - .45f) / .55f);
             fig.gameObject.SetActive(fK < .999f); raketPivot.gameObject.SetActive(rK > 0);
@@ -400,7 +409,7 @@ namespace BirdieSmash.Game
             // Figür, açılar, geçiş, poz, kamera ve parlama aynıysa iki kare sonra kamera kapanır (RT son görüntüyü tutar);
             // biri değişince aynı karede açılır.
             var kr = kam.transform.rotation;
-            bool ayni = !raKay && fig == sonFig && a == sonA && ra == sonRa && gec == sonGec && ReferenceEquals(poz, sonPoz) && odak == sonOdak && cp == sonCp && kr == sonRot && parlaT < 0;
+            bool ayni = sevinc == null && !raKay && fig == sonFig && a == sonA && ra == sonRa && gec == sonGec && ReferenceEquals(poz, sonPoz) && odak == sonOdak && cp == sonCp && kr == sonRot && parlaT < 0;
             if (ayni) durgun++; else { durgun = 0; sonFig = fig; sonA = a; sonRa = ra; sonGec = gec; sonPoz = poz; sonOdak = odak; sonCp = cp; sonRot = kr; }
             bool ciz = durgun < 2; if (kam.enabled != ciz) kam.enabled = ciz;
         }
