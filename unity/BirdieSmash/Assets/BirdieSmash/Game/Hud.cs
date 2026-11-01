@@ -918,7 +918,7 @@ namespace BirdieSmash.Game
         // aradaki boşlukta kamera karakteri gösterir. Kartın yüksekliği bir önceki karede ölçülür (IMGUI önce çizer), kart altta
         // biter, karakter kalan bandın tamamını alır. zaferUst/zaferAlt: bandın ekranın üstünden oranı (kamera okur).
         public float zaferUst = ZAFER_UST0, zaferAlt = ZAFER_ALT0; float heroUst = -1, heroAlt = -1, heroH = -1;
-        const float ZAFER_UST0 = .04f, ZAFER_ALT0 = .42f;
+        const float ZAFER_UST0 = .12f, ZAFER_ALT0 = .40f;
         Texture2D zeminGecis;
         Texture2D ZeminGecis()
         {   // üstte saydam, altta tam: kartın üst kenarındaki geçiş (karakterin ayakları yumuşakça kartın altına girer)
@@ -959,7 +959,7 @@ namespace BirdieSmash.Game
             if (!string.IsNullOrEmpty(R.bittiUst)) { string us = UiKok.Buyuk(R.bittiUst); float uh = aUst.CalcHeight(Ic(us), w); Yaz(new Rect(x, y, w, uh), us, aUst, A_SOLUK, al); y += uh + 4 * s; }
             // başlık: yaylanarak (1,25 → 1), hareketi azaltta yalnız solma
             {
-                string bs = UiKok.Buyuk(R.bittiBas ?? R.bittiBaslik ?? ""); var st = Sigdir(R.bittiKazandi && bs.Length <= 12 ? aBas : Stil(aBas, Mathf.RoundToInt(46 * k)), bs, w);
+                string bs = UiKok.Buyuk(R.bittiBas ?? R.bittiBaslik ?? ""); var st = Sigdir(hero ? Stil(aBas, Mathf.RoundToInt(56 * k)) : R.bittiKazandi && bs.Length <= 12 ? aBas : Stil(aBas, Mathf.RoundToInt(46 * k)), bs, w);   // r109: kahramanda 56 (74'lük başlık yüzü örtüyordu)
                 float th = st.CalcHeight(Ic(bs), w); var r = new Rect(x, y, w, th);
                 float e = rm ? 1 : GeriYay(t / .35f), sc = rm ? 1 : Mathf.LerpUnclamped(1.25f, 1, e); var m = GUI.matrix; GUIUtility.ScaleAroundPivot(new Vector2(sc, sc), r.center);
                 var g = GUI.color; GUI.color = new Color(0, 0, 0, .45f * al); GUI.Label(new Rect(r.x, r.y + 5 * s, r.width, r.height), bs, st);
@@ -968,10 +968,11 @@ namespace BirdieSmash.Game
             }
             if (!string.IsNullOrEmpty(R.bittiAltNot)) { float nh = aIpucu.CalcHeight(Ic(R.bittiAltNot), w); Yaz(new Rect(x, y, w, nh), R.bittiAltNot, aIpucu, A_SOLUK, al); y += nh + 6 * s; }
             if (hero)
-            {   // Afiş düzeni (r108): başlık karakterin üstüne biner (gölgeli), karakter bandı ekranın üstünden kartın üstüne dek.
-                // Başlığın altında ayrı bant kartı sıkıştırıyordu (bant ekranın %7'si kalıyordu). Kart başlığa en çok değer.
+            {   // r108: başlığın altında ayrı bant + uzun kart → bant ekranın %7'si. r109: bant ekranın tepesinden başlayınca başlık
+                // karakterin yüzünü örttü. Şimdi kart kısa (açılan kart, ipucu, tur çizgisi yok), başlık 56; bant başlığın alt
+                // kenarından (başlık en çok kafanın tepesine değer) kartın üstüne.
                 if (yKart < y + 10 * s) yKart = y + 10 * s;
-                if (Event.current.type == EventType.Repaint) { heroUst = top / H; heroAlt = (yKart - 24 * s) / H; }
+                if (Event.current.type == EventType.Repaint) { heroUst = (y - 6 * s) / H; heroAlt = (yKart - 20 * s) / H; }
                 y = yKart;
             }
             float yIcerik = y;
