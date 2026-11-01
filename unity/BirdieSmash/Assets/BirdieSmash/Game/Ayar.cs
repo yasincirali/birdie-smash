@@ -74,6 +74,7 @@ namespace BirdieSmash.Game
         public static readonly Dictionary<string, string> RGOR = new Dictionary<string, string> { { "grip", "siyah" }, { "tel", "beyaz" }, { "tel2", "kirmizi" }, { "desen", "tek" }, { "kafa", "oval" }, { "saft", "model" } };
         public static string FORMA { get { return GS.forma; } }
         static readonly PrefsKayit kayit = new PrefsKayit();
+        public static IKayit Kayit { get { return kayit; } }   // 2026-11-01 Tüy dükkânı defteri (Core/TuyDukkan)
 
         static int EskiInt(string k, int d) { try { return PlayerPrefs.HasKey(k) ? PlayerPrefs.GetInt(k, d) : d; } catch { return d; } }
         static string Str(string k, string d) { try { return PlayerPrefs.HasKey(k) ? PlayerPrefs.GetString(k, d) : d; } catch { return d; } }

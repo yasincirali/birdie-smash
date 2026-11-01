@@ -33,8 +33,13 @@ namespace BirdieSmash.Game
         public static void Esitle()
         {
             if (!Var) return;
-            string b = Oku(); SonKarar = BulutKayit.Karsilastir(Metin("tuytop_ekonomi"), b);
+            string b = Oku(); SonKarar = BulutKayit.Karsilastir(Metin("tuytop_ekonomi"), b, Metin(TuyDukkan.ANAHTAR));
             if (SonKarar == BulutKayit.Karar.Yukle) { BulutKayit.Ac(b, (k, v) => PlayerPrefs.SetString(k, v), (k, v) => PlayerPrefs.SetInt(k, v)); PlayerPrefs.Save(); sonYazilan = b; }
+            else if (SonKarar == BulutKayit.Karar.Birlestir)
+            {
+                var r = BulutKayit.SatinBirlestir(Metin("tuytop_ekonomi"), Metin(TuyDukkan.ANAHTAR), b);
+                PlayerPrefs.SetString("tuytop_ekonomi", r[0]); PlayerPrefs.SetString(TuyDukkan.ANAHTAR, r[1]); PlayerPrefs.Save(); Yaz();
+            }
             else if (SonKarar == BulutKayit.Karar.Yaz) Yaz();
         }
 

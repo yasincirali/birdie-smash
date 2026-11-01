@@ -574,3 +574,12 @@
 .hazir-dugme { flex-grow: 1; flex-basis: 0; margin: 4px; }
 .buyuk-yazi .hazir-dugmeler { flex-direction: column; align-items: stretch; }
 .hazir-kart { padding: 8px; }
+/* 2026-11-01 Tüy dükkânı: cüzdan kartı, iki sütun paket kartı (dar ekranda da 2 sütun; kart içi dikey), bonus yazıyla */
+.dukkan-cuzdan { padding: 14px; margin-bottom: 8px; }
+.dukkan-cuzdan > .satir { align-items: center; margin-bottom: 4px; }
+.dukkan-izgara { flex-direction: row; flex-wrap: wrap; margin-left: -4px; margin-right: -4px; }
+.dukkan-izgara > .dukkan-kart { flex-basis: 45%; flex-grow: 1; margin: 4px; padding: 12px; align-items: stretch; }
+.dukkan-kart > .satir { align-items: center; }
+.dukkan-kart .dugme--birincil { min-height: 48px; margin-top: 8px; }
+.dukkan-ek { color: var(--gold); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+.dukkan-not { color: var(--lime); margin: 4px 0 8px 0; }

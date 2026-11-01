@@ -761,6 +761,17 @@ static class BotMac
             BulutKayit.Ac(g, (k, v) => acilan[k] = v, (k, v) => acInt[k] = v);
             if (acilan.Count != 2 || acilan["tuytop_ekonomi"] != yerel["tuytop_ekonomi"] || acInt["tuytop_wins"] != 7 || acInt["tuytop_usta_kart"] != 1) Fail("bulut: görüntü birebir açılmalı");
             if (BulutKayit.Goruntu(k => k == "tuytop_ses" ? "1" : null, k => null) != null) Fail("bulut: cihaz tercihi buluta gitmemeli");
+            // Tüy dükkânı: teslim bir kez; başka cihazda alınan Tüy birleşmede eklenir, yerel ilerleme korunur
+            var dk = new BellekKayit(); var gd = SvGear(3, 100);
+            string p0 = TuyDukkan.PAKETLER[1].id;
+            if (TuyDukkan.Teslim(gd, dk, p0, "T1") != 3500 || gd.eko.tuy != 3600) Fail("dükkân: teslim Tüy vermeli");
+            if (TuyDukkan.Teslim(gd, dk, p0, "T1") != 0 || gd.eko.tuy != 3600) Fail("dükkân: aynı işlem ikinci kez Tüy vermemeli");
+            if (TuyDukkan.Teslim(gd, dk, "yok.boyle", "T2") != 0) Fail("dükkân: bilinmeyen ürün");
+            string bul = BulutKayit.Goruntu(k => k == TuyDukkan.ANAHTAR ? dk.Get(k) : k == "tuytop_ekonomi" ? "{\"tuy\":3600,\"xp\":50}" : null, k => null);
+            if (BulutKayit.Karsilastir("{\"tuy\":10,\"xp\":80}", bul, null) != BulutKayit.Karar.Birlestir) Fail("bulut: başka cihazdaki satın alma birleşmeli");
+            var r = BulutKayit.SatinBirlestir("{\"tuy\":10,\"xp\":80}", null, bul);
+            var re = Json.Obj(Json.Parse(r[0])); if ((int)Json.Num(re, "tuy", 0) != 3510 || (int)Json.Num(re, "xp", 0) != 80 || TuyDukkan.Toplam(r[1]) != 3500) Fail("bulut: birleşme Tüy'ü eklemeli, XP'yi korumalı");
+            if (BulutKayit.Karsilastir(r[0], bul, r[1]) != BulutKayit.Karar.Yaz) Fail("bulut: birleşmeden sonra tekrar eklememeli");
         }
         { var ga = SvGear(14, 2000); var ha = ga.Hesap(); if (!Kozmetik.Al(ga, Kozmetik.SAPKA, "sovalye", "yok") || !Kozmetik.Al(ga, Kozmetik.YUZ, "gunes", "yok")) Fail("Sv 14'te şövalye kaskı ve güneş gözlüğü alınmalı");
           var hb = ga.Hesap(); if (Gear.Cubuklar(ha).Zip(Gear.Cubuklar(hb), (p, q) => p - q).Any(v => v != 0)) Fail("aksesuar alımı gücü değiştirdi"); }

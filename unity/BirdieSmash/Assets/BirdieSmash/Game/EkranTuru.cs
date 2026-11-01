@@ -383,6 +383,7 @@ namespace BirdieSmash.Game
             }
             Ayar.RGOR["kafa"] = k0; Ayar.RGOR["desen"] = d0; Ayar.RGOR["saft"] = s0; root.vitrin.Yenile(); ui.RaketParcaSec(null);
             ui.SoyunmaSegment(0); yield return Bekle(20); yield return Cek("menu_" + ek + "atolye");
+            if (ek == "") { ui.DukkanAc(); yield return Bekle(120); yield return Cek("menu_dukkan"); ui.Geri(); yield return Bekle(10); }   // 2026-11-01 Tüy dükkânı (Editor sahte mağazası fiyat verir)
             ui.YuvaAc("raket"); yield return Bekle(20); yield return Cek("menu_" + ek + "yuva_raket"); ui.Geri(); yield return Bekle(5);
             ui.YuvaAc("tel"); yield return Bekle(20); yield return Cek("menu_" + ek + "yuva_kordaj"); ui.Geri(); yield return Bekle(5);
         }
