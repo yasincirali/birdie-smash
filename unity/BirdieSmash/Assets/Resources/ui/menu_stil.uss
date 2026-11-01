@@ -272,6 +272,9 @@
 .esnek-yatay-sifir { flex-grow: 1; flex-shrink: 1; }
 .renk--kilit { opacity: 0.55; }
 .renk-kilit-yazi { -unity-text-align: middle-center; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); margin-top: 1px; }
+.renk--isin { border-width: 2px; border-color: rgba(255, 255, 255, 0.85); }
+.renk--isin.renk--secili { border-width: 3px; border-color: var(--sun); }
+.renk-isin-isaret { position: absolute; top: 1px; right: 3px; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .ad-alan { margin: 0 0 4px 0; }
 .ad-alan .unity-base-text-field__input { min-height: 44px; background-color: var(--navy2); color: var(--tx); border-radius: 12px; border-width: 1px; border-color: rgba(255, 255, 255, 0.12); padding: 8px 12px; -unity-text-align: middle-left; }
 

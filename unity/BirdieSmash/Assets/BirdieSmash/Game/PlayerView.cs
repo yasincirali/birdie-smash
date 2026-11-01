@@ -63,10 +63,11 @@ namespace BirdieSmash.Game
             // 2026-11-01 Dolap › Sırt: pelerin/omuzluk (Kozmetik.SIRT; hazır KayKit ağı, Aksesuar.Sirt).
             public string sirt;
             public bool sacParla;   // 2026-11-01 mistik saç boyası: saç malzemesi hafifçe kendinden ışır
+            public bool isin;       // 2026-11-01 ışın kaplaması: çerçeve ve kordaj kendinden ışır, hale + renkli salınım izi (IsinKur)
             // 2026-10-30 Dolap › Raket: kafa şekli (RaketSekil; null/"oval" = FBX'in kendi kafası) ve şaft rengi (null = FBX rengi).
             public string kafa; public Color? saft;
             // Sahnedeki figürü yeniden kurmak gerekip gerekmediğinin özeti (GameRoot, Vitrin).
-            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kafa + saft + (sacParla ? "|p" : ""); }
+            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kafa + saft + (sacParla ? "|p" : "") + (isin ? "|i" : ""); }
         }
         static Color? Renk(string h) { return h != null ? Kit.Hex(h) : (Color?)null; }
         public static Gorunum Benim()
@@ -75,7 +76,7 @@ namespace BirdieSmash.Game
             return new Gorunum { forma = Kit.Hex(gs.forma), cerceve = Kit.Hex(kp ?? gs.raketRenk), bant = gs.bant != null ? Kit.Hex(gs.bant) : (Color?)null, bilek = gs.bileklik != null ? Kit.Hex(gs.bileklik) : (Color?)null,
                 grip = Kit.Hex(Vitrin.RAK_RENK[r["grip"]]), tel = Kit.Hex(Vitrin.RAK_RENK[r["tel"]]), tel2 = Kit.Hex(Vitrin.RAK_RENK[r["desen"] == "iki" ? r["tel2"] : r["tel"]]),
                 ten = Renk(Ayar.GorunumRenk("ten")), sac = Renk(Ayar.GorunumRenk("sac")), ayakkabi = Renk(Ayar.GorunumRenk("ayakkabi")), gripCizgi = gs.gripDoku == "cizgi",
-                tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.AykGorunum, sapka = Ayar.KOZ[Kozmetik.SAPKA], yuz = Ayar.KOZ[Kozmetik.YUZ], sirt = Ayar.KOZ[Kozmetik.SIRT], sacParla = Ayar.SacParla,
+                tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.AykGorunum, sapka = Ayar.KOZ[Kozmetik.SAPKA], yuz = Ayar.KOZ[Kozmetik.YUZ], sirt = Ayar.KOZ[Kozmetik.SIRT], sacParla = Ayar.SacParla, isin = Ayar.KaplamaIsin,
                 sort = Renk(Ayar.GorunumRenk("sort")), kumas = Ayar.gear != null ? Ayar.gear.kumas : null,
                 kafa = r["kafa"], saft = r["saft"] != "model" && Vitrin.RAK_RENK.ContainsKey(r["saft"]) ? Kit.Hex(Vitrin.RAK_RENK[r["saft"]]) : (Color?)null };
         }
@@ -373,9 +374,11 @@ namespace BirdieSmash.Game
             M["karin"] = Kit.Lit(Color.Lerp(g.forma, Color.white, .6f), .3f);
             aykDoku = govdeTx;
             if (g.cerceve.HasValue) M["cerceve"] = Kit.Lit(g.cerceve.Value, .6f);
+            isinRenk = g.isin && g.cerceve.HasValue && !hakem ? g.cerceve : null;
             if (g.saft.HasValue) M["koyu"] = Kit.Lit(g.saft.Value, .45f);   // şaft, boğaz ve dip kapağı (raket_koyu__koyu)
             if (g.bant.HasValue) M["bant"] = Kit.Lit(g.bant.Value, .2f); if (g.bilek.HasValue) M["bilek"] = Kit.Lit(g.bilek.Value, .2f);
             if (g.grip.HasValue) M["grip"] = g.gripCizgi ? Kit.LitTex(g.grip.Value, CizgiDoku(), .1f) : Kit.Lit(g.grip.Value, .15f); if (g.tel.HasValue) M["tel"] = Kit.Lit(g.tel.Value, .5f); if (g.tel2.HasValue) M["tel2"] = Kit.Lit(g.tel2.Value, .5f);
+            if (isinRenk.HasValue) IsinMalzeme(M, isinRenk.Value);
             if (g.ten.HasValue) M["ten"] = Kit.Lit(g.ten.Value, .3f); if (g.sac.HasValue) { M["sac"] = Kit.Lit(g.sac.Value, .2f); if (g.sacParla) Parlat(M["sac"]); } if (g.ayakkabi.HasValue) M["taban"] = Kit.Lit(g.ayakkabi.Value, .25f);
             bool bantGizle = sacBantGizle;
             foreach (var r in model.GetComponentsInChildren<Renderer>(true))
@@ -407,9 +410,35 @@ namespace BirdieSmash.Game
                 yay = kafa.gameObject.AddComponent<TrailRenderer>(); yay.time = .12f; yay.minVertexDistance = .03f; yay.emitting = false;
                 yay.widthCurve = new AnimationCurve(new Keyframe(0, .14f), new Keyframe(1, 0)); yay.material = Kit.Additive(Color.white);
                 yay.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; yay.receiveShadows = false;
+                if (isinRenk.HasValue) IsinKur(isinRenk.Value);
             }
         }
-        Transform kafa; TrailRenderer yay;
+        Transform kafa; TrailRenderer yay; Color? isinRenk;
+        // Işın raketi (2026-11-01, yasin: "ışın kılıcıyla oynama falan da olabilecek, yaratıcılıkta sınır tanıma"). Yalnız görünüş.
+        // Sahnede bloom yok (yerleşik hat, mobil bütçe): parlama üç katmanla kurulur. (1) Çerçeve beyaza yakın çekirdek + güçlü
+        // emisyon, kordaj aynı rengin emisyonu (ışık açısından bağımsız hep parlak). (2) Hale: çerçeve ağlarının eklemeli kopyası,
+        // kafa merkezinden %9 büyük, gölge düşürmez; kordaj boşluğunu doldurmaz çünkü yalnız boru kopyalanır. (3) Salınım izi
+        // beyaz yerine kaplama renginde, iki kat geniş. Hareketi azalt kuralı izde aynen geçerli (iz çizilmez, hale durur).
+        static void IsinMalzeme(Dictionary<string, Material> M, Color c)
+        {
+            var cek = Kit.Lit(Color.Lerp(c, Color.white, .55f), .8f); cek.EnableKeyword("_EMISSION"); cek.SetColor("_EmissionColor", c * 1.3f);
+            cek.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None; M["cerceve"] = cek;
+            var tel = Kit.Lit(Color.Lerp(c, Color.white, .3f), .5f); tel.EnableKeyword("_EMISSION"); tel.SetColor("_EmissionColor", c * .9f);
+            tel.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None; M["tel"] = tel; M["tel2"] = tel;
+        }
+        void IsinKur(Color c)
+        {
+            var hm = Kit.Additive(new Color(c.r, c.g, c.b, .55f));
+            foreach (var r in model.GetComponentsInChildren<MeshRenderer>(true))
+            {
+                if (Etiket(r.gameObject.name) != "cerceve" || r.name.EndsWith("_hale")) continue; var mf = r.GetComponent<MeshFilter>(); if (mf == null || mf.sharedMesh == null) continue;
+                var h = Kit.MeshObj(r.name + "_hale", r.transform, mf.sharedMesh, hm).transform;
+                var mrk = r.transform.InverseTransformPoint(kafa.position); h.localScale = Vector3.one * 1.09f; h.localPosition = mrk * (1 - 1.09f);
+            }
+            yay.widthCurve = new AnimationCurve(new Keyframe(0, .28f), new Keyframe(1, 0)); yay.time = .16f; yay.material = Kit.Additive(c);
+            yayRenk = new[] { new GradientColorKey(c, 0), new GradientColorKey(Color.Lerp(c, Color.white, .5f), 1) };
+        }
+        GradientColorKey[] yayRenk;
         BantMeta bantMeta; Transform aksesuar, sirtKok; public Transform AksesuarKok { get { return aksesuar; } } public Transform SirtKok { get { return sirtKok; } }
         readonly Gradient yayGrad = new Gradient(); readonly GradientAlphaKey[] yayS = new GradientAlphaKey[2]; float yayA = -1;
         static readonly GradientColorKey[] YAY_RENK = { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) };
@@ -800,7 +829,7 @@ namespace BirdieSmash.Game
             {
                 yay.emitting = o.sw > .3f && !M.reduce; float a = Mathf.Clamp01(o.sw) * .5f;
                 // 2026-10-27: renk eğrisi her karede yeni Gradient + iki dizi idi; yalnız alfa değişince ve aynı nesneyle
-                if (Mathf.Abs(a - yayA) > .002f) { yayA = a; yayS[0] = new GradientAlphaKey(a, 0); yayS[1] = new GradientAlphaKey(0, 1); yayGrad.SetKeys(YAY_RENK, yayS); yay.colorGradient = yayGrad; }
+                if (Mathf.Abs(a - yayA) > .002f) { yayA = a; yayS[0] = new GradientAlphaKey(a, 0); yayS[1] = new GradientAlphaKey(0, 1); yayGrad.SetKeys(yayRenk ?? YAY_RENK, yayS); yay.colorGradient = yayGrad; }
             }
             if (anim == null) { if (fbRacket != null) fbRacket.localRotation = Quaternion.Euler(0, 0, o.sw > 0 ? -140 * (1 - o.sw) + 40 : 20 - 40 * o.prepA); return; }
             if (D(clip) == null) clip = "idle";

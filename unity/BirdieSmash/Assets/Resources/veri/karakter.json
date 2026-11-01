@@ -125,6 +125,12 @@
 ],
 "kaplama": [
   {"id": "model", "ad": "Modelin rengi", "renk": null,      "sv": 1},
+  {"id": "gece",   "ad": "Gece",          "renk": "#232a3d", "sv": 3},
+  {"id": "mercan", "ad": "Mercan",        "renk": "#ff7a59", "sv": 5},
+  {"id": "isin_gok",    "ad": "Gök ışını",    "renk": "#4fd2ff", "sv": 8,  "parla": true},
+  {"id": "isin_kizil",  "ad": "Kızıl ışın",   "renk": "#ff3448", "sv": 12, "parla": true},
+  {"id": "isin_zumrut", "ad": "Zümrüt ışın",  "renk": "#3dff86", "sv": 16, "parla": true},
+  {"id": "isin_mor",    "ad": "Mor plazma",   "renk": "#b26bff", "sv": 20, "parla": true},
   {"id": "altin", "ad": "Altın",         "renk": "#ffc94a", "sv": 30}
 ],
 "sort_not": "2026-10-27 şort rengi (yasin: Gerçekçi'de beden sabit, aksesuarlar değişsin: şort, tişört, ayakkabı, bant, bileklik, raket). Yalnız görünüş, ücretsiz; Gerçekçi (doku × renk) ve Sade (düz renk) modelde görünür, Oyuncak'ta şort gövde atlasında olduğu için sunulmaz (Ayar.SortGorunur). Modelin rengi = Gerçekçi'de eski lacivert, Sade'de FBX rengi.",
