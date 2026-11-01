@@ -146,13 +146,16 @@ namespace BirdieSmash.Game
             int top = 0, alinir = 0, enAzSv = 99; var adlar = new List<string>(); var kilitli = new List<string>();
             foreach (var d in l) { adlar.Add(L.T(d.ad)); if (d.du == ModelDurum.Kilitli) { kilitli.Add(L.T("{0}: Sv {1} gerekli", L.T(d.ad), d.sv)); enAzSv = Mathf.Min(enAzSv, d.sv); } else { top += d.fiyat; alinir++; } }
             string kilitNot = kilitli.Count > 0 ? string.Join(" · ", kilitli) : null;
-            var bas = Yazi(L.T("Deneniyor: {0}", string.Join(", ", adlar)), 13, "kalin"); denemeCubuk.Add(bas);
-            if (kilitNot != null) denemeCubuk.Add(Yazi(kilitNot, 12, "durum-kilit"));
+            // r101: çubuk 3 satırdı (başlık, kilit notu, düğmeler), gövdeye ~60 pt kalıyordu; tek satır: ne denendiği ve durumu
+            // birincil düğmenin alt satırında (ekran okuyucu etiketi ikisini birlikte okur).
             var s = Satir("arali"); s.AddToClassList("deneme-cubuk-dugmeler"); denemeCubuk.Add(s);
+            string ne = L.T("Deneniyor: {0}", string.Join(", ", adlar));
             string cta = alinir == 1 && l.Count == 1 ? L.T("{0} · {1} Tüy ile al", L.T(l[0].ad), top) : L.T("Hepsini al · {0} Tüy", top);
             int eksik = top - Ayar.gear.eko.tuy;
             // r100: hepsi kilitliyken "Hepsini al · 0 Tüy" yazıyordu; artık ne zaman açılacağını söyler.
-            VisualElement al = alinir == 0 ? Pasif(L.T("Henüz alınamaz"), L.T("Sv {0}'da açılır · seviye atladıkça", enAzSv)) : eksik > 0 ? Pasif(cta, L.T("{0} Tüy daha gerekli", eksik)) : Dugme(cta, () => DenemeHepsiniAl(), "dugme--birincil", L.T("Bir kez alınır, hep senin"), 15);
+            VisualElement al = alinir == 0 ? Pasif(L.T("Henüz alınamaz"), kilitNot ?? L.T("Sv {0}'da açılır · seviye atladıkça", enAzSv))
+                : eksik > 0 ? Pasif(cta, ne + " · " + L.T("{0} Tüy daha gerekli", eksik))
+                : Dugme(cta, () => DenemeHepsiniAl(), "dugme--birincil", kilitNot != null ? ne + " · " + kilitNot : ne, 15);
             al.AddToClassList("deneme-cubuk-al"); s.Add(al);
             var b = Dugme(L.T("Bırak"), () => { DenemeSil(); root.vitrin.Yenile(); Tik(); SoyunmaGovdeKur(true); }, "deneme-birak", null, 14); s.Add(b);
         }
