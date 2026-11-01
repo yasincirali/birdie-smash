@@ -340,6 +340,10 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_TEN); ui.KarakterDene(Kozmetik.YUZ, "gunes"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_yuz_gunes");
             // 2026-10-31 K2/K4: deneme kategoriler arasında kalır (yüz + şapka), alt çubuk "Hepsini al"; kombin satırı gövdenin başında
             ui.KategoriGec(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "kep"); yield return Bekle(40); yield return Cek("menu_" + ek + "dolap_hepsini_al");
+            // 2026-11-01 Sevinç: sayfa (Yumruk önizlemesi) ve üç hareketin tepe anı (vitrin döngüsü 1,6 / 2,4 sn)
+            ui.KarakterAc(UiKok.KAR_SEVINC); yield return Bekle(25); yield return Cek("menu_" + ek + "sevinc");
+            if (ek == "") foreach (var sv in new[] { "kollar", "zipla", "alkis", "zafer", "egil", "iyi_oyun" }) { root.vitrin.Sevinc(sv); yield return Bekle(sv == "zipla" ? 18 : 30); yield return Cek("sevinc_" + sv); }
+            root.vitrin.Sevinc(null);
             // 2026-10-26 karakter tasarımı: Karakter alt sayfaları (Tip, Saç, Ayakkabı, Ten), yakın planlar (Yüz, Ayak, Tutuş:
             // kamera yumuşak geçişini bitirsin diye 40 kare) ve deneme kartı (alınmamış öğe vitrinde, kayda yazılmaz).
             ui.KarakterAc(UiKok.KAR_TIP); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_tip");
@@ -564,7 +568,20 @@ namespace BirdieSmash.Game
             yield return Bekle(20); yield return Cek("usta_kart");
             // halkalar yalnız rakibin vuruşundan sonra (top bize gelirken): o ana kadar bekle (en çok ~10 sn)
             for (int bk = 0; bk < 600 && !(root.match.s != null && root.match.s.from == "op" && !root.match.s.dead && root.match.s.y > Court.NET - 1 && root.match.s.t > .25f); bk++) yield return null;
-            yield return Cek("usta_halka"); botAcik = false;
+            yield return Cek("usta_halka");
+            // 2026-11-01 P3: duruş ayak izi dolu (oyuncu yerinde) karesi; bot yerine varmazsa yine çeker (rapor satırı söyler)
+            // r104: tur botu kendi noktasına koştuğu için hiç "yerinde" olmuyordu; burada bot durur, oyuncu gibi duruş noktasına dokunulur.
+            {
+                botAcik = false; bool y = false; float dx, dy;
+                for (int bk = 0; bk < 300 && !root.match.DurusNoktasi(out dx, out dy); bk++) yield return null;
+                if (root.match.DurusNoktasi(out dx, out dy)) root.match.AkilliAdim(dx + .5f, dy + .3f, 1.4f);
+                for (int bk = 0; bk < 120 && !(y = root.match.Yerinde()); bk++) yield return null;
+                yield return Cek("usta_durus"); rap.AppendLine("usta_durus · yerinde " + y); botAcik = true;
+            }
+            // 2026-11-01 Sevinç maçta: benim sayımdan sonraki bekleme (en çok ~25 sn bot oyunu)
+            // r104: bot benim sayımı beklerken maç bitiyordu; herhangi bir sayıdan sonra (rakibin sevinci de aynı kod) çekilir.
+            { int sk0 = root.match.sc[0] + root.match.sc[1]; for (int bk = 0; bk < 1500 && root.match.sc[0] + root.match.sc[1] == sk0 && !root.match.matchDone; bk++) yield return null; yield return Bekle(14); yield return Cek("sevinc_sayi"); rap.AppendLine("sevinc_sayi · " + root.match.sc[0] + "-" + root.match.sc[1]); }
+            botAcik = false;
             Ayar.easy = e0; root.HudKatman.UstaKartSifirla(); root.AnaMenu(); yield return Bekle(10);
             // 2026-10-31 K1: ilk maçtan sonra "Oyuncunu seç" (turda kendiliğinden açılmaz; burada elle), bir kart seçili, sonra Atla
             ui.OyuncuSecAc(); yield return Bekle(40); yield return Cek("oyuncu_sec");

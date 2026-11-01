@@ -675,7 +675,7 @@ namespace BirdieSmash.Game
             if (M.sc[0] + M.sc[1] > 0) { ustaKart = 1; PlayerPrefs.SetInt(USTA_KART, 1); PlayerPrefs.Save(); return y; }
             if (ustaKartSt == null || ustaKartSt.fontSize != Mathf.RoundToInt(13 * fu)) ustaKartSt = new GUIStyle(left) { wordWrap = true, fontSize = Mathf.RoundToInt(13 * fu) };
             float w = ColW, x = ColX, iw = w - 32 * u;
-            string bas = L.T("Usta: koşu senin"), metin = L.T("Kortta bir yere dokun, oyuncun oraya koşar. Top parlayınca kaydır.") + "\n" + L.T("Düz halkanın içindeysen tam vuruş, kesik halkadaysan uzanırsın.");
+            string bas = L.T("Usta: koşu senin"), metin = L.T("Ayak izlerinin yanına dokun, oyuncun yerini alır; başka yere dokunursan oraya koşar. Top parlayınca kaydır.") + "\n" + L.T("Düz halkanın içindeysen tam vuruş, kesik halkadaysan uzanırsın.");
             var bs = Stil(leftB, Mathf.RoundToInt(18 * fu)); float bh = bs.CalcHeight(Ic(bas), iw), mh = ustaKartSt.CalcHeight(Ic(metin), iw), h = bh + mh + 24 * u;
             var r = new Rect(x, y, w, h); GUI.Box(r, GUIContent.none, card);
             var o = GUI.color; GUI.color = Kit.Hex("#d8ff5a"); GUI.DrawTexture(new Rect(x, y, 6 * u, h), Texture2D.whiteTexture); GUI.color = o;

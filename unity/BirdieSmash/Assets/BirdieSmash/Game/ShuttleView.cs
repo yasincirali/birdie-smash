@@ -25,7 +25,7 @@ namespace BirdieSmash.Game
         public const float G = 3.2f, L = .066f * G, Rt = .032f * G, Rb = .012f * G, Rc = .0135f * G;
         public static bool SLICE_TAKLA = true;
         Transform body; GameObject lines; readonly GameObject[] ghosts = new GameObject[3]; Material[] ghostM = new Material[3];
-        Transform shadow; Material shadowM; LineRenderer trail, hLine, gLine, ring, ringS, prevRing, prevX1, prevX2; Transform ringFill; Material ringFillM, ringSM, prevM; LineRenderer erIc, erDis;
+        Transform shadow; Material shadowM; LineRenderer trail, hLine, gLine, ring, ringS, prevRing, prevX1, prevX2; Transform ringFill; Material ringFillM, ringSM, prevM; LineRenderer erIc, erDis, ayakL, ayakR; Material ayakM, ayakDolguM; Transform ayakDolguL, ayakDolguR;
         readonly List<Vector3> trailPts = new List<Vector3>();
         // İzin son uygulanan biçimi (renk, kalınlık, saydamlık) ve yeniden kullanılan anahtar dizileri.
         readonly Gradient izGrad = new Gradient(); readonly GradientColorKey[] izRenk = new GradientColorKey[2];
@@ -67,6 +67,12 @@ namespace BirdieSmash.Game
             // = uzanma (Match.USTA_UZAN). Rakip topu bu yana gelirken görünür; anlam biçimde de var (düz/kesik), yalnız renkte değil.
             erIc = Kit.Line("erisim_ic", transform, Kit.Clear(new Color(.77f, .93f, .25f, .35f)), true, true); erIc.widthMultiplier = .035f;
             erDis = Kit.Line("erisim_dis", transform, Kit.Clear(new Color(1, .6f, .24f, .5f), dash34), true, true); erDis.textureMode = LineTextureMode.Tile; erDis.widthMultiplier = .035f;
+            // Usta duruş işareti (2026-11-01 Ar-Ge P3): topu karşılamak için durulacak yer yerde iki ayak izi. Varılmadıkça yalnız
+            // çerçeve (beyaz), oraya gelince içi dolar (limon): "yerindesin" biçimle de okunur, yalnız renkle değil (HIG renk körlüğü).
+            ayakM = Kit.Clear(new Color(1, 1, 1, .55f)); ayakL = Kit.Line("durus_sol", transform, ayakM, true, true); ayakR = Kit.Line("durus_sag", transform, ayakM, true, true);
+            ayakL.widthMultiplier = ayakR.widthMultiplier = .035f;
+            ayakDolguM = Kit.Clear(new Color(.85f, 1, .35f, .45f));
+            ayakDolguL = Kit.MeshObj("durus_dolgu_sol", transform, Disc(), ayakDolguM).transform; ayakDolguR = Kit.MeshObj("durus_dolgu_sag", transform, Disc(), ayakDolguM).transform;
             prevM = Kit.Clear(new Color(.847f, 1, .353f, .8f), dash);
             prevRing = Kit.Line("hedef", transform, prevM, true, true); prevRing.textureMode = LineTextureMode.Tile; prevRing.widthMultiplier = .06f;
             var pm = Kit.Clear(new Color(.847f, 1, .353f, .8f));
@@ -172,7 +178,18 @@ namespace BirdieSmash.Game
         void Gizle()
         {
             body.gameObject.SetActive(false); shadow.gameObject.SetActive(false); foreach (var g in ghosts) g.SetActive(false);
-            trail.enabled = hLine.enabled = gLine.enabled = ring.enabled = ringS.enabled = prevRing.enabled = prevX1.enabled = prevX2.enabled = false; if (erIc != null) erIc.enabled = erDis.enabled = false; ringFill.gameObject.SetActive(false);
+            trail.enabled = hLine.enabled = gLine.enabled = ring.enabled = ringS.enabled = prevRing.enabled = prevX1.enabled = prevX2.enabled = false; if (erIc != null) erIc.enabled = erDis.enabled = false; ringFill.gameObject.SetActive(false); Durus(false, 0, 0, false);
+        }
+        void Durus(bool on, float x, float y, bool yerinde)
+        {
+            if (ayakL == null) return;
+            ayakL.enabled = ayakR.enabled = on; ayakDolguL.gameObject.SetActive(on && yerinde); ayakDolguR.gameObject.SetActive(on && yerinde);
+            if (!on) return;
+            const float ara = .17f, rx = .085f, rz = .19f;   // r104: küçük izler uzaktan "00" gibi okunuyordu
+            var l = Kit.W(x - ara, y, .009f); var r = Kit.W(x + ara, y, .009f);
+            Kit.Ellipse(ayakL, l, rx, rz, 24); Kit.Ellipse(ayakR, r, rx, rz, 24);
+            ayakM.color = yerinde ? new Color(.85f, 1, .35f, .9f) : new Color(1, 1, 1, .55f);
+            if (yerinde) { ayakDolguL.position = l; ayakDolguR.position = r; ayakDolguL.localScale = ayakDolguR.localScale = new Vector3(rx, 1, rz); }
         }
 
         // M: maç (iniş halkası, akış), preview: parmak ekrandayken tahmini düşüş (null = yok)
@@ -266,6 +283,8 @@ namespace BirdieSmash.Game
                 var mp = Kit.W(M.me.x, M.me.y, .007f); float r1 = M.ErisimIc, r2 = r1 + Match.USTA_UZAN;
                 Kit.Ellipse(erIc, mp, r1, r1); Kit.Ellipse(erDis, mp, r2, r2);
             }
+            // --- Usta duruş işareti (P3) ---
+            { float dx = 0, dy = 0; bool du = er && M.DurusNoktasi(out dx, out dy); Durus(du, dx, dy, du && M.Yerinde()); }
             // --- hedef önizleme ---
             prevRing.enabled = prevX1.enabled = prevX2.enabled = previewOn;
             if (previewOn)

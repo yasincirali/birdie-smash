@@ -130,7 +130,7 @@ namespace BirdieSmash.Game
                 if (id == null) return; var o = Kozmetik.Oge(kat, id); var du = Kozmetik.Durum(gr, kat, id, Ayar.KOZ[kat]);
                 if (du == ModelDurum.Secili || du == ModelDurum.Acik) return; l.Add(new Denenen { kat = kat, id = id, ad = o.ad, fiyat = o.fiyat, sv = o.sv, du = du });
             }
-            Koz(Kozmetik.TIP, vt.deneTip); Koz(Kozmetik.SAC, vt.deneSac); Koz(Kozmetik.SAPKA, vt.deneSapka); Koz(Kozmetik.YUZ, vt.deneYuz);
+            foreach (var k in Kozmetik.KAT) Koz(k, vt.DeneAl(k));
             GearModel m; if (vt.deneAyk != null && Gear.GEAR["ayakkabi"].TryGetValue(vt.deneAyk, out m))
             {
                 var du = gr.Durum("ayakkabi", vt.deneAyk);
@@ -168,7 +168,7 @@ namespace BirdieSmash.Game
                 bool ok = d.kat == "ayakkabi" ? gr.Al("ayakkabi", d.id) : Kozmetik.Al(gr, d.kat, d.id, Ayar.KOZ[d.kat]);
                 if (!ok) continue; biri = true;
                 if (d.kat == "ayakkabi") { gr.Sec("ayakkabi", d.id); root.vitrin.deneAyk = null; Ayar.GearHesap(); }
-                else { Ayar.KOZ[d.kat] = d.id; if (d.kat == Kozmetik.TIP) root.vitrin.deneTip = null; else if (d.kat == Kozmetik.SAC) root.vitrin.deneSac = null; else if (d.kat == Kozmetik.SAPKA) root.vitrin.deneSapka = null; else root.vitrin.deneYuz = null; }
+                else { Ayar.KOZ[d.kat] = d.id; root.vitrin.DeneYaz(d.kat, null); }
             }
             if (!biri) return;
             root.sfx.Yukselt(); Yerel.Hap("tick"); Ayar.Kaydet(); root.vitrin.Yenile(); kirli[(int)Sekme.Profil] = true; ustKirli = true; UstKur(); Degisti(); SoyunmaGovdeKur(true);
