@@ -1,0 +1,10 @@
+toplam 9
+tr_04_karakter · taşma x 403..461 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Ayakkabı"
+tr_04_karakter · taşma x 501..542 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Forma"
+tr_04_karakter · taşma x 582..624 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Sevinç"
+tr_04_karakter · taşma x 664..701 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Raket"
+tr_04_karakter · kelime bölündü 76>68 · .unity-text-element.unity-label.yazi.dugme-alt · "sahip olduklarından"
+en_04_karakter · taşma x 398..437 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Shoes"
+en_04_karakter · taşma x 477..508 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Shirt"
+en_04_karakter · taşma x 548..610 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Celebrate"
+en_04_karakter · taşma x 650..694 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Racket"
