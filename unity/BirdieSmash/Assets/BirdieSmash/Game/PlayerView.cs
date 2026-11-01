@@ -133,6 +133,9 @@ namespace BirdieSmash.Game
                 PrefabAdi = prefab.name; modelAdi = DokuAdi(prefab.name, modelAd); model = Instantiate(prefab, yaw).transform; model.localPosition = Vector3.zero; model.localScale = Vector3.one * SCALE;
                 anim = model.GetComponentInChildren<Animation>();
                 tenAtlas = gor.ten; Varyant(gor); Paint(gor); if (!hakem) RaketSekil.Uygula(model, gor.kafa);   // ten önce: Varyant gövde atlasını Paint'ten önce bağlıyor
+                // 2026-11-01 (r115): ışın halesi çerçeve ağının kopyası; Paint içinde kurulunca kafa biçimi (kalp, elmas…) henüz uygulanmamıştı,
+                // hale oval kaldı ve kalp çerçevenin dışında ikinci bir halka gibi göründü. Hale biçimden sonra kurulur.
+                if (isinRenk.HasValue && kafa != null) IsinKur(isinRenk.Value);
                 if (anim != null && anim["idle"] != null) Sample("idle", 0, null, 0, 1);
                 Calibrate(); AltKatmanKur();
                 if (!hakem) aksesuar = Aksesuar.Kur(model, kHead, Vector3.up, bantMeta, gor.sapka, gor.yuz, gor.forma, gor.sac);
@@ -410,7 +413,6 @@ namespace BirdieSmash.Game
                 yay = kafa.gameObject.AddComponent<TrailRenderer>(); yay.time = .12f; yay.minVertexDistance = .03f; yay.emitting = false;
                 yay.widthCurve = new AnimationCurve(new Keyframe(0, .14f), new Keyframe(1, 0)); yay.material = Kit.Additive(Color.white);
                 yay.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; yay.receiveShadows = false;
-                if (isinRenk.HasValue) IsinKur(isinRenk.Value);
             }
         }
         Transform kafa; TrailRenderer yay; Color? isinRenk;

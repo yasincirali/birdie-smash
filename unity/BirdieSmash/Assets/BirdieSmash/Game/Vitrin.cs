@@ -214,7 +214,7 @@ namespace BirdieSmash.Game
                 {
                     float ust = float.MinValue;
                     foreach (var r in ak.GetComponentsInChildren<Renderer>()) if (r.enabled) ust = Mathf.Max(ust, r.bounds.max.y);
-                    ust += .015f * boy; float alt = h.y - yy;
+                    ust += .06f * boy; float alt = h.y - yy;   // r115: .015 payla hale kadrajın üst kenarına yapıştı
                     if (ust > h.y + yy) { float yeniY = (ust - alt) * .5f; h.y = (ust + alt) * .5f; yy = Mathf.Max(yy, yeniY); }
                 }
                 float d = Uzaklik(yy, yx, out kay);
