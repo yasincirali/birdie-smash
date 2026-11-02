@@ -106,6 +106,9 @@ namespace BirdieSmash.Game
             yield return SonucKare("sonuc_tr_galibiyet", true, false, 0, "tr");
             yield return SonucKare("sonuc_yenilgi", false, false, 0, "en");   rap.AppendLine("sonuc_yenilgi · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok"));   // tur 2: matris düz, ikincil düğme stili var olmalı
             yield return SonucKare("sonuc_seviye", true, false, 0, "tr");   rap.AppendLine("sonuc_seviye · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok"));   // 2026-11-01 seviye şeridi
+            // 2026-11-02 hedef eşya: yolda (çubuk + kalan, büyük yazı) ve bu maçla hazır ("Hedefin hazır" ikincil düğmesi)
+            yield return SonucKare("sonuc_hedef_buyuk", true, false, 2, "tr");   rap.AppendLine("sonuc_hedef_buyuk · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok"));
+            yield return SonucKare("sonuc_hedef_hazir", true, false, 0, "tr");   rap.AppendLine("sonuc_hedef_hazir · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok"));
             yield return FileKare();   // 2026-10-27 ekran/file: file yakın planı (ayrı satır, başka dallar da bu listeye ekliyor)
             yield return DuyarliTuru();   // 2026-10-27 duyarlı yerleşim: SE / 13 / Pro Max / iPad, çentik taklidi, taşma denetimi
             yield return MenuSahne();
@@ -341,6 +344,20 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_TEN); ui.KarakterDene(Kozmetik.YUZ, "gunes"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_yuz_gunes");
             // 2026-10-31 K2/K4: deneme kategoriler arasında kalır (yüz + şapka), alt çubuk "Hepsini al"; kombin satırı gövdenin başında
             ui.KategoriGec(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "kep"); yield return Bekle(40); yield return Cek("menu_" + ek + "dolap_hepsini_al");
+            // 2026-11-02 hedef eşya: Tüy yetmeyen tek deneme → alt çubukta "Hedef yap"; hedef yapılınca "Hedefin · n Tüy kaldı".
+            // Oyuncunun Tüy'ü ve hedefi kare için değişir, sonra geri konur.
+            {
+                var vt = root.vitrin; vt.deneTip = vt.deneSac = vt.deneAyk = vt.deneSapka = vt.deneYuz = vt.deneSevinc = vt.deneMacSonu = vt.deneSirt = null;
+                string hid = null; foreach (var o in Kozmetik.Liste(Kozmetik.SAPKA)) if (o.fiyat > 0 && Kozmetik.Durum(Ayar.gear, Kozmetik.SAPKA, o.id, Ayar.KOZ[Kozmetik.SAPKA]) == ModelDurum.Alinir) hid = o.id;
+                if (hid != null)
+                {
+                    int tuy0 = Ayar.gear.eko.tuy; bool hv = Ayar.HedefMi(Kozmetik.SAPKA, hid); Ayar.gear.eko.tuy = 0; Ayar.HedefYaz(null, null);
+                    ui.KarakterDene(Kozmetik.SAPKA, hid); yield return Bekle(30); yield return Cek("menu_" + ek + "dolap_hedef_yap");
+                    Ayar.HedefYaz(Kozmetik.SAPKA, hid); ui.KarakterDene(Kozmetik.SAPKA, hid); yield return Bekle(20); yield return Cek("menu_" + ek + "dolap_hedefin");
+                    Ayar.gear.eko.tuy = tuy0; if (!hv) Ayar.HedefYaz(null, null); vt.deneSapka = null; ui.KarakterDene(Kozmetik.SAPKA, null);
+                }
+                else rap.AppendLine("dolap_hedef: seviyesi gelmiş ücretli şapka yok, kare çekilmedi");
+            }
             // 2026-11-01 Sevinç: sayfa (Yumruk önizlemesi) ve üç hareketin tepe anı (vitrin döngüsü 1,6 / 2,4 sn)
             ui.KarakterAc(UiKok.KAR_SEVINC); yield return Bekle(25); yield return Cek("menu_" + ek + "sevinc");
             if (ek == "") foreach (var sv in new[] { "kollar", "zipla", "alkis", "zafer", "egil", "iyi_oyun" }) { root.vitrin.Sevinc(sv); yield return Bekle(sv == "zipla" ? 18 : 30); yield return Cek("sevinc_" + sv); }
@@ -444,6 +461,16 @@ namespace BirdieSmash.Game
             // 2026-11-01 zafer anı: galibiyet gerçek maç sonu akışından geçer (matchDone + 1,4 sn bekleme → MatchEnd), kamera o
             // sürede kazanana döner; ilk karede yolun iki anı çekilir. sonuc_seviye: XP seviye eşiğinin hemen altında (seviye şeridi).
             if (ad == "sonuc_seviye") { int L, k, gr; Ayar.gear.OyuncuSv(out L, out k, out gr); if (gr > 0) Ayar.gear.eko.xp += gr - k - 5; }
+            // Hedef kareleri: seviyesi gelmiş en pahalı ücretli kozmetik hedef; "hazır"da Tüy fiyatın 10 altında (galibiyet ödülü geçirir),
+            // "büyük"te fiyatın üçte biri. Kayıt ve Tüy sonunda geri konur.
+            string hedef0 = PlayerPrefs.HasKey(Hedef.ANAHTAR) ? PlayerPrefs.GetString(Hedef.ANAHTAR) : null; int tuyH0 = Ayar.gear.eko.tuy; bool hedefKare = ad.StartsWith("sonuc_hedef");
+            if (hedefKare)
+            {
+                string hk = null, hi = null; int hf = 0;
+                foreach (var kat in Kozmetik.KAT) foreach (var o in Kozmetik.Liste(kat)) if (o.fiyat > hf && Kozmetik.Durum(Ayar.gear, kat, o.id, Ayar.KOZ[kat]) == ModelDurum.Alinir) { hk = kat; hi = o.id; hf = o.fiyat; }
+                if (hk == null) rap.AppendLine(ad + " · seviyesi gelmiş ücretli kozmetik yok, hedef satırı çıkmaz");
+                else { Ayar.HedefYaz(hk, hi); Ayar.gear.eko.tuy = ad == "sonuc_hedef_hazir" ? hf - 10 : hf / 3; }
+            }
             root.match.sc[0] = won ? 11 : 7; root.match.sc[1] = won ? 7 : 11;
             if (won)
             {
@@ -459,6 +486,7 @@ namespace BirdieSmash.Game
             while (Time.realtimeSinceStartup - t0 < 3.5f) yield return null;
             yield return Cek(ad);
             Ayar.ilerleme = eski; Ayar.reduce = r0; Ayar.kariyerModu = km; Ayar.kariyerSecim = -1; Ayar.yazi = y0; Ayar.dil = d0;
+            if (hedefKare) { Ayar.gear.eko.tuy = tuyH0; if (hedef0 != null) PlayerPrefs.SetString(Hedef.ANAHTAR, hedef0); else PlayerPrefs.DeleteKey(Hedef.ANAHTAR); }
             root.AnaMenu(); yield return Bekle(5);
         }
         // ---- ekran/file (2026-10-27, yasin "file de standartlarda olmalı bant kısmı daha sert ama file hareketli olacak") ----

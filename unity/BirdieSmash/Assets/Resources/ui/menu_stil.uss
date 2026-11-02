@@ -583,3 +583,9 @@
 .dukkan-kart .dugme--birincil { min-height: 48px; margin-top: 8px; }
 .dukkan-ek { color: var(--gold); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .dukkan-not { color: var(--lime); margin: 4px 0 8px 0; }
+/* 2026-11-02 hedef eşya: Tüy yetmeyince "Hedef yap" ikincil düğme. Dosya sonunda: ikinci .dugme kuralı alt çizgiyi ezmesin. Güneş çerçeve + yazı (yalnız
+   renk değil: başlık "Hedef yap" der). Birincil (dolu güneş) "Al"a ayrılmış kalır. */
+.dugme--hedef { background-color: rgba(255, 160, 77, 0.10); border-width: 2px; border-color: var(--sun); border-bottom-width: 2px; border-bottom-color: var(--sun); }
+.dugme--hedef .dugme-yazi { color: var(--sun); -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); }
+.dugme--hedef .dugme-alt { color: rgba(255, 255, 255, 0.82); }
+.dugme--hedef:active { background-color: rgba(255, 160, 77, 0.22); }

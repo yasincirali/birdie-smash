@@ -31,7 +31,7 @@ namespace BirdieSmash.Game
         // Menü kabuğu (2026-10-26, UI Toolkit; Game/UI/UiKok). Hud maç içi + perde için kalır; menü perdeyi buradan okur.
         public UiKok ui; public Hud HudKatman { get { return hud; } }
         GameObject court; Renderer akisR; string courtId, modelId, gorunumId;
-        public OdulSonuc odul; public bool yukseltHazir; bool pencere; float sqT; float psvx, psvy;
+        public OdulSonuc odul; public bool yukseltHazir; public Hedef.Bilgi hedef; public bool hedefHazir; bool pencere; float sqT; float psvx, psvy;
         float shake, punch; Vector3 camBase; Quaternion camRot; int seed = 1; Light sun; readonly System.Random rnd = new System.Random();
         bool ogrKayit;
         public Mod mod = Mod.Normal; public string drilId; public GunlukMac gunluk;
@@ -182,7 +182,7 @@ namespace BirdieSmash.Game
             if (yeni == 0) odul = null;   // ödülsüz tekrar: "+0 Tüy" satırı yazılmaz
             // 2026-10-30: görev 8 → 21 (63 yıldız); başarım App Store Connect metnindeki gibi 24 yıldızda kalır.
             if (p.AntrenmanYildiz >= Basarim.ANTRENOR_YILDIZ) Basarim.Ver(Basarim.ANTRENOR);
-            yukseltHazir = false; Ayar.Kaydet();
+            yukseltHazir = false; HedefHesapla(); Ayar.Kaydet();
             bittiBaslik = L.T("Görev bitti") + " · " + L.T(d.ad);
             BittiSifirla(); bittiKazandi = y > 0; bittiBas = L.T("Görev bitti"); bittiUst = L.T("Antrenman") + " · " + L.T(d.ad);
             bittiMaske = (1 << y) - 1; bittiYeniMaske = yeni > 0 ? ((1 << y) - 1) & ~((1 << eski) - 1) : 0;
@@ -295,7 +295,7 @@ namespace BirdieSmash.Game
             // ilk kez alınabilir yaptıysa. Önce her maçta (Tüy biriktiren oyuncuda hep) çıkıyordu; oyuncu düğmeyi görmez oluyordu.
             // Atölye sekmesindeki "yükseltme ya da yeni model hazır" satırı değişmedi.
             yukseltHazir = !hazirOnce && YukseltAlinir(odul.sonra);
-            Ayar.Kaydet();
+            HedefHesapla(); Ayar.Kaydet();
             bittiBaslik = L.T(won ? "Kazandın" : "Bu sefer rakip aldı") + (kNot != "" ? " · " + L.Cumle(kNot) : "");
             // "Galibiyet" anahtarı tr_en.json'da istatistik etiketi ("Wins"); başlıkta "Victory" olmalı (r16), sözlük HTML'in
             // birebir kopyası olduğu için orada değiştirilmez.
@@ -307,6 +307,8 @@ namespace BirdieSmash.Game
             var bitenler = new List<string>(); foreach (var g in M.gorevler) if (g.bitti) bitenler.Add(L.Cumle(g.ad));
             bittiBilgi = L.T("Rakip {0} · Görev {1}/3 ({2}) · En uzun ralli {3} · {4} smaç · {5} file vuruşu · {6} mükemmel · {7} aldatma · {8} split step · {9} tepeden · {10} uzanma · {11} kez dışarıyı bıraktın",
                 M.RakipAd(false), M.gorevBitti, bitenler.Count > 0 ? string.Join(", ", bitenler.ToArray()) : L.T("yok"), M.maxRally, M.smashes, M.kills, M.perfects, M.deceives, M.splits, M.tepeden, M.saves, M.outsLeft);
+            // 2026-11-02: ek ödüllerin tam dökümü (kartta yalnız en büyüğü) Ayrıntılar'ın başında.
+            if (odul != null && odul.ek.Count > 0) bittiBilgi = L.T("Ödüller: {0}", string.Join(" · ", odul.ek.ConvertAll(q => L.Cumle(q)).ToArray())) + "\n" + bittiBilgi;
             bittiDugme = L.Cumle(Career.AgainLabel(M.stil.kariyer >= 0, won, Ayar.ilerleme.HepsiBitti ? -1 : Ayar.ilerleme.Siradaki()));
             if (mod == Mod.Usta) bittiDugme = won ? L.T("Sıradaki Usta basamağı") : L.T("Tekrar dene");
             else if (mod == Mod.Gunluk) bittiDugme = L.T("Günün maçını yeniden oyna");
@@ -317,6 +319,12 @@ namespace BirdieSmash.Game
             bittiIpucu = ik == null ? null : ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
             if (Ozet.PuanIste(won, kariyerIlk, Ayar.wins, Ayar.puan)) { CancelInvoke("PuanIste"); Invoke("PuanIste", 1.5f); }
             if (won) hud.Konfeti();
+        }
+        // Hedef eşya (2026-11-02, Core/Hedef): maç sonunda bir kez çözülür (kart her karede PlayerPrefs okumasın). Ödül yoksa satır yok.
+        void HedefHesapla()
+        {
+            hedef = odul != null ? Ayar.HedefBilgi() : new Hedef.Bilgi(); int t1 = Ayar.gear.eko.tuy;
+            hedefHazir = hedef.gecerli && Hedef.YeniHazir(hedef.fiyat, t1 - odul.tuy, t1);
         }
         bool YukseltAlinir(int seviye)
         {

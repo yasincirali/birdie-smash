@@ -653,5 +653,13 @@
 "Satın alımları geri yükle": "Restore purchases",
 "Kaydın yeniden okundu.": "Your save was reloaded.",
 "Geri yüklenecek bir şey bulunamadı.": "Nothing to restore was found.",
-"Tüy tüketilen bir üründür: harcayınca biter, süresi dolmaz. Rastgele ödül satılmaz.": "Feathers are consumable: they're used up when spent and never expire. No random rewards are sold."
+"Tüy tüketilen bir üründür: harcayınca biter, süresi dolmaz. Rastgele ödül satılmaz.": "Feathers are consumable: they're used up when spent and never expire. No random rewards are sold.",
+"Hedef yap": "Set as goal",
+"Hedefin · {0} Tüy kaldı": "Your goal · {0} Feathers to go",
+"Maç sonunda ne kadar yaklaştığını görürsün": "After each match you'll see how close you are",
+"Hedef: {0}": "Goal: {0}",
+"{0} Tüy kaldı": "{0} Feathers to go",
+"Hedefin hazır": "Your goal is ready",
+"+{0} ödül daha": "+{0} more",
+"Ödüller: {0}": "Rewards: {0}"
 }
