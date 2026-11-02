@@ -842,7 +842,7 @@ namespace BirdieSmash.Game
         // sayar. Hareketi azalt: ışın ve iniş yok, sayılar son değerinde, bütün içerik .25 sn'de solarak gelir.
         // Yazı: 2026-10-29 Baloo 2 + Nunito (OFL, Resources/fonts; eskisi Barlow); boyut fu ile (Dynamic Type ×1,3'e kadar, HUD sınırı). ★ ✓ ✗ glif değil doku.
         Font fSiyah, fEkstra, fYari, fKalin; float aS = -1, aK = -1;
-        GUIStyle aBas, aUst, aSkor, aAd, aKosul, aSatir, aSayi, aLv, aUnl, aCta, aCtaAlt, aDug, aIpucu, aKutuS, aKutuIkon, aKutuLimon, aCtaS, aIz;
+        GUIStyle aBas, aUst, aSkor, aAd, aKosul, aSatir, aSayi, aLv, aUnl, aCta, aCtaAlt, aDug, aIpucu, aHedefSol, aHedefSag, aKutuS, aKutuIkon, aKutuLimon, aCtaS, aIz;
         float overT0 = -1; bool overAcik; int yildizHap;
         // 2026-10-27 yön C "Gün Batımı Salonu" (yasin karar kartı): menü USS kökündeki değerler. Adlar A'dan; anlam: A_LIMON yalnız
         // "sen" (senin skorun, halkan, "SEN", GALİBİYET başlığı, senin özet sayıların), A_TURUNCU ilerleme ve kazanım (ışınlar,
@@ -885,7 +885,9 @@ namespace BirdieSmash.Game
             // 2026-10-27 tur 2: aDug ataması yukarıdaki yorumun sonuna yapışmıştı (yorum içinde kaldı): aDug null, sonuç ekranının
             // ikincil düğmeleri (Tekrar/Ana menü) OnGUI'de NullReference atıyordu, ekrandan çıkılamıyordu.
             aDug = AStil(fKalin, 16 * k, TextAnchor.MiddleCenter, true);
-            aIpucu = AStil(fYari, 13 * k, TextAnchor.UpperCenter, true); aIz = AStil(fKalin, 12 * k, TextAnchor.MiddleLeft, false);
+            aIpucu = AStil(fYari, 13 * k, TextAnchor.UpperCenter, true);
+            // 2026-11-02 hedef satırı (r119): ortalanmış aIpucu adı ortaya, "Hazır"ı kırpıyordu; ad sola, kalan sağa, sağ tek satır.
+            aHedefSol = AStil(fKalin, 13 * k, TextAnchor.UpperLeft, true); aHedefSag = AStil(fKalin, 13 * k, TextAnchor.UpperRight, false); aIz = AStil(fKalin, 12 * k, TextAnchor.MiddleLeft, false);
             int r = Mathf.Max(4, Mathf.RoundToInt(16 * s)), ri = Mathf.Max(3, Mathf.RoundToInt(9 * s));
             aKutuS = AKutu(Ikonlar.Kutu(r, new Color(A_NAVY.r, A_NAVY.g, A_NAVY.b, .92f), new Color(1, 1, 1, .12f), Mathf.Max(1, s)), r + 2);
             aKutuIkon = AKutu(Ikonlar.Kutu(ri, A_NAVY3, new Color(1, 1, 1, 0), 0), ri + 2);
@@ -1117,8 +1119,8 @@ namespace BirdieSmash.Game
             var hd = root.hedef; string hSol = null, hSag = null; float hTh = 0, hSw = 0, hH = 0;
             if (hd.gecerli)
             {
-                hSol = L.T("Hedef: {0}", L.T(hd.ad)); hSag = L.T("{0} Tüy kaldı", 99999); hSw = aIpucu.CalcSize(Ic(hSag)).x;
-                hTh = aIpucu.CalcHeight(Ic(hSol), w - 2 * p - hSw - 8 * s); hH = 8 * s + Mathf.Max(hTh, aIpucu.CalcHeight(Ic(hSag), hSw)) + 4 * s + 6 * s;
+                hSol = L.T("Hedef: {0}", L.T(hd.ad)); hSag = L.T("{0} Tüy kaldı", 99999); hSw = aHedefSag.CalcSize(Ic(hSag)).x + 4 * s;
+                hTh = Mathf.Max(aHedefSol.CalcHeight(Ic(hSol), w - 2 * p - hSw - 8 * s), aHedefSag.CalcSize(Ic(hSag)).y); hH = 8 * s + hTh + 6 * s + 6 * s;
             }
             float h = p + rh + 6 * s + rh + (lv ? lvH + 8 * s : 0) + hH + 6 * s + ah + p; var r = new Rect(x, y, w, h); KutuCiz(r, aKutuS, al);
             float yy = y + p, rx_ = x + w - p;
@@ -1156,9 +1158,9 @@ namespace BirdieSmash.Game
             if (hd.gecerli)
             {
                 int hKalan = Hedef.Kalan(hd.fiyat, topN); float hOnce = Hedef.Oran(hd.fiyat, Ayar.gear.eko.tuy - od.tuy), hSimdi = Hedef.Oran(hd.fiyat, topN);
-                string sag = hKalan > 0 ? L.T("{0} Tüy kaldı", hKalan) : L.T("Hazır"); float sw = aIpucu.CalcSize(Ic(sag)).x, ty = yy + 8 * s;
-                Yaz(new Rect(x + p, ty, w - 2 * p - hSw - 8 * s, hTh), hSol, aIpucu, A_YAZI, al);
-                Yaz(new Rect(rx_ - sw, ty, sw, hTh), sag, aIpucu, hKalan > 0 ? A_ALTIN : A_TURUNCU, al);
+                string sag = hKalan > 0 ? L.T("{0} Tüy kaldı", hKalan) : L.T("Hazır"); float ty = yy + 8 * s;
+                Yaz(new Rect(x + p, ty, w - 2 * p - hSw - 8 * s, hTh), hSol, aHedefSol, A_YAZI, al);
+                Yaz(new Rect(rx_ - hSw, ty, hSw, hTh), sag, aHedefSag, hKalan > 0 ? A_ALTIN : A_TURUNCU, al);
                 var hb = new Rect(x + p, yy + hH - 6 * s, w - 2 * p, 6 * s);
                 Fill(hb, new Color(1, 1, 1, .12f * al));
                 Fill(new Rect(hb.x, hb.y, hb.width * hOnce, hb.height), new Color(A_ALTIN.r, A_ALTIN.g, A_ALTIN.b, .55f * al));   // maçtan önce

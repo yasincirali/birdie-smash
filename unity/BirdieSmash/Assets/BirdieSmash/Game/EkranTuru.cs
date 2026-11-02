@@ -348,7 +348,9 @@ namespace BirdieSmash.Game
             // Oyuncunun Tüy'ü ve hedefi kare için değişir, sonra geri konur.
             {
                 var vt = root.vitrin; vt.deneTip = vt.deneSac = vt.deneAyk = vt.deneSapka = vt.deneYuz = vt.deneSevinc = vt.deneMacSonu = vt.deneSirt = null;
-                string hid = null; foreach (var o in Kozmetik.Liste(Kozmetik.SAPKA)) if (o.fiyat > 0 && Kozmetik.Durum(Ayar.gear, Kozmetik.SAPKA, o.id, Ayar.KOZ[Kozmetik.SAPKA]) == ModelDurum.Alinir) hid = o.id;
+                // r119: tur oyuncusu Sv 1, ücretli şapkaların seviyesi gelmemişti (kare çekilmedi); kare için XP Sv 30'a çıkar, sonra geri.
+                int xp0 = Ayar.gear.eko.xp; Ayar.gear.eko.xp = 0; for (int L_ = 1; L_ < 30; L_++) Ayar.gear.eko.xp += Gear.SvEsik(L_);
+                string hid = null; foreach (var o in Kozmetik.Liste(Kozmetik.SAPKA)) if (hid == null && o.fiyat > 0 && Kozmetik.Durum(Ayar.gear, Kozmetik.SAPKA, o.id, Ayar.KOZ[Kozmetik.SAPKA]) == ModelDurum.Alinir) hid = o.id;
                 if (hid != null)
                 {
                     int tuy0 = Ayar.gear.eko.tuy; bool hv = Ayar.HedefMi(Kozmetik.SAPKA, hid); Ayar.gear.eko.tuy = 0; Ayar.HedefYaz(null, null);
@@ -356,7 +358,8 @@ namespace BirdieSmash.Game
                     Ayar.HedefYaz(Kozmetik.SAPKA, hid); ui.KarakterDene(Kozmetik.SAPKA, hid); yield return Bekle(20); yield return Cek("menu_" + ek + "dolap_hedefin");
                     Ayar.gear.eko.tuy = tuy0; if (!hv) Ayar.HedefYaz(null, null); vt.deneSapka = null; ui.KarakterDene(Kozmetik.SAPKA, null);
                 }
-                else rap.AppendLine("dolap_hedef: seviyesi gelmiş ücretli şapka yok, kare çekilmedi");
+                else rap.AppendLine("dolap_hedef: Sv 30'da da ücretli alınabilir şapka yok, kare çekilmedi");
+                Ayar.gear.eko.xp = xp0;
             }
             // 2026-11-01 Sevinç: sayfa (Yumruk önizlemesi) ve üç hareketin tepe anı (vitrin döngüsü 1,6 / 2,4 sn)
             ui.KarakterAc(UiKok.KAR_SEVINC); yield return Bekle(25); yield return Cek("menu_" + ek + "sevinc");
