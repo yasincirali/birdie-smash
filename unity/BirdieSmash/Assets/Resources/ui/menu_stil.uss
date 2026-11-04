@@ -152,9 +152,12 @@
 .buyuk-yazi .ikincil-kart { flex-basis: auto; flex-grow: 0; }
 .ikincil-kart.tam-genislik { flex-basis: auto; flex-grow: 0; }
 
+/* 2026-11-04 kontrast (yasin: "tüm yerlerde kontrast okunabilirlik önemli"): kilitli kart/düğüm/başarım bütünüyle 0,6–0,7
+   saydamlaştırılıyordu; soluk yazı (#CBB8C5) gece zemininde 12 px'te ~4:1'e düşüyordu ("3. basamaktan sonra", "Sv 4").
+   Saydamlık 0,85: soluk yazı ~6,8:1. Kilitli durum zaten kilit simgesi ve koşul yazısıyla veriliyor (yalnız renkle değil). */
 /* Kariyer */
 .basamak-kart.simdiki { border-color: var(--sun); border-width: 2px; }
-.basamak-kart.kilitli { opacity: 0.6; }
+.basamak-kart.kilitli { opacity: 0.85; }
 .basamak-satir { flex-direction: row; align-items: center; margin: 0; flex-wrap: nowrap; }
 .basamak-rozet { width: 36px; align-items: center; flex-shrink: 0; }
 .basamak-orta { flex-grow: 1; flex-shrink: 1; margin-left: 8px; margin-right: 8px; }
@@ -177,7 +180,7 @@
 .buyuk-yazi .dugum--sol { margin-right: 0; }
 .buyuk-yazi .dugum--sag { margin-left: 0; }
 .dugum.simdiki { border-color: var(--sun); border-width: 2px; }
-.dugum.kilitli { opacity: 0.6; }
+.dugum.kilitli { opacity: 0.85; }
 .dugum--final { border-color: rgba(249, 210, 114, 0.45); }
 .dugum--final.simdiki { border-color: var(--sun); }
 .dugum-rozet { width: 44px; height: 44px; border-radius: 22px; align-items: center; justify-content: center; flex-shrink: 0; border-width: 2px; border-color: rgba(255, 255, 255, 0.15); background-color: rgb(34, 24, 41); }
@@ -267,7 +270,7 @@
 .buyuk-yazi .stat-ad { width: 100%; }
 .model-kart, .tarz-kart { padding: 12px; }
 .model-kart.secili, .tarz-kart.secili { border-width: 2px; border-color: var(--sun); }
-.model-kart.kilitli, .tarz-kart.kilitli { opacity: 0.7; }
+.model-kart.kilitli, .tarz-kart.kilitli { opacity: 0.85; }
 .model-dugme { margin-top: 8px; }
 .esnek-yatay-sifir { flex-grow: 1; flex-shrink: 1; }
 .renk--kilit { opacity: 0.55; }
@@ -283,7 +286,7 @@
 .avatar { width: 56px; height: 56px; border-radius: 28px; align-items: center; justify-content: center; flex-shrink: 0; }
 .deger { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); color: var(--lime); }
 .basarim { flex-direction: row; align-items: center; min-height: 44px; margin: 0; padding: 4px 0; border-bottom-width: 1px; border-color: rgba(255, 255, 255, 0.06); flex-wrap: nowrap; }
-.basarim.kilitli { opacity: 0.7; }
+.basarim.kilitli { opacity: 0.85; }
 .basarim .esnek-yatay { margin-right: 8px; }
 
 /* Ayarlar ve sayfalar */
@@ -354,7 +357,7 @@
 .izgara > .sac-kare { flex-basis: 17%; flex-grow: 1; margin: 3px; padding: 6px 4px; min-height: 64px; min-width: 56px; align-items: center; justify-content: center; }
 .sac-kare .yazi { -unity-text-align: middle-center; white-space: normal; }
 .koz-kart.secili, .sac-kare.secili, .ayk-satir.secili { border-width: 2px; border-color: var(--sun); }
-.koz-kart.kilitli, .sac-kare.kilitli, .ayk-satir.kilitli { opacity: 0.7; }
+.koz-kart.kilitli, .sac-kare.kilitli, .ayk-satir.kilitli { opacity: 0.85; }
 .denenen { border-width: 2px; border-color: var(--sky); }
 /* 2026-10-31 sanat paketi 1: saç/şapka/yüz kartlarında öğe takılı baş portresi (Portre.Dene). Çizilene dek soluk zemin,
    sonra .2 sn belirir; Hareketi azaltta geçiş yok. Yazı ve durum altta kalır (adı okumadan da seçilebilsin). */

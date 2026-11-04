@@ -635,7 +635,8 @@ namespace BirdieSmash.Game
         static readonly float ZAFER_TV = Mathf.Tan(20 * Mathf.Deg2Rad);
         void ZaferKamera(float dt, ref Vector3 p, ref Quaternion q, ref float tv)
         {
-            if (!ZaferVar) { zaferK = 0; return; }
+            if (!ZaferVar) { zaferK = 0; me.zaferBak = null; zaferAn0 = -1; return; }
+            ZaferInis();
             if (zaferK <= 0) zaferYon = match.me.x >= Court.MID ? 1 : -1;   // oyuncunun bulunduğu yanın dışından: arkasında kort kalır
             zaferK = Ayar.reduce ? 1 : Mathf.MoveTowards(zaferK, 1, dt / ZAFER_SURE);
             // r108: döndürmeyi ayrı yumuşatmak yolda boş zemine ve hakem sandalyesine baktırıyordu; bakış noktası da kaysın
@@ -643,6 +644,21 @@ namespace BirdieSmash.Game
             float e = Mathf.SmoothStep(0, 1, zaferK); Vector3 zp, zb; ZaferCekim(out zp, out zb);
             var f = q * Vector3.forward; var h0 = p + f * (f.y < -.05f ? -p.y / f.y : 20);
             p = Vector3.Lerp(p, zp, e); q = Quaternion.LookRotation(Vector3.Lerp(h0, zb, e) - p, Vector3.up); tv = Mathf.Lerp(tv, ZAFER_TV, e);
+        }
+        // 2026-11-04 (yasin: "galibiyet sevinci kısmı çok dandik"): sevincin zirvesinde (zafer: sıçrayıştan iniş) ayak dibinde altın
+        // halka ve limon/altın kıvılcım; oyuncu kameraya döner (PlayerView.Sevinc, zaferBak). Konfeti kart gelince (MatchEnd) ayrıca.
+        float zaferAn0 = -1;
+        void ZaferInis()
+        {
+            Vector3 zp, zb; ZaferCekim(out zp, out zb); me.zaferBak = zp;
+            float an = me.MacSonuAn, z = PlayerView.SevincZirve(me.MacSonuId);
+            if (an >= z && zaferAn0 >= 0 && zaferAn0 < z)
+            {
+                var ayak = Kit.W(match.me.x, match.me.y, .02f);
+                fx.Dalga(ayak, Kit.Hex("#F9D272"), 110); fx.Burst(ayak + Vector3.up * 1.1f, Kit.Hex("#F9D272"), 26, 360, "spark"); fx.Burst(ayak + Vector3.up * 1.4f, Kit.Hex("#d8ff5a"), 18, 300, "spark");
+                Yerel.Hap("hit");   // iniş tıkı (maç sonu "win" deseni ayrıca çalar)
+            }
+            zaferAn0 = an;
         }
         // Karakter (ayak 0, tepe ZAFER_BOY: şapka ve pelerin dahil) ekranın [zaferUst, zaferAlt] bandına %85 doluluk ile oturur.
         void ZaferCekim(out Vector3 pos, out Vector3 bak)

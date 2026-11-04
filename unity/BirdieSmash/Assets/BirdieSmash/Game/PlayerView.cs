@@ -888,6 +888,8 @@ namespace BirdieSmash.Game
         // Raket her zaman sağ elde (kural): sağ kol raketi taşır, el sallama ve alkış sol elle.
         string sevId; float sevT = -1, sevW; bool sevDongu; int sevTop = -1;
         public const float SEVINC_SURE = 1.0f;
+        // "zafer" maç sonu sevincinin evreleri (sn): hazırlık, iniş, pompa döngüsünün başı; pompa sıklığı (yarım dalga/sn).
+        const float Z_HAZIR = .2f, Z_INIS = .62f, Z_DONGU = .8f, Z_POMPA = 2f;
         void Sevinc(Match M, float dt)
         {
             if (hakem || anim == null) return;
@@ -905,8 +907,27 @@ namespace BirdieSmash.Game
             bool surer = sevDongu ? M.matchDone : M.between && sevT < SEVINC_SURE;
             float hedef = surer ? 1 : 0; sevW = Mathf.MoveTowards(sevW, hedef, dt / (surer ? .15f : .15f));
             if (!surer && sevW <= 0) { sevT = -1; return; }
+            // 2026-11-04 (yasin: "galibiyet sevinci kısmı çok dandik duruyor"): zafer kamerası yan-önden (70°) geliyor, oyuncu ise
+            // fileye bakmaya devam ediyordu; sevinç profilden, yüz görünmeden okunuyordu. Maç sonu sevincinde gövde kameraya
+            // dönüyor (%85: tam karşıdan değil, raketli kol kadrajda kalsın diye hafif üç çeyrek). Hareketi azaltta dönüş kesme.
+            if (sevDongu && isMe && zaferBak.HasValue)
+            {
+                Vector3 kb = zaferBak.Value - yaw.position; kb.y = 0; Vector3 fw0 = yaw.forward; fw0.y = 0;
+                if (kb.sqrMagnitude > .01f && fw0.sqrMagnitude > .01f)
+                {
+                    float k = (M.reduce ? 1 : Mathf.SmoothStep(0, 1, Mathf.Clamp01(sevT / .45f))) * sevW;
+                    yaw.rotation = Quaternion.AngleAxis(Vector3.SignedAngle(fw0, kb, Vector3.up) * .85f * k, Vector3.up) * yaw.rotation;
+                }
+            }
             SevincPoz(sevId, sevT, sevW, M.reduce);
         }
+        // Zafer kamerasının varacağı yer (GameRoot.ZaferKamera her kare yazar; zafer yoksa null).
+        [System.NonSerialized] public Vector3? zaferBak;
+        // Maç sonu sevincinin saati (yoksa -1): GameRoot iniş anında halka ve kıvılcım patlatır.
+        public float MacSonuAn { get { return sevDongu && sevT >= 0 ? sevT : -1; } }
+        public string MacSonuId { get { return sevDongu ? sevId : null; } }
+        // Sevincin "zirve" anı (iniş/patlama): zafer sıçrayıp .62'de iner, zıpla .6'da, diğerleri kollar kalkınca.
+        public static float SevincZirve(string id) { return id == "zafer" ? .62f : id == "zipla" ? .6f : .3f; }
         static string Secim(string kat) { string v; return Ayar.KOZ.TryGetValue(kat, out v) && v != null ? v : Kozmetik.Varsayilan(kat); }
         // Vitrin önizlemesi (Dolap › Sevinç): boşta pozunun üstüne, döngüde.
         public void ShowSevinc(Vector3 pos, float yawDeg, string id, float t)
@@ -926,11 +947,17 @@ namespace BirdieSmash.Game
             Vector3 up = yaw.up, ri = yaw.right, fw = yaw.forward;
             float salla = rm ? 0 : 1;
             // sıçrama ve dönüş (kök): ağırlıkla
-            float hop = 0, don = 0, egil = 0;
+            float hop = 0, don = 0, egil = 0, bur = 0;
             switch (id)
             {
                 case "kollar": hop = .06f * Mathf.Abs(Mathf.Sin(t * 7)); break;
-                case "zafer": hop = .09f * Mathf.Abs(Mathf.Sin(t * 6)); break;
+                case "zafer":   // hazırlık (öne eğil) → sıçra (sırt geriye) → in → yumruk pompası (bkz. kollar bölümü)
+                    if (t < Z_HAZIR) egil = 14 * Mathf.SmoothStep(0, 1, t / Z_HAZIR);
+                    else if (t < Z_INIS) { float u = (t - Z_HAZIR) / (Z_INIS - Z_HAZIR); hop = .32f * Mathf.Sin(u * Mathf.PI); egil = Mathf.Lerp(14, -12, Mathf.SmoothStep(0, 1, u * 2.2f)); }
+                    else if (t < Z_DONGU) { float u = (t - Z_INIS) / (Z_DONGU - Z_INIS); egil = Mathf.Lerp(-12, -5, u) + 6 * Mathf.Sin(u * Mathf.PI); }   // iniş: göğüs bir an öne yaylanır
+                    else { float tl = t - Z_DONGU; hop = .07f * Mathf.Abs(Mathf.Sin(tl * Mathf.PI * Z_POMPA)); egil = -5 + 3 * Mathf.Sin(tl * Mathf.PI * Z_POMPA * 2); bur = 9 * Mathf.Sin(tl * Mathf.PI * Z_POMPA); }
+                    if (rm) { egil = -5; bur = 0; }
+                    break;
                 case "zipla": hop = .22f * Mathf.Sin(Mathf.Clamp01(t / .6f) * Mathf.PI); don = 360 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .6f)); break;
                 case "egil": egil = 32 * Mathf.SmoothStep(0, 1, Mathf.Clamp01((t % 2.4f) / .5f)); break;
                 case "iyi_oyun": egil = 10 * Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - .35f) / .4f)); break;
@@ -940,7 +967,7 @@ namespace BirdieSmash.Game
             // kayıt (yerel dönüşler): IK tam ağırlıkla çözülür, sonra kayıtla harmanlanır
             var kem = sevKem; kem[0] = SU; kem[1] = SE; kem[2] = LU; kem[3] = LE; kem[4] = kOmurga.Count > 0 ? kOmurga[0] : null; kem[5] = null;   // kare başı ayırma yok
             for (int i = 0; i < kem.Length; i++) if (kem[i] != null) sevKayit[i] = kem[i].localRotation;
-            if (egil > 0 && kOmurga.Count > 0) { var sp = kOmurga[0]; sp.rotation = Quaternion.AngleAxis(egil, ri) * sp.rotation; }
+            if ((egil != 0 || bur != 0) && kOmurga.Count > 0) { var sp = kOmurga[0]; sp.rotation = Quaternion.AngleAxis(bur, up) * Quaternion.AngleAxis(egil, ri) * sp.rotation; }
             float L = SU != null && SE != null && SH != null ? (SE.position - SU.position).magnitude + (SH.position - SE.position).magnitude : .5f;
             Vector3 sR = SU != null ? SU.position : Vector3.zero, sL = LU != null ? LU.position : Vector3.zero;
             float s = Mathf.Sin(t * 14) * salla;
@@ -949,7 +976,24 @@ namespace BirdieSmash.Game
                 case "yumruk":   // raketli el yukarı itilir (iki kez), sol yumruk göğüste
                     IK(SU, SE, SH, sR + up * L * (.78f + .1f * Mathf.Max(0, s)) + ri * L * .12f + fw * L * .18f, ri - fw * .4f);
                     IK(LU, LE, LH, sL + fw * L * .4f - up * L * .25f + ri * L * .3f, -up - ri * .3f); break;
-                case "kollar": case "zafer": case "zipla":   // iki kol V
+                case "zafer":
+                    {   // hazırlıkta kollar aşağı-geri (raket kalça yanında), sıçrayışta ikisi birden yukarı fırlar (raket dimdik),
+                        // sonra raket havada kalırken sol yumruk ve raket karşılıklı pompalanır (iki vuruş/sn).
+                        Vector3 rAlt = sR - up * L * .55f + ri * L * .3f - fw * L * .15f, lAlt = sL - up * L * .55f - ri * L * .3f - fw * L * .15f;
+                        Vector3 rUst = sR + up * L * .95f + ri * L * .22f + fw * L * .04f, lUst = sL + up * L * .88f - ri * L * .3f + fw * L * .06f;
+                        Vector3 rH, lH;
+                        if (rm) { rH = rUst; lH = lUst; }
+                        else if (t < Z_HAZIR) { float a = Mathf.SmoothStep(0, 1, t / Z_HAZIR); rH = Vector3.Lerp(sR + up * L * .1f + ri * L * .3f + fw * L * .2f, rAlt, a); lH = Vector3.Lerp(sL + up * L * .1f - ri * L * .3f + fw * L * .2f, lAlt, a); }
+                        else if (t < Z_DONGU) { float a = Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - Z_HAZIR) / .2f)); rH = Vector3.Lerp(rAlt, rUst, a); lH = Vector3.Lerp(lAlt, lUst, a); }
+                        else
+                        {
+                            float p = Mathf.Sin((t - Z_DONGU) * Mathf.PI * 2 * Z_POMPA * .5f);
+                            rH = sR + up * L * (.78f + .17f * Mathf.Max(0, p)) + ri * L * .26f + fw * L * .06f;
+                            lH = sL + up * L * (.5f + .38f * Mathf.Max(0, -p)) - ri * L * .3f + fw * L * (.22f - .14f * Mathf.Max(0, -p));
+                        }
+                        IK(SU, SE, SH, rH, ri - fw * .3f); IK(LU, LE, LH, lH, -ri - fw * .3f);
+                    } break;
+                case "kollar": case "zipla":   // iki kol V
                     IK(SU, SE, SH, sR + up * L * .82f + ri * L * .42f + fw * L * .05f, ri - fw * .3f);
                     IK(LU, LE, LH, sL + up * L * .82f - ri * L * .42f + fw * L * .05f, -ri - fw * .3f); break;
                 case "el_salla": case "selam":   // sol el yukarıda sallanır, raket yanda; selam: raket de hafif kalkar

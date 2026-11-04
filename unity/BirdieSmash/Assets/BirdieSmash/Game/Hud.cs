@@ -842,6 +842,7 @@ namespace BirdieSmash.Game
         // sayar. Hareketi azalt: ışın ve iniş yok, sayılar son değerinde, bütün içerik .25 sn'de solarak gelir.
         // Yazı: 2026-10-29 Baloo 2 + Nunito (OFL, Resources/fonts; eskisi Barlow); boyut fu ile (Dynamic Type ×1,3'e kadar, HUD sınırı). ★ ✓ ✗ glif değil doku.
         Font fSiyah, fEkstra, fYari, fKalin; float aS = -1, aK = -1;
+        Texture2D aKutuT, aKutuIkonT, aKutuLimonT, aCtaT;
         GUIStyle aBas, aUst, aSkor, aAd, aKosul, aSatir, aSayi, aLv, aUnl, aCta, aCtaAlt, aDug, aIpucu, aHedefSol, aHedefSag, aKutuS, aKutuIkon, aKutuLimon, aCtaS, aIz;
         float overT0 = -1; bool overAcik; int yildizHap;
         // 2026-10-27 yön C "Gün Batımı Salonu" (yasin karar kartı): menü USS kökündeki değerler. Adlar A'dan; anlam: A_LIMON yalnız
@@ -873,7 +874,13 @@ namespace BirdieSmash.Game
         GUIStyle AKutu(Texture2D t, int b) { var st = new GUIStyle(); st.normal.background = t; st.border = new RectOffset(b, b, b, b); return st; }
         void YayinStil(float s, float k)
         {
-            if (Mathf.Abs(s - aS) < .001f && Mathf.Abs(k - aK) < .001f && aBas != null) return; aS = s; aK = k;
+            // 2026-11-04 (yasin 2 Kas ekran görüntüsü: maç sonu kartı kutusuz, "BİR MAÇ DAHA" limon zeminsiz, koyu yazı koyu
+            // zeminde okunmuyordu): bu dört doku yalnız GUIStyle'ın yerel tarafında tutuluyordu; C# tarafında başvurusu yoktu.
+            // Perde arkasındaki Resources.UnloadUnusedAssets (31 Eki, Y1) onları "kullanılmıyor" sayıp siliyordu; ilk maçtan
+            // sonra kutular ve düğme zemini kayboluyordu. CI ekran turu boşaltma yolundan geçmediği için görmedi. Dokular artık
+            // alanlarda (HudKutular gibi); biri yine de yok olmuşsa stiller yeniden üretilir.
+            bool dokuVar = aKutuT != null && aKutuIkonT != null && aKutuLimonT != null && aCtaT != null;
+            if (Mathf.Abs(s - aS) < .001f && Mathf.Abs(k - aK) < .001f && aBas != null && dokuVar) return; aS = s; aK = k;
             FontYukle();
             Ikonlar.Hazirla();
             aBas = AStil(fSiyah, 74 * k, TextAnchor.MiddleCenter, true); aUst = AStil(fKalin, 12 * k, TextAnchor.MiddleCenter, true);
@@ -889,11 +896,12 @@ namespace BirdieSmash.Game
             // 2026-11-02 hedef satırı (r119): ortalanmış aIpucu adı ortaya, "Hazır"ı kırpıyordu; ad sola, kalan sağa, sağ tek satır.
             aHedefSol = AStil(fKalin, 13 * k, TextAnchor.UpperLeft, true); aHedefSag = AStil(fKalin, 13 * k, TextAnchor.UpperRight, false); aIz = AStil(fKalin, 12 * k, TextAnchor.MiddleLeft, false);
             int r = Mathf.Max(4, Mathf.RoundToInt(16 * s)), ri = Mathf.Max(3, Mathf.RoundToInt(9 * s));
-            aKutuS = AKutu(Ikonlar.Kutu(r, new Color(A_NAVY.r, A_NAVY.g, A_NAVY.b, .92f), new Color(1, 1, 1, .12f), Mathf.Max(1, s)), r + 2);
-            aKutuIkon = AKutu(Ikonlar.Kutu(ri, A_NAVY3, new Color(1, 1, 1, 0), 0), ri + 2);
-            aKutuLimon = AKutu(Ikonlar.Kutu(r, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .08f), new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .6f), Mathf.Max(1.5f, 1.5f * s)), r + 2);
+            if (aKutuT != null) Destroy(aKutuT); if (aKutuIkonT != null) Destroy(aKutuIkonT); if (aKutuLimonT != null) Destroy(aKutuLimonT); if (aCtaT != null) Destroy(aCtaT);
+            aKutuT = Ikonlar.Kutu(r, new Color(A_NAVY.r, A_NAVY.g, A_NAVY.b, .92f), new Color(1, 1, 1, .12f), Mathf.Max(1, s)); aKutuS = AKutu(aKutuT, r + 2);
+            aKutuIkonT = Ikonlar.Kutu(ri, A_NAVY3, new Color(1, 1, 1, 0), 0); aKutuIkon = AKutu(aKutuIkonT, ri + 2);
+            aKutuLimonT = Ikonlar.Kutu(r, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .08f), new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .6f), Mathf.Max(1.5f, 1.5f * s)); aKutuLimon = AKutu(aKutuLimonT, r + 2);
             int eg = Mathf.Max(4, Mathf.RoundToInt(14 * s)), ch = Mathf.Max(20, Mathf.RoundToInt(80 * s));
-            aCtaS = AKutu(Ikonlar.EgikDugme(eg * 2 + 8, ch, eg), 0); aCtaS.border = new RectOffset(eg + 4, eg + 4, 0, 0);
+            aCtaT = Ikonlar.EgikDugme(eg * 2 + 8, ch, eg); aCtaS = AKutu(aCtaT, 0); aCtaS.border = new RectOffset(eg + 4, eg + 4, 0, 0);
         }
         static float GeriYay(float x) { const float c1 = 1.70158f, c3 = c1 + 1; x = Mathf.Clamp01(x) - 1; return 1 + c3 * x * x * x + c1 * x * x; }
         // Yıldızın iniş anı (sn, ekran açılışından): 0,45 + 0,3·i. Titreşim Hud.Update'te (OnGUI karede birkaç kez çalışır).

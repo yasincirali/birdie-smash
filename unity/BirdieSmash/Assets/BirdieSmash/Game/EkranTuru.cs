@@ -461,6 +461,9 @@ namespace BirdieSmash.Game
             string y0 = Ayar.yazi; if (yazi > 0) Ayar.yazi = "buyuk"; Ayar.dil = dil;   // sonuç ekranı IMGUI: yaziTest değil YaziK (×1,3)
             root.StartMatch(false, false, false); botAcik = false;
             { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 4) yield return null; }   // r16: maç başı rakip kartı kalksın (gerçek akışta maç sonunda yok)
+            // 2026-11-04: gerçek akışta her maç perdenin arkasında Resources.UnloadUnusedAssets'ten geçer (Hud bosalt); tur bu yolu
+            // atlıyordu ve yalnız GUIStyle'da tutulan dokuların silinmesini (yasin'in kutusuz kart / zeminsiz düğme görüntüsü) görmedi.
+            yield return Resources.UnloadUnusedAssets();
             // 2026-11-01 zafer anı: galibiyet gerçek maç sonu akışından geçer (matchDone + 1,4 sn bekleme → MatchEnd), kamera o
             // sürede kazanana döner; ilk karede yolun iki anı çekilir. sonuc_seviye: XP seviye eşiğinin hemen altında (seviye şeridi).
             if (ad == "sonuc_seviye") { int L, k, gr; Ayar.gear.OyuncuSv(out L, out k, out gr); if (gr > 0) Ayar.gear.eko.xp += gr - k - 5; }
