@@ -51,7 +51,17 @@ namespace BirdieSmash.Game
         {
             if (gv == null) return L.T("Basamak görevi");
             string ad = L.Cumle(gv.ad); if (gv.bitti || gv.say == null || gv.hedef <= 1) return ad;
-            return ad + " · " + Mathf.Clamp(gv.say(M), 0, gv.hedef) + "/" + gv.hedef;
+            // Fikir turu 5 Kas 19:40 (inceleme YAP): sayaç varken addaki baştaki hedef sayısı tekrar etmesin; galibiyetin dar üç
+            // sütununda "3 smaçı karşıla · 0/3" iki satıra kırılıp "· 0/3" yetim kalıyordu → "Smaçı karşıla 0/3". "10 vuruşluk ralli"
+            // gibi sayı sıfatın parçasıysa (-lık/-luk/-lik/-lük) ad olduğu gibi kalır. Sayaç bölünmez boşlukla ada yapışık.
+            string pre = gv.hedef + " ", n = Mathf.Clamp(gv.say(M), 0, gv.hedef) + "/" + gv.hedef;
+            if (ad.StartsWith(pre))
+            {
+                string kalan = ad.Substring(pre.Length); int bo = kalan.IndexOf(' '); string ilk = bo > 0 ? kalan.Substring(0, bo) : kalan;
+                if (kalan.Length > 0 && !(ilk.EndsWith("lık") || ilk.EndsWith("luk") || ilk.EndsWith("lik") || ilk.EndsWith("lük")))
+                    return char.ToUpper(kalan[0]) + kalan.Substring(1) + "\u00a0" + n;
+            }
+            return ad + " ·\u00a0" + n;
         }
         // Karşılaşılan basamak (g) için üst satır ve sonraki basamağın düğme alt satırı.
         void BittiKariyer(int g, bool won, Match M)
@@ -169,7 +179,7 @@ namespace BirdieSmash.Game
         {
             ani.Sifirla(); AniDur(); aniIzlendi = false;   // Maçın anı her maç kendi rallilerinden (Günün maçı, Usta yolu, görev de buradan geçer)
             match = new Match(tohum, o);
-            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; yerN = 0; yerTop = null;
+            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; yerN = 0; yerTop = null; yardimN = 0; yardimTop = null;
             fx.Temizle(); sfx.CrowdStart(); pencere = false; sfx.SuAlti(false); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
@@ -471,7 +481,7 @@ namespace BirdieSmash.Game
 
         // ---- kaydırma girdisi: piksel → 640 px yükseklikli referans (HTML eşikleri aynen geçerli) ----
         class Swipe { public bool on, hit, moved; public float minD = 1e9f; public List<Vector3> tr = new List<Vector3>(); public Vector2 p0; public float t0; public void Reset() { on = hit = moved = false; minD = 1e9f; tr.Clear(); } }
-        readonly Swipe input = new Swipe(); int erkenN, yerN; Shuttle yerTop;
+        readonly Swipe input = new Swipe(); int erkenN, yerN, yardimN; Shuttle yerTop, yardimTop;
         float Ref { get { return 640f / Mathf.Max(1, Screen.height); } }
         Vector2 RefPos(Vector2 screen) { return new Vector2(screen.x * Ref, (Screen.height - screen.y) * Ref); }   // y aşağı
 
@@ -659,6 +669,9 @@ namespace BirdieSmash.Game
             }
             // Usta duruş işareti yazıyla da (P3): maçın ilk iki varışında "Yerindesin"; sonra yalnız ayak izinin dolması (sessiz HUD).
             if (ekran == Ekran.Oyun && !match.easy && match.ogr == null && yerN < 2 && match.s != null && match.s != yerTop && match.Yerinde()) { yerTop = match.s; yerN++; hud.Say(L.T("Yerindesin"), Kit.W(match.me.x, match.me.y, 1.6f), Kit.Hex("#d8ff5a")); }
+            // Zor koşu yardımı görünür (inceleme 5 Kas 20:10 YAP): görünmez yardım "ben dokunmadan koştu" diye kontrol kaybı gibi
+            // okunuyordu. Maçın ilk iki tetiklenişinde oyuncunun üstünde kısa "Koşu yardımı"; sonra sessiz (sayaç/Usta önerisi YAPMA).
+            if (ekran == Ekran.Oyun && match.kosuYardim && yardimN < 2 && match.s != null && match.s != yardimTop && match.YardimKosuyor) { yardimTop = match.s; yardimN++; hud.Say(L.T("Koşu yardımı"), Kit.W(match.me.x, match.me.y, 1.6f), Kit.Hex("#9fd8ff")); }
             fx.Tick(match, paused || geriT > 0 ? 0 : dt, ekran == Ekran.Oyun);
             if (akisR != null) { bool on = ekran == Ekran.Oyun && match.flow; akisR.enabled = on; if (on) akisR.material.color = new Color(1, .886f, .47f, Ayar.reduce ? .9f : .75f + .25f * Mathf.Sin(Time.unscaledTime * 1000 / 180f)); }
             Hakemler();

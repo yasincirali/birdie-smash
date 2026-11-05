@@ -26,7 +26,7 @@ namespace BirdieSmash.Game
         public static bool SLICE_TAKLA = true;
         Transform body; GameObject lines; readonly GameObject[] ghosts = new GameObject[3]; Material[] ghostM = new Material[3];
         Transform shadow; Material shadowM; LineRenderer trail, hLine, gLine, ring, ringS, prevRing, prevX1, prevX2; Transform ringFill; Material ringFillM, ringSM, prevM; LineRenderer erIc, erDis, ayakL, ayakR; Material ayakM, ayakDolguM; Transform ayakDolguL, ayakDolguR;
-        readonly List<Vector3> trailPts = new List<Vector3>();
+        readonly List<Vector3> trailPts = new List<Vector3>(); readonly List<float> trailT = new List<float>();
         // İzin son uygulanan biçimi (renk, kalınlık, saydamlık) ve yeniden kullanılan anahtar dizileri.
         readonly Gradient izGrad = new Gradient(); readonly GradientColorKey[] izRenk = new GradientColorKey[2];
         readonly GradientAlphaKey[] izSaydam = new GradientAlphaKey[2]; Color izC = new Color(-1, 0, 0, 0); float izW = -1, izA = -1;
@@ -195,13 +195,13 @@ namespace BirdieSmash.Game
         // M: maç (iniş halkası, akış), preview: parmak ekrandayken tahmini düşüş (null = yok)
         public void Show(Match M, Shuttle s, float dt, bool previewOn, Vector2 previewAt)
         {
-            if (s == null) { Gizle(); last = null; trailPts.Clear(); return; }
+            if (s == null) { Gizle(); last = null; trailPts.Clear(); trailT.Clear(); return; }
             float sp = Mathf.Max(1e-6f, s.Speed);
             // --- yön: etek hızın tersine (mantar önde); yeni vuruşta salınım ---
             bool flip = !s.dead && (last != s || lvx * s.vx + lvy * s.vy + lvz * s.vz < 0);   // yerde salınım yok
             bool takla = SLICE_TAKLA && s.slice;
             if (flip && last != null) wv = (Random.value < .5f ? -1 : 1) * (takla ? 22 : 14);
-            if (last != s) trailPts.Clear();
+            if (last != s) { trailPts.Clear(); trailT.Clear(); }
             last = s; lvx = s.vx; lvy = s.vy; lvz = s.vz;
             var tgt = new Vector3(s.vx, s.vz, -s.vy) / sp;   // mantar yönü (dünya)
             float k = reduce ? 1 : 1 - Mathf.Exp(-dt / .02f); d = (d + (tgt - d) * k).normalized; if (d.sqrMagnitude < .5f) d = tgt;
@@ -241,7 +241,14 @@ namespace BirdieSmash.Game
             // --- iz: son 12 nokta (smaçta 14); renk: akış (sen) altın, süper turuncu, smaç limon, diğer beyaz .45 ---
             // Stüdyo incelemesi (2026-11-05, sanat 4): düz iz 8 nokta / 2,5 / .3 alfa uzak kamerada neredeyse görünmüyordu;
             // topun yolu okunsun diye 12 nokta / 4 / .45. Smaç ve süper ayrımı korunur (onlar yine daha kalın ve renkli).
-            if (!s.dead) { trailPts.Add(pos); int max = s.type == "smash" ? 14 : 12; while (trailPts.Count > max) trailPts.RemoveAt(0); }
+            // 2026-11-05 (yasin: "patlama, yıldız ve top izi dikkat dağıtmayacak ama ilgi de çekecek"): iz nokta sayısıyla değil
+            // topun kendi saatiyle (s.t; yerde s.yerT eklenir) kısalır. Nokta sayısı kare hızına bağlıydı: 120 Hz'de iz 60 Hz'in
+            // yarısı, ağır çekimde (karede az yol) kısacıktı; yere düşen topun izi bir sonraki vuruşa kadar havada asılı kalıyordu.
+            // Şimdi uzunluk her ekranda ve ağır çekimde aynı yol (düz .16, smaç .2, süper .22 sn), düşen topun izi .16 sn'de çekilir.
+            float izSaat = s.t + (s.dead ? s.yerT : 0), izBoy = s.super ? .22f : s.type == "smash" ? .2f : .16f;
+            if (!s.dead && (trailT.Count == 0 || izSaat > trailT[trailT.Count - 1])) { trailPts.Add(pos); trailT.Add(izSaat); }
+            while (trailT.Count > 0 && izSaat - trailT[0] > izBoy) { trailPts.RemoveAt(0); trailT.RemoveAt(0); }
+            if (trailPts.Count > 40) { trailPts.RemoveAt(0); trailT.RemoveAt(0); }   // güvenlik tavanı (240 Hz'de .16 sn ≈ 38 nokta)
             trail.enabled = trailPts.Count > 1;
             if (trail.enabled)
             {
@@ -249,12 +256,14 @@ namespace BirdieSmash.Game
                 // yerel ayırma, karede ~6 nesne) yerine noktalar tek tek (en çok 14, ayırmasız); eğri ve renk yalnız biçim (akış/süper/smaç/düz) değişince.
                 int n = trailPts.Count; trail.positionCount = n; for (int i = 0; i < n; i++) trail.SetPosition(i, trailPts[i]);
                 Color c; float w, a;
-                if (M.flow && s.from == "me") { c = new Color(1, .82f, .23f); w = 2.5f; a = .9f; } else if (s.super) { c = new Color(1, .47f, .16f); w = 10; a = .9f; }
+                if (M.flow && s.from == "me") { c = new Color(1, .82f, .23f); w = 2.5f; a = .9f; } else if (s.super) { c = new Color(1, .47f, .16f); w = 7; a = .8f; }   // 10/.9 idi: kalın eklemeli turuncu topun kendisini örtüyordu
                 else if (s.type == "smash") { c = new Color(.85f, 1, .35f); w = 6; a = .8f; } else { c = Color.white; w = 4f; a = .45f; }
                 if (c != izC || w != izW || a != izA)
                 {
                     izC = c; izW = w; izA = a;
-                    trail.widthCurve = new AnimationCurve(new Keyframe(0, 0), new Keyframe(1, w / 28f));
+                    // Kuyruk yumuşak incelir (doğrusal koni ucu sivri ve "çizgi" gibiydi): genişlik ve saydamlık başta hızlı, kuyrukta
+                    // yavaş söner; göz topun kendisinde kalır, iz yalnız yönü ve hızı söyler.
+                    trail.widthCurve = new AnimationCurve(new Keyframe(0, 0, 0, 0), new Keyframe(.6f, w / 28f * .55f), new Keyframe(1, w / 28f, 0, 0));
                     izRenk[0] = new GradientColorKey(c, 0); izRenk[1] = new GradientColorKey(c, 1); izSaydam[0] = new GradientAlphaKey(0, 0); izSaydam[1] = new GradientAlphaKey(a, 1);
                     izGrad.SetKeys(izRenk, izSaydam); trail.colorGradient = izGrad;
                 }

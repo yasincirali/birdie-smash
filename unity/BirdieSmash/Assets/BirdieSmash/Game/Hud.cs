@@ -111,7 +111,7 @@ namespace BirdieSmash.Game
         public bool Blocks(Vector2 guiPos) { if (perdeEvre > 0) return true; foreach (var r in blocks) if (r.Contains(guiPos)) return true; return false; }
         public void MacBasi() { pop[0] = pop[1] = 0; cams.Clear(); hawk = null; flash = 0; floats.Clear(); }
         public void Pop(int i) { pop[i] = 1; }
-        public void Flash(float a, Color c) { if (Ayar.reduce) a *= .4f; if (a > flash) { flash = a; flashC = c; } }
+        public void Flash(float a, Color c) { a *= .6f; if (Ayar.reduce) a *= .4f; if (a > flash) { flash = a; flashC = c; } }   // ×.6 (2026-11-05): tam ekran parlama büyük smaçta %50'ydi, kortu bir an siliyordu; %30 hâlâ "vurdum" der
         public void Hawk(float x, float y, bool icerde, int cm, bool serve) { hawk = new HawkV { x = x, y = y, icerde = icerde, cm = cm, serve = serve }; }
         // Tribün flaşları (HTML M.cams): sayı kazanınca 26 küçük flaş ekranın üst bandında, .5 sn.
         public void Kamera() { for (int k = 0; k < 26; k++) cams.Add(new Vector3(Random.value, 8 + Random.value * 48, -Random.value * .6f)); }
@@ -148,14 +148,14 @@ namespace BirdieSmash.Game
         {
             float d = Time.unscaledDeltaTime; for (int i = floats.Count - 1; i >= 0; i--) { floats[i].a += d; if (floats[i].a > 1.2f) floats.RemoveAt(i); }
             if (ogrMsgT > 0) ogrMsgT -= d;
-            ralliPop = Mathf.Max(0, ralliPop - d * 4); pop[0] = Mathf.Max(0, pop[0] - d * 3); pop[1] = Mathf.Max(0, pop[1] - d * 3); flash = Mathf.Max(0, flash - d * 2.2f);
+            ralliPop = Mathf.Max(0, ralliPop - d * 4); pop[0] = Mathf.Max(0, pop[0] - d * 3); pop[1] = Mathf.Max(0, pop[1] - d * 3); flash = Mathf.Max(0, flash - d * 3f);
             for (int i = cams.Count - 1; i >= 0; i--) { var c = cams[i]; c.z += d; cams[i] = c; if (c.z > .5f) cams.RemoveAt(i); }
             if (hawk != null) { hawk.t += d; if (hawk.t > 1.5f) hawk = null; }
             if (konfetiT >= 0) { int once = Mathf.FloorToInt(konfetiT / .13f); konfetiT += d; int sonra = Mathf.FloorToInt(konfetiT / .13f); if (sonra > once && once < 6) { var c = new[] { "#d8ff5a", "#ffa04d", "#7ad7ff" }[once % 3]; var p = root.cam.ScreenToWorldPoint(new Vector3(Screen.width * (.15f + Random.value * .7f), Screen.height * (.5f + Random.value * .3f), 6)); root.fx.Burst(p, Kit.Hex(c), 30, 300, "spark"); } if (konfetiT > 1) konfetiT = -1; }
             if (kivT >= 0)
             {
                 int once = kivT <= 0 ? -1 : Mathf.FloorToInt(kivT / .12f); kivT += d; int sonra = Mathf.FloorToInt(kivT / .12f);
-                for (int k = once + 1; k <= sonra && k < 3; k++) { var p = root.cam.ScreenToWorldPoint(new Vector3(Screen.width * (.2f + Random.value * .6f), Screen.height * .7f, 6)); root.fx.Burst(p, Kit.Hex(new[] { "#d8ff5a", "#ffa04d", "#7ad7ff" }[k]), 22, 260, "spark"); }
+                for (int k = once + 1; k <= sonra && k < 3; k++) { var p = root.cam.ScreenToWorldPoint(new Vector3(Screen.width * (.3f + Random.value * .4f), Screen.height * .7f, 6)); root.fx.Burst(p, Kit.Hex(new[] { "#d8ff5a", "#ffa04d", "#7ad7ff" }[k]), 14, 260, "spark"); }   // 22 parça ve .2–.8 genişlik idi (2026-11-05): her sayıda rakibin üstü yıldızla doluyordu; 14 parça, orta bant
                 if (kivT > .3f) kivT = -1;
             }
             if (Ayar.fps) FpsOlc();

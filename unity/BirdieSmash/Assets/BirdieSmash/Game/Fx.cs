@@ -40,6 +40,12 @@ namespace BirdieSmash.Game
             var rot = tuy.rotationOverLifetime; rot.enabled = true; rot.z = new ParticleSystem.MinMaxCurve(-5, 5);
             kivilcim = PS("kivilcim", Kit.Additive(Color.white, YildizTex()), ParticleSystemRenderMode.Billboard);
             cizgi = PS("cizgi", Kit.Additive(Color.white, Kit.RadialTex()), ParticleSystemRenderMode.Stretch); var cm = cizgi.main; cm.gravityModifier = 0;
+            // Arcade "pat" eğrisi (2026-11-05, yasin: "patlama, yıldız ve top izi dikkat dağıtmayacak ama ilgi de çekecek"):
+            // eskiden parçacık doğduğu boyda sabit kalıp .4–.9 sn boyunca doğrusal soluyor, yerçekimiyle süzülüyordu; ekranda
+            // uzun süre asılı kalan yıldız yağmuru oyun alanını kalabalıklaştırıyordu. Şimdi yıldız ilk %12'de büyüyüp parlar
+            // (dikkat çeken an), hızını çabuk kaybeder (sürtünme) ve küçülerek söner; tüy de yarı ömürde incelir. Toplam
+            // görünür süre ~yarıya indi, ilk an daha canlı.
+            Pat(kivilcim, true, .9f); Pat(cizgi, false, 0); Pat(tuy, false, .6f);
             lekeM = Kit.Clear(new Color(10 / 255f, 30 / 255f, 26 / 255f, .45f), Kit.RadialTex());
             // 2026-10-31 (Unity incelemesi Y1): dalga, iz halkası ve çatlak her olayda yeni Material açıyordu; tek sahnede
             // UnloadUnusedAssets çağrılmadığı için maç başına yüzlerce malzeme birikiyordu. Renk zaten LineRenderer köşe
@@ -52,6 +58,15 @@ namespace BirdieSmash.Game
             hedefM = Kit.Clear(new Color(.847f, 1, .353f, .10f));
             hedefBant = Kit.Prim(PrimitiveType.Quad, "hedef_bant", transform, Vector3.zero, Vector3.one, hedefM).transform; hedefBant.rotation = Quaternion.Euler(90, 0, 0);
             hedefKenar = Kit.Line("hedef_kenar", transform, Kit.Clear(new Color(.847f, 1, .353f, .6f), Kit.DashTex(6, 5)), true, true); hedefKenar.textureMode = LineTextureMode.Tile; hedefKenar.widthMultiplier = .04f;
+        }
+        static void Pat(ParticleSystem ps, bool buyu, float surtunme)
+        {
+            var so = ps.sizeOverLifetime; so.enabled = true;
+            so.size = new ParticleSystem.MinMaxCurve(1, buyu ? new AnimationCurve(new Keyframe(0, .4f), new Keyframe(.12f, 1.25f), new Keyframe(.45f, .9f), new Keyframe(1, 0))
+                                                           : new AnimationCurve(new Keyframe(0, 1), new Keyframe(.5f, .85f), new Keyframe(1, 0)));
+            var col = ps.colorOverLifetime;
+            col.color = new ParticleSystem.MinMaxGradient(new Gradient { colorKeys = new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) }, alphaKeys = new[] { new GradientAlphaKey(1, 0), new GradientAlphaKey(1, .45f), new GradientAlphaKey(0, 1) } });
+            if (surtunme > 0) { var lv = ps.limitVelocityOverLifetime; lv.enabled = true; lv.limit = new ParticleSystem.MinMaxCurve(99); lv.drag = new ParticleSystem.MinMaxCurve(surtunme * 3); lv.multiplyDragByParticleSize = false; lv.multiplyDragByParticleVelocity = false; }
         }
         static Texture2D TuyTex()
         {   // uzun elips (HTML ellipse r·.35 × r)
@@ -75,7 +90,10 @@ namespace BirdieSmash.Game
             var ep = new ParticleSystem.EmitParams { position = at, applyShapeToPosition = false };
             for (int i = 0; i < n; i++)
             {
-                float s = spd / 28f * Random.Range(.3f, 1.2f); ep.velocity = Random.onUnitSphere * s + Vector3.up * .8f; ep.startColor = c; ep.startLifetime = Random.Range(.4f, .9f);
+                // Ömür: yıldız .3–.55, tüy .35–.65 sn (eskiden hepsi .4–.9). Yıldız hızı sürtünmeyle düştüğü için başlangıçta biraz
+                // daha hızlı (×1,25): patlamanın yarıçapı aynı, yalnız daha çabuk açılıp duruyor.
+                bool yildiz = kind == "spark"; float s = spd / 28f * Random.Range(.3f, 1.2f) * (yildiz ? 1.25f : 1); ep.velocity = Random.onUnitSphere * s + Vector3.up * .8f; ep.startColor = c;
+                ep.startLifetime = yildiz ? Random.Range(.3f, .55f) : kind == "feather" ? Random.Range(.35f, .65f) : Random.Range(.4f, .9f);
                 ep.startSize = kind == "feather" ? Random.Range(.18f, .32f) : Random.Range(.06f, .16f); ep.rotation = Random.Range(0, 360f); ps.Emit(ep, 1);
             }
         }
