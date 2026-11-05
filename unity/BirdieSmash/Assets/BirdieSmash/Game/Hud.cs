@@ -955,6 +955,15 @@ namespace BirdieSmash.Game
         }
         void Over(Match M)
         {
+            // Maçın anı oynarken kart çizilmez; tek satır etiket ve tüm ekran "dokun, geç" (Game/MacAni).
+            if (root.AniAktif)
+            {
+                float u0 = Mathf.Min(W / 390f, H / 844f); var st = Stil(mid, Mathf.RoundToInt(15 * u0 * Ayar.YaziK), FontStyle.Bold);
+                string et = L.T("Maçın anı · geçmek için dokun");
+                Konturlu(new Rect(16 * u0, H - bot - 70 * u0, W - 32 * u0, 40 * u0), et, st, Color.white, Mathf.Max(1.5f, 2 * u0));
+                if (GUI.Button(new Rect(0, 0, W, H), GUIContent.none, GUIStyle.none)) root.AniDur();
+                return;
+            }
             // 2026-10-27 (duyarlı yerleşim): yerleşim ölçüsü s en-boyun küçüğüyle (390 × 844 tasarım karesi) kalır, ama YAZI telefonda
             // (en/boy < 0,62) 11 pt'nin altına inmez: SE'de (375 × 667) s = 0,79 idi, 12'lik satırlar (üst satır, SEN/rakip adı,
             // yıldız koşulları) 9,5 pt çıkıyordu. W/375 ≈ ekranın pt başına pikseli (en dar iPhone 375 pt; daha geniş telefonda
@@ -1048,8 +1057,8 @@ namespace BirdieSmash.Game
             // açıkken görünür (eski dizilim, sığmazsa ikişer yan yana).
             var od2 = R.bittiDril != null ? Dril.Bul(R.bittiDril) : null; bool ayrintiVar = !string.IsNullOrEmpty(R.bittiBilgi);
             bool yuk = od != null && R.yukseltHazir, hdz = od != null && R.hedefHazir && R.hedef.gecerli;
-            bool payl = R.mod == Mod.Gunluk && Yerel.PaylasVar && R.match != null && R.match.matchDone;
-            int nTum = (payl ? 1 : 0) + (R.ustaDavet ? 1 : 0) + (yuk ? 1 : 0) + (hdz ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (od2 != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0), nIk = ayr ? nTum : Mathf.Min(1, nTum);
+            bool aniB = R.AniVar; bool payl = R.mod == Mod.Gunluk && Yerel.PaylasVar && R.match != null && R.match.matchDone;
+            int nTum = (aniB ? 1 : 0) + (payl ? 1 : 0) + (R.ustaDavet ? 1 : 0) + (yuk ? 1 : 0) + (hdz ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (od2 != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0), nIk = ayr ? nTum : Mathf.Min(1, nTum);
             float bh = Mathf.Max(BH, 50 * s), gap = 8 * s;
             string ct = UiKok.Buyuk(CtaBaslik(R.bittiDugme, R.bittiDugmeAlt)); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), cah = string.IsNullOrEmpty(R.bittiDugmeAlt) ? 0 : aCtaAlt.CalcHeight(Ic(R.bittiDugmeAlt), w);
             float ctaH = Mathf.Max(80 * s, cth + cah + 22 * s), blokH = ctaH + 12 * s + nIk * (bh + gap) + bh;
@@ -1059,14 +1068,15 @@ namespace BirdieSmash.Game
             float yb = Mathf.Max(y + 6 * s, H - bot - blokH);
             if (BuyukDugme(new Rect(x, yb, w, ctaH), ct, R.bittiDugmeAlt, s, al)) root.TekrarOyna(); yb += ctaH + 12 * s;
             int ki = 0; float kw = cift ? (w - gap) / 2 : w;
-            if (payl && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Sonucu paylaş"), al)) root.GunlukPaylas(); }
-            if (R.ustaDavet && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Usta'da dene · bir maç"), al)) root.UstaDene(); }
             if (od2 != null && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman: {0}", L.T(od2.ad)), al)) root.DrilOyna(od2.id); }
             if (yuk && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Ekipmanı yükselt"), al)) { root.AnaMenu(); if (root.ui != null) root.ui.SekmeAc(Sekme.Atolye); } }
             // 2026-11-02 hedef eşya: yalnız bu maçın Tüy'ü hedefi yetişir yaptıysa (sonraki maçlarda satır "Hazır" der, düğme çıkmaz).
             if (hdz && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Hedefin hazır"), al)) { var hk = R.hedef; root.AnaMenu(); if (root.ui != null) root.ui.HedefeGit(hk.kat, hk.id); } }
+            if (R.ustaDavet && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Usta'da dene · bir maç"), al)) root.UstaDene(); }
+            if (payl && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Sonucu paylaş"), al)) root.GunlukPaylas(); }
             if (R.bittiIlk && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Tam antrenman"), al)) root.Antrenman(); }
             if (R.mod == Mod.Dril && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman görevleri"), al)) { root.AnaMenu(); if (root.ui != null) root.ui.AntrenmanAc(); } }
+            if (aniB && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Maçın anı"), al)) root.AniBaslat(); }
             if (ayrintiVar)
             {
                 float hw = (w - gap) / 2;

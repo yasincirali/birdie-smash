@@ -606,6 +606,15 @@ namespace BirdieSmash.Game
         // Vitrin tutuş görünümü (Soyunma odası › Raket: Forehand · Backhand · File · Servis): klibin temas pozunda durur; yalnız
         // poz değişince örneklenir (karede ayırma ve örnekleme yok).
         string pozK; float pozP = -1;
+        // Maçın anı oynatması (Game/MacAni): kaydedilen gövde dönüşü (calib ve yatma dahil) ve klip fazı aynen basılır.
+        public Quaternion KayitYaw { get { return yaw.localRotation; } }
+        public void ShowKayit(Vector3 pos, Quaternion yr, string clip, float ph)
+        {
+            transform.position = pos; yaw.localRotation = yr;
+            if (shadow != null) shadow.position = new Vector3(pos.x, .003f, pos.z); if (takimDisk != null) takimDisk.position = new Vector3(pos.x, .002f, pos.z);
+            if (anim == null || clip == null) return; if (D(clip) == null) clip = "idle";
+            cur = clip; pozK = null; Sample(clip, ph, null, 0, 1);
+        }
         public void ShowPoz(Vector3 pos, float yawDeg, string clip, float ph)
         {
             transform.position = pos; yaw.localRotation = Quaternion.Euler(0, yawDeg, 0) * calib;

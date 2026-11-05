@@ -145,7 +145,7 @@ namespace BirdieSmash.Game
 
         public void StartMatch(bool ogr, bool kisa, bool ilk)
         {
-            ustaDeneBu = ustaDeneSonraki && !ogr; ustaDeneSonraki = false;   // Usta daveti yalnız bu maç (Ayar.easy değişmez)
+            ustaDeneBu = ustaDeneSonraki && !ogr; ustaDeneSonraki = false; ani.Sifirla();   // Usta daveti yalnız bu maç (Ayar.easy değişmez)
             var o = Secenek(ogr); o.ilk = ilk; o.ogrKisa = kisa;
             // Kariyer (2026-10-26, harita): haritadan seçilen açık basamak, yoksa sıradaki. Uzunluk basamaktan (Tur 1'de 0 =
             // oyuncunun seçimi, bugünkü davranış; Asya Turu 5, finali 11).
@@ -355,6 +355,20 @@ namespace BirdieSmash.Game
             var M = match; if (M == null) return; bool w = M.sc[0] > M.sc[1];
             string m = L.T(w ? "Birdie Smash · Günün maçını {0}–{1} kazandım, en uzun ralli {2}." : "Birdie Smash · Günün maçı: {0}–{1}, en uzun ralli {2}.", M.sc[0], M.sc[1], M.maxRally)
                 + "\n" + L.T("Sen kaç alırsın?"); Yerel.Paylas(m);
+        }
+        // Maçın anı: kayıt ve oynatma Game/MacAni; burada yalnız top işareti ve kart açma/kapama.
+        readonly MacAni ani = new MacAni(); Transform aniTopT;
+        public bool AniVar { get { return ani.Var && match != null && match.ogr == null; } }
+        public bool AniAktif { get { return ani.Aktif; } }
+        public void AniBaslat() { ani.Baslat(); Yerel.Hap("tick"); }
+        public void AniDur() { ani.Bitir(); if (aniTopT != null) aniTopT.gameObject.SetActive(false); }
+        Transform AniTop()
+        {
+            if (aniTopT != null) return aniTopT;
+            aniTopT = Kit.Prim(PrimitiveType.Sphere, "ani_top", transform, Vector3.zero, Vector3.one * .09f, Kit.Unlit(Color.white)).transform;
+            var tr = aniTopT.gameObject.AddComponent<TrailRenderer>(); tr.time = .18f; tr.widthMultiplier = .07f; tr.minVertexDistance = .03f;
+            tr.material = Kit.Additive(Color.white); tr.colorGradient = new Gradient { alphaKeys = new[] { new GradientAlphaKey(.5f, 0), new GradientAlphaKey(0, 1) }, colorKeys = new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) } };
+            return aniTopT;
         }
         public void UstaDene() { ustaDeneSonraki = true; ustaDavet = false; TekrarOyna(); }
         public void TekrarOyna()
@@ -627,8 +641,16 @@ namespace BirdieSmash.Game
                     if (o != null && o.macaGec) StartMatch(false, false, o.kisa);
                 }
             }
-            me.Show(match.me, match, dt); op.Show(match.op, match, dt); shuttle.reduce = Ayar.reduce;
-            shuttle.Show(match, ekran == Ekran.Menu ? null : match.s, paused || geriT > 0 ? 0 : dt, previewOn && input.on && !input.hit, previewAt);
+            shuttle.reduce = Ayar.reduce;
+            if (ani.Aktif && ekran == Ekran.Bitti) { if (!ani.Oynat(dt, me, op, AniTop())) AniDur(); shuttle.Show(match, null, 0, false, previewAt); }
+            else
+            {
+                if (ani.Aktif) ani.Bitir();
+                me.Show(match.me, match, dt); op.Show(match.op, match, dt);
+                shuttle.Show(match, ekran == Ekran.Menu ? null : match.s, paused || geriT > 0 ? 0 : dt, previewOn && input.on && !input.hit, previewAt);
+                // Maçın anı kaydı (Game/MacAni): yalnız gerçek maçta (antrenman ve görev dışında), oyun akarken.
+                if (ekran == Ekran.Oyun && !paused && geriT <= 0 && match.ogr == null) { var ts = match.s; bool tv = ts != null && !ts.dead; ani.Kaydet(dt, me, op, tv, tv ? Kit.W(ts.x, ts.y, ts.z) : Vector3.zero); }
+            }
             // Usta duruş işareti yazıyla da (P3): maçın ilk iki varışında "Yerindesin"; sonra yalnız ayak izinin dolması (sessiz HUD).
             if (ekran == Ekran.Oyun && !match.easy && match.ogr == null && yerN < 2 && match.s != null && match.s != yerTop && match.Yerinde()) { yerTop = match.s; yerN++; hud.Say(L.T("Yerindesin"), Kit.W(match.me.x, match.me.y, 1.6f), Kit.Hex("#d8ff5a")); }
             fx.Tick(match, paused || geriT > 0 ? 0 : dt, ekran == Ekran.Oyun);
@@ -765,6 +787,7 @@ namespace BirdieSmash.Game
                 case Ev.Point:
                     {
                         bool smac = mine && e.type == "smash";
+                        if (match.ogr == null) ani.SayiBitti(mine, (int)e.k, smac);
                         sfx.Point(mine, smac, (int)e.k); hud.Pop(mine ? 0 : 1); Yerel.Hap(mine ? "win" : "lose");
                         // düşüş yerinde toz ve kazananın renginde dalga; benim sayımda üst bantta üç renkli kıvılcım (HTML point)
                         if (e.x != 0 || e.y != 0) { var yer = Kit.W(e.x, e.y, .05f); fx.Burst(yer, new Color(.9f, 1, .94f, .7f), 14, 140, "dot"); fx.Dalga(yer, mine ? limon : Kit.Hex(Hud.RAKIP_HUD), 70); }
