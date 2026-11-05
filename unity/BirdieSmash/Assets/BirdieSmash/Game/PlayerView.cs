@@ -829,7 +829,10 @@ namespace BirdieSmash.Game
             ShowRing(o.nefes, dt, M.reduce); ImzaIsik(o, M.reduce, dt);
             if (yay != null)
             {
-                yay.emitting = o.sw > .3f && !M.reduce; float a = Mathf.Clamp01(o.sw) * .5f;
+                // Stüdyo incelemesi (2026-11-05, teknik sanat 7): iz hazırlığın son kısmında (ileri salınım) da açık; eskiden yalnız
+                // temastan sonra başlıyor, basamaklı hazırlık pozu kopuk görünüyordu. Duran raket iz bırakmaz (minVertexDistance).
+                bool on = o.sw <= 0 && o.prepA > .9f;
+                yay.emitting = (o.sw > .3f || on) && !M.reduce; float a = Mathf.Max(Mathf.Clamp01(o.sw), on ? .7f : 0) * .5f;
                 // 2026-10-27: renk eğrisi her karede yeni Gradient + iki dizi idi; yalnız alfa değişince ve aynı nesneyle
                 if (Mathf.Abs(a - yayA) > .002f) { yayA = a; yayS[0] = new GradientAlphaKey(a, 0); yayS[1] = new GradientAlphaKey(0, 1); yayGrad.SetKeys(yayRenk ?? YAY_RENK, yayS); yay.colorGradient = yayGrad; }
             }

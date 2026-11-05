@@ -372,6 +372,9 @@ namespace BirdieSmash.Core
             h.swHiz = 1 / (isServe ? .25f : h.shot == "lunge" ? .3f : type == "block" ? .1f : h.shot == "over" ? (type == "drop" ? .2f : .3f) : h.shot == "drive" ? .18f : h.shot == "kill" ? .15f : type == "drop" ? .12f : .25f);
             var oth = from == "me" ? op : me; if (oth.sw <= 0) oth.splitT = .3f;   // rakip vururken split step
             if (type == "smash" && !reduce) freeze = Math.Max(freeze, isSuper ? .16f : .08f);
+            // Mikro donma (stüdyo incelemesi 2026-11-05, teknik sanat 2): oyuncunun sert vuruşları da 20–35 ms "tok" temas alır.
+            // Yalnız kendi vuruşun (rakibinkinde yok), 40 ms altı; ralli vuruş başına en çok 35 ms uzar, hız değişmez.
+            else if (from == "me" && !reduce && !isServe && freeze <= 0) { float md = type == "kill" ? .035f : type == "drive" ? .025f : type == "clear" ? .02f : 0; if (md > 0) freeze = md; }
             // text = vuruşun adı (2026-10-29): GameRoot file önü kill'e kendi hissini verir (uçuş türü yine "smash")
             Emit(Ev.Hit, from, type, hx, hy, hz, rally, s.vurus, q ?? "good", isSuper); events[events.Count - 1].slice = slice; events[events.Count - 1].serve = isServe;
             if (rally > 2 && rally % 10 == 0) Say(null, null, Court.MID, Court.NET, 2.5f, "Ralli " + rally, 2);

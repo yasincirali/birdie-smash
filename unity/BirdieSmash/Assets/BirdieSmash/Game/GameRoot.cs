@@ -621,9 +621,14 @@ namespace BirdieSmash.Game
             fx.Tick(match, paused || geriT > 0 ? 0 : dt, ekran == Ekran.Oyun);
             if (akisR != null) { bool on = ekran == Ekran.Oyun && match.flow; akisR.enabled = on; if (on) akisR.material.color = new Color(1, .886f, .47f, Ayar.reduce ? .9f : .75f + .25f * Mathf.Sin(Time.unscaledTime * 1000 / 180f)); }
             Hakemler();
-            shake *= Mathf.Pow(.002f, dt); punch = 1 + (punch - 1) * Mathf.Pow(.0005f, dt); if (punch < 1) punch = 1;
-            var j = shake > .01f ? (Vector3)(Random.insideUnitCircle * shake * .012f) : Vector3.zero;
-            KadrajTakip(); var kp = camBase + camRot * j; var kq = camRot; float ktv = camTv * kadrajGenis;
+            // Stüdyo incelemesi (2026-11-05, teknik sanat 1 ve 4): vuruş donması sürerken itme ve sarsıntı sönmez; eskiden 80 ms
+            // donmada punch yarıya iniyor, temas anı "tok" okunmuyordu. Sarsıntı kare başı beyaz gürültü yerine zamana bağlı
+            // Perlin (22 Hz) + küçük roll: 60 ve 120 Hz'de aynı görünür, titreşim değil darbe gibi okunur. Hareketi azaltta shake hiç kurulmaz.
+            float sd = match != null && match.freeze > 0 ? 0 : dt;
+            shake *= Mathf.Pow(.002f, sd); punch = 1 + (punch - 1) * Mathf.Pow(.0005f, sd); if (punch < 1) punch = 1;
+            Vector3 j = Vector3.zero; float roll = 0;
+            if (shake > .01f) { float tt = Time.unscaledTime * 22f; j = new Vector3(Mathf.PerlinNoise(tt, 1.7f) * 2 - 1, Mathf.PerlinNoise(4.3f, tt) * 2 - 1, 0) * shake * .012f; roll = (Mathf.PerlinNoise(tt, 9.1f) * 2 - 1) * Mathf.Min(.6f, shake * .05f); }
+            KadrajTakip(); var kp = camBase + camRot * j; var kq = camRot * Quaternion.Euler(0, 0, roll); float ktv = camTv * kadrajGenis;
             ZaferKamera(dt, ref kp, ref kq, ref ktv); cam.transform.SetPositionAndRotation(kp, kq); Projeksiyon(punch, ktv);
         }
 

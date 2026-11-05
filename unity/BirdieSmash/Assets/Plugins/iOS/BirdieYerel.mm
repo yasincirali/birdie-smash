@@ -15,6 +15,13 @@
 static UIImpactFeedbackGenerator *bsAgir = nil, *bsOrta = nil, *bsHafif = nil;
 static UISelectionFeedbackGenerator *bsSecim = nil;
 
+static void bsIsit(void)
+{
+    // Stüdyo incelemesi (2026-11-05, teknik sanat 6): prepare Taptic motorunu birkaç saniye hazır tutar; hazır değilken ilk
+    // darbe bir kare (~16–30 ms) geç gelebiliyordu. Ralli vuruşları birkaç saniye arayla geldiği için her darbeden sonra yeniden.
+    [bsAgir prepare]; [bsOrta prepare]; [bsHafif prepare]; [bsSecim prepare];
+}
+
 static void bsHazirla(void)
 {
     if (bsAgir != nil) return;
@@ -22,6 +29,7 @@ static void bsHazirla(void)
     bsOrta = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleMedium];
     bsHafif = [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight];
     bsSecim = [[UISelectionFeedbackGenerator alloc] init];
+    bsIsit();
 }
 
 static void bsDarbe(int ms)
@@ -32,6 +40,7 @@ static void bsDarbe(int ms)
     else if (ms >= 22) [bsOrta impactOccurred];
     else if (ms >= 12) [bsHafif impactOccurred];
     else [bsSecim selectionChanged];
+    bsIsit();
 }
 
 extern "C" void BirdieTitresim(const int *desen, int n)
