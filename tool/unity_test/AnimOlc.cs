@@ -73,6 +73,7 @@ static class AnimOlc
                     // PlayerView alt katmanı (aynı kural: Match.AltHedef, Match.ALT_HIZ üstel yumuşatma)
                     if (a.yuru && a.ayakKlip != null) z.altKlip = a.ayakKlip;
                     float hedef = z.altKlip != null ? Match.AltHedef(a, c) : 0;
+                    if (c != z.cur && z.cur != null && z.altKlip != null) z.altW = Match.AltGecis(a, z.cur, c, z.altW);   // PlayerView: ayak işinden vuruş klibine
                     z.altW += (hedef - z.altW) * (1 - (float)Math.Exp(-dt * Match.ALT_HIZ)); if (z.altW < .01f && hedef == 0) z.altW = 0;
                     // gerçek zamanlı gövde hızı
                     if (!float.IsNaN(z.px))

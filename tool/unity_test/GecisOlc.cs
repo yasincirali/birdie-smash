@@ -1,5 +1,6 @@
 using System; using System.Collections.Generic; using BirdieSmash.Core;
 // Klip geçişi pop ölçümü (2026-10-27 performans turu 2, yasin: "animasyonlar her yerde smooth ... akıcı olmalı").
+// 2026-11-05: süre Match.GecisSure'den (PlayerView ile aynı); "eski" kipte eski sabit süreler.
 // PlayerView.Show'un klip değişimi kuralının taklidi (Unity'siz: Core bot maçı + Match.PickClip): önceki geçiş (0,08 sn,
 // vuruştan dönüşte 0,2 sn) bitmeden yeni klip gelince ekrandaki karışımın ne kadarı TEK KAREDE düşüyor. Eski kural: tek
 // prev (karışımın prev payı düşer). Yeni kural: aynı klibe dönüşte geçiş ters çevrilir, başka klipte cur ve prev birlikte
@@ -21,14 +22,14 @@ static class GecisOlc {
           M.Update(dt); M.events.Clear();
           for(int p=0;p<2;p++){ var o=p==0?M.me:M.op; string c; float ph; M.PickClip(o,p==0,out c,out ph);
             if(c!=cur[p]){
-              bool takip=cur[p]!=null&&Match.CLIP_HIT.ContainsKey(cur[p])&&!Match.CLIP_HIT.ContainsKey(c); float dus=0;
+              string eskiCur=cur[p]; float dus=0;
               if(cur[p]!=null) sw++;
               if(prev[p]!=null&&blend[p]<1) ara++;
               float wc=SS(blend[p]);
               if(!yeni){ if(prev[p]!=null&&blend[p]<1) dus=1-wc; prev[p]=cur[p]; cur[p]=c; blend[p]=0; }
               else if(prev[p]!=null&&blend[p]<1&&c==prev[p]){ prev[p]=cur[p]; cur[p]=c; blend[p]=1-blend[p]; prev2[p]=null; }
               else { if(prev[p]!=null&&blend[p]<1){ float p2=prev2[p]!=null?pay[p]:0; dus=(1-wc)*p2; float wp=(1-wc)*(1-p2); prev2[p]=prev[p]; pay[p]=wc+wp>1e-4f?wp/(wc+wp):0; } else prev2[p]=null; prev[p]=cur[p]; cur[p]=c; blend[p]=0; }
-              bs[p]=takip?.2f:.08f; top+=dus; if(dus>.10f)d10++; if(dus>.25f)d25++;
+              bs[p]=yeni?Match.GecisSure(o,eskiCur,c):(eskiCur!=null&&Match.CLIP_HIT.ContainsKey(eskiCur)&&!Match.CLIP_HIT.ContainsKey(c)?.2f:.08f); top+=dus; if(dus>.10f)d10++; if(dus>.25f)d25++;
             }
             blend[p]=Math.Min(1,blend[p]+dt/bs[p]); if(blend[p]>=1) prev2[p]=null; }
         }

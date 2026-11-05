@@ -6,8 +6,8 @@
 // gövde __forma takım rengi, __karin onun açığı, ayakkabılar Oyuncak'ın ayk_* parçaları). Hepsi iskeletli; 26 klip Legacy Animation olarak normalize zamanla
 // örneklenir: klip ve faz Match.PickClip'ten gelir (HTML player() ile aynı karar), vuruş anı topla kare kare eşleşir.
 // Faz → klip zamanı: sprite kare k'yı (k+.5)/n fazında gösterir; FBX'te pozlar eşit aralıklı olduğu için aynı faz aynı
-// pozu verir (döngülü kliplerde kapanış pozu ek). Klip değişiminde 0,08 s harmanlama; vuruş klibinden boşta/ayak
-// klibine dönüşte 0,2 s (Ar-Ge 23 Eki animasyon B1: takip pozundan hazır duruşa "ışınlanma" yok; sprite'ta harmanlama
+// pozu verir (döngülü kliplerde kapanış pozu ek). Harmanlama süresi geçişin türüne göre (Match.GecisSure, 2026-11-05: temas
+// 0,06, hazırlık 0,12, ayak işi 0,15, vuruştan dönüş 0,22 s; eskiden 0,08 ve dönüşte 0,2 s) (Ar-Ge 23 Eki animasyon B1: takip pozundan hazır duruşa "ışınlanma" yok; sprite'ta harmanlama
 // hayalet yapıyordu, iskelette yapmaz, bu yüzden Blender'da yeniden render gerekmedi). FBX yoksa basit kapsül figür.
 // Renk: parça adının "__" sonrası etiketi (HTML sprRenk/tint maskesi karşılığı): forma = takım rengi, cerceve = raket
 // modelinin rengi, bant/bilek = seçili kafa bandı/bileklik (ekipman "Yok" ise gizli), grip/tel/tel2 = raket görünümü
@@ -855,7 +855,6 @@ namespace BirdieSmash.Game
             if (D(clip) == null) clip = "idle";
             if (clip != cur)
             {
-                bool takip = cur != null && Match.CLIP_HIT.ContainsKey(cur) && !Match.CLIP_HIT.ContainsKey(clip);   // vuruş → hazır duruş/ayak
                 // Harmanlama sürerken gelen değişim (2026-10-27 performans turu 2; ölçüm tool/unity_test/GecisOlc, Core bot maçı; kural orada kopya): klip
                 // değişimlerinin %22'si (120 Hz'de %25) önceki 0,08/0,2 sn'lik geçiş bitmeden geliyordu (split → chassé → kros,
                 // fwd → back → chassé); eski kodda o anki karışımın "prev" payı (ortalama %46–52) tek karede düşüyordu: pop.
@@ -876,7 +875,10 @@ namespace BirdieSmash.Game
                     else prev2 = null;
                     prev = cur; prevPh = lastPh; cur = clip; blend = 0;
                 }
-                blendS = takip ? .2f : .08f;
+                // Süre geçişin türüne göre (Match.GecisSure; eskiden takip .2, kalan her şey .08). Ayak işinden vuruş klibine
+                // geçişte alt beden katmanı hedef ağırlıktan başlar (Match.AltGecis): bacaklar adımını kesmez.
+                blendS = Match.GecisSure(o, prev, cur);
+                if (altVar && prev != null) altW = Match.AltGecis(o, prev, cur, altW);
             }
             blend = Mathf.Min(1, blend + dt / blendS); lastPh = ph; if (blend >= 1) prev2 = null;
             // Boşta duruşun genliği nefese bağlı (B4; hız Match.IdleIlerle'de): nefes %70'in altına inince yorgun klibi
