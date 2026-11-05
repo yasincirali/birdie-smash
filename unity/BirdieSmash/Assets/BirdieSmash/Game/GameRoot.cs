@@ -21,7 +21,7 @@ namespace BirdieSmash.Game
     public class GameRoot : MonoBehaviour
     {
         public Match match; public Camera cam; public Ekran ekran = Ekran.Menu; public bool paused;
-        public string bittiBaslik, bittiNot, bittiBilgi, bittiDugme, bittiIpucu, bittiYildiz; public List<Ozet.Kart> bittiKart = new List<Ozet.Kart>(); public bool bittiIlk; public float rakipKartT;
+        public string bittiBaslik, bittiNot, bittiBilgi, bittiDugme, bittiIpucu, bittiYildiz; public List<Ozet.Kart> bittiKart = new List<Ozet.Kart>(); public bool bittiIlk, ustaDavet; public float rakipKartT; bool ustaDeneSonraki, ustaDeneBu;
         // Geri sayım (2026-10-30, yasin "1 ok" + "maç başlarken de bir geri sayım"): maç başında ve ralli sürerken duraklatmadan
         // dönüşte oyun 3-2-1 boyunca donuk durur, top yerinde görünür. Toplam 1,2 sn: maç başında rakip kartıyla (1,5 sn) üst
         // üste biner, maç başını uzatmaz. Antrenmanda ve öğretici maçta yok; sayı arasındaki duraklatmadan dönüşte yok (top yok).
@@ -145,6 +145,7 @@ namespace BirdieSmash.Game
 
         public void StartMatch(bool ogr, bool kisa, bool ilk)
         {
+            ustaDeneBu = ustaDeneSonraki && !ogr; ustaDeneSonraki = false;   // Usta daveti yalnız bu maç (Ayar.easy değişmez)
             var o = Secenek(ogr); o.ilk = ilk; o.ogrKisa = kisa;
             // Kariyer (2026-10-26, harita): haritadan seçilen açık basamak, yoksa sıradaki. Uzunluk basamaktan (Tur 1'de 0 =
             // oyuncunun seçimi, bugünkü davranış; Asya Turu 5, finali 11).
@@ -159,7 +160,7 @@ namespace BirdieSmash.Game
         MatchOptions Secenek(bool ogr)
         {
             Ayar.GearHesap();
-            return new MatchOptions { easy = Ayar.easy, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0 };
+            return new MatchOptions { easy = Ayar.easy && !(ustaDeneBu && !ogr), target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0 };
         }
         // Maç kurulumunun ortak kuyruğu (2026-10-26: dört mod aynı yoldan; davranış eski StartMatch'le birebir).
         void MacKur(int tohum, MatchOptions o)
@@ -257,6 +258,10 @@ namespace BirdieSmash.Game
             bool yumusadi = Ayar.ilerleme != null && Ayar.ilerleme.Yardim > yardim0;
             string kNot = ""; bool kariyerIlk = false; int yeniYildiz = 0; bittiYildiz = null; int ekTuy = 0, ekXp = 0; string ekAd = null; bittiSkor = null;
             BittiSifirla(); bittiKazandi = won;
+            // Kolay'dan Usta'ya davet (stüdyo incelemesi 2026-11-05, oyun tasarımı 6): Kolay'da rahat kazanan oyuncuya (3+ galibiyet,
+            // bu maçta 5+ tam orta) tek maçlık "Usta'da dene". Ayar değişmez, maç Usta ödülüyle (×1,25) oynanır; en çok 2 kez gösterilir.
+            ustaDavet = won && M.easy && M.ogr == null && M.stil.usta < 0 && mod == Mod.Normal && !ustaDeneBu && Ayar.wins >= 3 && M.perfects >= 5 && PlayerPrefs.GetInt("tuytop_usta_davet", 0) < 2;
+            if (ustaDavet) { PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); PlayerPrefs.Save(); }
             if (KariyerVeri.Var(M.stil.kariyer))
             {   // yıldızlar ve açılış Core/Ilerleme'de; Tur 1 sayısı (tuytop_v2.kariyer, başarımlar) ondan türer
                 int g = M.stil.kariyer; var bg = M.BasamakGorevi;
@@ -344,6 +349,7 @@ namespace BirdieSmash.Game
         // sonuç ekranı). Mağaza build'inde çağıran yok; EndMatch'in kendisi değişmez, tur gerçek akışın sonucunu çeker.
         public void EkranBitir(bool won) { EndMatch(won); }
         // "Bir maç daha" / "Yeni maç başlat" da smaç perdesiyle (HTML start()).
+        public void UstaDene() { ustaDeneSonraki = true; ustaDavet = false; TekrarOyna(); }
         public void TekrarOyna()
         {
             var m = mod;   // perde kapanınca hangi mod: maç sonundaki mod (ekrandaki düğme onu söyledi)

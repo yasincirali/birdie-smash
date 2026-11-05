@@ -161,6 +161,7 @@ namespace BirdieSmash.Game
         }
         // Nefes halkası (HTML nefesHalka): doluyken görünmez; azaldıkça iki uçtan öne (kameraya) doğru kısalır,
         // %40 altında turuncu (yanına "Nefes"/"Yorgun" yazılır: anlam yalnız renkle verilmez), %20 altında nabız atar.
+        Transform takimDisk;
         void ShowRing(float n, float dt, bool reduce)
         {
             if (ringBg == null) return;
@@ -826,6 +827,11 @@ namespace BirdieSmash.Game
             float dive = (o.yat ? o.dive : 0) * (o.x < Court.MID ? -1 : 1) * .26f * (isMe ? 1 : -1);
             yaw.localRotation = Quaternion.Euler(0, (isMe ? 0 : 180) + o.donus, 0) * Quaternion.Euler(0, 0, -(dive + lean) * Mathf.Rad2Deg) * calib;
             shadow.position = Kit.W(o.x, o.y, .003f); shadow.localScale = Vector3.one * (.9f - j * .8f);
+            // Takım diski (stüdyo incelemesi 2026-11-05, sanat 1): yüksek kameradan oyuncak figürün büyük başı gövdeyi örtüyor,
+            // kim nerede ilk bakışta okunmuyordu. Ayak altında yumuşak kenarlı disk: sen limon, rakip orkide (palet C, HUD ile aynı).
+            // Gölgenin altında, düşük alfa: kortu boyamaz, yalnız konumu işaretler. Hakemde yok.
+            if (!hakem) { if (takimDisk == null) takimDisk = Kit.Prim(PrimitiveType.Quad, "takim_disk", transform, Vector3.zero, Vector3.one, Kit.Clear(isMe ? new Color(.77f, .93f, .25f, .2f) : new Color(.91f, .61f, 1f, .2f), Kit.RadialTex())).transform;
+                takimDisk.rotation = shadow.rotation; takimDisk.position = Kit.W(o.x, o.y, .002f); takimDisk.localScale = Vector3.one * (1.1f - j * .5f); }
             ShowRing(o.nefes, dt, M.reduce); ImzaIsik(o, M.reduce, dt);
             if (yay != null)
             {

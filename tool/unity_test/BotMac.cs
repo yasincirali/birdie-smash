@@ -1369,7 +1369,8 @@ static class BotMac
                     if (e.kind != Ev.Hit || e.serve) continue; int i = e.who == "me" ? 0 : 1; var a = i == 0 ? M.me : M.op; string c = a.clip; temas[i]++; gor.Add(c);
                     if (a.hamleGor && Match.HAMLE.ContainsKey(c)) gor.Add(Match.HAMLE[c]);
                     bool bh = c.StartsWith("bh_"); float yan = (a.tmX - a.x) * (i == 0 ? 1 : -1);
-                    if (!bh && yan < -(a.tmZ > 1.95f ? .6f : .25f) || bh && yan > .1f) tarafYanlis[i]++;
+                    // rth (round-the-head, 2026-11-05): baş üstünde sol omuz tarafı bilerek forehand dışı; RTH_ERIS (+.25 tolerans) içinde doğru taraf.
+                    if (c == "rth" ? (yan > .1f || yan < -Match.RTH_ERIS - .25f) : (!bh && yan < -(a.tmZ > 1.95f ? .6f : .25f) || bh && yan > .1f)) tarafYanlis[i]++;
                     if (sonPrep[i] != null && sonPrep[i].StartsWith("bh_") != bh) temasEl[i]++; sonPrep[i] = null;
                     if (i == 1 && (c == "low" || c == "bh_low" || c == "net" || c == "bh_drive" || c == "drive")) { opAlt++; if (!bh) opAltFh++; }
                 }

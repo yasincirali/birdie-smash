@@ -233,7 +233,7 @@ namespace BirdieSmash.Game
         // Klip şeritleri: her vuruş × taraf ve ayak işi klibi, maç dışı bir figürle (ShowPoz: yalnız klip, katman/IK yok) 6
         // kare yan yana (1920×480). Vuruş kliplerinde kareler hazırlıktan takibe eşit aralıklı, temas karesi dahil; döngülerde
         // faz 0..5/6. "klip_poz" satırı: temas karesi ve sağ elin gövdeye göre yanı (+ sağ: forehand, − sol: backhand çaprazı).
-        static readonly string[] KLIP_SERIT = { "smash", "clear", "drop", "jump", "bh_over", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge", "block", "serve", "serve_bh", "serve_flick",
+        static readonly string[] KLIP_SERIT = { "smash", "clear", "drop", "jump", "rth", "bh_over", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge", "block", "serve", "serve_bh", "serve_flick",
             "fwd", "run", "chasse_r", "chasse_l", "kros_r", "kros_l", "geri_r", "geri_l", "back_r", "back_l", "split" };
         IEnumerator KlipSeritleri(string mdl)
         {

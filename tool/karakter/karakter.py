@@ -354,6 +354,14 @@ S_FOL=D(READY,root=(0,0.07,0.37),lean=(0,0.13,-0.02),twist=-40,pelvis=-38,wrR=(-
 #     ilk 6 kare (hazır→düşüş) üçünde birebir aynı, rakip vuruşu temastan önce okuyamaz.
 OV=lambda k: k/13
 smash=sample([(0,READY),(OV(2),S_PREP),(OV(5),S_DROP),(OV(9),S_HIT),(OV(11),S_FOL),(1,READY)],14,hit=3,hold=1,drop=2,lead=1)
+# --- rth (round-the-head smaç, 2026-11-05 stüdyo incelemesi): baş üstü ama top SOL omuz üstünde. Gerçek badmintonda
+#     backhand'e dönmek yerine raket başın arkasından sola dolanır; gövde daha kare (twist düşük), sola yatar, temas sol
+#     omzun üstünde, bakış sola-yukarı. Raket yine sağ elde; ızgara smaçla aynı (14 kare, temas 9) ki CLIP_HIT ortak kalsın.
+R_PREP=D(S_PREP,twist=38,pelvis=14,wrR=(0.06,-0.20,0.92),rk=(-0.55,-0.3,0.78),look=(-0.25,0.4,1))
+R_DROP=D(S_DROP,twist=22,pelvis=-2,lean=(-0.03,-0.03,0.015),wrR=(0.0,-0.08,0.90),rk=(-0.10,-0.50,-0.86),look=(-0.3,0.5,0.9))
+R_HIT=D(S_HIT,root=(-0.04,0.02,0.43),lean=(-0.09,0.04,0.02),twist=2,pelvis=-10,wrR=(-0.18,0.17,1.19),elR=(1,0.1,0.5),rk=(-0.48,0.45,0.75),rkFace=(0,1,0.1),wrL=(-0.28,0.10,0.62),look=(-0.35,0.6,0.75))
+R_FOL=D(S_FOL,root=(-0.02,0.06,0.37),lean=(-0.03,0.12,-0.02),twist=-25,pelvis=-28)
+rth=sample([(0,READY),(OV(2),R_PREP),(OV(5),R_DROP),(OV(9),R_HIT),(OV(11),R_FOL),(1,READY)],14,hit=3,hold=1,drop=2,lead=1)
 # --- clear (baş üstü, uzun): aynı yay ama temas başın hafif arkasında, devam öne-yukarı (topu taşır)
 C_HIT=D(S_HIT,wrR=(0.12,-0.02,1.27),rk=(0,0.2,0.98),lean=(0,0,0.02),pelvis=-20)
 C_FOL=D(S_FOL,wrR=(-0.14,0.30,0.62),rk=(-0.5,0.75,0.2),root=(0,0.05,0.40),lean=(0,0.07,0),twist=-30,pelvis=-32,anR=(0.12,0.12,0.05))
@@ -632,7 +640,8 @@ yorgun=sample([(0,YG0),(0.45,YG1),(1,YG0)],10,loop=True)
 CLIPS=dict(idle=idle,run=run,smash=smash,clear=clear,drive=drive,kill=kill,low=low,lunge=lunge,serve=serve,serve_gec=serve_gec,serve_bh=serve_bh,serve_flick=serve_flick,block=block,bh_over=bh_over,bh_drive=bh_drive,bh_kill=bh_kill,bh_low=bh_low,bh_lunge=bh_lunge,split=split,chasse_r=chasse_r,chasse_l=chasse_l,fwd=fwd,back_r=back_r,back_l=back_l,jump=jump,yorgun=yorgun,
     drop=drop,net=net,   # drop/net 2026-10-24 sona eklendi: önceki klip satırları kaymasın
     kros_r=kros_r,kros_l=kros_l,   # 2026-10-26: hızlı yana çapraz koşu (Unity); HTML sprite'ı donuk, satırlar kaymaz
-    geri_r=geri_r,geri_l=geri_l)   # 2026-11-05: yan dönük geri çekilme chassé'si (Unity); listenin sonunda
+    geri_r=geri_r,geri_l=geri_l,   # 2026-11-05: yan dönük geri çekilme chassé'si (Unity)
+    rth=rth)   # 2026-11-05: round-the-head smaç (Unity); listenin sonunda
 KEYS=dict(ov=[S_PREP,S_DROP,S_HIT,S_FOL,C_HIT,DP_HIT],sv=[SB0,SB1,SB2,SB3],fl=[SF2,SF3],sh=[SH0,SH1,SH2,SH3],dr=[DR_PREP,DR_HIT,DR_FOL],lo=[L_PREP,L_HIT,L_FOL],bdn=[BD_PREP,BD_HIT,BD_FOL],bln=[BL_PREP,BL_HIT,BL_FOL],X0=[],bo=[BO_PREP,BO_HIT,BO_FOL],bd=[BD_PREP,BD_HIT,BD_FOL],bk=[BK_PREP,BK_HIT],bl=[BL_PREP,BL_HIT,BL_FOL],blu=[BLU_PREP,BLU_HIT],split=[split[2],split[4]],chr=[chasse_r[2],chasse_r[4]],chl=[chasse_l[2],chasse_l[4]],fwd=[fwd[1],fwd[4]],bkr=[back_r[2],back_r[4]],bkl=[back_l[2],back_l[4]],jump=[J_TAKE,J_AIR,J_LAND],yorgun=[YG0,YG1])
 
 # ---------- sahne ----------

@@ -282,6 +282,16 @@ namespace BirdieSmash.Game
         }
         static readonly char[] GLIF = { '✓', '✗', '●', '○', '◆', '▸', '★', '▶' };
         static void Etk(Rect r, string t, GUIStyle s) { s = Glif(s, t); GUI.Label(Sigdir(r, t, s), t, s); }   // sabit boylu etiket, aynı kural
+        // Konturlu oyun yazısı (stüdyo incelemesi 2026-11-05, sanat 7): "Aldattın!", "Tam orta" gibi anlık sözler kortun açık
+        // yeşilinde düz gölgeyle zor okunuyordu. Sekiz yönde koyu (#0b1220) kontur + dolgu: çizgi roman dili, renk anlamı aynı.
+        static readonly Vector2[] KONTUR = { new Vector2(1, 0), new Vector2(-1, 0), new Vector2(0, 1), new Vector2(0, -1), new Vector2(.7f, .7f), new Vector2(-.7f, .7f), new Vector2(.7f, -.7f), new Vector2(-.7f, -.7f) };
+        static void Konturlu(Rect r, string t, GUIStyle s, Color c, float k)
+        {
+            s = Glif(s, t); r = Sigdir(r, t, s);
+            var o = GUI.color; GUI.color = new Color(.043f, .071f, .125f, c.a * .9f);
+            foreach (var v in KONTUR) GUI.Label(new Rect(r.x + v.x * k, r.y + v.y * k + 1, r.width, r.height), t, s);
+            GUI.color = c; GUI.Label(r, t, s); GUI.color = o;
+        }
         static void Shadowed(Rect r, string t, GUIStyle s, Color c)
         {
             s = Glif(s, t); r = Sigdir(r, t, s);
@@ -432,7 +442,7 @@ namespace BirdieSmash.Game
             foreach (var f in floats)
             {
                 // HTML txt: yaylı büyüme (k = 1 + 2,7(q−1)³ + 1,7(q−1)²), .8 sn sonra solar
-                float q = Mathf.Min(1, f.a * 5), k = 1 + 2.7f * Mathf.Pow(q - 1, 3) + 1.7f * Mathf.Pow(q - 1, 2), a = f.a > .8f ? 1 - (f.a - .8f) / .4f : 1;
+                float q = Mathf.Min(1, f.a * 5), k = Ayar.reduce ? 1 : 1 + 2.7f * Mathf.Pow(q - 1, 3) + 1.7f * Mathf.Pow(q - 1, 2), a = f.a > .8f ? 1 - (f.a - .8f) / .4f : 1;
                 var c = f.c; c.a = Mathf.Clamp01(a); var st = Stil(mid, Mathf.Max(1, Mathf.RoundToInt(19 * fu * f.size * (.5f + .5f * k))));
                 float yy;
                 if (f.sabit) yy = H * (f.c == Kit.Hex(RAKIP_HUD) ? .56f : .4f);
@@ -441,7 +451,7 @@ namespace BirdieSmash.Game
                 // Kartla çakışan yazı kartın hemen altına iner (blocks = bu karede çizilen kart ve düğmeler).
                 if (ogr) foreach (var bl in blocks) if (bl.width > (rx - lx) * .6f && yy < bl.yMax && yy + 46 * u > bl.yMin) yy = bl.yMax + 4 * u;
                 st = Sigdir(st, f.t, rx - lx);   // tek satır kalsın (iki satıra kırılınca skorun/kartın üstüne biniyordu)
-                Shadowed(new Rect(lx, yy, rx - lx, 46 * u), f.t, st, c);
+                Konturlu(new Rect(lx, yy, rx - lx, 46 * u), f.t, st, c, Mathf.Max(1.5f, 2.2f * u));
             }
             if (ogrMsgT > 0 && ogrMsg != null) { var c = Kit.Hex("#d8ff5a"); c.a = Mathf.Clamp01(ogrMsgT * 2); Shadowed(new Rect(lx, H * .5f, rx - lx, 60 * u), ogrMsg, mid, c); }
         }
@@ -1038,7 +1048,7 @@ namespace BirdieSmash.Game
             // açıkken görünür (eski dizilim, sığmazsa ikişer yan yana).
             var od2 = R.bittiDril != null ? Dril.Bul(R.bittiDril) : null; bool ayrintiVar = !string.IsNullOrEmpty(R.bittiBilgi);
             bool yuk = od != null && R.yukseltHazir, hdz = od != null && R.hedefHazir && R.hedef.gecerli;
-            int nTum = (yuk ? 1 : 0) + (hdz ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (od2 != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0), nIk = ayr ? nTum : Mathf.Min(1, nTum);
+            int nTum = (R.ustaDavet ? 1 : 0) + (yuk ? 1 : 0) + (hdz ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (od2 != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0), nIk = ayr ? nTum : Mathf.Min(1, nTum);
             float bh = Mathf.Max(BH, 50 * s), gap = 8 * s;
             string ct = UiKok.Buyuk(CtaBaslik(R.bittiDugme, R.bittiDugmeAlt)); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), cah = string.IsNullOrEmpty(R.bittiDugmeAlt) ? 0 : aCtaAlt.CalcHeight(Ic(R.bittiDugmeAlt), w);
             float ctaH = Mathf.Max(80 * s, cth + cah + 22 * s), blokH = ctaH + 12 * s + nIk * (bh + gap) + bh;
@@ -1048,6 +1058,7 @@ namespace BirdieSmash.Game
             float yb = Mathf.Max(y + 6 * s, H - bot - blokH);
             if (BuyukDugme(new Rect(x, yb, w, ctaH), ct, R.bittiDugmeAlt, s, al)) root.TekrarOyna(); yb += ctaH + 12 * s;
             int ki = 0; float kw = cift ? (w - gap) / 2 : w;
+            if (R.ustaDavet && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Usta'da dene · bir maç"), al)) root.UstaDene(); }
             if (od2 != null && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman: {0}", L.T(od2.ad)), al)) root.DrilOyna(od2.id); }
             if (yuk && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Ekipmanı yükselt"), al)) { root.AnaMenu(); if (root.ui != null) root.ui.SekmeAc(Sekme.Atolye); } }
             // 2026-11-02 hedef eşya: yalnız bu maçın Tüy'ü hedefi yetişir yaptıysa (sonraki maçlarda satır "Hazır" der, düğme çıkmaz).
