@@ -1,7 +1,6 @@
 {
  "fps": 30,
  "scale": 1.75,
- "bant": {"dz": -0.0210, "df": 0.0210, "r": 0.1431},
  "clips": [
   {
    "name": "idle",
@@ -236,7 +235,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.5237
+   "adim": 0.3382
   },
   {
    "name": "back_l",
@@ -247,7 +246,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.5237
+   "adim": 0.3382
   },
   {
    "name": "jump",
@@ -310,6 +309,28 @@
    "hold": null,
    "drop": null,
    "adim": 0.5761
+  },
+  {
+   "name": "geri_r",
+   "first": 1114,
+   "last": 1138,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.6482
+  },
+  {
+   "name": "geri_l",
+   "first": 1148,
+   "last": 1172,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.6482
   }
  ],
  "model": "tuycuk",
@@ -353,5 +374,10 @@
    "id": "karbon"
   }
  ],
- "hit": {}
+ "hit": {},
+ "bant": {
+  "dz": -0.0208,
+  "df": 0.0206,
+  "r": 0.1431
+ }
 }
