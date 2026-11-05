@@ -666,6 +666,7 @@ namespace BirdieSmash.Core
         // yalnız "donup kalma" cezası kalkar. Ayarlar'dan kapatılır; Usta yolu (bilerek seçilen zor merdiven) yardımsızdır.
         public const float KOSU_YARDIM_GEC = .35f;
         public bool kosuYardim; float sonDokun = -9;
+        public bool YardimKosuyor { get { return KosuYardimi() && me.manualT <= 0; } }   // Zor: yardım şu an koşturuyor (GameRoot ilk 2 kez "Koşu yardımı" der)
         bool KosuYardimi() { return kosuYardim && !easy && ogr == null && s != null && s.from == "op" && sonDokun < opHitAt && clock - opHitAt > KOSU_YARDIM_GEC; }
         public bool DurusNoktasi(out float x, out float y)
         {
