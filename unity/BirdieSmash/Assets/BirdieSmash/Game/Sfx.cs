@@ -95,6 +95,27 @@ namespace BirdieSmash.Game
             int s0 = (int)(t * SR), n = (int)(d * SR); var b = new Biquad("bandpass", f0, q);
             for (int i = 0; i < n && s0 + i < buf.Length; i++) { float u = i / (float)n; if (i % 32 == 0) b.Set("bandpass", expo ? f0 * Mathf.Pow(f1 / f0, u) : Mathf.Lerp(f0, f1, u), q); buf[s0 + i] += b.Run(R()) * v * zarf(u); }
         }
+        // Salon yansıması (2026-11-05 ses turu): Schroeder; 4 sönümlü tarak + 2 tümgeçiren, giriş 500 Hz highpass (kuyruk
+        // boğuk olmasın), 14 ms ön gecikme, çıkış 4,5 kHz lowpass. Kayıtlı badminton vuruşları 0,2–0,5 sn salon kuyruğu
+        // taşıyor; eski sentez 80 ms'de kesiliyordu ("kuru ve hep aynı"). Maliyet O(n), vuruş başına ~1 ms.
+        public void Salon( float wet, float rt, float damp)
+        {
+          float[] b = buf; int pre = (int)(.014f * SR), n = b.Length; var hp = new Biquad("highpass", 500, .707f);
+          var gir = new float[n]; for (int i = pre; i < n; i++) gir[i] = hp.Run(b[i - pre]);
+          float[] cd = { .0297f, .0371f, .0411f, .0437f }; var outv = new float[n];
+          for (int c = 0; c < 4; c++)
+          {
+            int d = (int)(cd[c] * SR), p = 0; float g = Mathf.Pow(10, -3 * cd[c] / rt) * .25f, lp = 0; var line = new float[d];
+            // .25 karışım kazancı geri beslemeye gömülü: hat içeriği ¼ ölçekte tutulur, çıkış doğrudan toplanır
+            for (int i = 0; i < n; i++) { float y = line[p]; lp = y * (1 - damp) + lp * damp; line[p] = gir[i] * .25f + lp * g * 4; outv[i] += y; if (++p == d) p = 0; }
+          }
+          foreach (var ad in new[] { .005f, .0017f })
+          {
+            int d = (int)(ad * SR), p = 0; var line = new float[d]; const float g = .7f;
+            for (int i = 0; i < n; i++) { float bu = line[p], x = outv[i]; outv[i] = -g * x + bu; line[p] = x + g * bu; if (++p == d) p = 0; }
+          }
+          var lp2 = new Biquad("lowpass", 4500, .707f); for (int i = 0; i < n; i++) b[i] += lp2.Run(outv[i]) * wet;
+        }
         public AudioClip Clip(string ad, float kazanc = 1, float gecikme = 0, float lowpass = 0)
         {
             int off = (int)(gecikme * SR); var d = new float[buf.Length + off]; Biquad lp = lowpass > 0 ? new Biquad("lowpass", lowpass, .707f) : null;
@@ -114,10 +135,14 @@ namespace BirdieSmash.Game
         const float MUZIK_DUZEY = .25f;
         readonly Dictionary<string, AudioClip[]> vses = new Dictionary<string, AudioClip[]>(); readonly Dictionary<string, AudioClip> cache = new Dictionary<string, AudioClip>();
         static readonly int[] PENTA = { 0, 2, 4, 7, 9 };
-        class Mix { public float a, str, frm, crk, ring, hiss; }
+        // Tür karışımı (2026-11-05 ses turu): pat = smaçın kuru şaklaması (2,9 kHz bandpass), rt/wet = salon kuyruğu süresi
+        // ve düzeyi. Drop kısık, parlak ve kısa; smaç kuru ve sert; clear en çok tel çınlaması.
+        class Mix { public float a, str, frm, crk, ring, hiss, pat, rt, wet; }
         static readonly Dictionary<string, Mix> HITMIX = new Dictionary<string, Mix> {
-            {"smash",new Mix{a=1,str=1,frm=.9f,crk=1,ring=.55f,hiss=1}},{"clear",new Mix{a=.72f,str=1,frm=.55f,crk=.25f,ring=1,hiss=.5f}},
-            {"drive",new Mix{a=.8f,str=.9f,frm=.7f,crk=.55f,ring=.5f,hiss=.6f}},{"drop",new Mix{a=.34f,str=.8f,frm=.12f,crk=0,ring=.9f,hiss=0}}};
+            {"smash",new Mix{a=1,str=.8f,frm=.7f,crk=1,ring=.5f,hiss=1,pat=1,rt=.5f,wet=.5f}},
+            {"clear",new Mix{a=.78f,str=1,frm=.5f,crk=.45f,ring=1,hiss=.5f,pat=.5f,rt=.55f,wet=.5f}},
+            {"drive",new Mix{a=.8f,str=.9f,frm=.6f,crk=.7f,ring=.55f,hiss=.6f,pat=.75f,rt=.45f,wet=.45f}},
+            {"drop",new Mix{a=.42f,str=.75f,frm=.1f,crk=.4f,ring=.6f,hiss=0,pat=.35f,rt=.35f,wet=.4f}}};
 
         public static Sfx Build(Transform root, Transform listener)
         {
@@ -158,8 +183,10 @@ namespace BirdieSmash.Game
             isitSira.Enqueue(() => Vurus("clear", "good", false, false, true, false)); isitSira.Enqueue(() => Vurus("drop", "good", false, false, true, false));
             foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect", "poor" }) { string tt = t, qq = q; isitSira.Enqueue(() => Vurus(tt, qq, false, false, false, false)); }
             isitSira.Enqueue(() => Vurus("smash", "perfect", false, true, false, false)); isitSira.Enqueue(() => Vurus("smash", "good", false, true, false, false));
+            isitSira.Enqueue(() => Vurus("jump", "perfect", false, false, false, false)); isitSira.Enqueue(() => Vurus("jump", "good", false, false, false, false));
             foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect", "poor" }) { string tt = t, qq = q; isitSira.Enqueue(() => Vurus(tt, qq, false, false, false, true)); }
             isitSira.Enqueue(() => Vurus("clear", "good", false, false, true, true)); isitSira.Enqueue(() => Vurus("drop", "good", false, false, true, true));
+            isitSira.Enqueue(() => Vurus("jump", "good", false, false, false, true));
         }
         void IsitIsle()
         {
@@ -169,35 +196,57 @@ namespace BirdieSmash.Game
         static string Tur(string type) { return type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type == "push" ? "drive" : HITMIX.ContainsKey(type ?? "") ? type : "clear"; }
         AudioClip Vurus(string type, string q, bool slice, bool super_, bool serve, bool op)
         {
-            var GS = Ayar.GS; type = Tur(type);
-            string k = type + q + slice + super_ + serve + op + GS.ton.ToString("0.000") + GS.kafa.ToString("0.000");
+            // sıçrayarak smaç smaç karışımını kullanır ama kuyruğu dolu (Dolu): önbellek anahtarına girer
+            var GS = Ayar.GS; bool jump = type == "jump"; type = Tur(type); bool dolu = super_ || jump;
+            string k = type + q + slice + super_ + serve + op + jump + GS.ton.ToString("0.000") + GS.kafa.ToString("0.000");
             AudioClip[] v; if (!vses.TryGetValue(k, out v))
             {
                 v = new AudioClip[2];
-                for (int j = 0; j < 2; j++) { var s = new Synth(.4f, seed++); VurusCal(s, type, q, slice, super_, serve, GS.ton, GS.kafa); v[j] = op ? s.Clip("vurus_op", .5f, .03f, 3000) : s.Clip("vurus"); }
+                for (int j = 0; j < 2; j++) { var s = new Synth(dolu ? .65f : .45f, seed++); VurusCal(s, type, q, slice, super_, serve, GS.ton, GS.kafa, jump); v[j] = op ? s.Clip("vurus_op", .5f, .03f, 3000) : s.Clip("vurus"); }
                 vses[k] = v;
             }
             return v[rnd.Next(2)];
         }
-        void VurusCal(Synth A, string type, string q, bool slice, bool super_, bool serve, float ton, float kafa)
+        // 2026-11-05 ses turu (yasin: "tatminkar ve gerçeğe yakın"): yasin'in örnek kayıtları yalnız ölçü olarak kullanıldı
+        // (lisansı belirsiz, oyuna girmez). Kayıtlarda enerjinin çoğu 0,5–2 kHz'te ve 0,2–0,5 sn kuyruk var; eski sentez
+        // 80 ms, tiz gürültü ağırlıklıydı. Eklenenler: tel yatağının alt modu (≈780 Hz) ve çerçeve gövdesi (1,1 kHz),
+        // beşinci tel kısmisi, smaçta kuru "pat", salon kuyruğu; sıçrayarak/süper smaçta dolu gövde (175 Hz) ve takip
+        // savruluşu. Tür/isabet/slice çarpanları ve rakip süzgeci aynı kural.
+        void VurusCal(Synth A, string type, string q, bool slice, bool super_, bool serve, float ton, float kafa, bool jump)
         {
-            var T = HITMIX[type]; float a = T.a * (super_ ? 1.3f : 1) * (serve ? .55f : 1), str = T.str, frm = T.frm, crk = T.crk, ring = T.ring, hiss = T.hiss;
-            if (q == "poor") { str *= .22f; frm *= 2.2f; crk *= .3f; ring *= .4f; } else if (q == "perfect") { str *= 1.15f; frm *= .6f; crk *= 1.1f; }
-            if (slice) { str *= .55f; crk *= .25f; frm *= .7f; }
-            float bus = a * 1.35f, f0 = 1480 * ton * (1 + A.R() * .025f); float[] m = { 1, 1.63f, 2.41f, 3.3f }, g = { .24f, .13f, .08f, .045f };
-            for (int i = 0; i < 4; i++) A.Decay(0, f0 * m[i], "sine", g[i] * str * bus, (.1f - i * .018f) * ring / ton, 1.045f);
-            A.Burst(0, .004f, "highpass", 3200 * ton, .5f * str * bus, 1, 2);
-            if (crk > 0) A.Burst(0, .014f, "bandpass", 4300 * Mathf.Sqrt(ton), .5f * crk * bus, 1.1f, 4);
-            A.Decay(0, 235 * kafa, "triangle", .2f * frm * bus, .045f, 1.15f); A.Burst(0, .03f, "lowpass", 360 * kafa, .32f * frm * bus, .8f, 3);
-            if (q == "poor") A.Decay(0, 640 * kafa, "square", .1f * bus, .06f, 1.1f);
-            A.Burst(.001f, .008f, "bandpass", 1300, .22f * bus, 2, 2);
-            if (hiss > 0) A.Burst(.004f, .035f, "bandpass", 6200, .07f * hiss * bus, .7f, 2);
-            if (slice)
-            {
-                A.NoiseSweep(0, .07f, 2200 * ton, 5200 * ton, 3, .2f * bus, true, u => Mathf.Sin(Mathf.PI * u));
-                for (int k = 0; k < 4; k++) A.Burst(.08f + k * .028f, .014f, "bandpass", 4800, (.05f - k * .01f) * bus, 1, 2);
-            }
-            A.Decay(.055f, f0, "sine", .05f * str * bus, .05f); A.Burst(.02f, .17f, "lowpass", 1700, .075f * bus, .7f, 2);
+          var T = HITMIX[type]; bool dolu = super_ || jump;
+          float a = T.a * (super_ ? 1.3f : 1) * (serve ? .55f : 1), str = T.str, frm = T.frm, crk = T.crk, ring = T.ring, hiss = T.hiss, pat = T.pat;
+          if (q == "poor") { str *= .22f; frm *= 2.2f; crk *= .3f; ring *= .4f; pat *= .4f; } else if (q == "perfect") { str *= 1.15f; frm *= .6f; crk *= 1.15f; pat *= 1.15f; }
+          if (slice) { str *= .55f; crk *= .25f; frm *= .7f; pat *= .4f; }
+          float bus = a * 1.2f, f0 = 1480 * ton * (1 + A.R() * .025f); float[] m = { 1, 1.63f, 2.41f, 3.3f, 4.37f }, g = { .2f, .13f, .1f, .07f, .045f };
+          // tel yatağı: beş kısmi, tiz kısmiler eskisinden güçlü (parlak "ping")
+          for (int i = 0; i < 5; i++) A.Decay(0, f0 * m[i], "sine", g[i] * str * bus, (.11f - i * .017f) * ring / ton, 1.045f);
+          // ani çatlama: çok kısa highpass gürültü (tel yatağının topa çarpışı) + bandpass "pat" (smaçın kuru şaklaması)
+          A.Burst(0, .003f, "bandpass", 4600 * ton, .5f * str * bus, .8f, 2);
+          // tel yatağının alt modu (≈780 Hz) ve çerçeve gövdesi: gerçek raket sesinin enerjisi 0,5–2 kHz'te
+          A.Decay(0, 780 * Mathf.Sqrt(ton) * kafa, "sine", .3f * str * bus * (type == "drop" ? .35f : 1), .05f * ring / ton + .02f, 1.06f);
+          A.Burst(0, .012f, "bandpass", 1100 * kafa, .5f * bus * (.4f + .6f * frm), 1.2f, 3);
+          if (crk > 0) A.Burst(0, .012f, "bandpass", 4300 * Mathf.Sqrt(ton), .55f * crk * bus, 1.1f, 4);
+          if (pat > 0) A.Burst(0, .009f, "bandpass", 2900 * Mathf.Sqrt(ton), .7f * pat * bus, 1.6f, 3);
+          // kafa/çerçeve
+          A.Decay(0, 235 * kafa, "triangle", .16f * frm * bus, .04f, 1.15f); A.Burst(0, .025f, "lowpass", 380 * kafa, .25f * frm * bus, .8f, 3);
+          if (q == "poor") A.Decay(0, 640 * kafa, "square", .1f * bus, .06f, 1.1f);
+          // mantar tık + tüy hışırtısı
+          A.Burst(.001f, .006f, "bandpass", 1500, .18f * bus, 2, 2);
+          if (hiss > 0) A.Burst(.003f, .03f, "bandpass", 6800, .05f * hiss * bus, .7f, 2);
+          if (dolu)
+          {
+            // sıçrayarak / süper smaç: dolu gövde (180 Hz) + takip savruluşu (raket havayı yarar, 3 kHz → 1,1 kHz iner)
+            A.Decay(0, 175 * kafa, "sine", .1f * bus, .09f, 1.3f);
+            A.NoiseSweep(.012f, .26f, 3200, 1000, 1.4f, .1f * bus, true, u => Mathf.Pow(Mathf.Sin(Mathf.PI * Mathf.Min(1, u * 1.3f)), 1.5f));
+          }
+          if (slice)
+          {
+            A.NoiseSweep(0, .07f, 2200 * ton, 5200 * ton, 3, .2f * bus, true, u => Mathf.Sin(Mathf.PI * u));
+            for (int k = 0; k < 4; k++) A.Burst(.08f + k * .028f, .014f, "bandpass", 4800, (.05f - k * .01f) * bus, 1, 2);
+          }
+          // salon: smaçta kısa ve kuru, sıçramada uzun ve dolu
+          A.Salon(T.wet * (dolu ? 1.5f : 1), T.rt * (dolu ? 1.7f : 1), .35f);
         }
 
         AudioClip Bir(string k, System.Action<Synth> f, float sec)
@@ -258,7 +307,24 @@ namespace BirdieSmash.Game
         void Kick(float v) { src.PlayOneShot(Bir("k" + v.ToString("0.000"), s => s.Sweep(0, .25f, "sine", t => 130 * Mathf.Pow(42f / 130, Mathf.Min(1, t / .14f)), t => v * Mathf.Pow(.0001f / v, Mathf.Min(1, t / .22f))), .26f)); }
         void Whistle() { if (Kayitli("duduk", .6f)) return; src.PlayOneShot(Bir("duduk", s => s.Sweep(0, .52f, "sine", t => 2600 * Mathf.Pow(700f / 2600, Mathf.Min(1, t / .45f)), t => .025f * Mathf.Pow(.004f, Mathf.Min(1, t / .5f))), .53f)); }
         public void Squeak() { if (Kayitli("gicirti", .8f)) return; src.PlayOneShot(Bir("gicirti", s => s.Sweep(0, .13f, "sine", t => t < .06f ? Mathf.Lerp(2300, 3400, t / .06f) : Mathf.Lerp(3400, 2800, Mathf.Min(1, (t - .06f) / .04f)), t => .025f * Mathf.Pow(.004f, Mathf.Min(1, t / .12f))), .14f)); }
-        public void Floor(bool big) { if (Kayitli(big ? "yer_sert" : "yer", big ? 1 : .7f)) { if (big) Kick(.18f); return; } Gurultu(.05f, "lowpass", big ? 600 : 1100, big ? .25f : .12f); if (big) Kick(.18f); }
+        // Yer (2026-11-05): eski 50 ms boğuk gürültü yerine mantarın tıkırtısı + gövde, tüy topun sekip ikinci/üçüncü
+        // küçük vuruşu (125 ve 220 ms) ve tüylerin yere yatma hışırtısı; kayıttaki gibi enerji 0,5–1 kHz'te.
+        public void Floor(bool big) { if (Kayitli(big ? "yer_sert" : "yer", big ? 1 : .7f)) { if (big) Kick(.18f); return; } src.PlayOneShot(Bir(big ? "yer_s" : "yer_y", sy => YerCal(sy, big), .5f), big ? .8f : .6f); if (big) Kick(.18f); }
+        static void YerCal(Synth A, bool big)
+        {
+          float k = big ? 1.5f : 1;
+          // ilk temas: mantarın tıkırtısı (3 kHz) + hafif gövde; tüy top seker, ikinci küçük vuruş, sonra tüyler üstüne yatar
+          float[] t = { 0, .125f, .22f }, v = { 1, .33f, .12f };
+          for (int i = 0; i < 3; i++)
+          {
+            A.Burst(t[i], .003f, "bandpass", 2800 * (1 + i * .06f), .25f * v[i] * k, 1.4f, 2);
+            A.Burst(t[i], .014f, "bandpass", 720 * (1 + i * .05f), .9f * v[i] * k, 1.5f, 3);
+            A.Decay(t[i], 610 * (1 + i * .08f), "sine", .14f * v[i] * k, .03f);
+            A.Burst(t[i], .025f, "lowpass", 600, .1f * v[i] * k, .8f, 3);
+          }
+          A.NoiseSweep(.12f, .1f, 4800, 7000, 1.6f, .025f * k, true, u => Mathf.Sin(Mathf.PI * u));
+          A.Salon(.4f, .45f, .4f);
+        }
         // file: k 0 drop … 1 smaç; smaçta ağ "puf" diye yutar, dropta yalnız hışırtı; bant kordon tınlar
         public void Net(float k, bool tape)
         {
