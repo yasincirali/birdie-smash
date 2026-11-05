@@ -145,7 +145,7 @@ namespace BirdieSmash.Game
 
         public void StartMatch(bool ogr, bool kisa, bool ilk)
         {
-            ustaDeneBu = ustaDeneSonraki && !ogr; ustaDeneSonraki = false;   // Usta daveti yalnız bu maç (Ayar.easy değişmez)
+            ustaDeneBu = ustaDeneSonraki && !ogr; ustaDeneSonraki = false;   // Zor daveti yalnız bu maç (Ayar.zorluk değişmez; maç Zor kademesinde: koşu sende, yardım açık)
             var o = Secenek(ogr); o.ilk = ilk; o.ogrKisa = kisa;
             // Kariyer (2026-10-26, harita): haritadan seçilen açık basamak, yoksa sıradaki. Uzunluk basamaktan (Tur 1'de 0 =
             // oyuncunun seçimi, bugünkü davranış; Asya Turu 5, finali 11).
@@ -162,7 +162,7 @@ namespace BirdieSmash.Game
             Ayar.GearHesap();
             // Usta daveti bayrağı burada TÜKETİLİR: Günün maçı/Usta yolu/görev StartMatch'e uğramadan Secenek çağırır, bayrak sızmasın.
             bool ud = ustaDeneBu && !ogr; ustaDeneBu = false; ustaDeneMac = ud;
-            return new MatchOptions { easy = Ayar.easy && !ud, kosuYardim = Ayar.kosuYardim, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0 };
+            return new MatchOptions { easy = Ayar.easy && !ud, kosuYardim = ud || Ayar.kosuYardim, rakipK = ud ? 1 : Ayar.RakipK, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0 };
         }
         // Maç kurulumunun ortak kuyruğu (2026-10-26: dört mod aynı yoldan; davranış eski StartMatch'le birebir).
         void MacKur(int tohum, MatchOptions o)
@@ -262,7 +262,7 @@ namespace BirdieSmash.Game
             string kNot = ""; bool kariyerIlk = false; int yeniYildiz = 0; bittiYildiz = null; int ekTuy = 0, ekXp = 0; string ekAd = null; bittiSkor = null;
             BittiSifirla(); bittiKazandi = won;
             // Kolay'dan Usta'ya davet (stüdyo incelemesi 2026-11-05, oyun tasarımı 6): Kolay'da rahat kazanan oyuncuya (3+ galibiyet,
-            // bu maçta 5+ tam orta) tek maçlık "Usta'da dene". Ayar değişmez, maç Usta ödülüyle (×1,25) oynanır; en çok 2 kez gösterilir.
+            // bu maçta 5+ tam orta) tek maçlık "Zor'u dene" (2026-11-05 dört kademe: önce Usta'ydı; Zor koşu yardımlı, adım daha küçük). Ayar değişmez, maç Usta ödülüyle (×1,25) oynanır; en çok 2 kez gösterilir.
             ustaDavet = won && M.easy && M.ogr == null && M.stil.usta < 0 && mod == Mod.Normal && !ustaDeneMac && Ayar.wins >= 3 && M.perfects >= 5 && PlayerPrefs.GetInt("tuytop_usta_davet", 0) < 2;
             if (ustaDavet) { PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); PlayerPrefs.Save(); }
             if (KariyerVeri.Var(M.stil.kariyer))

@@ -94,7 +94,7 @@ namespace BirdieSmash.Core
     public class MatchOptions
     {
         public bool easy = true, reduce, ilk; public int target = 21; public Style stil; public string saha = "salon";
-        public int bestRally; public bool ogr, ogrKisa, kosuYardim; public string formaRenk = "#4fb8ff";
+        public int bestRally; public bool ogr, ogrKisa, kosuYardim; public float rakipK = 1; public string formaRenk = "#4fb8ff";
         public GearStats gs;   // ekipman çarpanları (Gear.Hesap); null = nötr (bot testleri, eski imza)
         // 2026-10-26: Günün maçı değiştiricisi (Core/Gunluk; null = yok) ve antrenman görevi (Core/Dril; ogr ile birlikte).
         public string degistirici; public DrilTanim dril;
@@ -183,7 +183,7 @@ namespace BirdieSmash.Core
             me.x = Court.MID; me.y = Court.L - 2.2f; op.x = Court.MID; op.y = 2.2f;
             if (o.ogr) OgrKur(o.ogrKisa);
             if (!o.ogr) DegistiriciKur(o.degistirici);
-            UstaGucu(); YardimUygula(o.yardim);
+            UstaGucu(); YardimUygula(o.yardim); ZorlukRakip(o.rakipK);
             SetupServe();
         }
         // Usta zorluğu (2026-10-27, oyun incelemesi): Usta'da oyuncu koşar, erişim 1,15 m, ağır çekim az; rakibin gücü (g) Kolay
@@ -194,6 +194,12 @@ namespace BirdieSmash.Core
         void UstaGucu()
         {
             if (easy || ogr != null || stil.usta >= 0) return; float k = KariyerVeri.Usta.carpan; if (k == 1) return;
+            stil = stil.Clone(); stil.hiz *= k; stil.hata /= k;
+        }
+        // Zorluk kademesi (Ayar.zorluk notu): Kolay'da rakip yumuşar, Usta'da güçlenir; Usta yolu kendi g'siyle, antrenör dokunulmaz.
+        void ZorlukRakip(float k)
+        {
+            if (k == 1 || ogr != null || stil.usta >= 0) return;
             stil = stil.Clone(); stil.hiz *= k; stil.hata /= k;
         }
         // Yardım kademesi (Ilerleme.Yardim notu): Usta çarpanıyla aynı ölçek, onun üstüne. Kaynak tarz değişmez (Clone).

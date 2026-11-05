@@ -182,12 +182,9 @@ namespace BirdieSmash.Game
             Erisim.Etiket(bil, bil.text, "metin"); c.Add(bil);
             // Zorluk kartın üstünde seçilir (yasin 2026-11-05 "kariyer patikasını Kolay modda da oynayabilmeliyim"): eskiden kariyer
             // yalnız Hızlı maç/Ayarlar'daki seçimi izliyordu ve kartta yalnız yazıydı; oyuncu kariyeri Usta'ya kilitli sanıyordu.
-            // Aynı ayar (tuytop_easy): seçim her yerde aynı kalır.
+            // Aynı ayar (tuytop_zorluk, dört kademe): seçim her yerde aynı kalır.
             var zs = Satir(); c.Add(zs);
-            zs.Add(Cip(L.T("Kolay"), Ayar.easy, () => { Ayar.easy = true; Ayar.Kaydet(); Degisti(); }));
-            zs.Add(Cip(L.T("Usta"), !Ayar.easy, () => { Ayar.easy = false; Ayar.Kaydet(); Degisti(); }));
-            c.Add(Yazi(Ayar.easy ? L.T("Oyuncun topa kendiliğinden koşar, sen yalnız vurursun") : L.T("Koşmak da sende: kortta dokunduğun yere koşar"), 12, "soluk"));
-            UstaYardimSecenek(c);
+            ZorlukSatir(zs, c);
             c.Add(Grup(L.T("Yıldızlar")));
             var gv = Match.GorevBul(kb.gorev);
             YildizSatir(c, (m & Ilerleme.KAZAN) != 0, L.T("Kazan"));

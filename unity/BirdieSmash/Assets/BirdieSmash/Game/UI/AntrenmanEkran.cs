@@ -123,7 +123,7 @@ namespace BirdieSmash.Game
             dk.Add(Yazi(L.T(g.deg.ad), 16, "kalin")); dk.Add(Yazi(L.T(g.deg.aciklama), 14, "ipucu"));
             Erisim.Etiket(dk, L.T(g.deg.ad) + ". " + L.T(g.deg.aciklama), "metin");
             bool usta = g.deg.id == "usta";
-            var bil = Yazi(L.T("Saha") + ": " + L.T(CourtView.SAHA[g.saha].ad) + " · " + L.T("{0} sayı", g.uzunluk) + " · " + L.T(usta || !Ayar.easy ? "Usta" : "Kolay"), 13, "soluk");
+            var bil = Yazi(L.T("Saha") + ": " + L.T(CourtView.SAHA[g.saha].ad) + " · " + L.T("{0} sayı", g.uzunluk) + " · " + L.T(usta ? "Usta" : Ayar.ZorlukAd), 13, "soluk");
             Erisim.Etiket(bil, bil.text, "metin"); c.Add(bil);
             var od = Yazi(alindi ? "✓ " + L.T("Bugünün ödülü alındı. Yarın yenisi.") : L.T("Kazanınca bir kez: +{0} Tüy, +{1} XP", Gunluk.OdulTuy, Gunluk.OdulXp), 14, alindi ? "durum-gecti" : "altin");
             Erisim.Etiket(od, od.text, "metin"); c.Add(od);

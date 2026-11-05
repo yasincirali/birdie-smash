@@ -41,7 +41,19 @@ namespace BirdieSmash.Game
 
     public static class Ayar
     {
-        public static bool kosuYardim = true, easy = true, reduce, reduceSecim, reduceSistem, ses = true, muzik = true, kariyerModu, antrenman, sampiyon, fps, kosIpucu;
+        // Zorluk (2026-11-05, yasin: "birden fazla zorluk modu seçilebilir, rakibin zorluğunu da kullanabilirsin"): dört kademe tek
+        // sayıda. 0 Kolay (otomatik koşu, rakip yumuşak) · 1 Orta (otomatik koşu, rakip normal = eski Kolay) · 2 Zor (koşmak sende,
+        // geç kalınca koşu yardımı) · 3 Usta (koşmak sende, yardımsız, rakip güçlü = eski Usta'nın bir üstü). easy/kosuYardim eski
+        // okuyucular için türetilmiş kalır (Match, tur betikleri); yazanlar kademeye çevrilir. Kayıt tuytop_zorluk; yoksa eski
+        // tuytop_easy'den taşınır (1 → Orta, 0 → Usta), oyuncunun bugünkü oyunu değişmez.
+        public static int zorluk = 1;
+        public static readonly string[] ZORLUK_AD = { "Kolay", "Orta", "Zor", "Usta" };
+        public static readonly float[] ZORLUK_RAKIP = { .85f, 1f, 1f, 1.15f };   // rakip hız ×k, hata ÷k (UstaGucu ile aynı ölçek)
+        public static string ZorlukAd => ZORLUK_AD[Mathf.Clamp(zorluk, 0, 3)];
+        public static float RakipK => ZORLUK_RAKIP[Mathf.Clamp(zorluk, 0, 3)];
+        public static bool easy { get => zorluk <= 1; set { if (value != easy) zorluk = value ? 1 : 3; } }
+        public static bool kosuYardim { get => zorluk == 2; set { if (!easy) zorluk = value ? 2 : 3; } }
+        public static bool reduce, reduceSecim, reduceSistem, ses = true, muzik = true, kariyerModu, antrenman, sampiyon, fps, kosIpucu;
         public static int target = 5, kariyer, bestRally, wins, gorev, puan; public static int devirSayisi = -1;
         // Kariyer ilerlemesi (yıldızlar, turlar). kariyerSecim: haritadan seçilen basamak (genel indeks); -1 = sıradaki.
         // Kaydedilmez: haritadan bir basamağı yeniden oynamak "sıradaki"yi değiştirmesin.
@@ -105,7 +117,7 @@ namespace BirdieSmash.Game
             string len = Str("tuytop_len", null);
             if (len == "len5" || len == "len11" || len == "len21") target = int.Parse(len.Substring(3));
             else { int t = EskiInt("tuytop_target", 5); target = t == 11 || t == 21 ? t : 5; }   // bilinmeyen (eski len7 dahil) 5 olur
-            easy = EskiInt("tuytop_easy", 1) == 1; kosuYardim = EskiInt("tuytop_kosu_yardim", 1) == 1;
+            zorluk = Mathf.Clamp(EskiInt("tuytop_zorluk", EskiInt("tuytop_easy", 1) == 1 ? 1 : 3), 0, 3);
             kosIpucu = EskiInt("tuytop_kos_ipucu", 0) == 1;   // 2026-10-29: "Dokun: oraya koş" koşu sende ilk maçta görüldü
             saha = Str("tuytop_saha", "salon"); if (!CourtView.SAHA.ContainsKey(saha)) saha = "salon";
             // 2026-10-27 (yasin build 41: "3B model kaybolmuş, seçmeme rağmen görmedim"): build 40 notu Ayarlar'da "Sade" vaat
@@ -185,7 +197,7 @@ namespace BirdieSmash.Game
             kayit.Set("tuytop_v2", Json.Write(new Dictionary<string, object> { { "rally", (double)bestRally }, { "wins", (double)wins }, { "kariyer", (double)kariyer }, { "gorev", (double)gorev }, { "sampiyon", sampiyon } }));
             PlayerPrefs.SetString("tuytop_len", "len" + target); PlayerPrefs.SetString("tuytop_saha", saha); PlayerPrefs.SetString("tuytop_model", model); PlayerPrefs.SetString("tuytop_kamera", kamera);
             PlayerPrefs.SetString("tuytop_mod", kariyerModu ? "k" : "s"); if (antrenman) PlayerPrefs.SetString("tuytop_antrenman", "1");
-            PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_kosu_yardim", kosuYardim ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0); PlayerPrefs.SetInt("tuytop_muzik", muzik ? 1 : 0); if (kosIpucu) PlayerPrefs.SetInt("tuytop_kos_ipucu", 1);
+            PlayerPrefs.SetInt("tuytop_zorluk", zorluk); PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0); PlayerPrefs.SetInt("tuytop_muzik", muzik ? 1 : 0); if (kosIpucu) PlayerPrefs.SetInt("tuytop_kos_ipucu", 1);
             PlayerPrefs.SetString("tuytop_dil", dil); PlayerPrefs.SetString("tuytop_puan", puan.ToString()); PlayerPrefs.SetString("tuytop_yazi", yazi); PlayerPrefs.SetString("tuytop_fps", fps ? "1" : "0");
             var rg = new Dictionary<string, object>(); foreach (var kv in RGOR) rg[kv.Key] = kv.Value; PlayerPrefs.SetString("tuytop_raket_gor", Json.Write(rg));
             var gv = new Dictionary<string, object>(); foreach (var kv in GORUNUM) gv[kv.Key] = kv.Value; foreach (var kv in KOZ) gv[kv.Key] = kv.Value; gv["ayk_gor"] = AYK_GOR; PlayerPrefs.SetString("tuytop_gorunum", Json.Write(gv));
