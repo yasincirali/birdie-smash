@@ -143,6 +143,7 @@ static class BotMac
 
         if (gorevN == 0) Fail("görev olayı hiç gelmedi");
         OyunIncelemesi();   // 2026-10-27 (ayrı satır: ek kontrol listesi başka dallarda da büyüyor)
+        Zorluklar();   // 2026-11-05 dört kademe
         Baskilar();   // 2026-10-29 baskı, drive düellosu, file önü kill (ayrı satır)
         Yardimlar();   // 2026-10-29 kayıpta rakip yumuşar (ayrı satır)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
@@ -181,6 +182,27 @@ static class BotMac
         if (kz < n * .7) Fail("Tur 1 ilk basamak Kolay botla %" + (100 * kz / n) + " (≥ %70)");
         if (ku < n * .2) Fail("Tur 1 2. basamak Usta botla %" + (100 * ku / n) + " (≥ %20)");
         Console.WriteLine("oyun incelemesi: Hızlı maç rakibi g " + g0 + " (sıradaki basamak), Usta çarpanı " + k + "; Tur 1/1 Kolay %" + (100 * kz / n) + ", Tur 1/2 Usta %" + (100 * ku / n));
+    }
+    // 2026-11-05 dört kademe (Ayar.zorluk): rakip çarpanı yalnız Usta yolu ve antrenman dışında, kaynak tarz değişmez; aynı rakip
+    // ve aynı botla galibiyet Kolay ≥ Orta, Zor ≥ Usta (Zor/Usta botu geç koşar: 0,45–0,57 sn, koşu yardımı farkı görünsün).
+    static void Zorluklar()
+    {
+        var st = Match.KariyerRakip(1);
+        var a = new Match(3, new MatchOptions { easy = true, stil = st, target = 5, rakipK = .85f });
+        var y = new Match(3, new MatchOptions { easy = false, stil = UstaYolu.Rakip(0), target = 5, rakipK = 1.15f });
+        if (Math.Abs(a.stil.hiz - st.hiz * .85f) > 1e-5 || y.stil.hiz != UstaYolu.Rakip(0).hiz || st.hiz != Match.KariyerRakip(1).hiz) Fail("zorluk rakip çarpanı: Usta yolu dışı, kaynak tarz değişmez");
+        float[] K = { .85f, 1f, 1f, 1.15f }; int[] w = new int[4]; int n = 20;
+        for (int m = 0; m < n; m++)
+            for (int z = 0; z < 4; z++)
+            {
+                bool easy = z <= 1;
+                var M = new Match(1300 + m, new MatchOptions { easy = easy, kosuYardim = z == 2, rakipK = K[z], stil = st, target = 5 }); int guard = 0;
+                while (!M.over && guard++ < 60 * 60 * 20) { Bot(M, 1f / 60f, .1); if (!easy) UstaKos(M, .45f); M.Update(1f / 60f); M.events.Clear(); }
+                if (M.sc[0] > M.sc[1]) w[z]++;
+            }
+        if (w[0] + 2 < w[1]) Fail("Kolay Orta'dan zor çıktı: " + w[0] + " < " + w[1]);
+        if (w[3] > w[2] + 2) Fail("Usta Zor'dan kolay çıktı: " + w[3] + " > " + w[2]);
+        Console.WriteLine("zorluklar (Tur 1/2, " + n + " maç): Kolay %" + (100 * w[0] / n) + ", Orta %" + (100 * w[1] / n) + ", Zor %" + (100 * w[2] / n) + ", Usta %" + (100 * w[3] / n));
     }
     // 2026-10-29 (yasin: çocuklar onun hesabında zorlandı): Ilerleme.Yardim kayıpta artar, galibiyette azalır, kayda yazılır;
     // Match rakibi ×YardimK yumuşatır, Usta yolu ve antrenman değişmez; zayıf botla en üst kademe galibiyet oranını belirgin artırır.
@@ -246,10 +268,11 @@ static class BotMac
     }
     // Usta botu (Denge.UstaKos ile aynı): rakip vurduktan ~0,25 sn sonra topun alınacağı yere (±30 cm), vuruştan sonra ortaya.
     static Shuttle kosTop; static float kosGecik;
-    static void UstaKos(Match M)
+    static void UstaKos(Match M) { UstaKos(M, .25f); }
+    static void UstaKos(Match M, float gec0)
     {
         if (M.s == null || M.s.dead) return;
-        if (M.s != kosTop) { kosTop = M.s; kosGecik = (float)(.25 + rng.NextDouble() * .12); if (M.s.from == "me") M.RunTo(Court.MID, Court.NET + 3.3f, .8f); }
+        if (M.s != kosTop) { kosTop = M.s; kosGecik = (float)(gec0 + rng.NextDouble() * .12); if (M.s.from == "me") M.RunTo(Court.MID, Court.NET + 3.3f, .8f); }
         if (M.s.from == "op" && kosGecik > 0 && M.clock - M.opHitAt >= kosGecik && M.icpt != null && M.icpt.who == "me")
         { kosGecik = -1; M.RunTo(M.icpt.x + (float)(rng.NextDouble() - .5) * .6f, M.icpt.y + (float)(rng.NextDouble() - .5) * .6f, 1.2f); }
     }
@@ -1369,7 +1392,8 @@ static class BotMac
                     if (e.kind != Ev.Hit || e.serve) continue; int i = e.who == "me" ? 0 : 1; var a = i == 0 ? M.me : M.op; string c = a.clip; temas[i]++; gor.Add(c);
                     if (a.hamleGor && Match.HAMLE.ContainsKey(c)) gor.Add(Match.HAMLE[c]);
                     bool bh = c.StartsWith("bh_"); float yan = (a.tmX - a.x) * (i == 0 ? 1 : -1);
-                    if (!bh && yan < -(a.tmZ > 1.95f ? .6f : .25f) || bh && yan > .1f) tarafYanlis[i]++;
+                    // rth (round-the-head, 2026-11-05): baş üstünde sol omuz tarafı bilerek forehand dışı; RTH_ERIS (+.25 tolerans) içinde doğru taraf.
+                    if (c == "rth" ? (yan > .1f || yan < -Match.RTH_ERIS - .25f) : (!bh && yan < -(a.tmZ > 1.95f ? .6f : .25f) || bh && yan > .1f)) tarafYanlis[i]++;
                     if (sonPrep[i] != null && sonPrep[i].StartsWith("bh_") != bh) temasEl[i]++; sonPrep[i] = null;
                     if (i == 1 && (c == "low" || c == "bh_low" || c == "net" || c == "bh_drive" || c == "drive")) { opAlt++; if (!bh) opAltFh++; }
                 }
@@ -1386,7 +1410,7 @@ static class BotMac
         }
         if (hamleDus[1] > temas[1] / 10) Fail("vuruş: rakip hamle hazırlığından ayakta vuruşa dönüyor " + hamleDus[1]);
         if (opAltFh * 2 < opAlt) Fail("vuruş: rakip alçak vuruşların çoğunu backhand vuruyor (%" + (100f * opAltFh / Math.Max(1, opAlt)).ToString("0") + ")");
-        foreach (var need in new[] { "smash", "clear", "drop", "jump", "bh_over", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge" })
+        foreach (var need in new[] { "smash", "clear", "drop", "jump", "bh_over", "rth", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge" })
             if (!gor.Contains(need)) Fail("vuruş: hiç görülmeyen vuruş klibi " + need);
     }
 

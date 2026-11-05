@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 // Ortak yardımcılar: koordinat çevirisi, malzeme, prosedürel doku ve mesh.
 // Neden kodla: demo sahnesi tek satır sahne dosyası olmadan, her Unity sürümünde aynı kurulsun;
 // sanatçı varlıkları geldikçe bu fabrikalar yerini prefab'lara bırakır.
@@ -105,6 +106,24 @@ namespace BirdieSmash.Game
             var m = new Material(add); m.SetColor("_TintColor", c * .5f); if (t != null) m.mainTexture = t; return m;
         }
         // Kesikli çizgi dokusu (HTML setLineDash): u boyunca dolu/boş; LineRenderer textureMode=Tile ile tekrarlar.
+        // LED pano dokusu (2026-11-05): 3×5 nokta yazı tipi, her harf 4 sütun; yanan nokta renkli, sönük nokta zeminden biraz açık
+        // (gerçek LED panoda sönük diyot da seçilir). Nokta 2×2 piksel + 1 piksel ara, Point süzgeç: uzaktan bile keskin.
+        static readonly Dictionary<char, string> LED_HARF = new Dictionary<char, string> {
+            {'A',"010101111101101"},{'B',"110101110101110"},{'D',"110101101101110"},{'E',"111100110100111"},{'H',"101101111101101"},
+            {'I',"111010010010111"},{'L',"100100100100111"},{'M',"101111111101101"},{'R',"110101110101101"},{'S',"011100010001110"},
+            {'Y',"101101010010010"},{'0',"111101101101111"},{'3',"111001011001111"},{' ',"000000000000000"}};
+        public static Texture2D LedTex(string yazi, Color on, Color bg)
+        {
+            const int SUT = 50, SAT = 9, P = 3; var t = new Texture2D(SUT * P, SAT * P, TextureFormat.RGBA32, false); t.filterMode = FilterMode.Point; t.wrapMode = TextureWrapMode.Clamp;
+            var px = new Color32[t.width * t.height]; Color32 zemin = bg * .6f + Color.black * .4f; for (int i = 0; i < px.Length; i++) px[i] = zemin;   // Color32: doku başına ~65 KB yerine ~16 KB geçici dizi (performans incelemesi 2026-11-05)
+            var lit = new bool[SUT, SAT]; int gen = yazi.Length * 4 - 1, x0 = Mathf.Max(0, (SUT - gen) / 2);
+            for (int c = 0; c < yazi.Length; c++) { string g; if (!LED_HARF.TryGetValue(char.ToUpperInvariant(yazi[c]), out g)) continue;
+                for (int r = 0; r < 5; r++) for (int q = 0; q < 3; q++) if (g[r * 3 + q] == '1') { int xx = x0 + c * 4 + q; if (xx < SUT) lit[xx, 2 + r] = true; } }
+            Color32 sonuk = Color.Lerp(bg, on, .12f), yan = on;
+            for (int a = 0; a < SUT; a++) for (int b = 0; b < SAT; b++) { Color32 c = lit[a, b] ? yan : sonuk; int yy = (SAT - 1 - b) * P;
+                for (int i = 0; i < 2; i++) for (int j = 0; j < 2; j++) px[(yy + j) * t.width + a * P + i] = c; }
+            t.SetPixels32(px); t.Apply(); return t;
+        }
         public static Texture2D DashTex(int on = 3, int off = 4)
         {
             int n = on + off; var t = new Texture2D(n * 4, 1, TextureFormat.RGBA32, false); t.wrapMode = TextureWrapMode.Repeat; t.filterMode = FilterMode.Point;

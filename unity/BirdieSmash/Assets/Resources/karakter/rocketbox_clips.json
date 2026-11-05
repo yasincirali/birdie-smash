@@ -1,7 +1,6 @@
 {
  "fps": 30,
  "scale": 1.75,
- "bant": {"dz": 0.0810, "df": -0.0140, "r": 0.0546},
  "clips": [
   {
    "name": "idle",
@@ -236,7 +235,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.9026
+   "adim": 0.566
   },
   {
    "name": "back_l",
@@ -247,7 +246,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.9026
+   "adim": 0.566
   },
   {
    "name": "jump",
@@ -310,6 +309,38 @@
    "hold": null,
    "drop": null,
    "adim": 0.9284
+  },
+  {
+   "name": "geri_r",
+   "first": 1114,
+   "last": 1138,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 1.1605
+  },
+  {
+   "name": "geri_l",
+   "first": 1148,
+   "last": 1172,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 1.1605
+  },
+  {
+   "name": "rth",
+   "first": 1182,
+   "last": 1221,
+   "loop": false,
+   "poses": 14,
+   "hitK": 9,
+   "hold": 2,
+   "drop": 5
   }
  ],
  "model": "rocketbox",
@@ -334,5 +365,10 @@
   "kemik": "Bip01 R Hand",
   "pivot": "raket_pivot"
  },
- "hit": {}
+ "hit": {},
+ "bant": {
+  "dz": 0.0807,
+  "df": -0.0133,
+  "r": 0.0546
+ }
 }

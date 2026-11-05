@@ -75,7 +75,7 @@ namespace BirdieSmash.Game
         void Antrenmana() { var once = gez.sekme; gez.Kok(); Uygula(once, false); root.Antrenman(); }
 
         static readonly string[,] NASIL = {
-            {"Koş","Kolay modda oyuncu topa kendisi koşar, senin işin yalnız vuruş; kısa bir dokunuşla yerini değiştirebilirsin. Usta modda koşmak sende: dokun = oraya koş, yavaş sürükle = parmağı izle"},
+            {"Koş","Kolay ve Orta'da oyuncu topa kendisi koşar, senin işin yalnız vuruş; kısa bir dokunuşla yerini değiştirebilirsin. Zor ve Usta'da koşmak sende: dokun = oraya koş, yavaş sürükle = parmağı izle. Zor'da geç kalırsan oyuncun topa kendisi koşar, dokunursan yine sen yönlendirirsin"},
             {"Forehand / backhand","Top raket tarafında gelirse forehand, öbür tarafta backhand. Backhand clear kısa kalır, drive yavaşlar, smaç olmaz; topu forehand tarafına alacak şekilde dur"},
             {"Akış","Üst üste 4 tam orta: çizgiler altın olur, hedef büyür, şarkıya armoni girer"},
             {"Derinlik","Topun yerdeki gölgesi ve ona bağlı ince çizgi yüksekliği gösterir. Top sana inerken son saniyede yer çizgisi ve büzülen iniş halkası belirir; yeşilse yetişiyorsun"},

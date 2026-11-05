@@ -197,18 +197,10 @@ namespace BirdieSmash.Game
             if (of.y > 0) { soyunmaKaydir.scrollOffset = of; var sk = soyunmaKaydir; sk.schedule.Execute(() => sk.scrollOffset = of).StartingIn(33); }
         }
 
-        void SeviyeSatiri(VisualElement c)
-        {
-            var gr = Ayar.gear; int L_, kalan, gerek; gr.OyuncuSv(out L_, out kalan, out gerek);
-            var sv = Satir("arali"); c.Add(sv); sv.Add(Yazi(L.T("Seviye {0}", L_), 16, "kalin")); sv.Add(Yazi(L.T("{0} Tüy", gr.eko.tuy), 16, "kalin"));
-            c.Add(Cubuk(gerek > 0 ? kalan / (float)gerek : 1, CAMGOBEGI));
-            c.Add(Yazi(gerek > 0 ? L.T("Sonraki seviyeye {0} XP · maç kazandıkça Tüy ve XP gelir", gerek - kalan) : L.T("En yüksek seviye"), 12, "soluk"));
-        }
-
         // ---- Oyun segmenti: tarz, takım, yuvalar, ayakkabı tabanı ----
         void EkipmanGovde(VisualElement c)
         {
-            var gr = Ayar.gear; SeviyeSatiri(c);
+            var gr = Ayar.gear;   // Seviye satırı kalktı (2026-11-05, Ar-Ge 11:40 #3): üst çubukta Sv + XP ve Tüy zaten var, Profil'de ayrıntı
             c.Add(Grup(L.T("Oyun tarzı"))); TarzGovde(c);
             c.Add(Grup(L.T("Takımın")));
             var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true);
@@ -396,7 +388,7 @@ namespace BirdieSmash.Game
         void TarzGovde(VisualElement c)
         {
             int sv = Ayar.gear.Seviye(); string cur = Ayar.Tarz;
-            c.Add(Yazi(L.T("Tarz bir kimliktir, güç değil: artısı ve eksisi var, ücretsiz, maç dışında istediğin an değiştir. Eşit şartlarda da geçerli."), 13, "soluk"));
+            c.Add(Yazi(L.T("Tarz bir kimlik: artısı ve eksisi var. Ücretsiz, maç dışında istediğin an değiştir."), 13, "soluk"));   // 2026-11-05 (Ar-Ge 11:40 #3): 3 satır → tek cümle
             foreach (var t in Karakter.Tarzlar)
             {
                 bool acik = sv >= t.sv, secili = cur == t.id; string id = t.id;
@@ -407,7 +399,7 @@ namespace BirdieSmash.Game
                 else if (!acik) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = L.T("Sv {0} gerekli", t.sv); }
                 else durum = L.T("Seç");
                 var dy = Yazi(durum, 12, secili ? "durum-gecti" : acik ? "durum-simdi" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
-                if (!string.IsNullOrEmpty(t.arti)) TarzSatir(kart, Ikonlar.Yukari, TURUNCU, L.T("Artı") + ": " + L.T(t.arti));
+                if (!string.IsNullOrEmpty(t.arti)) TarzSatir(kart, Ikonlar.Yukari, TURUNCU, string.IsNullOrEmpty(t.eksi) ? L.T(t.arti) : L.T("Artı") + ": " + L.T(t.arti));   // eksisi olmayan (Dengeli) "Artı: Artısı da eksisi de yok" diye kendisiyle çelişiyordu
                 if (!string.IsNullOrEmpty(t.eksi)) TarzSatir(kart, Ikonlar.Asagi, MERCAN, L.T("Eksi") + ": " + L.T(t.eksi));
                 if (acik && !secili) kart.AddManipulator(new Clickable(() =>
                 {

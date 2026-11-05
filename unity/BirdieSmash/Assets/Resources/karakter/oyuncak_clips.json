@@ -1,7 +1,6 @@
 {
  "fps": 30,
  "scale": 1.75,
- "bant": {"dz": 0.0220, "df": -0.0060, "r": 0.1170, "yan": 0.95, "ust": 1.12, "on": 1.25, "arka": 1.15},
  "clips": [
   {
    "name": "idle",
@@ -236,7 +235,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.5237
+   "adim": 0.3382
   },
   {
    "name": "back_l",
@@ -247,7 +246,7 @@
    "hitK": null,
    "hold": null,
    "drop": null,
-   "adim": 0.5237
+   "adim": 0.3382
   },
   {
    "name": "jump",
@@ -310,6 +309,38 @@
    "hold": null,
    "drop": null,
    "adim": 0.6884
+  },
+  {
+   "name": "geri_r",
+   "first": 1114,
+   "last": 1138,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.6482
+  },
+  {
+   "name": "geri_l",
+   "first": 1148,
+   "last": 1172,
+   "loop": true,
+   "poses": 8,
+   "hitK": null,
+   "hold": null,
+   "drop": null,
+   "adim": 0.6482
+  },
+  {
+   "name": "rth",
+   "first": 1182,
+   "last": 1221,
+   "loop": false,
+   "poses": 14,
+   "hitK": 9,
+   "hold": 2,
+   "drop": 5
   }
  ],
  "model": "oyuncak",
@@ -441,5 +472,14 @@
    "id": "karbon"
   }
  ],
- "hit": {}
+ "hit": {},
+ "bant": {
+  "dz": 0.0225,
+  "df": -0.0059,
+  "r": 0.117,
+  "yan": 0.95,
+  "ust": 1.12,
+  "on": 1.25,
+  "arka": 1.15
+ }
 }

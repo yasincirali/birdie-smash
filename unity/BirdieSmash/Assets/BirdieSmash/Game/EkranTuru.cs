@@ -233,8 +233,8 @@ namespace BirdieSmash.Game
         // Klip şeritleri: her vuruş × taraf ve ayak işi klibi, maç dışı bir figürle (ShowPoz: yalnız klip, katman/IK yok) 6
         // kare yan yana (1920×480). Vuruş kliplerinde kareler hazırlıktan takibe eşit aralıklı, temas karesi dahil; döngülerde
         // faz 0..5/6. "klip_poz" satırı: temas karesi ve sağ elin gövdeye göre yanı (+ sağ: forehand, − sol: backhand çaprazı).
-        static readonly string[] KLIP_SERIT = { "smash", "clear", "drop", "jump", "bh_over", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge", "block", "serve", "serve_bh", "serve_flick",
-            "fwd", "run", "chasse_r", "chasse_l", "kros_r", "kros_l", "back_r", "back_l", "split" };
+        static readonly string[] KLIP_SERIT = { "smash", "clear", "drop", "jump", "rth", "bh_over", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge", "block", "serve", "serve_bh", "serve_flick",
+            "fwd", "run", "chasse_r", "chasse_l", "kros_r", "kros_l", "geri_r", "geri_l", "back_r", "back_l", "split" };
         IEnumerator KlipSeritleri(string mdl)
         {
             var g = new GameObject("klip_serit"); var pv = PlayerView.Build(g.transform, mdl, true, Kit.Hex("#3aa0ff"));
@@ -250,17 +250,20 @@ namespace BirdieSmash.Game
                 for (int i = 0; i < 6; i++) ph[i] = vurus || !Match.ADIM_BOY.ContainsKey(clip) ? (Mathf.RoundToInt(i * (n - 1) / 5f) + .5f) / n : i / 6f;
                 if (hitF >= 0) { int en = 0; for (int i = 1; i < 6; i++) if (Mathf.Abs(ph[i] * n - .5f - hitF) < Mathf.Abs(ph[en] * n - .5f - hitF)) en = i; ph[en] = (hitF + .5f) / n; }
                 yield return new WaitForEndOfFrame();
-                var cg = new GameObject("klip_kamera"); var c = cg.AddComponent<Camera>(); c.CopyFrom(root.cam); c.ResetProjectionMatrix(); c.fieldOfView = 42;
+                var cg = new GameObject("klip_kamera"); var c = cg.AddComponent<Camera>(); c.CopyFrom(root.cam); c.ResetProjectionMatrix(); c.fieldOfView = 50;   // dar (320 px) karede hamledeki raket de sığsın
                 cg.transform.position = pos + new Vector3(1.5f, .8f, 3.2f); cg.transform.LookAt(hedef);
-                var rt = new RenderTexture(1920, 480, 24); c.targetTexture = rt; var sb = new StringBuilder("klip_poz " + mdl + " " + clip + " · n " + n + " temas karesi " + hitF + " · el yanı");
+                // Her kare kendi 320×480 dokusuna çizilip şeride kopyalanır (2026-11-05): eskiden altı kare tek dokuya c.rect ile
+                // çiziliyordu; kamera her Render'da bütün dokuyu temizlediği için şeritte yalnız son kare (klibin sonundaki hazır
+                // duruş) 1920 px'e yayılmış görünüyordu: hamle ve file vuruşu şeritleri "duruş" gibi okunuyordu.
+                var rt = new RenderTexture(320, 480, 24); c.targetTexture = rt; c.aspect = 320f / 480f; var sb = new StringBuilder("klip_poz " + mdl + " " + clip + " · n " + n + " temas karesi " + hitF + " · el yanı");
+                var tex = new Texture2D(1920, 480, TextureFormat.RGB24, false); var prev = RenderTexture.active;
                 for (int i = 0; i < 6; i++)
                 {
-                    pv.ShowPoz(pos, 0, clip, ph[i]); c.rect = new Rect(i / 6f, 0, 1 / 6f, 1); c.Render();
+                    pv.ShowPoz(pos, 0, clip, ph[i]); c.Render();
+                    RenderTexture.active = rt; tex.ReadPixels(new Rect(0, 0, 320, 480), i * 320, 0); RenderTexture.active = prev;
                     Vector3 l, r, e; float se; if (pv.TaniAyak(out l, out r, out e, out se)) sb.Append(" " + (e.x - pos.x).ToString("F2") + (Mathf.Abs(ph[i] * n - .5f - hitF) < .01f ? "*" : ""));
                 }
-                var prev = RenderTexture.active; RenderTexture.active = rt;
-                var tex = new Texture2D(1920, 480, TextureFormat.RGB24, false); tex.ReadPixels(new Rect(0, 0, 1920, 480), 0, 0); tex.Apply();
-                RenderTexture.active = prev; c.targetTexture = null;
+                tex.Apply(); c.targetTexture = null;
                 File.WriteAllBytes(Path.Combine(dir, mdl + "_klip_" + clip + ".png"), tex.EncodeToPNG());
                 Destroy(tex); Destroy(cg); rt.Release(); Destroy(rt); rap.AppendLine(sb.ToString());
             }

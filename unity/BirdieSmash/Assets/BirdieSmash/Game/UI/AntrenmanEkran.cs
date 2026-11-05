@@ -86,7 +86,8 @@ namespace BirdieSmash.Game
             for (int i = 0; i < Dril.YILDIZ; i++) YildizSatir(c, y > i, L.T("12 topta {0} isabet", d.esik[i]));
             var od = Yazi(L.T("Her yeni yıldız +{0} Tüy, +{1} XP. Aynı yıldızı ikinci kez almak ödül vermez.", Gear.DRIL_TUY, Gear.DRIL_XP), 12, "soluk"); Erisim.Etiket(od, od.text, "metin"); c.Add(od);
             string id = d.id;
-            AltEylem(Dugme(L.T(y > 0 ? "Yeniden oyna" : "Başla") + ": " + L.T(d.ad), () => { gez.AltKapat(); Uygula(gez.sekme, false); root.DrilOyna(id); }, "dugme--birincil", null, 19));
+            AltEylem(Dugme(L.T(y > 0 ? "Yeniden oyna" : "Başla"),   // 2026-11-05 unslop: görev adı sayfa başlığında; düğmede tekrarı iki satıra kırıyordu
+                 () => { gez.AltKapat(); Uygula(gez.sekme, false); root.DrilOyna(id); }, "dugme--birincil", null, 19));
         }
 
         // ---- Günün maçı ----
@@ -122,7 +123,7 @@ namespace BirdieSmash.Game
             dk.Add(Yazi(L.T(g.deg.ad), 16, "kalin")); dk.Add(Yazi(L.T(g.deg.aciklama), 14, "ipucu"));
             Erisim.Etiket(dk, L.T(g.deg.ad) + ". " + L.T(g.deg.aciklama), "metin");
             bool usta = g.deg.id == "usta";
-            var bil = Yazi(L.T("Saha") + ": " + L.T(CourtView.SAHA[g.saha].ad) + " · " + L.T("{0} sayı", g.uzunluk) + " · " + L.T(usta || !Ayar.easy ? "Usta" : "Kolay"), 13, "soluk");
+            var bil = Yazi(L.T("Saha") + ": " + L.T(CourtView.SAHA[g.saha].ad) + " · " + L.T("{0} sayı", g.uzunluk) + " · " + L.T(usta ? "Usta" : Ayar.ZorlukAd), 13, "soluk");
             Erisim.Etiket(bil, bil.text, "metin"); c.Add(bil);
             var od = Yazi(alindi ? "✓ " + L.T("Bugünün ödülü alındı. Yarın yenisi.") : L.T("Kazanınca bir kez: +{0} Tüy, +{1} XP", Gunluk.OdulTuy, Gunluk.OdulXp), 14, alindi ? "durum-gecti" : "altin");
             Erisim.Etiket(od, od.text, "metin"); c.Add(od);

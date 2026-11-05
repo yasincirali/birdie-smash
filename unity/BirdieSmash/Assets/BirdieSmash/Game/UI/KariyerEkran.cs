@@ -178,15 +178,20 @@ namespace BirdieSmash.Game
                 Erisim.Etiket(ik, L.T("İmza vuruşu") + ": " + L.T(im.ad) + ". " + L.T(im.cevap), "metin");
             }
             int uz = kb.uzunluk > 0 ? kb.uzunluk : Ayar.target;
-            var bil = Yazi(L.T("Saha") + ": " + L.T(CourtView.SAHA[kb.saha].ad) + " · " + (kb.uzunluk > 0 ? L.T("{0} sayı", uz) : L.T("{0} sayı (senin seçimin)", uz)) + " · " + L.T(Ayar.easy ? "Kolay" : "Usta"), 13, "soluk");
+            var bil = Yazi(L.T("Saha") + ": " + L.T(CourtView.SAHA[kb.saha].ad) + " · " + (kb.uzunluk > 0 ? L.T("{0} sayı", uz) : L.T("{0} sayı (senin seçimin)", uz)) + "", 13, "soluk");
             Erisim.Etiket(bil, bil.text, "metin"); c.Add(bil);
+            // Zorluk kartın üstünde seçilir (yasin 2026-11-05 "kariyer patikasını Kolay modda da oynayabilmeliyim"): eskiden kariyer
+            // yalnız Hızlı maç/Ayarlar'daki seçimi izliyordu ve kartta yalnız yazıydı; oyuncu kariyeri Usta'ya kilitli sanıyordu.
+            // Aynı ayar (tuytop_zorluk, dört kademe): seçim her yerde aynı kalır.
+            var zs = Satir(); c.Add(zs);
+            ZorlukSatir(zs, c);
             c.Add(Grup(L.T("Yıldızlar")));
             var gv = Match.GorevBul(kb.gorev);
             YildizSatir(c, (m & Ilerleme.KAZAN) != 0, L.T("Kazan"));
             YildizSatir(c, (m & Ilerleme.GOREV) != 0, L.T("Basamak görevi") + ": " + (gv != null ? L.Cumle(gv.ad) : "-"));
             YildizSatir(c, (m & Ilerleme.FARK) != 0, L.T("Farkla kazan: rakip en çok {0} sayı", Ilerleme.FarkSiniri(uz)));
             var tv = KariyerVeri.Turlar[tr];
-            c.Add(Yazi(L.T("Önerilen ekipman puanı {0}–{1} · seninki {2}", tv.epMin, tv.epMax, EkipmanPuani()) + " · " + L.T("öneri, kilit değil"), 12, "soluk"));
+            c.Add(Yazi(L.T("Önerilen ekipman puanı {0}–{1} · seninki {2}", tv.epMin, tv.epMax, EkipmanPuani()), 12, "soluk"));   // 2026-11-05 unslop: "· öneri, kilit değil" üçüncü halkaydı; "Önerilen" zaten söylüyor
             // 2026-10-27: Oyna / Kilitli kaydırmanın dışında, sayfanın dibinde (Duyarli.cs, kural 4)
             if (acik)
             {

@@ -238,8 +238,10 @@ namespace BirdieSmash.Game
                 bool on = i < gn && !s.dead; ghosts[i].SetActive(on); if (!on) continue;
                 float back = (i + 1) * (1 / 60f) / (gn + 1); ghosts[i].transform.SetPositionAndRotation(pos - vW * back, rot);
             }
-            // --- iz: son 8 nokta (smaçta 14); renk: akış (sen) altın, süper turuncu, smaç limon, diğer beyaz .3 ---
-            if (!s.dead) { trailPts.Add(pos); int max = s.type == "smash" ? 14 : 8; while (trailPts.Count > max) trailPts.RemoveAt(0); }
+            // --- iz: son 12 nokta (smaçta 14); renk: akış (sen) altın, süper turuncu, smaç limon, diğer beyaz .45 ---
+            // Stüdyo incelemesi (2026-11-05, sanat 4): düz iz 8 nokta / 2,5 / .3 alfa uzak kamerada neredeyse görünmüyordu;
+            // topun yolu okunsun diye 12 nokta / 4 / .45. Smaç ve süper ayrımı korunur (onlar yine daha kalın ve renkli).
+            if (!s.dead) { trailPts.Add(pos); int max = s.type == "smash" ? 14 : 12; while (trailPts.Count > max) trailPts.RemoveAt(0); }
             trail.enabled = trailPts.Count > 1;
             if (trail.enabled)
             {
@@ -248,7 +250,7 @@ namespace BirdieSmash.Game
                 int n = trailPts.Count; trail.positionCount = n; for (int i = 0; i < n; i++) trail.SetPosition(i, trailPts[i]);
                 Color c; float w, a;
                 if (M.flow && s.from == "me") { c = new Color(1, .82f, .23f); w = 2.5f; a = .9f; } else if (s.super) { c = new Color(1, .47f, .16f); w = 10; a = .9f; }
-                else if (s.type == "smash") { c = new Color(.85f, 1, .35f); w = 6; a = .8f; } else { c = Color.white; w = 2.5f; a = .3f; }
+                else if (s.type == "smash") { c = new Color(.85f, 1, .35f); w = 6; a = .8f; } else { c = Color.white; w = 4f; a = .45f; }
                 if (c != izC || w != izW || a != izA)
                 {
                     izC = c; izW = w; izA = a;

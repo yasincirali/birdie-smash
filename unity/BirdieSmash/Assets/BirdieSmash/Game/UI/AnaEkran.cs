@@ -57,7 +57,7 @@ namespace BirdieSmash.Game
                 // yazıyordu. A tasarımında alt satır maçın biçimini söyler (sayı · saha · zorluk), ilk açılış ve şampiyon satırı kalır.
                 var p = Ayar.ilerleme; var kb = KariyerVeri.Al(p.Siradaki());
                 string alt = ilk ? null : !Ayar.antrenman ? L.T("İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç") : p.HepsiBitti ? L.Cumle(Career.Line(p))
-                    : L.T("{0} sayı", kb.uzunluk > 0 ? kb.uzunluk : Ayar.target) + " · " + L.T(CourtView.SAHA[kb.saha].ad) + " · " + L.T(Ayar.easy ? "Kolay" : "Usta");
+                    : L.T("{0} sayı", kb.uzunluk > 0 ? kb.uzunluk : Ayar.target) + " · " + L.T(CourtView.SAHA[kb.saha].ad) + " · " + L.T(Ayar.ZorlukAd);
                 c.Add(BuyukDugme(L.T("Oyna"), alt, () =>
                 {
                     if (Ayar.antrenman && !Ayar.kariyerModu) { Ayar.kariyerModu = true; Ayar.GearHesap(); Ayar.Kaydet(); }
@@ -84,7 +84,7 @@ namespace BirdieSmash.Game
             Erisim.Etiket(kart, L.T("İlk maçın") + ", " + L.T("3 adım antrenman, sonra 5 sayı"), "metin"); return kart;
         }
 
-        string HizliOzet() { return L.T("{0} sayı · {1} · {2}", Ayar.target, L.T(Ayar.easy ? "Kolay" : "Usta"), L.T(CourtView.SAHA[Ayar.saha].ad)); }
+        string HizliOzet() { return L.T("{0} sayı · {1} · {2}", Ayar.target, L.T(Ayar.ZorlukAd), L.T(CourtView.SAHA[Ayar.saha].ad)); }
 
         // Büyük eğik düğme (a-cta): limon gradyanlı eğik doku (9 dilim), solda dar italik başlık + alt satır, sağda koyu daire
         // içinde oynat simgesi. Işık süpürmesi: 3,2 sn'de bir soldan sağa, tek öğe (her düğmede değil); hareketi azaltta hiç
@@ -218,8 +218,10 @@ namespace BirdieSmash.Game
             tut.RegisterCallback<PointerMoveEvent>(e => { if (cek && e.position.y - basY > 60) { cek = false; tut.ReleasePointer(e.pointerId); AltKapat(); } });
             tut.RegisterCallback<PointerUpEvent>(e => { cek = false; tut.ReleasePointer(e.pointerId); });
             var bas = Satir("arali"); altSayfa.Add(bas);
-            var t = Yazi(baslik, 19, "sayfa-baslik"); Erisim.Etiket(t, baslik, "baslik"); bas.Add(t);
-            bas.Add(Dugme(L.T("Kapat"), AltKapat, "kucuk-dugme"));
+            // 2026-11-05 unslop: başlık içerik genişliğinde kalıp Kapat'ın yanında iki satıra kırılıyordu ("Köşe / smacı"); kalan
+            // genişliği alır, Kapat daralmaz.
+            var t = Yazi(baslik, 19, "sayfa-baslik"); Erisim.Etiket(t, baslik, "baslik"); t.style.flexGrow = 1f; t.style.flexShrink = 1f; t.style.minWidth = 0f; t.style.marginRight = 12f; bas.Add(t);
+            var kp = Dugme(L.T("Kapat"), AltKapat, "kucuk-dugme"); kp.style.flexShrink = 0f; bas.Add(kp);
             var sv = Kaydirma(altSayfa); sv.AddToClassList("alt-kaydir"); return sv.contentContainer;
         }
 
@@ -228,11 +230,13 @@ namespace BirdieSmash.Game
         {
             c.Add(Grup(L.T("Zorluk")));
             var z = Satir(); c.Add(z);
-            z.Add(Cip(L.T("Kolay · topa kendin gidersin, sen vur"), Ayar.easy, () => { Ayar.easy = true; Ayar.Kaydet(); Degisti(); }));
-            z.Add(Cip(L.T("Usta · koşmak da sende"), !Ayar.easy, () => { Ayar.easy = false; Ayar.Kaydet(); Degisti(); }));
+            // 2026-11-05 unslop incelemesi (yasin "yap"): açıklama çipin içindeydi, çipler üç satıra kırılıyordu; "Kolay · topa kendin
+            // gidersin" de ters okunuyordu (Kolay'da koşu otomatik). Çipte kısa ad, seçilenin açıklaması altında tek soluk satır.
+            ZorlukSatir(z, c);
             c.Add(Grup(L.T("Maç uzunluğu")));
-            var u = Satir(); c.Add(u); int[] Ls = { 5, 11, 21 }; string[] La = { "5 sayı (hızlı, ~2 dk)", "11 sayı (kısa)", "21 sayı (resmî)" };
+            var u = Satir(); c.Add(u); int[] Ls = { 5, 11, 21 }; string[] La = { "5 sayı", "11 sayı", "21 sayı" }, Lb = { "Hızlı maç, yaklaşık 2 dakika", "Kısa maç", "Resmî maç uzunluğu" };
             for (int i = 0; i < 3; i++) { int v = Ls[i]; u.Add(Cip(L.T(La[i]), Ayar.target == v, () => { Ayar.target = v; Ayar.Kaydet(); Degisti(); })); }
+            { int si = System.Array.IndexOf(Ls, Ayar.target); if (si >= 0) c.Add(Yazi(L.T(Lb[si]), 12, "soluk")); }
             if (!saha) return;
             c.Add(Grup(L.T("Saha")));
             var s1 = Satir(); var s2 = Satir(); c.Add(s1); c.Add(s2);
@@ -243,6 +247,24 @@ namespace BirdieSmash.Game
             }
         }
 
+        // Zorluk çipleri (2026-11-05, Ayar.zorluk notu): Hızlı maç, Ayarlar ve kariyer kartı aynı satırı kullanır. Dört kısa ad tek
+        // satırda; seçilenin açıklaması altında tek soluk satır (unslop: açıklama çipe girmez). Koşu yardımı ayrı açma/kapama
+        // değil, Zor ile Usta'yı ayıran şey (eski "Koşu yardımı açık/Kapalı" satırı buraya katıldı).
+        static readonly string[] ZORLUK_ACIK = {
+            "Oyuncun topa kendisi koşar; rakip daha yavaş, sık hata yapar",
+            "Oyuncun topa kendisi koşar, sen yalnız vurursun",
+            "Koşmak sende; geç kalırsan oyuncun koşar, dokunursan yine sen yönlendirirsin",
+            "Her adım senin dokunuşunla; rakip daha hızlı, az hata yapar" };
+        void ZorlukSatir(VisualElement satir, VisualElement c)
+        {
+            satir.AddToClassList("cip-sarar");   // dört çip: büyük yazıda sözcük kırılmaz, satır sarar
+            for (int i = 0; i < 4; i++)
+            {   // VoiceOver: çip adı + kademenin açıklaması (açıklama satırı yalnız seçili için görünür; UX incelemesi 2026-11-05)
+                int v = i; var cp = Cip(L.T(Ayar.ZORLUK_AD[i]), Ayar.zorluk == v, () => { Ayar.zorluk = v; Ayar.Kaydet(); Degisti(); });
+                Erisim.Etiket(cp, L.T(Ayar.ZORLUK_AD[i]) + ". " + L.T(ZORLUK_ACIK[i]), "dugme", Ayar.zorluk == v); satir.Add(cp);
+            }
+            c.Add(Yazi(L.T(ZORLUK_ACIK[Mathf.Clamp(Ayar.zorluk, 0, 3)]), 12, "soluk"));
+        }
         // Ayar değişti: görünen yüzey (alt sayfa / sayfa / sekme) yeniden kurulur; kaydırma yeri ScrollView'de kalır.
         void Degisti()
         {
