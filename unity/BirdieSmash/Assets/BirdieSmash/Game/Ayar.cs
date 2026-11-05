@@ -79,6 +79,21 @@ namespace BirdieSmash.Game
         static int EskiInt(string k, int d) { try { return PlayerPrefs.HasKey(k) ? PlayerPrefs.GetInt(k, d) : d; } catch { return d; } }
         static string Str(string k, string d) { try { return PlayerPrefs.HasKey(k) ? PlayerPrefs.GetString(k, d) : d; } catch { return d; } }
 
+        // Hedef eşya (2026-11-02, Core/Hedef): tek kayıt, Dolap/Atölye "Hedef yap" yazar, maç sonu kartı okur. Eşya alınınca ya da
+        // bulunamayınca kayıt burada silinir (oyuncu "hedefin" diye artık sahip olduğu bir şeyi görmesin).
+        public static Hedef.Bilgi HedefBilgi()
+        {
+            string k = Str(Hedef.ANAHTAR, null); if (k == null || gear == null) return new Hedef.Bilgi();
+            var b = Hedef.Coz(gear, k, kat => KOZ.ContainsKey(kat) ? KOZ[kat] : null);
+            if (!b.gecerli) HedefYaz(null, null);
+            return b;
+        }
+        public static bool HedefMi(string kat, string id) { return Str(Hedef.ANAHTAR, null) == Hedef.Yaz(kat, id); }
+        public static void HedefYaz(string kat, string id)
+        {
+            try { if (kat == null) PlayerPrefs.DeleteKey(Hedef.ANAHTAR); else PlayerPrefs.SetString(Hedef.ANAHTAR, Hedef.Yaz(kat, id)); PlayerPrefs.Save(); } catch { }
+        }
+
         public static void Yukle()
         {
             Bulut.Esitle();   // 2026-11-01 iCloud: yeni kurulumda ilerleme buluttan gelir; HTML devrinden ve okumadan önce

@@ -136,7 +136,9 @@ namespace BirdieSmash.Game
             // 2026-10-31 (mağaza turu tr_03: "Nova · Drive'cı · Final" iki satıra sarıp 18 pt satırda kesiliyordu): üstteki
             // başlıktaki gibi taban 0 + büyüme, yükseklik verilen genişlikle ölçülür.
             var rky = Yazi(st.isim + " · " + L.T(st.ad) + (final ? " · " + L.T("Final") : ""), 13, "soluk"); rky.style.flexBasis = new StyleLength(0f); rky.style.flexGrow = 1; rky.style.flexShrink = 1; rk.Add(rky);
-            var yr = Satir("rakip-satir"); yr.pickingMode = PickingMode.Ignore; orta.Add(yr); yr.Add(UcYildiz(p.Maske(g), 16)); var yy = Yazi(ys + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy);
+            // 2026-11-02 (Ar-Ge 19:40 #3, sadeleştirme): kilitli basamakta boş "☆☆☆ 0/3" yok; kilit simgesi ve yol sırası yeter, kart
+            // kısalır. Yıldızlar açık ve geçilmiş basamakta. "n. basamaktan sonra" kalır (29 Eki "leveller daha anlaşılır" kararı).
+            if (!kilit) { var yr = Satir("rakip-satir"); yr.pickingMode = PickingMode.Ignore; orta.Add(yr); yr.Add(UcYildiz(p.Maske(g), 16)); var yy = Yazi(ys + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy); }
             // Kilitli basamak nedenini söyler (2026-10-29, "leveller daha anlaşılır"): yalnız "Kilitli" yazınca neyin açacağı
             // maç kartına dokunmadan görünmüyordu. Tur açıksa kilidi önceki basamak tutar; tur kilitliyse neden tur seçicide.
             string durum = kilit && b > 0 && p.TurAcik(KariyerVeri.TurOf(g)) ? L.T("{0}. basamaktan sonra", b) : L.T(gecti ? "Geçildi" : simdi ? "ŞİMDİ" : acik ? "Açık" : "Kilitli");

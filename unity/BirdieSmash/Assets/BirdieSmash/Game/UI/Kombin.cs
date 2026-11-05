@@ -125,18 +125,19 @@ namespace BirdieSmash.Game
         List<Denenen> Denenenler()
         {
             var vt = root.vitrin; var gr = Ayar.gear; var l = new List<Denenen>();
-            void Koz(string kat, string id)
-            {
-                if (id == null) return; var o = Kozmetik.Oge(kat, id); var du = Kozmetik.Durum(gr, kat, id, Ayar.KOZ[kat]);
-                if (du == ModelDurum.Secili || du == ModelDurum.Acik) return; l.Add(new Denenen { kat = kat, id = id, ad = o.ad, fiyat = o.fiyat, sv = o.sv, du = du });
-            }
-            foreach (var k in Kozmetik.KAT) Koz(k, vt.DeneAl(k));
+            foreach (var k in Kozmetik.KAT) DenenenKoz(l, k, vt.DeneAl(k));
             GearModel m; if (vt.deneAyk != null && Gear.GEAR["ayakkabi"].TryGetValue(vt.deneAyk, out m))
             {
                 var du = gr.Durum("ayakkabi", vt.deneAyk);
                 if (du != ModelDurum.Secili && du != ModelDurum.Acik) l.Add(new Denenen { kat = "ayakkabi", id = vt.deneAyk, ad = m.ad, fiyat = m.fiyat, sv = m.sv, du = du });
             }
             return l;
+        }
+        // 2026-11-02: yerel fonksiyondu; Unity'siz mono (mcs) derlemesi yerel fonksiyonu ayrıştıramadığı için metot oldu, davranış aynı.
+        static void DenenenKoz(List<Denenen> l, string kat, string id)
+        {
+            if (id == null) return; var o = Kozmetik.Oge(kat, id); var du = Kozmetik.Durum(Ayar.gear, kat, id, Ayar.KOZ[kat]);
+            if (du == ModelDurum.Secili || du == ModelDurum.Acik) return; l.Add(new Denenen { kat = kat, id = id, ad = o.ad, fiyat = o.fiyat, sv = o.sv, du = du });
         }
         // Sabit alt çubuk (K4): kaydırma alanının altında, gövde kayarken yerinde durur. Deneme yoksa gizli.
         void DenemeCubukKur()
@@ -151,13 +152,32 @@ namespace BirdieSmash.Game
             var s = Satir("arali"); s.AddToClassList("deneme-cubuk-dugmeler"); denemeCubuk.Add(s);
             string ne = L.T("Deneniyor: {0}", string.Join(", ", adlar));
             string cta = alinir == 1 && l.Count == 1 ? L.T("{0} · {1} Tüy ile al", L.T(l[0].ad), top) : L.T("Hepsini al · {0} Tüy", top);
-            int eksik = top - Ayar.gear.eko.tuy;
+            int eksik = top - Ayar.gear.eko.tuy; Denenen tek = default(Denenen); foreach (var d in l) if (d.du != ModelDurum.Kilitli) tek = d;
             // r100: hepsi kilitliyken "Hepsini al · 0 Tüy" yazıyordu; artık ne zaman açılacağını söyler.
+            // 2026-11-02 hedef eşya: Tüy yetmeyen tek eşya denenirken pasif düğme yerine "Hedef yap" (birden çok eşyada pasif kalır:
+            // hedef tektir, hangisi olduğu belirsiz olurdu).
             VisualElement al = alinir == 0 ? Pasif(L.T("Henüz alınamaz"), kilitNot ?? L.T("Sv {0}'da açılır · seviye atladıkça", enAzSv))
+                : eksik > 0 && alinir == 1 ? HedefDugme(tek.kat, tek.id, eksik, ne + " · " + L.T("{0} Tüy daha gerekli", eksik), DenemeCubukKur)
                 : eksik > 0 ? Pasif(cta, ne + " · " + L.T("{0} Tüy daha gerekli", eksik))
                 : Dugme(cta, () => DenemeHepsiniAl(), "dugme--birincil", kilitNot != null ? ne + " · " + kilitNot : ne, 15);
             al.AddToClassList("deneme-cubuk-al"); s.Add(al);
             var b = Dugme(L.T("Bırak"), () => { DenemeSil(); root.vitrin.Yenile(); Tik(); SoyunmaGovdeKur(true); }, "deneme-birak", null, 14); s.Add(b);
+        }
+        // Hedef eşya (2026-11-02, Core/Hedef): Tüy yetmeyince "n Tüy daha gerekli" pasif düğmesi oyuncuya yapacak bir şey
+        // bırakmıyordu; şimdi eşyayı hedef yapar, maç sonu kartı ilerlemeyi gösterir. Zaten hedefse düğme durum söyler (pasif).
+        // Seviye kilitli eşyada çağrılmaz (çağıranlar Kilitli dalını önce ayırır; Ayar.HedefBilgi yine de geçersiz sayar).
+        VisualElement HedefDugme(string kat, string id, int eksik, string alt, System.Action yenile)
+        {
+            if (Ayar.HedefMi(kat, id)) return Pasif(L.T("Hedefin · {0} Tüy kaldı", eksik), L.T("Maç sonunda ne kadar yaklaştığını görürsün"));
+            return Dugme(L.T("Hedef yap"), () => { Ayar.HedefYaz(kat, id); Yerel.Hap("tick"); if (yenile != null) yenile(); }, "dugme--hedef", alt, 15);
+        }
+        // Maç sonu "Hedefin hazır" (Hud): ekipman modeli kendi yuva sayfasında, kozmetik ve ayakkabı Dolap'ta deneniyor olarak
+        // açılır; alt çubuk "… Tüy ile al" der. Satın alma yine oyuncunun dokunuşuyla.
+        public void HedefeGit(string kat, string id)
+        {
+            if (kat != "ayakkabi" && Gear.YuvaOf(kat) != null) { YuvaAc(kat); return; }
+            if (gez.sekme != Sekme.Soyunma) SekmeAc(Sekme.Soyunma);
+            root.vitrin.DeneYaz(kat, id); root.vitrin.Yenile(); SoyunmaGovdeKur(false);
         }
         void DenemeHepsiniAl()
         {

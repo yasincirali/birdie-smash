@@ -147,7 +147,7 @@ static class BotMac
         Yardimlar();   // 2026-10-29 kayıpta rakip yumuşar (ayrı satır)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
-        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
+        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
         KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
@@ -713,6 +713,32 @@ static class BotMac
         p.ImzaOkuSay(3); if (Ilerleme.Oku(p.Yaz(), 0, false).ImzaOkunan != 3) Fail("imza okuma sayacı");
         if (!Career.Line(Tamam()).StartsWith("Usta yolu: 1. basamak")) Fail("kariyer bitince satır Usta yolunu göstermeli: " + Career.Line(Tamam()));
         Console.WriteLine("Usta yolu: 24'lük çevrim, g " + u.g + "→" + u.tavan + ", 6'da bir final, kazan + görev yıldızı, kayıt");
+    }
+    // 2026-11-02 hedef eşya (Core/Hedef): seviye kilitli eşya hedef olmaz, alınan hedef düşer, oran/kalan, "hazır" yalnız
+    // eşiği geçen maçta, ödül alt yazısında en büyük ek + kalan sayısı.
+    static void HedefEsya()
+    {
+        string kat, id; if (!Hedef.Oku("sirt:yildiz_pelerin", out kat, out id) || kat != "sirt" || id != "yildiz_pelerin") Fail("hedef: kayıt okunmalı");
+        if (Hedef.Oku("bozuk", out kat, out id) || Hedef.Oku(":x", out kat, out id) || Hedef.Oku("x:", out kat, out id) || Hedef.Oku(null, out kat, out id)) Fail("hedef: bozuk kayıt reddedilmeli");
+        var yp = Kozmetik.Bul(Kozmetik.SIRT, "yildiz_pelerin"); string kayit = Hedef.Yaz(Kozmetik.SIRT, "yildiz_pelerin");
+        Func<string, string> sec = k => "yok";
+        var dusuk = SvGear(1, 0); if (Hedef.Coz(dusuk, kayit, sec).gecerli) Fail("hedef: seviye kilitli eşya hedef olmamalı (seviye ve Tüy ayrı)");
+        var g = SvGear(yp.sv, 100); var b = Hedef.Coz(g, kayit, sec);
+        if (!b.gecerli || b.fiyat != yp.fiyat || b.ad != yp.ad || b.model) Fail("hedef: seviyesi gelmiş eşya hedef olmalı");
+        if (Hedef.Kalan(b.fiyat, 100) != yp.fiyat - 100 || Hedef.Kalan(b.fiyat, yp.fiyat + 5) != 0) Fail("hedef: kalan");
+        if (Math.Abs(Hedef.Oran(1000, 250) - .25f) > 1e-5 || Hedef.Oran(1000, 5000) != 1 || Hedef.Oran(0, 0) != 1) Fail("hedef: oran");
+        if (!Hedef.YeniHazir(1000, 900, 1000) || Hedef.YeniHazir(1000, 1000, 1200) || Hedef.YeniHazir(1000, 100, 900)) Fail("hedef: hazır yalnız eşiği geçen maçta");
+        g.eko.tuy = yp.fiyat; if (!Kozmetik.Al(g, Kozmetik.SIRT, "yildiz_pelerin", "yok") || Hedef.Coz(g, kayit, sec).gecerli) Fail("hedef: alınan eşya hedef olarak düşmeli");
+        if (Hedef.Coz(g, Hedef.Yaz(Kozmetik.SIRT, "yok_boyle"), sec).gecerli || Hedef.Coz(g, "boyle:kat", sec).gecerli) Fail("hedef: bilinmeyen eşya geçersiz");
+        if (Hedef.Coz(g, Hedef.Yaz(Kozmetik.SIRT, "yok"), sec).gecerli) Fail("hedef: ücretsiz/seçili öğe hedef olmamalı");
+        // ekipman modeli (ayakkabı dahil): ücretli, sahip olunmayan, seviyesi gelmiş bir model hedef olur
+        var gm = SvGear(30, 0); string mk = null;
+        foreach (var yv in Gear.MODEL_YUVA) { foreach (var kv in Gear.GEAR[yv]) if (kv.Value.fiyat > 0 && gm.Durum(yv, kv.Key) == ModelDurum.Alinir) { mk = Hedef.Yaz(yv, kv.Key); break; } if (mk != null) break; }
+        if (mk == null) Fail("hedef: Sv 30'da ücretli alınabilir model yok"); else { var bm = Hedef.Coz(gm, mk, sec); if (!bm.gecerli || !bm.model) Fail("hedef: ekipman modeli hedef olmalı " + mk); }
+        int d; var ek = new List<string> { "günün ilk galibiyeti +50", "yeni basamak +60", "yeni yıldız +20" };
+        if (Hedef.EnBuyukEk(ek, out d) != "yeni basamak +60" || d != 2) Fail("ödül alt yazısı: en büyük ek ve kalan sayısı");
+        if (Hedef.EnBuyukEk(new List<string>(), out d) != null || d != 0 || Hedef.EnBuyukEk(new List<string> { "Günün maçı +40" }, out d) != "Günün maçı +40" || d != 0) Fail("ödül alt yazısı: boş/tek");
+        Console.WriteLine("Hedef eşya: kilitli olmaz, alınınca düşer, hazır eşikte; ödül satırı en büyük ek + " + d);
     }
     static Ilerleme Tamam() { var p = Ilerleme.Oku(null, 6, true); for (int g = 6; g < 24; g++) p.Isle(g, true, false, 5, 4, 5); return p; }
 

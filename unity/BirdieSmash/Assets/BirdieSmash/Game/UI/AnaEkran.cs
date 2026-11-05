@@ -135,7 +135,12 @@ namespace BirdieSmash.Game
             var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("karo"); if (cls != null) d.AddToClassList(cls);
             var ust_ = new VisualElement(); ust_.AddToClassList("karo-ust"); ust_.pickingMode = PickingMode.Ignore; d.Add(ust_);
             ust_.Add(Ikon(ikon, 13, cls == "karo--altin" ? ALTIN : SOLUK)); var et = Yazi(etiket, 11, "karo-etiket"); ust_.Add(et);
-            d.Add(Yazi(deger, 20, "karo-deger"));
+            // 2026-11-02 (Ar-Ge 19:40 #1, r118): "8/63" karoya sığmayınca "8/6" satırda kalıp "3" alt satıra, yıldız ikonunun
+            // altına düşüyordu (oyuncu hedefi geçmiş sanıyordu). Değer tek satır; sığmazsa %75'e kadar küçülür (Sigdir hesabı).
+            // Kap ikonsuz: SigdirOlc yatay satırdaki ikonu genişlikten düşer, karonun üst satırındaki ikon burada sayılmasın.
+            var dk = new VisualElement(); dk.pickingMode = PickingMode.Ignore; d.Add(dk);
+            var dl = Yazi(deger, 20, "karo-deger"); dl.style.whiteSpace = WhiteSpace.NoWrap; dl.style.flexShrink = 0f; dk.Add(dl);
+            float dt0 = dl.style.fontSize.value.value; dk.RegisterCallback<GeometryChangedEvent>(e => SigdirOlc(dk, dl, dt0, .75f));
             if (!string.IsNullOrEmpty(alt))
             {
                 var ar = new VisualElement(); ar.AddToClassList("karo-alt-satir"); ar.pickingMode = PickingMode.Ignore; d.Add(ar);

@@ -287,7 +287,7 @@ namespace BirdieSmash.Game
             }
             else if (du == ModelDurum.Kilitli) kart.Add(Pasif(cta, L.T("Sv {0}'da açılır · seviye atladıkça", sv)));
             else if (alOlur) kart.Add(Dugme(cta, () => KozAl(kat, id), "dugme--birincil", L.T("Bir kez alınır, hep senin"), 16));
-            else kart.Add(Pasif(cta, L.T("{0} Tüy daha gerekli", fiyat - Ayar.gear.eko.tuy)));
+            else kart.Add(HedefDugme(kat, id, fiyat - Ayar.gear.eko.tuy, L.T("{0} Tüy daha gerekli", fiyat - Ayar.gear.eko.tuy), Degisti));
             kart.Add(Dugme(L.T("Denemeyi bırak"), () => DenemeBirak(kat), "deneme-birak"));
         }
 

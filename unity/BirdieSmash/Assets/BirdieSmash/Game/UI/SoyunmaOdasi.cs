@@ -292,7 +292,7 @@ namespace BirdieSmash.Game
             else if (du == ModelDurum.Alinir)
             {
                 if (gr.AlOlur(Y.m, id)) kart.Add(Dugme(L.T("Al · {0}", m.fiyat + " " + L.T("Tüy")), () => { if (gr.Al(Y.m, id)) { root.sfx.Yukselt(); Yerel.Hap("flow"); ModelSec(Y, id); } }, "dugme--birincil", L.T("Bir kez alınır, hep senin"), 16));
-                else kart.Add(Pasif(L.T("Al · {0}", m.fiyat + " " + L.T("Tüy")), L.T("{0} Tüy daha gerekli", m.fiyat - gr.eko.tuy)));
+                else kart.Add(HedefDugme(Y.m, id, m.fiyat - gr.eko.tuy, L.T("{0} Tüy daha gerekli", m.fiyat - gr.eko.tuy), Degisti));   // 2026-11-02 hedef eşya
             }
             else if (du == ModelDurum.Kilitli) kart.Add(Pasif(L.T("Sv {0} gerekli", m.sv), L.T("Seviye atladıkça açılır")));
         }
