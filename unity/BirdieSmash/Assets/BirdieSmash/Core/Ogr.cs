@@ -31,20 +31,20 @@ namespace BirdieSmash.Core
         public Training ogr;
         public const int OGR_TEKRAR = 2;
         public static readonly OgrAdim[] OGR_ADIM = {
-            new OgrAdim{bas="Kısa servis",met="Oyuncunun önünden yukarı doğru YAVAŞ kaydır.",neden="Top fileyi sıyırır, rakibin önüne düşer. Tekler maçlarında en çok atılan servis.",servis="kisa",iz="yavas"},
-            new OgrAdim{bas="Flick servis",met="Aynı duruştan KISA ve SERT bir fiske yap.",neden="Hazırlık kısa servisle aynı görünür; rakip öne çıkarken top üstünden dibe gider.",servis="flick",iz="fiske"},
-            new OgrAdim{bas="Yüksek servis",met="UZUN ve HIZLI yukarı kaydır.",neden="Top yükselip rakibin dip çizgisine neredeyse dik iner.",servis="yuksek",iz="uzun"},
+            new OgrAdim{bas="Kısa servis",met="Oyuncunun önünden yukarı doğru yavaş kaydır.",neden="Top fileyi sıyırır, rakibin önüne düşer. Tekler maçlarında en çok atılan servis.",servis="kisa",iz="yavas"},
+            new OgrAdim{bas="Flick servis",met="Aynı duruştan kısa ve sert bir fiske yap.",neden="Hazırlık kısa servisle aynı görünür; rakip öne çıkarken top üstünden dibe gider.",servis="flick",iz="fiske"},
+            new OgrAdim{bas="Yüksek servis",met="Uzun ve hızlı yukarı kaydır.",neden="Top yükselip rakibin dip çizgisine neredeyse dik iner.",servis="yuksek",iz="uzun"},
             new OgrAdim{bas="Nefes",met="Ayağının altındaki halka nefesin. Halkaya dokun.",neden="Smaç, sıçrama ve uzanma nefes yakar; halka azalınca yavaşlarsın ve smaç zayıflar. Clear atıp sayı arasında dinlenince dolar.",bilgi="nefes"},
-            new OgrAdim{bas="Clear: dibe at",met="Topun içinden yukarı doğru UZUN ve orta hızda kaydır. Sağa sola eğersen top o yöne gider.",neden="Top rakibin arka çizgisine gider; sana yerine dönecek zaman kazandırır.",tip=new[]{"clear"},iz="uzun",besle="clear",dur=(I,s)=>I.over},
-            new OgrAdim{bas="Drop: fileye bırak",met="Topun üstünden YAVAŞ ve kısa geç.",neden="Top filenin hemen arkasına düşer; dipteki rakip öne koşmak zorunda kalır.",tip=new[]{"drop"},iz="yavas",besle="clear",dur=(I,s)=>I.over},
-            new OgrAdim{bas="Smaç",met="Top başının üstünde. HIZLI ve sert kaydır.",neden="Top aşağı doğru en hızlı iner; karşılaması en zor vuruş. Backhand tarafından smaç olmaz.",tip=new[]{"smash","jump"},iz="hizli",besle="clear",dur=(I,s)=>I.over},
-            new OgrAdim{bas="Drive: düz ve sert",met="Top omuz hizasında. HIZLI ve düz kaydır.",neden="Top fileyi alçaktan, düz geçer; rakibe hazırlanacak zaman kalmaz.",tip=new[]{"drive"},iz="hizli",besle="drive",dur=(I,s)=>!I.over&&!I.lunge&&!I.kill},
-            new OgrAdim{bas="Blok",met="Rakip smaç attı. Parmağını AŞAĞI doğru kısa çek.",neden="Raketi topun önüne koyarsın; smacın hızıyla top filenin dibine düşer.",tip=new[]{"block"},iz="asagi",besle="smash",dur=(I,s)=>true},
+            new OgrAdim{bas="Clear: dibe at",met="Topun içinden yukarı doğru uzun ve orta hızda kaydır. Sağa sola eğersen top o yöne gider.",neden="Top rakibin arka çizgisine gider; sana yerine dönecek zaman kazandırır.",tip=new[]{"clear"},iz="uzun",besle="clear",dur=(I,s)=>I.over},
+            new OgrAdim{bas="Drop: fileye bırak",met="Topun üstünden yavaş ve kısa geç.",neden="Top filenin hemen arkasına düşer; dipteki rakip öne koşmak zorunda kalır.",tip=new[]{"drop"},iz="yavas",besle="clear",dur=(I,s)=>I.over},
+            new OgrAdim{bas="Smaç",met="Top başının üstünde. Hızlı ve sert kaydır.",neden="Top aşağı doğru en hızlı iner; karşılaması en zor vuruş. Backhand tarafından smaç olmaz.",tip=new[]{"smash","jump"},iz="hizli",besle="clear",dur=(I,s)=>I.over},
+            new OgrAdim{bas="Drive: düz ve sert",met="Top omuz hizasında. Hızlı ve düz kaydır.",neden="Top fileyi alçaktan, düz geçer; rakibe hazırlanacak zaman kalmaz.",tip=new[]{"drive"},iz="hizli",besle="drive",dur=(I,s)=>!I.over&&!I.lunge&&!I.kill},
+            new OgrAdim{bas="Blok",met="Rakip smaç attı. Parmağını aşağı doğru kısa çek.",neden="Raketi topun önüne koyarsın; smacın hızıyla top filenin dibine düşer.",tip=new[]{"block"},iz="asagi",besle="smash",dur=(I,s)=>true},
             new OgrAdim{bas="Lift",met="Top alçakta. Yukarı doğru orta hızda kaydır.",neden="Alçak topu rakibin dibine kaldırırsın; fileden kurtulup yerine dönersin.",tip=new[]{"lift","clear"},iz="uzun",besle="drop",dur=(I,s)=>!I.over&&s.z<1.4f},
-            new OgrAdim{bas="File vuruşu",met="Top file üstünde yüksek kaldı. HIZLI ve sert kaydır.",neden="Fileye yakın yüksek top kaçırılmaz: aşağı vurursun, sayı neredeyse kesin.",tip=new[]{"kill"},iz="hizli",besle="gevsek",dur=(I,s)=>I.kill},
-            new OgrAdim{bas="Slice: kesme",met="Kaydırırken parmağınla bir YAY çiz; sert değil, clear hızında.",neden="Raket topu keserek alır; top takla atar, beklenenden kısa düşer ve rakip yanlış adım atar.",slice=true,iz="yay",besle="clear",dur=(I,s)=>I.over},
-            new OgrAdim{bas="Smaç gücü",met="Alttaki çubuk smaç gücün. Çubuğa dokun.",neden="Topun tam ortasından geçen her vuruş doldurur. Dolunca bir sonraki smaç SIÇRAYARAK smaç olur: en sert vuruşun. Şimdi senin için doldurduk.",bilgi="guc"},
-            new OgrAdim{bas="Sıçrayarak smaç",met="Güç dolu, top başının üstünde. HIZLI ve sert kaydır.",neden="Oyuncu sıçrar, top dik ve çok hızlı iner. Gücü bitirir; yeniden doldurmak için tam orta vur.",tip=new[]{"jump"},iz="hizli",besle="clear",dur=(I,s)=>I.over,guc=true},
+            new OgrAdim{bas="File vuruşu",met="Top file üstünde yüksek kaldı. Hızlı ve sert kaydır.",neden="Fileye yakın yüksek top kaçırılmaz: aşağı vurursun, sayı neredeyse kesin.",tip=new[]{"kill"},iz="hizli",besle="gevsek",dur=(I,s)=>I.kill},
+            new OgrAdim{bas="Slice: kesme",met="Kaydırırken parmağınla bir yay çiz; sert değil, clear hızında.",neden="Raket topu keserek alır; top takla atar, beklenenden kısa düşer ve rakip yanlış adım atar.",slice=true,iz="yay",besle="clear",dur=(I,s)=>I.over},
+            new OgrAdim{bas="Smaç gücü",met="Alttaki çubuk smaç gücün. Çubuğa dokun.",neden="Topun tam ortasından geçen her vuruş doldurur. Dolunca bir sonraki smaç sıçrayarak smaç olur: en sert vuruşun. Şimdi senin için doldurduk.",bilgi="guc"},
+            new OgrAdim{bas="Sıçrayarak smaç",met="Güç dolu, top başının üstünde. Hızlı ve sert kaydır.",neden="Oyuncu sıçrar, top dik ve çok hızlı iner. Gücü bitirir; yeniden doldurmak için tam orta vur.",tip=new[]{"jump"},iz="hizli",besle="clear",dur=(I,s)=>I.over,guc=true},
             new OgrAdim{bas="Antrenör ne derse",met="Artık oyun durmuyor. Top gelirken antrenör bir vuruş söyler: onu at.",neden="Maçta topu görür görmez karar verirsin. Dört topta kaçını tutturacaksın?",drill=true}};
         public static readonly int[] OGR_ILK = { 0, 4, 6 };   // Kısa servis, Clear, Smaç (Nefes bilgi adımı 3. sıraya girdi)
         public const int OGR_CAGRI = 4;   // son adımda dört çağrı
@@ -128,12 +128,12 @@ namespace BirdieSmash.Core
             if (a.servis != null)
             {
                 string w0 = a.servis; if (w0 == "kisa") return "Hızlıydın: yavaşça it";
-                if (servis == "kisa") return w0 == "flick" ? "Yavaş kaldı: kısa ama SERT fiske yap" : "Yavaş kaldı: uzun ve hızlı kaydır";
+                if (servis == "kisa") return w0 == "flick" ? "Yavaş kaldı: kısa ama sert fiske yap" : "Yavaş kaldı: uzun ve hızlı kaydır";
                 return w0 == "flick" ? "Hareket uzun oldu: kısa tut" : "Hareket kısa oldu: daha uzun kaydır";
             }
             string w = a.drill ? ogr.cagri : a.slice ? "slice" : a.tip[0], g = tip;
             if (w == "slice") return "Kavis okunmadı: kaydırırken bir yay çiz";
-            if (w == "block") return "Parmağını AŞAĞI çek"; if (g == "block") return "Aşağı çektin: yukarı kaydır";
+            if (w == "block") return "Parmağını aşağı çek"; if (g == "block") return "Aşağı çektin: yukarı kaydır";
             if ((w == "smash" || w == "jump") && g == "clear" && sp > 1.7f) return "Backhand tarafından smaç olmaz";
             var B = new Dictionary<string, int> { { "drop", 0 }, { "clear", 1 }, { "lift", 1 }, { "smash", 2 }, { "jump", 2 }, { "drive", 2 }, { "kill", 2 } };
             int bw, bg; if (B.TryGetValue(w, out bw) && g != null && B.TryGetValue(g, out bg)) { if (bw > bg) return "Yavaş kaldın: daha hızlı kaydır"; if (bw < bg) return "Hızlıydın: daha yavaş kaydır"; }

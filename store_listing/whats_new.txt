@@ -1,7 +1,26 @@
 === UNITY ===
-Bu sürümde yeni: istediğin eşyayı hedef yap, her maçtan sonra ne kadar yaklaştığını gör.
+Bu sürümde yeni: yazılar daha kısa ve daha okunur; maç içi ipucu koyu zeminde.
 
 Bu sürümde yeni:
+- Ayarlar'da zorluk ve maç uzunluğu düğmeleri kısa ("Kolay", "Usta", "5 sayı"…); ne işe yaradıkları altında tek satırda.
+- Antrenman görev sayfasının başlığı artık ikiye bölünmüyor; alttaki düğme kısaca "Yeniden oyna" ya da "Başla".
+- Antrenman ve öğretici yazılarında büyük harfle bağırma yok ("HIZLI kaydır" yerine "hızlı kaydır").
+- Profil'de sonraki seviyede açılacaklar türüne göre gruplu ("Saç modeli: Kazıma, Kel").
+- Maç başındaki "Top parlayınca kaydır" ipucu koyu bir zeminde, beyaz ve biraz daha büyük.
+
+Nasıl denenir:
+1. Ayarlar'ı aç: Zorluk'ta "Kolay" ve "Usta" yazmalı, altında seçtiğinin açıklaması olmalı. Kolay seçiliyken "Oyuncun topa kendiliğinden koşar" yazmalı. Maç uzunluğunda da aynı.
+2. Oyna › Antrenman › bir göreve dokun (ör. Köşe smacı): başlık tek satır olmalı, alttaki düğme "Yeniden oyna" ya da "Başla" demeli.
+3. Görev açıklamalarında büyük harfli kelime kalmamalı.
+4. Profil'de "Sv n ile açılır" başlığının altında açılacaklar türüne göre gruplu görünmeli.
+5. Bir maça başla: alttaki ipucu yazısı koyu bir kutunun içinde rahat okunmalı.
+6. Ayarlar'dan yazıyı büyüt: bu ekranlar yine sığmalı.
+
+Önceki sürümden (Hedef eşya ve maç sonu):
+- İstediğin eşyayı hedef yap, maç sonu kartında ne kadar yaklaştığını gör; "Hedefin hazır" seni eşyaya götürür.
+- Maç sonu kartı ve turuncu düğme her maçtan sonra yerinde; kazanınca oyuncun sana dönüp sıçrıyor, inişte altın halka.
+
+Eski not (Hedef eşya ayrıntısı):
 - Dolap'ta Tüy'ün yetmeyen bir eşyayı denerken altta "Hedef yap" düğmesi çıkıyor (Atölye'deki ekipman modellerinde de). Bir seferde tek hedef olur; yenisini seçersen eskisinin yerine geçer.
 - Maç sonu kartında hedefin bir çubukla görünüyor: "Hedef: eşyanın adı · kaç Tüy kaldı". Kazandığın Tüy uçarken çubuk da doluyor.
 - Tüy'ün yettiği maçta kartta "Hedefin hazır" düğmesi çıkıyor; seni eşyanın olduğu yere götürüyor, satın almayı sen yapıyorsun.

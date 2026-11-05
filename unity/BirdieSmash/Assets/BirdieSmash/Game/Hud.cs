@@ -419,7 +419,12 @@ namespace BirdieSmash.Game
                 // Yükseklik metinden ölçülür, alt kenar smaç çubuğu etiketinin hemen üstünde sabit kalır.
                 string ip = L.T(!Ogretici ? "Dokun: oraya koş" : M.easy ? "Top parlayınca kaydır: yön ve güç senin" : "Dokun: oraya koş · Top parlayınca kaydır");
                 // 2026-10-29: tek satır (Sigdir); iki satıra inince smaç çubuğu etiketine biniyor ve alttan kesik görünüyordu.
-                var ist = Sigdir(Stil(tiny, -1, FontStyle.Bold), ip, rx - lx); float ih = ist.CalcSize(Ic(ip)).y; Shadowed(new Rect(lx, hy + 14 * u - ih, rx - lx, ih + 2 * u), ip, ist, Kit.Hex("#cfe3dc"));
+                var ist = Sigdir(Stil(small, Mathf.RoundToInt(12 * fu), FontStyle.Bold), ip, rx - lx); var isz = ist.CalcSize(Ic(ip)); float ih = isz.y;
+                // 2026-11-05 unslop: açık yeşil kortun üstünde soluk yeşil-beyaz yazı zor okunuyordu; altına skor kutusuyla aynı koyu
+                // yuvarlak zemin (metin genişliğinde), yazı beyaz.
+                float iw = Mathf.Min(rx - lx, isz.x + 20 * u); if (hudKutu == null) HudKutular();
+                Boya(new Rect((lx + rx - iw) / 2, hy + 14 * u - ih - 3 * u, iw, ih + 8 * u), hudKutu, Color.white);
+                Shadowed(new Rect(lx, hy + 14 * u - ih, rx - lx, ih + 2 * u), ip, ist, Color.white);
             }
             if (M.s == null && !M.between && M.svPending == null && !ogr) ServisSeridi(M, hy);
             if (M.HitWindow() && (!ogr || !M.ogr.dur) && !M.easy) { }

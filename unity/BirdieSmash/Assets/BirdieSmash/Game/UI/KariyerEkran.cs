@@ -186,7 +186,7 @@ namespace BirdieSmash.Game
             YildizSatir(c, (m & Ilerleme.GOREV) != 0, L.T("Basamak görevi") + ": " + (gv != null ? L.Cumle(gv.ad) : "-"));
             YildizSatir(c, (m & Ilerleme.FARK) != 0, L.T("Farkla kazan: rakip en çok {0} sayı", Ilerleme.FarkSiniri(uz)));
             var tv = KariyerVeri.Turlar[tr];
-            c.Add(Yazi(L.T("Önerilen ekipman puanı {0}–{1} · seninki {2}", tv.epMin, tv.epMax, EkipmanPuani()) + " · " + L.T("öneri, kilit değil"), 12, "soluk"));
+            c.Add(Yazi(L.T("Önerilen ekipman puanı {0}–{1} · seninki {2}", tv.epMin, tv.epMax, EkipmanPuani()), 12, "soluk"));   // 2026-11-05 unslop: "· öneri, kilit değil" üçüncü halkaydı; "Önerilen" zaten söylüyor
             // 2026-10-27: Oyna / Kilitli kaydırmanın dışında, sayfanın dibinde (Duyarli.cs, kural 4)
             if (acik)
             {

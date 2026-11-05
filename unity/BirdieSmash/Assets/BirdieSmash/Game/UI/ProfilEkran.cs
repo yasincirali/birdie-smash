@@ -40,8 +40,18 @@ namespace BirdieSmash.Game
             for (int s2 = L_ + 1; s2 <= 30; s2++)
             {
                 var ac = Karakter.Acilanlar(s2); if (ac.Count == 0) continue;
-                var adlar = new List<string>(); foreach (var a in Karakter.AcilanlarTurlu(s2)) adlar.Add(a[0] != null ? L.T(a[0]) + ": " + L.T(a[1]) : L.T(a[1]));
-                var sa = Yazi(L.T("Sıradaki açılış · Sv {0}", s2) + ": " + string.Join(" · ", adlar.ToArray()), 13, "ipucu"); Erisim.Etiket(sa, sa.text, "metin"); kart.Add(sa); break;
+                // 2026-11-05 unslop: tek uzun "·" zinciriydi ve tür tekrar ediyordu ("Saç modeli: Kazıma · Saç modeli: Kel"). Tür bir
+                // kez yazılır, öğeleri virgülle; başlık ayrı satır.
+                var sira = new List<string>(); var tur = new Dictionary<string, List<string>>();
+                foreach (var a in Karakter.AcilanlarTurlu(s2))
+                {
+                    string tk = a[0] != null ? L.T(a[0]) : ""; List<string> l;
+                    if (!tur.TryGetValue(tk, out l)) { l = new List<string>(); tur[tk] = l; sira.Add(tk); }
+                    l.Add(L.T(a[1]));
+                }
+                var parca = new List<string>(); foreach (var tk in sira) parca.Add((tk != "" ? tk + ": " : "") + string.Join(", ", tur[tk].ToArray()));
+                var sb = Yazi(L.T("Sv {0} ile açılır", s2), 13, "ipucu"); kart.Add(sb);
+                var sa = Yazi(string.Join("\n", parca.ToArray()), 13, "soluk"); Erisim.Etiket(sa, sb.text + ": " + string.Join(", ", parca.ToArray()), "metin"); kart.Add(sa); break;
             }
 
             // ad (yalnız cihazda)

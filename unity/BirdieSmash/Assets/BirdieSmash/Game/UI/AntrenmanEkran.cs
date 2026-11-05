@@ -86,7 +86,8 @@ namespace BirdieSmash.Game
             for (int i = 0; i < Dril.YILDIZ; i++) YildizSatir(c, y > i, L.T("12 topta {0} isabet", d.esik[i]));
             var od = Yazi(L.T("Her yeni yıldız +{0} Tüy, +{1} XP. Aynı yıldızı ikinci kez almak ödül vermez.", Gear.DRIL_TUY, Gear.DRIL_XP), 12, "soluk"); Erisim.Etiket(od, od.text, "metin"); c.Add(od);
             string id = d.id;
-            AltEylem(Dugme(L.T(y > 0 ? "Yeniden oyna" : "Başla") + ": " + L.T(d.ad), () => { gez.AltKapat(); Uygula(gez.sekme, false); root.DrilOyna(id); }, "dugme--birincil", null, 19));
+            AltEylem(Dugme(L.T(y > 0 ? "Yeniden oyna" : "Başla"),   // 2026-11-05 unslop: görev adı sayfa başlığında; düğmede tekrarı iki satıra kırıyordu
+                 () => { gez.AltKapat(); Uygula(gez.sekme, false); root.DrilOyna(id); }, "dugme--birincil", null, 19));
         }
 
         // ---- Günün maçı ----

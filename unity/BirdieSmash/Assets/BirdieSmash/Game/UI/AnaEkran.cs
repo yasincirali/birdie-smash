@@ -218,8 +218,10 @@ namespace BirdieSmash.Game
             tut.RegisterCallback<PointerMoveEvent>(e => { if (cek && e.position.y - basY > 60) { cek = false; tut.ReleasePointer(e.pointerId); AltKapat(); } });
             tut.RegisterCallback<PointerUpEvent>(e => { cek = false; tut.ReleasePointer(e.pointerId); });
             var bas = Satir("arali"); altSayfa.Add(bas);
-            var t = Yazi(baslik, 19, "sayfa-baslik"); Erisim.Etiket(t, baslik, "baslik"); bas.Add(t);
-            bas.Add(Dugme(L.T("Kapat"), AltKapat, "kucuk-dugme"));
+            // 2026-11-05 unslop: başlık içerik genişliğinde kalıp Kapat'ın yanında iki satıra kırılıyordu ("Köşe / smacı"); kalan
+            // genişliği alır, Kapat daralmaz.
+            var t = Yazi(baslik, 19, "sayfa-baslik"); Erisim.Etiket(t, baslik, "baslik"); t.style.flexGrow = 1f; t.style.flexShrink = 1f; t.style.minWidth = 0f; t.style.marginRight = 12f; bas.Add(t);
+            var kp = Dugme(L.T("Kapat"), AltKapat, "kucuk-dugme"); kp.style.flexShrink = 0f; bas.Add(kp);
             var sv = Kaydirma(altSayfa); sv.AddToClassList("alt-kaydir"); return sv.contentContainer;
         }
 
@@ -228,11 +230,15 @@ namespace BirdieSmash.Game
         {
             c.Add(Grup(L.T("Zorluk")));
             var z = Satir(); c.Add(z);
-            z.Add(Cip(L.T("Kolay · topa kendin gidersin, sen vur"), Ayar.easy, () => { Ayar.easy = true; Ayar.Kaydet(); Degisti(); }));
-            z.Add(Cip(L.T("Usta · koşmak da sende"), !Ayar.easy, () => { Ayar.easy = false; Ayar.Kaydet(); Degisti(); }));
+            // 2026-11-05 unslop incelemesi (yasin "yap"): açıklama çipin içindeydi, çipler üç satıra kırılıyordu; "Kolay · topa kendin
+            // gidersin" de ters okunuyordu (Kolay'da koşu otomatik). Çipte kısa ad, seçilenin açıklaması altında tek soluk satır.
+            z.Add(Cip(L.T("Kolay"), Ayar.easy, () => { Ayar.easy = true; Ayar.Kaydet(); Degisti(); }));
+            z.Add(Cip(L.T("Usta"), !Ayar.easy, () => { Ayar.easy = false; Ayar.Kaydet(); Degisti(); }));
+            c.Add(Yazi(Ayar.easy ? L.T("Oyuncun topa kendiliğinden koşar, sen yalnız vurursun") : L.T("Koşmak da sende: kortta dokunduğun yere koşar"), 12, "soluk"));
             c.Add(Grup(L.T("Maç uzunluğu")));
-            var u = Satir(); c.Add(u); int[] Ls = { 5, 11, 21 }; string[] La = { "5 sayı (hızlı, ~2 dk)", "11 sayı (kısa)", "21 sayı (resmî)" };
+            var u = Satir(); c.Add(u); int[] Ls = { 5, 11, 21 }; string[] La = { "5 sayı", "11 sayı", "21 sayı" }, Lb = { "Hızlı maç, yaklaşık 2 dakika", "Kısa maç", "Resmî maç uzunluğu" };
             for (int i = 0; i < 3; i++) { int v = Ls[i]; u.Add(Cip(L.T(La[i]), Ayar.target == v, () => { Ayar.target = v; Ayar.Kaydet(); Degisti(); })); }
+            { int si = System.Array.IndexOf(Ls, Ayar.target); if (si >= 0) c.Add(Yazi(L.T(Lb[si]), 12, "soluk")); }
             if (!saha) return;
             c.Add(Grup(L.T("Saha")));
             var s1 = Satir(); var s2 = Satir(); c.Add(s1); c.Add(s2);
