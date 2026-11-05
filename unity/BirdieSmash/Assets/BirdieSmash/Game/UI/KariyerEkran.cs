@@ -178,8 +178,16 @@ namespace BirdieSmash.Game
                 Erisim.Etiket(ik, L.T("İmza vuruşu") + ": " + L.T(im.ad) + ". " + L.T(im.cevap), "metin");
             }
             int uz = kb.uzunluk > 0 ? kb.uzunluk : Ayar.target;
-            var bil = Yazi(L.T("Saha") + ": " + L.T(CourtView.SAHA[kb.saha].ad) + " · " + (kb.uzunluk > 0 ? L.T("{0} sayı", uz) : L.T("{0} sayı (senin seçimin)", uz)) + " · " + L.T(Ayar.easy ? "Kolay" : "Usta"), 13, "soluk");
+            var bil = Yazi(L.T("Saha") + ": " + L.T(CourtView.SAHA[kb.saha].ad) + " · " + (kb.uzunluk > 0 ? L.T("{0} sayı", uz) : L.T("{0} sayı (senin seçimin)", uz)) + "", 13, "soluk");
             Erisim.Etiket(bil, bil.text, "metin"); c.Add(bil);
+            // Zorluk kartın üstünde seçilir (yasin 2026-11-05 "kariyer patikasını Kolay modda da oynayabilmeliyim"): eskiden kariyer
+            // yalnız Hızlı maç/Ayarlar'daki seçimi izliyordu ve kartta yalnız yazıydı; oyuncu kariyeri Usta'ya kilitli sanıyordu.
+            // Aynı ayar (tuytop_easy): seçim her yerde aynı kalır.
+            var zs = Satir(); c.Add(zs);
+            zs.Add(Cip(L.T("Kolay"), Ayar.easy, () => { Ayar.easy = true; Ayar.Kaydet(); Degisti(); }));
+            zs.Add(Cip(L.T("Usta"), !Ayar.easy, () => { Ayar.easy = false; Ayar.Kaydet(); Degisti(); }));
+            c.Add(Yazi(Ayar.easy ? L.T("Oyuncun topa kendiliğinden koşar, sen yalnız vurursun") : L.T("Koşmak da sende: kortta dokunduğun yere koşar"), 12, "soluk"));
+            UstaYardimSecenek(c);
             c.Add(Grup(L.T("Yıldızlar")));
             var gv = Match.GorevBul(kb.gorev);
             YildizSatir(c, (m & Ilerleme.KAZAN) != 0, L.T("Kazan"));

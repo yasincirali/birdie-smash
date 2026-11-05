@@ -162,7 +162,7 @@ namespace BirdieSmash.Game
             Ayar.GearHesap();
             // Usta daveti bayrağı burada TÜKETİLİR: Günün maçı/Usta yolu/görev StartMatch'e uğramadan Secenek çağırır, bayrak sızmasın.
             bool ud = ustaDeneBu && !ogr; ustaDeneBu = false; ustaDeneMac = ud;
-            return new MatchOptions { easy = Ayar.easy && !ud, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0 };
+            return new MatchOptions { easy = Ayar.easy && !ud, kosuYardim = Ayar.kosuYardim, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0 };
         }
         // Maç kurulumunun ortak kuyruğu (2026-10-26: dört mod aynı yoldan; davranış eski StartMatch'le birebir).
         void MacKur(int tohum, MatchOptions o)
@@ -225,7 +225,7 @@ namespace BirdieSmash.Game
         public void UstaBaslat()
         {
             int n = Ayar.ilerleme.Usta; var b = UstaYolu.Basamak(n); var o = Secenek(false);
-            o.stil = UstaYolu.Rakip(n); o.saha = b.saha; o.target = b.uzunluk; o.easy = false;   // Usta: koşmak da sende
+            o.stil = UstaYolu.Rakip(n); o.saha = b.saha; o.target = b.uzunluk; o.easy = false; o.kosuYardim = false;   // Usta: koşmak da sende (Usta yolu yardımsız)
             mod = Mod.Usta; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
         }
         public void OgrGec()

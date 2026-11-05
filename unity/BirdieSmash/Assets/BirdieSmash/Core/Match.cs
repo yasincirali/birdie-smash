@@ -94,7 +94,7 @@ namespace BirdieSmash.Core
     public class MatchOptions
     {
         public bool easy = true, reduce, ilk; public int target = 21; public Style stil; public string saha = "salon";
-        public int bestRally; public bool ogr, ogrKisa; public string formaRenk = "#4fb8ff";
+        public int bestRally; public bool ogr, ogrKisa, kosuYardim; public string formaRenk = "#4fb8ff";
         public GearStats gs;   // ekipman çarpanları (Gear.Hesap); null = nötr (bot testleri, eski imza)
         // 2026-10-26: Günün maçı değiştiricisi (Core/Gunluk; null = yok) ve antrenman görevi (Core/Dril; ogr ile birlikte).
         public string degistirici; public DrilTanim dril;
@@ -176,7 +176,7 @@ namespace BirdieSmash.Core
 
         public Match(int seed, MatchOptions o)
         {
-            rng = new Random(seed); easy = o.easy; net.sakin = o.reduce; target = o.ilk ? 5 : o.target; reduce = o.reduce; ilk = o.ilk; saha = o.saha; bestRally = o.bestRally;
+            rng = new Random(seed); easy = o.easy; kosuYardim = o.kosuYardim; net.sakin = o.reduce; target = o.ilk ? 5 : o.target; reduce = o.reduce; ilk = o.ilk; saha = o.saha; bestRally = o.bestRally;
             stil = o.stil ?? STIL[STIL_SIRA[rng.Next(3)]]; GS = o.gs ?? GearStats.Notr;
             if (o.ogr && o.dril != null) { ogrDril = o.dril; o.ogr = true; }
             if (!o.ogr) gorevler = GorevSec();
@@ -645,7 +645,7 @@ namespace BirdieSmash.Core
         // Usta modu: dokunulan kort noktasına koş.
         public void RunTo(float x, float y, float manualFor)
         {
-            me.tx = Clamp(x, -.4f, Court.CW + .4f); me.ty = Clamp(y, Court.NET + .3f, Court.L + .8f); me.manualT = manualFor;
+            sonDokun = clock; me.tx = Clamp(x, -.4f, Court.CW + .4f); me.ty = Clamp(y, Court.NET + .3f, Court.L + .8f); me.manualT = manualFor;
         }
         // Usta konumlanma (2026-11-01, yasin "pozisyonlamak aşırı zor"; Ar-Ge P1 "Akıllı adım"). Ham dokunuş noktasına koşmak
         // oyuncuya iki tahmin yükler: topun nereye ineceği ve vuruş için onun YANINDA nerede durulacağı (forehand payı HitSide).
@@ -654,6 +654,13 @@ namespace BirdieSmash.Core
         // oyuncunun kararı kalır; Usta'nın dar erişimi (1,15 m) ve sıkı zamanlaması değişmez. Sürükleme (GameRoot) mıknatıssız:
         // ince ayar. Duruş noktası Kolay'ın kendiliğinden koşusunun hedefiyle aynı formül (RunMe), iki kip aynı yeri "doğru" sayar.
         public const float ADIM_MIKNATIS = 1.6f, YERINDE = .35f;
+        // Usta koşu yardımı (yasin 2026-11-05 "usta modunda hareketin zor olması"): rakip vurduktan sonra KOSU_YARDIM_GEC
+        // saniye içinde hiç dokunmadıysan oyuncun Kolay'daki gibi duruş noktasına kendisi koşar. Dokunan oyuncunun kontrolü
+        // tamamen kendinde (dokunuş yardımı o top için kapatır); Usta'nın dar erişimi, ivmesi ve vuruş penceresi aynı kalır,
+        // yalnız "donup kalma" cezası kalkar. Ayarlar'dan kapatılır; Usta yolu (bilerek seçilen zor merdiven) yardımsızdır.
+        public const float KOSU_YARDIM_GEC = .35f;
+        public bool kosuYardim; float sonDokun = -9;
+        bool KosuYardimi() { return kosuYardim && !easy && ogr == null && s != null && s.from == "op" && sonDokun < opHitAt && clock - opHitAt > KOSU_YARDIM_GEC; }
         public bool DurusNoktasi(out float x, out float y)
         {
             x = y = 0; if (s == null || s.dead || s.from != "op") return false;
@@ -664,6 +671,7 @@ namespace BirdieSmash.Core
         }
         public bool AkilliAdim(float x, float y, float manualFor)
         {
+            sonDokun = clock;
             float dx, dy; bool cek = DurusNoktasi(out dx, out dy) && Hyp(x - dx, y - dy) <= ADIM_MIKNATIS;
             if (cek) { x = dx; y = dy; }
             RunTo(x, y, manualFor); return cek;
@@ -818,7 +826,7 @@ namespace BirdieSmash.Core
             if (o.stun > 0) { o.stun -= d; float sk = (float)Math.Pow(.8, d * 60); o.vx *= sk; o.vy *= sk; return; }   // 60 Hz'de kare başına ×.8; 120 Hz'de aynı sönüm (2026-10-26)
             o.manualT = Math.Max(0, o.manualT - d);
             if (easy && o.manualT <= 0 && o.fakeUntil > clock) { o.tx = o.fakeX; o.ty = o.fakeY; }   // aldatıldı (Vex, gölge flick)
-            else if (easy && o.manualT <= 0)
+            else if ((easy || KosuYardimi()) && o.manualT <= 0)
             {
                 var I = icpt;
                 if (s.from == "op" && I != null && I.who == "me") { o.tx = Clamp(I.x - HitSide(o, "me", I), -.4f, Court.CW + .4f); o.ty = I.y + (I.lunge ? .6f : .25f); }

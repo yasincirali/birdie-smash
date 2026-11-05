@@ -235,6 +235,7 @@ namespace BirdieSmash.Game
             z.Add(Cip(L.T("Kolay"), Ayar.easy, () => { Ayar.easy = true; Ayar.Kaydet(); Degisti(); }));
             z.Add(Cip(L.T("Usta"), !Ayar.easy, () => { Ayar.easy = false; Ayar.Kaydet(); Degisti(); }));
             c.Add(Yazi(Ayar.easy ? L.T("Oyuncun topa kendiliğinden koşar, sen yalnız vurursun") : L.T("Koşmak da sende: kortta dokunduğun yere koşar"), 12, "soluk"));
+            UstaYardimSecenek(c);
             c.Add(Grup(L.T("Maç uzunluğu")));
             var u = Satir(); c.Add(u); int[] Ls = { 5, 11, 21 }; string[] La = { "5 sayı", "11 sayı", "21 sayı" }, Lb = { "Hızlı maç, yaklaşık 2 dakika", "Kısa maç", "Resmî maç uzunluğu" };
             for (int i = 0; i < 3; i++) { int v = Ls[i]; u.Add(Cip(L.T(La[i]), Ayar.target == v, () => { Ayar.target = v; Ayar.Kaydet(); Degisti(); })); }
@@ -250,6 +251,15 @@ namespace BirdieSmash.Game
         }
 
         // Ayar değişti: görünen yüzey (alt sayfa / sayfa / sekme) yeniden kurulur; kaydırma yeri ScrollView'de kalır.
+        // Usta koşu yardımı (2026-11-05): yalnız Usta seçiliyken görünür; Hızlı maç, Ayarlar ve kariyer kartı aynı satırı kullanır.
+        void UstaYardimSecenek(VisualElement c)
+        {
+            if (Ayar.easy) return;
+            var r = Satir(); c.Add(r);
+            r.Add(Cip(L.T("Koşu yardımı açık"), Ayar.kosuYardim, () => { Ayar.kosuYardim = true; Ayar.Kaydet(); Degisti(); }));
+            r.Add(Cip(L.T("Kapalı"), !Ayar.kosuYardim, () => { Ayar.kosuYardim = false; Ayar.Kaydet(); Degisti(); }));
+            c.Add(Yazi(Ayar.kosuYardim ? L.T("Geç kalırsan oyuncun topa kendisi koşar; dokunduğunda kontrol sende") : L.T("Her adım senin dokunuşunla"), 12, "soluk"));
+        }
         void Degisti()
         {
             for (int i = 0; i < 4; i++) kirli[i] = true; ustKirli = true;
