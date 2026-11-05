@@ -114,7 +114,7 @@ namespace BirdieSmash.Game
             {'Y',"101101010010010"},{'0',"111101101101111"},{'3',"111001011001111"},{' ',"000000000000000"}};
         public static Texture2D LedTex(string yazi, Color on, Color bg)
         {
-            const int SUT = 44, SAT = 9, P = 3; var t = new Texture2D(SUT * P, SAT * P, TextureFormat.RGBA32, false); t.filterMode = FilterMode.Point; t.wrapMode = TextureWrapMode.Clamp;
+            const int SUT = 50, SAT = 9, P = 3; var t = new Texture2D(SUT * P, SAT * P, TextureFormat.RGBA32, false); t.filterMode = FilterMode.Point; t.wrapMode = TextureWrapMode.Clamp;
             var px = new Color[t.width * t.height]; for (int i = 0; i < px.Length; i++) px[i] = bg * .6f + Color.black * .4f;
             var lit = new bool[SUT, SAT]; int gen = yazi.Length * 4 - 1, x0 = Mathf.Max(0, (SUT - gen) / 2);
             for (int c = 0; c < yazi.Length; c++) { string g; if (!LED_HARF.TryGetValue(char.ToUpperInvariant(yazi[c]), out g)) continue;
