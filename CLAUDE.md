@@ -52,3 +52,22 @@ Kod yazmadan önce ilgili skill çağrılır; uymuyorsa özette "skill dışı" 
 skill'ler ve `codebase-memory`/`dart`/`ui-ux-pro` sunucuları sandikapp'in
 `tool/bulut_kurulum.sh` betiğiyle her thread'e açılır.
 
+
+## Stüdyo ajanları (yasin 2026-11-05: claude-unity-game-studio "en verimli nasıl kullanırız")
+
+`.claude/agents/` 11 rol (kaynak ve neyin neden alınmadığı `.claude/agents/KAYNAK.md`). Ajan kullanıcıya soru sormaz,
+bulgu döner; uygulayan çağıran Claude'dur. Oturumun ajan listesinde yoksa (thread'ler `/home/user`'da başlar) aynı
+rol `general-purpose` ajana "önce `/home/user/birdie-smash/.claude/agents/<ad>.md`'yi oku, o rol olarak çalış" diye verilir.
+Maliyet kuralı: ajan pahalıdır; yalnız aşağıdaki anlarda, en fazla 3 paralel ve dar görevle.
+
+| An | Ajanlar (paralel) | Görev |
+|---|---|---|
+| Ar-Ge fikir turu (11:40/19:40) | `game-designer`, `art-director` | Rakip oyunla kıyaslı 2–3 fikir; arcade hissi önce |
+| Ar-Ge inceleme turu (12:10/20:10) | `ux-designer` + `accessibility-specialist`, `performance-analyst` | Son ekran turu karelerinden kontrast/okunurluk/HIG; kare süresi ve GC |
+| Ekonomi/ödül değişikliği | `economy-designer` | Öneri; karar dev thread'in |
+| PR açmadan önce (Unity diff) | `unity-specialist` ya da UI ise `unity-ui-specialist`, `qa-tester` | Diff incelemesi + BotMac/ekran turu test adımları |
+| Ses, efekt, sevinç, his | `sound-designer`, `technical-artist` | Somut parametreli öneri |
+
+Unity bilgi skill'leri (`unity-ui`, `unity-animation`, `unity-performance`, `unity-platforms`, `uw-game-feel-integrator`,
+`eng-unity-mobile-optimization` …) Unity 6 API başvurusudur; `birdie-unity` skill'inden sonra, ilgili konuda okunur.
+Projede olmayan paket önerileri (VContainer, UniTask, PrimeTween, Addressables, DOTS) uygulanmaz.
