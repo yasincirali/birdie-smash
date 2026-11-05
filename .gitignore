@@ -26,6 +26,7 @@ tmp/
 # Claude: yerel ayar/hook makineye özgü; skill'ler repoya girer ki bulut oturumu görsün (2026-10-08 kararı)
 .claude/*
 !.claude/skills/
+!.claude/agents/
 .claude/skills/brag/assets/music/*.mp3
 __pycache__/
 # İmza ve lisans dosyaları (2026-10-31, mağaza denetimi D1): yanlışlıkla commit edilmesin; depo herkese açık
