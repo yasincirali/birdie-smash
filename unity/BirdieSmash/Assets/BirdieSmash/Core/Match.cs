@@ -130,7 +130,7 @@ namespace BirdieSmash.Core
         // Görünüm FBX'in <model>_clips.json'undan günceller; varsayılanlar karakter.py CLIPS ile aynı.
         public static readonly Dictionary<string, int> CLIP_N = new Dictionary<string, int> {
             {"idle",8},{"run",8},{"smash",14},{"clear",14},{"drop",14},{"net",8},{"drive",8},{"kill",7},{"low",8},{"lunge",8},{"serve",20},{"serve_gec",20},{"serve_bh",10},{"serve_flick",10},{"block",6},
-            {"bh_over",10},{"bh_drive",8},{"bh_kill",7},{"bh_low",8},{"bh_lunge",8},{"split",7},{"chasse_r",8},{"chasse_l",8},{"fwd",8},{"back_r",8},{"back_l",8},{"jump",14},{"yorgun",10},{"kros_r",8},{"kros_l",8}};
+            {"bh_over",10},{"bh_drive",8},{"bh_kill",7},{"bh_low",8},{"bh_lunge",8},{"split",7},{"chasse_r",8},{"chasse_l",8},{"fwd",8},{"back_r",8},{"back_l",8},{"jump",14},{"yorgun",10},{"kros_r",8},{"kros_l",8},{"geri_r",8},{"geri_l",8}};
         // Raket HEP sağ elde (yasin 2026-10-19): backhand aynalama değil, kendi klibi.
         public static readonly Dictionary<string, string> BH = new Dictionary<string, string> {
             {"smash","bh_over"},{"clear","bh_over"},{"drop","bh_over"},{"net","bh_low"},{"drive","bh_drive"},{"kill","bh_kill"},{"low","bh_low"},{"lunge","bh_lunge"},{"block","bh_drive"},{"jump","bh_over"}};
@@ -151,7 +151,7 @@ namespace BirdieSmash.Core
         // 2026-10-26 (tüm beden turu, karakter.py dongu()): döngüler yeniden yazıldı; varsayılanlar sade modelin FBX ölçümü
         // (unity_fbx.py adim × 1,75, uçuş evresi düzeltmeli). Görünüm modelin kendi _clips.json'u ile ezer; listede olmayan klip
         // ezilmez, o yüzden yeni döngüler (run, kros_*) burada olmalı.
-        public static readonly Dictionary<string, float> ADIM_BOY = new Dictionary<string, float> { {"chasse_r",.99f},{"chasse_l",.99f},{"fwd",1.43f},{"back_r",1.58f},{"back_l",1.58f},{"run",2.31f},{"kros_r",1.63f},{"kros_l",1.63f} };
+        public static readonly Dictionary<string, float> ADIM_BOY = new Dictionary<string, float> { {"chasse_r",.99f},{"chasse_l",.99f},{"fwd",1.43f},{"back_r",1.58f},{"back_l",1.58f},{"run",2.31f},{"kros_r",1.63f},{"kros_l",1.63f},{"geri_r",2.03f},{"geri_l",2.03f} };   // geri_*: chassé × 0,90/0,44 (2026-11-05; model kendi ölçüsüyle ezer)
         // Döngü/sn tavanı (2026-10-26): 2,6'da chassé (eski 0,7 m) 1,8 m/s'yi, öne adım 2,3 m/s'yi aşınca ayak kayıyordu (bot:
         // oyuncu öne ort. 3,3, arkaya 3,5 m/s). Yeni bantlarla en hızlı durum ~3,4 döngü/sn (geri 5,2 m/s); tavan yalnız
         // ışınlanma/çarpışma sıçramalarına karşı.
@@ -162,6 +162,8 @@ namespace BirdieSmash.Core
         // Hız bantları (histerezisli, m/s): öne adım → koşu, chassé → çapraz koşu. Kaynak: hızlı yan harekette (≥ ~3 m/s)
         // oyuncular chassé'yi bırakıp çapraz adımla koşar; öne uzun mesafede koşu adımı. Eşikler döngüyü 2,0–3,0 döngü/sn bandında tutar.
         public const float KOSU_GIR = 3.2f, KOSU_CIK = 2.7f, KROS_GIR = 2.9f, KROS_CIK = 2.4f;
+        // Geri çekilme payı (2026-11-05): fileye doğru hız bileşeni −GERI_GIR × hızdan küçükse (gidiş ≳ 115°) geri_* girer, −GERI_CIK'te (≳ 105°) çıkar.
+        public const float GERI_GIR = .42f, GERI_CIK = .26f;
 
         // Tarzlar ve kariyer veriden (2026-10-26, KariyerVeri; değerler eski koddakiyle birebir). Hızlı maçın rastgele rakibi
         // bugünkü üç tarzdan kalır (Hızlı maç metni öyle söylüyor); yeni tarzlar kariyerde tanıtılır.
@@ -904,7 +906,7 @@ namespace BirdieSmash.Core
         {
             yan = ileri = 0;
             if (c == null) return;
-            if (c == "chasse_r" || c == "kros_r") yan = 1; else if (c == "chasse_l" || c == "kros_l") yan = -1;
+            if (c == "chasse_r" || c == "kros_r" || c == "geri_r") yan = 1; else if (c == "chasse_l" || c == "kros_l" || c == "geri_l") yan = -1;
             else if (c == "fwd" || c == "run") ileri = 1; else if (c == "back_r" || c == "back_l") ileri = -1;
         }
         // Kendi çerçevedeki (yan, ileri) vektörün gövde çerçevesine dönüşü (gövde donus derece sağa dönük).
@@ -986,10 +988,17 @@ namespace BirdieSmash.Core
                 // back_r↔fwd titremesi maç başına ~7 artıyordu (AnimOlc).
                 bool ters = q.ayakKlip != null && yol < -.3f * q.vAn && q.vAn > TERS_V;
                 if (ters) aday = YonKlibi(gy, gi);
-                bool kosu = q.ayakKlip == "run", kros = q.ayakKlip == "kros_r" || q.ayakKlip == "kros_l";
+                bool kosu = q.ayakKlip == "run", kros = q.ayakKlip == "kros_r" || q.ayakKlip == "kros_l", geri = q.ayakKlip == "geri_r" || q.ayakKlip == "geri_l";
+                // Geri çekilme (2026-11-05, yasin: "geri geri koşarken sporun doğasına uygun değil"): gövde yan çizgiye dönmüş ve
+                // gidiş arka çizgiye doğruysa (kendi çerçevede gidiş açısı ≳ 115°, histerezisle ≳ 105°'de kalır) yan klip
+                // chassé/kros yerine geri_* olur: ayaklar çaprazlanmadan uzun chassé sıçraması, raket overhead hazırlığında. Eskiden
+                // hızlı geri çekilme kros'tu: kros'un kendi leğen dönüşü (50°) gövdenin 90°'sine binip leğeni fileden ~140°
+                // çeviriyordu (sırtı dönük çapraz koşu). Saf yan (fileye bakan chassé) ve öne çapraz değişmez.
+                bool geriYon = q.donSektor != 0 && fwdv < -(geri ? GERI_CIK : GERI_GIR) * sp && q.vAn > DON_V0;
                 // Hız bandı anlık hızla (2026-10-27): süzgeçli hız kalkışta 1–1,5 m/s geride kalıyor, 4 m/s'de chassé (0,99 m)
                 // döngü tavanına (3,6/sn) dayanıp kayıyordu. Anlık hız ivme sınırlı ve pürüzsüz; histerezis yine bantta.
-                if (aday == "fwd" && q.vAn > (kosu ? KOSU_CIK : KOSU_GIR) && HasClip("run")) aday = "run";
+                if ((aday == "chasse_r" || aday == "chasse_l") && geriYon && HasClip("geri_r")) aday = aday == "chasse_r" ? "geri_r" : "geri_l";
+                else if (aday == "fwd" && q.vAn > (kosu ? KOSU_CIK : KOSU_GIR) && HasClip("run")) aday = "run";
                 else if ((aday == "chasse_r" || aday == "chasse_l") && q.vAn > (kros ? KROS_CIK : KROS_GIR) && HasClip("kros_r")) aday = aday == "chasse_r" ? "kros_r" : "kros_l";
                 if (q.ayakKlip == null) q.ayakKlip = aday;
                 // Aynı yönün hız bandı değişimi (fwd↔run, chassé↔kros) beklemesiz: faz sürer, histerezis titremeyi zaten keser;
@@ -1009,7 +1018,7 @@ namespace BirdieSmash.Core
         }
 
         public const float AYAK_KALIS = .05f;   // sn: ters/dönüş geçişinden önce şimdiki ayak klibinde en az kalış
-        static string Aile(string c) { return c == "run" ? "fwd" : c == "kros_r" ? "chasse_r" : c == "kros_l" ? "chasse_l" : c; }
+        static string Aile(string c) { return c == "run" ? "fwd" : c == "kros_r" || c == "geri_r" ? "chasse_r" : c == "kros_l" || c == "geri_l" ? "chasse_l" : c; }
 
         // Hazırlık pozu: top yaklaşırken kol geri alınır; poz, vuruş anındaki sınıflamanın aynısıyla seçilir (temasta poz sıçramaz).
         // Drive ve blok kendi hazırlığıyla (ce47f5c): eskiden alçak vuruş klibinden gelip raket yere iniyordu.

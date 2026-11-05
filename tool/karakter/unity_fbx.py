@@ -31,7 +31,7 @@ sys.argv = [sys.argv[0], '--', OUT, 'keys']
 ns = {'__name__': 'karakter', '__file__': SRC}
 exec(compile(src, SRC, 'exec'), ns)
 CLIPS, build, objs = ns['CLIPS'], ns['build'], ns['objs']
-LOOP = {'idle', 'run', 'fwd', 'chasse_r', 'chasse_l', 'back_r', 'back_l', 'yorgun', 'kros_r', 'kros_l'}   # kros_*: 2026-10-26 hızlı yana çapraz koşu
+LOOP = {'idle', 'run', 'fwd', 'chasse_r', 'chasse_l', 'back_r', 'back_l', 'yorgun', 'kros_r', 'kros_l', 'geri_r', 'geri_l'}   # geri_*: 2026-11-05 yan dönük geri chassé; kros_*: 2026-10-26 hızlı yana çapraz koşu
 FR, GAP, FPS = 3, 10, 30   # poz başına 3 kare (Unity arası doldurur), klipler arası boşluk
 sc = bpy.context.scene; sc.render.fps = FPS
 
@@ -114,7 +114,7 @@ for name, frames in CLIPS.items():
 # Ardışık iki pozda da zeminde olan ayağın (klibin en alçak temasının 6 mm içinde; ikisi yerdeyse ortalaması) yatay
 # yer değiştirmesi toplanır (yerinde döngü: basan ayak geriye kayar, oyun kökü o kadar ileri gitmeli). Unity PlayerView
 # `adim × SCALE`'i Match.ADIM_BOY'a yazar; klibin evresi hızla tam bu adımda ilerler, ayak yerde durur.
-ADIM_KLIP = ('run', 'chasse_r', 'chasse_l', 'fwd', 'back_r', 'back_l', 'kros_r', 'kros_l')
+ADIM_KLIP = ('run', 'chasse_r', 'chasse_l', 'fwd', 'back_r', 'back_l', 'kros_r', 'kros_l', 'geri_r', 'geri_l')
 def ayak_kemikleri(k):
     out = [b for b in pb if ('foot' in b.name.lower() or 'ball' in b.name.lower() or 'toe' in b.name.lower()) and
            b.name.lower().rstrip('.').endswith(('_' + k, '.' + k, ' ' + k)) and 'ik' not in b.name.lower()]

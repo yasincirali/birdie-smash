@@ -642,7 +642,7 @@ namespace BirdieSmash.Game
         // açılır (Match.ALT_HIZ üstel yumuşatma: pop yok; eşik ve istisnalar Match.AltHedef'te). Bacakları vuruşun kendisi olan kliplerde
         // (hamle, sıçrama, servis, split, yorgun) kapalı, istisnalar orada. Kemikler bulunamazsa kurulmaz: eski davranış birebir. HTML'de karşılığı yok (sprite tek
         // parça); bu yalnız görünüm, oyun kuralı değil.
-        static readonly string[] AYAK_KLIP = { "chasse_r", "chasse_l", "fwd", "back_r", "back_l", "run", "kros_r", "kros_l" };   // run/kros_*: 2026-10-26 hız bantları
+        static readonly string[] AYAK_KLIP = { "chasse_r", "chasse_l", "fwd", "back_r", "back_l", "run", "kros_r", "kros_l", "geri_r", "geri_l" };   // run/kros_*: 2026-10-26 hız bantları
         bool altVar; float altW, altPh; string altKlip;
         void AltKatmanKur()
         {

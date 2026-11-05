@@ -35,7 +35,7 @@ static class AnimOlc
         }
     }
 
-    static readonly HashSet<string> AYAK = new HashSet<string> { "chasse_r", "chasse_l", "fwd", "back_r", "back_l", "run", "kros_r", "kros_l" };
+    static readonly HashSet<string> AYAK = new HashSet<string> { "chasse_r", "chasse_l", "fwd", "back_r", "back_l", "run", "kros_r", "kros_l", "geri_r", "geri_l" };
     // Ayak işi fazının ilerlediği hız (Match.AyakIsi). Eski Core'la (vAn yok) karşılaştırmak için -DESKI: yumuşatılmış hız.
 #if ESKI
     static float Hiz(Athlete a) { return (float)Math.Sqrt(a.svx * a.svx + a.svy * a.svy); }

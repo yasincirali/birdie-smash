@@ -114,6 +114,13 @@ koordinatından çizilir (`insan.py` `_yuz_dugum`). 360° ve hakemler aynı `BS_
   - **Çözücü** yalnız tipin varsayılan saçı ve klasik ayakkabıyla ölçer (afro her tipte kol yolunu iterdi); en hacimli
     saçla kalan girme denetimde raporlanır. Çeşitler render'da gizli (`BS_OY_SACSEC`, `BS_OY_AYKSEC` seçer),
     `unity_fbx.py` hepsini FBX'e koyar.
+- **Ayak işi turu** (2026-11-05, yasin: "geri geri koşarken badmintonun doğasına uygun değil", "file önünde adımlama ve
+  vücudun şekli doğru gözükmeli"): hamle (lunge, bh_lunge) ve file vuruşu (net) temasta ön diz ~90° (baldır dik, kalça ön
+  ayağın bir uyluk gerisinde ve alçak), arka bacak uzanık (diz 25–50°), raket önde, başı bilek hizasında, yüzü açık; net artık
+  low'un gövdesini paylaşmaz (low'da raket başı yere bakıyordu). Geri çekilme: yeni `geri_r/geri_l` (yan dönük uzun chassé
+  sıçraması, ayaklar çaprazlanmaz, raket overhead hazırlığında, sol kol topa; oyun gövdeyi 90° çevirir, klip yana gider),
+  hızlı geri çekilmede kros yerine (Match.AyakIsi `geriYon`); yavaş geri adım `back_r/back_l` fileye bakarak geri geri koşu
+  değil, ~48° yan dönük chassé. Ölçü: diz açıları oyuncak gövdesinde (`OY.T` hpR/knR/anR), yandan Cycles render ile bakıldı.
 - **Oyuncak (KayKit, arşiv)**: `oyuncak_kaykit.py`, `BS_MODEL=oyuncak_kaykit`; KayKit Adventurers Rogue (CC0) gerekir.
 - **Adım boyu** (2026-10-26, fizik denetimi): `unity_fbx.py` ayak işi döngülerinin (run, chasse_r/l, fwd, back_r/l) bir turda
   taşıdığı yolu basan ayaktan ölçüp `<model>_clips.json` `adim` alanına yazar (model birimi; Unity × SCALE ile ADIM_BOY'u ezer,
