@@ -253,12 +253,16 @@ namespace BirdieSmash.Game
         static readonly string[] ZORLUK_ACIK = {
             "Oyuncun topa kendisi koşar; rakip daha yavaş, sık hata yapar",
             "Oyuncun topa kendisi koşar, sen yalnız vurursun",
-            "Koşmak sende; geç kalırsan oyuncun topa kendisi koşar",
+            "Koşmak sende; geç kalırsan oyuncun koşar, dokunursan yine sen yönlendirirsin",
             "Her adım senin dokunuşunla; rakip daha hızlı, az hata yapar" };
         void ZorlukSatir(VisualElement satir, VisualElement c)
         {
             satir.AddToClassList("cip-sarar");   // dört çip: büyük yazıda sözcük kırılmaz, satır sarar
-            for (int i = 0; i < 4; i++) { int v = i; satir.Add(Cip(L.T(Ayar.ZORLUK_AD[i]), Ayar.zorluk == v, () => { Ayar.zorluk = v; Ayar.Kaydet(); Degisti(); })); }
+            for (int i = 0; i < 4; i++)
+            {   // VoiceOver: çip adı + kademenin açıklaması (açıklama satırı yalnız seçili için görünür; UX incelemesi 2026-11-05)
+                int v = i; var cp = Cip(L.T(Ayar.ZORLUK_AD[i]), Ayar.zorluk == v, () => { Ayar.zorluk = v; Ayar.Kaydet(); Degisti(); });
+                Erisim.Etiket(cp, L.T(Ayar.ZORLUK_AD[i]) + ". " + L.T(ZORLUK_ACIK[i]), "dugme", Ayar.zorluk == v); satir.Add(cp);
+            }
             c.Add(Yazi(L.T(ZORLUK_ACIK[Mathf.Clamp(Ayar.zorluk, 0, 3)]), 12, "soluk"));
         }
         // Ayar değişti: görünen yüzey (alt sayfa / sayfa / sekme) yeniden kurulur; kaydırma yeri ScrollView'de kalır.

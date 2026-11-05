@@ -167,7 +167,7 @@ namespace BirdieSmash.Game
         // Maç kurulumunun ortak kuyruğu (2026-10-26: dört mod aynı yoldan; davranış eski StartMatch'le birebir).
         void MacKur(int tohum, MatchOptions o)
         {
-            ani.Sifirla(); AniDur();   // Maçın anı her maç kendi rallilerinden (Günün maçı, Usta yolu, görev de buradan geçer)
+            ani.Sifirla(); AniDur(); aniIzlendi = false;   // Maçın anı her maç kendi rallilerinden (Günün maçı, Usta yolu, görev de buradan geçer)
             match = new Match(tohum, o);
             Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; yerN = 0; yerTop = null;
             fx.Temizle(); sfx.CrowdStart(); pencere = false; sfx.SuAlti(false); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
@@ -264,7 +264,7 @@ namespace BirdieSmash.Game
             // Kolay'dan Usta'ya davet (stüdyo incelemesi 2026-11-05, oyun tasarımı 6): Kolay'da rahat kazanan oyuncuya (3+ galibiyet,
             // bu maçta 5+ tam orta) tek maçlık "Zor'u dene" (2026-11-05 dört kademe: önce Usta'ydı; Zor koşu yardımlı, adım daha küçük). Ayar değişmez, maç Usta ödülüyle (×1,25) oynanır; en çok 2 kez gösterilir.
             ustaDavet = won && M.easy && M.ogr == null && M.stil.usta < 0 && mod == Mod.Normal && !ustaDeneMac && Ayar.wins >= 3 && M.perfects >= 5 && PlayerPrefs.GetInt("tuytop_usta_davet", 0) < 2;
-            if (ustaDavet) { PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); PlayerPrefs.Save(); }
+            ustaDavetSayildi = false;   // hak düğme gerçekten çizilince düşer (UstaDavetGordu): tek ikincil yuvada başka düğme öndeyse yanmasın
             if (KariyerVeri.Var(M.stil.kariyer))
             {   // yıldızlar ve açılış Core/Ilerleme'de; Tur 1 sayısı (tuytop_v2.kariyer, başarımlar) ondan türer
                 int g = M.stil.kariyer; var bg = M.BasamakGorevi;
@@ -363,7 +363,7 @@ namespace BirdieSmash.Game
         readonly MacAni ani = new MacAni(); Transform aniTopT;
         public bool AniVar { get { return ani.Var && match != null && match.ogr == null; } }
         public bool AniAktif { get { return ani.Aktif; } }
-        public void AniBaslat() { ani.Baslat(); Yerel.Hap("tick"); }
+        public void AniBaslat() { ani.Baslat(); aniIzlendi = true; Yerel.Hap("tick"); }
         public void AniDur() { ani.Bitir(); if (aniTopT != null) aniTopT.gameObject.SetActive(false); }
         Transform AniTop()
         {
@@ -373,6 +373,9 @@ namespace BirdieSmash.Game
             tr.material = Kit.Additive(Color.white); tr.colorGradient = new Gradient { alphaKeys = new[] { new GradientAlphaKey(.5f, 0), new GradientAlphaKey(0, 1) }, colorKeys = new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) } };
             return aniTopT;
         }
+        bool ustaDavetSayildi, aniIzlendi;
+        public bool AniIzlendi { get { return aniIzlendi; } }
+        public void UstaDavetGordu() { if (ustaDavetSayildi) return; ustaDavetSayildi = true; PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); PlayerPrefs.Save(); }
         public void UstaDene() { ustaDeneSonraki = true; ustaDavet = false; TekrarOyna(); }
         public void TekrarOyna()
         {
