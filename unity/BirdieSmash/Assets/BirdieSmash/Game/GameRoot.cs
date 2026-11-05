@@ -349,6 +349,13 @@ namespace BirdieSmash.Game
         // sonuç ekranı). Mağaza build'inde çağıran yok; EndMatch'in kendisi değişmez, tur gerçek akışın sonucunu çeker.
         public void EkranBitir(bool won) { EndMatch(won); }
         // "Bir maç daha" / "Yeni maç başlat" da smaç perdesiyle (HTML start()).
+        // Meydan okuma (2026-11-05): Günün maçı herkese aynı rakip ve sahayla gelir; sonuç sistem paylaş sayfasına iki satır metin.
+        public void GunlukPaylas()
+        {
+            var M = match; if (M == null) return; bool w = M.sc[0] > M.sc[1];
+            string m = L.T(w ? "Birdie Smash · Günün maçını {0}–{1} kazandım, en uzun ralli {2}." : "Birdie Smash · Günün maçı: {0}–{1}, en uzun ralli {2}.", M.sc[0], M.sc[1], M.maxRally)
+                + "\n" + L.T("Sen kaç alırsın?"); Yerel.Paylas(m);
+        }
         public void UstaDene() { ustaDeneSonraki = true; ustaDavet = false; TekrarOyna(); }
         public void TekrarOyna()
         {

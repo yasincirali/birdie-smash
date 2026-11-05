@@ -89,6 +89,29 @@ extern "C" int BirdieDusukGuc(void)
     return [[NSProcessInfo processInfo] isLowPowerModeEnabled] ? 1 : 0;
 }
 
+// Paylaş (stüdyo incelemesi 2026-11-05, oyun tasarımı 4 "meydan okuma"): Günün maçı herkese aynı; sonuç iki satır metin
+// olarak sistem paylaş sayfasıyla gider. Sunucu, hesap, takip yok; metni oyuncu görür ve kendisi gönderir. iPad'de sayfa
+// ekranın alt ortasından açılır (popover kaynağı zorunlu).
+extern "C" void BirdiePaylas(const char *metin)
+{
+    if (metin == NULL) return;
+    NSString *s = [NSString stringWithUTF8String:metin];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIViewController *kok = nil;
+        for (UIScene *sc in [UIApplication sharedApplication].connectedScenes)
+            if ([sc isKindOfClass:[UIWindowScene class]]) for (UIWindow *w in ((UIWindowScene *)sc).windows) if (w.isKeyWindow) kok = w.rootViewController;
+        if (kok == nil) return;
+        while (kok.presentedViewController != nil) kok = kok.presentedViewController;
+        UIActivityViewController *av = [[UIActivityViewController alloc] initWithActivityItems:@[s] applicationActivities:nil];
+        if (av.popoverPresentationController != nil)
+        {
+            av.popoverPresentationController.sourceView = kok.view;
+            av.popoverPresentationController.sourceRect = CGRectMake(kok.view.bounds.size.width / 2, kok.view.bounds.size.height - 80, 1, 1);
+        }
+        [kok presentViewController:av animated:YES completion:nil];
+    });
+}
+
 extern "C" int BirdieDigerSesCaliyor(void)
 {
     return [[AVAudioSession sharedInstance] secondaryAudioShouldBeSilencedHint] ? 1 : 0;

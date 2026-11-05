@@ -20,6 +20,7 @@ namespace BirdieSmash.Game
         [DllImport("__Internal")] static extern int BirdieHareketAzalt();
         [DllImport("__Internal")] static extern int BirdieDusukGuc();
         [DllImport("__Internal")] static extern int BirdieDigerSesCaliyor();
+        [DllImport("__Internal")] static extern void BirdiePaylas(string metin);
         [DllImport("__Internal")] static extern float BirdieAcilisSure();
         [DllImport("__Internal")] static extern void BirdieAcilisBitir();
         [DllImport("__Internal")] static extern void BirdieAcilisGoster(float aci, float topGecikme, string yazi, float yaziOlcek);
@@ -94,6 +95,21 @@ namespace BirdieSmash.Game
             try { return BirdieDigerSesCaliyor() == 1; } catch { return false; }
 #else
             return false;
+#endif
+        }
+        // Sistem paylaş sayfası (2026-11-05): yalnız iOS cihazında; düğme PaylasVar değilse hiç çizilmez.
+        public static bool PaylasVar
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            get { return true; }
+#else
+            get { return false; }
+#endif
+        }
+        public static void Paylas(string metin)
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            try { BirdiePaylas(metin); } catch { }
 #endif
         }
         public static bool HareketAzalt()

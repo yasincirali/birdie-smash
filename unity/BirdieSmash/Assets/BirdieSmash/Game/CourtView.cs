@@ -88,7 +88,7 @@ namespace BirdieSmash.Game
             foreach (float x in new[] { 0f, Court.CW })
                 Kit.Prim(PrimitiveType.Cylinder, "direk", k, Kit.W(x, N, Court.NETP / 2), new Vector3(.04f, Court.NETP / 2, .04f), post)
                    .GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-            Tribun(k, T); Sandalyeler(k); Isik(k);
+            Tribun(k, T); Sandalyeler(k); Isik(k); ArkaPlan(k, sahaId ?? "salon");
             return k.gameObject;
         }
 
@@ -150,6 +150,32 @@ namespace BirdieSmash.Game
             Kit.Prim(PrimitiveType.Cube, "sirtlik", g, Kit.W(x1 + .19f, N - .1f, SH_Z + .25f), new Vector3(.04f, .45f, .4f), koyu);
             Kit.Prim(PrimitiveType.Cylinder, "olcer", g, Kit.W(Court.CW + .1f, Court.NET + .2f, .575f), new Vector3(.02f, .575f, .02f), Kit.Lit(new Color(.94f, .94f, .94f), .4f));
             Kit.Prim(PrimitiveType.Cube, "olcer_cizgi", g, Kit.W(Court.CW + .1f, Court.NET + .2f, 1.15f), new Vector3(.16f, .02f, .02f), Kit.Lit(new Color(.94f, .94f, .94f), .4f));
+        }
+
+        // Arka plan (stüdyo incelemesi 2026-11-05, sanat 2 ve 6): tribünün üstü düz siyah boşluktu ("ışığı kapalı salon").
+        // Tribün arkasına dikey degrade duvar (alt açık, üst saha rengine kararır) ve sahaya özgü tek imza: Gece parkında ağaç
+        // siluetleri ve yıldızlar. Işık hesaplamayan malzeme, gölge yok; kort ve top okunurluğuna dokunmaz (kortun ≥ 2 m gerisi).
+        static readonly Dictionary<string, string[]> ARKA = new Dictionary<string, string[]> {
+            {"salon",new[]{"#22313d","#11181d"}},{"turnuva",new[]{"#24457a","#0b1424"}},{"okul",new[]{"#5a3c24","#21170f"}},{"park",new[]{"#2b2457","#10163a"}}};
+        static void ArkaPlan(Transform k, string saha)
+        {
+            string[] r; if (!ARKA.TryGetValue(saha, out r)) r = ARKA["salon"];
+            var tex = new Texture2D(1, 64, TextureFormat.RGBA32, false); tex.wrapMode = TextureWrapMode.Clamp; Color a = Kit.Hex(r[0]), b = Kit.Hex(r[1]);
+            for (int i = 0; i < 64; i++) tex.SetPixel(0, i, Color.Lerp(a, b, Mathf.SmoothStep(0, 1, i / 63f))); tex.Apply();
+            const float Y = -3.6f, GEN = 22, YUK = 9;
+            Kit.Prim(PrimitiveType.Quad, "arka_duvar", k, Kit.W(Court.MID, Y, YUK / 2 - .2f), new Vector3(GEN, YUK, 1), Kit.Clear(Color.white, tex));
+            if (saha != "park") return;
+            var sil = Kit.Unlit(Kit.Hex("#0d1426")); var rnd = new System.Random(11);
+            float[] xs = { -4.6f, -2.9f, Court.CW + 2.6f, Court.CW + 4.2f, Court.CW + 5.8f };
+            foreach (float x in xs)
+            {
+                float h = 2.2f + (float)rnd.NextDouble() * 1.4f, c = 1.3f + (float)rnd.NextDouble() * .6f;
+                Kit.Prim(PrimitiveType.Cylinder, "agac_govde", k, Kit.W(x, Y + .3f, h / 2), new Vector3(.22f, h / 2, .22f), sil);
+                Kit.Prim(PrimitiveType.Sphere, "agac_tac", k, Kit.W(x, Y + .3f, h + c * .3f), new Vector3(c, c * 1.1f, c), sil);
+            }
+            var yild = Kit.Clear(new Color(1, .96f, .85f, .8f), Kit.RadialTex());
+            for (int i = 0; i < 26; i++) { float s = .05f + (float)rnd.NextDouble() * .07f;
+                Kit.Prim(PrimitiveType.Quad, "yildiz", k, Kit.W(Court.MID + ((float)rnd.NextDouble() - .5f) * GEN * .9f, Y + .05f, 4.2f + (float)rnd.NextDouble() * 4.3f), new Vector3(s, s, 1), yild); }
         }
 
         // Yayın ışığı: tavanda kortun boyunca üç lamba (HTML lamba havuzları NET×.45, NET, NET×1.55), sıcak beyaz.
