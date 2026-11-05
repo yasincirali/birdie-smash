@@ -331,6 +331,16 @@
    "hold": null,
    "drop": null,
    "adim": 0.6482
+  },
+  {
+   "name": "rth",
+   "first": 1182,
+   "last": 1221,
+   "loop": false,
+   "poses": 14,
+   "hitK": 9,
+   "hold": 2,
+   "drop": 5
   }
  ],
  "model": "tuycuk",
