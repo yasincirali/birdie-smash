@@ -1013,7 +1013,9 @@ namespace BirdieSmash.Game
             if (ayr) y = AyrintiCiz(x, y, w, s, al);
             else
             {
-                if (R.bittiMaske >= 0) y = YildizCiz(x, y, w, s, t, rm, al, hero ? .5f : 1);
+                // Yenilgide yıldızlar küçük (2026-11-05, Ar-Ge 11:40 #1): üç büyük boş yıldız ekranın ~%15'ini "olmadı" demeye
+                // harcıyordu; koşul yazısı (görev sayısıyla) aynı boyda kalır, kart ve düğme yukarı gelir. Galibiyet bugünkü gibi.
+                if (R.bittiMaske >= 0) y = YildizCiz(x, y, w, s, t, rm, al, hero ? .5f : R.bittiKazandi ? 1 : .6f);
                 if (od != null) y = OdulCiz(od, x, y, w, s, t, rm, al);
                 // Kahraman düzeninde açılan basamak kartı yok: büyük düğmenin alt satırı aynı şeyi söyler ("Sıradaki · İl şampiyonası")
                 if (!hero && !string.IsNullOrEmpty(R.bittiAcilan))

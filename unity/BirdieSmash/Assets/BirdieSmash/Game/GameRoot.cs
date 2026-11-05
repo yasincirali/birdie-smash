@@ -44,13 +44,22 @@ namespace BirdieSmash.Game
         public bool bittiKazandi; public int bittiMaske = -1, bittiYeniMaske, bittiYildizN = 3, bittiG = -1;
         public string bittiBas, bittiUst, bittiAltNot, bittiAcilan, bittiDugmeAlt; public string[] bittiKosul;
         void BittiSifirla() { bittiKazandi = false; bittiMaske = -1; bittiYeniMaske = 0; bittiYildizN = 3; bittiG = -1; bittiBas = bittiUst = bittiAltNot = bittiAcilan = bittiDugmeAlt = null; bittiKosul = null; }
+        // Basamak görevinin yıldız yazısı (2026-11-05, Ar-Ge 11:40 #1): bitmediyse bu maçtaki sayısı da yazılır ("3 smaçı karşıla ·
+        // 2/3"). Eskiden yenilgide yalnız "✕ 3 smaçı karşıla" görünüyordu; sayaç (Gorev.say) hazırdı, oyuncu "bir tane kalmıştı"yı
+        // göremiyordu. Bittiyse ad yalın (tik zaten söyler).
+        static string GorevKosul(Gorev gv, Match M)
+        {
+            if (gv == null) return L.T("Basamak görevi");
+            string ad = L.Cumle(gv.ad); if (gv.bitti || gv.say == null || gv.hedef <= 1) return ad;
+            return ad + " · " + Mathf.Clamp(gv.say(M), 0, gv.hedef) + "/" + gv.hedef;
+        }
         // Karşılaşılan basamak (g) için üst satır ve sonraki basamağın düğme alt satırı.
         void BittiKariyer(int g, bool won, Match M)
         {
             bittiG = g; var kb = KariyerVeri.Al(g);
             bittiUst = L.T(UiKok.TurAd(KariyerVeri.TurOf(g))) + " · " + (KariyerVeri.BasOf(g) + 1) + "/" + KariyerVeri.BASAMAK + " · " + L.T(kb.yer);
             var gv = M.BasamakGorevi;
-            bittiKosul = new[] { L.T("Kazan"), gv != null ? L.Cumle(gv.ad) : L.T("Basamak görevi"), L.T("Rakip ≤ {0}", Ilerleme.FarkSiniri(M.target)) };
+            bittiKosul = new[] { L.T("Kazan"), GorevKosul(gv, M), L.T("Rakip ≤ {0}", Ilerleme.FarkSiniri(M.target)) };
             var p = Ayar.ilerleme; int n = won && !p.HepsiBitti ? p.Siradaki() : g;
             if (KariyerVeri.Var(n)) { var nk = KariyerVeri.Al(n); bittiDugmeAlt = L.T(nk.yer) + " · " + Match.STIL[nk.stil].isim; }
         }
@@ -277,7 +286,7 @@ namespace BirdieSmash.Game
                     int ys = (won ? 1 : 0) + (p.UstaGorevBitti(n) ? 1 : 0);
                     bittiYildiz = new string('★', ys) + new string('☆', 2 - ys) + " · " + L.T("{0}/2 yıldız", ys) + (yeniYildiz > 0 ? " · " + L.T("{0} yeni", yeniYildiz) : "");
                     var bg2 = M.BasamakGorevi; bittiYildizN = 2; bittiMaske = (won ? 1 : 0) | (p.UstaGorevBitti(n) ? 2 : 0); bittiYeniMaske = (won && siradaki ? 1 : 0) | (!gorevOnce && p.UstaGorevBitti(n) ? 2 : 0);
-                    bittiKosul = new[] { L.T("Kazan"), bg2 != null ? L.Cumle(bg2.ad) : L.T("Basamak görevi") };
+                    bittiKosul = new[] { L.T("Kazan"), GorevKosul(bg2, M) };
                     bittiUst = L.T("Usta yolu") + " · " + L.T("{0}. basamak", n + 1) + " · " + L.T(UstaYolu.Basamak(n).yer);
                 }
             }
