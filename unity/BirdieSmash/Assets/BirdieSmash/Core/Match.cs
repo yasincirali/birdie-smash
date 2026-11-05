@@ -310,11 +310,11 @@ namespace BirdieSmash.Core
         public float OpSpd() { return (GS.rakip * stil.hiz * (easy ? 3.2f : 3.6f) + Math.Min(.55f, (sc[0] + sc[1]) * .02f)) * OpNefesF() - Math.Min(.8f, Behind() * .12f); }
 
         // Round-the-head (stüdyo incelemesi 2026-11-05, oyun tasarımı 2): baş üstü top sol omuzun üstündeyse (backhand tarafı ama
-        // gövdeden en çok RTH_ERIS uzakta) gerçek oyuncu backhand'e dönmez, raketi başın arkasından dolar: smaç mümkün, bedeli
+        // gövdeden en çok RTH_ERIS uzakta, ve top RTH_Z'den yüksekte: daha alçak baş üstü topa raket başın arkasından dolanamaz) gerçek oyuncu backhand'e dönmez, raketi başın arkasından dolar: smaç mümkün, bedeli
         // daha çok nefes, biraz daha yavaş top ve kısa toparlanma (RTH_*). Daha uzaktaki top yine gerçek backhand (bh_over).
         // Klip "rth" yoksa (eski model) eski davranış birebir.
-        public const float RTH_ERIS = 1.15f, RTH_HIZ = .93f, RTH_YOR = 1.35f, RTH_TOPARLA = .12f;
-        static bool RthMu(Athlete o, string who, float sx, float sz) { if (sz <= 1.95f || !HasClip("rth")) return false; float side = (sx - o.x) * (who == "me" ? 1 : -1); return side < -.6f && side >= -RTH_ERIS; }
+        public const float RTH_Z = 2.3f, RTH_ERIS = 1.0f, RTH_HIZ = .93f, RTH_YOR = 1.35f, RTH_TOPARLA = .12f;
+        static bool RthMu(Athlete o, string who, float sx, float sz) { if (sz <= RTH_Z || !HasClip("rth")) return false; float side = (sx - o.x) * (who == "me" ? 1 : -1); return side < -.6f && side >= -RTH_ERIS; }
         static string RthKlip(string clip, Athlete o, string who, float sx, float sz) { return clip == "bh_over" && RthMu(o, who, sx, sz) ? "rth" : clip; }
         static string HandOf(Athlete o, string who, float sx, float sz) { float side = (sx - o.x) * (who == "me" ? 1 : -1); return side < -(sz > 1.95f ? .6f : .25f) ? "back" : "fore"; }
         // HUD (hale etiketi, servis şeridi, Hawk-Eye kırpması) iç kuralları kopyalamasın diye salt-okur sarmalayıcılar.
@@ -381,7 +381,8 @@ namespace BirdieSmash.Core
             if (type == "smash" && !reduce) freeze = Math.Max(freeze, isSuper ? .16f : .08f);
             // Mikro donma (stüdyo incelemesi 2026-11-05, teknik sanat 2): oyuncunun sert vuruşları da 20–35 ms "tok" temas alır.
             // Yalnız kendi vuruşun (rakibinkinde yok), 40 ms altı; ralli vuruş başına en çok 35 ms uzar, hız değişmez.
-            else if (from == "me" && !reduce && !isServe && freeze <= 0) { float md = type == "kill" ? .035f : type == "drive" ? .025f : type == "clear" ? .02f : 0; if (md > 0) freeze = md; }
+            // (file önü kill uçuşta "smash" sayılır ve yukarıdaki 80 ms donmayı alır.)
+            else if (from == "me" && !reduce && !isServe && freeze <= 0) { float md = type == "drive" ? .025f : type == "clear" ? .02f : 0; if (md > 0) freeze = md; }
             // text = vuruşun adı (2026-10-29): GameRoot file önü kill'e kendi hissini verir (uçuş türü yine "smash")
             Emit(Ev.Hit, from, type, hx, hy, hz, rally, s.vurus, q ?? "good", isSuper); events[events.Count - 1].slice = slice; events[events.Count - 1].serve = isServe;
             if (rally > 2 && rally % 10 == 0) Say(null, null, Court.MID, Court.NET, 2.5f, "Ralli " + rally, 2);
@@ -681,11 +682,11 @@ namespace BirdieSmash.Core
         float OpYerSec(string type)
         {
             float rast = (R01() * 2 - 1) * .8f;
-            if (ogr != null || Dril != null) return rast;
+            if (ogr != null || Dril != null || type == "drive") return rast;   // drive düellosu düz değiş tokuştur: boşluğa değil vücuda
             float w = (easy ? .25f : .45f) * stil.hucum * OpNefesF(); if (w > .75f) w = .75f;
             if (R01() >= w) return rast;
             float taraf = me.x > Court.MID ? -1 : 1, uzak = Math.Min(1, Math.Abs(me.x - Court.MID) / ((Court.SR - Court.SL) * .3f));
-            return taraf * (.4f + .35f * uzak + R01() * .15f);
+            return taraf * (.35f + .3f * uzak + R01() * .1f);   // en çok .75: Plan ×.62 ile tekler çizgisinin içinde (eski rastgele ±.8)
         }
 
         void Plan(string type, float dxAim, bool overhead, out float tx, out float ty, out bool byAngle, out float val)

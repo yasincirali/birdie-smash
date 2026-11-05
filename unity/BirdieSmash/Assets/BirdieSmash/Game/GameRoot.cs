@@ -21,7 +21,7 @@ namespace BirdieSmash.Game
     public class GameRoot : MonoBehaviour
     {
         public Match match; public Camera cam; public Ekran ekran = Ekran.Menu; public bool paused;
-        public string bittiBaslik, bittiNot, bittiBilgi, bittiDugme, bittiIpucu, bittiYildiz; public List<Ozet.Kart> bittiKart = new List<Ozet.Kart>(); public bool bittiIlk, ustaDavet; public float rakipKartT; bool ustaDeneSonraki, ustaDeneBu;
+        public string bittiBaslik, bittiNot, bittiBilgi, bittiDugme, bittiIpucu, bittiYildiz; public List<Ozet.Kart> bittiKart = new List<Ozet.Kart>(); public bool bittiIlk, ustaDavet; public float rakipKartT; bool ustaDeneSonraki, ustaDeneBu, ustaDeneMac;
         // Geri sayım (2026-10-30, yasin "1 ok" + "maç başlarken de bir geri sayım"): maç başında ve ralli sürerken duraklatmadan
         // dönüşte oyun 3-2-1 boyunca donuk durur, top yerinde görünür. Toplam 1,2 sn: maç başında rakip kartıyla (1,5 sn) üst
         // üste biner, maç başını uzatmaz. Antrenmanda ve öğretici maçta yok; sayı arasındaki duraklatmadan dönüşte yok (top yok).
@@ -145,7 +145,7 @@ namespace BirdieSmash.Game
 
         public void StartMatch(bool ogr, bool kisa, bool ilk)
         {
-            ustaDeneBu = ustaDeneSonraki && !ogr; ustaDeneSonraki = false; ani.Sifirla();   // Usta daveti yalnız bu maç (Ayar.easy değişmez)
+            ustaDeneBu = ustaDeneSonraki && !ogr; ustaDeneSonraki = false;   // Usta daveti yalnız bu maç (Ayar.easy değişmez)
             var o = Secenek(ogr); o.ilk = ilk; o.ogrKisa = kisa;
             // Kariyer (2026-10-26, harita): haritadan seçilen açık basamak, yoksa sıradaki. Uzunluk basamaktan (Tur 1'de 0 =
             // oyuncunun seçimi, bugünkü davranış; Asya Turu 5, finali 11).
@@ -160,11 +160,14 @@ namespace BirdieSmash.Game
         MatchOptions Secenek(bool ogr)
         {
             Ayar.GearHesap();
-            return new MatchOptions { easy = Ayar.easy && !(ustaDeneBu && !ogr), target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0 };
+            // Usta daveti bayrağı burada TÜKETİLİR: Günün maçı/Usta yolu/görev StartMatch'e uğramadan Secenek çağırır, bayrak sızmasın.
+            bool ud = ustaDeneBu && !ogr; ustaDeneBu = false; ustaDeneMac = ud;
+            return new MatchOptions { easy = Ayar.easy && !ud, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0 };
         }
         // Maç kurulumunun ortak kuyruğu (2026-10-26: dört mod aynı yoldan; davranış eski StartMatch'le birebir).
         void MacKur(int tohum, MatchOptions o)
         {
+            ani.Sifirla(); AniDur();   // Maçın anı her maç kendi rallilerinden (Günün maçı, Usta yolu, görev de buradan geçer)
             match = new Match(tohum, o);
             Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; yerN = 0; yerTop = null;
             fx.Temizle(); sfx.CrowdStart(); pencere = false; sfx.SuAlti(false); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
@@ -260,7 +263,7 @@ namespace BirdieSmash.Game
             BittiSifirla(); bittiKazandi = won;
             // Kolay'dan Usta'ya davet (stüdyo incelemesi 2026-11-05, oyun tasarımı 6): Kolay'da rahat kazanan oyuncuya (3+ galibiyet,
             // bu maçta 5+ tam orta) tek maçlık "Usta'da dene". Ayar değişmez, maç Usta ödülüyle (×1,25) oynanır; en çok 2 kez gösterilir.
-            ustaDavet = won && M.easy && M.ogr == null && M.stil.usta < 0 && mod == Mod.Normal && !ustaDeneBu && Ayar.wins >= 3 && M.perfects >= 5 && PlayerPrefs.GetInt("tuytop_usta_davet", 0) < 2;
+            ustaDavet = won && M.easy && M.ogr == null && M.stil.usta < 0 && mod == Mod.Normal && !ustaDeneMac && Ayar.wins >= 3 && M.perfects >= 5 && PlayerPrefs.GetInt("tuytop_usta_davet", 0) < 2;
             if (ustaDavet) { PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); PlayerPrefs.Save(); }
             if (KariyerVeri.Var(M.stil.kariyer))
             {   // yıldızlar ve açılış Core/Ilerleme'de; Tur 1 sayısı (tuytop_v2.kariyer, başarımlar) ondan türer
@@ -645,11 +648,11 @@ namespace BirdieSmash.Game
             if (ani.Aktif && ekran == Ekran.Bitti) { if (!ani.Oynat(dt, me, op, AniTop())) AniDur(); shuttle.Show(match, null, 0, false, previewAt); }
             else
             {
-                if (ani.Aktif) ani.Bitir();
+                if (ani.Aktif) AniDur();
                 me.Show(match.me, match, dt); op.Show(match.op, match, dt);
                 shuttle.Show(match, ekran == Ekran.Menu ? null : match.s, paused || geriT > 0 ? 0 : dt, previewOn && input.on && !input.hit, previewAt);
                 // Maçın anı kaydı (Game/MacAni): yalnız gerçek maçta (antrenman ve görev dışında), oyun akarken.
-                if (ekran == Ekran.Oyun && !paused && geriT <= 0 && match.ogr == null) { var ts = match.s; bool tv = ts != null && !ts.dead; ani.Kaydet(dt, me, op, tv, tv ? Kit.W(ts.x, ts.y, ts.z) : Vector3.zero); }
+                if (ekran == Ekran.Oyun && !paused && geriT <= 0 && match.ogr == null && !match.between) { var ts = match.s; bool tv = ts != null && !ts.dead; ani.Kaydet(dt, me, op, tv, tv ? Kit.W(ts.x, ts.y, ts.z) : Vector3.zero); }
             }
             // Usta duruş işareti yazıyla da (P3): maçın ilk iki varışında "Yerindesin"; sonra yalnız ayak izinin dolması (sessiz HUD).
             if (ekran == Ekran.Oyun && !match.easy && match.ogr == null && yerN < 2 && match.s != null && match.s != yerTop && match.Yerinde()) { yerTop = match.s; yerN++; hud.Say(L.T("Yerindesin"), Kit.W(match.me.x, match.me.y, 1.6f), Kit.Hex("#d8ff5a")); }

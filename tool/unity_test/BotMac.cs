@@ -1387,7 +1387,7 @@ static class BotMac
         }
         if (hamleDus[1] > temas[1] / 10) Fail("vuruş: rakip hamle hazırlığından ayakta vuruşa dönüyor " + hamleDus[1]);
         if (opAltFh * 2 < opAlt) Fail("vuruş: rakip alçak vuruşların çoğunu backhand vuruyor (%" + (100f * opAltFh / Math.Max(1, opAlt)).ToString("0") + ")");
-        foreach (var need in new[] { "smash", "clear", "drop", "jump", "bh_over", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge" })
+        foreach (var need in new[] { "smash", "clear", "drop", "jump", "bh_over", "rth", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge" })
             if (!gor.Contains(need)) Fail("vuruş: hiç görülmeyen vuruş klibi " + need);
     }
 

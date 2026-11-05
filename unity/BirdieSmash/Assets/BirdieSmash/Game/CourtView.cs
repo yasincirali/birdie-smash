@@ -107,7 +107,7 @@ namespace BirdieSmash.Game
             int pi = 0; for (float x = X0; x < X1; x += 2, pi++)
             {
                 float x2 = Mathf.Min(X1, x + 2); var tex = Kit.LedTex(yazi[pi % yazi.Length], Kit.Hex(renk[pi % renk.Length]), Kit.Hex("#0d1420"));
-                var yuz = Kit.Prim(PrimitiveType.Quad, "led", root, Kit.W((x + x2) / 2, pano + .035f, .42f), new Vector3(x2 - x - .06f, .62f, 1), Kit.Clear(Color.white, tex));
+                var yuz = Kit.Prim(PrimitiveType.Quad, "led", root, Kit.W((x + x2) / 2, pano + .05f, .46f), new Vector3(x2 - x - .06f, .35f, 1), Kit.Clear(Color.white, tex));
                 yuz.transform.rotation = Quaternion.identity; var col = yuz.GetComponent<Collider>(); if (col != null) Object.Destroy(col);
             }
             for (int r = 0; r < 2; r++)
