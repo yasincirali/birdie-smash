@@ -465,7 +465,7 @@ namespace BirdieSmash.Game
             foreach (var r in kanal[kn]) foreach (var m in r.materials)
             {
                 if (k > 0) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", new Color(.85f, 1, .35f) * k * 1.2f); }
-                else { m.SetColor("_EmissionColor", Color.black); m.DisableKeyword("_EMISSION"); }
+                else m.SetColor("_EmissionColor", Color.black);   // anahtar açık kalır (2026-11-07): kapatıp açmak her parlamada varyant değiştiriyordu; siyah emisyon görüntüde aynıdır
             }
         }
 
