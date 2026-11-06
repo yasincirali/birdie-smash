@@ -161,7 +161,7 @@
 .basamak-satir { flex-direction: row; align-items: center; margin: 0; flex-wrap: nowrap; }
 .basamak-rozet { width: 36px; align-items: center; flex-shrink: 0; }
 .basamak-orta { flex-grow: 1; flex-shrink: 1; margin-left: 8px; margin-right: 8px; }
-.durum-gecti { color: var(--sun); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); flex-shrink: 0; }
+.durum-gecti { color: var(--mu); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); flex-shrink: 0; }
 .durum-simdi { color: var(--sun); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); flex-shrink: 0; }
 .durum-kilit { color: var(--mu); flex-shrink: 0; }
 .ipucu { color: var(--mu2); margin-top: 8px; }
@@ -184,11 +184,11 @@
 .dugum--final { border-color: rgba(249, 210, 114, 0.45); }
 .dugum--final.simdiki { border-color: var(--sun); }
 .dugum-rozet { width: 44px; height: 44px; border-radius: 22px; align-items: center; justify-content: center; flex-shrink: 0; border-width: 2px; border-color: rgba(255, 255, 255, 0.15); background-color: rgb(34, 24, 41); }
-.dugum-rozet--gecti { background-color: var(--sun); border-color: var(--sun); }
+.dugum-rozet--gecti { background-color: var(--mu2); border-color: var(--mu2); }   /* 2026-11-06 unslop: turuncu yalnız "şimdi"de; geçilen nötr açık + ✓ */
 .dugum-rozet--simdi { border-color: var(--sun); background-color: var(--navy); }
 .dugum-rozet--acik { border-color: rgba(255, 255, 255, 0.5); }
 .yol { width: 4px; height: 18px; align-self: center; border-radius: 2px; margin: 2px 0; }
-.yol--acik { background-color: var(--sun); }
+.yol--acik { background-color: rgba(255, 255, 255, 0.45); }
 .yol--kilit { background-color: rgba(255, 255, 255, 0.18); }
 .yildiz-sayac { flex-direction: row; align-items: center; margin: 0; flex-wrap: nowrap; }
 .yildizlar { flex-direction: row; align-items: center; margin: 2px 0 0 0; flex-wrap: nowrap; }
@@ -414,8 +414,8 @@
          -unity-background-scale-mode: stretch-to-fill; }
 .plaka-ust { flex-direction: row; align-items: center; flex-wrap: wrap; margin: -2px 0 6px 0; }
 .serit { padding: 4px 12px 3px 12px; margin-right: 10px; -unity-slice-left: 10; -unity-slice-right: 10; -unity-slice-top: 0; -unity-slice-bottom: 0; -unity-slice-scale: 0.5px; }
-.serit-yazi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--gold); letter-spacing: 1.4px; white-space: nowrap; }
-.plaka-tur { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); color: var(--mu); letter-spacing: 1.4px; }
+.serit-yazi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--gold); letter-spacing: 0.2px; white-space: nowrap; }
+.plaka-tur { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); color: var(--mu); letter-spacing: 0.2px; }   /* 2026-11-06 unslop: büyük harf etiket cümle düzenine, aralık daraldı */
 .plaka-baslik { color: var(--tx); margin: 0; }
 .plaka-meta { flex-direction: row; align-items: center; justify-content: space-between; margin-top: 8px; }
 .plaka-rakip { flex-direction: row; align-items: center; flex-shrink: 1; flex-grow: 1; margin-right: 8px; }
@@ -457,7 +457,7 @@
 .buyuk-yazi .karo { flex-basis: auto; flex-grow: 0; margin: 4px 0; }
 
 /* diğer sekmeler: kart başlıkları ve durum etiketleri yön A diliyle (renkler yukarıda değişkenlerden) */
-.durum-simdi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); letter-spacing: 1px; }
+.durum-simdi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); letter-spacing: 0; }
 
 /* ===== 2026-10-27 duyarlı yerleşim (yasin build 41: "her telefonda açıkça gözükmeli"; Game/UI/Duyarli.cs) =====
    Yalnız ölçü; renk ve yazı ailesi değişmez. .kisa: güvenli alan düşülünce panel yüksekliği < 700 (iPhone SE, 8 Plus,

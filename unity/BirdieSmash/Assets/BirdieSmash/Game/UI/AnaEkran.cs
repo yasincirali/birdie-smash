@@ -174,8 +174,8 @@ namespace BirdieSmash.Game
             kart.AddManipulator(new Clickable(() => { if (tamam) SekmeAc(Sekme.Kariyer); else { Yerel.Hap("tick"); MacKartAc(g); } }));
             var bas = new VisualElement(); bas.AddToClassList("plaka-ust"); bas.pickingMode = PickingMode.Ignore; kart.Add(bas);
             var serit = new VisualElement(); serit.AddToClassList("serit"); Doku(serit, Ikonlar.EgikLimonKucuk); serit.pickingMode = PickingMode.Ignore; bas.Add(serit);
-            serit.Add(Yazi(Buyuk(L.T(tamam ? "Kariyer tamam" : "Sıradaki maç")), 13, "serit-yazi"));
-            bas.Add(Yazi(Buyuk(L.T(TurAd(tr))) + " · " + (i + 1) + "/" + KariyerVeri.BASAMAK, 12, "plaka-tur"));
+            serit.Add(Yazi(L.T(tamam ? "Kariyer tamam" : "Sıradaki maç"), 13, "serit-yazi"));   // 2026-11-06 unslop: büyük harf + geniş aralık etiket yerine cümle düzeni
+            bas.Add(Yazi(L.T(TurAd(tr)) + " · " + (i + 1) + "/" + KariyerVeri.BASAMAK, 12, "plaka-tur"));
             kart.Add(Baslik(L.T(kb.yer), Px(38, 32), "plaka-baslik"));
             var rk = new VisualElement(); rk.AddToClassList("plaka-meta"); rk.pickingMode = PickingMode.Ignore; kart.Add(rk);
             var sol = new VisualElement(); sol.AddToClassList("plaka-rakip"); sol.pickingMode = PickingMode.Ignore; rk.Add(sol);

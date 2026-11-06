@@ -53,23 +53,16 @@ namespace BirdieSmash.Game
             orta.Add(Yazi(L.T(d.ad), 16, "kalin"));
             orta.Add(Yazi(L.T(d.ogretir), 13, "soluk"));
             var yr = Satir("rakip-satir"); yr.pickingMode = PickingMode.Ignore; orta.Add(yr); yr.Add(UcYildiz((1 << y) - 1, 16)); var yy = Yazi(y + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy);
-            // İlerleme çizgisi: son 5 oturumun isabet yüzdesi küçük çubuklarla (en yenisi sağda, dolu limon) ve sayıyla
-            // (yalnız biçimle değil yazıyla da okunur). Yıldız gibi geri alınmaz bir şey değil, yalnız gidişatı gösterir.
+            // İlerleme: son 5 oturumun isabet yüzdesi yalnız yazıyla (2026-11-06 unslop, öneri artifact'i YAP: her satırdaki 6 px'lik
+            // mini çubuklar okunmuyor, her karta süs grafik ekliyordu). Yıldız gibi geri alınmaz bir şey değil, yalnız gidişatı gösterir.
             var gec = pr.DrilGecmis(d.id); string gecYazi = null;
             if (gec.Count > 0)
             {
-                var gr = Satir("rakip-satir"); gr.pickingMode = PickingMode.Ignore; gr.style.alignItems = Align.FlexEnd; gr.style.marginTop = 4; orta.Add(gr);
-                for (int i = 0; i < gec.Count; i++)
-                {
-                    var b = new VisualElement(); b.pickingMode = PickingMode.Ignore; bool son = i == gec.Count - 1;
-                    b.style.width = 6; b.style.height = 3 + 15 * gec[i] / 100f; b.style.marginRight = 3; b.style.borderTopLeftRadius = b.style.borderTopRightRadius = 2;
-                    b.style.backgroundColor = son ? Kit.Hex("#d8ff5a") : new Color(1, 1, 1, .35f); gr.Add(b);
-                }
                 gecYazi = gec.Count > 1 ? L.T("Son {0} oturum: %{1} → %{2}", gec.Count, gec[0], gec[gec.Count - 1]) : L.T("Son oturum: %{0}", gec[0]);
-                var gy = Yazi(gecYazi, 12, "soluk"); gy.style.marginLeft = 6; gr.Add(gy);
+                var gy = Yazi(gecYazi, 12, "soluk"); gy.style.marginTop = 4; gy.pickingMode = PickingMode.Ignore; orta.Add(gy);
             }
             string durum = L.T(y >= 3 ? "Tamam" : y > 0 ? "Devam" : "Yeni");
-            r.Add(Yazi(durum, 12, y >= 3 ? "durum-gecti" : y > 0 ? "durum-simdi" : "durum-kilit"));
+            r.Add(Yazi(durum, 12, "durum-kilit"));   // 2026-11-06 unslop: turuncu durum yazıları her satırda vurgu yapıyordu; durum yıldız ve yazıyla okunur, renk soluk
             Erisim.Etiket(kart, L.T("Görev") + ", " + L.T(d.ad) + ", " + L.T(d.ogretir) + ", " + L.T("{0}/3 yıldız", y) + (gecYazi != null ? ", " + gecYazi : "") + ", " + durum, "dugme");
             return kart;
         }
@@ -138,7 +131,9 @@ namespace BirdieSmash.Game
             var kart = Kart("tur-kart"); if (!acik) kart.AddToClassList("kilitli");
             var bas = Satir("arali"); kart.Add(bas);
             bas.Add(Yazi(L.T("Usta yolu"), 20, "kalin"));
-            if (acik) bas.Add(Yazi(L.T("{0} basamak geçildi", pr.Usta), 13, "altin"));
+            // 2026-11-06 (unslop denetimi, öneri artifact'i YAP): altın "0 basamak geçildi" sıfırı başarı gibi gösteriyordu. Sıfırken
+            // yazı yok; sonrasında soluk sayaç (ödül anı kariyer kartında, burada yalnız bilgi).
+            if (acik && pr.Usta > 0) bas.Add(Yazi(L.T("{0} basamak geçildi", pr.Usta), 13, "soluk"));
             if (!acik)
             {
                 var kl = Satir("rakip-satir"); kart.Add(kl); kl.Add(Ikon(Ikonlar.Kilit, 18, SOLUK)); var ky = Yazi(L.T("Dünya Finalleri'ni kazan"), 14, "soluk"); ky.style.marginLeft = 6; kl.Add(ky);

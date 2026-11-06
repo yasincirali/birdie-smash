@@ -164,7 +164,7 @@ namespace BirdieSmash.Game
             for (int i = 0; i < 64; i++) tex.SetPixel(0, i, Color.Lerp(a, b, Mathf.SmoothStep(0, 1, i / 63f))); tex.Apply();
             const float Y = -3.6f, GEN = 22, YUK = 9;
             Kit.Prim(PrimitiveType.Quad, "arka_duvar", k, Kit.W(Court.MID, Y, YUK / 2 - .2f), new Vector3(GEN, YUK, 1), Kit.Clear(Color.white, tex));
-            if (saha != "park") return;
+            if (saha != "park") { UstSalon(k, saha, Y + .05f, GEN); return; }
             var sil = Kit.Unlit(Kit.Hex("#0d1426")); var rnd = new System.Random(11);
             float[] xs = { -4.6f, -2.9f, Court.CW + 2.6f, Court.CW + 4.2f, Court.CW + 5.8f };
             foreach (float x in xs)
@@ -176,6 +176,87 @@ namespace BirdieSmash.Game
             var yild = Kit.Clear(new Color(1, .96f, .85f, .8f), Kit.RadialTex());
             for (int i = 0; i < 26; i++) { float s = .05f + (float)rnd.NextDouble() * .07f;
                 Kit.Prim(PrimitiveType.Quad, "yildiz", k, Kit.W(Court.MID + ((float)rnd.NextDouble() - .5f) * GEN * .9f, Y + .05f, 4.2f + (float)rnd.NextDouble() * 4.3f), new Vector3(s, s, 1), yild); }
+        }
+
+        // Salonun üstü (2026-11-06, yasin: "yüksek clearlarda daha gerçeğe uygun kaplamalarla doldurulmalı"; öneri artifact'i YAP).
+        // Top tepedeyken kamera tribünün üstüne bakıyor, orası tek degrade duvardı. Araştırma (BWF tesis şartnamesi, yayın
+        // görüntüleri, muadiller): topun arkası koyu ve mat kalır ki beyaz tüy okunsun; ışık kortun tam üstünde değil iki yanda
+        // armatür sıraları; tribünün üstünde ikinci kat oturma ve önünde LED şerit; uzaklaştıkça karanlık. Uygulama:
+        //  - İkinci kat tribün: tek dörtgen, kendi ürettiğimiz 256×48 doku (soluk baş noktaları, yukarı doğru kararır). Sahne
+        //    nesnesi değil doku: yüzlerce kapsül yerine tek çizim.
+        //  - Önünde ince LED şerit (sahanın vurgu rengi, %45 parlaklık): yayın salonlarının ikinci kat bandı.
+        //  - Tavan: duvarın üst üçte biri zaten koyu; iki yanda (orta 5 m boş) üç sıra armatür ışığı, sönük ışınsal leke (ışık hesabı yok).
+        //  - Sahaya göre tek imza: turnuvada ülke flamaları, okulda okul flamaları ve basketbol potası, salonda akustik paneller.
+        // Orta şerit (topun yolu, MID ± 2,5 m) yalnız koyu tribün dokusu taşır; parlak öğe yok. Hepsi tek seferlik basit geometri.
+        static readonly Dictionary<string, string> VURGU = new Dictionary<string, string> { {"salon","#7fd3c7"},{"turnuva","#c4ed3f"},{"okul","#ffb35c"} };
+        static void UstSalon(Transform k, string saha, float Y, float GEN)
+        {
+            var g = new GameObject("ust_salon").transform; g.SetParent(k, false);
+            string vr; if (!VURGU.TryGetValue(saha, out vr)) vr = VURGU["salon"];
+            // ikinci kat: z 2,5–4,3 m
+            const float Z0 = 2.5f, Z1 = 4.3f;
+            Kit.Prim(PrimitiveType.Quad, "ikinci_kat", g, Kit.W(Court.MID, Y + .02f, (Z0 + Z1) / 2), new Vector3(GEN * .92f, Z1 - Z0, 1), Kit.Clear(Color.white, KalabalikTex(saha)));
+            var led = Kit.Hex(vr); led.a = .45f;
+            Kit.Prim(PrimitiveType.Quad, "led_serit", g, Kit.W(Court.MID, Y + .03f, Z0 - .12f), new Vector3(GEN * .92f, .14f, 1), Kit.Clear(led));
+            // armatür sıraları: iki yanda, üç sıra (z 6,2 / 7,0 / 7,8), ortada boşluk
+            var lek = Kit.Additive(new Color(1, .95f, .82f, .5f), Kit.RadialTex());
+            for (int sira = 0; sira < 3; sira++)
+            {
+                float z = 6.2f + sira * .8f, boy = .55f - sira * .1f;
+                for (int i = 0; i < 4; i++) foreach (float yon in new[] { -1f, 1f })
+                {
+                    float x = Court.MID + yon * (2.8f + i * 1.6f); if (Mathf.Abs(x - Court.MID) > GEN / 2 - .6f) continue;
+                    Kit.Prim(PrimitiveType.Quad, "armatur", g, Kit.W(x, Y + .04f, z), new Vector3(boy * 1.6f, boy * .5f, 1), lek);
+                }
+            }
+            if (saha == "turnuva")
+            {   // ülke flamaları: ikinci katın üstünde, orta şerit dışında; iki renkli dikey bant (bayrak deseni değil, renk çifti)
+                string[][] cift = { new[]{"#d8323c","#f4f1ea"}, new[]{"#1f5fbf","#f2c14e"}, new[]{"#2e9a5a","#f4f1ea"}, new[]{"#f4f1ea","#c8102e"}, new[]{"#111111","#f2c14e"}, new[]{"#0b3d91","#d8323c"} };
+                int n = 0;
+                for (float x = Court.MID - GEN * .44f; x < Court.MID + GEN * .44f; x += 1.15f)
+                {
+                    if (Mathf.Abs(x - Court.MID) < 2.5f) continue; var c = cift[n++ % cift.Length];
+                    Kit.Prim(PrimitiveType.Quad, "flama", g, Kit.W(x - .17f, Y + .03f, Z1 + .55f), new Vector3(.34f, .7f, 1), Kit.Unlit(Kit.Hex(c[0]) * .8f));
+                    Kit.Prim(PrimitiveType.Quad, "flama", g, Kit.W(x + .17f, Y + .03f, Z1 + .55f), new Vector3(.34f, .7f, 1), Kit.Unlit(Kit.Hex(c[1]) * .8f));
+                }
+            }
+            else if (saha == "okul")
+            {   // okul flamaları (iki uzun, sol ve sağ) + sağda basketbol potası (pano + çember), orta şerit boş
+                foreach (float yon in new[] { -1f, 1f })
+                    Kit.Prim(PrimitiveType.Quad, "okul_flama", g, Kit.W(Court.MID + yon * 5.4f, Y + .03f, Z1 + 1.1f), new Vector3(.9f, 1.8f, 1), Kit.Unlit(Kit.Hex(yon < 0 ? "#8e2b2b" : "#24406b") * .85f));
+                float px = Court.MID + 7.6f;
+                Kit.Prim(PrimitiveType.Quad, "pota_pano", g, Kit.W(px, Y + .2f, 3.7f), new Vector3(1.6f, 1.05f, 1), Kit.Unlit(new Color(.82f, .8f, .74f)));
+                Kit.Prim(PrimitiveType.Quad, "pota_cerceve", g, Kit.W(px, Y + .21f, 3.55f), new Vector3(.55f, .4f, 1), Kit.Unlit(new Color(.55f, .3f, .2f)));
+                Kit.Prim(PrimitiveType.Cylinder, "pota_cember", g, Kit.W(px, Y + .45f, 3.2f), new Vector3(.45f, .01f, .45f), Kit.Unlit(Kit.Hex("#e0662a")));
+            }
+            else
+            {   // salon: akustik duvar panelleri, iki yanda 3×2 ızgara, duvardan biraz açık
+                var pm = Kit.Unlit(new Color(.17f, .23f, .28f));
+                for (int i = 0; i < 3; i++) for (int j = 0; j < 2; j++) foreach (float yon in new[] { -1f, 1f })
+                    Kit.Prim(PrimitiveType.Quad, "akustik", g, Kit.W(Court.MID + yon * (3.6f + i * 1.9f), Y + .03f, Z1 + .6f + j * .95f), new Vector3(1.6f, .8f, 1), pm);
+            }
+            foreach (var c in g.GetComponentsInChildren<Collider>()) Object.Destroy(c);
+        }
+        // İkinci kat kalabalığı: koyu zemin üstünde soluk giysi/baş noktaları; satırlar yukarı doğru kararır ve seyrelir.
+        static Texture2D KalabalikTex(string saha)
+        {
+            const int W = 256, H = 48; var tex = new Texture2D(W, H, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var px = new Color[W * H]; Color zemin = saha == "okul" ? new Color(.16f, .12f, .09f) : new Color(.08f, .11f, .15f);
+            for (int i = 0; i < px.Length; i++) px[i] = zemin;
+            string[] giysi = { "#e85d4f", "#3f7fd8", "#f2c14e", "#f4f1ea", "#8e5bd1", "#3fb37f", "#ff8a3c", "#5fc4d9" };
+            var rnd = new System.Random(5);
+            for (int sira = 0; sira < 4; sira++)
+            {
+                int y0 = 4 + sira * 11; float sol = .55f - sira * .1f;   // yukarı (y büyük) kararır
+                for (int x = 2; x < W - 2; x += 4)
+                {
+                    if (rnd.NextDouble() > .78) continue; var c = Color.Lerp(zemin, Kit.Hex(giysi[rnd.Next(giysi.Length)]), sol);
+                    var bas = Color.Lerp(zemin, new Color(.85f, .68f, .52f), sol * .8f); int xx = x + rnd.Next(2);
+                    for (int dy = 0; dy < 5; dy++) for (int dx = 0; dx < 3; dx++) px[(y0 + dy) * W + xx + dx] = c;
+                    for (int dy = 5; dy < 7; dy++) for (int dx = 0; dx < 2; dx++) px[(y0 + dy) * W + xx + dx] = bas;
+                }
+            }
+            tex.SetPixels(px); tex.Apply(false, true); return tex;
         }
 
         // Yayın ışığı: tavanda kortun boyunca üç lamba (HTML lamba havuzları NET×.45, NET, NET×1.55), sıcak beyaz.
