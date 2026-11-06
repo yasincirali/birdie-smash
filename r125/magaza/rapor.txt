@@ -1,0 +1,37 @@
+ekran boyu istendi 1320x2868 · oldu 1320x2868
+magaza tr_01_smac · vuruş jump (perfect) · skor 9–7 · 1320x2868
+magaza tr_02_ralli · ralli 12 (en uzun 12)
+magaza tr_03_kariyer · taşma tr_03_kariyer · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.30 · 57 öğe · 0 sorun
+magaza tr_04_karakter · taşma tr_04_karakter · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.30 · 81 öğe · 11 sorun
+   ! yatay taşma (kaydırılamaz) · Sırt · [367,423 59x44]
+   ! yatay taşma (kaydırılamaz) · "Sırt" · [382,433 29x25]
+   ! yatay taşma (kaydırılamaz) · Ayakkabı · [436,423 105x44]
+   ! yatay taşma (kaydırılamaz) · "Ayakkabı" · [451,433 75x25]
+   ! yatay taşma (kaydırılamaz) · Forma · [551,423 82x44]
+   ! yatay taşma (kaydırılamaz) · "Forma" · [566,433 52x25]
+   ! yatay taşma (kaydırılamaz) · Sevinç · [643,423 84x44]
+   ! yatay taşma (kaydırılamaz) · "Sevinç" · [659,433 53x25]
+   ! yatay taşma (kaydırılamaz) · Raket · [737,423 78x44]
+   ! yatay taşma (kaydırılamaz) · "Raket" · [752,433 47x25]
+   ! sözcük bölünüyor "olduklarından" 94>69 · "sahip olduklarından" · [285,595 69x62]
+magaza tr_05_imza · rakip imza hazırlığı VAR (mermi)
+magaza en_01_smac · vuruş jump (perfect) · skor 9–7 · 1320x2868
+magaza en_02_ralli · ralli 12 (en uzun 12)
+magaza en_03_kariyer · taşma en_03_kariyer · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.30 · 57 öğe · 2 sorun
+   ! sözcük bölünüyor "Wardrobe" 67>59 · "Wardrobe" · [158,738 59x38]
+   ! sözcük bölünüyor "Workshop" 68>60 · "Workshop" · [229,738 60x38]
+magaza en_04_karakter · taşma en_04_karakter · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.30 · 81 öğe · 12 sorun
+   ! yatay taşma (kaydırılamaz) · Back · [349,414 70x44]
+   ! yatay taşma (kaydırılamaz) · "Back" · [364,423 40x25]
+   ! yatay taşma (kaydırılamaz) · Shoes · [429,414 80x44]
+   ! yatay taşma (kaydırılamaz) · "Shoes" · [444,423 50x25]
+   ! yatay taşma (kaydırılamaz) · Shirt · [519,414 70x44]
+   ! yatay taşma (kaydırılamaz) · "Shirt" · [534,423 39x25]
+   ! yatay taşma (kaydırılamaz) · Celebrate · [599,414 111x44]
+   ! yatay taşma (kaydırılamaz) · "Celebrate" · [614,423 80x25]
+   ! yatay taşma (kaydırılamaz) · Racket · [719,414 86x44]
+   ! yatay taşma (kaydırılamaz) · "Racket" · [734,423 56x25]
+   ! sözcük bölünüyor "Wardrobe" 67>61 · "Wardrobe" · [157,738 61x38]
+   ! sözcük bölünüyor "Workshop" 68>60 · "Workshop" · [229,738 60x38]
+magaza en_05_imza · rakip imza hazırlığı VAR (mermi)
+ekran boyu istendi 390x845 · oldu 390x845
