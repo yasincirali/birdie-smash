@@ -95,7 +95,7 @@ namespace BirdieSmash.Game
             var ic = new VisualElement(); ic.AddToClassList("dugme-ic"); ic.pickingMode = PickingMode.Ignore; d.Add(ic);
             ic.Add(Yazi(t, px, "dugme-yazi"));
             if (!string.IsNullOrEmpty(alt)) ic.Add(Yazi(alt, px * .78f, "dugme-alt"));
-            if (a != null) d.AddManipulator(new Clickable(a));
+            if (a != null) d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); a(); }));   // 2026-11-06: çip ve büyük düğme gibi her düğme dokunuşta ince tık (hareketi azaltta Hap susar)
             Erisim.Etiket(d, string.IsNullOrEmpty(alt) ? t : t + ", " + alt, "dugme", false, a == null);
             return d;
         }

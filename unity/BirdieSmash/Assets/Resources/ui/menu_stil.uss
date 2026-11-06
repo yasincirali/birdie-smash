@@ -503,6 +503,19 @@
    gölge yok; derinliği dolgu farkı verir). Hareketi azaltta küçülme de yok, yalnız renk. Dokunma alanları değişmedi. ===== */
 .dugme { border-radius: 14px; transition-property: background-color, scale; }
 .dugme:active { scale: 0.97 0.97; }
+/* 2026-11-06 gece (yasin: "menü butonlar, tıklamalar, renkler modern sade anlaşılır ama göz alıcı da olmalı"): basış
+   hissi oyuncak gibi. Basınca .06 sn'de %95'e iner, bırakınca .26 sn ease-out-back ile hafif taşarak yerine oturur (tek yay;
+   arcade menülerindeki "pıt" hissi, renk ya da parıltı eklemeden). Hedef durumun süresi geçerli: :active basışı, taban
+   bırakışı yönetir. Dokunuşa ince titreşim UiOge'de. Derinlik: üst kenar biraz daha açık (ışık yukarıdan), yan/alt kenar
+   aynı 1 pt; gölge ve degrade yok. Hareketi azaltta küçülme yok (aşağıdaki .az-hareket kuralları), yalnız renk. */
+.dugme { transition-duration: 0.14s, 0.26s; transition-timing-function: ease-out, ease-out-back; border-top-color: rgba(255, 255, 255, 0.13); }
+.dugme:active { scale: 0.95 0.95; transition-duration: 0.06s, 0.06s; transition-timing-function: ease-out, ease-out; }
+.dugme--birincil { border-top-color: rgba(0, 0, 0, 0); }
+.cip--secili { border-top-color: var(--tx); }
+.cta { transition-duration: 0.26s; transition-timing-function: ease-out-back; }
+.cta:active { scale: 0.95 0.95; transition-duration: 0.06s; transition-timing-function: ease-out; }
+.az-hareket .dugme, .az-hareket .cta { transition-duration: 0s; }
+.az-hareket .dugme:active, .az-hareket .cta:active { scale: 1 1; }
 .dugme--birincil { border-radius: 18px; }
 .dugme--birincil:active { scale: 0.98 0.98; }
 .ikon-dugme { border-width: 1px; }
