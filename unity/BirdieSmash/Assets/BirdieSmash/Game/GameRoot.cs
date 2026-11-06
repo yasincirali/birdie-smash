@@ -310,6 +310,22 @@ namespace BirdieSmash.Game
         // Siri ve sistem uyarısı uygulamayı arka plana atmadan yalnız etkinliği alır (iOS willResignActive); oyun sürerken top
         // oyuncunun göremediği anda yere düşüyordu. Duraklat menüde ve maç sonunda hiçbir şey yapmaz. Yalnız telefonda: masaüstü
         // ve CI ekran turunda (Xvfb, pencere odaksız açılabilir) maç durmasın.
+        bool akisOnce; Match akisMac; float akisSonT; const float AKIS_SON = .3f;
+
+        // Kenar hareketi erteleme (2026-11-06 Ar-Ge 20:07 #1): vuruş alttan yukarı kaydırma ve ev çubuğu tam orada; güçlü bir
+        // smaç uygulamayı arka plana atıyor ya da Denetim Merkezi'ni açıp (OnApplicationFocus) ralliyi duraklatıyordu. Yalnız
+        // ralli sürerken ertelenir (ilk kaydırma çubuğu gösterir, ikincisi çalışır: sistem hareketi kapanmaz); menüde, duraklatta
+        // ve maç sonunda sistem davranışı birebir. Atama her karede değil, durum değişince bir kez.
+        bool kenarErtele;
+        void KenarHareketi()
+        {
+            bool on = ekran == Ekran.Oyun && !paused; if (on == kenarErtele) return; kenarErtele = on;
+#if UNITY_IOS && !UNITY_EDITOR
+            UnityEngine.iOS.Device.deferSystemGesturesMode = on ? UnityEngine.iOS.SystemGestureDeferMode.All : UnityEngine.iOS.SystemGestureDeferMode.None;
+            UnityEngine.iOS.Device.hideHomeButton = on;
+#endif
+        }
+
         void OnApplicationFocus(bool f) { if (f) Ayar.SistemOku(); else if (Application.isMobilePlatform) Duraklat(); }   // dönüşte sistem "Hareketi Azalt" ve yazı boyutu değişmiş olabilir
 
         void EndMatch(bool won)
@@ -728,7 +744,15 @@ namespace BirdieSmash.Game
             if (ekran == Ekran.Oyun && match.kosuYardim && yardimN < 2 && match.s != null && match.s != yardimTop && match.YardimKosuyor) { yardimTop = match.s; yardimN++; hud.Say(L.T("Koşu yardımı"), Kit.W(match.me.x, match.me.y, 1.6f), Kit.Hex("#9fd8ff")); }
             fx.Tick(match, paused || geriT > 0 ? 0 : dt, ekran == Ekran.Oyun);
             SalonCanli(paused || geriT > 0 ? 0 : dt);
-            if (akisR != null) { bool on = ekran == Ekran.Oyun && match.flow; akisR.enabled = on; if (on) akisR.material.color = new Color(1, .886f, .47f, Ayar.reduce ? .9f : .75f + .25f * Mathf.Sin(Time.unscaledTime * 1000 / 180f)); }
+            if (akisR != null)
+            {   // Akış sönüşü (2026-11-06 inceleme #4): bitiş de üç kanalda; çizgiler .3 sn'de söner, inen iki nota, tek tık. Kural Core'da aynı.
+                bool fl = match.flow; if (akisOnce && !fl && akisMac == match && ekran == Ekran.Oyun) { sfx.AkisSondu(); Yerel.Hap("tick"); akisSonT = Ayar.reduce ? 0 : AKIS_SON; }
+                akisOnce = fl; akisMac = match; bool on = ekran == Ekran.Oyun && fl;
+                if (on) { akisSonT = 0; akisR.enabled = true; akisR.material.color = new Color(1, .886f, .47f, Ayar.reduce ? .9f : .75f + .25f * Mathf.Sin(Time.unscaledTime * 1000 / 180f)); }
+                else if (akisSonT > 0 && ekran == Ekran.Oyun) { if (!paused) akisSonT -= dt; akisR.enabled = true; akisR.material.color = new Color(1, .886f, .47f, .75f * Mathf.Clamp01(akisSonT / AKIS_SON)); }
+                else { akisSonT = 0; akisR.enabled = false; }
+            }
+            KenarHareketi();
             Hakemler();
             // Stüdyo incelemesi (2026-11-05, teknik sanat 1 ve 4): vuruş donması sürerken itme ve sarsıntı sönmez; eskiden 80 ms
             // donmada punch yarıya iniyor, temas anı "tok" okunmuyordu. Sarsıntı kare başı beyaz gürültü yerine zamana bağlı
