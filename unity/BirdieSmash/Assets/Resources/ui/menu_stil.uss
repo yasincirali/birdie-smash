@@ -493,33 +493,36 @@
 .genis .sekme { max-width: 140px; }
 
 /* ===== 2026-10-29 Tüycükler menü dili (yasin: "menüdeki iyileştirmeleri ekle", oyuncu modellerine dokunmadan; artifact
-   3vu7JypgDVbQgaHhd7nzt4). Renk ve yerleşim aynı (Gün Batımı); değişen biçim: köşeler daha yuvarlak, düğme ve kartların
-   altında koyu bir "dudak" (3–5 pt alt kenar), basınca 2 pt aşağı iner ve dudak incelir: dokunulabilir olan kabarık durur.
-   Neden alt kenar ve box-shadow değil: UI Toolkit'te gölge yok; alt kenar yerleşimi değiştirmeden aynı etkiyi verir.
-   Dokunma alanı değişmez (min-height kenarı da sayar). Hareketi azaltta aşağı inme yok, yalnız renk. ===== */
-.dugme { border-radius: 16px; border-bottom-width: 3px; border-bottom-color: rgba(0, 0, 0, 0.38); transition-property: background-color, scale, translate; }
-.dugme:active { scale: 1 1; translate: 0 2px; border-bottom-width: 1px; }
-.dugme--birincil { border-radius: 22px; border-bottom-width: 5px; border-bottom-color: rgb(196, 96, 42); }
-.dugme--birincil:active { border-bottom-width: 2px; translate: 0 3px; }
-.ikon-dugme { border-bottom-width: 1px; }
-.ikon-dugme:active { translate: 0 1px; }
-.cip { border-radius: 16px; }
-.cip--secili { border-bottom-color: rgb(196, 170, 182); }
-.kart { border-radius: 20px; border-bottom-width: 3px; border-bottom-color: rgba(0, 0, 0, 0.34); }
-.karo { border-radius: 18px; border-bottom-width: 3px; border-bottom-color: rgba(0, 0, 0, 0.36); }
-.dugum { border-radius: 20px; }
-.renk { border-radius: 14px; }
-.ust-hap { border-bottom-width: 2px; border-bottom-color: rgba(0, 0, 0, 0.35); }
-.vitrin-alan { border-radius: 22px; }
-.alt-sayfa { border-top-left-radius: 26px; border-top-right-radius: 26px; }
-.yuva-dugme { border-radius: 16px; }
-/* OYNA ve plaka dokuları (UiOge Egik, PlakaIc) artık yuvarlak köşeli; köşe yarıçapı dikey dilime de girer, yoksa yükseklik
+   3vu7JypgDVbQgaHhd7nzt4). Renk ve yerleşim aynı (Gün Batımı); köşeler yuvarlak.
+   2026-11-06 ince kenar (yasin, Oyna ekran görüntüsüyle: "butonların, objelerin kenarları profesyonel ve lightweight
+   gözükmeli"): 29 Eki'deki koyu alt "dudak" (düğme/kart/karo altında 3–5 pt koyu kenar, basınca aşağı inme) kaldırıldı.
+   Neden: yuvarlak köşede kalın alt kenar köşelerde koyu yay çiziyor, kart ve düğme ağır, "plastik oyuncak" görünüyordu;
+   güncel başarılı mobil oyun menüleri (Brawl Stars'ın sade sürümleri, Clash Royale 2024+, Apple Arcade oyunları) ince
+   1 pt kenar + düz dolgu kullanıyor. Şimdi her kenar eşit 1 pt (üstteki kurallardaki --ln), köşeler bir kademe küçük
+   (kart 16, karo 14, düğme 14, birincil 18), basış geri bildirimi aşağı inme yerine hafif küçülme + renk (UI Toolkit'te
+   gölge yok; derinliği dolgu farkı verir). Hareketi azaltta küçülme de yok, yalnız renk. Dokunma alanları değişmedi. ===== */
+.dugme { border-radius: 14px; transition-property: background-color, scale; }
+.dugme:active { scale: 0.97 0.97; }
+.dugme--birincil { border-radius: 18px; }
+.dugme--birincil:active { scale: 0.98 0.98; }
+.ikon-dugme { border-width: 1px; }
+.ikon-dugme:active { scale: 0.94 0.94; }
+.cip { border-radius: 12px; }
+.kart { border-radius: 16px; }
+.karo { border-radius: 14px; }
+.karo--altin { border-color: rgba(249, 210, 114, 0.30); }
+.dugum { border-radius: 16px; }
+.renk { border-radius: 12px; }
+.vitrin-alan { border-radius: 20px; }
+.alt-sayfa { border-top-left-radius: 22px; border-top-right-radius: 22px; }
+.yuva-dugme { border-radius: 14px; }
+/* OYNA ve plaka dokuları (UiOge Egik, PlakaIc) yuvarlak köşeli; köşe yarıçapı dikey dilime de girer, yoksa yükseklik
    değişince köşe esner. */
 .cta { -unity-slice-top: 34; -unity-slice-bottom: 44; }
-.cta:active { scale: 1 1; translate: 0 3px; }
+.cta:active { scale: 0.98 0.98; }
 .plaka { -unity-slice-bottom: 34; }
 .vs { text-shadow: 0 3px 0 rgba(30, 10, 12, 0.85); }
-.az-hareket .dugme:active, .az-hareket .cta:active, .az-hareket .ikon-dugme:active { translate: 0 0; }
+.az-hareket .dugme:active, .az-hareket .cta:active, .az-hareket .ikon-dugme:active { translate: 0 0; scale: 1 1; }
 /* r51: Nunito ExtraBold Barlow Bold'dan geniş, "MATCH OF THE DAY" kutucukta kesiliyordu: harf aralığı daraldı. */
 .karo-etiket { letter-spacing: 0; }
 /* r52: 0,1 de yetmedi ("MATCH OF THE DA"); kutucuğun yan payı 10 → 7. */
