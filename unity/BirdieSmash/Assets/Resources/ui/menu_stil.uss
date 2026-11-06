@@ -595,3 +595,18 @@
 .dugme--hedef .dugme-yazi { color: var(--sun); -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); }
 .dugme--hedef .dugme-alt { color: rgba(255, 255, 255, 0.82); }
 .dugme--hedef:active { background-color: rgba(255, 160, 77, 0.22); }
+
+/* 2026-11-06 ek tur fikir 5: Profil oyuncu kartı (büyük portre, seviye halkası, üç büyük sayı, kupa rafı). Kupa hücresi 48 pt
+   (HIG ≥ 44), kazanılmamış kupa soluk + "n/4" yazısı (yalnız renk değil). Büyük yazıda üç sayı alt alta. */
+.oyuncu-kart { border-radius: 20px; }
+.avatar--buyuk { width: 96px; height: 96px; border-radius: 48px; margin-right: 4px; }
+.sv-halka { width: 30px; height: 30px; border-radius: 15px; border-width: 3px; border-color: var(--lime); align-items: center; justify-content: center; flex-shrink: 0; }
+.sv-halka-ic { -unity-text-align: middle-center; }
+.uc-sayi { flex-direction: row; margin-top: 12px; }
+.uc-sayi--dikey { flex-direction: column; }
+.uc-sayi-oge { flex-grow: 1; flex-basis: 0; align-items: center; padding: 10px 4px; margin: 0 3px; border-radius: 14px; background-color: var(--navy2); border-width: 1px; border-color: var(--ln); }
+.uc-sayi--dikey .uc-sayi-oge { margin: 3px 0; }
+.kupa-raf { flex-direction: row; justify-content: space-between; margin-top: 8px; padding-bottom: 6px; border-bottom-width: 6px; border-color: #4A3560; }
+.kupa-hucre { width: 48px; height: 48px; align-items: center; justify-content: center; border-radius: 14px; }
+.kupa-hucre:active { scale: 0.94 0.94; }
+.kupa-hucre--yok { opacity: 0.55; }
