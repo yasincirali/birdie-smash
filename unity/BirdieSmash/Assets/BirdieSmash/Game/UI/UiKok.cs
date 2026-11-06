@@ -90,7 +90,7 @@ namespace BirdieSmash.Game
             kok.RegisterCallback<WheelEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
             kok.RegisterCallback<TransitionRunEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
             zemin = kok.Q<VisualElement>("zemin"); alan = kok.Q<VisualElement>("alan"); ust = kok.Q<VisualElement>("ust"); icerik = kok.Q<VisualElement>("icerik");
-            sayfa = kok.Q<VisualElement>("sayfa"); sekmeCubugu = kok.Q<VisualElement>("sekmeler"); altKatman = kok.Q<VisualElement>("alt-katman"); kalkan = kok.Q<VisualElement>("kalkan");
+            sayfa = kok.Q<VisualElement>("sayfa"); sekmeCubugu = kok.Q<VisualElement>("sekmeler"); ReklamKur(kok.Q<VisualElement>("reklam")); altKatman = kok.Q<VisualElement>("alt-katman"); kalkan = kok.Q<VisualElement>("kalkan");
             // 2026-10-26 Yayın Gecesi: gövde yazı tipi (2026-10-29 Tüycükler: Nunito; eskisi Barlow; Resources/fonts, OFL). Sınıf kuralları (menu_stil.uss) kalın ve başlık
             // dosyalarını seçer; kökteki satır içi değer, USS çözülemezse ya da tema yoksa da gövde yazısına düşülsün diye.
             var barlow = Resources.Load<Font>("fonts/Nunito-SemiBold");
@@ -116,7 +116,7 @@ namespace BirdieSmash.Game
         {
             var k = Y("kok", "kok tam", null); Y("zemin", "tam", k).pickingMode = PickingMode.Ignore;
             var g = Y("govde", "govde tam", k); var a = Y("alan", "alan", g); Y("ust", "ust-serit", a); Y("icerik", "icerik", a); Y("sayfa", "sayfa tam", a);
-            Y("sekmeler", "sekme-cubugu", g); Y("alt-katman", "alt-katman tam", k); Y("kalkan", "kalkan tam", k);
+            Y("reklam", "reklam-alani", g); Y("sekmeler", "sekme-cubugu", g); Y("alt-katman", "alt-katman tam", k); Y("kalkan", "kalkan tam", k);
             return k;
         }
 
@@ -154,6 +154,7 @@ namespace BirdieSmash.Game
         {
             if (DuyarliGuncelle()) HepsiniKur();
             float pw = doc.rootVisualElement.layout.width; if (float.IsNaN(pw) || pw <= 0 || Screen.width <= 0) return;
+            Reklam.MacGuncelle(root.ekran != Ekran.Menu);   // menüdeyken maç şeridi payı sıfır (Hud çizmiyorsa da)
             var sa = Guvenli.Alan; if (sa == sonSafe && Mathf.Abs(pw - sonPanelW) < .5f) return; sonSafe = sa; sonPanelW = pw;
             float s = pw / Screen.width;
             // 2026-10-27 (duyarlı yerleşim): payı kökün dolgusu (padding) taşıyordu; oysa gövde, alt katman ve perde kalkanı kökün
@@ -168,6 +169,17 @@ namespace BirdieSmash.Game
             guvPay = new Vector3(pu, ps, pr);
             altBosluk = Mathf.Max(0, sa.yMin) * s; sekmeCubugu.style.paddingBottom = altBosluk; if (altSayfa != null) altSayfa.style.paddingBottom = altBosluk + 16;
             SutunYaz(pw);
+        }
+
+        // Menü reklam şeridi (Game/Reklam.cs): gövdenin sütununda içerik ile sekme çubuğu arasında; içerik onun üstünde biter,
+        // kaydırılan liste şeridin altına girmez. SDK yokken yer tutucu yazı; ALAN false ise hiç yer kaplamaz.
+        void ReklamKur(VisualElement r)
+        {
+            if (r == null) return; r.Clear(); r.pickingMode = PickingMode.Position;
+            if (!Reklam.ALAN) { r.style.display = DisplayStyle.None; return; }
+            r.style.display = DisplayStyle.Flex; r.style.height = Reklam.PT;
+            var y = new Label(L.T("Reklam")); y.AddToClassList("reklam-yazi"); y.pickingMode = PickingMode.Ignore; r.Add(y);
+            Erisim.Etiket(r, L.T("Reklam alanı"), "metin");
         }
 
         // ---- gezinti ----
