@@ -271,7 +271,7 @@ namespace BirdieSmash.Core
             if (ogr != null) op.svTur = "yuksek";
             op.svClip = SERVIS[op.svTur].klip; me.svClip = "serve_bh";
             if (sc[0] + sc[1] == 0 && ogr == null) serveMsg = "Rakip: " + RakipAd(true);
-            if (Dril != null) { DrilTopBasi(); if (sv == "op") wait = .9f; }   // görev: antrenör yerini alır, top elle gelir
+            if (Dril != null) { DrilTopBasi(); if (sv == "op") wait = Dril.olcu == Sonsuz.ID ? .25f : .9f; }   // sonsuz ralli: antrenör durmadan besler (13:40 inceleme: .45 → .25)   // görev: antrenör yerini alır, top elle gelir
             Emit(Ev.Serve, sv);
         }
 
@@ -807,7 +807,7 @@ namespace BirdieSmash.Core
                 else if (degistirici == "altin" && sayiNo % 3 == 2) serveMsg = ALTIN_YAZI;   // bir sonraki ralli altın: servisten önce yazılır
                 // Sayılar arası bekleme 1,3 → 0,7 sn (HTML 959beb1): ritim düşmesin; antrenman ve rekor sayısı eski süreyi korur.
                 bool kisa = ogr == null && !rekor; kisaBekle = kisa; if (kisa) hakemT = hakemT0 = 1.0f;
-                betweenT = kisa ? .7f : Dril != null ? .9f : 1.3f;
+                betweenT = kisa ? .7f : Dril != null ? (Dril.olcu == Sonsuz.ID ? .2f : .9f) : 1.3f;
             }
         }
         public bool YeniRekor { get { return rekorBuMac; } }

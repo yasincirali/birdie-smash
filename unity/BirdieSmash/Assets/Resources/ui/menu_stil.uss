@@ -161,7 +161,7 @@
 .basamak-satir { flex-direction: row; align-items: center; margin: 0; flex-wrap: nowrap; }
 .basamak-rozet { width: 36px; align-items: center; flex-shrink: 0; }
 .basamak-orta { flex-grow: 1; flex-shrink: 1; margin-left: 8px; margin-right: 8px; }
-.durum-gecti { color: var(--sun); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); flex-shrink: 0; }
+.durum-gecti { color: var(--mu); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); flex-shrink: 0; }
 .durum-simdi { color: var(--sun); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); flex-shrink: 0; }
 .durum-kilit { color: var(--mu); flex-shrink: 0; }
 .ipucu { color: var(--mu2); margin-top: 8px; }
@@ -184,11 +184,11 @@
 .dugum--final { border-color: rgba(249, 210, 114, 0.45); }
 .dugum--final.simdiki { border-color: var(--sun); }
 .dugum-rozet { width: 44px; height: 44px; border-radius: 22px; align-items: center; justify-content: center; flex-shrink: 0; border-width: 2px; border-color: rgba(255, 255, 255, 0.15); background-color: rgb(34, 24, 41); }
-.dugum-rozet--gecti { background-color: var(--sun); border-color: var(--sun); }
+.dugum-rozet--gecti { background-color: var(--mu2); border-color: var(--mu2); }   /* 2026-11-06 unslop: turuncu yalnız "şimdi"de; geçilen nötr açık + ✓ */
 .dugum-rozet--simdi { border-color: var(--sun); background-color: var(--navy); }
 .dugum-rozet--acik { border-color: rgba(255, 255, 255, 0.5); }
 .yol { width: 4px; height: 18px; align-self: center; border-radius: 2px; margin: 2px 0; }
-.yol--acik { background-color: var(--sun); }
+.yol--acik { background-color: rgba(255, 255, 255, 0.45); }
 .yol--kilit { background-color: rgba(255, 255, 255, 0.18); }
 .yildiz-sayac { flex-direction: row; align-items: center; margin: 0; flex-wrap: nowrap; }
 .yildizlar { flex-direction: row; align-items: center; margin: 2px 0 0 0; flex-wrap: nowrap; }
@@ -414,8 +414,8 @@
          -unity-background-scale-mode: stretch-to-fill; }
 .plaka-ust { flex-direction: row; align-items: center; flex-wrap: wrap; margin: -2px 0 6px 0; }
 .serit { padding: 4px 12px 3px 12px; margin-right: 10px; -unity-slice-left: 10; -unity-slice-right: 10; -unity-slice-top: 0; -unity-slice-bottom: 0; -unity-slice-scale: 0.5px; }
-.serit-yazi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--gold); letter-spacing: 1.4px; white-space: nowrap; }
-.plaka-tur { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); color: var(--mu); letter-spacing: 1.4px; }
+.serit-yazi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--gold); letter-spacing: 0.2px; white-space: nowrap; }
+.plaka-tur { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); color: var(--mu); letter-spacing: 0.2px; }   /* 2026-11-06 unslop: büyük harf etiket cümle düzenine, aralık daraldı */
 .plaka-baslik { color: var(--tx); margin: 0; }
 .plaka-meta { flex-direction: row; align-items: center; justify-content: space-between; margin-top: 8px; }
 .plaka-rakip { flex-direction: row; align-items: center; flex-shrink: 1; flex-grow: 1; margin-right: 8px; }
@@ -457,7 +457,7 @@
 .buyuk-yazi .karo { flex-basis: auto; flex-grow: 0; margin: 4px 0; }
 
 /* diğer sekmeler: kart başlıkları ve durum etiketleri yön A diliyle (renkler yukarıda değişkenlerden) */
-.durum-simdi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); letter-spacing: 1px; }
+.durum-simdi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); letter-spacing: 0; }
 
 /* ===== 2026-10-27 duyarlı yerleşim (yasin build 41: "her telefonda açıkça gözükmeli"; Game/UI/Duyarli.cs) =====
    Yalnız ölçü; renk ve yazı ailesi değişmez. .kisa: güvenli alan düşülünce panel yüksekliği < 700 (iPhone SE, 8 Plus,
@@ -493,33 +493,36 @@
 .genis .sekme { max-width: 140px; }
 
 /* ===== 2026-10-29 Tüycükler menü dili (yasin: "menüdeki iyileştirmeleri ekle", oyuncu modellerine dokunmadan; artifact
-   3vu7JypgDVbQgaHhd7nzt4). Renk ve yerleşim aynı (Gün Batımı); değişen biçim: köşeler daha yuvarlak, düğme ve kartların
-   altında koyu bir "dudak" (3–5 pt alt kenar), basınca 2 pt aşağı iner ve dudak incelir: dokunulabilir olan kabarık durur.
-   Neden alt kenar ve box-shadow değil: UI Toolkit'te gölge yok; alt kenar yerleşimi değiştirmeden aynı etkiyi verir.
-   Dokunma alanı değişmez (min-height kenarı da sayar). Hareketi azaltta aşağı inme yok, yalnız renk. ===== */
-.dugme { border-radius: 16px; border-bottom-width: 3px; border-bottom-color: rgba(0, 0, 0, 0.38); transition-property: background-color, scale, translate; }
-.dugme:active { scale: 1 1; translate: 0 2px; border-bottom-width: 1px; }
-.dugme--birincil { border-radius: 22px; border-bottom-width: 5px; border-bottom-color: rgb(196, 96, 42); }
-.dugme--birincil:active { border-bottom-width: 2px; translate: 0 3px; }
-.ikon-dugme { border-bottom-width: 1px; }
-.ikon-dugme:active { translate: 0 1px; }
-.cip { border-radius: 16px; }
-.cip--secili { border-bottom-color: rgb(196, 170, 182); }
-.kart { border-radius: 20px; border-bottom-width: 3px; border-bottom-color: rgba(0, 0, 0, 0.34); }
-.karo { border-radius: 18px; border-bottom-width: 3px; border-bottom-color: rgba(0, 0, 0, 0.36); }
-.dugum { border-radius: 20px; }
-.renk { border-radius: 14px; }
-.ust-hap { border-bottom-width: 2px; border-bottom-color: rgba(0, 0, 0, 0.35); }
-.vitrin-alan { border-radius: 22px; }
-.alt-sayfa { border-top-left-radius: 26px; border-top-right-radius: 26px; }
-.yuva-dugme { border-radius: 16px; }
-/* OYNA ve plaka dokuları (UiOge Egik, PlakaIc) artık yuvarlak köşeli; köşe yarıçapı dikey dilime de girer, yoksa yükseklik
+   3vu7JypgDVbQgaHhd7nzt4). Renk ve yerleşim aynı (Gün Batımı); köşeler yuvarlak.
+   2026-11-06 ince kenar (yasin, Oyna ekran görüntüsüyle: "butonların, objelerin kenarları profesyonel ve lightweight
+   gözükmeli"): 29 Eki'deki koyu alt "dudak" (düğme/kart/karo altında 3–5 pt koyu kenar, basınca aşağı inme) kaldırıldı.
+   Neden: yuvarlak köşede kalın alt kenar köşelerde koyu yay çiziyor, kart ve düğme ağır, "plastik oyuncak" görünüyordu;
+   güncel başarılı mobil oyun menüleri (Brawl Stars'ın sade sürümleri, Clash Royale 2024+, Apple Arcade oyunları) ince
+   1 pt kenar + düz dolgu kullanıyor. Şimdi her kenar eşit 1 pt (üstteki kurallardaki --ln), köşeler bir kademe küçük
+   (kart 16, karo 14, düğme 14, birincil 18), basış geri bildirimi aşağı inme yerine hafif küçülme + renk (UI Toolkit'te
+   gölge yok; derinliği dolgu farkı verir). Hareketi azaltta küçülme de yok, yalnız renk. Dokunma alanları değişmedi. ===== */
+.dugme { border-radius: 14px; transition-property: background-color, scale; }
+.dugme:active { scale: 0.97 0.97; }
+.dugme--birincil { border-radius: 18px; }
+.dugme--birincil:active { scale: 0.98 0.98; }
+.ikon-dugme { border-width: 1px; }
+.ikon-dugme:active { scale: 0.94 0.94; }
+.cip { border-radius: 12px; }
+.kart { border-radius: 16px; }
+.karo { border-radius: 14px; }
+.karo--altin { border-color: rgba(249, 210, 114, 0.30); }
+.dugum { border-radius: 16px; }
+.renk { border-radius: 12px; }
+.vitrin-alan { border-radius: 20px; }
+.alt-sayfa { border-top-left-radius: 22px; border-top-right-radius: 22px; }
+.yuva-dugme { border-radius: 14px; }
+/* OYNA ve plaka dokuları (UiOge Egik, PlakaIc) yuvarlak köşeli; köşe yarıçapı dikey dilime de girer, yoksa yükseklik
    değişince köşe esner. */
 .cta { -unity-slice-top: 34; -unity-slice-bottom: 44; }
-.cta:active { scale: 1 1; translate: 0 3px; }
+.cta:active { scale: 0.98 0.98; }
 .plaka { -unity-slice-bottom: 34; }
 .vs { text-shadow: 0 3px 0 rgba(30, 10, 12, 0.85); }
-.az-hareket .dugme:active, .az-hareket .cta:active, .az-hareket .ikon-dugme:active { translate: 0 0; }
+.az-hareket .dugme:active, .az-hareket .cta:active, .az-hareket .ikon-dugme:active { translate: 0 0; scale: 1 1; }
 /* r51: Nunito ExtraBold Barlow Bold'dan geniş, "MATCH OF THE DAY" kutucukta kesiliyordu: harf aralığı daraldı. */
 .karo-etiket { letter-spacing: 0; }
 /* r52: 0,1 de yetmedi ("MATCH OF THE DA"); kutucuğun yan payı 10 → 7. */
@@ -592,3 +595,23 @@
 .dugme--hedef .dugme-yazi { color: var(--sun); -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); }
 .dugme--hedef .dugme-alt { color: rgba(255, 255, 255, 0.82); }
 .dugme--hedef:active { background-color: rgba(255, 160, 77, 0.22); }
+
+/* 2026-11-06 ek tur fikir 5: Profil oyuncu kartı (büyük portre, seviye halkası, üç büyük sayı, kupa rafı). Kupa hücresi 48 pt
+   (HIG ≥ 44), kazanılmamış kupa soluk + "n/4" yazısı (yalnız renk değil). Büyük yazıda üç sayı alt alta. */
+.oyuncu-kart { border-radius: 20px; }
+.avatar--buyuk { width: 96px; height: 96px; border-radius: 48px; margin-right: 4px; }
+.sv-halka { width: 30px; height: 30px; border-radius: 15px; border-width: 3px; border-color: var(--lime); align-items: center; justify-content: center; flex-shrink: 0; }
+.sv-halka-ic { -unity-text-align: middle-center; }
+.uc-sayi { flex-direction: row; margin-top: 12px; }
+.uc-sayi--dikey { flex-direction: column; }
+.uc-sayi-oge { flex-grow: 1; flex-basis: 0; align-items: center; padding: 10px 4px; margin: 0 3px; border-radius: 14px; background-color: var(--navy2); border-width: 1px; border-color: var(--ln); }
+.uc-sayi--dikey .uc-sayi-oge { margin: 3px 0; }
+.kupa-raf { flex-direction: row; justify-content: space-between; margin-top: 8px; padding-bottom: 6px; border-bottom-width: 6px; border-color: #4A3560; }
+.kupa-hucre { width: 48px; height: 48px; align-items: center; justify-content: center; border-radius: 14px; }
+.kupa-hucre:active { scale: 0.94 0.94; }
+.kupa-hucre--yok { opacity: 0.55; }
+
+/* 2026-11-06 13:40 Antrenman: üstte iki giriş yan yana (Sonsuz ralli, Temel ders); büyük yazıda alt alta. */
+.ant-cift { flex-direction: row; margin: 0 -4px 4px -4px; }
+.buyuk-yazi .ant-cift { flex-direction: column; }
+.buyuk-yazi .ant-cift .ikincil-kart { flex-basis: auto; }

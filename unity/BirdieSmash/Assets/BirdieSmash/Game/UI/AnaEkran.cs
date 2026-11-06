@@ -38,6 +38,11 @@ namespace BirdieSmash.Game
             }
             var esnek = new VisualElement(); esnek.AddToClassList("esnek"); esnek.AddToClassList("oyna-sahne"); esnek.pickingMode = PickingMode.Ignore; c.Add(esnek);
             oynaSahne = esnek; esnek.RegisterCallback<GeometryChangedEvent>(e => AfisYerlestir());   // 2026-10-27: afiş bu boşluğa oturur (Duyarli.cs)
+            // 2026-11-06 canlı afiş: afişin sol yarısına (senin oyuncun) dokununca Dolap'ta seçili sevinç oynar. Süs dokunuşu:
+            // sağ yarı boş geçer (rakip), ekran okuyucuda tek eylem "Sevinci oynat".
+            esnek.pickingMode = PickingMode.Position;
+            esnek.RegisterCallback<PointerUpEvent>(e => { if (e.localPosition.x < esnek.layout.width * .55f && root.afis != null && root.afis.Acik) { Yerel.Hap("tick"); root.afis.Sevinc(); } });
+            Erisim.Etiket(esnek, L.T("Sevinci oynat"), "dugme");
             // 2026-10-26 Usta yolu: dört tur bittiyse (ve Usta yolu açıksa) "Sıradaki" kartının yerini Usta kartı alır (kendi
             // Oyna düğmesiyle); finali yeniden oynamak Kariyer haritasından sürer.
             bool usta = Ayar.antrenman && UstaYolu.Acik(Ayar.ilerleme) && Ayar.ilerleme.HepsiBitti;
@@ -174,8 +179,8 @@ namespace BirdieSmash.Game
             kart.AddManipulator(new Clickable(() => { if (tamam) SekmeAc(Sekme.Kariyer); else { Yerel.Hap("tick"); MacKartAc(g); } }));
             var bas = new VisualElement(); bas.AddToClassList("plaka-ust"); bas.pickingMode = PickingMode.Ignore; kart.Add(bas);
             var serit = new VisualElement(); serit.AddToClassList("serit"); Doku(serit, Ikonlar.EgikLimonKucuk); serit.pickingMode = PickingMode.Ignore; bas.Add(serit);
-            serit.Add(Yazi(Buyuk(L.T(tamam ? "Kariyer tamam" : "Sıradaki maç")), 13, "serit-yazi"));
-            bas.Add(Yazi(Buyuk(L.T(TurAd(tr))) + " · " + (i + 1) + "/" + KariyerVeri.BASAMAK, 12, "plaka-tur"));
+            serit.Add(Yazi(L.T(tamam ? "Kariyer tamam" : "Sıradaki maç"), 13, "serit-yazi"));   // 2026-11-06 unslop: büyük harf + geniş aralık etiket yerine cümle düzeni
+            bas.Add(Yazi(L.T(TurAd(tr)) + " · " + (i + 1) + "/" + KariyerVeri.BASAMAK, 12, "plaka-tur"));
             kart.Add(Baslik(L.T(kb.yer), Px(38, 32), "plaka-baslik"));
             var rk = new VisualElement(); rk.AddToClassList("plaka-meta"); rk.pickingMode = PickingMode.Ignore; kart.Add(rk);
             var sol = new VisualElement(); sol.AddToClassList("plaka-rakip"); sol.pickingMode = PickingMode.Ignore; rk.Add(sol);

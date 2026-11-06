@@ -670,6 +670,29 @@ static class BotMac
         var K = new Match(33, new MatchOptions { easy = true, target = 5 }); K.outsBen = 3; if (Dril.Oner(K, false, new Ilerleme()) != "derin") Fail("kayıpta derin clear önerilmeli");
         if (Dril.Oner(K, true, null) != null) Fail("galibiyette öneri olmamalı");
         var p3 = new Ilerleme(); p3.DrilKaydet("derin", 3); if (Dril.Oner(K, false, p3) == "derin") Fail("üç yıldızlı görev önerildi");
+        // Sonsuz ralli (2026-11-06): listeye/yıldıza girmez, ilk kaçan topta biter, skorsuz, kademe her 5 isabette artar,
+        // bot birkaç vuruş tutturabilmeli (kademe 0 oynanabilir), eşik ilk geçişte bir kez.
+        if (Array.IndexOf(Dril.Liste, Sonsuz.Tanim) >= 0 || Dril.Bul(Sonsuz.ID) != Sonsuz.Tanim) Fail("sonsuz ralli listede olmamalı, Bul bulmalı");
+        if (Sonsuz.Kademe(4) != 0 || Sonsuz.Kademe(5) != 1 || Sonsuz.Kademe(500) != Sonsuz.TAVAN || Sonsuz.Havuz(0) != 1 || Sonsuz.Havuz(9) != 5) Fail("sonsuz kademe/havuz");
+        if (Sonsuz.YeniEsik(21, 12) != 20 || Sonsuz.YeniEsik(21, 25) != 0 || Sonsuz.YeniEsik(9, 0) != 0 || Sonsuz.YeniEsik(31, 0) != 30) Fail("sonsuz eşik");
+        // Bot kusursuz vurur (Kolay koşu yardımı her topa yetiştirir; ölçüm: 600 sn'de ~187 vuruş, 6. kademe dahil hepsi içeri):
+        // demek ki hızlanan besleme ulaşılmaz değil. Bitişi sınamak için bot hedef sayıya gelince bırakır.
+        int snTop = 0; float snSure = 0; var Rs = new Random(9);
+        for (int k = 0; k < 4; k++)
+        {
+            int hedef = 8 + 9 * k;   // 8, 17, 26, 35: her kademeden geçer
+            var S = new Match(60 + k, new MatchOptions { easy = true, ogr = true, dril = Sonsuz.Tanim, target = 5 }); int guard = 0; float t = 0;
+            while (!S.ogr.bitti && guard++ < 60 * 600)
+            {
+                Reach re; if (S.ogr.isabet < hedef && S.ReachInfo(out re) && Rs.NextDouble() < .25) S.SwipeShot(new SwipeInput { dx = (float)(Rs.NextDouble() - .5) * 40, dy = -200, speed = 1.3f, R = 40, dist = 5 });
+                S.Update(1f / 60f); t += 1f / 60f; S.events.Clear(); if (S.over) { Fail("sonsuz ralli maç sonuna gitti"); break; }
+            }
+            if (!S.ogr.bitti) Fail("sonsuz ralli bitmedi: " + S.ogr.dene + " top");
+            if (S.ogr.isabet != hedef || S.ogr.dene != hedef + 1) Fail("sonsuz ralli ilk kaçışta bitmeli: hedef " + hedef + " top " + S.ogr.dene + " isabet " + S.ogr.isabet);
+            if (S.sc[0] + S.sc[1] != 0) Fail("sonsuz rallide skor yazıldı");
+            snTop += S.ogr.isabet; snSure += t;
+        }
+        Console.WriteLine("sonsuz ralli: 4 oyun ilk kaçışta bitti (8/17/26/35 vuruş), tempo " + (snSure / snTop).ToString("0.00") + " sn/vuruş");
         Console.WriteLine("antrenman görevleri: 8 görev 12 topta biter, yıldız en iyi sonuç, ödül yalnız yeni yıldız (+" + Gear.DRIL_TUY + " Tüy)");
     }
 

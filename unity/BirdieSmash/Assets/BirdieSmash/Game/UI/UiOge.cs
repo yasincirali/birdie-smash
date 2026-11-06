@@ -259,7 +259,8 @@ namespace BirdieSmash.Game
             // #B9E61F, altta 4 pt koyu iç gölge. 9 dilim: yan dilimler 16 pt (32 doku pikseli), yükseklik 80 pt.
             // 2026-10-27 yön C: limon yerine gün batımı degradesi (UiKok.CTA_UST/ORTA/ALT, yukarıda); ad geriye uyum için aynı.
             // 2026-10-29 Tüycükler: Egik artık eğik değil, yuvarlak köşeli jöle düğme (aşağıda); ad ve dilimler geriye uyum için aynı.
-            EgikLimon = Egik(96, 160, 28, UiKok.CTA_UST, UiKok.CTA_ORTA, UiKok.CTA_ALT, 10);
+            // 2026-11-06 ince kenar (yasin: "profesyonel ve lightweight"): alttaki 5 pt koyu dudak kalktı (golge 0); derinlik degradeden.
+            EgikLimon = Egik(96, 160, 28, UiKok.CTA_UST, UiKok.CTA_ORTA, UiKok.CTA_ALT, 0);
             // Etiket şeridi (a-kick "SIRADAKİ MAÇ"): düz limon, küçük eğim (−12°), 22 pt.
             // 2026-10-27 yön C: dolgusuz altın çerçeve + altın yazı (C taslağı .etk span); ekranda tek doygun dolgu OYNA kalsın.
             // 2026-10-29 Tüycükler: eğik şerit yerine hap (yarıçap 20 doku pikseli; USS .serit yan dilimi 22). Dolgusuz altın çerçeve aynı.
@@ -267,7 +268,7 @@ namespace BirdieSmash.Game
                 (x, y) => new Color(UiKok.ALTIN.r, UiKok.ALTIN.g, UiKok.ALTIN.b, .10f), new Color(UiKok.ALTIN.r, UiKok.ALTIN.g, UiKok.ALTIN.b, 1), 3);
             // Yayın plakası (a-plate): üç köşe 14 pt yuvarlak, sağ alt 18 pt kesik; soldan sağa navy2 → navy; 1 pt ince çerçeve.
             // 2026-10-29 Tüycükler: sağ alt kesik kalktı, dört köşe yuvarlak; altta 6 doku pikseli (3 pt) koyu "dudak" (jöle kart).
-            Plaka = Sekil(96, 96, (x, y, ic) => PlakaIc(x, y, 96, 96, ic), (x, y) => { var c = Color.Lerp(new Color(NAVY2.r, NAVY2.g, NAVY2.b, .97f), new Color(NAVY.r, NAVY.g, NAVY.b, .95f), x / 96f); return y < 6 ? Color.Lerp(c, new Color(0, 0, 0, c.a), .4f) : c; }, new Color(1, 1, 1, .12f), 2);
+            Plaka = Sekil(96, 96, (x, y, ic) => PlakaIc(x, y, 96, 96, ic), (x, y) => { var c = Color.Lerp(new Color(NAVY2.r, NAVY2.g, NAVY2.b, .97f), new Color(NAVY.r, NAVY.g, NAVY.b, .95f), x / 96f); return c; }, new Color(1, 1, 1, .10f), 2);   // 2026-11-06: alt dudak kalktı, eşit 1 pt kenar
             // Şimdiki basamak (a-pips .cur): limon / soluk limon çapraz çizgi; düz renk yerine desen, yalnız renkle değil.
             Serit = new Texture2D(96, 10, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             var sp = new Color32[96 * 10]; for (int y = 0; y < 10; y++) for (int x = 0; x < 96; x++) { bool on = Mathf.Repeat(x + y * .36f, 12) < 6; sp[y * 96 + x] = on ? (Color32)LIMON_D : (Color32)new Color(LIMON_D.r, LIMON_D.g, LIMON_D.b, .35f); }
@@ -322,7 +323,7 @@ namespace BirdieSmash.Game
             }, (x, y) => dolgu, cerceve, kalin);
         }
         // Eğik limon düğme dokusu istenen ekran ölçeğinde (IMGUI: yan dilim = egim + 2 piksel).
-        public static Texture2D EgikDugme(int w, int h, int egim) { return Egik(w, h, egim, UiKok.CTA_UST, UiKok.CTA_ORTA, UiKok.CTA_ALT, Mathf.Max(1, h / 20)); }   // 2026-10-27 yön C degradesi
+        public static Texture2D EgikDugme(int w, int h, int egim) { return Egik(w, h, egim, UiKok.CTA_UST, UiKok.CTA_ORTA, UiKok.CTA_ALT, 0); }   // 2026-11-06: menüyle aynı, dudaksız   // 2026-10-27 yön C degradesi
         // 2026-10-29 Tüycükler (yasin: menüler neşeli dilde, "sadece renk değil"): eskiden eğik dikdörtgendi (sol ve sağ kenar
         // egim kadar yatık). Şimdi yuvarlak köşeli (yarıçap egim + 4, yan dilim egim + 4'e sığar; IMGUI çağıranı aynı kalır),
         // gradyan aynı; altta golge kadar koyu "dudak" (%30 siyah, eski iç gölgeden belirgin): düğme kabarık ve basılabilir okunur.

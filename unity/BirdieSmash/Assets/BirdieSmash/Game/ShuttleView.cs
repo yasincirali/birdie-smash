@@ -246,6 +246,9 @@ namespace BirdieSmash.Game
             // yarısı, ağır çekimde (karede az yol) kısacıktı; yere düşen topun izi bir sonraki vuruşa kadar havada asılı kalıyordu.
             // Şimdi uzunluk her ekranda ve ağır çekimde aynı yol (düz .16, smaç .2, süper .22 sn), düşen topun izi .16 sn'de çekilir.
             float izSaat = s.t + (s.dead ? s.yerT : 0), izBoy = s.super ? .22f : s.type == "smash" ? .2f : .16f;
+            // 2026-11-06 (öneri artifact'i "yüksek clear" YAP): yüksek clear tepeye çıkarken iz neredeyse dik ve uzun, "lazer" gibi
+            // duruyordu. Yükselirken 3 m'den sonra iz kısalır (6 m'de yarısı); inişte ve alçak vuruşlarda değişmez.
+            if (!s.dead && s.vz > 0 && s.z > 3) izBoy *= Mathf.Lerp(1, .5f, Mathf.Clamp01((s.z - 3) / 3));
             if (!s.dead && (trailT.Count == 0 || izSaat > trailT[trailT.Count - 1])) { trailPts.Add(pos); trailT.Add(izSaat); }
             while (trailT.Count > 0 && izSaat - trailT[0] > izBoy) { trailPts.RemoveAt(0); trailT.RemoveAt(0); }
             if (trailPts.Count > 40) { trailPts.RemoveAt(0); trailT.RemoveAt(0); }   // güvenlik tavanı (240 Hz'de .16 sn ≈ 38 nokta)

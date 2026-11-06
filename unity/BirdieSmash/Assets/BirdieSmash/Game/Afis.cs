@@ -93,7 +93,7 @@ namespace BirdieSmash.Game
                 if (ben != null) Destroy(ben.gameObject);
                 ben = PlayerView.Build(transform, Ayar.model, true, gor.forma, false, gor); benAnah = k; GolgeKapat(ben);
             }
-            string rk = rakipSt == null ? "" : Ayar.model + rakipSt.isim + rakipSt.ad + rakipForma;
+            string rk = rakipSt == null ? "" : Ayar.model + rakipSt.isim + rakipSt.ad + rakipForma; rakipId = rakipSt != null ? rakipSt.id : null;
             if (rk != rakipAnah)
             {
                 if (rakip != null) { Destroy(rakip.gameObject); rakip = null; }
@@ -115,12 +115,35 @@ namespace BirdieSmash.Game
         // devreye girmiyordu; Oyna sekmesinde afiş kamerası 60/120 fps çiziyordu. Nefes çok yavaş (.45 döngü/sn), 20 Hz'de
         // adımlamak gözle ayırt edilmiyor; aradaki karelerde ph sabit kalır ve kamera kapanır (çizim ~⅓–⅙).
         const float NEFES_ADIM = 1 / 20f; float nefesBirik;
+        // Canlı afiş (2026-11-06 ek tur fikir 1, inceleme YAP): ikisi de maç duruşunda (dizler bükük) donuk duruyordu. Şimdi
+        // ayaktalar (PlayerView.AfisPoz bacak katmanı); 4,5 sn'de bir sen raketi çevirirsin, .8 sn sonra rakip tarzına göre kısa
+        // hareket yapar (Smaşçı raket omuzda, Duvar kollar kavuşuk, diğerleri raket çevirir). Kendi oyuncuna dokununca Dolap'taki
+        // sevinç oynar (Sevinc()). Hareket sürerken poz her kare (akıcı), aralarda eski 20 Hz nefes adımı (bütçe notu aşağıda).
+        // Hareketi azaltta döngü yok, yalnız ayakta duruş; dokununca sevinç yine kollarla (PlayerView kuralı).
+        const float AKS_ARA = 4.5f, AKS_SURE = 1.6f, RAKIP_GEC = .8f;
+        float aksSaat = 2.5f, benT = -1, rakipT = -1; string benAks, rakipAks, rakipId;
+        public void Sevinc() { benAks = PlayerView.SevincSecimi(); benT = 0; durgun = 0; }
         void Goster(float dt)
         {
-            if (!Ayar.reduce) { nefesBirik += dt; if (nefesBirik >= NEFES_ADIM) { ph += nefesBirik * .45f; nefesBirik = 0; } }   // boşta duruş yavaş: nefes (yön A "oyuncu nefes alır")
-            if (ben != null) ben.ShowPoz(YER + Ek(BEN), -BEN_YON, "idle", ph);
-            if (rakip != null) rakip.ShowPoz(YER + Ek(RAKIP), -RAKIP_YON, "idle", ph + .37f);
+            bool hareket = benT >= 0 || rakipT >= 0;
+            if (!Ayar.reduce)
+            {
+                aksSaat -= dt;
+                if (aksSaat <= 0 && !hareket) { aksSaat = AKS_ARA; benAks = "raket_cevir"; benT = 0; rakipT = -RAKIP_GEC; rakipAks = rakipId == "smasci" ? "omuz" : rakipId == "duvar" ? "kavus" : "raket_cevir"; hareket = true; }
+            }
+            if (hareket)
+            {   // her kare: süre ve faz ilerler (ph değişir, ShowPoz yeniden örnekler)
+                ph += dt * .45f; nefesBirik = 0;
+                if (benT >= 0) { benT += dt; if (benT > (benAks == "raket_cevir" ? AKS_SURE : 2.4f)) benT = -1; }
+                if (rakipT > -1 + 1e-4f || rakipT >= 0) { rakipT += dt; if (rakipT > AKS_SURE) rakipT = -1; }
+            }
+            else if (!Ayar.reduce) { nefesBirik += dt; if (nefesBirik >= NEFES_ADIM) { ph += nefesBirik * .45f; nefesBirik = 0; } }   // boşta duruş yavaş: nefes (yön A "oyuncu nefes alır")
+            bool yeni = ph != uygPh || durgun == 0; uygPh = ph;
+            if (ben != null) { ben.ShowPoz(YER + Ek(BEN), -BEN_YON, "idle", ph); if (yeni) ben.AfisPoz(benT >= 0 ? benAks : null, benT, Agirlik(benT, benAks == "raket_cevir" ? AKS_SURE : 2.4f)); }
+            if (rakip != null) { rakip.ShowPoz(YER + Ek(RAKIP), -RAKIP_YON, "idle", ph + .37f); if (yeni) rakip.AfisPoz(rakipT >= 0 ? rakipAks : null, rakipT, Agirlik(rakipT, AKS_SURE)); }
         }
+        float uygPh = float.NaN;
+        static float Agirlik(float t, float d) { return t < 0 ? 0 : Mathf.Clamp01(Mathf.Min(t / .2f, (d - t) / .3f)); }
         // Durağan afiş çizilmez (2026-10-27 performans turu 2): hareketi azaltta figürler durur (ph ilerlemez, ShowPoz örneklemez)
         // ama kamera her karede iki derili figürü üç piksel ışıkla 640×748 MSAA RT'ye yeniden çiziyordu. Poz ya da figür
         // değişince (ph ilerler ya da Yenile figürü kurar) iki kare çizilir, sonra kamera kapanır; RT son görüntüyü tutar.

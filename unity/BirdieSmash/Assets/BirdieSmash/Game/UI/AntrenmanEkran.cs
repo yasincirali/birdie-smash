@@ -24,22 +24,34 @@ namespace BirdieSmash.Game
         public void DrilKartAc(string id) { var once = gez.sekme; kartDril = id; gez.Ac(Gezinti.DRIL); Uygula(once, true); }
         public void GunlukAc() { var once = gez.sekme; gez.Ac(Gezinti.GUNLUK); Uygula(once, true); }
 
+        // 2026-11-06 13:40 turu (fikir 2, oyuncu gözü YAP; defter "Antrenman: önce oyna, sonra çalış"): üstte iki giriş yan yana
+        // (Sonsuz ralli + rekor, Temel ders), altında "Görevler ★ n/63" ve üç saha sekmesi; yalnız seçili sahanın görevleri (21 → 7
+        // satır). Son seçilen saha tuytop_antrenman_saha'da (cihaz tercihi). Görev öneren yerler (maç sonu, Dril.Oner) AntrenmanGrup
+        // ile doğru sahayı açar. Eski 3 satırlık açıklama paragrafı kalktı: aynı kural görev kartında ("{0} top · skor yok", ödül satırı).
+        const string SAHA_ANAHTAR = "tuytop_antrenman_saha";
+        int antSaha = -1;
+        public void AntrenmanGrup(string grup) { int g = System.Array.IndexOf(Dril.GRUP, grup); if (g >= 0) { antSaha = g; PlayerPrefs.SetInt(SAHA_ANAHTAR, g); } }
         void AntrenmanKur(VisualElement p)
         {
             SayfaBasi(p, "Antrenman");
             var sv = Kaydirma(p); sv.AddToClassList("govde-kaydir"); var c = sv.contentContainer; c.AddToClassList("sekme-icerik");
             var pr = Ayar.ilerleme;
+            if (antSaha < 0) antSaha = Mathf.Clamp(PlayerPrefs.GetInt(SAHA_ANAHTAR, 0), 0, Dril.GRUP.Length - 1);
+            // Üstte iki giriş: Sonsuz ralli (ödülsüz, yalnız rekor) ve Temel ders (durumu: bitti ya da 15 adım). Büyük yazıda alt alta.
+            var ust = Satir("ant-cift"); c.Add(ust);
+            int rk = GameRoot.SonsuzRekor;
+            ust.Add(Dugme(L.T("Sonsuz ralli"), () => root.SonsuzOyna(), "ikincil-kart", rk > 0 ? L.T("Rekorun {0} vuruş", rk) : L.T("Kaçırana kadar, her 5 vuruşta hızlanır")));
+            ust.Add(Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", Ayar.antrenman ? "✓ " + L.T("Bitti") : L.T("15 adım, skor yok")));
             var bas = Satir("arali"); c.Add(bas);
             bas.Add(Yazi(L.T("Görevler"), 13, "etiket")); bas.Add(YildizSayac(pr.AntrenmanYildiz, Dril.ToplamYildiz, 15));
-            // Temel ders: ilk açılıştaki antrenmanın tamamı (eski "Tam antrenman" kartı)
-            var td = Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", L.T("Vuruş, servis, nefes") + " · " + L.T("15 adım, skor yok")); td.AddToClassList("tam-genislik"); c.Add(td);
-            c.Add(Yazi(L.T("Her görev 12 top, skor yok. Antrenör topu besler, sen tek bir vuruşu çalışırsın. Yıldız en iyi sonucundur, geri alınmaz."), 13, "soluk"));
-            // 2026-10-30 vuruş laboratuvarı: görevler kortta çalıştığı yere göre gruplanır (arka saha, file önü, orta saha).
+            var seg = Satir("segment"); c.Add(seg);
             for (int g = 0; g < Dril.GRUP.Length; g++)
             {
-                c.Add(Grup(L.T(Dril.GRUP_AD[g])));
-                foreach (var d in Dril.Liste) if (d.grup == Dril.GRUP[g]) c.Add(DrilSatir(d));
+                int gg = g; int y = 0, n = 0; foreach (var d in Dril.Liste) if (d.grup == Dril.GRUP[g]) { n++; y += pr.DrilYildiz(d.id); }
+                var cp = Cip(L.T(Dril.GRUP_AD[g]), antSaha == g, () => { if (antSaha == gg) return; Yerel.Hap("tick"); AntrenmanGrup(Dril.GRUP[gg]); Uygula(gez.sekme, false); }, y + "/" + n * Dril.YILDIZ);
+                cp.AddToClassList("segment-cip"); var eb = cp.userData as ErisimBilgi; if (eb != null) eb.rol = "sekme"; seg.Add(cp);
             }
+            foreach (var d in Dril.Liste) if (d.grup == Dril.GRUP[antSaha]) c.Add(DrilSatir(d));
             AldatmaBolum(c);   // 2026-10-26 aldatıcı vuruşlar: kilitliler de görünür, ne açtığıyla (Game/UI/AldatmaListe)
             c.Add(Bosluk(24));
         }
@@ -53,23 +65,16 @@ namespace BirdieSmash.Game
             orta.Add(Yazi(L.T(d.ad), 16, "kalin"));
             orta.Add(Yazi(L.T(d.ogretir), 13, "soluk"));
             var yr = Satir("rakip-satir"); yr.pickingMode = PickingMode.Ignore; orta.Add(yr); yr.Add(UcYildiz((1 << y) - 1, 16)); var yy = Yazi(y + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy);
-            // İlerleme çizgisi: son 5 oturumun isabet yüzdesi küçük çubuklarla (en yenisi sağda, dolu limon) ve sayıyla
-            // (yalnız biçimle değil yazıyla da okunur). Yıldız gibi geri alınmaz bir şey değil, yalnız gidişatı gösterir.
+            // İlerleme: son 5 oturumun isabet yüzdesi yalnız yazıyla (2026-11-06 unslop, öneri artifact'i YAP: her satırdaki 6 px'lik
+            // mini çubuklar okunmuyor, her karta süs grafik ekliyordu). Yıldız gibi geri alınmaz bir şey değil, yalnız gidişatı gösterir.
             var gec = pr.DrilGecmis(d.id); string gecYazi = null;
             if (gec.Count > 0)
             {
-                var gr = Satir("rakip-satir"); gr.pickingMode = PickingMode.Ignore; gr.style.alignItems = Align.FlexEnd; gr.style.marginTop = 4; orta.Add(gr);
-                for (int i = 0; i < gec.Count; i++)
-                {
-                    var b = new VisualElement(); b.pickingMode = PickingMode.Ignore; bool son = i == gec.Count - 1;
-                    b.style.width = 6; b.style.height = 3 + 15 * gec[i] / 100f; b.style.marginRight = 3; b.style.borderTopLeftRadius = b.style.borderTopRightRadius = 2;
-                    b.style.backgroundColor = son ? Kit.Hex("#d8ff5a") : new Color(1, 1, 1, .35f); gr.Add(b);
-                }
                 gecYazi = gec.Count > 1 ? L.T("Son {0} oturum: %{1} → %{2}", gec.Count, gec[0], gec[gec.Count - 1]) : L.T("Son oturum: %{0}", gec[0]);
-                var gy = Yazi(gecYazi, 12, "soluk"); gy.style.marginLeft = 6; gr.Add(gy);
+                var gy = Yazi(gecYazi, 12, "soluk"); gy.style.marginTop = 4; gy.pickingMode = PickingMode.Ignore; orta.Add(gy);
             }
-            string durum = L.T(y >= 3 ? "Tamam" : y > 0 ? "Devam" : "Yeni");
-            r.Add(Yazi(durum, 12, y >= 3 ? "durum-gecti" : y > 0 ? "durum-simdi" : "durum-kilit"));
+            // 2026-11-06 13:40: "Yeni/Devam/Tamam" yazısı kalktı (21 satırın hepsinde aynı kelime bilgi taşımıyordu); durum yıldız + "n/3".
+            string durum = L.T(y >= 3 ? "Tamam" : y > 0 ? "Devam" : "Yeni");   // yalnız ekran okuyucu için
             Erisim.Etiket(kart, L.T("Görev") + ", " + L.T(d.ad) + ", " + L.T(d.ogretir) + ", " + L.T("{0}/3 yıldız", y) + (gecYazi != null ? ", " + gecYazi : "") + ", " + durum, "dugme");
             return kart;
         }
@@ -138,7 +143,9 @@ namespace BirdieSmash.Game
             var kart = Kart("tur-kart"); if (!acik) kart.AddToClassList("kilitli");
             var bas = Satir("arali"); kart.Add(bas);
             bas.Add(Yazi(L.T("Usta yolu"), 20, "kalin"));
-            if (acik) bas.Add(Yazi(L.T("{0} basamak geçildi", pr.Usta), 13, "altin"));
+            // 2026-11-06 (unslop denetimi, öneri artifact'i YAP): altın "0 basamak geçildi" sıfırı başarı gibi gösteriyordu. Sıfırken
+            // yazı yok; sonrasında soluk sayaç (ödül anı kariyer kartında, burada yalnız bilgi).
+            if (acik && pr.Usta > 0) bas.Add(Yazi(L.T("{0} basamak geçildi", pr.Usta), 13, "soluk"));
             if (!acik)
             {
                 var kl = Satir("rakip-satir"); kart.Add(kl); kl.Add(Ikon(Ikonlar.Kilit, 18, SOLUK)); var ky = Yazi(L.T("Dünya Finalleri'ni kazan"), 14, "soluk"); ky.style.marginLeft = 6; kl.Add(ky);

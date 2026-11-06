@@ -52,7 +52,10 @@ namespace BirdieSmash.Game
                 ic.Add(Ikon(Ikonlar.Tuy, 22, ALTIN)); ic.Add(Yazi(UiKok.Sayi(pk.tuy), 22, "rakam"));
                 k.Add(Yazi(L.T(pk.ad), 14, "kalin"));
                 if (pk.ek > 0) { var e = Yazi(L.T("+%{0} fazla", pk.ek), 12, "dukkan-ek"); k.Add(e); }
-                k.Add(fiyat != null ? Dugme(fiyat, () => { dukkanNot = null; Tik(); Magaza.O.Al(id); }, "dugme--birincil") : Pasif(L.T("Satın alınamıyor")));
+                // 2026-11-06 (unslop, öneri artifact'i YAP): dört paketin dördü de dolu turuncu düğmeydi; her şey vurgulu olunca hiçbiri öne
+                // çıkmıyordu. Fiyat düğmeleri ikincil (sakin) biçimde; "önerilen/en popüler" vurgusu da yok (geliştirme kararı: dükkân baskısız,
+                // veri olmadan "en popüler" uydurma olur; bonus yüzdesi her kartta yazıyla duruyor).
+                k.Add(fiyat != null ? Dugme(fiyat, () => { dukkanNot = null; Tik(); Magaza.O.Al(id); }) : Pasif(L.T("Satın alınamıyor")));
                 Erisim.Etiket(k, L.T(pk.ad) + ", " + L.T("{0} Tüy", pk.tuy) + (pk.ek > 0 ? ", " + L.T("+%{0} fazla", pk.ek) : "") + ", " + (fiyat ?? L.T("Satın alınamıyor")), "dugme", false, fiyat == null);
             }
 

@@ -26,32 +26,46 @@ namespace BirdieSmash.Game
             var t = Yazi(L.T("Profil"), 24, "sekme-baslik"); Erisim.Etiket(t, L.T("Profil"), "baslik"); c.Add(t);
             var gr = Ayar.gear; var p = Ayar.ilerleme; int L_, kalan, gerek; gr.OyuncuSv(out L_, out kalan, out gerek);
             var un = Karakter.Gosterilen(p, L_, p.AntrenmanYildiz); var tz = Karakter.Tarz(Ayar.Tarz);
-            var kart = Kart(); c.Add(kart);
+            // 2026-11-06 ek tur fikir 5 (inceleme YAP; defter "Profil bir oyuncu kartı olsun"): üst kart ayar listesi gibi okunuyordu
+            // ("Sv 2 ile açılır / Pamuk / Saç modeli: …"); oyuncunun gurur duyduğu şey aşağıdaki listede kayboluyordu. Şimdi:
+            // büyük portre + ad + unvan + seviye halkası; altında üç büyük sayı (rekor ralli, smaç, galibiyet); kupa rafı (tur
+            // finalleri, kazanılmamış siluet, dokununca Kariyer o tura açılır); sıradaki açılış tek cümle. Tam istatistik listesi
+            // aşağıda aynen kalır. Büyük yazıda (K ≥ 1,35) üç sayı alt alta.
+            var kart = Kart("oyuncu-kart"); c.Add(kart);
             var r = Satir("profil-ust"); kart.Add(r);
-            var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 30); r.Add(av);
+            var av = new VisualElement(); av.AddToClassList("avatar"); av.AddToClassList("avatar--buyuk"); av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 54); r.Add(av);
             var ad = new VisualElement(); ad.AddToClassList("esnek-yatay"); r.Add(ad);
-            ad.Add(Yazi(p.Ad ?? L.T("Oyuncu"), 19, "kalin")); ad.Add(Yazi(L.T(un.ad), 14, "altin"));
-            ad.Add(Yazi(L.T("Seviye {0}", L_) + " · " + L.T("Tarz") + ": " + L.T(tz.ad), 14, "soluk"));
-            ad.Add(Yazi(L.T("Raket") + ": " + L.T(Gear.GEAR["raket"][gr.raket].ad) + " · " + L.T("{0} Tüy", gr.eko.tuy), 14, "soluk"));
+            ad.Add(Yazi(p.Ad ?? L.T("Oyuncu"), 22, "kalin")); ad.Add(Yazi(L.T(un.ad), 14, "altin"));
+            var svr = Satir("rakip-satir"); svr.style.marginTop = 6; ad.Add(svr);
+            var halka = new VisualElement(); halka.AddToClassList("sv-halka"); svr.Add(halka);
+            var hi = Yazi(L_.ToString(), 13, "kalin"); hi.AddToClassList("sv-halka-ic"); halka.Add(hi);
+            var hy = Yazi(gerek > 0 ? L.T("Sonraki seviyeye {0} XP", gerek - kalan) : L.T("En yüksek seviye"), 12, "soluk"); hy.style.marginLeft = 6; hy.style.flexShrink = 1; svr.Add(hy);
+            ad.Add(Yazi(L.T(tz.ad) + " · " + L.T(Gear.GEAR["raket"][gr.raket].ad), 13, "soluk"));
             Erisim.Etiket(r, (p.Ad ?? L.T("Oyuncu")) + ", " + L.T(un.ad) + ", " + L.T("Seviye {0}", L_) + ", " + L.T("Tarz") + " " + L.T(tz.ad), "metin");
             kart.Add(Cubuk(gerek > 0 ? kalan / (float)gerek : 1, CAMGOBEGI));
-            kart.Add(Yazi(gerek > 0 ? L.T("Sonraki seviyeye {0} XP · maç kazandıkça Tüy ve XP gelir", gerek - kalan) : L.T("En yüksek seviye"), 12, "soluk"));
-            // sıradaki açılış (Sv 30'da yok)
+            // üç büyük sayı
+            var uc = Satir("uc-sayi"); if (K >= 1.35f) uc.AddToClassList("uc-sayi--dikey"); kart.Add(uc);
+            System.Action<string, string> Buyuk_ = (deger, et) => { var b = new VisualElement(); b.AddToClassList("uc-sayi-oge"); b.Add(Yazi(deger, 24, "rakam")); b.Add(Yazi(et, 12, "soluk")); Erisim.Etiket(b, et + " " + deger, "metin"); uc.Add(b); };
+            Buyuk_(Ayar.bestRally.ToString(), L.T("Rekor ralli")); Buyuk_(p.Smac.ToString(), L.T("Smaç")); Buyuk_(Ayar.wins.ToString(), L.T("Galibiyet"));
+            // kupa rafı: verisi olan her turun finali
+            int kz_ = 0, top_ = 0; var raf = Satir("kupa-raf");
+            for (int tu = 0; tu < KariyerVeri.Turlar.Length; tu++)
+            {
+                if (!KariyerVeri.Turlar[tu].Var) continue; top_++; int g = KariyerVeri.Global(tu, KariyerVeri.BASAMAK - 1); bool var_ = p.Kazanildi(g); if (var_) kz_++;
+                var hk = new VisualElement(); hk.AddToClassList("kupa-hucre"); if (!var_) hk.AddToClassList("kupa-hucre--yok");
+                hk.Add(Ikon(Ikonlar.Kupa, 28, var_ ? ALTIN : SOLUK)); int tt = tu;
+                hk.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); KariyerTurSec(tt); SekmeAc(Sekme.Kariyer); }));
+                Erisim.Etiket(hk, L.T(TurAd(tu)) + ", " + L.T(var_ ? "Kazanıldı" : "Kazanılmadı"), "dugme"); raf.Add(hk);
+            }
+            var rb = Satir("arali"); rb.style.marginTop = 10; kart.Add(rb); rb.Add(Yazi(L.T("Kupa rafı"), 14, "kalin")); rb.Add(Yazi(kz_ + "/" + top_, 13, "soluk"));
+            kart.Add(raf);
+            // sıradaki açılış (Sv 30'da yok): tek cümle
             for (int s2 = L_ + 1; s2 <= 30; s2++)
             {
                 var ac = Karakter.Acilanlar(s2); if (ac.Count == 0) continue;
-                // 2026-11-05 unslop: tek uzun "·" zinciriydi ve tür tekrar ediyordu ("Saç modeli: Kazıma · Saç modeli: Kel"). Tür bir
-                // kez yazılır, öğeleri virgülle; başlık ayrı satır.
-                var sira = new List<string>(); var tur = new Dictionary<string, List<string>>();
-                foreach (var a in Karakter.AcilanlarTurlu(s2))
-                {
-                    string tk = a[0] != null ? L.T(a[0]) : ""; List<string> l;
-                    if (!tur.TryGetValue(tk, out l)) { l = new List<string>(); tur[tk] = l; sira.Add(tk); }
-                    l.Add(L.T(a[1]));
-                }
-                var parca = new List<string>(); foreach (var tk in sira) parca.Add((tk != "" ? tk + ": " : "") + string.Join(", ", tur[tk].ToArray()));
-                var sb = Yazi(L.T("Sv {0} ile açılır", s2), 13, "ipucu"); kart.Add(sb);
-                var sa = Yazi(string.Join("\n", parca.ToArray()), 13, "soluk"); Erisim.Etiket(sa, sb.text + ": " + string.Join(", ", parca.ToArray()), "metin"); kart.Add(sa); break;
+                var parca = new List<string>(); foreach (var a in Karakter.AcilanlarTurlu(s2)) parca.Add(L.T(a[1]));
+                var sa = Yazi(L.T("{0}. seviyede açılır: {1}", s2, string.Join(", ", parca.ToArray())), 13, "soluk"); sa.style.marginTop = 10; sa.style.whiteSpace = WhiteSpace.Normal;
+                Erisim.Etiket(sa, sa.text, "metin"); kart.Add(sa); break;
             }
 
             // ad (yalnız cihazda)
