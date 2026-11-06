@@ -24,7 +24,7 @@ namespace BirdieSmash.Core
         public static readonly string[] METIN = { "tuytop_v2", "tuytop_gear", "tuytop_ekonomi", "tuytop_ilerleme", "tuytop_raket_gor", "tuytop_gorunum",
             "tuytop_antrenman", "tuytop_basarim", "tuytop_kombin", "tuytop_kombin_aktif", "tuytop_oyuncu_sec", "tuytop_model", "tuytop_len", "tuytop_mod",
             "tuytop_saha", "tuytop_puan", "tuytop_html_devir", Hedef.ANAHTAR, TuyDukkan.ANAHTAR };
-        public static readonly string[] SAYI = { "tuytop_usta_kart", "tuytop_rally", "tuytop_wins", "tuytop_kariyer", "tuytop_target" };
+        public static readonly string[] SAYI = { "tuytop_usta_kart", "tuytop_rally", "tuytop_wins", "tuytop_kariyer", "tuytop_target", Sonsuz.ANAHTAR };   // 2026-11-06 sonsuz ralli rekoru (int)
 
         public enum Karar { Yaz, Yukle, Bos, Birlestir }
 

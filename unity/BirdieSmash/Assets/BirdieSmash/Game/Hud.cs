@@ -424,7 +424,7 @@ namespace BirdieSmash.Game
                 }
                 if (isaret) { float nab = Ayar.reduce ? 1 : .6f + .4f * Mathf.Sin(Time.unscaledTime * 6); Cerceve(new Rect(lx - 10 * u, by - 13 * u, rx - lx + 20 * u, 26 * u), new Color(.85f, 1, .35f, nab), 3); }
             }
-            if (M.Dril != null && root.ekran == Ekran.Oyun) VurusKart(M, H - bot - 30 * u);
+            if (M.Dril != null && M.Dril != Sonsuz.Tanim && root.ekran == Ekran.Oyun) VurusKart(M, H - bot - 30 * u);   // sonsuz rallide ölçüm kartı yok: tempo
             float hy = H - bot - 34 * u;
             if (M.sc[0] + M.sc[1] < 2 && M.s != null && !ogr && (Ogretici || KosIpucu(M)))
             {
@@ -719,6 +719,8 @@ namespace BirdieSmash.Game
             if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition)) root.rakipKartT = 0;   // dokununca hemen kapanır
             return y0 + h + 8 * u;
         }
+        // Sonsuz ralli sayacı: vuruş, kademe (1'den), rekor. Kademe sayıyla yazılır, hızlanma yalnız hissedilmesin.
+        static string SonsuzSayac(Training o) { return L.T("{0} vuruş · Hız {1} · Rekor {2}", o.isabet, Sonsuz.Kademe(o.isabet) + 1, Mathf.Max(GameRoot.SonsuzRekor, o.isabet)); }
         float OgrKart(Match M, float y)
         {
             var o = M.ogr; var a = M.OgrA(); if (a == null) return y;
@@ -726,7 +728,8 @@ namespace BirdieSmash.Game
             string ilr = a.drill ? L.T(" · Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : a.bilgi != null ? "" : " · " + new string('●', o.n) + new string('○', Match.OGR_TEKRAR - o.n) + " " + o.n + "/" + Match.OGR_TEKRAR;
             string say = L.T("Antrenman {0}/{1}{2}", o.i + 1, o.liste.Count, ilr);
             // 2026-10-26 antrenman görevi: sayaç top/isabet ve yıldız eşikleri (sayıyla; yıldız simgesi tek başına okunmaz)
-            if (a.dril != null) say = L.T("Görev · Top {0}/{1} · Hedefte {2} · Yıldız eşikleri {3}", Mathf.Min(o.dene, a.dril.top), a.dril.top, o.isabet, string.Join("/", System.Array.ConvertAll(a.dril.esik, e => e.ToString())));
+            if (a.dril == Sonsuz.Tanim) say = SonsuzSayac(o);
+            else if (a.dril != null) say = L.T("Görev · Top {0}/{1} · Hedefte {2} · Yıldız eşikleri {3}", Mathf.Min(o.dene, a.dril.top), a.dril.top, o.isabet, string.Join("/", System.Array.ConvertAll(a.dril.esik, e => e.ToString())));
             string met = (o.izsiz ? L.T("Bir daha, bu sefer iz yok. ") : "") + (a.servis == null && a.bilgi == null && !a.drill && a.dril == null && !o.dur ? L.T("Top sana gelince oyun duracak. ") : "") + L.T(a.met);
             if (leftWrap == null || leftWrapTaban != left) { leftWrap = new GUIStyle(left) { wordWrap = true }; leftWrapTaban = left; } var ws = leftWrap; var ns = Stil(ws, Mathf.RoundToInt(11 * fu));
             float h1 = ws.CalcHeight(Ic(met), iw), h2 = ns.CalcHeight(Ic(L.T(a.neden)), iw);
@@ -789,7 +792,7 @@ namespace BirdieSmash.Game
             float h = 8 * u + BH + hm + (bant ? 30 * u : 0) + (canli != null ? 22 * u : 0) + 8 * u;
             var r = new Rect(x, y, w, h); blocks.Add(r); Fill(r, new Color(9 / 255f, 16 / 255f, 17 / 255f, .62f));
             float yy = y + 8 * u, tw = iw - bw - bitW - 12 * u;
-            string sayac = a.dril != null ? L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(o.dene, a.dril.top), a.dril.top, o.isabet) : a.drill ? L.T("Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : o.n + "/" + Match.OGR_TEKRAR;
+            string sayac = a.dril == Sonsuz.Tanim ? SonsuzSayac(o) : a.dril != null ? L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(o.dene, a.dril.top), a.dril.top, o.isabet) : a.drill ? L.T("Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : o.n + "/" + Match.OGR_TEKRAR;
             string bas = L.T(a.bas); var bs = Sigdir(leftB, bas, tw); Etk(new Rect(x + 12 * u, yy, tw, BH * .58f), bas, bs);
             var ss = Sigdir(Stil(left, Mathf.RoundToInt(11 * fu)), sayac, tw); Etk(new Rect(x + 12 * u, yy + BH * .55f, tw, BH * .45f), sayac, ss);
             if (Button(new Rect(x + w - 12 * u - bitW - bw - 6 * u, yy, bw, BH), "?")) ogrDetay = true;
@@ -812,7 +815,8 @@ namespace BirdieSmash.Game
             var o0 = GUI.color; GUI.color = new Color(A_INK.r, A_INK.g, A_INK.b, .86f); GUI.DrawTexture(new Rect(-W, 0, W * 3, H), Texture2D.whiteTexture); GUI.color = o0;
             float x = ColX, w = ColW, bh = Mathf.Max(BH, 50 * s), gap = 10 * s;
             string bas = L.T("Duraklatıldı"), bilgi;
-            if (M.Dril != null) bilgi = L.T(M.Dril.ad) + " · " + L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(M.ogr.dene, M.Dril.top), M.Dril.top, M.ogr.isabet);
+            if (M.Dril == Sonsuz.Tanim) bilgi = L.T(M.Dril.ad) + " · " + SonsuzSayac(M.ogr);
+            else if (M.Dril != null) bilgi = L.T(M.Dril.ad) + " · " + L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(M.ogr.dene, M.Dril.top), M.Dril.top, M.ogr.isabet);
             else bilgi = L.T("{0} sayı", M.target) + " · " + L.T("Rakip") + " " + M.RakipAd(false) + (KariyerVeri.Var(M.stil.kariyer) ? " · " + L.T(KariyerVeri.Al(M.stil.kariyer).yer) : "");
             string skor = M.Dril != null ? null : Sayi(M.sc[0]) + " – " + Sayi(M.sc[1]);
             var bst = Sigdir(aSkor, bas, w); float bhY = bst.CalcHeight(Ic(bas), w), sh = skor == null ? 0 : aSkor.CalcHeight(Ic(skor), w), ih = aIpucu.CalcHeight(Ic(bilgi), w);

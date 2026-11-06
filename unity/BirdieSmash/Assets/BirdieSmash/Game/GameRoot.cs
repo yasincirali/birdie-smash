@@ -197,6 +197,7 @@ namespace BirdieSmash.Game
         void DrilSonu()
         {
             var M = match; var o = M.ogr; var d = o.dril; var p = Ayar.ilerleme;
+            if (d == Sonsuz.Tanim) { SonsuzSonu(o.isabet); return; }
             ekran = Ekran.Bitti; Uyanik(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); bittiIlk = false;
             int y = d.Yildiz(o.isabet), eski = p.DrilYildiz(d.id), yeni = p.DrilKaydet(d.id, y), enIyi = Mathf.Max(y, eski);
             p.DrilGecmisEkle(d.id, o.isabet, Mathf.Min(o.dene, d.top));
@@ -219,6 +220,26 @@ namespace BirdieSmash.Game
             sfx.MacSonu(yeni > 0); if (yeni > 0) hud.Konfeti();
         }
         public void DrilBitir() { if (match != null) match.DrilBitir(); }
+
+        // 2026-11-06 Sonsuz ralli sonucu (Core/Sonsuz): Tüy/XP yok, yıldız yok. Büyük sayı skor, altında rekor; rekor kırıldıysa
+        // ve 10/20/30 eşiği ilk kez geçildiyse tek satır. Kayıt tuytop_sonsuz (int, buluta gider). Düğme "Bir daha".
+        public static int SonsuzRekor { get { return PlayerPrefs.GetInt(Sonsuz.ANAHTAR, 0); } }
+        public void SonsuzOyna() { DrilOyna(Sonsuz.ID); }
+        void SonsuzSonu(int skor)
+        {
+            ekran = Ekran.Bitti; Uyanik(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); bittiIlk = false; odul = null;
+            int eski = SonsuzRekor; bool rekor = skor > eski, esik = false;
+            if (rekor) { PlayerPrefs.SetInt(Sonsuz.ANAHTAR, skor); PlayerPrefs.Save(); Yerel.Hap("flow"); }
+            int yeniEsik = Sonsuz.YeniEsik(skor, eski); esik = yeniEsik > 0;
+            yukseltHazir = false; HedefHesapla();
+            BittiSifirla(); bittiKazandi = rekor; bittiBas = L.T(rekor && eski > 0 ? "Yeni rekor" : "Sonsuz ralli"); bittiUst = L.T("Antrenman") + " · " + L.T("Sonsuz ralli");
+            bittiBaslik = L.T("Sonsuz ralli") + " · " + L.T("{0} vuruş", skor);
+            bittiSkor = L.T("{0} vuruş", skor); bittiYildiz = null;
+            bittiIpucu = (esik ? L.T("İlk kez {0} vuruş.", yeniEsik) + " " : "") + (rekor ? (eski > 0 ? L.T("Eski rekorun {0}.", eski) : L.T("İlk rekorun.")) : L.T("Rekorun {0}. Her 5 vuruşta top hızlanır.", eski));
+            bittiKart = new List<Ozet.Kart>(); bittiBilgi = ""; hud.ayrinti = false;
+            bittiDugme = L.T("Bir daha");
+            sfx.MacSonu(rekor); if (rekor && eski > 0) hud.Konfeti();
+        }
 
         // ---- 2026-10-26 Günün maçı (adım 8) ----
         // Tarih başlangıç anında alınır: gece yarısını geçen maç başladığı günün maçıdır (ödül o güne yazılır).

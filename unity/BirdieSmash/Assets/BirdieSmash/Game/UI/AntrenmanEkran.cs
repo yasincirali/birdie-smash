@@ -33,6 +33,10 @@ namespace BirdieSmash.Game
             bas.Add(Yazi(L.T("Görevler"), 13, "etiket")); bas.Add(YildizSayac(pr.AntrenmanYildiz, Dril.ToplamYildiz, 15));
             // Temel ders: ilk açılıştaki antrenmanın tamamı (eski "Tam antrenman" kartı)
             var td = Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", L.T("Vuruş, servis, nefes") + " · " + L.T("15 adım, skor yok")); td.AddToClassList("tam-genislik"); c.Add(td);
+            // 2026-11-06 Sonsuz ralli (ek tur fikri 6): Temel dersin hemen altında, görevlerden önce; ödülsüz, yalnız rekor.
+            int rk = GameRoot.SonsuzRekor;
+            var sn = Dugme(L.T("Sonsuz ralli"), () => root.SonsuzOyna(), "ikincil-kart", rk > 0 ? L.T("Rekorun {0} vuruş", rk) + " · " + L.T("kaçırana kadar") : L.T("Kaçırana kadar, her 5 vuruşta hızlanır"));
+            sn.AddToClassList("tam-genislik"); c.Add(sn);
             c.Add(Yazi(L.T("Her görev 12 top, skor yok. Antrenör topu besler, sen tek bir vuruşu çalışırsın. Yıldız en iyi sonucundur, geri alınmaz."), 13, "soluk"));
             // 2026-10-30 vuruş laboratuvarı: görevler kortta çalıştığı yere göre gruplanır (arka saha, file önü, orta saha).
             for (int g = 0; g < Dril.GRUP.Length; g++)

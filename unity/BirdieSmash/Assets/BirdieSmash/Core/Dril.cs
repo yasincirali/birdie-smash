@@ -39,7 +39,7 @@ namespace BirdieSmash.Core
         public static DrilTanim[] Liste { get { Yukle(); return liste; } }
         public static int ToplamYildiz { get { return Liste.Length * YILDIZ; } }
         public static void Sifirla() { liste = null; }
-        public static DrilTanim Bul(string id) { foreach (var d in Liste) if (d.id == id) return d; return null; }
+        public static DrilTanim Bul(string id) { if (id == Sonsuz.ID) return Sonsuz.Tanim; foreach (var d in Liste) if (d.id == id) return d; return null; }
 
         static void Yukle()
         {
@@ -85,6 +85,30 @@ namespace BirdieSmash.Core
         }
     }
 
+    // 2026-11-06 Sonsuz ralli (ek tur fikri 6, oyuncu gözü YAP; yasin "arcade önce"): Antrenman'da 30 saniyelik "bir el daha"
+    // modu. Antrenör hiç durmadan besler, her 5 isabetli vuruşta bir kademe: top yassılaşıp hızlanır, yana açılır, yeni besleme
+    // türü girer (clear → drive → file → yarım → smaç). İlk kaçan ya da dışarı/fileye giden topta biter. Skor = isabetli vuruş.
+    // Görev altyapısının (ogr + dril) üstünde: skor yok, antrenör geri oynamaz kuralları aynı. Yıldız listesine (Liste) girmez,
+    // ToplamYildiz değişmez. Ödül YOK (ekonomi kıt kuralı, inceleme 6 Kas 13:30): yalnız kişisel rekor (tuytop_sonsuz, buluta da
+    // gider) ve 10/20/30 eşiğinin ilk geçişi sonuçta bir kez söylenir. Game Center başarımı eklenmedi: App Store Connect'te
+    // başarım puanı 1000 sınırında (Basarim.cs), yeni kimlik yer açmadan girmez. İlk sürüm tek zorluk (Kolay koşu yardımı).
+    public static class Sonsuz
+    {
+        public const string ID = "sonsuz", ANAHTAR = "tuytop_sonsuz";
+        public const int ADIM = 5, TAVAN = 6;   // her 5 isabette bir kademe; 6. kademeden (30 vuruş) sonra hız sabit
+        public static readonly int[] ESIK = { 10, 20, 30 };
+        public static readonly DrilTanim Tanim = new DrilTanim { id = ID, ad = "Sonsuz ralli", ogretir = "Kaçırana kadar her topu içeri düşür.",
+            nasil = "Antrenör durmadan besler. Her 5 vuruşta top hızlanır ve yana açılır. İlk kaçan top oyunu bitirir.", besle = ID, olcu = ID, grup = "orta",
+            top = 100000, esik = new[] { 0, 0, 0 } };
+        public static int Kademe(int isabet) { return Math.Min(TAVAN, isabet / ADIM); }
+        // Kademenin besleme havuzu: yeni tür sırayla girer, oyuncu önce ritmi bulsun.
+        static readonly string[] SIRA = { "clear", "drive", "file", "yarim", "smash" };
+        public static int Havuz(int kademe) { return Math.Min(SIRA.Length, 1 + kademe); }
+        public static string Tur(int i) { return SIRA[i]; }
+        // Bu skorla ilk kez geçilen eşik (önceki rekor altındaydı); yoksa 0. En büyüğü söylenir.
+        public static int YeniEsik(int skor, int eskiRekor) { int e = 0; foreach (var x in ESIK) if (skor >= x && eskiRekor < x) e = x; return e; }
+    }
+
     public partial class Match
     {
         DrilTanim ogrDril;
@@ -126,6 +150,12 @@ namespace BirdieSmash.Core
             string b = d.besle;
             if (b == "karisik") b = ogr.dene % 2 == 0 ? "clear" : "drive";
             else if (b == "cesit") { string yeni; do yeni = CESIT_BESLE[(int)(R01() * CESIT_BESLE.Length) % CESIT_BESLE.Length]; while (yeni == drBesleSu && ogr.dene > 0); b = yeni; }
+            else if (b == Sonsuz.ID)
+            {   // kademe havuzundan, iki tür varsa aynısını üst üste vermeden; ilk top hep clear (ritmi bul)
+                int n = Sonsuz.Havuz(Sonsuz.Kademe(ogr.isabet)); string yeni = "clear";
+                if (ogr.dene > 0 && n > 1) do yeni = Sonsuz.Tur((int)(R01() * n) % n); while (yeni == drBesleSu);
+                b = yeni;
+            }
             drBesleSu = b;
             if (b == "smash") { op.x = Court.MID; op.y = 3.0f; }
             else if (b == "gevsek") { op.x = Court.MID; op.y = Court.NET - 1.6f; }
@@ -139,6 +169,7 @@ namespace BirdieSmash.Core
         {
             var d = Dril; if (d == null || DrilBitti) return;
             float hx = op.x, hy = op.y, vx, vy, vz; string b = drBesleSu ?? d.besle;
+            if (d.olcu == Sonsuz.ID) { SonsuzBesle(b, hx, hy); return; }
             switch (b)
             {
                 case "file":
@@ -184,6 +215,46 @@ namespace BirdieSmash.Core
             }
         }
 
+        // Sonsuz rallinin beslemesi: görevdeki aynı türler, kademe k (0–6) ile yassılaşır (açı küçülür, top daha erken gelir),
+        // yana açılır (yay) ve smaç sertleşir. Sayılar görev beslemesinden; kademe 0 görevle aynı.
+        void SonsuzBesle(string b, float hx, float hy)
+        {
+            int k = Sonsuz.Kademe(ogr.isabet); float yay = 1 + .12f * k, vx, vy, vz;
+            switch (b)
+            {
+                case "drive":
+                    {
+                        float hz = 1.25f + .03f * k, tx = Court.MID + (R01() - .5f) * 2.0f * yay; Shuttle.Aim(hx, hy, hz, KortIci(tx), Court.NET + 4.6f + .1f * k, true, .1f, out vx, out vy, out vz);
+                        StartFlight("op", vx, vy, vz, hx, hy, hz, false, "drive", false, "good"); return;
+                    }
+                case "file":
+                    {
+                        float hz = .5f, tx = Court.MID + (R01() - .5f) * 1.6f * yay; Shuttle.Aim(hx, hy, hz, KortIci(tx), Court.NET + .75f, true, 1.2f - .04f * k, out vx, out vy, out vz);
+                        StartFlight("op", vx, vy, vz, hx, hy, hz, false, "drop", false, "good"); return;
+                    }
+                case "yarim":
+                    {
+                        float hz = 1.1f, tx = Court.MID + (R01() - .5f) * 1.8f * yay, ty = Court.NET + 2.6f + R01() * .5f; Shuttle.Aim(hx, hy, hz, KortIci(tx), ty, true, .12f, out vx, out vy, out vz);
+                        StartFlight("op", vx, vy, vz, hx, hy, hz, false, "drive", false, "good"); return;
+                    }
+                case "smash":
+                    {
+                        float hz = 2.5f, tx = Court.MID + (R01() - .5f) * 2.4f * yay, ty = Court.NET + 3.4f + R01() * 1.2f;
+                        Shuttle.Aim(hx, hy, hz, KortIci(tx), ty, false, 52 * (.72f + .03f * k), out vx, out vy, out vz);
+                        if (!FileGecer(hx, hy, hz, vx, vy, vz)) Shuttle.Aim(hx, hy, hz, KortIci(tx), ty, true, .25f, out vx, out vy, out vz);
+                        StartFlight("op", vx, vy, vz, hx, hy, hz, false, "smash", false, "good"); return;
+                    }
+                default:
+                    {   // clear: kademeyle savunma yayından atak clear'e iner (LIFT_A → CLEAR_A)
+                        float hz = 1.0f, tx = Court.MID + (R01() - .5f) * 2.0f * yay, ty = Court.L - 1.3f - R01() * .7f, a = LIFT_A - (LIFT_A - CLEAR_A) * k / Sonsuz.TAVAN;
+                        Shuttle.Aim(hx, hy, hz, KortIci(tx), ty, true, a, out vx, out vy, out vz);
+                        StartFlight("op", vx, vy, vz, hx, hy, hz, false, "clear", false, "good"); return;
+                    }
+            }
+        }
+        // Yana açılan besleme tek kortun içinde kalsın (çizgiden 0,35 m içeri): antrenörün dışarı topu oyuncuyu haksız bitirir.
+        static float KortIci(float x) { return Math.Max(Court.SL + .35f, Math.Min(Court.SR - .35f, x)); }
+
         // Oyuncunun topu yere düştü (Land, sayıdan önce): bu top başarılı mı.
         void DrilDusus()
         {
@@ -210,6 +281,7 @@ namespace BirdieSmash.Core
                 case "karsila": drBasari = ic && drVurdu && (s.y >= Court.NET - Court.SSL || s.y <= 2.0f); break;
                 case "kill": drBasari = ic && sonTip == "kill"; break;
                 case "split": drBasari = drVurdu && splits > drSplit0; break;
+                case Sonsuz.ID: drBasari = ic && !s.serve; break;   // her içeri düşen vuruş sayılır; tür serbest
             }
             if (!s.serve || d.olcu == "servis") drOncekiVurus = s.serve ? "servis" : s.vurus;
             drOlcum = Olc(s, drBasari); drOlcumNo++;
@@ -272,11 +344,18 @@ namespace BirdieSmash.Core
         string DrilTop(string winner, string why)
         {
             var d = Dril; ogr.dene++;
+            if (d.olcu == Sonsuz.ID)
+            {   // ilk kaçan top biter; kademe atlayınca söylenir (oyuncu hızlanmayı hissetmeden önce bilsin)
+                if (!drBasari) { if (ogr.bitisT <= 0 && !ogr.bitti) ogr.bitisT = 1.4f; return L_Bitti(why); }
+                ogr.isabet++;
+                return ogr.isabet % Sonsuz.ADIM == 0 && Sonsuz.Kademe(ogr.isabet) <= Sonsuz.TAVAN && ogr.isabet <= Sonsuz.ADIM * Sonsuz.TAVAN ? ogr.isabet + " · Hızlanıyor" : ogr.isabet.ToString();
+            }
             if (drBasari) ogr.isabet++;
             string t = drBasari ? "Hedefte! ★ " + ogr.isabet + "/" + d.top : DrilNeden(why);
             if (ogr.dene >= d.top && ogr.bitisT <= 0 && !ogr.bitti) ogr.bitisT = 1.4f;
             return t;
         }
+        string L_Bitti(string why) { string n = DrilNeden(why); return n == "Top kaçtı" || n == "Alana düşmedi" ? "Bitti" : n; }
         // Kaçan topun tek kelimelik nedeni (oyuncu neyi düzelteceğini görsün).
         string DrilNeden(string why)
         {
