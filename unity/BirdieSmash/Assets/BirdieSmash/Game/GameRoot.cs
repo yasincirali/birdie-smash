@@ -311,6 +311,21 @@ namespace BirdieSmash.Game
         // oyuncunun göremediği anda yere düşüyordu. Duraklat menüde ve maç sonunda hiçbir şey yapmaz. Yalnız telefonda: masaüstü
         // ve CI ekran turunda (Xvfb, pencere odaksız açılabilir) maç durmasın.
         bool akisOnce; Match akisMac; float akisSonT; const float AKIS_SON = .3f;
+        // Sonsuz ralli anları (2026-11-06 Ar-Ge 22:03 #2): kutlama yalnız oyun bitince geliyordu (kaybın içinde); rekoru geçtiğin
+        // vuruşta bir kez yazı + ses + titreşim, kademe atlayınca ses + tık (yazısı Core'un "Hızlanıyor"u). Core'a dokunmadan
+        // önceki isabeti tutup farkı yakalar (akış sönüşüyle aynı kalıp). Aynı vuruşta ikisi olursa rekor kazanır.
+        Training snOgr; int snN, snRekor; bool snGecti;
+        void SonsuzAnlari()
+        {
+            var o = match != null ? match.ogr : null;
+            if (o == null || ekran != Ekran.Oyun || match.Dril != Sonsuz.Tanim) { snOgr = null; return; }
+            int n = o.isabet;
+            if (o != snOgr || n < snN) { snOgr = o; snN = n; snRekor = SonsuzRekor; snGecti = false; return; }
+            if (n <= snN) return;
+            if (!snGecti && snRekor > 0 && n > snRekor) { snGecti = true; sfx.Rekor(); Yerel.Hap("flow"); hud.Say(L.T("Yeni rekor!"), Kit.W(Court.MID, Court.NET, 2.4f), Kit.Hex("#d8ff5a"), 1.15f, true, 2); }
+            else if (Sonsuz.Kademe(n) > Sonsuz.Kademe(snN)) { sfx.Hizlandi(); Yerel.Hap("tick"); }
+            snN = n;
+        }
 
         // Kenar hareketi erteleme (2026-11-06 Ar-Ge 20:07 #1): vuruş alttan yukarı kaydırma ve ev çubuğu tam orada; güçlü bir
         // smaç uygulamayı arka plana atıyor ya da Denetim Merkezi'ni açıp (OnApplicationFocus) ralliyi duraklatıyordu. Yalnız
@@ -671,7 +686,7 @@ namespace BirdieSmash.Game
                     {   // "doğru zamanda vurdum ama geçti": ıskanın nedeni bir kelimeyle
                         float dx, dy, speed; SwipeVec(out dx, out dy, out speed);
                         string neden = far < 70 ? "Kısa kaydırdın" : speed <= .45f ? "Yavaş kaydırdın" : input.minD < 2.2f ? "Kıl payı: topun üstünden geç" : "Topun uzağından geçtin";
-                        hud.Say(L.T("Iska · {0}", L.T(neden)), Kit.W(M.me.x, M.me.y, 1.6f), Kit.Hex("#ffd27a")); sfx.Iska();
+                        hud.Say(L.T("Iska · {0}", L.T(neden)), Kit.W(M.me.x, M.me.y, 1.6f), Kit.Hex("#ffd27a"), 1, false, 2); sfx.Iska();
                     }
                 }
                 else if (!input.hit && erkenT <= 0 && !M.s.dead && M.s.from == "op" && !M.HitWindow() && far > 60 && erkenN < 3) { erkenN++; hud.Say(L.T("Erken: top parlayınca kaydır"), Kit.W(M.me.x, M.me.y, 1.6f), Kit.Hex("#ffd27a")); }   // maç başına en çok 3 kez
@@ -747,6 +762,7 @@ namespace BirdieSmash.Game
             if (akisR != null)
             {   // Akış sönüşü (2026-11-06 inceleme #4): bitiş de üç kanalda; çizgiler .3 sn'de söner, inen iki nota, tek tık. Kural Core'da aynı.
                 bool fl = match.flow; if (akisOnce && !fl && akisMac == match && ekran == Ekran.Oyun) { sfx.AkisSondu(); Yerel.Hap("tick"); akisSonT = Ayar.reduce ? 0 : AKIS_SON; }
+                SonsuzAnlari();
                 akisOnce = fl; akisMac = match; bool on = ekran == Ekran.Oyun && fl;
                 if (on) { akisSonT = 0; akisR.enabled = true; akisR.material.color = new Color(1, .886f, .47f, Ayar.reduce ? .9f : .75f + .25f * Mathf.Sin(Time.unscaledTime * 1000 / 180f)); }
                 else if (akisSonT > 0 && ekran == Ekran.Oyun) { if (!paused) akisSonT -= dt; akisR.enabled = true; akisR.material.color = new Color(1, .886f, .47f, .75f * Mathf.Clamp01(akisSonT / AKIS_SON)); }
@@ -942,7 +958,7 @@ namespace BirdieSmash.Game
                         // rakibin maç sayısını kurtarınca tek kelime (Kurtardın!). mpYan önceki karenin durumu (skor bu olayla değişti).
                         if (mine || e.k >= 8) salonSicra = 0;
                         if (e.type == "smash") ledSmacT = 1.6f;
-                        if (mine && mpYan == 1 && match.ogr == null) hud.Say(L.T("Kurtardın!"), Kit.W(Court.MID, Court.NET - 2.6f, 2f), Kit.Hex("#7ad7ff"), 1.3f, true);
+                        if (mine && mpYan == 1 && match.ogr == null) hud.Say(L.T("Kurtardın!"), Kit.W(Court.MID, Court.NET - 2.6f, 2f), Kit.Hex("#7ad7ff"), 1.3f, true, 2);
                         sfx.Point(mine, smac, (int)e.k); hud.Pop(mine ? 0 : 1); Yerel.Hap(mine ? "win" : "lose");
                         // düşüş yerinde toz ve kazananın renginde dalga; benim sayımda üst bantta üç renkli kıvılcım (HTML point)
                         if (e.x != 0 || e.y != 0) { var yer = Kit.W(e.x, e.y, .05f); fx.Burst(yer, new Color(.9f, 1, .94f, .7f), 14, 140, "dot"); fx.Dalga(yer, mine ? limon : Kit.Hex(Hud.RAKIP_HUD), 70); }
@@ -960,7 +976,7 @@ namespace BirdieSmash.Game
                         if (e.text == "Aldattın!") c = Kit.Hex("#7ad7ff");
                         if (e.text != null && e.text.StartsWith("Hedefte")) sfx.Hedefte();
                         if (e.type == "ogr") { hud.Ogr(L.Cumle(e.text)); if (e.text.StartsWith("Güzel") || e.text.StartsWith("Doğru")) sfx.Iyi(); if (e.text.StartsWith("Güzel")) Yerel.Hap("flow"); }
-                        else hud.Say(L.Cumle(e.text), at, c, e.type == "jump" ? 1.3f : e.text == "AKIŞ" ? 1.8f : e.onem >= 3 ? 1.2f : 1, e.type == "flow");
+                        else hud.Say(L.Cumle(e.text), at, c, e.type == "jump" ? 1.3f : e.text == "AKIŞ" ? 1.8f : e.onem >= 3 ? 1.2f : 1, e.type == "flow", e.type == "flow" ? Mathf.Max(2, e.onem) : Mathf.Clamp(e.onem, 1, 3));
                         break;
                     }
                 case Ev.MatchEnd: EndMatch(e.who == "me"); break;
