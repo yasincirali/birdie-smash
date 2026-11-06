@@ -99,6 +99,7 @@ namespace BirdieSmash.Game
             Ayar.model = "oyuncak"; Ayar.saha = "salon"; Ayar.kamera = "yayin"; root.SahaDegisti(); root.KameraDegisti();
             yield return ImzaKare("imza_mermi", KariyerVeri.Global(1, 5), false);
             yield return ImzaKare("imza_duvar_azalt", KariyerVeri.Global(0, 5), true);
+            yield return GirisKare();
             yield return GorevKare();
             yield return SonucKare("sonuc_galibiyet", true, false, 0, "en");   rap.AppendLine("sonuc_galibiyet · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok"));   // tur 2: matris düz, ikincil düğme stili var olmalı
             yield return SonucKare("sonuc_galibiyet_azalt", true, true, 0, "en");
@@ -437,6 +438,19 @@ namespace BirdieSmash.Game
             float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 60 && !(root.match.op.imzaT > 0 && root.match.op.imzaId != null)) yield return null;
             yield return Bekle(6); yield return Cek(ad + (root.match.op.imzaT > 0 ? "" : "_yok"));
             botAcik = false; Ayar.ilerleme = eski; Ayar.reduce = r0; Ayar.kariyerModu = km; Ayar.kariyerSecim = -1;
+        }
+        // 2026-11-06 ek tur: rakip girişi (Tur 2 finali Nova, ilk kez; kamera yaklaşmanın ortası, kart ve laf) ve sonsuz ralli
+        // oynanırken (sayaç: vuruş · hız · rekor). Giriş geri sayımla açılır, tur onu kapalı tuttuğu için burada bir an açılır.
+        IEnumerator GirisKare()
+        {
+            var eski = Ayar.ilerleme; var q = new Ilerleme(); for (int b = 0; b < 6; b++) q.tur[0][b] = 1; for (int b = 0; b < 5; b++) q.tur[1][b] = 1; Ayar.ilerleme = q;
+            bool km = Ayar.kariyerModu; Ayar.kariyerModu = true; Ayar.kariyerSecim = KariyerVeri.Global(1, 5);
+            string gor = PlayerPrefs.GetString("tuytop_rakip_giris", ""); PlayerPrefs.DeleteKey("tuytop_rakip_giris");
+            GameRoot.geriKapali = false; root.StartMatch(false, false, false); GameRoot.geriKapali = true;
+            yield return Bekle(36); yield return Cek(root.girisT > 0 ? "rakip_giris" : "rakip_giris_yok");
+            root.GirisAtla(); PlayerPrefs.SetString("tuytop_rakip_giris", gor);
+            Ayar.ilerleme = eski; Ayar.kariyerModu = km; Ayar.kariyerSecim = -1;
+            root.DrilBaslat(Sonsuz.ID); botAcik = true; yield return Bekle(60 * 8); yield return Cek("sonsuz_oyun"); botAcik = false;
         }
         // 2026-10-26: antrenman görevi oynanırken (köşe smacı: hedef köşe, sayaç kartı) ve sonuç ekranı; Günün maçı oynanırken.
         IEnumerator GorevKare()

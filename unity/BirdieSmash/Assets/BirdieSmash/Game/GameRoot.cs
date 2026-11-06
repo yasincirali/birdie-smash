@@ -183,6 +183,38 @@ namespace BirdieSmash.Game
             fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; pencere = false; sfx.SuAlti(false); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
+            GirisKur(o);
+        }
+
+        // ---- Rakip girişi (2026-11-06 ek tur fikri 7, oyuncu gözü YAP küçültülmüş) ----
+        // Kariyerde imzalı rakip ve finallerde (patron), basamak başına yalnız İLK kez: servisten önce 1,2 sn yayın kamerası
+        // rakibe yaklaşır (görüş daralır, bakış göğsüne), rakip kartı tarzın tek cümlelik lafını söyler. Dokunmak geçer.
+        // Her maçta olsaydı sinir ederdi (inceleme); ikinci kez aynı basamakta yalnız eski 1,5 sn'lik kart. Hareketi azaltta kamera
+        // yok, kart ve laf var. Görülen basamaklar tuytop_rakip_giris (virgüllü global basamak listesi; cihaz başına, buluta gitmez:
+        // kozmetik bir "ilk kez" bayrağı). Geri sayım girişten sonra başlar (oyun ve geri sayım bu sürede durur).
+        public const float GIRIS = 1.2f; const string GIRIS_ANAHTAR = "tuytop_rakip_giris";
+        public float girisT; public string girisLaf;
+        static readonly Dictionary<string, string> GIRIS_LAF = new Dictionary<string, string> {
+            { "smasci", "Smaçlarımı karşılayabilir misin?" }, { "duvar", "Benden top geçmez." }, { "file", "File benim." },
+            { "nova", "Hızıma yetiş bakalım." }, { "vex", "Nereye gideceğimi bilemezsin." }, { "aria", "Her vuruşunu okurum." } };
+        void GirisKur(MatchOptions o)
+        {
+            girisT = 0; girisLaf = null; var st = match.stil;
+            if (o.ogr || mod != Mod.Normal || st == null || st.kariyer < 0 || !st.patron || geriKapali) return;
+            string gor = PlayerPrefs.GetString(GIRIS_ANAHTAR, ""), id = st.kariyer.ToString();
+            if (("," + gor + ",").Contains("," + id + ",")) return;
+            PlayerPrefs.SetString(GIRIS_ANAHTAR, gor.Length == 0 ? id : gor + "," + id); PlayerPrefs.Save();
+            girisT = GIRIS; GIRIS_LAF.TryGetValue(st.id, out girisLaf);
+        }
+        public void GirisAtla() { girisT = 0; }
+        // Kamera: yerinden kımıldamaz (file düzleminden geçmesin), bakış rakibin göğsüne döner ve görüş %45 daralır; ilk .35 sn
+        // girer, son .3 sn çıkar (kesme yok, oyuna yumuşak döner).
+        void GirisKamera(ref Vector3 p, ref Quaternion q, ref float tv)
+        {
+            if (girisT <= 0 || Ayar.reduce || match == null) return;
+            float t = GIRIS - girisT, e = Mathf.SmoothStep(0, 1, Mathf.Min(t / .35f, girisT / .3f, 1));
+            var bak = Kit.W(match.op.x, match.op.y, 1.1f);
+            q = Quaternion.Slerp(q, Quaternion.LookRotation(bak - p, Vector3.up), e); tv = Mathf.Lerp(tv, tv * .55f, e);
         }
 
         // ---- 2026-10-26 antrenman görevi (adım 7) ----
@@ -654,8 +686,13 @@ namespace BirdieSmash.Game
             if (kaydetBekle && (ekran != Ekran.Oyun || paused || match == null || match.between)) BekleyenKayit();
             if (ekran == Ekran.Oyun && !paused)
             {
-                if (rakipKartT > 0) rakipKartT -= dt;
-                if (geriT > 0)
+                if (girisT > 0) girisT = Mathf.Max(0, girisT - dt);
+                if (rakipKartT > 0) rakipKartT = girisT > 0 ? Mathf.Max(1.2f, rakipKartT - dt) : rakipKartT - dt;   // girişte kart açık kalır
+                if (girisT > 0)
+                {   // rakip girişi: geri sayım bekler; dokunuş geçer (ReadInput bu sürede çalışmaz)
+                    if (Input.touchCount > 0 ? Input.GetTouch(0).phase == TouchPhase.Began : Input.GetMouseButtonDown(0)) GirisAtla();
+                }
+                else if (geriT > 0)
                 {
                     int once = Mathf.CeilToInt(geriT / (GERI / 3)); geriT -= dt; int sonra = geriT > 0 ? Mathf.CeilToInt(geriT / (GERI / 3)) : 0;
                     if (sonra != once) { if (sonra > 0) { sfx.Tik(660); Yerel.Hap("tick"); } else sfx.Tik(990); }
@@ -701,7 +738,7 @@ namespace BirdieSmash.Game
             Vector3 j = Vector3.zero; float roll = 0;
             if (shake > .01f) { float tt = Time.unscaledTime * 22f; j = new Vector3(Mathf.PerlinNoise(tt, 1.7f) * 2 - 1, Mathf.PerlinNoise(4.3f, tt) * 2 - 1, 0) * shake * .012f; roll = (Mathf.PerlinNoise(tt, 9.1f) * 2 - 1) * Mathf.Min(.6f, shake * .05f); }
             KadrajTakip(); var kp = camBase + camRot * j; var kq = camRot * Quaternion.Euler(0, 0, roll); float ktv = camTv * kadrajGenis;
-            ZaferKamera(dt, ref kp, ref kq, ref ktv); cam.transform.SetPositionAndRotation(kp, kq); Projeksiyon(punch, ktv);
+            GirisKamera(ref kp, ref kq, ref ktv); ZaferKamera(dt, ref kp, ref kq, ref ktv); cam.transform.SetPositionAndRotation(kp, kq); Projeksiyon(punch, ktv);
         }
 
         // ---- Canlı salon (2026-11-06 ek tur, yasin "10 yaratıcı fikir"; fikir 2, 3, 4) ----

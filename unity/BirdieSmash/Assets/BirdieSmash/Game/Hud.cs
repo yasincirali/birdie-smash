@@ -714,9 +714,11 @@ namespace BirdieSmash.Game
             var kb = KariyerVeri.Al(st.kariyer); var im = st.patron ? KariyerVeri.Imza(st.imza) : null;   // serbest maçta taban tarz imzayı taşır ama atmaz
             Etk(new Rect(x + 16 * u, y + 34 * u, w - 24 * u, 18 * u), kb != null ? L.T(st.ad) + " · " + L.T(kb.yer) : L.T(st.ad), left);
             // Patron (final): ipucu yerine imza vuruşu ve cevabı (tasarım §3.3: kart rakibin tek fikrini söyler; finalde o fikir imzadır)
-            Etk(new Rect(x + 16 * u, y + 54 * u, w - 24 * u, 36 * u), im != null ? L.T(im.ad) + ": " + L.T(im.cevap) : L.T(st.ipucu), new GUIStyle(left) { wordWrap = true, fontSize = Mathf.RoundToInt(12 * fu) });
+            // Rakip girişi (ilk kez, GameRoot.GirisKur): giriş süresince tarzın lafı tırnakla, sonra imza/ipucu satırı.
+            bool laf = root.girisT > 0 && root.girisLaf != null;
+            Etk(new Rect(x + 16 * u, y + 54 * u, w - 24 * u, 36 * u), laf ? "“" + L.T(root.girisLaf) + "”" : im != null ? L.T(im.ad) + ": " + L.T(im.cevap) : L.T(st.ipucu), new GUIStyle(laf ? leftB : left) { wordWrap = true, fontSize = Mathf.RoundToInt((laf ? 14 : 12) * fu) });
             GUI.contentColor = GUI.backgroundColor = Color.white;
-            if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition)) root.rakipKartT = 0;   // dokununca hemen kapanır
+            if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition) ) { if (root.girisT > 0) root.GirisAtla(); else root.rakipKartT = 0; }   // dokununca hemen kapanır
             return y0 + h + 8 * u;
         }
         // Sonsuz ralli sayacı: vuruş, kademe (1'den), rekor. Kademe sayıyla yazılır, hızlanma yalnız hissedilmesin.
