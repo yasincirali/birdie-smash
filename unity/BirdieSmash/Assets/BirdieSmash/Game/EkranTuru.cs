@@ -441,13 +441,16 @@ namespace BirdieSmash.Game
         }
         // 2026-11-06 ek tur: rakip girişi (Tur 2 finali Nova, ilk kez; kamera yaklaşmanın ortası, kart ve laf) ve sonsuz ralli
         // oynanırken (sayaç: vuruş · hız · rekor). Giriş geri sayımla açılır, tur onu kapalı tuttuğu için burada bir an açılır.
+        const float GIRIS_ORTA = .55f;
         IEnumerator GirisKare()
         {
             var eski = Ayar.ilerleme; var q = new Ilerleme(); for (int b = 0; b < 6; b++) q.tur[0][b] = 1; for (int b = 0; b < 5; b++) q.tur[1][b] = 1; Ayar.ilerleme = q;
             bool km = Ayar.kariyerModu; Ayar.kariyerModu = true; Ayar.kariyerSecim = KariyerVeri.Global(1, 5);
             string gor = PlayerPrefs.GetString("tuytop_rakip_giris", ""); PlayerPrefs.DeleteKey("tuytop_rakip_giris");
             GameRoot.geriKapali = false; root.StartMatch(false, false, false); GameRoot.geriKapali = true;
-            yield return Bekle(36); yield return Cek(root.girisT > 0 ? "rakip_giris" : "rakip_giris_yok");
+            // r124: yazılım GL'de 36 kare 1,2 sn'lik girişi aşıyordu (kare "_yok" çıktı); girişin ortasını bekle, en çok 36 kare.
+            { int k = 0; while (k++ < 36 && root.girisT > GIRIS_ORTA) yield return null; }
+            yield return Cek(root.girisT > 0 ? "rakip_giris" : "rakip_giris_yok");
             root.GirisAtla(); PlayerPrefs.SetString("tuytop_rakip_giris", gor);
             Ayar.ilerleme = eski; Ayar.kariyerModu = km; Ayar.kariyerSecim = -1;
             root.DrilBaslat(Sonsuz.ID); botAcik = true; yield return Bekle(60 * 8); yield return Cek("sonsuz_oyun"); botAcik = false;
