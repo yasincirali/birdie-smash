@@ -39,6 +39,12 @@ namespace BirdieSmash.Game
             int hz = EkranHz(), hedef = 60;
             if ((oyunda || menuHareket) && !Kilitli && !yuksekKapali && !dusukGuc && Basamak == 2 && tavan == 2 && hz >= 90) hedef = Mathf.Min(120, hz);
             if (Application.targetFrameRate != hedef) Application.targetFrameRate = hedef;
+            // Duraklatmada çizim yarı hızda (2026-11-07 inceleme, fikir 00:03 #4 küçültülmüş): sahne donuk ama kort, tribün ve gölge
+            // her kare yeniden çiziliyordu. renderFrameInterval 2 = 30 fps çizim, Update/dokunuş 60 Hz kalır; duraklat menüsüne
+            // dokunulunca (Hareket) hemen tam hıza döner. Menüde "8 sn dokunulmazsa" yapılmadı: canlı afiş 30'da kesik görünebilir.
+            bool durgun = root != null && root.ekran == Ekran.Oyun && root.paused && !menuHareket && !Kilitli;
+            int aralik = durgun ? 2 : 1;
+            if (UnityEngine.Rendering.OnDemandRendering.renderFrameInterval != aralik) UnityEngine.Rendering.OnDemandRendering.renderFrameInterval = aralik;
         }
 
         const float HAREKET_SURE = .5f; static float hareketSon = -99;

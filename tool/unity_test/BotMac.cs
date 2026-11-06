@@ -147,7 +147,7 @@ static class BotMac
         Baskilar();   // 2026-10-29 baskı, drive düellosu, file önü kill (ayrı satır)
         Yardimlar();   // 2026-10-29 kayıpta rakip yumuşar (ayrı satır)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
-        Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
+        Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); YenilgiIpuclari(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
         Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
         KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
@@ -373,6 +373,28 @@ static class BotMac
         Console.WriteLine("devir: 5 HTML anahtarı kabul, bayrak, ikinci açılış dokunmadı");
     }
     // Maç sonu özeti ve puan koşulu (HTML ozetKart/ozetIpucu/puanBak ile aynı kural).
+    // 2026-11-07 rakibe özel yenilgi ipucu (Ozet.Ipucu): kova ≥3 ise rakip adıyla tek çare, kendi dışarılarım önce gelir;
+    // gerçek yenilgilerde ipucu dağılımı ölçülür: tek cümle %85'i geçmesin (yoksa her kayıpta aynı cümle okunur).
+    static void YenilgiIpuclari()
+    {
+        object a; var R = new Match(4, new MatchOptions { easy = true, stil = Match.KariyerRakip(1), target = 5 });
+        R.rakipSmacSayi = 4; R.rakipFileSayi = 1;
+        if (!Ozet.Ipucu(R, false, out a).StartsWith("{0} smaçla") || (string)a != R.RakipAd(false)) Fail("rakip smaç kovası ipucu + rakip adı");
+        R.rakipFileSayi = 5; if (!Ozet.Ipucu(R, false, out a).StartsWith("{0} file önüne")) Fail("rakip file kovası ipucu");
+        R.outsBen = 2; if (!Ozet.Ipucu(R, false, out a).StartsWith("{0} vuruşun dışarı")) Fail("kendi dışarılarım rakip ipucundan önce");
+        R.outsBen = 0; R.rakipSmacSayi = 2; R.rakipFileSayi = 2; if (Ozet.Ipucu(R, false, out a).StartsWith("{0} ")) Fail("kova < 3 iken rakip ipucu olmamalı");
+        var say = new Dictionary<string, int>(); int kayip = 0;
+        for (int m = 0; m < 80 && kayip < 50; m++)
+        {
+            var M = new Match(1300 + m, new MatchOptions { easy = m % 2 == 0, stil = Match.KariyerRakip(1 + m % 3), target = 11 }); int guard = 0;
+            while (!M.over && guard++ < 60 * 60 * 40) { Bot(M, 1f / 60f, .2); M.Update(1f / 60f); M.events.Clear(); }
+            if (M.sc[0] >= M.sc[1]) continue; kayip++;
+            string k = Ozet.Ipucu(M, false, out a); k = k.Substring(0, Math.Min(14, k.Length)); int v; say.TryGetValue(k, out v); say[k] = v + 1;
+        }
+        int en = say.Count == 0 ? 0 : say.Values.Max();
+        if (kayip >= 10 && en > kayip * .85) Fail("yenilgi ipucu tek cümleye yığıldı: " + string.Join(", ", say.Select(x => x.Key + " " + x.Value)));
+        Console.WriteLine("yenilgi ipucu (" + kayip + " kayıp): " + string.Join(" | ", say.Select(x => x.Key + "… " + x.Value)));
+    }
     static void Ozetler()
     {
         var M = new Match(1, new MatchOptions { easy = true, target = 5 });
