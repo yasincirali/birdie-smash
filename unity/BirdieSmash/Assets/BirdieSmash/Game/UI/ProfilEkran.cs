@@ -63,7 +63,10 @@ namespace BirdieSmash.Game
             for (int s2 = L_ + 1; s2 <= 30; s2++)
             {
                 var ac = Karakter.Acilanlar(s2); if (ac.Count == 0) continue;
-                var parca = new List<string>(); foreach (var a in Karakter.AcilanlarTurlu(s2)) parca.Add(L.T(a[1]));
+                var tl = Karakter.AcilanlarTurlu(s2); var parca = new List<string>(); var say = new Dictionary<string, int>();
+                foreach (var a in tl) { int n; say.TryGetValue(a[1], out n); say[a[1]] = n + 1; }
+                // 2026-11-06: aynı ad iki yuvada açılınca ("Kırmızı, Kırmızı") hangi eşya olduğu yazılır: "Kırmızı (Forma rengi)"
+                foreach (var a in tl) parca.Add(say[a[1]] > 1 && a[0] != null ? L.T(a[1]) + " (" + L.T(a[0]) + ")" : L.T(a[1]));
                 var sa = Yazi(L.T("{0}. seviyede açılır: {1}", s2, string.Join(", ", parca.ToArray())), 13, "soluk"); sa.style.marginTop = 10; sa.style.whiteSpace = WhiteSpace.Normal;
                 Erisim.Etiket(sa, sa.text, "metin"); kart.Add(sa); break;
             }
