@@ -2,7 +2,8 @@
 //   Oyun: zorluk, maç uzunluğu (kariyere de uygulanır; saha yalnız serbest maçta anlamlı olduğu için Hızlı maç'a taşındı).
 //   Görünüm: oyuncu görünümü (Ayar.model: Oyuncak 3B, Gerçekçi, Sade; root.ModelDegisti), kamera (Ayar.kamera, GameRoot.KAMERA_SIRA/KAMERA_AD,
 //   root.KameraDegisti), yazı boyutu, hareketi azalt (sistem açıksa her zaman açık, kapalıysa buradan zorlanır).
-//   Ses. Dil. Game Center · Başarımlar (girişliyse). Yardım: Nasıl oynanır ›, Antrenmanı yeniden oyna, Lisanslar ›.
+//   Ses. Dil. Game Center · Başarımlar (girişliyse). Yardım: Nasıl oynanır ›, Lisanslar ›. (2026-11-06: "Antrenmanı yeniden oyna" satırı kalktı; aynı eylem
+//   Antrenman sekmesinde "Temel ders" kartı ve Nasıl oynanır'da "Temel dersi oyna" düğmesi, tek ad.)
 // Anahtarlar aynı (tuytop_*), işleyiciler aynı. Gizli kare hızı göstergesi: başlığa 3 sn içinde 5 dokunuş (HTML ile aynı).
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -66,7 +67,6 @@ namespace BirdieSmash.Game
             if (Basarim.acik) { c.Add(Bosluk(10)); c.Add(Dugme(L.T("Game Center · Başarımlar"), () => { Yerel.Hap("tick"); Basarim.Goster(); })); }
             c.Add(Yazi(L.T("Yardım"), 17, "bolum"));
             c.Add(Dugme(L.T("Nasıl oynanır") + "  ›", () => SayfaAc(Gezinti.NASIL), null, L.T("Vuruş, servis, nefes")));
-            c.Add(Dugme(L.T("Antrenmanı yeniden oyna"), Antrenmana));
             c.Add(Dugme(L.T("Lisanslar ve üçüncü taraf içerik") + "  ›", () => SayfaAc(Gezinti.LISANS)));
             c.Add(Bosluk(24));
         }
@@ -87,7 +87,7 @@ namespace BirdieSmash.Game
         {
             SayfaBasi(p, "Nasıl oynanır");
             var sv = Kaydirma(p); sv.AddToClassList("govde-kaydir"); var c = sv.contentContainer; c.AddToClassList("sekme-icerik");
-            c.Add(Dugme(L.T("Antrenmanı yeniden oyna"), Antrenmana, "dugme--birincil"));
+            c.Add(Dugme(L.T("Temel dersi oyna"), Antrenmana, "dugme--birincil"));
             var k = Kart(); c.Add(k);
             k.Add(Yazi(L.T("Kaydır = vur, hız = güç. Antrenman vuruşları öğretir; aşağıdakileri öğretmez."), 15));
             for (int i = 0; i < NASIL.GetLength(0); i++)

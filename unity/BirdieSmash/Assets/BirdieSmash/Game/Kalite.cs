@@ -53,6 +53,7 @@ namespace BirdieSmash.Game
             if (mem > 0 && mem < 1800 || cek <= 2 || gpu > 0 && gpu < 400) b = 0;
             Kilitli = System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-bsekran") >= 0; if (Kilitli) b = 2;
             k.tavan = b; k.Uygula(b, true);
+            SesArabellek(b);
             // Düşük basamakta (2 çekirdek ya da < 1,8 GB: iPhone 6s/SE 1. nesil) mip'li dokular yarı çözünürlükte yüklenir: 1024'lük
             // atlas 512 olur, doku belleği ~¼. Yalnız açılışta: oturum içinde değişirse bütün dokular yeniden yüklenir (takılma).
             if (b == 0) MipSiniri(1);
@@ -67,13 +68,24 @@ namespace BirdieSmash.Game
 #endif
         }
         // Ekran turu tanısı (2026-10-27): uygulanan kalite.
+        // Ses arabelleği (2026-11-06 inceleme #2): vuruş sesi önceden sentezli ve PlayOneShot ile çalıyor, kalan gecikme DSP
+        // arabelleğinde; titreşim yerel çağrıyla anında geldiği için ses bir arabellek kadar geride kalıyordu. AudioManager.asset
+        // depoda yok (varsayılan). İlk ses çalmadan (Sfx.Build'den önce) 256 örneğe iner (48 kHz'de ~5 ms); zayıf cihazda (basamak 0)
+        // çıtırtı riski yüzünden dokunulmaz. Değer tanı satırında, ekran turunda ve TestFlight'ta okunur.
+        static void SesArabellek(int b)
+        {
+            if (b == 0 || Kilitli) return;
+            var c = AudioSettings.GetConfiguration(); if (c.dspBufferSize > 0 && c.dspBufferSize <= 256) return;
+            c.dspBufferSize = 256; AudioSettings.Reset(c);
+        }
+
         public static string Tani
         {
             get
             {
                 return "basamak " + Basamak + " · MSAA " + QualitySettings.antiAliasing + " · gölge " + QualitySettings.shadows + " " + QualitySettings.shadowResolution + " " + QualitySettings.shadowDistance + " m · aniso "
                     + QualitySettings.anisotropicFiltering + " · kemik " + QualitySettings.skinWeights + " · hedef " + Application.targetFrameRate + " fps · vSync " + QualitySettings.vSyncCount
-                    + " · çözünürlük " + Screen.width + "x" + Screen.height + " · bellek " + SystemInfo.systemMemorySize + " MB · çekirdek " + SystemInfo.processorCount;
+                    + " · çözünürlük " + Screen.width + "x" + Screen.height + " · bellek " + SystemInfo.systemMemorySize + " MB · çekirdek " + SystemInfo.processorCount + " · ses " + AudioSettings.GetConfiguration().dspBufferSize + "/" + AudioSettings.outputSampleRate + " Hz";
             }
         }
 

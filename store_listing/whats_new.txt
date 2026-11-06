@@ -1,4 +1,11 @@
 === UNITY ===
+Bu akşam ayrıca (6 Kasım inceleme turu):
+- Maçta ekranın alt kenarından güçlü smaç kaydırması artık uygulamayı kapatmıyor, oyunu durdurmuyor (ev çubuğu ilk kaydırmada yalnız belirir).
+- Akış bitince kısa, yumuşak bir "söndü" sesi ve tek tık titreşim; altın çizgiler bir anda değil, yavaşça kayboluyor.
+- Vuruş sesi parmakla daha aynı anda gelir (ses gecikmesi kısaldı).
+- Ayarlar'daki "Antrenmanı yeniden oyna" kalktı; aynı ders Antrenman sekmesinde "Temel ders", Nasıl oynanır'da "Temel dersi oyna".
+Nasıl denenir: maçta alttan hızlı yukarı 10 smaç at, uygulama arka plana düşmemeli; üstten aşağı kaydırınca Denetim Merkezi ilk denemede açılmamalı, ikincide açılmalı. Menüde kenar hareketleri her zamanki gibi. Üst üste 4 tam orta ile akışa gir, sonra sıradan bir vuruşla boz: iki notalık inen ses ve çizgilerin sönmesi. Müzik ve alkışta çıtırtı olmamalı.
+
 Bu sürümde yeni: yazılar daha kısa ve daha okunur; maç içi ipucu koyu zeminde.
 
 Bu sürümde yeni:
