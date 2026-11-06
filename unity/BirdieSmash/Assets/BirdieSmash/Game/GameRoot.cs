@@ -369,20 +369,16 @@ namespace BirdieSmash.Game
             string m = L.T(w ? "Birdie Smash · Günün maçını {0}–{1} kazandım, en uzun ralli {2}." : "Birdie Smash · Günün maçı: {0}–{1}, en uzun ralli {2}.", M.sc[0], M.sc[1], M.maxRally)
                 + "\n" + L.T("Sen kaç alırsın?"); Yerel.Paylas(m);
         }
-        // Maçın anı: kayıt ve oynatma Game/MacAni; burada yalnız top işareti ve kart açma/kapama.
-        readonly MacAni ani = new MacAni(); Transform aniTopT;
+        // Maçın anı: kayıt ve oynatma Game/MacAni; burada yalnız oynatmanın topu ve kart açma/kapama. 2026-11-06: beyaz küre
+        // (ani_top) yerine oyunun kendi tüy topu ve izi (ShuttleView), sahte Shuttle'la; kamera zafer yakın çekimi değil oyun kamerası.
+        readonly MacAni ani = new MacAni(); Shuttle aniS;
         public bool AniVar { get { return ani.Var && match != null && match.ogr == null; } }
         public bool AniAktif { get { return ani.Aktif; } }
-        public void AniBaslat() { ani.Baslat(); aniIzlendi = true; Yerel.Hap("tick"); }
-        public void AniDur() { ani.Bitir(); if (aniTopT != null) aniTopT.gameObject.SetActive(false); }
-        Transform AniTop()
-        {
-            if (aniTopT != null) return aniTopT;
-            aniTopT = Kit.Prim(PrimitiveType.Sphere, "ani_top", transform, Vector3.zero, Vector3.one * .09f, Kit.Unlit(Color.white)).transform;
-            var tr = aniTopT.gameObject.AddComponent<TrailRenderer>(); tr.time = .18f; tr.widthMultiplier = .07f; tr.minVertexDistance = .03f;
-            tr.material = Kit.Additive(Color.white); tr.colorGradient = new Gradient { alphaKeys = new[] { new GradientAlphaKey(.5f, 0), new GradientAlphaKey(0, 1) }, colorKeys = new[] { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) } };
-            return aniTopT;
-        }
+        public int AniVurus { get { return ani.Vurus; } }
+        public bool AniSmac { get { return ani.Smac; } }
+        public float AniYavas { get { return ani.Aktif ? ani.YavasK : 0; } }
+        public void AniBaslat() { ani.Baslat(); aniS = new Shuttle { from = "", type = "clear" }; aniIzlendi = true; Yerel.Hap("tick"); }
+        public void AniDur() { ani.Bitir(); aniS = null; }
         bool ustaDavetSayildi, aniIzlendi;
         public bool AniIzlendi { get { return aniIzlendi; } }
         public void UstaDavetGordu() { if (ustaDavetSayildi) return; ustaDavetSayildi = true; PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); PlayerPrefs.Save(); }
@@ -658,7 +654,7 @@ namespace BirdieSmash.Game
                 }
             }
             shuttle.reduce = Ayar.reduce;
-            if (ani.Aktif && ekran == Ekran.Bitti) { if (!ani.Oynat(dt, me, op, AniTop())) AniDur(); shuttle.Show(match, null, 0, false, previewAt); }
+            if (ani.Aktif && ekran == Ekran.Bitti) { bool tv; if (!ani.Oynat(dt, me, op, aniS, Ayar.reduce, out tv)) { AniDur(); tv = false; } shuttle.Show(match, tv ? aniS : null, dt, false, previewAt); }
             else
             {
                 if (ani.Aktif) AniDur();
@@ -703,6 +699,9 @@ namespace BirdieSmash.Game
         static readonly float ZAFER_TV = Mathf.Tan(20 * Mathf.Deg2Rad);
         void ZaferKamera(float dt, ref Vector3 p, ref Quaternion q, ref float tv)
         {
+            // Maçın anı oynarken oyun kamerası (2026-11-06): ralli tüm kortta geçer, yakın çekimde oyuncular ve top kadrajdan
+            // çıkıyordu. Bitiren vuruşun ağır çekiminde görüş %14 daralır (hafif yaklaşma); zafer durumu korunur, anı bitince kesmeyle döner.
+            if (ani.Aktif) { tv *= Mathf.Lerp(1, .86f, Mathf.SmoothStep(0, 1, ani.YavasK)); return; }
             if (!ZaferVar) { zaferK = 0; me.zaferBak = null; zaferAn0 = -1; return; }
             ZaferInis();
             if (zaferK <= 0) zaferYon = match.me.x >= Court.MID ? 1 : -1;   // oyuncunun bulunduğu yanın dışından: arkasında kort kalır

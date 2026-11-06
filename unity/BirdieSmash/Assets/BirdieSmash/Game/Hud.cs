@@ -956,11 +956,25 @@ namespace BirdieSmash.Game
         void Over(Match M)
         {
             // Maçın anı oynarken kart çizilmez; tek satır etiket ve tüm ekran "dokun, geç" (Game/MacAni).
+            // 2026-11-06 (yasin: "maçın anı görseli istenen gibi gözükmüyor"; öneri artifact'i YAP): çıplak tek satır yerine sinema
+            // şeritleri (üst/alt ince koyu bant, ekranın %7'si, güvenli alanın içine taşmaz), sol üstte neyin özel olduğu
+            // ("Maçın anı · 14 vuruşluk ralli") ve bitiş ağır çekiminde smaçla bittiyse tek kelime "Smaç!". Alt satır yalnız
+            // "Geçmek için dokun" (soluk). Hareketi azaltta ağır çekim yok, "Smaç!" yine görünür (renkle değil yazıyla).
             if (root.AniAktif)
             {
-                float u0 = Mathf.Min(W / 390f, H / 844f); var st = Stil(mid, Mathf.RoundToInt(15 * u0 * Ayar.YaziK), FontStyle.Bold);
-                string et = L.T("Maçın anı · geçmek için dokun");
-                Konturlu(new Rect(16 * u0, H - bot - 70 * u0, W - 32 * u0, 40 * u0), et, st, Color.white, Mathf.Max(1.5f, 2 * u0));
+                float u0 = Mathf.Min(W / 390f, H / 844f), bant = Mathf.Max(H * .07f, top + 28 * u0);
+                Fill(new Rect(-W, 0, W * 3, bant), new Color(A_INK.r, A_INK.g, A_INK.b, .92f));
+                Fill(new Rect(-W, H - Mathf.Max(H * .07f, bot + 28 * u0), W * 3, H), new Color(A_INK.r, A_INK.g, A_INK.b, .92f));
+                var st = Stil(mid, Mathf.RoundToInt(15 * u0 * Ayar.YaziK), FontStyle.Bold); st.alignment = TextAnchor.MiddleLeft;
+                string et = L.T("Maçın anı") + (root.AniVurus > 1 ? " · " + L.T("{0} vuruşluk ralli", root.AniVurus) : "");
+                Konturlu(new Rect(lx, bant + 10 * u0, rx - lx, 30 * u0), et, st, Color.white, Mathf.Max(1.5f, 2 * u0));
+                if (root.AniSmac && root.AniYavas > 0)
+                {
+                    var sb = Stil(mid, Mathf.RoundToInt(34 * u0 * Ayar.YaziK), FontStyle.Bold); var c = Kit.Hex("#d8ff5a"); c.a = Mathf.Clamp01(root.AniYavas * 1.5f);
+                    Konturlu(new Rect(0, H * .3f, W, 60 * u0), L.T("Smaç!"), sb, c, Mathf.Max(2, 3 * u0));
+                }
+                var sa = Stil(mid, Mathf.RoundToInt(13 * u0 * Ayar.YaziK), FontStyle.Normal);
+                Konturlu(new Rect(16 * u0, H - Mathf.Max(H * .07f, bot + 28 * u0) - 34 * u0, W - 32 * u0, 28 * u0), L.T("Geçmek için dokun"), sa, new Color(1, 1, 1, .75f), Mathf.Max(1, 1.5f * u0));
                 if (GUI.Button(new Rect(0, 0, W, H), GUIContent.none, GUIStyle.none)) root.AniDur();
                 return;
             }
