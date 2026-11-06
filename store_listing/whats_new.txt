@@ -1,4 +1,11 @@
 === UNITY ===
+Bu gece (6 Kasım 22:30 inceleme turu):
+- Sonsuz rallide eski rekorunu geçtiğin vuruşta "Yeni rekor!" yazısı, yükselen iki nota ve titreşim; top hızlanınca kısa bir tık sesi ve hafif titreşim.
+- Sonsuz ralli sayacı sade: ralli sırasında yalnız vuruş sayın ve rekorun ("12 vuruş · Rekor 20"); rekoru geçince "Yeni rekor" yazar.
+- Kortta aynı anda en çok iki yazı çıkar; sayının neden bittiği (dışarı, ıska nedeni) küçük vuruş etiketlerinin altında kaybolmaz.
+- Oyun şimdilik yalnız iPhone için (iPad'de iPhone görünümüyle açılır).
+Nasıl denenir: Antrenman › Sonsuz ralli'yi bir kez oyna (rekor olsun), sonra tekrar oyna ve rekoru geç: geçtiğin anda yazı, ses ve titreşim tek sefer gelmeli. Her 5 vuruşta "Hızlanıyor" ile birlikte tık sesi duyulmalı. Normal maçta uzun rallilerde üst üste en çok iki yazı görmelisin.
+
 Bu akşam ayrıca (6 Kasım inceleme turu):
 - Maçta ekranın alt kenarından güçlü smaç kaydırması artık uygulamayı kapatmıyor, oyunu durdurmuyor (ev çubuğu ilk kaydırmada yalnız belirir).
 - Akış bitince kısa, yumuşak bir "söndü" sesi ve tek tık titreşim; altın çizgiler bir anda değil, yavaşça kayboluyor.

@@ -31,7 +31,7 @@ namespace BirdieSmash.Game
     {
         public GameRoot root; public bool ayrinti;
         GUIStyle big, mid, small, tiny, btn, btnP, chip, chipOn, card, left, leftB, btnD; float u, fu;
-        class Float { public string t; public Vector3 w; public float a; public Color c; public float size; public bool sabit; }
+        class Float { public string t; public Vector3 w; public float a; public Color c; public float size; public bool sabit; public int onem; }
         readonly List<Float> floats = new List<Float>(); readonly List<Rect> blocks = new List<Rect>();
         string ogrMsg; float ogrMsgT;
         // Biçim önbelleği (2026-10-26, 120 Hz önerisinin ön şartı "60'ta uzun kare sıfır"): OnGUI her karede onlarca
@@ -106,7 +106,23 @@ namespace BirdieSmash.Game
         // (büyük kalın rakam için ≥ 45 geçer; eski mercan −42 geçmiyordu), duvar üstünde −62,6. Kutlama kıvılcımlarının mercanı
         // turuncu oldu: rakip rengi kutlamada görünmesin.
         public const string RAKIP_HUD = "#E99BFF";
-        public void Say(string t, Vector3 world, Color c, float size = 1, bool sabit = false) { if (string.IsNullOrEmpty(t)) return; floats.Add(new Float { t = t, w = world, c = c, size = size, sabit = sabit }); if (floats.Count > 6) floats.RemoveAt(0); }
+        // Kortta aynı anda en çok 2 yüzen yazı, öncelikli (2026-11-06 Ar-Ge 22:03 #3; eski kural: 6'ya kadar, öncelik yok). Bir
+        // rallide vuruş etiketi, Aldattın!, ıska nedeni ve sayı nedeni üst üste binip topun önünü kapatıyor, en önemli bilgiyi
+        // ("neden sayı kaybettim") gömüyordu. Öncelik: 3 sayı sonucu/görev > 2 Aldattın, Kurtardın, ıska nedeni, rekor > 1 vuruş
+        // etiketi ve ipucu. Doluyken yeni yazı en düşüğünden (eşitse en eskisinden) düşük değilse onun yerine geçer, düşükse düşer.
+        // Core zaten aynı önemdeki yazıları seyreltiyor (Match.Say); bu kural yalnız farklı kaynakların birikmesini keser.
+        const int YAZI_EN_COK = 2;
+        public void Say(string t, Vector3 world, Color c, float size = 1, bool sabit = false, int onem = -1)
+        {
+            if (string.IsNullOrEmpty(t)) return; if (onem < 0) onem = sabit ? 3 : 1;
+            if (floats.Count >= YAZI_EN_COK)
+            {
+                int en = 0; for (int i = 1; i < floats.Count; i++) if (floats[i].onem < floats[en].onem) en = i;   // eşitte ilk (en eski) kalır
+                if (onem < floats[en].onem) return;
+                floats.RemoveAt(en);
+            }
+            floats.Add(new Float { t = t, w = world, c = c, size = size, sabit = sabit, onem = onem });
+        }
         public void Ogr(string t) { ogrMsg = t; ogrMsgT = 1.8f; }
         public bool Blocks(Vector2 guiPos) { if (perdeEvre > 0) return true; foreach (var r in blocks) if (r.Contains(guiPos)) return true; return false; }
         public void MacBasi() { pop[0] = pop[1] = 0; cams.Clear(); hawk = null; flash = 0; floats.Clear(); }
@@ -723,6 +739,14 @@ namespace BirdieSmash.Game
         }
         // Sonsuz ralli sayacı: vuruş, kademe (1'den), rekor. Kademe sayıyla yazılır, hızlanma yalnız hissedilmesin.
         static string SonsuzSayac(Training o) { return L.T("{0} vuruş · Hız {1} · Rekor {2}", o.isabet, Sonsuz.Kademe(o.isabet) + 1, Mathf.Max(GameRoot.SonsuzRekor, o.isabet)); }
+        // Ralli sırasındaki sayaç (2026-11-06 Ar-Ge 22:03 #4, küçültülmüş): oyuncunun tek sorusu "kaçtayım"; "Hız" sayısı kalktı
+        // (kademe atlayınca "Hızlanıyor" yazısı + ses + titreşim söylüyor), rekor geçilince sayı sessizce eşitlenmek yerine
+        // "Yeni rekor" yazar. Duraklat üç bilgiyi tutar (SonsuzSayac).
+        static string SonsuzSayacKisa(Training o)
+        {
+            int r = GameRoot.SonsuzRekor;
+            return r <= 0 ? L.T("{0} vuruş", o.isabet) : o.isabet > r ? L.T("{0} vuruş · Yeni rekor", o.isabet) : L.T("{0} vuruş · Rekor {1}", o.isabet, r);
+        }
         float OgrKart(Match M, float y)
         {
             var o = M.ogr; var a = M.OgrA(); if (a == null) return y;
@@ -730,7 +754,7 @@ namespace BirdieSmash.Game
             string ilr = a.drill ? L.T(" · Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : a.bilgi != null ? "" : " · " + new string('●', o.n) + new string('○', Match.OGR_TEKRAR - o.n) + " " + o.n + "/" + Match.OGR_TEKRAR;
             string say = L.T("Antrenman {0}/{1}{2}", o.i + 1, o.liste.Count, ilr);
             // 2026-10-26 antrenman görevi: sayaç top/isabet ve yıldız eşikleri (sayıyla; yıldız simgesi tek başına okunmaz)
-            if (a.dril == Sonsuz.Tanim) say = SonsuzSayac(o);
+            if (a.dril == Sonsuz.Tanim) say = SonsuzSayacKisa(o);
             else if (a.dril != null) say = L.T("Görev · Top {0}/{1} · Hedefte {2} · Yıldız eşikleri {3}", Mathf.Min(o.dene, a.dril.top), a.dril.top, o.isabet, string.Join("/", System.Array.ConvertAll(a.dril.esik, e => e.ToString())));
             string met = (o.izsiz ? L.T("Bir daha, bu sefer iz yok. ") : "") + (a.servis == null && a.bilgi == null && !a.drill && a.dril == null && !o.dur ? L.T("Top sana gelince oyun duracak. ") : "") + L.T(a.met);
             if (leftWrap == null || leftWrapTaban != left) { leftWrap = new GUIStyle(left) { wordWrap = true }; leftWrapTaban = left; } var ws = leftWrap; var ns = Stil(ws, Mathf.RoundToInt(11 * fu));
@@ -794,7 +818,7 @@ namespace BirdieSmash.Game
             float h = 8 * u + BH + hm + (bant ? 30 * u : 0) + (canli != null ? 22 * u : 0) + 8 * u;
             var r = new Rect(x, y, w, h); blocks.Add(r); Fill(r, new Color(9 / 255f, 16 / 255f, 17 / 255f, .62f));
             float yy = y + 8 * u, tw = iw - bw - bitW - 12 * u;
-            string sayac = a.dril == Sonsuz.Tanim ? SonsuzSayac(o) : a.dril != null ? L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(o.dene, a.dril.top), a.dril.top, o.isabet) : a.drill ? L.T("Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : o.n + "/" + Match.OGR_TEKRAR;
+            string sayac = a.dril == Sonsuz.Tanim ? SonsuzSayacKisa(o) : a.dril != null ? L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(o.dene, a.dril.top), a.dril.top, o.isabet) : a.drill ? L.T("Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : o.n + "/" + Match.OGR_TEKRAR;
             string bas = L.T(a.bas); var bs = Sigdir(leftB, bas, tw); Etk(new Rect(x + 12 * u, yy, tw, BH * .58f), bas, bs);
             var ss = Sigdir(Stil(left, Mathf.RoundToInt(11 * fu)), sayac, tw); Etk(new Rect(x + 12 * u, yy + BH * .55f, tw, BH * .45f), sayac, ss);
             if (Button(new Rect(x + w - 12 * u - bitW - bw - 6 * u, yy, bw, BH), "?")) ogrDetay = true;

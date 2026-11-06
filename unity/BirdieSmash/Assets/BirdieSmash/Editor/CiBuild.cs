@@ -111,6 +111,11 @@ namespace BirdieSmash.EditorTools
             // yüklenemez. Flutter hattı (ios/Runner.xcodeproj) zaten 15.0, iki hat aynı alt sınırı taşır.
             PlayerSettings.iOS.targetOSVersionString = "15.0";
             PlayerSettings.iOS.requiresFullScreen = true;
+            // Yalnız iPhone (2026-11-06 Ar-Ge 22:03 #1): Unity varsayılanı evrensel ikiliydi; iPad'de Kadraj tasarlanmış düzen değil,
+            // son çare kaydırmayla çiziyor ve mağaza 13" iPad karesi istiyordu. Apple yayınlanmış uygulamadan cihaz ailesi kaldırmaya
+            // izin vermez, eklemeye izin verir: 1.0 iPhone ile çıkar, iPad sahibi uyumluluk modunda aynı kadrajı oynar. iPad düzeni
+            // ayrı karar (o zaman bu satır + iPad kareleri). Flutter yolu da aynı: ios/Runner TARGETED_DEVICE_FAMILY = 1.
+            PlayerSettings.iOS.targetDevice = iOSTargetDevice.iPhoneOnly;
             PlayerSettings.iOS.appleEnableAutomaticSigning = false;   // imza fastlane match'ten; Xcode otomatik imzaya kalkışmasın
             PlayerSettings.statusBarHidden = true;
             // Oyuncunun kendi müziği susmasın (2026-10-30 menü müziği): Ambient oturum; menü müziği başka ses varken çalmaz (Yerel).

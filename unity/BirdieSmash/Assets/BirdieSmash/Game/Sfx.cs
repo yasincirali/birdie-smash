@@ -371,6 +371,9 @@ namespace BirdieSmash.Game
         public void Split() { Ton(1200, .04f, "square", .03f); }
         public void Perfect(int pstreak) { Ton(660 * Mathf.Pow(2, Mathf.Min(pstreak, 12) / 12f), .12f, "sine", .06f, .02f); }
         public void Akis() { Arpej(523, new[] { 0, 2, 4, 7, 9, 12 }, .25f, .05f, .06f); }
+        // Sonsuz ralli (2026-11-06 Ar-Ge 22:03 #2): rekoru geçtiğin an yükselen iki nota; kademe atlayınca kısa yükselen tık.
+        public void Rekor() { Ton(880, .1f, "triangle", .05f); Ton(1320, .18f, "triangle", .055f, .08f); }
+        public void Hizlandi() { Ton(990, .04f, "square", .025f); Ton(1320, .05f, "square", .025f, .05f); }
         public void AkisSondu() { Arpej(784, new[] { 0, -5 }, .16f, .028f, .09f); }   // Akış arpejinin tersi, kısık: ceza değil, "söndü" (2026-11-06)
         public void Gorev() { Arpej(660, new[] { 0, 4, 7, 12, 16 }, .18f, .05f, .07f); }
         public void OgrTamam() { Arpej(660, new[] { 0, 4, 7 }, .14f, .05f, .06f); }
