@@ -24,26 +24,34 @@ namespace BirdieSmash.Game
         public void DrilKartAc(string id) { var once = gez.sekme; kartDril = id; gez.Ac(Gezinti.DRIL); Uygula(once, true); }
         public void GunlukAc() { var once = gez.sekme; gez.Ac(Gezinti.GUNLUK); Uygula(once, true); }
 
+        // 2026-11-06 13:40 turu (fikir 2, oyuncu gözü YAP; defter "Antrenman: önce oyna, sonra çalış"): üstte iki giriş yan yana
+        // (Sonsuz ralli + rekor, Temel ders), altında "Görevler ★ n/63" ve üç saha sekmesi; yalnız seçili sahanın görevleri (21 → 7
+        // satır). Son seçilen saha tuytop_antrenman_saha'da (cihaz tercihi). Görev öneren yerler (maç sonu, Dril.Oner) AntrenmanGrup
+        // ile doğru sahayı açar. Eski 3 satırlık açıklama paragrafı kalktı: aynı kural görev kartında ("{0} top · skor yok", ödül satırı).
+        const string SAHA_ANAHTAR = "tuytop_antrenman_saha";
+        int antSaha = -1;
+        public void AntrenmanGrup(string grup) { int g = System.Array.IndexOf(Dril.GRUP, grup); if (g >= 0) { antSaha = g; PlayerPrefs.SetInt(SAHA_ANAHTAR, g); } }
         void AntrenmanKur(VisualElement p)
         {
             SayfaBasi(p, "Antrenman");
             var sv = Kaydirma(p); sv.AddToClassList("govde-kaydir"); var c = sv.contentContainer; c.AddToClassList("sekme-icerik");
             var pr = Ayar.ilerleme;
+            if (antSaha < 0) antSaha = Mathf.Clamp(PlayerPrefs.GetInt(SAHA_ANAHTAR, 0), 0, Dril.GRUP.Length - 1);
+            // Üstte iki giriş: Sonsuz ralli (ödülsüz, yalnız rekor) ve Temel ders (durumu: bitti ya da 15 adım). Büyük yazıda alt alta.
+            var ust = Satir("ant-cift"); c.Add(ust);
+            int rk = GameRoot.SonsuzRekor;
+            ust.Add(Dugme(L.T("Sonsuz ralli"), () => root.SonsuzOyna(), "ikincil-kart", rk > 0 ? L.T("Rekorun {0} vuruş", rk) : L.T("Kaçırana kadar, her 5 vuruşta hızlanır")));
+            ust.Add(Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", Ayar.antrenman ? "✓ " + L.T("Bitti") : L.T("15 adım, skor yok")));
             var bas = Satir("arali"); c.Add(bas);
             bas.Add(Yazi(L.T("Görevler"), 13, "etiket")); bas.Add(YildizSayac(pr.AntrenmanYildiz, Dril.ToplamYildiz, 15));
-            // Temel ders: ilk açılıştaki antrenmanın tamamı (eski "Tam antrenman" kartı)
-            var td = Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", L.T("Vuruş, servis, nefes") + " · " + L.T("15 adım, skor yok")); td.AddToClassList("tam-genislik"); c.Add(td);
-            // 2026-11-06 Sonsuz ralli (ek tur fikri 6): Temel dersin hemen altında, görevlerden önce; ödülsüz, yalnız rekor.
-            int rk = GameRoot.SonsuzRekor;
-            var sn = Dugme(L.T("Sonsuz ralli"), () => root.SonsuzOyna(), "ikincil-kart", rk > 0 ? L.T("Rekorun {0} vuruş", rk) + " · " + L.T("kaçırana kadar") : L.T("Kaçırana kadar, her 5 vuruşta hızlanır"));
-            sn.AddToClassList("tam-genislik"); c.Add(sn);
-            c.Add(Yazi(L.T("Her görev 12 top, skor yok. Antrenör topu besler, sen tek bir vuruşu çalışırsın. Yıldız en iyi sonucundur, geri alınmaz."), 13, "soluk"));
-            // 2026-10-30 vuruş laboratuvarı: görevler kortta çalıştığı yere göre gruplanır (arka saha, file önü, orta saha).
+            var seg = Satir("segment"); c.Add(seg);
             for (int g = 0; g < Dril.GRUP.Length; g++)
             {
-                c.Add(Grup(L.T(Dril.GRUP_AD[g])));
-                foreach (var d in Dril.Liste) if (d.grup == Dril.GRUP[g]) c.Add(DrilSatir(d));
+                int gg = g; int y = 0, n = 0; foreach (var d in Dril.Liste) if (d.grup == Dril.GRUP[g]) { n++; y += pr.DrilYildiz(d.id); }
+                var cp = Cip(L.T(Dril.GRUP_AD[g]), antSaha == g, () => { if (antSaha == gg) return; Yerel.Hap("tick"); AntrenmanGrup(Dril.GRUP[gg]); Uygula(gez.sekme, false); }, y + "/" + n * Dril.YILDIZ);
+                cp.AddToClassList("segment-cip"); var eb = cp.userData as ErisimBilgi; if (eb != null) eb.rol = "sekme"; seg.Add(cp);
             }
+            foreach (var d in Dril.Liste) if (d.grup == Dril.GRUP[antSaha]) c.Add(DrilSatir(d));
             AldatmaBolum(c);   // 2026-10-26 aldatıcı vuruşlar: kilitliler de görünür, ne açtığıyla (Game/UI/AldatmaListe)
             c.Add(Bosluk(24));
         }
@@ -65,8 +73,8 @@ namespace BirdieSmash.Game
                 gecYazi = gec.Count > 1 ? L.T("Son {0} oturum: %{1} → %{2}", gec.Count, gec[0], gec[gec.Count - 1]) : L.T("Son oturum: %{0}", gec[0]);
                 var gy = Yazi(gecYazi, 12, "soluk"); gy.style.marginTop = 4; gy.pickingMode = PickingMode.Ignore; orta.Add(gy);
             }
-            string durum = L.T(y >= 3 ? "Tamam" : y > 0 ? "Devam" : "Yeni");
-            r.Add(Yazi(durum, 12, "durum-kilit"));   // 2026-11-06 unslop: turuncu durum yazıları her satırda vurgu yapıyordu; durum yıldız ve yazıyla okunur, renk soluk
+            // 2026-11-06 13:40: "Yeni/Devam/Tamam" yazısı kalktı (21 satırın hepsinde aynı kelime bilgi taşımıyordu); durum yıldız + "n/3".
+            string durum = L.T(y >= 3 ? "Tamam" : y > 0 ? "Devam" : "Yeni");   // yalnız ekran okuyucu için
             Erisim.Etiket(kart, L.T("Görev") + ", " + L.T(d.ad) + ", " + L.T(d.ogretir) + ", " + L.T("{0}/3 yıldız", y) + (gecYazi != null ? ", " + gecYazi : "") + ", " + durum, "dugme");
             return kart;
         }

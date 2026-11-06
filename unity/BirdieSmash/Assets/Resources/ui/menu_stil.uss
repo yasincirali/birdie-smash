@@ -610,3 +610,8 @@
 .kupa-hucre { width: 48px; height: 48px; align-items: center; justify-content: center; border-radius: 14px; }
 .kupa-hucre:active { scale: 0.94 0.94; }
 .kupa-hucre--yok { opacity: 0.55; }
+
+/* 2026-11-06 13:40 Antrenman: üstte iki giriş yan yana (Sonsuz ralli, Temel ders); büyük yazıda alt alta. */
+.ant-cift { flex-direction: row; margin: 0 -4px 4px -4px; }
+.buyuk-yazi .ant-cift { flex-direction: column; }
+.buyuk-yazi .ant-cift .ikincil-kart { flex-basis: auto; }
