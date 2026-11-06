@@ -246,12 +246,38 @@ namespace BirdieSmash.Game
             { int si = System.Array.IndexOf(Ls, Ayar.target); if (si >= 0) c.Add(Yazi(L.T(Lb[si]), 12, "soluk")); }
             if (!saha) return;
             c.Add(Grup(L.T("Saha")));
-            var s1 = Satir(); var s2 = Satir(); c.Add(s1); c.Add(s2);
+            // 2026-11-07 inceleme (fikir 02:06 #5, defter): saha 2×2 yazı çipiydi ("Okul (ahşap)" parantezli) ve sahanın neye
+            // benzediğini söylemiyordu. Şimdi tek sıra dört çip; her birinde sahanın kendi renkleriyle çizilmiş küçük kort (çevre,
+            // mat, file çizgisi; okulda tahta çizgileri, gecede yıldız) ve kısa ad. Seçili çip turuncu + ✓ (yalnız renk değil).
+            // Doku yok: renkler CourtView.SAHA'dan, saha rengi değişince önizleme de değişir. Dar ekranda/büyük yazıda Sigdir küçültür.
+            var s1 = Satir(); c.Add(s1);
             for (int i = 0; i < 4; i++)
             {
-                string id = CourtView.SIRA[i];
-                (i < 2 ? s1 : s2).Add(Cip(L.T(CourtView.SAHA[id].ad), Ayar.saha == id, () => { Ayar.saha = id; Ayar.Kaydet(); root.SahaDegisti(); Degisti(); }));
+                string id = CourtView.SIRA[i]; var sh = CourtView.SAHA[id];
+                var d = Cip(L.T(SAHA_KISA[i]), Ayar.saha == id, () => { Ayar.saha = id; Ayar.Kaydet(); root.SahaDegisti(); Degisti(); });
+                d.style.paddingLeft = d.style.paddingRight = 4f; d.style.minHeight = 44f;
+                Erisim.Etiket(d, L.T(sh.ad), "dugme", Ayar.saha == id, false);
+                var ic = d.Q(null, "cip-ic"); var alt = new VisualElement(); alt.style.flexDirection = FlexDirection.Row; alt.style.alignItems = Align.Center; alt.pickingMode = PickingMode.Ignore;
+                while (ic.childCount > 0) { var ch = ic[0]; ic.RemoveAt(0); alt.Add(ch); }
+                ic.style.flexDirection = FlexDirection.Column; ic.Add(MiniSaha(sh)); ic.Add(alt);
+                Sigdir(d); s1.Add(d);
             }
+        }
+        static readonly string[] SAHA_KISA = { "Salon", "Turnuva", "Okul", "Gece" };   // CourtView.SIRA sırası; uzun ad erişim etiketinde
+        static VisualElement MiniSaha(Saha sh)
+        {
+            var cev = new VisualElement(); cev.pickingMode = PickingMode.Ignore; cev.style.width = 44f; cev.style.height = 26f; cev.style.marginBottom = 4f;
+            cev.style.backgroundColor = Kit.Hex(sh.cevre); cev.style.borderTopLeftRadius = cev.style.borderTopRightRadius = cev.style.borderBottomLeftRadius = cev.style.borderBottomRightRadius = 5f;
+            cev.style.alignItems = Align.Center; cev.style.justifyContent = Justify.Center; cev.style.overflow = Overflow.Hidden;
+            var kort = new VisualElement(); kort.pickingMode = PickingMode.Ignore; kort.style.width = 34f; kort.style.height = 18f; kort.style.backgroundColor = Kit.Hex(sh.kort);
+            var beyaz = new Color(1, 1, 1, .75f);
+            kort.style.borderTopWidth = kort.style.borderBottomWidth = kort.style.borderLeftWidth = kort.style.borderRightWidth = 1f;
+            kort.style.borderTopColor = kort.style.borderBottomColor = kort.style.borderLeftColor = kort.style.borderRightColor = beyaz;
+            if (sh.tahta) for (int k = 1; k < 4; k++) { var t = new VisualElement(); t.pickingMode = PickingMode.Ignore; t.style.position = Position.Absolute; t.style.left = 0f; t.style.right = 0f; t.style.top = k * 4f; t.style.height = 1f; t.style.backgroundColor = new Color(0, 0, 0, .18f); kort.Add(t); }
+            var file = new VisualElement(); file.pickingMode = PickingMode.Ignore; file.style.position = Position.Absolute; file.style.top = 0f; file.style.bottom = 0f; file.style.left = 16f; file.style.width = 1f; file.style.backgroundColor = beyaz; kort.Add(file);
+            cev.Add(kort);
+            if (sh.ad == "Gece") for (int k = 0; k < 2; k++) { var y = new VisualElement(); y.pickingMode = PickingMode.Ignore; y.style.position = Position.Absolute; y.style.width = y.style.height = 2f; y.style.top = 2f; y.style.left = 5f + k * 30f; y.style.backgroundColor = new Color(1, .95f, .7f, .9f); cev.Add(y); }
+            return cev;
         }
 
         // Zorluk çipleri (2026-11-05, Ayar.zorluk notu): Hızlı maç ve kariyer kartı aynı satırı kullanır (Ayarlar 2026-11-07'de çıktı). Dört kısa ad tek

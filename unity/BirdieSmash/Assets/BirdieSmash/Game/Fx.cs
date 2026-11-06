@@ -117,6 +117,16 @@ namespace BirdieSmash.Game
             for (int i = 0; i < m.cr.Length; i++) { var l = Kit.Line("catlak", transform, catlakM, false, true); l.widthMultiplier = .03f; l.positionCount = 2; l.SetPosition(0, m.p); l.SetPosition(1, m.p + new Vector3(Mathf.Cos(m.cr[i]), 0, Mathf.Sin(m.cr[i])) * 18 / 28f); m.catlak[i] = l; }
             marks.Add(m);
         }
+        // Gölgelendirici ısıtma (2026-11-07, Ar-Ge 02:06 #1): üç parçacık sistemi oyunda ilk kez ilk sert vuruşta
+        // çiziliyordu; Metal yeni gölgelendirici varyantını ilk çizimde derlediği için takılma tam ilk smaçta geliyordu.
+        // Maç perdesi kapalıyken kameranın önüne her sistemden alfa 0, .05 sn ömürlü tek parçacık bırakılır: GPU bir kez
+        // çizer (varyant derlenir), görüntüde hiçbir şey görünmez; akıcılık kapısı perdeyi zaten bu kareler bitene dek tutar.
+        public void Isit()
+        {
+            if (cam == null) return;
+            var ep = new ParticleSystem.EmitParams { position = cam.transform.position + cam.transform.forward * 3, applyShapeToPosition = false, velocity = Vector3.zero, startColor = new Color32(255, 255, 255, 0), startLifetime = .05f, startSize = .1f };
+            tuy.Emit(ep, 1); kivilcim.Emit(ep, 1); cizgi.Emit(ep, 1);
+        }
         public void Temizle()
         {
             foreach (var m in marks) { Destroy(m.leke.gameObject); Destroy(m.halka.gameObject); foreach (var l in m.catlak) Destroy(l.gameObject); }

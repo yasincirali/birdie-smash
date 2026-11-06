@@ -117,7 +117,7 @@ namespace BirdieSmash.Core
         public bool easy = true, reduce, ilk, between, split, splitPending, over, matchDone, hint, deceive, kisaBekle, flow;
         public Action svPending;
         // maç sonu istatistiği (HTML oInfo)
-        public int smashes, kills, perfects, deceives, splits, tepeden, saves, outsLeft, slices, smacSayi, outsBen, smacKarsila, dropSayi, rakipSmacSayi, rakipFileSayi;   // smacKarsila: karşılanan rakip smacı; dropSayi: drop ile alınan sayı (kariyer görevleri)   // outsBen: dışarı giden kendi vuruşum (servis hariç), maç sonu ipucu   // rakipSmac/FileSayi: rakibin kendi vuruşuyla aldığı sayı (Ozet.Ipucu, 2026-11-07)
+        public float enHizliSmac; public int smashes, kills, perfects, deceives, splits, tepeden, saves, outsLeft, slices, smacSayi, outsBen, smacKarsila, dropSayi, rakipSmacSayi, rakipFileSayi;   // smacKarsila: karşılanan rakip smacı; dropSayi: drop ile alınan sayı (kariyer görevleri)   // outsBen: dışarı giden kendi vuruşum (servis hariç), maç sonu ipucu   // rakipSmac/FileSayi: rakibin kendi vuruşuyla aldığı sayı (Ozet.Ipucu, 2026-11-07)
         bool nefesUyari, nefesIlk, opUyari, rekorBuMac;
         // hakemler (görünüm okur): baş hakemin el hareketi süresi, kime, servis el değişti mi; servis hakeminin yönü
         public float hakemT, hakemT0 = 1.4f, sjT; public string hakemYon, sjYon; public bool hakemSO;
@@ -601,7 +601,10 @@ namespace BirdieSmash.Core
             {
                 perfects++; pstreak++; Emit(Ev.Perfect, "me", type, hx, hy, hz, pstreak); energy = Math.Min(1, energy + .34f * GS.enerji); if (!reduce) freeze = Math.Max(freeze, .06f);
                 if (pstreak == GS.akis && !flow) { flow = true; Say(null, "flow", Court.MID, Court.NET, 2, "AKIŞ", 3); Emit(Ev.Flow, "me"); }
-                Say("me", type, hx, hy, hz, type == "jump" ? "SIÇRAYARAK SMAÇ" : type == "smash" ? "SMAÇ!" : type == "kill" ? "FİLE VURUŞU" : pstreak > 1 ? "Tam orta ×" + pstreak : (bh && (type == "clear" || type == "drive") ? "Backhand, tam orta" : "Tam orta"), (type == "jump" || type == "smash" || type == "kill" || pstreak >= 3) ? 2 : 1);
+                // Smaç hızı (2026-11-07 inceleme, fikir 02:06 #3): mükemmel smaç etiketi çıkış hızını da söyler ("SMAÇ! · 187 km/s").
+                // Yeni yazı yok, var olan etikete ek; birim Dril ile aynı (v0 m/s × 3,6). Raket gücü, sıçrama ve tepeden vuruş sayıya yansır.
+                string smHiz = type == "jump" || type == "smash" ? " · " + (int)Math.Round(Math.Sqrt(vx * vx + vy * vy + vz * vz) * 3.6) + " km/s" : "";
+                Say("me", type, hx, hy, hz, type == "jump" ? "SIÇRAYARAK SMAÇ" + smHiz : type == "smash" ? "SMAÇ!" + smHiz : type == "kill" ? "FİLE VURUŞU" : pstreak > 1 ? "Tam orta ×" + pstreak : (bh && (type == "clear" || type == "drive") ? "Backhand, tam orta" : "Tam orta"), (type == "jump" || type == "smash" || type == "kill" || pstreak >= 3) ? 2 : 1);
             }
             else { pstreak = 0; if (flow) { flow = false; Say(null, "flow", Court.MID, Court.NET, 2, "Akış bitti"); } if (q == "poor") Say("me", type, hx, hy, hz, "Sıyırdın"); }
             if (I.uzan) { Yor(.08f); if (++uzanSay <= 3) Say("me", "lunge", hx, hy, hz, "Uzandın!"); }
@@ -798,6 +801,8 @@ namespace BirdieSmash.Core
             }
             if (winner == "me" && s != null && s.from == "me" && s.type == "smash") smacSayi++;
             if (winner == "me" && s != null && s.from == "me" && s.type == "drop") dropSayi++;
+            // En hızlı sayı smacı (km/s, maç sonu Ayrıntılar + kişisel rekor tuytop_smac_rekor; 2026-11-07).
+            if (winner == "me" && s != null && s.from == "me" && (s.type == "smash" || s.type == "jump")) enHizliSmac = Math.Max(enHizliSmac, (float)Math.Round(s.v0 * 3.6f));
             // Yenilgi ipucu için rakibin sayıyı nasıl aldığı (2026-11-07 inceleme, fikir 00:03 #2 küçültülmüş: iki kova, imza ayrı sayılmaz;
             // imza vuruşları da smaç/drop türüyle düşer). s.from == "op" = rakibin topu kortuma düştü (dışarı ya da benim hatam sayılmaz).
             if (winner == "op" && s != null && s.from == "op" && !s.serve)

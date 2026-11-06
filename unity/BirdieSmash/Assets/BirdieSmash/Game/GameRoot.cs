@@ -418,6 +418,13 @@ namespace BirdieSmash.Game
             var bitenler = new List<string>(); foreach (var g in M.gorevler) if (g.bitti) bitenler.Add(L.Cumle(g.ad));
             bittiBilgi = L.T("Rakip {0} · Görev {1}/3 ({2}) · En uzun ralli {3} · {4} smaç · {5} file vuruşu · {6} mükemmel · {7} aldatma · {8} split step · {9} tepeden · {10} uzanma · {11} kez dışarıyı bıraktın",
                 M.RakipAd(false), M.gorevBitti, bitenler.Count > 0 ? string.Join(", ", bitenler.ToArray()) : L.T("yok"), M.maxRally, M.smashes, M.kills, M.perfects, M.deceives, M.splits, M.tepeden, M.saves, M.outsLeft);
+            // En hızlı sayı smacı ve kişisel rekor (2026-11-07 inceleme, fikir 02:06 #3): Ayrıntılar'a tek satır; maç kartına yeni yazı yok.
+            if (M.enHizliSmac > 0 && M.ogr == null)
+            {
+                int hz = (int)M.enHizliSmac, eski = PlayerPrefs.GetInt("tuytop_smac_rekor", 0); bool rekor = hz > eski && eski > 0;
+                if (hz > eski) { PlayerPrefs.SetInt("tuytop_smac_rekor", hz); PlayerPrefs.Save(); }
+                bittiBilgi = L.T("En hızlı smaç {0} km/s", hz) + (rekor ? " · " + L.T("Yeni rekor") : "") + "\n" + bittiBilgi;
+            }
             // 2026-11-02: ek ödüllerin tam dökümü (kartta yalnız en büyüğü) Ayrıntılar'ın başında.
             if (odul != null && odul.ek.Count > 0) bittiBilgi = L.T("Ödüller: {0}", string.Join(" · ", odul.ek.ConvertAll(q => L.Cumle(q)).ToArray())) + "\n" + bittiBilgi;
             bittiDugme = L.Cumle(Career.AgainLabel(M.stil.kariyer >= 0, won, Ayar.ilerleme.HepsiBitti ? -1 : Ayar.ilerleme.Siradaki()));
