@@ -180,7 +180,7 @@ namespace BirdieSmash.Game
             ani.Sifirla(); AniDur(); aniIzlendi = false;   // Maçın anı her maç kendi rallilerinden (Günün maçı, Usta yolu, görev de buradan geçer)
             match = new Match(tohum, o);
             Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; yerN = 0; yerTop = null; yardimN = 0; yardimTop = null;
-            fx.Temizle(); sfx.CrowdStart(); pencere = false; sfx.SuAlti(false); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
+            fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; pencere = false; sfx.SuAlti(false); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
         }
@@ -669,6 +669,7 @@ namespace BirdieSmash.Game
             // okunuyordu. Maçın ilk iki tetiklenişinde oyuncunun üstünde kısa "Koşu yardımı"; sonra sessiz (sayaç/Usta önerisi YAPMA).
             if (ekran == Ekran.Oyun && match.kosuYardim && yardimN < 2 && match.s != null && match.s != yardimTop && match.YardimKosuyor) { yardimTop = match.s; yardimN++; hud.Say(L.T("Koşu yardımı"), Kit.W(match.me.x, match.me.y, 1.6f), Kit.Hex("#9fd8ff")); }
             fx.Tick(match, paused || geriT > 0 ? 0 : dt, ekran == Ekran.Oyun);
+            SalonCanli(paused || geriT > 0 ? 0 : dt);
             if (akisR != null) { bool on = ekran == Ekran.Oyun && match.flow; akisR.enabled = on; if (on) akisR.material.color = new Color(1, .886f, .47f, Ayar.reduce ? .9f : .75f + .25f * Mathf.Sin(Time.unscaledTime * 1000 / 180f)); }
             Hakemler();
             // Stüdyo incelemesi (2026-11-05, teknik sanat 1 ve 4): vuruş donması sürerken itme ve sarsıntı sönmez; eskiden 80 ms
@@ -680,6 +681,54 @@ namespace BirdieSmash.Game
             if (shake > .01f) { float tt = Time.unscaledTime * 22f; j = new Vector3(Mathf.PerlinNoise(tt, 1.7f) * 2 - 1, Mathf.PerlinNoise(4.3f, tt) * 2 - 1, 0) * shake * .012f; roll = (Mathf.PerlinNoise(tt, 9.1f) * 2 - 1) * Mathf.Min(.6f, shake * .05f); }
             KadrajTakip(); var kp = camBase + camRot * j; var kq = camRot * Quaternion.Euler(0, 0, roll); float ktv = camTv * kadrajGenis;
             ZaferKamera(dt, ref kp, ref kq, ref ktv); cam.transform.SetPositionAndRotation(kp, kq); Projeksiyon(punch, ktv);
+        }
+
+        // ---- Canlı salon (2026-11-06 ek tur, yasin "10 yaratıcı fikir"; fikir 2, 3, 4) ----
+        // Tribün (CourtView.TribunTick), LED panolar (CourtView.LedYaz) ve maç sayısı anı tek yerden: durum burada, poz/doku orada.
+        //  - Heyecan: ralli 6→12 arası 0→1, sayı arasında .8 sn'de söner.
+        //  - Sıçrama: benim sayım ya da 8+ ralli; .6 sn. Dalga: 15. vuruşta bir kez, soldan sağa.
+        //  - Maç sayısı (mpYan: 0 ben, 1 rakip, -1 yok): skor hapı nabız atar (Hud), seyirci uğultusu susar, LED "MATCH POINT",
+        //    servis anında "kalp" titreşimi (OnEvent). Bitince uğultu döner.
+        //  - LED önceliği: maç sayısı > smaç (1,6 sn) > ralli 5+ ("RALLY n"); yoksa marka. Doku yalnız kod değişince istenir.
+        // Hareketi azaltta seyirci hareketsiz ve nabız yok; LED yazısı ve titreşim dışı her şey (yazı) yerinde.
+        float salonHey, salonSicra = -1, salonDalga = -99, ledSmacT; bool dalgaOldu; int mpYan = -1, ledKod = int.MinValue;
+        public int MacSayisiYan { get { return mpYan; } }
+        void SalonCanli(float dt)
+        {
+            var M = match; if (M == null) return;
+            bool oyunda = ekran == Ekran.Oyun && M.ogr == null;
+            // maç sayısı
+            int yeni = -1;
+            if (oyunda && !M.matchDone)
+            {
+                int a = M.sc[0], b = M.sc[1], cap = M.target == 21 ? 30 : M.target == 11 ? 15 : 7;
+                System.Func<int, int, bool> kazanir = (x, y) => (x + 1 >= M.target && x + 1 - y >= 2) || x + 1 >= cap;
+                yeni = kazanir(a, b) ? 0 : kazanir(b, a) ? 1 : -1;
+            }
+            if (yeni != mpYan) { if (yeni >= 0) sfx.CrowdSus(); else if (oyunda && !M.matchDone) sfx.CrowdStart(); mpYan = yeni; }
+            hud.macSayisiYan = Ayar.reduce ? -1 : mpYan;
+            // tribün
+            if (!Ayar.reduce && (ekran == Ekran.Oyun || ekran == Ekran.Bitti))
+            {
+                float hedef = M.between || !oyunda ? 0 : Mathf.Clamp01((M.rally - 6) / 6f);
+                salonHey += (hedef - salonHey) * (1 - Mathf.Exp(-dt / (hedef > salonHey ? .4f : .8f)));
+                if (salonSicra >= 0) { salonSicra += dt / .6f; if (salonSicra > 1) salonSicra = -1; }
+                if (M.rally == 0) dalgaOldu = false;
+                if (oyunda && M.rally >= 15 && !dalgaOldu) { dalgaOldu = true; salonDalga = -2.4f; }
+                if (salonDalga > -50) { salonDalga += dt * 7; if (salonDalga > Court.CW + 2.4f) salonDalga = -99; }
+                CourtView.TribunTick(Time.time, salonHey, Mathf.Max(0, salonSicra), salonDalga);
+            }
+            // LED
+            ledSmacT = Mathf.Max(0, ledSmacT - dt);
+            int kod = mpYan >= 0 ? -1 : ledSmacT > 0 ? -2 : oyunda && !M.between && M.rally >= 5 ? M.rally : 0;
+            if (kod != ledKod)
+            {
+                ledKod = kod;
+                if (kod == -1) CourtView.LedYaz("MATCH POINT", mpYan == 0 ? "#c4ed3f" : "#e99bff");
+                else if (kod == -2) CourtView.LedYaz("SMASH!", "#ff9a3c");
+                else if (kod > 0) CourtView.LedYaz("RALLY " + kod, "#f9d272");
+                else CourtView.LedYaz(null, null);
+            }
         }
 
         // ---- Zafer anı (2026-11-01 Ar-Ge 11:40 #1 + #2, yasin "Yap dediklerini yap ama tüy kazanımı ve level atlanırsa o bilgi
@@ -790,6 +839,7 @@ namespace BirdieSmash.Game
                 case Ev.Flow: sfx.Akis(); Yerel.Hap("flow"); if (M.ogr == null) Basarim.Ver(Basarim.AKIS); break;
                 case Ev.Aldat: sfx.Aldat(); Yerel.Hap("tick"); break;   // aldatma okunsun diye elde de hissedilir (hareketi azaltta yok)
                 case Ev.Split: sfx.Split(); break;
+                case Ev.Serve: if (mpYan >= 0) Yerel.Hap("kalp"); break;   // maç sayısında servis anında tek kalp atışı (hareketi azaltta Hap susar)
                 case Ev.Kurtaris: break;
                 case Ev.Imza: sfx.Imza(e.type); Yerel.Hap("tick"); break;   // ışık ve poz PlayerView'de (Athlete.imzaT), yazı Match.Say'den
                 case Ev.Okudun: sfx.Okudun(); Yerel.Hap("flow"); fx.Burst(at, Kit.Hex("#7ad7ff"), 14, 200, "spark"); break;
@@ -806,6 +856,11 @@ namespace BirdieSmash.Game
                     {
                         bool smac = mine && e.type == "smash";
                         if (match.ogr == null) ani.SayiBitti(mine, (int)e.k, smac);
+                        // Canlı salon (2026-11-06 ek tur): seyirci benim sayımda ya da uzun rallide kalkar, smaçta panolar "SMASH!";
+                        // rakibin maç sayısını kurtarınca tek kelime (Kurtardın!). mpYan önceki karenin durumu (skor bu olayla değişti).
+                        if (mine || e.k >= 8) salonSicra = 0;
+                        if (e.type == "smash") ledSmacT = 1.6f;
+                        if (mine && mpYan == 1 && match.ogr == null) hud.Say(L.T("Kurtardın!"), Kit.W(Court.MID, Court.NET - 2.6f, 2f), Kit.Hex("#7ad7ff"), 1.3f, true);
                         sfx.Point(mine, smac, (int)e.k); hud.Pop(mine ? 0 : 1); Yerel.Hap(mine ? "win" : "lose");
                         // düşüş yerinde toz ve kazananın renginde dalga; benim sayımda üst bantta üç renkli kıvılcım (HTML point)
                         if (e.x != 0 || e.y != 0) { var yer = Kit.W(e.x, e.y, .05f); fx.Burst(yer, new Color(.9f, 1, .94f, .7f), 14, 140, "dot"); fx.Dalga(yer, mine ? limon : Kit.Hex(Hud.RAKIP_HUD), 70); }

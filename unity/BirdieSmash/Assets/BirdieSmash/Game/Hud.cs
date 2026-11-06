@@ -111,6 +111,7 @@ namespace BirdieSmash.Game
         public bool Blocks(Vector2 guiPos) { if (perdeEvre > 0) return true; foreach (var r in blocks) if (r.Contains(guiPos)) return true; return false; }
         public void MacBasi() { pop[0] = pop[1] = 0; cams.Clear(); hawk = null; flash = 0; floats.Clear(); }
         public void Pop(int i) { pop[i] = 1; }
+        [System.NonSerialized] public int macSayisiYan = -1;
         public void Flash(float a, Color c) { a *= .6f; if (Ayar.reduce) a *= .4f; if (a > flash) { flash = a; flashC = c; } }   // ×.6 (2026-11-05): tam ekran parlama büyük smaçta %50'ydi, kortu bir an siliyordu; %30 hâlâ "vurdum" der
         public void Hawk(float x, float y, bool icerde, int cm, bool serve) { hawk = new HawkV { x = x, y = y, icerde = icerde, cm = cm, serve = serve }; }
         // Tribün flaşları (HTML M.cams): sayı kazanınca 26 küçük flaş ekranın üst bandında, .5 sn.
@@ -372,7 +373,9 @@ namespace BirdieSmash.Game
             float cx = W / 2, sy = top; var kr = new Rect(cx - 62 * u, sy, 124 * u, 34 * u); Boya(kr, hudKutu, Color.white);
             if (!ogr)
             {
-                var s0 = Stil(big, Mathf.RoundToInt(24 * fu * (1 + .5f * Mathf.Sin(pop[0] * Mathf.PI)))); var s1 = Stil(big, Mathf.RoundToInt(24 * fu * (1 + .5f * Mathf.Sin(pop[1] * Mathf.PI))));
+                // Maç sayısı nabzı (2026-11-06 ek tur fikir 4): maç sayısındaki tarafın sayısı 1,1 Hz yavaş nabız (±7 %); hareketi azaltta yok.
+                float nb = macSayisiYan >= 0 ? .07f * (.5f + .5f * Mathf.Sin(Time.unscaledTime * 7f)) : 0;
+                var s0 = Stil(big, Mathf.RoundToInt(24 * fu * (1 + .5f * Mathf.Sin(pop[0] * Mathf.PI) + (macSayisiYan == 0 ? nb : 0)))); var s1 = Stil(big, Mathf.RoundToInt(24 * fu * (1 + .5f * Mathf.Sin(pop[1] * Mathf.PI) + (macSayisiYan == 1 ? nb : 0))));
                 Shadowed(new Rect(cx - 60 * u, sy - 6 * u, 60 * u, 46 * u), Sayi(M.sc[0]), s0, Kit.Hex(gs.forma)); Shadowed(new Rect(cx - 10 * u, sy, 20 * u, 34 * u), "–", Stil(big, Mathf.RoundToInt(24 * fu)), Kit.Hex("#9dbab3"));
                 Shadowed(new Rect(cx, sy - 6 * u, 60 * u, 46 * u), Sayi(M.sc[1]), s1, Kit.Hex(RAKIP_HUD));
                 Fill(new Rect(cx + (M.server == "me" ? -54 : 50) * u, sy + 15 * u, 5 * u, 5 * u), M.server == "me" ? Kit.Hex(gs.forma) : Kit.Hex(RAKIP_HUD));   // servis noktası

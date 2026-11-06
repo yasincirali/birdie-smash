@@ -38,6 +38,11 @@ namespace BirdieSmash.Game
             }
             var esnek = new VisualElement(); esnek.AddToClassList("esnek"); esnek.AddToClassList("oyna-sahne"); esnek.pickingMode = PickingMode.Ignore; c.Add(esnek);
             oynaSahne = esnek; esnek.RegisterCallback<GeometryChangedEvent>(e => AfisYerlestir());   // 2026-10-27: afiş bu boşluğa oturur (Duyarli.cs)
+            // 2026-11-06 canlı afiş: afişin sol yarısına (senin oyuncun) dokununca Dolap'ta seçili sevinç oynar. Süs dokunuşu:
+            // sağ yarı boş geçer (rakip), ekran okuyucuda tek eylem "Sevinci oynat".
+            esnek.pickingMode = PickingMode.Position;
+            esnek.RegisterCallback<PointerUpEvent>(e => { if (e.localPosition.x < esnek.layout.width * .55f && root.afis != null && root.afis.Acik) { Yerel.Hap("tick"); root.afis.Sevinc(); } });
+            Erisim.Etiket(esnek, L.T("Sevinci oynat"), "dugme");
             // 2026-10-26 Usta yolu: dört tur bittiyse (ve Usta yolu açıksa) "Sıradaki" kartının yerini Usta kartı alır (kendi
             // Oyna düğmesiyle); finali yeniden oynamak Kariyer haritasından sürer.
             bool usta = Ayar.antrenman && UstaYolu.Acik(Ayar.ilerleme) && Ayar.ilerleme.HepsiBitti;

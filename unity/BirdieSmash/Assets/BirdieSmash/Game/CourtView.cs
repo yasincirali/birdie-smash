@@ -95,9 +95,11 @@ namespace BirdieSmash.Game
         // Rakibin arkası: pano (0,8 m, 2 m'lik dönüşümlü renk), arkasında 2 basamak, oturan seyirci (gövde + baş, bazen saç).
         static void Tribun(Transform k, Saha T)
         {
-            var root = new GameObject("tribun").transform; root.SetParent(k, false);
+            var root = new GameObject("tribun").transform; root.SetParent(k, false); Seyirciler.Clear(); Ledler.Clear();
             string[] giysi = { "#e85d4f", "#3f7fd8", "#f2c14e", "#f4f1ea", "#2c3e50", "#8e5bd1", "#3fb37f", "#ff8a3c", "#d94f8a", "#5fc4d9" }, ten = { "#f1c9a5", "#d9a57a", "#a8714a", "#6e4a2f", "#f5d6bb" };
-            var mats = new Dictionary<string, Material>(); System.Func<string, Material> M = hx => { Material mm; if (!mats.TryGetValue(hx, out mm)) mats[hx] = mm = Kit.Lit(Kit.Hex(hx), .15f); return mm; };
+            var mats = new Dictionary<string, Material>(); System.Func<string, Material> M = hx => { Material mm; if (!mats.TryGetValue(hx, out mm)) { mats[hx] = mm = Kit.Lit(Kit.Hex(hx), .15f); mm.enableInstancing = true; } return mm; };
+            // GPU örnekleme (2026-11-06 ek tur fikir 8, perf): seyirci aynı kapsül/küre ağıyla renk başına tek malzeme; örnekleme
+            // açıkken aynı ağ + malzeme tek çizimde gider (Standard destekler). Birleştirilmiş mesh değil: seyirci hareket ediyor (fikir 2).
             var rnd = new System.Random(7); float X0 = -1.6f, X1 = Court.CW + 1.6f, pano = -1.3f, DER = .55f, YUK = .42f;
             for (float x = X0; x < X1; x += 2) { float x2 = Mathf.Min(X1, x + 2); Kit.Prim(PrimitiveType.Cube, "pano", root, Kit.W((x + x2) / 2, pano, .4f), new Vector3(x2 - x, .8f, .06f), M(((int)((x - X0) / 2)) % 2 == 1 ? "#1d2b3a" : "#243a4f")); }
             // LED pano yüzü (stüdyo incelemesi 2026-11-05, sanat 2): konsept karedeki ışıklı panolar Unity'ye geçmemişti. Kasa aynı,
@@ -109,6 +111,7 @@ namespace BirdieSmash.Game
                 float x2 = Mathf.Min(X1, x + 2); var tex = Kit.LedTex(yazi[pi % yazi.Length], Kit.Hex(renk[pi % renk.Length]), Kit.Hex("#0d1420"));
                 var yuz = Kit.Prim(PrimitiveType.Quad, "led", root, Kit.W((x + x2) / 2, pano + .05f, .46f), new Vector3(x2 - x - .06f, .35f, 1), Kit.Clear(Color.white, tex));
                 yuz.transform.rotation = Quaternion.identity; var col = yuz.GetComponent<Collider>(); if (col != null) Object.Destroy(col);
+                Ledler.Add(new Led { m = yuz.GetComponent<Renderer>().material, varsayilan = tex });
             }
             for (int r = 0; r < 2; r++)
             {
@@ -117,10 +120,55 @@ namespace BirdieSmash.Game
                 for (float x = X0 + .3f; x < X1 - .2f; x += .55f)
                 {
                     if (rnd.NextDouble() > T.dol) continue; float xx = x + (float)(rnd.NextDouble() - .5) * .1f, yy = ya - DER * .5f;
-                    Kit.Prim(PrimitiveType.Capsule, "seyirci", root, Kit.W(xx, yy, z + .27f), new Vector3(.36f, .27f, .28f), M(giysi[rnd.Next(giysi.Length)]));
-                    Kit.Prim(PrimitiveType.Sphere, "bas", root, Kit.W(xx, yy, z + .66f), Vector3.one * .22f, M(ten[rnd.Next(ten.Length)]));
-                    if (rnd.NextDouble() < .55) Kit.Prim(PrimitiveType.Sphere, "sac", root, Kit.W(xx, yy - .015f, z + .7f), new Vector3(.23f, .16f, .23f), M("#1e1610"));
+                    var sy = new Seyirci { x = xx, sira = r, faz = (float)rnd.NextDouble() * 6.28f, guc = .6f + (float)rnd.NextDouble() * .4f };
+                    sy.govde = Kit.Prim(PrimitiveType.Capsule, "seyirci", root, Kit.W(xx, yy, z + .27f), new Vector3(.36f, .27f, .28f), M(giysi[rnd.Next(giysi.Length)])).transform;
+                    sy.bas = Kit.Prim(PrimitiveType.Sphere, "bas", root, Kit.W(xx, yy, z + .66f), Vector3.one * .22f, M(ten[rnd.Next(ten.Length)])).transform;
+                    if (rnd.NextDouble() < .55) sy.sac = Kit.Prim(PrimitiveType.Sphere, "sac", root, Kit.W(xx, yy - .015f, z + .7f), new Vector3(.23f, .16f, .23f), M("#1e1610")).transform;
+                    sy.g0 = sy.govde.localPosition; sy.b0 = sy.bas.localPosition; if (sy.sac != null) sy.s0 = sy.sac.localPosition;
+                    foreach (var c in new Component[] { sy.govde, sy.bas, sy.sac }) if (c != null) { var cl = c.GetComponent<Collider>(); if (cl != null) Object.Destroy(cl); }
+                    Seyirciler.Add(sy);
                 }
+            }
+        }
+
+        // ---- Canlı tribün ve LED (2026-11-06 ek tur, fikir 2 ve 3; yasin "10 yaratıcı fikir … uygula") ----
+        // Ses ralliye tepki veriyordu (Sfx: 8/12/16 vuruşta "ooo", 10+ ralli sonrası alkış), görüntü vermiyordu: seyirci heykeldi.
+        // GameRoot her kare TribunTick'i çağırır; durum (heyecan, sıçrama, dalga) GameRoot'ta, burada yalnız poz:
+        //  - boşta: kişi başına fazlı, 1 cm'lik nefes;
+        //  - heyecan (ralli 6→12 arası 0→1): öne eğilme (6 cm, korta doğru) ve biraz daha hızlı kıpırdanma;
+        //  - sıçrama (sayı sonu, smaçta tam): kişi başına güç ve x'e göre gecikmeyle en çok 15 cm;
+        //  - dalga (15+ ralli, bir kez): soldan sağa 7 m/sn, geçtiği kişi 14 cm kalkar.
+        // Genlik bilerek küçük: hareket topun arkasında, gözü topa değil sahneye çekmeli (VFX kuralı: dikkat çekici ama dağıtmayan).
+        // Hareketi azaltta hiç çağrılmaz (GameRoot), seyirci yerinde kalır.
+        public class Seyirci { public Transform govde, bas, sac; public Vector3 g0, b0, s0; public float x, faz, guc; public int sira; }
+        public static readonly List<Seyirci> Seyirciler = new List<Seyirci>();
+        public static void TribunTick(float t, float heyecan, float sicra, float dalgaX)
+        {
+            Vector3 one = Kit.W(0, .06f, 0) - Kit.W(0, 0, 0);   // korta doğru 6 cm
+            for (int i = 0; i < Seyirciler.Count; i++)
+            {
+                var s = Seyirciler[i]; if (s.govde == null) continue;
+                float y = .01f * Mathf.Sin(t * (1.3f + heyecan * 1.5f) + s.faz);
+                float gec = Mathf.Clamp01(sicra * 1.15f - Mathf.Abs(s.x - Court.MID) * .03f);
+                y += .15f * s.guc * Mathf.Sin(gec * Mathf.PI) * (sicra > 0 ? 1 : 0);
+                if (dalgaX > -50) { float d = Mathf.Abs(s.x - dalgaX); if (d < .8f) y += .14f * Mathf.Cos(d / .8f * Mathf.PI * .5f); }
+                Vector3 o = Vector3.up * y + one * heyecan * s.guc;
+                s.govde.localPosition = s.g0 + o; s.bas.localPosition = s.b0 + o * 1.15f; if (s.sac != null) s.sac.localPosition = s.s0 + o * 1.15f;
+            }
+        }
+        // LED panolar: önce üretilmiş dokular, yalnız değişince atanır (kare başı doku üretimi yok). null = varsayılan yazı.
+        public class Led { public Material m; public Texture2D varsayilan; public Texture2D simdi; }
+        public static readonly List<Led> Ledler = new List<Led>();
+        static readonly Dictionary<string, Texture2D> ledOnbellek = new Dictionary<string, Texture2D>();
+        public static void LedYaz(string yazi, string renk)
+        {
+            Texture2D tx = null;
+            if (yazi != null && !ledOnbellek.TryGetValue(yazi + renk, out tx)) { tx = Kit.LedTex(yazi, Kit.Hex(renk), Kit.Hex("#0d1420")); ledOnbellek[yazi + renk] = tx; }
+            for (int i = 0; i < Ledler.Count; i++)
+            {
+                var l = Ledler[i]; if (l.m == null) continue;
+                var hedef = tx != null && i % 2 == 0 ? tx : l.varsayilan;   // dönüşümlü: biri yeni yazı, biri marka (pano dizisi tek renk afişe dönmesin)
+                if (l.simdi == hedef) continue; l.simdi = hedef; l.m.mainTexture = hedef;
             }
         }
 

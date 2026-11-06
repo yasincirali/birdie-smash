@@ -28,7 +28,7 @@ namespace BirdieSmash.Game
         static readonly Dictionary<string, int[]> HAP = new Dictionary<string, int[]> {
             {"tick",new[]{8}},{"hit",new[]{14}},{"perfect",new[]{16,10,28}},{"smash",new[]{35,15,55}},{"jump",new[]{45,20,30,20,80}},
             {"kill",new[]{30,10,50}},{"net",new[]{20,30,20}},{"win",new[]{20,40,20,40,90}},{"lose",new[]{60}},
-            {"flow",new[]{10,30,10,30,10,30,70}},{"hawk",new[]{6,40,6,40,6}},{"poor",new[]{8,20,8}}};
+            {"flow",new[]{10,30,10,30,10,30,70}},{"kalp",new[]{28,110,42}},{"hawk",new[]{6,40,6,40,6}},{"poor",new[]{8,20,8}}};
 
         // HTML hap(k): hareketi azaltta yalnız win/lose
         public static void Hap(string k)
