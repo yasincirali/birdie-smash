@@ -38,6 +38,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using BirdieSmash.Core;
 
 static class BotMac
@@ -153,6 +154,8 @@ static class BotMac
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
         FileStandart();   // 2026-10-27 ekran/file (ayrı satır: liste başka dallarda da büyüyor)
+        IkizMaclar();   // 2026-11-07 online: iki çekirdek gecikmeli kuyrukla (Core/Uzak)
+        Ligler(); Kartlar();   // 2026-11-07 online: lig puanı (Core/Lig), oyuncu kartı (Core/OyuncuKarti)
         AdimTipleri();   // 2026-10-27 birleşik dal incelemesi: figürün kendi adım boyu (ekran/model) × işaretli faz (ekran/kosu)
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
@@ -1652,5 +1655,125 @@ static class BotMac
         if (al != 0) Fail("NetWave.Advance ayırma yapıyor: " + al + " B");
     }
     // ---- ekran/file sonu ----
+    // Online ikiz maç (2026-11-07, Core/Uzak): iki çekirdek birbirine sıralı, gecikmeli (±%25 titreşim) bir kuyrukla bağlanır,
+    // iki tarafta da insan benzeri bot oynar. Kapı: her maç biter, iki tarafın sayı dizisi ve son skoru aynalı olarak aynı
+    // (uyuşmazlık 0), ralliler gerçek (ortalama ≥ 3 vuruş), paket yükü maç başına 100 KB altında.
+    static void IkizMaclar()
+    {
+        float[] gec = { 0f, .08f, .15f, .25f };
+        var trng = new Random(41);
+        int uyusmaz = 0, takilan = 0, mac = 0; long bayt = 0; int vurus = 0, sayi = 0, sapN = 0, diril = 0, yerden = 0; float sapMax = 0, sapTop = 0;
+        foreach (float L in gec)
+        {
+            int ralliT = 0, sayiL = 0;
+            for (int m = 0; m < 6; m++)
+            {
+                bool kolay = m % 2 == 0;
+                var A = new Match(900 + m, new MatchOptions { easy = kolay, target = 11, uzak = true, uzakServis = m % 3 == 0 ? "op" : "me" });
+                var B = new Match(950 + m, new MatchOptions { easy = kolay, target = 11, uzak = true, uzakServis = m % 3 == 0 ? "me" : "op" });
+                A.uzak.gecikme = L; B.uzak.gecikme = L;
+                var yolAB = new List<KeyValuePair<float, byte[]>>(); var yolBA = new List<KeyValuePair<float, byte[]>>();
+                float t = 0, sonAB = 0, sonBA = 0; const float dt = 1f / 60f; int guard = 0;
+                var sA = new List<string>(); var sB = new List<string>();
+                while (!(A.over && B.over) && guard++ < 60 * 60 * 30)
+                {
+                    Bot(A, dt); Bot(B, dt);
+                    A.Update(dt); B.Update(dt); t += dt;
+                    foreach (var b in A.uzak.giden) { sonAB = Math.Max(sonAB, t + L * (float)(.75 + trng.NextDouble() * .5)); yolAB.Add(new KeyValuePair<float, byte[]>(sonAB, b)); }
+                    foreach (var b in B.uzak.giden) { sonBA = Math.Max(sonBA, t + L * (float)(.75 + trng.NextDouble() * .5)); yolBA.Add(new KeyValuePair<float, byte[]>(sonBA, b)); }
+                    A.uzak.giden.Clear(); B.uzak.giden.Clear();
+                    while (yolAB.Count > 0 && yolAB[0].Key <= t) { B.uzak.Al(yolAB[0].Value); yolAB.RemoveAt(0); }
+                    while (yolBA.Count > 0 && yolBA[0].Key <= t) { A.uzak.Al(yolBA[0].Value); yolBA.RemoveAt(0); }
+                    foreach (var e in A.events) { if (e.kind == Ev.Point) { sA.Add(e.who); ralliT += (int)e.k; sayiL++; } if (e.kind == Ev.Hit) vurus++; }
+                    foreach (var e in B.events) if (e.kind == Ev.Point) sB.Add(e.who == "me" ? "op" : "me");
+                    A.events.Clear(); B.events.Clear();
+                }
+                mac++; bayt += A.uzak.gidenBayt + B.uzak.gidenBayt; sayi += sA.Count;
+                sapMax = Math.Max(sapMax, Math.Max(A.uzakSapmaMax, B.uzakSapmaMax)); sapTop += A.uzakSapmaToplam + B.uzakSapmaToplam; sapN += A.uzakSapmaN + B.uzakSapmaN; diril += A.uzakDirilis + B.uzakDirilis; yerden += A.uzakYerdenAlinan + B.uzakYerdenAlinan;
+                if (!(A.over && B.over)) { takilan++; Fail("ikiz maç bitmedi: gecikme " + L + " maç " + m + " skor " + A.sc[0] + "-" + A.sc[1] + " / " + B.sc[1] + "-" + B.sc[0] + (A.UzakBekliyor ? " A bekliyor" : "") + (B.UzakBekliyor ? " B bekliyor" : "")); continue; }
+                bool ayni = A.sc[0] == B.sc[1] && A.sc[1] == B.sc[0] && sA.Count == sB.Count;
+                for (int i = 0; ayni && i < sA.Count; i++) if (sA[i] != sB[i]) ayni = false;
+                if (!ayni) { uyusmaz++; Fail("ikiz maç uyuşmadı: gecikme " + L + " maç " + m + " " + A.sc[0] + "-" + A.sc[1] + " / " + B.sc[1] + "-" + B.sc[0]); }
+            }
+            float ort = (float)ralliT / Math.Max(1, sayiL);
+            Console.WriteLine("ikiz maç gecikme " + (L * 1000).ToString("0") + " ms: 6 maç, ortalama ralli " + ort.ToString("0.0") + " vuruş");
+            if (ort < 3) Fail("ikiz maç ralli çok kısa (" + ort.ToString("0.0") + ")");
+        }
+        float kb = bayt / 1024f / Math.Max(1, mac);
+        Console.WriteLine("ikiz maç: " + mac + " maç, uyuşmazlık " + uyusmaz + ", takılan " + takilan + ", maç başına " + kb.ToString("0.0") + " KB (iki yön), " + sayi + " sayı, " + vurus + " vuruş");
+        if (kb > 100) Fail("ikiz maç paket yükü " + kb.ToString("0") + " KB");
+        Console.WriteLine("ikiz maç temas sapması ort " + (sapTop / Math.Max(1, sapN)).ToString("0.000") + " m, en çok " + sapMax.ToString("0.000") + " m (" + sapN + " vuruş), payda yetişilen " + yerden + ", görünen düşüşten diriliş " + diril);
+        if (diril > sapN / 50) Fail("ikiz maç: düşüşü görünen topların %2'sinden fazlası diriliyor (" + diril + ")");
+        if (sapMax > .10f) Fail("ikiz maç: rakibin temas noktası topun yolundan " + sapMax.ToString("0.00") + " m uzak (çekirdekler ayrışıyor)");
+        // Paket gidiş-dönüş: her alan aynen döner, bozuk/eski sürüm paket null
+        var p = new UzakPaket { tur = PaketTur.Vurus, sira = 7, hx = 1.5f, hy = 9.2f, hz = 2.1f, vx = -3, vy = -20, vz = 4, servis = false, super = true, slice = true, tip = "smash", vurus = "jump", q = "perfect" };
+        var r2 = UzakPaket.Oku(p.Yaz());
+        if (r2 == null || r2.sira != 7 || r2.hy != 9.2f || r2.vy != -20 || !r2.super || !r2.slice || r2.servis || r2.tip != "smash" || r2.vurus != "jump" || r2.q != "perfect" || r2.servisTur != null) Fail("UzakPaket gidiş-dönüş");
+        if (UzakPaket.Oku(new byte[] { 9, 1, 0 }) != null || UzakPaket.Oku(new byte[] { 1 }) != null) Fail("UzakPaket bozuk paketi kabul etti");
+        Console.WriteLine("UzakPaket vuruş " + p.Yaz().Length + " bayt");
+    }
+
+    // Lig (Core/Lig): Glicko-2 Glickman'ın örneğine uyar; gerçek beceri farkında puan doğru sıralanır; kupa kazanınca artar,
+    // lig tabanının altına inmez; yerleştirme 5 maç; sezon sonu yumuşak sıfırlama; kayıt gidiş-dönüş.
+    static void Ligler()
+    {
+        // Glickman 2012 örneği: 1500/200 oyuncu, 1400/30 (kazandı), 1550/100 (kaybetti), 1700/300 (kaybetti) → ~1464/151.5.
+        // Bizim dönem tek maç; aynı üç maçı sırayla uygulayınca yön ve büyüklük yakın olmalı (tam eşitlik dönemli hesapta).
+        var a = new LigDurum { r = 1500, rd = 200 }; var tek = new LigDurum { r = 1500, rd = 200 };
+        Lig.Sonuc(tek, new LigDurum { r = 1400, rd = 30 }, true);
+        if (!(tek.r > 1500 && tek.rd < 200)) Fail("Glicko: zayıfı yenmek puanı artırmalı, belirsizliği azaltmalı");
+        Lig.Sonuc(a, new LigDurum { r = 1400, rd = 30 }, true); Lig.Sonuc(a, new LigDurum { r = 1550, rd = 100 }, false); Lig.Sonuc(a, new LigDurum { r = 1700, rd = 300 }, false);
+        if (Math.Abs(a.r - 1464) > 25 || Math.Abs(a.rd - 151.5) > 25) Fail("Glicko örneği: " + a.r.ToString("0") + "/" + a.rd.ToString("0") + " (beklenen ~1464/151)");
+        // Sıralama: 40 oyuncu, gerçek beceri 1000…2000; her maçta yakın puanlı iki oyuncu eşleşir, kazanma gerçek beceriden.
+        var rr = new Random(5); int N = 40; var gercek = new double[N]; var D = new LigDurum[N];
+        for (int i = 0; i < N; i++) { gercek[i] = 1000 + 1000.0 * i / (N - 1); D[i] = new LigDurum(); }
+        for (int k = 0; k < 6000; k++)
+        {
+            int i = rr.Next(N), j = i; int en = int.MaxValue;
+            for (int t = 0; t < 6; t++) { int c = rr.Next(N); int f = (int)Math.Abs(D[c].r - D[i].r); if (c != i && f < en) { en = f; j = c; } }
+            if (j == i) continue;
+            bool kaz = rr.NextDouble() < 1 / (1 + Math.Pow(10, (gercek[j] - gercek[i]) / 400));
+            int kupaOnce = D[i].kupa, tabanOnce = D[i].taban; var Di = new LigDurum { r = D[i].r, rd = D[i].rd };
+            Lig.Sonuc(D[i], D[j], kaz); Lig.Sonuc(D[j], Di, !kaz);
+            if (D[i].Yerlesti && D[i].mac > Lig.YERLESTIRME) { if (kaz && D[i].kupa <= kupaOnce) Fail("kazanınca kupa artmadı"); if (D[i].kupa < tabanOnce) Fail("kupa lig tabanının altına indi"); }
+        }
+        int ters = 0, cift = 0; for (int i = 0; i < N; i++) for (int j = i + 1; j < N; j++) { cift++; if (D[i].r > D[j].r) ters++; }
+        double tersOran = (double)ters / cift;
+        Console.WriteLine("lig: 40 oyuncu 6000 maç, sıralama ters çift %" + (100 * tersOran).ToString("0.0") + ", en düşük " + Lig.Ad(D[0].kupa) + " (" + D[0].kupa + "), en yüksek " + Lig.Ad(D[N - 1].kupa) + " (" + D[N - 1].kupa + ")");
+        if (tersOran > .08) Fail("lig sıralaması gerçek beceriyi izlemiyor");
+        if (Lig.LigNo(D[N - 1].kupa) <= Lig.LigNo(D[0].kupa)) Fail("en iyi oyuncu en zayıfla aynı ligde");
+        // Yerleştirme: ilk 5 maç kupa göstermez
+        var y = new LigDurum(); for (int i = 0; i < 4; i++) if (Lig.Sonuc(y, new LigDurum(), true) != 0 || y.Yerlesti) Fail("yerleştirmede kupa farkı gösterildi");
+        Lig.Sonuc(y, new LigDurum(), true); if (!y.Yerlesti || y.kupa <= 0) Fail("yerleştirme sonrası başlangıç kupası yok");
+        // Kademe ve ad
+        if (Lig.Ad(0) != "Bronz III" || Lig.Ad(299) != "Bronz I" || Lig.Ad(300) != "Gümüş III" || Lig.Ad(2600) != "Şampiyon") Fail("lig adları: " + Lig.Ad(0) + ", " + Lig.Ad(299) + ", " + Lig.Ad(300) + ", " + Lig.Ad(2600));
+        // Sezon sonu: %60, rozet döner
+        var z = new LigDurum { mac = 20, kupa = 1900, taban = 1800, enYuksekLig = 4 }; int rozet = Lig.SezonBitir(z);
+        if (rozet != 4 || z.kupa != 1140 || z.taban != 700) Fail("sezon sonu: rozet " + rozet + " kupa " + z.kupa + " taban " + z.taban);
+        var g = Lig.Oku(Lig.Yaz(D[7])); if (Math.Abs(g.r - D[7].r) > .01 || g.kupa != D[7].kupa || g.taban != D[7].taban || g.mac != D[7].mac) Fail("lig kaydı gidiş-dönüş");
+        if (Lig.Oku("bozuk").r != 1500) Fail("bozuk lig kaydı varsayılana dönmeli");
+    }
+
+    // Oyuncu kartı (Core/OyuncuKarti): gidiş-dönüş; bilinmeyen kategori/öğe, uzun ve ayırıcı içeren değerler, eski sürüm düşer.
+    static void Kartlar()
+    {
+        var T = Kozmetik.Liste(Kozmetik.TIP); var S = Kozmetik.Liste(Kozmetik.SAC); string raket = null; foreach (var k in Gear.GEAR["raket"].Keys) { raket = k; break; }
+        var kart = new OyuncuKarti { ad = "Yasin | <b>çok uzun bir ad burada", model = "oyuncak", seviye = 12, kupa = 740, unvan = Karakter.Unvanlar[0].id };
+        kart.gorunus[Kozmetik.TIP] = T[T.Length - 1].id; kart.gorunus[Kozmetik.SAC] = S[1].id; kart.gorunus["raket"] = raket; kart.gorunus["ten"] = "dogal";
+        kart.gorunus["sihir"] = "x"; kart.gorunus[Kozmetik.SAPKA] = "yok_boyle_bir_sapka";
+        string y = kart.Yaz(); var o = OyuncuKarti.Oku(y);
+        Console.WriteLine("oyuncu kartı " + Encoding.UTF8.GetByteCount(y) + " bayt: " + y);
+        if (o == null) { Fail("kart okunamadı"); return; }
+        if (o.ad.Length > 16) Fail("kart adı 16 karakteri aştı: " + o.ad);
+        if (o.ad.Contains("|") || o.ad.Contains("<")) Fail("kart adında ayırıcı/işaret kaldı: " + o.ad);
+        if (o.seviye != 12 || o.kupa != 740 || o.model != "oyuncak" || o.unvan != Karakter.Unvanlar[0].id) Fail("kart alanları döndü değil");
+        if (!o.gorunus.ContainsKey(Kozmetik.TIP) || o.gorunus[Kozmetik.TIP] != T[T.Length - 1].id || o.gorunus["raket"] != raket || o.gorunus["ten"] != "dogal") Fail("kart görünüşü döndü değil");
+        if (o.gorunus.ContainsKey("sihir") || o.gorunus.ContainsKey(Kozmetik.SAPKA)) Fail("kart bilinmeyen kategori/öğe taşıdı");
+        if (OyuncuKarti.Oku("2|a|1|-1|||") != null || OyuncuKarti.Oku("1|a|1") != null || OyuncuKarti.Oku(new string('x', 2000)) != null) Fail("kart bozuk/eski sürümü kabul etti");
+        var h = OyuncuKarti.Oku("1|Ali|500|99999999|uzayli|yok|tip=../../etc,sac_model=" + S[0].id);
+        if (h == null || h.seviye != 99 || h.kupa != 99999 || h.model != null || h.unvan != null || h.gorunus.ContainsKey("tip") || !h.gorunus.ContainsKey(Kozmetik.SAC)) Fail("kart sınırları uygulanmadı");
+        if (Encoding.UTF8.GetByteCount(y) > 300) Fail("kart 300 baytı aştı");
+    }
+
     static float Hyp(float x, float y) { return (float)Math.Sqrt(x * x + y * y); }
 }
