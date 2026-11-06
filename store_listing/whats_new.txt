@@ -1,4 +1,10 @@
 === UNITY ===
+Bu gece (7 Kasım 02:30 inceleme turu):
+- Mükemmel smaçta yazı artık topun hızını da söylüyor ("SMAÇ! · 187 km/s"); raket gücü ve sıçrayarak smaç sayıya yansır. Maç sonu Ayrıntılar'da en hızlı sayı smacın ve kişisel rekorun.
+- Hızlı maç sayfasında saha seçimi tek sırada, her sahanın küçük resmiyle (Salon, Turnuva, Okul, Gece).
+- İlk smaçta ve ilk parlamada olabilecek kısa takılma giderildi (efektler açılış ve maç perdesinin arkasında hazırlanıyor).
+Nasıl denenir: Uygulamayı kapatıp yeniden aç, ilk maçta ilk sert smacı vur: oyun takılmamalı. Mükemmel zamanlamayla smaç vur: yazının yanında km/s görünmeli. Maç sonunda Ayrıntılar'ı aç: ilk satırda "En hızlı smaç … km/s" olmalı. Hızlı maç sayfasında dört saha tek sırada küçük resimleriyle görünmeli, seçtiğinde ✓ gelmeli.
+
 Bu gece (7 Kasım 00:30 inceleme turu):
 - Kaybettiğin maçın sonunda ipucu artık rakibe özel olabilir: rakip sayıların çoğunu smaçla ya da file önüne bırakarak aldıysa adıyla söyler ve tek bir çare verir.
 - Ayarlar › Yardım'da "Gizlilik politikası" bağlantısı (tarayıcıda açılır) ve en altta sürüm numarası.

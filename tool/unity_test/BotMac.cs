@@ -43,6 +43,7 @@ using BirdieSmash.Core;
 static class BotMac
 {
     static int fails = 0;
+    static float smacHizMax;
     static void Fail(string m) { Console.WriteLine("HATA: " + m); fails++; }
     static readonly Random rng = new Random(7);
 
@@ -118,6 +119,9 @@ static class BotMac
             bool ok = (Math.Max(a0, b0) >= target && Math.Abs(a0 - b0) >= 2) || Math.Max(a0, b0) == cap;
             if (!ok) Fail("skor kurala aykırı " + a0 + "-" + b0 + " hedef " + target);
             if (a0 > b0) meWins++;
+            // 2026-11-07 smaç hızı (fikir 02:06 #3): en hızlı sayı smacı km/s olarak gerçekçi bantta (0 = smaçla sayı yok).
+            if (M.enHizliSmac != 0 && (M.enHizliSmac < 100 || M.enHizliSmac > 420)) Fail("en hızlı smaç bant dışı " + M.enHizliSmac);
+            smacHizMax = Math.Max(smacHizMax, M.enHizliSmac);
             Console.WriteLine("maç " + m.ToString().PadLeft(2) + (M.easy ? " kolay " : " usta  ") + target.ToString().PadLeft(2) + " sayı " + a0 + "-" + b0 + "  rakip " + M.RakipAd(true) + (M.stil.kariyer >= 0 ? " · " + Match.KARIYER[M.stil.kariyer].yer : "") + "  " + t.ToString("0") + " s, en uzun ralli " + M.maxRally);
         }
         Console.WriteLine("sayı " + points + ", en uzun ralli " + maxRally + ", file " + nets + ", bant yuvarlanması " + cords + ", vuruş " + hits + ", kazanılan maç " + meWins + "/18");
@@ -154,6 +158,7 @@ static class BotMac
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
         FileStandart();   // 2026-10-27 ekran/file (ayrı satır: liste başka dallarda da büyüyor)
         AdimTipleri();   // 2026-10-27 birleşik dal incelemesi: figürün kendi adım boyu (ekran/model) × işaretli faz (ekran/kosu)
+        Console.WriteLine("en hızlı sayı smacı " + smacHizMax + " km/s");
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
         return fails == 0 ? 0 : 1;
     }

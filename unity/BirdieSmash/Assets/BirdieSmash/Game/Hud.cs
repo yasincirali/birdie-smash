@@ -137,7 +137,7 @@ namespace BirdieSmash.Game
         public void Perde(System.Action ortunce) { perdeIs = ortunce; perdeEvre = 1; perdeT = 0; perdeMin = .15f; perdeAtla = false; perdeAcilis = false; acilisBek = 0; }
         // Açılış perdesi (HTML perde({kapali:true, min:.6})): oyun kapalı perdeyle açılır, vuruş sesleri hazırlanınca kalkar;
         // hazırken dokunuş beklemeyi kısaltır.
-        public void Acilis() { perdeEvre = 2; perdeT = 0; hazirT = -1; acilisIyi = 0; perdeIs = null; perdeMin = .6f; perdeAtla = false; perdeAcilis = true; acilisBek = 0; perdeAci = 0; acilisT0 = Time.realtimeSinceStartup; acilisAcT = acilisSonT = -1; }
+        public void Acilis() { perdeEvre = 2; perdeT = 0; hazirT = -1; acilisIyi = 0; perdeIs = null; perdeMin = .6f; perdeAtla = false; perdeAcilis = true; acilisBek = 0; perdeAci = 0; acilisT0 = Time.realtimeSinceStartup; acilisAcT = acilisSonT = -1; if (root != null && root.fx != null) root.fx.Isit(); }
         public bool PerdeKapali { get { return perdeEvre == 1 || perdeEvre == 2; } }
         // UI Toolkit menüsü için (UiKok): perde var mı, ne kadar örtüyor (0..1; menü 1 − örtü opaklıkla solar), dokunuşla
         // beklemeyi kısalt. Perdenin çizimiyle aynı eğriler.
@@ -228,7 +228,7 @@ namespace BirdieSmash.Game
             {
                 perdeEvre = 2; perdeT = 0; acilisIyi = 0; hazirT = -1;
                 Yerel.PerdeGoster(perdeAci, .6f, L.T("Hazırlanıyor…"), Ayar.YaziK);
-                if (perdeIs != null) { perdeIs(); perdeIs = null; bosalt = true; }
+                if (perdeIs != null) { perdeIs(); perdeIs = null; bosalt = true; if (root.fx != null) root.fx.Isit(); }
             }
             else if (perdeEvre == 2)
             {

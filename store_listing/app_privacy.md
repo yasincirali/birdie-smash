@@ -51,4 +51,4 @@ iCloud ile ilerleme eşitleme (kabukta `{tip: 'kayit'}` için yer ayrılmış, �
 
 ## Privacy Manifest notu
 
-Repoda uygulamanın kendi `PrivacyInfo.xcprivacy` dosyası yok. Oyun `localStorage` kullanır (WebKit'in içi); kabuk `UserDefaults` gibi "required reason API" çağırmıyor. Flutter ve eklentiler kendi manifestlerini taşır. Apple yükleme sırasında eksik gerekçe bildirirse (ITMS-91053 e-postası) manifest eklenir; bu, App Privacy cevabını değiştirmez.
+Unity hattı (2026-11-07): kendi iOS eklentilerimiz (`BirdieAcilis.mm`, `BirdieBulut.mm`) `NSUserDefaults`'u doğrudan kullanır (PlayerPrefs ve HTML ilerleme devri); bu Apple'ın "required reason API" listesindedir. Gerekçe `Assets/Plugins/iOS/PrivacyInfo.xcprivacy` içinde: UserDefaults CA92.1 (yalnız uygulamanın kendi verisi), takip yok, toplanan veri yok. Unity bu dosyayı derlemede kendi UnityFramework manifestiyle birleştirir. Eski WebView kabuğu notu ("oyun localStorage kullanır, kabuk UserDefaults çağırmıyor") yalnız Flutter hattı için geçerliydi. Yükleme sonrası ITMS-91053 e-postası gelirse eksik kategori buraya eklenir; App Privacy cevabı değişmez.
