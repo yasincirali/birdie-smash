@@ -29,7 +29,10 @@ namespace BirdieSmash.Game
     public static class Guvenli
     {
         public static bool test; public static float ust, alt, sol, sag;   // piksel
-        public static Rect Alan
+        // 2026-11-06 reklam şeridi (Game/Reklam.cs): maçta üstte ayrılan pay (piksel). HUD ve kamera kadrajı Alan'ı okuduğu için
+        // ikisi de şeridin altına kendiliğinden yerleşir; şeridin kendisi HamAlan'ın üst kenarına çizilir.
+        public static float reklamUst;
+        public static Rect HamAlan
         {
             get
             {
@@ -37,6 +40,7 @@ namespace BirdieSmash.Game
                 float W = Screen.width, H = Screen.height; return new Rect(sol, alt, Mathf.Max(1, W - sol - sag), Mathf.Max(1, H - ust - alt));
             }
         }
+        public static Rect Alan { get { var r = HamAlan; if (reklamUst > 0) r.height = Mathf.Max(1, r.height - reklamUst); return r; } }
     }
 
     public partial class UiKok

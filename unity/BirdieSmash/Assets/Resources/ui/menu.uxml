@@ -11,6 +11,7 @@
                 <ui:VisualElement name="icerik" class="icerik" />
                 <ui:VisualElement name="sayfa" class="sayfa tam" />
             </ui:VisualElement>
+            <ui:VisualElement name="reklam" class="reklam-alani" />
             <ui:VisualElement name="sekmeler" class="sekme-cubugu" />
         </ui:VisualElement>
         <ui:VisualElement name="alt-katman" class="alt-katman tam" />

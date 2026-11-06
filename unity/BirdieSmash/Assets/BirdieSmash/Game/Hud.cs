@@ -324,9 +324,21 @@ namespace BirdieSmash.Game
         float H, W, top, bot, lx, rx, BH; Rect safe;
         void Layout()
         {
+            Reklam.MacGuncelle(root.ekran != Ekran.Menu);   // 2026-11-06: maçta üst şerit payı (Game/Reklam.cs)
             W = Screen.width; H = Screen.height; safe = Guvenli.Alan;   // 2026-10-27: ekran turu çentik taklidi (Game/UI/Duyarli.cs)
             top = H - safe.yMax + 8 * u; bot = safe.yMin + 10 * u; lx = Mathf.Max(safe.xMin, 0) + 16 * u; rx = W - Mathf.Max(W - safe.xMax, 0) - 16 * u;
             BH = Mathf.Max(46 * u, 44 * H / 640f);
+        }
+        // Maç reklam şeridi yer tutucusu (Game/Reklam.cs): çentiğin altında, HUD'un üstünde; koyu düz zemin + alt çizgi + küçük
+        // "Reklam" yazısı. Dokunuş blocks'a eklenir (şeride dokunmak vuruş/kaydırma sayılmasın).
+        GUIStyle reklamYazi;
+        void ReklamSerit()
+        {
+            var ham = Guvenli.HamAlan; float y = H - ham.yMax, h = Guvenli.reklamUst;
+            var r = new Rect(0, y, W, h); blocks.Add(r);
+            Fill(new Rect(0, 0, W, y + h), new Color(.078f, .055f, .098f, .96f)); Fill(new Rect(0, y + h - Mathf.Max(1, u), W, Mathf.Max(1, u)), new Color(1, 1, 1, .10f));
+            if (reklamYazi == null) { reklamYazi = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter }; reklamYazi.normal.textColor = new Color(.80f, .72f, .77f, .55f); }
+            reklamYazi.fontSize = Mathf.RoundToInt(11 * u); GUI.Label(r, L.T("Reklam"), reklamYazi);
         }
         // 640 px referans → ekran pikseli (GameRoot girdi ve HTML eşikleri bu ölçekte)
         float RefK { get { return H / 640f; } }
@@ -334,6 +346,7 @@ namespace BirdieSmash.Game
         void OnGUI()
         {
             var M = root.match; Styles(); Layout(); blocks.Clear();
+            if (Guvenli.reklamUst > 0) ReklamSerit();
             if (perdeEvre > 0 && Event.current.isMouse)
             {   // perde altındaki düğmeler dokunuşu almaz (açılış perdesi saniyelerce kapalı kalabilir); kapalıyken dokunuş beklemeyi kısaltır
                 if (perdeEvre == 2 && Event.current.type == EventType.MouseDown) perdeAtla = true; Event.current.Use();
