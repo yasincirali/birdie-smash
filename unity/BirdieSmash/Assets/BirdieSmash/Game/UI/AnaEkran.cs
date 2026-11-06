@@ -233,11 +233,13 @@ namespace BirdieSmash.Game
         // Zorluk, maç uzunluğu (ve istenirse saha): Ayarlar ile Hızlı maç aynı işleyiciyi paylaşır (aynı anahtarlar).
         void OyunSecenek(VisualElement c, bool saha)
         {
-            c.Add(Grup(L.T("Zorluk")));
+            // 2026-11-07 inceleme (fikir 00:03 #3): zorluk Ayarlar'dan kalktı; "bu maç nasıl olsun" kararı, oynamadan hemen önce
+            // görülen iki yerde kalır (Hızlı maç sayfası, kariyer kartı). Ayarlar'da değişip kariyeri sessizce değiştirmiyor.
+            if (saha) { c.Add(Grup(L.T("Zorluk")));
             var z = Satir(); c.Add(z);
             // 2026-11-05 unslop incelemesi (yasin "yap"): açıklama çipin içindeydi, çipler üç satıra kırılıyordu; "Kolay · topa kendin
             // gidersin" de ters okunuyordu (Kolay'da koşu otomatik). Çipte kısa ad, seçilenin açıklaması altında tek soluk satır.
-            ZorlukSatir(z, c);
+            ZorlukSatir(z, c); }
             c.Add(Grup(L.T("Maç uzunluğu")));
             var u = Satir(); c.Add(u); int[] Ls = { 5, 11, 21 }; string[] La = { "5 sayı", "11 sayı", "21 sayı" }, Lb = { "Hızlı maç, yaklaşık 2 dakika", "Kısa maç", "Resmî maç uzunluğu" };
             for (int i = 0; i < 3; i++) { int v = Ls[i]; u.Add(Cip(L.T(La[i]), Ayar.target == v, () => { Ayar.target = v; Ayar.Kaydet(); Degisti(); })); }
@@ -252,7 +254,7 @@ namespace BirdieSmash.Game
             }
         }
 
-        // Zorluk çipleri (2026-11-05, Ayar.zorluk notu): Hızlı maç, Ayarlar ve kariyer kartı aynı satırı kullanır. Dört kısa ad tek
+        // Zorluk çipleri (2026-11-05, Ayar.zorluk notu): Hızlı maç ve kariyer kartı aynı satırı kullanır (Ayarlar 2026-11-07'de çıktı). Dört kısa ad tek
         // satırda; seçilenin açıklaması altında tek soluk satır (unslop: açıklama çipe girmez). Koşu yardımı ayrı açma/kapama
         // değil, Zor ile Usta'yı ayıran şey (eski "Koşu yardımı açık/Kapalı" satırı buraya katıldı).
         static readonly string[] ZORLUK_ACIK = {

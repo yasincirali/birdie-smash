@@ -1,5 +1,5 @@
 // Ayarlar (⚙), Nasıl oynanır, Lisanslar (2026-10-26). İçerik bugünkü IMGUI AyarGovde ile aynı, gruplu liste olarak:
-//   Oyun: zorluk, maç uzunluğu (kariyere de uygulanır; saha yalnız serbest maçta anlamlı olduğu için Hızlı maç'a taşındı).
+//   Oyun: maç uzunluğu (kariyere de uygulanır; zorluk 2026-11-07'de çıktı, Hızlı maç + kariyer kartında; saha yalnız serbest maçta anlamlı olduğu için Hızlı maç'a taşındı).
 //   Görünüm: oyuncu görünümü (Ayar.model: Oyuncak 3B, Gerçekçi, Sade; root.ModelDegisti), kamera (Ayar.kamera, GameRoot.KAMERA_SIRA/KAMERA_AD,
 //   root.KameraDegisti), yazı boyutu, hareketi azalt (sistem açıksa her zaman açık, kapalıysa buradan zorlanır).
 //   Ses. Dil. Game Center · Başarımlar (girişliyse). Yardım: Nasıl oynanır ›, Lisanslar ›. (2026-11-06: "Antrenmanı yeniden oyna" satırı kalktı; aynı eylem
@@ -68,6 +68,13 @@ namespace BirdieSmash.Game
             c.Add(Yazi(L.T("Yardım"), 17, "bolum"));
             c.Add(Dugme(L.T("Nasıl oynanır") + "  ›", () => SayfaAc(Gezinti.NASIL), null, L.T("Vuruş, servis, nefes")));
             c.Add(Dugme(L.T("Lisanslar ve üçüncü taraf içerik") + "  ›", () => SayfaAc(Gezinti.LISANS)));
+            // Gizlilik bağlantısı + sürüm (2026-11-07 inceleme, fikir 00:03 #1): Guideline 5.1.1(i) gizlilik politikasını uygulama
+            // içinde de kolay erişilebilir ister; IAP'li oyunda inceleme arar. Sayfa store_listing/*/privacy_url.txt ile aynı adres.
+            // "Destek" satırı destek e-postası gelince (yasin'in adımı); sürüm satırı TestFlight geri bildiriminde "hangi sürüm"ü bitirir.
+            var gz = Dugme(L.T("Gizlilik politikası") + "  ↗", () => { Yerel.Hap("tick"); Application.OpenURL(Ayar.dil == "en"
+                ? "https://yasincirali.github.io/birdie-smash/privacy.html" : "https://yasincirali.github.io/birdie-smash/gizlilik.html"); });
+            Erisim.Etiket(gz, L.T("Gizlilik politikası") + ". " + L.T("Tarayıcıda açılır"), "dugme"); c.Add(gz);
+            c.Add(Bosluk(8)); c.Add(Yazi(L.T("Sürüm {0}", Application.version), 12, "soluk"));
             c.Add(Bosluk(24));
         }
         // Dil değişince Update tüm menüyü yeniden kurar (sonDil); Ayarlar sayfası açık kalır.

@@ -115,7 +115,7 @@ namespace BirdieSmash.Core
         public bool easy = true, reduce, ilk, between, split, splitPending, over, matchDone, hint, deceive, kisaBekle, flow;
         public Action svPending;
         // maç sonu istatistiği (HTML oInfo)
-        public int smashes, kills, perfects, deceives, splits, tepeden, saves, outsLeft, slices, smacSayi, outsBen, smacKarsila, dropSayi;   // smacKarsila: karşılanan rakip smacı; dropSayi: drop ile alınan sayı (kariyer görevleri)   // outsBen: dışarı giden kendi vuruşum (servis hariç), maç sonu ipucu
+        public int smashes, kills, perfects, deceives, splits, tepeden, saves, outsLeft, slices, smacSayi, outsBen, smacKarsila, dropSayi, rakipSmacSayi, rakipFileSayi;   // smacKarsila: karşılanan rakip smacı; dropSayi: drop ile alınan sayı (kariyer görevleri)   // outsBen: dışarı giden kendi vuruşum (servis hariç), maç sonu ipucu   // rakipSmac/FileSayi: rakibin kendi vuruşuyla aldığı sayı (Ozet.Ipucu, 2026-11-07)
         bool nefesUyari, nefesIlk, opUyari, rekorBuMac;
         // hakemler (görünüm okur): baş hakemin el hareketi süresi, kime, servis el değişti mi; servis hakeminin yönü
         public float hakemT, hakemT0 = 1.4f, sjT; public string hakemYon, sjYon; public bool hakemSO;
@@ -792,6 +792,10 @@ namespace BirdieSmash.Core
             }
             if (winner == "me" && s != null && s.from == "me" && s.type == "smash") smacSayi++;
             if (winner == "me" && s != null && s.from == "me" && s.type == "drop") dropSayi++;
+            // Yenilgi ipucu için rakibin sayıyı nasıl aldığı (2026-11-07 inceleme, fikir 00:03 #2 küçültülmüş: iki kova, imza ayrı sayılmaz;
+            // imza vuruşları da smaç/drop türüyle düşer). s.from == "op" = rakibin topu kortuma düştü (dışarı ya da benim hatam sayılmaz).
+            if (winner == "op" && s != null && s.from == "op" && !s.serve)
+            { if (s.type == "smash" || s.type == "jump" || s.type == "kill") rakipSmacSayi++; else if (s.type == "drop" || s.type == "block" || s.type == "push") rakipFileSayi++; }
             ImzaSifirla();
             GorevKontrol();
             Emit(Ev.Point, winner, s != null ? s.type : null, x, y, 0, rally, why, null, s != null && s.super);

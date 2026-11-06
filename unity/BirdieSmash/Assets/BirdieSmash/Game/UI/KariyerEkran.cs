@@ -149,7 +149,8 @@ namespace BirdieSmash.Game
             // r48 (2026-10-29): kilit nedeni ("5. basamaktan sonra") sağda uzun bir sütun oluyor, adı üç satıra kırıyordu
             // ("6. Kuala / Lumpur / finali"); neden de büyük yazıdaki gibi orta sütunun altına iner.
             bool nedenli = kilit && durum != L.T("Kilitli");
-            if (K >= 1.35f || nedenli) { dz.style.marginTop = 4; orta.Add(dz); } else r.Add(dz);
+            // r124 (2026-11-06): sağdaki kısa durum ("Kilitli") dar satırda "Kilitl / i" diye bölünüyordu; sağ sütun daralmaz, tek satır
+            if (K >= 1.35f || nedenli) { dz.style.marginTop = 4; orta.Add(dz); } else { dz.style.whiteSpace = WhiteSpace.NoWrap; dz.style.flexShrink = 0f; r.Add(dz); }
             Erisim.Etiket(kart, L.T(TurAd(KariyerVeri.TurOf(g))) + ", " + (b + 1) + ". " + L.T("basamak") + ", " + L.T(kb.yer) + ", " + st.isim + (final ? ", " + L.T("Final") : "") + ", " + L.T("{0}/3 yıldız", ys) + ", " + durum, "dugme", simdi);
             return kart;
         }

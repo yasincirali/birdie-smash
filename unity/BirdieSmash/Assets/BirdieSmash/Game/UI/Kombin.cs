@@ -111,7 +111,10 @@ namespace BirdieSmash.Game
                 }, alt);
                 d.AddToClassList("dar-cip"); d.AddToClassList("kombin-cip"); Sigdir(d); s.Add(d);
             }
-            var r = Cip(L.T("Rastgele"), false, KombinRastgele, L.T("sahip olduklarından")); r.AddToClassList("dar-cip"); r.AddToClassList("kombin-cip"); Sigdir(r); s.Add(r);
+            var r = Cip(L.T("Rastgele"), false, KombinRastgele); r.AddToClassList("dar-cip"); r.AddToClassList("kombin-cip"); Sigdir(r); s.Add(r);
+            // 2026-11-06: alt satır "sahip olduklarından" dar çipte dört satıra bölünüp hece ortasından kırılıyordu (r124); bilgi
+            // ekran okuyucu etiketinde kalır, görsel çip tek kelime (komşu Kombin çipleriyle aynı yükseklik)
+            Erisim.Etiket(r, L.T("Rastgele") + ", " + L.T("sahip olduklarından"), "dugme");
             // Giyilen yuvadan sonra bir şey değişti: o yuvayı güncellemek tek dokunuş (yazıyla söylenir, sessizce yazılmaz).
             if (giyili < 0 && kombinAktif >= 0 && kombinler[kombinAktif] != null)
             {

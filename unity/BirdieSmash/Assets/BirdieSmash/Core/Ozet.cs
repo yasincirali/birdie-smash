@@ -31,6 +31,10 @@ namespace BirdieSmash.Core
             arg = null;
             if (won) return null;
             if (M.outsBen >= 2) { arg = M.outsBen; return "{0} vuruşun dışarı gitti: çizgiden biraz içeriye nişan al."; }
+            // Rakibe özel ipucu (2026-11-07 inceleme, fikir 00:03 #2): genel cümle üçüncü kayıptan sonra okunmuyor; rakibin sayı
+            // kaynağı ≥3 ise adıyla tek çare. Kendi dışarılarım önce gelir (kendi hatam daha kolay düzelir). Oyuncuyu suçlamaz.
+            int rs = M.rakipSmacSayi, rf = M.rakipFileSayi;
+            if (System.Math.Max(rs, rf) >= 3) { arg = M.RakipAd(false); return rs >= rf ? "{0} smaçla sayı topladı: biraz geride bekle, smaçı karşılamaya hazır ol." : "{0} file önüne bıraktı: vurduktan sonra ortaya dön, öne erken çık."; }
             if (M.outsLeft == 0) return "Dışarı gidecek topu bırak: sayı senin olur.";
             if (M.perfects == 0) return "Top parlayınca topun tam üstünden geç: mükemmel vuruş gelir.";
             return "Uzun rallide nefesini clear ile topla.";

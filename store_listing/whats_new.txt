@@ -1,4 +1,11 @@
 === UNITY ===
+Bu gece (7 Kasım 00:30 inceleme turu):
+- Kaybettiğin maçın sonunda ipucu artık rakibe özel olabilir: rakip sayıların çoğunu smaçla ya da file önüne bırakarak aldıysa adıyla söyler ve tek bir çare verir.
+- Ayarlar › Yardım'da "Gizlilik politikası" bağlantısı (tarayıcıda açılır) ve en altta sürüm numarası.
+- Zorluk seçimi Ayarlar'dan kalktı; Hızlı maç sayfasında ve kariyer kartında duruyor.
+- Duraklatınca oyun arka planda daha az çizim yapar (pil ve ısınma için); duraklat menüsü her zamanki gibi tepki verir.
+Nasıl denenir: Kariyerde bir maçı bilerek kaybet, rakibin smaçlarını karşılama: sonuç kartındaki ipucunda rakibin adı geçmeli. Ayarlar'ı aç: Zorluk satırı olmamalı, Yardım'ın altında "Gizlilik politikası ↗" Safari'de açılmalı, altında "Sürüm 1.0" yazmalı. Maçta duraklat: menü düğmeleri hemen tepki vermeli.
+
 Bu gece (6 Kasım 22:30 inceleme turu):
 - Sonsuz rallide eski rekorunu geçtiğin vuruşta "Yeni rekor!" yazısı, yükselen iki nota ve titreşim; top hızlanınca kısa bir tık sesi ve hafif titreşim.
 - Sonsuz ralli sayacı sade: ralli sırasında yalnız vuruş sayın ve rekorun ("12 vuruş · Rekor 20"); rekoru geçince "Yeni rekor" yazar.
