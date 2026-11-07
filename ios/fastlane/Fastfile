@@ -50,8 +50,16 @@ def testflight_changelog(build_number, bolum = "HTML")
   rescue StandardError
     "Build #{build_number}"
   end
-  full = "#{notes}\n\n———\n#{kimlik}"
+  full = apple_metni("#{notes}\n\n———\n#{kimlik}")
   full.length > CHANGELOG_LIMIT ? full[0, CHANGELOG_LIMIT] : full
+end
+
+# App Store Connect "What to Test" bazı simgeleri reddediyor (2026-11-07, TF #86: "whatsNew contains invalid
+# characters: '[✓]'"; build yüklendi ama not yazılamadı ve iş kırmızı bitti). Harf (her dil), rakam, boşluk ve
+# yaygın noktalama kalır; ✓, emoji ve diğer simgeler düşer. PR metni yazan testçi diline simge koyabilir, hat kırılmasın.
+def apple_metni(metin)
+  metin = metin.gsub("›", ">").gsub("→", ">").gsub("✓", "")   # menü yolu "Ayarlar › Yardım" okunur kalsın
+  metin.gsub(/[^\p{L}\p{M}\p{N}\p{Zs}\n.,;:!?'"()\[\]\-\/%+&#@*=_·—–…’‘“”×°₺$€<>]/, "").gsub(/[ \t]+\n/, "\n")
 end
 
 # Headless runner'da izole, kilidi açık keychain + match (readonly). `beta` ve `beta_unity` ortak;
