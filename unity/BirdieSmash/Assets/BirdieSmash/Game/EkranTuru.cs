@@ -1238,6 +1238,9 @@ namespace BirdieSmash.Game
                     if (e.resolvedStyle.display == DisplayStyle.None || e.resolvedStyle.visibility == Visibility.Hidden || e.resolvedStyle.opacity < .05f) return;
                 var cr = te.contentRect; if (float.IsNaN(cr.width) || cr.width <= 0) return;
                 var wb = te.worldBound; if (wb.yMax < 0 || wb.yMin > ph) return;   // kaydırmanın dışında kalan satır görünmüyor
+                // 2026-11-07 (Kariyer yatay tur kartları): yatay kaydırmanın kenarında kalan (kısmen ya da tamamen dışarıdaki) kart kırpılır, taşma değildir.
+                for (VisualElement e = te.parent; e != null; e = e.parent)
+                    if (e is ScrollView ys && ys.mode == ScrollViewMode.Horizontal) { var vb = ys.contentViewport.worldBound; if (wb.xMin < vb.xMin - 1 || wb.xMax > vb.xMax + 1) return; break; }
                 string neden = null;
                 bool tek = te.resolvedStyle.whiteSpace == WhiteSpace.NoWrap;
                 var o = tek ? te.MeasureTextSize(m, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined)
