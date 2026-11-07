@@ -1,5 +1,6 @@
 === UNITY ===
 Raket, Dolap ve Kariyer yenilendi (7 Kasım akşamı):
+- Menüdeki reklam şeridi kendi yerinde, sekmelerin hemen üstünde duruyor; kartların üstüne binmiyor.
 - Raketin gerçek ölçüleri: ağırlık sınıfı ve gram (3U, 4U, 5U), denge noktası milimetre olarak (kafa hafif, dengeli, kafa ağır), şaft sertliği, raketin önerdiği gerginlik aralığı, kordaj kalınlığı. Her ölçünün ne demek olduğu ve maçta neyi değiştirdiği yazar.
 - Kordaj gerginliği artık hep görünür: Atölye'deki raket kartında ve Dolap > Raket'te. Raketin önerdiği aralığın dışına çıkarsan uyarı çıkar.
 - Yeni ücretsiz ayar: sap ölçüsü G4 (kalın), G5, G6 (ince). İnce sap bileği hızlandırır, kalın sap kontrol verir. Eski grip parçalarının adı artık Sargı.
