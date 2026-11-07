@@ -417,7 +417,7 @@ namespace BirdieSmash.Game
             if (yumusadi) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Sıradaki maçta rakip biraz yavaşlayacak.");
             // İmza okuma sayacı aşağıda değil yukarıda (ödül bloğu) işlendi; yeni beceri unvanı alt nota tek cümle, yeni yazı yuvası yok.
             var yeniUnvan = beceri0 != null ? Karakter.YeniBeceri(Ayar.ilerleme, beceri0) : null;
-            if (yeniUnvan != null) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Yeni unvan: {0}.", L.T(yeniUnvan.ad));
+            if (yeniUnvan != null) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Yeni unvan: {0}.", L.T(yeniUnvan.ad) + Karakter.KademeEki(yeniUnvan, Ayar.ilerleme));
             if (mod == Mod.Gunluk && gunluk != null) bittiUst = L.T("Günün maçı") + " · " + L.T(gunluk.deg.ad);
             else if (bittiUst == null && M.ogr == null) bittiUst = L.T("Hızlı maç") + " · " + L.T("Rakip") + " " + M.RakipAd(false);
             var bitenler = new List<string>(); foreach (var g in M.gorevler) if (g.bitti) bitenler.Add(L.Cumle(g.ad));

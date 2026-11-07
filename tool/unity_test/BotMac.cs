@@ -631,6 +631,10 @@ static class BotMac
         if (yu == null || yu.id != "smacci" || !Karakter.BeceriKazanilan(bk).Contains("kale") || Karakter.BeceriKazanilan(bk).Contains("aldatici")) Fail("beceri unvanı eşikte açılmalı (smaç 300, karşılama 120)");
         bk.MacSay(0, 0, 1); bk.ImzaOkuSay(1); var bq = Ilerleme.Oku(bk.Yaz(), 0, false);
         if (Karakter.BeceriKazanilan(bq).Count != 4 || bq.Sayac("karsila") != 120 || bq.Sayac("aldat") != 80) Fail("beceri sayaçları kayda yazılmalı");
+        // 2026-11-07 kademe: 400 aldatmada Aldatıcı II yeni unvan sayılır, ek " II", sonraki eşik 1500; kademe 1 kimliği değişmez
+        var ka = System.Array.Find(Karakter.Unvanlar, x => x.id == "aldatici"); var kb0 = Karakter.BeceriKazanilan(bq); var kq = Ilerleme.Oku(bq.Yaz(), 0, false); kq.MacSay(0, 0, 320);
+        var ky = Karakter.YeniBeceri(kq, kb0);
+        if (ky == null || ky.id != "aldatici" || Karakter.KademeEki(ky, kq) != " II" || Karakter.SonrakiEsik(ky, kq) != 1500 || !Karakter.BeceriKazanilan(kq).Contains("aldatici:2") || Karakter.KademeEki(ka, bq) != "" || Karakter.SonrakiEsik(ka, bq) != 400) Fail("beceri unvanı kademesi");
         for (int b = 0; b < 6; b++) bq.tur[0][b] = Ilerleme.KAZAN; if (Karakter.Gosterilen(bq, 1, 0).id != "yerel") Fail("seçim yoksa kariyer unvanı gösterilmeli");
         // 2026-11-07 rakip sevinci: tarzın seçimi veride geçerli, bilinmeyen ya da boş kimlik varsayılana düşer
         foreach (var kv in Match.STIL) { if (Kozmetik.Bul(Kozmetik.SEVINC, kv.Value.sevinc ?? "") == null || Kozmetik.Bul(Kozmetik.MAC_SONU, kv.Value.macSonu ?? "") == null) Fail("rakip sevinci veride yok: " + kv.Key); }

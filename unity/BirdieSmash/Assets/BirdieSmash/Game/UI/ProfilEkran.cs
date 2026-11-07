@@ -35,13 +35,13 @@ namespace BirdieSmash.Game
             var r = Satir("profil-ust"); kart.Add(r);
             var av = new VisualElement(); av.AddToClassList("avatar"); av.AddToClassList("avatar--buyuk"); av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 54); r.Add(av);
             var ad = new VisualElement(); ad.AddToClassList("esnek-yatay"); r.Add(ad);
-            ad.Add(Yazi(p.Ad ?? L.T("Oyuncu"), 22, "kalin")); ad.Add(Yazi(L.T(un.ad), 14, "altin"));
+            ad.Add(Yazi(p.Ad ?? L.T("Oyuncu"), 22, "kalin")); ad.Add(Yazi(L.T(un.ad) + Karakter.KademeEki(un, p), 14, "altin"));
             var svr = Satir("rakip-satir"); svr.style.marginTop = 6; ad.Add(svr);
             var halka = new VisualElement(); halka.AddToClassList("sv-halka"); svr.Add(halka);
             var hi = Yazi(L_.ToString(), 13, "kalin"); hi.AddToClassList("sv-halka-ic"); halka.Add(hi);
             var hy = Yazi(gerek > 0 ? L.T("Sonraki seviyeye {0} XP", gerek - kalan) : L.T("En yüksek seviye"), 12, "soluk"); hy.style.marginLeft = 6; hy.style.flexShrink = 1; svr.Add(hy);
             ad.Add(Yazi(L.T(tz.ad) + " · " + L.T(Gear.GEAR["raket"][gr.raket].ad), 13, "soluk"));
-            Erisim.Etiket(r, (p.Ad ?? L.T("Oyuncu")) + ", " + L.T(un.ad) + ", " + L.T("Seviye {0}", L_) + ", " + L.T("Tarz") + " " + L.T(tz.ad), "metin");
+            Erisim.Etiket(r, (p.Ad ?? L.T("Oyuncu")) + ", " + L.T(un.ad) + Karakter.KademeEki(un, p) + ", " + L.T("Seviye {0}", L_) + ", " + L.T("Tarz") + " " + L.T(tz.ad), "metin");
             kart.Add(Cubuk(gerek > 0 ? kalan / (float)gerek : 1, CAMGOBEGI));
             // üç büyük sayı
             var uc = Satir("uc-sayi"); if (K >= 1.35f) uc.AddToClassList("uc-sayi--dikey"); kart.Add(uc);
@@ -81,7 +81,10 @@ namespace BirdieSmash.Game
             // unvanlar
             c.Add(Grup(L.T("Unvan")));
             var kz = Karakter.Kazanilan(p, L_, p.AntrenmanYildiz); var us = Satir("cip-sarar"); c.Add(us);   // 2026-10-31 (yasin IMG_1517): 5 unvan eşit dar çipe sıkışıp harf harf bölünüyordu; çip yazısı kadar geniş, sığmayan alt satıra
-            foreach (var u in kz) { string id = u.id; us.Add(Cip(L.T(u.ad), u.id == un.id, () => { p.Unvan = id; Ayar.Kaydet(); kirli[(int)Sekme.Profil] = true; SekmeKur(Sekme.Profil); })); }
+            foreach (var u in kz) { string id = u.id; us.Add(Cip(L.T(u.ad) + Karakter.KademeEki(u, p), u.id == un.id, () => { p.Unvan = id; Ayar.Kaydet(); kirli[(int)Sekme.Profil] = true; SekmeKur(Sekme.Profil); })); }
+            // Kademe (2026-11-07): yalnız seçili beceri unvanının sıradaki eşiği, tek satır; yeni satır listesi yok.
+            int se_ = Karakter.SonrakiEsik(un, p);
+            if (se_ > 0) { var ks = Yazi(L.T("{0}: sonraki kademe {1}/{2}", L.T(un.ad) + Karakter.KademeEki(un, p), p.Sayac(un.sayac), se_), 12, "soluk"); ks.style.whiteSpace = WhiteSpace.Normal; Erisim.Etiket(ks, ks.text, "metin"); c.Add(ks); }
             foreach (var u in Karakter.Unvanlar)
             {
                 if (kz.Contains(u)) continue; var ur = Satir("basarim"); ur.AddToClassList("kilitli"); c.Add(ur);
@@ -96,8 +99,8 @@ namespace BirdieSmash.Game
 
             c.Add(Grup(L.T("İstatistikler")));
             var iz = Satir("izgara"); c.Add(iz);
-            Deger(iz, L.T("Rekor ralli"), Ayar.bestRally.ToString()); Deger(iz, L.T("Galibiyet"), Ayar.wins.ToString());
-            Deger(iz, L.T("Maç"), p.Mac.ToString()); Deger(iz, L.T("Smaç"), p.Smac.ToString());
+            // 2026-11-07 inceleme: Rekor ralli, Galibiyet, Smaç üstteki üç büyük sayıda; ızgarada tekrar edilmez (büyük yazıda üç satır kısa).
+            Deger(iz, L.T("Maç"), p.Mac.ToString());
             Deger(iz, L.T("Görev"), Ayar.gorev.ToString());
             Deger(iz, L.T("Kariyer yıldızı"), Ayar.ilerleme.ToplamYildiz + "/" + TurSayisiVeri() * 18);
             // tur başına yıldızlar (tasarım §2.3 Profil): yalnız verisi olan turlar; kilitli tur "Kilitli" yazısıyla
