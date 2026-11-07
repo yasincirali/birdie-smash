@@ -183,6 +183,15 @@
 .tur-cip--kilit .dugme-yazi { color: var(--mu); }
 .tur-cip--kilit.cip--secili .dugme-yazi { color: var(--tx); }
 .tur-kart { margin-top: 8px; margin-bottom: 10px; }
+/* 2026-11-07 yatay tur kartları: şerit, kart, seçili çerçeve, altı basamak tek satırda (sığmazsa sarar), açık maç kartı */
+.tur-serit { margin: 10px 0 6px 0; flex-shrink: 0; }
+.tur-kart--yatay { margin: 0 10px 0 0; flex-shrink: 0; }
+.tur-kart--secili { border-color: var(--sun); border-width: 2px; }
+.tur-kart--kilit .tur-tema { color: var(--mu2); }
+.tur-basamaklar { flex-direction: row; flex-wrap: wrap; justify-content: space-between; margin: 4px 0 8px 0; }
+.tur-durum { white-space: normal; margin-bottom: 6px; }
+.mac-ozet { margin-top: 4px; }
+.mac-ozet-oyna { margin-top: 10px; }
 /* 2026-11-07 tur giriş kartı (GD2): tema cümlesi, altı rakip noktası (yenilen ✓, yenilmeyen soluk halka), hazırlık çubuğu (bilgi) */
 .muhur-satir { min-height: 32px; align-items: center; margin-bottom: 4px; }
 .tur-tema { color: var(--tx); white-space: normal; margin: 6px 0 8px 0; }

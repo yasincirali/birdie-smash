@@ -343,6 +343,9 @@ namespace BirdieSmash.Game
             ui.SoyunmaSegment(0); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_oyun");
             ui.SayfaSonaKaydir(); yield return Bekle(10); yield return Cek("menu_" + ek + "soyunma_oyun_taban");
             ui.SoyunmaSegment(2); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_gorunum");
+            // 2026-11-07 Dolap › Raket: kimlik kartı, gerginlik, sap ölçüsü; sayfa sonunda teknik sayfa
+            ui.KarakterAc(UiKok.KAR_KIYAFET); ui.RaketIncele(true); yield return Bekle(40); yield return Cek("menu_" + ek + "dolap_raket");
+            ui.SayfaSonaKaydir(); yield return Bekle(10); yield return Cek("menu_" + ek + "dolap_raket_teknik"); ui.RaketIncele(false);
             ui.KarakterAc(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "kep"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_sapka_kep");
             ui.KarakterDene(Kozmetik.SAPKA, "buyucu"); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_sapka_buyucu");
             ui.KarakterAc(UiKok.KAR_TEN); ui.KarakterDene(Kozmetik.YUZ, "gunes"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_yuz_gunes");
