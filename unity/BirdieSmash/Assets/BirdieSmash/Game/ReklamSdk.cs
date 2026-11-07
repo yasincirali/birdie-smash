@@ -88,7 +88,14 @@ namespace BirdieSmash.Game
             // (Screen.SetResolution); Screen pikseli artık yerel piksel değil. Nokta = Screen pikseli / (ölçek × Screen/yerel genişlik).
             int sysW = Display.main.systemWidth; if (sysW > 0 && Screen.width > 0) olc *= (float)Screen.width / sysW;
             var r = px.Value;
-            int x = Mathf.RoundToInt((r.x + (r.width - SERIT_W * olc) / 2) / olc), y = Mathf.RoundToInt((r.y + (r.height - SERIT_H * olc) / 2) / olc);
+            float kx = r.x + (r.width - SERIT_W * olc) / 2, ky = r.y + (r.height - SERIT_H * olc) / 2;
+#if UNITY_IOS
+            // 2026-11-07 (yasin TF 100 karesi: şerit ortalandı ama sekme düğmelerinin üstüne biniyor): eklentinin iOS tarafı
+            // (GADUPluginUtil positionView:customPosition:) özel konumu ekranın değil GÜVENLİ ALANIN sol üstüne ekliyor; çentikli
+            // telefonda şerit üst pay kadar (≈50–60 nokta) aşağı kayıyordu. Yer ekran pikselinde geldiği için payı burada düşüyoruz.
+            var sa = Screen.safeArea; kx -= sa.xMin; ky -= Mathf.Max(0, Screen.height - sa.yMax);
+#endif
+            int x = Mathf.RoundToInt(kx / olc), y = Mathf.RoundToInt(ky / olc);
             if (serit == null)
             {
                 serit = new BannerView(SERIT_ID, AdSize.Banner, x, y); sonX = x; sonY = y; seritAcik = true;
