@@ -79,10 +79,15 @@ namespace BirdieSmash.Game
             c.Add(Dugme(L.T("Lisanslar ve üçüncü taraf içerik") + "  ›", () => SayfaAc(Gezinti.LISANS)));
             // Gizlilik bağlantısı + sürüm (2026-11-07 inceleme, fikir 00:03 #1): Guideline 5.1.1(i) gizlilik politikasını uygulama
             // içinde de kolay erişilebilir ister; IAP'li oyunda inceleme arar. Sayfa store_listing/*/privacy_url.txt ile aynı adres.
-            // "Destek" satırı destek e-postası gelince (yasin'in adımı); sürüm satırı TestFlight geri bildiriminde "hangi sürüm"ü bitirir.
-            var gz = Dugme(L.T("Gizlilik politikası") + "  ↗", () => { Yerel.Hap("tick"); Application.OpenURL(Ayar.dil == "en"
-                ? "https://yasincirali.github.io/birdie-smash/privacy.html" : "https://yasincirali.github.io/birdie-smash/gizlilik.html"); });
+            // 2026-11-07 (murphysoft.app HTTPS ile açıldı): gizlilik ve destek stüdyo sitesinde; Destek sayfası support@murphysoft.app'i
+            // ve SSS'yi taşır (e-posta bağlantısı uygulamada değil sayfada: mailto her cihazda posta uygulaması açmaz).
+            bool en = Ayar.dil == "en";
+            var gz = Dugme(L.T("Gizlilik politikası") + "  ↗", () => { Yerel.Hap("tick"); Application.OpenURL(en
+                ? "https://murphysoft.app/birdie-smash/privacy/" : "https://murphysoft.app/birdie-smash/gizlilik/"); });
             Erisim.Etiket(gz, L.T("Gizlilik politikası") + ". " + L.T("Tarayıcıda açılır"), "dugme"); c.Add(gz);
+            var ds = Dugme(L.T("Destek") + "  ↗", () => { Yerel.Hap("tick"); Application.OpenURL(en
+                ? "https://murphysoft.app/birdie-smash/support/" : "https://murphysoft.app/birdie-smash/destek/"); });
+            Erisim.Etiket(ds, L.T("Destek") + ". " + L.T("Tarayıcıda açılır"), "dugme"); c.Add(ds);
             c.Add(Bosluk(8)); c.Add(Yazi(L.T("Sürüm {0}", Application.version), 12, "soluk"));
             c.Add(Bosluk(24));
         }
