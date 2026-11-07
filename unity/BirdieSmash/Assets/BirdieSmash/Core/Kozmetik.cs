@@ -49,7 +49,11 @@ namespace BirdieSmash.Core
         public static bool Sahip(Gear g, string kat, string id)
         {
             var o = Bul(kat, id); if (o == null) return false;
-            return g.eko.acik.Contains(kat + ":" + id) || (o.fiyat == 0 && g.Seviye() >= o.sv);
+            if (g.eko.acik.Contains(kat + ":" + id) || (o.fiyat == 0 && g.Seviye() >= o.sv)) return true;
+            // 2026-11-07 (inceleme turu: "Zıpla ve dön" hem Sevinç hem Maç sonu listesinde satılıyordu, aynı poz iki kez ücret):
+            // aynı kimlikli hareket iki listede de varsa birini almak ikisini de açar. Kayıt biçimi aynı (tek "kat:id" satırı).
+            string es = kat == SEVINC ? MAC_SONU : kat == MAC_SONU ? SEVINC : null;
+            return es != null && Bul(es, id) != null && g.eko.acik.Contains(es + ":" + id);
         }
         public static ModelDurum Durum(Gear g, string kat, string id, string secili)
         {

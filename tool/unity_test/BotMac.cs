@@ -885,6 +885,8 @@ static class BotMac
         }
         { var gs = SvGear(20, 5000); if (!Kozmetik.Al(gs, Kozmetik.SIRT, "ruh_pelerin", "yok") || gs.eko.tuy != 5000 - Kozmetik.Bul(Kozmetik.SIRT, "ruh_pelerin").fiyat) Fail("Sv 20'de ruh omuzluğu alınmalı"); }
         { var gs = SvGear(5, 5000); if (Kozmetik.Al(gs, Kozmetik.SIRT, "yildiz_pelerin", "yok")) Fail("seviye kapısı Tüy ile aşılmamalı (sırt)"); }
+        // aynı hareket iki listede (Sevinç + Maç sonu "zipla"): birini almak ikisini açar, ikinci kez Tüy düşmez
+        { var gz = SvGear(12, 5000); if (!Kozmetik.Al(gz, Kozmetik.SEVINC, "zipla", "yumruk") || !Kozmetik.Sahip(gz, Kozmetik.MAC_SONU, "zipla") || Kozmetik.Al(gz, Kozmetik.MAC_SONU, "zipla", "zafer") || gz.eko.tuy != 5000 - Kozmetik.Bul(Kozmetik.SEVINC, "zipla").fiyat) Fail("Zıpla ve dön iki kez satılmamalı"); }
         // (1d) bulut kaydı (2026-11-01): yeni kurulum buluttan yüklenir; büyük XP kazanır; aynı XP'de bulutta fazla Tüy harcamayı geri vermez
         {
             var yerel = new Dictionary<string, string> { { "tuytop_ekonomi", "{\"tuy\":120,\"xp\":900}" }, { "tuytop_ilerleme", "{\"a\":1}" } };
