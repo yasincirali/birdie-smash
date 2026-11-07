@@ -15,9 +15,9 @@
     {"id": "ince",      "ad": "İnce yüksek gerilim",  "n": "Kontrol +8 · güç −4 · ses tiz",         "sv": 11, "fiyat": 800, "kontrol": 1.08, "guc": 0.96, "tatli": 0.98, "ton": 1.05, "kalinlik": 0.62}
   ],
   "grip": [
-    {"id": "sentetik", "ad": "Sentetik", "n": "Nötr",                                              "sv": 1, "fiyat": 0,   "eski": true},
-    {"id": "havlu",    "ad": "Havlu",    "n": "Nefesin azken top yarı yarıya az sapar · kontrol −3", "sv": 4, "fiyat": 300, "kontrol": 0.97, "yorgunSapma": 0.5, "doku": "cizgi"},
-    {"id": "kalin",    "ad": "Kalın",    "n": "Kontrol +6 · drive −5",                              "sv": 9, "fiyat": 600, "kontrol": 1.06, "hiz": 0.95}
+    {"id": "sentetik", "ad": "Sentetik sargı", "n": "Nötr",                                              "sv": 1, "fiyat": 0,   "eski": true},
+    {"id": "havlu", "ad": "Havlu sargı",    "n": "Nefesin azken top yarı yarıya az sapar · kontrol −3", "sv": 4, "fiyat": 300, "kontrol": 0.97, "yorgunSapma": 0.5, "doku": "cizgi"},
+    {"id": "kalin", "ad": "Kalın sargı",    "n": "Sapı yarım ölçü kalınlaştırır: kontrol +6 · drive −5",                              "sv": 9, "fiyat": 600, "kontrol": 1.06, "hiz": 0.95}
   ],
   "bileklik": [
     {"id": "yok",   "ad": "Yok",       "n": "—",                                    "sv": 1, "fiyat": 0,   "eski": true},

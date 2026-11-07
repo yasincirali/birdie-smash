@@ -998,6 +998,13 @@ static class BotMac
             if (Gear.DengeAd(Gear.GEAR["raket"]["hafif"].dengeMm.Value) != "kafa hafif" || Gear.DengeAd(Gear.GEAR["raket"]["agir"].dengeMm.Value) != "kafa ağır" || Gear.DengeAd(Gear.GEAR["raket"]["denge"].dengeMm.Value) != "dengeli")
                 Fail("denge noktası model adıyla çelişiyor");
             foreach (var kd in Gear.GEAR["kordaj"].Values) if (!kd.kalinlik.HasValue || kd.kalinlik < .60f || kd.kalinlik > .72f) Fail("kordaj kalınlığı: " + kd.id);
+            // sap ölçüsü (dev thread kararı): G5 nötr, G4/G6 ±%3 kontrol/drive simetrik; kayıtta yoksa G5, bozuk değer G5
+            if (Gear.SapKontrol("G5") != 1f || Gear.SapHiz("G5") != 1f || Math.Abs(Gear.SapKontrol("G4") * Gear.SapKontrol("G6") - .9991f) > 1e-4f || Math.Abs(Gear.SapHiz("G4") - Gear.SapKontrol("G6")) > 1e-6f) Fail("sap ölçüsü nötr/simetrik değil");
+            if (new Gear(new BellekKayit(), 0).sap != "G5") Fail("sap varsayılanı G5 olmalı");
+            { var bk = new BellekKayit(); bk.Set("tuytop_gear", "{\"raket\":\"denge\",\"tel\":26}"); if (new Gear(bk, 0).sap != "G5") Fail("eski kayıtta sap G5 olmalı");
+              var g6 = new Gear(bk, 0); g6.sap = "G6"; g6.GearYaz(); if (new Gear(bk, 0).sap != "G6") Fail("sap kaydı okunmalı");
+              bk.Set("tuytop_gear", "{\"sap\":\"G9\"}"); if (new Gear(bk, 0).sap != "G5") Fail("bozuk sap G5'e düşmeli"); }
+            if (Gear.Kimlik(Gear.GEAR["raket"]["denge"], "G6").IndexOf(" · G6 · ", StringComparison.Ordinal) < 0) Fail("kimlik satırı sap ölçüsünü yazmalı");
             int tmin, tmax; Gear.TelAralik("yok-boyle-raket", out tmin, out tmax); if (tmin != 20 || tmax != 28) Fail("gerginlik aralığı varsayılanı 20–28 olmalı");
         }
         // (1e) maç sonu ödüllü reklam (2026-11-07, Core/OdulluReklam): +%50 yalnız Tüy, günde 1, ilk 3 galibiyette yok, başka ikincil

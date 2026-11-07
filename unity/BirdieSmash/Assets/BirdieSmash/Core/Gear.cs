@@ -103,11 +103,11 @@ namespace BirdieSmash.Core
 
         // Denge sınıfı: piyasadaki raketlerde kafa hafif ≈ 260–285 mm, dengeli ≈ 286–295, kafa ağır ≈ 296–305 (sapın ucundan).
         public static string DengeAd(int mm) { return mm <= 285 ? "kafa hafif" : mm <= 295 ? "dengeli" : "kafa ağır"; }
-        // Gerçek raketin gövdesindeki satır: "3U · G5 · 300 mm · sert · 21–29 lbs". Grip şimdilik G5 (grip kalınlığı ayarı ekonomi kararını bekliyor).
-        public static string Kimlik(GearModel r)
+        // Gerçek raketin gövdesindeki satır: "3U · G5 · 300 mm · sert · 21–29 lbs"; sap oyuncunun ayarı (varsayılan G5).
+        public static string Kimlik(GearModel r, string sap = "G5")
         {
             if (r == null || r.u == null || !r.dengeMm.HasValue) return null;
-            return r.u + " · G5 · " + r.dengeMm.Value + " mm · " + r.saft + (r.telMin.HasValue && r.telMax.HasValue ? " · " + r.telMin.Value + "–" + r.telMax.Value + " lbs" : "");
+            return r.u + " · " + sap + " · " + r.dengeMm.Value + " mm · " + r.saft + (r.telMin.HasValue && r.telMax.HasValue ? " · " + r.telMin.Value + "–" + r.telMax.Value + " lbs" : "");
         }
         // Takılı raketin önerdiği gerginlik aralığı; veri yoksa 20–28 (piyasanın en yaygın aralığı).
         public static void TelAralik(string raket, out int min, out int max)
@@ -140,7 +140,7 @@ namespace BirdieSmash.Core
 
         public static readonly Yuva[] YUVA = {
             new Yuva{k="raket",m="raket",ad="Raket",n="Güç ve kontrol artar; modelin artısı büyür, eksisi küçülür"}, new Yuva{k="tel",m="kordaj",ad="Kordaj",n="Tatlı nokta genişler, gerginliğin eksisi azalır"},
-            new Yuva{k="grip",m="grip",ad="Grip",n="Kontrol artar: top daha az sapar"}, new Yuva{k="bileklik",m="bileklik",ad="Bileklik",n="Nefes daha yavaş tükenir"},
+            new Yuva{k="grip",m="grip",ad="Sargı",n="Kontrol artar: top daha az sapar"}, new Yuva{k="bileklik",m="bileklik",ad="Bileklik",n="Nefes daha yavaş tükenir"},
             new Yuva{k="bant",m="bant",ad="Kafa bandı",n="Tam orta penceresi genişler"}, new Yuva{k="forma",m="kumas",ad="Forma kumaşı",n="Koşu hızlanır, kumaşın etkisi büyür"}};
         public static Yuva YuvaOf(string k) { foreach (var y in YUVA) if (y.k == k || y.m == k) return y; return null; }
         public static readonly int[] YUK_FIYAT = { 50, 110, 180, 290, 450, 680, 1000, 1450, 2100 }, YUK_SV = { 1, 2, 4, 6, 9, 12, 16, 20, 24 };
@@ -151,6 +151,9 @@ namespace BirdieSmash.Core
 
         // seçili modeller (HTML G) + ekonomi. renk = forma rengi (yalnız görünüm), kumas = forma kumaşı (işlev).
         public string raket = "denge", kordaj = "dayanikli", grip = "sentetik", bileklik = "yok", bant = "yok", kumas = "klasik", renk = "mavi", ayakkabi = "klasik"; public float tel = 26;
+        // 2026-11-07 sap ölçüsü (dev thread kararı): G4 kalın · G5 · G6 ince; gerginlik gibi ücretsiz beceri ayarı, toplamı nötr.
+        // Grip yuvası artık sargıdır (sentetik, havlu, kalın sargı); ikisi çarpılarak biner. Eski kayıtta yoksa G5.
+        public string sap = "G5";
         public Ekonomi eko = new Ekonomi();
         public bool kariyerModu;
         readonly IKayit kayit;
@@ -180,7 +183,8 @@ namespace BirdieSmash.Core
                 object tv; if (g.TryGetValue("tel", out tv)) { double v = tv is string ? ParseD(((string)tv).Replace("t", "")) : tv is double ? (double)tv : 0; if (v >= 18 && v <= 32) tel = (float)v; }
                 raket = Model("raket", Json.Str(g, "raket", raket)); bileklik = Model("bileklik", Json.Str(g, "bileklik", bileklik)); bant = Model("bant", Json.Str(g, "bant", bant));
                 kordaj = Model("kordaj", Json.Str(g, "kordaj", kordaj)); grip = Model("grip", Json.Str(g, "grip", grip));
-                ayakkabi = Model("ayakkabi", Json.Str(g, "ayakkabi", ayakkabi));   // 2026-10-26: alan yoksa Klasik kort (nötr = bugünkü fizik)
+                ayakkabi = Model("ayakkabi", Json.Str(g, "ayakkabi", ayakkabi));
+                string sp = Json.Str(g, "sap", "G5"); sap = sp == "G4" || sp == "G6" ? sp : "G5";   // 2026-10-26: alan yoksa Klasik kort (nötr = bugünkü fizik)
                 string fo = Json.Str(g, "forma", null), ku = Json.Str(g, "kumas", null), rn = Json.Str(g, "renk", null);
                 kumas = ku != null && GEAR["kumas"].ContainsKey(ku) ? ku : fo != null ? KumasOf(fo) : "klasik";
                 renk = rn != null && RENK.ContainsKey(rn) ? rn : fo != null && RENK.ContainsKey(fo) ? fo : "mavi";
@@ -217,7 +221,7 @@ namespace BirdieSmash.Core
         public void GearYaz()
         {
             kayit.Set("tuytop_gear", Json.Write(new Dictionary<string, object> { { "raket", raket }, { "tel", (double)tel }, { "bileklik", bileklik }, { "bant", bant }, { "forma", EskiForma() },
-                { "kumas", kumas }, { "renk", renk }, { "grip", grip }, { "kordaj", kordaj }, { "ayakkabi", ayakkabi } }));
+                { "kumas", kumas }, { "renk", renk }, { "grip", grip }, { "kordaj", kordaj }, { "ayakkabi", ayakkabi }, { "sap", sap } }));
         }
         public void EkoYaz()
         {
@@ -275,6 +279,11 @@ namespace BirdieSmash.Core
         // (aynı formül), renk yalnız görünüm. Nötr modellerde (Dayanıklı, Sentetik, Klasik) her terim 1: v1 sayıları birebir.
         // Hücum'un nefes eksisi (yor > 1) raket seviyesiyle aynı oranda küçülür; Kesici'nin slice etkisi ve Havlu'nun yorgun
         // sapması ölçeklenmez (sayıya sığmayan "özel" etki, seviye tek bir sayıyı büyütür).
+        // Sap ölçüsü: G6 ince bilek ve drive +3 / kontrol −3; G4 kalın kontrol +3 / drive −3; G5 nötr.
+        public static float SapKontrol(string s) { return s == "G4" ? 1.03f : s == "G6" ? .97f : 1f; }
+        public static float SapHiz(string s) { return s == "G6" ? 1.03f : s == "G4" ? .97f : 1f; }
+        // Sap çevresi (yaklaşık; üretici tablosuna göre değişir).
+        public static string SapMm(string s) { return s == "G4" ? "≈ 86–89 mm" : s == "G6" ? "≈ 80–83 mm" : "≈ 83–86 mm"; }
         const float RAKET_EKSI = .4f;
         static float Taban(float m, float kr) { return Math.Abs(m - 1) < 1e-4f ? 1 + .05f * kr : 1; }
         public GearStats Hesap()
@@ -285,8 +294,8 @@ namespace BirdieSmash.Core
             float kr = KSv("raket"), kt = KSv("tel"), kg = KSv("grip"), kb = KSv("bileklik"), kh = KSv("bant"), kf = KSv("forma");
             return new GearStats {
                 guc = Taban(r.guc.Value, kr) * Olcek(r.guc.Value, kr, .18f, RAKET_EKSI) * Olcek(t.guc, kt, 0, .5f) * Olcek(kd.guc ?? 1, kt, .18f, RAKET_EKSI) * Olcek(b.guc ?? 1, kb, .18f, .6f),
-                kontrol = Taban(r.kontrol.Value, kr) * Olcek(r.kontrol.Value, kr, .18f, RAKET_EKSI) * Olcek(t.kontrol, kt, 0, .5f) * Olcek(kd.kontrol ?? 1, kt, .18f, RAKET_EKSI) * (1 + .15f * kg) * Olcek(gp.kontrol ?? 1, kg, .18f, RAKET_EKSI),
-                hiz = Olcek(r.hiz.Value, kr, .18f, RAKET_EKSI) * Olcek(b.hiz ?? 1, kb, .18f, .6f) * Olcek(gp.hiz ?? 1, kg, .18f, RAKET_EKSI),
+                kontrol = Taban(r.kontrol.Value, kr) * Olcek(r.kontrol.Value, kr, .18f, RAKET_EKSI) * Olcek(t.kontrol, kt, 0, .5f) * Olcek(kd.kontrol ?? 1, kt, .18f, RAKET_EKSI) * (1 + .15f * kg) * Olcek(gp.kontrol ?? 1, kg, .18f, RAKET_EKSI) * SapKontrol(sap),
+                hiz = Olcek(r.hiz.Value, kr, .18f, RAKET_EKSI) * Olcek(b.hiz ?? 1, kb, .18f, .6f) * Olcek(gp.hiz ?? 1, kg, .18f, RAKET_EKSI) * SapHiz(sap),
                 tatli = Olcek(r.tatli.Value, kr, .18f, RAKET_EKSI) * Olcek(t.tatli, kt, 0, .5f) * Olcek(kd.tatli ?? 1, kt, .18f, RAKET_EKSI) * (1 + .15f * kt) * (1 + .10f * kh),
                 ton = r.ton.Value * t.ton * (kd.ton ?? 1), kafa = r.kafa.Value, kenar = b.kenar ?? 1, akis = h.akis ?? 4, yavas = h.yavas ?? 1, rakip = h.rakip ?? 1,
                 kosu = (1 + .04f * kf) * Olcek(f.kosu ?? 1, kf, .12f, 0) * (a.kosu ?? 1), enerji = Olcek(f.enerji ?? 1, kf, .12f, 0),
