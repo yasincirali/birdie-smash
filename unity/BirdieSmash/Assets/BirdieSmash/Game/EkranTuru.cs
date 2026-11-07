@@ -425,6 +425,10 @@ namespace BirdieSmash.Game
             for (int t = 0; t < p.tur.Length; t++) for (int b = 0; b < p.tur[t].Length; b++) p.tur[t][b] = 7;
             p.Unvan = "asya"; ui.Kirlet(); ui.SekmeAc(Sekme.Oyna); ui.SekmeAc(Sekme.Profil); yield return Bekle(20); yield return Cek("menu_" + ek + "profil_tum");
             ui.SeviyeAniTur(4, 6); yield return Bekle(40); yield return Cek("menu_" + ek + "seviye_ani"); ui.SeviyeAniKapat();   // 2026-10-31 seviye atlama anı
+            // 2026-11-07 tur töreni (stüdyo GD1/GD5): Asya Turu altın mühürle; ardından bronz (12/18) ve iki rakip yenilmemiş hâli
+            ui.TurTorenTur(1, true, 1, 2); yield return Bekle(40); yield return Cek("menu_" + ek + "tur_toren"); ui.SeviyeAniKapat();
+            { var es = (int[])p.tur[1].Clone(); var ym = new[] { 7, 7, 3, 3, 1, 1 }; for (int b = 0; b < 6; b++) p.tur[1][b] = ym[b];
+              ui.TurTorenTur(1, true, 0, 1); yield return Bekle(40); yield return Cek("menu_" + ek + "tur_toren_bronz"); ui.SeviyeAniKapat(); p.tur[1] = es; }
             Ayar.ilerleme = eski; ui.SekmeAc(Sekme.Oyna); ui.SekmeAc(Sekme.Profil); yield return Bekle(5);
         }
 

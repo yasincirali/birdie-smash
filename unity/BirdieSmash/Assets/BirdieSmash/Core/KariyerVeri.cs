@@ -18,7 +18,7 @@ namespace BirdieSmash.Core
 {
     public class ImzaBilgi { public string id, ad, uyari, cevap, renk; public string[] sira; }
 
-    public class KariyerTur { public string id, ad; public int epMin, epMax; public float tepki = 1, hucum = 1; public Kariyer[] b = new Kariyer[0]; public bool Var { get { return b.Length > 0; } } }
+    public class KariyerTur { public string id, ad, tema = ""; public int epMin, epMax; public float tepki = 1, hucum = 1; public Kariyer[] b = new Kariyer[0]; public bool Var { get { return b.Length > 0; } } }
     // Usta yolu (kariyer.json "usta"): g = g + adim × çevrim, en çok tavan; tepki/hucum Tur 4 gibi ek zorluk.
     // carpan (2026-10-27): Usta yolu dışındaki Usta maçlarında (Hızlı maç, kariyer, Günün maçı "Usta") rakibin g çarpanı (Match.UstaGucu).
     public class UstaVeri { public float g = 1, adim = .02f, tavan = 1.2f, tepki = 1, hucum = 1, carpan = 1; public int uzunluk = 5, finalUzunluk = 11; }
@@ -89,7 +89,7 @@ namespace BirdieSmash.Core
             for (int t = 0; t < tj.Count && t < TUR; t++)
             {
                 var d = Json.Obj(tj[t]); var ep = d.ContainsKey("ep") ? Nums(d, "ep") : new float[] { 0, 0 };
-                var tur = new KariyerTur { id = Json.Str(d, "id", "tur" + t), ad = Json.Str(d, "ad", ""), epMin = (int)ep[0], epMax = (int)ep[ep.Length - 1], tepki = F(d, "tepki", 1), hucum = F(d, "hucum", 1) };
+                var tur = new KariyerTur { id = Json.Str(d, "id", "tur" + t), ad = Json.Str(d, "ad", ""), tema = Json.Str(d, "tema", ""), epMin = (int)ep[0], epMax = (int)ep[ep.Length - 1], tepki = F(d, "tepki", 1), hucum = F(d, "hucum", 1) };
                 var bl = new List<Kariyer>(); var bj = d["basamaklar"] as List<object>;
                 for (int i = 0; bj != null && i < bj.Count && i < BASAMAK; i++)
                 {

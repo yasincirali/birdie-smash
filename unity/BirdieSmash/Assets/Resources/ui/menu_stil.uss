@@ -183,6 +183,14 @@
 .tur-cip--kilit .dugme-yazi { color: var(--mu); }
 .tur-cip--kilit.cip--secili .dugme-yazi { color: var(--tx); }
 .tur-kart { margin-top: 8px; margin-bottom: 10px; }
+/* 2026-11-07 tur giriş kartı (GD2): tema cümlesi, altı rakip noktası (yenilen ✓, yenilmeyen soluk halka), hazırlık çubuğu (bilgi) */
+.muhur-satir { min-height: 32px; align-items: center; margin-bottom: 4px; }
+.tur-tema { color: var(--tx); white-space: normal; margin: 6px 0 8px 0; }
+.tur-rakipler { flex-direction: row; flex-wrap: nowrap; margin: 0 0 10px 0; }
+.tur-rakip-nokta { width: 20px; height: 20px; border-radius: 10px; margin-right: 6px; align-items: center; justify-content: center; }
+.tur-rakip-nokta--yok { opacity: 0.35; }
+.tur-hazir-iz { flex-grow: 0; margin: 6px 0 0 0; }
+.tur-hazir-iz .stat-dolu { background-color: var(--lime); }
 /* 2026-11-07 (UX5): sabit sıradaki maç şeridi, kaydırmanın dışında, sekme çubuğunun üstünde; birincil düğmeden kısa */
 .siradaki-serit { flex-shrink: 0; min-height: 52px; margin: 4px 16px 8px 16px; padding: 6px 14px; }
 .kisa .siradaki-serit { min-height: 48px; margin-bottom: 4px; }
@@ -609,6 +617,13 @@
 .seviye-ic .dugme { align-self: stretch; margin-top: 8px; }
 /* 2026-11-07 (UX1): grup başlığı ("Dolapta"/"Atölyede"/"Ayrıca") ve hayalet düğme (saydam + ince çerçeve; CTA > hayalet) */
 .seviye-grup { margin-top: 10px; letter-spacing: 0.5px; }
+/* 2026-11-07 tur töreni (GD1/GD5): tur adı, mühür satırı, altı rakip (nokta ≥ 28, yenilen ✓; yenilmeyen soluk + biçim: ✓ yok) */
+.toren-ad { color: var(--tx); -unity-text-align: middle-center; margin: 2px 0 12px 0; white-space: normal; }
+.toren-muhur { flex-direction: row; align-items: center; justify-content: center; margin-bottom: 14px; flex-wrap: nowrap; }
+.toren-rakipler { flex-direction: row; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; }
+.toren-rakip { align-items: center; width: 52px; margin: 0 2px 6px 2px; }
+.toren-rakip--yok { opacity: 0.45; }
+.toren-nokta { width: 28px; height: 28px; border-radius: 14px; align-items: center; justify-content: center; margin-bottom: 3px; border-width: 2px; border-color: rgba(255, 255, 255, 0.35); }
 .dugme--hayalet { background-color: rgba(0, 0, 0, 0); border-color: rgba(255, 255, 255, 0.25); border-width: 1px; }
 .dugme--hayalet:active { background-color: rgba(255, 255, 255, 0.06); }
 

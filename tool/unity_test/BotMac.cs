@@ -924,6 +924,24 @@ static class BotMac
             }
             if (gf > 0) Fail("seviye anı grupları AcilanAralik ile tutmuyor: " + gf);
         }
+        // (1g) tur mührü (2026-11-07, yasin "Ekle"): 8 yıldız yok, 9 bronz, 17 bronz, 18 altın; kayıt alanı yok (TurYildiz'dan)
+        {
+            var mp = new Ilerleme(); var y8 = new[] { 7, 1, 0, 0, 0, 0 }; var y9 = new[] { 7, 7, 3, 1, 0, 0 }; var y17 = new[] { 7, 7, 7, 7, 7, 3 };
+            for (int b = 0; b < 6; b++) mp.tur[0][b] = y8[b]; if (mp.TurYildiz(0) != 4 || mp.Muhur(0) != 0) Fail("mühür: 4 yıldızda mühür olmamalı");
+            for (int b = 0; b < 6; b++) mp.tur[0][b] = y9[b]; if (mp.TurYildiz(0) != 9 || mp.Muhur(0) != 1) Fail("mühür: 9 yıldız bronz olmalı " + mp.TurYildiz(0));
+            for (int b = 0; b < 6; b++) mp.tur[0][b] = y17[b]; if (mp.Muhur(0) != 1) Fail("mühür: 17 yıldız bronz kalmalı");
+            mp.tur[0][5] = 7; if (mp.Muhur(0) != 2) Fail("mühür: 18 yıldız altın olmalı");
+            foreach (var kt in KariyerVeri.Turlar) if (kt.Var && string.IsNullOrEmpty(kt.tema)) Fail("tur teması boş: " + kt.id);
+        }
+        // (1h) hedef "≈ N maç" (GD6): 3 maçtan az veri ya da 0 ortalama gizli (-1); son 5 tutulur; yukarı yuvarlanır
+        {
+            string k = ""; k = Hedef.SonEkle(k, 50); k = Hedef.SonEkle(k, 70);
+            if (Hedef.MacTahmini(200, k) != -1) Fail("≈maç: 2 maçla tahmin olmamalı");
+            k = Hedef.SonEkle(k, 60); if (Hedef.MacTahmini(200, k) != 4) Fail("≈maç: ort 60, 200 kalan → 4 olmalı " + Hedef.MacTahmini(200, k));
+            if (Hedef.MacTahmini(0, k) != -1) Fail("≈maç: kalan 0 gizli olmalı");
+            for (int i = 0; i < 6; i++) k = Hedef.SonEkle(k, 100); if (k.Split(',').Length != 5 || Hedef.MacTahmini(250, k) != 3) Fail("≈maç: son 5 / ort 100 → 3 " + k);
+            if (Hedef.MacTahmini(100, "0,0,0") != -1) Fail("≈maç: ortalama 0 gizli olmalı");
+        }
         // (1e) maç sonu ödüllü reklam (2026-11-07, Core/OdulluReklam): +%50 yalnız Tüy, günde 1, ilk 3 galibiyette yok, başka ikincil
         // varken yok, 3 ardışık ret → 3 maç sus; XP ve seviye değişmez.
         {

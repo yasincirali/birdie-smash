@@ -42,8 +42,21 @@ namespace BirdieSmash.Game
             {
                 var kl = Satir("rakip-satir"); kb.Add(kl); kl.Add(Ikon(Ikonlar.Kilit, 18, SOLUK)); var ky = Yazi(KilitNedeni(tr), 14, "soluk"); ky.style.marginLeft = 6; kl.Add(ky);
             }
-            if (tv != null) kb.Add(Yazi(L.T("Önerilen ekipman puanı {0}–{1} · seninki {2}", tv.epMin, tv.epMax, EkipmanPuani()), 13, "soluk"));
-            Erisim.Etiket(kb, L.T(TurAd(tr)) + (veri ? ", " + L.T("{0}/{1} yıldız", p.TurYildiz(tr), 18) : "") + (!acik ? ", " + KilitNedeni(tr) : ""), "metin");
+            // Tur giriş kartı (2026-11-07 stüdyo GD2): tema cümlesi, altı rakip noktası (yenilen ✓) ve hazırlık çubuğu. "Önerilen 12–24 ·
+            // seninki 6" sorun gösterip çözüm göstermiyordu. Çubuk yalnız bilgi, kapı değil (öneri-kilit ayrımı); ekipman puanı alt
+            // sınırın altındaysa "Atölye'ye git" (puan yuva seviyelerinin toplamı, Atölye'de yükselir), değilse düğme yok.
+            if (tv != null && !string.IsNullOrEmpty(tv.tema)) { var tm = Yazi(L.T(tv.tema), 14); tm.AddToClassList("tur-tema"); kb.Add(tm); }
+            if (veri) { var rn = Satir("tur-rakipler"); rn.pickingMode = PickingMode.Ignore; kb.Add(rn); for (int b = 0; b < KariyerVeri.BASAMAK; b++) { int g = KariyerVeri.Global(tr, b); var st = Match.STIL[KariyerVeri.Al(g).stil]; var n = new VisualElement(); n.AddToClassList("tur-rakip-nokta"); n.style.backgroundColor = Kit.Hex(st.renk); if (!p.Kazanildi(g)) n.AddToClassList("tur-rakip-nokta--yok"); else n.Add(Ikon(Ikonlar.Tik, 11, MUREKKEP)); n.pickingMode = PickingMode.Ignore; rn.Add(n); } }
+            if (tv != null)
+            {
+                int ep = EkipmanPuani(); bool az = ep < tv.epMin;
+                var hz = Satir("arali"); hz.pickingMode = PickingMode.Ignore; kb.Add(hz);
+                hz.Add(Yazi(L.T("Ekipman {0}/{1}", ep, tv.epMin), 13, az ? "durum-simdi" : "soluk")); hz.Add(Yazi(az ? L.T("{0} puan eksik", tv.epMin - ep) : L.T("Hazırsın"), 13, az ? "soluk" : "durum-gecti"));
+                var iz = new VisualElement(); iz.AddToClassList("stat-iz"); iz.AddToClassList("tur-hazir-iz"); iz.pickingMode = PickingMode.Ignore; kb.Add(iz);
+                var dl = new VisualElement(); dl.AddToClassList("stat-dolu"); dl.style.width = Length.Percent(Mathf.Clamp01(ep / (float)Mathf.Max(1, tv.epMin)) * 100); dl.pickingMode = PickingMode.Ignore; iz.Add(dl);
+                if (az && acik) { var ag = Dugme(L.T("Atölye'ye git"), () => SekmeAc(Sekme.Atolye), "kucuk-dugme"); ag.style.alignSelf = Align.FlexStart; ag.style.marginTop = 8; kb.Add(ag); }
+            }
+            Erisim.Etiket(kb, L.T(TurAd(tr)) + (veri ? ", " + L.T("{0}/{1} yıldız", p.TurYildiz(tr), 18) : "") + (!acik ? ", " + KilitNedeni(tr) : "") + (tv != null && !string.IsNullOrEmpty(tv.tema) ? ", " + L.T(tv.tema) : "") + (tv != null ? ", " + L.T("Ekipman {0}/{1}", EkipmanPuani(), tv.epMin) : ""), "metin");
             SiradakiSerit(k, p, sira);
             if (!veri) { c.Add(Bosluk(20)); return; }
 
@@ -110,8 +123,10 @@ namespace BirdieSmash.Game
             // 2026-11-07 (AD1, UX6): seçili = turuncu çerçeve + tint (çip dili); simge krem, ✓ turuncu. Kilitli seçili çipte ✓ yok, kilit kalır.
             if (!acik) ic.Add(Ikon(Ikonlar.Kilit, 14, secili ? YAZI : SOLUK)); else if (bitti) ic.Add(Ikon(Ikonlar.Kupa, 14, YAZI)); else if (secili) ic.Add(Ikon(Ikonlar.Tik, 14, TURUNCU));
             ic.Add(Yazi(L.T("Tur {0}", t + 1), 14, "dugme-yazi"));
+            // tur mührü (2026-11-07 GD5): bronz = çerçeve yıldız, altın = dolu yıldız (biçim + ekran okuyucu adı)
+            int mh = acik ? p.Muhur(t) : 0; if (mh > 0) { var mi = Ikon(mh >= 2 ? Ikonlar.YildizDolu : Ikonlar.YildizBos, 13, mh >= 2 ? ALTIN : BRONZ); mi.style.marginLeft = 4; ic.Add(mi); }
             int tt = t; d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); KariyerTurSec(tt); }));
-            Erisim.Etiket(d, L.T("Tur {0}", t + 1) + ", " + L.T(TurAd(t)) + (!acik ? ", " + L.T("Kilitli") : bitti ? ", " + L.T("tamam") : ""), "dugme", secili);
+            Erisim.Etiket(d, L.T("Tur {0}", t + 1) + ", " + L.T(TurAd(t)) + (!acik ? ", " + L.T("Kilitli") : bitti ? ", " + L.T("tamam") : "") + (mh >= 2 ? ", " + L.T("Altın tur mührü") : mh == 1 ? ", " + L.T("Bronz tur mührü") : ""), "dugme", secili);
             return d;
         }
 

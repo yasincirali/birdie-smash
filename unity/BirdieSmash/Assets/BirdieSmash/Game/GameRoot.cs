@@ -367,7 +367,10 @@ namespace BirdieSmash.Game
             if (KariyerVeri.Var(M.stil.kariyer))
             {   // yıldızlar ve açılış Core/Ilerleme'de; Tur 1 sayısı (tuytop_v2.kariyer, başarımlar) ondan türer
                 int g = M.stil.kariyer; var bg = M.BasamakGorevi;
+                int torenTur = KariyerVeri.TurOf(g), muhur0 = Ayar.ilerleme.Muhur(torenTur);
                 var r = Ayar.ilerleme.Isle(g, won, bg != null && bg.bitti, M.sc[0], M.sc[1], M.target);
+                // Tur töreni (2026-11-07 stüdyo GD1/GD5): tur finali ya da yeni tur mührü menüye dönüşte bir kez sahnelenir (UiKok.TurToren)
+                int muhur1 = Ayar.ilerleme.Muhur(torenTur); if (r.turBitti || muhur1 > muhur0) UiKok.TorenBekle(torenTur, r.turBitti, muhur0, muhur1);
                 kariyerIlk = r.ilkGalibiyet; kNot = r.not; yeniYildiz = r.yeniYildiz;
                 Ayar.kariyer = Ayar.ilerleme.Tur1Gecilen(); if (Ayar.kariyer >= Match.KARIYER.Length) Ayar.sampiyon = true;
                 if (kariyerIlk && KariyerVeri.TurOf(g) == 0) { Basarim.Ver("bs_kariyer_" + Ayar.kariyer); Basarim.Giris(Ayar.kariyer); }   // giriş isteği ilk basamaktan sonra
@@ -404,6 +407,7 @@ namespace BirdieSmash.Game
             // Maç sonu ödülü (HTML ekoOdul): antrenmanda yok (antrenman maç sonu ekranına gelmez). Yeni yıldız +20 Tüy, okunan imza +5 XP.
             bool hazirOnce = YukseltAlinir(Ayar.gear.Seviye());   // ödülden önce: bu maç yeni bir şey açtı mı
             odul = Ayar.gear.Odul(won, kariyerIlk, M.target, M.easy, M.gorevBitti, M.perfects, System.DateTime.Now, yeniYildiz, M.okudun, ekTuy, ekXp, ekAd);
+            PlayerPrefs.SetString(Hedef.SON_ANAHTAR, Hedef.SonEkle(PlayerPrefs.GetString(Hedef.SON_ANAHTAR, ""), odul.tuy));   // "≈ N maç" (Core/Hedef.MacTahmini)
             rekKart = true;   // ödüllü reklam teklifi yalnız gerçek maç kartında (antrenman ve görev kartında yok)
             if (odul.sonra > odul.once) Yerel.Hap("flow");   // seviye atladın
             if (odul.sonra >= 30) Basarim.Ver(Basarim.EFSANE);

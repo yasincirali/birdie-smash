@@ -1268,7 +1268,8 @@ namespace BirdieSmash.Game
             var hd = root.hedef; string hSol = null, hSag = null; float hTh = 0, hSw = 0, hH = 0;
             if (hd.gecerli)
             {
-                hSol = L.T("Hedef: {0}", L.T(hd.ad)); hSag = L.T("{0} Tüy kaldı", 99999); hSw = aHedefSag.CalcSize(Ic(hSag)).x + 4 * s;
+                hSol = L.T("Hedef: {0}", L.T(hd.ad)); { int hm = Hedef.MacTahmini(Hedef.Kalan(hd.fiyat, Ayar.gear.eko.tuy), PlayerPrefs.GetString(Hedef.SON_ANAHTAR, "")); if (hm > 0) hSol += " · " + L.T("≈ {0} maç", hm); }   // 2026-11-07 GD6
+                hSag = L.T("{0} Tüy kaldı", 99999); hSw = aHedefSag.CalcSize(Ic(hSag)).x + 4 * s;
                 hTh = Mathf.Max(aHedefSol.CalcHeight(Ic(hSol), w - 2 * p - hSw - 8 * s), aHedefSag.CalcSize(Ic(hSag)).y); hH = 8 * s + hTh + 6 * s + 6 * s;
             }
             float h = p + rh + 6 * s + rh + (lv ? lvH + 8 * s : 0) + hH + 6 * s + ah + p; var r = new Rect(x, y, w, h); KutuCiz(r, aKutuS, al);

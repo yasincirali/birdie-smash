@@ -279,7 +279,16 @@ namespace BirdieSmash.Game
             }
             // D7 (2026-10-31): gecikmeli seviye anı, oyuncu 1,1 sn içinde maça girerse maçın üstünde titreşim/ses çalıyordu;
             // çalıştığı anda hâlâ menüde mi diye bakılır.
-            if (svOnce > 0 && sv > svOnce) kok.schedule.Execute(() => { if (root.ekran == Ekran.Menu && !OdulAnlariKapali) SeviyeAni(svOnce, sv); }).StartingIn(once >= 0 && hedef > once && !Ayar.reduce ? 1100 : 200);
+            int gec = once >= 0 && hedef > once && !Ayar.reduce ? 1100 : 200;
+            // Tur töreni önce (turun zirvesi), seviye anı onun "Tamam"ından sonra; ikisi üst üste açılmaz.
+            if (torenTur >= 0)
+            {
+                int tt = torenTur, m0 = torenMuhur0, m1 = torenMuhur1; bool tb = torenBitti; torenTur = -1;
+                System.Action sonra = svOnce > 0 && sv > svOnce ? (System.Action)(() => SeviyeAni(svOnce, sv)) : null;
+                kok.schedule.Execute(() => { if (root.ekran == Ekran.Menu && !OdulAnlariKapali) TurToren(tt, tb, m0, m1, sonra); }).StartingIn(gec);
+                return;
+            }
+            if (svOnce > 0 && sv > svOnce) kok.schedule.Execute(() => { if (root.ekran == Ekran.Menu && !OdulAnlariKapali) SeviyeAni(svOnce, sv); }).StartingIn(gec);
         }
         void TuyUcur(VisualElement tuy, Label tz, int once, int hedef)
         {
@@ -341,6 +350,57 @@ namespace BirdieSmash.Game
             sayi.experimental.animation.Start(0f, 1f, 420, (v, t) => { float e = 1 - Mathf.Pow(1 - t, 3); v.style.scale = new Scale(Vector3.one * Mathf.Lerp(1.4f, 1f, e)); });
             int j = 0; foreach (var c in liste.Children()) { var cc = c; int gec = 260 + 60 * j++; cc.style.opacity = 0f; cc.schedule.Execute(() => cc.experimental.animation.Start(0f, 1f, 200, (v, t) => v.style.opacity = t)).StartingIn(gec); }
         }
+
+        // ---- Tur töreni (2026-11-07 stüdyo incelemesi GD1 + tur mührü GD5, yasin karar kartı "Ekle") ----
+        // Tur finali bugüne kadar maç sonu kartında tek not cümlesiydi ("Asya Turu tamam!"); 20-40 dakikalık turun zirvesi sıradan
+        // galibiyetten ayrışmıyordu. Menüye dönüşte bir kez: "Tur tamam", tur adı, turun yıldızı x/18 ve mühür (bronz 9★ = çerçeve
+        // yıldız, altın 18★ = dolu yıldız: biçim ve yazı, yalnız renk değil), turda yenilen altı rakip, tek turuncu düğme "Sıradaki:
+        // <tur>" haritayı o tura açar (maça değil). Yalnız mühür kazanıldıysa (eski bir turu yıldızlarken) aynı kart, başlık mühür.
+        // Zorunlu bekleme yok; zemine dokunmak kapatır. Hareketi azaltta solma ve büyüme yok. Seviye anı ardından açılır.
+        static int torenTur = -1, torenMuhur0, torenMuhur1; static bool torenBitti;
+        public static void TorenBekle(int t, bool bitti, int m0, int m1) { torenTur = t; torenBitti = bitti; torenMuhur0 = m0; torenMuhur1 = m1; }
+        public void TurTorenTur(int t, bool bitti, int m0, int m1) { TurToren(t, bitti, m0, m1, null); }   // EkranTuru
+        static readonly Color BRONZ = Kit.Hex("#D9A066");
+        void TurToren(int t, bool bitti, int m0, int m1, System.Action sonra)
+        {
+            SeviyeAniKapat(); var p = Ayar.ilerleme; if (p == null || t < 0 || t >= KariyerVeri.Turlar.Length) { if (sonra != null) sonra(); return; }
+            var o = new VisualElement(); o.AddToClassList("seviye-ani"); seviyeAni = o; kok.Add(o);
+            System.Action kapat = () => { if (seviyeAni == o) seviyeAni = null; o.RemoveFromHierarchy(); if (sonra != null) sonra(); };
+            o.AddManipulator(new Clickable(kapat));
+            var ic = new VisualElement(); ic.AddToClassList("seviye-ic"); o.Add(ic);
+            bool yeniMuhur = m1 > m0; string muhurAd = m1 >= 2 ? L.T("Altın tur mührü") : L.T("Bronz tur mührü");
+            ic.Add(Yazi(Buyuk(bitti ? L.T("Tur tamam") : muhurAd), 15, "seviye-ust"));
+            var ad = Yazi(L.T(KariyerEkranTurAd(t)), 30, "kalin"); ad.AddToClassList("toren-ad"); ic.Add(ad);
+            int ys = p.TurYildiz(t);
+            var mr = Satir("toren-muhur"); mr.pickingMode = PickingMode.Ignore; ic.Add(mr);
+            var mi = Ikon(m1 >= 2 ? Ikonlar.YildizDolu : m1 == 1 ? Ikonlar.YildizBos : Ikonlar.YildizBos, 56, m1 >= 2 ? ALTIN : m1 == 1 ? BRONZ : SOLUK); mr.Add(mi);
+            var my = new VisualElement(); my.pickingMode = PickingMode.Ignore; my.style.marginLeft = 10; mr.Add(my);
+            my.Add(Yazi(L.T("{0}/{1} yıldız", ys, 18), 20, "rakam"));
+            string alt = m1 >= 2 ? muhurAd : m1 == 1 ? muhurAd + " · " + L.T("altın için {0} yıldız", Ilerleme.MUHUR_ALTIN - ys) : L.T("bronz mühür için {0} yıldız", Ilerleme.MUHUR_BRONZ - ys);
+            my.Add(Yazi(alt, 13, yeniMuhur ? "durum-gecti" : "soluk"));
+            // turda yenilen rakipler (renk noktası + ad; yenilmeyen soluk)
+            var rk = Satir("toren-rakipler"); rk.pickingMode = PickingMode.Ignore; ic.Add(rk);
+            for (int b = 0; b < KariyerVeri.BASAMAK; b++)
+            {
+                int g = KariyerVeri.Global(t, b); var st = Match.STIL[KariyerVeri.Al(g).stil]; bool yen = p.Kazanildi(g);
+                var h = new VisualElement(); h.AddToClassList("toren-rakip"); h.pickingMode = PickingMode.Ignore; if (!yen) h.AddToClassList("toren-rakip--yok"); rk.Add(h);
+                var n = new VisualElement(); n.AddToClassList("toren-nokta"); n.style.backgroundColor = Kit.Hex(st.renk); n.pickingMode = PickingMode.Ignore; h.Add(n);
+                if (yen) n.Add(Ikon(Ikonlar.Tik, 14, MUREKKEP));
+                var ry = Yazi(st.isim, 11, "soluk"); ry.style.whiteSpace = WhiteSpace.NoWrap; h.Add(ry);
+            }
+            int sonrakiT = t + 1; bool sonrakiVar = bitti && sonrakiT < KariyerVeri.Turlar.Length && KariyerVeri.Turlar[sonrakiT].Var;
+            if (sonrakiVar) ic.Add(Dugme(L.T("Sıradaki: {0}", L.T(KariyerEkranTurAd(sonrakiT))), () => { kapat(); kariyerTur = sonrakiT; SekmeAc(Sekme.Kariyer); }, "dugme--birincil"));
+            else if (bitti && sonrakiT < KariyerVeri.TUR) ic.Add(Yazi(L.T("Yakında: bu tur sonraki güncellemede gelir"), 13, "soluk"));
+            ic.Add(Dugme(L.T("Tamam"), kapat, sonrakiVar ? "dugme--hayalet" : "dugme--birincil"));
+            Erisim.Etiket(ic, (bitti ? L.T("Tur tamam") : muhurAd) + ", " + L.T(KariyerEkranTurAd(t)) + ", " + L.T("{0}/{1} yıldız", ys, 18) + ", " + alt, "metin");
+            root.sfx.Tik(1180); Yerel.Hap(bitti || m1 >= 2 ? "flow" : "win");
+            if (Ayar.reduce) return;
+            o.style.opacity = 0f; o.experimental.animation.Start(0f, 1f, 220, (v, k) => v.style.opacity = k);
+            mi.style.scale = new Scale(Vector3.one * 1.5f);
+            mi.experimental.animation.Start(0f, 1f, 480, (v, k) => { float e = 1 - Mathf.Pow(1 - k, 3); v.style.scale = new Scale(Vector3.one * Mathf.Lerp(1.5f, 1f, e)); });
+            int j = 0; foreach (var c in rk.Children()) { var cc = c; int gc = 300 + 70 * j++; cc.style.opacity = 0f; cc.schedule.Execute(() => cc.experimental.animation.Start(0f, 1f, 180, (v, k) => v.style.opacity = k)).StartingIn(gc); }
+        }
+        static string KariyerEkranTurAd(int t) { return TurAd(t); }
 
         // Giriş: 24 pt sağdan, solarak, .22 sn (HTML pIn ile aynı); hareketi azaltta USS geçişi 0 sn, yalnız görünür olur.
         void Giris(VisualElement v)

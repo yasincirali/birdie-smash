@@ -103,6 +103,22 @@ namespace BirdieSmash.Game
                 Erisim.Etiket(ur, L.T("Unvan") + " " + L.T(u.ad) + ", " + L.T("Kilitli") + ", " + nasil, "metin");
             }
 
+            // Tur mühürleri (2026-11-07, yasin karar kartı "Ekle"; GD5): her tur için mühür ya da sıradaki eşik. Fiyatsız prestij, satılmaz.
+            c.Add(Grup(L.T("Tur mühürleri")));
+            var mk = Kart("muhur-kart"); c.Add(mk);
+            for (int mt = 0; mt < KariyerVeri.Turlar.Length; mt++)
+            {
+                if (!KariyerVeri.Turlar[mt].Var) continue; int mh = p.TurAcik(mt) ? p.Muhur(mt) : 0, ys = p.TurYildiz(mt);
+                var mr = Satir("arali"); mr.AddToClassList("muhur-satir"); mr.pickingMode = PickingMode.Ignore; mk.Add(mr);
+                var sol = Satir("rakip-satir"); sol.pickingMode = PickingMode.Ignore; mr.Add(sol);
+                sol.Add(Ikon(mh >= 2 ? Ikonlar.YildizDolu : Ikonlar.YildizBos, 18, mh >= 2 ? ALTIN : mh == 1 ? BRONZ : SOLUK));
+                var ay = Yazi(L.T(TurAd(mt)), 15); ay.style.marginLeft = 8; sol.Add(ay);
+                string dr = mh >= 2 ? L.T("Altın") : mh == 1 ? L.T("Bronz") + " · " + ys + "/18" : ys + "/18";
+                mr.Add(Yazi(dr, 13, mh > 0 ? "durum-gecti" : "soluk"));
+                Erisim.Etiket(mr, L.T(TurAd(mt)) + ", " + (mh >= 2 ? L.T("Altın tur mührü") : mh == 1 ? L.T("Bronz tur mührü") : L.T("{0}/{1} yıldız", ys, 18)), "metin");
+            }
+            mk.Add(Yazi(L.T("Bronz 9 yıldız, altın 18 yıldız. Satılmaz, yalnız oynayarak gelir."), 12, "soluk"));
+
             c.Add(Grup(L.T("İstatistikler")));
             var iz = Satir("izgara"); c.Add(iz);
             // 2026-11-07 inceleme: Rekor ralli, Galibiyet, Smaç üstteki üç büyük sayıda; ızgarada tekrar edilmez (büyük yazıda üç satır kısa).
