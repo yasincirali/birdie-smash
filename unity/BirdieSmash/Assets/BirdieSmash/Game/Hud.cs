@@ -505,21 +505,46 @@ namespace BirdieSmash.Game
         // kortun alt çeyreğini örtüyor, büyük yazıda ve İngilizcede alttan kesiliyordu. Şimdi ortada tek bir hap: her satır tek
         // satıra sığdırılır (Sigdir), en çok üç satır. "Rakip: …" satırı kalktı (rakip kartı ve skor tabelası zaten söylüyor);
         // görevler yalnız ilk serviste tek satır kısaltılmış; talimat yalnız Öğretici dönemde ve ilk serviste.
+        // 2026-11-07 (inceleme 7 Kas 12:06 #3): "Servis sende · sağ kare" satırı yalnız Öğretici dönemde. Sonrasında servisi
+        // kimin attığı figürün elindeki toptan, kare skordan ve oyuncunun durduğu kareden okunuyor; 300. maçta da her serviste
+        // kortun altını örten yazı okunmuyordu (banner körlüğü). Şerit yalnız söyleyecek yeni şey varken çıkar: hata/kural
+        // mesajı (serveMsg) ya da ilk servisteki görev satırı. Kortta hedef kare vurgusu ayrı iş (CourtView, kareyle denenecek).
+        // #4 aynı gün: satırlar, sığdırılmış ve ortalanmış stiller ve ölçüler yalnız durum değişince kurulur; eskiden her OnGUI
+        // (kare başına en az Repaint + her dokunma) liste, dizi, biçimli metin ve satır başına yeni GUIStyle üretiyordu, servis
+        // beklerken (1–6 sn) her kare çöp → ralli içinde GC takılması. Anahtar: maç, servis atan, taraf, mesaj, ilk servis,
+        // talimat dönemi, görev sayısı, dil, yazı ölçeği, en geniş satır.
+        readonly List<string> sMetin = new List<string>(); readonly List<Color> sRenk = new List<Color>();
+        readonly List<GUIStyle> sStil = new List<GUIStyle>(); readonly List<float> sBoy = new List<float>();
+        Match sM; string sServer, sSide, sMsg; bool sIlk, sOgr, sTal, sEn, sHazir; int sGorev; float sFu, sEnW, sWW, sHH;
         void ServisSeridi(Match M, float hy)
         {
-            var sat = new List<KeyValuePair<string, Color>>(); bool ilk = M.sc[0] + M.sc[1] == 0;
-            string side = L.T(M.ServeSideOf(M.server) == "R" ? "sağ" : "sol");
-            sat.Add(new KeyValuePair<string, Color>(M.server == "me" ? L.T("Servis sende · {0} kare", side) : L.T("Rakip servis atıyor · {0} kare", side), Color.white));
-            if (!string.IsNullOrEmpty(M.serveMsg) && !M.serveMsg.StartsWith("Rakip: ")) sat.Add(new KeyValuePair<string, Color>(L.Cumle(M.serveMsg), Kit.Hex("#ffd27a")));
-            else if (M.server == "me" && M.sc[0] + M.sc[1] < 2 && Ogretici) sat.Add(new KeyValuePair<string, Color>(L.T("Yukarı kaydır: yavaş kısa · hızlı uzun"), Kit.Hex("#cfe3dc")));
-            if (ilk && M.gorevler.Count > 0) { var ad = new List<string>(); foreach (var g in M.gorevler) ad.Add(L.Cumle(g.ad)); sat.Add(new KeyValuePair<string, Color>(L.T("Görev: ") + string.Join(" · ", ad.ToArray()), Kit.Hex("#ffd23a"))); }
-            var st0 = Stil(small, Mathf.RoundToInt(14 * fu), FontStyle.Bold); var st = Stil(small, Mathf.RoundToInt(12 * fu));
-            float enW = Mathf.Min(rx - lx, 380 * u) - 24 * u, ww = 0, hh = 10 * u; var stiller = new GUIStyle[sat.Count];
-            for (int i = 0; i < sat.Count; i++) { var b0 = i == 0 ? st0 : st; var f = Sigdir(b0, sat[i].Key, enW); stiller[i] = f; var sz = f.CalcSize(Ic(sat[i].Key)); ww = Mathf.Max(ww, Mathf.Min(sz.x, enW)); hh += sz.y; }
-            ww += 24 * u; float y0 = H - bot - 30 * u - hh; var kutu = new Rect(W / 2 - ww / 2, y0, ww, hh);
+            bool ilk = M.sc[0] + M.sc[1] == 0, ogr = Ogretici, tal = M.server == "me" && M.sc[0] + M.sc[1] < 2 && ogr;
+            string side = M.ServeSideOf(M.server); float enW = Mathf.Min(rx - lx, 380 * u) - 24 * u;
+            if (!sHazir || sM != M || sServer != M.server || sSide != side || sMsg != M.serveMsg || sIlk != ilk || sOgr != ogr
+                || sTal != tal || sGorev != M.gorevler.Count || sEn != L.En || sFu != fu || sEnW != enW)
+            {
+                sHazir = true; sM = M; sServer = M.server; sSide = side; sMsg = M.serveMsg; sIlk = ilk; sOgr = ogr; sTal = tal; sGorev = M.gorevler.Count; sEn = L.En; sFu = fu; sEnW = enW;
+                sMetin.Clear(); sRenk.Clear(); sStil.Clear(); sBoy.Clear();
+                if (ogr) { string sd = L.T(side == "R" ? "sağ" : "sol"); sMetin.Add(M.server == "me" ? L.T("Servis sende · {0} kare", sd) : L.T("Rakip servis atıyor · {0} kare", sd)); sRenk.Add(Color.white); }
+                if (!string.IsNullOrEmpty(M.serveMsg) && !M.serveMsg.StartsWith("Rakip: ")) { sMetin.Add(L.Cumle(M.serveMsg)); sRenk.Add(Kit.Hex("#ffd27a")); }
+                else if (tal) { sMetin.Add(L.T("Yukarı kaydır: yavaş kısa · hızlı uzun")); sRenk.Add(Kit.Hex("#cfe3dc")); }
+                if (ilk && M.gorevler.Count > 0) { var ad = new List<string>(); foreach (var g in M.gorevler) ad.Add(L.Cumle(g.ad)); sMetin.Add(L.T("Görev: ") + string.Join(" · ", ad.ToArray())); sRenk.Add(Kit.Hex("#ffd23a")); }
+                var st0 = Stil(small, Mathf.RoundToInt(14 * fu), FontStyle.Bold); var st = Stil(small, Mathf.RoundToInt(12 * fu));
+                sWW = 0; sHH = 10 * u;
+                for (int i = 0; i < sMetin.Count; i++)
+                {
+                    // ilk satır kalın: Öğretici dönemde servis satırı, sonrasında şeridin tek konusu (mesaj ya da görev)
+                    var f = Sigdir(i == 0 ? st0 : st, sMetin[i], enW); var sz = f.CalcSize(Ic(sMetin[i]));
+                    sWW = Mathf.Max(sWW, Mathf.Min(sz.x, enW)); sHH += sz.y; sBoy.Add(sz.y);
+                    sStil.Add(new GUIStyle(f) { alignment = TextAnchor.MiddleCenter, wordWrap = false, clipping = TextClipping.Overflow });
+                }
+                sWW += 24 * u;
+            }
+            if (sMetin.Count == 0) return;
+            float y0 = H - bot - 30 * u - sHH; var kutu = new Rect(W / 2 - sWW / 2, y0, sWW, sHH);
             Fill(kutu, new Color(9 / 255f, 16 / 255f, 17 / 255f, .74f));
             float yy = y0 + 5 * u;
-            for (int i = 0; i < sat.Count; i++) { float h = stiller[i].CalcSize(Ic(sat[i].Key)).y; GUI.color = sat[i].Value; GUI.Label(new Rect(kutu.x + 12 * u, yy, ww - 24 * u, h), sat[i].Key, new GUIStyle(stiller[i]) { alignment = TextAnchor.MiddleCenter, wordWrap = false, clipping = TextClipping.Overflow }); yy += h; }
+            for (int i = 0; i < sMetin.Count; i++) { GUI.color = sRenk[i]; GUI.Label(new Rect(kutu.x + 12 * u, yy, sWW - 24 * u, sBoy[i]), sMetin[i], sStil[i]); yy += sBoy[i]; }
             GUI.color = Color.white;
         }
         // Vuruş halesi (HTML shuttle(): reachInfo varken): R·1,3 ışıma, nabız atan halka (uzanmada turuncu), iç altın halka R·.33,
