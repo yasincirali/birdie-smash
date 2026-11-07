@@ -374,25 +374,25 @@ namespace BirdieSmash.Game
             int ys = p.TurYildiz(t);
             var mr = Satir("toren-muhur"); mr.pickingMode = PickingMode.Ignore; ic.Add(mr);
             var mi = Ikon(m1 >= 2 ? Ikonlar.YildizDolu : m1 == 1 ? Ikonlar.YildizBos : Ikonlar.YildizBos, 56, m1 >= 2 ? ALTIN : m1 == 1 ? BRONZ : SOLUK); mr.Add(mi);
-            var my = new VisualElement(); my.pickingMode = PickingMode.Ignore; my.style.marginLeft = 10; mr.Add(my);
+            var my = new VisualElement(); my.pickingMode = PickingMode.Ignore; my.style.marginLeft = 10; my.style.flexShrink = 1; my.style.minWidth = 0f; mr.Add(my);   // r137 büyük yazı: alt satır kartın sağından taşıyordu
             my.Add(Yazi(L.T("{0}/{1} yıldız", ys, 18), 20, "rakam"));
             string alt = m1 >= 2 ? muhurAd : m1 == 1 ? muhurAd + " · " + L.T("altın için {0} yıldız", Ilerleme.MUHUR_ALTIN - ys) : L.T("bronz mühür için {0} yıldız", Ilerleme.MUHUR_BRONZ - ys);
-            my.Add(Yazi(alt, 13, yeniMuhur ? "durum-gecti" : "soluk"));
+            var ay = Yazi(alt, 13, yeniMuhur ? "durum-gecti" : "soluk"); ay.style.whiteSpace = WhiteSpace.Normal; my.Add(ay);
             // turda yenilen rakipler (renk noktası + ad; yenilmeyen soluk)
-            var rk = Satir("toren-rakipler"); rk.pickingMode = PickingMode.Ignore; ic.Add(rk);
+            var yenilenAd = new System.Collections.Generic.List<string>(); var rk = Satir("toren-rakipler"); rk.pickingMode = PickingMode.Ignore; ic.Add(rk);
             for (int b = 0; b < KariyerVeri.BASAMAK; b++)
             {
-                int g = KariyerVeri.Global(t, b); var st = Match.STIL[KariyerVeri.Al(g).stil]; bool yen = p.Kazanildi(g);
+                int g = KariyerVeri.Global(t, b); var st = Match.STIL[KariyerVeri.Al(g).stil]; bool yen = p.Kazanildi(g); if (yen) yenilenAd.Add(st.isim);
                 var h = new VisualElement(); h.AddToClassList("toren-rakip"); h.pickingMode = PickingMode.Ignore; if (!yen) h.AddToClassList("toren-rakip--yok"); rk.Add(h);
                 var n = new VisualElement(); n.AddToClassList("toren-nokta"); n.style.backgroundColor = Kit.Hex(st.renk); n.pickingMode = PickingMode.Ignore; h.Add(n);
                 if (yen) n.Add(Ikon(Ikonlar.Tik, 14, MUREKKEP));
-                var ry = Yazi(st.isim, 11, "soluk"); ry.style.whiteSpace = WhiteSpace.NoWrap; h.Add(ry);
+                if (K < 1.35f) { var ry = Yazi(st.isim, 11, "soluk"); ry.style.whiteSpace = WhiteSpace.NoWrap; h.Add(ry); }   // büyük yazıda altı ad tek satıra sığmıyor (r137): yalnız nokta, ad erişilebilirlik etiketinde
             }
             int sonrakiT = t + 1; bool sonrakiVar = bitti && sonrakiT < KariyerVeri.Turlar.Length && KariyerVeri.Turlar[sonrakiT].Var;
             if (sonrakiVar) ic.Add(Dugme(L.T("Sıradaki: {0}", L.T(KariyerEkranTurAd(sonrakiT))), () => { kapat(); kariyerTur = sonrakiT; SekmeAc(Sekme.Kariyer); }, "dugme--birincil"));
             else if (bitti && sonrakiT < KariyerVeri.TUR) ic.Add(Yazi(L.T("Yakında: bu tur sonraki güncellemede gelir"), 13, "soluk"));
             ic.Add(Dugme(L.T("Tamam"), kapat, sonrakiVar ? "dugme--hayalet" : "dugme--birincil"));
-            Erisim.Etiket(ic, (bitti ? L.T("Tur tamam") : muhurAd) + ", " + L.T(KariyerEkranTurAd(t)) + ", " + L.T("{0}/{1} yıldız", ys, 18) + ", " + alt, "metin");
+            Erisim.Etiket(ic, (bitti ? L.T("Tur tamam") : muhurAd) + ", " + L.T(KariyerEkranTurAd(t)) + ", " + L.T("{0}/{1} yıldız", ys, 18) + ", " + alt + (yenilenAd.Count > 0 ? ", " + string.Join(", ", yenilenAd) : ""), "metin");
             root.sfx.Tik(1180); Yerel.Hap(bitti || m1 >= 2 ? "flow" : "win");
             if (Ayar.reduce) return;
             o.style.opacity = 0f; o.experimental.animation.Start(0f, 1f, 220, (v, k) => v.style.opacity = k);

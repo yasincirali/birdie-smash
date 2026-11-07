@@ -61,7 +61,7 @@ namespace BirdieSmash.Core
     public struct ShotPlanR { public string type; public float tx, d, val, hx, hy, hz, sp; public bool byAngle, bh, over, rth; }
 
     // Imza: rakip imza vuruşunun hazırlığına başladı (type = imza kimliği, k = hazırlık süresi); Okudun: oyuncu imzayı cevapladı.
-    public enum Ev { Hit, Net, Tape, Cord, Floor, Point, Text, Split, MatchEnd, Serve, Hawk, Flow, Gorev, Aldat, Perfect, Kurtaris, Imza, Okudun }
+    public enum Ev { Hit, Net, Tape, Cord, Floor, Point, Text, Split, MatchEnd, Serve, Hawk, Flow, Gorev, Aldat, Perfect, Kurtaris, Imza, Okudun, Karsila }
 
     public class GameEvent
     {
@@ -542,6 +542,7 @@ namespace BirdieSmash.Core
         // aldığı sayı). İlk 3'ü kortta tarz adıyla yazılır (etiket var olan yazının yerine geçer, yeni yazı katmanı yok), hepsi
         // maç sonu Ayrıntılar'da "Tarzın N kez fark yarattı". Dengeli'de hep 0.
         public int tarzFark, tarzEtiket; bool tarzHile, smasciAn; float enerjiTaban;   // enerjiTaban: enerji tarzsız dolsaydı (Smaşçı sıçrayışı)
+        int karsilaEtiket;   // "Karşıladın" etiketi sayacı (maçta ilk 3 her zaman)
         bool TarzAn() { tarzFark++; return ++tarzEtiket <= 3; }
         public bool HitWindow() { Reach r; return ReachInfo(out r); }
 
@@ -638,7 +639,16 @@ namespace BirdieSmash.Core
             if (type == "jump") me.jump = .53f;
             if (type == "kill") kills++;
             if (type == "smash" || type == "jump") smashes++;
-            if (s.from == "op" && s.type == "smash") smacKarsila++;
+            if (s.from == "op" && s.type == "smash")
+            {
+                smacKarsila++;
+                // Savunma anı (2026-11-07 inceleme, fikir 20:09 #1): rakip zor topu kurtarınca "Kıl payı!" + oyuncuya enerji vardı,
+                // oyuncu rakibin smaçını döndürünce kortta hiçbir şey yoktu ("3 smaçı karşıla" görevi görünmüyordu). Yalnız "good"
+                // dönüşte (mükemmelin kendi etiketi var, "poor" Sıyırdın der); hız rakip smaçının çıkış hızı (s.v0, SMAÇ etiketiyle
+                // aynı birim). Yazı yorgunluğu: maçta ilk 3, sonra yalnız ralli 6+. Yeni yazı katmanı yok, Say bütçesi aynı.
+                if (q == "good" && (++karsilaEtiket <= 3 || rally >= 6))
+                { Emit(Ev.Karsila, "me", type, hx, hy, hz); Say("me", "karsila", hx, hy, hz, "Karşıladın · " + (int)Math.Round(s.v0 * 3.6) + " km/s", 2); }
+            }
             ImzaCevap(type); VurusKaydet(type);
             me.sw = 1; GorevKontrol();
             string ft = type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type == "push" ? "drive" : type;

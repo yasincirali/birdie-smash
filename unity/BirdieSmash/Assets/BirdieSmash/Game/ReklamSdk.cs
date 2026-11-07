@@ -77,6 +77,9 @@ namespace BirdieSmash.Game
             if (!hazir) return;
             if (px == null) { if (serit != null && seritAcik) { serit.Hide(); seritAcik = false; } return; }
             float olc = MobileAds.Utils.GetDeviceScale(); if (olc <= 0) olc = 1;
+            // 2026-11-07 (yasin cihaz karesi: şerit kartların üstünde, sola yaslı): Kalite basamağı çözünürlüğü %85 / %70'e indiriyor
+            // (Screen.SetResolution); Screen pikseli artık yerel piksel değil. Nokta = Screen pikseli / (ölçek × Screen/yerel genişlik).
+            int sysW = Display.main.systemWidth; if (sysW > 0 && Screen.width > 0) olc *= (float)Screen.width / sysW;
             var r = px.Value;
             int x = Mathf.RoundToInt((r.x + (r.width - SERIT_W * olc) / 2) / olc), y = Mathf.RoundToInt((r.y + (r.height - SERIT_H * olc) / 2) / olc);
             if (serit == null)

@@ -343,6 +343,9 @@ namespace BirdieSmash.Game
             ui.SoyunmaSegment(0); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_oyun");
             ui.SayfaSonaKaydir(); yield return Bekle(10); yield return Cek("menu_" + ek + "soyunma_oyun_taban");
             ui.SoyunmaSegment(2); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_gorunum");
+            // 2026-11-07 Dolap › Raket: kimlik kartı, gerginlik, sap ölçüsü; sayfa sonunda teknik sayfa
+            ui.KarakterAc(UiKok.KAR_KIYAFET); ui.RaketIncele(true); yield return Bekle(40); yield return Cek("menu_" + ek + "dolap_raket");
+            ui.SayfaSonaKaydir(); yield return Bekle(10); yield return Cek("menu_" + ek + "dolap_raket_teknik"); ui.RaketIncele(false);
             ui.KarakterAc(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "kep"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_sapka_kep");
             ui.KarakterDene(Kozmetik.SAPKA, "buyucu"); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_sapka_buyucu");
             ui.KarakterAc(UiKok.KAR_TEN); ui.KarakterDene(Kozmetik.YUZ, "gunes"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_yuz_gunes");
@@ -1235,6 +1238,9 @@ namespace BirdieSmash.Game
                     if (e.resolvedStyle.display == DisplayStyle.None || e.resolvedStyle.visibility == Visibility.Hidden || e.resolvedStyle.opacity < .05f) return;
                 var cr = te.contentRect; if (float.IsNaN(cr.width) || cr.width <= 0) return;
                 var wb = te.worldBound; if (wb.yMax < 0 || wb.yMin > ph) return;   // kaydırmanın dışında kalan satır görünmüyor
+                // 2026-11-07 (Kariyer yatay tur kartları): yatay kaydırmanın kenarında kalan (kısmen ya da tamamen dışarıdaki) kart kırpılır, taşma değildir.
+                for (VisualElement e = te.parent; e != null; e = e.parent)
+                    if (e is ScrollView ys && ys.mode == ScrollViewMode.Horizontal) { var vb = ys.contentViewport.worldBound; if (wb.xMin < vb.xMin - 1 || wb.xMax > vb.xMax + 1) return; break; }
                 string neden = null;
                 bool tek = te.resolvedStyle.whiteSpace == WhiteSpace.NoWrap;
                 var o = tek ? te.MeasureTextSize(m, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined)
