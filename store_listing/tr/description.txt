@@ -24,6 +24,6 @@ GAME CENTER
 Kariyer ve oyun içi başarılar için Game Center başarımları. Giriş isteğe bağlıdır.
 
 İNTERNET GEREKMEZ
-Oyun tamamen telefonunda çalışır. Hesap yok, reklam yok, veri toplanmaz; ilerlemen yalnızca cihazında saklanır.
+Oyun telefonunda çalışır, hesap gerekmez; ilerlemen cihazında saklanır. Ücretsiz oyun menüde küçük bir reklam şeridi gösterir; maç sonunda istersen kısa bir reklam izleyip Tüy ödülünü artırabilirsin. Maçın ortasında reklam yok.
 
 Türkçe ve İngilizce, telefonunun diline göre açılır.
