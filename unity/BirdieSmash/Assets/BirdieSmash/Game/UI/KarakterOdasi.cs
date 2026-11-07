@@ -104,13 +104,18 @@ namespace BirdieSmash.Game
         public void RaketParcaSec(string p) { raketParca = p; root.vitrin.RaketParca(p); Tik(); SoyunmaGovdeKur(true); }   // EkranTuru + vitrin dokunuşu
         void RaketSayfa(VisualElement c)
         {
-            var s = Satir("segment"); s.AddToClassList("alt-segment"); s.AddToClassList("parca-ray"); c.Add(s);
+            // 2026-11-07 stüdyo incelemesi (UX4): altı parça 2×3 büyük düğmeydi, ×2'de ~190 pt yiyip seçenekleri alt kenara itiyordu.
+            // Kategori şeridi gibi tek satır, yatay kayar; seçili parça görünür alana getirilir. Yazı küçülmez (sığdırma yok).
+            var hk = new ScrollView(ScrollViewMode.Horizontal); hk.AddToClassList("kategori-kaydir"); hk.AddToClassList("parca-kaydir");
+            hk.horizontalScrollerVisibility = ScrollerVisibility.Hidden; hk.verticalScrollerVisibility = ScrollerVisibility.Hidden; c.Add(hk);
+            var s = Satir("segment"); s.AddToClassList("kategori-ray"); s.AddToClassList("parca-ray"); hk.Add(s); VisualElement secEl = null;
             for (int i = 0; i < PARCA.Length; i++)
             {
                 string p = PARCA[i]; bool sec = raketParca == p;
                 var d = Cip(L.T(PARCA_AD[i]), sec, () => { if (raketParca != p) RaketParcaSec(p); });
-                d.AddToClassList("segment-cip"); d.AddToClassList("dar-cip"); Sigdir(d); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; s.Add(d);
+                d.AddToClassList("segment-cip"); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; s.Add(d); if (sec) secEl = d;
             }
+            if (secEl != null) { var se = secEl; EventCallback<GeometryChangedEvent> gc = null; gc = e => { if (se.layout.width > 0) { hk.ScrollTo(se); se.UnregisterCallback(gc); } }; se.RegisterCallback(gc); }
             var gr = Ayar.gear; int sv = gr.Seviye(); string ps = raketParca;
             if (ps == null || ps == "kafa") KafaSekliSira(c);
             if (ps == null || ps == "cerceve")

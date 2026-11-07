@@ -183,6 +183,9 @@
 .tur-cip--kilit .dugme-yazi { color: var(--mu); }
 .tur-cip--kilit.cip--secili .dugme-yazi { color: var(--tx); }
 .tur-kart { margin-top: 8px; margin-bottom: 10px; }
+/* 2026-11-07 (UX5): sabit sıradaki maç şeridi, kaydırmanın dışında, sekme çubuğunun üstünde; birincil düğmeden kısa */
+.siradaki-serit { flex-shrink: 0; min-height: 52px; margin: 4px 16px 8px 16px; padding: 6px 14px; }
+.kisa .siradaki-serit { min-height: 48px; margin-bottom: 4px; }
 .dugum { min-height: 44px; padding: 10px 12px; margin: 0; }
 .dugum--sol { margin-right: 14%; }
 .dugum--sag { margin-left: 14%; }
@@ -346,6 +349,7 @@
 .tutamak-alan { height: 28px; align-items: center; justify-content: center; }
 .tutamak { width: 40px; height: 5px; border-radius: 3px; background-color: rgba(255, 255, 255, 0.35); }
 .alt-kaydir { flex-shrink: 1; }
+.kaydir-solma { position: absolute; left: 0; right: 0; bottom: 0; height: 28px; display: none; }   /* 2026-11-07 (UX2): alt sayfa listesi sürüyorsa */
 
 /* giriş geçişi (HTML pIn): 24 sağdan, solarak */
 .sayfa, .alt-sayfa, .sekme-kok { transition-property: opacity, translate; transition-duration: 0.22s; transition-timing-function: ease-out; }
@@ -586,7 +590,8 @@
 /* 2026-11-01 Dolap yenilemesi: kategori şeridi tek satır yatay kaydırma (dokuz kategori), ızgara 3 sütun, nadirlik yazısı. */
 .kategori-kaydir { flex-shrink: 0; flex-grow: 0; }
 .kategori-kaydir .unity-scroll-view__content-container { flex-direction: row; }
-.parca-ray .segment-cip { flex-basis: 30%; }
+.parca-kaydir { flex-shrink: 0; margin: 0 0 4px 0; }   /* 2026-11-07 (UX4): parça şeridi tek satır, yatay kayar */
+.parca-kaydir .kategori-ray { margin: 4px 0 4px 0; }
 .sekil-ornek { height: 64px; flex-basis: 28%; }
 .buyuk-yazi .kategori-ray { flex-wrap: nowrap; }
 /* 2026-11-07 (r127 Dolap ×2): ".buyuk-yazi .segment .segment-cip { flex-basis: 40% }" daha özgül olduğu için yatay kayan
@@ -602,6 +607,10 @@
 .seviye-liste { align-items: center; margin-bottom: 20px; }
 .seviye-oge { color: var(--tx); -unity-text-align: middle-center; white-space: normal; margin: 2px 0; }
 .seviye-ic .dugme { align-self: stretch; margin-top: 8px; }
+/* 2026-11-07 (UX1): grup başlığı ("Dolapta"/"Atölyede"/"Ayrıca") ve hayalet düğme (saydam + ince çerçeve; CTA > hayalet) */
+.seviye-grup { margin-top: 10px; letter-spacing: 0.5px; }
+.dugme--hayalet { background-color: rgba(0, 0, 0, 0); border-color: rgba(255, 255, 255, 0.25); border-width: 1px; }
+.dugme--hayalet:active { background-color: rgba(255, 255, 255, 0.06); }
 
 /* 2026-10-31 Dolap K2 + K4 (Game/UI/Kombin.cs). Kombin yuvaları dar çip (44 pt), dört yan yana; büyük yazıda ikişer.
    Alt çubuk: kaydırma alanının dışında, sabit; kart rengi + üst çizgi, deneme rengi gök (deneme-kart ile aynı anlam). */

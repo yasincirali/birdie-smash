@@ -44,6 +44,7 @@ namespace BirdieSmash.Game
             }
             if (tv != null) kb.Add(Yazi(L.T("Önerilen ekipman puanı {0}–{1} · seninki {2}", tv.epMin, tv.epMax, EkipmanPuani()), 13, "soluk"));
             Erisim.Etiket(kb, L.T(TurAd(tr)) + (veri ? ", " + L.T("{0}/{1} yıldız", p.TurYildiz(tr), 18) : "") + (!acik ? ", " + KilitNedeni(tr) : ""), "metin");
+            SiradakiSerit(k, p, sira);
             if (!veri) { c.Add(Bosluk(20)); return; }
 
             // 2026-10-26: Usta yolu son turun üstünde (finalden sonra gelir; kilitliyken nedeniyle görünür)
@@ -58,15 +59,34 @@ namespace BirdieSmash.Game
             }
             c.Add(Bosluk(12));
             // Şimdiki düğüm görünür alanın alt yarısında (≈ %62'de) dursun; yerleşim bitince (içerik yüksekliği belli olunca).
+            // 2026-11-07 (UX5, AD notu): 60 ms'lik zamanlayıcı yerleşimden önce çalışabiliyordu, oyuncu (ve ekran turu) haritayı kilitli
+            // finallerle açıyordu. Artık içerik yerleşince (GeometryChanged) bir kez, animasyonsuz; zamanlayıcı yedek.
             if (simdiki != null)
             {
-                var hedef = simdiki;
-                sv.schedule.Execute(() =>
+                var hedef = simdiki; bool yapildi = false;
+                System.Action kaydir = () =>
                 {
-                    float vh = sv.contentViewport.layout.height, y = hedef.worldBound.y - sv.contentContainer.worldBound.y; if (float.IsNaN(vh) || float.IsNaN(y)) return;
+                    if (yapildi) return; float vh = sv.contentViewport.layout.height, y = hedef.worldBound.y - sv.contentContainer.worldBound.y;
+                    if (float.IsNaN(vh) || float.IsNaN(y) || vh <= 0 || hedef.layout.height <= 0) return; yapildi = true;
                     sv.scrollOffset = new Vector2(0, Mathf.Max(0, y + hedef.layout.height / 2 - vh * .62f));
-                }).StartingIn(60);
+                };
+                EventCallback<GeometryChangedEvent> gc = null; gc = e => { kaydir(); if (yapildi) sv.contentContainer.UnregisterCallback(gc); };
+                sv.contentContainer.RegisterCallback(gc); sv.schedule.Execute(kaydir).StartingIn(60);
             }
+        }
+
+        // Sabit "Sıradaki" şeridi (2026-11-07 stüdyo UX5): haritada sıradaki maç düğüm → kart → Oyna diye üç dokunuştu ve şimdiki
+        // basamak çoğu zaman görünür alanın dışındaydı. Sekme çubuğunun üstünde, kaydırmadan bağımsız tek turuncu dokunuş: maç
+        // kartını açar (düğümle aynı yol). Kilitli bir turu incelerken de durur: oyuncuyu kendi turuna döndürür (UX6). Kariyer
+        // bitince yok.
+        void SiradakiSerit(VisualElement k, Ilerleme p, int sira)
+        {
+            if (p.HepsiBitti || sira < 0 || !p.Acik(sira)) return;
+            int tr = KariyerVeri.TurOf(sira); if (tr >= KariyerVeri.Turlar.Length || !KariyerVeri.Turlar[tr].Var) return;
+            var kb = KariyerVeri.Al(sira); var st = Match.STIL[kb.stil]; int b = KariyerVeri.BasOf(sira);
+            string bas = L.T("Sıradaki maç"), alt = (b + 1) + ". " + L.T(kb.yer) + " · " + st.isim;
+            var d = Dugme(bas, () => MacKartAc(sira), "dugme--birincil", alt, 17); d.AddToClassList("siradaki-serit"); Sigdir(d);
+            Erisim.Etiket(d, bas + ", " + L.T(TurAd(tr)) + ", " + alt, "dugme"); k.Add(d);
         }
 
         static int TurSayisiVeri() { int n = 0; foreach (var t in KariyerVeri.Turlar) if (t.Var) n++; return n; }

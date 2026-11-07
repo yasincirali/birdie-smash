@@ -912,6 +912,18 @@ static class BotMac
             var re = Json.Obj(Json.Parse(r[0])); if ((int)Json.Num(re, "tuy", 0) != 3510 || (int)Json.Num(re, "xp", 0) != 80 || TuyDukkan.Toplam(r[1]) != 3500) Fail("bulut: birleşme Tüy'ü eklemeli, XP'yi korumalı");
             if (BulutKayit.Karsilastir(r[0], bul, r[1]) != BulutKayit.Karar.Yaz) Fail("bulut: birleşmeden sonra tekrar eklememeli");
         }
+        // (1f) seviye anı grupları (2026-11-07, Karakter.AcilanAralikGruplu): AcilanAralik ile aynı öğeler aynı sırada; raket parçası
+        // Atölye'de yuvasıyla, ayakkabı Dolap'ta; bilinmeyen grup yok.
+        {
+            int gf = 0;
+            for (int a = 1; a < 30; a++) for (int b = a + 1; b <= 30; b++)
+            {
+                var d = Karakter.AcilanAralik(a, b); var g = Karakter.AcilanAralikGruplu(a, b);
+                if (d.Count != g.Count) { gf++; continue; }
+                for (int i = 0; i < d.Count; i++) if (d[i] != g[i][1] || (g[i][0] != "Dolap" && g[i][0] != "Atolye" && g[i][0] != "Diger") || (g[i][2] != null && g[i][0] != "Atolye")) gf++;
+            }
+            if (gf > 0) Fail("seviye anı grupları AcilanAralik ile tutmuyor: " + gf);
+        }
         // (1e) maç sonu ödüllü reklam (2026-11-07, Core/OdulluReklam): +%50 yalnız Tüy, günde 1, ilk 3 galibiyette yok, başka ikincil
         // varken yok, 3 ardışık ret → 3 maç sus; XP ve seviye değişmez.
         {

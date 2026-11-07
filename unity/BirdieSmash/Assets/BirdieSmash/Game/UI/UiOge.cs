@@ -185,7 +185,7 @@ namespace BirdieSmash.Game
     // Koddan çizilen simgeler (beyaz + alfa; boya Image.tintColor). 96 px, 2×2 örnekleme ile kenar yumuşatma.
     public static class Ikonlar
     {
-        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Tisort, Gradyan, YildizDolu, YildizBos, Yukari, Asagi, Yuz, Ayak, Tutus;
+        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Tisort, Gradyan, YildizDolu, YildizBos, Yukari, Asagi, Yuz, Ayak, Tutus, Solma;
         // 2026-10-26 Yayın Gecesi: simgeler (tüy, şimşek, hedef, güneş, çarpı, açık kilit) ve şekil dokuları (eğik düğme,
         // yayın plakası, etiket şeridi, basamak çizgisi, altın kutucuk, ışık süpürmesi, ışın). Hepsi 2× çözünürlükte (1 pt =
         // 2 doku pikseli; USS'te -unity-slice-scale: 0.5), açılışta bir kez; her biri birkaç KB.
@@ -262,6 +262,11 @@ namespace BirdieSmash.Game
                 bool govde = Mathf.Abs(x) < .08f && y >= .5f && y < .92f; bool bilezik = Mathf.Abs(x) < .3f && y > .44f && y < .56f;
                 return sap || govde || bilezik;
             });
+            // Alt sayfa kaydırma solması (2026-11-07 UX2): kart renginde (#261A30) aşağı doğru opaklaşan 1×32 şerit; içerik
+            // sürüyorsa listenin altında durur ("Hard" yarım kesik görünüp hata sanılıyordu, Saha bölümü fark edilmiyordu).
+            Solma = new Texture2D(1, 32, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            for (int i = 0; i < 32; i++) Solma.SetPixel(0, i, new Color(0x26 / 255f, 0x1A / 255f, 0x30 / 255f, Mathf.SmoothStep(1, 0, i / 31f)));
+            Solma.Apply(false, true);
             // Oyna sekmesinin zemini: USS'te gradyan yok. 2026-10-26: renk ve duraklar yön A'ya göre YayinDokulari'nda.
             Gradyan = new Texture2D(1, 64, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             YayinDokulari();

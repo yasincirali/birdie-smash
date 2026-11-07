@@ -143,6 +143,26 @@ namespace BirdieSmash.Core
             }
             return l;
         }
+        // Seviye anı grupları (2026-11-07 stüdyo incelemesi UX1/GD4): ham ad listesi "Head-heavy, Bun, Multifilament" raket parçasını
+        // ve kozmetiği karıştırıyordu, tek düğme Dolap'ı açıyordu (raket parçası Atölye'de). Her öğe {grup, ad, yuva}: grup
+        // "Dolap" (görünüm, ayakkabı, renkler, raket kaplaması: Dolap'ın raket görünümünde), "Atolye" (raket parçası, tarz),
+        // "Diger" (unvan, aldatma vuruşu). yuva yalnız raket parçasında (Atölye'de o yuva açılır). Sıra AcilanAralik ile aynı.
+        public static List<string[]> AcilanAralikGruplu(int once, int sonra)
+        {
+            var l = new List<string[]>();
+            for (int sv = Math.Max(2, once + 1); sv <= sonra; sv++)
+            {
+                foreach (var y in Gear.MODEL_YUVA) foreach (var m in Gear.GEAR[y].Values) if (m.sv == sv) l.Add(new[] { y == "ayakkabi" ? "Dolap" : "Atolye", m.ad, y == "ayakkabi" ? null : y });
+                foreach (var t in Tarzlar) if (t.sv == sv) l.Add(new[] { "Atolye", t.ad, null });
+                foreach (var o in Kozmetik.Acilan(Kozmetik.TIP, sv)) l.Add(new[] { "Dolap", o.ad, null });
+                foreach (var o in Kozmetik.Acilan(Kozmetik.SAC, sv)) l.Add(new[] { "Dolap", o.ad, null });
+                foreach (var m in Gear.RENK.Values) if (m.sv == sv && !m.kilit) l.Add(new[] { "Dolap", m.ad, null });
+                foreach (var k in GORUNUM_KAT) foreach (var o in Gorunum(k)) if (o.sv == sv) l.Add(new[] { "Dolap", o.ad, null });
+                foreach (var u in Unvanlar) if (u.sv == sv) l.Add(new[] { "Diger", u.ad, null });
+                foreach (var t in Aldatma.Liste) if (t.sv == sv) l.Add(new[] { "Diger", t.ad, null });
+            }
+            return l;
+        }
         public static List<string> Acilanlar(int sv)
         {
             var l = new List<string>();

@@ -317,10 +317,22 @@ namespace BirdieSmash.Game
             ic.Add(Yazi(Buyuk(L.T("Seviye atladın")), 15, "seviye-ust"));
             var sayi = Yazi(L.T("Sv {0}", sv), 64, "rakam"); sayi.AddToClassList("seviye-sayi"); ic.Add(sayi);
             var acilan = Karakter.AcilanAralik(once, sv); var liste = new VisualElement(); liste.AddToClassList("seviye-liste"); ic.Add(liste);
-            if (acilan.Count > 0) liste.Add(Yazi(L.T("Açıldı"), 13, "soluk"));
-            int n = 0; foreach (var a in acilan) { if (n == 6) { liste.Add(Yazi(L.T("ve {0} öğe daha", acilan.Count - 6), 14, "soluk")); break; } var y = Yazi(L.T(a), 17); y.AddToClassList("seviye-oge"); liste.Add(y); n++; }
-            var d = Dugme(L.T("Dolap'a bak"), () => { kapat(); SekmeAc(Sekme.Soyunma); }, "cta"); ic.Add(d);
-            ic.Add(Dugme(L.T("Tamam"), kapat));
+            // 2026-11-07 stüdyo incelemesi (UX1, GD4): açılanlar nerede bulunacaklarıyla gruplu ("Dolapta", "Atölyede", "Ayrıca"),
+            // grup başına en çok 3 satır; tek turuncu düğme ilk grubun yerine götürür (raket parçasıysa Atölye'de o yuva açık).
+            // Önce ham ad listesi + iki eşit düğme vardı, "Dolap'a bak" raket parçası için yanlış sekmeyi açıyordu. "Tamam" hayalet.
+            var gr = Karakter.AcilanAralikGruplu(once, sv); string[] GRUP = { "Dolap", "Atolye", "Diger" }, BAS = { "Dolapta", "Atölyede", "Ayrıca" };
+            string ilkGrup = null, ilkYuva = null;
+            for (int g = 0; g < 3; g++)
+            {
+                var ol = gr.FindAll(x => x[0] == GRUP[g]); if (ol.Count == 0) continue;
+                if (ilkGrup == null && g < 2) { ilkGrup = GRUP[g]; ilkYuva = ol[0][2]; }
+                var b = Yazi(L.T(BAS[g]), 13, "soluk"); b.AddToClassList("seviye-grup"); liste.Add(b);
+                for (int i = 0; i < ol.Count && i < 3; i++) { var y = Yazi(L.T(ol[i][1]), 17); y.AddToClassList("seviye-oge"); liste.Add(y); }
+                if (ol.Count > 3) liste.Add(Yazi(L.T("ve {0} öğe daha", ol.Count - 3), 14, "soluk"));
+            }
+            if (ilkGrup == "Dolap") ic.Add(Dugme(L.T("Dolap'ta dene"), () => { kapat(); SekmeAc(Sekme.Soyunma); }, "dugme--birincil"));
+            else if (ilkGrup == "Atolye") { string yv = ilkYuva; ic.Add(Dugme(L.T("Atölye'de gör"), () => { kapat(); if (yv != null) YuvaAc(yv); else SekmeAc(Sekme.Atolye); }, "dugme--birincil")); }
+            ic.Add(Dugme(L.T("Tamam"), kapat, ilkGrup != null ? "dugme--hayalet" : "dugme--birincil"));
             Erisim.Etiket(ic, L.T("Seviye atladın") + ", " + L.T("Sv {0}", sv) + (acilan.Count > 0 ? ", " + L.T("Açıldı") + ": " + string.Join(", ", acilan.ConvertAll(x => L.T(x))) : ""), "metin");
             root.sfx.Tik(990); Yerel.Hap("win");
             if (Ayar.reduce) return;

@@ -275,7 +275,7 @@ namespace BirdieSmash.Game
             var bas = Satir("arali"); kart.Add(bas); bas.Add(Yazi(L.T(m.ad), 16, "kalin"));
             var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; bas.Add(dr); string durum;
             if (du == ModelDurum.Secili) { dr.Add(Ikon(Ikonlar.Tik, 14, TURUNCU)); durum = L.T("Seçili"); }
-            else if (du == ModelDurum.Kilitli) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = L.T("Sv {0} gerekli", m.sv); }
+            else if (du == ModelDurum.Kilitli) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = KilitKalan(m.sv, gr.Seviye()); }
             else if (du == ModelDurum.Alinir) durum = m.fiyat + " " + L.T("Tüy"); else durum = L.T("Senin");
             var dy = Yazi(durum, 12, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
             var ns = Yazi(L.T(m.n), 13, "ipucu"); kart.Add(ns);
@@ -400,7 +400,7 @@ namespace BirdieSmash.Game
                 var bas = Satir("arali"); bas.pickingMode = PickingMode.Ignore; kart.Add(bas); bas.Add(Yazi(L.T(t.ad), 17, "kalin"));
                 var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; bas.Add(dr); string durum;
                 if (secili) { dr.Add(Ikon(Ikonlar.Tik, 14, TURUNCU)); durum = L.T("Seçili"); }
-                else if (!acik) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = L.T("Sv {0} gerekli", t.sv); }
+                else if (!acik) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = KilitKalan(t.sv, sv); }
                 else durum = L.T("Seç");
                 var dy = Yazi(durum, 12, secili ? "durum-gecti" : acik ? "durum-simdi" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
                 // 2026-11-07 stüdyo incelemesi (AD7): "Artı:/Eksi:" sözcükleri ▲/▼ ile tekrardı; ▼ orkideydi (orkide = rakip) ve ▲ turuncu
@@ -415,6 +415,8 @@ namespace BirdieSmash.Game
                 Erisim.Etiket(kart, L.T(t.ad) + (t.arti != "" ? ", " + L.T("Artı") + ": " + L.T(t.arti) : "") + (t.eksi != "" ? ", " + L.T("Eksi") + ": " + L.T(t.eksi) : "") + ", " + durum, acik && !secili ? "dugme" : "metin", secili, !acik);
             }
         }
+        // Kilit satırı (2026-11-07 stüdyo UX4): "Sv 8 gerekli" hedef vermiyordu; kaç seviye kaldığı da yazar. Kilit Tüy ile aşılmaz (karar sabit).
+        static string KilitKalan(int gerek, int simdi) { int k = gerek - simdi; return k > 0 ? L.T("Sv {0} · {1} seviye kaldı", gerek, k) : L.T("Sv {0} gerekli", gerek); }
         void TarzSatir(VisualElement kart, Texture2D ik, Color renk, string yazi)
         {
             var r = Satir("rakip-satir"); r.pickingMode = PickingMode.Ignore; kart.Add(r); var i = Ikon(ik, 16, renk); i.style.marginRight = 6; r.Add(i); r.Add(Yazi(yazi, 13, "esnek-yatay-sifir"));
