@@ -88,7 +88,7 @@ namespace BirdieSmash.Game
             foreach (float x in new[] { 0f, Court.CW })
                 Kit.Prim(PrimitiveType.Cylinder, "direk", k, Kit.W(x, N, Court.NETP / 2), new Vector3(.04f, Court.NETP / 2, .04f), post)
                    .GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-            Tribun(k, T); Sandalyeler(k); Isik(k); ArkaPlan(k, sahaId ?? "salon");
+            Tribun(k, T); if (Reklam.KENAR_PANO) KenarPano(k); Sandalyeler(k); Isik(k); ArkaPlan(k, sahaId ?? "salon");
             return k.gameObject;
         }
 
@@ -127,6 +127,39 @@ namespace BirdieSmash.Game
                     sy.g0 = sy.govde.localPosition; sy.b0 = sy.bas.localPosition; if (sy.sac != null) sy.s0 = sy.sac.localPosition;
                     foreach (var c in new Component[] { sy.govde, sy.bas, sy.sac }) if (c != null) { var cl = c.GetComponent<Collider>(); if (cl != null) Object.Destroy(cl); }
                     Seyirciler.Add(sy);
+                }
+            }
+        }
+
+        // Kort kenarı panoları (yasin 2026-11-07: "reklam panosuna ya da sağa sola perspektifler eklenebilir mi?"). Gerçek
+        // turnuvada yan çizgilerin dışında da alçak LED panolar durur; ekrandan yer çalmadan reklam/duyuru taşır. Yer: yan çizgiden
+        // 1,25 m dışarıda (hakem sandalyelerinin sırtlığı −0,99 / CW+0,79'da, pano onların arkasında kalır), filenin iki yanında
+        // 1 m boşluk (hakemler ve servis ölçer açık görünsün), dipten 0,5 m içeride biter. Yüz korta döner; kamera arkadan baktığı
+        // için panolar kendiliğinden perspektifle daralır. Ledler'e eklenir: LedYaz olay yazısı arka panoyla birlikte kenarlarda da
+        // dönüşümlü görünür. Reklam SDK'sı (oyun içi reklam ağı) gelince doku buradan değişir; şimdilik yalnız kendi yazımız.
+        static void KenarPano(Transform k)
+        {
+            var root = new GameObject("kenar_pano").transform; root.SetParent(k, false);
+            const float DIS = 1.25f, BOY = 1.9f, YUK = .62f, BOS = 1f, UC = .5f;
+            var kasa = Kit.Lit(Kit.Hex("#1d2b3a"), .15f); kasa.enableInstancing = true;
+            string[] yazi = { "BIRDIE SMASH", "RALLY", "SMASH 300", "BIRDIE SMASH" }; string[] renk = { "#c4ed3f", "#e99bff", "#ff9a3c", "#c4ed3f" };
+            int pi = 0;
+            foreach (int yan in new[] { -1, 1 })
+            {
+                float x = yan < 0 ? -DIS : Court.CW + DIS; var don = Quaternion.Euler(0, yan < 0 ? -90 : 90, 0);
+                foreach (var ar in new[] { new Vector2(UC, Court.NET - BOS), new Vector2(Court.NET + BOS, Court.L - UC) })
+                {
+                    int n = Mathf.Max(1, Mathf.RoundToInt((ar.y - ar.x) / BOY)); float b = (ar.y - ar.x) / n;
+                    for (int i = 0; i < n; i++, pi++)
+                    {
+                        float y = ar.x + b * (i + .5f);
+                        var g = Kit.Prim(PrimitiveType.Cube, "kenar_kasa", root, Kit.W(x + yan * .03f, y, YUK / 2), new Vector3(.06f, YUK, b - .04f), kasa);
+                        var cl = g.GetComponent<Collider>(); if (cl != null) Object.Destroy(cl);
+                        var tex = Kit.LedTex(yazi[pi % yazi.Length], Kit.Hex(renk[pi % renk.Length]), Kit.Hex("#0d1420"));
+                        var yuz = Kit.Prim(PrimitiveType.Quad, "kenar_led", root, Kit.W(x - yan * .005f, y, YUK * .55f), new Vector3(b - .1f, YUK * .5f, 1), Kit.Clear(Color.white, tex));
+                        yuz.transform.rotation = don; cl = yuz.GetComponent<Collider>(); if (cl != null) Object.Destroy(cl);
+                        Ledler.Add(new Led { m = yuz.GetComponent<Renderer>().material, varsayilan = tex });
+                    }
                 }
             }
         }

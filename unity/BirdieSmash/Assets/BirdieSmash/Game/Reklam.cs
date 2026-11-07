@@ -17,6 +17,8 @@ namespace BirdieSmash.Game
     {
         public const bool ALAN = true;
         public const float PT = 50f;
+        // Kort kenarı LED panoları (2026-11-07, CourtView.KenarPano): oyun içi reklam yeri; şerit gibi ekrandan yer almaz.
+        public const bool KENAR_PANO = true;
         // Nokta → piksel: iOS'ta 1 pt = dpi/163 piksel (Retina 2×, Pro 3×); dpi okunamazsa ekran genişliğinden (375 pt varsayımı).
         public static float Piksel()
         {
