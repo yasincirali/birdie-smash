@@ -2,7 +2,11 @@
 // İlke (§5.1): güç ekipmandan, tarz karakterden, görünüm ikisinden. Karakter ikinci bir güç kaynağı olmaz; yasin
 // varsayılanı kabul etti: puan dağıtılan yetenek ağacı yok, karakter = tarz. Gerekçe: ekonomi tavanı (%15–18) ekipmana göre
 // ayarlandı; ikinci bir katman ya tavanı deler ya da iki katmanı da önemsizleştirir.
-// Tarz: artısı ve eksisi olan küçük bir yan seçim (≤ %20 tek bir durumda, genel güç etkisi ≈ 0), ücretsiz, maç dışında her
+// 2026-11-07 (yasin "tarz farkı oyunda hissedilsin"): ±%4–10'luk etkiler kortta fark edilmiyordu (Denge tarz kipi: tarzlar
+// arası galibiyet farkı gürültü düzeyinde, inceleme 08:30 #3). Tavan tek durumda %35'e çıktı, her tarzın bir imza etkisi var
+// (Smaşçı smaç hızı, Duvar erişim, File ustası file önü, Aldatıcı slice) ve eksisi aynı ölçüde gerçek. Hissedilme ölçüsü
+// Match.tarzFark (tarzsız başka olacak an); ilk 3'ü kortta tarz adıyla yazılır. Denge kuralı aynı: tarzlar arası fark ≤ 5 puan.
+// Tarz: artısı ve eksisi olan bir yan seçim (≤ %35 tek bir durumda, genel güç etkisi ≈ 0), ücretsiz, maç dışında her
 // an değişir, Eşit şartlarda da geçerlidir (güç değil kimlik). GearStats'ın üstüne çarpan olarak biner (Uygula); ekipmanın
 // 5 çubuğuna girmez. Seviyesi gelmemiş tarz kayıtta kalsa da uygulanmaz (Dengeli sayılır), seviye gelince kendiliğinden döner.
 // Unvan: kariyerden, antrenmandan, seviyeden; kazanılan unvan bir daha geri alınmaz (koşulu kalıcı ilerlemeye bağlı).

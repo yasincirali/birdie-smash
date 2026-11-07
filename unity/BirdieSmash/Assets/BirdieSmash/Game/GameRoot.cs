@@ -444,6 +444,7 @@ namespace BirdieSmash.Game
             if (M.tepeden > 0) bb.Add(L.T("{0} tepeden", M.tepeden));
             if (M.saves > 0) bb.Add(L.T("{0} uzanma", M.saves));
             if (M.outsLeft > 0) bb.Add(L.T("{0} kez dışarıyı bıraktın", M.outsLeft));
+            if (M.tarzFark > 0) bb.Add(L.T("Tarzın {0} kez fark yarattı", M.tarzFark));   // 2026-11-07 tarz farkı (Match.tarzFark); Dengeli'de hep 0, yazılmaz
             bittiBilgi = string.Join(" · ", bb.ToArray());
             // En hızlı sayı smacı ve kişisel rekor (2026-11-07 inceleme, fikir 02:06 #3): Ayrıntılar'a tek satır; maç kartına yeni yazı yok.
             if (M.enHizliSmac > 0 && M.ogr == null)
