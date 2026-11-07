@@ -231,7 +231,7 @@ namespace BirdieSmash.Game
             var sv = Kaydirma(altSayfa); sv.AddToClassList("alt-kaydir");
             // 2026-11-07 (UX2): içerik görünen alandan uzunsa altta solma; sona kaydırınca kalkar (kaydırılabilir olduğu belli olsun).
             var sol = new Image { image = Ikonlar.Solma, scaleMode = ScaleMode.StretchToFill }; sol.AddToClassList("kaydir-solma"); sol.pickingMode = PickingMode.Ignore; sv.hierarchy.Add(sol);
-            System.Action solGuncelle = () => { var vs = sv.verticalScroller; bool kalan = vs.highValue > 2 && vs.value < vs.highValue - 2; sol.style.display = kalan ? DisplayStyle.Flex : DisplayStyle.None; };
+            System.Action solGuncelle = () => { var vs = sv.verticalScroller; bool kalan = vs.highValue > 2 && vs.value < vs.highValue - 2; var ds = kalan ? DisplayStyle.Flex : DisplayStyle.None; if (sol.resolvedStyle.display != ds) sol.style.display = ds; };
             sv.verticalScroller.valueChanged += v => solGuncelle(); sv.RegisterCallback<GeometryChangedEvent>(e => solGuncelle()); sv.contentContainer.RegisterCallback<GeometryChangedEvent>(e => solGuncelle());
             return sv.contentContainer;
         }

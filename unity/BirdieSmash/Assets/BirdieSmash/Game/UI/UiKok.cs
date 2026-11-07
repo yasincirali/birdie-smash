@@ -500,18 +500,23 @@ namespace BirdieSmash.Game
             koyuGunes = new Image { image = Ikonlar.GunesDisk, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(1, 1, 1, .2f) };
             koyuGunes.AddToClassList("koyu-gunes"); koyuGunes.pickingMode = PickingMode.Ignore;
             // diskin alt %30'u görünür (390 pt ekranda ~130 pt), yatayda ortalı; iPad'de büyümesin diye 560 sınırı (GunesYerlestir)
-            if (zemin.parent != null) { zemin.parent.Insert(zemin.parent.IndexOf(zemin) + 1, koyuGunes); zemin.parent.RegisterCallback<GeometryChangedEvent>(e => GunesYerlestir()); }
+            if (zemin.parent != null) { zemin.parent.Insert(zemin.parent.IndexOf(zemin) + 1, koyuGunes); zemin.parent.RegisterCallback<GeometryChangedEvent>(e => KoyuGunesYerlestir()); }
         }
-        Image gunesImg, koyuGunes; float gunesAci;
+        Image gunesImg, koyuGunes; float gunesAci, koyuGunesW = -1;
         // Güneş diski kare kalmalı (USS yüzdesi genişlik/yükseklik ayrı ölçer): genişliğin 1,25 katı, afişin ortasında
         // (afiş üst %8, boy %54 → merkez %35), yatayda ortalı; kenarları ekrandan taşar (batan güneş, tam daire değil).
         void GunesYerlestir()
         {
-            // koyu sekme kesiti zemin gizliyken de yerleşir (kökün ölçüsüyle; uygulama koyu sekmede açılabilir)
-            if (koyuGunes != null && koyuGunes.parent != null) { float w = koyuGunes.parent.contentRect.width; if (w > 0) { float k = Mathf.Min(w, 560) * 1.1f; koyuGunes.style.width = k; koyuGunes.style.height = k; koyuGunes.style.left = (w - k) / 2; koyuGunes.style.top = -k * .7f; } }
+            KoyuGunesYerlestir();
             if (gunesImg == null) return; var r = zemin.contentRect; if (r.width <= 0 || r.height <= 0) return;
             float d = Mathf.Max(r.width * 1.25f, r.height * .5f); gunesImg.style.width = d; gunesImg.style.height = d;
             gunesImg.style.left = (r.width - d) / 2; gunesImg.style.top = r.height * .35f - d / 2;
+        }
+        void KoyuGunesYerlestir()
+        {
+            // koyu sekme kesiti zemin gizliyken de yerleşir (kökün ölçüsüyle; uygulama koyu sekmede açılabilir)
+            // yalnız genişlik değişince yazılır: her GeometryChanged'de aynı stili yazmak yerleşimi kirletip döngüye sokuyordu (r133)
+            if (koyuGunes != null && koyuGunes.parent != null) { float w = koyuGunes.parent.contentRect.width; if (w > 0 && Mathf.Abs(w - koyuGunesW) > .5f) { koyuGunesW = w; float k = Mathf.Min(w, 560) * 1.1f; koyuGunes.style.width = k; koyuGunes.style.height = k; koyuGunes.style.left = (w - k) / 2; koyuGunes.style.top = -k * .7f; } }
         }
         // Afiş: Oyna görünürken açık. Rakip = Oyna'daki büyük düğmenin oynatacağı maçın rakibi (bekleyen maç, Usta yolu ya da
         // kariyerin sıradaki basamağı); ilk açılışta (antrenman görülmedi) afiş hiç çizilmez (aşağıda; eskiden rakipsiz, yalnız sen).
