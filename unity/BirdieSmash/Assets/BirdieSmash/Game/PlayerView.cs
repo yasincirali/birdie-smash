@@ -904,7 +904,7 @@ namespace BirdieSmash.Game
         // "iyi oyundu"yu (raketi rakibe kaldırıp başını eğer) döngüde yapar. Klip değil: örneklenen pozun üstüne kemik işlemi
         // (iki kemik IK kollar, omurga eğimi, sıçrama ve dönüş), bu yüzden dört modelde de yeni FBX'siz çalışır. Ağırlık 0→1→0
         // yumuşak; ralli başlayınca (between bitti) .15 sn'de söner, servis pozuna karışmaz. Hareketi azaltta sıçrama, dönüş ve
-        // salınım yok, kollar yalnız kalkar. Oyuncunun seçimi Ayar.KOZ (Dolap › Sevinç); rakip hep varsayılanı yapar.
+        // salınım yok, kollar yalnız kalkar. Oyuncunun seçimi Ayar.KOZ (Dolap › Sevinç); rakip tarzının sevincini yapar (2026-11-07, stil.json; eskiden hep varsayılan).
         // Raket her zaman sağ elde (kural): sağ kol raketi taşır, el sallama ve alkış sol elle.
         string sevId; float sevT = -1, sevW; bool sevDongu; int sevTop = -1;
         public const float SEVINC_SURE = 1.0f;
@@ -919,8 +919,8 @@ namespace BirdieSmash.Game
             if (top > sevTop)
             {
                 sevTop = top; bool benimki = isMe == (M.server == "me");
-                if (M.matchDone) { bool kazandim = isMe ? M.sc[0] > M.sc[1] : M.sc[1] > M.sc[0]; sevId = kazandim ? (isMe ? Secim(Kozmetik.MAC_SONU) : "zafer") : "iyi_oyun"; sevDongu = true; sevT = 0; }
-                else if (benimki) { sevId = isMe ? Secim(Kozmetik.SEVINC) : "yumruk"; sevDongu = false; sevT = 0; }
+                if (M.matchDone) { bool kazandim = isMe ? M.sc[0] > M.sc[1] : M.sc[1] > M.sc[0]; sevId = kazandim ? (isMe ? Secim(Kozmetik.MAC_SONU) : Kozmetik.RakipSecim(Kozmetik.MAC_SONU, M.stil != null ? M.stil.macSonu : null)) : "iyi_oyun"; sevDongu = true; sevT = 0; }
+                else if (benimki) { sevId = isMe ? Secim(Kozmetik.SEVINC) : Kozmetik.RakipSecim(Kozmetik.SEVINC, M.stil != null ? M.stil.sevinc : null); sevDongu = false; sevT = 0; }
             }
             if (sevT < 0) { sevW = 0; return; }
             sevT += dt;

@@ -623,6 +623,17 @@ static class BotMac
         var q = Ilerleme.Oku(p.Yaz(), 0, false);
         if (q.Tarz != "duvar" || q.Unvan != "yerel" || q.Ad != "Yasin Birdie Sma" || q.Mac != 2 || q.Smac != 6 || q.Tur1Gecilen() != 6) Fail("karakter kaydı: " + q.Yaz());
         if (Ilerleme.AdTemizle("   ") != null || new Ilerleme().Tarz != "dengeli" || new Ilerleme().Ad != null) Fail("boş ad / varsayılan tarz");
+        // 2026-11-07 beceri unvanları: eşikte açılır, öncesinde açılmaz; sayaçlar kayda yazılır; seçim yoksa gösterilen kariyer unvanı kalır
+        var bk = new Ilerleme(); var b0 = Karakter.BeceriKazanilan(bk); bk.MacSay(299, 119, 79); bk.ImzaOkuSay(19);
+        if (Karakter.YeniBeceri(bk, b0) != null) Fail("beceri unvanı eşikten önce açıldı");
+        bk.MacSay(1, 1, 0); var yu = Karakter.YeniBeceri(bk, b0);
+        if (yu == null || yu.id != "smacci" || !Karakter.BeceriKazanilan(bk).Contains("kale") || Karakter.BeceriKazanilan(bk).Contains("aldatici")) Fail("beceri unvanı eşikte açılmalı (smaç 300, karşılama 120)");
+        bk.MacSay(0, 0, 1); bk.ImzaOkuSay(1); var bq = Ilerleme.Oku(bk.Yaz(), 0, false);
+        if (Karakter.BeceriKazanilan(bq).Count != 4 || bq.Sayac("karsila") != 120 || bq.Sayac("aldat") != 80) Fail("beceri sayaçları kayda yazılmalı");
+        for (int b = 0; b < 6; b++) bq.tur[0][b] = Ilerleme.KAZAN; if (Karakter.Gosterilen(bq, 1, 0).id != "yerel") Fail("seçim yoksa kariyer unvanı gösterilmeli");
+        // 2026-11-07 rakip sevinci: tarzın seçimi veride geçerli, bilinmeyen ya da boş kimlik varsayılana düşer
+        foreach (var kv in Match.STIL) { if (Kozmetik.Bul(Kozmetik.SEVINC, kv.Value.sevinc ?? "") == null || Kozmetik.Bul(Kozmetik.MAC_SONU, kv.Value.macSonu ?? "") == null) Fail("rakip sevinci veride yok: " + kv.Key); }
+        if (Kozmetik.RakipSecim(Kozmetik.SEVINC, "uydurma") != "yumruk" || Kozmetik.RakipSecim(Kozmetik.MAC_SONU, null) != "zafer" || Kozmetik.RakipSecim(Kozmetik.SEVINC, "alkis") != "alkis") Fail("rakip sevinci varsayılanı");
         Console.WriteLine("tarz: " + string.Join(", ", T.Select(t => t.ad + " Sv" + t.sv)) + "; unvan " + Karakter.Unvanlar.Length + "; açılanlar Sv 4: " + string.Join(", ", Karakter.Acilanlar(4)) + "; Sv 18: " + string.Join(", ", Karakter.Acilanlar(18)));
     }
 
