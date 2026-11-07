@@ -35,9 +35,10 @@ namespace BirdieSmash.Game
             var r = Satir("profil-ust"); kart.Add(r);
             var av = new VisualElement(); av.AddToClassList("avatar"); av.AddToClassList("avatar--buyuk"); av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 54); r.Add(av);
             var ad = new VisualElement(); ad.AddToClassList("esnek-yatay"); r.Add(ad);
-            ad.Add(Yazi(p.Ad ?? L.T("Oyuncu"), 22, "kalin")); ad.Add(Yazi(L.T(un.ad) + Karakter.KademeEki(un, p), 14, "altin"));
+            ad.Add(Yazi(p.Ad ?? L.T("Oyuncu"), 22, "kalin")); var unY = Yazi(L.T(un.ad) + Karakter.KademeEki(un, p), 14, "altin"); ad.Add(unY); SozcukSigdir(unY);   // 2026-11-07: ×2'de "Neighbourhoo/d" bölünüyordu
             var svr = Satir("rakip-satir"); svr.style.marginTop = 6; ad.Add(svr);
             var halka = new VisualElement(); halka.AddToClassList("sv-halka"); svr.Add(halka);
+            { float hs = Mathf.Round(30 * Mathf.Max(1, K * .85f)); halka.style.width = hs; halka.style.height = hs; halka.style.borderTopLeftRadius = halka.style.borderTopRightRadius = halka.style.borderBottomLeftRadius = halka.style.borderBottomRightRadius = hs / 2; }   // 2026-11-07: ×2'de seviye rakamı 30 pt halkada kesiliyordu (r127)
             var hi = Yazi(L_.ToString(), 13, "kalin"); hi.AddToClassList("sv-halka-ic"); halka.Add(hi);
             var hy = Yazi(gerek > 0 ? L.T("Sonraki seviyeye {0} XP", gerek - kalan) : L.T("En yüksek seviye"), 12, "soluk"); hy.style.marginLeft = 6; hy.style.flexShrink = 1; svr.Add(hy);
             ad.Add(Yazi(L.T(tz.ad) + " · " + L.T(Gear.GEAR["raket"][gr.raket].ad), 13, "soluk"));

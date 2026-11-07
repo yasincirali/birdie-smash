@@ -122,6 +122,20 @@ namespace BirdieSmash.Game
             l.style.whiteSpace = WhiteSpace.NoWrap; l.style.flexShrink = 0f; float taban = l.style.fontSize.value.value;
             d.RegisterCallback<GeometryChangedEvent>(e => SigdirOlc(d, l, taban, minOran));
         }
+        // Sözcük sığdır (2026-11-07, r127 Profil ×2 "Neighbourhoo/d player"): sarılan yazıda en uzun sözcük kaba sığmıyorsa Unity
+        // onu harf ortasından böler. Yazı boyutu, en uzun sözcük satıra sığana kadar küçülür (11 pt altına inmez); sarma kalır.
+        void SozcukSigdir(Label l)
+        {
+            float taban = l.style.fontSize.value.value; if (taban <= 0) return;
+            l.RegisterCallback<GeometryChangedEvent>(e =>
+            {
+                float w = l.contentRect.width, simdi = l.resolvedStyle.fontSize; if (float.IsNaN(w) || w <= 1 || float.IsNaN(simdi) || simdi <= 0) return;
+                string uzun = ""; foreach (var sz in l.text.Split(' ', '\n')) if (sz.Length > uzun.Length) uzun = sz; if (uzun.Length < 2) return;
+                float gen = l.MeasureTextSize(uzun, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined).x * taban / simdi; if (gen <= 0) return;
+                float hedef = Mathf.Clamp(Mathf.Floor(taban * Mathf.Min(1, (w - 2) / gen) * 2) / 2, Mathf.Min(taban, YAZI_MIN), taban);
+                if (Mathf.Abs(hedef - simdi) > .25f) l.style.fontSize = hedef;
+            });
+        }
         static void SigdirOlc(VisualElement d, Label l, float taban, float minOran)
         {
             float w = d.contentRect.width; if (float.IsNaN(w) || w <= 1 || taban <= 0) return;

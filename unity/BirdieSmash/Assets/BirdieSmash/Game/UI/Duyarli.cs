@@ -136,7 +136,7 @@ namespace BirdieSmash.Game
                 n++; var r = v.worldBound; bool kaydir; var kirp = Kirp(v, out kaydir); var gor = kaydir ? Kes(r, kirp) : r;
                 bool cubukta = Altinda(v, sekmeCubugu);
                 if (!kaydir && Disinda(r, guv)) Sorun(sb, ref sorun, "güvenli alan / ekran dışında", Ad(v), r);
-                if (kaydir && (r.xMin < kirp.xMin - 1 || r.xMax > kirp.xMax + 1)) Sorun(sb, ref sorun, "yatay taşma (kaydırılamaz)", Ad(v), r);
+                if (kaydir && !YatayKayar(v) && (r.xMin < kirp.xMin - 1 || r.xMax > kirp.xMax + 1)) Sorun(sb, ref sorun, "yatay taşma (kaydırılamaz)", Ad(v), r);
                 if (!cubukta && !altAcik && gor.height > 1 && Kesisim(gor, sekme)) Sorun(sb, ref sorun, "sekme çubuğuyla çakışıyor", Ad(v), r);
                 var l = v as Label;
                 if (l != null)
@@ -201,6 +201,13 @@ namespace BirdieSmash.Game
             if (l != null) { if (!string.IsNullOrEmpty(l.text) && !(v.parent is TextField) && !Altinda(v, "unity-base-field")) oge.Add(v); }
             else if (b != null ? (b.rol == "dugme" || b.rol == "sekme") : v.ClassListContains("dugme")) oge.Add(v);
             for (int i = 0; i < v.hierarchy.childCount; i++) Topla_(v.hierarchy[i], oge, svl, altAcik);
+        }
+        // En yakın kaydırma görünümü yatay kayıyorsa (Dolap kategori şeridi) taşma tasarımdır, sorun değil (2026-11-07: r127'de
+        // her telefonda 8 yanlış "yatay taşma" satırı gerçek sorunları gölgeliyordu).
+        static bool YatayKayar(VisualElement v)
+        {
+            for (var p = v.hierarchy.parent; p != null; p = p.hierarchy.parent) { var sv = p as ScrollView; if (sv != null) return sv.mode != ScrollViewMode.Vertical; }
+            return false;
         }
         static bool Altinda(VisualElement v, VisualElement ata) { for (var p = v; p != null; p = p.hierarchy.parent) if (p == ata) return true; return false; }
         static bool Altinda(VisualElement v, string cls) { for (var p = v.hierarchy.parent; p != null; p = p.hierarchy.parent) if (p.ClassListContains(cls)) return true; return false; }
