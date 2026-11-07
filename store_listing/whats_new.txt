@@ -1,4 +1,9 @@
 === UNITY ===
+Bu sabah (7 Kasım 08:30 inceleme turu):
+- Dört beceri unvanının artık üç kademesi var: Smaç ustası, Geçilmez, Aldatıcı ve Okuyucu, oynadıkça II ve III olur (ör. 400 aldatmada Aldatıcı II). Kademe güç vermez, yalnız unvanın yanında görünür; yeni kademe maç sonunda "Yeni unvan" diye haber verilir.
+- Profil'de İstatistikler bölümü üstteki üç büyük sayıyı (rekor ralli, smaç, galibiyet) tekrar etmiyor, sayfa kısaldı.
+Nasıl denenir: Profil'i aç ve açılmış bir beceri unvanını seç: altında "sonraki kademe 85/400" gibi tek satır görünmeli ve birkaç maçtan sonra sayı artmalı. İstatistikler'de rekor ralli, galibiyet ve smaç olmamalı; bunlar en üstteki kartta duruyor olmalı. Ayarlar'da metni büyüt, Profil taşmamalı.
+
 Bu sabah (7 Kasım 06:30 inceleme turu):
 - Atölye'de model kartları sadeleşti: her kartta beş çubuk yerine modelin artısını ve eksisini söyleyen tek cümle var. Beş çubuk sayfanın üstündeki "Takımın şimdi" kartında duruyor; model seçince o kart değişiyor.
 - Çevrimiçi maç için altyapı (henüz kapalı): servisi atmayan oyuncu için süre ve maçtan çekilme kuralı.

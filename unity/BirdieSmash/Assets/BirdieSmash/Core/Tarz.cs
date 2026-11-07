@@ -14,7 +14,8 @@ namespace BirdieSmash.Core
     public class TarzBilgi { public string id, ad, arti, eksi; public int sv = 1; public Dictionary<string, float> etki = new Dictionary<string, float>(); }
     // sayac/esik (2026-11-07 inceleme, fikir 3 "beceri unvanları"): oynayıştan kazanılan unvan; Ilerleme.Sayac(sayac) ≥ esik.
     // İlerleme unvanları kariyerde ne kadar ilerlediğini söyler, bunlar nasıl oynadığını (online kartında rakip okur). Ödülsüz.
-    public class UnvanBilgi { public string id, ad, nasil, sayac; public int tur = -1, sv, antrenman, esik; }
+    // kademe (2026-11-07 inceleme): beceri unvanının üç eşiği (I · II · III); ödülsüz, yalnız kimlik. Yoksa tek eşik {esik}.
+    public class UnvanBilgi { public string id, ad, nasil, sayac; public int tur = -1, sv, antrenman, esik; public int[] kademe; }
     // Görünüm öğesi: renk null = modelin kendi rengi.
     // parla (2026-11-01 mistik saç boyaları): renk hafifçe kendinden ışır (Alev, Buz, Yıldız tozu); yalnız görünüş.
     public class GorunumOge { public string id, ad, renk; public int sv = 1; public bool parla; }
@@ -68,20 +69,40 @@ namespace BirdieSmash.Core
         }
         public static bool Kazanildi(UnvanBilgi u, Ilerleme p, int seviye, int antrenmanYildiz)
         {
-            if (u.sayac != null) return u.esik > 0 && p.Sayac(u.sayac) >= u.esik;
+            if (u.sayac != null) return Kademe(u, p) >= 1;
             if (u.tur >= 0) return u.tur < p.tur.Length && p.TurBitti(u.tur);
             if (u.sv > 0) return seviye >= u.sv;
             if (u.antrenman > 0) return antrenmanYildiz >= u.antrenman;
             return true;
         }
         // Bu maçla açılan ilk beceri unvanı (maç sonu kartında tek satır). once = maçtan önce kazanılmış beceri unvanı kimlikleri.
+        // Kademe 2 ve 3 listeye "id:2" / "id:3" olarak ayrıca girer; kademe 1 eski kimlikle kalır (kayıt ve kart değişmez).
         public static List<string> BeceriKazanilan(Ilerleme p)
         {
-            var l = new List<string>(); foreach (var u in Unvanlar) if (u.sayac != null && Kazanildi(u, p, 0, 0)) l.Add(u.id); return l;
+            var l = new List<string>();
+            foreach (var u in Unvanlar) { int k = Kademe(u, p); if (k >= 1) l.Add(u.id); for (int i = 2; i <= k; i++) l.Add(u.id + ":" + i); }
+            return l;
         }
+        // Yeni unvan ya da yeni kademe: maç sonu alt notu "Yeni unvan: Aldatıcı II." (ad + KademeEki aynı p ile).
         public static UnvanBilgi YeniBeceri(Ilerleme p, List<string> once)
         {
-            foreach (var u in Unvanlar) if (u.sayac != null && !once.Contains(u.id) && Kazanildi(u, p, 0, 0)) return u; return null;
+            foreach (var u in Unvanlar) { int k = Kademe(u, p); if (k >= 1 && !once.Contains(k == 1 ? u.id : u.id + ":" + k)) return u; }
+            return null;
+        }
+        // Beceri unvanının kademesi (0: kazanılmadı). Sayaçsız unvanın kademesi yok (0); kazanılması Kazanildi'de.
+        public static int Kademe(UnvanBilgi u, Ilerleme p)
+        {
+            if (u.sayac == null || u.esik <= 0) return 0;
+            int n = p.Sayac(u.sayac), k = 0; var e = u.kademe ?? new[] { u.esik };
+            foreach (var x in e) if (n >= x) k++;
+            return k;
+        }
+        // Görünen ek: kademe 1 eksiz ("Aldatıcı"), 2 " II", 3 " III". Roma rakamı renkten bağımsız okunur (HIG renk körlüğü).
+        public static string KademeEki(UnvanBilgi u, Ilerleme p) { int k = Kademe(u, p); return k == 2 ? " II" : k == 3 ? " III" : ""; }
+        // Sıradaki kademe eşiği (yoksa 0): Profil'de tek satır "sonraki kademe 212/400".
+        public static int SonrakiEsik(UnvanBilgi u, Ilerleme p)
+        {
+            int k = Kademe(u, p); if (k < 1 || u.kademe == null || k >= u.kademe.Length) return 0; return u.kademe[k];
         }
         // Gösterilen unvan: oyuncunun seçtiği (hâlâ kazanılmışsa), seçmediyse kazanılanların en sonuncusu (dosyada en değerli
         // en altta): oyuncu hiç dokunmadan da ilerlemesini görür.
@@ -149,6 +170,8 @@ namespace BirdieSmash.Core
             foreach (var x in (List<object>)o["unvanlar"])
             {
                 var d = Json.Obj(x); ul.Add(new UnvanBilgi { id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), nasil = Json.Str(d, "nasil", ""), tur = (int)Json.Num(d, "tur", -1), sv = (int)Json.Num(d, "sv", 0), antrenman = (int)Json.Num(d, "antrenman", 0), sayac = Json.Str(d, "sayac", null), esik = (int)Json.Num(d, "esik", 0) });
+                var ke = d.ContainsKey("kademe") ? d["kademe"] as List<object> : null; var ub = ul[ul.Count - 1];
+                if (ke != null) { ub.kademe = new int[ke.Count]; for (int i = 0; i < ke.Count; i++) ub.kademe[i] = (int)(double)ke[i]; if (ub.kademe[0] != ub.esik) throw new InvalidOperationException("Birdie Smash: karakter.json " + ub.id + " kademe[0] esik olmalı"); }
             }
             var g = new Dictionary<string, GorunumOge[]>();
             foreach (var k in GORUNUM_KAT)
