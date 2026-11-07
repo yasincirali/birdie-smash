@@ -1,0 +1,8 @@
+toplam 7
+tr_04_karakter · taşma x 337..383 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Ayakkabı"
+tr_04_karakter · taşma x 420..452 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Forma"
+tr_04_karakter · taşma x 490..523 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Sevinç"
+tr_04_karakter · taşma x 561..589 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Raket"
+en_04_karakter · taşma x 401..425 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Shirt"
+en_04_karakter · taşma x 463..512 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Celebrate"
+en_04_karakter · taşma x 550..584 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Racket"
