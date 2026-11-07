@@ -893,6 +893,26 @@ namespace BirdieSmash.Game
             var bst = Sigdir(aSkor, bas, w); float bhY = bst.CalcHeight(Ic(bas), w), sh = skor == null ? 0 : aSkor.CalcHeight(Ic(skor), w), ih = aIpucu.CalcHeight(Ic(bilgi), w);
             string ct = UiKok.Buyuk(L.T("Maça devam et")); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), ctaH = Mathf.Max(80 * s, cth + 22 * s);
             float blok = bhY + 6 * s + sh + ih + 22 * s + ctaH + 12 * s + 3 * bh + 2 * gap;
+            // Bu maçın görevleri (2026-11-07 inceleme, fikir 20:09 #4): maç içinde yalnız 3 nokta görünüyor; duraklatan oyuncu
+            // "hangi yıldızı kovalıyordum" sorusunun cevabını burada okur. Simge + yazı (yalnız renk değil): ○ kalan + sayaç, ✓ biten
+            // soluk. Antrenman/Sonsuz rallide yok (M.Dril). Büyük yazıda blok sığmazsa yalnız kalanlar, o da sığmazsa hiç.
+            string[] gs = null; float gh = 0;
+            if (M.Dril == null && M.gorevler != null && M.gorevler.Count > 0)
+            {
+                for (int tur = 0; tur < 2 && (gs == null || blok + gh > H - top - bot - BH - 8 * s); tur++)
+                {
+                    var l = new List<string>(); gh = 10 * s;
+                    foreach (var g in M.gorevler)
+                    {
+                        if (g.bitti && tur == 1) continue;
+                        string t = g.bitti ? "✓ " + L.Cumle(g.ad) : "○ " + L.Cumle(g.ad) + " · " + Mathf.Min(g.say(M), g.hedef) + "/" + g.hedef;
+                        l.Add(t); gh += Glif(aIpucu, t).CalcHeight(Ic(t), w);
+                    }
+                    gs = l.ToArray();
+                }
+                if (gs.Length == 0 || blok + gh > H - top - bot - BH - 8 * s) { gs = null; gh = 0; }
+            }
+            blok += gh;
             float y = Mathf.Max(top + BH + 8 * s, Mathf.Min((H - blok) / 2, H - bot - blok));
             Yaz(new Rect(x, y, w, bhY), bas, bst, A_YAZI, 1); y += bhY + 6 * s;
             if (skor != null)
@@ -901,6 +921,12 @@ namespace BirdieSmash.Game
                 Yaz(new Rect(sx, y, aw + 2, sh), a0, aSkor, A_LIMON, 1); Yaz(new Rect(sx + aw, y, bw + 2, sh), b0, aSkor, A_YAZI, 1); y += sh;
             }
             Yaz(new Rect(x, y, w, ih), bilgi, aIpucu, A_SOLUK, 1); y += ih + 22 * s;
+            if (gs != null)
+            {
+                y -= 12 * s;
+                foreach (var t in gs) { var gst = Glif(aIpucu, t); float th = gst.CalcHeight(Ic(t), w); Yaz(new Rect(x, y, w, th), t, gst, t[0] == '✓' ? A_SOLUK : A_YAZI, t[0] == '✓' ? .7f : 1); y += th; }
+                y += 22 * s;
+            }
             if (BuyukDugme(new Rect(x, y, w, ctaH), ct, null, s, 1)) { bastanOnayT = -1; root.Devam(); } y += ctaH + 12 * s;
             // HTML duraklat satırı: Ses · Maçı baştan başlat · Ana menü (oyun sırasında ses düğmesi yalnız burada). 2026-11-06 13:40 inceleme:
             // "Ses açık" eylem mi durum mu okunmuyordu; "Ses: açık" durum okunur, dokunmak değiştirir (simge anahtar önerisi yazılı satır kararına takıldı).

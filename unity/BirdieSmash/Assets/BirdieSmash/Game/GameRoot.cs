@@ -1060,6 +1060,7 @@ namespace BirdieSmash.Game
                 case Ev.Split: sfx.Split(); break;
                 case Ev.Serve: if (mpYan >= 0) Yerel.Hap("kalp"); break;   // maç sayısında servis anında tek kalp atışı (hareketi azaltta Hap susar)
                 case Ev.Kurtaris: break;
+                case Ev.Karsila: sfx.Gasp(.07f); Yerel.Hap("tick"); break;   // smaç döndürüldü: tribün nefesi + tık (yazı Match.Say'den; hareketi azaltta Hap susar, ses kalır)
                 case Ev.Imza: sfx.Imza(e.type); Yerel.Hap("tick"); break;   // ışık ve poz PlayerView'de (Athlete.imzaT), yazı Match.Say'den
                 case Ev.Okudun: sfx.Okudun(); Yerel.Hap("ralli"); fx.Burst(at, Kit.Hex("#7ad7ff"), 14, 200, "spark"); break;
                 case Ev.Gorev:

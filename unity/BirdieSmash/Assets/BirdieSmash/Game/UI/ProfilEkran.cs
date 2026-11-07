@@ -140,6 +140,9 @@ namespace BirdieSmash.Game
             if (p.Mac == 0 && Ayar.wins > 0) c.Add(Yazi(L.T("Maç ve smaç sayısı bu sürümden sonra oynanan maçları sayar."), 12, "soluk"));
 
             c.Add(Grup(L.T("Başarımlar")));
+            // Game Center listenin sonundan başlığın altına (2026-11-07 inceleme, fikir 20:09 #3): Ayarlar'daki kopya kalktı, tek yer
+            // burası; uzun listenin dibinde aranmasın. Metin aynı anahtar ("Game Center'da aç" yeni çeviri isterdi).
+            if (Basarim.acik) { c.Add(Dugme(L.T("Game Center · Başarımlar") + "  ›", () => { Yerel.Hap("tick"); Basarim.Goster(); })); c.Add(Bosluk(6)); }
             for (int i = 0; i < BASARIM.GetLength(0); i++) BasarimSatir(c, BASARIM[i, 0], L.T(BASARIM[i, 1]));
             for (int i = 1; i <= Match.KARIYER.Length; i++) BasarimSatir(c, "bs_kariyer_" + i, L.T("Kariyer") + ": " + L.T(Match.KARIYER[i - 1].yer));
             for (int tu = 1; tu < KariyerVeri.Turlar.Length; tu++) if (KariyerVeri.Turlar[tu].Var) BasarimSatir(c, "bs_tur_" + (tu + 1), L.T("{0} finalini kazan", L.T(TurAd(tu))));
@@ -148,7 +151,6 @@ namespace BirdieSmash.Game
             BasarimSatir(c, Basarim.GUNUN_MACI, L.T("Bir Günün maçını kazan"));
             BasarimSatir(c, Basarim.USTA6, L.T("Usta yolunda 6 basamak geç"));
             BasarimSatir(c, Basarim.IMZA_OKUR, L.T("Toplam {0} imza vuruşu oku", Basarim.IMZA_OKUR_HEDEF));
-            if (Basarim.acik) { c.Add(Bosluk(6)); c.Add(Dugme(L.T("Game Center · Başarımlar"), () => { Yerel.Hap("tick"); Basarim.Goster(); })); }
             c.Add(Bosluk(20));
         }
 

@@ -1,4 +1,10 @@
 === UNITY ===
+Bu akşam (7 Kasım 20:15 inceleme turu):
+- Rakibin smaçını geri çevirince kortta "Karşıladın" ve smaçın hızı yazar, seyirci nefesini tutar, telefon kısa titrer. Maçta ilk üç kez, sonra yalnız uzun rallilerde.
+- Duraklat ekranında bu maçın üç görevi yazar: kalanlar sayacıyla (ör. 1/3), bitenler işaretli ve soluk.
+- Game Center düğmesi Ayarlar'dan kalktı; Profil'de Başarımlar başlığının hemen altında.
+Nasıl denenir: Orta ya da Zor'da Smaşçı'ya karşı bir maç oyna; onun smaçını döndürünce "Karşıladın · ... km/s" görmeli, ses ve titreşim hissetmelisin. Maçta duraklat: skorun altında üç görev satırı olmalı. Profil'i aç: Game Center düğmesi Başarımlar başlığının altında.
+
 Bu akşam (7 Kasım 18:20 inceleme turu):
 - Ayarlar > Ses'te yeni "Titreşim" düğmesi: titreşimi kapatmak için artık Hareketi azalt'ı açman gerekmiyor; kamera sarsıntısı ve yakınlaşma yerinde kalır.
 - Oyunu ilk kez açınca alttaki sekmeler gizli, ekranda yalnız ilk maç var. Antrenmanı bitirince sekmeler gelir. Ayarlar düğmesi hep üstte.
