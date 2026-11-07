@@ -136,7 +136,9 @@ namespace BirdieSmash.Game
         // 1,25 m dışarıda (hakem sandalyelerinin sırtlığı −0,99 / CW+0,79'da, pano onların arkasında kalır), filenin iki yanında
         // 1 m boşluk (hakemler ve servis ölçer açık görünsün), dipten 0,5 m içeride biter. Yüz korta döner; kamera arkadan baktığı
         // için panolar kendiliğinden perspektifle daralır. Ledler'e eklenir: LedYaz olay yazısı arka panoyla birlikte kenarlarda da
-        // dönüşümlü görünür. Reklam SDK'sı (oyun içi reklam ağı) gelince doku buradan değişir; şimdilik yalnız kendi yazımız.
+        // dönüşümlü görünür. Oyuna etkisi yok (yasin: "oyunu etkilememesi gerekir"): çarpıştırıcı yok (top ve oyuncu fiziği Core'da,
+        // sahne nesnesine bakmaz), kortun 1,25 m dışında; kamera arkadan baktığı için kenara kaçan oyuncunun önüne geçmez.
+        // Maliyet: 12 yüz + 12 örneklenmiş kasa, ışıksız malzeme, gölge yok. Reklam SDK'sı (oyun içi reklam ağı) gelince doku buradan değişir; şimdilik yalnız kendi yazımız.
         static void KenarPano(Transform k)
         {
             var root = new GameObject("kenar_pano").transform; root.SetParent(k, false);
@@ -154,10 +156,12 @@ namespace BirdieSmash.Game
                     {
                         float y = ar.x + b * (i + .5f);
                         var g = Kit.Prim(PrimitiveType.Cube, "kenar_kasa", root, Kit.W(x + yan * .03f, y, YUK / 2), new Vector3(.06f, YUK, b - .04f), kasa);
-                        var cl = g.GetComponent<Collider>(); if (cl != null) Object.Destroy(cl);
-                        var tex = Kit.LedTex(yazi[pi % yazi.Length], Kit.Hex(renk[pi % renk.Length]), Kit.Hex("#0d1420"));
+                        var cl = g.GetComponent<Collider>(); if (cl != null) Object.Destroy(cl); g.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                        // Doku önbellekten (LedYaz ile aynı sözlük): her maç kurulumunda 12 doku yerine en çok 3 kez üretilir, sonra hiç.
+                        string ys = yazi[pi % yazi.Length], rs = renk[pi % renk.Length]; Texture2D tex;
+                        if (!ledOnbellek.TryGetValue(ys + rs, out tex)) { tex = Kit.LedTex(ys, Kit.Hex(rs), Kit.Hex("#0d1420")); ledOnbellek[ys + rs] = tex; }
                         var yuz = Kit.Prim(PrimitiveType.Quad, "kenar_led", root, Kit.W(x - yan * .005f, y, YUK * .55f), new Vector3(b - .1f, YUK * .5f, 1), Kit.Clear(Color.white, tex));
-                        yuz.transform.rotation = don; cl = yuz.GetComponent<Collider>(); if (cl != null) Object.Destroy(cl);
+                        yuz.transform.rotation = don; cl = yuz.GetComponent<Collider>(); if (cl != null) Object.Destroy(cl); var yr = yuz.GetComponent<Renderer>(); yr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; yr.receiveShadows = false;
                         Ledler.Add(new Led { m = yuz.GetComponent<Renderer>().material, varsayilan = tex });
                     }
                 }
