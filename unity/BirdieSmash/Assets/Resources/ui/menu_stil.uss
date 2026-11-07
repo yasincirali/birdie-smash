@@ -189,6 +189,7 @@
 .tur-kart--secili { border-color: var(--sun); border-width: 2px; }
 .tur-kart--kilit .tur-tema { color: var(--mu2); }
 .tur-basamaklar { flex-direction: row; flex-wrap: wrap; justify-content: space-between; margin: 4px 0 8px 0; }
+.tur-basamaklar .dugum-rozet { margin-bottom: 4px; }   /* dar ekranda sararsa satırlar birbirine değmesin */
 .tur-durum { white-space: normal; margin-bottom: 6px; }
 .mac-ozet { margin-top: 4px; }
 .mac-ozet-oyna { margin-top: 10px; }

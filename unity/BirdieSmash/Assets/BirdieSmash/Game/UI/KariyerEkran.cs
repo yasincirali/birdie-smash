@@ -15,7 +15,7 @@ namespace BirdieSmash.Game
 {
     public partial class UiKok
     {
-        int kariyerTur = -1, kartBasamak;
+        int kariyerTur = -1, kartBasamak; float kariyerY = -1;
 
         void KariyerKur(VisualElement k)
         {
@@ -33,7 +33,7 @@ namespace BirdieSmash.Game
             var hs = new ScrollView(ScrollViewMode.Horizontal); hs.AddToClassList("tur-serit"); hs.horizontalScrollerVisibility = ScrollerVisibility.Hidden; c.Add(hs);
             var kartlar = new System.Collections.Generic.List<VisualElement>();
             for (int i = 0; i < KariyerVeri.TUR; i++) { var tk = TurKart(i, sira, hs); hs.Add(tk); kartlar.Add(tk); }
-            TurSeritYerlestir(hs, kartlar);
+            TurSeritYerlestir(hs, kartlar, sv);
 
             int tr = kariyerTur; var tv = tr < KariyerVeri.Turlar.Length ? KariyerVeri.Turlar[tr] : null; bool veri = tv != null && tv.Var;
             // Başka bir turu incelerken sabit şerit oyuncuyu kendi turunun maçına döndürür (UX6); kendi turunda maç zaten aşağıda açık.
@@ -45,18 +45,21 @@ namespace BirdieSmash.Game
             // 2026-10-26: Usta yolu son turun altında (finalden sonra gelir; kilitliyken nedeniyle görünür)
             if (tr == KariyerVeri.TUR - 1) c.Add(UstaKart());
             c.Add(Bosluk(12));
+            // Kaydırarak tur seçince sekme yeniden kurulur; sayfanın dikey yeri korunur (inceleme: snap anında sayfa başa fırlıyordu).
+            if (kariyerY > 0) { float y0 = kariyerY; sv.schedule.Execute(() => sv.scrollOffset = new Vector2(0, y0)).StartingIn(0); }
+            kariyerY = -1;
         }
 
         const float TUR_ARALIK = 10f;
-        // Kart genişliği şeridin %84'ü (büyük yazıda %90): sonraki tur kenarda görünür, kaydırılabileceği belli olur. Seçili kart
+        // Kart genişliği şerit eksi 36 px: sonraki tur kenarda görünür (önce %84'tü; 375 pt'de altı 44 pt nokta sığmıyor, sarıyordu), kaydırılabileceği belli olur. Seçili kart
         // ortalanır. Bırakınca en yakın kart seçilir (kendi kendine hizalanma); dokunarak da seçilir. Sürükleme dokunuş sayılmaz.
-        void TurSeritYerlestir(ScrollView hs, System.Collections.Generic.List<VisualElement> kartlar)
+        void TurSeritYerlestir(ScrollView hs, System.Collections.Generic.List<VisualElement> kartlar, ScrollView sayfaSv)
         {
             float w = 0; bool basili = false; float sonX = -1; int sabit = 0;
             EventCallback<GeometryChangedEvent> gc = null; gc = e =>
             {
                 float vw = hs.layout.width; if (float.IsNaN(vw) || vw <= 0) return;
-                hs.UnregisterCallback(gc); w = Mathf.Round(vw * (K >= 1.35f ? .9f : .84f));
+                hs.UnregisterCallback(gc); w = Mathf.Round(Mathf.Max(vw * .8f, vw - 36));
                 foreach (var kt in kartlar) kt.style.width = w;
                 hs.schedule.Execute(() => hs.scrollOffset = new Vector2(Mathf.Max(0, kariyerTur * (w + TUR_ARALIK) - (vw - w) / 2), 0)).StartingIn(0);
             };
@@ -65,16 +68,19 @@ namespace BirdieSmash.Game
             hs.RegisterCallback<PointerUpEvent>(e => basili = false, TrickleDown.TrickleDown);
             hs.RegisterCallback<PointerCancelEvent>(e => basili = false, TrickleDown.TrickleDown);
             hs.RegisterCallback<PointerCaptureOutEvent>(e => basili = false, TrickleDown.TrickleDown);
-            hs.schedule.Execute(() =>
+            // Kart üstünde başlayan dikey sürükleme sayfaya geçsin (iç içe kaydırma).
+            hs.nestedInteractionKind = ScrollView.NestedInteractionKind.ForwardScrolling;
+            var it = hs.schedule.Execute(() =>
             {
                 if (w <= 0) return; float x = hs.scrollOffset.x;
                 if (Mathf.Abs(x - sonX) > .5f) { sonX = x; sabit = 0; return; }
                 if (basili || ++sabit != 3) return;
                 float vw = hs.layout.width; int idx = Mathf.Clamp(Mathf.RoundToInt((x + (vw - w) / 2) / (w + TUR_ARALIK)), 0, kartlar.Count - 1);
                 float hedef = Mathf.Max(0, idx * (w + TUR_ARALIK) - (vw - w) / 2);
-                if (idx != kariyerTur) { Yerel.Hap("tick"); KariyerTurSec(idx); }
+                if (idx != kariyerTur) { Yerel.Hap("tick"); kariyerY = sayfaSv.scrollOffset.y; KariyerTurSec(idx); }
                 else if (Mathf.Abs(hedef - x) > 1) hs.scrollOffset = new Vector2(hedef, 0);
             }).Every(100);
+            hs.RegisterCallback<DetachFromPanelEvent>(e => it.Pause());   // sekme yeniden kurulunca eski şeridin zamanlayıcısı durur
         }
         // Sürükleme sonrası bırakma dokunuş sayılmasın: basışta kaydedilen konumdan 8 px'den fazla kaydıysa yok say.
         static bool Surukledi(ScrollView hs) { return hs.userData is float x0 && Mathf.Abs(hs.scrollOffset.x - x0) > 8; }
@@ -126,7 +132,7 @@ namespace BirdieSmash.Game
                 var dl = new VisualElement(); dl.AddToClassList("stat-dolu"); dl.style.width = Length.Percent(Mathf.Clamp01(ep / (float)Mathf.Max(1, tv.epMin)) * 100); dl.pickingMode = PickingMode.Ignore; iz.Add(dl);
                 if (az && acik) { var ag = Dugme(L.T("Atölye'ye git"), () => SekmeAc(Sekme.Atolye), "kucuk-dugme"); ag.style.alignSelf = Align.FlexStart; ag.style.marginTop = 8; kb.Add(ag); }
             }
-            int tt = t; kb.AddManipulator(new Clickable(() => { if (Surukledi(hs) || tt == kariyerTur) return; Yerel.Hap("tick"); KariyerTurSec(tt); }));
+            int tt = t; kb.AddManipulator(new Clickable(() => { if (Surukledi(hs) || tt == kariyerTur) return; Yerel.Hap("tick"); var psv = hs.parent?.GetFirstAncestorOfType<ScrollView>(); if (psv != null) kariyerY = psv.scrollOffset.y; KariyerTurSec(tt); }));
             int mh = acik ? p.Muhur(t) : 0;
             Erisim.Etiket(kb, L.T("Tur {0}", t + 1) + ", " + L.T(TurAd(t)) + (veri && acik ? ", " + L.T("{0}/{1} yıldız", p.TurYildiz(t), 18) : "") + (!acik ? ", " + KilitNedeni(t) : "")
                 + (mh >= 2 ? ", " + L.T("Altın tur mührü") : mh == 1 ? ", " + L.T("Bronz tur mührü") : "") + (durum != null ? ", " + durum : ""), "dugme", secili);
