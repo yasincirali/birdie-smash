@@ -28,6 +28,10 @@ namespace BirdieSmash.Core
     {
         public string id, ad, n, renk, forma, doku, kilitAd, varlik; public bool kilit, eski; public int sv = 1, fiyat;
         public float? guc, kontrol, hiz, tatli, ton, kafa, kenar, yavas, rakip, kosu, enerji, toparla, slice, yorgunSapma, yor, uzanma, jumpTatli; public int? akis;
+        // 2026-11-07 (yasin: "badminton profesyonel oyuncularının bile tatmin olacağı detayda"): raketin teknik sayfası. Çarpanlar
+        // (guc, hiz, tatli…) aynen kalır; bu alanlar onları gerçek raket diliyle açıklar: U sınıfı + telsiz gram, denge noktası
+        // (sapın ucundan mm), şaft sertliği, üreticinin önerdiği gerginlik aralığı. Kordajda tel kalınlığı (mm). Yalnız gösterim.
+        public string u, saft; public int? gram, dengeMm, telMin, telMax; public float? kalinlik;
     }
 
     public class TelStat { public string ad, n; public float guc, tatli, kontrol, ton; }
@@ -94,6 +98,23 @@ namespace BirdieSmash.Core
             renkler = r; gear = g;
         }
         static float? F(Dictionary<string, object> d, string k) { object v; return d.TryGetValue(k, out v) && v is double ? (float)(double)v : (float?)null; }
+        static int? I(Dictionary<string, object> d, string k) { var f = F(d, k); return f.HasValue ? Mathf_Round(f.Value) : (int?)null; }
+        static int Mathf_Round(float f) { return (int)Math.Round(f); }
+
+        // Denge sınıfı: piyasadaki raketlerde kafa hafif ≈ 260–285 mm, dengeli ≈ 286–295, kafa ağır ≈ 296–305 (sapın ucundan).
+        public static string DengeAd(int mm) { return mm <= 285 ? "kafa hafif" : mm <= 295 ? "dengeli" : "kafa ağır"; }
+        // Gerçek raketin gövdesindeki satır: "3U · G5 · 300 mm · sert · 21–29 lbs". Grip şimdilik G5 (grip kalınlığı ayarı ekonomi kararını bekliyor).
+        public static string Kimlik(GearModel r)
+        {
+            if (r == null || r.u == null || !r.dengeMm.HasValue) return null;
+            return r.u + " · G5 · " + r.dengeMm.Value + " mm · " + r.saft + (r.telMin.HasValue && r.telMax.HasValue ? " · " + r.telMin.Value + "–" + r.telMax.Value + " lbs" : "");
+        }
+        // Takılı raketin önerdiği gerginlik aralığı; veri yoksa 20–28 (piyasanın en yaygın aralığı).
+        public static void TelAralik(string raket, out int min, out int max)
+        {
+            GearModel r; min = 20; max = 28;
+            if (GEAR != null && GEAR["raket"].TryGetValue(raket, out r) && r.telMin.HasValue && r.telMax.HasValue) { min = r.telMin.Value; max = r.telMax.Value; }
+        }
         static GearModel ModelOku(Dictionary<string, object> d)
         {
             string kl = Json.Str(d, "kilit", null);
@@ -102,7 +123,8 @@ namespace BirdieSmash.Core
                 sv = (int)Json.Num(d, "sv", 1), fiyat = (int)Json.Num(d, "fiyat", 0), eski = Json.Bool(d, "eski", false), kilit = kl != null, kilitAd = kl,
                 guc = F(d, "guc"), kontrol = F(d, "kontrol"), hiz = F(d, "hiz"), tatli = F(d, "tatli"), ton = F(d, "ton"), kafa = F(d, "kafa"), kenar = F(d, "kenar"), yavas = F(d, "yavas"),
                 rakip = F(d, "rakip"), kosu = F(d, "kosu"), enerji = F(d, "enerji"), toparla = F(d, "toparla"), slice = F(d, "slice"), yorgunSapma = F(d, "yorgunSapma"), yor = F(d, "yor"), uzanma = F(d, "uzanma"), jumpTatli = F(d, "jumpTatli"),
-                akis = d.ContainsKey("akis") && d["akis"] is double ? (int)(double)d["akis"] : (int?)null };
+                akis = d.ContainsKey("akis") && d["akis"] is double ? (int)(double)d["akis"] : (int?)null,
+                u = Json.Str(d, "u", null), saft = Json.Str(d, "saft", null), gram = I(d, "gram"), dengeMm = I(d, "denge_mm"), telMin = I(d, "tel_min"), telMax = I(d, "tel_max"), kalinlik = F(d, "kalinlik") };
         }
         static readonly Dictionary<string, string> VARSAYILAN = new Dictionary<string, string> { { "raket", "denge" }, { "kordaj", "dayanikli" }, { "grip", "sentetik" }, { "bileklik", "yok" }, { "bant", "yok" }, { "kumas", "klasik" }, { "ayakkabi", "klasik" } };
         public static string Varsayilan(string yuva) { return VARSAYILAN[yuva]; }

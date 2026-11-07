@@ -984,6 +984,22 @@ static class BotMac
             for (int i = 0; i < 6; i++) k = Hedef.SonEkle(k, 100); if (k.Split(',').Length != 5 || Hedef.MacTahmini(250, k) != 3) Fail("≈maç: son 5 / ort 100 → 3 " + k);
             if (Hedef.MacTahmini(100, "0,0,0") != -1) Fail("≈maç: ortalama 0 gizli olmalı");
         }
+        // (1i) raket teknik sayfası (2026-11-07): her raketin U sınıfı, gramı U bandında, denge noktası adıyla uyumlu, gerginlik aralığı
+        // piyasa sınırında (18–32), kordajın tel kalınlığı 0,60–0,72 mm; kimlik satırı biçimi.
+        {
+            var bant = new Dictionary<string, int[]> { { "5U", new[] { 75, 79 } }, { "4U", new[] { 80, 84 } }, { "3U", new[] { 85, 89 } } };
+            foreach (var r in Gear.GEAR["raket"].Values)
+            {
+                if (r.u == null || !r.gram.HasValue || !r.dengeMm.HasValue || r.saft == null || !r.telMin.HasValue || !r.telMax.HasValue) { Fail("raket teknik sayfası eksik: " + r.id); continue; }
+                if (!bant.ContainsKey(r.u) || r.gram < bant[r.u][0] || r.gram > bant[r.u][1]) Fail("raket gramı U bandı dışında: " + r.id + " " + r.u + " " + r.gram);
+                if (r.dengeMm < 255 || r.dengeMm > 310 || r.telMin < 18 || r.telMax > 32 || r.telMin >= r.telMax) Fail("raket ölçüsü gerçek aralık dışında: " + r.id);
+                if (Gear.Kimlik(r) != r.u + " · G5 · " + r.dengeMm + " mm · " + r.saft + " · " + r.telMin + "–" + r.telMax + " lbs") Fail("kimlik satırı biçimi: " + Gear.Kimlik(r));
+            }
+            if (Gear.DengeAd(Gear.GEAR["raket"]["hafif"].dengeMm.Value) != "kafa hafif" || Gear.DengeAd(Gear.GEAR["raket"]["agir"].dengeMm.Value) != "kafa ağır" || Gear.DengeAd(Gear.GEAR["raket"]["denge"].dengeMm.Value) != "dengeli")
+                Fail("denge noktası model adıyla çelişiyor");
+            foreach (var kd in Gear.GEAR["kordaj"].Values) if (!kd.kalinlik.HasValue || kd.kalinlik < .60f || kd.kalinlik > .72f) Fail("kordaj kalınlığı: " + kd.id);
+            int tmin, tmax; Gear.TelAralik("yok-boyle-raket", out tmin, out tmax); if (tmin != 20 || tmax != 28) Fail("gerginlik aralığı varsayılanı 20–28 olmalı");
+        }
         // (1e) maç sonu ödüllü reklam (2026-11-07, Core/OdulluReklam): +%50 yalnız Tüy, günde 1, ilk 3 galibiyette yok, başka ikincil
         // varken yok, 3 ardışık ret → 3 maç sus; XP ve seviye değişmez.
         {

@@ -207,11 +207,53 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Oyun tarzı"))); TarzGovde(c);
             c.Add(Grup(L.T("Takımın")));
             var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true);
+            RaketKimlikKart(c);
             c.Add(Grup(L.T("Yuvalar"))); var iz = Satir("izgara"); iz.AddToClassList("yuva-izgara"); c.Add(iz);
             foreach (var Y in Gear.YUVA) iz.Add(YuvaKare(Y));
             c.Add(Cip(L.T("Eşit şartlar"), gr.eko.esit, () => { gr.eko.esit = !gr.eko.esit; Ayar.GearHesap(); Ayar.Kaydet(); SoyunmaGovdeKur(true); }, L.T("Serbest maçta yükseltmeler sayılmaz")));
             c.Add(Grup(L.T("Ayakkabı tabanı"))); TabanBolum(c);
             c.Add(Yazi(L.T("Çubuklar ekipmanı anlatır, 50 nötr. Oyun tarzı çubuklara girmez. Görünüş Dolap'ta, oyunu etkilemez."), 12, "soluk"));
+        }
+
+        // 2026-11-07 (yasin: "kordaj gerginliği kaybolmuş"; ölçüler gerçek raket diliyle): Atölye'nin ana ekranında takılı raketin
+        // gövde satırı ("3U · G5 · 300 mm · sert · 21–29 lbs") ve gerginlik. Gerginlik eskiden yalnız Kordaj yuvasının alt sayfasındaydı.
+        void RaketKimlikKart(VisualElement c)
+        {
+            var gr = Ayar.gear; GearModel r; if (!Gear.GEAR["raket"].TryGetValue(gr.raket, out r)) return;
+            c.Add(Grup(L.T("Raketin")));
+            var k = Kart("raket-kimlik"); c.Add(k);
+            var bas = Satir("arali"); k.Add(bas); bas.Add(Yazi(L.T(r.ad), 16, "kalin"));
+            int tmin, tmax; Gear.TelAralik(gr.raket, out tmin, out tmax); int tel = Mathf.RoundToInt(gr.tel);
+            bas.Add(Yazi(tel + " lbs", 15, tel < tmin || tel > tmax ? "durum-kilit" : "durum-gecti"));
+            string kim = Gear.Kimlik(r); if (kim != null) k.Add(Yazi(kim, 13, "kimlik-satir"));
+            GearModel kd; string kdAd = Gear.GEAR["kordaj"].TryGetValue(gr.kordaj, out kd) ? L.T(kd.ad) + (kd.kalinlik.HasValue ? " " + KalinlikYaz(kd.kalinlik.Value) : "") : "";
+            k.Add(Yazi(L.T("Kordaj") + ": " + kdAd + " · " + L.T("raketin önerisi {0}–{1} lbs", tmin, tmax), 12, "soluk"));
+            var d = Satir("arali"); d.style.marginTop = 8; k.Add(d);
+            d.Add(Dugme(L.T("Gerginlik"), () => YuvaAc("tel"), "dugme--hayalet")); d.Add(Dugme(L.T("Teknik sayfa"), () => YuvaAc("raket"), "dugme--hayalet"));
+            Erisim.Etiket(bas, L.T(r.ad) + ", " + (kim ?? "") + ", " + L.T("Tel gerginliği") + " " + tel + " lbs", "metin");
+        }
+        static string KalinlikYaz(float mm) { return mm.ToString("0.00", L.En ? System.Globalization.CultureInfo.InvariantCulture : new System.Globalization.CultureInfo("tr-TR")) + " mm"; }
+
+        // Teknik sayfa: raket yuvasının alt sayfasında. Her ölçü değer + ne demek + maçta ne yapar.
+        void TeknikKur(VisualElement c)
+        {
+            var gr = Ayar.gear; GearModel r; if (!Gear.GEAR["raket"].TryGetValue(gr.raket, out r) || r.u == null) return;
+            c.Add(Grup(L.T("Teknik sayfa") + " · " + L.T(r.ad)));
+            var k = Kart("teknik-kart"); c.Add(k);
+            string kim = Gear.Kimlik(r); if (kim != null) k.Add(Yazi(kim, 13, "kimlik-satir"));
+            int dm = r.dengeMm ?? 290; string da = Gear.DengeAd(dm);
+            TeknikSatir(k, "Ağırlık", r.u + " · " + (r.gram ?? 0) + " g " + L.T("(telsiz)"), "U sınıfı: 5U 75–79 g, 4U 80–84 g, 3U 85–89 g. Hafif raket elde hızlı döner; ağır raket topu daha sert iter, kolu daha çok yorar.");
+            TeknikSatir(k, "Denge noktası", dm + " mm · " + L.T(da), "Sapın ucundan ağırlık merkezine uzaklık. Kafa ağır: smaç ve clear güçlü, drive ve file geç. Kafa hafif: savunma ve file hızlı, smaç yumuşak.");
+            TeknikSatir(k, "Şaft", L.T(r.saft ?? "orta"), "Esnek şaft yavaş kolda da güç verir ve affeder; sert şaft hızlı kolda isabet verir, tatlı nokta daralır.");
+            TeknikSatir(k, "Önerilen gerginlik", (r.telMin ?? 20) + "–" + (r.telMax ?? 28) + " lbs", "Üreticinin gövdeye yazdığı aralık. Gevşek tel tramplen ve geniş tatlı nokta, sıkı tel his ve kontrol verir.");
+            TeknikSatir(k, "Uzunluk", "675 mm", "Standart boy; bilgi.");
+            k.Add(Yazi(L.T("Maçta") + ": " + L.T(r.n), 13, "ipucu"));
+        }
+        void TeknikSatir(VisualElement k, string ad, string deger, string anlam)
+        {
+            var s = Satir("arali"); s.style.marginTop = 8; k.Add(s); s.Add(Yazi(L.T(ad), 14, "kalin")); var v = Yazi(deger, 14, "rakam"); v.style.flexShrink = 0f; s.Add(v);
+            var a = Yazi(L.T(anlam), 12, "soluk"); a.style.whiteSpace = WhiteSpace.Normal; k.Add(a);
+            Erisim.Etiket(s, L.T(ad) + ", " + deger, "metin");
         }
 
         // Yuva kartı: dokununca yuva sayfası. "Hazır" = yükseltme alınabilir ya da seviyesi gelmiş, Tüy'ü yeten model var.
@@ -262,6 +304,7 @@ namespace BirdieSmash.Game
             var c = AltSayfaKur(L.T(Y.ad)); canliDolgu.Clear(); canliDeger.Clear();
             YuvaKur(c, Y, L_);
             if (Y.k == "tel") TelKur(c);
+            if (Y.k == "raket") TeknikKur(c);
             c.Add(Grup(L.T("Takımın şimdi"))); var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true);
             c.Add(Grup(L.T("Modeller")));
             foreach (var m in Gear.GEAR[Y.m].Values) ModelKart(c, Y, m);
@@ -279,6 +322,8 @@ namespace BirdieSmash.Game
             else if (du == ModelDurum.Alinir) durum = m.fiyat + " " + L.T("Tüy"); else durum = L.T("Senin");
             var dy = Yazi(durum, 12, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
             var ns = Yazi(L.T(m.n), 13, "ipucu"); kart.Add(ns);
+            if (Y.m == "raket") { string kim = Gear.Kimlik(m); if (kim != null) kart.Add(Yazi(kim, 12, "kimlik-satir")); }   // gerçek raketin gövde satırı
+            else if (Y.m == "kordaj" && m.kalinlik.HasValue) kart.Add(Yazi(L.T("Tel kalınlığı") + " " + KalinlikYaz(m.kalinlik.Value), 12, "soluk"));
             if (m.renk != null) { var rr = Satir("rakip-satir"); rr.pickingMode = PickingMode.Ignore; kart.Add(rr); var n = new VisualElement(); n.AddToClassList("renk-nokta"); n.style.backgroundColor = Kit.Hex(m.renk); rr.Add(n); rr.Add(Yazi(L.T("Görünüm rengi"), 11, "soluk")); }
             // 2026-11-07 inceleme (fikir 06:03 #5): model kartında 5 çubuk yok. Kategori sayfasında 4–6 model × 5 çubuk 20–30 çubuk
             // ediyordu; arcade oyuncu farkı çubuktan değil m.n cümlesinden ("Güç +6 · drive +4 · tatlı nokta dar") okur, kart yarıya
@@ -366,12 +411,21 @@ namespace BirdieSmash.Game
             sl.RegisterCallback<PointerUpEvent>(e => TelBitti(), TrickleDown.TrickleDown);
             sl.RegisterCallback<PointerCaptureOutEvent>(e => TelBitti(), TrickleDown.TrickleDown);
             var arti = Dugme("+", () => TelAdim(1), "ikon-dugme"); Erisim.Etiket(arti, L.T("Tel gerginliği") + " +1", "dugme"); r.Add(arti);
-            telNot = Yazi(L.T(Gear.TelStats(gr.tel).n) + " · " + L.T("Gerginlik bir beceri ayarıdır, seviye istemez."), 12, "soluk"); c.Add(telNot);
+            telNot = Yazi(TelNot(), 12, "soluk"); telNot.style.whiteSpace = WhiteSpace.Normal; c.Add(telNot);
+        }
+        // Raketin önerdiği aralık her zaman yazılır; dışına çıkınca oyun engellemez, ne olacağını söyler (gerçekte de üretici garantisi dışı).
+        static string TelNot()
+        {
+            int tmin, tmax; Gear.TelAralik(Ayar.gear.raket, out tmin, out tmax); int t = Mathf.RoundToInt(Ayar.gear.tel);
+            string ar = L.T("Raketin önerisi {0}–{1} lbs", tmin, tmax);
+            if (t > tmax) ar += " · " + L.T("üstündesin: kontrol artar, tatlı nokta çok daralır");
+            else if (t < tmin) ar += " · " + L.T("altındasın: top tramplenden çıkar, kontrol azalır");
+            return L.T(Gear.TelStats(Ayar.gear.tel).n) + " · " + ar + " · " + L.T("Gerginlik bir beceri ayarıdır, seviye istemez.");
         }
         static string TelBaslik() { return L.T("Tel gerginliği") + " · " + Mathf.RoundToInt(Ayar.gear.tel) + " lbs"; }
         void TelYaz()
         {
-            if (telYazi != null) telYazi.text = TelBaslik(); if (telNot != null) telNot.text = L.T(Gear.TelStats(Ayar.gear.tel).n) + " · " + L.T("Gerginlik bir beceri ayarıdır, seviye istemez.");
+            if (telYazi != null) telYazi.text = TelBaslik(); if (telNot != null) telNot.text = TelNot();
             CanliCubukYaz();
         }
         Slider TelKaydirici() { return altSayfa != null ? altSayfa.Q<Slider>() : null; }
