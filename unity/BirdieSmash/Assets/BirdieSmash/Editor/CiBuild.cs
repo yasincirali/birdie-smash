@@ -289,7 +289,10 @@ namespace BirdieSmash.EditorTools
                 foreach (var ad in yazilan)
                 {
                     if (proj.ContainsFileByProjectPath(ad)) continue;
-                    var g = proj.AddFolderReference(Path.Combine(xcode, ad), ad);
+                    // Göreli yol (TF 99 kırıldı): Unity Xcode projesini Linux konteynerinde /github/workspace/... altında yazıyor,
+                    // macOS koşucusu projeyi başka yere açıyor; mutlak yol "en.lproj couldn't be opened" ile arşivi düşürdü.
+                    // Kaynak ağacı Source = proje klasörüne göreli.
+                    var g = proj.AddFolderReference(ad, ad, UnityEditor.iOS.Xcode.PBXSourceTree.Source);
                     proj.AddFileToBuild(hedef, g);
                 }
                 proj.WriteToFile(pp);
