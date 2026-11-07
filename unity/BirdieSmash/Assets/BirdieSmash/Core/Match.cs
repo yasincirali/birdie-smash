@@ -189,7 +189,11 @@ namespace BirdieSmash.Core
             if (o.ogr) OgrKur(o.ogrKisa);
             if (!o.ogr) DegistiriciKur(o.degistirici);
             UstaGucu(); YardimUygula(o.yardim); ZorlukRakip(o.rakipK);
-            if (o.uzak && !o.ogr) { uzak = new UzakBag(); server = o.uzakServis == "op" ? "op" : "me"; }
+            // Online'da eşit güç (yasin kararı 2026-11-07, karar kartı "Dereceli online maçta ekipman gücü sayılsın mı?" →
+            // "Eşit güç, ekipman yalnız görünüş"): ekipman ve tarz çarpanları nötr; raket/ayakkabı oyuncu kartında görünüşle gider.
+            // Neden online'ın tamamı (yalnız dereceli değil): arkadaş maçı da iki insanın kıyası; güç farkı orada da "parayla
+            // kazandı" hissi verir. Ekipman gücü kariyer, Günün maçı ve Hızlı maçta (yapay zekâya karşı) sürer.
+            if (o.uzak && !o.ogr) { uzak = new UzakBag(); server = o.uzakServis == "op" ? "op" : "me"; GS = GearStats.Notr; }
             SetupServe();
         }
         // Usta zorluğu (2026-10-27, oyun incelemesi): Usta'da oyuncu koşar, erişim 1,15 m, ağır çekim az; rakibin gücü (g) Kolay

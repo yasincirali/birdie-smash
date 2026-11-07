@@ -1730,6 +1730,9 @@ static class BotMac
         var p = new UzakPaket { tur = PaketTur.Vurus, sira = 7, hx = 1.5f, hy = 9.2f, hz = 2.1f, vx = -3, vy = -20, vz = 4, servis = false, super = true, slice = true, tip = "smash", vurus = "jump", q = "perfect" };
         var r2 = UzakPaket.Oku(p.Yaz());
         if (r2 == null || r2.sira != 7 || r2.hy != 9.2f || r2.vy != -20 || !r2.super || !r2.slice || r2.servis || r2.tip != "smash" || r2.vurus != "jump" || r2.q != "perfect" || r2.servisTur != null) Fail("UzakPaket gidiş-dönüş");
+        // Eşit güç (yasin 2026-11-07): online maçta verilen ekipman çarpanları yok sayılır, çevrimdışı maçta sürer.
+        { var gs = new GearStats { kosu = 1.3f, kontrol = 1.4f }; var On = new Match(5, new MatchOptions { uzak = true, gs = gs }); var Off = new Match(5, new MatchOptions { gs = gs });
+          if (On.GS != GearStats.Notr || Off.GS != gs) Fail("online eşit güç: ekipman çarpanı online'a geçti ya da çevrimdışında kayboldu"); }
         if (UzakPaket.Oku(new byte[] { 9, 1, 0 }) != null || UzakPaket.Oku(new byte[] { 1 }) != null) Fail("UzakPaket bozuk paketi kabul etti");
         Console.WriteLine("UzakPaket vuruş " + p.Yaz().Length + " bayt");
     }
