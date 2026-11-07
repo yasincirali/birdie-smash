@@ -700,7 +700,6 @@
    (biraz koyu), üstte 1 pt çizgi; yazı küçük ve soluk, dikkat çekmez. SDK gelince şerit bu kutunun içine yerleşir. */
 .reklam-alani { flex-shrink: 0; height: 50px; background-color: rgb(20, 14, 25); border-top-width: 1px; border-color: var(--ln);
                 align-items: center; justify-content: center; display: none; }
-.reklam-yazi { color: rgba(203, 184, 197, 0.55); font-size: 11px; letter-spacing: 0.6px; -unity-font-definition: resource("fonts/Nunito-Bold"); }
 /* 2026-11-07 Profil ad alanı yer tutucusu (ProfilEkran): alanın içinde, metin başlangıcına hizalı, dokunuşu geçirir. */
 .ad-yer-tutucu { position: absolute; left: 12px; top: 0; bottom: 0; -unity-text-align: middle-left; }
 

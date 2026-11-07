@@ -12,7 +12,7 @@ namespace BirdieSmash.Game
     //  - Sıra: UMP rıza bilgisi (AB/BK'de gerekirse Google'ın rıza formu) → rıza reklama izin veriyorsa MobileAds.Initialize.
     //    Rıza vermeyen ya da form açılamayan oyuncu reklamsız oynar; hiçbir şey kilitlenmez.
     //  - Şerit: 320×50 standart şerit, menüdeki şerit yerinin ortasına native olarak oturur (UiKok her kare yeri verir).
-    //    Maçta, perde altında ve alt sayfa açıkken gizli. Yüklenmezse yer tutucu ("Reklam") kalır.
+    //    Maçta, perde altında ve alt sayfa açıkken gizli. Yüklenmezse menüde yer açılmaz (2026-11-08, UiKok.ReklamSeritYeri).
     //  - Ödüllü: maç başında yüklenir, maç sonu kartı OdulluHazir'a bakar. Gösterilirken oyun sesi durur (iOS'ta eklenti Unity'yi
     //    duraklatır; Android'de AudioListener). Ödül yalnız SDK "ödül kazanıldı" deyince; yarıda kapanırsa yok.
     //  - Kimlikler Google'ın TEST kimlikleri (yalnız test reklamı). yasin'in AdMob hesabı gelince SERIT_ID/ODULLU_ID ve
@@ -37,13 +37,13 @@ namespace BirdieSmash.Game
         // oyuncu ilk maçını bitirmeden açılmaz. Önceden ilk açılışta, perde kalkarken, tek topa vurmadan "reklam ortaklarımız…"
         // diyaloğu geliyordu: yeni kurulan arcade oyunu en sık o anda silinir, izin de değer görülmeden reddedilir (ödüllü
         // reklam doluluğu düşer). Badminton League / Tennis Clash da ilk maçı rızasız oynatıp ilk menü dönüşünde sorar.
-        // UMP şartı "reklam isteğinden önce rıza"dır; o ana kadar SDK hiç başlamadığı için istek de yok, yer tutucu durur.
+        // UMP şartı "reklam isteğinden önce rıza"dır; o ana kadar SDK hiç başlamadığı için istek de yok, menüde yer de yok.
         // Koşul: antrenman bitti VE en az bir maç (galibiyet ya da bu sürümden beri sayılan maç). Yarıda bırakan ikinci
         // açılışta da antrenmana döner; rıza yine maçtan sonra gelir. Yeni anahtar yok.
         public static bool IlkMacBitti { get { return Ayar.antrenman && (Ayar.wins > 0 || (Ayar.ilerleme != null && Ayar.ilerleme.Mac > 0)); } }
         public static void Baslat()
         {
-            if (basladi || !Reklam.ALAN || !IlkMacBitti) return; basladi = true;
+            if (basladi || !IlkMacBitti) return; basladi = true;   // 2026-11-08: Reklamsız da başlar; ödüllü reklam isteyene açık kalır, şeridi UiKok istemez
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             try
             {

@@ -2,7 +2,7 @@
 // HTML'de Blender'da 24 açıdan çizilmiş sprite sayfası boyanıyordu; Unity'de aynı FBX ayrı bir kamerayla RenderTexture'a
 // çizilir (sahneden 500 m uzakta, kortu görmez). Davranış HTML ile aynı: parmakla sürükleyince döner, bırakınca
 // yavaşlayarak durur (v ·0,08^dt), boştayken 18°/sn döner (hareketi azalt açıkken dönmez), ok düğmeleri 15° çevirir.
-// "Raketi incele": 0,6 sn geçişle raket öne gelir ve kendi ekseninde 24°/sn döner; grip, kordaj ve çapraz tel rengi
+// "Raketi incele": 0,6 sn geçişle raket öne gelir, kahraman açısında durur, boşta ±35° salınır (2026-11-08; eskiden 24°/sn tam tur); grip, kordaj ve çapraz tel rengi
 // (RAK_RENK, tuytop_raket_gor) yalnız görünümdür. Yükseltmede o yuvanın parçası bir kez limona parlar (turParlat).
 // 2026-10-26 karakter tasarımı (yasin: "yakın açıda görüp upgrade lenecekleri için"): yakın plan (odak) Yüz (baş + saç),
 // Ayak (ayakkabılar), Tutuş (el + raket sapı). Hedef nokta her karede kemikten okunur (figür döndükçe izlenir), kamera
@@ -328,6 +328,14 @@ namespace BirdieSmash.Game
         // yüz normali varsayılan (ileri) kaldı, parça kadrajları da tüm rakete düştü (kafa/kordaj yandan, grip/şaft yüzden göründü).
         // Kopyanın adı aslınınki yapılır (yukarıda Instantiate).
         // Parça seç (null = tüm raket: eski 360° dönüş). parla: aynı parça yeniden seçilse de parlasın (şekil değişince).
+        // Raket görünümüne girişte kahraman açısı: "kafa" kadrajı (kordaj yüzü kameraya hafif açılı, 3/4). Ürün vitrinlerinin
+        // varsayılanı; dönen raket gözün oturacağı anı kaçırıyordu (inceleme 2026-11-08 #4).
+        const float SALINIM_BEKLE = 3f, SALINIM_GENLIK = 35f, SALINIM_W = 10f / SALINIM_GENLIK;   // tepe hız = genlik × w = 10°/sn
+        public float bosT; float salMerkez;   // bosT: dokunuşsuz süre; oklar (SoyunmaOdasi.VitrinCevir) sıfırlar
+        public void RaketKahraman()
+        {
+            float phi = Mathf.Atan2(yuzN.x, yuzN.z) * Mathf.Rad2Deg; raHedef = -phi + PARCA_ACI["kafa"]; raKay = true; rv = 0; bosT = 0;
+        }
         public void RaketParca(string p, bool parla = false)
         {
             if (p != null && !PARCA_ET.ContainsKey(p)) p = null; bool yeni = p != parca; parca = p;
@@ -394,11 +402,20 @@ namespace BirdieSmash.Game
             float gd = hedefGec - gec; gec = rm || Mathf.Abs(gd) < .002f ? hedefGec : gec + Mathf.Sign(gd) * Mathf.Min(Mathf.Abs(gd), dt / .6f);
             if (hedefGec == 1 && !suruk)
             {
-                if (raKay) { rv = 0; float fark = Mathf.DeltaAngle(ra, raHedef); ra = rm ? raHedef : ra + fark * (1 - Mathf.Exp(-dt * 6)); if (Mathf.Abs(fark) < .3f) { ra = raHedef; raKay = false; } }
-                else if (Mathf.Abs(rv) > 2) rv *= Mathf.Pow(.08f, dt); else rv = rm || parca != null ? 0 : 24;
+                if (raKay) { rv = 0; bosT = 0; float fark = Mathf.DeltaAngle(ra, raHedef); ra = rm ? raHedef : ra + fark * (1 - Mathf.Exp(-dt * 6)); if (Mathf.Abs(fark) < .3f) { ra = raHedef; raKay = false; } }
+                else if (Mathf.Abs(rv) > 2) { rv *= Mathf.Pow(.08f, dt); bosT = 0; }
+                else if (rm || parca != null) { rv = 0; bosT = 0; }
+                else
+                {
+                    // 2026-11-08 (inceleme #4): bütün raket artık durmadan 24°/sn dönmüyor; tam turda kordaj yüzü kameraya dikken
+                    // raket ince bir çizgiye iniyordu (r142 karesi). Bırakıldığı açıda durur, 3 sn dokunuşsuzlukta o açının
+                    // çevresinde ±35° yavaş salınır (tepe hız ≈10°/sn, tam tur yok). sin(0) = 0: salınım bulunduğu açıdan başlar.
+                    rv = 0; if (bosT <= SALINIM_BEKLE) salMerkez = ra; bosT += dt;
+                    if (bosT > SALINIM_BEKLE) ra = salMerkez + SALINIM_GENLIK * Mathf.Sin((bosT - SALINIM_BEKLE) * SALINIM_W);
+                }
                 ra += rv * dt;
             }
-            if (suruk) raKay = false;
+            if (suruk) { raKay = false; bosT = 0; }
             float hit; if (poz != null && odak == TUTUS) fig.ShowPoz(YER, a, poz, Match.CLIP_HIT.TryGetValue(poz, out hit) ? hit : .5f);
             else if (sevinc != null) { sevincT += dt; fig.ShowSevinc(YER, a, sevinc, sevincT); }   // Dolap › Sevinç önizlemesi (döngü)
             else fig.ShowStatic(YER, a, 0);

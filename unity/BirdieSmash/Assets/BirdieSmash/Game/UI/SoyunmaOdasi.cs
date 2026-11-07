@@ -91,7 +91,9 @@ namespace BirdieSmash.Game
             vitrinOdak = Satir("vitrin-odak"); vitrinOdak.pickingMode = PickingMode.Ignore; alt.Add(vitrinOdak);
             var ok = Satir("vitrin-oklar"); ok.pickingMode = PickingMode.Ignore; alt.Add(ok);
             var sol = new VisualElement(); sol.AddToClassList("dugme"); sol.AddToClassList("ikon-dugme"); sol.Add(Ikon(Ikonlar.Geri, 20, Color.white)); sol.AddManipulator(new Clickable(() => VitrinCevir(-1))); Erisim.Etiket(sol, L.T("Sola çevir"), "dugme"); ok.Add(sol);
-            var orta = Dugme("", () => RaketGorunum(vt.hedefGec < 1), "vitrin-gecis", null, VitrinPx(16)); Sigdir(orta, .75f); ok.Add(orta);   // r14: ×2'de "Inspect racket" iki satıra çıkıp önizlemeyi kapatıyordu
+            // 2026-11-08 (inceleme #3): ortadaki "Raketi incele / Oyuncuya dön" hapı kalktı; aynı geçiş üstteki oda seçicide
+            // (Görünüm · Raket) ve rakete dokunmakta zaten var, iki yol aynı işi yapıyordu. Yerinde boşluk: oklar kenarda kalır.
+            var orta = new VisualElement(); orta.style.flexGrow = 1; orta.pickingMode = PickingMode.Ignore; ok.Add(orta);
             var sag = new VisualElement(); sag.AddToClassList("dugme"); sag.AddToClassList("ikon-dugme"); sag.Add(Ikon(Ikonlar.Ileri, 20, Color.white)); sag.AddManipulator(new Clickable(() => VitrinCevir(1))); Erisim.Etiket(sag, L.T("Sağa çevir"), "dugme"); ok.Add(sag);
             OdakDugmeleriKur();
             // Yakın plan kadrajı kutunun en-boyuna ve alttaki düğmelerin payına göre (Vitrin.Uzaklik).
@@ -151,7 +153,7 @@ namespace BirdieSmash.Game
         void VitrinCevir(int yon)
         {
             var vt = root.vitrin;
-            if (vt.hedefGec >= 1) { vt.rv = 0; vt.ra = Mathf.Round(vt.ra / 10) * 10 + 20 * yon; } else { vt.v = 0; vt.a = Mathf.Round(vt.a / 15) * 15 + 15 * yon; }
+            if (vt.hedefGec >= 1) { vt.rv = 0; vt.bosT = 0; vt.ra = Mathf.Round(vt.ra / 10) * 10 + 20 * yon; } else { vt.v = 0; vt.a = Mathf.Round(vt.a / 15) * 15 + 15 * yon; }
             Tik();
         }
         void VitrinBas(PointerDownEvent e)
@@ -193,8 +195,6 @@ namespace BirdieSmash.Game
             string rp = vt.Parca; string rpAd = rp == "kafa" ? "Kafa şekli" : rp == "cerceve" ? "Çerçeve" : rp == "saft" ? "Şaft" : rp == "grip" ? "Grip" : rp == "kordaj" ? "Kordaj" : null;
             vitrinYazi.text = raketG && rpAd != null ? L.T("Yakın plan: {0}", L.T(rpAd)) : L.T(raketG ? "Raketin, 360 derece görünüm" : od == Vitrin.YUZ ? "Yakın plan: yüz ve saç" : od == Vitrin.AYAK ? "Yakın plan: ayakkabılar" : od == Vitrin.TUTUS ? "Yakın plan: tutuş" : "Oyuncun, 360 derece görünüm");
             OdakDugmeleriKur();
-            var gecis = vitrinIm.parent.Q<VisualElement>(null, "vitrin-gecis");
-            if (gecis != null) { var gy = gecis.Q<Label>(); string gt = L.T(raketG ? "Oyuncuya dön" : "Raketi incele"); if (gy != null) { gy.text = gt; var gc_ = gecis; gecis.schedule.Execute(() => SigdirOlc(gc_, gy, Mathf.Round(VitrinPx(16) * K), .75f)); } Erisim.Etiket(gecis, gt, "dugme"); }
             var c = soyunmaGovde; c.Clear();
             KarakterGovde(c); c.Add(Bosluk(20));
             DenemeCubukKur();
@@ -227,9 +227,11 @@ namespace BirdieSmash.Game
             int tmin, tmax; Gear.TelAralik(gr.raket, out tmin, out tmax); int tel = Mathf.RoundToInt(gr.tel);
             // Aralık dışı yalnız renkle verilmez (fikir 22:10 #5a): ok + kısa söz.
             bas.Add(Yazi(tel + " lbs" + (tel > tmax ? " · " + L.T("↑ önerinin üstü") : tel < tmin ? " · " + L.T("↓ önerinin altı") : ""), 15, tel < tmin || tel > tmax ? "durum-kilit" : "durum-gecti"));
-            string kim = Gear.Kimlik(r, SapYazi(gr)); if (kim != null) k.Add(Yazi(kim, 13, "kimlik-satir"));
+            string kim = Gear.Kimlik(r, SapYazi(gr), r.saft != null ? L.T(r.saft) : null); if (kim != null) k.Add(Yazi(kim, 13, "kimlik-satir"));
             GearModel kd; string kdAd = Gear.GEAR["kordaj"].TryGetValue(gr.kordaj, out kd) ? L.T(kd.ad) + (kd.kalinlik.HasValue ? " " + KalinlikYaz(kd.kalinlik.Value) : "") : "";
-            k.Add(Yazi(L.T("Kordaj") + ": " + kdAd + " · " + L.T("raketin önerisi {0}–{1} lbs", tmin, tmax), 12, "soluk"));
+            // 2026-11-08 (inceleme #3): "raketin önerisi" aralığı kimlik satırında zaten yazıyorsa tekrar edilmez; verisiz rakette kalır.
+            bool aralikYazili = kim != null && r != null && r.telMin.HasValue && r.telMax.HasValue;
+            k.Add(Yazi(L.T("Kordaj") + ": " + kdAd + (aralikYazili ? "" : " · " + L.T("raketin önerisi {0}–{1} lbs", tmin, tmax)), 12, "soluk"));
             if (dolap) SapSecici(k);
             var d = Satir("arali"); d.style.marginTop = 8; k.Add(d);
             if (dolap) { d.Add(Dugme(L.T("Raket modelleri"), () => YuvaAc("raket"), "dugme--hayalet")); d.Add(Dugme(L.T("Kordaj modelleri"), () => YuvaAc("tel"), "dugme--hayalet")); }
@@ -240,7 +242,7 @@ namespace BirdieSmash.Game
         void SapSecici(VisualElement k)
         {
             var gr = Ayar.gear;
-            var bas = Satir("arali"); bas.style.marginTop = 10; k.Add(bas); bas.Add(Yazi(L.T("Sap ölçüsü"), 14, "kalin")); bas.Add(Yazi(gr.sap + " · " + Gear.SapMm(gr.sap), 13, "soluk"));
+            var bas = Satir("arali"); bas.style.marginTop = 10; k.Add(bas); bas.Add(Yazi(L.T("Sap ölçüsü"), 14, "kalin")); bas.Add(Yazi(gr.sap + " · " + Gear.SapMm(gr.sap, L.T("inç")), 13, "soluk"));
             var r = Satir("secim"); k.Add(r);
             foreach (var sp in new[] { "G4", "G5", "G6" })
             {
@@ -260,13 +262,13 @@ namespace BirdieSmash.Game
             var gr = Ayar.gear; GearModel r; if (!Gear.GEAR["raket"].TryGetValue(gr.raket, out r) || r.u == null) return;
             c.Add(Grup(L.T("Teknik sayfa") + " · " + L.T(r.ad)));
             var k = Kart("teknik-kart"); c.Add(k);
-            string kim = Gear.Kimlik(r, SapYazi(gr)); if (kim != null) k.Add(Yazi(kim, 13, "kimlik-satir"));
+            string kim = Gear.Kimlik(r, SapYazi(gr), r.saft != null ? L.T(r.saft) : null); if (kim != null) k.Add(Yazi(kim, 13, "kimlik-satir"));
             int dm = r.dengeMm ?? 290; string da = Gear.DengeAd(dm);
             TeknikSatir(k, "Ağırlık", r.u + " · " + (r.gram ?? 0) + " g " + L.T("(telsiz)"), "U sınıfı: 5U 75–79 g, 4U 80–84 g, 3U 85–89 g. Hafif raket elde hızlı döner; ağır raket topu daha sert iter, kolu daha çok yorar.");
             TeknikSatir(k, "Denge noktası", dm + " mm · " + L.T(da), "Sapın ucundan ağırlık merkezine uzaklık. Kafa ağır: smaç ve clear güçlü, drive ve file geç. Kafa hafif: savunma ve file hızlı, smaç yumuşak.");
             TeknikSatir(k, "Şaft", L.T(r.saft ?? "orta"), "Esnek şaft affeder: zamanlama kaçsa da top yerine gider (tatlı nokta geniş, sapma az), ama topu bir an tutar, smaç yavaşlar. Sert şaft hızlı kolda gücü doğrudan aktarır; zamanlama ister, tatlı nokta daralır.");
             TeknikSatir(k, "Önerilen gerginlik", (r.telMin ?? 20) + "–" + (r.telMax ?? 28) + " lbs", "Üreticinin gövdeye yazdığı aralık. Gevşek tel tramplen ve geniş tatlı nokta, sıkı tel his ve kontrol verir.");
-            TeknikSatir(k, "Sap ölçüsü", gr.sap + " · " + Gear.SapMm(gr.sap), "Sap çevresi; sayı büyüdükçe incelir. Kalın sap (G4) sağlam tutuş ve kontrol, ince sap (G6) parmak ve bilek oyunu, hızlı drive.");
+            TeknikSatir(k, "Sap ölçüsü", gr.sap + " · " + Gear.SapMm(gr.sap, L.T("inç")), "Sap çevresi; sayı büyüdükçe incelir. Kalın sap (G4) sağlam tutuş ve kontrol, ince sap (G6) parmak ve bilek oyunu, hızlı drive.");
             k.Add(Yazi(L.T("Maçta") + ": " + L.T(r.n), 13, "ipucu"));
         }
         void TeknikSatir(VisualElement k, string ad, string deger, string anlam)

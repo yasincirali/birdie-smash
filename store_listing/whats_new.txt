@@ -1,4 +1,12 @@
 === UNITY ===
+Bu gece (8 Kasım 02:20 inceleme turu):
+- Menüde boş "Reklam" kutusu artık yok: reklam gelmediyse yer de ayrılmaz, reklam gelince sekmelerin hemen üstünde açılır.
+- Tüy dükkânının altında "Reklamsız" kartı: bir kez alınır, menüdeki reklam şeridini kaldırır, Tüy vermez. Ödüllü reklam isteyene açık kalır.
+- Dolap › Raket: vitrindeki "Oyuncuya dön / Raketi incele" düğmesi kalktı (üstteki Görünüm · Raket seçimi aynı işi yapar). Raket artık durmadan dönmüyor: güzel bir açıda durur, biraz bekleyince yavaşça sağa sola salınır.
+- İngilizce arayüzde raket satırındaki şaft sertliği ve "inç" artık İngilizce.
+- Maçta aynı ıska nedeni ("Kısa kaydırdın" gibi) bir maçta en çok iki kez yazılır; sonra yalnız ıska sesi. İlk üç galibiyete kadar her seferinde yazar.
+Nasıl denenir: Oyunu silip yeniden kur, antrenmanı bitir: Oyna sekmesinin altında boş gri kutu olmamalı. Dükkânda (üstteki Tüy sayacı) Reklamsız kartı paketlerin altında olmalı (ürün mağazada açılana kadar "Satın alınamıyor"). Dolap › Raket'te raket ince bir çizgi gibi görünmemeli, 3 saniye dokunmayınca hafifçe salınmalı; oklar hâlâ çevirmeli. Zor zorlukta birkaç kez aynı şekilde ıskala: üçüncüsünden sonra yazı çıkmamalı, ses gelmeli.
+
 Reklam şeridi düzeltmesi (7 Kasım gecesi):
 - Menüdeki reklam şeridi artık sekme düğmelerinin üstüne binmiyor; kendi siyah şeridinin içinde, sekmelerin hemen üstünde duruyor.
 Nasıl denenir: Oyna, Kariyer ve Dolap sekmelerinde alttaki reklam şeridine bak: sekme ikonları tamamen görünür ve dokunulabilir olmalı, reklam üstündeki siyah şeridin ortasında durmalı.
