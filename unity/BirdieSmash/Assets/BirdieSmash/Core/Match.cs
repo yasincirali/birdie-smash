@@ -659,7 +659,7 @@ namespace BirdieSmash.Core
             if (s != null || between || server != "me" || wait > 0 || over || svPending != null || DrilBitti) return false; hint = false;
             float cx = (serveBox.x0 + serveBox.x1) / 2, r = Clamp(dx / Math.Max(50, Math.Abs(dy)), -1.3f, 1.3f);
             string tur = ServisTuru(dx, dy, speed); float d = tur == "kisa" ? Court.SSL + .45f : tur == "flick" ? 6.0f : 6.2f;
-            ServisAt("me", tur, cx + r * 1.5f, Court.NET - d); OgrOlay(null, tur, false, false, speed); return true;
+            ServisAt("me", tur, cx + r * 1.5f, Court.NET - d); OgrOlay(null, tur, false, false, speed); otoServis = 0; return true;
         }
 
         // Usta modu: dokunulan kort noktasına koş.
@@ -817,7 +817,9 @@ namespace BirdieSmash.Core
             if (rally > bestRally) { bestRally = rally; if (rally >= 6) { rekorBuMac = true; Say(null, "rekor", Court.MID, Court.NET, 2, "Yeni ralli rekoru: " + rally, 3); } }
             int a = sc[0], b = sc[1], cap = target == 21 ? 30 : target == 11 ? 15 : 7;
             matchDone = ogr == null && ((Math.Max(a, b) >= target && Math.Abs(a - b) >= 2) || Math.Max(a, b) >= cap);
-            if (matchDone) { if (winner == "me" && !reduce && uzak == null) { slow = .3f; slowT = .9f; } betweenT = 1.4f; }   // kaybı ağır çekimde izletmek cezalandırır
+            if (matchDone) { if (winner == "me" && !reduce) { slow = .3f; slowT = .9f; } betweenT = 1.4f; }   // kaybı ağır çekimde izletmek cezalandırır
+            // 2026-11-07 inceleme (fikir 06:03 #2a): online'da da. Maç bitince hakem kararı gitmiştir, karşıya paket gerekmez;
+            // ağır çekim yalnız kazananın telefonunda yerel görüntüdür (betweenT gerçek dt ile akar, maç sonu zamanı değişmez).
             else
             {
                 if (Math.Max(a, b) >= target - 1 && a != b && Math.Abs(a - b) <= 1) serveMsg = a > b ? "Maç sayısı" : "Rakibin maç sayısı";
@@ -1214,7 +1216,7 @@ namespace BirdieSmash.Core
             // Pencere çarpanı donmadan önce ilerler (2026-10-27): smaç/tam orta donması (hit-stop) sırasında vuruşla kapanan
             // pencerenin çıkışı biter, top donmadan gerçek hızında çıkar; eskiden çıkış donmadan sonra başlıyordu.
             float pk = PencereAdim(dt, PencereYakin());
-            if (uzak != null) { pk = 1; freeze = 0; slow = 1; slowT = 0; }   // online: yerel saat bükülmez (Core/Uzak başı)
+            if (uzak != null) { pk = 1; freeze = 0; if (!matchDone) { slow = 1; slowT = 0; } }   // online: yerel saat bükülmez (Core/Uzak başı); maç bittiyse kazananın ağır çekimi kalır
             if (freeze > 0) { freeze -= dt; return; }
             if (ogr != null && OgrDurdur()) return;   // antrenman: top vuruş yerine gelince oyun durur, parmak hareketi gösterilir
             if (slowT > 0) { slowT -= dt; if (slowT <= 0) slow = 1; }
@@ -1238,7 +1240,7 @@ namespace BirdieSmash.Core
             me.sw = Math.Max(0, me.sw - d * me.swHiz); op.sw = Math.Max(0, op.sw - d * op.swHiz); me.hop = Math.Max(0, me.hop - d * 5); op.dive = Math.Max(0, op.dive - d * 1.5f);
             for (int oi = 0; oi < 2; oi++) { var o = oi == 0 ? me : op; if (o.svAnim != null) { o.svAnim.t += d; if (o.svAnim.t >= o.svAnim.d) { o.svAnim = null; var f = svPending; svPending = null; if (f != null) f(); } } }   // ayırmasız (yukarıdaki not)
             if (wait > 0) { wait -= d; if (wait <= 0 && server == "op" && s == null && !between && svPending == null) { wait = 0; if (uzak == null) OpServe(); } }
-            if (uzak != null) UzakTick(d);
+            if (uzak != null) { UzakTick(d); if (UzakServisSaati(dt)) return; }
             RunMe(d); Prep(me, "me", dt); Prep(op, "op", dt);
             if (s == null) return;
             if (s.dead) { s.yerT += d; return; }   // yerdeki top: sekme + devrilme süresi (Shuttle.YerPoz)

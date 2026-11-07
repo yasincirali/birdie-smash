@@ -1,4 +1,9 @@
 === UNITY ===
+Bu sabah (7 Kasım 06:30 inceleme turu):
+- Atölye'de model kartları sadeleşti: her kartta beş çubuk yerine modelin artısını ve eksisini söyleyen tek cümle var. Beş çubuk sayfanın üstündeki "Takımın şimdi" kartında duruyor; model seçince o kart değişiyor.
+- Çevrimiçi maç için altyapı (henüz kapalı): servisi atmayan oyuncu için süre ve maçtan çekilme kuralı.
+Nasıl denenir: Atölye'yi aç, Raket'e gir: model kartları eskisinden kısa olmalı, her kartta açıklama cümlesi ve düğme olmalı, çubuk olmamalı. Başka bir model seç: üstteki "Takımın şimdi" çubukları değişmeli. Ayarlar'da metni büyüt ve aynı sayfayı aç: kartlar taşmamalı.
+
 Bu gece (7 Kasım 04:30 inceleme turu):
 - Rakipler artık sayı alınca kendi sevinçlerini yapıyor: her rakibin kendine özgü sayı ve maç sonu hareketi var (önce hepsi aynı yumruğu yapıyordu).
 - Oynayışından kazanılan dört yeni unvan: Smaç ustası, Geçilmez, Aldatıcı, Okuyucu. Profil'de kilitli unvanların yanında ne kadar kaldığı yazıyor; açıldığı maçın sonunda kart haber veriyor.

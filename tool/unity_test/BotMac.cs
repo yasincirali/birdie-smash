@@ -159,6 +159,7 @@ static class BotMac
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
         FileStandart();   // 2026-10-27 ekran/file (ayrı satır: liste başka dallarda da büyüyor)
         IkizMaclar();   // 2026-11-07 online: iki çekirdek gecikmeli kuyrukla (Core/Uzak)
+        ServisSaatleri();   // 2026-11-07 inceleme: online servis saati + çekilme (Core/Uzak)
         Ligler(); Kartlar();   // 2026-11-07 online: lig puanı (Core/Lig), oyuncu kartı (Core/OyuncuKarti)
         AdimTipleri();   // 2026-10-27 birleşik dal incelemesi: figürün kendi adım boyu (ekran/model) × işaretli faz (ekran/kosu)
         Console.WriteLine("en hızlı sayı smacı " + smacHizMax + " km/s");
@@ -1727,6 +1728,39 @@ static class BotMac
         if (r2 == null || r2.sira != 7 || r2.hy != 9.2f || r2.vy != -20 || !r2.super || !r2.slice || r2.servis || r2.tip != "smash" || r2.vurus != "jump" || r2.q != "perfect" || r2.servisTur != null) Fail("UzakPaket gidiş-dönüş");
         if (UzakPaket.Oku(new byte[] { 9, 1, 0 }) != null || UzakPaket.Oku(new byte[] { 1 }) != null) Fail("UzakPaket bozuk paketi kabul etti");
         Console.WriteLine("UzakPaket vuruş " + p.Yaz().Length + " bayt");
+    }
+
+    // 2026-11-07 inceleme (fikir 06:03 #1): online'da servisi atmayan taraf 6 sn sonra kısa servis atar (sayı akar, iki çekirdek
+    // aynı skoru görür); üst üste 3. süre dolumunda maç hükmen biter: B kaybeder, A "hükmen kazandı" der. Tek oyunculuda saat yok.
+    static void ServisSaatleri()
+    {
+        var pa = UzakPaket.Oku(new UzakPaket { tur = PaketTur.Ayrildi, sira = 4 }.Yaz());
+        if (pa == null || pa.tur != PaketTur.Ayrildi || pa.sira != 4) Fail("UzakPaket Ayrildi gidiş-dönüş");
+        var A = new Match(70, new MatchOptions { easy = true, target = 11, uzak = true, uzakServis = "op" });
+        var B = new Match(71, new MatchOptions { easy = true, target = 11, uzak = true, uzakServis = "me" });
+        A.uzak.gecikme = B.uzak.gecikme = .08f;
+        const float dt = 1f / 60f; float t = 0, ilkOto = -1; int guard = 0, otoMax = 0;
+        var yolAB = new List<KeyValuePair<float, byte[]>>(); var yolBA = new List<KeyValuePair<float, byte[]>>();
+        while (!(A.over && B.over) && guard++ < 60 * 60 * 10)
+        {
+            Bot(A, dt);
+            if (!(B.server == "me" && B.s == null)) Bot(B, dt);   // B rallide oynar ama servisini hiç elle atmaz
+            int once = B.otoServis; A.Update(dt); B.Update(dt); t += dt;
+            if (B.otoServis > once && ilkOto < 0) ilkOto = t; otoMax = Math.Max(otoMax, B.otoServis);
+            foreach (var b in A.uzak.giden) yolAB.Add(new KeyValuePair<float, byte[]>(t + .08f, b));
+            foreach (var b in B.uzak.giden) yolBA.Add(new KeyValuePair<float, byte[]>(t + .08f, b));
+            A.uzak.giden.Clear(); B.uzak.giden.Clear();
+            while (yolAB.Count > 0 && yolAB[0].Key <= t) { B.uzak.Al(yolAB[0].Value); yolAB.RemoveAt(0); }
+            while (yolBA.Count > 0 && yolBA[0].Key <= t) { A.uzak.Al(yolBA[0].Value); yolBA.RemoveAt(0); }
+            A.events.Clear(); B.events.Clear();
+        }
+        if (!(A.over && B.over)) Fail("servis saati: maç bitmedi (B servis atmıyor)");
+        else if (!A.hukmen || A.hukmenKazanan != "me" || !B.hukmen || B.hukmenKazanan != "op") Fail("servis saati: çekilen taraf hükmen kaybetmeli");
+        if (ilkOto < Match.SERVIS_SAATI || ilkOto > Match.SERVIS_SAATI + 1.5f) Fail("servis saati: ilk otomatik servis " + ilkOto.ToString("0.0") + " sn (beklenen ~6)");
+        if (A.sc[0] != B.sc[1] || A.sc[1] != B.sc[0]) Fail("servis saati: iki çekirdeğin skoru ayrıştı " + A.sc[0] + "-" + A.sc[1] + " / " + B.sc[1] + "-" + B.sc[0]);
+        var T = new Match(72, new MatchOptions { easy = true, target = 5 }); for (int i = 0; i < 60 * 20; i++) T.Update(dt);
+        if (T.over || T.otoServis != 0 || T.s != null || T.ServisKalan != -1) Fail("servis saati tek oyunculuda işlememeli");
+        Console.WriteLine("servis saati: ilk otomatik servis " + ilkOto.ToString("0.0") + " sn, hükmen bitiş " + t.ToString("0") + " sn, skor " + A.sc[0] + "-" + A.sc[1]);
     }
 
     // Lig (Core/Lig): Glicko-2 Glickman'ın örneğine uyar; gerçek beceri farkında puan doğru sıralanır; kupa kazanınca artar,
