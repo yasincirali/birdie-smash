@@ -79,6 +79,9 @@ namespace BirdieSmash.Core
         // 2026-10-26: imza yalnız patron bayrağıyla ateşlenir. stil.json'daki taban tarz imzayı taşır (harita/maç kartı adını
         // gösterir), serbest maç o taban nesneyi kullandığı için imza kimliğine bakmak yetmez; bayrağı yalnız KariyerVeri.Rakip koyar.
         public bool patron;
+        // 2026-11-07 (inceleme, fikir 4): rakibin kendi sevinci (stil.json sevinc/macSonu). Önceden rakip her sayıda sabit "yumruk",
+        // maç sonunda sabit "zafer" yapıyordu; Dolap metni "kendi sevincini yapar" diyordu. Seçim Kozmetik.RakipSecim'de doğrulanır.
+        public string sevinc, macSonu;
         // 2026-10-26 Tur 3–4 ve Usta yolu (adım 9, §3.2): tepki = rakibin topa çıkış gecikmesi (sn; eskiden sabit .18), hucum =
         // smaç ve drive seçiminin ağırlık çarpanı (1 = veri olduğu gibi). imzaAra/imzaP = imza sıklığı kuralı (Core/Imza; Günün
         // maçı "Patron provası" sıklaştırır, maç başı en çok IMZA_AZAMI değişmez). usta = Usta yolu basamağı (-1 değil).

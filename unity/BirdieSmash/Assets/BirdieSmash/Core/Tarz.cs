@@ -12,7 +12,9 @@ using System.Collections.Generic;
 namespace BirdieSmash.Core
 {
     public class TarzBilgi { public string id, ad, arti, eksi; public int sv = 1; public Dictionary<string, float> etki = new Dictionary<string, float>(); }
-    public class UnvanBilgi { public string id, ad, nasil; public int tur = -1, sv, antrenman; }
+    // sayac/esik (2026-11-07 inceleme, fikir 3 "beceri unvanları"): oynayıştan kazanılan unvan; Ilerleme.Sayac(sayac) ≥ esik.
+    // İlerleme unvanları kariyerde ne kadar ilerlediğini söyler, bunlar nasıl oynadığını (online kartında rakip okur). Ödülsüz.
+    public class UnvanBilgi { public string id, ad, nasil, sayac; public int tur = -1, sv, antrenman, esik; }
     // Görünüm öğesi: renk null = modelin kendi rengi.
     // parla (2026-11-01 mistik saç boyaları): renk hafifçe kendinden ışır (Alev, Buz, Yıldız tozu); yalnız görünüş.
     public class GorunumOge { public string id, ad, renk; public int sv = 1; public bool parla; }
@@ -66,10 +68,20 @@ namespace BirdieSmash.Core
         }
         public static bool Kazanildi(UnvanBilgi u, Ilerleme p, int seviye, int antrenmanYildiz)
         {
+            if (u.sayac != null) return u.esik > 0 && p.Sayac(u.sayac) >= u.esik;
             if (u.tur >= 0) return u.tur < p.tur.Length && p.TurBitti(u.tur);
             if (u.sv > 0) return seviye >= u.sv;
             if (u.antrenman > 0) return antrenmanYildiz >= u.antrenman;
             return true;
+        }
+        // Bu maçla açılan ilk beceri unvanı (maç sonu kartında tek satır). once = maçtan önce kazanılmış beceri unvanı kimlikleri.
+        public static List<string> BeceriKazanilan(Ilerleme p)
+        {
+            var l = new List<string>(); foreach (var u in Unvanlar) if (u.sayac != null && Kazanildi(u, p, 0, 0)) l.Add(u.id); return l;
+        }
+        public static UnvanBilgi YeniBeceri(Ilerleme p, List<string> once)
+        {
+            foreach (var u in Unvanlar) if (u.sayac != null && !once.Contains(u.id) && Kazanildi(u, p, 0, 0)) return u; return null;
         }
         // Gösterilen unvan: oyuncunun seçtiği (hâlâ kazanılmışsa), seçmediyse kazanılanların en sonuncusu (dosyada en değerli
         // en altta): oyuncu hiç dokunmadan da ilerlemesini görür.
@@ -136,7 +148,7 @@ namespace BirdieSmash.Core
             var ul = new List<UnvanBilgi>();
             foreach (var x in (List<object>)o["unvanlar"])
             {
-                var d = Json.Obj(x); ul.Add(new UnvanBilgi { id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), nasil = Json.Str(d, "nasil", ""), tur = (int)Json.Num(d, "tur", -1), sv = (int)Json.Num(d, "sv", 0), antrenman = (int)Json.Num(d, "antrenman", 0) });
+                var d = Json.Obj(x); ul.Add(new UnvanBilgi { id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), nasil = Json.Str(d, "nasil", ""), tur = (int)Json.Num(d, "tur", -1), sv = (int)Json.Num(d, "sv", 0), antrenman = (int)Json.Num(d, "antrenman", 0), sayac = Json.Str(d, "sayac", null), esik = (int)Json.Num(d, "esik", 0) });
             }
             var g = new Dictionary<string, GorunumOge[]>();
             foreach (var k in GORUNUM_KAT)

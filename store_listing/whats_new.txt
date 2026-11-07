@@ -1,4 +1,9 @@
 === UNITY ===
+Bu gece (7 Kasım 04:30 inceleme turu):
+- Rakipler artık sayı alınca kendi sevinçlerini yapıyor: her rakibin kendine özgü sayı ve maç sonu hareketi var (önce hepsi aynı yumruğu yapıyordu).
+- Oynayışından kazanılan dört yeni unvan: Smaç ustası, Geçilmez, Aldatıcı, Okuyucu. Profil'de kilitli unvanların yanında ne kadar kaldığı yazıyor; açıldığı maçın sonunda kart haber veriyor.
+Nasıl denenir: Kariyerde iki farklı rakiple oyna, rakip sayı aldığında yaptığı hareket rakipten rakibe değişmeli. Profil'i aç, Unvan bölümünde yeni dört unvan kilitli görünmeli ve yanlarında "12/300" gibi ilerleme olmalı; birkaç maçtan sonra sayı artmalı.
+
 Bu gece (7 Kasım 02:30 inceleme turu):
 - Mükemmel smaçta yazı artık topun hızını da söylüyor ("SMAÇ! · 187 km/s"); raket gücü ve sıçrayarak smaç sayıya yansır. Maç sonu Ayrıntılar'da en hızlı sayı smacın ve kişisel rekorun.
 - Hızlı maç sayfasında saha seçimi tek sırada, her sahanın küçük resmiyle (Salon, Turnuva, Okul, Gece).

@@ -79,7 +79,8 @@ namespace BirdieSmash.Core
                     id = kv.Key, isim = Json.Str(d, "isim", null), renk = Json.Str(d, "renk", null), yedek = Json.Str(d, "yedek", null), ad = Json.Str(d, "ad", kv.Key), ipucu = Json.Str(d, "ipucu", ""),
                     ustK = Strs(d, "ustK"), ustP = Nums(d, "ustP"), altK = Strs(d, "altK"), altP = Nums(d, "altP"),
                     hiz = F(d, "hiz", 1), hata = F(d, "hata", 1), ev = F(d, "ev", 3), yorK = F(d, "yorK", 1), geriK = F(d, "geriK", 1),
-                    aldatP = F(d, "aldatP", 0), uyum = F(d, "uyum", 0), imza = Json.Str(d, "imza", null)
+                    aldatP = F(d, "aldatP", 0), uyum = F(d, "uyum", 0), imza = Json.Str(d, "imza", null),
+                    sevinc = Json.Str(d, "sevinc", null), macSonu = Json.Str(d, "macSonu", null)
                 };
             }
             var im = new Dictionary<string, ImzaBilgi>(); object io; if (so.TryGetValue("imzalar", out io))

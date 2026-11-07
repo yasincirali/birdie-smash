@@ -40,6 +40,9 @@ namespace BirdieSmash.Core
         public static KozmetikOge[] Liste(string kat) { Yukle(); KozmetikOge[] a; return veri.TryGetValue(kat, out a) ? a : new KozmetikOge[0]; }
         public static KozmetikOge Bul(string kat, string id) { foreach (var o in Liste(kat)) if (o.id == id) return o; return null; }
         // Listenin ilki varsayılandır: var olan oyuncu ve hakemler bu görünüşle kalır.
+        // Rakibin sevinci (2026-11-07): tarzın seçimi veride varsa o, yoksa kategorinin varsayılanı (yumruk / zafer). Online'da
+        // aynı yol karttan gelen seçimle beslenecek (OyuncuKarti.gorunus[SEVINC]); bilinmeyen kimlik hiçbir şey açmaz, varsayılan çizilir.
+        public static string RakipSecim(string kat, string secim) { return secim != null && Bul(kat, secim) != null ? secim : Varsayilan(kat); }
         public static string Varsayilan(string kat) { var l = Liste(kat); return l.Length > 0 ? l[0].id : null; }
         public static KozmetikOge Oge(string kat, string id) { return Bul(kat, id) ?? Bul(kat, Varsayilan(kat)); }
 

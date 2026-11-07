@@ -348,7 +348,9 @@ namespace BirdieSmash.Game
             ekran = Ekran.Bitti; Uyanik(false); var M = match; bittiIlk = M.ilk; sfx.MacSonu(won); sfx.Ugultu(false, 0);
             if (won) Ayar.wins++;
             if (!M.easy && M.ogr == null) Ayar.kosIpucu = true;   // Hud.KosIpucu: koşu sende ilk maç ipucu bir kez
-            if (M.ogr == null && Ayar.ilerleme != null) Ayar.ilerleme.MacSay(M.smashes);   // Profil istatistiği (2026-10-26; cihazda)
+            // Beceri unvanı (2026-11-07 inceleme): maçtan önceki kazanılmış beceri unvanları; maç sonu kartı yeni açılanı tek satırla söyler.
+            var beceri0 = Ayar.ilerleme != null ? Karakter.BeceriKazanilan(Ayar.ilerleme) : null;
+            if (M.ogr == null && Ayar.ilerleme != null) Ayar.ilerleme.MacSay(M.smashes, M.smacKarsila, M.deceives);   // Profil istatistiği (2026-10-26; cihazda)
             // Yardım kademesi (Core/Ilerleme.Yardim): Usta yolu dışındaki her maç. Kayıpta sonuç ekranı söyler (gizli kolaylık değil).
             int yardim0 = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0;
             if (M.ogr == null && Ayar.ilerleme != null && M.stil.usta < 0) Ayar.ilerleme.YardimIsle(won);
@@ -413,6 +415,9 @@ namespace BirdieSmash.Game
             bittiBas = won ? (L.En ? "Victory" : "Galibiyet") : L.T("Bu sefer rakip aldı");
             if (kNot != "") { if (kariyerIlk) bittiAcilan = L.Cumle(kNot); else bittiAltNot = L.Cumle(kNot); }
             if (yumusadi) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Sıradaki maçta rakip biraz yavaşlayacak.");
+            // İmza okuma sayacı aşağıda değil yukarıda (ödül bloğu) işlendi; yeni beceri unvanı alt nota tek cümle, yeni yazı yuvası yok.
+            var yeniUnvan = beceri0 != null ? Karakter.YeniBeceri(Ayar.ilerleme, beceri0) : null;
+            if (yeniUnvan != null) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Yeni unvan: {0}.", L.T(yeniUnvan.ad));
             if (mod == Mod.Gunluk && gunluk != null) bittiUst = L.T("Günün maçı") + " · " + L.T(gunluk.deg.ad);
             else if (bittiUst == null && M.ogr == null) bittiUst = L.T("Hızlı maç") + " · " + L.T("Rakip") + " " + M.RakipAd(false);
             var bitenler = new List<string>(); foreach (var g in M.gorevler) if (g.bitti) bitenler.Add(L.Cumle(g.ad));

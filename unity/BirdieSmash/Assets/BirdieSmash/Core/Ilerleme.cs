@@ -48,7 +48,15 @@ namespace BirdieSmash.Core
         }
         public int Smac { get { return N("smac"); } }
         public int Mac { get { return N("mac"); } }
-        public void MacSay(int smac) { diger["mac"] = (double)(Mac + 1); diger["smac"] = (double)(Smac + Math.Max(0, smac)); }
+        // karsila/aldat (2026-11-07, beceri unvanları): karşılanan rakip smacı ve aldatıcı vuruş toplamı; antrenman sayılmaz (MacSay
+        // yalnız maçta çağrılır). Sayac: unvan eşiği için sayaç okuma (Karakter.Kazanildi).
+        public void MacSay(int smac, int karsila = 0, int aldat = 0)
+        {
+            diger["mac"] = (double)(Mac + 1); diger["smac"] = (double)(Smac + Math.Max(0, smac));
+            if (karsila > 0) diger["karsila"] = (double)(N("karsila") + karsila);
+            if (aldat > 0) diger["aldat"] = (double)(N("aldat") + aldat);
+        }
+        public int Sayac(string k) { return k == "imzaOku" ? ImzaOkunan : N(k); }
         // Yardım (2026-10-29, yasin: "benim hesabımdan oynattığım çocuklar zor olduğunu söyledi"): rakibin gücü hesabın
         // ilerlemesine bağlı (Hızlı maç sıradaki basamağın g'si, kariyer basamağın kendisi); ilerlemiş bir hesapta yeni ya da
         // küçük bir oyuncu her maçı kaybediyordu. Kaybedilen her maç bir kademe ekler, kazanılan her maç bir kademe geri alır
