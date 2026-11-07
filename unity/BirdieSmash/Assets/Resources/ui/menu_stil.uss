@@ -620,7 +620,7 @@
 /* 2026-11-07 tur töreni (GD1/GD5): tur adı, mühür satırı, altı rakip (nokta ≥ 28, yenilen ✓; yenilmeyen soluk + biçim: ✓ yok) */
 .toren-ad { color: var(--tx); -unity-text-align: middle-center; margin: 2px 0 12px 0; white-space: normal; }
 .toren-muhur { flex-direction: row; align-items: center; justify-content: center; margin-bottom: 14px; flex-wrap: nowrap; }
-.toren-rakipler { flex-direction: row; justify-content: center; flex-wrap: nowrap; margin-bottom: 18px; }   /* altı rakip tek satır (r135: 52px genişlikte 5+1 kırılıyordu) */
+.toren-rakipler { flex-direction: row; justify-content: center; flex-wrap: nowrap; align-self: stretch; width: 100%; margin-bottom: 18px; }   /* altı rakip tek satır (r135: 52px genişlikte 5+1 kırılıyordu); r136: kap içeriğe göre daralınca flex-basis 0 öğeler sıfır genişliğe düştü, kap tam genişlik */
 .toren-rakip { align-items: center; flex-grow: 1; flex-basis: 0; min-width: 0; max-width: 56px; margin: 0 1px 6px 1px; overflow: hidden; }
 .toren-rakip--yok { opacity: 0.45; }
 .toren-nokta { width: 28px; height: 28px; border-radius: 14px; align-items: center; justify-content: center; margin-bottom: 3px; border-width: 2px; border-color: rgba(255, 255, 255, 0.35); }
