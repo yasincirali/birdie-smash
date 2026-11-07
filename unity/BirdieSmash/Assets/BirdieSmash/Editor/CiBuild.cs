@@ -52,6 +52,7 @@ namespace BirdieSmash.EditorTools
                 var rep = BuildPipeline.BuildPlayer(opt);
                 if (rep.summary.result != BuildResult.Succeeded) throw new Exception("BuildPlayer: " + rep.summary.result + ", hata " + rep.summary.totalErrors);
                 PlistSifreleme(Path.Combine(path, "Info.plist")); PlistProMotion(Path.Combine(path, "Info.plist")); PlistReklam(Path.Combine(path, "Info.plist"));
+                IosYerellestirme(path);
                 Debug.Log("Birdie Smash iOS Xcode projesi: " + path);
                 EditorApplication.Exit(0);
             }
@@ -202,9 +203,10 @@ namespace BirdieSmash.EditorTools
         public const string ADMOB_IOS_UYG = "ca-app-pub-3940256099942544~1458002511";
         public const string ADMOB_ANDROID_UYG = "ca-app-pub-3940256099942544~3347511713";
         // ATT metni: UMP rıza akışı AdMob panelinde IDFA açıklaması tanımlanırsa sistem izin penceresini açar; anahtar yoksa iOS
-        // uygulamayı kapatır. Ton oyunun dili: kısa, suçlamasız, ne olduğunu söyler. İngilizce taban (mağaza dili global; Türkçe
-        // InfoPlist.strings ayrı iş).
+        // uygulamayı kapatır. Ton oyunun dili: kısa, suçlamasız, ne olduğunu söyler. İngilizce taban (mağaza dili global);
+        // Türkçesi tr.lproj/InfoPlist.strings'te (IosYerellestirme, 2026-11-07).
         const string ATT_METNI = "Used to show you more relevant ads. If you do not allow it, the game works exactly the same.";
+        const string ATT_METNI_TR = "Sana daha ilgili reklamlar göstermek için. İzin vermezsen oyun tamamen aynı çalışır.";
         static void ReklamAyar()
         {
             Type t = null;
@@ -241,6 +243,62 @@ namespace BirdieSmash.EditorTools
             int i = t.LastIndexOf("</dict>", StringComparison.Ordinal); if (i < 0) return;
             File.WriteAllText(plist, t.Substring(0, i) + ek + t.Substring(i));
             Debug.Log("Birdie Smash: reklam plist anahtarları CiBuild'den eklendi");
+        }
+
+        // ---- iOS yerelleştirme (2026-11-07 inceleme turu) ----
+        // Unity'nin Xcode çıktısı yalnız İngilizce taşır: App Store ürün sayfası "Diller: English" der (oyun içi tam Türkçe olsa da;
+        // dil listesi paketteki .lproj klasörlerinden okunur) ve ATT penceresi Türkçe cihazda İngilizce çıkar (5.1.1: amaç metni
+        // oyuncunun anlayacağı dilde olmalı). Çözüm: Info.plist'e CFBundleLocalizations [en, tr] + en.lproj/tr.lproj
+        // InfoPlist.strings (ad + ATT), klasörler Xcode projesine "folder reference" olarak (paketin köküne aynen kopyalanır).
+        // PBXProject yalnız iOS modülüyle derlenir: #if UNITY_IOS (iOS hedefinde Editor tanımlı; Linux ekran build'i ve
+        // tool/unity_test derlemesi bu bloğu görmez). Hata build'i kırmaz, yalnız uyarı: dil satırı eksik kalır, oyun aynı çalışır.
+        // Yeni dil = DILLER'e bir satır (Asya dilleri mağaza metniyle birlikte).
+        static readonly string[][] DILLER = {
+            new[] { "en", "Birdie Smash", ATT_METNI },
+            new[] { "tr", "Birdie Smash", ATT_METNI_TR },
+        };
+        static void IosYerellestirme(string xcode)
+        {
+            try
+            {
+                var plist = Path.Combine(xcode, "Info.plist");
+                if (!File.Exists(plist)) { Debug.LogWarning("Birdie Smash: yerelleştirme atlandı, Info.plist yok"); return; }
+                var t = File.ReadAllText(plist);
+                bool att = t.Contains("NSUserTrackingUsageDescription");
+                if (!t.Contains("CFBundleLocalizations"))
+                {
+                    string dizi = "\t<key>CFBundleLocalizations</key>\n\t<array>\n";
+                    foreach (var d in DILLER) dizi += "\t\t<string>" + d[0] + "</string>\n";
+                    dizi += "\t</array>\n";
+                    int i = t.LastIndexOf("</dict>", StringComparison.Ordinal);
+                    if (i >= 0) { t = t.Substring(0, i) + dizi + t.Substring(i); File.WriteAllText(plist, t); }
+                }
+                var yazilan = new System.Collections.Generic.List<string>();
+                foreach (var d in DILLER)
+                {
+                    var kl = Path.Combine(xcode, d[0] + ".lproj"); Directory.CreateDirectory(kl);
+                    string s = "\"CFBundleDisplayName\" = \"" + d[1] + "\";\n";
+                    if (att) s += "\"NSUserTrackingUsageDescription\" = \"" + d[2] + "\";\n";
+                    File.WriteAllText(Path.Combine(kl, "InfoPlist.strings"), s, new System.Text.UTF8Encoding(false));
+                    yazilan.Add(d[0] + ".lproj");
+                }
+#if UNITY_IOS
+                var pp = UnityEditor.iOS.Xcode.PBXProject.GetPBXProjectPath(xcode);
+                var proj = new UnityEditor.iOS.Xcode.PBXProject(); proj.ReadFromFile(pp);
+                var hedef = proj.GetUnityMainTargetGuid();
+                foreach (var ad in yazilan)
+                {
+                    if (proj.ContainsFileByProjectPath(ad)) continue;
+                    var g = proj.AddFolderReference(Path.Combine(xcode, ad), ad);
+                    proj.AddFileToBuild(hedef, g);
+                }
+                proj.WriteToFile(pp);
+                Debug.Log("Birdie Smash: iOS dilleri yazıldı (" + string.Join(", ", yazilan.ToArray()) + ", ATT " + (att ? "var" : "yok") + ")");
+#else
+                Debug.LogWarning("Birdie Smash: UNITY_IOS tanımsız, .lproj klasörleri Xcode projesine eklenmedi");
+#endif
+            }
+            catch (Exception e) { Debug.LogWarning("Birdie Smash: iOS yerelleştirme atlandı: " + e.Message); }
         }
 
         static string Arg(string name)
