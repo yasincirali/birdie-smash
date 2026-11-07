@@ -33,10 +33,17 @@ namespace BirdieSmash.Game
         public static bool SeritYuklu { get; private set; }
         public static bool Hazir { get { return hazir; } }
 
-        // Menü ilk göründüğünde bir kez (UiKok). Açılış perdesi ve ilk antrenman reklamsız geçer.
+        // Menü her karede çağırır (UiKok); bir kez çalışır. 2026-11-08 (inceleme turu): rıza formu ve iOS izin penceresi
+        // oyuncu ilk maçını bitirmeden açılmaz. Önceden ilk açılışta, perde kalkarken, tek topa vurmadan "reklam ortaklarımız…"
+        // diyaloğu geliyordu: yeni kurulan arcade oyunu en sık o anda silinir, izin de değer görülmeden reddedilir (ödüllü
+        // reklam doluluğu düşer). Badminton League / Tennis Clash da ilk maçı rızasız oynatıp ilk menü dönüşünde sorar.
+        // UMP şartı "reklam isteğinden önce rıza"dır; o ana kadar SDK hiç başlamadığı için istek de yok, yer tutucu durur.
+        // Koşul: antrenman bitti VE en az bir maç (galibiyet ya da bu sürümden beri sayılan maç). Yarıda bırakan ikinci
+        // açılışta da antrenmana döner; rıza yine maçtan sonra gelir. Yeni anahtar yok.
+        public static bool IlkMacBitti { get { return Ayar.antrenman && (Ayar.wins > 0 || (Ayar.ilerleme != null && Ayar.ilerleme.Mac > 0)); } }
         public static void Baslat()
         {
-            if (basladi || !Reklam.ALAN) return; basladi = true;
+            if (basladi || !Reklam.ALAN || !IlkMacBitti) return; basladi = true;
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             try
             {

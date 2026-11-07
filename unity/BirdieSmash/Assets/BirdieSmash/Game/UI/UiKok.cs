@@ -1,6 +1,7 @@
 // Menü kabuğu (komple-oyun tasarımı adım 1, 2026-10-26): IMGUI menüleri UI Toolkit'e taşındı; maç içi HUD, duraklat,
 // maç sonu ve smaç perdesi IMGUI'de kalır (Hud; tasarım §6 adım 1 ve §7.2: HUD az öğeli, Adım 3'ten sonra taşınır).
-// Ekran haritası (§2.1): alt sekme çubuğu Oyna · Kariyer · Soyunma odası · Profil; Ayarlar sekme değil, üst şeritte ⚙
+// Ekran haritası (§2.1): alt sekme çubuğu Oyna · Kariyer · Dolap (Soyunma) · Atölye · Profil (30 Eki: Atölye Dolap'tan
+// ayrıldı, gerekçe SoyunmaOdasi başlığında; ilk hali 4 sekmeydi); Ayarlar sekme değil, üst şeritte ⚙
 // (oyuncu oturumda bir kez bile girmez). Ayarlar › Nasıl oynanır / Lisanslar tam sayfa, Hızlı maç kurulumu alt sayfa.
 // Gezinti kuralı Core/Gezinti'de (saf C#, test edilir); burası yalnız görünüm.
 // Kurulum çalışma zamanında: UIDocument + PanelSettings (Resources/ui/PanelSettings varsa o; Editor'de DemoKurulum üretir,

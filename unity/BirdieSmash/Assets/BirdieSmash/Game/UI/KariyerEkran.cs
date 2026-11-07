@@ -258,6 +258,8 @@ namespace BirdieSmash.Game
             // Aynı ayar (tuytop_zorluk, dört kademe): seçim her yerde aynı kalır.
             var zs = Satir(); c.Add(zs);
             ZorlukSatir(zs, c);
+            // 2026-11-08: basamak uzunluk vermiyorsa ("senin seçimin") seçim burada da yapılır (UzunlukSatir, aynı anahtar).
+            if (kb.uzunluk <= 0) { var us = Satir(); c.Add(us); UzunlukSatir(us, c); }
             c.Add(Grup(L.T("Yıldızlar")));
             var gv = Match.GorevBul(kb.gorev);
             // Yeniden oynamada eksik yıldız üstte (2026-11-07, inceleme 18:20 madde 3): tamamlayıcı oyuncunun sorusu "hangisi eksik";
