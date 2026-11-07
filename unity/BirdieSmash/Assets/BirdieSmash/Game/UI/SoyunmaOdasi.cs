@@ -350,7 +350,7 @@ namespace BirdieSmash.Game
         void TelKur(VisualElement c)
         {
             var gr = Ayar.gear;
-            telYazi = Yazi(TelBaslik(), 15, "grup-kalin"); c.Add(telYazi);
+            telYazi = Grup(TelBaslik()); c.Add(telYazi);   // 2026-11-07 tek tip bölüm başlığı
             var r = Satir("tel-satir"); c.Add(r);
             var eksi = Dugme("−", () => TelAdim(-1), "ikon-dugme"); Erisim.Etiket(eksi, L.T("Tel gerginliği") + " −1", "dugme"); r.Add(eksi);
             var sl = new Slider(18, 32) { value = gr.tel }; sl.AddToClassList("tel-kaydirici"); r.Add(sl);

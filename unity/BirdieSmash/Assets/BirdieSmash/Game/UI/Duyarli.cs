@@ -124,6 +124,7 @@ namespace BirdieSmash.Game
             Topla_(altAcik ? altKatman : kok, oge, svl, altAcik);
             if (altAcik) Topla_(sekmeCubugu, oge, svl, true);   // sayfa sekme çubuğunu da örter: çubuk yine denetlenir (çakışma hariç)
             var dokun = new List<KeyValuePair<VisualElement, Rect>>(); int n = 0;
+            var yazilar = new List<KeyValuePair<VisualElement, Rect>>();   // 2026-11-07 yazı üst üste (yasin: "yazılar üst üste biniyor, bu hiç olmamalı")
             foreach (var sv in svl)
             {
                 var v = sv.contentViewport.worldBound;
@@ -135,7 +136,7 @@ namespace BirdieSmash.Game
                 n++; var r = v.worldBound; bool kaydir; var kirp = Kirp(v, out kaydir); var gor = kaydir ? Kes(r, kirp) : r;
                 bool cubukta = Altinda(v, sekmeCubugu);
                 if (!kaydir && Disinda(r, guv)) Sorun(sb, ref sorun, "güvenli alan / ekran dışında", Ad(v), r);
-                if (kaydir && (r.xMin < kirp.xMin - 1 || r.xMax > kirp.xMax + 1)) Sorun(sb, ref sorun, "yatay taşma (kaydırılamaz)", Ad(v), r);
+                if (kaydir && !YatayKayar(v) && (r.xMin < kirp.xMin - 1 || r.xMax > kirp.xMax + 1)) Sorun(sb, ref sorun, "yatay taşma (kaydırılamaz)", Ad(v), r);
                 if (!cubukta && !altAcik && gor.height > 1 && Kesisim(gor, sekme)) Sorun(sb, ref sorun, "sekme çubuğuyla çakışıyor", Ad(v), r);
                 var l = v as Label;
                 if (l != null)
@@ -156,6 +157,16 @@ namespace BirdieSmash.Game
                         }
                     }
                     var e = v.hierarchy.parent; if (e != null && (r.xMax > e.worldBound.xMax + 6 || r.xMin < e.worldBound.xMin - 6)) Sorun(sb, ref sorun, "yazı kabından taşıyor", Ad(v), r);
+                    // Yazı üst üste (2026-11-07, yasin: "bazı yerlerde yazılar üst üste biniyor, bu hiç olmamalı"): öğe kutuları
+                    // dolgu yüzünden değebilir, o yüzden yazının kendi mürekkep kutusu (ölçülen boy, hizalamaya göre) karşılaştırılır.
+                    // Biri ötekinin atası değilse ve kesişim iki yönde de 2 birimden büyükse sorun. Kaydırma kırpması da uygulanır.
+                    var yk = YaziKutusu(l); if (kaydir) yk = Kes(yk, kirp);
+                    if (yk.width > 2 && yk.height > 2)
+                    {
+                        foreach (var o in yazilar)
+                        { var k = Kes(yk, o.Value); if (k.width > 2 && k.height > 2 && !Altinda(v, o.Key) && !Altinda(o.Key, v)) Sorun(sb, ref sorun, "yazı üst üste: " + Ad(o.Key), Ad(v), yk); }
+                        yazilar.Add(new KeyValuePair<VisualElement, Rect>(v, yk));
+                    }
                     continue;
                 }
                 var b = v.userData as ErisimBilgi;
@@ -191,6 +202,13 @@ namespace BirdieSmash.Game
             else if (b != null ? (b.rol == "dugme" || b.rol == "sekme") : v.ClassListContains("dugme")) oge.Add(v);
             for (int i = 0; i < v.hierarchy.childCount; i++) Topla_(v.hierarchy[i], oge, svl, altAcik);
         }
+        // En yakın kaydırma görünümü yatay kayıyorsa (Dolap kategori şeridi) taşma tasarımdır, sorun değil (2026-11-07: r127'de
+        // her telefonda 8 yanlış "yatay taşma" satırı gerçek sorunları gölgeliyordu).
+        static bool YatayKayar(VisualElement v)
+        {
+            for (var p = v.hierarchy.parent; p != null; p = p.hierarchy.parent) { var sv = p as ScrollView; if (sv != null) return sv.mode != ScrollViewMode.Vertical; }
+            return false;
+        }
         static bool Altinda(VisualElement v, VisualElement ata) { for (var p = v; p != null; p = p.hierarchy.parent) if (p == ata) return true; return false; }
         static bool Altinda(VisualElement v, string cls) { for (var p = v.hierarchy.parent; p != null; p = p.hierarchy.parent) if (p.ClassListContains(cls)) return true; return false; }
         // En yakın kaydırma görünümlerinin kesişimi (öğe kaydırılabilir alanda mı).
@@ -199,6 +217,19 @@ namespace BirdieSmash.Game
             kaydir = false; var k = new Rect(-1e5f, -1e5f, 2e5f, 2e5f);
             for (var p = v.hierarchy.parent; p != null; p = p.hierarchy.parent) { var sv = p as ScrollView; if (sv != null) { kaydir = true; k = Kes(k, sv.contentViewport.worldBound); } }
             return k;
+        }
+        // Yazının ekranda kapladığı kutu: içerik alanı içinde ölçülen boy, unityTextAlign'a göre yerleştirilmiş.
+        static Rect YaziKutusu(Label l)
+        {
+            var w = l.worldBound; var rs = l.resolvedStyle;
+            float x0 = w.xMin + rs.paddingLeft + rs.borderLeftWidth, y0 = w.yMin + rs.paddingTop + rs.borderTopWidth;
+            float cw = Mathf.Max(0, w.width - rs.paddingLeft - rs.paddingRight - rs.borderLeftWidth - rs.borderRightWidth);
+            float ch = Mathf.Max(0, w.height - rs.paddingTop - rs.paddingBottom - rs.borderTopWidth - rs.borderBottomWidth);
+            var m = rs.whiteSpace == WhiteSpace.NoWrap ? l.MeasureTextSize(l.text, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined)
+                                                       : l.MeasureTextSize(l.text, cw, VisualElement.MeasureMode.AtMost, 0, VisualElement.MeasureMode.Undefined);
+            float tw = Mathf.Min(m.x, Mathf.Max(cw, m.x)), th = m.y; var a = rs.unityTextAlign; int ax = (int)a % 3, ay = (int)a / 3;   // TextAnchor: UpperLeft=0 … LowerRight=8
+            float x = ax == 0 ? x0 : ax == 1 ? x0 + (cw - tw) / 2 : x0 + cw - tw, y = ay == 0 ? y0 : ay == 1 ? y0 + (ch - th) / 2 : y0 + ch - th;
+            return new Rect(x, y, tw, th);
         }
         static Rect Kes(Rect a, Rect b) { float x0 = Mathf.Max(a.xMin, b.xMin), y0 = Mathf.Max(a.yMin, b.yMin), x1 = Mathf.Min(a.xMax, b.xMax), y1 = Mathf.Min(a.yMax, b.yMax); return x1 > x0 && y1 > y0 ? Rect.MinMaxRect(x0, y0, x1, y1) : new Rect(x0, y0, 0, 0); }
         static bool Kesisim(Rect a, Rect b) { var k = Kes(a, b); return k.width > 1 && k.height > 1; }

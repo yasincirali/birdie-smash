@@ -1123,9 +1123,12 @@ namespace BirdieSmash.Game
                 if (R.bittiMaske >= 0) y = YildizCiz(x, y, w, s, t, rm, al, hero ? .5f : R.bittiKazandi ? 1 : .6f);
                 if (od != null) y = OdulCiz(od, x, y, w, s, t, rm, al);
                 // Kahraman düzeninde açılan basamak kartı yok: büyük düğmenin alt satırı aynı şeyi söyler ("Sıradaki · İl şampiyonası")
-                if (!hero && !string.IsNullOrEmpty(R.bittiAcilan))
+                // 2026-11-07 (r127 sonuc_se_buyuk: SE + büyük yazıda düğmeler ekranın 100 pt altına itiliyordu, kartın altı yazıların
+                // üstüne biniyordu): açılan basamak kartı da isteğe bağlı; sığmazsa çizilmez, büyük düğmenin alt satırı aynı şeyi söyler.
+                float acUh = 0; if (!hero && !string.IsNullOrEmpty(R.bittiAcilan)) acUh = Mathf.Max(aUnl.CalcHeight(Ic(R.bittiAcilan), w - 26 * s - 14 * s * 3), 26 * s) + 16 * s;
+                if (acUh > 0 && y + acUh + blokH0 <= H - bot)
                 {
-                    float ik = 26 * s, ph = 14 * s, tw = w - ik - ph * 3, uh = Mathf.Max(aUnl.CalcHeight(Ic(R.bittiAcilan), tw), ik) + 16 * s; var r = new Rect(x, y, w, uh);
+                    float ik = 26 * s, ph = 14 * s, tw = w - ik - ph * 3, uh = acUh; var r = new Rect(x, y, w, uh);
                     float ua = rm ? al : Mathf.Clamp01((t - 1.9f) / .3f); KutuCiz(r, aKutuLimon, ua);
                     Tex(new Rect(r.x + ph, r.y + (uh - ik) / 2, ik, ik), Ikonlar.AcikKilit, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, ua));
                     Yaz(new Rect(r.x + ph * 2 + ik, r.y + 8 * s, tw, uh - 16 * s), R.bittiAcilan, aUnl, A_YAZI, ua); y += uh + 10 * s;
@@ -1181,8 +1184,8 @@ namespace BirdieSmash.Game
                 + " · matris " + (GUI.matrix.isIdentity ? "düz" : "DÖNÜK") + " · ikincil düğme stili " + (aDug != null ? "var" : "YOK")   // tur 2: yoruma yapışan satırların kilidi
                 + (hero ? " · kahraman bandı %" + (zaferUst * 100).ToString("F0") + "–" + (zaferAlt * 100).ToString("F0") : "") + " · ikincil " + nIk + "/" + nTum + (R.hedef.gecerli ? " · hedef " + R.hedef.kat + ":" + R.hedef.id + (R.hedefHazir ? " hazır" : "") : "")
                 + " · alt düğme dibi " + son.ToString("F0") + " / sınır " + sinir.ToString("F0") + (son > sinir + 1 ? " · TAŞIYOR" : "") + " · üst " + top.ToString("F0") + " alt pay " + bot.ToString("F0");
-            if (Event.current.type == EventType.Repaint && son > sinir + 1 && sigK > .7f)
-                sigK = Mathf.Max(.7f, Mathf.Floor(sigK * (sinir - top) / Mathf.Max(1, son - top) * 20) / 20);
+            if (Event.current.type == EventType.Repaint && son > sinir + 1 && sigK > .6f)   // 2026-11-07: taban .7 → .6 (SE + büyük yazı)
+                sigK = Mathf.Max(.6f, Mathf.Floor(sigK * (sinir - top) / Mathf.Max(1, son - top) * 20) / 20);
         }
         // i. ikincil düğmenin yeri: tek sütunda alt alta; çift sütunda ikişer (tek kalan son düğme tam genişlik).
         static Rect IkincilYer(ref int i, ref float yb, float x, float kw, float bh, float gap, bool cift, int n)
@@ -1214,10 +1217,15 @@ namespace BirdieSmash.Game
                 if (var_) Tex(new Rect(c.x - sz * .8f, c.y - sz * .8f, sz * 1.6f, sz * 1.6f), Ikonlar.Isik, new Color(A_ALTIN.r, A_ALTIN.g, A_ALTIN.b, .45f * a));
                 Tex(new Rect(c.x - sz / 2, c.y - sz / 2, sz, sz), var_ ? Ikonlar.YildizDolu : Ikonlar.YildizBos, var_ ? new Color(A_ALTIN.r, A_ALTIN.g, A_ALTIN.b, a) : new Color(1, 1, 1, .35f * a));
                 GUI.matrix = m;
-                string ks = R.bittiKosul != null && i < R.bittiKosul.Length ? R.bittiKosul[i] : ""; float ik = 13 * s, tw = col - ik - 8 * s, h = aKosul.CalcHeight(Ic(ks), tw);
-                float tx = c.x - Mathf.Min(tw, aKosul.CalcSize(Ic(ks)).x) / 2 + ik / 2 + 2 * s, ty = y + rowH + 8 * s, ka = rm ? al : Mathf.Clamp01((t - .3f) / .3f);
+                string ks = R.bittiKosul != null && i < R.bittiKosul.Length ? R.bittiKosul[i] : ""; float ik = 13 * s, tw = col - ik - 8 * s;
+                // 2026-11-07 (r127 sonuc_se_buyuk "Oppon/ent", "smash/es"): dar sütunda uzun sözcük harf ortasından bölünüyordu;
+                // en uzun sözcük sığana kadar yazı küçülür (en çok %75'e).
+                var kst = aKosul; { string uz = ""; foreach (var kw in ks.Split(' ')) if (kw.Length > uz.Length) uz = kw;
+                    for (int fs = aKosul.fontSize; fs > Mathf.RoundToInt(aKosul.fontSize * .75f) && kst.CalcSize(Ic(uz)).x > tw; fs--) kst = Stil(aKosul, fs - 1); }
+                float h = kst.CalcHeight(Ic(ks), tw);
+                float tx = c.x - Mathf.Min(tw, kst.CalcSize(Ic(ks)).x) / 2 + ik / 2 + 2 * s, ty = y + rowH + 8 * s, ka = rm ? al : Mathf.Clamp01((t - .3f) / .3f);
                 Tex(new Rect(tx - ik - 3 * s, ty + 1 * s, ik, ik), var_ ? Ikonlar.Tik : Ikonlar.Carpi, var_ ? new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, ka) : new Color(A_SOLUK.r, A_SOLUK.g, A_SOLUK.b, ka));
-                Yaz(new Rect(tx, ty, tw, h), ks, aKosul, var_ ? A_YAZI : A_SOLUK, ka); kh = Mathf.Max(kh, h);
+                Yaz(new Rect(tx, ty, tw, h), ks, kst, var_ ? A_YAZI : A_SOLUK, ka); kh = Mathf.Max(kh, h);
             }
             return y + rowH + 8 * s + kh + (ol < 1 ? 8 : 14) * s;
         }
@@ -1262,7 +1270,12 @@ namespace BirdieSmash.Game
             int kaz = Mathf.RoundToInt(od.tuy * (rm ? e : var_)), topN = Ayar.gear.eko.tuy - od.tuy + kaz;
             float lx_ = x + p + ik + 10 * s, tyw = aSatir.CalcSize(Ic(L.T("Tüy"))).x;
             Yaz(new Rect(lx_, yy, tyw, rh), L.T("Tüy"), aSatir, A_YAZI, al);
-            Yaz(new Rect(lx_ + tyw + 8 * s, yy + 1 * s, w * .45f, rh), L.T("Toplam {0}", topN), Stil(aIz, Mathf.RoundToInt(13 * aK)), A_SOLUK, al);
+            // "Toplam" kazanç sayısıyla çakışmasın (2026-11-07, yasin "yazılar üst üste biniyor"; r127 sonuc_se_buyuk'ta "Total 965"
+            // ile "+120" üst üsteydi): kalan boşluk ölçülür, sığmazsa yazı 11 pt'ye kadar küçülür, yine sığmazsa hiç çizilmez
+            // (toplam üst çubukta zaten görünüyor).
+            float kzw = aSayi.CalcSize(Ic("+" + od.tuy)).x, tx0 = lx_ + tyw + 8 * s, tbos = rx_ - kzw - 8 * s - tx0; string tStr = L.T("Toplam {0}", topN);
+            for (int tfs = Mathf.RoundToInt(13 * aK); tfs >= Mathf.RoundToInt(11 * aK) && tbos > 0; tfs--)
+            { var tst = Stil(aIz, tfs); if (tst.CalcSize(Ic(tStr)).x <= tbos) { Yaz(new Rect(tx0, yy + 1 * s, tbos, rh), tStr, tst, A_SOLUK, al); break; } }
             Yaz(new Rect(rx_ - 120 * s, yy, 120 * s, rh), "+" + kaz, aSayi, A_ALTIN, al); yy += rh + 6 * s;
             KutuCiz(new Rect(x + p, yy + (rh - ik) / 2, ik, ik), aKutuIkon, al); Yaz(new Rect(x + p, yy + (rh - ik) / 2, ik, ik), "XP", Stil(aLv, Mathf.RoundToInt(13 * aK)), A_YAZI, al);
             string xs = "+" + Mathf.RoundToInt(od.xp * e); float xw = aSayi.CalcSize(Ic("+" + od.xp)).x + 4 * s;

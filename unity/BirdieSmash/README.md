@@ -22,7 +22,7 @@ depoda ProjectSettings.asset yok.
 - Tam orta vuruş isabet ve smaç enerjisi verir; enerji dolunca hızlı kaydırma sıçrayarak smaç olur.
 - İki oyuncuda da nefes (dayanıklılık) halkası var; yorulan oyuncu yavaşlar.
 - Ayarlar: Kolay/Usta, 5/11/21 sayı, saha (salon, turnuva, okul, park), figür (Oyuncak 3B / Gerçekçi), hareketi azalt, ses.
-- Kariyer: 6 basamak; bitiş düğmesi "Sıradaki: {yer}" / "Tekrar dene" / "Bir maç daha". Kariyer bitince Şampiyon forması açılır.
+- Kariyer: 6 basamak; bitiş düğmesi "Sıradaki: {yer}" / "Tekrar dene" / "Bir maç daha"; Hızlı maç yenilgisinde "Rövanş · {rakip}" (aynı tarz + saha, 2026-11-07). Kariyer bitince Şampiyon forması açılır.
 - Ekipman (menü › Ekipman): raket (Denge/Kafa ağır/Kafa hafif/Esnek), tel gerginliği 18–32 lbs (güç/tatlı nokta/kontrol ve raket sesinin
   tonu), bileklik, saç bandı, forma; altı yuva Tüy ile 10 seviyeye yükselir (oyuncu seviyesi kapısı). "Eşit şartlar" serbest maçta
   yükseltmeyi kapatır. 360° vitrin: sürükle ya da oklar; raket rengi seçilir. Çarpanlar HTML `gsHesap` ile birebir (BotMac denetler).

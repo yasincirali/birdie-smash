@@ -152,6 +152,8 @@ namespace BirdieSmash.Game
         // dördüncü seçenek sona eklendi; var olan sıra ve varsayılan "oyuncak" değişmez. Kayıt değeri "tuycuk"; FBX'i olmayan
         // build'de Yukle onu bilinmeyen model gibi oyuncak'a düşürür.
         public static readonly string[] MODELLER = { "oyuncak", "rocketbox", "sade", "tuycuk" }, MODEL_AD = { "Oyuncak 3B", "Gerçekçi", "Sade", "Tüycük" };
+        // Ayarlar'da sunulan modeller (2026-11-07, yasin: 4 → 2). Diğerleri kayıtlı seçim olarak yaşar, yeni oyuncuya sunulmaz.
+        public static bool ModelSecenek(string m) { return m == "oyuncak" || m == "tuycuk"; }
         public static bool ModelVar(string m)
         {
             if (m == "oyuncak" || m == "rocketbox") return true;

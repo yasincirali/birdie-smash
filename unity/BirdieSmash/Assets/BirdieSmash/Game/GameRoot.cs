@@ -164,7 +164,10 @@ namespace BirdieSmash.Game
                 int g = Ayar.kariyerSecim >= 0 && Ayar.ilerleme.Acik(Ayar.kariyerSecim) ? Ayar.kariyerSecim : Ayar.ilerleme.Siradaki(); var kb = KariyerVeri.Al(g);
                 o.stil = Match.KariyerRakip(g); o.saha = kb.saha; if (kb.uzunluk > 0) o.target = kb.uzunluk; o.degistirici = kb.degistirici;   // kural maçı (veri; çoğu basamakta null)
             }
+            else if (rovansSiradaki != null) o.stil = rovansSiradaki;   // Rövanş: az önce yenen rakip (saha Ayar.saha, zaten aynı)
             else o.stil = KariyerVeri.Serbest(Match.STIL_SIRA[rnd.Next(3)], Ayar.ilerleme);   // 2026-10-27: oyuncunun kariyer seviyesinde (KariyerVeri.Serbest)
+            sonHizliStil = Ayar.kariyerModu && !ogr ? null : o.stil;   // Match tarzı ölçekleyip klonlar (rakipK); rövanş ölçeksiz aslını taşır
+            rovansSiradaki = null; rovansStil = null;
             mod = Mod.Normal; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
         }
         MatchOptions Secenek(bool ogr)
@@ -421,8 +424,22 @@ namespace BirdieSmash.Game
             if (mod == Mod.Gunluk && gunluk != null) bittiUst = L.T("Günün maçı") + " · " + L.T(gunluk.deg.ad);
             else if (bittiUst == null && M.ogr == null) bittiUst = L.T("Hızlı maç") + " · " + L.T("Rakip") + " " + M.RakipAd(false);
             var bitenler = new List<string>(); foreach (var g in M.gorevler) if (g.bitti) bitenler.Add(L.Cumle(g.ad));
-            bittiBilgi = L.T("Rakip {0} · Görev {1}/3 ({2}) · En uzun ralli {3} · {4} smaç · {5} file vuruşu · {6} mükemmel · {7} aldatma · {8} split step · {9} tepeden · {10} uzanma · {11} kez dışarıyı bıraktın",
-                M.RakipAd(false), M.gorevBitti, bitenler.Count > 0 ? string.Join(", ", bitenler.ToArray()) : L.T("yok"), M.maxRally, M.smashes, M.kills, M.perfects, M.deceives, M.splits, M.tepeden, M.saves, M.outsLeft);
+            // Sıfır sayaçlar yazılmaz (2026-11-07 inceleme, fikir 14:06 #5): "0 aldatma · 0 tepeden" oyuncuya "bunları yapmadın" diyor ve
+            // asıl satırı (ralli, smaç) kalabalıkta kaybettiriyordu. Rakip ve görev hep; kalanlar yalnız > 0, sabit sırayla (ralli, smaç,
+            // mükemmel önce). Parçalar tek tek çevrilir; yazı yuvası ve kart düzeni aynı.
+            var bb = new List<string>();
+            bb.Add(L.T("Rakip {0}", M.RakipAd(false)));
+            bb.Add(L.T("Görev {0}/3 ({1})", M.gorevBitti, bitenler.Count > 0 ? string.Join(", ", bitenler.ToArray()) : L.T("yok")));
+            if (M.maxRally > 0) bb.Add(L.T("En uzun ralli {0}", M.maxRally));
+            if (M.smashes > 0) bb.Add(L.T("{0} smaç", M.smashes));
+            if (M.perfects > 0) bb.Add(L.T("{0} mükemmel", M.perfects));
+            if (M.kills > 0) bb.Add(L.T("{0} file vuruşu", M.kills));
+            if (M.deceives > 0) bb.Add(L.T("{0} aldatma", M.deceives));
+            if (M.splits > 0) bb.Add(L.T("{0} split step", M.splits));
+            if (M.tepeden > 0) bb.Add(L.T("{0} tepeden", M.tepeden));
+            if (M.saves > 0) bb.Add(L.T("{0} uzanma", M.saves));
+            if (M.outsLeft > 0) bb.Add(L.T("{0} kez dışarıyı bıraktın", M.outsLeft));
+            bittiBilgi = string.Join(" · ", bb.ToArray());
             // En hızlı sayı smacı ve kişisel rekor (2026-11-07 inceleme, fikir 02:06 #3): Ayrıntılar'a tek satır; maç kartına yeni yazı yok.
             if (M.enHizliSmac > 0 && M.ogr == null)
             {
@@ -434,6 +451,11 @@ namespace BirdieSmash.Game
             if (odul != null && odul.ek.Count > 0) bittiBilgi = L.T("Ödüller: {0}", string.Join(" · ", odul.ek.ConvertAll(q => L.Cumle(q)).ToArray())) + "\n" + bittiBilgi;
             bittiDugme = L.Cumle(Career.AgainLabel(M.stil.kariyer >= 0, won, Ayar.ilerleme.HepsiBitti ? -1 : Ayar.ilerleme.Siradaki()));
             if (mod == Mod.Usta) bittiDugme = won ? L.T("Sıradaki Usta basamağı") : L.T("Tekrar dene");
+            // Rövanş (2026-11-07 inceleme, fikir 14:06 #2): Hızlı maç yenilgisinde ana düğme aynı rakibi (tarz + saha) yeniden getirir,
+            // yeni tohumla. Yenilginin hemen ardındaki "bu sefer yenerim" en güçlü geri dönüş anı; rakip değişince öğrenilen boşa gidiyordu.
+            // Yeni düğme yok (maç sonu tek ana düğme kuralı). Galibiyette bugünkü gibi yeni rastgele rakip. Kariyer/Usta/Günün maçı değişmez.
+            rovansStil = null;
+            if (mod == Mod.Normal && M.ogr == null && M.stil.kariyer < 0 && sonHizliStil != null && !won) { rovansStil = sonHizliStil; bittiDugme = L.T("Rövanş · {0}", M.RakipAd(false)); }
             else if (mod == Mod.Gunluk) bittiDugme = L.T("Günün maçını yeniden oyna");
             // Kayıpta bir antrenman görevi önerisi (tasarım §3.6); görev zaten üç yıldızsa önerilmez.
             bittiDril = Dril.Oner(M, won, Ayar.ilerleme);
@@ -479,10 +501,12 @@ namespace BirdieSmash.Game
         public bool AniIzlendi { get { return aniIzlendi; } }
         public void UstaDavetGordu() { if (ustaDavetSayildi) return; ustaDavetSayildi = true; PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); PlayerPrefs.Save(); }
         public void UstaDene() { ustaDeneSonraki = true; ustaDavet = false; TekrarOyna(); }
+        Style rovansStil, rovansSiradaki, sonHizliStil;   // rovansStil: maç sonu ekranında sunulan; rovansSiradaki: yalnız ana düğmeyle başlayan maça geçer
         public void TekrarOyna()
         {
             var m = mod;   // perde kapanınca hangi mod: maç sonundaki mod (ekrandaki düğme onu söyledi)
-            hud.Perde(() => { if (m == Mod.Dril) DrilBaslat(drilId); else if (m == Mod.Gunluk) GunlukBaslat(); else if (m == Mod.Usta) UstaBaslat(); else StartMatch(false, false, false); });
+            var rv = m == Mod.Normal && !ustaDeneSonraki ? rovansStil : null;   // Usta daveti (UstaDene) de buradan geçer; rövanşı taşımaz
+            hud.Perde(() => { if (m == Mod.Dril) DrilBaslat(drilId); else if (m == Mod.Gunluk) GunlukBaslat(); else if (m == Mod.Usta) UstaBaslat(); else { rovansSiradaki = rv; StartMatch(false, false, false); } });
         }
         // Mağaza puanı (Ar-Ge 23 Eki #1): sonuç ekranından 1,5 sn sonra, oyuncu hâlâ oradaysa; yalnız sistem penceresi.
         // İstenmediyse sayılmaz. Apple ayrıca yılda 3 ile sınırlar; TestFlight'ta pencere hiç çıkmaz. Android hattı yok.
@@ -628,10 +652,41 @@ namespace BirdieSmash.Game
             var pl = M.ShotPlan(new SwipeInput { dx = dx, dy = dy, speed = sp, curved = Curved() }, I, true); tip = pl.type;
         }
 
+        // Aktif parmak (2026-11-07 inceleme, fikir 14:06 #1): kaydırma fingerId ile izlenir. Eskiden GetTouch(0) okunuyordu; 0. dokunuş
+        // "ilk basan parmak"tır, kaydıran değil. Ekran kenarına dayanmış sol başparmak 0. dokunuş olunca sağ başparmağın kaydırması
+        // hiç Began görmüyor, vuruş yutuluyordu (iki elle dikey tutuş). Şimdi en yeni Began olan parmak aktif olur, kalkana dek yalnız
+        // o okunur; aktif parmak yokken duran dokunuşlar yok sayılır. Tek parmak ve fare yolu birebir aynı.
+        int aktifParmak = -1;
+        bool AktifDokunus(out Touch t)
+        {
+            t = default(Touch); bool bulundu = false;
+            for (int i = 0; i < Input.touchCount; i++) { var d = Input.GetTouch(i); if (d.phase == TouchPhase.Began) { t = d; bulundu = true; } }
+            if (bulundu) { aktifParmak = t.fingerId; return true; }
+            if (aktifParmak < 0) return false;
+            for (int i = 0; i < Input.touchCount; i++)
+            {
+                var d = Input.GetTouch(i); if (d.fingerId != aktifParmak) continue;
+                t = d; if (d.phase == TouchPhase.Ended || d.phase == TouchPhase.Canceled) aktifParmak = -1; return true;
+            }
+            aktifParmak = -1; return false;
+        }
+        // Yeni bir parmak bastı mı (hangi dizinde olursa olsun): atlama dokunuşları için, dayanmış parmak saymaz.
+        static bool YeniDokunus()
+        {
+            if (Input.touchCount == 0) return Input.GetMouseButtonDown(0);
+            for (int i = 0; i < Input.touchCount; i++) if (Input.GetTouch(i).phase == TouchPhase.Began) return true;
+            return false;
+        }
+
         void ReadInput()
         {
             bool down, held, up; Vector2 pos;
-            if (Input.touchCount > 0) { var t = Input.GetTouch(0); pos = t.position; down = t.phase == TouchPhase.Began; up = t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled; held = !down && !up; }
+            if (Input.touchCount > 0)
+            {
+                Touch t;
+                if (AktifDokunus(out t)) { pos = t.position; down = t.phase == TouchPhase.Began; up = t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled; held = !down && !up; }
+                else { pos = Input.GetTouch(0).position; down = false; up = false; held = false; }
+            }
             else { pos = Input.mousePosition; down = Input.GetMouseButtonDown(0); up = Input.GetMouseButtonUp(0); held = Input.GetMouseButton(0) && !down; }
             float now = Time.unscaledTime * 1000; var q = RefPos(pos); var M = match;
             if (erkenT > 0)
@@ -733,7 +788,7 @@ namespace BirdieSmash.Game
                 if (rakipKartT > 0) rakipKartT = girisT > 0 ? Mathf.Max(1.2f, rakipKartT - dt) : rakipKartT - dt;   // girişte kart açık kalır
                 if (girisT > 0)
                 {   // rakip girişi: geri sayım bekler; dokunuş geçer (ReadInput bu sürede çalışmaz)
-                    if (Input.touchCount > 0 ? Input.GetTouch(0).phase == TouchPhase.Began : Input.GetMouseButtonDown(0)) GirisAtla();
+                    if (YeniDokunus()) GirisAtla();
                 }
                 else if (geriT > 0)
                 {
@@ -901,7 +956,7 @@ namespace BirdieSmash.Game
         void ZaferAtla()
         {
             var M = match; if (ekran != Ekran.Oyun || paused || M == null || !M.matchDone || !M.between || M.betweenT > 1.15f) return;
-            bool down = Input.touchCount > 0 ? Input.GetTouch(0).phase == TouchPhase.Began : Input.GetMouseButtonDown(0);
+            bool down = YeniDokunus();
             if (!down) return; M.betweenT = 0; if (ZaferVar) zaferK = 1;
         }
 
@@ -946,16 +1001,16 @@ namespace BirdieSmash.Game
                     if (e.k >= 20 && M.ogr == null) Basarim.Ver(Basarim.RALLI20);
                     break;
                 case Ev.Perfect: sfx.Perfect((int)e.k); fx.Burst(at, limon, 18, 280, "spark"); break;
-                case Ev.Flow: sfx.Akis(); Yerel.Hap("flow"); if (M.ogr == null) Basarim.Ver(Basarim.AKIS); break;
+                case Ev.Flow: sfx.Akis(); Yerel.Hap("ralli"); if (M.ogr == null) Basarim.Ver(Basarim.AKIS); break;
                 case Ev.Aldat: sfx.Aldat(); Yerel.Hap("tick"); break;   // aldatma okunsun diye elde de hissedilir (hareketi azaltta yok)
                 case Ev.Split: sfx.Split(); break;
                 case Ev.Serve: if (mpYan >= 0) Yerel.Hap("kalp"); break;   // maç sayısında servis anında tek kalp atışı (hareketi azaltta Hap susar)
                 case Ev.Kurtaris: break;
                 case Ev.Imza: sfx.Imza(e.type); Yerel.Hap("tick"); break;   // ışık ve poz PlayerView'de (Athlete.imzaT), yazı Match.Say'den
-                case Ev.Okudun: sfx.Okudun(); Yerel.Hap("flow"); fx.Burst(at, Kit.Hex("#7ad7ff"), 14, 200, "spark"); break;
+                case Ev.Okudun: sfx.Okudun(); Yerel.Hap("ralli"); fx.Burst(at, Kit.Hex("#7ad7ff"), 14, 200, "spark"); break;
                 case Ev.Gorev:
-                    if (e.who == "ogr") { sfx.OgrTamam(); Yerel.Hap("flow"); break; }
-                    Ayar.gorev++; kaydetBekle = true; sfx.Gorev(); Yerel.Hap("flow"); if (e.k >= 3 && M.ogr == null) Basarim.Ver(Basarim.GOREV3); hud.Say(L.T("Görev tamam: {0}", L.Cumle(e.text)), Kit.W(Court.MID, Court.NET, 2.4f), Kit.Hex("#ffd23a"), 1.15f, true);
+                    if (e.who == "ogr") { sfx.OgrTamam(); Yerel.Hap("ralli"); break; }
+                    Ayar.gorev++; kaydetBekle = true; sfx.Gorev(); Yerel.Hap("ralli"); if (e.k >= 3 && M.ogr == null) Basarim.Ver(Basarim.GOREV3); hud.Say(L.T("Görev tamam: {0}", L.Cumle(e.text)), Kit.W(Court.MID, Court.NET, 2.4f), Kit.Hex("#ffd23a"), 1.15f, true);
                     fx.Burst(Kit.W(Court.MID, Court.NET - 1, 2.4f), Kit.Hex("#ffd23a"), 16, 220, "spark"); break;
                 case Ev.Net: net.sign = mine ? -1 : 1; sfx.Net(e.k, e.big); Yerel.Hap("net"); fx.Burst(at, Color.white, 4 + Mathf.RoundToInt(8 * e.k), 60 + 90 * e.k, "feather"); break;
                 case Ev.Cord: net.sign = mine ? -1 : 1; sfx.Net(.3f, true); Yerel.Hap("net"); break;

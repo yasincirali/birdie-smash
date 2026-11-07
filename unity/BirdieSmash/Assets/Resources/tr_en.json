@@ -316,6 +316,7 @@
 "{0} sayı · {1} · {2}": "{0} points · {1} · {2}",
 "{0} · {1} sayı · {2}": "{0} · {1} points · {2}",
 "Rekor ralli": "Best rally",
+"Adını yaz": "Enter your name",
 "Galibiyet": "Wins",
 "Görev": "Missions",
 " · Top {0}/{1} · Doğru {2}": " · Shuttle {0}/{1} · Correct {2}",
@@ -670,5 +671,17 @@
 "{0} Tüy kaldı": "{0} Feathers to go",
 "Hedefin hazır": "Your goal is ready",
 "+{0} ödül daha": "+{0} more",
-"Ödüller: {0}": "Rewards: {0}"
+"Ödüller: {0}": "Rewards: {0}",
+"Rakip {0}": "Opponent {0}",
+"Görev {0}/3 ({1})": "Missions {0}/3 ({1})",
+"En uzun ralli {0}": "Longest rally {0}",
+"{0} smaç": "{0} smashes",
+"{0} file vuruşu": "{0} net kills",
+"{0} mükemmel": "{0} perfect",
+"{0} aldatma": "{0} deceptions",
+"{0} split step": "{0} split steps",
+"{0} tepeden": "{0} taken high",
+"{0} uzanma": "{0} lunges",
+"{0} kez dışarıyı bıraktın": "{0} outs left",
+"Rövanş · {0}": "Rematch · {0}"
 }

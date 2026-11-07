@@ -35,9 +35,10 @@ namespace BirdieSmash.Game
             var r = Satir("profil-ust"); kart.Add(r);
             var av = new VisualElement(); av.AddToClassList("avatar"); av.AddToClassList("avatar--buyuk"); av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 54); r.Add(av);
             var ad = new VisualElement(); ad.AddToClassList("esnek-yatay"); r.Add(ad);
-            ad.Add(Yazi(p.Ad ?? L.T("Oyuncu"), 22, "kalin")); ad.Add(Yazi(L.T(un.ad) + Karakter.KademeEki(un, p), 14, "altin"));
+            ad.Add(Yazi(p.Ad ?? L.T("Oyuncu"), 22, "kalin")); var unY = Yazi(L.T(un.ad) + Karakter.KademeEki(un, p), 14, "altin"); ad.Add(unY); SozcukSigdir(unY);   // 2026-11-07: ×2'de "Neighbourhoo/d" bölünüyordu
             var svr = Satir("rakip-satir"); svr.style.marginTop = 6; ad.Add(svr);
             var halka = new VisualElement(); halka.AddToClassList("sv-halka"); svr.Add(halka);
+            { float hs = Mathf.Round(30 * Mathf.Max(1, K * .85f)); halka.style.width = hs; halka.style.height = hs; halka.style.borderTopLeftRadius = halka.style.borderTopRightRadius = halka.style.borderBottomLeftRadius = halka.style.borderBottomRightRadius = hs / 2; }   // 2026-11-07: ×2'de seviye rakamı 30 pt halkada kesiliyordu (r127)
             var hi = Yazi(L_.ToString(), 13, "kalin"); hi.AddToClassList("sv-halka-ic"); halka.Add(hi);
             var hy = Yazi(gerek > 0 ? L.T("Sonraki seviyeye {0} XP", gerek - kalan) : L.T("En yüksek seviye"), 12, "soluk"); hy.style.marginLeft = 6; hy.style.flexShrink = 1; svr.Add(hy);
             ad.Add(Yazi(L.T(tz.ad) + " · " + L.T(Gear.GEAR["raket"][gr.raket].ad), 13, "soluk"));
@@ -76,6 +77,11 @@ namespace BirdieSmash.Game
             var tf = new TextField { value = p.Ad ?? "", maxLength = Ilerleme.AD_AZAMI, isDelayed = true }; tf.AddToClassList("ad-alan"); tf.style.fontSize = Mathf.Round(16 * K);
             tf.RegisterValueChangedCallback(e => { p.Ad = e.newValue; Ayar.Kaydet(); kirli[(int)Sekme.Profil] = true; var kk = sekmeKok[(int)Sekme.Profil]; kk.schedule.Execute(() => { if (gez.sekme == Sekme.Profil && gez.Ust == null) SekmeKur(Sekme.Profil); }).StartingIn(16); });
             Erisim.Etiket(tf, L.T("Adın") + ", " + L.T("yalnız bu cihazda tutulur"), "metin_alani", false, false, p.Ad ?? ""); c.Add(tf);
+            // Yer tutucu (2026-11-07, yasin "yap", arayüz cilası): boş alan ne yazılacağını söylesin. Unity 6 textEdition.placeholder
+            // yerine kendi soluk etiketimiz (mono ile Unity'siz derleme 2021 başvurularıyla yapılıyor); alan boşken ve odak yokken görünür.
+            var ph = Yazi(L.T("Adını yaz"), 16, "soluk"); ph.AddToClassList("ad-yer-tutucu"); ph.pickingMode = PickingMode.Ignore; tf.Add(ph);
+            System.Action phG = () => ph.style.display = string.IsNullOrEmpty(tf.value) && tf.focusController?.focusedElement != tf ? DisplayStyle.Flex : DisplayStyle.None;
+            tf.RegisterCallback<FocusInEvent>(e => ph.style.display = DisplayStyle.None); tf.RegisterCallback<FocusOutEvent>(e => phG()); tf.RegisterValueChangedCallback(e => phG()); phG();
             c.Add(Yazi(L.T("Ad yalnız bu cihazda tutulur, hiçbir yere gönderilmez."), 12, "soluk"));
 
             // unvanlar
