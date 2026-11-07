@@ -1,4 +1,9 @@
 === UNITY ===
+Bu gece (8 Kasım 00:20 inceleme turu):
+- Oyunu ilk kez açınca reklam izni sorusu artık hemen çıkmıyor: önce antrenman ve ilk maç, soru ilk maçtan sonra menüye dönünce gelir.
+- Maç uzunluğu (5, 11, 21 sayı) Ayarlar'dan kalktı; Hızlı maç sayfasında ve kariyerde maç ayrıntısında, zorluğun hemen altında seçilir.
+Nasıl denenir: oyunu silip yeniden kur: açılışta izin penceresi olmamalı; antrenmanı ve ilk maçı bitirip menüye dönünce gelebilir (yalnız reklam ayarı açıksa). Kariyer'de bir basamağın Maç ayrıntısı'nı aç: zorluk çiplerinin altında 5 · 11 · 21 sayı çipleri olmalı; birini seçince Hızlı maç'taki seçim de aynı olmalı. Ayarlar'da artık "Oyun" bölümü yok.
+
 Raket, Dolap ve Kariyer yenilendi (7 Kasım akşamı):
 - Menüdeki reklam şeridi kendi yerinde, sekmelerin hemen üstünde duruyor; kartların üstüne binmiyor.
 - Raketin gerçek ölçüleri: ağırlık sınıfı ve gram (3U, 4U, 5U), denge noktası milimetre olarak (kafa hafif, dengeli, kafa ağır), şaft sertliği, raketin önerdiği gerginlik aralığı, kordaj kalınlığı. Her ölçünün ne demek olduğu ve maçta neyi değiştirdiği yazar.

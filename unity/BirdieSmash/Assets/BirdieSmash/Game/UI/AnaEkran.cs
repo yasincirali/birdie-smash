@@ -247,9 +247,7 @@ namespace BirdieSmash.Game
             // gidersin" de ters okunuyordu (Kolay'da koşu otomatik). Çipte kısa ad, seçilenin açıklaması altında tek soluk satır.
             ZorlukSatir(z, c); }
             c.Add(Grup(L.T("Maç uzunluğu")));
-            var u = Satir(); c.Add(u); int[] Ls = { 5, 11, 21 }; string[] La = { "5 sayı", "11 sayı", "21 sayı" }, Lb = { "Hızlı maç, yaklaşık 2 dakika", "Kısa maç", "Resmî maç uzunluğu" };
-            for (int i = 0; i < 3; i++) { int v = Ls[i]; u.Add(Cip(L.T(La[i]), Ayar.target == v, () => { Ayar.target = v; Ayar.Kaydet(); Degisti(); })); }
-            { int si = System.Array.IndexOf(Ls, Ayar.target); if (si >= 0) c.Add(Yazi(L.T(Lb[si]), 12, "soluk")); }
+            var u = Satir(); c.Add(u); UzunlukSatir(u, c);
             if (!saha) return;
             c.Add(Grup(L.T("Saha")));
             // 2026-11-07 inceleme (fikir 02:06 #5, defter): saha 2×2 yazı çipiydi ("Okul (ahşap)" parantezli) ve sahanın neye
@@ -294,6 +292,20 @@ namespace BirdieSmash.Game
             "Oyuncun topa kendisi koşar, sen yalnız vurursun",
             "Koşmak sende; geç kalırsan oyuncun koşar, dokunursan yine sen yönlendirirsin",
             "Her adım senin dokunuşunla; rakip daha hızlı, az hata yapar" };
+        // Maç uzunluğu çipleri (tuytop_target). 2026-11-08 (inceleme turu): Hızlı maç sayfası ve kariyer maç ayrıntısı aynı satırı
+        // kullanır; Ayarlar › Oyun grubu kalktı. Kariyer kartı "senin seçimin" yazıp seçimi başka sayfada değiştiriyordu, Hızlı
+        // maçta 21 seçen oyuncunun kariyeri sessizce 21 sayı oluyordu. Seçim oynamadan hemen önce görülen yerde; anahtar aynı.
+        void UzunlukSatir(VisualElement satir, VisualElement c)
+        {
+            satir.AddToClassList("cip-sarar");
+            int[] Ls = { 5, 11, 21 }; string[] La = { "5 sayı", "11 sayı", "21 sayı" }, Lb = { "Hızlı maç, yaklaşık 2 dakika", "Kısa maç", "Resmî maç uzunluğu" };
+            for (int i = 0; i < 3; i++)
+            {
+                int v = Ls[i]; var cp = Cip(L.T(La[i]), Ayar.target == v, () => { Ayar.target = v; Ayar.Kaydet(); Degisti(); });
+                Erisim.Etiket(cp, L.T(La[i]) + ". " + L.T(Lb[i]), "dugme", Ayar.target == v); satir.Add(cp);
+            }
+            int si = System.Array.IndexOf(Ls, Ayar.target); if (si >= 0) c.Add(Yazi(L.T(Lb[si]), 12, "soluk"));
+        }
         void ZorlukSatir(VisualElement satir, VisualElement c)
         {
             satir.AddToClassList("cip-sarar");   // dört çip: büyük yazıda sözcük kırılmaz, satır sarar

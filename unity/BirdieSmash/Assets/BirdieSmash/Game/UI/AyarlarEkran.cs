@@ -26,7 +26,8 @@ namespace BirdieSmash.Game
             var sv = Kaydirma(p); sv.AddToClassList("govde-kaydir"); var c = sv.contentContainer; c.AddToClassList("sekme-icerik");
             // 2026-11-07 tek tip bölüm başlığı (yasin "yap", arayüz cilası): Ayarlar'daki 17 pt "bolum" başlıkları diğer ekranlardaki
             // Grup başlığıyla aynı (tek stil, VoiceOver'da başlık rolü). Hiyerarşi boşlukla okunur.
-            c.Add(Grup(L.T("Oyun"))); OyunSecenek(c, false);
+            // 2026-11-08 (inceleme turu): "Oyun" grubu kalktı. Tek içeriği maç uzunluğuydu; artık Hızlı maç sayfasında ve kariyer
+            // maç ayrıntısında, oynamadan hemen önce (zorlukla aynı karar, 2026-11-07). Ayar ve anahtar aynı.
             // 2026-11-07 (inceleme 16:05 #5): içeriksiz "Görünüm" başlığı kalktı; hemen altındaki "Oyuncu görünümü" ile iki başlık
             // art arda duruyordu (VoiceOver'da iki boş başlık).
             c.Add(Grup(L.T("Oyuncu görünümü"))); var m = Satir(); c.Add(m);
