@@ -181,6 +181,9 @@ namespace BirdieSmash.Game
             int uz = kb.uzunluk > 0 ? kb.uzunluk : Ayar.target;
             var bil = Yazi(L.T("Saha") + ": " + L.T(CourtView.SAHA[kb.saha].ad) + " · " + (kb.uzunluk > 0 ? L.T("{0} sayı", uz) : L.T("{0} sayı (senin seçimin)", uz)) + "", 13, "soluk");
             Erisim.Etiket(bil, bil.text, "metin"); c.Add(bil);
+            // Kural maçı (2026-11-07): tek satır, Günün maçının çevrilmiş adı ve açıklaması (yeni metin anahtarı yok).
+            var kd = kb.degistirici != null ? Gunluk.Deg(kb.degistirici) : null;
+            if (kd != null) { var kr = Yazi(L.T(kd.ad) + " · " + L.T(kd.aciklama), 14, "ipucu"); Erisim.Etiket(kr, kr.text, "metin"); c.Add(kr); }
             // Zorluk kartın üstünde seçilir (yasin 2026-11-05 "kariyer patikasını Kolay modda da oynayabilmeliyim"): eskiden kariyer
             // yalnız Hızlı maç/Ayarlar'daki seçimi izliyordu ve kartta yalnız yazıydı; oyuncu kariyeri Usta'ya kilitli sanıyordu.
             // Aynı ayar (tuytop_zorluk, dört kademe): seçim her yerde aynı kalır.

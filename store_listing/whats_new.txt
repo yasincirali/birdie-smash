@@ -1,4 +1,8 @@
 === UNITY ===
+Bu sabah (7 Kasım 10:30 inceleme turu):
+- Sevinç artık sayının değerine göre: kendi kazanan vuruşunla ya da 8 vuruştan uzun bir ralliyle aldığın sayıda seçtiğin sevinç tam oynar, rakip topu dışarı ya da fileye atınca kısa sürer. Uzun bir ralliyi kaybeden oyuncu kısaca başını eğer. Sayılar arası tempo hızlandı.
+- Kariyerde her turda bir "kural maçı" var: Seul'de Uzun ralli, Birmingham'da Altın ralli, Singapur çeyrek finalinde Yalnız file. Kural maç kartında ve ana sayfadaki Oyna düğmesinin altında yazıyor.
+Nasıl denenir: Bir maç oyna: smaçla aldığın sayıda karakterin sevinci tam oynamalı, rakibin dışarı attığı topta kısa kesilmeli. Uzun bir ralliyi kaybedince karakterin kısaca başını eğdiğini gör. Kariyer haritasında Asya Turu'nda Seul'ü aç: kartta "Uzun ralli · 8 ve daha uzun rallinin sayısı 2" satırı olmalı ve maçta uzun ralli 2 sayı vermeli.
 Bu sabah (7 Kasım 08:30 inceleme turu):
 - Dört beceri unvanının artık üç kademesi var: Smaç ustası, Geçilmez, Aldatıcı ve Okuyucu, oynadıkça II ve III olur (ör. 400 aldatmada Aldatıcı II). Kademe güç vermez, yalnız unvanın yanında görünür; yeni kademe maç sonunda "Yeni unvan" diye haber verilir.
 - Profil'de İstatistikler bölümü üstteki üç büyük sayıyı (rekor ralli, smaç, galibiyet) tekrar etmiyor, sayfa kısaldı.

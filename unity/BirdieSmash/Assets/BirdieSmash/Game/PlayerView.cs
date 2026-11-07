@@ -906,8 +906,16 @@ namespace BirdieSmash.Game
         // yumuşak; ralli başlayınca (between bitti) .15 sn'de söner, servis pozuna karışmaz. Hareketi azaltta sıçrama, dönüş ve
         // salınım yok, kollar yalnız kalkar. Oyuncunun seçimi Ayar.KOZ (Dolap › Sevinç); rakip tarzının sevincini yapar (2026-11-07, stil.json; eskiden hep varsayılan).
         // Raket her zaman sağ elde (kural): sağ kol raketi taşır, el sallama ve alkış sol elle.
-        string sevId; float sevT = -1, sevW; bool sevDongu; int sevTop = -1;
+        string sevId; float sevT = -1, sevW, sevSure = SEVINC_SURE; bool sevDongu; int sevTop = -1;
         public const float SEVINC_SURE = 1.0f;
+        // Kademeli sevinç (2026-11-07 inceleme, fikir 10:06 #1): her sayıda tam sevinç, rakibin dışarı attığı topla 15 vuruşluk
+        // rallinin smacını aynı ödülle karşılıyordu; tekrar eden ödül değer kaybeder, sayı arası da dolardı. Tam sevinç yalnız
+        // kazanılmış sayıda: son vuruş sayıyı alanınsa (rakip dönderemedi) ya da ralli >= SEV_UZUN. Rakip hatasında (dışarı,
+        // file) seçili sevincin kısası: zirvesine kadar oynar, söner (zıpla dönüşünü, zafer inişini yarıda kesmesin diye zirve +.15).
+        // Uzun ralliyi kaybeden kısa başını eğer ("of"), kollar maç duruşunda: rakibin sevinci karşısında okunur. Maç sonu aynı.
+        // Yalnız Game katmanı; online'da da her telefonun yerel görüntüsü (Core'a, pakete dokunmaz).
+        public const int SEV_UZUN = 8; const float SEV_OF = .6f;
+        static float SevincKisa(string id) { return Mathf.Max(.55f, SevincZirve(id) + .15f); }
         // "zafer" maç sonu sevincinin evreleri (sn): hazırlık, iniş, pompa döngüsünün başı; pompa sıklığı (yarım dalga/sn).
         const float Z_HAZIR = .2f, Z_INIS = .62f, Z_DONGU = .8f, Z_POMPA = 2f;
         void Sevinc(Match M, float dt)
@@ -920,11 +928,17 @@ namespace BirdieSmash.Game
             {
                 sevTop = top; bool benimki = isMe == (M.server == "me");
                 if (M.matchDone) { bool kazandim = isMe ? M.sc[0] > M.sc[1] : M.sc[1] > M.sc[0]; sevId = kazandim ? (isMe ? Secim(Kozmetik.MAC_SONU) : Kozmetik.RakipSecim(Kozmetik.MAC_SONU, M.stil != null ? M.stil.macSonu : null)) : "iyi_oyun"; sevDongu = true; sevT = 0; }
-                else if (benimki) { sevId = isMe ? Secim(Kozmetik.SEVINC) : Kozmetik.RakipSecim(Kozmetik.SEVINC, M.stil != null ? M.stil.sevinc : null); sevDongu = false; sevT = 0; }
+                else if (benimki)
+                {
+                    sevId = isMe ? Secim(Kozmetik.SEVINC) : Kozmetik.RakipSecim(Kozmetik.SEVINC, M.stil != null ? M.stil.sevinc : null); sevDongu = false; sevT = 0;
+                    bool kazanilmis = M.rally >= SEV_UZUN || (M.s != null && M.s.from == M.server);   // server = sayıyı alan (Point yazdı)
+                    sevSure = kazanilmis ? SEVINC_SURE : SevincKisa(sevId);
+                }
+                else if (M.rally >= SEV_UZUN) { sevId = "of"; sevDongu = false; sevT = 0; sevSure = SEV_OF; }
             }
             if (sevT < 0) { sevW = 0; return; }
             sevT += dt;
-            bool surer = sevDongu ? M.matchDone : M.between && sevT < SEVINC_SURE;
+            bool surer = sevDongu ? M.matchDone : M.between && sevT < sevSure;
             float hedef = surer ? 1 : 0; sevW = Mathf.MoveTowards(sevW, hedef, dt / (surer ? .15f : .15f));
             if (!surer && sevW <= 0) { sevT = -1; return; }
             // 2026-11-04 (yasin: "galibiyet sevinci kısmı çok dandik duruyor"): zafer kamerası yan-önden (70°) geliyor, oyuncu ise
@@ -1034,6 +1048,7 @@ namespace BirdieSmash.Game
                 case "zipla": hop = .22f * Mathf.Sin(Mathf.Clamp01(t / .6f) * Mathf.PI); don = 360 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .6f)); break;
                 case "egil": egil = 32 * Mathf.SmoothStep(0, 1, Mathf.Clamp01((t % 2.4f) / .5f)); break;
                 case "iyi_oyun": egil = 10 * Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - .35f) / .4f)); break;
+                case "of": egil = 12 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .25f)); break;   // uzun ralli kaybı: baş öne, kollar yerinde
             }
             transform.position += up * hop * w * salla;
             if (don != 0 && salla > 0) yaw.localRotation = Quaternion.AngleAxis(don, Vector3.up) * yaw.localRotation;

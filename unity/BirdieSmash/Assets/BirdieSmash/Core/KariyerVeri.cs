@@ -96,6 +96,11 @@ namespace BirdieSmash.Core
                     var b = Json.Obj(bj[i]);
                     var k = new Kariyer { stil = Json.Str(b, "stil", "duvar"), g = F(b, "g", 1), yer = Json.Str(b, "yer", ""), saha = Json.Str(b, "saha", "salon"), uzunluk = (int)Json.Num(b, "uzunluk", 0), gorev = Json.Str(b, "gorev", null), patron = Json.Bool(b, "patron", false), imza = Json.Bool(b, "imza", false), tur = t, basamak = i };
                     if (!st.ContainsKey(k.stil)) throw new InvalidOperationException("Birdie Smash: kariyer.json bilinmeyen tarz " + k.stil);
+                    // Kural maçı (2026-11-07 inceleme, fikir 10:06 #3): Günün maçının sayı değeri değiştiricileri kariyere; yalnız
+                    // altin/uzun/file (zorluğu değiştirenler, usta/nefes/patron, kariyerin g dengesini bozar, alınmadı). Patron finali
+                    // ve Tur 1 (öğrenme) kuralsız kalır; BotMac Veri bunu kilitler.
+                    k.degistirici = Json.Str(b, "degistirici", null);
+                    if (k.degistirici != null && k.degistirici != "altin" && k.degistirici != "uzun" && k.degistirici != "file") throw new InvalidOperationException("Birdie Smash: kariyer.json kariyerde olmayan değiştirici " + k.degistirici);
                     bl.Add(k);
                 }
                 if (bl.Count != 0 && bl.Count != BASAMAK) throw new InvalidOperationException("Birdie Smash: tur " + (t + 1) + " altı basamak değil");   // harita ve kayıt 6 sabit

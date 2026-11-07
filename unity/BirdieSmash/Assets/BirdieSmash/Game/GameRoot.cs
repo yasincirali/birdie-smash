@@ -162,7 +162,7 @@ namespace BirdieSmash.Game
             if (Ayar.kariyerModu && !ogr)
             {
                 int g = Ayar.kariyerSecim >= 0 && Ayar.ilerleme.Acik(Ayar.kariyerSecim) ? Ayar.kariyerSecim : Ayar.ilerleme.Siradaki(); var kb = KariyerVeri.Al(g);
-                o.stil = Match.KariyerRakip(g); o.saha = kb.saha; if (kb.uzunluk > 0) o.target = kb.uzunluk;
+                o.stil = Match.KariyerRakip(g); o.saha = kb.saha; if (kb.uzunluk > 0) o.target = kb.uzunluk; o.degistirici = kb.degistirici;   // kural maçı (veri; çoğu basamakta null)
             }
             else o.stil = KariyerVeri.Serbest(Match.STIL_SIRA[rnd.Next(3)], Ayar.ilerleme);   // 2026-10-27: oyuncunun kariyer seviyesinde (KariyerVeri.Serbest)
             mod = Mod.Normal; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
