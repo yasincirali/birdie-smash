@@ -23,7 +23,7 @@ namespace BirdieSmash.Game
         public Durum durum = Durum.Kapali;
         public string sonHata;
         // UI dinler: durum değişti, satın alma bitti (verilen Tüy; 0 = iptal/başarısız).
-        public event Action Degisti; public event Action<int> Bitti;
+        public event Action Degisti; public event Action<int> Bitti; public event Action ReklamsizBitti;   // Reklamsız alındı ya da geri yüklendi
 
         public void Baslat()
         {
@@ -32,6 +32,7 @@ namespace BirdieSmash.Game
             {
                 var b = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
                 foreach (var p in TuyDukkan.PAKETLER) b.AddProduct(p.id, ProductType.Consumable);
+                b.AddProduct(TuyDukkan.REKLAMSIZ, ProductType.NonConsumable);   // 2026-11-08 Reklamsız (tek seferlik)
                 UnityPurchasing.Initialize(this, b);
             }
             catch (Exception e) { durum = Durum.Hata; sonHata = e.Message; Degisti?.Invoke(); }
@@ -55,14 +56,24 @@ namespace BirdieSmash.Game
             a.RestoreTransactions((ok, msg) => sonuc?.Invoke(ok));
         }
 
-        public void OnInitialized(IStoreController controller, IExtensionProvider extensions) { ctl = controller; ext = extensions; durum = Durum.Hazir; Degisti?.Invoke(); }
+        // Makbuzda Reklamsız varsa (yeniden kurulum, başka cihaz) sahiplik yerele yazılır; geri yükle düğmesine basmak gerekmez.
+        public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
+        {
+            ctl = controller; ext = extensions; durum = Durum.Hazir;
+            var r = controller.products.WithID(TuyDukkan.REKLAMSIZ);
+            if (r != null && r.hasReceipt && TuyDukkan.ReklamsizTeslim(Ayar.Kayit, r.transactionID)) { PlayerPrefs.Save(); Reklam.Yenile(); Bulut.Yaz(); }
+            Degisti?.Invoke();
+        }
+        public bool ReklamsizVar { get { return !Reklam.ALAN; } }
         public void OnInitializeFailed(InitializationFailureReason error) { durum = Durum.Hata; sonHata = error.ToString(); Degisti?.Invoke(); }
         public void OnInitializeFailed(InitializationFailureReason error, string message) { durum = Durum.Hata; sonHata = error + " " + message; Degisti?.Invoke(); }
 
         public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs e)
         {
-            int n = TuyDukkan.Teslim(Ayar.gear, Ayar.Kayit, e.purchasedProduct.definition.id, e.purchasedProduct.transactionID);
+            string id = e.purchasedProduct.definition.id;
+            int n = TuyDukkan.Teslim(Ayar.gear, Ayar.Kayit, id, e.purchasedProduct.transactionID);
             PlayerPrefs.Save(); Bulut.Yaz();
+            if (id == TuyDukkan.REKLAMSIZ) { Reklam.Yenile(); ReklamsizBitti?.Invoke(); return PurchaseProcessingResult.Complete; }
             Bitti?.Invoke(n);
             return PurchaseProcessingResult.Complete;
         }

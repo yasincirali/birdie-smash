@@ -41,6 +41,7 @@ namespace BirdieSmash.Game
                 PlayerPrefs.SetString("tuytop_ekonomi", r[0]); PlayerPrefs.SetString(TuyDukkan.ANAHTAR, r[1]); PlayerPrefs.Save(); Yaz();
             }
             else if (SonKarar == BulutKayit.Karar.Yaz) Yaz();
+            Reklam.Yenile();   // 2026-11-08: buluttan gelen defter Reklamsız taşıyabilir
         }
 
         public static void Yaz()

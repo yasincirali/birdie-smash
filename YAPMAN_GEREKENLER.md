@@ -39,6 +39,14 @@ Kod hazır: dört Tüy paketi (Unity IAP, StoreKit), işlem defteri, iCloud anah
    | `com.birdiesmash.app.tuy20000` | Tüy hazinesi / Feather hoard | 11,99 $ |
 
    Her üründe inceleme ekran görüntüsü olarak TF'deki Tüy dükkânı sayfası yeter. Ürünleri bir sonraki sürüme iliştir.
+   Ayrıca bir **Non-Consumable** ürün (2026-11-08, kod hazır; ürün yokken dükkânda "Satın alınamıyor" yazar):
+
+   | Product ID | Ad (TR / EN) | Önerilen fiyat |
+   |---|---|---|
+   | `com.birdiesmash.app.reklamsiz` | Reklamsız / Ad-free | 2,99 $ (99,99 ₺) |
+
+   Açıklama: "Menüdeki reklam şeridi kalkar. Ödüllü reklam yalnız sen istersen açılır. Tüy vermez." İnceleme notuna:
+   "Restore Purchases düğmesi Tüy dükkânının altında". Family Sharing açmak isteğe bağlı (sonradan kapatılamaz).
 4. **Sandbox testi**: Ayarlar › App Store › Sandbox hesabı ile TF build'inde üst çubuktaki Tüy sayacına dokun → paket al →
    Tüy cüzdana eklenmeli. Uygulamayı silip yeniden kur → iCloud açıksa ilerleme ve aldığın Tüy geri gelmeli.
 

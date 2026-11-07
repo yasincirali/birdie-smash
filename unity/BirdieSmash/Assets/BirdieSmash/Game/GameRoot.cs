@@ -182,7 +182,7 @@ namespace BirdieSmash.Game
         {
             ani.Sifirla(); AniDur(); aniIzlendi = false;   // Maçın anı her maç kendi rallilerinden (Günün maçı, Usta yolu, görev de buradan geçer)
             match = new Match(tohum, o);
-            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; yerN = 0; yerTop = null; yardimN = 0; yardimTop = null;
+            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; System.Array.Clear(iskaN, 0, iskaN.Length); yerN = 0; yerTop = null; yardimN = 0; yardimTop = null;
             fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; pencere = false; sfx.SuAlti(false); ReklamKartKapat(); ReklamSdk.OdulluHazirla(); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
@@ -631,6 +631,8 @@ namespace BirdieSmash.Game
 
         // ---- kaydırma girdisi: piksel → 640 px yükseklikli referans (HTML eşikleri aynen geçerli) ----
         class Swipe { public bool on, hit, moved; public float minD = 1e9f; public List<Vector3> tr = new List<Vector3>(); public Vector2 p0; public float t0; public void Reset() { on = hit = moved = false; minD = 1e9f; tr.Clear(); } }
+        static readonly string[] ISKA_NEDEN = { "Kısa kaydırdın", "Yavaş kaydırdın", "Kıl payı: topun üstünden geç", "Topun uzağından geçtin" };
+        readonly int[] iskaN = new int[4];
         readonly Swipe input = new Swipe(); int erkenN, yerN, yardimN; Shuttle yerTop, yardimTop;
         float Ref { get { return 640f / Mathf.Max(1, Screen.height); } }
         Vector2 RefPos(Vector2 screen) { return new Vector2(screen.x * Ref, (Screen.height - screen.y) * Ref); }   // y aşağı
@@ -661,9 +663,14 @@ namespace BirdieSmash.Game
         // Kavis (slice): izin ilk yarısı ile ikinci yarısının yönü 0,8 rad'dan fazla ayrışıyorsa ve ikinci yarı 25 px'ten uzunsa.
         // Aldatıcı vuruş jesti (2026-10-26, Core/Aldatma.JestOku): tutma süresi, yay yönü, V. Hesap Core'da (BotMac sınar); burada
         // yalnız iz diziye çevrilir. Kaydırmanın eski alanları (tür, hız, kavis) değişmez.
+        // 2026-11-08 (inceleme #6): diziler her çağrıda yeniden ayrılıyordu; erken tamponda pencere açılmadan sürüklenen her
+        // karede çağrıldığı için ralli içinde kare başına çöp üretiyordu. Tampon bir kez ayrılır, iz uzunsa büyür (JestOku n'i alır).
+        float[] jx = new float[64], jy = new float[64], jt = new float[64];
         SwipeInput Jest(SwipeInput si)
         {
-            var tr = input.tr; int n = tr.Count; var xs = new float[n]; var ys = new float[n]; var ts = new float[n];
+            var tr = input.tr; int n = tr.Count;
+            if (jx.Length < n) { int m = Mathf.NextPowerOfTwo(n); jx = new float[m]; jy = new float[m]; jt = new float[m]; }
+            float[] xs = jx, ys = jy, ts = jt;
             for (int i = 0; i < n; i++) { xs[i] = tr[i].x; ys[i] = tr[i].y; ts[i] = tr[i].z; }
             Aldatma.JestOku(xs, ys, ts, n, input.p0.x, input.p0.y, input.t0, ref si); return si;
         }
@@ -804,10 +811,14 @@ namespace BirdieSmash.Game
                     else
                     {   // "doğru zamanda vurdum ama geçti": ıskanın nedeni bir kelimeyle
                         float dx, dy, speed; SwipeVec(out dx, out dy, out speed);
-                        string neden = far < 70 ? "Kısa kaydırdın" : speed <= .45f ? "Yavaş kaydırdın" : input.minD < 2.2f ? "Kıl payı: topun üstünden geç" : "Topun uzağından geçtin";
+                        int ni = far < 70 ? 0 : speed <= .45f ? 1 : input.minD < 2.2f ? 2 : 3;
+                        string neden = ISKA_NEDEN[ni];
                         if (far < 70) KaydirmaOlc.kisa++; else if (speed <= .45f) KaydirmaOlc.yavas++; else if (input.minD < 2.2f) KaydirmaOlc.kil++; else KaydirmaOlc.uzak++;
                         KaydirmaOlc.Bitti(false);
-                        hud.Say(L.T("Iska · {0}", L.T(neden)), Kit.W(M.me.x, M.me.y, 1.6f), Kit.Hex("#ffd27a"), 1, false, 2); sfx.Iska();
+                        // 2026-11-08 (inceleme #5): aynı neden maçta en çok 2 kez yazılır (yeni oyuncu, wins < 3, her seferinde); sonra
+                        // yalnız ıska sesi. Zor/Usta'da ralli en hızlı anda okunacak yazıyla bölünüyordu; muadiller ıskada yazı yazmaz.
+                        if (Ayar.wins < 3 || iskaN[ni] < 2) { iskaN[ni]++; hud.Say(L.T("Iska · {0}", L.T(neden)), Kit.W(M.me.x, M.me.y, 1.6f), Kit.Hex("#ffd27a"), 1, false, 2); }
+                        sfx.Iska();
                     }
                 }
                 else if (!input.hit && erkenT <= 0 && !M.s.dead && M.s.from == "op" && !M.HitWindow() && far > 60 && erkenN < 3) { erkenN++; hud.Say(L.T("Erken: top parlayınca kaydır"), Kit.W(M.me.x, M.me.y, 1.6f), Kit.Hex("#ffd27a")); }   // maç başına en çok 3 kez

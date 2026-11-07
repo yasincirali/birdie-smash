@@ -19,6 +19,7 @@ namespace BirdieSmash.Game
         {
             if (dukkanDinliyor) return; dukkanDinliyor = true;
             Magaza.O.Degisti += () => { if (gez.Ust == Gezinti.DUKKAN) SayfaKur(Gezinti.DUKKAN); };
+            Magaza.O.ReklamsizBitti += () => { dukkanNot = L.T("Reklamsız açık: menüdeki reklam şeridi kalktı."); root.sfx.Tik(); Yerel.Hap("win"); if (gez.Ust == Gezinti.DUKKAN) SayfaKur(Gezinti.DUKKAN); };
             Magaza.O.Bitti += n =>
             {
                 dukkanNot = n > 0 ? L.T("{0} Tüy cüzdanında.", UiKok.Sayi(n)) : L.T("Satın alma tamamlanmadı, ücret alınmadı.");
@@ -59,10 +60,21 @@ namespace BirdieSmash.Game
                 Erisim.Etiket(k, L.T(pk.ad) + ", " + L.T("{0} Tüy", pk.tuy) + (pk.ek > 0 ? ", " + L.T("+%{0} fazla", pk.ek) : "") + ", " + (fiyat ?? L.T("Satın alınamıyor")), "dugme", false, fiyat == null);
             }
 
+            // 2026-11-08 Reklamsız (geliştirme kararı 7 Kas): Tüy paketlerinin altında tek kart; öne çıkarma, süreli etiket, "en
+            // popüler" yok (dükkân baskısız). Ne kaldırdığı ve ne kaldırmadığı kartta yazılı: ödüllü reklam isteğe bağlı kalır.
+            c.Add(Bosluk(12));
+            var rk = Kart("dukkan-kart"); c.Add(rk);
+            rk.Add(Yazi(L.T("Reklamsız"), 16, "kalin"));
+            rk.Add(Yazi(L.T("Menüdeki reklam şeridi kalkar. Maç sonundaki ödüllü reklam yalnız sen istersen açılır. Tüy vermez, bir kez alınır."), 13, "soluk"));
+            string rf = m.Fiyat(TuyDukkan.REKLAMSIZ); bool rVar = m.ReklamsizVar;
+            if (rVar) rk.Add(Pasif(L.T("Alındı")));
+            else rk.Add(rf != null ? Dugme(rf, () => { dukkanNot = null; Tik(); Magaza.O.Al(TuyDukkan.REKLAMSIZ); }) : Pasif(L.T("Satın alınamıyor")));
+            Erisim.Etiket(rk, L.T("Reklamsız") + ", " + (rVar ? L.T("Alındı") : rf ?? L.T("Satın alınamıyor")), "dugme", false, rVar || rf == null);
+
             c.Add(Bosluk(12));
             c.Add(Yazi(Bulut.Acik ? L.T("İlerlemen ve aldığın Tüy iCloud'a yedekleniyor; uygulamayı silsen de geri gelir.")
                                   : L.T("iCloud kapalı: ilerlemen yalnız bu cihazda. Ayarlar'da iCloud'u açarsan yedeklenir."), 13, "soluk"));
-            c.Add(Dugme(L.T("Satın alımları geri yükle"), () => { Tik(); Magaza.O.GeriYukle(ok => { dukkanNot = ok ? L.T("Kaydın yeniden okundu.") : L.T("Geri yüklenecek bir şey bulunamadı."); ustKirli = true; if (gez.Ust == Gezinti.DUKKAN) SayfaKur(Gezinti.DUKKAN); }); }));
+            c.Add(Dugme(L.T("Satın alımları geri yükle"), () => { Tik(); Magaza.O.GeriYukle(ok => { Reklam.Yenile(); dukkanNot = ok ? L.T("Kaydın yeniden okundu.") : L.T("Geri yüklenecek bir şey bulunamadı."); ustKirli = true; if (gez.Ust == Gezinti.DUKKAN) SayfaKur(Gezinti.DUKKAN); }); }));
             c.Add(Yazi(L.T("Tüy tüketilen bir üründür: harcayınca biter, süresi dolmaz. Rastgele ödül satılmaz."), 12, "soluk"));
             c.Add(Bosluk(24));
         }

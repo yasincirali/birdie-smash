@@ -174,30 +174,37 @@ namespace BirdieSmash.Game
         }
 
         // Menü reklam şeridi (Game/Reklam.cs): gövdenin sütununda içerik ile sekme çubuğu arasında; içerik onun üstünde biter,
-        // kaydırılan liste şeridin altına girmez. SDK yokken yer tutucu yazı; ALAN false ise hiç yer kaplamaz.
-        VisualElement reklamEl; Label reklamYazi; bool sonReklamYuklu;
+        // kaydırılan liste şeridin altına girmez. ALAN false ise hiç yer kaplamaz.
+        // 2026-11-08 (inceleme #1): yer tutucu ("Reklam" yazılı boş kutu) kalktı. #57'den beri SDK ilk maç bitene kadar başlamıyor,
+        // yani yeni oyuncunun ilk menüsü hep boş gri kutu görüyordu (rıza reddi, çevrimdışı, dolmayan istek de aynı); App Review
+        // 2.1 yer tutucu içeriği bitmemiş ürün sayar, muadiller reklam yoksa yer ayırmaz. Yer artık 0 yükseklikte; şerit ilk
+        // yüklendiğinde açılır ve oturum boyunca açık kalır (sonraki yenilemede düşse de menü zıplamasın).
+        VisualElement reklamEl; static bool seritAcildi;
         void ReklamKur(VisualElement r)
         {
-            if (r == null) return; r.Clear(); r.pickingMode = PickingMode.Position; reklamEl = r; reklamYazi = null;
+            if (r == null) return; r.Clear(); r.pickingMode = PickingMode.Position; reklamEl = r;
             if (!Reklam.ALAN) { r.style.display = DisplayStyle.None; return; }
-            r.style.display = DisplayStyle.Flex; r.style.height = Reklam.PT;
-            var y = new Label(L.T("Reklam")); y.AddToClassList("reklam-yazi"); y.pickingMode = PickingMode.Ignore; r.Add(y); reklamYazi = y;
-            y.visible = !ReklamSdk.SeritYuklu; sonReklamYuklu = ReklamSdk.SeritYuklu;
+            r.style.display = DisplayStyle.Flex; r.style.height = seritAcildi ? Reklam.PT : 0f;
             Erisim.Etiket(r, L.T("Reklam alanı"), "metin");
         }
-        // AdMob şeridi (Game/ReklamSdk, 2026-11-07): yer tutucunun ekrandaki yeri her kare verilir; şerit yalnız menü tam
-        // görünürken çıkar: perde/solma yok, alt sayfa (sheet) kapalı. Şerit native bir görünüm, UI Toolkit'in üstünde durur:
-        // alt sayfa onu örtemeyeceği için gizlenir. Şerit yüklenince yer tutucu yazısı gizlenir (yer aynı kalır, içerik oynamaz).
+        // AdMob şeridi (Game/ReklamSdk, 2026-11-07): yerin ekrandaki konumu her kare verilir; şerit yalnız menü tam görünürken
+        // çıkar: perde/solma yok, alt sayfa (sheet) kapalı. Şerit native bir görünüm, UI Toolkit'in üstünde durur: alt sayfa onu
+        // örtemeyeceği için gizlenir. Yer kapalıyken şerit, açılınca oturacağı yere (sekme çubuğunun hemen üstü, PT boyu) istenir;
+        // yüklenince yer açılır, yerleşim o boya oturana kadar şerit gizli tutulur (içeriğin üstüne binmesin).
         void ReklamSeritYeri(bool perde, float ortu)
         {
             ReklamSdk.Baslat();
-            if (reklamYazi != null && ReklamSdk.SeritYuklu != sonReklamYuklu) { sonReklamYuklu = ReklamSdk.SeritYuklu; reklamYazi.visible = !sonReklamYuklu; }
+            // Reklamsız alındıysa (oturum ortasında da): yer kapanır, şerit gizlenir; menü yeniden kurulunca ReklamKur hiç açmaz.
+            if (!Reklam.ALAN) { if (reklamEl != null && reklamEl.style.display != DisplayStyle.None) reklamEl.style.display = DisplayStyle.None; ReklamSdk.Serit(null); return; }
             if (!ReklamSdk.Hazir) return;
+            if (ReklamSdk.SeritYuklu && !seritAcildi && reklamEl != null) { seritAcildi = true; reklamEl.style.height = Reklam.PT; }
             Rect? yer = null;
             if (!perde && ortu <= .01f && gez.AcikAltSayfa == null && reklamEl != null && reklamEl.resolvedStyle.display == DisplayStyle.Flex)
             {
                 float pw = doc.rootVisualElement.layout.width; var wb = reklamEl.worldBound;
-                if (pw > 0 && Screen.width > 0 && wb.width > 0) { float s = pw / Screen.width; yer = new Rect(wb.x / s, wb.y / s, wb.width / s, wb.height / s); }
+                bool oturdu = wb.height >= Reklam.PT - .5f;
+                if (seritAcildi && !oturdu) { ReklamSdk.Serit(null); return; }
+                if (pw > 0 && Screen.width > 0 && wb.width > 0) { float s = pw / Screen.width, ust = wb.yMax - Reklam.PT; yer = new Rect(wb.x / s, ust / s, wb.width / s, Reklam.PT / s); }
             }
             ReklamSdk.Serit(yer);
         }

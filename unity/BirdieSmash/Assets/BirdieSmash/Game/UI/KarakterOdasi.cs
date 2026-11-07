@@ -62,7 +62,7 @@ namespace BirdieSmash.Game
         {
             var vt = root.vitrin; if (vt == null) return;
             vt.Sevinc(karAlt == KAR_SEVINC ? vt.deneSevinc ?? vt.deneMacSonu ?? Ayar.KOZ[Kozmetik.SEVINC] : null);   // Sevinç: figür seçili hareketi döngüde yapar
-            if (karAlt == KAR_RAKET) { vt.Odak(Vitrin.TAM); vt.hedefGec = 1; vt.RaketParca(raketParca); return; }
+            if (karAlt == KAR_RAKET) { bool giris = vt.hedefGec < 1; vt.Odak(Vitrin.TAM); vt.hedefGec = 1; vt.RaketParca(raketParca); if (giris && raketParca == null) vt.RaketKahraman(); return; }
             // Sırt: pelerin arkada; figür arkasını üç çeyrek döner (kendi kendine dönme ve ok düğmeleri yine çalışır)
             if (karAlt == KAR_SIRT) { vt.a = 155; vt.v = 0; }
             vt.hedefGec = 0; vt.Odak(karAlt == KAR_SAC || karAlt == KAR_SAPKA || karAlt == KAR_TEN ? Vitrin.YUZ : karAlt == KAR_AYK ? Vitrin.AYAK : Vitrin.TAM);

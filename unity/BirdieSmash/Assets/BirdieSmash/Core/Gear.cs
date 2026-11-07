@@ -104,10 +104,11 @@ namespace BirdieSmash.Core
         // Denge sınıfı: piyasadaki raketlerde kafa hafif ≈ 260–285 mm, dengeli ≈ 286–295, kafa ağır ≈ 296–305 (sapın ucundan).
         public static string DengeAd(int mm) { return mm <= 285 ? "kafa hafif" : mm <= 295 ? "dengeli" : "kafa ağır"; }
         // Gerçek raketin gövdesindeki satır: "3U · G5 · 300 mm · sert · 21–29 lbs"; sap oyuncunun ayarı (varsayılan G5).
-        public static string Kimlik(GearModel r, string sap = "G5")
+        // 2026-11-08 (inceleme #2): Core'da çeviri yok; İngilizce arayüzde şaft "orta" Türkçe kalıyordu. Çağıran çevrilmiş adı verir.
+        public static string Kimlik(GearModel r, string sap = "G5", string saftYazi = null)
         {
             if (r == null || r.u == null || !r.dengeMm.HasValue) return null;
-            return r.u + " · " + sap + " · " + r.dengeMm.Value + " mm · " + r.saft + (r.telMin.HasValue && r.telMax.HasValue ? " · " + r.telMin.Value + "–" + r.telMax.Value + " lbs" : "");
+            return r.u + " · " + sap + " · " + r.dengeMm.Value + " mm · " + (saftYazi ?? r.saft) + (r.telMin.HasValue && r.telMax.HasValue ? " · " + r.telMin.Value + "–" + r.telMax.Value + " lbs" : "");
         }
         // Takılı raketin önerdiği gerginlik aralığı; veri yoksa 20–28 (piyasanın en yaygın aralığı).
         public static void TelAralik(string raket, out int min, out int max)
@@ -285,7 +286,8 @@ namespace BirdieSmash.Core
         // Sap çevresi (yaklaşık; üretici tablosuna göre değişir).
         // Sap çevresi (2026-11-07 fikir 22:10 #1d): üretici tablosu G4 3½ inç ≈ 89 mm, G5 3¼ inç ≈ 83 mm, G6 3 inç ≈ 76 mm. Önceki
         // aralıklar (G6 80–83) tabloya göre kalın yazıyordu.
-        public static string SapMm(string s) { return s == "G4" ? "≈ 89 mm (3½ inç)" : s == "G6" ? "≈ 76 mm (3 inç)" : "≈ 83 mm (3¼ inç)"; }
+        // inc: birim adı çağırandan (L.T("inç")), 2026-11-08 inceleme #2.
+        public static string SapMm(string s, string inc = "inç") { return s == "G4" ? "≈ 89 mm (3½ " + inc + ")" : s == "G6" ? "≈ 76 mm (3 " + inc + ")" : "≈ 83 mm (3¼ " + inc + ")"; }
         const float RAKET_EKSI = .4f;
         static float Taban(float m, float kr) { return Math.Abs(m - 1) < 1e-4f ? 1 + .05f * kr : 1; }
         public GearStats Hesap()

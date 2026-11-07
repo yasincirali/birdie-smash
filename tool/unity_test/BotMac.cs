@@ -952,6 +952,14 @@ static class BotMac
             if (BulutKayit.Karsilastir("{\"tuy\":10,\"xp\":80}", bul, null) != BulutKayit.Karar.Birlestir) Fail("bulut: başka cihazdaki satın alma birleşmeli");
             var r = BulutKayit.SatinBirlestir("{\"tuy\":10,\"xp\":80}", null, bul);
             var re = Json.Obj(Json.Parse(r[0])); if ((int)Json.Num(re, "tuy", 0) != 3510 || (int)Json.Num(re, "xp", 0) != 80 || TuyDukkan.Toplam(r[1]) != 3500) Fail("bulut: birleşme Tüy'ü eklemeli, XP'yi korumalı");
+            // 2026-11-08 Reklamsız: Tüy vermez, defterde işaret; bulut birleşmesi işareti taşır, eski biçim (alansız) bozulmaz.
+            int tuyOnce = gd.eko.tuy;
+            if (TuyDukkan.Teslim(gd, dk, TuyDukkan.REKLAMSIZ, "R1") != 0 || gd.eko.tuy != tuyOnce || !TuyDukkan.Reklamsiz(dk.Get(TuyDukkan.ANAHTAR))) Fail("dükkân: Reklamsız Tüy vermemeli, işaretlemeli");
+            if (TuyDukkan.Toplam(dk.Get(TuyDukkan.ANAHTAR)) != 3500) Fail("dükkân: Reklamsız Tüy toplamını değiştirmemeli");
+            if (TuyDukkan.Reklamsiz(null) || TuyDukkan.Reklamsiz("{\"toplam\":5,\"islem\":[]}")) Fail("dükkân: eski defter Reklamsız sayılmamalı");
+            string bulR = BulutKayit.Goruntu(k => k == TuyDukkan.ANAHTAR ? dk.Get(k) : k == "tuytop_ekonomi" ? "{\"tuy\":3600,\"xp\":50}" : null, k => null);
+            if (BulutKayit.Karsilastir("{\"tuy\":10,\"xp\":80}", bulR, "{\"toplam\":3500,\"islem\":[\"T1\"]}") != BulutKayit.Karar.Birlestir) Fail("bulut: başka cihazdaki Reklamsız birleştirme istemeli");
+            if (!TuyDukkan.Reklamsiz(BulutKayit.SatinBirlestir("{\"tuy\":10,\"xp\":80}", "{\"toplam\":3500,\"islem\":[\"T1\"]}", bulR)[1])) Fail("bulut: birleşme Reklamsız'ı taşımalı");
             if (BulutKayit.Karsilastir(r[0], bul, r[1]) != BulutKayit.Karar.Yaz) Fail("bulut: birleşmeden sonra tekrar eklememeli");
         }
         // (1f) seviye anı grupları (2026-11-07, Karakter.AcilanAralikGruplu): AcilanAralik ile aynı öğeler aynı sırada; raket parçası
