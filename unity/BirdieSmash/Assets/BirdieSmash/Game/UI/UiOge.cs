@@ -105,7 +105,7 @@ namespace BirdieSmash.Game
         {
             var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("cip"); if (secili) d.AddToClassList("cip--secili");
             var ic = new VisualElement(); ic.AddToClassList("cip-ic"); ic.pickingMode = PickingMode.Ignore; d.Add(ic);
-            if (secili) ic.Add(Ikon(Ikonlar.Tik, 16, MUREKKEP));
+            if (secili) { var tk = Ikon(Ikonlar.Tik, 16, TURUNCU); tk.AddToClassList("cip-tik"); ic.Add(tk); }   // 2026-11-07: seçili dili turuncu çerçeve + ✓ (krem dolgu kalktı); segment sekmesinde ✓ gizli (USS)
             var yz = new VisualElement(); yz.AddToClassList("cip-yazilar"); yz.pickingMode = PickingMode.Ignore; ic.Add(yz);
             yz.Add(Yazi(t, 14, "dugme-yazi")); if (!string.IsNullOrEmpty(alt)) yz.Add(Yazi(alt, 11.5f, "dugme-alt"));
             if (a != null) d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); a(); }));
@@ -185,7 +185,7 @@ namespace BirdieSmash.Game
     // Koddan çizilen simgeler (beyaz + alfa; boya Image.tintColor). 96 px, 2×2 örnekleme ile kenar yumuşatma.
     public static class Ikonlar
     {
-        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Tisort, Gradyan, YildizDolu, YildizBos, Yukari, Asagi;
+        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Tisort, Gradyan, YildizDolu, YildizBos, Yukari, Asagi, Yuz, Ayak, Tutus, Solma;
         // 2026-10-26 Yayın Gecesi: simgeler (tüy, şimşek, hedef, güneş, çarpı, açık kilit) ve şekil dokuları (eğik düğme,
         // yayın plakası, etiket şeridi, basamak çizgisi, altın kutucuk, ışık süpürmesi, ışın). Hepsi 2× çözünürlükte (1 pt =
         // 2 doku pikseli; USS'te -unity-slice-scale: 0.5), açılışta bir kez; her biri birkaç KB.
@@ -240,6 +240,33 @@ namespace BirdieSmash.Game
             // Stat çubuğunun artı/eksi işareti (2026-10-26, ekipman v2 ▲ ▼): glif değil çizim (yazı tipinde olmayabilir); yönü
             // biçimle verir, rengi ek bilgidir (renk körlüğü).
             Yukari = Ciz((x, y) => y > -.55f && y < .6f && Mathf.Abs(x) < (.6f - y) * .62f); Asagi = Ciz((x, y) => y < .55f && y > -.6f && Mathf.Abs(x) < (y + .6f) * .62f);
+            // Vitrin odak düğmeleri (2026-11-07 stüdyo incelemesi AD2): yazı yerine simge; "Face" kategori satırında da yazıyordu.
+            // Yüz = halka baş + iki göz + gülüş; Ayak = ayakkabı silueti (taban + burun); Tutuş = sargılı raket sapı (eğik boşluklar).
+            Yuz = Ciz((x, y) =>
+            {
+                float r = Mathf.Sqrt(x * x + y * y); bool halka = Mathf.Abs(r - .74f) < .12f;
+                bool goz = ((x - .27f) * (x - .27f) + (y - .2f) * (y - .2f)) < .012f || ((x + .27f) * (x + .27f) + (y - .2f) * (y - .2f)) < .012f;
+                float g = Mathf.Sqrt(x * x + (y + .02f) * (y + .02f)); bool gulus = y < -.12f && Mathf.Abs(g - .4f) < .07f && Mathf.Abs(x) < .32f;
+                return halka || goz || gulus;
+            });
+            Ayak = Ciz((x, y) =>
+            {
+                bool taban = y > -.62f && y < -.42f && x > -.8f && x < .82f; bool topuk = x > -.8f && x < -.18f && y >= -.42f && y < .4f;
+                float ex = (x - .12f) / .7f, ey = (y + .42f) / .42f; bool burun = y >= -.42f && ex * ex + ey * ey < 1;
+                bool bag = Cizgi(x, y, -.1f, .08f, .18f, -.06f, .05f);
+                return (taban || topuk || burun) && !bag;
+            });
+            Tutus = Ciz((x, y) =>
+            {
+                bool sap = Mathf.Abs(x) < .24f && y > -.86f && y < .5f && Mathf.Repeat(y - x * .9f + 2, .3f) > .07f;
+                bool govde = Mathf.Abs(x) < .08f && y >= .5f && y < .92f; bool bilezik = Mathf.Abs(x) < .3f && y > .44f && y < .56f;
+                return sap || govde || bilezik;
+            });
+            // Alt sayfa kaydırma solması (2026-11-07 UX2): kart renginde (#261A30) aşağı doğru opaklaşan 1×32 şerit; içerik
+            // sürüyorsa listenin altında durur ("Hard" yarım kesik görünüp hata sanılıyordu, Saha bölümü fark edilmiyordu).
+            Solma = new Texture2D(1, 32, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            for (int i = 0; i < 32; i++) Solma.SetPixel(0, i, new Color(0x26 / 255f, 0x1A / 255f, 0x30 / 255f, Mathf.SmoothStep(1, 0, i / 31f)));
+            Solma.Apply(false, true);
             // Oyna sekmesinin zemini: USS'te gradyan yok. 2026-10-26: renk ve duraklar yön A'ya göre YayinDokulari'nda.
             Gradyan = new Texture2D(1, 64, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             YayinDokulari();

@@ -1,5 +1,11 @@
 # App Store Connect › App Privacy cevapları — Birdie Smash
 
+> **2026-11-07: AdMob bağlandı (Game/ReklamSdk.cs).** Aşağıdaki "Data Not Collected" reklamsız sürüm içindir. Reklamlı
+> 1.0 için cevap **Yes, we collect data**: Identifiers › Device ID (yalnız ATT izni verilirse IDFA), Usage Data › Advertising
+> Data + Product Interaction, Diagnostics › Performance/Crash (Google SDK); hepsi amaç **Third-Party Advertising**,
+> kimliğe bağlı değil (Not Linked to You); Device ID ve Advertising Data için "Used to Track You" = Yes (ATT izniyle).
+> Kaynak: Google'ın "AdMob App Store data disclosure" sayfası; SDK sürümü değişince yeniden bakılır.
+
 Tarih: 2026-10-24 · Kod: `main` @ 9e781a2 · Sonuç: **Data Not Collected**
 
 ## Sorulacak ilk soru

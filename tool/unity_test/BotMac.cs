@@ -161,6 +161,7 @@ static class BotMac
         IkizMaclar();   // 2026-11-07 online: iki çekirdek gecikmeli kuyrukla (Core/Uzak)
         ServisSaatleri();   // 2026-11-07 inceleme: online servis saati + çekilme (Core/Uzak)
         Ligler(); Kartlar();   // 2026-11-07 online: lig puanı (Core/Lig), oyuncu kartı (Core/OyuncuKarti)
+        SicrayisBantlari();   // 2026-11-07 inceleme 16:05 #3: sıçrayış file uzaklığına göre (yalnız ölçüm, kural değişmedi)
         AdimTipleri();   // 2026-10-27 birleşik dal incelemesi: figürün kendi adım boyu (ekran/model) × işaretli faz (ekran/kosu)
         Console.WriteLine("en hızlı sayı smacı " + smacHizMax + " km/s");
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
@@ -194,6 +195,44 @@ static class BotMac
     }
     // 2026-11-05 dört kademe (Ayar.zorluk): rakip çarpanı yalnız Usta yolu ve antrenman dışında, kaynak tarz değişmez; aynı rakip
     // ve aynı botla galibiyet Kolay ≥ Orta, Zor ≥ Usta (Zor/Usta botu geç koşar: 0,45–0,57 sn, koşu yardımı farkı görünsün).
+    // 2026-11-07 (inceleme turu, fikir 16:05 #3): dolu enerji her hızlı forehand tepeden kaydırmada "jump" olur, vuruş noktasının
+    // fileye uzaklığına bakılmaz. Kural değiştirmeden önce ölçüm: tek maçlarda enerji hep dolu (her uygun vuruş sıçrayış), çift
+    // maçlarda hep boş (aynı vuruş düz smaç); bant başına "rakip dokunamadan sayı" oranı. Yalnız bilgi satırı, Fail yok:
+    // karar (arka bantta sıçrayış düz smaça dönsün mü) bu sayılarla geliştirme thread'inde verilir.
+    static void SicrayisBantlari()
+    {
+        int[,] n = new int[2, 3], bit = new int[2, 3];   // [0 jump,1 smash][≤4 m, 4–5,5 m, >5,5 m]
+        for (int m = 0; m < 60; m++)
+        {
+            bool dolu = m % 2 == 0;
+            var M = new Match(4100 + m, new MatchOptions { easy = true, stil = Match.KariyerRakip(1), target = 11 }); int guard = 0;
+            int acik = -1, acikTur = 0;
+            while (!M.over && guard++ < 60 * 60 * 30)
+            {
+                M.energy = dolu ? 1 : 0;
+                Bot(M, 1f / 60f, .2); M.Update(1f / 60f);
+                foreach (var e in M.events)
+                {
+                    if (e.kind == Ev.Hit)
+                    {
+                        if (acik >= 0) acik = -1;   // biri yeniden vurdu: bitirmedi
+                        if (e.who == "me" && (e.text == "jump" || e.text == "smash"))
+                        {
+                            float u = Math.Abs(e.y - Court.NET); int b = u <= 4 ? 0 : u <= 5.5f ? 1 : 2;
+                            acikTur = e.text == "jump" ? 0 : 1; acik = b; n[acikTur, b]++;
+                        }
+                    }
+                    if (e.kind == Ev.Point) { if (acik >= 0 && e.who == "me") bit[acikTur, acik]++; acik = -1; }
+                }
+                M.events.Clear();
+            }
+        }
+        string[] ad = { "≤4 m", "4–5,5 m", ">5,5 m" }; var sb = new System.Text.StringBuilder("sıçrayış bantları (bitirme %, sıçrayış / düz smaç):");
+        for (int b = 0; b < 3; b++)
+            sb.Append(" " + ad[b] + " " + (n[0, b] > 0 ? (100 * bit[0, b] / n[0, b]).ToString() : "-") + "/" + (n[1, b] > 0 ? (100 * bit[1, b] / n[1, b]).ToString() : "-") + " (n " + n[0, b] + "/" + n[1, b] + ")");
+        Console.WriteLine(sb.ToString());
+    }
+
     static void Zorluklar()
     {
         var st = Match.KariyerRakip(1);
@@ -914,6 +953,57 @@ static class BotMac
             var r = BulutKayit.SatinBirlestir("{\"tuy\":10,\"xp\":80}", null, bul);
             var re = Json.Obj(Json.Parse(r[0])); if ((int)Json.Num(re, "tuy", 0) != 3510 || (int)Json.Num(re, "xp", 0) != 80 || TuyDukkan.Toplam(r[1]) != 3500) Fail("bulut: birleşme Tüy'ü eklemeli, XP'yi korumalı");
             if (BulutKayit.Karsilastir(r[0], bul, r[1]) != BulutKayit.Karar.Yaz) Fail("bulut: birleşmeden sonra tekrar eklememeli");
+        }
+        // (1f) seviye anı grupları (2026-11-07, Karakter.AcilanAralikGruplu): AcilanAralik ile aynı öğeler aynı sırada; raket parçası
+        // Atölye'de yuvasıyla, ayakkabı Dolap'ta; bilinmeyen grup yok.
+        {
+            int gf = 0;
+            for (int a = 1; a < 30; a++) for (int b = a + 1; b <= 30; b++)
+            {
+                var d = Karakter.AcilanAralik(a, b); var g = Karakter.AcilanAralikGruplu(a, b);
+                if (d.Count != g.Count) { gf++; continue; }
+                for (int i = 0; i < d.Count; i++) if (d[i] != g[i][1] || (g[i][0] != "Dolap" && g[i][0] != "Atolye" && g[i][0] != "Diger") || (g[i][2] != null && g[i][0] != "Atolye")) gf++;
+            }
+            if (gf > 0) Fail("seviye anı grupları AcilanAralik ile tutmuyor: " + gf);
+        }
+        // (1g) tur mührü (2026-11-07, yasin "Ekle"): 8 yıldız yok, 9 bronz, 17 bronz, 18 altın; kayıt alanı yok (TurYildiz'dan)
+        {
+            var mp = new Ilerleme(); var y8 = new[] { 7, 1, 0, 0, 0, 0 }; var y9 = new[] { 7, 7, 3, 1, 0, 0 }; var y17 = new[] { 7, 7, 7, 7, 7, 3 };
+            for (int b = 0; b < 6; b++) mp.tur[0][b] = y8[b]; if (mp.TurYildiz(0) != 4 || mp.Muhur(0) != 0) Fail("mühür: 4 yıldızda mühür olmamalı");
+            for (int b = 0; b < 6; b++) mp.tur[0][b] = y9[b]; if (mp.TurYildiz(0) != 9 || mp.Muhur(0) != 1) Fail("mühür: 9 yıldız bronz olmalı " + mp.TurYildiz(0));
+            for (int b = 0; b < 6; b++) mp.tur[0][b] = y17[b]; if (mp.Muhur(0) != 1) Fail("mühür: 17 yıldız bronz kalmalı");
+            mp.tur[0][5] = 7; if (mp.Muhur(0) != 2) Fail("mühür: 18 yıldız altın olmalı");
+            foreach (var kt in KariyerVeri.Turlar) if (kt.Var && string.IsNullOrEmpty(kt.tema)) Fail("tur teması boş: " + kt.id);
+        }
+        // (1h) hedef "≈ N maç" (GD6): 3 maçtan az veri ya da 0 ortalama gizli (-1); son 5 tutulur; yukarı yuvarlanır
+        {
+            string k = ""; k = Hedef.SonEkle(k, 50); k = Hedef.SonEkle(k, 70);
+            if (Hedef.MacTahmini(200, k) != -1) Fail("≈maç: 2 maçla tahmin olmamalı");
+            k = Hedef.SonEkle(k, 60); if (Hedef.MacTahmini(200, k) != 4) Fail("≈maç: ort 60, 200 kalan → 4 olmalı " + Hedef.MacTahmini(200, k));
+            if (Hedef.MacTahmini(0, k) != -1) Fail("≈maç: kalan 0 gizli olmalı");
+            for (int i = 0; i < 6; i++) k = Hedef.SonEkle(k, 100); if (k.Split(',').Length != 5 || Hedef.MacTahmini(250, k) != 3) Fail("≈maç: son 5 / ort 100 → 3 " + k);
+            if (Hedef.MacTahmini(100, "0,0,0") != -1) Fail("≈maç: ortalama 0 gizli olmalı");
+        }
+        // (1e) maç sonu ödüllü reklam (2026-11-07, Core/OdulluReklam): +%50 yalnız Tüy, günde 1, ilk 3 galibiyette yok, başka ikincil
+        // varken yok, 3 ardışık ret → 3 maç sus; XP ve seviye değişmez.
+        {
+            var od = new OdulluReklam.Durum(); string gn = OdulluReklam.Gun(new DateTime(2026, 11, 7, 20, 0, 0));
+            if (OdulluReklam.Uygun(od, gn, 2, 80, false, false, true)) Fail("ödüllü reklam: ilk 3 galibiyette çıkmamalı");
+            if (!OdulluReklam.Uygun(od, gn, 3, 80, false, false, true)) Fail("ödüllü reklam: 3. galibiyetten sonra çıkmalı");
+            if (OdulluReklam.Uygun(od, gn, 9, 80, true, false, true) || OdulluReklam.Uygun(od, gn, 9, 0, false, false, true) || OdulluReklam.Uygun(od, gn, 9, 80, false, true, true) || OdulluReklam.Uygun(od, gn, 9, 80, false, false, false))
+                Fail("ödüllü reklam: başka ikincil, sıfır Tüy, bu maç kullanılmış ya da reklam yokken çıkmamalı");
+            var ga = SvGear(5, 100); var o1 = ga.Odul(true, false, 11, true, 1, 3, new DateTime(2026, 11, 7)); int t0 = o1.tuy, xp0 = ga.eko.xp, sv0 = ga.Seviye(), tc0 = ga.eko.tuy;
+            int rek = ga.ReklamOdulu(o1);
+            if (rek != OdulluReklam.Ek(t0) || o1.tuy != t0 + rek || ga.eko.tuy != tc0 + rek || ga.eko.xp != xp0 || ga.Seviye() != sv0) Fail("ödüllü reklam: +%50 yalnız Tüy olmalı, XP ve seviye sabit (" + t0 + " → +" + rek + ")");
+            if (OdulluReklam.Ek(81) != 41 || OdulluReklam.Ek(0) != 0) Fail("ödüllü reklam: +%50 yuvarlama");
+            OdulluReklam.Izlendi(od, gn); OdulluReklam.KartKapandi(od, true, true);
+            if (OdulluReklam.Uygun(od, gn, 9, 80, false, false, true)) Fail("ödüllü reklam: günde en çok 1 (ikinci ödül yok)");
+            string yarin = OdulluReklam.Gun(new DateTime(2026, 11, 8, 9, 0, 0));
+            if (!OdulluReklam.Uygun(od, yarin, 9, 80, false, false, true)) Fail("ödüllü reklam: yeni günde yeniden çıkmalı");
+            for (int i = 0; i < 3; i++) OdulluReklam.KartKapandi(od, true, false);
+            for (int i = 0; i < 3; i++) { if (OdulluReklam.Uygun(od, yarin, 9, 80, false, false, true)) Fail("ödüllü reklam: 3 retten sonra 3 maç susmalı (" + i + ")"); OdulluReklam.KartKapandi(od, false, false); }
+            if (!OdulluReklam.Uygun(od, yarin, 9, 80, false, false, true)) Fail("ödüllü reklam: 3 maç sustuktan sonra dönmeli");
+            if (OdulluReklam.Durum.Oku(od.Yaz()).Yaz() != od.Yaz() || OdulluReklam.Durum.Oku("bozuk").bugun != 0) Fail("ödüllü reklam: kayıt gidiş-dönüş");
         }
         { var ga = SvGear(14, Kozmetik.Bul(Kozmetik.SAPKA, "sovalye").fiyat + Kozmetik.Bul(Kozmetik.YUZ, "gunes").fiyat + 200); var ha = ga.Hesap(); if (!Kozmetik.Al(ga, Kozmetik.SAPKA, "sovalye", "yok") || !Kozmetik.Al(ga, Kozmetik.YUZ, "gunes", "yok")) Fail("Sv 14'te şövalye kaskı ve güneş gözlüğü alınmalı");
           var hb = ga.Hesap(); if (Gear.Cubuklar(ha).Zip(Gear.Cubuklar(hb), (p, q) => p - q).Any(v => v != 0)) Fail("aksesuar alımı gücü değiştirdi"); }

@@ -208,7 +208,7 @@ namespace BirdieSmash.Game
             AltEylem(Dugme(L.T("Hızlı maç oyna"), () =>
             {
                 Ayar.kariyerModu = false; Ayar.GearHesap(); Ayar.Kaydet(); gez.Kapat(Gezinti.HIZLI); Uygula(gez.sekme, false); root.Oyna();
-            }, "dugme--birincil", HizliOzet(), 19));
+            }, "dugme--birincil", K > 1.35f ? null : HizliOzet(), 19));   // 2026-11-07 (UX2): büyük yazıda özet satırı CTA'yı 3 satıra büyütüp listeyi daraltıyordu; seçimler çiplerde zaten görünür
         }
 
         void AltSayfaYenidenKur(string altS) { if (altS == Gezinti.KART) MacKartKur(); else if (altS == Gezinti.YUVA) YuvaSayfaKur(); else if (altS == Gezinti.DRIL) DrilKartKur(); else if (altS == Gezinti.GUNLUK) GunlukKartKur(); else if (altS == Gezinti.SEC) OyuncuSecKur(); else HizliKur(); }
@@ -228,7 +228,12 @@ namespace BirdieSmash.Game
             // genişliği alır, Kapat daralmaz.
             var t = Yazi(baslik, 19, "sayfa-baslik"); Erisim.Etiket(t, baslik, "baslik"); t.style.flexGrow = 1f; t.style.flexShrink = 1f; t.style.minWidth = 0f; t.style.marginRight = 12f; bas.Add(t);
             var kp = Dugme(L.T("Kapat"), AltKapat, "kucuk-dugme"); kp.style.flexShrink = 0f; bas.Add(kp);
-            var sv = Kaydirma(altSayfa); sv.AddToClassList("alt-kaydir"); return sv.contentContainer;
+            var sv = Kaydirma(altSayfa); sv.AddToClassList("alt-kaydir");
+            // 2026-11-07 (UX2): içerik görünen alandan uzunsa altta solma; sona kaydırınca kalkar (kaydırılabilir olduğu belli olsun).
+            var sol = new Image { image = Ikonlar.Solma, scaleMode = ScaleMode.StretchToFill }; sol.AddToClassList("kaydir-solma"); sol.pickingMode = PickingMode.Ignore; sv.hierarchy.Add(sol);
+            System.Action solGuncelle = () => { var vs = sv.verticalScroller; bool kalan = vs.highValue > 2 && vs.value < vs.highValue - 2; var ds = kalan ? DisplayStyle.Flex : DisplayStyle.None; if (sol.resolvedStyle.display != ds) sol.style.display = ds; };
+            sv.verticalScroller.valueChanged += v => solGuncelle(); sv.RegisterCallback<GeometryChangedEvent>(e => solGuncelle()); sv.contentContainer.RegisterCallback<GeometryChangedEvent>(e => solGuncelle());
+            return sv.contentContainer;
         }
 
         // Zorluk, maç uzunluğu (ve istenirse saha): Ayarlar ile Hızlı maç aynı işleyiciyi paylaşır (aynı anahtarlar).

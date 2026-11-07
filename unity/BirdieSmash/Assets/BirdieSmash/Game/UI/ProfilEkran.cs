@@ -76,13 +76,15 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Adın")));
             var tf = new TextField { value = p.Ad ?? "", maxLength = Ilerleme.AD_AZAMI, isDelayed = true }; tf.AddToClassList("ad-alan"); tf.style.fontSize = Mathf.Round(16 * K);
             tf.RegisterValueChangedCallback(e => { p.Ad = e.newValue; Ayar.Kaydet(); kirli[(int)Sekme.Profil] = true; var kk = sekmeKok[(int)Sekme.Profil]; kk.schedule.Execute(() => { if (gez.sekme == Sekme.Profil && gez.Ust == null) SekmeKur(Sekme.Profil); }).StartingIn(16); });
-            Erisim.Etiket(tf, L.T("Adın") + ", " + L.T("yalnız bu cihazda tutulur"), "metin_alani", false, false, p.Ad ?? ""); c.Add(tf);
+            Erisim.Etiket(tf, L.T("Adın") + ", " + L.T("cihazında ve kendi iCloud hesabında tutulur"), "metin_alani", false, false, p.Ad ?? ""); c.Add(tf);
             // Yer tutucu (2026-11-07, yasin "yap", arayüz cilası): boş alan ne yazılacağını söylesin. Unity 6 textEdition.placeholder
             // yerine kendi soluk etiketimiz (mono ile Unity'siz derleme 2021 başvurularıyla yapılıyor); alan boşken ve odak yokken görünür.
             var ph = Yazi(L.T("Adını yaz"), 16, "soluk"); ph.AddToClassList("ad-yer-tutucu"); ph.pickingMode = PickingMode.Ignore; tf.Add(ph);
             System.Action phG = () => ph.style.display = string.IsNullOrEmpty(tf.value) && tf.focusController?.focusedElement != tf ? DisplayStyle.Flex : DisplayStyle.None;
             tf.RegisterCallback<FocusInEvent>(e => ph.style.display = DisplayStyle.None); tf.RegisterCallback<FocusOutEvent>(e => phG()); tf.RegisterValueChangedCallback(e => phG()); phG();
-            c.Add(Yazi(L.T("Ad yalnız bu cihazda tutulur, hiçbir yere gönderilmez."), 12, "soluk"));
+            // 2026-11-07 (inceleme 16:05 #4): ad tuytop_ilerleme içinde BulutKayit ile oyuncunun kendi iCloud'una da gider;
+            // "hiçbir yere gönderilmez" yanlıştı. Bize ya da başkasına gitmediği doğru, cümle bunu söyler.
+            c.Add(Yazi(L.T("Adın cihazında ve kendi iCloud hesabında tutulur; bize ya da başkasına gönderilmez."), 12, "soluk"));
 
             // unvanlar
             c.Add(Grup(L.T("Unvan")));
@@ -102,6 +104,22 @@ namespace BirdieSmash.Game
                 us2.Add(Yazi(L.T(u.ad), 15)); us2.Add(Yazi(nasil, 12, "soluk"));
                 Erisim.Etiket(ur, L.T("Unvan") + " " + L.T(u.ad) + ", " + L.T("Kilitli") + ", " + nasil, "metin");
             }
+
+            // Tur mühürleri (2026-11-07, yasin karar kartı "Ekle"; GD5): her tur için mühür ya da sıradaki eşik. Fiyatsız prestij, satılmaz.
+            c.Add(Grup(L.T("Tur mühürleri")));
+            var mk = Kart("muhur-kart"); c.Add(mk);
+            for (int mt = 0; mt < KariyerVeri.Turlar.Length; mt++)
+            {
+                if (!KariyerVeri.Turlar[mt].Var) continue; int mh = p.TurAcik(mt) ? p.Muhur(mt) : 0, ys = p.TurYildiz(mt);
+                var mr = Satir("arali"); mr.AddToClassList("muhur-satir"); mr.pickingMode = PickingMode.Ignore; mk.Add(mr);
+                var sol = Satir("rakip-satir"); sol.pickingMode = PickingMode.Ignore; mr.Add(sol);
+                sol.Add(Ikon(mh >= 2 ? Ikonlar.YildizDolu : Ikonlar.YildizBos, 18, mh >= 2 ? ALTIN : mh == 1 ? BRONZ : SOLUK));
+                var ay = Yazi(L.T(TurAd(mt)), 15); ay.style.marginLeft = 8; sol.Add(ay);
+                string dr = mh >= 2 ? L.T("Altın") : mh == 1 ? L.T("Bronz") + " · " + ys + "/18" : ys + "/18";
+                mr.Add(Yazi(dr, 13, mh > 0 ? "durum-gecti" : "soluk"));
+                Erisim.Etiket(mr, L.T(TurAd(mt)) + ", " + (mh >= 2 ? L.T("Altın tur mührü") : mh == 1 ? L.T("Bronz tur mührü") : L.T("{0}/{1} yıldız", ys, 18)), "metin");
+            }
+            mk.Add(Yazi(L.T("Bronz 9 yıldız, altın 18 yıldız. Satılmaz, yalnız oynayarak gelir."), 12, "soluk"));
 
             c.Add(Grup(L.T("İstatistikler")));
             var iz = Satir("izgara"); c.Add(iz);

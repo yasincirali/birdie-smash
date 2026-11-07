@@ -54,6 +54,21 @@ namespace BirdieSmash.Core
         }
 
         public static int Kalan(int fiyat, int tuy) { return Math.Max(0, fiyat - tuy); }
+
+        // "≈ N maç" (2026-11-07 stüdyo GD6): Tüy sayısı oyuncuya kaç maç demiyordu. Son 5 maçın Tüy ödülü (SON_ANAHTAR, "a,b,c")
+        // ortalamasıyla yukarı yuvarlanmış maç sayısı. En az 3 maç yoksa ya da ortalama 0 ise -1 (yazı gizli: uydurma sayı yok).
+        public const string SON_ANAHTAR = "tuytop_son_tuy"; public const int SON_N = 5, SON_EN_AZ = 3;
+        public static string SonEkle(string kayit, int tuy)
+        {
+            var l = new List<string>(string.IsNullOrEmpty(kayit) ? new string[0] : kayit.Split(',')); l.Add(Math.Max(0, tuy).ToString());
+            while (l.Count > SON_N) l.RemoveAt(0); return string.Join(",", l.ToArray());
+        }
+        public static int MacTahmini(int kalan, string son)
+        {
+            if (kalan <= 0 || string.IsNullOrEmpty(son)) return -1; int top = 0, n = 0, v;
+            foreach (var p in son.Split(',')) if (int.TryParse(p, out v) && v >= 0) { top += v; n++; }
+            if (n < SON_EN_AZ || top <= 0) return -1; return (int)Math.Ceiling(kalan / (top / (double)n));
+        }
         public static float Oran(int fiyat, int tuy) { return fiyat <= 0 ? 1 : Math.Min(1f, Math.Max(0f, tuy / (float)fiyat)); }
         // Bu maçın Tüy'ü hedefi ilk kez yetişir yaptı mı ("Hedefin hazır" düğmesi yalnız o maçta; sonraki maçlarda satır "Hazır" der).
         public static bool YeniHazir(int fiyat, int tuyOnce, int tuySonra) { return fiyat > 0 && tuyOnce < fiyat && tuySonra >= fiyat; }

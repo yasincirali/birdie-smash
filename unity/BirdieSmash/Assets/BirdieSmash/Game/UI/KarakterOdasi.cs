@@ -104,13 +104,18 @@ namespace BirdieSmash.Game
         public void RaketParcaSec(string p) { raketParca = p; root.vitrin.RaketParca(p); Tik(); SoyunmaGovdeKur(true); }   // EkranTuru + vitrin dokunuşu
         void RaketSayfa(VisualElement c)
         {
-            var s = Satir("segment"); s.AddToClassList("alt-segment"); s.AddToClassList("parca-ray"); c.Add(s);
+            // 2026-11-07 stüdyo incelemesi (UX4): altı parça 2×3 büyük düğmeydi, ×2'de ~190 pt yiyip seçenekleri alt kenara itiyordu.
+            // Kategori şeridi gibi tek satır, yatay kayar; seçili parça görünür alana getirilir. Yazı küçülmez (sığdırma yok).
+            var hk = new ScrollView(ScrollViewMode.Horizontal); hk.AddToClassList("kategori-kaydir"); hk.AddToClassList("parca-kaydir");
+            hk.horizontalScrollerVisibility = ScrollerVisibility.Hidden; hk.verticalScrollerVisibility = ScrollerVisibility.Hidden; c.Add(hk);
+            var s = Satir("segment"); s.AddToClassList("kategori-ray"); s.AddToClassList("parca-ray"); hk.Add(s); VisualElement secEl = null;
             for (int i = 0; i < PARCA.Length; i++)
             {
                 string p = PARCA[i]; bool sec = raketParca == p;
                 var d = Cip(L.T(PARCA_AD[i]), sec, () => { if (raketParca != p) RaketParcaSec(p); });
-                d.AddToClassList("segment-cip"); d.AddToClassList("dar-cip"); Sigdir(d); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; s.Add(d);
+                d.AddToClassList("segment-cip"); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; s.Add(d); if (sec) secEl = d;
             }
+            if (secEl != null) { var se = secEl; EventCallback<GeometryChangedEvent> gc = null; gc = e => { if (se.layout.width > 0) { hk.ScrollTo(se); se.UnregisterCallback(gc); } }; se.RegisterCallback(gc); }
             var gr = Ayar.gear; int sv = gr.Seviye(); string ps = raketParca;
             if (ps == null || ps == "kafa") KafaSekliSira(c);
             if (ps == null || ps == "cerceve")
@@ -152,20 +157,20 @@ namespace BirdieSmash.Game
             OrnekSira(c, L.T("Şaft"), l, Ayar.RGOR["saft"], id => { Ayar.RGOR["saft"] = id; Ayar.Kaydet(); });
         }
 
-        // Vitrinin sol altı: Yüz · Ayak · Tutuş. Seçili ✓ ve açık zemin; aynısına dokunmak Tüm boy'a döner.
+        // Vitrinin sol altı: Yüz · Ayak · Tutuş. 2026-11-07 (stüdyo AD2/UX3): 44×44 simge düğme; yazılı hâli altındaki kategori
+        // satırıyla iki "Face" gösteriyordu. Seçili = turuncu çerçeve (çip dili); ad ekran okuyucuda. Aynısına dokunmak Tüm boy'a döner.
         void OdakDugmeleriKur()
         {
             if (vitrinOdak == null) return; vitrinOdak.Clear(); var vt = root.vitrin;
             // raket tezgâhında figür görünmez: Yüz/Ayak/Tutuş anlamsız, parça rayı aşağıda (2026-10-30)
             if (vt.hedefGec >= 1) return;
-            var ad = new[] { "Yüz", "Ayak", "Tutuş" }; var od = new[] { Vitrin.YUZ, Vitrin.AYAK, Vitrin.TUTUS };
+            var ad = new[] { "Yüz", "Ayak", "Tutuş" }; var od = new[] { Vitrin.YUZ, Vitrin.AYAK, Vitrin.TUTUS }; var sim = new[] { Ikonlar.Yuz, Ikonlar.Ayak, Ikonlar.Tutus };
             for (int i = 0; i < 3; i++)
             {
                 int o = od[i]; bool sec = vt.odak == o && vt.hedefGec < 1;
                 var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("odak-dugme"); if (sec) d.AddToClassList("odak-dugme--secili");
                 var ic = new VisualElement(); ic.AddToClassList("cip-ic"); ic.pickingMode = PickingMode.Ignore; d.Add(ic);
-                if (sec) ic.Add(Ikon(Ikonlar.Tik, 13, MUREKKEP));
-                ic.Add(Yazi(L.T(ad[i]), VitrinPx(13), "dugme-yazi"));
+                ic.Add(Ikon(sim[i], 24, sec ? TURUNCU : YAZI));
                 d.AddManipulator(new Clickable(() => { Tik(); vt.Odak(sec ? Vitrin.TAM : o, o == Vitrin.TUTUS ? vt.poz ?? "drive" : null); SoyunmaGovdeKur(true); }));
                 Erisim.Etiket(d, L.T("Yakın plan: {0}", L.T(ad[i])) + (sec ? ", " + L.T("tüm boya dönmek için yeniden dokun") : ""), "dugme", sec);
                 vitrinOdak.Add(d);

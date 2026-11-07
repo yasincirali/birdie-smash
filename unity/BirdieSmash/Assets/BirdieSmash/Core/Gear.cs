@@ -347,6 +347,14 @@ namespace BirdieSmash.Core
             return o;
         }
 
+        // Maç sonu ödüllü reklam (2026-11-07, Core/OdulluReklam): izlenince yalnız Tüy +%50; XP, seviye, yıldız değişmez.
+        // Kartın ödül satırı aynı OdulSonuc'tan okunduğu için ekran değişmeden güncellenir.
+        public int ReklamOdulu(OdulSonuc o)
+        {
+            if (o == null) return 0; int ek = OdulluReklam.Ek(o.tuy); if (ek <= 0) return 0;
+            o.tuy += ek; eko.tuy += ek; o.ek.Add("reklam ödülü +" + ek); EkoYaz(); return ek;
+        }
+
         // Antrenman görevi ödülü (2026-10-26, tasarım §3.6): yalnız ilk kez alınan yıldız, yıldız başına +25 Tüy, +30 XP.
         // Aynı görevi tekrar oynamak ödül vermez (yıldız en iyi sonuçtur); maç ödülü (Odul) antrenmanda hiç yoktur.
         public const int DRIL_TUY = 25, DRIL_XP = 30;

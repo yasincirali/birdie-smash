@@ -183,7 +183,7 @@ namespace BirdieSmash.Game
             ani.Sifirla(); AniDur(); aniIzlendi = false;   // Maçın anı her maç kendi rallilerinden (Günün maçı, Usta yolu, görev de buradan geçer)
             match = new Match(tohum, o);
             Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; yerN = 0; yerTop = null; yardimN = 0; yardimTop = null;
-            fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; pencere = false; sfx.SuAlti(false); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
+            fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; pencere = false; sfx.SuAlti(false); ReklamKartKapat(); ReklamSdk.OdulluHazirla(); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
             GirisKur(o);
@@ -367,7 +367,10 @@ namespace BirdieSmash.Game
             if (KariyerVeri.Var(M.stil.kariyer))
             {   // yıldızlar ve açılış Core/Ilerleme'de; Tur 1 sayısı (tuytop_v2.kariyer, başarımlar) ondan türer
                 int g = M.stil.kariyer; var bg = M.BasamakGorevi;
+                int torenTur = KariyerVeri.TurOf(g), muhur0 = Ayar.ilerleme.Muhur(torenTur);
                 var r = Ayar.ilerleme.Isle(g, won, bg != null && bg.bitti, M.sc[0], M.sc[1], M.target);
+                // Tur töreni (2026-11-07 stüdyo GD1/GD5): tur finali ya da yeni tur mührü menüye dönüşte bir kez sahnelenir (UiKok.TurToren)
+                int muhur1 = Ayar.ilerleme.Muhur(torenTur); if (r.turBitti || muhur1 > muhur0) UiKok.TorenBekle(torenTur, r.turBitti, muhur0, muhur1);
                 kariyerIlk = r.ilkGalibiyet; kNot = r.not; yeniYildiz = r.yeniYildiz;
                 Ayar.kariyer = Ayar.ilerleme.Tur1Gecilen(); if (Ayar.kariyer >= Match.KARIYER.Length) Ayar.sampiyon = true;
                 if (kariyerIlk && KariyerVeri.TurOf(g) == 0) { Basarim.Ver("bs_kariyer_" + Ayar.kariyer); Basarim.Giris(Ayar.kariyer); }   // giriş isteği ilk basamaktan sonra
@@ -404,6 +407,8 @@ namespace BirdieSmash.Game
             // Maç sonu ödülü (HTML ekoOdul): antrenmanda yok (antrenman maç sonu ekranına gelmez). Yeni yıldız +20 Tüy, okunan imza +5 XP.
             bool hazirOnce = YukseltAlinir(Ayar.gear.Seviye());   // ödülden önce: bu maç yeni bir şey açtı mı
             odul = Ayar.gear.Odul(won, kariyerIlk, M.target, M.easy, M.gorevBitti, M.perfects, System.DateTime.Now, yeniYildiz, M.okudun, ekTuy, ekXp, ekAd);
+            PlayerPrefs.SetString(Hedef.SON_ANAHTAR, Hedef.SonEkle(PlayerPrefs.GetString(Hedef.SON_ANAHTAR, ""), odul.tuy));   // "≈ N maç" (Core/Hedef.MacTahmini)
+            rekKart = true;   // ödüllü reklam teklifi yalnız gerçek maç kartında (antrenman ve görev kartında yok)
             if (odul.sonra > odul.once) Yerel.Hap("flow");   // seviye atladın
             if (odul.sonra >= 30) Basarim.Ver(Basarim.EFSANE);
             // "Ekipmanı yükselt": alınabilecek yükseltme ya da (ekipman v2) seviyesi gelmiş, Tüy'ü yeten model varsa.
@@ -500,6 +505,34 @@ namespace BirdieSmash.Game
         public void AniDur() { ani.Bitir(); aniS = null; }
         bool ustaDavetSayildi, aniIzlendi;
         public bool AniIzlendi { get { return aniIzlendi; } }
+        // ---- maç sonu ödüllü reklam (2026-11-07; kural Core/OdulluReklam, SDK Game/ReklamSdk, düğme Hud) ----
+        // Kart durumu maç başına: teklif görüldü mü, izlendi mi, bu maç denendi mi. Kart kapanınca (yeni maç başlarken) ret/sus
+        // sayacı işlenir; sayaç PlayerPrefs'te (tuytop_ öneki, cihaza özgü, buluta gitmez: günlük tavan cihaz başına yeter).
+        bool rekKart, rekGoruldu, rekIzlendi, rekDenendi;
+        static OdulluReklam.Durum RekDurum() { return OdulluReklam.Durum.Oku(PlayerPrefs.GetString(OdulluReklam.ANAHTAR, "")); }
+        static void RekYaz(OdulluReklam.Durum d) { PlayerPrefs.SetString(OdulluReklam.ANAHTAR, d.Yaz()); PlayerPrefs.Save(); }
+        public bool ReklamUygun(bool baskaIkincil)
+        {
+            if (!rekKart || odul == null) return false;
+            return OdulluReklam.Uygun(RekDurum(), OdulluReklam.Gun(System.DateTime.Now), Ayar.wins, odul.tuy, baskaIkincil, rekDenendi, ReklamSdk.OdulluHazir);
+        }
+        public void ReklamTeklifGordu() { rekGoruldu = true; }
+        public void OdulluIzle()
+        {
+            if (!rekKart || odul == null || rekDenendi) return; rekDenendi = true; var o = odul;
+            ReklamSdk.OdulluGoster(k =>
+            {
+                if (!k || o != odul) return;   // yarıda kapandı ya da kart değişti: ödül yok, düğme bu maç bir daha çıkmaz
+                Ayar.gear.ReklamOdulu(o); var d = RekDurum(); OdulluReklam.Izlendi(d, OdulluReklam.Gun(System.DateTime.Now)); RekYaz(d);
+                rekIzlendi = true; Yerel.Hap("tick"); PlayerPrefs.Save(); Bulut.Yaz();
+            });
+        }
+        void ReklamKartKapat()
+        {
+            if (rekKart) { var d = RekDurum(); OdulluReklam.KartKapandi(d, rekGoruldu, rekIzlendi); RekYaz(d); }
+            rekKart = rekGoruldu = rekIzlendi = rekDenendi = false;
+        }
+
         public void UstaDavetGordu() { if (ustaDavetSayildi) return; ustaDavetSayildi = true; PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); PlayerPrefs.Save(); }
         public void UstaDene() { ustaDeneSonraki = true; ustaDavet = false; TekrarOyna(); }
         Style rovansStil, rovansSiradaki, sonHizliStil;   // rovansStil: maç sonu ekranında sunulan; rovansSiradaki: yalnız ana düğmeyle başlayan maça geçer
@@ -602,10 +635,27 @@ namespace BirdieSmash.Game
         float Ref { get { return 640f / Mathf.Max(1, Screen.height); } }
         Vector2 RefPos(Vector2 screen) { return new Vector2(screen.x * Ref, (Screen.height - screen.y) * Ref); }   // y aşağı
 
+        // Kaydırma ölçümü (2026-11-07, yasin: "kaydırma hızını dokunuş örnekleriyle ölçmek öne alınsın"). Eski girdi sistemi parmağı
+        // karede bir kez okur; hız son 90 ms'deki örneklerden çıkar. Uzun bir kare (takılma) o pencerede 1–2 örnek bırakırsa hız
+        // düşük okunur ve "Yavaş kaydırdın" ıskası gelir. Davranışı DEĞİŞTİRMEZ, yalnız sayar: gizli kare hızı göstergesinin
+        // (Ayarlar başlığına 3 sn'de 5 dokunuş) üçüncü satırı. EnhancedTouch örnek geçmişine geçiş bu sayılara göre karar verilir.
+        public static class KaydirmaOlc
+        {
+            public static int kay, vur, kisa, yavas, kil, uzak, ornekTop, ornekN, uzunKareli;
+            public static int sonOrnek; public static bool uzunKare;
+            public static string Ozet()
+            {
+                if (kay == 0) return "kaydırma: henüz yok";
+                return "kaydırma " + kay + " · vuruş %" + Mathf.RoundToInt(100f * vur / kay) + " · ıska kısa " + kisa + " yavaş " + yavas + " kıl " + kil + " uzak " + uzak
+                    + "\n90 ms'de örnek ort " + (ornekN > 0 ? (ornekTop / (float)ornekN).ToString("F1") : "-") + " · takılmalı kaydırma " + uzunKareli;
+            }
+            public static void Bitti(bool vurdu) { kay++; if (vurdu) vur++; ornekTop += sonOrnek; ornekN++; if (uzunKare) uzunKareli++; uzunKare = false; }
+        }
         void SwipeVec(out float dx, out float dy, out float speed)
         {
             var tr = input.tr; var last = tr[tr.Count - 1]; var a = tr[0];
             foreach (var p in tr) if (last.z - p.z <= 90) { a = p; break; }   // pencere son harekete göre (HTML swipeVec)
+            int n = 0; foreach (var p in tr) if (last.z - p.z <= 90) n++; KaydirmaOlc.sonOrnek = n;
             float dt = Mathf.Max(16, last.z - a.z); dx = last.x - a.x; dy = last.y - a.y; speed = Mathf.Sqrt(dx * dx + dy * dy) / dt;
         }
         // Kavis (slice): izin ilk yarısı ile ikinci yarısının yönü 0,8 rad'dan fazla ayrışıyorsa ve ikinci yarı 25 px'ten uzunsa.
@@ -709,6 +759,7 @@ namespace BirdieSmash.Game
             }
             else if (held && input.on)
             {
+                if (Time.unscaledDeltaTime > .034f) KaydirmaOlc.uzunKare = true;
                 var prev = input.tr[input.tr.Count - 1]; input.tr.Add(new Vector3(q.x, q.y, now));
                 while (input.tr.Count > 2 && now - input.tr[0].z > 300) input.tr.RemoveAt(0);
                 if (Vector2.Distance(q, input.p0) > 18) input.moved = true;
@@ -734,7 +785,7 @@ namespace BirdieSmash.Game
                     // Topun üstünden geçmek şart değil: pencere açıkken belirgin kaydırma (70 px, kavis için yer) vuruştur; topu kesmek mükemmeli verir.
                     bool durdu = M.ogr != null && M.ogr.dur;
                     if (!durdu && (d <= R || (far > 70 && speed > .45f)))
-                        if (M.SwipeShot(Jest(new SwipeInput { dx = dx, dy = dy, speed = speed, dist = d <= R ? d : R * 1.5f, R = R, side = side, curved = Curved() }))) { input.hit = true; Yerel.Vurus(M.sonTip, M.sonQ, M.sonSlice); }
+                        if (M.SwipeShot(Jest(new SwipeInput { dx = dx, dy = dy, speed = speed, dist = d <= R ? d : R * 1.5f, R = R, side = side, curved = Curved() }))) { input.hit = true; KaydirmaOlc.Bitti(true); Yerel.Vurus(M.sonTip, M.sonQ, M.sonSlice); }
                 }
             }
             else if (up && input.on)
@@ -754,6 +805,8 @@ namespace BirdieSmash.Game
                     {   // "doğru zamanda vurdum ama geçti": ıskanın nedeni bir kelimeyle
                         float dx, dy, speed; SwipeVec(out dx, out dy, out speed);
                         string neden = far < 70 ? "Kısa kaydırdın" : speed <= .45f ? "Yavaş kaydırdın" : input.minD < 2.2f ? "Kıl payı: topun üstünden geç" : "Topun uzağından geçtin";
+                        if (far < 70) KaydirmaOlc.kisa++; else if (speed <= .45f) KaydirmaOlc.yavas++; else if (input.minD < 2.2f) KaydirmaOlc.kil++; else KaydirmaOlc.uzak++;
+                        KaydirmaOlc.Bitti(false);
                         hud.Say(L.T("Iska · {0}", L.T(neden)), Kit.W(M.me.x, M.me.y, 1.6f), Kit.Hex("#ffd27a"), 1, false, 2); sfx.Iska();
                     }
                 }

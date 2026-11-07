@@ -128,6 +128,10 @@ namespace BirdieSmash.Core
         public int Yildiz(int g) { return Say(Maske(g)); }
         public bool Kazanildi(int g) { return (Maske(g) & KAZAN) != 0; }
         public int TurYildiz(int t) { int n = 0; foreach (var m in tur[t]) n += Say(m); return n; }
+        // Tur mührü (2026-11-07, yasin karar kartı "Ekle"; stüdyo GD5): 9★ bronz, 18★ altın. Fiyatsız prestij: satılmaz, geri alınmaz,
+        // süresi yok; TurYildiz'dan hesaplanır, yeni kayıt anahtarı yok. 0 yok, 1 bronz, 2 altın.
+        public const int MUHUR_BRONZ = 9, MUHUR_ALTIN = 18;
+        public int Muhur(int t) { int n = TurYildiz(t); return n >= MUHUR_ALTIN ? 2 : n >= MUHUR_BRONZ ? 1 : 0; }
         public int ToplamYildiz { get { int n = 0; for (int t = 0; t < tur.Length; t++) n += TurYildiz(t); return n; } }
 
         // Tur verisi var ve önceki turun finali kazanıldı.

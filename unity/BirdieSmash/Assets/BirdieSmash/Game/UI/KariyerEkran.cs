@@ -42,8 +42,22 @@ namespace BirdieSmash.Game
             {
                 var kl = Satir("rakip-satir"); kb.Add(kl); kl.Add(Ikon(Ikonlar.Kilit, 18, SOLUK)); var ky = Yazi(KilitNedeni(tr), 14, "soluk"); ky.style.marginLeft = 6; kl.Add(ky);
             }
-            if (tv != null) kb.Add(Yazi(L.T("Önerilen ekipman puanı {0}–{1} · seninki {2}", tv.epMin, tv.epMax, EkipmanPuani()), 13, "soluk"));
-            Erisim.Etiket(kb, L.T(TurAd(tr)) + (veri ? ", " + L.T("{0}/{1} yıldız", p.TurYildiz(tr), 18) : "") + (!acik ? ", " + KilitNedeni(tr) : ""), "metin");
+            // Tur giriş kartı (2026-11-07 stüdyo GD2): tema cümlesi, altı rakip noktası (yenilen ✓) ve hazırlık çubuğu. "Önerilen 12–24 ·
+            // seninki 6" sorun gösterip çözüm göstermiyordu. Çubuk yalnız bilgi, kapı değil (öneri-kilit ayrımı); ekipman puanı alt
+            // sınırın altındaysa "Atölye'ye git" (puan yuva seviyelerinin toplamı, Atölye'de yükselir), değilse düğme yok.
+            if (tv != null && !string.IsNullOrEmpty(tv.tema)) { var tm = Yazi(L.T(tv.tema), 14); tm.AddToClassList("tur-tema"); kb.Add(tm); }
+            if (veri) { var rn = Satir("tur-rakipler"); rn.pickingMode = PickingMode.Ignore; kb.Add(rn); for (int b = 0; b < KariyerVeri.BASAMAK; b++) { int g = KariyerVeri.Global(tr, b); var st = Match.STIL[KariyerVeri.Al(g).stil]; var n = new VisualElement(); n.AddToClassList("tur-rakip-nokta"); n.style.backgroundColor = Kit.Hex(st.renk); if (!p.Kazanildi(g)) n.AddToClassList("tur-rakip-nokta--yok"); else n.Add(Ikon(Ikonlar.Tik, 11, MUREKKEP)); n.pickingMode = PickingMode.Ignore; rn.Add(n); } }
+            if (tv != null)
+            {
+                int ep = EkipmanPuani(); bool az = ep < tv.epMin;
+                var hz = Satir("arali"); hz.pickingMode = PickingMode.Ignore; kb.Add(hz);
+                hz.Add(Yazi(L.T("Ekipman {0}/{1}", ep, tv.epMin), 13, az ? "durum-simdi" : "soluk")); hz.Add(Yazi(az ? L.T("{0} puan eksik", tv.epMin - ep) : L.T("Hazırsın"), 13, az ? "soluk" : "durum-gecti"));
+                var iz = new VisualElement(); iz.AddToClassList("stat-iz"); iz.AddToClassList("tur-hazir-iz"); iz.pickingMode = PickingMode.Ignore; kb.Add(iz);
+                var dl = new VisualElement(); dl.AddToClassList("stat-dolu"); dl.style.width = Length.Percent(Mathf.Clamp01(ep / (float)Mathf.Max(1, tv.epMin)) * 100); dl.pickingMode = PickingMode.Ignore; iz.Add(dl);
+                if (az && acik) { var ag = Dugme(L.T("Atölye'ye git"), () => SekmeAc(Sekme.Atolye), "kucuk-dugme"); ag.style.alignSelf = Align.FlexStart; ag.style.marginTop = 8; kb.Add(ag); }
+            }
+            Erisim.Etiket(kb, L.T(TurAd(tr)) + (veri ? ", " + L.T("{0}/{1} yıldız", p.TurYildiz(tr), 18) : "") + (!acik ? ", " + KilitNedeni(tr) : "") + (tv != null && !string.IsNullOrEmpty(tv.tema) ? ", " + L.T(tv.tema) : "") + (tv != null ? ", " + L.T("Ekipman {0}/{1}", EkipmanPuani(), tv.epMin) : ""), "metin");
+            SiradakiSerit(k, p, sira);
             if (!veri) { c.Add(Bosluk(20)); return; }
 
             // 2026-10-26: Usta yolu son turun üstünde (finalden sonra gelir; kilitliyken nedeniyle görünür)
@@ -58,15 +72,34 @@ namespace BirdieSmash.Game
             }
             c.Add(Bosluk(12));
             // Şimdiki düğüm görünür alanın alt yarısında (≈ %62'de) dursun; yerleşim bitince (içerik yüksekliği belli olunca).
+            // 2026-11-07 (UX5, AD notu): 60 ms'lik zamanlayıcı yerleşimden önce çalışabiliyordu, oyuncu (ve ekran turu) haritayı kilitli
+            // finallerle açıyordu. Artık içerik yerleşince (GeometryChanged) bir kez, animasyonsuz; zamanlayıcı yedek.
             if (simdiki != null)
             {
-                var hedef = simdiki;
-                sv.schedule.Execute(() =>
+                var hedef = simdiki; bool yapildi = false;
+                System.Action kaydir = () =>
                 {
-                    float vh = sv.contentViewport.layout.height, y = hedef.worldBound.y - sv.contentContainer.worldBound.y; if (float.IsNaN(vh) || float.IsNaN(y)) return;
+                    if (yapildi) return; float vh = sv.contentViewport.layout.height, y = hedef.worldBound.y - sv.contentContainer.worldBound.y;
+                    if (float.IsNaN(vh) || float.IsNaN(y) || vh <= 0 || hedef.layout.height <= 0) return; yapildi = true;
                     sv.scrollOffset = new Vector2(0, Mathf.Max(0, y + hedef.layout.height / 2 - vh * .62f));
-                }).StartingIn(60);
+                };
+                EventCallback<GeometryChangedEvent> gc = null; gc = e => { kaydir(); if (yapildi) sv.contentContainer.UnregisterCallback(gc); };
+                sv.contentContainer.RegisterCallback(gc); sv.schedule.Execute(kaydir).StartingIn(60);
             }
+        }
+
+        // Sabit "Sıradaki" şeridi (2026-11-07 stüdyo UX5): haritada sıradaki maç düğüm → kart → Oyna diye üç dokunuştu ve şimdiki
+        // basamak çoğu zaman görünür alanın dışındaydı. Sekme çubuğunun üstünde, kaydırmadan bağımsız tek turuncu dokunuş: maç
+        // kartını açar (düğümle aynı yol). Kilitli bir turu incelerken de durur: oyuncuyu kendi turuna döndürür (UX6). Kariyer
+        // bitince yok.
+        void SiradakiSerit(VisualElement k, Ilerleme p, int sira)
+        {
+            if (p.HepsiBitti || sira < 0 || !p.Acik(sira)) return;
+            int tr = KariyerVeri.TurOf(sira); if (tr >= KariyerVeri.Turlar.Length || !KariyerVeri.Turlar[tr].Var) return;
+            var kb = KariyerVeri.Al(sira); var st = Match.STIL[kb.stil]; int b = KariyerVeri.BasOf(sira);
+            string bas = L.T("Sıradaki maç"), alt = (b + 1) + ". " + L.T(kb.yer) + " · " + st.isim;
+            var d = Dugme(bas, () => MacKartAc(sira), "dugme--birincil", alt, 17); d.AddToClassList("siradaki-serit"); Sigdir(d);
+            Erisim.Etiket(d, bas + ", " + L.T(TurAd(tr)) + ", " + alt, "dugme"); k.Add(d);
         }
 
         static int TurSayisiVeri() { int n = 0; foreach (var t in KariyerVeri.Turlar) if (t.Var) n++; return n; }
@@ -81,17 +114,19 @@ namespace BirdieSmash.Game
             return L.T("{0} finalini kazan", L.T(TurAd(t - 1)));
         }
 
-        // Tur seçici çipi: seçili = açık zemin (2026-10-26 Yayın Gecesi; eskiden camgöbeği) (yazı ve ✓ ile), kilitli = kilit simgesi, bitmiş = kupa simgesi.
+        // Tur seçici çipi: seçili = turuncu çerçeve + tint (2026-11-07; önce açık zemin, ondan önce camgöbeği) (yazı ve ✓ ile), kilitli = kilit simgesi, bitmiş = kupa simgesi.
         VisualElement TurCip(int t)
         {
             var p = Ayar.ilerleme; bool secili = t == kariyerTur, acik = p.TurAcik(t), bitti = acik && p.TurBitti(t);
             var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("cip"); d.AddToClassList("tur-cip"); if (secili) d.AddToClassList("cip--secili"); if (!acik) d.AddToClassList("tur-cip--kilit");
             var ic = new VisualElement(); ic.AddToClassList("cip-ic"); ic.pickingMode = PickingMode.Ignore; d.Add(ic);
-            var renk = secili ? MUREKKEP : Color.white;
-            if (!acik) ic.Add(Ikon(Ikonlar.Kilit, 14, renk)); else if (bitti) ic.Add(Ikon(Ikonlar.Kupa, 14, renk)); else if (secili) ic.Add(Ikon(Ikonlar.Tik, 14, renk));
+            // 2026-11-07 (AD1, UX6): seçili = turuncu çerçeve + tint (çip dili); simge krem, ✓ turuncu. Kilitli seçili çipte ✓ yok, kilit kalır.
+            if (!acik) ic.Add(Ikon(Ikonlar.Kilit, 14, secili ? YAZI : SOLUK)); else if (bitti) ic.Add(Ikon(Ikonlar.Kupa, 14, YAZI)); else if (secili) ic.Add(Ikon(Ikonlar.Tik, 14, TURUNCU));
             ic.Add(Yazi(L.T("Tur {0}", t + 1), 14, "dugme-yazi"));
+            // tur mührü (2026-11-07 GD5): bronz = çerçeve yıldız, altın = dolu yıldız (biçim + ekran okuyucu adı)
+            int mh = acik ? p.Muhur(t) : 0; if (mh > 0) { var mi = Ikon(mh >= 2 ? Ikonlar.YildizDolu : Ikonlar.YildizBos, 13, mh >= 2 ? ALTIN : BRONZ); mi.style.marginLeft = 4; ic.Add(mi); }
             int tt = t; d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); KariyerTurSec(tt); }));
-            Erisim.Etiket(d, L.T("Tur {0}", t + 1) + ", " + L.T(TurAd(t)) + (!acik ? ", " + L.T("Kilitli") : bitti ? ", " + L.T("tamam") : ""), "dugme", secili);
+            Erisim.Etiket(d, L.T("Tur {0}", t + 1) + ", " + L.T(TurAd(t)) + (!acik ? ", " + L.T("Kilitli") : bitti ? ", " + L.T("tamam") : "") + (mh >= 2 ? ", " + L.T("Altın tur mührü") : mh == 1 ? ", " + L.T("Bronz tur mührü") : ""), "dugme", secili);
             return d;
         }
 

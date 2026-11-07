@@ -171,8 +171,10 @@ namespace BirdieSmash.Game
         // Seviye kilitli eşyada çağrılmaz (çağıranlar Kilitli dalını önce ayırır; Ayar.HedefBilgi yine de geçersiz sayar).
         VisualElement HedefDugme(string kat, string id, int eksik, string alt, System.Action yenile)
         {
-            if (Ayar.HedefMi(kat, id)) return Pasif(L.T("Hedefin · {0} Tüy kaldı", eksik), L.T("Maç sonunda ne kadar yaklaştığını görürsün"));
-            return Dugme(L.T("Hedef yap"), () => { Ayar.HedefYaz(kat, id); Yerel.Hap("tick"); if (yenile != null) yenile(); }, "dugme--hedef", alt, 15);
+            // 2026-11-07 (GD6): "≈ N maç" son 5 maçın Tüy ortalamasıyla; 3 maçtan az veri varsa yazılmaz
+            int mt = Hedef.MacTahmini(eksik, PlayerPrefs.GetString(Hedef.SON_ANAHTAR, "")); string ms = mt > 0 ? " · " + L.T("≈ {0} maç", mt) : "";
+            if (Ayar.HedefMi(kat, id)) return Pasif(L.T("Hedefin · {0} Tüy kaldı", eksik) + ms, L.T("Maç sonunda ne kadar yaklaştığını görürsün"));
+            return Dugme(L.T("Hedef yap") + ms, () => { Ayar.HedefYaz(kat, id); Yerel.Hap("tick"); if (yenile != null) yenile(); }, "dugme--hedef", alt, 15);
         }
         // Maç sonu "Hedefin hazır" (Hud): ekipman modeli kendi yuva sayfasında, kozmetik ve ayakkabı Dolap'ta deneniyor olarak
         // açılır; alt çubuk "… Tüy ile al" der. Satın alma yine oyuncunun dokunuşuyla.
