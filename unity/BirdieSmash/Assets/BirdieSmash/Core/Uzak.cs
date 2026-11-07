@@ -25,7 +25,7 @@ using System.Text;
 
 namespace BirdieSmash.Core
 {
-    public enum PaketTur : byte { Vurus = 1, Sayi = 2, Konum = 3 }
+    public enum PaketTur : byte { Vurus = 1, Sayi = 2, Konum = 3, Ayrildi = 4 }   // Ayrildi: gönderen maçtan çekildi (hükmen yenilgi), gövde yok
 
     // Tek paket türü (alanların kullanılmayanı 0): Vurus = temas noktası + hız + tür; Sayi = kazanan + neden + skor;
     // Konum = oyuncunun kort noktası. Koordinatlar GÖNDERENİN çerçevesinde; alan Uygula sırasında aynalar.
@@ -50,7 +50,7 @@ namespace BirdieSmash.Core
                     Yazi(w, tip); Yazi(w, vurus); Yazi(w, q); Yazi(w, servisTur);
                 }
                 else if (tur == PaketTur.Sayi) { w.Write(benKazandim); Yazi(w, neden); w.Write((byte)sc0); w.Write((byte)sc1); }
-                else { w.Write(x); w.Write(y); }
+                else if (tur == PaketTur.Konum) { w.Write(x); w.Write(y); }
                 return ms.ToArray();
             }
         }
@@ -70,7 +70,7 @@ namespace BirdieSmash.Core
                     }
                     else if (p.tur == PaketTur.Sayi) { p.benKazandim = r.ReadBoolean(); p.neden = Oku(r); p.sc0 = r.ReadByte(); p.sc1 = r.ReadByte(); }
                     else if (p.tur == PaketTur.Konum) { p.x = r.ReadSingle(); p.y = r.ReadSingle(); }
-                    else return null;
+                    else if (p.tur != PaketTur.Ayrildi) return null;
                     return p;
                 }
             }
@@ -161,6 +161,7 @@ namespace BirdieSmash.Core
         int UzakUygula(UzakPaket p)
         {
             if (p.tur == PaketTur.Konum) { uzakHx = AynaX(p.x); uzakHy = AynaY(p.y); return 1; }
+            if (p.tur == PaketTur.Ayrildi) { if (!over) HukmenBitir("me"); return 1; }   // rakip çekildi: sırayı beklemez, her an geçerli
             if (p.tur == PaketTur.Sayi)
             {
                 if (over) return -1;
@@ -203,18 +204,67 @@ namespace BirdieSmash.Core
         void UzakSapmaOlc(float x, float y, float z)
         {
             // Yol 1/60 sn'de bir nokta (Shuttle.Simulate): smaçta noktalar ~0,5 m aralıklı, bu yüzden parçaya uzaklık ölçülür.
-            float en = float.MaxValue; var P = s.landPred.path;
+            // 2026-11-07 inceleme: topun gerçek son yolu da aday (şu anki yer + hızla geriye gecikme×1,5 + 0,1 sn). Fileye yakın drive'da
+            // tahmin yolu fileyi sıyırmayı öngörüp 2 noktada bitiyor, top ise geçiyor; payda yerde bekleyen topta da yol eski kalıyor.
+            // Rakip topu doğru yerde almışken ölçüm 0,3–1,4 m "sapma" yazıyordu: ölçüm hatası, çekirdekler ayrışmıyordu (BotMac
+            // IkizMaclar titreşim tohumu 41 dışındaki 43/44/45 yakaladı; maç sonu ağır çekimi rastgele sırayı kaydırınca görüldü).
+            // Payda yerde duran topun hızı sıfırlanmıştır: geriye iniş hızıyla (uzakInV), yerde geçen süre kadar fazla gidilir.
+            bool yerde = s == uzakYerTop && !float.IsNaN(uzakYerAt);
+            float gvx = yerde ? uzakInV[0] : s.vx, gvy = yerde ? uzakInV[1] : s.vy, gvz = yerde ? uzakInV[2] : s.vz;
+            float en = float.MaxValue, geri = uzak.gecikme * 1.5f + .1f + (yerde ? Math.Max(0, clock - uzakYerAt) : 0); var P = s.landPred.path;
+            for (int k = 0; k <= 12; k++)
+            {
+                float t = geri * k / 12f, ex = s.x - gvx * t - x, ey = s.y - gvy * t - y, ez = Math.Max(0, s.z - gvz * t) - z, e2 = ex * ex + ey * ey + ez * ez;
+                if (e2 < en) en = e2;
+            }
             for (int i = 0; i + 1 < P.Count; i++)
             {
                 float ax = P[i].x, ay = P[i].y, az = P[i].z, bx = P[i + 1].x - ax, by = P[i + 1].y - ay, bz = P[i + 1].z - az;
                 float bb = bx * bx + by * by + bz * bz, u = bb > 1e-9f ? Math.Max(0, Math.Min(1, ((x - ax) * bx + (y - ay) * by + (z - az) * bz) / bb)) : 0;
                 float dx = ax + bx * u - x, dy = ay + by * u - y, dz = az + bz * u - z, d2 = dx * dx + dy * dy + dz * dz; if (d2 < en) en = d2;
             }
-            if (en == float.MaxValue) return;
             float d = (float)Math.Sqrt(en); uzakSapmaMax = Math.Max(uzakSapmaMax, d); uzakSapmaToplam += d; uzakSapmaN++;
             if (s.dead) uzakDirilis++; if (s == uzakYerTop) uzakYerdenAlinan++;
         }
 
         float UzakIleriAl() { float v = uzakIleri; uzakIleri = 0; return v; }
+
+        // Servis saati ve çekilme (2026-11-07 inceleme, fikir 06:03 #1). Tek oyunculuda oyuncunun servisi süresiz bekler (acele yok);
+        // online'da servisi atmayan oyuncu karşı telefonu sonsuza dek bekletirdi (rakip servisi yalnız paketle gelir). Bu yüzden yalnız
+        // uzak kipte: servis sırası bende ve hazırsam SERVIS_SAATI sn sonra kısa servis kendiliğinden atılır (en güvenli servis, sayı
+        // vermez). Üst üste OTO_SERVIS_HUKMEN. kez süre dolarsa servis atılmaz, maç hükmen biter: oyuncu ortada yok demektir.
+        // Elle atılan her servis sayacı sıfırlar (SwipeServe). Kadran (halka + son saniye tık + titreşim) görünümün işi, ServisKalan'ı
+        // okur; online ekranı faz 2/3 ile gelir. Uygulamadan çıkma/arka plan süresi (15 sn) de taşıma katmanında Ayril()'ı çağırır.
+        public const float SERVIS_SAATI = 6f; public const int OTO_SERVIS_HUKMEN = 3;
+        float servisSaati; public int otoServis;
+        public bool hukmen; public string hukmenKazanan;   // maç çekilmeyle bitti (maç sonu ekranı "Rakip ayrıldı" der; lig kupası tam)
+        public float ServisKalan { get { return ServisBekliyor() ? Math.Max(0, SERVIS_SAATI - servisSaati) : -1; } }   // -1 = saat işlemiyor
+        bool ServisBekliyor() { return uzak != null && !over && !matchDone && server == "me" && s == null && !between && wait <= 0 && svPending == null; }
+
+        // Adim'den (UzakTick'ten sonra), gerçek dt ile. true = maç bu adımda bitti.
+        bool UzakServisSaati(float dt)
+        {
+            if (!ServisBekliyor()) { servisSaati = 0; return false; }
+            servisSaati += dt;
+            if (servisSaati < SERVIS_SAATI) return false;
+            servisSaati = 0;
+            if (++otoServis >= OTO_SERVIS_HUKMEN) { Ayril(); return true; }
+            ServisAt("me", "kisa", (serveBox.x0 + serveBox.x1) / 2, Court.NET - (Court.SSL + .45f));   // SwipeServe'ün kısa servisiyle aynı hedef
+            return false;
+        }
+
+        // Oyuncu maçtan çekilir (3 otomatik servis, "Maçtan çık", uzun arka plan): karşıya bildir, ben hükmen kaybederim.
+        public void Ayril()
+        {
+            if (uzak == null || over) return;
+            uzak.Gonder(new UzakPaket { tur = PaketTur.Ayrildi, sira = rally });
+            HukmenBitir("op");
+        }
+
+        void HukmenBitir(string kazanan)
+        {
+            hukmen = true; hukmenKazanan = kazanan; uzakBekle = false; s = null; between = false; matchDone = true; over = true;
+            Emit(Ev.MatchEnd, kazanan);
+        }
     }
 }

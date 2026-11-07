@@ -21,8 +21,8 @@ Bölüm ve madde adları Apple'ın "Age ratings values and definitions" sayfası
 | User-Generated Content | No | Oyuncunun yazdığı/yüklediği ve başkasının gördüğü içerik yok. |
 | Social Media | No | — |
 | Social Media Disabled for Users Under 13 | No / uygulanmaz | Sosyal özellik yok. |
-| Messaging and Chat | No | Sohbet, mesaj, çok oyunculu yok. Game Center yalnız başarım içindir; arkadaş/sohbet özelliği oyunda kullanılmaz. |
-| Advertising | No | Reklam yok. |
+| Messaging and Chat | No | Sohbet ve serbest mesaj yok. Game Center yalnız başarım içindir. 2026-11-07: online birebir (kapalı bayrak, faz 1) geldiğinde de cevap **No** kalır: maçta yalnız sabit olumlu ifadeler (emote) var, oyuncunun yazdığı metin karşıya gitmez. Serbest sohbet ya da takma ad dışında metin eklenirse bu satır yeniden değerlendirilir. |
+| Advertising | **Dala bağlı** | 2026-11-07: `Game/Reklam.cs` `ALAN = true` (yer tutucu şerit, PR #40). Reklam SDK'sı bağlanırsa **Yes** ("Contains Ads"; serbest sohbet olmadığı için tek başına yaş derecesini yükseltmez), `ALAN = false` ile gidilirse **No**. Karar `YAPMAN_GEREKENLER.md` "Reklam alanı"nda; App Privacy dalı `app_privacy.md`'de. |
 
 ## Adım 3 — Mature Themes
 

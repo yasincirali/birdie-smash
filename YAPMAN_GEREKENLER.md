@@ -250,3 +250,6 @@ duruyor (`unity/.../Game/Reklam.cs`). Mağazaya 1.0 gönderilmeden önce ikisind
    ATT izin metni ve App Store "App Privacy" etiketi de güncellenir (reklam = veri toplar).
 2. Ya da `Reklam.ALAN = false` yapılır; şerit kalkar, oyun eski yerleşime döner.
 Boş "Reklam" kutusuyla mağazaya gitmek inceleme reddi riskidir (2.1 eksik işlev).
+Hangisi seçilirse seçilsin App Store Connect › Age Rating formunda "Advertising" cevabını
+`store_listing/yas_derecesi.md`'deki dala göre ver (SDK = Yes, ALAN=false = No) ve App Privacy'yi
+`store_listing/app_privacy.md` "reklam" dalına göre güncelle (2026-11-07 inceleme).

@@ -261,12 +261,11 @@ namespace BirdieSmash.Game
             if (Y.k == "tel") TelKur(c);
             c.Add(Grup(L.T("Takımın şimdi"))); var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true);
             c.Add(Grup(L.T("Modeller")));
-            var notr = gr.CubuklarIle(Y.m, Gear.Varsayilan(Y.m));
-            foreach (var m in Gear.GEAR[Y.m].Values) ModelKart(c, Y, m, notr);
+            foreach (var m in Gear.GEAR[Y.m].Values) ModelKart(c, Y, m);
             if (gr.eko.esit) c.Add(Yazi(L.T("Eşit şartlar açık: serbest maçta sayılmaz, kariyerde sayılır"), 12, "soluk"));
         }
 
-        void ModelKart(VisualElement c, Yuva Y, GearModel m, int[] notr)
+        void ModelKart(VisualElement c, Yuva Y, GearModel m)
         {
             var gr = Ayar.gear; var du = gr.Durum(Y.m, m.id); string id = m.id;
             var kart = Kart("model-kart"); if (du == ModelDurum.Secili) kart.AddToClassList("secili"); if (du == ModelDurum.Kilitli) kart.AddToClassList("kilitli"); c.Add(kart);
@@ -278,7 +277,9 @@ namespace BirdieSmash.Game
             var dy = Yazi(durum, 12, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
             var ns = Yazi(L.T(m.n), 13, "ipucu"); kart.Add(ns);
             if (m.renk != null) { var rr = Satir("rakip-satir"); rr.pickingMode = PickingMode.Ignore; kart.Add(rr); var n = new VisualElement(); n.AddToClassList("renk-nokta"); n.style.backgroundColor = Kit.Hex(m.renk); rr.Add(n); rr.Add(Yazi(L.T("Görünüm rengi"), 11, "soluk")); }
-            CubukKart(kart, gr.CubuklarIle(Y.m, m.id), notr, false);
+            // 2026-11-07 inceleme (fikir 06:03 #5): model kartında 5 çubuk yok. Kategori sayfasında 4–6 model × 5 çubuk 20–30 çubuk
+            // ediyordu; arcade oyuncu farkı çubuktan değil m.n cümlesinden ("Güç +6 · drive +4 · tatlı nokta dar") okur, kart yarıya
+            // iner, büyük yazıda kaydırma azalır. Sayısal 5 çubuk sayfanın üstündeki "Takımın şimdi" kartında; seçince o kart yenilenir.
             Erisim.Etiket(kart, L.T(m.ad) + ", " + L.T(m.n) + ", " + durum, "metin", du == ModelDurum.Secili);
             if (du == ModelDurum.Acik) kart.Add(Dugme(L.T("Seç"), () => ModelSec(Y, id), "model-dugme"));
             else if (du == ModelDurum.Alinir)
