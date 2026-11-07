@@ -1,0 +1,29 @@
+ekran boyu istendi 1320x2868 · oldu 1320x2868
+magaza tr_01_smac · vuruş jump (perfect) · skor 9–7 · 1320x2868
+magaza tr_02_ralli · ralli 12 (en uzun 12)
+magaza tr_03_kariyer · taşma tr_03_kariyer · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 58 öğe · 0 sorun
+magaza tr_04_karakter · taşma tr_04_karakter · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 81 öğe · 9 sorun
+   ! yatay taşma (kaydırılamaz) · Sırt · [325,403 53x44]
+   ! yatay taşma (kaydırılamaz) · Ayakkabı · [388,403 88x44]
+   ! yatay taşma (kaydırılamaz) · "Ayakkabı" · [403,415 58x19]
+   ! yatay taşma (kaydırılamaz) · Forma · [486,403 70x44]
+   ! yatay taşma (kaydırılamaz) · "Forma" · [501,415 40x19]
+   ! yatay taşma (kaydırılamaz) · Sevinç · [567,403 72x44]
+   ! yatay taşma (kaydırılamaz) · "Sevinç" · [582,415 42x19]
+   ! yatay taşma (kaydırılamaz) · Raket · [649,403 67x44]
+   ! yatay taşma (kaydırılamaz) · "Raket" · [664,415 37x19]
+magaza tr_05_imza · rakip imza hazırlığı VAR (mermi)
+magaza en_01_smac · vuruş jump (perfect) · skor 9–7 · 1320x2868
+magaza en_02_ralli · ralli 12 (en uzun 12)
+magaza en_03_kariyer · taşma en_03_kariyer · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 58 öğe · 0 sorun
+magaza en_04_karakter · taşma en_04_karakter · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 81 öğe · 8 sorun
+   ! yatay taşma (kaydırılamaz) · Shoes · [383,403 69x44]
+   ! yatay taşma (kaydırılamaz) · "Shoes" · [398,415 39x19]
+   ! yatay taşma (kaydırılamaz) · Shirt · [462,403 61x44]
+   ! yatay taşma (kaydırılamaz) · "Shirt" · [477,415 31x19]
+   ! yatay taşma (kaydırılamaz) · Celebrate · [533,403 93x44]
+   ! yatay taşma (kaydırılamaz) · "Celebrate" · [548,415 63x19]
+   ! yatay taşma (kaydırılamaz) · Racket · [635,403 74x44]
+   ! yatay taşma (kaydırılamaz) · "Racket" · [650,415 43x19]
+magaza en_05_imza · rakip imza hazırlığı VAR (mermi)
+ekran boyu istendi 390x845 · oldu 390x845
