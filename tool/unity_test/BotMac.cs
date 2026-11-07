@@ -442,11 +442,17 @@ static class BotMac
         if (KariyerVeri.Turlar.Length != 4 || !KariyerVeri.Turlar[1].Var || KariyerVeri.Turlar[1].b[5].uzunluk != 11 || !KariyerVeri.Turlar[1].b[5].patron) Fail("Asya Turu verisi");
         if (!KariyerVeri.Turlar[2].Var || !KariyerVeri.Turlar[3].Var) Fail("Tur 3–4 verisi yok");
         foreach (var t in KariyerVeri.Turlar) foreach (var k in t.b) if (Match.GorevBul(k.gorev) == null || !Match.STIL.ContainsKey(k.stil)) Fail("bilinmeyen görev/tarz: " + k.yer);
+        // Kural maçı (2026-11-07): Tur 1 ve patron finali kuralsız, turda en çok bir; Günün maçı tanımı olmalı ve maça geçmeli.
+        int kural = 0;
+        for (int ti = 0; ti < KariyerVeri.Turlar.Length; ti++) { int n = 0; foreach (var k in KariyerVeri.Turlar[ti].b) if (k.degistirici != null) { n++; kural++; if (ti == 0 || k.patron || Gunluk.Deg(k.degistirici) == null) Fail("kural maçı yeri/tanımı: " + k.yer); } if (n > 1) Fail("turda birden çok kural maçı"); }
+        if (kural != 3) Fail("kariyerde 3 kural maçı olmalı: " + kural);
+        var Mk = new Match(5, new MatchOptions { stil = Match.KariyerRakip(8), target = 5, degistirici = KariyerVeri.Al(8).degistirici });
+        if (Mk.degistirici != "uzun" || new Match(5, new MatchOptions { stil = Match.KariyerRakip(9), target = 5, degistirici = KariyerVeri.Al(9).degistirici }).degistirici != null) Fail("kural maçı değiştiricisi maça geçmedi (Seul uzun, Tokyo yok)");
         var M = new Match(5, new MatchOptions { stil = Match.KariyerRakip(1), target = 5 });
         if (M.BasamakGorevi == null || M.BasamakGorevi.id != "karsila" || M.gorevler.Count != 3 || M.gorevler.Select(x => x.id).Distinct().Count() != 3) Fail("basamağın sabit görevi ilk görev olmalı");
         if (new Match(5, new MatchOptions { target = 5 }).BasamakGorevi != null) Fail("serbest maçta sabit görev olmamalı");
         if (Match.KariyerRakip(4).imza != null || Match.KariyerRakip(5).imza != "duvarblok" || Match.KariyerRakip(11).imza != "mermi") Fail("imza yalnız patronda");
-        Console.WriteLine("veri: tool/veri = Resources/veri, Tur 1 birebir, " + KariyerVeri.Turlar.Count(t => t.Var) + " tur, " + Match.STIL.Count + " tarz, sabit görev tamam");
+        Console.WriteLine("veri: tool/veri = Resources/veri, Tur 1 birebir, " + KariyerVeri.Turlar.Count(t => t.Var) + " tur, " + Match.STIL.Count + " tarz, sabit görev, " + kural + " kural maçı tamam");
     }
 
     // Yıldızlar, açılış ve kayıt taşıması (Core/Ilerleme).

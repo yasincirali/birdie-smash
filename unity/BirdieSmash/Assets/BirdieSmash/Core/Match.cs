@@ -90,7 +90,7 @@ namespace BirdieSmash.Core
     }
 
     // Kariyer basamağı (veri/kariyer.json): uzunluk 0 = oyuncunun seçtiği maç uzunluğu; gorev = 2. yıldızın sabit görevi.
-    public class Kariyer { public string stil, yer, saha, gorev; public float g; public int tur, basamak, uzunluk; public bool patron, imza; }
+    public class Kariyer { public string stil, yer, saha, gorev, degistirici; public float g; public int tur, basamak, uzunluk; public bool patron, imza; }
 
     public class ServeBox { public string who; public float x0, x1, y0, y1; }
 
