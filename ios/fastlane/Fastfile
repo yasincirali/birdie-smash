@@ -175,6 +175,19 @@ platform :ios do
     plist = File.join(dir, "Info.plist")
     profile = "match AppStore #{BUNDLE_ID}"
 
+    # 2026-11-07 AdMob (Google Mobile Ads Unity eklentisi, yasin: "şerit en başta bağlı çıksın"): Unity'nin iOS çözücüsü
+    # (External Dependency Manager) Xcode projesinin yanına Podfile yazar ama ubuntu'daki unity-builder pod install
+    # koşamaz. Burada macOS'ta kurulur ve workspace derlenir. İmza ayarları pod install'dan SONRA yazılır: pod install
+    # projeyi yeniden kaydeder. Podfile yoksa (reklam paketi kaldırılırsa) proje eskisi gibi derlenir.
+    podfile = File.join(dir, "Podfile")
+    workspace = File.join(dir, "Unity-iPhone.xcworkspace")
+    if File.exist?(podfile)
+      UI.message("Podfile var: pod install (#{dir})")
+      Dir.chdir(dir) { sh("pod install --repo-update") }
+    end
+    derle_hedefi = File.directory?(workspace) ? { workspace: workspace } : { project: xcodeproj }
+    UI.message("Derlenecek: #{derle_hedefi.values.first}")
+
     api_key = asc_api_key
     ci_imza_hazirla(api_key)
 
@@ -276,9 +289,14 @@ platform :ios do
     set_info_plist_value(path: plist, key: "UISupportedInterfaceOrientations", value: ["UIInterfaceOrientationPortrait"])
     set_info_plist_value(path: plist, key: "UISupportedInterfaceOrientations~ipad", value: ["UIInterfaceOrientationPortrait"])
     set_info_plist_value(path: plist, key: "UIRequiresFullScreen", value: true)
+    # AdMob: GADApplicationIdentifier yoksa SDK ilk açılışta uygulamayı kapatır. Unity eklentisinin derleme sonrası
+    # adımı yazar (CiBuild.ReklamAyar uygulama kimliğini verir); yazılmadıysa TestFlight'a çökecek build gitmesin.
+    if File.exist?(podfile) && get_info_plist_value(path: plist, key: "GADApplicationIdentifier").to_s.empty?
+      UI.user_error!("Info.plist'te GADApplicationIdentifier yok: AdMob'lu build açılışta çöker (CiBuild.ReklamAyar günlüğüne bak)")
+    end
 
     build_app(
-      project: xcodeproj,
+      **derle_hedefi,
       scheme: "Unity-iPhone",
       configuration: "Release",
       export_method: "app-store",

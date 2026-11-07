@@ -15,6 +15,17 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.imageconversion": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
-    "com.unity.purchasing": "4.12.2"
-  }
+    "com.unity.purchasing": "4.12.2",
+    "com.google.ads.mobile": "11.6.0"
+  },
+  "scopedRegistries": [
+    {
+      "name": "package.openupm.com",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.google.ads.mobile",
+        "com.google.external-dependency-manager"
+      ]
+    }
+  ]
 }

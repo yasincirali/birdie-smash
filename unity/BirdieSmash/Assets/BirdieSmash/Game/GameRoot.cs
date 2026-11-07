@@ -183,7 +183,7 @@ namespace BirdieSmash.Game
             ani.Sifirla(); AniDur(); aniIzlendi = false;   // Maçın anı her maç kendi rallilerinden (Günün maçı, Usta yolu, görev de buradan geçer)
             match = new Match(tohum, o);
             Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; yerN = 0; yerTop = null; yardimN = 0; yardimTop = null;
-            fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; pencere = false; sfx.SuAlti(false); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
+            fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; pencere = false; sfx.SuAlti(false); ReklamKartKapat(); ReklamSdk.OdulluHazirla(); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
             GirisKur(o);
@@ -404,6 +404,7 @@ namespace BirdieSmash.Game
             // Maç sonu ödülü (HTML ekoOdul): antrenmanda yok (antrenman maç sonu ekranına gelmez). Yeni yıldız +20 Tüy, okunan imza +5 XP.
             bool hazirOnce = YukseltAlinir(Ayar.gear.Seviye());   // ödülden önce: bu maç yeni bir şey açtı mı
             odul = Ayar.gear.Odul(won, kariyerIlk, M.target, M.easy, M.gorevBitti, M.perfects, System.DateTime.Now, yeniYildiz, M.okudun, ekTuy, ekXp, ekAd);
+            rekKart = true;   // ödüllü reklam teklifi yalnız gerçek maç kartında (antrenman ve görev kartında yok)
             if (odul.sonra > odul.once) Yerel.Hap("flow");   // seviye atladın
             if (odul.sonra >= 30) Basarim.Ver(Basarim.EFSANE);
             // "Ekipmanı yükselt": alınabilecek yükseltme ya da (ekipman v2) seviyesi gelmiş, Tüy'ü yeten model varsa.
@@ -499,6 +500,34 @@ namespace BirdieSmash.Game
         public void AniDur() { ani.Bitir(); aniS = null; }
         bool ustaDavetSayildi, aniIzlendi;
         public bool AniIzlendi { get { return aniIzlendi; } }
+        // ---- maç sonu ödüllü reklam (2026-11-07; kural Core/OdulluReklam, SDK Game/ReklamSdk, düğme Hud) ----
+        // Kart durumu maç başına: teklif görüldü mü, izlendi mi, bu maç denendi mi. Kart kapanınca (yeni maç başlarken) ret/sus
+        // sayacı işlenir; sayaç PlayerPrefs'te (tuytop_ öneki, cihaza özgü, buluta gitmez: günlük tavan cihaz başına yeter).
+        bool rekKart, rekGoruldu, rekIzlendi, rekDenendi;
+        static OdulluReklam.Durum RekDurum() { return OdulluReklam.Durum.Oku(PlayerPrefs.GetString(OdulluReklam.ANAHTAR, "")); }
+        static void RekYaz(OdulluReklam.Durum d) { PlayerPrefs.SetString(OdulluReklam.ANAHTAR, d.Yaz()); PlayerPrefs.Save(); }
+        public bool ReklamUygun(bool baskaIkincil)
+        {
+            if (!rekKart || odul == null) return false;
+            return OdulluReklam.Uygun(RekDurum(), OdulluReklam.Gun(System.DateTime.Now), Ayar.wins, odul.tuy, baskaIkincil, rekDenendi, ReklamSdk.OdulluHazir);
+        }
+        public void ReklamTeklifGordu() { rekGoruldu = true; }
+        public void OdulluIzle()
+        {
+            if (!rekKart || odul == null || rekDenendi) return; rekDenendi = true; var o = odul;
+            ReklamSdk.OdulluGoster(k =>
+            {
+                if (!k || o != odul) return;   // yarıda kapandı ya da kart değişti: ödül yok, düğme bu maç bir daha çıkmaz
+                Ayar.gear.ReklamOdulu(o); var d = RekDurum(); OdulluReklam.Izlendi(d, OdulluReklam.Gun(System.DateTime.Now)); RekYaz(d);
+                rekIzlendi = true; Yerel.Hap("tick"); PlayerPrefs.Save(); Bulut.Yaz();
+            });
+        }
+        void ReklamKartKapat()
+        {
+            if (rekKart) { var d = RekDurum(); OdulluReklam.KartKapandi(d, rekGoruldu, rekIzlendi); RekYaz(d); }
+            rekKart = rekGoruldu = rekIzlendi = rekDenendi = false;
+        }
+
         public void UstaDavetGordu() { if (ustaDavetSayildi) return; ustaDavetSayildi = true; PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); PlayerPrefs.Save(); }
         public void UstaDene() { ustaDeneSonraki = true; ustaDavet = false; TekrarOyna(); }
         Style rovansStil, rovansSiradaki, sonHizliStil;   // rovansStil: maç sonu ekranında sunulan; rovansSiradaki: yalnız ana düğmeyle başlayan maça geçer

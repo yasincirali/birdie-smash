@@ -252,6 +252,20 @@ maçta reklam yeri kortun yan ve arka LED panoları (şimdilik oyunun kendi yaz�
    ATT izin metni ve App Store "App Privacy" etiketi de güncellenir (reklam = veri toplar).
 2. Ya da `Reklam.ALAN = false` yapılır; şerit kalkar, oyun eski yerleşime döner.
 Boş "Reklam" kutusuyla mağazaya gitmek inceleme reddi riskidir (2.1 eksik işlev).
+**Karar (2026-11-07, sen: "şerit en başta bağlı olarak çıksın"): AdMob bağlandı.** Menü şeridi + maç sonu isteğe bağlı
+ödüllü reklam (+%50 Tüy, günde en çok 1, ilk 3 galibiyette yok). Şimdilik Google'ın **test** kimlikleri: TestFlight'ta "Test Ad"
+yazılı reklam görürsün, gerçek para yok. Mağaza 1.0'dan önce senden:
+1. admob.google.com'da hesap aç (aynı Google hesabın olabilir), **Uygulama ekle › iOS › Birdie Smash** (yayında değilse
+   "listelenmemiş" seç). Çıkan **Uygulama kimliği** (`ca-app-pub-…~…`) ve iki **reklam birimi**: "Banner" ve "Ödüllü".
+   Üç kimliği thread'e yaz (gizli değiller); ben koda girerim (`Game/ReklamSdk.cs`, `Editor/CiBuild.cs`).
+2. AdMob › **Gizlilik ve mesajlar**: AB/BK rıza mesajını (GDPR) yayınla; istersen iOS "IDFA açıklaması" mesajı (ATT
+   penceresini o açar; açmazsan reklamlar kişiselleştirilmemiş gelir, oyun aynı).
+3. AdMob › Uygulama ayarları › **app-ads.txt**: `murphysoft.app/app-ads.txt` (dosyayı ben koyarım, yayıncı kimliğin lazım).
+4. App Store Connect › **App Privacy**: "Data Not Collected" artık doğru değil. `store_listing/app_privacy.md` reklam dalı:
+   Identifiers (Device ID), Usage Data (Advertising Data, Product Interaction), Diagnostics; amaç Third-Party Advertising;
+   ATT izni verilirse "Used to Track You". Age Rating › Advertising = **Yes**.
+5. Gizlilik politikası reklam bölümüyle güncellendi (murphysoft.app/birdie-smash/privacy/, site yayına girince).
+
 Hangisi seçilirse seçilsin App Store Connect › Age Rating formunda "Advertising" cevabını
 `store_listing/yas_derecesi.md`'deki dala göre ver (SDK = Yes, ALAN=false = No) ve App Privacy'yi
 `store_listing/app_privacy.md` "reklam" dalına göre güncelle (2026-11-07 inceleme).

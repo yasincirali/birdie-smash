@@ -132,7 +132,7 @@ namespace BirdieSmash.Game
                 sonGorunur = gor; kok.style.display = gor ? DisplayStyle.Flex : DisplayStyle.None;
                 if (gor) { Kirlet(); salonKirli = true; }   // maçta Tüy, XP, kariyer değişmiş olabilir; vitrin Uygula'da açılır; salon fonu yeniden çekilir
             }
-            if (!gor) { if (root.afis.Acik) root.afis.Kapat(); SahneCiz(true, false); return; }
+            if (!gor) { if (root.afis.Acik) root.afis.Kapat(); SahneCiz(true, false); ReklamSdk.Serit(null); return; }
             if (!temaFontVar) TemaFontOku();
             float k = Ayar.MenuYaziK; if (Mathf.Abs(k - K) > .001f || sonDil != Ayar.dil) { K = k; sonDil = Ayar.dil; HepsiniKur(); }
             if (Ayar.reduce != sonReduce) { sonReduce = Ayar.reduce; kok.EnableInClassList("az-hareket", sonReduce); }
@@ -142,6 +142,7 @@ namespace BirdieSmash.Game
             PerdeKaymaUygula(hud);   // 2026-10-27 perde v2: içerik solarken 12 pt aşağı (yalnız translate)
             if (pv != kalkanAcik) { kalkanAcik = pv; kalkan.style.display = pv ? DisplayStyle.Flex : DisplayStyle.None; if (!pv) salonKirli = true; }   // perde kalkınca fon bir kez daha (açılışta sahne perde altında kuruluyor olabilir)
             SahneCiz(pv || o > 0, true);   // perde açılırken/kapanırken menü solar: altında maç sahnesi görünmeli
+            ReklamSeritYeri(pv, o);
             if (Input.GetKeyDown(KeyCode.Escape) && !pv) Geri();   // Android geri tuşu
         }
 
@@ -173,13 +174,31 @@ namespace BirdieSmash.Game
 
         // Menü reklam şeridi (Game/Reklam.cs): gövdenin sütununda içerik ile sekme çubuğu arasında; içerik onun üstünde biter,
         // kaydırılan liste şeridin altına girmez. SDK yokken yer tutucu yazı; ALAN false ise hiç yer kaplamaz.
+        VisualElement reklamEl; Label reklamYazi; bool sonReklamYuklu;
         void ReklamKur(VisualElement r)
         {
-            if (r == null) return; r.Clear(); r.pickingMode = PickingMode.Position;
+            if (r == null) return; r.Clear(); r.pickingMode = PickingMode.Position; reklamEl = r; reklamYazi = null;
             if (!Reklam.ALAN) { r.style.display = DisplayStyle.None; return; }
             r.style.display = DisplayStyle.Flex; r.style.height = Reklam.PT;
-            var y = new Label(L.T("Reklam")); y.AddToClassList("reklam-yazi"); y.pickingMode = PickingMode.Ignore; r.Add(y);
+            var y = new Label(L.T("Reklam")); y.AddToClassList("reklam-yazi"); y.pickingMode = PickingMode.Ignore; r.Add(y); reklamYazi = y;
+            y.visible = !ReklamSdk.SeritYuklu; sonReklamYuklu = ReklamSdk.SeritYuklu;
             Erisim.Etiket(r, L.T("Reklam alanı"), "metin");
+        }
+        // AdMob şeridi (Game/ReklamSdk, 2026-11-07): yer tutucunun ekrandaki yeri her kare verilir; şerit yalnız menü tam
+        // görünürken çıkar: perde/solma yok, alt sayfa (sheet) kapalı. Şerit native bir görünüm, UI Toolkit'in üstünde durur:
+        // alt sayfa onu örtemeyeceği için gizlenir. Şerit yüklenince yer tutucu yazısı gizlenir (yer aynı kalır, içerik oynamaz).
+        void ReklamSeritYeri(bool perde, float ortu)
+        {
+            ReklamSdk.Baslat();
+            if (reklamYazi != null && ReklamSdk.SeritYuklu != sonReklamYuklu) { sonReklamYuklu = ReklamSdk.SeritYuklu; reklamYazi.visible = !sonReklamYuklu; }
+            if (!ReklamSdk.Hazir) return;
+            Rect? yer = null;
+            if (!perde && ortu <= .01f && gez.AcikAltSayfa == null && reklamEl != null && reklamEl.resolvedStyle.display == DisplayStyle.Flex)
+            {
+                float pw = doc.rootVisualElement.layout.width; var wb = reklamEl.worldBound;
+                if (pw > 0 && Screen.width > 0 && wb.width > 0) { float s = pw / Screen.width; yer = new Rect(wb.x / s, wb.y / s, wb.width / s, wb.height / s); }
+            }
+            ReklamSdk.Serit(yer);
         }
 
         // ---- gezinti ----

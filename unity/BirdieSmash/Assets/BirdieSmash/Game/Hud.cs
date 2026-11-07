@@ -1147,7 +1147,10 @@ namespace BirdieSmash.Game
             var od2 = R.bittiDril != null ? Dril.Bul(R.bittiDril) : null; bool ayrintiVar = !string.IsNullOrEmpty(R.bittiBilgi);
             bool yuk = od != null && R.yukseltHazir, hdz = od != null && R.hedefHazir && R.hedef.gecerli;
             bool aniB = R.AniVar; bool payl = R.mod == Mod.Gunluk && Yerel.PaylasVar && R.match != null && R.match.matchDone;
-            int nTum = (aniB ? 1 : 0) + (payl ? 1 : 0) + (R.ustaDavet ? 1 : 0) + (yuk ? 1 : 0) + (hdz ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (od2 != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0), nIk = ayr ? nTum : Mathf.Min(1, nTum);
+            int nTum = (aniB ? 1 : 0) + (payl ? 1 : 0) + (R.ustaDavet ? 1 : 0) + (yuk ? 1 : 0) + (hdz ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (od2 != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0);
+            // 2026-11-07 ödüllü reklam (Core/OdulluReklam): yalnız tek ikincil yuva boşken; ana düğme yerinde kalır.
+            bool rek = RekVar(R, od, nTum); if (rek) nTum = 1;
+            int nIk = ayr ? nTum : Mathf.Min(1, nTum);
             float bh = Mathf.Max(BH, 50 * s), gap = 8 * s;
             string ct = UiKok.Buyuk(CtaBaslik(R.bittiDugme, R.bittiDugmeAlt)); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), cah = string.IsNullOrEmpty(R.bittiDugmeAlt) ? 0 : aCtaAlt.CalcHeight(Ic(R.bittiDugmeAlt), w);
             float ctaH = Mathf.Max(80 * s, cth + cah + 22 * s), blokH = ctaH + 12 * s + nIk * (bh + gap) + bh;
@@ -1170,6 +1173,7 @@ namespace BirdieSmash.Game
             if (R.bittiIlk && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Tam antrenman"), al)) root.Antrenman(); }
             if (R.mod == Mod.Dril && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman görevleri"), al)) { root.AnaMenu(); if (root.ui != null) { var dg = Dril.Bul(root.drilId); if (dg != null && dg != Sonsuz.Tanim) root.ui.AntrenmanGrup(dg.grup); root.ui.AntrenmanAc(); } } }
             if (aniB && !aniOnce && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Maçın anı"), al)) root.AniBaslat(); }
+            if (rek && ki < nIk) { R.ReklamTeklifGordu(); if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Ödüle +%50 · reklam izle"), al)) R.OdulluIzle(); }
             if (ayrintiVar)
             {
                 float hw = (w - gap) / 2;
@@ -1394,11 +1398,21 @@ namespace BirdieSmash.Game
             GUI.matrix = m;
             bool b = GUI.Button(r, GUIContent.none, GUIStyle.none); if (b) Yerel.Hap("tick"); return b;
         }
+        // Ödüllü reklam düğmesi bu kartta var mı (tek yuva kuralı: başka ikincil varsa yok). baska: kartın diğer ikincilleri.
+        bool RekVar(GameRoot R, OdulSonuc od, int baska) { return od != null && R.mod != Mod.Dril && R.ReklamUygun(baska > 0); }
+        int DigerIkincil(GameRoot R, OdulSonuc od)
+        {
+            bool payl = R.mod == Mod.Gunluk && Yerel.PaylasVar && R.match != null && R.match.matchDone;
+            return (R.AniVar ? 1 : 0) + (payl ? 1 : 0) + (R.ustaDavet ? 1 : 0) + (od != null && R.yukseltHazir ? 1 : 0) + (od != null && R.hedefHazir && R.hedef.gecerli ? 1 : 0)
+                + (R.bittiIlk ? 1 : 0) + (R.bittiDril != null && Dril.Bul(R.bittiDril) != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0);
+        }
         // Alt bloğun yüksekliği (büyük düğme + ikincil + bağlantı satırı): isteğe bağlı satırlar çizilmeden önce yer var mı diye.
         float AltBlokH(GameRoot R, OdulSonuc od, bool ayr, float w, float s)
         {
             float bh = Mathf.Max(BH, 50 * s), gap = 8 * s; bool yuk = od != null && R.yukseltHazir, hdz = od != null && R.hedefHazir && R.hedef.gecerli;
-            int nTum = (yuk ? 1 : 0) + (hdz ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (R.bittiDril != null && Dril.Bul(R.bittiDril) != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0), nIk = ayr ? nTum : Mathf.Min(1, nTum);
+            int nTum = (yuk ? 1 : 0) + (hdz ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (R.bittiDril != null && Dril.Bul(R.bittiDril) != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0);
+            if (nTum == 0 && RekVar(R, od, DigerIkincil(R, od))) nTum = 1;
+            int nIk = ayr ? nTum : Mathf.Min(1, nTum);
             string ct = UiKok.Buyuk(CtaBaslik(R.bittiDugme, R.bittiDugmeAlt)); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), cah = string.IsNullOrEmpty(R.bittiDugmeAlt) ? 0 : aCtaAlt.CalcHeight(Ic(R.bittiDugmeAlt), w);
             return Mathf.Max(80 * s, cth + cah + 22 * s) + 12 * s + nIk * (bh + gap) + bh + 6 * s;
         }

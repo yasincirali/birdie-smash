@@ -3,7 +3,8 @@ using UnityEngine;
 namespace BirdieSmash.Game
 {
     // Reklam şeridi için ayrılan alan (yasin 2026-11-06: "oyun ekranında ve menüde ince bir reklam için alan ayır, profesyonel
-    // olmalı, sinir etmemeli"). Henüz reklam SDK'sı yok: bu dosya yalnız yeri ayırır ve yer tutucuyu çizer.
+    // olmalı, sinir etmemeli"). Bu dosya yeri ayırır ve yer tutucuyu çizer; AdMob şeridi o yere Game/ReklamSdk.cs'den oturur
+    // (2026-11-07, yasin: "şerit en başta bağlı olarak çıksın"; şerit yüklenmezse yer tutucu kalır).
     //  - Boyut: standart telefon şeridi 320×50 pt. Uyarlanabilir şerit (AdMob anchored adaptive) telefonda ~50–62 pt; SDK
     //    gelince yükseklik onun bildirdiği değerle değiştirilir (PT tek yer).
     //  - (2026-11-07: maç üstü şerit kaldırıldı, aşağıda MAC_SERIT; maçta reklam yeri kort kenarı panoları.)
@@ -12,8 +13,8 @@ namespace BirdieSmash.Game
     //    "oyun kontrollerinin yanında reklam" yasağı da bu). HUD ve kamera kadrajı şeridin altına iner, kort kapanmaz.
     //  - Sinir etmemesi için: geçiş (tam ekran) reklam yok, ses yok, maç içinde yenileme yok (SDK'da yenileme kapatılacak,
     //    şerit maç arasında değişir), şerit hareket etmez.
-    //  - ALAN açıkken SDK yoksa yer tutucu ("Reklam") görünür. Mağaza 1.0 gönderiminden önce ya SDK bağlanır ya ALAN false
-    //    yapılır (boş kutu mağazada profesyonel durmaz). YAPMAN_GEREKENLER.md'de yazılı.
+    //  - ALAN açıkken şerit yüklenmediyse (SDK yok, rıza yok, ağ yok) yer tutucu ("Reklam") görünür. SDK 2026-11-07'de bağlandı
+    //    (Google test kimlikleri); mağaza 1.0 öncesi yasin'in AdMob kimlikleri girer. YAPMAN_GEREKENLER.md › Reklam.
     public static class Reklam
     {
         public const bool ALAN = true;

@@ -912,6 +912,27 @@ static class BotMac
             var re = Json.Obj(Json.Parse(r[0])); if ((int)Json.Num(re, "tuy", 0) != 3510 || (int)Json.Num(re, "xp", 0) != 80 || TuyDukkan.Toplam(r[1]) != 3500) Fail("bulut: birleşme Tüy'ü eklemeli, XP'yi korumalı");
             if (BulutKayit.Karsilastir(r[0], bul, r[1]) != BulutKayit.Karar.Yaz) Fail("bulut: birleşmeden sonra tekrar eklememeli");
         }
+        // (1e) maç sonu ödüllü reklam (2026-11-07, Core/OdulluReklam): +%50 yalnız Tüy, günde 1, ilk 3 galibiyette yok, başka ikincil
+        // varken yok, 3 ardışık ret → 3 maç sus; XP ve seviye değişmez.
+        {
+            var od = new OdulluReklam.Durum(); string gn = OdulluReklam.Gun(new DateTime(2026, 11, 7, 20, 0, 0));
+            if (OdulluReklam.Uygun(od, gn, 2, 80, false, false, true)) Fail("ödüllü reklam: ilk 3 galibiyette çıkmamalı");
+            if (!OdulluReklam.Uygun(od, gn, 3, 80, false, false, true)) Fail("ödüllü reklam: 3. galibiyetten sonra çıkmalı");
+            if (OdulluReklam.Uygun(od, gn, 9, 80, true, false, true) || OdulluReklam.Uygun(od, gn, 9, 0, false, false, true) || OdulluReklam.Uygun(od, gn, 9, 80, false, true, true) || OdulluReklam.Uygun(od, gn, 9, 80, false, false, false))
+                Fail("ödüllü reklam: başka ikincil, sıfır Tüy, bu maç kullanılmış ya da reklam yokken çıkmamalı");
+            var ga = SvGear(5, 100); var o1 = ga.Odul(true, false, 11, true, 1, 3, new DateTime(2026, 11, 7)); int t0 = o1.tuy, xp0 = ga.eko.xp, sv0 = ga.Seviye(), tc0 = ga.eko.tuy;
+            int rek = ga.ReklamOdulu(o1);
+            if (rek != OdulluReklam.Ek(t0) || o1.tuy != t0 + rek || ga.eko.tuy != tc0 + rek || ga.eko.xp != xp0 || ga.Seviye() != sv0) Fail("ödüllü reklam: +%50 yalnız Tüy olmalı, XP ve seviye sabit (" + t0 + " → +" + rek + ")");
+            if (OdulluReklam.Ek(81) != 41 || OdulluReklam.Ek(0) != 0) Fail("ödüllü reklam: +%50 yuvarlama");
+            OdulluReklam.Izlendi(od, gn); OdulluReklam.KartKapandi(od, true, true);
+            if (OdulluReklam.Uygun(od, gn, 9, 80, false, false, true)) Fail("ödüllü reklam: günde en çok 1 (ikinci ödül yok)");
+            string yarin = OdulluReklam.Gun(new DateTime(2026, 11, 8, 9, 0, 0));
+            if (!OdulluReklam.Uygun(od, yarin, 9, 80, false, false, true)) Fail("ödüllü reklam: yeni günde yeniden çıkmalı");
+            for (int i = 0; i < 3; i++) OdulluReklam.KartKapandi(od, true, false);
+            for (int i = 0; i < 3; i++) { if (OdulluReklam.Uygun(od, yarin, 9, 80, false, false, true)) Fail("ödüllü reklam: 3 retten sonra 3 maç susmalı (" + i + ")"); OdulluReklam.KartKapandi(od, false, false); }
+            if (!OdulluReklam.Uygun(od, yarin, 9, 80, false, false, true)) Fail("ödüllü reklam: 3 maç sustuktan sonra dönmeli");
+            if (OdulluReklam.Durum.Oku(od.Yaz()).Yaz() != od.Yaz() || OdulluReklam.Durum.Oku("bozuk").bugun != 0) Fail("ödüllü reklam: kayıt gidiş-dönüş");
+        }
         { var ga = SvGear(14, Kozmetik.Bul(Kozmetik.SAPKA, "sovalye").fiyat + Kozmetik.Bul(Kozmetik.YUZ, "gunes").fiyat + 200); var ha = ga.Hesap(); if (!Kozmetik.Al(ga, Kozmetik.SAPKA, "sovalye", "yok") || !Kozmetik.Al(ga, Kozmetik.YUZ, "gunes", "yok")) Fail("Sv 14'te şövalye kaskı ve güneş gözlüğü alınmalı");
           var hb = ga.Hesap(); if (Gear.Cubuklar(ha).Zip(Gear.Cubuklar(hb), (p, q) => p - q).Any(v => v != 0)) Fail("aksesuar alımı gücü değiştirdi"); }
         // (2) kozmetik GearStats'a dokunmaz: aynı ekipmanla hesap birebir (seçim Ayar'da, Gear'de değil; Kozmetik.Al yalnız Tüy)

@@ -42,6 +42,7 @@ namespace BirdieSmash.EditorTools
                 DemoKurulum.Kur();   // sahne Assets/Scenes/Demo.unity + build listesi + shader/girdi ayarları (CI kopyası taze)
                 DokuAyar.Denetle();  // 2026-10-27: her doku ASTC/boy/mip hedefinde mi (değilse yeniden içe aktarır, günlüğe satır basar)
                 Ayarla(Arg("-buildVersion"));
+                ReklamAyar();
                 var opt = new BuildPlayerOptions
                 {
                     scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray(),
@@ -50,7 +51,7 @@ namespace BirdieSmash.EditorTools
                 if (opt.scenes.Length == 0) throw new Exception("Build listesinde sahne yok (DemoKurulum.Kur)");
                 var rep = BuildPipeline.BuildPlayer(opt);
                 if (rep.summary.result != BuildResult.Succeeded) throw new Exception("BuildPlayer: " + rep.summary.result + ", hata " + rep.summary.totalErrors);
-                PlistSifreleme(Path.Combine(path, "Info.plist")); PlistProMotion(Path.Combine(path, "Info.plist"));
+                PlistSifreleme(Path.Combine(path, "Info.plist")); PlistProMotion(Path.Combine(path, "Info.plist")); PlistReklam(Path.Combine(path, "Info.plist"));
                 Debug.Log("Birdie Smash iOS Xcode projesi: " + path);
                 EditorApplication.Exit(0);
             }
@@ -189,6 +190,57 @@ namespace BirdieSmash.EditorTools
             if (t.Contains("CADisableMinimumFrameDurationOnPhone")) { Debug.Log("ProMotion anahtarı Unity çıktısında var"); return; }
             int i = t.LastIndexOf("</dict>", StringComparison.Ordinal); if (i < 0) return;
             File.WriteAllText(plist, t.Substring(0, i) + "\t<key>CADisableMinimumFrameDurationOnPhone</key>\n\t<true/>\n" + t.Substring(i));
+        }
+
+        // ---- AdMob (2026-11-07, yasin: "şerit en başta bağlı olarak çıksın"; Game/ReklamSdk.cs) ----
+        // Uygulama kimliği yasin'in AdMob hesabından gelene kadar Google'ın TEST kimliği (yalnız test reklamı gösterir; mağaza 1.0
+        // öncesi değişir, YAPMAN_GEREKENLER.md). Kimlik gizli değildir (her IPA'nın Info.plist'inde düz yazılır).
+        // Eklentinin ayar varlığı (Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset) depoda yok: ProjectSettings
+        // gibi koddan yazılır. Yansıma ile, çünkü bu dosya eklentisiz Editor'de ve tool/unity_test derlemesinde de derlenmeli.
+        // Eklentinin iOS derleme sonrası adımı kimlik boşsa build'i kırar; kimlik yine de yazılmadıysa PlistReklam yazar,
+        // fastlane de GADApplicationIdentifier'sız IPA'yı yüklemez (SDK açılışta uygulamayı kapatır).
+        public const string ADMOB_IOS_UYG = "ca-app-pub-3940256099942544~1458002511";
+        public const string ADMOB_ANDROID_UYG = "ca-app-pub-3940256099942544~3347511713";
+        // ATT metni: UMP rıza akışı AdMob panelinde IDFA açıklaması tanımlanırsa sistem izin penceresini açar; anahtar yoksa iOS
+        // uygulamayı kapatır. Ton oyunun dili: kısa, suçlamasız, ne olduğunu söyler. İngilizce taban (mağaza dili global; Türkçe
+        // InfoPlist.strings ayrı iş).
+        const string ATT_METNI = "Used to show you more relevant ads. If you do not allow it, the game works exactly the same.";
+        static void ReklamAyar()
+        {
+            Type t = null;
+            foreach (var a in AppDomain.CurrentDomain.GetAssemblies()) { t = a.GetType("GoogleMobileAds.Editor.GoogleMobileAdsSettings", false); if (t != null) break; }
+            if (t == null) { Debug.LogWarning("Birdie Smash: AdMob eklentisi yok (GoogleMobileAdsSettings), reklam ayarı atlandı"); return; }
+            var yukle = t.GetMethod("LoadInstance", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            var o = yukle != null ? yukle.Invoke(null, null) as UnityEngine.Object : null;
+            if (o == null) { Debug.LogWarning("Birdie Smash: GoogleMobileAdsSettings.LoadInstance yok ya da boş döndü"); return; }
+            int n = AyarYaz(o, "iosappid", ADMOB_IOS_UYG) + AyarYaz(o, "androidappid", ADMOB_ANDROID_UYG) + AyarYaz(o, "usertrackingusagedescription", ATT_METNI);
+            EditorUtility.SetDirty(o); AssetDatabase.SaveAssets();
+            Debug.Log("Birdie Smash: AdMob ayarı yazıldı (" + n + "/3 alan, iOS " + ADMOB_IOS_UYG + ")");
+        }
+        // Özellik ya da alan adı sürümden sürüme değişti (adMobIOSAppId → GoogleMobileAdsIOSAppId): adı içeren ilk yazılabilir üye.
+        static int AyarYaz(object o, string parca, string deger)
+        {
+            const System.Reflection.BindingFlags B = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic;
+            foreach (var p in o.GetType().GetProperties(B))
+                if (p.PropertyType == typeof(string) && p.CanWrite && p.Name.ToLowerInvariant().Contains(parca)) { p.SetValue(o, deger, null); return 1; }
+            foreach (var f in o.GetType().GetFields(B))
+                if (f.FieldType == typeof(string) && f.Name.ToLowerInvariant().Contains(parca)) { f.SetValue(o, deger); return 1; }
+            Debug.LogWarning("Birdie Smash: AdMob ayarında '" + parca + "' alanı bulunamadı");
+            return 0;
+        }
+        // Eklenti yazmadıysa son çare: uygulama kimliği, ATT metni ve Google'ın SKAdNetwork kimliği (AdMob şartı).
+        static void PlistReklam(string plist)
+        {
+            if (!File.Exists(plist)) return; var t = File.ReadAllText(plist); string ek = "";
+            Type gma = null; foreach (var a in AppDomain.CurrentDomain.GetAssemblies()) { gma = a.GetType("GoogleMobileAds.Api.MobileAds", false); if (gma != null) break; }
+            if (gma == null) return;   // eklentisiz build: reklam anahtarı yazılmaz
+            if (!t.Contains("GADApplicationIdentifier")) ek += "\t<key>GADApplicationIdentifier</key>\n\t<string>" + ADMOB_IOS_UYG + "</string>\n";
+            if (!t.Contains("NSUserTrackingUsageDescription")) ek += "\t<key>NSUserTrackingUsageDescription</key>\n\t<string>" + ATT_METNI + "</string>\n";
+            if (!t.Contains("SKAdNetworkItems")) ek += "\t<key>SKAdNetworkItems</key>\n\t<array>\n\t\t<dict>\n\t\t\t<key>SKAdNetworkIdentifier</key>\n\t\t\t<string>cstr6suwn9.skadnetwork</string>\n\t\t</dict>\n\t</array>\n";
+            if (ek == "") { Debug.Log("Birdie Smash: reklam plist anahtarları eklentiden geldi"); return; }
+            int i = t.LastIndexOf("</dict>", StringComparison.Ordinal); if (i < 0) return;
+            File.WriteAllText(plist, t.Substring(0, i) + ek + t.Substring(i));
+            Debug.Log("Birdie Smash: reklam plist anahtarları CiBuild'den eklendi");
         }
 
         static string Arg(string name)
