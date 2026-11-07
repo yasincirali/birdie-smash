@@ -1,4 +1,9 @@
 === UNITY ===
+Bu öğlen (7 Kasım 12:30 inceleme turu):
+- Servis anındaki "Servis sende · sağ kare" yazısı artık yalnız ilk maçlarda (3 galibiyete kadar) çıkıyor. Sonrasında kortun altındaki kutu yalnız söyleyecek yeni bir şey varken görünüyor: hata, kural maçı uyarısı ya da maçın ilk servisindeki görevler.
+- Servis beklerken arka planda boşa iş yapan yazı kutusu sadeleşti; ralli içindeki küçük takılmalar azalmalı.
+Nasıl denenir: 3 galibiyeti geçmiş bir hesapla maç oyna: ilk serviste yalnız "Görev: …" satırı görünmeli, sonraki servislerde kortun altında yazı olmamalı. Servis hatası yap: uyarı yine çıkmalı. Kariyerde Birmingham'ı oyna: altın ralli uyarısı servisten önce görünmeli.
+
 Bu sabah (7 Kasım 10:30 inceleme turu):
 - Sevinç artık sayının değerine göre: kendi kazanan vuruşunla ya da 8 vuruştan uzun bir ralliyle aldığın sayıda seçtiğin sevinç tam oynar, rakip topu dışarı ya da fileye atınca kısa sürer. Uzun bir ralliyi kaybeden oyuncu kısaca başını eğer. Sayılar arası tempo hızlandı.
 - Kariyerde her turda bir "kural maçı" var: Seul'de Uzun ralli, Birmingham'da Altın ralli, Singapur çeyrek finalinde Yalnız file. Kural maç kartında ve ana sayfadaki Oyna düğmesinin altında yazıyor.

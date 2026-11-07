@@ -74,12 +74,12 @@ static class Denge
     }
 
     // Oran ve ortalama sayı farkı.
-    static double Oyna(Style st, int target, bool easy, GearStats gs, int n, int tohum, out double fark, out double imza)
+    static double Oyna(Style st, int target, bool easy, GearStats gs, int n, int tohum, out double fark, out double imza, string deg = null)
     {
         int w = 0; double f = 0, im = 0;
         for (int m = 0; m < n; m++)
         {
-            var M = new Match(tohum + m, new MatchOptions { easy = easy, target = target, stil = st, gs = gs }); int guard = 0;
+            var M = new Match(tohum + m, new MatchOptions { easy = easy, target = target, stil = st, gs = gs, degistirici = deg }); int guard = 0;
             while (!M.over && guard++ < 60 * 60 * 40)
             {
                 Bot(M, 1f / 60f, easy ? PHIT : USTA_PHIT); M.Update(1f / 60f);
@@ -349,6 +349,27 @@ static class Denge
             {
                 var b = UstaYolu.Basamak(un); double f, i; double o = Oyna(UstaYolu.Rakip(un), b.uzunluk, false, Ekipman(48), nm, 20000 + un * 100, out f, out i);
                 Console.WriteLine(string.Format("  {0,3}. {1,-26} {2,-7} g {3:0.00} {4,2} sayı{5}  %{6,3:0} ({7:+0.0;-0.0})", un + 1, b.yer, b.stil, b.g, b.uzunluk, b.final ? " final" : "      ", o * 100, f));
+            }
+            return 0;
+        }
+        // 2026-11-07 kural maçı eğrisi (inceleme 7 Kas 12:06 #1): #48 üç basamağa sayı değeri kuralı ekledi, g'lere dokunmadı.
+        // mono denge.exe egri [n]: Tur 2–4, her basamak EP ortası, pHit .07; kural maçında kuralsız oran da yazılır.
+        // Kilit (rapor, eşikle kırılmaz): kural maçı kuralsız hâlinden ≤ 8 puan zor; final turun en zoruna ±5; komşu fark ≤ 15.
+        if (a.Length > 0 && a[0] == "egri")
+        {
+            PHIT = .07; int nm = a.Length > 1 ? int.Parse(a[1]) : 150;
+            for (int t = 1; t < KariyerVeri.Turlar.Length; t++)
+            {
+                var tr = KariyerVeri.Turlar[t]; if (!tr.Var) continue; var gO = Ekipman((tr.epMin + tr.epMax) / 2);
+                Console.WriteLine("  " + tr.ad);
+                for (int b = 0; b < KariyerVeri.BASAMAK; b++)
+                {
+                    int g = KariyerVeri.Global(t, b); var k = KariyerVeri.Al(g); if (k == null) continue; int hedef = k.uzunluk > 0 ? k.uzunluk : 5; double f, i;
+                    double o = Oyna(KariyerVeri.Rakip(g), hedef, true, gO, nm, 5000 + g * 1000, out f, out i, k.degistirici);
+                    string ek = "";
+                    if (k.degistirici != null) { double o0 = Oyna(KariyerVeri.Rakip(g), hedef, true, gO, nm, 5000 + g * 1000, out f, out i); ek = string.Format("  kuralsız %{0:0} ({1:+0;-0} puan)", o0 * 100, (o - o0) * 100); }
+                    Console.WriteLine(string.Format("    {0}. {1,-26} {2,-7} g {3:0.00} {4,-6} %{5,3:0}{6}{7}", b + 1, k.yer, k.stil, k.g, k.degistirici ?? "", o * 100, ek, k.patron ? "  final" : ""));
+                }
             }
             return 0;
         }
