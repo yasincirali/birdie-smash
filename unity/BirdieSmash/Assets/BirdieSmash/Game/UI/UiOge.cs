@@ -110,17 +110,23 @@ namespace BirdieSmash.Game
             yz.Add(Yazi(t, 14, "dugme-yazi")); if (!string.IsNullOrEmpty(alt)) yz.Add(Yazi(alt, 11.5f, "dugme-alt"));
             if (a != null) d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); a(); }));
             Erisim.Etiket(d, string.IsNullOrEmpty(alt) ? t : t + ", " + alt, "dugme", secili, a == null);
-            return d;
+            Sigdir(d); return d;
         }
         // Sığdır (2026-10-26, r13): dar çiplerde (segment, tutuş) tek kelimelik etiket hece ortasından bölünmesin ("Chara cter",
         // "Shoe s"). Etiket tek satıra alınır; çipin iç genişliğine sığmıyorsa yazı boyutu en çok minOran'a kadar küçülür.
         // Neden kodda: Unity 6000.0'da USS'te otomatik yazı boyutu yok. Hesap her seferinde taban boyuttan yapılır (şimdiki
         // boyuttan değil), çip genişliği yazıdan değil satırdan geldiği için GeometryChanged döngüye girmez.
+        // 2026-11-07 dar çip kuralı (yasin "yap", arayüz cilası): her çipte etiket ve alt yazı tek satır; sığmazsa küçülür
+        // (11 pt altına inmez). Cip() bunu kendisi çağırır; ikinci çağrı (eski çağıranlar) bir şey eklemez.
         void Sigdir(VisualElement d, float minOran = .7f)
         {
-            var l = d.Q<Label>(null, "dugme-yazi"); if (l == null) return;
-            l.style.whiteSpace = WhiteSpace.NoWrap; l.style.flexShrink = 0f; float taban = l.style.fontSize.value.value;
-            d.RegisterCallback<GeometryChangedEvent>(e => SigdirOlc(d, l, taban, minOran));
+            if (d.ClassListContains("sigdir")) return; d.AddToClassList("sigdir");
+            foreach (var sinif in new[] { "dugme-yazi", "dugme-alt" })
+            {
+                var l = d.Q<Label>(null, sinif); if (l == null) continue;
+                l.style.whiteSpace = WhiteSpace.NoWrap; l.style.flexShrink = 0f; float taban = l.style.fontSize.value.value;
+                d.RegisterCallback<GeometryChangedEvent>(e => SigdirOlc(d, l, taban, minOran));
+            }
         }
         // Sözcük sığdır (2026-11-07, r127 Profil ×2 "Neighbourhoo/d player"): sarılan yazıda en uzun sözcük kaba sığmıyorsa Unity
         // onu harf ortasından böler. Yazı boyutu, en uzun sözcük satıra sığana kadar küçülür (11 pt altına inmez); sarma kalır.

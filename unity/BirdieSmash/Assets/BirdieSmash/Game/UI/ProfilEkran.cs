@@ -77,6 +77,11 @@ namespace BirdieSmash.Game
             var tf = new TextField { value = p.Ad ?? "", maxLength = Ilerleme.AD_AZAMI, isDelayed = true }; tf.AddToClassList("ad-alan"); tf.style.fontSize = Mathf.Round(16 * K);
             tf.RegisterValueChangedCallback(e => { p.Ad = e.newValue; Ayar.Kaydet(); kirli[(int)Sekme.Profil] = true; var kk = sekmeKok[(int)Sekme.Profil]; kk.schedule.Execute(() => { if (gez.sekme == Sekme.Profil && gez.Ust == null) SekmeKur(Sekme.Profil); }).StartingIn(16); });
             Erisim.Etiket(tf, L.T("Adın") + ", " + L.T("yalnız bu cihazda tutulur"), "metin_alani", false, false, p.Ad ?? ""); c.Add(tf);
+            // Yer tutucu (2026-11-07, yasin "yap", arayüz cilası): boş alan ne yazılacağını söylesin. Unity 6 textEdition.placeholder
+            // yerine kendi soluk etiketimiz (mono ile Unity'siz derleme 2021 başvurularıyla yapılıyor); alan boşken ve odak yokken görünür.
+            var ph = Yazi(L.T("Adını yaz"), 16, "soluk"); ph.AddToClassList("ad-yer-tutucu"); ph.pickingMode = PickingMode.Ignore; tf.Add(ph);
+            System.Action phG = () => ph.style.display = string.IsNullOrEmpty(tf.value) && tf.focusController?.focusedElement != tf ? DisplayStyle.Flex : DisplayStyle.None;
+            tf.RegisterCallback<FocusInEvent>(e => ph.style.display = DisplayStyle.None); tf.RegisterCallback<FocusOutEvent>(e => phG()); tf.RegisterValueChangedCallback(e => phG()); phG();
             c.Add(Yazi(L.T("Ad yalnız bu cihazda tutulur, hiçbir yere gönderilmez."), 12, "soluk"));
 
             // unvanlar

@@ -197,7 +197,7 @@ ASC › Apps › Birdie Smash › **General › App Information**.
 1. Sağ üstteki dil menüsünden **Add Language › Turkish** ekle (birincil dil English kalır).
 2. English seçiliyken: **Name** = `store_listing/en/name.txt`, **Subtitle** = `store_listing/en/subtitle.txt`.
 3. Turkish seçiliyken: **Name** = `store_listing/tr/name.txt`, **Subtitle** = `store_listing/tr/subtitle.txt`.
-4. **Category**: Primary **Games › Sports**; ikinci alt kategori istersen **Arcade**.
+4. **Category**: Primary **Games › Sports**, ikinci alt kategori **Games › Arcade** (senin kararın 2026-11-07).
 5. **Age Ratings › Set Up Age Ratings**: `store_listing/yas_derecesi.md`'deki tabloyu
    adım adım işaretle; son adımda **Not Applicable**, Save. Sonuç **4+** olmalı.
 
@@ -232,7 +232,7 @@ Her dil için (sağ üst dil menüsü) ilgili klasördeki dosyayı yapıştır:
 
 ### Açık sorular (senin kararın)
 
-1. **Destek e-postası ve Support URL.** Support URL ASC'de zorunlu. Seçenekler:
+1. **Destek e-postası ve Support URL.** (2026-11-07 öneri: tek stüdyo alan adı + uygulama başına takma ad, ör. birdie@; ya da yeni Gmail + "+birdie". Karar senin.) Support URL ASC'de zorunlu. Seçenekler:
    (a) bir destek e-postası belirle, Claude `docs/destek.html` sayfasını o adresle
    yapsın, URL `https://yasincirali.github.io/birdie-smash/destek.html` olur;
    (b) mevcut bir web sayfan varsa onu ver. E-posta belirlenince gizlilik metninin
@@ -240,7 +240,7 @@ Her dil için (sağ üst dil menüsü) ilgili klasördeki dosyayı yapıştır:
    destek bağlantısı"na yönlendiriyor; adres uydurulmadı.
 2. **Copyright satırı** ve App Store'da görünecek **geliştirici adı** (Apple hesabındaki
    ad/şirket adı otomatik gelir).
-3. İkinci kategori **Arcade** olsun mu, yalnız Sports mu?
+3. ~~İkinci kategori Arcade olsun mu?~~ Karar (2026-11-07): Sports + Arcade (yukarıda B.4).
 
 ## Reklam alanı (2026-11-06)
 

@@ -62,7 +62,8 @@
 .soluk { color: var(--mu); }
 .altin { color: var(--gold); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .etiket { color: var(--mu); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); letter-spacing: 0.5px; }
-.grup { color: rgba(255, 255, 255, 0.8); margin-top: 14px; margin-bottom: 6px; }
+/* 2026-11-07 tek tip bölüm başlığı: bütün ekranlarda tek stil (eski "bolum" 17 pt ve "grup-kalin" 15 pt kalktı). */
+.grup { color: var(--tx); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); letter-spacing: 0.3px; margin-top: 16px; margin-bottom: 6px; }
 .grup-kalin { color: var(--tx); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); margin-top: 16px; margin-bottom: 4px; }
 .bolum { color: var(--tx); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); margin-top: 22px; margin-bottom: 2px; }
 .sekme-baslik { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); margin-bottom: 4px; }
@@ -145,7 +146,7 @@
 .basamak--gecti { background-color: var(--sun); }
 .basamak--simdi { height: 12px; background-color: var(--sun); border-width: 2px; border-color: var(--tx); }
 .ikincil-satir { margin-top: 6px; flex-wrap: nowrap; }
-.ikincil-kart { flex-grow: 1; flex-basis: 0; margin: 4px; min-height: 64px; border-radius: 14px; }
+.ikincil-kart { flex-grow: 1; flex-basis: 0; margin: 4px; min-height: 64px; border-radius: 16px; }
 .buyuk-yazi .ikincil-satir { flex-direction: column; }
 /* r11 (büyük yazı): sütunda flex-basis 0 kartı 64 px'e sabitliyor, başlık alt yazının üstüne biniyordu. Sütunda ve tam
    genişlikte kart içeriği kadar uzar. */
@@ -208,7 +209,7 @@
 .vitrin-gecis { flex-grow: 1; margin: 0 8px; background-color: rgba(51, 35, 63, 0.9); }
 .soyunma-kaydir { flex-grow: 1; flex-shrink: 1; }
 .renkler { flex-wrap: wrap; margin: 0 -3px; }
-.renk { flex-grow: 1; flex-basis: 20%; min-width: 44px; height: 44px; margin: 3px; border-radius: 10px; border-width: 1px; border-color: rgba(255, 255, 255, 0.25); align-items: center; justify-content: center; }
+.renk { flex-grow: 1; flex-basis: 20%; min-width: 44px; height: 44px; margin: 3px; border-radius: 12px; border-width: 1px; border-color: rgba(255, 255, 255, 0.25); align-items: center; justify-content: center; }
 .renk--secili { border-width: 3px; border-color: var(--sun); }
 .yuva { padding: 12px; }
 .yuva-satir { flex-direction: row; align-items: center; margin: 0; flex-wrap: nowrap; }
@@ -361,7 +362,7 @@
 .denenen { border-width: 2px; border-color: var(--sky); }
 /* 2026-10-31 sanat paketi 1: saç/şapka/yüz kartlarında öğe takılı baş portresi (Portre.Dene). Çizilene dek soluk zemin,
    sonra .2 sn belirir; Hareketi azaltta geçiş yok. Yazı ve durum altta kalır (adı okumadan da seçilebilsin). */
-.koz-resim { align-self: stretch; margin-bottom: 4px; border-radius: 10px; background-color: rgba(255, 255, 255, 0.06); opacity: 1; transition-property: opacity; transition-duration: 0.2s; }
+.koz-resim { align-self: stretch; margin-bottom: 4px; border-radius: 12px; background-color: rgba(255, 255, 255, 0.06); opacity: 1; transition-property: opacity; transition-duration: 0.2s; }
 .koz-resim--bekle { opacity: 0.35; }
 .az-hareket .koz-resim { transition-duration: 0s; }
 .buyuk-yazi .izgara > .sac-kare .koz-resim { width: 64px; align-self: center; }
@@ -442,7 +443,7 @@
 
 /* üç kutucuk (a-tile): 1.25 / 1 / 1; büyük yazıda alt alta */
 .karo-satir { flex-direction: row; flex-wrap: nowrap; margin: 0 -4px; }
-.karo { flex-grow: 1; flex-basis: 0; min-height: 64px; margin: 0 4px; padding: 9px 10px; border-radius: 14px; background-color: var(--navy); border-width: 1px; border-color: var(--ln);
+.karo { flex-grow: 1; flex-basis: 0; min-height: 64px; margin: 0 4px; padding: 9px 10px; border-radius: 16px; background-color: var(--navy); border-width: 1px; border-color: var(--ln);
         align-items: flex-start; justify-content: flex-start; }
 .karo--genis { flex-grow: 1.25; }
 .karo--altin { border-color: rgba(249, 210, 114, 0.45); -unity-background-scale-mode: stretch-to-fill; }
@@ -501,7 +502,9 @@
    1 pt kenar + düz dolgu kullanıyor. Şimdi her kenar eşit 1 pt (üstteki kurallardaki --ln), köşeler bir kademe küçük
    (kart 16, karo 14, düğme 14, birincil 18), basış geri bildirimi aşağı inme yerine hafif küçülme + renk (UI Toolkit'te
    gölge yok; derinliği dolgu farkı verir). Hareketi azaltta küçülme de yok, yalnız renk. Dokunma alanları değişmedi. ===== */
-.dugme { border-radius: 14px; transition-property: background-color, scale; }
+/* 2026-11-07 köşe ölçeği (yasin "yap", arayüz cilası): kap köşeleri yalnız 4 / 8 / 12 / 16 / 20; yuvarlak öğeler (daire, hap)
+   boyun yarısı. 14 → 16 (kart, düğme, karo), 18 → 20 (birincil düğme), 10 → 12 (renk karesi, kozmetik resmi). */
+.dugme { border-radius: 16px; transition-property: background-color, scale; }
 .dugme:active { scale: 0.97 0.97; }
 /* 2026-11-06 gece (yasin: "menü butonlar, tıklamalar, renkler modern sade anlaşılır ama göz alıcı da olmalı"): basış
    hissi oyuncak gibi. Basınca .06 sn'de %95'e iner, bırakınca .26 sn ease-out-back ile hafif taşarak yerine oturur (tek yay;
@@ -516,19 +519,19 @@
 .cta:active { scale: 0.95 0.95; transition-duration: 0.06s; transition-timing-function: ease-out; }
 .az-hareket .dugme, .az-hareket .cta { transition-duration: 0s; }
 .az-hareket .dugme:active, .az-hareket .cta:active { scale: 1 1; }
-.dugme--birincil { border-radius: 18px; }
+.dugme--birincil { border-radius: 20px; }
 .dugme--birincil:active { scale: 0.98 0.98; }
 .ikon-dugme { border-width: 1px; }
 .ikon-dugme:active { scale: 0.94 0.94; }
 .cip { border-radius: 12px; }
 .kart { border-radius: 16px; }
-.karo { border-radius: 14px; }
+.karo { border-radius: 16px; }
 .karo--altin { border-color: rgba(249, 210, 114, 0.30); }
 .dugum { border-radius: 16px; }
 .renk { border-radius: 12px; }
 .vitrin-alan { border-radius: 20px; }
 .alt-sayfa { border-top-left-radius: 22px; border-top-right-radius: 22px; }
-.yuva-dugme { border-radius: 14px; }
+.yuva-dugme { border-radius: 16px; }
 /* OYNA ve plaka dokuları (UiOge Egik, PlakaIc) yuvarlak köşeli; köşe yarıçapı dikey dilime de girer, yoksa yükseklik
    değişince köşe esner. */
 .cta { -unity-slice-top: 34; -unity-slice-bottom: 44; }
@@ -620,12 +623,12 @@
 .sv-halka-ic { -unity-text-align: middle-center; }
 .uc-sayi { flex-direction: row; margin-top: 12px; }
 .uc-sayi--dikey { flex-direction: column; }
-.uc-sayi-oge { flex-grow: 1; flex-basis: 0; align-items: center; padding: 10px 4px; margin: 0 3px; border-radius: 14px; background-color: var(--navy2); border-width: 1px; border-color: var(--ln); }
+.uc-sayi-oge { flex-grow: 1; flex-basis: 0; align-items: center; padding: 10px 4px; margin: 0 3px; border-radius: 16px; background-color: var(--navy2); border-width: 1px; border-color: var(--ln); }
 /* 2026-11-07 (yasin "yazılar üst üste biniyor"): dikeyde flex-basis 0 öğeyi yalnız dolgu boyuna eziyordu, büyük yazıda
    sayı ve etiketler üst üste biniyordu (r127 menu_se_x2_profil). Dikeyde boy içerikten gelir. */
 .uc-sayi--dikey .uc-sayi-oge { margin: 3px 0; flex-basis: auto; flex-grow: 0; flex-shrink: 0; }
 .kupa-raf { flex-direction: row; justify-content: space-between; margin-top: 8px; padding-bottom: 6px; border-bottom-width: 6px; border-color: #4A3560; }
-.kupa-hucre { width: 48px; height: 48px; align-items: center; justify-content: center; border-radius: 14px; }
+.kupa-hucre { width: 48px; height: 48px; align-items: center; justify-content: center; border-radius: 16px; }
 .kupa-hucre:active { scale: 0.94 0.94; }
 .kupa-hucre--yok { opacity: 0.55; }
 
@@ -639,3 +642,5 @@
 .reklam-alani { flex-shrink: 0; height: 50px; background-color: rgb(20, 14, 25); border-top-width: 1px; border-color: var(--ln);
                 align-items: center; justify-content: center; display: none; }
 .reklam-yazi { color: rgba(203, 184, 197, 0.55); font-size: 11px; letter-spacing: 0.6px; -unity-font-definition: resource("fonts/Nunito-Bold"); }
+/* 2026-11-07 Profil ad alanı yer tutucusu (ProfilEkran): alanın içinde, metin başlangıcına hizalı, dokunuşu geçirir. */
+.ad-yer-tutucu { position: absolute; left: 12px; top: 0; bottom: 0; -unity-text-align: middle-left; }

@@ -24,8 +24,10 @@ namespace BirdieSmash.Game
                 if (++ayarDokun >= 5) { ayarDokun = 0; if (root.HudKatman != null) root.HudKatman.FpsAc(!Ayar.fps); }
             });
             var sv = Kaydirma(p); sv.AddToClassList("govde-kaydir"); var c = sv.contentContainer; c.AddToClassList("sekme-icerik");
-            c.Add(Yazi(L.T("Oyun"), 17, "bolum")); OyunSecenek(c, false);
-            c.Add(Yazi(L.T("Görünüm"), 17, "bolum"));
+            // 2026-11-07 tek tip bölüm başlığı (yasin "yap", arayüz cilası): Ayarlar'daki 17 pt "bolum" başlıkları diğer ekranlardaki
+            // Grup başlığıyla aynı (tek stil, VoiceOver'da başlık rolü). Hiyerarşi boşlukla okunur.
+            c.Add(Grup(L.T("Oyun"))); OyunSecenek(c, false);
+            c.Add(Grup(L.T("Görünüm")));
             c.Add(Grup(L.T("Oyuncu görünümü"))); var m = Satir(); c.Add(m);
             // r56 (2026-10-29): Tüycük'le dört çip tek satırda "Oyun cak 3B" diye bölünüyordu (tarama: kelime 58 > 36 px); 2×2 sarar.
             m.style.flexWrap = Wrap.Wrap;
@@ -34,7 +36,9 @@ namespace BirdieSmash.Game
             // başka model seçiliyken bu, küçük gri notla değil, çiplerin hemen altında açıkça yazılır.
             for (int i = 0; i < Ayar.MODELLER.Length; i++)
             {
-                string id = Ayar.MODELLER[i]; if (!Ayar.ModelVar(id)) continue;
+                // 2026-11-07 (yasin "yap": dört seçenek ikiye): seçenekte yalnız Oyuncak 3B ve Tüycük; Gerçekçi ya da Sade seçmiş
+                // oyuncunun seçimi silinmez, kendi çipi de görünmeye devam eder (geri dönüp bırakabilsin). Online kartı dört modeli de tanır.
+                string id = Ayar.MODELLER[i]; if (!Ayar.ModelVar(id)) continue; if (!Ayar.ModelSecenek(id) && Ayar.model != id) continue;
                 var ci = Cip(L.T(Ayar.MODEL_AD[i]), Ayar.model == id, () => { Ayar.model = id; Ayar.Kaydet(); root.ModelDegisti(); Degisti(); });
                 ci.style.flexBasis = new StyleLength(new Length(40, LengthUnit.Percent)); m.Add(ci);
             }
@@ -55,17 +59,17 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Hareket")));
             string ht = Ayar.reduceSistem ? "Hareket azaltıldı · sistem" : Ayar.reduce ? "Hareket azaltıldı" : "Hareket tam";
             c.Add(Cip(L.T(ht), Ayar.reduce, Ayar.reduceSistem ? (System.Action)null : () => { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.Kaydet(); Degisti(); }));
-            c.Add(Yazi(L.T("Ses"), 17, "bolum"));
+            c.Add(Grup(L.T("Ses")));
             // Müzik ayrı çip (2026-10-30): sesi açık tutup yalnız menü müziğini kapatmak isteyen için. Ses kapalıyken müzik de
             // susar (dinleyici kısık), çip seçimi korunur.
             var sr = Satir(); c.Add(sr);
             sr.Add(Cip(L.T(Ayar.ses ? "Ses açık" : "Ses kapalı"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Degisti(); }));
             sr.Add(Cip(L.T(Ayar.muzik ? "Müzik açık" : "Müzik kapalı"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.Kaydet(); Degisti(); }));
-            c.Add(Yazi(L.T("Dil"), 17, "bolum")); var dl = Satir(); c.Add(dl);
+            c.Add(Grup(L.T("Dil"))); var dl = Satir(); c.Add(dl);
             dl.Add(Cip("Türkçe", Ayar.dil == "tr", () => { Ayar.dil = "tr"; Ayar.Kaydet(); }));
             dl.Add(Cip("English", Ayar.dil == "en", () => { Ayar.dil = "en"; Ayar.Kaydet(); }));
             if (Basarim.acik) { c.Add(Bosluk(10)); c.Add(Dugme(L.T("Game Center · Başarımlar"), () => { Yerel.Hap("tick"); Basarim.Goster(); })); }
-            c.Add(Yazi(L.T("Yardım"), 17, "bolum"));
+            c.Add(Grup(L.T("Yardım")));
             c.Add(Dugme(L.T("Nasıl oynanır") + "  ›", () => SayfaAc(Gezinti.NASIL), null, L.T("Vuruş, servis, nefes")));
             c.Add(Dugme(L.T("Lisanslar ve üçüncü taraf içerik") + "  ›", () => SayfaAc(Gezinti.LISANS)));
             // Gizlilik bağlantısı + sürüm (2026-11-07 inceleme, fikir 00:03 #1): Guideline 5.1.1(i) gizlilik politikasını uygulama
