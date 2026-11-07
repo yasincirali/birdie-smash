@@ -410,7 +410,15 @@ namespace BirdieSmash.Game
         }
 
         // Durum değişti: hepsi kirli, görünen hemen yeniden kurulur.
-        public void Kirlet() { SeviyeAniKapat(); for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true; var once = gez.sekme; Uygula(once, false); }
+        public void Kirlet() { SeviyeAniKapat(); for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true; SekmeCubuguGorunur(); var once = gez.sekme; Uygula(once, false); }
+
+        // İlk açılışta sekme çubuğu yok (2026-11-07, inceleme 18:20 madde 2; Tennis Clash ilk maçtan önce menüyü göstermez):
+        // Oyna'yı tek "İlk maç" kartına indirmenin değeri, yanında 0 Tüy'le kilitli Atölye/Dolap açıkken yarıya iniyordu.
+        // Koşul AnaEkran'ın ilk açılış koşuluyla aynı (antrenman görülmedi, galibiyet yok, bekleyen maç yok); antrenman
+        // bitince düşer, yani kaybeden oyuncu menüsüz kalmaz. Devirle gelen galibiyetli oyuncu çubuğu hep görür.
+        // Ayarlar düğmesi ve Tüy hapı üst şeritte kalır (Gizlilik/Destek ilk ekrandan erişilebilir, App Store).
+        bool IlkAcilis => !Ayar.antrenman && Ayar.wins == 0 && (root == null || !root.bekleyen);
+        void SekmeCubuguGorunur() { if (sekmeCubugu != null) sekmeCubugu.style.display = IlkAcilis ? DisplayStyle.None : DisplayStyle.Flex; }
 
         void HepsiniKur()
         {
@@ -428,7 +436,7 @@ namespace BirdieSmash.Game
                 sekmeCubugu.Add(d);
             }
             if (altBosluk > 0) sekmeCubugu.style.paddingBottom = altBosluk;
-            GostergeKur();
+            SekmeCubuguGorunur(); GostergeKur();
             for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true; Uygula(gez.sekme, false);
         }
 

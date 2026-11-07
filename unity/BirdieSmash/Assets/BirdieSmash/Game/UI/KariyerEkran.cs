@@ -226,11 +226,20 @@ namespace BirdieSmash.Game
             ZorlukSatir(zs, c);
             c.Add(Grup(L.T("Yıldızlar")));
             var gv = Match.GorevBul(kb.gorev);
-            YildizSatir(c, (m & Ilerleme.KAZAN) != 0, L.T("Kazan"));
-            YildizSatir(c, (m & Ilerleme.GOREV) != 0, L.T("Basamak görevi") + ": " + (gv != null ? L.Cumle(gv.ad) : "-"));
-            YildizSatir(c, (m & Ilerleme.FARK) != 0, L.T("Farkla kazan: rakip en çok {0} sayı", Ilerleme.FarkSiniri(uz)));
-            var tv = KariyerVeri.Turlar[tr];
-            c.Add(Yazi(L.T("Önerilen ekipman puanı {0}–{1} · seninki {2}", tv.epMin, tv.epMax, EkipmanPuani()), 12, "soluk"));   // 2026-11-05 unslop: "· öneri, kilit değil" üçüncü halkaydı; "Önerilen" zaten söylüyor
+            // Yeniden oynamada eksik yıldız üstte (2026-11-07, inceleme 18:20 madde 3): tamamlayıcı oyuncunun sorusu "hangisi eksik";
+            // üç satır aynı sırada (Kazan, Görev, Farkla) duruyordu. Kazanılmış basamakta eksikler tam satır, alınanlar tek soluk
+            // satırda birleşir. İlk oynayışta üç satır eskisi gibi.
+            bool[] yv = { (m & Ilerleme.KAZAN) != 0, (m & Ilerleme.GOREV) != 0, (m & Ilerleme.FARK) != 0 };
+            string[] yUzun = { L.T("Kazan"), L.T("Basamak görevi") + ": " + (gv != null ? L.Cumle(gv.ad) : "-"), L.T("Farkla kazan: rakip en çok {0} sayı", Ilerleme.FarkSiniri(uz)) };
+            if (!p.Kazanildi(g)) for (int i = 0; i < 3; i++) YildizSatir(c, yv[i], yUzun[i]);
+            else
+            {
+                string[] yKisa = { L.T("Kazan"), L.T("Basamak görevi"), L.T("Farkla kazan") }; string alinan = null;
+                for (int i = 0; i < 3; i++) if (!yv[i]) YildizSatir(c, false, yUzun[i]); else alinan = alinan == null ? yKisa[i] : alinan + " · " + yKisa[i];
+                if (alinan != null) { var al = Yazi(L.T("Alındı: {0}", alinan), 13, "soluk"); Erisim.Etiket(al, al.text, "metin"); c.Add(al); }
+            }
+            // "Önerilen ekipman puanı" satırı kalktı (2026-11-07, inceleme 18:20 madde 3): tur giriş kartı aynı bilgiyi hazırlık
+            // çubuğu + "Atölye'ye git" ile veriyor (stüdyo GD2); kartta sorun gösterip çözüm göstermeyen eski biçim kalmıştı.
             // 2026-10-27: Oyna / Kilitli kaydırmanın dışında, sayfanın dibinde (Duyarli.cs, kural 4)
             if (acik)
             {

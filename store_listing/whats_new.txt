@@ -1,4 +1,11 @@
 === UNITY ===
+Bu akşam (7 Kasım 18:20 inceleme turu):
+- Ayarlar > Ses'te yeni "Titreşim" düğmesi: titreşimi kapatmak için artık Hareketi azalt'ı açman gerekmiyor; kamera sarsıntısı ve yakınlaşma yerinde kalır.
+- Oyunu ilk kez açınca alttaki sekmeler gizli, ekranda yalnız ilk maç var. Antrenmanı bitirince sekmeler gelir. Ayarlar düğmesi hep üstte.
+- Kariyer maç kartı kısaldı: "Önerilen ekipman puanı" satırı kalktı (aynı bilgi tur kartında). Kazandığın bir basamağı yeniden oynarken eksik yıldızın en üstte, aldıkların tek satırda yazar.
+- Tur töreninde altı rakip tek satırda.
+Nasıl denenir: Ayarlar > Ses'te Titreşim'i kapat, bir maç oyna: vuruşta titreşim olmamalı, ses ve görüntü aynen sürmeli; Hareket tam kalmalı. Kariyer'de 1 ya da 2 yıldızlı bir basamağın kartını aç: eksik yıldız ilk satırda, altta soluk "Alındı: ..." satırı olmalı. İlk açılışı görmek istersen oyunu silip yeniden kur: sekmeler antrenmandan sonra gelmeli.
+
 Menüler ve akışlar elden geçti (7 Kasım, stüdyo incelemesi):
 - Seçili olan her yerde aynı görünür: turuncu çerçeve ve hafif turuncu zemin. Alt sekmede seçili simge biraz büyür ve yükselir. Koyu ekranlarda (Kariyer, Dolap, Atölye, Profil) üstte soluk bir güneş var.
 - Dolap'ta kamera düğmeleri simge oldu; Atölye'de artı ve eksi yazı yerine yeşil yukarı ok ve soluk aşağı ok. Tur düğmeleri daha büyük, kilitli tur net okunur.

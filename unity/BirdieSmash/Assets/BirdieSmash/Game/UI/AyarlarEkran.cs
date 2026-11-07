@@ -66,6 +66,9 @@ namespace BirdieSmash.Game
             var sr = Satir(); c.Add(sr);
             sr.Add(Cip(L.T(Ayar.ses ? "Ses açık" : "Ses kapalı"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Degisti(); }));
             sr.Add(Cip(L.T(Ayar.muzik ? "Müzik açık" : "Müzik kapalı"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.Kaydet(); Degisti(); }));
+            // Titreşim çipi (2026-11-07): Hareketi azalt'tan bağımsız; açılınca kısa bir tık ("tick") örnek olsun diye çalınır.
+            // Duraklat sayfasına eklenmez (orada yalnız Ses, sade).
+            sr.Add(Cip(L.T(Ayar.titresim ? "Titreşim açık" : "Titreşim kapalı"), Ayar.titresim, () => { Ayar.titresim = !Ayar.titresim; Ayar.Kaydet(); if (Ayar.titresim) Yerel.Hap("tick"); Degisti(); }));
             c.Add(Grup(L.T("Dil"))); var dl = Satir(); c.Add(dl);
             dl.Add(Cip("Türkçe", Ayar.dil == "tr", () => { Ayar.dil = "tr"; Ayar.Kaydet(); }));
             dl.Add(Cip("English", Ayar.dil == "en", () => { Ayar.dil = "en"; Ayar.Kaydet(); }));
