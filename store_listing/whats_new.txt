@@ -4,6 +4,11 @@ Reklam bağlandı (test reklamları):
 - Maç sonu kartında, Tüy kazandığın bir maçta, kartta başka öneri yoksa "Ödüle +%50 · reklam izle" düğmesi çıkabilir. Kısa bir video izlersen o maçın Tüy ödülü yarısı kadar artar. Günde en çok bir kez, ilk 3 galibiyetten sonra. İzlemek zorunlu değil, videoyu yarıda kapatırsan ödül yok, başka bir şey değişmez.
 - Avrupa'daysan ilk açılışta Google'ın reklam izni penceresi çıkabilir; izin vermesen de oyun aynen çalışır.
 Nasıl denenir: Menüde alttaki şeride bak, birkaç saniye içinde "Test Ad" yazan bir reklam görünmeli; Ayarlar ya da alt sayfa açınca şerit gizlenmeli, maçta hiç görünmemeli. 3 galibiyetten sonra Tüy kazandığın bir maçı bitir: kartta reklam düğmesi çıkarsa bas, videoyu sonuna kadar izle, kapanınca Tüy sayısı artmış olmalı. Aynı gün ikinci maçta düğme çıkmamalı.
+Küçük metin düzeltmeleri:
+- Ayarlar'da üst üste duran iki başlıktan boş olan "Görünüm" kalktı; "Oyuncu görünümü" doğrudan seçeneklerin üstünde.
+- Profil'de ad notu artık doğruyu söylüyor: adın cihazında ve kendi iCloud hesabında tutulur, bize gönderilmez.
+- Nasıl oynanır > Çubuklar ve tarz: tarzın bir artısı ve bir eksisi olduğu, fark yarattığı anda kortta adıyla yazıldığı anlatılıyor.
+Nasıl denenir: Ayarlar'ı aç, en üstte "Oyun"dan sonra tek başlık "Oyuncu görünümü" olmalı. Profil'de ad alanının altındaki notu oku. Ayarlar > Nasıl oynanır'da "Çubuklar ve tarz" satırını oku.
 === HTML ===
 Bu sürümde yeni:
 - Unity sürümüne hazırlık: ilerlemen (kariyer, Tüy, ekipman, ayarlar) telefonda ikinci bir yere de kaydediliyor. Bir sonraki büyük güncelleme (Unity, 3B) bunu bir kez okuyup ilerlemeni taşıyacak.

@@ -161,6 +161,7 @@ static class BotMac
         IkizMaclar();   // 2026-11-07 online: iki çekirdek gecikmeli kuyrukla (Core/Uzak)
         ServisSaatleri();   // 2026-11-07 inceleme: online servis saati + çekilme (Core/Uzak)
         Ligler(); Kartlar();   // 2026-11-07 online: lig puanı (Core/Lig), oyuncu kartı (Core/OyuncuKarti)
+        SicrayisBantlari();   // 2026-11-07 inceleme 16:05 #3: sıçrayış file uzaklığına göre (yalnız ölçüm, kural değişmedi)
         AdimTipleri();   // 2026-10-27 birleşik dal incelemesi: figürün kendi adım boyu (ekran/model) × işaretli faz (ekran/kosu)
         Console.WriteLine("en hızlı sayı smacı " + smacHizMax + " km/s");
         Console.WriteLine(fails == 0 ? "TAMAM" : "HATA " + fails);
@@ -194,6 +195,44 @@ static class BotMac
     }
     // 2026-11-05 dört kademe (Ayar.zorluk): rakip çarpanı yalnız Usta yolu ve antrenman dışında, kaynak tarz değişmez; aynı rakip
     // ve aynı botla galibiyet Kolay ≥ Orta, Zor ≥ Usta (Zor/Usta botu geç koşar: 0,45–0,57 sn, koşu yardımı farkı görünsün).
+    // 2026-11-07 (inceleme turu, fikir 16:05 #3): dolu enerji her hızlı forehand tepeden kaydırmada "jump" olur, vuruş noktasının
+    // fileye uzaklığına bakılmaz. Kural değiştirmeden önce ölçüm: tek maçlarda enerji hep dolu (her uygun vuruş sıçrayış), çift
+    // maçlarda hep boş (aynı vuruş düz smaç); bant başına "rakip dokunamadan sayı" oranı. Yalnız bilgi satırı, Fail yok:
+    // karar (arka bantta sıçrayış düz smaça dönsün mü) bu sayılarla geliştirme thread'inde verilir.
+    static void SicrayisBantlari()
+    {
+        int[,] n = new int[2, 3], bit = new int[2, 3];   // [0 jump,1 smash][≤4 m, 4–5,5 m, >5,5 m]
+        for (int m = 0; m < 60; m++)
+        {
+            bool dolu = m % 2 == 0;
+            var M = new Match(4100 + m, new MatchOptions { easy = true, stil = Match.KariyerRakip(1), target = 11 }); int guard = 0;
+            int acik = -1, acikTur = 0;
+            while (!M.over && guard++ < 60 * 60 * 30)
+            {
+                M.energy = dolu ? 1 : 0;
+                Bot(M, 1f / 60f, .2); M.Update(1f / 60f);
+                foreach (var e in M.events)
+                {
+                    if (e.kind == Ev.Hit)
+                    {
+                        if (acik >= 0) acik = -1;   // biri yeniden vurdu: bitirmedi
+                        if (e.who == "me" && (e.text == "jump" || e.text == "smash"))
+                        {
+                            float u = Math.Abs(e.y - Court.NET); int b = u <= 4 ? 0 : u <= 5.5f ? 1 : 2;
+                            acikTur = e.text == "jump" ? 0 : 1; acik = b; n[acikTur, b]++;
+                        }
+                    }
+                    if (e.kind == Ev.Point) { if (acik >= 0 && e.who == "me") bit[acikTur, acik]++; acik = -1; }
+                }
+                M.events.Clear();
+            }
+        }
+        string[] ad = { "≤4 m", "4–5,5 m", ">5,5 m" }; var sb = new System.Text.StringBuilder("sıçrayış bantları (bitirme %, sıçrayış / düz smaç):");
+        for (int b = 0; b < 3; b++)
+            sb.Append(" " + ad[b] + " " + (n[0, b] > 0 ? (100 * bit[0, b] / n[0, b]).ToString() : "-") + "/" + (n[1, b] > 0 ? (100 * bit[1, b] / n[1, b]).ToString() : "-") + " (n " + n[0, b] + "/" + n[1, b] + ")");
+        Console.WriteLine(sb.ToString());
+    }
+
     static void Zorluklar()
     {
         var st = Match.KariyerRakip(1);

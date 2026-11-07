@@ -27,7 +27,8 @@ namespace BirdieSmash.Game
             // 2026-11-07 tek tip bölüm başlığı (yasin "yap", arayüz cilası): Ayarlar'daki 17 pt "bolum" başlıkları diğer ekranlardaki
             // Grup başlığıyla aynı (tek stil, VoiceOver'da başlık rolü). Hiyerarşi boşlukla okunur.
             c.Add(Grup(L.T("Oyun"))); OyunSecenek(c, false);
-            c.Add(Grup(L.T("Görünüm")));
+            // 2026-11-07 (inceleme 16:05 #5): içeriksiz "Görünüm" başlığı kalktı; hemen altındaki "Oyuncu görünümü" ile iki başlık
+            // art arda duruyordu (VoiceOver'da iki boş başlık).
             c.Add(Grup(L.T("Oyuncu görünümü"))); var m = Satir(); c.Add(m);
             // r56 (2026-10-29): Tüycük'le dört çip tek satırda "Oyun cak 3B" diye bölünüyordu (tarama: kelime 58 > 36 px); 2×2 sarar.
             m.style.flexWrap = Wrap.Wrap;
@@ -93,7 +94,7 @@ namespace BirdieSmash.Game
             {"Nefes","Smaç, sıçrama ve uzanma nefes yakar; nefesin düşünce yavaşlarsın ve smaç zayıflar. Clear atıp sayı arasında dinlen. Topu tepeden alırsan smaç dikleşir"},
             {"Ekipman","Raket, tel gerginliği, bileklik, bant ve forma oyunun dinamiklerini, raket sesini ve titreşimi değiştirir"},
             // 2026-10-26 ekipman v2 ve karakter: 5 çubuk ve tarz bir satırla anlatılır (yalnız Unity; HTML donduruldu)
-            {"Çubuklar ve tarz","Atölye'de takımının 5 çubuğu var (50 nötr); her modelin kartı artısını ve eksisini tek cümleyle yazar, en iyi parça yok. Tarz güç vermez, oyun biçimini değiştirir: ücretsiz, istediğin an değiştir"}};
+            {"Çubuklar ve tarz","Atölye'de takımının 5 çubuğu var (50 nötr); her modelin kartı artısını ve eksisini tek cümleyle yazar, en iyi parça yok. Tarzın bir artısı ve bir eksisi var, en iyi tarz yok; fark yarattığı an kortta adıyla yazılır. Ücretsiz, istediğin an değiştir"}};
         void NasilKur(VisualElement p)
         {
             SayfaBasi(p, "Nasıl oynanır");
