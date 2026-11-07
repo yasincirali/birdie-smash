@@ -244,8 +244,10 @@ Her dil için (sağ üst dil menüsü) ilgili klasördeki dosyayı yapıştır:
 
 ## Reklam alanı (2026-11-06)
 
-Maçta üstte, menüde sekme çubuğunun üstünde 50 pt'lik "Reklam" şeridi yer tutucu olarak
-duruyor (`unity/.../Game/Reklam.cs`). Mağazaya 1.0 gönderilmeden önce ikisinden biri:
+Menüde sekme çubuğunun üstünde 50 pt'lik "Reklam" şeridi yer tutucu olarak duruyor
+(`unity/.../Game/Reklam.cs`). Maç üstü şerit 2026-11-07'de kaldırıldı (senin kararın: "Kort kenarı panolar");
+maçta reklam yeri kortun yan ve arka LED panoları (şimdilik oyunun kendi yazıları). Panoları gerçek reklama
+çevirmek oyun içi reklam ağı (Anzu, Gadsme vb.) ister; o da gizlilik politikası, ATT ve App Privacy güncellemesi demek. Mağazaya 1.0 gönderilmeden önce ikisinden biri:
 1. Reklam SDK'sı seçilip bağlanır (AdMob / AppLovin vb.). O zaman gizlilik politikası,
    ATT izin metni ve App Store "App Privacy" etiketi de güncellenir (reklam = veri toplar).
 2. Ya da `Reklam.ALAN = false` yapılır; şerit kalkar, oyun eski yerleşime döner.

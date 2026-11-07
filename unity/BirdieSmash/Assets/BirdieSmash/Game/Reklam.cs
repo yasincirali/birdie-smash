@@ -6,6 +6,7 @@ namespace BirdieSmash.Game
     // olmalı, sinir etmemeli"). Henüz reklam SDK'sı yok: bu dosya yalnız yeri ayırır ve yer tutucuyu çizer.
     //  - Boyut: standart telefon şeridi 320×50 pt. Uyarlanabilir şerit (AdMob anchored adaptive) telefonda ~50–62 pt; SDK
     //    gelince yükseklik onun bildirdiği değerle değiştirilir (PT tek yer).
+    //  - (2026-11-07: maç üstü şerit kaldırıldı, aşağıda MAC_SERIT; maçta reklam yeri kort kenarı panoları.)
     //  - Yer: menüde sekme çubuğunun hemen üstü (içerik kaydırılır, şerit sabit; başparmak bölgesindeki sekmelerle arasında
     //    çizgi var). Maçta EKRANIN ÜSTÜ: alt yarı kaydırma/vuruş alanı, orada şerit yanlış dokunuş demek (reklam ağlarının
     //    "oyun kontrollerinin yanında reklam" yasağı da bu). HUD ve kamera kadrajı şeridin altına iner, kort kapanmaz.
@@ -26,6 +27,10 @@ namespace BirdieSmash.Game
             return Mathf.Round(PT * Mathf.Clamp(olcek, 1f, 4f));
         }
         // Maçta (oyun ve maç sonu) üst pay; menüde sıfır (menü kendi şeridini sekme çubuğunun üstünde taşır).
-        public static void MacGuncelle(bool macta) { Guvenli.reklamUst = ALAN && macta ? Piksel() : 0f; }
+        // Maç üstü şerit KAPALI (yasin kararı 2026-11-07, kart "Maçtaki reklam nerede dursun?" → "Kort kenarı panolar"):
+        // ralli sırasında göz şeride kayıyor ve kort 50 pt kısalıyordu. Maçtaki reklam yeri artık kortun kendisi
+        // (KENAR_PANO + arka LED pano); menü şeridi (ALAN) kalır. Kod duruyor: MAC_SERIT true yapılırsa şerit geri gelir.
+        public const bool MAC_SERIT = false;
+        public static void MacGuncelle(bool macta) { Guvenli.reklamUst = ALAN && MAC_SERIT && macta ? Piksel() : 0f; }
     }
 }
