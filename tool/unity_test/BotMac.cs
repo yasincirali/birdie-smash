@@ -611,14 +611,17 @@ static class BotMac
             Func<KeyValuePair<string, float>, bool> iyi = kv => kv.Key == "smacYor" || kv.Key == "toparla" ? kv.Value < 1 : kv.Value > 1;
             if (!t.etki.Any(kv => iyi(kv))) Fail("tarzın artısı yok: " + t.id);
             if (!t.etki.Any(kv => !iyi(kv))) Fail("tarzın eksisi yok: " + t.id);
-            if (t.etki.Values.Any(v => Math.Abs(v - 1) > .2001f)) Fail("tarz etkisi %20'den büyük: " + t.id);
+            // 2026-11-07 tavan %20 → %35 (yasin "tarz farkı hissedilsin"; ±%5–10 kortta fark edilmiyordu). Genel denge Denge tarz kipinde.
+            if (t.etki.Values.Any(v => Math.Abs(v - 1) > .3501f)) Fail("tarz etkisi %35'ten büyük: " + t.id);
             var u = Karakter.Uygula(GearStats.Notr, t.id); if (u.tarz != t.id || GearStats.Notr.tarz != "dengeli") Fail("Uygula kopya değil");
         }
         var d = Karakter.Uygula(GearStats.Notr, "dengeli"); if (d.enerji != 1 || d.tatli != 1 || d.slice != 1 || d.uzanma != 1) Fail("Dengeli nötr değil");
         if (Karakter.Gecerli("aldatici", 17) != "dengeli" || Karakter.Gecerli("aldatici", 18) != "aldatici" || Karakter.Gecerli("yok", 30) != "dengeli") Fail("tarz seviye kapısı");
         // tarz maça gider: Smaşçı enerjisi, Duvar uzanma erişimi (aynı tohum, aynı girdi)
-        var sm = Karakter.Uygula(GearStats.Notr, "smasci"); if (Math.Abs(sm.enerji - 1.2f) > 1e-5 || sm.smacYor != 1.15f) Fail("Smaşçı etkisi");
-        var dv = new Match(3, new MatchOptions { easy = true, target = 5, gs = Karakter.Uygula(GearStats.Notr, "duvar") }); if (dv.GS.uzanma != 1.06f) Fail("tarz maça gitmedi");
+        // Değerler veriden (karakter.json): denge ayarı testi kırmasın, test aktarımı kilitlesin.
+        var smT = Karakter.Tarz("smasci"); var dvT = Karakter.Tarz("duvar");
+        var sm = Karakter.Uygula(GearStats.Notr, "smasci"); if (Math.Abs(sm.enerji - smT.etki["enerji"]) > 1e-5 || sm.smacYor != smT.etki["smacYor"]) Fail("Smaşçı etkisi");
+        var dv = new Match(3, new MatchOptions { easy = true, target = 5, gs = Karakter.Uygula(GearStats.Notr, "duvar") }); if (dv.GS.uzanma != dvT.etki["uzanma"]) Fail("tarz maça gitmedi");
         // unvanlar
         var p = new Ilerleme(); var u0 = Karakter.Kazanilan(p, 1, 0);
         if (u0.Count != 1 || u0[0].id != "mahalle" || Karakter.Gosterilen(p, 1, 0).id != "mahalle") Fail("başlangıç unvanı Mahalle oyuncusu");
@@ -958,7 +961,7 @@ static class BotMac
         // ayakkabı maça gider: Hafif hız oyuncunun koşusunu hızlandırır (aynı tohum)
         var mh = new Match(3, new MatchOptions { easy = true, target = 5, gs = yb.Hesap() }); if (Math.Abs(mh.GS.kosu - 1.048f) > 1e-4) Fail("ayakkabı koşusu maça gitmedi");
         // tarz ayakkabının üstüne biner (Duvar uzanma × Pro karbon uzanma)
-        var gc = new Gear(new BellekKayit(), 0); gc.ayakkabi = "karbon"; var tc = Karakter.Uygula(gc.Hesap(), "duvar"); if (Math.Abs(tc.uzanma - 1.06f * 1.024f) > 1e-4) Fail("tarz ve ayakkabı uzanması çarpılmalı");
+        var gc = new Gear(new BellekKayit(), 0); gc.ayakkabi = "karbon"; var tc = Karakter.Uygula(gc.Hesap(), "duvar"); if (Math.Abs(tc.uzanma - Karakter.Tarz("duvar").etki["uzanma"] * 1.024f) > 1e-4) Fail("tarz ve ayakkabı uzanması çarpılmalı");
         // (6) rakip görünüşü: her rakibin verisi var ve kimlikler geçerli
         foreach (var id in KariyerVeri.Stil.Keys)
         {

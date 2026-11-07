@@ -1,4 +1,9 @@
 === UNITY ===
+Tarzlar artık kortta hissediliyor (7 Kasım):
+- Dört oyun tarzının etkisi büyüdü: Smaşçı'nın smacı %6 hızlı ve enerjisi daha çabuk dolar; Duvar daha uzağa uzanır ama smacı yavaştır; File ustası file önünde tam ortayı çok daha kolay bulur; Aldatıcı'nın slice'ı rakibi daha çok şaşırtır. Her tarzın eksisi de aynı ölçüde gerçek.
+- Tarzın sonucu değiştirdiği an kortta adıyla yazılır ("Duvar uzanışı!", "Tam orta · File ustası"), maç sonu Ayrıntılar'da "Tarzın N kez fark yarattı" görünür.
+Nasıl denenir: Atölye'de Tarz bölümünden Duvar'ı seç ve bir maç oyna: uzaktaki alçak toplara yetişince "Duvar uzanışı!" yazmalı. Maç sonunda Ayrıntılar'ı aç: "Tarzın N kez fark yarattı" satırı olmalı. Dengeli'de bu satır çıkmamalı.
+
 Bu öğleden sonra (7 Kasım 14:30 inceleme turu):
 - Bir parmağın ekranda dururken (ör. sol başparmak kenara dayalı) öbür parmakla yaptığın kaydırma artık vuruş sayılıyor; eskiden bazen hiç vurmuyordu.
 - Hızlı maçta yenilince ana düğme "Rövanş" oluyor: aynı rakiple, aynı sahada yeniden oynarsın. Kazanınca eskisi gibi yeni rakip gelir.
