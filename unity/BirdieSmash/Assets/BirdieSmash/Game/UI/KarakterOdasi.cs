@@ -72,8 +72,11 @@ namespace BirdieSmash.Game
         void KategoriKur()
         {
             if (soyunmaSegment == null) return; soyunmaSegment.Clear(); karAlt = KarGecerli(karAlt);
+            OdaSeciciYaz();
+            if (kategoriKaydir != null) kategoriKaydir.style.display = karAlt == KAR_RAKET ? DisplayStyle.None : DisplayStyle.Flex;
             foreach (int i in KarSayfalar())
             {
+                if (i == KAR_RAKET) continue;   // 2026-11-07 (yasin seçimi "tek Raket bölümü"): Raket üstteki Görünüm/Raket ayrımında
                 int ii = i; var d = Cip(L.T(KAR_AD[i]), karAlt == i, () => KategoriSec(ii), KategoriDeneniyor(i) ? L.T("deneniyor") : null);
                 d.AddToClassList("segment-cip"); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; soyunmaSegment.Add(d);
                 if (karAlt == i && kategoriKaydir != null) { var sd = d; kategoriKaydir.schedule.Execute(() => { if (sd.panel != null) kategoriKaydir.ScrollTo(sd); }).StartingIn(1); }   // seçili kategori görünür kalsın
@@ -117,6 +120,13 @@ namespace BirdieSmash.Game
             }
             if (secEl != null) { var se = secEl; EventCallback<GeometryChangedEvent> gc = null; gc = e => { if (se.layout.width > 0) { hk.ScrollTo(se); se.UnregisterCallback(gc); } }; se.RegisterCallback(gc); }
             var gr = Ayar.gear; int sv = gr.Seviye(); string ps = raketParca;
+            // 2026-11-07 (yasin: "tek Raket bölümü"; ölçüler profesyonel düzeyde): raketle ilgili her şey burada. Tüm raket görünümünde
+            // önce işlev (kimlik, sap, gerginlik), sonra görünüş, en altta teknik sayfa. Parça seçilince o parçanın işlevi ve görünüşü:
+            // Kordaj → gerginlik + renk, Grip → sap ölçüsü + renk. Model alımı yuva kademeleriyle birlikte Atölye'de kalır.
+            if (ps == null) { RaketKimlikKart(c, true); TelKur(c); }
+            else if (ps == "kordaj") TelKur(c);
+            else if (ps == "grip") { var sk = Kart("raket-kimlik"); c.Add(sk); SapSecici(sk); }
+            c.Add(Grup(L.T("Görünüş"))); GorunumRozet(c);
             if (ps == null || ps == "kafa") KafaSekliSira(c);
             if (ps == null || ps == "cerceve")
             {
@@ -133,7 +143,15 @@ namespace BirdieSmash.Game
                 ds.Add(Cip(L.T("Ana ve çapraz ayrı"), Ayar.RGOR["desen"] == "iki", () => { Ayar.RGOR["desen"] = "iki"; Ayar.Kaydet(); root.vitrin.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
                 if (Ayar.RGOR["desen"] == "iki") RenkSira(c, "Çapraz teller", "tel2");
             }
-            c.Add(Yazi(L.T("Raketin görünüşü oyunu etkilemez. Raketin gücü ve kordaj gerginliği Atölye'de."), 12, "soluk"));
+            if (ps == null) TeknikKur(c);
+        }
+        // Üstte iki büyük sekme: Görünüm (figür, altı kategori) · Raket (işlev + görünüş + teknik sayfa).
+        VisualElement odaSecici;
+        void OdaSeciciYaz()
+        {
+            if (odaSecici == null) return; odaSecici.Clear(); bool rk = karAlt == KAR_RAKET;
+            var g = Cip(L.T("Görünüm"), !rk, () => RaketGorunum(false)); g.AddToClassList("oda-cip"); var gb = g.userData as ErisimBilgi; if (gb != null) gb.rol = "sekme"; odaSecici.Add(g);
+            var r = Cip(L.T("Raket"), rk, () => RaketGorunum(true)); r.AddToClassList("oda-cip"); var rb = r.userData as ErisimBilgi; if (rb != null) rb.rol = "sekme"; odaSecici.Add(r);
         }
         // Kafa şekli: üç biçim, örnek kare içinde biçimin kendisi çizili (yalnız adla değil); seçili ✓ + kalın çerçeve.
         void KafaSekliSira(VisualElement c)
@@ -181,8 +199,9 @@ namespace BirdieSmash.Game
         void KarakterGovde(VisualElement c)
         {
             // raket görünümünde (vitrin rakette) yalnız raketin görünüşü: forma ve şapka figür görünmezken seçilmez
-            karAlt = KarGecerli(karAlt); GorunumRozet(c);
+            karAlt = KarGecerli(karAlt);
             if (karAlt == KAR_RAKET) { RaketSayfa(c); return; }
+            GorunumRozet(c);
             KombinSatir(c);
             if (!Ayar.VaryantGorunur) TekBedenKart(c);
             if (!Ayar.AykModelGorunur && karAlt == KAR_AYK) ModelUyari(c);

@@ -697,3 +697,6 @@
 /* 2026-11-07 raket kimliği: gerçek raketin gövde satırı ("3U · G5 · 300 mm · sert · 21–29 lbs") */
 .kimlik-satir { color: var(--tx); -unity-font-style: bold; letter-spacing: 1px; margin-top: 6px; padding: 4px 8px; border-radius: 8px; background-color: rgba(0, 0, 0, 0.28); border-width: 1px; border-color: rgba(255, 255, 255, 0.12); align-self: flex-start; white-space: normal; }
 .raket-kimlik .dugme--hayalet { flex-grow: 1; margin: 0 4px 0 0; }
+/* Dolap üst ayrımı: Görünüm · Raket (2026-11-07, yasin seçimi) */
+.oda-secici { flex-direction: row; margin: 4px 16px 8px 16px; }
+.oda-cip { flex-grow: 1; flex-basis: 0; margin: 0 3px; min-height: 44px; }

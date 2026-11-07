@@ -74,6 +74,7 @@ namespace BirdieSmash.Game
         void SoyunmaKur(VisualElement k)
         {
             k.Clear(); var vt = root.vitrin;
+            odaSecici = Satir("oda-secici"); k.Add(odaSecici);   // Görünüm · Raket (OdaSeciciYaz, KategoriKur'da yenilenir)
             var ust = new VisualElement(); ust.AddToClassList("vitrin-alan"); k.Add(ust);
             vitrinIm = new Image { image = vt.rt, scaleMode = ScaleMode.ScaleAndCrop }; vitrinIm.AddToClassList("vitrin"); ust.Add(vitrinIm);
             Erisim.Etiket(vitrinIm, L.T("Oyuncun, 360 derece görünüm"), "resim");
@@ -217,7 +218,7 @@ namespace BirdieSmash.Game
 
         // 2026-11-07 (yasin: "kordaj gerginliği kaybolmuş"; ölçüler gerçek raket diliyle): Atölye'nin ana ekranında takılı raketin
         // gövde satırı ("3U · G5 · 300 mm · sert · 21–29 lbs") ve gerginlik. Gerginlik eskiden yalnız Kordaj yuvasının alt sayfasındaydı.
-        void RaketKimlikKart(VisualElement c)
+        void RaketKimlikKart(VisualElement c, bool dolap = false)
         {
             var gr = Ayar.gear; GearModel r; if (!Gear.GEAR["raket"].TryGetValue(gr.raket, out r)) return;
             c.Add(Grup(L.T("Raketin")));
@@ -228,9 +229,10 @@ namespace BirdieSmash.Game
             string kim = Gear.Kimlik(r, gr.sap); if (kim != null) k.Add(Yazi(kim, 13, "kimlik-satir"));
             GearModel kd; string kdAd = Gear.GEAR["kordaj"].TryGetValue(gr.kordaj, out kd) ? L.T(kd.ad) + (kd.kalinlik.HasValue ? " " + KalinlikYaz(kd.kalinlik.Value) : "") : "";
             k.Add(Yazi(L.T("Kordaj") + ": " + kdAd + " · " + L.T("raketin önerisi {0}–{1} lbs", tmin, tmax), 12, "soluk"));
-            SapSecici(k);
+            if (dolap) SapSecici(k);
             var d = Satir("arali"); d.style.marginTop = 8; k.Add(d);
-            d.Add(Dugme(L.T("Gerginlik"), () => YuvaAc("tel"), "dugme--hayalet")); d.Add(Dugme(L.T("Teknik sayfa"), () => YuvaAc("raket"), "dugme--hayalet"));
+            if (dolap) { d.Add(Dugme(L.T("Raket modelleri"), () => YuvaAc("raket"), "dugme--hayalet")); d.Add(Dugme(L.T("Kordaj modelleri"), () => YuvaAc("tel"), "dugme--hayalet")); }
+            else d.Add(Dugme(L.T("Dolap'ta raket: gerginlik, sap, teknik sayfa"), () => SoyunmaSegment(2), "dugme--hayalet"));
             Erisim.Etiket(bas, L.T(r.ad) + ", " + (kim ?? "") + ", " + L.T("Tel gerginliği") + " " + tel + " lbs", "metin");
         }
         // Sap ölçüsü (dev thread kararı 2026-11-07): G4 kalın · G5 · G6 ince, ücretsiz, toplamı nötr; sargı (grip yuvası) üstüne biner.
@@ -444,7 +446,7 @@ namespace BirdieSmash.Game
             if (telYazi != null) telYazi.text = TelBaslik(); if (telNot != null) telNot.text = TelNot();
             CanliCubukYaz();
         }
-        Slider TelKaydirici() { return altSayfa != null ? altSayfa.Q<Slider>() : null; }
+        Slider TelKaydirici() { var sl = altSayfa != null ? altSayfa.Q<Slider>() : null; return sl ?? (soyunmaGovde != null ? soyunmaGovde.Q<Slider>(null, "tel-kaydirici") : null); }
         void TelAdim(int d)
         {
             var gr = Ayar.gear; float yeni = Mathf.Clamp(gr.tel + d, 18, 32); if (yeni == gr.tel) return;
