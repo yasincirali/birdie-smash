@@ -1,4 +1,8 @@
 === UNITY ===
+Reklam şeridi düzeltmesi (7 Kasım gecesi):
+- Menüdeki reklam şeridi artık sekme düğmelerinin üstüne binmiyor; kendi siyah şeridinin içinde, sekmelerin hemen üstünde duruyor.
+Nasıl denenir: Oyna, Kariyer ve Dolap sekmelerinde alttaki reklam şeridine bak: sekme ikonları tamamen görünür ve dokunulabilir olmalı, reklam üstündeki siyah şeridin ortasında durmalı.
+
 Bu gece (8 Kasım 00:20 inceleme turu):
 - Oyunu ilk kez açınca reklam izni sorusu artık hemen çıkmıyor: önce antrenman ve ilk maç, soru ilk maçtan sonra menüye dönünce gelir.
 - Maç uzunluğu (5, 11, 21 sayı) Ayarlar'dan kalktı; Hızlı maç sayfasında ve kariyerde maç ayrıntısında, zorluğun hemen altında seçilir.
