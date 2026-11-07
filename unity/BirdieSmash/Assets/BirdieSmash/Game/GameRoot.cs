@@ -630,10 +630,27 @@ namespace BirdieSmash.Game
         float Ref { get { return 640f / Mathf.Max(1, Screen.height); } }
         Vector2 RefPos(Vector2 screen) { return new Vector2(screen.x * Ref, (Screen.height - screen.y) * Ref); }   // y aşağı
 
+        // Kaydırma ölçümü (2026-11-07, yasin: "kaydırma hızını dokunuş örnekleriyle ölçmek öne alınsın"). Eski girdi sistemi parmağı
+        // karede bir kez okur; hız son 90 ms'deki örneklerden çıkar. Uzun bir kare (takılma) o pencerede 1–2 örnek bırakırsa hız
+        // düşük okunur ve "Yavaş kaydırdın" ıskası gelir. Davranışı DEĞİŞTİRMEZ, yalnız sayar: gizli kare hızı göstergesinin
+        // (Ayarlar başlığına 3 sn'de 5 dokunuş) üçüncü satırı. EnhancedTouch örnek geçmişine geçiş bu sayılara göre karar verilir.
+        public static class KaydirmaOlc
+        {
+            public static int kay, vur, kisa, yavas, kil, uzak, ornekTop, ornekN, uzunKareli;
+            public static int sonOrnek; public static bool uzunKare;
+            public static string Ozet()
+            {
+                if (kay == 0) return "kaydırma: henüz yok";
+                return "kaydırma " + kay + " · vuruş %" + Mathf.RoundToInt(100f * vur / kay) + " · ıska kısa " + kisa + " yavaş " + yavas + " kıl " + kil + " uzak " + uzak
+                    + "\n90 ms'de örnek ort " + (ornekN > 0 ? (ornekTop / (float)ornekN).ToString("F1") : "-") + " · takılmalı kaydırma " + uzunKareli;
+            }
+            public static void Bitti(bool vurdu) { kay++; if (vurdu) vur++; ornekTop += sonOrnek; ornekN++; if (uzunKare) uzunKareli++; uzunKare = false; }
+        }
         void SwipeVec(out float dx, out float dy, out float speed)
         {
             var tr = input.tr; var last = tr[tr.Count - 1]; var a = tr[0];
             foreach (var p in tr) if (last.z - p.z <= 90) { a = p; break; }   // pencere son harekete göre (HTML swipeVec)
+            int n = 0; foreach (var p in tr) if (last.z - p.z <= 90) n++; KaydirmaOlc.sonOrnek = n;
             float dt = Mathf.Max(16, last.z - a.z); dx = last.x - a.x; dy = last.y - a.y; speed = Mathf.Sqrt(dx * dx + dy * dy) / dt;
         }
         // Kavis (slice): izin ilk yarısı ile ikinci yarısının yönü 0,8 rad'dan fazla ayrışıyorsa ve ikinci yarı 25 px'ten uzunsa.
@@ -737,6 +754,7 @@ namespace BirdieSmash.Game
             }
             else if (held && input.on)
             {
+                if (Time.unscaledDeltaTime > .034f) KaydirmaOlc.uzunKare = true;
                 var prev = input.tr[input.tr.Count - 1]; input.tr.Add(new Vector3(q.x, q.y, now));
                 while (input.tr.Count > 2 && now - input.tr[0].z > 300) input.tr.RemoveAt(0);
                 if (Vector2.Distance(q, input.p0) > 18) input.moved = true;
@@ -762,7 +780,7 @@ namespace BirdieSmash.Game
                     // Topun üstünden geçmek şart değil: pencere açıkken belirgin kaydırma (70 px, kavis için yer) vuruştur; topu kesmek mükemmeli verir.
                     bool durdu = M.ogr != null && M.ogr.dur;
                     if (!durdu && (d <= R || (far > 70 && speed > .45f)))
-                        if (M.SwipeShot(Jest(new SwipeInput { dx = dx, dy = dy, speed = speed, dist = d <= R ? d : R * 1.5f, R = R, side = side, curved = Curved() }))) { input.hit = true; Yerel.Vurus(M.sonTip, M.sonQ, M.sonSlice); }
+                        if (M.SwipeShot(Jest(new SwipeInput { dx = dx, dy = dy, speed = speed, dist = d <= R ? d : R * 1.5f, R = R, side = side, curved = Curved() }))) { input.hit = true; KaydirmaOlc.Bitti(true); Yerel.Vurus(M.sonTip, M.sonQ, M.sonSlice); }
                 }
             }
             else if (up && input.on)
@@ -782,6 +800,8 @@ namespace BirdieSmash.Game
                     {   // "doğru zamanda vurdum ama geçti": ıskanın nedeni bir kelimeyle
                         float dx, dy, speed; SwipeVec(out dx, out dy, out speed);
                         string neden = far < 70 ? "Kısa kaydırdın" : speed <= .45f ? "Yavaş kaydırdın" : input.minD < 2.2f ? "Kıl payı: topun üstünden geç" : "Topun uzağından geçtin";
+                        if (far < 70) KaydirmaOlc.kisa++; else if (speed <= .45f) KaydirmaOlc.yavas++; else if (input.minD < 2.2f) KaydirmaOlc.kil++; else KaydirmaOlc.uzak++;
+                        KaydirmaOlc.Bitti(false);
                         hud.Say(L.T("Iska · {0}", L.T(neden)), Kit.W(M.me.x, M.me.y, 1.6f), Kit.Hex("#ffd27a"), 1, false, 2); sfx.Iska();
                     }
                 }
