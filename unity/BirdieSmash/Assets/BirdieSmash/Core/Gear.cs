@@ -283,7 +283,9 @@ namespace BirdieSmash.Core
         public static float SapKontrol(string s) { return s == "G4" ? 1.03f : s == "G6" ? .97f : 1f; }
         public static float SapHiz(string s) { return s == "G6" ? 1.03f : s == "G4" ? .97f : 1f; }
         // Sap çevresi (yaklaşık; üretici tablosuna göre değişir).
-        public static string SapMm(string s) { return s == "G4" ? "≈ 86–89 mm" : s == "G6" ? "≈ 80–83 mm" : "≈ 83–86 mm"; }
+        // Sap çevresi (2026-11-07 fikir 22:10 #1d): üretici tablosu G4 3½ inç ≈ 89 mm, G5 3¼ inç ≈ 83 mm, G6 3 inç ≈ 76 mm. Önceki
+        // aralıklar (G6 80–83) tabloya göre kalın yazıyordu.
+        public static string SapMm(string s) { return s == "G4" ? "≈ 89 mm (3½ inç)" : s == "G6" ? "≈ 76 mm (3 inç)" : "≈ 83 mm (3¼ inç)"; }
         const float RAKET_EKSI = .4f;
         static float Taban(float m, float kr) { return Math.Abs(m - 1) < 1e-4f ? 1 + .05f * kr : 1; }
         public GearStats Hesap()

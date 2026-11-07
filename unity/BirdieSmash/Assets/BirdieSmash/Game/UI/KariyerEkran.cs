@@ -25,7 +25,7 @@ namespace BirdieSmash.Game
             var bas = Satir("arali"); c.Add(bas);
             var t = Yazi(L.T("Kariyer"), 24, "sekme-baslik"); Erisim.Etiket(t, L.T("Kariyer"), "baslik"); bas.Add(t);
             bas.Add(YildizSayac(p.ToplamYildiz, TurSayisiVeri() * 18, 15));
-            c.Add(Yazi(L.Cumle(Career.Line(p)), 14, "soluk"));
+            // Career.Line satırı kalktı (fikir 22:10 #2): aynı maç başlık altında, tur kartında, maç kartında ve düğmede dört kez yazıyordu.
 
             // 2026-11-07 (yasin, Dolap/Kariyer alternatifleri, seçim "A: yatay tur kartları"): çip satırı + tur kartı + altı düğümlük
             // dikey yol yerine her tur bir kart, yatay kaydırılır; kartta altı basamak tek satırda (dokununca maç kartı). Altında
@@ -117,7 +117,9 @@ namespace BirdieSmash.Game
                 if (acik)
                 {
                     int y = p.TurYildiz(t);
-                    if (sira >= 0 && KariyerVeri.TurOf(sira) == t) { var skb = KariyerVeri.Al(sira); durum = L.T("Şimdi: {0}", (KariyerVeri.BasOf(sira) + 1) + ". " + L.T(skb.yer) + " · " + Match.STIL[skb.stil].isim); }
+                    // "Şimdi: …" yalnız seçili olmayan kartta (başka turu incelerken kendi turunu gösterir); seçili kendi turunda maç
+                    // kartı hemen altında, kartta mühüre kalan yazar (fikir 22:10 #2).
+                    if (!secili && sira >= 0 && KariyerVeri.TurOf(sira) == t) { var skb = KariyerVeri.Al(sira); durum = L.T("Şimdi: {0}", (KariyerVeri.BasOf(sira) + 1) + ". " + L.T(skb.yer) + " · " + Match.STIL[skb.stil].isim); }
                     else durum = y >= Ilerleme.MUHUR_ALTIN ? L.T("Altın tur mührü") : y >= Ilerleme.MUHUR_BRONZ ? L.T("Altın mühüre {0} yıldız", Ilerleme.MUHUR_ALTIN - y) : L.T("Bronz mühüre {0} yıldız", Ilerleme.MUHUR_BRONZ - y);
                     var dz = Yazi(durum, 13, "soluk"); dz.AddToClassList("tur-durum"); dz.pickingMode = PickingMode.Ignore; kb.Add(dz);
                 }
@@ -172,7 +174,7 @@ namespace BirdieSmash.Game
             Erisim.Etiket(rr, (b + 1) + ". " + L.T(kb.yer) + ", " + L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad) + (acik ? ", " + L.T("{0}/3 yıldız", p.Yildiz(g)) : ""), "metin");
             var ip = Yazi(L.T(st.ipucu), 14, "ipucu"); Erisim.Etiket(ip, L.T(st.ipucu), "metin"); kart.Add(ip);
             if (acik) { var zs = Satir(); kart.Add(zs); ZorlukSatir(zs, kart); }
-            if (acik) { var o = Dugme(L.T(p.Kazanildi(g) ? "Yeniden oyna" : "Oyna") + ": " + L.T(kb.yer), () => KariyerOyna(g), "dugme--birincil", null, 19); o.AddToClassList("mac-ozet-oyna"); Sigdir(o); kart.Add(o); }
+            if (acik) { string ol = L.T(p.Kazanildi(g) ? "Yeniden oyna" : "Oyna"); var o = Dugme(ol, () => KariyerOyna(g), "dugme--birincil", null, 19); o.AddToClassList("mac-ozet-oyna"); Sigdir(o); Erisim.Etiket(o, ol + ", " + L.T(kb.yer), "dugme"); kart.Add(o); }   // yer adı kartın başlığında; ekran okuyucu yine söyler
             else kart.Add(Pasif(L.T("Kilitli"), b > 0 && p.TurAcik(tr) ? L.T("Önce {0} basamağını kazan", L.T(KariyerVeri.Al(g - 1).yer)) : KilitNedeni(tr)));
             var dy = Dugme(L.T("Maç ayrıntısı"), () => MacKartAc(g), "kucuk-dugme"); dy.AddToClassList("dugme--hayalet"); dy.style.alignSelf = Align.Center; dy.style.marginTop = 8; kart.Add(dy);
             return kart;

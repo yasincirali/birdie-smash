@@ -225,8 +225,9 @@ namespace BirdieSmash.Game
             var k = Kart("raket-kimlik"); c.Add(k);
             var bas = Satir("arali"); k.Add(bas); bas.Add(Yazi(L.T(r.ad), 16, "kalin"));
             int tmin, tmax; Gear.TelAralik(gr.raket, out tmin, out tmax); int tel = Mathf.RoundToInt(gr.tel);
-            bas.Add(Yazi(tel + " lbs", 15, tel < tmin || tel > tmax ? "durum-kilit" : "durum-gecti"));
-            string kim = Gear.Kimlik(r, gr.sap); if (kim != null) k.Add(Yazi(kim, 13, "kimlik-satir"));
+            // Aralık dışı yalnız renkle verilmez (fikir 22:10 #5a): ok + kısa söz.
+            bas.Add(Yazi(tel + " lbs" + (tel > tmax ? " · " + L.T("↑ önerinin üstü") : tel < tmin ? " · " + L.T("↓ önerinin altı") : ""), 15, tel < tmin || tel > tmax ? "durum-kilit" : "durum-gecti"));
+            string kim = Gear.Kimlik(r, SapYazi(gr)); if (kim != null) k.Add(Yazi(kim, 13, "kimlik-satir"));
             GearModel kd; string kdAd = Gear.GEAR["kordaj"].TryGetValue(gr.kordaj, out kd) ? L.T(kd.ad) + (kd.kalinlik.HasValue ? " " + KalinlikYaz(kd.kalinlik.Value) : "") : "";
             k.Add(Yazi(L.T("Kordaj") + ": " + kdAd + " · " + L.T("raketin önerisi {0}–{1} lbs", tmin, tmax), 12, "soluk"));
             if (dolap) SapSecici(k);
@@ -252,19 +253,20 @@ namespace BirdieSmash.Game
         static string KalinlikYaz(float mm) { return mm.ToString("0.00", L.En ? System.Globalization.CultureInfo.InvariantCulture : new System.Globalization.CultureInfo("tr-TR")) + " mm"; }
 
         // Teknik sayfa: raket yuvasının alt sayfasında. Her ölçü değer + ne demek + maçta ne yapar.
+        // Kalın sargı sapı yarım ölçü kalınlaştırır; gerçek oyuncu bunu "G5 + sargı" diye söyler (fikir 22:10 #5b).
+        static string SapYazi(Gear gr) { return gr.grip == "kalin" ? gr.sap + " + " + L.T("sargı") : gr.sap; }
         void TeknikKur(VisualElement c)
         {
             var gr = Ayar.gear; GearModel r; if (!Gear.GEAR["raket"].TryGetValue(gr.raket, out r) || r.u == null) return;
             c.Add(Grup(L.T("Teknik sayfa") + " · " + L.T(r.ad)));
             var k = Kart("teknik-kart"); c.Add(k);
-            string kim = Gear.Kimlik(r, gr.sap); if (kim != null) k.Add(Yazi(kim, 13, "kimlik-satir"));
+            string kim = Gear.Kimlik(r, SapYazi(gr)); if (kim != null) k.Add(Yazi(kim, 13, "kimlik-satir"));
             int dm = r.dengeMm ?? 290; string da = Gear.DengeAd(dm);
             TeknikSatir(k, "Ağırlık", r.u + " · " + (r.gram ?? 0) + " g " + L.T("(telsiz)"), "U sınıfı: 5U 75–79 g, 4U 80–84 g, 3U 85–89 g. Hafif raket elde hızlı döner; ağır raket topu daha sert iter, kolu daha çok yorar.");
             TeknikSatir(k, "Denge noktası", dm + " mm · " + L.T(da), "Sapın ucundan ağırlık merkezine uzaklık. Kafa ağır: smaç ve clear güçlü, drive ve file geç. Kafa hafif: savunma ve file hızlı, smaç yumuşak.");
-            TeknikSatir(k, "Şaft", L.T(r.saft ?? "orta"), "Esnek şaft yavaş kolda da güç verir ve affeder; sert şaft hızlı kolda isabet verir, tatlı nokta daralır.");
+            TeknikSatir(k, "Şaft", L.T(r.saft ?? "orta"), "Esnek şaft affeder: zamanlama kaçsa da top yerine gider (tatlı nokta geniş, sapma az), ama topu bir an tutar, smaç yavaşlar. Sert şaft hızlı kolda gücü doğrudan aktarır; zamanlama ister, tatlı nokta daralır.");
             TeknikSatir(k, "Önerilen gerginlik", (r.telMin ?? 20) + "–" + (r.telMax ?? 28) + " lbs", "Üreticinin gövdeye yazdığı aralık. Gevşek tel tramplen ve geniş tatlı nokta, sıkı tel his ve kontrol verir.");
             TeknikSatir(k, "Sap ölçüsü", gr.sap + " · " + Gear.SapMm(gr.sap), "Sap çevresi; sayı büyüdükçe incelir. Kalın sap (G4) sağlam tutuş ve kontrol, ince sap (G6) parmak ve bilek oyunu, hızlı drive.");
-            TeknikSatir(k, "Uzunluk", "675 mm", "Standart boy; bilgi.");
             k.Add(Yazi(L.T("Maçta") + ": " + L.T(r.n), 13, "ipucu"));
         }
         void TeknikSatir(VisualElement k, string ad, string deger, string anlam)
