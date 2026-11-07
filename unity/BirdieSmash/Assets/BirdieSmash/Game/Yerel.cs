@@ -44,9 +44,12 @@ namespace BirdieSmash.Game
         {
             if (Ayar.reduce || Ayar.gear == null) return; Cal(Sfx.Desen(type, q, slice, Ayar.gear.tel));
         }
+        // Titreşim anahtarı (2026-11-07, HIG Playing haptics + muadillerde ses/müzik/titreşim üç ayrı anahtar): titreşimi
+        // kapatmanın tek yolu "Hareketi azalt"tı, o da sarsıntı/yakınlaşmayı, yani arcade hissini götürüyordu. Tek kapı burada;
+        // Hareketi azalt'ın kendi kuralı (yalnız win/lose) üstte aynen durur. Ses + görüntü her olayı taşıdığı için anlam kaybolmaz.
         static void Cal(int[] p)
         {
-            if (p == null || p.Length == 0) return;
+            if (p == null || p.Length == 0 || !Ayar.titresim) return;
 #if UNITY_IOS && !UNITY_EDITOR
             try { BirdieTitresim(p, p.Length); } catch { }
 #elif UNITY_ANDROID && !UNITY_EDITOR
