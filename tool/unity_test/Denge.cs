@@ -9,7 +9,7 @@
 // kariyer modunda (eşit şartlar kapalı). Uzunluk: basamağın verisi; Tur 1'de oyuncu seçer, 5 ile ölçülür.
 // 2026-10-26 ekipman v2 + karakter (tasarım Ek A.5): üç ek kip, ilk argüman ad:
 //   mono denge.exe model [maç]   raket modeli × tur → galibiyet % (hedef: en iyi − en kötü ≤ 8 puan)
-//   mono denge.exe tarz  [maç]   oyun tarzı × tur → galibiyet % (hedef: fark ≤ 5 puan)
+//   mono denge.exe tarz  [maç]   oyun tarzı × tur → galibiyet % (hedef: fark ≤ 5 puan) + maç başına tarz farkı anı (hedef ≥ 1, bot kör oynar)
 //   mono denge.exe dril [n] [beceri]  antrenman görevleri: odaklı botla yıldız oranları (hedef ★★★ %30–70)
 //   mono denge.exe ustayolu [n]  Usta yolu basamakları, Usta botuyla (hedef %40–55, final %30–45)
 //   mono denge.exe olc <tarz> <g,..> <tepki> <hucum> <sayı> <n> [imza] [usta]  tek tarz, birkaç g (ayar turu)
@@ -26,7 +26,7 @@ using BirdieSmash.Core;
 static class Denge
 {
     static Random rng = new Random(11);
-    static double PHIT = .12; static bool USTA;
+    static double PHIT = .12; static bool USTA; static long FARK, FARK_N;   // tarz kipi: maç başına tarzFark (Match)
     // 2026-10-26 Usta botu: Usta yolunu oynayan, kariyeri bitirmiş oyuncu. Kolay botundan isabetli (kaydırma topun merkezine
     // en çok 1 R: Usta'da R dışı "poor" olur, Kolay'da olmaz) ve pencereyi daha iyi yakalar (kare başına .12). Koşu UstaKos.
     static double USTA_PHIT = .12, USTA_DIST = 40;
@@ -86,7 +86,7 @@ static class Denge
                 foreach (var e in M.events) if (e.kind == Ev.Imza) im++;
                 M.events.Clear();
             }
-            if (M.sc[0] > M.sc[1]) w++; f += M.sc[0] - M.sc[1];
+            if (M.sc[0] > M.sc[1]) w++; f += M.sc[0] - M.sc[1]; FARK += M.tarzFark; FARK_N++;
         }
         fark = f / n; imza = im / n; return (double)w / n;
     }
@@ -103,12 +103,13 @@ static class Denge
         return say > 0 ? top / say : 0;
     }
 
+    static double[] FARKS; static bool FARK_GOSTER;
     static void Tablo(string baslik, string[] satir, Func<string, int, GearStats> ekipman, int n, double hedef)
     {
         Console.WriteLine(baslik + " (hücre = 6 basamak × " + n + " maç, Kolay, EP tur ortası)");
         var turlar = new List<int>(); for (int t = 0; t < KariyerVeri.Turlar.Length; t++) if (KariyerVeri.Turlar[t].Var) turlar.Add(t);
         var ust = "  " + "".PadRight(10); foreach (var t in turlar) ust += KariyerVeri.Turlar[t].ad.PadLeft(16); Console.WriteLine(ust);
-        var en = new double[turlar.Count]; var ek = new double[turlar.Count];
+        var en = new double[turlar.Count]; var ek = new double[turlar.Count]; FARKS = new double[turlar.Count];
         for (int j = 0; j < turlar.Count; j++) { en[j] = -1; ek[j] = 1e9; }
         foreach (var id in satir)
         {
@@ -116,9 +117,10 @@ static class Denge
             for (int j = 0; j < turlar.Count; j++)
             {
                 int t = turlar[j]; var tr = KariyerVeri.Turlar[t];
-                double o = TurOran(t, ekipman(id, (tr.epMin + tr.epMax) / 2), n) * 100;
+                FARK = FARK_N = 0; double o = TurOran(t, ekipman(id, (tr.epMin + tr.epMax) / 2), n) * 100; FARKS[j] = FARK_N > 0 ? (double)FARK / FARK_N : 0;
                 en[j] = Math.Max(en[j], o); ek[j] = Math.Min(ek[j], o); l += ("%" + o.ToString("0")).PadLeft(16);
             }
+            if (FARK_GOSTER) { l += "   fark/maç"; for (int j = 0; j < turlar.Count; j++) l += " " + FARKS[j].ToString("0.0"); }
             Console.WriteLine(l);
         }
         var s = "  " + "fark".PadRight(10); for (int j = 0; j < turlar.Count; j++) s += ((en[j] - ek[j]).ToString("0.0") + (en[j] - ek[j] <= hedef ? " ok" : " FAZLA")).PadLeft(16);
@@ -321,7 +323,10 @@ static class Denge
         }
         if (a.Length > 0 && a[0] == "tarz")
         {
-            int nm = a.Length > 1 ? int.Parse(a[1]) : 40; var ids = new List<string>(); foreach (var t in Karakter.Tarzlar) ids.Add(t.id);
+            // 2026-11-07 (tarz farkı hissedilsin): pHit .07 (kariyer g'leri bu botla ayarlı; .12 botu %90+ kazanıp farkı tavanda
+            // eziyordu) ve satır sonunda maç başına "tarzın fark yarattığı an" (Match.tarzFark; hedef ≥ 1: bot tarza göre oynamaz, tarzını bilen oyuncuda daha sık).
+            PHIT = .07; FARK_GOSTER = true;
+            int nm = a.Length > 1 ? int.Parse(a[1]) : 40; var ids = new List<string>(); foreach (var t in Karakter.Tarzlar) if (a.Length < 3 || Array.IndexOf(a[2].Split(','), t.id) >= 0) ids.Add(t.id);   // a[2]: "dengeli,duvar" yalnız o tarzlar
             Tablo("Oyun tarzı × tur", ids.ToArray(), (id, ep) => Karakter.Uygula(Ekipman(ep), id), nm, 5); return 0;
         }
         if (a.Length > 1 && a[0] == "lab") { LabTani(a[1], a.Length > 2 ? int.Parse(a[2]) : 20); return 0; }

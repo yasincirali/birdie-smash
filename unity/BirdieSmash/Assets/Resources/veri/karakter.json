@@ -84,10 +84,10 @@
 ],
 "tarzlar": [
   {"id": "dengeli", "ad": "Dengeli",     "sv": 1,  "arti": "Artısı da eksisi de yok",                               "eksi": "",                                  "etki": {}},
-  {"id": "smasci",  "ad": "Smaşçı",      "sv": 4,  "arti": "Smaç enerjisi %20 hızlı dolar · sıçrayarak smaçta tatlı nokta +5", "eksi": "Smaç nefesi %15 fazla yakar",       "etki": {"enerji": 1.2, "jumpTatli": 1.05, "smacYor": 1.15}},
-  {"id": "duvar",   "ad": "Duvar",       "sv": 8,  "arti": "Uzanma erişimi +6 · uzanma sonrası toparlanma %15 kısa", "eksi": "Smaç hızı −4",                      "etki": {"uzanma": 1.06, "toparla": 0.85, "smacHiz": 0.96}},
-  {"id": "file",    "ad": "File ustası", "sv": 12, "arti": "File vuruşu ve file önü vuruşta tatlı nokta +10",       "eksi": "Arka sahaya koşu −5",                "etki": {"fileTatli": 1.1, "arkaKosu": 0.95}},
-  {"id": "aldatici","ad": "Aldatıcı",    "sv": 18, "arti": "Slice ve aldatma %10 güçlü",                             "eksi": "Tam orta penceresi −10",             "etki": {"slice": 1.1, "tatli": 0.9}}
+  {"id": "smasci",  "ad": "Smaşçı",      "sv": 4,  "arti": "Smaç %6 hızlı · enerji %30 hızlı dolar · sıçrayarak smaçta tam orta +25", "eksi": "Smaç nefesi %35 fazla yakar",       "etki": {"enerji": 1.3, "jumpTatli": 1.25, "smacHiz": 1.06, "smacYor": 1.35}},
+  {"id": "duvar",   "ad": "Duvar",       "sv": 8,  "arti": "Uzanma erişimi +8 · uzanma sonrası toparlanma %20 kısa", "eksi": "Smaç %10 yavaş",                      "etki": {"uzanma": 1.08, "toparla": 0.8, "smacHiz": 0.9}},
+  {"id": "file",    "ad": "File ustası", "sv": 12, "arti": "File vuruşu ve file önünde tam orta +30",       "eksi": "Arka sahaya koşu %10 yavaş",                "etki": {"fileTatli": 1.3, "arkaKosu": 0.9}},
+  {"id": "aldatici","ad": "Aldatıcı",    "sv": 18, "arti": "Slice ve aldatma %30 güçlü",                             "eksi": "Tam orta penceresi −10",             "etki": {"slice": 1.3, "tatli": 0.9}}
 ],
 "unvanlar": [
   {"id": "mahalle",  "ad": "Mahalle oyuncusu", "nasil": "Başlangıç"},
