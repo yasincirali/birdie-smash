@@ -349,8 +349,9 @@ namespace BirdieSmash.Game
             {
                 int i = (int)s; var d = new VisualElement(); d.AddToClassList("sekme"); sekmeDugme[i] = d;
                 var cizgi = new VisualElement(); cizgi.AddToClassList("sekme-cizgi"); cizgi.pickingMode = PickingMode.Ignore; d.Add(cizgi);
-                var im = Ikon(ik[i], 22, s == gez.sekme ? TURUNCU : SOLUK); im.AddToClassList("sekme-ikon"); d.Add(im);
-                string ad = L.T(SEKME_AD[i]); if (etiket) d.Add(Yazi(ad, 11, "sekme-yazi"));
+                // 2026-11-07 (stüdyo AD4): simge 22 → 24, etiket 11 → 12; seçili simge USS'te büyür ve kalkar (stok iOS sekmesi gibiydi).
+                var im = Ikon(ik[i], 24, s == gez.sekme ? TURUNCU : SOLUK); im.AddToClassList("sekme-ikon"); d.Add(im);
+                string ad = L.T(SEKME_AD[i]); if (etiket) d.Add(Yazi(ad, 12, "sekme-yazi"));
                 d.AddManipulator(new Clickable(() => SekmeAc(s))); Erisim.Etiket(d, ad, "sekme", s == gez.sekme);
                 sekmeCubugu.Add(d);
             }
@@ -421,12 +422,21 @@ namespace BirdieSmash.Game
             var zi = new Image { image = Ikonlar.Gradyan, scaleMode = ScaleMode.StretchToFill }; zi.pickingMode = PickingMode.Ignore; zi.AddToClassList("tam"); zemin.Add(zi);
             afisImg = new Image { image = root.afis.rt, scaleMode = ScaleMode.ScaleAndCrop }; afisImg.AddToClassList("afis"); afisImg.pickingMode = PickingMode.Ignore; zemin.Add(afisImg);
             vsYazi = new Label("VS"); vsYazi.AddToClassList("yazi"); vsYazi.AddToClassList("vs"); vsYazi.pickingMode = PickingMode.Ignore; zemin.Add(vsYazi);
+            // 2026-11-07 stüdyo incelemesi (AD3): koyu sekmelerde (Kariyer, Dolap, Atölye, Profil, tam sayfalar) dünya hiç yoktu,
+            // şablon hissinin ana kaynağıydı. Oyna'nın güneşinin soluk bir kesiti üst şeridin arkasından batar: aynı doku, sabit
+            // (dönmez, hareket yok), %20 opak; yazılar sekme başlığından sonra başladığı için kontrast değişmez. Yeni asset yok.
+            koyuGunes = new Image { image = Ikonlar.GunesDisk, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(1, 1, 1, .2f) };
+            koyuGunes.AddToClassList("koyu-gunes"); koyuGunes.pickingMode = PickingMode.Ignore;
+            // diskin alt %30'u görünür (390 pt ekranda ~130 pt), yatayda ortalı; iPad'de büyümesin diye 560 sınırı (GunesYerlestir)
+            if (zemin.parent != null) { zemin.parent.Insert(zemin.parent.IndexOf(zemin) + 1, koyuGunes); zemin.parent.RegisterCallback<GeometryChangedEvent>(e => GunesYerlestir()); }
         }
-        Image gunesImg; float gunesAci;
+        Image gunesImg, koyuGunes; float gunesAci;
         // Güneş diski kare kalmalı (USS yüzdesi genişlik/yükseklik ayrı ölçer): genişliğin 1,25 katı, afişin ortasında
         // (afiş üst %8, boy %54 → merkez %35), yatayda ortalı; kenarları ekrandan taşar (batan güneş, tam daire değil).
         void GunesYerlestir()
         {
+            // koyu sekme kesiti zemin gizliyken de yerleşir (kökün ölçüsüyle; uygulama koyu sekmede açılabilir)
+            if (koyuGunes != null && koyuGunes.parent != null) { float w = koyuGunes.parent.contentRect.width; if (w > 0) { float k = Mathf.Min(w, 560) * 1.1f; koyuGunes.style.width = k; koyuGunes.style.height = k; koyuGunes.style.left = (w - k) / 2; koyuGunes.style.top = -k * .7f; } }
             if (gunesImg == null) return; var r = zemin.contentRect; if (r.width <= 0 || r.height <= 0) return;
             float d = Mathf.Max(r.width * 1.25f, r.height * .5f); gunesImg.style.width = d; gunesImg.style.height = d;
             gunesImg.style.left = (r.width - d) / 2; gunesImg.style.top = r.height * .35f - d / 2;

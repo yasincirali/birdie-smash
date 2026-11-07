@@ -117,7 +117,10 @@ namespace BirdieSmash.Game
         void AtolyeGovdeKur(bool yerKoru)
         {
             if (atolyeGovde == null) return; Vector2 of = yerKoru && atolyeKaydir != null ? atolyeKaydir.scrollOffset : Vector2.zero;
-            var c = atolyeGovde; c.Clear(); canliDolgu.Clear(); canliDeger.Clear(); EkipmanGovde(c); c.Add(Bosluk(20));
+            var c = atolyeGovde; c.Clear(); canliDolgu.Clear(); canliDeger.Clear();
+            // 2026-11-07 (AD7): Kariyer ve Profil'de sekme başlığı vardı, Atölye'de yoktu (sekmeler arası tutarsız). Dolap'ta yok: vitrin kimlik.
+            var bt = Yazi(L.T("Atölye"), 24, "sekme-baslik"); Erisim.Etiket(bt, L.T("Atölye"), "baslik"); c.Add(bt);
+            EkipmanGovde(c); c.Add(Bosluk(20));
             if (of.y > 0) { atolyeKaydir.scrollOffset = of; var sk = atolyeKaydir; sk.schedule.Execute(() => sk.scrollOffset = of).StartingIn(33); }
         }
 
@@ -241,7 +244,7 @@ namespace BirdieSmash.Game
                 var dg = Yazi(v[i].ToString(), 12, "stat-deger"); r.Add(dg);
                 int fark = karsi != null ? v[i] - karsi[i] : 0; string yon = "";
                 var isk = new VisualElement(); isk.AddToClassList("stat-isaret"); isk.pickingMode = PickingMode.Ignore; r.Add(isk);
-                if (fark != 0) { isk.Add(Ikon(fark > 0 ? Ikonlar.Yukari : Ikonlar.Asagi, 12, fark > 0 ? TURUNCU : MERCAN)); yon = ", " + L.T(fark > 0 ? "artı {0}" : "eksi {0}", Mathf.Abs(fark)); }
+                if (fark != 0) { isk.Add(Ikon(fark > 0 ? Ikonlar.Yukari : Ikonlar.Asagi, 12, fark > 0 ? LIMON : SOLUK));   /* 2026-11-07 (AD7): ▲ limon, ▼ soluk; orkide yalnız rakip */ yon = ", " + L.T(fark > 0 ? "artı {0}" : "eksi {0}", Mathf.Abs(fark)); }
                 Erisim.Etiket(r, L.T(AD[i]) + " " + v[i] + yon, "metin");
                 if (canli) { canliDolgu.Add(dl); canliDeger.Add(dg); }
             }
@@ -400,8 +403,11 @@ namespace BirdieSmash.Game
                 else if (!acik) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = L.T("Sv {0} gerekli", t.sv); }
                 else durum = L.T("Seç");
                 var dy = Yazi(durum, 12, secili ? "durum-gecti" : acik ? "durum-simdi" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
-                if (!string.IsNullOrEmpty(t.arti)) TarzSatir(kart, Ikonlar.Yukari, TURUNCU, string.IsNullOrEmpty(t.eksi) ? L.T(t.arti) : L.T("Artı") + ": " + L.T(t.arti));   // eksisi olmayan (Dengeli) "Artı: Artısı da eksisi de yok" diye kendisiyle çelişiyordu
-                if (!string.IsNullOrEmpty(t.eksi)) TarzSatir(kart, Ikonlar.Asagi, MERCAN, L.T("Eksi") + ": " + L.T(t.eksi));
+                // 2026-11-07 stüdyo incelemesi (AD7): "Artı:/Eksi:" sözcükleri ▲/▼ ile tekrardı; ▼ orkideydi (orkide = rakip) ve ▲ turuncu
+                // (turuncu = seçili/CTA): üç anlam bir aradaydı. ▲ limon (kazanım = sen), ▼ soluk (ceza renk taşımaz); yön simgenin
+                // biçiminden okunur, ekran okuyucu "artı/eksi" der (Etiket aşağıda).
+                if (!string.IsNullOrEmpty(t.arti)) TarzSatir(kart, Ikonlar.Yukari, LIMON, L.T(t.arti));
+                if (!string.IsNullOrEmpty(t.eksi)) TarzSatir(kart, Ikonlar.Asagi, SOLUK, L.T(t.eksi));
                 if (acik && !secili) kart.AddManipulator(new Clickable(() =>
                 {
                     Ayar.ilerleme.Tarz = id; Ayar.GearHesap(); Ayar.Kaydet(); Tik(); kirli[(int)Sekme.Profil] = true; SoyunmaGovdeKur(true);
@@ -411,7 +417,7 @@ namespace BirdieSmash.Game
         }
         void TarzSatir(VisualElement kart, Texture2D ik, Color renk, string yazi)
         {
-            var r = Satir("rakip-satir"); r.pickingMode = PickingMode.Ignore; kart.Add(r); var i = Ikon(ik, 12, renk); i.style.marginRight = 6; r.Add(i); r.Add(Yazi(yazi, 13, "esnek-yatay-sifir"));
+            var r = Satir("rakip-satir"); r.pickingMode = PickingMode.Ignore; kart.Add(r); var i = Ikon(ik, 16, renk); i.style.marginRight = 6; r.Add(i); r.Add(Yazi(yazi, 13, "esnek-yatay-sifir"));
         }
 
         // ---- Görünüm segmenti (karakter, adım 6) ----

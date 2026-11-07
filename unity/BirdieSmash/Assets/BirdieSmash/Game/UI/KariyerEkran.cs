@@ -81,14 +81,14 @@ namespace BirdieSmash.Game
             return L.T("{0} finalini kazan", L.T(TurAd(t - 1)));
         }
 
-        // Tur seçici çipi: seçili = açık zemin (2026-10-26 Yayın Gecesi; eskiden camgöbeği) (yazı ve ✓ ile), kilitli = kilit simgesi, bitmiş = kupa simgesi.
+        // Tur seçici çipi: seçili = turuncu çerçeve + tint (2026-11-07; önce açık zemin, ondan önce camgöbeği) (yazı ve ✓ ile), kilitli = kilit simgesi, bitmiş = kupa simgesi.
         VisualElement TurCip(int t)
         {
             var p = Ayar.ilerleme; bool secili = t == kariyerTur, acik = p.TurAcik(t), bitti = acik && p.TurBitti(t);
             var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("cip"); d.AddToClassList("tur-cip"); if (secili) d.AddToClassList("cip--secili"); if (!acik) d.AddToClassList("tur-cip--kilit");
             var ic = new VisualElement(); ic.AddToClassList("cip-ic"); ic.pickingMode = PickingMode.Ignore; d.Add(ic);
-            var renk = secili ? MUREKKEP : Color.white;
-            if (!acik) ic.Add(Ikon(Ikonlar.Kilit, 14, renk)); else if (bitti) ic.Add(Ikon(Ikonlar.Kupa, 14, renk)); else if (secili) ic.Add(Ikon(Ikonlar.Tik, 14, renk));
+            // 2026-11-07 (AD1, UX6): seçili = turuncu çerçeve + tint (çip dili); simge krem, ✓ turuncu. Kilitli seçili çipte ✓ yok, kilit kalır.
+            if (!acik) ic.Add(Ikon(Ikonlar.Kilit, 14, secili ? YAZI : SOLUK)); else if (bitti) ic.Add(Ikon(Ikonlar.Kupa, 14, YAZI)); else if (secili) ic.Add(Ikon(Ikonlar.Tik, 14, TURUNCU));
             ic.Add(Yazi(L.T("Tur {0}", t + 1), 14, "dugme-yazi"));
             int tt = t; d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); KariyerTurSec(tt); }));
             Erisim.Etiket(d, L.T("Tur {0}", t + 1) + ", " + L.T(TurAd(t)) + (!acik ? ", " + L.T("Kilitli") : bitti ? ", " + L.T("tamam") : ""), "dugme", secili);

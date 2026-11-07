@@ -49,6 +49,8 @@
 .kok { flex-grow: 1; background-color: rgba(0, 0, 0, 0); }
 .kok.koyu { background-color: rgba(26, 18, 33, 0.92); }   /* yön A: diğer sekmelerde gece zemini (salon çok soluk seçilir) */
 .kok.koyu #zemin { display: none; }
+.koyu-gunes { position: absolute; display: none; }
+.kok.koyu .koyu-gunes { display: flex; }   /* 2026-11-07 (AD3): koyu sekmede üstte soluk güneş kesiti (UiKok.ZeminKur) */
 .govde { flex-direction: column; }
 .alan { flex-grow: 1; flex-shrink: 1; }
 .icerik { flex-grow: 1; flex-shrink: 1; }
@@ -108,10 +110,14 @@
 .cip-ic .ikon { margin-right: 6px; }
 .cip-yazilar { flex-shrink: 1; align-items: center; }
 .cip .dugme-yazi { -unity-font-definition: resource("fonts/Nunito-SemiBold"); }
-.cip--secili { background-color: var(--tx); border-color: var(--tx); }
-.cip--secili:active { background-color: var(--tx); }
-.cip--secili .dugme-yazi { color: var(--ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
-.cip--secili .dugme-alt { color: rgba(26, 18, 33, 0.85); }
+/* 2026-11-07 stüdyo incelemesi (AD1, yasin "menü renk, düğme, sekme"): seçili tek dilde = turuncu 2 pt çerçeve + hafif turuncu
+   dolgu + kalın yazı + turuncu ✓. Krem dolgu ekranın en parlak yüzeyiydi, CTA ile yarışıyordu (hizli karesi: "Medium" ile
+   "Play quick match"); üç ayrı seçili dili (krem çip, turuncu çerçeveli kart, turuncu çizgili sekme) oyuncu ayrı öğreniyordu.
+   Artık doygun dolgu yalnız CTA'da. Kontrast: krem yazı / tint zemin ~12:1. Renk körlüğü: çerçeve kalınlığı + ✓ + kalın yazı. */
+.cip--secili { background-color: rgba(255, 160, 77, 0.16); border-color: var(--sun); border-width: 2px; }
+.cip--secili:active { background-color: rgba(255, 160, 77, 0.26); }
+.cip--secili .dugme-yazi { color: var(--tx); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+.cip--secili .dugme-alt { color: var(--mu2); }
 .satir { flex-direction: row; flex-wrap: wrap; margin-left: -4px; margin-right: -4px; }
 /* 2026-10-31: sayısı değişen çip satırı (Profil › Unvan): basis 0 tüm çipleri tek satırda eşit dar paylara bölüp sözcükleri
    harf harf kırıyordu. Burada çip yazısı kadar geniş başlar, satır sarar, kalan yer büyüyerek paylaşılır. */
@@ -171,8 +177,11 @@
 /* Kariyer haritası (2026-10-26, adım 2). Düğüm ≥ 44 yükseklik, rozet 44 x 44. Yol: düğümler sağa sola kırılır (%14),
    aralarında 4 birimlik çizgi (geçilen kısım limon, gelecek soluk). Durum biçimle de: rozet dolu/halka/kilit, yazı. */
 .tur-secici { margin-top: 10px; margin-bottom: 2px; flex-wrap: nowrap; }
-.tur-cip { padding: 8px 4px; min-width: 44px; }
-.tur-cip--kilit { opacity: 0.75; }
+/* 2026-11-07 (UX6, UX8): çip 31 pt ölçüldü; açık 44. Kilitli çip soluklaşmaz (seçiliyken gri-gri ~3:1 oluyordu): koyu zemin,
+   kilit simgesi ve soluk yazı (≥ 4,5:1); seçili kilitli = turuncu çerçeve + kilit (✓ yok). */
+.tur-cip { padding: 8px 4px; min-width: 44px; min-height: 44px; }
+.tur-cip--kilit .dugme-yazi { color: var(--mu); }
+.tur-cip--kilit.cip--secili .dugme-yazi { color: var(--tx); }
 .tur-kart { margin-top: 8px; margin-bottom: 10px; }
 .dugum { min-height: 44px; padding: 10px 12px; margin: 0; }
 .dugum--sol { margin-right: 14%; }
@@ -243,6 +252,15 @@
    Seçili kart kalın limon çerçeve + ✓ + "Seçili" yazısı (yalnız renkle değil); kilitli kart soluk + kilit + koşul. */
 .segment { margin: 8px 12px 0 12px; flex-wrap: nowrap; }
 .segment-cip { padding: 8px 6px; }
+/* 2026-11-07 (AD1): sayfa değiştiren alt sekmeler (Tur 1–4 değil; Görünüm/Ekipman/Antrenman segmentleri) kutu değil, alt çizgili
+   düz yazı. Sekme = çizgi, seçenek = çerçeveli kutu, eylem = dolu kutu: üçü biçimle ayrışır (Golf Clash/Brawl Stars kalıbı).
+   Seçili = 3 pt turuncu alt çizgi + kalın krem yazı (biçim: çizgi ve kalınlık); ✓ sekmede gizli. Dokunma alanı 44 kalır. */
+.segment-cip, .segment-cip.cip--secili { background-color: rgba(0, 0, 0, 0); border-width: 0; border-bottom-width: 3px; border-color: rgba(0, 0, 0, 0); border-radius: 0; min-height: 44px; }
+.segment-cip:active { background-color: rgba(255, 255, 255, 0.06); }
+.segment-cip.cip--secili { border-bottom-color: var(--sun); }
+.segment-cip .dugme-yazi { color: var(--mu); }
+.segment-cip.cip--secili .dugme-yazi { color: var(--tx); }
+.segment-cip .cip-tik { display: none; }
 .buyuk-yazi .segment { flex-wrap: wrap; }
 /* r13 (2026-10-26): ×2'de dört sütun "C ha ra ct er" diye harf harf sarıyordu (flex-basis 0, satır hiç kırılmıyordu).
    Büyük yazıda 2×2; etiket tek satır, sığmazsa küçülür (UiOge.Sigdir). Dar çip: ✓ yazının üstünde, yan dolgu az. */
@@ -304,6 +322,12 @@
 .sekme-cubugu { flex-direction: row; background-color: var(--bar); border-top-width: 1px; border-color: var(--ln); flex-shrink: 0; padding: 6px 8px 0 8px; }
 .sekme { flex-grow: 1; flex-basis: 0; min-height: 50px; align-items: center; justify-content: center; padding: 4px 2px; margin: 0 2px 6px 2px; border-radius: 16px; }
 .sekme--secili { background-color: rgba(0, 0, 0, 0); }   /* C: dolgulu hap yok; turuncu simge + yazı + 3 pt üst çizgi (biçimle de okunur) */
+/* 2026-11-07 stüdyo incelemesi (AD4): seçili sekme biçimle öne çıkar: hafif turuncu plaka (doygun dolgu değil; tek doygun dolgu
+   CTA), simge %15 büyür ve 2 pt kalkar (yalnız scale/translate, .12 sn; hareketi azaltta 0). Üst çizgi kalır. */
+.sekme--secili { background-color: rgba(255, 160, 77, 0.14); border-radius: 14px; }
+.sekme-ikon { transition-property: scale, translate; transition-duration: 0.12s; transition-timing-function: ease-out; }
+.sekme--secili .sekme-ikon { scale: 1.15 1.15; translate: 0 -2px; }
+.az-hareket .sekme-ikon { transition-duration: 0s; }
 .sekme-cizgi { position: absolute; top: -6px; left: 28%; right: 28%; height: 3px; border-radius: 2px; background-color: var(--sun); display: none; }
 .sekme--secili .sekme-cizgi { display: flex; }
 .sekme-ikon { opacity: 1; }
@@ -338,9 +362,10 @@
    Seçili = kalın limon çerçeve (2026-10-26 Yayın Gecesi: camgöbeğinden) + ✓ + "Seçili"; denenen = gök mavisi çerçeve (2026-10-26: limon artık seçili) + "deneniyor" yazısı;
    kilitli = soluk + kilit + "Sv n". Hiçbir durum yalnız renkle verilmez. Dokunma alanları ≥ 44 pt. */
 .vitrin-odak { flex-direction: row; flex-wrap: nowrap; margin: 0 0 4px 0; align-self: flex-start; }
-.odak-dugme { min-width: 56px; margin-right: 6px; padding: 0 10px; background-color: rgba(51, 35, 63, 0.9); }
-.odak-dugme--secili { background-color: var(--tx); }
-.odak-dugme--secili .dugme-yazi { color: var(--ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+/* 2026-11-07 (AD2, UX3): odak düğmeleri yazı değil 44×44 simge; altındaki kategori satırıyla iki "Face" çakışıyordu (biri kamera,
+   biri kategori). Ekran okuyucu adı aynı (Erisim.Etiket). Seçili = çip dili (turuncu çerçeve + tint). */
+.odak-dugme { min-width: 44px; width: 44px; height: 44px; margin-right: 6px; padding: 0; align-items: center; justify-content: center; background-color: rgba(51, 35, 63, 0.9); }
+.odak-dugme--secili { background-color: rgba(255, 160, 77, 0.22); border-color: var(--sun); border-width: 2px; }
 .alt-segment { margin: 4px 0 8px 0; }
 /* 2026-10-30 Görünüm alt sayfaları altıya çıktı (Beden · Yüz · Saç · Şapka · Ayakkabı · Renk): iki satır üçer; büyük yazıda
    ikişer (segment kuralı). Tek satırda altı çip 390 pt'de "Ayakkabı"yı %70'in altına küçültüyordu. */
