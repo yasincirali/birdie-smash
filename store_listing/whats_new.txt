@@ -1,4 +1,11 @@
 === UNITY ===
+Bu öğleden sonra (7 Kasım 14:30 inceleme turu):
+- Bir parmağın ekranda dururken (ör. sol başparmak kenara dayalı) öbür parmakla yaptığın kaydırma artık vuruş sayılıyor; eskiden bazen hiç vurmuyordu.
+- Hızlı maçta yenilince ana düğme "Rövanş" oluyor: aynı rakiple, aynı sahada yeniden oynarsın. Kazanınca eskisi gibi yeni rakip gelir.
+- Ralli sürerken gelen akış, imzayı okudun ve görev tamam titreşimleri kısaldı; vuruş titreşimin artık onların içinde kaybolmuyor. Uzun titreşim yalnız seviye atlama, tur finali, rekor gibi maç dışı anlarda.
+- Maç sonu Ayrıntılar'da sıfır olan sayılar ("0 aldatma" gibi) artık yazılmıyor.
+Nasıl denenir: Telefonu iki elle tut, sol başparmağını ekranın sol kenarında bırak ve sağ başparmakla smaç kaydır: vuruş gelmeli. Hızlı maçta bir maç kaybet: düğmede "Rövanş · rakibin adı" yazmalı, basınca aynı rakip gelmeli. Bir maç kazan: düğme "Bir maç daha" olmalı. Maç sonunda Ayrıntılar'ı aç: yalnız yaptığın vuruş türleri sayılmalı.
+
 Bu öğlen (7 Kasım 12:30 inceleme turu):
 - Servis anındaki "Servis sende · sağ kare" yazısı artık yalnız ilk maçlarda (3 galibiyete kadar) çıkıyor. Sonrasında kortun altındaki kutu yalnız söyleyecek yeni bir şey varken görünüyor: hata, kural maçı uyarısı ya da maçın ilk servisindeki görevler.
 - Servis beklerken arka planda boşa iş yapan yazı kutusu sadeleşti; ralli içindeki küçük takılmalar azalmalı.
