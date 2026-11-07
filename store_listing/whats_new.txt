@@ -1,7 +1,7 @@
 === UNITY ===
 Menüler ve akışlar elden geçti (7 Kasım, stüdyo incelemesi):
 - Seçili olan her yerde aynı görünür: turuncu çerçeve ve hafif turuncu zemin. Alt sekmede seçili simge biraz büyür ve yükselir. Koyu ekranlarda (Kariyer, Dolap, Atölye, Profil) üstte soluk bir güneş var.
-- Dolap'ta kamera düğmeleri simge oldu; Atölye'de artı ve eksi yazı yerine yeşil ▲ ve soluk ▼. Tur düğmeleri daha büyük, kilitli tur net okunur.
+- Dolap'ta kamera düğmeleri simge oldu; Atölye'de artı ve eksi yazı yerine yeşil yukarı ok ve soluk aşağı ok. Tur düğmeleri daha büyük, kilitli tur net okunur.
 - Maç içinde kendi skorun limon yeşili, smaç gücü çubuğu kalın ve parlak, duraklat düğmesi hap şeklinde.
 - Seviye atlayınca açılanlar "Dolapta" ve "Atölyede" diye ayrılır; turuncu düğme seni doğrudan yeni eşyaya götürür.
 - Kariyer açılınca şimdiki maçına kayar; altta sabit "Sıradaki maç" düğmesi tek dokunuşla maç kartını açar. Tur kartında turun teması, altı rakip ve ekipman hazırlığı görünür.
