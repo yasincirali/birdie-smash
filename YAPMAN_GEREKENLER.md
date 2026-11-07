@@ -253,3 +253,14 @@ Boş "Reklam" kutusuyla mağazaya gitmek inceleme reddi riskidir (2.1 eksik işl
 Hangisi seçilirse seçilsin App Store Connect › Age Rating formunda "Advertising" cevabını
 `store_listing/yas_derecesi.md`'deki dala göre ver (SDK = Yes, ALAN=false = No) ve App Privacy'yi
 `store_listing/app_privacy.md` "reklam" dalına göre güncelle (2026-11-07 inceleme).
+
+## Online 1v1 (2026-11-07, yasin: "İlk offline başlatıp online'a 2. fazda dönsek")
+1.0 mağazaya **offline** çıkar. Online çekirdek (uzak maç, lig, oyuncu kartı, eşit güç) kodda
+hazır ama kapalı; 1.0'da oyuncu online iz görmez. Aşağıdakiler 1.0'ı **bekletmez**, 2. faz
+(yayından sonraki güncelleme) için gerekir:
+1. Unity Cloud'da Unity Gaming Services projesi aç (Authentication, Relay, Matchmaker, Lobby,
+   Leaderboards, Cloud Code). Proje kimliğini thread'e yaz; anahtar/secret repoya yazılmaz.
+2. Online oyuncu adı kararı: hazır ad ("Hızlı Martı 27", döngünün önerisi) ya da serbest ad
+   (küfür süzgeci + Bildir/Engelle + sunucu gerekir, App Store 1.2).
+3. Dereceli maç uzunluğu: 11 sayı tek oyun (öneri) ya da 21.
+Rapor: https://claude.ai/artifact/V2uZN5PBYvFSP3GC3RAynf
