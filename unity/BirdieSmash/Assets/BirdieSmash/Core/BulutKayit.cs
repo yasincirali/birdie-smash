@@ -66,7 +66,7 @@ namespace BirdieSmash.Core
         {
             var y = TuyDukkan.Defter.Oku(yerelDefter); var bd = BulutDefter(bulut);
             int fark = System.Math.Max(0, bd.toplam - y.toplam);
-            foreach (var x in bd.islem) y.islem.Add(x); y.toplam = System.Math.Max(y.toplam, bd.toplam);
+            foreach (var x in bd.islem) y.islem.Add(x); y.toplam = System.Math.Max(y.toplam, bd.toplam); y.reklamsiz |= bd.reklamsiz;   // Reklamsız başka cihazda alındıysa da gelir (2026-11-08)
             var e = Json.Obj(Json.Parse(yerelEko)) ?? new Dictionary<string, object>();
             e["tuy"] = Json.Num(e, "tuy", 0) + fark;
             return new[] { Json.Write(e), y.Yaz() };
