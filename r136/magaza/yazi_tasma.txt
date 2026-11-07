@@ -1,0 +1,13 @@
+toplam 12
+tr_04_karakter · taşma x 359..413 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Ayakkabı"
+tr_04_karakter · taşma x 451..488 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Forma"
+tr_04_karakter · taşma x 526..564 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Sevinç"
+tr_04_karakter · taşma x 602..636 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Raket"
+en_03_kariyer · kelime bölündü 76>58 · .unity-text-element.unity-label.yazi.sekme-yazi · "Wardrobe"
+en_03_kariyer · kelime bölündü 78>59 · .unity-text-element.unity-label.yazi.sekme-yazi · "Workshop"
+en_04_karakter · taşma x 353..389 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Shoes"
+en_04_karakter · taşma x 427..456 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Shirt"
+en_04_karakter · taşma x 493..551 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Celebrate"
+en_04_karakter · taşma x 589..630 / 375 · .unity-text-element.unity-label.yazi.dugme-yazi · "Racket"
+en_04_karakter · kelime bölündü 78>59 · .unity-text-element.unity-label.yazi.sekme-yazi · "Wardrobe"
+en_04_karakter · kelime bölündü 78>59 · .unity-text-element.unity-label.yazi.sekme-yazi · "Workshop"
