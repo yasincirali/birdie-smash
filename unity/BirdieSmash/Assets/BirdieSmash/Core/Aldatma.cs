@@ -250,7 +250,7 @@ namespace BirdieSmash.Core
         {
             var D = hileEtki; hileEtki = null; if (D == null) return react;
             float k = (.5f + .5f * D.pay) * (1 - Aldatma.Okuma(stil)) * GS.slice;
-            react += D.t.tepki * k; op.fakeUntil = clock + D.t.adim * k;
+            react += D.t.tepki * k; op.fakeUntil = clock + D.t.adim * k; aldatHile = true;
             op.fakeX = D.t.yon == "ayna" ? Clamp(2 * Court.MID - r.x, Court.SL, Court.SR) : op.x;
             deceives++; Emit(Ev.Aldat, "op", D.t.id, op.x, op.y, 0, k); GorevKontrol();
             // 2026-10-29 (yasin: fake trickshot'ta dinamik değişmeli): aldatılan rakibin ters/donuk anı ağır çekimle okunur

@@ -65,10 +65,12 @@ namespace BirdieSmash.Game
         public static float YaziK { get { return yazi == "normal" ? 1 : yazi == "buyuk" ? 1.3f : Mathf.Clamp(yaziSistem, .9f, 1.3f); } }
         // Menü yazı ölçeği (2026-10-26, UI Toolkit menü kabuğu): flex yerleşimde metin sarılır, kart uzar, gövde kayar; bu
         // yüzden "Sistem" iOS'un tercih edilen boyutunu ×2'ye kadar izler (HIG Dynamic Type). Maç içi HUD IMGUI'de kaldığı
-        // için YaziK ×1,3 sınırını korur (oyun alanını kapatmasın; tasarım §2.4 bilinçli sapma). "Büyük" iki yüzeyde aynı 1,3.
+        // için YaziK ×1,3 sınırını korur (oyun alanını kapatmasın; tasarım §2.4 bilinçli sapma). "Büyük" en az 1,3; menüde sistem
+        // yazısı daha büyükse onu izler (2026-11-08 inceleme, fikir 22:08 #4: iOS'ta büyük yazı kullanan "Büyük"ü seçince menü
+        // ×2'den ×1,3'e küçülüyordu; "Normal" bilinçli olarak sistemi yok sayar ve kalır, 7 Kas 00:03 kararı).
         // yaziTest yalnız ekran turu içindir (EkranTuru ×2 karesi), kaydedilmez.
         public static float yaziTest;
-        public static float MenuYaziK { get { if (yaziTest > 0) return yaziTest; return yazi == "normal" ? 1 : yazi == "buyuk" ? 1.3f : Mathf.Clamp(yaziSistem, .9f, 2f); } }
+        public static float MenuYaziK { get { if (yaziTest > 0) return yaziTest; return yazi == "normal" ? 1 : yazi == "buyuk" ? Mathf.Max(1.3f, Mathf.Clamp(yaziSistem, .9f, 2f)) : Mathf.Clamp(yaziSistem, .9f, 2f); } }
         // Sistem ayarları (hareketi azalt, yazı boyutu) açılışta ve uygulama öne her geldiğinde okunur.
         public static void SistemOku() { reduceSistem = Yerel.HareketAzalt(); reduce = reduceSecim || reduceSistem; yaziSistem = Yerel.YaziOlcek(); }
         // GSE = yalnız ekipman (5 çubuk ve yükseltme önizlemesi bunu anlatır), GS = ekipman + oyun tarzı (maç fiziği bunu

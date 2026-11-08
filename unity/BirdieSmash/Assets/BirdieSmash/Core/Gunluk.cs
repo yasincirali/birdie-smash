@@ -89,6 +89,10 @@ namespace BirdieSmash.Core
     public partial class Match
     {
         public string degistirici; int sayiNo; float vurusY;
+        // aldatHile (2026-11-08 inceleme, fikir 22:08 #3 "Aldatma günü"): bu rallide oyuncu rakibi aldattı (slice ya da aldatma
+        // tanımı) ve rakip o andan beri topa dokunmadı. tarzHile'nin tarzdan bağımsız hâli; rakip vurunca, ralli başında ve
+        // sayıdan sonra söner.
+        bool aldatHile;
         public const string ALTIN_YAZI = "Altın ralli: bu sayı 2";
 
         // Maç kurulurken (serbest/kariyer maçında null). GS ve stil kopyalanır: kaynak nesneler (Ayar.GS, veri) değişmez.
@@ -108,6 +112,7 @@ namespace BirdieSmash.Core
                 case "altin": return sayiNo % 3 == 2 ? 2 : 1;
                 case "uzun": return rally >= 8 ? 2 : 1;
                 case "file": return s != null && s.from == winner && Math.Abs(vurusY - Court.NET) < 2.3f ? 2 : 1;
+                case "aldat": return winner == "me" && aldatHile ? 2 : 1;   // yalnız oyuncunun aldatması; rakibin sayısı hep 1
             }
             return 1;
         }
