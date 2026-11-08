@@ -269,7 +269,7 @@ namespace BirdieSmash.Core
         void SetupServe()
         {
             if (ogr != null) { var a = OgrA(); if (a != null && a.bilgi == null) server = a.servis != null ? "me" : "op"; if (a != null && a.drill) OgrCagriSec(true); }   // antrenman: servis adımında sen, vuruş adımında antrenör yüksek servisle başlatır
-            s = null; me.vx = me.vy = 0; op.mvx = op.mvy = 0; me.tx = float.NaN; me.stun = 0; rally = 0; driveSeri = 0; between = false; icpt = null; serveMsg = ""; ImzaSifirla(); me.fakeUntil = -9;
+            s = null; me.vx = me.vy = 0; op.mvx = op.mvy = 0; me.tx = float.NaN; me.stun = 0; rally = 0; driveSeri = 0; between = false; icpt = null; serveMsg = ""; ImzaSifirla(); me.fakeUntil = -9; aldatHile = false;
             string sv = server, side = ServeSide(sv), rv = sv == "me" ? "op" : "me";
             float[] sb = BoxX(sv, side), rb = BoxX(rv, side);
             if (sv == "me") { me.x = (sb[0] + sb[1]) / 2; me.y = Court.NET + Court.SSL + 1.4f; op.x = (rb[0] + rb[1]) / 2; op.y = Court.NET - Court.SSL - 1.6f; }
@@ -376,7 +376,7 @@ namespace BirdieSmash.Core
             if (driveSeri == 2) Say(null, null, Court.MID, Court.NET, 2.2f, "Drive düellosu!", 2);   // üçüncü drive
             if (from == "me") pencereVurus = true;   // vuruşla kapanan pencere hızlı çıkar (PencereAdim)
             vurusY = hy;   // Günün maçı "file" değiştiricisi: son vuruşun derinliği
-            if (from == "op") { opHitAt = clock; split = false; tarzHile = false; if (splitPending) { splitPending = false; DoSplit(); } } else { split = false; splitPending = false; }
+            if (from == "op") { opHitAt = clock; split = false; tarzHile = false; aldatHile = false; if (splitPending) { splitPending = false; DoSplit(); } } else { split = false; splitPending = false; }
             // Usta merkeze dönüş (2026-11-01, Ar-Ge P2): vuruştan sonra oyuncu orta tabana kendiliğinden süzülür (Kolay'ın RunMe
             // hedefiyle aynı nokta); yeni bir dokunuş hedefi değiştirir. Eskiden vuruş sonrası toparlanma da tamamen elle idi ve
             // oyuncu her rallide iki kez konum seçiyordu; zorluk topa gitmekte kalsın, geri dönüş angarya olmasın.
@@ -459,7 +459,7 @@ namespace BirdieSmash.Core
             // Aldatma: kesilen/son anda bırakılan vuruşta rakip geç ve ters yöne çıkar (hold & flick).
             if (recv == "op" && deceive)
             {
-                react += .3f * GS.slice; op.fakeUntil = clock + .32f * GS.slice; op.fakeX = Clamp(2 * Court.MID - r.x, Court.SL, Court.SR); deceive = false; deceives++; hileGeldi = true; tarzHile = GS.slice > 1;
+                react += .3f * GS.slice; op.fakeUntil = clock + .32f * GS.slice; op.fakeX = Clamp(2 * Court.MID - r.x, Court.SL, Court.SR); deceive = false; deceives++; hileGeldi = true; tarzHile = GS.slice > 1; aldatHile = true;
                 Say("op", null, op.x, op.y, 0, "Aldattın!", 2); Emit(Ev.Aldat, "op", null, op.x, op.y);
             }
             Func<PathPt, float, float> need = (p, reach) => Math.Max(0, Hyp(p.x - P0.x, p.y - P0.y) - reach) / spd + react + t0;
@@ -831,6 +831,7 @@ namespace BirdieSmash.Core
                 sc[wi] = Math.Min(tavan, sc[wi] + deger); server = winner; sayiNo++;
                 if (deger == 2) Say(null, "cift", Court.MID, Court.NET, 2, "Çift sayı!", 2);
             }
+            aldatHile = false;
             if (winner == "me" && s != null && s.from == "me" && s.type == "smash") smacSayi++;
             if (winner == "me" && s != null && s.from == "me" && s.type == "drop") dropSayi++;
             // En hızlı sayı smacı (km/s, maç sonu Ayrıntılar + kişisel rekor tuytop_smac_rekor; 2026-11-07).

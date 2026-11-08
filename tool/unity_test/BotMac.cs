@@ -818,19 +818,19 @@ static class BotMac
         Console.WriteLine("günün maçı 2026-10-26: " + a.deg.id + " · " + a.stil + " · " + a.saha + " · g " + a.g + " · tohum " + a.tohum);
         if (a.deg.id != ALTIN_GUN[0] || a.stil != ALTIN_GUN[1] || a.saha != ALTIN_GUN[2]) Fail("Günün maçı altın değeri değişti: " + a.deg.id + "/" + a.stil + "/" + a.saha);
         var degSay = new Dictionary<string, int>(); var stilSay = new Dictionary<string, int>(); GunlukMac once = null;
-        for (int i = 0; i < 60; i++)
+        for (int i = 0; i < 70; i++)
         {
             var m = Gunluk.Bugun(new DateTime(2026, 10, 1).AddDays(i));
             if (once != null && (once.deg.id == m.deg.id || once.stil == m.stil)) Fail("arka arkaya aynı değiştirici/rakip: " + m.tarih);
             if (m.g < .72f - 1e-4 || m.g > .88f + 1e-4 || m.uzunluk != m.deg.uzunluk) Fail("günün maçı g/uzunluk: " + m.tarih);
             int c; degSay.TryGetValue(m.deg.id, out c); degSay[m.deg.id] = c + 1; stilSay.TryGetValue(m.stil, out c); stilSay[m.stil] = c + 1; once = m;
         }
-        if (degSay.Count != 6 || stilSay.Count != 6) Fail("60 günde her değiştirici ve rakip görünmeli: " + degSay.Count + "/" + stilSay.Count);
-        foreach (var kv in degSay) if (kv.Value != 10) Fail("değiştirici 6 günlük bloklarla dönmeli: " + kv.Key + " " + kv.Value);
+        if (degSay.Count != 7 || stilSay.Count != 6) Fail("70 günde her değiştirici ve rakip görünmeli: " + degSay.Count + "/" + stilSay.Count);
+        foreach (var kv in degSay) if (kv.Value != 10) Fail("değiştirici 7 günlük bloklarla dönmeli: " + kv.Key + " " + kv.Value);
         // kancalar: altın ralli (her 3. sayı 2), usta (easy kapalı), nefes (yorulma hızlı), patron (imza sık), serbest maç değişmez
         var g = Gunluk.Bugun(new DateTime(2026, 10, 1)); var st = Gunluk.Rakip(g);
         if (st.kariyer != -1 || (g.deg.id != "patron" && st.imza != null)) Fail("günün rakibi kariyer dışı, imzasız olmalı");
-        foreach (var id in new[] { "altin", "uzun", "file", "usta", "nefes", "patron" })
+        foreach (var id in new[] { "altin", "uzun", "file", "usta", "nefes", "patron", "aldat" })
         {
             var M = new Match(41, new MatchOptions { easy = true, target = 11, stil = Match.STIL["duvar"].Clone(), degistirici = id });
             if (M.degistirici != id) Fail("değiştirici kurulmadı: " + id);
@@ -840,7 +840,7 @@ static class BotMac
             int guard = 0, iki = 0, sayi = 0; var R = new Random(9);
             while (!M.over && guard++ < 60 * 60 * 30)
             {
-                Bot(M, 1f / 60f); int s0 = M.sc[0] + M.sc[1]; M.Update(1f / 60f); int d = M.sc[0] + M.sc[1] - s0; if (d > 0) { sayi++; if (d == 2) iki++; if (d > 2) Fail("sayı 2'den büyük"); }
+                Bot(M, 1f / 60f); int s0 = M.sc[0] + M.sc[1], o0 = M.sc[1]; M.Update(1f / 60f); int d = M.sc[0] + M.sc[1] - s0; if (d > 0) { sayi++; if (d == 2) iki++; if (d > 2) Fail("sayı 2'den büyük"); if (id == "aldat" && M.sc[1] - o0 == 2) Fail("aldatma günü: rakibin sayısı 2 olmamalı"); }
                 M.events.Clear();
             }
             if (!M.over) Fail("değiştiricili maç bitmedi: " + id);
@@ -851,9 +851,9 @@ static class BotMac
         var serbest = new Match(41, new MatchOptions { easy = true, target = 11 }); if (serbest.degistirici != null) Fail("serbest maçta değiştirici");
         var p = new Ilerleme(); if (!p.GunlukKazan("2026-10-26") || p.GunlukKazan("2026-10-26") || !p.GunlukAlindi("2026-10-26") || p.GunlukAlindi("2026-10-27") || !p.GunlukKazan("2026-10-28") || p.GunlukSay != 2) Fail("günün ödülü günde bir kez");
         if (Ilerleme.Oku(p.Yaz(), 0, false).GunlukSon != "2026-10-28") Fail("günlük kayıt");
-        Console.WriteLine("günün maçı: aynı gün aynı maç, 60 günde 6×10 değiştirici, arka arkaya tekrar yok, ödül günde bir");
+        Console.WriteLine("günün maçı: aynı gün aynı maç, 70 günde 7×10 değiştirici, arka arkaya tekrar yok, ödül günde bir");
     }
-    static readonly string[] ALTIN_GUN = { "uzun", "vex", "salon" };   // 2026-10-26 ilk ölçüm (Gunluk aritmetiği sabit kaldıkça aynı)
+    static readonly string[] ALTIN_GUN = { "nefes", "vex", "salon" };   // 2026-10-26 ilk ölçüm "uzun"; 2026-11-08 "aldat" eklenince 7 değiştirici (bilinçli: 1.0 yayından önce, sürümler arası tek maç bozulmasın diye)
 
     // Usta yolu: belirlenimci sıra (24'lük çevrimde her basamak bir kez), g tavanı, final 11 sayı + imza, Usta zorluk, kayıt.
     static void UstaYollari()

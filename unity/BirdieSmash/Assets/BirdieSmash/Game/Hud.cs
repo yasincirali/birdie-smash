@@ -46,8 +46,20 @@ namespace BirdieSmash.Game
         static GUIContent Ic(string t) { ic.text = t; ic.image = null; ic.tooltip = null; return ic; }
         static readonly string[] SAYI = new string[100];
         static string Sayi(int n) { if (n < 0 || n >= SAYI.Length) return n.ToString(); return SAYI[n] ?? (SAYI[n] = n.ToString()); }
-        string ralliYazi; int ralliYaziN = -1; bool ralliYaziEn;
-        string RalliYazi(int n) { if (n != ralliYaziN || L.En != ralliYaziEn || ralliYazi == null) { ralliYaziN = n; ralliYaziEn = L.En; ralliYazi = L.T("Ralli {0}", n); } return ralliYazi; }
+        string ralliYazi; int ralliYaziN = -1; bool ralliYaziEn, ralliYaziUzun;
+        // Uzun ralli günü (2026-11-08 inceleme, fikir 22:08 #1): sayaç hedefi söyler ("Ralli 5/8"), 8'de "Ralli 8 ×2" olur;
+        // oyuncu ×2'yi sayı geldikten sonra "Çift sayı!" ile değil, karar anında (riskli smaçı bırakıp ralliyi uzatırken) görür.
+        string RalliYazi(int n, bool uzun) { if (n != ralliYaziN || L.En != ralliYaziEn || uzun != ralliYaziUzun || ralliYazi == null) { ralliYaziN = n; ralliYaziEn = L.En; ralliYaziUzun = uzun; ralliYazi = !uzun ? L.T("Ralli {0}", n) : n >= 8 ? L.T("Ralli {0} ×2", n) : L.T("Ralli {0}/8", n); } return ralliYazi; }
+        // Kural rozeti (aynı fikir): Günün maçı ve kariyer kural maçında kuralın adı skor kutusunun altında maç boyu durur
+        // (Tennis Clash etkinlik rozeti gibi); çift sayılı kurallarda "×2" eki. Yazı önbellekte: OnGUI'de her kare dize kurulmaz.
+        string rozetYazi, rozetDeg; bool rozetEn; int ciftRalli = -1;
+        string RozetYazi(string id)
+        {
+            if (id == rozetDeg && L.En == rozetEn && rozetYazi != null) return rozetYazi;
+            rozetDeg = id; rozetEn = L.En; var d = Gunluk.Deg(id);
+            rozetYazi = d == null ? "" : L.T(d.ad) + (id == "altin" || id == "uzun" || id == "file" || id == "aldat" ? " ×2" : "");
+            return rozetYazi;
+        }
         GUIStyle Stil(GUIStyle b, int boy, FontStyle fs = (FontStyle)(-1))
         {
             int no; if (!stilNo.TryGetValue(b, out no)) { no = stilNo.Count + 1; stilNo[b] = no; }
@@ -421,13 +433,17 @@ namespace BirdieSmash.Game
                 // ekranında zaten yazıyor); ralli sayacı ralli 3'ü geçince belirir ve her vuruşta skorun pop diliyle hafifçe
                 // büyür (hareketi azaltta büyümez); "Görev n/3" yerine 3 nokta: biten dolu disk, kalan halka (biçimle de okunur).
                 var bs = Stil(left, Mathf.RoundToInt(11 * fu), FontStyle.Bold);
+                bool uzunGun = M.degistirici == "uzun", ciftAn = uzunGun && M.rally >= 8;
                 if (M.rally != sonRalli) { if (M.rally > 3 && !Ayar.reduce) ralliPop = 1; sonRalli = M.rally; }
+                // ralli 8'e varınca ×2 anı üç kanalda: kısa tık sesi, tık titreşimi, sayacın altın rengi (+ pop; hareketi azaltta
+                // pop yok, renk ve "×2" yazısı kalır). Ralli başına bir kez.
+                if (!ciftAn) ciftRalli = -1; else if (ciftRalli < 0) { ciftRalli = M.rally; root.sfx.Tik(1320); Yerel.Hap("tick"); }
                 bool ralliVar = M.rally > 3; float bw = 64 * u, bh = ralliVar ? 40 * u : 22 * u;
                 Boya(new Rect(lx - 10 * u, top + 2 * u, bw, bh), hudKutu, Color.white);
                 float gy = top + 8 * u;
                 if (ralliVar)
                 {
-                    GUI.color = Kit.Hex("#9dbab3"); Etk(new Rect(lx - 4 * u, top + 4 * u, bw + 20 * u, 18 * u), RalliYazi(M.rally), Stil(bs, Mathf.RoundToInt(12 * fu * (1 + .25f * Mathf.Sin(ralliPop * Mathf.PI)))));
+                    GUI.color = ciftAn ? new Color(1, .82f, .23f) : Kit.Hex("#9dbab3"); Etk(new Rect(lx - 4 * u, top + 4 * u, bw + 20 * u, 18 * u), RalliYazi(M.rally, uzunGun), Stil(bs, Mathf.RoundToInt(12 * fu * (1 + .25f * Mathf.Sin(ralliPop * Mathf.PI)))));
                     gy = top + 26 * u;
                 }
                 for (int i = 0; i < 3; i++)
@@ -436,6 +452,11 @@ namespace BirdieSmash.Game
                     Tex(r, bitti ? disk : ringK, new Color(1, .82f, .23f, bitti ? .95f : .7f));
                 }
                 GUI.color = Color.white;
+                if (M.degistirici != null && M.Dril == null)
+                {
+                    string rz = RozetYazi(M.degistirici);
+                    if (rz.Length > 0) { GUI.color = new Color(1, .82f, .23f, .9f); Etk(new Rect(cx - 90 * u, sy + 36 * u, 180 * u, 18 * u), rz, Stil(mid, Mathf.RoundToInt(11 * fu), FontStyle.Bold)); GUI.color = Color.white; }
+                }
             }
             else Shadowed(kr, L.T("Antrenman"), mid, Color.white);
             // tribün flaşları
@@ -892,7 +913,8 @@ namespace BirdieSmash.Game
             string bas = L.T("Duraklatıldı"), bilgi;
             if (M.Dril == Sonsuz.Tanim) bilgi = L.T(M.Dril.ad) + " · " + SonsuzSayac(M.ogr);
             else if (M.Dril != null) bilgi = L.T(M.Dril.ad) + " · " + L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(M.ogr.dene, M.Dril.top), M.Dril.top, M.ogr.isabet);
-            else bilgi = L.T("{0} sayı", M.target) + " · " + L.T("Rakip") + " " + M.RakipAd(false) + (KariyerVeri.Var(M.stil.kariyer) ? " · " + L.T(KariyerVeri.Al(M.stil.kariyer).yer) : "");
+            else bilgi = L.T("{0} sayı", M.target) + " · " + L.T("Rakip") + " " + M.RakipAd(false) + (KariyerVeri.Var(M.stil.kariyer) ? " · " + L.T(KariyerVeri.Al(M.stil.kariyer).yer) : "")
+                + (M.degistirici != null && Gunluk.Deg(M.degistirici) != null ? " · " + L.T(Gunluk.Deg(M.degistirici).ad) : "");   // kural maçında kuralın adı (2026-11-08)
             string skor = M.Dril != null ? null : Sayi(M.sc[0]) + " – " + Sayi(M.sc[1]);
             var bst = Sigdir(aSkor, bas, w); float bhY = bst.CalcHeight(Ic(bas), w), sh = skor == null ? 0 : aSkor.CalcHeight(Ic(skor), w), ih = aIpucu.CalcHeight(Ic(bilgi), w);
             string ct = UiKok.Buyuk(L.T("Maça devam et")); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), ctaH = Mathf.Max(80 * s, cth + 22 * s);

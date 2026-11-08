@@ -1,4 +1,11 @@
 === UNITY ===
+Bu gece (8 Kasım 22:15 inceleme turu):
+- Günün maçında ve kariyerdeki kural maçlarında kuralın adı skorun hemen altında maç boyu yazıyor (sayısı ikiye katlanan kurallarda "×2" ekiyle). Duraklat ekranında da kural adı var.
+- Uzun ralli gününde ralli sayacı hedefi gösterir ("Ralli 5/8"); 8. vuruşta altın renge döner, "×2" yazar, kısa bir tık sesi ve titreşim gelir.
+- Günün maçına yeni kural: "Aldatma günü". Rakibi aldatıp (yay çizerek kaydırma ya da aldatıcı vuruş) aldığın sayı 2 sayılır. Kurallar artık 7 günde bir döner.
+- Ayarlar'da "Büyük" yazı, telefonda yazıyı zaten büyük kullananlarda menü yazısını küçültmüyor.
+Nasıl denenir: Antrenman > Günün maçı'nı oyna: skorun altında günün kuralı yazmalı. Uzun ralli gününde ralliyi 8 vuruşa taşı: sayaç altın olmalı, ses ve titreşim gelmeli. Aldatma gününde rakibi ters yöne gönderip sayıyı al: "Çift sayı!" çıkmalı. Telefonun yazı boyutunu en büyüğe alıp oyunda Büyük'ü seç: menü yazısı küçülmemeli.
+
 Bu akşam (8 Kasım 17:20 inceleme turu):
 - Günün maçı "Usta günü"nde Usta yolunu henüz açmamış oyuncu artık Zor oynar: koşmak sende, geç kalırsan oyuncun topa kendisi koşar. Rakip ve ödül herkes için aynı. Usta yolunu açmış oyuncu eskisi gibi yardımsız oynar.
 - TestFlight notunda build numarası artık en üstte.
@@ -18,11 +25,6 @@ Arayüz turu (8 Kasım öğlen):
 - Reklam şeridi Dolap ve Atölye'de yok (AdMob şeridi 50 pt'den ince olamıyor; bu iki ekranda listeyi kesiyordu).
 - İngilizce: tarz açıklamaları, "Görünüş" başlığı ve sap etiketleri artık İngilizce.
 Nasıl denenir: Atölye'de Oyun tarzı kartlarına bak: her kartta bir cümle ve altında küçük etiketler olmalı. Dolap › Raket'te sap ölçüsünü G4 ve G6 yap: düğme yazısı taşmamalı, altındaki satır etkiyi söylemeli. Dolap ve Atölye'de altta reklam şeridi olmamalı, Oyna ve Kariyer'de olmalı. Ayarlar'dan yazı boyutunu en büyüğe al, Dolap'ta bir şapka dene: "Bırak" düğmesi görünmeli.
-
-Bu öğlen (8 Kasım 12:20 inceleme turu):
-- Hızlı maç'ta artık yalnız ilk üç rakip gelmiyor: kariyerde yendiğin rakipler (Drive'cı, Aldatıcı, Komple gibi) de rastgele gelir. Aynı rakip art arda gelmez.
-- Gizli kare hızı göstergesine (Ayarlar başlığına 5 dokunuş) "Açılış x,x sn" satırı eklendi.
-Nasıl denenir: Kariyerde Smaşçı, Duvar ve File dışında bir rakibi yen, sonra Hızlı maç'ı birkaç kez oyna: o rakip de gelmeli, aynı rakip iki maç üst üste gelmemeli. Göstergeyi açıp ekran görüntüsünü gönder: alt satırda açılış süresi görünmeli.
 
 === HTML ===
 Bu sürümde yeni:
