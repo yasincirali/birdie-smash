@@ -199,6 +199,21 @@ namespace BirdieSmash.Game
             KarakterGovde(c); c.Add(Bosluk(20));
             DenemeCubukKur();
             if (of.y > 0) { soyunmaKaydir.scrollOffset = of; var sk = soyunmaKaydir; sk.schedule.Execute(() => sk.scrollOffset = of).StartingIn(33); }
+            // 2026-11-08 (yasin TF: Sırt, Ayakkabı, Forma, Sevinç çipine dokununca boş sayfa): yer korunmayan yenilemede (kategori,
+            // segment) kayma sıfırlanmıyordu. Uzun sayfanın (Şapka, Yüz ızgarası) dibindeyken kısa sayfaya geçince eski kayma kalıyor,
+            // içerik görünen alanın üstünde kalıp sayfa boş görünüyordu. Yeni sayfa hep baştan açılır.
+            else if (!yerKoru && KategoriUsteKaydir && soyunmaKaydir != null) { soyunmaKaydir.scrollOffset = Vector2.zero; var sk = soyunmaKaydir; sk.schedule.Execute(() => sk.scrollOffset = Vector2.zero).StartingIn(1); }
+        }
+        public static bool KategoriUsteKaydir = true;   // EkranTuru eski davranışı karşılaştırmak için bir an kapatır
+        public void DolapSonaKaydir() { if (soyunmaKaydir != null) soyunmaKaydir.verticalScroller.value = soyunmaKaydir.verticalScroller.highValue; }
+        public string DolapTani
+        {
+            get
+            {
+                if (soyunmaKaydir == null || soyunmaGovde == null) return "dolap yok";
+                return "çocuk " + soyunmaGovde.childCount + " · içerik " + Mathf.Round(soyunmaGovde.layout.height) + " · görünen " + Mathf.Round(soyunmaKaydir.contentViewport.layout.height)
+                    + " · kayma " + Mathf.Round(soyunmaKaydir.scrollOffset.y) + " · alan " + Mathf.Round(soyunmaKaydir.layout.height) + " · üst " + Mathf.Round(soyunmaKaydir.worldBound.y);
+            }
         }
 
         // ---- Oyun segmenti: tarz, takım, yuvalar, ayakkabı tabanı ----
