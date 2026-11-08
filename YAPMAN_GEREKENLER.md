@@ -180,7 +180,12 @@ PC tarafı (Blender'ı Claude'un canlı sürmesi için, ~5 dk):
 
 ## Mağaza gönderimi, parça 1: gizlilik, App Privacy, yaş, metinler (2026-10-24, Ar-Ge raporu "yap")
 
-Hazır dosyalar: `legal/gizlilik.md` + `legal/privacy.md` (kaynak) → `docs/gizlilik.html`
+> 2026-11-08: bu bölümün A adımı **geçersiz**. Gizlilik metninin tek kaynağı murphysoft deposu
+> (https://murphysoft.app/birdie-smash/privacy/ ve /gizlilik/, Version 2 · 7 Kasım; reklam + satın alma + iCloud).
+> Bu depodaki eski kopyalar (`legal/gizlilik.md`, `legal/privacy.md`, `docs/`) "reklam yok, satın alma yok" dediği için
+> silindi; github.io adresleri kullanılmaz (404). App Privacy cevapları: `store_listing/app_privacy.md` (1.0 reklamlı satırlar).
+
+Eski: Hazır dosyalar: `legal/gizlilik.md` + `legal/privacy.md` (kaynak) → `docs/gizlilik.html`
 + `docs/privacy.html` (`python3 docs/_build_legal.py` üretir; HTML'i elle düzenleme),
 `store_listing/app_privacy.md`, `store_listing/yas_derecesi.md`,
 `store_listing/en/*.txt` ve `store_listing/tr/*.txt`. Ekran görüntüleri parça 2'de

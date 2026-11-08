@@ -59,6 +59,24 @@ namespace BirdieSmash.Core
             var k = Al(p.Siradaki()); if (k == null) return b;   // Siradaki: kariyer bitince açık son turun finali
             b.hiz *= k.g; b.hata /= k.g; return b;
         }
+        // Hızlı maç rakip havuzu (2026-11-08, inceleme turu): eskiden hep ilk üç tarz (Smaşçı/Duvar/File); Drive'cı, Aldatıcı ve
+        // Komple yalnız kariyerde görünüyordu. Kariyerde en az bir kez YENDİĞİN basamağın tarzı havuza girer (para değil, çeşit
+        // ödülü; yeni anahtar yok, ilerleme maskesinden türer). Güç yine Serbest'ten (oyuncunun seviyesi), patron imzası yok.
+        // Sıra stil.json sırası, ilk üç her zaman içeride. onceki: art arda aynı rakip gelmesin (havuz 1 değilse).
+        public static List<string> HizliHavuz(Ilerleme p)
+        {
+            var yenilen = new HashSet<string>();
+            if (p != null) for (int g = 0; g < TUR * BASAMAK; g++) if (Var(g) && (p.Maske(g) & Ilerleme.KAZAN) != 0) yenilen.Add(Al(g).stil);
+            var h = new List<string>();
+            foreach (var id in StilSira) if (Stil.ContainsKey(id) && (Array.IndexOf(Match.STIL_SIRA, id) >= 0 || yenilen.Contains(id))) h.Add(id);
+            foreach (var id in Match.STIL_SIRA) if (!h.Contains(id)) h.Add(id);   // stil.json sırası eksik olsa da taban üçlü kalır
+            return h;
+        }
+        public static string HizliSec(Ilerleme p, string onceki, Random r)
+        {
+            var h = HizliHavuz(p); if (h.Count > 1 && onceki != null) h.Remove(onceki);
+            return h[r.Next(h.Count)];
+        }
         public static ImzaBilgi Imza(string id) { ImzaBilgi b; return id != null && Imzalar.TryGetValue(id, out b) ? b : null; }
 
         public static void Sifirla() { turlar = null; stil = null; imza = null; sira = null; usta = null; Gear.VeriSifirla(); Karakter.Sifirla(); Dril.Sifirla(); Gunluk.Sifirla(); Aldatma.Sifirla(); }

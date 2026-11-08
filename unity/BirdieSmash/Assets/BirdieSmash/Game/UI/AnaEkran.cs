@@ -203,7 +203,7 @@ namespace BirdieSmash.Game
         void HizliKur()
         {
             var c = AltSayfaKur(L.T("Hızlı maç"));
-            c.Add(Yazi(L.T("Rakip her maçta rastgele: Smaşçı, Duvar ya da File oyuncusu."), 13, "soluk"));
+            c.Add(Yazi(L.T("Rakip her maçta rastgele. Kariyerde yendiğin rakipler de gelir."), 13, "soluk"));
             OyunSecenek(c, true);
             AltEylem(Dugme(L.T("Hızlı maç oyna"), () =>
             {
