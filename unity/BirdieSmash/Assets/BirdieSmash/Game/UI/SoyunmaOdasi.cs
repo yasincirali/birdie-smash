@@ -213,7 +213,7 @@ namespace BirdieSmash.Game
             foreach (var Y in Gear.YUVA) iz.Add(YuvaKare(Y));
             c.Add(Cip(L.T("Eşit şartlar"), gr.eko.esit, () => { gr.eko.esit = !gr.eko.esit; Ayar.GearHesap(); Ayar.Kaydet(); SoyunmaGovdeKur(true); }, L.T("Serbest maçta yükseltmeler sayılmaz")));
             c.Add(Grup(L.T("Ayakkabı tabanı"))); TabanBolum(c);
-            c.Add(Yazi(L.T("Çubuklar ekipmanı anlatır, 50 nötr. Oyun tarzı çubuklara girmez. Görünüş Dolap'ta, oyunu etkilemez."), 12, "soluk"));
+            c.Add(Yazi(L.T("Çubuklar ekipmandan gelir; 50 ortalamadır. Tarz ve görünüm çubukları değiştirmez."), 12, "soluk"));
         }
 
         // 2026-11-07 (yasin: "kordaj gerginliği kaybolmuş"; ölçüler gerçek raket diliyle): Atölye'nin ana ekranında takılı raketin
@@ -242,15 +242,21 @@ namespace BirdieSmash.Game
         void SapSecici(VisualElement k)
         {
             var gr = Ayar.gear;
-            var bas = Satir("arali"); bas.style.marginTop = 10; k.Add(bas); bas.Add(Yazi(L.T("Sap ölçüsü"), 14, "kalin")); bas.Add(Yazi(gr.sap + " · " + Gear.SapMm(gr.sap, L.T("inç")), 13, "soluk"));
+            var bas = Satir("arali"); bas.style.marginTop = 10; k.Add(bas); bas.Add(Yazi(L.T("Sap ölçüsü"), 14, "kalin")); bas.Add(Yazi(Gear.SapMm(gr.sap, L.T("inç")), 13, "soluk"));
+            // 2026-11-08 (yasin: "butonlarda taşan"): etki çip alt yazısıydı ("Bilek ve drive +3 · kontrol −3", 154 pt > 77 pt çip).
+            // Çipte yalnız ölçü ve kısa ad; seçilenin etkisi altında tek satır, tarz haplarıyla aynı dil (▲ limon, ▼ soluk).
             var r = Satir("secim"); k.Add(r);
             foreach (var sp in new[] { "G4", "G5", "G6" })
             {
-                string s_ = sp, ad = sp == "G4" ? L.T("G4 kalın") : sp == "G6" ? L.T("G6 ince") : "G5";
-                r.Add(Cip(ad, gr.sap == sp, () => { if (gr.sap == s_) return; gr.sap = s_; Ayar.GearHesap(); Ayar.Kaydet(); root.sfx.Tik(); Degisti(); SoyunmaGovdeKur(true); },
-                    sp == "G4" ? L.T("Kontrol +3 · drive −3") : sp == "G6" ? L.T("Bilek ve drive +3 · kontrol −3") : L.T("Nötr")));
+                string s_ = sp;
+                r.Add(Cip(sp, gr.sap == sp, () => { if (gr.sap == s_) return; gr.sap = s_; Ayar.GearHesap(); Ayar.Kaydet(); root.sfx.Tik(); Degisti(); SoyunmaGovdeKur(true); },
+                    sp == "G4" ? L.T("Kalın") : sp == "G6" ? L.T("İnce") : L.T("Orta")));
             }
-            k.Add(Yazi(L.T("Sap ölçüsü bir beceri ayarıdır, seviye istemez. Sargı sapı ayrıca kalınlaştırır."), 12, "soluk"));
+            var etki = Satir("tarz-haplar"); etki.pickingMode = PickingMode.Ignore; k.Add(etki);
+            if (gr.sap == "G4") { TarzHap(etki, Ikonlar.Yukari, LIMON, L.T("Kontrol +3"), false); TarzHap(etki, Ikonlar.Asagi, SOLUK, L.T("Drive −3"), true); }
+            else if (gr.sap == "G6") { TarzHap(etki, Ikonlar.Yukari, LIMON, L.T("Bilek ve drive +3"), false); TarzHap(etki, Ikonlar.Asagi, SOLUK, L.T("Kontrol −3"), true); }
+            else etki.Add(Yazi(L.T("Nötr: artı ve eksi yok"), 12.5f, "soluk"));
+            k.Add(Yazi(L.T("Seviye istemez. Kalın sargı sapı yarım ölçü kalınlaştırır."), 12, "soluk"));
         }
         static string KalinlikYaz(float mm) { return mm.ToString("0.00", L.En ? System.Globalization.CultureInfo.InvariantCulture : new System.Globalization.CultureInfo("tr-TR")) + " mm"; }
 
@@ -442,7 +448,9 @@ namespace BirdieSmash.Game
             string ar = L.T("Raketin önerisi {0}–{1} lbs", tmin, tmax);
             if (t > tmax) ar += " · " + L.T("üstündesin: kontrol artar, tatlı nokta çok daralır");
             else if (t < tmin) ar += " · " + L.T("altındasın: top tramplenden çıkar, kontrol azalır");
-            return L.T(Gear.TelStats(Ayar.gear.tel).n) + " · " + ar + " · " + L.T("Gerginlik bir beceri ayarıdır, seviye istemez.");
+            // 2026-11-08: üç ayrı bilgi " · " ile tek paragrafa yapışıktı; his bir satır, öneri aralığı bir satır.
+            string his = Gear.TelStats(Ayar.gear.tel).n; if (his == "Orta") his = "Orta: güç ve kontrol dengede";   // tek sözcük "Orta" bir şey anlatmıyordu
+            return L.T(his) + "\n" + ar + ". " + L.T("Seviye istemez.");
         }
         static string TelBaslik() { return L.T("Tel gerginliği") + " · " + Mathf.RoundToInt(Ayar.gear.tel) + " lbs"; }
         void TelYaz()
@@ -468,7 +476,7 @@ namespace BirdieSmash.Game
         void TarzGovde(VisualElement c)
         {
             int sv = Ayar.gear.Seviye(); string cur = Ayar.Tarz;
-            c.Add(Yazi(L.T("Tarz bir kimlik: artısı ve eksisi var. Ücretsiz, maç dışında istediğin an değiştir."), 13, "soluk"));   // 2026-11-05 (Ar-Ge 11:40 #3): 3 satır → tek cümle
+            c.Add(Yazi(L.T("Ücretsiz. Maç dışında istediğin an değiştir."), 13, "soluk"));   // 2026-11-05 (Ar-Ge 11:40 #3): 3 satır → tek cümle
             foreach (var t in Karakter.Tarzlar)
             {
                 bool acik = sv >= t.sv, secili = cur == t.id; string id = t.id;
@@ -479,23 +487,28 @@ namespace BirdieSmash.Game
                 else if (!acik) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = KilitKalan(t.sv, sv); }
                 else durum = L.T("Seç");
                 var dy = Yazi(durum, 12, secili ? "durum-gecti" : acik ? "durum-simdi" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
-                // 2026-11-07 stüdyo incelemesi (AD7): "Artı:/Eksi:" sözcükleri ▲/▼ ile tekrardı; ▼ orkideydi (orkide = rakip) ve ▲ turuncu
-                // (turuncu = seçili/CTA): üç anlam bir aradaydı. ▲ limon (kazanım = sen), ▼ soluk (ceza renk taşımaz); yön simgenin
-                // biçiminden okunur, ekran okuyucu "artı/eksi" der (Etiket aşağıda).
-                if (!string.IsNullOrEmpty(t.arti)) TarzSatir(kart, Ikonlar.Yukari, LIMON, L.T(t.arti));
-                if (!string.IsNullOrEmpty(t.eksi)) TarzSatir(kart, Ikonlar.Asagi, SOLUK, L.T(t.eksi));
+                // 2026-11-07 stüdyo incelemesi (AD7): ▲ limon (kazanım = sen), ▼ soluk (ceza renk taşımaz); yön simgenin biçiminden okunur.
+                // 2026-11-08 (yasin: "her özelliğin açıklandığı alanlar çok amatör"): yüzdelerle dolu iki uzun cümle yerine tek cümle
+                // kimlik (oz) + her etki ayrı hap ("▲ Smaç hızı +%6"). Haplar sarılır, tek hap kartı taşmaz; Dengeli'de hap yok.
+                if (!string.IsNullOrEmpty(t.oz)) { var oz = Yazi(L.T(t.oz), 13, "tarz-oz"); oz.pickingMode = PickingMode.Ignore; kart.Add(oz); }
+                var haplar = Satir("tarz-haplar"); haplar.pickingMode = PickingMode.Ignore;
+                foreach (var a in Parcalar(t.arti)) TarzHap(haplar, Ikonlar.Yukari, LIMON, L.T(a), false);
+                foreach (var e in Parcalar(t.eksi)) TarzHap(haplar, Ikonlar.Asagi, SOLUK, L.T(e), true);
+                if (haplar.childCount > 0) kart.Add(haplar);
                 if (acik && !secili) kart.AddManipulator(new Clickable(() =>
                 {
                     Ayar.ilerleme.Tarz = id; Ayar.GearHesap(); Ayar.Kaydet(); Tik(); kirli[(int)Sekme.Profil] = true; SoyunmaGovdeKur(true);
                 }));
-                Erisim.Etiket(kart, L.T(t.ad) + (t.arti != "" ? ", " + L.T("Artı") + ": " + L.T(t.arti) : "") + (t.eksi != "" ? ", " + L.T("Eksi") + ": " + L.T(t.eksi) : "") + ", " + durum, acik && !secili ? "dugme" : "metin", secili, !acik);
+                Erisim.Etiket(kart, L.T(t.ad) + (t.oz != "" ? ", " + L.T(t.oz) : "") + (t.arti != "" ? ", " + L.T("Artı") + ": " + L.Cumle(t.arti) : "") + (t.eksi != "" ? ", " + L.T("Eksi") + ": " + L.Cumle(t.eksi) : "") + ", " + durum, acik && !secili ? "dugme" : "metin", secili, !acik);
             }
         }
         // Kilit satırı (2026-11-07 stüdyo UX4): "Sv 8 gerekli" hedef vermiyordu; kaç seviye kaldığı da yazar. Kilit Tüy ile aşılmaz (karar sabit).
         static string KilitKalan(int gerek, int simdi) { int k = gerek - simdi; return k > 0 ? L.T("Sv {0} · {1} seviye kaldı", gerek, k) : L.T("Sv {0} gerekli", gerek); }
-        void TarzSatir(VisualElement kart, Texture2D ik, Color renk, string yazi)
+        static IEnumerable<string> Parcalar(string s) { if (string.IsNullOrEmpty(s)) yield break; foreach (var p in s.Split(new[] { " · " }, System.StringSplitOptions.RemoveEmptyEntries)) yield return p.Trim(); }
+        void TarzHap(VisualElement s, Texture2D ik, Color renk, string yazi, bool eksi)
         {
-            var r = Satir("rakip-satir"); r.pickingMode = PickingMode.Ignore; kart.Add(r); var i = Ikon(ik, 16, renk); i.style.marginRight = 6; r.Add(i); r.Add(Yazi(yazi, 13, "esnek-yatay-sifir"));
+            var h = new VisualElement(); h.AddToClassList("tarz-hap"); if (eksi) h.AddToClassList("tarz-hap--eksi"); h.pickingMode = PickingMode.Ignore; s.Add(h);
+            var i = Ikon(ik, 12, renk); i.style.marginRight = 4; h.Add(i); var y = Yazi(yazi, 12.5f, "tarz-hap-yazi"); y.style.whiteSpace = WhiteSpace.Normal; h.Add(y);
         }
 
         // ---- Görünüm segmenti (karakter, adım 6) ----

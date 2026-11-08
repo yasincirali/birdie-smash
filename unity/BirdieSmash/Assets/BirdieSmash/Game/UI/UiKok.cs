@@ -180,6 +180,7 @@ namespace BirdieSmash.Game
         // 2.1 yer tutucu içeriği bitmemiş ürün sayar, muadiller reklam yoksa yer ayırmaz. Yer artık 0 yükseklikte; şerit ilk
         // yüklendiğinde açılır ve oturum boyunca açık kalır (sonraki yenilemede düşse de menü zıplamasın).
         VisualElement reklamEl; static bool seritAcildi;
+        static readonly Sekme[] SERITSIZ_SEKME = { Sekme.Soyunma, Sekme.Atolye };
         void ReklamKur(VisualElement r)
         {
             if (r == null) return; r.Clear(); r.pickingMode = PickingMode.Position; reklamEl = r;
@@ -196,6 +197,12 @@ namespace BirdieSmash.Game
             ReklamSdk.Baslat();
             // Reklamsız alındıysa (oturum ortasında da): yer kapanır, şerit gizlenir; menü yeniden kurulunca ReklamKur hiç açmaz.
             if (!Reklam.ALAN) { if (reklamEl != null && reklamEl.style.display != DisplayStyle.None) reklamEl.style.display = DisplayStyle.None; ReklamSdk.Serit(null); return; }
+            // 2026-11-08 (yasin: "reklam şeridi daha ince olamaz mı"): AdMob telefonda 320×50'den ince şerit vermez (uyarlanabilir şerit
+            // de en az 50 pt), PT inmez. Onun yerine şerit uzun listeli ve ayar yapılan Dolap ile Atölye'de yok; yer de kapanır ki
+            // içerik aşağıya kadar insin. Gelir asıl maç sonu ödüllü reklamda; bu iki sekme şeridin küçük bir payı.
+            bool sekmede = System.Array.IndexOf(SERITSIZ_SEKME, gez.sekme) < 0;
+            if (reklamEl != null) { var ist = sekmede ? DisplayStyle.Flex : DisplayStyle.None; if (reklamEl.style.display != ist) reklamEl.style.display = ist; }
+            if (!sekmede) { ReklamSdk.Serit(null); return; }
             if (!ReklamSdk.Hazir) return;
             if (ReklamSdk.SeritYuklu && !seritAcildi && reklamEl != null) { seritAcildi = true; reklamEl.style.height = Reklam.PT; }
             Rect? yer = null;

@@ -82,12 +82,13 @@
   {"id": "ruh_pelerin", "ad": "Ruh omuzluğu", "sv": 20, "fiyat": 2500, "nadir": "mistik", "varlik": "kaykit", "renk": "#2FB3A2"},
   {"id": "melek_kanat", "ad": "Melek kanadı", "sv": 22, "fiyat": 2500, "nadir": "mistik", "varlik": "ozel"}
 ],
+"tarzlar_not": "2026-11-08 (yasin: \"her özelliğin açıklandığı alanlar çok amatör\"): oz = tarzın tek cümlelik kimliği; arti/eksi ' · ' ile ayrılmış kısa etiketler, Atölye'de her biri ayrı hap (▲ limon, ▼ soluk). Etiketteki sayı etki çarpanıyla aynı yönde ve aynı ölçüde olmalı. Çeviri Lang.UNITY_EK (parça parça).",
 "tarzlar": [
-  {"id": "dengeli", "ad": "Dengeli",     "sv": 1,  "arti": "Artısı da eksisi de yok",                               "eksi": "",                                  "etki": {}},
-  {"id": "smasci",  "ad": "Smaşçı",      "sv": 4,  "arti": "Smaç %6 hızlı · enerji %30 hızlı dolar · sıçrayarak smaçta tam orta +25", "eksi": "Smaç nefesi %35 fazla yakar",       "etki": {"enerji": 1.3, "jumpTatli": 1.25, "smacHiz": 1.06, "smacYor": 1.35}},
-  {"id": "duvar",   "ad": "Duvar",       "sv": 8,  "arti": "Uzanma erişimi +8 · uzanma sonrası toparlanma %20 kısa", "eksi": "Smaç %10 yavaş",                      "etki": {"uzanma": 1.08, "toparla": 0.8, "smacHiz": 0.9}},
-  {"id": "file",    "ad": "File ustası", "sv": 12, "arti": "File vuruşu ve file önünde tam orta +30",       "eksi": "Arka sahaya koşu %10 yavaş",                "etki": {"fileTatli": 1.3, "arkaKosu": 0.9}},
-  {"id": "aldatici","ad": "Aldatıcı",    "sv": 18, "arti": "Slice ve aldatma %30 güçlü",                             "eksi": "Tam orta penceresi −10",             "etki": {"slice": 1.3, "tatli": 0.9}}
+  {"id": "dengeli", "ad": "Dengeli",     "sv": 1,  "oz": "Her vuruşta aynı his; artı ve eksi yok.",            "arti": "",                                                       "eksi": "",                       "etki": {}},
+  {"id": "smasci",  "ad": "Smaşçı",      "sv": 4,  "oz": "Smaçla bitirir, nefesini de smaçla harcar.",         "arti": "Smaç hızı +%6 · Enerji dolumu +%30 · Sıçrayış smacı tam orta +%25", "eksi": "Smaçta nefes +%35",      "etki": {"enerji": 1.3, "jumpTatli": 1.25, "smacHiz": 1.06, "smacYor": 1.35}},
+  {"id": "duvar",   "ad": "Duvar",       "sv": 8,  "oz": "Her topa uzanır, sonra çabuk toparlanır.",           "arti": "Uzanma erişimi +%8 · Toparlanma %20 hızlı",              "eksi": "Smaç hızı −%10",         "etki": {"uzanma": 1.08, "toparla": 0.8, "smacHiz": 0.9}},
+  {"id": "file",    "ad": "File ustası", "sv": 12, "oz": "Fileyi kapatır, arka sahada geç kalır.",             "arti": "File önü tam orta +%30",                                 "eksi": "Arka sahaya koşu −%10",  "etki": {"fileTatli": 1.3, "arkaKosu": 0.9}},
+  {"id": "aldatici","ad": "Aldatıcı",    "sv": 18, "oz": "Slice ve aldatmayla rakibi ters köşeye yatırır.",    "arti": "Slice ve aldatma +%30",                                  "eksi": "Tam orta penceresi −%10", "etki": {"slice": 1.3, "tatli": 0.9}}
 ],
 "unvanlar": [
   {"id": "mahalle",  "ad": "Mahalle oyuncusu", "nasil": "Başlangıç"},

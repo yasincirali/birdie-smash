@@ -64,7 +64,7 @@ namespace BirdieSmash.Core
         static float[] Cift(Dictionary<string, object> d, string k) { var a = d.ContainsKey(k) ? d[k] as List<object> : null; return a == null || a.Count != 2 ? null : new[] { (float)(double)a[0], (float)(double)a[1] }; }
         // Gruplar ve görünen adları (Antrenman sayfası bu sırayla gösterir).
         public static readonly string[] GRUP = { "arka", "file", "orta" };
-        public static readonly string[] GRUP_AD = { "Arka saha", "File önü", "Orta saha ve karışık" };
+        public static readonly string[] GRUP_AD = { "Arka saha", "File önü", "Orta saha" };   // 2026-11-08: "Orta saha ve karışık" sekmede 87 pt'ye sığmıyordu (r142); İngilizcesi zaten "Mid-court"
         // Savunma ve atak clear'i ayıran tepe yüksekliği (m). Ölçüm (Denge "lab", 2026-10-30): oyuncunun clear'leri tepe 4,1–7,9 m;
         // orta-hızlı kaydırma (sp 1,0–1,4) 6 m'nin üstüne, hızlı ve uzun kaydırma (sp ≥ 1,6) altına çıkar.
         public const float TEPE_SAVUNMA = 6.0f;
