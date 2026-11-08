@@ -283,8 +283,14 @@ namespace BirdieSmash.Game
         {
             var g = Gunluk.Bugun(System.DateTime.Now); var o = Secenek(false);
             o.stil = Gunluk.Rakip(g); o.saha = g.saha; o.target = g.uzunluk; o.degistirici = g.deg.id;
+            // 2026-11-08 inceleme: "Usta günü" Kolay/Orta oyuncusunu yardımsız Usta'ya atıyordu (Match.DegistiriciKur yalnız easy=false;
+            // kosuYardim kendi kademesinden false gelir). Usta yolunu açmamış oyuncu o gün Zor oynar: koşu sende, geç kalırsan yardım.
+            // Rakip, tohum, saha ve ödül herkes için aynı kalır; değişen yalnız oyuncunun yardım düzeyi.
+            if (GunlukUstaYardimli(g)) o.kosuYardim = true;
             mod = Mod.Gunluk; gunluk = g; MacKur(g.tohum, o);   // tohum tarihten: herkes aynı maçı (aynı rastgele akış) oynar
         }
+
+        public static bool GunlukUstaYardimli(GunlukMac g) { return g.deg.id == "usta" && !UstaYolu.Acik(Ayar.ilerleme); }
 
         // ---- 2026-10-26 Usta yolu (adım 9) ----
         public void UstaOyna() { if (!UstaYolu.Acik(Ayar.ilerleme)) return; hud.Perde(UstaBaslat); }

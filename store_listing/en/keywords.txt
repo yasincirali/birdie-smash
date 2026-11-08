@@ -1,1 +1,1 @@
-badminton,shuttlecock,racket,sports,rally,career,tournament,arcade,net,jump,offline,single player
+daily match,shuttlecock,racket,sports,rally,career,tournament,arcade,net,jump,offline,single player

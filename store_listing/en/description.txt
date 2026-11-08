@@ -1,5 +1,10 @@
 Birdie Smash is a badminton game you play with one finger. When the shuttle comes, you swipe: the direction of your swipe decides where it goes, the speed decides how hard you hit.
 
+- Career: 4 tours and 24 opponents, from your local gym to the World Finals, then the endless Master road
+- Match of the day: a new opponent, court and twist every day, with no streaks to keep
+- Endless rally: the coach feeds until you miss, faster every 5 hits
+- Locker room: shirts, caps, shoes and celebration moves; racket, strings and grip that change how you play
+
 SHOTS
 Pass over the shuttle slowly and briefly for a drop that falls just behind the net. Swipe long for a clear to the back line. Swipe fast with the shuttle above your head and you smash. Drive at shoulder height, lift a low shuttle, kill it at the net, block the opponent's smash. Draw an arc as you swipe and you slice the shuttle so it lands shorter than expected. You serve too: short, flick or high.
 
@@ -9,13 +14,13 @@ STAY FIT
 Smashes, jumps and lunges burn stamina. When it runs low you slow down and your smash weakens. Play clears and rest between points. Forehand and backhand are different: there is no smash on the backhand side, so position yourself to take the shuttle on the forehand.
 
 CAREER
-Six stages: local gym, school tournament, city championship, regional final, national league and the Champions Cup. Opponents play differently: the Smasher smashes every overhead, the Wall returns everything, the Net Player lives at the net. Every match comes with three missions. Finish the career to unlock the Champion shirt.
+Four tours: the Local road, the Asia Tour, the Europe Tour and the World Finals, six opponents each. Opponents play differently: the Smasher smashes every overhead, the Wall returns everything, the Net Player lives at the net, the Trickster changes direction at the last moment. Tour bosses have a signature shot you learn to read. Every match comes with missions and stars. After the World Finals the Master road begins: an endless ladder where you do the running too.
 
 GEAR
-Win matches to earn Feathers and XP. Racket model, string tension, wristband, headband and shirt change how the game plays: a head-heavy racket hits harder smashes, a head-light racket speeds up the net game, loose strings give power, tight strings give control. Your gear also changes the racket sound and the haptics. Spin your player 360 degrees and inspect your racket up close. Feathers are earned only by playing; there are no purchases.
+Win matches to earn Feathers and XP. Racket model, string tension, wristband, headband and shirt change how the game plays: a head-heavy racket hits harder smashes, a head-light racket speeds up the net game, loose strings give power, tight strings give control. Your gear also changes the racket sound and the haptics. Spin your player 360 degrees and inspect your racket up close. Feathers are earned by playing; if you want more, Feather packs are available as in-app purchases.
 
 TRAINING AND QUICK MATCH
-A coached training session teaches every shot step by step. In Quick match choose a 5, 11 or 21 point game on one of four courts: hall, tournament, wooden school gym and night. In Easy mode your player runs to the shuttle and you just hit. In Pro mode you do the running too.
+A coached training session teaches every shot step by step. In Quick match choose a 5, 11 or 21 point game on one of four courts: hall, tournament, wooden school gym and night. Four difficulty levels: in Easy and Medium your player runs to the shuttle and you just hit; in Hard and Pro you do the running too, and in Hard your player helps when you are late.
 
 FEEL AND SOUND
 The racket sound is generated on your phone from the string tension and the type of shot. Every hit comes with haptic feedback. With Reduce Motion on, transitions stay calm.
@@ -24,6 +29,6 @@ GAME CENTER
 Game Center achievements for your career and in-game feats. Signing in is optional.
 
 NO INTERNET NEEDED
-The game runs on your phone with no account needed; your progress is stored on your device. This free game shows a small ad banner in the menus, and after a match you can choose to watch a short ad to boost your Feather reward. No ads interrupt a match.
+The game runs on your phone with no account needed; your progress is stored on your device. This free game shows a small ad banner in the menus, and after a match you can choose to watch a short ad to boost your Feather reward. No ads interrupt a match. A one-time No Ads purchase removes the menu banner.
 
 Available in English and Turkish, following your phone's language.
