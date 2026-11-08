@@ -1,5 +1,10 @@
 Birdie Smash, tek parmakla oynanan bir badminton oyunu. Top gelince ekranda kaydırırsın: kaydırmanın yönü topun gideceği yeri, hızı vuruşun gücünü belirler.
 
+- Kariyer: 4 tur, 24 rakip; mahalle salonundan Dünya Finalleri'ne, sonra bitmeyen Usta yolu
+- Günün maçı: her gün yeni rakip, saha ve kural; seri tutma derdi yok
+- Sonsuz ralli: antrenör sen kaçırana kadar besler, her 5 vuruşta hızlanır
+- Dolap: forma, şapka, ayakkabı ve sevinç hareketleri; oyunu değiştiren raket, kordaj ve sap
+
 VURUŞLAR
 Yavaş ve kısa geçersen drop olur, top filenin hemen arkasına düşer. Uzun kaydırırsan clear ile dibe atarsın. Top başının üstündeyken hızlı kaydırırsan smaç gelir. Omuz hizasında drive, alçak topta lift, file üstünde file vuruşu, rakibin smacına karşı blok. Kaydırırken parmağınla yay çizersen top kesilir ve beklenenden kısa düşer. Servis de sende: kısa, flick ya da yüksek.
 
@@ -9,13 +14,13 @@ FORMDA KAL
 Smaç, sıçrama ve uzanma nefes yakar. Nefesin azalınca yavaşlarsın, smacın zayıflar. Clear atıp sayı arasında dinlen. Forehand ile backhand farklıdır: backhand tarafından smaç olmaz, topu forehand tarafına alacak şekilde dur.
 
 KARİYER
-Altı basamak: mahalle salonu, okul turnuvası, il şampiyonası, bölge finali, ulusal lig ve Şampiyonlar kupası. Rakiplerin farklı oynar: her topu smaçlayan Smaşçı, her şeyi geri çeviren Duvar, fileye yapışan File oyuncusu. Her maçta üç görev seni bekler. Kariyeri bitirince Şampiyon forması açılır.
+Dört tur: Yerel yol, Asya Turu, Avrupa Turu ve Dünya Finalleri; her turda altı rakip. Rakiplerin farklı oynar: her topu smaçlayan Smaşçı, her şeyi geri çeviren Duvar, fileye yapışan File oyuncusu, son anda yön değiştiren Aldatıcı. Tur patronlarının okumayı öğreneceğin bir imza vuruşu var. Her maçta görevler ve yıldızlar seni bekler. Dünya Finalleri'nden sonra Usta yolu başlar: koşmanın da sende olduğu, sonu olmayan bir merdiven.
 
 EKİPMAN
-Maç kazandıkça Tüy ve XP toplarsın. Raket modeli, tel gerginliği, bileklik, kafa bandı ve forma oyunun hissini değiştirir: kafa ağır raket smacı sertleştirir, kafa hafif raket file oyununu hızlandırır, gevşek tel güç verir, sıkı tel kontrol. Ekipman raketin sesini ve titreşimini de değiştirir. Oyuncunu 360 derece döndürüp raketini yakından inceleyebilirsin. Tüy yalnızca oynayarak kazanılır; satın alma yoktur.
+Maç kazandıkça Tüy ve XP toplarsın. Raket modeli, tel gerginliği, bileklik, kafa bandı ve forma oyunun hissini değiştirir: kafa ağır raket smacı sertleştirir, kafa hafif raket file oyununu hızlandırır, gevşek tel güç verir, sıkı tel kontrol. Ekipman raketin sesini ve titreşimini de değiştirir. Oyuncunu 360 derece döndürüp raketini yakından inceleyebilirsin. Tüy oynayarak kazanılır; daha fazlasını isteyen uygulama içinden Tüy paketi alabilir.
 
 ANTRENMAN VE HIZLI MAÇ
-Antrenörlü antrenman her vuruşu adım adım öğretir. Hızlı maçta 5, 11 ya da 21 sayılık maç seçersin; dört saha var: salon, turnuva, ahşap zeminli okul ve gece. Kolay modda oyuncun topa kendisi koşar, sen yalnızca vurursun. Usta modda koşmak da sende.
+Antrenörlü antrenman her vuruşu adım adım öğretir. Hızlı maçta 5, 11 ya da 21 sayılık maç seçersin; dört saha var: salon, turnuva, ahşap zeminli okul ve gece. Dört zorluk var: Kolay ve Orta'da oyuncun topa kendisi koşar, sen yalnızca vurursun; Zor ve Usta'da koşmak da sende, Zor'da geç kalırsan oyuncun yardım eder.
 
 HİS VE SES
 Raket sesi tel gerginliğine ve vuruş türüne göre telefonunda üretilir. Her vuruş titreşimle hissedilir. Hareketi azalt ayarı açıksa geçişler sakinleşir.
@@ -24,6 +29,6 @@ GAME CENTER
 Kariyer ve oyun içi başarılar için Game Center başarımları. Giriş isteğe bağlıdır.
 
 İNTERNET GEREKMEZ
-Oyun telefonunda çalışır, hesap gerekmez; ilerlemen cihazında saklanır. Ücretsiz oyun menüde küçük bir reklam şeridi gösterir; maç sonunda istersen kısa bir reklam izleyip Tüy ödülünü artırabilirsin. Maçın ortasında reklam yok.
+Oyun telefonunda çalışır, hesap gerekmez; ilerlemen cihazında saklanır. Ücretsiz oyun menüde küçük bir reklam şeridi gösterir; maç sonunda istersen kısa bir reklam izleyip Tüy ödülünü artırabilirsin. Maçın ortasında reklam yok. Tek seferlik Reklamsız alımı menüdeki şeridi kaldırır.
 
 Türkçe ve İngilizce, telefonunun diline göre açılır.

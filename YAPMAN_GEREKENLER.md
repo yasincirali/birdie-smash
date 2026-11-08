@@ -150,7 +150,7 @@ Sıralama tablosu (leaderboard) bilerek yok.
 | bs_usta_6 | 20 | Master Road / Clear 6 stages on the Master road. | Usta yolu / Usta yolunda 6 basamak geç. |
 | bs_imza_okur | 15 | Signature Reader / Read 10 signature shots in total. | İmza okuru / Toplam 10 imza vuruşu oku. |
 
-Toplam 1000 puan (Apple sınırı 1000; artık yer yok, yeni başarım için puan kaydırmak gerekir). 2026-10-26 (Unity, karakter adımı): bs_tur_2..4 ve bs_efsane eklendi; kod yalnız Unity build'inde verir. 2026-10-26 (Unity, adım 7–9): bs_antrenor, bs_gunun_maci, bs_usta_6, bs_imza_okur eklendi (15 → 19 başarım); bs_tur_3/4 artık kazanılabilir (Tur 3–4 verisi geldi). Görselleri (`store_listing/game_center/<id>.png`) henüz yok: ekleyince yükle. Tanımlanmamış ID oyunu bozmaz, yalnız Game Center'da görünmez.
+Toplam 1000 puan (Apple sınırı 1000; artık yer yok, yeni başarım için puan kaydırmak gerekir). 2026-10-26 (Unity, karakter adımı): bs_tur_2..4 ve bs_efsane eklendi; kod yalnız Unity build'inde verir. 2026-10-26 (Unity, adım 7–9): bs_antrenor, bs_gunun_maci, bs_usta_6, bs_imza_okur eklendi (15 → 19 başarım); bs_tur_3/4 artık kazanılabilir (Tur 3–4 verisi geldi). Görselleri 2026-11-08'de eklendi (19/19 hazır; üreteç `tool/gorsel/game_center_rozet.py`). Tanımlanmamış ID oyunu bozmaz, yalnız Game Center'da görünmez.
 Açıklamada ASC iki alan ister (kazanılmadan / kazanılınca); ikisine de aynı
 cümleyi yazabilirsin. Kaydettikten sonra başarımlar TestFlight build'inde
 hemen çalışır; mağaza sürümünde ilk incelemeyle birlikte yayına çıkar.
@@ -230,7 +230,7 @@ Her dil için (sağ üst dil menüsü) ilgili klasördeki dosyayı yapıştır:
 - **Promotional Text** ← `promotional_text.txt`
 - **Description** ← `description.txt`
 - **Keywords** ← `keywords.txt` (olduğu gibi; virgülden sonra boşluk ekleme)
-- **Support URL** ← açık soru (aşağıda)
+- **Support URL** ← `support_url.txt` (en: murphysoft.app/birdie-smash/support/, tr: .../destek/; sayfa yayında). Destek e-postası support@murphysoft.app.
 - **Marketing URL** boş kalabilir. "What's New" ilk sürümde sorulmaz.
 - **Copyright**: örn. `2026 <ad soyad ya da şirket adı>` (senin kararın).
 - **App Review Information**: iletişim adı/telefon/e-posta senin; **Sign-in required** işaretsiz (hesap yok).
@@ -245,12 +245,7 @@ Her dil için (sağ üst dil menüsü) ilgili klasördeki dosyayı yapıştır:
 
 ### Açık sorular (senin kararın)
 
-1. **Destek e-postası ve Support URL.** (2026-11-07 öneri: tek stüdyo alan adı + uygulama başına takma ad, ör. birdie@; ya da yeni Gmail + "+birdie". Karar senin.) Support URL ASC'de zorunlu. Seçenekler:
-   (a) bir destek e-postası belirle, Claude `docs/destek.html` sayfasını o adresle
-   yapsın, URL `https://yasincirali.github.io/birdie-smash/destek.html` olur;
-   (b) mevcut bir web sayfan varsa onu ver. E-posta belirlenince gizlilik metninin
-   "İletişim" bölümüne de yazılır (yalnız "Sürüm" artar). Şu an metin "App Store'daki
-   destek bağlantısı"na yönlendiriyor; adres uydurulmadı.
+1. ~~Destek e-postası ve Support URL~~ Karar (2026-11-08, stüdyo kuralı): support@murphysoft.app ve murphysoft.app/birdie-smash/support/ (yukarıda, `support_url.txt`).
 2. **Copyright satırı** ve App Store'da görünecek **geliştirici adı** (Apple hesabındaki
    ad/şirket adı otomatik gelir).
 3. ~~İkinci kategori Arcade olsun mu?~~ Karar (2026-11-07): Sports + Arcade (yukarıda B.4).

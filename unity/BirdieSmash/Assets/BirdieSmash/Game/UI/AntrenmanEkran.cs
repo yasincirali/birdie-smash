@@ -125,10 +125,12 @@ namespace BirdieSmash.Game
             ra.Add(Yazi(st.isim, 20, "kalin")); ra.Add(Yazi(L.T(st.ad), 14, "soluk"));
             Erisim.Etiket(rr, L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad), "metin");
             var dk = Kart("imza-kart"); c.Add(dk);
-            dk.Add(Yazi(L.T(g.deg.ad), 16, "kalin")); dk.Add(Yazi(L.T(g.deg.aciklama), 14, "ipucu"));
-            Erisim.Etiket(dk, L.T(g.deg.ad) + ". " + L.T(g.deg.aciklama), "metin");
-            bool usta = g.deg.id == "usta";
-            var bil = Yazi(L.T("Saha") + ": " + L.T(CourtView.SAHA[g.saha].ad) + " · " + L.T("{0} sayı", g.uzunluk) + " · " + L.T(usta ? "Usta" : Ayar.ZorlukAd), 13, "soluk");
+            // Usta yolunu açmamış oyuncu Usta gününde Zor oynar (GameRoot.GunlukUstaYardimli): açıklama ve zorluk etiketi onun maçını anlatır.
+            bool usta = g.deg.id == "usta", ustaYardim = GameRoot.GunlukUstaYardimli(g);
+            string acik = ustaYardim ? L.T("Koşmak sende; geç kalırsan oyuncun koşar, dokunursan yine sen yönlendirirsin") : L.T(g.deg.aciklama);
+            dk.Add(Yazi(L.T(g.deg.ad), 16, "kalin")); dk.Add(Yazi(acik, 14, "ipucu"));
+            Erisim.Etiket(dk, L.T(g.deg.ad) + ". " + acik, "metin");
+            var bil = Yazi(L.T("Saha") + ": " + L.T(CourtView.SAHA[g.saha].ad) + " · " + L.T("{0} sayı", g.uzunluk) + " · " + L.T(ustaYardim ? "Zor" : usta ? "Usta" : Ayar.ZorlukAd), 13, "soluk");
             Erisim.Etiket(bil, bil.text, "metin"); c.Add(bil);
             var od = Yazi(alindi ? "✓ " + L.T("Bugünün ödülü alındı. Yarın yenisi.") : L.T("Kazanınca bir kez: +{0} Tüy, +{1} XP", Gunluk.OdulTuy, Gunluk.OdulXp), 14, alindi ? "durum-gecti" : "altin");
             Erisim.Etiket(od, od.text, "metin"); c.Add(od);

@@ -50,7 +50,9 @@ def testflight_changelog(build_number, bolum = "HTML")
   rescue StandardError
     "Build #{build_number}"
   end
-  full = apple_metni("#{notes}\n\n———\n#{kimlik}")
+  # 2026-11-08: kimlik satırı başa alındı. Sondayken uzun notta 4000 sınırında kesilip her build'de kayboluyordu
+  # (testçi hangi build'de olduğunu göremiyordu). Kesme artık notun sonundan; eski notlar store_listing/whats_new_arsiv.md'de.
+  full = apple_metni("#{kimlik}\n———\n\n#{notes}")
   full.length > CHANGELOG_LIMIT ? full[0, CHANGELOG_LIMIT] : full
 end
 
