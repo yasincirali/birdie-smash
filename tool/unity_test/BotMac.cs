@@ -764,6 +764,14 @@ static class BotMac
         var K = new Match(33, new MatchOptions { easy = true, target = 5 }); K.outsBen = 3; if (Dril.Oner(K, false, new Ilerleme()) != "derin") Fail("kayıpta derin clear önerilmeli");
         if (Dril.Oner(K, true, null) != null) Fail("galibiyette öneri olmamalı");
         var p3 = new Ilerleme(); p3.DrilKaydet("derin", 3); if (Dril.Oner(K, false, p3) == "derin") Fail("üç yıldızlı görev önerildi");
+        // 2026-11-08 tek neden: ipucu ve ders aynı sırayı okur (Ozet.Neden); yeni oyuncuya ileri ders yok.
+        var N = new Match(34, new MatchOptions { easy = true, target = 5 }); N.rakipFileSayi = 4; object na;
+        if (Dril.Oner(N, false, new Ilerleme()) != "file_dibi" || !Ozet.Ipucu(N, false, out na).StartsWith("{0} file önüne")) Fail("rakip file önü: ipucu ve ders file dibi olmalı");
+        var p4 = new Ilerleme(); p4.DrilKaydet("file_dibi", 3); if (Dril.Oner(N, false, p4) != "lift") Fail("file dibi üç yıldızlıysa lift");
+        N.rakipFileSayi = 0; N.rakipSmacSayi = 3; if (Dril.Oner(N, false, new Ilerleme()) != "savunma") Fail("rakip smaçı: savunma");
+        N.outsBen = 2; if (Dril.Oner(N, false, new Ilerleme()) != "derin") Fail("kendi dışarılarım önce: derin");
+        var Y = new Match(35, new MatchOptions { easy = true, target = 5 }); Y.smashes = 1; Y.smacKarsila = 1; var pY = new Ilerleme(); pY.DrilKaydet("split", 3);
+        for (int w0 = 0; w0 < 3; w0++) { string o0 = Dril.Oner(Y, false, pY, w0); if (o0 == "kill" || o0 == "aldat") Fail("yeni oyuncuya ileri ders: " + o0); }
         // Sonsuz ralli (2026-11-06): listeye/yıldıza girmez, ilk kaçan topta biter, skorsuz, kademe her 5 isabette artar,
         // bot birkaç vuruş tutturabilmeli (kademe 0 oynanabilir), eşik ilk geçişte bir kez.
         if (Array.IndexOf(Dril.Liste, Sonsuz.Tanim) >= 0 || Dril.Bul(Sonsuz.ID) != Sonsuz.Tanim) Fail("sonsuz ralli listede olmamalı, Bul bulmalı");

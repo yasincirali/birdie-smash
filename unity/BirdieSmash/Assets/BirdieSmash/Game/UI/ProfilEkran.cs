@@ -110,14 +110,15 @@ namespace BirdieSmash.Game
             var mk = Kart("muhur-kart"); c.Add(mk);
             for (int mt = 0; mt < KariyerVeri.Turlar.Length; mt++)
             {
-                if (!KariyerVeri.Turlar[mt].Var) continue; int mh = p.TurAcik(mt) ? p.Muhur(mt) : 0, ys = p.TurYildiz(mt);
+                // 2026-11-08 inceleme (fikir 07:05 #2): kilitli tur "0/18" değil "Kilitli" der; tur yıldızları artık yalnız burada.
+                if (!KariyerVeri.Turlar[mt].Var) continue; bool mac = p.TurAcik(mt); int mh = mac ? p.Muhur(mt) : 0, ys = p.TurYildiz(mt);
                 var mr = Satir("arali"); mr.AddToClassList("muhur-satir"); mr.pickingMode = PickingMode.Ignore; mk.Add(mr);
                 var sol = Satir("rakip-satir"); sol.pickingMode = PickingMode.Ignore; mr.Add(sol);
                 sol.Add(Ikon(mh >= 2 ? Ikonlar.YildizDolu : Ikonlar.YildizBos, 18, mh >= 2 ? ALTIN : mh == 1 ? BRONZ : SOLUK));
                 var ay = Yazi(L.T(TurAd(mt)), 15); ay.style.marginLeft = 8; sol.Add(ay);
-                string dr = mh >= 2 ? L.T("Altın") : mh == 1 ? L.T("Bronz") + " · " + ys + "/18" : ys + "/18";
+                string dr = !mac ? L.T("Kilitli") : mh >= 2 ? L.T("Altın") : mh == 1 ? L.T("Bronz") + " · " + ys + "/18" : ys + "/18";
                 mr.Add(Yazi(dr, 13, mh > 0 ? "durum-gecti" : "soluk"));
-                Erisim.Etiket(mr, L.T(TurAd(mt)) + ", " + (mh >= 2 ? L.T("Altın tur mührü") : mh == 1 ? L.T("Bronz tur mührü") : L.T("{0}/{1} yıldız", ys, 18)), "metin");
+                Erisim.Etiket(mr, L.T(TurAd(mt)) + ", " + (!mac ? L.T("Kilitli") : mh >= 2 ? L.T("Altın tur mührü") : mh == 1 ? L.T("Bronz tur mührü") : L.T("{0}/{1} yıldız", ys, 18)), "metin");
             }
             mk.Add(Yazi(L.T("Bronz 9 yıldız, altın 18 yıldız. Satılmaz, yalnız oynayarak gelir."), 12, "soluk"));
 
@@ -127,12 +128,8 @@ namespace BirdieSmash.Game
             Deger(iz, L.T("Maç"), p.Mac.ToString());
             Deger(iz, L.T("Görev"), Ayar.gorev.ToString());
             Deger(iz, L.T("Kariyer yıldızı"), Ayar.ilerleme.ToplamYildiz + "/" + TurSayisiVeri() * 18);
-            // tur başına yıldızlar (tasarım §2.3 Profil): yalnız verisi olan turlar; kilitli tur "Kilitli" yazısıyla
-            for (int tu = 0; tu < KariyerVeri.Turlar.Length; tu++)
-            {
-                if (!KariyerVeri.Turlar[tu].Var) continue; bool ac = Ayar.ilerleme.TurAcik(tu);
-                Deger(iz, L.T(TurAd(tu)), ac ? Ayar.ilerleme.TurYildiz(tu) + "/18 ★" : L.T("Kilitli"));
-            }
+            // Tur başına yıldızlar ızgaradan kalktı (2026-11-08 inceleme, fikir 07:05 #2): "Tur mühürleri" kartı aynı bilgiyi
+            // veriyordu ve kilitli turda iki yer farklı söylüyordu (0/18 ile Kilitli); büyük yazıda ızgara dört satır kısaldı.
             // 2026-10-26 adım 7–9
             Deger(iz, L.T("Antrenman yıldızı"), p.AntrenmanYildiz + "/" + Dril.ToplamYildiz);
             Deger(iz, L.T("Günün maçı"), p.GunlukSay.ToString());

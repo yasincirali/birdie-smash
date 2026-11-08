@@ -25,6 +25,17 @@ namespace BirdieSmash.Core
             if (o.Count == 0) o.Add(new Kart { deger = M.maxRally, ad = SIRA[0] });
             return o;
         }
+        // Kaybın tek nedeni (2026-11-08 inceleme, fikir 07:05 #1): ipucu yazısı ile önerilen ders düğmesi ayrı kurallarla seçiliyordu
+        // (rakip 4 kez file önüne bıraktı → yazı "öne erken çık", düğme "Savunma"). İkisi bu sırayı okur: kendi dışarılarım >
+        // rakibin sayı kaynağı (≥3) > genel. Böylece kayıp kartı tek bir "neden + ne yap" söyler.
+        public const int NEDEN_GENEL = 0, NEDEN_DISARI = 1, NEDEN_RAKIP_SMAC = 2, NEDEN_RAKIP_FILE = 3;
+        public static int Neden(Match M)
+        {
+            if (M.outsBen >= 2) return NEDEN_DISARI;
+            int rs = M.rakipSmacSayi, rf = M.rakipFileSayi;
+            if (System.Math.Max(rs, rf) >= 3) return rs >= rf ? NEDEN_RAKIP_SMAC : NEDEN_RAKIP_FILE;
+            return NEDEN_GENEL;
+        }
         // Dönüş: Türkçe kalıp + yer tutucu değeri (çeviri görünümde L.T ile; Core dil bilmez).
         public static string Ipucu(Match M, bool won, out object arg)
         {
@@ -34,7 +45,7 @@ namespace BirdieSmash.Core
             // Rakibe özel ipucu (2026-11-07 inceleme, fikir 00:03 #2): genel cümle üçüncü kayıptan sonra okunmuyor; rakibin sayı
             // kaynağı ≥3 ise adıyla tek çare. Kendi dışarılarım önce gelir (kendi hatam daha kolay düzelir). Oyuncuyu suçlamaz.
             int rs = M.rakipSmacSayi, rf = M.rakipFileSayi;
-            if (System.Math.Max(rs, rf) >= 3) { arg = M.RakipAd(false); return rs >= rf ? "{0} smaçla sayı topladı: biraz geride bekle, smaçı karşılamaya hazır ol." : "{0} file önüne bıraktı: vurduktan sonra ortaya dön, öne erken çık."; }
+            if (Neden(M) >= NEDEN_RAKIP_SMAC) { arg = M.RakipAd(false); return rs >= rf ? "{0} smaçla sayı topladı: biraz geride bekle, smaçı karşılamaya hazır ol." : "{0} file önüne bıraktı: vurduktan sonra ortaya dön, öne erken çık."; }
             if (M.outsLeft == 0) return "Dışarı gidecek topu bırak: sayı senin olur.";
             if (M.perfects == 0) return "Top parlayınca topun tam üstünden geç: mükemmel vuruş gelir.";
             return "Uzun rallide nefesini clear ile topla.";

@@ -464,7 +464,7 @@ namespace BirdieSmash.Game
             if (mod == Mod.Normal && M.ogr == null && M.stil.kariyer < 0 && sonHizliStil != null && !won) { rovansStil = sonHizliStil; bittiDugme = L.T("Rövanş · {0}", M.RakipAd(false)); }
             else if (mod == Mod.Gunluk) bittiDugme = L.T("Günün maçını yeniden oyna");
             // Kayıpta bir antrenman görevi önerisi (tasarım §3.6); görev zaten üç yıldızsa önerilmez.
-            bittiDril = Dril.Oner(M, won, Ayar.ilerleme);
+            bittiDril = Dril.Oner(M, won, Ayar.ilerleme, Ayar.wins);
             // Özet (Ar-Ge 23 Eki #2): iki kart + ipucu; bittiBilgi artık "Ayrıntılar" ardında (Hud.Over).
             bittiKart = Ozet.Kartlar(M); object ia; string ik = Ozet.Ipucu(M, won, out ia);
             bittiIpucu = ik == null ? null : ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
