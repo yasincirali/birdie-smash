@@ -2,7 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!-- Our own iOS plugins (BirdieAcilis.mm, BirdieBulut.mm) read and write NSUserDefaults for values only this app uses
      (PlayerPrefs, HTML progress handover). Apple lists UserDefaults as a required-reason API; reason CA92.1 = app's own data.
-     Unity merges plugin manifests into the build (2026-11-07, review round, idea 02:06 #4). No tracking, no collected data. -->
+     Unity merges plugin manifests into the build (2026-11-07, review round, idea 02:06 #4). No tracking, no collected data
+     by OUR code. Third-party data (Google Mobile Ads SDK: device ID with ATT, advertising/usage, diagnostics) is declared in the
+     SDK's own bundled manifest and in store_listing/app_privacy.md (2026-11-08). -->
 <plist version="1.0">
 <dict>
 	<key>NSPrivacyTracking</key>

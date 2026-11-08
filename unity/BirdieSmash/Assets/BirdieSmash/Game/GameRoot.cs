@@ -165,7 +165,7 @@ namespace BirdieSmash.Game
                 o.stil = Match.KariyerRakip(g); o.saha = kb.saha; if (kb.uzunluk > 0) o.target = kb.uzunluk; o.degistirici = kb.degistirici;   // kural maçı (veri; çoğu basamakta null)
             }
             else if (rovansSiradaki != null) o.stil = rovansSiradaki;   // Rövanş: az önce yenen rakip (saha Ayar.saha, zaten aynı)
-            else o.stil = KariyerVeri.Serbest(Match.STIL_SIRA[rnd.Next(3)], Ayar.ilerleme);   // 2026-10-27: oyuncunun kariyer seviyesinde (KariyerVeri.Serbest)
+            else o.stil = KariyerVeri.Serbest(KariyerVeri.HizliSec(Ayar.ilerleme, sonHizliStil != null ? sonHizliStil.id : null, rnd), Ayar.ilerleme);   // 2026-10-27: oyuncunun kariyer seviyesinde (KariyerVeri.Serbest); 2026-11-08: havuz = ilk üç + kariyerde yendiğin tarzlar, art arda aynı rakip yok
             sonHizliStil = Ayar.kariyerModu && !ogr ? null : o.stil;   // Match tarzı ölçekleyip klonlar (rakipK); rövanş ölçeksiz aslını taşır
             rovansSiradaki = null; rovansStil = null;
             mod = Mod.Normal; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);

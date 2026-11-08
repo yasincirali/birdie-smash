@@ -174,6 +174,12 @@ static class BotMac
         var p = new Ilerleme(); var t = Match.STIL["smasci"]; var sb = KariyerVeri.Serbest("smasci", p); float g0 = KariyerVeri.Al(0).g;
         if (Math.Abs(sb.hiz - t.hiz * g0) > 1e-5 || Math.Abs(sb.hata - t.hata / g0) > 1e-5 || sb.kariyer != -1 || sb.patron || t.hiz != Match.STIL["smasci"].hiz) Fail("Hızlı maç rakibi sıradaki basamağın g'sinde olmalı (taban değişmeden)");
         if (KariyerVeri.Serbest("duvar", null).hiz != Match.STIL["duvar"].hiz) Fail("ilerleme yoksa taban tarz");
+        // 2026-11-08: Hızlı maç havuzu = ilk üç + kariyerde yenilen tarzlar; art arda aynı rakip yok.
+        { var hp = new Ilerleme(); var h0 = KariyerVeri.HizliHavuz(hp); if (h0.Count != 3) Fail("hızlı havuz başta 3 değil " + h0.Count);
+          int gx = -1; for (int g = 0; g < KariyerVeri.TUR * KariyerVeri.BASAMAK && gx < 0; g++) if (KariyerVeri.Var(g) && Array.IndexOf(Match.STIL_SIRA, KariyerVeri.Al(g).stil) < 0) gx = g;
+          if (gx < 0) Fail("kariyerde ilk üç dışında tarz yok");
+          else { hp.tur[KariyerVeri.TurOf(gx)][KariyerVeri.BasOf(gx)] |= Ilerleme.KAZAN; if (!KariyerVeri.HizliHavuz(hp).Contains(KariyerVeri.Al(gx).stil)) Fail("yenilen tarz havuzda yok"); }
+          var hr = new Random(3); string on = null; for (int i = 0; i < 200; i++) { var s2 = KariyerVeri.HizliSec(hp, on, hr); if (s2 == on) Fail("hızlı maç art arda aynı rakip"); on = s2; } }
         float k = KariyerVeri.Usta.carpan; var st = Match.KariyerRakip(2);
         var mu = new Match(3, new MatchOptions { easy = false, stil = st, target = 5 }); var mk = new Match(3, new MatchOptions { easy = true, stil = st, target = 5 });
         var my = new Match(3, new MatchOptions { easy = false, stil = UstaYolu.Rakip(0), target = 5 });
