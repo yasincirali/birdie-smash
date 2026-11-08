@@ -343,6 +343,20 @@ namespace BirdieSmash.Game
             ui.SoyunmaSegment(0); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_oyun");
             ui.SayfaSonaKaydir(); yield return Bekle(10); yield return Cek("menu_" + ek + "soyunma_oyun_taban");
             ui.SoyunmaSegment(2); yield return Bekle(20); yield return Cek("menu_" + ek + "soyunma_gorunum");
+            // 2026-11-08 (yasin TF: Sırt/Ayakkabı/Forma/Sevinç çipine dokununca boş sayfa): oyuncunun yolu, çip (KategoriGec), Şapka
+            // sayfasının dibinden. Önce eski davranış (kayma korunur), sonra düzeltme; rapora kayma ve yükseklikler yazılır.
+            foreach (var eski in new[] { true, false })
+            {
+                UiKok.KategoriUsteKaydir = !eski;
+                ui.KarakterAc(UiKok.KAR_SAPKA); yield return Bekle(30); ui.DolapSonaKaydir(); yield return Bekle(10);
+                rap.AppendLine("dolap şapka dibi · " + ui.DolapTani);
+                foreach (var kt in new[] { UiKok.KAR_SIRT, UiKok.KAR_AYK, UiKok.KAR_KIYAFET, UiKok.KAR_SEVINC })
+                {
+                    ui.KategoriGec(kt); yield return Bekle(25); rap.AppendLine("dolap çip " + kt + (eski ? " eski" : " yeni") + " · " + ui.DolapTani);
+                    if (ek == "") yield return Cek("menu_dolap_cip_" + kt + (eski ? "_eski" : ""));
+                }
+            }
+            UiKok.KategoriUsteKaydir = true;
             // 2026-11-07 Dolap › Raket: kimlik kartı, gerginlik, sap ölçüsü; sayfa sonunda teknik sayfa
             ui.KarakterAc(UiKok.KAR_KIYAFET); ui.RaketIncele(true); yield return Bekle(40); yield return Cek("menu_" + ek + "dolap_raket");
             ui.SayfaSonaKaydir(); yield return Bekle(10); yield return Cek("menu_" + ek + "dolap_raket_teknik"); ui.RaketIncele(false);

@@ -1,4 +1,8 @@
 === UNITY ===
+Dolap boş sayfa düzeltmesi (8 Kasım):
+- Dolap'ta uzun bir sayfanın aşağısındayken Sırt, Ayakkabı, Forma ya da Sevinç'e geçince sayfa boş görünüyordu. Artık her kategori en baştan açılır.
+Nasıl denenir: Dolap > Görünüm > Şapka'yı aç, en aşağı kaydır, sonra Sırt, Ayakkabı, Forma ve Sevinç'e dokun: her biri üstten dolu açılmalı.
+
 Arayüz turu (8 Kasım öğlen):
 - Atölye › Oyun tarzı: her tarz tek cümleyle kendini anlatıyor; artı ve eksiler uzun cümle yerine ayrı küçük etiketler (▲ Smaç hızı +%6, ▼ Smaçta nefes +%35).
 - Dolap › Raket › Sap ölçüsü: düğmelerde yalnız G4 / G5 / G6 ve Kalın / Orta / İnce; seçilen ölçünün etkisi altında tek satır. Yazılar artık düğmeden taşmıyor.
