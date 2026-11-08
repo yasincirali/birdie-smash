@@ -1,4 +1,10 @@
 === UNITY ===
+Bu sabah (8 Kasım 07:20 inceleme turu):
+- Kaybedince alttaki yazı ile önerilen antrenman düğmesi artık aynı şeyi söylüyor: rakip file önüne bıraktıysa ikisi de file önünü, smaçla sayı topladıysa ikisi de savunmayı önerir. Yeni oyuncuya (ilk üç galibiyete kadar) ileri dersler önerilmez.
+- Profil'de tur yıldızları artık yalnız "Tur mühürleri" kartında; kilitli tur "Kilitli" yazar. İstatistikler kısaldı.
+- Hızlı maç'ta 5 sayının açıklaması artık yalnız "Yaklaşık 2 dakika".
+Nasıl denenir: Bir maçta rakibin file önüne bıraktığı toplara yetişme, kaybet: alttaki yazı "file önüne bıraktı" diyorsa düğme "Antrenman: File dibi" olmalı. Profil'de kilitli bir turun yanında "Kilitli" yazmalı, İstatistikler'de tur adları tekrar etmemeli.
+
 Bu gece (8 Kasım 02:20 inceleme turu):
 - Menüde boş "Reklam" kutusu artık yok: reklam gelmediyse yer de ayrılmaz, reklam gelince sekmelerin hemen üstünde açılır.
 - Tüy dükkânının altında "Reklamsız" kartı: bir kez alınır, menüdeki reklam şeridini kaldırır, Tüy vermez. Ödüllü reklam isteyene açık kalır.

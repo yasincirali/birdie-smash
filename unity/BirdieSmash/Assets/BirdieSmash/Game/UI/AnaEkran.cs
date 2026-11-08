@@ -298,7 +298,8 @@ namespace BirdieSmash.Game
         void UzunlukSatir(VisualElement satir, VisualElement c)
         {
             satir.AddToClassList("cip-sarar");
-            int[] Ls = { 5, 11, 21 }; string[] La = { "5 sayı", "11 sayı", "21 sayı" }, Lb = { "Hızlı maç, yaklaşık 2 dakika", "Kısa maç", "Resmî maç uzunluğu" };
+            // 2026-11-08 inceleme (fikir 07:05 #3): 5 sayının açıklaması "Hızlı maç" sayfasında mod adını tekrar ediyordu; süre kaldı.
+            int[] Ls = { 5, 11, 21 }; string[] La = { "5 sayı", "11 sayı", "21 sayı" }, Lb = { "Yaklaşık 2 dakika", "Kısa maç", "Resmî maç uzunluğu" };
             for (int i = 0; i < 3; i++)
             {
                 int v = Ls[i]; var cp = Cip(L.T(La[i]), Ayar.target == v, () => { Ayar.target = v; Ayar.Kaydet(); Degisti(); });

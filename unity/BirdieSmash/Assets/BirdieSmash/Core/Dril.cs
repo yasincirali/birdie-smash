@@ -71,14 +71,20 @@ namespace BirdieSmash.Core
 
         // Maç sonu ipucunun görevi (tasarım §3.6: "Dışarı giden 3 vuruş: Derin clear görevine bak"). Yalnız kayıpta ve
         // yalnız henüz üç yıldızı alınmamış göreve; ölçü maçın kendi sayılarından, sabit öncelik (Ozet ile aynı yaklaşım).
-        public static string Oner(Match M, bool won, Ilerleme p)
+        // 2026-11-08 (inceleme, fikir 07:05 #1): sıra Ozet.Neden ile aynı, ipucu yazısı ve ders düğmesi aynı şeyi söyler. Rakip
+        // smaçla sayı topladıysa savunma (üç yıldızlıysa blok), file önüne bıraktıysa file dibi (sonra lift). Yeni oyuncuya
+        // (galibiyet < 3) ileri dersler (aldatma, file öldürme) önerilmez: Kolay'da 5 sayılık kayıpta ikisi de hep 0 çıkıyordu.
+        public static string Oner(Match M, bool won, Ilerleme p, int wins = int.MaxValue)
         {
             if (won || M.ogr != null) return null;
             var aday = new List<string>();
-            if (M.outsBen >= 2) aday.Add("derin");
+            int neden = Ozet.Neden(M);
+            if (neden == Ozet.NEDEN_DISARI) aday.Add("derin");
+            else if (neden == Ozet.NEDEN_RAKIP_SMAC) { aday.Add("savunma"); aday.Add("blok"); }
+            else if (neden == Ozet.NEDEN_RAKIP_FILE) { aday.Add("file_dibi"); aday.Add("lift"); }
             if (M.stil != null && M.stil.id == "smasci" || M.smacKarsila == 0 && M.smashes == 0) aday.Add("savunma");
-            if (M.kills == 0) aday.Add("kill");
-            if (M.deceives == 0) aday.Add("aldat");
+            if (M.kills == 0 && wins >= 3) aday.Add("kill");
+            if (M.deceives == 0 && wins >= 3) aday.Add("aldat");
             if (M.splits == 0) aday.Add("split");
             foreach (var id in aday) if (Bul(id) != null && (p == null || p.DrilYildiz(id) < YILDIZ)) return id;
             return null;
