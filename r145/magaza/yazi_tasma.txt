@@ -1,0 +1,5 @@
+toplam 4
+en_03_kariyer · kelime bölündü 76>58 · .unity-text-element.unity-label.yazi.sekme-yazi · "Wardrobe"
+en_03_kariyer · kelime bölündü 78>59 · .unity-text-element.unity-label.yazi.sekme-yazi · "Workshop"
+en_04_karakter · kelime bölündü 77>59 · .unity-text-element.unity-label.yazi.sekme-yazi · "Wardrobe"
+en_04_karakter · kelime bölündü 78>59 · .unity-text-element.unity-label.yazi.sekme-yazi · "Workshop"
