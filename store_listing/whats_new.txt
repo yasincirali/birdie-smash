@@ -1,4 +1,9 @@
 === UNITY ===
+Bu öğlen (8 Kasım 12:20 inceleme turu):
+- Hızlı maç'ta artık yalnız ilk üç rakip gelmiyor: kariyerde yendiğin rakipler (Drive'cı, Aldatıcı, Komple gibi) de rastgele gelir. Aynı rakip art arda gelmez.
+- Gizli kare hızı göstergesine (Ayarlar başlığına 5 dokunuş) "Açılış x,x sn" satırı eklendi.
+Nasıl denenir: Kariyerde Smaşçı, Duvar ve File dışında bir rakibi yen, sonra Hızlı maç'ı birkaç kez oyna: o rakip de gelmeli, aynı rakip iki maç üst üste gelmemeli. Göstergeyi açıp ekran görüntüsünü gönder: alt satırda açılış süresi görünmeli.
+
 Bu sabah (8 Kasım 07:20 inceleme turu):
 - Kaybedince alttaki yazı ile önerilen antrenman düğmesi artık aynı şeyi söylüyor: rakip file önüne bıraktıysa ikisi de file önünü, smaçla sayı topladıysa ikisi de savunmayı önerir. Yeni oyuncuya (ilk üç galibiyete kadar) ileri dersler önerilmez.
 - Profil'de tur yıldızları artık yalnız "Tur mühürleri" kartında; kilitli tur "Kilitli" yazar. İstatistikler kısaldı.

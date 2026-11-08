@@ -6,7 +6,7 @@
 > kimliğe bağlı değil (Not Linked to You); Device ID ve Advertising Data için "Used to Track You" = Yes (ATT izniyle).
 > Kaynak: Google'ın "AdMob App Store data disclosure" sayfası; SDK sürümü değişince yeniden bakılır.
 
-Tarih: 2026-10-24 · Kod: `main` @ 9e781a2 · Sonuç: **Data Not Collected**
+Tarih: 2026-10-24 · Kod: `main` @ 9e781a2 · Sonuç (reklamsız sürüm): **Data Not Collected**. 2026-11-08: reklamlı 1.0 için satırlar aşağıda güncellendi (Unity oyunu, AdMob, uygulama içi satın alma, iCloud); 1.0 cevabı **Yes, we collect data** (üstteki not).
 
 ## Sorulacak ilk soru
 
@@ -18,11 +18,11 @@ Apple'ın tanımı: "collect" = veriyi cihazdan çıkarıp senin ya da ortaklar�
 
 - **Oyun** (`assets/game/index.html`): içinde tek bir `http://` / `https://` adresi yok. `fetch(` çağrıları yalnız dosyaya gömülü `data:image/...;base64` sprite'larını açıyor (oyuncu, rakip, hakem, ekipman görselleri). `XMLHttpRequest`, `WebSocket`, `sendBeacon`, çerez, analitik yok (`gtag` eşleşmeleri base64 verisinin içindeki rastgele harfler).
 - **Kayıt**: yalnız `localStorage`, anahtarlar `tuytop_v2`, `tuytop_ekonomi`, `tuytop_gear`, `tuytop_basarim`, `tuytop_antrenman`, `tuytop_mod`, `tuytop_saha`, `tuytop_len`, `tuytop_raket_gor`. Cihazdan çıkmaz.
-- **Kabuk** (`lib/main.dart`, `pubspec.yaml`): bağımlılıklar `webview_flutter` (yerel `assets/game/index.html` dosyasını açar), `games_services` (Game Center), `cupertino_icons`. Ağ, analitik, reklam, çökme raporu paketi yok. `Haptic` kanalı titreşim, `Oyun` kanalı Game Center girişi ve başarım kimliklerini Apple'a iletir.
+- **Oyun** (Unity, `unity/BirdieSmash`; 2026-10-25'ten beri Flutter kabuğu yerine): kendi kodumuz ağ isteği atmaz, analitik/çökme raporu paketi yok. Ağa çıkan üç parça: Google Mobile Ads SDK (`Game/ReklamSdk.cs`), StoreKit üzerinden satın alma (`Game/Magaza.cs`), iCloud anahtar-değer kaydı (`Game/Bulut.cs`, oyuncunun kendi iCloud'u, bize gelmez).
 - **Game Center**: oyun yalnız başarım kimliklerini (`bs_kariyer_1` vb.) Apple'ın hizmetine gönderir; oyuncu kimliğini okumaz/saklamaz, geliştiriciye ulaşan bir şey yok. Apple'ın topladığı veri → bildirilmez.
 - **İzinler**: Info.plist'te hiçbir `NS...UsageDescription` yok (kamera, mikrofon, konum, rehber, fotoğraf istenmiyor). Bildirim yok.
-- **Reklam / izleme**: reklam SDK'sı yok, IDFA okunmuyor, App Tracking Transparency istemi yok.
-- **Satın alma**: StoreKit / uygulama içi satın alma yok. "Tüy" yalnız oyun içinde kazanılır.
+- **Reklam / izleme**: 1.0'da Google AdMob (menü şeridi + ödüllü reklam). IDFA yalnız App Tracking Transparency izni verilirse Google'a gider; izin yoksa kişiselleştirilmemiş reklam. Veri Google'a gider, bize gelmez; App Privacy'de "Third-Party Advertising" amaçlı bildirilir.
+- **Satın alma**: StoreKit ile "Reklamsız" ve Tüy paketleri. Ödeme ve satın alma geçmişi Apple'da; kendi sunucumuz yok, makbuz yalnız cihazda doğrulanır → bizim için "toplanmaz".
 
 ## Veri türü başına gerekçe
 
@@ -30,17 +30,17 @@ Apple'ın tanımı: "collect" = veriyi cihazdan çıkarıp senin ya da ortaklar�
 |---|---|---|
 | Contact Info (Name, Email, Phone, Physical Address, Other) | Toplanmaz | Hesap ya da form yok; hiçbir metin girişi yok. |
 | Health & Fitness | Toplanmaz | HealthKit yok; "nefes" yalnız oyun içi değer. |
-| Financial Info (Payment, Credit, Other) | Toplanmaz | Satın alma yok. |
+| Financial Info (Payment, Credit, Other) | Toplanmaz | Ödeme Apple'da (StoreKit); kart bilgisi bize gelmez. |
 | Location (Precise, Coarse) | Toplanmaz | Konum izni ve API'si yok. |
 | Sensitive Info | Toplanmaz | — |
 | Contacts | Toplanmaz | Rehber izni yok. |
 | User Content (Emails/Texts, Photos/Videos, Audio, Gameplay Content, Customer Support, Other) | Toplanmaz | Gameplay Content (skor, ilerleme, ekipman) yalnız cihazda `localStorage`'da. Başarım durumu Apple'ın Game Center'ına gider → Apple'ın verisi, bildirilmez. Mikrofon yok. |
 | Browsing History | Toplanmaz | WebView yalnız yerel dosyayı açar; dış sayfa yok. |
 | Search History | Toplanmaz | Arama yok. |
-| Identifiers (User ID, Device ID) | Toplanmaz | Kendi kullanıcı kimliğimiz yok; Game Center oyuncu kimliği okunmuyor/gönderilmiyor; IDFA/IDFV okunmuyor. |
-| Purchases (Purchase History) | Toplanmaz | Satın alma yok. |
-| Usage Data (Product Interaction, Advertising Data, Other) | Toplanmaz | Analitik yok, reklam yok. |
-| Diagnostics (Crash, Performance, Other) | Toplanmaz | Crashlytics/Sentry benzeri bir şey yok. Apple'ın kendi çökme raporları (kullanıcı "Uygulama geliştiricileriyle paylaş"ı açtıysa) Apple'ın verisi, bildirilmez. |
+| Identifiers (User ID, Device ID) | **1.0: Device ID toplanır** (Third-Party Advertising, Not Linked, Used to Track = Yes) | Kendi kullanıcı kimliğimiz yok; Game Center kimliği okunmuyor. IDFA yalnız ATT izniyle Google Mobile Ads SDK'ya gider. Reklamsız sürümde: toplanmaz. |
+| Purchases (Purchase History) | Toplanmaz | Satın alma StoreKit ile Apple'da; geçmiş bize ya da üçüncü tarafa gitmez. |
+| Usage Data (Product Interaction, Advertising Data, Other) | **1.0: Advertising Data + Product Interaction toplanır** (Third-Party Advertising, Not Linked; Advertising Data Used to Track = Yes) | Kendi analitiğimiz yok; Google Mobile Ads SDK reklam gösterimi/tıklaması toplar. |
+| Diagnostics (Crash, Performance, Other) | **1.0: Performance + Crash toplanır** (Third-Party Advertising, Not Linked) | Kendi çökme raporumuz yok; Google SDK kendi tanılama verisini toplar. Apple'ın çökme raporları Apple'ın verisi, bildirilmez. |
 | Surroundings (Environment Scanning) | Toplanmaz | Kamera/AR yok. |
 | Body (Hands, Head) | Toplanmaz | Kamera/AR yok. |
 | Other Data | Toplanmaz | — |
