@@ -658,6 +658,11 @@ static class BotMac
             if (!t.etki.Any(kv => !iyi(kv))) Fail("tarzın eksisi yok: " + t.id);
             // 2026-11-07 tavan %20 → %35 (yasin "tarz farkı hissedilsin"; ±%5–10 kortta fark edilmiyordu). Genel denge Denge tarz kipinde.
             if (t.etki.Values.Any(v => Math.Abs(v - 1) > .3501f)) Fail("tarz etkisi %35'ten büyük: " + t.id);
+            // 2026-11-08 Atölye hapları: etiketteki yüzdeler etki çarpanlarıyla birebir (sayı uydurma yok), tek cümle kimlik var.
+            if (string.IsNullOrEmpty(t.oz)) Fail("tarz kimlik cümlesi yok: " + t.id);
+            var yuzde = System.Text.RegularExpressions.Regex.Matches(t.arti + " · " + t.eksi, @"%(\d+)").Cast<System.Text.RegularExpressions.Match>().Select(m => int.Parse(m.Groups[1].Value)).OrderBy(x => x).ToList();
+            var etkiY = t.etki.Values.Select(v => (int)Math.Round(Math.Abs(v - 1) * 100)).OrderBy(x => x).ToList();
+            if (!yuzde.SequenceEqual(etkiY)) Fail("tarz etiketi etkiyle uyuşmuyor: " + t.id + " " + string.Join(",", yuzde) + " / " + string.Join(",", etkiY));
             var u = Karakter.Uygula(GearStats.Notr, t.id); if (u.tarz != t.id || GearStats.Notr.tarz != "dengeli") Fail("Uygula kopya değil");
         }
         var d = Karakter.Uygula(GearStats.Notr, "dengeli"); if (d.enerji != 1 || d.tatli != 1 || d.slice != 1 || d.uzanma != 1) Fail("Dengeli nötr değil");

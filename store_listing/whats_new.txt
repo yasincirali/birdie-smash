@@ -1,4 +1,15 @@
 === UNITY ===
+Arayüz turu (8 Kasım öğlen):
+- Atölye › Oyun tarzı: her tarz tek cümleyle kendini anlatıyor; artı ve eksiler uzun cümle yerine ayrı küçük etiketler (▲ Smaç hızı +%6, ▼ Smaçta nefes +%35).
+- Dolap › Raket › Sap ölçüsü: düğmelerde yalnız G4 / G5 / G6 ve Kalın / Orta / İnce; seçilen ölçünün etkisi altında tek satır. Yazılar artık düğmeden taşmıyor.
+- Düğmelere sığmayan yazılar artık dışarı taşmıyor: alt yazı iki satıra iner, ana yazı "…" ile biter.
+- Kordaj gerginliği notu iki satır: his, sonra raketin önerdiği aralık.
+- Antrenman'da üçüncü sekme "Orta saha" (sığmıyordu).
+- Büyük yazı boyutunda Dolap'ta deneme çubuğundaki "Bırak" düğmesi ekran dışına kaçmıyor.
+- Reklam şeridi Dolap ve Atölye'de yok (AdMob şeridi 50 pt'den ince olamıyor; bu iki ekranda listeyi kesiyordu).
+- İngilizce: tarz açıklamaları, "Görünüş" başlığı ve sap etiketleri artık İngilizce.
+Nasıl denenir: Atölye'de Oyun tarzı kartlarına bak: her kartta bir cümle ve altında küçük etiketler olmalı. Dolap › Raket'te sap ölçüsünü G4 ve G6 yap: düğme yazısı taşmamalı, altındaki satır etkiyi söylemeli. Dolap ve Atölye'de altta reklam şeridi olmamalı, Oyna ve Kariyer'de olmalı. Ayarlar'dan yazı boyutunu en büyüğe al, Dolap'ta bir şapka dene: "Bırak" düğmesi görünmeli.
+
 Bu öğlen (8 Kasım 12:20 inceleme turu):
 - Hızlı maç'ta artık yalnız ilk üç rakip gelmiyor: kariyerde yendiğin rakipler (Drive'cı, Aldatıcı, Komple gibi) de rastgele gelir. Aynı rakip art arda gelmez.
 - Gizli kare hızı göstergesine (Ayarlar başlığına 5 dokunuş) "Açılış x,x sn" satırı eklendi.

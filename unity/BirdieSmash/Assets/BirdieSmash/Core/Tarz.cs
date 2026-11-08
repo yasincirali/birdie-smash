@@ -15,7 +15,7 @@ using System.Collections.Generic;
 
 namespace BirdieSmash.Core
 {
-    public class TarzBilgi { public string id, ad, arti, eksi; public int sv = 1; public Dictionary<string, float> etki = new Dictionary<string, float>(); }
+    public class TarzBilgi { public string id, ad, oz, arti, eksi; public int sv = 1; public Dictionary<string, float> etki = new Dictionary<string, float>(); }
     // sayac/esik (2026-11-07 inceleme, fikir 3 "beceri unvanları"): oynayıştan kazanılan unvan; Ilerleme.Sayac(sayac) ≥ esik.
     // İlerleme unvanları kariyerde ne kadar ilerlediğini söyler, bunlar nasıl oynadığını (online kartında rakip okur). Ödülsüz.
     // kademe (2026-11-07 inceleme): beceri unvanının üç eşiği (I · II · III); ödülsüz, yalnız kimlik. Yoksa tek eşik {esik}.
@@ -186,7 +186,7 @@ namespace BirdieSmash.Core
             var tl = new List<TarzBilgi>();
             foreach (var x in (List<object>)o["tarzlar"])
             {
-                var d = Json.Obj(x); var t = new TarzBilgi { id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), arti = Json.Str(d, "arti", ""), eksi = Json.Str(d, "eksi", ""), sv = (int)Json.Num(d, "sv", 1) };
+                var d = Json.Obj(x); var t = new TarzBilgi { id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), oz = Json.Str(d, "oz", ""), arti = Json.Str(d, "arti", ""), eksi = Json.Str(d, "eksi", ""), sv = (int)Json.Num(d, "sv", 1) };
                 var e = Json.Obj(d.ContainsKey("etki") ? d["etki"] : null); if (e != null) foreach (var kv in e) if (kv.Value is double) t.etki[kv.Key] = (float)(double)kv.Value;
                 tl.Add(t);
             }

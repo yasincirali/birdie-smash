@@ -647,8 +647,9 @@
 .deneme-cubuk-dugmeler { margin-top: 0; align-items: center; }
 .deneme-cubuk-al { flex-grow: 1; margin-right: 8px; }
 .deneme-cubuk .deneme-birak { margin-top: 0; min-width: 88px; }
-.buyuk-yazi .deneme-cubuk-dugmeler { flex-direction: column; align-items: stretch; }
-.buyuk-yazi .deneme-cubuk-al { margin-right: 0; margin-bottom: 6px; }
+/* 2026-11-08 r142 ×2: ".buyuk-yazi .satir.arali" sarmayı açıyordu; sütunda sarma ikinci düğmeyi ekranın sağına yeni sütuna atıyordu ("Bırak" 360..430 / 375). */
+.buyuk-yazi .satir.arali.deneme-cubuk-dugmeler { flex-direction: column; align-items: stretch; flex-wrap: nowrap; }   /* r143: ".buyuk-yazi .satir.arali" (3 sınıf) 2 sınıflı kuralı eziyordu */
+.buyuk-yazi .deneme-cubuk-al { margin-right: 0; margin-bottom: 6px; flex-grow: 0; }
 /* 2026-10-31 K1 "Oyuncunu seç" (Game/UI/OyuncuSec.cs): altı hazır kart 3×2 (büyük yazıda 2 sütun); seçili ✓ + turuncu çerçeve. */
 .hazir-izgara { flex-wrap: wrap; margin: 6px 0; }
 .hazir-kart { flex-basis: 30%; flex-grow: 1; margin: 4px; padding: 10px; min-height: 44px; }
@@ -709,3 +710,11 @@
 /* Dolap üst ayrımı: Görünüm · Raket (2026-11-07, yasin seçimi) */
 .oda-secici { flex-direction: row; margin: 4px 16px 8px 16px; }
 .oda-cip { flex-grow: 1; flex-basis: 0; margin: 0 3px; min-height: 44px; }
+
+/* 2026-11-08 Atölye tarz kartı ve sap etkisi (yasin: "açıklama alanları amatör"): tek cümle kimlik + etki hapları. Hap sarılır,
+   satır taşmaz; ▲ limon / ▼ soluk simge yönü taşır (renk tek başına anlam taşımaz). */
+.tarz-oz { color: var(--tx); margin-top: 4px; white-space: normal; }
+.tarz-haplar { margin-top: 8px; margin-left: -3px; margin-right: -3px; flex-wrap: wrap; }
+.tarz-hap { flex-direction: row; align-items: center; flex-shrink: 1; max-width: 100%; margin: 3px; padding: 4px 9px 4px 7px; border-radius: 8px; background-color: rgba(201, 238, 75, 0.12); border-width: 1px; border-color: rgba(201, 238, 75, 0.28); }
+.tarz-hap--eksi { background-color: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.14); }
+.tarz-hap-yazi { color: var(--tx); flex-shrink: 1; }

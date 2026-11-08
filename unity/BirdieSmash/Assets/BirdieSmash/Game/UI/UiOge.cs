@@ -152,6 +152,12 @@ namespace BirdieSmash.Game
             float gen = olc.x * taban / simdi; if (float.IsNaN(gen) || gen <= 0) return;
             float hedef = Mathf.Clamp(Mathf.Floor(taban * Mathf.Min(1, (w - 2) / gen) * 2) / 2, Mathf.Min(taban, Mathf.Max(YAZI_MIN, Mathf.Round(taban * minOran))), taban);   // 2026-10-27: küçülme de 11'in altına inmez
             if (Mathf.Abs(hedef - simdi) > .25f) l.style.fontSize = hedef;
+            // 2026-11-08 (yasin: "alanlarından butonlarda taşan"): en küçük boyutta da sığmayan yazı çipin dışına taşıyordu (r142 sap
+            // çipleri "Kontrol +3 · drive −3" 103 > 77 pt). Alt yazı iki satıra sarılır; ana yazı kesilmez, "…" ile biter (tam metin
+            // erişilebilirlik etiketinde). Ölçü tek satır genişliği olduğundan sonuç sarmadan bağımsız, döngü kurmaz.
+            bool sigmaz = gen * hedef / taban > w - 2, alt = l.ClassListContains("dugme-alt");
+            if (alt) { l.style.whiteSpace = sigmaz ? WhiteSpace.Normal : WhiteSpace.NoWrap; l.style.flexShrink = sigmaz ? 1f : 0f; l.style.maxWidth = sigmaz ? new StyleLength(w) : new StyleLength(StyleKeyword.None); }
+            else { l.style.flexShrink = sigmaz ? 1f : 0f; l.style.overflow = sigmaz ? Overflow.Hidden : Overflow.Visible; l.style.textOverflow = sigmaz ? TextOverflow.Ellipsis : TextOverflow.Clip; }
         }
         Image Ikon(Texture2D t, float pt, Color c)
         {
