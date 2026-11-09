@@ -1,4 +1,10 @@
 === UNITY ===
+Reklam ve zorluk (9 Kasım):
+- Maç sonu ödüllü reklam ("Ödüle +%50 · reklam izle") artık gerçekten çıkıyor: "Maçın anı" düğmesi yuvayı kaptığı için neredeyse hiç görünmüyordu. Kural aynı: ilk 3 galibiyetten sonra, günde 1. Maçın anı Ayrıntılar'da yerinde.
+- Reklam şeridi yalnız Oyna ekranında, sekme çubuğundan 8 pt aralıklı; Kariyer, Dolap, Profil ve Atölye'de şerit yok. Küçük ekranda Oyna'ya sığmıyorsa hiç çıkmıyor, düğmeleri itmiyor.
+- Zorluk (Kolay, Orta, Zor, Usta) Oyna ekranında, Oyna düğmesinin hemen üstünde. Kariyerin sıradaki maçı seçtiğin zorlukta oynanır.
+Nasıl denenir: Oyna'da Kolay'ı seç ve Oyna'ya bas, maçı kazan: kariyer ilerlemeli. Bugün henüz reklam izlemediysen maç sonu kartında "Ödüle +%50 · reklam izle" çıkmalı (test reklamı açılır). Oyna'da şerit sekmelerin biraz üstünde durmalı, Kariyer ve Dolap'a geçince kaybolmalı.
+
 Bu gece (8 Kasım 22:15 inceleme turu):
 - Günün maçında ve kariyerdeki kural maçlarında kuralın adı skorun hemen altında maç boyu yazıyor (sayısı ikiye katlanan kurallarda "×2" ekiyle). Duraklat ekranında da kural adı var.
 - Uzun ralli gününde ralli sayacı hedefi gösterir ("Ralli 5/8"); 8. vuruşta altın renge döner, "×2" yazar, kısa bir tık sesi ve titreşim gelir.

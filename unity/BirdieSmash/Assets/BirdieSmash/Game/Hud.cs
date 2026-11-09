@@ -1210,7 +1210,10 @@ namespace BirdieSmash.Game
             bool aniB = R.AniVar; bool payl = R.mod == Mod.Gunluk && Yerel.PaylasVar && R.match != null && R.match.matchDone;
             int nTum = (aniB ? 1 : 0) + (payl ? 1 : 0) + (R.ustaDavet ? 1 : 0) + (yuk ? 1 : 0) + (hdz ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (od2 != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0);
             // 2026-11-07 ödüllü reklam (Core/OdulluReklam): yalnız tek ikincil yuva boşken; ana düğme yerinde kalır.
-            bool rek = RekVar(R, od, nTum); if (rek) nTum = 1;
+            // 2026-11-09 (yasin: "reklam görüntüsü gelmesi lazım"): Maçın anı #44'ten beri neredeyse her maçta var ve yuvayı
+            // sayıldığı için teklif hiç çıkmıyordu. An bir tekrar izleme, eylem değil: teklif onun önüne geçer, an Ayrıntılar'da
+            // ve teklifin olmadığı maçlarda yerinde kalır. Diğer ikinciller (antrenman, yükselt, paylaş…) yine önceliklidir.
+            bool rek = RekVar(R, od, nTum - (aniB ? 1 : 0)); if (rek) nTum = 1 + (aniB ? 1 : 0);
             int nIk = ayr ? nTum : Mathf.Min(1, nTum);
             float bh = Mathf.Max(BH, 50 * s), gap = 8 * s;
             string ct = UiKok.Buyuk(CtaBaslik(R.bittiDugme, R.bittiDugmeAlt)); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), cah = string.IsNullOrEmpty(R.bittiDugmeAlt) ? 0 : aCtaAlt.CalcHeight(Ic(R.bittiDugmeAlt), w);
@@ -1221,6 +1224,7 @@ namespace BirdieSmash.Game
             float yb = Mathf.Max(y + 6 * s, H - bot - blokH);
             if (BuyukDugme(new Rect(x, yb, w, ctaH), ct, R.bittiDugmeAlt, s, al)) root.TekrarOyna(); yb += ctaH + 12 * s;
             int ki = 0; float kw = cift ? (w - gap) / 2 : w;
+            if (rek && ki < nIk) { R.ReklamTeklifGordu(); if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Ödüle +%50 · reklam izle"), al)) R.OdulluIzle(); }
             if (od2 != null && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman: {0}", L.T(od2.ad)), al)) root.DrilOyna(od2.id); }
             if (yuk && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Ekipmanı yükselt"), al)) { root.AnaMenu(); if (root.ui != null) root.ui.SekmeAc(Sekme.Atolye); } }
             // 2026-11-02 hedef eşya: yalnız bu maçın Tüy'ü hedefi yetişir yaptıysa (sonraki maçlarda satır "Hazır" der, düğme çıkmaz).
@@ -1234,7 +1238,6 @@ namespace BirdieSmash.Game
             if (R.bittiIlk && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Tam antrenman"), al)) root.Antrenman(); }
             if (R.mod == Mod.Dril && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman görevleri"), al)) { root.AnaMenu(); if (root.ui != null) { var dg = Dril.Bul(root.drilId); if (dg != null && dg != Sonsuz.Tanim) root.ui.AntrenmanGrup(dg.grup); root.ui.AntrenmanAc(); } } }
             if (aniB && !aniOnce && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Maçın anı"), al)) root.AniBaslat(); }
-            if (rek && ki < nIk) { R.ReklamTeklifGordu(); if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Ödüle +%50 · reklam izle"), al)) R.OdulluIzle(); }
             if (ayrintiVar)
             {
                 float hw = (w - gap) / 2;
@@ -1462,10 +1465,11 @@ namespace BirdieSmash.Game
         }
         // Ödüllü reklam düğmesi bu kartta var mı (tek yuva kuralı: başka ikincil varsa yok). baska: kartın diğer ikincilleri.
         bool RekVar(GameRoot R, OdulSonuc od, int baska) { return od != null && R.mod != Mod.Dril && R.ReklamUygun(baska > 0); }
+        // Maçın anı sayılmaz: teklif anın önüne geçer (2026-11-09, yukarıdaki kart kodu).
         int DigerIkincil(GameRoot R, OdulSonuc od)
         {
             bool payl = R.mod == Mod.Gunluk && Yerel.PaylasVar && R.match != null && R.match.matchDone;
-            return (R.AniVar ? 1 : 0) + (payl ? 1 : 0) + (R.ustaDavet ? 1 : 0) + (od != null && R.yukseltHazir ? 1 : 0) + (od != null && R.hedefHazir && R.hedef.gecerli ? 1 : 0)
+            return (payl ? 1 : 0) + (R.ustaDavet ? 1 : 0) + (od != null && R.yukseltHazir ? 1 : 0) + (od != null && R.hedefHazir && R.hedef.gecerli ? 1 : 0)
                 + (R.bittiIlk ? 1 : 0) + (R.bittiDril != null && Dril.Bul(R.bittiDril) != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0);
         }
         // Alt bloğun yüksekliği (büyük düğme + ikincil + bağlantı satırı): isteğe bağlı satırlar çizilmeden önce yer var mı diye.

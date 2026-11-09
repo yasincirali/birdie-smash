@@ -141,6 +141,8 @@
 
 /* Oyna */
 .oyna-icerik { padding: 8px 16px 10px 16px; }
+/* 2026-11-09 Oyna'da zorluk çipleri (AnaEkran.OynaKur): plakanın altında, Oyna düğmesinin üstünde; çip ≥ 44 pt kalır. */
+.oyna-zorluk { margin-top: -4px; margin-bottom: 4px; }
 .marka { align-items: center; margin-top: 8px; }
 .logo { width: 84px; height: 84px; }
 .marka-ad { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); -unity-text-align: middle-center; margin-top: 2px; }
