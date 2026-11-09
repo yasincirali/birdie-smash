@@ -26,7 +26,7 @@
   {
    "id": "altin",
    "ad": "Altın ralli",
-   "aciklama": "Her 3. rallinin sayısı 2",
+   "aciklama": "Her 3. sayı 2 sayılır",
    "uzunluk": 11
   },
   {
@@ -50,7 +50,7 @@
   {
    "id": "uzun",
    "ad": "Uzun ralli",
-   "aciklama": "8 ve daha uzun rallinin sayısı 2",
+   "aciklama": "Ralli 8 vuruşa ulaşırsa sayı 2",
    "uzunluk": 11
   },
   {
