@@ -1,4 +1,11 @@
 === UNITY ===
+Bu gece (10 Kasım 02:15 inceleme turu):
+- Ayarlar'da Ses, Müzik, Titreşim ve Hareketi azalt artık tek "Ses ve his" bölümünde, her biri solda adı, sağda açma kapama anahtarıyla. Anahtarın yanında "açık" ya da "kapalı" yazıyor.
+- Büyük yazıyla Dolap'ta bir şapkayı hedef yapınca kartlar artık ezilmiyor, liste kayıyor. Seviye atladın ekranı ve tur töreni büyük yazıda da tam okunuyor; düğmeler altta sabit.
+- Bronz tur mührü alınca törende "Eksik yıldız: n maç" satırı çıkıyor; dokununca Kariyer'de yıldızı eksik ilk maç açılıyor.
+- Günün maçı sayfası sadeleşti: saha, sayı ve zorluk rakibin altında; kurallar daha açık ("Her 3. sayı 2 sayılır", "Ralli 8 vuruşa ulaşırsa sayı 2").
+Nasıl denenir: Ayarlar'ı aç, Ses ve his bölümünde dört anahtarı tek tek kapatıp aç: ses, müzik ve titreşim hemen değişmeli. Telefonun yazı boyutunu en büyüğe al, Dolap > Şapka'da parası yetmeyen bir şapkayı dene ve Hedef yap: kartlar okunur kalmalı, sayfa kaymalı. Bir turda 9 ile 17 arası yıldızla turu bitir: törende eksik yıldız satırına dokun, Kariyer'de o maç açılmalı.
+
 Bu gece (8 Kasım 22:15 inceleme turu):
 - Günün maçında ve kariyerdeki kural maçlarında kuralın adı skorun hemen altında maç boyu yazıyor (sayısı ikiye katlanan kurallarda "×2" ekiyle). Duraklat ekranında da kural adı var.
 - Uzun ralli gününde ralli sayacı hedefi gösterir ("Ralli 5/8"); 8. vuruşta altın renge döner, "×2" yazar, kısa bir tık sesi ve titreşim gelir.

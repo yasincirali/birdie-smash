@@ -58,18 +58,17 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Yazı boyutu"))); var yz = Satir(); c.Add(yz);
             string[] Yk = { "sistem", "normal", "buyuk" }, Ya = { "Sistem", "Normal", "Büyük" };
             for (int i = 0; i < 3; i++) { string id = Yk[i]; yz.Add(Cip(L.T(Ya[i]), Ayar.yazi == id, () => { Ayar.yazi = id; Ayar.Kaydet(); Degisti(); })); }
-            c.Add(Grup(L.T("Hareket")));
-            string ht = Ayar.reduceSistem ? "Hareket azaltıldı · sistem" : Ayar.reduce ? "Hareket azaltıldı" : "Hareket tam";
-            c.Add(Cip(L.T(ht), Ayar.reduce, Ayar.reduceSistem ? (System.Action)null : () => { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.Kaydet(); Degisti(); }));
-            c.Add(Grup(L.T("Ses")));
-            // Müzik ayrı çip (2026-10-30): sesi açık tutup yalnız menü müziğini kapatmak isteyen için. Ses kapalıyken müzik de
-            // susar (dinleyici kısık), çip seçimi korunur.
-            var sr = Satir(); c.Add(sr);
-            sr.Add(Cip(L.T(Ayar.ses ? "Ses açık" : "Ses kapalı"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Degisti(); }));
-            sr.Add(Cip(L.T(Ayar.muzik ? "Müzik açık" : "Müzik kapalı"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.Kaydet(); Degisti(); }));
-            // Titreşim çipi (2026-11-07): Hareketi azalt'tan bağımsız; açılınca kısa bir tık ("tick") örnek olsun diye çalınır.
-            // Duraklat sayfasına eklenmez (orada yalnız Ses, sade).
-            sr.Add(Cip(L.T(Ayar.titresim ? "Titreşim açık" : "Titreşim kapalı"), Ayar.titresim, () => { Ayar.titresim = !Ayar.titresim; Ayar.Kaydet(); if (Ayar.titresim) Yerel.Hap("tick"); Degisti(); }));
+            // 2026-11-10 inceleme (fikir 02:05 #2): "Hareket" (tek çip) ve "Ses" (üç çip) tek "Ses ve his" grubunda, dört anahtar
+            // satırı; ad sabit, durum anahtarda. Tek seçimli gruplar (görünüm, kamera, yazı boyutu, dil) çip kalır. Davranış ve
+            // tuytop_* anahtarları aynı: Müzik ayrı (2026-10-30, ses kapalıyken müzik de susar, seçim korunur); Titreşim
+            // Hareketi azalt'tan bağımsız, açılınca örnek tık (2026-11-07; Duraklat'a eklenmez); sistem hareketi azalttıysa satır
+            // pasif, altında "Sistem ayarından".
+            c.Add(Grup(L.T("Ses ve his")));
+            c.Add(AnahtarSatir(L.T("Ses"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Degisti(); }));
+            c.Add(AnahtarSatir(L.T("Müzik"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.Kaydet(); Degisti(); }));
+            c.Add(AnahtarSatir(L.T("Titreşim"), Ayar.titresim, () => { Ayar.titresim = !Ayar.titresim; Ayar.Kaydet(); if (Ayar.titresim) Yerel.Hap("tick"); Degisti(); }));
+            c.Add(AnahtarSatir(L.T("Hareketi azalt"), Ayar.reduce, Ayar.reduceSistem ? (System.Action)null : () => { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.Kaydet(); Degisti(); },
+                Ayar.reduceSistem ? L.T("Sistem ayarından") : null));
             c.Add(Grup(L.T("Dil"))); var dl = Satir(); c.Add(dl);
             dl.Add(Cip("Türkçe", Ayar.dil == "tr", () => { Ayar.dil = "tr"; Ayar.Kaydet(); }));
             dl.Add(Cip("English", Ayar.dil == "en", () => { Ayar.dil = "en"; Ayar.Kaydet(); }));
