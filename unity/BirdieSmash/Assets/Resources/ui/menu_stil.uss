@@ -622,6 +622,12 @@
 /* 2026-10-31 seviye anı: tam ekran, mürekkep zemin; ortada sütun (sekme çubuğu ve üst çubuk altta kalır, dokununca kapanır) */
 .seviye-ani { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(26, 18, 33, 0.94); align-items: center; justify-content: center; padding: 24px; }
 .seviye-ic { align-items: center; width: 100%; max-width: 360px; }
+/* 2026-11-10 (r147 seviye_ani 11 kesik, tur_toren taşma): içerik sütunda kayar, düğmeler altta sabit; büyük yazıda satırlar
+   ezilmez. Sütun içerik kadar uzun, ekrandan uzunsa ekran boyu (kaydırma devreye girer). */
+.seviye-sutun { width: 100%; max-width: 360px; max-height: 100%; flex-shrink: 1; }
+.seviye-kaydir { flex-grow: 0; flex-shrink: 1; }
+.seviye-eylem { flex-shrink: 0; align-self: stretch; }
+.seviye-eylem .dugme { align-self: stretch; margin-top: 8px; }
 .seviye-ust { color: var(--lime); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); letter-spacing: 2px; }
 .seviye-sayi { color: var(--tx); margin: 4px 0 14px 0; }
 .seviye-liste { align-items: center; margin-bottom: 20px; }
@@ -631,10 +637,11 @@
 .seviye-grup { margin-top: 10px; letter-spacing: 0.5px; }
 /* 2026-11-07 tur töreni (GD1/GD5): tur adı, mühür satırı, altı rakip (nokta ≥ 28, yenilen ✓; yenilmeyen soluk + biçim: ✓ yok) */
 .toren-ad { color: var(--tx); -unity-text-align: middle-center; margin: 2px 0 12px 0; white-space: normal; }
-.toren-muhur { flex-direction: row; align-items: center; justify-content: center; margin-bottom: 14px; flex-wrap: nowrap; }
+.toren-muhur { flex-direction: row; align-items: center; justify-content: center; margin-bottom: 14px; flex-wrap: nowrap; align-self: stretch; max-width: 100%; }   /* r147: satır içeriği kadar genişleyip (sütun align-items center) 375 pt dışına taşıyordu; tam genişlik + metin daralır */
 .toren-rakipler { flex-direction: row; justify-content: center; flex-wrap: nowrap; align-self: stretch; width: 100%; margin-bottom: 18px; }   /* altı rakip tek satır (r135: 52px genişlikte 5+1 kırılıyordu); r136: kap içeriğe göre daralınca flex-basis 0 öğeler sıfır genişliğe düştü, kap tam genişlik */
 .toren-rakip { align-items: center; width: 50px; flex-shrink: 1; min-width: 0; margin: 0 1px 6px 1px; overflow: hidden; }   /* r141: flex-basis 0 + büyüme ile altıncı (final) rakip görünmüyordu (beş nokta, altıncı yuva boş); sabit genişlik, dar ekranda küçülür */
 .toren-rakip--yok { opacity: 0.45; }
+.toren-eksik { min-height: 44px; margin: 0 0 14px 0; }   /* 2026-11-10 bronz mühürde "Eksik yıldız: n maç ›" (ikincil, rakiplerin üstünde) */
 .toren-nokta { width: 28px; height: 28px; border-radius: 14px; align-items: center; justify-content: center; margin-bottom: 3px; border-width: 2px; border-color: rgba(255, 255, 255, 0.35); }
 .dugme--hayalet { background-color: rgba(0, 0, 0, 0); border-color: rgba(255, 255, 255, 0.25); border-width: 1px; }
 .dugme--hayalet:active { background-color: rgba(255, 255, 255, 0.06); }
@@ -652,6 +659,13 @@
 /* 2026-11-08 r142 ×2: ".buyuk-yazi .satir.arali" sarmayı açıyordu; sütunda sarma ikinci düğmeyi ekranın sağına yeni sütuna atıyordu ("Bırak" 360..430 / 375). */
 .buyuk-yazi .satir.arali.deneme-cubuk-dugmeler { flex-direction: column; align-items: stretch; flex-wrap: nowrap; }   /* r143: ".buyuk-yazi .satir.arali" (3 sınıf) 2 sınıflı kuralı eziyordu */
 .buyuk-yazi .deneme-cubuk-al { margin-right: 0; margin-bottom: 6px; flex-grow: 0; }
+/* 2026-11-10 inceleme (fikir 02:05 #1, r147 dolap_hedefin 44 kesik): büyük yazıda alt çubuk iki satırlık düğme + alt satırla
+   gövdenin tamamını yiyor, kaydırma alanı ~0'a inip içerik (kartlar, grup başlıkları) 0–15 px'e eziliyordu. Üç önlem:
+   kaydırma içeriği hiç ezilmez (kayar), Dolap gövdesine en az 140 pt kalır (vitrin küçülür), büyük yazıda çubuk alt satırı
+   gizli (aynı bilgi gövdedeki deneme kartında: "Deneniyor: …", "n Tüy daha gerekli"; ekran okuyucu etiketi değişmez). */
+.govde-kaydir .unity-scroll-view__content-container, .seviye-kaydir .unity-scroll-view__content-container { flex-shrink: 0; }
+.soyunma-kaydir { min-height: 140px; }
+.buyuk-yazi .deneme-cubuk .dugme-alt { display: none; }
 /* 2026-10-31 K1 "Oyuncunu seç" (Game/UI/OyuncuSec.cs): altı hazır kart 3×2 (büyük yazıda 2 sütun); seçili ✓ + turuncu çerçeve. */
 .hazir-izgara { flex-wrap: wrap; margin: 6px 0; }
 .hazir-kart { flex-basis: 30%; flex-grow: 1; margin: 4px; padding: 10px; min-height: 44px; }
@@ -720,3 +734,15 @@
 .tarz-hap { flex-direction: row; align-items: center; flex-shrink: 1; max-width: 100%; margin: 3px; padding: 4px 9px 4px 7px; border-radius: 8px; background-color: rgba(201, 238, 75, 0.12); border-width: 1px; border-color: rgba(201, 238, 75, 0.28); }
 .tarz-hap--eksi { background-color: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.14); }
 .tarz-hap-yazi { color: var(--tx); flex-shrink: 1; }
+
+/* 2026-11-10 inceleme (fikir 02:05 #2): Ayarlar aç/kapa satırı (UiOge.AnahtarSatir). Solda sabit ad, sağda "açık/kapalı" +
+   anahtar (iOS ölçüsü 51×31). Açık: turuncu ray, top sağda ve üstünde ✓; kapalı: soluk ray, top solda. Satır ≥ 52 pt. */
+.anahtar-satir { flex-direction: row; align-items: center; min-height: 52px; padding: 8px 12px 8px 14px; }
+.anahtar-yazilar { flex-grow: 1; flex-shrink: 1; align-items: flex-start; }
+.anahtar-satir .dugme-yazi { -unity-text-align: middle-left; white-space: normal; }
+.anahtar-satir .dugme-alt { -unity-text-align: middle-left; white-space: normal; }
+.anahtar-durum { color: var(--mu); margin: 0 10px 0 8px; flex-shrink: 0; }
+.anahtar { width: 51px; height: 31px; border-radius: 16px; padding: 2px; flex-shrink: 0; justify-content: center; align-items: flex-start; background-color: rgba(255, 255, 255, 0.18); }
+.anahtar--acik { background-color: var(--sun); align-items: flex-end; }
+.anahtar-top { width: 27px; height: 27px; border-radius: 14px; background-color: var(--tx); align-items: center; justify-content: center; }
+.anahtar-satir--pasif { opacity: 0.6; }

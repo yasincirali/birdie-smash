@@ -115,3 +115,7 @@ jobs:
           D="r${{ github.run_number }}"; mkdir -p "$W/$D"; cp -r "$RUNNER_TEMP/ekran/." "$W/$D/" || true
           echo "${{ github.sha }}" > "$W/$D/sha.txt"
           cd "$W" && git add "$D" && git commit -qm "ekran $D (${{ github.sha }})" && git push -q origin ekran-sonuc
+
+      # 2026-11-10 yazı taşma kapısı (tool/yazi_tasma_kapi.py): sonuçlar dala yazıldıktan sonra; sayı tavanı geçerse iş kırmızı.
+      - name: yazı taşma kapısı
+        run: python3 tool/yazi_tasma_kapi.py "$RUNNER_TEMP/ekran/yazi_tasma.txt" tool/unity_test/yazi_tasma_tavan.txt

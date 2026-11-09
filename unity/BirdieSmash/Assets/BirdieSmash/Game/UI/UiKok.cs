@@ -348,13 +348,24 @@ namespace BirdieSmash.Game
                 .OnCompleted(() => tuy.style.scale = StyleKeyword.Null);
         }
         VisualElement seviyeAni;
+        // Seviye anı ve tur töreni iskeleti (2026-11-10 inceleme, fikir 02:05 #1): r147 büyük yazıda seviye anının 11 satırı ve
+        // "Tamam" düğmesi ezilmişti (sütun ekrandan uzun, satırlar küçülüyordu). İçerik kayan sütunda, düğmeler altta sabit.
+        // Kapatma artık yalnız zemine dokununca (önce içeriğe dokunmak da kapatıyordu; kaydırma sürüklemesi kapatmasın diye).
+        VisualElement AniIskelet(VisualElement o, System.Action kapat, out VisualElement eylem)
+        {
+            o.RegisterCallback<ClickEvent>(e => { if (e.target == o) kapat(); });
+            var sut = new VisualElement(); sut.AddToClassList("seviye-sutun"); o.Add(sut);
+            var kay = Kaydirma(sut); kay.AddToClassList("seviye-kaydir");
+            var ic = new VisualElement(); ic.AddToClassList("seviye-ic"); kay.Add(ic);
+            eylem = new VisualElement(); eylem.AddToClassList("seviye-eylem"); sut.Add(eylem);
+            return ic;
+        }
         void SeviyeAni(int once, int sv)
         {
             if (seviyeAni != null) seviyeAni.RemoveFromHierarchy();
             var o = new VisualElement(); o.AddToClassList("seviye-ani"); seviyeAni = o; kok.Add(o);
             System.Action kapat = () => { if (seviyeAni == o) seviyeAni = null; o.RemoveFromHierarchy(); };
-            o.AddManipulator(new Clickable(kapat));
-            var ic = new VisualElement(); ic.AddToClassList("seviye-ic"); o.Add(ic);
+            VisualElement ey; var ic = AniIskelet(o, kapat, out ey);
             ic.Add(Yazi(Buyuk(L.T("Seviye atladın")), 15, "seviye-ust"));
             var sayi = Yazi(L.T("Sv {0}", sv), 64, "rakam"); sayi.AddToClassList("seviye-sayi"); ic.Add(sayi);
             var acilan = Karakter.AcilanAralik(once, sv); var liste = new VisualElement(); liste.AddToClassList("seviye-liste"); ic.Add(liste);
@@ -371,9 +382,9 @@ namespace BirdieSmash.Game
                 for (int i = 0; i < ol.Count && i < 3; i++) { var y = Yazi(L.T(ol[i][1]), 17); y.AddToClassList("seviye-oge"); liste.Add(y); }
                 if (ol.Count > 3) liste.Add(Yazi(L.T("ve {0} öğe daha", ol.Count - 3), 14, "soluk"));
             }
-            if (ilkGrup == "Dolap") ic.Add(Dugme(L.T("Dolap'ta dene"), () => { kapat(); SekmeAc(Sekme.Soyunma); }, "dugme--birincil"));
-            else if (ilkGrup == "Atolye") { string yv = ilkYuva; ic.Add(Dugme(L.T("Atölye'de gör"), () => { kapat(); if (yv != null) YuvaAc(yv); else SekmeAc(Sekme.Atolye); }, "dugme--birincil")); }
-            ic.Add(Dugme(L.T("Tamam"), kapat, ilkGrup != null ? "dugme--hayalet" : "dugme--birincil"));
+            if (ilkGrup == "Dolap") ey.Add(Dugme(L.T("Dolap'ta dene"), () => { kapat(); SekmeAc(Sekme.Soyunma); }, "dugme--birincil"));
+            else if (ilkGrup == "Atolye") { string yv = ilkYuva; ey.Add(Dugme(L.T("Atölye'de gör"), () => { kapat(); if (yv != null) YuvaAc(yv); else SekmeAc(Sekme.Atolye); }, "dugme--birincil")); }
+            ey.Add(Dugme(L.T("Tamam"), kapat, ilkGrup != null ? "dugme--hayalet" : "dugme--birincil"));
             Erisim.Etiket(ic, L.T("Seviye atladın") + ", " + L.T("Sv {0}", sv) + (acilan.Count > 0 ? ", " + L.T("Açıldı") + ": " + string.Join(", ", acilan.ConvertAll(x => L.T(x))) : ""), "metin");
             root.sfx.Tik(990); Yerel.Hap("win");
             if (Ayar.reduce) return;
@@ -398,18 +409,30 @@ namespace BirdieSmash.Game
             SeviyeAniKapat(); var p = Ayar.ilerleme; if (p == null || t < 0 || t >= KariyerVeri.Turlar.Length) { if (sonra != null) sonra(); return; }
             var o = new VisualElement(); o.AddToClassList("seviye-ani"); seviyeAni = o; kok.Add(o);
             System.Action kapat = () => { if (seviyeAni == o) seviyeAni = null; o.RemoveFromHierarchy(); if (sonra != null) sonra(); };
-            o.AddManipulator(new Clickable(kapat));
-            var ic = new VisualElement(); ic.AddToClassList("seviye-ic"); o.Add(ic);
+            VisualElement ey; var ic = AniIskelet(o, kapat, out ey);
             bool yeniMuhur = m1 > m0; string muhurAd = m1 >= 2 ? L.T("Altın tur mührü") : L.T("Bronz tur mührü");
             ic.Add(Yazi(Buyuk(bitti ? L.T("Tur tamam") : muhurAd), 15, "seviye-ust"));
             var ad = Yazi(L.T(KariyerEkranTurAd(t)), 30, "kalin"); ad.AddToClassList("toren-ad"); ic.Add(ad);
             int ys = p.TurYildiz(t);
             var mr = Satir("toren-muhur"); mr.pickingMode = PickingMode.Ignore; ic.Add(mr);
-            var mi = Ikon(m1 >= 2 ? Ikonlar.YildizDolu : m1 == 1 ? Ikonlar.YildizBos : Ikonlar.YildizBos, 56, m1 >= 2 ? ALTIN : m1 == 1 ? BRONZ : SOLUK); mr.Add(mi);
+            // r147 büyük yazı: mühür yıldızı 56 → 40 (metne yer), satır tam genişlik (USS), metin sütunu kalan yeri alır ve sarar.
+            var mi = Ikon(m1 >= 2 ? Ikonlar.YildizDolu : m1 == 1 ? Ikonlar.YildizBos : Ikonlar.YildizBos, K >= 1.35f ? 40 : 56, m1 >= 2 ? ALTIN : m1 == 1 ? BRONZ : SOLUK); mi.style.flexShrink = 0; mr.Add(mi);
             var my = new VisualElement(); my.pickingMode = PickingMode.Ignore; my.style.marginLeft = 10; my.style.flexShrink = 1; my.style.minWidth = 0f; mr.Add(my);   // r137 büyük yazı: alt satır kartın sağından taşıyordu
+            if (K >= 1.35f) { my.style.flexGrow = 1; my.style.flexBasis = 0; }
             my.Add(Yazi(L.T("{0}/{1} yıldız", ys, 18), 20, "rakam"));
             string alt = m1 >= 2 ? muhurAd : m1 == 1 ? muhurAd + " · " + L.T("altın için {0} yıldız", Ilerleme.MUHUR_ALTIN - ys) : L.T("bronz mühür için {0} yıldız", Ilerleme.MUHUR_BRONZ - ys);
             var ay = Yazi(alt, 13, yeniMuhur ? "durum-gecti" : "soluk"); ay.style.whiteSpace = WhiteSpace.Normal; my.Add(ay);
+            // 2026-11-10 inceleme (fikir 02:05 #3): bronzda "altın için n yıldız" nereye gidileceğini söylemiyordu, oyuncu Kariyer'de
+            // altı kartı tek tek açıyordu. Tek dokunulabilir satır: tören kapanır, Kariyer o turda ilk eksik yıldızlı maç kartı
+            // açık gelir. Ödül vaadi yok (altın mühür kendi ödülü); altında ve mühürsüzde satır yok. 44 pt ikincil düğme.
+            int eksikG = -1, eksikN = 0;
+            if (m1 == 1) for (int b = 0; b < KariyerVeri.BASAMAK; b++) { int g = KariyerVeri.Global(t, b); if (KariyerVeri.Var(g) && p.Kazanildi(g) && p.Yildiz(g) < 3) { eksikN++; if (eksikG < 0) eksikG = g; } }
+            if (eksikG >= 0)
+            {
+                int eg = eksikG, et = t;
+                var ek = Dugme(L.T("Eksik yıldız: {0} maç", eksikN) + "  ›", () => { kapat(); kariyerTur = et; SekmeAc(Sekme.Kariyer); MacKartAc(eg); }, "toren-eksik", null, 14);
+                ic.Add(ek);
+            }
             // turda yenilen rakipler (renk noktası + ad; yenilmeyen soluk)
             var yenilenAd = new System.Collections.Generic.List<string>(); var rk = Satir("toren-rakipler"); rk.pickingMode = PickingMode.Ignore; ic.Add(rk);
             for (int b = 0; b < KariyerVeri.BASAMAK; b++)
@@ -421,9 +444,9 @@ namespace BirdieSmash.Game
                 if (K < 1.35f) { var ry = Yazi(st.isim, 11, "soluk"); ry.style.whiteSpace = WhiteSpace.NoWrap; h.Add(ry); }   // büyük yazıda altı ad tek satıra sığmıyor (r137): yalnız nokta, ad erişilebilirlik etiketinde
             }
             int sonrakiT = t + 1; bool sonrakiVar = bitti && sonrakiT < KariyerVeri.Turlar.Length && KariyerVeri.Turlar[sonrakiT].Var;
-            if (sonrakiVar) ic.Add(Dugme(L.T("Sıradaki: {0}", L.T(KariyerEkranTurAd(sonrakiT))), () => { kapat(); kariyerTur = sonrakiT; SekmeAc(Sekme.Kariyer); }, "dugme--birincil"));
-            else if (bitti && sonrakiT < KariyerVeri.TUR) ic.Add(Yazi(L.T("Yakında: bu tur sonraki güncellemede gelir"), 13, "soluk"));
-            ic.Add(Dugme(L.T("Tamam"), kapat, sonrakiVar ? "dugme--hayalet" : "dugme--birincil"));
+            if (sonrakiVar) ey.Add(Dugme(L.T("Sıradaki: {0}", L.T(KariyerEkranTurAd(sonrakiT))), () => { kapat(); kariyerTur = sonrakiT; SekmeAc(Sekme.Kariyer); }, "dugme--birincil"));
+            else if (bitti && sonrakiT < KariyerVeri.TUR) ey.Add(Yazi(L.T("Yakında: bu tur sonraki güncellemede gelir"), 13, "soluk"));
+            ey.Add(Dugme(L.T("Tamam"), kapat, sonrakiVar ? "dugme--hayalet" : "dugme--birincil"));
             Erisim.Etiket(ic, (bitti ? L.T("Tur tamam") : muhurAd) + ", " + L.T(KariyerEkranTurAd(t)) + ", " + L.T("{0}/{1} yıldız", ys, 18) + ", " + alt + (yenilenAd.Count > 0 ? ", " + string.Join(", ", yenilenAd) : ""), "metin");
             root.sfx.Tik(1180); Yerel.Hap(bitti || m1 >= 2 ? "flow" : "win");
             if (Ayar.reduce) return;

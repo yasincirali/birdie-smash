@@ -112,6 +112,25 @@ namespace BirdieSmash.Game
             Erisim.Etiket(d, string.IsNullOrEmpty(alt) ? t : t + ", " + alt, "dugme", secili, a == null);
             Sigdir(d); return d;
         }
+        // Aç/kapa satırı (2026-11-10 inceleme, fikir 02:05 #2): Ayarlar'da Ses/Müzik/Titreşim/Hareket tek seçimli çiplerle aynı
+        // görünüyordu (turuncu çerçeve + ✓) ve çip metni durumla değişiyordu ("Ses açık" ↔ "Ses kapalı"): eylem mi durum mu
+        // okunmuyordu, "Titreşim açık" TR'de kesiliyordu. HIG kalıbı: solda sabit ad, sağda anahtar. Durum üç yolla okunur:
+        // topun konumu, topta ✓ (renk körlüğü) ve anahtarın solunda "açık/kapalı" yazısı (Duraklat'taki "Ses: açık" yazılı satır
+        // kararıyla aynı dil). Bütün satır dokunma alanı (≥ 52 pt). a null ise pasif (ör. sistemden gelen Hareketi azalt).
+        VisualElement AnahtarSatir(string ad, bool acik, Action a, string not = null)
+        {
+            var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("anahtar-satir"); if (a == null) d.AddToClassList("anahtar-satir--pasif");
+            var yz = new VisualElement(); yz.AddToClassList("anahtar-yazilar"); yz.pickingMode = PickingMode.Ignore; d.Add(yz);
+            yz.Add(Yazi(ad, 15, "dugme-yazi")); if (!string.IsNullOrEmpty(not)) yz.Add(Yazi(not, 12, "dugme-alt"));
+            string durum = L.T(acik ? "açık" : "kapalı");
+            var dr = Yazi(durum, 13, "anahtar-durum"); dr.pickingMode = PickingMode.Ignore; d.Add(dr);
+            var ray = new VisualElement(); ray.AddToClassList("anahtar"); if (acik) ray.AddToClassList("anahtar--acik"); ray.pickingMode = PickingMode.Ignore; d.Add(ray);
+            var top = new VisualElement(); top.AddToClassList("anahtar-top"); top.pickingMode = PickingMode.Ignore; ray.Add(top);
+            if (acik) top.Add(Ikon(Ikonlar.Tik, 14, MUREKKEP));
+            if (a != null) d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); a(); }));
+            Erisim.Etiket(d, string.IsNullOrEmpty(not) ? ad : ad + ", " + not, "dugme", acik, a == null, durum);
+            return d;
+        }
         // Sığdır (2026-10-26, r13): dar çiplerde (segment, tutuş) tek kelimelik etiket hece ortasından bölünmesin ("Chara cter",
         // "Shoe s"). Etiket tek satıra alınır; çipin iç genişliğine sığmıyorsa yazı boyutu en çok minOran'a kadar küçülür.
         // Neden kodda: Unity 6000.0'da USS'te otomatik yazı boyutu yok. Hesap her seferinde taban boyuttan yapılır (şimdiki

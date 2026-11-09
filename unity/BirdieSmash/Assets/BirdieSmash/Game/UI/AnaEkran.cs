@@ -66,7 +66,7 @@ namespace BirdieSmash.Game
                 // yazıyordu. A tasarımında alt satır maçın biçimini söyler (sayı · saha · zorluk), ilk açılış ve şampiyon satırı kalır.
                 var p = Ayar.ilerleme; var kb = KariyerVeri.Al(p.Siradaki());
                 string alt = ilk ? null : !Ayar.antrenman ? L.T("İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç") : p.HepsiBitti ? L.Cumle(Career.Line(p))
-                    : L.T("{0} sayı", kb.uzunluk > 0 ? kb.uzunluk : Ayar.target) + " · " + L.T(CourtView.SAHA[kb.saha].ad) + " · " + L.T(Ayar.ZorlukAd)
+                    : L.T("{0} sayı", kb.uzunluk > 0 ? kb.uzunluk : Ayar.target) + " · " + L.T(Ayar.ZorlukAd)   // 2026-11-09: saha adı ("Okul (ahşap)") plakadaki yer adıyla iki ayrı yer gibi okunuyordu (inceleme 10 Kas 02:15); saha maç kartında
                       + (kb.degistirici != null && Gunluk.Deg(kb.degistirici) != null ? " · " + L.T(Gunluk.Deg(kb.degistirici).ad) : "");   // kural maçı adı
                 c.Add(BuyukDugme(L.T("Oyna"), alt, () =>
                 {

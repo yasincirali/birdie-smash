@@ -2,8 +2,15 @@
 Reklam ve zorluk (9 Kasım):
 - Maç sonu ödüllü reklam ("Ödüle +%50 · reklam izle") artık gerçekten çıkıyor: "Maçın anı" düğmesi yuvayı kaptığı için neredeyse hiç görünmüyordu. Kural aynı: ilk 3 galibiyetten sonra, günde 1. Maçın anı Ayrıntılar'da yerinde.
 - Reklam şeridi yalnız Oyna ekranında, sekme çubuğundan 8 pt aralıklı; Kariyer, Dolap, Profil ve Atölye'de şerit yok. Küçük ekranda Oyna'ya sığmıyorsa hiç çıkmıyor, düğmeleri itmiyor.
-- Zorluk (Kolay, Orta, Zor, Usta) Oyna ekranında, Oyna düğmesinin hemen üstünde. Kariyerin sıradaki maçı seçtiğin zorlukta oynanır.
+- Zorluk (Kolay, Orta, Zor, Usta) Oyna ekranında, Oyna düğmesinin hemen üstünde. Kariyerin sıradaki maçı seçtiğin zorlukta oynanır. Oyna düğmesinin alt satırında artık saha adı yok (plakadaki yer adıyla karışıyordu).
 Nasıl denenir: Oyna'da Kolay'ı seç ve Oyna'ya bas, maçı kazan: kariyer ilerlemeli. Bugün henüz reklam izlemediysen maç sonu kartında "Ödüle +%50 · reklam izle" çıkmalı (test reklamı açılır). Oyna'da şerit sekmelerin biraz üstünde durmalı, Kariyer ve Dolap'a geçince kaybolmalı.
+
+Bu gece (10 Kasım 02:15 inceleme turu):
+- Ayarlar'da Ses, Müzik, Titreşim ve Hareketi azalt artık tek "Ses ve his" bölümünde, her biri solda adı, sağda açma kapama anahtarıyla. Anahtarın yanında "açık" ya da "kapalı" yazıyor.
+- Büyük yazıyla Dolap'ta bir şapkayı hedef yapınca kartlar artık ezilmiyor, liste kayıyor. Seviye atladın ekranı ve tur töreni büyük yazıda da tam okunuyor; düğmeler altta sabit.
+- Bronz tur mührü alınca törende "Eksik yıldız: n maç" satırı çıkıyor; dokununca Kariyer'de yıldızı eksik ilk maç açılıyor.
+- Günün maçı sayfası sadeleşti: saha, sayı ve zorluk rakibin altında; kurallar daha açık ("Her 3. sayı 2 sayılır", "Ralli 8 vuruşa ulaşırsa sayı 2").
+Nasıl denenir: Ayarlar'ı aç, Ses ve his bölümünde dört anahtarı tek tek kapatıp aç: ses, müzik ve titreşim hemen değişmeli. Telefonun yazı boyutunu en büyüğe al, Dolap > Şapka'da parası yetmeyen bir şapkayı dene ve Hedef yap: kartlar okunur kalmalı, sayfa kaymalı. Bir turda 9 ile 17 arası yıldızla turu bitir: törende eksik yıldız satırına dokun, Kariyer'de o maç açılmalı.
 
 Bu gece (8 Kasım 22:15 inceleme turu):
 - Günün maçında ve kariyerdeki kural maçlarında kuralın adı skorun hemen altında maç boyu yazıyor (sayısı ikiye katlanan kurallarda "×2" ekiyle). Duraklat ekranında da kural adı var.
