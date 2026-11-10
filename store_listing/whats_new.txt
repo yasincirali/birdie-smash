@@ -1,4 +1,9 @@
 === UNITY ===
+Kariyerde geri dönüş maçı (10 Kasım gece):
+- Dünya Finalleri'nin ilk maçı (Singapur grup 1) artık bir senaryo: rakip 3–0 önde başlar, maç 11 sayı. Rakibin gücü buna göre düşürüldü; ölçümde kazanma oranı eskisine yakın.
+- Basamak kartında ve maçta skorun altında "Geri dönüş" yazar. Günün maçı döngüsü değişmedi.
+Nasıl denenir: Kariyer > Dünya Finalleri > Singapur grup 1 kartını aç: "Geri dönüş · Rakip 3–0 önde başlar" satırı olmalı. Maça gir: skor 0–3 başlamalı, ilk serviste rakibin adı yine görünmeli, skorun altında "Geri dönüş" durmalı. Maç 11'de (2 farkla) bitmeli. Başka bir kariyer maçı ve Hızlı maç 0–0 başlamalı.
+
 Smaç hareketleri ve Efsane kademeleri (10 Kasım akşam):
 - Dolap'ta "Sevinç" sayfası artık "Hareketler". Sonunda yeni bölüm: Smaç hareketi. Sıçrayarak smaçta figürün havadaki duruşunu seçersin: Düz sıçrayış (baştan), Yay (Sv 6), Makas (Sv 14), Dönerek iniş (Sv 22). Yalnız seviyeyle açılır, Tüy ile alınmaz; vuruşun gücünü, hızını, zamanını değiştirmez. Hareketi azalt açıkken oynamaz.
 - Sv 30'dan sonra XP boşa gitmiyor: her 6.000 XP bir Efsane kademesi ve 300 Tüy. Kademe güç ya da kapı açmaz. Oyna'nın altındaki satır, Seviye yolu ve Profil kademeyi gösterir.

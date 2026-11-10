@@ -489,9 +489,15 @@ static class BotMac
         if (!KariyerVeri.Turlar[2].Var || !KariyerVeri.Turlar[3].Var) Fail("Tur 3–4 verisi yok");
         foreach (var t in KariyerVeri.Turlar) foreach (var k in t.b) if (Match.GorevBul(k.gorev) == null || !Match.STIL.ContainsKey(k.stil)) Fail("bilinmeyen görev/tarz: " + k.yer);
         // Kural maçı (2026-11-07): Tur 1 ve patron finali kuralsız, turda en çok bir; Günün maçı tanımı olmalı ve maça geçmeli.
-        int kural = 0;
-        for (int ti = 0; ti < KariyerVeri.Turlar.Length; ti++) { int n = 0; foreach (var k in KariyerVeri.Turlar[ti].b) if (k.degistirici != null) { n++; kural++; if (ti == 0 || k.patron || Gunluk.Deg(k.degistirici) == null) Fail("kural maçı yeri/tanımı: " + k.yer); } if (n > 1) Fail("turda birden çok kural maçı"); }
-        if (kural != 3) Fail("kariyerde 3 kural maçı olmalı: " + kural);
+        int kural = 0, senaryoN = 0;
+        for (int ti = 0; ti < KariyerVeri.Turlar.Length; ti++) { int n = 0, sn = 0; foreach (var k in KariyerVeri.Turlar[ti].b) if (k.degistirici != null) { bool senaryo = k.degistirici == "geri"; if (senaryo) { sn++; senaryoN++; if (k.uzunluk != 11) Fail("geri dönüş yalnız 11 sayılık basamakta: " + k.yer); } else { n++; kural++; } if (ti == 0 || k.patron || Gunluk.Deg(k.degistirici) == null) Fail("kural maçı yeri/tanımı: " + k.yer); } if (n > 1 || sn > 1) Fail("turda birden çok kural maçı ya da senaryo"); }
+        if (kural != 3 || senaryoN != 1) Fail("kariyerde 3 kural maçı + 1 senaryo olmalı: " + kural + "/" + senaryoN);
+        // Senaryo (2026-11-10): "geri" maçı 0–3 başlatır, Günün maçı döngüsüne girmez, ilk sayı yazısı (rakip adı) yine çıkar.
+        foreach (var gd in Gunluk.Degistiriciler) if (gd.id == "geri") Fail("senaryo Günün maçı döngüsünde olmamalı");
+        var Mg = new Match(5, new MatchOptions { easy = true, stil = Match.KariyerRakip(18), target = 11, degistirici = KariyerVeri.Al(18).degistirici });
+        if (Mg.degistirici != "geri" || Mg.sc[0] != 0 || Mg.sc[1] != Match.GERI_FARK || !Mg.IlkSayi || Mg.MacSayisiDurum() != -1) Fail("geri dönüş maçı 0–3 başlamalı");
+        { int gd = 0; while (!Mg.over && gd++ < 60 * 60 * 30) { Bot(Mg, 1f / 60f); Mg.Update(1f / 60f); Mg.events.Clear(); } if (!Mg.over || Math.Max(Mg.sc[0], Mg.sc[1]) > 15 || Mg.IlkSayi) Fail("geri dönüş maçı bitmedi ya da tavanı aştı"); }
+        if (new Match(5, new MatchOptions { easy = true, target = 11 }).sc[1] != 0) Fail("serbest maç 0–0 başlamalı");
         var Mk = new Match(5, new MatchOptions { stil = Match.KariyerRakip(8), target = 5, degistirici = KariyerVeri.Al(8).degistirici });
         if (Mk.degistirici != "uzun" || new Match(5, new MatchOptions { stil = Match.KariyerRakip(9), target = 5, degistirici = KariyerVeri.Al(9).degistirici }).degistirici != null) Fail("kural maçı değiştiricisi maça geçmedi (Seul uzun, Tokyo yok)");
         var M = new Match(5, new MatchOptions { stil = Match.KariyerRakip(1), target = 5 });

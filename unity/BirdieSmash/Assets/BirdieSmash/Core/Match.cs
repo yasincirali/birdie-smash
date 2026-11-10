@@ -282,7 +282,7 @@ namespace BirdieSmash.Core
             float r = R01(); op.svTur = r < .58f ? "kisa" : r < .8f ? "flick" : "yuksek";
             if (ogr != null) op.svTur = "yuksek";
             op.svClip = SERVIS[op.svTur].klip; me.svClip = "serve_bh";
-            if (sc[0] + sc[1] == 0 && ogr == null) serveMsg = "Rakip: " + RakipAd(true);
+            if (IlkSayi && ogr == null) serveMsg = "Rakip: " + RakipAd(true);
             if (Dril != null) { DrilTopBasi(); if (sv == "op") wait = Dril.olcu == Sonsuz.ID ? .25f : .9f; }   // sonsuz ralli: antrenör durmadan besler (13:40 inceleme: .45 → .25)   // görev: antrenör yerini alır, top elle gelir
             Emit(Ev.Serve, sv);
         }

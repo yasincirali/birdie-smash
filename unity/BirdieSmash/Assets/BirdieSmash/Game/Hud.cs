@@ -550,7 +550,7 @@ namespace BirdieSmash.Game
         Match sM; string sServer, sSide, sMsg; bool sIlk, sOgr, sTal, sEn, sHazir; int sGorev; float sFu, sEnW, sWW, sHH;
         void ServisSeridi(Match M, float hy)
         {
-            bool ilk = M.sc[0] + M.sc[1] == 0, ogr = Ogretici, tal = M.server == "me" && M.sc[0] + M.sc[1] < 2 && ogr;
+            bool ilk = M.IlkSayi, ogr = Ogretici, tal = M.server == "me" && M.sc[0] + M.sc[1] < 2 && ogr;
             string side = M.ServeSideOf(M.server); float enW = Mathf.Min(rx - lx, 380 * u) - 24 * u;
             if (!sHazir || sM != M || sServer != M.server || sSide != side || sMsg != M.serveMsg || sIlk != ilk || sOgr != ogr
                 || sTal != tal || sGorev != M.gorevler.Count || sEn != L.En || sFu != fu || sEnW != enW)

@@ -24,12 +24,17 @@ namespace BirdieSmash.Core
 
     public static class Gunluk
     {
-        static string[] rakipler, sahalar; static GunlukDeg[] degler; static float g0 = .95f, g1 = 1.15f;
+        static string[] rakipler, sahalar; static GunlukDeg[] degler, senaryolar; static float g0 = .95f, g1 = 1.15f;
         public static int OdulTuy = 40, OdulXp = 30;
         public static readonly DateTime BAS = new DateTime(2026, 1, 1);
         public static void Sifirla() { rakipler = null; }
         public static GunlukDeg[] Degistiriciler { get { Yukle(); return degler; } }
-        public static GunlukDeg Deg(string id) { foreach (var d in Degistiriciler) if (d.id == id) return d; return null; }
+        // Senaryolar (2026-11-10, fikir 19:49 #2 "senaryo basamağı"): maçı kuralla değil başlangıç durumuyla değiştirir
+        // ("geri": rakip önde başlar). Günün maçı döngüsüne GİRMEZ (degler ayrı dizi: döngü 7 gün kalır, "herkes aynı maç"
+        // sürümler arası bozulmaz; önde başlayan rakip g'si ölçülmemiş günlük maçta haksız olurdu); yalnız kariyer basamağı
+        // kullanır. Ad ve açıklama aynı yerden okunur ki kart, rozet ve maç sonu tek kaynaktan yazsın.
+        public static GunlukDeg[] Senaryolar { get { Yukle(); return senaryolar; } }
+        public static GunlukDeg Deg(string id) { foreach (var d in Degistiriciler) if (d.id == id) return d; foreach (var d in senaryolar) if (d.id == id) return d; return null; }
 
         static void Yukle()
         {
@@ -42,7 +47,9 @@ namespace BirdieSmash.Core
             var dl = new List<GunlukDeg>();
             foreach (var x in (List<object>)o["degistiriciler"]) { var d = Json.Obj(x); dl.Add(new GunlukDeg { id = Json.Str(d, "id", ""), ad = Json.Str(d, "ad", ""), aciklama = Json.Str(d, "aciklama", ""), uzunluk = (int)Json.Num(d, "uzunluk", 5) }); }
             foreach (var id in r) if (!KariyerVeri.Stil.ContainsKey(id)) throw new InvalidOperationException("Birdie Smash: gunluk.json bilinmeyen tarz " + id);
-            degler = dl.ToArray(); sahalar = sa; rakipler = r;
+            var snl = new List<GunlukDeg>(); object sno;
+            if (o.TryGetValue("senaryolar", out sno) && sno is List<object>) foreach (var x in (List<object>)sno) { var d = Json.Obj(x); snl.Add(new GunlukDeg { id = Json.Str(d, "id", ""), ad = Json.Str(d, "ad", ""), aciklama = Json.Str(d, "aciklama", ""), uzunluk = 0 }); }
+            degler = dl.ToArray(); senaryolar = snl.ToArray(); sahalar = sa; rakipler = r;
         }
 
         // Yerel gün "YYYY-AA-GG" (kayıt ve karşılaştırma; kültürden bağımsız).
@@ -93,6 +100,7 @@ namespace BirdieSmash.Core
         // tanımı) ve rakip o andan beri topa dokunmadı. tarzHile'nin tarzdan bağımsız hâli; rakip vurunca, ralli başında ve
         // sayıdan sonra söner.
         bool aldatHile;
+        public const int GERI_FARK = 3;
         public const string ALTIN_YAZI = "Altın ralli: bu sayı 2";
 
         // Maç kurulurken (serbest/kariyer maçında null). GS ve stil kopyalanır: kaynak nesneler (Ayar.GS, veri) değişmez.
@@ -102,6 +110,7 @@ namespace BirdieSmash.Core
             if (id == "usta") easy = false;
             if (id == "patron") { stil = stil.Clone(); stil.patron = stil.imza != null; stil.imzaAra = 2; stil.imzaP = .8f; }
             if (id == "nefes") { GS = GS.Kopya(); GS.yorK /= .7f; stil = stil.Clone(); stil.yorK /= .7f; }
+            if (id == "geri") sc[1] = GERI_FARK;   // senaryo: rakip önde başlar; sayı değeri, tavan ve servis kuralı aynı
         }
 
         // Maç sayısı tek kural (inceleme 2026-11-10, fikir 22:09 #3): Match servis şeridi ve GameRoot (LED, skor nabzı,
@@ -109,6 +118,8 @@ namespace BirdieSmash.Core
         // (10–5'te LED yanıyor, yazı yoktu), tavan beraberliğinde (14–14) "Uzatma: 2 fark" diyordu oysa sonraki sayı bitirir,
         // altın rallinin 2 sayısını da hesaba katmıyordu. Koşullu değiştiriciler (uzun/file/aldat) 1 sayılır: koşul ralliden
         // önce bilinmez, "belki maç sayısı" yazmak yanlış bilgi olur. Ayırmasız (GameRoot her karede çağırır).
+        /// Maçın ilk sayısı oynanmadı. Skor toplamı 0 mı diye bakılmaz: "geri" senaryosunda maç 0–3 başlar.
+        public bool IlkSayi { get { return sayiNo == 0; } }
         public int SonrakiDeger() { return degistirici == "altin" && sayiNo % 3 == 2 ? 2 : 1; }
         public int Tavan() { return target == 21 ? 30 : target == 11 ? 15 : 7; }
         bool SonrakiKazanir(int x, int y) { int n = Math.Min(Tavan(), x + SonrakiDeger()); return (n >= target && n - y >= 2) || n >= Tavan(); }
