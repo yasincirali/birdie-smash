@@ -72,6 +72,27 @@ namespace BirdieSmash.Core
             return new[] { Json.Write(e), y.Yaz() };
         }
 
+        // Oturum içi yazma kapısı (2026-11-10 inceleme, fikir 22:09 #1). Esitle yalnız açılışta çalışır; Yaz (maç sonu, arka plana
+        // geçiş) bulutu okumadan yazıyordu. Yeni kurulumda iCloud deposu ilk açılışta henüz inmemiş olabilir (boş okunur, oyuncu
+        // Sv 1'den başlar) ya da ikinci cihaz arka planda açık kalmış olabilir: ilk Yaz büyük ilerlemeyi ve başka cihazda alınan
+        // Tüy/Reklamsız defterini ezerdi. Artık yalnız karar "Yaz" iken yazılır; bulut öndeyse (Yukle) ya da bulutta yerelin
+        // bilmediği satın alma varsa (Birlestir) bu oturumda yazılmaz, sonraki açılışın Esitle'si yükler/birleştirir. Oturum
+        // içinde buluttan yeniden yüklemek (Ayar bellekte) yapılmadı: menü yeniden kurulumu bulutta sınanamaz.
+        public static bool Yazilabilir(string yerelEko, string bulut, string yerelDefter) { return Karsilastir(yerelEko, bulut, yerelDefter) == Karar.Yaz; }
+
+        // Yukle'de yerel satın alma kaybolmasın (aynı tur): bulut öndeyken bu cihazda yapılmış ve buluta henüz yazılmamış satın
+        // almalar (yukarıdaki kapı yazmayı durdurduğu için artık mümkün) yüklenen cüzdana eklenir. SatinBirlestir'in tersi:
+        // eski yerel defter "bulut" rolünde. Eksik yoksa null (dokunma).
+        public static string[] YukleSonrasiBirlestir(string yuklenenEko, string yuklenenDefter, string eskiYerelDefter)
+        {
+            if (string.IsNullOrEmpty(eskiYerelDefter)) return null;
+            var m = new Dictionary<string, object>(); m[TuyDukkan.ANAHTAR] = eskiYerelDefter;
+            var g = new Dictionary<string, object>(); g["m"] = m; string sanal = Json.Write(g);
+            var eski = TuyDukkan.Defter.Oku(eskiYerelDefter);
+            if (Eksik(yuklenenDefter, sanal).Count == 0 && !(eski.reklamsiz && !TuyDukkan.Defter.Oku(yuklenenDefter).reklamsiz)) return null;
+            return SatinBirlestir(yuklenenEko, yuklenenDefter, sanal);
+        }
+
         // Görüntüyü yerele açar: yazıcılar anahtar başına çağrılır. Görüntüde olmayan ilerleme anahtarı silinmez (eski sürümün
         // bilmediği yeni anahtar yerelde kalır).
         public static int Ac(string bulut, Action<string, string> metinYaz, Action<string, int> sayiYaz)
