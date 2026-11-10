@@ -1,4 +1,10 @@
 === UNITY ===
+Reklam ve zorluk (9 Kasım):
+- Maç sonu ödüllü reklam ("Ödüle +%50 · reklam izle") artık gerçekten çıkıyor: "Maçın anı" düğmesi yuvayı kaptığı için neredeyse hiç görünmüyordu. Kural aynı: ilk 3 galibiyetten sonra, günde 1. Maçın anı Ayrıntılar'da yerinde.
+- Reklam şeridi yalnız Oyna ekranında, sekme çubuğundan 8 pt aralıklı; Kariyer, Dolap, Profil ve Atölye'de şerit yok. Küçük ekranda Oyna'ya sığmıyorsa hiç çıkmıyor, düğmeleri itmiyor.
+- Zorluk (Kolay, Orta, Zor, Usta) Oyna ekranında, Oyna düğmesinin hemen üstünde. Kariyerin sıradaki maçı seçtiğin zorlukta oynanır. Oyna düğmesinin alt satırında artık saha adı yok (plakadaki yer adıyla karışıyordu).
+Nasıl denenir: Oyna'da Kolay'ı seç ve Oyna'ya bas, maçı kazan: kariyer ilerlemeli. Bugün henüz reklam izlemediysen maç sonu kartında "Ödüle +%50 · reklam izle" çıkmalı (test reklamı açılır). Oyna'da şerit sekmelerin biraz üstünde durmalı, Kariyer ve Dolap'a geçince kaybolmalı.
+
 Bu gece (10 Kasım 02:15 inceleme turu):
 - Ayarlar'da Ses, Müzik, Titreşim ve Hareketi azalt artık tek "Ses ve his" bölümünde, her biri solda adı, sağda açma kapama anahtarıyla. Anahtarın yanında "açık" ya da "kapalı" yazıyor.
 - Büyük yazıyla Dolap'ta bir şapkayı hedef yapınca kartlar artık ezilmiyor, liste kayıyor. Seviye atladın ekranı ve tur töreni büyük yazıda da tam okunuyor; düğmeler altta sabit.

@@ -51,6 +51,10 @@ namespace BirdieSmash.Game
             // görülmedi) tek kart ilk maçın ne olduğunu söyler, kutucuklar yok. Galibiyeti olan (devirle gelen dahil) aynı ekranı görür.
             bool ilk = !Ayar.antrenman && Ayar.wins == 0 && !root.bekleyen;
             if (ilk) c.Add(IlkKart()); else if (usta && !root.bekleyen) c.Add(UstaKart()); else c.Add(SiradakiKart());
+            // 2026-11-09 (yasin: "kariyeri farklı zorluklarda oynayabilme gelmesi lazım"): seçim 5 Kas'tan beri Kariyer'deki maç
+            // kartındaydı, Oyna'dan oynayan görmüyordu. Aynı dört çip (tek ayar tuytop_zorluk) Oyna düğmesinin hemen üstünde;
+            // açıklama satırı yok (düğmenin alt satırı kademeyi zaten söylüyor, küçük ekranda bir satır kazanılır).
+            if (Ayar.antrenman && !usta && !root.bekleyen && !ilk) { var zs = Satir("oyna-zorluk"); c.Add(zs); ZorlukSatir(zs, c, false); }
             if (root.bekleyen)
             {
                 c.Add(BuyukDugme(L.T("Maça devam et"), null, () => root.MacaDon()));
@@ -62,7 +66,7 @@ namespace BirdieSmash.Game
                 // yazıyordu. A tasarımında alt satır maçın biçimini söyler (sayı · saha · zorluk), ilk açılış ve şampiyon satırı kalır.
                 var p = Ayar.ilerleme; var kb = KariyerVeri.Al(p.Siradaki());
                 string alt = ilk ? null : !Ayar.antrenman ? L.T("İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç") : p.HepsiBitti ? L.Cumle(Career.Line(p))
-                    : L.T("{0} sayı", kb.uzunluk > 0 ? kb.uzunluk : Ayar.target) + " · " + L.T(CourtView.SAHA[kb.saha].ad) + " · " + L.T(Ayar.ZorlukAd)
+                    : L.T("{0} sayı", kb.uzunluk > 0 ? kb.uzunluk : Ayar.target) + " · " + L.T(Ayar.ZorlukAd)   // 2026-11-09: saha adı ("Okul (ahşap)") plakadaki yer adıyla iki ayrı yer gibi okunuyordu (inceleme 10 Kas 02:15); saha maç kartında
                       + (kb.degistirici != null && Gunluk.Deg(kb.degistirici) != null ? " · " + L.T(Gunluk.Deg(kb.degistirici).ad) : "");   // kural maçı adı
                 c.Add(BuyukDugme(L.T("Oyna"), alt, () =>
                 {
@@ -307,7 +311,7 @@ namespace BirdieSmash.Game
             }
             int si = System.Array.IndexOf(Ls, Ayar.target); if (si >= 0) c.Add(Yazi(L.T(Lb[si]), 12, "soluk"));
         }
-        void ZorlukSatir(VisualElement satir, VisualElement c)
+        void ZorlukSatir(VisualElement satir, VisualElement c, bool aciklama = true)
         {
             satir.AddToClassList("cip-sarar");   // dört çip: büyük yazıda sözcük kırılmaz, satır sarar
             for (int i = 0; i < 4; i++)
@@ -315,7 +319,7 @@ namespace BirdieSmash.Game
                 int v = i; var cp = Cip(L.T(Ayar.ZORLUK_AD[i]), Ayar.zorluk == v, () => { Ayar.zorluk = v; Ayar.Kaydet(); Degisti(); });
                 Erisim.Etiket(cp, L.T(Ayar.ZORLUK_AD[i]) + ". " + L.T(ZORLUK_ACIK[i]), "dugme", Ayar.zorluk == v); satir.Add(cp);
             }
-            c.Add(Yazi(L.T(ZORLUK_ACIK[Mathf.Clamp(Ayar.zorluk, 0, 3)]), 12, "soluk"));
+            if (aciklama) c.Add(Yazi(L.T(ZORLUK_ACIK[Mathf.Clamp(Ayar.zorluk, 0, 3)]), 12, "soluk"));
         }
         // Ayar değişti: görünen yüzey (alt sayfa / sayfa / sekme) yeniden kurulur; kaydırma yeri ScrollView'de kalır.
         void Degisti()

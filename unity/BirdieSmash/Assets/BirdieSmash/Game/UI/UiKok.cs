@@ -180,38 +180,55 @@ namespace BirdieSmash.Game
         // 2.1 yer tutucu içeriği bitmemiş ürün sayar, muadiller reklam yoksa yer ayırmaz. Yer artık 0 yükseklikte; şerit ilk
         // yüklendiğinde açılır ve oturum boyunca açık kalır (sonraki yenilemede düşse de menü zıplamasın).
         VisualElement reklamEl; static bool seritAcildi;
-        static readonly Sekme[] SERITSIZ_SEKME = { Sekme.Soyunma, Sekme.Atolye };
+        // 2026-11-09 (yasin: "reklam şeridi daha rahatsız etmeyecek benchmarked bir pozisyona alalım, küçük ekranlarda da rahatsız
+        // etmesin"). Kıyas: arcade spor oyunları menü şeridini yalnız ana ekranda, ekranın dibinde sabit gösterir; eşya, harita ve
+        // ayar ekranlarında şerit yok (oyuncu orada okur, kaydırır). AdMob uygulama kılavuzu da şeridin dokunulan düğmelere bitişik
+        // durmamasını ister (yanlışlıkla tıklama politikası). Bu yüzden:
+        //  - Şerit yalnız Oyna sekmesinin kendisinde (üstünde tam sayfa ya da alt sayfa yokken). Kariyer, Dolap, Profil, Atölye
+        //    şeritsiz; o sekmelerde yer de kapanır ve içerik sekme çubuğuna kadar iner.
+        //  - Şerit ile sekme çubuğu arasında ARA kadar boşluk (yanlışlıkla dokunma payı).
+        //  - Oyna'da şerit afiş boşluğundan (esnek oyna-sahne) yer alır, düğmeleri itmez. Küçük ekranda (SE, büyük yazı) afiş
+        //    boşluğu şerit girince AFIS_MIN'in altına düşecekse şerit o ekranda hiç çıkmaz: içerik kaymaz, kaydırma da gerekmez.
+        //    Karar yer açıkken ve kapalıyken aynı ölçüyle verilir (açık: boşluk; kapalı: boşluk − bant), açılıp kapanma titremez.
+        // Önceki (2026-11-08) "Dolap ve Atölye'de yok" kararının üstüne yazar.
+        const float ARA = 8f, AFIS_MIN = 72f;
+        static float Bant { get { return Reklam.PT + ARA; } }
         void ReklamKur(VisualElement r)
         {
             if (r == null) return; r.Clear(); r.pickingMode = PickingMode.Position; reklamEl = r;
             if (!Reklam.ALAN) { r.style.display = DisplayStyle.None; return; }
-            r.style.display = DisplayStyle.Flex; r.style.height = seritAcildi ? Reklam.PT : 0f;
+            r.style.display = DisplayStyle.Flex; r.style.height = seritAcildi ? Bant : 0f;
             Erisim.Etiket(r, L.T("Reklam alanı"), "metin");
+        }
+        // Oyna'da şerit için yer var mı (yukarıdaki AFIS_MIN kuralı). Sahne henüz yerleşmediyse (ilk kare) evet: ölçü gelince düzelir.
+        bool OynadaYerVar()
+        {
+            var sahne = oynaSahne; if (sahne == null || sahne.panel == null || float.IsNaN(sahne.layout.height)) return true;
+            bool acik = seritAcildi && reklamEl != null && reklamEl.resolvedStyle.display == DisplayStyle.Flex;
+            return (acik ? sahne.layout.height : sahne.layout.height - Bant) >= AFIS_MIN;
         }
         // AdMob şeridi (Game/ReklamSdk, 2026-11-07): yerin ekrandaki konumu her kare verilir; şerit yalnız menü tam görünürken
         // çıkar: perde/solma yok, alt sayfa (sheet) kapalı. Şerit native bir görünüm, UI Toolkit'in üstünde durur: alt sayfa onu
-        // örtemeyeceği için gizlenir. Yer kapalıyken şerit, açılınca oturacağı yere (sekme çubuğunun hemen üstü, PT boyu) istenir;
-        // yüklenince yer açılır, yerleşim o boya oturana kadar şerit gizli tutulur (içeriğin üstüne binmesin).
+        // örtemeyeceği için gizlenir. Yüklenince yer açılır (PT + ARA), yerleşim o boya oturana kadar şerit gizli tutulur
+        // (içeriğin üstüne binmesin). Şerit bandın üstüne oturur, ARA boşluğu sekme çubuğu tarafında kalır.
         void ReklamSeritYeri(bool perde, float ortu)
         {
             ReklamSdk.Baslat();
             // Reklamsız alındıysa (oturum ortasında da): yer kapanır, şerit gizlenir; menü yeniden kurulunca ReklamKur hiç açmaz.
             if (!Reklam.ALAN) { if (reklamEl != null && reklamEl.style.display != DisplayStyle.None) reklamEl.style.display = DisplayStyle.None; ReklamSdk.Serit(null); return; }
-            // 2026-11-08 (yasin: "reklam şeridi daha ince olamaz mı"): AdMob telefonda 320×50'den ince şerit vermez (uyarlanabilir şerit
-            // de en az 50 pt), PT inmez. Onun yerine şerit uzun listeli ve ayar yapılan Dolap ile Atölye'de yok; yer de kapanır ki
-            // içerik aşağıya kadar insin. Gelir asıl maç sonu ödüllü reklamda; bu iki sekme şeridin küçük bir payı.
-            bool sekmede = System.Array.IndexOf(SERITSIZ_SEKME, gez.sekme) < 0;
-            if (reklamEl != null) { var ist = sekmede ? DisplayStyle.Flex : DisplayStyle.None; if (reklamEl.style.display != ist) reklamEl.style.display = ist; }
-            if (!sekmede) { ReklamSdk.Serit(null); return; }
+            // AdMob telefonda 320×50'den ince şerit vermez (uyarlanabilir şerit de en az 50 pt), PT inmez (2026-11-08).
+            bool yerde = gez.sekme == Sekme.Oyna && gez.Ust == null && OynadaYerVar();
+            if (reklamEl != null) { var ist = yerde ? DisplayStyle.Flex : DisplayStyle.None; if (reklamEl.style.display != ist) reklamEl.style.display = ist; }
+            if (!yerde) { ReklamSdk.Serit(null); return; }
             if (!ReklamSdk.Hazir) return;
-            if (ReklamSdk.SeritYuklu && !seritAcildi && reklamEl != null) { seritAcildi = true; reklamEl.style.height = Reklam.PT; }
+            if (ReklamSdk.SeritYuklu && !seritAcildi && reklamEl != null) { seritAcildi = true; reklamEl.style.height = Bant; }
             Rect? yer = null;
             if (!perde && ortu <= .01f && gez.AcikAltSayfa == null && reklamEl != null && reklamEl.resolvedStyle.display == DisplayStyle.Flex)
             {
                 float pw = doc.rootVisualElement.layout.width; var wb = reklamEl.worldBound;
-                bool oturdu = wb.height >= Reklam.PT - .5f;
+                bool oturdu = wb.height >= Bant - .5f;
                 if (seritAcildi && !oturdu) { ReklamSdk.Serit(null); return; }
-                if (pw > 0 && Screen.width > 0 && wb.width > 0) { float s = pw / Screen.width, ust = wb.yMax - Reklam.PT; yer = new Rect(wb.x / s, ust / s, wb.width / s, Reklam.PT / s); }
+                if (pw > 0 && Screen.width > 0 && wb.width > 0) { float s = pw / Screen.width, ust = wb.yMax - Bant; yer = new Rect(wb.x / s, ust / s, wb.width / s, Reklam.PT / s); }
             }
             ReklamSdk.Serit(yer);
         }
