@@ -1,4 +1,10 @@
 === UNITY ===
+Gelişim görünür, maç sonu başlığı (11 Kasım gece):
+- Atölye'de "Takımın şimdi" çubukları artık gelişim puanlarını da gösteriyor: ekipmanın çubuğunun ucunda yeşil bir parça ve sağda "+n" yazısı. Eşit şartlar açıkken görünmez.
+- Gelişim sayfası Sv 1'de sade: puan yokken eksi/artı düğmeleri ve "+%0" yazısı yok. Profil'deki Gelişim kartı beş çubuk yerine tek satır ("12/29 puan").
+- Maç sonu başlığı maçın hikâyesini söylüyor: çok geriden gelip kazanınca "Geri dönüş" (altında "3–8 gerideyken döndün."), uzatmada ya da tek sayı farkla kazanınca "Kıl payı". Ödül değişmedi.
+Nasıl denenir: Gelişim'de Güç'e birkaç puan ver, Dolap > Atölye'ye geç: Güç çubuğunun ucunda yeşil parça ve "+n" olmalı, sayı büyümeli. Puanı geri al: parça kaybolmalı. Profil'de Gelişim tek satır olmalı, dokununca sayfa açılmalı. 11 sayılık maçta rakip 4–5 sayı öne geçsin, sonra kazan: başlık "Geri dönüş" olmalı. 10–10'dan 12–10 kazan: "Kıl payı". Rahat kazanınca yine "Galibiyet".
+
 Kariyerde geri dönüş maçı (10 Kasım gece):
 - Dünya Finalleri'nin ilk maçı (Singapur grup 1) artık bir senaryo: rakip 3–0 önde başlar, maç 11 sayı. Rakibin gücü buna göre düşürüldü; ölçümde kazanma oranı eskisine yakın.
 - Basamak kartında ve maçta skorun altında "Geri dönüş" yazar. Günün maçı döngüsü değişmedi.

@@ -305,6 +305,9 @@
 .stat-ad { width: 34%; color: var(--mu2); flex-shrink: 0; }
 .stat-iz { flex-grow: 1; height: 8px; background-color: rgba(255, 255, 255, 0.1); border-radius: 4px; margin: 0 8px; }
 .stat-dolu { position: absolute; left: 0; top: 0; bottom: 0; background-color: var(--sky); border-radius: 4px; }
+/* 2026-11-11: gelişimin payı ekipman dolgusunun ucunda, limon = sen; yanında "+n" yazısı (renk tek başına taşımaz) */
+.stat-gelisim { position: absolute; top: 0; bottom: 0; background-color: var(--lime); border-radius: 4px; }
+.stat-arti { color: var(--lime); white-space: nowrap; flex-shrink: 0; margin-left: 2px; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .stat-orta { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background-color: rgba(255, 255, 255, 0.55); }
 .stat-deger { min-width: 30px; white-space: nowrap; -unity-text-align: middle-right; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); flex-shrink: 0; }   /* r13: ×2'de "5" / "0" diye kırılıyordu */
 .stat-isaret { width: 16px; margin-left: 4px; align-items: center; flex-shrink: 0; }

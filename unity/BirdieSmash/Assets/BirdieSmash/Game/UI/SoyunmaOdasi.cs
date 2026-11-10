@@ -51,6 +51,7 @@ namespace BirdieSmash.Game
         int soyunmaSeg; string yuvaAcik = "raket";
         // Canlı çubuklar (tel kaydırıcısı sürüklenirken yeniden kurmadan güncellenir): dolgu + değer yazısı.
         readonly List<VisualElement> canliDolgu = new List<VisualElement>(); readonly List<Label> canliDeger = new List<Label>();
+        readonly List<VisualElement> canliGel = new List<VisualElement>(); readonly List<Label> canliArti = new List<Label>();
         public const int SEG_KARAKTER = 3;
         VisualElement vitrinOdak;
 
@@ -222,7 +223,7 @@ namespace BirdieSmash.Game
             var gr = Ayar.gear;   // Seviye satırı kalktı (2026-11-05, Ar-Ge 11:40 #3): üst çubukta Sv + XP ve Tüy zaten var, Profil'de ayrıntı
             c.Add(Grup(L.T("Oyun tarzı"))); TarzGovde(c);
             c.Add(Grup(L.T("Takımın")));
-            var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true);
+            var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true, null, Ayar.GelisimCubuk());
             RaketKimlikKart(c);
             c.Add(Grup(L.T("Yuvalar"))); var iz = Satir("izgara"); iz.AddToClassList("yuva-izgara"); c.Add(iz);
             foreach (var Y in Gear.YUVA) iz.Add(YuvaKare(Y));
@@ -316,28 +317,40 @@ namespace BirdieSmash.Game
         }
 
         // 5 çubuk: ad, iz (50'de nötr çizgisi), değer; karsi verildiyse ▲/▼ (nötr modele göre). canli: tel kaydırıcısı günceller.
-        void CubukKart(VisualElement c, int[] v, int[] karsi, bool canli, string[] adlar = null)
+        // gel: gelişimin çubuk başına payı (yalnız "Takımın şimdi"); ekipman dolgusunun ucunda limon (= sen) tonla durur ve
+        // değerin yanında "+n" yazar: renk tek başına taşımaz, erişilebilirlik etiketi de söyler.
+        void CubukKart(VisualElement c, int[] v, int[] karsi, bool canli, string[] adlar = null, int[] gel = null)
         {
-            var AD = adlar ?? Gear.CUBUK_AD;
+            var AD = adlar ?? Gear.CUBUK_AD; if (canli) { canliGel.Clear(); canliArti.Clear(); }
             for (int i = 0; i < 5; i++)
             {
                 var r = Satir("stat-satir"); r.pickingMode = PickingMode.Ignore; c.Add(r);
                 r.Add(Yazi(L.T(AD[i]), 12, "stat-ad"));
                 var iz = new VisualElement(); iz.AddToClassList("stat-iz"); iz.pickingMode = PickingMode.Ignore; r.Add(iz);
                 var dl = new VisualElement(); dl.AddToClassList("stat-dolu"); dl.style.width = Length.Percent(v[i]); dl.pickingMode = PickingMode.Ignore; iz.Add(dl);
+                int g = gel != null ? Mathf.Min(gel[i], 100 - v[i]) : 0;
+                var gd = new VisualElement(); gd.AddToClassList("stat-gelisim"); gd.pickingMode = PickingMode.Ignore; gd.style.left = Length.Percent(v[i]); gd.style.width = Length.Percent(g); gd.style.display = g > 0 ? DisplayStyle.Flex : DisplayStyle.None; iz.Add(gd);
                 var orta = new VisualElement(); orta.AddToClassList("stat-orta"); orta.pickingMode = PickingMode.Ignore; iz.Add(orta);
-                var dg = Yazi(v[i].ToString(), 12, "stat-deger"); r.Add(dg);
+                var dg = Yazi((v[i] + g).ToString(), 12, "stat-deger"); r.Add(dg);
+                Label ar = null; if (gel != null) { ar = Yazi(g > 0 ? "+" + g : "", 11, "stat-arti"); ar.style.display = g > 0 ? DisplayStyle.Flex : DisplayStyle.None; r.Add(ar); }
+                string yonGel = g > 0 ? ", " + L.T("gelişimden artı {0}", g) : "";
                 int fark = karsi != null ? v[i] - karsi[i] : 0; string yon = "";
                 var isk = new VisualElement(); isk.AddToClassList("stat-isaret"); isk.pickingMode = PickingMode.Ignore; r.Add(isk);
                 if (fark != 0) { isk.Add(Ikon(fark > 0 ? Ikonlar.Yukari : Ikonlar.Asagi, 12, fark > 0 ? LIMON : SOLUK));   /* 2026-11-07 (AD7): ▲ limon, ▼ soluk; orkide yalnız rakip */ yon = ", " + L.T(fark > 0 ? "artı {0}" : "eksi {0}", Mathf.Abs(fark)); }
-                Erisim.Etiket(r, L.T(AD[i]) + " " + v[i] + yon, "metin");
-                if (canli) { canliDolgu.Add(dl); canliDeger.Add(dg); }
+                Erisim.Etiket(r, L.T(AD[i]) + " " + (v[i] + g) + yonGel + yon, "metin");
+                if (canli) { canliDolgu.Add(dl); canliDeger.Add(dg); canliGel.Add(gd); canliArti.Add(ar); }
             }
         }
         void CanliCubukYaz()
         {
-            if (canliDolgu.Count != 5) return; var v = Gear.Cubuklar(Ayar.GSE);
-            for (int i = 0; i < 5; i++) { canliDolgu[i].style.width = Length.Percent(v[i]); canliDeger[i].text = v[i].ToString(); var b = canliDeger[i].parent.userData as ErisimBilgi; if (b != null) b.etiket = L.T(Gear.CUBUK_AD[i]) + " " + v[i]; }
+            if (canliDolgu.Count != 5) return; var v = Gear.Cubuklar(Ayar.GSE); var gel = Ayar.GelisimCubuk(); bool gv = canliGel.Count == 5;
+            for (int i = 0; i < 5; i++)
+            {
+                int g = gv ? Mathf.Min(gel[i], 100 - v[i]) : 0;
+                canliDolgu[i].style.width = Length.Percent(v[i]); canliDeger[i].text = (v[i] + g).ToString();
+                if (gv) { canliGel[i].style.left = Length.Percent(v[i]); canliGel[i].style.width = Length.Percent(g); canliGel[i].style.display = g > 0 ? DisplayStyle.Flex : DisplayStyle.None; var a = canliArti[i]; if (a != null) { a.text = g > 0 ? "+" + g : ""; a.style.display = g > 0 ? DisplayStyle.Flex : DisplayStyle.None; } }
+                var b = canliDeger[i].parent.userData as ErisimBilgi; if (b != null) b.etiket = L.T(Gear.CUBUK_AD[i]) + " " + (v[i] + g) + (g > 0 ? ", " + L.T("gelişimden artı {0}", g) : "");
+            }
         }
 
         // ---- yuva sayfası (alt sayfa) ----
@@ -348,7 +361,7 @@ namespace BirdieSmash.Game
             YuvaKur(c, Y, L_);
             if (Y.k == "tel") TelKur(c);
             if (Y.k == "raket") TeknikKur(c);
-            c.Add(Grup(L.T("Takımın şimdi"))); var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true);
+            c.Add(Grup(L.T("Takımın şimdi"))); var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true, null, Ayar.GelisimCubuk());
             c.Add(Grup(L.T("Modeller")));
             foreach (var m in Gear.GEAR[Y.m].Values) ModelKart(c, Y, m);
             if (gr.eko.esit) c.Add(Yazi(L.T("Eşit şartlar açık: serbest maçta sayılmaz, kariyerde sayılır"), 12, "soluk"));
