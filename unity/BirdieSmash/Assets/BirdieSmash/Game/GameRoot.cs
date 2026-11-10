@@ -175,7 +175,7 @@ namespace BirdieSmash.Game
             Ayar.GearHesap();
             // Usta daveti bayrağı burada TÜKETİLİR: Günün maçı/Usta yolu/görev StartMatch'e uğramadan Secenek çağırır, bayrak sızmasın.
             bool ud = ustaDeneBu && !ogr; ustaDeneBu = false; ustaDeneMac = ud;
-            return new MatchOptions { easy = Ayar.easy && !ud, kosuYardim = ud || Ayar.kosuYardim, rakipK = ud ? 1 : Ayar.RakipK, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0 };
+            return new MatchOptions { easy = Ayar.easy && !ud, kosuYardim = ud || Ayar.kosuYardim, rakipK = ud ? 1 : Ayar.RakipK, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null && Ayar.easy ? Ayar.ilerleme.Yardim : 0 };
         }
         // Maç kurulumunun ortak kuyruğu (2026-10-26: dört mod aynı yoldan; davranış eski StartMatch'le birebir).
         void MacKur(int tohum, MatchOptions o)
@@ -361,6 +361,9 @@ namespace BirdieSmash.Game
             var beceri0 = Ayar.ilerleme != null ? Karakter.BeceriKazanilan(Ayar.ilerleme) : null;
             if (M.ogr == null && Ayar.ilerleme != null) Ayar.ilerleme.MacSay(M.smashes, M.smacKarsila, M.deceives);   // Profil istatistiği (2026-10-26; cihazda)
             // Yardım kademesi (Core/Ilerleme.Yardim): Usta yolu dışındaki her maç. Kayıpta sonuç ekranı söyler (gizli kolaylık değil).
+            // 2026-11-10 inceleme: yardım yalnız Kolay/Orta seçen oyuncuya uygulanır (Secenek: Ayar.easy). Zor/Usta'yı bilerek seçen
+            // oyuncunun rakibi gizlice yavaşlamasın; kademe sayılmaya devam eder (kayıp sayacı) ve 3+ kayıpta sonuç kartı kademe
+            // indirmeyi açıkça önerir. Kolay/Orta'ya inen oyuncu biriken yardımla başlar: 29 Eki kararının (çocuklar) amacı bu.
             int yardim0 = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0;
             if (M.ogr == null && Ayar.ilerleme != null && M.stil.usta < 0) Ayar.ilerleme.YardimIsle(won);
             bool yumusadi = Ayar.ilerleme != null && Ayar.ilerleme.Yardim > yardim0;
@@ -428,7 +431,9 @@ namespace BirdieSmash.Game
             // birebir kopyası olduğu için orada değiştirilmez.
             bittiBas = won ? (L.En ? "Victory" : "Galibiyet") : L.T("Bu sefer rakip aldı");
             if (kNot != "") { if (kariyerIlk) bittiAcilan = L.Cumle(kNot); else bittiAltNot = L.Cumle(kNot); }
-            if (yumusadi) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Sıradaki maçta rakip biraz yavaşlayacak.");
+            if (yumusadi && Ayar.easy) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Sıradaki maçta rakip biraz yavaşlayacak.");
+            else if (!won && !Ayar.easy && M.stil.usta < 0 && M.ogr == null && Ayar.ilerleme != null && Ayar.ilerleme.Yardim >= 3)
+                bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Zorlanıyorsan Ayarlar'dan zorluğu bir kademe indirebilirsin.");
             // İmza okuma sayacı aşağıda değil yukarıda (ödül bloğu) işlendi; yeni beceri unvanı alt nota tek cümle, yeni yazı yuvası yok.
             var yeniUnvan = beceri0 != null ? Karakter.YeniBeceri(Ayar.ilerleme, beceri0) : null;
             if (yeniUnvan != null) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Yeni unvan: {0}.", L.T(yeniUnvan.ad) + Karakter.KademeEki(yeniUnvan, Ayar.ilerleme));

@@ -22,6 +22,7 @@ Apple'ın tanımı: "collect" = veriyi cihazdan çıkarıp senin ya da ortaklar�
 - **Game Center**: oyun yalnız başarım kimliklerini (`bs_kariyer_1` vb.) Apple'ın hizmetine gönderir; oyuncu kimliğini okumaz/saklamaz, geliştiriciye ulaşan bir şey yok. Apple'ın topladığı veri → bildirilmez.
 - **İzinler**: Info.plist'te hiçbir `NS...UsageDescription` yok (kamera, mikrofon, konum, rehber, fotoğraf istenmiyor). Bildirim yok.
 - **Reklam / izleme**: 1.0'da Google AdMob (menü şeridi + ödüllü reklam). IDFA yalnız App Tracking Transparency izni verilirse Google'a gider; izin yoksa kişiselleştirilmemiş reklam. Veri Google'a gider, bize gelmez; App Privacy'de "Third-Party Advertising" amaçlı bildirilir.
+  "Used to Track = Yes" ancak ATT penceresi gerçekten çıkıyorsa doğru: AdMob "IDFA açıklaması" mesajı yayında olmalı (YAPMAN_GEREKENLER AdMob 2. adım, 2026-11-10).
 - **Satın alma**: StoreKit ile "Reklamsız" ve Tüy paketleri. Ödeme ve satın alma geçmişi Apple'da; kendi sunucumuz yok, makbuz yalnız cihazda doğrulanır → bizim için "toplanmaz".
 
 ## Veri türü başına gerekçe

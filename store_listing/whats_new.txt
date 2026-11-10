@@ -10,6 +10,10 @@ Bu sabah (10 Kasım 07:12 inceleme turu):
 - Ayarlar › Kamera'da seçili açının altında ne gösterdiği yazıyor (Yayın, Alçak, Üstten).
 Nasıl denenir: Zor'da bir maç oyna; topun düşeceği yere yakınken halka kalın ve noktalı, uzaktayken ince olmalı. Ayarlar'da üç kamera çipine sırayla dokun: altındaki cümle her seferinde değişmeli.
 
+Öğlen (10 Kasım 12:10 inceleme turu):
+- Zor ya da Usta seçtiysen, üst üste kaybedince rakip artık gizlice yavaşlamıyor; seçtiğin zorlukta oynarsın. Üç kez üst üste kaybedince maç sonu kartı zorluğu bir kademe indirebileceğini söyler. Kolay ve Orta'da eski yardım aynen sürüyor.
+Nasıl denenir: Zor'u seç, üç maçı arka arkaya kaybet: kartta "Sıradaki maçta rakip biraz yavaşlayacak" yazmamalı, üçüncü kayıpta "Zorlanıyorsan Ayarlar'dan zorluğu bir kademe indirebilirsin" yazmalı. Kolay'da kaybedince eski "rakip biraz yavaşlayacak" cümlesi çıkmalı.
+
 Bu gece (10 Kasım 02:15 inceleme turu):
 - Ayarlar'da Ses, Müzik, Titreşim ve Hareketi azalt artık tek "Ses ve his" bölümünde, her biri solda adı, sağda açma kapama anahtarıyla. Anahtarın yanında "açık" ya da "kapalı" yazıyor.
 - Büyük yazıyla Dolap'ta bir şapkayı hedef yapınca kartlar artık ezilmiyor, liste kayıyor. Seviye atladın ekranı ve tur töreni büyük yazıda da tam okunuyor; düğmeler altta sabit.
