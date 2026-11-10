@@ -30,25 +30,9 @@ namespace BirdieSmash.Game
             // maç ayrıntısında, oynamadan hemen önce (zorlukla aynı karar, 2026-11-07). Ayar ve anahtar aynı.
             // 2026-11-07 (inceleme 16:05 #5): içeriksiz "Görünüm" başlığı kalktı; hemen altındaki "Oyuncu görünümü" ile iki başlık
             // art arda duruyordu (VoiceOver'da iki boş başlık).
-            c.Add(Grup(L.T("Oyuncu görünümü"))); var m = Satir(); c.Add(m);
-            // r56 (2026-10-29): Tüycük'le dört çip tek satırda "Oyun cak 3B" diye bölünüyordu (tarama: kelime 58 > 36 px); 2×2 sarar.
-            m.style.flexWrap = Wrap.Wrap;
-            // 2026-10-27 (yasin build 41: "3B model kaybolmuş, seçmeme rağmen görmedim"): Sade üçüncü seçenek (build 40 notu
-            // vaat ediyordu, FBX vardı, çip yoktu). Karakter odasındaki tip/saç/ayakkabı modeli yalnız Oyuncak 3B'de görünür;
-            // başka model seçiliyken bu, küçük gri notla değil, çiplerin hemen altında açıkça yazılır.
-            for (int i = 0; i < Ayar.MODELLER.Length; i++)
-            {
-                // 2026-11-07 (yasin "yap": dört seçenek ikiye): seçenekte yalnız Oyuncak 3B ve Tüycük; Gerçekçi ya da Sade seçmiş
-                // oyuncunun seçimi silinmez, kendi çipi de görünmeye devam eder (geri dönüp bırakabilsin). Online kartı dört modeli de tanır.
-                string id = Ayar.MODELLER[i]; if (!Ayar.ModelVar(id)) continue; if (!Ayar.ModelSecenek(id) && Ayar.model != id) continue;
-                var ci = Cip(L.T(Ayar.MODEL_AD[i]), Ayar.model == id, () => { Ayar.model = id; Ayar.Kaydet(); root.ModelDegisti(); Degisti(); });
-                ci.style.flexBasis = new StyleLength(new Length(40, LengthUnit.Percent)); m.Add(ci);
-            }
-            // 2026-10-27: Gerçekçi'de ayakkabı modeli, şort ve kumaş da görünür; not neyin sabit neyin değiştiğini söyler.
-            if (Ayar.model == "rocketbox") c.Add(Yazi(L.T("Gerçekçi: beden, yüz ve saç sabit; ayakkabı, forma, şort, kafa bandı, bileklik ve raket değişir."), 13, "ipucu"));
-            // 2026-10-29 Tüycük: tüy rengi forma renginden; ayakkabı modeli görünür (Oyuncak'ın parçaları), beden ve saç tek.
-            else if (Ayar.model == "tuycuk") c.Add(Yazi(L.T("Tüycük: beden ve yüz sabit, tüy rengi forma renginden gelir; ayakkabı, kafa bandı, bileklik ve raket değişir."), 13, "ipucu"));
-            else if (!Ayar.VaryantGorunur) c.Add(Yazi(L.T("Beden tipi, saç biçimi ve ayakkabı modeli yalnız Oyuncak 3B'de görünür."), 13, "ipucu"));
+            // 2026-11-10 (fikir 7 Kas 18:05 #4, yasin "üçünü de al"): "Oyuncu görünümü" model çipleri Dolap'a taşındı (UiKok.ModelCipleri,
+            // Dolap › Beden ve tek bedenli modellerde bilgi kartı). Kimlik kararı giydirmenin ilk adımı; Ayarlar'la Dolap arasında mekik bitti.
+            // Kayıt anahtarı ve değerleri aynı (tuytop_model): kimsenin seçimi değişmez.
             c.Add(Grup(L.T("Kamera"))); var km = Satir(); c.Add(km);
             for (int i = 0; i < GameRoot.KAMERA_SIRA.Length; i++)
             {

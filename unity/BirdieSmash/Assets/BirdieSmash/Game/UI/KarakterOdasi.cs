@@ -289,7 +289,7 @@ namespace BirdieSmash.Game
                 : L.T("Beden ve saç biçimi bu modelde sabit. Forma, şort, ayakkabı rengi, ten, saç rengi, kafa bandı, bileklik ve raket değişir. Beden tipi ve saç biçimi Oyuncak 3B'de.");
             var kart = Kart("bilgi-kart"); c.Add(kart);
             kart.Add(Yazi(bas, 15, "kalin")); kart.Add(Yazi(metin, 13, "ipucu"));
-            kart.Add(Dugme(L.T("Oyuncak 3B'ye geç"), () => { Ayar.model = "oyuncak"; Ayar.Kaydet(); root.ModelDegisti(); karAlt = KAR_TIP; Tik(); SoyunmaGovdeKur(true); }, null, L.T("Ayarlar › Oyuncu görünümü"), 15));
+            ModelCipleri(kart);   // 2026-11-10: "Oyuncak 3B'ye geç" düğmesi yerine modelin kendisi burada seçilir
             Erisim.Etiket(kart, bas + ". " + metin, "metin");
         }
 
@@ -298,6 +298,19 @@ namespace BirdieSmash.Game
         // neden görünmediği, hangi modelde göründüğü ve tek dokunuşla geçiş. Aynı gün ikinci tur: Gerçekçi'ye beş ayakkabı modeli
         // geldi (rocketbox_aksesuar.py), tip ve saç sayfaları o modelde hiç gösterilmiyor (TekBedenKart). Kart artık yalnız
         // Sade'nin Ayakkabı sayfasında: model orada görünmez, renk görünür; seçim kaydedilir ve alınabilir.
+        // Oyuncu modeli (2026-11-10; önce Ayarlar › Oyuncu görünümü): Dolap › Beden'in başında ve tek bedenli modelin bilgi
+        // kartında. Seçenek kuralı aynı (Ayar.ModelSecenek: Oyuncak 3B ve Tüycük; eski seçim kendi çipiyle kalır). Dokununca vitrin
+        // ve arkadaki maç figürü değişir, kategori şeridi modele göre yeniden kurulur; denemeler modele özgü olduğundan bırakılır.
+        void ModelCipleri(VisualElement c)
+        {
+            c.Add(Grup(L.T("Oyuncu modeli"))); var m = Satir(); m.style.flexWrap = Wrap.Wrap; c.Add(m);
+            for (int i = 0; i < Ayar.MODELLER.Length; i++)
+            {
+                string id = Ayar.MODELLER[i]; if (!Ayar.ModelVar(id)) continue; if (!Ayar.ModelSecenek(id) && Ayar.model != id) continue;
+                var ci = Cip(L.T(Ayar.MODEL_AD[i]), Ayar.model == id, () => { if (Ayar.model == id) return; Ayar.model = id; Ayar.Kaydet(); DenemeSil(); root.ModelDegisti(); karAlt = KarGecerli(id == "oyuncak" ? KAR_TIP : karAlt); KarakterOdakAyarla(); Tik(); SoyunmaGovdeKur(true); });
+                ci.style.flexBasis = new StyleLength(new Length(40, LengthUnit.Percent)); m.Add(ci);
+            }
+        }
         void ModelUyari(VisualElement c)
         {
             int i = System.Array.IndexOf(Ayar.MODELLER, Ayar.model); string ad = L.T(i >= 0 ? Ayar.MODEL_AD[i] : Ayar.model);
@@ -305,7 +318,7 @@ namespace BirdieSmash.Game
             var kart = Kart("deneme-kart"); c.Add(kart);
             kart.Add(Yazi(L.T("Ayakkabı modeli bu modelde görünmez"), 15, "kalin"));
             kart.Add(Yazi(metin, 13, "ipucu"));
-            kart.Add(Dugme(L.T("Gerçekçi'ye geç"), () => { Ayar.model = "rocketbox"; Ayar.Kaydet(); root.ModelDegisti(); Tik(); SoyunmaGovdeKur(true); }, "dugme--birincil", L.T("Ayarlar › Oyuncu görünümü"), 16));
+            kart.Add(Dugme(L.T("Gerçekçi'ye geç"), () => { Ayar.model = "rocketbox"; Ayar.Kaydet(); root.ModelDegisti(); Tik(); SoyunmaGovdeKur(true); }, "dugme--birincil", null, 16));
             Erisim.Etiket(kart, L.T("Ayakkabı modeli bu modelde görünmez") + ". " + metin, "metin");
         }
 
@@ -400,6 +413,7 @@ namespace BirdieSmash.Game
         void TipSayfa(VisualElement c)
         {
             var gr = Ayar.gear; string sec = Ayar.KOZ[Kozmetik.TIP], dn = root.vitrin.deneTip;
+            ModelCipleri(c);
             c.Add(Grup(L.T("Beden tipi · {0}", L.T(Kozmetik.Oge(Kozmetik.TIP, sec).ad))));
             c.Add(Yazi(L.T("Yalnız görünüş: maçta boy ve kol uzunluğu fark etmez. Sahip olduğun tipler arasında geçiş ücretsiz."), 12, "soluk"));
             var iz = Satir("izgara"); iz.AddToClassList("koz-izgara"); c.Add(iz);
