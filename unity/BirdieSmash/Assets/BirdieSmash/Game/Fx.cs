@@ -16,6 +16,10 @@ namespace BirdieSmash.Game
         class Mark { public Vector3 p; public float t; public bool big; public float[] cr; public Transform leke; public LineRenderer halka; public LineRenderer[] catlak; }
         class Wave { public Vector3 p; public float t, max; public Color c; public LineRenderer l; }
         readonly List<Mark> marks = new List<Mark>(); readonly List<Wave> waves = new List<Wave>();
+        // Dalga havuzu (İnceleme turu 2026-11-10 17:08 #4): her vuruşta yeni LineRenderer yaratılıp ~.45 sn sonra siliniyordu
+        // (ralli boyunca GC ve Destroy). Biten dalga kapatılıp burada bekler; aynı anda en çok birkaç dalga olduğu için havuz
+        // kendiliğinden küçük kalır. Yere düşüş izi (Iz) sayı başına bir kez, havuza alınmadı.
+        readonly Stack<LineRenderer> dalgaHavuz = new Stack<LineRenderer>();
         ParticleSystem tuy, kivilcim, cizgi; Material lekeM, beyazM, catlakM; Camera cam; MaterialPropertyBlock lekeMpb;
         static readonly int RENK = Shader.PropertyToID("_Color");
         LineRenderer kosu, erisim, hedefKenar; Transform kosuNokta, hedefBant; Material hedefM;
@@ -105,7 +109,9 @@ namespace BirdieSmash.Game
         }
         public void Dalga(Vector3 at, Color c, float maxPx)
         {
-            if (Ayar.reduce) return; var l = Kit.Line("dalga", transform, beyazM, true); waves.Add(new Wave { p = at, max = maxPx / 28f, c = c, l = l });
+            if (Ayar.reduce) return; LineRenderer l;
+            if (dalgaHavuz.Count > 0) { l = dalgaHavuz.Pop(); l.enabled = true; } else l = Kit.Line("dalga", transform, beyazM, true);
+            waves.Add(new Wave { p = at, max = maxPx / 28f, c = c, l = l });
         }
         public void Iz(float x, float y, bool big)
         {
@@ -130,7 +136,7 @@ namespace BirdieSmash.Game
         public void Temizle()
         {
             foreach (var m in marks) { Destroy(m.leke.gameObject); Destroy(m.halka.gameObject); foreach (var l in m.catlak) Destroy(l.gameObject); }
-            marks.Clear(); foreach (var w in waves) Destroy(w.l.gameObject); waves.Clear();
+            marks.Clear(); foreach (var w in waves) { w.l.enabled = false; dalgaHavuz.Push(w.l); } waves.Clear();
         }
 
         public void Tick(Match M, float dt, bool oyun)
@@ -146,7 +152,7 @@ namespace BirdieSmash.Game
             for (int i = waves.Count - 1; i >= 0; i--)
             {
                 var w = waves[i]; w.t += dt * 2.2f;   // HTML dalga ~.45 sn
-                if (w.t >= 1) { Destroy(w.l.gameObject); waves.RemoveAt(i); continue; }
+                if (w.t >= 1) { w.l.enabled = false; dalgaHavuz.Push(w.l); waves.RemoveAt(i); continue; }
                 float e = 1 - Mathf.Pow(1 - w.t, 3); var c = w.c; c.a = (1 - w.t) * .8f; w.l.startColor = w.l.endColor = c; w.l.widthMultiplier = (5 * (1 - w.t) + 1) / 28f;
                 // kameraya dönük çember
                 int n = 40; w.l.positionCount = n; var r = cam.transform.right * w.max * e; var u = cam.transform.up * w.max * e * .5f;

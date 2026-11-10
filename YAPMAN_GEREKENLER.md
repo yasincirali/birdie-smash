@@ -47,6 +47,12 @@ Kod hazır: dört Tüy paketi (Unity IAP, StoreKit), işlem defteri, iCloud anah
 
    Açıklama: "Menüdeki reklam şeridi kalkar. Ödüllü reklam yalnız sen istersen açılır. Tüy vermez." İnceleme notuna:
    "Restore Purchases düğmesi Tüy dükkânının altında". Family Sharing açmak isteğe bağlı (sonradan kapatılamaz).
+   **Ürün sayfasında tanıt (isteğe bağlı, 2026-11-10 inceleme):** Reklamsız ürünü oluşunca ASC › In-App Purchases ›
+   Reklamsız › "Promote in App Store" aç. Görünen ad "Reklamsız / Ad-free", açıklama (≤45 karakter)
+   TR "Menüdeki reklam şeridi kalkar, Tüy vermez" / EN "Removes the menu ad strip. No Feathers.".
+   1024×1024 tanıtım görseli ister (ekran görüntüsü değil, yazısız oyun görseli; hazır olunca store_listing/gorsel/ altına).
+   Kodda iş yok: Unity IAP ürün sayfasından başlayan alımı uygulama açılınca ProcessPurchase ile işler, şerit kapanır.
+   TF sandbox'ta `itms-services://?action=purchaseIntent&bundleId=com.birdiesmash.app&productIdentifier=com.birdiesmash.app.reklamsiz` ile dene.
 4. **Sandbox testi**: Ayarlar › App Store › Sandbox hesabı ile TF build'inde üst çubuktaki Tüy sayacına dokun → paket al →
    Tüy cüzdana eklenmeli. Uygulamayı silip yeniden kur → iCloud açıksa ilerleme ve aldığın Tüy geri gelmeli.
 
@@ -266,8 +272,12 @@ yazılı reklam görürsün, gerçek para yok. Mağaza 1.0'dan önce senden:
 1. admob.google.com'da hesap aç (aynı Google hesabın olabilir), **Uygulama ekle › iOS › Birdie Smash** (yayında değilse
    "listelenmemiş" seç). Çıkan **Uygulama kimliği** (`ca-app-pub-…~…`) ve iki **reklam birimi**: "Banner" ve "Ödüllü".
    Üç kimliği thread'e yaz (gizli değiller); ben koda girerim (`Game/ReklamSdk.cs`, `Editor/CiBuild.cs`).
-2. AdMob › **Gizlilik ve mesajlar**: AB/BK rıza mesajını (GDPR) yayınla; istersen iOS "IDFA açıklaması" mesajı (ATT
-   penceresini o açar; açmazsan reklamlar kişiselleştirilmemiş gelir, oyun aynı).
+2. AdMob › **Gizlilik ve mesajlar**: AB/BK rıza mesajını (GDPR) **ve** iOS "IDFA açıklaması" mesajını yayınla; ikisi de
+   **zorunlu** (2026-11-10 inceleme). ATT penceresini kodumuz değil bu mesaj açar; oysa paket izin metnini
+   (`NSUserTrackingUsageDescription`, `Editor/CiBuild.cs`) her build'de taşıyor ve App Privacy "Used to Track = Yes" diyor.
+   Mesaj yayında değilse inceleme cihazında pencere çıkmaz ve App Review 2.1/5.1.2 ile geri çevirir.
+   Gönderimden önce kontrol: TestFlight'ta temiz kurulum, ilk maçtan sonra ATT penceresi çıktı mı?
+   (Kişiselleştirilmemiş reklamla çıkmak istersen söyle: izin metni build'den kalkar, etiket "Used to Track = No" olur.)
 3. AdMob › Uygulama ayarları › **app-ads.txt**: `murphysoft.app/app-ads.txt` (dosyayı ben koyarım, yayıncı kimliğin lazım).
 4. App Store Connect › **App Privacy**: "Data Not Collected" artık doğru değil. `store_listing/app_privacy.md` reklam dalı:
    Identifiers (Device ID), Usage Data (Advertising Data, Product Interaction), Diagnostics; amaç Third-Party Advertising;

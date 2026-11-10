@@ -192,6 +192,9 @@ namespace BirdieSmash.Core
         HileDenetim HileSec(SwipeInput sw, Reach I, ref ShotPlanR P)
         {
             if (hileTop != null && s == hileTop) { hileTop = null; hileOkunan++; Emit(Ev.Okudun, "me", "aldatma", me.x, me.y, 1.2f); Say("me", "okudun", me.x, me.y, 1.2f, "Okudun!", 2); }
+            // Rakibin flick servisini karşılamak da okumadır (İnceleme turu 2026-11-10 17:08 #6): ses + titreşim + kıvılcım her
+            // seferinde, yazı maç başına en çok 2 kez. Görev/XP sayacına girmez (hileOkunan/okudun artmaz), yalnız his.
+            else if (s != null && s.serve && s.from == "op" && s.servisTur == "flick") { Emit(Ev.Okudun, "me", "flick", me.x, me.y, 1.2f); if (flickOkudum < 2) { flickOkudum++; Say("me", "okudun", me.x, me.y, 1.2f, "Okudun!", 2); } }
             if (sw.tap) return null;
             var L = Aldatma.Liste; HileDenetim red = null;
             for (int i = L.Length - 1; i >= 0; i--)   // üst seviye önce: V çizgisi kavis de sayılır, çift hareket çevirmeden önce
