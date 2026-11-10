@@ -220,6 +220,9 @@ namespace BirdieSmash.Game
         }
         VisualElement SvHedefSatir()
         {
+            // 2026-11-10: dağıtılmamış gelişim puanı varken satır onu söyler ve Gelişim sayfasını açar (tek "sıradaki iş" satırı;
+            // iki satır küçük ekranda Oyna düğmesini iterdi). Puan dağıtılınca satır yine seviye ödülüne döner.
+            if (Ayar.GelisimBos > 0) return GelisimSatir();
             int L_, kalan, gerek; Ayar.gear.OyuncuSv(out L_, out kalan, out gerek); if (gerek <= 0) return null;
             int sv = L_ + 1; string ac = SvAcilanOzet(sv, 1);
             var d = new VisualElement(); d.AddToClassList("sv-hedef");
@@ -239,7 +242,7 @@ namespace BirdieSmash.Game
             int L_, kalan, gerek; Ayar.gear.OyuncuSv(out L_, out kalan, out gerek);
             c.Add(Yazi(gerek > 0 ? L.T("Sv {0} · sonraki seviyeye {1} XP", L_, gerek - kalan) : L.T("Sv 30 · en üst seviye"), 15, "kalin"));
             if (gerek > 0) { var cb = Cubuk(kalan / (float)gerek, TURUNCU, 8); cb.style.marginTop = 6; cb.style.marginBottom = 4; c.Add(cb); }
-            var acik = Yazi(L.T("Her seviye Tüy verir, 5'in katları büyük ödül. Açılanlar Dolap ve Atölye'de seni bekler."), 13, "soluk"); acik.style.whiteSpace = WhiteSpace.Normal; acik.style.marginBottom = 6; c.Add(acik);
+            var acik = Yazi(L.T("Her seviye Tüy ve bir gelişim puanı verir, 5'in katları büyük ödül. Açılanlar Dolap ve Atölye'de seni bekler."), 13, "soluk"); acik.style.whiteSpace = WhiteSpace.Normal; acik.style.marginBottom = 6; c.Add(acik);
             for (int sv = L_ + 1; sv <= 30; sv++)
             {
                 bool buyuk = sv % 5 == 0; string ac = SvAcilanOzet(sv, 3);
@@ -265,7 +268,7 @@ namespace BirdieSmash.Game
             }, "dugme--birincil", K > 1.35f ? null : HizliOzet(), 19));   // 2026-11-07 (UX2): büyük yazıda özet satırı CTA'yı 3 satıra büyütüp listeyi daraltıyordu; seçimler çiplerde zaten görünür
         }
 
-        void AltSayfaYenidenKur(string altS) { if (altS == Gezinti.SEVIYE) SeviyeYoluKur(); else if (altS == Gezinti.KART) MacKartKur(); else if (altS == Gezinti.YUVA) YuvaSayfaKur(); else if (altS == Gezinti.DRIL) DrilKartKur(); else if (altS == Gezinti.GUNLUK) GunlukKartKur(); else if (altS == Gezinti.SEC) OyuncuSecKur(); else HizliKur(); }
+        void AltSayfaYenidenKur(string altS) { if (altS == Gezinti.SEVIYE) SeviyeYoluKur(); else if (altS == Gezinti.GELISIM) GelisimKur(); else if (altS == Gezinti.KART) MacKartKur(); else if (altS == Gezinti.YUVA) YuvaSayfaKur(); else if (altS == Gezinti.DRIL) DrilKartKur(); else if (altS == Gezinti.GUNLUK) GunlukKartKur(); else if (altS == Gezinti.SEC) OyuncuSecKur(); else HizliKur(); }
 
         // Alt sayfa iskeleti (Hızlı maç ve kariyer maç kartı ortak, 2026-10-26): tutamak (aşağı çekince kapanır, iOS kalıbı;
         // ayrıca Kapat, Geri ve zemine dokunma), başlık, kaydırmalı gövde. Dönüş: gövdenin içerik kabı.

@@ -22,3 +22,6 @@ jobs:
       # (Flutter testi WebView içini göremez).
       - name: Oyun script sözdizimi
         run: node tool/oyun_sozdizimi.js
+      # Çeviri sözlüğünde yinelenen anahtar oyunu açılışta düşürür; derleme yakalamaz.
+      - name: Çeviri anahtarları tek
+        run: node tool/lang_tekrar.js

@@ -137,7 +137,7 @@ namespace BirdieSmash.Game
             // desen 'tek' | 'iki' (HTML RGOR.desen ile aynı). 2026-10-26: denetim 'capraz' bekliyordu, yazılan değer 'iki' olduğu
             // için "Ana ve çapraz ayrı" seçimi her açılışta 'tek'e dönüyordu; eski 'capraz' kaydı da 'iki' sayılır.
             if (rg != null) foreach (var k in new List<string>(RGOR.Keys)) { string v = Json.Str(rg, k, null); if (k == "desen" && v == "capraz") v = "iki"; if (v != null && (k == "desen" ? v == "tek" || v == "iki" : k == "kafa" ? System.Array.IndexOf(RaketSekil.SIRA, v) >= 0 : k == "saft" ? v == "model" || Vitrin.RAK_RENK.ContainsKey(v) : Vitrin.RAK_RENK.ContainsKey(v))) RGOR[k] = v; }
-            gear = new Gear(kayit, wins); gear.kariyerModu = kariyerModu;
+            gear = new Gear(kayit, wins); gear.kariyerModu = kariyerModu; gelisim = null;   // dağılım yeni kayıttan okunsun (GearHesap)
             if (gear.renk == "sampiyon" && !sampiyon) gear.renk = "mavi";   // v1 kuralı (forma = Şampiyon), artık renkte
             // Görünüm (karakter): bilinmeyen değer varsayılana düşer; seviyesi düşmüş gibi görünen değer (bozuk XP) silinmez,
             // ekranda Karakter.Oge ile yine geçerli öğeye çözülür.
@@ -174,7 +174,19 @@ namespace BirdieSmash.Game
         // Tüycük (2026-10-29) Oyuncak'ın beş ayakkabı parçasını aynı ayak kemikleriyle taşır: model görünür. Şortu yok (tek parça gövde).
         public static bool AykModelGorunur { get { return model == "oyuncak" || model == "rocketbox" || model == "tuycuk"; } }
         public static bool SortGorunur { get { return model == "rocketbox" || model == "sade"; } }
-        public static void GearHesap() { gear.kariyerModu = kariyerModu; GSE = gear.Hesap(); GS = Karakter.Uygula(GSE, Tarz); AldatmaKur(); }
+        // 2026-11-10 oyuncu gelişimi (Core/Gelisim): GS = ekipman + tarz + gelişim. GSE yalnız ekipman kalır (Atölye çubukları
+        // ekipmanı anlatır); gelişimin payı kendi sayfasında yüzdeyle yazılır. Eşit şartlarda ekipman seviyesi gibi etkisiz.
+        public static void GearHesap()
+        {
+            gear.kariyerModu = kariyerModu; GSE = gear.Hesap();
+            if (gelisim == null) gelisim = Gelisim.Oku(Str(Gelisim.ANAHTAR, null), gear.Seviye());
+            GS = Gelisim.Uygula(Karakter.Uygula(GSE, Tarz), gelisim, gear.eko.esit && !kariyerModu); AldatmaKur();
+        }
+        public static int[] gelisim;
+        public static int GelisimBos { get { return gear == null || gelisim == null ? 0 : Gelisim.Bos(gelisim, gear.Seviye()); } }
+        public static bool GelisimVer(int dal) { if (!Gelisim.Ver(gelisim, dal, gear.Seviye())) return false; GelisimYaz(); return true; }
+        public static bool GelisimGeriAl(int dal) { if (!Gelisim.GeriAl(gelisim, dal)) return false; GelisimYaz(); return true; }
+        static void GelisimYaz() { try { PlayerPrefs.SetString(Gelisim.ANAHTAR, Gelisim.Yaz(gelisim)); PlayerPrefs.Save(); } catch { } GearHesap(); }
         // Aldatıcı vuruşlar (2026-10-26, Core/Aldatma): seviye kapısı maça buradan gider (her maç kurulumunda GearHesap çağrılır);
         // ilk fırsat açıklaması bir kez gösterilir, görülenler ilerleme kaydında (tuytop_ilerleme.aldatmaGor).
         static void AldatmaKur()

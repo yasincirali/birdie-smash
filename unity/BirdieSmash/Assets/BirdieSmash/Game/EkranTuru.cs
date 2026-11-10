@@ -299,6 +299,7 @@ namespace BirdieSmash.Game
             yield return Profil(ui, ek);
             ui.SekmeAc(Sekme.Oyna); ui.HizliMacAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "hizli"); ui.Geri();
             ui.SekmeAc(Sekme.Oyna); ui.SeviyeYoluAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "seviye_yolu"); ui.Geri();   // 2026-11-10 Seviye yolu
+            ui.GelisimAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "gelisim"); ui.Geri();   // 2026-11-10 oyuncu gelişimi
             ui.AyarlarAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "ayarlar"); ui.Geri(); yield return Bekle(5);
             // 2026-10-26 adım 7–8: antrenman sayfası (örnek yıldızlarla), görev kartı, Günün maçı kartı
             var eskiP = Ayar.ilerleme; var dp = new Ilerleme(); dp.DrilKaydet("derin", 3); dp.DrilKaydet("drop", 2); dp.DrilKaydet("kose", 1); dp.DrilKaydet("servis", 2); foreach (var gy in new[] { 4, 6, 6, 8, 9 }) dp.DrilGecmisEkle("derin", gy, 12); foreach (var gy in new[] { 3, 5 }) dp.DrilGecmisEkle("drop", gy, 12); Ayar.ilerleme = dp;   // 2026-10-30: ilerleme çizgisi
@@ -787,6 +788,7 @@ namespace BirdieSmash.Game
             ui.SekmeAc(Sekme.Profil); yield return DCek(ui, ek + "profil");
             ui.SekmeAc(Sekme.Oyna); ui.HizliMacAc(); yield return DCek(ui, ek + "hizli"); ui.Geri();
             ui.SekmeAc(Sekme.Oyna); ui.SeviyeYoluAc(); yield return DCek(ui, ek + "seviye_yolu"); ui.Geri();
+            ui.GelisimAc(); yield return DCek(ui, ek + "gelisim"); ui.Geri();
             ui.AyarlarAc(); yield return DCek(ui, ek + "ayarlar"); ui.Geri(); yield return Bekle(5);
             if (kisaca) yield break;
             ui.AntrenmanAc(); yield return DCek(ui, ek + "antrenman");
