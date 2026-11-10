@@ -1047,6 +1047,7 @@ static class BotMac
             int rek = ga.ReklamOdulu(o1);
             if (rek != OdulluReklam.Ek(t0) || o1.tuy != t0 + rek || ga.eko.tuy != tc0 + rek || ga.eko.xp != xp0 || ga.Seviye() != sv0) Fail("ödüllü reklam: +%50 yalnız Tüy olmalı, XP ve seviye sabit (" + t0 + " → +" + rek + ")");
             if (OdulluReklam.Ek(81) != 41 || OdulluReklam.Ek(0) != 0) Fail("ödüllü reklam: +%50 yuvarlama");
+            if (OdulluReklam.Uygun(new OdulluReklam.Durum(), gn, 9, 15, false, false, true) || !OdulluReklam.Uygun(new OdulluReklam.Durum(), gn, 9, OdulluReklam.ODUL_ESIK, false, false, true)) Fail("ödüllü reklam: küçük ödülde (15 Tüy) çıkmamalı, en kısa galibiyet tabanında (40) çıkmalı");
             OdulluReklam.Izlendi(od, gn); OdulluReklam.KartKapandi(od, true, true);
             if (OdulluReklam.Uygun(od, gn, 9, 80, false, false, true)) Fail("ödüllü reklam: günde en çok 1 (ikinci ödül yok)");
             string yarin = OdulluReklam.Gun(new DateTime(2026, 11, 8, 9, 0, 0));

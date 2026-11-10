@@ -1,4 +1,9 @@
 === UNITY ===
+Bu akşam (10 Kasım 19:49 inceleme turu):
+- Seviye atlayınca "Dolap'ta dene"ye basarsan Dolap, açılan eşyanın sayfasında açılıyor ve karakterin onu hemen giyiyor. Önce eşyayı listede senin araman gerekiyordu. Deneme kaydedilmez, "Denemeyi bırak" ile geri alırsın.
+- Maç sonu reklam teklifi artık küçük ödüllü maçlarda çıkmıyor: kısa bir kayıptan sonra reklam izleyip birkaç Tüy almak günün tek hakkını harcıyordu. Her galibiyette ve uzun maçlarda çıkmaya devam ediyor.
+- Kariyer tur kartında "4 puan eksik" yerine "4 yükseltme eksik" yazıyor; kaç Atölye yükseltmesi önerildiği artık açık.
+Nasıl denenir: Seviye atladığında açılan pencerede "Dolap'ta dene"ye bas: karakter yeni ayakkabıyı ya da saç modelini giymiş olmalı. 5 sayılık bir maçı kaybet: maç sonunda reklam düğmesi çıkmamalı; bir maç kazan: (bugün izlemediysen) çıkmalı. Kariyer'de seçili tur kartında ekipman satırını oku.
 Reklam ve zorluk (9 Kasım):
 - Maç sonu ödüllü reklam ("Ödüle +%50 · reklam izle") artık gerçekten çıkıyor: "Maçın anı" düğmesi yuvayı kaptığı için neredeyse hiç görünmüyordu. Kural aynı: ilk 3 galibiyetten sonra, günde 1. Maçın anı Ayrıntılar'da yerinde.
 - Reklam şeridi yalnız Oyna ekranında, sekme çubuğundan 8 pt aralıklı; Kariyer, Dolap, Profil ve Atölye'de şerit yok. Küçük ekranda Oyna'ya sığmıyorsa hiç çıkmıyor, düğmeleri itmiyor.
