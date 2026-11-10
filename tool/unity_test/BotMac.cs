@@ -153,7 +153,7 @@ static class BotMac
         Yardimlar();   // 2026-10-29 kayıpta rakip yumuşar (ayrı satır)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); YenilgiIpuclari(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
-        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
+        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Efsaneler(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
         KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
@@ -890,6 +890,21 @@ static class BotMac
     // eşiği geçen maçta, ödül alt yazısında en büyük ek + kalan sayısı.
     // 2026-11-10 oyuncu gelişimi (Core/Gelisim): puan yalnız seviyeden, dal tavanı 10, bozuk kayıt kırpılır, geri alma
     // ücretsiz, eşit şartlarda etkisiz, etki ekipman yuva seviyesinin (%18) altında.
+    // 2026-11-10 Efsane kademeleri: Sv 30 üstü her 6.000 XP +300 Tüy; seviye 30'da kalır, geriye dönük ödeme yok.
+    static void Efsaneler()
+    {
+        int t = Gear.Sv30Xp();
+        if (Gear.EfsaneOf(0) != 0 || Gear.EfsaneOf(t - 1) != 0 || Gear.EfsaneOf(t) != 0 || Gear.EfsaneOf(t + Gear.EFSANE_XP - 1) != 0 || Gear.EfsaneOf(t + Gear.EFSANE_XP) != 1) Fail("efsane: eşikler");
+        var g = new Gear(new BellekKayit(), 0); g.eko.xp = t + Gear.EFSANE_XP - 10; int n, k;
+        if (g.Seviye() != 30 || g.Efsane() != 0 || !g.EfsaneIlerleme(out n, out k) || n != 0 || k != Gear.EFSANE_XP - 10) Fail("efsane: ilerleme");
+        int tuy0 = g.eko.tuy; var o = g.DrilOdul(1);
+        if (o.efsane != 1 || o.efsaneTuy != Gear.EFSANE_TUY || g.eko.tuy != tuy0 + o.tuy + Gear.EFSANE_TUY || g.Seviye() != 30 || o.svTuy != 0) Fail("efsane: kademe atlanınca +300, seviye 30'da kalır");
+        tuy0 = g.eko.tuy; o = g.DrilOdul(1); if (o.efsane != 0 || g.eko.tuy != tuy0 + o.tuy) Fail("efsane: kademe atlanmadan ödül yok");
+        var e = new Gear(new BellekKayit(), 0); e.eko.xp = t + 5 * Gear.EFSANE_XP; tuy0 = e.eko.tuy; o = e.DrilOdul(1);
+        if (o.efsane != 0 || e.eko.tuy != tuy0 + o.tuy || e.Efsane() != 5) Fail("efsane: geriye dönük ödeme olmamalı");
+        var d = new Gear(new BellekKayit(), 0); d.eko.xp = 50; if (d.EfsaneIlerleme(out n, out k) || d.Efsane() != 0) Fail("efsane: Sv 30 altında yok");
+        if (Gelisim.Toplam(30) != 29) Fail("efsane: gelişim puanı vermez");
+    }
     static void Gelisimler()
     {
         if (Gelisim.Toplam(1) != 0 || Gelisim.Toplam(2) != 1 || Gelisim.Toplam(30) != 29 || Gelisim.Toplam(99) != 29 || Gelisim.Toplam(0) != 0) Fail("gelişim: puan = seviye - 1, 29'da durur");

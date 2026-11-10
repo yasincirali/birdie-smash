@@ -1318,6 +1318,7 @@ namespace BirdieSmash.Game
             if (ekBuyuk != null) ek = L.Cumle(ekBuyuk) + (ekDiger > 0 ? " · " + L.T("+{0} ödül daha", ekDiger) : "");
             // 2026-11-10 seviye ödülü (Gear.SvOdul): seviye atlanan maçta kartta "Seviye ödülü +n Tüy"; açılanların önünde.
             if (od.svTuy > 0) acil = L.T("Seviye ödülü +{0} Tüy", od.svTuy) + (acil != null ? " · " + acil : "");
+            if (od.efsane > 0) acil = L.T("Efsane {0} · +{1} Tüy", od.efsane, od.efsaneTuy) + (acil != null ? " · " + acil : "");   // 2026-11-10 Gear.EFSANE_XP
             string alt = (acil != null ? acil + "\n" : "") + svYazi + (ek != null ? " · " + ek : ""); float ah = aIpucu.CalcHeight(Ic(alt), w - 2 * p);
             float lvH = lv ? 48 * s : 0;
             // Hedef eşya satırı (2026-11-02, Core/Hedef): "Hedef: Yıldız pelerini · 640 Tüy kaldı" + ince çubuk; çubuk ve kalan sayı
