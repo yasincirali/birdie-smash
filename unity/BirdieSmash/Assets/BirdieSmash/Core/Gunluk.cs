@@ -110,7 +110,7 @@ namespace BirdieSmash.Core
             if (id == "usta") easy = false;
             if (id == "patron") { stil = stil.Clone(); stil.patron = stil.imza != null; stil.imzaAra = 2; stil.imzaP = .8f; }
             if (id == "nefes") { GS = GS.Kopya(); GS.yorK /= .7f; stil = stil.Clone(); stil.yorK /= .7f; }
-            if (id == "geri") sc[1] = GERI_FARK;   // senaryo: rakip önde başlar; sayı değeri, tavan ve servis kuralı aynı
+            if (id == "geri") { sc[1] = GERI_FARK; enBuyukGeri = GERI_FARK; geriRakip = GERI_FARK; }   // senaryo: rakip önde başlar; sayı değeri, tavan ve servis kuralı aynı
         }
 
         // Maç sayısı tek kural (inceleme 2026-11-10, fikir 22:09 #3): Match servis şeridi ve GameRoot (LED, skor nabzı,
@@ -124,6 +124,20 @@ namespace BirdieSmash.Core
         public int Tavan() { return target == 21 ? 30 : target == 11 ? 15 : 7; }
         bool SonrakiKazanir(int x, int y) { int n = Math.Min(Tavan(), x + SonrakiDeger()); return (n >= target && n - y >= 2) || n >= Tavan(); }
         /// 0 = oyuncunun maç sayısı, 1 = rakibin, 2 = ikisinin de (tavan beraberliği: son sayı kazanır), -1 = yok.
+        // Maç sonu başlığı hikâyeyi söyler (inceleme 2026-11-11, fikir 02:05 #3): 3–8'den dönülen maç ile 11–0 aynı "Galibiyet"
+        // kartıyla bitiyordu; oyuncu maçı en gergin an ve son kare üzerinden hatırlar. Eşik hedefe göre (21: 6, 11: 4, 5: 2):
+        // 11'lik maçta 2–3 sayılık gerilik her maçta olur, başlık sıradanlaşmasın. Kıl payı = son fark 1 (tavan) ya da hedef
+        // aşıldı (uzatma). Ödül/Tüy değişmez; yalnız başlık. Dönüş: 0 Galibiyet, 1 Geri dönüş, 2 Kıl payı (yalnız kazanınca).
+        public int enBuyukGeri, geriBen, geriRakip;
+        public int MacHikaye()
+        {
+            if (ogr != null || sc[0] <= sc[1]) return 0;
+            int esik = target >= 21 ? 6 : target >= 11 ? 4 : 2;
+            if (enBuyukGeri >= esik) return 1;
+            if (sc[0] - sc[1] == 1 || sc[0] > target) return 2;
+            return 0;
+        }
+
         public int MacSayisiDurum()
         {
             if (ogr != null || matchDone) return -1;

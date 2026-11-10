@@ -23,25 +23,29 @@ namespace BirdieSmash.Game
                 : L.T("Her seviye bir puan verir. Dal başına en çok 10; dağılımı istediğin zaman ücretsiz değiştirirsin."), 13, "soluk");
             ac.style.whiteSpace = WhiteSpace.Normal; ac.style.marginTop = 4; ac.style.marginBottom = 6; c.Add(ac);
             if (Ayar.gear.eko.esit && !Ayar.kariyerModu) { var es = Yazi(L.T("Eşit şartlar açık: gelişim bu maçlarda sayılmaz."), 13, "ipucu"); es.style.whiteSpace = WhiteSpace.Normal; es.style.marginBottom = 6; c.Add(es); }
-            for (int i = 0; i < Gelisim.DAL; i++) c.Add(GelisimDal(i, p[i], bos > 0));
+            for (int i = 0; i < Gelisim.DAL; i++) c.Add(GelisimDal(i, p[i], bos > 0, top > 0));
         }
 
-        VisualElement GelisimDal(int dal, int n, bool puanVar)
+        // 2026-11-11 (inceleme, fikir 02:05 #2): Sv 1'de (hiç puan yok) beş kartta on soluk − / + düğmesi ve beş kez "0/10 · +%0"
+        // ilk açan oyuncuya pasif düğme duvarı gösteriyordu; o durumda düğmeler çizilmez (kart: ad + cümle + basamaklar), üstteki
+        // "İlk puanın Sv 2'de" yeter. Yüzde yalnız n > 0 iken yazar. Puanı olan oyuncuda pasif düğme kalır (yerleşim oynamasın).
+        VisualElement GelisimDal(int dal, int n, bool puanVar, bool dugmeli = true)
         {
             var k = new VisualElement(); k.AddToClassList("gel-dal");
             var ust = Satir("arali"); ust.pickingMode = PickingMode.Ignore; k.Add(ust);
             ust.Add(Yazi(L.T(Gelisim.AD[dal]), 16, "kalin"));
             string yz = "+%" + Gelisim.Yuzde(dal, n); if (L.En) yz = "+" + Gelisim.Yuzde(dal, n) + "%";
-            ust.Add(Yazi(n + "/" + Gelisim.TAVAN + " · " + yz, 14, "rakam"));
+            if (n == 0) yz = "";
+            ust.Add(Yazi(n + "/" + Gelisim.TAVAN + (yz != "" ? " · " + yz : ""), 14, "rakam"));
             var ne = Yazi(L.T(Gelisim.NE[dal]), 12, "soluk"); ne.style.whiteSpace = WhiteSpace.Normal; k.Add(ne);
             var alt = new VisualElement(); alt.AddToClassList("gel-alt"); k.Add(alt);
             int d = dal;
-            alt.Add(GelisimDugme("-", n > 0, () => { if (Ayar.GelisimGeriAl(d)) { Tik(); Degisti(); } }, L.T("{0}: bir puan geri al", L.T(Gelisim.AD[dal]))));
+            if (dugmeli) alt.Add(GelisimDugme("-", n > 0, () => { if (Ayar.GelisimGeriAl(d)) { Tik(); Degisti(); } }, L.T("{0}: bir puan geri al", L.T(Gelisim.AD[dal]))));
             var cb = new VisualElement(); cb.AddToClassList("gel-cubuk"); cb.pickingMode = PickingMode.Ignore; alt.Add(cb);
             for (int j = 0; j < Gelisim.TAVAN; j++) { var b = new VisualElement(); b.AddToClassList("gel-basamak"); if (j < n) b.AddToClassList("gel-basamak--dolu"); cb.Add(b); }
-            Erisim.Etiket(cb, L.T(Gelisim.AD[dal]) + ", " + n + "/" + Gelisim.TAVAN + ", " + yz + ". " + L.T(Gelisim.NE[dal]), "metin");
+            Erisim.Etiket(cb, L.T(Gelisim.AD[dal]) + ", " + n + "/" + Gelisim.TAVAN + (yz != "" ? ", " + yz : "") + ". " + L.T(Gelisim.NE[dal]), "metin");
             bool ver = puanVar && n < Gelisim.TAVAN;
-            alt.Add(GelisimDugme("+", ver, () => { if (Ayar.GelisimVer(d)) { root.sfx.Yukselt(); Yerel.Hap("tick"); Degisti(); } }, L.T("{0}: bir puan ver", L.T(Gelisim.AD[dal]))));
+            if (dugmeli) alt.Add(GelisimDugme("+", ver, () => { if (Ayar.GelisimVer(d)) { root.sfx.Yukselt(); Yerel.Hap("tick"); Degisti(); } }, L.T("{0}: bir puan ver", L.T(Gelisim.AD[dal]))));
             return k;
         }
 
@@ -69,25 +73,21 @@ namespace BirdieSmash.Game
             return d;
         }
 
-        // Profil kartı: beş dalın özeti (ad + n/10), dokununca sayfa açılır.
+        // Profil kartı (2026-11-11, inceleme fikir 02:05 #4): beş çubuk Gelişim sayfasında ve Atölye'nin "Takımın şimdi" kartında
+        // (gelişim payı ucunda) zaten var; Profil'de üçüncü kez beş satır kupa rafını aşağı itiyordu. Tek satır toplam + durum,
+        // dokununca sayfa açılır.
         void GelisimKart(VisualElement c)
         {
-            var p = Ayar.gelisim; if (p == null) return; int bos = Ayar.GelisimBos;
+            var p = Ayar.gelisim; if (p == null) return; int bos = Ayar.GelisimBos, top = Gelisim.Toplam(Ayar.gear.Seviye());
             c.Add(Grup(L.T("Gelişim")));
             var kart = Kart("gel-kart"); kart.AddToClassList("dugme"); c.Add(kart);
-            string ozet = "";
-            for (int i = 0; i < Gelisim.DAL; i++)
-            {
-                var r = new VisualElement(); r.AddToClassList("gel-ozet"); r.pickingMode = PickingMode.Ignore; kart.Add(r);
-                var ad = Yazi(L.T(Gelisim.AD[i]), 13); ad.AddToClassList("gel-ozet-ad"); r.Add(ad);
-                var cb = Cubuk(p[i] / (float)Gelisim.TAVAN, TURUNCU, 6); cb.AddToClassList("gel-ozet-cubuk"); r.Add(cb);
-                var sy = Yazi(p[i] + "/" + Gelisim.TAVAN, 13, "rakam"); sy.AddToClassList("gel-ozet-sayi"); r.Add(sy);
-                ozet += L.T(Gelisim.AD[i]) + " " + p[i] + "/" + Gelisim.TAVAN + ", ";
-            }
-            string alt = Gelisim.Toplam(Ayar.gear.Seviye()) == 0 ? L.T("İlk puanın Sv 2'de") : bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : L.T("Dağılımı değiştir");
-            var ay = Yazi(alt, 13, bos > 0 ? "altin" : "soluk"); ay.style.marginTop = 6; ay.pickingMode = PickingMode.Ignore; kart.Add(ay);
+            var r = Satir("arali"); r.pickingMode = PickingMode.Ignore; kart.Add(r);
+            string ust = top == 0 ? L.T("İlk puanın Sv 2'de") : L.T("{0}/{1} puan", top - bos, top);
+            r.Add(Yazi(ust, 15, "kalin")); r.Add(Yazi("›", 18, "soluk"));
+            string alt = top == 0 ? "" : bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : L.T("Dağılımı değiştir");
+            if (alt != "") { var ay = Yazi(alt, 13, bos > 0 ? "altin" : "soluk"); ay.style.marginTop = 4; ay.pickingMode = PickingMode.Ignore; kart.Add(ay); }
             kart.AddManipulator(new Clickable(() => { Tik(); GelisimAc(); }));
-            Erisim.Etiket(kart, L.T("Gelişim") + ": " + ozet + alt, "dugme");
+            Erisim.Etiket(kart, L.T("Gelişim") + ": " + ust + (alt != "" ? ", " + alt : ""), "dugme");
         }
     }
 }

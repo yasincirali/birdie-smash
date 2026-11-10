@@ -180,6 +180,9 @@ namespace BirdieSmash.Game
         public static bool SortGorunur { get { return model == "rocketbox" || model == "sade"; } }
         // 2026-11-10 oyuncu gelişimi (Core/Gelisim): GS = ekipman + tarz + gelişim. GSE yalnız ekipman kalır (Atölye çubukları
         // ekipmanı anlatır); gelişimin payı kendi sayfasında yüzdeyle yazılır. Eşit şartlarda ekipman seviyesi gibi etkisiz.
+        // 2026-11-11: Atölye çubukları ekipman çubuğunun ucuna gelişimin payını ayrı tonla ekler (GelisimCubuk); GSE yine
+        // yalnız ekipman, yani ekipman karşılaştırmaları (yükseltme önizlemesi, model kartı) değişmez.
+        public static int[] GelisimCubuk() { return Gelisim.CubukPayi(GSE, gelisim, gear == null || (gear.eko.esit && !kariyerModu)); }
         public static void GearHesap()
         {
             gear.kariyerModu = kariyerModu; GSE = gear.Hesap();

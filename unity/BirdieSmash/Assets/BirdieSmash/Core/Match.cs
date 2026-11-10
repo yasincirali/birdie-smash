@@ -843,6 +843,7 @@ namespace BirdieSmash.Core
                 // 2026-10-26 Günün maçı değiştiricisi: sayı 1 ya da 2 (SayiDegeri); serbest/kariyer maçında hep 1. Tavanı (cap) aşmaz.
                 int deger = degistirici != null ? SayiDegeri(winner) : 1, wi = winner == "me" ? 0 : 1, tavan = target == 21 ? 30 : target == 11 ? 15 : 7;
                 sc[wi] = Math.Min(tavan, sc[wi] + deger); server = winner; sayiNo++;
+                if (sc[1] - sc[0] > enBuyukGeri) { enBuyukGeri = sc[1] - sc[0]; geriBen = sc[0]; geriRakip = sc[1]; }   // maç sonu başlığı (MacHikaye)
                 if (deger == 2) Say(null, "cift", Court.MID, Court.NET, 2, "Çift sayı!", 2);
             }
             aldatHile = false;
