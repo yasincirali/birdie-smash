@@ -123,7 +123,7 @@ namespace BirdieSmash.Game
             }
             bool kilit = gr.Seviye() < o.sv; int eksik = o.fiyat - gr.eko.tuy;
             string bas = L.T("Sıradaki: {0}", L.T(o.ad));
-            string alt = kol + " · " + (kilit ? L.T("Sv {0}'da açılır", o.sv) : eksik > 0 ? L.T("{0} Tüy kaldı", eksik) : L.T("Alabilirsin"));
+            string alt = kol + " · " + (kilit ? L.T("Sv {0} ile açılır", o.sv) : eksik > 0 ? L.T("{0} Tüy kaldı", eksik) : L.T("Alabilirsin"));
             sol.Add(Yazi(bas, 14, "kalin"));
             if (!kilit) { var cb = Cubuk(o.fiyat > 0 ? Mathf.Clamp01(gr.eko.tuy / (float)o.fiyat) : 1, eksik > 0 ? TURUNCU : CAMGOBEGI, 5); cb.AddToClassList("sv-hedef-cubuk"); sol.Add(cb); }
             sol.Add(Yazi(alt, 12, "soluk"));
