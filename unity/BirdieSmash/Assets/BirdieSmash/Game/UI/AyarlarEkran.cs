@@ -53,8 +53,13 @@ namespace BirdieSmash.Game
             for (int i = 0; i < GameRoot.KAMERA_SIRA.Length; i++)
             {
                 string id = GameRoot.KAMERA_SIRA[i];
-                km.Add(Cip(L.T(GameRoot.KAMERA_AD[i]), Ayar.kamera == id, () => { Ayar.kamera = id; Ayar.Kaydet(); root.KameraDegisti(); Degisti(); }));
+                var kc = Cip(L.T(GameRoot.KAMERA_AD[i]), Ayar.kamera == id, () => { Ayar.kamera = id; Ayar.Kaydet(); root.KameraDegisti(); Degisti(); });
+                Erisim.Etiket(kc, L.T(GameRoot.KAMERA_AD[i]) + ". " + L.T(KAMERA_ACIK[i]), "dugme", Ayar.kamera == id); km.Add(kc);
             }
+            // 2026-11-10 inceleme (fikir 07:06 #3): çipler yalnız ad söylüyordu, farkı görmek için maça girip çıkmak gerekiyordu.
+            // Zorluk satırının kalıbı: seçili açının tek soluk cümlesi (cümleler GameRoot kamera kadraj yorumundan).
+            int ks = System.Array.IndexOf(GameRoot.KAMERA_SIRA, Ayar.kamera);
+            if (ks >= 0) c.Add(Yazi(L.T(KAMERA_ACIK[ks]), 12, "soluk"));
             c.Add(Grup(L.T("Yazı boyutu"))); var yz = Satir(); c.Add(yz);
             string[] Yk = { "sistem", "normal", "buyuk" }, Ya = { "Sistem", "Normal", "Büyük" };
             for (int i = 0; i < 3; i++) { string id = Yk[i]; yz.Add(Cip(L.T(Ya[i]), Ayar.yazi == id, () => { Ayar.yazi = id; Ayar.Kaydet(); Degisti(); })); }
@@ -95,11 +100,16 @@ namespace BirdieSmash.Game
 
         void Antrenmana() { var once = gez.sekme; gez.Kok(); Uygula(once, false); root.Antrenman(); }
 
+        static readonly string[] KAMERA_ACIK = {   // GameRoot.KAMERA_SIRA sırasıyla
+            "TV yayın açısı: yüksekten, kortun tamamı görünür",
+            "Omzunun gerisinden: rakip ve file büyük, derinlik hissi güçlü",
+            "Kuşbakışına yakın: topun ineceği yer ve çizgiler en net" };
+
         static readonly string[,] NASIL = {
             {"Koş","Kolay ve Orta'da oyuncu topa kendisi koşar, senin işin yalnız vuruş; kısa bir dokunuşla yerini değiştirebilirsin. Zor ve Usta'da koşmak sende: dokun = oraya koş, yavaş sürükle = parmağı izle. Zor'da geç kalırsan oyuncun topa kendisi koşar, dokunursan yine sen yönlendirirsin"},
             {"Forehand / backhand","Top raket tarafında gelirse forehand, öbür tarafta backhand. Backhand clear kısa kalır, drive yavaşlar, smaç olmaz; topu forehand tarafına alacak şekilde dur"},
             {"Akış","Üst üste 4 tam orta: çizgiler altın olur, hedef büyür, şarkıya armoni girer"},
-            {"Derinlik","Topun yerdeki gölgesi ve ona bağlı ince çizgi yüksekliği gösterir. Top sana inerken son saniyede yer çizgisi ve büzülen iniş halkası belirir; yeşilse yetişiyorsun"},
+            {"Derinlik","Topun yerdeki gölgesi ve ona bağlı ince çizgi yüksekliği gösterir. Top sana inerken son saniyede yer çizgisi ve büzülen iniş halkası belirir; kalın ve ortası noktalıysa yetişiyorsun, inceyse yetişmiyorsun"},
             {"Nefes","Smaç, sıçrama ve uzanma nefes yakar; nefesin düşünce yavaşlarsın ve smaç zayıflar. Clear atıp sayı arasında dinlen. Topu tepeden alırsan smaç dikleşir"},
             {"Ekipman","Raket, tel gerginliği, bileklik, bant ve forma oyunun dinamiklerini, raket sesini ve titreşimi değiştirir"},
             // 2026-10-26 ekipman v2 ve karakter: 5 çubuk ve tarz bir satırla anlatılır (yalnız Unity; HTML donduruldu)

@@ -47,6 +47,12 @@ Kod hazır: dört Tüy paketi (Unity IAP, StoreKit), işlem defteri, iCloud anah
 
    Açıklama: "Menüdeki reklam şeridi kalkar. Ödüllü reklam yalnız sen istersen açılır. Tüy vermez." İnceleme notuna:
    "Restore Purchases düğmesi Tüy dükkânının altında". Family Sharing açmak isteğe bağlı (sonradan kapatılamaz).
+   **Ürün sayfasında tanıt (isteğe bağlı, 2026-11-10 inceleme):** Reklamsız ürünü oluşunca ASC › In-App Purchases ›
+   Reklamsız › "Promote in App Store" aç. Görünen ad "Reklamsız / Ad-free", açıklama (≤45 karakter)
+   TR "Menüdeki reklam şeridi kalkar, Tüy vermez" / EN "Removes the menu ad strip. No Feathers.".
+   1024×1024 tanıtım görseli ister (ekran görüntüsü değil, yazısız oyun görseli; hazır olunca store_listing/gorsel/ altına).
+   Kodda iş yok: Unity IAP ürün sayfasından başlayan alımı uygulama açılınca ProcessPurchase ile işler, şerit kapanır.
+   TF sandbox'ta `itms-services://?action=purchaseIntent&bundleId=com.birdiesmash.app&productIdentifier=com.birdiesmash.app.reklamsiz` ile dene.
 4. **Sandbox testi**: Ayarlar › App Store › Sandbox hesabı ile TF build'inde üst çubuktaki Tüy sayacına dokun → paket al →
    Tüy cüzdana eklenmeli. Uygulamayı silip yeniden kur → iCloud açıksa ilerleme ve aldığın Tüy geri gelmeli.
 

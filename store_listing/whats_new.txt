@@ -5,6 +5,11 @@ Reklam ve zorluk (9 Kasım):
 - Zorluk (Kolay, Orta, Zor, Usta) Oyna ekranında, Oyna düğmesinin hemen üstünde. Kariyerin sıradaki maçı seçtiğin zorlukta oynanır. Oyna düğmesinin alt satırında artık saha adı yok (plakadaki yer adıyla karışıyordu).
 Nasıl denenir: Oyna'da Kolay'ı seç ve Oyna'ya bas, maçı kazan: kariyer ilerlemeli. Bugün henüz reklam izlemediysen maç sonu kartında "Ödüle +%50 · reklam izle" çıkmalı (test reklamı açılır). Oyna'da şerit sekmelerin biraz üstünde durmalı, Kariyer ve Dolap'a geçince kaybolmalı.
 
+Bu sabah (10 Kasım 07:12 inceleme turu):
+- Top sana inerken çıkan iniş halkası artık yalnız renkle değil biçimle de konuşuyor: yetişeceksen halka kalın ve ortasında dolu bir nokta var, yetişemeyeceksen ince. Renk körü oyuncular da ayırt edebilsin diye.
+- Ayarlar › Kamera'da seçili açının altında ne gösterdiği yazıyor (Yayın, Alçak, Üstten).
+Nasıl denenir: Zor'da bir maç oyna; topun düşeceği yere yakınken halka kalın ve noktalı, uzaktayken ince olmalı. Ayarlar'da üç kamera çipine sırayla dokun: altındaki cümle her seferinde değişmeli.
+
 Bu gece (10 Kasım 02:15 inceleme turu):
 - Ayarlar'da Ses, Müzik, Titreşim ve Hareketi azalt artık tek "Ses ve his" bölümünde, her biri solda adı, sağda açma kapama anahtarıyla. Anahtarın yanında "açık" ya da "kapalı" yazıyor.
 - Büyük yazıyla Dolap'ta bir şapkayı hedef yapınca kartlar artık ezilmiyor, liste kayıyor. Seviye atladın ekranı ve tur töreni büyük yazıda da tam okunuyor; düğmeler altta sabit.
