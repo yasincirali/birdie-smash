@@ -187,10 +187,24 @@ namespace BirdieSmash.Game
             foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect", "poor" }) { string tt = t, qq = q; isitSira.Enqueue(() => Vurus(tt, qq, false, false, false, true)); }
             isitSira.Enqueue(() => Vurus("clear", "good", false, false, true, true)); isitSira.Enqueue(() => Vurus("drop", "good", false, false, true, true));
             isitSira.Enqueue(() => Vurus("jump", "good", false, false, false, true));
+            ArtKur();
+        }
+        // Ralli sesleri (İnceleme turu 2026-11-10 17:08 #4): ralli notası (15 basamak × 3 renk) ve perfect serisi tonları (13)
+        // ralli ortasında ilk kez sentezleniyordu: en heyecanlı anda ana iş parçacığında tampon. Ayrı, düşük öncelikli sıra:
+        // Hazir'a sayılmaz (perde bunlar için beklemez), vuruş sırası bitince sakin anlarda karede bir tane. Önbellek kalıcı
+        // olduğundan bir kez kurulur.
+        readonly Queue<System.Action> artSira = new Queue<System.Action>(); bool artKuruldu;
+        void ArtKur()
+        {
+            if (artKuruldu) return; artKuruldu = true;
+            for (int i = 0; i < 15; i++) { int n = i; artSira.Enqueue(() => RallyKlip(n, true, true)); artSira.Enqueue(() => RallyKlip(n, true, false)); artSira.Enqueue(() => RallyKlip(n, false, false)); }
+            for (int i = 0; i <= 12; i++) { int n = i; artSira.Enqueue(() => PerfectKlip(n)); }
+            artSira.Enqueue(() => KickKlip());
         }
         void IsitIsle()
         {
-            if (isitSira.Count == 0 || (sakin != null && !sakin())) return;
+            if (sakin != null && !sakin()) return;
+            if (isitSira.Count == 0) { if (artSira.Count > 0) { var g = artSira.Dequeue(); try { g(); } catch (System.Exception) { } } return; }
             for (int i = 0; i < 2 && isitSira.Count > 0; i++) { var f = isitSira.Dequeue(); try { f(); } catch (System.Exception) { } }
         }
         static string Tur(string type) { return type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type == "push" ? "drive" : HITMIX.ContainsKey(type ?? "") ? type : "clear"; }
@@ -253,7 +267,8 @@ namespace BirdieSmash.Game
         {
             AudioClip c; if (cache.TryGetValue(k, out c)) return c; var s = new Synth(sec, seed++); f(s); c = s.Clip(k); cache[k] = c; return c;
         }
-        void Ton(float f, float d, string type, float v, float delay = 0) { src.PlayOneShot(Bir("t" + f + d + type + v + delay, s => s.Tone(delay, f, d, type, v), d + delay + .05f)); }
+        void Ton(float f, float d, string type, float v, float delay = 0) { src.PlayOneShot(TonKlip(f, d, type, v, delay)); }
+        AudioClip TonKlip(float f, float d, string type, float v, float delay = 0) { return Bir("t" + f + d + type + v + delay, s => s.Tone(delay, f, d, type, v), d + delay + .05f); }
         void Gurultu(float d, string type, float f, float v, float q = 1, float delay = 0) { src.PlayOneShot(Bir("n" + d + type + f + v + q + delay, s => s.Burst(delay, d, type, f, v, q, 4), d + delay + .05f)); }
         void Arpej(float f0, int[] semi, float d, float v, float ara) { src.PlayOneShot(Bir("a" + f0 + string.Join(",", semi) + d + v + ara, s => { for (int i = 0; i < semi.Length; i++) s.Tone(i * ara, f0 * Mathf.Pow(2, semi[i] / 12f), d, "triangle", v); }, semi.Length * ara + d + .05f)); }
 
@@ -299,12 +314,18 @@ namespace BirdieSmash.Game
         }
         // Ekipman ekranında rakete/tele dokununca o takımın smaç sesi (HTML racketHit({type:'smash',q:'perfect'})).
         public void Deneme() { src.PlayOneShot(Vurus("smash", "perfect", false, false, false, false)); }
-        void RallyNote(int n, bool mine, bool harm)
+        void RallyNote(int n, bool mine, bool harm) { src.PlayOneShot(RallyKlip(n, mine, harm)); }
+        AudioClip RallyKlip(int n, bool mine, bool harm)
         {
             int i = Mathf.Min(Mathf.Max(0, n), 14), semi = i / 5 * 12 + PENTA[i % 5]; float f = (mine ? 392 : 196) * Mathf.Pow(2, semi / 12f);
-            src.PlayOneShot(Bir("r" + f + mine + harm, s => { s.Tone(0, f, .32f, "triangle", mine ? .05f : .03f); s.Tone(.01f, f * 2, .18f, "sine", mine ? .02f : .01f); if (harm) { s.Tone(.04f, f * 1.5f, .4f, "sine", .03f); s.Tone(.08f, f * 2.52f, .3f, "sine", .015f); } }, .5f));
+            return Bir("r" + f + mine + harm, s => { s.Tone(0, f, .32f, "triangle", mine ? .05f : .03f); s.Tone(.01f, f * 2, .18f, "sine", mine ? .02f : .01f); if (harm) { s.Tone(.04f, f * 1.5f, .4f, "sine", .03f); s.Tone(.08f, f * 2.52f, .3f, "sine", .015f); } }, .5f);
         }
-        void Kick(float v) { src.PlayOneShot(Bir("k" + v.ToString("0.000"), s => s.Sweep(0, .25f, "sine", t => 130 * Mathf.Pow(42f / 130, Mathf.Min(1, t / .14f)), t => v * Mathf.Pow(.0001f / v, Mathf.Min(1, t / .22f))), .26f)); }
+        // Tek klip (İnceleme turu 2026-11-10 17:08 #4): eskiden her güç değeri ayrı klipti ("k" + v), ralli 6–15 arası her vuruş
+        // yeni bir tampon sentezliyordu. Klip en güçlü değerde (.24) bir kez kurulur, güç PlayOneShot kazancıyla verilir; zarf
+        // .0001 tabanına üstel indiği için .12–.24 arasında eğri farkı duyulmaz.
+        const float KICK_V = .24f;
+        AudioClip KickKlip() { return Bir("k", s => s.Sweep(0, .25f, "sine", t => 130 * Mathf.Pow(42f / 130, Mathf.Min(1, t / .14f)), t => KICK_V * Mathf.Pow(.0001f / KICK_V, Mathf.Min(1, t / .22f))), .26f); }
+        void Kick(float v) { src.PlayOneShot(KickKlip(), Mathf.Clamp01(v / KICK_V)); }
         void Whistle() { if (Kayitli("duduk", .6f)) return; src.PlayOneShot(Bir("duduk", s => s.Sweep(0, .52f, "sine", t => 2600 * Mathf.Pow(700f / 2600, Mathf.Min(1, t / .45f)), t => .025f * Mathf.Pow(.004f, Mathf.Min(1, t / .5f))), .53f)); }
         public void Squeak() { if (Kayitli("gicirti", .8f)) return; src.PlayOneShot(Bir("gicirti", s => s.Sweep(0, .13f, "sine", t => t < .06f ? Mathf.Lerp(2300, 3400, t / .06f) : Mathf.Lerp(3400, 2800, Mathf.Min(1, (t - .06f) / .04f)), t => .025f * Mathf.Pow(.004f, Mathf.Min(1, t / .12f))), .14f)); }
         // Yer (2026-11-05): eski 50 ms boğuk gürültü yerine mantarın tıkırtısı + gövde, tüy topun sekip ikinci/üçüncü
@@ -369,7 +390,8 @@ namespace BirdieSmash.Game
         public void Okudun() { Arpej(784, new[] { 0, 4, 7, 12 }, .12f, .05f, .05f); }
         public void Aldat() { Ton(740, .1f, "triangle", .06f); Ton(988, .12f, "triangle", .06f, .08f); }
         public void Split() { Ton(1200, .04f, "square", .03f); }
-        public void Perfect(int pstreak) { Ton(660 * Mathf.Pow(2, Mathf.Min(pstreak, 12) / 12f), .12f, "sine", .06f, .02f); }
+        public void Perfect(int pstreak) { src.PlayOneShot(PerfectKlip(pstreak)); }
+        AudioClip PerfectKlip(int pstreak) { return TonKlip(660 * Mathf.Pow(2, Mathf.Min(Mathf.Max(0, pstreak), 12) / 12f), .12f, "sine", .06f, .02f); }
         public void Akis() { Arpej(523, new[] { 0, 2, 4, 7, 9, 12 }, .25f, .05f, .06f); }
         // Sonsuz ralli (2026-11-06 Ar-Ge 22:03 #2): rekoru geçtiğin an yükselen iki nota; kademe atlayınca kısa yükselen tık.
         public void Rekor() { Ton(880, .1f, "triangle", .05f); Ton(1320, .18f, "triangle", .055f, .08f); }

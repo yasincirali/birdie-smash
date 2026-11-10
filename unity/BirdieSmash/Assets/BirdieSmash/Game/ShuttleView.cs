@@ -25,7 +25,7 @@ namespace BirdieSmash.Game
         public const float G = 3.2f, L = .066f * G, Rt = .032f * G, Rb = .012f * G, Rc = .0135f * G;
         public static bool SLICE_TAKLA = true;
         Transform body; GameObject lines; readonly GameObject[] ghosts = new GameObject[3]; Material[] ghostM = new Material[3];
-        Transform shadow; Material shadowM; LineRenderer trail, hLine, gLine, ring, ringS, prevRing, prevX1, prevX2; Transform ringFill; Material ringFillM, ringSM, prevM; LineRenderer erIc, erDis, ayakL, ayakR; Material ayakM, ayakDolguM; Transform ayakDolguL, ayakDolguR;
+        Transform shadow; Material shadowM; LineRenderer trail, hLine, gLine, ring, ringS, prevRing, prevX1, prevX2; Transform ringFill, ringNokta; Material ringFillM, ringNoktaM, ringSM, prevM; LineRenderer erIc, erDis, ayakL, ayakR; Material ayakM, ayakDolguM; Transform ayakDolguL, ayakDolguR;
         readonly List<Vector3> trailPts = new List<Vector3>(); readonly List<float> trailT = new List<float>();
         // İzin son uygulanan biçimi (renk, kalınlık, saydamlık) ve yeniden kullanılan anahtar dizileri.
         readonly Gradient izGrad = new Gradient(); readonly GradientColorKey[] izRenk = new GradientColorKey[2];
@@ -63,6 +63,7 @@ namespace BirdieSmash.Game
             ring = Kit.Line("inis", transform, Kit.Clear(new Color(1, 1, 1, .45f), dash34), true, true); ring.textureMode = LineTextureMode.Tile; ring.widthMultiplier = .05f;
             ringSM = Kit.Clear(new Color(1, 1, 1, .5f)); ringS = Kit.Line("inis_halka", transform, ringSM, true, true); ringS.widthMultiplier = .05f;
             ringFillM = Kit.Clear(new Color(1, 1, 1, .18f)); ringFill = Kit.MeshObj("inis_dolgu", transform, Disc(), ringFillM).transform;
+            ringNoktaM = Kit.Clear(new Color(.85f, 1, .35f, .9f)); ringNokta = Kit.MeshObj("inis_nokta", transform, Disc(), ringNoktaM).transform;
             // Usta erişim halkaları (2026-10-31 U1): oyuncunun ayağında iç halka (düz, limon) = tam vuruş, kesik dış halka (turuncu)
             // = uzanma (Match.USTA_UZAN). Rakip topu bu yana gelirken görünür; anlam biçimde de var (düz/kesik), yalnız renkte değil.
             erIc = Kit.Line("erisim_ic", transform, Kit.Clear(new Color(.77f, .93f, .25f, .35f)), true, true); erIc.widthMultiplier = .035f;
@@ -178,7 +179,7 @@ namespace BirdieSmash.Game
         void Gizle()
         {
             body.gameObject.SetActive(false); shadow.gameObject.SetActive(false); foreach (var g in ghosts) g.SetActive(false);
-            trail.enabled = hLine.enabled = gLine.enabled = ring.enabled = ringS.enabled = prevRing.enabled = prevX1.enabled = prevX2.enabled = false; if (erIc != null) erIc.enabled = erDis.enabled = false; ringFill.gameObject.SetActive(false); Durus(false, 0, 0, false);
+            trail.enabled = hLine.enabled = gLine.enabled = ring.enabled = ringS.enabled = prevRing.enabled = prevX1.enabled = prevX2.enabled = false; if (erIc != null) erIc.enabled = erDis.enabled = false; ringFill.gameObject.SetActive(false); ringNokta.gameObject.SetActive(false); Durus(false, 0, 0, false);
         }
         void Durus(bool on, float x, float y, bool yerinde)
         {
@@ -281,13 +282,21 @@ namespace BirdieSmash.Game
             if (gLine.enabled) { gLine.positionCount = 2; gLine.SetPosition(0, Kit.W(0, s.y, .006f)); gLine.SetPosition(1, Kit.W(Court.CW, s.y, .006f)); }
             // --- iniş halkası ---
             var lp = s.landPred; bool land = s.from == "op" && !s.dead && lp != null && lp.y > Court.NET && !(lp.net != null && !lp.net.ok);
-            ring.enabled = land; ringS.enabled = false; ringFill.gameObject.SetActive(false);
+            ring.enabled = land; ringS.enabled = false; ringFill.gameObject.SetActive(false); ringNokta.gameObject.SetActive(false);
             if (land)
             {
                 var q = Kit.W(lp.x, lp.y, .008f); float rem = Mathf.Max(0, lp.t - s.t); Kit.Ellipse(ring, q, 9f / 28, 9f / 28);
                 bool near = Mathf.Sqrt((lp.x - M.me.x) * (lp.x - M.me.x) + (lp.y - M.me.y) * (lp.y - M.me.y)) <= (M.easy ? 1.45f : 1.15f);
-                if (rem < .9f) { float f2 = Mathf.Max(0, rem / .9f); ringS.enabled = true; Kit.Ellipse(ringS, q, (9 + 18 * f2) / 28, (9 + 18 * f2) / 28); ringSM.color = near ? new Color(.85f, 1, .35f, .7f) : new Color(1, 1, 1, .5f); }
-                if (rem < .35f) { ringFill.gameObject.SetActive(true); ringFill.position = q; ringFill.localScale = Vector3.one * 9f / 28; ringFillM.color = near ? new Color(.85f, 1, .35f, .25f) : new Color(1, 1, 1, .18f); }
+                // 2026-11-10 inceleme (fikir 07:06 #1): "yetişiyorsun" yalnız renkle (limon/beyaz) söyleniyordu; döteranopide limon ile
+                // beyaz neredeyse aynı ve mağaza beyanı "Yalnız renkle ayırt etmeme: Evet". Şimdi biçimde de: yetişiyorsan büzülen halka
+                // 1,8× kalın ve dolgunun ortasında dolu nokta, yetişmiyorsan ince halka, nokta yok. Renk aynı kaldı; animasyon değil
+                // biçim olduğu için Hareketi azalt'ta da geçerli.
+                if (rem < .9f) { float f2 = Mathf.Max(0, rem / .9f); ringS.enabled = true; Kit.Ellipse(ringS, q, (9 + 18 * f2) / 28, (9 + 18 * f2) / 28); ringS.widthMultiplier = near ? .09f : .035f; ringSM.color = near ? new Color(.85f, 1, .35f, .7f) : new Color(1, 1, 1, .5f); }
+                if (rem < .35f)
+                {
+                    ringFill.gameObject.SetActive(true); ringFill.position = q; ringFill.localScale = Vector3.one * 9f / 28; ringFillM.color = near ? new Color(.85f, 1, .35f, .25f) : new Color(1, 1, 1, .18f);
+                    if (near) { ringNokta.gameObject.SetActive(true); ringNokta.position = q + Vector3.up * .001f; ringNokta.localScale = Vector3.one * 2.5f / 28; }
+                }
             }
             // --- Usta erişim halkaları ---
             bool er = !M.easy && M.ogr == null && s.from == "op" && !s.dead && s.y > Court.NET - 1;

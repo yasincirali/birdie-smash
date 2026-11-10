@@ -33,20 +33,21 @@ namespace BirdieSmash.Game
         // "ralli" (2026-11-07): ralli SÜRERKEN olan olaylar (akış, okudun, görev tamam) kısa iki tık (~55 ms). Uzun "flow" (~190 ms)
         // rakibin geri vuruşundan sonra gelen kendi vuruş tıkımızı örtüyordu; flow yalnız ralli dışındaki büyük anlarda kalır
         // (seviye, tur finali, rekor). Bir anlam = bir desen.
-        // HTML hap(k): hareketi azaltta yalnız win/lose
+        // Titreşimin tek kapısı Ayar.titresim (İnceleme turu 2026-11-10 17:08 #2): HTML hap(k) hareketi azaltta yalnız win/lose
+        // çalıyordu; sistemde Hareketi Azalt açık herkes Titreşim anahtarı açıkken bile hiçbir vuruşu hissetmiyordu. HIG:
+        // Reduce Motion görsel hareket içindir (sarsıntı, yakınlaşma, paralaks), titreşimin kendi anahtarı var (2026-11-07).
         public static void Hap(string k)
         {
-            int[] p; if (!HAP.TryGetValue(k, out p)) return;
-            if (Ayar.reduce && k != "win" && k != "lose") return; Cal(p);
+            int[] p; if (!HAP.TryGetValue(k, out p)) return; Cal(p);
         }
         // HTML hapHit(o): benim vuruşum; süre türe, doku tel gerginliğine göre (Sfx.Desen)
         public static void Vurus(string type, string q, bool slice)
         {
-            if (Ayar.reduce || Ayar.gear == null) return; Cal(Sfx.Desen(type, q, slice, Ayar.gear.tel));
+            if (Ayar.gear == null) return; Cal(Sfx.Desen(type, q, slice, Ayar.gear.tel));
         }
         // Titreşim anahtarı (2026-11-07, HIG Playing haptics + muadillerde ses/müzik/titreşim üç ayrı anahtar): titreşimi
         // kapatmanın tek yolu "Hareketi azalt"tı, o da sarsıntı/yakınlaşmayı, yani arcade hissini götürüyordu. Tek kapı burada;
-        // Hareketi azalt'ın kendi kuralı (yalnız win/lose) üstte aynen durur. Ses + görüntü her olayı taşıdığı için anlam kaybolmaz.
+        // 10 Kas'tan beri Hareketi azalt titreşimi kesmez (yukarıda). Ses + görüntü her olayı taşıdığı için anlam kaybolmaz.
         static void Cal(int[] p)
         {
             if (p == null || p.Length == 0 || !Ayar.titresim) return;

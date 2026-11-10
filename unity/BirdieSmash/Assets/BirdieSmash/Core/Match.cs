@@ -117,7 +117,9 @@ namespace BirdieSmash.Core
         public string server = "me", serveMsg = "", saha = "salon";
         public int rally, maxRally, pstreak, target = 21, bestRally;
         public float energy, clock, opHitAt = -9, wait, betweenT, freeze, slow = 1, slowT;
-        public bool easy = true, reduce, ilk, between, split, splitPending, over, matchDone, hint, deceive, kisaBekle, flow;
+        // 2026-11-10 inceleme (fikir 07:06 #6): servis ipucu bayrağı "hint" kalktı; okuyan yoktu. İpucu kararı tek yerde: Hud.ServisSeridi
+        // (Öğretici dönemi). Online paket ve kayıt bu alanı hiç taşımadı.
+        public bool easy = true, reduce, ilk, between, split, splitPending, over, matchDone, deceive, kisaBekle, flow;
         public Action svPending;
         // maç sonu istatistiği (HTML oInfo)
         public float enHizliSmac; public int smashes, kills, perfects, deceives, splits, tepeden, saves, outsLeft, slices, smacSayi, outsBen, smacKarsila, dropSayi, rakipSmacSayi, rakipFileSayi;   // smacKarsila: karşılanan rakip smacı; dropSayi: drop ile alınan sayı (kariyer görevleri)   // outsBen: dışarı giden kendi vuruşum (servis hariç), maç sonu ipucu   // rakipSmac/FileSayi: rakibin kendi vuruşuyla aldığı sayı (Ozet.Ipucu, 2026-11-07)
@@ -275,7 +277,7 @@ namespace BirdieSmash.Core
             if (sv == "me") { me.x = (sb[0] + sb[1]) / 2; me.y = Court.NET + Court.SSL + 1.4f; op.x = (rb[0] + rb[1]) / 2; op.y = Court.NET - Court.SSL - 1.6f; }
             else { op.x = (sb[0] + sb[1]) / 2; op.y = Court.NET - Court.SSL - 1.4f; me.x = (rb[0] + rb[1]) / 2; me.y = Court.NET + Court.SSL + 1.6f; }
             serveBox = new ServeBox { who = rv, x0 = rb[0], x1 = rb[1], y0 = rv == "me" ? Court.NET + Court.SSL : 0, y1 = rv == "me" ? Court.L : Court.NET - Court.SSL };
-            wait = sv == "op" ? (kisaBekle ? .7f : 1.0f) : 0; hint = sv == "me"; svPending = null; me.svAnim = op.svAnim = null;
+            wait = sv == "op" ? (kisaBekle ? .7f : 1.0f) : 0; svPending = null; me.svAnim = op.svAnim = null;
             // Rakip servis türünü önceden seçer, duruşu ona göre görünür; flick kısa servisle aynı duruştan.
             float r = R01(); op.svTur = r < .58f ? "kisa" : r < .8f ? "flick" : "yuksek";
             if (ogr != null) op.svTur = "yuksek";
@@ -665,6 +667,7 @@ namespace BirdieSmash.Core
         // karesinde çıkar. Hareket: yavaş = kısa, kısa ve sert fiske = flick, uzun ve hızlı = yüksek.
         public class Servis { public string klip; public float sure, z, aci; }
         string servisTurSon;   // StartFlight'a giden servis türü (Shuttle.servisTur)
+        int flickSeri, flickBekledim, flickOkudum;   // ardışık flick servisim; "Bekliyordum!" ve rakip flick'ini okuma yazısı sayıları (maç başına)
         public static readonly Dictionary<string, Servis> SERVIS = new Dictionary<string, Servis> {
             {"kisa", new Servis{klip="serve_bh",sure=.32f,z=1.0f,aci=.36f}}, {"flick", new Servis{klip="serve_flick",sure=.32f,z=1.02f,aci=.52f}}, {"yuksek", new Servis{klip="serve",sure=.56f,z=.82f,aci=1.0f}}};
         void ServisAt(string who, string tur, float tx, float ty)
@@ -676,7 +679,18 @@ namespace BirdieSmash.Core
             svPending = () =>
             {
                 float vx, vy, vz; Shuttle.Aim(hx, hy, hz, tx, ty, true, S.aci, out vx, out vy, out vz); servisTurSon = tur;
-                if (tur == "flick" && (who == "op" || R01() < .75f)) deceive = who == "me";   // çoğu flick rakibi kısa servise hazırlıksız yakalar
+                // Ardışık flick (İnceleme turu 2026-11-10 17:08 #1): flick'in işe yaraması kısa servisle karışmasından gelir; eskiden
+                // her flick %75 aldatıyordu, öğrenen oyuncu her servisi flick atıp rakibi "kukla" yapıyordu. Rakip ardışık flick'e
+                // alışır: 1. %75, 2. %50, 3. ve sonrası %25 (easy'de düşüş yarım: %75/%62,5/%50). Kısa/yüksek servis sayacı
+                // sıfırlar. R01 çağrısı eskisi gibi yalnız benim flick'imde (IkizMaclar: online'da rakip insan, Match:455 siler).
+                if (tur == "flick" && who == "me")
+                {
+                    float sans = .75f - (easy ? .125f : .25f) * Math.Min(2, flickSeri); flickSeri++;
+                    deceive = R01() < sans;
+                    if (uzak == null && !deceive && flickSeri >= 3 && flickBekledim < 2) { flickBekledim++; Say("op", null, op.x, op.y, 1.2f, "Bekliyordum!", 2); }
+                }
+                else if (tur == "flick") deceive = false;
+                else if (who == "me") flickSeri = 0;
                 StartFlight(who, vx, vy, vz, hx, hy, hz, true, tur == "kisa" ? "drop" : "clear", false, "good");
                 if (tur == "flick" && who == "op") Say("me", null, me.x, me.y, 0, "Flick servis!", 2);
             };
@@ -684,7 +698,7 @@ namespace BirdieSmash.Core
         public static string ServisTuru(float dx, float dy, float speed) { return speed > 1.0f ? (Hyp(dx, dy) < 95 ? "flick" : "yuksek") : "kisa"; }
         public bool SwipeServe(float dx, float dy, float speed)
         {
-            if (s != null || between || server != "me" || wait > 0 || over || svPending != null || DrilBitti) return false; hint = false;
+            if (s != null || between || server != "me" || wait > 0 || over || svPending != null || DrilBitti) return false;
             float cx = (serveBox.x0 + serveBox.x1) / 2, r = Clamp(dx / Math.Max(50, Math.Abs(dy)), -1.3f, 1.3f);
             string tur = ServisTuru(dx, dy, speed); float d = tur == "kisa" ? Court.SSL + .45f : tur == "flick" ? 6.0f : 6.2f;
             ServisAt("me", tur, cx + r * 1.5f, Court.NET - d); OgrOlay(null, tur, false, false, speed); otoServis = 0; return true;

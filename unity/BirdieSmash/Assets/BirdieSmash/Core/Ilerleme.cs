@@ -63,6 +63,7 @@ namespace BirdieSmash.Core
         // (0–YARDIM_AZAMI); maçta rakibin hızı ×YardimK, hatası ÷YardimK (Match.YardimUygula). Ölçüm (zayıf bot, pHit .035,
         // Kolay, 11 sayı): ilk basamakta k 1 → %22, k ,7 → %42, k ,6 → %72. Kazanınca hemen geri döner: güçlü oyuncu tek
         // kayıpta rakibi kalıcı olarak yumuşatmaz. Usta yolu (bilerek seçilen sonsuz merdiven) ve antrenman sayılmaz.
+        // 2026-11-10: yalnız Kolay/Orta seçilmişken uygulanır (GameRoot.Secenek); Zor/Usta'da sayaç sürer ama rakip değişmez.
         public const int YARDIM_AZAMI = 4;
         public int Yardim { get { return Math.Max(0, Math.Min(YARDIM_AZAMI, N("yardim"))); } }
         public void YardimIsle(bool won) { diger["yardim"] = (double)Math.Max(0, Math.Min(YARDIM_AZAMI, Yardim + (won ? -1 : 1))); }
