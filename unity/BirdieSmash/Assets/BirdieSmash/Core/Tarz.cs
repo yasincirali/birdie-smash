@@ -151,15 +151,17 @@ namespace BirdieSmash.Core
         // ve kozmetiği karıştırıyordu, tek düğme Dolap'ı açıyordu (raket parçası Atölye'de). Her öğe {grup, ad, yuva}: grup
         // "Dolap" (görünüm, ayakkabı, renkler, raket kaplaması: Dolap'ın raket görünümünde), "Atolye" (raket parçası, tarz),
         // "Diger" (unvan, aldatma vuruşu). yuva yalnız raket parçasında (Atölye'de o yuva açılır). Sıra AcilanAralik ile aynı.
+        // Satır: { grup, ad, Atölye yuvası, denenebilir "kat|id" }. 4. alan (inceleme 10 Kas 19:49 #5): seviye anındaki "Dolap'ta dene"
+        // eşyayı gerçekten vitrinde denesin diye; yalnız vitrinin DeneYaz ile giydirebildiği türler (ayakkabı, tip, saç modeli), gerisi null.
         public static List<string[]> AcilanAralikGruplu(int once, int sonra)
         {
             var l = new List<string[]>();
             for (int sv = Math.Max(2, once + 1); sv <= sonra; sv++)
             {
-                foreach (var y in Gear.MODEL_YUVA) foreach (var m in Gear.GEAR[y].Values) if (m.sv == sv) l.Add(new[] { y == "ayakkabi" ? "Dolap" : "Atolye", m.ad, y == "ayakkabi" ? null : y });
+                foreach (var y in Gear.MODEL_YUVA) foreach (var m in Gear.GEAR[y].Values) if (m.sv == sv) l.Add(new[] { y == "ayakkabi" ? "Dolap" : "Atolye", m.ad, y == "ayakkabi" ? null : y, y == "ayakkabi" ? "ayakkabi|" + m.id : null });
                 foreach (var t in Tarzlar) if (t.sv == sv) l.Add(new[] { "Atolye", t.ad, null });
-                foreach (var o in Kozmetik.Acilan(Kozmetik.TIP, sv)) l.Add(new[] { "Dolap", o.ad, null });
-                foreach (var o in Kozmetik.Acilan(Kozmetik.SAC, sv)) l.Add(new[] { "Dolap", o.ad, null });
+                foreach (var o in Kozmetik.Acilan(Kozmetik.TIP, sv)) l.Add(new[] { "Dolap", o.ad, null, Kozmetik.TIP + "|" + o.id });
+                foreach (var o in Kozmetik.Acilan(Kozmetik.SAC, sv)) l.Add(new[] { "Dolap", o.ad, null, Kozmetik.SAC + "|" + o.id });
                 foreach (var m in Gear.RENK.Values) if (m.sv == sv && !m.kilit) l.Add(new[] { "Dolap", m.ad, null });
                 foreach (var k in GORUNUM_KAT) foreach (var o in Gorunum(k)) if (o.sv == sv) l.Add(new[] { "Dolap", o.ad, null });
                 foreach (var u in Unvanlar) if (u.sv == sv) l.Add(new[] { "Diger", u.ad, null });

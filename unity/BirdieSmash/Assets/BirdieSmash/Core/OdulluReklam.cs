@@ -10,6 +10,9 @@
 //  - Kartın tek ikincil yuvası doluysa (antrenman önerisi, yükselt, Usta daveti, maçın anı…) o maç teklif yok; ana düğme
 //    hiç yer değiştirmez.
 //  - 3 ardışık ret (teklif görüldü, izlenmeden kart kapandı) → sonraki 3 maç teklif yok. Ret sayılır, ceza değildir.
+//  - Teklif yalnız taban Tüy >= ODUL_ESIK (40) olan maçta (inceleme 10 Kas 19:49 #4): 5 sayılık kayıp 15 Tüy, izleyen +8 alıp günün
+//    tek hakkını yakıyordu; ilk izleme "+8" ise oyuncu bir daha izlemez. 40 = en kısa galibiyet tabanı, yani her galibiyet ve görevli/uzun
+//    kayıp uygun kalır (teselli teklifi tamamen kalkmaz). Günlük sayı (1) ve +%50 değişmez.
 //  - Yarıda kapanan reklam ödül vermez, sayaç da yanmaz (yazı suçlamaz; düğme o maç bir daha çıkmaz).
 using System;
 
@@ -18,7 +21,7 @@ namespace BirdieSmash.Core
     public static class OdulluReklam
     {
         public const string ANAHTAR = "tuytop_odullu_reklam";
-        public const int ILK_GALIBIYET = 3, GUNLUK = 1, RET_SERI = 3, SUS_MAC = 3;
+        public const int ILK_GALIBIYET = 3, GUNLUK = 1, RET_SERI = 3, SUS_MAC = 3, ODUL_ESIK = 40;
 
         public static int Ek(int tuy) { return tuy <= 0 ? 0 : (int)Math.Floor(tuy * .5 + .5); }
 
@@ -41,7 +44,7 @@ namespace BirdieSmash.Core
         // Bu maçın kartında teklif çıkar mı? reklamHazir: SDK'da yüklenmiş, gösterilebilir reklam var.
         public static bool Uygun(Durum d, string gun, int galibiyet, int odulTuy, bool baskaIkincil, bool buMacKullanildi, bool reklamHazir)
         {
-            if (!reklamHazir || buMacKullanildi || baskaIkincil || odulTuy <= 0) return false;
+            if (!reklamHazir || buMacKullanildi || baskaIkincil || odulTuy < ODUL_ESIK) return false;
             if (galibiyet < ILK_GALIBIYET || d.sus > 0) return false;
             return d.Bugun(gun) < GUNLUK;
         }
