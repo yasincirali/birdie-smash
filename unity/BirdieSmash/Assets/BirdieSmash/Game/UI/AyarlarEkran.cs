@@ -97,7 +97,7 @@ namespace BirdieSmash.Game
             {"Nefes","Smaç, sıçrama ve uzanma nefes yakar; nefesin düşünce yavaşlarsın ve smaç zayıflar. Clear atıp sayı arasında dinlen. Topu tepeden alırsan smaç dikleşir"},
             {"Ekipman","Raket, tel gerginliği, bileklik, bant ve forma oyunun dinamiklerini, raket sesini ve titreşimi değiştirir"},
             // 2026-10-26 ekipman v2 ve karakter: 5 çubuk ve tarz bir satırla anlatılır (yalnız Unity; HTML donduruldu)
-            {"Çubuklar ve tarz","Atölye'de takımının 5 çubuğu var (50 nötr); her modelin kartı artısını ve eksisini tek cümleyle yazar, en iyi parça yok. Tarzın bir artısı ve bir eksisi var, en iyi tarz yok; fark yarattığı an kortta adıyla yazılır. Ücretsiz, istediğin an değiştir"}};
+            {"Çubuklar ve tarz","Atölye'de takımının 5 çubuğu var (50 nötr); her modelin kartı artısını ve eksisini tek cümleyle yazar, en iyi parça yok. Gelişim puanların çubuğun ucuna ayrı renkle ve +n yazısıyla eklenir. Tarzın bir artısı ve bir eksisi var, en iyi tarz yok; fark yarattığı an kortta adıyla yazılır. Ücretsiz, istediğin an değiştir"}};
         void NasilKur(VisualElement p)
         {
             SayfaBasi(p, "Nasıl oynanır");

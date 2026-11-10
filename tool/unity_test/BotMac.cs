@@ -153,7 +153,7 @@ static class BotMac
         Yardimlar();   // 2026-10-29 kayıpta rakip yumuşar (ayrı satır)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); YenilgiIpuclari(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
-        Turlar34(); Drillar(); MacSayisilari(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Efsaneler(); SmacHareketleri(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
+        Turlar34(); Drillar(); MacSayisilari(); MacHikayeleri(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Efsaneler(); SmacHareketleri(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
         KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
@@ -861,6 +861,29 @@ static class BotMac
         if (d(11, 9, 5, "altin", 13) != -1) Fail("altın olmayan rallide 9–5 maç sayısı değil");
         if (d(11, 9, 5, "uzun", 14) != -1) Fail("koşullu değiştirici 1 sayılır");
         Console.WriteLine("maç sayısı: tek kural, fark > 1, tavan, altın ralli");
+    }
+
+    // 2026-11-11 inceleme (fikir 02:05 #3): maç sonu başlığı. Geride kalma Point içinde izlenir; eşik hedefe göre.
+    static void MacHikayeleri()
+    {
+        var pt = typeof(Match).GetMethod("Point", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var M = new Match(3, new MatchOptions { easy = true, target = 11 });
+        var bw = typeof(Match).GetField("between", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+        foreach (var w in new[] { "op", "op", "op", "op", "op", "me", "me" }) { bw.SetValue(M, false); pt.Invoke(M, new object[] { w, "test", 0f, 0f }); }
+        if (M.enBuyukGeri != 5 || M.geriBen != 0 || M.geriRakip != 5) Fail("hikâye: 0–5 en büyük gerilik izlenmeli " + M.enBuyukGeri + " " + M.geriBen + "–" + M.geriRakip);
+        M.sc[0] = 11; M.sc[1] = 8; if (M.MacHikaye() != 1) Fail("hikâye: 0–5'ten 11–8 geri dönüş");
+        M.sc[0] = 8; M.sc[1] = 11; if (M.MacHikaye() != 0) Fail("hikâye: kayıpta başlık değişmez");
+        var K = new Match(3, new MatchOptions { easy = true, target = 11 }); K.enBuyukGeri = 3; K.sc[0] = 11; K.sc[1] = 6;
+        if (K.MacHikaye() != 0) Fail("hikâye: 11'likte 3 gerilik sıradan");
+        K.sc[0] = 12; K.sc[1] = 10; if (K.MacHikaye() != 2) Fail("hikâye: uzatma kıl payı");
+        K.sc[0] = 15; K.sc[1] = 14; if (K.MacHikaye() != 2) Fail("hikâye: tavan kıl payı");
+        var B = new Match(3, new MatchOptions { easy = true, target = 5 }); B.enBuyukGeri = 2; B.sc[0] = 5; B.sc[1] = 3;
+        if (B.MacHikaye() != 1) Fail("hikâye: 5'likte 2 gerilik geri dönüş");
+        var G = new Match(3, new MatchOptions { easy = true, target = 11, degistirici = "geri" });
+        if (G.enBuyukGeri != Match.GERI_FARK || G.geriRakip != Match.GERI_FARK) Fail("hikâye: geri senaryosu başlangıç geriliği sayılır");
+        var gp = Gelisim.CubukPayi(GearStats.Notr, new[] { 10, 0, 0, 0, 0 }, false); var ge = Gelisim.CubukPayi(GearStats.Notr, new[] { 10, 0, 0, 0, 0 }, true);
+        if (gp[Gear.GUC] <= 0 || gp[Gear.KONTROL] != 0 || ge[Gear.GUC] != 0) Fail("çubuk payı: güç puanı Güç çubuğuna, eşit şartlarda sıfır");
+        Console.WriteLine("maç sonu başlığı: geri dönüş/kıl payı; çubuk payı güç 10 puan = +" + gp[Gear.GUC]);
     }
 
     static void Gunlukler()

@@ -52,6 +52,16 @@ namespace BirdieSmash.Core
         // Ekranda yazılan yüzde: dalın şu anki etkisi (tam sayıya yuvarlanmış).
         public static int Yuzde(int dal, int n) { return (int)Math.Round(ETKI[dal] * n * 100); }
 
+        // 2026-11-11 (inceleme turu, fikir 02:05 #1): Atölye "Takımın şimdi" çubukları ekipmanı anlatır ama oyuncu aynı beş adı
+        // burada puanla büyütüyor; çubuğun ucunda gelişimin payı ayrı tonla ve "+n" yazısıyla görünmezse puan vermenin görünür
+        // ödülü kalmıyor. Pay = Cubuklar(ekipman + gelişim) − Cubuklar(ekipman); tarz yine girmez. Eşit şartlarda sıfır.
+        public static int[] CubukPayi(GearStats gse, int[] p, bool esit)
+        {
+            var a = Gear.Cubuklar(gse); var b = Gear.Cubuklar(Uygula(gse, p, esit));
+            for (int i = 0; i < a.Length; i++) a[i] = Math.Max(0, b[i] - a[i]);
+            return a;
+        }
+
         public static GearStats Uygula(GearStats g, int[] p, bool esit)
         {
             if (esit || p == null || Harcanan(p) == 0) return g;

@@ -986,6 +986,7 @@ namespace BirdieSmash.Game
         //   donerek : vuruştan sonra inerken kendi ekseninde bir tam tur, yere önü dönük iner
         const float SMAC_TEMAS = .47f;
         static float Pencere(float u, float a, float b, float yum) { return Mathf.SmoothStep(0, 1, Mathf.Clamp01((u - a) / yum)) * Mathf.SmoothStep(0, 1, Mathf.Clamp01((b - u) / yum)); }
+        readonly float[] smUy = new float[2], smBa = new float[2];
         void SmacHareket(string id, float u, bool rm)
         {
             if (rm || id == null || id == "duz" || u <= 0 || u >= 1) return;
@@ -1003,7 +1004,7 @@ namespace BirdieSmash.Game
             if (don != 0) { yaw.localRotation = Quaternion.AngleAxis(don, Vector3.up) * yaw.localRotation; up = yaw.up; ri = yaw.right; }   // tam turda başa döner: iniş karesi klibinkiyle aynı
             if (egil != 0 && kOmurga.Count > 0) kOmurga[0].rotation = Quaternion.AngleAxis(egil * w, ri) * kOmurga[0].rotation;
             // +açı: bacak arkaya (aşağı bakan kemik için sağ eksende artı dönüş ucu geriye taşır). Sıra: önce uyluk, sonra baldır.
-            float[] uy = { uylukSol, uylukSag }, ba = { baldirSol, baldirSag };
+            float[] uy = smUy, ba = smBa; uy[0] = uylukSol; uy[1] = uylukSag; ba[0] = baldirSol; ba[1] = baldirSag;   // alan dizileri: karede ayırma yok (2026-11-11)
             for (int i = 0; i < 2; i++)
             {
                 Transform th = kBacak[i * 3], kn = kBacak[i * 3 + 1]; if (th == null || kn == null) continue;

@@ -434,8 +434,10 @@ namespace BirdieSmash.Game
             bittiBaslik = L.T(won ? "Kazandın" : "Bu sefer rakip aldı") + (kNot != "" ? " · " + L.Cumle(kNot) : "");
             // "Galibiyet" anahtarı tr_en.json'da istatistik etiketi ("Wins"); başlıkta "Victory" olmalı (r16), sözlük HTML'in
             // birebir kopyası olduğu için orada değiştirilmez.
-            bittiBas = won ? (L.En ? "Victory" : "Galibiyet") : L.T("Bu sefer rakip aldı");
+            int hik = won ? M.MacHikaye() : 0;
+            bittiBas = hik == 1 ? L.T("Geri dönüş") : hik == 2 ? L.T("Kıl payı") : won ? (L.En ? "Victory" : "Galibiyet") : L.T("Bu sefer rakip aldı");
             if (kNot != "") { if (kariyerIlk) bittiAcilan = L.Cumle(kNot); else bittiAltNot = L.Cumle(kNot); }
+            if (hik == 1) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("{0}–{1} gerideyken döndün.", M.geriBen, M.geriRakip);
             if (yumusadi && Ayar.easy) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Sıradaki maçta rakip biraz yavaşlayacak.");
             else if (!won && !Ayar.easy && M.stil.usta < 0 && M.ogr == null && Ayar.ilerleme != null && Ayar.ilerleme.Yardim >= 3)
                 bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Zorlanıyorsan Ayarlar'dan zorluğu bir kademe indirebilirsin.");
