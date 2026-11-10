@@ -1,4 +1,9 @@
 === UNITY ===
+Dolap koleksiyonu (10 Kasım):
+- Dolap'ta kategori çipleri artık kaçının senin olduğunu yazıyor ("Şapka 3/9"). Sayfanın başında yeni satır: koleksiyonun toplamı ve sıradaki eşya (kaç Tüy kaldığı ya da hangi seviyede açılacağı). Dokununca o eşya figürün üstünde denenir.
+- Bir eşya alınca figür kendi sevincini bir kez yapıyor (Hareketi azalt açıkken yapmaz).
+Nasıl denenir: Dolap'ı aç: çiplerde "n/m" sayıları, üstte "Sıradaki: ..." satırı olmalı. Satıra dokun: ilgili kategori açılmalı ve eşya "deneniyor" olmalı. Tüy'ün yetiyorsa al: figür sevinmeli, sayaç bir artmalı, satır bir sonraki eşyayı göstermeli.
+
 Seviye ödülleri (10 Kasım):
 - Seviye atlamak artık Tüy veriyor: her seviye +40, 5'in katlarında büyük ödül (Sv 5 +150 ... Sv 30 +500). "Seviye atladın" ekranında ve maç sonu kartında yazıyor.
 - Oyna ekranının altında yeni satır: sıradaki seviyenin ödülü ve kaç XP kaldığı. Dokununca "Seviye yolu" açılır: Sv 30'a kadar her seviyenin Tüy'ü ve açtığı eşyalar.

@@ -22,6 +22,8 @@ namespace BirdieSmash.Game
             {"Sen","You"},{"Reklam","Ad"},{"Reklam alanı","Ad space"},{"Rakip ≤ {0}","Opponent ≤ {0}"},{"yıldız","stars"},{"Rastgele rakip","Random opponent"},{"Seviye atladın","Level up"},
             // 2026-11-10 seviye ödülü ve Seviye yolu
             {"Seviye ödülü +{0} Tüy","Level reward +{0} Feathers"},{"Seviye ödülü","Level reward"},{"+{0} Tüy","+{0} Feathers"},{"Seviye yolu","Level track"},
+            {"Koleksiyon {0}/{1}","Collection {0}/{1}"},{"Dolabın tamam: hepsi senin.","Your locker is complete: it's all yours."},{"Sıradaki: {0}","Next up: {0}"},
+            {"Sv {0}'da açılır","Unlocks at Lv {0}"},{"{0} Tüy kaldı","{0} Feathers to go"},{"Alabilirsin","You can get it"},{"dene","try on"},
             {"Sv {0} ödülü · {1} XP kaldı","Lv {0} reward · {1} XP to go"},{"Sv {0} · sonraki seviyeye {1} XP","Lv {0} · {1} XP to next level"},{"Sv 30 · en üst seviye","Lv 30 · top level"},
             {"Her seviye Tüy verir, 5'in katları büyük ödül. Açılanlar Dolap ve Atölye'de seni bekler.","Every level gives Feathers, every 5th a big reward. Unlocks wait for you in Wardrobe and Workshop."},
             {"Büyük ödül","Big reward"},{"Açılır: {0}","Unlocks: {0}"},{"İz geri geldi","Trail is back"},{"Lisanslar","Licences"},{"Yazı boyutu","Text size"},{"Sistem","System"},{"Normal","Normal"},{"Büyük","Large"},

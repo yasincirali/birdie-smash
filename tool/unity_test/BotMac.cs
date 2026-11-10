@@ -153,7 +153,7 @@ static class BotMac
         Yardimlar();   // 2026-10-29 kayıpta rakip yumuşar (ayrı satır)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); YenilgiIpuclari(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
-        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
+        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
         KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
@@ -887,6 +887,24 @@ static class BotMac
     }
     // 2026-11-02 hedef eşya (Core/Hedef): seviye kilitli eşya hedef olmaz, alınan hedef düşer, oran/kalan, "hazır" yalnız
     // eşiği geçen maçta, ödül alt yazısında en büyük ek + kalan sayısı.
+    // 2026-11-10 Dolap koleksiyon sayımı ve "Sıradaki": sayım kayıttan, aynı hareket iki kez sayılmaz, sıradaki eşya
+    // önce seviyesi yeten en ucuz, yoksa en yakın seviye; alınınca değişir, hepsi alınınca null.
+    static void DolapSayim()
+    {
+        var g = SvGear(1, 0); int top = 0, shp = 0;
+        foreach (var k in Kozmetik.KAT) { int s, t; Kozmetik.Sayim(g, k, out s, out t); if (s > t || t < 0) Fail("dolap sayım: sahip toplamı aşamaz " + k); if (k != Kozmetik.MAC_SONU && s < 1) Fail("dolap sayım: Sv 1'de her kategoride en az bir ücretsiz öğe olmalı " + k); top += t; shp += s; }
+        int ms, mt; Kozmetik.Sayim(g, Kozmetik.MAC_SONU, out ms, out mt); int ortak = 0; foreach (var o in Kozmetik.Liste(Kozmetik.MAC_SONU)) if (Kozmetik.Bul(Kozmetik.SEVINC, o.id) != null) ortak++;
+        if (mt != Kozmetik.Liste(Kozmetik.MAC_SONU).Length - ortak) Fail("dolap sayım: ortak hareket iki kez sayılmamalı");
+        string kat; var sr = Kozmetik.Siradaki(g, Kozmetik.KAT, out kat);
+        if (sr == null || kat == null || Kozmetik.Sahip(g, kat, sr.id)) Fail("dolap sıradaki: sahip olunmayan bir eşya dönmeli");
+        foreach (var k in Kozmetik.KAT) foreach (var o in Kozmetik.Liste(k)) if (!Kozmetik.Sahip(g, k, o.id) && o.sv <= 1 && sr.sv <= 1 && o.fiyat < sr.fiyat && !(k == Kozmetik.MAC_SONU && Kozmetik.Bul(Kozmetik.SEVINC, o.id) != null)) Fail("dolap sıradaki: seviyesi yeten en ucuz olmalı");
+        string kat2; if (Kozmetik.Siradaki(g, Kozmetik.KAT, out kat2) != sr || kat2 != kat) Fail("dolap sıradaki: aynı kayıtta aynı eşya");
+        var z = SvGear(30, 0); int n = 0;
+        while (true) { string k; var o = Kozmetik.Siradaki(z, Kozmetik.KAT, out k); if (o == null) break; if (o.sv > 30) Fail("dolap sıradaki: Sv 30'da kilitli kalmamalı"); z.eko.tuy = o.fiyat; if (!Kozmetik.Al(z, k, o.id, null)) Fail("dolap sıradaki: Sv 30'da alınabilmeli " + k + ":" + o.id); if (++n > 500) { Fail("dolap sıradaki: bitmiyor"); break; } }
+        int zs = 0, zt = 0; foreach (var k in Kozmetik.KAT) { int s, t; Kozmetik.Sayim(z, k, out s, out t); zs += s; zt += t; }
+        if (zs != zt || zt != top) Fail("dolap sayım: hepsi alınınca sahip = toplam (" + zs + "/" + zt + ")");
+        Console.WriteLine("Dolap: Sv 1'de " + shp + "/" + top + ", sıradaki " + kat + ":" + sr.id + " (" + sr.fiyat + " Tüy), " + n + " alımla tamam");
+    }
     static void HedefEsya()
     {
         string kat, id; if (!Hedef.Oku("sirt:yildiz_pelerin", out kat, out id) || kat != "sirt" || id != "yildiz_pelerin") Fail("hedef: kayıt okunmalı");

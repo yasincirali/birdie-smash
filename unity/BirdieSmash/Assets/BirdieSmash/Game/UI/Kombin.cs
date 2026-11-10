@@ -196,7 +196,7 @@ namespace BirdieSmash.Game
                 else { Ayar.KOZ[d.kat] = d.id; root.vitrin.DeneYaz(d.kat, null); }
             }
             if (!biri) return;
-            root.sfx.Yukselt(); Yerel.Hap("tick"); Ayar.Kaydet(); root.vitrin.Yenile(); kirli[(int)Sekme.Profil] = true; ustKirli = true; UstKur(); Degisti(); SoyunmaGovdeKur(true);
+            root.sfx.Yukselt(); Yerel.Hap("tick"); Ayar.Kaydet(); root.vitrin.Yenile(); kirli[(int)Sekme.Profil] = true; ustKirli = true; UstKur(); Degisti(); SoyunmaGovdeKur(true); AlimAni();
         }
     }
 }

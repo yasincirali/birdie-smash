@@ -770,3 +770,6 @@
 .seviye-odul { flex-direction: row; align-items: center; justify-content: center; flex-wrap: wrap; margin-top: 4px; margin-bottom: 8px; }
 .seviye-odul .ikon { margin-right: 6px; }
 .seviye-odul .soluk { margin-left: 8px; }
+
+/* Dolap koleksiyon satırı (2026-11-10): Oyna'daki seviye satırıyla aynı kalıp; Dolap'ta üstte boşluk yok, altta var. */
+.dolap-siradaki { margin-top: 0; margin-bottom: 8px; }
