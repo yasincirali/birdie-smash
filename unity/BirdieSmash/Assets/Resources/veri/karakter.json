@@ -55,6 +55,12 @@
   {"id": "alkis", "ad": "Rakete alkış", "sv": 5, "fiyat": 450},
   {"id": "zipla", "ad": "Zıpla ve dön", "sv": 8, "fiyat": 750}
 ],
+"smac": [
+  {"id": "duz", "ad": "Düz sıçrayış", "sv": 1, "fiyat": 0},
+  {"id": "yay", "ad": "Yay", "sv": 6, "fiyat": 0},
+  {"id": "makas", "ad": "Makas", "sv": 14, "fiyat": 0},
+  {"id": "donerek", "ad": "Dönerek iniş", "sv": 22, "fiyat": 0}
+],
 "mac_sonu": [
   {"id": "zafer", "ad": "Zafer", "sv": 1, "fiyat": 0},
   {"id": "selam", "ad": "Seyirciyi selamla", "sv": 2, "fiyat": 250},

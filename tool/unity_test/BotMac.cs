@@ -153,7 +153,7 @@ static class BotMac
         Yardimlar();   // 2026-10-29 kayıpta rakip yumuşar (ayrı satır)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); YenilgiIpuclari(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
-        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Efsaneler(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
+        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Efsaneler(); SmacHareketleri(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
         KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
@@ -904,6 +904,16 @@ static class BotMac
         if (o.efsane != 0 || e.eko.tuy != tuy0 + o.tuy || e.Efsane() != 5) Fail("efsane: geriye dönük ödeme olmamalı");
         var d = new Gear(new BellekKayit(), 0); d.eko.xp = 50; if (d.EfsaneIlerleme(out n, out k) || d.Efsane() != 0) Fail("efsane: Sv 30 altında yok");
         if (Gelisim.Toplam(30) != 29) Fail("efsane: gelişim puanı vermez");
+    }
+    // 2026-11-10 smaç hareketi (Kozmetik.SMAC): Tüy ile satılmaz, yalnız seviyeyle açılır; seçim kaydı korunur.
+    static void SmacHareketleri()
+    {
+        var l = Kozmetik.Liste(Kozmetik.SMAC); if (l.Length < 4 || l[0].id != "duz") Fail("smaç hareketi: liste");
+        int once = 0; foreach (var o in l) { if (o.fiyat != 0) Fail("smaç hareketi Tüy ile satılmaz: " + o.id); if (o.sv < once || o.sv > 30) Fail("smaç hareketi seviyesi sıralı ve ≤ 30: " + o.id); once = o.sv; }
+        var g = new Gear(new BellekKayit(), 0);
+        if (!Kozmetik.Sahip(g, Kozmetik.SMAC, "duz") || Kozmetik.Sahip(g, Kozmetik.SMAC, "yay") || Kozmetik.Durum(g, Kozmetik.SMAC, "yay", "duz") != ModelDurum.Kilitli) Fail("smaç hareketi: Sv 1'de yalnız düz");
+        g.eko.xp = Gear.Sv30Xp(); foreach (var o in l) if (!Kozmetik.Sahip(g, Kozmetik.SMAC, o.id)) Fail("smaç hareketi Sv 30'da açık olmalı: " + o.id);
+        if (Array.IndexOf(Kozmetik.KAT, Kozmetik.SMAC) < 0) Fail("smaç hareketi KAT'ta yok (kayıt ve kart dolaşmaz)");
     }
     static void Gelisimler()
     {

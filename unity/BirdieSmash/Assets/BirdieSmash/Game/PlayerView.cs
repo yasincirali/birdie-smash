@@ -896,7 +896,9 @@ namespace BirdieSmash.Game
             Sample(cur, ph, prev, prevPh, prev == null ? 1 : Mathf.SmoothStep(0, 1, blend), altKlip, altPh, altW, prev2, prev2Ph, prev2Pay);   // smoothstep (2026-10-26): doğrusal ağırlık geçişin başında ve sonunda hız kırığı veriyordu
             KalcaDonus(o);   // ana örneklemeden hemen sonra: uzanma kalçayı kaydırmadan, ayak kilidi IK'dan önce
             Uzan(o, M, j);   // kayma ve kalça: ayak kilidinden önce (kilit kalça kaymasını ayakta geri alır)
-            FileItin(); AyakKilit(dt); HazirNefes(o, M); UzanKol(); ServisEller(); Sevinc(M, dt);
+            FileItin(); AyakKilit(dt); HazirNefes(o, M); UzanKol(); ServisEller();
+            if (isMe && !hakem && o.jump > 0 && (cur == "jump" || o.prepClip == "jump")) SmacHareket(Secim(Kozmetik.SMAC), 1 - o.jump, M.reduce);
+            Sevinc(M, dt);
         }
 
         // ---- Sevinç (2026-11-01, Ar-Ge K3; yasin "maç sonunda da sevinç kategorisi kısmını gönder") ----
@@ -973,6 +975,57 @@ namespace BirdieSmash.Game
             float d = id == "iyi_oyun" || id == "zafer" || id == "selam" || id == "egil" ? 2.4f : 1.6f, tt = t % d;
             float w = Mathf.Clamp01(Mathf.Min(tt / .15f, (d - tt) / .25f));
             SevincPoz(id, tt, w, Ayar.reduce);
+        }
+        // ---- Smaç hareketi (2026-11-10, Kozmetik.SMAC; yasin: "xp ve levele özgü animasyonlar, cool smash tricks") ----
+        // Sıçrayarak smaç klibinin (jump) üstüne kemik katmanı: sevinç katmanıyla aynı yöntem, yeni FBX yok, dört modelde aynı.
+        // u = sıçramanın ilerlemesi (0 kalkış, SMAC_TEMAS'ta temas, 1 iniş; Match: jump 1 → 0, temasta .53). Poz yalnız u'nun
+        // işlevi (saklı durum yok): Dolap önizlemesi ve maç aynı kareyi verir. Raket kolu ve temas anı klipte kalır: katman
+        // yalnız omurga, bacak ve (temastan SONRA) kök dönüşüne dokunur, top raketten aynı yerde çıkar. Hareketi azalt: hiçbiri.
+        //   yay     : temasa kadar sırt geriye yay, dizler arkaya kıvrık; temasta gövde öne kapanır
+        //   makas   : havada bacaklar ön-arka açılır, temasta yer değiştirir
+        //   donerek : vuruştan sonra inerken kendi ekseninde bir tam tur, yere önü dönük iner
+        const float SMAC_TEMAS = .47f;
+        static float Pencere(float u, float a, float b, float yum) { return Mathf.SmoothStep(0, 1, Mathf.Clamp01((u - a) / yum)) * Mathf.SmoothStep(0, 1, Mathf.Clamp01((b - u) / yum)); }
+        void SmacHareket(string id, float u, bool rm)
+        {
+            if (rm || id == null || id == "duz" || u <= 0 || u >= 1) return;
+            if (kBacak == null) ZincirKur(); if (kBacak == null) return;
+            Vector3 up = yaw.up, ri = yaw.right;
+            float w = Pencere(u, 0, 1, .14f), egil = 0, uylukSol = 0, uylukSag = 0, baldirSol = 0, baldirSag = 0, don = 0;
+            float gec = Mathf.SmoothStep(0, 1, Mathf.Clamp01((u - SMAC_TEMAS + .06f) / .16f));   // temasın hemen öncesinden sonrasına 0 → 1
+            switch (id)
+            {
+                case "yay": egil = Mathf.Lerp(-20, 15, gec); baldirSol = baldirSag = Mathf.Lerp(58, 12, gec); uylukSol = uylukSag = Mathf.Lerp(10, -14, gec); break;
+                case "makas": uylukSol = Mathf.Lerp(-40, 30, gec); uylukSag = Mathf.Lerp(32, -36, gec); baldirSol = Mathf.Lerp(8, 46, gec); baldirSag = Mathf.Lerp(46, 8, gec); egil = Mathf.Lerp(-6, 8, gec); break;
+                case "donerek": don = 360 * Mathf.SmoothStep(0, 1, Mathf.Clamp01((u - SMAC_TEMAS - .04f) / (1 - SMAC_TEMAS - .08f))); baldirSol = baldirSag = 30 * Pencere(u, SMAC_TEMAS, 1, .2f); break;
+                default: return;
+            }
+            if (don != 0) { yaw.localRotation = Quaternion.AngleAxis(don, Vector3.up) * yaw.localRotation; up = yaw.up; ri = yaw.right; }   // tam turda başa döner: iniş karesi klibinkiyle aynı
+            if (egil != 0 && kOmurga.Count > 0) kOmurga[0].rotation = Quaternion.AngleAxis(egil * w, ri) * kOmurga[0].rotation;
+            // +açı: bacak arkaya (aşağı bakan kemik için sağ eksende artı dönüş ucu geriye taşır). Sıra: önce uyluk, sonra baldır.
+            float[] uy = { uylukSol, uylukSag }, ba = { baldirSol, baldirSag };
+            for (int i = 0; i < 2; i++)
+            {
+                Transform th = kBacak[i * 3], kn = kBacak[i * 3 + 1]; if (th == null || kn == null) continue;
+                if (uy[i] != 0) th.rotation = Quaternion.AngleAxis(uy[i] * w, ri) * th.rotation;
+                if (ba[i] != 0) kn.rotation = Quaternion.AngleAxis(ba[i] * w, ri) * kn.rotation;
+            }
+        }
+        // Vitrin önizlemesi (Dolap › Hareketler › Smaç hareketi): 1,7 sn'lik döngüde hazırlan, sıçra (maçtaki 0,53 sn), in, bekle.
+        public void ShowSmac(Vector3 pos, float yawDeg, string id, float t)
+        {
+            const float BAS = .35f, SURE = 1f / Match.JUMP_HIZ, DONGU = 1.7f;
+            float tt = t % DONGU, u = Ayar.reduce ? -1 : (tt - BAS) / SURE; bool hava = u > 0 && u < 1;
+            transform.position = pos + Vector3.up * (hava ? Mathf.Sin(u * Mathf.PI) * .5f : 0); yaw.localRotation = Quaternion.Euler(0, yawDeg, 0) * calib;
+            shadow.position = new Vector3(pos.x, .003f, pos.z);
+            if (anim == null) return; cur = "_sevinc";
+            float hit; if (!Match.CLIP_HIT.TryGetValue("jump", out hit)) hit = .6f;
+            if (D("jump") == null || u <= -.6f || u >= 1.5f) { Sample("idle", .25f, null, 0, 1); return; }
+            // klip fazı: kalkıştan temasa 0 → hit, temastan sonra takip (maçta sw ile aynı yön); döngü başı/sonu boşta pozuyla harmanlanır
+            float ph = u < SMAC_TEMAS ? hit * Mathf.Clamp01((u + .6f) / (SMAC_TEMAS + .6f)) : hit + (1 - hit) * Mathf.Clamp01((u - SMAC_TEMAS) / .75f);
+            float gir = Mathf.Clamp01(Mathf.Min((u + .6f) / .25f, (1.5f - u) / .3f));
+            Sample("jump", ph, "idle", .25f, Mathf.SmoothStep(0, 1, gir));
+            if (hava) SmacHareket(id, u, false);
         }
         // Sevinçte bacakların dikliği (0 = boşta pozunun maç duruşu, 1 = dik). Zafer: hazırlıkta çömelir, sıçrayışta açılır,
         // inişte dizden yaylanır (.18 sn), pompada dik. Zıpla: havada dik, inişte yaylanma. Diğerleri dik durur.
