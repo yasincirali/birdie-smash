@@ -362,6 +362,14 @@ namespace BirdieSmash.Game
             eylem = new VisualElement(); eylem.AddToClassList("seviye-eylem"); sut.Add(eylem);
             return ic;
         }
+        void SeviyeDene(string katId)
+        {
+            if (string.IsNullOrEmpty(katId)) return; int ay = katId.IndexOf('|'); if (ay <= 0) return;
+            string kat = katId.Substring(0, ay), id = katId.Substring(ay + 1);
+            int sf = kat == Kozmetik.TIP ? KAR_TIP : kat == Kozmetik.SAC ? KAR_SAC : KAR_AYK;
+            if (System.Array.IndexOf(KarSayfalar(), sf) < 0) return;
+            KarakterAc(sf); KarakterDene(kat, id);
+        }
         void SeviyeAni(int once, int sv)
         {
             if (seviyeAni != null) seviyeAni.RemoveFromHierarchy();
@@ -380,16 +388,20 @@ namespace BirdieSmash.Game
             // grup başına en çok 3 satır; tek turuncu düğme ilk grubun yerine götürür (raket parçasıysa Atölye'de o yuva açık).
             // Önce ham ad listesi + iki eşit düğme vardı, "Dolap'a bak" raket parçası için yanlış sekmeyi açıyordu. "Tamam" hayalet.
             var gr = Karakter.AcilanAralikGruplu(once, sv); string[] GRUP = { "Dolap", "Atolye", "Diger" }, BAS = { "Dolapta", "Atölyede", "Ayrıca" };
-            string ilkGrup = null, ilkYuva = null;
+            string ilkGrup = null, ilkYuva = null, ilkDene = null;
             for (int g = 0; g < 3; g++)
             {
                 var ol = gr.FindAll(x => x[0] == GRUP[g]); if (ol.Count == 0) continue;
+                if (g == 0 && ilkDene == null) { var dn = ol.Find(x => x.Length > 3 && x[3] != null); if (dn != null) ilkDene = dn[3]; }
                 if (ilkGrup == null && g < 2) { ilkGrup = GRUP[g]; ilkYuva = ol[0][2]; }
                 var b = Yazi(L.T(BAS[g]), 13, "soluk"); b.AddToClassList("seviye-grup"); liste.Add(b);
                 for (int i = 0; i < ol.Count && i < 3; i++) { var y = Yazi(L.T(ol[i][1]), 17); y.AddToClassList("seviye-oge"); liste.Add(y); }
                 if (ol.Count > 3) liste.Add(Yazi(L.T("ve {0} öğe daha", ol.Count - 3), 14, "soluk"));
             }
-            if (ilkGrup == "Dolap") ey.Add(Dugme(L.T("Dolap'ta dene"), () => { kapat(); SekmeAc(Sekme.Soyunma); }, "dugme--birincil"));
+            // "Dolap'ta dene" yalnız sekmeyi açıyordu, oyuncu açılan eşyayı listede kendisi arıyordu (inceleme 10 Kas 19:49 #5): artık ilk
+            // denenebilir eşyanın sayfası açılır ve vitrinde giydirilir (kayda yazılmaz; "Denemeyi bırak" zaten var). Sayfa bu modelde
+            // yoksa (tip/saç yalnız varyant görünürken) eski davranış: yalnız sekme.
+            if (ilkGrup == "Dolap") { string dn = ilkDene; ey.Add(Dugme(L.T("Dolap'ta dene"), () => { kapat(); SekmeAc(Sekme.Soyunma); SeviyeDene(dn); }, "dugme--birincil")); }
             else if (ilkGrup == "Atolye") { string yv = ilkYuva; ey.Add(Dugme(L.T("Atölye'de gör"), () => { kapat(); if (yv != null) YuvaAc(yv); else SekmeAc(Sekme.Atolye); }, "dugme--birincil")); }
             ey.Add(Dugme(L.T("Tamam"), kapat, ilkGrup != null ? "dugme--hayalet" : "dugme--birincil"));
             Erisim.Etiket(ic, L.T("Seviye atladın") + ", " + L.T("Sv {0}", sv) + (svTuy > 0 ? ", " + L.T("Seviye ödülü +{0} Tüy", svTuy) : "") + (acilan.Count > 0 ? ", " + L.T("Açıldı") + ": " + string.Join(", ", acilan.ConvertAll(x => L.T(x))) : ""), "metin");
