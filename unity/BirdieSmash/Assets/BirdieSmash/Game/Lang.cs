@@ -96,8 +96,29 @@ namespace BirdieSmash.Game
         public static string T(string k, params object[] a)
         {
             string v = k; if (En) { Yukle(); string e; if (d.TryGetValue(k, out e)) v = e; else if (EksikTopla && k != null && k.Length > 1 && Eksik.Count < 500 && Regex.IsMatch(k, "[a-zçğıöşü]", RegexOptions.IgnoreCase)) Eksik.Add(k); }
-            if (a != null && a.Length > 0) v = Regex.Replace(v, @"\{(\d+)\}", m => { int i = int.Parse(m.Groups[1].Value); return i < a.Length ? System.Convert.ToString(a[i]) : m.Value; });
+            if (a != null && a.Length > 0) v = YerTut(v, a);
             return v;
+        }
+        // {n} yer tutucuları (2026-11-10 inceleme, fikir 22:09 #4): Regex.Replace + lambda her çağrıda Match nesneleri ve kapanış
+        // ayırıyordu; L.T argümanla OnGUI'de karede birçok kez çağrılıyor. Aynı kural elle: {rakam} dizin < a.Length ise değer,
+        // değilse olduğu gibi kalır; "{" tek başına ya da rakamsız "{x}" dokunulmaz (Regex ile birebir).
+        static readonly System.Text.StringBuilder ytSb = new System.Text.StringBuilder(128);
+        static string YerTut(string v, object[] a)
+        {
+            if (v == null || v.IndexOf('{') < 0) return v;
+            ytSb.Length = 0; int n = v.Length;
+            for (int i = 0; i < n; i++)
+            {
+                char c = v[i];
+                if (c == '{')
+                {
+                    int j = i + 1, idx = 0; bool rakam = false;
+                    while (j < n && v[j] >= '0' && v[j] <= '9') { idx = idx * 10 + (v[j] - '0'); rakam = true; j++; if (idx > 100000) break; }
+                    if (rakam && j < n && v[j] == '}' && idx < a.Length) { ytSb.Append(System.Convert.ToString(a[idx])); i = j; continue; }
+                }
+                ytSb.Append(c);
+            }
+            return ytSb.ToString();
         }
         // Core'dan gelen bitmiş cümle: önce tam anahtar, sonra yer tutuculu kalıp; parçalar da (ör. görev adı) çevrilir.
         public static string Cumle(string s)

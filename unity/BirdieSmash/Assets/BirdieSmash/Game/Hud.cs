@@ -1298,14 +1298,23 @@ namespace BirdieSmash.Game
             return y + rowH + 8 * s + kh + (ol < 1 ? 8 : 14) * s;
         }
         // Ödül kartı (a-rew): Tüy sayarak (yıldızlardan sonra .9 sn), XP çubuğu aynı sürede dolar, seviye atladıysan satır.
+        object odulOnb; bool odulOnbEn; int onbL0, onbKalan0, onbGerek0; string onbAlt, onbHSol, onbHSag, odulOnbHedef, onbSag; int onbSagK = -1;   // OdulCiz metin önbelleği
         float OdulCiz(OdulSonuc od, float x, float y, float w, float s, float t, bool rm, float al)
         {
             float p = 14 * s, ik = 30 * s, rh = 34 * s, t1 = YildizAn(Mathf.Max(0, Ilerleme.Say(root.bittiYeniMaske))) + .1f, e = rm ? 1 : Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - t1) / .9f));
-            bool lv = od.sonra > od.once; string ek = od.ek.Count > 0 ? string.Join(" · ", od.ek.ConvertAll(q => L.Cumle(q)).ToArray()) : null;
+            bool lv = od.sonra > od.once;
+            // 2026-11-10 inceleme (fikir 22:09 #4): kartın metinleri (L.T/Regex, ConvertAll, Join, OyuncuSv, AcilanAralik) her
+            // OnGUI çağrısında (karede ≥ 2, 120 Hz'de 240/sn) yeniden kuruluyordu; tam Tüy sayacı ve uçan tüylerin aktığı an.
+            // Artık sonuç (od) ve dil değişince bir kez kurulur; sayılar ve çubuk canlanmaya devam eder (L0/kalan0/gerek0 da önbellekte).
+            string hAnah = root.hedef.gecerli ? root.hedef.ad : null;   // hedef sonradan hesaplanırsa satır yenilensin
+            if (!ReferenceEquals(odulOnb, od) || odulOnbEn != L.En || hAnah != odulOnbHedef)
+            {
+            odulOnb = od; odulOnbEn = L.En; odulOnbHedef = hAnah; onbSag = null;
+            string ek = od.ek.Count > 0 ? string.Join(" · ", od.ek.ConvertAll(q => L.Cumle(q)).ToArray()) : null;
             // Seviye çubuğu sayıyla da okunur (2026-10-29): "Sv 4 · 120/300 XP"; seviye atlanınca açılanlar adıyla
             // (en çok 3 ad + "+n"), Profil'e gitmeden.
-            int L0, kalan0, gerek0; Ayar.gear.OyuncuSv(out L0, out kalan0, out gerek0);
-            string svYazi = L.T("Sv {0}", L0) + (gerek0 > 0 ? " · " + kalan0 + "/" + gerek0 + " XP" : "");
+            Ayar.gear.OyuncuSv(out onbL0, out onbKalan0, out onbGerek0);
+            string svYazi = L.T("Sv {0}", onbL0) + (onbGerek0 > 0 ? " · " + onbKalan0 + "/" + onbGerek0 + " XP" : "");
             string acil = null;
             if (lv) { var ac = Karakter.AcilanAralik(od.once, od.sonra); if (ac.Count > 0) { var ad3 = ac.GetRange(0, Mathf.Min(3, ac.Count)).ConvertAll(q => L.T(q)); acil = L.T("Açıldı: {0}", string.Join(" · ", ad3.ToArray()) + (ac.Count > 3 ? " +" + (ac.Count - 3) : "")); } }
             // 2026-11-01 (yasin: "tüy kazanımı ve level atlanırsa o bilgi net şekilde gözlenebilmeli"): toplam Tüy artık alt yazıda
@@ -1319,15 +1328,18 @@ namespace BirdieSmash.Game
             // 2026-11-10 seviye ödülü (Gear.SvOdul): seviye atlanan maçta kartta "Seviye ödülü +n Tüy"; açılanların önünde.
             if (od.svTuy > 0) acil = L.T("Seviye ödülü +{0} Tüy", od.svTuy) + (acil != null ? " · " + acil : "");
             if (od.efsane > 0) acil = L.T("Efsane {0} · +{1} Tüy", od.efsane, od.efsaneTuy) + (acil != null ? " · " + acil : "");   // 2026-11-10 Gear.EFSANE_XP
-            string alt = (acil != null ? acil + "\n" : "") + svYazi + (ek != null ? " · " + ek : ""); float ah = aIpucu.CalcHeight(Ic(alt), w - 2 * p);
+            onbAlt = (acil != null ? acil + "\n" : "") + svYazi + (ek != null ? " · " + ek : "");
+            onbHSol = null;
+            if (root.hedef.gecerli) { var hd0 = root.hedef; onbHSol = L.T("Hedef: {0}", L.T(hd0.ad)); int hm = Hedef.MacTahmini(Hedef.Kalan(hd0.fiyat, Ayar.gear.eko.tuy), PlayerPrefs.GetString(Hedef.SON_ANAHTAR, "")); if (hm > 0) onbHSol += " · " + L.T("≈ {0} maç", hm); onbHSag = L.T("{0} Tüy kaldı", 99999); }   // 2026-11-07 GD6
+            }
+            int kalan0 = onbKalan0, gerek0 = onbGerek0; string alt = onbAlt; float ah = aIpucu.CalcHeight(Ic(alt), w - 2 * p);
             float lvH = lv ? 48 * s : 0;
             // Hedef eşya satırı (2026-11-02, Core/Hedef): "Hedef: Yıldız pelerini · 640 Tüy kaldı" + ince çubuk; çubuk ve kalan sayı
             // uçan tüylerle birlikte ilerler (Tüy sayacıyla aynı kaz). Yalnız renkle değil: kalan sayı ya da "Hazır" yazar.
             var hd = root.hedef; string hSol = null, hSag = null; float hTh = 0, hSw = 0, hH = 0;
             if (hd.gecerli)
             {
-                hSol = L.T("Hedef: {0}", L.T(hd.ad)); { int hm = Hedef.MacTahmini(Hedef.Kalan(hd.fiyat, Ayar.gear.eko.tuy), PlayerPrefs.GetString(Hedef.SON_ANAHTAR, "")); if (hm > 0) hSol += " · " + L.T("≈ {0} maç", hm); }   // 2026-11-07 GD6
-                hSag = L.T("{0} Tüy kaldı", 99999); hSw = aHedefSag.CalcSize(Ic(hSag)).x + 4 * s;
+                hSol = onbHSol ?? ""; hSag = onbHSag; hSw = aHedefSag.CalcSize(Ic(hSag)).x + 4 * s;
                 hTh = Mathf.Max(aHedefSol.CalcHeight(Ic(hSol), w - 2 * p - hSw - 8 * s), aHedefSag.CalcSize(Ic(hSag)).y); hH = 8 * s + hTh + 6 * s + 6 * s;
             }
             float h = p + rh + 6 * s + rh + (lv ? lvH + 8 * s : 0) + hH + 6 * s + ah + p; var r = new Rect(x, y, w, h); KutuCiz(r, aKutuS, al);
@@ -1371,7 +1383,8 @@ namespace BirdieSmash.Game
             if (hd.gecerli)
             {
                 int hKalan = Hedef.Kalan(hd.fiyat, topN); float hOnce = Hedef.Oran(hd.fiyat, Ayar.gear.eko.tuy - od.tuy), hSimdi = Hedef.Oran(hd.fiyat, topN);
-                string sag = hKalan > 0 ? L.T("{0} Tüy kaldı", hKalan) : L.T("Hazır"); float ty = yy + 8 * s;
+                if (hKalan != onbSagK || onbSag == null) { onbSagK = hKalan; onbSag = hKalan > 0 ? L.T("{0} Tüy kaldı", hKalan) : L.T("Hazır"); }   // yalnız sayı değişince
+                string sag = onbSag; float ty = yy + 8 * s;
                 Yaz(new Rect(x + p, ty, w - 2 * p - hSw - 8 * s, hTh), hSol, aHedefSol, A_YAZI, al);
                 Yaz(new Rect(rx_ - hSw, ty, hSw, hTh), sag, aHedefSag, hKalan > 0 ? A_ALTIN : A_TURUNCU, al);
                 var hb = new Rect(x + p, yy + hH - 6 * s, w - 2 * p, 6 * s);

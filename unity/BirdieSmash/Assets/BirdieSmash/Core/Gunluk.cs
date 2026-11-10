@@ -104,6 +104,22 @@ namespace BirdieSmash.Core
             if (id == "nefes") { GS = GS.Kopya(); GS.yorK /= .7f; stil = stil.Clone(); stil.yorK /= .7f; }
         }
 
+        // Maç sayısı tek kural (inceleme 2026-11-10, fikir 22:09 #3): Match servis şeridi ve GameRoot (LED, skor nabzı,
+        // seyirci susması) aynı fonksiyonu okur. Önceden iki ayrı formül vardı: şerit yalnız fark ≤ 1'de "Maç sayısı" diyordu
+        // (10–5'te LED yanıyor, yazı yoktu), tavan beraberliğinde (14–14) "Uzatma: 2 fark" diyordu oysa sonraki sayı bitirir,
+        // altın rallinin 2 sayısını da hesaba katmıyordu. Koşullu değiştiriciler (uzun/file/aldat) 1 sayılır: koşul ralliden
+        // önce bilinmez, "belki maç sayısı" yazmak yanlış bilgi olur. Ayırmasız (GameRoot her karede çağırır).
+        public int SonrakiDeger() { return degistirici == "altin" && sayiNo % 3 == 2 ? 2 : 1; }
+        public int Tavan() { return target == 21 ? 30 : target == 11 ? 15 : 7; }
+        bool SonrakiKazanir(int x, int y) { int n = Math.Min(Tavan(), x + SonrakiDeger()); return (n >= target && n - y >= 2) || n >= Tavan(); }
+        /// 0 = oyuncunun maç sayısı, 1 = rakibin, 2 = ikisinin de (tavan beraberliği: son sayı kazanır), -1 = yok.
+        public int MacSayisiDurum()
+        {
+            if (ogr != null || matchDone) return -1;
+            bool m = SonrakiKazanir(sc[0], sc[1]), o = SonrakiKazanir(sc[1], sc[0]);
+            return m && o ? 2 : m ? 0 : o ? 1 : -1;
+        }
+
         // Kazanılan sayının değeri (Point): 1 ya da 2.
         int SayiDegeri(string winner)
         {

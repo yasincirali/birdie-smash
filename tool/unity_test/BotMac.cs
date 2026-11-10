@@ -153,7 +153,7 @@ static class BotMac
         Yardimlar();   // 2026-10-29 kayıpta rakip yumuşar (ayrı satır)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); YenilgiIpuclari(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
-        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Efsaneler(); SmacHareketleri(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
+        Turlar34(); Drillar(); MacSayisilari(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Efsaneler(); SmacHareketleri(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
         KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
@@ -823,6 +823,30 @@ static class BotMac
     }
 
     // Günün maçı: altın tarih, aynı gün aynı maç, 60 günde arka arkaya aynı değiştirici/rakip yok, hepsi görünür, kancalar.
+    // 2026-11-10 inceleme (fikir 22:09 #3): maç sayısı tek kural (Match.MacSayisiDurum); şerit ve LED aynı. Fark > 1'de de
+    // maç sayısı, tavan beraberliğinde "son sayı kazanır" (2), altın rallide (sayı 2) bir sayı eksikken de maç sayısı.
+    static void MacSayisilari()
+    {
+        Func<int, int, int, string, int, int> d = (t, a, b, deg, no) =>
+        {
+            var M = new Match(3, new MatchOptions { easy = true, target = t, degistirici = deg });
+            M.sc[0] = a; M.sc[1] = b;
+            typeof(Match).GetField("sayiNo", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(M, no);
+            return M.MacSayisiDurum();
+        };
+        if (d(11, 10, 5, null, 15) != 0) Fail("10–5 maç sayısı olmalı");
+        if (d(11, 3, 10, null, 13) != 1) Fail("3–10 rakibin maç sayısı olmalı");
+        if (d(11, 10, 10, null, 20) != -1) Fail("10–10 uzatma, maç sayısı yok");
+        if (d(11, 11, 10, null, 21) != 0) Fail("11–10 maç sayısı");
+        if (d(11, 14, 14, null, 28) != 2) Fail("14–14 tavan: son sayı kazanır");
+        if (d(5, 6, 6, null, 12) != 2) Fail("6–6 (5 sayı) tavan: son sayı kazanır");
+        if (d(21, 29, 29, null, 58) != 2) Fail("29–29 tavan: son sayı kazanır");
+        if (d(11, 9, 5, "altin", 14) != 0) Fail("altın rallide 9–5 maç sayısı (sayı 2)");
+        if (d(11, 9, 5, "altin", 13) != -1) Fail("altın olmayan rallide 9–5 maç sayısı değil");
+        if (d(11, 9, 5, "uzun", 14) != -1) Fail("koşullu değiştirici 1 sayılır");
+        Console.WriteLine("maç sayısı: tek kural, fark > 1, tavan, altın ralli");
+    }
+
     static void Gunlukler()
     {
         var a = Gunluk.Bugun(new DateTime(2026, 10, 26, 8, 0, 0)); var b = Gunluk.Bugun(new DateTime(2026, 10, 26, 23, 59, 0));
@@ -1059,6 +1083,15 @@ static class BotMac
             if (BulutKayit.Karsilastir("{\"tuy\":10,\"xp\":80}", bulR, "{\"toplam\":3500,\"islem\":[\"T1\"]}") != BulutKayit.Karar.Birlestir) Fail("bulut: başka cihazdaki Reklamsız birleştirme istemeli");
             if (!TuyDukkan.Reklamsiz(BulutKayit.SatinBirlestir("{\"tuy\":10,\"xp\":80}", "{\"toplam\":3500,\"islem\":[\"T1\"]}", bulR)[1])) Fail("bulut: birleşme Reklamsız'ı taşımalı");
             if (BulutKayit.Karsilastir(r[0], bul, r[1]) != BulutKayit.Karar.Yaz) Fail("bulut: birleşmeden sonra tekrar eklememeli");
+            // 2026-11-10 oturum içi yazma kapısı: önde olan bulutu (büyük XP ya da başka cihazın satın alması) Yaz ezmez;
+            // yeni kurulum Sv 1 görüntüsü büyük ilerlemenin üstüne yazılmaz. Yukle sonrası bu cihazın satın alması kaybolmaz.
+            string buyuk = BulutKayit.Goruntu(k => k == "tuytop_ekonomi" ? "{\"tuy\":900,\"xp\":5000}" : null, k => null);
+            if (BulutKayit.Yazilabilir("{\"tuy\":0,\"xp\":40}", buyuk, null)) Fail("bulut: yeni kurulumun küçük ilerlemesi büyük bulutu ezmemeli");
+            if (BulutKayit.Yazilabilir("{\"tuy\":10,\"xp\":80}", bul, null)) Fail("bulut: başka cihazın satın alması varken yazılmamalı");
+            if (!BulutKayit.Yazilabilir("{\"tuy\":0,\"xp\":6000}", buyuk, null) || !BulutKayit.Yazilabilir("{\"tuy\":0,\"xp\":40}", null, null)) Fail("bulut: yerel öndeyse ya da bulut boşsa yazılmalı");
+            var ysb = BulutKayit.YukleSonrasiBirlestir("{\"tuy\":900,\"xp\":5000}", null, dk.Get(TuyDukkan.ANAHTAR));
+            if (ysb == null || (int)Json.Num(Json.Obj(Json.Parse(ysb[0])), "tuy", 0) != 4400 || (int)Json.Num(Json.Obj(Json.Parse(ysb[0])), "xp", 0) != 5000 || !TuyDukkan.Reklamsiz(ysb[1])) Fail("bulut: yükleme bu cihazın Tüy ve Reklamsız alımını korumalı");
+            if (BulutKayit.YukleSonrasiBirlestir("{\"tuy\":900,\"xp\":5000}", dk.Get(TuyDukkan.ANAHTAR), dk.Get(TuyDukkan.ANAHTAR)) != null || BulutKayit.YukleSonrasiBirlestir("{\"tuy\":900}", null, null) != null) Fail("bulut: eksik alım yoksa yükleme sonrası dokunulmamalı");
         }
         // (1f) seviye anı grupları (2026-11-07, Karakter.AcilanAralikGruplu): AcilanAralik ile aynı öğeler aynı sırada; raket parçası
         // Atölye'de yuvasıyla, ayakkabı Dolap'ta; bilinmeyen grup yok.
