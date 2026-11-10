@@ -49,6 +49,10 @@ namespace BirdieSmash.Game
         public static int zorluk = 1;
         public static readonly string[] ZORLUK_AD = { "Kolay", "Orta", "Zor", "Usta" };
         public static readonly float[] ZORLUK_RAKIP = { .85f, 1f, 1f, 1.15f };   // rakip hız ×k, hata ÷k (UstaGucu ile aynı ölçek)
+        // Şampiyon yolu (2026-11-10, fikir 8 Kas 00:09 #2, yasin "üçünü de al"): kariyer sonrası merdiven seçili zorlukta oynanır;
+        // Usta'da adı "Usta yolu" kalır (aynı merdiven, tek sayaç, kayıt aynı). Ad buradan okunur ki kart, sonuç ve profil aynı desin.
+        public static bool UstaZor => zorluk >= 3;
+        public static string YolAd => UstaZor ? "Usta yolu" : "Şampiyon yolu";
         public static string ZorlukAd => ZORLUK_AD[Mathf.Clamp(zorluk, 0, 3)];
         public static float RakipK => ZORLUK_RAKIP[Mathf.Clamp(zorluk, 0, 3)];
         public static bool easy { get => zorluk <= 1; set { if (value != easy) zorluk = value ? 1 : 3; } }

@@ -136,7 +136,7 @@ namespace BirdieSmash.Game
             // 2026-10-26 adım 7–9
             Deger(iz, L.T("Antrenman yıldızı"), p.AntrenmanYildiz + "/" + Dril.ToplamYildiz);
             Deger(iz, L.T("Günün maçı"), p.GunlukSay.ToString());
-            if (p.UstaAcik) Deger(iz, L.T("Usta yolu"), p.Usta.ToString());
+            if (p.UstaAcik) Deger(iz, L.T(Ayar.YolAd), p.Usta.ToString());
             if (p.Mac == 0 && Ayar.wins > 0) c.Add(Yazi(L.T("Maç ve smaç sayısı bu sürümden sonra oynanan maçları sayar."), 12, "soluk"));
 
             c.Add(Grup(L.T("Başarımlar")));
@@ -149,7 +149,7 @@ namespace BirdieSmash.Game
             BasarimSatir(c, Basarim.EFSANE, L.T("Seviye 30'a ulaş"));
             BasarimSatir(c, Basarim.ANTRENOR, L.T("Antrenmanın 24 yıldızını topla"));
             BasarimSatir(c, Basarim.GUNUN_MACI, L.T("Bir Günün maçını kazan"));
-            BasarimSatir(c, Basarim.USTA6, L.T("Usta yolunda 6 basamak geç"));
+            BasarimSatir(c, Basarim.USTA6, L.T("Usta zorlukta, Usta yolunda 6 basamak geç"));
             BasarimSatir(c, Basarim.IMZA_OKUR, L.T("Toplam {0} imza vuruşu oku", Basarim.IMZA_OKUR_HEDEF));
             c.Add(Bosluk(20));
         }
