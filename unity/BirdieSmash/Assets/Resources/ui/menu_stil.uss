@@ -755,12 +755,12 @@
 .sv-hedef-cubuk { margin-top: 4px; }
 .sv-hedef-sag { flex-direction: row; align-items: center; flex-shrink: 0; }
 .sv-hedef-sag .ikon { margin-right: 4px; }
-.sv-hedef-ac { margin-left: 8px; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sv-hedef-ac { margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .kisa .sv-hedef { margin-top: 6px; padding: 4px 12px; }
 .sv-yol { flex-direction: row; align-items: center; padding: 10px 12px; margin: 4px 0; border-radius: 12px; border-width: 1px; border-color: var(--ln); background-color: rgba(38, 26, 48, 0.92); }
 .sv-yol--buyuk { border-color: rgba(249, 210, 114, 0.45); }
 .sv-yol--siradaki { border-color: rgba(255, 160, 77, 0.70); }
-.sv-yol-no { width: 64px; flex-shrink: 0; }
+.sv-yol-no { min-width: 64px; margin-right: 8px; flex-shrink: 0; }
 .sv-yol-orta { flex-grow: 1; flex-shrink: 1; min-width: 0; }
 .sv-yol-tuy { flex-direction: row; align-items: center; flex-wrap: wrap; }
 .sv-yol-tuy .ikon { margin-right: 4px; }
@@ -782,13 +782,14 @@
 .gel-basamak--dolu { background-color: rgb(255, 160, 77); }
 .gel-dugme { width: 44px; height: 44px; min-height: 44px; flex-shrink: 0; align-items: center; justify-content: center; padding: 0; border-radius: 12px; border-width: 1px; border-color: rgba(255, 160, 77, 0.70); }
 .gel-dugme--pasif { border-color: var(--ln); opacity: 0.45; }
+.gel-dugme--pasif:active { scale: 1 1; }
 .buyuk-yazi .gel-dugme { width: 56px; height: 56px; }
 .sv-hedef--gelisim { border-color: rgba(255, 160, 77, 0.70); }
 .gel-kart { padding: 10px 12px; }
 .gel-ozet { flex-direction: row; align-items: center; min-height: 22px; }
 .gel-ozet-ad { width: 38%; flex-shrink: 0; }
 .gel-ozet-cubuk { flex-grow: 1; flex-shrink: 1; min-width: 0; margin: 0 8px; }
-.gel-ozet-sayi { width: 44px; flex-shrink: 0; -unity-text-align: middle-right; }
+.gel-ozet-sayi { min-width: 44px; flex-shrink: 0; -unity-text-align: middle-right; }
 .buyuk-yazi .gel-ozet { flex-wrap: wrap; }
 .buyuk-yazi .gel-ozet-ad { width: 100%; }
 .seviye-gelisim { margin-top: 4px; -unity-text-align: middle-center; color: rgb(255, 196, 140); }

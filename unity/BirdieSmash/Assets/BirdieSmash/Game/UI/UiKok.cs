@@ -43,7 +43,7 @@ namespace BirdieSmash.Game
         {
             get
             {
-                string u = gez.Ust; if (u == Gezinti.AYAR) return "Ayarlar"; if (u == Gezinti.NASIL) return "Nasıl oynanır"; if (u == Gezinti.LISANS) return "Lisanslar"; if (u == Gezinti.HIZLI) return "Hızlı maç"; if (u == Gezinti.KART) return "Maç kartı"; if (u == Gezinti.YUVA) return "Yuva"; if (u == Gezinti.ANTRENMAN) return "Antrenman"; if (u == Gezinti.DRIL) return "Görev kartı"; if (u == Gezinti.GUNLUK) return "Günün maçı"; if (u == Gezinti.SEC) return "Oyuncunu seç"; if (u == Gezinti.DUKKAN) return "Tüy dükkânı";
+                string u = gez.Ust; if (u == Gezinti.SEVIYE) return "Seviye yolu"; if (u == Gezinti.GELISIM) return "Gelişim"; if (u == Gezinti.AYAR) return "Ayarlar"; if (u == Gezinti.NASIL) return "Nasıl oynanır"; if (u == Gezinti.LISANS) return "Lisanslar"; if (u == Gezinti.HIZLI) return "Hızlı maç"; if (u == Gezinti.KART) return "Maç kartı"; if (u == Gezinti.YUVA) return "Yuva"; if (u == Gezinti.ANTRENMAN) return "Antrenman"; if (u == Gezinti.DRIL) return "Görev kartı"; if (u == Gezinti.GUNLUK) return "Günün maçı"; if (u == Gezinti.SEC) return "Oyuncunu seç"; if (u == Gezinti.DUKKAN) return "Tüy dükkânı";
                 if (gez.sekme == Sekme.Soyunma) return root.vitrin.hedefGec >= 1 ? "Raket tezgâhı" : "Dolap";
                 if (gez.sekme == Sekme.Atolye) return "Atölye";
                 return gez.sekme == Sekme.Kariyer ? "Kariyer" : gez.sekme == Sekme.Profil ? "Profil" : "Menü";

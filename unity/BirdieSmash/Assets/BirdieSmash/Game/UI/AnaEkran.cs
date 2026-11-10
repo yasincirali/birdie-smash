@@ -231,7 +231,8 @@ namespace BirdieSmash.Game
             var c2 = Cubuk(kalan / (float)gerek, TURUNCU, 5); c2.AddToClassList("sv-hedef-cubuk"); sol.Add(c2);
             var sag = new VisualElement(); sag.AddToClassList("sv-hedef-sag"); sag.pickingMode = PickingMode.Ignore; d.Add(sag);
             sag.Add(Ikon(Ikonlar.Tuy, 16, ALTIN)); sag.Add(Yazi("+" + Gear.SvOdul(sv), 16, "rakam"));
-            if (ac != null && K <= 1.35f) { var a = Yazi(ac, 12, "soluk"); a.AddToClassList("sv-hedef-ac"); sag.Add(a); }
+            // açılan eşya sol blokta, çubuğun altında: sağda dururken 375 pt'te başlığı iki satıra sarıyordu
+            if (ac != null && K <= 1.35f) { var a = Yazi(ac, 12, "soluk"); a.AddToClassList("sv-hedef-ac"); sol.Add(a); }
             d.AddManipulator(new Clickable(() => { Tik(); SeviyeYoluAc(); }));
             Erisim.Etiket(d, L.T("Sv {0} ödülü · {1} XP kaldı", sv, gerek - kalan) + ", " + L.T("+{0} Tüy", Gear.SvOdul(sv)) + (ac != null ? ", " + ac : "") + ", " + L.T("Seviye yolu"), "dugme");
             return d;

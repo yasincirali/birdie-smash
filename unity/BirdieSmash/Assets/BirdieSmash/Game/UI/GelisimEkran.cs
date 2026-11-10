@@ -16,8 +16,9 @@ namespace BirdieSmash.Game
             var c = AltSayfaKur(L.T("Gelişim"));
             var p = Ayar.gelisim; int sv = Ayar.gear.Seviye(), bos = Ayar.GelisimBos, top = Gelisim.Toplam(sv);
             var bas = Satir("arali"); bas.pickingMode = PickingMode.Ignore; c.Add(bas);
-            bas.Add(Yazi(bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : L.T("Bütün puanların dağıtıldı"), 16, "kalin"));
-            bas.Add(Yazi(L.T("{0}/{1} puan", top - bos, top), 13, "soluk"));
+            // Sv 1'de puan yok: "hepsi dağıtıldı" yanlış olurdu, ilk puanın ne zaman geleceği yazar.
+            bas.Add(Yazi(top == 0 ? L.T("İlk puanın Sv 2'de") : bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : L.T("Bütün puanların dağıtıldı"), 16, "kalin"));
+            if (top > 0) bas.Add(Yazi(L.T("{0}/{1} puan", top - bos, top), 13, "soluk"));
             var ac = Yazi(sv >= 30 ? L.T("Her seviye bir puan verdi. Dal başına en çok 10; dağılımı istediğin zaman ücretsiz değiştirirsin.")
                 : L.T("Her seviye bir puan verir. Dal başına en çok 10; dağılımı istediğin zaman ücretsiz değiştirirsin."), 13, "soluk");
             ac.style.whiteSpace = WhiteSpace.Normal; ac.style.marginTop = 4; ac.style.marginBottom = 6; c.Add(ac);
@@ -35,7 +36,7 @@ namespace BirdieSmash.Game
             var ne = Yazi(L.T(Gelisim.NE[dal]), 12, "soluk"); ne.style.whiteSpace = WhiteSpace.Normal; k.Add(ne);
             var alt = new VisualElement(); alt.AddToClassList("gel-alt"); k.Add(alt);
             int d = dal;
-            alt.Add(GelisimDugme("−", n > 0, () => { if (Ayar.GelisimGeriAl(d)) { Tik(); Degisti(); } }, L.T("{0}: bir puan geri al", L.T(Gelisim.AD[dal]))));
+            alt.Add(GelisimDugme("-", n > 0, () => { if (Ayar.GelisimGeriAl(d)) { Tik(); Degisti(); } }, L.T("{0}: bir puan geri al", L.T(Gelisim.AD[dal]))));
             var cb = new VisualElement(); cb.AddToClassList("gel-cubuk"); cb.pickingMode = PickingMode.Ignore; alt.Add(cb);
             for (int j = 0; j < Gelisim.TAVAN; j++) { var b = new VisualElement(); b.AddToClassList("gel-basamak"); if (j < n) b.AddToClassList("gel-basamak--dolu"); cb.Add(b); }
             Erisim.Etiket(cb, L.T(Gelisim.AD[dal]) + ", " + n + "/" + Gelisim.TAVAN + ", " + yz + ". " + L.T(Gelisim.NE[dal]), "metin");
@@ -47,7 +48,8 @@ namespace BirdieSmash.Game
         VisualElement GelisimDugme(string isaret, bool etkin, System.Action a, string etiket)
         {
             var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("gel-dugme"); if (!etkin) d.AddToClassList("gel-dugme--pasif");
-            var y = Yazi(isaret, 22, "kalin"); y.pickingMode = PickingMode.Ignore; d.Add(y);
+            // "-" ASCII: U+2212 Nunito'da yoksa boş kutu çıkar. Büyük yazıda glif 56 pt düğmeyi aşmasın diye ölçek 1,4'te durur.
+            var y = Yazi(isaret, 22 * Mathf.Min(K, 1.4f) / Mathf.Max(1f, K), "kalin"); y.pickingMode = PickingMode.Ignore; d.Add(y);
             if (etkin) d.AddManipulator(new Clickable(a));
             Erisim.Etiket(d, etiket, "dugme", false, !etkin);
             return d;
@@ -82,7 +84,7 @@ namespace BirdieSmash.Game
                 var sy = Yazi(p[i] + "/" + Gelisim.TAVAN, 13, "rakam"); sy.AddToClassList("gel-ozet-sayi"); r.Add(sy);
                 ozet += L.T(Gelisim.AD[i]) + " " + p[i] + "/" + Gelisim.TAVAN + ", ";
             }
-            string alt = bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : L.T("Dağılımı değiştir");
+            string alt = Gelisim.Toplam(Ayar.gear.Seviye()) == 0 ? L.T("İlk puanın Sv 2'de") : bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : L.T("Dağılımı değiştir");
             var ay = Yazi(alt, 13, bos > 0 ? "altin" : "soluk"); ay.style.marginTop = 6; ay.pickingMode = PickingMode.Ignore; kart.Add(ay);
             kart.AddManipulator(new Clickable(() => { Tik(); GelisimAc(); }));
             Erisim.Etiket(kart, L.T("Gelişim") + ": " + ozet + alt, "dugme");

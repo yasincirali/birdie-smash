@@ -77,7 +77,10 @@ namespace BirdieSmash.Game
             foreach (int i in KarSayfalar())
             {
                 if (i == KAR_RAKET) continue;   // 2026-11-07 (yasin seçimi "tek Raket bölümü"): Raket üstteki Görünüm/Raket ayrımında
-                int ii = i; var d = Cip(L.T(KAR_AD[i]), karAlt == i, () => KategoriSec(ii), KategoriDeneniyor(i) ? L.T("deneniyor") : KategoriSayim(i));
+                // sayım adla aynı satırda ("Şapka 3/9"): alt satır yedi çipi birden iki satıra çıkarıp kısa ekranda vitrini daraltırdı
+                int ii = i, ks, kt; bool sayim = KarSayim(i, out ks, out kt); bool dn = KategoriDeneniyor(i);
+                var d = Cip(L.T(KAR_AD[i]) + (sayim ? " " + ks + "/" + kt : ""), karAlt == i, () => KategoriSec(ii), dn ? L.T("deneniyor") : null);
+                if (sayim) { var eb = d.userData as ErisimBilgi; if (eb != null) eb.etiket = L.T(KAR_AD[i]) + ", " + L.T("{0} eşyadan {1} tanesi senin", kt, ks) + (dn ? ", " + L.T("deneniyor") : ""); }
                 d.AddToClassList("segment-cip"); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; soyunmaSegment.Add(d);
                 if (karAlt == i && kategoriKaydir != null) { var sd = d; kategoriKaydir.schedule.Execute(() => { if (sd.panel != null) kategoriKaydir.ScrollTo(sd); }).StartingIn(1); }   // seçili kategori görünür kalsın
             }
@@ -98,7 +101,6 @@ namespace BirdieSmash.Game
             foreach (var kat in k) { int s, t; Kozmetik.Sayim(Ayar.gear, kat, out s, out t); sahip += s; toplam += t; }
             return toplam > 0;
         }
-        string KategoriSayim(int i) { int s, t; return KarSayim(i, out s, out t) ? s + "/" + t : null; }
         // Görünen kategorilerin katları (Gerçekçi/Sade'de Beden ve Saç sayfası yok: sayıma ve "Sıradaki"ne girmez).
         static string[] DolapKatlar()
         {
@@ -136,8 +138,8 @@ namespace BirdieSmash.Game
         {
             int hedef = karAlt;
             foreach (int i in KarSayfalar()) { var k = KarKat(i); if (k != null && System.Array.IndexOf(k, kat) >= 0) hedef = i; }
-            root.sfx.Tik(); Yerel.Hap("tick");
-            if (hedef != karAlt) { karAlt = hedef; KarakterOdakAyarla(); KategoriKur(); }
+            // Kategori değişimi KategoriSec'ten: kaydırmayı sıfırlar (uzun sayfadan kısa sayfaya geçişte boş sayfa, 8 Kas hatası).
+            if (hedef != karAlt) KategoriSec(hedef); else { root.sfx.Tik(); Yerel.Hap("tick"); }
             Dene(kat, id);
         }
 
@@ -355,9 +357,19 @@ namespace BirdieSmash.Game
         void AlimAni()
         {
             var vt = root.vitrin; if (vt == null || Ayar.reduce || karAlt == KAR_SEVINC || karAlt == KAR_RAKET) return;
-            vt.Sevinc(null); vt.Sevinc(Ayar.KOZ[Kozmetik.SEVINC]);
-            kok.schedule.Execute(() => { if (root.vitrin != null && karAlt != KAR_SEVINC) root.vitrin.Sevinc(null); }).StartingIn(1600);
+            // Süre hareketin kendi döngüsü (PlayerView.ShowSevinc: dört harekette 2,4 sn, diğerlerinde 1,6): erken kesilirse figür
+            // tepe pozdan boşta duruşa atlar. Yüz/ayak yakın planında kollar kadraj dışında kalır; an boyunca tüm boy, sonra geri.
+            // Arka arkaya iki alımda ilk zamanlayıcı ikinciyi kesmesin diye sayaç.
+            string sid = Ayar.KOZ[Kozmetik.SEVINC]; int ms = sid == "zafer" || sid == "iyi_oyun" || sid == "selam" || sid == "egil" ? 2400 : 1600;
+            int tok = ++alimTok, kat0 = karAlt;
+            vt.Sevinc(null); vt.Sevinc(sid); if (vt.odak != Vitrin.TAM) vt.Odak(Vitrin.TAM);
+            kok.schedule.Execute(() =>
+            {
+                if (tok != alimTok || root.vitrin == null || root.vitrin.sevinc != sid) return;
+                if (gez.sekme == Sekme.Soyunma && karAlt == kat0) KarakterOdakAyarla(); else root.vitrin.Sevinc(null);
+            }).StartingIn(ms);
         }
+        int alimTok;
 
         // Deneme kartı: denenen öğe alınmamışsa (seçili ya da sahipse kart yok; dokunuş onu zaten seçmiştir).
         void DenemeKart(VisualElement c, string kat, string id, string ad, int fiyat, int sv, ModelDurum du, bool alOlur)
