@@ -870,6 +870,9 @@ namespace BirdieSmash.Game
                 {
                     int once = Mathf.CeilToInt(geriT / (GERI / 3)); geriT -= dt; int sonra = geriT > 0 ? Mathf.CeilToInt(geriT / (GERI / 3)) : 0;
                     if (sonra != once) { if (sonra > 0) { sfx.Tik(660); Yerel.Hap("tick"); } else sfx.Tik(990); }
+                    // 2026-11-10 (yasin "üçünü de al"): dokunuş geri sayımı geçer; bekletmek isteyen bekler, hazır olan başlar. İlk .2 sn
+                    // sayılmaz: Oyna / Devam düğmesine basan parmağın aynı dokunuşu sayımı yutmasın. Dokunuş vuruş sayılmaz (input.Reset).
+                    if (geriT > 0 && geriT < GERI - .2f && YeniDokunus()) { geriT = 0; sfx.Tik(990); }
                     if (geriT <= 0) { geriT = 0; input.Reset(); }
                 }
                 else { ZaferAtla(); ReadInput(); match.Update(dt); }
