@@ -34,7 +34,7 @@ namespace BirdieSmash.Game
         public OdulSonuc odul; public bool yukseltHazir; public Hedef.Bilgi hedef; public bool hedefHazir; bool pencere; float sqT; float psvx, psvy;
         float shake, punch; Vector3 camBase; Quaternion camRot; int seed = 1; Light sun; readonly System.Random rnd = new System.Random();
         bool ogrKayit;
-        public Mod mod = Mod.Normal; public string drilId; public GunlukMac gunluk;
+        public Mod mod = Mod.Normal; public string drilId; public GunlukMac gunluk; bool gunlukSonraOyna;
         // Maç sonu ekranının mod farkları: skor satırı (görevde "7/12 hedefte"), önerilen antrenman görevi (kayıpta, Dril.Oner).
         public string bittiSkor, bittiDril;
         // 2026-10-26 maç sonu yön A (Hud.Over): ekranın parçaları ayrı alanlarda (eskiden tek başlık + yıldız dizgesi). Başlık
@@ -471,8 +471,18 @@ namespace BirdieSmash.Game
             // Rövanş (2026-11-07 inceleme, fikir 14:06 #2): Hızlı maç yenilgisinde ana düğme aynı rakibi (tarz + saha) yeniden getirir,
             // yeni tohumla. Yenilginin hemen ardındaki "bu sefer yenerim" en güçlü geri dönüş anı; rakip değişince öğrenilen boşa gidiyordu.
             // Yeni düğme yok (maç sonu tek ana düğme kuralı). Galibiyette bugünkü gibi yeni rastgele rakip. Kariyer/Usta/Günün maçı değişmez.
-            rovansStil = null;
+            rovansStil = null; gunlukSonraOyna = false;
             if (mod == Mod.Normal && M.ogr == null && M.stil.kariyer < 0 && sonHizliStil != null && !won) { rovansStil = sonHizliStil; bittiDugme = L.T("Rövanş · {0}", M.RakipAd(false)); }
+            else if (mod == Mod.Gunluk && won)
+            {
+                // 2026-11-10 inceleme (fikir 22:09 #5): Günün maçının ödülü günde bir (Gunluk.cs); kazanınca ana düğme ödülsüz aynı
+                // maçı öneriyordu. Kazanınca oyuncuyu sıradaki anlamlı maça bağlar: Oyna'nın başlatacağı maç (StartMatch ile aynı
+                // seçim: haritada seçili açık basamak ya da sıradaki; kariyer kapalı/bitmişse "Bir maç daha"). Kayıpta ödül açık
+                // kaldığı için "yeniden oyna" kalır. Yeni düğme yok (maç sonu tek ana düğme kuralı); Günün maçı Oyna'da duruyor.
+                var gIlr = Ayar.ilerleme; int gSira = gIlr.HepsiBitti ? -1 : Ayar.kariyerSecim >= 0 && gIlr.Acik(Ayar.kariyerSecim) ? Ayar.kariyerSecim : gIlr.Siradaki();
+                bittiDugme = L.Cumle(Career.AgainLabel(Ayar.kariyerModu, true, gSira)); gunlukSonraOyna = true;
+                bittiDugmeAlt = Ayar.kariyerModu && KariyerVeri.Var(gSira) ? L.T(KariyerVeri.Al(gSira).yer) + " · " + Match.STIL[KariyerVeri.Al(gSira).stil].isim : null;   // BittiKariyer ile aynı biçim: başlık "Sıradaki", alt satır yer · tarz
+            }
             else if (mod == Mod.Gunluk) bittiDugme = L.T("Günün maçını yeniden oyna");
             // Kayıpta bir antrenman görevi önerisi (tasarım §3.6); görev zaten üç yıldızsa önerilmez.
             bittiDril = Dril.Oner(M, won, Ayar.ilerleme, Ayar.wins);
@@ -550,6 +560,7 @@ namespace BirdieSmash.Game
         public void TekrarOyna()
         {
             var m = mod;   // perde kapanınca hangi mod: maç sonundaki mod (ekrandaki düğme onu söyledi)
+            if (m == Mod.Gunluk && gunlukSonraOyna) m = Mod.Normal;   // kazanılmış Günün maçı: düğme Oyna'nın maçını söyledi
             var rv = m == Mod.Normal && !ustaDeneSonraki ? rovansStil : null;   // Usta daveti (UstaDene) de buradan geçer; rövanşı taşımaz
             hud.Perde(() => { if (m == Mod.Dril) DrilBaslat(drilId); else if (m == Mod.Gunluk) GunlukBaslat(); else if (m == Mod.Usta) UstaBaslat(); else { rovansSiradaki = rv; StartMatch(false, false, false); } });
         }
@@ -939,13 +950,8 @@ namespace BirdieSmash.Game
             var M = match; if (M == null) return;
             bool oyunda = ekran == Ekran.Oyun && M.ogr == null;
             // maç sayısı
-            int yeni = -1;
-            if (oyunda && !M.matchDone)
-            {
-                int a = M.sc[0], b = M.sc[1], cap = M.target == 21 ? 30 : M.target == 11 ? 15 : 7;
-                System.Func<int, int, bool> kazanir = (x, y) => (x + 1 >= M.target && x + 1 - y >= 2) || x + 1 >= cap;
-                yeni = kazanir(a, b) ? 0 : kazanir(b, a) ? 1 : -1;
-            }
+            // Kural Core'da (Match.MacSayisiDurum, şeritle aynı); her karede lambda ayırmıyor. Tavan beraberliği (2) oyuncu yanı.
+            int yeni = oyunda ? M.MacSayisiDurum() : -1; if (yeni == 2) yeni = 0;
             if (yeni != mpYan) { if (yeni >= 0) sfx.CrowdSus(); else if (oyunda && !M.matchDone) sfx.CrowdStart(); mpYan = yeni; }
             hud.macSayisiYan = Ayar.reduce ? -1 : mpYan;
             // tribün

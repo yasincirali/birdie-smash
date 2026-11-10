@@ -15,6 +15,13 @@ Seviye ödülleri (10 Kasım):
 - Oyna ekranının altında yeni satır: sıradaki seviyenin ödülü ve kaç XP kaldığı. Dokununca "Seviye yolu" açılır: Sv 30'a kadar her seviyenin Tüy'ü ve açtığı eşyalar.
 Nasıl denenir: Oyna'da en alttaki "Sv n ödülü" satırına dokun: Seviye yolu açılmalı, sıradaki seviye turuncu çerçeveli, 5'in katları "Büyük ödül" etiketli olmalı. Bir seviye atla: "Seviye atladın" ekranında "+40 Tüy · Seviye ödülü" çıkmalı ve Tüy sayın o kadar artmalı.
 
+Gece (10 Kasım 22:09 inceleme turu):
+- "Maç sayısı" yazısı artık her maç sayısında çıkıyor; önce yalnız skor yakınken yazıyordu (10-5'te pano yanıyor ama yazı yoktu). Tavanda berabere kalınca (11 sayılık maçta 14-14) "Son sayı kazanır" yazıyor; önce yanlışlıkla "Uzatma: 2 fark gerekiyor" diyordu. Günün maçının altın rallisinde de doğru.
+- Günün maçını kazanınca büyük düğme artık aynı maçı değil sıradaki kariyer maçını öneriyor (günün ödülü zaten alındı). Kaybedince yine "Günün maçını yeniden oyna".
+- Maç sonu ödül kartı daha az iş yapıyor: Tüy sayılırken takılma azalmalı.
+- iCloud kaydı daha güvenli: uygulamayı yeniden kurunca ya da ikinci cihazda oynayınca, küçük ilerleme buluttaki büyük ilerlemenin ve başka cihazda alınan Tüy'ün üstüne yazılmıyor. Bir sonraki açılışta büyük olan yükleniyor, bu cihazda alınanlar korunuyor.
+Nasıl denenir: 11 sayılık bir maçta 10-5'e gel: servis öncesi "Maç sayısı" yazmalı. 14-14'e kadar uzat: "Son sayı kazanır" yazmalı. Günün maçını kazan: büyük düğme "Sıradaki" ve kariyer yerini göstermeli, basınca kariyer maçı başlamalı. İki cihazın varsa: büyük ilerlemeli cihazdan sonra diğerinde uygulamayı silip kur, bir maç oyna, uygulamayı kapatıp aç: büyük ilerleme gelmeli.
+
 Bu akşam (10 Kasım 19:49 inceleme turu):
 - Seviye atlayınca "Dolap'ta dene"ye basarsan Dolap, açılan eşyanın sayfasında açılıyor ve karakterin onu hemen giyiyor. Önce eşyayı listede senin araman gerekiyordu. Deneme kaydedilmez, "Denemeyi bırak" ile geri alırsın.
 - Maç sonu reklam teklifi artık küçük ödüllü maçlarda çıkmıyor: kısa bir kayıptan sonra reklam izleyip birkaç Tüy almak günün tek hakkını harcıyordu. Her galibiyette ve uzun maçlarda çıkmaya devam ediyor.

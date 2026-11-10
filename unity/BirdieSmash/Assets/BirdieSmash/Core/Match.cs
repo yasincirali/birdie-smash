@@ -866,7 +866,9 @@ namespace BirdieSmash.Core
             // ağır çekim yalnız kazananın telefonunda yerel görüntüdür (betweenT gerçek dt ile akar, maç sonu zamanı değişmez).
             else
             {
-                if (Math.Max(a, b) >= target - 1 && a != b && Math.Abs(a - b) <= 1) serveMsg = a > b ? "Maç sayısı" : "Rakibin maç sayısı";
+                int mp = MacSayisiDurum();   // tek kural (Gunluk.cs): LED ve nabız da bunu okur
+                if (mp == 2) serveMsg = "Son sayı kazanır";
+                else if (mp >= 0) serveMsg = mp == 0 ? "Maç sayısı" : "Rakibin maç sayısı";
                 else if (a == b && a >= target - 1) serveMsg = "Uzatma: 2 fark gerekiyor";
                 else if (degistirici == "altin" && sayiNo % 3 == 2) serveMsg = ALTIN_YAZI;   // bir sonraki ralli altın: servisten önce yazılır
                 // Sayılar arası bekleme 1,3 → 0,7 sn (HTML 959beb1): ritim düşmesin; antrenman ve rekor sayısı eski süreyi korur.
