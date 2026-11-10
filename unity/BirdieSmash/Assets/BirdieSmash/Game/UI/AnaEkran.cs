@@ -84,6 +84,9 @@ namespace BirdieSmash.Game
             var p2 = Ayar.ilerleme;
             row.Add(Karo(Ikonlar.Hedef, L.T("Antrenman"), p2.AntrenmanYildiz + "/" + Dril.ToplamYildiz, L.T("yıldız"), Ikonlar.YildizDolu, AntrenmanAc,
                 L.T("Antrenman") + ", " + L.T("{0}/{1} yıldız · Temel ders ve {2} görev", p2.AntrenmanYildiz, Dril.ToplamYildiz, Dril.Liste.Length)));
+            // 2026-11-10 (yasin: "catch yok", kıyas: savaş geçidi şeridi, Forza seviye ödülü): sıradaki seviyenin ödülü ana ekranda
+            // tek satır; dokununca Seviye yolu (Sv 30'a kadar bütün ödüller). Sv 30'da satır yok.
+            var sh = SvHedefSatir(); if (sh != null) c.Add(sh);
         }
 
         // İlk maç kartı (yalnız ilk açılış): plakanın yerinde, rakip ve basamak çizgisi yok (henüz kariyer başlamadı).
@@ -204,6 +207,53 @@ namespace BirdieSmash.Game
         }
 
         // ---- Hızlı maç alt sayfası ----
+        // ---- Seviye yolu (2026-11-10) ----
+        // Seviye atlamak bugüne kadar yalnız kilit kaldırıyordu ve sıradaki ödül hiçbir yerde görünmüyordu (Profil'de tek cümle).
+        // Kıyas: Fortnite/COD savaş geçidi şeridi (sıradaki ödül hep ekranda), Forza (her seviyede sabit ödül). Tablo sabit ve
+        // rastgelesiz: Gear.SvOdul Tüy'ü + o seviyede açılanlar (Karakter.AcilanlarTurlu). 5'in katları "Büyük ödül" etiketiyle
+        // (yalnız renk değil). Satır dokunma hedefi değil, okunur liste; tek eylem Kapat.
+        static string SvAcilanOzet(int sv, int azami)
+        {
+            var tl = Karakter.AcilanlarTurlu(sv); if (tl.Count == 0) return null;
+            var ad = new System.Collections.Generic.List<string>(); for (int i = 0; i < tl.Count && i < azami; i++) ad.Add(L.T(tl[i][1]));
+            return string.Join(", ", ad.ToArray()) + (tl.Count > azami ? " +" + (tl.Count - azami) : "");
+        }
+        VisualElement SvHedefSatir()
+        {
+            int L_, kalan, gerek; Ayar.gear.OyuncuSv(out L_, out kalan, out gerek); if (gerek <= 0) return null;
+            int sv = L_ + 1; string ac = SvAcilanOzet(sv, 1);
+            var d = new VisualElement(); d.AddToClassList("sv-hedef");
+            var sol = new VisualElement(); sol.AddToClassList("sv-hedef-sol"); sol.pickingMode = PickingMode.Ignore; d.Add(sol);
+            sol.Add(Yazi(L.T("Sv {0} ödülü · {1} XP kaldı", sv, gerek - kalan), 14, "kalin"));
+            var c2 = Cubuk(kalan / (float)gerek, TURUNCU, 5); c2.AddToClassList("sv-hedef-cubuk"); sol.Add(c2);
+            var sag = new VisualElement(); sag.AddToClassList("sv-hedef-sag"); sag.pickingMode = PickingMode.Ignore; d.Add(sag);
+            sag.Add(Ikon(Ikonlar.Tuy, 16, ALTIN)); sag.Add(Yazi("+" + Gear.SvOdul(sv), 16, "rakam"));
+            if (ac != null && K <= 1.35f) { var a = Yazi(ac, 12, "soluk"); a.AddToClassList("sv-hedef-ac"); sag.Add(a); }
+            d.AddManipulator(new Clickable(() => { Tik(); SeviyeYoluAc(); }));
+            Erisim.Etiket(d, L.T("Sv {0} ödülü · {1} XP kaldı", sv, gerek - kalan) + ", " + L.T("+{0} Tüy", Gear.SvOdul(sv)) + (ac != null ? ", " + ac : "") + ", " + L.T("Seviye yolu"), "dugme");
+            return d;
+        }
+        void SeviyeYoluKur()
+        {
+            var c = AltSayfaKur(L.T("Seviye yolu"));
+            int L_, kalan, gerek; Ayar.gear.OyuncuSv(out L_, out kalan, out gerek);
+            c.Add(Yazi(gerek > 0 ? L.T("Sv {0} · sonraki seviyeye {1} XP", L_, gerek - kalan) : L.T("Sv 30 · en üst seviye"), 15, "kalin"));
+            if (gerek > 0) { var cb = Cubuk(kalan / (float)gerek, TURUNCU, 8); cb.style.marginTop = 6; cb.style.marginBottom = 4; c.Add(cb); }
+            var acik = Yazi(L.T("Her seviye Tüy verir, 5'in katları büyük ödül. Açılanlar Dolap ve Atölye'de seni bekler."), 13, "soluk"); acik.style.whiteSpace = WhiteSpace.Normal; acik.style.marginBottom = 6; c.Add(acik);
+            for (int sv = L_ + 1; sv <= 30; sv++)
+            {
+                bool buyuk = sv % 5 == 0; string ac = SvAcilanOzet(sv, 3);
+                var k = new VisualElement(); k.AddToClassList("sv-yol"); if (buyuk) k.AddToClassList("sv-yol--buyuk"); if (sv == L_ + 1) k.AddToClassList("sv-yol--siradaki"); c.Add(k);
+                var no = Yazi(L.T("Sv {0}", sv), 20, "rakam"); no.AddToClassList("sv-yol-no"); k.Add(no);
+                var orta = new VisualElement(); orta.AddToClassList("sv-yol-orta"); k.Add(orta);
+                var tr = new VisualElement(); tr.AddToClassList("sv-yol-tuy"); orta.Add(tr);
+                tr.Add(Ikon(Ikonlar.Tuy, 16, ALTIN)); tr.Add(Yazi(L.T("+{0} Tüy", Gear.SvOdul(sv)), 16, "kalin"));
+                if (buyuk) { var be = Yazi(L.T("Büyük ödül"), 12, "sv-yol-etiket"); tr.Add(be); }
+                if (ac != null) { var ay = Yazi(L.T("Açılır: {0}", ac), 13, "soluk"); ay.style.whiteSpace = WhiteSpace.Normal; orta.Add(ay); }
+                Erisim.Etiket(k, L.T("Sv {0}", sv) + ", " + (buyuk ? L.T("Büyük ödül") + ", " : "") + L.T("+{0} Tüy", Gear.SvOdul(sv)) + (ac != null ? ", " + L.T("Açılır: {0}", ac) : ""), "metin");
+            }
+        }
+
         void HizliKur()
         {
             var c = AltSayfaKur(L.T("Hızlı maç"));
@@ -215,7 +265,7 @@ namespace BirdieSmash.Game
             }, "dugme--birincil", K > 1.35f ? null : HizliOzet(), 19));   // 2026-11-07 (UX2): büyük yazıda özet satırı CTA'yı 3 satıra büyütüp listeyi daraltıyordu; seçimler çiplerde zaten görünür
         }
 
-        void AltSayfaYenidenKur(string altS) { if (altS == Gezinti.KART) MacKartKur(); else if (altS == Gezinti.YUVA) YuvaSayfaKur(); else if (altS == Gezinti.DRIL) DrilKartKur(); else if (altS == Gezinti.GUNLUK) GunlukKartKur(); else if (altS == Gezinti.SEC) OyuncuSecKur(); else HizliKur(); }
+        void AltSayfaYenidenKur(string altS) { if (altS == Gezinti.SEVIYE) SeviyeYoluKur(); else if (altS == Gezinti.KART) MacKartKur(); else if (altS == Gezinti.YUVA) YuvaSayfaKur(); else if (altS == Gezinti.DRIL) DrilKartKur(); else if (altS == Gezinti.GUNLUK) GunlukKartKur(); else if (altS == Gezinti.SEC) OyuncuSecKur(); else HizliKur(); }
 
         // Alt sayfa iskeleti (Hızlı maç ve kariyer maç kartı ortak, 2026-10-26): tutamak (aşağı çekince kapanır, iOS kalıbı;
         // ayrıca Kapat, Geri ve zemine dokunma), başlık, kaydırmalı gövde. Dönüş: gövdenin içerik kabı.

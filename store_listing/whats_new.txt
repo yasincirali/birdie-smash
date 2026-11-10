@@ -1,4 +1,9 @@
 === UNITY ===
+Seviye ödülleri (10 Kasım):
+- Seviye atlamak artık Tüy veriyor: her seviye +40, 5'in katlarında büyük ödül (Sv 5 +150 ... Sv 30 +500). "Seviye atladın" ekranında ve maç sonu kartında yazıyor.
+- Oyna ekranının altında yeni satır: sıradaki seviyenin ödülü ve kaç XP kaldığı. Dokununca "Seviye yolu" açılır: Sv 30'a kadar her seviyenin Tüy'ü ve açtığı eşyalar.
+Nasıl denenir: Oyna'da en alttaki "Sv n ödülü" satırına dokun: Seviye yolu açılmalı, sıradaki seviye turuncu çerçeveli, 5'in katları "Büyük ödül" etiketli olmalı. Bir seviye atla: "Seviye atladın" ekranında "+40 Tüy · Seviye ödülü" çıkmalı ve Tüy sayın o kadar artmalı.
+
 Reklam ve zorluk (9 Kasım):
 - Maç sonu ödüllü reklam ("Ödüle +%50 · reklam izle") artık gerçekten çıkıyor: "Maçın anı" düğmesi yuvayı kaptığı için neredeyse hiç görünmüyordu. Kural aynı: ilk 3 galibiyetten sonra, günde 1. Maçın anı Ayrıntılar'da yerinde.
 - Reklam şeridi yalnız Oyna ekranında, sekme çubuğundan 8 pt aralıklı; Kariyer, Dolap, Profil ve Atölye'de şerit yok. Küçük ekranda Oyna'ya sığmıyorsa hiç çıkmıyor, düğmeleri itmiyor.

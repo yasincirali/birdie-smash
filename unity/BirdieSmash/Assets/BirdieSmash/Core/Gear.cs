@@ -67,7 +67,7 @@ namespace BirdieSmash.Core
         public readonly Dictionary<string, int> sv = new Dictionary<string, int> { { "raket", 1 }, { "tel", 1 }, { "grip", 1 }, { "bileklik", 1 }, { "bant", 1 }, { "forma", 1 } };
     }
 
-    public class OdulSonuc { public int tuy, xp, once, sonra; public List<string> ek = new List<string>(); }
+    public class OdulSonuc { public int tuy, xp, once, sonra, svTuy; public List<string> ek = new List<string>(); }   // svTuy: seviye ödülü (tuy'a dahil değil; reklam +%50 onu büyütmez)
 
     public class Gear
     {
@@ -260,6 +260,15 @@ namespace BirdieSmash.Core
         // HTML'de 53, C#'ta 52 olurdu. Ekonomi sayıları HTML ile birebir kalsın diye tek yuvarlama burası.
         public static double JsRound(double v) { return Math.Floor(v + .5); }
         public static int SvEsik(int L) { return (int)JsRound((100 + 60 * Math.Pow(L - 1, 1.35)) / 10) * 10; }
+        // Seviye ödülü (2026-11-10, yasin: "catch yok ... 3A oyunların levellinglerine bak"): seviye atlamak yalnız kilit
+        // kaldırıyordu, oyuncunun eline bir şey geçmiyordu (kıyas: Forza her seviyede sabit ödül, savaş geçidi şeridi). Her
+        // seviye 40 Tüy, 5'in katları büyük. Rastgelelik yok, tablo sabit ve önceden görünür (Oyna › Seviye yolu).
+        // Bütçe küçük tutuldu: Sv 2–30 toplamı 2.720 Tüy; tool/ekonomi_denge.py'de Sv 30 kozmetik payı %34 → %39 (bant
+        // %30–45, "her şeyi alamaz" kararı, yasin 1 Kas). Maç ödülüne (OdulSonuc.tuy) katılmaz: ödüllü reklam +%50 onu
+        // büyütmesin. Geriye dönük dağıtım yok: yalnız seviye atlandığı anda verilir, ayrı kayıt alanı gerekmez.
+        public static int SvOdul(int L) { return L < 2 || L > 30 ? 0 : L % 5 != 0 ? 40 : L == 5 ? 150 : L == 10 ? 200 : L == 15 ? 250 : L == 20 ? 300 : L == 25 ? 400 : 500; }
+        public static int SvOdulAralik(int once, int sonra) { int t = 0; for (int L = once + 1; L <= sonra; L++) t += SvOdul(L); return t; }
+        void SvOdulVer(OdulSonuc o) { o.sonra = Seviye(); o.svTuy = SvOdulAralik(o.once, o.sonra); eko.tuy += o.svTuy; }
         public void OyuncuSv(out int L, out int kalan, out int gerek) { L = 1; int x = eko.xp; while (L < 30 && x >= SvEsik(L)) { x -= SvEsik(L); L++; } kalan = x; gerek = L < 30 ? SvEsik(L) : 0; }
         public int Seviye() { int L, a, b; OyuncuSv(out L, out a, out b); return L; }
         public float KSv(string k) { int v; eko.sv.TryGetValue(k, out v); return eko.esit && !kariyerModu ? 0 : (Math.Max(1, Math.Min(10, v == 0 ? 1 : v)) - 1) / 9f; }
@@ -378,7 +387,7 @@ namespace BirdieSmash.Core
             if (okudun > 0) o.xp += 5 * okudun;
             // 2026-10-26: Günün maçı (+40 Tüy, +30 XP, günde bir kez kazanınca) ve Usta yolu ek ödülü çağırandan; ad ek listesine.
             if (ekTuy > 0 || ekXp > 0) { o.tuy += ekTuy; o.xp += ekXp; if (ekAd != null) o.ek.Add(ekAd + " +" + ekTuy); }
-            o.once = Seviye(); eko.tuy += o.tuy; eko.xp += o.xp; EkoYaz(); o.sonra = Seviye();
+            o.once = Seviye(); eko.tuy += o.tuy; eko.xp += o.xp; SvOdulVer(o); EkoYaz();
             return o;
         }
 
@@ -397,7 +406,7 @@ namespace BirdieSmash.Core
         {
             var o = new OdulSonuc(); o.once = Seviye(); o.sonra = o.once; if (yeniYildiz <= 0) return o;
             o.tuy = DRIL_TUY * yeniYildiz; o.xp = DRIL_XP * yeniYildiz; o.ek.Add("yeni yıldız +" + o.tuy);
-            eko.tuy += o.tuy; eko.xp += o.xp; EkoYaz(); o.sonra = Seviye(); return o;
+            eko.tuy += o.tuy; eko.xp += o.xp; SvOdulVer(o); EkoYaz(); return o;
         }
     }
 }

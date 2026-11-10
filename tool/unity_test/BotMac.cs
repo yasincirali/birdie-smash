@@ -771,6 +771,18 @@ static class BotMac
         var p2 = Ilerleme.Oku(p.Yaz(), 0, false); if (p2.DrilYildiz("derin") != 3 || p2.AntrenmanYildiz != 3) Fail("görev yıldızı kayıtta kayboldu: " + p.Yaz());
         var g = new Gear(new BellekKayit(), 0); int tuy0 = g.eko.tuy; var o = g.DrilOdul(2); if (o.tuy != 2 * Gear.DRIL_TUY || o.xp != 2 * Gear.DRIL_XP || g.eko.tuy != tuy0 + 50) Fail("görev ödülü");
         if (g.DrilOdul(0).tuy != 0) Fail("tekrar oynanan görev ödül vermemeli");
+        // 2026-11-10 seviye ödülü: tablo sabit (her seviye 40, 5'in katları büyük), toplam 2.720; yalnız seviye atlanınca,
+        // maç Tüy'üne (reklam +%50 tabanı) karışmadan verilir; seviye atlamayan maç vermez.
+        {
+            int top = 0; for (int L = 1; L <= 31; L++) top += Gear.SvOdul(L);
+            if (top != 2720 || Gear.SvOdul(1) != 0 || Gear.SvOdul(2) != 40 || Gear.SvOdul(5) != 150 || Gear.SvOdul(30) != 500 || Gear.SvOdul(31) != 0) Fail("seviye ödülü tablosu " + top);
+            var gs = new Gear(new BellekKayit(), 0); gs.eko.gun = "x"; int t0 = gs.eko.tuy;
+            var a = gs.Odul(true, false, 5, true, 0, 0, DateTime.Now);   // 50 XP: Sv 1'de kalır
+            if (a.svTuy != 0 || gs.eko.tuy != t0 + a.tuy) Fail("seviye atlamayan maç seviye ödülü vermemeli");
+            var b2 = gs.Odul(true, false, 21, true, 3, 10, DateTime.Now);   // 240 XP: Sv 1 → 3
+            if (b2.once != 1 || b2.sonra != 3 || b2.svTuy != 80 || gs.eko.tuy != t0 + a.tuy + b2.tuy + 80) Fail("seviye ödülü Sv 1→3: " + b2.sonra + " / " + b2.svTuy);
+            int once = b2.tuy, ek = gs.ReklamOdulu(b2); if (ek != OdulluReklam.Ek(once)) Fail("reklam ödülü seviye ödülünü büyütmemeli");
+        }
         // kayıpta öneri: dışarı giden vuruşlar → derin clear; üç yıldızlıysa önerilmez
         var K = new Match(33, new MatchOptions { easy = true, target = 5 }); K.outsBen = 3; if (Dril.Oner(K, false, new Ilerleme()) != "derin") Fail("kayıpta derin clear önerilmeli");
         if (Dril.Oner(K, true, null) != null) Fail("galibiyette öneri olmamalı");

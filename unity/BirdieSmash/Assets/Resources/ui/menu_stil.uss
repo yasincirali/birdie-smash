@@ -746,3 +746,27 @@
 .anahtar--acik { background-color: var(--sun); align-items: flex-end; }
 .anahtar-top { width: 27px; height: 27px; border-radius: 14px; background-color: var(--tx); align-items: center; justify-content: center; }
 .anahtar-satir--pasif { opacity: 0.6; }
+
+/* 2026-11-10 Seviye ödülü ve Seviye yolu (AnaEkran.SvHedefSatir / SeviyeYoluKur, UiKok.SeviyeAni). Oyna satırı ≥ 44 pt dokunma. */
+.sv-hedef { flex-direction: row; align-items: center; justify-content: space-between; min-height: 44px; margin-top: 8px; padding: 6px 12px;
+            border-radius: 12px; border-width: 1px; border-color: var(--ln); background-color: rgba(38, 26, 48, 0.92); }
+.sv-hedef:active { background-color: rgba(60, 42, 74, 0.95); }
+.sv-hedef-sol { flex-grow: 1; flex-shrink: 1; min-width: 0; margin-right: 12px; }
+.sv-hedef-cubuk { margin-top: 4px; }
+.sv-hedef-sag { flex-direction: row; align-items: center; flex-shrink: 0; }
+.sv-hedef-sag .ikon { margin-right: 4px; }
+.sv-hedef-ac { margin-left: 8px; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kisa .sv-hedef { margin-top: 6px; padding: 4px 12px; }
+.sv-yol { flex-direction: row; align-items: center; padding: 10px 12px; margin: 4px 0; border-radius: 12px; border-width: 1px; border-color: var(--ln); background-color: rgba(38, 26, 48, 0.92); }
+.sv-yol--buyuk { border-color: rgba(249, 210, 114, 0.45); }
+.sv-yol--siradaki { border-color: rgba(255, 160, 77, 0.70); }
+.sv-yol-no { width: 64px; flex-shrink: 0; }
+.sv-yol-orta { flex-grow: 1; flex-shrink: 1; min-width: 0; }
+.sv-yol-tuy { flex-direction: row; align-items: center; flex-wrap: wrap; }
+.sv-yol-tuy .ikon { margin-right: 4px; }
+.sv-yol-etiket { margin-left: 8px; padding: 1px 8px; border-radius: 8px; border-width: 1px; border-color: rgba(249, 210, 114, 0.45); color: var(--gold); }
+.buyuk-yazi .sv-yol { flex-direction: column; align-items: flex-start; }
+.buyuk-yazi .sv-yol-no { width: auto; }
+.seviye-odul { flex-direction: row; align-items: center; justify-content: center; flex-wrap: wrap; margin-top: 4px; margin-bottom: 8px; }
+.seviye-odul .ikon { margin-right: 6px; }
+.seviye-odul .soluk { margin-left: 8px; }

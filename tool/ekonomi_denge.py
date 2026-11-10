@@ -18,6 +18,9 @@ KOZ = ('tipler', 'sac_model', 'sapka', 'sevinc', 'mac_sonu', 'yuz', 'sirt')
 def mac(won, f=2, zor=1, g=1.5, p=5):
     return ((40 if won else 15) * f + g * 15 + p) * zor, ((50 if won else 20) * f + g * 15 + p * 2) * zor
 
+def sv_odul(L):
+    return 0 if L < 2 or L > 30 else 40 if L % 5 else {5: 150, 10: 200, 15: 250, 20: 300, 25: 400, 30: 500}[L]
+
 def main():
     g = json.load(open(os.path.join(KOK, 'gear.json')))['modeller']; k = json.load(open(os.path.join(KOK, 'karakter.json')))
     (tw, xw), (tl, xl) = mac(True), mac(False)
@@ -26,7 +29,7 @@ def main():
     koz_top = sum(o['fiyat'] for kk in KOZ for o in k[kk])
     print('kozmetik katalog toplamı', koz_top, '· günlük ~%d Tüy' % gun_t)
     for L in (5, 10, 15, 20, 25, 30):
-        gun = xp[L - 1] / gun_x; kaz = gun * gun_t + 4500 * L / 30
+        gun = xp[L - 1] / gun_x; kaz = gun * gun_t + 4500 * L / 30 + sum(sv_odul(i) for i in range(2, L + 1))   # 2026-11-10 seviye ödülü (Gear.SvOdul)
         guc = sum(m['fiyat'] for v in g.values() for m in (v.values() if isinstance(v, dict) else v) if m.get('sv', 1) <= L)
         guc += YUVA * sum(f for f, s in zip(YUK_FIYAT, YUK_SV) if s <= L)
         koz = sum(o['fiyat'] for kk in KOZ for o in k[kk] if o.get('sv', 1) <= L)
