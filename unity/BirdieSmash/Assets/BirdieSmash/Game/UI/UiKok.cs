@@ -116,8 +116,8 @@ namespace BirdieSmash.Game
         VisualElement KodIskelet()
         {
             var k = Y("kok", "kok tam", null); Y("zemin", "tam", k).pickingMode = PickingMode.Ignore;
-            var g = Y("govde", "govde tam", k); var a = Y("alan", "alan", g); Y("ust", "ust-serit", a); Y("icerik", "icerik", a); Y("sayfa", "sayfa tam", a);
-            Y("reklam", "reklam-alani", g); Y("sekmeler", "sekme-cubugu", g); Y("alt-katman", "alt-katman tam", k); Y("kalkan", "kalkan tam", k);
+            var g = Y("govde", "govde tam", k); Y("reklam", "reklam-alani", g); var a = Y("alan", "alan", g); Y("ust", "ust-serit", a); Y("icerik", "icerik", a); Y("sayfa", "sayfa tam", a);
+            Y("sekmeler", "sekme-cubugu", g); Y("alt-katman", "alt-katman tam", k); Y("kalkan", "kalkan tam", k);
             return k;
         }
 
@@ -191,6 +191,11 @@ namespace BirdieSmash.Game
         //    boşluğu şerit girince AFIS_MIN'in altına düşecekse şerit o ekranda hiç çıkmaz: içerik kaymaz, kaydırma da gerekmez.
         //    Karar yer açıkken ve kapalıyken aynı ölçüyle verilir (açık: boşluk; kapalı: boşluk − bant), açılıp kapanma titremez.
         // Önceki (2026-11-08) "Dolap ve Atölye'de yok" kararının üstüne yazar.
+        // 2026-11-11 (yasin, yerleşim sayfası K29XK1MmhZ292bwGg2ZDqF: "ana ekranda ince gösterelim", seçim B): bant ekranın DİBİNDEN
+        // ÜSTÜNE taşındı: güvenli alanın (Dynamic Island) hemen altında, üst şeridin üstünde. Gövdenin ilk çocuğu; şerit bandın
+        // üstüne oturur, ARA boşluğu artık üst şerit (Sv/Tüy hapı, Ayarlar) tarafında kalır: sekme düğmelerine bitişik değil.
+        // Yükseklik değişmedi: AdMob telefonda 50 pt'den ince şerit vermez. Kalan kurallar (yalnız Oyna, AFIS_MIN, yüklenmezse
+        // yer açılmaz, Reklamsız'da hiç yok) aynı.
         const float ARA = 8f, AFIS_MIN = 72f;
         static float Bant { get { return Reklam.PT + ARA; } }
         void ReklamKur(VisualElement r)
@@ -210,7 +215,7 @@ namespace BirdieSmash.Game
         // AdMob şeridi (Game/ReklamSdk, 2026-11-07): yerin ekrandaki konumu her kare verilir; şerit yalnız menü tam görünürken
         // çıkar: perde/solma yok, alt sayfa (sheet) kapalı. Şerit native bir görünüm, UI Toolkit'in üstünde durur: alt sayfa onu
         // örtemeyeceği için gizlenir. Yüklenince yer açılır (PT + ARA), yerleşim o boya oturana kadar şerit gizli tutulur
-        // (içeriğin üstüne binmesin). Şerit bandın üstüne oturur, ARA boşluğu sekme çubuğu tarafında kalır.
+        // (içeriğin üstüne binmesin). Şerit bandın üstüne oturur, ARA boşluğu üst şerit tarafında kalır (bant 2026-11-11'den beri üstte).
         void ReklamSeritYeri(bool perde, float ortu)
         {
             ReklamSdk.Baslat();
@@ -228,7 +233,7 @@ namespace BirdieSmash.Game
                 float pw = doc.rootVisualElement.layout.width; var wb = reklamEl.worldBound;
                 bool oturdu = wb.height >= Bant - .5f;
                 if (seritAcildi && !oturdu) { ReklamSdk.Serit(null); return; }
-                if (pw > 0 && Screen.width > 0 && wb.width > 0) { float s = pw / Screen.width, ust = wb.yMax - Bant; yer = new Rect(wb.x / s, ust / s, wb.width / s, Reklam.PT / s); }
+                if (pw > 0 && Screen.width > 0 && wb.width > 0) { float s = pw / Screen.width, ust = wb.yMin; yer = new Rect(wb.x / s, ust / s, wb.width / s, Reklam.PT / s); }
             }
             ReklamSdk.Serit(yer);
         }

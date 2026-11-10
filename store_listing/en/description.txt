@@ -1,6 +1,6 @@
 Birdie Smash is a badminton game you play with one finger. When the shuttle comes, you swipe: the direction of your swipe decides where it goes, the speed decides how hard you hit.
 
-- Career: 4 tours and 24 opponents, from your local gym to the World Finals, then the endless Champion road
+- Career: 8 tours and 48 opponents, from your local gym to the Legends Cup, then the endless Champion road
 - Match of the day: a new opponent, court and twist every day, with no streaks to keep
 - Endless rally: the coach feeds until you miss, faster every 5 hits
 - Locker room: shirts, caps, shoes, celebrations and smash moves unlocked by level; racket, strings and grip that change how you play
@@ -14,7 +14,7 @@ STAY FIT
 Smashes, jumps and lunges burn stamina. When it runs low you slow down and your smash weakens. Play clears and rest between points. Forehand and backhand are different: there is no smash on the backhand side, so position yourself to take the shuttle on the forehand.
 
 CAREER
-Four tours: the Local road, the Asia Tour, the Europe Tour and the World Finals, six opponents each. Opponents play differently: the Smasher smashes every overhead, the Wall returns everything, the Net Player lives at the net, the Trickster changes direction at the last moment. Tour bosses have a signature shot you learn to read. Every match comes with missions and stars. After the World Finals the Champion road begins: an endless ladder played at the difficulty you choose. On Pro it is called the Master road and you do the running too.
+Eight tours: the Local road, the Asia Tour, the Europe Tour, the World Finals, the Pacific Tour, the Americas Tour, the Grand Cup and the Legends Cup, six opponents each. Opponents play differently: the Smasher smashes every overhead, the Wall returns everything, the Net Player lives at the net, the Trickster changes direction at the last moment. Tour bosses have a signature shot you learn to read. Every match comes with missions and stars. After the World Finals the Champion road begins: an endless ladder played at the difficulty you choose. On Pro it is called the Master road and you do the running too.
 
 GEAR
 Win matches to earn Feathers and XP. Racket model, string tension, wristband, headband and shirt change how the game plays: a head-heavy racket hits harder smashes, a head-light racket speeds up the net game, loose strings give power, tight strings give control. Your gear also changes the racket sound and the haptics. Spin your player 360 degrees and inspect your racket up close. As you level up you unlock new moves for the jump smash; they are looks only and are never sold. After level 30 the Legend ranks begin. Feathers are earned by playing; if you want more, Feather packs are available as in-app purchases.

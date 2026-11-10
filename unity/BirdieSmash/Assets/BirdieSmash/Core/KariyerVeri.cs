@@ -25,7 +25,9 @@ namespace BirdieSmash.Core
 
     public static class KariyerVeri
     {
-        public const int TUR = 4, BASAMAK = 6;
+        // 2026-11-10 (yasin karar kartı "Şimdi 8 tur"): 4 → 8. Kayıt dizisi tur sırasıyla büyür; eski kayıt (4 dizi) aynen okunur,
+        // yeni turlar Dünya Finalleri'nden SONRA gelir (araya tur girmez: tur[3] hep Dünya Finalleri'dir).
+        public const int TUR = 8, BASAMAK = 6;
         public static Func<string, string> Kaynak;   // ad ("kariyer" | "stil" | "gear" | "karakter") → JSON metni
         static KariyerTur[] turlar; static Dictionary<string, Style> stil; static Dictionary<string, ImzaBilgi> imza; static string[] sira; static UstaVeri usta;
 
@@ -119,7 +121,7 @@ namespace BirdieSmash.Core
                     // ve Tur 1 (öğrenme) kuralsız kalır; BotMac Veri bunu kilitler. 2026-11-10: "geri" senaryosu (rakip 3–0 önde
                     // başlar) da burada; zorluğu değiştirdiği için basamağın g'si senaryoyla birlikte ölçülür (kariyer.json notu).
                     k.degistirici = Json.Str(b, "degistirici", null);
-                    if (k.degistirici != null && k.degistirici != "altin" && k.degistirici != "uzun" && k.degistirici != "file" && k.degistirici != "geri") throw new InvalidOperationException("Birdie Smash: kariyer.json kariyerde olmayan değiştirici " + k.degistirici);
+                    if (k.degistirici != null && k.degistirici != "altin" && k.degistirici != "uzun" && k.degistirici != "file" && k.degistirici != "geri" && k.degistirici != "aldat") throw new InvalidOperationException("Birdie Smash: kariyer.json kariyerde olmayan değiştirici " + k.degistirici);
                     bl.Add(k);
                 }
                 if (bl.Count != 0 && bl.Count != BASAMAK) throw new InvalidOperationException("Birdie Smash: tur " + (t + 1) + " altı basamak değil");   // harita ve kayıt 6 sabit

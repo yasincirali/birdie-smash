@@ -98,7 +98,7 @@ static class Denge
         for (int b = 0; b < KariyerVeri.BASAMAK; b++)
         {
             int g = KariyerVeri.Global(t, b); var k = KariyerVeri.Al(g); if (k == null) continue;
-            top += Oyna(KariyerVeri.Rakip(g), k.uzunluk > 0 ? k.uzunluk : 5, true, gs, n, 5000 + g * 1000, out f, out i); say++;
+            top += Oyna(KariyerVeri.Rakip(g), k.uzunluk > 0 ? k.uzunluk : 5, true, gs, n, 5000 + g * 1000, out f, out i, k.degistirici); say++;
         }
         return say > 0 ? top / say : 0;
     }
@@ -136,7 +136,7 @@ static class Denge
     // Denge dril ölçümünden, beceri 1,25: ★ %99, ★★ %92, ★★★ %53), dört tur bitince Usta yolu (galibiyet %50, her galibiyet
     // yeni basamak; görev yıldızı %45, kayıpta da). Kariyer galibiyeti tur başına TUR_ORAN. Boşluk etkinlik sayısıyla ölçülür (görev de bir etkinlik; ~1 dk).
     // Kariyer galibiyet olasılığı tur başına: Denge tablolarının (pHit .07, n 150) tur ortalamaları, yuvarlak.
-    static readonly double[] TUR_ORAN = { .7, .6, .52, .5 };
+    static readonly double[] TUR_ORAN = { .7, .6, .52, .5, .5, .48, .46, .44 };   // 5–8: ayar kipinin hedef ortalamaları (2026-11-10)
     static int TEMPO_TOHUM = 7; static string SonIz;
     static int Tempo(int toplam, bool eski, bool sessiz = false)
     {
@@ -331,6 +331,29 @@ static class Denge
         }
         if (a.Length > 1 && a[0] == "lab") { LabTani(a[1], a.Length > 2 ? int.Parse(a[2]) : 20); return 0; }
         if (a.Length > 0 && a[0] == "dril") { if (a.Length > 2) BECERI = double.Parse(a[2], System.Globalization.CultureInfo.InvariantCulture); DrilTablo(a.Length > 1 ? int.Parse(a[1]) : 100); return 0; }
+        // 2026-11-10 (8 tur): mono denge.exe ayar <tur,..> <n> <hedef1,..,hedef6> [hedef düşüşü/tur]
+        // Her basamağın g'sini ikiye bölerek hedef galibiyet oranına getirir (Kolay bot pHit .07, EP tur ortası, basamağın kendi
+        // uzunluğu, imzası, kuralı ve senaryosu). Çıktı kariyer.json'a elle yazılır; ölçüm gürültüsü n 100'de ±5 puan.
+        if (a.Length > 0 && a[0] == "ayar")
+        {
+            PHIT = .07; var ci = System.Globalization.CultureInfo.InvariantCulture; int nn = int.Parse(a[2]); var hd = a[3].Split(','); double dus = a.Length > 4 ? double.Parse(a[4], ci) : 0; int sira = 0;
+            foreach (var ts in a[1].Split(','))
+            {
+                int t = int.Parse(ts) - 1; var tr = KariyerVeri.Turlar[t]; var gs = Ekipman((tr.epMin + tr.epMax) / 2); Console.WriteLine("  " + tr.ad + " (EP " + (tr.epMin + tr.epMax) / 2 + ")");
+                for (int b = 0; b < KariyerVeri.BASAMAK; b++)
+                {
+                    int g = KariyerVeri.Global(t, b); var k = KariyerVeri.Al(g); double hedef = double.Parse(hd[b], ci) - dus * sira; float lo = .45f, hi = 1.6f, eski = k.g; double o = 0, f, im;
+                    for (int it = 0; it < 6; it++)
+                    {
+                        k.g = (lo + hi) / 2; o = Oyna(KariyerVeri.Rakip(g), k.uzunluk, true, gs, nn, 5000 + g * 1000, out f, out im, k.degistirici) * 100;
+                        if (o > hedef) lo = k.g; else hi = k.g;   // kazanma oranı yüksek: rakip güçlensin
+                    }
+                    Console.WriteLine(string.Format(ci, "    {0}. {1,-24} {2,-7} hedef %{3:0} → g {4:0.00} (%{5:0}; eski g {6:0.00})", b + 1, k.yer, k.stil, hedef, k.g, o, eski)); k.g = eski;
+                }
+                sira++;
+            }
+            return 0;
+        }
         // 2026-10-26 ayar ölçümü: mono denge.exe olc <tarz> <g1,g2,..> <tepki> <hucum> <sayı> <n> [imza] [usta]
         // (tek tarzın birkaç g'deki galibiyet oranı; tur g'lerini ayarlamak için, pHit .07, EP tur ortası 30)
         if (a.Length > 0 && a[0] == "olc")
@@ -372,7 +395,7 @@ static class Denge
                     int g = KariyerVeri.Global(t, b); var k = KariyerVeri.Al(g); if (k == null) continue; int hedef = k.uzunluk > 0 ? k.uzunluk : 5; double f, i;
                     double o = Oyna(KariyerVeri.Rakip(g), hedef, true, gO, nm, 5000 + g * 1000, out f, out i, k.degistirici);
                     string ek = "";
-                    if (k.degistirici != null) { double o0 = Oyna(KariyerVeri.Rakip(g), hedef, true, gO, nm, 5000 + g * 1000, out f, out i); ek = string.Format("  kuralsız %{0:0} ({1:+0;-0} puan)", o0 * 100, (o - o0) * 100); }
+                    if (k.degistirici != null) { double o0 = Oyna(KariyerVeri.Rakip(g), hedef, true, gO, nm, 5000 + g * 1000, out f, out i, k.degistirici); ek = string.Format("  kuralsız %{0:0} ({1:+0;-0} puan)", o0 * 100, (o - o0) * 100); }
                     Console.WriteLine(string.Format("    {0}. {1,-26} {2,-7} g {3:0.00} {4,-6} %{5,3:0}{6}{7}", b + 1, k.yer, k.stil, k.g, k.degistirici ?? "", o * 100, ek, k.patron ? "  final" : ""));
                 }
             }
@@ -405,8 +428,8 @@ static class Denge
                     int g = KariyerVeri.Global(t, b); var k = KariyerVeri.Al(g); int hedef = k.uzunluk > 0 ? k.uzunluk : 5;
                     double fA = 0, fO, iA = 0, iO;
                     // Tur seçiliyse (ayar turu) yalnız EP ortası ölçülür: süre yarıya iner; EP etkisi ölçümde gürültü düzeyinde.
-                    double oA = turSec != null ? -1 : Oyna(KariyerVeri.Rakip(g), hedef, easy, gA, n, 5000 + g * 1000, out fA, out iA); if (turSec != null) fA = 0;
-                    double oO = Oyna(KariyerVeri.Rakip(g), hedef, easy, gO, n, 5000 + g * 1000, out fO, out iO);
+                    double oA = turSec != null ? -1 : Oyna(KariyerVeri.Rakip(g), hedef, easy, gA, n, 5000 + g * 1000, out fA, out iA, k.degistirici); if (turSec != null) fA = 0;
+                    double oO = Oyna(KariyerVeri.Rakip(g), hedef, easy, gO, n, 5000 + g * 1000, out fO, out iO, k.degistirici);
                     Console.WriteLine(string.Format("    {0}. {1,-26} {2,-7} g {3:0.00} {4,2} sayı  EP{5,-2} %{6,3:0} ({7:+0.0;-0.0})  EP{8,-2} %{9,3:0} ({10:+0.0;-0.0}){11}",
                         b + 1, k.yer, k.stil, k.g, hedef, epA, oA * 100, fA, epO, oO * 100, fO, k.patron ? "  imza/maç " + iO.ToString("0.0") : ""));
                 }

@@ -1,6 +1,7 @@
 // Usta yolu (komple-oyun tasarımı §3.2 "Usta zorluğu" ve §6 adım 9; 2026-10-26). Veri kariyer.json "usta".
-// Dünya Finalleri'nin finali kazanılınca açılır; Usta zorlukta (oyuncu koşar, easy = false) sonu olmayan bir merdivendir.
-// Neden ayrı bir "Tur 5" değil: tasarım dört tur sabit (harita, kayıt dizisi, Game Center bs_tur_2..4); oyunu bitiren
+// Son turun finali kazanılınca açılır (2026-11-11: kariyer 8 tur, son tur Efsaneler Kupası; daha önce Dünya Finalleri'yle
+// açmış kayıtta açık kalır, Ilerleme.UstaAcik); Usta zorlukta (oyuncu koşar, easy = false) sonu olmayan bir merdivendir.
+// Neden ayrı bir tur değil: tur sayısı sabit (harita, kayıt dizisi, Game Center bs_tur_2..8); oyunu bitiren
 // oyuncunun "yeni şey" akışı kesilmesin diye (tempo ölçüsü: Tur 2 sonrası 19 maçlık boşluk) her galibiyet yeni bir
 // basamaktır. Basamaklar 24 kariyer basamağının yerlerini ve rakiplerini 24'lük çevrimlerde karışık sırayla dolaşır
 // (Gunluk.Karma, sabit tohum: herkes aynı sırayı görür; kayıtta yalnız sayaç).
@@ -22,7 +23,9 @@ namespace BirdieSmash.Core
 
     public static class UstaYolu
     {
-        public const int CEVRIM = KariyerVeri.TUR * KariyerVeri.BASAMAK;   // 24
+        // 24 sabit (ilk dört turun basamakları). 2026-11-10 kariyer 8 tura çıkınca TUR'a bağlı kalsaydı kayıtlı Usta basamağı
+        // numaraları başka rakibe/yere kayardı ve g artışı (her 6 basamakta) aynı kalsa da çevrim 48'e uzardı.
+        public const int CEVRIM = 24;
         const uint TUZ = 0x27d4eb2dU;
 
         public static bool Acik(Ilerleme p) { return p != null && p.UstaAcik; }

@@ -23,12 +23,40 @@
     {"stil": "smasci", "g": 0.97, "yer": "Berlin yarı finali",     "saha": "turnuva", "uzunluk": 5,  "gorev": "karsila"},
     {"stil": "vex",    "g": 0.8,  "yer": "Londra finali",          "saha": "turnuva", "uzunluk": 11, "gorev": "okudun", "patron": true}]},
   {"id": "dunya", "tema": "Hepsi 11 sayı: ilk maçta 3–0 geriden başlarsın, sonra turun en hızlı rakipleri.", "ad": "Dünya Finalleri", "ep": [36, 48], "tepki": 0.85, "hucum": 1.15, "basamaklar": [
-    {"stil": "aria",   "g": 0.62, "yer": "Singapur grup 1",        "saha": "turnuva", "uzunluk": 11, "gorev": "aldat",  "degistirici": "geri"},
+    {"stil": "aria",   "g": 0.56, "yer": "Singapur grup 1",        "saha": "turnuva", "uzunluk": 11, "gorev": "aldat",  "degistirici": "geri"},
     {"stil": "duvar",  "g": 0.83, "yer": "Singapur grup 2",        "saha": "turnuva", "uzunluk": 11, "gorev": "okudun", "imza": true},
     {"stil": "nova",   "g": 0.76, "yer": "Singapur grup 3",        "saha": "turnuva", "uzunluk": 11, "gorev": "tepe",   "imza": true},
     {"stil": "file",   "g": 1.18, "yer": "Singapur çeyrek finali", "saha": "turnuva", "uzunluk": 11, "gorev": "kill",   "degistirici": "file"},
     {"stil": "vex",    "g": 0.86, "yer": "Singapur yarı finali",   "saha": "turnuva", "uzunluk": 11, "gorev": "uzan",   "imza": true},
-    {"stil": "aria",   "g": 0.93, "yer": "Singapur finali",        "saha": "turnuva", "uzunluk": 11, "gorev": "okudun", "patron": true}]}
+    {"stil": "aria",   "g": 0.93, "yer": "Singapur finali",        "saha": "turnuva", "uzunluk": 11, "gorev": "okudun", "patron": true}]},
+  {"id": "pasifik", "tema": "Dünya şampiyonu olarak ilk tur: rakipler seni çalışmış, daha çabuk tepki verir.", "ad": "Pasifik Turu", "ep": [44, 52], "tepki": 0.82, "hucum": 1.18, "basamaklar": [
+    {"stil": "nova",   "g": 0.79, "yer": "Sidney",             "saha": "salon",   "uzunluk": 11, "gorev": "perf"},
+    {"stil": "duvar",  "g": 0.86, "yer": "Auckland",           "saha": "park",    "uzunluk": 11, "gorev": "drop"},
+    {"stil": "vex",    "g": 0.94, "yer": "Manila",             "saha": "salon",   "uzunluk": 11, "gorev": "aldat",   "degistirici": "aldat"},
+    {"stil": "file",   "g": 1.15, "yer": "Taipei",             "saha": "turnuva", "uzunluk": 11, "gorev": "kill"},
+    {"stil": "aria",   "g": 0.95, "yer": "Osaka yarı finali",  "saha": "turnuva", "uzunluk": 11, "gorev": "uzan",    "imza": true},
+    {"stil": "smasci", "g": 0.97, "yer": "Osaka finali",       "saha": "turnuva", "uzunluk": 11, "gorev": "okudun",  "patron": true}]},
+  {"id": "amerika", "tema": "İki kıta, iki özel maç: birinde geriden başlarsın, birinde uzun ralli iki sayar.", "ad": "Amerika Turu", "ep": [48, 56], "tepki": 0.8, "hucum": 1.2, "basamaklar": [
+    {"stil": "duvar",  "g": 0.86, "yer": "Toronto",              "saha": "salon",   "uzunluk": 11, "gorev": "tepe"},
+    {"stil": "smasci", "g": 0.66, "yer": "Meksiko",              "saha": "park",    "uzunluk": 11, "gorev": "karsila", "degistirici": "geri"},
+    {"stil": "aria",   "g": 0.92, "yer": "Lima",                 "saha": "salon",   "uzunluk": 11, "gorev": "aldat"},
+    {"stil": "nova",   "g": 0.90, "yer": "São Paulo",            "saha": "turnuva", "uzunluk": 11, "gorev": "ralli",   "degistirici": "uzun", "imza": true},
+    {"stil": "vex",    "g": 0.87, "yer": "New York yarı finali", "saha": "turnuva", "uzunluk": 11, "gorev": "perf",    "imza": true},
+    {"stil": "file",   "g": 1.16, "yer": "New York finali",      "saha": "turnuva", "uzunluk": 11, "gorev": "okudun",  "patron": true}]},
+  {"id": "buyukkupa", "tema": "Sezonun en büyük kupası: finali 21 sayı, nefesini maça yay.", "ad": "Büyük Kupa", "ep": [52, 60], "tepki": 0.78, "hucum": 1.22, "basamaklar": [
+    {"stil": "file",   "g": 1.15, "yer": "Dubai",                "saha": "salon",   "uzunluk": 11, "gorev": "kill"},
+    {"stil": "aria",   "g": 0.85, "yer": "İstanbul",             "saha": "turnuva", "uzunluk": 11, "gorev": "drop"},
+    {"stil": "smasci", "g": 1.00, "yer": "Yeni Delhi",           "saha": "salon",   "uzunluk": 11, "gorev": "karsila", "degistirici": "altin"},
+    {"stil": "duvar",  "g": 0.88, "yer": "Hong Kong",            "saha": "turnuva", "uzunluk": 11, "gorev": "tepe",    "imza": true},
+    {"stil": "nova",   "g": 0.88, "yer": "Şanghay yarı finali",  "saha": "turnuva", "uzunluk": 11, "gorev": "uzan",    "imza": true},
+    {"stil": "vex",    "g": 0.88, "yer": "Şanghay finali",       "saha": "turnuva", "uzunluk": 21, "gorev": "okudun",  "patron": true}]},
+  {"id": "efsaneler", "tema": "Altı tarzın en iyileri: her rakip imza vuruşuyla gelir, final 21 sayı.", "ad": "Efsaneler Kupası", "ep": [56, 60], "tepki": 0.75, "hucum": 1.25, "basamaklar": [
+    {"stil": "smasci", "g": 1.00, "yer": "Bali grup 1",          "saha": "turnuva", "uzunluk": 11, "gorev": "karsila", "imza": true},
+    {"stil": "file",   "g": 1.20, "yer": "Bali grup 2",          "saha": "turnuva", "uzunluk": 11, "gorev": "kill",    "imza": true},
+    {"stil": "duvar",  "g": 0.85, "yer": "Bali grup 3",          "saha": "turnuva", "uzunluk": 11, "gorev": "drop",    "imza": true, "degistirici": "geri"},
+    {"stil": "nova",   "g": 0.90, "yer": "Bali çeyrek finali",   "saha": "turnuva", "uzunluk": 11, "gorev": "perf",    "imza": true},
+    {"stil": "vex",    "g": 0.90, "yer": "Bali yarı finali",     "saha": "turnuva", "uzunluk": 11, "gorev": "aldat",   "imza": true},
+    {"stil": "aria",   "g": 0.95, "yer": "Bali finali",          "saha": "turnuva", "uzunluk": 21, "gorev": "okudun",  "patron": true}]}
 ],
 "usta": {"g": 0.6, "adim": 0.02, "tavan": 0.72, "tepki": 1, "hucum": 1, "carpan": 0.75, "uzunluk": 5, "finalUzunluk": 11}
 }

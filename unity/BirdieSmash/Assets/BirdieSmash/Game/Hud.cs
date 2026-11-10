@@ -153,7 +153,7 @@ namespace BirdieSmash.Game
         public void Perde(System.Action ortunce) { perdeIs = ortunce; perdeEvre = 1; perdeT = 0; perdeMin = .15f; perdeAtla = false; perdeAcilis = false; acilisBek = 0; }
         // Açılış perdesi (HTML perde({kapali:true, min:.6})): oyun kapalı perdeyle açılır, vuruş sesleri hazırlanınca kalkar;
         // hazırken dokunuş beklemeyi kısaltır.
-        public void Acilis() { perdeEvre = 2; perdeT = 0; hazirT = -1; acilisIyi = 0; perdeIs = null; perdeMin = .6f; perdeAtla = false; perdeAcilis = true; acilisBek = 0; perdeAci = 0; acilisT0 = Time.realtimeSinceStartup; acilisAcT = acilisSonT = -1; if (root != null && root.fx != null) root.fx.Isit(); }
+        public void Acilis() { perdeEvre = 2; perdeT = 0; hazirT = -1; acilisIyi = 0; perdeIs = null; perdeMin = .6f; perdeAtla = false; perdeAcilis = true; acilisBek = 0; perdeAci = 0; acilisSpin = 0; acilisT0 = Time.realtimeSinceStartup; acilisAcT = acilisSonT = -1; if (root != null && root.fx != null) root.fx.Isit(); }
         public bool PerdeKapali { get { return perdeEvre == 1 || perdeEvre == 2; } }
         // UI Toolkit menüsü için (UiKok): perde var mı, ne kadar örtüyor (0..1; menü 1 − örtü opaklıkla solar), dokunuşla
         // beklemeyi kısalt. Perdenin çizimiyle aynı eğriler.
@@ -1528,7 +1528,7 @@ namespace BirdieSmash.Game
         // Açılış (soğuk açılış): kapalı diskle başlar (iOS açılış rengi = dış halka #a3234b, CiBuild), en az .6 sn, sonra aynı küçülme.
         // Hareketi azalt: ölçek/dönme/uçuş yok, 200 ms belirme ve 250 ms solma. Top HTML'deki çizilmiş tüy top (Yukleyici.serit, 2026-10-30).
         bool perdeAcilis, kaynakVar; int acilisIyi; float acilisBek, perdeSabit = -1; Vector2 perdeKaynak;
-        float acilisT0 = -1, acilisAcT = -1, acilisSonT = -1;   // ekran turu: gerçek açılışın süreleri (sn)
+        float acilisSpin, acilisT0 = -1, acilisAcT = -1, acilisSonT = -1;   // ekran turu: gerçek açılışın süreleri (sn)
         public string AcilisTani { get { return acilisT0 < 0 ? "yok" : "kapalı " + (acilisAcT < 0 ? "?" : (acilisAcT - acilisT0).ToString("F2")) + " sn · toplam " + (acilisSonT < 0 ? "?" : (acilisSonT - acilisT0).ToString("F2")) + " sn (hedef ≥ .95: .60 + .35; ses geç hazırsa hazır + .35)"; } }
         static float EaseOut3(float x) { return 1 - Mathf.Pow(1 - Mathf.Clamp01(x), 3); }
         static float EaseInOut3(float x) { x = Mathf.Clamp01(x); return x < .5f ? 4 * x * x * x : 1 - Mathf.Pow(-2 * x + 2, 3) / 2; }
@@ -1558,7 +1558,20 @@ namespace BirdieSmash.Game
             {
                 float s = 1;
                 if (perdeEvre == 3) { float sc, a; DiskOlcek(out sc, out a); if (Ayar.reduce) al = a; else s = sc; }
-                p = new Vector2(Mathf.Round(W_ / 2), Mathf.Round(H_ / 2 - Mathf.Min(W_, H_) * .026f)); boy = Mathf.Round(Mathf.Min(W_, H_) * .3f * s); serbest = true; return boy > 2 && al > 0;
+                p = new Vector2(Mathf.Round(W_ / 2), Mathf.Round(H_ / 2 - Mathf.Min(W_, H_) * .026f)); float k = 1; aci = 44f;
+                // 2026-11-11 (yasin, açılış prototipi: "spin atışı ile devam etmeli"): top yerinden oynamaz; ilk 1,15 sn'de iki tam
+                // tur atıp bekleme yönünde (44°) durur, küçükten hafif taşarak büyür, eksen dönüşü hızlı başlayıp yavaşlar.
+                // Hareketi azalt açıkken yok. aci/donus serbest dalda ekrandaki yön ve faz ekidir (TopCiz).
+                if (acilisTop && !Ayar.reduce)
+                {
+                    float ta = perdeSabit >= 0 ? (perdeEvre == 2 ? perdeT : 9) : acilisSpin;
+                    if (ta < 1.15f)
+                    {
+                        float uu = EaseOut3(ta / 1.15f), x = Mathf.Clamp01(ta / .7f) - 1; const float C = 1.9f;
+                        aci = 44f - 720f * (1 - uu); donus = 7f * (1 - uu); k = .55f + .45f * (1 + (C + 1) * x * x * x + C * x * x);
+                    }
+                }
+                boy = Mathf.Round(Mathf.Min(W_, H_) * .3f * s * k); serbest = true; return boy > 2 && al > 0;
             }
             if (perdeAcilis || perdeEvre != 1 || Ayar.reduce) return false;
             float t = perdeT / UCUS_SN; if (t >= 1) return false;
@@ -1576,7 +1589,7 @@ namespace BirdieSmash.Game
         void PerdeCiz()
         {
             if (perdeEvre == 0) return; if (perdeTex == null) PerdeDoku();
-            if (Event.current.type == EventType.Repaint) acilisIyi = Time.unscaledDeltaTime < .025f ? acilisIyi + 1 : 0;
+            if (Event.current.type == EventType.Repaint) { acilisIyi = Time.unscaledDeltaTime < .025f ? acilisIyi + 1 : 0; if (perdeAcilis) acilisSpin += Mathf.Min(Time.unscaledDeltaTime, .05f); }
             blocks.Add(new Rect(0, 0, W, H));
             float sc, al; DiskOlcek(out sc, out al);
             if (sc > .001f && al > .001f)
@@ -1610,7 +1623,7 @@ namespace BirdieSmash.Game
                 }
             }
             var o = GUI.color; GUI.color = new Color(1, 1, 1, al);
-            if (y.serit != null) SeritCiz(y, p, boy * SERIT_BOY, serbest ? 44f : -aci, y.Faz);
+            if (y.serit != null) SeritCiz(y, p, boy * SERIT_BOY, serbest ? aci : -aci, y.Faz + (serbest ? donus : 0));
             else GUI.DrawTexture(new Rect(p.x - boy / 2, p.y - boy / 2, boy, boy), y.rt);
             GUI.color = o;
         }
