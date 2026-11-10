@@ -222,13 +222,15 @@ ASC › Apps › Birdie Smash › **General › App Information**.
 
 ### C. App Privacy
 
-ASC › Birdie Smash › **General › App Privacy**.
-1. **Privacy Policy URL** › Edit: English için `privacy.html`, Turkish için
-   `gizlilik.html` adresi (A.3; aynı adresler `store_listing/<dil>/privacy_url.txt`'te).
+ASC › Birdie Smash › **General › App Privacy**. (2026-11-10 düzeltme: eski adımlar github.io adresini ve
+"veri toplanmıyor" cevabını yazıyordu; 1.0 reklamlı olduğu için ikisi de yanlıştı.)
+1. **Privacy Policy URL** › Edit: English için `store_listing/en/privacy_url.txt`, Turkish için
+   `store_listing/tr/privacy_url.txt` içindeki murphysoft.app adresi.
 2. **Data Types › Get Started** › "Do you or your third-party partners collect data
-   from this app?" → **No, we do not collect data from this app** › Save.
-3. Sağ üstte **Publish**. Sayfada "Data Not Collected" görünmeli.
-   Gerekçe ve hangi durumda değişeceği: `store_listing/app_privacy.md`.
+   from this app?" → **Yes, we collect data**. İşaretlenecek satırlar ve her birinin amacı:
+   `store_listing/app_privacy.md` başındaki 2026-11-07 notu (Device ID, Advertising Data,
+   Product Interaction, Performance/Crash; amaç Third-Party Advertising; Not Linked to You).
+3. Sağ üstte **Publish**.
 
 ### D. Sürüm sayfası (iOS App › 1.0 Prepare for Submission)
 
