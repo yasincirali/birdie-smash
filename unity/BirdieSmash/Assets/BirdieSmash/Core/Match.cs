@@ -667,6 +667,7 @@ namespace BirdieSmash.Core
         // karesinde çıkar. Hareket: yavaş = kısa, kısa ve sert fiske = flick, uzun ve hızlı = yüksek.
         public class Servis { public string klip; public float sure, z, aci; }
         string servisTurSon;   // StartFlight'a giden servis türü (Shuttle.servisTur)
+        int flickSeri, flickBekledim, flickOkudum;   // ardışık flick servisim; "Bekliyordum!" ve rakip flick'ini okuma yazısı sayıları (maç başına)
         public static readonly Dictionary<string, Servis> SERVIS = new Dictionary<string, Servis> {
             {"kisa", new Servis{klip="serve_bh",sure=.32f,z=1.0f,aci=.36f}}, {"flick", new Servis{klip="serve_flick",sure=.32f,z=1.02f,aci=.52f}}, {"yuksek", new Servis{klip="serve",sure=.56f,z=.82f,aci=1.0f}}};
         void ServisAt(string who, string tur, float tx, float ty)
@@ -678,7 +679,18 @@ namespace BirdieSmash.Core
             svPending = () =>
             {
                 float vx, vy, vz; Shuttle.Aim(hx, hy, hz, tx, ty, true, S.aci, out vx, out vy, out vz); servisTurSon = tur;
-                if (tur == "flick" && (who == "op" || R01() < .75f)) deceive = who == "me";   // çoğu flick rakibi kısa servise hazırlıksız yakalar
+                // Ardışık flick (İnceleme turu 2026-11-10 17:08 #1): flick'in işe yaraması kısa servisle karışmasından gelir; eskiden
+                // her flick %75 aldatıyordu, öğrenen oyuncu her servisi flick atıp rakibi "kukla" yapıyordu. Rakip ardışık flick'e
+                // alışır: 1. %75, 2. %50, 3. ve sonrası %25 (easy'de düşüş yarım: %75/%62,5/%50). Kısa/yüksek servis sayacı
+                // sıfırlar. R01 çağrısı eskisi gibi yalnız benim flick'imde (IkizMaclar: online'da rakip insan, Match:455 siler).
+                if (tur == "flick" && who == "me")
+                {
+                    float sans = .75f - (easy ? .125f : .25f) * Math.Min(2, flickSeri); flickSeri++;
+                    deceive = R01() < sans;
+                    if (uzak == null && !deceive && flickSeri >= 3 && flickBekledim < 2) { flickBekledim++; Say("op", null, op.x, op.y, 1.2f, "Bekliyordum!", 2); }
+                }
+                else if (tur == "flick") deceive = false;
+                else if (who == "me") flickSeri = 0;
                 StartFlight(who, vx, vy, vz, hx, hy, hz, true, tur == "kisa" ? "drop" : "clear", false, "good");
                 if (tur == "flick" && who == "op") Say("me", null, me.x, me.y, 0, "Flick servis!", 2);
             };

@@ -159,6 +159,7 @@ static class BotMac
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
         FileStandart();   // 2026-10-27 ekran/file (ayrı satır: liste başka dallarda da büyüyor)
         IkizMaclar();   // 2026-11-07 online: iki çekirdek gecikmeli kuyrukla (Core/Uzak)
+        FlickSerileri();   // 2026-11-10 inceleme 17:08 #1: ardışık flick servisi rakibi gittikçe az aldatır
         ServisSaatleri();   // 2026-11-07 inceleme: online servis saati + çekilme (Core/Uzak)
         Ligler(); Kartlar();   // 2026-11-07 online: lig puanı (Core/Lig), oyuncu kartı (Core/OyuncuKarti)
         SicrayisBantlari();   // 2026-11-07 inceleme 16:05 #3: sıçrayış file uzaklığına göre (yalnız ölçüm, kural değişmedi)
@@ -1423,6 +1424,40 @@ static class BotMac
         Console.WriteLine("rakip slice (çevirme): " + cev + " vuruş, fileye " + cevFile);
         if (cev == 0) Fail("rakip slice'ı hiç görülmedi");
         else if (cevFile > cev / 10) Fail("rakip slice'ı fileye gidiyor: " + cevFile + "/" + cev);
+    }
+
+    // 2026-11-10 inceleme 17:08 #1: hep flick servis atan oyuncu. Eskiden her flick %75 aldatıyordu; şimdi ardışık flick
+    // %75 → %50 → %25'e iner (easy'de %75 → %62,5 → %50). Kontrol: maçtaki 3. ve sonraki flick'lerde aldatma oranı
+    // normalde 0,10–0,42, easy'de normalden yüksek; "Bekliyordum!" maç başına en çok 2 kez.
+    static void FlickSerileri()
+    {
+        const float dt = 1f / 60; double[] oran = new double[2];
+        for (int e = 0; e < 2; e++)
+        {
+            int flick = 0, gec = 0, gecKand = 0;   // gec: maçtaki 3. ve sonraki ardışık flick
+            for (int m = 0; m < 30; m++)
+            {
+                var M = new Match(900 + m, new MatchOptions { easy = e == 1, target = 21 }); int g = 0, bekle = 0, d0 = -1, sira = 0;
+                while (!M.over && g++ < 60 * 60 * 40)
+                {
+                    if (M.s == null && M.server == "me" && M.wait <= 0 && !M.between && M.svPending == null && M.SwipeServe(0, -70, 1.6f)) { flick++; sira++; d0 = M.deceives; if (sira >= 3) gec++; }
+                    Bot(M, dt, .14);
+                    M.Update(dt);
+                    foreach (var ev in M.events)
+                    {
+                        if (ev.kind == Ev.Text && ev.text == "Bekliyordum!") bekle++;
+                        if (d0 >= 0 && (ev.kind == Ev.Aldat || (ev.kind == Ev.Hit && ev.who == "op"))) { if (M.deceives > d0 && sira >= 3) gecKand++; d0 = -1; }
+                    }
+                    M.events.Clear();
+                }
+                if (bekle > 2) Fail("Bekliyordum! maçta " + bekle + " kez (en çok 2)");
+            }
+            oran[e] = gec == 0 ? 0 : (double)gecKand / gec;
+            Console.WriteLine("flick serisi " + (e == 1 ? "easy" : "normal") + ": " + flick + " flick, 3.+ flick " + gec + ", aldatma oranı " + oran[e].ToString("0.00"));
+            if (gec < 25) Fail("flick serisi: az ardışık flick (" + gec + ")");
+        }
+        if (oran[0] < .1 || oran[0] > .42) Fail("flick serisi: normal 3.+ flick aldatma oranı " + oran[0].ToString("0.00") + " (%25 hedef, eski %75)");
+        if (oran[1] <= oran[0]) Fail("flick serisi: easy oranı normalden yüksek olmalı (%50 hedef)");
     }
 
     // Ayak işi (2026-10-26 gece, build 40 incelemesi; ayrıntılı ölçüm tool/unity_test/AnimOlc): ayak işi klibinin fazı
