@@ -30,10 +30,10 @@ namespace BirdieSmash.Game
         public const int TAM = 0, YUZ = 1, AYAK = 2, TUTUS = 3;
         public int odak { get; private set; }
         public string poz { get; private set; }
-        public string deneTip, deneSac, deneAyk, deneSapka, deneYuz, deneSevinc, deneMacSonu, deneSirt;   // sevinç denemeleri figürü değiştirmez, önizlemede oynar
+        public string deneTip, deneSac, deneAyk, deneSapka, deneYuz, deneSevinc, deneMacSonu, deneSirt, deneSmac;   // sevinç denemeleri figürü değiştirmez, önizlemede oynar
         // Kozmetik kategorisine göre deneme alanı (kategori → alan eşlemesi tek yerde; "ayakkabi" ayakkabı modeli).
-        public string DeneAl(string kat) { return kat == Kozmetik.TIP ? deneTip : kat == Kozmetik.SAC ? deneSac : kat == Kozmetik.SAPKA ? deneSapka : kat == Kozmetik.YUZ ? deneYuz : kat == Kozmetik.SEVINC ? deneSevinc : kat == Kozmetik.MAC_SONU ? deneMacSonu : kat == Kozmetik.SIRT ? deneSirt : deneAyk; }
-        public void DeneYaz(string kat, string id) { if (kat == Kozmetik.TIP) deneTip = id; else if (kat == Kozmetik.SAC) deneSac = id; else if (kat == Kozmetik.SAPKA) deneSapka = id; else if (kat == Kozmetik.YUZ) deneYuz = id; else if (kat == Kozmetik.SEVINC) deneSevinc = id; else if (kat == Kozmetik.MAC_SONU) deneMacSonu = id; else if (kat == Kozmetik.SIRT) deneSirt = id; else deneAyk = id; }
+        public string DeneAl(string kat) { return kat == Kozmetik.TIP ? deneTip : kat == Kozmetik.SAC ? deneSac : kat == Kozmetik.SAPKA ? deneSapka : kat == Kozmetik.YUZ ? deneYuz : kat == Kozmetik.SEVINC ? deneSevinc : kat == Kozmetik.MAC_SONU ? deneMacSonu : kat == Kozmetik.SIRT ? deneSirt : kat == Kozmetik.SMAC ? deneSmac : deneAyk; }
+        public void DeneYaz(string kat, string id) { if (kat == Kozmetik.TIP) deneTip = id; else if (kat == Kozmetik.SAC) deneSac = id; else if (kat == Kozmetik.SAPKA) deneSapka = id; else if (kat == Kozmetik.YUZ) deneYuz = id; else if (kat == Kozmetik.SEVINC) deneSevinc = id; else if (kat == Kozmetik.MAC_SONU) deneMacSonu = id; else if (kat == Kozmetik.SIRT) deneSirt = id; else if (kat == Kozmetik.SMAC) deneSmac = id; else deneAyk = id; }
         Transform bBas, bEl, bParmak; readonly List<Transform> bAyak = new List<Transform>(); Renderer bGrip, bTel, bSac, bGovde; Vector3 camS, hedefS; bool camVar;
         public PlayerView Fig { get { return fig; } }   // ekran turu tanısı (VaryantOzet)
         public Camera Kam { get { return kam; } }       // ekran turu: bölge rengi vitrin RT'sinden örneklenir (2026-10-27)
@@ -85,9 +85,10 @@ namespace BirdieSmash.Game
         public void Ac() { gameObject.SetActive(true); kam.enabled = true; durgun = 0; Yenile(); }
         // Sevinç önizlemesi (2026-11-01): id verilince figür o hareketi döngüde yapar; null = boşta. Sevinç sayfasından çıkınca silinir.
         public string sevinc; float sevincT;
+        public static float TestSmacT = -1;   // ekran turu: smaç hareketi önizlemesinin saati sabit (kare hızı CI'da düşük)
         public void Sevinc(string id) { if (sevinc != id) sevincT = 0; sevinc = id; if (id == null) ShowStaticSifirla(); }
         void ShowStaticSifirla() { if (fig != null) fig.ShowStatic(YER, a, 0); }
-        public void Kapat() { sevinc = null; kam.enabled = false; suruk = false; gec = hedefGec = 0; parca = null; raKay = false; odak = TAM; poz = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = deneSevinc = deneMacSonu = deneSirt = null; camVar = false; gameObject.SetActive(false); }
+        public void Kapat() { sevinc = null; kam.enabled = false; suruk = false; gec = hedefGec = 0; parca = null; raKay = false; odak = TAM; poz = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = deneSevinc = deneMacSonu = deneSirt = deneSmac = null; camVar = false; gameObject.SetActive(false); }
         // Yakın plan seç (aynı odağa ikinci dokunuş Soyunma odasında Tüm boy'a döner). Tutuşa girerken el kameraya döner.
         public void Odak(int o, string klip = null)
         {
@@ -417,7 +418,7 @@ namespace BirdieSmash.Game
             }
             if (suruk) { raKay = false; bosT = 0; }
             float hit; if (poz != null && odak == TUTUS) fig.ShowPoz(YER, a, poz, Match.CLIP_HIT.TryGetValue(poz, out hit) ? hit : .5f);
-            else if (sevinc != null) { sevincT += dt; fig.ShowSevinc(YER, a, sevinc, sevincT); }   // Dolap › Sevinç önizlemesi (döngü)
+            else if (sevinc != null) { sevincT += dt; if (sevinc.StartsWith("smac:")) fig.ShowSmac(YER, a, sevinc.Substring(5), TestSmacT >= 0 ? TestSmacT : sevincT); else fig.ShowSevinc(YER, a, sevinc, sevincT); }   // Dolap › Sevinç önizlemesi (döngü)
             else fig.ShowStatic(YER, a, 0);
             // geçiş: figür 0–60%'ta solar/kayar, raket 45–100%'te öne gelir
             float fK = Mathf.Clamp01(gec / .6f), rK = Mathf.Clamp01((gec - .45f) / .55f);

@@ -403,7 +403,11 @@ namespace BirdieSmash.Game
             // yoksa (tip/saç yalnız varyant görünürken) eski davranış: yalnız sekme.
             if (ilkGrup == "Dolap") { string dn = ilkDene; ey.Add(Dugme(L.T("Dolap'ta dene"), () => { kapat(); SekmeAc(Sekme.Soyunma); SeviyeDene(dn); }, "dugme--birincil")); }
             else if (ilkGrup == "Atolye") { string yv = ilkYuva; ey.Add(Dugme(L.T("Atölye'de gör"), () => { kapat(); if (yv != null) YuvaAc(yv); else SekmeAc(Sekme.Atolye); }, "dugme--birincil")); }
-            ey.Add(Dugme(L.T("Tamam"), kapat, ilkGrup != null ? "dugme--hayalet" : "dugme--birincil"));
+            // 2026-11-10 (Ar-Ge 19:49 #5): seviye puan verdi ama dağıtmak için Oyna'ya dönüp satırı bulmak gerekiyordu. Açılan eşya
+            // yokken birincil düğme budur; varken ikinci sırada durur (üç düğme: eşya, puan, tamam).
+            bool puanVar = Ayar.GelisimBos > 0;
+            if (puanVar) ey.Add(Dugme(L.T("Puanı dağıt"), () => { kapat(); GelisimAc(); }, ilkGrup != null ? "dugme--hayalet" : "dugme--birincil"));
+            ey.Add(Dugme(L.T("Tamam"), kapat, ilkGrup != null || puanVar ? "dugme--hayalet" : "dugme--birincil"));
             Erisim.Etiket(ic, L.T("Seviye atladın") + ", " + L.T("Sv {0}", sv) + (svTuy > 0 ? ", " + L.T("Seviye ödülü +{0} Tüy", svTuy) : "") + (acilan.Count > 0 ? ", " + L.T("Açıldı") + ": " + string.Join(", ", acilan.ConvertAll(x => L.T(x))) : ""), "metin");
             root.sfx.Tik(990); Yerel.Hap("win");
             if (Ayar.reduce) return;

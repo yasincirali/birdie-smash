@@ -31,9 +31,13 @@ namespace BirdieSmash.Core
         public const string TIP = "tip", SAC = "sac_model", SAPKA = "sapka", YUZ = "yuz";
         // 2026-11-01 Sevinç (Ar-Ge K3): sayı sevinci ve maç sonu hareketi; aynı sahiplik/fiyat kuralı, yalnız görünüş.
         public const string SEVINC = "sevinc", MAC_SONU = "mac_sonu";
+        // Smaç hareketi (2026-11-10, yasin: "xp ve levele özgü animasyonlar, cool smash tricks yapılabilsin"): sıçrayarak smaçta
+        // figürün havadaki duruşu. Yalnız görünüş (Yukle güç alanını reddeder): vuruşun hızı, zamanı, isabeti aynı. Tüy ile
+        // satılmaz, yalnız seviyeyle açılır (fiyat 0 + sv): Sahip kuralı zaten "ücretsiz ve seviyesi gelmiş" der.
+        public const string SMAC = "smac";
         // 2026-11-01 Sırt (pelerin, omuzluk; KayKit CC0 hazır ağları): aynı sahiplik/fiyat kuralı, yalnız görünüş.
         public const string SIRT = "sirt";
-        public static readonly string[] KAT = { TIP, SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT };
+        public static readonly string[] KAT = { TIP, SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC };
         static Dictionary<string, KozmetikOge[]> veri; static Dictionary<string, RakipGorunum> rakip;
         public static void Sifirla() { veri = null; rakip = null; }
 
@@ -115,7 +119,7 @@ namespace BirdieSmash.Core
             if (veri != null) return;
             var o = Json.Obj(Json.Parse(KariyerVeri.Metin("karakter"))); if (o == null) throw new InvalidOperationException("Birdie Smash: veri/karakter.json okunamadı");
             var v = new Dictionary<string, KozmetikOge[]>();
-            foreach (var k in new[] { "tipler", SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT })
+            foreach (var k in new[] { "tipler", SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC })
             {
                 var l = new List<KozmetikOge>(); var a = o.ContainsKey(k) ? o[k] as List<object> : null;
                 if (a != null) foreach (var x in a)

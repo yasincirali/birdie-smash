@@ -550,7 +550,7 @@ namespace BirdieSmash.Game
         Match sM; string sServer, sSide, sMsg; bool sIlk, sOgr, sTal, sEn, sHazir; int sGorev; float sFu, sEnW, sWW, sHH;
         void ServisSeridi(Match M, float hy)
         {
-            bool ilk = M.sc[0] + M.sc[1] == 0, ogr = Ogretici, tal = M.server == "me" && M.sc[0] + M.sc[1] < 2 && ogr;
+            bool ilk = M.IlkSayi, ogr = Ogretici, tal = M.server == "me" && M.sc[0] + M.sc[1] < 2 && ogr;
             string side = M.ServeSideOf(M.server); float enW = Mathf.Min(rx - lx, 380 * u) - 24 * u;
             if (!sHazir || sM != M || sServer != M.server || sSide != side || sMsg != M.serveMsg || sIlk != ilk || sOgr != ogr
                 || sTal != tal || sGorev != M.gorevler.Count || sEn != L.En || sFu != fu || sEnW != enW)
@@ -1327,6 +1327,7 @@ namespace BirdieSmash.Game
             if (ekBuyuk != null) ek = L.Cumle(ekBuyuk) + (ekDiger > 0 ? " · " + L.T("+{0} ödül daha", ekDiger) : "");
             // 2026-11-10 seviye ödülü (Gear.SvOdul): seviye atlanan maçta kartta "Seviye ödülü +n Tüy"; açılanların önünde.
             if (od.svTuy > 0) acil = L.T("Seviye ödülü +{0} Tüy", od.svTuy) + (acil != null ? " · " + acil : "");
+            if (od.efsane > 0) acil = L.T("Efsane {0} · +{1} Tüy", od.efsane, od.efsaneTuy) + (acil != null ? " · " + acil : "");   // 2026-11-10 Gear.EFSANE_XP
             onbAlt = (acil != null ? acil + "\n" : "") + svYazi + (ek != null ? " · " + ek : "");
             onbHSol = null;
             if (root.hedef.gecerli) { var hd0 = root.hedef; onbHSol = L.T("Hedef: {0}", L.T(hd0.ad)); int hm = Hedef.MacTahmini(Hedef.Kalan(hd0.fiyat, Ayar.gear.eko.tuy), PlayerPrefs.GetString(Hedef.SON_ANAHTAR, "")); if (hm > 0) onbHSol += " · " + L.T("≈ {0} maç", hm); onbHSag = L.T("{0} Tüy kaldı", 99999); }   // 2026-11-07 GD6

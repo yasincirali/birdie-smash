@@ -67,7 +67,7 @@ namespace BirdieSmash.Core
         public readonly Dictionary<string, int> sv = new Dictionary<string, int> { { "raket", 1 }, { "tel", 1 }, { "grip", 1 }, { "bileklik", 1 }, { "bant", 1 }, { "forma", 1 } };
     }
 
-    public class OdulSonuc { public int tuy, xp, once, sonra, svTuy; public List<string> ek = new List<string>(); }   // svTuy: seviye ödülü (tuy'a dahil değil; reklam +%50 onu büyütmez)
+    public class OdulSonuc { public int tuy, xp, once, sonra, svTuy, efsane, efsaneTuy; public List<string> ek = new List<string>(); }   // svTuy: seviye ödülü (tuy'a dahil değil; reklam +%50 onu büyütmez)
 
     public class Gear
     {
@@ -268,7 +268,22 @@ namespace BirdieSmash.Core
         // büyütmesin. Geriye dönük dağıtım yok: yalnız seviye atlandığı anda verilir, ayrı kayıt alanı gerekmez.
         public static int SvOdul(int L) { return L < 2 || L > 30 ? 0 : L % 5 != 0 ? 40 : L == 5 ? 150 : L == 10 ? 200 : L == 15 ? 250 : L == 20 ? 300 : L == 25 ? 400 : 500; }
         public static int SvOdulAralik(int once, int sonra) { int t = 0; for (int L = once + 1; L <= sonra; L++) t += SvOdul(L); return t; }
-        void SvOdulVer(OdulSonuc o) { o.sonra = Seviye(); o.svTuy = SvOdulAralik(o.once, o.sonra); eko.tuy += o.svTuy; }
+        // Efsane kademeleri (2026-11-10, Ar-Ge 19:49 #1, yasin "yapılacaklar listesindekileri yap"): Sv 30'dan sonra XP boşa
+        // akıyordu, en çok oynayan oyuncunun önünde hedef kalmıyordu. Sv 30 üstünde her 6.000 XP bir Efsane kademesi ve +300 Tüy
+        // (kıyas: Forza/COD prestij; yaklaşık 20 galibiyet). Güç, kapı, gelişim puanı VERMEZ: Seviye() 30'da kalır, bütün seviye
+        // kapıları ve Gelisim.Toplam aynı. Ayrı kayıt yok (xp'den hesaplanır) ve geriye dönük ödeme yok: yalnız kademe atlanan
+        // ödülde verilir. Ad, Sv 30 unvanı "Efsane" ile aynı (yeni kavram öğretmez). Maç ödülüne katılmaz (reklam büyütmez).
+        public const int EFSANE_XP = 6000, EFSANE_TUY = 300;
+        public static int Sv30Xp() { int t = 0; for (int L = 1; L < 30; L++) t += SvEsik(L); return t; }
+        public static int EfsaneOf(int xp) { return Math.Max(0, (xp - Sv30Xp()) / EFSANE_XP); }
+        public int Efsane() { return EfsaneOf(eko.xp); }
+        // Sıradaki kademe için: n = şu anki kademe, kalan = içinde biriken XP (0..EFSANE_XP-1). Sv 30 altında false.
+        public bool EfsaneIlerleme(out int n, out int kalan) { int x = eko.xp - Sv30Xp(); n = 0; kalan = 0; if (x < 0) return false; n = x / EFSANE_XP; kalan = x % EFSANE_XP; return true; }
+        void SvOdulVer(OdulSonuc o)
+        {
+            o.sonra = Seviye(); o.svTuy = SvOdulAralik(o.once, o.sonra); eko.tuy += o.svTuy;
+            int e0 = EfsaneOf(eko.xp - o.xp), e1 = Efsane(); if (e1 > e0) { o.efsane = e1; o.efsaneTuy = (e1 - e0) * EFSANE_TUY; eko.tuy += o.efsaneTuy; }
+        }
         public void OyuncuSv(out int L, out int kalan, out int gerek) { L = 1; int x = eko.xp; while (L < 30 && x >= SvEsik(L)) { x -= SvEsik(L); L++; } kalan = x; gerek = L < 30 ? SvEsik(L) : 0; }
         public int Seviye() { int L, a, b; OyuncuSv(out L, out a, out b); return L; }
         public float KSv(string k) { int v; eko.sv.TryGetValue(k, out v); return eko.esit && !kariyerModu ? 0 : (Math.Max(1, Math.Min(10, v == 0 ? 1 : v)) - 1) / 9f; }

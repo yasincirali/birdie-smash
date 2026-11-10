@@ -387,6 +387,10 @@ namespace BirdieSmash.Game
             // 2026-11-01 Sevinç: sayfa (Yumruk önizlemesi) ve üç hareketin tepe anı (vitrin döngüsü 1,6 / 2,4 sn)
             ui.KarakterAc(UiKok.KAR_SEVINC); yield return Bekle(25); yield return Cek("menu_" + ek + "sevinc");
             if (ek == "") foreach (var sv in new[] { "kollar", "zipla", "alkis", "zafer", "egil", "iyi_oyun" }) { root.vitrin.Sevinc(sv); yield return Bekle(sv == "zipla" ? 18 : 30); yield return Cek("sevinc_" + sv); }
+            // 2026-11-10 smaç hareketleri (Kozmetik.SMAC): her hareketin temas öncesi (u .3) ve sonrası (u .75) karesi; saat sabit.
+            if (ek == "") foreach (var sm in new[] { "duz", "yay", "makas", "donerek" }) foreach (var su in new[] { .3f, .75f })
+                { Vitrin.TestSmacT = .35f + su / Match.JUMP_HIZ; root.vitrin.Sevinc("smac:" + sm); yield return Bekle(4); yield return Cek("smac_" + sm + (su < .5f ? "_once" : "_sonra")); }
+            Vitrin.TestSmacT = -1;
             root.vitrin.Sevinc(null);
             // 2026-10-26 karakter tasarımı: Karakter alt sayfaları (Tip, Saç, Ayakkabı, Ten), yakın planlar (Yüz, Ayak, Tutuş:
             // kamera yumuşak geçişini bitirsin diye 40 kare) ve deneme kartı (alınmamış öğe vitrinde, kayda yazılmaz).

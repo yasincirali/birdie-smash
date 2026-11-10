@@ -153,7 +153,7 @@ static class BotMac
         Yardimlar();   // 2026-10-29 kayıpta rakip yumuşar (ayrı satır)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); YenilgiIpuclari(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
-        Turlar34(); Drillar(); MacSayisilari(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
+        Turlar34(); Drillar(); MacSayisilari(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Efsaneler(); SmacHareketleri(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
         KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
@@ -489,9 +489,15 @@ static class BotMac
         if (!KariyerVeri.Turlar[2].Var || !KariyerVeri.Turlar[3].Var) Fail("Tur 3–4 verisi yok");
         foreach (var t in KariyerVeri.Turlar) foreach (var k in t.b) if (Match.GorevBul(k.gorev) == null || !Match.STIL.ContainsKey(k.stil)) Fail("bilinmeyen görev/tarz: " + k.yer);
         // Kural maçı (2026-11-07): Tur 1 ve patron finali kuralsız, turda en çok bir; Günün maçı tanımı olmalı ve maça geçmeli.
-        int kural = 0;
-        for (int ti = 0; ti < KariyerVeri.Turlar.Length; ti++) { int n = 0; foreach (var k in KariyerVeri.Turlar[ti].b) if (k.degistirici != null) { n++; kural++; if (ti == 0 || k.patron || Gunluk.Deg(k.degistirici) == null) Fail("kural maçı yeri/tanımı: " + k.yer); } if (n > 1) Fail("turda birden çok kural maçı"); }
-        if (kural != 3) Fail("kariyerde 3 kural maçı olmalı: " + kural);
+        int kural = 0, senaryoN = 0;
+        for (int ti = 0; ti < KariyerVeri.Turlar.Length; ti++) { int n = 0, sn = 0; foreach (var k in KariyerVeri.Turlar[ti].b) if (k.degistirici != null) { bool senaryo = k.degistirici == "geri"; if (senaryo) { sn++; senaryoN++; if (k.uzunluk != 11) Fail("geri dönüş yalnız 11 sayılık basamakta: " + k.yer); } else { n++; kural++; } if (ti == 0 || k.patron || Gunluk.Deg(k.degistirici) == null) Fail("kural maçı yeri/tanımı: " + k.yer); } if (n > 1 || sn > 1) Fail("turda birden çok kural maçı ya da senaryo"); }
+        if (kural != 3 || senaryoN != 1) Fail("kariyerde 3 kural maçı + 1 senaryo olmalı: " + kural + "/" + senaryoN);
+        // Senaryo (2026-11-10): "geri" maçı 0–3 başlatır, Günün maçı döngüsüne girmez, ilk sayı yazısı (rakip adı) yine çıkar.
+        foreach (var gd in Gunluk.Degistiriciler) if (gd.id == "geri") Fail("senaryo Günün maçı döngüsünde olmamalı");
+        var Mg = new Match(5, new MatchOptions { easy = true, stil = Match.KariyerRakip(18), target = 11, degistirici = KariyerVeri.Al(18).degistirici });
+        if (Mg.degistirici != "geri" || Mg.sc[0] != 0 || Mg.sc[1] != Match.GERI_FARK || !Mg.IlkSayi || Mg.MacSayisiDurum() != -1) Fail("geri dönüş maçı 0–3 başlamalı");
+        { int gd = 0; while (!Mg.over && gd++ < 60 * 60 * 30) { Bot(Mg, 1f / 60f); Mg.Update(1f / 60f); Mg.events.Clear(); } if (!Mg.over || Math.Max(Mg.sc[0], Mg.sc[1]) > 15 || Mg.IlkSayi) Fail("geri dönüş maçı bitmedi ya da tavanı aştı"); }
+        if (new Match(5, new MatchOptions { easy = true, target = 11 }).sc[1] != 0) Fail("serbest maç 0–0 başlamalı");
         var Mk = new Match(5, new MatchOptions { stil = Match.KariyerRakip(8), target = 5, degistirici = KariyerVeri.Al(8).degistirici });
         if (Mk.degistirici != "uzun" || new Match(5, new MatchOptions { stil = Match.KariyerRakip(9), target = 5, degistirici = KariyerVeri.Al(9).degistirici }).degistirici != null) Fail("kural maçı değiştiricisi maça geçmedi (Seul uzun, Tokyo yok)");
         var M = new Match(5, new MatchOptions { stil = Match.KariyerRakip(1), target = 5 });
@@ -914,6 +920,31 @@ static class BotMac
     // eşiği geçen maçta, ödül alt yazısında en büyük ek + kalan sayısı.
     // 2026-11-10 oyuncu gelişimi (Core/Gelisim): puan yalnız seviyeden, dal tavanı 10, bozuk kayıt kırpılır, geri alma
     // ücretsiz, eşit şartlarda etkisiz, etki ekipman yuva seviyesinin (%18) altında.
+    // 2026-11-10 Efsane kademeleri: Sv 30 üstü her 6.000 XP +300 Tüy; seviye 30'da kalır, geriye dönük ödeme yok.
+    static void Efsaneler()
+    {
+        int t = Gear.Sv30Xp();
+        if (Gear.EfsaneOf(0) != 0 || Gear.EfsaneOf(t - 1) != 0 || Gear.EfsaneOf(t) != 0 || Gear.EfsaneOf(t + Gear.EFSANE_XP - 1) != 0 || Gear.EfsaneOf(t + Gear.EFSANE_XP) != 1) Fail("efsane: eşikler");
+        var g = new Gear(new BellekKayit(), 0); g.eko.xp = t + Gear.EFSANE_XP - 10; int n, k;
+        if (g.Seviye() != 30 || g.Efsane() != 0 || !g.EfsaneIlerleme(out n, out k) || n != 0 || k != Gear.EFSANE_XP - 10) Fail("efsane: ilerleme");
+        int tuy0 = g.eko.tuy; var o = g.DrilOdul(1);
+        if (o.efsane != 1 || o.efsaneTuy != Gear.EFSANE_TUY || g.eko.tuy != tuy0 + o.tuy + Gear.EFSANE_TUY || g.Seviye() != 30 || o.svTuy != 0) Fail("efsane: kademe atlanınca +300, seviye 30'da kalır");
+        tuy0 = g.eko.tuy; o = g.DrilOdul(1); if (o.efsane != 0 || g.eko.tuy != tuy0 + o.tuy) Fail("efsane: kademe atlanmadan ödül yok");
+        var e = new Gear(new BellekKayit(), 0); e.eko.xp = t + 5 * Gear.EFSANE_XP; tuy0 = e.eko.tuy; o = e.DrilOdul(1);
+        if (o.efsane != 0 || e.eko.tuy != tuy0 + o.tuy || e.Efsane() != 5) Fail("efsane: geriye dönük ödeme olmamalı");
+        var d = new Gear(new BellekKayit(), 0); d.eko.xp = 50; if (d.EfsaneIlerleme(out n, out k) || d.Efsane() != 0) Fail("efsane: Sv 30 altında yok");
+        if (Gelisim.Toplam(30) != 29) Fail("efsane: gelişim puanı vermez");
+    }
+    // 2026-11-10 smaç hareketi (Kozmetik.SMAC): Tüy ile satılmaz, yalnız seviyeyle açılır; seçim kaydı korunur.
+    static void SmacHareketleri()
+    {
+        var l = Kozmetik.Liste(Kozmetik.SMAC); if (l.Length < 4 || l[0].id != "duz") Fail("smaç hareketi: liste");
+        int once = 0; foreach (var o in l) { if (o.fiyat != 0) Fail("smaç hareketi Tüy ile satılmaz: " + o.id); if (o.sv < once || o.sv > 30) Fail("smaç hareketi seviyesi sıralı ve ≤ 30: " + o.id); once = o.sv; }
+        var g = new Gear(new BellekKayit(), 0);
+        if (!Kozmetik.Sahip(g, Kozmetik.SMAC, "duz") || Kozmetik.Sahip(g, Kozmetik.SMAC, "yay") || Kozmetik.Durum(g, Kozmetik.SMAC, "yay", "duz") != ModelDurum.Kilitli) Fail("smaç hareketi: Sv 1'de yalnız düz");
+        g.eko.xp = Gear.Sv30Xp(); foreach (var o in l) if (!Kozmetik.Sahip(g, Kozmetik.SMAC, o.id)) Fail("smaç hareketi Sv 30'da açık olmalı: " + o.id);
+        if (Array.IndexOf(Kozmetik.KAT, Kozmetik.SMAC) < 0) Fail("smaç hareketi KAT'ta yok (kayıt ve kart dolaşmaz)");
+    }
     static void Gelisimler()
     {
         if (Gelisim.Toplam(1) != 0 || Gelisim.Toplam(2) != 1 || Gelisim.Toplam(30) != 29 || Gelisim.Toplam(99) != 29 || Gelisim.Toplam(0) != 0) Fail("gelişim: puan = seviye - 1, 29'da durur");

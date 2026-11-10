@@ -40,10 +40,11 @@ namespace BirdieSmash.Game
             var halka = new VisualElement(); halka.AddToClassList("sv-halka"); svr.Add(halka);
             { float hs = Mathf.Round(30 * Mathf.Max(1, K * .85f)); halka.style.width = hs; halka.style.height = hs; halka.style.borderTopLeftRadius = halka.style.borderTopRightRadius = halka.style.borderBottomLeftRadius = halka.style.borderBottomRightRadius = hs / 2; }   // 2026-11-07: ×2'de seviye rakamı 30 pt halkada kesiliyordu (r127)
             var hi = Yazi(L_.ToString(), 13, "kalin"); hi.AddToClassList("sv-halka-ic"); halka.Add(hi);
-            var hy = Yazi(gerek > 0 ? L.T("Sonraki seviyeye {0} XP", gerek - kalan) : L.T("En yüksek seviye"), 12, "soluk"); hy.style.marginLeft = 6; hy.style.flexShrink = 1; svr.Add(hy);
+            int efN, efK; Ayar.gear.EfsaneIlerleme(out efN, out efK);
+            var hy = Yazi(gerek > 0 ? L.T("Sonraki seviyeye {0} XP", gerek - kalan) : efN > 0 ? L.T("Efsane {0}", efN) : L.T("En yüksek seviye"), 12, "soluk"); hy.style.marginLeft = 6; hy.style.flexShrink = 1; svr.Add(hy);
             ad.Add(Yazi(L.T(tz.ad) + " · " + L.T(Gear.GEAR["raket"][gr.raket].ad), 13, "soluk"));
             Erisim.Etiket(r, (p.Ad ?? L.T("Oyuncu")) + ", " + L.T(un.ad) + Karakter.KademeEki(un, p) + ", " + L.T("Seviye {0}", L_) + ", " + L.T("Tarz") + " " + L.T(tz.ad), "metin");
-            kart.Add(Cubuk(gerek > 0 ? kalan / (float)gerek : 1, CAMGOBEGI));
+            kart.Add(gerek > 0 ? Cubuk(kalan / (float)gerek, CAMGOBEGI) : Cubuk(efK / (float)Gear.EFSANE_XP, ALTIN));
             // üç büyük sayı
             var uc = Satir("uc-sayi"); if (K >= 1.35f) uc.AddToClassList("uc-sayi--dikey"); kart.Add(uc);
             System.Action<string, string> Buyuk_ = (deger, et) => { var b = new VisualElement(); b.AddToClassList("uc-sayi-oge"); b.Add(Yazi(deger, 24, "rakam")); b.Add(Yazi(et, 12, "soluk")); Erisim.Etiket(b, et + " " + deger, "metin"); uc.Add(b); };
@@ -135,7 +136,7 @@ namespace BirdieSmash.Game
             // 2026-10-26 adım 7–9
             Deger(iz, L.T("Antrenman yıldızı"), p.AntrenmanYildiz + "/" + Dril.ToplamYildiz);
             Deger(iz, L.T("Günün maçı"), p.GunlukSay.ToString());
-            if (p.UstaAcik) Deger(iz, L.T("Usta yolu"), p.Usta.ToString());
+            if (p.UstaAcik) Deger(iz, L.T(Ayar.YolAd), p.Usta.ToString());
             if (p.Mac == 0 && Ayar.wins > 0) c.Add(Yazi(L.T("Maç ve smaç sayısı bu sürümden sonra oynanan maçları sayar."), 12, "soluk"));
 
             c.Add(Grup(L.T("Başarımlar")));
@@ -148,7 +149,7 @@ namespace BirdieSmash.Game
             BasarimSatir(c, Basarim.EFSANE, L.T("Seviye 30'a ulaş"));
             BasarimSatir(c, Basarim.ANTRENOR, L.T("Antrenmanın 24 yıldızını topla"));
             BasarimSatir(c, Basarim.GUNUN_MACI, L.T("Bir Günün maçını kazan"));
-            BasarimSatir(c, Basarim.USTA6, L.T("Usta yolunda 6 basamak geç"));
+            BasarimSatir(c, Basarim.USTA6, L.T("Usta zorlukta, Usta yolunda 6 basamak geç"));
             BasarimSatir(c, Basarim.IMZA_OKUR, L.T("Toplam {0} imza vuruşu oku", Basarim.IMZA_OKUR_HEDEF));
             c.Add(Bosluk(20));
         }

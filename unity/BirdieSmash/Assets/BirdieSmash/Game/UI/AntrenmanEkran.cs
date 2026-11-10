@@ -146,25 +146,25 @@ namespace BirdieSmash.Game
             var pr = Ayar.ilerleme; bool acik = UstaYolu.Acik(pr);
             var kart = Kart("tur-kart"); if (!acik) kart.AddToClassList("kilitli");
             var bas = Satir("arali"); kart.Add(bas);
-            bas.Add(Yazi(L.T("Usta yolu"), 20, "kalin"));
+            bas.Add(Yazi(L.T(Ayar.YolAd), 20, "kalin"));
             // 2026-11-06 (unslop denetimi, öneri artifact'i YAP): altın "0 basamak geçildi" sıfırı başarı gibi gösteriyordu. Sıfırken
             // yazı yok; sonrasında soluk sayaç (ödül anı kariyer kartında, burada yalnız bilgi).
             if (acik && pr.Usta > 0) bas.Add(Yazi(L.T("{0} basamak geçildi", pr.Usta), 13, "soluk"));
             if (!acik)
             {
                 var kl = Satir("rakip-satir"); kart.Add(kl); kl.Add(Ikon(Ikonlar.Kilit, 18, SOLUK)); var ky = Yazi(L.T("Dünya Finalleri'ni kazan"), 14, "soluk"); ky.style.marginLeft = 6; kl.Add(ky);
-                kart.Add(Yazi(L.T("Sonu olmayan merdiven, Usta zorlukta: koşmak da sende."), 13, "soluk"));
-                Erisim.Etiket(kart, L.T("Usta yolu") + ", " + L.T("Kilitli") + ", " + L.T("Dünya Finalleri'ni kazan"), "metin");
+                { var ky2 = Yazi(L.T("Sonu olmayan merdiven. Seçtiğin zorlukta oynanır; Usta'da adı Usta yolu olur."), 13, "soluk"); ky2.style.whiteSpace = WhiteSpace.Normal; kart.Add(ky2); }
+                Erisim.Etiket(kart, L.T(Ayar.YolAd) + ", " + L.T("Kilitli") + ", " + L.T("Dünya Finalleri'ni kazan"), "metin");
                 return kart;
             }
             var b = UstaYolu.Basamak(pr.Usta); var st = Match.STIL[b.stil];
             kart.Add(Yazi(L.T("Sıradaki") + ": " + L.T(b.yer) + (b.final ? " · " + L.T("Final") : ""), 16, "kalin"));
             var rk = Satir("rakip-satir"); kart.Add(rk);
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);
-            rk.Add(Yazi(L.T("Rakip") + " " + st.isim + " · " + L.T(st.ad) + " · " + L.T("{0} sayı", b.uzunluk) + " · " + L.T("Usta"), 14, "soluk"));
-            kart.Add(Yazi(L.T("Usta zorluk: koşmak da sende. Kaybetmek geri düşürmez."), 12, "soluk"));
-            kart.Add(Dugme(L.T("Usta yolunu oyna"), () => root.UstaOyna(), "dugme--birincil", L.T("{0}. basamak", pr.Usta + 1), 18));
-            Erisim.Etiket(kart, L.T("Usta yolu") + ", " + L.T("{0} basamak geçildi", pr.Usta) + ", " + L.T("Sıradaki") + " " + L.T(b.yer), "metin");
+            rk.Add(Yazi(L.T("Rakip") + " " + st.isim + " · " + L.T(st.ad) + " · " + L.T("{0} sayı", b.uzunluk) + " · " + L.T(Ayar.ZorlukAd), 14, "soluk"));
+            { var ac2 = Yazi(Ayar.UstaZor ? L.T("Usta zorluk: koşmak da sende. Kaybetmek geri düşürmez.") : L.T("{0} zorlukta oynanır. Kaybetmek geri düşürmez. Usta'da oynarsan adı Usta yolu olur.", L.T(Ayar.ZorlukAd)), 12, "soluk"); ac2.style.whiteSpace = WhiteSpace.Normal; kart.Add(ac2); }
+            kart.Add(Dugme(L.T(Ayar.UstaZor ? "Usta yolunu oyna" : "Şampiyon yolunu oyna"), () => root.UstaOyna(), "dugme--birincil", L.T("{0}. basamak", pr.Usta + 1), 18));
+            Erisim.Etiket(kart, L.T(Ayar.YolAd) + ", " + L.T(Ayar.ZorlukAd) + ", " + L.T("{0} basamak geçildi", pr.Usta) + ", " + L.T("Sıradaki") + " " + L.T(b.yer), "metin");
             return kart;
         }
     }

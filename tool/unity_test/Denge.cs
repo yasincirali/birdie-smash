@@ -12,7 +12,7 @@
 //   mono denge.exe tarz  [maç]   oyun tarzı × tur → galibiyet % (hedef: fark ≤ 5 puan) + maç başına tarz farkı anı (hedef ≥ 1, bot kör oynar)
 //   mono denge.exe dril [n] [beceri]  antrenman görevleri: odaklı botla yıldız oranları (hedef ★★★ %30–70)
 //   mono denge.exe ustayolu [n]  Usta yolu basamakları, Usta botuyla (hedef %40–55, final %30–45)
-//   mono denge.exe olc <tarz> <g,..> <tepki> <hucum> <sayı> <n> [imza] [usta]  tek tarz, birkaç g (ayar turu)
+//   mono denge.exe olc <tarz> <g,..> <tepki> <hucum> <sayı> <n> [imza] [usta] [geri]  tek tarz, birkaç g (ayar turu; geri = rakip 3–0 önde)
 //   mono denge.exe tempo         maç maç ekonomi simülasyonu: "yeni şey" olayları arası en uzun boşluk (hedef ≤ 4 maç)
 // Model/tarz kipinde her hücre turun 6 basamağının ortalamasıdır (aynı tohumlar: hücreler arası fark yalnız modelden/tarzdan
 // gelir), ekipman turun önerilen EP'sinin ortası. Bot modelin/tarzın hilesini bilerek kullanmaz (slice %10, rastgele): ölçülen
@@ -340,7 +340,7 @@ static class Denge
             {
                 float gg = float.Parse(gs, ci); var st = KariyerVeri.Stil[a[1]].Clone(); st.hiz *= gg; st.hata /= gg; st.tepki *= float.Parse(a[3], ci); st.hucum *= float.Parse(a[4], ci);
                 st.patron = imzaVar && st.imza != null; if (!st.patron) st.imza = null; double f, i;
-                double o = Oyna(st, int.Parse(a[5]), !ustaK, Ekipman(30), int.Parse(a[6]), 5000, out f, out i);
+                double o = Oyna(st, int.Parse(a[5]), !ustaK, Ekipman(30), int.Parse(a[6]), 5000, out f, out i, Array.IndexOf(a, "geri") > 0 ? "geri" : null);
                 Console.WriteLine(string.Format("  {0,-7} g {1:0.00} tepki {2} hucum {3} {4} sayı{5}{6}: %{7:0} ({8:+0.0;-0.0})", a[1], gg, a[3], a[4], a[5], imzaVar ? " imza" : "", ustaK ? " USTA" : "", o * 100, f));
             }
             return 0;

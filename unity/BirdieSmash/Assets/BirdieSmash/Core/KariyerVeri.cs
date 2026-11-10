@@ -116,9 +116,10 @@ namespace BirdieSmash.Core
                     if (!st.ContainsKey(k.stil)) throw new InvalidOperationException("Birdie Smash: kariyer.json bilinmeyen tarz " + k.stil);
                     // Kural maçı (2026-11-07 inceleme, fikir 10:06 #3): Günün maçının sayı değeri değiştiricileri kariyere; yalnız
                     // altin/uzun/file (zorluğu değiştirenler, usta/nefes/patron, kariyerin g dengesini bozar, alınmadı). Patron finali
-                    // ve Tur 1 (öğrenme) kuralsız kalır; BotMac Veri bunu kilitler.
+                    // ve Tur 1 (öğrenme) kuralsız kalır; BotMac Veri bunu kilitler. 2026-11-10: "geri" senaryosu (rakip 3–0 önde
+                    // başlar) da burada; zorluğu değiştirdiği için basamağın g'si senaryoyla birlikte ölçülür (kariyer.json notu).
                     k.degistirici = Json.Str(b, "degistirici", null);
-                    if (k.degistirici != null && k.degistirici != "altin" && k.degistirici != "uzun" && k.degistirici != "file") throw new InvalidOperationException("Birdie Smash: kariyer.json kariyerde olmayan değiştirici " + k.degistirici);
+                    if (k.degistirici != null && k.degistirici != "altin" && k.degistirici != "uzun" && k.degistirici != "file" && k.degistirici != "geri") throw new InvalidOperationException("Birdie Smash: kariyer.json kariyerde olmayan değiştirici " + k.degistirici);
                     bl.Add(k);
                 }
                 if (bl.Count != 0 && bl.Count != BASAMAK) throw new InvalidOperationException("Birdie Smash: tur " + (t + 1) + " altı basamak değil");   // harita ve kayıt 6 sabit

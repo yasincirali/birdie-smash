@@ -294,10 +294,15 @@ namespace BirdieSmash.Game
 
         // ---- 2026-10-26 Usta yolu (adım 9) ----
         public void UstaOyna() { if (!UstaYolu.Acik(Ayar.ilerleme)) return; hud.Perde(UstaBaslat); }
+        bool ustaTam;   // bu Usta yolu maçı Usta zorlukta mı (başarım koşulu)
         public void UstaBaslat()
         {
             int n = Ayar.ilerleme.Usta; var b = UstaYolu.Basamak(n); var o = Secenek(false);
-            o.stil = UstaYolu.Rakip(n); o.saha = b.saha; o.target = b.uzunluk; o.easy = false; o.kosuYardim = false;   // Usta: koşmak da sende (Usta yolu yardımsız)
+            o.stil = UstaYolu.Rakip(n); o.saha = b.saha; o.target = b.uzunluk; // 2026-11-10 Şampiyon yolu: önce zorluk seçimine bakmadan Usta'ya zorlanıyordu; Kolay/Orta'da 24 maçı bitiren oyuncunun ana düğmesi
+            // elle koşulan, çok zor bir merdivene bağlanıyordu. Artık seçili zorlukta (Secenek); Usta seçiliyse eskisiyle birebir.
+            // Ödül çarpanı (Zor/Usta ×1,25) zaten zorluktan gelir (Gear.Odul easy). bs_usta_6 yalnız Usta'da verilir.
+            if (Ayar.UstaZor) { o.easy = false; o.kosuYardim = false; }   // Usta: koşmak da sende
+            ustaTam = Ayar.UstaZor;
             mod = Mod.Usta; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
         }
         public void OgrGec()
@@ -398,15 +403,15 @@ namespace BirdieSmash.Game
             {
                 var p = Ayar.ilerleme; int n = M.stil.usta; var bg = M.BasamakGorevi; bool gorevOnce = p.UstaGorevBitti(n), siradaki = n == p.Usta;
                 yeniYildiz = p.UstaIsle(n, won, bg != null && bg.bitti);   // görev yıldızı kayıpta da (+20 Tüy, kariyerle aynı)
-                if (won && siradaki) { kariyerIlk = true; kNot = "Usta yolu: " + (n + 1) + ". basamak geçildi."; if (p.Usta >= 6) Basarim.Ver(Basarim.USTA6); if (UstaYolu.Basamak(n).final) Yerel.Hap("flow"); }
-                else if (!won) kNot = "Usta yolu seni bekliyor.";
+                if (won && siradaki) { kariyerIlk = true; kNot = Ayar.YolAd + ": " + (n + 1) + ". basamak geçildi."; if (p.Usta >= 6 && ustaTam) Basarim.Ver(Basarim.USTA6); if (UstaYolu.Basamak(n).final) Yerel.Hap("flow"); }
+                else if (!won) kNot = Ayar.YolAd + " seni bekliyor.";
                 if (siradaki)
                 {   // iki yıldız: kazan + basamak görevi (biçim ve sayı yazıyla)
                     int ys = (won ? 1 : 0) + (p.UstaGorevBitti(n) ? 1 : 0);
                     bittiYildiz = new string('★', ys) + new string('☆', 2 - ys) + " · " + L.T("{0}/2 yıldız", ys) + (yeniYildiz > 0 ? " · " + L.T("{0} yeni", yeniYildiz) : "");
                     var bg2 = M.BasamakGorevi; bittiYildizN = 2; bittiMaske = (won ? 1 : 0) | (p.UstaGorevBitti(n) ? 2 : 0); bittiYeniMaske = (won && siradaki ? 1 : 0) | (!gorevOnce && p.UstaGorevBitti(n) ? 2 : 0);
                     bittiKosul = new[] { L.T("Kazan"), GorevKosul(bg2, M) };
-                    bittiUst = L.T("Usta yolu") + " · " + L.T("{0}. basamak", n + 1) + " · " + L.T(UstaYolu.Basamak(n).yer);
+                    bittiUst = L.T(Ayar.YolAd) + " · " + L.T("{0}. basamak", n + 1) + " · " + L.T(UstaYolu.Basamak(n).yer);
                 }
             }
             // 2026-10-26 Günün maçı: günde bir kez, kazanınca +40 Tüy, +30 XP. Kayıp normal maç ödülünü alır, bugünün ödülü açık kalır.
@@ -467,7 +472,7 @@ namespace BirdieSmash.Game
             // 2026-11-02: ek ödüllerin tam dökümü (kartta yalnız en büyüğü) Ayrıntılar'ın başında.
             if (odul != null && odul.ek.Count > 0) bittiBilgi = L.T("Ödüller: {0}", string.Join(" · ", odul.ek.ConvertAll(q => L.Cumle(q)).ToArray())) + "\n" + bittiBilgi;
             bittiDugme = L.Cumle(Career.AgainLabel(M.stil.kariyer >= 0, won, Ayar.ilerleme.HepsiBitti ? -1 : Ayar.ilerleme.Siradaki()));
-            if (mod == Mod.Usta) bittiDugme = won ? L.T("Sıradaki Usta basamağı") : L.T("Tekrar dene");
+            if (mod == Mod.Usta) bittiDugme = won ? L.T(Ayar.UstaZor ? "Sıradaki Usta basamağı" : "Sıradaki basamak") : L.T("Tekrar dene");
             // Rövanş (2026-11-07 inceleme, fikir 14:06 #2): Hızlı maç yenilgisinde ana düğme aynı rakibi (tarz + saha) yeniden getirir,
             // yeni tohumla. Yenilginin hemen ardındaki "bu sefer yenerim" en güçlü geri dönüş anı; rakip değişince öğrenilen boşa gidiyordu.
             // Yeni düğme yok (maç sonu tek ana düğme kuralı). Galibiyette bugünkü gibi yeni rastgele rakip. Kariyer/Usta/Günün maçı değişmez.
@@ -881,6 +886,9 @@ namespace BirdieSmash.Game
                 {
                     int once = Mathf.CeilToInt(geriT / (GERI / 3)); geriT -= dt; int sonra = geriT > 0 ? Mathf.CeilToInt(geriT / (GERI / 3)) : 0;
                     if (sonra != once) { if (sonra > 0) { sfx.Tik(660); Yerel.Hap("tick"); } else sfx.Tik(990); }
+                    // 2026-11-10 (yasin "üçünü de al"): dokunuş geri sayımı geçer; bekletmek isteyen bekler, hazır olan başlar. İlk .2 sn
+                    // sayılmaz: Oyna / Devam düğmesine basan parmağın aynı dokunuşu sayımı yutmasın. Dokunuş vuruş sayılmaz (input.Reset).
+                    if (geriT > 0 && geriT < GERI - .2f && YeniDokunus()) { geriT = 0; sfx.Tik(990); }
                     if (geriT <= 0) { geriT = 0; input.Reset(); }
                 }
                 else { ZaferAtla(); ReadInput(); match.Update(dt); }

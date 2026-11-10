@@ -65,7 +65,7 @@ namespace BirdieSmash.Game
                 // 2026-10-26 (yasin onayı, inceleme 2026-10-26 §2): "Sıradaki: {yer}" alt yazısı kalktı; yer hemen üstteki plakada
                 // yazıyordu. A tasarımında alt satır maçın biçimini söyler (sayı · saha · zorluk), ilk açılış ve şampiyon satırı kalır.
                 var p = Ayar.ilerleme; var kb = KariyerVeri.Al(p.Siradaki());
-                string alt = ilk ? null : !Ayar.antrenman ? L.T("İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç") : p.HepsiBitti ? L.Cumle(Career.Line(p))
+                string alt = ilk ? null : !Ayar.antrenman ? L.T("İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç") : p.HepsiBitti ? L.Cumle(Ayar.UstaZor ? Career.Line(p) : Career.Line(p).Replace("Usta yolu: ", "Şampiyon yolu: "))
                     : L.T("{0} sayı", kb.uzunluk > 0 ? kb.uzunluk : Ayar.target) + " · " + L.T(Ayar.ZorlukAd)   // 2026-11-09: saha adı ("Okul (ahşap)") plakadaki yer adıyla iki ayrı yer gibi okunuyordu (inceleme 10 Kas 02:15); saha maç kartında
                       + (kb.degistirici != null && Gunluk.Deg(kb.degistirici) != null ? " · " + L.T(Gunluk.Deg(kb.degistirici).ad) : "");   // kural maçı adı
                 c.Add(BuyukDugme(L.T("Oyna"), alt, () =>
@@ -223,7 +223,7 @@ namespace BirdieSmash.Game
             // 2026-11-10: dağıtılmamış gelişim puanı varken satır onu söyler ve Gelişim sayfasını açar (tek "sıradaki iş" satırı;
             // iki satır küçük ekranda Oyna düğmesini iterdi). Puan dağıtılınca satır yine seviye ödülüne döner.
             if (Ayar.GelisimBos > 0) return GelisimSatir();
-            int L_, kalan, gerek; Ayar.gear.OyuncuSv(out L_, out kalan, out gerek); if (gerek <= 0) return null;
+            int L_, kalan, gerek; Ayar.gear.OyuncuSv(out L_, out kalan, out gerek); if (gerek <= 0) return EfsaneSatir();
             int sv = L_ + 1; string ac = SvAcilanOzet(sv, 1);
             var d = new VisualElement(); d.AddToClassList("sv-hedef");
             var sol = new VisualElement(); sol.AddToClassList("sv-hedef-sol"); sol.pickingMode = PickingMode.Ignore; d.Add(sol);
@@ -237,12 +237,41 @@ namespace BirdieSmash.Game
             Erisim.Etiket(d, L.T("Sv {0} ödülü · {1} XP kaldı", sv, gerek - kalan) + ", " + L.T("+{0} Tüy", Gear.SvOdul(sv)) + (ac != null ? ", " + ac : "") + ", " + L.T("Seviye yolu"), "dugme");
             return d;
         }
+        // Sv 30'dan sonra satır boş kalıyordu (2026-11-10 Efsane kademeleri, Gear.EFSANE_XP): aynı kalıp, sıradaki kademe ve +300 Tüy.
+        VisualElement EfsaneSatir()
+        {
+            int n, kalan; if (!Ayar.gear.EfsaneIlerleme(out n, out kalan)) return null;
+            string bas = L.T("Efsane {0} · {1} XP kaldı", n + 1, Sayi(Gear.EFSANE_XP - kalan));
+            var d = new VisualElement(); d.AddToClassList("sv-hedef");
+            var sol = new VisualElement(); sol.AddToClassList("sv-hedef-sol"); sol.pickingMode = PickingMode.Ignore; d.Add(sol);
+            sol.Add(Yazi(bas, 14, "kalin"));
+            var c2 = Cubuk(kalan / (float)Gear.EFSANE_XP, ALTIN, 5); c2.AddToClassList("sv-hedef-cubuk"); sol.Add(c2);
+            var sag = new VisualElement(); sag.AddToClassList("sv-hedef-sag"); sag.pickingMode = PickingMode.Ignore; d.Add(sag);
+            sag.Add(Ikon(Ikonlar.Tuy, 16, ALTIN)); sag.Add(Yazi("+" + Gear.EFSANE_TUY, 16, "rakam"));
+            d.AddManipulator(new Clickable(() => { Tik(); SeviyeYoluAc(); }));
+            Erisim.Etiket(d, bas + ", " + L.T("+{0} Tüy", Gear.EFSANE_TUY) + ", " + L.T("Seviye yolu"), "dugme");
+            return d;
+        }
         void SeviyeYoluKur()
         {
             var c = AltSayfaKur(L.T("Seviye yolu"));
             int L_, kalan, gerek; Ayar.gear.OyuncuSv(out L_, out kalan, out gerek);
-            c.Add(Yazi(gerek > 0 ? L.T("Sv {0} · sonraki seviyeye {1} XP", L_, gerek - kalan) : L.T("Sv 30 · en üst seviye"), 15, "kalin"));
+            int en, ek_; bool ef = Ayar.gear.EfsaneIlerleme(out en, out ek_);
+            c.Add(Yazi(gerek > 0 ? L.T("Sv {0} · sonraki seviyeye {1} XP", L_, gerek - kalan) : en > 0 ? L.T("Sv 30 · Efsane {0}", en) : L.T("Sv 30 · en üst seviye"), 15, "kalin"));
             if (gerek > 0) { var cb = Cubuk(kalan / (float)gerek, TURUNCU, 8); cb.style.marginTop = 6; cb.style.marginBottom = 4; c.Add(cb); }
+            else if (ef)
+            {
+                // Sv 30: liste boş kalırdı; sayfa Efsane kademesini anlatır (tek kart, sabit ödül, rastgelelik yok).
+                var cb = Cubuk(ek_ / (float)Gear.EFSANE_XP, ALTIN, 8); cb.style.marginTop = 6; cb.style.marginBottom = 4; c.Add(cb);
+                var k = new VisualElement(); k.AddToClassList("sv-yol"); k.AddToClassList("sv-yol--buyuk"); k.AddToClassList("sv-yol--siradaki");
+                var no = Yazi((en + 1).ToString(), 18, "kalin"); no.AddToClassList("sv-yol-no"); k.Add(no);
+                var or2 = new VisualElement(); or2.AddToClassList("esnek-yatay"); k.Add(or2);
+                or2.Add(Yazi(L.T("Efsane {0} · {1} XP kaldı", en + 1, Sayi(Gear.EFSANE_XP - ek_)), 14, "kalin"));
+                var sg = Satir(); sg.Add(Ikon(Ikonlar.Tuy, 16, ALTIN)); sg.Add(Yazi("+" + Gear.EFSANE_TUY, 16, "rakam")); k.Add(sg);
+                Erisim.Etiket(k, L.T("Efsane {0} · {1} XP kaldı", en + 1, Sayi(Gear.EFSANE_XP - ek_)) + ", " + L.T("+{0} Tüy", Gear.EFSANE_TUY), "metin");
+                var ea = Yazi(L.T("Sv 30'dan sonra her {0} XP bir Efsane kademesi ve {1} Tüy verir. Kademe yalnız gösteriştir: güç ya da kapı açmaz.", Sayi(Gear.EFSANE_XP), Gear.EFSANE_TUY), 13, "soluk"); ea.style.whiteSpace = WhiteSpace.Normal; ea.style.marginBottom = 6;
+                c.Add(ea); c.Add(k); return;
+            }
             var acik = Yazi(L.T("Her seviye Tüy ve bir gelişim puanı verir, 5'in katları büyük ödül. Açılanlar Dolap ve Atölye'de seni bekler."), 13, "soluk"); acik.style.whiteSpace = WhiteSpace.Normal; acik.style.marginBottom = 6; c.Add(acik);
             for (int sv = L_ + 1; sv <= 30; sv++)
             {
