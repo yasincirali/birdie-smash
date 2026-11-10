@@ -78,6 +78,33 @@ namespace BirdieSmash.Core
             if (o.fiyat > 0 && !g.eko.acik.Contains(kat + ":" + id)) { g.eko.acik.Add(kat + ":" + id); g.EkoYaz(); }
             return id;
         }
+        // Koleksiyon sayımı (2026-11-10, yasin: "dolap kısmı göz alıcı ve orada zaman geçirtici değil"): kategori çipinde "7/19",
+        // Dolap'ın başında toplam. Sevinç ile Maç sonu aynı kimliği paylaşabildiğinden (biri alınınca ikisi açılır, bkz. Sahip)
+        // Maç sonu'nda yalnız Sevinç'te olmayanlar sayılır; aynı hareket iki kez sayılmaz. Kayıt okunur, yeni anahtar yok.
+        public static void Sayim(Gear g, string kat, out int sahip, out int toplam)
+        {
+            sahip = 0; toplam = 0;
+            foreach (var o in Liste(kat))
+            {
+                if (kat == MAC_SONU && Bul(SEVINC, o.id) != null) continue;
+                toplam++; if (Sahip(g, kat, o.id)) sahip++;
+            }
+        }
+        // Sıradaki eşya: oyuncuya Dolap'ta tek bir "buna yakınsın" göstermek için. Önce seviyesi yeten ve en ucuz olan (Tüy
+        // yetmese de: ne kadar kaldığını çağıran yazar), hiçbiri yoksa en yakın seviyede açılacak olan. Rastgelelik yok:
+        // eşit durumda veri sırası kazanır, aynı kayıtta hep aynı eşya çıkar. Hepsi alınmışsa null.
+        public static KozmetikOge Siradaki(Gear g, string[] katlar, out string kat)
+        {
+            kat = null; KozmetikOge en = null; bool enAlinir = false; int sv = g.Seviye();
+            foreach (var k in katlar) foreach (var o in Liste(k))
+            {
+                if (Sahip(g, k, o.id) || (k == MAC_SONU && Bul(SEVINC, o.id) != null)) continue;
+                bool al = sv >= o.sv;
+                bool iyi = en == null || (al && !enAlinir) || (al == enAlinir && (al ? o.fiyat < en.fiyat : o.sv < en.sv || (o.sv == en.sv && o.fiyat < en.fiyat)));
+                if (iyi) { en = o; kat = k; enAlinir = al; }
+            }
+            return en;
+        }
         // Seviye gelince açılanlar (Profil "Sıradaki açılış").
         public static List<KozmetikOge> Acilan(string kat, int sv) { var l = new List<KozmetikOge>(); foreach (var o in Liste(kat)) if (o.sv == sv) l.Add(o); return l; }
 

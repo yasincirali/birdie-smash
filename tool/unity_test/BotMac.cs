@@ -153,7 +153,7 @@ static class BotMac
         Yardimlar();   // 2026-10-29 kayıpta rakip yumuşar (ayrı satır)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); YenilgiIpuclari(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
-        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
+        Turlar34(); Drillar(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
         KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
@@ -772,6 +772,18 @@ static class BotMac
         var p2 = Ilerleme.Oku(p.Yaz(), 0, false); if (p2.DrilYildiz("derin") != 3 || p2.AntrenmanYildiz != 3) Fail("görev yıldızı kayıtta kayboldu: " + p.Yaz());
         var g = new Gear(new BellekKayit(), 0); int tuy0 = g.eko.tuy; var o = g.DrilOdul(2); if (o.tuy != 2 * Gear.DRIL_TUY || o.xp != 2 * Gear.DRIL_XP || g.eko.tuy != tuy0 + 50) Fail("görev ödülü");
         if (g.DrilOdul(0).tuy != 0) Fail("tekrar oynanan görev ödül vermemeli");
+        // 2026-11-10 seviye ödülü: tablo sabit (her seviye 40, 5'in katları büyük), toplam 2.720; yalnız seviye atlanınca,
+        // maç Tüy'üne (reklam +%50 tabanı) karışmadan verilir; seviye atlamayan maç vermez.
+        {
+            int top = 0; for (int L = 1; L <= 31; L++) top += Gear.SvOdul(L);
+            if (top != 2720 || Gear.SvOdul(1) != 0 || Gear.SvOdul(2) != 40 || Gear.SvOdul(5) != 150 || Gear.SvOdul(30) != 500 || Gear.SvOdul(31) != 0) Fail("seviye ödülü tablosu " + top);
+            var gs = new Gear(new BellekKayit(), 0); gs.eko.gun = "x"; int t0 = gs.eko.tuy;
+            var a = gs.Odul(true, false, 5, true, 0, 0, DateTime.Now);   // 50 XP: Sv 1'de kalır
+            if (a.svTuy != 0 || gs.eko.tuy != t0 + a.tuy) Fail("seviye atlamayan maç seviye ödülü vermemeli");
+            var b2 = gs.Odul(true, false, 21, true, 3, 10, DateTime.Now);   // 240 XP: Sv 1 → 3
+            if (b2.once != 1 || b2.sonra != 3 || b2.svTuy != 80 || gs.eko.tuy != t0 + a.tuy + b2.tuy + 80) Fail("seviye ödülü Sv 1→3: " + b2.sonra + " / " + b2.svTuy);
+            int once = b2.tuy, ek = gs.ReklamOdulu(b2); if (ek != OdulluReklam.Ek(once)) Fail("reklam ödülü seviye ödülünü büyütmemeli");
+        }
         // kayıpta öneri: dışarı giden vuruşlar → derin clear; üç yıldızlıysa önerilmez
         var K = new Match(33, new MatchOptions { easy = true, target = 5 }); K.outsBen = 3; if (Dril.Oner(K, false, new Ilerleme()) != "derin") Fail("kayıpta derin clear önerilmeli");
         if (Dril.Oner(K, true, null) != null) Fail("galibiyette öneri olmamalı");
@@ -876,6 +888,47 @@ static class BotMac
     }
     // 2026-11-02 hedef eşya (Core/Hedef): seviye kilitli eşya hedef olmaz, alınan hedef düşer, oran/kalan, "hazır" yalnız
     // eşiği geçen maçta, ödül alt yazısında en büyük ek + kalan sayısı.
+    // 2026-11-10 oyuncu gelişimi (Core/Gelisim): puan yalnız seviyeden, dal tavanı 10, bozuk kayıt kırpılır, geri alma
+    // ücretsiz, eşit şartlarda etkisiz, etki ekipman yuva seviyesinin (%18) altında.
+    static void Gelisimler()
+    {
+        if (Gelisim.Toplam(1) != 0 || Gelisim.Toplam(2) != 1 || Gelisim.Toplam(30) != 29 || Gelisim.Toplam(99) != 29 || Gelisim.Toplam(0) != 0) Fail("gelişim: puan = seviye - 1, 29'da durur");
+        if (Gelisim.DAL * Gelisim.TAVAN <= Gelisim.Toplam(30)) Fail("gelişim: Sv 30'da her dal dolmamalı (seçim kalmaz)");
+        var p = Gelisim.Oku(null, 10); if (Gelisim.Harcanan(p) != 0 || Gelisim.Bos(p, 10) != 9) Fail("gelişim: boş kayıt");
+        p = Gelisim.Oku("3,2,0,0,0", 4); if (Gelisim.Yaz(p) != "3,0,0,0,0") Fail("gelişim: seviyeden fazlası sondan kırpılmalı: " + Gelisim.Yaz(p));
+        p = Gelisim.Oku("99,-5,x", 30); if (Gelisim.Yaz(p) != "10,0,0,0,0") Fail("gelişim: bozuk değer 0..10'a çekilmeli: " + Gelisim.Yaz(p));
+        p = Gelisim.Oku("2,1", 3); if (Gelisim.Yaz(p) != "2,0,0,0,0" || Gelisim.Bos(p, 3) != 0) Fail("gelişim: kısa kayıt");
+        p = new int[5]; int sv = 30, n = 0; while (Gelisim.Ver(p, Gelisim.GUC, sv)) n++; if (n != 10 || p[0] != 10 || Gelisim.VerOlur(p, Gelisim.GUC, sv)) Fail("gelişim: dal tavanı 10");
+        while (Gelisim.Ver(p, Gelisim.KONTROL, sv)) { } while (Gelisim.Ver(p, Gelisim.TATLI, sv)) { }
+        if (Gelisim.Bos(p, sv) != 0 || p[2] != 9 || Gelisim.Ver(p, Gelisim.CABUK, sv)) Fail("gelişim: puan bitince verilmez");
+        if (!Gelisim.GeriAl(p, Gelisim.GUC) || Gelisim.Bos(p, sv) != 1 || !Gelisim.Ver(p, Gelisim.CABUK, sv) || Gelisim.GeriAl(p, Gelisim.DAYAN)) Fail("gelişim: geri alma ücretsiz, boş daldan alınmaz");
+        if (Gelisim.Oku(Gelisim.Yaz(p), sv)[3] != 1 || Gelisim.Yaz(Gelisim.Oku(Gelisim.Yaz(p), sv)) != Gelisim.Yaz(p)) Fail("gelişim: kayıt gidiş dönüş");
+        var tam = new[] { 10, 10, 10, 10, 10 }; var g = Gelisim.Uygula(GearStats.Notr, tam, false);
+        if (Math.Abs(g.guc - 1.10f) > 1e-4 || Math.Abs(g.kontrol - 1.10f) > 1e-4 || Math.Abs(g.tatli - 1.10f) > 1e-4 || Math.Abs(g.kosu - 1.08f) > 1e-4 || Math.Abs(g.yorK - 1 / 1.15f) > 1e-4) Fail("gelişim: tavan etkisi");
+        if (g.guc > 1.18f || g.kontrol > 1.18f || g.tatli > 1.18f) Fail("gelişim: etki ekipman yuva seviyesinin altında kalmalı");
+        if (GearStats.Notr.guc != 1 || Gelisim.Uygula(GearStats.Notr, tam, true) != GearStats.Notr || Gelisim.Uygula(GearStats.Notr, new int[5], false) != GearStats.Notr) Fail("gelişim: eşit şartlarda ve puansız etkisiz, Notr değişmez");
+        if (g.hiz != 1 || g.enerji != 1 || g.slice != 1 || g.uzanma != 1) Fail("gelişim: yalnız beş dalın değerleri değişir");
+        if (Array.IndexOf(BulutKayit.METIN, Gelisim.ANAHTAR) < 0) Fail("gelişim: dağılım buluta gitmeli");
+        Console.WriteLine("Gelişim: Sv 30'da 29 puan / 50 yuva, tavan güç ×" + g.guc.ToString("0.00") + " koşu ×" + g.kosu.ToString("0.00") + " yorulma ×" + g.yorK.ToString("0.00") + ", smaç hızı ×" + (SmacHizi(Gelisim.Uygula(GearStats.Notr, new[] { 10, 0, 0, 0, 0 }, false)) / SmacHizi(GearStats.Notr)).ToString("0.000"));
+    }
+    // 2026-11-10 Dolap koleksiyon sayımı ve "Sıradaki": sayım kayıttan, aynı hareket iki kez sayılmaz, sıradaki eşya
+    // önce seviyesi yeten en ucuz, yoksa en yakın seviye; alınınca değişir, hepsi alınınca null.
+    static void DolapSayim()
+    {
+        var g = SvGear(1, 0); int top = 0, shp = 0;
+        foreach (var k in Kozmetik.KAT) { int s, t; Kozmetik.Sayim(g, k, out s, out t); if (s > t || t < 0) Fail("dolap sayım: sahip toplamı aşamaz " + k); if (k != Kozmetik.MAC_SONU && s < 1) Fail("dolap sayım: Sv 1'de her kategoride en az bir ücretsiz öğe olmalı " + k); top += t; shp += s; }
+        int ms, mt; Kozmetik.Sayim(g, Kozmetik.MAC_SONU, out ms, out mt); int ortak = 0; foreach (var o in Kozmetik.Liste(Kozmetik.MAC_SONU)) if (Kozmetik.Bul(Kozmetik.SEVINC, o.id) != null) ortak++;
+        if (mt != Kozmetik.Liste(Kozmetik.MAC_SONU).Length - ortak) Fail("dolap sayım: ortak hareket iki kez sayılmamalı");
+        string kat; var sr = Kozmetik.Siradaki(g, Kozmetik.KAT, out kat);
+        if (sr == null || kat == null || Kozmetik.Sahip(g, kat, sr.id)) Fail("dolap sıradaki: sahip olunmayan bir eşya dönmeli");
+        foreach (var k in Kozmetik.KAT) foreach (var o in Kozmetik.Liste(k)) if (!Kozmetik.Sahip(g, k, o.id) && o.sv <= 1 && sr.sv <= 1 && o.fiyat < sr.fiyat && !(k == Kozmetik.MAC_SONU && Kozmetik.Bul(Kozmetik.SEVINC, o.id) != null)) Fail("dolap sıradaki: seviyesi yeten en ucuz olmalı");
+        string kat2; if (Kozmetik.Siradaki(g, Kozmetik.KAT, out kat2) != sr || kat2 != kat) Fail("dolap sıradaki: aynı kayıtta aynı eşya");
+        var z = SvGear(30, 0); int n = 0;
+        while (true) { string k; var o = Kozmetik.Siradaki(z, Kozmetik.KAT, out k); if (o == null) break; if (o.sv > 30) Fail("dolap sıradaki: Sv 30'da kilitli kalmamalı"); z.eko.tuy = o.fiyat; if (!Kozmetik.Al(z, k, o.id, null)) Fail("dolap sıradaki: Sv 30'da alınabilmeli " + k + ":" + o.id); if (++n > 500) { Fail("dolap sıradaki: bitmiyor"); break; } }
+        int zs = 0, zt = 0; foreach (var k in Kozmetik.KAT) { int s, t; Kozmetik.Sayim(z, k, out s, out t); zs += s; zt += t; }
+        if (zs != zt || zt != top) Fail("dolap sayım: hepsi alınınca sahip = toplam (" + zs + "/" + zt + ")");
+        Console.WriteLine("Dolap: Sv 1'de " + shp + "/" + top + ", sıradaki " + kat + ":" + sr.id + " (" + sr.fiyat + " Tüy), " + n + " alımla tamam");
+    }
     static void HedefEsya()
     {
         string kat, id; if (!Hedef.Oku("sirt:yildiz_pelerin", out kat, out id) || kat != "sirt" || id != "yildiz_pelerin") Fail("hedef: kayıt okunmalı");

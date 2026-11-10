@@ -72,6 +72,8 @@ namespace BirdieSmash.Game
                 Erisim.Etiket(sa, sa.text, "metin"); kart.Add(sa); break;
             }
 
+            GelisimKart(c);   // 2026-11-10 oyuncu gelişimi: oyuncu kartının hemen altında (kartın anlattığı oyuncunun değerleri)
+
             // ad (yalnız cihazda)
             c.Add(Grup(L.T("Adın")));
             var tf = new TextField { value = p.Ad ?? "", maxLength = Ilerleme.AD_AZAMI, isDelayed = true }; tf.AddToClassList("ad-alan"); tf.style.fontSize = Mathf.Round(16 * K);

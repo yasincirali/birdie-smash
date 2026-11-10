@@ -1,4 +1,20 @@
 === UNITY ===
+Oyuncu gelişimi (10 Kasım):
+- Her seviye artık bir gelişim puanı veriyor (Sv 30'da 29 puan). Puanı beş daldan birine koyarsın: Güç, Kontrol, Tatlı nokta, Çabukluk, Dayanıklılık. Dal başına en çok 10; hepsini dolduramazsın, seçmen gerekir. Dağılımı istediğin zaman ücretsiz değiştirirsin.
+- Etki küçük ve ekipmanın altında: dal dolunca güç, kontrol, tatlı nokta +%10, koşu +%8, yorulma yaklaşık %13 daha yavaş. Puan yalnız seviyeden gelir; Tüy ya da reklamla alınmaz. Eşit şartlar açıkken sayılmaz.
+- Dağıtılmamış puanın varsa Oyna ekranının altındaki satır bunu söyler ve Gelişim sayfasını açar. Profil'de oyuncu kartının altında "Gelişim" kartı var.
+Nasıl denenir: Seviyen 2 ve üstüyse Oyna'nın altında "Dağıtılacak puan: n" satırı çıkmalı. Dokun: Gelişim sayfası açılmalı. Bir dala + ile puan ver: çubuk dolmalı, yüzde artmalı, puan sayısı azalmalı. − ile geri al: puan geri gelmeli. Bütün puanları dağıtınca Oyna'daki satır yine seviye ödülünü göstermeli. Güç'e birkaç puan verip maç oyna: smaç biraz daha hızlı olmalı.
+
+Dolap koleksiyonu (10 Kasım):
+- Dolap'ta kategori çipleri artık kaçının senin olduğunu yazıyor ("Şapka 3/9"). Sayfanın başında yeni satır: koleksiyonun toplamı ve sıradaki eşya (kaç Tüy kaldığı ya da hangi seviyede açılacağı). Dokununca o eşya figürün üstünde denenir.
+- Bir eşya alınca figür kendi sevincini bir kez yapıyor (Hareketi azalt açıkken yapmaz).
+Nasıl denenir: Dolap'ı aç: çiplerde "n/m" sayıları, üstte "Sıradaki: ..." satırı olmalı. Satıra dokun: ilgili kategori açılmalı ve eşya "deneniyor" olmalı. Tüy'ün yetiyorsa al: figür sevinmeli, sayaç bir artmalı, satır bir sonraki eşyayı göstermeli.
+
+Seviye ödülleri (10 Kasım):
+- Seviye atlamak artık Tüy veriyor: her seviye +40, 5'in katlarında büyük ödül (Sv 5 +150 ... Sv 30 +500). "Seviye atladın" ekranında ve maç sonu kartında yazıyor.
+- Oyna ekranının altında yeni satır: sıradaki seviyenin ödülü ve kaç XP kaldığı. Dokununca "Seviye yolu" açılır: Sv 30'a kadar her seviyenin Tüy'ü ve açtığı eşyalar.
+Nasıl denenir: Oyna'da en alttaki "Sv n ödülü" satırına dokun: Seviye yolu açılmalı, sıradaki seviye turuncu çerçeveli, 5'in katları "Büyük ödül" etiketli olmalı. Bir seviye atla: "Seviye atladın" ekranında "+40 Tüy · Seviye ödülü" çıkmalı ve Tüy sayın o kadar artmalı.
+
 Bu akşam (10 Kasım 19:49 inceleme turu):
 - Seviye atlayınca "Dolap'ta dene"ye basarsan Dolap, açılan eşyanın sayfasında açılıyor ve karakterin onu hemen giyiyor. Önce eşyayı listede senin araman gerekiyordu. Deneme kaydedilmez, "Denemeyi bırak" ile geri alırsın.
 - Maç sonu reklam teklifi artık küçük ödüllü maçlarda çıkmıyor: kısa bir kayıptan sonra reklam izleyip birkaç Tüy almak günün tek hakkını harcıyordu. Her galibiyette ve uzun maçlarda çıkmaya devam ediyor.

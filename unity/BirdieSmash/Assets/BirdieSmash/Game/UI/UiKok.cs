@@ -43,7 +43,7 @@ namespace BirdieSmash.Game
         {
             get
             {
-                string u = gez.Ust; if (u == Gezinti.AYAR) return "Ayarlar"; if (u == Gezinti.NASIL) return "Nasıl oynanır"; if (u == Gezinti.LISANS) return "Lisanslar"; if (u == Gezinti.HIZLI) return "Hızlı maç"; if (u == Gezinti.KART) return "Maç kartı"; if (u == Gezinti.YUVA) return "Yuva"; if (u == Gezinti.ANTRENMAN) return "Antrenman"; if (u == Gezinti.DRIL) return "Görev kartı"; if (u == Gezinti.GUNLUK) return "Günün maçı"; if (u == Gezinti.SEC) return "Oyuncunu seç"; if (u == Gezinti.DUKKAN) return "Tüy dükkânı";
+                string u = gez.Ust; if (u == Gezinti.SEVIYE) return "Seviye yolu"; if (u == Gezinti.GELISIM) return "Gelişim"; if (u == Gezinti.AYAR) return "Ayarlar"; if (u == Gezinti.NASIL) return "Nasıl oynanır"; if (u == Gezinti.LISANS) return "Lisanslar"; if (u == Gezinti.HIZLI) return "Hızlı maç"; if (u == Gezinti.KART) return "Maç kartı"; if (u == Gezinti.YUVA) return "Yuva"; if (u == Gezinti.ANTRENMAN) return "Antrenman"; if (u == Gezinti.DRIL) return "Görev kartı"; if (u == Gezinti.GUNLUK) return "Günün maçı"; if (u == Gezinti.SEC) return "Oyuncunu seç"; if (u == Gezinti.DUKKAN) return "Tüy dükkânı";
                 if (gez.sekme == Sekme.Soyunma) return root.vitrin.hedefGec >= 1 ? "Raket tezgâhı" : "Dolap";
                 if (gez.sekme == Sekme.Atolye) return "Atölye";
                 return gez.sekme == Sekme.Kariyer ? "Kariyer" : gez.sekme == Sekme.Profil ? "Profil" : "Menü";
@@ -236,6 +236,8 @@ namespace BirdieSmash.Game
         // ---- gezinti ----
         public void SekmeAc(Sekme s) { var once = gez.sekme; bool d = gez.SekmeSec(s); if (d) Yerel.Hap("tick"); Uygula(once, d); }
         public void AyarlarAc() { var once = gez.sekme; gez.Ac(Gezinti.AYAR); Uygula(once, true); }
+        public void SeviyeYoluAc() { var once = gez.sekme; gez.Ac(Gezinti.SEVIYE); Uygula(once, true); }
+        public void GelisimAc() { var once = gez.sekme; gez.Ac(Gezinti.GELISIM); Uygula(once, true); }
         public void HizliMacAc() { var once = gez.sekme; gez.Ac(Gezinti.HIZLI); Uygula(once, true); }
         // Kariyer haritası: düğüme dokununca maç kartı (alt sayfa); tur seçici (EkranTuru da kullanır).
         public void MacKartAc(int g) { var once = gez.sekme; kartBasamak = g; gez.Ac(Gezinti.KART); Uygula(once, true); }
@@ -376,6 +378,11 @@ namespace BirdieSmash.Game
             VisualElement ey; var ic = AniIskelet(o, kapat, out ey);
             ic.Add(Yazi(Buyuk(L.T("Seviye atladın")), 15, "seviye-ust"));
             var sayi = Yazi(L.T("Sv {0}", sv), 64, "rakam"); sayi.AddToClassList("seviye-sayi"); ic.Add(sayi);
+            // 2026-11-10 seviye ödülü (Gear.SvOdul): sayının hemen altında, tüy simgesiyle; açılanlar listesinden önce (eline geçen şey).
+            int svTuy = Gear.SvOdulAralik(once, sv);
+            if (svTuy > 0) { var or_ = new VisualElement(); or_.AddToClassList("seviye-odul"); or_.Add(Ikon(Ikonlar.Tuy, 22, ALTIN)); or_.Add(Yazi(L.T("+{0} Tüy", Sayi(svTuy)), 22, "rakam")); or_.Add(Yazi(L.T("Seviye ödülü"), 14, "soluk")); ic.Add(or_); }
+            // 2026-11-10 oyuncu gelişimi: her seviye bir puan; an yalnız söyler, dağıtım Gelişim sayfasında (Oyna'daki satır götürür).
+            if (sv > once && Ayar.GelisimBos > 0) { var gy = Yazi(L.T("+{0} gelişim puanı", System.Math.Min(sv - once, Ayar.GelisimBos)), 15, "kalin"); gy.AddToClassList("seviye-gelisim"); ic.Add(gy); }
             var acilan = Karakter.AcilanAralik(once, sv); var liste = new VisualElement(); liste.AddToClassList("seviye-liste"); ic.Add(liste);
             // 2026-11-07 stüdyo incelemesi (UX1, GD4): açılanlar nerede bulunacaklarıyla gruplu ("Dolapta", "Atölyede", "Ayrıca"),
             // grup başına en çok 3 satır; tek turuncu düğme ilk grubun yerine götürür (raket parçasıysa Atölye'de o yuva açık).
@@ -397,7 +404,7 @@ namespace BirdieSmash.Game
             if (ilkGrup == "Dolap") { string dn = ilkDene; ey.Add(Dugme(L.T("Dolap'ta dene"), () => { kapat(); SekmeAc(Sekme.Soyunma); SeviyeDene(dn); }, "dugme--birincil")); }
             else if (ilkGrup == "Atolye") { string yv = ilkYuva; ey.Add(Dugme(L.T("Atölye'de gör"), () => { kapat(); if (yv != null) YuvaAc(yv); else SekmeAc(Sekme.Atolye); }, "dugme--birincil")); }
             ey.Add(Dugme(L.T("Tamam"), kapat, ilkGrup != null ? "dugme--hayalet" : "dugme--birincil"));
-            Erisim.Etiket(ic, L.T("Seviye atladın") + ", " + L.T("Sv {0}", sv) + (acilan.Count > 0 ? ", " + L.T("Açıldı") + ": " + string.Join(", ", acilan.ConvertAll(x => L.T(x))) : ""), "metin");
+            Erisim.Etiket(ic, L.T("Seviye atladın") + ", " + L.T("Sv {0}", sv) + (svTuy > 0 ? ", " + L.T("Seviye ödülü +{0} Tüy", svTuy) : "") + (acilan.Count > 0 ? ", " + L.T("Açıldı") + ": " + string.Join(", ", acilan.ConvertAll(x => L.T(x))) : ""), "metin");
             root.sfx.Tik(990); Yerel.Hap("win");
             if (Ayar.reduce) return;
             o.style.opacity = 0f; o.experimental.animation.Start(0f, 1f, 220, (v, t) => v.style.opacity = t);

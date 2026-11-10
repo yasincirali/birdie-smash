@@ -77,11 +77,72 @@ namespace BirdieSmash.Game
             foreach (int i in KarSayfalar())
             {
                 if (i == KAR_RAKET) continue;   // 2026-11-07 (yasin seçimi "tek Raket bölümü"): Raket üstteki Görünüm/Raket ayrımında
-                int ii = i; var d = Cip(L.T(KAR_AD[i]), karAlt == i, () => KategoriSec(ii), KategoriDeneniyor(i) ? L.T("deneniyor") : null);
+                // sayım adla aynı satırda ("Şapka 3/9"): alt satır yedi çipi birden iki satıra çıkarıp kısa ekranda vitrini daraltırdı
+                int ii = i, ks, kt; bool sayim = KarSayim(i, out ks, out kt); bool dn = KategoriDeneniyor(i);
+                var d = Cip(L.T(KAR_AD[i]) + (sayim ? " " + ks + "/" + kt : ""), karAlt == i, () => KategoriSec(ii), dn ? L.T("deneniyor") : null);
+                if (sayim) { var eb = d.userData as ErisimBilgi; if (eb != null) eb.etiket = L.T(KAR_AD[i]) + ", " + L.T("{0} eşyadan {1} tanesi senin", kt, ks) + (dn ? ", " + L.T("deneniyor") : ""); }
                 d.AddToClassList("segment-cip"); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; soyunmaSegment.Add(d);
                 if (karAlt == i && kategoriKaydir != null) { var sd = d; kategoriKaydir.schedule.Execute(() => { if (sd.panel != null) kategoriKaydir.ScrollTo(sd); }).StartingIn(1); }   // seçili kategori görünür kalsın
             }
         }
+        // ---- Koleksiyon (2026-11-10, yasin: "dolap kısmı göz alıcı ve orada zaman geçirtici değil") ----
+        // Dolap'ta "ne kadarı benim, sırada ne var" hiç yazmıyordu: kategori çipi yalnız addı, sahip olunan ile olunmayan ancak
+        // kart kart gezince anlaşılıyordu. Çip artık "3/9" der (deneme varken yine "deneniyor"), sayfanın başındaki satır toplamı
+        // ve sıradaki eşyayı gösterir; dokununca eşya kendi kategorisinde denenir. Sayım Core/Kozmetik'te (kayıttan, yeni
+        // anahtar yok). Ayakkabı ve Forma ekipman/renk tabanlı, sayıları burada yok. Rozet, parıltı, "YENİ" yok: yalnız sayı.
+        static string[] KarKat(int i)
+        {
+            return i == KAR_TIP ? new[] { Kozmetik.TIP } : i == KAR_SAC ? new[] { Kozmetik.SAC } : i == KAR_SAPKA ? new[] { Kozmetik.SAPKA } : i == KAR_TEN ? new[] { Kozmetik.YUZ }
+                : i == KAR_SEVINC ? new[] { Kozmetik.SEVINC, Kozmetik.MAC_SONU } : i == KAR_SIRT ? new[] { Kozmetik.SIRT } : null;
+        }
+        static bool KarSayim(int i, out int sahip, out int toplam)
+        {
+            sahip = 0; toplam = 0; var k = KarKat(i); if (k == null) return false;
+            foreach (var kat in k) { int s, t; Kozmetik.Sayim(Ayar.gear, kat, out s, out t); sahip += s; toplam += t; }
+            return toplam > 0;
+        }
+        // Görünen kategorilerin katları (Gerçekçi/Sade'de Beden ve Saç sayfası yok: sayıma ve "Sıradaki"ne girmez).
+        static string[] DolapKatlar()
+        {
+            var l = new System.Collections.Generic.List<string>();
+            foreach (int i in KarSayfalar()) { var k = KarKat(i); if (k != null) l.AddRange(k); }
+            return l.ToArray();
+        }
+        void KoleksiyonSatir(VisualElement c)
+        {
+            var gr = Ayar.gear; int sahip = 0, toplam = 0;
+            foreach (int i in KarSayfalar()) { int s, t; if (KarSayim(i, out s, out t)) { sahip += s; toplam += t; } }
+            if (toplam == 0) return;
+            string kat; var o = Kozmetik.Siradaki(gr, DolapKatlar(), out kat); string kol = L.T("Koleksiyon {0}/{1}", sahip, toplam);
+            var d = new VisualElement(); d.AddToClassList("sv-hedef"); d.AddToClassList("dolap-siradaki"); c.Add(d);
+            var sol = new VisualElement(); sol.AddToClassList("sv-hedef-sol"); sol.pickingMode = PickingMode.Ignore; d.Add(sol);
+            if (o == null)
+            {
+                sol.Add(Yazi(kol, 14, "kalin")); sol.Add(Yazi(L.T("Dolabın tamam: hepsi senin."), 12, "soluk"));
+                d.pickingMode = PickingMode.Ignore; Erisim.Etiket(d, kol + ". " + L.T("Dolabın tamam: hepsi senin."), "metin"); return;
+            }
+            bool kilit = gr.Seviye() < o.sv; int eksik = o.fiyat - gr.eko.tuy;
+            string bas = L.T("Sıradaki: {0}", L.T(o.ad));
+            string alt = kol + " · " + (kilit ? L.T("Sv {0} ile açılır", o.sv) : eksik > 0 ? L.T("{0} Tüy kaldı", eksik) : L.T("Alabilirsin"));
+            sol.Add(Yazi(bas, 14, "kalin"));
+            if (!kilit) { var cb = Cubuk(o.fiyat > 0 ? Mathf.Clamp01(gr.eko.tuy / (float)o.fiyat) : 1, eksik > 0 ? TURUNCU : CAMGOBEGI, 5); cb.AddToClassList("sv-hedef-cubuk"); sol.Add(cb); }
+            sol.Add(Yazi(alt, 12, "soluk"));
+            var sag = new VisualElement(); sag.AddToClassList("sv-hedef-sag"); sag.pickingMode = PickingMode.Ignore; d.Add(sag);
+            sag.Add(Ikon(kilit ? Ikonlar.Kilit : Ikonlar.Tuy, 16, kilit ? SOLUK : ALTIN)); sag.Add(Yazi(kilit ? L.T("Sv {0}", o.sv) : Sayi(o.fiyat), 16, "rakam"));
+            string sk = kat, sid = o.id;
+            d.AddManipulator(new Clickable(() => SiradakiDene(sk, sid)));
+            Erisim.Etiket(d, bas + ", " + (kilit ? L.T("Sv {0}", o.sv) : o.fiyat + " " + L.T("Tüy")) + ", " + alt + ", " + L.T("dene"), "dugme");
+        }
+        // Sıradaki eşyaya git: kendi kategorisi açılır, figür onu dener (alma yine alttaki çubuktan, oyuncunun dokunuşuyla).
+        void SiradakiDene(string kat, string id)
+        {
+            int hedef = karAlt;
+            foreach (int i in KarSayfalar()) { var k = KarKat(i); if (k != null && System.Array.IndexOf(k, kat) >= 0) hedef = i; }
+            // Kategori değişimi KategoriSec'ten: kaydırmayı sıfırlar (uzun sayfadan kısa sayfaya geçişte boş sayfa, 8 Kas hatası).
+            if (hedef != karAlt) KategoriSec(hedef); else { root.sfx.Tik(); Yerel.Hap("tick"); }
+            Dene(kat, id);
+        }
+
         // Kategoride bir deneme var mı (K2): denemeler kategoriler arasında kaldığı için şerit hangisinde olduğunu yazıyla söyler.
         bool KategoriDeneniyor(int i)
         {
@@ -202,6 +263,7 @@ namespace BirdieSmash.Game
             karAlt = KarGecerli(karAlt);
             if (karAlt == KAR_RAKET) { RaketSayfa(c); return; }
             GorunumRozet(c);
+            KoleksiyonSatir(c);
             KombinSatir(c);
             if (!Ayar.VaryantGorunur) TekBedenKart(c);
             if (!Ayar.AykModelGorunur && karAlt == KAR_AYK) ModelUyari(c);
@@ -287,8 +349,27 @@ namespace BirdieSmash.Game
         {
             var gr = Ayar.gear; bool ok = kat == "ayakkabi" ? gr.Al("ayakkabi", id) : Kozmetik.Al(gr, kat, id, Ayar.KOZ[kat]);
             if (!ok) return;
-            root.sfx.Yukselt(); Yerel.Hap("tick"); ustKirli = true; UstKur(); KozSec(kat, id); Degisti();
+            root.sfx.Yukselt(); Yerel.Hap("tick"); ustKirli = true; UstKur(); KozSec(kat, id); Degisti(); AlimAni();
         }
+        // Satın alma anı (2026-11-10, yasin: Dolap "göz alıcı değil"): eşya alınınca yalnız ses ve ✓ vardı, figür kıpırdamıyordu.
+        // Artık figür kendi seçili sevincini bir kez yapar (yaklaşık 1,6 sn) ve boşta duruşa döner. Konfeti, parıltı, sayaç yok.
+        // Hareketi azalt açıkken ve Sevinç sayfasında (figür zaten o hareketi döngüde yapıyor) çalışmaz.
+        void AlimAni()
+        {
+            var vt = root.vitrin; if (vt == null || Ayar.reduce || karAlt == KAR_SEVINC || karAlt == KAR_RAKET) return;
+            // Süre hareketin kendi döngüsü (PlayerView.ShowSevinc: dört harekette 2,4 sn, diğerlerinde 1,6): erken kesilirse figür
+            // tepe pozdan boşta duruşa atlar. Yüz/ayak yakın planında kollar kadraj dışında kalır; an boyunca tüm boy, sonra geri.
+            // Arka arkaya iki alımda ilk zamanlayıcı ikinciyi kesmesin diye sayaç.
+            string sid = Ayar.KOZ[Kozmetik.SEVINC]; int ms = sid == "zafer" || sid == "iyi_oyun" || sid == "selam" || sid == "egil" ? 2400 : 1600;
+            int tok = ++alimTok, kat0 = karAlt;
+            vt.Sevinc(null); vt.Sevinc(sid); if (vt.odak != Vitrin.TAM) vt.Odak(Vitrin.TAM);
+            kok.schedule.Execute(() =>
+            {
+                if (tok != alimTok || root.vitrin == null || root.vitrin.sevinc != sid) return;
+                if (gez.sekme == Sekme.Soyunma && karAlt == kat0) KarakterOdakAyarla(); else root.vitrin.Sevinc(null);
+            }).StartingIn(ms);
+        }
+        int alimTok;
 
         // Deneme kartı: denenen öğe alınmamışsa (seçili ya da sahipse kart yok; dokunuş onu zaten seçmiştir).
         void DenemeKart(VisualElement c, string kat, string id, string ad, int fiyat, int sv, ModelDurum du, bool alOlur)
