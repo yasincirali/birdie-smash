@@ -29,7 +29,7 @@ sonraki TestFlight build'i iki yetkiyi taşır.
 5. **Privacy & messaging** › **European regulations (GDPR)** mesajı oluştur › uygulamayı seç › Publish.
 6. Aynı sayfada **IDFA explainer** (iOS ATT) mesajı oluştur › Publish. İkisi de zorunlu: ATT penceresini bu mesaj açar.
 
-Ben: kimlikleri koda girerim, test reklamı kapanır, `murphysoft.app/app-ads.txt` dosyasını koyarım.
+YAPILDI 11 Kas: kimlikler kodda (iOS), `murphysoft.app/app-ads.txt` yayında.
 Sonra AdMob › Apps › Birdie Smash › **app-ads.txt** sekmesinde "Check for updates" (ben haber veririm).
 
 ## 3. Uygulama bilgileri (10 dk) → **bilgi**
@@ -87,7 +87,8 @@ Durum "Ready to Submit" olmalı; incelemeye 9. adımda sürümle birlikte gider.
 
 ASC › iOS App › **1.0 Prepare for Submission**:
 1. Sürüm numarası alanı **1.0.0** olsun (build'lerin sürüm adı artık 1.0.0; ASC "1.0" yazıyorsa düzelt).
-2. Her dil için: Promotional Text, Description, Keywords, Support URL ← `store_listing/<dil>/*.txt`. Marketing URL boş.
+2. Her dil için: Promotional Text, Description, Keywords, Support URL ← `store_listing/<dil>/*.txt`. **Marketing URL** `https://murphysoft.app/birdie-smash/`
+   (AdMob app-ads.txt dosyasını bu alan adında arar; dosya yayında).
 3. **Screenshots › iPhone 6.9"**: `store_listing/gorsel/<dil>/6.9/01…05` sırayla (6.5" isteğe bağlı, aynı klasörün 6.5'i).
 4. **Build** › + › 1.0.0 sürümlü en yeni build (bu PR birleştikten sonraki ilk TestFlight build'i ya da daha yenisi).
 5. Copyright: `2026 <adın soyadın>`.
