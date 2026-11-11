@@ -21,6 +21,7 @@ namespace BirdieSmash.Game
         {
             k.Clear(); var sv = Kaydirma(k); sv.AddToClassList("govde-kaydir"); var c = sv.contentContainer; c.AddToClassList("sekme-icerik");
             var p = Ayar.ilerleme; int sira = p.Siradaki();
+            BasamakAniHazirla(sira);
             if (kariyerTur < 0 || kariyerTur >= KariyerVeri.TUR) kariyerTur = KariyerVeri.TurOf(sira);
             var bas = Satir("arali"); c.Add(bas);
             var t = Yazi(L.T("Kariyer"), 24, "sekme-baslik"); Erisim.Etiket(t, L.T("Kariyer"), "baslik"); bas.Add(t);
@@ -164,12 +165,38 @@ namespace BirdieSmash.Game
 
         // Basamak noktası (44 pt): geçilen = ✓, şimdiki = güneş diski üstünde numara, açık = numara, kilitli = kilit, final = kupa
         // (geçilmediyse). Dokununca o basamağın maç kartı.
+        // 2026-11-11 inceleme (fikir 20:05 #2): basamak geçmek haritada hiç an değildi; düğüm sonraki açılışta sessizce ✓ oluyordu.
+        // tuytop_kariyer_gorulen = Kariyer'de en son gösterilen sıradaki basamak. Sıradaki ondan ilerideyse bu kurulumda geçilen
+        // düğümlerin ✓'i küçükten büyür, yeni sıradaki düğüm yerine oturur; tek tık sesi + tick titreşimi (üç kanal). Değer hemen
+        // yazılır: yeniden kurulumlar (dil, yazı boyu) anı tekrarlamaz. İlk kez (anahtar yok) yalnız yazılır, eski oyuncuya geçmiş
+        // basamaklar topluca oynatılmaz. Hareketi azaltta ölçek yok, ses ve titreşim kalır. Konfeti/rozet yok (yasin kuralı).
+        int basAniDen = -1, basAniA = -1;
+        void BasamakAniHazirla(int sira)
+        {
+            basAniDen = basAniA = -1; if (sira < 0) return;
+            int gorulen = PlayerPrefs.GetInt("tuytop_kariyer_gorulen", -1);
+            if (gorulen == sira) return;
+            PlayerPrefs.SetInt("tuytop_kariyer_gorulen", sira); PlayerPrefs.Save();
+            if (gorulen < 0 || sira < gorulen) return;
+            basAniDen = gorulen; basAniA = sira;
+            if (root != null && root.sfx != null) root.sfx.Tik(1175); Yerel.Hap("tick");
+        }
+        static void BasamakBuyut(VisualElement v, float bas, int gecikmeMs)
+        {
+            if (Ayar.reduce) return;
+            v.style.scale = new Scale(new Vector2(bas, bas));
+            v.style.transitionProperty = new System.Collections.Generic.List<StylePropertyName> { new StylePropertyName("scale") };
+            v.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(.18f, TimeUnit.Second) };
+            v.style.transitionTimingFunction = new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseOutBack) };
+            v.schedule.Execute(() => { v.style.scale = new Scale(Vector2.one); Kalite.Hareket(); }).StartingIn(gecikmeMs);
+        }
         VisualElement BasamakNokta(int g, int sira, ScrollView hs)
         {
             var p = Ayar.ilerleme; int b = KariyerVeri.BasOf(g); bool gecti = p.Kazanildi(g), simdi = g == sira && p.Acik(g), acik = p.Acik(g), final = KariyerVeri.Final(g);
             var roz = new VisualElement(); roz.AddToClassList("dugum-rozet"); roz.AddToClassList(gecti ? "dugum-rozet--gecti" : simdi ? "dugum-rozet--simdi" : acik ? "dugum-rozet--acik" : "dugum-rozet--kilit");
             if (simdi) roz.style.backgroundImage = new StyleBackground(Ikonlar.GunesDisk);
-            if (gecti) roz.Add(Ikon(Ikonlar.Tik, 20, KOYU));
+            if (gecti) { var tik = Ikon(Ikonlar.Tik, 20, KOYU); roz.Add(tik); if (g >= basAniDen && g < basAniA) BasamakBuyut(tik, .6f, 120); }
+            if (simdi && g == basAniA && basAniDen >= 0) BasamakBuyut(roz, .8f, 300);
             else if (final) roz.Add(Ikon(Ikonlar.Kupa, 18, simdi ? KOYU : acik ? ALTIN : SOLUK));
             else if (!acik) roz.Add(Ikon(Ikonlar.Kilit, 16, SOLUK));
             else { var n = Yazi((b + 1).ToString(), 16, "kalin"); n.style.color = simdi ? KOYU : YAZI; n.pickingMode = PickingMode.Ignore; roz.Add(n); }

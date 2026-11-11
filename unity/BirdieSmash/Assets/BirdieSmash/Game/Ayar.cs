@@ -55,6 +55,9 @@ namespace BirdieSmash.Game
         public static string YolAd => UstaZor ? "Usta yolu" : "Şampiyon yolu";
         public static string ZorlukAd => ZORLUK_AD[Mathf.Clamp(zorluk, 0, 3)];
         public static float RakipK => ZORLUK_RAKIP[Mathf.Clamp(zorluk, 0, 3)];
+        // Lastik bant (Match.lastik notu, 2026-11-11): geride kalınca rakibin gevşemesi yalnız alt kademelerde tam.
+        public static readonly float[] ZORLUK_LASTIK = { 1f, .7f, .3f, 0f };
+        public static float Lastik => ZORLUK_LASTIK[Mathf.Clamp(zorluk, 0, 3)];
         public static bool easy { get => zorluk <= 1; set { if (value != easy) zorluk = value ? 1 : 3; } }
         public static bool kosuYardim { get => zorluk == 2; set { if (!easy) zorluk = value ? 2 : 3; } }
         public static bool reduce, reduceSecim, reduceSistem, ses = true, muzik = true, titresim = true, kariyerModu, antrenman, sampiyon, fps, kosIpucu;

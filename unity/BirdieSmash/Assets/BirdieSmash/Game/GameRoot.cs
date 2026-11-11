@@ -175,7 +175,7 @@ namespace BirdieSmash.Game
             Ayar.GearHesap();
             // Usta daveti bayrağı burada TÜKETİLİR: Günün maçı/Usta yolu/görev StartMatch'e uğramadan Secenek çağırır, bayrak sızmasın.
             bool ud = ustaDeneBu && !ogr; ustaDeneBu = false; ustaDeneMac = ud;
-            return new MatchOptions { easy = Ayar.easy && !ud, kosuYardim = ud || Ayar.kosuYardim, rakipK = ud ? 1 : Ayar.RakipK, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null && Ayar.easy ? Ayar.ilerleme.Yardim : 0 };
+            return new MatchOptions { easy = Ayar.easy && !ud, kosuYardim = ud || Ayar.kosuYardim, rakipK = ud ? 1 : Ayar.RakipK, lastik = ud ? Ayar.ZORLUK_LASTIK[2] : Ayar.Lastik, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null && Ayar.easy ? Ayar.ilerleme.Yardim : 0 };
         }
         // Maç kurulumunun ortak kuyruğu (2026-10-26: dört mod aynı yoldan; davranış eski StartMatch'le birebir).
         void MacKur(int tohum, MatchOptions o)
@@ -1113,6 +1113,8 @@ namespace BirdieSmash.Game
         void OnEvent(GameEvent e)
         {
             var at = Kit.W(e.x, e.y, e.z); bool mine = e.who == "me"; bool rm = Ayar.reduce; var M = match;
+            // Konum panı (Sfx.pan notu): ekrandaki yatay konum, kamera her ekranda farklı çözüldüğü için görüntü noktasından.
+            if (sfx != null && cam != null) sfx.pan = Mathf.Clamp((cam.WorldToViewportPoint(at).x - .5f) * 2 * Sfx.PAN_AZAMI, -Sfx.PAN_AZAMI, Sfx.PAN_AZAMI);
             Color limon = Kit.Hex("#d8ff5a");
             switch (e.kind)
             {

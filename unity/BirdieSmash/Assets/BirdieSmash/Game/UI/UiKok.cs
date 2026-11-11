@@ -104,10 +104,12 @@ namespace BirdieSmash.Game
             for (int i = 0; i < SEKME_N; i++) { sekmeKok[i] = new VisualElement(); sekmeKok[i].AddToClassList("sekme-kok"); sekmeKok[i].AddToClassList("tam"); icerik.Add(sekmeKok[i]); }
             altKatman.RegisterCallback<PointerDownEvent>(e => { if (e.target == altKatman) AltKapatKay(); });
             kalkan.RegisterCallback<PointerDownEvent>(e => { if (root.HudKatman != null) root.HudKatman.PerdeAtla(); e.StopPropagation(); });
-            // iOS sol kenardan kaydırma = Geri (tam sayfada; maçta yok, menü maçta gizli). Kenar 24 pt, 70 pt sağa çekiş.
-            sayfa.RegisterCallback<PointerDownEvent>(e => { kenarX = e.position.x - sayfa.worldBound.x < 24 ? e.position.x : -1; }, TrickleDown.TrickleDown);
-            sayfa.RegisterCallback<PointerMoveEvent>(e => { if (kenarX >= 0 && e.position.x - kenarX > 70) { kenarX = -1; Geri(); } }, TrickleDown.TrickleDown);
-            sayfa.RegisterCallback<PointerUpEvent>(e => kenarX = -1, TrickleDown.TrickleDown);
+            // iOS sol kenardan kaydırma = Geri (tam sayfada; maçta yok, menü maçta gizli). Kenar 24 pt. 2026-11-11: sayfa parmağı
+            // izler, bırakınca karar verilir (KenarSurukle notu); hareketi azaltta eski 70 pt eşik ve anında geçiş.
+            sayfa.RegisterCallback<PointerDownEvent>(e => { kenarX = e.position.x - sayfa.worldBound.x < 24 ? e.position.x : -1; kenarDx = 0; kenarHiz = 0; kenarT = Time.realtimeSinceStartup; kenarSurukle = false; }, TrickleDown.TrickleDown);
+            sayfa.RegisterCallback<PointerMoveEvent>(e => KenarSurukle(e.position.x), TrickleDown.TrickleDown);
+            sayfa.RegisterCallback<PointerUpEvent>(e => KenarBirak(), TrickleDown.TrickleDown);
+            sayfa.RegisterCallback<PointerCancelEvent>(e => KenarBirak(), TrickleDown.TrickleDown);
             DuyarliGuncelle();   // 2026-10-27: boyut sınıfı (kısa / geniş) ilk kurulumdan önce: kodda yazılan boyutlar ona bakar (Duyarli.cs)
             HepsiniKur(); kuruldu = true;
         }
@@ -250,6 +252,46 @@ namespace BirdieSmash.Game
         void SayfaAc(string s) { var once = gez.sekme; gez.Ac(s); Uygula(once, true); }
         public void Geri() { var once = gez.sekme; if (gez.Geri()) { Yerel.Hap("tick"); Uygula(once, true); } }
         void AltKapat() { var once = gez.sekme; gez.AltKapat(); Uygula(once, false); }
+        // 2026-11-11 inceleme (fikir 20:05 #3, HIG standart gezinme): tam sayfada sol kenardan geri kaydırma 70 pt'de sayfayı bir
+        // anda kaldırıyordu; parmak sayfayı taşımıyordu. Artık sayfa parmakla sağa kayar; altta dönülecek sekme (yığında tek sayfa
+        // varsa) görünür. Bırakınca genişliğin %35'i ya da ~800 pt/sn hız geçildiyse .2 sn ease-out sağa çıkıp Geri, değilse
+        // yerine yaylanır. Geri düğmesi ve ekran turu bilerek anında (alt sayfadaki gerekçe: zamanlanmış kapanış sıradakini kapatmasın).
+        // Yığında iki sayfa varken (Ayarlar › Lisanslar) altta koyu zemin görünür; alttaki tam sayfayı önceden kurmak iki kez kurmak olurdu.
+        float kenarDx, kenarHiz, kenarT; bool kenarSurukle, kenarKapaniyor;
+        const float KENAR_ESIK = .35f, KENAR_HIZ = 800f, KENAR_SURE = .2f;
+        void KenarSurukle(float x)
+        {
+            if (kenarX < 0 || kenarKapaniyor) return;
+            float dx = Mathf.Max(0, x - kenarX), t = Time.realtimeSinceStartup, dt = t - kenarT;
+            if (dt > 0) kenarHiz = Mathf.Lerp(kenarHiz, (dx - kenarDx) / dt, .5f); kenarT = t; kenarDx = dx;
+            if (Ayar.reduce) { if (dx > 70) { kenarX = -1; Geri(); } return; }
+            if (!kenarSurukle && dx > 8) { kenarSurukle = true; KenarAlt(true); }
+            if (!kenarSurukle) return;
+            sayfa.style.transitionDuration = new List<TimeValue> { new TimeValue(0f, TimeUnit.Second) };
+            sayfa.style.translate = new Translate(dx, 0, 0); Kalite.Hareket();
+        }
+        void KenarBirak()
+        {
+            bool surukledi = kenarX >= 0 && kenarSurukle; kenarX = -1; kenarSurukle = false; if (!surukledi || kenarKapaniyor) return;
+            float w = Mathf.Max(1, sayfa.resolvedStyle.width); bool kapat = kenarDx > w * KENAR_ESIK || kenarHiz > KENAR_HIZ;
+            kenarKapaniyor = true; if (kapat) Yerel.Hap("tick");
+            sayfa.style.transitionProperty = new List<StylePropertyName> { new StylePropertyName("translate") };
+            sayfa.style.transitionDuration = new List<TimeValue> { new TimeValue(KENAR_SURE, TimeUnit.Second) };
+            sayfa.style.transitionTimingFunction = new List<EasingFunction> { new EasingFunction(EasingMode.EaseOut) };
+            sayfa.style.translate = new Translate(kapat ? w : 0, 0, 0); Kalite.Hareket();
+            sayfa.schedule.Execute(() =>
+            {
+                kenarKapaniyor = false;
+                if (kapat) { var once = gez.sekme; if (gez.Geri()) Uygula(once, false); }   // tık yukarıda; giriş animasyonu yok, sekme zaten görünüyordu
+                else KenarAlt(false);
+                sayfa.style.translate = StyleKeyword.Null; sayfa.style.transitionDuration = StyleKeyword.Null; sayfa.style.transitionProperty = StyleKeyword.Null; sayfa.style.transitionTimingFunction = StyleKeyword.Null;
+            }).StartingIn(Mathf.RoundToInt(KENAR_SURE * 1000) + 16);
+        }
+        void KenarAlt(bool goster)
+        {
+            if (gez.Derinlik != 1) return;   // altta başka tam sayfa var: koyu zemin
+            sekmeKok[(int)gez.sekme].style.display = goster ? DisplayStyle.Flex : DisplayStyle.None; ust.style.display = goster ? DisplayStyle.Flex : DisplayStyle.None;
+        }
         // 2026-11-11 inceleme (fikir 19:05 #1): alt sayfa açılırken yaylanıyor ama kapanırken tek karede yok oluyordu. Kapat, zemine
         // dokunma ve tutamak artık önce sayfayı aşağı kaydırır (.2 sn ease-in), zemin aynı anda solar, sonra AltKapat. Hareketi
         // azaltta kayma yok, .12 sn solma. Geri (ekran turu, gezinti yığını) bilerek anında kalır: zamanlanmış kapanış sıradaki
