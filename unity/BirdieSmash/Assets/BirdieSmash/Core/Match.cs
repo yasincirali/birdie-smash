@@ -104,6 +104,10 @@ namespace BirdieSmash.Core
         // 2026-11-07 online (Core/Uzak.cs): uzak = rakip karşı telefondan gelir; uzakServis = ilk servis kimde ("me"/"op").
         public bool uzak; public string uzakServis;
         public int yardim;   // 2026-10-29: Ilerleme.Yardim kademesi (0 = yok); Usta yolu ve antrenmanda uygulanmaz
+        // 2026-11-11 (inceleme, fikir 20:05 #1): lastik bant kademeye bağlı. Geride kalan oyuncuya rakibin yavaşlaması ve
+        // sapması Kolay'da oyuncuyu masada tutar; Zor/Usta oyuncusu ise geri dönüşünü "rakip bıraktı" diye okuyordu.
+        // Çarpan Game/Ayar.ZORLUK_LASTIK'ten gelir (Kolay 1, Orta .7, Zor .3, Usta ve Usta yolu 0; Usta daveti koşu yardımlı olduğu için Zor); 1 = eski davranış.
+        public float lastik = 1;
     }
 
     public partial class Match
@@ -183,7 +187,7 @@ namespace BirdieSmash.Core
 
         public Match(int seed, MatchOptions o)
         {
-            rng = new Random(seed); easy = o.easy; kosuYardim = o.kosuYardim; net.sakin = o.reduce; target = o.ilk ? 5 : o.target; reduce = o.reduce; ilk = o.ilk; saha = o.saha; bestRally = o.bestRally;
+            rng = new Random(seed); lastik = o.lastik; easy = o.easy; kosuYardim = o.kosuYardim; net.sakin = o.reduce; target = o.ilk ? 5 : o.target; reduce = o.reduce; ilk = o.ilk; saha = o.saha; bestRally = o.bestRally;
             stil = o.stil ?? STIL[STIL_SIRA[rng.Next(3)]]; GS = o.gs ?? GearStats.Notr;
             if (o.ogr && o.dril != null) { ogrDril = o.dril; o.ogr = true; }
             if (!o.ogr) gorevler = GorevSec();
@@ -304,6 +308,8 @@ namespace BirdieSmash.Core
         float LineMargin(float x, float y, bool serve) { float x0, x1, y0, y1; Sinir(serve, out x0, out x1, out y0, out y1); return Math.Min(Math.Min(Math.Abs(x - x0), Math.Abs(x - x1)), Math.Min(Math.Abs(y - y0), Math.Abs(y - y1))); }
 
         int Behind() { return Math.Max(0, sc[1] - sc[0]); }
+        public float lastik = 1;   // MatchOptions.lastik notu
+        float Lastik() { return Behind() * lastik; }
         // Nefes (kondisyon): smaç, sıçrama ve uzanma nefes yakar; nefes .4 altında koşu yavaşlar, smaç zayıflar.
         public float NefesF() { return me.nefes < .4f ? .8f + .5f * me.nefes : 1; }
         void Yor(float v)
@@ -325,7 +331,7 @@ namespace BirdieSmash.Core
         // hiç uygulanmıyor: rakip yalnız smaçla yoruluyor. Demo HTML'in bugünkü davranışını taşır; düzeltme kararı yasin'de.
         public static bool OP_KOSU_YORAR = false;
         float opRunX = float.NaN, opRunY;
-        public float OpSpd() { return (GS.rakip * stil.hiz * (easy ? 3.2f : 3.6f) + Math.Min(.55f, (sc[0] + sc[1]) * .02f)) * OpNefesF() - Math.Min(.8f, Behind() * .12f); }
+        public float OpSpd() { return (GS.rakip * stil.hiz * (easy ? 3.2f : 3.6f) + Math.Min(.55f, (sc[0] + sc[1]) * .02f)) * OpNefesF() - Math.Min(.8f, Lastik() * .12f); }
 
         // Round-the-head (stüdyo incelemesi 2026-11-05, oyun tasarımı 2): baş üstü top sol omuzun üstündeyse (backhand tarafı ama
         // gövdeden en çok RTH_ERIS uzakta, ve top RTH_Z'den yüksekte: daha alçak baş üstü topa raket başın arkasından dolanamaz) gerçek oyuncu backhand'e dönmez, raketi başın arkasından dolar: smaç mümkün, bedeli
@@ -808,7 +814,7 @@ namespace BirdieSmash.Core
             if (type == "drive") val *= DriveHiz();
             if (obh && type == "clear") ty = Math.Max(ty, Court.NET + 1.2f);   // backhand clear'ı kısa kalır
             // geride kalınca rakip daha çok hata yapar (lastik bant); yorgunken sapma büyür
-            float hata = stil.hata * (.5f + (easy ? .3f : 0) + (obh ? .35f : 0) + Math.Min(.9f, Behind() * .15f)) * (1 + (1 - OpNefesF()) * 3);
+            float hata = stil.hata * (.5f + (easy ? .3f : 0) + (obh ? .35f : 0) + Math.Min(.9f, Lastik() * .15f)) * (1 + (1 - OpNefesF()) * 3);
             if (I.zor) { hata *= 1.6f; if (type == "lift" || type == "clear") ty = Math.Max(Court.NET + 2.2f, ty - 1.4f); }   // baskıda dönüş kısa kalır
             Func<float> g = () => (R01() - .5f) * hata;
             Shuttle.Aim(hx, hy, hz, tx + g(), ty + g(), byAngle, val, out vx, out vy, out vz);

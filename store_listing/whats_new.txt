@@ -5,6 +5,14 @@ Sayı arası akıcılık, duraklatta kamera, ısınmada kare düzeni (11 Kasım 
 - Telefon ısınınca oyun kendi kendine 60 kareye ve bir alt görüntü kalitesine iner, soğuyunca geri döner; uzun oyunda takılma ve pil kaybı azalır. Kullanılmayan hareket sensörü kapatıldı.
 Nasıl denenir: Maçta bir sayı oyna, dip köşede bitir: iki oyuncu servis yerine kayarak geçmeli, bir karede zıplamamalı. Maçı duraklat, "Alçak"a dokun: örtü açılıp yeni açı görünmeli, Devam'da maç o açıyla sürmeli. 20 dakika kadar arka arkaya oyna: oyun takılmamalı (gizli kare hızı satırında "ısı" değeri görünür).
 
+Geri kaydırma, kariyer ilerlemesi, kulaklıkta yön (11 Kasım akşam):
+- Ayarlar gibi tam sayfalarda sol kenardan sağa kaydırınca sayfa parmağını izler, altta döneceğin ekran görünür; bırakınca ya kayarak kapanır ya yerine döner.
+- Kariyer'de bir basamağı geçip geri dönünce geçtiğin basamağın tiki büyüyerek yerine oturur, sıradaki basamak öne çıkar; kısa bir tık sesi ve titreşim gelir.
+- Kulaklıkla oynarken vuruş, file ve topun yere düşüş sesi kortta nerede olduysa o yandan hafifçe duyulur.
+- Zor ve Usta'da rakip öne geçince artık kendiliğinden gevşemez; Kolay'da eskisi gibi biraz yardım eder, Orta'da daha az.
+- iOS sürümü daha hızlı kodla derleniyor (eski telefonlarda daha akıcı maç bekleniyor).
+Nasıl denenir: Ayarlar'ı aç, ekranın sol kenarından yavaşça sağa sürükle: sayfa parmakla gelmeli, arkada Oyna görünmeli; yarım bırakırsan geri dönmeli, daha çok çekersen kapanmalı. Kariyer'de bir maç kazan, sonra Kariyer sekmesine geç: geçtiğin basamakta tik büyümeli, tık duyulmalı. Kulaklık tak, maçta sağ köşeye top düşür: ses sağdan gelmeli. Zor'da 3-8 geri kal: rakip yavaşlamamalı.
+
 Alt sayfalar, dükkân, başarım anı (11 Kasım gece):
 - Hızlı maç, maç kartı gibi alttan açılan sayfalar artık parmağı izler: tutamaktan aşağı çekince sayfa iner, bırakınca ya yerine oturur ya kayarak kapanır. Kapat'a ya da boşluğa dokununca da kayarak kapanır.
 - Tüy dükkânında satın alma sürerken düğme "İşleniyor…" der, öteki fiyatlar beklemeye geçer; ikinci dokunuş artık yanlış "tamamlanmadı" yazdırmaz. Geri yükle de "Kontrol ediliyor…" der.

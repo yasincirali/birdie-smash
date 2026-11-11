@@ -246,12 +246,17 @@ static class BotMac
         var a = new Match(3, new MatchOptions { easy = true, stil = st, target = 5, rakipK = .85f });
         var y = new Match(3, new MatchOptions { easy = false, stil = UstaYolu.Rakip(0), target = 5, rakipK = 1.15f });
         if (Math.Abs(a.stil.hiz - st.hiz * .85f) > 1e-5 || y.stil.hiz != UstaYolu.Rakip(0).hiz || st.hiz != Match.KariyerRakip(1).hiz) Fail("zorluk rakip çarpanı: Usta yolu dışı, kaynak tarz değişmez");
-        float[] K = { .85f, 1f, 1f, 1.15f }; int[] w = new int[4]; int n = 20;
+        // 2026-11-11 lastik bant kademeye bağlı: 6 geride rakip Kolay'da yavaşlar, Usta'da (lastik 0) hızı skordan bağımsız.
+        var l1 = new Match(3, new MatchOptions { easy = true, stil = st, target = 21 }); var l0 = new Match(3, new MatchOptions { easy = true, stil = st, target = 21, lastik = 0 });
+        float h1 = l1.OpSpd(), h0 = l0.OpSpd(); l1.sc[1] = 6; l0.sc[1] = 6;
+        if (l1.OpSpd() >= h1 - .5f) Fail("lastik 1: 6 öndeki rakip yavaşlamalı");
+        if (Math.Abs(l0.OpSpd() - h0) > .2f) Fail("lastik 0: rakip hızı yalnız skor toplamıyla artar, geride kalma etkisi yok");
+        float[] K = { .85f, 1f, 1f, 1.15f }, L = { 1f, .7f, .3f, 0f }; int[] w = new int[4]; int n = 20;
         for (int m = 0; m < n; m++)
             for (int z = 0; z < 4; z++)
             {
                 bool easy = z <= 1;
-                var M = new Match(1300 + m, new MatchOptions { easy = easy, kosuYardim = z == 2, rakipK = K[z], stil = st, target = 5 }); int guard = 0;
+                var M = new Match(1300 + m, new MatchOptions { easy = easy, kosuYardim = z == 2, rakipK = K[z], lastik = L[z], stil = st, target = 5 }); int guard = 0;
                 while (!M.over && guard++ < 60 * 60 * 20) { Bot(M, 1f / 60f, .1); if (!easy) UstaKos(M, .45f); M.Update(1f / 60f); M.events.Clear(); }
                 if (M.sc[0] > M.sc[1]) w[z]++;
             }
