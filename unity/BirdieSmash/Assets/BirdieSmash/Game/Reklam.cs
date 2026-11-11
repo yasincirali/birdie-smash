@@ -9,8 +9,9 @@ namespace BirdieSmash.Game
     //  - Boyut: standart telefon şeridi 320×50 pt. Uyarlanabilir şerit (AdMob anchored adaptive) telefonda ~50–62 pt; SDK
     //    gelince yükseklik onun bildirdiği değerle değiştirilir (PT tek yer).
     //  - (2026-11-07: maç üstü şerit kaldırıldı, aşağıda MAC_SERIT; maçta reklam yeri kort kenarı panoları.)
-    //  - Yer: menüde sekme çubuğunun hemen üstü (içerik kaydırılır, şerit sabit; başparmak bölgesindeki sekmelerle arasında
-    //    çizgi var). Maçta EKRANIN ÜSTÜ: alt yarı kaydırma/vuruş alanı, orada şerit yanlış dokunuş demek (reklam ağlarının
+    //  - Yer: 2026-11-11 (yasin: "ana ekranda ince gösterelim", yerleşim B) yalnız Ana ekranda, EN ÜSTTE (güvenli alanın
+    //    hemen altı, tam genişlik bant); içerik bandın altından başlar. Eskiden sekme çubuğunun hemen üstündeydi: başparmak
+    //    bölgesinde yanlış dokunuş riski. 50 pt AdMob'un en ince şeridi; küçültmek/kırpmak politika ihlali. Maçta EKRANIN ÜSTÜ: alt yarı kaydırma/vuruş alanı, orada şerit yanlış dokunuş demek (reklam ağlarının
     //    "oyun kontrollerinin yanında reklam" yasağı da bu). HUD ve kamera kadrajı şeridin altına iner, kort kapanmaz.
     //  - Sinir etmemesi için: geçiş (tam ekran) reklam yok, ses yok, maç içinde yenileme yok (SDK'da yenileme kapatılacak,
     //    şerit maç arasında değişir), şerit hareket etmez.
@@ -32,7 +33,7 @@ namespace BirdieSmash.Game
             float olcek = Screen.dpi > 50 ? Screen.dpi / 163f : Screen.width / 375f;
             return Mathf.Round(PT * Mathf.Clamp(olcek, 1f, 4f));
         }
-        // Maçta (oyun ve maç sonu) üst pay; menüde sıfır (menü kendi şeridini sekme çubuğunun üstünde taşır).
+        // Maçta (oyun ve maç sonu) üst pay; menüde sıfır (menü kendi şeridini Ana ekranın üstünde taşır).
         // Maç üstü şerit KAPALI (yasin kararı 2026-11-07, kart "Maçtaki reklam nerede dursun?" → "Kort kenarı panolar"):
         // ralli sırasında göz şeride kayıyor ve kort 50 pt kısalıyordu. Maçtaki reklam yeri artık kortun kendisi
         // (KENAR_PANO + arka LED pano); menü şeridi (ALAN) kalır. Kod duruyor: MAC_SERIT true yapılırsa şerit geri gelir.

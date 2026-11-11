@@ -1,4 +1,12 @@
 === UNITY ===
+Kariyer 8 tur, reklam şeridi üstte, yeni açılış (11 Kasım):
+- Kariyer 4 turdan 8 tura çıktı. Dünya Finalleri'nden sonra dört yeni tur: Pasifik Turu, Amerika Turu, Büyük Kupa, Efsaneler Kupası (24 yeni maç, toplam 48 rakip). Son iki turun finali 21 sayı. Kazandığın maçlar, yıldızlar ve mühürler aynen duruyor.
+- Şampiyon yolu / Usta yolu artık 8. tur bitince açılır. Daha önce açtıysan açık kalır ve kaldığın basamaktan devam eder.
+- Profil'de kupa rafı sekiz kupa: dörderli iki sıra. Dört yeni Game Center başarımı (tur finalleri).
+- Reklam şeridi yalnız Ana ekranda ve artık en üstte, tam genişlik bantta; sekme düğmelerinin üstünden kalktı.
+- Açılışta tüy top yerinde iki tur atıp durur ("spin atışı"). Hareketi azalt açıkken eskisi gibi sabit.
+Nasıl denenir: Uygulamayı kapatıp aç: açılışta top ortada dönerek büyümeli ve mantar sağ altta duracak şekilde durmalı; yerinden oynamamalı. Ana ekran: "Test Ad" şeridi saat/Dynamic Island'ın hemen altında olmalı, sekme çubuğunun üstünde reklam olmamalı; Kariyer, Dolap, Atölye, Profil'de şerit olmamalı. Kariyer: tur kartlarını sola kaydır, sekiz tur görünmeli; Dünya Finalleri bitmediyse Pasifik Turu kilitli olmalı. Dünya Finalleri'ni bitirmiş bir kayıtta Pasifik Turu açık olmalı, Oyna kartı Sidney maçını göstermeli (daha önce Şampiyon/Usta yolu açıktıysa o da Kariyer'de durmalı). Profil: kupa rafında 8 kupa iki sıra hâlinde, taşma olmamalı; büyük yazıda da.
+
 Gelişim görünür, maç sonu başlığı (11 Kasım gece):
 - Atölye'de "Takımın şimdi" çubukları artık gelişim puanlarını da gösteriyor: ekipmanın çubuğunun ucunda yeşil bir parça ve sağda "+n" yazısı. Eşit şartlar açıkken görünmez.
 - Gelişim sayfası Sv 1'de sade: puan yokken eksi/artı düğmeleri ve "+%0" yazısı yok. Profil'deki Gelişim kartı beş çubuk yerine tek satır ("12/29 puan").

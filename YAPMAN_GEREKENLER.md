@@ -150,11 +150,22 @@ Sıralama tablosu (leaderboard) bilerek yok.
 | bs_tur_2 | 80 | Conqueror of Asia / Win the Asia Tour final. | Asya fatihi / Asya Turu finalini kazan. |
 | bs_tur_3 | 100 | European Champion / Win the Europe Tour final. | Avrupa şampiyonu / Avrupa Turu finalini kazan. |
 | bs_tur_4 | 150 | World Champion / Win the World Finals. | Dünya şampiyonu / Dünya Finalleri'ni kazan. |
+| bs_tur_5 | 30 | Pacific Champion / Win the Pacific Tour final. | Pasifik şampiyonu / Pasifik Turu finalini kazan. |
+| bs_tur_6 | 30 | Champion of the Americas / Win the Americas Tour final. | Amerika şampiyonu / Amerika Turu finalini kazan. |
+| bs_tur_7 | 40 | Grand Cup / Win the Grand Cup final. | Büyük Kupa / Büyük Kupa finalini kazan. |
+| bs_tur_8 | 60 | Legend of Legends / Win the Legends Cup and finish Career. | Efsanelerin efsanesi / Efsaneler Kupası'nı kazanıp kariyeri bitir. |
 | bs_efsane | 50 | Legend / Reach level 30. | Efsane / Seviye 30'a ulaş. |
 | bs_antrenor | 25 | Coach / Earn all 24 training drill stars. | Antrenör / Antrenman görevlerinin 24 yıldızını topla. |
 | bs_gunun_maci | 10 | Match of the Day / Win a Match of the day. | Günün maçı / Bir Günün maçını kazan. |
 | bs_usta_6 | 20 | Master Road / Clear 6 stages on the Master road. | Usta yolu / Usta yolunda 6 basamak geç. |
 | bs_imza_okur | 15 | Signature Reader / Read 10 signature shots in total. | İmza okuru / Toplam 10 imza vuruşu oku. |
+
+**2026-11-11 kariyer 8 tur (senin kararın "Şimdi 8 tur"): dört yeni başarım, 19 → 23.** Apple sınırı 1000 puan dolu olduğu için
+yukarıdaki tabloda şu beş satırın puanını **düşür**, sonra bs_tur_5..8'i ekle (toplam yine 1000):
+bs_kariyer_6 150 → **100**, bs_tur_4 150 → **100**, bs_tur_3 100 → **80**, bs_tur_2 80 → **60**, bs_kariyer_5 80 → **60**.
+bs_kariyer_6 açıklamasından "and finish Career / kariyeri bitir" kısmını sil (kariyer artık Efsaneler Kupası'nda bitiyor).
+Görseller hazır: `store_listing/game_center/bs_tur_5.png` … `bs_tur_8.png`. Yayınlanmış bir başarımın puanı ASC'de
+değiştirilebilir; başarımlar henüz canlıya çıkmadıysa sıra önemli değil.
 
 Toplam 1000 puan (Apple sınırı 1000; artık yer yok, yeni başarım için puan kaydırmak gerekir). 2026-10-26 (Unity, karakter adımı): bs_tur_2..4 ve bs_efsane eklendi; kod yalnız Unity build'inde verir. 2026-10-26 (Unity, adım 7–9): bs_antrenor, bs_gunun_maci, bs_usta_6, bs_imza_okur eklendi (15 → 19 başarım); bs_tur_3/4 artık kazanılabilir (Tur 3–4 verisi geldi). Görselleri 2026-11-08'de eklendi (19/19 hazır; üreteç `tool/gorsel/game_center_rozet.py`). Tanımlanmamış ID oyunu bozmaz, yalnız Game Center'da görünmez.
 Açıklamada ASC iki alan ister (kazanılmadan / kazanılınca); ikisine de aynı

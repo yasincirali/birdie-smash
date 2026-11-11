@@ -1,6 +1,6 @@
 Birdie Smash, tek parmakla oynanan bir badminton oyunu. Top gelince ekranda kaydırırsın: kaydırmanın yönü topun gideceği yeri, hızı vuruşun gücünü belirler.
 
-- Kariyer: 4 tur, 24 rakip; mahalle salonundan Dünya Finalleri'ne, sonra bitmeyen Şampiyon yolu
+- Kariyer: 8 tur, 48 rakip; mahalle salonundan Efsaneler Kupası'na, sonra bitmeyen Şampiyon yolu
 - Günün maçı: her gün yeni rakip, saha ve kural; seri tutma derdi yok
 - Sonsuz ralli: antrenör sen kaçırana kadar besler, her 5 vuruşta hızlanır
 - Dolap: forma, şapka, ayakkabı, sevinç ve seviyeyle açılan smaç hareketleri; oyunu değiştiren raket, kordaj ve sap
@@ -14,7 +14,7 @@ FORMDA KAL
 Smaç, sıçrama ve uzanma nefes yakar. Nefesin azalınca yavaşlarsın, smacın zayıflar. Clear atıp sayı arasında dinlen. Forehand ile backhand farklıdır: backhand tarafından smaç olmaz, topu forehand tarafına alacak şekilde dur.
 
 KARİYER
-Dört tur: Yerel yol, Asya Turu, Avrupa Turu ve Dünya Finalleri; her turda altı rakip. Rakiplerin farklı oynar: her topu smaçlayan Smaşçı, her şeyi geri çeviren Duvar, fileye yapışan File oyuncusu, son anda yön değiştiren Aldatıcı. Tur patronlarının okumayı öğreneceğin bir imza vuruşu var. Her maçta görevler ve yıldızlar seni bekler. Dünya Finalleri'nden sonra Şampiyon yolu başlar: seçtiğin zorlukta oynanan, sonu olmayan bir merdiven. Usta zorlukta adı Usta yolu olur ve koşmak da sendedir.
+Sekiz tur: Yerel yol, Asya Turu, Avrupa Turu, Dünya Finalleri, Pasifik Turu, Amerika Turu, Büyük Kupa ve Efsaneler Kupası; her turda altı rakip. Rakiplerin farklı oynar: her topu smaçlayan Smaşçı, her şeyi geri çeviren Duvar, fileye yapışan File oyuncusu, son anda yön değiştiren Aldatıcı. Tur patronlarının okumayı öğreneceğin bir imza vuruşu var. Her maçta görevler ve yıldızlar seni bekler. Dünya Finalleri'nden sonra Şampiyon yolu başlar: seçtiğin zorlukta oynanan, sonu olmayan bir merdiven. Usta zorlukta adı Usta yolu olur ve koşmak da sendedir.
 
 EKİPMAN
 Maç kazandıkça Tüy ve XP toplarsın. Raket modeli, tel gerginliği, bileklik, kafa bandı ve forma oyunun hissini değiştirir: kafa ağır raket smacı sertleştirir, kafa hafif raket file oyununu hızlandırır, gevşek tel güç verir, sıkı tel kontrol. Ekipman raketin sesini ve titreşimini de değiştirir. Oyuncunu 360 derece döndürüp raketini yakından inceleyebilirsin. Seviye atladıkça sıçrayarak smaç için yeni hareketler açılır; bunlar yalnız görünüştür, satılmaz. Sv 30'dan sonra Efsane kademeleri başlar. Tüy oynayarak kazanılır; daha fazlasını isteyen uygulama içinden Tüy paketi alabilir.

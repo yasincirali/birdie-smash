@@ -706,8 +706,9 @@
 /* 2026-11-07 (yasin "yazılar üst üste biniyor"): dikeyde flex-basis 0 öğeyi yalnız dolgu boyuna eziyordu, büyük yazıda
    sayı ve etiketler üst üste biniyordu (r127 menu_se_x2_profil). Dikeyde boy içerikten gelir. */
 .uc-sayi--dikey .uc-sayi-oge { margin: 3px 0; flex-basis: auto; flex-grow: 0; flex-shrink: 0; }
-.kupa-raf { flex-direction: row; justify-content: space-between; margin-top: 8px; padding-bottom: 6px; border-bottom-width: 6px; border-color: #4A3560; }
-.kupa-hucre { width: 48px; height: 48px; align-items: center; justify-content: center; border-radius: 16px; }
+/* 2026-11-11 kariyer 8 tur: sekiz kupa tek sıraya sığmaz (8 × 48 > kart genişliği); dörderli iki sıra. */
+.kupa-raf { flex-direction: row; flex-wrap: wrap; margin-top: 8px; padding-bottom: 6px; border-bottom-width: 6px; border-color: #4A3560; }
+.kupa-hucre { width: 25%; height: 48px; align-items: center; justify-content: center; border-radius: 16px; }
 .kupa-hucre:active { scale: 0.94 0.94; }
 .kupa-hucre--yok { opacity: 0.55; }
 
@@ -718,7 +719,8 @@
 
 /* 2026-11-06 reklam şeridi yer tutucusu (Game/Reklam.cs): sekme çubuğunun üstünde 50 pt, sekme çubuğuyla aynı zemin ailesi
    (biraz koyu), üstte 1 pt çizgi; yazı küçük ve soluk, dikkat çekmez. SDK gelince şerit bu kutunun içine yerleşir. */
-.reklam-alani { flex-shrink: 0; height: 50px; background-color: rgb(20, 14, 25); border-top-width: 1px; border-color: var(--ln);
+/* 2026-11-11: bant üstte (gövdenin ilk çocuğu, güvenli alanın altında); çizgi artık altında. */
+.reklam-alani { flex-shrink: 0; height: 50px; background-color: rgb(20, 14, 25); border-bottom-width: 1px; border-color: var(--ln);
                 align-items: center; justify-content: center; display: none; }
 /* 2026-11-07 Profil ad alanı yer tutucusu (ProfilEkran): alanın içinde, metin başlangıcına hizalı, dokunuşu geçirir. */
 .ad-yer-tutucu { position: absolute; left: 12px; top: 0; bottom: 0; -unity-text-align: middle-left; }

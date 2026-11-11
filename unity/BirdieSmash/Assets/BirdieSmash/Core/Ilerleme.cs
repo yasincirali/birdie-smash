@@ -122,7 +122,9 @@ namespace BirdieSmash.Core
         public List<string> AldatmaGorulen { get { var l = new List<string>(); var o = diger.ContainsKey("aldatmaGor") ? diger["aldatmaGor"] as List<object> : null; if (o != null) foreach (var x in o) if (x is string) l.Add((string)x); return l; } }
         public void AldatmaGor(string id) { var l = AldatmaGorulen; if (l.Contains(id)) return; var o = new List<object>(); foreach (var x in l) o.Add(x); o.Add(id); diger["aldatmaGor"] = o; }
         // Usta yolu: son turun (Dünya Finalleri) finali kazanılınca açılır.
-        public bool UstaAcik { get { int s = KariyerVeri.Turlar.Length - 1; return s >= 0 && KariyerVeri.Turlar[s].Var && TurAcik(s) && TurBitti(s); } }
+        // 2026-11-10 (8 tur): eskiden Dünya Finalleri (4. tur) son turdu; orayı bitirip merdivene çıkmış oyuncunun kapısı yeni
+        // turlar yüzünden kapanmaz: en az bir Usta basamağı kazanmış kayıt açık kalır (kazanılan şey geri alınmaz).
+        public bool UstaAcik { get { if (Usta > 0) return true; int s = KariyerVeri.Turlar.Length - 1; return s >= 0 && KariyerVeri.Turlar[s].Var && TurAcik(s) && TurBitti(s); } }
 
         public static int Say(int m) { return (m & 1) + (m >> 1 & 1) + (m >> 2 & 1); }
         public int Maske(int g) { return tur[KariyerVeri.TurOf(g)][KariyerVeri.BasOf(g)]; }

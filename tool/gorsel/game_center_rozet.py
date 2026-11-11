@@ -14,6 +14,10 @@ ROZETLER = {
     "bs_tur_2": ("II", MAVI),        # Asya Turu finali (tur numarası Roma rakamı: kariyer basamaklarının 1–6'sıyla karışmaz)
     "bs_tur_3": ("III", MAVI),       # Avrupa Turu finali
     "bs_tur_4": ("IV", ALTIN),       # Dünya Finalleri
+    "bs_tur_5": ("V", MAVI),         # Pasifik Turu finali (2026-11-11: kariyer 8 tur)
+    "bs_tur_6": ("VI", MAVI),        # Amerika Turu finali
+    "bs_tur_7": ("VII", MAVI),       # Büyük Kupa finali
+    "bs_tur_8": ("VIII", ALTIN),     # Efsaneler Kupası: kariyerin sonu
     "bs_efsane": ("30", ALTIN),      # Seviye 30
     "bs_antrenor": ("24", LIME),     # 24 antrenman yıldızı
     "bs_gunun_maci": ("☀", ALTIN),  # Günün maçı: güneş
@@ -26,7 +30,7 @@ def ciz(simge, renk):
     im = Image.new("RGB", (1024, 1024), ZEMIN); d = ImageDraw.Draw(im)
     d.ellipse((90, 90, 934, 934), fill=renk); d.ellipse((136, 136, 888, 888), fill=ZEMIN); d.ellipse((170, 170, 854, 854), fill=DISK)
     # Tek simge (güneş, göz) DejaVu'da rakamdan küçük çizilir: aynı görsel ağırlık için büyütülür.
-    boy = 620 if not simge.isalnum() else {1: 400, 2: 330, 3: 290}.get(len(simge), 290)
+    boy = 620 if not simge.isalnum() else {1: 400, 2: 330, 3: 290}.get(len(simge), 240)
     f = ImageFont.truetype(FONT, boy)
     x0, y0, x1, y1 = d.textbbox((0, 0), simge, font=f)
     d.text((512 - (x0 + x1) / 2, 512 - (y0 + y1) / 2), simge, font=f, fill=renk)

@@ -223,7 +223,11 @@ namespace BirdieSmash.Core
                 float bb = bx * bx + by * by + bz * bz, u = bb > 1e-9f ? Math.Max(0, Math.Min(1, ((x - ax) * bx + (y - ay) * by + (z - az) * bz) / bb)) : 0;
                 float dx = ax + bx * u - x, dy = ay + by * u - y, dz = az + bz * u - z, d2 = dx * dx + dy * dy + dz * dz; if (d2 < en) en = d2;
             }
-            float d = (float)Math.Sqrt(en); uzakSapmaMax = Math.Max(uzakSapmaMax, d); uzakSapmaToplam += d; uzakSapmaN++;
+            // 2026-11-11: dirilişte (top bu tarafta görünür biçimde düşmüş, s.dead) top servis yerine alınmış olabilir; yola uzaklık
+            // 6–7 m çıkar ve çekirdeklerin ayrıştığını değil ölçümün anlamsızlaştığını gösterir (BotMac sırası değişince tohum 41'de
+            // de yakalandı; main'de IkizMaclar tek başına koşunca da çıkıyordu). Diriliş kendi sayacı ve %2 sınırıyla denetlenir;
+            // sapma ölçüsüne yalnız canlı top girer. Sayı (uzakSapmaN) vuruş sayısı olarak aynı kalır.
+            float d = (float)Math.Sqrt(en); uzakSapmaN++; if (!s.dead) { uzakSapmaMax = Math.Max(uzakSapmaMax, d); uzakSapmaToplam += d; }
             if (s.dead) uzakDirilis++; if (s == uzakYerTop) uzakYerdenAlinan++;
         }
 

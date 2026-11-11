@@ -485,13 +485,16 @@ static class BotMac
         var b0 = Match.STIL["smasci"]; if (b0.isim != "Blaze" || b0.ustP[0] != .62f || b0.hata != 1.2f || b0.ev != 3.2f || b0.yorK != 1.3f) Fail("Blaze değerleri veriden farklı okundu");
         var d0 = Match.STIL["duvar"]; if (d0.hiz != 1.08f || d0.hata != .75f || d0.yorK != .7f) Fail("Rocco değerleri veriden farklı okundu");
         var f0 = Match.STIL["file"]; if (f0.geriK != 1.8f || f0.ev != 2.2f) Fail("Mika değerleri veriden farklı okundu");
-        if (KariyerVeri.Turlar.Length != 4 || !KariyerVeri.Turlar[1].Var || KariyerVeri.Turlar[1].b[5].uzunluk != 11 || !KariyerVeri.Turlar[1].b[5].patron) Fail("Asya Turu verisi");
-        if (!KariyerVeri.Turlar[2].Var || !KariyerVeri.Turlar[3].Var) Fail("Tur 3–4 verisi yok");
+        if (KariyerVeri.Turlar.Length != 8 || KariyerVeri.TUR != 8 || !KariyerVeri.Turlar[1].Var || KariyerVeri.Turlar[1].b[5].uzunluk != 11 || !KariyerVeri.Turlar[1].b[5].patron) Fail("Asya Turu verisi");
+        for (int ti = 2; ti < 8; ti++) if (!KariyerVeri.Turlar[ti].Var) Fail("Tur " + (ti + 1) + " verisi yok");
+        // 8 tur (2026-11-10): araya tur girmez (kayıt tur sırasıyla): 4. tur hep Dünya Finalleri; son iki turun finali 21 sayı.
+        if (KariyerVeri.Turlar[3].id != "dunya" || KariyerVeri.Turlar[7].id != "efsaneler" || KariyerVeri.Turlar[6].b[5].uzunluk != 21 || KariyerVeri.Turlar[7].b[5].uzunluk != 21) Fail("8 tur sırası / final uzunluğu");
+        for (int ti = 1; ti < 8; ti++) if (KariyerVeri.Turlar[ti].epMin < KariyerVeri.Turlar[ti - 1].epMin || KariyerVeri.Turlar[ti].epMax > 60) Fail("tur EP aralığı artmalı, en çok 60: " + KariyerVeri.Turlar[ti].ad);
         foreach (var t in KariyerVeri.Turlar) foreach (var k in t.b) if (Match.GorevBul(k.gorev) == null || !Match.STIL.ContainsKey(k.stil)) Fail("bilinmeyen görev/tarz: " + k.yer);
         // Kural maçı (2026-11-07): Tur 1 ve patron finali kuralsız, turda en çok bir; Günün maçı tanımı olmalı ve maça geçmeli.
         int kural = 0, senaryoN = 0;
         for (int ti = 0; ti < KariyerVeri.Turlar.Length; ti++) { int n = 0, sn = 0; foreach (var k in KariyerVeri.Turlar[ti].b) if (k.degistirici != null) { bool senaryo = k.degistirici == "geri"; if (senaryo) { sn++; senaryoN++; if (k.uzunluk != 11) Fail("geri dönüş yalnız 11 sayılık basamakta: " + k.yer); } else { n++; kural++; } if (ti == 0 || k.patron || Gunluk.Deg(k.degistirici) == null) Fail("kural maçı yeri/tanımı: " + k.yer); } if (n > 1 || sn > 1) Fail("turda birden çok kural maçı ya da senaryo"); }
-        if (kural != 3 || senaryoN != 1) Fail("kariyerde 3 kural maçı + 1 senaryo olmalı: " + kural + "/" + senaryoN);
+        if (kural != 6 || senaryoN != 3) Fail("kariyerde 6 kural maçı + 3 senaryo olmalı: " + kural + "/" + senaryoN);
         // Senaryo (2026-11-10): "geri" maçı 0–3 başlatır, Günün maçı döngüsüne girmez, ilk sayı yazısı (rakip adı) yine çıkar.
         foreach (var gd in Gunluk.Degistiriciler) if (gd.id == "geri") Fail("senaryo Günün maçı döngüsünde olmamalı");
         var Mg = new Match(5, new MatchOptions { easy = true, stil = Match.KariyerRakip(18), target = 11, degistirici = KariyerVeri.Al(18).degistirici });
@@ -532,7 +535,14 @@ static class BotMac
         var f = Ilerleme.Oku(null, 6, true); for (int b = 0; b < 6; b++) f.Isle(6 + b, true, false, 5, 4, 5);
         if (f.HepsiBitti || !f.TurAcik(2) || f.TurYakinda(2) || f.Siradaki() != 12 || f.UstaAcik) Fail("Asya Turu bitince Avrupa Turu açılmalı");
         IlerlemeSonuc son = null; for (int g = 12; g < 24; g++) son = f.Isle(g, true, false, 5, 4, 5);
-        if (!f.HepsiBitti || !f.UstaAcik || !son.turBitti || !son.not.Contains("Usta yolu açıldı") || f.Siradaki() != 23) Fail("Dünya Finalleri bitince Usta yolu açılmalı: " + son.not);
+        // 8 tur (2026-11-10): Dünya Finalleri artık son tur değil; bitince Pasifik Turu açılır, Usta yolu son turun finalinde.
+        if (f.HepsiBitti || f.UstaAcik || !son.turBitti || !son.not.Contains("Pasifik Turu açıldı") || f.Siradaki() != 24 || !f.TurAcik(4)) Fail("Dünya Finalleri bitince Pasifik Turu açılmalı: " + son.not);
+        for (int g = 24; g < 48; g++) son = f.Isle(g, true, false, 11, 4, 11);
+        if (!f.HepsiBitti || !f.UstaAcik || !son.turBitti || !son.not.Contains("Usta yolu açıldı") || f.Siradaki() != 47) Fail("Efsaneler Kupası bitince Usta yolu açılmalı: " + son.not);
+        // Eski kayıt (4 dizi, Dünya Finalleri bitmiş, merdivende 3 basamak): okunur, merdiven kapısı kapanmaz, sıradaki Pasifik 1.
+        var eskiK = Ilerleme.Oku("{\"tur\":[[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,7]],\"usta\":3}", 0, false);
+        if (!eskiK.UstaAcik || eskiK.Siradaki() != 24 || eskiK.Maske(23) != 7 || eskiK.Maske(24) != 0 || eskiK.ToplamYildiz != 26) Fail("4 turluk eski kayıt 8 turda okunmalı");
+        if (Ilerleme.Oku("{\"tur\":[[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1],[1,1,1,1,1,1]]}", 0, false).UstaAcik) Fail("merdivene hiç çıkmamış eski kayıt: Usta yolu son turdan sonra");
         var tb = Ilerleme.Oku(null, 5, false).Isle(5, true, false, 5, 4, 5); if (!tb.turBitti || !tb.not.Contains("Asya Turu açıldı")) Fail("Tur 1 finali notu: " + tb.not);
         // ödül: yeni yıldız +20 Tüy, okunan imza +5 XP
         var g0 = new Gear(new BellekKayit(), 0); g0.eko.gun = "x"; var o0 = g0.Odul(true, false, 5, true, 0, 0, DateTime.Now);
@@ -1031,7 +1041,7 @@ static class BotMac
         if (Hedef.EnBuyukEk(new List<string>(), out d) != null || d != 0 || Hedef.EnBuyukEk(new List<string> { "Günün maçı +40" }, out d) != "Günün maçı +40" || d != 0) Fail("ödül alt yazısı: boş/tek");
         Console.WriteLine("Hedef eşya: kilitli olmaz, alınınca düşer, hazır eşikte; ödül satırı en büyük ek + " + d);
     }
-    static Ilerleme Tamam() { var p = Ilerleme.Oku(null, 6, true); for (int g = 6; g < 24; g++) p.Isle(g, true, false, 5, 4, 5); return p; }
+    static Ilerleme Tamam() { var p = Ilerleme.Oku(null, 6, true); for (int g = 6; g < KariyerVeri.TUR * KariyerVeri.BASAMAK; g++) p.Isle(g, true, false, 5, 4, 5); return p; }
 
     // ---- 2026-10-26 karakter tasarımı (tip, saç biçimi, ayakkabı modeli) ----
     static Gear SvGear(int sv, int tuy) { var g = new Gear(new BellekKayit(), 0); g.eko.xp = 0; for (int L = 1; L < sv; L++) g.eko.xp += Gear.SvEsik(L); g.eko.tuy = tuy; return g; }
