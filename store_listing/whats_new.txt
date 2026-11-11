@@ -1,11 +1,4 @@
 === UNITY ===
-Kariyer şeridi dolarak ilerliyor, Maçın anı maç sayısını tanıyor, Nasıl oynanır kısaldı (12 Kasım gece):
-- Kariyer maçını kazanınca sonuç kartındaki tur şeridinde yeni basamak bir anda boyanmıyor: soldan dolar, kısa parlar, tık sesi ve titreşim gelir; sonra sıradaki basamak belirir.
-- "Maçın anı" artık maçı bitiren sayıyı ve rakibin maç sayısını kurtardığın sayıyı öne alır. Maçı kazandıysan kaybettiğin bir ralli gösterilmez. Düğmenin altında "Maç sayısı" ya da "Maç sayısını kurtardın" yazar.
-- Ayarlar > Nasıl oynanır: başlıklar tek satır, dokununca açılır. Koş, Forehand / backhand ve Derinlik maddelerinin altında "Görevde dene" ile ilgili antrenman görevine gidilir.
-- Oyuncu gölgeleri daha keskin: gölge mesafesi artık kamera açısına göre kortun boyunca ayarlanıyor.
-Nasıl denenir: Kariyerde bir maç kazan: sonuç kartının altındaki şeritte yeni basamak yıldızlardan sonra soldan dolmalı, tık duyulmalı. Maçı maç sayısında smaçla bitir ve "Maçın anı"na dokun: o sayı oynamalı, üstte "Maç sayısı" yazmalı. Ayarlar > Nasıl oynanır'da "Derinlik"e dokun: açılmalı, "Görevde dene"ye dokununca Savunma clear görev kartı açılmalı. Maçta oyuncunun gölgesine bak: kenarı eskisinden net olmalı, uzak dip çizgide kesilmemeli.
-
 Hızlı maçta rakip seçimi, Sonsuz rallide yeni top uyarısı, Tüy harcama anı (11 Kasım gece 3):
 - Hızlı maç sayfasında rakibi seçebilirsin: "Rastgele" ya da kariyerde yendiğin rakiplerden biri. Rakibin gücü yine senin seviyende.
 - Sonsuz rallide hız artınca hangi yeni topun geleceği de yazıyor ("Smaç da geliyor" gibi); ilk smaç sürpriz olmuyor.

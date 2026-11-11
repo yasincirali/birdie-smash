@@ -7,10 +7,6 @@
 // 2026-11-06 (yasin: "maçın anı görseli istenen gibi gözükmüyor"; öneri artifact'i YAP): top artık gerçek tüy top görünümüyle
 // (ShuttleView, kendi izi) oynar: kayıttaki konumlardan sahte bir Shuttle beslenir, hız kare farkından. Rallinin vuruş sayısı
 // ve smaçla bitip bitmediği saklanır (Hud etiketi). Hareketi azaltta ağır çekim yok (YavasK hep 0, kamera yaklaşmaz).
-// 2026-11-12 (inceleme 00:05 #7): seçim yalnız ralli uzunluğuna bakıyordu; 13 vuruşluk kaybedilmiş ralli, maçı 2 vuruşta smaçla
-// bitiren sayıyı geçiyordu. Bağlam eki: maçı bitiren sayı +10, rakibin maç sayısını kurtaran sayı +6 (bağlam GameRoot'un sayı
-// öncesi maç sayısı durumundan, Core'a dokunmaz). Maçı kazandıysan kaybettiğin ralli an olmaz: kazandığın sayılar arasından ayrı
-// bir en iyi tutulur, MacBitti(true) onu seçer; yenilgide genel en iyi kalır ("iyi direndin" anı). Bellek en çok iki kayıt (~170 KB).
 using System.Collections.Generic;
 using UnityEngine;
 using BirdieSmash.Core;
@@ -22,12 +18,11 @@ namespace BirdieSmash.Game
         public struct Kare { public float zt; public Vector3 mp, op, top; public Quaternion my, oy; public string mk, ok; public float mf, of; public bool topVar; }
         const float ORN = 1 / 60f, YAVAS = .35f, YAVAS_SURE = .9f, BEKLE = .7f; const float SAKLA_SN = 5, EN_AZ_SN = .75f; const int MAX = 60 * 12;
         readonly List<Kare> ralli = new List<Kare>(MAX); float birik, saat, enIyiPuan = -1, t = -1; int oi; Vector3 sonTop; bool sonVar;
-        public int Vurus, Baglam; public bool Smac;   // oynatılan rallinin vuruş sayısı, bağlamı (0 yok, 1 maçı bitiren, 2 maç sayısı kurtarma), smaçla mı bitti
-        Kare[] bIyi; float bPuan = -1; int bVurus, bBaglam; bool bSmac;   // yalnız kazandığın sayılardan en iyisi
+        public int Vurus; public bool Smac;   // oynatılan rallinin vuruş sayısı, smaçla mı bitti
         public Kare[] enIyi;
         public bool Var { get { return enIyi != null && enIyi.Length > 1; } }
         public bool Aktif { get { return t >= 0 && enIyi != null; } }
-        public void Sifirla() { ralli.Clear(); enIyi = null; enIyiPuan = -1; birik = 0; saat = 0; t = -1; Vurus = 0; Baglam = 0; Smac = false; bIyi = null; bPuan = -1; }
+        public void Sifirla() { ralli.Clear(); enIyi = null; enIyiPuan = -1; birik = 0; saat = 0; t = -1; Vurus = 0; Smac = false; }
         public void Kaydet(float dt, PlayerView me, PlayerView op, bool topVar, Vector3 top)
         {
             // Zaman damgalı (inceleme 2026-11-05): 30/60/120 Hz'de oynatma gerçek hızda kalır; 60 Hz'den sık kare atlanır.
@@ -35,20 +30,13 @@ namespace BirdieSmash.Game
             if (ralli.Count >= MAX) ralli.RemoveAt(0);
             ralli.Add(new Kare { zt = saat, mp = me.transform.position, op = op.transform.position, my = me.KayitYaw, oy = op.KayitYaw, mk = me.TaniKlip, ok = op.TaniKlip, mf = me.TaniFaz, of = op.TaniFaz, topVar = topVar, top = top });
         }
-        public void SayiBitti(bool benim, int vurus, bool smac, int baglam = 0)
+        public void SayiBitti(bool benim, int vurus, bool smac)
         {
-            float p = vurus + (benim ? 6 : 0) + (smac ? 4 : 0) + (baglam == 1 ? 10 : baglam == 2 ? 6 : 0);
+            float p = vurus + (benim ? 6 : 0) + (smac ? 4 : 0);
             float sure = ralli.Count > 1 ? ralli[ralli.Count - 1].zt - ralli[0].zt : 0;
-            bool genel = p > enIyiPuan, ben = benim && p > bPuan;
-            if (sure >= EN_AZ_SN && (genel || ben))
-            {
-                int bas = ralli.Count - 1; float son = ralli[bas].zt; while (bas > 0 && son - ralli[bas - 1].zt <= SAKLA_SN) bas--; int nk = ralli.Count - bas; var a = new Kare[nk]; ralli.CopyTo(bas, a, 0, nk);
-                if (genel) { enIyi = a; enIyiPuan = p; Vurus = vurus; Smac = smac; Baglam = baglam; }
-                if (ben) { bIyi = a; bPuan = p; bVurus = vurus; bSmac = smac; bBaglam = baglam; }   // aynı dizi paylaşılır, kopya yok
-            }
+            if (sure >= EN_AZ_SN && p > enIyiPuan) { int bas = ralli.Count - 1; float son = ralli[bas].zt; while (bas > 0 && son - ralli[bas - 1].zt <= SAKLA_SN) bas--; int nk = ralli.Count - bas; var a = new Kare[nk]; ralli.CopyTo(bas, a, 0, nk); enIyi = a; enIyiPuan = p; Vurus = vurus; Smac = smac; }
             ralli.Clear(); birik = 0;
         }
-        public void MacBitti(bool kazandi) { if (kazandi && bIyi != null) { enIyi = bIyi; enIyiPuan = bPuan; Vurus = bVurus; Smac = bSmac; Baglam = bBaglam; } bIyi = null; }
         public void Baslat() { if (Var) { t = 0; oi = 0; sonVar = false; YavasK = 0; } }
         // Ağır çekim payı (0 → 1, son 0,9 sn'ye girerken .25 sn'de): kamera bitiren ana bu oranla hafifçe yaklaşır.
         public float YavasK { get; private set; }

@@ -382,7 +382,7 @@ namespace BirdieSmash.Game
             if (M.ogr == null && Ayar.ilerleme != null && M.stil.usta < 0) Ayar.ilerleme.YardimIsle(won);
             bool yumusadi = Ayar.ilerleme != null && Ayar.ilerleme.Yardim > yardim0;
             string kNot = ""; bool kariyerIlk = false; int yeniYildiz = 0; bittiYildiz = null; int ekTuy = 0, ekXp = 0; string ekAd = null; bittiSkor = null;
-            BittiSifirla(); bittiKazandi = won; if (M.ogr == null) ani.MacBitti(won);
+            BittiSifirla(); bittiKazandi = won;
             // Kolay'dan Usta'ya davet (stüdyo incelemesi 2026-11-05, oyun tasarımı 6): Kolay'da rahat kazanan oyuncuya (3+ galibiyet,
             // bu maçta 5+ tam orta) tek maçlık "Zor'u dene" (2026-11-05 dört kademe: önce Usta'ydı; Zor koşu yardımlı, adım daha küçük). Ayar değişmez, maç Usta ödülüyle (×1,25) oynanır; en çok 2 kez gösterilir.
             ustaDavet = won && M.easy && M.ogr == null && M.stil.usta < 0 && mod == Mod.Normal && !ustaDeneMac && Ayar.wins >= 3 && M.perfects >= 5 && PlayerPrefs.GetInt("tuytop_usta_davet", 0) < 2;
@@ -543,7 +543,6 @@ namespace BirdieSmash.Game
         public bool AniAktif { get { return ani.Aktif; } }
         public int AniVurus { get { return ani.Vurus; } }
         public bool AniSmac { get { return ani.Smac; } }
-        public int AniBaglam { get { return ani.Baglam; } }
         public float AniYavas { get { return ani.Aktif ? ani.YavasK : 0; } }
         public void AniBaslat() { ani.Baslat(); aniS = new Shuttle { from = "", type = "clear" }; aniIzlendi = true; Yerel.Hap("tick"); }
         public void AniDur() { ani.Bitir(); aniS = null; }
@@ -648,11 +647,6 @@ namespace BirdieSmash.Game
             camTv = kam.tv; camK = kam.k; takip.Egim(kam, null, 0, true);   // açı/ekran değişince takip sıfırdan
             camBase = new Vector3(0, kam.h, kam.Z); camRot = Quaternion.Euler(kam.p, 0, 0); cam.transform.SetPositionAndRotation(camBase, camRot);
             kadrajEgim = 0; kadrajGenis = 1; Projeksiyon(1);
-            // Gölge mesafesi kadrajdan (2026-11-12, Kalite.KadrajGolge): en uzak kort köşesi (çevre payı .5 m) + 2,5 m (figür boyu
-            // ve takip eğiminde kesilmesin diye). Kamera konumu yalnız burada değişir; eğim yalnız döndürür.
-            float gd = 0, hx = Court.CW / 2 + .5f, hz = Court.L / 2 + .5f;
-            for (int i = 0; i < 4; i++) gd = Mathf.Max(gd, Vector3.Distance(camBase, new Vector3((i & 1) == 0 ? -hx : hx, 0, (i & 2) == 0 ? -hz : hz)));
-            Kalite.KadrajGolge(gd + 2.5f);
         }
         // Takip: maçta (sonuç ekranında da, top yere inerken) uçuşun eğimi; menüde ve hareketi azaltta 0. Saat Match.clock:
         // duraklatınca kamera da durur, ağır çekimde yavaşlar.
@@ -1172,7 +1166,7 @@ namespace BirdieSmash.Game
                 case Ev.Point:
                     {
                         bool smac = mine && e.type == "smash";
-                        if (match.ogr == null) ani.SayiBitti(mine, (int)e.k, smac, mine && (mpYan == 0 || mpYan == 2) ? 1 : mine && mpYan == 1 ? 2 : 0);   // mpYan sayı öncesi durum
+                        if (match.ogr == null) ani.SayiBitti(mine, (int)e.k, smac);
                         // Canlı salon (2026-11-06 ek tur): seyirci benim sayımda ya da uzun rallide kalkar, smaçta panolar "SMASH!";
                         // rakibin maç sayısını kurtarınca tek kelime (Kurtardın!). mpYan önceki karenin durumu (skor bu olayla değişti).
                         if (mine || e.k >= 8) salonSicra = 0;
