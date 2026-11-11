@@ -143,10 +143,14 @@ namespace BirdieSmash.Core
         {
             var d = Dril; if (d == null || d.alan == null || d.olcu == "aldat" || d.olcu == "karsila" || d.olcu == "kill" || d.olcu == "split" || d.olcu == "cesit") return null;
             // Kısa servis: alanın genişliği servisin gittiği kutudan (çapraz; skor antrenmanda hep 0, kutu sabit), derinliği veriden.
-            if (d.olcu == "servis" && serveBox != null) return new[] { Math.Min(serveBox.x0, serveBox.x1), Math.Max(serveBox.x0, serveBox.x1), d.alan[2], d.alan[3] };
+            if (d.olcu == "servis" && serveBox != null) return Alan4(Math.Min(serveBox.x0, serveBox.x1), Math.Max(serveBox.x0, serveBox.x1), d.alan[2], d.alan[3]);
             if (!d.kose || drKose == 0) return d.alan;
-            return new[] { Court.CW - d.alan[1], Court.CW - d.alan[0], d.alan[2], d.alan[3] };
+            return Alan4(Court.CW - d.alan[1], Court.CW - d.alan[0], d.alan[2], d.alan[3]);
         }
+        // 2026-11-11 (fikir 23:05 #8): görünüm (Fx.Tick, Hud) her karede soruyordu; yeni dizi yerine maç başına tek tampon.
+        // Okuyan hemen kullanır (Icinde, bant çizimi), saklamaz.
+        readonly float[] drAlanBuf = new float[4];
+        float[] Alan4(float a, float b, float c, float e) { drAlanBuf[0] = a; drAlanBuf[1] = b; drAlanBuf[2] = c; drAlanBuf[3] = e; return drAlanBuf; }
         static bool Icinde(float[] a, float x, float y) { return a != null && x >= a[0] && x <= a[1] && y >= a[2] && y <= a[3]; }
 
         // Top başı (SetupServe): sayaçlar sıfırlanır, köşe değişir, antrenör beslemeye göre durur (smaç: orta sahada, gevşek

@@ -14,10 +14,14 @@ namespace BirdieSmash.Game
         public static Vector2 FromWorld(Vector3 p) { return new Vector2(p.x + Court.MID, Court.NET - p.z); }
 
         static Shader std, spr;
+        // 2026-11-11 inceleme (fikir 23:05 #1): figür kurulurken yaratılan malzemeler bu listeye de yazılır ki figür silinince
+        // onlar da silinsin (PlayerView.Sil). Eskiden Dolap'ta her deneme kartı figürü yeniden kuruyor, ~20 malzeme maç
+        // perdesindeki UnloadUnusedAssets'e kadar bellekte kalıyordu. Liste yalnız PlayerView.Build süresince doludur.
+        public static System.Collections.Generic.List<Material> Topla;
         public static Material Lit(Color c, float smooth = .25f)
         {
             if (std == null) std = Shader.Find("Standard");
-            var m = new Material(std); m.color = c; m.SetFloat("_Glossiness", smooth); return m;
+            var m = new Material(std); m.color = c; m.SetFloat("_Glossiness", smooth); if (Topla != null) Topla.Add(m); return m;
         }
         public static Material LitTex(Color c, Texture t, float smooth = .25f) { var m = Lit(c, smooth); m.mainTexture = t; return m; }
         // Standard: teğet uzayı normal haritası (doku içe aktarımda "Normal map" türünde olmalı: KarakterImport) ve
