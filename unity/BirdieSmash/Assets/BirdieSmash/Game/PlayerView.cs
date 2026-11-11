@@ -115,14 +115,12 @@ namespace BirdieSmash.Game
         }
         // Kurulumda yaratılan malzemeler (Kit.Topla). Önbellekli olanlar (dokuM, sacM) başka figürlerle paylaşıldığı için silinmez.
         List<Material> kendiM;
-        // Önbelleğe bir kez girmiş malzeme (LRU'dan düşse bile başka figürde kullanılıyor olabilir) asla silinmez.
-        static readonly HashSet<Material> paylasilan = new HashSet<Material>();
         // Sık yeniden kurulan yüzeyler (Dolap vitrini, portreler, afiş) Destroy(gameObject) yerine bunu çağırır.
         public void Sil()
         {
             if (kendiM != null)
             {
-                foreach (var m in kendiM) if (m != null && !paylasilan.Contains(m)) Destroy(m);
+                foreach (var m in kendiM) if (m != null && !Kit.Paylasilan.Contains(m)) Destroy(m);
                 kendiM = null;
             }
             Destroy(gameObject);
@@ -316,7 +314,7 @@ namespace BirdieSmash.Game
                     // figür hâlâ kullanıyor olabilir. Menüye dönüşteki UnloadUnusedAssets kullanılmayanı boşaltır.
                     while (tenSira.Count > TEN_LRU) { dokuM.Remove(tenSira[0]); tenSira.RemoveAt(0); }
                 }
-                dokuM[anahtar] = m = Kit.LitTex(Color.white, tx, .18f); paylasilan.Add(m);
+                dokuM[anahtar] = m = Kit.LitTex(Color.white, tx, .18f); Kit.Paylas(m);
                 // 2026-10-26: Gerçekçi model düz/çamurlu görünüyordu (yalnız renk dokusu): kıvrım/kas/yüz normalden,
                 // ten/kumaş/ayakkabı farkı parlaklık haritasından. Dosya yoksa (oyuncak, sade) eski malzeme birebir.
                 Kit.Bump(m, Resources.Load<Texture2D>("karakter/" + modelAdi + ek + "_n"));
@@ -618,7 +616,7 @@ namespace BirdieSmash.Game
             // saç/renk değişikliğinde yeniden). Renk + doku başına tek malzeme paylaşılır; saç malzemesine sonradan
             // yazan kod yok (parlatma yalnız raket, kanal boyası forma/raket), bu yüzden paylaşmak görünüşü değiştirmez.
             string sk = ColorUtility.ToHtmlStringRGBA(rk) + (tx != null ? "t" : "d") + (parla ? "p" : ""); Material m;
-            if (!sacM.TryGetValue(sk, out m) || m == null) { sacM[sk] = m = tx != null ? Kit.LitTex(rk, tx, .2f) : Kit.Lit(rk, .2f); paylasilan.Add(m); if (parla) Parlat(m); }
+            if (!sacM.TryGetValue(sk, out m) || m == null) { sacM[sk] = m = tx != null ? Kit.LitTex(rk, tx, .2f) : Kit.Lit(rk, .2f); Kit.Paylas(m); if (parla) Parlat(m); }
             var arr = r.sharedMaterials; for (int k = 0; k < arr.Length; k++) arr[k] = m; if (arr.Length == 0) arr = new[] { m }; r.sharedMaterials = arr;
         }
         // Vitrin tutuş görünümü (Soyunma odası › Raket: Forehand · Backhand · File · Servis): klibin temas pozunda durur; yalnız

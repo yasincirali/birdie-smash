@@ -18,6 +18,10 @@ namespace BirdieSmash.Game
         // onlar da silinsin (PlayerView.Sil). Eskiden Dolap'ta her deneme kartı figürü yeniden kuruyor, ~20 malzeme maç
         // perdesindeki UnloadUnusedAssets'e kadar bellekte kalıyordu. Liste yalnız PlayerView.Build süresince doludur.
         public static System.Collections.Generic.List<Material> Topla;
+        // Statik önbelleğe giren malzeme (PlayerView dokuM/sacM, Aksesuar hazır ağları) burada işaretlenir; Topla'ya düşmüş olsa da
+        // PlayerView.Sil onu silmez (başka figür kullanıyor olabilir; LRU'dan düşse bile). Yeni statik malzeme önbelleği = Paylas.
+        public static readonly System.Collections.Generic.HashSet<Material> Paylasilan = new System.Collections.Generic.HashSet<Material>();
+        public static void Paylas(Material m) { if (m != null) Paylasilan.Add(m); }
         public static Material Lit(Color c, float smooth = .25f)
         {
             if (std == null) std = Shader.Find("Standard");

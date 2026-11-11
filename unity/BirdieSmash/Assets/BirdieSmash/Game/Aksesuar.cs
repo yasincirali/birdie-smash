@@ -211,6 +211,7 @@ namespace BirdieSmash.Game
                 Resources.UnloadAsset(ta);
             }
             if (h != null) Boya(h, Kozmetik.Bul(Kozmetik.SAPKA, id) ?? Kozmetik.Bul(Kozmetik.SIRT, id));
+            if (h != null && h.mats != null) foreach (var m in h.mats) Kit.Paylas(m);   // 2026-11-11: önbellekte; PlayerView.Sil silmesin (Kit.Paylasilan)
             hazir[id] = h; return h;
         }
         // Veri rengi (karakter.json "renk") en çok üçgenli alt ağın rengi olur; mistik öğede o alt ağ hafifçe kendinden ışır
