@@ -1,4 +1,15 @@
 === UNITY ===
+Kariyer kaydırma, smaç hazır anı, maç sayısında sessizlik (11 Kasım akşam):
+- Kariyer'de tur kartları bırakınca yumuşakça yerine oturur; hafif bir fiskeyle bir sonraki tura geçer.
+- Smaç gücü çubuğu dolunca çan sesi, kısa titreşim ve oyuncunun üstünde kıvılcım; maçın ilk iki dolusunda "Smaç hazır!" yazar. Çubuk dolunca artık zıplamaz.
+- Skor sayısı her sayıda aynı boyda büyüyüp küçülür (titreme yok). Hareketi azalt açıkken skor oynamaz.
+- Maç sayısına gelince salon susar; ralli bitince kazanana göre coşku ya da iç çekiş gelir.
+- Iskada neden doğru yazar: "Kısa", "Yavaş", "Erken" ya da "Geç: top parlarken kaydır".
+- Rakip zor bir topu kurtarınca "Kurtardı!" yazar ve sesi duyulur ("Kıl payı" artık yalnız maç sonu başlığında).
+- "Flick servis!" yazısı maç başına en fazla iki kez çıkar.
+- Zor ve Usta'da uzağa dokununca oyuncun yalnız koşar, vuruşa karışmaz.
+Nasıl denenir: Kariyer'de tur kartlarını yavaşça sürükleyip bırak: kart ortaya kayarak oturmalı. Hızlıca hafif fiske at: bir sonraki tur gelmeli. Maçta smaç çubuğunu doldur: çan, titreşim, kıvılcım ve "Smaç hazır!" gelmeli; üçüncü dolusunda yazı çıkmamalı. Bir sayı al: skor aynı boyda kısa nabız atmalı. Maç sayısında seyirci sesi kesilmeli. Topu geç kaydır: "Geç" yazmalı. Zor'da rakip balıklama yapınca "Kurtardı!" görünmeli.
+
 Saha panoları tam yazıyor (11 Kasım sabah):
 - Sahadaki ışıklı panolar "MATCH POINT" yerine yarım kelime ("MAH I") yazıyordu, ralli sayacı çoğu sayıda boş kalıyordu. Panolar artık tüm harf ve rakamları yazar; ralli sayacı 5, 10, 15 diye ilerler.
 Nasıl denenir: Turnuva ya da salon sahasında maç oyna, maç sayısına gel: panolarda "MATCH POINT" tam okunmalı. Uzun bir ralli yap: 5. vuruşta "RALLY 5", 10. vuruşta "RALLY 10" görünmeli. Smaçla sayı al: "SMASH!" ünlemiyle görünmeli.

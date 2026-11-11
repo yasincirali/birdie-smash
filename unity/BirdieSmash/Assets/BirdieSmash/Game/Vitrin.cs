@@ -26,7 +26,7 @@ namespace BirdieSmash.Game
             {"beyaz","Beyaz"},{"siyah","Siyah"},{"kirmizi","Kırmızı"},{"limon","Limon"},{"mavi","Mavi"},{"turuncu","Turuncu"},{"pembe","Pembe"},{"mor","Mor"}};
         static readonly Vector3 YER = new Vector3(500, 0, 0);
         public RenderTexture rt; Camera kam; PlayerView fig; Transform raketPivot; string anah;
-        public float a, v, ra, rv, gec, hedefGec; public bool suruk; float parlaT = -1; int parlaK;
+        public float a, v, ra, rv, gec, hedefGec; public bool suruk; float parlaT = -1; int parlaK; List<Material> parlaMat;
         public const int TAM = 0, YUZ = 1, AYAK = 2, TUTUS = 3;
         public int odak { get; private set; }
         public string poz { get; private set; }
@@ -345,7 +345,7 @@ namespace BirdieSmash.Game
             if (p != null && (yeni || parla))
             {
                 float phi = Mathf.Atan2(yuzN.x, yuzN.z) * Mathf.Rad2Deg; raHedef = -phi + PARCA_ACI[p]; raKay = true; rv = 0;
-                if (!Ayar.reduce) { parlaK = 1; parlaEt = PARCA_ET[p]; parlaT = 0; }
+                if (!Ayar.reduce) { parlaK = 1; parlaEt = PARCA_ET[p]; parlaT = 0; parlaMat = null; }
             }
             if (p == null && yeni) { raKay = false; }
             durgun = 0;
@@ -391,7 +391,7 @@ namespace BirdieSmash.Game
         public void Parlat(string yuva)
         {
             if (Ayar.reduce) return; int kn; var map = new Dictionary<string, int> { { "raket", 1 }, { "tel", 1 }, { "grip", 1 }, { "bileklik", 3 }, { "bant", 2 }, { "forma", 0 } };
-            if (!map.TryGetValue(yuva, out kn)) return; parlaK = kn; parlaT = 0;
+            if (!map.TryGetValue(yuva, out kn)) return; parlaK = kn; parlaT = 0; parlaMat = null;
         }
 
         // Raket görünümünde raket yüzü en açık açı; geçişte kamera figürden rakete kayar.
@@ -435,8 +435,14 @@ namespace BirdieSmash.Game
             if (parlaT >= 0)
             {
                 parlaT += dt; float k = parlaT < .9f ? Mathf.Sin(parlaT / .9f * Mathf.PI) : 0; fig.Parlat(parlaK, k);
-                if (parlaK == 1) foreach (var r in raketPivot.GetComponentsInChildren<Renderer>()) if (parlaEt == null || System.Array.IndexOf(parlaEt, PlayerView.Etiket(r.gameObject.name)) >= 0) foreach (var m in r.materials) { if (k > 0) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", new Color(.85f, 1, .35f) * k * 1.2f); } else m.SetColor("_EmissionColor", Color.black); }
-                if (parlaT >= .9f) parlaT = -1;
+                // 2026-11-11 inceleme #5: hedef malzemeler parlamanın ilk karesinde bir kez toplanır; eskiden ~0,9 sn boyunca her
+                // karede bileşen araması + r.materials dizisi + etiket dizesi üretiliyordu (ödül anında çöp ve takılma riski).
+                if (parlaK == 1)
+                {
+                    if (parlaMat == null) { parlaMat = new List<Material>(); foreach (var r in raketPivot.GetComponentsInChildren<Renderer>()) if (parlaEt == null || System.Array.IndexOf(parlaEt, PlayerView.Etiket(r.gameObject.name)) >= 0) parlaMat.AddRange(r.materials); }
+                    foreach (var m in parlaMat) { if (m == null) continue; if (k > 0) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", new Color(.85f, 1, .35f) * k * 1.2f); } else m.SetColor("_EmissionColor", Color.black); }
+                }
+                if (parlaT >= .9f) { parlaT = -1; parlaMat = null; }
             }
             // Durağan vitrin çizilmez (2026-10-27 performans turu 2): hareketi azaltta, Tutuş yakın planında ve sürükleme
             // bırakılıp yavaşlama bitince görüntü kare kare aynı; kamera yine de figürü her karede 4× MSAA RT'ye çiziyordu.

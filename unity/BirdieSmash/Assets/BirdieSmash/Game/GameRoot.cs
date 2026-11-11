@@ -31,7 +31,7 @@ namespace BirdieSmash.Game
         // Menü kabuğu (2026-10-26, UI Toolkit; Game/UI/UiKok). Hud maç içi + perde için kalır; menü perdeyi buradan okur.
         public UiKok ui; public Hud HudKatman { get { return hud; } }
         GameObject court; Renderer akisR; string courtId, modelId, gorunumId;
-        public OdulSonuc odul; public bool yukseltHazir; public Hedef.Bilgi hedef; public bool hedefHazir; bool pencere; float sqT; float psvx, psvy;
+        public OdulSonuc odul; public bool yukseltHazir; public Hedef.Bilgi hedef; public bool hedefHazir; bool pencere; Shuttle pencereTop; float sqT; float psvx, psvy;
         float shake, punch; Vector3 camBase; Quaternion camRot; int seed = 1; Light sun; readonly System.Random rnd = new System.Random();
         bool ogrKayit;
         public Mod mod = Mod.Normal; public string drilId; public GunlukMac gunluk; bool gunlukSonraOyna;
@@ -182,7 +182,7 @@ namespace BirdieSmash.Game
         {
             ani.Sifirla(); AniDur(); aniIzlendi = false;   // Maçın anı her maç kendi rallilerinden (Günün maçı, Usta yolu, görev de buradan geçer)
             match = new Match(tohum, o);
-            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; System.Array.Clear(iskaN, 0, iskaN.Length); yerN = 0; yerTop = null; yardimN = 0; yardimTop = null;
+            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; System.Array.Clear(iskaN, 0, iskaN.Length); yerN = 0; yerTop = null; yardimN = 0; yardimTop = null; hazirN = 0; enerjiDolu = match.energy >= 1;
             fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; pencere = false; sfx.SuAlti(false); ReklamKartKapat(); ReklamSdk.OdulluHazirla(); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
@@ -659,10 +659,14 @@ namespace BirdieSmash.Game
         }
 
         // ---- kaydırma girdisi: piksel → 640 px yükseklikli referans (HTML eşikleri aynen geçerli) ----
-        class Swipe { public bool on, hit, moved; public float minD = 1e9f; public List<Vector3> tr = new List<Vector3>(); public Vector2 p0; public float t0; public void Reset() { on = hit = moved = false; minD = 1e9f; tr.Clear(); } }
-        static readonly string[] ISKA_NEDEN = { "Kısa kaydırdın", "Yavaş kaydırdın", "Kıl payı: topun üstünden geç", "Topun uzağından geçtin" };
+        // guclu: pencere açılmadan belirgin kaydırma (erken tampona girecek kadar) yapıldı; bırakışta "Yavaş" yerine "Erken" der.
+        class Swipe { public bool on, hit, moved, guclu; public float minD = 1e9f; public List<Vector3> tr = new List<Vector3>(); public Vector2 p0; public float t0; public void Reset() { on = hit = moved = guclu = false; minD = 1e9f; tr.Clear(); } }
+        // Iska nedeni (2026-11-11 inceleme #2): eski 3. ve 4. neden ("Kıl payı: topun üstünden geç", "Topun uzağından geçtin")
+        // neredeyse hiç düşmüyordu (pencere açıkken 70 px + .45 hız zaten vuruş); geç bırakılan kaydırmaya "Erken", erken
+        // kaydırıp bekleyene "Yavaş" yazılıyordu. Yeni oyuncunun tek öğretmeni bu kelime; zamanlama erken/geç diye ayrılır.
+        static readonly string[] ISKA_NEDEN = { "Kısa kaydırdın", "Yavaş kaydırdın", "Erken: top parlayınca kaydır", "Geç: top parlarken kaydır" };
         readonly int[] iskaN = new int[4];
-        readonly Swipe input = new Swipe(); int erkenN, yerN, yardimN; Shuttle yerTop, yardimTop;
+        readonly Swipe input = new Swipe(); int erkenN, yerN, yardimN, hazirN; bool enerjiDolu; Shuttle yerTop, yardimTop;
         float Ref { get { return 640f / Mathf.Max(1, Screen.height); } }
         Vector2 RefPos(Vector2 screen) { return new Vector2(screen.x * Ref, (Screen.height - screen.y) * Ref); }   // y aşağı
 
@@ -672,13 +676,16 @@ namespace BirdieSmash.Game
         // (Ayarlar başlığına 3 sn'de 5 dokunuş) üçüncü satırı. EnhancedTouch örnek geçmişine geçiş bu sayılara göre karar verilir.
         public static class KaydirmaOlc
         {
-            public static int kay, vur, kisa, yavas, kil, uzak, ornekTop, ornekN, uzunKareli;
+            public static int kay, vur, kisa, yavas, erken, gec, ornekTop, ornekN, uzunKareli;
             public static int sonOrnek; public static bool uzunKare;
             public static string Ozet()
             {
                 if (kay == 0) return "kaydırma: henüz yok";
-                return "kaydırma " + kay + " · vuruş %" + Mathf.RoundToInt(100f * vur / kay) + " · ıska kısa " + kisa + " yavaş " + yavas + " kıl " + kil + " uzak " + uzak
-                    + "\n90 ms'de örnek ort " + (ornekN > 0 ? (ornekTop / (float)ornekN).ToString("F1") : "-") + " · takılmalı kaydırma " + uzunKareli;
+                return "kaydırma " + kay + " · vuruş %" + Mathf.RoundToInt(100f * vur / kay) + " · ıska kısa " + kisa + " yavaş " + yavas + " erken " + erken + " geç " + gec
+                    + "\n90 ms'de örnek ort " + (ornekN > 0 ? (ornekTop / (float)ornekN).ToString("F1") : "-") + " · takılmalı kaydırma " + uzunKareli
+                    // Ekran boyu ve dpi (2026-11-11 inceleme #3): jest eşikleri ekran yüksekliğiyle ölçekleniyor; büyük telefonda
+                    // kısa/yavaş oranı yüksekse noktaya (pt) çevirme kararı bu satırla verilir.
+                    + "\nekran " + Screen.height + " px · dpi " + Mathf.RoundToInt(Screen.dpi);
             }
             public static void Bitti(bool vurdu) { kay++; if (vurdu) vur++; ornekTop += sonOrnek; ornekN++; if (uzunKare) uzunKareli++; uzunKare = false; }
         }
@@ -799,7 +806,10 @@ namespace BirdieSmash.Game
                 var prev = input.tr[input.tr.Count - 1]; input.tr.Add(new Vector3(q.x, q.y, now));
                 while (input.tr.Count > 2 && now - input.tr[0].z > 300) input.tr.RemoveAt(0);
                 if (Vector2.Distance(q, input.p0) > 18) input.moved = true;
-                float segSpeed = Vector2.Distance(q, prev) / Mathf.Max(8, now - prev.z); sfx.Ugultu(true, segSpeed);
+                float segSpeed = Vector2.Distance(q, prev) / Mathf.Max(8, now - prev.z);
+                // Raket uğultusu yalnız vuruş hızında ya da pencere açıkken (2026-11-11 inceleme #4a): Usta'nın yavaş sürükleme
+                // koşusu raket sallanmadan "vuuş" çalıyordu.
+                sfx.Ugultu(true, segSpeed > .45f || M.HitWindow() ? segSpeed : 0);
                 // Sürükleme mıknatıssız ince ayardır; parmak kıpırdamadan basılı kalınca dokunuşun mıknatıslı hedefini ezmesin (input.moved).
                 Vector2 c; if (!M.easy && M.s != null && !M.HitWindow() && !input.hit && input.moved && segSpeed < .6f && CourtPoint(pos, out c)) M.RunTo(c.x, c.y, 1.4f);
                 // Erken kaydırma tamponu (2026-10-31 U3): pencere açılmadan yapılan belirgin kaydırma saklanır, pencere ERKEN_MS
@@ -808,7 +818,7 @@ namespace BirdieSmash.Game
                 if (!input.hit && M.s != null && !M.s.dead && M.s.from == "op" && !(M.ogr != null && M.ogr.dur) && !M.HitWindow() && Vector2.Distance(q, input.p0) > 70)
                 {
                     float edx, edy, esp; SwipeVec(out edx, out edy, out esp);
-                    if (esp > .45f) { erkenSw = Jest(new SwipeInput { dx = edx, dy = edy, speed = esp, dist = HitR() * .9f, R = HitR(), curved = Curved() }); erkenT = now; erkenTop = M.s; }
+                    if (esp > .45f) { input.guclu = true; erkenSw = Jest(new SwipeInput { dx = edx, dy = edy, speed = esp, dist = HitR() * .9f, R = HitR(), curved = Curved() }); erkenT = now; erkenTop = M.s; }
                 }
                 if (!input.hit && M.s != null && !M.s.dead && M.s.from == "op" && M.HitWindow())
                 {
@@ -831,7 +841,11 @@ namespace BirdieSmash.Game
                 float far = Vector2.Distance(q, input.p0);
                 if (!input.hit && M.HitWindow())
                 {
-                    if (far < 24) { if (M.SwipeShot(new SwipeInput { dx = 0, dy = -1, speed = 1, dist = HitR() * 1.5f, R = HitR(), tap = true })) Yerel.Vurus(M.sonTip, M.sonQ, M.sonSlice); }   // dokunma = güvenli clear
+                    // Zor/Usta'da uzaktaki dokunuş yalnız koşudur (inceleme 2026-11-11 17:05): iniş noktası topun HitR×2,2 dışındaysa
+                    // aşağıdaki dokunuşta koşu emri verildi (yukarıdaki Usta koşusu kuralıyla aynı ölçü); kalkışta pencere açık diye
+                    // kendiliğinden clear atmak "kontrol bende değil" hissi veriyordu. Kolay ve antrenman birebir eski.
+                    bool kosuDokunus = !M.easy && M.ogr == null && Vector2.Distance(input.p0, BallRef()) > HitR() * 2.2f;
+                    if (far < 24) { if (!kosuDokunus && M.SwipeShot(new SwipeInput { dx = 0, dy = -1, speed = 1, dist = HitR() * 1.5f, R = HitR(), tap = true })) Yerel.Vurus(M.sonTip, M.sonQ, M.sonSlice); }   // dokunma = güvenli clear
                     else if (M.ogr != null && M.ogr.dur)
                     {   // antrenmanda top durur: vuruş parmak kalkınca, bütün hareketin hızıyla okunur
                         float dx, dy, speed; SwipeVec(out dx, out dy, out speed);
@@ -840,9 +854,11 @@ namespace BirdieSmash.Game
                     else
                     {   // "doğru zamanda vurdum ama geçti": ıskanın nedeni bir kelimeyle
                         float dx, dy, speed; SwipeVec(out dx, out dy, out speed);
-                        int ni = far < 70 ? 0 : speed <= .45f ? 1 : input.minD < 2.2f ? 2 : 3;
+                        // Belirgin hareket pencereden önce bittiyse (kaydır-bekle) ya da hızlı kaydırma pencerenin açıldığı karede
+                        // bırakıldıysa neden erkendir; yalnız gerçekten yavaş hareket "Yavaş".
+                        int ni = far < 70 ? 0 : speed <= .45f && !input.guclu ? 1 : 2;
                         string neden = ISKA_NEDEN[ni];
-                        if (far < 70) KaydirmaOlc.kisa++; else if (speed <= .45f) KaydirmaOlc.yavas++; else if (input.minD < 2.2f) KaydirmaOlc.kil++; else KaydirmaOlc.uzak++;
+                        if (ni == 0) KaydirmaOlc.kisa++; else if (ni == 1) KaydirmaOlc.yavas++; else KaydirmaOlc.erken++;
                         KaydirmaOlc.Bitti(false);
                         // 2026-11-08 (inceleme #5): aynı neden maçta en çok 2 kez yazılır (yeni oyuncu, wins < 3, her seferinde); sonra
                         // yalnız ıska sesi. Zor/Usta'da ralli en hızlı anda okunacak yazıyla bölünüyordu; muadiller ıskada yazı yazmaz.
@@ -850,7 +866,12 @@ namespace BirdieSmash.Game
                         sfx.Iska();
                     }
                 }
-                else if (!input.hit && erkenT <= 0 && !M.s.dead && M.s.from == "op" && !M.HitWindow() && far > 60 && erkenN < 3) { erkenN++; hud.Say(L.T("Erken: top parlayınca kaydır"), Kit.W(M.me.x, M.me.y, 1.6f), Kit.Hex("#ffd27a")); }   // maç başına en çok 3 kez
+                else if (!input.hit && erkenT <= 0 && !M.s.dead && M.s.from == "op" && !M.HitWindow() && far > 60)
+                {   // pencere kapalıyken bırakılan kaydırma: bu top için pencere açılıp kapandıysa geç kalındı, hiç açılmadıysa erken
+                    bool gec = ReferenceEquals(pencereTop, M.s);
+                    if (gec || input.guclu) { KaydirmaOlc.Bitti(false); if (gec) KaydirmaOlc.gec++; else KaydirmaOlc.erken++; }   // Usta'nın koşu sürüklemesi ölçüme girmez
+                    if (erkenN < 3) { erkenN++; hud.Say(L.T(gec ? ISKA_NEDEN[3] : ISKA_NEDEN[2]), Kit.W(M.me.x, M.me.y, 1.6f), Kit.Hex("#ffd27a")); }   // maç başına en çok 3 kez
+                }
                 else if (M.easy && !input.hit && !M.HitWindow() && far < 18 && now - input.t0 < 250)
                 { Vector2 c; if (CourtPoint(pos, out c)) M.RunTo(c.x, c.y, .7f); }   // Kolay'da kısa dokunuş yer değiştirir
             }
@@ -894,7 +915,7 @@ namespace BirdieSmash.Game
                     if (geriT <= 0) { geriT = 0; input.Reset(); }
                 }
                 else { ZaferAtla(); ReadInput(); match.Update(dt); }
-                bool w = match.HitWindow(); if (w != pencere) { pencere = w; if (!Ayar.reduce) sfx.SuAlti(w); if (w) { sfx.Tik(); Yerel.Hap("tick"); } }   // vuruş penceresi: su altı
+                bool w = match.HitWindow(); if (w) pencereTop = match.s; if (w != pencere) { pencere = w; if (!Ayar.reduce) sfx.SuAlti(w); if (w) { sfx.Tik(); Yerel.Hap("tick"); } }   // vuruş penceresi: su altı
                 Gicirti(dt);
                 foreach (var e in match.events) OnEvent(e); match.events.Clear();
                 if (match.bestRally > Ayar.bestRally) { Ayar.bestRally = match.bestRally; Ayar.Kaydet(); }
@@ -921,6 +942,21 @@ namespace BirdieSmash.Game
             // Zor koşu yardımı görünür (inceleme 5 Kas 20:10 YAP): görünmez yardım "ben dokunmadan koştu" diye kontrol kaybı gibi
             // okunuyordu. Maçın ilk iki tetiklenişinde oyuncunun üstünde kısa "Koşu yardımı"; sonra sessiz (sayaç/Usta önerisi YAPMA).
             if (ekran == Ekran.Oyun && match.kosuYardim && yardimN < 2 && match.s != null && match.s != yardimTop && match.YardimKosuyor) { yardimTop = match.s; yardimN++; hud.Say(L.T("Koşu yardımı"), Kit.W(match.me.x, match.me.y, 1.6f), Kit.Hex("#9fd8ff")); }
+            // "Smaç hazır" anı (inceleme 11 Kas 18:05 #4, Core'a dokunmadan): enerji 1'e vardığı kare üç kanalda, oyuncunun baktığı yerde.
+            // Önce yalnız ekranın altındaki çubuğun rengi değişiyordu; göz topta iken kaçıyor, sıçrayarak smaç "rastgele" sanılıyordu.
+            // Ses: kısa yükselen çan (kendi sentezimiz); titreşim tick; oyuncunun üstünde limon kıvılcım (hareketi azaltta yok) ve maçın
+            // ilk iki dolusunda "Smaç hazır!" yazısı (sonra sessiz yazı, ses/titreşim/kıvılcım sürer). Antrenmanda yok (elle doldurulabiliyor).
+            if (ekran == Ekran.Oyun && match.ogr == null)
+            {
+                bool dl = match.energy >= 1;
+                if (dl && !enerjiDolu)
+                {
+                    sfx.SmacHazir(); Yerel.Hap("tick"); var ust = Kit.W(match.me.x, match.me.y, 1.4f);
+                    if (!Ayar.reduce) fx.Burst(ust, Kit.Hex("#d8ff5a"), 16, 240, "spark");
+                    if (hazirN < 2) { hazirN++; hud.Say(L.T("Smaç hazır!"), Kit.W(match.me.x, match.me.y, 1.9f), Kit.Hex("#d8ff5a")); }
+                }
+                enerjiDolu = dl;
+            }
             fx.Tick(match, paused || geriT > 0 ? 0 : dt, ekran == Ekran.Oyun);
             SalonCanli(paused || geriT > 0 ? 0 : dt);
             if (akisR != null)
@@ -1097,7 +1133,7 @@ namespace BirdieSmash.Game
                 case Ev.Aldat: sfx.Aldat(); Yerel.Hap("tick"); break;   // aldatma okunsun diye elde de hissedilir (hareketi azaltta yok)
                 case Ev.Split: sfx.Split(); break;
                 case Ev.Serve: if (mpYan >= 0) Yerel.Hap("kalp"); break;   // maç sayısında servis anında tek kalp atışı (hareketi azaltta Hap susar)
-                case Ev.Kurtaris: break;
+                case Ev.Kurtaris: sfx.Kurtaris(); break;
                 case Ev.Karsila: sfx.Gasp(.07f); Yerel.Hap("tick"); break;   // smaç döndürüldü: tribün nefesi + tık (yazı Match.Say'den; hareketi azaltta Hap susar, ses kalır)
                 case Ev.Imza: sfx.Imza(e.type); Yerel.Hap("tick"); break;   // ışık ve poz PlayerView'de (Athlete.imzaT), yazı Match.Say'den
                 case Ev.Okudun: sfx.Okudun(); Yerel.Hap("ralli"); fx.Burst(at, Kit.Hex("#7ad7ff"), 14, 200, "spark"); break;

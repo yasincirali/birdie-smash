@@ -668,6 +668,9 @@ namespace BirdieSmash.Core
         public class Servis { public string klip; public float sure, z, aci; }
         string servisTurSon;   // StartFlight'a giden servis türü (Shuttle.servisTur)
         int flickSeri, flickBekledim, flickOkudum;   // ardışık flick servisim; "Bekliyordum!" ve rakip flick'ini okuma yazısı sayıları (maç başına)
+        // "Flick servis!" maç başına ilk 2 (inceleme 2026-11-11 17:05): oyuncu duruşu okumayı öğrenince yazı tekrarı değer kaybeder,
+        // servis anı zaten kalabalık; sonrası yalnız ses + hazırlık pozu. BotMac metne bakmaz, rng çekimi değişmez.
+        int flickYazi;
         public static readonly Dictionary<string, Servis> SERVIS = new Dictionary<string, Servis> {
             {"kisa", new Servis{klip="serve_bh",sure=.32f,z=1.0f,aci=.36f}}, {"flick", new Servis{klip="serve_flick",sure=.32f,z=1.02f,aci=.52f}}, {"yuksek", new Servis{klip="serve",sure=.56f,z=.82f,aci=1.0f}}};
         void ServisAt(string who, string tur, float tx, float ty)
@@ -692,7 +695,7 @@ namespace BirdieSmash.Core
                 else if (tur == "flick") deceive = false;
                 else if (who == "me") flickSeri = 0;
                 StartFlight(who, vx, vy, vz, hx, hy, hz, true, tur == "kisa" ? "drop" : "clear", false, "good");
-                if (tur == "flick" && who == "op") Say("me", null, me.x, me.y, 0, "Flick servis!", 2);
+                if (tur == "flick" && who == "op" && flickYazi < 2) { flickYazi++; Say("me", null, me.x, me.y, 0, "Flick servis!", 2); }
             };
         }
         public static string ServisTuru(float dx, float dy, float speed) { return speed > 1.0f ? (Hyp(dx, dy) < 95 ? "flick" : "yuksek") : "kisa"; }
@@ -1367,8 +1370,10 @@ namespace BirdieSmash.Core
                     MoveAcc(op, s.landPred.x, s.landPred.y - .4f, 2.2f, d);
                     // File önü kill (2026-10-29): rakip yetişemediği için atlayıp "Kıl payı!" ağır çekimi oynuyordu; kill'de
                     // kıl payı yok, top anında yere çakılır (ağır çekim ve yazı atlanır, sayı yazısı "FİLE ÖNÜ SAYISI").
+                    // Yazı "Kıl payı!" idi; maç sonu başlığı ve ıska nedeniyle aynı söz üç anlam taşıyordu (2026-11-11 inceleme #6).
+                    // Oyuncunun kurtarışı "Kurtardın!" (GameRoot), rakibinki "Kurtardı!": eşli ve okunur.
                     if (op.dive <= 0 && s.vurus != "kill" && !IsOut(s.landPred.x, s.landPred.y, s.serve) && !(s.landPred.net != null && !s.landPred.net.ok) && s.t > s.landPred.t - .25f)
-                    { op.dive = 1; op.yat = true; Emit(Ev.Kurtaris, "op", null, op.x, op.y); Say("op", null, op.x, op.y, 0, "Kıl payı!"); if (!reduce) { slow = .35f; slowT = .3f; } }
+                    { op.dive = 1; op.yat = true; Emit(Ev.Kurtaris, "op", null, op.x, op.y); Say("op", null, op.x, op.y, 0, "Kurtardı!"); if (!reduce) { slow = .35f; slowT = .3f; } }
                 }
             }
             // Ana nokta fileden stil.ev metre (2026-10-26): eskiden y = ev yazılıyordu, yani rakibin dip çizgisinden. "Fileye yakın

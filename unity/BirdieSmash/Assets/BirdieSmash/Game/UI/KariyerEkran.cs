@@ -56,6 +56,11 @@ namespace BirdieSmash.Game
         void TurSeritYerlestir(ScrollView hs, System.Collections.Generic.List<VisualElement> kartlar, ScrollView sayfaSv)
         {
             float w = 0; bool basili = false; float sonX = -1; int sabit = 0;
+            // Oturma tween'i (inceleme 11 Kas 18:05 #1): bırakınca hedef karta 240 ms ease-out kayar, tur değiştiyse sekme ancak kart
+            // yerine oturduktan sonra kurulur (yeni şerit aynı konumda doğar, sıçrama görünmez). Önce 0,3 sn bekleyip tek karede
+            // zıplıyordu. Hafif fiske (kart genişliğinin %15'i) yönündeki komşu karta geçer; önce yarıdan fazla sürüklemek gerekiyordu.
+            // Hareketi azaltta tween yok, eskisi gibi anında. Yeni basış tween'i keser.
+            float twX0 = 0, twX1 = 0, twT0 = -1; int twIdx = -1; IVisualElementScheduledItem tw = null;
             EventCallback<GeometryChangedEvent> gc = null; gc = e =>
             {
                 float vw = hs.layout.width; if (float.IsNaN(vw) || vw <= 0) return;
@@ -64,7 +69,7 @@ namespace BirdieSmash.Game
                 hs.schedule.Execute(() => hs.scrollOffset = new Vector2(Mathf.Max(0, kariyerTur * (w + TUR_ARALIK) - (vw - w) / 2), 0)).StartingIn(0);
             };
             hs.RegisterCallback(gc);
-            hs.RegisterCallback<PointerDownEvent>(e => { basili = true; hs.userData = hs.scrollOffset.x; }, TrickleDown.TrickleDown);
+            hs.RegisterCallback<PointerDownEvent>(e => { basili = true; twT0 = -1; hs.userData = hs.scrollOffset.x; }, TrickleDown.TrickleDown);
             hs.RegisterCallback<PointerUpEvent>(e => basili = false, TrickleDown.TrickleDown);
             hs.RegisterCallback<PointerCancelEvent>(e => basili = false, TrickleDown.TrickleDown);
             hs.RegisterCallback<PointerCaptureOutEvent>(e => basili = false, TrickleDown.TrickleDown);
@@ -74,13 +79,29 @@ namespace BirdieSmash.Game
             {
                 if (w <= 0) return; float x = hs.scrollOffset.x;
                 if (Mathf.Abs(x - sonX) > .5f) { sonX = x; sabit = 0; return; }
-                if (basili || ++sabit != 3) return;
+                if (basili || twT0 >= 0 || ++sabit != 2) return;   // 2 yoklama (~0,2 sn; önce 3)
                 float vw = hs.layout.width; int idx = Mathf.Clamp(Mathf.RoundToInt((x + (vw - w) / 2) / (w + TUR_ARALIK)), 0, kartlar.Count - 1);
+                if (idx == kariyerTur && hs.userData is float x0 && Mathf.Abs(x - x0) > w * .15f) idx = Mathf.Clamp(idx + (x > x0 ? 1 : -1), 0, kartlar.Count - 1);   // fiske
+                hs.userData = null;
                 float hedef = Mathf.Max(0, idx * (w + TUR_ARALIK) - (vw - w) / 2);
+                if (Mathf.Abs(hedef - x) > 1 && !Ayar.reduce)
+                {
+                    twX0 = x; twX1 = hedef; twIdx = idx; twT0 = Time.realtimeSinceStartup;
+                    if (tw == null) tw = hs.schedule.Execute(() =>
+                    {
+                        if (twT0 < 0) return;
+                        float k = Mathf.Clamp01((Time.realtimeSinceStartup - twT0) / .24f), e = 1 - (1 - k) * (1 - k) * (1 - k);   // ease-out kübik
+                        hs.scrollOffset = new Vector2(Mathf.Lerp(twX0, twX1, e), 0); sonX = hs.scrollOffset.x;
+                        if (k < 1) return;
+                        twT0 = -1; sabit = 0;
+                        if (twIdx != kariyerTur) { Yerel.Hap("tick"); kariyerY = sayfaSv.scrollOffset.y; KariyerTurSec(twIdx); }
+                    }).Every(16);
+                    return;
+                }
                 if (idx != kariyerTur) { Yerel.Hap("tick"); kariyerY = sayfaSv.scrollOffset.y; KariyerTurSec(idx); }
                 else if (Mathf.Abs(hedef - x) > 1) hs.scrollOffset = new Vector2(hedef, 0);
             }).Every(100);
-            hs.RegisterCallback<DetachFromPanelEvent>(e => it.Pause());   // sekme yeniden kurulunca eski şeridin zamanlayıcısı durur
+            hs.RegisterCallback<DetachFromPanelEvent>(e => { it.Pause(); if (tw != null) tw.Pause(); });   // sekme yeniden kurulunca eski şeridin zamanlayıcısı durur
         }
         // Sürükleme sonrası bırakma dokunuş sayılmasın: basışta kaydedilen konumdan 8 px'den fazla kaydıysa yok say.
         static bool Surukledi(ScrollView hs) { return hs.userData is float x0 && Mathf.Abs(hs.scrollOffset.x - x0) > 8; }
