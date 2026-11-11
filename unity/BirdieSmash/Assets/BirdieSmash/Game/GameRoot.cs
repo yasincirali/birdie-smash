@@ -841,7 +841,11 @@ namespace BirdieSmash.Game
                 float far = Vector2.Distance(q, input.p0);
                 if (!input.hit && M.HitWindow())
                 {
-                    if (far < 24) { if (M.SwipeShot(new SwipeInput { dx = 0, dy = -1, speed = 1, dist = HitR() * 1.5f, R = HitR(), tap = true })) Yerel.Vurus(M.sonTip, M.sonQ, M.sonSlice); }   // dokunma = güvenli clear
+                    // Zor/Usta'da uzaktaki dokunuş yalnız koşudur (inceleme 2026-11-11 17:05): iniş noktası topun HitR×2,2 dışındaysa
+                    // aşağıdaki dokunuşta koşu emri verildi (yukarıdaki Usta koşusu kuralıyla aynı ölçü); kalkışta pencere açık diye
+                    // kendiliğinden clear atmak "kontrol bende değil" hissi veriyordu. Kolay ve antrenman birebir eski.
+                    bool kosuDokunus = !M.easy && M.ogr == null && Vector2.Distance(input.p0, BallRef()) > HitR() * 2.2f;
+                    if (far < 24) { if (!kosuDokunus && M.SwipeShot(new SwipeInput { dx = 0, dy = -1, speed = 1, dist = HitR() * 1.5f, R = HitR(), tap = true })) Yerel.Vurus(M.sonTip, M.sonQ, M.sonSlice); }   // dokunma = güvenli clear
                     else if (M.ogr != null && M.ogr.dur)
                     {   // antrenmanda top durur: vuruş parmak kalkınca, bütün hareketin hızıyla okunur
                         float dx, dy, speed; SwipeVec(out dx, out dy, out speed);

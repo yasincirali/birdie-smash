@@ -1,1 +1,1 @@
-daily match,shuttlecock,racket,tennis,ping pong,rally,career,tournament,arcade,offline,single player
+daily match,shuttlecock,racket,sports,serve,net,rally,career,tournament,arcade,offline,single player

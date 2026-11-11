@@ -1,1 +1,1 @@
-günlük maç,tüy top,raket,tenis,masa tenisi,smaç,ralli,kariyer,turnuva,arcade,tek oyunculu,offline
+günlük maç,tüy top,raket,spor oyunu,file,smaç,ralli,kariyer,turnuva,arcade,tek oyunculu,offline
