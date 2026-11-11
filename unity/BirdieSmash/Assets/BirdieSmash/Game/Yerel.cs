@@ -19,6 +19,7 @@ namespace BirdieSmash.Game
         [DllImport("__Internal")] static extern float BirdieYaziOlcek();
         [DllImport("__Internal")] static extern int BirdieHareketAzalt();
         [DllImport("__Internal")] static extern int BirdieDusukGuc();
+        [DllImport("__Internal")] static extern int BirdieIsil();
         [DllImport("__Internal")] static extern int BirdieDigerSesCaliyor();
         [DllImport("__Internal")] static extern void BirdiePaylas(string metin);
         [DllImport("__Internal")] static extern float BirdieAcilisSure();
@@ -134,6 +135,15 @@ namespace BirdieSmash.Game
             try { return BirdieDusukGuc() == 1; } catch { return false; }
 #else
             return false;
+#endif
+        }
+        // iOS ısıl durumu (NSProcessInfoThermalState 0–3); iOS dışında hep 0.
+        public static int Isil()
+        {
+#if UNITY_IOS && !UNITY_EDITOR
+            try { return BirdieIsil(); } catch { return 0; }
+#else
+            return 0;
 #endif
         }
     }

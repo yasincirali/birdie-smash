@@ -815,6 +815,8 @@ namespace BirdieSmash.Game
         }
 
         float jGor;
+        const float KAY_SURE = .30f; float kaySonX = float.NaN, kaySonY, kayX, kayY, kayT = KAY_SURE;
+        float KayK() { float u = 1 - kayT / KAY_SURE; return u * u * u; }   // kalan ofset payı: 1 → 0, kübik ease-out
         public void Show(Athlete o, Match M, float dt)
         {
             // kendi bacağının adımı ve adım tavanı (Match.Athlete.adimBoy/ayakTurMax notu): tavan chassé adımı 0,99 m'den
@@ -826,7 +828,20 @@ namespace BirdieSmash.Game
             string clip; float ph; M.PickClip(o, isMe, out clip, out ph);   // önce: split klibi kendi hop'unu taşır (Match.JumpH hopsuz)
             float j = Match.JumpH(o, clip == "split" && anim != null && D("split") != null) * .5f;
             jGor = j > jGor ? Mathf.MoveTowards(jGor, j, Match.GORSEL_YUKSELIS * dt) : j; j = jGor;   // yükseliş tavanı: ışınlanma yok
-            transform.position = Kit.W(o.x, o.y, 0) + Vector3.up * j;
+            // Sayı arası dönüş (2026-11-11 inceleme, fikir 21:05 #1): SetupServe iki oyuncuyu servis karesine tek karede yazıyor;
+            // dip köşeden 3–5 m ışınlanma her sayıda "oyun sıfırlandı" gibi okunuyordu. Yalnız görünümde: bir karede 0,5 m'den uzun
+            // sıçrama (koşu en çok ~0,3 m/kare) eski görsel konumdan 0,30 sn ease-out kayarak kapanır. Core konumu aynı (BotMac,
+            // ikiz maçlar etkilenmez). Servis girişi bekletilmedi: servis klibi ≥ 0,32 sn, top fırlarken kayma zaten bitmiş olur.
+            // Hareketi azaltta eski anında geçiş.
+            float cx = o.x, cy = o.y;
+            if (!float.IsNaN(kaySonX) && !Ayar.reduce && dt > 0 && dt < .2f)
+            {
+                float ddx = kaySonX + kayX * KayK() - cx, ddy = kaySonY + kayY * KayK() - cy;
+                if (Mathf.Abs(cx - kaySonX) + Mathf.Abs(cy - kaySonY) > .5f) { kayX = ddx; kayY = ddy; kayT = 0; }
+            }
+            else kayT = KAY_SURE;
+            kaySonX = cx; kaySonY = cy; kayT = Mathf.Min(KAY_SURE, kayT + dt);
+            float kk = KayK(); transform.position = Kit.W(cx + kayX * kk, cy + kayY * kk, 0) + Vector3.up * j;
             // Gövde dik (ce47f5c): hamlede yatma yok; yalnız kıl payı kurtarışta (yat) en çok 15°. Koşu eğimi ±0,08 rad (~4,6°;
             // Ar-Ge 23 Eki B3: render edilmiş figürü düz resim gibi yatırmak sahte görünür, ayaklar yerden kalkar).
             // 2026-10-27 (ekran/kosu): gövde gidişe döner (Match.AyakIsi, Athlete.donus; arka sahaya yan dönük, ön köşeye

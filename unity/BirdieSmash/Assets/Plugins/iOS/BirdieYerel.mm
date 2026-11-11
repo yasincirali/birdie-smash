@@ -95,6 +95,13 @@ extern "C" int BirdieDusukGuc(void)
     return [[NSProcessInfo processInfo] isLowPowerModeEnabled] ? 1 : 0;
 }
 
+// Isıl durum (2026-11-11 inceleme, fikir 21:05 #3): 0 normal, 1 ılık, 2 sıcak (serious), 3 kritik. Kalite aynı 5 sn'lik
+// okumada sıcakta 120 Hz'i ve bir kalite basamağını bırakır; iOS'un kendisi kısıp kare atlatmasından önce oyun yavaşlar.
+extern "C" int BirdieIsil(void)
+{
+    return (int)[[NSProcessInfo processInfo] thermalState];
+}
+
 // Paylaş (stüdyo incelemesi 2026-11-05, oyun tasarımı 4 "meydan okuma"): Günün maçı herkese aynı; sonuç iki satır metin
 // olarak sistem paylaş sayfasıyla gider. Sunucu, hesap, takip yok; metni oyuncu görür ve kendisi gönderir. iPad'de sayfa
 // ekranın alt ortasından açılır (popover kaynağı zorunlu).

@@ -113,6 +113,9 @@ namespace BirdieSmash.EditorTools
             // yüklenemez. Flutter hattı (ios/Runner.xcodeproj) zaten 15.0, iki hat aynı alt sınırı taşır.
             PlayerSettings.iOS.targetOSVersionString = "15.0";
             PlayerSettings.iOS.requiresFullScreen = true;
+            // İvmeölçer kapalı (2026-11-11 inceleme, fikir 21:05 #3): oyun eğim/sallama okumuyor; Unity iOS varsayılanı 60 Hz örnekleme
+            // boşuna sensör ve pil harcıyordu. Eğimli bir özellik gelirse burası açılır.
+            PlayerSettings.accelerometerFrequency = 0;
             // Yalnız iPhone (2026-11-06 Ar-Ge 22:03 #1): Unity varsayılanı evrensel ikiliydi; iPad'de Kadraj tasarlanmış düzen değil,
             // son çare kaydırmayla çiziyor ve mağaza 13" iPad karesi istiyordu. Apple yayınlanmış uygulamadan cihaz ailesi kaldırmaya
             // izin vermez, eklemeye izin verir: 1.0 iPhone ile çıkar, iPad sahibi uyumluluk modunda aynı kadrajı oynar. iPad düzeni

@@ -1,4 +1,10 @@
 === UNITY ===
+Sayı arası akıcılık, duraklatta kamera, ısınmada kare düzeni (11 Kasım gece 2):
+- Sayı bitince oyuncular servis yerine ışınlanmıyor: kısa bir kayışla yerlerine geçiyorlar. Hareketi azalt açıkken eskisi gibi anında.
+- Duraklat menüsünde kamera açısı seçilebilir (Yayın, Alçak, Üstten). Dokununca karanlık örtü bir an açılır, yeni açı arkada görünür.
+- Telefon ısınınca oyun kendi kendine 60 kareye ve bir alt görüntü kalitesine iner, soğuyunca geri döner; uzun oyunda takılma ve pil kaybı azalır. Kullanılmayan hareket sensörü kapatıldı.
+Nasıl denenir: Maçta bir sayı oyna, dip köşede bitir: iki oyuncu servis yerine kayarak geçmeli, bir karede zıplamamalı. Maçı duraklat, "Alçak"a dokun: örtü açılıp yeni açı görünmeli, Devam'da maç o açıyla sürmeli. 20 dakika kadar arka arkaya oyna: oyun takılmamalı (gizli kare hızı satırında "ısı" değeri görünür).
+
 Alt sayfalar, dükkân, başarım anı (11 Kasım gece):
 - Hızlı maç, maç kartı gibi alttan açılan sayfalar artık parmağı izler: tutamaktan aşağı çekince sayfa iner, bırakınca ya yerine oturur ya kayarak kapanır. Kapat'a ya da boşluğa dokununca da kayarak kapanır.
 - Tüy dükkânında satın alma sürerken düğme "İşleniyor…" der, öteki fiyatlar beklemeye geçer; ikinci dokunuş artık yanlış "tamamlanmadı" yazdırmaz. Geri yükle de "Kontrol ediliyor…" der.

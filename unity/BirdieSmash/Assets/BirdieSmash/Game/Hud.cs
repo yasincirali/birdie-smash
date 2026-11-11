@@ -217,7 +217,7 @@ namespace BirdieSmash.Game
             {
                 fpsYaz = now; float en = 0; int tak = 0; foreach (var q in fpsK) { if (q.y > en) en = q.y; if (q.y > 50) tak++; }
                 fpsYazi = fpsK.Count + " fps · en uzun " + Mathf.RoundToInt(en) + " ms · takılma " + tak + "\n" + ek + ": ort " + (fpsT > 0 ? Mathf.RoundToInt(fpsN / (fpsT / 1000)) : 0) + " fps · en uzun " + Mathf.RoundToInt(fpsEn) + " ms · takılma " + fpsTak + " · " + Mathf.RoundToInt(fpsT / 1000) + " sn";
-                if (root.ekran == Ekran.Oyun || root.ekran == Ekran.Bitti) fpsYazi += "\n" + GameRoot.KaydirmaOlc.Ozet() + " · font atlası " + atlasN;
+                if (root.ekran == Ekran.Oyun || root.ekran == Ekran.Bitti) fpsYazi += "\n" + GameRoot.KaydirmaOlc.Ozet() + " · font atlası " + atlasN + " · ısı " + Kalite.Isil;
                 // 2026-11-08 (inceleme turu): açılış süresi yalnız CI ekran turunda (Linux yazılım render'ı) ölçülüyordu; iPhone'daki
                 // gerçek değer FPS ekran görüntüsüyle gelsin. İlk sayı motor başlangıcından menünün tam açılmasına (realtimeSinceStartup),
                 // parantez içi Unity perdesinin kapalı kaldığı süre. 3 sn üstündeyse hakem/vitrin modellerini ertelemek ayrı iş.
@@ -926,11 +926,14 @@ namespace BirdieSmash.Game
         // ekran boyu dört düz renk bloktu (r71 duraklat). Koyu mürekkep örtü, Baloo başlık, Nunito bilgi satırı; "Maça devam et"
         // maç sonundaki büyük turuncu düğme (alt satırında skor), diğerleri lacivert yuvarlak ADugme, hepsi kart genişliğinde.
         // Ses düğmesi durumu yazıyla söyler (yalnız renkle değil). Dikey: blok ortada, sığmazsa üstten başlar, alt güvenli alanı aşmaz.
-        float bastanOnayT = -1;
+        float bastanOnayT = -1, kameraOnizT = -1;
         void Pause(Match M)
         {
             float s = Mathf.Min(W / 390f, H / 844f), kt = W / H < .62f ? Mathf.Max(s, 11f / 12f * W / 375f) : s, k = kt * Ayar.YaziK; YayinStil(s, k);
-            var o0 = GUI.color; GUI.color = new Color(A_INK.r, A_INK.g, A_INK.b, .86f); GUI.DrawTexture(new Rect(-W, 0, W * 3, H), Texture2D.whiteTexture); GUI.color = o0;
+            // Kamera önizlemesi (2026-11-11 inceleme, fikir 21:05 #2): açı çipine dokununca örtü 0,6 sn %30'a iner ki yeni açı arkada
+            // görülsün, sonra 0,25 sn'de geri koyulaşır. Hareketi azaltta da aynı (yalnız saydamlık, hareket yok).
+            float kd = kameraOnizT < 0 ? 9 : Time.unscaledTime - kameraOnizT, oa = kd < .6f ? .30f : kd < .85f ? Mathf.Lerp(.30f, .86f, (kd - .6f) / .25f) : .86f;
+            var o0 = GUI.color; GUI.color = new Color(A_INK.r, A_INK.g, A_INK.b, oa); GUI.DrawTexture(new Rect(-W, 0, W * 3, H), Texture2D.whiteTexture); GUI.color = o0;
             float x = ColX, w = ColW, bh = Mathf.Max(BH, 50 * s), gap = 10 * s;
             string bas = L.T("Duraklatıldı"), bilgi;
             if (M.Dril == Sonsuz.Tanim) bilgi = L.T(M.Dril.ad) + " · " + SonsuzSayac(M.ogr);
@@ -940,7 +943,7 @@ namespace BirdieSmash.Game
             string skor = M.Dril != null ? null : Sayi(M.sc[0]) + " – " + Sayi(M.sc[1]);
             var bst = Sigdir(aSkor, bas, w); float bhY = bst.CalcHeight(Ic(bas), w), sh = skor == null ? 0 : aSkor.CalcHeight(Ic(skor), w), ih = aIpucu.CalcHeight(Ic(bilgi), w);
             string ct = UiKok.Buyuk(L.T("Maça devam et")); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), ctaH = Mathf.Max(80 * s, cth + 22 * s);
-            float blok = bhY + 6 * s + sh + ih + 22 * s + ctaH + 12 * s + 3 * bh + 2 * gap;
+            float blok = bhY + 6 * s + sh + ih + 22 * s + ctaH + 12 * s + 4 * bh + 3 * gap;
             // Bu maçın görevleri (2026-11-07 inceleme, fikir 20:09 #4): maç içinde yalnız 3 nokta görünüyor; duraklatan oyuncu
             // "hangi yıldızı kovalıyordum" sorusunun cevabını burada okur. Simge + yazı (yalnız renk değil): ○ kalan + sayaç, ✓ biten
             // soluk. Antrenman/Sonsuz rallide yok (M.Dril). Büyük yazıda blok sığmazsa yalnız kalanlar, o da sığmazsa hiç.
@@ -979,6 +982,20 @@ namespace BirdieSmash.Game
             // HTML duraklat satırı: Ses · Maçı baştan başlat · Ana menü (oyun sırasında ses düğmesi yalnız burada). 2026-11-06 13:40 inceleme:
             // "Ses açık" eylem mi durum mu okunmuyordu; "Ses: açık" durum okunur, dokunmak değiştirir (simge anahtar önerisi yazılı satır kararına takıldı).
             if (ADugme(new Rect(x, y, w, bh), L.T(Ayar.ses ? "Ses: açık" : "Ses: kapalı"), 1)) { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Yerel.Hap("tick"); } y += bh + gap;
+            // Kamera çipleri (2026-11-11 inceleme, fikir 21:05 #2): açı maçın hissini en çok değiştiren ayar, farkı görmek için
+            // Ayarlar'a gidip maça dönmek gerekiyordu. Aynı üç seçenek ve anahtar (tuytop_kamera); seçili çip ✓ + turuncu çerçeve
+            // (yalnız renk değil). Kadraj FitCamera'da duraklatmada da hemen yeniden çözülür; takip eğimi Devam'da kaldığı yerden.
+            {
+                int kn = GameRoot.KAMERA_SIRA.Length; float cg = 6 * s, cw = (w - cg * (kn - 1)) / kn;
+                for (int i = 0; i < kn; i++)
+                {
+                    string id = GameRoot.KAMERA_SIRA[i]; bool sec = Ayar.kamera == id; var cr = new Rect(x + i * (cw + cg), y, cw, bh);
+                    if (ADugme(cr, (sec ? "✓ " : "") + L.T(GameRoot.KAMERA_AD[i]), sec ? 1 : .85f) && !sec)
+                    { Ayar.kamera = id; Ayar.Kaydet(); root.KameraDegisti(); kameraOnizT = Time.unscaledTime; Kalite.Hareket(); Yerel.Hap("tick"); }
+                    if (sec) KutuCiz(cr, aKutuLimon, 1);
+                }
+                y += bh + gap;
+            }
             // "Maçı baştan başlat" onayı (2026-10-31 Ar-Ge UI/UX #2, yasin "yap"): Devam'ın hemen altında tek dokunuşta skoru
             // siliyordu. Maç ilerlemişse (skor 0–0 değil / antrenmanda atılmış top var) ilk dokunuş düğmeyi turuncu çerçeveye ve
             // "Emin misin? Bir kez daha dokun" yazısına çevirir (renk + yazı, yalnız renk değil); 2,5 sn içinde ikinci dokunuş

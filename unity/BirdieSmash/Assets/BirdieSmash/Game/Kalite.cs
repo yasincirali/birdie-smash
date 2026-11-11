@@ -21,6 +21,11 @@ namespace BirdieSmash.Game
         public static int Basamak { get; private set; } = 2;
         int tavan; float top, sayac, inisBekle, iyiSure, topY, sayY; bool sonYuksek; int natW, natH; Camera cam; public static bool Kilitli;
         GameRoot root; bool yuksekKapali; float gucBak; bool dusukGuc;
+        // Isıl tavan (2026-11-11 inceleme, fikir 21:05 #3; 6 Kas'ta "ısınma geri bildirimi gelirse" diye bekletilmişti, yasin 11 Kas
+        // "performans ilerletmeleri de içerilmeli"): sıcakta (2) 120 Hz kapanır ve basamak tavanı bir iner, kritikte (3) basamak 0
+        // (gölge yok, çözünürlük ×.7). Isı 30 sn normal/ılık kalınca tavan kalkar, basamak eski "20 sn iyi kare" yoluyla kendisi
+        // çıkar. İniş de Iste() üzerinden: ralli sürerken bekler (O5 kuralı).
+        public static int Isil { get; private set; } int isilTavan = 2; float isilIyi;
         static int EkranHz()
         {
 #if UNITY_2022_2_OR_NEWER
@@ -31,13 +36,13 @@ namespace BirdieSmash.Game
         }
         void KareHedefi()
         {
-            gucBak -= Time.unscaledDeltaTime; if (gucBak <= 0) { gucBak = 5; dusukGuc = Yerel.DusukGuc(); }
+            gucBak -= Time.unscaledDeltaTime; if (gucBak <= 0) { gucBak = 5; dusukGuc = Yerel.DusukGuc(); IsilBak(); }
             bool oyunda = root != null && root.ekran == Ekran.Oyun && !root.paused;
             // Menü yalnız hareket sürerken yüksek hızda (2026-10-28, yasin "her yerde smooth"): kaydırma, sürükleme, USS geçişi
             // ya da perde HAREKET_SURE içinde olduysa ProMotion'da 120, durunca 60 (pil). Durağan menü eskisi gibi 60.
             bool menuHareket = !oyunda && Time.unscaledTime - hareketSon < HAREKET_SURE;
             int hz = EkranHz(), hedef = 60;
-            if ((oyunda || menuHareket) && !Kilitli && !yuksekKapali && !dusukGuc && Basamak == 2 && tavan == 2 && hz >= 90) hedef = Mathf.Min(120, hz);
+            if ((oyunda || menuHareket) && !Kilitli && !yuksekKapali && !dusukGuc && Isil < 2 && Basamak == 2 && tavan == 2 && hz >= 90) hedef = Mathf.Min(120, hz);
             if (Application.targetFrameRate != hedef) Application.targetFrameRate = hedef;
             // Duraklatmada çizim yarı hızda (2026-11-07 inceleme, fikir 00:03 #4 küçültülmüş): sahne donuk ama kort, tribün ve gölge
             // her kare yeniden çiziliyordu. renderFrameInterval 2 = 30 fps çizim, Update/dokunuş 60 Hz kalır; duraklat menüsüne
@@ -45,6 +50,16 @@ namespace BirdieSmash.Game
             bool durgun = root != null && root.ekran == Ekran.Oyun && root.paused && !menuHareket && !Kilitli;
             int aralik = durgun ? 2 : 1;
             if (UnityEngine.Rendering.OnDemandRendering.renderFrameInterval != aralik) UnityEngine.Rendering.OnDemandRendering.renderFrameInterval = aralik;
+        }
+
+        void IsilBak()
+        {
+            if (Kilitli) return;
+            Isil = Yerel.Isil();
+            int t = Isil >= 3 ? 0 : Isil == 2 ? Mathf.Max(0, tavan - 1) : tavan;
+            if (t < isilTavan) { isilTavan = t; isilIyi = 0; if (Basamak > t) Iste(t, true); }
+            else if (t > isilTavan) { isilIyi += 5; if (isilIyi >= 30) { isilTavan = t; isilIyi = 0; } }
+            else isilIyi = 0;
         }
 
         const float HAREKET_SURE = .5f; static float hareketSon = -99;
@@ -58,7 +73,7 @@ namespace BirdieSmash.Game
             if (mem > 0 && mem < 2500 || cek <= 4) b = 1;
             if (mem > 0 && mem < 1800 || cek <= 2 || gpu > 0 && gpu < 400) b = 0;
             Kilitli = System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-bsekran") >= 0; if (Kilitli) b = 2;
-            k.tavan = b; k.Uygula(b, true);
+            k.tavan = b; k.isilTavan = b; k.Uygula(b, true);
             SesArabellek(b);
             // Düşük basamakta (2 çekirdek ya da < 1,8 GB: iPhone 6s/SE 1. nesil) mip'li dokular yarı çözünürlükte yüklenir: 1024'lük
             // atlas 512 olur, doku belleği ~¼. Yalnız açılışta: oturum içinde değişirse bütün dokular yeniden yüklenir (takılma).
@@ -91,7 +106,7 @@ namespace BirdieSmash.Game
             {
                 return "basamak " + Basamak + " · MSAA " + QualitySettings.antiAliasing + " · gölge " + QualitySettings.shadows + " " + QualitySettings.shadowResolution + " " + QualitySettings.shadowDistance + " m · aniso "
                     + QualitySettings.anisotropicFiltering + " · kemik " + QualitySettings.skinWeights + " · hedef " + Application.targetFrameRate + " fps · vSync " + QualitySettings.vSyncCount
-                    + " · çözünürlük " + Screen.width + "x" + Screen.height + " · bellek " + SystemInfo.systemMemorySize + " MB · çekirdek " + SystemInfo.processorCount + " · ses " + AudioSettings.GetConfiguration().dspBufferSize + "/" + AudioSettings.outputSampleRate + " Hz";
+                    + " · çözünürlük " + Screen.width + "x" + Screen.height + " · bellek " + SystemInfo.systemMemorySize + " MB · çekirdek " + SystemInfo.processorCount + " · ses " + AudioSettings.GetConfiguration().dspBufferSize + "/" + AudioSettings.outputSampleRate + " Hz · ısı " + Isil;
             }
         }
 
@@ -146,7 +161,7 @@ namespace BirdieSmash.Game
             if (top < 3) return;
             float ort = top / sayac; top = 0; sayac = 0;
             if (ort > 1 / 50f && Basamak > 0 && inisBekle <= 0) { Iste(Basamak - 1, true); inisBekle = 5; iyiSure = 0; return; }
-            if (ort < 1 / 58f) { iyiSure += 3; if (iyiSure >= 20 && Basamak < tavan) { Iste(Basamak + 1, false); iyiSure = 0; } }
+            if (ort < 1 / 58f) { iyiSure += 3; if (iyiSure >= 20 && Basamak < Mathf.Min(tavan, isilTavan)) { Iste(Basamak + 1, false); iyiSure = 0; } }
             else iyiSure = 0;
         }
     }
