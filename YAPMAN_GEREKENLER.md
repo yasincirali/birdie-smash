@@ -283,7 +283,7 @@ Boş "Reklam" kutusuyla mağazaya gitmek inceleme reddi riskidir (2.1 eksik işl
 **Karar (2026-11-07, sen: "şerit en başta bağlı olarak çıksın"): AdMob bağlandı.** Menü şeridi + maç sonu isteğe bağlı
 ödüllü reklam (+%50 Tüy, günde en çok 1, ilk 3 galibiyette yok). Şimdilik Google'ın **test** kimlikleri: TestFlight'ta "Test Ad"
 yazılı reklam görürsün, gerçek para yok. Mağaza 1.0'dan önce senden:
-1. admob.google.com'da hesap aç (aynı Google hesabın olabilir), **Uygulama ekle › iOS › Birdie Smash** (yayında değilse
+1. YAPILDI (2026-11-11: hesap, iOS uygulaması ve iki birim açıldı; kimlikler kodda, `murphysoft.app/app-ads.txt` eklendi) admob.google.com'da hesap aç (aynı Google hesabın olabilir), **Uygulama ekle › iOS › Birdie Smash** (yayında değilse
    "listelenmemiş" seç). Çıkan **Uygulama kimliği** (`ca-app-pub-…~…`) ve iki **reklam birimi**: "Banner" ve "Ödüllü".
    Üç kimliği thread'e yaz (gizli değiller); ben koda girerim (`Game/ReklamSdk.cs`, `Editor/CiBuild.cs`).
 2. AdMob › **Gizlilik ve mesajlar**: AB/BK rıza mesajını (GDPR) **ve** iOS "IDFA açıklaması" mesajını yayınla; ikisi de

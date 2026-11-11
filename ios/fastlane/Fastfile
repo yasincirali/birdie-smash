@@ -120,7 +120,10 @@ platform :ios do
   desc "İlk kurulum: Match ile bu bundle id için App Store profili üret (tek seferlik)"
   lane :setup_match_certificates do
     api_key = asc_api_key
-    match(type: "appstore", readonly: false, force_for_new_devices: false, api_key: api_key)
+    # 2026-11-11 mağaza hazırlığı: App ID'ye Game Center / iCloud sonradan açılınca match var olan profili yenilemez,
+    # build günlüğünde "Profil Game Center yetkisi taşımıyor" uyarısı sürer. MATCH_FORCE=true (Setup Match iş akışının
+    # "force" girdisi) yalnız bu bundle'ın profilini yeniden üretir; ortak dağıtım sertifikası (harcliklarim dalı) aynı kalır.
+    match(type: "appstore", readonly: false, force: ENV["MATCH_FORCE"] == "true", force_for_new_devices: false, api_key: api_key)
     UI.success("Match tamam — #{BUNDLE_ID} profili #{ENV['MATCH_GIT_URL']} içine yazıldı")
   end
 
