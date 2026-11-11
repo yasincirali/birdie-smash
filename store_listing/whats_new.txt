@@ -1,4 +1,11 @@
 === UNITY ===
+Tüy dükkânı daha anlaşılır (12 Kasım gece 2):
+- Bir eşyayı hedef yaptıysan dükkânın üstünde hedefin, kaç Tüy eksik olduğu ve yaklaşık kaç maç süreceği yazıyor; hedefine yeten en küçük pakette "Hedefine yeter" görünüyor.
+- Paket kartlarındaki fiyat düğmeleri aynı hizada; paket büyüdükçe tüy demeti de büyüyor.
+- Mağaza artık arka planda erkenden hazırlanıyor; bağlanırken "Fiyat alınıyor…" yazıyor. Bağlantı yoksa tek bir uyarı ve "Yeniden dene" düğmesi çıkıyor.
+- Tüy alınca tüyler aldığın paketten cüzdandaki sayıya uçuyor, sayı sayarak artıyor.
+Nasıl denenir: Dolap'ta Tüy'ün yetmediği bir eşyada "Hedef yap"a dokun, sonra üstteki Tüy sayısına dokunup dükkânı aç: hedef satırı ve bir pakette "Hedefine yeter" görünmeli. Uçak modunda dükkânı aç: tek uyarı ve "Yeniden dene" görünmeli, bağlantıyı açıp ona dokununca fiyatlar gelmeli. Bir paket al: tüyler o karttan cüzdana uçmalı.
+
 Nasıl oynanır kısaldı, daha keskin oyuncu gölgesi (12 Kasım gece):
 - Ayarlar > Nasıl oynanır: başlıklar tek satır, dokununca açılır, aynı anda bir tane açık. Koş, Forehand / backhand ve Derinlik maddelerinin altında "Görevde dene" ile ilgili antrenman görevine gidilir.
 - Oyuncu gölgeleri daha keskin: gölge mesafesi artık kamera açısına göre kortun boyu kadar ayarlanıyor.
