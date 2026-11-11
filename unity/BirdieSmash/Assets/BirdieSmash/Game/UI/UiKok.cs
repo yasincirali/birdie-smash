@@ -102,7 +102,7 @@ namespace BirdieSmash.Game
             }
             ZeminKur();
             for (int i = 0; i < SEKME_N; i++) { sekmeKok[i] = new VisualElement(); sekmeKok[i].AddToClassList("sekme-kok"); sekmeKok[i].AddToClassList("tam"); icerik.Add(sekmeKok[i]); }
-            altKatman.RegisterCallback<PointerDownEvent>(e => { if (e.target == altKatman) AltKapat(); });
+            altKatman.RegisterCallback<PointerDownEvent>(e => { if (e.target == altKatman) AltKapatKay(); });
             kalkan.RegisterCallback<PointerDownEvent>(e => { if (root.HudKatman != null) root.HudKatman.PerdeAtla(); e.StopPropagation(); });
             // iOS sol kenardan kaydırma = Geri (tam sayfada; maçta yok, menü maçta gizli). Kenar 24 pt, 70 pt sağa çekiş.
             sayfa.RegisterCallback<PointerDownEvent>(e => { kenarX = e.position.x - sayfa.worldBound.x < 24 ? e.position.x : -1; }, TrickleDown.TrickleDown);
@@ -250,6 +250,40 @@ namespace BirdieSmash.Game
         void SayfaAc(string s) { var once = gez.sekme; gez.Ac(s); Uygula(once, true); }
         public void Geri() { var once = gez.sekme; if (gez.Geri()) { Yerel.Hap("tick"); Uygula(once, true); } }
         void AltKapat() { var once = gez.sekme; gez.AltKapat(); Uygula(once, false); }
+        // 2026-11-11 inceleme (fikir 19:05 #1): alt sayfa açılırken yaylanıyor ama kapanırken tek karede yok oluyordu. Kapat, zemine
+        // dokunma ve tutamak artık önce sayfayı aşağı kaydırır (.2 sn ease-in), zemin aynı anda solar, sonra AltKapat. Hareketi
+        // azaltta kayma yok, .12 sn solma. Geri (ekran turu, gezinti yığını) bilerek anında kalır: zamanlanmış kapanış sıradaki
+        // sayfayı kapatmasın. Bekleyen kapanış aynı sayfa hâlâ açıksa çalışır.
+        bool altKapaniyor; Color altZemin = new Color(0, 0, 0, -1);
+        void AltKapatKay()
+        {
+            var v = altSayfa; if (v == null) { AltKapat(); return; }
+            if (altKapaniyor) return; altKapaniyor = true; Yerel.Hap("tick");
+            float sure = Ayar.reduce ? 0.12f : 0.2f;
+            v.style.transitionProperty = new List<StylePropertyName> { new StylePropertyName("translate"), new StylePropertyName("opacity") };
+            v.style.transitionDuration = new List<TimeValue> { new TimeValue(sure, TimeUnit.Second) };
+            v.style.transitionTimingFunction = new List<EasingFunction> { new EasingFunction(EasingMode.EaseIn) };
+            if (Ayar.reduce) v.style.opacity = 0f; else v.style.translate = new Translate(0, Mathf.Max(200f, v.resolvedStyle.height + 40f), 0);
+            AltZeminOran(0f, sure);
+            v.schedule.Execute(() => { altKapaniyor = false; if (altSayfa == v) AltKapat(); AltZeminSifirla(); }).StartingIn(Mathf.RoundToInt(sure * 1000) + 16);
+        }
+        // Sürükleme: sayfa parmakla iner (geçiş yok); bırakınca geçiş USS'e döner, inline translate kalkar, sayfa yerine yaylanır.
+        void AltSurukle(VisualElement v, float dy, bool basili)
+        {
+            if (v == null || altKapaniyor) return;
+            if (basili) { v.style.transitionDuration = new List<TimeValue> { new TimeValue(0f, TimeUnit.Second) }; v.style.translate = new Translate(0, dy, 0); }
+            else { v.style.transitionDuration = StyleKeyword.Null; v.style.translate = StyleKeyword.Null; }
+            float h = Mathf.Max(1, v.resolvedStyle.height); AltZeminOran(basili ? 1f - Mathf.Clamp01(dy / h) : 1f, basili ? 0f : 0.22f);
+            Kalite.Hareket();
+        }
+        void AltZeminOran(float k, float sure)
+        {
+            if (altZemin.a < 0) altZemin = altKatman.resolvedStyle.backgroundColor;   // USS rgba(10,6,14,.6); renk tek yerde kalsın
+            altKatman.style.transitionProperty = new List<StylePropertyName> { new StylePropertyName("background-color") };
+            altKatman.style.transitionDuration = new List<TimeValue> { new TimeValue(sure, TimeUnit.Second) };
+            altKatman.style.backgroundColor = new Color(altZemin.r, altZemin.g, altZemin.b, altZemin.a * k);
+        }
+        void AltZeminSifirla() { altKatman.style.backgroundColor = StyleKeyword.Null; altKatman.style.transitionDuration = StyleKeyword.Null; altKatman.style.transitionProperty = StyleKeyword.Null; }
         // Maçtan ana menüye dönüş (GameRoot.AnaMenu): açık sayfalar kapanır, Oyna sekmesi.
         public void MenuyeDon() { var once = gez.sekme; kariyerTur = -1; gez.SekmeSec(Sekme.Oyna); Uygula(once, false); Kirlet(); if (OyuncuSecGerekli()) OyuncuSecAc(); }   // harita yeniden sıradakinin turunu açar (yeni tur açılmış olabilir)
 

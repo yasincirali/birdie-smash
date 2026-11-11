@@ -181,7 +181,7 @@ namespace BirdieSmash.Game
         void MacKur(int tohum, MatchOptions o)
         {
             ani.Sifirla(); AniDur(); aniIzlendi = false;   // Maçın anı her maç kendi rallilerinden (Günün maçı, Usta yolu, görev de buradan geçer)
-            match = new Match(tohum, o);
+            match = new Match(tohum, o); Basarim.MacBasla();
             Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; System.Array.Clear(iskaN, 0, iskaN.Length); yerN = 0; yerTop = null; yardimN = 0; yardimTop = null; hazirN = 0; enerjiDolu = match.energy >= 1;
             fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; pencere = false; sfx.SuAlti(false); ReklamKartKapat(); ReklamSdk.OdulluHazirla(); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
@@ -891,12 +891,12 @@ namespace BirdieSmash.Game
         // 2026-10-31 (Unity incelemesi O1): görev tamamlanınca tam kayıt (JSON + ~20 PlayerPrefs anahtarı) vuruş anında yapılıyordu;
         // tek kare takılma. Sayı arasına, duraklatmaya ya da menüye ertelenir; arka plana geçişte de yazılır (OnApplicationPause).
         bool kaydetBekle;
-        void BekleyenKayit() { if (!kaydetBekle) return; kaydetBekle = false; Ayar.Kaydet(); }
+        void BekleyenKayit() { Basarim.Yaz(); if (!kaydetBekle) return; kaydetBekle = false; Ayar.Kaydet(); }
         void Update()
         {
             FitCamera();
             float dt = Mathf.Min(.05f, Time.unscaledDeltaTime);
-            if (kaydetBekle && (ekran != Ekran.Oyun || paused || match == null || match.between)) BekleyenKayit();
+            if ((kaydetBekle || Basarim.Bekliyor) && (ekran != Ekran.Oyun || paused || match == null || match.between)) BekleyenKayit();
             if (ekran == Ekran.Oyun && !paused)
             {
                 if (girisT > 0) girisT = Mathf.Max(0, girisT - dt);

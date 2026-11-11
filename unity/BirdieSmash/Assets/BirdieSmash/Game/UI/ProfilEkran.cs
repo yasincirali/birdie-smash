@@ -16,9 +16,24 @@ namespace BirdieSmash.Game
     public partial class UiKok
     {
         // Başarım kimlikleri App Store Connect'teki ile aynı (Basarim); adlar yalnız bu liste için.
+        bool basarimTum;   // Profil başarım listesi açık (oturum boyunca; 2026-11-11)
         static readonly string[,] BASARIM = {
             { Basarim.ANTRENMAN, "Antrenmanı bitir" }, { Basarim.AKIS, "Akışa gir" }, { Basarim.RALLI20, "20 vuruşluk ralli" },
             { Basarim.SICRAMA, "Sıçrayarak smaç" }, { Basarim.GOREV3, "Bir maçta 3 görev" } };
+
+        // Başarımın oyuncuya görünen adı (Profil listesi ve maç sonu kartı aynı adı kullanır; 2026-11-11).
+        public static string BasarimAdi(string id)
+        {
+            for (int i = 0; i < BASARIM.GetLength(0); i++) if (BASARIM[i, 0] == id) return L.T(BASARIM[i, 1]);
+            if (id.StartsWith("bs_kariyer_")) { int n; if (int.TryParse(id.Substring(11), out n) && n >= 1 && n <= Match.KARIYER.Length) return L.T("Kariyer") + ": " + L.T(Match.KARIYER[n - 1].yer); }
+            if (id.StartsWith("bs_tur_")) { int n; if (int.TryParse(id.Substring(7), out n) && n >= 2) return L.T("{0} finalini kazan", L.T(TurAd(n - 1))); }
+            if (id == Basarim.EFSANE) return L.T("Seviye 30'a ulaş");
+            if (id == Basarim.ANTRENOR) return L.T("Antrenmanın 24 yıldızını topla");
+            if (id == Basarim.GUNUN_MACI) return L.T("Bir Günün maçını kazan");
+            if (id == Basarim.USTA6) return L.T("Usta zorlukta, Usta yolunda 6 basamak geç");
+            if (id == Basarim.IMZA_OKUR) return L.T("Toplam {0} imza vuruşu oku", Basarim.IMZA_OKUR_HEDEF);
+            return id;
+        }
 
         void ProfilKur(VisualElement k)
         {
@@ -143,14 +158,28 @@ namespace BirdieSmash.Game
             // Game Center listenin sonundan başlığın altına (2026-11-07 inceleme, fikir 20:09 #3): Ayarlar'daki kopya kalktı, tek yer
             // burası; uzun listenin dibinde aranmasın. Metin aynı anahtar ("Game Center'da aç" yeni çeviri isterdi).
             if (Basarim.acik) { c.Add(Dugme(L.T("Game Center · Başarımlar") + "  ›", () => { Yerel.Hap("tick"); Basarim.Goster(); })); c.Add(Bosluk(6)); }
-            for (int i = 0; i < BASARIM.GetLength(0); i++) BasarimSatir(c, BASARIM[i, 0], L.T(BASARIM[i, 1]));
-            for (int i = 1; i <= Match.KARIYER.Length; i++) BasarimSatir(c, "bs_kariyer_" + i, L.T("Kariyer") + ": " + L.T(Match.KARIYER[i - 1].yer));
-            for (int tu = 1; tu < KariyerVeri.Turlar.Length; tu++) if (KariyerVeri.Turlar[tu].Var) BasarimSatir(c, "bs_tur_" + (tu + 1), L.T("{0} finalini kazan", L.T(TurAd(tu))));
-            BasarimSatir(c, Basarim.EFSANE, L.T("Seviye 30'a ulaş"));
-            BasarimSatir(c, Basarim.ANTRENOR, L.T("Antrenmanın 24 yıldızını topla"));
-            BasarimSatir(c, Basarim.GUNUN_MACI, L.T("Bir Günün maçını kazan"));
-            BasarimSatir(c, Basarim.USTA6, L.T("Usta zorlukta, Usta yolunda 6 basamak geç"));
-            BasarimSatir(c, Basarim.IMZA_OKUR, L.T("Toplam {0} imza vuruşu oku", Basarim.IMZA_OKUR_HEDEF));
+            // 2026-11-11 inceleme (fikir 19:05 #7): 23–25 satır alt alta, çoğu kilit + "Henüz değil"; sayfanın yarısı kilit duvarıydı.
+            // Kapalıyken: kazanılanlar (gurur) + listedeki sıradaki 3 kilitli hedef + "Tümünü göster (n)". Açınca eski tam liste.
+            var ids = new System.Collections.Generic.List<string>();
+            for (int i = 0; i < BASARIM.GetLength(0); i++) ids.Add(BASARIM[i, 0]);
+            for (int i = 1; i <= Match.KARIYER.Length; i++) ids.Add("bs_kariyer_" + i);
+            for (int tu = 1; tu < KariyerVeri.Turlar.Length; tu++) if (KariyerVeri.Turlar[tu].Var) ids.Add("bs_tur_" + (tu + 1));
+            ids.Add(Basarim.EFSANE); ids.Add(Basarim.ANTRENOR); ids.Add(Basarim.GUNUN_MACI); ids.Add(Basarim.USTA6); ids.Add(Basarim.IMZA_OKUR);
+            int bKaz = 0; foreach (var id in ids) if (Basarim.Var(id)) bKaz++;
+            var bs = Yazi(L.T("{0}/{1} kazanıldı", bKaz, ids.Count), 13, "soluk"); c.Add(bs);
+            var liste = new VisualElement(); c.Add(liste); int kilitGoster = 0, gizli = 0;
+            foreach (var id in ids)
+            {
+                bool v = Basarim.Var(id);
+                if (basarimTum || v || kilitGoster < 3) { BasarimSatir(liste, id, BasarimAdi(id)); if (!v) kilitGoster++; }
+                else gizli++;
+            }
+            if (gizli > 0)
+            {   // yerinde açılır (sayfa yeniden kurulmaz, kaydırma yeri korunur)
+                VisualElement td = null;
+                td = Dugme(L.T("Tümünü göster ({0})", ids.Count) + "  ›", () => { Tik(); basarimTum = true; liste.Clear(); foreach (var id in ids) BasarimSatir(liste, id, BasarimAdi(id)); td.RemoveFromHierarchy(); }, "kucuk-dugme");
+                c.Add(td);
+            }
             c.Add(Bosluk(20));
         }
 

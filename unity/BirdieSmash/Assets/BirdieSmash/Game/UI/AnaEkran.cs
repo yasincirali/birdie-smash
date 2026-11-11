@@ -167,8 +167,11 @@ namespace BirdieSmash.Game
         VisualElement GunlukKaro()
         {
             var g = Bugun(); var st = Match.STIL[g.stil]; bool alindi = Ayar.ilerleme.GunlukAlindi(g.tarih);
-            var d = Karo(Ikonlar.Gunes, L.T("Günün maçı"), L.T(g.deg.ad), alindi ? L.T("Bugün kazandın") : L.T("+{0} Tüy", Gunluk.OdulTuy), alindi ? Ikonlar.Tik : Ikonlar.Tuy, GunlukAc,
-                L.T("Günün maçı") + ", " + L.T(g.deg.ad) + ", " + L.T("Rakip") + " " + st.isim + ", " + (alindi ? L.T("Bugün kazandın") : L.T("+{0} Tüy", Gunluk.OdulTuy)), "karo--altin");
+            // 2026-11-11 inceleme (fikir 19:05 #5): kazanınca kutucuk "Bugün kazandın"da bitiyordu; yarına somut, baskısız bir neden yok.
+            // Kural tarihten belirlenimli (Gunluk.Bugun): yarının adı yazılır. Geri sayım, "kaçırma" dili, rozet yok.
+            string altY = alindi ? L.T("Yarın: {0}", L.T(Gunluk.Bugun(System.DateTime.Now.AddDays(1)).deg.ad)) : L.T("+{0} Tüy", Gunluk.OdulTuy);
+            var d = Karo(Ikonlar.Gunes, L.T("Günün maçı"), L.T(g.deg.ad), altY, alindi ? Ikonlar.Tik : Ikonlar.Tuy, GunlukAc,
+                L.T("Günün maçı") + ", " + L.T(g.deg.ad) + ", " + L.T("Rakip") + " " + st.isim + ", " + (alindi ? L.T("Bugün kazandın") + ", " + altY : altY), "karo--altin");
             d.AddToClassList("karo--genis"); Doku(d, Ikonlar.AltinKaro);
             return d;
         }
@@ -306,15 +309,31 @@ namespace BirdieSmash.Game
         {
             altKatman.Clear(); altSayfa = new VisualElement(); altSayfa.AddToClassList("alt-sayfa"); altSayfa.style.paddingBottom = altBosluk + 16; altKatman.Add(altSayfa);
             var tut = new VisualElement(); tut.AddToClassList("tutamak-alan"); var cz = new VisualElement(); cz.AddToClassList("tutamak"); cz.pickingMode = PickingMode.Ignore; tut.Add(cz); altSayfa.Add(tut);
-            float basY = 0; bool cek = false;
-            tut.RegisterCallback<PointerDownEvent>(e => { basY = e.position.y; cek = true; tut.CapturePointer(e.pointerId); });
-            tut.RegisterCallback<PointerMoveEvent>(e => { if (cek && e.position.y - basY > 60) { cek = false; tut.ReleasePointer(e.pointerId); AltKapat(); } });
-            tut.RegisterCallback<PointerUpEvent>(e => { cek = false; tut.ReleasePointer(e.pointerId); });
+            // 2026-11-11 inceleme (fikir 19:05 #1): tutamak sürüklemede sayfayı hiç kaydırmıyor, 60 px'te bir anda kapatıyordu ("bozuk"
+            // sanılıyordu). Artık sayfa parmakla iner, zemin karartması aynı oranda solar; bırakınca yüksekliğin %25'i ya da hızlı fiske
+            // (~900/sn) aşağı kayıp kapatır, değilse USS geçişiyle (.22 sn ease-out) yerine yaylanır (iOS sheet kalıbı, HIG Sheets).
+            var sayfaV = altSayfa;
+            float basY = 0, sonY = 0, sonT = 0, hiz = 0; bool cek = false;
+            tut.RegisterCallback<PointerDownEvent>(e => { basY = sonY = e.position.y; sonT = Time.unscaledTime; hiz = 0; cek = true; tut.CapturePointer(e.pointerId); AltSurukle(sayfaV, 0, true); });
+            tut.RegisterCallback<PointerMoveEvent>(e =>
+            {
+                if (!cek) return; float y = e.position.y, tn = Time.unscaledTime, dt = tn - sonT;
+                if (dt > 0.0001f) hiz = Mathf.Lerp(hiz, (y - sonY) / dt, 0.5f); sonY = y; sonT = tn;
+                AltSurukle(sayfaV, Mathf.Max(0, y - basY), true);
+            });
+            System.Action<int> birak = pid =>
+            {
+                if (!cek) return; cek = false; if (tut.HasPointerCapture(pid)) tut.ReleasePointer(pid);
+                float dy = Mathf.Max(0, sonY - basY), h = Mathf.Max(1, sayfaV.resolvedStyle.height);
+                if (dy > h * 0.25f || (hiz > 900 && dy > 12)) AltKapatKay(); else AltSurukle(sayfaV, 0, false);
+            };
+            tut.RegisterCallback<PointerUpEvent>(e => birak(e.pointerId));
+            tut.RegisterCallback<PointerCancelEvent>(e => birak(e.pointerId));
             var bas = Satir("arali"); altSayfa.Add(bas);
             // 2026-11-05 unslop: başlık içerik genişliğinde kalıp Kapat'ın yanında iki satıra kırılıyordu ("Köşe / smacı"); kalan
             // genişliği alır, Kapat daralmaz.
             var t = Yazi(baslik, 19, "sayfa-baslik"); Erisim.Etiket(t, baslik, "baslik"); t.style.flexGrow = 1f; t.style.flexShrink = 1f; t.style.minWidth = 0f; t.style.marginRight = 12f; bas.Add(t);
-            var kp = Dugme(L.T("Kapat"), AltKapat, "kucuk-dugme"); kp.style.flexShrink = 0f; bas.Add(kp);
+            var kp = Dugme(L.T("Kapat"), AltKapatKay, "kucuk-dugme"); kp.style.flexShrink = 0f; bas.Add(kp);
             var sv = Kaydirma(altSayfa); sv.AddToClassList("alt-kaydir");
             // 2026-11-07 (UX2): içerik görünen alandan uzunsa altta solma; sona kaydırınca kalkar (kaydırılabilir olduğu belli olsun).
             var sol = new Image { image = Ikonlar.Solma, scaleMode = ScaleMode.StretchToFill }; sol.AddToClassList("kaydir-solma"); sol.pickingMode = PickingMode.Ignore; sv.hierarchy.Add(sol);

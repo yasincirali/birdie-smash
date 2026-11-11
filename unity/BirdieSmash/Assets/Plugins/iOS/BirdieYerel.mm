@@ -36,10 +36,16 @@ static void bsDarbe(int ms)
 {
     if (ms <= 0) return;
     bsHazirla();
-    if (ms >= 40) [bsAgir impactOccurred];
-    else if (ms >= 22) [bsOrta impactOccurred];
-    else if (ms >= 12) [bsHafif impactOccurred];
-    else [bsSecim selectionChanged];
+    // 2026-11-11 inceleme (fikir 19:05 #4): süre dört üretece eşleniyor, şiddet hep tamdı; Sfx.Desen'in tel gerginliği (±%8) ve
+    // perfect ×1,15 farkı çoğu vuruşta aynı basamakta kalıp elde kayboluyordu. Basamak içinde şiddet süreyle artar (basamağın
+    // tepesi eskisi gibi tam), 22 lb ile 30 lb raket elde de ayrışır. Core Haptics yok (7 Kas kararı); tek UIKit çağrısı.
+    UIImpactFeedbackGenerator *g = nil; double k = 1.0;
+    if (ms >= 40) { g = bsAgir; k = 0.7 + 0.3 * MIN(1.0, (ms - 40) / 30.0); }
+    else if (ms >= 22) { g = bsOrta; k = 0.6 + 0.4 * MIN(1.0, (ms - 22) / 18.0); }
+    else if (ms >= 12) { g = bsHafif; k = 0.6 + 0.4 * MIN(1.0, (ms - 12) / 10.0); }
+    if (g == nil) [bsSecim selectionChanged];
+    else if (@available(iOS 13.0, *)) [g impactOccurredWithIntensity:k];
+    else [g impactOccurred];
     bsIsit();
 }
 
