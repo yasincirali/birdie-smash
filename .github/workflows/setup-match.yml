@@ -4,9 +4,15 @@ name: iOS — Setup Match (one-time)
 # provisioning profili üretip match deposuna (MATCH_GIT_URL)
 # yazar. Sertifika takım geneli tektir; yalnız profil eklenir.
 # Önkoşul: bundle id Apple Developer'da kayıtlı olmalı.
+# 2026-11-11: "force" girdisi işaretlenirse var olan profil yeniden üretilir (App ID yeteneği sonradan açıldığında).
 
 on:
   workflow_dispatch:
+    inputs:
+      force:
+        description: "Profili yeniden üret (App ID'ye Game Center / iCloud eklendikten sonra işaretle)"
+        type: boolean
+        default: false
 
 jobs:
   setup:
@@ -34,4 +40,5 @@ jobs:
           MATCH_GIT_BASIC_AUTH: ${{ secrets.MATCH_GIT_BASIC_AUTH }}
           MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
           MATCH_READONLY: "false"
+          MATCH_FORCE: ${{ inputs.force }}
         run: bundle exec fastlane setup_match_certificates

@@ -16,8 +16,10 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-# Sürüm fastlane tarafından CI'da yükseltilir (Harçlıklarım ile aynı düzen); elle bump etme.
-version: 0.1.0+1
+# Build numarası fastlane tarafından CI'da yükseltilir (Harçlıklarım ile aynı düzen); "+1"i elle bump etme.
+# Sürüm adı (x.y.z) ise mağaza sürümüdür ve elle değişir: App Store Connect'teki sürüm kaydıyla birebir aynı olmalı,
+# yoksa build o sürüme iliştirilemez. 2026-11-11 (yasin: "store sürecine başlayalım"): 0.1.0 → 1.0.0, ilk mağaza sürümü.
+version: 1.0.0+1
 
 environment:
   sdk: ^3.13.2

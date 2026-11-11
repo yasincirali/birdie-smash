@@ -15,18 +15,20 @@ namespace BirdieSmash.Game
     //    Maçta, perde altında ve alt sayfa açıkken gizli. Yüklenmezse menüde yer açılmaz (2026-11-08, UiKok.ReklamSeritYeri).
     //  - Ödüllü: maç başında yüklenir, maç sonu kartı OdulluHazir'a bakar. Gösterilirken oyun sesi durur (iOS'ta eklenti Unity'yi
     //    duraklatır; Android'de AudioListener). Ödül yalnız SDK "ödül kazanıldı" deyince; yarıda kapanırsa yok.
-    //  - Kimlikler Google'ın TEST kimlikleri (yalnız test reklamı). yasin'in AdMob hesabı gelince SERIT_ID/ODULLU_ID ve
-    //    CiBuild.ADMOB_*_UYG değişir; mağaza 1.0 öncesi zorunlu (YAPMAN_GEREKENLER.md › Reklam).
+    //  - Kimlikler: iOS 2026-11-11'den beri yasin'in AdMob hesabı (mağaza 1.0; birimler "Menu banner" ve "Match end reward").
+    //    Android hattı yok, orada Google'ın TEST kimlikleri kalır; Android yayını gelince AdMob'da ayrı Android uygulaması açılır.
+    //    TestFlight build'leri de gerçek reklam gösterir: geliştirici ve testçi kendi reklamına dokunmaz (geçersiz trafik).
     //  - Eklenti yalnız iOS/Android oyuncusunda çağrılır: Editor'de ve CI'ın Linux oyuncusunda (ekran turu) SDK yok, yer
     //    tutucu görünür; böylece ekran karesi reklamın içeriğine göre değişmez.
     public static class ReklamSdk
     {
 #if UNITY_ANDROID
         const string SERIT_ID = "ca-app-pub-3940256099942544/6300978111", ODULLU_ID = "ca-app-pub-3940256099942544/5224354917";
-#else
-        const string SERIT_ID = "ca-app-pub-3940256099942544/2934735716", ODULLU_ID = "ca-app-pub-3940256099942544/1712485313";
-#endif
         public const bool TEST_KIMLIK = true;
+#else
+        const string SERIT_ID = "ca-app-pub-6645967875947629/1662942089", ODULLU_ID = "ca-app-pub-6645967875947629/2951973024";
+        public const bool TEST_KIMLIK = false;
+#endif
         const float SERIT_W = 320, SERIT_H = 50;
 
         static bool basladi, hazir;

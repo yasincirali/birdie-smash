@@ -1,0 +1,35 @@
+name: ASC — Game Center başarımları
+
+# 2026-11-11 mağaza 1.0: 23 başarımı store_listing/game_center/basarimlar.json'dan ASC'ye girer (tool/asc/game_center.py).
+# Yeniden koşulabilir: var olanı atlar, silmez. İki yol:
+#  - Actions › bu iş akışı › Run workflow (main'e girdikten sonra), "kuru" işaretliyse yalnız okur.
+#  - Dal push'u: asc-gc/kuru* → yalnız okur, asc-gc/uygula* → yazar. Yeni iş akışı main'e girmeden dispatch
+#    edilemediği için (GitHub kuralı) ilk koşu bu yolla yapıldı.
+on:
+  workflow_dispatch:
+    inputs:
+      kuru:
+        description: "Yalnız oku, ne yapacağını yaz"
+        type: boolean
+        default: true
+  push:
+    branches: ['asc-gc/**']
+
+jobs:
+  basarimlar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pyjwt cryptography requests
+      - name: Başarımları gir
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+          ASC_APP_ID: "6824684283"
+          KURU: ${{ (github.event_name == 'workflow_dispatch' && inputs.kuru) || startsWith(github.ref_name, 'asc-gc/kuru') }}
+        run: |
+          if [ "$KURU" = "true" ]; then python tool/asc/game_center.py --kuru; else python tool/asc/game_center.py; fi
