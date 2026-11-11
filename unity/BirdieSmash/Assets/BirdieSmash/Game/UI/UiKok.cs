@@ -327,7 +327,7 @@ namespace BirdieSmash.Game
         }
         void AltZeminSifirla() { altKatman.style.backgroundColor = StyleKeyword.Null; altKatman.style.transitionDuration = StyleKeyword.Null; altKatman.style.transitionProperty = StyleKeyword.Null; }
         // Maçtan ana menüye dönüş (GameRoot.AnaMenu): açık sayfalar kapanır, Oyna sekmesi.
-        public void MenuyeDon() { var once = gez.sekme; kariyerTur = -1; gez.SekmeSec(Sekme.Oyna); Uygula(once, false); Kirlet(); if (OyuncuSecGerekli()) OyuncuSecAc(); }   // harita yeniden sıradakinin turunu açar (yeni tur açılmış olabilir)
+        public void MenuyeDon() { MagazaOnIsit(); var once = gez.sekme; kariyerTur = -1; gez.SekmeSec(Sekme.Oyna); Uygula(once, false); Kirlet(); if (OyuncuSecGerekli()) OyuncuSecAc(); }   // harita yeniden sıradakinin turunu açar (yeni tur açılmış olabilir)
 
         void Uygula(Sekme once, bool anim)
         {
@@ -407,10 +407,13 @@ namespace BirdieSmash.Game
             }
             if (svOnce > 0 && sv > svOnce) kok.schedule.Execute(() => { if (root.ekran == Ekran.Menu && !OdulAnlariKapali) SeviyeAni(svOnce, sv); }).StartingIn(gec);
         }
-        void TuyUcur(VisualElement tuy, Label tz, int once, int hedef)
+        // kaynak (2026-11-12 inceleme, dükkân satın alma anı): verilirse tüyler ekran ortasından değil o öğenin (satın alınan
+        // paket kartı) ortasından kalkar; hedef aynı dil, aynı süre.
+        void TuyUcur(VisualElement tuy, Label tz, int once, int hedef, VisualElement kaynak = null)
         {
             var kb = kok.worldBound; var hb = tuy.worldBound; if (float.IsNaN(hb.x) || kb.width < 1) { tz.text = Sayi(hedef); return; }
             Vector2 bas = new Vector2(kb.width * .5f, kb.height * .45f), son = new Vector2(hb.x - kb.x + 18, hb.y - kb.y + hb.height * .5f);
+            if (kaynak != null) { var sb = kaynak.worldBound; if (!float.IsNaN(sb.x) && sb.width > 1) bas = new Vector2(sb.center.x - kb.x, sb.center.y - kb.y); }
             for (int i = 0; i < 6; i++)
             {
                 var f = Ikon(Ikonlar.Tuy, 26, ALTIN); f.pickingMode = PickingMode.Ignore; f.style.position = Position.Absolute; kok.Add(f);

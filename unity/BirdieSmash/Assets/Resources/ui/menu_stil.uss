@@ -691,6 +691,20 @@
 .dukkan-kart .dugme--birincil { min-height: 48px; margin-top: 8px; }
 .dukkan-ek { color: var(--gold); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .dukkan-not { color: var(--lime); margin: 4px 0 8px 0; }
+/* 2026-11-12 inceleme (dükkân): bilgi bloğu büyür, fiyat düğmesi kartın dibine yaslanır (aynı sıradaki kartlar eş boy, ızgara
+   tırtıksız). Paket demeti ikonun yerinde; hedef satırı ve "Hedefine yeter" altın (Tüy rengi), yazı + ✓ ile (yalnız renk değil).
+   Satın alınan kart 0,6 sn altın çerçeve; hareketi azaltta geçiş yok. Büyük yazıda ızgara tek sütun (iki sütunda taşma adayı). */
+.dukkan-kart-bilgi { flex-grow: 1; }
+.dukkan-demet { margin-right: 6px; flex-shrink: 0; }
+.dukkan-hedef { color: var(--gold); margin-top: 6px; }
+.dukkan-yeter { align-items: center; margin-top: 4px; }
+.dukkan-yeter .kalin { color: var(--gold); margin-left: 4px; }
+.dukkan-durum { padding: 14px; margin-bottom: 8px; }
+.dukkan-durum .dugme { margin-top: 10px; min-height: 48px; }
+.dukkan-izgara > .dukkan-kart { transition-property: border-color; transition-duration: 0.2s; }
+.dukkan-kart--alindi { border-color: var(--gold); border-width: 2px; }
+.az-hareket .dukkan-izgara > .dukkan-kart { transition-duration: 0s; }
+.buyuk-yazi .dukkan-izgara > .dukkan-kart { flex-basis: 100%; }
 /* 2026-11-02 hedef eşya: Tüy yetmeyince "Hedef yap" ikincil düğme. Dosya sonunda: ikinci .dugme kuralı alt çizgiyi ezmesin. Güneş çerçeve + yazı (yalnız
    renk değil: başlık "Hedef yap" der). Birincil (dolu güneş) "Al"a ayrılmış kalır. */
 .dugme--hedef { background-color: rgba(255, 160, 77, 0.10); border-width: 2px; border-color: var(--sun); border-bottom-width: 2px; border-bottom-color: var(--sun); }
