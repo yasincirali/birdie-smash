@@ -123,6 +123,8 @@ namespace BirdieSmash.Core
         public float energy, clock, opHitAt = -9, wait, betweenT, freeze, slow = 1, slowT;
         // 2026-11-10 inceleme (fikir 07:06 #6): servis ipucu bayrağı "hint" kalktı; okuyan yoktu. İpucu kararı tek yerde: Hud.ServisSeridi
         // (Öğretici dönemi). Online paket ve kayıt bu alanı hiç taşımadı.
+        // Son sayı sıçrayarak smaçla mı alındı (yalnız görüntü ve sayı arası süresi; Point yazar, bir sonraki Point'e kadar geçerli).
+        public bool sovSayi;
         public bool easy = true, reduce, ilk, between, split, splitPending, over, matchDone, deceive, kisaBekle, flow;
         public Action svPending;
         // maç sonu istatistiği (HTML oInfo)
@@ -871,7 +873,7 @@ namespace BirdieSmash.Core
             if (rally > bestRally) { bestRally = rally; if (rally >= 6) { rekorBuMac = true; Say(null, "rekor", Court.MID, Court.NET, 2, "Yeni ralli rekoru: " + rally, 3); } }
             int a = sc[0], b = sc[1], cap = target == 21 ? 30 : target == 11 ? 15 : 7;
             matchDone = ogr == null && ((Math.Max(a, b) >= target && Math.Abs(a - b) >= 2) || Math.Max(a, b) >= cap);
-            if (matchDone) { if (winner == "me" && !reduce) { slow = .3f; slowT = .9f; } betweenT = 1.4f; }   // kaybı ağır çekimde izletmek cezalandırır
+            if (matchDone) { sovSayi = false; if (winner == "me" && !reduce) { slow = .3f; slowT = .9f; } betweenT = 1.4f; }   // kaybı ağır çekimde izletmek cezalandırır
             // 2026-11-07 inceleme (fikir 06:03 #2a): online'da da. Maç bitince hakem kararı gitmiştir, karşıya paket gerekmez;
             // ağır çekim yalnız kazananın telefonunda yerel görüntüdür (betweenT gerçek dt ile akar, maç sonu zamanı değişmez).
             else
@@ -882,7 +884,10 @@ namespace BirdieSmash.Core
                 else if (a == b && a >= target - 1) serveMsg = "Uzatma: 2 fark gerekiyor";
                 else if (degistirici == "altin" && sayiNo % 3 == 2) serveMsg = ALTIN_YAZI;   // bir sonraki ralli altın: servisten önce yazılır
                 // Sayılar arası bekleme 1,3 → 0,7 sn (HTML 959beb1): ritim düşmesin; antrenman ve rekor sayısı eski süreyi korur.
-                bool kisa = ogr == null && !rekor; kisaBekle = kisa; if (kisa) hakemT = hakemT0 = 1.0f;
+                // 2026-11-12 (yasin: "uzun animasyon sadece sıçrayarak smaç veya set sayısında"): sıçrayarak smaçla alınan sayı gösteri
+                // sayısıdır; rekor rallisi gibi uzun beklemeyi (1,3 sn) alır, kazanan sevincini/dansını tam yapar (PlayerView.SEVINC_UZUN).
+                sovSayi = ogr == null && Dril == null && s != null && s.from == winner && s.type == "jump";
+                bool kisa = ogr == null && !rekor && !sovSayi; kisaBekle = kisa; if (kisa) hakemT = hakemT0 = 1.0f;
                 betweenT = kisa ? .7f : Dril != null ? (Dril.olcu == Sonsuz.ID ? .2f : .9f) : 1.3f;
             }
         }

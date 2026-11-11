@@ -70,7 +70,7 @@ static class BotMac
     static int Main()
     {
         var clipSeen = new Dictionary<string, int>(); var serveSeen = new Dictionary<string, int>();
-        int nets = 0, cords = 0, points = 0, meWins = 0, maxRally = 0, hits = 0, prepEarly = 0, prepFrames = 0, jumpN = 0, opJumpN = 0, tiltBad = 0;
+        int sovN = 0, nets = 0, cords = 0, points = 0, meWins = 0, maxRally = 0, hits = 0, prepEarly = 0, prepFrames = 0, jumpN = 0, opJumpN = 0, tiltBad = 0;
         float minMe = 1, minOp = 1, jumpMin = 9, opJumpMin = 9; var gaps = new List<float>(); var gapsRekor = new List<float>();
         var styles = new Dictionary<string, int>(); int tired = 0, gorevN = 0;
         int[] targets = { 5, 11, 21 };
@@ -110,6 +110,8 @@ static class BotMac
                         if (e.who == "op" && M.op.clip == "jump") { opJumpN++; opJumpMin = Math.Min(opJumpMin, Match.JumpH(M.op)); }
                     }
                     if (e.kind == Ev.Point) { points++; maxRally = Math.Max(maxRally, (int)e.k); pointAt = t; lastRekor = !M.kisaBekle; }
+                    // 2026-11-12 gösteri sayısı: sıçrayarak smaçla alınan sayı uzun beklemeyi alır (dans tam oynar); maç sonunda ve başka sayıda kapalı.
+                    if (e.kind == Ev.Point) { bool sj = !M.matchDone && M.s != null && M.s.from == e.who && M.s.type == "jump"; if (M.sovSayi != sj) Fail("sovSayi sıçrayarak smaç sayısıyla eşleşmeli"); if (M.sovSayi) { sovN++; if (M.kisaBekle || M.betweenT < 1.2f) Fail("gösteri sayısında sayı arası uzun olmalı"); } }
                     if (e.kind == Ev.Serve && pointAt >= 0) { (lastRekor ? gapsRekor : gaps).Add(t - pointAt); pointAt = -1; }
                 }
                 M.events.Clear();
