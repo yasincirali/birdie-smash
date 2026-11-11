@@ -1,0 +1,31 @@
+name: TestFlight — çökme raporları
+
+# 2026-11-11: testçinin paylaştığı TestFlight çökmelerini ASC API'den indirip `cokme-sonuc` dalına run numarasıyla yazar
+# (tool/tani/tf_cokme.py; e-posta/ad yazılmaz, depo herkese açık). Tetik: `cokme/**` dalına push ya da elle. Build yapmaz.
+on:
+  push:
+    branches: ['cokme/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  indir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install -q pyjwt cryptography
+      - name: İndir
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+        run: python3 tool/tani/tf_cokme.py "$RUNNER_TEMP/c"
+      - name: cokme-sonuc dalına yaz
+        run: |
+          git config user.name "github-actions[bot]"; git config user.email "github-actions[bot]@users.noreply.github.com"
+          d="r${{ github.run_number }}"; cp -r "$RUNNER_TEMP/c" "$RUNNER_TEMP/$d"
+          git fetch origin cokme-sonuc && git checkout -q cokme-sonuc || git checkout -q --orphan cokme-sonuc
+          git rm -rq --cached . 2>/dev/null || true; find . -maxdepth 1 ! -name .git ! -name . ! -name 'r[0-9]*' -exec rm -rf {} +
+          cp -r "$RUNNER_TEMP/$d" "./$d"; git add "$d"; git commit -qm "TF çökme raporları $d"; git push origin cokme-sonuc
