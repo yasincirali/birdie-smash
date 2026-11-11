@@ -210,7 +210,7 @@ namespace BirdieSmash.Game
                 catch (System.Exception e) { Debug.LogWarning("aksesuar " + id + ": " + e.Message); h = null; }
                 Resources.UnloadAsset(ta);
             }
-            if (h != null) Boya(h, Kozmetik.Bul(Kozmetik.SAPKA, id) ?? Kozmetik.Bul(Kozmetik.SIRT, id));
+            if (h != null) Boya(h, Kozmetik.Bul(Kozmetik.SAPKA, id) ?? Kozmetik.Bul(Kozmetik.SIRT, id) ?? Kozmetik.Bul(Kozmetik.KOL, id));
             hazir[id] = h; return h;
         }
         // Veri rengi (karakter.json "renk") en çok üçgenli alt ağın rengi olur; mistik öğede o alt ağ hafifçe kendinden ışır
@@ -311,6 +311,61 @@ namespace BirdieSmash.Game
             float ls = boyun.parent.lossyScale.x; kok.localScale = new Vector3(w, w * boy, w) / Mathf.Max(1e-5f, ls);
             HazirObj(kok, h);
             if (h.altY < -.8f) kok.gameObject.AddComponent<PelerinSalinim>();
+            return kok;
+        }
+
+        // Kol eşyası (2026-11-12, kalkan; tur 2): raketsiz (sol) ön kol kemiğine bağlanır, kolla birlikte döner. Çerçeve: köken ön kolun
+        // ortasında KOL YÜZEYİNDE, +z koldan dışarı (gövdenin tersi), +y bileğe doğru, birim = ön kol boyu × KOL_OLCEK. Kol kalınlığı
+        // tipten tipe değişir (güçlü tipin kolu atletinkinden kalın): yüzey, boşta pozunda pişirilen derinin dışa bakan en uç noktasından
+        // ölçülür (Sirt ile aynı yöntem); kalkanın arka yüzü oraya oturur, kola gömülmez ve havada durmaz. Gövde iç tarafta kaldığı
+        // için ölçüye girmez (yalnız dışa doğru bileşene bakılır).
+        const float KOL_OLCEK = 1.3f;
+        public static Transform Kol(Transform model, Vector3 dikey, string id)
+        {
+            var h = Hazir(id); if (model == null || h == null || h.tur != 2) return null;
+            Transform bas = null, goz = null, ust = null, on = null, el = null;
+            foreach (var t in model.GetComponentsInChildren<Transform>(true))
+            {
+                string n = t.name.ToLowerInvariant();
+                if (t.name.StartsWith("bas__")) bas = t; else if (t.name.StartsWith("goz__")) goz = t;
+                if (n.Contains("__")) continue;
+                if (ust == null && n.Contains("upperarm") && Sol(n)) ust = t;
+            }
+            if (ust == null) return null;
+            foreach (var t in ust.GetComponentsInChildren<Transform>(true))
+            {
+                string n = t.name.ToLowerInvariant(); if (n.Contains("__")) continue;
+                if (on == null && (n.Contains("forearm") || n.Contains("lowerarm"))) on = t;
+                else if (on != null && el == null && t.IsChildOf(on) && (n.Contains("hand") || n.Contains("wrist")) && !n.Contains("ik") && !n.Contains("slot")) el = t;
+            }
+            if (on == null || el == null) return null;
+            Vector3 up = dikey.normalized, eks = el.position - on.position; float L = eks.magnitude; if (L < 1e-4f) return null; eks /= L;
+            Vector3 ileri = bas != null && goz != null ? Vector3.ProjectOnPlane(goz.position - bas.position, up) : Vector3.zero;
+            if (ileri.sqrMagnitude < 1e-8f) ileri = Vector3.ProjectOnPlane(model.forward, up);
+            ileri.Normalize(); var sag = Vector3.Cross(up, ileri);
+            Vector3 dis = Vector3.ProjectOnPlane(-sag, eks);   // sol kolun dışı = figürün solu, ön kol eksenine dik
+            if (dis.sqrMagnitude < .04f) dis = Vector3.ProjectOnPlane(-ileri, eks);   // kol tam yana açıksa: arka yüz
+            dis.Normalize(); var yan = Vector3.Cross(eks, dis);
+            Vector3 orta = on.position + eks * L * .5f; float yuzey = 0; bool bulundu = false;
+            foreach (var rd in model.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                if (!rd.enabled || rd.sharedMesh == null) continue;
+                string et = PlayerView.Etiket(rd.gameObject.name); if (et == "bilek" || rd.name.StartsWith("raket")) continue;
+                var m = new Mesh(); rd.BakeMesh(m, true); var M = Matrix4x4.TRS(rd.transform.position, rd.transform.rotation, Vector3.one);
+                foreach (var v in m.vertices)
+                {
+                    var d = M.MultiplyPoint3x4(v) - orta;
+                    if (Mathf.Abs(Vector3.Dot(d, eks)) > .3f * L || Mathf.Abs(Vector3.Dot(d, yan)) > .45f * L) continue;
+                    float z = Vector3.Dot(d, dis); if (z > .8f * L) continue;   // kola ait olmayan uzak nokta
+                    if (!bulundu || z > yuzey) { yuzey = z; bulundu = true; }
+                }
+                Object.Destroy(m);
+            }
+            if (!bulundu) yuzey = .22f * L;
+            var kok = new GameObject("kol").transform; kok.SetParent(on, true);
+            kok.position = orta + dis * (yuzey + .01f * L); kok.rotation = Quaternion.LookRotation(dis, eks);
+            float ls = on.lossyScale.x; kok.localScale = Vector3.one * (L * KOL_OLCEK / Mathf.Max(1e-5f, ls));
+            var g = HazirObj(kok, h); g.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             return kok;
         }
 

@@ -113,6 +113,15 @@
   {"id": "balon", "ad": "Balonlar", "sv": 13, "fiyat": 1600, "nadir": "destansi", "varlik": "ozel"},
   {"id": "tavus", "ad": "Tavus kuyruğu", "sv": 18, "fiyat": 2400, "nadir": "mistik", "varlik": "ozel"}
 ],
+"kol_not": "2026-11-12 Dolap › Sırt sayfasında Kol (yasin: 'ayakkabı pelerin şapka, kalkan gibi şeyler satacağız ... oyuna etkisi olan şeyler olmayacak sadece görsellik ve absürtlük'): raketsiz ön kola takılan kalkanlar (tool/karakter/ozel_aksesuar.py tur 2, Game/Aksesuar.Kol). Kolun yüzeyi tipe göre ölçülür, kalkan kola gömülmez. YALNIZ görünüş (güç alanı yasak): savunmayı, vuruşu, hızı değiştirmez. Fiyat nadirlik bantlarında, ilk öğe yok ücretsiz.",
+"kol": [
+  {"id": "yok", "ad": "Kol boş", "sv": 1, "fiyat": 0},
+  {"id": "kapak", "ad": "Tencere kapağı", "sv": 3, "fiyat": 350, "garip": true, "nadir": "siradan", "varlik": "ozel"},
+  {"id": "kalkan", "ad": "Şövalye kalkanı", "sv": 6, "fiyat": 750, "nadir": "nadir", "varlik": "ozel"},
+  {"id": "dur", "ad": "Dur tabelası", "sv": 8, "fiyat": 950, "garip": true, "nadir": "nadir", "varlik": "ozel"},
+  {"id": "pizza", "ad": "Pizza kalkanı", "sv": 12, "fiyat": 1600, "garip": true, "nadir": "destansi", "varlik": "ozel"},
+  {"id": "yildiz_kalkan", "ad": "Yıldız kalkanı", "sv": 19, "fiyat": 2500, "nadir": "mistik", "varlik": "ozel"}
+],
 "tarzlar_not": "2026-11-08 (yasin: \"her özelliğin açıklandığı alanlar çok amatör\"): oz = tarzın tek cümlelik kimliği; arti/eksi ' · ' ile ayrılmış kısa etiketler, Atölye'de her biri ayrı hap (▲ limon, ▼ soluk). Etiketteki sayı etki çarpanıyla aynı yönde ve aynı ölçüde olmalı. Çeviri Lang.UNITY_EK (parça parça).",
 "tarzlar": [
   {"id": "dengeli", "ad": "Dengeli",     "sv": 1,  "oz": "Her vuruşta aynı his; artı ve eksi yok.",            "arti": "",                                                       "eksi": "",                       "etki": {}},

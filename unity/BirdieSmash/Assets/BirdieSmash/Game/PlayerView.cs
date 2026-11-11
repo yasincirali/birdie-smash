@@ -62,12 +62,14 @@ namespace BirdieSmash.Game
             public string sapka, yuz;
             // 2026-11-01 Dolap › Sırt: pelerin/omuzluk (Kozmetik.SIRT; hazır KayKit ağı, Aksesuar.Sirt).
             public string sirt;
+            // 2026-11-12 Dolap › Kol: raketsiz ön kola kalkan (Kozmetik.KOL; Aksesuar.Kol).
+            public string kol;
             public bool sacParla;   // 2026-11-01 mistik saç boyası: saç malzemesi hafifçe kendinden ışır
             public bool isin;       // 2026-11-01 ışın kaplaması: çerçeve ve kordaj kendinden ışır, hale + renkli salınım izi (IsinKur)
             // 2026-10-30 Dolap › Raket: kafa şekli (RaketSekil; null/"oval" = FBX'in kendi kafası) ve şaft rengi (null = FBX rengi).
             public string kafa; public Color? saft;
             // Sahnedeki figürü yeniden kurmak gerekip gerekmediğinin özeti (GameRoot, Vitrin).
-            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kafa + saft + (sacParla ? "|p" : "") + (isin ? "|i" : ""); }
+            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kol + "|" + kafa + saft + (sacParla ? "|p" : "") + (isin ? "|i" : ""); }
         }
         static Color? Renk(string h) { return h != null ? Kit.Hex(h) : (Color?)null; }
         public static Gorunum Benim()
@@ -76,7 +78,7 @@ namespace BirdieSmash.Game
             return new Gorunum { forma = Kit.Hex(gs.forma), cerceve = Kit.Hex(kp ?? gs.raketRenk), bant = gs.bant != null ? Kit.Hex(gs.bant) : (Color?)null, bilek = gs.bileklik != null ? Kit.Hex(gs.bileklik) : (Color?)null,
                 grip = Kit.Hex(Vitrin.RAK_RENK[r["grip"]]), tel = Kit.Hex(Vitrin.RAK_RENK[r["tel"]]), tel2 = Kit.Hex(Vitrin.RAK_RENK[r["desen"] == "iki" ? r["tel2"] : r["tel"]]),
                 ten = Renk(Ayar.GorunumRenk("ten")), sac = Renk(Ayar.GorunumRenk("sac")), ayakkabi = Renk(Ayar.GorunumRenk("ayakkabi")), gripCizgi = gs.gripDoku == "cizgi",
-                tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.AykGorunum, sapka = Ayar.KOZ[Kozmetik.SAPKA], yuz = Ayar.KOZ[Kozmetik.YUZ], sirt = Ayar.KOZ[Kozmetik.SIRT], sacParla = Ayar.SacParla, isin = Ayar.KaplamaIsin,
+                tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.AykGorunum, sapka = Ayar.KOZ[Kozmetik.SAPKA], yuz = Ayar.KOZ[Kozmetik.YUZ], sirt = Ayar.KOZ[Kozmetik.SIRT], kol = Ayar.KOZ[Kozmetik.KOL], sacParla = Ayar.SacParla, isin = Ayar.KaplamaIsin,
                 sort = Renk(Ayar.GorunumRenk("sort")), kumas = Ayar.gear != null ? Ayar.gear.kumas : null,
                 kafa = r["kafa"], saft = r["saft"] != "model" && Vitrin.RAK_RENK.ContainsKey(r["saft"]) ? Kit.Hex(Vitrin.RAK_RENK[r["saft"]]) : (Color?)null };
         }
@@ -140,6 +142,7 @@ namespace BirdieSmash.Game
                 Calibrate(); AltKatmanKur();
                 if (!hakem) aksesuar = Aksesuar.Kur(model, kHead, Vector3.up, bantMeta, gor.sapka, gor.yuz, gor.forma, gor.sac);
                 if (!hakem && Aksesuar.Var(gor.sirt)) sirtKok = Aksesuar.Sirt(model, Vector3.up, gor.sirt);
+                if (!hakem && Aksesuar.Var(gor.kol)) kolKok = Aksesuar.Kol(model, Vector3.up, gor.kol);
                 if (!hakem && kThigh.Count > 0)
                 {   // ayak kilidi: boşta pozunda (taban y=0'da) bilek yüksekliği
                     ZincirKur(); bilek0 = new float[2];
@@ -442,7 +445,7 @@ namespace BirdieSmash.Game
             yayRenk = new[] { new GradientColorKey(c, 0), new GradientColorKey(Color.Lerp(c, Color.white, .5f), 1) };
         }
         GradientColorKey[] yayRenk;
-        BantMeta bantMeta; Transform aksesuar, sirtKok; public Transform AksesuarKok { get { return aksesuar; } } public Transform SirtKok { get { return sirtKok; } }
+        BantMeta bantMeta; Transform aksesuar, sirtKok, kolKok; public Transform KolKok { get { return kolKok; } } public Transform AksesuarKok { get { return aksesuar; } } public Transform SirtKok { get { return sirtKok; } }
         readonly Gradient yayGrad = new Gradient(); readonly GradientAlphaKey[] yayS = new GradientAlphaKey[2]; float yayA = -1;
         static readonly GradientColorKey[] YAY_RENK = { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) };
         // Varsayılan şort: SORT_RENK (rocketbox_kit, düz lacivert .075/.095/.15) ÷ doku grisi .86 (gamma uzayında çarpım).

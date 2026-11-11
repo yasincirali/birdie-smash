@@ -900,6 +900,10 @@ namespace BirdieSmash.Game
             // 2026-11-01 Sırt: KayKit pelerinleri (Aksesuar.Sirt) arkadan üç çeyrek; sayfanın kendisi (tek satır şerit, 3 sütun, nadirlik) ayrıca
             ui.KarakterAc(UiKok.KAR_SIRT); yield return Bekle(30); yield return Cek("menu_karakter_sirt");
             foreach (var o in Kozmetik.Liste(Kozmetik.SIRT)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.SIRT, o.id); yield return Bekle(20); root.vitrin.a = 150; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_sirt_" + o.id); rap.AppendLine("vitrin sirt=" + o.id + " · " + SirtTani()); }
+            // 2026-11-12 Kol: kalkanlar sol-önden (kalkan yüzü görünür) ve arkadan; sırt denemesi temizlenir
+            ui.KarakterDene(Kozmetik.SIRT, "yok");
+            foreach (var o in Kozmetik.Liste(Kozmetik.KOL)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.KOL, o.id); yield return Bekle(20); root.vitrin.a = 60; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_kol_" + o.id); root.vitrin.a = 300; yield return Bekle(4); yield return Cek("model_vitrin_kol_" + o.id + "_2"); }
+            ui.KarakterDene(Kozmetik.KOL, "yok");
             ui.KarakterDene(Kozmetik.SIRT, "yildiz_pelerin"); ui.KarakterDene(Kozmetik.SAPKA, "kapson"); yield return Bekle(20); root.vitrin.a = 200; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("menu_karakter_sirt_hepsini_al");
             Ayar.reduce = aksRd; Ayar.reduceSecim = aksRs;
             ui.SoyunmaSegment(0); yield return Bekle(5);

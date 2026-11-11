@@ -10,6 +10,7 @@
 #     tepesi bu çerçevede ~1,1–1,25 (KayKit kabukları başı 1,4–1,6'ya kadar sarıyor). Şimdi taç saçın üstüne oturur
 #     (.98–1.24, dişler 1.62), kulak ve boynuz tabanı ~.9'da saça gömülü, gövdesi saçın üstünde; hale 1.78'de. Vitrin
 #     yakın planı aksesuar kökünün sınırını da kadraja alır (Vitrin.OdakPoz).
+#   · KOL (tur 2, 2026-11-12): aşağıda "Kol" bölümünde.
 #   · SIRT (tur 1): birim = omuz eni, köken omuz ortası sırt yüzeyinde, +y yukarı, -z arkaya. altY > -.8 olduğu için kanat ve
 #     jetpack sallanmaz (PelerinSalinim yalnız uzun pelerinde).
 # Düz gölgeleme: her üçgen kendi normalini taşır (KayKit'in köşeli görünüşü). Python 3, bağımlılık yok.
@@ -333,12 +334,60 @@ def tavus():   # tavus kuyruğu: belden yukarı yelpaze, tüyler arkaya yatık (
     kutu(ag, Y[0], (-.14, -.70, -.14), (.14, -.56, -.04))
     ag.yaz('tavus', 1)
 
+
+# ---- Kol (tur 2, 2026-11-12): raketsiz ön kola kalkan. Çerçeve (Aksesuar.Kol): köken ön kolun ortasında kol yüzeyinde, +z koldan
+# dışarı, +y bileğe doğru, birim = ön kol boyu × 1,3. Arka yüz z = 0'da (kola yaslanır), hiçbir parça z < 0'a inmez (kola gömülmez);
+# yarıçap <= .7 (gövdeye ve rakete uzanmaz).
+def plaka(ag, renk, nokta, z0, z1): levha(ag, renk, nokta, z1 - z0, lambda x, y: z1)
+def cember(r, n=16, c=(0, 0), a0=0): return [(c[0] + r * math.cos(a0 + 2 * math.pi * i / n), c[1] + r * math.sin(a0 + 2 * math.pi * i / n)) for i in range(n)]
+
+def kapak():   # tencere kapağı (Tencere şapkasının eşi)
+    ag = Ag(); G, K = '#aeb6bf', '#3a3f47'
+    plaka(ag, G, cember(.62, 18), 0, .05)
+    for i in range(12):   # bombe: alçak koni kuşakları (z ekseni)
+        a0 = 2 * math.pi * i / 12; a1 = 2 * math.pi * (i + 1) / 12; p = lambda R, z, a: (R * math.cos(a), R * math.sin(a), z)
+        ag.dortgen('#c3cad2', p(.55, .05, a0), p(.55, .05, a1), p(.28, .13, a1), p(.28, .13, a0)); ag.ucgen('#c3cad2', p(.28, .13, a0), p(.28, .13, a1), (0, 0, .15))
+    silindir(ag, K, (0, 0, .14), (0, 0, .25), .06, 8); silindir(ag, K, (0, 0, .25), (0, 0, .29), .11, 8)
+    ag.yaz('kapak', 2)
+
+def kalkan():   # şövalye kalkanı: sivri uç bileğe doğru (kol sarkınca aşağı bakar)
+    ag = Ag(); A, M, B = '#e0b040', '#2f5fb8', '#f2f2f2'
+    dis = [(-.5, -.62), (.5, -.62), (.52, -.1), (.36, .4), (0, .78), (-.36, .4), (-.52, -.1)]
+    plaka(ag, A, dis, 0, .05); plaka(ag, M, [(x * .84, (y - .02) * .84) for x, y in dis], .05, .08)
+    kutu(ag, B, (-.06, -.40, .08), (.06, .46, .10)); kutu(ag, B, (-.28, -.24, .08), (.28, -.12, .10))
+    ag.yaz('kalkan', 2)
+
+def dur():   # dur tabelası (yazısız: beyaz şerit)
+    ag = Ag(); B, K = '#f2f2f2', '#d6342f'
+    plaka(ag, B, cember(.62, 8, a0=math.pi / 8), 0, .04); plaka(ag, K, cember(.54, 8, a0=math.pi / 8), .04, .06)
+    kutu(ag, B, (-.36, -.09, .06), (.36, .09, .08))
+    ag.yaz('dur', 2)
+
+def pizza():
+    ag = Ag(); H, S, P, B = '#d9a25a', '#c8372d', '#f5cf5a', '#a82a22'
+    plaka(ag, H, cember(.64, 18), 0, .06); plaka(ag, S, cember(.54, 18), .06, .075); plaka(ag, P, cember(.49, 18), .075, .085)
+    for i, (r, a) in enumerate(((.0, 0), (.30, 20), (.30, 95), (.32, 165), (.28, 240), (.33, 305))):
+        ar = math.radians(a); plaka(ag, B, cember(.085, 8, (r * math.cos(ar), r * math.sin(ar))), .085, .097)
+    ag.yaz('pizza', 2)
+
+def yildiz_kalkan():   # beş köşeli yıldız (içbükey: merkezden üçgenlenir)
+    ag = Ag()
+    def yildiz(renk, Rd, Ri, z0, z1):
+        pt = [((Rd if i % 2 == 0 else Ri) * math.cos(math.pi / 2 + math.pi * i / 5), (Rd if i % 2 == 0 else Ri) * math.sin(math.pi / 2 + math.pi * i / 5)) for i in range(10)]
+        for i in range(10):
+            (x0, y0), (x1, y1) = pt[i], pt[(i + 1) % 10]
+            ag.ucgen(renk, (0, 0, z1), (x0, y0, z1), (x1, y1, z1)); ag.ucgen(renk, (0, 0, z0), (x1, y1, z0), (x0, y0, z0))
+            ag.dortgen(renk, (x0, y0, z1), (x0, y0, z0), (x1, y1, z0), (x1, y1, z1))
+    yildiz('#6a4cff', .70, .34, 0, .06); yildiz('#ffd84a', .38, .18, .06, .09)
+    ag.yaz('yildiz_kalkan', 2)
+
 KALEM = {
     'tac': tac, 'hale': hale, 'seytan': seytan, 'kedi': kedi,
     'melek_kanat': lambda: kanat('melek_kanat', '#f6f3ea', KANAT, (('#dcd5c4', .70), ('#fffdf6', .42))),
     'yarasa_kanat': lambda: kanat('yarasa_kanat', '#3b2547', YARASA),
     'jetpack': jetpack,
     'tencere': tencere, 'mantar': mantar, 'ufo': ufo, 'ordek': ordek, 'kaktus': kaktus, 'top_sapka': top_sapka, 'pervane': pervane, 'simit': simit,
+    'kapak': kapak, 'kalkan': kalkan, 'dur': dur, 'pizza': pizza, 'yildiz_kalkan': yildiz_kalkan,
     'kaplumbaga': kaplumbaga, 'kurma': kurma, 'balon': balon, 'top_tupu': top_tupu, 'tavus': tavus,
 }
 
