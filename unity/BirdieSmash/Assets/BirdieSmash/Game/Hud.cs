@@ -1046,7 +1046,7 @@ namespace BirdieSmash.Game
         Font fSiyah, fEkstra, fYari, fKalin; float aS = -1, aK = -1;
         Texture2D aKutuT, aKutuIkonT, aKutuLimonT, aCtaT, aHayaletT;
         GUIStyle aBas, aUst, aSkor, aAd, aKosul, aSatir, aSayi, aLv, aUnl, aCta, aCtaAlt, aDug, aIpucu, aHedefSol, aHedefSag, aKutuS, aKutuIkon, aKutuLimon, aCtaS, aIz, aHayalet;
-        float overT0 = -1; bool overAcik; int yildizHap;
+        float overT0 = -1; bool overAcik, yolHap; int yildizHap;
         // 2026-10-27 yön C "Gün Batımı Salonu" (yasin karar kartı): menü USS kökündeki değerler. Adlar A'dan; anlam: A_LIMON yalnız
         // "sen" (senin skorun, halkan, "SEN", GALİBİYET başlığı, senin özet sayıların), A_TURUNCU ilerleme ve kazanım (ışınlar,
         // ✓, XP, seviye, açılan kart, basamak çizgisi), A_MERCAN rakip (değeri orkide: birincil eylemin turuncusundan ayrı).
@@ -1113,7 +1113,7 @@ namespace BirdieSmash.Game
         void SonucZaman()
         {
             bool b = root.ekran == Ekran.Bitti;
-            if (b && !overAcik) { overT0 = Time.unscaledTime; yildizHap = 0; sigK = 1; }
+            if (b && !overAcik) { overT0 = Time.unscaledTime; yildizHap = 0; yolHap = false; sigK = 1; }
             overAcik = b;
             // Zafer kamerasının bandı (GameRoot.ZaferCekim): kart gelmeden tahmin, gelince ölçülen yer; kamera zıplamasın diye yumuşak.
             float hu = b && heroUst > 0 ? heroUst : ZAFER_UST0, ha = b && heroAlt > 0 ? heroAlt : ZAFER_ALT0, dz = Time.unscaledDeltaTime * .6f;
@@ -1155,7 +1155,7 @@ namespace BirdieSmash.Game
                 Fill(new Rect(-W, 0, W * 3, bant), new Color(A_INK.r, A_INK.g, A_INK.b, .92f));
                 Fill(new Rect(-W, H - Mathf.Max(H * .07f, bot + 28 * u0), W * 3, H), new Color(A_INK.r, A_INK.g, A_INK.b, .92f));
                 var st = Stil(mid, Mathf.RoundToInt(15 * u0 * Ayar.YaziK), FontStyle.Bold); st.alignment = TextAnchor.MiddleLeft;
-                string et = L.T("Maçın anı") + (root.AniVurus > 1 ? " · " + L.T("{0} vuruşluk ralli", root.AniVurus) : "");
+                string et = L.T("Maçın anı") + (root.AniBaglam == 1 ? " · " + L.T("Maç sayısı") : root.AniBaglam == 2 ? " · " + L.T("Maç sayısını kurtardın") : "") + (root.AniVurus > 1 ? " · " + L.T("{0} vuruşluk ralli", root.AniVurus) : "");   // bağlam önce (2026-11-12)
                 Konturlu(new Rect(lx, bant + 10 * u0, rx - lx, 30 * u0), et, st, Color.white, Mathf.Max(1.5f, 2 * u0));
                 if (root.AniSmac && root.AniYavas > 0)
                 {
@@ -1254,7 +1254,7 @@ namespace BirdieSmash.Game
                 // "tüy kazanımı ve level atlanırsa o bilgi net şekilde gözlenebilmeli"). İpucu Ayrıntılar'da da okunur.
                 float ipH = string.IsNullOrEmpty(R.bittiIpucu) ? 0 : aIpucu.CalcHeight(Ic(R.bittiIpucu), w) + 8 * s, yolH = R.bittiG >= 0 ? 26 * s : 0;
                 if (!hero && ipH > 0 && y + ipH + blokH0 <= H - bot) { Yaz(new Rect(x, y, w, ipH - 8 * s), R.bittiIpucu, aIpucu, A_SOLUK, al); y += ipH; }
-                if (!hero && yolH > 0 && y + yolH + blokH0 <= H - bot) y = YolCiz(x, y, w, s, al);
+                if (!hero && yolH > 0 && y + yolH + blokH0 <= H - bot) y = YolCiz(x, y, w, s, al, t, rm);
             }
             float yIcerikSon = y;
             // ---- alt blok: büyük düğme, en çok bir ikincil düğme, Ayrıntılar · Ana menü yazı bağlantısı ----
@@ -1491,7 +1491,12 @@ namespace BirdieSmash.Game
             }
         }
         // Turun basamak çizgisi (a-road): geçilen limon, şimdiki çizgili, gelecek soluk; yanında "3/6" (yalnız renkle değil).
-        float YolCiz(float x, float y, float w, float s, float al)
+        // 2026-11-12 (inceleme 00:05 #1): az önce kazanılan basamak kart açılır açılmaz turuncuydu; oyuncu "kazandım" ile "bir
+        // basamak ilerledim"i ayrı hissetmiyordu. Yıldız ve ödül sayımından sonra (YOL_T0) 0,3 sn'de soldan dolar, bir kez kısa
+        // parlar, dolum bitince tık + hap; sıradaki basamağın şerit dokusu dolum bitince belirir. Yenilgide dolum yok. Hareketi
+        // azaltta hepsi anında, tık/hap yine bir kez (ses kanalı kalır). Yeni durum yok: süre overT0'dan.
+        const float YOL_T0 = 2.0f, YOL_D = .3f;
+        float YolCiz(float x, float y, float w, float s, float al, float t = 99, bool rm = true)
         {
             var p = Ayar.ilerleme; int g = root.bittiG, tr = KariyerVeri.TurOf(g), sira = p.HepsiBitti ? -1 : p.Siradaki(), gec = 0;
             for (int j = 0; j < KariyerVeri.BASAMAK; j++) if (p.Kazanildi(KariyerVeri.Global(tr, j))) gec++;
@@ -1501,7 +1506,20 @@ namespace BirdieSmash.Game
             for (int j = 0; j < KariyerVeri.BASAMAK; j++)
             {
                 int gj = KariyerVeri.Global(tr, j); var r = new Rect(bx + j * (pw + 5 * s), y + h / 2 - 2.5f * s, pw, 5 * s);
-                if (gj == sira) Tex(r, Ikonlar.Serit, new Color(1, 1, 1, al)); else Fill(r, p.Kazanildi(gj) ? new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, al) : new Color(1, 1, 1, .14f * al));
+                if (gj == g && root.bittiKazandi && p.Kazanildi(gj))
+                {   // yeni basamak: soluk zemin + ease-out dolum + bitişte 0,25 sn parlama
+                    float d = rm ? 1 : Mathf.Clamp01((t - YOL_T0) / YOL_D), e = 1 - (1 - d) * (1 - d);
+                    Fill(r, new Color(1, 1, 1, .14f * al));
+                    if (e > 0) Fill(new Rect(r.x, r.y, r.width * e, r.height), new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, al));
+                    float pt = t - YOL_T0 - YOL_D; if (!rm && pt > 0 && pt < .25f) Fill(new Rect(r.x - 2 * s, r.y - 2 * s, r.width + 4 * s, r.height + 4 * s), new Color(1, 1, 1, .55f * (1 - pt / .25f) * al));
+                    if (d >= 1 && !yolHap) { yolHap = true; root.sfx.Tik(880); Yerel.Hap("tick"); }
+                }
+                else if (gj == sira)
+                {   // sıradaki doku, yeni basamağın dolumu bitince belirir (göz bir sonrakine kayar)
+                    float sa = root.bittiKazandi && g >= 0 && p.Kazanildi(g) && !rm ? Mathf.Clamp01((t - YOL_T0 - YOL_D) / .2f) : 1;
+                    Tex(r, Ikonlar.Serit, new Color(1, 1, 1, al * sa));
+                }
+                else Fill(r, p.Kazanildi(gj) ? new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, al) : new Color(1, 1, 1, .14f * al));
             }
             return y + h + 10 * s;
         }
