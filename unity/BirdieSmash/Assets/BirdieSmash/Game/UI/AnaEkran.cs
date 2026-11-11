@@ -80,7 +80,7 @@ namespace BirdieSmash.Game
             if (ilk) return;
             var row = Satir("karo-satir"); c.Add(row);
             if (Ayar.antrenman && !root.bekleyen) row.Add(GunlukKaro());
-            row.Add(Karo(Ikonlar.Simsek, L.T("Hızlı maç"), L.T("{0} sayı", Ayar.target), L.T("Rastgele rakip"), null, HizliMacAc, L.T("Hızlı maç") + ", " + HizliOzet()));
+            row.Add(Karo(Ikonlar.Simsek, L.T("Hızlı maç"), L.T("{0} sayı", Ayar.target), GameRoot.HizliSecili() != null ? KariyerVeri.Stil[GameRoot.HizliSecili()].isim : L.T("Rastgele rakip"), null, HizliMacAc, L.T("Hızlı maç") + ", " + HizliOzet()));
             var p2 = Ayar.ilerleme;
             row.Add(Karo(Ikonlar.Hedef, L.T("Antrenman"), p2.AntrenmanYildiz + "/" + Dril.ToplamYildiz, L.T("yıldız"), Ikonlar.YildizDolu, AntrenmanAc,
                 L.T("Antrenman") + ", " + L.T("{0}/{1} yıldız · Temel ders ve {2} görev", p2.AntrenmanYildiz, Dril.ToplamYildiz, Dril.Liste.Length)));
@@ -293,12 +293,30 @@ namespace BirdieSmash.Game
         void HizliKur()
         {
             var c = AltSayfaKur(L.T("Hızlı maç"));
-            c.Add(Yazi(L.T("Rakip her maçta rastgele. Kariyerde yendiğin rakipler de gelir."), 13, "soluk"));
+            RakipSatir(c);
             OyunSecenek(c, true);
             AltEylem(Dugme(L.T("Hızlı maç oyna"), () =>
             {
                 Ayar.kariyerModu = false; Ayar.GearHesap(); Ayar.Kaydet(); gez.Kapat(Gezinti.HIZLI); Uygula(gez.sekme, false); root.Oyna();
             }, "dugme--birincil", K > 1.35f ? null : HizliOzet(), 19));   // 2026-11-07 (UX2): büyük yazıda özet satırı CTA'yı 3 satıra büyütüp listeyi daraltıyordu; seçimler çiplerde zaten görünür
+        }
+
+        // Hızlı maç rakibi (2026-11-11 inceleme, fikir 22:05 #1): rakip yalnız rastgeleydi, oyuncu "file ustasına karşı nasıl
+        // oynanır"ı çalışamıyordu. "Rastgele" (varsayılan, bugünkü davranış) + havuzdaki tarzlar: ilk üç ve kariyerde yendiklerin;
+        // yenilmemiş tarz listede yok (kilitli kalabalık değil). Çipte rakibin adı, altında tarzı; seçili turuncu + ✓ (Cip).
+        // Satır sarar (cip-sarar), büyük yazıda çipler alt alta iner. Altında tek soluk satır: kariyerin listeyi büyüttüğü.
+        void RakipSatir(VisualElement c)
+        {
+            c.Add(Grup(L.T("Rakip")));
+            var r = Satir(); r.AddToClassList("cip-sarar"); c.Add(r);
+            string sec = GameRoot.HizliSecili();
+            r.Add(Cip(L.T("Rastgele"), sec == null, () => { Ayar.hizliRakip = ""; Ayar.Kaydet(); Degisti(); }, L.T("her maç başka")));
+            foreach (var id in KariyerVeri.HizliHavuz(Ayar.ilerleme))
+            {
+                var st = KariyerVeri.Stil[id]; string sid = id;
+                r.Add(Cip(st.isim, sec == id, () => { Ayar.hizliRakip = sid; Ayar.Kaydet(); Degisti(); }, L.T(st.ad)));
+            }
+            var n = Yazi(L.T("Kariyerde yendiğin rakipler buraya eklenir."), 13, "soluk"); n.style.whiteSpace = WhiteSpace.Normal; c.Add(n);
         }
 
         void AltSayfaYenidenKur(string altS) { if (altS == Gezinti.SEVIYE) SeviyeYoluKur(); else if (altS == Gezinti.GELISIM) GelisimKur(); else if (altS == Gezinti.KART) MacKartKur(); else if (altS == Gezinti.YUVA) YuvaSayfaKur(); else if (altS == Gezinti.DRIL) DrilKartKur(); else if (altS == Gezinti.GUNLUK) GunlukKartKur(); else if (altS == Gezinti.SEC) OyuncuSecKur(); else HizliKur(); }
