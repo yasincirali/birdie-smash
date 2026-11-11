@@ -165,10 +165,18 @@ namespace BirdieSmash.Game
                 o.stil = Match.KariyerRakip(g); o.saha = kb.saha; if (kb.uzunluk > 0) o.target = kb.uzunluk; o.degistirici = kb.degistirici;   // kural maçı (veri; çoğu basamakta null)
             }
             else if (rovansSiradaki != null) o.stil = rovansSiradaki;   // Rövanş: az önce yenen rakip (saha Ayar.saha, zaten aynı)
+            else if (HizliSecili() != null) o.stil = KariyerVeri.Serbest(HizliSecili(), Ayar.ilerleme);   // 2026-11-11: oyuncunun seçtiği rakip, güç yine oyuncunun seviyesinden
             else o.stil = KariyerVeri.Serbest(KariyerVeri.HizliSec(Ayar.ilerleme, sonHizliStil != null ? sonHizliStil.id : null, rnd), Ayar.ilerleme);   // 2026-10-27: oyuncunun kariyer seviyesinde (KariyerVeri.Serbest); 2026-11-08: havuz = ilk üç + kariyerde yendiğin tarzlar, art arda aynı rakip yok
             sonHizliStil = Ayar.kariyerModu && !ogr ? null : o.stil;   // Match tarzı ölçekleyip klonlar (rakipK); rövanş ölçeksiz aslını taşır
             rovansSiradaki = null; rovansStil = null;
             mod = Mod.Normal; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
+        }
+        // Hızlı maçta seçili rakip (2026-11-11 inceleme, fikir 22:05 #1): yalnız havuzdaysa (ilk üç + kariyerde yendiğin tarzlar);
+        // değilse null = rastgele. Kolay rakip seçip Tüy kasmak yok: güç Serbest'te oyuncunun kariyer seviyesinden.
+        public static string HizliSecili()
+        {
+            var id = Ayar.hizliRakip; if (string.IsNullOrEmpty(id)) return null;
+            return KariyerVeri.HizliHavuz(Ayar.ilerleme).Contains(id) ? id : null;
         }
         MatchOptions Secenek(bool ogr)
         {

@@ -2,6 +2,7 @@
 //   tuytop_v2       JSON {rally, wins, kariyer, gorev, sampiyon}   (HTML best)
 //   tuytop_len      'len5' | 'len11' | 'len21' (varsayılan len5)   tuytop_mod 'k' | 's'   tuytop_saha   tuytop_model
 //   tuytop_gear / tuytop_ekonomi (Core/Gear)   tuytop_raket_gor JSON {grip, tel, tel2, desen}   tuytop_antrenman '1'
+//   tuytop_hizli_rakip (2026-11-11) Hızlı maçta seçilen rakip tarzı (stil id); boş = rastgele
 //   tuytop_puan     mağaza puanı istenme sayısı (0..3, HTML puanBak ile ortak)
 //   tuytop_ilerleme (2026-10-26, kariyer haritası) JSON {v, tur: [[maske×6]×4]} (Core/Ilerleme: yıldız bit maskesi). İlk
 //                   açılışta tuytop_v2.kariyer'den taşınır; tuytop_v2.kariyer yazılmaya devam eder (= Tur 1'de geçilen
@@ -68,6 +69,9 @@ namespace BirdieSmash.Game
         // Oyun verisi (Core/KariyerVeri) Resources/veri'den: sahne yüklenmeden, her şeyden önce.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void VeriKaynagi() { KariyerVeri.Kaynak = ad => { var t = Resources.Load<TextAsset>("veri/" + ad); return t != null ? t.text : null; }; KariyerVeri.Sifirla(); }
+        // Hızlı maç rakibi (2026-11-11 inceleme, fikir 22:05 #1): "" = rastgele (bugünkü davranış). Havuzda olmayan id (kayıt
+        // bozuk ya da tarz sonradan kalktı) kullanımda rastgeleye düşer (GameRoot.StartMatch); burada doğrulanmaz.
+        public static string hizliRakip = "";
         public static string saha = "salon", model = "oyuncak", kamera = "yayin", dil = "tr", yazi = "sistem"; static float yaziSistem = 1;
         public static float YaziK { get { return yazi == "normal" ? 1 : yazi == "buyuk" ? 1.3f : Mathf.Clamp(yaziSistem, .9f, 1.3f); } }
         // Menü yazı ölçeği (2026-10-26, UI Toolkit menü kabuğu): flex yerleşimde metin sarılır, kart uzar, gövde kayar; bu
@@ -129,6 +133,7 @@ namespace BirdieSmash.Game
             zorluk = Mathf.Clamp(EskiInt("tuytop_zorluk", EskiInt("tuytop_easy", 1) == 1 ? 1 : 3), 0, 3);
             kosIpucu = EskiInt("tuytop_kos_ipucu", 0) == 1;   // 2026-10-29: "Dokun: oraya koş" koşu sende ilk maçta görüldü
             saha = Str("tuytop_saha", "salon"); if (!CourtView.SAHA.ContainsKey(saha)) saha = "salon";
+            hizliRakip = Str("tuytop_hizli_rakip", "");
             // 2026-10-27 (yasin build 41: "3B model kaybolmuş, seçmeme rağmen görmedim"): build 40 notu Ayarlar'da "Sade" vaat
             // ediyordu, Resources'ta sade.fbx vardı (ekran turu her turda maçını çekiyor) ama seçenek yoktu ve "sade" kaydı burada
             // oyuncak'a dönüyordu. Artık geçerli model (MODELLER); FBX'i olmayan build'de yine oyuncak'a düşer.
@@ -221,7 +226,7 @@ namespace BirdieSmash.Game
         {
             if (ilerleme != null) { kariyer = ilerleme.Tur1Gecilen(); PlayerPrefs.SetString(Ilerleme.ANAHTAR, ilerleme.Yaz()); }
             kayit.Set("tuytop_v2", Json.Write(new Dictionary<string, object> { { "rally", (double)bestRally }, { "wins", (double)wins }, { "kariyer", (double)kariyer }, { "gorev", (double)gorev }, { "sampiyon", sampiyon } }));
-            PlayerPrefs.SetString("tuytop_len", "len" + target); PlayerPrefs.SetString("tuytop_saha", saha); PlayerPrefs.SetString("tuytop_model", model); PlayerPrefs.SetString("tuytop_kamera", kamera);
+            PlayerPrefs.SetString("tuytop_len", "len" + target); PlayerPrefs.SetString("tuytop_saha", saha); PlayerPrefs.SetString("tuytop_hizli_rakip", hizliRakip ?? ""); PlayerPrefs.SetString("tuytop_model", model); PlayerPrefs.SetString("tuytop_kamera", kamera);
             PlayerPrefs.SetString("tuytop_mod", kariyerModu ? "k" : "s"); if (antrenman) PlayerPrefs.SetString("tuytop_antrenman", "1");
             PlayerPrefs.SetInt("tuytop_zorluk", zorluk); PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0); PlayerPrefs.SetInt("tuytop_muzik", muzik ? 1 : 0); PlayerPrefs.SetInt("tuytop_titresim", titresim ? 1 : 0); if (kosIpucu) PlayerPrefs.SetInt("tuytop_kos_ipucu", 1);
             PlayerPrefs.SetString("tuytop_dil", dil); PlayerPrefs.SetString("tuytop_puan", puan.ToString()); PlayerPrefs.SetString("tuytop_yazi", yazi); PlayerPrefs.SetString("tuytop_fps", fps ? "1" : "0");
