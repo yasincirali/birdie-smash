@@ -107,7 +107,23 @@ namespace BirdieSmash.Game
         public static PlayerView Build(Transform root, string model, bool isMe, Color forma, bool hakem = false, Gorunum gor = null)
         {
             var g = new GameObject(hakem ? "hakem" : isMe ? "ben" : "rakip"); g.transform.SetParent(root, false);
-            var pv = g.AddComponent<PlayerView>(); pv.isMe = isMe; pv.hakem = hakem; pv.Init(model, gor ?? new Gorunum { forma = forma, cerceve = Kit.Hex("#e9eef0") }); return pv;
+            var pv = g.AddComponent<PlayerView>(); pv.isMe = isMe; pv.hakem = hakem;
+            var onceki = Kit.Topla; pv.kendiM = new List<Material>(); Kit.Topla = pv.kendiM;
+            try { pv.Init(model, gor ?? new Gorunum { forma = forma, cerceve = Kit.Hex("#e9eef0") }); }
+            finally { Kit.Topla = onceki; }
+            return pv;
+        }
+        // Kurulumda yaratılan malzemeler (Kit.Topla). Önbellekli olanlar (dokuM, sacM) başka figürlerle paylaşıldığı için silinmez.
+        List<Material> kendiM;
+        // Sık yeniden kurulan yüzeyler (Dolap vitrini, portreler, afiş) Destroy(gameObject) yerine bunu çağırır.
+        public void Sil()
+        {
+            if (kendiM != null)
+            {
+                foreach (var m in kendiM) if (m != null && !Kit.Paylasilan.Contains(m)) Destroy(m);
+                kendiM = null;
+            }
+            Destroy(gameObject);
         }
 
         // 2026-10-31 (Unity incelemesi D9): UnityEngine.Object'te `??` Unity'nin null karşılaştırmasını atlar; Resources.Load
@@ -298,7 +314,7 @@ namespace BirdieSmash.Game
                     // figür hâlâ kullanıyor olabilir. Menüye dönüşteki UnloadUnusedAssets kullanılmayanı boşaltır.
                     while (tenSira.Count > TEN_LRU) { dokuM.Remove(tenSira[0]); tenSira.RemoveAt(0); }
                 }
-                dokuM[anahtar] = m = Kit.LitTex(Color.white, tx, .18f);
+                dokuM[anahtar] = m = Kit.LitTex(Color.white, tx, .18f); Kit.Paylas(m);
                 // 2026-10-26: Gerçekçi model düz/çamurlu görünüyordu (yalnız renk dokusu): kıvrım/kas/yüz normalden,
                 // ten/kumaş/ayakkabı farkı parlaklık haritasından. Dosya yoksa (oyuncak, sade) eski malzeme birebir.
                 Kit.Bump(m, Resources.Load<Texture2D>("karakter/" + modelAdi + ek + "_n"));
@@ -600,7 +616,7 @@ namespace BirdieSmash.Game
             // saç/renk değişikliğinde yeniden). Renk + doku başına tek malzeme paylaşılır; saç malzemesine sonradan
             // yazan kod yok (parlatma yalnız raket, kanal boyası forma/raket), bu yüzden paylaşmak görünüşü değiştirmez.
             string sk = ColorUtility.ToHtmlStringRGBA(rk) + (tx != null ? "t" : "d") + (parla ? "p" : ""); Material m;
-            if (!sacM.TryGetValue(sk, out m) || m == null) { sacM[sk] = m = tx != null ? Kit.LitTex(rk, tx, .2f) : Kit.Lit(rk, .2f); if (parla) Parlat(m); }
+            if (!sacM.TryGetValue(sk, out m) || m == null) { sacM[sk] = m = tx != null ? Kit.LitTex(rk, tx, .2f) : Kit.Lit(rk, .2f); Kit.Paylas(m); if (parla) Parlat(m); }
             var arr = r.sharedMaterials; for (int k = 0; k < arr.Length; k++) arr[k] = m; if (arr.Length == 0) arr = new[] { m }; r.sharedMaterials = arr;
         }
         // Vitrin tutuş görünümü (Soyunma odası › Raket: Forehand · Backhand · File · Servis): klibin temas pozunda durur; yalnız

@@ -370,6 +370,7 @@ namespace BirdieSmash.Game
         {
             ekran = Ekran.Bitti; Uyanik(false); var M = match; bittiIlk = M.ilk; sfx.MacSonu(won); sfx.Ugultu(false, 0);
             if (won) Ayar.wins++;
+            if (mod != Mod.Dril && M.ogr == null && M.stil != null) Ayar.KarneYaz(M.stil.id, won);   // rakip karnesi (Ayar.Karne): antrenman ve Sonsuz sayılmaz
             if (!M.easy && M.ogr == null) Ayar.kosIpucu = true;   // Hud.KosIpucu: koşu sende ilk maç ipucu bir kez
             // Beceri unvanı (2026-11-07 inceleme): maçtan önceki kazanılmış beceri unvanları; maç sonu kartı yeni açılanı tek satırla söyler.
             var beceri0 = Ayar.ilerleme != null ? Karakter.BeceriKazanilan(Ayar.ilerleme) : null;
@@ -455,13 +456,19 @@ namespace BirdieSmash.Game
             if (yeniUnvan != null) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Yeni unvan: {0}.", L.T(yeniUnvan.ad) + Karakter.KademeEki(yeniUnvan, Ayar.ilerleme));
             if (mod == Mod.Gunluk && gunluk != null) bittiUst = L.T("Günün maçı") + " · " + L.T(gunluk.deg.ad);
             else if (bittiUst == null && M.ogr == null) bittiUst = L.T("Hızlı maç") + " · " + L.T("Rakip") + " " + M.RakipAd(false);
+            // Karne başlığa (2026-11-11 inceleme, fikir 23:05 #2): ilk maçta yazılmaz (1–0 bilgi değil), sonra "· aranızda 3–1".
+            int kG, kY; if (bittiUst != null && mod != Mod.Dril && M.ogr == null && M.stil != null && Ayar.Karne(M.stil.id, out kG, out kY) && kG + kY >= 2)
+                bittiUst += " · " + L.T("aranızda {0}–{1}", kG, kY);
             var bitenler = new List<string>(); foreach (var g in M.gorevler) if (g.bitti) bitenler.Add(L.Cumle(g.ad));
             // Sıfır sayaçlar yazılmaz (2026-11-07 inceleme, fikir 14:06 #5): "0 aldatma · 0 tepeden" oyuncuya "bunları yapmadın" diyor ve
             // asıl satırı (ralli, smaç) kalabalıkta kaybettiriyordu. Rakip ve görev hep; kalanlar yalnız > 0, sabit sırayla (ralli, smaç,
             // mükemmel önce). Parçalar tek tek çevrilir; yazı yuvası ve kart düzeni aynı.
             var bb = new List<string>();
-            bb.Add(L.T("Rakip {0}", M.RakipAd(false)));
-            bb.Add(L.T("Görev {0}/3 ({1})", M.gorevBitti, bitenler.Count > 0 ? string.Join(", ", bitenler.ToArray()) : L.T("yok")));
+            // 2026-11-11 inceleme (fikir 23:05 #3): başlık rakibi taşıyorsa (Hızlı maç) burada tekrar yazılmaz; görev yalnız en az biri
+            // bittiyse ("Görev 0/3 (yok)" yukarıdaki sıfır sayaç kuralının aynısı: "bunu yapmadın" demiyoruz).
+            string rakipAd = M.RakipAd(false);
+            if (bittiUst == null || bittiUst.IndexOf(rakipAd, System.StringComparison.Ordinal) < 0) bb.Add(L.T("Rakip {0}", rakipAd));
+            if (bitenler.Count > 0) bb.Add(L.T("Görev {0}/3: {1}", M.gorevBitti, string.Join(", ", bitenler.ToArray())));
             if (M.maxRally > 0) bb.Add(L.T("En uzun ralli {0}", M.maxRally));
             if (M.smashes > 0) bb.Add(L.T("{0} smaç", M.smashes));
             if (M.perfects > 0) bb.Add(L.T("{0} mükemmel", M.perfects));
