@@ -126,7 +126,7 @@ namespace BirdieSmash.Game
 
     public class Sfx : MonoBehaviour
     {
-        AudioSource src, opSrc; readonly AudioSource[] vurusSrc = new AudioSource[4]; int vurusSira; AudioLowPassFilter suAlti; float suHedef = 22000; System.Random rnd = new System.Random(5); int seed = 11;
+        AudioSource src, opSrc, yerSrc; readonly AudioSource[] vurusSrc = new AudioSource[4]; int vurusSira; AudioLowPassFilter suAlti; float suHedef = 22000; System.Random rnd = new System.Random(5); int seed = 11;
         AudioSource crowd; float crowdHedef; Swoosh swo;
         // Menü müziği: döngü ilk açılışta arka iş parçacığında sentezlenir (≈1,1 M örnek), clip ana iş parçacığında kurulur.
         // menude GameRoot'tan: menüdeyken ve perde menüyü örtmüyorken. Düzey .25: döngü .8 tepeye normalize, menü tık
@@ -153,6 +153,8 @@ namespace BirdieSmash.Game
             src = gameObject.AddComponent<AudioSource>(); src.playOnAwake = false; src.spatialBlend = 0;
             // Vuruşlar perdeli çaldığı için ayrı kaynaklardan (PlayOneShot perde almaz); 4 kaynak üst üste binen vuruşa yeter.
             for (int i = 0; i < vurusSrc.Length; i++) { vurusSrc[i] = gameObject.AddComponent<AudioSource>(); vurusSrc[i].playOnAwake = false; vurusSrc[i].spatialBlend = 0; }
+            // Top düşüşü ve file kendi kaynağında: konum panı (pan notu) menü/ralli seslerinin çaldığı src'yi kaydırmasın.
+            yerSrc = gameObject.AddComponent<AudioSource>(); yerSrc.playOnAwake = false; yerSrc.spatialBlend = 0;
             // Rakibin kayıtlı vuruşu: ayrı nesnede 3 kHz alçak geçiren (AudioLowPassFilter nesnedeki tüm kaynaklara uygulanır).
             var og = new GameObject("rakip_ses"); og.transform.SetParent(transform, false); opSrc = og.AddComponent<AudioSource>(); opSrc.playOnAwake = false; opSrc.spatialBlend = 0;
             var olp = og.AddComponent<AudioLowPassFilter>(); olp.cutoffFrequency = 3000;
@@ -274,14 +276,20 @@ namespace BirdieSmash.Game
 
         // ---- olaylar (HTML çağrı yerleri) ----
         // hiz: topun çıkış hızı (m/s; 0 = bilinmiyor, eski düzey). Güç katsayısı p: 12 m/s drop ≈ 0, 60 m/s smaç = 1.
+        // Konum panı (inceleme 2026-11-11, fikir 20:05 #6): vuruş, file ve top düşüşü ekrandaki yatay konumdan hafifçe sağa/sola
+        // kayar; kulaklıkta topun hangi köşeye gittiği sesle de duyulur. Sınır ±PAN_AZAMI: hoparlörde fark edilmez, rahatsız etmez.
+        // 3B ses (spatialBlend) yerine pan: kamera her ekranda yeniden çözülüyor, mesafe zayıflaması rakip vuruşunu boğardı.
+        // Oyun her olaydan önce yazar (GameRoot.OnEvent); menü sesleri src'de, panlanmaz. Mono ses (iOS Erişilebilirlik) sistemce birleşir.
+        public const float PAN_AZAMI = .35f;
+        public float pan;
         public void Hit(string type, string q, bool slice, bool super_, bool serve, bool mine, int rally, bool flow, float hiz = 0)
         {
             float p = hiz > 0 ? Mathf.Clamp01((hiz - 12) / 48f) : .5f, kaz = .8f + .35f * p, perde = 1.03f - .06f * p + (float)(rnd.NextDouble() - .5) * .02f;
             string t = Tur(type), kayitAd = serve ? "vurus_servis" : slice ? "vurus_slice" : "vurus_" + t;
             var kv = Kayit(kayitAd + "_" + q) ?? Kayit(kayitAd);
-            if (kv != null) { var c = kv[rnd.Next(kv.Length)]; if (mine) VurusCal(c, kaz, perde); else { opSrc.pitch = perde; opSrc.PlayOneShot(c, .5f * kaz); } }
+            if (kv != null) { var c = kv[rnd.Next(kv.Length)]; if (mine) VurusCal(c, kaz, perde); else { opSrc.pitch = perde; opSrc.panStereo = pan; opSrc.PlayOneShot(c, .5f * kaz); } }
             else if (mine) VurusCal(Vurus(type, q, slice, super_, serve, false), kaz, perde);
-            else { var k = Kaynak(); k.pitch = perde; k.PlayOneShot(Vurus(type, q, slice, super_, serve, true), kaz); }
+            else { var k = Kaynak(); k.pitch = perde; k.panStereo = pan; k.PlayOneShot(Vurus(type, q, slice, super_, serve, true), kaz); }
             if (mine && !serve && (type == "smash" || type == "jump" || type == "kill")) Govde(.5f + .5f * p * (super_ ? 1.3f : 1));
             if (rally >= 8 && rally % 4 == 0 && !serve && !macSayisi) Ooo(Mathf.Min(1, (rally - 4) / 16f));
             RallyNote(rally - 1, mine, mine && flow);
@@ -291,7 +299,7 @@ namespace BirdieSmash.Game
             if (rally > 2 && rally % 5 == 0) Ton(523 * Mathf.Pow(2, Mathf.Min(rally, 30) / 24f), .2f, "triangle", .07f);
         }
         AudioSource Kaynak() { var k = vurusSrc[vurusSira]; vurusSira = (vurusSira + 1) % vurusSrc.Length; return k; }
-        void VurusCal(AudioClip c, float kaz, float perde) { var k = Kaynak(); k.pitch = perde; k.PlayOneShot(c, kaz); }
+        void VurusCal(AudioClip c, float kaz, float perde) { var k = Kaynak(); k.pitch = perde; k.panStereo = pan; k.PlayOneShot(c, kaz); }
         // Gövde darbesi: alçak sinüs süpürmesi, iki düzeyde önbellekte (kazanç oynatmada).
         void Govde(float v) { if (Kayitli("govde", v)) return; src.PlayOneShot(Bir("govde", s => s.Sweep(0, .09f, "sine", t => 80 * Mathf.Pow(45f / 80, Mathf.Min(1, t / .07f)), t => .32f * (t < .002f ? t / .002f : Mathf.Pow(.0005f, Mathf.Min(1, (t - .002f) / .08f)))), .1f), Mathf.Min(1.3f, v)); }
         // Seyirci "ooo": geniş formant (380 → 620 Hz), 0,9 sn kabarıp söner; şiddet ralli uzunluğuyla.
@@ -330,7 +338,7 @@ namespace BirdieSmash.Game
         public void Squeak() { if (Kayitli("gicirti", .8f)) return; src.PlayOneShot(Bir("gicirti", s => s.Sweep(0, .13f, "sine", t => t < .06f ? Mathf.Lerp(2300, 3400, t / .06f) : Mathf.Lerp(3400, 2800, Mathf.Min(1, (t - .06f) / .04f)), t => .025f * Mathf.Pow(.004f, Mathf.Min(1, t / .12f))), .14f)); }
         // Yer (2026-11-05): eski 50 ms boğuk gürültü yerine mantarın tıkırtısı + gövde, tüy topun sekip ikinci/üçüncü
         // küçük vuruşu (125 ve 220 ms) ve tüylerin yere yatma hışırtısı; kayıttaki gibi enerji 0,5–1 kHz'te.
-        public void Floor(bool big) { if (Kayitli(big ? "yer_sert" : "yer", big ? 1 : .7f)) { if (big) Kick(.18f); return; } src.PlayOneShot(Bir(big ? "yer_s" : "yer_y", sy => YerCal(sy, big), .5f), big ? .8f : .6f); if (big) Kick(.18f); }
+        public void Floor(bool big) { yerSrc.panStereo = pan; if (Kayitli(big ? "yer_sert" : "yer", big ? 1 : .7f, yerSrc)) { if (big) Kick(.18f); return; } yerSrc.PlayOneShot(Bir(big ? "yer_s" : "yer_y", sy => YerCal(sy, big), .5f), big ? .8f : .6f); if (big) Kick(.18f); }
         static void YerCal(Synth A, bool big)
         {
           float k = big ? 1.5f : 1;
@@ -349,8 +357,8 @@ namespace BirdieSmash.Game
         // file: k 0 drop … 1 smaç; smaçta ağ "puf" diye yutar, dropta yalnız hışırtı; bant kordon tınlar
         public void Net(float k, bool tape)
         {
-            if (Kayitli(tape ? "file_bant" : "file", .5f + .5f * k)) return;
-            src.PlayOneShot(Bir("file" + k.ToString("0.0") + tape, s =>
+            yerSrc.panStereo = pan; if (Kayitli(tape ? "file_bant" : "file", .5f + .5f * k, yerSrc)) return;
+            yerSrc.PlayOneShot(Bir("file" + k.ToString("0.0") + tape, s =>
             {
                 s.Burst(0, .05f + .1f * k, "lowpass", 260 + 240 * k, .05f + .22f * k, 1, 4); s.Burst(0, .08f, "bandpass", 1400, .03f + .05f * k, 2, 4);
                 int n = 2 + Mathf.RoundToInt(3 * k); for (int i = 0; i < n; i++) s.Burst(i * .045f, .04f, "bandpass", 900 + i * 300, .04f + .06f * k, 3, 4);
@@ -426,7 +434,7 @@ namespace BirdieSmash.Game
             for (int i = 1; i <= 8; i++) { var ci = Resources.Load<AudioClip>("ses/" + ad + "_" + i); if (ci == null) break; l.Add(ci); }
             v = l.Count > 0 ? l.ToArray() : null; kayit[ad] = v; return v;
         }
-        bool Kayitli(string ad, float kaz = 1) { var v = Kayit(ad); if (v == null) return false; src.PlayOneShot(v[rnd.Next(v.Length)], Mathf.Min(1.5f, kaz)); return true; }
+        bool Kayitli(string ad, float kaz = 1, AudioSource k = null) { var v = Kayit(ad); if (v == null) return false; (k ?? src).PlayOneShot(v[rnd.Next(v.Length)], Mathf.Min(1.5f, kaz)); return true; }
 
         void Update()
         {

@@ -104,6 +104,11 @@ namespace BirdieSmash.EditorTools
             // buradaki değer yalnız yerel Editor build'i için anlamlı.
             if (!string.IsNullOrEmpty(surum) && surum != "none") PlayerSettings.bundleVersion = surum;
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.iOS, ScriptingImplementation.IL2CPP);   // iOS'ta zorunlu
+            // 2026-11-11 (inceleme, fikir 20:05 #5a): IL2CPP C++ yapılandırması Master (Unity varsayılanı Release). Bağlantı anı
+            // optimizasyonu Core simülasyonunu (Shuttle.Aim, PlanIntercept) ve OnGUI yolunu kod değişmeden hızlandırır, ikiliyi
+            // küçültür; bedeli yalnız Xcode derleme süresi. Kod küçültme (ManagedStrippingLevel) bilerek varsayılanda: yansımayla
+            // çağrılan IAP/AdMob kodu silinirse açılışta çöker; link.xml + TestFlight satın alma denemesiyle ayrı adım.
+            PlayerSettings.SetIl2CppCompilerConfiguration(BuildTargetGroup.iOS, Il2CppCompilerConfiguration.Master);
             // Yalnız dikey (HTML kabuğuyla aynı): otomatik döndürme kapalı.
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
             PlayerSettings.allowedAutorotateToPortrait = true; PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
