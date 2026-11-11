@@ -108,7 +108,7 @@ namespace BirdieSmash.Game
                 }
                 finally { kam.targetTexture = null; isik.enabled = false; RenderTexture.ReleaseTemporary(gec); }
             }
-            finally { fig.gameObject.SetActive(false); fig.Sil(); }
+            finally { fig.gameObject.SetActive(false); Object.Destroy(fig.gameObject); }
         }
     }
 }

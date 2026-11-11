@@ -126,7 +126,7 @@ namespace BirdieSmash.Game
 
     public class Sfx : MonoBehaviour
     {
-        AudioSource src, trb, opSrc, yerSrc; readonly AudioSource[] vurusSrc = new AudioSource[4]; int vurusSira; AudioLowPassFilter suAlti; float suHedef = 22000; System.Random rnd = new System.Random(5); int seed = 11;
+        AudioSource src, opSrc, yerSrc; readonly AudioSource[] vurusSrc = new AudioSource[4]; int vurusSira; AudioLowPassFilter suAlti; float suHedef = 22000; System.Random rnd = new System.Random(5); int seed = 11;
         AudioSource crowd; float crowdHedef; Swoosh swo;
         // Menü müziği: döngü ilk açılışta arka iş parçacığında sentezlenir (≈1,1 M örnek), clip ana iş parçacığında kurulur.
         // menude GameRoot'tan: menüdeyken ve perde menüyü örtmüyorken. Düzey .25: döngü .8 tepeye normalize, menü tık
@@ -151,7 +151,6 @@ namespace BirdieSmash.Game
         void Init(Transform listener)
         {
             src = gameObject.AddComponent<AudioSource>(); src.playOnAwake = false; src.spatialBlend = 0;
-            trb = gameObject.AddComponent<AudioSource>(); trb.playOnAwake = false; trb.spatialBlend = 0;   // tribün tek-atımlıkları: düzeyi Ayar.SeyirciK (Update)
             // Vuruşlar perdeli çaldığı için ayrı kaynaklardan (PlayOneShot perde almaz); 4 kaynak üst üste binen vuruşa yeter.
             for (int i = 0; i < vurusSrc.Length; i++) { vurusSrc[i] = gameObject.AddComponent<AudioSource>(); vurusSrc[i].playOnAwake = false; vurusSrc[i].spatialBlend = 0; }
             // Top düşüşü ve file kendi kaynağında: konum panı (pan notu) menü/ralli seslerinin çaldığı src'yi kaydırmasın.
@@ -304,14 +303,14 @@ namespace BirdieSmash.Game
         // Gövde darbesi: alçak sinüs süpürmesi, iki düzeyde önbellekte (kazanç oynatmada).
         void Govde(float v) { if (Kayitli("govde", v)) return; src.PlayOneShot(Bir("govde", s => s.Sweep(0, .09f, "sine", t => 80 * Mathf.Pow(45f / 80, Mathf.Min(1, t / .07f)), t => .32f * (t < .002f ? t / .002f : Mathf.Pow(.0005f, Mathf.Min(1, (t - .002f) / .08f)))), .1f), Mathf.Min(1.3f, v)); }
         // Seyirci "ooo": geniş formant (380 → 620 Hz), 0,9 sn kabarıp söner; şiddet ralli uzunluğuyla.
-        void Ooo(float k) { if (Kayitli("ooo", .5f + .5f * k, trb)) return; trb.PlayOneShot(Bir("ooo", s => { s.NoiseSweep(0, .9f, 380, 620, 1.6f, .09f, false, u => Mathf.Sin(Mathf.PI * Mathf.Min(1, u * 1.3f)) * (1 - u * .4f)); s.NoiseSweep(0, .9f, 900, 1150, 2.2f, .035f, false, u => Mathf.Sin(Mathf.PI * Mathf.Min(1, u * 1.3f))); }, .95f), .5f + .5f * k); }
+        void Ooo(float k) { if (Kayitli("ooo", .5f + .5f * k)) return; src.PlayOneShot(Bir("ooo", s => { s.NoiseSweep(0, .9f, 380, 620, 1.6f, .09f, false, u => Mathf.Sin(Mathf.PI * Mathf.Min(1, u * 1.3f)) * (1 - u * .4f)); s.NoiseSweep(0, .9f, 900, 1150, 2.2f, .035f, false, u => Mathf.Sin(Mathf.PI * Mathf.Min(1, u * 1.3f))); }, .95f), .5f + .5f * k); }
         // Alkış: rastgele zamanlı el çırpışları (her biri 4–7 ms gürültü, bandpass 900–2600 Hz), yoğunluk başta yüksek, sonda
         // seyrek. Ralli uzunluğuna göre iki boy (kısa 1,4 sn, uzun 2,4 sn); her boy iki çekimle önbellekte.
         void Alkis(bool uzun)
         {
-            if (Kayitli(uzun ? "alkis_uzun" : "alkis", 1, trb)) return;
+            if (Kayitli(uzun ? "alkis_uzun" : "alkis")) return;
             float sure = uzun ? 2.4f : 1.4f; int cek = rnd.Next(2);
-            trb.PlayOneShot(Bir("alkis" + uzun + cek, s =>
+            src.PlayOneShot(Bir("alkis" + uzun + cek, s =>
             {
                 var r = new System.Random(uzun ? 41 + cek : 17 + cek); int n = uzun ? 260 : 130;
                 for (int i = 0; i < n; i++)
@@ -375,13 +374,13 @@ namespace BirdieSmash.Game
         }
         public void Gasp(float v, float delay = 0)
         {
-            if (delay == 0 && Kayitli("ic_cekis", v / .09f, trb)) return;
-            trb.PlayOneShot(Bir("ic" + v + delay, s => s.NoiseSweep(delay, .8f, 380, 900, 2, v, false, u => u < .1875f ? u / .1875f : Mathf.Pow(.0001f, (u - .1875f) / .8125f)), delay + .85f));
+            if (delay == 0 && Kayitli("ic_cekis", v / .09f)) return;
+            src.PlayOneShot(Bir("ic" + v + delay, s => s.NoiseSweep(delay, .8f, 380, 900, 2, v, false, u => u < .1875f ? u / .1875f : Mathf.Pow(.0001f, (u - .1875f) / .8125f)), delay + .85f));
         }
         public void Cheer(float v)
         {
-            if (Kayitli("cosku", v / .18f, trb)) return;
-            trb.PlayOneShot(Bir("cosku" + v, s => { var b = new Synth.Biquad("bandpass", 1200, .6f); int n = (int)(Synth.SR * 1.2f); for (int i = 0; i < n; i++) s.buf[i] += b.Run(s.R() * Mathf.Sin(Mathf.PI * i / n) * (.6f + .4f * Mathf.Sin(i / 900f))) * v; }, 1.25f));
+            if (Kayitli("cosku", v / .18f)) return;
+            src.PlayOneShot(Bir("cosku" + v, s => { var b = new Synth.Biquad("bandpass", 1200, .6f); int n = (int)(Synth.SR * 1.2f); for (int i = 0; i < n; i++) s.buf[i] += b.Run(s.R() * Mathf.Sin(Mathf.PI * i / n) * (.6f + .4f * Mathf.Sin(i / 900f))) * v; }, 1.25f));
         }
         // ralli: sayının vuruş sayısı (0 = bilinmiyor). Uzun ralliyi seyirci alkışlar (kimin aldığından bağımsız; rakibin
         // sayısında kısa alkış, benim sayımda sevinçle birlikte).
@@ -441,8 +440,7 @@ namespace BirdieSmash.Game
         {
             IsitIsle();
             float dt = Time.unscaledDeltaTime; bool sessiz = !Ayar.ses;
-            trb.volume = Ayar.SeyirciK;
-            crowd.volume += ((sessiz ? 0 : crowdHedef * 3.5f * Ayar.SeyirciK) - crowd.volume) * (1 - Mathf.Exp(-dt / .4f));   // Web Audio setTargetAtTime(.4)
+            crowd.volume += ((sessiz ? 0 : crowdHedef * 3.5f) - crowd.volume) * (1 - Mathf.Exp(-dt / .4f));   // Web Audio setTargetAtTime(.4)
             float tc = suHedef < 1000 ? .05f : .02f; suAlti.cutoffFrequency += (suHedef - suAlti.cutoffFrequency) * (1 - Mathf.Exp(-dt / tc));
             MuzikIsle(dt);
         }

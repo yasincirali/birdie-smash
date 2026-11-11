@@ -314,8 +314,7 @@ namespace BirdieSmash.Game
             foreach (var id in KariyerVeri.HizliHavuz(Ayar.ilerleme))
             {
                 var st = KariyerVeri.Stil[id]; string sid = id;
-                int kG, kY; string alt = Ayar.Karne(id, out kG, out kY) ? L.T(st.ad) + " · " + kG + "–" + kY : L.T(st.ad);   // karne (fikir 23:05 #2): sayıyla, renkle değil
-                r.Add(Cip(st.isim, sec == id, () => { Ayar.hizliRakip = sid; Ayar.Kaydet(); Degisti(); }, alt));
+                r.Add(Cip(st.isim, sec == id, () => { Ayar.hizliRakip = sid; Ayar.Kaydet(); Degisti(); }, L.T(st.ad)));
             }
             var n = Yazi(L.T("Kariyerde yendiğin rakipler buraya eklenir."), 13, "soluk"); n.style.whiteSpace = WhiteSpace.Normal; c.Add(n);
         }

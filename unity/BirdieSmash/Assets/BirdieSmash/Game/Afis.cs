@@ -90,13 +90,13 @@ namespace BirdieSmash.Game
             var gor = PlayerView.Benim(); string k = Ayar.model + gor.Anahtar();
             if (ben == null || k != benAnah)
             {
-                if (ben != null) ben.Sil();
+                if (ben != null) Destroy(ben.gameObject);
                 ben = PlayerView.Build(transform, Ayar.model, true, gor.forma, false, gor); benAnah = k; GolgeKapat(ben);
             }
             string rk = rakipSt == null ? "" : Ayar.model + rakipSt.isim + rakipSt.ad + rakipForma; rakipId = rakipSt != null ? rakipSt.id : null;
             if (rk != rakipAnah)
             {
-                if (rakip != null) { rakip.Sil(); rakip = null; }
+                if (rakip != null) { Destroy(rakip.gameObject); rakip = null; }
                 if (rakipSt != null) { rakip = PlayerView.Build(transform, Ayar.model, false, rakipForma, false, PlayerView.Rakip(rakipSt, rakipForma)); GolgeKapat(rakip); }
                 rakipAnah = rk;
             }

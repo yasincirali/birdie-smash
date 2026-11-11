@@ -13,7 +13,7 @@ namespace BirdieSmash.Game
 {
     public class Fx : MonoBehaviour
     {
-        class Mark { public Vector3 p; public float t; public bool big; public float[] cr; public Transform leke; public Renderer lekeR; public LineRenderer halka; public LineRenderer[] catlak; }
+        class Mark { public Vector3 p; public float t; public bool big; public float[] cr; public Transform leke; public LineRenderer halka; public LineRenderer[] catlak; }
         class Wave { public Vector3 p; public float t, max; public Color c; public LineRenderer l; }
         readonly List<Mark> marks = new List<Mark>(); readonly List<Wave> waves = new List<Wave>();
         // Dalga havuzu (İnceleme turu 2026-11-10 17:08 #4): her vuruşta yeni LineRenderer yaratılıp ~.45 sn sonra siliniyordu
@@ -116,7 +116,7 @@ namespace BirdieSmash.Game
         public void Iz(float x, float y, bool big)
         {
             var m = new Mark { p = Kit.W(x, y, .007f), big = big, cr = new float[big ? 5 : 0] }; for (int i = 0; i < m.cr.Length; i++) m.cr[i] = Random.value * 6.28f;
-            m.leke = Kit.Prim(PrimitiveType.Quad, "iz", transform, m.p, Vector3.one, lekeM).transform; m.leke.rotation = Quaternion.Euler(90, 0, 0); m.lekeR = m.leke.GetComponent<Renderer>();
+            m.leke = Kit.Prim(PrimitiveType.Quad, "iz", transform, m.p, Vector3.one, lekeM).transform; m.leke.rotation = Quaternion.Euler(90, 0, 0);
             m.leke.localScale = new Vector3((big ? 9 : 5) / 28f * 2.6f, (big ? 9 : 5) / 28f * 2.6f, 1);
             m.halka = Kit.Line("iz_halka", transform, beyazM, true, true); m.halka.widthMultiplier = .04f;
             m.catlak = new LineRenderer[m.cr.Length];
@@ -144,7 +144,7 @@ namespace BirdieSmash.Game
             for (int i = marks.Count - 1; i >= 0; i--)
             {
                 var m = marks[i]; m.t += dt; float a = Mathf.Max(0, 1 - m.t / 3);
-                var mm = m.lekeR;   // 2026-11-11 (fikir 23:05 #8): her karede GetComponent yerine kurulumda bir kez lekeMpb.SetColor(RENK, new Color(10 / 255f, 30 / 255f, 26 / 255f, .45f * a * 1.4f)); mm.SetPropertyBlock(lekeMpb);
+                var mm = m.leke.GetComponent<Renderer>(); lekeMpb.SetColor(RENK, new Color(10 / 255f, 30 / 255f, 26 / 255f, .45f * a * 1.4f)); mm.SetPropertyBlock(lekeMpb);
                 m.halka.enabled = m.t < .5f; if (m.halka.enabled) { Kit.Ellipse(m.halka, m.p, (8 + m.t * 80) / 28f, (8 + m.t * 80) / 28f); m.halka.startColor = m.halka.endColor = new Color(1, 1, 1, (.5f - m.t) * 1.6f); }
                 foreach (var l in m.catlak) l.startColor = l.endColor = new Color(.847f, 1, .353f, .6f * a);
                 if (m.t >= 3) { Destroy(m.leke.gameObject); Destroy(m.halka.gameObject); foreach (var l in m.catlak) Destroy(l.gameObject); marks.RemoveAt(i); }
@@ -183,10 +183,8 @@ namespace BirdieSmash.Game
             var oa = M != null ? M.OgrA() : null; if (oa == null || oa.bilgi != null) return null;
             if (oa.dril != null) return M.DrilAlan();
             if (oa.servis != null) return null; string k = M.OgrIstenen(oa); float[] h;
-            if (k == null || !Match.OGR_HEDEF.TryGetValue(k, out h)) return null; hBuf[0] = Court.SL; hBuf[1] = Court.SR; hBuf[2] = h[0]; hBuf[3] = h[1]; return hBuf;
+            if (k == null || !Match.OGR_HEDEF.TryGetValue(k, out h)) return null; return new[] { Court.SL, Court.SR, h[0], h[1] };
         }
-        // Tek tampon (2026-11-11, fikir 23:05 #8): Tick her karede, Hud karede 2+ kez soruyordu; okuyan hemen kullanır, saklamaz.
-        static readonly float[] hBuf = new float[4];
         public Vector3? HedefMerkez(Match M)
         {
             var h = HedefAlan(M); if (h == null) return null; return Kit.W((h[0] + h[1]) / 2, (h[2] + h[3]) / 2, .01f);

@@ -3,7 +3,6 @@
 //   tuytop_len      'len5' | 'len11' | 'len21' (varsayılan len5)   tuytop_mod 'k' | 's'   tuytop_saha   tuytop_model
 //   tuytop_gear / tuytop_ekonomi (Core/Gear)   tuytop_raket_gor JSON {grip, tel, tel2, desen}   tuytop_antrenman '1'
 //   tuytop_hizli_rakip (2026-11-11) Hızlı maçta seçilen rakip tarzı (stil id); boş = rastgele
-//   tuytop_karne (2026-11-11) rakip başına sonuç "stil:galibiyet:yenilgi;…" (Karne / KarneYaz); iCloud METIN listesinde
 //   tuytop_puan     mağaza puanı istenme sayısı (0..3, HTML puanBak ile ortak)
 //   tuytop_ilerleme (2026-10-26, kariyer haritası) JSON {v, tur: [[maske×6]×4]} (Core/Ilerleme: yıldız bit maskesi). İlk
 //                   açılışta tuytop_v2.kariyer'den taşınır; tuytop_v2.kariyer yazılmaya devam eder (= Tur 1'de geçilen
@@ -62,10 +61,6 @@ namespace BirdieSmash.Game
         public static float Lastik => ZORLUK_LASTIK[Mathf.Clamp(zorluk, 0, 3)];
         public static bool easy { get => zorluk <= 1; set { if (value != easy) zorluk = value ? 1 : 3; } }
         public static bool kosuYardim { get => zorluk == 2; set { if (!easy) zorluk = value ? 2 : 3; } }
-        // Seyirci düzeyi (2026-11-11 inceleme, fikir 23:05 #6; tuytop_seyirci 0 kapalı · 1 az · 2 normal, yoksa normal = eski oyuncu
-        // değişmez): uğultu, ooo, alkış, coşku ve tribün nefesi. Raket, file, düdük ve müzik etkilenmez (Sfx.trb).
-        public static int seyirci = 2;
-        public static float SeyirciK { get { return seyirci <= 0 ? 0 : seyirci == 1 ? .4f : 1; } }
         public static bool reduce, reduceSecim, reduceSistem, ses = true, muzik = true, titresim = true, kariyerModu, antrenman, sampiyon, fps, kosIpucu;
         public static int target = 5, kariyer, bestRally, wins, gorev, puan; public static int devirSayisi = -1;
         // Kariyer ilerlemesi (yıldızlar, turlar). kariyerSecim: haritadan seçilen basamak (genel indeks); -1 = sıradaki.
@@ -77,28 +72,6 @@ namespace BirdieSmash.Game
         // Hızlı maç rakibi (2026-11-11 inceleme, fikir 22:05 #1): "" = rastgele (bugünkü davranış). Havuzda olmayan id (kayıt
         // bozuk ya da tarz sonradan kalktı) kullanımda rastgeleye düşer (GameRoot.StartMatch); burada doğrulanmaz.
         public static string hizliRakip = "";
-        // Rakip karnesi (2026-11-11 inceleme, fikir 23:05 #2): sabit rakip kadrosunun ("Vex beni hep yeniyor") rövanş nedeni.
-        // Kariyer, Hızlı maç ve Günün maçı sayılır; antrenman/görev/Sonsuz sayılmaz (GameRoot.EndMatch). Okuma her seferinde
-        // kayıttan (menüde birkaç çip; iCloud eşitlemesi metni değiştirebilir, ayrı önbellek tutulmaz).
-        public const string KARNE = "tuytop_karne";
-        public static bool Karne(string stil, out int g, out int y)
-        {
-            g = y = 0; if (string.IsNullOrEmpty(stil)) return false;
-            foreach (var p in Str(KARNE, "").Split(';'))
-            {
-                var f = p.Split(':'); if (f.Length != 3 || f[0] != stil) continue;
-                int.TryParse(f[1], out g); int.TryParse(f[2], out y); return g + y > 0;
-            }
-            return false;
-        }
-        public static void KarneYaz(string stil, bool won)
-        {
-            if (string.IsNullOrEmpty(stil) || stil.IndexOf(':') >= 0 || stil.IndexOf(';') >= 0) return;
-            int g, y; Karne(stil, out g, out y); if (won) g++; else y++;
-            var sb = new System.Text.StringBuilder(); sb.Append(stil).Append(':').Append(g).Append(':').Append(y);
-            foreach (var p in Str(KARNE, "").Split(';')) { if (p.Length == 0 || p.StartsWith(stil + ":")) continue; sb.Append(';').Append(p); }
-            try { PlayerPrefs.SetString(KARNE, sb.ToString()); } catch { }
-        }
         public static string saha = "salon", model = "oyuncak", kamera = "yayin", dil = "tr", yazi = "sistem"; static float yaziSistem = 1;
         public static float YaziK { get { return yazi == "normal" ? 1 : yazi == "buyuk" ? 1.3f : Mathf.Clamp(yaziSistem, .9f, 1.3f); } }
         // Menü yazı ölçeği (2026-10-26, UI Toolkit menü kabuğu): flex yerleşimde metin sarılır, kart uzar, gövde kayar; bu
@@ -166,7 +139,7 @@ namespace BirdieSmash.Game
             // oyuncak'a dönüyordu. Artık geçerli model (MODELLER); FBX'i olmayan build'de yine oyuncak'a düşer.
             model = Str("tuytop_model", "oyuncak"); if (model == "sportif" || model == "aday") model = "rocketbox"; if (!ModelVar(model)) model = "oyuncak";
             kamera = Str("tuytop_kamera", "yayin"); if (System.Array.IndexOf(GameRoot.KAMERA_SIRA, kamera) < 0) kamera = "yayin";
-            reduceSecim = EskiInt("tuytop_reduce", 0) == 1; ses = EskiInt("tuytop_ses", 1) == 1; muzik = EskiInt("tuytop_muzik", 1) == 1; titresim = EskiInt("tuytop_titresim", 1) == 1; seyirci = Mathf.Clamp(EskiInt("tuytop_seyirci", 2), 0, 2); SistemOku();
+            reduceSecim = EskiInt("tuytop_reduce", 0) == 1; ses = EskiInt("tuytop_ses", 1) == 1; muzik = EskiInt("tuytop_muzik", 1) == 1; titresim = EskiInt("tuytop_titresim", 1) == 1; SistemOku();
             yazi = Str("tuytop_yazi", "sistem"); if (yazi != "normal" && yazi != "buyuk") yazi = "sistem"; fps = Str("tuytop_fps", "0") == "1";
             int pu; puan = int.TryParse(Str("tuytop_puan", "0"), out pu) ? Mathf.Clamp(pu, 0, Ozet.PUAN_AZAMI) : Ozet.PUAN_AZAMI;
             kariyerModu = Str("tuytop_mod", "s") == "k"; antrenman = Str("tuytop_antrenman", "0") == "1";
@@ -255,7 +228,7 @@ namespace BirdieSmash.Game
             kayit.Set("tuytop_v2", Json.Write(new Dictionary<string, object> { { "rally", (double)bestRally }, { "wins", (double)wins }, { "kariyer", (double)kariyer }, { "gorev", (double)gorev }, { "sampiyon", sampiyon } }));
             PlayerPrefs.SetString("tuytop_len", "len" + target); PlayerPrefs.SetString("tuytop_saha", saha); PlayerPrefs.SetString("tuytop_hizli_rakip", hizliRakip ?? ""); PlayerPrefs.SetString("tuytop_model", model); PlayerPrefs.SetString("tuytop_kamera", kamera);
             PlayerPrefs.SetString("tuytop_mod", kariyerModu ? "k" : "s"); if (antrenman) PlayerPrefs.SetString("tuytop_antrenman", "1");
-            PlayerPrefs.SetInt("tuytop_zorluk", zorluk); PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0); PlayerPrefs.SetInt("tuytop_muzik", muzik ? 1 : 0); PlayerPrefs.SetInt("tuytop_titresim", titresim ? 1 : 0); PlayerPrefs.SetInt("tuytop_seyirci", seyirci); if (kosIpucu) PlayerPrefs.SetInt("tuytop_kos_ipucu", 1);
+            PlayerPrefs.SetInt("tuytop_zorluk", zorluk); PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0); PlayerPrefs.SetInt("tuytop_muzik", muzik ? 1 : 0); PlayerPrefs.SetInt("tuytop_titresim", titresim ? 1 : 0); if (kosIpucu) PlayerPrefs.SetInt("tuytop_kos_ipucu", 1);
             PlayerPrefs.SetString("tuytop_dil", dil); PlayerPrefs.SetString("tuytop_puan", puan.ToString()); PlayerPrefs.SetString("tuytop_yazi", yazi); PlayerPrefs.SetString("tuytop_fps", fps ? "1" : "0");
             var rg = new Dictionary<string, object>(); foreach (var kv in RGOR) rg[kv.Key] = kv.Value; PlayerPrefs.SetString("tuytop_raket_gor", Json.Write(rg));
             var gv = new Dictionary<string, object>(); foreach (var kv in GORUNUM) gv[kv.Key] = kv.Value; foreach (var kv in KOZ) gv[kv.Key] = kv.Value; gv["ayk_gor"] = AYK_GOR; PlayerPrefs.SetString("tuytop_gorunum", Json.Write(gv));
