@@ -1320,6 +1320,7 @@ namespace BirdieSmash.Game
             return y + rowH + 8 * s + kh + (ol < 1 ? 8 : 14) * s;
         }
         // Ödül kartı (a-rew): Tüy sayarak (yıldızlardan sonra .9 sn), XP çubuğu aynı sürede dolar, seviye atladıysan satır.
+        bool basarimCaldi = true;
         object odulOnb; bool odulOnbEn; int onbL0, onbKalan0, onbGerek0; string onbAlt, onbHSol, onbHSag, odulOnbHedef, onbSag; int onbSagK = -1;   // OdulCiz metin önbelleği
         float OdulCiz(OdulSonuc od, float x, float y, float w, float s, float t, bool rm, float al)
         {
@@ -1350,10 +1351,15 @@ namespace BirdieSmash.Game
             // 2026-11-10 seviye ödülü (Gear.SvOdul): seviye atlanan maçta kartta "Seviye ödülü +n Tüy"; açılanların önünde.
             if (od.svTuy > 0) acil = L.T("Seviye ödülü +{0} Tüy", od.svTuy) + (acil != null ? " · " + acil : "");
             if (od.efsane > 0) acil = L.T("Efsane {0} · +{1} Tüy", od.efsane, od.efsaneTuy) + (acil != null ? " · " + acil : "");   // 2026-11-10 Gear.EFSANE_XP
-            onbAlt = (acil != null ? acil + "\n" : "") + svYazi + (ek != null ? " · " + ek : "");
+            // 2026-11-11 inceleme (fikir 19:05 #3): bu maçta kazanılan başarım adıyla alt yazının ilk satırında; Tüy sayımı bitince
+            // tek görev çanı + "ralli" titreşimi (aşağıda). Game Center afişi açılmaz (maç sonu kartının üstüne binerdi).
+            string bsY = null; var mb = Basarim.MacYeni; basarimCaldi = mb.Count == 0;
+            if (mb.Count > 0) bsY = L.T("Başarım: {0}", UiKok.BasarimAdi(mb[0])) + (mb.Count > 1 ? " · " + L.T("+{0} başarım daha", mb.Count - 1) : "");
+            onbAlt = (bsY != null ? bsY + "\n" : "") + (acil != null ? acil + "\n" : "") + svYazi + (ek != null ? " · " + ek : "");
             onbHSol = null;
             if (root.hedef.gecerli) { var hd0 = root.hedef; onbHSol = L.T("Hedef: {0}", L.T(hd0.ad)); int hm = Hedef.MacTahmini(Hedef.Kalan(hd0.fiyat, Ayar.gear.eko.tuy), PlayerPrefs.GetString(Hedef.SON_ANAHTAR, "")); if (hm > 0) onbHSol += " · " + L.T("≈ {0} maç", hm); onbHSag = L.T("{0} Tüy kaldı", 99999); }   // 2026-11-07 GD6
             }
+            if (!basarimCaldi && Event.current.type == EventType.Repaint && t > t1 + 1f) { basarimCaldi = true; root.sfx.Gorev(); Yerel.Hap("ralli"); }
             int kalan0 = onbKalan0, gerek0 = onbGerek0; string alt = onbAlt; float ah = aIpucu.CalcHeight(Ic(alt), w - 2 * p);
             float lvH = lv ? 48 * s : 0;
             // Hedef eşya satırı (2026-11-02, Core/Hedef): "Hedef: Yıldız pelerini · 640 Tüy kaldı" + ince çubuk; çubuk ve kalan sayı

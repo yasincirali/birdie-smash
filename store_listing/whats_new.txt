@@ -1,4 +1,13 @@
 === UNITY ===
+Alt sayfalar, dükkân, başarım anı (11 Kasım gece):
+- Hızlı maç, maç kartı gibi alttan açılan sayfalar artık parmağı izler: tutamaktan aşağı çekince sayfa iner, bırakınca ya yerine oturur ya kayarak kapanır. Kapat'a ya da boşluğa dokununca da kayarak kapanır.
+- Tüy dükkânında satın alma sürerken düğme "İşleniyor…" der, öteki fiyatlar beklemeye geçer; ikinci dokunuş artık yanlış "tamamlanmadı" yazdırmaz. Geri yükle de "Kontrol ediliyor…" der.
+- Bir başarım kazanınca maç sonu kartında adıyla yazar, Tüy sayımından sonra kısa bir çan çalar. Başarım kaydı artık ralli ortasında değil sayı arasında yapılır (takılma yok).
+- Titreşim gücü vuruşa ve raket teline göre ince ince değişir.
+- Günün maçını kazanınca kutucukta yarının kuralı görünür ("Yarın: …").
+- Profil'de başarım listesi kısaldı: kazandıkların ve sıradaki 3 hedef; "Tümünü göster" ile hepsi açılır.
+Nasıl denenir: Oyna'da Hızlı maç'ı aç, üstteki çizgiyi yavaşça biraz aşağı çekip bırak: sayfa geri oturmalı. Daha çok çek ya da hızlıca fiskele: kayarak kapanmalı. Dükkânda bir pakete dokun, App Store penceresi gelene kadar yine dokun: "İşleniyor…" görünmeli, yanlış uyarı çıkmamalı. 20 vuruşluk ralli yap (ilk kez): maç sonunda "Başarım: 20 vuruşluk ralli" satırı ve çan gelmeli. Günün maçını kazan: kutucukta "Yarın: …" yazmalı. Profil'in altında "Tümünü göster"e dokun: tüm liste aynı yerde açılmalı.
+
 Kariyer kaydırma, smaç hazır anı, maç sayısında sessizlik (11 Kasım akşam):
 - Kariyer'de tur kartları bırakınca yumuşakça yerine oturur; hafif bir fiskeyle bir sonraki tura geçer.
 - Smaç gücü çubuğu dolunca çan sesi, kısa titreşim ve oyuncunun üstünde kıvılcım; maçın ilk iki dolusunda "Smaç hazır!" yazar. Çubuk dolunca artık zıplamaz.

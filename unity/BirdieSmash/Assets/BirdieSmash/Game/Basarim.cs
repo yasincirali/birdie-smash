@@ -35,12 +35,27 @@ namespace BirdieSmash.Game
         public static bool Var(string id) { Yukle(); return yerel.ContainsKey(id); }
         public static int Sayi { get { Yukle(); return yerel.Count; } }
 
+        // 2026-11-11 inceleme (fikir 19:05 #3): RALLI20, AKIS ve GOREV3 ralli SÜRERKEN veriliyordu; JSON + senkron PlayerPrefs.Save +
+        // GameKit çağrısı vuruş karesinde (31 Eki O1 "kayıt sayı arasına" kararını deliyordu, tek kare takılma). Ver artık yalnız
+        // belleğe yazar; Yaz() diske ve Game Center'a gönderir. GameRoot sayı arasında / duraklatınca / menüde / arka plana
+        // geçişte çağırır (BekleyenKayit ile aynı an). Var() bellekten okur, yani verildiği an tutarlı.
+        // Ayrıca kazanılan başarım oyunda görünmüyordu: maç içinde kazanılanlar MacYeni'de birikir, maç sonu kartı adıyla yazar.
+        static readonly List<string> bekleyen = new List<string>();
+        public static readonly List<string> MacYeni = new List<string>();
+        public static bool Bekliyor { get { return bekleyen.Count > 0; } }
+        public static void MacBasla() { MacYeni.Clear(); }
         public static void Ver(string id)
         {
             if (string.IsNullOrEmpty(id)) return; Yukle(); if (yerel.ContainsKey(id)) return;
             yerel[id] = (double)System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            bekleyen.Add(id); MacYeni.Add(id);
+        }
+        public static void Yaz()
+        {
+            if (bekleyen.Count == 0) return;
             PlayerPrefs.SetString("tuytop_basarim", Json.Write(yerel)); PlayerPrefs.Save();
-            Gonder(id);
+            for (int i = 0; i < bekleyen.Count; i++) Gonder(bekleyen[i]);
+            bekleyen.Clear();
         }
         // HTML basarimEsitle: kariyer basamakları ve 20 ralli rekoru kayıttan (eski oyuncu da başarımını alsın)
         public static void Esitle(int kariyer, int bestRally)

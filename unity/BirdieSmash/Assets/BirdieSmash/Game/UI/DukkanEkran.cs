@@ -56,7 +56,9 @@ namespace BirdieSmash.Game
                 // 2026-11-06 (unslop, öneri artifact'i YAP): dört paketin dördü de dolu turuncu düğmeydi; her şey vurgulu olunca hiçbiri öne
                 // çıkmıyordu. Fiyat düğmeleri ikincil (sakin) biçimde; "önerilen/en popüler" vurgusu da yok (geliştirme kararı: dükkân baskısız,
                 // veri olmadan "en popüler" uydurma olur; bonus yüzdesi her kartta yazıyla duruyor).
-                k.Add(fiyat != null ? Dugme(fiyat, () => { dukkanNot = null; Tik(); Magaza.O.Al(id); }) : Pasif(L.T("Satın alınamıyor")));
+                // 2026-11-11 inceleme: satın alma sürerken o kart "İşleniyor…", öteki fiyatlar pasif (ikinci istek yanlış "tamamlanmadı" yazdırıyordu).
+                k.Add(fiyat == null ? Pasif(L.T("Satın alınamıyor")) : m.SurenMi(id) ? Pasif(L.T("İşleniyor…")) : m.Suruyor || m.GeriYukleniyor ? Pasif(fiyat)
+                    : Dugme(fiyat, () => { dukkanNot = null; Tik(); Magaza.O.Al(id); }));
                 Erisim.Etiket(k, L.T(pk.ad) + ", " + L.T("{0} Tüy", pk.tuy) + (pk.ek > 0 ? ", " + L.T("+%{0} fazla", pk.ek) : "") + ", " + (fiyat ?? L.T("Satın alınamıyor")), "dugme", false, fiyat == null);
             }
 
@@ -68,13 +70,16 @@ namespace BirdieSmash.Game
             rk.Add(Yazi(L.T("Menüdeki reklam şeridi kalkar. Maç sonundaki ödüllü reklam yalnız sen istersen açılır. Tüy vermez, bir kez alınır."), 13, "soluk"));
             string rf = m.Fiyat(TuyDukkan.REKLAMSIZ); bool rVar = m.ReklamsizVar;
             if (rVar) rk.Add(Pasif(L.T("Alındı")));
-            else rk.Add(rf != null ? Dugme(rf, () => { dukkanNot = null; Tik(); Magaza.O.Al(TuyDukkan.REKLAMSIZ); }) : Pasif(L.T("Satın alınamıyor")));
+            else rk.Add(rf == null ? Pasif(L.T("Satın alınamıyor")) : m.SurenMi(TuyDukkan.REKLAMSIZ) ? Pasif(L.T("İşleniyor…")) : m.Suruyor || m.GeriYukleniyor ? Pasif(rf)
+                : Dugme(rf, () => { dukkanNot = null; Tik(); Magaza.O.Al(TuyDukkan.REKLAMSIZ); }));
             Erisim.Etiket(rk, L.T("Reklamsız") + ", " + (rVar ? L.T("Alındı") : rf ?? L.T("Satın alınamıyor")), "dugme", false, rVar || rf == null);
 
             c.Add(Bosluk(12));
             c.Add(Yazi(Bulut.Acik ? L.T("İlerlemen ve aldığın Tüy iCloud'a yedekleniyor; uygulamayı silsen de geri gelir.")
                                   : L.T("iCloud kapalı: ilerlemen yalnız bu cihazda. Ayarlar'da iCloud'u açarsan yedeklenir."), 13, "soluk"));
-            c.Add(Dugme(L.T("Satın alımları geri yükle"), () => { Tik(); Magaza.O.GeriYukle(ok => { Reklam.Yenile(); dukkanNot = ok ? L.T("Kaydın yeniden okundu.") : L.T("Geri yüklenecek bir şey bulunamadı."); ustKirli = true; if (gez.Ust == Gezinti.DUKKAN) SayfaKur(Gezinti.DUKKAN); }); }));
+            if (m.GeriYukleniyor) c.Add(Pasif(L.T("Kontrol ediliyor…")));
+            else if (m.Suruyor) c.Add(Pasif(L.T("Satın alımları geri yükle")));
+            else c.Add(Dugme(L.T("Satın alımları geri yükle"), () => { Tik(); Magaza.O.GeriYukle(ok => { Reklam.Yenile(); dukkanNot = ok ? L.T("Kaydın yeniden okundu.") : L.T("Geri yüklenecek bir şey bulunamadı."); ustKirli = true; if (gez.Ust == Gezinti.DUKKAN) SayfaKur(Gezinti.DUKKAN); }); }));
             c.Add(Yazi(L.T("Tüy tüketilen bir üründür: harcayınca biter, süresi dolmaz. Rastgele ödül satılmaz."), 12, "soluk"));
             c.Add(Bosluk(24));
         }
