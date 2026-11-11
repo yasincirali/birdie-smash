@@ -650,6 +650,10 @@ namespace BirdieSmash.Game
             camTv = kam.tv; camK = kam.k; takip.Egim(kam, null, 0, true);   // açı/ekran değişince takip sıfırdan
             camBase = new Vector3(0, kam.h, kam.Z); camRot = Quaternion.Euler(kam.p, 0, 0); cam.transform.SetPositionAndRotation(camBase, camRot);
             kadrajEgim = 0; kadrajGenis = 1; Projeksiyon(1);
+            // Gölge mesafesi kadrajdan (2026-11-12, Kalite.KadrajGolge): en uzak kort köşesi (çevre payı .5 m) + 2,5 m.
+            float gd = 0, hx = Court.CW / 2 + .5f, hz = Court.L / 2 + .5f;
+            for (int i = 0; i < 4; i++) gd = Mathf.Max(gd, Vector3.Distance(camBase, new Vector3((i & 1) == 0 ? -hx : hx, 0, (i & 2) == 0 ? -hz : hz)));
+            Kalite.KadrajGolge(gd + 2.5f);
         }
         // Takip: maçta (sonuç ekranında da, top yere inerken) uçuşun eğimi; menüde ve hareketi azaltta 0. Saat Match.clock:
         // duraklatınca kamera da durur, ağır çekimde yavaşlar.
