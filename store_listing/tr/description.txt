@@ -1,6 +1,6 @@
 Birdie Smash, tek parmakla oynanan bir badminton oyunu. Top gelince ekranda kaydırırsın: kaydırmanın yönü topun gideceği yeri, hızı vuruşun gücünü belirler.
 
-- Kariyer: 8 tur, 48 rakip; mahalle salonundan Efsaneler Kupası'na, sonra bitmeyen Şampiyon yolu
+- Kariyer: 8 tur, 48 maç, altı farklı oyun tarzı; mahalle salonundan Efsaneler Kupası'na, sonra bitmeyen Şampiyon yolu
 - Günün maçı: her gün yeni rakip, saha ve kural; seri tutma derdi yok
 - Sonsuz ralli: antrenör sen kaçırana kadar besler, her 5 vuruşta hızlanır
 - Dolap: forma, şapka, ayakkabı, sevinç ve seviyeyle açılan smaç hareketleri; oyunu değiştiren raket, kordaj ve sap

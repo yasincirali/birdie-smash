@@ -43,7 +43,7 @@ namespace BirdieSmash.Game
             esnek.pickingMode = PickingMode.Position;
             esnek.RegisterCallback<PointerUpEvent>(e => { if (e.localPosition.x < esnek.layout.width * .55f && root.afis != null && root.afis.Acik) { Yerel.Hap("tick"); root.afis.Sevinc(); } });
             Erisim.Etiket(esnek, L.T("Sevinci oynat"), "dugme");
-            // 2026-10-26 Usta yolu: dört tur bittiyse (ve Usta yolu açıksa) "Sıradaki" kartının yerini Usta kartı alır (kendi
+            // 2026-10-26 Usta yolu: sekiz tur bittiyse (ve Usta yolu açıksa) "Sıradaki" kartının yerini Usta kartı alır (kendi
             // Oyna düğmesiyle); finali yeniden oynamak Kariyer haritasından sürer.
             bool usta = Ayar.antrenman && UstaYolu.Acik(Ayar.ilerleme) && Ayar.ilerleme.HepsiBitti;
             // 2026-10-31 (yasin "yap", inceleme 31 Eki 12:10 madde 2): ilk açılışta plaka "Sıradaki maç · Mika" diyordu ama OYNA

@@ -111,13 +111,31 @@ namespace BirdieSmash.Game
         static readonly Dictionary<char, string> LED_HARF = new Dictionary<char, string> {
             {'A',"010101111101101"},{'B',"110101110101110"},{'D',"110101101101110"},{'E',"111100110100111"},{'H',"101101111101101"},
             {'I',"111010010010111"},{'L',"100100100100111"},{'M',"101111111101101"},{'R',"110101110101101"},{'S',"011100010001110"},
-            {'Y',"101101010010010"},{'0',"111101101101111"},{'3',"111001011001111"},{' ',"000000000000000"}};
+            {'Y',"101101010010010"},{'0',"111101101101111"},{'3',"111001011001111"},{' ',"000000000000000"},
+            // 2026-11-11 (Ar-Ge 07:05, 1): 5 Kas yazı tipi yalnız "BIRDIE SMASH" harflerini taşıyordu; 6 Kas canlı panolar "MATCH POINT"ı
+            // "MAH I", "RALLY 15"i "RALLY" yazıyordu (bilinmeyen harf sessizce atlanır). Tam Latin alfabe + rakamlar + ! · -.
+            {'C',"111100100100111"},{'F',"111100110100100"},{'G',"111100101101111"},{'J',"001001001101111"},{'K',"101101110101101"},
+            {'N',"110101101101101"},{'O',"010101101101010"},{'P',"110101110100100"},{'Q',"010101101110011"},{'T',"111010010010010"},
+            {'U',"101101101101111"},{'V',"101101101101010"},{'W',"101101111111101"},{'X',"101101010101101"},{'Z',"111001010100111"},
+            {'1',"010110010010111"},{'2',"111001111100111"},{'4',"101101111001001"},{'5',"111100111001111"},{'6',"111100111101111"},
+            {'7',"111001001010010"},{'8',"111101111101111"},{'9',"111101111001111"},{'!',"010010010000010"},{'·',"000000010000000"},
+            {'-',"000000111000000"}};
+        // Türkçe büyük harf ASCII karşılığına (ToUpperInvariant sonrası): 3×5 noktada noktalı/kuyruklu harf okunmaz.
+        static char LedKarakter(char c)
+        {
+            c = char.ToUpperInvariant(c);
+            switch (c) { case 'Ş': return 'S'; case 'İ': case 'I': return 'I'; case 'Ü': return 'U'; case 'Ö': return 'O'; case 'Ç': return 'C'; case 'Ğ': return 'G'; default: return c; }
+        }
         public static Texture2D LedTex(string yazi, Color on, Color bg)
         {
             const int SUT = 50, SAT = 9, P = 3; var t = new Texture2D(SUT * P, SAT * P, TextureFormat.RGBA32, false); t.filterMode = FilterMode.Point; t.wrapMode = TextureWrapMode.Clamp;
             var px = new Color32[t.width * t.height]; Color32 zemin = bg * .6f + Color.black * .4f; for (int i = 0; i < px.Length; i++) px[i] = zemin;   // Color32: doku başına ~65 KB yerine ~16 KB geçici dizi (performans incelemesi 2026-11-05)
             var lit = new bool[SUT, SAT]; int gen = yazi.Length * 4 - 1, x0 = Mathf.Max(0, (SUT - gen) / 2);
-            for (int c = 0; c < yazi.Length; c++) { string g; if (!LED_HARF.TryGetValue(char.ToUpperInvariant(yazi[c]), out g)) continue;
+            for (int c = 0; c < yazi.Length; c++) { string g; if (!LED_HARF.TryGetValue(LedKarakter(yazi[c]), out g)) {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    Debug.LogWarning("LED glifi yok: '" + yazi[c] + "' (" + yazi + ")");   // sessiz atlama yarım kelimeyi 6 gün sakladı
+#endif
+                    continue; }
                 for (int r = 0; r < 5; r++) for (int q = 0; q < 3; q++) if (g[r * 3 + q] == '1') { int xx = x0 + c * 4 + q; if (xx < SUT) lit[xx, 2 + r] = true; } }
             Color32 sonuk = Color.Lerp(bg, on, .12f), yan = on;
             for (int a = 0; a < SUT; a++) for (int b = 0; b < SAT; b++) { Color32 c = lit[a, b] ? yan : sonuk; int yy = (SAT - 1 - b) * P;

@@ -1,4 +1,8 @@
 === UNITY ===
+Saha panoları tam yazıyor (11 Kasım sabah):
+- Sahadaki ışıklı panolar "MATCH POINT" yerine yarım kelime ("MAH I") yazıyordu, ralli sayacı çoğu sayıda boş kalıyordu. Panolar artık tüm harf ve rakamları yazar; ralli sayacı 5, 10, 15 diye ilerler.
+Nasıl denenir: Turnuva ya da salon sahasında maç oyna, maç sayısına gel: panolarda "MATCH POINT" tam okunmalı. Uzun bir ralli yap: 5. vuruşta "RALLY 5", 10. vuruşta "RALLY 10" görünmeli. Smaçla sayı al: "SMASH!" ünlemiyle görünmeli.
+
 Kariyer 8 tur, reklam şeridi üstte, yeni açılış (11 Kasım):
 - Kariyer 4 turdan 8 tura çıktı. Dünya Finalleri'nden sonra dört yeni tur: Pasifik Turu, Amerika Turu, Büyük Kupa, Efsaneler Kupası (24 yeni maç, toplam 48 rakip). Son iki turun finali 21 sayı. Kazandığın maçlar, yıldızlar ve mühürler aynen duruyor.
 - Şampiyon yolu / Usta yolu artık 8. tur bitince açılır. Daha önce açtıysan açık kalır ve kaldığın basamaktan devam eder.

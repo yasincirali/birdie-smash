@@ -249,6 +249,7 @@ Her dil için (sağ üst dil menüsü) ilgili klasördeki dosyayı yapıştır:
 - **Promotional Text** ← `promotional_text.txt`
 - **Description** ← `description.txt`
 - **Keywords** ← `keywords.txt` (olduğu gibi; virgülden sonra boşluk ekleme)
+- 11 Kas: açıklama "48 rakip" yerine "48 maç, altı oyun tarzı", tanıtım metni "Şampiyonlar kupası" yerine "Efsaneler Kupası" (oyunda altı adlı rakip var, öyle bir kupa yok). Daha önce yapıştırdıysan iki dosyayı iki dilde yeniden yapıştır.
 - **Support URL** ← `support_url.txt` (en: murphysoft.app/birdie-smash/support/, tr: .../destek/; sayfa yayında). Destek e-postası support@murphysoft.app.
 - **Marketing URL** boş kalabilir. "What's New" ilk sürümde sorulmaz.
 - **Copyright**: örn. `2026 <ad soyad ya da şirket adı>` (senin kararın).
