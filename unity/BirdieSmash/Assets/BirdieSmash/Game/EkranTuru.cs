@@ -649,6 +649,12 @@ namespace BirdieSmash.Game
                 rap.AppendLine("perf_doku " + (string.IsNullOrEmpty(t.name) ? "(adsız)" : t.name) + " " + t.width + "x" + t.height + " " + t.format + " mip " + t.mipmapCount + " okunur " + t.isReadable + " süzme " + t.filterMode + " aniso " + t.anisoLevel + " · " + (b / 1024) + " KB");
             }
             rap.AppendLine("perf_doku toplam " + dn + " doku · " + (topB / 1024) + " KB (GetRuntimeMemorySizeLong; geliştirme dışı oyuncuda 0 olabilir)");
+            // 2026-11-12 (model thread): yüklü animasyon klibi ve ağ belleği. KarakterImport anahtar azaltmasının oyuncuya ulaştığının
+            // ve ne kazandırdığının ölçüsü (önce/sonra aynı satır karşılaştırılır). Geliştirme dışı oyuncuda 0 olabilir.
+            long animB = 0; int an = 0; foreach (var k in Resources.FindObjectsOfTypeAll<AnimationClip>()) { if (k == null) continue; animB += UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(k); an++; }
+            long agB = 0; int agN = 0; foreach (var k in Resources.FindObjectsOfTypeAll<Mesh>()) { if (k == null) continue; agB += UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(k); agN++; }
+            rap.AppendLine("perf_anim toplam " + an + " klip · " + (animB / 1024) + " KB");
+            rap.AppendLine("perf_ag toplam " + agN + " ağ · " + (agB / 1024) + " KB");
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
         }
         IEnumerator MenuSahne()
