@@ -404,6 +404,8 @@ namespace BirdieSmash.Game
         public void OgrTamam() { Arpej(660, new[] { 0, 4, 7 }, .14f, .05f, .06f); }
         public void Yukselt() { Arpej(523, new[] { 0, 4, 7, 12 }, .14f, .05f, .06f); }
         public void Tik(float f = 880) { Ton(f, .05f, "triangle", .04f); }
+        // Smaç hazır (2026-11-11): iki kısa yükselen ton (E6 → A6), perfect tonundan tiz ve kısa; vuruş sesinin altında kalmasın diye hafif.
+        public void SmacHazir() { Ton(1319, .06f, "sine", .05f); Ton(1760, .09f, "sine", .05f, .06f); }
         public void Iyi() { Ton(784, .12f, "triangle", .05f); }
         public void Hedefte() { Ton(1320, .1f, "triangle", .05f); }
         public void Iska() { if (Kayitli("iska", .6f)) return; Gurultu(.05f, "highpass", 1200, .05f); }

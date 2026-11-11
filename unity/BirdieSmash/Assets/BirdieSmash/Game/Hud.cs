@@ -142,8 +142,9 @@ namespace BirdieSmash.Game
         public void Ogr(string t) { ogrMsg = t; ogrMsgT = 1.8f; }
         public bool Blocks(Vector2 guiPos) { if (perdeEvre > 0) return true; foreach (var r in blocks) if (r.Contains(guiPos)) return true; return false; }
         public void MacBasi() { pop[0] = pop[1] = 0; cams.Clear(); hawk = null; flash = 0; floats.Clear(); }
-        public void Pop(int i) { pop[i] = 1; }
+        public void Pop(int i) { if (!Ayar.reduce) pop[i] = 1; }   // 2026-11-11 inceleme: hareketi azaltta skor büyümez (ralli pop'u ve nabız zaten bakıyordu); renk ve sayı kalır
         [System.NonSerialized] public int macSayisiYan = -1;
+        int gucEtiketBoy = -1; string gucEtiketDil; float gucEtiketW;
         public void Flash(float a, Color c) { a *= .6f; if (Ayar.reduce) a *= .4f; if (a > flash) { flash = a; flashC = c; } }   // ×.6 (2026-11-05): tam ekran parlama büyük smaçta %50'ydi, kortu bir an siliyordu; %30 hâlâ "vurdum" der
         public void Hawk(float x, float y, bool icerde, int cm, bool serve) { hawk = new HawkV { x = x, y = y, icerde = icerde, cm = cm, serve = serve }; }
         // Tribün flaşları (HTML M.cams): sayı kazanınca 26 küçük flaş ekranın üst bandında, .5 sn.
@@ -175,7 +176,10 @@ namespace BirdieSmash.Game
         float kivT = -1; public void SayiKivilcim() { kivT = 0; }
 
         // GUILayout kullanılmıyor (her şey Rect ile): Layout geçişi atlanır, OnGUI karede bir kez az çalışır (2026-10-26, §7.2).
-        void Awake() { useGUILayout = false; }
+        void Awake() { useGUILayout = false; Font.textureRebuilt += AtlasYenilendi; }
+        void OnDestroy() { Font.textureRebuilt -= AtlasYenilendi; }
+        // Gizli FPS katmanında "font atlası n": dinamik TTF glif atlası yeniden kurulduysa TF ekran görüntüsünde görünsün (2026-11-11).
+        static int atlasN; static void AtlasYenilendi(Font f) { atlasN++; }
 
         void Update()
         {
@@ -213,7 +217,7 @@ namespace BirdieSmash.Game
             {
                 fpsYaz = now; float en = 0; int tak = 0; foreach (var q in fpsK) { if (q.y > en) en = q.y; if (q.y > 50) tak++; }
                 fpsYazi = fpsK.Count + " fps · en uzun " + Mathf.RoundToInt(en) + " ms · takılma " + tak + "\n" + ek + ": ort " + (fpsT > 0 ? Mathf.RoundToInt(fpsN / (fpsT / 1000)) : 0) + " fps · en uzun " + Mathf.RoundToInt(fpsEn) + " ms · takılma " + fpsTak + " · " + Mathf.RoundToInt(fpsT / 1000) + " sn";
-                if (root.ekran == Ekran.Oyun || root.ekran == Ekran.Bitti) fpsYazi += "\n" + GameRoot.KaydirmaOlc.Ozet();
+                if (root.ekran == Ekran.Oyun || root.ekran == Ekran.Bitti) fpsYazi += "\n" + GameRoot.KaydirmaOlc.Ozet() + " · font atlası " + atlasN;
                 // 2026-11-08 (inceleme turu): açılış süresi yalnız CI ekran turunda (Linux yazılım render'ı) ölçülüyordu; iPhone'daki
                 // gerçek değer FPS ekran görüntüsüyle gelsin. İlk sayı motor başlangıcından menünün tam açılmasına (realtimeSinceStartup),
                 // parantez içi Unity perdesinin kapalı kaldığı süre. 3 sn üstündeyse hakem/vitrin modellerini ertelemek ayrı iş.
@@ -330,6 +334,12 @@ namespace BirdieSmash.Game
             foreach (var v in KONTUR) GUI.Label(new Rect(r.x + v.x * k, r.y + v.y * k + 1, r.width, r.height), t, s);
             GUI.color = c; GUI.Label(r, t, s); GUI.color = o;
         }
+        // Skor sayısı: sabit boy stil, k ölçeği sayının merkezinde (k=1 iken matris dokunulmaz).
+        static void SkorCiz(Rect r, string t, GUIStyle s, Color c, float k)
+        {
+            if (Mathf.Abs(k - 1) < .001f) { Shadowed(r, t, s, c); return; }
+            var m = GUI.matrix; GUIUtility.ScaleAroundPivot(new Vector2(k, k), r.center); Shadowed(r, t, s, c); GUI.matrix = m;
+        }
         static void Shadowed(Rect r, string t, GUIStyle s, Color c)
         {
             s = Glif(s, t); r = Sigdir(r, t, s);
@@ -424,10 +434,15 @@ namespace BirdieSmash.Game
             if (!ogr)
             {
                 // Maç sayısı nabzı (2026-11-06 ek tur fikir 4): maç sayısındaki tarafın sayısı 1,1 Hz yavaş nabız (±7 %); hareketi azaltta yok.
-                float nb = macSayisiYan >= 0 ? .07f * (.5f + .5f * Mathf.Sin(Time.unscaledTime * 7f)) : 0;
-                var s0 = Stil(big, Mathf.RoundToInt(24 * fu * (1 + .5f * Mathf.Sin(pop[0] * Mathf.PI) + (macSayisiYan == 0 ? nb : 0)))); var s1 = Stil(big, Mathf.RoundToInt(24 * fu * (1 + .5f * Mathf.Sin(pop[1] * Mathf.PI) + (macSayisiYan == 1 ? nb : 0))));
-                Shadowed(new Rect(cx - 60 * u, sy - 6 * u, 60 * u, 46 * u), Sayi(M.sc[0]), s0, Kit.Hex(SEN_HUD)); Shadowed(new Rect(cx - 10 * u, sy, 20 * u, 34 * u), "–", Stil(big, Mathf.RoundToInt(24 * fu)), Kit.Hex("#9dbab3"));
-                Shadowed(new Rect(cx, sy - 6 * u, 60 * u, 46 * u), Sayi(M.sc[1]), s1, Kit.Hex(RAKIP_HUD));
+                float nb = macSayisiYan >= 0 && !Ayar.reduce ? .07f * (.5f + .5f * Mathf.Sin(Time.unscaledTime * 7f)) : 0;
+                // 2026-11-11 inceleme (fikir 18:05 #2): pop ve nabız artık yazı boyunu değiştirmiyor. Önce her karede 24→36 px arası
+                // her tam sayı boyda yeniden yazılıyordu: dinamik TTF her yeni boyu atlasa rasterleştiriyor, atlas dolunca tam sayı
+                // alınan karede yeniden kuruluyordu; büyüme de 1 px'lik basamaklarla titriyordu. Şimdi tek boy (36·fu, tepe boyu, keskin)
+                // + GUI matrisi ölçeği (geri sayım ve maç sonu başlığındaki desen); ölçek 24/36'dan 36/36'ya akar.
+                var sb = Stil(big, Mathf.RoundToInt(36 * fu));
+                SkorCiz(new Rect(cx - 60 * u, sy - 6 * u, 60 * u, 46 * u), Sayi(M.sc[0]), sb, Kit.Hex(SEN_HUD), (1 + .5f * Mathf.Sin(pop[0] * Mathf.PI) + (macSayisiYan == 0 ? nb : 0)) / 1.5f);
+                Shadowed(new Rect(cx - 10 * u, sy, 20 * u, 34 * u), "–", Stil(big, Mathf.RoundToInt(24 * fu)), Kit.Hex("#9dbab3"));
+                SkorCiz(new Rect(cx, sy - 6 * u, 60 * u, 46 * u), Sayi(M.sc[1]), sb, Kit.Hex(RAKIP_HUD), (1 + .5f * Mathf.Sin(pop[1] * Mathf.PI) + (macSayisiYan == 1 ? nb : 0)) / 1.5f);
                 Fill(new Rect(cx + (M.server == "me" ? -54 : 50) * u, sy + 15 * u, 5 * u, 5 * u), M.server == "me" ? Kit.Hex(SEN_HUD) : Kit.Hex(RAKIP_HUD));   // servis noktası
                 // sol üst kutu (2026-10-26, yasin Ar-Ge önerisi "ekle"): "{hedef} sayı · rakip" satırı kalktı (duraklat
                 // ekranında zaten yazıyor); ralli sayacı ralli 3'ü geçince belirir ve her vuruşta skorun pop diliyle hafifçe
@@ -443,7 +458,10 @@ namespace BirdieSmash.Game
                 float gy = top + 8 * u;
                 if (ralliVar)
                 {
-                    GUI.color = ciftAn ? new Color(1, .82f, .23f) : Kit.Hex("#9dbab3"); Etk(new Rect(lx - 4 * u, top + 4 * u, bw + 20 * u, 18 * u), RalliYazi(M.rally, uzunGun), Stil(bs, Mathf.RoundToInt(12 * fu * (1 + .25f * Mathf.Sin(ralliPop * Mathf.PI)))));
+                    GUI.color = ciftAn ? new Color(1, .82f, .23f) : Kit.Hex("#9dbab3"); var rr = new Rect(lx - 4 * u, top + 4 * u, bw + 20 * u, 18 * u); float rk = 1 + .25f * Mathf.Sin(ralliPop * Mathf.PI);
+                    // sabit boy + ölçek (skorla aynı gerekçe); sola hizalı yazı, pivot sol kenar ortası ki yazı yerinden kaymasın
+                    var rm = GUI.matrix; if (rk > 1.001f) GUIUtility.ScaleAroundPivot(new Vector2(rk, rk), new Vector2(rr.x, rr.center.y));
+                    Etk(rr, RalliYazi(M.rally, uzunGun), Stil(bs, Mathf.RoundToInt(12 * fu))); GUI.matrix = rm;
                     gy = top + 26 * u;
                 }
                 for (int i = 0; i < 3; i++)
@@ -470,7 +488,11 @@ namespace BirdieSmash.Game
             // smaç gücü çubuğu
             {
                 bool dol = M.energy >= 1; string lab = L.T(dol ? "Sıçrayarak smaç hazır" : "Smaç gücü"); var ls = Stil(leftB, Mathf.RoundToInt(14 * fu));   // 2026-11-07 (AD5): 12 → 14; oyunun ana arcade göstergesi en sönük öğeydi
-                float lw = ls.CalcSize(Ic(lab)).x, bx = lx + lw + 10 * u, bw = Mathf.Max(40 * u, rx - bx), by = H - bot - 12 * u;
+                // 2026-11-11 inceleme (fikir 18:05 #3): çubuğun başı iki etiketin GENİŞ olanından hesaplanır. Önce o anki etiketten
+                // hesaplanıyordu: dolduğu karede etiket "Sıçrayarak smaç hazır" olunca çubuk ~%30 kısalıp sağa atlıyordu; oyuncunun beklediği
+                // an "çubuk zıpladı" diye okunuyordu. Genişlik dil/yazı boyu değişince bir kez ölçülür (her kare CalcSize yok).
+                if (gucEtiketBoy != ls.fontSize || gucEtiketDil != Ayar.dil) { gucEtiketBoy = ls.fontSize; gucEtiketDil = Ayar.dil; gucEtiketW = Mathf.Max(ls.CalcSize(Ic(L.T("Smaç gücü"))).x, ls.CalcSize(Ic(L.T("Sıçrayarak smaç hazır"))).x); }
+                float lw = gucEtiketW, bx = lx + lw + 10 * u, bw = Mathf.Max(40 * u, rx - bx), by = H - bot - 12 * u;
                 bool isaret = ogr && M.OgrA() != null && M.OgrA().bilgi == "guc";
                 GUI.color = dol ? Kit.Hex(DOLU_HUD) : Kit.Hex(SOLUK_HUD); Etk(new Rect(lx, by - 9 * u, lw + 4 * u, 24 * u), lab, ls); GUI.color = Color.white;
                 // ray 16·u (2026-11-07 AD5; önce 12, ondan önce 8), merkezi aynı yerde; boş ray %22 beyaz (%14 görünmüyordu); dolgu tam boy

@@ -182,7 +182,7 @@ namespace BirdieSmash.Game
         {
             ani.Sifirla(); AniDur(); aniIzlendi = false;   // Maçın anı her maç kendi rallilerinden (Günün maçı, Usta yolu, görev de buradan geçer)
             match = new Match(tohum, o);
-            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; System.Array.Clear(iskaN, 0, iskaN.Length); yerN = 0; yerTop = null; yardimN = 0; yardimTop = null;
+            Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; System.Array.Clear(iskaN, 0, iskaN.Length); yerN = 0; yerTop = null; yardimN = 0; yardimTop = null; hazirN = 0; enerjiDolu = match.energy >= 1;
             fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; pencere = false; sfx.SuAlti(false); ReklamKartKapat(); ReklamSdk.OdulluHazirla(); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
@@ -666,7 +666,7 @@ namespace BirdieSmash.Game
         // kaydırıp bekleyene "Yavaş" yazılıyordu. Yeni oyuncunun tek öğretmeni bu kelime; zamanlama erken/geç diye ayrılır.
         static readonly string[] ISKA_NEDEN = { "Kısa kaydırdın", "Yavaş kaydırdın", "Erken: top parlayınca kaydır", "Geç: top parlarken kaydır" };
         readonly int[] iskaN = new int[4];
-        readonly Swipe input = new Swipe(); int erkenN, yerN, yardimN; Shuttle yerTop, yardimTop;
+        readonly Swipe input = new Swipe(); int erkenN, yerN, yardimN, hazirN; bool enerjiDolu; Shuttle yerTop, yardimTop;
         float Ref { get { return 640f / Mathf.Max(1, Screen.height); } }
         Vector2 RefPos(Vector2 screen) { return new Vector2(screen.x * Ref, (Screen.height - screen.y) * Ref); }   // y aşağı
 
@@ -942,6 +942,21 @@ namespace BirdieSmash.Game
             // Zor koşu yardımı görünür (inceleme 5 Kas 20:10 YAP): görünmez yardım "ben dokunmadan koştu" diye kontrol kaybı gibi
             // okunuyordu. Maçın ilk iki tetiklenişinde oyuncunun üstünde kısa "Koşu yardımı"; sonra sessiz (sayaç/Usta önerisi YAPMA).
             if (ekran == Ekran.Oyun && match.kosuYardim && yardimN < 2 && match.s != null && match.s != yardimTop && match.YardimKosuyor) { yardimTop = match.s; yardimN++; hud.Say(L.T("Koşu yardımı"), Kit.W(match.me.x, match.me.y, 1.6f), Kit.Hex("#9fd8ff")); }
+            // "Smaç hazır" anı (inceleme 11 Kas 18:05 #4, Core'a dokunmadan): enerji 1'e vardığı kare üç kanalda, oyuncunun baktığı yerde.
+            // Önce yalnız ekranın altındaki çubuğun rengi değişiyordu; göz topta iken kaçıyor, sıçrayarak smaç "rastgele" sanılıyordu.
+            // Ses: kısa yükselen çan (kendi sentezimiz); titreşim tick; oyuncunun üstünde limon kıvılcım (hareketi azaltta yok) ve maçın
+            // ilk iki dolusunda "Smaç hazır!" yazısı (sonra sessiz yazı, ses/titreşim/kıvılcım sürer). Antrenmanda yok (elle doldurulabiliyor).
+            if (ekran == Ekran.Oyun && match.ogr == null)
+            {
+                bool dl = match.energy >= 1;
+                if (dl && !enerjiDolu)
+                {
+                    sfx.SmacHazir(); Yerel.Hap("tick"); var ust = Kit.W(match.me.x, match.me.y, 1.4f);
+                    if (!Ayar.reduce) fx.Burst(ust, Kit.Hex("#d8ff5a"), 16, 240, "spark");
+                    if (hazirN < 2) { hazirN++; hud.Say(L.T("Smaç hazır!"), Kit.W(match.me.x, match.me.y, 1.9f), Kit.Hex("#d8ff5a")); }
+                }
+                enerjiDolu = dl;
+            }
             fx.Tick(match, paused || geriT > 0 ? 0 : dt, ekran == Ekran.Oyun);
             SalonCanli(paused || geriT > 0 ? 0 : dt);
             if (akisR != null)
