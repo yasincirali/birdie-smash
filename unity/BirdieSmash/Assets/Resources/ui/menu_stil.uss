@@ -337,7 +337,11 @@
 /* Ayarlar ve sayfalar */
 .sayfa-basi { flex-direction: row; align-items: center; min-height: 56px; padding: 0 16px; }
 .sayfa-baslik { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); flex-shrink: 1; }
-.nasil-baslik { margin-top: 12px; margin-bottom: 2px; }
+.nasil-baslik { margin-top: 0; margin-bottom: 0; flex-grow: 1; flex-shrink: 1; white-space: normal; }
+/* 2026-11-12 Nasıl oynanır açılır satırları: tüm satır dokunma alanı (≥44), ok işareti durum da söyler (yalnız renkle değil) */
+.nasil-satir { flex-direction: row; align-items: center; min-height: 44px; border-bottom-width: 1px; border-bottom-color: var(--ln); }
+.nasil-ok { margin-left: 8px; opacity: 0.7; }
+.nasil-dene { min-height: 44px; -unity-text-align: middle-left; color: var(--lime); }
 
 /* sekme çubuğu (49 + alt güvenli alan); seçili = üst çizgi + kalın yazı + tam opak simge */
 /* 2026-10-26 yön A (a-tabs): lacivert çubuk; seçili sekme limon dolgulu yuvarlak hap + koyu simge + kalın yazı (durum biçimle de:
