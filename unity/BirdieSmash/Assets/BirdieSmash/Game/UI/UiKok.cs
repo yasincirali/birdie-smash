@@ -392,6 +392,8 @@ namespace BirdieSmash.Game
                 tz.text = Sayi(once);
                 tz.schedule.Execute(() => TuyUcur(tuy, tz, once, hedef)).StartingIn(250);   // yerleşim bitsin (hedefin yeri)
             }
+            if (once >= 0 && hedef < once && !Ayar.reduce) { azalOnce = once; azalHedef = hedef; azalBas = Time.unscaledTime; }
+            if (azalHedef == hedef && Time.unscaledTime - azalBas < AZAL_SN && !Ayar.reduce) TuyAzal(tuy, tz);
             // D7 (2026-10-31): gecikmeli seviye anı, oyuncu 1,1 sn içinde maça girerse maçın üstünde titreşim/ses çalıyordu;
             // çalıştığı anda hâlâ menüde mi diye bakılır.
             int gec = once >= 0 && hedef > once && !Ayar.reduce ? 1100 : 200;
@@ -428,6 +430,22 @@ namespace BirdieSmash.Game
                 float k = Mathf.Clamp01((t - .35f) / .65f); tz.text = Sayi(Mathf.RoundToInt(Mathf.Lerp(once, hedef, k * (2 - k))));
             }).OnCompleted(() => { tz.text = Sayi(hedef); root.sfx.Tik(1320); Yerel.Hap("tick"); });
             tuy.experimental.animation.Start(0f, 1f, 820, (v, t) => { float k = t < .6f ? 0 : (t - .6f) / .4f; v.style.scale = new Scale(Vector3.one * (1 + .12f * Mathf.Sin(k * Mathf.PI))); })
+                .OnCompleted(() => tuy.style.scale = StyleKeyword.Null);
+        }
+        // Harcama anı (2026-11-11 inceleme, fikir 22:05 #5): artış tüy uçurup sayarak geliyordu, harcamada (Dolap/Atölye alımı,
+        // Gear.Yukselt) üst şerit yeniden kurulup sayı bir anda düşüyordu; oyuncu ne harcadığını göz ucuyla göremiyordu. Sayı
+        // 0,35 sn'de aşağı sayar (artıştan hızlı), hap bir kez hafifçe içe basılır. Tık sesi yok (alım sesi zaten çalıyor);
+        // kırmızı ya da "−120" uçan yazı yok, harcama ceza gibi okunmasın. Hareketi azaltta sayı doğrudan yazılır (çağıran bakar).
+        // Alımdan sonra üst şerit aynı karede iki kez kurulabiliyor (KozAl: UstKur + Degisti); ikinci kurulum yeni etiketi
+        // yarıda kalan saymayı sürdürsün diye başlangıç anı statik tutulur, sayma kalan süreden devam eder.
+        static int azalOnce, azalHedef = -1; static float azalBas = -9; const float AZAL_SN = .35f;
+        void TuyAzal(VisualElement tuy, Label tz)
+        {
+            float g = Mathf.Clamp01((Time.unscaledTime - azalBas) / AZAL_SN); int ms = Mathf.Max(1, Mathf.RoundToInt((1 - g) * AZAL_SN * 1000)); int o = azalOnce, h = azalHedef;
+            tz.text = Sayi(Mathf.RoundToInt(Mathf.Lerp(o, h, g * (2 - g))));
+            tz.experimental.animation.Start(0f, 1f, ms, (v, t) => { float k = Mathf.Lerp(g, 1, t); tz.text = Sayi(Mathf.RoundToInt(Mathf.Lerp(o, h, k * (2 - k)))); })
+                .OnCompleted(() => tz.text = Sayi(h));
+            tuy.experimental.animation.Start(0f, 1f, ms, (v, t) => { float k = Mathf.Lerp(g, 1, t); v.style.scale = new Scale(Vector3.one * (1 - .04f * Mathf.Sin(k * Mathf.PI))); })
                 .OnCompleted(() => tuy.style.scale = StyleKeyword.Null);
         }
         VisualElement seviyeAni;

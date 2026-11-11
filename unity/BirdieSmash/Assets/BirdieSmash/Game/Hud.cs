@@ -839,16 +839,33 @@ namespace BirdieSmash.Game
             int r = GameRoot.SonsuzRekor;
             return r <= 0 ? L.T("{0} vuruş", o.isabet) : o.isabet > r ? L.T("{0} vuruş · Yeni rekor", o.isabet) : L.T("{0} vuruş · Rekor {1}", o.isabet, r);
         }
+        // Antrenman kartı yazı önbelleği (2026-11-11 inceleme, fikir 22:05 #4): kart her OnGUI geçişinde (karede en az iki) iki
+        // new string, string.Join + ConvertAll + lambda, params object[] kutulamalı L.T ve met birleştirmesi kuruyordu; en hızlı
+        // top akışının olduğu Sonsuz rallide GC kaynaklı uzun kare tam topun geldiği ana denk gelebiliyordu. Ralli yazısıyla aynı
+        // kalıp: yazılar yalnız adım/sayaç/rekor/dil değişince bir kez kurulur, OnGUI okur. Sonsuz için iki biçim (Duraklat'ta
+        // Hız'lı, kartta kısa) bilerek ayrı kalır (6 Kas kararı: rallide tek soru "kaçtayım").
+        string ogrSay, ogrSayac, ogrMet; Training ogrYO; OgrAdim ogrYA; int ogrYI = -1, ogrYN, ogrYDene, ogrYIsabet, ogrYRekor; bool ogrYEn, ogrYIz, ogrYDur;
+        bool OgrYaziGuncel(Training o, OgrAdim a)
+        {
+            int rk = GameRoot.SonsuzRekor; bool en = L.En, iz = o.izsiz;
+            if (o == ogrYO && a == ogrYA && o.i == ogrYI && o.n == ogrYN && o.dene == ogrYDene && o.isabet == ogrYIsabet && rk == ogrYRekor && en == ogrYEn && iz == ogrYIz && o.dur == ogrYDur) return true;
+            ogrYO = o; ogrYA = a; ogrYI = o.i; ogrYN = o.n; ogrYDene = o.dene; ogrYIsabet = o.isabet; ogrYRekor = rk; ogrYEn = en; ogrYIz = iz; ogrYDur = o.dur; return false;
+        }
         float OgrKart(Match M, float y)
         {
             var o = M.ogr; var a = M.OgrA(); if (a == null) return y;
             float w = ColW, x = ColX, iw = w - 24 * u;
-            string ilr = a.drill ? L.T(" · Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : a.bilgi != null ? "" : " · " + new string('●', o.n) + new string('○', Match.OGR_TEKRAR - o.n) + " " + o.n + "/" + Match.OGR_TEKRAR;
-            string say = L.T("Antrenman {0}/{1}{2}", o.i + 1, o.liste.Count, ilr);
-            // 2026-10-26 antrenman görevi: sayaç top/isabet ve yıldız eşikleri (sayıyla; yıldız simgesi tek başına okunmaz)
-            if (a.dril == Sonsuz.Tanim) say = SonsuzSayacKisa(o);
-            else if (a.dril != null) say = L.T("Görev · Top {0}/{1} · Hedefte {2} · Yıldız eşikleri {3}", Mathf.Min(o.dene, a.dril.top), a.dril.top, o.isabet, string.Join("/", System.Array.ConvertAll(a.dril.esik, e => e.ToString())));
-            string met = (o.izsiz ? L.T("Bir daha, bu sefer iz yok. ") : "") + (a.servis == null && a.bilgi == null && !a.drill && a.dril == null && !o.dur ? L.T("Top sana gelince oyun duracak. ") : "") + L.T(a.met);
+            if (!OgrYaziGuncel(o, a))
+            {
+                string ilr = a.drill ? L.T(" · Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : a.bilgi != null ? "" : " · " + new string('●', o.n) + new string('○', Match.OGR_TEKRAR - o.n) + " " + o.n + "/" + Match.OGR_TEKRAR;
+                ogrSay = L.T("Antrenman {0}/{1}{2}", o.i + 1, o.liste.Count, ilr);
+                // 2026-10-26 antrenman görevi: sayaç top/isabet ve yıldız eşikleri (sayıyla; yıldız simgesi tek başına okunmaz)
+                if (a.dril == Sonsuz.Tanim) ogrSay = SonsuzSayacKisa(o);
+                else if (a.dril != null) ogrSay = L.T("Görev · Top {0}/{1} · Hedefte {2} · Yıldız eşikleri {3}", Mathf.Min(o.dene, a.dril.top), a.dril.top, o.isabet, string.Join("/", System.Array.ConvertAll(a.dril.esik, e => e.ToString())));
+                ogrSayac = a.dril == Sonsuz.Tanim ? SonsuzSayacKisa(o) : a.dril != null ? L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(o.dene, a.dril.top), a.dril.top, o.isabet) : a.drill ? L.T("Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : o.n + "/" + Match.OGR_TEKRAR;
+                ogrMet = (o.izsiz ? L.T("Bir daha, bu sefer iz yok. ") : "") + (a.servis == null && a.bilgi == null && !a.drill && a.dril == null && !o.dur ? L.T("Top sana gelince oyun duracak. ") : "") + L.T(a.met);
+            }
+            string say = ogrSay, met = ogrMet;
             if (leftWrap == null || leftWrapTaban != left) { leftWrap = new GUIStyle(left) { wordWrap = true }; leftWrapTaban = left; } var ws = leftWrap; var ns = Stil(ws, Mathf.RoundToInt(11 * fu));
             float h1 = ws.CalcHeight(Ic(met), iw), h2 = ns.CalcHeight(Ic(L.T(a.neden)), iw);
             int? hb = M.OgrHedefBolge(a); bool bant = hb.HasValue;
@@ -910,7 +927,7 @@ namespace BirdieSmash.Game
             float h = 8 * u + BH + hm + (bant ? 30 * u : 0) + (canli != null ? 22 * u : 0) + 8 * u;
             var r = new Rect(x, y, w, h); blocks.Add(r); Fill(r, new Color(9 / 255f, 16 / 255f, 17 / 255f, .62f));
             float yy = y + 8 * u, tw = iw - bw - bitW - 12 * u;
-            string sayac = a.dril == Sonsuz.Tanim ? SonsuzSayacKisa(o) : a.dril != null ? L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(o.dene, a.dril.top), a.dril.top, o.isabet) : a.drill ? L.T("Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : o.n + "/" + Match.OGR_TEKRAR;
+            string sayac = ogrSayac;   // OgrKart bu karede kurdu/önbellekten verdi (OgrYaziGuncel)
             string bas = L.T(a.bas); var bs = Sigdir(leftB, bas, tw); Etk(new Rect(x + 12 * u, yy, tw, BH * .58f), bas, bs);
             var ss = Sigdir(Stil(left, Mathf.RoundToInt(11 * fu)), sayac, tw); Etk(new Rect(x + 12 * u, yy + BH * .55f, tw, BH * .45f), sayac, ss);
             if (Button(new Rect(x + w - 12 * u - bitW - bw - 6 * u, yy, bw, BH), "?")) ogrDetay = true;
