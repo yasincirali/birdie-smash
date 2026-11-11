@@ -42,8 +42,9 @@ namespace BirdieSmash.Game
         // her yıldızın koşulu, açılan şey (ilk galibiyetin notu), büyük düğmenin alt satırı (sıradaki basamak ve rakip).
         // Eski alanlar (bittiBaslik, bittiYildiz) yazılmaya devam eder: başka okuyan yoksa da ekran turu raporu ve geri dönüş için.
         public bool bittiKazandi; public int bittiMaske = -1, bittiYeniMaske, bittiYildizN = 3, bittiG = -1;
+        public int bittiYeniG = -1;   // bu maçta ilk kez kazanılan kariyer basamağı (maç sonu şeridi onu doldurur, 2026-11-12)
         public string bittiBas, bittiUst, bittiAltNot, bittiAcilan, bittiDugmeAlt; public string[] bittiKosul;
-        void BittiSifirla() { bittiKazandi = false; bittiMaske = -1; bittiYeniMaske = 0; bittiYildizN = 3; bittiG = -1; bittiBas = bittiUst = bittiAltNot = bittiAcilan = bittiDugmeAlt = null; bittiKosul = null; }
+        void BittiSifirla() { bittiYeniG = -1; bittiKazandi = false; bittiMaske = -1; bittiYeniMaske = 0; bittiYildizN = 3; bittiG = -1; bittiBas = bittiUst = bittiAltNot = bittiAcilan = bittiDugmeAlt = null; bittiKosul = null; }
         // Basamak görevinin yıldız yazısı (2026-11-05, Ar-Ge 11:40 #1): bitmediyse bu maçtaki sayısı da yazılır ("3 smaçı karşıla ·
         // 2/3"). Eskiden yenilgide yalnız "✕ 3 smaçı karşıla" görünüyordu; sayaç (Gorev.say) hazırdı, oyuncu "bir tane kalmıştı"yı
         // göremiyordu. Bittiyse ad yalın (tik zaten söyler).
@@ -394,7 +395,7 @@ namespace BirdieSmash.Game
                 var r = Ayar.ilerleme.Isle(g, won, bg != null && bg.bitti, M.sc[0], M.sc[1], M.target);
                 // Tur töreni (2026-11-07 stüdyo GD1/GD5): tur finali ya da yeni tur mührü menüye dönüşte bir kez sahnelenir (UiKok.TurToren)
                 int muhur1 = Ayar.ilerleme.Muhur(torenTur); if (r.turBitti || muhur1 > muhur0) UiKok.TorenBekle(torenTur, r.turBitti, muhur0, muhur1);
-                kariyerIlk = r.ilkGalibiyet; kNot = r.not; yeniYildiz = r.yeniYildiz;
+                kariyerIlk = r.ilkGalibiyet; kNot = r.not; yeniYildiz = r.yeniYildiz; if (r.ilkGalibiyet) bittiYeniG = g;
                 Ayar.kariyer = Ayar.ilerleme.Tur1Gecilen(); if (Ayar.kariyer >= Match.KARIYER.Length) Ayar.sampiyon = true;
                 if (kariyerIlk && KariyerVeri.TurOf(g) == 0) { Basarim.Ver("bs_kariyer_" + Ayar.kariyer); Basarim.Giris(Ayar.kariyer); }   // giriş isteği ilk basamaktan sonra
                 if (r.turBitti) Yerel.Hap("flow");   // tur finali: güçlü desen (HAP'ta "success" yok, en uzun desen "flow")
@@ -537,6 +538,7 @@ namespace BirdieSmash.Game
         public bool AniAktif { get { return ani.Aktif; } }
         public int AniVurus { get { return ani.Vurus; } }
         public bool AniSmac { get { return ani.Smac; } }
+        public int AniBaglam { get { return ani.Baglam; } }
         public float AniYavas { get { return ani.Aktif ? ani.YavasK : 0; } }
         public void AniBaslat() { ani.Baslat(); aniS = new Shuttle { from = "", type = "clear" }; aniIzlendi = true; Yerel.Hap("tick"); }
         public void AniDur() { ani.Bitir(); aniS = null; }
@@ -1160,7 +1162,8 @@ namespace BirdieSmash.Game
                 case Ev.Point:
                     {
                         bool smac = mine && e.type == "smash";
-                        if (match.ogr == null) ani.SayiBitti(mine, (int)e.k, smac);
+                        // Bağlam (2026-11-12): mpYan önceki karenin durumu; benim sayım ben maç sayısındayken maçı bitirir, rakibinkindeyken kurtarır.
+                        if (match.ogr == null) { ani.SayiBitti(mine, (int)e.k, smac, !mine ? 0 : mpYan == 0 ? 1 : mpYan == 1 ? 2 : 0); if (match.matchDone) ani.Sec(match.sc[0] > match.sc[1]); }
                         // Canlı salon (2026-11-06 ek tur): seyirci benim sayımda ya da uzun rallide kalkar, smaçta panolar "SMASH!";
                         // rakibin maç sayısını kurtarınca tek kelime (Kurtardın!). mpYan önceki karenin durumu (skor bu olayla değişti).
                         if (mine || e.k >= 8) salonSicra = 0;
