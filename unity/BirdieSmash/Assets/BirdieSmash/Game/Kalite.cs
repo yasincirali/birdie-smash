@@ -100,11 +100,12 @@ namespace BirdieSmash.Game
             c.dspBufferSize = 256; AudioSettings.Reset(c);
         }
 
+        // 2026-11-12 (inceleme, fikir 2a): kortun üç tavan spotu piksel ışık mı köşe ışığı mı, cihazda önce ölçülür; pişirme kararı bu satıra bakar.
         public static string Tani
         {
             get
             {
-                return "basamak " + Basamak + " · MSAA " + QualitySettings.antiAliasing + " · gölge " + QualitySettings.shadows + " " + QualitySettings.shadowResolution + " " + QualitySettings.shadowDistance + " m · aniso "
+                return "basamak " + Basamak + " · MSAA " + QualitySettings.antiAliasing + " · gölge " + QualitySettings.shadows + " " + QualitySettings.shadowResolution + " " + QualitySettings.shadowDistance + " m · piksel ışık " + QualitySettings.pixelLightCount + " · aniso "
                     + QualitySettings.anisotropicFiltering + " · kemik " + QualitySettings.skinWeights + " · hedef " + Application.targetFrameRate + " fps · vSync " + QualitySettings.vSyncCount
                     + " · çözünürlük " + Screen.width + "x" + Screen.height + " · bellek " + SystemInfo.systemMemorySize + " MB · çekirdek " + SystemInfo.processorCount + " · ses " + AudioSettings.GetConfiguration().dspBufferSize + "/" + AudioSettings.outputSampleRate + " Hz · ısı " + Isil;
             }
