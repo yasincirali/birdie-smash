@@ -1,11 +1,17 @@
 // Karakter FBX içe aktarımı (Resources/karakter/<model>.fbx: oyuncak = KayKit Rogue, rocketbox = Sports_Male_04):
-// Legacy animasyon, sıkıştırma kapalı. Yeniden örnekleme AÇIK (2026-10-26, Unity ekran turu r8): kapalıyken Unity
+// Legacy animasyon, anahtar azaltma (aşağıda 2026-11-12). Yeniden örnekleme AÇIK (2026-10-26, Unity ekran turu r8): kapalıyken Unity
 // FBX'in Euler eğrilerini bileşen bileşen ara-değerliyor; Rocketbox (Biped) köprücük/kol açıları ±180° sınırında
 // olduğundan anahtarlar arasında kollar başın arkasına savruluyordu (Blender'da aynı karede eller göğüs hizasında).
 // Örnekleme her kareyi FBX SDK ile doğru sırada çözüp kuaterniyona çevirir; anahtar karelerde değer aynı kalır.
 // Klipler tool/karakter/unity_fbx.py'nin yazdığı <model>_clips.json'daki kare aralıklarından bölünür.
 // Malzeme içe alınır (gömülü doku, InPrefab): deri modellerin yüz/saç dokusu modelin kendisinden gelir; PlayerView
 // yalnız forma/çerçeve parçalarını boyar. Eski tek renkli prototipte (oyuncu.fbx) malzeme kapalıydı, gerek kalmadı.
+// 2026-11-12 (model thread, bellek): animasyon sıkıştırması Off → KeyframeReduction, hata payları 0.2 (Unity varsayılanı 0.5).
+// Off'ta yeniden örneklenmiş 33 klip × 933 kare × 53 kemik × 10 kanal (konum/dönüş/ölçek) sabit olsa bile her karede saklanıyordu:
+// model başına ~8 MB eğri; maçta 4 figür farklı tip FBX'i yükleyebildiği için ~30 MB. Kemiklerin çoğunda konum ve ölçek sabit,
+// azaltma onları iki anahtara indirir; dönüşte 0.2° sınırı kol zincirinde raket ucunda ~1–2 cm eder (erişim IK p90 0.15 m'nin altında).
+// Örnekleme açık kalır (Euler sınırı sorunu yukarıda); azaltma örneklenmiş kuaterniyon eğrisine uygulanır.
+// GetVersion: ayar değişince Unity (CI Library önbelleği dahil) FBX'leri yeniden içe aktarsın.
 // Klip bölme OnPreprocessAnimation'da: defaultClipAnimations (take adı) OnPreprocessModel'de henüz dolu olmayabilir.
 using System.IO;
 using UnityEditor;
@@ -17,6 +23,8 @@ namespace BirdieSmash.EditorTools
     {
         [System.Serializable] class Clip { public string name; public int first, last; public bool loop; }
         [System.Serializable] class Meta { public int fps; public float scale; public Clip[] clips; }
+
+        public override uint GetVersion() { return 2; }
 
         bool Karakter() { var p = assetPath.Replace('\\', '/'); return p.Contains("Resources/karakter/") && p.EndsWith(".fbx"); }
 
@@ -36,7 +44,8 @@ namespace BirdieSmash.EditorTools
             if (!Karakter()) return;
             var mi = (ModelImporter)assetImporter;
             mi.animationType = ModelImporterAnimationType.Legacy;
-            mi.importAnimation = true; mi.resampleCurves = true; mi.animationCompression = ModelImporterAnimationCompression.Off;
+            mi.importAnimation = true; mi.resampleCurves = true; mi.animationCompression = ModelImporterAnimationCompression.KeyframeReduction;
+            mi.animationRotationError = .2f; mi.animationPositionError = .2f; mi.animationScaleError = .2f;
             mi.materialImportMode = ModelImporterMaterialImportMode.ImportStandard; mi.materialLocation = ModelImporterMaterialLocation.InPrefab;
             mi.useFileScale = true; mi.globalScale = 1;
             mi.importBlendShapes = false; mi.importCameras = false; mi.importLights = false;
