@@ -78,6 +78,16 @@ namespace BirdieSmash.Game
                 ? "https://murphysoft.app/birdie-smash/support/" : "https://murphysoft.app/birdie-smash/destek/"); });
             Erisim.Etiket(ds, L.T("Destek") + ". " + L.T("Tarayıcıda açılır"), "dugme"); c.Add(ds);
             c.Add(Bosluk(8)); c.Add(Yazi(L.T("Sürüm {0}", Application.version), 12, "soluk"));
+            // Tanı (2026-11-11, Cokme.cs): yalnız gizli FPS katmanı açıkken ve önceki oturum oyun açıkken bittiyse. Kayıt cihazda
+            // kalır; paylaş düğmesi sistem sayfasıyla metni testçinin seçtiği yere gönderir, "Sil" kaydı kaldırır.
+            if (Ayar.fps && Cokme.Son != null)
+            {
+                c.Add(Grup(L.T("Tanı")));
+                string ilk = Cokme.Son.Length > 160 ? Cokme.Son.Substring(0, 160) + "…" : Cokme.Son;
+                c.Add(Yazi(ilk, 12, "soluk"));
+                c.Add(Dugme(L.T("Çökme kaydını paylaş"), () => { Yerel.Hap("tick"); Yerel.Paylas(Cokme.Son); }));
+                c.Add(Dugme(L.T("Çökme kaydını sil"), () => { Yerel.Hap("tick"); Cokme.Temizle(); Degisti(); }));
+            }
             c.Add(Bosluk(24));
         }
         // Dil değişince Update tüm menüyü yeniden kurar (sonDil); Ayarlar sayfası açık kalır.

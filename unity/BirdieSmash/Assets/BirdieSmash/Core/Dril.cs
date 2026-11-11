@@ -111,6 +111,10 @@ namespace BirdieSmash.Core
         static readonly string[] SIRA = { "clear", "drive", "file", "yarim", "smash" };
         public static int Havuz(int kademe) { return Math.Min(SIRA.Length, 1 + kademe); }
         public static string Tur(int i) { return SIRA[i]; }
+        // Kademe atlarken havuza giren yeni tür söylenir (2026-11-11 inceleme, fikir 22:05 #2): ilk drive/file/smaç topu habersiz
+        // geliyor, ıska haksız hissettiriyordu. Yazı mevcut "n · Hızlanıyor"un sonuna eklenir; yeni tür yoksa null (yalnız hız).
+        static readonly string[] YENI_TUR = { null, "Düz top da geliyor", "File dibi de geliyor", "Orta saha da geliyor", "Smaç da geliyor" };
+        public static string YeniTurYazi(int kademe) { return kademe > 0 && kademe < SIRA.Length && Havuz(kademe) > Havuz(kademe - 1) ? YENI_TUR[kademe] : null; }
         // Bu skorla ilk kez geçilen eşik (önceki rekor altındaydı); yoksa 0. En büyüğü söylenir.
         public static int YeniEsik(int skor, int eskiRekor) { int e = 0; foreach (var x in ESIK) if (skor >= x && eskiRekor < x) e = x; return e; }
     }
@@ -354,7 +358,9 @@ namespace BirdieSmash.Core
             {   // ilk kaçan top biter; kademe atlayınca söylenir (oyuncu hızlanmayı hissetmeden önce bilsin)
                 if (!drBasari) { if (ogr.bitisT <= 0 && !ogr.bitti) ogr.bitisT = 1.4f; return L_Bitti(why); }
                 ogr.isabet++;
-                return ogr.isabet % Sonsuz.ADIM == 0 && Sonsuz.Kademe(ogr.isabet) <= Sonsuz.TAVAN && ogr.isabet <= Sonsuz.ADIM * Sonsuz.TAVAN ? ogr.isabet + " · Hızlanıyor" : ogr.isabet.ToString();
+                if (!(ogr.isabet % Sonsuz.ADIM == 0 && ogr.isabet <= Sonsuz.ADIM * Sonsuz.TAVAN)) return ogr.isabet.ToString();
+                string yeni = Sonsuz.YeniTurYazi(Sonsuz.Kademe(ogr.isabet));
+                return ogr.isabet + " · Hızlanıyor" + (yeni != null ? " · " + yeni : "");
             }
             if (drBasari) ogr.isabet++;
             string t = drBasari ? "Hedefte! ★ " + ogr.isabet + "/" + d.top : DrilNeden(why);

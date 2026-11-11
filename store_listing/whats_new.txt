@@ -1,4 +1,11 @@
 === UNITY ===
+Hızlı maçta rakip seçimi, Sonsuz rallide yeni top uyarısı, Tüy harcama anı (11 Kasım gece 3):
+- Hızlı maç sayfasında rakibi seçebilirsin: "Rastgele" ya da kariyerde yendiğin rakiplerden biri. Rakibin gücü yine senin seviyende.
+- Sonsuz rallide hız artınca hangi yeni topun geleceği de yazıyor ("Smaç da geliyor" gibi); ilk smaç sürpriz olmuyor.
+- Dolap ya da Atölye'de bir şey alınca üstteki Tüy sayısı bir anda düşmüyor, kısa sürede aşağı sayıyor.
+- Antrenman ve Sonsuz ralli kartı yazılarını her karede yeniden kurmuyor; uzun seansta takılma azalır.
+Nasıl denenir: Ana ekranda Hızlı maç'ı aç, Rakip satırında bir isme dokun, maçı başlat: o rakip gelmeli; ana ekrandaki karoda adı yazmalı. Antrenman'da Sonsuz ralli oyna: 5. vuruşta "Hızlanıyor · Düz top da geliyor" görünmeli. Dolap'ta Tüy'le bir eşya al: üstteki sayı yarım saniyede aşağı saymalı.
+
 Sayı arası akıcılık, duraklatta kamera, ısınmada kare düzeni (11 Kasım gece 2):
 - Sayı bitince oyuncular servis yerine ışınlanmıyor: kısa bir kayışla yerlerine geçiyorlar. Hareketi azalt açıkken eskisi gibi anında.
 - Duraklat menüsünde kamera açısı seçilebilir (Yayın, Alçak, Üstten). Dokununca karanlık örtü bir an açılır, yeni açı arkada görünür.

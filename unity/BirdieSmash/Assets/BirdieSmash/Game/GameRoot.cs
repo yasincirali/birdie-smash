@@ -79,7 +79,7 @@ namespace BirdieSmash.Game
 
         void Awake()
         {
-            Application.targetFrameRate = 60; Uyanik(false); Ayar.Yukle();
+            Application.targetFrameRate = 60; Uyanik(false); Ayar.Yukle(); Cokme.Basla();   // çökme izi ilk iş (Cokme.cs)
             foreach (var c in FindObjectsByType<Camera>(FindObjectsSortMode.None)) if (c.gameObject.scene.IsValid() && c.transform.root != transform) c.gameObject.SetActive(false);
             foreach (var l in FindObjectsByType<Light>(FindObjectsSortMode.None)) if (l.transform.root != transform) l.gameObject.SetActive(false);
             var cg = new GameObject("kamera"); cg.transform.SetParent(transform, false); cam = cg.AddComponent<Camera>(); cg.AddComponent<AudioListener>();
@@ -165,10 +165,18 @@ namespace BirdieSmash.Game
                 o.stil = Match.KariyerRakip(g); o.saha = kb.saha; if (kb.uzunluk > 0) o.target = kb.uzunluk; o.degistirici = kb.degistirici;   // kural maçı (veri; çoğu basamakta null)
             }
             else if (rovansSiradaki != null) o.stil = rovansSiradaki;   // Rövanş: az önce yenen rakip (saha Ayar.saha, zaten aynı)
+            else if (HizliSecili() != null) o.stil = KariyerVeri.Serbest(HizliSecili(), Ayar.ilerleme);   // 2026-11-11: oyuncunun seçtiği rakip, güç yine oyuncunun seviyesinden
             else o.stil = KariyerVeri.Serbest(KariyerVeri.HizliSec(Ayar.ilerleme, sonHizliStil != null ? sonHizliStil.id : null, rnd), Ayar.ilerleme);   // 2026-10-27: oyuncunun kariyer seviyesinde (KariyerVeri.Serbest); 2026-11-08: havuz = ilk üç + kariyerde yendiğin tarzlar, art arda aynı rakip yok
             sonHizliStil = Ayar.kariyerModu && !ogr ? null : o.stil;   // Match tarzı ölçekleyip klonlar (rakipK); rövanş ölçeksiz aslını taşır
             rovansSiradaki = null; rovansStil = null;
             mod = Mod.Normal; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
+        }
+        // Hızlı maçta seçili rakip (2026-11-11 inceleme, fikir 22:05 #1): yalnız havuzdaysa (ilk üç + kariyerde yendiğin tarzlar);
+        // değilse null = rastgele. Kolay rakip seçip Tüy kasmak yok: güç Serbest'te oyuncunun kariyer seviyesinden.
+        public static string HizliSecili()
+        {
+            var id = Ayar.hizliRakip; if (string.IsNullOrEmpty(id)) return null;
+            return KariyerVeri.HizliHavuz(Ayar.ilerleme).Contains(id) ? id : null;
         }
         MatchOptions Secenek(bool ogr)
         {
@@ -319,7 +327,8 @@ namespace BirdieSmash.Game
         public void Duraklat() { if (ekran == Ekran.Oyun && !paused) { paused = true; erkenT = 0; Uyanik(false); input.Reset(); sfx.Ugultu(false, 0); AudioListener.pause = true; } }
         public void Devam() { paused = false; AudioListener.pause = false; input.Reset(); if (ekran == Ekran.Oyun) { Uyanik(true); if (match != null && match.s != null && match.ogr == null && !geriKapali) geriT = GERI; } }
         // D5 (2026-10-31): arka planda iOS uygulamayı uyarısız kapatabilir; bekleyen kayıt ve PlayerPrefs diske yazılır.
-        void OnApplicationPause(bool p) { if (p) { Duraklat(); BekleyenKayit(); PlayerPrefs.Save(); Bulut.Yaz(); } }   // arka plana geçince kendiliğinden duraklar; top bir anda üstüne düşmez
+        void OnApplicationQuit() { Cokme.Cikis(); }
+        void OnApplicationPause(bool p) { Cokme.Durum(p); if (p) { Duraklat(); BekleyenKayit(); PlayerPrefs.Save(); Bulut.Yaz(); } }   // arka plana geçince kendiliğinden duraklar; top bir anda üstüne düşmez
         // Odak kaybı da duraklatır (2026-10-27, oyun incelemesi): Denetim Merkezi/Bildirim Merkezi açılması, gelen arama afişi,
         // Siri ve sistem uyarısı uygulamayı arka plana atmadan yalnız etkinliği alır (iOS willResignActive); oyun sürerken top
         // oyuncunun göremediği anda yere düşüyordu. Duraklat menüde ve maç sonunda hiçbir şey yapmaz. Yalnız telefonda: masaüstü
@@ -894,7 +903,7 @@ namespace BirdieSmash.Game
         void BekleyenKayit() { Basarim.Yaz(); if (!kaydetBekle) return; kaydetBekle = false; Ayar.Kaydet(); }
         void Update()
         {
-            FitCamera();
+            FitCamera(); Cokme.Tik(this);
             float dt = Mathf.Min(.05f, Time.unscaledDeltaTime);
             if ((kaydetBekle || Basarim.Bekliyor) && (ekran != Ekran.Oyun || paused || match == null || match.between)) BekleyenKayit();
             if (ekran == Ekran.Oyun && !paused)
