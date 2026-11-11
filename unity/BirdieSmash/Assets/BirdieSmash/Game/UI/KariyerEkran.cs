@@ -1,6 +1,6 @@
 // Kariyer haritası (komple-oyun tasarımı §2.3, §3.1; adım 2, 2026-10-26). Adım 1'in düz listesinin yerini aldı.
 // Yerleşim (2026-11-07, yatay tur kartları; önceki dikey yol haritasının yerini aldı): üstte başlık ve toplam yıldız, altında
-// yatay kaydırılan dört tur kartı (tur adı, yıldız, tema, altı basamak noktası, şimdiki maç ya da mühüre kalan yıldız), altında
+// yatay kaydırılan sekiz tur kartı (tur adı, yıldız, tema, altı basamak noktası, şimdiki maç ya da mühüre kalan yıldız), altında
 // seçili turun açık maç kartı (rakip, ipucu, zorluk, Oyna). Basamak noktasına dokunmak maç kartını alt sayfa olarak açar (MacKartKur).
 // Durum yalnız renkle verilmez (HIG renk körlüğü): geçilen = ✓, şimdiki = güneş diski + numara + "Şimdi: …" satırı, kilitli = kilit,
 // final = kupa; ekran okuyucu her noktada "Geçildi/Şimdi/Açık/Kilitli" der; yıldızlar dolu/çerçeve biçimiyle ve "2/3" yazısıyla.

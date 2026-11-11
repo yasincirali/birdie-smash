@@ -977,7 +977,7 @@ namespace BirdieSmash.Game
             }
             // LED
             ledSmacT = Mathf.Max(0, ledSmacT - dt);
-            int kod = mpYan >= 0 ? -1 : ledSmacT > 0 ? -2 : oyunda && !M.between && M.rally >= 5 ? M.rally : 0;
+            int kod = mpYan >= 0 ? -1 : ledSmacT > 0 ? -2 : oyunda && !M.between && M.rally >= 5 ? M.rally / 5 * 5 : 0;   // 2026-11-11: 5'in katlarında (5, 10, 15…): her yeni sayı ralli ortasında doku + GPU yüklemesi yapıyordu; 6 doku maç boyu yeter
             if (kod != ledKod)
             {
                 ledKod = kod;

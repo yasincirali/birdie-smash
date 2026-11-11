@@ -1,6 +1,6 @@
 Birdie Smash is a badminton game you play with one finger. When the shuttle comes, you swipe: the direction of your swipe decides where it goes, the speed decides how hard you hit.
 
-- Career: 8 tours and 48 opponents, from your local gym to the Legends Cup, then the endless Champion road
+- Career: 8 tours, 48 matches and six playing styles, from your local gym to the Legends Cup, then the endless Champion road
 - Match of the day: a new opponent, court and twist every day, with no streaks to keep
 - Endless rally: the coach feeds until you miss, faster every 5 hits
 - Locker room: shirts, caps, shoes, celebrations and smash moves unlocked by level; racket, strings and grip that change how you play
