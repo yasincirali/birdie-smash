@@ -283,11 +283,11 @@ namespace BirdieSmash.Game
             else if (mine) VurusCal(Vurus(type, q, slice, super_, serve, false), kaz, perde);
             else { var k = Kaynak(); k.pitch = perde; k.PlayOneShot(Vurus(type, q, slice, super_, serve, true), kaz); }
             if (mine && !serve && (type == "smash" || type == "jump" || type == "kill")) Govde(.5f + .5f * p * (super_ ? 1.3f : 1));
-            if (rally >= 8 && rally % 4 == 0 && !serve) Ooo(Mathf.Min(1, (rally - 4) / 16f));
+            if (rally >= 8 && rally % 4 == 0 && !serve && !macSayisi) Ooo(Mathf.Min(1, (rally - 4) / 16f));
             RallyNote(rally - 1, mine, mine && flow);
             if (rally >= 6) Kick(.12f + Mathf.Min(.12f, rally * .008f));
             if (Tur(type) == "smash" && (type == "smash" || type == "jump")) Whistle();
-            crowdHedef = .01f + Mathf.Min(.06f, rally * .0045f);
+            if (!macSayisi) crowdHedef = .01f + Mathf.Min(.06f, rally * .0045f);
             if (rally > 2 && rally % 5 == 0) Ton(523 * Mathf.Pow(2, Mathf.Min(rally, 30) / 24f), .2f, "triangle", .07f);
         }
         AudioSource Kaynak() { var k = vurusSrc[vurusSira]; vurusSira = (vurusSira + 1) % vurusSrc.Length; return k; }
@@ -378,6 +378,9 @@ namespace BirdieSmash.Game
         // sayısında kısa alkış, benim sayımda sevinçle birlikte).
         public void Point(bool mine, bool smacSayisi, int ralli = 0)
         {
+            // Maç sayısı rallisi bitti (bayrak SalonCanli'nin bir sonraki karesinde değişir): susan salon kazanana göre patlar ya da
+            // nefesini tutar. Gerilim sessizlikten, ödül patlamadan (2026-11-11 inceleme #1).
+            if (macSayisi) { if (mine) Cheer(.24f); else Gasp(.08f); }
             if (ralli >= 10) Alkis(ralli >= 18);
             if (mine && Kayitli("sayi_ben")) { if (smacSayisi) Gasp(.09f); return; }
             if (!mine && Kayitli("sayi_rakip")) return;
@@ -451,8 +454,15 @@ namespace BirdieSmash.Game
             muzik.volume = muzikDuzey;
         }
         void OnApplicationFocus(bool odak) { if (odak) digerT = 0; }
-        public void CrowdStart() { crowdHedef = .01f; }
-        public void CrowdSus() { crowdHedef = 0; }
+        // Maç sayısında salon susar (GameRoot.SalonCanli). 2026-11-11 inceleme #1: Hit her vuruşta crowdHedef'i yeniden yazdığı
+        // için sessizlik yalnız servis beklerken sürüyor, ralli uzadıkça uğultu ve "Ooo" geri geliyordu; bayrak açıkken Hit
+        // uğultuya ve Ooo'ya dokunmaz. Ralli tonları ve raket sesi kalır: sessiz salonda daha net duyulur.
+        bool macSayisi;
+        public void CrowdStart() { crowdHedef = .01f; macSayisi = false; }
+        public void CrowdSus() { crowdHedef = 0; macSayisi = true; }
+        // Rakibin balıklamayla kurtarışı (Ev.Kurtaris): parkeye düşen gövdenin kısık "küt"ü + tribün nefesi. Anın tek sessiz
+        // büyük hareketiydi (2026-11-11 inceleme #4). Titreşim yok: rakibin hareketi elde hissedilmez.
+        public void Kurtaris() { Govde(.35f); Gasp(.06f); }
 
         // Titreşim deseni (HTML hapHit): süre vuruşun gücü, gerginlik dokusu. Yerel.Vurus çalar.
         public static readonly Dictionary<string, int> HIT_MS = new Dictionary<string, int> { { "smash", 44 }, { "jump", 62 }, { "kill", 26 }, { "drive", 28 }, { "clear", 32 }, { "drop", 9 }, { "lift", 24 }, { "block", 12 }, { "push", 16 } };
@@ -474,6 +484,13 @@ namespace BirdieSmash.Game
         Synth.Biquad bq = new Synth.Biquad("bandpass", 700, 1.4f); int sayac; bool acik;
         void Awake() { a = gameObject.AddComponent<AudioSource>(); a.playOnAwake = false; a.loop = true; a.clip = AudioClip.Create("sessiz", Synth.SR, 1, Synth.SR, false); a.Play(); }
         public void Ayarla(bool on, float sp) { acik = on && Ayar.ses; hedefG = acik ? Mathf.Min(.22f, sp * .09f) : 0; hedefF = 500 + Mathf.Min(3, sp) * 900; }
+        // Kaynak uygulama boyunca döngüdeydi; menüde de ses iş parçacığı her örnekte gürültü + bandpass hesaplıyordu (kazanç 0
+        // olsa da). Uğultu kapalı ve sönmüşken duraklar, açılınca kaldığı yerden sürer (2026-11-11 inceleme #4c, pil/ısı).
+        void Update()
+        {
+            if (acik) { if (!a.isPlaying) a.UnPause(); }
+            else if (g < .0005f && a.isPlaying) a.Pause();
+        }
         void OnAudioFilterRead(float[] data, int ch)
         {
             float kg = 1 - Mathf.Exp(-1f / (Synth.SR * (hedefG > g ? .02f : .04f))), kf = 1 - Mathf.Exp(-1f / (Synth.SR * .03f));

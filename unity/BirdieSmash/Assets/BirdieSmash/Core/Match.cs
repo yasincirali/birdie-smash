@@ -1367,8 +1367,10 @@ namespace BirdieSmash.Core
                     MoveAcc(op, s.landPred.x, s.landPred.y - .4f, 2.2f, d);
                     // File önü kill (2026-10-29): rakip yetişemediği için atlayıp "Kıl payı!" ağır çekimi oynuyordu; kill'de
                     // kıl payı yok, top anında yere çakılır (ağır çekim ve yazı atlanır, sayı yazısı "FİLE ÖNÜ SAYISI").
+                    // Yazı "Kıl payı!" idi; maç sonu başlığı ve ıska nedeniyle aynı söz üç anlam taşıyordu (2026-11-11 inceleme #6).
+                    // Oyuncunun kurtarışı "Kurtardın!" (GameRoot), rakibinki "Kurtardı!": eşli ve okunur.
                     if (op.dive <= 0 && s.vurus != "kill" && !IsOut(s.landPred.x, s.landPred.y, s.serve) && !(s.landPred.net != null && !s.landPred.net.ok) && s.t > s.landPred.t - .25f)
-                    { op.dive = 1; op.yat = true; Emit(Ev.Kurtaris, "op", null, op.x, op.y); Say("op", null, op.x, op.y, 0, "Kıl payı!"); if (!reduce) { slow = .35f; slowT = .3f; } }
+                    { op.dive = 1; op.yat = true; Emit(Ev.Kurtaris, "op", null, op.x, op.y); Say("op", null, op.x, op.y, 0, "Kurtardı!"); if (!reduce) { slow = .35f; slowT = .3f; } }
                 }
             }
             // Ana nokta fileden stil.ev metre (2026-10-26): eskiden y = ev yazılıyordu, yani rakibin dip çizgisinden. "Fileye yakın
