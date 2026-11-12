@@ -55,8 +55,8 @@ namespace BirdieSmash.Game
             var vt = root.vitrin; if (vt == null) return; bool d = DenemeVar();
             DenemeSil(); vt.Sevinc(null); vt.Odak(Vitrin.TAM); if (d) vt.Yenile();
         }
-        bool DenemeVar() { var vt = root.vitrin; return vt.deneTip != null || vt.deneSac != null || vt.deneAyk != null || vt.deneSapka != null || vt.deneYuz != null || vt.deneSevinc != null || vt.deneMacSonu != null || vt.deneSirt != null || vt.deneKol != null; }
-        void DenemeSil() { var vt = root.vitrin; vt.deneTip = vt.deneSac = vt.deneAyk = vt.deneSapka = vt.deneYuz = vt.deneSevinc = vt.deneMacSonu = vt.deneSirt = vt.deneSmac = vt.deneKol = null; }
+        bool DenemeVar() { var vt = root.vitrin; return vt.deneTip != null || vt.deneSac != null || vt.deneAyk != null || vt.deneSapka != null || vt.deneYuz != null || vt.deneSevinc != null || vt.deneMacSonu != null || vt.deneSirt != null || vt.deneKol != null || vt.deneBel != null; }
+        void DenemeSil() { var vt = root.vitrin; vt.deneTip = vt.deneSac = vt.deneAyk = vt.deneSapka = vt.deneYuz = vt.deneSevinc = vt.deneMacSonu = vt.deneSirt = vt.deneSmac = vt.deneKol = vt.deneBel = null; }
         // Kategori kamerayı çağırır (araştırma: her kategorinin bir kadrajı); Raket vitrini tezgâha geçirir, diğerleri figüre döndürür.
         void KarakterOdakAyarla()
         {
@@ -93,7 +93,7 @@ namespace BirdieSmash.Game
         static string[] KarKat(int i)
         {
             return i == KAR_TIP ? new[] { Kozmetik.TIP } : i == KAR_SAC ? new[] { Kozmetik.SAC } : i == KAR_SAPKA ? new[] { Kozmetik.SAPKA } : i == KAR_TEN ? new[] { Kozmetik.YUZ }
-                : i == KAR_SEVINC ? new[] { Kozmetik.SEVINC, Kozmetik.MAC_SONU, Kozmetik.SMAC } : i == KAR_SIRT ? new[] { Kozmetik.SIRT, Kozmetik.KOL } : null;
+                : i == KAR_SEVINC ? new[] { Kozmetik.SEVINC, Kozmetik.MAC_SONU, Kozmetik.SMAC } : i == KAR_SIRT ? new[] { Kozmetik.SIRT, Kozmetik.KOL, Kozmetik.BEL } : null;
         }
         static bool KarSayim(int i, out int sahip, out int toplam)
         {
@@ -147,7 +147,7 @@ namespace BirdieSmash.Game
         bool KategoriDeneniyor(int i)
         {
             var vt = root.vitrin; if (vt == null) return false;
-            return i == KAR_TIP ? vt.deneTip != null : i == KAR_SAC ? vt.deneSac != null : i == KAR_SAPKA ? vt.deneSapka != null : i == KAR_TEN ? vt.deneYuz != null : i == KAR_SEVINC ? vt.deneSevinc != null || vt.deneMacSonu != null || vt.deneSmac != null : i == KAR_SIRT ? vt.deneSirt != null || vt.deneKol != null : i == KAR_AYK && vt.deneAyk != null;
+            return i == KAR_TIP ? vt.deneTip != null : i == KAR_SAC ? vt.deneSac != null : i == KAR_SAPKA ? vt.deneSapka != null : i == KAR_TEN ? vt.deneYuz != null : i == KAR_SEVINC ? vt.deneSevinc != null || vt.deneMacSonu != null || vt.deneSmac != null : i == KAR_SIRT ? vt.deneSirt != null || vt.deneKol != null || vt.deneBel != null : i == KAR_AYK && vt.deneAyk != null;
         }
         void KategoriSec(int i)
         {
@@ -561,13 +561,30 @@ namespace BirdieSmash.Game
         {
             switch (n) { case "siradan": return L.T("Sıradan"); case "nadir": return L.T("Nadir"); case "destansi": return L.T("Destansı"); case "mistik": return "◆ " + L.T("Mistik"); default: return null; }
         }
+        static readonly string[] SET_ID = { "yilbasi", "cadilar", "masal", "gelenek" }, SET_AD = { "Yılbaşı", "Cadılar Bayramı", "Masallar", "Geleneksel" };
+        readonly Dictionary<string, string> kozSet = new Dictionary<string, string>();
         void KozIzgara(VisualElement c, string kat, string baslik, string dn, bool resim = true)
         {
             var gr = Ayar.gear; string sec = Ayar.KOZ[kat];
             c.Add(Grup(L.T(baslik) + " · " + L.T(Kozmetik.Oge(kat, dn ?? sec).ad)));
-            var iz = Satir("izgara"); iz.AddToClassList("koz-izgara"); c.Add(iz); int ks = 0;
-            foreach (var o in Kozmetik.Liste(kat))
+            // 2026-11-12 Koleksiyon süzgeci (yasin: "konsept konsept ilerle"): Yılbaşı, Cadılar Bayramı, Masallar, Geleneksel setleriyle ızgara
+            // uzadı (şapka 40+); çipler yalnız o bölümde parçası olan koleksiyonları gösterir. Süzgeç yalnız listeyi daraltır: "boş" kartı,
+            // takılı olan ve denenen eşya hep görünür ki seçim kaybolmuş okunmasın. Seçim kaydedilmez (Dolap her açılışta "Hepsi").
+            string su; kozSet.TryGetValue(kat, out su); var tum = Kozmetik.Liste(kat); bool setVar = false; foreach (var o in tum) if (o.koleksiyon != null) { setVar = true; break; }
+            if (setVar)
             {
+                var cs = Satir("cip-sarar"); cs.AddToClassList("koz-set"); c.Add(cs);
+                cs.Add(Cip(L.T("Hepsi"), su == null, () => { kozSet.Remove(kat); SoyunmaGovdeKur(true); }));
+                for (int si = 0; si < SET_ID.Length; si++)
+                {
+                    string sid = SET_ID[si]; bool varMi = false; foreach (var o in tum) if (o.koleksiyon == sid) { varMi = true; break; }
+                    if (varMi) cs.Add(Cip(L.T(SET_AD[si]), su == sid, () => { kozSet[kat] = sid; SoyunmaGovdeKur(true); }));
+                }
+            }
+            var iz = Satir("izgara"); iz.AddToClassList("koz-izgara"); c.Add(iz); int ks = 0; bool ilk = true;
+            foreach (var o in tum)
+            {
+                bool goster = su == null || ilk || o.koleksiyon == su || o.id == sec || o.id == dn; ilk = false; if (!goster) continue;
                 var du = Kozmetik.Durum(gr, kat, o.id, sec); string id = o.id; Texture2D ik; string durum = KozDurum(kat, o, du, out ik);
                 var k = Kart("koz-kart"); k.AddToClassList("dugme"); k.AddToClassList("koz-kart--kisa"); if (du == ModelDurum.Secili) k.AddToClassList("secili"); if (du == ModelDurum.Kilitli) k.AddToClassList("kilitli"); if (dn == o.id) k.AddToClassList("denenen");
                 if (o.nadir == "mistik") k.AddToClassList("koz-kart--mistik");
@@ -598,6 +615,9 @@ namespace BirdieSmash.Game
             // 2026-11-12 Kol: kalkanlar raketsiz kola takılır (aynı sayfa: şerit dokuz sekmeyle zaten dolu, onuncu sekme taşardı)
             KozIzgara(c, Kozmetik.KOL, "Kol", root.vitrin.deneKol);
             c.Add(Yazi(L.T("Kalkanlar raketsiz kola takılır. Yalnız görünüş: vuruşu, hızı ya da savunmayı değiştirmez."), 12, "soluk"));
+            // 2026-11-12 Bel: etek, kemer, kuyruk, simit (aynı sayfa; şerit sekmeyle dolu)
+            KozIzgara(c, Kozmetik.BEL, "Bel", root.vitrin.deneBel);
+            c.Add(Yazi(L.T("Bel eşyaları oyuncuyla birlikte hareket eder. Yalnız görünüş."), 12, "soluk"));
         }
 
         // ---- Ten: baştan hepsi açık (kimlik satılmaz) ----

@@ -742,7 +742,7 @@ class Oyuncak:
         ar,aw=J['lowerarm01.R____head'],J['wrist.R____head']; d=(aw-ar); dn=d.normalized(); c0=aw-dn*.045
         cc=c0   # kemik ekseni (sadeleştirilmiş ağda dilimin köşe ortalaması boş kalabiliyordu)
         bil=_halka_r('oy_bilek',cc,dn,[v.co.copy() for v in me.vertices if (v.co-c0).length<.08],.042,.006,mats['bilek'],'bilek',n=20,pay=.0015); parca.append(bil)
-        yaka=[v.co.copy() for v in me.vertices if any(K.an[k].z-.01<v.co.z<K.an[k].z+.10 and (Vector((v.co.x,v.co.y))-Vector((K.an[k].x,K.an[k].y))).length<.075 for k in 'rl')]
+        yaka=[v.co.copy() for v in me.vertices if any(K.an[k].z-.045<v.co.z<K.an[k].z+.10 and (Vector((v.co.x,v.co.y))-Vector((K.an[k].x,K.an[k].y))).length<.11 for k in 'rl')]
         s.ayakkabilar,alt=SA.ayakkabilar(aykco,J,K.an,yaka,_mat); parca+=list(s.ayakkabilar.values())
         # --- oyuncak oranı (2026-10-27): parçalar gerçek oranlı gövdede kuruldu; şimdi hepsi aynı kemik dönüşümüyle bükülür.
         #     Baş pivotu çene hizasında, baş ortasında: baş yukarı/öne/yana büyür, çene göğse inmez (boyun tabanından

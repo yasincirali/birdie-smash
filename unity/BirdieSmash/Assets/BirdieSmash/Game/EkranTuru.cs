@@ -56,6 +56,9 @@ namespace BirdieSmash.Game
             var bekci = new System.Threading.Thread(() => { for (int i = 0; i < 300; i++) { System.Threading.Thread.Sleep(10000); Debug.Log("EkranTuru bekçi: kare " + kare + " adım " + adim); } }); bekci.IsBackground = true; bekci.Start();
             GameRoot.geriKapali = true; UiKok.OdulAnlariKapali = true; L.EksikTopla = true; yield return null; root = FindFirstObjectByType<GameRoot>(); Debug.Log("EkranTuru GameRoot " + (root != null));
             if (kip == "magaza") { yield return MagazaTuru(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }   // 2026-10-29: mağaza kareleri (Game/MagazaTuru.cs)
+            // 2026-11-12 kısa tur (`ekran/kisa-*` dalı → `-bskip dolap`): katalog büyüdükçe tam tur + derleme 90 dk iş sınırını aştı (r157 kare
+            // yazamadan iptal oldu). Dolap işi yalnız açılış, menü ve varyant/eşya vitrinini çeker; tam tur öteki `ekran/**` dallarında sürer.
+            if (kip == "dolap") { yield return Cek("00_ilk_kare"); yield return MenuTuru(); yield return Varyantlar(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             yield return MenuTuru(); if (root.HudKatman != null) rap.AppendLine("açılış süresi (gerçek, CI yazılım render'ı): " + root.HudKatman.AcilisTani);
             Ayar.antrenman = true; Ayar.easy = true; Ayar.target = 5; Ayar.reduce = false; if (root.ui != null) root.ui.Kirlet();   // r11: Oyna sekmesi ilk açılış kurulumunda kalıyordu
@@ -922,6 +925,9 @@ namespace BirdieSmash.Game
             ui.KarakterDene(Kozmetik.SIRT, "yok");
             foreach (var o in Kozmetik.Liste(Kozmetik.KOL)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.KOL, o.id); yield return Bekle(20); root.vitrin.a = 60; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_kol_" + o.id); root.vitrin.a = 300; yield return Bekle(4); yield return Cek("model_vitrin_kol_" + o.id + "_2"); }
             ui.KarakterDene(Kozmetik.KOL, "yok");
+            // 2026-11-12 Bel: önden-yandan ve arkadan (kuyruk)
+            foreach (var o in Kozmetik.Liste(Kozmetik.BEL)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.BEL, o.id); yield return Bekle(20); root.vitrin.a = 40; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_bel_" + o.id); root.vitrin.a = 200; yield return Bekle(4); yield return Cek("model_vitrin_bel_" + o.id + "_2"); }
+            ui.KarakterDene(Kozmetik.BEL, "yok");
             ui.KarakterDene(Kozmetik.SIRT, "yildiz_pelerin"); ui.KarakterDene(Kozmetik.SAPKA, "kapson"); yield return Bekle(20); root.vitrin.a = 200; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("menu_karakter_sirt_hepsini_al");
             Ayar.reduce = aksRd; Ayar.reduceSecim = aksRs;
             ui.SoyunmaSegment(0); yield return Bekle(5);
