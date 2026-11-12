@@ -10,7 +10,6 @@ Ortam: ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_CONTENT (fastlane'in kullandığı ana
 --kuru: yalnız okur ve ne yapacağını yazar.
 """
 import argparse
-import hashlib
 import json
 import os
 import sys
@@ -85,7 +84,7 @@ def gorsel_yukle(asc, lok_id, dosya):
         if r.status_code >= 300:
             raise SystemExit(f"görsel parçası yüklenemedi ({dosya.name}): {r.status_code}")
     asc.istek("PATCH", f"/v1/gameCenterAchievementImages/{gid}", {"data": {"type": "gameCenterAchievementImages",
-        "id": gid, "attributes": {"uploaded": True, "sourceFileChecksum": hashlib.md5(b).hexdigest()}}})
+        "id": gid, "attributes": {"uploaded": True}}})  # 2026-11-12: bu kaynakta sourceFileChecksum yok (409)
 
 
 def main():
@@ -144,7 +143,15 @@ def main():
                         "type": "gameCenterAchievements", "id": d["id"]}}}}})["data"]
             g = asc.istek("GET", f"/v1/gameCenterAchievementLocalizations/{l['id']}/gameCenterAchievementImage",
                           izin=(200, 404))
-            if not g.get("data"):
+            gd = g.get("data")
+            durum = ((gd or {}).get("attributes", {}).get("assetDeliveryState") or {}).get("state")
+            if gd and durum not in ("COMPLETE", "UPLOAD_COMPLETE"):
+                # Yarım kalmış yükleme (önceki koşu PATCH'te düştü): kaydı silip baştan yükle.
+                print(f"  {bid} {loc}: yarım görsel ({durum}) siliniyor")
+                if not a.kuru:
+                    asc.istek("DELETE", f"/v1/gameCenterAchievementImages/{gd['id']}")
+                gd = None
+            if not gd:
                 print(f"  {bid} {loc}: görsel yükleniyor")
                 if not a.kuru:
                     gorsel_yukle(asc, l["id"], VERI / f"{bid}.png")
