@@ -704,7 +704,7 @@ def orumcek():   # başın tepesinde oturan iri örümcek: gövde saçın üstü
 
 def vampir_dis():   # vampir dişleri (yüz): üst dudağın altından sarkan iki sivri diş (dudak üstü y −.9 z 1,07; ağız ≈ y −1,02)
     ag = Ag()
-    for sgn in (-1, 1): koni(ag, BEY, (sgn * .12, -.99, 1.04), (sgn * .12, -1.12, 1.07), .042, 6)
+    for sgn in (-1, 1): koni(ag, BEY, (sgn * .13, -.97, 1.11), (sgn * .13, -1.14, 1.15), .055, 6)   # 2026-11-12 oyun içi kare (r158): yüz yüzeyi yerel ölçümden ~.07 önde, dişler dudağın içinde kalıyordu
     ag.yaz('vampir_dis', 0)
 
 def mumya():   # KATALOGDA DEĞİL (2026-11-12 önizleme: düz elips bantlar yanağa giriyor, üstte havada kalıyor; yüzeye izdüşümle yeniden çizilecek). Mumya sargısı (yüz): başı saran eğik sargı bantları, gözler açıkta, serbest uç yanda sarkar
@@ -835,7 +835,7 @@ def yaprak_etek():   # yaprak etek: belden sarkan on dört yaprak, iki ton yeşi
 def pirilti():   # peri pırıltısı (yüz): iki yanakta üçer küçük parlak pul (yanak yüzeyi x .5'te z ≈ .84)
     ag = Ag()
     for sgn in (-1, 1):
-        for (x, y, z, r, renk) in ((.44, -.66, .885, .055, ALT), (.57, -.74, .80, .04, '#ff8fc0'), (.52, -.56, .845, .035, '#b58cff')): elipsoid(ag, renk, (sgn * x, y, z), (r, r, r * .45), 6, 3)
+        for (x, y, z, r, renk) in ((.44, -.66, .97, .07, ALT), (.58, -.76, .88, .052, '#ff8fc0'), (.53, -.54, .93, .046, '#b58cff')): elipsoid(ag, renk, (sgn * x, y, z), (r, r, r * .45), 6, 3)   # r158: yanağın içinde kalıyordu, öne alındı ve irileşti
     ag.yaz('pirilti', 0)
 
 def ugur_bocegi():   # uğur böceği kalkanı: kırmızı kubbe kabuk, siyah benekler ve orta çizgi, bilek tarafında baş
@@ -962,9 +962,9 @@ def kavuk():   # kavuk: kat kat sarılmış iri beyaz sarık (iç 1,1 > saç), o
 def pos_biyik():   # pos bıyık (yüz): burun altından iki yana uzanan, uçları yukarı kıvrık gür bıyık (dudak üstü y −.9 z 1,07; yanak x .5'te z ≈ .84)
     ag = Ag(); S = '#3a2a1e'
     for sgn in (-1, 1):
-        boru(ag, S, [((0, -.85, 1.05), .065), ((sgn * .20, -.87, 1.03), .08), ((sgn * .40, -.90, .93), .07), ((sgn * .58, -.86, .82), .05),
-                     ((sgn * .72, -.74, .72), .032), ((sgn * .76, -.60, .68), .012)], 8)
-    elipsoid(ag, S, (0, -.85, 1.05), (.07, .066, .066), 8, 5)   # orta ek yerini kapatır
+        boru(ag, S, [((0, -.82, 1.13), .065), ((sgn * .20, -.84, 1.11), .08), ((sgn * .40, -.87, 1.03), .07), ((sgn * .58, -.83, .92), .05),
+                     ((sgn * .72, -.71, .81), .032), ((sgn * .77, -.57, .76), .012)], 8)   # r158: ortası dudağın içinde kalıyordu, .08 öne ve biraz yukarı
+    elipsoid(ag, S, (0, -.82, 1.13), (.07, .066, .066), 8, 5)   # orta ek yerini kapatır
     ag.yaz('pos_biyik', 0)
 
 def saz():   # saz: sırtta çapraz, armut gövde aşağıda, uzun sap omuz üstüne çıkar, burgular ve teller
