@@ -561,13 +561,30 @@ namespace BirdieSmash.Game
         {
             switch (n) { case "siradan": return L.T("Sıradan"); case "nadir": return L.T("Nadir"); case "destansi": return L.T("Destansı"); case "mistik": return "◆ " + L.T("Mistik"); default: return null; }
         }
+        static readonly string[] SET_ID = { "yilbasi", "cadilar", "masal", "gelenek" }, SET_AD = { "Yılbaşı", "Cadılar Bayramı", "Masallar", "Geleneksel" };
+        readonly Dictionary<string, string> kozSet = new Dictionary<string, string>();
         void KozIzgara(VisualElement c, string kat, string baslik, string dn, bool resim = true)
         {
             var gr = Ayar.gear; string sec = Ayar.KOZ[kat];
             c.Add(Grup(L.T(baslik) + " · " + L.T(Kozmetik.Oge(kat, dn ?? sec).ad)));
-            var iz = Satir("izgara"); iz.AddToClassList("koz-izgara"); c.Add(iz); int ks = 0;
-            foreach (var o in Kozmetik.Liste(kat))
+            // 2026-11-12 Koleksiyon süzgeci (yasin: "konsept konsept ilerle"): Yılbaşı, Cadılar Bayramı, Masallar, Geleneksel setleriyle ızgara
+            // uzadı (şapka 40+); çipler yalnız o bölümde parçası olan koleksiyonları gösterir. Süzgeç yalnız listeyi daraltır: "boş" kartı,
+            // takılı olan ve denenen eşya hep görünür ki seçim kaybolmuş okunmasın. Seçim kaydedilmez (Dolap her açılışta "Hepsi").
+            string su; kozSet.TryGetValue(kat, out su); var tum = Kozmetik.Liste(kat); bool setVar = false; foreach (var o in tum) if (o.koleksiyon != null) { setVar = true; break; }
+            if (setVar)
             {
+                var cs = Satir("cip-sarar"); cs.AddToClassList("koz-set"); c.Add(cs);
+                cs.Add(Cip(L.T("Hepsi"), su == null, () => { kozSet.Remove(kat); SoyunmaGovdeKur(true); }));
+                for (int si = 0; si < SET_ID.Length; si++)
+                {
+                    string sid = SET_ID[si]; bool varMi = false; foreach (var o in tum) if (o.koleksiyon == sid) { varMi = true; break; }
+                    if (varMi) cs.Add(Cip(L.T(SET_AD[si]), su == sid, () => { kozSet[kat] = sid; SoyunmaGovdeKur(true); }));
+                }
+            }
+            var iz = Satir("izgara"); iz.AddToClassList("koz-izgara"); c.Add(iz); int ks = 0; bool ilk = true;
+            foreach (var o in tum)
+            {
+                bool goster = su == null || ilk || o.koleksiyon == su || o.id == sec || o.id == dn; ilk = false; if (!goster) continue;
                 var du = Kozmetik.Durum(gr, kat, o.id, sec); string id = o.id; Texture2D ik; string durum = KozDurum(kat, o, du, out ik);
                 var k = Kart("koz-kart"); k.AddToClassList("dugme"); k.AddToClassList("koz-kart--kisa"); if (du == ModelDurum.Secili) k.AddToClassList("secili"); if (du == ModelDurum.Kilitli) k.AddToClassList("kilitli"); if (dn == o.id) k.AddToClassList("denenen");
                 if (o.nadir == "mistik") k.AddToClassList("koz-kart--mistik");

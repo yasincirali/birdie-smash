@@ -20,7 +20,7 @@ namespace BirdieSmash.Core
     // bant false: bu saçta kafa bandı gizlenir (saç hacminin içinde kalır). garip: tuhaf/iddialı biçim (fiyatı yüksek tutulur).
     // nadir (2026-11-01 Dolap yenilemesi): siradan / nadir / destansi / mistik; null = sınıfsız (varsayılan "yok" öğeleri).
     // renk: hazır ağın (varlik kaykit) ana rengi yerine (KayKit iskelet paketinde hepsi aynı gül kurusu; mistikler gece rengine).
-    public class KozmetikOge { public string id, ad, n, varlik, paket, nadir, renk; public int sv = 1, fiyat; public bool bant = true, garip; }
+    public class KozmetikOge { public string id, ad, n, varlik, paket, nadir, renk, koleksiyon; public int sv = 1, fiyat; public bool bant = true, garip; }
 
     // Rakibin görünüşü (stil.json gorunum). Boş alan = varsayılan (ilk öğe / modelin rengi).
     public class RakipGorunum { public string tip, sac, sacRenk, ten, ayakkabi, aykRenk; }
@@ -134,7 +134,7 @@ namespace BirdieSmash.Core
                         // Yalnız görünüş: bir etki/güç alanı yazılırsa sessiz kalmasın (güç satılmaz, tasarım §4.3).
                         foreach (var yasak in new[] { "etki", "guc", "kontrol", "hiz", "tatli", "kosu", "enerji", "toparla", "yor", "uzanma", "jumpTatli" })
                             if (d.ContainsKey(yasak)) throw new InvalidOperationException("Birdie Smash: karakter.json " + k + " öğesinde güç alanı: " + yasak);
-                        l.Add(new KozmetikOge { id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), n = Json.Str(d, "n", ""), varlik = Json.Str(d, "varlik", null), paket = Json.Str(d, "paket", null), nadir = Json.Str(d, "nadir", null), renk = Json.Str(d, "renk", null),
+                        l.Add(new KozmetikOge { id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), n = Json.Str(d, "n", ""), varlik = Json.Str(d, "varlik", null), paket = Json.Str(d, "paket", null), nadir = Json.Str(d, "nadir", null), renk = Json.Str(d, "renk", null), koleksiyon = Json.Str(d, "set", null),
                             sv = (int)Json.Num(d, "sv", 1), fiyat = (int)Json.Num(d, "fiyat", 0), bant = Json.Bool(d, "bant", true), garip = Json.Bool(d, "garip", false) });
                     }
                 if (l.Count == 0 || l[0].fiyat != 0 || l[0].sv != 1) throw new InvalidOperationException("Birdie Smash: karakter.json " + k + " ilk öğesi ücretsiz ve Sv 1 olmalı (varsayılan)");
