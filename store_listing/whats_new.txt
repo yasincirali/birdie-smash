@@ -1,4 +1,11 @@
 === UNITY ===
+Kasmalar giderildi: sayı sonrası ve maç sonu akıcı (12 Kasım gece):
+- Sayı alınca çıkan büyük yazı (Sayı!, Smaç! gibi) büyürken oyun bir an takılıyordu. Yazı artık tek boyda hazırlanıp büyütülüyor, takılma yok.
+- Maç sonu sevinci sırasında bazen oluşan donma giderildi: sonuç kartı ve kayıt sevinç bittikten sonra hazırlanıyor, kartın parçaları maç başında hazırda bekliyor.
+- Sayı, alkış ve coşku sesleri maç başındaki perdenin arkasında hazırlanıyor; ilk sayıda ses yüzünden takılma olmuyor.
+- Rekor ralli ya da görev tamamlandığında yapılan kayıt sevinç anında değil, sayı arasının sonunda yapılıyor.
+Nasıl denenir: Birkaç maç oyna. Her sayıdan sonra çıkan yazı ve oyuncunun sevinci akıcı oynamalı, ekran bir an bile durmamalı. Maçı kazan: zafer sevinci baştan sona takılmadan oynamalı, sonuç kartı sevinç sürerken akıcı açılmalı. Kartta ödüller ve yıldızlar eskisi gibi görünmeli; menüye dönüp yeniden girince Tüy ve seviye kaydedilmiş olmalı.
+
 Ana ekranda sesli dans, sade kayıp kartı, iOS Oyun Modu (12 Kasım gece):
 - Ana ekranda kendi oyuncuna dokununca seçtiğin sevinç tam süresince oynuyor; dans seçtiysen dansın kendi sesi bir kez çalıyor.
 - Kariyer maçını kaybedince kartta "... basamağı seni bekliyor" cümlesi artık yok: basamak adı zaten üstte ve düğmenin altında yazıyor.

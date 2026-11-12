@@ -259,7 +259,7 @@ namespace BirdieSmash.Game
             {
                 perdeEvre = 2; perdeT = 0; acilisIyi = 0; hazirT = -1;
                 Yerel.PerdeGoster(perdeAci, .6f, L.T("Hazırlanıyor…"), Ayar.YaziK);
-                if (perdeIs != null) { perdeIs(); perdeIs = null; bosalt = true; if (root.fx != null) root.fx.Isit(); }
+                if (perdeIs != null) { perdeIs(); perdeIs = null; bosalt = true; isitBekle = true; if (root.fx != null) root.fx.Isit(); }
             }
             else if (perdeEvre == 2)
             {
@@ -281,6 +281,31 @@ namespace BirdieSmash.Game
             else if (perdeEvre == 3 && perdeT >= (Ayar.reduce ? .25f : .35f)) { perdeEvre = 0; kaynakVar = false; if (perdeAcilis && acilisSonT < 0) acilisSonT = Time.realtimeSinceStartup; }
             if (perdeEvre != 2) perdeBek = false;
             TopPozYaz();
+        }
+
+        // Perde arkası ısıtma (2026-11-12, yasin: "kasma efektini hiçbir yerde istemiyoruz"): maç perdesi kapalıyken bir kez.
+        // (1) Maç sonu kartının stilleri ve kutu dokuları, kartın ilk açılışındaki ölçekle (sigK = 1) kurulur; kart zafer sevinci
+        //     sırasında açıldığında yeniden çizim yok (Over'daki hesapla aynı formül).
+        // (2) Dinamik yazı tipi atlası, sayı yazısı ve kart başlığının boylarında Türkçe/İngilizce harflerle doldurulur: atlas büyümesi
+        //     ve yeniden kurulumu (Font.textureRebuilt, gizli FPS katmanındaki "font atlası n") perdenin arkasında olur, sayı anında değil.
+        // GUI.skin yalnız OnGUI'de geçerli olduğu için perdeIs'ten değil, perde kapalıyken ilk Repaint'te çağrılır.
+        bool isitBekle;
+        const string ISIT_HARF = "ABCÇDEFGĞHIİJKLMNOÖPRSŞTUÜVYZQWXabcçdefgğhıijklmnoöprsştuüvyzqwx0123456789!?.,:·–-+×%/'’“”() ";
+        void PerdeIsit()
+        {
+            try
+            {
+                float s = Mathf.Min(W / 390f, H / 844f), kt = W / H < .62f ? Mathf.Max(s, 11f / 12f * W / 375f) : s, k = kt * Ayar.YaziK; YayinStil(s, k);
+                if (fSiyah != null)
+                {
+                    float[] boy = { 1, 1.2f, 1.3f, 1.4f, 1.6f, 1.8f };   // Hud.Say çağrılarındaki size değerleri (GameRoot.OnEvent)
+                    foreach (var b in boy) fSiyah.RequestCharactersInTexture(ISIT_HARF, Mathf.RoundToInt(19 * fu * b));
+                    foreach (var b in new[] { 74f, 56f, 46f, 44f, 40f, 26f }) fSiyah.RequestCharactersInTexture(ISIT_HARF, Mathf.Max(8, Mathf.RoundToInt(b * k)));
+                }
+                if (fKalin != null) foreach (var b in new[] { 16f, 15f, 13f, 12f }) fKalin.RequestCharactersInTexture(ISIT_HARF, Mathf.Max(8, Mathf.RoundToInt(b * k)));
+                if (fYari != null) foreach (var b in new[] { 16f, 13f }) fYari.RequestCharactersInTexture(ISIT_HARF, Mathf.Max(8, Mathf.RoundToInt(b * k)));
+            }
+            catch (System.Exception e) { Debug.LogWarning("PerdeIsit: " + e.Message); }
         }
 
         // D4 (2026-10-31): Styles() boyut/yazı ölçeği her değiştiğinde 7 yeni 1×1 doku açıyor, eskileri yok etmiyordu. Renk başına bir doku.
@@ -383,6 +408,7 @@ namespace BirdieSmash.Game
         void OnGUI()
         {
             var M = root.match; Styles(); Layout(); blocks.Clear();
+            if (isitBekle && perdeEvre == 2 && Event.current.type == EventType.Repaint) { isitBekle = false; PerdeIsit(); }
             if (Guvenli.reklamUst > 0) ReklamSerit();
             if (perdeEvre > 0 && Event.current.isMouse)
             {   // perde altındaki düğmeler dokunuşu almaz (açılış perdesi saniyelerce kapalı kalabilir); kapalıyken dokunuş beklemeyi kısaltır
@@ -538,7 +564,11 @@ namespace BirdieSmash.Game
             {
                 // HTML txt: yaylı büyüme (k = 1 + 2,7(q−1)³ + 1,7(q−1)²), .8 sn sonra solar
                 float q = Mathf.Min(1, f.a * 5), k = Ayar.reduce ? 1 : 1 + 2.7f * Mathf.Pow(q - 1, 3) + 1.7f * Mathf.Pow(q - 1, 2), a = f.a > .8f ? 1 - (f.a - .8f) / .4f : 1;
-                var c = f.c; c.a = Mathf.Clamp01(a); var st = Stil(mid, Mathf.Max(1, Mathf.RoundToInt(19 * fu * f.size * (.5f + .5f * k))));
+                // 2026-11-12 (yasin: "sayı olduktan sonraki animasyonda kasmalar oluyor"): yaylı büyüme yazı BOYUNU her kare değiştiriyordu
+                // (19·fu·size·(.5+.5k), ilk .2 sn'de ~40 ayrı piksel boyu). Dinamik TTF her yeni boy × glif için atlasa çizer, atlas dolunca
+                // bütünüyle yeniden kurulur (Font.textureRebuilt): sayı yazısının çıktığı karelerde takılma. Yazı tek boyda (tam boy)
+                // biçimlenir, büyüme GUI.matrix ölçeğiyle verilir (skor pop'u ve ralli sayacı da böyle); Sigdir de sabit boyda bir kez ölçer.
+                var c = f.c; c.a = Mathf.Clamp01(a); var st = Stil(mid, Mathf.Max(1, Mathf.RoundToInt(19 * fu * f.size))); float olc = .5f + .5f * k;
                 float yy;
                 if (f.sabit) yy = H * (f.c == Kit.Hex(RAKIP_HUD) ? .56f : .4f);
                 else { var sp = root.cam.WorldToScreenPoint(f.w + Vector3.up * (.6f + f.a * .5f)); if (sp.z < 0) continue; yy = Mathf.Clamp(H - sp.y - 20 * u, top + 60 * u, H - bot - 80 * u); }
@@ -546,7 +576,8 @@ namespace BirdieSmash.Game
                 // Kartla çakışan yazı kartın hemen altına iner (blocks = bu karede çizilen kart ve düğmeler).
                 if (ogr) foreach (var bl in blocks) if (bl.width > (rx - lx) * .6f && yy < bl.yMax && yy + 46 * u > bl.yMin) yy = bl.yMax + 4 * u;
                 st = Sigdir(st, f.t, rx - lx);   // tek satır kalsın (iki satıra kırılınca skorun/kartın üstüne biniyordu)
-                Konturlu(new Rect(lx, yy, rx - lx, 46 * u), f.t, st, c, Mathf.Max(1.5f, 2.2f * u));
+                var fr = new Rect(lx, yy, rx - lx, 46 * u); var fm = GUI.matrix; if (Mathf.Abs(olc - 1) > .002f) GUIUtility.ScaleAroundPivot(new Vector2(olc, olc), fr.center);
+                Konturlu(fr, f.t, st, c, Mathf.Max(1.5f, 2.2f * u)); GUI.matrix = fm;
             }
             if (ogrMsgT > 0 && ogrMsg != null) { var c = Kit.Hex("#d8ff5a"); c.a = Mathf.Clamp01(ogrMsgT * 2); Shadowed(new Rect(lx, H * .5f, rx - lx, 60 * u), ogrMsg, mid, c); }
         }
@@ -748,7 +779,7 @@ namespace BirdieSmash.Game
                 if (o.cagri == null || M.s == null || M.s.dead || M.s.from != "op") return;
                 var p = root.cam.WorldToScreenPoint(Kit.W(M.me.x, M.me.y, 0)); float yy = Mathf.Min(H - p.y - 120 * K, H * .62f), b = Ayar.reduce ? 1 : 1 + .06f * Mathf.Max(0, 1 - (M.realClock - o.cagriT) * 3);
                 Shadowed(new Rect(lx, yy - 44 * K, rx - lx, 20 * K), L.T("Antrenör diyor"), Stil(small, Mathf.RoundToInt(12 * fu), FontStyle.Bold), Kit.Hex("#cfe3dc"));
-                Shadowed(new Rect(lx, yy - 24 * K, rx - lx, 40 * K), UiKok.Buyuk(L.T(Match.OGR_AD[o.cagri])) + "!", Stil(big, Mathf.RoundToInt(30 * fu * b)), Kit.Hex("#d8ff5a"));
+                SkorCiz(new Rect(lx, yy - 24 * K, rx - lx, 40 * K), UiKok.Buyuk(L.T(Match.OGR_AD[o.cagri])) + "!", Stil(big, Mathf.RoundToInt(30 * fu)), Kit.Hex("#d8ff5a"), b);   // büyüme ölçekle, boyla değil (2026-11-12, atlas)
                 return;
             }
             // görev: hareket yalnız ilk topta bir kez gösterilir (Core OgrDurdur gösterim topu; serviste ilk servis), sonra oyuncu dener
@@ -1053,7 +1084,7 @@ namespace BirdieSmash.Game
         // sayar. Hareketi azalt: ışın ve iniş yok, sayılar son değerinde, bütün içerik .25 sn'de solarak gelir.
         // Yazı: 2026-10-29 Baloo 2 + Nunito (OFL, Resources/fonts; eskisi Barlow); boyut fu ile (Dynamic Type ×1,3'e kadar, HUD sınırı). ★ ✓ ✗ glif değil doku.
         Font fSiyah, fEkstra, fYari, fKalin; float aS = -1, aK = -1;
-        Texture2D aKutuT, aKutuIkonT, aKutuLimonT, aCtaT, aHayaletT;
+        Texture2D aKutuT, aKutuIkonT, aKutuLimonT, aCtaT, aHayaletT; readonly Dictionary<int, Texture2D[]> kutuOnbellek = new Dictionary<int, Texture2D[]>();
         GUIStyle aBas, aUst, aSkor, aAd, aKosul, aSatir, aSayi, aLv, aUnl, aCta, aCtaAlt, aDug, aIpucu, aHedefSol, aHedefSag, aKutuS, aKutuIkon, aKutuLimon, aCtaS, aIz, aHayalet;
         float overT0 = -1; bool overAcik; int yildizHap;
         // 2026-10-27 yön C "Gün Batımı Salonu" (yasin karar kartı): menü USS kökündeki değerler. Adlar A'dan; anlam: A_LIMON yalnız
@@ -1107,14 +1138,30 @@ namespace BirdieSmash.Game
             // 2026-11-02 hedef satırı (r119): ortalanmış aIpucu adı ortaya, "Hazır"ı kırpıyordu; ad sola, kalan sağa, sağ tek satır.
             aHedefSol = AStil(fKalin, 13 * k, TextAnchor.UpperLeft, true); aHedefSag = AStil(fKalin, 13 * k, TextAnchor.UpperRight, false); aIz = AStil(fKalin, 12 * k, TextAnchor.MiddleLeft, false);
             int r = Mathf.Max(4, Mathf.RoundToInt(16 * s)), ri = Mathf.Max(3, Mathf.RoundToInt(9 * s));
-            if (aKutuT != null) Destroy(aKutuT); if (aKutuIkonT != null) Destroy(aKutuIkonT); if (aKutuLimonT != null) Destroy(aKutuLimonT); if (aCtaT != null) Destroy(aCtaT); if (aHayaletT != null) Destroy(aHayaletT);
-            aKutuT = Ikonlar.Kutu(r, new Color(A_NAVY.r, A_NAVY.g, A_NAVY.b, .92f), new Color(1, 1, 1, .12f), Mathf.Max(1, s)); aKutuS = AKutu(aKutuT, r + 2);
-            aKutuIkonT = Ikonlar.Kutu(ri, A_NAVY3, new Color(1, 1, 1, 0), 0); aKutuIkon = AKutu(aKutuIkonT, ri + 2);
-            aKutuLimonT = Ikonlar.Kutu(r, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .08f), new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .6f), Mathf.Max(1.5f, 1.5f * s)); aKutuLimon = AKutu(aKutuLimonT, r + 2);
-            // hayalet düğme (2026-11-07 AD6): saydam zemin, %25 beyaz 1 pt çerçeve; ağırlık sırası CTA > hayalet > yok
-            aHayaletT = Ikonlar.Kutu(r, new Color(1, 1, 1, 0), new Color(1, 1, 1, .25f), Mathf.Max(1, s)); aHayalet = AKutu(aHayaletT, r + 2);
-            int eg = Mathf.Max(4, Mathf.RoundToInt(14 * s)), ch = Mathf.Max(20, Mathf.RoundToInt(80 * s));
-            aCtaT = Ikonlar.EgikDugme(eg * 2 + 8, ch, eg); aCtaS = AKutu(aCtaT, 0); aCtaS.border = new RectOffset(eg + 4, eg + 4, 0, 0);
+            // 2026-11-12 (yasin: "maç sonu sevinçte bazen donma oluyor"): kart her açılışta sigK = 1 ile başlıyor, sonraki karede sığdırma
+            // ölçeği küçültüyordu; her ölçek değişiminde beş kutu dokusu piksel piksel yeniden çiziliyor (Ikonlar.Kutu + Apply) ve
+            // eskiler yok ediliyordu. Yani her maç sonu, zafer sevinci oynarken en az iki tam yeniden çizim. Dokular ölçek basamağına
+            // (s × 100) göre saklanır: sigK .05 adımlı, telefon başına birkaç basamak, her biri bir kez çizilir. Alanlar yine dolu
+            // tutulur (UnloadUnusedAssets notu, yukarıda); sözlük de C# başvurusudur.
+            int sk = Mathf.RoundToInt(s * 100); Texture2D[] kt;
+            if (!kutuOnbellek.TryGetValue(sk, out kt) || kt[0] == null || kt[1] == null || kt[2] == null || kt[3] == null || kt[4] == null)   // Unity null'u: yok edilmiş doku da null
+            {
+                int eg0 = Mathf.Max(4, Mathf.RoundToInt(14 * s)), ch0 = Mathf.Max(20, Mathf.RoundToInt(80 * s));
+                kt = new[] {
+                    Ikonlar.Kutu(r, new Color(A_NAVY.r, A_NAVY.g, A_NAVY.b, .92f), new Color(1, 1, 1, .12f), Mathf.Max(1, s)),
+                    Ikonlar.Kutu(ri, A_NAVY3, new Color(1, 1, 1, 0), 0),
+                    Ikonlar.Kutu(r, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .08f), new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .6f), Mathf.Max(1.5f, 1.5f * s)),
+                    // hayalet düğme (2026-11-07 AD6): saydam zemin, %25 beyaz 1 pt çerçeve; ağırlık sırası CTA > hayalet > yok
+                    Ikonlar.Kutu(r, new Color(1, 1, 1, 0), new Color(1, 1, 1, .25f), Mathf.Max(1, s)),
+                    Ikonlar.EgikDugme(eg0 * 2 + 8, ch0, eg0) };
+                kutuOnbellek[sk] = kt;
+            }
+            aKutuT = kt[0]; aKutuS = AKutu(aKutuT, r + 2);
+            aKutuIkonT = kt[1]; aKutuIkon = AKutu(aKutuIkonT, ri + 2);
+            aKutuLimonT = kt[2]; aKutuLimon = AKutu(aKutuLimonT, r + 2);
+            aHayaletT = kt[3]; aHayalet = AKutu(aHayaletT, r + 2);
+            int eg = Mathf.Max(4, Mathf.RoundToInt(14 * s));
+            aCtaT = kt[4]; aCtaS = AKutu(aCtaT, 0); aCtaS.border = new RectOffset(eg + 4, eg + 4, 0, 0);
         }
         static float GeriYay(float x) { const float c1 = 1.70158f, c3 = c1 + 1; x = Mathf.Clamp01(x) - 1; return 1 + c3 * x * x * x + c1 * x * x; }
         // Yıldızın iniş anı (sn, ekran açılışından): 0,45 + 0,3·i. Titreşim Hud.Update'te (OnGUI karede birkaç kez çalışır).

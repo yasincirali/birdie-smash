@@ -107,6 +107,7 @@ namespace BirdieSmash.Game
             gameObject.AddComponent<KadrajIsaret>().root = this;   // yüksek top: ekran dışı işareti (Core/Kadraj)
             sfx.menude = () => ekran == Ekran.Menu && !hud.PerdeKapali;   // menü müziği: perde kapanırken söner, maçta yok
             sfx.sakin = () => hud.PerdeKapali || ekran != Ekran.Oyun || paused || match == null || match.between || match.s == null;
+            sfx.derinSakin = () => hud.PerdeKapali || ekran == Ekran.Menu && Kalite.MenuDurgun;   // ek ses sırası (Sfx.IsitIsle notu)
             Basarim.Esitle(Ayar.kariyer, Ayar.bestRally); Basarim.Giris(Ayar.kariyer);
             match = new Match(1, new MatchOptions { easy = Ayar.easy, target = Ayar.target, saha = Ayar.saha });   // menü arkasında duran sahne
             Kur(match);
@@ -447,7 +448,7 @@ namespace BirdieSmash.Game
             // ilk kez alınabilir yaptıysa. Önce her maçta (Tüy biriktiren oyuncuda hep) çıkıyordu; oyuncu düğmeyi görmez oluyordu.
             // Atölye sekmesindeki "yükseltme ya da yeni model hazır" satırı değişmedi.
             yukseltHazir = !hazirOnce && YukseltAlinir(odul.sonra);
-            HedefHesapla(); Ayar.Kaydet();
+            HedefHesapla(); kaydetBekle = true; kayitErteleT = Time.unscaledTime + KAYIT_ERTELE;   // yazım sevinçten sonra (Update notu, 2026-11-12)
             bittiBaslik = L.T(won ? "Kazandın" : "Bu sefer rakip aldı") + (kNot != "" ? " · " + L.Cumle(kNot) : "");
             // "Galibiyet" anahtarı tr_en.json'da istatistik etiketi ("Wins"); başlıkta "Victory" olmalı (r16), sözlük HTML'in
             // birebir kopyası olduğu için orada değiştirilmez.
@@ -494,7 +495,7 @@ namespace BirdieSmash.Game
             if (M.enHizliSmac > 0 && M.ogr == null)
             {
                 int hz = (int)M.enHizliSmac, eski = PlayerPrefs.GetInt("tuytop_smac_rekor", 0); bool rekor = hz > eski && eski > 0;
-                if (hz > eski) { PlayerPrefs.SetInt("tuytop_smac_rekor", hz); PlayerPrefs.Save(); }
+                if (hz > eski) PlayerPrefs.SetInt("tuytop_smac_rekor", hz);   // Save ertelenen Kaydet içinde (2026-11-12)
                 bittiBilgi = L.T("En hızlı smaç {0} km/s", hz) + (rekor ? " · " + L.T("Yeni rekor") : "") + "\n" + bittiBilgi;
             }
             // 2026-11-02: ek ödüllerin tam dökümü (kartta yalnız en büyüğü) Ayrıntılar'ın başında.
@@ -921,13 +922,19 @@ namespace BirdieSmash.Game
 
         // 2026-10-31 (Unity incelemesi O1): görev tamamlanınca tam kayıt (JSON + ~20 PlayerPrefs anahtarı) vuruş anında yapılıyordu;
         // tek kare takılma. Sayı arasına, duraklatmaya ya da menüye ertelenir; arka plana geçişte de yazılır (OnApplicationPause).
-        bool kaydetBekle;
+        bool kaydetBekle; float kayitErteleT; const float KAYIT_ERTELE = 2.6f;   // maç sonu sevinci döngüsü 2,4 sn (PlayerView.SevincSure) + pay
         void BekleyenKayit() { Basarim.Yaz(); if (!kaydetBekle) return; kaydetBekle = false; Ayar.Kaydet(); }
         void Update()
         {
             FitCamera(); Cokme.Tik(this);
             float dt = Mathf.Min(.05f, Time.unscaledDeltaTime);
-            if ((kaydetBekle || Basarim.Bekliyor) && (ekran != Ekran.Oyun || paused || match == null || match.between)) BekleyenKayit();
+            // 2026-11-12 (yasin: "sayı sonrası animasyonda kasma, maç sonu sevinçte donma"): kayıt (JSON + senkron PlayerPrefs.Save +
+            // Game Center) sayı arasının İLK karesinde, yani sayı sevinci ve yazısı başlarken yapılıyordu; maç sonunda da EndMatch
+            // aynı karede yazıyordu, zafer sevinci oynarken. Sayı arasında yalnız son .15 sn'de (sevinç bitmiş, servis kurulmadan;
+            // maç sayısında hiç: EndMatch yazar), maç sonunda sevinç bitince (KAYIT_ERTELE) ya da perde kapanınca. Duraklatma, menü
+            // ve arka plana geçiş (OnApplicationPause) eskisi gibi hemen yazar: kayıp penceresi en çok birkaç saniye.
+            bool sevincte = ekran == Ekran.Bitti && Time.unscaledTime < kayitErteleT && !hud.PerdeKapali;
+            if ((kaydetBekle || Basarim.Bekliyor) && !sevincte && (ekran != Ekran.Oyun || paused || match == null || match.between && !match.matchDone && match.betweenT < .15f)) BekleyenKayit();
             if (ekran == Ekran.Oyun && !paused)
             {
                 if (girisT > 0) girisT = Mathf.Max(0, girisT - dt);
@@ -949,7 +956,7 @@ namespace BirdieSmash.Game
                 bool w = match.HitWindow(); if (w) pencereTop = match.s; if (w != pencere) { pencere = w; if (!Ayar.reduce) sfx.SuAlti(w); if (w) { sfx.Tik(); Yerel.Hap("tick"); } }   // vuruş penceresi: su altı
                 Gicirti(dt);
                 foreach (var e in match.events) OnEvent(e); match.events.Clear();
-                if (match.bestRally > Ayar.bestRally) { Ayar.bestRally = match.bestRally; Ayar.Kaydet(); }
+                if (match.bestRally > Ayar.bestRally) { Ayar.bestRally = match.bestRally; kaydetBekle = true; }   // rekor ralli: tam kayıt sayı anında değil, ertelenen kayıtta (2026-11-12)
                 var o = match.ogr;
                 if (o != null && o.dril != null) { if (o.macaGec && !ogrKayit) { ogrKayit = true; DrilSonu(); } }   // görev: "Görev bitti" yazısından sonra sonuç ekranı, maça geçmez
                 else

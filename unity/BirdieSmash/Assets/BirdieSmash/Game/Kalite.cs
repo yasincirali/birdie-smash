@@ -73,6 +73,8 @@ namespace BirdieSmash.Game
         const float HAREKET_SURE = .5f; static float hareketSon = -99;
         // Menü bir şey kıpırdattığında çağırır (UiKok: dokunma/sürükleme/tekerlek/USS geçişi; Hud: perde).
         public static void Hareket() { hareketSon = Time.unscaledTime; }
+        // Menü son HAREKET_SURE içinde kıpırdamadı mı (Sfx ek ses sırası bunu bekler: kaydırma sırasında sentez yok, 2026-11-12).
+        public static bool MenuDurgun { get { return Time.unscaledTime - hareketSon >= HAREKET_SURE; } }
 
         public static Kalite Kur(GameObject g, Camera cam)
         {

@@ -203,11 +203,44 @@ namespace BirdieSmash.Game
             for (int i = 0; i < 15; i++) { int n = i; artSira.Enqueue(() => RallyKlip(n, true, true)); artSira.Enqueue(() => RallyKlip(n, true, false)); artSira.Enqueue(() => RallyKlip(n, false, false)); }
             for (int i = 0; i <= 12; i++) { int n = i; artSira.Enqueue(() => PerfectKlip(n)); }
             artSira.Enqueue(() => KickKlip());
+            // Sayı ve maç sonu sesleri (2026-11-12, yasin: "sayı sonrası animasyonda kasma, maç sonu sevinçte donma"): coşku (1,2 sn
+            // süzgeçli gürültü), iç çekiş, alkış ve sayı arpeji ilk kez tam sayı ya da maç sonu anında sentezleniyordu; her biri
+            // ana iş parçacığında birkaç ms tampon + AudioClip.SetData, sevinç ve sayı yazısıyla aynı karede. Kayıtlı ses varsa
+            // (Kayit) sentez hiç çağrılmaz; kayıtsız yolun klipleri burada, aynı anahtarlarla önceden kurulur. Dans motifleri de.
+            foreach (var v in new[] { .14f, .18f, .24f }) { float vv = v; artSira.Enqueue(() => CheerKlip(vv)); }
+            foreach (var v in new[] { .06f, .07f, .08f, .09f }) { float vv = v; artSira.Enqueue(() => GaspKlip(vv, 0)); }
+            artSira.Enqueue(() => GaspKlip(.07f, .38f));
+            for (int c = 0; c < 2; c++) { int cc = c; artSira.Enqueue(() => AlkisKlip(false, cc)); artSira.Enqueue(() => AlkisKlip(true, cc)); }
+            artSira.Enqueue(() => ArpejKlip(523, SAYI_ARPEJ, .18f, .08f, .07f)); artSira.Enqueue(() => TonKlip(220, .25f, "sawtooth", .05f));
+            foreach (var d in new[] { "robot", "tavuk", "twist", "dalga", "helikopter", "gitar" }) { string dd = d; artSira.Enqueue(() => DansIsit(dd)); }
         }
+        static readonly int[] SAYI_ARPEJ = { 0, 4, 7, 12 };
+        // Dans() ile aynı parametreler; çalmadan yalnız klipleri kurar (anahtarlar aynı olduğu için Dans() önbellekten çalar).
+        void DansIsit(string id)
+        {
+            switch (id)
+            {
+                case "robot": TonKlip(880, .06f, "square", .03f); TonKlip(660, .08f, "square", .03f, .12f); break;
+                case "tavuk": TonKlip(620, .05f, "square", .028f); TonKlip(820, .04f, "square", .026f, .07f); TonKlip(560, .07f, "square", .028f, .14f); break;
+                case "twist": TonKlip(523, .12f, "triangle", .05f); TonKlip(659, .16f, "triangle", .05f, .18f); break;
+                case "dalga": ArpejKlip(523, new[] { 0, 4, 7, 12 }, .12f, .04f, .06f); GurultuKlip(.3f, "bandpass", 2500, .03f, 1, .05f); break;
+                case "helikopter": GurultuKlip(.06f, "lowpass", 320, .07f); GurultuKlip(.06f, "lowpass", 320, .07f, 1, .11f); GurultuKlip(.06f, "lowpass", 320, .07f, 1, .22f); break;
+                case "gitar": ArpejKlip(196, new[] { 0, 7, 12, 16, 19 }, .4f, .035f, .025f); break;
+            }
+        }
+        // derinSakin (2026-11-12): perde kapalı ya da menü durağan. Ek sıra (ralli notaları, sayı/maç sonu sesleri) yalnız orada işlenir,
+        // karede dört: önceden "sakin" anlarda karede bir taneydi ve sakin anlar sayı arasını (sevinç + sayı yazısı) da kapsıyordu;
+        // sentez tam o karelere biniyordu. Maç perdesi en az .6 sn kapalı kaldığı için sıra ilk perdede biter.
+        public System.Func<bool> derinSakin;
         void IsitIsle()
         {
             if (sakin != null && !sakin()) return;
-            if (isitSira.Count == 0) { if (artSira.Count > 0) { var g = artSira.Dequeue(); try { g(); } catch (System.Exception) { } } return; }
+            if (isitSira.Count == 0)
+            {
+                if (artSira.Count > 0 && derinSakin != null && derinSakin())
+                    for (int i = 0; i < 4 && artSira.Count > 0; i++) { var g = artSira.Dequeue(); try { g(); } catch (System.Exception) { } }
+                return;
+            }
             for (int i = 0; i < 2 && isitSira.Count > 0; i++) { var f = isitSira.Dequeue(); try { f(); } catch (System.Exception) { } }
         }
         static string Tur(string type) { return type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type == "push" ? "drive" : HITMIX.ContainsKey(type ?? "") ? type : "clear"; }
@@ -272,8 +305,10 @@ namespace BirdieSmash.Game
         }
         void Ton(float f, float d, string type, float v, float delay = 0) { src.PlayOneShot(TonKlip(f, d, type, v, delay)); }
         AudioClip TonKlip(float f, float d, string type, float v, float delay = 0) { return Bir("t" + f + d + type + v + delay, s => s.Tone(delay, f, d, type, v), d + delay + .05f); }
-        void Gurultu(float d, string type, float f, float v, float q = 1, float delay = 0) { src.PlayOneShot(Bir("n" + d + type + f + v + q + delay, s => s.Burst(delay, d, type, f, v, q, 4), d + delay + .05f)); }
-        void Arpej(float f0, int[] semi, float d, float v, float ara) { src.PlayOneShot(Bir("a" + f0 + string.Join(",", semi) + d + v + ara, s => { for (int i = 0; i < semi.Length; i++) s.Tone(i * ara, f0 * Mathf.Pow(2, semi[i] / 12f), d, "triangle", v); }, semi.Length * ara + d + .05f)); }
+        void Gurultu(float d, string type, float f, float v, float q = 1, float delay = 0) { src.PlayOneShot(GurultuKlip(d, type, f, v, q, delay)); }
+        AudioClip GurultuKlip(float d, string type, float f, float v, float q = 1, float delay = 0) { return Bir("n" + d + type + f + v + q + delay, s => s.Burst(delay, d, type, f, v, q, 4), d + delay + .05f); }
+        void Arpej(float f0, int[] semi, float d, float v, float ara) { src.PlayOneShot(ArpejKlip(f0, semi, d, v, ara)); }
+        AudioClip ArpejKlip(float f0, int[] semi, float d, float v, float ara) { return Bir("a" + f0 + string.Join(",", semi) + d + v + ara, s => { for (int i = 0; i < semi.Length; i++) s.Tone(i * ara, f0 * Mathf.Pow(2, semi[i] / 12f), d, "triangle", v); }, semi.Length * ara + d + .05f); }
 
         // ---- olaylar (HTML çağrı yerleri) ----
         // hiz: topun çıkış hızı (m/s; 0 = bilinmiyor, eski düzey). Güç katsayısı p: 12 m/s drop ≈ 0, 60 m/s smaç = 1.
@@ -312,8 +347,12 @@ namespace BirdieSmash.Game
         void Alkis(bool uzun)
         {
             if (Kayitli(uzun ? "alkis_uzun" : "alkis", 1, trb)) return;
-            float sure = uzun ? 2.4f : 1.4f; int cek = rnd.Next(2);
-            trb.PlayOneShot(Bir("alkis" + uzun + cek, s =>
+            trb.PlayOneShot(AlkisKlip(uzun, rnd.Next(2)), .9f);
+        }
+        AudioClip AlkisKlip(bool uzun, int cek)
+        {
+            float sure = uzun ? 2.4f : 1.4f;
+            return Bir("alkis" + uzun + cek, s =>
             {
                 var r = new System.Random(uzun ? 41 + cek : 17 + cek); int n = uzun ? 260 : 130;
                 for (int i = 0; i < n; i++)
@@ -321,7 +360,7 @@ namespace BirdieSmash.Game
                     float u = (float)Mathf.Pow((float)r.NextDouble(), 1.7f), t = u * sure;
                     s.Burst(t, .004f + (float)r.NextDouble() * .003f, "bandpass", 900 + (float)r.NextDouble() * 1700, (.05f + (float)r.NextDouble() * .05f) * (1 - u * .6f), 1.2f, 2);
                 }
-            }, sure + .1f), .9f);
+            }, sure + .1f);
         }
         // Ekipman ekranında rakete/tele dokununca o takımın smaç sesi (HTML racketHit({type:'smash',q:'perfect'})).
         public void Deneme() { src.PlayOneShot(Vurus("smash", "perfect", false, false, false, false)); }
@@ -378,13 +417,15 @@ namespace BirdieSmash.Game
         public void Gasp(float v, float delay = 0)
         {
             if (delay == 0 && Kayitli("ic_cekis", v / .09f, trb)) return;
-            trb.PlayOneShot(Bir("ic" + v + delay, s => s.NoiseSweep(delay, .8f, 380, 900, 2, v, false, u => u < .1875f ? u / .1875f : Mathf.Pow(.0001f, (u - .1875f) / .8125f)), delay + .85f));
+            trb.PlayOneShot(GaspKlip(v, delay));
         }
+        AudioClip GaspKlip(float v, float delay) { return Bir("ic" + v + delay, s => s.NoiseSweep(delay, .8f, 380, 900, 2, v, false, u => u < .1875f ? u / .1875f : Mathf.Pow(.0001f, (u - .1875f) / .8125f)), delay + .85f); }
         public void Cheer(float v)
         {
             if (Kayitli("cosku", v / .18f, trb)) return;
-            trb.PlayOneShot(Bir("cosku" + v, s => { var b = new Synth.Biquad("bandpass", 1200, .6f); int n = (int)(Synth.SR * 1.2f); for (int i = 0; i < n; i++) s.buf[i] += b.Run(s.R() * Mathf.Sin(Mathf.PI * i / n) * (.6f + .4f * Mathf.Sin(i / 900f))) * v; }, 1.25f));
+            trb.PlayOneShot(CheerKlip(v));
         }
+        AudioClip CheerKlip(float v) { return Bir("cosku" + v, s => { var b = new Synth.Biquad("bandpass", 1200, .6f); int n = (int)(Synth.SR * 1.2f); for (int i = 0; i < n; i++) s.buf[i] += b.Run(s.R() * Mathf.Sin(Mathf.PI * i / n) * (.6f + .4f * Mathf.Sin(i / 900f))) * v; }, 1.25f); }
         // ralli: sayının vuruş sayısı (0 = bilinmiyor). Uzun ralliyi seyirci alkışlar (kimin aldığından bağımsız; rakibin
         // sayısında kısa alkış, benim sayımda sevinçle birlikte).
         public void Point(bool mine, bool smacSayisi, int ralli = 0)
@@ -395,7 +436,7 @@ namespace BirdieSmash.Game
             if (ralli >= 10) Alkis(ralli >= 18);
             if (mine && Kayitli("sayi_ben")) { if (smacSayisi) Gasp(.09f); return; }
             if (!mine && Kayitli("sayi_rakip")) return;
-            if (mine) { if (ralli < 10) Cheer(.14f); Arpej(523, new[] { 0, 4, 7, 12 }, .18f, .08f, .07f); if (smacSayisi) Gasp(.09f); }
+            if (mine) { if (ralli < 10) Cheer(.14f); Arpej(523, SAYI_ARPEJ, .18f, .08f, .07f); if (smacSayisi) Gasp(.09f); }
             else Ton(220, .25f, "sawtooth", .05f);
         }
         // İmza vuruşu hazırlığı (2026-10-26, Core/Imza): kare + üçgen iki ton, perde imzaya göre (ses de imzayı tanıtır,
