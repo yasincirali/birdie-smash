@@ -22,11 +22,28 @@ OUT = os.path.join(os.path.dirname(__file__), '..', '..', 'unity', 'BirdieSmash'
 def hex_rgb(h):
     h = h.lstrip('#'); return tuple(int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
 
+RENK_TAVAN, UCGEN_TAVAN = 4, 600
+DETAY = 1.0
+class Fazla(Exception): pass
+def D(n, en_az=5): return max(en_az, int(round(n * DETAY)))   # bölüntü sayısı DETAY ile ölçeklenir
+
 class Ag:
     def __init__(s): s.alt = {}   # renk → üçgen listesi [(p0,p1,p2)]
     def ucgen(s, renk, a, b, c): s.alt.setdefault(renk, []).append((a, b, c))
     def dortgen(s, renk, a, b, c, d): s.ucgen(renk, a, b, c); s.ucgen(renk, a, c, d)
     def yaz(s, id_, tur):
+        # Tasarım dili bütçesi (2026-11-12, yasin: "aşırı detaylı render sorunu yaratacak şeyler olmamalı"): renk başına bir alt ağ = bir çizim
+        # çağrısı, bu yüzden en çok RENK_TAVAN renk (en yakın iki ton birleşir: vurgu renkleri kalır) ve en çok UCGEN_TAVAN üçgen. Aşan kalem
+        # daha düşük DETAY ile yeniden kurulur (calistir); oyuncak dili zaten iri ve az yüzlü.
+        while len(s.alt) > RENK_TAVAN:
+            ks = list(s.alt); en = None
+            for i in range(len(ks)):
+                for j in range(i + 1, len(ks)):
+                    d = sum((a - b) ** 2 for a, b in zip(hex_rgb(ks[i]), hex_rgb(ks[j])))
+                    if en is None or d < en[0]: en = (d, ks[i], ks[j])
+            a, b = (en[1], en[2]) if len(s.alt[en[1]]) >= len(s.alt[en[2]]) else (en[2], en[1])
+            s.alt[a] += s.alt.pop(b)
+        if sum(len(u) for u in s.alt.values()) > UCGEN_TAVAN: raise Fazla(sum(len(u) for u in s.alt.values()))
         pos, nor, idx, gruplar = [], [], {}, []
         for renk, us in s.alt.items():
             ts = []
@@ -51,11 +68,12 @@ class Ag:
                 f.write(struct.pack('<H', len(ts)))
                 for uc in ts: f.write(struct.pack('<3H', *uc))
         ys = [p[1] for p in pos]
-        print(id_, 'köşe', len(pos), 'renk', len(gruplar), 'y', round(min(ys), 2), round(max(ys), 2))
+        print(id_, 'detay', DETAY, 'üçgen', sum(len(t) for _, t in gruplar), 'köşe', len(pos), 'renk', len(gruplar), 'y', round(min(ys), 2), round(max(ys), 2))
 
 # ---- ilkel biçimler (dışa bakan sarım: Unity sol el, saat yönü ön yüz; Coz iki yüzlü yaptığı için yön kritik değil) ----
 def halka(ag, renk, R, r, y, n=20, m=8, c=(0, 0, 0)):
     """Torus: R ana yarıçap, r boru; yatay, merkez y'de."""
+    n, m = D(n, 8), D(m, 4)
     def P(i, j):
         a = 2 * math.pi * i / n; b = 2 * math.pi * j / m; k = R + r * math.cos(b)
         return (c[0] + k * math.cos(a), c[1] + y + r * math.sin(b), c[2] + k * math.sin(a))
@@ -64,6 +82,7 @@ def halka(ag, renk, R, r, y, n=20, m=8, c=(0, 0, 0)):
 
 def koni(ag, renk, taban, uc, r, n=8, kapak=True):
     """taban merkezinden uc noktasına koni; taban dairesi eksene dik."""
+    n = D(n, 4)
     ax = [uc[i] - taban[i] for i in range(3)]; L = math.sqrt(sum(x * x for x in ax)); ax = [x / L for x in ax]
     t = [1, 0, 0] if abs(ax[0]) < .9 else [0, 1, 0]
     e1 = [ax[1] * t[2] - ax[2] * t[1], ax[2] * t[0] - ax[0] * t[2], ax[0] * t[1] - ax[1] * t[0]]; l1 = math.sqrt(sum(x * x for x in e1)); e1 = [x / l1 for x in e1]
@@ -74,8 +93,7 @@ def koni(ag, renk, taban, uc, r, n=8, kapak=True):
         if kapak: ag.ucgen(renk, P(i + 1), P(i), tuple(taban))
 
 def silindir(ag, renk, alt, ust, r, n=10):
-    koni(ag, renk, alt, ust, r, n, False)   # yan yüz için iki koni yerine düz şerit:
-    ag.alt[renk] = ag.alt[renk][:-n]
+    n = D(n, 5)
     ax = [ust[i] - alt[i] for i in range(3)]; L = math.sqrt(sum(x * x for x in ax)); ax = [x / L for x in ax]
     t = [1, 0, 0] if abs(ax[0]) < .9 else [0, 1, 0]
     e1 = [ax[1] * t[2] - ax[2] * t[1], ax[2] * t[0] - ax[0] * t[2], ax[0] * t[1] - ax[1] * t[0]]; l1 = math.sqrt(sum(x * x for x in e1)); e1 = [x / l1 for x in e1]
@@ -87,6 +105,7 @@ def silindir(ag, renk, alt, ust, r, n=10):
 
 def kesik(ag, renk, alt, ust, r0, r1, n=8):
     """Kesik koni (alt yarıçap r0, üst r1), kapaksız: boynuz gibi zincirlenir, eklemi bir sonraki parça örter."""
+    n = D(n, 5)
     ax = [ust[i] - alt[i] for i in range(3)]; L = math.sqrt(sum(x * x for x in ax)); ax = [x / L for x in ax]
     t = [1, 0, 0] if abs(ax[0]) < .9 else [0, 1, 0]
     e1 = [ax[1] * t[2] - ax[2] * t[1], ax[2] * t[0] - ax[0] * t[2], ax[0] * t[1] - ax[1] * t[0]]; l1 = math.sqrt(sum(x * x for x in e1)); e1 = [x / l1 for x in e1]
@@ -189,6 +208,7 @@ def jetpack():
 # arkasında (z <= -.02) durur, omuz enini (|x| <= .5) kolların salınım alanına taşırmaz, altY > -.8 (pelerin gibi sallanmaz).
 def elipsoid(ag, renk, c, r, n=12, m=6, e0=-90, e1=90, eksen='y'):
     """Elipsoit kuşağı: enlem e0..e1 (derece; 0..90 = üst kubbe). renk: sabit ya da (i, j) → renk. eksen 'z-' = kutup arkaya."""
+    if not callable(renk): n, m = D(n, 6), D(m, 3)
     def P(i, j):
         a = 2 * math.pi * i / n; e = math.radians(e0 + (e1 - e0) * j / m)
         x, y, z = math.cos(e) * math.cos(a), math.sin(e), math.cos(e) * math.sin(a)
@@ -204,12 +224,14 @@ def elipsoid(ag, renk, c, r, n=12, m=6, e0=-90, e1=90, eksen='y'):
 def top(ag, renk, c, r, n=8, m=5): elipsoid(ag, renk, c, (r, r, r), n, m)
 
 def disk(ag, renk, c, r, n=12):
+    n = D(n, 6)
     for i in range(n):
         a0 = 2 * math.pi * i / n; a1 = 2 * math.pi * (i + 1) / n
         ag.ucgen(renk, c, (c[0] + r * math.cos(a0), c[1], c[2] + r * math.sin(a0)), (c[0] + r * math.cos(a1), c[1], c[2] + r * math.sin(a1)))
 
 def halka_z(ag, renk, c, R, r, n=14, m=6):
     """Torus, ekseni z (xy düzleminde durur: arkadan bakınca halka)."""
+    n, m = D(n, 8), D(m, 4)
     def P(i, j):
         a = 2 * math.pi * i / n; b = 2 * math.pi * j / m; k = R + r * math.cos(b)
         return (c[0] + k * math.cos(a), c[1] + k * math.sin(a), c[2] + r * math.sin(b))
@@ -332,7 +354,7 @@ def tavus():   # tavus kuyruğu: belden yukarı yelpaze, tüyler arkaya yatık (
         levha(ag, Y[i % 2], [pt(.05, 0), pt(Lf * .55, .10), pt(Lf * .88, .13), pt(Lf, 0), pt(Lf * .88, -.13), pt(Lf * .55, -.10)], .02, zf)
         cx, cy = pt(Lf * .84, 0)
         for rr, renk, dz in ((.085, G, -.024), (.045, M, -.03)):
-            levha(ag, renk, [(cx + rr * math.cos(2 * math.pi * k / 8), cy + rr * math.sin(2 * math.pi * k / 8)) for k in range(8)], .004, lambda x, y, zf=zf, dz=dz: zf(x, y) + dz)
+            levha(ag, renk, [(cx + rr * math.cos(2 * math.pi * k / 6), cy + rr * math.sin(2 * math.pi * k / 6)) for k in range(6)], .004, lambda x, y, zf=zf, dz=dz: zf(x, y) + dz)
     kutu(ag, Y[0], (-.14, -.70, -.14), (.14, -.56, -.04))
     ag.yaz('tavus', 1)
 
@@ -388,13 +410,13 @@ def dur():   # dur tabelası (yazısız: beyaz şerit); beyaz çerçeve, hafif b
 
 def pizza():   # kabarık kenar (simit gibi halka), sos, peynir, biberli dilimler
     ag = Ag(); H, S, P, B, Y = '#d9a25a', '#c8372d', '#f5cf5a', '#a82a22', '#5f8f3a'
-    bombe(ag, H, cember(.50, 20), 0, .04, .05); halka_z(ag, H, (0, 0, .06), .50, .07, 20, 6)
-    bombe(ag, S, cember(.45, 20), .04, .07, .09, 2, False); bombe(ag, P, cember(.40, 20), .06, .085, .11, 3, False)
+    bombe(ag, H, cember(.50, 14), 0, .04, .05, 1); halka_z(ag, H, (0, 0, .06), .50, .07, 14, 5)
+    bombe(ag, S, cember(.45, 14), .04, .07, .09, 1, False); bombe(ag, P, cember(.40, 14), .06, .085, .11, 2, False)
     for r, a in ((.0, 0), (.25, 20), (.25, 95), (.27, 165), (.23, 240), (.27, 305)):
         ar = math.radians(a); c = (r * math.cos(ar), r * math.sin(ar)); zz = bombe_z(.085, .11, r / .40)
-        elipsoid(ag, B, (c[0], c[1], zz), (.075, .075, .02), 8, 3)
+        elipsoid(ag, B, (c[0], c[1], zz), (.085, .085, .022), 8, 3)
     for r, a in ((.14, 60), (.16, 200), (.33, 130), (.12, 310)):
-        ar = math.radians(a); elipsoid(ag, Y, (r * math.cos(ar), r * math.sin(ar), bombe_z(.085, .11, r / .40)), (.035, .02, .015), 6, 3)
+        ar = math.radians(a); elipsoid(ag, Y, (r * math.cos(ar), r * math.sin(ar), bombe_z(.085, .11, r / .40)), (.05, .028, .018), 6, 3)
     kayis(ag); ag.yaz('pizza', 2)
 
 def yildiz_kalkan():   # kabarık beş köşeli yıldız: mor gövde, sarı bombeli iç yıldız, ortada parlak göbek
@@ -409,6 +431,7 @@ KIR, YES, BEY, ALT = '#d6342f', '#2f8f4a', '#fbfbf6', '#f2c230'
 
 def boru(ag, renk, yol, n=12):
     """Eğri boru: yol = [((x, y, z), r), ...]; halkalar yol teğetine dik, çerçeve halkadan halkaya taşınır (ek yerinde boşluk kalmaz)."""
+    n = D(n, 4)
     def nrm(v): L = math.sqrt(sum(x * x for x in v)) or 1; return [x / L for x in v]
     def cap(u, v): return [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]]
     m = len(yol); hal = []; e1 = None
@@ -497,15 +520,15 @@ def hediye_cuvali():   # Noel Baba çuvalı: sırtta dolu çuval, ağzı büzgü
 def seker_baston():   # sırtta çapraz iki dev şeker baston: kırmızı beyaz halkalı, kıvrık uç omuz üstünde
     ag = Ag()
     for sgn in (-1, 1):
-        a, b = (sgn * -.34, -.66, -.16 - .05 * (sgn > 0)), (sgn * .30, .34, -.16 - .05 * (sgn > 0)); n = 8
+        a, b = (sgn * -.34, -.66, -.16 - .05 * (sgn > 0)), (sgn * .30, .34, -.16 - .05 * (sgn > 0)); n = 6
         for k in range(n):
             p = lambda t: tuple(a[i] + (b[i] - a[i]) * t for i in range(3))
-            silindir(ag, KIR if k % 2 == 0 else BEY, p(k / n), p((k + 1) / n), .075, 8)
+            kesik(ag, KIR if k % 2 == 0 else BEY, p(k / n), p((k + 1) / n), .075, .075, 7)
         ust = b
         for k in range(6):   # kıvrım: yarım çember dışa
             t0, t1 = math.pi * k / 6, math.pi * (k + 1) / 6; R = .16
             q = lambda t: (ust[0] + sgn * (R - R * math.cos(t)), ust[1] + R * math.sin(t) * 1.0, ust[2])
-            silindir(ag, BEY if k % 2 == 0 else KIR, q(t0), q(t1), .075, 8)
+            kesik(ag, BEY if k % 2 == 0 else KIR, q(t0), q(t1), .075, .075, 7)
     kutu(ag, YES, (-.12, -.26, -.30), (.12, -.10, -.10)); top(ag, ALT, (0, -.18, -.31), .06, 6, 3)
     ag.yaz('seker_baston', 1)
 
@@ -534,7 +557,7 @@ def cam_sirt():   # sırtta süslü çam: saksı belde, ağaç başın arkasınd
 def kurabiye():   # zencefilli kurabiye adam: kabarık gövde, şeker kremalı kenar süsü, düğmeler, gülen yüz
     ag = Ag(); K, S = '#b5713a', BEY
     def elips(c, rx, ry, renk=K, z0=0, zk=.05, zt=.10):
-        ic = Ag(); bombe(ic, renk, [(rx * math.cos(2 * math.pi * k / 14), ry * math.sin(2 * math.pi * k / 14)) for k in range(14)], z0, zk, zt, 2)
+        ic = Ag(); bombe(ic, renk, [(rx * math.cos(2 * math.pi * k / 9), ry * math.sin(2 * math.pi * k / 9)) for k in range(9)], z0, zk, zt, 2 if rx > .2 else 1, renk == K)
         for r_, us in ic.alt.items():
             for t in us: ag.ucgen(r_, *[(q[0] + c[0], q[1] + c[1], q[2]) for q in t])
     elips((0, -.02), .24, .30, zt=.12); elips((0, -.44), .21, .20, zt=.12)                      # gövde, baş (baş dirsek tarafında: kol sarkınca yukarı)
@@ -543,8 +566,8 @@ def kurabiye():   # zencefilli kurabiye adam: kabarık gövde, şeker kremalı k
         top(ag, '#3a2a1c', (sgn * .08, -.48, .12), .028, 6, 3)
         elips((sgn * .43, -.14), .035, .09, S, .08, .10, .11); elips((sgn * .17, .56), .09, .03, S, .08, .10, .11)
     for y, renk in ((-.10, KIR), (.04, YES), (.18, KIR)): top(ag, renk, (0, y, .125), .04, 6, 3)
-    for k in range(5):
-        a = math.radians(200 + 35 * k); top(ag, S, (.10 * math.cos(a), -.42 - .10 * math.sin(a) * -1 - .10, .125), .018, 5, 2)
+    for k in range(3):
+        a = math.radians(215 + 55 * k); top(ag, S, (.10 * math.cos(a), -.42 - .10 * math.sin(a) * -1 - .10, .125), .024, 5, 3)
     kayis(ag, -.20, .16, .16); ag.yaz('kurabiye', 2)
 
 def kar_tanesi():   # kar tanesi kalkanı: buz mavisi bombeli disk üstünde altı kollu beyaz kristal
@@ -566,11 +589,11 @@ def kar_tanesi():   # kar tanesi kalkanı: buz mavisi bombeli disk üstünde alt
 
 def celenk():   # yılbaşı çelengi: yeşil halka, kırmızı meyveler, altta büyük fiyonk; ortası boş (kol görünür)
     ag = Ag()
-    halka_z(ag, YES, (0, 0, .09), .44, .13, 20, 7)
-    for i in range(20):
-        a = 2 * math.pi * i / 20; rr = .44 + (.10 if i % 2 else -.09); elipsoid(ag, '#3aa65a', (rr * math.cos(a), rr * math.sin(a), .13), (.07, .07, .06), 6, 3)
-    for i in range(9):
-        a = 2 * math.pi * i / 9 + .3; top(ag, KIR if i % 3 else ALT, (.44 * math.cos(a), .44 * math.sin(a), .22), .045, 6, 3)
+    halka_z(ag, YES, (0, 0, .09), .44, .13, 14, 6)
+    for i in range(10):   # 2026-11-12 tasarım dili: 20 küçük yaprak + 9 meyve yerine 10 iri yaprak + 6 iri meyve
+        a = 2 * math.pi * i / 10; rr = .44 + (.11 if i % 2 else -.10); elipsoid(ag, lambda i_, j_: '#3aa65a', (rr * math.cos(a), rr * math.sin(a), .13), (.10, .10, .07), 6, 2)
+    for i in range(6):
+        a = 2 * math.pi * i / 6 + .3; top(ag, KIR if i % 2 else ALT, (.44 * math.cos(a), .44 * math.sin(a), .22), .06, 6, 3)
     for sgn in (-1, 1):
         elipsoid(ag, KIR, (sgn * .17, .44, .24), (.17, .10, .06), 8, 4)
         bombe(ag, KIR, [(sgn * .02, .48), (sgn * .16, .74), (sgn * .04, .70), (sgn * .0, .50)] if sgn > 0 else [(-.0, .50), (-.04, .70), (-.16, .74), (-.02, .48)], .18, .22, .22, 1)
@@ -595,6 +618,7 @@ def kirmizi_burun():   # ren geyiği burnu: burun ucunu (y ≈ −.72, z 1,08) i
 # ≈ .45; dört oyuncak tipinde ölçüldü (aks_giy.py). Bacaklar çömelince yana açılır: uzun etek bacağa girer, bu yüzden parçalar kısa ve geniş
 # (y >= -.35) tutulur. Elips halkalar merkezden z = +.1 öne kayık (göbek öne taşar).
 def elips_halka(ag, renk, rx, rz, r, y, cz=.10, n=24, m=8):
+    n, m = D(n, 10), D(m, 4)
     def P(i, j):
         a = 2 * math.pi * i / n; b = 2 * math.pi * j / m; k = 1 + r * math.cos(b) / ((rx + rz) / 2)
         return (rx * k * math.cos(a), y + r * math.sin(b), cz + rz * k * math.sin(a))
@@ -705,7 +729,7 @@ def supurge():   # cadı süpürgesi: sırtta çapraz, çalı ucu aşağıda, ba
     silindir(ag, '#5a3a1a', q(L + .02), q(L + .08), .085, 10)
     ag.yaz('supurge', 1)
 
-def mezar_tasi():   # mezar taşı: sırtta kemerli taş levha, çatlak ve yosun; yazı yok
+def mezar_tasi():   # KATALOGDA DEĞİL (2026-11-12 tasarım dili: ölüm çağrışımı sevimli oyuncak diline uymuyor). mezar taşı: sırtta kemerli taş levha, çatlak ve yosun; yazı yok
     ag = Ag(); G, G2, Y = '#9aa0a6', '#7c838a', '#5f8f3a'
     ust = [(.34 * math.cos(math.pi * k / 8), .34 + .30 * math.sin(math.pi * k / 8)) for k in range(9)]
     levha(ag, G, [(-.34, -.66), (.34, -.66)] + ust, .14, lambda x, y: -.14)
@@ -741,7 +765,7 @@ def ag_kalkan():   # örümcek ağı kalkanı: koyu disk üstünde beyaz ağ, k�
     for k in range(6): a = math.pi * k / 3; tel((.24, -.20), (.24 + .11 * math.cos(a), -.20 + .11 * math.sin(a)), .008)
     kayis(ag); ag.yaz('ag_kalkan', 2)
 
-def tabut():   # tabut kapağı kalkanı: altıgen ahşap kapak, kenar çıtası, pirinç çiviler ve kulp
+def tabut():   # KATALOGDA DEĞİL (2026-11-12 tasarım dili: ölüm çağrışımı sevimli oyuncak diline uymuyor). tabut kapağı kalkanı: altıgen ahşap kapak, kenar çıtası, pirinç çiviler ve kulp
     ag = Ag(); A, A2, P = '#7a4a26', '#5d371b', '#d9b45a'
     dis = [(-.24, -.62), (.24, -.62), (.40, -.26), (.26, .66), (-.26, .66), (-.40, -.26)]
     bombe(ag, A2, dis, 0, .06, .08); bombe(ag, A, olc(dis, .84), .05, .09, .13, 2, False)
@@ -771,15 +795,15 @@ def cicek(ag, c, r, renk, eksen='y', orta=ALT):
     for k in range(5):
         a = 2 * math.pi * k / 5; u, v = r * .62 * math.cos(a), r * .62 * math.sin(a)
         p = (c[0] + u, c[1], c[2] + v) if eksen == 'y' else (c[0] + u, c[1] + v, c[2])
-        elipsoid(ag, renk, p, (r * .5, r * .28, r * .5) if eksen == 'y' else (r * .5, r * .5, r * .28), 6, 3)
-    top(ag, orta, (c[0], c[1] + (r * .12 if eksen == 'y' else 0), c[2] + (r * .12 if eksen != 'y' else 0)), r * .3, 6, 3)
+        elipsoid(ag, lambda i, j: renk, p, (r * .5, r * .28, r * .5) if eksen == 'y' else (r * .5, r * .5, r * .28), 5, 2)
+    top(ag, orta, (c[0], c[1] + (r * .12 if eksen == 'y' else 0), c[2] + (r * .12 if eksen != 'y' else 0)), r * .3, 5, 3)
 
 def cicek_tac():   # çiçek taç: saçın üstünde yaprak halkası, dokuz çiçek
     ag = Ag(); R = ['#ff8fc0', '#fbfbf6', '#b58cff']
-    halka(ag, '#4f9a45', 1.04, .055, .44, 20, 6)   # saçın çevresine oturur (y .44'te saç yarıçapı ≈ 1,0); tepede havada halka gibi durmaz
-    for k in range(9):
-        a = 2 * math.pi * k / 9 + .2; x, z = 1.08 * math.cos(a), 1.08 * math.sin(a)
-        cicek(ag, (x, .50, z), .20, R[k % 3]); elipsoid(ag, '#63b356', (x * .97 + .10 * math.sin(a), .44, z * .97 - .10 * math.cos(a)), (.10, .03, .06), 6, 2)
+    halka(ag, '#4f9a45', 1.04, .07, .44, 16, 5)   # saçın çevresine oturur (y .44'te saç yarıçapı ≈ 1,0); tepede havada halka gibi durmaz
+    for k in range(6):   # 2026-11-12 tasarım dili: dokuz küçük çiçek + yaprak yerine altı iri çiçek (uzaktan okunur, üçgen bütçesi)
+        a = 2 * math.pi * k / 6 + .52; x, z = 1.10 * math.cos(a), 1.10 * math.sin(a)
+        cicek(ag, (x, .52, z), .28, R[k % 3])
     ag.yaz('cicek_tac', 0)
 
 def kelebek_kanat():   # kelebek kanatları: üst ve alt lop, koyu kenar, benekler; sırttan arkaya ve yana açık
@@ -898,13 +922,12 @@ def fes():   # fes: tepede oturan kırmızı kesik koni (taban saça gömülü),
 
 def sombrero():   # sombrero: geniş, kenarı yukarı kıvrık siper (iç 1,12 > saç), yüksek tepe, renkli şerit ve kenar süsü
     ag = Ag(); H, H2 = '#e3c06a', '#c99a3c'; R = ['#d6342f', '#2f9e5b', '#f2f2f2']
-    elips_kusak(ag, H, 1.12, 1.12, .46, 2.00, 2.00, .40, 0, 28); elips_kusak(ag, H, 2.00, 2.00, .40, 2.26, 2.26, .66, 0, 28)
-    elips_kusak(ag, H2, 1.12, 1.12, .42, 2.00, 2.00, .36, 0, 28); elips_kusak(ag, H2, 2.00, 2.00, .36, 2.30, 2.30, .66, 0, 28)   # alt yüz (kalınlık)
-    elips_halka(ag, R[0], 2.28, 2.28, .05, .67, 0, 28, 5)
-    for i in range(14):
-        a = 2 * math.pi * i / 14; top(ag, R[i % 3], (2.10 * math.cos(a), .52, 2.10 * math.sin(a)), .075, 6, 3)
-    boru(ag, H, [((0, .44, 0), 1.14), ((0, .80, 0), 1.00), ((0, 1.20, 0), .78), ((0, 1.52, 0), .62), ((0, 1.72, 0), .40), ((0, 1.80, 0), .12)], 18); disk(ag, H, (0, 1.80, 0), .13, 18)
-    elips_kusak(ag, R[0], 1.13, 1.13, .50, 1.09, 1.09, .64, 0, 24); elips_kusak(ag, R[1], 1.09, 1.09, .64, 1.05, 1.05, .74, 0, 24)
+    elips_kusak(ag, H, 1.12, 1.12, .46, 2.00, 2.00, .40, 0, 20); elips_kusak(ag, H2, 2.00, 2.00, .40, 2.26, 2.26, .66, 0, 20)
+    elips_halka(ag, R[0], 2.28, 2.28, .06, .67, 0, 20, 4)
+    for i in range(8):
+        a = 2 * math.pi * i / 8; top(ag, R[i % 2], (2.12 * math.cos(a), .54, 2.12 * math.sin(a)), .11, 6, 3)
+    boru(ag, H, [((0, .44, 0), 1.14), ((0, .80, 0), 1.00), ((0, 1.20, 0), .78), ((0, 1.52, 0), .62), ((0, 1.72, 0), .40), ((0, 1.80, 0), .12)], 14); disk(ag, H, (0, 1.80, 0), .13, 14)
+    elips_kusak(ag, R[0], 1.13, 1.13, .50, 1.07, 1.07, .72, 0, 14)
     ag.yaz('sombrero', 0)
 
 def hasir():   # konik hasır şapka: geniş alçak koni (iç yüz saçın dışında: r 1,0'da y .86), örgü halkaları, tepede düğüm
@@ -1020,12 +1043,10 @@ def obi():   # obi kuşağı: geniş ipek kuşak, ince orta kordon, arkada iri f
 def pullu_kusak():   # pullu kuşak: bele bağlı tül şerit, iki sıra sallanan altın pul, yanda düğüm
     ag = Ag(); T, S = '#2f9e8f', '#e8c547'
     elips_kusak(ag, T, .87, .75, -.04, .87, .75, .12)
-    n = 22
-    for sira, (y, off) in enumerate(((-.10, 0), (-.22, .5))):
-        for i in range(n):
-            a = 2 * math.pi * (i + off) / n; nx, nz = math.cos(a), math.sin(a); p = ((.90 + sira * .03) * nx, y, .10 + (.78 + sira * .03) * nz)
-            # pul: yüzü dışa bakan küçük disk (elipsoit, normal yönünde yassı)
-            e = .012; elipsoid(ag, S, p, (.065 * abs(nz) + e * abs(nx) + .01, .065, .065 * abs(nx) + e * abs(nz) + .01), 6, 3)
+    n = 14   # 2026-11-12 tasarım dili: iki sıra 44 küçük pul yerine tek sıra 14 iri pul
+    for i in range(n):
+        a = 2 * math.pi * (i + .5) / n; nx, nz = math.cos(a), math.sin(a); p = (.92 * nx, -.14, .10 + .80 * nz)
+        elipsoid(ag, lambda i_, j_: S, p, (.10 * abs(nz) + .025, .10, .10 * abs(nx) + .025), 6, 2)
     top(ag, T, (.88, .04, .10), .09, 8, 4); boru(ag, T, [((.90, .02, .10), .04), ((1.00, -.16, .12), .035), ((1.02, -.34, .12), .05)], 6)
     ag.yaz('pullu_kusak', 3)
 
@@ -1041,14 +1062,18 @@ KALEM = {
     'hediye_cuvali': hediye_cuvali, 'seker_baston': seker_baston, 'havai_fisek': havai_fisek, 'cam_sirt': cam_sirt,
     'kurabiye': kurabiye, 'kar_tanesi': kar_tanesi, 'celenk': celenk, 'noel_sakal': noel_sakal, 'kirmizi_burun': kirmizi_burun,
     'noel_kemer': noel_kemer, 'simit_bel': simit_bel, 'tutu': tutu, 'seytan_kuyruk': seytan_kuyruk,
-    'balkabagi': balkabagi, 'hayalet': hayalet, 'orumcek': orumcek, 'vampir_dis': vampir_dis, 'supurge': supurge, 'mezar_tasi': mezar_tasi,
+    'balkabagi': balkabagi, 'hayalet': hayalet, 'orumcek': orumcek, 'vampir_dis': vampir_dis, 'supurge': supurge,
     'cicek_tac': cicek_tac, 'kelebek_kanat': kelebek_kanat, 'yaprak_etek': yaprak_etek, 'pirilti': pirilti, 'ugur_bocegi': ugur_bocegi, 'tek_boynuz': tek_boynuz,
     'kirmizi_baslik': kirmizi_baslik, 'kurbaga': kurbaga, 'fasulye': fasulye, 'ejderha_kuyruk': ejderha_kuyruk, 'dev_yuzuk': dev_yuzuk,
     'ejderha_kanat': lambda: kanat('ejderha_kanat', '#3f9b4f', YARASA, (('#e8c547', .72),)),
     'fes': fes, 'sombrero': sombrero, 'hasir': hasir, 'viking': viking, 'kavuk': kavuk, 'pos_biyik': pos_biyik, 'saz': saz, 'davul': davul, 'yelpaze': yelpaze,
     'kilim': kilim, 'tef': tef, 'kilt': kilt, 'obi': obi, 'pullu_kusak': pullu_kusak,
-    'kabak_kalkan': kabak_kalkan, 'ag_kalkan': ag_kalkan, 'tabut': tabut, 'kazan': kazan, 'kedi_kuyruk': kedi_kuyruk,
+    'kabak_kalkan': kabak_kalkan, 'ag_kalkan': ag_kalkan, 'kazan': kazan, 'kedi_kuyruk': kedi_kuyruk,
 }
 
 if __name__ == '__main__':
-    for k in (sys.argv[1:] or KALEM): KALEM[k]()
+    for k in (sys.argv[1:] or KALEM):
+        for DETAY in (1.0, .8, .65, .5, .4):
+            try: KALEM[k](); break
+            except Fazla as e: son = e
+        else: print('!! SIĞMADI', k, son)
