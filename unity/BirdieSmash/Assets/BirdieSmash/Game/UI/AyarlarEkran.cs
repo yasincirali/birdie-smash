@@ -70,8 +70,10 @@ namespace BirdieSmash.Game
             c.Add(AnahtarSatir(L.T("Hareketi azalt"), Ayar.reduce, Ayar.reduceSistem ? (System.Action)null : () => { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.Kaydet(); Degisti(); },
                 Ayar.reduceSistem ? L.T("Sistem ayarından") : null));
             c.Add(Grup(L.T("Dil"))); var dl = Satir(); c.Add(dl);
-            dl.Add(Cip("Türkçe", Ayar.dil == "tr", () => { Ayar.dil = "tr"; Ayar.Kaydet(); }));
-            dl.Add(Cip("English", Ayar.dil == "en", () => { Ayar.dil = "en"; Ayar.Kaydet(); }));
+            // "Sistem" (2026-11-12): iOS'un uygulama başına dil ayarını izler; Yazı satırındaki Sistem çipiyle aynı kalıp.
+            dl.Add(Cip(L.T("Sistem"), Ayar.dilSistem, () => { Ayar.dilSistem = true; Ayar.dil = Ayar.SistemDil(); Ayar.Kaydet(); }));
+            dl.Add(Cip("Türkçe", !Ayar.dilSistem && Ayar.dil == "tr", () => { Ayar.dilSistem = false; Ayar.dil = "tr"; Ayar.Kaydet(); }));
+            dl.Add(Cip("English", !Ayar.dilSistem && Ayar.dil == "en", () => { Ayar.dilSistem = false; Ayar.dil = "en"; Ayar.Kaydet(); }));
             // Game Center düğmesi buradan kalktı (2026-11-07 inceleme, fikir 20:09 #3): başlıksız, "Dil" grubunun parçası gibi
             // okunuyordu ve Profil › Başarımlar'da aynısı vardı. Başarımı gören oyuncu oradan geçer; Ayarlar bir öğe kısa.
             c.Add(Grup(L.T("Yardım")));

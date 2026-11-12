@@ -417,6 +417,22 @@ namespace BirdieSmash.Game
         public void Tik(float f = 880) { Ton(f, .05f, "triangle", .04f); }
         // Smaç hazır (2026-11-11): iki kısa yükselen ton (E6 → A6), perfect tonundan tiz ve kısa; vuruş sesinin altında kalmasın diye hafif.
         public void SmacHazir() { Ton(1319, .06f, "sine", .05f); Ton(1760, .09f, "sine", .05f, .06f); }
+        // Dans imzaları (2026-11-12 inceleme, fikir 12:05 #1): #88'in altı dansı yalnız görüntüydü; "her olay üç kanal" kuralının dışında kalan tek
+        // kozmetik ailesi, Dolap'taki alım kararı da sessiz önizlemeye bakıyordu. Her dansa kendi sentezimizle (kayıt yok, CC0 kuralı) 1–2 vuruşluk motif;
+        // seçildiğinde bir kez (döngü her turda tekrar etmez, sinir etmesin) ve maç sonu zirvesinde bir kez. Sayı arası sevinçlerinde çalmaz (sayı arası kısa).
+        // Seviyeler Tik/SmacHazir düzeyinde (.03–.05): vuruş ve alkışın altında kalır. Hareketi azaltta ses sürer.
+        public void Dans(string id)
+        {
+            switch (id)
+            {
+                case "robot": Ton(880, .06f, "square", .03f); Ton(660, .08f, "square", .03f, .12f); break;                                   // iki bip
+                case "tavuk": Ton(620, .05f, "square", .028f); Ton(820, .04f, "square", .026f, .07f); Ton(560, .07f, "square", .028f, .14f); break;   // gıdak
+                case "twist": Ton(523, .12f, "triangle", .05f); Ton(659, .16f, "triangle", .05f, .18f); break;                              // iki notalık swing
+                case "dalga": Arpej(523, new[] { 0, 4, 7, 12 }, .12f, .04f, .06f); Gurultu(.3f, "bandpass", 2500, .03f, 1, .05f); break;   // yükselen + alkış hışırtısı
+                case "helikopter": Gurultu(.06f, "lowpass", 320, .07f); Gurultu(.06f, "lowpass", 320, .07f, 1, .11f); Gurultu(.06f, "lowpass", 320, .07f, 1, .22f); break;   // vuvuvu
+                case "gitar": Arpej(196, new[] { 0, 7, 12, 16, 19 }, .4f, .035f, .025f); break;                                            // açık akor tıngırtısı
+            }
+        }
         public void Iyi() { Ton(784, .12f, "triangle", .05f); }
         public void Hedefte() { Ton(1320, .1f, "triangle", .05f); }
         public void Iska() { if (Kayitli("iska", .6f)) return; Gurultu(.05f, "highpass", 1200, .05f); }

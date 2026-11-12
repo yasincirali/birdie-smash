@@ -1,4 +1,10 @@
 === UNITY ===
+Danslar sesli, uzun smaç çubuğu, "Sistem" dili (12 Kasım öğle):
+- Her dansın kendi kısa sesi var (robotta iki bip, gitarda akor, helikopterde pervane…). Dolap'ta dans seçince bir kez, maç sonu sevincinde zirvede bir kez çalıyor; sayı aralarında çalmıyor.
+- Maçtaki smaç gücü çubuğu daha uzun: dolunca yazı artık kısaca "Smaç hazır".
+- Ayarlar > Dil'de yeni "Sistem" seçeneği: telefonun ya da iPhone Ayarlar > Birdie Smash > Dil'in dilini izler. Yeni kurulumda varsayılan bu; daha önce seçtiğin dil değişmez.
+Nasıl denenir: Dolap > Sevinç'te "Gitar" dansını seç: akor sesi bir kez duyulmalı; dans döngüde tekrar ederken ses tekrar etmemeli. Bir maç kazan, maç sonu sevinci dans ise zirvede sesi gelmeli. Maçta çubuk eskisinden uzun görünmeli. Ayarlar > Dil > Sistem'i seç, iPhone Ayarlar > Birdie Smash > Dil'den İngilizce yap, oyuna dön: oyun İngilizce açılmalı.
+
 Art arda sayı, ayarlanabilir kaydırma, menünün ilk açılışı (12 Kasım sabah):
 - Üst üste 3 sayı alınca salondaki panolarda "3 IN A ROW" yazıyor ve seyirci alkışlıyor; 5 sayıda alkış uzuyor, tribünde dalga oluyor. Gerideyken başlayan seriyle skoru eşitleyince ya da öne geçince bir kez "Geri döndün!" çıkıyor. Rakibin serisi için bir şey olmuyor.
 - Ayarlar'da yeni "Kaydırma" satırı: Kısa, Normal, Uzun. Kısa'da daha kısa ve yavaş kaydırma da vuruş sayılıyor; Uzun'da yalnız uzun, hızlı kaydırma. Vuruşun gücü ve yönü değişmiyor. Varsayılan Normal (eskisiyle aynı).

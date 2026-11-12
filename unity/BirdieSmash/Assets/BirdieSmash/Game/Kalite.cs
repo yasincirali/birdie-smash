@@ -115,7 +115,8 @@ namespace BirdieSmash.Game
             {
                 return "basamak " + Basamak + " · MSAA " + QualitySettings.antiAliasing + " · gölge " + QualitySettings.shadows + " " + QualitySettings.shadowResolution + " " + QualitySettings.shadowDistance.ToString("0.0") + " m · piksel ışık " + QualitySettings.pixelLightCount + " · aniso "
                     + QualitySettings.anisotropicFiltering + " · kemik " + QualitySettings.skinWeights + " · hedef " + Application.targetFrameRate + " fps · vSync " + QualitySettings.vSyncCount
-                    + " · çözünürlük " + Screen.width + "x" + Screen.height + " · bellek " + SystemInfo.systemMemorySize + " MB · çekirdek " + SystemInfo.processorCount + " · ses " + AudioSettings.GetConfiguration().dspBufferSize + "/" + AudioSettings.outputSampleRate + " Hz · ısı " + Isil;
+                    + " · çözünürlük " + Screen.width + "x" + Screen.height + " · bellek " + SystemInfo.systemMemorySize + " MB · çekirdek " + SystemInfo.processorCount + " · ses " + AudioSettings.GetConfiguration().dspBufferSize + "/" + AudioSettings.outputSampleRate + " Hz · ısı " + Isil
+                    + " · GC artımlı " + (UnityEngine.Scripting.GarbageCollector.isIncremental ? "evet" : "hayır");   // 2026-11-12 (fikir 12:05 #5): CiBuild ayarını cihazda doğrular
             }
         }
 

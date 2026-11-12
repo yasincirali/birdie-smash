@@ -102,7 +102,7 @@ namespace BirdieSmash.Game
             // iniyor, MSAA yokken kırık/kesik görünüyordu. MSAA, gölge ve çözünürlük cihaza göre Kalite'de.
             Kalite.Kur(gameObject, cam);
             shuttle = ShuttleView.Build(transform); shuttle.cam = cam; sfx = Sfx.Build(transform, cg.transform);
-            vitrin = Vitrin.Build(transform); afis = Afis.Build(transform); fx = Fx.Build(transform, cam); yukleyici = Yukleyici.Build(transform);
+            vitrin = Vitrin.Build(transform); Vitrin.DansSes = sfx.Dans; afis = Afis.Build(transform); fx = Fx.Build(transform, cam); yukleyici = Yukleyici.Build(transform);
             hud = gameObject.AddComponent<Hud>(); hud.root = this; hud.Acilis();
             gameObject.AddComponent<KadrajIsaret>().root = this;   // yüksek top: ekran dışı işareti (Core/Kadraj)
             sfx.menude = () => ekran == Ekran.Menu && !hud.PerdeKapali;   // menü müziği: perde kapanırken söner, maçta yok
@@ -1111,6 +1111,7 @@ namespace BirdieSmash.Game
                 var ayak = Kit.W(match.me.x, match.me.y, .02f);
                 fx.Dalga(ayak, Kit.Hex("#F9D272"), 110); fx.Burst(ayak + Vector3.up * 1.1f, Kit.Hex("#F9D272"), 26, 360, "spark"); fx.Burst(ayak + Vector3.up * 1.4f, Kit.Hex("#d8ff5a"), 18, 300, "spark");
                 Yerel.Hap("hit");   // iniş tıkı (maç sonu "win" deseni ayrıca çalar)
+                if (PlayerView.Dans(me.MacSonuId)) sfx.Dans(me.MacSonuId);   // dans imzası zirvede bir kez (2026-11-12, Sfx.Dans)
             }
             zaferAn0 = an;
         }

@@ -121,6 +121,10 @@ namespace BirdieSmash.EditorTools
             // İvmeölçer kapalı (2026-11-11 inceleme, fikir 21:05 #3): oyun eğim/sallama okumuyor; Unity iOS varsayılanı 60 Hz örnekleme
             // boşuna sensör ve pil harcıyordu. Eğimli bir özellik gelirse burası açılır.
             PlayerSettings.accelerometerFrequency = 0;
+            // Artımlı çöp toplama açıkça (2026-11-12 inceleme, fikir 12:05 #5): ProjectSettings depoda olmadığı için mod oluşturulan
+            // varsayılana kalıyordu. Kalite.Hareket menüyü 120 Hz'e (8,3 ms bütçe) çıkarabiliyor; artımlı değilse tek toplama birkaç kareyi
+            // yutar, maç ortasında kaçan vuruş olur. Mod ekran turu perf satırında (Kalite.Tani "GC artımlı evet/hayır").
+            PlayerSettings.gcIncremental = true;
             // Çökme raporu API'si (2026-11-11, TF'de maç içi çökme, kayıt yoktu): iOS yerel çökmesi bir sonraki açılışta
             // CrashReport.reports'tan okunur (Game/Cokme.cs); ek maliyeti yalnız çökme anında.
             PlayerSettings.enableCrashReportAPI = true;
