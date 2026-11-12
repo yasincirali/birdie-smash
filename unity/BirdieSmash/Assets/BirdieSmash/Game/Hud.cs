@@ -185,6 +185,7 @@ namespace BirdieSmash.Game
         void OnDestroy() { Font.textureRebuilt -= AtlasYenilendi; }
         // Gizli FPS katmanında "font atlası n": dinamik TTF glif atlası yeniden kurulduysa TF ekran görüntüsünde görünsün (2026-11-11).
         static int atlasN; static void AtlasYenilendi(Font f) { atlasN++; }
+        public static int AtlasN { get { return atlasN; } }   // ekran turu perf: sayı anı/maç sonu bölümlerinde yeniden kurulum sayısı
 
         void Update()
         {
