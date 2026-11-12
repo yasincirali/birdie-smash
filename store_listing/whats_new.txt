@@ -1,4 +1,12 @@
 === UNITY ===
+Ana ekranda sesli dans, sade kayıp kartı, iOS Oyun Modu (12 Kasım gece):
+- Ana ekranda kendi oyuncuna dokununca seçtiğin sevinç tam süresince oynuyor; dans seçtiysen dansın kendi sesi bir kez çalıyor.
+- Kariyer maçını kaybedince kartta "... basamağı seni bekliyor" cümlesi artık yok: basamak adı zaten üstte ve düğmenin altında yazıyor.
+- Zor ya da Usta'da üst üste kaybedince çıkan ipucu artık doğru yeri gösteriyor: zorluk çipini maçtan önce bir kademe indirebilirsin, yıldızların aynı kalır.
+- Oyun iPhone'da Oyun Modu'nu açabiliyor (iOS 18 ve sonrası): arka plan işleri azalır, kablosuz kulaklıkta ses gecikmesi düşer.
+- Maç sonu kartı açıkken arka planda daha az iş yapılıyor.
+Nasıl denenir: Dolap > Sevinç'te bir dans seç, ana ekrana dön ve kendi oyuncuna dokun: dans bir kez sesli ve sonuna kadar oynamalı; dans olmayan bir sevinç seçince kısa sürüp durmalı. Zor'da bir kariyer maçını kaybet: kartta "seni bekliyor" yazmamalı; üç kez kaybedince "zorluk çipini bir kademe indir" ipucu çıkmalı. Kablosuz kulaklıkla bir maç oynarken Denetim Merkezi'nde Oyun Modu simgesi görünmeli.
+
 Kol kalkanı resimleri, dansların tamamı, uzun menü müziği (12 Kasım akşamüstü):
 - Dolap > Sırt > Kol bölümündeki kartlar artık kalkanın kendisini yakından gösteriyor (önceden hepsi aynı yüz resmiydi).
 - Dolap'ta bir şey satın alınca seçili dans yarıda kesilmeden sonuna kadar oynuyor.
