@@ -307,6 +307,8 @@ namespace BirdieSmash.Game
         void Ooo(float k) { if (Kayitli("ooo", .5f + .5f * k, trb)) return; trb.PlayOneShot(Bir("ooo", s => { s.NoiseSweep(0, .9f, 380, 620, 1.6f, .09f, false, u => Mathf.Sin(Mathf.PI * Mathf.Min(1, u * 1.3f)) * (1 - u * .4f)); s.NoiseSweep(0, .9f, 900, 1150, 2.2f, .035f, false, u => Mathf.Sin(Mathf.PI * Mathf.Min(1, u * 1.3f))); }, .95f), .5f + .5f * k); }
         // Alkış: rastgele zamanlı el çırpışları (her biri 4–7 ms gürültü, bandpass 900–2600 Hz), yoğunluk başta yüksek, sonda
         // seyrek. Ralli uzunluğuna göre iki boy (kısa 1,4 sn, uzun 2,4 sn); her boy iki çekimle önbellekte.
+        // Art arda sayı (GameRoot.SeriSay): uzun ralli alkışıyla aynı örnek, 5+ seride uzun boy.
+        public void SeriAlkis(bool uzun) { Alkis(uzun); }
         void Alkis(bool uzun)
         {
             if (Kayitli(uzun ? "alkis_uzun" : "alkis", 1, trb)) return;

@@ -53,6 +53,11 @@ namespace BirdieSmash.Game
             // tuytop_* anahtarları aynı: Müzik ayrı (2026-10-30, ses kapalıyken müzik de susar, seçim korunur); Titreşim
             // Hareketi azalt'tan bağımsız, açılınca örnek tık (2026-11-07; Duraklat'a eklenmez); sistem hareketi azalttıysa satır
             // pasif, altında "Sistem ayarından".
+            // Kaydırma (2026-11-12 inceleme, fikir 07:05 #5): vuruş eşiği üç kademe; seçili kademenin tek soluk cümlesi (kamera kalıbı).
+            c.Add(Grup(L.T("Kaydırma"))); var kd = Satir(); kd.AddToClassList("cip-sarar"); c.Add(kd);
+            string[] Ka = { "Kısa", "Normal", "Uzun" }, KaAcik = { "Kısa ve yavaş kaydırma da vuruş sayılır", "Varsayılan eşik", "Yalnız uzun, hızlı kaydırma vuruş sayılır" };
+            for (int i = 0; i < 3; i++) { int id = i; kd.Add(Cip(L.T(Ka[i]), Ayar.kaydirma == id, () => { Ayar.kaydirma = id; Ayar.Kaydet(); Degisti(); })); }
+            c.Add(Yazi(L.T(KaAcik[Mathf.Clamp(Ayar.kaydirma, 0, 2)]), 12, "soluk"));
             c.Add(Grup(L.T("Ses ve his")));
             c.Add(AnahtarSatir(L.T("Ses"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Degisti(); }));
             c.Add(AnahtarSatir(L.T("Müzik"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.Kaydet(); Degisti(); }));

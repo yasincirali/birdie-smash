@@ -1,4 +1,11 @@
 === UNITY ===
+Art arda sayı, ayarlanabilir kaydırma, menünün ilk açılışı (12 Kasım sabah):
+- Üst üste 3 sayı alınca salondaki panolarda "3 IN A ROW" yazıyor ve seyirci alkışlıyor; 5 sayıda alkış uzuyor, tribünde dalga oluyor. Gerideyken başlayan seriyle skoru eşitleyince ya da öne geçince bir kez "Geri döndün!" çıkıyor. Rakibin serisi için bir şey olmuyor.
+- Ayarlar'da yeni "Kaydırma" satırı: Kısa, Normal, Uzun. Kısa'da daha kısa ve yavaş kaydırma da vuruş sayılıyor; Uzun'da yalnız uzun, hızlı kaydırma. Vuruşun gücü ve yönü değişmiyor. Varsayılan Normal (eskisiyle aynı).
+- Antrenmandan sonra ana menü ilk kez tam açıldığında öğeler yukarıdan aşağı sırayla beliriyor (bir kez, yarım saniyeden kısa). Hareketi azalt açıksa anında görünüyor.
+- File bandına değip karşıya düşen topta yazı kısaldı: "File bandı!".
+Nasıl denenir: Bir maçta üst üste 3 sayı al: panolarda "3 IN A ROW" ve alkış olmalı. 0-3 gerideyken 3-4 sayı üst üste alıp eşitle: "Geri döndün!" bir kez çıkmalı. Ayarlar > Kaydırma'da Kısa'yı seç ve maçta kısa kaydır: "Kısa kaydırdın" ıskası daha az çıkmalı. Uygulamayı silip yeniden kurduysan antrenmanı bitir: menü öğeleri sırayla belirmeli.
+
 Yeni şapkalar, sırt eşyaları, kol kalkanları ve danslar (12 Kasım sabaha karşı):
 - Dolap'a 8 yeni şapka (Pervaneli bere, Tencere, Mantar şapka, Saksı kaktüs, Lastik ördek, Dev tüy top, Simit hale, UFO), 5 yeni sırt eşyası (Yedek top tüpü, Kurma kolu, Kaplumbağa kabuğu, Balonlar, Tavus kuyruğu) geldi.
 - Yeni bölüm: Dolap > Sırt sayfasının altında "Kol". Sol kola 5 kalkan takılabiliyor (Tencere kapağı, Şövalye kalkanı, Dur tabelası, Pizza kalkanı, Yıldız kalkanı). Hepsi yalnızca görünüş; oyuna etkisi yok.
