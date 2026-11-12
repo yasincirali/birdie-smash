@@ -1338,7 +1338,7 @@ namespace BirdieSmash.Core
                         else if (pen < .03f && Math.Abs(s.vy) > 6)
                         {
                             s.y = Court.NET - yan * Court.TOP_PAY; s.z = lim + .02f; s.vy = -yan * 1.3f; s.vx *= .3f; s.vz = .7f; s.netCord = true; net.Impulse(s.x, lim, sp, true, -yan);
-                            Emit(Ev.Cord, s.from, s.type, s.x, Court.NET, s.z, .3f); Say(null, null, s.x, Court.NET, s.z, "File bandı! Top karşıya yuvarlandı", 2);
+                            Emit(Ev.Cord, s.from, s.type, s.x, Court.NET, s.z, .3f); Say(null, null, s.x, Court.NET, s.z, "File bandı!", 2);   // 2026-11-12 inceleme (#6): görüntü yuvarlanmayı zaten gösteriyor; ralli ortasında iki kelime
                         }
                         else if (pen < Court.BANT)
                         {

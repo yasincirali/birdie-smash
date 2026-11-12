@@ -51,7 +51,7 @@ namespace BirdieSmash.EditorTools
                 if (opt.scenes.Length == 0) throw new Exception("Build listesinde sahne yok (DemoKurulum.Kur)");
                 var rep = BuildPipeline.BuildPlayer(opt);
                 if (rep.summary.result != BuildResult.Succeeded) throw new Exception("BuildPlayer: " + rep.summary.result + ", hata " + rep.summary.totalErrors);
-                PlistSifreleme(Path.Combine(path, "Info.plist")); PlistProMotion(Path.Combine(path, "Info.plist")); PlistReklam(Path.Combine(path, "Info.plist"));
+                PlistSifreleme(Path.Combine(path, "Info.plist")); PlistProMotion(Path.Combine(path, "Info.plist")); PlistOyunModu(Path.Combine(path, "Info.plist")); PlistReklam(Path.Combine(path, "Info.plist"));
                 IosYerellestirme(path);
                 Debug.Log("Birdie Smash iOS Xcode projesi: " + path);
                 EditorApplication.Exit(0);
@@ -121,6 +121,10 @@ namespace BirdieSmash.EditorTools
             // İvmeölçer kapalı (2026-11-11 inceleme, fikir 21:05 #3): oyun eğim/sallama okumuyor; Unity iOS varsayılanı 60 Hz örnekleme
             // boşuna sensör ve pil harcıyordu. Eğimli bir özellik gelirse burası açılır.
             PlayerSettings.accelerometerFrequency = 0;
+            // Artımlı çöp toplama açıkça (2026-11-12 inceleme, fikir 12:05 #5): ProjectSettings depoda olmadığı için mod oluşturulan
+            // varsayılana kalıyordu. Kalite.Hareket menüyü 120 Hz'e (8,3 ms bütçe) çıkarabiliyor; artımlı değilse tek toplama birkaç kareyi
+            // yutar, maç ortasında kaçan vuruş olur. Mod ekran turu perf satırında (Kalite.Tani "GC artımlı evet/hayır").
+            PlayerSettings.gcIncremental = true;
             // Çökme raporu API'si (2026-11-11, TF'de maç içi çökme, kayıt yoktu): iOS yerel çökmesi bir sonraki açılışta
             // CrashReport.reports'tan okunur (Game/Cokme.cs); ek maliyeti yalnız çökme anında.
             PlayerSettings.enableCrashReportAPI = true;
@@ -202,6 +206,18 @@ namespace BirdieSmash.EditorTools
             if (t.Contains("CADisableMinimumFrameDurationOnPhone")) { Debug.Log("ProMotion anahtarı Unity çıktısında var"); return; }
             int i = t.LastIndexOf("</dict>", StringComparison.Ordinal); if (i < 0) return;
             File.WriteAllText(plist, t.Substring(0, i) + "\t<key>CADisableMinimumFrameDurationOnPhone</key>\n\t<true/>\n" + t.Substring(i));
+        }
+
+        // iOS Oyun Modu (2026-11-12 22:05 fikir 5, inceleme YAP): iOS 18+ oyun kategorisindeki uygulamada arka plan işini kısar ve
+        // Bluetooth kulaklık gecikmesini düşürür (raket sesi vuruşla eş kalır). Kategori ASC'de Sports olsa da plist'te yoktu; Unity
+        // yazmıyorsa iki anahtar eklenir, yazıyorsa dokunulmaz (anahtar başına ayrı kontrol).
+        static void PlistOyunModu(string plist)
+        {
+            if (!File.Exists(plist)) return; var t = File.ReadAllText(plist); string ek = "";
+            if (!t.Contains("LSApplicationCategoryType")) ek += "\t<key>LSApplicationCategoryType</key>\n\t<string>public.app-category.sports-games</string>\n";
+            if (!t.Contains("GCSupportsGameMode")) ek += "\t<key>GCSupportsGameMode</key>\n\t<true/>\n";
+            int i = t.LastIndexOf("</dict>", StringComparison.Ordinal); if (ek == "" || i < 0) return;
+            File.WriteAllText(plist, t.Substring(0, i) + ek + t.Substring(i)); Debug.Log("Oyun Modu anahtarları eklendi");
         }
 
         // ---- AdMob (2026-11-07, yasin: "şerit en başta bağlı olarak çıksın"; Game/ReklamSdk.cs) ----

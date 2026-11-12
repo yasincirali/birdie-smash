@@ -5,7 +5,7 @@
 //   altı yuva yükseltmesi (önizleme çubukları: gri şimdi, yeşil yükseltince), "Eşit şartlar", modeller ve tel gerginliği,
 //   istatistik satırı. Ayarlar (+ Unity: dil). Nasıl oynanır. Lisanslar.
 //   Maç: skor kutusu (sayı alınca büyür), servis noktası, sol üst kutu (Ralli 3'ten sonra · 3 görev noktası), smaç gücü çubuğu
-//   ("Sıçrayarak smaç hazır" turuncu nabız), servis şeridi (altta), vuruş halesi + etiket, hedef önizleme adı, parmak izi,
+//   ("Smaç hazır" turuncu nabız), servis şeridi (altta), vuruş halesi + etiket, hedef önizleme adı, parmak izi,
 //   çizgi kamerası dairesi, tribün flaşları, ekran parlaması, antrenman kartı (hız bandı ve iğne, bilgi adımı çerçevesi,
 //   antrenör çağrısı, iz), maç sonu (Tüy/XP ödülü, yükseltme hazır), duraklat, smaç perdesi.
 // Dokunma alanı: her düğme en az 44/640 ekran yüksekliği (iPhone SE 667 pt dahil ≥ 44 pt); güvenli alan Screen.safeArea.
@@ -492,11 +492,14 @@ namespace BirdieSmash.Game
             if (!ogr && root.ekran == Ekran.Oyun) y = UstaKart(M, y);   // görev sonuç ekranında kart kalkar (Over üstüne binmesin)
             // smaç gücü çubuğu
             {
-                bool dol = M.energy >= 1; string lab = L.T(dol ? "Sıçrayarak smaç hazır" : "Smaç gücü"); var ls = Stil(leftB, Mathf.RoundToInt(14 * fu));   // 2026-11-07 (AD5): 12 → 14; oyunun ana arcade göstergesi en sönük öğeydi
+                bool dol = M.energy >= 1; string lab = L.T(dol ? "Smaç hazır" : "Smaç gücü"); var ls = Stil(leftB, Mathf.RoundToInt(14 * fu));   // 2026-11-07 (AD5): 12 → 14; oyunun ana arcade göstergesi en sönük öğeydi
                 // 2026-11-11 inceleme (fikir 18:05 #3): çubuğun başı iki etiketin GENİŞ olanından hesaplanır. Önce o anki etiketten
                 // hesaplanıyordu: dolduğu karede etiket "Sıçrayarak smaç hazır" olunca çubuk ~%30 kısalıp sağa atlıyordu; oyuncunun beklediği
                 // an "çubuk zıpladı" diye okunuyordu. Genişlik dil/yazı boyu değişince bir kez ölçülür (her kare CalcSize yok).
-                if (gucEtiketBoy != ls.fontSize || gucEtiketDil != Ayar.dil) { gucEtiketBoy = ls.fontSize; gucEtiketDil = Ayar.dil; gucEtiketW = Mathf.Max(ls.CalcSize(Ic(L.T("Smaç gücü"))).x, ls.CalcSize(Ic(L.T("Sıçrayarak smaç hazır"))).x); }
+                // 2026-11-12 inceleme (fikir 12:05 #2): dolu etiket "Sıçrayarak smaç hazır" → "Smaç hazır". Uzun etiket ~2 kat genişti ve yer
+                // ayrıldığı için çubuk maç boyunca ~%25–30 kısa duruyordu; dolu anı zaten üç kanalda söyleniyor (ses + tick + kıvılcım + yazı),
+                // "sıçrayarak" bilgisi öğreticide. Kısa etiket Büyük yazıda dar ekranda taşmayı da azaltır.
+                if (gucEtiketBoy != ls.fontSize || gucEtiketDil != Ayar.dil) { gucEtiketBoy = ls.fontSize; gucEtiketDil = Ayar.dil; gucEtiketW = Mathf.Max(ls.CalcSize(Ic(L.T("Smaç gücü"))).x, ls.CalcSize(Ic(L.T("Smaç hazır"))).x); }
                 float lw = gucEtiketW, bx = lx + lw + 10 * u, bw = Mathf.Max(40 * u, rx - bx), by = H - bot - 12 * u;
                 bool isaret = ogr && M.OgrA() != null && M.OgrA().bilgi == "guc";
                 GUI.color = dol ? Kit.Hex(DOLU_HUD) : Kit.Hex(SOLUK_HUD); Etk(new Rect(lx, by - 9 * u, lw + 4 * u, 24 * u), lab, ls); GUI.color = Color.white;
@@ -1334,6 +1337,7 @@ namespace BirdieSmash.Game
             float p = r.width * .2f; Tex(new Rect(r.x + p, r.y + p, r.width - 2 * p, r.height - 2 * p), Ikonlar.Kisi, new Color(A_YAZI.r, A_YAZI.g, A_YAZI.b, .85f * a));
         }
         // Üç büyük yıldız (a-bigstars): ortadaki büyük; alınan dolu altın + parıltı, alınmayan çerçeve; altında koşul (✓/✗ + yazı).
+        readonly string[] yKosul = new string[3]; readonly float[] yTw = new float[3], yH = new float[3], yW = new float[3]; readonly int[] yFs = new int[3]; readonly GUIStyle[] ySt = new GUIStyle[3], yBaz = new GUIStyle[3];
         float YildizCiz(float x, float y, float w, float s, float t, bool rm, float al, float ol = 1)
         {   // ol: kahraman yerleşiminde .6 (yıldızlar küçük, koşul yazısı aynı boy: anlam yazıda da)
             var R = root; int n = Mathf.Clamp(R.bittiYildizN, 1, 3); float col = Mathf.Min(112 * s, w / n), rowH = 92 * s * ol, x0 = W / 2 - col * n / 2, kh = 0;
@@ -1349,10 +1353,18 @@ namespace BirdieSmash.Game
                 string ks = R.bittiKosul != null && i < R.bittiKosul.Length ? R.bittiKosul[i] : ""; float ik = 13 * s, tw = col - ik - 8 * s;
                 // 2026-11-07 (r127 sonuc_se_buyuk "Oppon/ent", "smash/es"): dar sütunda uzun sözcük harf ortasından bölünüyordu;
                 // en uzun sözcük sığana kadar yazı küçülür (en çok %75'e).
-                var kst = aKosul; { string uz = ""; foreach (var kw in ks.Split(' ')) if (kw.Length > uz.Length) uz = kw;
-                    for (int fs = aKosul.fontSize; fs > Mathf.RoundToInt(aKosul.fontSize * .75f) && kst.CalcSize(Ic(uz)).x > tw; fs--) kst = Stil(aKosul, fs - 1); }
-                float h = kst.CalcHeight(Ic(ks), tw);
-                float tx = c.x - Mathf.Min(tw, kst.CalcSize(Ic(ks)).x) / 2 + ik / 2 + 2 * s, ty = y + rowH + 8 * s, ka = rm ? al : Mathf.Clamp01((t - .3f) / .3f);
+                // Ölçüm önbelleği (2026-11-12 22:05 fikir 7, inceleme YAP): Split + küçültme döngüsü + CalcHeight/CalcSize her OnGUI
+                // çağrısında (Layout + Repaint) koşuyordu, kart açık kaldıkça çöp üretiyordu. Yazı, sütun genişliği ya da taban boy
+                // değişince yeniden ölçülür (ekran dönmesi, Büyük yazı); aksi hâlde saklanan stil ve boylar kullanılır.
+                GUIStyle kst; float h, kw0;
+                if (yKosul[i] != ks || yTw[i] != tw || yFs[i] != aKosul.fontSize || yBaz[i] != aKosul || ySt[i] == null)
+                {
+                    kst = aKosul; string uz = ""; foreach (var kw in ks.Split(' ')) if (kw.Length > uz.Length) uz = kw;
+                    for (int fs = aKosul.fontSize; fs > Mathf.RoundToInt(aKosul.fontSize * .75f) && kst.CalcSize(Ic(uz)).x > tw; fs--) kst = Stil(aKosul, fs - 1);
+                    yKosul[i] = ks; yTw[i] = tw; yFs[i] = aKosul.fontSize; yBaz[i] = aKosul; ySt[i] = kst; yH[i] = kst.CalcHeight(Ic(ks), tw); yW[i] = kst.CalcSize(Ic(ks)).x;
+                }
+                kst = ySt[i]; h = yH[i]; kw0 = yW[i];
+                float tx = c.x - Mathf.Min(tw, kw0) / 2 + ik / 2 + 2 * s, ty = y + rowH + 8 * s, ka = rm ? al : Mathf.Clamp01((t - .3f) / .3f);
                 Tex(new Rect(tx - ik - 3 * s, ty + 1 * s, ik, ik), var_ ? Ikonlar.Tik : Ikonlar.Carpi, var_ ? new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, ka) : new Color(A_SOLUK.r, A_SOLUK.g, A_SOLUK.b, ka));
                 Yaz(new Rect(tx, ty, tw, h), ks, kst, var_ ? A_YAZI : A_SOLUK, ka); kh = Mathf.Max(kh, h);
             }

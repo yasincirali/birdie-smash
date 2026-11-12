@@ -87,6 +87,30 @@ namespace BirdieSmash.Game
             // 2026-11-10 (yasin: "catch yok", kıyas: savaş geçidi şeridi, Forza seviye ödülü): sıradaki seviyenin ödülü ana ekranda
             // tek satır; dokununca Seviye yolu (Sv 30'a kadar bütün ödüller). Sv 30'da satır yok.
             var sh = SvHedefSatir(); if (sh != null) c.Add(sh);
+            // Menü ilk kez tam açılıyor (2026-11-12 inceleme, fikir 07:05 #3): öğreticiden sonra plaka, çipler, OYNA, kutucuklar ve
+            // seviye satırı tek karede düşüyordu; nereye bakılacağı belli değildi. Yalnız bir kez (tuytop_menu_acildi): öğeler
+            // yukarıdan aşağı 60 ms arayla 0,25 sn'de belirir (≤ 0,6 sn), dokunuş engellenmez. Hareketi azaltta anında son hâl.
+            // Ek açıklama satırı ve "YENİ" rozeti yok: plaka sıradaki maçı zaten söylüyor. Güncelleyen oyuncu bir kez görür (zararsız).
+            if (!root.bekleyen && PlayerPrefs.GetInt("tuytop_menu_acildi", 0) == 0)
+            {
+                PlayerPrefs.SetInt("tuytop_menu_acildi", 1); PlayerPrefs.Save();
+                if (!Ayar.reduce) KademeliAc(c);
+            }
+        }
+
+        void KademeliAc(VisualElement c)
+        {
+            int i = 0;
+            foreach (var ch in c.Children())
+            {
+                var v = ch; int bas = 40 + i * 60; i++;
+                v.style.opacity = 0f; v.style.translate = new Translate(0, 14, 0);
+                v.style.transitionProperty = new System.Collections.Generic.List<StylePropertyName> { new StylePropertyName("opacity"), new StylePropertyName("translate") };
+                v.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(.25f, TimeUnit.Second) };
+                v.style.transitionTimingFunction = new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseOut) };
+                v.schedule.Execute(() => { v.style.opacity = 1f; v.style.translate = new Translate(0, 0, 0); Kalite.Hareket(); }).StartingIn(bas);
+                v.schedule.Execute(() => { v.style.opacity = StyleKeyword.Null; v.style.translate = StyleKeyword.Null; v.style.transitionProperty = StyleKeyword.Null; v.style.transitionDuration = StyleKeyword.Null; v.style.transitionTimingFunction = StyleKeyword.Null; }).StartingIn(bas + 300);
+            }
         }
 
         // İlk maç kartı (yalnız ilk açılış): plakanın yerinde, rakip ve basamak çizgisi yok (henüz kariyer başlamadı).

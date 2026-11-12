@@ -12,6 +12,34 @@ Yılbaşı, Cadılar Bayramı, Masallar ve Geleneksel kıyafetler koleksiyonlar�
 - Kol kalkanları baştan çizildi: artık düz levha değil, bombeli ve çerçeveli; arkalarında kol kayışı var. Biraz küçüldüler ve bileğe doğru kaydılar, gövdenin içine girmemeleri için.
 Nasıl denenir: Dolap > Görünüm > Sırt sayfasının altındaki Kol bölümünden "Şövalye kalkanı" ve "Pizza kalkanı"nı dene, oyuncuyu çevir: kalkan kolun üstünde durmalı, gövdeyi ya da üst kolu kesmemeli. Şapka sayfasından "Noel Baba şapkası" ve "Kardan adam"ı, Sırt sayfasından "Hediye çuvalı"nı dene: saçın ve sırtın üstüne oturmalı. Yüz bölümünden "Noel Baba sakalı"nı dene: sakal çeneye oturmalı, yüzün içine girmemeli. Bel bölümünden "Noel Baba kemeri" ve "Ördekli simit"i dene: belde durmalı, oyuncu koşarken bacakların içine girmemeli. Şapka sayfasından "Balkabağı kafa" ve "Hayalet çarşafı"nı dene: başı tümden örtmeli, saç dışarı taşmamalı. Şapka sayfasından "Sombrero" ve "Viking miğferi"ni, Yüz bölümünden "Pos bıyık"ı, Sırt sayfasından "Dev yelpaze" ve "Saz"ı dene: yelpaze ve sazın sapı başın içine girmemeli, bıyık burnun altında durmalı. Şapka sayfasında "Yılbaşı" düğmesine dokun: yalnız yılbaşı şapkaları ve takılı şapkan kalmalı; "Hepsi" ile liste geri gelmeli. Dolap'ta Tip sayfasından dört oyuncuyu sırayla seç, Ayakkabı sayfasından ayakkabıları dene ve oyuncuyu çevir: bacak ayakkabının içine girmeli, bilekte ten ya da çorap dışarı taşmamalı. Kalkan takılıyken bir maç oyna: koşarken ve vururken kalkan kolda kalmalı, rakete değmemeli.
 
+Ana ekranda sesli dans, sade kayıp kartı, iOS Oyun Modu (12 Kasım gece):
+- Ana ekranda kendi oyuncuna dokununca seçtiğin sevinç tam süresince oynuyor; dans seçtiysen dansın kendi sesi bir kez çalıyor.
+- Kariyer maçını kaybedince kartta "... basamağı seni bekliyor" cümlesi artık yok: basamak adı zaten üstte ve düğmenin altında yazıyor.
+- Zor ya da Usta'da üst üste kaybedince çıkan ipucu artık doğru yeri gösteriyor: zorluk çipini maçtan önce bir kademe indirebilirsin, yıldızların aynı kalır.
+- Oyun iPhone'da Oyun Modu'nu açabiliyor (iOS 18 ve sonrası): arka plan işleri azalır, kablosuz kulaklıkta ses gecikmesi düşer.
+- Maç sonu kartı açıkken arka planda daha az iş yapılıyor.
+Nasıl denenir: Dolap > Sevinç'te bir dans seç, ana ekrana dön ve kendi oyuncuna dokun: dans bir kez sesli ve sonuna kadar oynamalı; dans olmayan bir sevinç seçince kısa sürüp durmalı. Zor'da bir kariyer maçını kaybet: kartta "seni bekliyor" yazmamalı; üç kez kaybedince "zorluk çipini bir kademe indir" ipucu çıkmalı. Kablosuz kulaklıkla bir maç oynarken Denetim Merkezi'nde Oyun Modu simgesi görünmeli.
+
+Kol kalkanı resimleri, dansların tamamı, uzun menü müziği (12 Kasım akşamüstü):
+- Dolap > Sırt > Kol bölümündeki kartlar artık kalkanın kendisini yakından gösteriyor (önceden hepsi aynı yüz resmiydi).
+- Dolap'ta bir şey satın alınca seçili dans yarıda kesilmeden sonuna kadar oynuyor.
+- Dolap'ta şapka ve sırt sayfaları arasında gidip gelince küçük resimler yeniden çizilmeden hemen görünüyor.
+- Menü müziği iki katı uzun: ilk bölümden sonra daha sakin ikinci bir bölüm geliyor, aynı parça yarım dakikada bir başa dönmüyor.
+Nasıl denenir: Dolap > Sırt sayfasının altında Kol bölümüne in: her kartta farklı bir kalkan görünmeli. Sevinç olarak bir dans seç, sonra bir eşya satın al: dans sonuna kadar oynamalı. Şapka sayfasına, sonra Sırt'a, sonra yeniden Şapka'ya geç: resimler beklemeden gelmeli. Menüde bir dakika bekle: müziğin ikinci bölümü (daha alçak ezgi) duyulmalı, geçişte takılma olmamalı.
+
+Danslar sesli, uzun smaç çubuğu, "Sistem" dili (12 Kasım öğle):
+- Her dansın kendi kısa sesi var (robotta iki bip, gitarda akor, helikopterde pervane…). Dolap'ta dans seçince bir kez, maç sonu sevincinde zirvede bir kez çalıyor; sayı aralarında çalmıyor.
+- Maçtaki smaç gücü çubuğu daha uzun: dolunca yazı artık kısaca "Smaç hazır".
+- Ayarlar > Dil'de yeni "Sistem" seçeneği: telefonun ya da iPhone Ayarlar > Birdie Smash > Dil'in dilini izler. Yeni kurulumda varsayılan bu; daha önce seçtiğin dil değişmez.
+Nasıl denenir: Dolap > Sevinç'te "Gitar" dansını seç: akor sesi bir kez duyulmalı; dans döngüde tekrar ederken ses tekrar etmemeli. Bir maç kazan, maç sonu sevinci dans ise zirvede sesi gelmeli. Maçta çubuk eskisinden uzun görünmeli. Ayarlar > Dil > Sistem'i seç, iPhone Ayarlar > Birdie Smash > Dil'den İngilizce yap, oyuna dön: oyun İngilizce açılmalı.
+
+Art arda sayı, ayarlanabilir kaydırma, menünün ilk açılışı (12 Kasım sabah):
+- Üst üste 3 sayı alınca salondaki panolarda "3 IN A ROW" yazıyor ve seyirci alkışlıyor; 5 sayıda alkış uzuyor, tribünde dalga oluyor. Gerideyken başlayan seriyle skoru eşitleyince ya da öne geçince bir kez "Geri döndün!" çıkıyor. Rakibin serisi için bir şey olmuyor.
+- Ayarlar'da yeni "Kaydırma" satırı: Kısa, Normal, Uzun. Kısa'da daha kısa ve yavaş kaydırma da vuruş sayılıyor; Uzun'da yalnız uzun, hızlı kaydırma. Vuruşun gücü ve yönü değişmiyor. Varsayılan Normal (eskisiyle aynı).
+- Antrenmandan sonra ana menü ilk kez tam açıldığında öğeler yukarıdan aşağı sırayla beliriyor (bir kez, yarım saniyeden kısa). Hareketi azalt açıksa anında görünüyor.
+- File bandına değip karşıya düşen topta yazı kısaldı: "File bandı!".
+Nasıl denenir: Bir maçta üst üste 3 sayı al: panolarda "3 IN A ROW" ve alkış olmalı. 0-3 gerideyken 3-4 sayı üst üste alıp eşitle: "Geri döndün!" bir kez çıkmalı. Ayarlar > Kaydırma'da Kısa'yı seç ve maçta kısa kaydır: "Kısa kaydırdın" ıskası daha az çıkmalı. Uygulamayı silip yeniden kurduysan antrenmanı bitir: menü öğeleri sırayla belirmeli.
+
 Yeni şapkalar, sırt eşyaları, kol kalkanları ve danslar (12 Kasım sabaha karşı):
 - Dolap'a 8 yeni şapka (Pervaneli bere, Tencere, Mantar şapka, Saksı kaktüs, Lastik ördek, Dev tüy top, Simit hale, UFO), 5 yeni sırt eşyası (Yedek top tüpü, Kurma kolu, Kaplumbağa kabuğu, Balonlar, Tavus kuyruğu) geldi.
 - Yeni bölüm: Dolap > Sırt sayfasının altında "Kol". Sol kola 5 kalkan takılabiliyor (Tencere kapağı, Şövalye kalkanı, Dur tabelası, Pizza kalkanı, Yıldız kalkanı). Hepsi yalnızca görünüş; oyuna etkisi yok.

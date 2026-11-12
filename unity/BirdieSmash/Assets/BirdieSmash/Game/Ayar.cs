@@ -65,6 +65,11 @@ namespace BirdieSmash.Game
         // Seyirci düzeyi (2026-11-11 inceleme, fikir 23:05 #6; tuytop_seyirci 0 kapalı · 1 az · 2 normal, yoksa normal = eski oyuncu
         // değişmez): uğultu, ooo, alkış, coşku ve tribün nefesi. Raket, file, düdük ve müzik etkilenmez (Sfx.trb).
         public static int seyirci = 2;
+        // Kaydırma eşiği (2026-11-12 inceleme, fikir 07:05 #5; tuytop_kaydirma 0 kısa · 1 normal · 2 uzun, yoksa normal = eski
+        // davranış). Yalnız "vuruş sayıldı mı" eşiği (70 ref px mesafe, 0,45 hız) ölçeklenir; güç/yön (ShotPlan) aynı. Online açılınca
+        // eşik yerel girdi sınıflandırması olarak kalır (eşit güç bozulmaz). Küçük el/tek el/motor zorluğu için Kısa.
+        public static int kaydirma = 1;
+        public static float KaydirmaK { get { return kaydirma <= 0 ? .8f : kaydirma >= 2 ? 1.2f : 1; } }
         public static float SeyirciK { get { return seyirci <= 0 ? 0 : seyirci == 1 ? .4f : 1; } }
         public static bool reduce, reduceSecim, reduceSistem, ses = true, muzik = true, titresim = true, kariyerModu, antrenman, sampiyon, fps, kosIpucu;
         public static int target = 5, kariyer, bestRally, wins, gorev, puan; public static int devirSayisi = -1;
@@ -110,7 +115,11 @@ namespace BirdieSmash.Game
         public static float yaziTest;
         public static float MenuYaziK { get { if (yaziTest > 0) return yaziTest; return yazi == "normal" ? 1 : yazi == "buyuk" ? Mathf.Max(1.3f, Mathf.Clamp(yaziSistem, .9f, 2f)) : Mathf.Clamp(yaziSistem, .9f, 2f); } }
         // Sistem ayarları (hareketi azalt, yazı boyutu) açılışta ve uygulama öne her geldiğinde okunur.
-        public static void SistemOku() { reduceSistem = Yerel.HareketAzalt(); reduce = reduceSecim || reduceSistem; yaziSistem = Yerel.YaziOlcek(); }
+        public static void SistemOku() { reduceSistem = Yerel.HareketAzalt(); reduce = reduceSecim || reduceSistem; yaziSistem = Yerel.YaziOlcek(); if (dilSistem && Application.isMobilePlatform) dil = SistemDil(); }   // masaüstü/CI: ekran turları dili kendisi kurar, odak dönüşü ezmesin
+        // Unity iOS'ta systemLanguage NSLocale preferredLanguages'tan gelir; uygulama başına dil seçimi oraya yansır. Cihazda yansımadığı
+        // görülürse BirdieYerel.mm'den NSBundle.mainBundle.preferredLocalizations[0] okunur (TF'te bir kez doğrulanacak).
+        public static bool dilSistem = true;
+        public static string SistemDil() { return Application.systemLanguage == SystemLanguage.Turkish ? "tr" : "en"; }
         // GSE = yalnız ekipman (5 çubuk ve yükseltme önizlemesi bunu anlatır), GS = ekipman + oyun tarzı (maç fiziği bunu
         // okur). Tarz ekipman kartına girmez: güç ekipmandan, tarz karakterden (tasarım §5.1).
         public static Gear gear; public static GearStats GS = GearStats.Notr, GSE = GearStats.Notr;
@@ -167,11 +176,16 @@ namespace BirdieSmash.Game
             model = Str("tuytop_model", "oyuncak"); if (model == "sportif" || model == "aday") model = "rocketbox"; if (!ModelVar(model)) model = "oyuncak";
             kamera = Str("tuytop_kamera", "yayin"); if (System.Array.IndexOf(GameRoot.KAMERA_SIRA, kamera) < 0) kamera = "yayin";
             reduceSecim = EskiInt("tuytop_reduce", 0) == 1; ses = EskiInt("tuytop_ses", 1) == 1; muzik = EskiInt("tuytop_muzik", 1) == 1; titresim = EskiInt("tuytop_titresim", 1) == 1; seyirci = Mathf.Clamp(EskiInt("tuytop_seyirci", 2), 0, 2); SistemOku();
+            kaydirma = Mathf.Clamp(EskiInt("tuytop_kaydirma", 1), 0, 2);
             yazi = Str("tuytop_yazi", "sistem"); if (yazi != "normal" && yazi != "buyuk") yazi = "sistem"; fps = Str("tuytop_fps", "0") == "1";
             int pu; puan = int.TryParse(Str("tuytop_puan", "0"), out pu) ? Mathf.Clamp(pu, 0, Ozet.PUAN_AZAMI) : Ozet.PUAN_AZAMI;
             kariyerModu = Str("tuytop_mod", "s") == "k"; antrenman = Str("tuytop_antrenman", "0") == "1";
             // Dil: HTML navigator.language 'tr' ile başlıyorsa Türkçe, değilse İngilizce. Unity'de sistem dili; ayarda elle seçilirse tuytop_dil.
-            dil = Str("tuytop_dil", Application.systemLanguage == SystemLanguage.Turkish ? "tr" : "en"); if (dil != "tr" && dil != "en") dil = "tr";
+            // 2026-11-12 inceleme (fikir 12:05 #3): "Sistem" dili. Önce Kaydet her seferinde tuytop_dil yazdığı için ilk açılışın dili kalıcıydı;
+            // iOS Ayarlar › Birdie Smash › Dil'den (CFBundleLocalizations en, tr) değiştiren oyuncunun oyunu değişmiyordu. Artık değer yoksa
+            // "sistem" sayılır ve SistemOku her dönüşte dili yeniden okur; tr/en yalnız oyuncu çipe dokununca yazılır. Eski oyuncunun kayıtlı
+            // tr/en değeri olduğu gibi okunur (sıfırlanmaz, tuytop_* değişmezi); isterse Sistem çipine geçer.
+            string dk = Str("tuytop_dil", "sistem"); dilSistem = dk != "tr" && dk != "en"; dil = dilSistem ? SistemDil() : dk;
             var rg = Json.Obj(Json.Parse(Str("tuytop_raket_gor", null)));
             // desen 'tek' | 'iki' (HTML RGOR.desen ile aynı). 2026-10-26: denetim 'capraz' bekliyordu, yazılan değer 'iki' olduğu
             // için "Ana ve çapraz ayrı" seçimi her açılışta 'tek'e dönüyordu; eski 'capraz' kaydı da 'iki' sayılır.
@@ -255,8 +269,8 @@ namespace BirdieSmash.Game
             kayit.Set("tuytop_v2", Json.Write(new Dictionary<string, object> { { "rally", (double)bestRally }, { "wins", (double)wins }, { "kariyer", (double)kariyer }, { "gorev", (double)gorev }, { "sampiyon", sampiyon } }));
             PlayerPrefs.SetString("tuytop_len", "len" + target); PlayerPrefs.SetString("tuytop_saha", saha); PlayerPrefs.SetString("tuytop_hizli_rakip", hizliRakip ?? ""); PlayerPrefs.SetString("tuytop_model", model); PlayerPrefs.SetString("tuytop_kamera", kamera);
             PlayerPrefs.SetString("tuytop_mod", kariyerModu ? "k" : "s"); if (antrenman) PlayerPrefs.SetString("tuytop_antrenman", "1");
-            PlayerPrefs.SetInt("tuytop_zorluk", zorluk); PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0); PlayerPrefs.SetInt("tuytop_muzik", muzik ? 1 : 0); PlayerPrefs.SetInt("tuytop_titresim", titresim ? 1 : 0); PlayerPrefs.SetInt("tuytop_seyirci", seyirci); if (kosIpucu) PlayerPrefs.SetInt("tuytop_kos_ipucu", 1);
-            PlayerPrefs.SetString("tuytop_dil", dil); PlayerPrefs.SetString("tuytop_puan", puan.ToString()); PlayerPrefs.SetString("tuytop_yazi", yazi); PlayerPrefs.SetString("tuytop_fps", fps ? "1" : "0");
+            PlayerPrefs.SetInt("tuytop_zorluk", zorluk); PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0); PlayerPrefs.SetInt("tuytop_muzik", muzik ? 1 : 0); PlayerPrefs.SetInt("tuytop_titresim", titresim ? 1 : 0); PlayerPrefs.SetInt("tuytop_seyirci", seyirci); PlayerPrefs.SetInt("tuytop_kaydirma", kaydirma); if (kosIpucu) PlayerPrefs.SetInt("tuytop_kos_ipucu", 1);
+            PlayerPrefs.SetString("tuytop_dil", dilSistem ? "sistem" : dil); PlayerPrefs.SetString("tuytop_puan", puan.ToString()); PlayerPrefs.SetString("tuytop_yazi", yazi); PlayerPrefs.SetString("tuytop_fps", fps ? "1" : "0");
             var rg = new Dictionary<string, object>(); foreach (var kv in RGOR) rg[kv.Key] = kv.Value; PlayerPrefs.SetString("tuytop_raket_gor", Json.Write(rg));
             var gv = new Dictionary<string, object>(); foreach (var kv in GORUNUM) gv[kv.Key] = kv.Value; foreach (var kv in KOZ) gv[kv.Key] = kv.Value; gv["ayk_gor"] = AYK_GOR; PlayerPrefs.SetString("tuytop_gorunum", Json.Write(gv));
             if (gear != null) { gear.GearYaz(); gear.EkoYaz(); }
