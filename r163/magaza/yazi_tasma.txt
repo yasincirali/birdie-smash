@@ -1,0 +1,7 @@
+toplam 6
+tr_03_kariyer · kesik yükseklik 22>20 · .unity-text-element.unity-label.yazi.kalin · "1"
+tr_03_kariyer · kesik yükseklik 22>20 · .unity-text-element.unity-label.yazi.kalin · "2"
+tr_03_kariyer · kesik yükseklik 22>20 · .unity-text-element.unity-label.yazi.kalin · "3"
+en_03_kariyer · kesik yükseklik 22>20 · .unity-text-element.unity-label.yazi.kalin · "1"
+en_03_kariyer · kesik yükseklik 22>20 · .unity-text-element.unity-label.yazi.kalin · "2"
+en_03_kariyer · kesik yükseklik 22>20 · .unity-text-element.unity-label.yazi.kalin · "3"
