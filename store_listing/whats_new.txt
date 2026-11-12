@@ -1,4 +1,9 @@
 === UNITY ===
+Yılbaşı koleksiyonu ve yeniden çizilen kol kalkanları (12 Kasım akşam):
+- Dolap'a yılbaşı eşyaları geldi. Şapka: Noel Baba şapkası, Ren geyiği boynuzu, Hediye paketi, Yılbaşı ışıkları, Kardan adam, Çam ağacı şapka. Sırt: Şeker bastonlar, Hediye çuvalı, Havai fişekler, Sırtta çam ağacı. Kol: Kurabiye adam, Yılbaşı çelengi, Kar tanesi kalkanı. Hepsi yalnızca görünüş.
+- Kol kalkanları baştan çizildi: artık düz levha değil, bombeli ve çerçeveli; arkalarında kol kayışı var. Biraz küçüldüler ve bileğe doğru kaydılar, gövdenin içine girmemeleri için.
+Nasıl denenir: Dolap > Görünüm > Sırt sayfasının altındaki Kol bölümünden "Şövalye kalkanı" ve "Pizza kalkanı"nı dene, oyuncuyu çevir: kalkan kolun üstünde durmalı, gövdeyi ya da üst kolu kesmemeli. Şapka sayfasından "Noel Baba şapkası" ve "Kardan adam"ı, Sırt sayfasından "Hediye çuvalı"nı dene: saçın ve sırtın üstüne oturmalı. Kalkan takılıyken bir maç oyna: koşarken ve vururken kalkan kolda kalmalı, rakete değmemeli.
+
 Yeni şapkalar, sırt eşyaları, kol kalkanları ve danslar (12 Kasım sabaha karşı):
 - Dolap'a 8 yeni şapka (Pervaneli bere, Tencere, Mantar şapka, Saksı kaktüs, Lastik ördek, Dev tüy top, Simit hale, UFO), 5 yeni sırt eşyası (Yedek top tüpü, Kurma kolu, Kaplumbağa kabuğu, Balonlar, Tavus kuyruğu) geldi.
 - Yeni bölüm: Dolap > Sırt sayfasının altında "Kol". Sol kola 5 kalkan takılabiliyor (Tencere kapağı, Şövalye kalkanı, Dur tabelası, Pizza kalkanı, Yıldız kalkanı). Hepsi yalnızca görünüş; oyuna etkisi yok.

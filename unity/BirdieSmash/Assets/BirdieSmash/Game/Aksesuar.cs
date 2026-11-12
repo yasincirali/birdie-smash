@@ -320,7 +320,7 @@ namespace BirdieSmash.Game
         // tipten tipe değişir (güçlü tipin kolu atletinkinden kalın): yüzey, boşta pozunda pişirilen derinin dışa bakan en uç noktasından
         // ölçülür (Sirt ile aynı yöntem); kalkanın arka yüzü oraya oturur, kola gömülmez ve havada durmaz. Gövde iç tarafta kaldığı
         // için ölçüye girmez (yalnız dışa doğru bileşene bakılır).
-        const float KOL_OLCEK = 1.8f;   // r154: 1,3'te kalkan göğüs rozeti gibi küçük okundu
+        const float KOL_OLCEK = 1.7f, KOL_BOSLUK = .05f, KOL_BILEK = .12f;
         public static Transform Kol(Transform model, Vector3 dikey, string id)
         {
             var h = Hazir(id); if (model == null || h == null || h.tur != 2) return null;
@@ -364,7 +364,9 @@ namespace BirdieSmash.Game
             }
             if (!bulundu) yuzey = .22f * L;
             var kok = new GameObject("kol").transform; kok.SetParent(on, true);
-            kok.position = orta + dis * (yuzey + .01f * L); kok.rotation = Quaternion.LookRotation(dis, eks);
+            // 2026-11-12 (yasin: "kalkan güzel gözükmüyor"): 1,8 ölçekli düz plaka gövdeyi kesiyordu. Kalkan küçüldü (1,7; çizim yarıçapı .62 → .56), bileğe doğru kaydı
+            // (dirsek tarafı üst kola ve gövdeye girmesin) ve koldan kayış payı kadar açık durur; kayışlar boşluğu doldurur.
+            kok.position = orta + dis * (yuzey + KOL_BOSLUK * L) + eks * (KOL_BILEK * L); kok.rotation = Quaternion.LookRotation(dis, eks);
             float ls = on.lossyScale.x; kok.localScale = Vector3.one * (L * KOL_OLCEK / Mathf.Max(1e-5f, ls));
             var g = HazirObj(kok, h); g.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             return kok;
