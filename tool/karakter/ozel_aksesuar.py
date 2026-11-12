@@ -181,6 +181,8 @@ def jetpack():
     ag.yaz('jetpack', 1)
 
 
+# r154 (ekran turu): kısa saçın tepesi bu çerçevede ~.9 çıktı; ördek, saksı ve dev tüy top havada kaldı, mantar ve bere saçın
+# üstünde tabak gibi durdu. Tabanlar .8–.85'e (saça gömülü), kubbeler alnın üstüne (.38–.6) indirildi.
 # ---- 2026-11-12 absürt koleksiyon (yasin: "yaratıcı ol ... sadece görsellik ve absürtlük ama modelin üstüne güzel oturmalı,
 # iç içe geçmiş olmamalı"). Oturma kuralı: şapkanın iç yüzü saç tepesinin (1,1–1,25) dışında kalır ya da taban saça gömülür
 # (taban ~.9–1.0), gövdesi saçın üstündedir; yüz hizasına (y < .35) hiçbir parça inmez. Sırt parçaları sırt yüzeyinin
@@ -224,7 +226,7 @@ def tencere():   # ters çevrilmiş tencere: ağzı saçın dışında (iç yar�
 
 def mantar():
     ag = Ag(); K, B, C = '#d6342f', '#fff6e6', '#f0e2c4'
-    c = (0, .8, 0); r = (1.42, .86, 1.42)
+    c = (0, .6, 0); r = (1.42, .86, 1.42)
     elipsoid(ag, K, c, r, 16, 6, 0, 90); disk(ag, C, c, 1.42, 16)
     for e, a, q in ((62, 20, .26), (30, 80, .22), (38, 160, .24), (26, 230, .2), (44, 300, .25), (80, 200, .2)):
         er, ar = math.radians(e), math.radians(a)
@@ -241,44 +243,44 @@ def ufo():   # başın üstünde süzülen daire (hale gibi boşlukta; saça de�
         a = 2 * math.pi * i / 8; top(ag, S, (1.12 * math.cos(a), 1.90, 1.12 * math.sin(a)), .075, 6, 3)
     ag.yaz('ufo', 0)
 
-def ordek():   # lastik ördek: gövdenin altı saça gömülü (taban 1,05), kendisi saçın üstünde oturur
+def ordek():   # lastik ördek: gövdenin altı saça gömülü (taban .85), kendisi saçın üstünde oturur
     ag = Ag(); S, T, K, D = '#ffd23f', '#ff8a2a', '#1c1c22', '#f2b90f'
-    elipsoid(ag, S, (0, 1.50, -.05), (.62, .45, .78), 12, 6)
-    for sgn in (-1, 1): elipsoid(ag, D, (sgn * .58, 1.52, -.1), (.12, .24, .42), 8, 4)
-    koni(ag, S, (0, 1.62, -.66), (0, 1.98, -.98), .22, 8)
-    top(ag, S, (0, 2.02, .42), .37, 10, 6)
-    koni(ag, T, (0, 1.98, .72), (0, 1.94, 1.08), .15, 8)
-    for sgn in (-1, 1): top(ag, K, (sgn * .17, 2.10, .72), .06, 6, 3)
+    elipsoid(ag, S, (0, 1.30, -.05), (.62, .45, .78), 12, 6)
+    for sgn in (-1, 1): elipsoid(ag, D, (sgn * .58, 1.32, -.1), (.12, .24, .42), 8, 4)
+    koni(ag, S, (0, 1.42, -.66), (0, 1.78, -.98), .22, 8)
+    top(ag, S, (0, 1.82, .42), .37, 10, 6)
+    koni(ag, T, (0, 1.78, .72), (0, 1.74, 1.08), .15, 8)
+    for sgn in (-1, 1): top(ag, K, (sgn * .17, 1.90, .72), .06, 6, 3)
     ag.yaz('ordek', 0)
 
 def kaktus():
     ag = Ag(); P, T, Y, C = '#c9683c', '#5a3a26', '#3f9b4f', '#ff7eb6'
-    kesik(ag, P, (0, .95, 0), (0, 1.40, 0), .50, .64, 12); halka(ag, P, .64, .07, 1.40, 14, 6); disk(ag, T, (0, 1.39, 0), .60, 12)
-    silindir(ag, Y, (0, 1.38, 0), (0, 2.30, 0), .30, 10); elipsoid(ag, Y, (0, 2.30, 0), (.30, .30, .30), 10, 4, 0, 90)
-    for sgn, y0, y1, x in ((1, 1.82, 2.22, .64), (-1, 1.66, 1.98, .62)):
+    kesik(ag, P, (0, .80, 0), (0, 1.25, 0), .50, .64, 12); halka(ag, P, .64, .07, 1.25, 14, 6); disk(ag, T, (0, 1.24, 0), .60, 12)
+    silindir(ag, Y, (0, 1.23, 0), (0, 2.15, 0), .30, 10); elipsoid(ag, Y, (0, 2.15, 0), (.30, .30, .30), 10, 4, 0, 90)
+    for sgn, y0, y1, x in ((1, 1.67, 2.07, .64), (-1, 1.51, 1.83, .62)):
         silindir(ag, Y, (sgn * .25, y0, 0), (sgn * x, y0, 0), .14, 8); top(ag, Y, (sgn * x, y0, 0), .14, 8, 4)
         silindir(ag, Y, (sgn * x, y0, 0), (sgn * x, y1, 0), .14, 8); elipsoid(ag, Y, (sgn * x, y1, 0), (.14, .14, .14), 8, 3, 0, 90)
-    top(ag, C, (0, 2.64, 0), .13, 8, 4)
+    top(ag, C, (0, 2.49, 0), .13, 8, 4)
     ag.yaz('kaktus', 0)
 
 def top_sapka():   # dev tüy top: mantar başın tepesinde, tüy eteği yukarı açılır
     ag = Ag(); B, B2, K = '#ffffff', '#e4e8f2', '#d6342f'
-    elipsoid(ag, B, (0, .95, 0), (.66, .42, .66), 12, 4, 0, 90)
-    halka(ag, K, .56, .07, 1.30, 16, 6)
+    elipsoid(ag, B, (0, .80, 0), (.66, .42, .66), 12, 4, 0, 90)
+    halka(ag, K, .56, .07, 1.15, 16, 6)
     n = 16; alt, ust = (0, 1.30, 0), (0, 2.30, 0)
     for i in range(n):
         a0 = 2 * math.pi * i / n; a1 = 2 * math.pi * (i + 1) / n; am = (a0 + a1) / 2
         p = lambda R, y, a: (R * math.cos(a), y, R * math.sin(a))
-        ag.dortgen(B if i % 2 == 0 else B2, p(.50, 1.30, a0), p(.50, 1.30, a1), p(1.12, 2.22, a1), p(1.12, 2.22, a0))
-        ag.ucgen(B if i % 2 == 0 else B2, p(1.12, 2.22, a0), p(1.12, 2.22, a1), p(1.20, 2.40, am))   # tüy ucu
+        ag.dortgen(B if i % 2 == 0 else B2, p(.50, 1.15, a0), p(.50, 1.15, a1), p(1.12, 2.07, a1), p(1.12, 2.07, a0))
+        ag.ucgen(B if i % 2 == 0 else B2, p(1.12, 2.07, a0), p(1.12, 2.07, a1), p(1.20, 2.25, am))   # tüy ucu
     ag.yaz('top_sapka', 0)
 
 def pervane():   # pervaneli bere: dilim dilim renkli kubbe (iç yüz saçın dışında), tepede pervane
     ag = Ag(); R = ['#d6342f', '#ffd23f', '#2f6fd6']; K = '#3a3f47'
-    elipsoid(ag, lambda i, j: R[(i // 2) % 3], (0, .50, 0), (1.15, .92, 1.15), 12, 5, 0, 90)
-    silindir(ag, K, (0, 1.40, 0), (0, 1.62, 0), .05, 6)
-    kutu(ag, R[0], (-.62, 1.60, -.10), (-.04, 1.64, .10)); kutu(ag, R[2], (.04, 1.60, -.10), (.62, 1.64, .10))
-    top(ag, R[1], (0, 1.66, 0), .09, 6, 4)
+    elipsoid(ag, lambda i, j: R[(i // 2) % 3], (0, .38, 0), (1.15, .92, 1.15), 12, 5, 0, 90)
+    silindir(ag, K, (0, 1.28, 0), (0, 1.50, 0), .05, 6)
+    kutu(ag, R[0], (-.62, 1.48, -.10), (-.04, 1.52, .10)); kutu(ag, R[2], (.04, 1.48, -.10), (.62, 1.52, .10))
+    top(ag, R[1], (0, 1.54, 0), .09, 6, 4)
     ag.yaz('pervane', 0)
 
 def simit():   # simit hale: susamlı
@@ -291,9 +293,9 @@ def simit():   # simit hale: susamlı
 
 def kaplumbaga():   # kabuk: sırt yüzeyinden arkaya kubbe, kenarda açık renkli çerçeve
     ag = Ag(); K = ['#2f6d3a', '#3f8f4a', '#58a85f', '#6dbb72']; C = '#e6d9a8'
-    c = (0, -.26, -.02)
-    elipsoid(ag, lambda i, j: K[min(3, j)], c, (.46, .46, .36), 12, 5, 0, 90, 'z-')
-    elipsoid(ag, C, c, (.52, .52, .09), 12, 4, -90, 90, 'z-')
+    c = (0, -.20, -.02)
+    elipsoid(ag, lambda i, j: K[min(3, j)], c, (.52, .52, .40), 12, 5, 0, 90, 'z-')
+    elipsoid(ag, C, c, (.58, .58, .09), 12, 4, -90, 90, 'z-')
     ag.yaz('kaplumbaga', 1)
 
 def kurma():   # kurmalı oyuncak anahtarı: mil sırttan arkaya, iki halka arkadan okunur

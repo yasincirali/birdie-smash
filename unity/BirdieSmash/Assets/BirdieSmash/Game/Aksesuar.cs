@@ -320,7 +320,7 @@ namespace BirdieSmash.Game
         // tipten tipe değişir (güçlü tipin kolu atletinkinden kalın): yüzey, boşta pozunda pişirilen derinin dışa bakan en uç noktasından
         // ölçülür (Sirt ile aynı yöntem); kalkanın arka yüzü oraya oturur, kola gömülmez ve havada durmaz. Gövde iç tarafta kaldığı
         // için ölçüye girmez (yalnız dışa doğru bileşene bakılır).
-        const float KOL_OLCEK = 1.3f;
+        const float KOL_OLCEK = 1.8f;   // r154: 1,3'te kalkan göğüs rozeti gibi küçük okundu
         public static Transform Kol(Transform model, Vector3 dikey, string id)
         {
             var h = Hazir(id); if (model == null || h == null || h.tur != 2) return null;

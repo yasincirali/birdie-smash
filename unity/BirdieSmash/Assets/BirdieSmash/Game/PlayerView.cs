@@ -1093,20 +1093,26 @@ namespace BirdieSmash.Game
             if (id == "gitar") return .68f - .1f * Mathf.Max(0, Mathf.Sin(t * 10));
             return 1;
         }
+        [System.NonSerialized] public int TaniBacakKod; [System.NonSerialized] public float TaniBacakR;
+        public bool TaniKalcaAta { get { return kHip != null && kBacak != null && kBacak[0] != null && kBacak[0].IsChildOf(kHip); } }
         readonly Vector3[] sevAyak = new Vector3[2]; readonly Quaternion[] sevAyakR = new Quaternion[2];
         void SevincBacak(float k, Vector3 fw)
         {
+            // Tanı (ekran turu raporu, 2026-11-12): 0 çalıştı, 1 girdi yok, 2 bacak kemiği eksik, 3 erişim yok (disk < 0), 4 aralık dışı.
+            TaniBacakKod = 1; TaniBacakR = 0;
             if (k <= .001f || kHip == null || kBacak == null) return;
             Vector3 up = yaw.up; float r = float.MaxValue;
             for (int i = 0; i < 2; i++)
             {
-                Transform th = kBacak[i * 3], kn = kBacak[i * 3 + 1], ft = kBacak[i * 3 + 2]; if (th == null || kn == null || ft == null) return;
+                Transform th = kBacak[i * 3], kn = kBacak[i * 3 + 1], ft = kBacak[i * 3 + 2]; if (th == null || kn == null || ft == null) { TaniBacakKod = 2; return; }
                 sevAyak[i] = ft.position; sevAyakR[i] = ft.rotation;
                 float T = ((kn.position - th.position).magnitude + (ft.position - kn.position).magnitude) * .97f;
                 Vector3 v = th.position - ft.position; float b = Vector3.Dot(v, up), disk = b * b - v.sqrMagnitude + T * T;
-                if (disk < 0) return; r = Mathf.Min(r, -b + Mathf.Sqrt(disk));
+                if (disk < 0) { TaniBacakKod = 3; return; } r = Mathf.Min(r, -b + Mathf.Sqrt(disk));
             }
-            if (r <= 0 || r > .5f) return;   // zaten dik ya da ölçek tuhaf: dokunma
+            TaniBacakR = r;
+            if (r <= 0 || r > .5f) { TaniBacakKod = 4; return; }   // zaten dik ya da ölçek tuhaf: dokunma
+            TaniBacakKod = 0;
             kHip.position += up * r * k;
             for (int i = 0; i < 2; i++)
             {
