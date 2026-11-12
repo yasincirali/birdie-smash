@@ -5,6 +5,7 @@
 //   Ses. Dil. Game Center · Başarımlar (girişliyse). Yardım: Nasıl oynanır ›, Lisanslar ›. (2026-11-06: "Antrenmanı yeniden oyna" satırı kalktı; aynı eylem
 //   Antrenman sekmesinde "Temel ders" kartı ve Nasıl oynanır'da "Temel dersi oyna" düğmesi, tek ad.)
 // Anahtarlar aynı (tuytop_*), işleyiciler aynı. Gizli kare hızı göstergesi: başlığa 3 sn içinde 5 dokunuş (HTML ile aynı).
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using BirdieSmash.Core;
@@ -55,6 +56,11 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Ses ve his")));
             c.Add(AnahtarSatir(L.T("Ses"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Degisti(); }));
             c.Add(AnahtarSatir(L.T("Müzik"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.Kaydet(); Degisti(); }));
+            // Seyirci (2026-11-11 inceleme, fikir 23:05 #6): kulaklıkla raket sesini net duymak isteyen için; üç çip, seçili ✓ + yazı (Cip).
+            var sy = Satir(); sy.AddToClassList("cip-sarar"); c.Add(Yazi(L.T("Seyirci"), 15)); c.Add(sy);
+            sy.Add(Cip(L.T("Kapalı"), Ayar.seyirci == 0, () => { Ayar.seyirci = 0; Ayar.Kaydet(); Degisti(); }));
+            sy.Add(Cip(L.T("Az"), Ayar.seyirci == 1, () => { Ayar.seyirci = 1; Ayar.Kaydet(); Degisti(); }));
+            sy.Add(Cip(L.T("Normal"), Ayar.seyirci == 2, () => { Ayar.seyirci = 2; Ayar.Kaydet(); Degisti(); }));
             c.Add(AnahtarSatir(L.T("Titreşim"), Ayar.titresim, () => { Ayar.titresim = !Ayar.titresim; Ayar.Kaydet(); if (Ayar.titresim) Yerel.Hap("tick"); Degisti(); }));
             c.Add(AnahtarSatir(L.T("Hareketi azalt"), Ayar.reduce, Ayar.reduceSistem ? (System.Action)null : () => { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.Kaydet(); Degisti(); },
                 Ayar.reduceSistem ? L.T("Sistem ayarından") : null));
@@ -78,6 +84,16 @@ namespace BirdieSmash.Game
                 ? "https://murphysoft.app/birdie-smash/support/" : "https://murphysoft.app/birdie-smash/destek/"); });
             Erisim.Etiket(ds, L.T("Destek") + ". " + L.T("Tarayıcıda açılır"), "dugme"); c.Add(ds);
             c.Add(Bosluk(8)); c.Add(Yazi(L.T("Sürüm {0}", Application.version), 12, "soluk"));
+            // Tanı (2026-11-11, Cokme.cs): yalnız gizli FPS katmanı açıkken ve önceki oturum oyun açıkken bittiyse. Kayıt cihazda
+            // kalır; paylaş düğmesi sistem sayfasıyla metni testçinin seçtiği yere gönderir, "Sil" kaydı kaldırır.
+            if (Ayar.fps && Cokme.Son != null)
+            {
+                c.Add(Grup(L.T("Tanı")));
+                string ilk = Cokme.Son.Length > 160 ? Cokme.Son.Substring(0, 160) + "…" : Cokme.Son;
+                c.Add(Yazi(ilk, 12, "soluk"));
+                c.Add(Dugme(L.T("Çökme kaydını paylaş"), () => { Yerel.Hap("tick"); Yerel.Paylas(Cokme.Son); }));
+                c.Add(Dugme(L.T("Çökme kaydını sil"), () => { Yerel.Hap("tick"); Cokme.Temizle(); Degisti(); }));
+            }
             c.Add(Bosluk(24));
         }
         // Dil değişince Update tüm menüyü yeniden kurar (sonDil); Ayarlar sayfası açık kalır.
@@ -98,6 +114,8 @@ namespace BirdieSmash.Game
             {"Ekipman","Raket, tel gerginliği, bileklik, bant ve forma oyunun dinamiklerini, raket sesini ve titreşimi değiştirir"},
             // 2026-10-26 ekipman v2 ve karakter: 5 çubuk ve tarz bir satırla anlatılır (yalnız Unity; HTML donduruldu)
             {"Çubuklar ve tarz","Atölye'de takımının 5 çubuğu var (50 nötr); her modelin kartı artısını ve eksisini tek cümleyle yazar, en iyi parça yok. Gelişim puanların çubuğun ucuna ayrı renkle ve +n yazısıyla eklenir. Tarzın bir artısı ve bir eksisi var, en iyi tarz yok; fark yarattığı an kortta adıyla yazılır. Ücretsiz, istediğin an değiştir"}};
+        // NASIL satırlarının karşılık görevi (veri/antrenman.json id'leri; null = görev yok). Sıra NASIL ile aynı.
+        static readonly string[] NASIL_GOREV = { "split", "drive", null, "derin", null, null, null };
         void NasilKur(VisualElement p)
         {
             SayfaBasi(p, "Nasıl oynanır");
@@ -105,10 +123,35 @@ namespace BirdieSmash.Game
             c.Add(Dugme(L.T("Temel dersi oyna"), Antrenmana, "dugme--birincil"));
             var k = Kart(); c.Add(k);
             k.Add(Yazi(L.T("Kaydır = vur, hız = güç. Antrenman vuruşları öğretir; aşağıdakileri öğretmez."), 15));
+            // 2026-11-12 (inceleme 00:05 #5, sadeleştirme): yedi başlık açık metin olarak diziliyordu, okuyan oyuncu uzun metni
+            // geçiyordu. Başlıklar tek satır (≥44 pt, › / ⌄ ile, yalnız renkle değil), dokununca açılır, aynı anda bir tane açık.
+            // Karşılığı olan görev varsa açık maddenin altında "Görevde dene ›" görev kartını açar (kilit/ödül kuralı kartın kendi
+            // kuralı). Karşılığı olmayan madde (Akış, Nefes, Ekipman, Çubuklar) yalnız metin.
+            var govde = new List<VisualElement>(); var oklar = new List<Label>(); var satirlar = new List<VisualElement>();
             for (int i = 0; i < NASIL.GetLength(0); i++)
             {
-                var b = Yazi(L.T(NASIL[i, 0]), 16, "kalin"); b.AddToClassList("nasil-baslik"); Erisim.Etiket(b, L.T(NASIL[i, 0]), "baslik"); k.Add(b);
-                k.Add(Yazi(L.T(NASIL[i, 1]), 14));
+                int ii = i; string bas = L.T(NASIL[i, 0]);
+                var sr = new VisualElement(); sr.AddToClassList("nasil-satir"); k.Add(sr); satirlar.Add(sr);
+                var b = Yazi(bas, 16, "kalin"); b.AddToClassList("nasil-baslik"); b.pickingMode = PickingMode.Ignore; sr.Add(b);
+                var ok = Yazi("›", 18, "nasil-ok"); ok.pickingMode = PickingMode.Ignore; sr.Add(ok); oklar.Add(ok);
+                Erisim.Etiket(sr, bas, "dugme", false, false, L.T("kapalı"));
+                var g = new VisualElement(); g.style.display = DisplayStyle.None; k.Add(g); govde.Add(g);
+                g.Add(Yazi(L.T(NASIL[i, 1]), 14));
+                string gid = NASIL_GOREV[i];
+                if (gid != null && Dril.Bul(gid) != null)
+                {
+                    var dene = Yazi(L.T("Görevde dene ›"), 15, "kalin"); dene.AddToClassList("nasil-dene"); Erisim.Etiket(dene, L.T("Görevde dene"), "dugme");
+                    dene.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); DrilKartAc(gid); })); g.Add(dene);
+                }
+                sr.AddManipulator(new Clickable(() =>
+                {
+                    Yerel.Hap("tick"); bool ac = govde[ii].style.display == DisplayStyle.None;
+                    for (int j = 0; j < govde.Count; j++)
+                    {
+                        bool a = ac && j == ii; govde[j].style.display = a ? DisplayStyle.Flex : DisplayStyle.None; oklar[j].text = a ? "⌄" : "›";
+                        Erisim.Etiket(satirlar[j], L.T(NASIL[j, 0]), "dugme", false, false, L.T(a ? "açık" : "kapalı"));
+                    }
+                }));
             }
             c.Add(Bosluk(24));
         }

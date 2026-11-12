@@ -121,6 +121,9 @@ namespace BirdieSmash.EditorTools
             // İvmeölçer kapalı (2026-11-11 inceleme, fikir 21:05 #3): oyun eğim/sallama okumuyor; Unity iOS varsayılanı 60 Hz örnekleme
             // boşuna sensör ve pil harcıyordu. Eğimli bir özellik gelirse burası açılır.
             PlayerSettings.accelerometerFrequency = 0;
+            // Çökme raporu API'si (2026-11-11, TF'de maç içi çökme, kayıt yoktu): iOS yerel çökmesi bir sonraki açılışta
+            // CrashReport.reports'tan okunur (Game/Cokme.cs); ek maliyeti yalnız çökme anında.
+            PlayerSettings.enableCrashReportAPI = true;
             // Yalnız iPhone (2026-11-06 Ar-Ge 22:03 #1): Unity varsayılanı evrensel ikiliydi; iPad'de Kadraj tasarlanmış düzen değil,
             // son çare kaydırmayla çiziyor ve mağaza 13" iPad karesi istiyordu. Apple yayınlanmış uygulamadan cihaz ailesi kaldırmaya
             // izin vermez, eklemeye izin verir: 1.0 iPhone ile çıkar, iPad sahibi uyumluluk modunda aynı kadrajı oynar. iPad düzeni
@@ -202,13 +205,13 @@ namespace BirdieSmash.EditorTools
         }
 
         // ---- AdMob (2026-11-07, yasin: "şerit en başta bağlı olarak çıksın"; Game/ReklamSdk.cs) ----
-        // Uygulama kimliği yasin'in AdMob hesabından gelene kadar Google'ın TEST kimliği (yalnız test reklamı gösterir; mağaza 1.0
-        // öncesi değişir, YAPMAN_GEREKENLER.md). Kimlik gizli değildir (her IPA'nın Info.plist'inde düz yazılır).
+        // iOS uygulama kimliği 2026-11-11'den beri yasin'in AdMob hesabı (mağaza 1.0); Android hattı olmadığı için Android'de
+        // Google'ın TEST kimliği kalır (ReklamSdk.TEST_KIMLIK ile aynı ayrım). Kimlik gizli değildir (her IPA'nın Info.plist'inde düz yazılır).
         // Eklentinin ayar varlığı (Assets/GoogleMobileAds/Resources/GoogleMobileAdsSettings.asset) depoda yok: ProjectSettings
         // gibi koddan yazılır. Yansıma ile, çünkü bu dosya eklentisiz Editor'de ve tool/unity_test derlemesinde de derlenmeli.
         // Eklentinin iOS derleme sonrası adımı kimlik boşsa build'i kırar; kimlik yine de yazılmadıysa PlistReklam yazar,
         // fastlane de GADApplicationIdentifier'sız IPA'yı yüklemez (SDK açılışta uygulamayı kapatır).
-        public const string ADMOB_IOS_UYG = "ca-app-pub-3940256099942544~1458002511";
+        public const string ADMOB_IOS_UYG = "ca-app-pub-6645967875947629~7956374345";
         public const string ADMOB_ANDROID_UYG = "ca-app-pub-3940256099942544~3347511713";
         // ATT metni: UMP rıza akışı AdMob panelinde IDFA açıklaması tanımlanırsa sistem izin penceresini açar; anahtar yoksa iOS
         // uygulamayı kapatır. Ton oyunun dili: kısa, suçlamasız, ne olduğunu söyler. İngilizce taban (mağaza dili global);

@@ -1,4 +1,16 @@
 === UNITY ===
+Tüy dükkânı daha anlaşılır (12 Kasım gece 2):
+- Bir eşyayı hedef yaptıysan dükkânın üstünde hedefin, kaç Tüy eksik olduğu ve yaklaşık kaç maç süreceği yazıyor; hedefine yeten en küçük pakette "Hedefine yeter" görünüyor.
+- Paket kartlarındaki fiyat düğmeleri aynı hizada; paket büyüdükçe tüy demeti de büyüyor.
+- Mağaza artık arka planda erkenden hazırlanıyor; bağlanırken "Fiyat alınıyor…" yazıyor. Bağlantı yoksa tek bir uyarı ve "Yeniden dene" düğmesi çıkıyor.
+- Tüy alınca tüyler aldığın paketten cüzdandaki sayıya uçuyor, sayı sayarak artıyor.
+Nasıl denenir: Dolap'ta Tüy'ün yetmediği bir eşyada "Hedef yap"a dokun, sonra üstteki Tüy sayısına dokunup dükkânı aç: hedef satırı ve bir pakette "Hedefine yeter" görünmeli. Uçak modunda dükkânı aç: tek uyarı ve "Yeniden dene" görünmeli, bağlantıyı açıp ona dokununca fiyatlar gelmeli. Bir paket al: tüyler o karttan cüzdana uçmalı.
+
+Nasıl oynanır kısaldı, daha keskin oyuncu gölgesi (12 Kasım gece):
+- Ayarlar > Nasıl oynanır: başlıklar tek satır, dokununca açılır, aynı anda bir tane açık. Koş, Forehand / backhand ve Derinlik maddelerinin altında "Görevde dene" ile ilgili antrenman görevine gidilir.
+- Oyuncu gölgeleri daha keskin: gölge mesafesi artık kamera açısına göre kortun boyu kadar ayarlanıyor.
+Nasıl denenir: Ayarlar > Nasıl oynanır'da "Derinlik"e dokun: açılmalı, öteki başlıklar kapalı kalmalı; "Görevde dene"ye dokununca görev kartı açılmalı. Maçta oyuncunun gölgesine üç kamera açısında bak: kenarı eskisinden net olmalı, uzak dip çizgide kesilmemeli.
+
 Hızlı maçta rakip seçimi, Sonsuz rallide yeni top uyarısı, Tüy harcama anı (11 Kasım gece 3):
 - Hızlı maç sayfasında rakibi seçebilirsin: "Rastgele" ya da kariyerde yendiğin rakiplerden biri. Rakibin gücü yine senin seviyende.
 - Sonsuz rallide hız artınca hangi yeni topun geleceği de yazıyor ("Smaç da geliyor" gibi); ilk smaç sürpriz olmuyor.

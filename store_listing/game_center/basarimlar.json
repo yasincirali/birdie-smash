@@ -1,0 +1,278 @@
+[
+ {
+  "id": "bs_kariyer_1",
+  "puan": 20,
+  "en": {
+   "ad": "Local Hall",
+   "aciklama": "Win the local hall stage in Career."
+  },
+  "tr": {
+   "ad": "Mahalle salonu",
+   "aciklama": "Kariyerde mahalle salonu basamağını kazan."
+  }
+ },
+ {
+  "id": "bs_kariyer_2",
+  "puan": 30,
+  "en": {
+   "ad": "School Tournament",
+   "aciklama": "Win the school tournament stage in Career."
+  },
+  "tr": {
+   "ad": "Okul turnuvası",
+   "aciklama": "Kariyerde okul turnuvası basamağını kazan."
+  }
+ },
+ {
+  "id": "bs_kariyer_3",
+  "puan": 40,
+  "en": {
+   "ad": "Provincial Champion",
+   "aciklama": "Win the provincial championship stage in Career."
+  },
+  "tr": {
+   "ad": "İl şampiyonu",
+   "aciklama": "Kariyerde il şampiyonası basamağını kazan."
+  }
+ },
+ {
+  "id": "bs_kariyer_4",
+  "puan": 60,
+  "en": {
+   "ad": "Regional Final",
+   "aciklama": "Win the regional final stage in Career."
+  },
+  "tr": {
+   "ad": "Bölge finali",
+   "aciklama": "Kariyerde bölge finali basamağını kazan."
+  }
+ },
+ {
+  "id": "bs_kariyer_5",
+  "puan": 60,
+  "en": {
+   "ad": "National League",
+   "aciklama": "Win the national league stage in Career."
+  },
+  "tr": {
+   "ad": "Ulusal lig",
+   "aciklama": "Kariyerde ulusal lig basamağını kazan."
+  }
+ },
+ {
+  "id": "bs_kariyer_6",
+  "puan": 100,
+  "en": {
+   "ad": "Champion",
+   "aciklama": "Win the Champions Cup."
+  },
+  "tr": {
+   "ad": "Şampiyon",
+   "aciklama": "Şampiyonlar kupasını kazan."
+  }
+ },
+ {
+  "id": "bs_antrenman",
+  "puan": 10,
+  "en": {
+   "ad": "Coached",
+   "aciklama": "Finish the tutorial without skipping it."
+  },
+  "tr": {
+   "ad": "Antrenmanlı",
+   "aciklama": "Antrenmanı atlamadan bitir."
+  }
+ },
+ {
+  "id": "bs_akis",
+  "puan": 40,
+  "en": {
+   "ad": "In the Flow",
+   "aciklama": "Reach Flow with perfect hits in a row."
+  },
+  "tr": {
+   "ad": "Akışta",
+   "aciklama": "Üst üste tam orta vurup Akış'a gir."
+  }
+ },
+ {
+  "id": "bs_ralli_20",
+  "puan": 50,
+  "en": {
+   "ad": "Marathon Rally",
+   "aciklama": "Play a rally of 20 shots."
+  },
+  "tr": {
+   "ad": "Maraton ralli",
+   "aciklama": "20 vuruşluk bir ralli oyna."
+  }
+ },
+ {
+  "id": "bs_sicrayan_smac",
+  "puan": 30,
+  "en": {
+   "ad": "Sky Smash",
+   "aciklama": "Win a point with a jump smash."
+  },
+  "tr": {
+   "ad": "Gökten smaç",
+   "aciklama": "Sıçrayarak smaçla sayı kazan."
+  }
+ },
+ {
+  "id": "bs_uc_gorev",
+  "puan": 40,
+  "en": {
+   "ad": "Full Card",
+   "aciklama": "Complete all 3 missions in one match."
+  },
+  "tr": {
+   "ad": "Tam kart",
+   "aciklama": "Bir maçta 3 görevin hepsini bitir."
+  }
+ },
+ {
+  "id": "bs_tur_2",
+  "puan": 60,
+  "en": {
+   "ad": "Conqueror of Asia",
+   "aciklama": "Win the Asia Tour final."
+  },
+  "tr": {
+   "ad": "Asya fatihi",
+   "aciklama": "Asya Turu finalini kazan."
+  }
+ },
+ {
+  "id": "bs_tur_3",
+  "puan": 80,
+  "en": {
+   "ad": "European Champion",
+   "aciklama": "Win the Europe Tour final."
+  },
+  "tr": {
+   "ad": "Avrupa şampiyonu",
+   "aciklama": "Avrupa Turu finalini kazan."
+  }
+ },
+ {
+  "id": "bs_tur_4",
+  "puan": 100,
+  "en": {
+   "ad": "World Champion",
+   "aciklama": "Win the World Finals."
+  },
+  "tr": {
+   "ad": "Dünya şampiyonu",
+   "aciklama": "Dünya Finalleri'ni kazan."
+  }
+ },
+ {
+  "id": "bs_tur_5",
+  "puan": 30,
+  "en": {
+   "ad": "Pacific Champion",
+   "aciklama": "Win the Pacific Tour final."
+  },
+  "tr": {
+   "ad": "Pasifik şampiyonu",
+   "aciklama": "Pasifik Turu finalini kazan."
+  }
+ },
+ {
+  "id": "bs_tur_6",
+  "puan": 30,
+  "en": {
+   "ad": "Champion of the Americas",
+   "aciklama": "Win the Americas Tour final."
+  },
+  "tr": {
+   "ad": "Amerika şampiyonu",
+   "aciklama": "Amerika Turu finalini kazan."
+  }
+ },
+ {
+  "id": "bs_tur_7",
+  "puan": 40,
+  "en": {
+   "ad": "Grand Cup",
+   "aciklama": "Win the Grand Cup final."
+  },
+  "tr": {
+   "ad": "Büyük Kupa",
+   "aciklama": "Büyük Kupa finalini kazan."
+  }
+ },
+ {
+  "id": "bs_tur_8",
+  "puan": 60,
+  "en": {
+   "ad": "Legend of Legends",
+   "aciklama": "Win the Legends Cup and finish Career."
+  },
+  "tr": {
+   "ad": "Efsanelerin efsanesi",
+   "aciklama": "Efsaneler Kupası'nı kazanıp kariyeri bitir."
+  }
+ },
+ {
+  "id": "bs_efsane",
+  "puan": 50,
+  "en": {
+   "ad": "Legend",
+   "aciklama": "Reach level 30."
+  },
+  "tr": {
+   "ad": "Efsane",
+   "aciklama": "Seviye 30'a ulaş."
+  }
+ },
+ {
+  "id": "bs_antrenor",
+  "puan": 25,
+  "en": {
+   "ad": "Coach",
+   "aciklama": "Earn all 24 training drill stars."
+  },
+  "tr": {
+   "ad": "Antrenör",
+   "aciklama": "Antrenman görevlerinin 24 yıldızını topla."
+  }
+ },
+ {
+  "id": "bs_gunun_maci",
+  "puan": 10,
+  "en": {
+   "ad": "Match of the Day",
+   "aciklama": "Win a Match of the day."
+  },
+  "tr": {
+   "ad": "Günün maçı",
+   "aciklama": "Bir Günün maçını kazan."
+  }
+ },
+ {
+  "id": "bs_usta_6",
+  "puan": 20,
+  "en": {
+   "ad": "Master Road",
+   "aciklama": "Clear 6 stages on the Master road."
+  },
+  "tr": {
+   "ad": "Usta yolu",
+   "aciklama": "Usta yolunda 6 basamak geç."
+  }
+ },
+ {
+  "id": "bs_imza_okur",
+  "puan": 15,
+  "en": {
+   "ad": "Signature Reader",
+   "aciklama": "Read 10 signature shots in total."
+  },
+  "tr": {
+   "ad": "İmza okuru",
+   "aciklama": "Toplam 10 imza vuruşu oku."
+  }
+ }
+]

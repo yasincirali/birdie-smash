@@ -19,6 +19,14 @@ namespace BirdieSmash.Game
     public class Kalite : MonoBehaviour
     {
         public static int Basamak { get; private set; } = 2;
+        // 2026-11-12 (inceleme 00:05 #3, ikinci inceleme): gölge mesafesi 40/25 m sabitti, kort 13,4 m. Tek kademe StableFit gölge
+        // haritasını o mesafeyi saran küreye yaydığı için figür gölgesi gereksiz bulanıktı. Kadraj çözülünce (FitCamera) kameradan en
+        // uzak kort köşesine uzaklık + pay buraya yazılır; basamak tavanı (40/25) üst sınır kalır. 0 = henüz kadraj yok, tavan.
+        // İlk incelemenin "kamera eğilince uzak dipte kesilir" kaygısı: takip/giriş/zafer kamerası konumu uzaklaştırmaz (eğim yalnız
+        // döndürür, zafer yaklaşır); pay 2,5 m figür boyunu da kapsar.
+        static float kadrajGolge;
+        static float GolgeMesafe(int b) { float tavan = b == 2 ? 40 : 25; return kadrajGolge > 0 ? Mathf.Min(tavan, kadrajGolge) : tavan; }
+        public static void KadrajGolge(float d) { kadrajGolge = d; QualitySettings.shadowDistance = GolgeMesafe(Basamak); }
         int tavan; float top, sayac, inisBekle, iyiSure, topY, sayY; bool sonYuksek; int natW, natH; Camera cam; public static bool Kilitli;
         GameRoot root; bool yuksekKapali; float gucBak; bool dusukGuc;
         // Isıl tavan (2026-11-11 inceleme, fikir 21:05 #3; 6 Kas'ta "ısınma geri bildirimi gelirse" diye bekletilmişti, yasin 11 Kas
@@ -100,11 +108,12 @@ namespace BirdieSmash.Game
             c.dspBufferSize = 256; AudioSettings.Reset(c);
         }
 
+        // 2026-11-12 (inceleme, fikir 2a): kortun üç tavan spotu piksel ışık mı köşe ışığı mı, cihazda önce ölçülür; pişirme kararı bu satıra bakar.
         public static string Tani
         {
             get
             {
-                return "basamak " + Basamak + " · MSAA " + QualitySettings.antiAliasing + " · gölge " + QualitySettings.shadows + " " + QualitySettings.shadowResolution + " " + QualitySettings.shadowDistance + " m · aniso "
+                return "basamak " + Basamak + " · MSAA " + QualitySettings.antiAliasing + " · gölge " + QualitySettings.shadows + " " + QualitySettings.shadowResolution + " " + QualitySettings.shadowDistance.ToString("0.0") + " m · piksel ışık " + QualitySettings.pixelLightCount + " · aniso "
                     + QualitySettings.anisotropicFiltering + " · kemik " + QualitySettings.skinWeights + " · hedef " + Application.targetFrameRate + " fps · vSync " + QualitySettings.vSyncCount
                     + " · çözünürlük " + Screen.width + "x" + Screen.height + " · bellek " + SystemInfo.systemMemorySize + " MB · çekirdek " + SystemInfo.processorCount + " · ses " + AudioSettings.GetConfiguration().dspBufferSize + "/" + AudioSettings.outputSampleRate + " Hz · ısı " + Isil;
             }
@@ -115,7 +124,7 @@ namespace BirdieSmash.Game
             Basamak = b;
             QualitySettings.antiAliasing = b == 2 ? 4 : b == 1 ? 2 : 0; if (cam != null) cam.allowMSAA = b > 0;
             QualitySettings.shadows = b == 2 ? ShadowQuality.All : b == 1 ? ShadowQuality.HardOnly : ShadowQuality.Disable;
-            QualitySettings.shadowDistance = b == 2 ? 40 : 25; QualitySettings.shadowCascades = 1;
+            QualitySettings.shadowDistance = GolgeMesafe(b); QualitySettings.shadowCascades = 1;
             QualitySettings.skinWeights = b == 0 ? SkinWeights.TwoBones : SkinWeights.FourBones;
             // 2026-10-27 performans turu 2: gölge haritası boyu ve izdüşümü açıkça (depoda QualitySettings.asset yok; Unity'nin
             // iOS varsayılan düzeyi neyse oydu). Kamera artık topu izleyip eğiliyor: kararlı sığdırma (StableFit) gölge kenarının

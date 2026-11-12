@@ -106,7 +106,7 @@ namespace BirdieSmash.Game
             if (deneTip != null) g.tip = deneTip; if (deneSac != null) g.sacModel = deneSac; if (deneAyk != null) g.aykModel = deneAyk; if (deneSapka != null) g.sapka = deneSapka; if (deneYuz != null) g.yuz = deneYuz; if (deneSirt != null) g.sirt = deneSirt; if (deneKol != null) g.kol = deneKol;
             string k = Ayar.model + g.Anahtar();
             if (k == anah && fig != null) return; anah = k;
-            if (fig != null) Destroy(fig.gameObject); if (raketPivot != null) Destroy(raketPivot.gameObject);
+            if (fig != null) fig.Sil(); if (raketPivot != null) Destroy(raketPivot.gameObject);
             fig = PlayerView.Build(transform, Ayar.model, true, g.forma, false, g); fig.transform.position = YER;
             fig.ShowStatic(YER, 0, 0);
             // raket kopyası: rijit raket parçaları (deri ağı olmayan, etiketi raket kanalında) pivotun altına
