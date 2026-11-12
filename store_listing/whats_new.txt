@@ -1,4 +1,12 @@
 === UNITY ===
+Yeni şapkalar, sırt eşyaları, kol kalkanları ve danslar (12 Kasım sabaha karşı):
+- Dolap'a 8 yeni şapka (Pervaneli bere, Tencere, Mantar şapka, Saksı kaktüs, Lastik ördek, Dev tüy top, Simit hale, UFO), 5 yeni sırt eşyası (Yedek top tüpü, Kurma kolu, Kaplumbağa kabuğu, Balonlar, Tavus kuyruğu) geldi.
+- Yeni bölüm: Dolap > Sırt sayfasının altında "Kol". Sol kola 5 kalkan takılabiliyor (Tencere kapağı, Şövalye kalkanı, Dur tabelası, Pizza kalkanı, Yıldız kalkanı). Hepsi yalnızca görünüş; oyuna etkisi yok.
+- 6 yeni dans: robot, tavuk, twist, dalga, helikopter, gitar. Hem sayı sevinci hem maç sonu sevinci olarak seçilebilir.
+- Sıçrayarak smaçla alınan sayıdan sonra sevinç biraz daha uzun gösteriliyor; öteki sayılarda ara eskisi gibi kısa.
+- Oyuncu hareketleri bellekte daha az yer tutacak şekilde sıkıştırıldı; hareketlerde gözle görülür fark olmamalı.
+Nasıl denenir: Dolap > Görünüm'de Şapka sayfasından "UFO" şapkasını, Sırt sayfasından "Tavus kuyruğu" eşyasını, aynı sayfanın altındaki Kol bölümünden "Pizza kalkanı" kalkanını dene: eşyalar oyuncunun üstüne oturmalı, saçın ya da gövdenin içine girmemeli; oyuncuyu çevirip arkadan da bak. Sevinç sayfasından bir dans seç, maçta sayı al: dans kısa oynamalı, raket hep sağ elde kalmalı. Sıçrayarak smaçla bir sayı al: sevinç bir saniye kadar sürmeli. Maçta koşu, vuruş ve servis hareketleri eskisi gibi akıcı görünmeli; titreme ya da kayma görürsen yaz.
+
 Tüy dükkânı daha anlaşılır (12 Kasım gece 2):
 - Bir eşyayı hedef yaptıysan dükkânın üstünde hedefin, kaç Tüy eksik olduğu ve yaklaşık kaç maç süreceği yazıyor; hedefine yeten en küçük pakette "Hedefine yeter" görünüyor.
 - Paket kartlarındaki fiyat düğmeleri aynı hizada; paket büyüdükçe tüy demeti de büyüyor.

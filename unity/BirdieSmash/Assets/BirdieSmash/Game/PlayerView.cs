@@ -62,12 +62,14 @@ namespace BirdieSmash.Game
             public string sapka, yuz;
             // 2026-11-01 Dolap › Sırt: pelerin/omuzluk (Kozmetik.SIRT; hazır KayKit ağı, Aksesuar.Sirt).
             public string sirt;
+            // 2026-11-12 Dolap › Kol: raketsiz ön kola kalkan (Kozmetik.KOL; Aksesuar.Kol).
+            public string kol;
             public bool sacParla;   // 2026-11-01 mistik saç boyası: saç malzemesi hafifçe kendinden ışır
             public bool isin;       // 2026-11-01 ışın kaplaması: çerçeve ve kordaj kendinden ışır, hale + renkli salınım izi (IsinKur)
             // 2026-10-30 Dolap › Raket: kafa şekli (RaketSekil; null/"oval" = FBX'in kendi kafası) ve şaft rengi (null = FBX rengi).
             public string kafa; public Color? saft;
             // Sahnedeki figürü yeniden kurmak gerekip gerekmediğinin özeti (GameRoot, Vitrin).
-            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kafa + saft + (sacParla ? "|p" : "") + (isin ? "|i" : ""); }
+            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kol + "|" + kafa + saft + (sacParla ? "|p" : "") + (isin ? "|i" : ""); }
         }
         static Color? Renk(string h) { return h != null ? Kit.Hex(h) : (Color?)null; }
         public static Gorunum Benim()
@@ -76,7 +78,7 @@ namespace BirdieSmash.Game
             return new Gorunum { forma = Kit.Hex(gs.forma), cerceve = Kit.Hex(kp ?? gs.raketRenk), bant = gs.bant != null ? Kit.Hex(gs.bant) : (Color?)null, bilek = gs.bileklik != null ? Kit.Hex(gs.bileklik) : (Color?)null,
                 grip = Kit.Hex(Vitrin.RAK_RENK[r["grip"]]), tel = Kit.Hex(Vitrin.RAK_RENK[r["tel"]]), tel2 = Kit.Hex(Vitrin.RAK_RENK[r["desen"] == "iki" ? r["tel2"] : r["tel"]]),
                 ten = Renk(Ayar.GorunumRenk("ten")), sac = Renk(Ayar.GorunumRenk("sac")), ayakkabi = Renk(Ayar.GorunumRenk("ayakkabi")), gripCizgi = gs.gripDoku == "cizgi",
-                tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.AykGorunum, sapka = Ayar.KOZ[Kozmetik.SAPKA], yuz = Ayar.KOZ[Kozmetik.YUZ], sirt = Ayar.KOZ[Kozmetik.SIRT], sacParla = Ayar.SacParla, isin = Ayar.KaplamaIsin,
+                tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.AykGorunum, sapka = Ayar.KOZ[Kozmetik.SAPKA], yuz = Ayar.KOZ[Kozmetik.YUZ], sirt = Ayar.KOZ[Kozmetik.SIRT], kol = Ayar.KOZ[Kozmetik.KOL], sacParla = Ayar.SacParla, isin = Ayar.KaplamaIsin,
                 sort = Renk(Ayar.GorunumRenk("sort")), kumas = Ayar.gear != null ? Ayar.gear.kumas : null,
                 kafa = r["kafa"], saft = r["saft"] != "model" && Vitrin.RAK_RENK.ContainsKey(r["saft"]) ? Kit.Hex(Vitrin.RAK_RENK[r["saft"]]) : (Color?)null };
         }
@@ -156,6 +158,7 @@ namespace BirdieSmash.Game
                 Calibrate(); AltKatmanKur();
                 if (!hakem) aksesuar = Aksesuar.Kur(model, kHead, Vector3.up, bantMeta, gor.sapka, gor.yuz, gor.forma, gor.sac);
                 if (!hakem && Aksesuar.Var(gor.sirt)) sirtKok = Aksesuar.Sirt(model, Vector3.up, gor.sirt);
+                if (!hakem && Aksesuar.Var(gor.kol)) kolKok = Aksesuar.Kol(model, Vector3.up, gor.kol);
                 if (!hakem && kThigh.Count > 0)
                 {   // ayak kilidi: boşta pozunda (taban y=0'da) bilek yüksekliği
                     ZincirKur(); bilek0 = new float[2];
@@ -458,7 +461,7 @@ namespace BirdieSmash.Game
             yayRenk = new[] { new GradientColorKey(c, 0), new GradientColorKey(Color.Lerp(c, Color.white, .5f), 1) };
         }
         GradientColorKey[] yayRenk;
-        BantMeta bantMeta; Transform aksesuar, sirtKok; public Transform AksesuarKok { get { return aksesuar; } } public Transform SirtKok { get { return sirtKok; } }
+        BantMeta bantMeta; Transform aksesuar, sirtKok, kolKok; public Transform KolKok { get { return kolKok; } } public Transform AksesuarKok { get { return aksesuar; } } public Transform SirtKok { get { return sirtKok; } }
         readonly Gradient yayGrad = new Gradient(); readonly GradientAlphaKey[] yayS = new GradientAlphaKey[2]; float yayA = -1;
         static readonly GradientColorKey[] YAY_RENK = { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) };
         // Varsayılan şort: SORT_RENK (rocketbox_kit, düz lacivert .075/.095/.15) ÷ doku grisi .86 (gamma uzayında çarpım).
@@ -941,6 +944,15 @@ namespace BirdieSmash.Game
         // Raket her zaman sağ elde (kural): sağ kol raketi taşır, el sallama ve alkış sol elle.
         string sevId; float sevT = -1, sevW, sevSure = SEVINC_SURE; bool sevDongu; int sevTop = -1;
         public const float SEVINC_SURE = 1.0f;
+        // 2026-11-12 Danslar (yasin: "sevinçlere danslar eklenebilir; sayı arasında uzun animasyon yapılmamalı ya da sadece sıçrayarak
+        // smaç veya set sayısında"): robot, tavuk, twist, dalga, helikopter, gitar. Hepsi döngülü (t'nin periyodik işlevi), yani
+        // süreyi sayının türü belirler, dans değil: rakip hatasında kısa (SevincKisa), kazanılmış sayıda sayı arası kadar (~.7 sn),
+        // sıçrayarak smaçla alınan sayıda (Match.sovSayi; sayı arası 1,3 sn'ye uzar) SEVINC_UZUN, maç sonunda döngü.
+        // Raket hep sağ elde; hareketi azaltta salınım yok, dansın duruşu sabit kalır.
+        public const float SEVINC_UZUN = 1.25f;
+        public static bool Dans(string id) { return id == "robot" || id == "tavuk" || id == "twist" || id == "dalga" || id == "helikopter" || id == "gitar"; }
+        // Kademeli saat: her tam sayıda bekler, vuruşun ilk %30'unda bir sonrakine geçer (robotun kesik hareketi; sıçrama yok).
+        static float Kademe(float x) { float f = Mathf.Floor(x); return f + Mathf.SmoothStep(0, 1, Mathf.Clamp01((x - f) / .3f)); }
         // Kademeli sevinç (2026-11-07 inceleme, fikir 10:06 #1): her sayıda tam sevinç, rakibin dışarı attığı topla 15 vuruşluk
         // rallinin smacını aynı ödülle karşılıyordu; tekrar eden ödül değer kaybeder, sayı arası da dolardı. Tam sevinç yalnız
         // kazanılmış sayıda: son vuruş sayıyı alanınsa (rakip dönderemedi) ya da ralli >= SEV_UZUN. Rakip hatasında (dışarı,
@@ -965,7 +977,7 @@ namespace BirdieSmash.Game
                 {
                     sevId = isMe ? Secim(Kozmetik.SEVINC) : Kozmetik.RakipSecim(Kozmetik.SEVINC, M.stil != null ? M.stil.sevinc : null); sevDongu = false; sevT = 0;
                     bool kazanilmis = M.rally >= SEV_UZUN || (M.s != null && M.s.from == M.server);   // server = sayıyı alan (Point yazdı)
-                    sevSure = kazanilmis ? SEVINC_SURE : SevincKisa(sevId);
+                    sevSure = M.sovSayi ? SEVINC_UZUN : kazanilmis ? SEVINC_SURE : SevincKisa(sevId);
                 }
                 else if (M.rally >= SEV_UZUN) { sevId = "of"; sevDongu = false; sevT = 0; sevSure = SEV_OF; }
             }
@@ -994,7 +1006,7 @@ namespace BirdieSmash.Game
         public float MacSonuAn { get { return sevDongu && sevT >= 0 ? sevT : -1; } }
         public string MacSonuId { get { return sevDongu ? sevId : null; } }
         // Sevincin "zirve" anı (iniş/patlama): zafer sıçrayıp .62'de iner, zıpla .6'da, diğerleri kollar kalkınca.
-        public static float SevincZirve(string id) { return id == "zafer" ? .62f : id == "zipla" ? .6f : .3f; }
+        public static float SevincZirve(string id) { return id == "zafer" ? .62f : id == "zipla" ? .6f : Dans(id) ? .5f : .3f; }
         public static string SevincSecimi() { return Secim(Kozmetik.SEVINC); }
         static string Secim(string kat) { string v; return Ayar.KOZ.TryGetValue(kat, out v) && v != null ? v : Kozmetik.Varsayilan(kat); }
         // Vitrin önizlemesi (Dolap › Sevinç): boşta pozunun üstüne, döngüde.
@@ -1003,7 +1015,7 @@ namespace BirdieSmash.Game
             transform.position = pos; yaw.localRotation = Quaternion.Euler(0, yawDeg, 0) * calib;
             shadow.position = new Vector3(pos.x, .003f, pos.z);
             if (anim == null) return; Sample("idle", .25f, null, 0, 1); cur = "_sevinc";   // ShowStatic çıkışta boşta pozunu yeniden örneklesin
-            float d = id == "iyi_oyun" || id == "zafer" || id == "selam" || id == "egil" ? 2.4f : 1.6f, tt = t % d;
+            float d = id == "iyi_oyun" || id == "zafer" || id == "selam" || id == "egil" || Dans(id) ? 2.4f : 1.6f, tt = t % d;
             float w = Mathf.Clamp01(Mathf.Min(tt / .15f, (d - tt) / .25f));
             SevincPoz(id, tt, w, Ayar.reduce);
         }
@@ -1073,22 +1085,34 @@ namespace BirdieSmash.Game
             }
             if (id == "zipla") { float u = (t - .6f) / .18f; return u > 0 && u < 1 ? 1 - .6f * Mathf.Sin(u * Mathf.PI) : 1; }
             if (id == "iyi_oyun") return .7f;   // rakibe selam: tam dik değil, rahat
+            // danslar: dizler ritimle yaylanır (leğen iner kalkar), ayaklar yerde
+            if (id == "twist") return 1 - .3f * Mathf.Abs(Mathf.Sin(t * 9));
+            if (id == "tavuk") return .72f - .14f * Mathf.Sin(t * 12);
+            if (id == "robot") return .9f;
+            if (id == "dalga") return 1 - .15f * Mathf.Abs(Mathf.Sin(t * 6));
+            if (id == "gitar") return .68f - .1f * Mathf.Max(0, Mathf.Sin(t * 10));
             return 1;
         }
+        [System.NonSerialized] public int TaniBacakKod; [System.NonSerialized] public float TaniBacakR;
+        public bool TaniKalcaAta { get { return kHip != null && kBacak != null && kBacak[0] != null && kBacak[0].IsChildOf(kHip); } }
         readonly Vector3[] sevAyak = new Vector3[2]; readonly Quaternion[] sevAyakR = new Quaternion[2];
         void SevincBacak(float k, Vector3 fw)
         {
+            // Tanı (ekran turu raporu, 2026-11-12): 0 çalıştı, 1 girdi yok, 2 bacak kemiği eksik, 3 erişim yok (disk < 0), 4 aralık dışı.
+            TaniBacakKod = 1; TaniBacakR = 0;
             if (k <= .001f || kHip == null || kBacak == null) return;
             Vector3 up = yaw.up; float r = float.MaxValue;
             for (int i = 0; i < 2; i++)
             {
-                Transform th = kBacak[i * 3], kn = kBacak[i * 3 + 1], ft = kBacak[i * 3 + 2]; if (th == null || kn == null || ft == null) return;
+                Transform th = kBacak[i * 3], kn = kBacak[i * 3 + 1], ft = kBacak[i * 3 + 2]; if (th == null || kn == null || ft == null) { TaniBacakKod = 2; return; }
                 sevAyak[i] = ft.position; sevAyakR[i] = ft.rotation;
                 float T = ((kn.position - th.position).magnitude + (ft.position - kn.position).magnitude) * .97f;
                 Vector3 v = th.position - ft.position; float b = Vector3.Dot(v, up), disk = b * b - v.sqrMagnitude + T * T;
-                if (disk < 0) return; r = Mathf.Min(r, -b + Mathf.Sqrt(disk));
+                if (disk < 0) { TaniBacakKod = 3; return; } r = Mathf.Min(r, -b + Mathf.Sqrt(disk));
             }
-            if (r <= 0 || r > .5f) return;   // zaten dik ya da ölçek tuhaf: dokunma
+            TaniBacakR = r;
+            if (r <= 0 || r > .5f) { TaniBacakKod = 4; return; }   // zaten dik ya da ölçek tuhaf: dokunma
+            TaniBacakKod = 0;
             kHip.position += up * r * k;
             for (int i = 0; i < 2; i++)
             {
@@ -1119,7 +1143,7 @@ namespace BirdieSmash.Game
             Vector3 up = yaw.up, ri = yaw.right, fw = yaw.forward;
             float salla = rm ? 0 : 1;
             // sıçrama ve dönüş (kök): ağırlıkla
-            float hop = 0, don = 0, egil = 0, bur = 0;
+            float hop = 0, don = 0, egil = 0, bur = 0, yat = 0;
             switch (id)
             {
                 case "kollar": hop = .06f * Mathf.Abs(Mathf.Sin(t * 7)); break;
@@ -1134,6 +1158,13 @@ namespace BirdieSmash.Game
                 case "egil": egil = 32 * Mathf.SmoothStep(0, 1, Mathf.Clamp01((t % 2.4f) / .5f)); break;
                 case "iyi_oyun": egil = 10 * Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - .35f) / .4f)); break;
                 case "of": egil = 12 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .25f)); break;   // uzun ralli kaybı: baş öne, kollar yerinde
+                // danslar (omurga): salla = 0 (hareketi azalt) iken duruş sabit
+                case "robot": egil = 4; bur = 16 * Mathf.Cos(Kademe(t * 3.2f) * Mathf.PI) * salla; break;
+                case "tavuk": egil = 8 + 8 * Mathf.Max(0, Mathf.Sin(t * 12)) * salla; hop = .03f * Mathf.Abs(Mathf.Sin(t * 12)); break;   // gagalama
+                case "twist": egil = 6; bur = 24 * Mathf.Sin(t * 9) * salla; break;
+                case "dalga": yat = 8 * Mathf.Sin(t * 6) * salla; break;
+                case "helikopter": egil = -4; hop = .05f * Mathf.Abs(Mathf.Sin(t * 8)); break;
+                case "gitar": egil = 10 + 8 * Mathf.Max(0, Mathf.Sin(t * 10)) * salla; bur = -10; break;
             }
             transform.position += up * hop * w * salla;
             if (don != 0 && salla > 0) yaw.localRotation = Quaternion.AngleAxis(don, Vector3.up) * yaw.localRotation;
@@ -1145,7 +1176,7 @@ namespace BirdieSmash.Game
             // kayıt (yerel dönüşler): IK tam ağırlıkla çözülür, sonra kayıtla harmanlanır
             var kem = sevKem; kem[0] = SU; kem[1] = SE; kem[2] = LU; kem[3] = LE; kem[4] = kOmurga.Count > 0 ? kOmurga[0] : null; kem[5] = SH;   // kare başı ayırma yok; el: RaketDik ağırlıkla karışsın
             for (int i = 0; i < kem.Length; i++) if (kem[i] != null) sevKayit[i] = kem[i].localRotation;
-            if ((egil != 0 || bur != 0) && kOmurga.Count > 0) { var sp = kOmurga[0]; sp.rotation = Quaternion.AngleAxis(bur, up) * Quaternion.AngleAxis(egil, ri) * sp.rotation; }
+            if ((egil != 0 || bur != 0 || yat != 0) && kOmurga.Count > 0) { var sp = kOmurga[0]; sp.rotation = Quaternion.AngleAxis(bur, up) * Quaternion.AngleAxis(egil, ri) * Quaternion.AngleAxis(yat, fw) * sp.rotation; }
             float L = SU != null && SE != null && SH != null ? (SE.position - SU.position).magnitude + (SH.position - SE.position).magnitude : .5f;
             Vector3 sR = SU != null ? SU.position : Vector3.zero, sL = LU != null ? LU.position : Vector3.zero;
             float s = Mathf.Sin(t * 14) * salla;
@@ -1193,6 +1224,35 @@ namespace BirdieSmash.Game
                 case "kavus":         // afiş (Duvar): kollar göğüste kavuşuk, raket aşağı
                     { Vector3 g = (sR + sL) * .5f + fw * L * .32f - up * L * .3f;
                       IK(SU, SE, SH, g - ri * L * .1f, -up + fw * .2f); IK(LU, LE, LH, g + ri * L * .1f + up * L * .04f, -up + fw * .2f); } break;
+                case "robot":   // dirsekler dik açıda: bir el yukarı, öbürü aşağı; her vuruşta kesik kesik yer değişir
+                    { float k = rm ? 1 : Mathf.Cos(Kademe(t * 3.2f) * Mathf.PI);
+                      IK(SU, SE, SH, sR + ri * L * .5f + fw * L * .12f + up * L * .42f * k, ri - fw * .2f);
+                      IK(LU, LE, LH, sL - ri * L * .5f + fw * L * .12f - up * L * .42f * k, -ri - fw * .2f);
+                      RaketDik(SH, Vector3.Slerp(fw + up * .2f, up, (k + 1) * .5f)); } break;
+                case "tavuk":   // eller koltuk altında, dirsekler kanat gibi çırpar; raket kuyruk gibi yana-geri
+                    { float f = Mathf.Sin(t * 12) * salla;
+                      IK(SU, SE, SH, sR + fw * L * .22f - up * L * .2f + ri * L * .1f, ri + up * (.1f + .7f * f) - fw * .2f);
+                      IK(LU, LE, LH, sL + fw * L * .22f - up * L * .2f - ri * L * .1f, -ri + up * (.1f + .7f * f) - fw * .2f);
+                      RaketDik(SH, ri * .8f + up * .3f - fw * .2f); } break;
+                case "twist":   // bel sağa sola burulurken bükük kollar ters yöne gider
+                    { float q = Mathf.Sin(t * 9) * salla;
+                      IK(SU, SE, SH, sR + fw * L * (.35f + .25f * q) - up * L * .45f + ri * L * .25f, ri - fw * .5f);
+                      IK(LU, LE, LH, sL + fw * L * (.35f - .25f * q) - up * L * .45f - ri * L * .25f, -ri - fw * .5f);
+                      RaketDik(SH, up + fw * .4f); } break;
+                case "dalga":   // kollar yana açık; dalga raketli elden sol ele geçer (faz farkı)
+                    { float hr = Mathf.Sin(t * 6) * salla, hl = Mathf.Sin(t * 6 - 1.6f) * salla;
+                      IK(SU, SE, SH, sR + ri * L * .85f + up * L * .35f * hr + fw * L * .1f, ri * .3f - up * hr - fw * .3f);
+                      IK(LU, LE, LH, sL - ri * L * .85f + up * L * .35f * hl + fw * L * .1f, -ri * .3f - up * hl - fw * .3f);
+                      RaketDik(SH, ri + up * hr * .6f); } break;
+                case "helikopter":   // raket başın üstünde yatay döner (saniyede iki tur), sol el belde
+                    IK(SU, SE, SH, sR + up * L * .9f + ri * L * .1f + fw * L * .04f, ri - fw * .3f);
+                    IK(LU, LE, LH, sL - up * L * .72f - ri * L * .28f + fw * L * .06f, -ri - fw * .6f);
+                    RaketDik(SH, rm ? up : Quaternion.AngleAxis(t * 720, up) * (ri + up * .15f)); break;
+                case "gitar":   // raket gitar: sap sağ kalçada, kafası sol omza doğru; sol el "perdede" gidip gelir, baş ritimle öne
+                    { Vector3 nd = (-ri * .9f + up * .5f + fw * .2f).normalized;
+                      IK(SU, SE, SH, sR - up * L * .7f + fw * L * .3f + ri * L * .05f, ri - fw * .5f);
+                      RaketDik(SH, nd);
+                      if (SH != null) IK(LU, LE, LH, SH.position + nd * L * (.5f + .12f * Mathf.Sin(t * 5) * salla) + fw * L * .05f, -ri - up * .5f); } break;
                 case "iyi_oyun": // raket rakibe doğru kalkar (fileden selam)
                     IK(SU, SE, SH, sR + fw * L * .7f + up * L * .45f + ri * L * .1f, ri - up * .3f); break;
             }

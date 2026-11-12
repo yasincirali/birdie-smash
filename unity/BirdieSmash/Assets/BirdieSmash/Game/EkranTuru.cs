@@ -387,6 +387,8 @@ namespace BirdieSmash.Game
             // 2026-11-01 Sevinç: sayfa (Yumruk önizlemesi) ve üç hareketin tepe anı (vitrin döngüsü 1,6 / 2,4 sn)
             ui.KarakterAc(UiKok.KAR_SEVINC); yield return Bekle(25); yield return Cek("menu_" + ek + "sevinc");
             if (ek == "") foreach (var sv in new[] { "kollar", "zipla", "alkis", "zafer", "egil", "iyi_oyun" }) { root.vitrin.Sevinc(sv); yield return Bekle(sv == "zipla" ? 18 : 30); yield return Cek("sevinc_" + sv); }
+            // 2026-11-12 danslar: ikişer kare (farklı evre), hareketi azalt kapalıyken (salınımlı hâli görünsün)
+            if (ek == "") { bool dr = Ayar.reduce; Ayar.reduce = false; foreach (var sv in new[] { "robot", "tavuk", "twist", "dalga", "helikopter", "gitar" }) { root.vitrin.Sevinc(sv); yield return Bekle(22); yield return Cek("dans_" + sv + "_1"); { var df = root.vitrin.Fig; if (df != null) rap.AppendLine("dans " + sv + " · bacak kod " + df.TaniBacakKod + " r " + df.TaniBacakR.ToString("F3") + " kalçaAta " + df.TaniKalcaAta); } yield return Bekle(13); yield return Cek("dans_" + sv + "_2"); } Ayar.reduce = dr; }
             // 2026-11-10 smaç hareketleri (Kozmetik.SMAC): her hareketin temas öncesi (u .3) ve sonrası (u .75) karesi; saat sabit.
             if (ek == "") foreach (var sm in new[] { "duz", "yay", "makas", "donerek" }) foreach (var su in new[] { .3f, .75f })
                 { Vitrin.TestSmacT = .35f + su / Match.JUMP_HIZ; root.vitrin.Sevinc("smac:" + sm); yield return Bekle(4); yield return Cek("smac_" + sm + (su < .5f ? "_once" : "_sonra")); }
@@ -651,6 +653,12 @@ namespace BirdieSmash.Game
                 rap.AppendLine("perf_doku " + (string.IsNullOrEmpty(t.name) ? "(adsız)" : t.name) + " " + t.width + "x" + t.height + " " + t.format + " mip " + t.mipmapCount + " okunur " + t.isReadable + " süzme " + t.filterMode + " aniso " + t.anisoLevel + " · " + (b / 1024) + " KB");
             }
             rap.AppendLine("perf_doku toplam " + dn + " doku · " + (topB / 1024) + " KB (GetRuntimeMemorySizeLong; geliştirme dışı oyuncuda 0 olabilir)");
+            // 2026-11-12 (model thread): yüklü animasyon klibi ve ağ belleği. KarakterImport anahtar azaltmasının oyuncuya ulaştığının
+            // ve ne kazandırdığının ölçüsü (önce/sonra aynı satır karşılaştırılır). Geliştirme dışı oyuncuda 0 olabilir.
+            long animB = 0; int an = 0; foreach (var k in Resources.FindObjectsOfTypeAll<AnimationClip>()) { if (k == null) continue; animB += UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(k); an++; }
+            long agB = 0; int agN = 0; foreach (var k in Resources.FindObjectsOfTypeAll<Mesh>()) { if (k == null) continue; agB += UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(k); agN++; }
+            rap.AppendLine("perf_anim toplam " + an + " klip · " + (animB / 1024) + " KB");
+            rap.AppendLine("perf_ag toplam " + agN + " ağ · " + (agB / 1024) + " KB");
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
         }
         IEnumerator MenuSahne()
@@ -894,6 +902,10 @@ namespace BirdieSmash.Game
             // 2026-11-01 Sırt: KayKit pelerinleri (Aksesuar.Sirt) arkadan üç çeyrek; sayfanın kendisi (tek satır şerit, 3 sütun, nadirlik) ayrıca
             ui.KarakterAc(UiKok.KAR_SIRT); yield return Bekle(30); yield return Cek("menu_karakter_sirt");
             foreach (var o in Kozmetik.Liste(Kozmetik.SIRT)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.SIRT, o.id); yield return Bekle(20); root.vitrin.a = 150; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_sirt_" + o.id); rap.AppendLine("vitrin sirt=" + o.id + " · " + SirtTani()); }
+            // 2026-11-12 Kol: kalkanlar sol-önden (kalkan yüzü görünür) ve arkadan; sırt denemesi temizlenir
+            ui.KarakterDene(Kozmetik.SIRT, "yok");
+            foreach (var o in Kozmetik.Liste(Kozmetik.KOL)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.KOL, o.id); yield return Bekle(20); root.vitrin.a = 60; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_kol_" + o.id); root.vitrin.a = 300; yield return Bekle(4); yield return Cek("model_vitrin_kol_" + o.id + "_2"); }
+            ui.KarakterDene(Kozmetik.KOL, "yok");
             ui.KarakterDene(Kozmetik.SIRT, "yildiz_pelerin"); ui.KarakterDene(Kozmetik.SAPKA, "kapson"); yield return Bekle(20); root.vitrin.a = 200; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("menu_karakter_sirt_hepsini_al");
             Ayar.reduce = aksRd; Ayar.reduceSecim = aksRs;
             ui.SoyunmaSegment(0); yield return Bekle(5);

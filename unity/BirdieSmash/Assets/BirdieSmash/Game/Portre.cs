@@ -34,7 +34,7 @@ namespace BirdieSmash.Game
         static PlayerView.Gorunum DeneGorunum(string kat, string id)
         {
             var g = PlayerView.Benim();
-            if (kat == Kozmetik.SAC) { g.sacModel = id; g.sapka = null; } else if (kat == Kozmetik.SAPKA) g.sapka = id; else if (kat == Kozmetik.YUZ) g.yuz = id; else if (kat == Kozmetik.SIRT) g.sirt = id;
+            if (kat == Kozmetik.SAC) { g.sacModel = id; g.sapka = null; } else if (kat == Kozmetik.SAPKA) g.sapka = id; else if (kat == Kozmetik.YUZ) g.yuz = id; else if (kat == Kozmetik.SIRT) g.sirt = id; else if (kat == Kozmetik.KOL) g.kol = id;
             return g;
         }
         static string DeneAnahtar(string kat, string id, PlayerView.Gorunum g) { return "kc|" + kat + "|" + id + "|" + Ayar.model + g.Anahtar(); }

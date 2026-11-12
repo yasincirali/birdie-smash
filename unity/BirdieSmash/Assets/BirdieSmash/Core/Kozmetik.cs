@@ -37,7 +37,10 @@ namespace BirdieSmash.Core
         public const string SMAC = "smac";
         // 2026-11-01 Sırt (pelerin, omuzluk; KayKit CC0 hazır ağları): aynı sahiplik/fiyat kuralı, yalnız görünüş.
         public const string SIRT = "sirt";
-        public static readonly string[] KAT = { TIP, SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC };
+        // 2026-11-12 Kol (yasin: "ayakkabı pelerin şapka, kalkan gibi şeyler satacağız ... oyuna etkisi olmayacak"): raketsiz (sol)
+        // ön kola takılan kalkan ve benzerleri; aynı sahiplik/fiyat kuralı, yalnız görünüş. Sona eklendi (kayıt sırası değişmez).
+        public const string KOL = "kol";
+        public static readonly string[] KAT = { TIP, SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC, KOL };
         static Dictionary<string, KozmetikOge[]> veri; static Dictionary<string, RakipGorunum> rakip;
         public static void Sifirla() { veri = null; rakip = null; }
 
@@ -119,7 +122,7 @@ namespace BirdieSmash.Core
             if (veri != null) return;
             var o = Json.Obj(Json.Parse(KariyerVeri.Metin("karakter"))); if (o == null) throw new InvalidOperationException("Birdie Smash: veri/karakter.json okunamadı");
             var v = new Dictionary<string, KozmetikOge[]>();
-            foreach (var k in new[] { "tipler", SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC })
+            foreach (var k in new[] { "tipler", SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC, KOL })
             {
                 var l = new List<KozmetikOge>(); var a = o.ContainsKey(k) ? o[k] as List<object> : null;
                 if (a != null) foreach (var x in a)
