@@ -362,7 +362,9 @@ namespace BirdieSmash.Game
                 }
                 Object.Destroy(m);
             }
-            if (!bulundu) yuzey = .22f * L;
+            // 2026-11-12: ölçü kol yüzeyini bulamazsa (ince kollu tipte kutuya yalnız gövde noktası düşerse değer eksi çıkar) kalkan kolun
+            // içine ya da gövdeyle kol arasına gömülür; makul aralığın dışındaki ölçü yerine tipik kol yarıçapı kullanılır.
+            if (!bulundu || yuzey < .08f * L || yuzey > .5f * L) yuzey = .22f * L;
             var kok = new GameObject("kol").transform; kok.SetParent(on, true);
             // 2026-11-12 (yasin: "kalkan güzel gözükmüyor"): 1,8 ölçekli düz plaka gövdeyi kesiyordu. Kalkan küçüldü (1,7; çizim yarıçapı .62 → .56), bileğe doğru kaydı
             // (dirsek tarafı üst kola ve gövdeye girmesin) ve koldan kayış payı kadar açık durur; kayışlar boşluğu doldurur.
