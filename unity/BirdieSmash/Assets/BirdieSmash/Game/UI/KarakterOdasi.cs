@@ -82,8 +82,24 @@ namespace BirdieSmash.Game
                 var d = Cip(L.T(KAR_AD[i]) + (sayim ? " " + ks + "/" + kt : ""), karAlt == i, () => KategoriSec(ii), dn ? L.T("deneniyor") : null);
                 if (sayim) { var eb = d.userData as ErisimBilgi; if (eb != null) eb.etiket = L.T(KAR_AD[i]) + ", " + L.T("{0} eşyadan {1} tanesi senin", kt, ks) + (dn ? ", " + L.T("deneniyor") : ""); }
                 d.AddToClassList("segment-cip"); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; soyunmaSegment.Add(d);
-                if (karAlt == i && kategoriKaydir != null) { var sd = d; kategoriKaydir.schedule.Execute(() => { if (sd.panel != null) kategoriKaydir.ScrollTo(sd); }).StartingIn(1); }   // seçili kategori görünür kalsın
+                if (karAlt == i && kategoriKaydir != null) OrtayaKaydir(kategoriKaydir, d);   // seçili kategori görünür kalsın
             }
+        }
+        // 2026-11-13 inceleme (fikir 02:05 #1, r161 karesi): seçili kategori 1 ms zamanlayıcıyla ScrollTo ediliyordu; o anda yerleşim
+        // bitmemiş (genişlik 0) olduğundan kaydırma boşa gidiyor, Sırt seçiliyken şerit "Beden · Yüz · Saç · Şapka · B…" gösterip
+        // seçili sekmeyi sağ kenarda kesiyordu. Parça şeridiyle aynı kalıp: genişlik gelince bir kez kaydırılır. ScrollTo çipi yalnız
+        // kenara getirirdi; seçili çip görünür alanın ortasına alınır ki iki yanındaki komşular da okunsun (nereden geldim, nereye gidebilirim).
+        static void OrtayaKaydir(ScrollView sv, VisualElement el)
+        {
+            EventCallback<GeometryChangedEvent> gc = null;
+            gc = e =>
+            {
+                float g = sv.contentViewport.layout.width; if (el.layout.width <= 0 || g <= 0) return;
+                el.UnregisterCallback(gc);
+                float x = el.layout.x + el.layout.width * .5f - g * .5f, enCok = Mathf.Max(0, sv.contentContainer.layout.width - g);
+                sv.scrollOffset = new Vector2(Mathf.Clamp(x, 0, enCok), sv.scrollOffset.y);
+            };
+            el.RegisterCallback(gc);
         }
         // ---- Koleksiyon (2026-11-10, yasin: "dolap kısmı göz alıcı ve orada zaman geçirtici değil") ----
         // Dolap'ta "ne kadarı benim, sırada ne var" hiç yazmıyordu: kategori çipi yalnız addı, sahip olunan ile olunmayan ancak
@@ -113,7 +129,12 @@ namespace BirdieSmash.Game
             var gr = Ayar.gear; int sahip = 0, toplam = 0;
             foreach (int i in KarSayfalar()) { int s, t; if (KarSayim(i, out s, out t)) { sahip += s; toplam += t; } }
             if (toplam == 0) return;
-            string kat; var o = Kozmetik.Siradaki(gr, DolapKatlar(), out kat); string kol = L.T("Koleksiyon {0}/{1}", sahip, toplam);
+            // 2026-11-13 inceleme (fikir 02:05 #2): satır bütün dolaptan seçiyordu; Sırt'ta "Sıradaki: Güneş gözlüğü" yazıp dokununca
+            // oyuncuyu Yüz sayfasına atıyordu. Önce açık sayfanın sıradakisi, sayım "Sırt 3/40 · Dolap 14/147";
+            // sayfada alınmamış eşya kalmadıysa bütün dolabın sıradakisine düşer (eski davranış). Dokunuş sayfada kalır, eşyayı dener.
+            string kat = null; var sk0 = KarKat(karAlt); KozmetikOge o = sk0 != null ? Kozmetik.Siradaki(gr, sk0, out kat) : null; bool sayfa = o != null;
+            if (!sayfa) o = Kozmetik.Siradaki(gr, DolapKatlar(), out kat);
+            int ss, st; string kol = sayfa && KarSayim(karAlt, out ss, out st) ? L.T(KAR_AD[karAlt]) + " " + ss + "/" + st + " · " + L.T("Dolap {0}/{1}", sahip, toplam) : L.T("Koleksiyon {0}/{1}", sahip, toplam);
             var d = new VisualElement(); d.AddToClassList("sv-hedef"); d.AddToClassList("dolap-siradaki"); c.Add(d);
             var sol = new VisualElement(); sol.AddToClassList("sv-hedef-sol"); sol.pickingMode = PickingMode.Ignore; d.Add(sol);
             if (o == null)
@@ -122,7 +143,7 @@ namespace BirdieSmash.Game
                 d.pickingMode = PickingMode.Ignore; Erisim.Etiket(d, kol + ". " + L.T("Dolabın tamam: hepsi senin."), "metin"); return;
             }
             bool kilit = gr.Seviye() < o.sv; int eksik = o.fiyat - gr.eko.tuy;
-            string bas = L.T("Sıradaki: {0}", L.T(o.ad));
+            string bas = L.T("Sıradaki: {0}", L.T(o.ad));   // sayfa bağlamı alt satırdaki "Sırt 3/40" sayımında (küçük harfe çevirme dile göre bozulurdu)
             string alt = kol + " · " + (kilit ? L.T("Sv {0} ile açılır", o.sv) : eksik > 0 ? L.T("{0} Tüy kaldı", eksik) : L.T("Alabilirsin"));
             sol.Add(Yazi(bas, 14, "kalin"));
             if (!kilit) { var cb = Cubuk(o.fiyat > 0 ? Mathf.Clamp01(gr.eko.tuy / (float)o.fiyat) : 1, eksik > 0 ? TURUNCU : CAMGOBEGI, 5); cb.AddToClassList("sv-hedef-cubuk"); sol.Add(cb); }
@@ -179,7 +200,7 @@ namespace BirdieSmash.Game
                 var d = Cip(L.T(PARCA_AD[i]), sec, () => { if (raketParca != p) RaketParcaSec(p); });
                 d.AddToClassList("segment-cip"); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; s.Add(d); if (sec) secEl = d;
             }
-            if (secEl != null) { var se = secEl; EventCallback<GeometryChangedEvent> gc = null; gc = e => { if (se.layout.width > 0) { hk.ScrollTo(se); se.UnregisterCallback(gc); } }; se.RegisterCallback(gc); }
+            if (secEl != null) OrtayaKaydir(hk, secEl);
             var gr = Ayar.gear; int sv = gr.Seviye(); string ps = raketParca;
             // 2026-11-07 (yasin: "tek Raket bölümü"; ölçüler profesyonel düzeyde): raketle ilgili her şey burada. Tüm raket görünümünde
             // önce işlev (kimlik, sap, gerginlik), sonra görünüş, en altta teknik sayfa. Parça seçilince o parçanın işlevi ve görünüşü:
@@ -563,22 +584,22 @@ namespace BirdieSmash.Game
         }
         static readonly string[] SET_ID = { "yilbasi", "cadilar", "masal", "gelenek" }, SET_AD = { "Yılbaşı", "Cadılar Bayramı", "Masallar", "Geleneksel" };
         readonly Dictionary<string, string> kozSet = new Dictionary<string, string>();
-        void KozIzgara(VisualElement c, string kat, string baslik, string dn, bool resim = true)
+        void KozIzgaraIc(VisualElement c, string kat, string baslik, string dn, bool resim)
         {
             var gr = Ayar.gear; string sec = Ayar.KOZ[kat];
-            c.Add(Grup(L.T(baslik) + " · " + L.T(Kozmetik.Oge(kat, dn ?? sec).ad)));
-            // 2026-11-12 Koleksiyon süzgeci (yasin: "konsept konsept ilerle"): Yılbaşı, Cadılar Bayramı, Masallar, Geleneksel setleriyle ızgara
-            // uzadı (şapka 40+); çipler yalnız o bölümde parçası olan koleksiyonları gösterir. Süzgeç yalnız listeyi daraltır: "boş" kartı,
-            // takılı olan ve denenen eşya hep görünür ki seçim kaybolmuş okunmasın. Seçim kaydedilmez (Dolap her açılışta "Hepsi").
             string su; kozSet.TryGetValue(kat, out su); var tum = Kozmetik.Liste(kat); bool setVar = false; foreach (var o in tum) if (o.koleksiyon != null) { setVar = true; break; }
             if (setVar)
             {
-                var cs = Satir("cip-sarar"); cs.AddToClassList("koz-set"); c.Add(cs);
-                cs.Add(Cip(L.T("Hepsi"), su == null, () => { kozSet.Remove(kat); SoyunmaGovdeKur(true); }));
+                var cs = Satir("cip-sarar"); cs.AddToClassList("koz-set"); c.Add(cs); System.Action yenile = () => { c.Clear(); KozIzgaraIc(c, kat, baslik, dn, resim); };
+                cs.Add(Cip(L.T("Hepsi"), su == null, () => { if (su == null) return; kozSet.Remove(kat); yenile(); }));
                 for (int si = 0; si < SET_ID.Length; si++)
                 {
-                    string sid = SET_ID[si]; bool varMi = false; foreach (var o in tum) if (o.koleksiyon == sid) { varMi = true; break; }
-                    if (varMi) cs.Add(Cip(L.T(SET_AD[si]), su == sid, () => { kozSet[kat] = sid; SoyunmaGovdeKur(true); }));
+                    // 2026-11-13 (fikir 02:05 #5): çip setin bu bölümdeki ilerlemesini söyler ("Yılbaşı 2/7"); süzgeç de yalnız bu bölümün
+                    // kartlarını gösterdiği için sayı gördüğün kartlarla aynıdır. Tamamlanınca ödül, rozet, süre yok (ekonomi geliştirme thread'inin).
+                    string sid = SET_ID[si]; int sh = 0, ts = 0; foreach (var o in tum) if (o.koleksiyon == sid) { ts++; if (Kozmetik.Sahip(gr, kat, o.id)) sh++; }
+                    if (ts == 0) continue; string ad = L.T(SET_AD[si]);
+                    var sc = Cip(ad + " " + sh + "/" + ts, su == sid, () => { if (su == sid) return; kozSet[kat] = sid; yenile(); }); cs.Add(sc);
+                    var eb = sc.userData as ErisimBilgi; if (eb != null) eb.etiket = ad + ", " + L.T("{0} eşyadan {1} tanesi senin", ts, sh);
                 }
             }
             var iz = Satir("izgara"); iz.AddToClassList("koz-izgara"); c.Add(iz); int ks = 0; bool ilk = true;
@@ -597,6 +618,18 @@ namespace BirdieSmash.Game
                 Erisim.Etiket(k, L.T(baslik) + ", " + L.T(o.ad) + (nd != null ? ", " + nd : "") + ", " + durum + (dn == o.id ? ", " + L.T("deneniyor") : ""), "dugme", du == ModelDurum.Secili);
                 iz.Add(k);
             }
+        }
+        void KozIzgara(VisualElement c, string kat, string baslik, string dn, bool resim = true)
+        {
+            var gr = Ayar.gear; string sec = Ayar.KOZ[kat];
+            c.Add(Grup(L.T(baslik) + " · " + L.T(Kozmetik.Oge(kat, dn ?? sec).ad)));
+            // 2026-11-12 Koleksiyon süzgeci (yasin: "konsept konsept ilerle"): Yılbaşı, Cadılar Bayramı, Masallar, Geleneksel setleriyle ızgara
+            // uzadı (şapka 40+); çipler yalnız o bölümde parçası olan koleksiyonları gösterir. Süzgeç yalnız listeyi daraltır: "boş" kartı,
+            // takılı olan ve denenen eşya hep görünür ki seçim kaybolmuş okunmasın. Seçim kaydedilmez (Dolap her açılışta "Hepsi").
+            // 2026-11-13 inceleme (fikir 02:05 #4): süzgeç çipi SoyunmaGovdeKur(true) ile bütün gövdeyi (Koleksiyon satırı, Kombinler,
+            // 44 kartlık ızgara) baştan kuruyordu; kaydırma yeri ve odak kayboluyor, dar telefonda takılıyordu. Çipler ve ızgara kendi
+            // kutusunda; süzgeç yalnız o kutuyu yeniden kurar (küçük resimler önbellekte).
+            var kutu = new VisualElement(); kutu.AddToClassList("koz-set-kutu"); c.Add(kutu); KozIzgaraIc(kutu, kat, baslik, dn, resim);
             if (dn != null) { var o = Kozmetik.Oge(kat, dn); DenemeKart(c, kat, dn, o.ad, o.fiyat, o.sv, Kozmetik.Durum(gr, kat, dn, sec), Kozmetik.AlOlur(gr, kat, dn, sec)); }
         }
         void SapkaSayfa(VisualElement c)

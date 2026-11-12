@@ -100,7 +100,16 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Kombinler")));
             var s = Satir("secim"); s.AddToClassList("kombin-satir"); c.Add(s);
             int giyili = -1; for (int i = 0; i < KOMBIN_SAY; i++) if (KombinAyni(kombinler[i], simdi)) { giyili = i; break; }
-            for (int i = 0; i < KOMBIN_SAY; i++)
+            // 2026-11-13 inceleme (fikir 02:05 #6, r161): yeni oyuncuda üç "Boş · kaydet" yuvası eşya ızgarasını ekranın son %15'ine
+            // itiyordu. Hiç kayıt yokken tek çip "Bu görünüşü kaydet" (1. yuvaya yazar) + Rastgele; ilk kayıttan sonra üç yuva (K2 korunur).
+            bool hicYok = true; for (int i = 0; i < KOMBIN_SAY; i++) if (kombinler[i] != null) { hicYok = false; break; }
+            if (hicYok)
+            {
+                var kd = Cip(L.T("Bu görünüşü kaydet"), false, () => { kombinler[0] = KombinSimdi(); kombinAktif = 0; KombinYaz(); root.sfx.Yukselt(); SoyunmaGovdeKur(true); });
+                kd.AddToClassList("kombin-cip"); s.Add(kd);
+                Erisim.Etiket(kd, L.T("Bu görünüşü kaydet") + ", " + L.T("Kombin {0}", 1), "dugme");
+            }
+            for (int i = 0; i < KOMBIN_SAY && !hicYok; i++)
             {
                 int ii = i; bool dolu = kombinler[i] != null, on = giyili == i;
                 string ad = L.T("Kombin {0}", i + 1), alt = !dolu ? L.T("Boş · kaydet") : on ? L.T("Giyili") : L.T("Giy");
@@ -149,7 +158,9 @@ namespace BirdieSmash.Game
             var l = Denenenler(); denemeCubuk.style.display = l.Count == 0 ? DisplayStyle.None : DisplayStyle.Flex; if (l.Count == 0) return;
             int top = 0, alinir = 0, enAzSv = 99; var adlar = new List<string>(); var kilitli = new List<string>();
             foreach (var d in l) { adlar.Add(L.T(d.ad)); if (d.du == ModelDurum.Kilitli) { kilitli.Add(L.T("{0}: Sv {1} gerekli", L.T(d.ad), d.sv)); enAzSv = Mathf.Min(enAzSv, d.sv); } else { top += d.fiyat; alinir++; } }
-            string kilitNot = kilitli.Count > 0 ? string.Join(" · ", kilitli) : null;
+            // 2026-11-13 inceleme (fikir 02:05 #7, r161 yazi_tasma): "Wizard hat: Lv 10 needed" düğmenin alt satırında iki satıra sarıp
+            // yarıya kırpılıyordu; ad zaten kartta, vitrinde ve "Deneniyor" satırında. Tek eşyada yalnız seviye, birden çokta sayı + en küçük seviye.
+            string kilitNot = kilitli.Count == 0 ? null : kilitli.Count == 1 ? L.T("Sv {0} ile açılır", enAzSv) : L.T("{0} eşya · Sv {1} ile açılır", kilitli.Count, enAzSv);
             // r101: çubuk 3 satırdı (başlık, kilit notu, düğmeler), gövdeye ~60 pt kalıyordu; tek satır: ne denendiği ve durumu
             // birincil düğmenin alt satırında (ekran okuyucu etiketi ikisini birlikte okur).
             var s = Satir("arali"); s.AddToClassList("deneme-cubuk-dugmeler"); denemeCubuk.Add(s);
