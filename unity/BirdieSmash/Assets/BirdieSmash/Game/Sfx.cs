@@ -538,6 +538,9 @@ namespace BirdieSmash.Game
     // vuruşta .30, zayıfta .18), zayıf vuruşta el çırpma (bandpass 1500 gürültü), vuruş arası sinüs bas; akor tonlarından
     // sekizlik arpej (kare, .22 sn, alçak geçiren 2400 Hz); 5. ölçüden ezgi (üçgen) iki kez. Dosya yok, lisans sorusu yok.
     // Dikişsiz: tampon 2 sn uzun sentezlenir, döngü sonunu aşan kuyruk başa eklenir (çalan nota başta sönerek sürer).
+    // B bölümü (2026-11-12, inceleme 17:05): 25,7 sn'lik tek döngü Dolap'ta ("zaman geçirtici", yasin 10 Kas) iki dakikada beş kez
+    // dönüyordu. Aynı sentezle 12 ölçü daha: Am–F–C–G (vi–IV–I–V), arp dörtlük (yarı yoğunluk), ezgi bir oktav aşağı ve daha
+    // yumuşak; A-B döngüsü ≈51 sn. Sentez zaten arka iş parçacığında; tampon ~9 MB geçici, klip kurulunca bırakılır. Yeni dosya yok.
     public static class MenuMuzik
     {
         static readonly Dictionary<char, int> NOT = new Dictionary<char, int> { { 'C', 0 }, { 'D', 2 }, { 'E', 4 }, { 'F', 5 }, { 'G', 7 }, { 'A', 9 }, { 'B', 11 } };
@@ -545,11 +548,12 @@ namespace BirdieSmash.Game
         static float Hz(int m) { return 440 * Mathf.Pow(2, (m - 69) / 12f); }
         public static float[] TuyPop()
         {
-            float b = 60f / 112, L = 12 * 4 * b; int N = Mathf.RoundToInt(L * Synth.SR); var S = new Synth(L + 2, 21);
+            float b = 60f / 112, L = 24 * 4 * b; int N = Mathf.RoundToInt(L * Synth.SR); var S = new Synth(L + 2, 21);
             string[] bas = { "F2", "G2", "E2", "A2" }; string[][] ak = { new[] { "F3", "A3", "C4" }, new[] { "G3", "B3", "D4" }, new[] { "E3", "G3", "B3" }, new[] { "A3", "C4", "E4" } };
-            for (int k = 0; k < 12; k++)
+            string[] basB = { "A2", "F2", "C3", "G2" }; string[][] akB = { new[] { "A3", "C4", "E4" }, new[] { "F3", "A3", "C4" }, new[] { "C4", "E4", "G4" }, new[] { "G3", "B3", "D4" } };
+            for (int k = 0; k < 24; k++)
             {
-                float t0 = k * 4 * b; int kb = M(bas[k % 4]); var a = ak[k % 4];
+                bool B = k >= 12; float t0 = k * 4 * b; int kb = M((B ? basB : bas)[k % 4]); var a = (B ? akB : ak)[k % 4];
                 for (int j = 0; j < 4; j++)
                 {
                     float v = j % 2 == 0 ? .30f : .18f;
@@ -558,16 +562,20 @@ namespace BirdieSmash.Game
                     S.Decay(t0 + j * b + .5f * b, Hz(kb), "sine", .26f, .30f);
                 }
                 int a0 = M(a[0]) + 12, a1 = M(a[1]) + 12, a2 = M(a[2]) + 12; int[] arp = { a0, a1, a2, a1, a0 + 12, a2, a1, a2 };
-                for (int j = 0; j < 8; j++) S.Tone(t0 + j * b / 2, Hz(arp[j]), .22f, "square", .05f, new Synth.Biquad("lowpass", 2400, .8f));
+                for (int j = 0; j < 8; j += B ? 2 : 1) S.Tone(t0 + j * b / 2, Hz(arp[j]), B ? .30f : .22f, "square", .05f, new Synth.Biquad("lowpass", 2400, .8f));
             }
             string[] ezgi = { "A5 1", "G5 .5", "E5 .5", "G5 1", "C6 1", "B5 .5", "A5 .5", "G5 1", "D5 2", "E5 .5", "G5 .5", "B5 1", "A5 .5", "G5 .5", "E5 1", "A5 .5", "C6 .5", "A5 1", "E5 2" };
-            float te = 4 * 4 * b;
-            for (int r = 0; r < 2; r++)
-                foreach (var e in ezgi)
-                {
-                    var p = e.Split(' '); float d = float.Parse(p[1], System.Globalization.CultureInfo.InvariantCulture) * b;
-                    S.Decay(te, Hz(M(p[0])), "triangle", .13f, Mathf.Min(.7f, d * 1.2f)); te += d;
-                }
+            // A: 5.–12. ölçü ezgi iki kez; B: 17.–24. ölçü aynı ezgi bir oktav aşağı (C6/A5 tepeleri Am–F–C–G üstünde de akor tonu).
+            for (int bol = 0; bol < 2; bol++)
+            {
+                float te = (bol * 12 + 4) * 4 * b; int okt = bol == 0 ? 0 : -12; float ses = bol == 0 ? .13f : .12f;
+                for (int r = 0; r < 2; r++)
+                    foreach (var e in ezgi)
+                    {
+                        var p = e.Split(' '); float d = float.Parse(p[1], System.Globalization.CultureInfo.InvariantCulture) * b;
+                        S.Decay(te, Hz(M(p[0]) + okt), "triangle", ses, Mathf.Min(.7f, d * 1.2f)); te += d;
+                    }
+            }
             var o = new float[N]; float tepe = 1e-6f;
             for (int i = 0; i < N; i++) { float x = S.buf[i] + (i + N < S.buf.Length ? S.buf[i + N] : 0); o[i] = x; tepe = Mathf.Max(tepe, Mathf.Abs(x)); }
             float g = .8f / tepe; for (int i = 0; i < N; i++) o[i] *= g;

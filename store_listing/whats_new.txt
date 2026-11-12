@@ -1,4 +1,11 @@
 === UNITY ===
+Kol kalkanı resimleri, dansların tamamı, uzun menü müziği (12 Kasım akşamüstü):
+- Dolap > Sırt > Kol bölümündeki kartlar artık kalkanın kendisini yakından gösteriyor (önceden hepsi aynı yüz resmiydi).
+- Dolap'ta bir şey satın alınca seçili dans yarıda kesilmeden sonuna kadar oynuyor.
+- Dolap'ta şapka ve sırt sayfaları arasında gidip gelince küçük resimler yeniden çizilmeden hemen görünüyor.
+- Menü müziği iki katı uzun: ilk bölümden sonra daha sakin ikinci bir bölüm geliyor, aynı parça yarım dakikada bir başa dönmüyor.
+Nasıl denenir: Dolap > Sırt sayfasının altında Kol bölümüne in: her kartta farklı bir kalkan görünmeli. Sevinç olarak bir dans seç, sonra bir eşya satın al: dans sonuna kadar oynamalı. Şapka sayfasına, sonra Sırt'a, sonra yeniden Şapka'ya geç: resimler beklemeden gelmeli. Menüde bir dakika bekle: müziğin ikinci bölümü (daha alçak ezgi) duyulmalı, geçişte takılma olmamalı.
+
 Danslar sesli, uzun smaç çubuğu, "Sistem" dili (12 Kasım öğle):
 - Her dansın kendi kısa sesi var (robotta iki bip, gitarda akor, helikopterde pervane…). Dolap'ta dans seçince bir kez, maç sonu sevincinde zirvede bir kez çalıyor; sayı aralarında çalmıyor.
 - Maçtaki smaç gücü çubuğu daha uzun: dolunca yazı artık kısaca "Smaç hazır".

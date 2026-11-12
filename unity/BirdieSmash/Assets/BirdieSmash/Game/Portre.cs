@@ -13,13 +13,18 @@ namespace BirdieSmash.Game
     public static class Portre
     {
         static readonly Vector3 YER = new Vector3(600, 0, 0);
-        const int BOY = 256, SINIR = 8, KBOY = 160, KSINIR = 40;
+        const int BOY = 256, SINIR = 8, KBOY = 160, KSINIR = 80;
         static Transform kok; static Camera kam; static Light isik;
         static readonly Dictionary<string, RenderTexture> rt = new Dictionary<string, RenderTexture>();
         static readonly List<string> sira = new List<string>();
         // Dolap küçük resimleri (2026-10-31, sanat paketi 1): saç/şapka/yüz kartları yalnız adla anlatılıyordu ("Anime", "Ananas"
         // ne demek?). Her kart oyuncunun bugünkü görünüşüne o öğe takılmış bir baş portresi gösterir. Ayrı ve daha büyük bir
         // önbellek (17 saç + 8 şapka + 6 yüz sığsın, 160² ≈ 100 KB her biri, MSAA'sız): portrelerle birbirini atmasınlar.
+        // 2026-11-12 (inceleme 17:05): tavan 40 → 80. Katalog 64 resimli karta çıktı (şapka 26, sırt 15, saç 11, yüz 6, kol 6),
+        // sezon koleksiyonlarıyla 100'ü geçiyor; Şapka → Sırt → Şapka gezintisinde en eski 24 resim atılıp yeniden çiziliyordu
+        // (her biri ana iş parçacığında FBX figürü, 45 ms aralıkla: 26 şapka ≈ 1,2 sn boş kutu). 80 × 100 KB ≈ 8 MB doku, oyun
+        // boyunca kalır (Dolap kapanınca bırakan bir kanca yok); bugünkü katalog tamamen, iki büyük kategori birlikte sığar.
+        // Disk önbelleği ve yalnız başı etkileyen dar anahtar ayrı iş, önce ekran turunda ölçüm.
         static readonly Dictionary<string, RenderTexture> krt = new Dictionary<string, RenderTexture>();
         static readonly List<string> ksira = new List<string>();
 
@@ -45,17 +50,17 @@ namespace BirdieSmash.Game
         }
         public static Texture Dene(string kat, string id)
         {
-            var g = DeneGorunum(kat, id); return Al(DeneAnahtar(kat, id, g), g, true, KBOY, krt, ksira, KSINIR, kat == Kozmetik.SIRT);
+            var g = DeneGorunum(kat, id); return Al(DeneAnahtar(kat, id, g), g, true, KBOY, krt, ksira, KSINIR, kat == Kozmetik.SIRT, kat == Kozmetik.KOL);
         }
 
         static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben) { return Al(anahtar, g, ben, BOY, rt, sira, SINIR); }
-        static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben, int boy, Dictionary<string, RenderTexture> on, List<string> sr, int sinir, bool arka = false)
+        static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben, int boy, Dictionary<string, RenderTexture> on, List<string> sr, int sinir, bool arka = false, bool kol = false)
         {
             RenderTexture t; if (on.TryGetValue(anahtar, out t) && t != null && t.IsCreated()) return t;
             // D6 (2026-10-31): RT içeriği kaybolmuşsa (arka plandan dönüş, bellek baskısı) eski nesne yok edilmeden yerine yenisi
             // konuyordu; bellek sızıntısı. Önce eskisi bırakılır.
             if (t != null) { t.Release(); Object.Destroy(t); on.Remove(anahtar); }
-            try { t = Ciz(g, ben, boy, arka); } catch (System.Exception e) { Debug.LogWarning("Birdie Smash portre çizilemedi: " + e.Message); return null; }
+            try { t = Ciz(g, ben, boy, arka, kol); } catch (System.Exception e) { Debug.LogWarning("Birdie Smash portre çizilemedi: " + e.Message); return null; }
             if (t == null) return null;
             on[anahtar] = t; sr.Remove(anahtar); sr.Add(anahtar);
             while (sr.Count > sinir) { var e = sr[0]; sr.RemoveAt(0); RenderTexture o; if (on.TryGetValue(e, out o) && o != null) { o.Release(); Object.Destroy(o); } on.Remove(e); }
@@ -76,7 +81,10 @@ namespace BirdieSmash.Game
 
         static bool RaketAlti(Transform t, Transform kok) { for (; t != null && t != kok; t = t.parent) if (t.name.ToLowerInvariant().StartsWith("raket")) return true; return false; }
         // arka (2026-11-01 Sırt): pelerin küçük resmi arkadan üç çeyrek, baştan beline kadar (pelerin sırtta, yüzden görünmez).
-        static RenderTexture Ciz(PlayerView.Gorunum g, bool ben, int boy, bool arka = false)
+        // kol (2026-11-12, inceleme 17:05): kalkan üst kolda, baş kadrajının dışında kalıyordu; altı Kol kartı aynı baş portresini
+        // gösteriyordu ("aynı resim, farklı ad" satın almayı durdurur). Kol kartında kadraj kalkanın kendi sınırlarına oturur,
+        // kamera figürün dönüşünden bağımsız olarak kalkanın bulunduğu yandan, üç çeyrek önden bakar. Kalkan bulunamazsa baş kadrajı.
+        static RenderTexture Ciz(PlayerView.Gorunum g, bool ben, int boy, bool arka = false, bool kol = false)
         {
             Kur();
             var fig = PlayerView.Build(kok, Ayar.model, ben, g.forma, false, g);
@@ -90,13 +98,28 @@ namespace BirdieSmash.Game
                 { string n = tr.name.ToLowerInvariant(); if (n.Contains("__")) continue; if (n == "head" || n.EndsWith(" head")) { bas = tr; break; } }
                 float ust = float.MinValue; foreach (var r in fig.GetComponentsInChildren<Renderer>()) if (r.enabled && !r.gameObject.name.StartsWith("raket") && !(r is TrailRenderer)) ust = Mathf.Max(ust, r.bounds.max.y);
                 if (ust == float.MinValue) ust = YER.y + 1.8f;
+                Bounds kb = new Bounds(); bool kalkan = false;
+                if (kol && fig.KolKok != null)
+                    foreach (var r in fig.KolKok.GetComponentsInChildren<Renderer>()) if (r.enabled) { if (!kalkan) { kb = r.bounds; kalkan = true; } else kb.Encapsulate(r.bounds); }
+                if (kalkan)
+                {
+                    var govde = new Vector3(bas != null ? bas.position.x : YER.x, kb.center.y, bas != null ? bas.position.z : YER.z);
+                    var yan = kb.center - govde; yan.y = 0; yan = yan.sqrMagnitude > 1e-6f ? yan.normalized : Vector3.left;
+                    var yon = (yan * .8f + Vector3.forward * .6f).normalized;
+                    float r2 = Mathf.Max(kb.extents.magnitude * 1.5f, .12f), d2 = r2 / Mathf.Tan(kam.fieldOfView * .5f * Mathf.Deg2Rad);
+                    kam.transform.position = kb.center + yon * d2 + Vector3.up * r2 * .15f; kam.transform.LookAt(kb.center);
+                    isik.transform.position = kb.center + yon * .9f + new Vector3(0, .5f, 0); isik.enabled = true;
+                }
                 float bY = bas != null ? bas.position.y : ust - .35f; if (ust < bY + .1f) ust = bY + .3f;
                 // kadraj: çene (baş kemiğinin biraz altı) ile tepe arası; tepe payı %8
                 float alt = bY - (ust - bY) * (arka ? 2.6f : .35f), yari = (ust - alt) * .5f * 1.08f, orta = (ust + alt) * .5f;
                 float d = yari / Mathf.Tan(kam.fieldOfView * .5f * Mathf.Deg2Rad);
                 var hedef = new Vector3(bas != null ? bas.position.x : YER.x, orta, bas != null ? bas.position.z : YER.z);
-                kam.transform.position = hedef + new Vector3(0, yari * .12f, d); kam.transform.LookAt(hedef);
-                isik.transform.position = hedef + new Vector3(-.6f, .5f, .9f); isik.enabled = true;
+                if (!kalkan)
+                {
+                    kam.transform.position = hedef + new Vector3(0, yari * .12f, d); kam.transform.LookAt(hedef);
+                    isik.transform.position = hedef + new Vector3(-.6f, .5f, .9f); isik.enabled = true;
+                }
                 // 4× MSAA geçici yüzeye çizilir, MSAA'sız kalıcı dokuya çözülür: bellekte kalan yalnız boy² × 4 bayt
                 // D6: Render istisna atarsa geçici yüzey de bırakılsın (finally)
                 var gec = RenderTexture.GetTemporary(boy, boy, 16, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default, 4);
