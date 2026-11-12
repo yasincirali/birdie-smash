@@ -29,6 +29,7 @@ namespace BirdieSmash.Game
 
         public void Basla() { n = 0; acik = true; ilk = true; toplama0 = System.GC.CollectionCount(0); sonToplama = toplama0; sonMono = Profiler.GetMonoUsedSizeLong(); }
         public int Kare { get { return n; } }
+        public System.Func<bool> filtre;
 
         void Update()
         {
@@ -36,6 +37,7 @@ namespace BirdieSmash.Game
             // İlk kare: Basla'yı çağıran karenin süresi bölüme ait değil.
             long mono = Profiler.GetMonoUsedSizeLong(); int top = System.GC.CollectionCount(0);
             if (ilk) { ilk = false; sonMono = mono; sonToplama = top; return; }
+            if (filtre != null && !filtre()) { sonMono = mono; sonToplama = top; return; }   // bölüm yalnız seçili anlar (2026-11-12: sayı arası, maç sonu)
             if (n >= AZAMI) return;
             kayitVar = gcKayit.Valid && gcKayit.LastValue > 0 || kayitVar;
             long g = gcKayit.Valid && kayitVar ? gcKayit.LastValue : (top == sonToplama ? System.Math.Max(0, mono - sonMono) : -1);   // -1: toplama karesi (bilinmiyor)

@@ -642,6 +642,22 @@ namespace BirdieSmash.Game
                         rap.AppendLine("perf_gecis " + mdl + " " + (pv.isMe ? "ben" : "rakip") + " · klip değişimi " + pv.TaniDegisim + " · geçiş sürerken " + pv.TaniAra + " · tek karede düşen ağırlık toplam " + pv.TaniDusen.ToString("0.00") + " · %25 üstü pop " + pv.TaniPop + " (eski kuralda geçiş sürerken her değişim düşerdi; GecisOlc)");
                 botAcik = false;
             }
+            // Sayı anı ve maç sonu (2026-11-12, yasin: "sayı olduktan sonraki animasyonda kasmalar, maç sonu sevinçte bazen donma"):
+            // bot kısa bir maçı sonuna kadar oynar. "sayi_arasi" yalnız sayı arası kareleri (sevinç, sayı yazısı, kayıt), "mac_sonu"
+            // maç sayısından kartın oturmasına kadar (zafer sevinci, EndMatch, kart). Takılma = p99/p50 ve en uzun kare; atlas satırı
+            // dinamik yazı tipi atlasının bu bölümlerde kaç kez yeniden kurulduğunu yazar (beklenen 0).
+            {
+                Ayar.model = "oyuncak"; root.ModelDegisti(); Ayar.target = 3; root.StartMatch(false, false, false); botAcik = true; yield return Bekle(30);
+                var olS = gameObject.AddComponent<KareOlcum>(); var olB = gameObject.AddComponent<KareOlcum>();
+                olS.filtre = () => root.match != null && root.ekran == Ekran.Oyun && root.match.between && !root.match.matchDone;
+                olB.filtre = () => root.match != null && (root.match.matchDone || root.ekran == Ekran.Bitti);
+                int atlas0 = Hud.AtlasN; olS.Basla(); olB.Basla();
+                int bk = 0; for (int i = 0; i < 12000 && root.ekran != Ekran.Bitti; i++) yield return null;
+                int atlasMac = Hud.AtlasN - atlas0; for (; bk < 200; bk++) yield return null;
+                rap.AppendLine(olS.Bitir("sayi_arasi")); rap.AppendLine(olB.Bitir("mac_sonu"));
+                rap.AppendLine("perf_tani sayi · maç bitti " + (root.ekran == Ekran.Bitti ? "evet" : "HAYIR (süre doldu)") + " · font atlası yeniden kurulumu maçta " + atlasMac + " · maç sonunda " + (Hud.AtlasN - atlas0 - atlasMac));
+                botAcik = false; Destroy(olS); Destroy(olB);
+            }
             Ayar.model = m0; Ayar.target = t0; root.ModelDegisti(); root.AnaMenu(); yield return Bekle(20);
             ol.Basla(); hud.Acilis(); yield return null;
             for (int i = 0; i < 900 && hud.PerdeVar; i++) yield return null;

@@ -1,4 +1,11 @@
 === UNITY ===
+Kasmalar giderildi: sayı sonrası ve maç sonu akıcı (12 Kasım gece):
+- Sayı alınca çıkan büyük yazı (Sayı!, Smaç! gibi) büyürken oyun bir an takılıyordu. Yazı artık tek boyda hazırlanıp büyütülüyor, takılma yok.
+- Maç sonu sevinci sırasında bazen oluşan donma giderildi: sonuç kartı ve kayıt sevinç bittikten sonra hazırlanıyor, kartın parçaları maç başında hazırda bekliyor.
+- Sayı, alkış ve coşku sesleri maç başındaki perdenin arkasında hazırlanıyor; ilk sayıda ses yüzünden takılma olmuyor.
+- Rekor ralli ya da görev tamamlandığında yapılan kayıt sevinç anında değil, sayı arasının sonunda yapılıyor.
+Nasıl denenir: Birkaç maç oyna. Her sayıdan sonra çıkan yazı ve oyuncunun sevinci akıcı oynamalı, ekran bir an bile durmamalı. Maçı kazan: zafer sevinci baştan sona takılmadan oynamalı, sonuç kartı sevinç sürerken akıcı açılmalı. Kartta ödüller ve yıldızlar eskisi gibi görünmeli; menüye dönüp yeniden girince Tüy ve seviye kaydedilmiş olmalı.
+
 Yılbaşı, Cadılar Bayramı, Masallar ve Geleneksel kıyafetler koleksiyonları, Bel bölümü, yeniden çizilen kol kalkanları (12 Kasım akşam):
 - Dolap'a yılbaşı eşyaları geldi. Şapka: Noel Baba şapkası, Ren geyiği boynuzu, Hediye paketi, Yılbaşı ışıkları, Kardan adam, Çam ağacı şapka. Sırt: Şeker bastonlar, Hediye çuvalı, Havai fişekler, Sırtta çam ağacı. Kol: Kurabiye adam, Yılbaşı çelengi, Kar tanesi kalkanı. Yüz: Kırmızı burun, Noel Baba sakalı. Hepsi yalnızca görünüş.
 - Yeni bölüm: Dolap > Sırt sayfasının en altında "Bel". Bele Noel Baba kemeri, Bale tütüsü, Şeytan kuyruğu ve Ördekli simit takılabiliyor. Şapka, sakal, kemer ve çuvalı birlikte takınca oyuncu Noel Baba oluyor.
