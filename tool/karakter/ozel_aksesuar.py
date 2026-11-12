@@ -590,6 +590,54 @@ def kirmizi_burun():   # ren geyiği burnu: burun ucunu (y ≈ −.72, z 1,08) i
     ag = Ag(); top(ag, '#e3262c', (0, -.72, 1.12), .17, 12, 7); top(ag, '#ff8f8f', (-.06, -.65, 1.255), .035, 6, 3)
     ag.yaz('kirmizi_burun', 0)
 
+# ---- Bel (tur 3, 2026-11-12): leğen kemiğine bağlı eşyalar (etek, kemer, kuyruk, simit). Çerçeve (Aksesuar.Bel): köken iki kalça ekleminin
+# ortasının .25 birim üstü, +y yukarı, +z öne, birim = kalça eklemleri arası. Gövde bu çerçevede yarı genişlik ≈ .75, öne ≈ .65 (göbek), arkaya
+# ≈ .45; dört oyuncak tipinde ölçüldü (aks_giy.py). Bacaklar çömelince yana açılır: uzun etek bacağa girer, bu yüzden parçalar kısa ve geniş
+# (y >= -.35) tutulur. Elips halkalar merkezden z = +.1 öne kayık (göbek öne taşar).
+def elips_halka(ag, renk, rx, rz, r, y, cz=.10, n=24, m=8):
+    def P(i, j):
+        a = 2 * math.pi * i / n; b = 2 * math.pi * j / m; k = 1 + r * math.cos(b) / ((rx + rz) / 2)
+        return (rx * k * math.cos(a), y + r * math.sin(b), cz + rz * k * math.sin(a))
+    for i in range(n):
+        for j in range(m): ag.dortgen(renk, P(i, j), P(i + 1, j), P(i + 1, j + 1), P(i, j + 1))
+
+def elips_kusak(ag, renk, rx0, rz0, y0, rx1, rz1, y1, cz=.10, n=24, kat=None):
+    """İki elips arasında şerit (etek, kemer bandı). kat: (i) → renk (dilimli etek)."""
+    P = lambda rx, rz, y, i: (rx * math.cos(2 * math.pi * i / n), y, cz + rz * math.sin(2 * math.pi * i / n))
+    for i in range(n): ag.dortgen(kat(i) if kat else renk, P(rx0, rz0, y0, i), P(rx0, rz0, y0, i + 1), P(rx1, rz1, y1, i + 1), P(rx1, rz1, y1, i))
+
+def noel_kemer():   # Noel Baba kemeri: siyah kemer, altın toka, altında kısa kırmızı etek ve beyaz kürk şerit
+    ag = Ag(); S = '#22252b'
+    elips_kusak(ag, S, .86, .74, -.02, .86, .74, .16)
+    elips_kusak(ag, KIR, .87, .75, -.02, 1.06, .96, -.26); elips_halka(ag, BEY, 1.06, .96, .075, -.27, .10, 24, 6)
+    kutu(ag, ALT, (-.15, -.06, .82), (.15, .20, .88)); kutu(ag, S, (-.08, .0, .875), (.08, .14, .89))
+    ag.yaz('noel_kemer', 3)
+
+def simit_bel():   # şişme ördekli deniz simidi: belde gevşek duran sarı halka, önde ördek başı
+    ag = Ag(); S, T, K = '#ffd23f', '#ff8a2a', '#1c1c22'
+    elips_halka(ag, S, 1.10, .98, .24, .02, .10, 24, 10)
+    top(ag, S, (0, .34, 1.30), .24, 10, 6); kesik(ag, S, (0, .12, 1.22), (0, .30, 1.28), .15, .13, 8)
+    koni(ag, T, (0, .32, 1.50), (0, .30, 1.72), .10, 8)
+    for sgn in (-1, 1): top(ag, K, (sgn * .11, .40, 1.48), .04, 6, 3)
+    koni(ag, S, (0, .05, -1.02), (0, .28, -1.26), .14, 8)   # kuyruk
+    ag.yaz('simit_bel', 3)
+
+def tutu():   # bale tütüsü: üç kat kabarık tül, belde saten kuşak
+    ag = Ag(); R = ['#ff8fc0', '#ffb3d6', '#ffd0e6']
+    elips_kusak(ag, '#e0508f', .85, .73, -.02, .85, .73, .12)
+    for k, (y, rr) in enumerate(((-.02, 1.38), (-.08, 1.28), (-.14, 1.16))):
+        n = 24; P = lambda r, yy, i: (r * math.cos(2 * math.pi * i / n), yy, .10 + r * .92 * math.sin(2 * math.pi * i / n))
+        for i in range(n):
+            dal = .05 if i % 2 == 0 else -.05; dal2 = -.05 if i % 2 == 0 else .05
+            ag.dortgen(R[k], P(.84, .02 - k * .02, i), P(.84, .02 - k * .02, i + 1), P(rr, y + dal2, i + 1), P(rr, y + dal, i))
+    ag.yaz('tutu', 3)
+
+def seytan_kuyruk():   # şeytan kuyruğu: kuyruk sokumundan arkaya ve yukarı kıvrılan ince kuyruk, ucunda ok
+    ag = Ag(); K = '#c2242b'
+    boru(ag, K, [((0, -.10, -.42), .07), ((0, -.24, -.70), .065), ((0, -.20, -1.00), .06), ((0, .02, -1.22), .055), ((0, .32, -1.30), .05), ((0, .58, -1.20), .045), ((0, .70, -1.04), .04)], 8)
+    koni(ag, K, (0, .66, -1.10), (0, .86, -.82), .13, 4)
+    ag.yaz('seytan_kuyruk', 3)
+
 KALEM = {
     'tac': tac, 'hale': hale, 'seytan': seytan, 'kedi': kedi,
     'melek_kanat': lambda: kanat('melek_kanat', '#f6f3ea', KANAT, (('#dcd5c4', .70), ('#fffdf6', .42))),
@@ -601,6 +649,7 @@ KALEM = {
     'noel_sapka': noel_sapka, 'geyik': geyik, 'cam_agaci': cam_agaci, 'hediye_sapka': hediye_sapka, 'isik_tac': isik_tac, 'kardan_sapka': kardan_sapka,
     'hediye_cuvali': hediye_cuvali, 'seker_baston': seker_baston, 'havai_fisek': havai_fisek, 'cam_sirt': cam_sirt,
     'kurabiye': kurabiye, 'kar_tanesi': kar_tanesi, 'celenk': celenk, 'noel_sakal': noel_sakal, 'kirmizi_burun': kirmizi_burun,
+    'noel_kemer': noel_kemer, 'simit_bel': simit_bel, 'tutu': tutu, 'seytan_kuyruk': seytan_kuyruk,
 }
 
 if __name__ == '__main__':

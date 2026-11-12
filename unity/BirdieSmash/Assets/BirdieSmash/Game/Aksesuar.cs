@@ -212,7 +212,7 @@ namespace BirdieSmash.Game
                 catch (System.Exception e) { Debug.LogWarning("aksesuar " + id + ": " + e.Message); h = null; }
                 Resources.UnloadAsset(ta);
             }
-            if (h != null) Boya(h, Kozmetik.Bul(Kozmetik.SAPKA, id) ?? Kozmetik.Bul(Kozmetik.SIRT, id) ?? Kozmetik.Bul(Kozmetik.KOL, id));
+            if (h != null) Boya(h, Kozmetik.Bul(Kozmetik.SAPKA, id) ?? Kozmetik.Bul(Kozmetik.SIRT, id) ?? Kozmetik.Bul(Kozmetik.KOL, id) ?? Kozmetik.Bul(Kozmetik.BEL, id));
             if (h != null && h.mats != null) foreach (var m in h.mats) Kit.Paylas(m);   // 2026-11-11: önbellekte; PlayerView.Sil silmesin (Kit.Paylasilan)
             hazir[id] = h; return h;
         }
@@ -372,6 +372,34 @@ namespace BirdieSmash.Game
             // (dirsek tarafı üst kola ve gövdeye girmesin) ve koldan kayış payı kadar açık durur; kayışlar boşluğu doldurur.
             kok.position = orta + dis * (yuzey + KOL_BOSLUK * L) + eks * (KOL_BILEK * L); kok.rotation = Quaternion.LookRotation(dis, eks);
             float ls = on.lossyScale.x; kok.localScale = Vector3.one * (L * KOL_OLCEK / Mathf.Max(1e-5f, ls));
+            var g = HazirObj(kok, h); g.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+            return kok;
+        }
+
+        // Bel eşyası (2026-11-12; tur 3): leğen kemiğine bağlanır (etek, kemer, kuyruk, simit). Çerçeve: köken iki kalça ekleminin ortasının
+        // BEL_YUK birim üstü, +y yukarı, +z öne, birim = kalça eklemleri arası (tiple ölçeklenir: güçlü tipte geniş, kadında dar). Deriden
+        // bel ölçmek denendi (tool/karakter/aks_giy.py): ağırlık boyaması tipten tipe değiştiği için tutarsız çıktı; kemik ölçüsü dört
+        // oyuncak tipinde gövdeyi yarı genişlik ≈ .75, öne ≈ .65, arkaya ≈ .45 veriyor, eşyalar bu paya göre çizilir (ozel_aksesuar.py).
+        const float BEL_YUK = .25f;
+        public static Transform Bel(Transform model, Vector3 dikey, string id)
+        {
+            var h = Hazir(id); if (model == null || h == null || h.tur != 3) return null;
+            Transform bas = null, goz = null, legen = null, sol = null, sag = null;
+            foreach (var t in model.GetComponentsInChildren<Transform>(true))
+            {
+                string n = t.name.ToLowerInvariant();
+                if (t.name.StartsWith("bas__")) bas = t; else if (t.name.StartsWith("goz__")) goz = t;
+                if (n.Contains("__") || n.Contains("ik") || n.Contains("twist")) continue;
+                if (legen == null && (n.Contains("pelvis") || n.Contains("hips"))) legen = t;
+                if (n.Contains("thigh") || n.Contains("upleg")) { if (sol == null && Sol(n)) sol = t; else if (sag == null && Sag(n)) sag = t; }
+            }
+            if (legen == null || sol == null || sag == null) return null;
+            Vector3 up = dikey.normalized; float w = (sol.position - sag.position).magnitude; if (w < 1e-4f) return null;
+            Vector3 ileri = bas != null && goz != null ? Vector3.ProjectOnPlane(goz.position - bas.position, up) : Vector3.zero;
+            if (ileri.sqrMagnitude < 1e-8f) ileri = Vector3.ProjectOnPlane(model.forward, up);
+            var kok = new GameObject("bel").transform; kok.SetParent(legen, true);
+            kok.position = (sol.position + sag.position) * .5f + up * (BEL_YUK * w); kok.rotation = Quaternion.LookRotation(ileri.normalized, up);
+            float ls = legen.lossyScale.x; kok.localScale = Vector3.one * (w / Mathf.Max(1e-5f, ls));
             var g = HazirObj(kok, h); g.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             return kok;
         }

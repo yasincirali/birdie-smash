@@ -69,6 +69,13 @@ if os.environ.get('YUZ_OLC'):   # yüz yüzeyi birim baş çerçevesinde: y band
         print('x', x0, ' '.join(f'y{y:.2f}:z{max([q.z for q in P if abs(abs(q.x) - x0) < .08 and abs(q.y - y) < .06] or [9]):.2f}' for y in (-.6, -.75, -.9, -1.05, -1.2, -1.35, -1.5)))
     print('sB', sB, 'rB', rB, 'cB', cB, 'bas', bas, 'goz', goz, 'x', min(q.x for q in P), max(q.x for q in P), 'y', min(q.y for q in P), max(q.y for q in P), 'z', min(q.z for q in P), max(q.z for q in P))
 bas1 = bas
+# Bel çerçevesi (Aksesuar.Bel, tur 3): kalça eklemlerinin ortası + yukarı BEL_YUK × w; birim = w (iki kalça eklemi arası; tiple ölçeklenir).
+# Deri ölçümü denendi, tipten tipe tutarsız çıktı (ağırlık boyaması farklı); gövde bu çerçevede yarı genişlik ≈ .75, ön ≈ .65, arka ≈ .45.
+BEL_YUK = float(os.environ.get('BEL_YUK', .25))
+hs, hr = (W @ arm.pose.bones['thigh_l'].matrix).translation, (W @ arm.pose.bones['thigh_r'].matrix).translation
+wB = (hs - hr).length; cW = (hs + hr) / 2 + upB * BEL_YUK * wB
+ax, ay, az = sag * wB, upB * wB, il * wB
+TW = mathutils.Matrix(((ax.x, ay.x, az.x, cW.x), (ax.y, ay.y, az.y, cW.y), (ax.z, ay.z, az.z, cW.z), (0, 0, 0, 1)))
 def oku(id_):
     b = open(os.path.join(R, 'aks', id_ + '.bytes'), 'rb').read(); tur, n = struct.unpack_from('<BH', b, 4); o = 7
     v = [struct.unpack_from('<6f', b, o + i * 24)[:3] for i in range(n)]; o += n * 24
@@ -89,9 +96,9 @@ for id_ in ids:
     me = bpy.data.meshes.new(id_); me.from_pydata([(x, y, z) for x, y, z in v], [], [(a, c, b_) for a, b_, c in faces]); me.update()
     for m in mats: me.materials.append(m)
     for p, a in zip(me.polygons, fm): p.material_index = a
-    ob = bpy.data.objects.new(id_, me); sc.collection.objects.link(ob); ob.matrix_world = T if tur == 2 else TB
-    cam.ortho_scale = boy * 1.7 if tur == 2 else boy * .62; hedef = V((0, 0, boy * .55)) if tur == 2 else bas1 + up * (boy * .06)
-    for aci in ((35, 100, 180, 300) if tur == 2 else (90, 140, 180, 270)):
+    ob = bpy.data.objects.new(id_, me); sc.collection.objects.link(ob); ob.matrix_world = T if tur == 2 else TW if tur == 3 else TB
+    cam.ortho_scale = boy * .62 if tur == 0 else boy * 1.7; hedef = bas1 + up * (boy * .06) if tur == 0 else V((0, 0, boy * .55))
+    for aci in ((90, 140, 180, 270) if tur == 0 else (35, 100, 180, 300) if tur == 2 else (90, 150, 210, 270)):
         a = math.radians(aci); yon = V((math.sin(a) * il.x - math.cos(a) * sag.x, math.sin(a) * il.y - math.cos(a) * sag.y, .35))
         # aci 90 = tam önden, 180 = figürün solundan
         yon = il * math.sin(a) + (-sag) * (-math.cos(a)) + up * .3

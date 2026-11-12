@@ -40,7 +40,10 @@ namespace BirdieSmash.Core
         // 2026-11-12 Kol (yasin: "ayakkabı pelerin şapka, kalkan gibi şeyler satacağız ... oyuna etkisi olmayacak"): raketsiz (sol)
         // ön kola takılan kalkan ve benzerleri; aynı sahiplik/fiyat kuralı, yalnız görünüş. Sona eklendi (kayıt sırası değişmez).
         public const string KOL = "kol";
-        public static readonly string[] KAT = { TIP, SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC, KOL };
+        // 2026-11-12 Bel (yasin: konsept setleri, "app boyutunu artırmadan"): leğene bağlı etek, kemer, kuyruk, simit. Set, yeni model
+        // dosyası yerine aynı gövdeye takılan parçalarla kurulur; bel bunun eksik takma noktasıydı. Sona eklendi (kayıt sırası değişmez).
+        public const string BEL = "bel";
+        public static readonly string[] KAT = { TIP, SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC, KOL, BEL };
         static Dictionary<string, KozmetikOge[]> veri; static Dictionary<string, RakipGorunum> rakip;
         public static void Sifirla() { veri = null; rakip = null; }
 
@@ -122,7 +125,7 @@ namespace BirdieSmash.Core
             if (veri != null) return;
             var o = Json.Obj(Json.Parse(KariyerVeri.Metin("karakter"))); if (o == null) throw new InvalidOperationException("Birdie Smash: veri/karakter.json okunamadı");
             var v = new Dictionary<string, KozmetikOge[]>();
-            foreach (var k in new[] { "tipler", SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC, KOL })
+            foreach (var k in new[] { "tipler", SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC, KOL, BEL })
             {
                 var l = new List<KozmetikOge>(); var a = o.ContainsKey(k) ? o[k] as List<object> : null;
                 if (a != null) foreach (var x in a)
