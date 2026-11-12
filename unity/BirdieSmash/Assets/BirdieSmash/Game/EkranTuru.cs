@@ -645,11 +645,13 @@ namespace BirdieSmash.Game
             // dinamik yazı tipi atlasının bu bölümlerde kaç kez yeniden kurulduğunu yazar (beklenen 0).
             {
                 Ayar.model = "oyuncak"; root.ModelDegisti(); Ayar.target = 3; root.StartMatch(false, false, false); botAcik = true; yield return Bekle(30);
+                // 2026-11-12 (r160/r162 90 dk sınırına takıldı): bot maçı yazılım GL'de dakikalar sürüyor. Skor 2–0'dan başlar, sınır 2400 kare.
+                if (root.match != null && !root.match.matchDone) { root.match.sc[0] = 2; root.match.sc[1] = 0; }
                 var olS = gameObject.AddComponent<KareOlcum>(); var olB = gameObject.AddComponent<KareOlcum>();
                 olS.filtre = () => root.match != null && root.ekran == Ekran.Oyun && root.match.between && !root.match.matchDone;
                 olB.filtre = () => root.match != null && (root.match.matchDone || root.ekran == Ekran.Bitti);
                 int atlas0 = Hud.AtlasN; olS.Basla(); olB.Basla();
-                int bk = 0; for (int i = 0; i < 12000 && root.ekran != Ekran.Bitti; i++) yield return null;
+                int bk = 0; for (int i = 0; i < 2400 && root.ekran != Ekran.Bitti; i++) yield return null;
                 int atlasMac = Hud.AtlasN - atlas0; for (; bk < 200; bk++) yield return null;
                 rap.AppendLine(olS.Bitir("sayi_arasi")); rap.AppendLine(olB.Bitir("mac_sonu"));
                 rap.AppendLine("perf_tani sayi · maç bitti " + (root.ekran == Ekran.Bitti ? "evet" : "HAYIR (süre doldu)") + " · font atlası yeniden kurulumu maçta " + atlasMac + " · maç sonunda " + (Hud.AtlasN - atlas0 - atlasMac));
