@@ -102,7 +102,7 @@ namespace BirdieSmash.Game
             // iniyor, MSAA yokken kırık/kesik görünüyordu. MSAA, gölge ve çözünürlük cihaza göre Kalite'de.
             Kalite.Kur(gameObject, cam);
             shuttle = ShuttleView.Build(transform); shuttle.cam = cam; sfx = Sfx.Build(transform, cg.transform);
-            vitrin = Vitrin.Build(transform); Vitrin.DansSes = sfx.Dans; afis = Afis.Build(transform); fx = Fx.Build(transform, cam); yukleyici = Yukleyici.Build(transform);
+            vitrin = Vitrin.Build(transform); Vitrin.DansSes = sfx.Dans; afis = Afis.Build(transform); Afis.DansSes = sfx.Dans; fx = Fx.Build(transform, cam); yukleyici = Yukleyici.Build(transform);
             hud = gameObject.AddComponent<Hud>(); hud.root = this; hud.Acilis();
             gameObject.AddComponent<KadrajIsaret>().root = this;   // yüksek top: ekran dışı işareti (Core/Kadraj)
             sfx.menude = () => ekran == Ekran.Menu && !hud.PerdeKapali;   // menü müziği: perde kapanırken söner, maçta yok
@@ -403,7 +403,7 @@ namespace BirdieSmash.Game
                 var r = Ayar.ilerleme.Isle(g, won, bg != null && bg.bitti, M.sc[0], M.sc[1], M.target);
                 // Tur töreni (2026-11-07 stüdyo GD1/GD5): tur finali ya da yeni tur mührü menüye dönüşte bir kez sahnelenir (UiKok.TurToren)
                 int muhur1 = Ayar.ilerleme.Muhur(torenTur); if (r.turBitti || muhur1 > muhur0) UiKok.TorenBekle(torenTur, r.turBitti, muhur0, muhur1);
-                kariyerIlk = r.ilkGalibiyet; kNot = r.not; yeniYildiz = r.yeniYildiz; if (r.ilkGalibiyet) bittiYeniG = g;
+                kariyerIlk = r.ilkGalibiyet; kNot = won ? r.not : ""; yeniYildiz = r.yeniYildiz; if (r.ilkGalibiyet) bittiYeniG = g;   // kayıpta "X basamağı seni bekliyor" yazılmaz: basamak adı üst satırda ve düğme altında zaten var (2026-11-12 22:05 fikir 6)
                 Ayar.kariyer = Ayar.ilerleme.Tur1Gecilen(); if (Ayar.kariyer >= Match.KARIYER.Length) Ayar.sampiyon = true;
                 if (kariyerIlk && KariyerVeri.TurOf(g) == 0) { Basarim.Ver("bs_kariyer_" + Ayar.kariyer); Basarim.Giris(Ayar.kariyer); }   // giriş isteği ilk basamaktan sonra
                 if (r.turBitti) Yerel.Hap("flow");   // tur finali: güçlü desen (HAP'ta "success" yok, en uzun desen "flow")
@@ -422,7 +422,6 @@ namespace BirdieSmash.Game
                 var p = Ayar.ilerleme; int n = M.stil.usta; var bg = M.BasamakGorevi; bool gorevOnce = p.UstaGorevBitti(n), siradaki = n == p.Usta;
                 yeniYildiz = p.UstaIsle(n, won, bg != null && bg.bitti);   // görev yıldızı kayıpta da (+20 Tüy, kariyerle aynı)
                 if (won && siradaki) { kariyerIlk = true; kNot = Ayar.YolAd + ": " + (n + 1) + ". basamak geçildi."; if (p.Usta >= 6 && ustaTam) Basarim.Ver(Basarim.USTA6); if (UstaYolu.Basamak(n).final) Yerel.Hap("flow"); }
-                else if (!won) kNot = Ayar.YolAd + " seni bekliyor.";
                 if (siradaki)
                 {   // iki yıldız: kazan + basamak görevi (biçim ve sayı yazıyla)
                     int ys = (won ? 1 : 0) + (p.UstaGorevBitti(n) ? 1 : 0);
@@ -457,8 +456,11 @@ namespace BirdieSmash.Game
             if (kNot != "") { if (kariyerIlk) bittiAcilan = L.Cumle(kNot); else bittiAltNot = L.Cumle(kNot); }
             if (hik == 1) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("{0}–{1} gerideyken döndün.", M.geriBen, M.geriRakip);
             if (yumusadi && Ayar.easy) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Sıradaki maçta rakip biraz yavaşlayacak.");
+            // Zorluk ipucu (2026-11-12 22:05 fikir 2, inceleme YAP kısmen): Ayarlar'daki zorluk 2026-11-07'de çıktı, cümle artık olmayan
+            // yeri gösteriyordu. Çip kariyer kartında ve Hızlı maçta; yıldızlar zorluktan bağımsız (Ilerleme.Isle zorluk almaz), bunu söylemek
+            // kademe indirmeyi "ilerlemeyi kaybetmek" olmaktan çıkarır. Maç sonu düğmesi (tek dokunuşla indir) eklenmedi: kart IMGUI'de kalabalık.
             else if (!won && !Ayar.easy && M.stil.usta < 0 && M.ogr == null && Ayar.ilerleme != null && Ayar.ilerleme.Yardim >= 3)
-                bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Zorlanıyorsan Ayarlar'dan zorluğu bir kademe indirebilirsin.");
+                bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Zorlanıyorsan maçtan önce zorluk çipini bir kademe indir; yıldızlar aynı kalır.");
             // İmza okuma sayacı aşağıda değil yukarıda (ödül bloğu) işlendi; yeni beceri unvanı alt nota tek cümle, yeni yazı yuvası yok.
             var yeniUnvan = beceri0 != null ? Karakter.YeniBeceri(Ayar.ilerleme, beceri0) : null;
             if (yeniUnvan != null) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Yeni unvan: {0}.", L.T(yeniUnvan.ad) + Karakter.KademeEki(yeniUnvan, Ayar.ilerleme));

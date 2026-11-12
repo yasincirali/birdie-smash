@@ -51,7 +51,7 @@ namespace BirdieSmash.EditorTools
                 if (opt.scenes.Length == 0) throw new Exception("Build listesinde sahne yok (DemoKurulum.Kur)");
                 var rep = BuildPipeline.BuildPlayer(opt);
                 if (rep.summary.result != BuildResult.Succeeded) throw new Exception("BuildPlayer: " + rep.summary.result + ", hata " + rep.summary.totalErrors);
-                PlistSifreleme(Path.Combine(path, "Info.plist")); PlistProMotion(Path.Combine(path, "Info.plist")); PlistReklam(Path.Combine(path, "Info.plist"));
+                PlistSifreleme(Path.Combine(path, "Info.plist")); PlistProMotion(Path.Combine(path, "Info.plist")); PlistOyunModu(Path.Combine(path, "Info.plist")); PlistReklam(Path.Combine(path, "Info.plist"));
                 IosYerellestirme(path);
                 Debug.Log("Birdie Smash iOS Xcode projesi: " + path);
                 EditorApplication.Exit(0);
@@ -206,6 +206,18 @@ namespace BirdieSmash.EditorTools
             if (t.Contains("CADisableMinimumFrameDurationOnPhone")) { Debug.Log("ProMotion anahtarı Unity çıktısında var"); return; }
             int i = t.LastIndexOf("</dict>", StringComparison.Ordinal); if (i < 0) return;
             File.WriteAllText(plist, t.Substring(0, i) + "\t<key>CADisableMinimumFrameDurationOnPhone</key>\n\t<true/>\n" + t.Substring(i));
+        }
+
+        // iOS Oyun Modu (2026-11-12 22:05 fikir 5, inceleme YAP): iOS 18+ oyun kategorisindeki uygulamada arka plan işini kısar ve
+        // Bluetooth kulaklık gecikmesini düşürür (raket sesi vuruşla eş kalır). Kategori ASC'de Sports olsa da plist'te yoktu; Unity
+        // yazmıyorsa iki anahtar eklenir, yazıyorsa dokunulmaz (anahtar başına ayrı kontrol).
+        static void PlistOyunModu(string plist)
+        {
+            if (!File.Exists(plist)) return; var t = File.ReadAllText(plist); string ek = "";
+            if (!t.Contains("LSApplicationCategoryType")) ek += "\t<key>LSApplicationCategoryType</key>\n\t<string>public.app-category.sports-games</string>\n";
+            if (!t.Contains("GCSupportsGameMode")) ek += "\t<key>GCSupportsGameMode</key>\n\t<true/>\n";
+            int i = t.LastIndexOf("</dict>", StringComparison.Ordinal); if (ek == "" || i < 0) return;
+            File.WriteAllText(plist, t.Substring(0, i) + ek + t.Substring(i)); Debug.Log("Oyun Modu anahtarları eklendi");
         }
 
         // ---- AdMob (2026-11-07, yasin: "şerit en başta bağlı olarak çıksın"; Game/ReklamSdk.cs) ----

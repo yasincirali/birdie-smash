@@ -1337,6 +1337,7 @@ namespace BirdieSmash.Game
             float p = r.width * .2f; Tex(new Rect(r.x + p, r.y + p, r.width - 2 * p, r.height - 2 * p), Ikonlar.Kisi, new Color(A_YAZI.r, A_YAZI.g, A_YAZI.b, .85f * a));
         }
         // Üç büyük yıldız (a-bigstars): ortadaki büyük; alınan dolu altın + parıltı, alınmayan çerçeve; altında koşul (✓/✗ + yazı).
+        readonly string[] yKosul = new string[3]; readonly float[] yTw = new float[3], yH = new float[3], yW = new float[3]; readonly int[] yFs = new int[3]; readonly GUIStyle[] ySt = new GUIStyle[3], yBaz = new GUIStyle[3];
         float YildizCiz(float x, float y, float w, float s, float t, bool rm, float al, float ol = 1)
         {   // ol: kahraman yerleşiminde .6 (yıldızlar küçük, koşul yazısı aynı boy: anlam yazıda da)
             var R = root; int n = Mathf.Clamp(R.bittiYildizN, 1, 3); float col = Mathf.Min(112 * s, w / n), rowH = 92 * s * ol, x0 = W / 2 - col * n / 2, kh = 0;
@@ -1352,10 +1353,18 @@ namespace BirdieSmash.Game
                 string ks = R.bittiKosul != null && i < R.bittiKosul.Length ? R.bittiKosul[i] : ""; float ik = 13 * s, tw = col - ik - 8 * s;
                 // 2026-11-07 (r127 sonuc_se_buyuk "Oppon/ent", "smash/es"): dar sütunda uzun sözcük harf ortasından bölünüyordu;
                 // en uzun sözcük sığana kadar yazı küçülür (en çok %75'e).
-                var kst = aKosul; { string uz = ""; foreach (var kw in ks.Split(' ')) if (kw.Length > uz.Length) uz = kw;
-                    for (int fs = aKosul.fontSize; fs > Mathf.RoundToInt(aKosul.fontSize * .75f) && kst.CalcSize(Ic(uz)).x > tw; fs--) kst = Stil(aKosul, fs - 1); }
-                float h = kst.CalcHeight(Ic(ks), tw);
-                float tx = c.x - Mathf.Min(tw, kst.CalcSize(Ic(ks)).x) / 2 + ik / 2 + 2 * s, ty = y + rowH + 8 * s, ka = rm ? al : Mathf.Clamp01((t - .3f) / .3f);
+                // Ölçüm önbelleği (2026-11-12 22:05 fikir 7, inceleme YAP): Split + küçültme döngüsü + CalcHeight/CalcSize her OnGUI
+                // çağrısında (Layout + Repaint) koşuyordu, kart açık kaldıkça çöp üretiyordu. Yazı, sütun genişliği ya da taban boy
+                // değişince yeniden ölçülür (ekran dönmesi, Büyük yazı); aksi hâlde saklanan stil ve boylar kullanılır.
+                GUIStyle kst; float h, kw0;
+                if (yKosul[i] != ks || yTw[i] != tw || yFs[i] != aKosul.fontSize || yBaz[i] != aKosul || ySt[i] == null)
+                {
+                    kst = aKosul; string uz = ""; foreach (var kw in ks.Split(' ')) if (kw.Length > uz.Length) uz = kw;
+                    for (int fs = aKosul.fontSize; fs > Mathf.RoundToInt(aKosul.fontSize * .75f) && kst.CalcSize(Ic(uz)).x > tw; fs--) kst = Stil(aKosul, fs - 1);
+                    yKosul[i] = ks; yTw[i] = tw; yFs[i] = aKosul.fontSize; yBaz[i] = aKosul; ySt[i] = kst; yH[i] = kst.CalcHeight(Ic(ks), tw); yW[i] = kst.CalcSize(Ic(ks)).x;
+                }
+                kst = ySt[i]; h = yH[i]; kw0 = yW[i];
+                float tx = c.x - Mathf.Min(tw, kw0) / 2 + ik / 2 + 2 * s, ty = y + rowH + 8 * s, ka = rm ? al : Mathf.Clamp01((t - .3f) / .3f);
                 Tex(new Rect(tx - ik - 3 * s, ty + 1 * s, ik, ik), var_ ? Ikonlar.Tik : Ikonlar.Carpi, var_ ? new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, ka) : new Color(A_SOLUK.r, A_SOLUK.g, A_SOLUK.b, ka));
                 Yaz(new Rect(tx, ty, tw, h), ks, kst, var_ ? A_YAZI : A_SOLUK, ka); kh = Mathf.Max(kh, h);
             }
