@@ -74,8 +74,10 @@ jobs:
           # 2026-10-27 (duyarlı yerleşim): ekran 800 genişlik; EkranTuru.DuyarliTuru 768×1024 (iPad) pencere açar, 600 dar kalıyordu.
           # 2026-10-27 ikinci tur: altı dal yeni kare ekledi (r42 832 sn); sınır 1500 → 2400 sn, iş sınırı 60 dk.
           # 2026-11-12: tur r151'de 1875 sn sürdü; r152 ve r154 2400 sn sınırında kesildi (son bölümler ve perf satırları yazılmadı). Sınır 3300 sn.
+          # 2026-11-12 kısa tur: `ekran/kisa-*` dalı yalnız Dolap vitrinini çeker (EkranTuru kip "dolap"); tam tur 90 dk iş sınırını aşıyordu.
+          KIP=""; case "$GITHUB_REF_NAME" in ekran/kisa-*) KIP="-bskip dolap";; esac
           timeout 3300 xvfb-run -a -s "-screen 0 800x1300x24" "$EXE" -screen-width 390 -screen-height 845 -screen-fullscreen 0 \
-            -force-glcore -logFile "$RUNNER_TEMP/ekran/player.log" -bsekran "$RUNNER_TEMP/ekran" &
+            -force-glcore -logFile "$RUNNER_TEMP/ekran/player.log" -bsekran "$RUNNER_TEMP/ekran" $KIP &
           # Takılma tanısı: 150 sn sonra hâlâ ilk karelerdeyse yığın dökümü (gdb, tüm iş parçacıkları).
           sleep 150
           P=$(pgrep -x BirdieSmash | head -1)
@@ -87,7 +89,7 @@ jobs:
       # Mağaza görselleri adım 1 (2026-10-29, Game/MagazaTuru.cs): ayrı oyuncu çalıştırması, 6,9" boyunda (1320×2868)
       # pencere; xvfb ekranı ondan büyük açılır. Kareler ekran/magaza/ altına; 6,5" ve başlık yazısı tool/magaza_gorsel.py.
       - name: mağaza kareleri
-        if: always()
+        if: always() && !startsWith(github.ref_name, 'ekran/kisa-')
         run: |
           EXE=$(ls build/StandaloneLinux64/BirdieSmash* | grep -v '_Data' | head -1)
           [ -n "$EXE" ] || { echo "oyuncu yok"; exit 0; }
