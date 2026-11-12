@@ -59,7 +59,10 @@
   {"id": "hediye_sapka", "ad": "Hediye paketi", "sv": 7, "fiyat": 700, "nadir": "nadir", "varlik": "ozel"},
   {"id": "isik_tac", "ad": "Yılbaşı ışıkları", "sv": 10, "fiyat": 900, "nadir": "nadir", "varlik": "ozel"},
   {"id": "kardan_sapka", "ad": "Kardan adam", "sv": 12, "fiyat": 1400, "nadir": "destansi", "varlik": "ozel"},
-  {"id": "cam_agaci", "ad": "Çam ağacı şapka", "sv": 15, "fiyat": 1800, "nadir": "destansi", "varlik": "ozel"}
+  {"id": "cam_agaci", "ad": "Çam ağacı şapka", "sv": 15, "fiyat": 1800, "nadir": "destansi", "varlik": "ozel"},
+  {"id": "orumcek", "ad": "Tepede örümcek", "sv": 6, "fiyat": 650, "garip": true, "nadir": "nadir", "varlik": "ozel"},
+  {"id": "hayalet", "ad": "Hayalet çarşafı", "sv": 11, "fiyat": 1300, "garip": true, "nadir": "destansi", "varlik": "ozel"},
+  {"id": "balkabagi", "ad": "Balkabağı kafa", "sv": 16, "fiyat": 1900, "garip": true, "nadir": "destansi", "varlik": "ozel"}
 ],
 "sevinc_not": "2026-11-01 Dolap › Sevinç (Ar-Ge K3, yasin 'maç sonunda da sevinç kategorisi kısmını gönder'): sayı kazanınca ve maç sonunda oyuncunun yaptığı hareket. YALNIZ görünüş (güç alanı yasak), Tüy ve seviyeyle. Klip değil, kemik üstü işlemsel poz (Game/PlayerView Sevinc): her modelde aynı çalışır. Kaybeden maç sonunda hep 'iyi oyundu' (raketi rakibe kaldırır), satılmaz. İlk öğe ücretsiz varsayılan.",
 "sevinc": [
@@ -101,7 +104,8 @@
   {"id": "biyik", "ad": "Kalın bıyık", "sv": 6, "fiyat": 550, "garip": true},
   {"id": "korsan", "ad": "Korsan bandı", "sv": 9, "fiyat": 850, "garip": true},
   {"id": "kirmizi_burun", "ad": "Kırmızı burun", "sv": 3, "fiyat": 300, "garip": true, "varlik": "ozel"},
-  {"id": "noel_sakal", "ad": "Noel Baba sakalı", "sv": 7, "fiyat": 700, "garip": true, "varlik": "ozel"}
+  {"id": "noel_sakal", "ad": "Noel Baba sakalı", "sv": 7, "fiyat": 700, "garip": true, "varlik": "ozel"},
+  {"id": "vampir_dis", "ad": "Vampir dişleri", "sv": 4, "fiyat": 400, "garip": true, "nadir": "nadir", "varlik": "ozel"}
 ],
 "sirt_not": "2026-11-01 Dolap › Sırt (yasin: 'pelerin vs gibi mistik şeyler ... internette hazır bedava ürünleri kullanabilirsin'; karar kartı: yalnız bedava paketler): KayKit Adventurers 1.0 ve Skeletons 1.0 (CC0) şapka ve pelerinleri, tool/karakter/kaykit_aksesuar.py ile Resources/karakter/aks/<id>.bytes (varlik kaykit). Pelerin göğüs kemiğine bağlı, koşuda yayla savrulur (Game/PelerinSalinim.cs). nadir: siradan / nadir / destansi / mistik; Dolap kartında yazıyla gösterilir (renk yalnız destek). Yalnız görünüş, ilk öğe yok ücretsiz.",
 "sirt": [
@@ -123,7 +127,9 @@
   {"id": "seker_baston", "ad": "Şeker bastonlar", "sv": 4, "fiyat": 350, "nadir": "siradan", "varlik": "ozel"},
   {"id": "hediye_cuvali", "ad": "Hediye çuvalı", "sv": 8, "fiyat": 800, "nadir": "nadir", "varlik": "ozel"},
   {"id": "havai_fisek", "ad": "Havai fişekler", "sv": 12, "fiyat": 1500, "nadir": "destansi", "varlik": "ozel"},
-  {"id": "cam_sirt", "ad": "Sırtta çam ağacı", "sv": 16, "fiyat": 1900, "nadir": "destansi", "varlik": "ozel"}
+  {"id": "cam_sirt", "ad": "Sırtta çam ağacı", "sv": 16, "fiyat": 1900, "nadir": "destansi", "varlik": "ozel"},
+  {"id": "supurge", "ad": "Cadı süpürgesi", "sv": 5, "fiyat": 500, "garip": true, "nadir": "nadir", "varlik": "ozel"},
+  {"id": "mezar_tasi", "ad": "Mezar taşı", "sv": 11, "fiyat": 1200, "garip": true, "nadir": "destansi", "varlik": "ozel"}
 ],
 "kol_not": "2026-11-12 Dolap › Sırt sayfasında Kol (yasin: 'ayakkabı pelerin şapka, kalkan gibi şeyler satacağız ... oyuna etkisi olan şeyler olmayacak sadece görsellik ve absürtlük'): raketsiz ön kola takılan kalkanlar (tool/karakter/ozel_aksesuar.py tur 2, Game/Aksesuar.Kol). Kolun yüzeyi tipe göre ölçülür, kalkan kola gömülmez. YALNIZ görünüş (güç alanı yasak): savunmayı, vuruşu, hızı değiştirmez. Fiyat nadirlik bantlarında, ilk öğe yok ücretsiz.",
 "kol": [
@@ -135,7 +141,10 @@
   {"id": "yildiz_kalkan", "ad": "Yıldız kalkanı", "sv": 19, "fiyat": 2500, "nadir": "mistik", "varlik": "ozel"},
   {"id": "kurabiye", "ad": "Kurabiye adam", "sv": 5, "fiyat": 600, "nadir": "nadir", "varlik": "ozel"},
   {"id": "celenk", "ad": "Yılbaşı çelengi", "sv": 9, "fiyat": 900, "nadir": "nadir", "varlik": "ozel"},
-  {"id": "kar_tanesi", "ad": "Kar tanesi kalkanı", "sv": 14, "fiyat": 1700, "nadir": "destansi", "varlik": "ozel"}
+  {"id": "kar_tanesi", "ad": "Kar tanesi kalkanı", "sv": 14, "fiyat": 1700, "nadir": "destansi", "varlik": "ozel"},
+  {"id": "kabak_kalkan", "ad": "Balkabağı kalkanı", "sv": 7, "fiyat": 800, "garip": true, "nadir": "nadir", "varlik": "ozel"},
+  {"id": "ag_kalkan", "ad": "Örümcek ağı kalkanı", "sv": 11, "fiyat": 1300, "garip": true, "nadir": "destansi", "varlik": "ozel"},
+  {"id": "tabut", "ad": "Tabut kapağı", "sv": 15, "fiyat": 1800, "garip": true, "nadir": "destansi", "varlik": "ozel"}
 ],
 "bel_not": "2026-11-12 Dolap › Sırt sayfasında Bel (yasin: konsept setleri, app boyutunu artırmadan): leğene bağlı etek, kemer, kuyruk, simit. Yalnız görünüş.",
 "bel": [
@@ -143,7 +152,9 @@
   {"id": "tutu", "ad": "Bale tütüsü", "sv": 5, "fiyat": 500, "garip": true, "nadir": "nadir", "varlik": "ozel"},
   {"id": "noel_kemer", "ad": "Noel Baba kemeri", "sv": 6, "fiyat": 700, "nadir": "nadir", "varlik": "ozel"},
   {"id": "seytan_kuyruk", "ad": "Şeytan kuyruğu", "sv": 8, "fiyat": 850, "garip": true, "nadir": "nadir", "varlik": "ozel"},
-  {"id": "simit_bel", "ad": "Ördekli simit", "sv": 10, "fiyat": 1100, "garip": true, "nadir": "destansi", "varlik": "ozel"}
+  {"id": "simit_bel", "ad": "Ördekli simit", "sv": 10, "fiyat": 1100, "garip": true, "nadir": "destansi", "varlik": "ozel"},
+  {"id": "kedi_kuyruk", "ad": "Kara kedi kuyruğu", "sv": 4, "fiyat": 450, "garip": true, "nadir": "nadir", "varlik": "ozel"},
+  {"id": "kazan", "ad": "Cadı kazanı", "sv": 13, "fiyat": 1500, "garip": true, "nadir": "destansi", "varlik": "ozel"}
 ],
 "tarzlar_not": "2026-11-08 (yasin: \"her özelliğin açıklandığı alanlar çok amatör\"): oz = tarzın tek cümlelik kimliği; arti/eksi ' · ' ile ayrılmış kısa etiketler, Atölye'de her biri ayrı hap (▲ limon, ▼ soluk). Etiketteki sayı etki çarpanıyla aynı yönde ve aynı ölçüde olmalı. Çeviri Lang.UNITY_EK (parça parça).",
 "tarzlar": [
