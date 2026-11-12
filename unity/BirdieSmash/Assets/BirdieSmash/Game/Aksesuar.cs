@@ -210,12 +210,8 @@ namespace BirdieSmash.Game
                 catch (System.Exception e) { Debug.LogWarning("aksesuar " + id + ": " + e.Message); h = null; }
                 Resources.UnloadAsset(ta);
             }
-<<<<<<< HEAD
             if (h != null) Boya(h, Kozmetik.Bul(Kozmetik.SAPKA, id) ?? Kozmetik.Bul(Kozmetik.SIRT, id) ?? Kozmetik.Bul(Kozmetik.KOL, id));
-=======
-            if (h != null) Boya(h, Kozmetik.Bul(Kozmetik.SAPKA, id) ?? Kozmetik.Bul(Kozmetik.SIRT, id));
             if (h != null && h.mats != null) foreach (var m in h.mats) Kit.Paylas(m);   // 2026-11-11: önbellekte; PlayerView.Sil silmesin (Kit.Paylasilan)
->>>>>>> origin/main
             hazir[id] = h; return h;
         }
         // Veri rengi (karakter.json "renk") en çok üçgenli alt ağın rengi olur; mistik öğede o alt ağ hafifçe kendinden ışır
