@@ -99,7 +99,9 @@
   {"id": "yuvarlak", "ad": "Yuvarlak gözlük", "sv": 3, "fiyat": 300},
   {"id": "boya", "ad": "Yüz boyası", "sv": 4, "fiyat": 350},
   {"id": "biyik", "ad": "Kalın bıyık", "sv": 6, "fiyat": 550, "garip": true},
-  {"id": "korsan", "ad": "Korsan bandı", "sv": 9, "fiyat": 850, "garip": true}
+  {"id": "korsan", "ad": "Korsan bandı", "sv": 9, "fiyat": 850, "garip": true},
+  {"id": "kirmizi_burun", "ad": "Kırmızı burun", "sv": 3, "fiyat": 300, "garip": true, "varlik": "ozel"},
+  {"id": "noel_sakal", "ad": "Noel Baba sakalı", "sv": 7, "fiyat": 700, "garip": true, "varlik": "ozel"}
 ],
 "sirt_not": "2026-11-01 Dolap › Sırt (yasin: 'pelerin vs gibi mistik şeyler ... internette hazır bedava ürünleri kullanabilirsin'; karar kartı: yalnız bedava paketler): KayKit Adventurers 1.0 ve Skeletons 1.0 (CC0) şapka ve pelerinleri, tool/karakter/kaykit_aksesuar.py ile Resources/karakter/aks/<id>.bytes (varlik kaykit). Pelerin göğüs kemiğine bağlı, koşuda yayla savrulur (Game/PelerinSalinim.cs). nadir: siradan / nadir / destansi / mistik; Dolap kartında yazıyla gösterilir (renk yalnız destek). Yalnız görünüş, ilk öğe yok ücretsiz.",
 "sirt": [

@@ -423,24 +423,25 @@ def boru(ag, renk, yol, n=12):
 
 def noel_sapka():   # Noel Baba şapkası: kürk bant saçın dışında (iç 1,05), külah yana devrik, ucunda ponpon
     ag = Ag()
-    halka(ag, BEY, 1.12, .16, .52, 20, 8)
-    boru(ag, KIR, [((0, .52, 0), 1.08), ((.02, .95, -.02), .98), ((.10, 1.32, -.05), .78), ((.30, 1.62, -.09), .56), ((.62, 1.80, -.13), .38),
-                   ((.98, 1.78, -.17), .26), ((1.26, 1.60, -.20), .17), ((1.40, 1.38, -.22), .10)], 14)
-    top(ag, BEY, (1.46, 1.24, -.23), .20, 10, 6)
+    halka(ag, BEY, 1.17, .17, .18, 20, 8)   # bant alın hizasında (bant çizgisi y = 0'ın hemen üstü): şapka başa geçmiş okunur, saçın üstünde havada durmaz
+    boru(ag, KIR, [((0, .18, 0), 1.13), ((.02, .70, -.02), 1.04), ((.10, 1.12, -.05), .82), ((.30, 1.46, -.09), .58), ((.62, 1.66, -.13), .40),
+                   ((.98, 1.64, -.17), .27), ((1.26, 1.46, -.20), .17), ((1.40, 1.24, -.22), .10)], 14)
+    top(ag, BEY, (1.46, 1.10, -.23), .20, 10, 6)
     ag.yaz('noel_sapka', 0)
 
-def geyik():   # ren geyiği: saç bandı, iki dallı boynuz, kulaklar, boynuzda çıngırak
+def geyik():   # ren geyiği: saç bandı (kulaklık yayı gibi kulaktan kulağa), banttan çıkan iki dallı boynuz, bantta kulaklar, çıngırak
     ag = Ag(); K, A = '#7a4a26', '#9a6a3c'
+    yay = lambda x: -.25 + 1.25 * math.sqrt(max(0, 1 - (x / .99) ** 2))
+    boru(ag, K, [((.99 * math.cos(math.pi * k / 16), -.25 + 1.25 * math.sin(math.pi * k / 16), -.05), .06) for k in range(3, 14)], 6)
     for sgn in (-1, 1):
-        x = sgn * .55
-        kesik(ag, K, (x, .82, 0), (sgn * .74, 1.40, 0), .11, .09, 8); kesik(ag, K, (sgn * .74, 1.40, 0), (sgn * .70, 1.98, 0), .09, .06, 8)
-        top(ag, K, (sgn * .70, 1.98, 0), .06, 6, 3)
-        for (y0, dx, dy, r) in ((1.22, .34, .26, .07), (1.56, -.30, .24, .06), (1.76, .28, .20, .05)):
-            a = (sgn * (.72 if y0 > 1.3 else .68), y0, 0); u = (a[0] + sgn * dx, y0 + dy, 0)
-            kesik(ag, K, a, u, r, r * .7, 6); top(ag, K, u, r * .7, 6, 3)
-        elipsoid(ag, A, (sgn * .98, .78, -.05), (.26, .13, .10), 8, 4); elipsoid(ag, '#e9b7a0', (sgn * .98, .78, .0), (.17, .08, .07), 8, 3)
-    top(ag, ALT, (-.40, 1.50, .10), .10, 8, 4); kutu(ag, '#8a6a10', (-.44, 1.46, .17), (-.36, 1.48, .21))
-    silindir(ag, KIR, (-.72, 1.60, 0), (-.42, 1.56, .08), .015, 4)
+        x = sgn * .50; y0 = yay(.50)
+        boru(ag, K, [((x, y0, -.05), .11), ((sgn * .66, y0 + .50, -.05), .09), ((sgn * .64, y0 + 1.06, -.05), .06), ((sgn * .62, y0 + 1.16, -.05), .03)], 8)
+        for (t, dx, dy, r) in ((.36, .34, .26, .07), (.66, -.30, .24, .06), (.86, .28, .20, .05)):
+            a = (sgn * (.50 + .16 * min(1, t / .5)), y0 + t, -.05); u = (a[0] + sgn * dx, a[1] + dy, -.05)
+            boru(ag, K, [(a, r), (u, r * .7), ((u[0] + sgn * dx * .15, u[1] + dy * .2, -.05), r * .3)], 6)
+        ex = sgn * .80; ey = yay(.80)
+        elipsoid(ag, A, (ex + sgn * .20, ey + .06, -.05), (.24, .13, .10), 8, 4); elipsoid(ag, '#e9b7a0', (ex + sgn * .21, ey + .06, .01), (.16, .08, .07), 8, 3)
+    top(ag, ALT, (-.36, yay(.5) + .40, .10), .10, 8, 4); kutu(ag, '#8a6a10', (-.40, yay(.5) + .36, .17), (-.32, yay(.5) + .38, .21))
     ag.yaz('geyik', 0)
 
 def cam_agaci():   # başta mini çam: saksı saça gömülü (taban .82), üç kat, renkli toplar, tepe yıldızı
@@ -576,6 +577,19 @@ def celenk():   # yılbaşı çelengi: yeşil halka, kırmızı meyveler, altta 
     top(ag, '#b3272b', (0, .44, .25), .07, 8, 4)
     kutu(ag, '#4a3323', (-.34, -.05, -.07), (.34, .05, .03)); ag.yaz('celenk', 2)
 
+def noel_sakal():   # Noel Baba sakalı (yüz, tur 0): çene hattı boyunca kabarık toplar + bıyık. Yüz yüzeyi birim başta ölçüldü (aks_giy.py YUZ_OLC):
+    # orta hat z 1,07 (dudak) → .98 (çene y −1,2); x .3'te ≈.90; x .5'te .84 → .70; x .7'de .68 → .45. Toplar yüzeyin hemen dışında durur.
+    ag = Ag()
+    for sgn in (-1, 1):
+        for (x, y, z, r) in ((.74, -.92, .62, .19), (.58, -1.10, .76, .22), (.34, -1.26, .92, .23), (.32, -1.50, .90, .20)): elipsoid(ag, BEY, (sgn * x, y, z), (r, r, r * .8), 8, 5)
+        elipsoid(ag, BEY, (sgn * .22, -.97, 1.11), (.22, .09, .08), 8, 4)
+    for (y, z, r) in ((-1.34, 1.02, .25), (-1.62, .98, .21), (-1.84, .93, .14)): elipsoid(ag, BEY, (0, y, z), (r, r, r * .8), 8, 5)
+    ag.yaz('noel_sakal', 0)
+
+def kirmizi_burun():   # ren geyiği burnu: burun ucunu (y ≈ −.72, z 1,08) içine alan parlak kırmızı top
+    ag = Ag(); top(ag, '#e3262c', (0, -.72, 1.12), .17, 12, 7); top(ag, '#ff8f8f', (-.06, -.65, 1.255), .035, 6, 3)
+    ag.yaz('kirmizi_burun', 0)
+
 KALEM = {
     'tac': tac, 'hale': hale, 'seytan': seytan, 'kedi': kedi,
     'melek_kanat': lambda: kanat('melek_kanat', '#f6f3ea', KANAT, (('#dcd5c4', .70), ('#fffdf6', .42))),
@@ -586,7 +600,7 @@ KALEM = {
     'kaplumbaga': kaplumbaga, 'kurma': kurma, 'balon': balon, 'top_tupu': top_tupu, 'tavus': tavus,
     'noel_sapka': noel_sapka, 'geyik': geyik, 'cam_agaci': cam_agaci, 'hediye_sapka': hediye_sapka, 'isik_tac': isik_tac, 'kardan_sapka': kardan_sapka,
     'hediye_cuvali': hediye_cuvali, 'seker_baston': seker_baston, 'havai_fisek': havai_fisek, 'cam_sirt': cam_sirt,
-    'kurabiye': kurabiye, 'kar_tanesi': kar_tanesi, 'celenk': celenk,
+    'kurabiye': kurabiye, 'kar_tanesi': kar_tanesi, 'celenk': celenk, 'noel_sakal': noel_sakal, 'kirmizi_burun': kirmizi_burun,
 }
 
 if __name__ == '__main__':

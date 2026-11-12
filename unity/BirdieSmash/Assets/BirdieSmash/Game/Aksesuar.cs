@@ -190,6 +190,8 @@ namespace BirdieSmash.Game
                         }
                         break;
                     }
+                // 2026-11-12 Yılbaşı: yüz eşyası da hazır ağdan gelebilir (sakal, kırmızı burun; birim baş çerçevesi, ozel_aksesuar.py)
+                default: HazirAg(k, id); break;
             }
         }
 
