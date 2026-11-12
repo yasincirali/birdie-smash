@@ -1,0 +1,4 @@
+toplam 3
+model_vitrin_sapka_buyucu · kesik yükseklik 34>17 · .unity-text-element.unity-label.yazi.dugme-alt · "Wizard hat: Lv 10 needed"
+model_vitrin_sapka_viking · kesik yükseklik 34>17 · .unity-text-element.unity-label.yazi.dugme-alt · "Viking helmet: Lv 11 needed"
+model_ayarlar_gercekci · çevrilmemiş · .unity-text-element.unity-label.yazi.dugme-yazi · "Türkçe"
