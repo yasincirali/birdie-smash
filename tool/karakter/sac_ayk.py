@@ -543,11 +543,11 @@ def sac_dokusu(yol,px=128):
 # (terlik gibi alçak ağız); iri oyuncak ayakta bacak ayakkabının topuğundan giriyor, çorap ağzı topuğun arkasına çan gibi taşıyordu.
 # Bütün çeşitlere bileği saran alçak dolgulu yaka (2,8–4 cm; bilekli 8,5 cm aynı kalır): bacak ayakkabının içine girer, topuk örtülür.
 AYK={
- 'klasik': dict(burun=.010,gen=1.00,sis=.003,duvar=.006,tasma=.0045,ust_r=(0.90,0.91,0.92),orta=(0.97,0.97,0.96),dis=(0.80,0.10,0.10),vurgu=(0.80,0.10,0.10),plaka=None,yaka=.034,serit=None),
- 'hafif':  dict(burun=.014,gen=.94,sis=.0015,duvar=.003,tasma=.0030,ust_r=(0.90,0.91,0.92),orta=(0.82,0.84,0.86),dis=(0.04,0.06,0.16),vurgu=(0.04,0.06,0.16),plaka=None,yaka=.028,serit=(0.04,0.06,0.16),bagcik=(0.04,0.06,0.16)),
- 'yastik': dict(burun=.010,gen=1.04,sis=.0045,duvar=.015,tasma=.0085,ust_r=(0.90,0.91,0.92),orta=(0.97,0.97,0.96),dis=(0.10,0.10,0.11),vurgu=(0.10,0.10,0.11),plaka=None,yaka=.040,serit=None),
+ 'klasik': dict(burun=.010,gen=1.00,sis=.003,duvar=.006,tasma=.0045,ust_r=(0.90,0.91,0.92),orta=(0.97,0.97,0.96),dis=(0.80,0.10,0.10),vurgu=(0.80,0.10,0.10),plaka=None,yaka=.038,serit=None),
+ 'hafif':  dict(burun=.014,gen=.94,sis=.0015,duvar=.003,tasma=.0030,ust_r=(0.90,0.91,0.92),orta=(0.82,0.84,0.86),dis=(0.04,0.06,0.16),vurgu=(0.04,0.06,0.16),plaka=None,yaka=.036,serit=(0.04,0.06,0.16),bagcik=(0.04,0.06,0.16)),
+ 'yastik': dict(burun=.010,gen=1.04,sis=.0045,duvar=.015,tasma=.0085,ust_r=(0.90,0.91,0.92),orta=(0.97,0.97,0.96),dis=(0.10,0.10,0.11),vurgu=(0.10,0.10,0.11),plaka=None,yaka=.042,serit=None),
  'bilekli':dict(burun=.010,gen=1.02,sis=.0035,duvar=.007,tasma=.0050,ust_r=(0.90,0.91,0.92),orta=(0.93,0.91,0.86),dis=(0.42,0.26,0.12),vurgu=(0.42,0.26,0.12),plaka=None,yaka=.085,serit=None),
- 'karbon': dict(burun=.013,gen=.96,sis=.002,duvar=.008,tasma=.0040,ust_r=(0.90,0.91,0.92),orta=(0.03,0.03,0.035),dis=(0.03,0.03,0.035),vurgu=(0.55,0.85,0.05),plaka=(0.55,0.85,0.05),yaka=.030,serit=(0.55,0.85,0.05),bagcik=(0.10,0.10,0.11)),
+ 'karbon': dict(burun=.013,gen=.96,sis=.002,duvar=.008,tasma=.0040,ust_r=(0.90,0.91,0.92),orta=(0.03,0.03,0.035),dis=(0.03,0.03,0.035),vurgu=(0.55,0.85,0.05),plaka=(0.55,0.85,0.05),yaka=.036,serit=(0.55,0.85,0.05),bagcik=(0.10,0.10,0.11)),
 }
 def _saya(ad,pts,bal,an,prm,yaka_pts):
     """saya: ayak noktalarının dışbükey zarfı (oyuncak._ayakkabi ile aynı yol), çeşit parametreleriyle"""
@@ -561,7 +561,11 @@ def _saya(ad,pts,bal,an,prm,yaka_pts):
         ax=Vector((an.x,an.y,0))
         for c in yaka_pts:
             if c.z<an.z+prm['yaka']:
-                d=Vector((c.x,c.y,0))-ax; q.append(c+(d.normalized()*.014 if d.length>1e-4 else Vector()))
+                d=Vector((c.x,c.y,0))-ax
+                if d.length<1e-4: q.append(c); continue
+                if d.length>.075 or c.z<an.z-.01:   # ayak sırtı çorabı (2026-11-12): yeniden örgü kaba kalınca güçlü tipte sayanın önünden çıkıyordu; zarfa az payla girer
+                    q.append(c+d.normalized()*.016+Vector((0,0,.014))); continue
+                q.append(c+d.normalized()*((.014 if prm['yaka']>.06 else .020)+.016*max(0.,d.normalized().y))+Vector((0,0,.008)))   # alçak yakada pay 2 cm, önde (dil, +y) 3,6 cm'ye dek: bilek öne bükülünce çorap yakadan çıkmasın
     bm=bmesh.new()
     for c in q: bm.verts.new(c)
     bmesh.ops.convex_hull(bm,input=bm.verts[:])
