@@ -91,11 +91,18 @@ namespace BirdieSmash.Game
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = Kit.Hex("#6f8590"); RenderSettings.ambientEquatorColor = Kit.Hex("#3b4c55"); RenderSettings.ambientGroundColor = Kit.Hex("#1a2420");
             QualitySettings.shadowDistance = 40;
+            // Fizik adımı kapalı (2026-11-12 inceleme, fikir 07:05 #7): top ve oyuncular Core'da, Rigidbody/Raycast yok; varsayılan
+            // her FixedUpdate'te boş PhysX adımı koşuyordu. Kit.Prim çarpıştırıcı önbelleği (yalnız kurulum maliyeti) şimdilik yok.
+#if UNITY_2022_2_OR_NEWER
+            Physics.simulationMode = SimulationMode.Script;
+#else
+            Physics.autoSimulation = false;
+#endif
             // Kenar yumuşatma (2026-10-26, yasin "saha nizami çizilmeli"): 4 cm'lik saha çizgileri uzak yarıda 1 pikselin altına
             // iniyor, MSAA yokken kırık/kesik görünüyordu. MSAA, gölge ve çözünürlük cihaza göre Kalite'de.
             Kalite.Kur(gameObject, cam);
             shuttle = ShuttleView.Build(transform); shuttle.cam = cam; sfx = Sfx.Build(transform, cg.transform);
-            vitrin = Vitrin.Build(transform); afis = Afis.Build(transform); fx = Fx.Build(transform, cam); yukleyici = Yukleyici.Build(transform);
+            vitrin = Vitrin.Build(transform); Vitrin.DansSes = sfx.Dans; afis = Afis.Build(transform); fx = Fx.Build(transform, cam); yukleyici = Yukleyici.Build(transform);
             hud = gameObject.AddComponent<Hud>(); hud.root = this; hud.Acilis();
             gameObject.AddComponent<KadrajIsaret>().root = this;   // yüksek top: ekran dışı işareti (Core/Kadraj)
             sfx.menude = () => ekran == Ekran.Menu && !hud.PerdeKapali;   // menü müziği: perde kapanırken söner, maçta yok
@@ -192,7 +199,7 @@ namespace BirdieSmash.Game
             ani.Sifirla(); AniDur(); aniIzlendi = false;   // Maçın anı her maç kendi rallilerinden (Günün maçı, Usta yolu, görev de buradan geçer)
             match = new Match(tohum, o); Basarim.MacBasla();
             Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; System.Array.Clear(iskaN, 0, iskaN.Length); yerN = 0; yerTop = null; yardimN = 0; yardimTop = null; hazirN = 0; enerjiDolu = match.energy >= 1;
-            fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; pencere = false; sfx.SuAlti(false); ReklamKartKapat(); ReklamSdk.OdulluHazirla(); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
+            fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; seriBen = 0; seriBasFark = 0; seriGeriDondu = false; ledSeriT = 0; pencere = false; sfx.SuAlti(false); ReklamKartKapat(); ReklamSdk.OdulluHazirla(); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
             GirisKur(o);
@@ -837,10 +844,10 @@ namespace BirdieSmash.Game
                 // Erken kaydırma tamponu (2026-10-31 U3): pencere açılmadan yapılan belirgin kaydırma saklanır, pencere ERKEN_MS
                 // içinde açılırsa vuruş olur (en iyi "good": topu kesmeden geçmiş sayılır). Platform oyunlarının görünmez toleransı;
                 // Usta'da süre kısa.
-                if (!input.hit && M.s != null && !M.s.dead && M.s.from == "op" && !(M.ogr != null && M.ogr.dur) && !M.HitWindow() && Vector2.Distance(q, input.p0) > 70)
+                if (!input.hit && M.s != null && !M.s.dead && M.s.from == "op" && !(M.ogr != null && M.ogr.dur) && !M.HitWindow() && Vector2.Distance(q, input.p0) > 70 * Ayar.KaydirmaK)
                 {
                     float edx, edy, esp; SwipeVec(out edx, out edy, out esp);
-                    if (esp > .45f) { input.guclu = true; erkenSw = Jest(new SwipeInput { dx = edx, dy = edy, speed = esp, dist = HitR() * .9f, R = HitR(), curved = Curved() }); erkenT = now; erkenTop = M.s; }
+                    if (esp > .45f * Ayar.KaydirmaK) { input.guclu = true; erkenSw = Jest(new SwipeInput { dx = edx, dy = edy, speed = esp, dist = HitR() * .9f, R = HitR(), curved = Curved() }); erkenT = now; erkenTop = M.s; }
                 }
                 if (!input.hit && M.s != null && !M.s.dead && M.s.from == "op" && M.HitWindow())
                 {
@@ -852,7 +859,7 @@ namespace BirdieSmash.Game
                     if (far > 14 && speed > .1f) { Reach I; if (M.ReachInfo(out I)) { var pl = M.ShotPlan(new SwipeInput { dx = dx, dy = dy, speed = speed, curved = Curved() }, I, true); previewOn = true; previewAt = new Vector2(Mathf.Clamp(pl.tx, Court.SL, Court.SR), Court.NET - pl.d); previewTip = pl.type; } }
                     // Topun üstünden geçmek şart değil: pencere açıkken belirgin kaydırma (70 px, kavis için yer) vuruştur; topu kesmek mükemmeli verir.
                     bool durdu = M.ogr != null && M.ogr.dur;
-                    if (!durdu && (d <= R || (far > 70 && speed > .45f)))
+                    if (!durdu && (d <= R || (far > 70 * Ayar.KaydirmaK && speed > .45f * Ayar.KaydirmaK)))
                         if (M.SwipeShot(Jest(new SwipeInput { dx = dx, dy = dy, speed = speed, dist = d <= R ? d : R * 1.5f, R = R, side = side, curved = Curved() }))) { input.hit = true; KaydirmaOlc.Bitti(true); Yerel.Vurus(M.sonTip, M.sonQ, M.sonSlice); }
                 }
             }
@@ -878,7 +885,7 @@ namespace BirdieSmash.Game
                         float dx, dy, speed; SwipeVec(out dx, out dy, out speed);
                         // Belirgin hareket pencereden önce bittiyse (kaydır-bekle) ya da hızlı kaydırma pencerenin açıldığı karede
                         // bırakıldıysa neden erkendir; yalnız gerçekten yavaş hareket "Yavaş".
-                        int ni = far < 70 ? 0 : speed <= .45f && !input.guclu ? 1 : 2;
+                        int ni = far < 70 * Ayar.KaydirmaK ? 0 : speed <= .45f * Ayar.KaydirmaK && !input.guclu ? 1 : 2;
                         string neden = ISKA_NEDEN[ni];
                         if (ni == 0) KaydirmaOlc.kisa++; else if (ni == 1) KaydirmaOlc.yavas++; else KaydirmaOlc.erken++;
                         KaydirmaOlc.Bitti(false);
@@ -1004,6 +1011,17 @@ namespace BirdieSmash.Game
         }
 
         // ---- Canlı salon (2026-11-06 ek tur, yasin "10 yaratıcı fikir"; fikir 2, 3, 4) ----
+        // Skor bu olayla değişti (sc[0] ben). Seri başındaki fark sayıdan önceki skordan: ilk sayıda (seriBen 1) sc − 1.
+        void SeriSay(bool mine)
+        {
+            if (!mine) { seriBen = 0; seriGeriDondu = false; return; }
+            seriBen++; if (seriBen == 1) seriBasFark = match.sc[1] - (match.sc[0] - 1);
+            if (match.matchDone) return;   // maçı bitiren sayıda sevinç zaten maç sonu anının
+            if (seriBen >= 3) { ledSeriT = 2.4f; sfx.SeriAlkis(seriBen >= 5); }
+            if (seriBen == 5 && !Ayar.reduce) salonDalga = -2.4f;
+            if (seriBen >= 3 && !seriGeriDondu && seriBasFark >= 2 && match.sc[0] >= match.sc[1] && match.sc[0] - match.sc[1] <= 1)
+            { seriGeriDondu = true; hud.Say(L.T("Geri döndün!"), Kit.W(Court.MID, Court.NET - 2.6f, 2f), Kit.Hex("#d8ff5a"), 1.3f, true, 2); }
+        }
         // Tribün (CourtView.TribunTick), LED panolar (CourtView.LedYaz) ve maç sayısı anı tek yerden: durum burada, poz/doku orada.
         //  - Heyecan: ralli 6→12 arası 0→1, sayı arasında .8 sn'de söner.
         //  - Sıçrama: benim sayım ya da 8+ ralli; .6 sn. Dalga: 15. vuruşta bir kez, soldan sağa.
@@ -1012,6 +1030,10 @@ namespace BirdieSmash.Game
         //  - LED önceliği: maç sayısı > smaç (1,6 sn) > ralli 5+ ("RALLY n"); yoksa marka. Doku yalnız kod değişince istenir.
         // Hareketi azaltta seyirci hareketsiz ve nabız yok; LED yazısı ve titreşim dışı her şey (yazı) yerinde.
         float salonHey, salonSicra = -1, salonDalga = -99, ledSmacT; bool dalgaOldu; int mpYan = -1, ledKod = int.MinValue;
+        // Art arda sayı (2026-11-12 inceleme, fikir 07:05 #2): yalnız oyuncunun serisi sayılır (rakibin serisi oyuncuyu ezmesin,
+        // lastik bant da yok, oynanış değişmez). 3'te LED "3 IN A ROW" + alkış, 5'te uzun alkış + yarım dalga; seri gerideyken
+        // (en az 2 fark) başladıysa eşitleme/öne geçme sayısında bir kez "Geri döndün!". LED dili diğer kodlarla aynı (İngilizce).
+        int seriBen, seriBasFark; bool seriGeriDondu; float ledSeriT;
         public int MacSayisiYan { get { return mpYan; } }
         void SalonCanli(float dt)
         {
@@ -1034,13 +1056,14 @@ namespace BirdieSmash.Game
                 CourtView.TribunTick(Time.time, salonHey, Mathf.Max(0, salonSicra), salonDalga);
             }
             // LED
-            ledSmacT = Mathf.Max(0, ledSmacT - dt);
-            int kod = mpYan >= 0 ? -1 : ledSmacT > 0 ? -2 : oyunda && !M.between && M.rally >= 5 ? M.rally / 5 * 5 : 0;   // 2026-11-11: 5'in katlarında (5, 10, 15…): her yeni sayı ralli ortasında doku + GPU yüklemesi yapıyordu; 6 doku maç boyu yeter
+            ledSmacT = Mathf.Max(0, ledSmacT - dt); ledSeriT = Mathf.Max(0, ledSeriT - dt);
+            int kod = mpYan >= 0 ? -1 : ledSmacT > 0 ? -2 : ledSeriT > 0 ? -100 - Mathf.Min(seriBen, 21) : oyunda && !M.between && M.rally >= 5 ? M.rally / 5 * 5 : 0;   // 2026-11-11: 5'in katlarında (5, 10, 15…): her yeni sayı ralli ortasında doku + GPU yüklemesi yapıyordu; 6 doku maç boyu yeter
             if (kod != ledKod)
             {
                 ledKod = kod;
                 if (kod == -1) CourtView.LedYaz("MATCH POINT", mpYan == 0 ? "#c4ed3f" : "#e99bff");
                 else if (kod == -2) CourtView.LedYaz("SMASH!", "#ff9a3c");
+                else if (kod <= -100) CourtView.LedYaz((-100 - kod) + " IN A ROW", "#c4ed3f");
                 else if (kod > 0) CourtView.LedYaz("RALLY " + kod, "#f9d272");
                 else CourtView.LedYaz(null, null);
             }
@@ -1088,6 +1111,7 @@ namespace BirdieSmash.Game
                 var ayak = Kit.W(match.me.x, match.me.y, .02f);
                 fx.Dalga(ayak, Kit.Hex("#F9D272"), 110); fx.Burst(ayak + Vector3.up * 1.1f, Kit.Hex("#F9D272"), 26, 360, "spark"); fx.Burst(ayak + Vector3.up * 1.4f, Kit.Hex("#d8ff5a"), 18, 300, "spark");
                 Yerel.Hap("hit");   // iniş tıkı (maç sonu "win" deseni ayrıca çalar)
+                if (PlayerView.Dans(me.MacSonuId)) sfx.Dans(me.MacSonuId);   // dans imzası zirvede bir kez (2026-11-12, Sfx.Dans)
             }
             zaferAn0 = an;
         }
@@ -1179,6 +1203,7 @@ namespace BirdieSmash.Game
                         // rakibin maç sayısını kurtarınca tek kelime (Kurtardın!). mpYan önceki karenin durumu (skor bu olayla değişti).
                         if (mine || e.k >= 8) salonSicra = 0;
                         if (e.type == "smash") ledSmacT = 1.6f;
+                        if (match.ogr == null) SeriSay(mine);
                         if (mine && mpYan == 1 && match.ogr == null) hud.Say(L.T("Kurtardın!"), Kit.W(Court.MID, Court.NET - 2.6f, 2f), Kit.Hex("#7ad7ff"), 1.3f, true, 2);
                         sfx.Point(mine, smac, (int)e.k); hud.Pop(mine ? 0 : 1); Yerel.Hap(mine ? "win" : "lose");
                         // düşüş yerinde toz ve kazananın renginde dalga; benim sayımda üst bantta üç renkli kıvılcım (HTML point)

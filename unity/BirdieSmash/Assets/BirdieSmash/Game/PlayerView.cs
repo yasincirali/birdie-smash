@@ -950,6 +950,9 @@ namespace BirdieSmash.Game
         // sıçrayarak smaçla alınan sayıda (Match.sovSayi; sayı arası 1,3 sn'ye uzar) SEVINC_UZUN, maç sonunda döngü.
         // Raket hep sağ elde; hareketi azaltta salınım yok, dansın duruşu sabit kalır.
         public const float SEVINC_UZUN = 1.25f;
+        // Sevinç klibinin döngü süresi, tek kaynak (2026-11-12, inceleme 17:05): Dolap'taki alım anı (KarakterOdasi.AlimAni) kendi
+        // listesini tutuyordu ve dansları bilmiyordu; dans 1,6 sn'de kesilip boşta duruşa atlıyor, dans sesi yarıda kalıyordu.
+        public static float SevincSure(string id) { return id == "iyi_oyun" || id == "zafer" || id == "selam" || id == "egil" || Dans(id) ? 2.4f : 1.6f; }
         public static bool Dans(string id) { return id == "robot" || id == "tavuk" || id == "twist" || id == "dalga" || id == "helikopter" || id == "gitar"; }
         // Kademeli saat: her tam sayıda bekler, vuruşun ilk %30'unda bir sonrakine geçer (robotun kesik hareketi; sıçrama yok).
         static float Kademe(float x) { float f = Mathf.Floor(x); return f + Mathf.SmoothStep(0, 1, Mathf.Clamp01((x - f) / .3f)); }
@@ -1015,7 +1018,7 @@ namespace BirdieSmash.Game
             transform.position = pos; yaw.localRotation = Quaternion.Euler(0, yawDeg, 0) * calib;
             shadow.position = new Vector3(pos.x, .003f, pos.z);
             if (anim == null) return; Sample("idle", .25f, null, 0, 1); cur = "_sevinc";   // ShowStatic çıkışta boşta pozunu yeniden örneklesin
-            float d = id == "iyi_oyun" || id == "zafer" || id == "selam" || id == "egil" || Dans(id) ? 2.4f : 1.6f, tt = t % d;
+            float d = SevincSure(id), tt = t % d;
             float w = Mathf.Clamp01(Mathf.Min(tt / .15f, (d - tt) / .25f));
             SevincPoz(id, tt, w, Ayar.reduce);
         }

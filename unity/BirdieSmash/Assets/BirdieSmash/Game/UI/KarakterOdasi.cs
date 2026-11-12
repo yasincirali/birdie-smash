@@ -373,7 +373,7 @@ namespace BirdieSmash.Game
             // Süre hareketin kendi döngüsü (PlayerView.ShowSevinc: dört harekette 2,4 sn, diğerlerinde 1,6): erken kesilirse figür
             // tepe pozdan boşta duruşa atlar. Yüz/ayak yakın planında kollar kadraj dışında kalır; an boyunca tüm boy, sonra geri.
             // Arka arkaya iki alımda ilk zamanlayıcı ikinciyi kesmesin diye sayaç.
-            string sid = Ayar.KOZ[Kozmetik.SEVINC]; int ms = sid == "zafer" || sid == "iyi_oyun" || sid == "selam" || sid == "egil" ? 2400 : 1600;
+            string sid = Ayar.KOZ[Kozmetik.SEVINC]; int ms = Mathf.RoundToInt(PlayerView.SevincSure(sid) * 1000);   // tek kaynak: dans da 2,4 sn
             int tok = ++alimTok, kat0 = karAlt;
             vt.Sevinc(null); vt.Sevinc(sid); if (vt.odak != Vitrin.TAM) vt.Odak(Vitrin.TAM);
             kok.schedule.Execute(() =>

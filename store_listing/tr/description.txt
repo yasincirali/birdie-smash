@@ -3,7 +3,7 @@ Birdie Smash, tek parmakla oynanan bir badminton oyunu. Top gelince ekranda kayd
 - Kariyer: 8 tur, 48 maç, altı farklı oyun tarzı; mahalle salonundan Efsaneler Kupası'na, sonra bitmeyen Şampiyon yolu
 - Günün maçı: her gün yeni rakip, saha ve kural; seri tutma derdi yok
 - Sonsuz ralli: antrenör sen kaçırana kadar besler, her 5 vuruşta hızlanır
-- Dolap: forma, şapka, ayakkabı, sevinç ve seviyeyle açılan smaç hareketleri; oyunu değiştiren raket, kordaj ve sap
+- Dolap: forma, şapka, sırt eşyası, kol kalkanı, ayakkabı, danslar ve sevinçler, seviyeyle açılan smaç hareketleri; oyunu değiştiren raket, kordaj ve sap
 
 VURUŞLAR
 Yavaş ve kısa geçersen drop olur, top filenin hemen arkasına düşer. Uzun kaydırırsan clear ile dibe atarsın. Top başının üstündeyken hızlı kaydırırsan smaç gelir. Omuz hizasında drive, alçak topta lift, file üstünde file vuruşu, rakibin smacına karşı blok. Kaydırırken parmağınla yay çizersen top kesilir ve beklenenden kısa düşer. Servis de sende: kısa, flick ya da yüksek.

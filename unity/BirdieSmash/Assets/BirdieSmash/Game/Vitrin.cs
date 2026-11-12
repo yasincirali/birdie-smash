@@ -88,7 +88,9 @@ namespace BirdieSmash.Game
         public static float TestSmacT = -1;   // ekran turu: smaç hareketi önizlemesinin saati sabit (kare hızı CI'da düşük)
         // smacId: "smac:" önekli önizlemenin kimliği bir kez ayrılır (2026-11-11 inceleme #5: önceden her karede Substring = GC).
         string smacId;
-        public void Sevinc(string id) { if (sevinc != id) sevincT = 0; sevinc = id; smacId = id != null && id.StartsWith("smac:") ? id.Substring(5) : null; if (id == null) ShowStaticSifirla(); }
+        // Dans seçilince imza motifi (2026-11-12, Sfx.Dans): Vitrin GameRoot'u tanımıyor, ses kancası GameRoot'tan bağlanır.
+        public static System.Action<string> DansSes;
+        public void Sevinc(string id) { if (sevinc != id && id != null && DansSes != null && PlayerView.Dans(id)) DansSes(id); if (sevinc != id) sevincT = 0; sevinc = id; smacId = id != null && id.StartsWith("smac:") ? id.Substring(5) : null; if (id == null) ShowStaticSifirla(); }
         void ShowStaticSifirla() { if (fig != null) fig.ShowStatic(YER, a, 0); }
         public void Kapat() { sevinc = null; smacId = null; kam.enabled = false; suruk = false; gec = hedefGec = 0; parca = null; raKay = false; odak = TAM; poz = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = deneSevinc = deneMacSonu = deneSirt = deneSmac = deneKol = null; camVar = false; gameObject.SetActive(false); }
         // Yakın plan seç (aynı odağa ikinci dokunuş Soyunma odasında Tüm boy'a döner). Tutuşa girerken el kameraya döner.
