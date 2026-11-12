@@ -1,4 +1,11 @@
 === UNITY ===
+Dolap'ta gezinmek daha rahat (13 Kasım gece):
+- Kategori şeridinde seçili sayfa artık hep görünüyor ve ortada duruyor; Sırt ya da Hareketler seçiliyken sağ kenarda kesilmiyor.
+- Sayfanın başındaki "Sıradaki" satırı açık sayfadaki eşyayı gösteriyor (Sırt'ta bir sırt eşyası). Altında iki sayım var: bu sayfada kaçı senin, bütün Dolap'ta kaçı senin. Dokununca aynı sayfada denersin, başka sayfaya atlamazsın.
+- Koleksiyon düğmeleri kaçını topladığını söylüyor: "Yılbaşı 2/6" gibi. Düğmeye dokununca yalnız eşya listesi değişiyor, sayfa en başa atlamıyor ve takılmıyor.
+- Hiç kombin kaydetmediysen üç boş kutu yerine tek "Bu görünüşü kaydet" düğmesi var; eşyalar ekranda daha yukarıdan başlıyor. İlk kayıttan sonra üç kombin yeri görünüyor.
+- Seviyesi yetmeyen bir eşyayı denerken alttaki düğme yalnız "Sv 10 ile açılır" diyor; İngilizcede yazı artık kesilmiyor.
+Nasıl denenir: Dolap > Görünüm > Sırt'a gir: kategori şeridinde Sırt ortada ve görünür olmalı. Satırda "Sıradaki" bir sırt, kol ya da bel eşyası olmalı; dokununca aynı sayfada vitrinde denenmeli. Şapka sayfasında aşağı kaydır, "Yılbaşı" düğmesine dokun: sayfa başa atlamadan yalnız yılbaşı şapkaları kalmalı, düğmede sayı yazmalı. Yeni kurulumda Kombinler satırında tek "Bu görünüşü kaydet" görünmeli; dokununca "Kombin 1" dolu, yanında iki boş yer çıkmalı. Seviyen yetmeyen bir şapkayı dene: alttaki düğmenin altında yalnız "Sv … ile açılır" yazmalı.
 Kasmalar giderildi: sayı sonrası ve maç sonu akıcı (12 Kasım gece):
 - Sayı alınca çıkan büyük yazı (Sayı!, Smaç! gibi) büyürken oyun bir an takılıyordu. Yazı artık tek boyda hazırlanıp büyütülüyor, takılma yok.
 - Maç sonu sevinci sırasında bazen oluşan donma giderildi: sonuç kartı ve kayıt sevinç bittikten sonra hazırlanıyor, kartın parçaları maç başında hazırda bekliyor.
