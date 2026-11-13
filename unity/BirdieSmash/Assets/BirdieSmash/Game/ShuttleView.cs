@@ -44,8 +44,11 @@ namespace BirdieSmash.Game
             body = new GameObject("govde").transform; body.SetParent(transform, false);
             var tuy = Kit.Lit(new Color(.97f, .97f, .955f), .12f); var ic = Kit.Lit(new Color(.74f, .75f, .76f), .05f); var sap = Kit.Lit(new Color(.98f, .97f, .93f), .2f);
             var mantar = Kit.Lit(Kit.Hex("#f1dcb4"), .35f); var serit = Kit.Lit(new Color(.2f, .27f, .5f), .3f);
-            var go = Kit.MeshObj("tuyler", body, Feathers(), tuy, true); go.GetComponent<MeshRenderer>().sharedMaterials = new[] { tuy, ic, sap };
-            var co = Kit.MeshObj("mantar", body, Cork(), mantar, true); co.GetComponent<MeshRenderer>().sharedMaterials = new[] { mantar, serit };
+            // Gölge tek (yasin 13 Kas: "topun 2 adet gölgesi oluyor gibi"): top gövdesi gerçek zamanlı gölge DÜŞÜRMEZ.
+            // Işık eğik geldiği için o gölge blob'dan kayık ikinci bir leke çiziyordu; yükseklik okumasını blob (topun tam
+            // altı) veriyor, oyuncu iniş yerini ondan okur. Oyuncular gerçek gölgeyi korur (büyük, yere basan gövde).
+            var go = Kit.MeshObj("tuyler", body, Feathers(), tuy); go.GetComponent<MeshRenderer>().sharedMaterials = new[] { tuy, ic, sap };
+            var co = Kit.MeshObj("mantar", body, Cork(), mantar); co.GetComponent<MeshRenderer>().sharedMaterials = new[] { mantar, serit };
             lines = Kit.MeshObj("cizgiler", body, Lines(), Kit.Unlit(new Color(.33f, .37f, .40f)));
             var combined = Combined();
             for (int i = 0; i < 3; i++)
@@ -273,8 +276,10 @@ namespace BirdieSmash.Game
                 }
             }
             // --- gölge + yükseklik çizgisi ---
+            // Yerdeki top (s.dead): gölge küçük temas lekesine iner. Eskiden uçuştaki boyutta (0,43 m) kalıyordu; yatan
+            // topun yanında koyu bir disk "top gitti, gölge kaldı" gibi okunuyordu (yasin 13 Kas).
             float zz = Mathf.Max(0, s.z); shadow.gameObject.SetActive(true); shadow.position = Kit.W(s.x, s.y, .005f);
-            float sh = 5f / 28 * (1 + zz * .3f); shadow.localScale = new Vector3(sh * 2.4f, sh * 2.4f, 1); shadowM.color = new Color(0, 0, 0, .4f / (1 + zz * .35f) * 1.4f);
+            float sh = 5f / 28 * (s.dead ? .55f : 1 + zz * .3f); shadow.localScale = new Vector3(sh * 2.4f, sh * 2.4f, 1); shadowM.color = new Color(0, 0, 0, .4f / (1 + zz * .35f) * 1.4f);
             hLine.enabled = zz > .25f; if (hLine.enabled) { hLine.positionCount = 2; hLine.SetPosition(0, Kit.W(s.x, s.y, 0)); hLine.SetPosition(1, pos); }
             // --- yer çizgisi: rakip topu, file bu yanında, inişe 1,1 sn'den az ---
             float remL = s.landPred != null && s.from == "op" ? s.landPred.t - s.t : 9;

@@ -58,6 +58,15 @@ namespace BirdieSmash.Game
             if (kip == "magaza") { yield return MagazaTuru(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }   // 2026-10-29: mağaza kareleri (Game/MagazaTuru.cs)
             // 2026-11-12 kısa tur (`ekran/kisa-*` dalı → `-bskip dolap`): katalog büyüdükçe tam tur + derleme 90 dk iş sınırını aştı (r157 kare
             // yazamadan iptal oldu). Dolap işi yalnız açılış, menü ve varyant/eşya vitrinini çeker; tam tur öteki `ekran/**` dallarında sürer.
+            // 2026-11-13 görsel kısa tur (`ekran/kisa-gorsel-*`): üstten vuruş kolu (klip şeritleri artık UstKol katmanıyla),
+            // file halka dalgası (FileKare) ve Oyna afişinde rastgele hareket/dinlenme (üç kare, 4 sn arayla).
+            if (kip == "gorsel")
+            {
+                yield return Cek("00_ilk_kare"); yield return KlipSeritleri("oyuncak"); yield return FileKare();
+                if (root.ui != null) { root.AnaMenu(); root.ui.SekmeAc(Sekme.Oyna); }
+                for (int i = 0; i < 3; i++) { float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 4) yield return null; yield return Cek("afis_" + i); }
+                File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
+            }
             if (kip == "dolap") { yield return Cek("00_ilk_kare"); yield return MenuTuru(); yield return Varyantlar(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             yield return MenuTuru(); if (root.HudKatman != null) rap.AppendLine("açılış süresi (gerçek, CI yazılım render'ı): " + root.HudKatman.AcilisTani);

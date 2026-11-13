@@ -643,7 +643,7 @@ namespace BirdieSmash.Game
             if (shadow != null) shadow.position = new Vector3(pos.x, .003f, pos.z);
             if (anim == null) return; if (D(clip) == null) clip = "idle";
             if (cur == clip && pozK == clip && Mathf.Abs(pozP - ph) < 1e-4f) return;
-            cur = clip; pozK = clip; pozP = ph; Sample(clip, ph, null, 0, 1);
+            cur = clip; pozK = clip; pozP = ph; Sample(clip, ph, null, 0, 1); UstKol(clip, ph, 1);
         }
 
         void Fallback(Color forma)
@@ -931,6 +931,7 @@ namespace BirdieSmash.Game
             }
             hazirKafa = UzanHazir(o, M) ? KafaVurusta(cur) : null;   // ana örneklemeden önce: önbellekte yoksa vuruş karesi örneklenir
             Sample(cur, ph, prev, prevPh, prev == null ? 1 : Mathf.SmoothStep(0, 1, blend), altKlip, altPh, altW, prev2, prev2Ph, prev2Pay);   // smoothstep (2026-10-26): doğrusal ağırlık geçişin başında ve sonunda hız kırığı veriyordu
+            UstKol(cur, ph, prev == null ? 1 : Mathf.SmoothStep(0, 1, blend));   // üstten vuruşta kol başın üstünde (uzanmadan önce: uzanma bu pozdan ölçer)
             KalcaDonus(o);   // ana örneklemeden hemen sonra: uzanma kalçayı kaydırmadan, ayak kilidi IK'dan önce
             Uzan(o, M, j);   // kayma ve kalça: ayak kilidinden önce (kilit kalça kaymasını ayakta geri alır)
             FileItin(); AyakKilit(dt); HazirNefes(o, M); UzanKol(); ServisEller();
@@ -1091,6 +1092,7 @@ namespace BirdieSmash.Game
             }
             if (id == "zipla") { float u = (t - .6f) / .18f; return u > 0 && u < 1 ? 1 - .6f * Mathf.Sin(u * Mathf.PI) : 1; }
             if (id == "iyi_oyun") return .7f;   // rakibe selam: tam dik değil, rahat
+            if (id == "dinlen") return 1 - .45f * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .5f));   // soluklanma: dizler bükük
             // danslar: dizler ritimle yaylanır (leğen iner kalkar), ayaklar yerde
             if (id == "twist") return 1 - .3f * Mathf.Abs(Mathf.Sin(t * 9));
             if (id == "tavuk") return .72f - .14f * Mathf.Sin(t * 12);
@@ -1164,6 +1166,10 @@ namespace BirdieSmash.Game
                 case "egil": egil = 32 * Mathf.SmoothStep(0, 1, Mathf.Clamp01((t % 2.4f) / .5f)); break;
                 case "iyi_oyun": egil = 10 * Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - .35f) / .4f)); break;
                 case "of": egil = 12 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .25f)); break;   // uzun ralli kaybı: baş öne, kollar yerinde
+                // Dinlenme (2026-11-13, Oyna afişi "yorulunca durabilirler"): giriş .5 sn, nefes 0,7 Hz (göğüs inip kalkar).
+                // dinlen: eller dizlerin üstünde, gövde öne eğik soluklanma; bel: dik duruş, eller belde, omuzlar nefesle kalkar.
+                case "dinlen": egil = 30 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .5f)) + 3 * Mathf.Sin(t * 4.4f) * salla; break;
+                case "bel": egil = -3 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .5f)) - 2.5f * Mathf.Max(0, Mathf.Sin(t * 4.4f)) * salla; break;
                 // danslar (omurga): salla = 0 (hareketi azalt) iken duruş sabit
                 case "robot": egil = 4; bur = 16 * Mathf.Cos(Kademe(t * 3.2f) * Mathf.PI) * salla; break;
                 case "tavuk": egil = 8 + 8 * Mathf.Max(0, Mathf.Sin(t * 12)) * salla; hop = .03f * Mathf.Abs(Mathf.Sin(t * 12)); break;   // gagalama
@@ -1259,6 +1265,18 @@ namespace BirdieSmash.Game
                       IK(SU, SE, SH, sR - up * L * .7f + fw * L * .3f + ri * L * .05f, ri - fw * .5f);
                       RaketDik(SH, nd);
                       if (SH != null) IK(LU, LE, LH, SH.position + nd * L * (.5f + .12f * Mathf.Sin(t * 5) * salla) + fw * L * .05f, -ri - up * .5f); } break;
+                case "dinlen":   // avuçlar dizin hemen üstünde (uyluk), raket sağ elde ucu yere dönük
+                    { float a = Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .5f)); if (rm) a = 1;
+                      var kR = sR + fw * L * .45f - up * L * .86f + ri * L * .02f; var kL = sL + fw * L * .45f - up * L * .86f - ri * L * .02f;   // omuz ve kol boyuna göre: her tipte (tombul/uzun) aynı yere
+                      IK(SU, SE, SH, Vector3.Lerp(SH != null ? SH.position : kR, kR, a), ri * .6f + up * .2f - fw * .4f);
+                      IK(LU, LE, LH, Vector3.Lerp(LH != null ? LH.position : kL, kL, a), -ri * .6f + up * .2f - fw * .4f);
+                      RaketDik(SH, Vector3.Slerp(up, -up * .7f + fw * .5f + ri * .2f, a)); } break;
+                case "bel":      // eller kalçada, dirsekler dışa; raket sapı elde, kafası aşağı-arkaya
+                    { float a = Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .5f)); if (rm) a = 1;
+                      var hR = sR - up * L * .62f + ri * L * .14f - fw * L * .04f; var hL = sL - up * L * .62f - ri * L * .14f - fw * L * .04f;
+                      IK(SU, SE, SH, Vector3.Lerp(SH != null ? SH.position : hR, hR, a), ri - fw * .5f);
+                      IK(LU, LE, LH, Vector3.Lerp(LH != null ? LH.position : hL, hL, a), -ri - fw * .5f);
+                      RaketDik(SH, Vector3.Slerp(up, -up - fw * .4f + ri * .3f, a)); } break;
                 case "iyi_oyun": // raket rakibe doğru kalkar (fileden selam)
                     IK(SU, SE, SH, sR + fw * L * .7f + up * L * .45f + ri * L * .1f, ri - up * .3f); break;
             }
@@ -1294,7 +1312,8 @@ namespace BirdieSmash.Game
         //  - Yetişmezse: kol boyunu aşan pay UZAN_PAY0'dan UZAN_PAY1'e dek ağırlığı sıfıra indirir (gergin kol takılıp kalmaz).
         // Durum yok sayılır: ağırlık τ'nun ve temastan geçen sürenin fonksiyonu; tek bellek temas karesinde ölçülen kayma.
         const float UZAN_GIR = .15f, UZAN_CIK = .1f, UZAN_EGIM = 20f, UZAN_EGIM_PAY = .6f, UZAN_PAY0 = .45f, UZAN_PAY1 = .8f,
-            UZAN_KALCA = .45f, UZAN_KALCA_MAX = .2f, UZAN_BILEK = 40f;
+            UZAN_KALCA = .45f, UZAN_KALCA_MAX = .2f, UZAN_BILEK = 40f, BILEK_SINIR = 32f;
+        public float TaniBilek;
         Vector3? hazirKafa; int uzanN = -1; float uzanS0; Vector3 uzanD;
         readonly Dictionary<string, Vector3> vurusKafa = new Dictionary<string, Vector3>();
         public float TaniUzanW, TaniUzanOnce = -1, TaniUzanSonra = -1, TaniDirsek, TaniUzanPay;
@@ -1309,7 +1328,7 @@ namespace BirdieSmash.Game
         {
             Vector3 v; if (vurusKafa.TryGetValue(clip, out v)) return v;
             float hit; if (anim == null || D(clip) == null || !Match.CLIP_HIT.TryGetValue(clip, out hit)) return null;
-            Sample(clip, hit, null, 0, 1); v = yaw.InverseTransformPoint(kafa.position); vurusKafa[clip] = v; return v;
+            Sample(clip, hit, null, 0, 1); UstKol(clip, hit, 1); v = yaw.InverseTransformPoint(kafa.position); vurusKafa[clip] = v; return v;
         }
         // Hazırlık tutuşu canlı (2026-10-27 gece, ölçüm: hazırlık pozu tek karede ~0,5 sn donuk, "takıldı" okunuyordu): tutuş
         // karesinde omurgada küçük nefes/yaylanma (öne-arkaya 1,5°, kupa burgusu 1°, 1,6 Hz). Genlik hazırlık ağırlığıyla gelir,
@@ -1379,7 +1398,7 @@ namespace BirdieSmash.Game
             float f = pay > UZAN_PAY0 ? 1 - Mathf.SmoothStep(0, 1, (pay - UZAN_PAY0) / (UZAN_PAY1 - UZAN_PAY0)) : 1;   // yetişilmez: söner
             Hd = H1 + (Hd - H1) * f; kHedef = kafa.position + (kHedef - kafa.position) * f;
             Vector3 orta = (S.position + H1) * .5f, kutup = E.position - orta, ekO = (H1 - S.position).normalized;
-            var rot = H.rotation;
+            var rot = H.rotation; var elKlip = H.localRotation;
             IK(S, E, H, Hd, kutup.sqrMagnitude > 1e-6f ? kutup : -yaw.up);
             H.rotation = rot;
             {   // bilek
@@ -1387,10 +1406,63 @@ namespace BirdieSmash.Game
                 float aci = Mathf.Min(Vector3.Angle(v, v2), UZAN_BILEK);
                 if (ek.sqrMagnitude > 1e-8f && aci > .01f) H.rotation = Quaternion.AngleAxis(aci, ek.normalized) * H.rotation;
             }
+            // Bilek sınırı (yasin 13 Kas: "raket sallama gerçekçi durmuyor, anatomik olarak"): el dünya dönüşünü koruyup kol
+            // IK ile yer değiştirince el ön kola göre klipteki tutuştan sapıyordu; üstüne 40° bilek düzeltmesi binince bilek
+            // kırık, raket ön kolun yanından "takılı" görünüyordu (gerçek bilek: bükülme ~70°, yana yalnız 20–30°). Elin ön kola
+            // göre sapması klibin tutuşundan en çok BILEK_SINIR° olur; fazlası ön kolla birlikte döner. Kafa temasa birkaç cm daha
+            // uzak kalabilir (raket yayı ve temas kuralı Core'da, değişmez); kırık bilekten iyidir.
+            {
+                float sap = Quaternion.Angle(elKlip, H.localRotation); TaniBilek = sap;
+                if (sap > BILEK_SINIR) H.localRotation = Quaternion.Slerp(elKlip, H.localRotation, BILEK_SINIR / sap);
+            }
             // Dirsek dönmesi: kutup yönünün IK öncesi ve sonrası (omuz–el eksenine dik düzlemde) açısı; 90°'den büyükse ters büküm.
             Vector3 ekS = (H.position - S.position).normalized, k1 = Vector3.ProjectOnPlane(E.position - (S.position + H.position) * .5f, ekS), k0p = Vector3.ProjectOnPlane(kutup, ekO);
             TaniDirsek = k1.sqrMagnitude > 1e-8f && k0p.sqrMagnitude > 1e-8f ? Vector3.Angle(k0p, k1) : 0;
             TaniUzanW = w * f; TaniUzanSonra = (uzanHedef - kafa.position).magnitude;
+        }
+
+        // Üstten vuruş kolu (yasin 13 Kas: "raket sallama gerçekçi durmuyor, anatomik olarak"). Klip şeridinde (r163
+        // oyuncak_klip_clear) clear/smaç boyunca sağ el göğüs hizasında kalıyor, raket bilek çevresinde pervane gibi dönüyordu:
+        // ortak iskelette pişen kol açıları tıknaz gövdede (kısa kol, büyük baş) eli omuzun üstüne çıkaramıyor. Gerçek üstten
+        // vuruşta (clear, smaç, drop, sıçrayarak smaç, kafa arkası) dirsek omuz hizasına kalkar, el başın yanına/arkasına gider
+        // (yay), temasta kol başın üstünde uzanır; serbest sol kol hazırlıkta topu gösterir, temasta aşağı çekilir (gövde döner).
+        // Katman: el, sağ omuzdan kol boyuna oranlı hedefe iki kemik IK ile taşınır, dirsek dışa; el DÜNYA dönüşü korunur (raket
+        // klibin yönünde kalır, temasta dik). Yalnız el hedefin altındaysa çalışır (kolu zaten yukarıda olan model etkilenmez).
+        // Ağırlık temas kesrine göre: hazırlıkta açılır, temastan kısa süre sonra söner (takip klibin kendisi). Uzanma katmanı
+        // bu pozdan ölçer (KafaVurusta da katmanı uygular), temas kuralı Core'da değişmez. Hareketi azalt: aynı (poz, hareket değil).
+        static bool UstVurus(string c) { return c == "clear" || c == "smash" || c == "drop" || c == "jump" || c == "rth"; }
+        public float TaniUstKol;
+        void UstKol(string clip, float ph, float agirlik)
+        {
+            TaniUstKol = 0;
+            if (hakem || clip == null || !UstVurus(clip) || anim == null) return;
+            if (kKol == null) ZincirKur(); if (kKol == null) return;
+            float hit; if (!Match.CLIP_HIT.TryGetValue(clip, out hit)) return;
+            float w = Mathf.SmoothStep(0, 1, (ph - (hit - .4f)) / .25f) * (1 - Mathf.SmoothStep(0, 1, (ph - (hit + .06f)) / .22f)) * agirlik;
+            if (w < .01f) return;
+            Vector3 up = yaw.up, ri = yaw.right, fw = yaw.forward;
+            Transform S = kKol[3], E = kKol[4], H = kKol[5];
+            if (S != null && E != null && H != null)
+            {
+                float L = (E.position - S.position).magnitude + (H.position - E.position).magnitude;
+                float s = Mathf.SmoothStep(0, 1, (ph - (hit - .2f)) / .2f);   // 0 = geri yay (el başın arkasında), 1 = temas (yukarıda uzanık)
+                Vector3 geri = S.position + up * L * .5f + ri * L * .12f - fw * L * .12f, temas = S.position + up * L * .86f + ri * L * .1f + fw * L * .22f;
+                Vector3 hedef = Vector3.Lerp(geri, temas, s), d = hedef - H.position;
+                float alt = Vector3.Dot(d, up); float k = Mathf.Clamp01(alt / (.15f * L)) * w;   // el zaten hedef yüksekliğindeyse dokunma
+                if (k > .01f)
+                {
+                    var rot = H.rotation;
+                    IK(S, E, H, H.position + d * k, ri - fw * .2f);   // dirsek dışa (yana), hafif geride
+                    H.rotation = rot; TaniUstKol = k;
+                }
+            }
+            Transform LU = kKol[0], LE = kKol[1], LH = kKol[2];
+            if (LU != null && LE != null && LH != null)
+            {   // serbest kol: hazırlıkta topa doğru yukarı-öne, temasa yaklaşırken aşağı (gövdeye) çekilir
+                float L = (LE.position - LU.position).magnitude + (LH.position - LE.position).magnitude;
+                float g = w * (1 - Mathf.SmoothStep(0, 1, (ph - (hit - .12f)) / .14f));
+                if (g > .01f) IK(LU, LE, LH, Vector3.Lerp(LH.position, LU.position + up * L * .62f + fw * L * .5f - ri * L * .08f, g), -ri - fw * .2f);
+            }
         }
 
         // Kısa/flick servis duruşunda eller çeneden aşağıda (2026-10-28, ekran turu r44 model_mac_*): klipler ortak iskelette

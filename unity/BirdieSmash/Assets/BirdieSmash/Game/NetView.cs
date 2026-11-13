@@ -9,6 +9,13 @@
 //  - bant iki kat (kordonun üstünden katlanmış: ön ve arka yüz 3 mm aralıklı, üstte kapanır), üst kenar kordonla daha az oynar;
 //  - yalnız hareketli sütunlar (NetWave.lo..hi, bir önceki karenin aralığı dahil ki duran sütun son kez düze yazılsın) ve parlayan
 //    bölge yenilenir; file uyurken LateUpdate hiçbir şey yapmaz. Diziler bir kez ayrılır, karede ayırma yok; sınır kutusu sabit.
+//
+// 2026-11-13 (yasin: "file gerçekçiliğimiz bantta iyi gibi ama fileye geldiğinde dalgalanma görmeliyiz"): ağın NetWave sapması
+// file düzlemine DİK (dünya y) ve kamera kortun arkasından neredeyse o eksen boyunca bakıyor: smaçta ağ 20–30 cm şişse bile
+// ekranda birkaç piksel kayıyordu, dalga okunmuyordu. Ağa (bant altına) çarpan topta yalnız görünümde bir halka dalgası eklenir:
+// çarpma noktasından 2,4 m/s açılan halka, geçtiği gözleri düşeyde birkaç cm kaldırıp (ekranda okunan eksen) hafif aydınlatır,
+// ~1,1 sn'de söner. Genlik topun hızıyla (NetWave.glow sıçraması: smaç tam, drop az); zarf bandın alt kenarında 0 (ağ banda
+// dikili, yırtılma yok). Top kuralı/fizik değişmez (Core'a dokunulmaz). Hareketi azalt: genlik ×AZALT, renk halkası kalır.
 using UnityEngine;
 using BirdieSmash.Core;
 
@@ -20,6 +27,9 @@ namespace BirdieSmash.Game
         const int NX = 66, NZ = 12; const float KAT = .003f;
         Mesh mesh, tapeMesh; Vector3[] v, tv; Color[] c; float[] vx, vz, ktop;
         int pl = NX, pr = -1; bool parladi;
+        // halka dalgası (yalnız görünüm): t < 0 = yok
+        float hT = -1, hX, hZ, hGuc, oncekiGlow; bool halkaVardi;
+        const float H_HIZ = 2.4f, H_GEN = .12f, H_SURE = 1.1f, H_YUK = .035f;
         // Tanı (EkranTuru rapor.txt): son yenilemede yazılan köşe sayısı, uyuyan kare sayısı.
         public int SonGuncel, UykuKare;
         static readonly Color AG = new Color(.13f, .14f, .15f, .9f), PARILTI = new Color(1, .85f, .55f, 1);
@@ -66,9 +76,20 @@ namespace BirdieSmash.Game
                 for (int j = 0; j < NZ; j++)
                 {
                     int n = i * NZ + j; float x = vx[n], z = vz[n];
-                    v[n] = Kit.W(x, Court.NET + net.Gorunen(x, z), z);   // yön Core'da (NetWave.Impulse yon, 2026-10-26); sign kullanılmaz
-                    if (renk) { float gd = Mathf.Exp(-((x - net.gx) * (x - net.gx) + (z - net.gz) * (z - net.gz)) / .18f) * net.glow; c[n] = Color.Lerp(AG, PARILTI, Mathf.Clamp01(gd)); }
+                    float hb = Halka(x, z, j);
+                    v[n] = Kit.W(x, Court.NET + net.Gorunen(x, z), z + hb * H_YUK * net.Olcek);   // yön Core'da (NetWave.Impulse yon, 2026-10-26); sign kullanılmaz
+                    if (renk) { float gd = Mathf.Exp(-((x - net.gx) * (x - net.gx) + (z - net.gz) * (z - net.gz)) / .18f) * net.glow + Mathf.Abs(hb) * .55f; c[n] = Color.Lerp(AG, PARILTI, Mathf.Clamp01(gd)); }
                 }
+        }
+        // Halka dalgasının bu gözdeki payı (−1..1): ön cephe Gauss bandı × iki tepeli dalga × sönüm × hız × ağ zarfı.
+        float Halka(float x, float z, int j)
+        {
+            if (hT < 0 || j >= NZ - 2) return 0;   // bandın alt kenarı ve üstü sabit (ağ banda dikili)
+            float bant = Court.NetLimit(x) - Court.BANT, alt = Court.NetLimit(x) - Court.AG_DERIN;
+            float u = Mathf.Clamp01((bant - z) / (bant - alt)), env = u * (2 - u);
+            float dx = x - hX, dz = (z - hZ) * 1.6f, r = Mathf.Sqrt(dx * dx + dz * dz), on = H_HIZ * hT, d = r - on;
+            float band = Mathf.Exp(-d * d / (2 * H_GEN * H_GEN)), son = 1 - hT / H_SURE;
+            return band * Mathf.Cos(d / H_GEN * 2.2f) * son * son * hGuc * env;
         }
         void YazBant(int i0, int i1)
         {
@@ -88,7 +109,12 @@ namespace BirdieSmash.Game
             int l = NX, r = -1; const float OR = (NX - 1) / (float)(NetWave.N - 1);
             if (net.active && net.lo <= net.hi) { l = Mathf.Max(0, Mathf.FloorToInt((net.lo - 1) * OR)); r = Mathf.Min(NX - 1, Mathf.CeilToInt((net.hi + 1) * OR)); }
             int ul = Mathf.Min(l, pl), ur = Mathf.Max(r, pr); pl = l; pr = r;
-            bool parlak = net.glow > 0, renk = parlak || parladi; parladi = parlak;
+            // Yeni ağ çarpması: glow sıçradı ve çarpma bandın altında (bant çarpması gz'yi bandın üstüne yazar).
+            if (net.glow > oncekiGlow + .04f && net.gz < Court.NetLimit(net.gx) - Court.BANT) { hT = 0; hX = net.gx; hZ = net.gz; hGuc = Mathf.Clamp(net.glow, .35f, 1); }
+            oncekiGlow = net.glow;
+            if (hT >= 0) { hT += Time.deltaTime; if (hT > H_SURE) hT = -1; }
+            bool halka = hT >= 0; if (halka || halkaVardi) { ul = 0; ur = NX - 1; } halkaVardi = halka;   // halka bitince bir kare daha: düze yazılsın
+            bool parlak = net.glow > 0 || halka, renk = parlak || parladi; parladi = parlak;
             if (renk)
             {   // parıltı bölgesi gx ± 1,3 m (exp(−d²/0,18) < 1e-4)
                 int gl = Mathf.Max(0, Mathf.FloorToInt((net.gx - 1.3f) / Court.CW * (NX - 1))), gr = Mathf.Min(NX - 1, Mathf.CeilToInt((net.gx + 1.3f) / Court.CW * (NX - 1)));
