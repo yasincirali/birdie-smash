@@ -89,12 +89,15 @@ namespace BirdieSmash.Game
             // çıkınca oklar satırı uzuyor, düğmeler üst üste biniyordu. Sütunda yükseklikler ne olursa olsun çakışmazlar.
             // Kap ve satırlar dokunuşu geçirir (vitrini sürükleyerek döndürmek boşluklarda da çalışsın).
             var alt = new VisualElement(); alt.AddToClassList("vitrin-alt"); alt.pickingMode = PickingMode.Ignore; ust.Add(alt);
-            vitrinOdak = Satir("vitrin-odak"); vitrinOdak.pickingMode = PickingMode.Ignore; alt.Add(vitrinOdak);
+            // 2026-11-13 (yasin, cihaz ekran görüntüsü: "buton yerleşimleri, konumları, simetrileri göze hitap etmeli"): odak düğmeleri
+            // sol okun üstünde ikinci bir satırdı; sol alt köşe iki kat dolu, sağ alt tek ok, düğmeler figürün ellerinin önündeydi.
+            // Şimdi tek satır: ‹ ok · ortada üç odak düğmesi · ok ›. Vitrinin alt şeridi simetrik ve figürün önünde yalnız 44 pt kalır.
+            vitrinOdak = Satir("vitrin-odak"); vitrinOdak.pickingMode = PickingMode.Ignore;
             var ok = Satir("vitrin-oklar"); ok.pickingMode = PickingMode.Ignore; alt.Add(ok);
             var sol = new VisualElement(); sol.AddToClassList("dugme"); sol.AddToClassList("ikon-dugme"); sol.Add(Ikon(Ikonlar.Geri, 20, Color.white)); sol.AddManipulator(new Clickable(() => VitrinCevir(-1))); Erisim.Etiket(sol, L.T("Sola çevir"), "dugme"); ok.Add(sol);
             // 2026-11-08 (inceleme #3): ortadaki "Raketi incele / Oyuncuya dön" hapı kalktı; aynı geçiş üstteki oda seçicide
             // (Görünüm · Raket) ve rakete dokunmakta zaten var, iki yol aynı işi yapıyordu. Yerinde boşluk: oklar kenarda kalır.
-            var orta = new VisualElement(); orta.style.flexGrow = 1; orta.pickingMode = PickingMode.Ignore; ok.Add(orta);
+            vitrinOdak.AddToClassList("vitrin-odak--orta"); ok.Add(vitrinOdak);
             var sag = new VisualElement(); sag.AddToClassList("dugme"); sag.AddToClassList("ikon-dugme"); sag.Add(Ikon(Ikonlar.Ileri, 20, Color.white)); sag.AddManipulator(new Clickable(() => VitrinCevir(1))); Erisim.Etiket(sag, L.T("Sağa çevir"), "dugme"); ok.Add(sag);
             OdakDugmeleriKur();
             // Yakın plan kadrajı kutunun en-boyuna ve alttaki düğmelerin payına göre (Vitrin.Uzaklik).

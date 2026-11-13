@@ -122,6 +122,11 @@
 /* 2026-10-31: sayısı değişen çip satırı (Profil › Unvan): basis 0 tüm çipleri tek satırda eşit dar paylara bölüp sözcükleri
    harf harf kırıyordu. Burada çip yazısı kadar geniş başlar, satır sarar, kalan yer büyüyerek paylaşılır. */
 .satir.cip-sarar > .cip { flex-basis: auto; }
+/* 2026-11-13 (yasin: "simetriler göze hitap etsin"): Hızlı maç rakipleri 3+1 diziliyordu (Mika tek başına tam satır).
+   İki sütunlu ızgara: 4 rakip 2×2, sayı arttıkça çiftler halinde; tek kalan ortada yarım genişlikte. Büyük yazıda içerik kadar. */
+.satir.cip-iki { justify-content: center; }
+.satir.cip-iki > .cip { flex-basis: 40%; max-width: 47%; }
+.buyuk-yazi .satir.cip-iki > .cip { flex-basis: auto; max-width: none; }
 .satir.arali { justify-content: space-between; align-items: center; margin-left: 0; margin-right: 0; flex-wrap: nowrap; }
 /* büyük yazıda (x1.35 üstü) çipler alt alta: metin sarılır, yan yana sıkışmaz */
 /* r13 (2026-10-26): .satir'ın flex-wrap: wrap'ı sütunda da geçerliydi; Yoga uzun metinli Zorluk çiplerini ikinci bir sütuna
@@ -232,7 +237,7 @@
 .buyuk-yazi .tur-secici .cip { flex-basis: 40%; }
 
 /* Soyunma odası */
-.vitrin-alan { height: 50%; min-height: 220px; flex-shrink: 0; margin: 0 16px; border-radius: 16px; overflow: hidden; background-color: var(--navy); }
+.vitrin-alan { height: 50%; min-height: 190px; flex-shrink: 1; margin: 0 16px; border-radius: 16px; overflow: hidden; background-color: var(--navy); }
 .vitrin { flex-grow: 1; }
 .vitrin-yazi { position: absolute; top: 8px; right: 10px; -unity-text-align: middle-right; color: rgba(255, 255, 255, 0.75); background-color: rgba(26, 18, 33, 0.6); border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; padding: 3px 8px; }   /* r11: ortadaki yazı raketin ve başın üstüne biniyordu; sağ üst köşe, koyu zemin */
 /* r13 (2026-10-26): Yüz·Ayak·Tutuş ve oklar tek alt sütunda (SoyunmaOdasi); büyük yazıda üst üste binmiyorlar. */
@@ -396,6 +401,8 @@
 /* 2026-11-07 (AD2, UX3): odak düğmeleri yazı değil 44×44 simge; altındaki kategori satırıyla iki "Face" çakışıyordu (biri kamera,
    biri kategori). Ekran okuyucu adı aynı (Erisim.Etiket). Seçili = çip dili (turuncu çerçeve + tint). */
 .odak-dugme { min-width: 44px; width: 44px; height: 44px; margin-right: 6px; padding: 0; align-items: center; justify-content: center; background-color: rgba(51, 35, 63, 0.9); }
+.vitrin-odak--orta { flex-grow: 1; justify-content: center; align-self: center; margin: 0 4px; }   /* 2026-11-13: okların arasında, ortalı (simetri) */
+.vitrin-odak--orta .odak-dugme { margin: 0 4px; }
 .odak-dugme--secili { background-color: rgba(255, 160, 77, 0.22); border-color: var(--sun); border-width: 2px; }
 .alt-segment { margin: 4px 0 8px 0; }
 /* 2026-10-30 Görünüm alt sayfaları altıya çıktı (Beden · Yüz · Saç · Şapka · Ayakkabı · Renk): iki satır üçer; büyük yazıda
@@ -424,6 +431,11 @@
 .buyuk-yazi .izgara > .sac-kare .koz-resim { width: 64px; align-self: center; }
 .ayk-satir { padding: 10px 12px; min-height: 56px; margin: 4px 0; }
 .deneme-kart { padding: 12px; border-width: 2px; border-color: var(--sky); }
+/* 2026-11-13 (yasin cihaz karesi): Dolap'ta gövdenin sonundaki "Deneniyor" kartı alttaki sabit satın alma çubuğunun hemen üstünde
+   ikinci bir gök çerçeveli kutu olarak yarım görünüyordu (aynı bilgi iki kez, üst üste binmiş gibi). Normal yazıda çubuk yeter;
+   büyük yazıda çubuğun alt satırı gizli olduğundan kart kalır. */
+.deneme-kart--dolap { display: none; }
+.buyuk-yazi .deneme-kart--dolap { display: flex; }
 /* 2026-10-27 Gerçekçi/Sade "tek beden" bilgi kartı: deneme kartından sakin (ince çerçeve), ikincil düğmeli */
 .bilgi-kart { padding: 12px; margin-bottom: 8px; border-width: 1px; border-color: var(--sky); }
 .deneme-birak { margin-top: 8px; }

@@ -332,7 +332,7 @@ namespace BirdieSmash.Game
         void RakipSatir(VisualElement c)
         {
             c.Add(Grup(L.T("Rakip")));
-            var r = Satir(); r.AddToClassList("cip-sarar"); c.Add(r);
+            var r = Satir(); r.AddToClassList("cip-sarar"); r.AddToClassList("cip-iki"); c.Add(r);
             string sec = GameRoot.HizliSecili();
             r.Add(Cip(L.T("Rastgele"), sec == null, () => { Ayar.hizliRakip = ""; Ayar.Kaydet(); Degisti(); }, L.T("her maç başka")));
             foreach (var id in KariyerVeri.HizliHavuz(Ayar.ilerleme))
