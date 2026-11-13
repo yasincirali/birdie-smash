@@ -60,6 +60,14 @@ namespace BirdieSmash.Game
             // yazamadan iptal oldu). Dolap işi yalnız açılış, menü ve varyant/eşya vitrinini çeker; tam tur öteki `ekran/**` dallarında sürer.
             // 2026-11-13 görsel kısa tur (`ekran/kisa-gorsel-*`): üstten vuruş kolu (klip şeritleri artık UstKol katmanıyla),
             // file halka dalgası (FileKare) ve Oyna afişinde rastgele hareket/dinlenme (üç kare, 4 sn arayla).
+            // 2026-11-14 yazı/simetri kısa turu (`ekran/kisa-yazi-*`, docs/arayuz_tasarim_dili.md §5): menü turu EN ve TR, ×1 ve ×2;
+            // her karede YaziTara + Cakisma (yazi_tasma.txt, yazi_cakisma.txt).
+            if (kip == "yazi")
+            {
+                yield return Cek("00_ilk_kare"); yield return MenuTuru("", true); Ayar.yaziTest = 2; yield return MenuTuru("x2_", true); Ayar.yaziTest = 0;
+                { string d0 = Ayar.dil; Ayar.dil = "tr"; root.ui.Kirlet(); yield return MenuTuru("tr_", true); Ayar.yaziTest = 2; yield return MenuTuru("x2_tr_", true); Ayar.yaziTest = 0; Ayar.dil = d0; root.ui.Kirlet(); }
+                File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
+            }
             if (kip == "gorsel")
             {
                 yield return Cek("00_ilk_kare"); yield return KlipSeritleri("oyuncak"); yield return FileKare();
@@ -1334,6 +1342,75 @@ namespace BirdieSmash.Game
                 tasma.AppendLine(ad + " · " + neden + " · ." + sinif + " · \"" + tm + "\""); tasmaSay++;
             });
             File.WriteAllText(Path.Combine(dir, "yazi_tasma.txt"), "toplam " + tasmaSay + "\n" + tasma);
+            Cakisma(ad, k, pw, ph);
+        }
+        // Yazı çakışması ve simetri taraması (2026-11-14, yasin: "uygulama genelinde simetri, üst üste binen yazı kontrol edelim";
+        // kurallar docs/arayuz_tasarim_dili.md §1–2). YaziTara her yazının KENDİ kutusuna sığıp sığmadığını ölçüyordu; Kariyer'de
+        // "Gear 28/44" kutusuna sığıyordu ama kutu ilerleme çubuğunun üstüne binmişti, tarama yakalamadı. Burada:
+        //  - görünen her yazının çizilen metin dikdörtgeni (ölçülen boyut, hizalamaya göre kutunun içinde) başka bir yazınınkiyle
+        //    ya da bir çubukla (.stat-iz) 2×2 px'ten fazla kesişirse "çakışma";
+        //  - ekran genişliğinin %70'inden geniş kartın (.kart, .tur-kart, .bilgi-kart …) sol ve sağ boşluğu 1,5 px'ten fazla farklıysa
+        //    "asimetri" (yatay kaydırmadaki kartlar hariç).
+        readonly StringBuilder cakisma = new StringBuilder(); int cakismaSay;
+        class YK { public Rect r; public TextElement te; }
+        readonly List<YK> yaziKutu = new List<YK>(); readonly HashSet<string> cakGor = new HashSet<string>();
+        void CakYaz(string ad, string neden, string a, string b) { if (!cakGor.Add(neden + a + b)) return; cakisma.AppendLine(ad + " · " + neden + " · \"" + a.Replace("\n", " ⏎ ") + "\"" + (b != null ? " ↔ \"" + b.Replace("\n", " ⏎ ") + "\"" : "")); cakismaSay++; }
+        static readonly string[] KART_SINIF = { "kart", "tur-kart", "bilgi-kart", "ikincil-kart", "cubuk-kart", "oyuncu-kart", "hazir-kart" };
+        static bool Gorunur(VisualElement x)
+        {
+            for (VisualElement e = x; e != null; e = e.parent)
+                if (e.resolvedStyle.display == DisplayStyle.None || e.resolvedStyle.visibility == Visibility.Hidden || e.resolvedStyle.opacity < .05f) return false;
+            return true;
+        }
+        static bool YatayKaydirmada(VisualElement x) { for (var e = x.parent; e != null; e = e.parent) { var sv = e as ScrollView; if (sv != null && sv.mode == ScrollViewMode.Horizontal) return true; } return false; }
+        static bool AtaMi(VisualElement a, VisualElement b) { for (var e = b.parent; e != null; e = e.parent) if (e == a) return true; return false; }
+        static Rect MetinKutu(TextElement te)
+        {
+            var wb = te.worldBound; var cr = te.contentRect; float sx = wb.width > 0 && te.layout.width > 0 ? wb.width / te.layout.width : 1;
+            float cx = wb.xMin + cr.xMin * sx, cy = wb.yMin + cr.yMin * sx, cw = cr.width * sx, ch = cr.height * sx;
+            bool tek = te.resolvedStyle.whiteSpace == WhiteSpace.NoWrap;
+            var o = tek ? te.MeasureTextSize(te.text, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined)
+                        : te.MeasureTextSize(te.text, cr.width, VisualElement.MeasureMode.Exactly, 0, VisualElement.MeasureMode.Undefined);
+            float w = Mathf.Min(o.x * sx, tek ? o.x * sx : cw), h = o.y * sx;
+            var al = te.resolvedStyle.unityTextAlign; int col = (int)al % 3, row = (int)al / 3;
+            float x = col == 0 ? cx : col == 1 ? cx + (cw - w) / 2 : cx + cw - w, y = row == 0 ? cy : row == 1 ? cy + (ch - h) / 2 : cy + ch - h;
+            return new Rect(x, y, w, h);
+        }
+        void Cakisma(string ad, VisualElement k, float pw, float ph)
+        {
+            yaziKutu.Clear(); cakGor.Clear();
+            k.Query<TextElement>().ForEach(te =>
+            {
+                if (string.IsNullOrEmpty(te.text) || te.text.Trim().Length == 0 || !Gorunur(te)) return;
+                var wb = te.worldBound; if (float.IsNaN(wb.width) || wb.width <= 0 || wb.yMax < 0 || wb.yMin > ph) return;
+                if (YatayKaydirmada(te) && (wb.xMin < 0 || wb.xMax > pw)) return;
+                yaziKutu.Add(new YK { r = MetinKutu(te), te = te });
+            });
+            for (int i = 0; i < yaziKutu.Count; i++)
+                for (int j = i + 1; j < yaziKutu.Count; j++)
+                {
+                    var A = yaziKutu[i]; var B = yaziKutu[j]; if (AtaMi(A.te, B.te) || AtaMi(B.te, A.te)) continue;
+                    float ix = Mathf.Min(A.r.xMax, B.r.xMax) - Mathf.Max(A.r.xMin, B.r.xMin), iy = Mathf.Min(A.r.yMax, B.r.yMax) - Mathf.Max(A.r.yMin, B.r.yMin);
+                    if (ix > 2 && iy > 2) CakYaz(ad, "yazı çakışması " + ix.ToString("F0") + "×" + iy.ToString("F0"), A.te.text, B.te.text);
+                }
+            k.Query<VisualElement>(className: "stat-iz").ForEach(bar =>
+            {
+                if (!Gorunur(bar)) return; var bb = bar.worldBound; if (float.IsNaN(bb.width) || bb.width <= 0) return;
+                foreach (var y in yaziKutu)
+                {
+                    var r = y.r; var te = y.te; if (AtaMi(bar, te)) continue;
+                    float ix = Mathf.Min(r.xMax, bb.xMax) - Mathf.Max(r.xMin, bb.xMin), iy = Mathf.Min(r.yMax, bb.yMax) - Mathf.Max(r.yMin, bb.yMin);
+                    if (ix > 2 && iy > 2) CakYaz(ad, "yazı çubuğun üstünde " + ix.ToString("F0") + "×" + iy.ToString("F0"), te.text, null);
+                }
+            });
+            foreach (var sn in KART_SINIF)
+                k.Query<VisualElement>(className: sn).ForEach(kt =>
+                {
+                    if (!Gorunur(kt) || YatayKaydirmada(kt)) return; var wb = kt.worldBound; if (float.IsNaN(wb.width) || wb.width < pw * .7f || wb.yMax < 0 || wb.yMin > ph) return;
+                    float sol = wb.xMin, sag = pw - wb.xMax;
+                    if (Mathf.Abs(sol - sag) > 1.5f) CakYaz(ad, "asimetri ." + sn + " sol " + sol.ToString("F0") + " sağ " + sag.ToString("F0"), kt.name ?? sn, null);
+                });
+            File.WriteAllText(Path.Combine(dir, "yazi_cakisma.txt"), "toplam " + cakismaSay + "\n" + cakisma);
         }
         static bool KelimeBolundu(TextElement te, string m, float w, out float enGenis)
         {
