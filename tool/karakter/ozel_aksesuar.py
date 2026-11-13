@@ -1075,6 +1075,7 @@ def cupcake():   # kek şapka: kâğıt kalıp başı tencere gibi sarar (r166: 
     for k in range(7):
         a = 2 * math.pi * k / 7; R = 1.04 if k % 2 == 0 else .74; y = 1.46 if k % 2 == 0 else 1.74
         top(ag, '#e3262c' if k % 3 == 0 else '#5aaef0', (R * math.cos(a), y, R * math.sin(a)), .06, 5, 3)
+    for renk in ag.alt: ag.alt[renk] = [tuple((q[0], q[1] - .22, q[2]) for q in t) for t in ag.alt[renk]]   # r167: kalıp saçın tepesinde tünemiş duruyordu; tencere gibi alna yakın (kenar y .20, bant çizgisinin üstünde)
     ag.yaz('cupcake', 0)
 
 def krema_biyik():   # krem şanti bıyık (yüz): pos bıyıkla aynı dudak üstü yolu, kabarık krem topları; ortada küçük kiraz yok (sade)
