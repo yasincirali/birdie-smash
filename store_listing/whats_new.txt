@@ -1,4 +1,24 @@
 === UNITY ===
+Raketi almadan dene, smaç rekorun Profil'de (13 Kasım akşam):
+- Atölye > Raket'te bir model kartının boş yerine dokununca o raket takımında denenir: üstteki çubuklar o raketle yeniden hesaplanır, her çubukta seçili raketine göre yukarı ya da aşağı ok çıkar; Teknik sayfa da o raketi anlatır. Karta yeniden dokununca deneme kapanır, hiçbir şey satın alınmaz.
+- Tel gerginliği kaydırıcısını sürüklerken her lbs'de ince bir tık ve kısa bir tel sesi var; ses gerildikçe incelir. Raketin önerdiği aralığın kenarını geçince çift titreşim gelir.
+- Dolap'taki karakter artık durmadan dönmüyor: açılışta bir tur döner, sonra yüzü ve kıyafeti önde durur; bir süre dokunmazsan bir kez hafifçe sağa sola bakar. Telefon daha az ısınır.
+- Hızlı maç'ta saha seçince oyun takılmıyor; saha maça başlarken hazırlanıyor.
+- Profil'deki üç büyük sayının ortası artık en hızlı smaç rekorun (km/s). Toplam smaç sayısı İstatistikler'e indi.
+- Ayakkabı denerken oklar artık şu an giydiğin ayakkabıya göre.
+Nasıl denenir: Atölye > Raket'e gir, seçili olmayan bir raketin kartında düğme dışındaki bir yere dokun: kart mavi çerçeveli olmalı, üstte "Takımın · (raket adı) (deneniyor)" başlığı ve oklu çubuklar görünmeli, Teknik sayfa başlığında da "(deneniyor)" yazmalı. Aynı karta tekrar dokun: deneme kapanmalı. Tel sayfasında kaydırıcıyı yavaşça sürükle: her lbs'de tık ve ses gelmeli, aralık kenarında çift titreşim olmalı. Dolap'ı aç: karakter bir tur dönüp yüzü önde durmalı. Hızlı maç'ta sahaları hızlıca değiştir: takılma olmamalı, maçta seçtiğin saha gelmeli. En az bir smaç yaptığın bir maçtan sonra Profil'e bak: ortada "En hızlı smaç" ve km/s yazmalı.
+Maç sonunda yüzler, Şampiyon yolu tek ad (13 Kasım öğle):
+- Maç sonu kartında skorun iki yanında artık kendi karakterinin ve rakibinin yüzü var; Dolap'ta taktığın şapka ve saç burada da görünüyor.
+- Şampiyon yolu Usta zorlukta da aynı adla görünüyor; başlığın yanında küçük "Usta" etiketi var. Kart açıklaması tek cümleye indi.
+- Günün maçı kartında ödül tek satır: kazanınca alacağın ve kaybetsen de maç ödülü aynı satırda.
+- Top yere düştüğünde kalan iz artık her seferinde yeniden kurulmuyor; sayı anında küçük takılmalar azalıyor.
+Nasıl denenir: Bir maç bitir: skorun solunda kendi karakterinin yüzü, sağında rakibin yüzü renkli halkaların içinde görünmeli, kenarlar halkadan taşmamalı. Dolap'ta şapka değiştirip bir maç daha bitir: yeni şapka maç sonunda da görünmeli. Kariyeri bitirdiysen Antrenman'da zorluğu Usta yap: kartın adı yine "Şampiyon yolu" olmalı, yanında "Usta" yazmalı. Günün maçı kartında ödül tek satırda olmalı. Uzun maçta top her düştüğünde iz ve çatlaklar eskisi gibi görünmeli, oyun takılmamalı.
+Kupa rafı ve maç sonu kartı sadeleşti (13 Kasım sabah):
+- Profil'deki kupa rafı artık kazandığın kupaları ve yalnız sıradaki kupayı gösteriyor; kalanlar tek "+6" gibi bir kutuda. Dokununca Kariyer açılıyor.
+- Yeni bir kupa kazanınca Profil'i ilk açışında kupa rafa yukarıdan iniyor, kısa bir ses ve titreşimle. Hareketi azalt açıksa yalnız ses ve titreşim olur.
+- Maç sonu kartı artık sıradan sayıları övmüyor ("1 Smaç" gibi); yalnız gerçekten dikkat çeken bir değer varsa öne çıkıyor, yoksa en uzun ralli yazıyor.
+- Maç sırasında menü vitrinlerinin kullandığı bellek boşaltılıyor; eski telefonlarda oyun arka plana atılınca kapanma ihtimali azalıyor.
+Nasıl denenir: Yeni kurulumda Profil'e gir: rafta tek soluk kupa ve yanında "+7" olmalı; "+7"ye dokununca Kariyer açılmalı. Bir turun finalini kazan, sonra Profil'i aç: yeni kupa yukarıdan inmeli, ses ve titreşim gelmeli; Profil'i ikinci kez açınca inmemeli. Sıradan bir maç bitir: kartta "1 Mükemmel" gibi küçük sayılar olmamalı. Maçtan menüye dönünce Oyna sekmesindeki oyuncu afişi ve Dolap vitrini boş kalmadan hemen görünmeli.
 Dolap'ta gezinmek daha rahat (13 Kasım gece):
 - Kategori şeridinde seçili sayfa artık hep görünüyor ve ortada duruyor; Sırt ya da Hareketler seçiliyken sağ kenarda kesilmiyor.
 - Sayfanın başındaki "Sıradaki" satırı açık sayfadaki eşyayı gösteriyor (Sırt'ta bir sırt eşyası). Altında iki sayım var: bu sayfada kaçı senin, bütün Dolap'ta kaçı senin. Dokununca aynı sayfada denersin, başka sayfaya atlamazsın.

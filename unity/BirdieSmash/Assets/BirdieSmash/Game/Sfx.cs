@@ -456,6 +456,9 @@ namespace BirdieSmash.Game
         public void OgrTamam() { Arpej(660, new[] { 0, 4, 7 }, .14f, .05f, .06f); }
         public void Yukselt() { Arpej(523, new[] { 0, 4, 7, 12 }, .14f, .05f, .06f); }
         public void Tik(float f = 880) { Ton(f, .05f, "triangle", .04f); }
+        // 2026-11-13 inceleme #2: tel kaydırıcısında her tam lbs bir çınlama; perde gerginlikle bir oktav yükselir (18 lbs tok,
+        // 32 lbs tiz). Gerçek oyuncu gerginliği sesinden tanır. 15 ayrı perde: klipler Bir() önbelleğinde kalır.
+        public void TelTik(float lbs) { float k = Mathf.Clamp01((lbs - 18) / 14f); Ton(Mathf.Round(520 * Mathf.Pow(2, k)), .04f, "triangle", .028f); }
         // Smaç hazır (2026-11-11): iki kısa yükselen ton (E6 → A6), perfect tonundan tiz ve kısa; vuruş sesinin altında kalmasın diye hafif.
         public void SmacHazir() { Ton(1319, .06f, "sine", .05f); Ton(1760, .09f, "sine", .05f, .06f); }
         // Dans imzaları (2026-11-12 inceleme, fikir 12:05 #1): #88'in altı dansı yalnız görüntüydü; "her olay üç kanal" kuralının dışında kalan tek

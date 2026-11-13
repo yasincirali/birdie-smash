@@ -64,7 +64,7 @@ namespace BirdieSmash.Game
             vt.Sevinc(karAlt == KAR_SEVINC ? (vt.deneSmac != null ? SevOn(Kozmetik.SMAC, vt.deneSmac) : vt.deneSevinc ?? vt.deneMacSonu ?? Ayar.KOZ[Kozmetik.SEVINC]) : null);   // Sevinç: figür seçili hareketi döngüde yapar
             if (karAlt == KAR_RAKET) { bool giris = vt.hedefGec < 1; vt.Odak(Vitrin.TAM); vt.hedefGec = 1; vt.RaketParca(raketParca); if (giris && raketParca == null) vt.RaketKahraman(); return; }
             // Sırt: pelerin arkada; figür arkasını üç çeyrek döner (kendi kendine dönme ve ok düğmeleri yine çalışır)
-            if (karAlt == KAR_SIRT) { vt.a = 155; vt.v = 0; }
+            if (karAlt == KAR_SIRT) vt.AciKoy(155);
             vt.hedefGec = 0; vt.Odak(karAlt == KAR_SAC || karAlt == KAR_SAPKA || karAlt == KAR_TEN ? Vitrin.YUZ : karAlt == KAR_AYK ? Vitrin.AYAK : Vitrin.TAM);
         }
 
@@ -482,7 +482,11 @@ namespace BirdieSmash.Game
         void TabanBolum(VisualElement c)
         {
             var gr = Ayar.gear; string dn = root.vitrin.deneAyk, gos = dn ?? gr.ayakkabi; int sv = gr.Seviye();
-            var m = Gear.GEAR["ayakkabi"][gos]; var notr = Gear.AyakkabiCubuklar(Gear.GEAR["ayakkabi"][Gear.Varsayilan("ayakkabi")]);
+            var m = Gear.GEAR["ayakkabi"][gos];
+            // 2026-11-13 inceleme #7: denemede ▲/▼ giydiğine göre ("şu an giydiğimden iyi mi"); nötre göre ▲ gören oyuncu
+            // giydiğinden kötü ayakkabıyı iyileştirme sanabiliyordu. Deneme yokken eski kural (nötre göre); denenen = giyili ise ok yok.
+            int[] notr = dn == null ? Gear.AyakkabiCubuklar(Gear.GEAR["ayakkabi"][Gear.Varsayilan("ayakkabi")])
+                : dn == gr.ayakkabi ? null : Gear.AyakkabiCubuklar(Gear.GEAR["ayakkabi"][gr.ayakkabi]);
             var du0 = gr.Durum("ayakkabi", gos);
             var kart = Kart("model-kart"); kart.AddToClassList(dn != null && du0 != ModelDurum.Secili ? "denenen" : "secili"); c.Add(kart);
             var bas = Satir("arali"); bas.pickingMode = PickingMode.Ignore; kart.Add(bas); bas.Add(Yazi(L.T(m.ad), 17, "kalin"));

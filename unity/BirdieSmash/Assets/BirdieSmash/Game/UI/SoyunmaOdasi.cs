@@ -48,7 +48,7 @@ namespace BirdieSmash.Game
         Image vitrinIm; Label vitrinYazi, telYazi, telNot; VisualElement soyunmaGovde, soyunmaSegment; ScrollView soyunmaKaydir, kategoriKaydir;
         Dictionary<string, float> yukOnce; string yukK; bool telDegisti;
         Vector2 vBas; float vBasT, vSonX, vSonT; bool vBasili;
-        int soyunmaSeg; string yuvaAcik = "raket";
+        int soyunmaSeg; string yuvaAcik = "raket", deneRaket;
         // Canlı çubuklar (tel kaydırıcısı sürüklenirken yeniden kurmadan güncellenir): dolgu + değer yazısı.
         readonly List<VisualElement> canliDolgu = new List<VisualElement>(); readonly List<Label> canliDeger = new List<Label>();
         readonly List<VisualElement> canliGel = new List<VisualElement>(); readonly List<Label> canliArti = new List<Label>();
@@ -67,7 +67,7 @@ namespace BirdieSmash.Game
         // Yuva sayfası Atölye'nin işi: Dolap'tan (takılı kıyafet satırı) çağrılınca önce Atölye'ye geçilir.
         public void YuvaAc(string k)
         {
-            if (Gear.YuvaOf(k) == null) return; yuvaAcik = Gear.YuvaOf(k).k;
+            if (Gear.YuvaOf(k) == null) return; yuvaAcik = Gear.YuvaOf(k).k; deneRaket = null;
             if (gez.sekme != Sekme.Atolye) SekmeAc(Sekme.Atolye);
             var once = gez.sekme; gez.Ac(Gezinti.YUVA); Uygula(once, true);
         }
@@ -154,7 +154,7 @@ namespace BirdieSmash.Game
         void VitrinCevir(int yon)
         {
             var vt = root.vitrin;
-            if (vt.hedefGec >= 1) { vt.rv = 0; vt.bosT = 0; vt.ra = Mathf.Round(vt.ra / 10) * 10 + 20 * yon; } else { vt.v = 0; vt.a = Mathf.Round(vt.a / 15) * 15 + 15 * yon; }
+            if (vt.hedefGec >= 1) { vt.rv = 0; vt.bosT = 0; vt.ra = Mathf.Round(vt.ra / 10) * 10 + 20 * yon; } else vt.AciKoy(Mathf.Round(vt.a / 15) * 15 + 15 * yon);
             Tik();
         }
         void VitrinBas(PointerDownEvent e)
@@ -279,10 +279,10 @@ namespace BirdieSmash.Game
         // Teknik sayfa: raket yuvasının alt sayfasında. Her ölçü değer + ne demek + maçta ne yapar.
         // Kalın sargı sapı yarım ölçü kalınlaştırır; gerçek oyuncu bunu "G5 + sargı" diye söyler (fikir 22:10 #5b).
         static string SapYazi(Gear gr) { return gr.grip == "kalin" ? gr.sap + " + " + L.T("sargı") : gr.sap; }
-        void TeknikKur(VisualElement c)
+        void TeknikKur(VisualElement c, string dene = null)
         {
-            var gr = Ayar.gear; GearModel r; if (!Gear.GEAR["raket"].TryGetValue(gr.raket, out r) || r.u == null) return;
-            c.Add(Grup(L.T("Teknik sayfa") + " · " + L.T(r.ad)));
+            var gr = Ayar.gear; GearModel r; if (!Gear.GEAR["raket"].TryGetValue(dene ?? gr.raket, out r) || r.u == null) return;
+            c.Add(Grup(L.T("Teknik sayfa") + " · " + L.T(r.ad) + (dene != null ? " " + L.T("(deneniyor)") : "")));
             var k = Kart("teknik-kart"); c.Add(k);
             string kim = Gear.Kimlik(r, SapYazi(gr), r.saft != null ? L.T(r.saft) : null); if (kim != null) k.Add(Yazi(kim, 13, "kimlik-satir"));
             int dm = r.dengeMm ?? 290; string da = Gear.DengeAd(dm);
@@ -360,8 +360,20 @@ namespace BirdieSmash.Game
             var c = AltSayfaKur(L.T(Y.ad)); canliDolgu.Clear(); canliDeger.Clear();
             YuvaKur(c, Y, L_);
             if (Y.k == "tel") TelKur(c);
-            if (Y.k == "raket") TeknikKur(c);
-            c.Add(Grup(L.T("Takımın şimdi"))); var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true, null, Ayar.GelisimCubuk());
+            // 2026-11-13 inceleme #1: raket almadan önce "takımım nasıl değişir" görülmüyordu (kartta çubuk yok, 7 Kas kararı;
+            // "Takımın şimdi" ve Teknik sayfa yalnız seçili raket). Model kartının gövdesine dokunmak = dene: üstteki kart o
+            // raketle yeniden hesaplanır (Gear.Hesap, kayda yazılmaz), her çubukta ▲/▼ seçili rakete göre (ok + erişim etiketi
+            // "artı n"; renk tek başına değil), Teknik sayfa o raketi anlatır. Sayfadan çıkınca deneme silinir (ayakkabı kipi gibi).
+            var gr0 = Ayar.gear; string dr_ = Y.k == "raket" && deneRaket != null && deneRaket != gr0.raket && Gear.GEAR["raket"].ContainsKey(deneRaket) ? deneRaket : null;
+            if (Y.k == "raket") TeknikKur(c, dr_);
+            if (dr_ == null) { c.Add(Grup(L.T("Takımın şimdi"))); var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true, null, Ayar.GelisimCubuk()); }
+            else
+            {
+                string eski = gr0.raket; gr0.raket = dr_; GearStats dgs; try { dgs = gr0.Hesap(); } finally { gr0.raket = eski; }
+                c.Add(Grup(L.T("Takımın") + " · " + L.T(Gear.GEAR["raket"][dr_].ad) + " " + L.T("(deneniyor)")));
+                var kc = Kart("cubuk-kart"); kc.AddToClassList("denenen"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(dgs), Gear.Cubuklar(Ayar.GSE), false, null, Ayar.GelisimCubuk());
+                kc.Add(Yazi(L.T("Oklar seçili raketine göre. Karta yeniden dokununca deneme kapanır."), 12, "soluk"));
+            }
             c.Add(Grup(L.T("Modeller")));
             foreach (var m in Gear.GEAR[Y.m].Values) ModelKart(c, Y, m);
             if (gr.eko.esit) c.Add(Yazi(L.T("Eşit şartlar açık: serbest maçta sayılmaz, kariyerde sayılır"), 12, "soluk"));
@@ -371,6 +383,8 @@ namespace BirdieSmash.Game
         {
             var gr = Ayar.gear; var du = gr.Durum(Y.m, m.id); string id = m.id;
             var kart = Kart("model-kart"); if (du == ModelDurum.Secili) kart.AddToClassList("secili"); if (du == ModelDurum.Kilitli) kart.AddToClassList("kilitli"); c.Add(kart);
+            bool denenir = Y.m == "raket" && du != ModelDurum.Secili; if (denenir && deneRaket == id) kart.AddToClassList("denenen");
+            if (denenir) kart.RegisterCallback<ClickEvent>(e => { for (var t = e.target as VisualElement; t != null && t != kart; t = t.parent) if (t.ClassListContains("dugme")) return; RaketDene(id); });
             var bas = Satir("arali"); kart.Add(bas); bas.Add(Yazi(L.T(m.ad), 16, "kalin"));
             var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; bas.Add(dr); string durum;
             if (du == ModelDurum.Secili) { dr.Add(Ikon(Ikonlar.Tik, 14, TURUNCU)); durum = L.T("Seçili"); }
@@ -384,7 +398,7 @@ namespace BirdieSmash.Game
             // 2026-11-07 inceleme (fikir 06:03 #5): model kartında 5 çubuk yok. Kategori sayfasında 4–6 model × 5 çubuk 20–30 çubuk
             // ediyordu; arcade oyuncu farkı çubuktan değil m.n cümlesinden ("Güç +6 · drive +4 · tatlı nokta dar") okur, kart yarıya
             // iner, büyük yazıda kaydırma azalır. Sayısal 5 çubuk sayfanın üstündeki "Takımın şimdi" kartında; seçince o kart yenilenir.
-            Erisim.Etiket(kart, L.T(m.ad) + ", " + L.T(m.n) + ", " + durum, "metin", du == ModelDurum.Secili);
+            Erisim.Etiket(kart, L.T(m.ad) + ", " + L.T(m.n) + ", " + durum + (denenir ? ", " + L.T(deneRaket == id ? "deneniyor" : "dokun, takımında dene") : ""), "metin", du == ModelDurum.Secili);
             if (du == ModelDurum.Acik) kart.Add(Dugme(L.T("Seç"), () => ModelSec(Y, id), "model-dugme"));
             else if (du == ModelDurum.Alinir)
             {
@@ -394,9 +408,15 @@ namespace BirdieSmash.Game
             else if (du == ModelDurum.Kilitli) kart.Add(Pasif(L.T("Sv {0} gerekli", m.sv), L.T("Seviye atladıkça açılır")));
         }
 
+        void RaketDene(string id)
+        {
+            deneRaket = deneRaket == id ? null : id; Yerel.Hap("tick"); root.sfx.Tik();
+            if (gez.AcikAltSayfa != Gezinti.YUVA) return;
+            var eski = altSayfa != null ? altSayfa.Q<ScrollView>() : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; YuvaSayfaKur(); KaydirmaGeri(altSayfa, of);
+        }
         void ModelSec(Yuva Y, string id)
         {
-            var gr = Ayar.gear; if (!gr.Sec(Y.m, id)) return;
+            var gr = Ayar.gear; if (!gr.Sec(Y.m, id)) return; if (Y.m == "raket") deneRaket = null;
             Ayar.GearHesap(); Ayar.Kaydet(); root.vitrin.Yenile(); if (Y.m == "raket" || Y.m == "kordaj") { root.sfx.Deneme(); Yerel.Vurus("smash", "perfect", false); } else root.sfx.Tik();
             ustKirli = true; UstKur(); Degisti(); SoyunmaGovdeKur(true);
         }
@@ -461,7 +481,7 @@ namespace BirdieSmash.Game
             Erisim.Etiket(sl, L.T("Tel gerginliği"), "kaydirici", false, false, Mathf.RoundToInt(gr.tel) + " lbs");
             sl.RegisterValueChangedCallback(e =>
             {
-                float yeni = Mathf.Round(e.newValue); if (yeni == gr.tel) return; gr.tel = yeni; Ayar.GearHesap(); telDegisti = true; TelYaz();
+                float yeni = Mathf.Round(e.newValue); if (yeni == gr.tel) return; TelTik(gr.tel, yeni); gr.tel = yeni; Ayar.GearHesap(); telDegisti = true; TelYaz();
             });
             // bırakınca kaydet + deneme smacı (HTML: deneme smacı titreşimiyle); tutamak işaretçiyi yakaladığı için TrickleDown
             sl.RegisterCallback<PointerUpEvent>(e => TelBitti(), TrickleDown.TrickleDown);
@@ -490,7 +510,20 @@ namespace BirdieSmash.Game
         void TelAdim(int d)
         {
             var gr = Ayar.gear; float yeni = Mathf.Clamp(gr.tel + d, 18, 32); if (yeni == gr.tel) return;
-            gr.tel = yeni; Ayar.GearHesap(); telDegisti = true; var sl = TelKaydirici(); if (sl != null) sl.SetValueWithoutNotify(yeni); TelYaz(); TelBitti();
+            TelTik(gr.tel, yeni, false); gr.tel = yeni; Ayar.GearHesap(); telDegisti = true; var sl = TelKaydirici(); if (sl != null) sl.SetValueWithoutNotify(yeni); TelYaz(); TelBitti();
+        }
+        // 2026-11-13 inceleme #2: kaydırıcı sürüklenirken dilsizdi (14 basamak elde hissedilmiyordu; ses ve titreşim yalnız
+        // bırakınca). Her tam lbs: iOS seçici gibi tek tık + kısa tel çınlaması (en çok 25 ms'de bir, hızlı sürüklemede ≤40/sn).
+        // Raketin önerdiği aralığın kenarını geçerken bir kez "poor" deseni: sınır elde hissedilir. Titreşim Yerel.Cal kapısından
+        // (Ayar.titresim). −/+ düğmesi bırakınca deneme smacını zaten çaldığı için orada yalnız sınır titreşimi.
+        float telTikT = -1;
+        void TelTik(float eski, float yeni, bool tik = true)
+        {
+            int tmin, tmax; Gear.TelAralik(Ayar.gear.raket, out tmin, out tmax);
+            bool sinir = (eski <= tmax) != (yeni <= tmax) || (eski >= tmin) != (yeni >= tmin);
+            if (sinir) { Yerel.Hap("poor"); if (tik) root.sfx.TelTik(yeni); telTikT = Time.unscaledTime; return; }
+            if (!tik || Time.unscaledTime - telTikT < .025f) return; telTikT = Time.unscaledTime;
+            Yerel.Hap("tick"); root.sfx.TelTik(yeni);
         }
         void TelBitti()
         {

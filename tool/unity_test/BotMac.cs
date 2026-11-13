@@ -467,6 +467,9 @@ static class BotMac
         M.maxRally = 12; k = Ozet.Kartlar(M); if (k[0].ad != "En uzun ralli" || k[0].deger != 12) Fail("8+ ralli ilk kart olmalı");
         var B = new Match(2, new MatchOptions { easy = true, target = 5 }); B.maxRally = 3; k = Ozet.Kartlar(B);
         if (k.Count != 1 || k[0].ad != "En uzun ralli") Fail("boş maçta tek kart en uzun ralli olmalı");
+        // 2026-11-13: eşik altı sayılar övülmez ("1 Mükemmel · 1 Smaç" yerine tek ralli kartı)
+        B.perfects = 1; B.smashes = 2; B.deceives = 1; B.splits = 5; k = Ozet.Kartlar(B); if (k.Count != 1 || k[0].ad != "En uzun ralli") Fail("eşik altı istatistik öne çıkmamalı: " + string.Join(",", k.Select(x => x.ad)));
+        B.perfects = 0; B.smashes = 0; B.deceives = 0; B.splits = 0;
         if (Ozet.Ipucu(B, false, out a) != "Dışarı gidecek topu bırak: sayı senin olur.") Fail("yenilgi ipucu bırakma olmalı");
         string w = Ozet.Ipucu(B, true, out a); if (w != null) Fail("galibiyette ipucu olmamalı (yıldız satırının tekrarı): " + w);
         if (!Ozet.PuanIste(true, true, 1, 0) || !Ozet.PuanIste(true, false, 3, 2) || Ozet.PuanIste(true, false, 4, 0) || Ozet.PuanIste(false, true, 3, 0) || Ozet.PuanIste(true, true, 3, 3))

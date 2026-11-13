@@ -156,6 +156,11 @@ namespace BirdieSmash.Game
             vitrin.Yenile();
         }
         public void SahaDegisti() { if (ekran != Ekran.Oyun) { match.saha = Ayar.saha; Kur(match); } }
+        // 2026-11-13 inceleme #4: Hızlı maç saha çipi her dokunuşta bütün kortu (tribün, ışık, LED) dokunuşla aynı karede yıkıp
+        // kuruyordu; menü açıkken ana kamera sahneyi çizmiyor (UiKok cullingMask 0), kurulan kort görünmüyordu. Çip artık yalnız
+        // seçimi yazar; kort Oyna → StartMatch → MacKur → Kur(match) içinde, maç perdesinin arkasında kurulur. Ekran/mağaza
+        // turları sahneyi hemen görmek istediği için SahaDegisti (anında kurulum) onlarda kalır.
+        public void SahaSecildi() { if (ekran != Ekran.Oyun) match.saha = Ayar.saha; }
 
         // Perde (HTML start(): perde({hazir, ortunce: maciKur})): disk kapanınca maç kurulur, sonra açılır.
         public void Oyna() { hud.Perde(() => { if (!Ayar.antrenman) StartMatch(true, true, false); else StartMatch(false, false, false); }); }
@@ -200,7 +205,7 @@ namespace BirdieSmash.Game
             ani.Sifirla(); AniDur(); aniIzlendi = false;   // Maçın anı her maç kendi rallilerinden (Günün maçı, Usta yolu, görev de buradan geçer)
             match = new Match(tohum, o); Basarim.MacBasla();
             Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; System.Array.Clear(iskaN, 0, iskaN.Length); yerN = 0; yerTop = null; yardimN = 0; yardimTop = null; hazirN = 0; enerjiDolu = match.energy >= 1;
-            fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; seriBen = 0; seriBasFark = 0; seriGeriDondu = false; ledSeriT = 0; pencere = false; sfx.SuAlti(false); ReklamKartKapat(); ReklamSdk.OdulluHazirla(); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat();
+            fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; seriBen = 0; seriBasFark = 0; seriGeriDondu = false; ledSeriT = 0; pencere = false; sfx.SuAlti(false); ReklamKartKapat(); ReklamSdk.OdulluHazirla(); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat(); vitrin.Bosalt(); afis.Bosalt();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
             GirisKur(o);

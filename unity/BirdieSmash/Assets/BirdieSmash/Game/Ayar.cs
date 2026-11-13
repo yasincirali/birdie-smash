@@ -52,9 +52,10 @@ namespace BirdieSmash.Game
         public static readonly string[] ZORLUK_AD = { "Kolay", "Orta", "Zor", "Usta" };
         public static readonly float[] ZORLUK_RAKIP = { .85f, 1f, 1f, 1.15f };   // rakip hız ×k, hata ÷k (UstaGucu ile aynı ölçek)
         // Şampiyon yolu (2026-11-10, fikir 8 Kas 00:09 #2, yasin "üçünü de al"): kariyer sonrası merdiven seçili zorlukta oynanır;
-        // Usta'da adı "Usta yolu" kalır (aynı merdiven, tek sayaç, kayıt aynı). Ad buradan okunur ki kart, sonuç ve profil aynı desin.
+        // Ad buradan okunur ki kart, sonuç ve profil aynı desin. 2026-11-13 (inceleme 12:05 #5): Usta'da ad değişmiyor
+        // ("Usta yolu" iki ayrı mod gibi görünüyordu, kart cümleleri ad değişimini anlatmaya harcanıyordu); zorluk kartta "Usta" etiketiyle.
         public static bool UstaZor => zorluk >= 3;
-        public static string YolAd => UstaZor ? "Usta yolu" : "Şampiyon yolu";
+        public static string YolAd => "Şampiyon yolu";
         public static string ZorlukAd => ZORLUK_AD[Mathf.Clamp(zorluk, 0, 3)];
         public static float RakipK => ZORLUK_RAKIP[Mathf.Clamp(zorluk, 0, 3)];
         // Lastik bant (Match.lastik notu, 2026-11-11): geride kalınca rakibin gevşemesi yalnız alt kademelerde tam.
