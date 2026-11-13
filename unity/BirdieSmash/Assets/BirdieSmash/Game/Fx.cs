@@ -13,7 +13,7 @@ namespace BirdieSmash.Game
 {
     public class Fx : MonoBehaviour
     {
-        class Mark { public Vector3 p; public float t; public bool big; public int n; public float[] cr; public Transform leke; public Renderer lekeR; public LineRenderer halka; public LineRenderer[] catlak; }
+        class Mark { public Vector3 p; public float t; public bool big; public int n; public float hiz = 1; public float[] cr; public Transform leke; public Renderer lekeR; public LineRenderer halka; public LineRenderer[] catlak; }
         class Wave { public Vector3 p; public float t, max; public Color c; public LineRenderer l; }
         readonly List<Mark> marks = new List<Mark>(); readonly List<Wave> waves = new List<Wave>();
         // Dalga havuzu (İnceleme turu 2026-11-10 17:08 #4): her vuruşta yeni LineRenderer yaratılıp ~.45 sn sonra siliniyordu
@@ -128,7 +128,7 @@ namespace BirdieSmash.Game
                 m.halka = Kit.Line("iz_halka", transform, beyazM, true, true); m.halka.widthMultiplier = .04f;
                 for (int i = 0; i < 5; i++) { var l = Kit.Line("catlak", transform, catlakM, false, true); l.widthMultiplier = .03f; l.positionCount = 2; m.catlak[i] = l; }
             }
-            m.p = Kit.W(x, y, .007f); m.big = big; m.t = 0; m.n = big ? 5 : 0;
+            m.p = Kit.W(x, y, .007f); m.big = big; m.t = 0; m.hiz = 1; m.n = big ? 5 : 0;
             m.leke.localPosition = m.p; m.leke.localScale = new Vector3((big ? 9 : 5) / 28f * 2.6f, (big ? 9 : 5) / 28f * 2.6f, 1);
             m.halka.enabled = true;
             for (int i = 0; i < 5; i++)
@@ -138,6 +138,10 @@ namespace BirdieSmash.Game
             }
             marks.Add(m);
         }
+        // 2026-11-13 (yasin: "sayı olduktan sonra topun gölgesi servis pozisyonundayken bir süre daha kalıyor"): düşüş lekesi koyu yeşil bir
+        // disk ve 3 sn sönüyordu; sayı arası 1,3 sn (kısa .7) olduğu için oyuncular servis yerine geçtikten sonra 1,7–2,3 sn daha
+        // yerde "top gölgesi" gibi duruyordu. Servis kurulunca kalan izler .25 sn'de söner: saat hızlanır, saydamlık kesintisiz iner.
+        public void IzSondur() { foreach (var m in marks) m.hiz = Mathf.Max(m.hiz, (3 - m.t) / .25f); }
         void IzBirak(Mark m) { m.leke.gameObject.SetActive(false); m.halka.enabled = false; for (int i = 0; i < m.catlak.Length; i++) m.catlak[i].enabled = false; izHavuz.Push(m); }
         // Gölgelendirici ısıtma (2026-11-07, Ar-Ge 02:06 #1): üç parçacık sistemi oyunda ilk kez ilk sert vuruşta
         // çiziliyordu; Metal yeni gölgelendirici varyantını ilk çizimde derlediği için takılma tam ilk smaçta geliyordu.
@@ -159,7 +163,7 @@ namespace BirdieSmash.Game
         {
             for (int i = marks.Count - 1; i >= 0; i--)
             {
-                var m = marks[i]; m.t += dt; float a = Mathf.Max(0, 1 - m.t / 3);
+                var m = marks[i]; m.t += dt * m.hiz; float a = Mathf.Max(0, 1 - m.t / 3);
                 var mm = m.lekeR;   // 2026-11-11 (fikir 23:05 #8): her karede GetComponent yerine kurulumda bir kez lekeMpb.SetColor(RENK, new Color(10 / 255f, 30 / 255f, 26 / 255f, .45f * a * 1.4f)); mm.SetPropertyBlock(lekeMpb);
                 m.halka.enabled = m.t < .5f; if (m.halka.enabled) { Kit.Ellipse(m.halka, m.p, (8 + m.t * 80) / 28f, (8 + m.t * 80) / 28f); m.halka.startColor = m.halka.endColor = new Color(1, 1, 1, (.5f - m.t) * 1.6f); }
                 for (int k = 0; k < m.n; k++) m.catlak[k].startColor = m.catlak[k].endColor = new Color(.847f, 1, .353f, .6f * a);

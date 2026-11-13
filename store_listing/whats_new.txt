@@ -1,4 +1,11 @@
 === UNITY ===
+Tatlıcı seti, simgeler ortada, sayı arası gölge (13 Kasım gece):
+- Dolap'ta yeni "Tatlıcı" koleksiyonu: dondurma kafa, kek şapka, krem şanti bıyık, dev lolipop, donut kalkanı ve makaron kuşağı. Yalnız görünüş, oyunu etkilemez.
+- Sayı bittikten sonra topun yere düştüğü yerdeki koyu leke, oyuncular servis yerine geçince hemen söner; servis anında yerde "top gölgesi" kalmaz.
+- Düğmelerin içindeki simgeler ortalandı: Dolap'taki ayakkabı düğmesi, kilitler, alt çubuktaki Dolap ve Profil simgeleri.
+- Profil'deki ve Kariyer'deki yüz resimleri halkanın ortasında; yüz artık bir yana yaslanıp kesilmiyor.
+- Büyük yazı boyutunda Dolap'ın üstündeki "Görünüm" ve "Raket" düğmelerinin yazısı kesilmiyor.
+Nasıl denenir: Bir maç oyna, sayı bitince topun düştüğü yere bak: oyuncular servis yerine geçince koyu leke hemen kaybolmalı. Dolap'ta koleksiyon düğmelerinde "Tatlıcı"yı seç: altı yeni eşya görünmeli, karakterin üstünde gövdeye girmeden durmalı. Dolap'ta karakterin altındaki üç küçük düğmeye bak: yüz, ayakkabı ve raket simgeleri düğmelerin ortasında olmalı. Profil'e ve Kariyer'e gir: yüzler halkanın ortasında olmalı. Ayarlar'da yazı boyutunu Büyük yap, Dolap'a gir: "Görünüm" ve "Raket" yazıları tam görünmeli.
 Görsel düzeltmeler: tek gölge, binmeyen yazılar, dalgalanan file, canlı Oyna sayfası (13 Kasım akşam):
 - Topun tek gölgesi var. Eskiden topun altında ikinci, kaymış bir gölge daha çıkıyordu; yere düşen topun gölgesi de küçüldü, top gidince orada büyük bir leke kalmıyor.
 - "SMAÇ!" ile sayı yazısı artık hiç üst üste binmiyor: aynı anda çıkan yazılar birbirinin altına ya da üstüne yerleşiyor.

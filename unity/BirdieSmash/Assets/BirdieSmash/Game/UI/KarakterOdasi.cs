@@ -586,7 +586,7 @@ namespace BirdieSmash.Game
         {
             switch (n) { case "siradan": return L.T("Sıradan"); case "nadir": return L.T("Nadir"); case "destansi": return L.T("Destansı"); case "mistik": return "◆ " + L.T("Mistik"); default: return null; }
         }
-        static readonly string[] SET_ID = { "yilbasi", "cadilar", "masal", "gelenek" }, SET_AD = { "Yılbaşı", "Cadılar Bayramı", "Masallar", "Geleneksel" };
+        static readonly string[] SET_ID = { "yilbasi", "cadilar", "masal", "gelenek", "tatli" }, SET_AD = { "Yılbaşı", "Cadılar Bayramı", "Masallar", "Geleneksel", "Tatlıcı" };   // 2026-11-13 beşinci set: Tatlıcı (yiyecek)
         readonly Dictionary<string, string> kozSet = new Dictionary<string, string>();
         void KozIzgaraIc(VisualElement c, string kat, string baslik, string dn, bool resim)
         {

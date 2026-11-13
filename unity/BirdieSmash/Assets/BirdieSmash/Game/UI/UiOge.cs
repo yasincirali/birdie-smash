@@ -233,7 +233,7 @@ namespace BirdieSmash.Game
                 bool govde = Mathf.Abs(x) < .58f && y > -.82f && y < .08f && !((x * x + (y + .34f) * (y + .34f)) < .02f);
                 float r = Mathf.Sqrt(x * x + (y - .1f) * (y - .1f)); bool kulp = y > .05f && Mathf.Abs(r - .36f) < .11f;
                 return govde || kulp;
-            });
+            }, 0, .12f);
             Oyna = Ciz((x, y) => { float x0 = -.42f, x1 = .66f; if (x < x0 || x > x1) return false; float h = .62f * (x1 - x) / (x1 - x0); return Mathf.Abs(y) < h; });
             Kupa = Ciz((x, y) =>
             {
@@ -254,12 +254,12 @@ namespace BirdieSmash.Game
             {
                 bool govde = Mathf.Abs(x) < .42f && y > -.78f && y < .55f; bool kol = y < .55f && y > .1f && Mathf.Abs(x) < .82f && (y - .1f) > (Mathf.Abs(x) - .42f) * -.2f && Mathf.Abs(x) - .42f < (y - .05f) * .9f;
                 bool yaka = x * x + (y - .62f) * (y - .62f) < .2f * .2f; return (govde || kol) && !yaka;
-            });
+            }, 0, .11f);
             Kisi = Ciz((x, y) =>
             {
                 bool bas = (x * x + (y - .42f) * (y - .42f)) < .29f * .29f; float sx = x / .72f, sy = (y + .82f) / .72f;
                 bool omuz = sx * sx + sy * sy < 1 && y > -.86f && y < .02f; return bas || omuz;
-            });
+            }, 0, .08f);
             // Kariyer yıldızları (2026-10-26): alınan dolu, alınmayan yalnız çerçeve (renk körlüğü: biçim farkı, renk değil).
             YildizDolu = Ciz((x, y) => Yildiz(x, y, .92f)); YildizBos = Ciz((x, y) => Yildiz(x, y, .92f) && !Yildiz(x, y, .58f));
             // Stat çubuğunun artı/eksi işareti (2026-10-26, ekipman v2 ▲ ▼): glif değil çizim (yazı tipinde olmayabilir); yönü
@@ -280,7 +280,7 @@ namespace BirdieSmash.Game
                 float ex = (x - .12f) / .7f, ey = (y + .42f) / .42f; bool burun = y >= -.42f && ex * ex + ey * ey < 1;
                 bool bag = Cizgi(x, y, -.1f, .08f, .18f, -.06f, .05f);
                 return (taban || topuk || burun) && !bag;
-            });
+            }, .06f, .14f);
             Tutus = Ciz((x, y) =>
             {
                 bool sap = Mathf.Abs(x) < .24f && y > -.86f && y < .5f && Mathf.Repeat(y - x * .9f + 2, .3f) > .07f;
@@ -463,6 +463,11 @@ namespace BirdieSmash.Game
             float vx = bx - ax, vy = by - ay, wx = x - ax, wy = y - ay; float t = Mathf.Clamp01((wx * vx + wy * vy) / (vx * vx + vy * vy));
             float dx = wx - vx * t, dy = wy - vy * t; return dx * dx + dy * dy < yari * yari;
         }
+        // Kaydırılmış çizim (2026-11-13, yasin: "menülerdeki buton içerisindeki resource'ların kayıp kaymadığını görüntüle"): ayakkabı,
+        // kilit, tişört ve kişi simgeleri kendi çerçevelerinde aşağıda (ayakkabı sol altta) çiziliyordu; 44 pt'lik kare düğmede ve
+        // kariyer basamağı halkasında simge ortadan kaymış görünüyordu. Biçim aynı kalır, sınır kutusu ortaya taşınır (dx, dy birim
+        // çerçevede; ölçü: tool/unity_test yerine 200×200 örnekle bbox merkezi).
+        static Texture2D Ciz(Func<float, float, bool> ic, float dx, float dy) { return Ciz((x, y) => ic(x - dx, y - dy)); }
         static Texture2D Ciz(Func<float, float, bool> ic)
         {
             const int n = 96; var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };

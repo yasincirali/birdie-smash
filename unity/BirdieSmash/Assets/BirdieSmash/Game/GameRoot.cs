@@ -957,7 +957,7 @@ namespace BirdieSmash.Game
                     if (geriT > 0 && geriT < GERI - .2f && YeniDokunus()) { geriT = 0; sfx.Tik(990); }
                     if (geriT <= 0) { geriT = 0; input.Reset(); }
                 }
-                else { ZaferAtla(); ReadInput(); match.Update(dt); }
+                else { ZaferAtla(); ReadInput(); bool araIdi = match.between; match.Update(dt); if (araIdi && !match.between) fx.IzSondur(); }   // servis kuruldu: düşüş izi servis yerinde asılı kalmasın (2026-11-13)
                 bool w = match.HitWindow(); if (w) pencereTop = match.s; if (w != pencere) { pencere = w; if (!Ayar.reduce) sfx.SuAlti(w); if (w) { sfx.Tik(); Yerel.Hap("tick"); } }   // vuruş penceresi: su altı
                 Gicirti(dt);
                 foreach (var e in match.events) OnEvent(e); match.events.Clear();
