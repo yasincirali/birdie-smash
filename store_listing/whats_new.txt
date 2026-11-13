@@ -1,4 +1,12 @@
 === UNITY ===
+Raketi almadan dene, smaç rekorun Profil'de (13 Kasım akşam):
+- Atölye > Raket'te bir model kartının boş yerine dokununca o raket takımında denenir: üstteki çubuklar o raketle yeniden hesaplanır, her çubukta seçili raketine göre yukarı ya da aşağı ok çıkar; Teknik sayfa da o raketi anlatır. Karta yeniden dokununca deneme kapanır, hiçbir şey satın alınmaz.
+- Tel gerginliği kaydırıcısını sürüklerken her lbs'de ince bir tık ve kısa bir tel sesi var; ses gerildikçe incelir. Raketin önerdiği aralığın kenarını geçince çift titreşim gelir.
+- Dolap'taki karakter artık durmadan dönmüyor: açılışta bir tur döner, sonra yüzü ve kıyafeti önde durur; bir süre dokunmazsan bir kez hafifçe sağa sola bakar. Telefon daha az ısınır.
+- Hızlı maç'ta saha seçince oyun takılmıyor; saha maça başlarken hazırlanıyor.
+- Profil'deki üç büyük sayının ortası artık en hızlı smaç rekorun (km/s). Toplam smaç sayısı İstatistikler'e indi.
+- Ayakkabı denerken oklar artık şu an giydiğin ayakkabıya göre.
+Nasıl denenir: Atölye > Raket'e gir, seçili olmayan bir raketin kartında düğme dışındaki bir yere dokun: kart mavi çerçeveli olmalı, üstte "Takımın · (raket adı) (deneniyor)" başlığı ve oklu çubuklar görünmeli, Teknik sayfa başlığında da "(deneniyor)" yazmalı. Aynı karta tekrar dokun: deneme kapanmalı. Tel sayfasında kaydırıcıyı yavaşça sürükle: her lbs'de tık ve ses gelmeli, aralık kenarında çift titreşim olmalı. Dolap'ı aç: karakter bir tur dönüp yüzü önde durmalı. Hızlı maç'ta sahaları hızlıca değiştir: takılma olmamalı, maçta seçtiğin saha gelmeli. En az bir smaç yaptığın bir maçtan sonra Profil'e bak: ortada "En hızlı smaç" ve km/s yazmalı.
 Maç sonunda yüzler, Şampiyon yolu tek ad (13 Kasım öğle):
 - Maç sonu kartında skorun iki yanında artık kendi karakterinin ve rakibinin yüzü var; Dolap'ta taktığın şapka ve saç burada da görünüyor.
 - Şampiyon yolu Usta zorlukta da aynı adla görünüyor; başlığın yanında küçük "Usta" etiketi var. Kart açıklaması tek cümleye indi.

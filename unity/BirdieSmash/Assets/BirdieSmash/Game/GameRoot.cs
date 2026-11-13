@@ -156,6 +156,11 @@ namespace BirdieSmash.Game
             vitrin.Yenile();
         }
         public void SahaDegisti() { if (ekran != Ekran.Oyun) { match.saha = Ayar.saha; Kur(match); } }
+        // 2026-11-13 inceleme #4: Hızlı maç saha çipi her dokunuşta bütün kortu (tribün, ışık, LED) dokunuşla aynı karede yıkıp
+        // kuruyordu; menü açıkken ana kamera sahneyi çizmiyor (UiKok cullingMask 0), kurulan kort görünmüyordu. Çip artık yalnız
+        // seçimi yazar; kort Oyna → StartMatch → MacKur → Kur(match) içinde, maç perdesinin arkasında kurulur. Ekran/mağaza
+        // turları sahneyi hemen görmek istediği için SahaDegisti (anında kurulum) onlarda kalır.
+        public void SahaSecildi() { if (ekran != Ekran.Oyun) match.saha = Ayar.saha; }
 
         // Perde (HTML start(): perde({hazir, ortunce: maciKur})): disk kapanınca maç kurulur, sonra açılır.
         public void Oyna() { hud.Perde(() => { if (!Ayar.antrenman) StartMatch(true, true, false); else StartMatch(false, false, false); }); }

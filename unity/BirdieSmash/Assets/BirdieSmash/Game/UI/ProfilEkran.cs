@@ -63,7 +63,13 @@ namespace BirdieSmash.Game
             // üç büyük sayı
             var uc = Satir("uc-sayi"); if (K >= 1.35f) uc.AddToClassList("uc-sayi--dikey"); kart.Add(uc);
             System.Action<string, string> Buyuk_ = (deger, et) => { var b = new VisualElement(); b.AddToClassList("uc-sayi-oge"); b.Add(Yazi(deger, 24, "rakam")); b.Add(Yazi(et, 12, "soluk")); Erisim.Etiket(b, et + " " + deger, "metin"); uc.Add(b); };
-            Buyuk_(Ayar.bestRally.ToString(), L.T("Rekor ralli")); Buyuk_(p.Smac.ToString(), L.T("Smaç")); Buyuk_(Ayar.wins.ToString(), L.T("Galibiyet"));
+            // 2026-11-13 inceleme #5: ortadaki sayı en hızlı smaç rekoru (tuytop_smac_rekor; maç sonunda yazılıyordu ama yalnız o maçın
+            // kartında anılıyordu). Badmintonun herkesin bildiği tek rakamı smaç hızı; raket/gelişim seçiminin somut sonucu burada
+            // görünür. Rekor yoksa eski toplam smaç sayısı; toplam ızgaraya iner. Üç sayı kalır.
+            int smacRekor = PlayerPrefs.GetInt("tuytop_smac_rekor", 0);
+            Buyuk_(Ayar.bestRally.ToString(), L.T("Rekor ralli"));
+            if (smacRekor > 0) Buyuk_(L.T("{0} km/s", smacRekor), L.T("En hızlı smaç")); else Buyuk_(p.Smac.ToString(), L.T("Smaç"));
+            Buyuk_(Ayar.wins.ToString(), L.T("Galibiyet"));
             // kupa rafı: verisi olan her turun finali
             // 2026-11-13 inceleme (fikir 07:05 #6): ilk gün sekiz soluk siluet uzak bir duvardı. Raf kazanılanlar + yalnız sıradaki
             // tur (soluk) + kalanlar tek "+n" hücresi; dokununca Kariyer (sıradaki tur seçili). Başlıktaki n/8 tüm turları sayar.
@@ -160,8 +166,9 @@ namespace BirdieSmash.Game
 
             c.Add(Grup(L.T("İstatistikler")));
             var iz = Satir("izgara"); c.Add(iz);
-            // 2026-11-07 inceleme: Rekor ralli, Galibiyet, Smaç üstteki üç büyük sayıda; ızgarada tekrar edilmez (büyük yazıda üç satır kısa).
+            // 2026-11-07 inceleme: Rekor ralli, Galibiyet, Smaç üstteki üç büyük sayıda (smaç rekoru varsa Smaç ızgarada, 2026-11-13); ızgarada tekrar edilmez (büyük yazıda üç satır kısa).
             Deger(iz, L.T("Maç"), p.Mac.ToString());
+            if (smacRekor > 0) Deger(iz, L.T("Smaç"), p.Smac.ToString());   // 2026-11-13: üstte smaç hızı varken toplam buraya iner
             Deger(iz, L.T("Görev"), Ayar.gorev.ToString());
             Deger(iz, L.T("Kariyer yıldızı"), Ayar.ilerleme.ToplamYildiz + "/" + TurSayisiVeri() * 18);
             // Tur başına yıldızlar ızgaradan kalktı (2026-11-08 inceleme, fikir 07:05 #2): "Tur mühürleri" kartı aynı bilgiyi

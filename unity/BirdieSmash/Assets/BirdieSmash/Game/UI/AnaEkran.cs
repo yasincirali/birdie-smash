@@ -407,7 +407,7 @@ namespace BirdieSmash.Game
             for (int i = 0; i < 4; i++)
             {
                 string id = CourtView.SIRA[i]; var sh = CourtView.SAHA[id];
-                var d = Cip(L.T(SAHA_KISA[i]), Ayar.saha == id, () => { Ayar.saha = id; Ayar.Kaydet(); root.SahaDegisti(); Degisti(); });
+                var d = Cip(L.T(SAHA_KISA[i]), Ayar.saha == id, () => { Ayar.saha = id; Ayar.Kaydet(); root.SahaSecildi(); Degisti(); });
                 d.style.paddingLeft = d.style.paddingRight = 4f; d.style.minHeight = 44f;
                 Erisim.Etiket(d, L.T(sh.ad), "dugme", Ayar.saha == id, false);
                 var ic = d.Q(null, "cip-ic"); var alt = new VisualElement(); alt.style.flexDirection = FlexDirection.Row; alt.style.alignItems = Align.Center; alt.pickingMode = PickingMode.Ignore;

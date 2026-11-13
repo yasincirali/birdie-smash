@@ -82,7 +82,7 @@ namespace BirdieSmash.Game
             return new RenderTexture(w, h, 16) { name = "vitrin", antiAliasing = Kalite.Basamak == 2 ? 4 : Kalite.Basamak == 1 ? 2 : 1, memorylessMode = RenderTextureMemoryless.MSAA | RenderTextureMemoryless.Depth };
         }
 
-        public void Ac() { gameObject.SetActive(true); kam.enabled = true; durgun = 0; Yenile(); }
+        public void Ac() { gameObject.SetActive(true); kam.enabled = true; durgun = 0; acT = Ayar.reduce ? 1 : 0; if (!Ayar.reduce) a = KAHRAMAN_ACI - 360; figBos = 0; salYapildi = false; Yenile(); }
         // Sevinç önizlemesi (2026-11-01): id verilince figür o hareketi döngüde yapar; null = boşta. Sevinç sayfasından çıkınca silinir.
         public string sevinc; float sevincT;
         public static float TestSmacT = -1;   // ekran turu: smaç hareketi önizlemesinin saati sabit (kare hızı CI'da düşük)
@@ -104,6 +104,19 @@ namespace BirdieSmash.Game
             o = Mathf.Clamp(o, TAM, TUTUS); if (o != TAM) hedefGec = 0;
             if (o == TUTUS && odak != TUTUS) { a = TUTUS_ACI; v = 0; }
             odak = o; poz = o == TUTUS ? klip : null;
+        }
+        const float KAHRAMAN_ACI = -20, ACILIS_SURE = 3f, BAKIN_BEKLE = 6f, BAKIN_GENLIK = 20f, BAKIN_SURE = 4f;   // tepe hız ≈ 180°/sn açılış, ≈31°/sn salınım
+        float acT = 1, figBos, salMerkezF; bool salYapildi;
+        // Ok düğmesi / Sırt sekmesi açıyı elle koyar: açılış turu biter, o açı kalır (salınım yine o açının çevresinde).
+        public void AciKoy(float x) { a = x; v = 0; acT = 1; figBos = 0; salYapildi = false; }
+        void FigurBos(float dt)
+        {
+            if (acT < 1) { acT = Mathf.Min(1, acT + dt / ACILIS_SURE); a = KAHRAMAN_ACI - 360 * (1 - Mathf.SmoothStep(0, 1, acT)); if (acT >= 1) a = KAHRAMAN_ACI; return; }
+            if (salYapildi) return;
+            if (figBos <= BAKIN_BEKLE) salMerkezF = a; figBos += dt; if (figBos <= BAKIN_BEKLE) return;
+            float t = (figBos - BAKIN_BEKLE) / BAKIN_SURE;
+            if (t >= 1) { a = salMerkezF; salYapildi = true; return; }
+            a = salMerkezF + BAKIN_GENLIK * Mathf.Sin(t * 2 * Mathf.PI);
         }
         const float TUTUS_ACI = -35, SEVINC_ACI = -20;   // sağ el (raket) kameraya dönük, gövde 3/4
         // Ekipman ya da raket görünümü değişince figürü yeniden boya (anahtar: görünümün özeti).
@@ -395,17 +408,29 @@ namespace BirdieSmash.Game
             if (!var_) return false; var p = kam.WorldToViewportPoint(b.center); if (p.z < 0) return false; vp = new Vector2(p.x, p.y); return true;
         }
 
+        // 2026-11-13 inceleme #6: her dokunuşta yeni sözlük kurulmasın.
+        static readonly Dictionary<string, int> PARLA_KANAL = new Dictionary<string, int> { { "raket", 1 }, { "tel", 1 }, { "grip", 1 }, { "bileklik", 3 }, { "bant", 2 }, { "forma", 0 } };
         public void Parlat(string yuva)
         {
-            if (Ayar.reduce) return; int kn; var map = new Dictionary<string, int> { { "raket", 1 }, { "tel", 1 }, { "grip", 1 }, { "bileklik", 3 }, { "bant", 2 }, { "forma", 0 } };
-            if (!map.TryGetValue(yuva, out kn)) return; parlaK = kn; parlaT = 0; parlaMat = null;
+            if (Ayar.reduce) return; int kn;
+            if (!PARLA_KANAL.TryGetValue(yuva, out kn)) return; parlaK = kn; parlaT = 0; parlaMat = null;
         }
 
         // Raket görünümünde raket yüzü en açık açı; geçişte kamera figürden rakete kayar.
         void Update()
         {
             if (fig == null) return; float dt = Mathf.Min(.05f, Time.unscaledDeltaTime); bool rm = Ayar.reduce;
-            if (!suruk) { if (Mathf.Abs(v) > 2) v *= Mathf.Pow(.08f, dt); else v = rm || hedefGec > 0 || odak == TUTUS ? 0 : 18; a += v * dt; }
+            // 2026-11-13 inceleme #3: figür artık durmadan 18°/sn dönmüyor. Dönen figürün yarı süresi sırtıydı (şapka, yüz,
+            // Tüy harcanan eşya arkada) ve açı her kare değiştiği için "durağan vitrin çizilmez" kuralı hiç devreye girmiyordu:
+            // Dolap açıkken 4× MSAA RT her kare çiziliyordu. Şimdi: açılışta bir tam tur (ilk izlenim, 3 sn yumuşak), sonra
+            // 3/4 kahraman açısında durur; 6 sn dokunuşsuzlukta bir kez ±20° "bakın" salınımı, yine durur. Sürüklenirse
+            // oyuncunun bıraktığı açı kalır. Durunca alttaki kural kamerayı kapatır. Raketteki 8 Kas kuralıyla aynı aile.
+            if (!suruk)
+            {
+                if (Mathf.Abs(v) > 2) { v *= Mathf.Pow(.08f, dt); a += v * dt; acT = 1; figBos = 0; salYapildi = false; }
+                else { v = 0; if (!rm && hedefGec == 0 && odak != TUTUS && sevinc == null) FigurBos(dt); }
+            }
+            else { acT = 1; figBos = 0; salYapildi = false; }
             // Sevinç önizlemesi (r104: dönen vitrin hareketi yandan gösteriyordu, kollar okunmuyordu): dönüş durur, figür 3/4 öne
             // döner; sürüklenirse oyuncunun açısı kalır.
             if (sevinc != null && !suruk && Mathf.Abs(v) <= 2) { v = 0; float fk = Mathf.DeltaAngle(a, SEVINC_ACI); a = rm ? SEVINC_ACI : a + fk * (1 - Mathf.Exp(-dt * 6)); }
