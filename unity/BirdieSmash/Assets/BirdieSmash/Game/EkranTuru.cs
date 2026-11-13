@@ -1352,7 +1352,7 @@ namespace BirdieSmash.Game
         //  - ekran genişliğinin %70'inden geniş kartın (.kart, .tur-kart, .bilgi-kart …) sol ve sağ boşluğu 1,5 px'ten fazla farklıysa
         //    "asimetri" (yatay kaydırmadaki kartlar hariç).
         readonly StringBuilder cakisma = new StringBuilder(); int cakismaSay;
-        class YK { public Rect r; public TextElement te; }
+        class YK { public Rect r; public TextElement te; public VisualElement kat; }
         readonly List<YK> yaziKutu = new List<YK>(); readonly HashSet<string> cakGor = new HashSet<string>();
         void CakYaz(string ad, string neden, string a, string b) { if (!cakGor.Add(neden + a + b)) return; cakisma.AppendLine(ad + " · " + neden + " · \"" + a.Replace("\n", " ⏎ ") + "\"" + (b != null ? " ↔ \"" + b.Replace("\n", " ⏎ ") + "\"" : "")); cakismaSay++; }
         static readonly string[] KART_SINIF = { "kart", "tur-kart", "bilgi-kart", "ikincil-kart", "cubuk-kart", "oyuncu-kart", "hazir-kart" };
@@ -1364,17 +1364,31 @@ namespace BirdieSmash.Game
         }
         static bool YatayKaydirmada(VisualElement x) { for (var e = x.parent; e != null; e = e.parent) { var sv = e as ScrollView; if (sv != null && sv.mode == ScrollViewMode.Horizontal) return true; } return false; }
         static bool AtaMi(VisualElement a, VisualElement b) { for (var e = b.parent; e != null; e = e.parent) if (e == a) return true; return false; }
+        // Metnin görünen kutusu: içerik kutusu (dolgu hariç), atalardaki kırpıcıların (kaydırma görünümü, overflow: hidden)
+        // içine kırpılmış. r169'da ölçülen metin boyuyla kurulan kutu sayfa (sheet) içinde yanlış dikey değerler verdi
+        // (Kolay ↔ Kazan, 110 px aralı satırlar "çakışık"); flex akışında kutular üst üste binmez, binen kutu gerçekten
+        // binmiştir. Kutusundan taşan metni YaziTara ("kesik yükseklik/genişlik") ayrıca yakalar.
         static Rect MetinKutu(TextElement te)
         {
-            var wb = te.worldBound; var cr = te.contentRect; float sx = wb.width > 0 && te.layout.width > 0 ? wb.width / te.layout.width : 1;
-            float cx = wb.xMin + cr.xMin * sx, cy = wb.yMin + cr.yMin * sx, cw = cr.width * sx, ch = cr.height * sx;
-            bool tek = te.resolvedStyle.whiteSpace == WhiteSpace.NoWrap;
-            var o = tek ? te.MeasureTextSize(te.text, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined)
-                        : te.MeasureTextSize(te.text, cr.width, VisualElement.MeasureMode.Exactly, 0, VisualElement.MeasureMode.Undefined);
-            float w = Mathf.Min(o.x * sx, tek ? o.x * sx : cw), h = o.y * sx;
-            var al = te.resolvedStyle.unityTextAlign; int col = (int)al % 3, row = (int)al / 3;
-            float x = col == 0 ? cx : col == 1 ? cx + (cw - w) / 2 : cx + cw - w, y = row == 0 ? cy : row == 1 ? cy + (ch - h) / 2 : cy + ch - h;
-            return new Rect(x, y, w, h);
+            var wb = te.worldBound; var cr = te.contentRect; float sx = te.layout.width > 0 ? wb.width / te.layout.width : 1;
+            var r = new Rect(wb.xMin + cr.xMin * sx, wb.yMin + cr.yMin * sx, cr.width * sx, cr.height * sx);
+            for (var e = te.parent; e != null; e = e.parent)
+            {
+                var sv = e as ScrollView; Rect k;
+                if (sv != null) k = sv.contentViewport.worldBound;
+                else if (e.style.overflow.value == Overflow.Hidden) k = e.worldBound;
+                else continue;
+                float x0 = Mathf.Max(r.xMin, k.xMin), y0 = Mathf.Max(r.yMin, k.yMin), x1 = Mathf.Min(r.xMax, k.xMax), y1 = Mathf.Min(r.yMax, k.yMax);
+                r = x1 > x0 && y1 > y0 ? Rect.MinMaxRect(x0, y0, x1, y1) : new Rect(r.x, r.y, 0, 0);
+            }
+            return r;
+        }
+        // Katman: metnin en yakın büyük (ekran genişliğinin %80'i) mutlak konumlu atası (alt sayfa, perde, açılır kart). Farklı
+        // katmandaki yazılar çakışma sayılmaz: üstteki katman alttakini örter (r169: "Kapat" ↔ arkadaki sayfa başlığı).
+        static VisualElement Katman(VisualElement te, float pw)
+        {
+            for (var e = te.parent; e != null; e = e.parent) if (e.resolvedStyle.position == Position.Absolute && e.worldBound.width > pw * .8f) return e;
+            return null;
         }
         void Cakisma(string ad, VisualElement k, float pw, float ph)
         {
@@ -1384,12 +1398,13 @@ namespace BirdieSmash.Game
                 if (string.IsNullOrEmpty(te.text) || te.text.Trim().Length == 0 || !Gorunur(te)) return;
                 var wb = te.worldBound; if (float.IsNaN(wb.width) || wb.width <= 0 || wb.yMax < 0 || wb.yMin > ph) return;
                 if (YatayKaydirmada(te) && (wb.xMin < 0 || wb.xMax > pw)) return;
-                yaziKutu.Add(new YK { r = MetinKutu(te), te = te });
+                var mr = MetinKutu(te); if (mr.width < 1 || mr.height < 1) return;
+                yaziKutu.Add(new YK { r = mr, te = te, kat = Katman(te, pw) });
             });
             for (int i = 0; i < yaziKutu.Count; i++)
                 for (int j = i + 1; j < yaziKutu.Count; j++)
                 {
-                    var A = yaziKutu[i]; var B = yaziKutu[j]; if (AtaMi(A.te, B.te) || AtaMi(B.te, A.te)) continue;
+                    var A = yaziKutu[i]; var B = yaziKutu[j]; if (A.kat != B.kat || AtaMi(A.te, B.te) || AtaMi(B.te, A.te)) continue;
                     float ix = Mathf.Min(A.r.xMax, B.r.xMax) - Mathf.Max(A.r.xMin, B.r.xMin), iy = Mathf.Min(A.r.yMax, B.r.yMax) - Mathf.Max(A.r.yMin, B.r.yMin);
                     if (ix > 2 && iy > 2) CakYaz(ad, "yazı çakışması " + ix.ToString("F0") + "×" + iy.ToString("F0"), A.te.text, B.te.text);
                 }
@@ -1398,7 +1413,7 @@ namespace BirdieSmash.Game
                 if (!Gorunur(bar)) return; var bb = bar.worldBound; if (float.IsNaN(bb.width) || bb.width <= 0) return;
                 foreach (var y in yaziKutu)
                 {
-                    var r = y.r; var te = y.te; if (AtaMi(bar, te)) continue;
+                    var r = y.r; var te = y.te; if (AtaMi(bar, te) || Katman(bar, pw) != y.kat) continue;
                     float ix = Mathf.Min(r.xMax, bb.xMax) - Mathf.Max(r.xMin, bb.xMin), iy = Mathf.Min(r.yMax, bb.yMax) - Mathf.Max(r.yMin, bb.yMin);
                     if (ix > 2 && iy > 2) CakYaz(ad, "yazı çubuğun üstünde " + ix.ToString("F0") + "×" + iy.ToString("F0"), te.text, null);
                 }
