@@ -1,4 +1,7 @@
 === UNITY ===
+Kariyer kartında yazı düzeltmesi (14 Kasım):
+- Tur kartındaki "Ekipman 28/44" yazısı (İngilizcede "Gear") artık iki satıra kırılıp ilerleme çubuğunun altına girmiyor; tek satırda, çubuğun üstünde duruyor.
+Nasıl denenir: Dili İngilizceye al, Kariyer'de seçili tur kartına bak: "Gear 28/44" tek satır ve yeşil çubuğun üstünde olmalı, sağda "16 upgrades short" okunmalı.
 Düğmeler hizalı ve simetrik (13 Kasım gece):
 - Dolap'ta Yüz, Ayak ve Tutuş yakın plan düğmeleri artık iki ok düğmesinin arasında, tam ortada duruyor.
 - Dolap ekranı küçük telefonlarda daha iyi sığıyor: karakter vitrini gerekirse biraz küçülüyor, alttaki satın alma çubuğu sekme çubuğunun altında kalmıyor; aynı bilgiyi tekrar eden deneme kartı normal yazı boyunda gizli.
