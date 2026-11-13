@@ -53,7 +53,7 @@ namespace BirdieSmash.Game
         }
         static RenderTexture YeniRt(int w, int h)
         {
-            return new RenderTexture(w, h, 16, RenderTextureFormat.ARGB32) { name = "afis", antiAliasing = Kalite.Basamak > 0 ? 2 : 1, memorylessMode = RenderTextureMemoryless.MSAA };   // çok örnekli tampon karo belleğinde
+            return new RenderTexture(w, h, 16, RenderTextureFormat.ARGB32) { name = "afis", antiAliasing = Kalite.Basamak > 0 ? 2 : 1, memorylessMode = RenderTextureMemoryless.MSAA | RenderTextureMemoryless.Depth };   // çok örnekli tampon karo belleğinde
         }
         // 2026-10-31 (inceleme 31 Eki 12:10 madde 1): RT sabit 640×748 idi; kahraman alanı 3× ekranda ~1,75 kat büyütülüp
         // bulanıklaşıyordu (Dolap vitrinindeki sorunun aynısı). RT artık kutunun ekran pikseli boyunda, en-boy 640:748 sabit
@@ -82,6 +82,11 @@ namespace BirdieSmash.Game
         {
             if (!gameObject.activeSelf) gameObject.SetActive(true); kam.enabled = true; durgun = 0; Yenile(rakipSt, rakipForma);
         }
+        // 2026-11-13 inceleme (fikir 07:05 #3): derinlik de "memoryless" (her çizimde temizlenir, sonra okunmaz; karo GPU'da derinlik
+        // belleği ve bant genişliği gider). Maç başında (GameRoot.MacBasla, perde arkası) RT bırakılır: maç boyunca ~10–15 MB
+        // boş durmasın (eski cihazda arka plana atınca jetsam riski). Nesne ve UI bağı kalır; Ac() kamerayı açınca Unity RT'yi
+        // kendiliğinden yeniden ayırır ve aynı karede, UI'dan önce çizer. Sekme değişiminde bırakılmaz (dönüşte yeniden ayırma takılması).
+        public void Bosalt() { if (rt != null && rt.IsCreated()) rt.Release(); }
         public void Kapat() { if (kam != null) kam.enabled = false; gameObject.SetActive(false); }
 
         // Görünüm ya da rakip değişince figürü yeniden kur (anahtar: model + görünüm özeti; rakipte stil adı + forma).

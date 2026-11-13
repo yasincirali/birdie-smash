@@ -13,13 +13,17 @@ namespace BirdieSmash.Game
 {
     public class Fx : MonoBehaviour
     {
-        class Mark { public Vector3 p; public float t; public bool big; public float[] cr; public Transform leke; public Renderer lekeR; public LineRenderer halka; public LineRenderer[] catlak; }
+        class Mark { public Vector3 p; public float t; public bool big; public int n; public float[] cr; public Transform leke; public Renderer lekeR; public LineRenderer halka; public LineRenderer[] catlak; }
         class Wave { public Vector3 p; public float t, max; public Color c; public LineRenderer l; }
         readonly List<Mark> marks = new List<Mark>(); readonly List<Wave> waves = new List<Wave>();
         // Dalga havuzu (İnceleme turu 2026-11-10 17:08 #4): her vuruşta yeni LineRenderer yaratılıp ~.45 sn sonra siliniyordu
         // (ralli boyunca GC ve Destroy). Biten dalga kapatılıp burada bekler; aynı anda en çok birkaç dalga olduğu için havuz
         // kendiliğinden küçük kalır. Yere düşüş izi (Iz) sayı başına bir kez, havuza alınmadı.
         readonly Stack<LineRenderer> dalgaHavuz = new Stack<LineRenderer>();
+        // 2026-11-13 (inceleme 12:05 #2): iz lekesi her top düşüşünde 2–7 nesne yaratıp 3 sn sonra siliyordu; sayı anı (sevinç,
+        // skor nabzı, alkış, kamera) en yüklü kare olduğu için yarat/yok et oraya düşüyordu. İzler havuzda: leke + halka + 5 çatlak
+        // bir kez kurulur, sonra açılıp kapanır (aynı anda en çok ~3 iz yaşar). Dalga noktaları da tek dizi + tek SetPositions.
+        readonly Stack<Mark> izHavuz = new Stack<Mark>(); readonly Vector3[] dalgaNok = new Vector3[40];
         ParticleSystem tuy, kivilcim, cizgi; Material lekeM, beyazM, catlakM; Camera cam; MaterialPropertyBlock lekeMpb;
         static readonly int RENK = Shader.PropertyToID("_Color");
         LineRenderer kosu, erisim, hedefKenar; Transform kosuNokta, hedefBant; Material hedefM;
@@ -115,14 +119,26 @@ namespace BirdieSmash.Game
         }
         public void Iz(float x, float y, bool big)
         {
-            var m = new Mark { p = Kit.W(x, y, .007f), big = big, cr = new float[big ? 5 : 0] }; for (int i = 0; i < m.cr.Length; i++) m.cr[i] = Random.value * 6.28f;
-            m.leke = Kit.Prim(PrimitiveType.Quad, "iz", transform, m.p, Vector3.one, lekeM).transform; m.leke.rotation = Quaternion.Euler(90, 0, 0); m.lekeR = m.leke.GetComponent<Renderer>();
-            m.leke.localScale = new Vector3((big ? 9 : 5) / 28f * 2.6f, (big ? 9 : 5) / 28f * 2.6f, 1);
-            m.halka = Kit.Line("iz_halka", transform, beyazM, true, true); m.halka.widthMultiplier = .04f;
-            m.catlak = new LineRenderer[m.cr.Length];
-            for (int i = 0; i < m.cr.Length; i++) { var l = Kit.Line("catlak", transform, catlakM, false, true); l.widthMultiplier = .03f; l.positionCount = 2; l.SetPosition(0, m.p); l.SetPosition(1, m.p + new Vector3(Mathf.Cos(m.cr[i]), 0, Mathf.Sin(m.cr[i])) * 18 / 28f); m.catlak[i] = l; }
+            Mark m;
+            if (izHavuz.Count > 0) { m = izHavuz.Pop(); m.leke.gameObject.SetActive(true); }
+            else
+            {
+                m = new Mark { cr = new float[5], catlak = new LineRenderer[5] };
+                m.leke = Kit.Prim(PrimitiveType.Quad, "iz", transform, Vector3.zero, Vector3.one, lekeM).transform; m.leke.rotation = Quaternion.Euler(90, 0, 0); m.lekeR = m.leke.GetComponent<Renderer>();
+                m.halka = Kit.Line("iz_halka", transform, beyazM, true, true); m.halka.widthMultiplier = .04f;
+                for (int i = 0; i < 5; i++) { var l = Kit.Line("catlak", transform, catlakM, false, true); l.widthMultiplier = .03f; l.positionCount = 2; m.catlak[i] = l; }
+            }
+            m.p = Kit.W(x, y, .007f); m.big = big; m.t = 0; m.n = big ? 5 : 0;
+            m.leke.localPosition = m.p; m.leke.localScale = new Vector3((big ? 9 : 5) / 28f * 2.6f, (big ? 9 : 5) / 28f * 2.6f, 1);
+            m.halka.enabled = true;
+            for (int i = 0; i < 5; i++)
+            {
+                var l = m.catlak[i]; l.enabled = i < m.n; if (!l.enabled) continue;
+                m.cr[i] = Random.value * 6.28f; l.SetPosition(0, m.p); l.SetPosition(1, m.p + new Vector3(Mathf.Cos(m.cr[i]), 0, Mathf.Sin(m.cr[i])) * 18 / 28f);
+            }
             marks.Add(m);
         }
+        void IzBirak(Mark m) { m.leke.gameObject.SetActive(false); m.halka.enabled = false; for (int i = 0; i < m.catlak.Length; i++) m.catlak[i].enabled = false; izHavuz.Push(m); }
         // Gölgelendirici ısıtma (2026-11-07, Ar-Ge 02:06 #1): üç parçacık sistemi oyunda ilk kez ilk sert vuruşta
         // çiziliyordu; Metal yeni gölgelendirici varyantını ilk çizimde derlediği için takılma tam ilk smaçta geliyordu.
         // Maç perdesi kapalıyken kameranın önüne her sistemden alfa 0, .05 sn ömürlü tek parçacık bırakılır: GPU bir kez
@@ -135,7 +151,7 @@ namespace BirdieSmash.Game
         }
         public void Temizle()
         {
-            foreach (var m in marks) { Destroy(m.leke.gameObject); Destroy(m.halka.gameObject); foreach (var l in m.catlak) Destroy(l.gameObject); }
+            foreach (var m in marks) IzBirak(m);
             marks.Clear(); foreach (var w in waves) { w.l.enabled = false; dalgaHavuz.Push(w.l); } waves.Clear();
         }
 
@@ -146,8 +162,8 @@ namespace BirdieSmash.Game
                 var m = marks[i]; m.t += dt; float a = Mathf.Max(0, 1 - m.t / 3);
                 var mm = m.lekeR;   // 2026-11-11 (fikir 23:05 #8): her karede GetComponent yerine kurulumda bir kez lekeMpb.SetColor(RENK, new Color(10 / 255f, 30 / 255f, 26 / 255f, .45f * a * 1.4f)); mm.SetPropertyBlock(lekeMpb);
                 m.halka.enabled = m.t < .5f; if (m.halka.enabled) { Kit.Ellipse(m.halka, m.p, (8 + m.t * 80) / 28f, (8 + m.t * 80) / 28f); m.halka.startColor = m.halka.endColor = new Color(1, 1, 1, (.5f - m.t) * 1.6f); }
-                foreach (var l in m.catlak) l.startColor = l.endColor = new Color(.847f, 1, .353f, .6f * a);
-                if (m.t >= 3) { Destroy(m.leke.gameObject); Destroy(m.halka.gameObject); foreach (var l in m.catlak) Destroy(l.gameObject); marks.RemoveAt(i); }
+                for (int k = 0; k < m.n; k++) m.catlak[k].startColor = m.catlak[k].endColor = new Color(.847f, 1, .353f, .6f * a);
+                if (m.t >= 3) { IzBirak(m); marks.RemoveAt(i); }
             }
             for (int i = waves.Count - 1; i >= 0; i--)
             {
@@ -156,7 +172,8 @@ namespace BirdieSmash.Game
                 float e = 1 - Mathf.Pow(1 - w.t, 3); var c = w.c; c.a = (1 - w.t) * .8f; w.l.startColor = w.l.endColor = c; w.l.widthMultiplier = (5 * (1 - w.t) + 1) / 28f;
                 // kameraya dönük çember
                 int n = 40; w.l.positionCount = n; var r = cam.transform.right * w.max * e; var u = cam.transform.up * w.max * e * .5f;
-                for (int k = 0; k < n; k++) { float an = k * Mathf.PI * 2 / n; w.l.SetPosition(k, w.p + r * Mathf.Cos(an) + u * Mathf.Sin(an)); }
+                for (int k = 0; k < n; k++) { float an = k * Mathf.PI * 2 / n; dalgaNok[k] = w.p + r * Mathf.Cos(an) + u * Mathf.Sin(an); }
+                w.l.SetPositions(dalgaNok);
             }
             // Usta: koşu çizgisi ve erişim halkası
             bool usta = oyun && M != null && !M.easy && M.s != null;

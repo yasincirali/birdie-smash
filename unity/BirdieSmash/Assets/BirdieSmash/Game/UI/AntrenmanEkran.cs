@@ -134,9 +134,9 @@ namespace BirdieSmash.Game
             string acik = ustaYardim ? L.T("Koşmak sende; geç kalırsan oyuncun koşar, dokunursan yine sen yönlendirirsin") : L.T(g.deg.aciklama);
             dk.Add(Yazi(L.T(g.deg.ad), 16, "kalin")); dk.Add(Yazi(acik, 14, "ipucu"));
             Erisim.Etiket(dk, L.T(g.deg.ad) + ". " + acik, "metin");
-            var od = Yazi(alindi ? "✓ " + L.T("Bugünün ödülü alındı. Yarın yenisi.") : L.T("Kazanınca bir kez: +{0} Tüy, +{1} XP", Gunluk.OdulTuy, Gunluk.OdulXp), 14, alindi ? "durum-gecti" : "altin");
+            var od = Yazi(alindi ? "✓ " + L.T("Bugünün ödülü alındı. Yarın yenisi.") : L.T("Kazanınca bir kez +{0} Tüy, +{1} XP · kaybetsen de maç ödülü", Gunluk.OdulTuy, Gunluk.OdulXp), 14, alindi ? "durum-gecti" : "altin");
             Erisim.Etiket(od, od.text, "metin"); c.Add(od);
-            var kural = Yazi(L.T("Seri yok. Kaybetsen de maç ödülünü alırsın."), 12, "soluk"); Erisim.Etiket(kural, kural.text, "metin"); c.Add(kural);
+            // 2026-11-13 (inceleme 12:05 #6): ayrı "Seri yok." satırı kalktı: olmayan kavramı anlatıyordu; kayıp ödülü ödül satırında.
             AltEylem(Dugme(L.T(alindi ? "Yeniden oyna" : "Oyna") + ": " + L.T("Günün maçı"), () => { gez.AltKapat(); Uygula(gez.sekme, false); root.GunlukOyna(); }, "dugme--birincil", null, 19));
         }
 
@@ -146,14 +146,16 @@ namespace BirdieSmash.Game
             var pr = Ayar.ilerleme; bool acik = UstaYolu.Acik(pr);
             var kart = Kart("tur-kart"); if (!acik) kart.AddToClassList("kilitli");
             var bas = Satir("arali"); kart.Add(bas);
-            bas.Add(Yazi(L.T(Ayar.YolAd), 20, "kalin"));
+            // Usta'da ad aynı; zorluk başlığın yanında küçük etiket (Kariyer'deki zorluk etiketi gibi, yazıyla: yalnız renk değil).
+            if (acik && Ayar.UstaZor) { var bs = Satir(null); bs.Add(Yazi(L.T(Ayar.YolAd), 20, "kalin")); var ue = Yazi(L.T("Usta"), 13, "etiket"); ue.style.marginLeft = 8; bs.Add(ue); bas.Add(bs); }
+            else bas.Add(Yazi(L.T(Ayar.YolAd), 20, "kalin"));
             // 2026-11-06 (unslop denetimi, öneri artifact'i YAP): altın "0 basamak geçildi" sıfırı başarı gibi gösteriyordu. Sıfırken
             // yazı yok; sonrasında soluk sayaç (ödül anı kariyer kartında, burada yalnız bilgi).
             if (acik && pr.Usta > 0) bas.Add(Yazi(L.T("{0} basamak geçildi", pr.Usta), 13, "soluk"));
             if (!acik)
             {
                 var kl = Satir("rakip-satir"); kart.Add(kl); kl.Add(Ikon(Ikonlar.Kilit, 18, SOLUK)); var ky = Yazi(L.T("Dünya Finalleri'ni kazan"), 14, "soluk"); ky.style.marginLeft = 6; kl.Add(ky);
-                { var ky2 = Yazi(L.T("Sonu olmayan merdiven. Seçtiğin zorlukta oynanır; Usta'da adı Usta yolu olur."), 13, "soluk"); ky2.style.whiteSpace = WhiteSpace.Normal; kart.Add(ky2); }
+                { var ky2 = Yazi(L.T("Sonu olmayan merdiven. Kaybetmek geri düşürmez."), 13, "soluk"); ky2.style.whiteSpace = WhiteSpace.Normal; kart.Add(ky2); }
                 Erisim.Etiket(kart, L.T(Ayar.YolAd) + ", " + L.T("Kilitli") + ", " + L.T("Dünya Finalleri'ni kazan"), "metin");
                 return kart;
             }
@@ -162,8 +164,8 @@ namespace BirdieSmash.Game
             var rk = Satir("rakip-satir"); kart.Add(rk);
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);
             rk.Add(Yazi(L.T("Rakip") + " " + st.isim + " · " + L.T(st.ad) + " · " + L.T("{0} sayı", b.uzunluk) + " · " + L.T(Ayar.ZorlukAd), 14, "soluk"));
-            { var ac2 = Yazi(Ayar.UstaZor ? L.T("Usta zorluk: koşmak da sende. Kaybetmek geri düşürmez.") : L.T("{0} zorlukta oynanır. Kaybetmek geri düşürmez. Usta'da oynarsan adı Usta yolu olur.", L.T(Ayar.ZorlukAd)), 12, "soluk"); ac2.style.whiteSpace = WhiteSpace.Normal; kart.Add(ac2); }
-            kart.Add(Dugme(L.T(Ayar.UstaZor ? "Usta yolunu oyna" : "Şampiyon yolunu oyna"), () => root.UstaOyna(), "dugme--birincil", L.T("{0}. basamak", pr.Usta + 1), 18));
+            { var ac2 = Yazi(Ayar.UstaZor ? L.T("Usta zorluk: koşmak da sende. Kaybetmek geri düşürmez.") : L.T("{0} zorlukta oynanır. Kaybetmek geri düşürmez.", L.T(Ayar.ZorlukAd)), 12, "soluk"); ac2.style.whiteSpace = WhiteSpace.Normal; kart.Add(ac2); }
+            kart.Add(Dugme(L.T("Şampiyon yolunu oyna"), () => root.UstaOyna(), "dugme--birincil", L.T("{0}. basamak", pr.Usta + 1), 18));
             Erisim.Etiket(kart, L.T(Ayar.YolAd) + ", " + L.T(Ayar.ZorlukAd) + ", " + L.T("{0} basamak geçildi", pr.Usta) + ", " + L.T("Sıradaki") + " " + L.T(b.yer), "metin");
             return kart;
         }

@@ -146,7 +146,15 @@ namespace BirdieSmash.Game
         }
         public void Ogr(string t) { ogrMsg = t; ogrMsgT = 1.8f; }
         public bool Blocks(Vector2 guiPos) { if (perdeEvre > 0) return true; foreach (var r in blocks) if (r.Contains(guiPos)) return true; return false; }
-        public void MacBasi() { pop[0] = pop[1] = 0; cams.Clear(); hawk = null; flash = 0; floats.Clear(); }
+        // 2026-11-13 (inceleme 12:05 #1): maç sonu skor halkalarında iki genel kişi simgesi yerine iki portre (Dolap'ta kurduğun
+        // karakter zafer anında görünür). Portreler maç başında, perde arkasında alınır: Portre ilk kez çizerse kamera render'ı
+        // sonuç kartının açıldığı kareye değil perdenin arkasına düşer, OnGUI her karede anahtar dizgisi kurmaz.
+        Texture portreBen, portreRk;
+        public void MacBasi()
+        {
+            pop[0] = pop[1] = 0; cams.Clear(); hawk = null; flash = 0; floats.Clear();
+            portreBen = Portre.Benim(); portreRk = root.match != null ? Portre.Rakip(root.match.stil) : null;
+        }
         public void Pop(int i) { if (!Ayar.reduce) pop[i] = 1; }   // 2026-11-11 inceleme: hareketi azaltta skor büyümez (ralli pop'u ve nabız zaten bakıyordu); renk ve sayı kalır
         [System.NonSerialized] public int macSayisiYan = -1;
         int gucEtiketBoy = -1; string gucEtiketDil; float gucEtiketW;
@@ -1429,10 +1437,14 @@ namespace BirdieSmash.Game
         }
         void Yaz(Rect r, string t, GUIStyle st, Color c, float a) { var g = GUI.color; GUI.color = new Color(c.r, c.g, c.b, c.a * a); GUI.Label(r, t, st); GUI.color = g; }
         void KutuCiz(Rect r, GUIStyle st, float a) { if (Event.current.type != EventType.Repaint) return; var g = GUI.color; GUI.color = new Color(1, 1, 1, a); st.Draw(r, false, false, false, false); GUI.color = g; }
-        // Oyuncu halkası (yüz resmi yok: rakip portreleri sonraki faz; şimdilik kişi simgesi, renkli halka: sen limon, rakip mercan).
+        // Oyuncu halkası: renkli halka (sen limon, rakip mercan; yer de anlatır: sol sen, sağ rakip, adlar altta) + portre.
+        // Portre IMGUI'de maskelenemediği için halkanın iç karesine (.15 pay = çembere içten teğet kare) oturur, köşesi taşmaz.
+        // Portre yoksa (model yüklenmedi) eski kişi simgesi.
         void Yuz(Rect r, Color halka, float a, bool rakip)
         {
             Tex(r, disk, new Color(A_NAVY3.r, A_NAVY3.g, A_NAVY3.b, a)); Tex(r, ring, new Color(halka.r, halka.g, halka.b, a));
+            var pt = rakip ? portreRk : portreBen;
+            if (pt != null) { float q = r.width * .15f; var o = GUI.color; GUI.color = new Color(1, 1, 1, a); GUI.DrawTexture(new Rect(r.x + q, r.y + q, r.width - 2 * q, r.height - 2 * q), pt, ScaleMode.ScaleAndCrop); GUI.color = o; return; }
             float p = r.width * .2f; Tex(new Rect(r.x + p, r.y + p, r.width - 2 * p, r.height - 2 * p), Ikonlar.Kisi, new Color(A_YAZI.r, A_YAZI.g, A_YAZI.b, .85f * a));
         }
         // Üç büyük yıldız (a-bigstars): ortadaki büyük; alınan dolu altın + parıltı, alınmayan çerçeve; altında koşul (✓/✗ + yazı).
