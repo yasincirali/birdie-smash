@@ -30,7 +30,7 @@ namespace BirdieSmash.Game
             if (id == Basarim.EFSANE) return L.T("Seviye 30'a ulaş");
             if (id == Basarim.ANTRENOR) return L.T("Antrenmanın 24 yıldızını topla");
             if (id == Basarim.GUNUN_MACI) return L.T("Bir Günün maçını kazan");
-            if (id == Basarim.USTA6) return L.T("Usta zorlukta, Usta yolunda 6 basamak geç");
+            if (id == Basarim.USTA6) return L.T("Usta zorlukta, Şampiyon yolunda 6 basamak geç");
             if (id == Basarim.IMZA_OKUR) return L.T("Toplam {0} imza vuruşu oku", Basarim.IMZA_OKUR_HEDEF);
             return id;
         }

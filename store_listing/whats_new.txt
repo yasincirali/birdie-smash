@@ -1,4 +1,10 @@
 === UNITY ===
+Maç sonunda yüzler, Şampiyon yolu tek ad (13 Kasım öğle):
+- Maç sonu kartında skorun iki yanında artık kendi karakterinin ve rakibinin yüzü var; Dolap'ta taktığın şapka ve saç burada da görünüyor.
+- Şampiyon yolu Usta zorlukta da aynı adla görünüyor; başlığın yanında küçük "Usta" etiketi var. Kart açıklaması tek cümleye indi.
+- Günün maçı kartında ödül tek satır: kazanınca alacağın ve kaybetsen de maç ödülü aynı satırda.
+- Top yere düştüğünde kalan iz artık her seferinde yeniden kurulmuyor; sayı anında küçük takılmalar azalıyor.
+Nasıl denenir: Bir maç bitir: skorun solunda kendi karakterinin yüzü, sağında rakibin yüzü renkli halkaların içinde görünmeli, kenarlar halkadan taşmamalı. Dolap'ta şapka değiştirip bir maç daha bitir: yeni şapka maç sonunda da görünmeli. Kariyeri bitirdiysen Antrenman'da zorluğu Usta yap: kartın adı yine "Şampiyon yolu" olmalı, yanında "Usta" yazmalı. Günün maçı kartında ödül tek satırda olmalı. Uzun maçta top her düştüğünde iz ve çatlaklar eskisi gibi görünmeli, oyun takılmamalı.
 Kupa rafı ve maç sonu kartı sadeleşti (13 Kasım sabah):
 - Profil'deki kupa rafı artık kazandığın kupaları ve yalnız sıradaki kupayı gösteriyor; kalanlar tek "+6" gibi bir kutuda. Dokununca Kariyer açılıyor.
 - Yeni bir kupa kazanınca Profil'i ilk açışında kupa rafa yukarıdan iniyor, kısa bir ses ve titreşimle. Hareketi azalt açıksa yalnız ses ve titreşim olur.
