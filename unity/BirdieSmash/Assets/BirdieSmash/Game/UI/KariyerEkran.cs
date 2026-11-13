@@ -151,8 +151,14 @@ namespace BirdieSmash.Game
             {
                 int ep = EkipmanPuani(); bool az = ep < tv.epMin;
                 var hz = Satir("arali"); hz.pickingMode = PickingMode.Ignore; kb.Add(hz);
-                hz.Add(Yazi(L.T("Ekipman {0}/{1}", ep, tv.epMin), 13, az ? "durum-simdi" : "soluk")); hz.Add(Yazi(az ? L.T("{0} yükseltme eksik", tv.epMin - ep) : L.T("Hazırsın"), 13, az ? "soluk" : "durum-gecti"));
-                var iz = new VisualElement(); iz.AddToClassList("stat-iz"); iz.AddToClassList("tur-hazir-iz"); iz.pickingMode = PickingMode.Ignore; kb.Add(iz);
+                // Yazı çubuğun altında kalmasın (yasin 14 Kas, iPhone ekran görüntüsü: İngilizcede "Gear 28/44" sağdaki "16 upgrades
+                // short" yüzünden daralıp iki satıra kırıldı, ikinci satır ilerleme çubuğunun altına girdi). Sol etiket hiç
+                // daralmaz/kırılmaz; sağdaki daralır ve gerekirse kendi içinde sağa yaslı kırılır; satır yüksekliği içeriğe göre,
+                // çubuk satırın altından 6 pt boşlukla başlar.
+                hz.style.alignItems = Align.FlexStart; hz.style.flexWrap = Wrap.NoWrap;
+                var ek = Yazi(L.T("Ekipman {0}/{1}", ep, tv.epMin), 13, az ? "durum-simdi" : "soluk"); ek.style.flexShrink = 0; ek.style.whiteSpace = WhiteSpace.NoWrap; ek.style.marginRight = 12; hz.Add(ek);
+                var ey = Yazi(az ? L.T("{0} yükseltme eksik", tv.epMin - ep) : L.T("Hazırsın"), 13, az ? "soluk" : "durum-gecti"); ey.style.flexShrink = 1; ey.style.minWidth = 0; ey.style.whiteSpace = WhiteSpace.Normal; ey.style.unityTextAlign = TextAnchor.UpperRight; hz.Add(ey);
+                var iz = new VisualElement(); iz.style.marginTop = 6; iz.AddToClassList("stat-iz"); iz.AddToClassList("tur-hazir-iz"); iz.pickingMode = PickingMode.Ignore; kb.Add(iz);
                 var dl = new VisualElement(); dl.AddToClassList("stat-dolu"); dl.style.width = Length.Percent(Mathf.Clamp01(ep / (float)Mathf.Max(1, tv.epMin)) * 100); dl.pickingMode = PickingMode.Ignore; iz.Add(dl);
                 if (az && acik) { var ag = Dugme(L.T("Atölye'ye git"), () => SekmeAc(Sekme.Atolye), "kucuk-dugme"); ag.style.alignSelf = Align.FlexStart; ag.style.marginTop = 8; kb.Add(ag); }
             }
