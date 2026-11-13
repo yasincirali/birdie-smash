@@ -65,15 +65,33 @@ namespace BirdieSmash.Game
             System.Action<string, string> Buyuk_ = (deger, et) => { var b = new VisualElement(); b.AddToClassList("uc-sayi-oge"); b.Add(Yazi(deger, 24, "rakam")); b.Add(Yazi(et, 12, "soluk")); Erisim.Etiket(b, et + " " + deger, "metin"); uc.Add(b); };
             Buyuk_(Ayar.bestRally.ToString(), L.T("Rekor ralli")); Buyuk_(p.Smac.ToString(), L.T("Smaç")); Buyuk_(Ayar.wins.ToString(), L.T("Galibiyet"));
             // kupa rafı: verisi olan her turun finali
-            int kz_ = 0, top_ = 0; var raf = Satir("kupa-raf");
+            // 2026-11-13 inceleme (fikir 07:05 #6): ilk gün sekiz soluk siluet uzak bir duvardı. Raf kazanılanlar + yalnız sıradaki
+            // tur (soluk) + kalanlar tek "+n" hücresi; dokununca Kariyer (sıradaki tur seçili). Başlıktaki n/8 tüm turları sayar.
+            // #4: ilk kez görülen kupa rafa bir kez yukarıdan iner (.5 sn, tick + kısa ton); görülenler tuytop_kupa_gor (global
+            // basamak biti; cihaz başına). Anahtar yokken (güncelleme sonrası ilk açılış) bugünkü kupalar sessizce görülmüş sayılır:
+            // eski kupa "yeni" diye oynamaz. Hareketi azaltta iniş yok, yalnız ses + titreşim.
+            int kz_ = 0, top_ = 0, kalan_ = 0, sira_ = -1; var raf = Satir("kupa-raf");
+            bool gorVar = PlayerPrefs.HasKey(KUPA_GOR); int gorMaske = PlayerPrefs.GetInt(KUPA_GOR, 0), gorYeni = gorMaske; bool yeniOldu = false;
             for (int tu = 0; tu < KariyerVeri.Turlar.Length; tu++)
             {
                 if (!KariyerVeri.Turlar[tu].Var) continue; top_++; int g = KariyerVeri.Global(tu, KariyerVeri.BASAMAK - 1); bool var_ = p.Kazanildi(g); if (var_) kz_++;
+                if (!var_ && sira_ >= 0) { kalan_++; continue; }
+                if (!var_) sira_ = tu;
                 var hk = new VisualElement(); hk.AddToClassList("kupa-hucre"); if (!var_) hk.AddToClassList("kupa-hucre--yok");
                 hk.Add(Ikon(Ikonlar.Kupa, 28, var_ ? ALTIN : SOLUK)); int tt = tu;
                 hk.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); KariyerTurSec(tt); SekmeAc(Sekme.Kariyer); }));
                 Erisim.Etiket(hk, L.T(TurAd(tu)) + ", " + L.T(var_ ? "Kazanıldı" : "Kazanılmadı"), "dugme"); raf.Add(hk);
+                int bit = 1 << (tu & 31);
+                if (var_ && (gorMaske & bit) == 0) { gorYeni |= bit; if (gorVar) { yeniOldu = true; if (!Ayar.reduce) KupaIndir(hk); } }
             }
+            if (kalan_ > 0)
+            {
+                var ar = new VisualElement(); ar.AddToClassList("kupa-hucre"); ar.AddToClassList("kupa-hucre--yok"); ar.Add(Yazi("+" + kalan_, 15, "kalin")); int st = sira_;
+                ar.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); KariyerTurSec(st); SekmeAc(Sekme.Kariyer); }));
+                Erisim.Etiket(ar, L.T("{0} kupa daha", kalan_), "dugme"); raf.Add(ar);
+            }
+            if (gorYeni != gorMaske || !gorVar) PlayerPrefs.SetInt(KUPA_GOR, gorYeni);   // Save yok: bir sonraki Ayar.Kaydet yazar
+            if (yeniOldu) { root.sfx.Tik(1320); Yerel.Hap("tick"); }
             var rb = Satir("arali"); rb.style.marginTop = 10; kart.Add(rb); rb.Add(Yazi(L.T("Kupa rafı"), 14, "kalin")); rb.Add(Yazi(kz_ + "/" + top_, 13, "soluk"));
             kart.Add(raf);
             // sıradaki açılış (Sv 30'da yok): tek cümle
@@ -194,6 +212,18 @@ namespace BirdieSmash.Game
             r.Add(Ikon(var_ ? Ikonlar.Tik : Ikonlar.Kilit, 20, var_ ? TURUNCU : SOLUK));
             r.Add(Yazi(ad, 15, "esnek-yatay")); string d = L.T(var_ ? "Kazanıldı" : "Henüz değil"); r.Add(Yazi(d, 12, var_ ? "durum-gecti" : "durum-kilit"));
             Erisim.Etiket(r, ad + ", " + d, "metin");
+        }
+        const string KUPA_GOR = "tuytop_kupa_gor";
+        // Yeni kupa inişi (2026-11-13 #4): yukarıdan 22 px, saydamdan; .5 sn geri yaylanan eğri. Satır içi stil sonra temizlenir
+        // ki :active küçülmesi ve soluk sınıfı bozulmasın (AnaEkran.KademeliAc kalıbı).
+        void KupaIndir(VisualElement v)
+        {
+            v.style.opacity = 0f; v.style.translate = new Translate(0, -22, 0);
+            v.style.transitionProperty = new List<StylePropertyName> { new StylePropertyName("opacity"), new StylePropertyName("translate") };
+            v.style.transitionDuration = new List<TimeValue> { new TimeValue(.3f, TimeUnit.Second), new TimeValue(.5f, TimeUnit.Second) };
+            v.style.transitionTimingFunction = new List<EasingFunction> { new EasingFunction(EasingMode.EaseOut), new EasingFunction(EasingMode.EaseOutBack) };
+            v.schedule.Execute(() => { v.style.opacity = 1f; v.style.translate = new Translate(0, 0, 0); Kalite.Hareket(); }).StartingIn(180);
+            v.schedule.Execute(() => { v.style.opacity = StyleKeyword.Null; v.style.translate = StyleKeyword.Null; v.style.transitionProperty = StyleKeyword.Null; v.style.transitionDuration = StyleKeyword.Null; v.style.transitionTimingFunction = StyleKeyword.Null; }).StartingIn(760);
         }
     }
 }

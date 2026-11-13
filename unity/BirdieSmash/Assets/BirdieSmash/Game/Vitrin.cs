@@ -79,7 +79,7 @@ namespace BirdieSmash.Game
         }
         static RenderTexture YeniRt(int w, int h)
         {
-            return new RenderTexture(w, h, 16) { name = "vitrin", antiAliasing = Kalite.Basamak == 2 ? 4 : Kalite.Basamak == 1 ? 2 : 1, memorylessMode = RenderTextureMemoryless.MSAA };
+            return new RenderTexture(w, h, 16) { name = "vitrin", antiAliasing = Kalite.Basamak == 2 ? 4 : Kalite.Basamak == 1 ? 2 : 1, memorylessMode = RenderTextureMemoryless.MSAA | RenderTextureMemoryless.Depth };
         }
 
         public void Ac() { gameObject.SetActive(true); kam.enabled = true; durgun = 0; Yenile(); }
@@ -92,6 +92,11 @@ namespace BirdieSmash.Game
         public static System.Action<string> DansSes;
         public void Sevinc(string id) { if (sevinc != id && id != null && DansSes != null && PlayerView.Dans(id)) DansSes(id); if (sevinc != id) sevincT = 0; sevinc = id; smacId = id != null && id.StartsWith("smac:") ? id.Substring(5) : null; if (id == null) ShowStaticSifirla(); }
         void ShowStaticSifirla() { if (fig != null) fig.ShowStatic(YER, a, 0); }
+        // 2026-11-13 inceleme (fikir 07:05 #3): derinlik de "memoryless" (her çizimde temizlenir, sonra okunmaz; karo GPU'da derinlik
+        // belleği ve bant genişliği gider). Maç başında (GameRoot.MacBasla, perde arkası) RT bırakılır: maç boyunca ~10–15 MB
+        // boş durmasın (eski cihazda arka plana atınca jetsam riski). Nesne ve UI bağı kalır; Ac() kamerayı açınca Unity RT'yi
+        // kendiliğinden yeniden ayırır ve aynı karede, UI'dan önce çizer. Sekme değişiminde bırakılmaz (dönüşte yeniden ayırma takılması).
+        public void Bosalt() { if (rt != null && rt.IsCreated()) rt.Release(); }
         public void Kapat() { sevinc = null; smacId = null; kam.enabled = false; suruk = false; gec = hedefGec = 0; parca = null; raKay = false; odak = TAM; poz = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = deneSevinc = deneMacSonu = deneSirt = deneSmac = deneKol = deneBel = null; camVar = false; gameObject.SetActive(false); }
         // Yakın plan seç (aynı odağa ikinci dokunuş Soyunma odasında Tüm boy'a döner). Tutuşa girerken el kameraya döner.
         public void Odak(int o, string klip = null)

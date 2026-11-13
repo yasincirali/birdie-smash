@@ -1,4 +1,10 @@
 === UNITY ===
+Kupa rafı ve maç sonu kartı sadeleşti (13 Kasım sabah):
+- Profil'deki kupa rafı artık kazandığın kupaları ve yalnız sıradaki kupayı gösteriyor; kalanlar tek "+6" gibi bir kutuda. Dokununca Kariyer açılıyor.
+- Yeni bir kupa kazanınca Profil'i ilk açışında kupa rafa yukarıdan iniyor, kısa bir ses ve titreşimle. Hareketi azalt açıksa yalnız ses ve titreşim olur.
+- Maç sonu kartı artık sıradan sayıları övmüyor ("1 Smaç" gibi); yalnız gerçekten dikkat çeken bir değer varsa öne çıkıyor, yoksa en uzun ralli yazıyor.
+- Maç sırasında menü vitrinlerinin kullandığı bellek boşaltılıyor; eski telefonlarda oyun arka plana atılınca kapanma ihtimali azalıyor.
+Nasıl denenir: Yeni kurulumda Profil'e gir: rafta tek soluk kupa ve yanında "+7" olmalı; "+7"ye dokununca Kariyer açılmalı. Bir turun finalini kazan, sonra Profil'i aç: yeni kupa yukarıdan inmeli, ses ve titreşim gelmeli; Profil'i ikinci kez açınca inmemeli. Sıradan bir maç bitir: kartta "1 Mükemmel" gibi küçük sayılar olmamalı. Maçtan menüye dönünce Oyna sekmesindeki oyuncu afişi ve Dolap vitrini boş kalmadan hemen görünmeli.
 Dolap'ta gezinmek daha rahat (13 Kasım gece):
 - Kategori şeridinde seçili sayfa artık hep görünüyor ve ortada duruyor; Sırt ya da Hareketler seçiliyken sağ kenarda kesilmiyor.
 - Sayfanın başındaki "Sıradaki" satırı açık sayfadaki eşyayı gösteriyor (Sırt'ta bir sırt eşyası). Altında iki sayım var: bu sayfada kaçı senin, bütün Dolap'ta kaçı senin. Dokununca aynı sayfada denersin, başka sayfaya atlamazsın.
