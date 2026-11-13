@@ -170,6 +170,16 @@ namespace BirdieSmash.Game
             var olc = l.MeasureTextSize(l.text, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined);
             float gen = olc.x * taban / simdi; if (float.IsNaN(gen) || gen <= 0) return;
             float hedef = Mathf.Clamp(Mathf.Floor(taban * Mathf.Min(1, (w - 2) / gen) * 2) / 2, Mathf.Min(taban, Mathf.Max(YAZI_MIN, Mathf.Round(taban * minOran))), taban);   // 2026-10-27: küçülme de 11'in altına inmez
+            // Grup ölçüsü (2026-11-14 inceleme, fikir 02:05 #1; r168 İngilizce "Tournament" öbür üç saha adından küçüktü): satır
+            // "sigdir-grup" ise her çip kendi hedefini etikete yazar, satırdaki ana yazılar hedeflerin en küçüğünü alır. Eşit
+            // seçenek eşit görünür. Her çipin kendi hedefi taban boyuttan hesaplandığı için en küçük sabit kalır, döngü kurmaz.
+            if (d.parent != null && d.parent.ClassListContains("sigdir-grup") && l.ClassListContains("dugme-yazi"))
+            {
+                l.userData = hedef; float enK = hedef;
+                foreach (var kd in d.parent.Children()) { var kl = kd.Q<Label>(null, "dugme-yazi"); if (kl != null && kl.userData is float) enK = Mathf.Min(enK, (float)kl.userData); }
+                foreach (var kd in d.parent.Children()) { var kl = kd.Q<Label>(null, "dugme-yazi"); if (kl != null && kl != l && kl.userData is float && Mathf.Abs(kl.resolvedStyle.fontSize - enK) > .25f) kl.style.fontSize = enK; }
+                hedef = enK;
+            }
             if (Mathf.Abs(hedef - simdi) > .25f) l.style.fontSize = hedef;
             // 2026-11-08 (yasin: "alanlarından butonlarda taşan"): en küçük boyutta da sığmayan yazı çipin dışına taşıyordu (r142 sap
             // çipleri "Kontrol +3 · drive −3" 103 > 77 pt). Alt yazı iki satıra sarılır; ana yazı kesilmez, "…" ile biter (tam metin

@@ -341,7 +341,8 @@ namespace BirdieSmash.Game
                 int kG, kY; string alt = Ayar.Karne(id, out kG, out kY) ? L.T(st.ad) + " · " + kG + "–" + kY : L.T(st.ad);   // karne (fikir 23:05 #2): sayıyla, renkle değil
                 r.Add(Cip(st.isim, sec == id, () => { Ayar.hizliRakip = sid; Ayar.Kaydet(); Degisti(); }, alt));
             }
-            var n = Yazi(L.T("Kariyerde yendiğin rakipler buraya eklenir."), 13, "soluk"); n.style.whiteSpace = WhiteSpace.Normal; c.Add(n);
+            // 2026-11-14 inceleme (fikir 02:05 #4): not havuz tamken de yazıyordu; yalnız kariyerde yenilmemiş rakip kaldıysa.
+            if (KariyerVeri.HizliHavuzEksik(Ayar.ilerleme)) { var n = Yazi(L.T("Kariyerde yendiğin rakipler buraya eklenir."), 13, "soluk"); n.style.whiteSpace = WhiteSpace.Normal; c.Add(n); }
         }
 
         void AltSayfaYenidenKur(string altS) { if (altS == Gezinti.SEVIYE) SeviyeYoluKur(); else if (altS == Gezinti.GELISIM) GelisimKur(); else if (altS == Gezinti.KART) MacKartKur(); else if (altS == Gezinti.YUVA) YuvaSayfaKur(); else if (altS == Gezinti.DRIL) DrilKartKur(); else if (altS == Gezinti.GUNLUK) GunlukKartKur(); else if (altS == Gezinti.SEC) OyuncuSecKur(); else HizliKur(); }
@@ -391,7 +392,7 @@ namespace BirdieSmash.Game
             // 2026-11-07 inceleme (fikir 00:03 #3): zorluk Ayarlar'dan kalktı; "bu maç nasıl olsun" kararı, oynamadan hemen önce
             // görülen iki yerde kalır (Hızlı maç sayfası, kariyer kartı). Ayarlar'da değişip kariyeri sessizce değiştirmiyor.
             if (saha) { c.Add(Grup(L.T("Zorluk")));
-            var z = Satir(); c.Add(z);
+            var z = Satir(); z.AddToClassList("sigdir-grup"); c.Add(z);
             // 2026-11-05 unslop incelemesi (yasin "yap"): açıklama çipin içindeydi, çipler üç satıra kırılıyordu; "Kolay · topa kendin
             // gidersin" de ters okunuyordu (Kolay'da koşu otomatik). Çipte kısa ad, seçilenin açıklaması altında tek soluk satır.
             ZorlukSatir(z, c); }
@@ -403,7 +404,7 @@ namespace BirdieSmash.Game
             // benzediğini söylemiyordu. Şimdi tek sıra dört çip; her birinde sahanın kendi renkleriyle çizilmiş küçük kort (çevre,
             // mat, file çizgisi; okulda tahta çizgileri, gecede yıldız) ve kısa ad. Seçili çip turuncu + ✓ (yalnız renk değil).
             // Doku yok: renkler CourtView.SAHA'dan, saha rengi değişince önizleme de değişir. Dar ekranda/büyük yazıda Sigdir küçültür.
-            var s1 = Satir(); c.Add(s1);
+            var s1 = Satir(); s1.AddToClassList("sigdir-grup"); c.Add(s1);   // dört ad tek ölçüde (SigdirOlc grup)
             for (int i = 0; i < 4; i++)
             {
                 string id = CourtView.SIRA[i]; var sh = CourtView.SAHA[id];
@@ -462,7 +463,12 @@ namespace BirdieSmash.Game
             for (int i = 0; i < 4; i++)
             {   // VoiceOver: çip adı + kademenin açıklaması (açıklama satırı yalnız seçili için görünür; UX incelemesi 2026-11-05)
                 int v = i; var cp = Cip(L.T(Ayar.ZORLUK_AD[i]), Ayar.zorluk == v, () => { Ayar.zorluk = v; Ayar.Kaydet(); Degisti(); });
-                Erisim.Etiket(cp, L.T(Ayar.ZORLUK_AD[i]) + ". " + L.T(ZORLUK_ACIK[i]), "dugme", Ayar.zorluk == v); satir.Add(cp);
+                Erisim.Etiket(cp, L.T(Ayar.ZORLUK_AD[i]) + ". " + L.T(ZORLUK_ACIK[i]), "dugme", Ayar.zorluk == v);
+                // 2026-11-14 inceleme (ikinci göz, r168): dört kademe yazı genişliğinde ve seçilenin ✓'ü onu büyütüyordu; satır
+                // eğri duruyor, seçim değişince çipler yer değiştiriyordu (Maç uzunluğu satırı eşit). Normal yazıda dört eşit pay;
+                // büyük yazıda (K > 1,35) bugünkü sarma kalır.
+                if (K <= 1.35f) { cp.style.flexGrow = 1f; cp.style.flexBasis = 0f; }
+                satir.Add(cp);
             }
             if (aciklama) c.Add(Yazi(L.T(ZORLUK_ACIK[Mathf.Clamp(Ayar.zorluk, 0, 3)]), 12, "soluk"));
         }

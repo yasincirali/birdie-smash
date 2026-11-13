@@ -74,6 +74,13 @@ namespace BirdieSmash.Core
             foreach (var id in Match.STIL_SIRA) if (!h.Contains(id)) h.Add(id);   // stil.json sırası eksik olsa da taban üçlü kalır
             return h;
         }
+        // Hızlı maç notu (2026-11-14): kariyerde geçen ama havuza henüz girmemiş (yenilmemiş) bir tarz var mı.
+        public static bool HizliHavuzEksik(Ilerleme p)
+        {
+            var h = HizliHavuz(p);
+            for (int g = 0; g < TUR * BASAMAK; g++) { if (!Var(g)) continue; string id = Al(g).stil; if (id != null && Stil.ContainsKey(id) && Array.IndexOf(StilSira, id) >= 0 && !h.Contains(id)) return true; }
+            return false;
+        }
         public static string HizliSec(Ilerleme p, string onceki, Random r)
         {
             var h = HizliHavuz(p); if (h.Count > 1 && onceki != null) h.Remove(onceki);
