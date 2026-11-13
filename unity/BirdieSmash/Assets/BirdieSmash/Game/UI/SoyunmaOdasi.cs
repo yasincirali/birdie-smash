@@ -274,7 +274,7 @@ namespace BirdieSmash.Game
             else etki.Add(Yazi(L.T("Nötr: artı ve eksi yok"), 12.5f, "soluk"));
             k.Add(Yazi(L.T("Seviye istemez. Kalın sargı sapı yarım ölçü kalınlaştırır."), 12, "soluk"));
         }
-        static string KalinlikYaz(float mm) { return mm.ToString("0.00", L.En ? System.Globalization.CultureInfo.InvariantCulture : new System.Globalization.CultureInfo("tr-TR")) + " mm"; }
+        static string KalinlikYaz(float mm) { return mm.ToString("0.00", L.Kultur) + " mm"; }
 
         // Teknik sayfa: raket yuvasının alt sayfasında. Her ölçü değer + ne demek + maçta ne yapar.
         // Kalın sargı sapı yarım ölçü kalınlaştırır; gerçek oyuncu bunu "G5 + sargı" diye söyler (fikir 22:10 #5b).

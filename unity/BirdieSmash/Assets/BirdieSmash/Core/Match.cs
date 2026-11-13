@@ -547,6 +547,11 @@ namespace BirdieSmash.Core
         public const float USTA_UZAN = .4f, UZAN_SAPMA = .3f;   // bot ölçümü (Tur 1/2 Usta, 200 maç): uzanmasız %49, .3 %58, .4 %57, .5 %67
         public float ErisimIc { get { return easy ? 1.45f : 1.15f; } }   // görünüm: Usta erişim halkaları (ShuttleView)
         public int uzanSay;
+        // Rakibin kurtarış ağır çekimi maçta yalnız bir kez (2026-11-13 inceleme, fikir #3): her balıklama 0,3 sn yavaşlatıyordu;
+        // oyuncunun kazanan sandığı vuruş rakibin anı olarak tekrar tekrar izletiliyor, ralli ritmi bölünüyordu (maç sonunda
+        // aynı ilke: kaybı ağır çekimde izletmek cezalandırır). İlki "rakip böyle de yapar" diye öğretir; sonrakilerde ses +
+        // "Kurtardı!" kalır. Online'da ağır çekim zaten kapalı (Adim başı), IkizMaclar etkilenmez.
+        public int opKurtaris;
         // Tarz farkı (2026-11-07, yasin "tarz farkı oyunda hissedilsin"): tarzın sonucu değiştirdiği an sayılır (tarzsız olsa başka
         // olurdu: Duvar'ın uzanışı tabanın dışında, File/Smaşçı'nın tam ortası taban penceresinin dışında, Aldatıcı'nın aldatıp
         // aldığı sayı). İlk 3'ü kortta tarz adıyla yazılır (etiket var olan yazının yerine geçer, yeni yazı katmanı yok), hepsi
@@ -634,7 +639,10 @@ namespace BirdieSmash.Core
                 Say("me", type, hx, hy, hz, (type == "jump" ? "SIÇRAYARAK SMAÇ" + smHiz : type == "smash" ? "SMAÇ!" + smHiz : type == "kill" ? "FİLE VURUŞU" : pstreak > 1 ? "Tam orta ×" + pstreak : (bh && (type == "clear" || type == "drive") ? "Backhand, tam orta" : "Tam orta")) + tarzEk, (type == "jump" || type == "smash" || type == "kill" || pstreak >= 3 || tarzEk != "") ? 2 : 1);
             }
             else { pstreak = 0; if (flow) { flow = false; Say(null, "flow", Court.MID, Court.NET, 2, "Akış bitti"); } if (q == "poor") Say("me", type, hx, hy, hz, "Sıyırdın"); }
-            if (I.uzan) { Yor(.08f); if (++uzanSay <= 3) Say("me", "lunge", hx, hy, hz, "Uzandın!"); }
+            // 2026-11-13 inceleme (fikir #5): zayıf erişim (I.uzan) ile balıklama (I.lunge) aynı "Uzandın!" yazısını iki ayrı
+            // sayaçla veriyordu (maçta 6 kez, tek kelime iki anlam). Öğretici yazı yalnız balıklamada kalır; zayıf erişim
+            // "Sıyırdın" ile zaten söyleniyor. uzanSay sayılmaya devam eder (istatistik/ileride kullanım).
+            if (I.uzan) { Yor(.08f); uzanSay++; }
             if (I.lunge)
             {
                 me.dive = 1; me.yat = false; me.stun = .35f * GS.toparla; saves++; Yor(.15f);
@@ -1384,7 +1392,7 @@ namespace BirdieSmash.Core
                     // Yazı "Kıl payı!" idi; maç sonu başlığı ve ıska nedeniyle aynı söz üç anlam taşıyordu (2026-11-11 inceleme #6).
                     // Oyuncunun kurtarışı "Kurtardın!" (GameRoot), rakibinki "Kurtardı!": eşli ve okunur.
                     if (op.dive <= 0 && s.vurus != "kill" && !IsOut(s.landPred.x, s.landPred.y, s.serve) && !(s.landPred.net != null && !s.landPred.net.ok) && s.t > s.landPred.t - .25f)
-                    { op.dive = 1; op.yat = true; Emit(Ev.Kurtaris, "op", null, op.x, op.y); Say("op", null, op.x, op.y, 0, "Kurtardı!"); if (!reduce) { slow = .35f; slowT = .3f; } }
+                    { op.dive = 1; op.yat = true; Emit(Ev.Kurtaris, "op", null, op.x, op.y); Say("op", null, op.x, op.y, 0, "Kurtardı!"); if (!reduce && ++opKurtaris == 1) { slow = .35f; slowT = .3f; } }
                 }
             }
             // Ana nokta fileden stil.ev metre (2026-10-26): eskiden y = ev yazılıyordu, yani rakibin dip çizgisinden. "Fileye yakın

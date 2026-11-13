@@ -778,7 +778,7 @@ namespace BirdieSmash.Game
                 vk1 = (o.hedef ? "✓ " : "✗ ") + L.T(o.ad) + " · " + (o.hedef ? L.T("hedefte") : L.T(o.neden ?? "Alana düşmedi"));
                 var p = new List<string>();
                 if (!o.file && !float.IsNaN(o.gec)) p.Add(L.T("Fileyi {0} cm geçti", Mathf.Max(0, Mathf.RoundToInt(o.gec * 100))));
-                if (!o.file && !o.disari) p.Add(L.T(o.dip ? "Dip çizgiye {0} m" : "Fileye {0} m", o.mesafe.ToString("0.0", L.En ? System.Globalization.CultureInfo.InvariantCulture : new System.Globalization.CultureInfo("tr-TR"))));
+                if (!o.file && !o.disari) p.Add(L.T(o.dip ? "Dip çizgiye {0} m" : "Fileye {0} m", o.mesafe.ToString("0.0", L.Kultur)));
                 p.Add(L.T("{0} km/s", Mathf.RoundToInt(o.hiz)));
                 vk2 = string.Join(" · ", p.ToArray());
             }

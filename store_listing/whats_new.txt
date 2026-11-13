@@ -1,4 +1,12 @@
 === UNITY ===
+Balıklaman hissediliyor, ralli daha akıcı (13 Kasım gece, 22:00):
+- Topa balıklama uzandığında artık ayağının altında toz ve küçük bir halka çıkıyor, gövdenin yere değme sesi ve ayakkabı sürtmesi duyuluyor, telefon kısa bir tık veriyor.
+- Rakibin balıklamayla kurtarışı maçta yalnız ilk seferinde ağır çekime giriyor; sonraki kurtarışlarda oyun yavaşlamıyor, ses ve "Kurtardı!" yazısı kalıyor.
+- Split step tuttuğunda ayağının altında küçük beyaz bir halka beliriyor; sesi kapalı oynarken de görünür.
+- "Uzandın!" yazısı maçta yalnız balıklamada ve en çok 3 kez çıkıyor; kortta daha az yazı var.
+- Kariyer maç kartında, uzunluğu sen seçiyorsan sayı üstteki satırda ikinci kez yazılmıyor.
+- Telefon belleği azaldığında Dolap'taki küçük resimlerin bir kısmı bırakılıyor; eski iPhone'larda kapanma riski azalır.
+Nasıl denenir: Zor ya da Usta'da bir maç oyna, uzak bir topa balıklamayla yetiş: toz, halka, ses ve titreşim gelmeli. Rakip birkaç kez balıklama yapsın: yalnız ilkinde oyun yavaşlamalı. Rakip vururken ekrana dokun (split step): ayağının altında küçük halka görmelisin. Kariyer'de uzunluğu senin seçtiğin bir maçın kartını aç: "Saha: ..." satırında sayı yazmamalı, hemen altında sayı çipleri olmalı.
 Tatlıcı seti, simgeler ortada, sayı arası gölge (13 Kasım gece):
 - Dolap'ta yeni "Tatlıcı" koleksiyonu: dondurma kafa, kek şapka, krem şanti bıyık, dev lolipop, donut kalkanı ve makaron kuşağı. Yalnız görünüş, oyunu etkilemez.
 - Sayı bittikten sonra topun yere düştüğü yerdeki koyu leke, oyuncular servis yerine geçince hemen söner; servis anında yerde "top gölgesi" kalmaz.
