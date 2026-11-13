@@ -568,8 +568,18 @@ namespace BirdieSmash.Game
             if (M.s == null && !M.between && M.svPending == null && !ogr) ServisSeridi(M, hy);
             if (M.HitWindow() && (!ogr || !M.ogr.dur) && !M.easy) { }
             NefesYazi(M.me, true, M); NefesYazi(M.op, false, M);
-            foreach (var f in floats)
+            // Yazılar hiç üst üste binmez (yasin 13 Kas: "smaç ve sayı olduğunda üst üste yazılar biniyor"). Önceki kural yalnız
+            // SAYIYI sınırlıyordu (en çok 2); "SMAÇ! · 187 km/s" vurana bağlı yüzer, sayı nedeni ekranın %40'ında sabit durur ve
+            // ikisi aynı banda düşüyordu. Şimdi her karede yerleşim: önce önemlisi (eşitse eskisi) yerine oturur, sonraki yazı
+            // çakışıyorsa onun altına, alt sınırı aşarsa üstüne kayar. Yazılar yatayda ortalı ve tam genişlik olduğu için yalnız
+            // dikey aralık sınanır. Öğretici mesajı (ogrMsg) da dolu alan sayılır. Liste alanları yeniden kullanılır (kare başı GC yok).
+            yerSira.Clear(); for (int i = 0; i < floats.Count; i++) yerSira.Add(i);
+            if (yerKarsilas == null) yerKarsilas = (i1, i2) => floats[i1].onem != floats[i2].onem ? floats[i2].onem.CompareTo(floats[i1].onem) : i1.CompareTo(i2);
+            yerSira.Sort(yerKarsilas);
+            yerDolu.Clear(); if (ogrMsgT > 0 && ogrMsg != null) yerDolu.Add(new Rect(lx, H * .5f, rx - lx, 60 * u));
+            foreach (int fi in yerSira)
             {
+                var f = floats[fi];
                 // HTML txt: yaylı büyüme (k = 1 + 2,7(q−1)³ + 1,7(q−1)²), .8 sn sonra solar
                 float q = Mathf.Min(1, f.a * 5), k = Ayar.reduce ? 1 : 1 + 2.7f * Mathf.Pow(q - 1, 3) + 1.7f * Mathf.Pow(q - 1, 2), a = f.a > .8f ? 1 - (f.a - .8f) / .4f : 1;
                 // 2026-11-12 (yasin: "sayı olduktan sonraki animasyonda kasmalar oluyor"): yaylı büyüme yazı BOYUNU her kare değiştiriyordu
@@ -584,10 +594,34 @@ namespace BirdieSmash.Game
                 // Kartla çakışan yazı kartın hemen altına iner (blocks = bu karede çizilen kart ve düğmeler).
                 if (ogr) foreach (var bl in blocks) if (bl.width > (rx - lx) * .6f && yy < bl.yMax && yy + 46 * u > bl.yMin) yy = bl.yMax + 4 * u;
                 st = Sigdir(st, f.t, rx - lx);   // tek satır kalsın (iki satıra kırılınca skorun/kartın üstüne biniyordu)
+                yy = YerBul(yy, 46 * u * Mathf.Max(1, olc), top + 60 * u, H - bot - 80 * u);
                 var fr = new Rect(lx, yy, rx - lx, 46 * u); var fm = GUI.matrix; if (Mathf.Abs(olc - 1) > .002f) GUIUtility.ScaleAroundPivot(new Vector2(olc, olc), fr.center);
                 Konturlu(fr, f.t, st, c, Mathf.Max(1.5f, 2.2f * u)); GUI.matrix = fm;
             }
             if (ogrMsgT > 0 && ogrMsg != null) { var c = Kit.Hex("#d8ff5a"); c.a = Mathf.Clamp01(ogrMsgT * 2); Shadowed(new Rect(lx, H * .5f, rx - lx, 60 * u), ogrMsg, mid, c); }
+        }
+        readonly List<int> yerSira = new List<int>(4); readonly List<Rect> yerDolu = new List<Rect>(4); System.Comparison<int> yerKarsilas;
+        // İstenen y'ye en yakın boş bandı bulur ve onu dolu sayar. Ölçekli yazı (yaylı büyüme) ortadan büyüdüğü için yükseklik
+        // en büyük ölçekle ayrılır: büyüme anında da komşuya değmez. Yer yoksa (çok nadir: 3+ yazı) en alttakinin altına iner.
+        float YerBul(float yy, float h, float ust, float alt)
+        {
+            float bosluk = 4 * u;
+            for (int deneme = 0; deneme < 6; deneme++)
+            {
+                bool cakisti = false;
+                foreach (var r in yerDolu)
+                {
+                    if (yy < r.yMax + bosluk && yy + h > r.yMin - bosluk)
+                    {
+                        cakisti = true;
+                        float asagi = r.yMax + bosluk, yukari = r.yMin - bosluk - h;
+                        yy = asagi + h <= alt || yukari < ust ? asagi : yukari;
+                        break;
+                    }
+                }
+                if (!cakisti) break;
+            }
+            yerDolu.Add(new Rect(0, yy, 1, h)); return yy;
         }
         void Cerceve(Rect r, Color c, float k)
         {
@@ -903,6 +937,16 @@ namespace BirdieSmash.Game
         {
             var o = M.ogr; var a = M.OgrA(); if (a == null) return y;
             float w = ColW, x = ColX, iw = w - 24 * u;
+            // Gizlenen kart (yasin 13 Kas: "antrenman modunda yazı büyük alan kaplıyor; i butonuyla hide edilebilir, kenarda yer
+            // kaplamayan şekilde durabilir"): kartın "i" düğmesi kartı sağ kenarda tek bir 44 pt yuvarlak "i" düğmesine indirir,
+            // ona dokununca kart geri gelir. Tercih kalıcı (tuytop_ogr_gizli): oyuncu bir kez kapattıysa sonraki adımlarda da kapalı
+            // kalır. Bilgi adımları (oyun duruyor, "Anladım, devam" bekliyor) gizlenemez; görev sonucu kendi ekranında.
+            if (OgrGizli && a.bilgi == null)
+            {
+                var b = new Rect(x + w - BH, y, BH, BH);
+                if (Button(b, "i")) OgrGizli = false;
+                return y + BH + 6 * u;
+            }
             if (!OgrYaziGuncel(o, a))
             {
                 string ilr = a.drill ? L.T(" · Top {0}/{1} · Doğru {2}", o.dene, Match.OGR_CAGRI, o.isabet) : a.bilgi != null ? "" : " · " + new string('●', o.n) + new string('○', Match.OGR_TEKRAR - o.n) + " " + o.n + "/" + Match.OGR_TEKRAR;
@@ -954,6 +998,12 @@ namespace BirdieSmash.Game
         }
 
         string ogrAdimAnah; bool ogrDetay;
+        static int ogrGizliK = -1;
+        static bool OgrGizli
+        {
+            get { if (ogrGizliK < 0) { try { ogrGizliK = PlayerPrefs.GetInt("tuytop_ogr_gizli", 0); } catch { ogrGizliK = 0; } } return ogrGizliK == 1; }
+            set { ogrGizliK = value ? 1 : 0; PlayerPrefs.SetInt("tuytop_ogr_gizli", ogrGizliK); PlayerPrefs.Save(); }
+        }
         // hız bandı: bölgeler oyunun kendi eşikleri; hedef bölge ▸ ile ve çerçeveyle (yalnız renkle değil)
         void HizBandi(OgrAdim a, int hb, float igne, float bx, float yy, float bwid)
         {
@@ -974,10 +1024,11 @@ namespace BirdieSmash.Game
             float hm = ms != null ? ms.CalcHeight(Ic(met), iw) + 4 * u : 0;
             float h = 8 * u + BH + hm + (bant ? 30 * u : 0) + (canli != null ? 22 * u : 0) + 8 * u;
             var r = new Rect(x, y, w, h); blocks.Add(r); Fill(r, new Color(9 / 255f, 16 / 255f, 17 / 255f, .62f));
-            float yy = y + 8 * u, tw = iw - bw - bitW - 12 * u;
+            float yy = y + 8 * u, tw = iw - bw * 2 - bitW - 18 * u;
             string sayac = ogrSayac;   // OgrKart bu karede kurdu/önbellekten verdi (OgrYaziGuncel)
             string bas = L.T(a.bas); var bs = Sigdir(leftB, bas, tw); Etk(new Rect(x + 12 * u, yy, tw, BH * .58f), bas, bs);
             var ss = Sigdir(Stil(left, Mathf.RoundToInt(11 * fu)), sayac, tw); Etk(new Rect(x + 12 * u, yy + BH * .55f, tw, BH * .45f), sayac, ss);
+            if (Button(new Rect(x + w - 12 * u - bitW - bw * 2 - 12 * u, yy, bw, BH), "i")) OgrGizli = true;
             if (Button(new Rect(x + w - 12 * u - bitW - bw - 6 * u, yy, bw, BH), "?")) ogrDetay = true;
             if (Button(new Rect(x + w - 12 * u - bitW, yy, bitW, BH), "Bitir")) root.OgrGec();
             yy += BH;

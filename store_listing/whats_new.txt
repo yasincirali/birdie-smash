@@ -1,4 +1,12 @@
 === UNITY ===
+Görsel düzeltmeler: tek gölge, binmeyen yazılar, dalgalanan file, canlı Oyna sayfası (13 Kasım akşam):
+- Topun tek gölgesi var. Eskiden topun altında ikinci, kaymış bir gölge daha çıkıyordu; yere düşen topun gölgesi de küçüldü, top gidince orada büyük bir leke kalmıyor.
+- "SMAÇ!" ile sayı yazısı artık hiç üst üste binmiyor: aynı anda çıkan yazılar birbirinin altına ya da üstüne yerleşiyor.
+- Top fileye (beyaz bandın altına) çarpınca çarptığı yerden halka halka dalga yayılıyor; sert smaçta dalga büyük, yumuşak topta küçük.
+- Oyna sayfasında oyuncular hep aynı hareketi yapmıyor: raket çevirme, el sallama, alkış ve danslar arasından rastgele seçiyorlar. Senin oyuncun yalnız sahip olduğun dansları yapar. Bir süre hareket edince yoruluyorlar ve dinleniyorlar (eller dizde soluklanma ya da eller belde derin nefes).
+- Clear, smaç ve drop vuruşlarında kol başın üstüne kalkıyor, serbest el topu gösteriyor; bilek artık doğal olmayan açılara bükülmüyor.
+- Antrenmanda yazı kartının "i" düğmesi kartı sağ kenarda küçük bir "i" düğmesine indiriyor; ona dokununca kart geri geliyor. Seçim hatırlanıyor.
+Nasıl denenir: Hızlı maç oyna. Topun altında tek gölge olmalı; sayı bitince yerde yatan topun yanında büyük koyu leke kalmamalı. Smaçla sayı al: "SMAÇ!" ve sayı yazısı ayrı satırlarda görünmeli. Fileye takılan bir top at: ağda çarptığı noktadan dışa yayılan dalga görmelisin. Clear ve smaç atarken raketli kol başın üstüne kalkmalı. Ana ekranda Oyna sekmesinde yarım dakika bekle: iki oyuncu farklı hareketler yapmalı, arada dinlenmeli. Antrenmana gir, kartta "i"ye dokun: kart sağ üstte küçük bir düğmeye inmeli; tekrar dokununca açılmalı.
 Raketi almadan dene, smaç rekorun Profil'de (13 Kasım akşam):
 - Atölye > Raket'te bir model kartının boş yerine dokununca o raket takımında denenir: üstteki çubuklar o raketle yeniden hesaplanır, her çubukta seçili raketine göre yukarı ya da aşağı ok çıkar; Teknik sayfa da o raketi anlatır. Karta yeniden dokununca deneme kapanır, hiçbir şey satın alınmaz.
 - Tel gerginliği kaydırıcısını sürüklerken her lbs'de ince bir tık ve kısa bir tel sesi var; ses gerildikçe incelir. Raketin önerdiği aralığın kenarını geçince çift titreşim gelir.
