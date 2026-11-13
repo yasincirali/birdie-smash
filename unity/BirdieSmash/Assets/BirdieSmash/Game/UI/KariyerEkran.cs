@@ -296,7 +296,9 @@ namespace BirdieSmash.Game
                 Erisim.Etiket(ik, L.T("İmza vuruşu") + ": " + L.T(im.ad) + ". " + L.T(im.cevap), "metin");
             }
             int uz = kb.uzunluk > 0 ? kb.uzunluk : Ayar.target;
-            var bil = Yazi(L.T("Saha") + ": " + L.T(CourtView.SAHA[kb.saha].ad) + " · " + (kb.uzunluk > 0 ? L.T("{0} sayı", uz) : L.T("{0} sayı (senin seçimin)", uz)) + "", 13, "soluk");
+            // 2026-11-13 inceleme (fikir #6): uzunluk seçiliyse ("senin seçimin") çipler hemen altında; satır sayıyı ikinci kez
+            // yazmaz (çip değişince sayfa kurulmazsa eski sayıyı gösterip çiple çelişebiliyordu). Sabit uzunlukta bugünkü gibi.
+            var bil = Yazi(L.T("Saha") + ": " + L.T(CourtView.SAHA[kb.saha].ad) + (kb.uzunluk > 0 ? " · " + L.T("{0} sayı", uz) : ""), 13, "soluk");
             Erisim.Etiket(bil, bil.text, "metin"); c.Add(bil);
             // Kural maçı (2026-11-07): tek satır, Günün maçının çevrilmiş adı ve açıklaması (yeni metin anahtarı yok).
             var kd = kb.degistirici != null ? Gunluk.Deg(kb.degistirici) : null;

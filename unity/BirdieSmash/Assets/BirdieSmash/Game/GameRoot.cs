@@ -31,7 +31,7 @@ namespace BirdieSmash.Game
         // Menü kabuğu (2026-10-26, UI Toolkit; Game/UI/UiKok). Hud maç içi + perde için kalır; menü perdeyi buradan okur.
         public UiKok ui; public Hud HudKatman { get { return hud; } }
         GameObject court; Renderer akisR; string courtId, modelId, gorunumId;
-        public OdulSonuc odul; public bool yukseltHazir; public Hedef.Bilgi hedef; public bool hedefHazir; bool pencere; Shuttle pencereTop; float sqT; float psvx, psvy;
+        public OdulSonuc odul; public bool yukseltHazir; public Hedef.Bilgi hedef; public bool hedefHazir; bool pencere; Shuttle pencereTop; float sqT; float psvx, psvy, pDive;
         float shake, punch; Vector3 camBase; Quaternion camRot; int seed = 1; Light sun; readonly System.Random rnd = new System.Random();
         bool ogrKayit;
         public Mod mod = Mod.Normal; public string drilId; public GunlukMac gunluk; bool gunlukSonraOyna;
@@ -957,7 +957,7 @@ namespace BirdieSmash.Game
                     if (geriT > 0 && geriT < GERI - .2f && YeniDokunus()) { geriT = 0; sfx.Tik(990); }
                     if (geriT <= 0) { geriT = 0; input.Reset(); }
                 }
-                else { ZaferAtla(); ReadInput(); match.Update(dt); }
+                else { ZaferAtla(); ReadInput(); bool araIdi = match.between; match.Update(dt); if (araIdi && !match.between) fx.IzSondur(); }   // servis kuruldu: düşüş izi servis yerinde asılı kalmasın (2026-11-13)
                 bool w = match.HitWindow(); if (w) pencereTop = match.s; if (w != pencere) { pencere = w; if (!Ayar.reduce) sfx.SuAlti(w); if (w) { sfx.Tik(); Yerel.Hap("tick"); } }   // vuruş penceresi: su altı
                 Gicirti(dt);
                 foreach (var e in match.events) OnEvent(e); match.events.Clear();
@@ -1168,6 +1168,15 @@ namespace BirdieSmash.Game
             toz -= dt; if (sp > 2.6f && toz <= 0) { toz = .07f; fx.Burst(Kit.W(o.x, o.y, .05f), new Color(.86f, .94f, .9f, .55f), 2, 40, "dot"); }
             if (psp > 2.4f && psvx * o.vx + psvy * o.vy < psp * sp * .2f && sqT <= 0) { sqT = .25f; sfx.Squeak(); }
             sqT = Mathf.Max(0, sqT - dt); psvx = o.vx; psvy = o.vy;
+            // Kendi balıklaman (2026-11-13 inceleme, fikir #1): Core durumu değişmez (Match I.lunge → me.dive = 1), burada yükselen
+            // kenar okunur; online IkizMaclar ve BotMac etkilenmez. Üç kanal: ayak altında toz + küçük dalga, gövde + sürtme sesi,
+            // "tick". Hareketi azaltta toz/dalga Fx'te, titreşim Yerel.Hap'te susar; ses kalır.
+            if (o.dive > pDive + .5f)
+            {
+                var ayak = Kit.W(o.x, o.y, .05f); fx.Burst(ayak, new Color(.86f, .94f, .9f, .6f), 6, 70, "dot"); fx.Dalga(ayak, Color.white, 40);
+                sqT = .25f; sfx.Uzan(); Yerel.Hap("tick");
+            }
+            pDive = o.dive;
         }
 
         void OnEvent(GameEvent e)
@@ -1193,7 +1202,7 @@ namespace BirdieSmash.Game
                 case Ev.Perfect: sfx.Perfect((int)e.k); fx.Burst(at, limon, 18, 280, "spark"); break;
                 case Ev.Flow: sfx.Akis(); Yerel.Hap("ralli"); if (M.ogr == null) Basarim.Ver(Basarim.AKIS); break;
                 case Ev.Aldat: sfx.Aldat(); Yerel.Hap("tick"); break;   // aldatma okunsun diye elde de hissedilir (hareketi azaltta yok)
-                case Ev.Split: sfx.Split(); break;
+                case Ev.Split: sfx.Split(); fx.Dalga(Kit.W(e.x, e.y, .05f), Color.white, 18); break;   // görüntü kanalı (2026-11-13 inceleme #4): sesi kapalı oynayan split'in tuttuğunu görsün; titreşim yok (rakip smaç tıkıyla çakışır)
                 case Ev.Serve: if (mpYan >= 0) Yerel.Hap("kalp"); break;   // maç sayısında servis anında tek kalp atışı (hareketi azaltta Hap susar)
                 case Ev.Kurtaris: sfx.Kurtaris(); break;
                 case Ev.Karsila: sfx.Gasp(.07f); Yerel.Hap("tick"); break;   // smaç döndürüldü: tribün nefesi + tık (yazı Match.Say'den; hareketi azaltta Hap susar, ses kalır)

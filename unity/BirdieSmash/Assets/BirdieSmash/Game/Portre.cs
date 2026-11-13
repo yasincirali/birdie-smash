@@ -53,6 +53,17 @@ namespace BirdieSmash.Game
             var g = DeneGorunum(kat, id); return Al(DeneAnahtar(kat, id, g), g, true, KBOY, krt, ksira, KSINIR, kat == Kozmetik.SIRT, kat == Kozmetik.KOL);
         }
 
+        // Düşük bellek uyarısı (2026-11-13 inceleme 22:12, fikir #2): Cokme.DusukBellek yalnız UnloadUnusedAssets + GC
+        // yapıyordu; bu statik sözlüklerdeki RT'ler onunla serbest kalmaz (~8 MB küçük resim). Uyarıda küçük resim önbelleği
+        // en yeni KALAN karta iner: Dolap açıksa görünen kartlar en son çizilenlerdir, kutuları boşalmaz; geri kalanı Dolap
+        // gezintisinde mevcut sıralı çizimle (kare başına bir kart) yeniden dolar. Portreler (8 × 256 KB) dokunulmaz: üst
+        // çubuk avatarı ve Profil kartı aynı RT'yi gösterir, silinirse kutu boşalır.
+        const int KALAN = 16;
+        public static void Bosalt()
+        {
+            while (ksira.Count > KALAN) { var e = ksira[0]; ksira.RemoveAt(0); RenderTexture o; if (krt.TryGetValue(e, out o) && o != null) { o.Release(); Object.Destroy(o); } krt.Remove(e); }
+        }
+
         static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben) { return Al(anahtar, g, ben, BOY, rt, sira, SINIR); }
         static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben, int boy, Dictionary<string, RenderTexture> on, List<string> sr, int sinir, bool arka = false, bool kol = false)
         {
@@ -79,6 +90,22 @@ namespace BirdieSmash.Game
             isik.type = LightType.Point; isik.range = 4; isik.intensity = 1.7f; isik.shadows = LightShadows.None; isik.renderMode = LightRenderMode.ForcePixel; isik.enabled = false;
         }
 
+        static float BasOrtaX(Transform fig, float bY, float ust, float yedek)
+        {
+            float mn = float.MaxValue, mx = float.MinValue; var m = new Mesh();
+            try
+            {
+                foreach (var sk in fig.GetComponentsInChildren<SkinnedMeshRenderer>())
+                {
+                    if (!sk.enabled || RaketAlti(sk.transform, fig)) continue;
+                    sk.BakeMesh(m, true); var M = Matrix4x4.TRS(sk.transform.position, sk.transform.rotation, Vector3.one); var vs = m.vertices;
+                    for (int i = 0; i < vs.Length; i++) { var w = M.MultiplyPoint3x4(vs[i]); if (w.y < bY || w.y > ust + .05f) continue; if (w.x < mn) mn = w.x; if (w.x > mx) mx = w.x; }
+                }
+            }
+            finally { Object.Destroy(m); }
+            // akıl kontrolü: baş genişliği 0,1–0,8 m dışındaysa (kol başın üstünde vb.) ölçüm atılır
+            return mn <= mx && mx - mn > .1f && mx - mn < .8f ? (mn + mx) * .5f : yedek;
+        }
         static bool RaketAlti(Transform t, Transform kok) { for (; t != null && t != kok; t = t.parent) if (t.name.ToLowerInvariant().StartsWith("raket")) return true; return false; }
         // arka (2026-11-01 Sırt): pelerin küçük resmi arkadan üç çeyrek, baştan beline kadar (pelerin sırtta, yüzden görünmez).
         // kol (2026-11-12, inceleme 17:05): kalkan üst kolda, baş kadrajının dışında kalıyordu; altı Kol kartı aynı baş portresini
@@ -115,6 +142,11 @@ namespace BirdieSmash.Game
                 float alt = bY - (ust - bY) * (arka ? 2.6f : .35f), yari = (ust - alt) * .5f * 1.08f, orta = (ust + alt) * .5f;
                 float d = yari / Mathf.Tan(kam.fieldOfView * .5f * Mathf.Deg2Rad);
                 var hedef = new Vector3(bas != null ? bas.position.x : YER.x, orta, bas != null ? bas.position.z : YER.z);
+                // 2026-11-13 (yasin: "buton içerisindeki resource'lar kaymasın"): kadraj baş kemiğine göre ortalanıyordu. Kemik boyunda,
+                // yüzün gerisinde; figür üç çeyrek döndüğü için (ben +18°, rakip −18°) yüz ekranda yana kayıyordu: Profil'de oyuncunun
+                // yüzü halkanın sağına, Kariyer'de rakibin yüzü soluna yaslanıp kesiliyordu. Yatay merkez artık başın görünen ağından
+                // (kemiğin üstündeki köşeler: baş + saç) ölçülür; ölçülemezse eski kemik merkezi.
+                if (!kalkan) hedef.x = BasOrtaX(fig.transform, bY, ust, hedef.x);
                 if (!kalkan)
                 {
                     kam.transform.position = hedef + new Vector3(0, yari * .12f, d); kam.transform.LookAt(hedef);

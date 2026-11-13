@@ -58,7 +58,8 @@ namespace BirdieSmash.Game
         {
             dusukBellek++;
             // Ralli ortasında da: iOS uyarıdan sonra saniyeler içinde kapatabilir, bir karelik takılma kapanmaktan iyidir.
-            Resources.UnloadUnusedAssets(); System.GC.Collect();
+            // Portre.Bosalt önce: bıraktığı RT'ler aynı UnloadUnusedAssets/GC turunda toplanır (2026-11-13 inceleme).
+            Portre.Bosalt(); Resources.UnloadUnusedAssets(); System.GC.Collect();
             yazT = 0;
         }
 

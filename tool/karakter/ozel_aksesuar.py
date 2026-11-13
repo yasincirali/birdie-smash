@@ -1050,6 +1050,71 @@ def pullu_kusak():   # pullu kuşak: bele bağlı tül şerit, iki sıra sallana
     top(ag, T, (.88, .04, .10), .09, 8, 4); boru(ag, T, [((.90, .02, .10), .04), ((1.00, -.16, .12), .035), ((1.02, -.34, .12), .05)], 6)
     ag.yaz('pullu_kusak', 3)
 
+# ---- Tatlıcı seti (2026-11-13, yasin: "yeni skinler ekleme"; tasarım dili "tombul oyuncak" §3 konu: yiyecek) ----
+# Beşinci konsept: dondurma, kek, lolipop, donut, makaron, krem şanti. İri yuvarlak kütleler, pastel düz renk, eşya başına ≤4 renk.
+PEM, NANE, KREM, GOFRET = '#ff8fbf', '#9be3c4', '#fff3f6', '#d9a25a'
+
+def dondurma():   # başa düşmüş dondurma: pembe top başın tepesini tencere gibi sarar (r166: saçın üstünde oturtulan top havada kaldı; kenar 1,12 > saç), damlalar kenardan sarkar, üstte nane top ve ters gofret külah
+    ag = Ag()
+    elipsoid(ag, PEM, (0, .98, 0), (1.14, .56, 1.14), 14, 6, -25, 90)
+    for k in range(7):
+        a = 2 * math.pi * k / 7 + .3; elipsoid(ag, PEM, (1.08 * math.cos(a), .66 - .07 * (k % 2), 1.08 * math.sin(a)), (.16, .24 + .07 * (k % 2), .16), 6, 3)
+    elipsoid(ag, NANE, (0, 1.58, 0), (.60, .36, .60), 10, 5)
+    koni(ag, GOFRET, (0, 1.84, 0), (0, 2.66, 0), .54, 10)
+    for y in (2.04, 2.30): halka(ag, '#b98242', .54 * (2.66 - y) / .82 + .01, .025, y, 10, 3)
+    ag.yaz('dondurma', 0)
+
+def cupcake():   # kek şapka: kâğıt kalıp başı tencere gibi sarar (r166: saç tepesine oturtulan kalıp havada kaldı; iç 1,12 > saç), üç kat kabarık pembe krema, tepede kiraz, iri renkli şeker
+    ag = Ag(); K = '#7cc4ff'
+    kesik(ag, K, (0, .42, 0), (0, 1.12, 0), 1.14, 1.26, 16); disk(ag, K, (0, 1.12, 0), 1.26, 16)
+    for i in range(8):   # kalıbın oluklu kenarı: iri kabartma şeritler (ince çizgi yerine)
+        a = 2 * math.pi * i / 8; kesik(ag, '#5aaef0', (1.17 * math.cos(a), .46, 1.17 * math.sin(a)), (1.29 * math.cos(a), 1.10, 1.29 * math.sin(a)), .07, .07, 5)
+    for R, r, y in ((.96, .30, 1.24), (.66, .27, 1.54), (.36, .23, 1.80)): halka(ag, '#ffc6dc', R, r, y, 16, 6)
+    top(ag, '#ffc6dc', (0, 1.98, 0), .20, 8, 4)
+    top(ag, '#e3262c', (0, 2.22, 0), .17, 8, 5)
+    for k in range(7):
+        a = 2 * math.pi * k / 7; R = 1.04 if k % 2 == 0 else .74; y = 1.46 if k % 2 == 0 else 1.74
+        top(ag, '#e3262c' if k % 3 == 0 else '#5aaef0', (R * math.cos(a), y, R * math.sin(a)), .06, 5, 3)
+    for renk in ag.alt: ag.alt[renk] = [tuple((q[0], q[1] - .22, q[2]) for q in t) for t in ag.alt[renk]]   # r167: kalıp saçın tepesinde tünemiş duruyordu; tencere gibi alna yakın (kenar y .20, bant çizgisinin üstünde)
+    ag.yaz('cupcake', 0)
+
+def krema_biyik():   # krem şanti bıyık (yüz): pos bıyıkla aynı dudak üstü yolu, kabarık krem topları; ortada küçük kiraz yok (sade)
+    ag = Ag()
+    for sgn in (-1, 1):
+        boru(ag, KREM, [((0, -.82, 1.13), .07), ((sgn * .22, -.84, 1.11), .09), ((sgn * .42, -.86, 1.02), .08), ((sgn * .58, -.80, .91), .06), ((sgn * .66, -.70, .84), .04)], 8)
+        for t, (x, y, z, r) in enumerate(((.18, -.80, 1.15, .07), (.38, -.82, 1.07, .065), (.56, -.76, .95, .05))): top(ag, KREM, (sgn * x, y, z), r, 6, 4)
+    elipsoid(ag, KREM, (0, -.80, 1.15), (.08, .075, .07), 8, 5)
+    ag.yaz('krema_biyik', 0)
+
+def lolipop():   # sırtta dev lolipop: sap belden çapraz, şeker başın arkasında (z <= -.3: enseye değmez), pembe-beyaz halkalar, sapta mavi fiyonk
+    ag = Ag(); z = -.36; c = (-.10, .78)
+    silindir(ag, BEY, (.20, -.60, -.18), (c[0] + .03, c[1] - .40, z + .04), .035, 6)
+    bombe(ag, PEM, cember(.44, 16, c), z - .04, z, z + .02, 1)
+    for i, R in enumerate((.36, .24, .12)): halka_z(ag, BEY if i % 2 == 0 else PEM, (c[0], c[1], z + .03), R, .055, 16, 4)
+    top(ag, BEY, (c[0], c[1], z + .05), .06, 6, 3)
+    for sgn in (-1, 1): elipsoid(ag, '#7cc4ff', (c[0] + .04 + sgn * .09, c[1] - .48, z + .06), (.09, .06, .04), 6, 3)
+    top(ag, '#7cc4ff', (c[0] + .04, c[1] - .48, z + .07), .04, 5, 3)
+    ag.yaz('lolipop', 1)
+
+def donut():   # donut kalkanı: kabarık hamur halkası, üstünde pembe şeker kaplama, iri renkli şekerler; ortası boş (kol görünür)
+    ag = Ag()
+    halka_z(ag, GOFRET, (0, 0, .10), .34, .18, 16, 6)
+    halka_z(ag, PEM, (0, 0, .17), .34, .145, 16, 5)
+    for k in range(9):
+        a = 2 * math.pi * k / 9 + .2; r = .34 + .07 * (1 if k % 2 else -1)
+        elipsoid(ag, BEY if k % 2 == 0 else '#7cc4ff', (r * math.cos(a), r * math.sin(a), .31), (.05, .022, .02), 5, 2)
+    kayis(ag); ag.yaz('donut', 2)
+
+def makaron_kusak():   # makaron kuşağı: krem kuşak, üstünde yan yana dizili altı iri makaron (iki kapak, ortada krema)
+    ag = Ag(); R = [PEM, NANE, '#ffd96a']
+    elips_kusak(ag, KREM, .87, .75, -.04, .87, .75, .14)
+    n = 6
+    for i in range(n):
+        a = 2 * math.pi * (i + .5) / n; p = (1.02 * math.cos(a), .05, .10 + .90 * math.sin(a)); rk = R[i % 3]
+        elipsoid(ag, rk, (p[0], p[1] + .08, p[2]), (.18, .07, .18), 8, 3); elipsoid(ag, rk, (p[0], p[1] - .08, p[2]), (.18, .07, .18), 8, 3)   # önizleme: .14 belde kayboluyordu
+        elipsoid(ag, KREM, p, (.16, .04, .16), 8, 2)
+    ag.yaz('makaron_kusak', 3)
+
 KALEM = {
     'tac': tac, 'hale': hale, 'seytan': seytan, 'kedi': kedi,
     'melek_kanat': lambda: kanat('melek_kanat', '#f6f3ea', KANAT, (('#dcd5c4', .70), ('#fffdf6', .42))),
@@ -1069,6 +1134,7 @@ KALEM = {
     'fes': fes, 'sombrero': sombrero, 'hasir': hasir, 'viking': viking, 'kavuk': kavuk, 'pos_biyik': pos_biyik, 'saz': saz, 'davul': davul, 'yelpaze': yelpaze,
     'kilim': kilim, 'tef': tef, 'kilt': kilt, 'obi': obi, 'pullu_kusak': pullu_kusak,
     'kabak_kalkan': kabak_kalkan, 'ag_kalkan': ag_kalkan, 'kazan': kazan, 'kedi_kuyruk': kedi_kuyruk,
+    'dondurma': dondurma, 'cupcake': cupcake, 'krema_biyik': krema_biyik, 'lolipop': lolipop, 'donut': donut, 'makaron_kusak': makaron_kusak,
 }
 
 if __name__ == '__main__':
