@@ -1,0 +1,3 @@
+toplam 2
+dugme_ayarlar · çevrilmemiş · .unity-text-element.unity-label.yazi.dugme-yazi · "Türkçe"
+model_ayarlar_gercekci · çevrilmemiş · .unity-text-element.unity-label.yazi.dugme-yazi · "Türkçe"
