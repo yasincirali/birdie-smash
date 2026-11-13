@@ -39,25 +39,39 @@ namespace BirdieSmash.Game
             ust.Add(Yazi(n + "/" + Gelisim.TAVAN + (yz != "" ? " · " + yz : ""), 14, "rakam"));
             var ne = Yazi(L.T(Gelisim.NE[dal]), 12, "soluk"); ne.style.whiteSpace = WhiteSpace.Normal; k.Add(ne);
             var alt = new VisualElement(); alt.AddToClassList("gel-alt"); k.Add(alt);
-            int d = dal;
-            if (dugmeli) alt.Add(GelisimDugme("-", n > 0, () => { if (Ayar.GelisimGeriAl(d)) { Tik(); Degisti(); } }, L.T("{0}: bir puan geri al", L.T(Gelisim.AD[dal]))));
+            int d = dal, n0 = n;
+            if (dugmeli) alt.Add(GelisimDugme("-", n > 0, () => { if (Ayar.GelisimGeriAl(d)) { root.sfx.Tik(740); Yerel.Hap("tick"); gelAniDal = d; gelAniBas = n0 - 1; gelAniGeri = true; Degisti(); } }, L.T("{0}: bir puan geri al", L.T(Gelisim.AD[dal]))));
             var cb = new VisualElement(); cb.AddToClassList("gel-cubuk"); cb.pickingMode = PickingMode.Ignore; alt.Add(cb);
             for (int j = 0; j < Gelisim.TAVAN; j++)
             {
                 var b = new VisualElement(); b.AddToClassList("gel-basamak"); if (j < n) b.AddToClassList("gel-basamak--dolu"); cb.Add(b);
-                if (dal == gelAniDal && j == gelAniBas && j < n) { gelAniDal = -1; BasamakDol(b); }
+                if (dal == gelAniDal && j == gelAniBas && !gelAniGeri && j < n) { gelAniDal = -1; BasamakDol(b); }
+                else if (dal == gelAniDal && j == gelAniBas && gelAniGeri && j >= n) { gelAniDal = -1; gelAniGeri = false; BasamakSon(b); }
             }
             Erisim.Etiket(cb, L.T(Gelisim.AD[dal]) + ", " + n + "/" + Gelisim.TAVAN + (yz != "" ? ", " + yz : "") + ". " + L.T(Gelisim.NE[dal]), "metin");
             bool ver = puanVar && n < Gelisim.TAVAN;
-            int n0 = n;
-            if (dugmeli) alt.Add(GelisimDugme("+", ver, () => { if (Ayar.GelisimVer(d)) { root.sfx.Yukselt(); Yerel.Hap("tick"); gelAniDal = d; gelAniBas = n0; Degisti(); } }, L.T("{0}: bir puan ver", L.T(Gelisim.AD[dal]))));
+            if (dugmeli) alt.Add(GelisimDugme("+", ver, () => { if (Ayar.GelisimVer(d)) { root.sfx.Yukselt(); Yerel.Hap("tick"); gelAniDal = d; gelAniBas = n0; gelAniGeri = false; Degisti(); } }, L.T("{0}: bir puan ver", L.T(Gelisim.AD[dal]))));
             return k;
         }
 
         // Puan verme anı (2026-11-11 inceleme, fikir 23:05 #4): ses ve tık vardı, göz bir şey görmüyordu; basamak tam dolu doğuyordu.
         // Sayfa yine yeniden kurulur (Degisti, kaydırma korunur); yeni kurulan kartta yalnız o basamak soldan sağa 0,18 sn dolar.
-        // Parıltı yok (sayfanın "süs yok" kuralı). Hareketi azaltta anında dolu; ses/tık aynı. Geri alma (−) hareketsiz.
-        int gelAniDal = -1, gelAniBas = -1;
+        // Parıltı yok (sayfanın "süs yok" kuralı). Hareketi azaltta anında dolu; ses/tık aynı.
+        // Geri alma (2026-11-14 inceleme, fikir 02:05 #6): − hareketsizdi, basamak bir anda boşalıyordu; hangi dalın azaldığı göz
+        // ucuyla okunmuyordu. Boşalan basamak dolu doğar ve sağdan sola 0,12 sn söner; tık + ile simetrik ama üç yarım ton pes
+        // (880 → 740 Hz). Hareketi azaltta anında boş.
+        int gelAniDal = -1, gelAniBas = -1; bool gelAniGeri;
+        static void BasamakSon(VisualElement b)
+        {
+            if (Ayar.reduce) return;
+            b.AddToClassList("gel-basamak--dolu");
+            b.style.transformOrigin = new TransformOrigin(Length.Percent(0), Length.Percent(50));
+            b.style.transitionProperty = new System.Collections.Generic.List<StylePropertyName> { new StylePropertyName("scale") };
+            b.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(.12f, TimeUnit.Second) };
+            b.style.transitionTimingFunction = new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseIn) };
+            b.schedule.Execute(() => { b.style.scale = new Scale(new Vector3(0, 1, 1)); Kalite.Hareket(); }).StartingIn(16);
+            b.schedule.Execute(() => { b.RemoveFromClassList("gel-basamak--dolu"); b.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(0, TimeUnit.Second) }; b.style.scale = new Scale(Vector3.one); }).StartingIn(150);
+        }
         static void BasamakDol(VisualElement b)
         {
             if (Ayar.reduce) return;

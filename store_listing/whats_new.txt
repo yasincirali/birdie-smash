@@ -1,4 +1,10 @@
 === UNITY ===
+Hızlı maç ve Gelişim cilası (14 Kasım gece):
+- Hızlı maçta saha adları ve zorluk adları artık aynı yazı boyunda; İngilizcede "Tournament" öbür üç addan küçük durmuyor. Zorluk çipleri eşit genişlikte, seçim değişince yer değiştirmiyor.
+- "Kariyerde yendiğin rakipler buraya eklenir." notu yalnız yenilecek rakip kaldıysa görünüyor.
+- Gelişim'de bir puanı geri alınca o basamak sağdan sola sönüyor ve daha pes bir tık duyuluyor.
+- Hızlı maç ya da maç kartı gibi alt sayfalar açıkken arkadaki ana ekran figürleri dans etmeyi bırakıyor; pil ve ısı için.
+Nasıl denenir: Dili İngilizceye al, Oyna > Hızlı maç: dört saha adı aynı boyda, dört zorluk çipi eşit genişlikte olmalı; zorluğu değiştir, çipler yerinde kalmalı. Kariyerde herkesi yendiysen rakip notu görünmemeli. Gelişim'de bir dala puan verip geri al: basamak sönerek boşalmalı. Hızlı maç sayfasını kapatınca arkadaki figürler yeniden hareket etmeli.
 Kariyer kartında yazı düzeltmesi (14 Kasım):
 - Tur kartındaki "Ekipman 28/44" yazısı (İngilizcede "Gear") artık iki satıra kırılıp ilerleme çubuğunun altına girmiyor; tek satırda, çubuğun üstünde duruyor.
 Nasıl denenir: Dili İngilizceye al, Kariyer'de seçili tur kartına bak: "Gear 28/44" tek satır ve yeşil çubuğun üstünde olmalı, sağda "16 upgrades short" okunmalı.

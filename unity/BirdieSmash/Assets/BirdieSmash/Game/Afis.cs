@@ -186,9 +186,13 @@ namespace BirdieSmash.Game
         // ama kamera her karede iki derili figürü üç piksel ışıkla 640×748 MSAA RT'ye yeniden çiziyordu. Poz ya da figür
         // değişince (ph ilerler ya da Yenile figürü kurar) iki kare çizilir, sonra kamera kapanır; RT son görüntüyü tutar.
         float sonPh = float.NaN; int durgun;
+        // Dondur (2026-11-14 inceleme, fikir 02:05 #2): Hızlı maç, maç kartı, Gelişim gibi alt sayfalar afişi %88'e kadar örterken
+        // dans zamanlanıp nefes sürüyor, kamera görünmeyen RT'ye iki derili figür çiziyordu. Donukken Goster çağrılmaz (ph sabit,
+        // yeni dans yok), durgun yolu iki kare sonra kamerayı kapatır, RT son kareyi tutar; sayfa kapanınca kaldığı yerden sürer.
+        public bool Dondur;
         void Update()
         {
-            Goster(Mathf.Min(.05f, Time.unscaledDeltaTime));
+            if (!Dondur) Goster(Mathf.Min(.05f, Time.unscaledDeltaTime));
             if (ph != sonPh) { sonPh = ph; durgun = durgun > 0 ? 1 : 0; } else durgun++;   // nefes adımı tek kare; figür kurulumu (Yenile/Ac durgun=0) iki kare
             bool ciz = durgun < 2; if (kam.enabled != ciz) kam.enabled = ciz;
         }
