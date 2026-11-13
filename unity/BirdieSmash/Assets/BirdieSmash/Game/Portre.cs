@@ -53,6 +53,17 @@ namespace BirdieSmash.Game
             var g = DeneGorunum(kat, id); return Al(DeneAnahtar(kat, id, g), g, true, KBOY, krt, ksira, KSINIR, kat == Kozmetik.SIRT, kat == Kozmetik.KOL);
         }
 
+        // Düşük bellek uyarısı (2026-11-13 inceleme 22:12, fikir #2): Cokme.DusukBellek yalnız UnloadUnusedAssets + GC
+        // yapıyordu; bu statik sözlüklerdeki RT'ler onunla serbest kalmaz (~8 MB küçük resim). Uyarıda küçük resim önbelleği
+        // en yeni KALAN karta iner: Dolap açıksa görünen kartlar en son çizilenlerdir, kutuları boşalmaz; geri kalanı Dolap
+        // gezintisinde mevcut sıralı çizimle (kare başına bir kart) yeniden dolar. Portreler (8 × 256 KB) dokunulmaz: üst
+        // çubuk avatarı ve Profil kartı aynı RT'yi gösterir, silinirse kutu boşalır.
+        const int KALAN = 16;
+        public static void Bosalt()
+        {
+            while (ksira.Count > KALAN) { var e = ksira[0]; ksira.RemoveAt(0); RenderTexture o; if (krt.TryGetValue(e, out o) && o != null) { o.Release(); Object.Destroy(o); } krt.Remove(e); }
+        }
+
         static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben) { return Al(anahtar, g, ben, BOY, rt, sira, SINIR); }
         static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben, int boy, Dictionary<string, RenderTexture> on, List<string> sr, int sinir, bool arka = false, bool kol = false)
         {

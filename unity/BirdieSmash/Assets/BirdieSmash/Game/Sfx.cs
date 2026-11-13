@@ -537,6 +537,9 @@ namespace BirdieSmash.Game
         // Rakibin balıklamayla kurtarışı (Ev.Kurtaris): parkeye düşen gövdenin kısık "küt"ü + tribün nefesi. Anın tek sessiz
         // büyük hareketiydi (2026-11-11 inceleme #4). Titreşim yok: rakibin hareketi elde hissedilmez.
         public void Kurtaris() { Govde(.35f); Gasp(.06f); }
+        // Oyuncunun kendi balıklaması (2026-11-13 inceleme, fikir #1): rakibinki üç kanallıydı, en zor savunma hareketin
+        // sessizdi. Gövdenin hafif "küt"ü + ayakkabı sürtmesi; tribün nefesi yok (o rakibin anı, ayrışsın).
+        public void Uzan() { Govde(.22f); Squeak(); }
 
         // Titreşim deseni (HTML hapHit): süre vuruşun gücü, gerginlik dokusu. Yerel.Vurus çalar.
         public static readonly Dictionary<string, int> HIT_MS = new Dictionary<string, int> { { "smash", 44 }, { "jump", 62 }, { "kill", 26 }, { "drive", 28 }, { "clear", 32 }, { "drop", 9 }, { "lift", 24 }, { "block", 12 }, { "push", 16 } };
