@@ -67,7 +67,7 @@ namespace BirdieSmash.Game
                 for (int i = 0; i < 3; i++) { float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 4) yield return null; yield return Cek("afis_" + i); }
                 File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
             }
-            if (kip == "dolap") { yield return Cek("00_ilk_kare"); yield return MenuTuru(); yield return Varyantlar(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }
+            if (kip == "dolap") { yield return Cek("00_ilk_kare"); yield return MenuTuru(); yield return DugmeKareleri(); yield return Varyantlar(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             yield return MenuTuru(); if (root.HudKatman != null) rap.AppendLine("açılış süresi (gerçek, CI yazılım render'ı): " + root.HudKatman.AcilisTani);
             Ayar.antrenman = true; Ayar.easy = true; Ayar.target = 5; Ayar.reduce = false; if (root.ui != null) root.ui.Kirlet();   // r11: Oyna sekmesi ilk açılış kurulumunda kalıyordu
@@ -297,6 +297,16 @@ namespace BirdieSmash.Game
         }
 
         // Menü kareleri: açılış perdesi kalkana kadar bekler (sesler hazırlanınca, en çok 12 sn).
+        // 2026-11-13 kısa tur (yasin: düğme yerleşimi/simetri): kısa turda Dolap, Hızlı maç ve Ayarlar da çekilir ki yerleşim
+        // düzeltmesi tam tur (90 dk) beklemeden görülsün.
+        IEnumerator DugmeKareleri()
+        {
+            var ui = root != null ? root.ui : null; if (ui == null) yield break;
+            ui.SekmeAc(Sekme.Soyunma); yield return Bekle(30); yield return Cek("dugme_soyunma");
+            ui.SekmeAc(Sekme.Oyna); ui.HizliMacAc(); yield return Bekle(20); yield return Cek("dugme_hizli"); ui.Geri();
+            ui.AyarlarAc(); yield return Bekle(20); yield return Cek("dugme_ayarlar"); ui.Geri(); yield return Bekle(5);
+        }
+
         IEnumerator MenuTuru(string ek = "ilk_", bool hepsi = false)
         {
             var ui = root != null ? root.ui : null; if (ui == null) { Debug.Log("EkranTuru: menü kabuğu yok"); yield break; }

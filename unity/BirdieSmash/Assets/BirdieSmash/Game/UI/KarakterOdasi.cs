@@ -336,7 +336,7 @@ namespace BirdieSmash.Game
         {
             int i = System.Array.IndexOf(Ayar.MODELLER, Ayar.model); string ad = L.T(i >= 0 ? Ayar.MODEL_AD[i] : Ayar.model);
             string metin = L.T("Şu an {0} modeli seçili. Ayakkabı modeli Oyuncak 3B ve Gerçekçi'de görünür, rengi burada da; seçimin kaydedilir.", ad);
-            var kart = Kart("deneme-kart"); c.Add(kart);
+            var kart = Kart("deneme-kart"); c.Add(kart); if (gez.sekme == Sekme.Soyunma) kart.AddToClassList("deneme-kart--dolap");
             kart.Add(Yazi(L.T("Ayakkabı modeli bu modelde görünmez"), 15, "kalin"));
             kart.Add(Yazi(metin, 13, "ipucu"));
             kart.Add(Dugme(L.T("Gerçekçi'ye geç"), () => { Ayar.model = "rocketbox"; Ayar.Kaydet(); root.ModelDegisti(); Tik(); SoyunmaGovdeKur(true); }, "dugme--birincil", null, 16));

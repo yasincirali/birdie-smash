@@ -62,7 +62,7 @@ namespace BirdieSmash.Game
             c.Add(AnahtarSatir(L.T("Ses"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Degisti(); }));
             c.Add(AnahtarSatir(L.T("Müzik"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.Kaydet(); Degisti(); }));
             // Seyirci (2026-11-11 inceleme, fikir 23:05 #6): kulaklıkla raket sesini net duymak isteyen için; üç çip, seçili ✓ + yazı (Cip).
-            var sy = Satir(); sy.AddToClassList("cip-sarar"); c.Add(Yazi(L.T("Seyirci"), 15)); c.Add(sy);
+            var sy = Satir(); sy.AddToClassList("cip-sarar"); c.Add(Grup(L.T("Seyirci"))); c.Add(sy);   // 2026-11-13: diğer başlıklarla aynı Grup biçimi (tek düz yazı başlıktı)
             sy.Add(Cip(L.T("Kapalı"), Ayar.seyirci == 0, () => { Ayar.seyirci = 0; Ayar.Kaydet(); Degisti(); }));
             sy.Add(Cip(L.T("Az"), Ayar.seyirci == 1, () => { Ayar.seyirci = 1; Ayar.Kaydet(); Degisti(); }));
             sy.Add(Cip(L.T("Normal"), Ayar.seyirci == 2, () => { Ayar.seyirci = 2; Ayar.Kaydet(); Degisti(); }));

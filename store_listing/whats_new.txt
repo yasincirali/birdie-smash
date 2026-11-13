@@ -1,4 +1,10 @@
 === UNITY ===
+Düğmeler hizalı ve simetrik (13 Kasım gece):
+- Dolap'ta Yüz, Ayak ve Tutuş yakın plan düğmeleri artık iki ok düğmesinin arasında, tam ortada duruyor.
+- Dolap ekranı küçük telefonlarda daha iyi sığıyor: karakter vitrini gerekirse biraz küçülüyor, alttaki satın alma çubuğu sekme çubuğunun altında kalmıyor; aynı bilgiyi tekrar eden deneme kartı normal yazı boyunda gizli.
+- Hızlı maç rakipleri iki sütunlu düzende (dört rakip 2x2), tek bir rakip artık satırın tamamını kaplamıyor.
+- Ayarlar'da "Seyirci" başlığı diğer başlıklarla aynı biçimde.
+Nasıl denenir: Dolap'ı aç: yakın plan düğmeleri okların arasında ortalı olmalı, alttaki satın alma çubuğu tam görünmeli. Oyna > Hızlı maç: rakipler ikişer ikişer dizilmeli. Ayarlar'da Seyirci başlığına bak.
 Balıklaman hissediliyor, ralli daha akıcı (13 Kasım gece, 22:00):
 - Topa balıklama uzandığında artık ayağının altında toz ve küçük bir halka çıkıyor, gövdenin yere değme sesi ve ayakkabı sürtmesi duyuluyor, telefon kısa bir tık veriyor.
 - Rakibin balıklamayla kurtarışı maçta yalnız ilk seferinde ağır çekime giriyor; sonraki kurtarışlarda oyun yavaşlamıyor, ses ve "Kurtardı!" yazısı kalıyor.
