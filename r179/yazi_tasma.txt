@@ -1,0 +1,3 @@
+toplam 2
+dugme_hizli · kesik genişlik 25>23 · .unity-text-element.unity-label.yazi.dugme-yazi · "Hall"
+dugme_hizli · kesik genişlik 67>64 · .unity-text-element.unity-label.yazi.dugme-yazi · "Tournament"
