@@ -81,7 +81,6 @@ namespace BirdieSmash.Game
             var cz = new VisualElement(); cz.AddToClassList("satir"); cz.pickingMode = PickingMode.Ignore; ust.Add(cz);
             var czIkon = Ikon(Ikonlar.Tuy, 26, ALTIN); cz.Add(czIkon); var czSayi = Yazi(UiKok.Sayi(ucusOnce >= 0 ? ucusOnce : tuy), 26, "rakam"); cz.Add(czSayi);
             Erisim.Etiket(ust, L.T("Cüzdanında {0} Tüy", tuy), "metin");
-            ust.Add(Yazi(L.T("Tüy'le Dolap'ta skin, Atölye'de ekipman alırsın. Maç oynayarak da kazanırsın."), 13, "soluk"));
             // 2026-11-12 inceleme (#1): satın almanın nedeni (Dolap/Atölye'deki hedef eşya) dükkânda görünmüyordu, oyuncu kafasında
             // hesap yapıyordu. Hedef varsa tek satır; "≈ N maç" aynı satırda oynayarak kazanma yolunu da gösterir (baskı yok).
             var hd = Ayar.HedefBilgi(); int eksik = hd.gecerli ? Hedef.Kalan(hd.fiyat, tuy) : 0;
@@ -90,6 +89,9 @@ namespace BirdieSmash.Game
                 int mt = Hedef.MacTahmini(eksik, PlayerPrefs.GetString(Hedef.SON_ANAHTAR, ""));
                 ust.Add(Yazi(L.T("Hedef: {0}", L.T(hd.ad)) + " · " + L.T("{0} Tüy eksik", UiKok.Sayi(eksik)) + (mt > 0 ? " · " + L.T("≈ {0} maç", mt) : ""), 13, "dukkan-hedef"));
             }
+            // 2026-11-14 inceleme (fikir 12:05 #5): Tüy'ün ne işe yaradığı yalnız hedef satırı yokken; hedef satırı "ne için" ve
+            // "maçla kazanılır"ı zaten söylüyor, iki satır aynı şeyi anlatıyordu. Fiyat ızgarası bir satır yukarı çıkar (SE).
+            else ust.Add(Yazi(L.T("Tüy'le Dolap'ta skin, Atölye'de ekipman alırsın. Maç oynayarak da kazanırsın."), 13, "soluk"));
             if (!string.IsNullOrEmpty(dukkanNot)) { var n = Yazi(dukkanNot, 14, "kalin"); n.AddToClassList("dukkan-not"); c.Add(n); }
 
             var m = Magaza.O;

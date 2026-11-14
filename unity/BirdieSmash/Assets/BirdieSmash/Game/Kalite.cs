@@ -55,7 +55,13 @@ namespace BirdieSmash.Game
             // Duraklatmada çizim yarı hızda (2026-11-07 inceleme, fikir 00:03 #4 küçültülmüş): sahne donuk ama kort, tribün ve gölge
             // her kare yeniden çiziliyordu. renderFrameInterval 2 = 30 fps çizim, Update/dokunuş 60 Hz kalır; duraklat menüsüne
             // dokunulunca (Hareket) hemen tam hıza döner. Menüde "8 sn dokunulmazsa" yapılmadı: canlı afiş 30'da kesik görünebilir.
-            bool durgun = root != null && root.ekran == Ekran.Oyun && root.paused && !menuHareket && !Kilitli;
+            // 2026-11-14 inceleme (fikir 12:05 #3): menüde de, 3B hareketli öğe görünmüyorken (VS afişi Oyna'da, Dolap vitrini
+            // Soyunma'da kapalı) MENU_DURGUN boyunca hiçbir dokunuş/kaydırma/USS geçişi olmadıysa çizim yarı hızda (Kariyer, Profil,
+            // Atölye, sayfalar). Eşik 0,5 sn değil 3 sn: ScrollView ataletle dokunuşsuz kayar, 3 sn'de durmuş olur; afişin kesik
+            // görünme kaygısı (7 Kas) afiş açıkken bu kural uygulanmadığı için geçerli. Dokunuş anında tam hıza döndürür.
+            bool menuDurgun = root != null && root.ekran == Ekran.Menu && Time.unscaledTime - hareketSon >= MENU_DURGUN && !Kilitli
+                && (root.afis == null || !root.afis.Acik) && (root.vitrin == null || !root.vitrin.gameObject.activeSelf);
+            bool durgun = root != null && root.ekran == Ekran.Oyun && root.paused && !menuHareket && !Kilitli || menuDurgun;
             int aralik = durgun ? 2 : 1;
             if (UnityEngine.Rendering.OnDemandRendering.renderFrameInterval != aralik) UnityEngine.Rendering.OnDemandRendering.renderFrameInterval = aralik;
         }
@@ -70,7 +76,7 @@ namespace BirdieSmash.Game
             else isilIyi = 0;
         }
 
-        const float HAREKET_SURE = .5f; static float hareketSon = -99;
+        const float HAREKET_SURE = .5f, MENU_DURGUN = 3f; static float hareketSon = -99;
         // Menü bir şey kıpırdattığında çağırır (UiKok: dokunma/sürükleme/tekerlek/USS geçişi; Hud: perde).
         public static void Hareket() { hareketSon = Time.unscaledTime; }
         // Menü son HAREKET_SURE içinde kıpırdamadı mı (Sfx ek ses sırası bunu bekler: kaydırma sırasında sentez yok, 2026-11-12).
