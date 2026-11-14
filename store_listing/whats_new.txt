@@ -1,4 +1,10 @@
 === UNITY ===
+Geri koşu ve yetişme (14 Kasım akşam):
+- Geriye koşmak artık öne koşmaktan yavaş: yana yüzde 6, düz geriye yüzde 18. Kural sende ve rakipte aynı.
+- Rakip önde yakalanıp arkaya top gelince eskisi gibi hep yetişmiyor; yetişemezse uzanıp topu bırakıyor.
+- Otomatik ve Yardımlı harekette oyuncun yetişemeyeceği yüksek noktaya koşmuyor, yetişebileceği noktayı seçiyor: arkaya gelen topa daha sık yetişiyorsun.
+- Top gövdenin gerisinde kalınca rakip smaç atmıyor, clear ya da drop oynuyor. Senin smacın da o durumda daha yavaş ve daha düz gidiyor.
+Nasıl denenir: Fileye yakın dururken rakibi dibe clear atmaya zorla, ardından sen de arkaya clear at: rakip önde kaldıysa bazen yetişemeyip uzanmalı. Sen de öndeyken gelen dibe topa geri koşarken koşunun öne koşudan belirgin yavaş olduğunu hisset.
 Zorluk yalnız rakip, hareket ayrı ayar; rakip raketi (14 Kasım):
 - Zorluk (Kolay, Orta, Zor, Usta) artık yalnız rakibin gücünü seçiyor. Oyuncunun koşusu ayrı ayar: Ayarlar > Oyuncu hareketi > Otomatik, Yardımlı ya da Elle. Bugünkü oyunun değişmez; eski seçimin bu ayara taşındı.
 - Usta günü ve Zor daveti de yalnız rakibi güçlendiriyor, koşunu değiştirmiyor.
