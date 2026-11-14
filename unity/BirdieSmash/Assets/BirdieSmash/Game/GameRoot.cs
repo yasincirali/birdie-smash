@@ -1229,8 +1229,10 @@ namespace BirdieSmash.Game
                     Ayar.gorev++; kaydetBekle = true; sfx.Gorev(); Yerel.Hap("ralli"); if (e.k >= 3 && M.ogr == null) Basarim.Ver(Basarim.GOREV3); hud.Say(L.T("Görev tamam: {0}", L.Cumle(e.text)), Kit.W(Court.MID, Court.NET, 2.4f), Kit.Hex("#ffd23a"), 1.15f, true);
                     fx.Burst(Kit.W(Court.MID, Court.NET - 1, 2.4f), Kit.Hex("#ffd23a"), 16, 220, "spark"); break;
                 case Ev.Net: net.sign = mine ? -1 : 1; sfx.Net(e.k, e.big); Yerel.Hap("net"); fx.Burst(at, Color.white, 4 + Mathf.RoundToInt(8 * e.k), 60 + 90 * e.k, "feather"); break;
-                case Ev.Cord: net.sign = mine ? -1 : 1; sfx.Net(.3f, true); Yerel.Hap("net"); break;
-                case Ev.Tape: net.sign = mine ? -1 : 1; sfx.Bant(); break;
+                // Bant ve ip (2026-11-14 inceleme, fikir 17:05 #2): Net'te üç kanal vardı, kardeşlerinde yoktu; bandı sıyırıp geçen top
+                // maçın "ooh" anı. Kamera/ağır çekim yok (ralli ritmi bozulmasın); ses yalnız mevcut sentez.
+                case Ev.Cord: net.sign = mine ? -1 : 1; sfx.Net(.3f, true); sfx.Gasp(.06f); Yerel.Hap("net"); fx.Burst(at, Color.white, 6, 90, "feather"); break;
+                case Ev.Tape: net.sign = mine ? -1 : 1; sfx.Bant(); Yerel.Hap("tick"); fx.Burst(at, Color.white, 3, 50, "feather"); break;
                 case Ev.Floor: sfx.Floor(e.big); fx.Iz(e.x, e.y, e.big); if (e.big && !rm) shake = Mathf.Max(shake, 5); break;
                 case Ev.Hawk: sfx.Hawk(e.type == "in"); Yerel.Hap("hawk"); hud.Hawk(e.x, e.y, e.type == "in", (int)e.k, M.s != null && M.s.serve); break;
                 case Ev.Point:

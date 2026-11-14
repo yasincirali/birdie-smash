@@ -204,7 +204,8 @@ namespace BirdieSmash.Game
             lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; lr.receiveShadows = false; return lr;
         }
         // Nefes halkası (HTML nefesHalka): doluyken görünmez; azaldıkça iki uçtan öne (kameraya) doğru kısalır,
-        // %40 altında turuncu (yanına "Nefes"/"Yorgun" yazılır: anlam yalnız renkle verilmez), %20 altında nabız atar.
+        // %40 altında turuncu, %20 altında nabız atar. Anlam yalnız renkle verilmez: halkanın boyu miktarı söyler; kalıcı "Nefes"/"Yorgun"
+        // etiketi 2026-11-14'te kalktı (yazı yerleşiminin dışındaydı), tek seferlik "Nefes al"/"Rakip yoruldu!" yazısı kalır.
         Transform takimDisk;
         void ShowRing(float n, float dt, bool reduce)
         {

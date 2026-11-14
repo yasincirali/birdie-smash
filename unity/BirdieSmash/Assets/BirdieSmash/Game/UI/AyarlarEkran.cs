@@ -70,14 +70,16 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Ses ve his")));
             c.Add(AnahtarSatir(L.T("Ses"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Degisti(); }));
             c.Add(AnahtarSatir(L.T("Müzik"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.Kaydet(); Degisti(); }));
+            c.Add(AnahtarSatir(L.T("Titreşim"), Ayar.titresim, () => { Ayar.titresim = !Ayar.titresim; Ayar.Kaydet(); if (Ayar.titresim) Yerel.Hap("tick"); Degisti(); }));
+            c.Add(AnahtarSatir(L.T("Hareketi azalt"), Ayar.reduce, Ayar.reduceSistem ? (System.Action)null : () => { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.Kaydet(); Degisti(); },
+                Ayar.reduceSistem ? L.T("Sistem ayarından") : null));
+            // Seyirci, "Ses ve his" grubunun SONUNDA (2026-11-14 inceleme, fikir 17:05 #1): 13 Kas'ta Grup başlığına çevrilince
+            // Titreşim ve Hareketi azalt görsel olarak ve VoiceOver başlık gezintisinde "Seyirci" altına düşmüştü.
             // Seyirci (2026-11-11 inceleme, fikir 23:05 #6): kulaklıkla raket sesini net duymak isteyen için; üç çip, seçili ✓ + yazı (Cip).
             var sy = Satir(); sy.AddToClassList("cip-sarar"); c.Add(Grup(L.T("Seyirci"))); c.Add(sy);   // 2026-11-13: diğer başlıklarla aynı Grup biçimi (tek düz yazı başlıktı)
             sy.Add(Cip(L.T("Kapalı"), Ayar.seyirci == 0, () => { Ayar.seyirci = 0; Ayar.Kaydet(); Degisti(); }));
             sy.Add(Cip(L.T("Az"), Ayar.seyirci == 1, () => { Ayar.seyirci = 1; Ayar.Kaydet(); Degisti(); }));
             sy.Add(Cip(L.T("Normal"), Ayar.seyirci == 2, () => { Ayar.seyirci = 2; Ayar.Kaydet(); Degisti(); }));
-            c.Add(AnahtarSatir(L.T("Titreşim"), Ayar.titresim, () => { Ayar.titresim = !Ayar.titresim; Ayar.Kaydet(); if (Ayar.titresim) Yerel.Hap("tick"); Degisti(); }));
-            c.Add(AnahtarSatir(L.T("Hareketi azalt"), Ayar.reduce, Ayar.reduceSistem ? (System.Action)null : () => { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.Kaydet(); Degisti(); },
-                Ayar.reduceSistem ? L.T("Sistem ayarından") : null));
             c.Add(Grup(L.T("Dil"))); var dl = Satir(); c.Add(dl);
             // "Sistem" (2026-11-12): iOS'un uygulama başına dil ayarını izler; Yazı satırındaki Sistem çipiyle aynı kalıp.
             dl.Add(Cip(L.T("Sistem"), Ayar.dilSistem, () => { Ayar.dilSistem = true; Ayar.dil = Ayar.SistemDil(); Ayar.Kaydet(); }));

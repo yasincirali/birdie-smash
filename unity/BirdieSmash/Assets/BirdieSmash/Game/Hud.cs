@@ -85,7 +85,16 @@ namespace BirdieSmash.Game
         public void StilSifirla() { stilOn.Clear(); stilNo.Clear(); glifSt.Clear(); }
         Match servisM; string servisSon; float servisBas, servisHedef, servisT0 = -9;
         float ralliPop; int sonRalli; float[] pop = new float[2]; float flash; Color flashC; readonly List<Vector3> cams = new List<Vector3>();
-        class HawkV { public float x, y, t; public bool icerde, serve; public int cm; } HawkV hawk;
+        class HawkV { public float x, y, t; public bool icerde, serve, baslik; public int cm; } HawkV hawk;
+        // Sayaç yalnız SetInt (Save yok): sayı anında eşzamanlı disk yazımı takılma yapıyordu (12 Kas kasma kuralı); kalıcılık sonraki Save'le.
+        const string HAWK_N = "tuytop_hawk_n"; int hawkN = -1;
+        // Daireye kırpılmış dikdörtgen: kaba kırpma (yalnız daire içi). Eskiden HawkCiz içinde closure'du; her OnGUI olayında
+        // delegate + kapanış nesnesi ayırıyordu (fikir 17:05 #7).
+        void HawkBlok(float cx, float cy, float R, float fade, float ax, float ay, float bw, float bh)
+        {
+            var r = new Rect(cx + ax, cy + ay, bw, bh); float dx = Mathf.Max(Mathf.Abs(r.center.x - cx) - r.width / 2, 0), dy = Mathf.Max(Mathf.Abs(r.center.y - cy) - r.height / 2, 0);
+            if (dx * dx + dy * dy > R * R) return; var rr = Rect.MinMaxRect(Mathf.Max(r.xMin, cx - R * .92f), Mathf.Max(r.yMin, cy - R * .92f), Mathf.Min(r.xMax, cx + R * .92f), Mathf.Min(r.yMax, cy + R * .92f)); if (rr.width > 0 && rr.height > 0) Fill(rr, new Color(1, 1, 1, fade));
+        }
         Texture2D ring, ringK, ringKesik, glow, disk, bar; Texture2D[] perdeTex;
         // Maç göstergesi Tüycükler diline (2026-10-31 Ar-Ge UI/UX #1, yasin "yap"; defter Pnfx5sknsw9PuWQ2MB9fGY): skor kutusu,
         // sol üst ralli/görev kutusu ve smaç rayı keskin köşeli düz dikdörtgendi, menüler ve duraklat yuvarlak kartlarla
@@ -160,7 +169,12 @@ namespace BirdieSmash.Game
         [System.NonSerialized] public int macSayisiYan = -1;
         int gucEtiketBoy = -1; string gucEtiketDil; float gucEtiketW;
         public void Flash(float a, Color c) { a *= .6f; if (Ayar.reduce) a *= .4f; if (a > flash) { flash = a; flashC = c; } }   // ×.6 (2026-11-05): tam ekran parlama büyük smaçta %50'ydi, kortu bir an siliyordu; %30 hâlâ "vurdum" der
-        public void Hawk(float x, float y, bool icerde, int cm, bool serve) { hawk = new HawkV { x = x, y = y, icerde = icerde, cm = cm, serve = serve }; }
+        public void Hawk(float x, float y, bool icerde, int cm, bool serve)
+        {
+            if (hawkN < 0) hawkN = PlayerPrefs.GetInt(HAWK_N, 0);
+            bool bas = hawkN < 3; if (bas) PlayerPrefs.SetInt(HAWK_N, ++hawkN);
+            hawk = new HawkV { x = x, y = y, icerde = icerde, cm = cm, serve = serve, baslik = bas };
+        }
         // Tribün flaşları (HTML M.cams): sayı kazanınca 26 küçük flaş ekranın üst bandında, .5 sn.
         public void Kamera() { for (int k = 0; k < 26; k++) cams.Add(new Vector3(Random.value, 8 + Random.value * 48, -Random.value * .6f)); }
         float konfetiT = -1; public void Konfeti() { konfetiT = 0; }
@@ -581,8 +595,9 @@ namespace BirdieSmash.Game
                 Shadowed(new Rect(lx, hy + 14 * u - ih, rx - lx, ih + 2 * u), ip, ist, Color.white);
             }
             if (M.s == null && !M.between && M.svPending == null && !ogr) ServisSeridi(M, hy);
-            if (M.HitWindow() && (!ogr || !M.ogr.dur) && !M.easy) { }
-            NefesYazi(M.me, true, M); NefesYazi(M.op, false, M);
+            // Kalıcı "Nefes"/"Yorgun" etiketi kalktı (2026-11-14 inceleme, fikir 17:05 #3): yazı yerleşiminin dışındaydı, smaç/sayı
+            // yazısıyla aynı banda düşebiliyordu. Bilgi üç yoldan kalıyor: ayak altı nefes halkası, tek seferlik "Nefes al"/"Rakip
+            // yoruldu!" ve sayı arası yorgun pozu.
             // Yazılar hiç üst üste binmez (yasin 13 Kas: "smaç ve sayı olduğunda üst üste yazılar biniyor"). Önceki kural yalnız
             // SAYIYI sınırlıyordu (en çok 2); "SMAÇ! · 187 km/s" vurana bağlı yüzer, sayı nedeni ekranın %40'ında sabit durur ve
             // ikisi aynı banda düşüyordu. Şimdi her karede yerleşim: önce önemlisi (eşitse eskisi) yerine oturur, sonraki yazı
@@ -870,22 +885,14 @@ namespace BirdieSmash.Game
             Tex(new Rect(cx - R - 4, cy - R - 4, 2 * R + 8, 2 * R + 8), disk, new Color(8 / 255f, 16 / 255f, 17 / 255f, .9f * fade));
             var kc = Kit.Hex(sa.kort); kc.a = fade; Tex(new Rect(cx - R, cy - R, 2 * R, 2 * R), disk, kc);
             float S = 300 * RefK * k, lw = .04f * S; float x0, x1, y0, y1; M.SinirPublic(h.serve, out x0, out x1, out y0, out y1);
-            System.Action<float, float, float, float> blok = (ax, ay, bw, bh) =>
-            {   // daireye kırpılmış dikdörtgen: kaba kırpma (yalnız daire içi)
-                var r = new Rect(cx + ax, cy + ay, bw, bh); float dx = Mathf.Max(Mathf.Abs(r.center.x - cx) - r.width / 2, 0), dy = Mathf.Max(Mathf.Abs(r.center.y - cy) - r.height / 2, 0);
-                if (dx * dx + dy * dy > R * R) return; var rr = Rect.MinMaxRect(Mathf.Max(r.xMin, cx - R * .92f), Mathf.Max(r.yMin, cy - R * .92f), Mathf.Min(r.xMax, cx + R * .92f), Mathf.Min(r.yMax, cy + R * .92f)); if (rr.width > 0 && rr.height > 0) Fill(rr, new Color(1, 1, 1, fade));
-            };
-            blok((x0 - h.x) * S, -R, lw, 2 * R); blok((x1 - h.x) * S - lw, -R, lw, 2 * R); blok(-R, -(y0 - h.y) * S - lw, 2 * R, lw); blok(-R, -(y1 - h.y) * S, 2 * R, lw);
+            HawkBlok(cx, cy, R, fade, (x0 - h.x) * S, -R, lw, 2 * R); HawkBlok(cx, cy, R, fade, (x1 - h.x) * S - lw, -R, lw, 2 * R);
+            HawkBlok(cx, cy, R, fade, -R, -(y0 - h.y) * S - lw, 2 * R, lw); HawkBlok(cx, cy, R, fade, -R, -(y1 - h.y) * S, 2 * R, lw);
             if (h.t > .36f) { float q = Mathf.Min(1, (h.t - .36f) / .12f), rc = .013f * S * q; Tex(new Rect(cx - rc, cy - rc, 2 * rc, 2 * rc), disk, h.icerde ? new Color(.85f, 1, .35f, .95f * fade) : new Color(1, .48f, .42f, .95f * fade)); }
             Tex(new Rect(cx - R - 2, cy - R - 2, 2 * R + 4, 2 * R + 4), ringK, new Color(1, 1, 1, fade));
-            Shadowed(new Rect(cx - 100 * u, cy - R - 22 * u, 200 * u, 16 * u), L.T("ÇİZGİ KAMERASI"), tiny, new Color(.62f, .73f, .7f, fade));
+            // Başlık yalnız ilk 3 çizgi kamerasında (2026-11-14 inceleme, fikir 17:05 #4): kıl payı maçta sık, başlık + karar + sayı
+            // nedeni üç yazı ediyordu; daire kendini anlatıyor. Karar satırı rengin yanında yazıyla kalır (renk körlüğü).
+            if (h.baslik) Shadowed(new Rect(cx - 100 * u, cy - R - 22 * u, 200 * u, 16 * u), L.T("ÇİZGİ KAMERASI"), tiny, new Color(.62f, .73f, .7f, fade));
             if (h.t > .36f) Shadowed(new Rect(cx - 150 * u, cy + R + 6 * u, 300 * u, 28 * u), L.T(h.icerde ? "İÇERİ" : "DIŞARI") + " · " + h.cm + " cm", Stil(mid, Mathf.RoundToInt(20 * fu)), h.icerde ? new Color(.85f, 1, .35f, fade) : new Color(1, .48f, .42f, fade));
-        }
-        void NefesYazi(Athlete o, bool isMe, Match M)
-        {
-            if (o.nefes >= .4f || M.ogr != null) return;
-            var sp = root.cam.WorldToScreenPoint(Kit.W(o.x + (isMe ? .9f : -.9f), o.y, 0)); if (sp.z < 0) return;
-            Shadowed(new Rect(sp.x - 50 * u, H - sp.y - 10 * u, 100 * u, 20 * u), L.T(isMe ? "Nefes" : "Yorgun"), small, Kit.Hex("#ff9f7a"));
         }
         // İlk Usta maçı kartı (2026-10-31 Ar-Ge U4, yasin "ilerle ve devam et"): Usta'ya ilk giren oyuncu ana ekrandaki tek satır
         // dışında koşunun kendisinde olduğunu, nasıl koşulduğunu ve iki halkanın anlamını bilmiyordu. Yalnız ilk Usta maçında,
