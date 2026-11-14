@@ -1,4 +1,11 @@
 === UNITY ===
+Dolap > Ayakkabı cilası (15 Kasım gece):
+- Ayakkabı yakın planı artık ayakkabıları kadrajın ortasına alıyor; iri baldırlar kareyi doldurmuyor, iki ayakkabının burnu ve yanları görünüyor.
+- Ayakkabı, sırt ve kol eşyası denediğinde ya da seçtiğinde eşya bir anda belirmiyor, kısa bir yaylanmayla yerine oturuyor (Hareketi azalt açıksa anında).
+- Ayakkabı görünümü takılıyken altta görünmeyen model ve renk satırları yerine tek cümle ve Oyun düğmesi var; "Görünüm yok" seçince model ve renk geri geliyor.
+- "Sıradaki" satırında kilitli eşyanın seviyesi yalnız sağda bir kez yazıyor, alt satır ikiye bölünmüyor.
+- "Kombin kaydet / Rastgele" satırı sayfanın sonuna indi; eşyalar ilk ekranda görünüyor.
+Nasıl denenir: Dolap > Görünüm > Ayakkabı'yı aç: yakın planda iki ayakkabı tam görünmeli. Bir görünüme dokun: eşya küçükten yaylanarak oturmalı. Görünüm takılıyken sayfada model ve renk satırı olmamalı, "Görünüm yok"a dokununca gelmeli. Sırt ve Kol'da da bir eşya dene.
 Açılış (15 Kasım):
 - Uygulamayı açınca tüy top artık en baştan spin atıyor: küçükten büyüyerek iki tur döner, sonra yerinde kendi ekseninde dönmeye devam eder. Oyun bu sırada yüklenir.
 - Dene: uygulamayı tamamen kapatıp aç. Dokunduğun anda ilk görüntüde küçük top olmalı, sıçrama ya da takılma olmadan spin atıp büyümeli, ana ekrana geçerken ikinci kez spin atmamalı.

@@ -249,7 +249,24 @@ namespace BirdieSmash.Game
                 Vector3 m = Vector3.zero; foreach (var t in bAyak) m += t.position; m /= bAyak.Count; m.y = YER.y + .06f * boy;
                 // r14: .10/.15 boy hâlâ dardı (Oyuncak modelin ayakkabısı iri, ayaklar açık duruşta; öndeki ayak düğmelerin
                 // altında kaldı). Pencere ~60 × 90 cm: iki ayakkabı ve bileğe kadar baldır.
-                float d = Uzaklik(.17f * boy, .26f * boy, out kay);
+                float yy = .17f * boy, yx = .26f * boy;
+                // 2026-11-15 inceleme (r180: Oyuncak modelde kareyi baldırlar dolduruyor, ayakkabının burnu ve yanları dışarıda):
+                // görünüm takılıysa kadraj iki ayakkabının mesh sınırından (Portre kartıyla aynı yol); değilse ayak kemiklerinin
+                // yatay açıklığı pencereyi genişletir, merkez yere biraz iner. Hiçbiri yoksa eski oran yolu.
+                Bounds kb = new Bounds(); bool sinir = false;
+                if (fig != null && fig.AyakKok != null)
+                    foreach (var p in fig.AyakKok) if (p != null && p.gameObject.activeInHierarchy) foreach (var r in p.GetComponentsInChildren<Renderer>()) if (r.enabled) { if (!sinir) { kb = r.bounds; sinir = true; } else kb.Encapsulate(r.bounds); }
+                if (sinir)
+                {
+                    m = kb.center; float e = kb.extents.magnitude;
+                    yy = Mathf.Max(kb.extents.y * 1.6f, e * .75f); yx = Mathf.Max(e * 1.2f, .12f * boy);
+                }
+                else if (bAyak.Count > 1)
+                {
+                    float acik = 0; foreach (var a in bAyak) foreach (var b in bAyak) { var f = a.position - b.position; f.y = 0; acik = Mathf.Max(acik, f.magnitude); }
+                    yx = Mathf.Max(yx, acik * .5f + .16f * boy); yy = Mathf.Max(yy, yx * .7f); m.y = YER.y + .04f * boy;
+                }
+                float d = Uzaklik(yy, yx, out kay);
                 cam = m + new Vector3(.35f, .38f, .86f).normalized * d; hedef = m - Vector3.up * kay;
             }
             else if (odak == TUTUS && (bGrip != null || bEl != null)) TutusPoz(boy, out cam, out hedef);
@@ -480,11 +497,35 @@ namespace BirdieSmash.Game
             // bırakılıp yavaşlama bitince görüntü kare kare aynı; kamera yine de figürü her karede 4× MSAA RT'ye çiziyordu.
             // Figür, açılar, geçiş, poz, kamera ve parlama aynıysa iki kare sonra kamera kapanır (RT son görüntüyü tutar);
             // biri değişince aynı karede açılır.
+            if (belirT >= 0) BelirAdim(dt);
             var kr = kam.transform.rotation;
-            bool ayni = sevinc == null && !raKay && fig == sonFig && a == sonA && ra == sonRa && gec == sonGec && ReferenceEquals(poz, sonPoz) && odak == sonOdak && cp == sonCp && kr == sonRot && parlaT < 0;
+            bool ayni = belirT < 0 && sevinc == null && !raKay && fig == sonFig && a == sonA && ra == sonRa && gec == sonGec && ReferenceEquals(poz, sonPoz) && odak == sonOdak && cp == sonCp && kr == sonRot && parlaT < 0;
             if (ayni) durgun++; else { durgun = 0; sonFig = fig; sonA = a; sonRa = ra; sonGec = gec; sonPoz = poz; sonOdak = odak; sonCp = cp; sonRot = kr; }
             bool ciz = durgun < 2; if (kam.enabled != ciz) kam.enabled = ciz;
         }
+        // 2026-11-15 inceleme #3 ("giydim" anı): denenen ya da seçilen ayakkabı/sırt/kol eşyası tek karede belirmesin; kendi kökü
+        // 0,82 → 1,0 ölçekte 160 ms geri yaylı (back-out) oturur. Şapka/yüz aksesuar kökünü saçla paylaştığı için dışarıda (saç da
+        // büyürdü). Hareketi azalt açıkken hiç oynamaz; haptik ve ses KarakterOdasi'nda aynı kalır. Süre boyunca vitrin çizilir.
+        Transform[] belirK; Vector3[] belirS; float belirT = -1;   // belirS: köklerin kendi ölçeği (Aksesuar kemik boyuna göre kurar, 1 değil)
+        public void Belir(string kat)
+        {
+            if (belirT >= 0) BelirOlcek(1);   // yarım kalan belirme önce yerine (yoksa ara ölçek yeni taban olurdu)
+            belirT = -1; belirK = null; if (fig == null || Ayar.reduce) return;
+            if (kat == Kozmetik.AYAK) belirK = fig.AyakKok;
+            else if (kat == Kozmetik.SIRT && fig.SirtKok != null) belirK = new[] { fig.SirtKok };
+            else if (kat == Kozmetik.KOL && fig.KolKok != null) belirK = new[] { fig.KolKok };
+            if (belirK == null || belirK.Length == 0) { belirK = null; return; }
+            belirS = new Vector3[belirK.Length]; for (int i = 0; i < belirK.Length; i++) belirS[i] = belirK[i] != null ? belirK[i].localScale : Vector3.one;
+            belirT = 0; BelirOlcek(.82f);
+        }
+        void BelirAdim(float dt)
+        {
+            belirT += dt; float t = Mathf.Clamp01(belirT / .16f), u = t - 1;
+            const float c1 = 1.70158f, c3 = c1 + 1;   // easeOutBack: hafif aşıp yerine oturur
+            BelirOlcek(.82f + .18f * (1 + c3 * u * u * u + c1 * u * u));
+            if (t >= 1) { BelirOlcek(1); belirT = -1; belirK = null; belirS = null; }
+        }
+        void BelirOlcek(float k) { if (belirK == null) return; for (int i = 0; i < belirK.Length; i++) if (belirK[i] != null) belirK[i].localScale = belirS[i] * k; }
         PlayerView sonFig; float sonA = float.NaN, sonRa, sonGec; string sonPoz; int sonOdak = -1, durgun; Vector3 sonCp; Quaternion sonRot;
     }
 }
