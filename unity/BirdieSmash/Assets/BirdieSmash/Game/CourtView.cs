@@ -108,7 +108,10 @@ namespace BirdieSmash.Game
             string[] yazi = { "BIRDIE SMASH", "SMASH 300", "BIRDIE SMASH", "RALLY", "BIRDIE SMASH" }; string[] renk = { "#c4ed3f", "#ff9a3c", "#c4ed3f", "#e99bff", "#c4ed3f" };
             int pi = 0; for (float x = X0; x < X1; x += 2, pi++)
             {
-                float x2 = Mathf.Min(X1, x + 2); var tex = Kit.LedTex(yazi[pi % yazi.Length], Kit.Hex(renk[pi % renk.Length]), Kit.Hex("#0d1420"));
+                float x2 = Mathf.Min(X1, x + 2); // Doku önbellekten (2026-11-14 inceleme, fikir 17:05 #5): arka panolar her kort kurulumunda yeni doku üretip eskisini
+                // UnloadUnusedAssets'e dek bellekte bırakıyordu; kenar panolarıyla aynı sözlük, oturumda en çok 3 doku.
+                string ys0 = yazi[pi % yazi.Length], rs0 = renk[pi % renk.Length]; Texture2D tex;
+                if (!ledOnbellek.TryGetValue(ys0 + rs0, out tex)) { tex = Kit.LedTex(ys0, Kit.Hex(rs0), Kit.Hex("#0d1420")); ledOnbellek[ys0 + rs0] = tex; }
                 var yuz = Kit.Prim(PrimitiveType.Quad, "led", root, Kit.W((x + x2) / 2, pano + .05f, .46f), new Vector3(x2 - x - .06f, .35f, 1), Kit.Clear(Color.white, tex));
                 yuz.transform.rotation = Quaternion.identity; var col = yuz.GetComponent<Collider>(); if (col != null) Object.Destroy(col);
                 Ledler.Add(new Led { m = yuz.GetComponent<Renderer>().material, varsayilan = tex });

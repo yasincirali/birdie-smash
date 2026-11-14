@@ -1,4 +1,11 @@
 === UNITY ===
+Kortta daha az yazı, file anları, Ayarlar düzeni (14 Kasım akşam):
+- Top file bandını sıyırıp geçince ya da ipe değince artık kısa bir titreşim ve birkaç tüy kırıntısı var; ipe değen topta seyirci nefesini tutuyor.
+- Kortta oyuncunun yanındaki kalıcı "Nefes"/"Yorgun" yazısı kalktı. Yorgunluğu ayak altındaki halka, bir kez çıkan "Nefes al" yazısı ve sayı arasındaki yorgun duruş gösteriyor.
+- Çizgi kamerasının "ÇİZGİ KAMERASI" başlığı yalnız ilk üç seferde çıkıyor; sonra yalnız daire ve "İÇERİ/DIŞARI · cm" satırı.
+- Ayarlar'da Titreşim ve Hareketi azalt artık "Ses ve his" başlığının altında; Seyirci seçimi grubun sonunda.
+- Kort değişince arka LED panoları her seferinde yeniden çizilmiyor: saha geçişi daha hafif.
+Nasıl denenir: Birkaç maç oyna; topu fileye yakın düşür, bandı sıyırıp geçince kısa titreşim ve tüy kırıntısı görmelisin. Uzun ralli at, oyuncun yorulunca yanında yazı çıkmamalı, halka turuncuya dönmeli. Kıl payı bir topta çizgi kamerası dördüncü kez çıktığında başlık görünmemeli. Ayarlar'ı aç: Titreşim ve Hareketi azalt, Ses ve Müzik'in hemen altında olmalı.
 Geri koşu ve yetişme (14 Kasım akşam):
 - Geriye koşmak artık öne koşmaktan yavaş: yana yüzde 6, düz geriye yüzde 18. Kural sende ve rakipte aynı.
 - Rakip önde yakalanıp arkaya top gelince eskisi gibi hep yetişmiyor; yetişemezse uzanıp topu bırakıyor.
