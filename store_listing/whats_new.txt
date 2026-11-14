@@ -1,4 +1,10 @@
 === UNITY ===
+Sayı yazıları ve geç kalınan smaç (14 Kasım gece):
+- Rakip topa yetişemeyip uzanınca artık "Kurtardı!" yazmıyor; sayı yazısı "YETİŞEMEDİ" oluyor. Drop ile alınan sayı "DROP SAYISI" diye yazılıyor.
+- Top gövdenin gerisindeyken attığın smaç daha zayıf gider; artık bunu hissettiriyor: sarsıntı ve flaş küçük, maçta ilk iki kez "Geç kaldın: topun altına gir" yazıyor.
+- Maç sonu öne çıkanlarda rakibin en az üç kez yetişemediği maçta "Rakip yetişemedi" kartı çıkıyor.
+- Ayarlar'da sıra: Oyuncu hareketi, Kaydırma, Kamera, Ses ve his, Yazı boyutu, Dil. Yazı boyutu seçeneğinin altında ne yaptığını anlatan kısa cümle var.
+Nasıl denenir: Rakibi dibe ve öne koşturarak sayı al: rakip uzanıp yetişemezse yazı "YETİŞEMEDİ" olmalı, "Kurtardı!" görünmemeli. Topun altına girmeden geç bir smaç at: sarsıntı küçük olmalı, ilk iki seferde uyarı yazısı çıkmalı. Ayarlar'ı aç, sırayı ve Yazı boyutu altındaki cümleyi kontrol et.
 Kariyer hikâyesi ve güçlenen rakipler (14 Kasım gece):
 - Rakipler artık tur tur gerçekten güçleniyor: her turun en zayıf rakibi bile önceki turun en zayıfından hızlı. Rakip kartında tek bir Güç sayısı var (ilk maçta 21, Efsaneler finalinde 99).
 - Kariyer ekranında dünya sıralaman: 1.840'tan başlar, kazandıkça yükselir, kaybedince düşmez. Dünya Finalleri'ni kazanınca bir numarasın, sonraki turlarda unvanını korursun.

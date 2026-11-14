@@ -107,13 +107,20 @@ namespace BirdieSmash.Game
         readonly List<Material> seyrekM = new List<Material>(); Renderer seyrekKafa; float seyrekA = -1;
         const int TEL_SAYI = 22; const float SEYREK_MIN = .08f, SEYREK_MAX = .45f;
         static readonly Color SEYREK_RENK = new Color(.80f, .84f, .88f);
+        // Tek paylaşılan malzeme (2026-11-14 inceleme, fikir 22:05 #7): her tel parçası Kit.Clear ile kendi malzemesini alıyordu;
+        // Kit.Topla dışında kaldıkları için figür yok edilince sahipsiz kalıyor, her maç yeni set birikiyordu. Seyrek kordaj yalnız
+        // maçtaki tek rakipte, alfa da tek değer: tüm teller aynı malzemeyi paylaşır (tek yazım, aynı çizim grubu). Paylasilan'da,
+        // figür yıkımı onu silmez.
+        static Material seyrekPay;
         public void KordajSeyrek()
         {
             seyrekM.Clear(); seyrekKafa = null; seyrekA = -1;
+            if (seyrekPay == null) { var t = Kit.Topla; Kit.Topla = null; seyrekPay = Kit.Clear(new Color(SEYREK_RENK.r, SEYREK_RENK.g, SEYREK_RENK.b, SEYREK_MIN)); Kit.Topla = t; Kit.Paylas(seyrekPay); }
+            seyrekM.Add(seyrekPay);
             foreach (var r in model.GetComponentsInChildren<Renderer>(true))
             {
                 string tag = Etiket(r.gameObject.name); if (tag != "tel" && tag != "tel2") continue;
-                var m = Kit.Clear(new Color(SEYREK_RENK.r, SEYREK_RENK.g, SEYREK_RENK.b, SEYREK_MIN)); seyrekM.Add(m);
+                var m = seyrekPay;
                 r.sharedMaterial = m; r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 if (tag == "tel" && seyrekKafa == null) seyrekKafa = r;
             }

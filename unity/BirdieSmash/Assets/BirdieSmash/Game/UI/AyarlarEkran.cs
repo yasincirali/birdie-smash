@@ -43,6 +43,16 @@ namespace BirdieSmash.Game
                 Erisim.Etiket(hc, L.T(Ayar.HAREKET_AD[i]) + ". " + L.T(HAREKET_ACIK[i]), "dugme", Ayar.hareket == id); hr.Add(hc);
             }
             c.Add(Yazi(L.T(HAREKET_ACIK[Mathf.Clamp(Ayar.hareket, 0, 2)]), 12, "soluk"));
+            // 2026-11-10 inceleme (fikir 02:05 #2): "Hareket" (tek çip) ve "Ses" (üç çip) tek "Ses ve his" grubunda, dört anahtar
+            // satırı; ad sabit, durum anahtarda. Tek seçimli gruplar (görünüm, kamera, yazı boyutu, dil) çip kalır. Davranış ve
+            // tuytop_* anahtarları aynı: Müzik ayrı (2026-10-30, ses kapalıyken müzik de susar, seçim korunur); Titreşim
+            // Hareketi azalt'tan bağımsız, açılınca örnek tık (2026-11-07; Duraklat'a eklenmez); sistem hareketi azalttıysa satır
+            // pasif, altında "Sistem ayarından".
+            // Kaydırma (2026-11-12 inceleme, fikir 07:05 #5): vuruş eşiği üç kademe; seçili kademenin tek soluk cümlesi (kamera kalıbı).
+            c.Add(Grup(L.T("Kaydırma"))); var kd = Satir(); kd.AddToClassList("cip-sarar"); c.Add(kd);
+            string[] Ka = { "Kısa", "Normal", "Uzun" }, KaAcik = { "Kısa ve yavaş kaydırma da vuruş sayılır", "Varsayılan eşik", "Yalnız uzun, hızlı kaydırma vuruş sayılır" };
+            for (int i = 0; i < 3; i++) { int id = i; kd.Add(Cip(L.T(Ka[i]), Ayar.kaydirma == id, () => { Ayar.kaydirma = id; Ayar.Kaydet(); Degisti(); })); }
+            c.Add(Yazi(L.T(KaAcik[Mathf.Clamp(Ayar.kaydirma, 0, 2)]), 12, "soluk"));
             c.Add(Grup(L.T("Kamera"))); var km = Satir(); c.Add(km);
             for (int i = 0; i < GameRoot.KAMERA_SIRA.Length; i++)
             {
@@ -54,19 +64,6 @@ namespace BirdieSmash.Game
             // Zorluk satırının kalıbı: seçili açının tek soluk cümlesi (cümleler GameRoot kamera kadraj yorumundan).
             int ks = System.Array.IndexOf(GameRoot.KAMERA_SIRA, Ayar.kamera);
             if (ks >= 0) c.Add(Yazi(L.T(KAMERA_ACIK[ks]), 12, "soluk"));
-            c.Add(Grup(L.T("Yazı boyutu"))); var yz = Satir(); c.Add(yz);
-            string[] Yk = { "sistem", "normal", "buyuk" }, Ya = { "Sistem", "Normal", "Büyük" };
-            for (int i = 0; i < 3; i++) { string id = Yk[i]; yz.Add(Cip(L.T(Ya[i]), Ayar.yazi == id, () => { Ayar.yazi = id; Ayar.Kaydet(); Degisti(); })); }
-            // 2026-11-10 inceleme (fikir 02:05 #2): "Hareket" (tek çip) ve "Ses" (üç çip) tek "Ses ve his" grubunda, dört anahtar
-            // satırı; ad sabit, durum anahtarda. Tek seçimli gruplar (görünüm, kamera, yazı boyutu, dil) çip kalır. Davranış ve
-            // tuytop_* anahtarları aynı: Müzik ayrı (2026-10-30, ses kapalıyken müzik de susar, seçim korunur); Titreşim
-            // Hareketi azalt'tan bağımsız, açılınca örnek tık (2026-11-07; Duraklat'a eklenmez); sistem hareketi azalttıysa satır
-            // pasif, altında "Sistem ayarından".
-            // Kaydırma (2026-11-12 inceleme, fikir 07:05 #5): vuruş eşiği üç kademe; seçili kademenin tek soluk cümlesi (kamera kalıbı).
-            c.Add(Grup(L.T("Kaydırma"))); var kd = Satir(); kd.AddToClassList("cip-sarar"); c.Add(kd);
-            string[] Ka = { "Kısa", "Normal", "Uzun" }, KaAcik = { "Kısa ve yavaş kaydırma da vuruş sayılır", "Varsayılan eşik", "Yalnız uzun, hızlı kaydırma vuruş sayılır" };
-            for (int i = 0; i < 3; i++) { int id = i; kd.Add(Cip(L.T(Ka[i]), Ayar.kaydirma == id, () => { Ayar.kaydirma = id; Ayar.Kaydet(); Degisti(); })); }
-            c.Add(Yazi(L.T(KaAcik[Mathf.Clamp(Ayar.kaydirma, 0, 2)]), 12, "soluk"));
             c.Add(Grup(L.T("Ses ve his")));
             c.Add(AnahtarSatir(L.T("Ses"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Degisti(); }));
             c.Add(AnahtarSatir(L.T("Müzik"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.Kaydet(); Degisti(); }));
@@ -80,6 +77,13 @@ namespace BirdieSmash.Game
             sy.Add(Cip(L.T("Kapalı"), Ayar.seyirci == 0, () => { Ayar.seyirci = 0; Ayar.Kaydet(); Degisti(); }));
             sy.Add(Cip(L.T("Az"), Ayar.seyirci == 1, () => { Ayar.seyirci = 1; Ayar.Kaydet(); Degisti(); }));
             sy.Add(Cip(L.T("Normal"), Ayar.seyirci == 2, () => { Ayar.seyirci = 2; Ayar.Kaydet(); Degisti(); }));
+            // Sıra anlamla (2026-11-14 inceleme, fikir 22:05 #3): oyun hissi (hareket, kaydırma, kamera) → ses → görünüm (yazı boyutu,
+            // dil). Yazı boyutu eskiden kamera ile kaydırmanın arasındaydı; "vuruş tutmuyor" diyen oyuncu hareket ve kaydırmayı yan
+            // yana bulur. Yazı boyutu da diğer çipli gruplar gibi seçilinin tek soluk cümlesini alır. Anahtarlar aynı.
+            c.Add(Grup(L.T("Yazı boyutu"))); var yz = Satir(); c.Add(yz);
+            string[] Yk = { "sistem", "normal", "buyuk" }, Ya = { "Sistem", "Normal", "Büyük" };
+            for (int i = 0; i < 3; i++) { string id = Yk[i]; var yc = Cip(L.T(Ya[i]), Ayar.yazi == id, () => { Ayar.yazi = id; Ayar.Kaydet(); Degisti(); }); Erisim.Etiket(yc, L.T(Ya[i]) + ". " + L.T(YAZI_ACIK[i]), "dugme", Ayar.yazi == id); yz.Add(yc); }
+            int ys = System.Array.IndexOf(Yk, Ayar.yazi); c.Add(Yazi(L.T(YAZI_ACIK[ys < 0 ? 0 : ys]), 12, "soluk"));
             c.Add(Grup(L.T("Dil"))); var dl = Satir(); c.Add(dl);
             // "Sistem" (2026-11-12): iOS'un uygulama başına dil ayarını izler; Yazı satırındaki Sistem çipiyle aynı kalıp.
             dl.Add(Cip(L.T("Sistem"), Ayar.dilSistem, () => { Ayar.dilSistem = true; Ayar.dil = Ayar.SistemDil(); Ayar.Kaydet(); }));
@@ -118,6 +122,7 @@ namespace BirdieSmash.Game
 
         void Antrenmana() { var once = gez.sekme; gez.Kok(); Uygula(once, false); root.Antrenman(); }
 
+        static readonly string[] YAZI_ACIK = { "iPhone'un yazı boyutunu izler", "Hep aynı boyut", "En az %130, iPhone daha büyükse onu izler" };   // sistem, normal, buyuk (Ayar.MenuYaziK)
         static readonly string[] KAMERA_ACIK = {   // GameRoot.KAMERA_SIRA sırasıyla
             "TV yayın açısı: yüksekten, kortun tamamı görünür",
             "Omzunun gerisinden: rakip ve file büyük, derinlik hissi güçlü",
