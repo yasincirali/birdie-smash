@@ -13,14 +13,16 @@ namespace BirdieSmash.Core
     public static class Ozet
     {
         public struct Kart { public int deger; public string ad; }
-        static readonly string[] SIRA = { "En uzun ralli", "Mükemmel", "Smaç", "Aldatma", "File vuruşu", "Uzanma", "Tepeden", "Split step" };
+        static readonly string[] SIRA = { "En uzun ralli", "Mükemmel", "Smaç", "Rakip yetişemedi", "Aldatma", "File vuruşu", "Uzanma", "Tepeden", "Split step" };
         // 2026-11-13 inceleme (fikir 07:05 #1): eşik yalnız rallide (8) vardı, diğerleri 1'den öne çıkıyordu; sıradan maçta kart
         // "1 Mükemmel · 1 Smaç" diye övüyordu. Artık her istatistiğin kendi eşiği var; geçen yoksa en uzun ralli tek kart kalır
         // (çoğu maçta tek kart). Kişisel rekor önceliği yapılmadı: rekor Match’te değil Ayar’da, Core’a taşımak ayrı iş.
-        static readonly int[] ESIK = { 8, 3, 3, 2, 2, 2, 2, 6 };
+        static readonly int[] ESIK = { 8, 3, 3, 3, 2, 2, 2, 2, 6 };
+        // "Rakip yetişemedi" (2026-11-14 inceleme, fikir 22:05 #5): yerleştirme oyunu (derine at, önden çek) smaç dışı bir kazanma
+        // yolu; Match.gecKalma yalnız ölçüm araçlarındaydı (kart içeri düşeni sayar: yetisSayi). Smaç ve mükemmelden sonra, eşik 3; yeni görev ya da ödül yok.
         static int Deger(Match M, int i)
         {
-            switch (i) { case 0: return M.maxRally; case 1: return M.perfects; case 2: return M.smashes; case 3: return M.deceives; case 4: return M.kills; case 5: return M.saves; case 6: return M.tepeden; default: return M.splits; }
+            switch (i) { case 0: return M.maxRally; case 1: return M.perfects; case 2: return M.smashes; case 3: return M.yetisSayi; case 4: return M.deceives; case 5: return M.kills; case 6: return M.saves; case 7: return M.tepeden; default: return M.splits; }
         }
         public static List<Kart> Kartlar(Match M)
         {

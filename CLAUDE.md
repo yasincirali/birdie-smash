@@ -50,9 +50,18 @@ Kod yazmadan önce ilgili skill çağrılır; uymuyorsa özette "skill dışı" 
 | Karakter, rig, klip (`tool/karakter/`) | `birdie-karakter`, `3d-animator` | `blender` (yalnız PC) |
 | Flutter kabuğu (`lib/`, `ios/`, WebView, haptic, devir kanalı) | `flutter-architecture`, `flutter-expert` ⚠️, `flutter-testing` | `dart` |
 | Menü/ekran tasarımı, UI cilası | `ui-ux-pro-max`, `emil-design-eng` | `ui-ux-pro-mcp` |
+| Menü/HUD hareketi, geçiş, animasyon denetimi | `animate`, `apple-design`, `design-motion-principles`; denetim `review-animations`, `improve-animations`, `find-animation-opportunities`; ad bulma `animation-vocabulary` | — |
+| Tasarım sistemi, token, bileşen kuralı | `design-system` (yargısı alınır, CSS sözdizimi alınmaz; kural kaynağı `docs/arayuz_tasarim_dili.md`) | `ui-ux-pro-mcp` |
+| Hata / çökme / stack trace | `debugging-wizard`, sonra `uw-unity-debugging` | — |
+| Kod incelemesi, PR öncesi | `code-reviewer` (+ stüdyo ajanı `unity-specialist`) | — |
+| Bir kararı zorlatma / pre-mortem | `the-fool` | — |
+| Dokümansız kodu çözme / doküman | `spec-miner` / `code-documenter` | — |
+| iOS yerel kod (AppDelegate, devir kanalı, Game Center köprüsü) | `swift-expert` | — |
+| Mağaza/tanıtım videosu | `remotion-motion-graphics` | — |
+| Yeni skill yazma | `skill-creator` | — |
 | Kod keşfi (her iş) | — | `codebase-memory-mcp` önce (`search_graph`, `trace_path`), sonra grep |
 
-`flutter-expert` Bloc/GoRouter önerir; kabuk tek ekran, yönlendirme yok. Bulutta
+`flutter-expert` Bloc/GoRouter önerir; kabuk tek ekran, yönlendirme yok. Sandık'tan alınan skill'ler (2026-11-14, yasin: "Sandık içinde işine yarayabilecek skilleri ve mcpleri al") `.claude/skills/` altında kopyadır; web/CSS örnekleri Unity UI Toolkit'e yargı olarak taşınır. Alınmayanlar: Supabase/SQL/güvenlik (sunucu yok), web sitesi tasarım skill'leri, `brag`/`canvas-design` (büyük, oyunda karşılığı yok). `.mcp.json`'a `codebase-memory-mcp`, `dart`, `ui-ux-pro-mcp` eklendi (yalnız PC yolları; bulutta `tool/bulut_kurulum.sh` kurar). Bulutta
 skill'ler ve `codebase-memory`/`dart`/`ui-ux-pro` sunucuları sandikapp'in
 `tool/bulut_kurulum.sh` betiğiyle her thread'e açılır.
 
