@@ -169,7 +169,7 @@ namespace BirdieSmash.Game
 
         public void StartMatch(bool ogr, bool kisa, bool ilk)
         {
-            ustaDeneBu = ustaDeneSonraki && !ogr; ustaDeneSonraki = false;   // Zor daveti yalnız bu maç (Ayar.zorluk değişmez; maç Zor kademesinde: koşu sende, yardım açık)
+            ustaDeneBu = ustaDeneSonraki && !ogr; ustaDeneSonraki = false;   // Zor daveti yalnız bu maç (Ayar.zorluk değişmez; rakip Zor kademesinde, oyuncunun hareket ayarı aynı)
             var o = Secenek(ogr); o.ilk = ilk; o.ogrKisa = kisa;
             // Kariyer (2026-10-26, harita): haritadan seçilen açık basamak, yoksa sıradaki. Uzunluk basamaktan (Tur 1'de 0 =
             // oyuncunun seçimi, bugünkü davranış; Asya Turu 5, finali 11).
@@ -197,7 +197,8 @@ namespace BirdieSmash.Game
             Ayar.GearHesap();
             // Usta daveti bayrağı burada TÜKETİLİR: Günün maçı/Usta yolu/görev StartMatch'e uğramadan Secenek çağırır, bayrak sızmasın.
             bool ud = ustaDeneBu && !ogr; ustaDeneBu = false; ustaDeneMac = ud;
-            return new MatchOptions { easy = Ayar.easy && !ud, kosuYardim = ud || Ayar.kosuYardim, rakipK = ud ? 1 : Ayar.RakipK, lastik = ud ? Ayar.ZORLUK_LASTIK[2] : Ayar.Lastik, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null && Ayar.easy ? Ayar.ilerleme.Yardim : 0 };
+            // 2026-11-14: Zor daveti de yalnız rakibi Zor'a alır; oyuncunun hareket ayarı (Ayar.hareket) olduğu gibi kalır.
+            return new MatchOptions { easy = Ayar.easy, kosuYardim = Ayar.kosuYardim, rakipK = ud ? Ayar.ZORLUK_RAKIP[2] : Ayar.RakipK, sert = ud || Ayar.zorluk >= 2, lastik = ud ? Ayar.ZORLUK_LASTIK[2] : Ayar.Lastik, target = Ayar.target, reduce = Ayar.reduce, ogr = ogr, bestRally = Ayar.bestRally, saha = Ayar.saha, gs = Ayar.GS, formaRenk = Ayar.FORMA, yardim = Ayar.ilerleme != null && Ayar.zorluk <= 1 ? Ayar.ilerleme.Yardim : 0 };   // yardım kademesi zorluğa bağlı (Kolay/Orta), koşuya değil
         }
         // Maç kurulumunun ortak kuyruğu (2026-10-26: dört mod aynı yoldan; davranış eski StartMatch'le birebir).
         void MacKur(int tohum, MatchOptions o)
@@ -308,11 +309,10 @@ namespace BirdieSmash.Game
             // 2026-11-08 inceleme: "Usta günü" Kolay/Orta oyuncusunu yardımsız Usta'ya atıyordu (Match.DegistiriciKur yalnız easy=false;
             // kosuYardim kendi kademesinden false gelir). Usta yolunu açmamış oyuncu o gün Zor oynar: koşu sende, geç kalırsan yardım.
             // Rakip, tohum, saha ve ödül herkes için aynı kalır; değişen yalnız oyuncunun yardım düzeyi.
-            if (GunlukUstaYardimli(g)) o.kosuYardim = true;
+            // 2026-11-14: Usta günü yalnız rakibi Usta gücüne alır (Match.DegistiriciKur sert); koşu oyuncunun hareket ayarında.
             mod = Mod.Gunluk; gunluk = g; MacKur(g.tohum, o);   // tohum tarihten: herkes aynı maçı (aynı rastgele akış) oynar
         }
 
-        public static bool GunlukUstaYardimli(GunlukMac g) { return g.deg.id == "usta" && !UstaYolu.Acik(Ayar.ilerleme); }
 
         // ---- 2026-10-26 Usta yolu (adım 9) ----
         public void UstaOyna() { if (!UstaYolu.Acik(Ayar.ilerleme)) return; hud.Perde(UstaBaslat); }
@@ -323,7 +323,7 @@ namespace BirdieSmash.Game
             o.stil = UstaYolu.Rakip(n); o.saha = b.saha; o.target = b.uzunluk; // 2026-11-10 Şampiyon yolu: önce zorluk seçimine bakmadan Usta'ya zorlanıyordu; Kolay/Orta'da 24 maçı bitiren oyuncunun ana düğmesi
             // elle koşulan, çok zor bir merdivene bağlanıyordu. Artık seçili zorlukta (Secenek); Usta seçiliyse eskisiyle birebir.
             // Ödül çarpanı (Zor/Usta ×1,25) zaten zorluktan gelir (Gear.Odul easy). bs_usta_6 yalnız Usta'da verilir.
-            if (Ayar.UstaZor) { o.easy = false; o.kosuYardim = false; }   // Usta: koşmak da sende
+            // 2026-11-14: Usta artık yalnız rakip gücü; koşu oyuncunun hareket ayarından (eskiden Usta'da koşu zorla elleydi).
             ustaTam = Ayar.UstaZor;
             mod = Mod.Usta; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
         }
@@ -394,7 +394,7 @@ namespace BirdieSmash.Game
             var beceri0 = Ayar.ilerleme != null ? Karakter.BeceriKazanilan(Ayar.ilerleme) : null;
             if (M.ogr == null && Ayar.ilerleme != null) Ayar.ilerleme.MacSay(M.smashes, M.smacKarsila, M.deceives);   // Profil istatistiği (2026-10-26; cihazda)
             // Yardım kademesi (Core/Ilerleme.Yardim): Usta yolu dışındaki her maç. Kayıpta sonuç ekranı söyler (gizli kolaylık değil).
-            // 2026-11-10 inceleme: yardım yalnız Kolay/Orta seçen oyuncuya uygulanır (Secenek: Ayar.easy). Zor/Usta'yı bilerek seçen
+            // 2026-11-10 inceleme: yardım yalnız Kolay/Orta seçen oyuncuya uygulanır (Secenek: Ayar.zorluk ≤ 1; 2026-11-14 koşudan ayrıldı). Zor/Usta'yı bilerek seçen
             // oyuncunun rakibi gizlice yavaşlamasın; kademe sayılmaya devam eder (kayıp sayacı) ve 3+ kayıpta sonuç kartı kademe
             // indirmeyi açıkça önerir. Kolay/Orta'ya inen oyuncu biriken yardımla başlar: 29 Eki kararının (çocuklar) amacı bu.
             int yardim0 = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0;
@@ -404,7 +404,7 @@ namespace BirdieSmash.Game
             BittiSifirla(); bittiKazandi = won;
             // Kolay'dan Usta'ya davet (stüdyo incelemesi 2026-11-05, oyun tasarımı 6): Kolay'da rahat kazanan oyuncuya (3+ galibiyet,
             // bu maçta 5+ tam orta) tek maçlık "Zor'u dene" (2026-11-05 dört kademe: önce Usta'ydı; Zor koşu yardımlı, adım daha küçük). Ayar değişmez, maç Usta ödülüyle (×1,25) oynanır; en çok 2 kez gösterilir.
-            ustaDavet = won && M.easy && M.ogr == null && M.stil.usta < 0 && mod == Mod.Normal && !ustaDeneMac && Ayar.wins >= 3 && M.perfects >= 5 && PlayerPrefs.GetInt("tuytop_usta_davet", 0) < 2;
+            ustaDavet = won && Ayar.zorluk <= 1 && M.ogr == null && M.stil.usta < 0 && mod == Mod.Normal && !ustaDeneMac && Ayar.wins >= 3 && M.perfects >= 5 && PlayerPrefs.GetInt("tuytop_usta_davet", 0) < 2;
             ustaDavetSayildi = false;   // hak düğme gerçekten çizilince düşer (UstaDavetGordu): tek ikincil yuvada başka düğme öndeyse yanmasın
             if (KariyerVeri.Var(M.stil.kariyer))
             {   // yıldızlar ve açılış Core/Ilerleme'de; Tur 1 sayısı (tuytop_v2.kariyer, başarımlar) ondan türer
@@ -447,7 +447,7 @@ namespace BirdieSmash.Game
             if (M.okudun > 0) { Ayar.ilerleme.ImzaOkuSay(M.okudun); if (Ayar.ilerleme.ImzaOkunan >= Basarim.IMZA_OKUR_HEDEF) Basarim.Ver(Basarim.IMZA_OKUR); }
             // Maç sonu ödülü (HTML ekoOdul): antrenmanda yok (antrenman maç sonu ekranına gelmez). Yeni yıldız +20 Tüy, okunan imza +5 XP.
             bool hazirOnce = YukseltAlinir(Ayar.gear.Seviye());   // ödülden önce: bu maç yeni bir şey açtı mı
-            odul = Ayar.gear.Odul(won, kariyerIlk, M.target, M.easy, M.gorevBitti, M.perfects, System.DateTime.Now, yeniYildiz, M.okudun, ekTuy, ekXp, ekAd);
+            odul = Ayar.gear.Odul(won, kariyerIlk, M.target, !M.sert, M.gorevBitti, M.perfects, System.DateTime.Now, yeniYildiz, M.okudun, ekTuy, ekXp, ekAd);
             PlayerPrefs.SetString(Hedef.SON_ANAHTAR, Hedef.SonEkle(PlayerPrefs.GetString(Hedef.SON_ANAHTAR, ""), odul.tuy));   // "≈ N maç" (Core/Hedef.MacTahmini)
             rekKart = true;   // ödüllü reklam teklifi yalnız gerçek maç kartında (antrenman ve görev kartında yok)
             if (odul.sonra > odul.once) Yerel.Hap("flow");   // seviye atladın
@@ -465,11 +465,11 @@ namespace BirdieSmash.Game
             bittiBas = hik == 1 ? L.T("Geri dönüş") : hik == 2 ? L.T("Kıl payı") : won ? (L.En ? "Victory" : "Galibiyet") : L.T("Bu sefer rakip aldı");
             if (kNot != "") { if (kariyerIlk) bittiAcilan = L.Cumle(kNot); else bittiAltNot = L.Cumle(kNot); }
             if (hik == 1) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("{0}–{1} gerideyken döndün.", M.geriBen, M.geriRakip);
-            if (yumusadi && Ayar.easy) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Sıradaki maçta rakip biraz yavaşlayacak.");
+            if (yumusadi && Ayar.zorluk <= 1) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Sıradaki maçta rakip biraz yavaşlayacak.");
             // Zorluk ipucu (2026-11-12 22:05 fikir 2, inceleme YAP kısmen): Ayarlar'daki zorluk 2026-11-07'de çıktı, cümle artık olmayan
             // yeri gösteriyordu. Çip kariyer kartında ve Hızlı maçta; yıldızlar zorluktan bağımsız (Ilerleme.Isle zorluk almaz), bunu söylemek
             // kademe indirmeyi "ilerlemeyi kaybetmek" olmaktan çıkarır. Maç sonu düğmesi (tek dokunuşla indir) eklenmedi: kart IMGUI'de kalabalık.
-            else if (!won && !Ayar.easy && M.stil.usta < 0 && M.ogr == null && Ayar.ilerleme != null && Ayar.ilerleme.Yardim >= 3)
+            else if (!won && Ayar.zorluk >= 2 && M.stil.usta < 0 && M.ogr == null && Ayar.ilerleme != null && Ayar.ilerleme.Yardim >= 3)
                 bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Zorlanıyorsan maçtan önce zorluk çipini bir kademe indir; yıldızlar aynı kalır.");
             // İmza okuma sayacı aşağıda değil yukarıda (ödül bloğu) işlendi; yeni beceri unvanı alt nota tek cümle, yeni yazı yuvası yok.
             var yeniUnvan = beceri0 != null ? Karakter.YeniBeceri(Ayar.ilerleme, beceri0) : null;

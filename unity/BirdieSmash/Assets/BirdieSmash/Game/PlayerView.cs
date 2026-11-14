@@ -99,14 +99,36 @@ namespace BirdieSmash.Game
         // rakip ~10 m ötede; 22 + 21 tel arası (~6 mm) ekranda bir pikselden dar, çoklu örnekleme telleri tek bir beyaz yüzeye
         // ortalıyor, raket dolu disk gibi görünüyordu (gölgesi de dolu). Gerçek yayında uzak kordaj ince bir pus: teller saydam
         // (alfa .3, ışıksız) ve gölge düşürmez. Yalnız maçtaki rakipte; yakın plan (vitrin, afiş) ve senin raketin aynı kalır.
+        // 2026-11-14 (yasin: "maç içinde rakip raketinin içi beyaz olabiliyor, bunu çözmüştük ama arada karşılaştım"): sabit .3
+        // alfa yetmiyordu. Kalite basamağı ralli içinde çözünürlüğü (Screen.SetResolution) ve MSAA'yı düşürüyor (Kalite.cs); düşük
+        // basamakta tel aralığı ekranda bir pikselin altına iniyor, 43 tel üst üste binip .3 alfa birikerek yine dolu açık bir
+        // disk veriyordu. "Arada" olması bu yüzden: yalnız kalite düştüğünde, rakip fileden uzakken. Şimdi alfa her karede tel
+        // aralığının ekrandaki piksel boyuna göre: aralık ≤ 1,5 px'te .08 (ince pus), ≥ 4 px'te .45; renk de beyaz değil, gri-mavi.
+        readonly List<Material> seyrekM = new List<Material>(); Renderer seyrekKafa; float seyrekA = -1;
+        const int TEL_SAYI = 22; const float SEYREK_MIN = .08f, SEYREK_MAX = .45f;
+        static readonly Color SEYREK_RENK = new Color(.80f, .84f, .88f);
         public void KordajSeyrek()
         {
+            seyrekM.Clear(); seyrekKafa = null; seyrekA = -1;
             foreach (var r in model.GetComponentsInChildren<Renderer>(true))
             {
                 string tag = Etiket(r.gameObject.name); if (tag != "tel" && tag != "tel2") continue;
-                var c = r.sharedMaterial != null && r.sharedMaterial.HasProperty("_Color") ? r.sharedMaterial.color : r.sharedMaterial != null && r.sharedMaterial.HasProperty("_BaseColor") ? r.sharedMaterial.GetColor("_BaseColor") : Color.white;
-                r.sharedMaterial = Kit.Clear(new Color(c.r, c.g, c.b, .3f)); r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                var m = Kit.Clear(new Color(SEYREK_RENK.r, SEYREK_RENK.g, SEYREK_RENK.b, SEYREK_MIN)); seyrekM.Add(m);
+                r.sharedMaterial = m; r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                if (tag == "tel" && seyrekKafa == null) seyrekKafa = r;
             }
+        }
+        // Karede bir: kafanın ekrandaki genişliği / tel sayısı = tel aralığı (px). Değişim küçükse malzemeye yazılmaz.
+        void KordajGuncelle()
+        {
+            if (seyrekKafa == null || seyrekM.Count == 0) return; var cam = Camera.main; if (cam == null) return;
+            var b = seyrekKafa.bounds; if (b.size.sqrMagnitude <= 0) return;
+            Vector3 a0 = cam.WorldToScreenPoint(b.center - cam.transform.right * b.extents.magnitude * .7f), a1 = cam.WorldToScreenPoint(b.center + cam.transform.right * b.extents.magnitude * .7f);
+            if (a0.z <= 0 || a1.z <= 0) return;
+            float aralik = Mathf.Abs(a1.x - a0.x) / TEL_SAYI;
+            float a = Mathf.Lerp(SEYREK_MIN, SEYREK_MAX, Mathf.InverseLerp(1.5f, 4f, aralik));
+            if (Mathf.Abs(a - seyrekA) < .02f) return; seyrekA = a;
+            foreach (var m in seyrekM) if (m != null) m.color = new Color(SEYREK_RENK.r, SEYREK_RENK.g, SEYREK_RENK.b, a);
         }
         public static PlayerView Build(Transform root, string model, bool isMe, Color forma, bool hakem = false, Gorunum gor = null)
         {
@@ -841,6 +863,7 @@ namespace BirdieSmash.Game
         float KayK() { float u = 1 - kayT / KAY_SURE; return u * u * u; }   // kalan ofset payı: 1 → 0, kübik ease-out
         public void Show(Athlete o, Match M, float dt)
         {
+            KordajGuncelle();   // yalnız maçtaki rakipte dolu (KordajSeyrek); diğer figürlerde hemen döner
             // kendi bacağının adımı ve adım tavanı (Match.Athlete.adimBoy/ayakTurMax notu): tavan chassé adımı 0,99 m'den
             // kısaysa o oranda yükselir (en çok 6 tur/sn); gerçek oranlı modellerde adım ≥ 0,99, tavan aynen 3,6.
             // Tur 2: her karede yazılır (adım boyu yoksa null/NaN): menü arkasındaki maç model değişiminden sonra da sürüyor,

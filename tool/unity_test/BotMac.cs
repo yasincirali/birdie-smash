@@ -187,6 +187,9 @@ static class BotMac
         var mu = new Match(3, new MatchOptions { easy = false, stil = st, target = 5 }); var mk = new Match(3, new MatchOptions { easy = true, stil = st, target = 5 });
         var my = new Match(3, new MatchOptions { easy = false, stil = UstaYolu.Rakip(0), target = 5 });
         if (Math.Abs(mu.stil.hiz - st.hiz * k) > 1e-5 || Math.Abs(mu.stil.hata - st.hata / k) > 1e-5 || mk.stil.hiz != st.hiz || my.stil.hiz != UstaYolu.Rakip(0).hiz || st.hiz != Match.KariyerRakip(2).hiz) Fail("Usta gücü: yalnız Usta yolu dışındaki Usta maçı, kaynak tarz değişmez");
+        // 2026-11-14 (yasin: zorluk yalnız rakip, hareket ayrı): otomatik koşuda sert rakip Usta gücünü alır, elle koşuda sert olmayan rakip almaz.
+        { var oS = new Match(3, new MatchOptions { easy = true, sert = true, stil = st, target = 5 }); var eY = new Match(3, new MatchOptions { easy = false, sert = false, stil = st, target = 5 });
+          if (Math.Abs(oS.stil.hiz - st.hiz * k) > 1e-5 || eY.stil.hiz != st.hiz || !oS.easy || eY.easy) Fail("sert rakip koşudan bağımsız olmalı"); }
         var gm = new Match(3, new MatchOptions { easy = true, stil = st, target = 5, degistirici = "usta" }); if (Math.Abs(gm.stil.hiz - st.hiz * k) > 1e-5) Fail("Günün maçı Usta: rakip gücü Usta çarpanıyla");
         int kz = 0, ku = 0, n = 24;
         for (int m = 0; m < n; m++)
@@ -913,14 +916,14 @@ static class BotMac
         }
         if (degSay.Count != 7 || stilSay.Count != 6) Fail("70 günde her değiştirici ve rakip görünmeli: " + degSay.Count + "/" + stilSay.Count);
         foreach (var kv in degSay) if (kv.Value != 10) Fail("değiştirici 7 günlük bloklarla dönmeli: " + kv.Key + " " + kv.Value);
-        // kancalar: altın ralli (her 3. sayı 2), usta (easy kapalı), nefes (yorulma hızlı), patron (imza sık), serbest maç değişmez
+        // kancalar: altın ralli (her 3. sayı 2), usta (rakip sert, koşu aynı), nefes (yorulma hızlı), patron (imza sık), serbest maç değişmez
         var g = Gunluk.Bugun(new DateTime(2026, 10, 1)); var st = Gunluk.Rakip(g);
         if (st.kariyer != -1 || (g.deg.id != "patron" && st.imza != null)) Fail("günün rakibi kariyer dışı, imzasız olmalı");
         foreach (var id in new[] { "altin", "uzun", "file", "usta", "nefes", "patron", "aldat" })
         {
             var M = new Match(41, new MatchOptions { easy = true, target = 11, stil = Match.STIL["duvar"].Clone(), degistirici = id });
             if (M.degistirici != id) Fail("değiştirici kurulmadı: " + id);
-            if (id == "usta" && M.easy) Fail("Usta günü Kolay kaldı");
+            if (id == "usta" && (!M.sert || !M.easy)) Fail("Usta günü: rakip sert olmalı, oyuncunun koşusu değişmemeli (2026-11-14)");
             if (id == "nefes" && !(M.GS.yorK > 1.3f)) Fail("nefes değiştiricisi yorulmayı hızlandırmadı");
             if (id == "patron" && (!M.stil.patron || M.stil.imzaAra != 2 || Match.STIL["duvar"].imzaAra == 2)) Fail("patron provası kaynağı değiştirdi ya da kurulmadı");
             int guard = 0, iki = 0, sayi = 0; var R = new Random(9);
