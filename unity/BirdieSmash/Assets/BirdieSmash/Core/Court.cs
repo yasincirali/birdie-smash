@@ -56,6 +56,7 @@ namespace BirdieSmash.Core
         public bool agda, altindan; public float agT, agSure, agAsili, agMax, agYan, yerT, inVx, inVy, inVz;
         public string from, type;
         public bool serve, super, netDone, dead, netHit, slice, netCord;
+        public bool yetisemedi;   // rakip bu topa yetişemedi (erişim dışı ya da başarısız balıklama): sayı yazısı "YETİŞEMEDİ"
         public string vurus;   // 2026-10-29: vuruşun kendi adı (kill/jump/smash/drive…); type uçuş sınıfıdır (kill ve jump "smash" uçar)
         public float[] ogrHedef;   // antrenman: bu vuruşun düşmesi gereken bant ("Hedefte! ★")
         public string imza;        // rakibin imza vuruşu (Core/Imza): cevap kuralı bu uçuşa bakar

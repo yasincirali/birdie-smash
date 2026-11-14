@@ -2072,14 +2072,18 @@ static class BotMac
     // tekdüze azalır (iki taraf aynalı); maçta iki oyuncunun da en yüksek geri hızı en yüksek öne hızının YON_GERI'si (+%3)
     // üstüne çıkmaz; rakip hiçbir vuruşta topa RAKIP_ERIS'ten uzak değildir (eskiden plan yanılırsa uzaktan vururdu); rakip top
     // gövdesinin ARKA_SMAC'tan çok gerisindeyken smaçlamaz (eski kuralda Kolay rakibin smaçlarının %17'si böyleydi).
+    // 2026-11-14 inceleme (fikir 22:05 #1, #2, #6): oyuncunun gövde gerisi smacı Ev.Hit.arka ile işaretlenir ve "Geç kaldın" yazısı
+    // maçta en çok 2 kez; rakibin başarısız uzanışı "Kurtardı!" yazmaz; rakibin yetişemediği içeri top "YETİŞEMEDİ" sayısıdır
+    // (sayısı Match.yetisSayi ile eşit).
     static void GeriKosu()
     {
         if (Match.YonK(0, -1, true) != 1 || Match.YonK(0, 1, false) != 1 || Math.Abs(Match.YonK(1, 0, true) - Match.YON_YAN) > 1e-5 || Math.Abs(Match.YonK(0, 1, true) - Match.YON_GERI) > 1e-5 || Math.Abs(Match.YonK(0, -1, false) - Match.YON_GERI) > 1e-5) Fail("YonK yön çarpanları");
         float onceki = 2; for (int a = 0; a <= 180; a += 5) { double r = a * Math.PI / 180; float k = Match.YonK((float)Math.Sin(r), -(float)Math.Cos(r), true); if (k > onceki + 1e-5f) Fail("YonK açıyla artmamalı (" + a + "°)"); onceki = k; }
-        var vmax = new float[2, 2]; int opVurus = 0, uzakVurus = 0, arkaSmac = 0, birak = 0; float enUzak = 0;
+        var vmax = new float[2, 2]; int opVurus = 0, uzakVurus = 0, arkaSmac = 0, birak = 0, arkaBen = 0, yetisYazi = 0, yetisToplam = 0; float enUzak = 0;
         for (int m = 0; m < 6; m++)
         {
             var M = new Match(700 + m, new MatchOptions { easy = m % 2 == 0, sert = m % 2 == 1, target = 11 });
+            int gecYazi = 0, yetisM = 0;
             Shuttle son = null; float ox = M.op.x, oy = M.op.y; int guard = 0;
             while (!M.over && guard++ < 60 * 60 * 30)
             {
@@ -2102,11 +2106,21 @@ static class BotMac
                         if ((M.s.vurus ?? M.s.type) == "smash" && M.s.hz > 1.95f && M.op.y - M.s.hy > Match.ARKA_SMAC + .02f) arkaSmac++;
                     }
                 }
+                foreach (var e in M.events)
+                {
+                    if (e.kind == Ev.Hit && e.arka) { arkaBen++; if (e.who != "me" || (e.type != "smash")) Fail("arka bayrağı yalnız oyuncunun smacında"); }
+                    if (e.kind == Ev.Text && e.text == "Geç kaldın: topun altına gir") gecYazi++;
+                    if (e.kind == Ev.Text && e.text == "Kurtardı!") Fail("rakibin başarısız uzanışı 'Kurtardı!' yazmamalı");
+                    if (e.kind == Ev.Point && e.text == "YETİŞEMEDİ") yetisM++;
+                }
                 M.events.Clear();
             }
+            if (gecYazi > 2) Fail("'Geç kaldın' yazısı maçta " + gecYazi + " kez (en çok 2)");
+            if (yetisM > M.yetisSayi) Fail("YETİŞEMEDİ yazısı (" + yetisM + ") yetisSayi'dan (" + M.yetisSayi + ") çok");
+            yetisYazi += yetisM; yetisToplam += M.yetisSayi;
             birak += M.gecKalma;
         }
-        Console.WriteLine("geri koşu: en yüksek hız öne/geri ben " + vmax[0, 0].ToString("F1") + "/" + vmax[0, 1].ToString("F1") + ", rakip " + vmax[1, 0].ToString("F1") + "/" + vmax[1, 1].ToString("F1") + " m/s; rakip " + opVurus + " vuruş, en uzak temas " + enUzak.ToString("F2") + " m, yetişemeyip bıraktığı " + birak + ", gövdenin gerisinden smaç " + arkaSmac);
+        Console.WriteLine("geri koşu: en yüksek hız öne/geri ben " + vmax[0, 0].ToString("F1") + "/" + vmax[0, 1].ToString("F1") + ", rakip " + vmax[1, 0].ToString("F1") + "/" + vmax[1, 1].ToString("F1") + " m/s; rakip " + opVurus + " vuruş, en uzak temas " + enUzak.ToString("F2") + " m, yetişemeyip bıraktığı " + birak + ", gövdenin gerisinden smaç " + arkaSmac + "; oyuncunun arka smacı " + arkaBen + ", YETİŞEMEDİ yazısı " + yetisYazi + "/" + yetisToplam);
         for (int k = 0; k < 2; k++) if (vmax[k, 0] > 0 && vmax[k, 1] > vmax[k, 0] * (Match.YON_GERI + .03f)) Fail((k == 0 ? "ben" : "rakip") + ": geri koşu öne koşudan YON_GERI oranında yavaş değil (" + vmax[k, 1].ToString("F2") + " / " + vmax[k, 0].ToString("F2") + ")");
         if (uzakVurus > 0) Fail("rakip " + uzakVurus + " kez topa RAKIP_ERIS'ten uzaktan vurdu (en uzak " + enUzak.ToString("F2") + " m)");
         if (arkaSmac > 0) Fail("rakip top gövdesinin gerisindeyken " + arkaSmac + " kez smaçladı");

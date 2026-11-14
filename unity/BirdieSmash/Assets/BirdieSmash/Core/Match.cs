@@ -65,7 +65,7 @@ namespace BirdieSmash.Core
 
     public class GameEvent
     {
-        public Ev kind; public string who, type, quality, text; public float x, y, z, k; public bool big, slice, serve; public int onem = 1;
+        public Ev kind; public string who, type, quality, text; public float x, y, z, k; public bool big, slice, serve, arka; public int onem = 1;   // arka: gövdenin gerisinden smaç (ARKA_SMAC), GameRoot hissini düşürür
     }
 
     // Rakip kimliği (HTML STIL): global kısa ad, tarz, forma rengi; forma oyuncununkine yakınsa yedek renk.
@@ -448,7 +448,7 @@ namespace BirdieSmash.Core
             // (file önü kill uçuşta "smash" sayılır ve yukarıdaki 80 ms donmayı alır.)
             else if (from == "me" && !reduce && !isServe && freeze <= 0) { float md = type == "drive" ? .025f : type == "clear" ? .02f : 0; if (md > 0) freeze = md; }
             // text = vuruşun adı (2026-10-29): GameRoot file önü kill'e kendi hissini verir (uçuş türü yine "smash")
-            Emit(Ev.Hit, from, type, hx, hy, hz, rally, s.vurus, q ?? "good", isSuper); events[events.Count - 1].slice = slice; events[events.Count - 1].serve = isServe;
+            Emit(Ev.Hit, from, type, hx, hy, hz, rally, s.vurus, q ?? "good", isSuper); events[events.Count - 1].slice = slice; events[events.Count - 1].serve = isServe; events[events.Count - 1].arka = from == "me" && sonArka; sonArka = false;
             if (rally > 2 && rally % 10 == 0) Say(null, null, Court.MID, Court.NET, 2.5f, "Ralli " + rally, 2);
             PlanIntercept();
             if (from == "op" && !isServe) ImzaDuvar(type);
@@ -587,6 +587,8 @@ namespace BirdieSmash.Core
         // aynı ilke: kaybı ağır çekimde izletmek cezalandırır). İlki "rakip böyle de yapar" diye öğretir; sonrakilerde ses +
         // "Kurtardı!" kalır. Online'da ağır çekim zaten kapalı (Adim başı), IkizMaclar etkilenmez.
         public int opKurtaris;
+        public int yetisSayi;   // rakibin yetişemediği, içeri düşen top (Ozet kartı; gecKalma dışarı gideni de sayar)
+        public int arkaSmacBen; bool sonArka;   // arkaSmacBen: oyuncunun gövdenin gerisinden attığı smaç (BotMac, öğretici yazı sayacı)
         // Tarz farkı (2026-11-07, yasin "tarz farkı oyunda hissedilsin"): tarzın sonucu değiştirdiği an sayılır (tarzsız olsa başka
         // olurdu: Duvar'ın uzanışı tabanın dışında, File/Smaşçı'nın tam ortası taban penceresinin dışında, Aldatıcı'nın aldatıp
         // aldığı sayı). İlk 3'ü kortta tarz adıyla yazılır (etiket var olan yazının yerine geçer, yeni yazı katmanı yok), hepsi
@@ -707,6 +709,12 @@ namespace BirdieSmash.Core
             me.sw = 1; GorevKontrol();
             string ft = type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type == "push" ? "drive" : type;
             sonTip = type; sonQ = q; sonSlice = slice;   // titreşim deseni (HTML hapHit) uçuş türünü değil vuruşun kendisini ister
+            // Gövdenin gerisinden smaç (2026-11-14 inceleme, fikir 22:05 #1): 983fa47'den beri bu smaç %15 yavaş ve düz, ama kortta
+            // tam smaç gibi sarsıntı/flaş alıyordu; oyuncu "smaç bozuldu" sanıyordu. Kural görünür olur: GameRoot hissi yarıya indirir
+            // (e.arka), maçta ilk 2 kez öğretici yazı. Sıçrayışta enerjinin sıfırlanması bir denge kararı, geliştirme thread'inde.
+            bool arkaSm = PL.arka && (type == "smash" || type == "jump");
+            if (arkaSm) { arkaSmacBen++; if (arkaSmacBen <= 2) Say("me", "arka", hx, hy, hz, "Geç kaldın: topun altına gir"); }
+            sonArka = arkaSm;
             vurusAdi = type; StartFlight("me", vx, vy, vz, hx, hy, hz, false, ft, type == "jump", q, slice);
             if (HD != null) HileSonra(HD);
             OgrOlay(type, null, slice, PL.over, sw.speed);
@@ -940,6 +948,17 @@ namespace BirdieSmash.Core
         }
         public bool YeniRekor { get { return rekorBuMac; } }
 
+        // Sayı yazısı vuruşun adını söyler (2026-11-14 inceleme, fikir 22:05 #6): smaç dışındaki her kazanan top "SAYI!" idi.
+        // Öncelik tek yazı: smaç türleri > rakip yetişemedi > drop > SAYI!. "Çizgi üstü" eklenmedi: kıl payı topta çizgi kamerası
+        // kararı zaten yazıyor, iki yazı olurdu.
+        string SayiYazisi()
+        {
+            if (s.super) return "SIÇRAYARAK SMAÇ SAYISI";
+            if (s.vurus == "kill") return "FİLE ÖNÜ SAYISI";
+            if (s.type == "smash") return "SMAÇ SAYISI";
+            if (s.yetisemedi) return "YETİŞEMEDİ";
+            return s.type == "drop" ? "DROP SAYISI" : "SAYI!";
+        }
         void Land()
         {
             if (uzak != null && UzakDusus()) return;   // online: kendi topumun hakemi rakip (Core/Uzak)
@@ -955,7 +974,7 @@ namespace BirdieSmash.Core
             bool outp = IsOut(s.x, s.y, s.serve);
             if (ogr != null && s.ogrHedef != null && hitter == "me" && !outp && s.y >= s.ogrHedef[0] && s.y <= s.ogrHedef[1]) { ogr.yildiz++; Say("me", null, s.x, s.y, 0, "Hedefte! ★", 2); }
             if (outp) { if (other == "me") outsLeft++; else if (!s.serve) outsBen++; Point(other, s.serve ? (hitter == "me" ? "Servis hatası" : "Rakip servis hatası") : (hitter == "me" ? "Dışarı" : "Dışarı! Bıraktın, sayı senin"), s.x, s.y); }
-            else { if (s.type == "smash" && hitter == "me" && Dril == null) { op.dive = 1; op.yat = true; } Point(hitter, hitter == "me" ? (s.super ? "SIÇRAYARAK SMAÇ SAYISI" : s.vurus == "kill" ? "FİLE ÖNÜ SAYISI" : s.type == "smash" ? "SMAÇ SAYISI" : "SAYI!") : "Kaçtı", s.x, s.y); }
+            else { if (s.type == "smash" && hitter == "me" && Dril == null) { op.dive = 1; op.yat = true; } if (hitter == "me" && s.yetisemedi) yetisSayi++; Point(hitter, hitter == "me" ? SayiYazisi() : "Kaçtı", s.x, s.y); }
         }
 
         // Oyuncu hareketi: hedefe ivmeyle koşar, yaklaşınca frenler. Kolay modda kesişme noktasına kendi koşar.
@@ -1430,7 +1449,7 @@ namespace BirdieSmash.Core
                     // Oyuncu ise topa fiziksel olarak yetişmek zorunda (Erisim). Yetişemeyen rakip son anda uzanır, top düşer.
                     if (s.t >= I.t)
                     {
-                        if (Hyp(op.x - s.x, op.y - s.y) > RAKIP_ERIS) { I.leave = true; gecKalma++; return; }
+                        if (Hyp(op.x - s.x, op.y - s.y) > RAKIP_ERIS) { I.leave = true; gecKalma++; s.yetisemedi = true; return; }
                         OpHit(); return;
                     }
                 }
@@ -1441,9 +1460,12 @@ namespace BirdieSmash.Core
                     // File önü kill (2026-10-29): rakip yetişemediği için atlayıp "Kıl payı!" ağır çekimi oynuyordu; kill'de
                     // kıl payı yok, top anında yere çakılır (ağır çekim ve yazı atlanır, sayı yazısı "FİLE ÖNÜ SAYISI").
                     // Yazı "Kıl payı!" idi; maç sonu başlığı ve ıska nedeniyle aynı söz üç anlam taşıyordu (2026-11-11 inceleme #6).
-                    // Oyuncunun kurtarışı "Kurtardın!" (GameRoot), rakibinki "Kurtardı!": eşli ve okunur.
+                    // Bu dalda rakip topa vurmaz (plan yok ya da I.leave): balıklama her zaman başarısız uzanıştır, top düşer, sayı oyuncunun.
+                    // Yazı eskiden "Kurtardı!" idi ve hemen ardından oyuncunun "SAYI!" yazısı geliyordu: iki çelişen yazı (2026-11-14
+                    // inceleme, fikir 22:05 #2; 983fa47 erişim kuralıyla daha sık). Artık rakibin üstünde yazı yok; sayı yazısı "YETİŞEMEDİ"
+                    // olur (Land, s.yetisemedi). Balıklama, ses ve ilk seferdeki ağır çekim kalır: oyuncunun yerleştirdiği topun anı.
                     if (op.dive <= 0 && s.vurus != "kill" && !IsOut(s.landPred.x, s.landPred.y, s.serve) && !(s.landPred.net != null && !s.landPred.net.ok) && s.t > s.landPred.t - .25f)
-                    { op.dive = 1; op.yat = true; Emit(Ev.Kurtaris, "op", null, op.x, op.y); Say("op", null, op.x, op.y, 0, "Kurtardı!"); if (!reduce && ++opKurtaris == 1) { slow = .35f; slowT = .3f; } }
+                    { op.dive = 1; op.yat = true; s.yetisemedi = true; Emit(Ev.Kurtaris, "op", null, op.x, op.y); if (!reduce && ++opKurtaris == 1) { slow = .35f; slowT = .3f; } }
                 }
             }
             // Ana nokta fileden stil.ev metre (2026-10-26): eskiden y = ev yazılıyordu, yani rakibin dip çizgisinden. "Fileye yakın
