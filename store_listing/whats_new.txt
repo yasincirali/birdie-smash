@@ -1,4 +1,11 @@
 === UNITY ===
+Kariyerde ilerleme anı (14 Kasım öğle):
+- Kariyer maçının sonunda "Ana menü"ye basınca doğrudan Kariyer açılıyor; kazandığın basamağın işareti ve yeni basamak gözünün önünde büyüyor.
+- Bir turun finalini kazanınca Kariyer önce eski turda açılıyor, sonra kayarak yeni tura geçiyor; yeni turun adı hafifçe yaylanıyor, kartta 2 saniye "Yeni tur açıldı" yazıyor.
+- Kariyer maç kartında ve maç ayrıntısında o rakiple galibiyet-yenilgi sayın görünüyor (ör. "Hızlı · 1–3").
+- Dükkânda hedef eşyan varken Tüy'ün ne işe yaradığını anlatan satır tekrar etmiyor; paketler biraz yukarıda.
+- Kariyer, Profil, Atölye gibi menülerde birkaç saniye dokunmazsan ekran daha az çiziliyor: pil ve ısı için. Dokununca hemen akıcı.
+Nasıl denenir: Kariyerden bir maç oyna, bitince "Ana menü"ye bas: Kariyer sekmesi açık gelmeli, yeni basamak büyümeli. Bir tur finalini kazanırsan şerit eski turdan yeni tura kaymalı. Aynı rakiple birkaç maç oynadıysan maç kartında sayılar görünmeli. Hızlı maç bitince "Ana menü" yine Oyna'ya dönmeli. Kariyer'de 5 saniye bekleyip kaydır: takılma olmamalı.
 Son maçlar ve daha akıcı duraklatma (14 Kasım sabah):
 - Profil'de "Son maçlar" bölümü: son 10 maçın sonucu (✓ ya da ✗), skoru ve zorluğun baş harfi, altında kaç galibiyet aldığın.
 - Sayı arasında duraklatıp dönünce top havada değilse 3-2-1 geri sayımı beklemiyorsun.
