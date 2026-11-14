@@ -1115,6 +1115,484 @@ def makaron_kusak():   # makaron kuşağı: krem kuşak, üstünde yan yana dizi
         elipsoid(ag, KREM, p, (.16, .04, .16), 8, 2)
     ag.yaz('makaron_kusak', 3)
 
+# ---- Saç, yüz ve ayakkabı rafı (2026-11-14, yasin: "klasik, garip duran, dikkat çekici, tüy harcatmaya değecek saç modelleri";
+# "ayakkabıda da eksiğimiz var"; öneri artifact WsmAvTCwJa9P1icjwTVioZ, "beğenmediğim yok, yenilerini ekle çeşit olarak").
+# Saçlar FBX'e gömülmez (dört tip FBX'ini yeniden üretmek ~2 saat ve her saç her FBX'i büyütür): baş çerçevesinde kabuk ve
+# parçalar olarak buraya yazılır, Unity bunları saç seçiliyken kafaya takar (Aksesuar.Kur, karakter.json sac_model[].aks).
+# SAC_YER rengindeki alt ağ oyuncunun saç rengiyle boyanır (Aksesuar.SacBoya; "Modelin rengi" seçiliyse bu kahve kalır):
+# kabuk saç gibi davranır, brokoli/bulut/alev gibi "saç olmayan" saçlar kendi rengindedir.
+SAC_YER = '#5a3a24'
+SIY = '#24202b'
+
+def _ss(a, b, x):
+    t = max(0., min(1., (x - a) / (b - a))); return t * t * (3 - 2 * t)
+
+def kabuk(ag, renk, alt, rm=lambda e, b: 1., N=20, K=6, c=(0, -.05, -.03), R=(1.10, 1.18, 1.14), kalin=.10, b0=-180, b1=180, yatay=False):
+    """Saç kabuğu: baş çerçevesinde elipsoit (c merkez, R yarıçap), boylam b (0 = ön, ±180 = ense) sütunlarında alt kenar alt(b)
+    yüksekliğinden tepeye K sıra. rm(e, b) yarıçap çarpanı (dalga, hacim). Alt kenar içe doğru 'kalin' kadar kıvrılır: kabuk
+    kenarından bakınca kâğıt değil saç kalınlığı okunur (tasarım dili kural 1)."""
+    N, K = D(N, 10), D(K, 3)
+    def P(e, b, k=1.):
+        er, br = math.radians(e), math.radians(b); s = rm(e, b) * k; sy = k if yatay else s   # yatay: çarpan yalnız x/z'ye (bob alt kenarı yerinde kalır)
+        return (c[0] + R[0] * s * math.cos(er) * math.sin(br), c[1] + R[1] * sy * math.sin(er), c[2] + R[2] * s * math.cos(er) * math.cos(br))
+    def emin(b): return math.degrees(math.asin(max(-.98, min(.98, (alt(b) - c[1]) / R[1]))))
+    tam = b1 - b0 >= 359.9; sut = [b0 + (b1 - b0) * i / N for i in range(N + 1)]
+    for i in range(N):
+        ba, bb = sut[i], sut[i + 1]; ea, eb = emin(ba), emin(bb)
+        for j in range(K):
+            e0a, e1a = ea + (88 - ea) * j / K, ea + (88 - ea) * (j + 1) / K
+            e0b, e1b = eb + (88 - eb) * j / K, eb + (88 - eb) * (j + 1) / K
+            ag.dortgen(renk, P(e0a, ba), P(e0b, bb), P(e1b, bb), P(e1a, ba))
+        ag.ucgen(renk, P(e1a, ba), P(e1b, bb), (c[0], c[1] + R[1] * rm(90, 0), c[2]))
+        ag.dortgen(renk, P(ea, ba, 1 - kalin), P(eb, bb, 1 - kalin), P(eb, bb), P(ea, ba))
+    if not tam:   # yan kesik (yarım kabuk): kenarı da kalın
+        for b in (b0, b1):
+            e = emin(b)
+            for j in range(K): ag.dortgen(renk, P(e + (88 - e) * j / K, b, 1 - kalin), P(e + (88 - e) * j / K, b), P(e + (88 - e) * (j + 1) / K, b), P(e + (88 - e) * (j + 1) / K, b, 1 - kalin))
+
+def kisa_alt(on=-.10, yan=-.42, arka=-.72):
+    """Kısa saçın alt kenarı: alında kâkül hizası, kulağın üstünde favori, ensede ense çizgisi."""
+    def f(b):
+        a = abs(b)
+        if a <= 60: return on + (yan - on) * _ss(30, 60, a)
+        if a <= 120: return yan
+        return yan + (arka - yan) * _ss(120, 165, a)
+    return f
+
+def yon_tabani(ax):
+    L = math.sqrt(sum(x * x for x in ax)) or 1; ax = [x / L for x in ax]
+    t = [1, 0, 0] if abs(ax[0]) < .9 else [0, 1, 0]
+    e1 = [ax[1] * t[2] - ax[2] * t[1], ax[2] * t[0] - ax[0] * t[2], ax[0] * t[1] - ax[1] * t[0]]; l1 = math.sqrt(sum(x * x for x in e1)); e1 = [x / l1 for x in e1]
+    e2 = [ax[1] * e1[2] - ax[2] * e1[1], ax[2] * e1[0] - ax[0] * e1[2], ax[0] * e1[1] - ax[1] * e1[0]]
+    return e1, ax, e2
+
+def egik(ag, renk, c, r, yon, n=8, m=5):
+    """Ekseni 'yon' boyunca uzanan elipsoit (r = (en, boy, kalınlık)): tutam, tüy, kulak, pençe."""
+    e1, ey, e2 = yon_tabani(yon); g = Ag(); elipsoid(g, renk, (0, 0, 0), r, n, m)
+    for k, us in g.alt.items():
+        for tri in us: ag.ucgen(k, *[tuple(c[i] + p[0] * e1[i] + p[1] * ey[i] + p[2] * e2[i] for i in range(3)) for p in tri])
+
+def damla(ag, renk, kok, uc, r, n=6):
+    """Damla: kökte tombul, uca doğru incelip yuvarlak biten torna gövde (tutam, alev dili, pençe). Sivri uç ve küp topuz yok
+    (2026-11-14 önizleme: koni + küçük top uzaktan diken gibi okunuyordu, tasarım dili kural 1)."""
+    n = D(n, 5); e1, ax, e2 = yon_tabani([uc[i] - kok[i] for i in range(3)]); L = math.sqrt(sum((uc[i] - kok[i]) ** 2 for i in range(3)))
+    prof = ((-.12, .0), (-.04, .80), (.15, 1.0), (.50, .80), (.80, .50), (.95, .26), (1.0, .0))
+    hal = [[tuple(kok[k] + ax[k] * L * t + r * f * (math.cos(2 * math.pi * j / n) * e1[k] + math.sin(2 * math.pi * j / n) * e2[k]) for k in range(3)) for j in range(n)] for t, f in prof]
+    for s in range(len(prof) - 1):
+        for j in range(n): ag.dortgen(renk, hal[s][j], hal[s][(j + 1) % n], hal[s + 1][(j + 1) % n], hal[s + 1][j])
+
+def tutam(ag, renk, kok, uc, r, n=6): damla(ag, renk, kok, uc, r, n)
+
+# ---- Saç ----
+def kase():   # kâse kesim: alından enseye düz kesik kenar, kâse gibi hafif açılan alt
+    ag = Ag(); kabuk(ag, SAC_YER, lambda b: -.12 if abs(b) < 115 else -.12 - .22 * _ss(115, 170, abs(b)), lambda e, b: 1 + .05 * (1 - math.sin(math.radians(e))), N=22)
+    ag.yaz('kase', 0)
+
+def dalgali():   # yandan dalgalı: sol yandan ayrık, sağa yatan üç iri dalga; kâkül sağda alına iner
+    ag = Ag(); f = kisa_alt(-.04, -.40, -.70)
+    kabuk(ag, SAC_YER, lambda b: f(b) - (.30 * _ss(-20, 35, b) * (1 - _ss(50, 85, b)) if b > -20 else 0),
+          lambda e, b: 1 + .13 * max(0., math.sin(math.radians(b * 3 + 40))) ** 1.5 * (.4 + .6 * math.cos(math.radians(e))), N=28, K=7)
+    ag.yaz('dalgali', 0)
+
+def perde():   # orta ayrık perde (90'lar): ortadan ikiye ayrılan, yanaklara kıvrılarak inen kâkül
+    ag = Ag()
+    def alt(b):
+        a = abs(b)
+        if a < 6: return .30
+        if a < 40: return .30 - .85 * _ss(6, 40, a)
+        if a < 110: return -.55
+        return -.55 - .25 * _ss(110, 165, a)
+    kabuk(ag, SAC_YER, alt, lambda e, b: 1 + .06 * _ss(10, 40, abs(b)) * (1 - _ss(40, 90, abs(b))) - .06 * math.exp(-(b / 7) ** 2), N=26, K=6)
+    ag.yaz('perde', 0)
+
+def kut_bob():   # küt bob: düz kâkül, yanda ve arkada çene hizasında düz kesik; alt kısım yüzün dışına açılır
+    ag = Ag()
+    def alt(b):
+        a = abs(b)
+        return -.14 if a < 50 else -.14 + (-1.0 + .14) * _ss(50, 66, a)
+    kabuk(ag, SAC_YER, alt, lambda e, b: 1 + .85 * max(0., -math.sin(math.radians(e))) * _ss(45, 70, abs(b)) + .03, N=26, K=7, yatay=True)
+    ag.yaz('kut_bob', 0)
+
+def duz_tepe():   # düz tepe (flat top): yanlar kısa, tepe dümdüz ve yüksek
+    ag = Ag()
+    def rm(e, b):
+        er = math.radians(e); p = 5.
+        return 1 / ((abs(math.cos(er)) ** p + abs(math.sin(er) * 1.0) ** p) ** (1 / p))
+    kabuk(ag, SAC_YER, kisa_alt(-.08, -.25, -.55), rm, R=(1.06, 1.42, 1.10), c=(0, -.08, -.03), N=18, K=6)
+    ag.yaz('duz_tepe', 0)
+
+def daginik():   # yataktan kalkmış: kısa kabuk, dört yöne dikilmiş tombul tutamlar
+    ag = Ag(); kabuk(ag, SAC_YER, kisa_alt(), N=16, K=4)
+    for (x, y, z, ux, uy, uz) in ((-.45, .95, .25, -.7, .9, .2), (.10, 1.12, .30, .15, 1, .35), (.55, 1.0, -.05, .85, .8, -.1),
+                                 (-.15, 1.05, -.50, -.25, .9, -.75), (.42, .78, -.70, .45, .5, -.9), (-.80, .55, -.25, -1, .45, -.3)):
+        L = math.sqrt(ux * ux + uy * uy + uz * uz); tutam(ag, SAC_YER, (x, y, z), (x + ux / L * .55, y + uy / L * .55, z + uz / L * .55), .26)
+    ag.yaz('daginik', 0)
+
+def kivircik():   # kıvırcık kısa: başa yakın, iri kıvrım tümsekleri
+    ag = Ag(); kabuk(ag, SAC_YER, kisa_alt(-.06, -.38, -.66), lambda e, b: 1 + .14 * abs(math.sin(math.radians(b * 4)) * math.sin(math.radians(e * 4 + 20))) ** .7, N=26, K=8)
+    ag.yaz('kivircik', 0)
+
+def bukle():   # dev bukle: kısa saç, alnın ortasında tek kocaman halka bukle
+    ag = Ag(); kabuk(ag, SAC_YER, kisa_alt(-.02), N=16, K=4)
+    yol = []
+    for k in range(12):
+        a = math.radians(90 + k * 32); rr = .30 - .016 * k
+        yol.append(((rr * math.cos(a) * .9, .22 + rr * math.sin(a), 1.16 + .015 * k), .14 - .005 * k))
+    boru(ag, SAC_YER, [((0, .75, .85), .15), ((0, .60, 1.06), .15)] + yol, 8)
+    ag.yaz('bukle', 0)
+
+def kalp_topuz():   # kalp topuz: tepede kalp biçimli topuz (iki yuvarlak + aşağı sivrilen gövde, uç saça gömülü)
+    ag = Ag(); kabuk(ag, SAC_YER, kisa_alt(), N=16, K=4)
+    nok = kalp_nokta((0, 0), .50); g = Ag(); bombe(g, SAC_YER, nok, 0, .06, .20, 2, False); bombe(g, SAC_YER, nok, 0, -.06, -.20, 2, False)
+    for k, us in g.alt.items():
+        for tri in us: ag.ucgen(k, *[(p[0], p[1] + 1.50, p[2] - .12) for p in tri])
+    halka(ag, '#e0457b', .20, .07, 1.08, 12, 4, (0, 0, -.12))   # kurdele bağı: topuzun saça tutunduğu yer
+    ag.yaz('kalp_topuz', 0)
+
+def anten():   # uğur böceği antenleri: kısa saçtan çıkan iki kalın sap, uçlarında benekli kırmızı top
+    ag = Ag(); kabuk(ag, SAC_YER, kisa_alt(), N=16, K=4)
+    for sx in (-1, 1):
+        boru(ag, SIY, [((sx * .28, .95, .20), .09), ((sx * .40, 1.35, .30), .085), ((sx * .60, 1.70, .28), .08)], 6)
+        top(ag, '#e3262c', (sx * .66, 1.82, .27), .17, 9, 6)
+        top(ag, SIY, (sx * .66 + sx * .05, 1.90, .40), .055, 5, 3)
+    ag.yaz('anten', 0)
+
+def brokoli():   # brokoli: koyu yeşil sap kabuğu, tepede kabarık çiçek kümeleri
+    ag = Ag(); kabuk(ag, '#2f6b3a', kisa_alt(-.02, -.35, -.65), N=14, K=3)
+    for (x, y, z, r) in ((0, 1.25, .05, .48), (-.55, 1.0, .10, .36), (.55, 1.0, .05, .36), (0, 1.0, -.55, .40), (-.40, .85, .55, .30), (.40, .85, .55, .30), (-.55, .8, -.45, .30), (.55, .8, -.45, .30)):
+        elipsoid(ag, '#5aa548', (x, y, z), (r, r * .85, r), 7, 4)
+    for (x, y, z) in ((-.15, 1.62, .20), (.25, 1.55, -.15), (-.35, 1.3, -.35)): top(ag, '#76c25a', (x, y, z), .12, 5, 3)
+    ag.yaz('brokoli', 0)
+
+def ibik():   # tavuk ibiği: kısa saç, tepede alından enseye kırmızı ibik
+    ag = Ag(); kabuk(ag, SAC_YER, kisa_alt(), N=16, K=4)
+    for k, (e, s) in enumerate(((60, .18), (78, .25), (96, .27), (114, .24), (132, .18))):
+        er = math.radians(e); y, z = 1.10 * math.sin(er) - .02, 1.10 * math.cos(er)
+        elipsoid(ag, '#e3262c', (0, y + s * .7, z), (.12, s * 1.3, s * .85), 8, 5)
+    ag.yaz('ibik', 0)
+
+def spagetti():   # spagetti: başın üstünde makarna yığını, iri tel tel sarkan makarnalar, domates sosu ve köfteler
+    ag = Ag(); SAR = '#f2c94c'
+    kabuk(ag, SAR, kisa_alt(.0, -.20, -.40), lambda e, b: 1 + .05 * abs(math.sin(math.radians(b * 6 + e * 3))), N=18, K=4)
+    for k in range(7):   # iri, düz sarkan makarna telleri (zikzak tel uzaktan toka gibi okunuyordu)
+        b = math.radians(-150 + k * 50); x, z = math.sin(b), math.cos(b)
+        if abs(math.degrees(b)) < 55: continue   # yüzün önüne sarkmaz
+        boru(ag, SAR, [((x * 1.18, .08, z * 1.18), .095), ((x * 1.16, -.30, z * 1.16), .095), ((x * 1.12, -.62, z * 1.12), .085)], 6)
+        top(ag, SAR, (x * 1.12, -.62, z * 1.12), .085, 6, 3)
+    elipsoid(ag, '#d6342f', (0, 1.13, -.05), (.62, .22, .58), 9, 4)
+    for (x, z) in ((-.25, .10), (.28, -.05), (0, -.32)): top(ag, '#7a4428', (x, 1.30, z), .16, 7, 4)
+    ag.yaz('spagetti', 0)
+
+def ruzgar():   # rüzgâr tüneli: smaçın ortasında donmuş gibi geriye savrulmuş saç; arkaya uzanan iri tutamlar
+    ag = Ag()
+    kabuk(ag, SAC_YER, kisa_alt(.02, -.40, -.60), lambda e, b: 1 + .55 * _ss(110, 180, abs(b)) * _ss(0, 30, e) * (1 - _ss(60, 88, e)) + .08 * _ss(60, 120, abs(b)), N=24, K=6)
+    for (x, y, l, r) in ((-.30, .70, .85, .20), (.30, .70, .85, .20), (0, .35, 1.0, .22), (-.55, .25, .65, .16), (.55, .25, .65, .16)):
+        tutam(ag, SAC_YER, (x, y, -1.20), (x * 1.3, y + .18, -1.20 - l), r)
+    ag.yaz('ruzgar', 0)
+
+def gokkusagi():   # gökkuşağı: alından enseye dört renkli ibik yay (kısa saçın üstünde, varlik kisa)
+    ag = Ag()
+    for k, renk in enumerate(('#e94a4a', '#f2c230', '#4fb35a', '#4a7fe0')):
+        R = 1.62 - k * .15; yol = []
+        for i in range(13):
+            a = math.radians(20 + i * (140 / 12)); yol.append(((0, -.05 + R * math.sin(a), .05 + R * math.cos(a) * .95), .085))
+        boru(ag, renk, yol, 6)
+    ag.yaz('gokkusagi', 0)
+
+def bulut():   # bulut: başın üstünde pamuk bulut, yanında ona yapışık küçük bulut (havada durmaz)
+    ag = Ag(); BB, GB = '#f4f7ff', '#c9d7f5'
+    for (x, y, z, r) in ((0, 1.15, 0, .64), (-.62, .80, .15, .44), (.62, .80, .10, .44), (0, .80, -.62, .48), (0, .66, .55, .38)):
+        elipsoid(ag, BB if y > .7 else GB, (x, y, z), (r, r * .82, r), 8, 5)
+    for k in range(6):
+        b = math.radians(30 + k * 60); elipsoid(ag, GB, (1.0 * math.sin(b), .30, 1.0 * math.cos(b) * (.8 if math.cos(b) > 0 else 1)), (.34, .28, .34), 7, 4)
+    for (x, y, z, r) in ((1.05, 1.28, -.10, .30), (1.32, 1.18, -.10, .22), (.85, 1.14, -.10, .22)): elipsoid(ag, BB, (x, y, z), (r, r * .8, r), 7, 4)
+    ag.yaz('bulut', 0)
+
+def tuy_topuz():   # tüy top topuzu: kısa saç, tepe arkasında topuz, topuza saplı tüy top tüyleri gibi beş beyaz tüy ve renkli bant
+    ag = Ag(); kabuk(ag, SAC_YER, kisa_alt(), N=16, K=4)
+    c = (0, 1.20, -.35); elipsoid(ag, SAC_YER, c, (.36, .30, .36), 10, 6)
+    halka(ag, '#e99bff', .30, .07, c[1] - .12, 12, 5, (0, 0, c[2]))
+    for k in range(7):
+        a = 2 * math.pi * k / 7; d = (math.sin(a) * .45, 1., math.cos(a) * .45)
+        L = math.sqrt(sum(x * x for x in d)); d = tuple(x / L for x in d)
+        egik(ag, '#fbfbf6', (c[0] + d[0] * .62, c[1] + .18 + d[1] * .45, c[2] + d[2] * .62), (.17, .40, .05), d, 6, 3)
+    elipsoid(ag, '#e9d7b8', (0, c[1] + .26, c[2]), (.20, .13, .20), 8, 4)   # mantar: tüylerin dibinde
+    ag.yaz('tuy_topuz', 0)
+
+def alev():   # alev: turuncu alev dilleri yukarı ve geriye yalar, içte sarı; kabuk kızıl
+    ag = Ag(); T, S, K = '#ff7a1a', '#ffd23f', '#d6342f'
+    kabuk(ag, T, kisa_alt(.0, -.35, -.62), N=14, K=3)
+    for (x, z, h, r, renk) in ((0, .25, .95, .34, T), (-.45, .05, .75, .30, T), (.45, .05, .75, .30, T), (0, -.45, .80, .38, T)):
+        damla(ag, renk, (x, .95 - abs(x) * .3, z), (x * 1.25, .95 + h, z - .35), r, 5)
+    for (x, z, h, r) in ((0, .20, .60, .18), (0, -.40, .45, .16)): damla(ag, S, (x, 1.12, z + .1), (x * 1.2, 1.12 + h, z - .2), r, 5)
+    ag.yaz('alev', 0)
+
+# ---- Yüz (baş çerçevesi; yüz yüzeyi Aksesuar.Yuz ölçüsü: göz y −.4 z 1,0 x ±.32; burun ucu y −.8 z 1,08; dudak y −.9…−1,0 z 1,06;
+# yanak x .5 y −.68 z .87; çene y −1,25 z .98) ----
+ALTN = '#e2b93b'
+def tasi(ag, d=(0, 0, 0), s=1., c=(0, 0, 0)):
+    """Önizleme düzeltmesi (2026-11-14, aks_giy gerçek oyuncak başında): ağın tamamını c çevresinde s ile büyütüp d kadar kaydırır."""
+    for k, us in ag.alt.items(): ag.alt[k] = [tuple(tuple(c[i] + (p[i] - c[i]) * s + d[i] for i in range(3)) for p in tri) for tri in us]
+GOZ_YUK = (0, .07, .02)   # gözlükler: ölçülen göz hizası (−.4) önizlemede camı göz altına koyuyordu; hafif yukarı ve öne
+def gozluk_sapi(ag, renk, r=.032):
+    for sx in (-1, 1): boru(ag, renk, [((sx * .58, -.38, .93), r), ((sx * .80, -.36, .55), r), ((sx * .92, -.34, .10), r)], 5)
+
+def nefes_bandi():
+    ag = Ag(); egik(ag, '#fbfbf6', (0, -.60, 1.10), (.06, .24, .035), (1, 0, -.12), 8, 3); elipsoid(ag, '#d8d2e6', (0, -.60, 1.115), (.07, .045, .02), 6, 2); tasi(ag, (0, .02, .01), 1.5, (0, -.60, 1.10)); ag.yaz('nefes_bandi', 0)
+
+def yara_bandi():   # yanakta çapraz yara bandı
+    ag = Ag(); B = '#f2c8a0'
+    egik(ag, B, (.50, -.68, .93), (.05, .20, .03), (.8, .6, -.25), 7, 3); egik(ag, B, (.50, -.68, .935), (.05, .20, .03), (.8, -.6, -.25), 7, 3)
+    elipsoid(ag, '#fbfbf6', (.50, -.68, .955), (.07, .07, .02), 6, 2); tasi(ag, (0, 0, .02), 1.9, (.50, -.68, .93)); ag.yaz('yara_bandi', 0)
+
+def kalin_kas():
+    ag = Ag()
+    for sx in (-1, 1): egik(ag, SAC_YER, (sx * .32, -.18, 1.02), (.06, .19, .05), (1, sx * .22, -.25 * sx), 8, 4)
+    tasi(ag, (0, .02, .07), 1.3, (0, -.18, 1.02)); ag.yaz('kalin_kas', 0)
+
+def kare_gozluk():   # kalın siyah kare çerçeve (Yuvarlak gözlük ince ve yuvarlak; bu kalın ve köşeli)
+    ag = Ag()
+    for sx in (-1, 1):
+        x0, x1, y0, y1, z0, z1 = sx * .14, sx * .54, -.56, -.26, .99, 1.07
+        xa, xb = min(x0, x1), max(x0, x1)
+        kutu(ag, SIY, (xa, y1 - .07, z0), (xb, y1, z1)); kutu(ag, SIY, (xa, y0, z0), (xb, y0 + .07, z1))
+        kutu(ag, SIY, (xa, y0, z0), (xa + .07, y1, z1)); kutu(ag, SIY, (xb - .07, y0, z0 - .04), (xb, y1, z1 - .04))
+    kutu(ag, SIY, (-.15, -.38, 1.02), (.15, -.33, 1.08)); gozluk_sapi(ag, SIY, .035)
+    tasi(ag, GOZ_YUK, 1.12, (0, -.40, 1.0)); ag.yaz('kare_gozluk', 0)
+
+def spor_gozluk():   # saran tek parça turuncu cam
+    ag = Ag(); yol = []
+    for i in range(11):
+        b = math.radians(-78 + i * 15.6); yol.append(((1.08 * math.sin(b), -.40, 1.08 * math.cos(b) * .98), .12 if abs(i - 5) < 4 else .09))
+    boru(ag, '#ff8a3d', yol, 6); gozluk_sapi(ag, SIY, .03)
+    for sx in (-1, 1): elipsoid(ag, '#ffd2b0', (sx * .30, -.34, 1.17), (.10, .025, .02), 6, 2)
+    tasi(ag, (0, .09, 0)); ag.yaz('spor_gozluk', 0)
+
+def kecisakal():   # keçi sakalı: çenede kısa, yuvarlak sakal (saç rengini alır)
+    ag = Ag(); elipsoid(ag, SAC_YER, (0, -1.24, 1.00), (.18, .17, .13), 8, 5); elipsoid(ag, SAC_YER, (0, -1.42, .95), (.12, .13, .10), 7, 4); tasi(ag, (0, .02, .03), 1.25, (0, -1.3, .98)); ag.yaz('kecisakal', 0)
+
+def monokl():   # sağ gözde altın monokl, kalın çerçeve ve kısa zincir topları
+    ag = Ag(); halka_z(ag, ALTN, (.32, -.40, 1.06), .17, .04, 16, 5); disk_z(ag, '#cfe8ff', (.32, -.40, 1.04), .15, 12)
+    for k in range(4): top(ag, ALTN, (.46 + .05 * k, -.56 - .09 * k, 1.00 - .07 * k), .03, 5, 3)
+    ag.yaz('monokl', 0)
+
+def disk_z(ag, renk, c, r, n=12):
+    n = D(n, 6)
+    for i in range(n):
+        a0 = 2 * math.pi * i / n; a1 = 2 * math.pi * (i + 1) / n
+        ag.ucgen(renk, c, (c[0] + r * math.cos(a1), c[1] + r * math.sin(a1), c[2]), (c[0] + r * math.cos(a0), c[1] + r * math.sin(a0), c[2]))
+
+def duduk():   # hakem düdüğü: ağızda sarı düdük, yuvarlak hazne yanda
+    ag = Ag(); S = '#ffd23f'
+    silindir(ag, S, (0, -.97, 1.04), (.20, -.99, 1.24), .07, 8)
+    elipsoid(ag, S, (.30, -1.0, 1.28), (.14, .12, .14), 9, 5); top(ag, '#c99a12', (.30, -1.0, 1.43), .045, 5, 3)
+    tasi(ag, (0, 0, 0), 1.35, (0, -.97, 1.04)); ag.yaz('duduk', 0)
+
+def pilot():   # pilot gözlüğü: damla biçimli koyu cam, ince altın çerçeve, çift köprü
+    ag = Ag()
+    for sx in (-1, 1):
+        nok = [(sx * .32 + .19 * math.cos(math.radians(a)), -.42 + (.13 if math.sin(math.radians(a)) > 0 else .18) * math.sin(math.radians(a))) for a in range(0, 360, 30)]
+        cx, cy = sx * .32, -.42; g = Ag(); bombe(g, '#3a4a5c', [(x - cx, y - cy) for x, y in nok], .0, .03, .06, 2)
+        for k, us in g.alt.items():
+            for tri in us: ag.ucgen(k, *[(p[0] + cx, p[1] + cy, p[2] + 1.0) for p in tri])
+        boru(ag, ALTN, [((x, y, 1.03), .022) for x, y in nok + nok[:1]], 4)
+    for y in (-.30, -.36): silindir(ag, ALTN, (-.14, y, 1.06), (.14, y, 1.06), .02, 4)
+    gozluk_sapi(ag, ALTN, .022)
+    tasi(ag, GOZ_YUK, 1.1, (0, -.40, 1.0)); ag.yaz('pilot', 0)
+
+def yildiz_nokta(c, R, r, a0=90):
+    return [(c[0] + (R if i % 2 == 0 else r) * math.cos(math.radians(a0 + i * 36)), c[1] + (R if i % 2 == 0 else r) * math.sin(math.radians(a0 + i * 36))) for i in range(10)]
+
+def cerceve_cam(ag, renk, nokta, c, z):
+    g = Ag(); bombe(g, renk, [(x - c[0], y - c[1]) for x, y in nokta], .0, .05, .09, 2)
+    for k, us in g.alt.items():
+        for tri in us: ag.ucgen(k, *[(p[0] + c[0], p[1] + c[1], p[2] + z) for p in tri])
+
+def yildiz_gozluk():
+    ag = Ag()
+    for sx in (-1, 1): cerceve_cam(ag, '#ffd23f', yildiz_nokta((sx * .33, -.40), .25, .12), (sx * .33, -.40), 1.0)
+    silindir(ag, '#ffd23f', (-.12, -.36, 1.06), (.12, -.36, 1.06), .03, 5); gozluk_sapi(ag, '#c99a12', .03)
+    tasi(ag, GOZ_YUK, 1.25, (0, -.40, 1.0)); ag.yaz('yildiz_gozluk', 0)
+
+def kalp_nokta(c, s):
+    return [(c[0] + s * 16 * math.sin(t) ** 3 / 16, c[1] + s * (13 * math.cos(t) - 5 * math.cos(2 * t) - 2 * math.cos(3 * t) - math.cos(4 * t)) / 16) for t in [2 * math.pi * i / 16 for i in range(16)]]
+
+def kalp_gozluk():
+    ag = Ag()
+    for sx in (-1, 1): cerceve_cam(ag, '#ff5d8f', kalp_nokta((sx * .33, -.40), .21), (sx * .33, -.40), 1.0)
+    silindir(ag, '#ff5d8f', (-.12, -.34, 1.06), (.12, -.34, 1.06), .03, 5); gozluk_sapi(ag, '#c2386a', .03)
+    tasi(ag, GOZ_YUK, 1.25, (0, -.40, 1.0)); ag.yaz('kalp_gozluk', 0)
+
+def dalgic():   # dalgıç maskesi: iki gözü ve burnu örten oval cam, siyah lastik kayış başı sarar, sağda şnorkel
+    ag = Ag()
+    nok = [(.62 * math.cos(math.radians(a)), -.42 + .25 * math.sin(math.radians(a)) - (.08 if math.sin(math.radians(a)) < -.5 else 0)) for a in range(0, 360, 24)]
+    cerceve_cam(ag, '#9fd8f0', nok, (0, -.42), 1.02)
+    boru(ag, '#3c4048', [((x, y, 1.04), .045) for x, y in nok + nok[:1]], 4)
+    halka(ag, '#3c4048', 1.03, .05, -.38, 18, 4, (0, 0, -.02))
+    boru(ag, '#ff8a3d', [((.20, -.98, 1.08), .055), ((.62, -.90, .82), .055), ((.98, -.40, .40), .055), ((1.02, .35, .30), .055), ((1.00, .75, .30), .07)], 6)
+    tasi(ag, (0, .05, 0)); ag.yaz('dalgic', 0)
+
+def sakiz():   # sakız balonu: ağızdan şişmiş pembe balon, parlak benek
+    ag = Ag(); top(ag, '#ff8fc0', (0, -1.0, 1.34), .30, 12, 7); top(ag, '#ffd0e6', (-.11, -.89, 1.58), .06, 6, 3); ag.yaz('sakiz', 0)
+
+def tuy_biyik():   # tüy bıyık: dudak üstünden iki yana açılan tüy top tüyleri, ortada mantar düğüm
+    ag = Ag()
+    for sx in (-1, 1):
+        for k, a in enumerate((-25, 0, 25)):
+            d = (sx * math.cos(math.radians(a)), math.sin(math.radians(a)) * .6 - .1, -.25)
+            egik(ag, '#fbfbf6', (sx * .26 + d[0] * .12, -.88 + d[1] * .12, 1.06), (.08, .22, .03), d, 6, 3)
+    elipsoid(ag, '#e9d7b8', (0, -.86, 1.12), (.09, .08, .07), 7, 4)
+    tasi(ag, (0, 0, .02), 1.6, (0, -.88, 1.06)); ag.yaz('tuy_biyik', 0)
+
+def vizor():   # robot vizör: gözleri saran camgöbeği şerit, yanlarda gri kulak kutuları
+    ag = Ag(); yol = []
+    for i in range(11):
+        b = math.radians(-80 + i * 16); yol.append(((1.07 * math.sin(b), -.40, 1.07 * math.cos(b)), .13))
+    boru(ag, '#46e0ff', yol, 6)
+    for sx in (-1, 1): elipsoid(ag, '#8a90a6', (sx * 1.0, -.40, .05), (.16, .26, .26), 8, 5); top(ag, '#46e0ff', (sx * 1.15, -.40, .05), .06, 5, 3)
+    tasi(ag, (0, .09, 0)); ag.yaz('vizor', 0)
+
+# ---- Ayakkabı görünümü (tur 4, 2026-11-14): her ayağa ayrı takılır (Aksesuar.Ayak). Çerçeve: köken ekipman ayakkabısının tabanı
+# ortası (ayak yere basarken), +y yukarı, +z burun, birim = ayakkabı boyu (x ayakkabı enine göre gerilir: x ±.5 = ekipman
+# ayakkabısının eni). Ekipman ayakkabısı gizlenir; görünüm onun hacmini (x ±.5, z ±.5, y 0–.40) örter. Hiçbir parça y < 0'a
+# inmez (zemine girer), bu yüzden yay, tekerlek ve bulut tabanın İÇİNDE durur. Sol ve sağ aynı ağ (eşyalar simetrik).
+def ayak_iz(s=1., n=14, burun=.06):
+    """Taban izi: süper elips, burun tarafı hafif geniş; (x, z) listesi."""
+    out = []
+    for i in range(n):
+        a = 2 * math.pi * i / n; ca, sa = math.cos(a), math.sin(a)
+        x = .5 * s * math.copysign(abs(ca) ** .7, ca) * (1 + burun * max(0, sa)); z = .5 * s * math.copysign(abs(sa) ** .8, sa)
+        out.append((x, z))
+    return out
+
+def prizma(ag, renk, iz, y0, y1, c=(0, 0)):
+    n = len(iz); a = [(c[0] + x, y0, c[1] + z) for x, z in iz]; b = [(c[0] + x, y1, c[1] + z) for x, z in iz]
+    mx = (c[0], y0, c[1]); my = (c[0], y1, c[1])
+    for i in range(n):
+        j = (i + 1) % n; ag.dortgen(renk, a[i], a[j], b[j], b[i]); ag.ucgen(renk, b[i], b[j], my); ag.ucgen(renk, a[j], a[i], mx)
+
+def ust_kubbe(ag, renk, iz, y0, h, merkez=(0, -.12), halka=3, ac=0.):
+    """Ayakkabı sayası: iz kenarından merkeze doğru yükselen kubbe (merkez bilek tarafına kayık). ac > 0: tepe açık (bilek ağzı)."""
+    n = len(iz); mx, mz = merkez
+    def P(i, t):
+        x, z = iz[i % n]; k = 1 - t * (1 - ac) if ac else 1 - t
+        return (mx + (x - mx) * k, y0 + h * math.sin(t * math.pi / 2), mz + (z - mz) * k)
+    for s in range(halka):
+        t0, t1 = s / halka, (s + 1) / halka
+        for i in range(n):
+            if t1 >= 1 and not ac: ag.ucgen(renk, P(i, t0), P(i + 1, t0), (mx, y0 + h, mz))
+            else: ag.dortgen(renk, P(i, t0), P(i + 1, t0), P(i + 1, t1), P(i, t1))
+
+def kanvas():   # kanvas: beyaz kauçuk taban, kırmızı şerit, lacivert bez saya, beyaz lastik burun
+    ag = Ag(); iz = ayak_iz()
+    prizma(ag, '#f4f1ea', iz, 0, .10); prizma(ag, '#e94a4a', ayak_iz(1.01), .10, .13)
+    ust_kubbe(ag, '#2f4a8a', ayak_iz(.96), .13, .30); elipsoid(ag, '#f4f1ea', (0, .14, .30), (.42, .14, .22), 9, 3, 0, 90)
+    halka(ag, '#f4f1ea', .17, .045, .42, 12, 4, (0, 0, -.16))
+    ag.yaz('kanvas', 4)
+
+def tombul_taban():   # tombul taban: iki kat kalın yumuşak beyaz taban, mavi saya
+    ag = Ag(); prizma(ag, '#f4f1ea', ayak_iz(1.04), 0, .12); prizma(ag, '#d8d2e6', ayak_iz(1.04), .12, .14); prizma(ag, '#f4f1ea', ayak_iz(1.02), .14, .22)
+    ust_kubbe(ag, '#5a7bd8', ayak_iz(.95), .22, .24); halka(ag, '#f4f1ea', .16, .045, .45, 12, 4, (0, 0, -.16))
+    ag.yaz('tombul_taban', 4)
+
+def cizme():   # yağmur çizmesi: sarı lastik, koyu taban, baldıra çıkan konç
+    ag = Ag(); S = '#ffcf33'
+    prizma(ag, '#3c4048', ayak_iz(1.02), 0, .07); ust_kubbe(ag, S, ayak_iz(.98), .07, .26)
+    silindir(ag, S, (0, .18, -.14), (0, .80, -.16), .26, 12); halka(ag, '#e0a91c', .26, .06, .80, 14, 4, (0, 0, -.16))
+    ag.yaz('cizme', 4)
+
+def yuksek_bilek():   # yüksek bilekli basketbol botu: kırmızı saya, beyaz taban ve bilek bandı, yanlarda yuvarlak arma
+    ag = Ag(); K = '#e94a4a'
+    prizma(ag, '#f4f1ea', ayak_iz(1.02), 0, .09); ust_kubbe(ag, K, ayak_iz(.97), .09, .28)
+    silindir(ag, K, (0, .20, -.14), (0, .62, -.15), .25, 12); halka(ag, '#f4f1ea', .25, .055, .62, 14, 4, (0, 0, -.15))
+    for sx in (-1, 1): elipsoid(ag, '#f4f1ea', (sx * .44, .30, -.12), (.03, .11, .11), 8, 3)
+    ag.yaz('yuksek_bilek', 4)
+
+def takunya():   # takunya: tahta Hollanda takunyası, kalkık burun, üstte boyalı kırmızı çiçek
+    ag = Ag(); T = '#e2b46a'
+    prizma(ag, '#b98545', ayak_iz(1.04), 0, .06); ust_kubbe(ag, T, ayak_iz(1.03), .06, .34, (0, -.18))
+    elipsoid(ag, T, (0, .15, .36), (.34, .15, .24), 9, 4)
+    for k in range(5): a = math.radians(90 + k * 72); top(ag, '#e94a4a', (.07 * math.cos(a), .38, .12 + .07 * math.sin(a)), .045, 5, 3)
+    top(ag, '#f4f1ea', (0, .40, .12), .04, 5, 3)
+    ag.yaz('takunya', 4)
+
+def elf():   # elf pabucu: yeşil saya, burnu yukarı kıvrılır, ucunda altın çıngırak; bilekte kırmızı kenar
+    ag = Ag(); Y = '#3fa34d'
+    prizma(ag, '#2e7d3b', ayak_iz(1.0), 0, .07); ust_kubbe(ag, Y, ayak_iz(.96), .07, .28)
+    boru(ag, Y, [((0, .16, .38), .14), ((0, .22, .56), .10), ((0, .36, .70), .07), ((0, .52, .68), .05), ((0, .60, .56), .04)], 7)
+    top(ag, '#f2c230', (0, .60, .50), .07, 7, 4); halka(ag, '#d6342f', .18, .06, .40, 12, 4, (0, 0, -.16))
+    ag.yaz('elf', 4)
+
+def kabak_pabuc():   # kabak pabuç: dilimli turuncu balkabağı, burunda kıvrık yeşil sap
+    ag = Ag(); T = '#ff8a2a'
+    prizma(ag, '#5a3a24', ayak_iz(1.0), 0, .06)
+    for sx in (-.24, 0, .24): elipsoid(ag, T, (sx, .26, 0), (.30, .25, .52), 10, 5)
+    boru(ag, '#3f8f3a', [((0, .40, .25), .06), ((0, .52, .32), .05), ((.08, .58, .22), .04)], 6)
+    ag.yaz('kabak_pabuc', 4)
+
+def ordek_terlik():   # ördek terlik: sarı ördek gövdesi, burunda baş, turuncu gaga, gözler
+    ag = Ag(); S = '#ffd23f'
+    prizma(ag, '#ff8a3d', ayak_iz(1.02), 0, .06); elipsoid(ag, S, (0, .20, -.04), (.54, .30, .58), 11, 5, 0, 90)
+    top(ag, S, (0, .44, .26), .22, 10, 6); egik(ag, '#ff8a3d', (0, .40, .50), (.13, .14, .06), (0, 0, 1), 8, 3)
+    for sx in (-1, 1): top(ag, SIY, (sx * .11, .52, .42), .04, 5, 3)
+    ag.yaz('ordek_terlik', 4)
+
+def tavsan_patik():   # tavşan patik: pofuduk pembe patik, bilekte iki tavşan kulağı
+    ag = Ag(); P_ = '#f7c3d6'
+    prizma(ag, '#f2a8c4', ayak_iz(1.02), 0, .07)
+    for (x, z, r) in ((0, .22, .34), (-.22, -.10, .28), (.22, -.10, .28), (0, -.30, .30)): elipsoid(ag, P_, (x, .26, z), (r, r * .75, r), 8, 5)
+    for sx in (-1, 1): egik(ag, P_, (sx * .17, .62, .18), (.13, .36, .07), (sx * .3, 1, .25), 8, 4); egik(ag, '#ff8fb4', (sx * .18, .63, .245), (.07, .25, .02), (sx * .3, 1, .25), 6, 2)
+    ag.yaz('tavsan_patik', 4)
+
+def paten():   # tekerlekli paten: kırmızı bot, gri taban plakası, altında dört beyaz tekerlek (tekerlek yere değer, zemine girmez)
+    ag = Ag()
+    for z in (-.30, .30):
+        silindir(ag, '#8a90a6', (-.40, .10, z), (.40, .10, z), .035, 5)
+        for sx in (-1, 1): silindir(ag, '#f4f1ea', (sx * .24, .10, z), (sx * .44, .10, z), .10, 8)
+    prizma(ag, '#8a90a6', ayak_iz(.98), .14, .19); ust_kubbe(ag, '#e94a4a', ayak_iz(.95), .19, .26)
+    silindir(ag, '#e94a4a', (0, .28, -.14), (0, .62, -.15), .24, 10); halka(ag, '#f4f1ea', .24, .05, .62, 12, 4, (0, 0, -.15))
+    ag.yaz('paten', 4)
+
+def dinozor():   # dinozor ayağı: yeşil tombul ayak, önde üç beyaz pençe, sırtında turuncu dikenler
+    ag = Ag(); Y = '#4fae4a'
+    prizma(ag, '#2f7a3a', ayak_iz(1.02), 0, .06); ust_kubbe(ag, Y, ayak_iz(1.0), .06, .30)
+    for sx in (-.26, 0, .26): tutam(ag, '#f4f1ea', (sx, .12, .40), (sx * 1.15, .08, .66), .11)
+    for k, z in enumerate((.16, -.06, -.28)): tutam(ag, '#ff8a3d', (0, .28 + .04 * k, z), (0, .50 + .05 * k, z - .08), .11)
+    ag.yaz('dinozor', 4)
+
+def yayli():   # yaylı: tabanın içinde kalın bir yay, üstünde mor bot (yay zemine girmez; zıplamayı değiştirmez)
+    ag = Ag(); disk(ag, '#3c4048', (0, .005, 0), .32, 12); prizma(ag, '#3c4048', ayak_iz(.7), 0, .03)
+    yol = [((.20 * math.cos(t), .03 + .23 * t / (5 * math.pi), .20 * math.sin(t) - .05), .045) for t in [i * math.pi / 4 for i in range(21)]]
+    boru(ag, '#c0c4d6', yol, 5)
+    prizma(ag, '#2a1d3a', ayak_iz(1.0), .26, .30); ust_kubbe(ag, '#7a5cd6', ayak_iz(.96), .30, .22)
+    ag.yaz('yayli', 4)
+
+def roket():   # roket: kırmızı bot, beyaz burun, mavi lomboz, topukta iki gri egzoz
+    ag = Ag()
+    prizma(ag, '#8a90a6', ayak_iz(1.0), 0, .08); ust_kubbe(ag, '#e94a4a', ayak_iz(.97), .08, .30)
+    elipsoid(ag, '#f4f1ea', (0, .10, .32), (.40, .14, .20), 9, 3, 0, 90)
+    for sx in (-1, 1): elipsoid(ag, '#7cc4ff', (sx * .46, .24, 0), (.03, .08, .08), 6, 3); kesik(ag, '#8a90a6', (sx * .16, .16, -.44), (sx * .19, .13, -.62), .08, .12, 8)
+    ag.yaz('roket', 4)
+
+def bulut_taban():   # bulut taban: tabanın çevresinde yapışık pamuk bulutlar, üstünde orkide saya
+    ag = Ag(); iz = ayak_iz(1.0, 10)
+    for i, (x, z) in enumerate(iz): elipsoid(ag, '#f4f7ff', (x * 1.02, .10, z * 1.02), (.16, .11, .16), 6, 4)
+    prizma(ag, '#c9d7f5', ayak_iz(.92), .02, .14); ust_kubbe(ag, '#e99bff', ayak_iz(.94), .14, .28)
+    ag.yaz('bulut_taban', 4)
+
+YENI_SAC_YUZ_AYAK = {
+    'kase': kase, 'dalgali': dalgali, 'perde': perde, 'kut_bob': kut_bob, 'duz_tepe': duz_tepe, 'daginik': daginik, 'kivircik': kivircik,
+    'bukle': bukle, 'kalp_topuz': kalp_topuz, 'anten': anten, 'brokoli': brokoli, 'ibik': ibik, 'spagetti': spagetti, 'ruzgar': ruzgar,
+    'gokkusagi': gokkusagi, 'bulut': bulut, 'tuy_topuz': tuy_topuz, 'alev': alev,
+    'nefes_bandi': nefes_bandi, 'yara_bandi': yara_bandi, 'kalin_kas': kalin_kas, 'kare_gozluk': kare_gozluk, 'spor_gozluk': spor_gozluk,
+    'kecisakal': kecisakal, 'monokl': monokl, 'duduk': duduk, 'pilot': pilot, 'yildiz_gozluk': yildiz_gozluk, 'kalp_gozluk': kalp_gozluk,
+    'dalgic': dalgic, 'sakiz': sakiz, 'tuy_biyik': tuy_biyik, 'vizor': vizor,
+    'kanvas': kanvas, 'tombul_taban': tombul_taban, 'cizme': cizme, 'yuksek_bilek': yuksek_bilek, 'takunya': takunya, 'elf': elf,
+    'kabak_pabuc': kabak_pabuc, 'ordek_terlik': ordek_terlik, 'tavsan_patik': tavsan_patik, 'paten': paten, 'dinozor': dinozor,
+    'yayli': yayli, 'roket': roket, 'bulut_taban': bulut_taban,
+}
+
+
 KALEM = {
     'tac': tac, 'hale': hale, 'seytan': seytan, 'kedi': kedi,
     'melek_kanat': lambda: kanat('melek_kanat', '#f6f3ea', KANAT, (('#dcd5c4', .70), ('#fffdf6', .42))),
@@ -1136,6 +1614,7 @@ KALEM = {
     'kabak_kalkan': kabak_kalkan, 'ag_kalkan': ag_kalkan, 'kazan': kazan, 'kedi_kuyruk': kedi_kuyruk,
     'dondurma': dondurma, 'cupcake': cupcake, 'krema_biyik': krema_biyik, 'lolipop': lolipop, 'donut': donut, 'makaron_kusak': makaron_kusak,
 }
+KALEM.update(YENI_SAC_YUZ_AYAK)
 
 if __name__ == '__main__':
     for k in (sys.argv[1:] or KALEM):
