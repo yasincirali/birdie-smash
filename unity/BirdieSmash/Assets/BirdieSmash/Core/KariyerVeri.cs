@@ -49,7 +49,7 @@ namespace BirdieSmash.Core
         public static Style Rakip(int g)
         {
             var k = Al(g); var t = Turlar[TurOf(g)]; var b = Stil[k.stil].Clone(); b.hiz *= k.g; b.hata /= k.g; b.kariyer = g;
-            b.patron = k.patron || k.imza; if (!b.patron) b.imza = null; b.tepki *= t.tepki; b.hucum *= t.hucum; return b;
+            b.patron = k.patron || k.imza; if (!b.patron) b.imza = null; b.tepki *= t.tepki * k.tepki; b.hucum *= t.hucum; return b;
         }
         // Hızlı maç rakibi (2026-10-27, oyun incelemesi): eskiden taban tarz g 1 ile geliyordu: ilk açılışın 5 sayılık ilk maçı
         // da bu yoldan (kariyer modu kapalı), yeni oyuncu ekipmansız (EP 6) kariyerin 3.–5. basamağı gücünde bir Smaşçı'yla
@@ -121,7 +121,7 @@ namespace BirdieSmash.Core
                 for (int i = 0; bj != null && i < bj.Count && i < BASAMAK; i++)
                 {
                     var b = Json.Obj(bj[i]);
-                    var k = new Kariyer { stil = Json.Str(b, "stil", "duvar"), g = F(b, "g", 1), yer = Json.Str(b, "yer", ""), saha = Json.Str(b, "saha", "salon"), uzunluk = (int)Json.Num(b, "uzunluk", 0), gorev = Json.Str(b, "gorev", null), patron = Json.Bool(b, "patron", false), imza = Json.Bool(b, "imza", false), tur = t, basamak = i };
+                    var k = new Kariyer { stil = Json.Str(b, "stil", "duvar"), g = F(b, "g", 1), yer = Json.Str(b, "yer", ""), saha = Json.Str(b, "saha", "salon"), uzunluk = (int)Json.Num(b, "uzunluk", 0), gorev = Json.Str(b, "gorev", null), patron = Json.Bool(b, "patron", false), imza = Json.Bool(b, "imza", false), tur = t, basamak = i, tepki = F(b, "tepki", 1) };
                     if (!st.ContainsKey(k.stil)) throw new InvalidOperationException("Birdie Smash: kariyer.json bilinmeyen tarz " + k.stil);
                     // Kural maçı (2026-11-07 inceleme, fikir 10:06 #3): Günün maçının sayı değeri değiştiricileri kariyere; yalnız
                     // altin/uzun/file (zorluğu değiştirenler, usta/nefes/patron, kariyerin g dengesini bozar, alınmadı). Patron finali
