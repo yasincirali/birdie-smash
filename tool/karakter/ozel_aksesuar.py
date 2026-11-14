@@ -1446,9 +1446,10 @@ def tuy_biyik():   # tüy bıyık: dudak üstünden iki yana açılan tüy top t
 
 def vizor():   # robot vizör: gözleri saran camgöbeği şerit, yanlarda gri kulak kutuları
     ag = Ag(); yol = []
-    for i in range(11):
-        b = math.radians(-80 + i * 16); yol.append(((1.07 * math.sin(b), -.40, 1.07 * math.cos(b)), .13))
-    boru(ag, '#46e0ff', yol, 6)
+    # r ön izleme (2026-11-14): tek boru alında bant gibi okundu; üç sıra yassı bir cam şerit verir, gözleri örter
+    for y in (-.30, -.40, -.50):
+        yol = [((1.08 * math.sin(math.radians(-80 + i * 20)), y, 1.08 * math.cos(math.radians(-80 + i * 20))), .085) for i in range(9)]
+        boru(ag, '#46e0ff', yol, 5)
     for sx in (-1, 1): elipsoid(ag, '#8a90a6', (sx * 1.0, -.40, .05), (.16, .26, .26), 8, 5); top(ag, '#46e0ff', (sx * 1.15, -.40, .05), .06, 5, 3)
     tasi(ag, (0, .09, 0)); ag.yaz('vizor', 0)
 
