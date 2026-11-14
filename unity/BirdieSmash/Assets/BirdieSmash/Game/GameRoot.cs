@@ -937,7 +937,7 @@ namespace BirdieSmash.Game
         {
             FitCamera(); Cokme.Tik(this);
             float dt = Mathf.Min(.05f, Time.unscaledDeltaTime);
-            if (sesAcT >= 0) { sesAcT += Time.unscaledDeltaTime; float sv = Mathf.Min(1, sesAcT / .25f); AudioListener.volume = Ayar.ses ? sv : 0; if (sv >= 1 || paused) { if (paused) AudioListener.volume = Ayar.ses ? 1 : 0; sesAcT = -1; } }
+            if (sesAcT >= 0) { sesAcT += Time.unscaledDeltaTime; float sesK = Mathf.Min(1, sesAcT / .25f); AudioListener.volume = Ayar.ses ? sesK : 0; if (sesK >= 1 || paused) { if (paused) AudioListener.volume = Ayar.ses ? 1 : 0; sesAcT = -1; } }
             // 2026-11-12 (yasin: "sayı sonrası animasyonda kasma, maç sonu sevinçte donma"): kayıt (JSON + senkron PlayerPrefs.Save +
             // Game Center) sayı arasının İLK karesinde, yani sayı sevinci ve yazısı başlarken yapılıyordu; maç sonunda da EndMatch
             // aynı karede yazıyordu, zafer sevinci oynarken. Sayı arasında yalnız son .15 sn'de (sevinç bitmiş, servis kurulmadan;

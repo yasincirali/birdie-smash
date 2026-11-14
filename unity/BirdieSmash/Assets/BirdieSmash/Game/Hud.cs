@@ -487,18 +487,18 @@ namespace BirdieSmash.Game
                 // Servis noktası (2026-11-14 inceleme, fikir 07:05 #4): ralli sisteminde servis sayıyı kazanana geçer; nokta önce tek
                 // karede öbür yana ışınlanıyordu. Şimdi 0,2 sn ease-out kayar, varışta 0,15 sn 1,4× pop; servis sana geçince tık
                 // titreşimi (ses yok). Hareketi azaltta anında, tık kalır. Zaman damgasıyla: OnGUI karede birden çok çağrılır.
-                float stx = M.server == "me" ? -54 : 50, sNow = Time.unscaledTime;
-                if (servisM != M) { servisM = M; servisSon = M.server; servisBas = stx; servisT0 = -9; }
+                float svHx = M.server == "me" ? -54 : 50, svNow = Time.unscaledTime;
+                if (servisM != M) { servisM = M; servisSon = M.server; servisBas = svHx; servisT0 = -9; }
                 else if (servisSon != M.server)
                 {
-                    servisSon = M.server; float ep = Mathf.Clamp01((sNow - servisT0) / .2f);
-                    servisBas = Mathf.Lerp(servisBas, servisHedef, 1 - (1 - ep) * (1 - ep)); servisT0 = sNow;
+                    servisSon = M.server; float svE = Mathf.Clamp01((svNow - servisT0) / .2f);
+                    servisBas = Mathf.Lerp(servisBas, servisHedef, 1 - (1 - svE) * (1 - svE)); servisT0 = svNow;
                     if (M.server == "me") Yerel.Hap("tick");
                 }
-                servisHedef = stx;
-                float sp = Ayar.reduce ? 1 : Mathf.Clamp01((sNow - servisT0) / .2f), sq = Ayar.reduce ? 1 : Mathf.Clamp01((sNow - servisT0 - .2f) / .15f);
-                float sxp = Mathf.Lerp(servisBas, stx, 1 - (1 - sp) * (1 - sp)), sk = 5 * (1 + .4f * Mathf.Sin(sq * Mathf.PI)) * u;
-                Fill(new Rect(cx + (sxp + 2.5f) * u - sk / 2, sy + 17.5f * u - sk / 2, sk, sk), M.server == "me" ? Kit.Hex(SEN_HUD) : Kit.Hex(RAKIP_HUD));
+                servisHedef = svHx;
+                float svP = Ayar.reduce ? 1 : Mathf.Clamp01((svNow - servisT0) / .2f), svQ = Ayar.reduce ? 1 : Mathf.Clamp01((svNow - servisT0 - .2f) / .15f);
+                float svX = Mathf.Lerp(servisBas, svHx, 1 - (1 - svP) * (1 - svP)), svK = 5 * (1 + .4f * Mathf.Sin(svQ * Mathf.PI)) * u;
+                Fill(new Rect(cx + (svX + 2.5f) * u - svK / 2, sy + 17.5f * u - svK / 2, svK, svK), M.server == "me" ? Kit.Hex(SEN_HUD) : Kit.Hex(RAKIP_HUD));
                 // sol üst kutu (2026-10-26, yasin Ar-Ge önerisi "ekle"): "{hedef} sayı · rakip" satırı kalktı (duraklat
                 // ekranında zaten yazıyor); ralli sayacı ralli 3'ü geçince belirir ve her vuruşta skorun pop diliyle hafifçe
                 // büyür (hareketi azaltta büyümez); "Görev n/3" yerine 3 nokta: biten dolu disk, kalan halka (biçimle de okunur).
