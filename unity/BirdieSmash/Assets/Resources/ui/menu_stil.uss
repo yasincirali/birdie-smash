@@ -252,7 +252,7 @@
 .yuva-satir { flex-direction: row; align-items: center; margin: 0; flex-wrap: nowrap; }
 .yuva-sol { flex-grow: 1; flex-shrink: 1; margin-right: 10px; }
 .yuva-dugme { width: 42%; flex-shrink: 0; margin: 0; min-height: 44px; border-radius: 12px; }
-.buyuk-yazi .yuva-satir { flex-direction: column; align-items: stretch; }
+.buyuk-yazi .yuva-satir { flex-direction: column; align-items: stretch; flex-wrap: nowrap; }
 .buyuk-yazi .yuva-dugme { width: auto; margin-top: 8px; }
 .seviye-bolme { flex-direction: row; margin: 6px 0 4px 0; flex-wrap: nowrap; }
 .bolme { width: 14px; height: 6px; margin-right: 3px; border-radius: 2px; background-color: rgba(255, 255, 255, 0.18); }
@@ -522,7 +522,7 @@
 .karo-deger { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--tx); margin-top: 1px; }
 .karo-alt-satir { flex-direction: row; align-items: center; }
 .karo-alt { color: var(--mu); margin-left: 3px; }
-.buyuk-yazi .karo-satir { flex-direction: column; margin: 0; }
+.buyuk-yazi .karo-satir { flex-direction: column; margin: 0; flex-wrap: nowrap; }
 .buyuk-yazi .karo { flex-basis: auto; flex-grow: 0; margin: 4px 0; }
 
 /* diğer sekmeler: kart başlıkları ve durum etiketleri yön A diliyle (renkler yukarıda değişkenlerden) */
@@ -744,7 +744,9 @@
 
 /* 2026-11-06 13:40 Antrenman: üstte iki giriş yan yana (Sonsuz ralli, Temel ders); büyük yazıda alt alta. */
 .ant-cift { flex-direction: row; margin: 0 -4px 4px -4px; }
-.buyuk-yazi .ant-cift { flex-direction: column; }
+/* 2026-11-14 (tasarım dili, r170 ×2 Antrenman): .satir'dan gelen flex-wrap: wrap sütunda ikinci kartı yan sütuna (ekran dışına,
+   x 395) atıyor, ilk kartı içerik genişliğinde bırakıyordu (sol 16 / sağ 18). Sütunda sarma yok; kartlar tam genişlikte. */
+.buyuk-yazi .ant-cift { flex-direction: column; flex-wrap: nowrap; }
 .buyuk-yazi .ant-cift .ikincil-kart { flex-basis: auto; }
 
 /* 2026-11-06 reklam şeridi yer tutucusu (Game/Reklam.cs): sekme çubuğunun üstünde 50 pt, sekme çubuğuyla aynı zemin ailesi

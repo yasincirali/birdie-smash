@@ -1,4 +1,10 @@
 === UNITY ===
+Yazılar üst üste binmiyor (14 Kasım):
+- Büyük yazı boyunda Antrenman'daki "Sonsuz ralli" ve "Temel ders" kartları alt alta, ikisi de ekranda; ikinci kart sağdan taşmıyor.
+- İngilizcede seçili zorluk çipi "Medi..." diye kesilmiyor; sığmadığında ✓ yerine turuncu çerçeve ve kalın yazıyla seçili görünüyor.
+- Kariyer basamak halkalarındaki rakamlar halkanın tam ortasında, büyük yazıda da kesilmiyor.
+- Sayfa başındaki "Geri" düğmesi büyük yazıda harf harf kırılmıyor; uzun sayfa başlıkları sözcük ortasından bölünmüyor.
+Nasıl denenir: Ayarlar'da yazı boyunu en büyüğe al. Antrenman'a gir: iki kart alt alta ve tam görünmeli. Dükkân'a gir: "Geri" tek satır olmalı. Dili İngilizceye al, Kariyer'de bir maç kartı aç ve Medium'u seç: yazı tam okunmalı.
 Hızlı maç ve Gelişim cilası (14 Kasım gece):
 - Hızlı maçta saha adları ve zorluk adları artık aynı yazı boyunda; İngilizcede "Tournament" öbür üç addan küçük durmuyor. Zorluk çipleri eşit genişlikte, seçim değişince yer değiştirmiyor.
 - "Kariyerde yendiğin rakipler buraya eklenir." notu yalnız yenilecek rakip kaldıysa görünüyor.

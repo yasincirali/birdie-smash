@@ -165,10 +165,16 @@ namespace BirdieSmash.Game
         {
             float w = d.contentRect.width; if (float.IsNaN(w) || w <= 1 || taban <= 0) return;
             var ik = d.Q<Image>(null, "ikon");
-            if (ik != null && ik.parent != null && ik.parent.resolvedStyle.flexDirection == FlexDirection.Row) w -= ik.resolvedStyle.width + ik.resolvedStyle.marginLeft + ik.resolvedStyle.marginRight;
+            float ikPay = 0;
+            if (ik != null && ik.parent != null && ik.resolvedStyle.display != DisplayStyle.None && ik.parent.resolvedStyle.flexDirection == FlexDirection.Row) { ikPay = ik.resolvedStyle.width + ik.resolvedStyle.marginLeft + ik.resolvedStyle.marginRight; w -= ikPay; }
             float simdi = l.resolvedStyle.fontSize; if (float.IsNaN(simdi) || simdi <= 0) return;
             var olc = l.MeasureTextSize(l.text, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined);
             float gen = olc.x * taban / simdi; if (float.IsNaN(gen) || gen <= 0) return;
+            // 2026-11-14 (yasin: tasarım dili, r170 İngilizce maç kartı "Medi…"): dört eşit zorluk çipinde seçili çipin ✓'i yazının
+            // yerini yiyordu; en küçük boyutta da sığmayan seçili yazı kesiliyordu. Sığmıyorsa ✓ gizlenir, seçili durum turuncu çerçeve,
+            // dolgu ve kalın yazıyla okunur (docs/arayuz_tasarim_dili.md §3: "✓ ya da çerçeve"; ekran okuyucuda "seçili" kalır).
+            float enAz = Mathf.Min(taban, Mathf.Max(YAZI_MIN, Mathf.Round(taban * minOran)));
+            if (ikPay > 0 && ik.ClassListContains("cip-tik") && gen * enAz / taban > w - 2) { ik.style.display = DisplayStyle.None; w += ikPay; }
             float hedef = Mathf.Clamp(Mathf.Floor(taban * Mathf.Min(1, (w - 2) / gen) * 2) / 2, Mathf.Min(taban, Mathf.Max(YAZI_MIN, Mathf.Round(taban * minOran))), taban);   // 2026-10-27: küçülme de 11'in altına inmez
             // Grup ölçüsü (2026-11-14 inceleme, fikir 02:05 #1; r168 İngilizce "Tournament" öbür üç saha adından küçüktü): satır
             // "sigdir-grup" ise her çip kendi hedefini etikete yazar, satırdaki ana yazılar hedeflerin en küçüğünü alır. Eşit

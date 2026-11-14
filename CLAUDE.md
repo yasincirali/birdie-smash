@@ -36,6 +36,10 @@ onay beklemeden yap, sonunda Türkçe özetle; push saatleri kuralı (hafta içi
   `/mnt/project-files/birdie-smash/` altında; oyuna girişi (sprite ya da
   three.js) henüz kararlaştırılmadı.
 
+- **Arayüz tasarım dili (yasin 2026-11-14):** her menü/HUD değişikliği `docs/arayuz_tasarim_dili.md`'ye uyar:
+  yazı hiçbir dilde/boyda üst üste binmez, yan boşluklar ve düğme içi ortalama simetrik. UI PR'ında `ekran/kisa-yazi-*`
+  turu `yazi_tasma.txt` + `yazi_cakisma.txt` "toplam 0" ister.
+
 ## Skill ve MCP yönlendirmesi (yasin 2026-10-29: "Unity oyuna Unity, Flutter'a Flutter")
 
 Kod yazmadan önce ilgili skill çağrılır; uymuyorsa özette "skill dışı" yazılır.
