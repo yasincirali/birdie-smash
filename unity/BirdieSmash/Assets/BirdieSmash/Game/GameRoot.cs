@@ -1212,11 +1212,15 @@ namespace BirdieSmash.Game
                 case Ev.Hit:
                     sfx.Hit(e.type, e.quality, e.slice, e.big, e.serve, mine, (int)e.k, M.flow, M.s != null ? M.s.Speed : 0);   // hız: vuruşun gücü sese biner (Sfx 2026-10-27)
                     fx.Burst(at, Color.white, e.type == "smash" ? 10 : 5, e.type == "smash" ? 220 : 120, "feather");
-                    fx.Dalga(at, e.type == "smash" ? limon : Color.white, e.type == "smash" ? 90 : 46);
+                    // Gövdenin gerisinden smaç (e.arka, 2026-11-14 inceleme fikir 22:05 #1): Core'da %15 yavaş ve düz; his de bunu söyler:
+                    // dalga beyaz ve küçük, sarsıntı yarım, flaş yok. Tam smaç hissi yalnız topun altına girilen smaçta.
+                    bool tamSmac = e.type == "smash" && !e.arka;
+                    fx.Dalga(at, tamSmac ? limon : Color.white, tamSmac ? 90 : e.arka ? 60 : 46);
                     // File önü kill (2026-10-29, "file önü smaç oyunu değiştirsin"): Core onu smaç diye uçurur, gerçek adı e.text'te.
                     // Kısa ve sert: sarsıntı smaçtan büyük, yakınlaşma küçük (file dibinde kadraj kaymasın), halo rengi altın.
                     bool kill = e.text == "kill";
-                    if (e.type == "smash") { if (!rm) { shake = Mathf.Max(shake, e.big ? 12 : kill ? 9 : 6); punch = Mathf.Max(punch, e.big ? 1.09f : kill ? 1.03f : 1.05f); } hud.Flash(e.big ? .5f : .2f, e.big ? new Color(1, .55f, .24f) : kill ? Kit.Hex("#ffd27a") : limon); }
+                    if (e.arka) { if (!rm) shake = Mathf.Max(shake, 3); }
+                    else if (e.type == "smash") { if (!rm) { shake = Mathf.Max(shake, e.big ? 12 : kill ? 9 : 6); punch = Mathf.Max(punch, e.big ? 1.09f : kill ? 1.03f : 1.05f); } hud.Flash(e.big ? .5f : .2f, e.big ? new Color(1, .55f, .24f) : kill ? Kit.Hex("#ffd27a") : limon); }
                     if (mine) fx.Streak(at, M.flow ? Kit.Hex("#ffd23a") : Color.white, e.type == "smash" ? 16 : M.flow ? 12 : 6);
                     if (!mine && e.type == "smash") Yerel.Hap("tick");   // rakibin smacı: kısa tık (onun vuruşu titremez)
                     if (e.k >= 20 && M.ogr == null) Basarim.Ver(Basarim.RALLI20);

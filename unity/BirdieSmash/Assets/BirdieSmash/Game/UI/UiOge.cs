@@ -314,6 +314,9 @@ namespace BirdieSmash.Game
         }
 
         // ---- Yayın Gecesi dokuları ----
+        // Cam plaka (2026-11-14 gece, docs/arayuz_tasarim_dili.md §6): menu_stil.uss --cam2 / --cam ile aynı iki değer; doku
+        // dikey degrade (üst açık, alt koyu) ve yarı saydam, salonun ışığı arkadan sezilir. Opaklık .84/.80: yazı okunur kalır.
+        static readonly Color CAM_UST = new Color(66 / 255f, 48 / 255f, 80 / 255f, .84f), CAM_ALT = new Color(48 / 255f, 34 / 255f, 60 / 255f, .80f);
         static readonly Color NAVY = Kit.Hex("#261A30"), NAVY2 = Kit.Hex("#33233F"), INK = Kit.Hex("#1A1221");   // 2026-10-27 yön C: kart, düğme, zemin (adlar A'dan)
         static void YayinDokulari()
         {
@@ -356,7 +359,7 @@ namespace BirdieSmash.Game
                 (x, y) => new Color(UiKok.ALTIN.r, UiKok.ALTIN.g, UiKok.ALTIN.b, .10f), new Color(UiKok.ALTIN.r, UiKok.ALTIN.g, UiKok.ALTIN.b, 1), 3);
             // Yayın plakası (a-plate): üç köşe 14 pt yuvarlak, sağ alt 18 pt kesik; soldan sağa navy2 → navy; 1 pt ince çerçeve.
             // 2026-10-29 Tüycükler: sağ alt kesik kalktı, dört köşe yuvarlak; altta 6 doku pikseli (3 pt) koyu "dudak" (jöle kart).
-            Plaka = Sekil(96, 96, (x, y, ic) => PlakaIc(x, y, 96, 96, ic), (x, y) => { var c = Color.Lerp(new Color(NAVY2.r, NAVY2.g, NAVY2.b, .97f), new Color(NAVY.r, NAVY.g, NAVY.b, .95f), x / 96f); return c; }, new Color(1, 1, 1, .10f), 2);   // 2026-11-06: alt dudak kalktı, eşit 1 pt kenar
+            Plaka = Sekil(96, 96, (x, y, ic) => PlakaIc(x, y, 96, 96, ic), (x, y) => Color.Lerp(CAM_ALT, CAM_UST, y / 95f), new Color(1, 1, 1, .16f), 2);   // 2026-11-06: alt dudak kalktı, eşit 1 pt kenar   // 2026-11-14 gece: cam (§6), üstten alta açık→koyu, kenar .16
             // Şimdiki basamak (a-pips .cur): limon / soluk limon çapraz çizgi; düz renk yerine desen, yalnız renkle değil.
             Serit = new Texture2D(96, 10, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             var sp = new Color32[96 * 10]; for (int y = 0; y < 10; y++) for (int x = 0; x < 96; x++) { bool on = Mathf.Repeat(x + y * .36f, 12) < 6; sp[y * 96 + x] = on ? (Color32)LIMON_D : (Color32)new Color(LIMON_D.r, LIMON_D.g, LIMON_D.b, .35f); }
