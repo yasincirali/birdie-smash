@@ -1,4 +1,8 @@
 === UNITY ===
+Açılış (15 Kasım):
+- Uygulamayı açınca tüy top artık en baştan spin atıyor: küçükten büyüyerek iki tur döner, sonra yerinde kendi ekseninde dönmeye devam eder. Oyun bu sırada yüklenir.
+- Dene: uygulamayı tamamen kapatıp aç. Dokunduğun anda ilk görüntüde küçük top olmalı, sıçrama ya da takılma olmadan spin atıp büyümeli, ana ekrana geçerken ikinci kez spin atmamalı.
+
 Cam menüler ve servis duruşu (14 Kasım gece):
 - Menülerde kartlar, düğmeler, üst haplar ve sekme çubuğu yarı saydam cam yüzeye geçti; düğme ve çip boyları tek standarda oturdu.
 - Sen servis atarken yorgun rakip artık çömelip ellerini dizine koymuyor, karşılama duruşunda bekliyor.

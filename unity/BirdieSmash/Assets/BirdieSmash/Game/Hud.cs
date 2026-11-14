@@ -273,6 +273,8 @@ namespace BirdieSmash.Game
             // 2026-10-31 akşam: yerel perde artık kapalı evrenin tamamında üstte kalır (önceden 6 akıcı karede kalkıyordu; sonraki
             // takılmalar Unity perdesinde görünüyordu) ve Unity perdeyi açmaya başladığı karede kalkar. Maça geçişte de kullanılır.
             float ys = Yerel.AcilisSure();
+            // Açılış saati: yerel perde açıkken onun süresi (spin onunla aynı anda görünür), sonra kare süresiyle sürer.
+            if (perdeAcilis) acilisSpin = ys >= 0 ? ys : acilisSpin + Mathf.Min(d, .05f);
             if (ys >= 0)
             {
                 if (!Ayar.reduce) perdeAci = ys * 1.2f;
@@ -299,7 +301,8 @@ namespace BirdieSmash.Game
                 // hazır olduktan AKICI_AZAMI sn sonra yine açılır.
                 if (hazir && hazirT < 0) hazirT = perdeT;
                 bool akici = acilisIyi >= AKICI_KARE || perdeSabit >= 0 || (hazirT >= 0 && perdeT - hazirT > AKICI_AZAMI);
-                if (hazir && akici && (perdeT >= min || perdeAtla)) { perdeEvre = 3; perdeT = 0; perdeBek = false; Yerel.AcilisBitir(); if (perdeAcilis) acilisAcT = Time.realtimeSinceStartup; }
+                bool sure = perdeAcilis && !Ayar.reduce ? acilisSpin >= ACILIS_EN_AZ : perdeT >= min;
+                if (hazir && akici && (sure || perdeAtla)) { perdeEvre = 3; perdeT = 0; perdeBek = false; Yerel.AcilisBitir(); if (perdeAcilis) acilisAcT = Time.realtimeSinceStartup; }
             }
             else if (perdeEvre == 3 && perdeT >= (Ayar.reduce ? .25f : .35f)) { perdeEvre = 0; kaynakVar = false; if (perdeAcilis && acilisSonT < 0) acilisSonT = Time.realtimeSinceStartup; }
             if (perdeEvre != 2) perdeBek = false;
@@ -1764,7 +1767,7 @@ namespace BirdieSmash.Game
         // Hareketi azalt: ölçek/dönme/uçuş yok, 200 ms belirme ve 250 ms solma. Top HTML'deki çizilmiş tüy top (Yukleyici.serit, 2026-10-30).
         bool perdeAcilis, kaynakVar; int acilisIyi; float acilisBek, perdeSabit = -1; Vector2 perdeKaynak;
         float acilisSpin, acilisT0 = -1, acilisAcT = -1, acilisSonT = -1;   // ekran turu: gerçek açılışın süreleri (sn)
-        public string AcilisTani { get { return acilisT0 < 0 ? "yok" : "kapalı " + (acilisAcT < 0 ? "?" : (acilisAcT - acilisT0).ToString("F2")) + " sn · toplam " + (acilisSonT < 0 ? "?" : (acilisSonT - acilisT0).ToString("F2")) + " sn (hedef ≥ .95: .60 + .35; ses geç hazırsa hazır + .35)"; } }
+        public string AcilisTani { get { return acilisT0 < 0 ? "yok" : "kapalı " + (acilisAcT < 0 ? "?" : (acilisAcT - acilisT0).ToString("F2")) + " sn · toplam " + (acilisSonT < 0 ? "?" : (acilisSonT - acilisT0).ToString("F2")) + " sn (hedef: yerel perdeden ≥ 1,52 spin + yerleşme, sonra .35; ses geç hazırsa hazır + .35)"; } }
         static float EaseOut3(float x) { return 1 - Mathf.Pow(1 - Mathf.Clamp01(x), 3); }
         static float EaseInOut3(float x) { x = Mathf.Clamp01(x); return x < .5f ? 4 * x * x * x : 1 - Mathf.Pow(-2 * x + 2, 3) / 2; }
         // diskin ölçeği (0..1) ve opaklığı bu karede
@@ -1775,6 +1778,12 @@ namespace BirdieSmash.Game
             else if (perdeEvre == 3) { if (rm) al = 1 - Mathf.Clamp01(perdeT / .25f); else sc = 1 - EaseInOut3(perdeT / .35f); }
         }
         const float UCUS_SN = .28f;
+        // Açılış spini (BirdieAcilis.mm'deki BS_* sabitleriyle birebir aynı tutulmalı): ilk kare tutma, spin süresi, ilk boy,
+        // eksen fazı eki (C0) ve ilk karenin toplam fazı (18 + 1/32 şerit periyodu = kare 0'ın ortası; C0 = FAZ0 − 2,4 × TUT).
+        const float ACILIS_TUT = .12f, ACILIS_SPIN = 1.15f, ACILIS_K0 = .55f, ACILIS_FAZ0 = 18.03125f * Mathf.PI * 2 / 16, ACILIS_C0 = ACILIS_FAZ0 - 2.4f * ACILIS_TUT;
+        // Açılış en az spin + .25 sn yerleşme sürer (yerel perdenin açıldığı andan); yükleme bu sırada biter. Önceden en az .6 sn
+        // Unity perdesinin başladığı andan sayılıyordu: motor açılışı zaten yerel perdede geçtiği için açılışı boşuna uzatıyordu.
+        const float ACILIS_EN_AZ = ACILIS_TUT + ACILIS_SPIN + .25f;
         static Vector2 UcusA { get { return new Vector2(-Screen.width * .1f, Screen.height * .85f); } }
         static Vector2 UcusB { get { return new Vector2(Screen.width * 1.1f, Screen.height * .12f); } }
 
@@ -1797,13 +1806,24 @@ namespace BirdieSmash.Game
                 // 2026-11-11 (yasin, açılış prototipi: "spin atışı ile devam etmeli"): top yerinden oynamaz; ilk 1,15 sn'de iki tam
                 // tur atıp bekleme yönünde (44°) durur, küçükten hafif taşarak büyür, eksen dönüşü hızlı başlayıp yavaşlar.
                 // Hareketi azalt açıkken yok. aci/donus serbest dalda ekrandaki yön ve faz ekidir (TopCiz).
-                if (acilisTop && !Ayar.reduce)
+                // 2026-11-14 (yasin: "top sadece kendi etrafında değil spin de atacaktı, ana sayfaya geçerken spin atıyor sadece"):
+                // spin, yerel açılış perdesinin (BirdieAcilis.mm) arkasında oynuyordu; yerel perde kapalı evre boyunca üstte
+                // kaldığı için görünmüyor, yalnız yükleme kısaysa açılırken görünüyordu. Artık spin uygulamanın açıldığı anda yerel
+                // perdede başlar (aynı eğriler Core Animation anahtar kareleriyle) ve zaman tek: acilisSpin = yerel perdenin
+                // süresi (PerdeTick). Sistem açılış ekranı (CiBuild, Editor/acilis_top.png) spinin ilk karesidir: top .55 boyda,
+                // 44°, şerit karesi 0; ilk ACILIS_TUT sn bu kare durur (pencerenin görünmesi bir iki kare sürebilir, spin
+                // görünmeden başlamasın). Faz eki ACILIS_FAZ0'a göre yazılır: ilk karede toplam faz şerit karesi 0'ın ortası.
+                // Hareketi azalt: spin yok, top açılış boyunda (.55) ve aynı karede durur (sistem ekranıyla aynı, sıçrama yok).
+                if (acilisTop)
                 {
-                    float ta = perdeSabit >= 0 ? (perdeEvre == 2 ? perdeT : 9) : acilisSpin;
-                    if (ta < 1.15f)
+                    float ta = (perdeSabit >= 0 ? (perdeEvre == 2 ? perdeT : 9) : acilisSpin) - ACILIS_TUT;
+                    float faz = root.yukleyici != null ? root.yukleyici.Faz : 0;
+                    if (Ayar.reduce) { k = ACILIS_K0; donus = ACILIS_FAZ0 - faz; }
+                    else if (ta < 0) { aci = 44f - 720f; k = ACILIS_K0; donus = ACILIS_FAZ0 - faz; }
+                    else if (ta < ACILIS_SPIN)
                     {
-                        float uu = EaseOut3(ta / 1.15f), x = Mathf.Clamp01(ta / .7f) - 1; const float C = 1.9f;
-                        aci = 44f - 720f * (1 - uu); donus = 7f * (1 - uu); k = .55f + .45f * (1 + (C + 1) * x * x * x + C * x * x);
+                        float uu = EaseOut3(ta / ACILIS_SPIN), x = Mathf.Clamp01(ta / .7f) - 1; const float C = 1.9f;
+                        aci = 44f - 720f * (1 - uu); donus = ACILIS_C0 * (1 - uu); k = ACILIS_K0 + (1 - ACILIS_K0) * (1 + (C + 1) * x * x * x + C * x * x);
                     }
                 }
                 boy = Mathf.Round(Mathf.Min(W_, H_) * .3f * s * k); serbest = true; return boy > 2 && al > 0;
@@ -1824,7 +1844,7 @@ namespace BirdieSmash.Game
         void PerdeCiz()
         {
             if (perdeEvre == 0) return; if (perdeTex == null) PerdeDoku();
-            if (Event.current.type == EventType.Repaint) { acilisIyi = Time.unscaledDeltaTime < .025f ? acilisIyi + 1 : 0; if (perdeAcilis) acilisSpin += Mathf.Min(Time.unscaledDeltaTime, .05f); }
+            if (Event.current.type == EventType.Repaint) { acilisIyi = Time.unscaledDeltaTime < .025f ? acilisIyi + 1 : 0; }
             blocks.Add(new Rect(0, 0, W, H));
             float sc, al; DiskOlcek(out sc, out al);
             if (sc > .001f && al > .001f)
