@@ -161,6 +161,7 @@ static class BotMac
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
         FileStandart();   // 2026-10-27 ekran/file (ayrı satır: liste başka dallarda da büyüyor)
         IkizMaclar();   // 2026-11-07 online: iki çekirdek gecikmeli kuyrukla (Core/Uzak)
+        GeriKosu();   // 2026-11-14 geri koşu yavaş, rakip topa gerçekten yetişir, gövdenin gerisinden smaç yok
         FlickSerileri();   // 2026-11-10 inceleme 17:08 #1: ardışık flick servisi rakibi gittikçe az aldatır
         ServisSaatleri();   // 2026-11-07 inceleme: online servis saati + çekilme (Core/Uzak)
         Ligler(); Kartlar();   // 2026-11-07 online: lig puanı (Core/Lig), oyuncu kartı (Core/OyuncuKarti)
@@ -2026,6 +2027,51 @@ static class BotMac
         if (al != 0) Fail("NetWave.Advance ayırma yapıyor: " + al + " B");
     }
     // ---- ekran/file sonu ----
+    // Geri koşu ve vuruş anatomisi (2026-11-14, yasin: "geri geri koşmak öne gitmekle aynı hızda olmamalı hem bizim user hem
+    // rakip için"; "hangi açılarda hangi vuruşlar yapılabilir"). Kapı: Match.YonK öne 1, yana YON_YAN, geriye YON_GERI, açıyla
+    // tekdüze azalır (iki taraf aynalı); maçta iki oyuncunun da en yüksek geri hızı en yüksek öne hızının YON_GERI'si (+%3)
+    // üstüne çıkmaz; rakip hiçbir vuruşta topa RAKIP_ERIS'ten uzak değildir (eskiden plan yanılırsa uzaktan vururdu); rakip top
+    // gövdesinin ARKA_SMAC'tan çok gerisindeyken smaçlamaz (eski kuralda Kolay rakibin smaçlarının %17'si böyleydi).
+    static void GeriKosu()
+    {
+        if (Match.YonK(0, -1, true) != 1 || Match.YonK(0, 1, false) != 1 || Math.Abs(Match.YonK(1, 0, true) - Match.YON_YAN) > 1e-5 || Math.Abs(Match.YonK(0, 1, true) - Match.YON_GERI) > 1e-5 || Math.Abs(Match.YonK(0, -1, false) - Match.YON_GERI) > 1e-5) Fail("YonK yön çarpanları");
+        float onceki = 2; for (int a = 0; a <= 180; a += 5) { double r = a * Math.PI / 180; float k = Match.YonK((float)Math.Sin(r), -(float)Math.Cos(r), true); if (k > onceki + 1e-5f) Fail("YonK açıyla artmamalı (" + a + "°)"); onceki = k; }
+        var vmax = new float[2, 2]; int opVurus = 0, uzakVurus = 0, arkaSmac = 0, birak = 0; float enUzak = 0;
+        for (int m = 0; m < 6; m++)
+        {
+            var M = new Match(700 + m, new MatchOptions { easy = m % 2 == 0, sert = m % 2 == 1, target = 11 });
+            Shuttle son = null; float ox = M.op.x, oy = M.op.y; int guard = 0;
+            while (!M.over && guard++ < 60 * 60 * 30)
+            {
+                Bot(M, 1f / 60f); M.Update(1f / 60f);
+                float ovx = (M.op.x - ox) * 60, ovy = (M.op.y - oy) * 60; ox = M.op.x; oy = M.op.y;
+                if (M.s != null && !M.s.dead && !M.between)
+                    for (int k = 0; k < 2; k++)
+                    {
+                        float vx = k == 0 ? M.me.vx : ovx, vy = k == 0 ? M.me.vy : ovy, v = (float)Math.Sqrt(vx * vx + vy * vy);
+                        if (v < .5f || v > 12) continue; float c = (k == 0 ? -vy : vy) / v;
+                        if (c > .95f) vmax[k, 0] = Math.Max(vmax[k, 0], v); else if (c < -.95f) vmax[k, 1] = Math.Max(vmax[k, 1], v);
+                    }
+                if (M.s != null && M.s != son)
+                {
+                    son = M.s;
+                    if (!M.s.serve && M.s.from == "op")
+                    {
+                        opVurus++; float d = (float)Math.Sqrt((M.op.x - M.s.hx) * (M.op.x - M.s.hx) + (M.op.y - M.s.hy) * (M.op.y - M.s.hy)); enUzak = Math.Max(enUzak, d);
+                        if (d > Match.RAKIP_ERIS + .05f) uzakVurus++;
+                        if ((M.s.vurus ?? M.s.type) == "smash" && M.s.hz > 1.95f && M.op.y - M.s.hy > Match.ARKA_SMAC + .02f) arkaSmac++;
+                    }
+                }
+                M.events.Clear();
+            }
+            birak += M.gecKalma;
+        }
+        Console.WriteLine("geri koşu: en yüksek hız öne/geri ben " + vmax[0, 0].ToString("F1") + "/" + vmax[0, 1].ToString("F1") + ", rakip " + vmax[1, 0].ToString("F1") + "/" + vmax[1, 1].ToString("F1") + " m/s; rakip " + opVurus + " vuruş, en uzak temas " + enUzak.ToString("F2") + " m, yetişemeyip bıraktığı " + birak + ", gövdenin gerisinden smaç " + arkaSmac);
+        for (int k = 0; k < 2; k++) if (vmax[k, 0] > 0 && vmax[k, 1] > vmax[k, 0] * (Match.YON_GERI + .03f)) Fail((k == 0 ? "ben" : "rakip") + ": geri koşu öne koşudan YON_GERI oranında yavaş değil (" + vmax[k, 1].ToString("F2") + " / " + vmax[k, 0].ToString("F2") + ")");
+        if (uzakVurus > 0) Fail("rakip " + uzakVurus + " kez topa RAKIP_ERIS'ten uzaktan vurdu (en uzak " + enUzak.ToString("F2") + " m)");
+        if (arkaSmac > 0) Fail("rakip top gövdesinin gerisindeyken " + arkaSmac + " kez smaçladı");
+    }
+
     // Online ikiz maç (2026-11-07, Core/Uzak): iki çekirdek birbirine sıralı, gecikmeli (±%25 titreşim) bir kuyrukla bağlanır,
     // iki tarafta da insan benzeri bot oynar. Kapı: her maç biter, iki tarafın sayı dizisi ve son skoru aynalı olarak aynı
     // (uyuşmazlık 0), ralliler gerçek (ortalama ≥ 3 vuruş), paket yükü maç başına 100 KB altında.
