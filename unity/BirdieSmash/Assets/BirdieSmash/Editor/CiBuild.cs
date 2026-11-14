@@ -182,6 +182,8 @@ namespace BirdieSmash.EditorTools
         // üstünde ortada, yerel perdenin (Plugins/iOS/BirdieAcilis.mm) ilk karesiyle aynı yer ve boy; dokunuştan sonraki ilk
         // görüntüde top zaten durur, motor açılmadan dönmeye başlar. Görsel kare: ekranın kısa kenarının %50'si, top Hud
         // geometrisiyle (merkezden .026·m yukarı, boy .3·m) içine çizilmiş (Editor/acilis_top.png, scratchpad üreteci).
+        // 2026-11-14: görsel artık açılış spininin ilk karesi (top .55 boyda; BirdieAcilis.mm spini buradan başlatır, sıçrama
+        // yok). Üreteç depoda: tool/acilis_top_uret.py.
         // "Görsel ve arka plan (göreli)" tipi; alan adları public API'de olmadığı için SerializedObject. Bulunamazsa düz renk kalır.
         const string AcilisTop = "Assets/BirdieSmash/Editor/acilis_top.png";
         static void IosAcilisTopu()

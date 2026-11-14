@@ -1,4 +1,8 @@
 === UNITY ===
+Açılış (15 Kasım):
+- Uygulamayı açınca tüy top artık en baştan spin atıyor: küçükten büyüyerek iki tur döner, sonra yerinde kendi ekseninde dönmeye devam eder. Oyun bu sırada yüklenir.
+- Dene: uygulamayı tamamen kapatıp aç. Dokunduğun anda ilk görüntüde küçük top olmalı, sıçrama ya da takılma olmadan spin atıp büyümeli, ana ekrana geçerken ikinci kez spin atmamalı.
+
 Dolap: 18 saç, 15 yüz eşyası ve ayakkabı görünümü (14 Kasım gece):
 - Saç modeli rafına 18 yeni biçim: Kâse kesim, Küt bob, Dev bukle gibi klasikler ve Brokoli, Tavuk ibiği, Spagetti, Rüzgâr tüneli, Gökkuşağı, Bulut, Alev, Tüy top topuzu gibi garip olanlar. Saç rengi seçtiysen yeni saçlar da o rengi alıyor; şapka takınca kısa kesime dönüyor.
 - Yüz rafına 15 eşya: gözlükler (kalın kare, spor, pilot, yıldız, kalp, dalgıç maskesi, robot vizör), monokl, hakem düdüğü, sakız balonu, gür kaşlar, keçi sakalı, tüy bıyık, nefes ve yara bandı.

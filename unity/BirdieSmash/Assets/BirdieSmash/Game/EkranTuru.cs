@@ -879,7 +879,7 @@ namespace BirdieSmash.Game
             hud.PerdeKare(false, 2, .3f); yield return PerdeCek("gecis_azalt_kapali");
             hud.PerdeKare(false, 3, .12f); yield return PerdeCek("gecis_azalt_acilis_0120");
             Ayar.reduce = false;
-            foreach (var k in new[] { 0f, .10f, .25f, .40f, .55f, .65f }) { hud.PerdeKare(true, 2, k); yield return PerdeCek("acilis_" + Ms(k)); }
+            foreach (var k in new[] { 0f, .12f, .25f, .40f, .60f, .85f, 1.10f, 1.30f }) { hud.PerdeKare(true, 2, k); yield return PerdeCek("acilis_" + Ms(k)); }
             hud.PerdeKare(true, 2, 0, true); yield return PerdeCek("acilis_bekle");
             // 2026-10-30 (yasin: "gif takılmamalı, maçtaki topun aynısını 3B dönerken görmeliyim"): bekleme pozunda tam bir eksen
             // turu, 66 kare (40 ms → 2,64 sn/tur ≈ 2,4 rad/sn, oyundaki hız). Faz sabitlenir; GIF döngüsü dikişsiz.

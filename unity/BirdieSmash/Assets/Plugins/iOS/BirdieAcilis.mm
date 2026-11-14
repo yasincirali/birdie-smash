@@ -12,6 +12,13 @@
 // çağırmazsa 15 sn sonra kendisi kalkar. Hareketi azalt: dönme yok, tek kare (Unity'deki gibi).
 // Açılış ekranının kendisi (LaunchScreen) düz renk + aynı topun 0. karesi (CiBuild.IosAcilis); bu pencere ilk karede
 // aynı topu aynı yerde gösterir, halkalar .25 sn'de belirir.
+// 2026-11-14 (yasin: "giriş gifini beğeniyorum, ilk yüklemeleri o gif oynarken yapalım; top sadece kendi etrafında değil spin
+// de atacaktı, ana sayfaya geçerken spin atıyor sadece"): açılış spini (Hud.TopDurum, 2026-11-11 prototipi: iki tam tur,
+// küçükten hafif taşarak büyüme, hızlı başlayıp yavaşlayan eksen dönüşü) artık burada, uygulama açılır açılmaz oynar;
+// önceden yalnız Unity perdesindeydi ve bu pencerenin arkasında kalıyordu. Eğriler Hud ile aynı, 1/120 sn anahtar kareler
+// render sunucusunda: motor açılışı ana iş parçacığını tutsa da takılmaz. Sistem açılış ekranı spinin ilk karesi (top .55
+// boyda, şerit karesi 0); ilk BS_TUT sn o kare durur ki pencere görünmeden spin başlamasın. Unity aynı saati
+// (BirdieAcilisSure) okuyarak devralır. Maça geçiş perdesinde spin yok.
 // 2026-10-31 akşam (yasin: "splash gifimiz yine geç giriyor ... tıklanır tıklanmaz ... maça geçiş anı ... takılma olmamalı"):
 // (a) Sistem açılış ekranı didFinishLaunching dönene dek ekranda kalır; perde onun içinde kurulsa da Unity'nin motor
 //     başlatması (super, il2cpp ve veri yükleme) bitene dek görünmüyordu. Klasik yaşam döngüsünde super artık bir sonraki
@@ -50,6 +57,12 @@ static void bsBitir(void)
 
 // aci: halkaların başlangıç açısı (rad, Unity perdeAci ile aynı); topGecikme: top ve yazı bu kadar sn sonra belirir (0: hemen,
 // < 0: hiç); yazi: topun altındaki etiket (nil: yok); yaziOlcek: Ayar.YaziK. Açılışta (aci 0, ilk kurulum) halkalar .25 sn'de belirir.
+// Açılış spini sabitleri: Hud ACILIS_* ile birebir aynı (tutma, süre, ilk boy, ilk karenin toplam fazı, eksen fazı eki).
+static const double BS_TUT = .12, BS_SPIN = 1.15, BS_K0 = .55, BS_AXP = M_PI * 2 / 16, BS_FAZ0 = 18.03125 * BS_AXP, BS_C0 = BS_FAZ0 - 2.4 * BS_TUT;
+static double bsEase3(double x) { x = x < 0 ? 0 : x > 1 ? 1 : x; return 1 - pow(1 - x, 3); }
+static CGRect bsKare(double faz) { int fi = (int)floor(fmod(faz, BS_AXP) / BS_AXP * 16) % 16; return CGRectMake((fi % 4) * .25, (fi / 4) * .25, .25, .25); }
+
+// belir: uygulama açılışı (halkalar belirir, top spin atar); maça geçişte NO.
 static void bsPerdeKur(UIWindow *unity, CGFloat aci, CGFloat topGecikme, NSString *yazi, CGFloat yaziOlcek, BOOL belir)
 {
     UIImage *top = bsResim(@"tuy_don.png");
@@ -94,6 +107,33 @@ static void bsPerdeKur(UIWindow *unity, CGFloat aci, CGFloat topGecikme, NSStrin
     CALayer *T = [CALayer layer]; T.contents = (__bridge id)top.CGImage; T.bounds = CGRectMake(0, 0, 300 * s, 299 * s);
     T.anchorPoint = CGPointMake(39 / 300.0, 36 / 299.0); T.position = cork; T.transform = CATransform3DMakeRotation(yon + M_PI * 135 / 180, 0, 0, 1);
     T.contentsRect = CGRectMake(0, 0, .25, .25); T.minificationFilter = kCAFilterTrilinear; T.magnificationFilter = kCAFilterLinear;
+    if (belir && rm)
+    {   // hareketi azalt: spin yok, top açılış ekranındaki boy ve karede durur (Unity de öyle çizer)
+        T.position = CGPointMake(p.x + cos(yon) * .56 * k * BS_K0, p.y + sin(yon) * .56 * k * BS_K0);
+        T.transform = CATransform3DScale(T.transform, BS_K0, BS_K0, 1); T.contentsRect = bsKare(BS_FAZ0);
+    }
+    else if (belir)
+    {   // spin: ta = 0..BS_SPIN, ekrandaki yön 44° − 720°(1 − u), boy K0 + (1 − K0)·geri taşma eğrisi, faz 2,4·t + C0(1 − u)
+        const int N = (int)round(BS_SPIN * 120); const double C = 1.9;
+        NSMutableArray *kt = [NSMutableArray arrayWithCapacity:N + 1], *pv = [NSMutableArray arrayWithCapacity:N + 1], *tv = [NSMutableArray arrayWithCapacity:N + 1], *cv = [NSMutableArray arrayWithCapacity:N + 1];
+        for (int i = 0; i <= N; i++)
+        {
+            double ta = BS_SPIN * i / N, uu = bsEase3(ta / BS_SPIN), x = fmin(1, ta / .7) - 1, ks = BS_K0 + (1 - BS_K0) * (1 + (C + 1) * x * x * x + C * x * x);
+            double a = (44 - 720 * (1 - uu)) * M_PI / 180, faz = 2.4 * (ta + BS_TUT) + BS_C0 * (1 - uu);
+            [kt addObject:@(ta / BS_SPIN)];
+            [pv addObject:[NSValue valueWithCGPoint:CGPointMake(p.x + cos(a) * .56 * k * ks, p.y + sin(a) * .56 * k * ks)]];
+            [tv addObject:[NSValue valueWithCATransform3D:CATransform3DScale(CATransform3DMakeRotation(a + M_PI * 135 / 180, 0, 0, 1), ks, ks, 1)]];
+            [cv addObject:[NSValue valueWithCGRect:bsKare(faz)]];
+        }
+        NSArray *yollar = @[@"position", @"transform", @"contentsRect"], *degerler = @[pv, tv, cv];
+        for (int j = 0; j < 3; j++)
+        {   // geri dolgu: BS_TUT boyunca ilk kare (= açılış ekranı); bitince modeldeki son poz (44°, tam boy) kalır
+            CAKeyframeAnimation *a = [CAKeyframeAnimation animationWithKeyPath:yollar[j]];
+            a.values = degerler[j]; a.keyTimes = kt; a.duration = BS_SPIN; a.beginTime = t0 + BS_TUT; a.fillMode = kCAFillModeBackwards;
+            if (j == 2) a.calculationMode = kCAAnimationDiscrete;
+            [T addAnimation:a forKey:[@"spin_" stringByAppendingString:yollar[j]]];
+        }
+    }
     if (!rm)
     {
         NSMutableArray *v = [NSMutableArray arrayWithCapacity:16]; NSMutableArray *kt = [NSMutableArray arrayWithCapacity:17];
@@ -101,6 +141,7 @@ static void bsPerdeKur(UIWindow *unity, CGFloat aci, CGFloat topGecikme, NSStrin
         [v addObject:v[0]]; [kt addObject:@1];
         CAKeyframeAnimation *a = [CAKeyframeAnimation animationWithKeyPath:@"contentsRect"];
         a.values = v; a.keyTimes = kt; a.calculationMode = kCAAnimationDiscrete; a.duration = (M_PI * 2 / 16) / 2.4; a.repeatCount = HUGE_VALF; a.beginTime = t0;
+        if (belir) { a.beginTime = t0 + BS_TUT + BS_SPIN; a.timeOffset = BS_TUT + BS_SPIN; }   // spin bitince aynı saatten (faz 2,4·t) sürer
         a.removedOnCompletion = NO; [T addAnimation:a forKey:@"don"];
     }
     if (topGecikme >= 0) [kok addSublayer:T];
@@ -161,7 +202,9 @@ static BOOL bsErteleOlur(void)
     }
     bsHazir = YES;
     BOOL r = [super application:application didFinishLaunchingWithOptions:launchOptions];
-    [self bsOneAl];
+    // Eşzamanlı yolda super motoru başlatırken sistem açılış ekranı üstteydi; spin görünmeden bitmesin diye perde (ve
+    // saati) yeniden kurulur, spin pencere görününce başlar.
+    bsBitir(); [self bsOneAl];
     return r;
 }
 - (void)bsOneAl
