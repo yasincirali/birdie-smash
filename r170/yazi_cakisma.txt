@@ -1,0 +1,7 @@
+toplam 6
+menu_x2_harita_tur4_kilitli · yazı çubuğun üstünde 191×8 · "4. Madrid · Vex"
+menu_x2_harita_tur4_usta · yazı çubuğun üstünde 179×4 · "Next match"
+menu_x2_antrenman · asimetri .ikincil-kart sol 16 sağ 18 · ""
+menu_x2_gorev_karti · asimetri .ikincil-kart sol 16 sağ 18 · ""
+menu_x2_tr_antrenman · asimetri .ikincil-kart sol 16 sağ 18 · ""
+menu_x2_tr_gorev_karti · asimetri .ikincil-kart sol 16 sağ 18 · ""
