@@ -162,6 +162,7 @@ static class BotMac
         FileStandart();   // 2026-10-27 ekran/file (ayrı satır: liste başka dallarda da büyüyor)
         IkizMaclar();   // 2026-11-07 online: iki çekirdek gecikmeli kuyrukla (Core/Uzak)
         GucMerdiveni();   // 2026-11-14 rakibin görünen gücü tur tur artar
+        Hikayeler();   // 2026-11-14 kariyer hikâyesi: bölüm, güç sayısı, dünya sırası
         GeriKosu();   // 2026-11-14 geri koşu yavaş, rakip topa gerçekten yetişir, gövdenin gerisinden smaç yok
         FlickSerileri();   // 2026-11-10 inceleme 17:08 #1: ardışık flick servisi rakibi gittikçe az aldatır
         ServisSaatleri();   // 2026-11-07 inceleme: online servis saati + çekilme (Core/Uzak)
@@ -2028,6 +2029,27 @@ static class BotMac
         if (al != 0) Fail("NetWave.Advance ayırma yapıyor: " + al + " B");
     }
     // ---- ekran/file sonu ----
+    // Kariyer hikâyesi (2026-11-14, Core/Hikaye). Kapı: her turun bölüm başlığı ve hikâye cümlesi var; güç sayısı 1–99, tur
+    // ortalaması tur tur artar, Tur 1 ilk maç ≤ 30, son final ≥ 95; oyuncunun dünya sırası 0 galibiyette ILK_SIRA, galibiyetle hiç
+    // artmaz, 24'te 1; rakip sırası ≥ 2; "son karşılaşma" aynı tarzın önceki basamağı.
+    static void Hikayeler()
+    {
+        float once = -1; string oz = "";
+        for (int t = 0; t < KariyerVeri.Turlar.Length; t++)
+        {
+            var tr = KariyerVeri.Turlar[t]; if (!tr.Var) continue;
+            if (tr.bolum.Length == 0 || tr.hikaye.Length == 0) Fail("bölüm başlığı/hikâye yok: " + tr.ad);
+            float top = 0; for (int b = 0; b < KariyerVeri.BASAMAK; b++) { int g = KariyerVeri.Global(t, b), gc = Hikaye.Guc(g); top += gc; if (gc < 1 || gc > 99) Fail("güç bant dışı " + gc); if (Hikaye.RakipSira(g) < 2) Fail("rakip sırası 1 olamaz (1 oyuncunun)"); }
+            float ort = top / KariyerVeri.BASAMAK; oz += " " + ort.ToString("F0"); if (ort <= once) Fail("güç ortalaması artmadı: " + tr.ad); once = ort;
+        }
+        int son = KariyerVeri.Turlar.Length * KariyerVeri.BASAMAK - 1;
+        if (Hikaye.Guc(0) > 30 || Hikaye.Guc(son) < 95) Fail("güç uçları: ilk " + Hikaye.Guc(0) + ", son " + Hikaye.Guc(son));
+        if (Hikaye.OyuncuSira(0) != Hikaye.ILK_SIRA || Hikaye.OyuncuSira(Hikaye.ZIRVE_GALIBIYET) != 1) Fail("dünya sırası uçları");
+        for (int w = 1; w <= 48; w++) if (Hikaye.OyuncuSira(w) > Hikaye.OyuncuSira(w - 1)) Fail("dünya sırası galibiyetle düştü: " + w);
+        int og = Hikaye.OncekiKarsilasma(KariyerVeri.Global(1, 1)); if (og < 0 || KariyerVeri.Al(og).stil != KariyerVeri.Al(KariyerVeri.Global(1, 1)).stil || Hikaye.OncekiKarsilasma(0) != -1) Fail("son karşılaşma");
+        Console.WriteLine("hikâye: tur başına güç ortalaması" + oz + "; dünya sırası 0/6/12/18/24 galibiyet " + Hikaye.OyuncuSira(0) + "/" + Hikaye.OyuncuSira(6) + "/" + Hikaye.OyuncuSira(12) + "/" + Hikaye.OyuncuSira(18) + "/" + Hikaye.OyuncuSira(24));
+    }
+
     // Güç merdiveni (2026-11-14, yasin: "daha güçlü rakiplerle karşılaştığımı hissetmeliyim zaman geçtikçe"). Kapı: görünen güç
     // (koşu hızı = g × tarz hızı × 3,2) Tur 2'den itibaren her turun en zayıf rakibi önceki turun en zayıfından güçlü ve
     // her turun ortalaması öncekinden yüksektir; gizli tepki çarpanı 0,7–1,7 bandında kalır (dengeyi taşır, oyunu bozmaz).

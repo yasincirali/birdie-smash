@@ -26,6 +26,9 @@ namespace BirdieSmash.Game
             var bas = Satir("arali"); c.Add(bas);
             var t = Yazi(L.T("Kariyer"), 24, "sekme-baslik"); Erisim.Etiket(t, L.T("Kariyer"), "baslik"); bas.Add(t);
             bas.Add(YildizSayac(p.ToplamYildiz, TurSayisiVeri() * 18, 15));
+            // Dünya sırası (2026-11-14 hikâye, Core/Hikaye): kazanılan basamakla yükselir, kayıpta düşmez; 1'den sonra unvanı koru.
+            { int ds = Hikaye.OyuncuSira(Hikaye.Galibiyet(p)); string dy = ds == 1 ? L.T("Dünya 1 numarası · unvanını koru") : L.T("Dünya sıralaman: {0}.", SiraYaz(ds));
+              var dsy = Yazi(dy, 14, "soluk"); dsy.AddToClassList("dunya-sira"); Erisim.Etiket(dsy, dy, "metin"); c.Add(dsy); }
             // Career.Line satırı kalktı (fikir 22:10 #2): aynı maç başlık altında, tur kartında, maç kartında ve düğmede dört kez yazıyordu.
 
             // 2026-11-07 (yasin, Dolap/Kariyer alternatifleri, seçim "A: yatay tur kartları"): çip satırı + tur kartı + altı düğümlük
@@ -157,10 +160,13 @@ namespace BirdieSmash.Game
             var kb = Kart("tur-kart"); kb.AddToClassList("tur-kart--yatay"); if (secili) kb.AddToClassList("tur-kart--secili"); if (!acik) kb.AddToClassList("tur-kart--kilit");
             var ust = Satir("arali"); ust.pickingMode = PickingMode.Ignore; kb.Add(ust);
             var adk = new VisualElement(); adk.AddToClassList("esnek-yatay"); adk.pickingMode = PickingMode.Ignore; ust.Add(adk);
-            adk.Add(Yazi(L.T("Tur {0}", t + 1), 12, "etiket"));
+            adk.Add(Yazi(L.T("Tur {0}", t + 1) + (tv != null && tv.bolum.Length > 0 ? " · " + L.T(tv.bolum) : ""), 12, "etiket"));   // bölüm başlığı (Core/Hikaye)
             var ad = Yazi(L.T(TurAd(t)), 20, "kalin"); ad.name = "tur-ad"; adk.Add(ad);
             if (!acik) ust.Add(Ikon(Ikonlar.Kilit, 20, SOLUK)); else if (veri) ust.Add(YildizSayac(p.TurYildiz(t), 18, 14));
-            if (tv != null && !string.IsNullOrEmpty(tv.tema)) { var tm = Yazi(L.T(tv.tema), 14); tm.AddToClassList("tur-tema"); kb.Add(tm); }
+            // Hikâye cümlesi temanın üstünde (2026-11-14): tema turun kuralını söyler, hikâye neden orada olduğunu; tema küçülür.
+            bool hk = tv != null && tv.hikaye.Length > 0;
+            if (hk) { var hy = Yazi(L.T(tv.hikaye), 14); hy.AddToClassList("tur-hikaye"); kb.Add(hy); }
+            if (tv != null && !string.IsNullOrEmpty(tv.tema)) { var tm = Yazi(L.T(tv.tema), hk ? 13 : 14); tm.AddToClassList("tur-tema"); if (hk) tm.AddToClassList("tur-tema-alt"); kb.Add(tm); }
             if (!acik) { var ky = Yazi(KilitNedeni(t), 13, "soluk"); ky.AddToClassList("tur-durum"); kb.Add(ky); }
             string durum = null;
             if (veri)
@@ -265,8 +271,15 @@ namespace BirdieSmash.Game
             // aynı basamakta takılan oyuncu "bu rakiple kaç kez kaybettim"i maça başlarken görmüyordu. Aynı biçim, sayıyla, renksiz.
             int kG, kY; bool karne = Ayar.Karne(st.id, out kG, out kY);
             ra.Add(Yazi(st.isim + " · " + L.T(st.ad) + (karne ? " · " + kG + "–" + kY : ""), 14, "soluk"));
+            // Güç ve dünya sırası (2026-11-14 hikâye): rakibin görünen gücü güç merdiveniyle tur tur artar; aynı tarzla yeniden
+            // karşılaşınca o günkü güç yazar ("daha güçlü rakiplerle karşılaştığımı hissetmeliyim").
+            int gc = Hikaye.Guc(g), og = Hikaye.OncekiKarsilasma(g);
+            string gs = L.T("Güç {0} · Dünya {1}.", gc, SiraYaz(Hikaye.RakipSira(g)));
+            var gy = Yazi(gs, 13, "soluk"); gy.AddToClassList("rakip-guc"); ra.Add(gy);
+            string ks = og >= 0 ? L.T("Son karşılaşma: {0} · o gün güç {1}", L.T(KariyerVeri.Al(og).yer), Hikaye.Guc(og)) : null;
+            if (ks != null) { var ky = Yazi(ks, 13, "soluk"); ky.AddToClassList("rakip-guc"); ra.Add(ky); }
             if (acik) { var yr = Satir("rakip-satir"); yr.pickingMode = PickingMode.Ignore; ra.Add(yr); yr.Add(UcYildiz(p.Maske(g), 16)); var yy = Yazi(p.Yildiz(g) + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy); }
-            Erisim.Etiket(rr, (b + 1) + ". " + L.T(kb.yer) + ", " + L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad) + (karne ? ", " + L.T("Bu rakiple {0} galibiyet, {1} yenilgi", kG, kY) : "") + (acik ? ", " + L.T("{0}/3 yıldız", p.Yildiz(g)) : ""), "metin");
+            Erisim.Etiket(rr, (b + 1) + ". " + L.T(kb.yer) + ", " + L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad) + ", " + gs + (ks != null ? ", " + ks : "") + (karne ? ", " + L.T("Bu rakiple {0} galibiyet, {1} yenilgi", kG, kY) : "") + (acik ? ", " + L.T("{0}/3 yıldız", p.Yildiz(g)) : ""), "metin");
             var ip = Yazi(L.T(st.ipucu), 14, "ipucu"); Erisim.Etiket(ip, L.T(st.ipucu), "metin"); kart.Add(ip);
             if (acik) { var zs = Satir(); kart.Add(zs); ZorlukSatir(zs, kart); }
             if (acik) { string ol = L.T(p.Kazanildi(g) ? "Yeniden oyna" : "Oyna"); var o = Dugme(ol, () => KariyerOyna(g), "dugme--birincil", null, 19); o.AddToClassList("mac-ozet-oyna"); Sigdir(o); Erisim.Etiket(o, ol + ", " + L.T(kb.yer), "dugme"); kart.Add(o); }   // yer adı kartın başlığında; ekran okuyucu yine söyler
@@ -274,6 +287,9 @@ namespace BirdieSmash.Game
             var dy = Dugme(L.T("Maç ayrıntısı"), () => MacKartAc(g), "kucuk-dugme"); dy.AddToClassList("dugme--hayalet"); dy.style.alignSelf = Align.Center; dy.style.marginTop = 8; kart.Add(dy);
             return kart;
         }
+
+        // Sıra yazımı: binlik ayırıcı dile göre (TR 1.840, EN 1,840).
+        static string SiraYaz(int n) { return n >= 1000 ? (n / 1000) + (L.En ? "," : ".") + (n % 1000).ToString("000") : n.ToString(); }
 
         void KariyerOyna(int g)
         {

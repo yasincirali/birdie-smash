@@ -915,6 +915,7 @@ namespace BirdieSmash.Game
             GUI.Label(new Rect(x + 16 * u, y + 12 * u + bh, iw, mh), metin, ustaKartSt);
             return y + h + 8 * u;
         }
+        int gucK = -2; bool gucEn; string gucYazi; GUIStyle gucSt;
         float RakipKart(Match M, float y)
         {
             // HTML rkGir: yukarıdan 10 px, solarak, .22 sn (hareketi azaltta anında)
@@ -922,7 +923,16 @@ namespace BirdieSmash.Game
             GUI.contentColor = GUI.backgroundColor = new Color(1, 1, 1, gk);
             var st = M.stil; float w = ColW, x = ColX, h = 92 * u; var r = new Rect(x, y, w, h); blocks.Add(r); GUI.Box(r, GUIContent.none, card);
             var oc = Kit.Hex(Match.OpRenk(st, Ayar.FORMA)); oc.a = gk; GUI.color = oc; GUI.DrawTexture(new Rect(x, y, 6 * u, h), Texture2D.whiteTexture); GUI.color = Color.white;
-            Etk(new Rect(x + 16 * u, y + 8 * u, w - 24 * u, 26 * u), st.isim, Stil(leftB, Mathf.RoundToInt(20 * fu)));
+            // Güç (2026-11-14 hikâye, Core/Hikaye): kariyer basamağında adın sağında, kartın tek sayısı; yazı önbellekli (OnGUI kare
+            // başına iki kez geçer). Ad kısa (en uzun "Blaze"), sağdaki sayı ona değmez; adın kutusu sayının solunda biter.
+            float gw = 0;
+            if (st.kariyer >= 0)
+            {
+                if (gucK != st.kariyer || gucEn != L.En) { gucK = st.kariyer; gucEn = L.En; gucYazi = L.T("Güç {0}", Hikaye.Guc(st.kariyer)); }
+                if (gucSt == null || gucSt.fontSize != Mathf.RoundToInt(15 * fu)) gucSt = new GUIStyle(leftB) { alignment = TextAnchor.UpperRight, fontSize = Mathf.RoundToInt(15 * fu) };
+                gw = gucSt.CalcSize(Ic(gucYazi)).x; Etk(new Rect(x + w - 16 * u - gw, y + 12 * u, gw, 22 * u), gucYazi, gucSt); gw += 8 * u;
+            }
+            Etk(new Rect(x + 16 * u, y + 8 * u, w - 24 * u - gw, 26 * u), st.isim, Stil(leftB, Mathf.RoundToInt(20 * fu)));
             var kb = KariyerVeri.Al(st.kariyer); var im = st.patron ? KariyerVeri.Imza(st.imza) : null;   // serbest maçta taban tarz imzayı taşır ama atmaz
             Etk(new Rect(x + 16 * u, y + 34 * u, w - 24 * u, 18 * u), kb != null ? L.T(st.ad) + " · " + L.T(kb.yer) : L.T(st.ad), left);
             // Patron (final): ipucu yerine imza vuruşu ve cevabı (tasarım §3.3: kart rakibin tek fikrini söyler; finalde o fikir imzadır)
