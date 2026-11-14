@@ -454,9 +454,22 @@ namespace BirdieSmash.Game
             Vector3 ileri = bas != null && goz != null ? Vector3.ProjectOnPlane(goz.position - bas.position, up) : Vector3.zero;
             if (ileri.sqrMagnitude < 1e-8f) ileri = Vector3.ProjectOnPlane(model.forward, up);
             ileri.Normalize(); var sag = Vector3.Cross(up, ileri);
-            var m = new Mesh(); ayk.BakeMesh(m, true); var M = Matrix4x4.TRS(ayk.transform.position, ayk.transform.rotation, Vector3.one);
-            var v = m.vertices; Object.Destroy(m); if (v.Length < 8) return null;
-            Vector3 cx = Vector3.zero; for (int i = 0; i < v.Length; i++) { v[i] = M.MultiplyPoint3x4(v[i]); cx += v[i]; } cx /= v.Length;
+            // r179 (ekran turu): TRS(konum, dönüş, 1) ile dünyaya çevrilen pişmiş ağ ayakkabıyı ayağın önüne ve altına koydu: oyuncak
+            // FBX'te ölçek modelin üst düğümünde, BakeMesh onu (r65 bant notundaki gibi) taşımıyor. İki dönüşüm de denenir; iki
+            // tarafın ağırlık merkezi ayak kemiklerine en yakın düşen seçilir (ölçek nerede durursa dursun doğru olan kazanır).
+            var m = new Mesh(); ayk.BakeMesh(m, false); var ham = m.vertices; Object.Destroy(m); if (ham.Length < 8) return null;
+            var adaylar = new[] { ayk.transform.localToWorldMatrix, Matrix4x4.TRS(ayk.transform.position, ayk.transform.rotation, Vector3.one) };
+            Vector3[] v = null; Vector3 cx = Vector3.zero; float enIyi = float.MaxValue;
+            foreach (var M in adaylar)
+            {
+                var w = new Vector3[ham.Length]; Vector3 c = Vector3.zero; for (int i = 0; i < ham.Length; i++) { w[i] = M.MultiplyPoint3x4(ham[i]); c += w[i]; } c /= ham.Length;
+                Vector3 cl = Vector3.zero, cr = Vector3.zero; int nl = 0, nr = 0; var ls = Vector3.Cross(up, ileri);
+                for (int i = 0; i < w.Length; i++) { if (Vector3.Dot(w[i] - c, ls) < 0) { cl += w[i]; nl++; } else { cr += w[i]; nr++; } }
+                if (nl == 0 || nr == 0) continue; cl /= nl; cr /= nr;
+                float e = Mathf.Min((cl - ayakL.position).magnitude + (cr - ayakR.position).magnitude, (cl - ayakR.position).magnitude + (cr - ayakL.position).magnitude);
+                if (e < enIyi) { enIyi = e; v = w; cx = c; }
+            }
+            if (v == null) return null;
             var kok = new List<Transform>();
             for (int s = 0; s < 2; s++)
             {
