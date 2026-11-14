@@ -203,6 +203,11 @@
 /* 2026-11-07 tur giriş kartı (GD2): tema cümlesi, altı rakip noktası (yenilen ✓, yenilmeyen soluk halka), hazırlık çubuğu (bilgi) */
 .muhur-satir { min-height: 32px; align-items: center; margin-bottom: 4px; }
 .tur-tema { color: var(--tx); white-space: normal; margin: 6px 0 8px 0; }
+/* 2026-11-14 hikâye: bölümün cümlesi temanın üstünde; tema küçük ve soluk (kural bilgisi), ikisi tek blok gibi okunur */
+.tur-hikaye { color: var(--tx); white-space: normal; margin: 6px 0 0 0; }
+.tur-tema-alt { color: var(--mu); margin-top: 4px; }
+.dunya-sira { margin: 2px 0 10px 0; }
+.rakip-guc { margin-top: 2px; }
 .tur-rakipler { flex-direction: row; flex-wrap: nowrap; margin: 0 0 10px 0; }
 .tur-rakip-nokta { width: 20px; height: 20px; border-radius: 10px; margin-right: 6px; align-items: center; justify-content: center; }
 .tur-rakip-nokta--yok { opacity: 0.35; }

@@ -223,6 +223,9 @@ namespace BirdieSmash.Game
         static readonly Dictionary<string, string> GIRIS_LAF = new Dictionary<string, string> {
             { "smasci", "Smaçlarımı karşılayabilir misin?" }, { "duvar", "Benden top geçmez." }, { "file", "File benim." },
             { "nova", "Hızıma yetiş bakalım." }, { "vex", "Nereye gideceğimi bilemezsin." }, { "aria", "Her vuruşunu okurum." } };
+        static readonly Dictionary<string, string> ROVANS_LAF = new Dictionary<string, string> {
+            { "smasci", "Geçen sefer şanslıydın. Smaçlarım hızlandı." }, { "duvar", "O günden beri duvarı yükselttim." }, { "file", "O günden beri file önünü çalıştım." },
+            { "nova", "Drive'ım hızlandı. Bu sefer yetişemezsin." }, { "vex", "Seni izledim. Bu sefer aldanmayacağım." }, { "aria", "Maçlarını izledim. Sana göre hazırlandım." } };
         void GirisKur(MatchOptions o)
         {
             girisT = 0; girisLaf = null; var st = match.stil;
@@ -231,6 +234,9 @@ namespace BirdieSmash.Game
             if (("," + gor + ",").Contains("," + id + ",")) return;
             PlayerPrefs.SetString(GIRIS_ANAHTAR, gor.Length == 0 ? id : gor + "," + id); PlayerPrefs.Save();
             girisT = GIRIS; GIRIS_LAF.TryGetValue(st.id, out girisLaf);
+            // Rövanş (2026-11-14 hikâye): bu tarzla kariyerde daha önce karşılaştıysan rakip o güne değinir; güç merdiveni onu
+            // o günden beri gerçekten güçlendirdi (Core/Hikaye.OncekiKarsilasma).
+            string rv; if (Hikaye.OncekiKarsilasma(st.kariyer) >= 0 && ROVANS_LAF.TryGetValue(st.id, out rv)) girisLaf = rv;
         }
         public void GirisAtla() { girisT = 0; }
         // Kamera: yerinden kımıldamaz (file düzleminden geçmesin), bakış rakibin göğsüne döner ve görüş %45 daralır; ilk .35 sn

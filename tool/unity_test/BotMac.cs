@@ -161,6 +161,8 @@ static class BotMac
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
         FileStandart();   // 2026-10-27 ekran/file (ayrı satır: liste başka dallarda da büyüyor)
         IkizMaclar();   // 2026-11-07 online: iki çekirdek gecikmeli kuyrukla (Core/Uzak)
+        GucMerdiveni();   // 2026-11-14 rakibin görünen gücü tur tur artar
+        Hikayeler();   // 2026-11-14 kariyer hikâyesi: bölüm, güç sayısı, dünya sırası
         GeriKosu();   // 2026-11-14 geri koşu yavaş, rakip topa gerçekten yetişir, gövdenin gerisinden smaç yok
         FlickSerileri();   // 2026-11-10 inceleme 17:08 #1: ardışık flick servisi rakibi gittikçe az aldatır
         ServisSaatleri();   // 2026-11-07 inceleme: online servis saati + çekilme (Core/Uzak)
@@ -763,7 +765,7 @@ static class BotMac
         int imzali = 0; foreach (var k in t4.b) if (k.imza) { imzali++; var r = KariyerVeri.Rakip(KariyerVeri.Global(3, k.basamak)); if (!r.patron || r.imza == null) Fail("imza bayraklı basamakta imza yok: " + k.yer); }
         if (imzali != 3) Fail("Dünya Finalleri'nde 3 imzalı basamak (Rocco, Nova, Vex) olmalı: " + imzali);
         var r0 = KariyerVeri.Rakip(KariyerVeri.Global(3, 3)); if (r0.patron || r0.imza != null) Fail("imzasız basamakta imza var");
-        var r1 = KariyerVeri.Rakip(KariyerVeri.Global(2, 0)); if (Math.Abs(r1.tepki - Match.STIL["vex"].tepki * t3.tepki) > 1e-5 || Math.Abs(r1.hucum - t3.hucum) > 1e-5) Fail("tur ek zorluğu rakibe binmedi");
+        var r1 = KariyerVeri.Rakip(KariyerVeri.Global(2, 0)); if (Math.Abs(r1.tepki - Match.STIL["vex"].tepki * t3.tepki * t3.b[0].tepki) > 1e-5 || Math.Abs(r1.hucum - t3.hucum) > 1e-5) Fail("tur ek zorluğu rakibe binmedi");
         var y1 = KariyerVeri.Rakip(0); if (y1.tepki != Match.STIL[y1.id].tepki || y1.hucum != 1) Fail("Tur 1 rakibi değişti");
         foreach (var t in new[] { t3, t4 }) foreach (var k in t.b) if (k.yer.Length == 0 || k.yer.Contains("All England")) Fail("mekân adı");
         Console.WriteLine("Tur 3–4: Vex/Aria, " + imzali + " imzalı basamak, tepki " + t3.tepki + "/" + t4.tepki + ", hücum " + t3.hucum + "/" + t4.hucum + ", Tur 1–2 aynı");
@@ -2027,6 +2029,44 @@ static class BotMac
         if (al != 0) Fail("NetWave.Advance ayırma yapıyor: " + al + " B");
     }
     // ---- ekran/file sonu ----
+    // Kariyer hikâyesi (2026-11-14, Core/Hikaye). Kapı: her turun bölüm başlığı ve hikâye cümlesi var; güç sayısı 1–99, tur
+    // ortalaması tur tur artar, Tur 1 ilk maç ≤ 30, son final ≥ 95; oyuncunun dünya sırası 0 galibiyette ILK_SIRA, galibiyetle hiç
+    // artmaz, 24'te 1; rakip sırası ≥ 2; "son karşılaşma" aynı tarzın önceki basamağı.
+    static void Hikayeler()
+    {
+        float once = -1; string oz = "";
+        for (int t = 0; t < KariyerVeri.Turlar.Length; t++)
+        {
+            var tr = KariyerVeri.Turlar[t]; if (!tr.Var) continue;
+            if (tr.bolum.Length == 0 || tr.hikaye.Length == 0) Fail("bölüm başlığı/hikâye yok: " + tr.ad);
+            float top = 0; for (int b = 0; b < KariyerVeri.BASAMAK; b++) { int g = KariyerVeri.Global(t, b), gc = Hikaye.Guc(g); top += gc; if (gc < 1 || gc > 99) Fail("güç bant dışı " + gc); if (Hikaye.RakipSira(g) < 2) Fail("rakip sırası 1 olamaz (1 oyuncunun)"); }
+            float ort = top / KariyerVeri.BASAMAK; oz += " " + ort.ToString("F0"); if (ort <= once) Fail("güç ortalaması artmadı: " + tr.ad); once = ort;
+        }
+        int son = KariyerVeri.Turlar.Length * KariyerVeri.BASAMAK - 1;
+        if (Hikaye.Guc(0) > 30 || Hikaye.Guc(son) < 95) Fail("güç uçları: ilk " + Hikaye.Guc(0) + ", son " + Hikaye.Guc(son));
+        if (Hikaye.OyuncuSira(0) != Hikaye.ILK_SIRA || Hikaye.OyuncuSira(Hikaye.ZIRVE_GALIBIYET) != 1) Fail("dünya sırası uçları");
+        for (int w = 1; w <= 48; w++) if (Hikaye.OyuncuSira(w) > Hikaye.OyuncuSira(w - 1)) Fail("dünya sırası galibiyetle düştü: " + w);
+        int og = Hikaye.OncekiKarsilasma(KariyerVeri.Global(1, 1)); if (og < 0 || KariyerVeri.Al(og).stil != KariyerVeri.Al(KariyerVeri.Global(1, 1)).stil || Hikaye.OncekiKarsilasma(0) != -1) Fail("son karşılaşma");
+        Console.WriteLine("hikâye: tur başına güç ortalaması" + oz + "; dünya sırası 0/6/12/18/24 galibiyet " + Hikaye.OyuncuSira(0) + "/" + Hikaye.OyuncuSira(6) + "/" + Hikaye.OyuncuSira(12) + "/" + Hikaye.OyuncuSira(18) + "/" + Hikaye.OyuncuSira(24));
+    }
+
+    // Güç merdiveni (2026-11-14, yasin: "daha güçlü rakiplerle karşılaştığımı hissetmeliyim zaman geçtikçe"). Kapı: görünen güç
+    // (koşu hızı = g × tarz hızı × 3,2) Tur 2'den itibaren her turun en zayıf rakibi önceki turun en zayıfından güçlü ve
+    // her turun ortalaması öncekinden yüksektir; gizli tepki çarpanı 0,7–1,7 bandında kalır (dengeyi taşır, oyunu bozmaz).
+    static void GucMerdiveni()
+    {
+        float onceOrt = 0, onceAz = 0; string ozet = "";
+        for (int t = 0; t < KariyerVeri.Turlar.Length; t++)
+        {
+            var tr = KariyerVeri.Turlar[t]; if (!tr.Var) continue; float top = 0, enAz = 99;
+            foreach (var k in tr.b) { float v = k.g * KariyerVeri.Stil[k.stil].hiz * 3.2f; top += v; enAz = Math.Min(enAz, v); if (k.tepki < .7f || k.tepki > 1.7f) Fail("gizli tepki çarpanı bant dışı: " + k.yer + " " + k.tepki); }
+            float ort = top / tr.b.Length; ozet += " " + ort.ToString("F2");
+            if (t >= 1 && (ort <= onceOrt || enAz <= onceAz)) Fail("güç merdiveni: " + tr.ad + " ort " + ort.ToString("F2") + ", en az " + enAz.ToString("F2") + " (önceki tur ort " + onceOrt.ToString("F2") + ", en az " + onceAz.ToString("F2") + ")");
+            onceOrt = ort; onceAz = enAz;
+        }
+        Console.WriteLine("güç merdiveni: tur başına rakip koşu hızı ortalaması (m/s)" + ozet);
+    }
+
     // Geri koşu ve vuruş anatomisi (2026-11-14, yasin: "geri geri koşmak öne gitmekle aynı hızda olmamalı hem bizim user hem
     // rakip için"; "hangi açılarda hangi vuruşlar yapılabilir"). Kapı: Match.YonK öne 1, yana YON_YAN, geriye YON_GERI, açıyla
     // tekdüze azalır (iki taraf aynalı); maçta iki oyuncunun da en yüksek geri hızı en yüksek öne hızının YON_GERI'si (+%3)

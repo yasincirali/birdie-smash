@@ -1,4 +1,10 @@
 === UNITY ===
+Kariyer hikâyesi ve güçlenen rakipler (14 Kasım gece):
+- Rakipler artık tur tur gerçekten güçleniyor: her turun en zayıf rakibi bile önceki turun en zayıfından hızlı. Rakip kartında tek bir Güç sayısı var (ilk maçta 21, Efsaneler finalinde 99).
+- Kariyer ekranında dünya sıralaman: 1.840'tan başlar, kazandıkça yükselir, kaybedince düşmez. Dünya Finalleri'ni kazanınca bir numarasın, sonraki turlarda unvanını korursun.
+- Her tur bir bölüm: başlığı ve tek cümlelik hikâyesi tur kartında.
+- Aynı rakiple yeniden karşılaşınca maç kartında son karşılaşmanız ve o günkü gücü yazıyor; finallerde rakip o güne laf atıyor.
+Nasıl denenir: Kariyer'i aç, başlığın altında dünya sıralamanı gör. Tur kartlarını kaydır: her birinde bölüm başlığı ve hikâye olmalı. Bir maç kartında rakibin Güç sayısına bak, sonraki turda aynı rakibin daha yüksek olmalı.
 Kortta daha az yazı, file anları, Ayarlar düzeni (14 Kasım akşam):
 - Top file bandını sıyırıp geçince ya da ipe değince artık kısa bir titreşim ve birkaç tüy kırıntısı var; ipe değen topta seyirci nefesini tutuyor.
 - Kortta oyuncunun yanındaki kalıcı "Nefes"/"Yorgun" yazısı kalktı. Yorgunluğu ayak altındaki halka, bir kez çıkan "Nefes al" yazısı ve sayı arasındaki yorgun duruş gösteriyor.

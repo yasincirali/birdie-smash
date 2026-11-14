@@ -354,6 +354,66 @@ static class Denge
             }
             return 0;
         }
+        // 2026-11-14 güç merdiveni (yasin: "daha güçlü rakiplerle karşılaştığımı hissetmeliyim zaman geçtikçe"):
+        //   mono denge.exe merdiven <n> <v1,..,v48>   her basamağı eski g'de ve hedef koşu hızında (m/s, g = v / (hiz × 3,2)) oynar,
+        //   iki galibiyet oranını yan yana yazar (pHit .07, EP turun ortası). Telafi ayarı ölçmeden önce farkın büyüklüğü.
+        if (a.Length > 0 && a[0] == "merdiven")
+        {
+            PHIT = .07; var ci = System.Globalization.CultureInfo.InvariantCulture; int nn = int.Parse(a[1]); var vs = a[2].Split(',');
+            for (int t = 0; t < KariyerVeri.Turlar.Length; t++)
+            {
+                var tr = KariyerVeri.Turlar[t]; if (!tr.Var) continue; var gs = Ekipman((tr.epMin + tr.epMax) / 2); Console.WriteLine("  " + tr.ad + " (EP " + (tr.epMin + tr.epMax) / 2 + ")");
+                for (int b = 0; b < KariyerVeri.BASAMAK; b++)
+                {
+                    int g = KariyerVeri.Global(t, b); var k = KariyerVeri.Al(g); float eski = k.g; double f, im;
+                    double o0 = Oyna(KariyerVeri.Rakip(g), k.uzunluk == 0 ? 5 : k.uzunluk, true, gs, nn, 5000 + g * 1000, out f, out im, k.degistirici) * 100;
+                    k.g = float.Parse(vs[g], ci) / (KariyerVeri.Stil[k.stil].hiz * 3.2f);
+                    double o1 = Oyna(KariyerVeri.Rakip(g), k.uzunluk == 0 ? 5 : k.uzunluk, true, gs, nn, 5000 + g * 1000, out f, out im, k.degistirici) * 100;
+                    Console.WriteLine(string.Format(ci, "    {0}. {1,-24} {2,-7} g {3:0.00} → {4:0.00}  %{5:0} → %{6:0}", b + 1, k.yer, k.stil, eski, k.g, o0, o1)); k.g = eski;
+                }
+            }
+            return 0;
+        }
+        //   mono denge.exe tara <n>   bugünkü veriyle her basamağın galibiyet oranı ve rakip koşu hızı (pHit .07, EP turun ortası)
+        if (a.Length > 0 && a[0] == "tara")
+        {
+            PHIT = .07; var ci = System.Globalization.CultureInfo.InvariantCulture; int nn = int.Parse(a[1]);
+            for (int t = 0; t < KariyerVeri.Turlar.Length; t++)
+            {
+                var tr = KariyerVeri.Turlar[t]; if (!tr.Var) continue; var gs = Ekipman((tr.epMin + tr.epMax) / 2); string sat = "  " + tr.ad + ":";
+                for (int b = 0; b < KariyerVeri.BASAMAK; b++)
+                {
+                    int g = KariyerVeri.Global(t, b); var k = KariyerVeri.Al(g); double f, im;
+                    double o = Oyna(KariyerVeri.Rakip(g), k.uzunluk == 0 ? 5 : k.uzunluk, true, gs, nn, 7000 + g * 1000, out f, out im, k.degistirici) * 100;
+                    sat += string.Format(ci, " {0:0.00}m/s %{1:0}", k.g * KariyerVeri.Stil[k.stil].hiz * 3.2f, o);
+                }
+                Console.WriteLine(sat);
+            }
+            return 0;
+        }
+        //   mono denge.exe merdivenayar <n> <v1,..,v48> <h1,..,h48> [ilkTur]   g merdivende sabit, basamağın gizli tepki çarpanı
+        //   (kariyer.json "tepki", 0,8–1,6) galibiyet hedefine ikiye bölmeyle bulunur. Sınıra dayanan basamak "!" ile işaretlenir.
+        if (a.Length > 0 && a[0] == "merdivenayar")
+        {
+            PHIT = .07; var ci = System.Globalization.CultureInfo.InvariantCulture; int nn = int.Parse(a[1]); var vs = a[2].Split(','); var hs = a[3].Split(','); int ilk = a.Length > 4 ? int.Parse(a[4]) - 1 : 1;
+            for (int t = ilk; t < KariyerVeri.Turlar.Length; t++)
+            {
+                var tr = KariyerVeri.Turlar[t]; if (!tr.Var) continue; var gs = Ekipman((tr.epMin + tr.epMax) / 2); Console.WriteLine("  " + tr.ad + " (EP " + (tr.epMin + tr.epMax) / 2 + ")");
+                for (int b = 0; b < KariyerVeri.BASAMAK; b++)
+                {
+                    int g = KariyerVeri.Global(t, b); var k = KariyerVeri.Al(g); float eskiG = k.g, eskiT = k.tepki; double f, im, o = 0, hedef = double.Parse(hs[g], ci);
+                    k.g = float.Parse(vs[g], ci) / (KariyerVeri.Stil[k.stil].hiz * 3.2f); float lo = .8f, hi = 1.6f;
+                    for (int it = 0; it < 5; it++)
+                    {
+                        k.tepki = (lo + hi) / 2; o = Oyna(KariyerVeri.Rakip(g), k.uzunluk == 0 ? 5 : k.uzunluk, true, gs, nn, 5000 + g * 1000, out f, out im, k.degistirici) * 100;
+                        if (o > hedef) hi = k.tepki; else lo = k.tepki;   // galibiyet yüksek: rakip daha çabuk tepki versin
+                    }
+                    Console.WriteLine(string.Format(ci, "    {0}. {1,-24} {2,-7} g {3:0.00} → {4:0.000} tepki {5:0.00}{6}  hedef %{7:0} → %{8:0}", b + 1, k.yer, k.stil, eskiG, k.g, k.tepki, k.tepki < .83f || k.tepki > 1.57f ? " !" : "", hedef, o));
+                    k.g = eskiG; k.tepki = eskiT;
+                }
+            }
+            return 0;
+        }
         // 2026-10-26 ayar ölçümü: mono denge.exe olc <tarz> <g1,g2,..> <tepki> <hucum> <sayı> <n> [imza] [usta]
         // (tek tarzın birkaç g'deki galibiyet oranı; tur g'lerini ayarlamak için, pHit .07, EP tur ortası 30)
         if (a.Length > 0 && a[0] == "olc")

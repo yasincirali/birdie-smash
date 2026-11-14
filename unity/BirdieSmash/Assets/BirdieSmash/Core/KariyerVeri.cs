@@ -18,7 +18,7 @@ namespace BirdieSmash.Core
 {
     public class ImzaBilgi { public string id, ad, uyari, cevap, renk; public string[] sira; }
 
-    public class KariyerTur { public string id, ad, tema = ""; public int epMin, epMax; public float tepki = 1, hucum = 1; public Kariyer[] b = new Kariyer[0]; public bool Var { get { return b.Length > 0; } } }
+    public class KariyerTur { public string id, ad, tema = "", bolum = "", hikaye = ""; public int epMin, epMax; public float tepki = 1, hucum = 1; public Kariyer[] b = new Kariyer[0]; public bool Var { get { return b.Length > 0; } } }
     // Usta yolu (kariyer.json "usta"): g = g + adim × çevrim, en çok tavan; tepki/hucum Tur 4 gibi ek zorluk.
     // carpan (2026-10-27): Usta yolu dışındaki Usta maçlarında (Hızlı maç, kariyer, Günün maçı "Usta") rakibin g çarpanı (Match.UstaGucu).
     public class UstaVeri { public float g = 1, adim = .02f, tavan = 1.2f, tepki = 1, hucum = 1, carpan = 1; public int uzunluk = 5, finalUzunluk = 11; }
@@ -49,7 +49,7 @@ namespace BirdieSmash.Core
         public static Style Rakip(int g)
         {
             var k = Al(g); var t = Turlar[TurOf(g)]; var b = Stil[k.stil].Clone(); b.hiz *= k.g; b.hata /= k.g; b.kariyer = g;
-            b.patron = k.patron || k.imza; if (!b.patron) b.imza = null; b.tepki *= t.tepki; b.hucum *= t.hucum; return b;
+            b.patron = k.patron || k.imza; if (!b.patron) b.imza = null; b.tepki *= t.tepki * k.tepki; b.hucum *= t.hucum; return b;
         }
         // Hızlı maç rakibi (2026-10-27, oyun incelemesi): eskiden taban tarz g 1 ile geliyordu: ilk açılışın 5 sayılık ilk maçı
         // da bu yoldan (kariyer modu kapalı), yeni oyuncu ekipmansız (EP 6) kariyerin 3.–5. basamağı gücünde bir Smaşçı'yla
@@ -116,12 +116,12 @@ namespace BirdieSmash.Core
             for (int t = 0; t < tj.Count && t < TUR; t++)
             {
                 var d = Json.Obj(tj[t]); var ep = d.ContainsKey("ep") ? Nums(d, "ep") : new float[] { 0, 0 };
-                var tur = new KariyerTur { id = Json.Str(d, "id", "tur" + t), ad = Json.Str(d, "ad", ""), tema = Json.Str(d, "tema", ""), epMin = (int)ep[0], epMax = (int)ep[ep.Length - 1], tepki = F(d, "tepki", 1), hucum = F(d, "hucum", 1) };
+                var tur = new KariyerTur { id = Json.Str(d, "id", "tur" + t), ad = Json.Str(d, "ad", ""), tema = Json.Str(d, "tema", ""), bolum = Json.Str(d, "bolum", ""), hikaye = Json.Str(d, "hikaye", ""), epMin = (int)ep[0], epMax = (int)ep[ep.Length - 1], tepki = F(d, "tepki", 1), hucum = F(d, "hucum", 1) };
                 var bl = new List<Kariyer>(); var bj = d["basamaklar"] as List<object>;
                 for (int i = 0; bj != null && i < bj.Count && i < BASAMAK; i++)
                 {
                     var b = Json.Obj(bj[i]);
-                    var k = new Kariyer { stil = Json.Str(b, "stil", "duvar"), g = F(b, "g", 1), yer = Json.Str(b, "yer", ""), saha = Json.Str(b, "saha", "salon"), uzunluk = (int)Json.Num(b, "uzunluk", 0), gorev = Json.Str(b, "gorev", null), patron = Json.Bool(b, "patron", false), imza = Json.Bool(b, "imza", false), tur = t, basamak = i };
+                    var k = new Kariyer { stil = Json.Str(b, "stil", "duvar"), g = F(b, "g", 1), yer = Json.Str(b, "yer", ""), saha = Json.Str(b, "saha", "salon"), uzunluk = (int)Json.Num(b, "uzunluk", 0), gorev = Json.Str(b, "gorev", null), patron = Json.Bool(b, "patron", false), imza = Json.Bool(b, "imza", false), tur = t, basamak = i, tepki = F(b, "tepki", 1) };
                     if (!st.ContainsKey(k.stil)) throw new InvalidOperationException("Birdie Smash: kariyer.json bilinmeyen tarz " + k.stil);
                     // Kural maçı (2026-11-07 inceleme, fikir 10:06 #3): Günün maçının sayı değeri değiştiricileri kariyere; yalnız
                     // altin/uzun/file (zorluğu değiştirenler, usta/nefes/patron, kariyerin g dengesini bozar, alınmadı). Patron finali
