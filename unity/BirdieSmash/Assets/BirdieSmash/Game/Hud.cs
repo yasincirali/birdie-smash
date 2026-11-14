@@ -83,6 +83,7 @@ namespace BirdieSmash.Game
         }
         GUIStyle leftWrap, leftWrapTaban; // her karede yeni taban S() önbelleğini şişirirdi
         public void StilSifirla() { stilOn.Clear(); stilNo.Clear(); glifSt.Clear(); }
+        Match servisM; string servisSon; float servisBas, servisHedef, servisT0 = -9;
         float ralliPop; int sonRalli; float[] pop = new float[2]; float flash; Color flashC; readonly List<Vector3> cams = new List<Vector3>();
         class HawkV { public float x, y, t; public bool icerde, serve; public int cm; } HawkV hawk;
         Texture2D ring, ringK, ringKesik, glow, disk, bar; Texture2D[] perdeTex;
@@ -483,7 +484,21 @@ namespace BirdieSmash.Game
                 SkorCiz(new Rect(cx - 60 * u, sy - 6 * u, 60 * u, 46 * u), Sayi(M.sc[0]), sb, Kit.Hex(SEN_HUD), (1 + .5f * Mathf.Sin(pop[0] * Mathf.PI) + (macSayisiYan == 0 ? nb : 0)) / 1.5f);
                 Shadowed(new Rect(cx - 10 * u, sy, 20 * u, 34 * u), "–", Stil(big, Mathf.RoundToInt(24 * fu)), Kit.Hex("#9dbab3"));
                 SkorCiz(new Rect(cx, sy - 6 * u, 60 * u, 46 * u), Sayi(M.sc[1]), sb, Kit.Hex(RAKIP_HUD), (1 + .5f * Mathf.Sin(pop[1] * Mathf.PI) + (macSayisiYan == 1 ? nb : 0)) / 1.5f);
-                Fill(new Rect(cx + (M.server == "me" ? -54 : 50) * u, sy + 15 * u, 5 * u, 5 * u), M.server == "me" ? Kit.Hex(SEN_HUD) : Kit.Hex(RAKIP_HUD));   // servis noktası
+                // Servis noktası (2026-11-14 inceleme, fikir 07:05 #4): ralli sisteminde servis sayıyı kazanana geçer; nokta önce tek
+                // karede öbür yana ışınlanıyordu. Şimdi 0,2 sn ease-out kayar, varışta 0,15 sn 1,4× pop; servis sana geçince tık
+                // titreşimi (ses yok). Hareketi azaltta anında, tık kalır. Zaman damgasıyla: OnGUI karede birden çok çağrılır.
+                float svHx = M.server == "me" ? -54 : 50, svNow = Time.unscaledTime;
+                if (servisM != M) { servisM = M; servisSon = M.server; servisBas = svHx; servisT0 = -9; }
+                else if (servisSon != M.server)
+                {
+                    servisSon = M.server; float svE = Mathf.Clamp01((svNow - servisT0) / .2f);
+                    servisBas = Mathf.Lerp(servisBas, servisHedef, 1 - (1 - svE) * (1 - svE)); servisT0 = svNow;
+                    if (M.server == "me") Yerel.Hap("tick");
+                }
+                servisHedef = svHx;
+                float svP = Ayar.reduce ? 1 : Mathf.Clamp01((svNow - servisT0) / .2f), svQ = Ayar.reduce ? 1 : Mathf.Clamp01((svNow - servisT0 - .2f) / .15f);
+                float svX = Mathf.Lerp(servisBas, svHx, 1 - (1 - svP) * (1 - svP)), svK = 5 * (1 + .4f * Mathf.Sin(svQ * Mathf.PI)) * u;
+                Fill(new Rect(cx + (svX + 2.5f) * u - svK / 2, sy + 17.5f * u - svK / 2, svK, svK), M.server == "me" ? Kit.Hex(SEN_HUD) : Kit.Hex(RAKIP_HUD));
                 // sol üst kutu (2026-10-26, yasin Ar-Ge önerisi "ekle"): "{hedef} sayı · rakip" satırı kalktı (duraklat
                 // ekranında zaten yazıyor); ralli sayacı ralli 3'ü geçince belirir ve her vuruşta skorun pop diliyle hafifçe
                 // büyür (hareketi azaltta büyümez); "Görev n/3" yerine 3 nokta: biten dolu disk, kalan halka (biçimle de okunur).
@@ -1054,7 +1069,9 @@ namespace BirdieSmash.Game
             string bas = L.T("Duraklatıldı"), bilgi;
             if (M.Dril == Sonsuz.Tanim) bilgi = L.T(M.Dril.ad) + " · " + SonsuzSayac(M.ogr);
             else if (M.Dril != null) bilgi = L.T(M.Dril.ad) + " · " + L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(M.ogr.dene, M.Dril.top), M.Dril.top, M.ogr.isabet);
-            else bilgi = L.T("{0} sayı", M.target) + " · " + L.T("Rakip") + " " + M.RakipAd(false) + (KariyerVeri.Var(M.stil.kariyer) ? " · " + L.T(KariyerVeri.Al(M.stil.kariyer).yer) : "")
+            // 2026-11-14 inceleme (fikir 07:05 #6): kariyer yeri (şehir) kalktı; maç içinde hiçbir kararı etkilemiyor, maç kartında
+            // ve kariyer sayfasında yazıyor. Büyük yazıda satır ikiye iniyordu.
+            else bilgi = L.T("{0} sayı", M.target) + " · " + L.T("Rakip") + " " + M.RakipAd(false)
                 + (M.degistirici != null && Gunluk.Deg(M.degistirici) != null ? " · " + L.T(Gunluk.Deg(M.degistirici).ad) : "");   // kural maçında kuralın adı (2026-11-08)
             string skor = M.Dril != null ? null : Sayi(M.sc[0]) + " – " + Sayi(M.sc[1]);
             var bst = Sigdir(aSkor, bas, w); float bhY = bst.CalcHeight(Ic(bas), w), sh = skor == null ? 0 : aSkor.CalcHeight(Ic(skor), w), ih = aIpucu.CalcHeight(Ic(bilgi), w);

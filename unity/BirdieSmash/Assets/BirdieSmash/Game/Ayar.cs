@@ -3,6 +3,7 @@
 //   tuytop_len      'len5' | 'len11' | 'len21' (varsayılan len5)   tuytop_mod 'k' | 's'   tuytop_saha   tuytop_model
 //   tuytop_gear / tuytop_ekonomi (Core/Gear)   tuytop_raket_gor JSON {grip, tel, tel2, desen}   tuytop_antrenman '1'
 //   tuytop_hizli_rakip (2026-11-11) Hızlı maçta seçilen rakip tarzı (stil id); boş = rastgele
+//   tuytop_son_maclar (2026-11-14) son 10 maç "g:ben:rakip:zorluk;…" (SonMaclar / SonMacYaz); iCloud METIN listesinde
 //   tuytop_karne (2026-11-11) rakip başına sonuç "stil:galibiyet:yenilgi;…" (Karne / KarneYaz); iCloud METIN listesinde
 //   tuytop_puan     mağaza puanı istenme sayısı (0..3, HTML puanBak ile ortak)
 //   tuytop_ilerleme (2026-10-26, kariyer haritası) JSON {v, tur: [[maske×6]×4]} (Core/Ilerleme: yıldız bit maskesi). İlk
@@ -104,6 +105,29 @@ namespace BirdieSmash.Game
             var sb = new System.Text.StringBuilder(); sb.Append(stil).Append(':').Append(g).Append(':').Append(y);
             foreach (var p in Str(KARNE, "").Split(';')) { if (p.Length == 0 || p.StartsWith(stil + ":")) continue; sb.Append(';').Append(p); }
             try { PlayerPrefs.SetString(KARNE, sb.ToString()); } catch { }
+        }
+        // Son maçlar (2026-11-14 inceleme, fikir 07:05 #1): Profil'de toplamlar hep artar, gelişimi göstermez; Kolay'dan Orta'ya
+        // geçen oyuncu "farkı kapatıyor muyum" sorusunun cevabını son 10 maçta okur. Karne ile aynı maçlar sayılır (antrenman,
+        // görev, Sonsuz yok). Biçim "g:ben:rakip:zorluk;…", en yeni başta, en çok 10. iCloud METIN listesinde. Seri/alev/kıyas yok.
+        public const string SON_MACLAR = "tuytop_son_maclar"; public const int SON_MAC_SINIR = 10;
+        public struct SonMac { public bool g; public int ben, rakip, zorluk; }
+        public static System.Collections.Generic.List<SonMac> SonMaclar()
+        {
+            var l = new System.Collections.Generic.List<SonMac>();
+            foreach (var p in Str(SON_MACLAR, "").Split(';'))
+            {
+                var f = p.Split(':'); int g, b, r, z;
+                if (f.Length != 4 || !int.TryParse(f[0], out g) || !int.TryParse(f[1], out b) || !int.TryParse(f[2], out r) || !int.TryParse(f[3], out z)) continue;
+                l.Add(new SonMac { g = g == 1, ben = b, rakip = r, zorluk = Mathf.Clamp(z, 0, 3) }); if (l.Count >= SON_MAC_SINIR) break;
+            }
+            return l;
+        }
+        public static void SonMacYaz(bool won, int ben, int rakip, int z)
+        {
+            var sb = new System.Text.StringBuilder(); sb.Append(won ? 1 : 0).Append(':').Append(ben).Append(':').Append(rakip).Append(':').Append(Mathf.Clamp(z, 0, 3));
+            int n = 1;
+            foreach (var p in Str(SON_MACLAR, "").Split(';')) { if (p.Length == 0 || n >= SON_MAC_SINIR) continue; sb.Append(';').Append(p); n++; }
+            try { PlayerPrefs.SetString(SON_MACLAR, sb.ToString()); } catch { }
         }
         public static string saha = "salon", model = "oyuncak", kamera = "yayin", dil = "tr", yazi = "sistem"; static float yaziSistem = 1;
         public static float YaziK { get { return yazi == "normal" ? 1 : yazi == "buyuk" ? 1.3f : Mathf.Clamp(yaziSistem, .9f, 1.3f); } }

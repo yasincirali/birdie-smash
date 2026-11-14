@@ -1,4 +1,11 @@
 === UNITY ===
+Son maçlar ve daha akıcı duraklatma (14 Kasım sabah):
+- Profil'de "Son maçlar" bölümü: son 10 maçın sonucu (✓ ya da ✗), skoru ve zorluğun baş harfi, altında kaç galibiyet aldığın.
+- Sayı arasında duraklatıp dönünce top havada değilse 3-2-1 geri sayımı beklemiyorsun.
+- Duraklatmadan dönüşte ses birden patlamıyor, çeyrek saniyede yumuşakça açılıyor.
+- Skor kutusundaki servis noktası artık öbür yana ışınlanmıyor, kayarak geçiyor; servis sana geçince telefon kısa bir tık veriyor.
+- Duraklat ekranındaki bilgi satırında turnuva şehri artık yazmıyor; büyük yazıda satır tek satıra iniyor.
+Nasıl denenir: İki üç maç oyna, Profil'e gir: "Son maçlar"da en yeni maç solda olmalı. Bir maçta sayı biter bitmez duraklat ve devam et: geri sayım çıkmamalı. Kulaklıkla duraklatıp devam et: ses yumuşak gelmeli. Sayıyı kazanınca skorun yanındaki küçük nokta kayarak senin tarafına geçmeli.
 Yazılar üst üste binmiyor (14 Kasım):
 - Büyük yazı boyunda Antrenman'daki "Sonsuz ralli" ve "Temel ders" kartları alt alta, ikisi de ekranda; ikinci kart sağdan taşmıyor.
 - İngilizcede seçili zorluk çipi "Medi..." diye kesilmiyor; sığmadığında ✓ yerine turuncu çerçeve ve kalın yazıyla seçili görünüyor.
