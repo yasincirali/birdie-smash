@@ -1,0 +1,5 @@
+toplam 4
+menu_hizli · kesik genişlik 25>23 · .unity-text-element.unity-label.yazi.dugme-yazi · "Hall"
+menu_hizli · kesik genişlik 67>64 · .unity-text-element.unity-label.yazi.dugme-yazi · "Tournament"
+menu_x2_antrenman_alt · kelime bölündü 255>214 · .unity-text-element.unity-label.yazi.kalin · "Behind-the-back rescue"
+menu_x2_tr_mac_karti_final_kilitli · kelime bölündü 221>210 · .unity-text-element.unity-label.yazi.sayfa-baslik · "Şampiyonlar kupası"
