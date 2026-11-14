@@ -1336,7 +1336,7 @@ namespace BirdieSmash.Game
                 // yükseklik ölçüsü tutarlı kalıyor; kelime kutudan genişse ayrı yakalanır.
                 else if (!tek && KelimeBolundu(te, m, cr.width, out float kw)) neden = "kelime bölündü " + kw.ToString("F0") + ">" + cr.width.ToString("F0");
                 else if (wb.xMin < -1 || wb.xMax > pw + 1) neden = "taşma x " + wb.xMin.ToString("F0") + ".." + wb.xMax.ToString("F0") + " / " + pw.ToString("F0");
-                if (neden == null && en && m.IndexOfAny(TR_HARF) >= 0) neden = "çevrilmemiş";
+                if (neden == null && en && m.IndexOfAny(TR_HARF) >= 0 && m != "Türkçe") neden = "çevrilmemiş";   // dil seçeneği kendi adıyla yazılır
                 if (neden == null || !gorulen.Add(m + neden)) return;
                 string sinif = string.Join(".", te.GetClasses()); string tm = m.Replace("\n", " ⏎ ");
                 tasma.AppendLine(ad + " · " + neden + " · ." + sinif + " · \"" + tm + "\""); tasmaSay++;
@@ -1371,8 +1371,13 @@ namespace BirdieSmash.Game
         static Rect MetinKutu(TextElement te)
         {
             var wb = te.worldBound; var cr = te.contentRect; float sx = te.layout.width > 0 ? wb.width / te.layout.width : 1;
-            var r = new Rect(wb.xMin + cr.xMin * sx, wb.yMin + cr.yMin * sx, cr.width * sx, cr.height * sx);
-            for (var e = te.parent; e != null; e = e.parent)
+            return Kirp(te, new Rect(wb.xMin + cr.xMin * sx, wb.yMin + cr.yMin * sx, cr.width * sx, cr.height * sx));
+        }
+        // Atalardaki kaydırma penceresi ve overflow: hidden kutusuyla kırpar (görünmeyen kısım çakışma sayılmaz; r170: kaydırmanın
+        // altında kalan çubuk alttaki sabit "Sıradaki maç" düğmesiyle çakışıyor sanılıyordu).
+        static Rect Kirp(VisualElement el, Rect r)
+        {
+            for (var e = el.parent; e != null; e = e.parent)
             {
                 var sv = e as ScrollView; Rect k;
                 if (sv != null) k = sv.contentViewport.worldBound;
@@ -1410,7 +1415,7 @@ namespace BirdieSmash.Game
                 }
             k.Query<VisualElement>(className: "stat-iz").ForEach(bar =>
             {
-                if (!Gorunur(bar)) return; var bb = bar.worldBound; if (float.IsNaN(bb.width) || bb.width <= 0) return;
+                if (!Gorunur(bar)) return; var bb = Kirp(bar, bar.worldBound); if (float.IsNaN(bb.width) || bb.width <= 0 || bb.height <= 0) return;
                 foreach (var y in yaziKutu)
                 {
                     var r = y.r; var te = y.te; if (AtaMi(bar, te) || Katman(bar, pw) != y.kat) continue;

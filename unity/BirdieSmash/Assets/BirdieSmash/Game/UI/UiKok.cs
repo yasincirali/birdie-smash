@@ -810,8 +810,12 @@ namespace BirdieSmash.Game
         {
             var bas = new VisualElement(); bas.AddToClassList("sayfa-basi"); ebeveyn.Add(bas);
             var g = new VisualElement(); g.AddToClassList("dugme"); g.AddToClassList("geri-dugme");
-            g.Add(Ikon(Ikonlar.Geri, 18, Color.white)); g.Add(Yazi(L.T("Geri"), 15, "kalin")); g.AddManipulator(new Clickable(Geri)); Erisim.Etiket(g, L.T("Geri"), "dugme"); bas.Add(g);
-            var t = Yazi(L.T(baslik), 19, "sayfa-baslik"); t.pickingMode = PickingMode.Position; Erisim.Etiket(t, L.T(baslik), "baslik"); bas.Add(t);
+            // 2026-11-14 (tasarım dili §1.2, r170 ×2 Dükkân "Bac/k", "Şampiyonlar kupası" bölündü): geri düğmesi etiket gibi
+            // daralmaz, kırılmaz; başlık daralır ve sözcük ortasından bölünmeden sarar (SozcukSigdir).
+            g.style.flexShrink = 0f;
+            var gy = Yazi(L.T("Geri"), 15, "kalin"); gy.style.whiteSpace = WhiteSpace.NoWrap; gy.style.flexShrink = 0f;
+            g.Add(Ikon(Ikonlar.Geri, 18, Color.white)); g.Add(gy); g.AddManipulator(new Clickable(Geri)); Erisim.Etiket(g, L.T("Geri"), "dugme"); bas.Add(g);
+            var t = Yazi(L.T(baslik), 19, "sayfa-baslik"); t.pickingMode = PickingMode.Position; t.style.flexShrink = 1f; t.style.minWidth = 0f; SozcukSigdir(t); Erisim.Etiket(t, L.T(baslik), "baslik"); bas.Add(t);
             return t;
         }
 

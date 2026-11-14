@@ -157,7 +157,7 @@ namespace BirdieSmash.Game
                 // çubuk satırın altından 6 pt boşlukla başlar.
                 hz.style.alignItems = Align.FlexStart; hz.style.flexWrap = Wrap.NoWrap;
                 var ek = Yazi(L.T("Ekipman {0}/{1}", ep, tv.epMin), 13, az ? "durum-simdi" : "soluk"); ek.style.flexShrink = 0f; ek.style.whiteSpace = WhiteSpace.NoWrap; ek.style.marginRight = 12f; hz.Add(ek);
-                var ey = Yazi(az ? L.T("{0} yükseltme eksik", tv.epMin - ep) : L.T("Hazırsın"), 13, az ? "soluk" : "durum-gecti"); ey.style.flexShrink = 1f; ey.style.minWidth = 0f; ey.style.whiteSpace = WhiteSpace.Normal; ey.style.unityTextAlign = TextAnchor.UpperRight; hz.Add(ey);
+                var ey = Yazi(az ? L.T("{0} yükseltme eksik", tv.epMin - ep) : L.T("Hazırsın"), 13, az ? "soluk" : "durum-gecti"); ey.style.flexShrink = 1f; ey.style.minWidth = 0f; ey.style.whiteSpace = WhiteSpace.Normal; ey.style.unityTextAlign = TextAnchor.UpperRight; SozcukSigdir(ey); hz.Add(ey);   // ×2 TR "yükseltme" sözcüğü bölünmesin (r170)
                 var iz = new VisualElement(); iz.style.marginTop = 6f; iz.AddToClassList("stat-iz"); iz.AddToClassList("tur-hazir-iz"); iz.pickingMode = PickingMode.Ignore; kb.Add(iz);
                 var dl = new VisualElement(); dl.AddToClassList("stat-dolu"); dl.style.width = Length.Percent(Mathf.Clamp01(ep / (float)Mathf.Max(1, tv.epMin)) * 100); dl.pickingMode = PickingMode.Ignore; iz.Add(dl);
                 if (az && acik) { var ag = Dugme(L.T("Atölye'ye git"), () => SekmeAc(Sekme.Atolye), "kucuk-dugme"); ag.style.alignSelf = Align.FlexStart; ag.style.marginTop = 8; kb.Add(ag); }
@@ -205,7 +205,14 @@ namespace BirdieSmash.Game
             if (simdi && g == basAniA && basAniDen >= 0) BasamakBuyut(roz, .8f, 300);
             else if (final) roz.Add(Ikon(Ikonlar.Kupa, 18, simdi ? KOYU : acik ? ALTIN : SOLUK));
             else if (!acik) roz.Add(Ikon(Ikonlar.Kilit, 16, SOLUK));
-            else { var n = Yazi((b + 1).ToString(), 16, "kalin"); n.style.color = simdi ? KOYU : YAZI; n.pickingMode = PickingMode.Ignore; roz.Add(n); }
+            else
+            {
+                // 2026-11-14 (tasarım dili, r170): rakam 44 pt halkada kendi kutusundan taşıyordu (×1 22>20, ×2 32 pt rakam 9 pt'ye
+                // ezildi). Halka sabit 44 (altı basamak bir satıra sığsın); rakam en çok 22 pt, daralmaz, iç boşluksuz ve ortada.
+                var n = Yazi((b + 1).ToString(), 16, "kalin"); n.style.fontSize = Mathf.Min(n.style.fontSize.value.value, 22f);
+                n.style.flexShrink = 0f; n.style.paddingTop = 0f; n.style.paddingBottom = 0f; n.style.marginTop = 0f; n.style.marginBottom = 0f;
+                n.style.unityTextAlign = TextAnchor.MiddleCenter; n.style.color = simdi ? KOYU : YAZI; n.pickingMode = PickingMode.Ignore; roz.Add(n);
+            }
             int gg = g; roz.AddManipulator(new Clickable(() => { if (Surukledi(hs)) return; Yerel.Hap("tick"); MacKartAc(gg); }));
             var kb = KariyerVeri.Al(g);
             Erisim.Etiket(roz, (b + 1) + ". " + L.T("basamak") + ", " + L.T(kb.yer) + (final ? ", " + L.T("Final") : "") + ", " + L.T(gecti ? "Geçildi" : simdi ? "Şimdi" : acik ? "Açık" : "Kilitli"), "dugme");
