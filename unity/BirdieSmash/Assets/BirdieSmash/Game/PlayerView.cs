@@ -114,7 +114,7 @@ namespace BirdieSmash.Game
         static Material seyrekPay;
         public void KordajSeyrek()
         {
-            seyrekM.Clear(); seyrekKafa = null; seyrekA = -1;
+            seyrekM.Clear(); seyrekKafa = null; seyrekA = -1; seyrekEksen = false;
             if (seyrekPay == null) { var t = Kit.Topla; Kit.Topla = null; seyrekPay = Kit.Clear(new Color(SEYREK_RENK.r, SEYREK_RENK.g, SEYREK_RENK.b, SEYREK_MIN)); Kit.Topla = t; Kit.Paylas(seyrekPay); }
             seyrekM.Add(seyrekPay);
             foreach (var r in model.GetComponentsInChildren<Renderer>(true))
@@ -125,18 +125,41 @@ namespace BirdieSmash.Game
                 if (tag == "tel" && seyrekKafa == null) seyrekKafa = r;
             }
         }
-        // Karede bir: kafanın ekrandaki genişliği / tel sayısı = tel aralığı (px). Değişim küçükse malzemeye yazılmaz.
+        // Karede bir: tel aralığının ekrandaki boyu (px) → alfa. Değişim küçükse malzemeye yazılmaz.
+        // 2026-11-14 gece (yasin: "hala arasıra rakibin raketi içerisi beyaz oluyor", iki maç ekranı): aralık dünya AABB'sinin
+        // kamera sağına izdüşümünden ölçülüyordu; raket yandan ya da eğik görününce (servis karşılama duruşu, raket dik) AABB
+        // geniş kalıyor, aralık 4 px sanılıp alfa .45'e çıkıyordu, oysa 22 tel ekranda birkaç piksele üst üste biniyor ve .45
+        // alfa birikerek dolu açık bir şerit/disk veriyordu. Şimdi aralık telin kendi ağından: yerel sınır kutusunun orta ekseni
+        // (teller bu eksen boyunca dizili) ve uzun ekseni (enine teller) ayrı ayrı ekrana izdüşürülür, küçüğü alınır; yan bakışta
+        // aralık sıfıra iner. Alfa da üst üste binmeyi hesaba katar: k = 1/aralık tel aynı piksele düşerse birikmiş örtü
+        // 1-(1-a)^k; a = 1 - (1-SEYREK_ORTU)^aralık bunu SEYREK_ORTU'da tutar (aralık 1 px → .25, .3 px → .08), en çok .45.
+        Vector3 seyrekMerkez, seyrekS, seyrekL; bool seyrekEksen;
+        const float SEYREK_ORTU = .25f, SEYREK_ALT = .02f;
+        void SeyrekEksen()
+        {
+            seyrekEksen = false; var mf = seyrekKafa != null ? seyrekKafa.GetComponent<MeshFilter>() : null; if (mf == null || mf.sharedMesh == null) return;
+            var b = mf.sharedMesh.bounds; Vector3 sz = b.size; int[] ax = { 0, 1, 2 }; System.Array.Sort(ax, (p, q) => sz[q].CompareTo(sz[p]));
+            seyrekMerkez = b.center; seyrekL = Vector3.zero; seyrekS = Vector3.zero;
+            seyrekL[ax[0]] = b.extents[ax[0]]; seyrekS[ax[1]] = b.extents[ax[1]]; seyrekEksen = true;
+        }
+        static float EkranBoy(Camera cam, Transform t, Vector3 m, Vector3 e)
+        {
+            Vector3 p0 = cam.WorldToScreenPoint(t.TransformPoint(m - e)), p1 = cam.WorldToScreenPoint(t.TransformPoint(m + e));
+            if (p0.z <= 0 || p1.z <= 0) return -1; return new Vector2(p1.x - p0.x, p1.y - p0.y).magnitude;
+        }
         void KordajGuncelle()
         {
             if (seyrekKafa == null || seyrekM.Count == 0) return; var cam = Camera.main; if (cam == null) return;
-            var b = seyrekKafa.bounds; if (b.size.sqrMagnitude <= 0) return;
-            Vector3 a0 = cam.WorldToScreenPoint(b.center - cam.transform.right * b.extents.magnitude * .7f), a1 = cam.WorldToScreenPoint(b.center + cam.transform.right * b.extents.magnitude * .7f);
-            if (a0.z <= 0 || a1.z <= 0) return;
-            float aralik = Mathf.Abs(a1.x - a0.x) / TEL_SAYI;
-            float a = Mathf.Lerp(SEYREK_MIN, SEYREK_MAX, Mathf.InverseLerp(1.5f, 4f, aralik));
-            if (Mathf.Abs(a - seyrekA) < .02f) return; seyrekA = a;
+            if (!seyrekEksen) { SeyrekEksen(); if (!seyrekEksen) return; }
+            var t = seyrekKafa.transform; float s = EkranBoy(cam, t, seyrekMerkez, seyrekS), l = EkranBoy(cam, t, seyrekMerkez, seyrekL);
+            if (s < 0 || l < 0) return;
+            float aralik = Mathf.Min(s / TEL_SAYI, l / (TEL_SAYI - 1));
+            float a = Mathf.Clamp(1 - Mathf.Pow(1 - SEYREK_ORTU, aralik), SEYREK_ALT, SEYREK_MAX);
+            TaniTelAralik = aralik; TaniTelAlfa = a;
+            if (Mathf.Abs(a - seyrekA) < .01f) return; seyrekA = a;
             foreach (var m in seyrekM) if (m != null) m.color = new Color(SEYREK_RENK.r, SEYREK_RENK.g, SEYREK_RENK.b, a);
         }
+        public float TaniTelAralik = -1, TaniTelAlfa = -1;
         public static PlayerView Build(Transform root, string model, bool isMe, Color forma, bool hakem = false, Gorunum gor = null)
         {
             var g = new GameObject(hakem ? "hakem" : isMe ? "ben" : "rakip"); g.transform.SetParent(root, false);

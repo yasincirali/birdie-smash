@@ -41,6 +41,16 @@
     --lime: #C9EE4B; --lime-ink: #141A08; --coral: #E99BFF; --gold: #F9D272; --sky: #8FC6FF;
     --tx: #F3EAEE; --mu: #CBB8C5; --mu2: #DCCDD5; --ln: rgba(255, 255, 255, 0.10);
     --sun: #FFA04D; --cta-ink: #1E0A0C; --bar: #1F1528;
+    /* 2026-11-14 gece cam yüzey standardı (yasin: "butonları, listelerin yerleşimleri vs hepsini standartlara oturtup,
+       glassmorphism falan kullanıp"; kurallar docs/arayuz_tasarim_dili.md §6). UI Toolkit'te arka plan bulanıklığı
+       (backdrop-filter) yok: cam üç parçayla kurulur. (1) Mor tonlu yarı saydam dolgu, zeminin güneş ışığı ve salon arkadan
+       sezilir; bulanıklık olmadığı için opaklık yazı okunurluğunu korur (kart .80, hap/düğme .72; en kötü durumda salon
+       resminin açık bölgesi arkadayken gövde yazısı ≥ 4,5:1). (2) Üst kenarda ışık çizgisi (--cam-ust): camın kalınlığı ve
+       ışığın yukarıdan geldiği. (3) Yan ve alt kenar ince ve koyu: yüzey zeminden ayrılır, gölge yok (box-shadow yok).
+       Seviyeler: --cam kart/liste, --cam2 düğme ve hap (bir tık açık, basılabilir), --cam3 basılı. Alt sayfa ve maç HUD'u
+       cam değildir: alt sayfa .97 (uzun okuma), HUD kortun üstünde okunurluk için kendi kuralında. */
+    --cam: rgba(48, 34, 60, 0.80); --cam2: rgba(66, 48, 80, 0.72); --cam3: rgba(86, 64, 102, 0.82);
+    --cam-ust: rgba(255, 255, 255, 0.22); --cam-kenar: rgba(255, 255, 255, 0.10); --cam-alt: rgba(0, 0, 0, 0.28);
 }
 
 .tam { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
@@ -82,30 +92,30 @@
 
 /* düğmeler: en az 44 x 44 */
 .dugme {
-    min-height: 44px; min-width: 44px; border-radius: 12px; background-color: var(--navy2);
+    min-height: 48px; min-width: 44px; border-radius: 12px; background-color: var(--cam2);   /* §6: ikincil düğme 48 (eskisi 44) */
     padding: 10px 14px; margin: 4px 0; justify-content: center; align-items: stretch;
-    border-width: 1px; border-color: rgba(255, 255, 255, 0.06);
+    border-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); border-bottom-color: var(--cam-alt);
     transition-property: background-color, scale; transition-duration: 0.08s;
 }
-.dugme:active { background-color: var(--navy3); scale: 0.98 0.98; }
+.dugme:active { background-color: var(--cam3); scale: 0.98 0.98; }
 .dugme-ic { align-items: center; }
 .dugme-yazi { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); -unity-text-align: middle-center; }
 .dugme-alt { color: var(--mu); -unity-text-align: middle-center; margin-top: 2px; }
-.dugme--birincil { background-color: var(--sun); min-height: 60px; border-radius: 16px; margin-top: 10px; border-width: 0; }
+.dugme--birincil { background-color: var(--sun); min-height: 56px; border-radius: 16px; margin-top: 10px; border-width: 0; }   /* §6: birincil 56 (eskisi 60); ekranda tek */
 .dugme--birincil .dugme-yazi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); letter-spacing: 0.5px; }   /* yön A: birincil başlık dar italik */
 .dugme--birincil:active { background-color: rgb(255, 178, 94); }
 .dugme--birincil .dugme-yazi { color: var(--cta-ink); }
 .dugme--birincil .dugme-alt { color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }   /* C: alt satır tam opak + kalın (APCA ≥ 60) */
 .dugme--pasif { background-color: rgb(34, 24, 41); }
 .dugme--pasif .dugme-yazi, .dugme--pasif .dugme-alt { color: rgba(255, 255, 255, 0.55); }
-.ikon-dugme { width: 44px; height: 44px; padding: 0; align-items: center; justify-content: center; border-radius: 22px; background-color: rgba(38, 26, 48, 0.78); border-color: var(--ln); margin: 0; }
+.ikon-dugme { width: 44px; height: 44px; padding: 0; align-items: center; justify-content: center; border-radius: 22px; background-color: var(--cam2); border-color: var(--cam-kenar); border-top-color: var(--cam-ust); margin: 0; }
 .kucuk-dugme { padding: 6px 14px; margin: 0; }
 .geri-dugme { flex-direction: row; align-items: center; padding: 6px 12px 6px 8px; margin: 0 8px 0 0; }
 .geri-dugme .yazi { margin-left: 4px; }
 
 /* seçim çipi: seçili = açık zemin (tx) + koyu yazı + ✓ simgesi (2026-10-26 Yayın Gecesi: camgöbeğinden; limon birincil
    düğmenin ve "senin" tarafın rengi, seçili çip ondan ayrı okunsun) */
-.cip { flex-grow: 1; flex-basis: 0; margin: 4px; padding: 10px 10px; border-radius: 12px; }
+.cip { flex-grow: 1; flex-basis: 0; margin: 4px; padding: 10px 10px; border-radius: 12px; min-height: 44px; }
 .cip-ic { flex-direction: row; align-items: center; justify-content: center; }
 .cip-ic .ikon { margin-right: 6px; }
 .cip-yazilar { flex-shrink: 1; align-items: center; }
@@ -139,7 +149,7 @@
 .buyuk-yazi .satir.arali { flex-wrap: wrap; }
 
 /* kart */
-.kart { background-color: rgba(38, 26, 48, 0.92); border-radius: 16px; padding: 14px; margin: 6px 0; border-width: 1px; border-color: var(--ln); }
+.kart { border-radius: 16px; padding: 14px; margin: 6px 0; background-color: var(--cam); border-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); border-bottom-color: var(--cam-alt); }   /* §6 cam kart */
 .cubuk { background-color: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; margin: 6px 0; }
 .cubuk-dolu { height: 100%; border-radius: 4px; }
 .renk-nokta { width: 12px; height: 12px; border-radius: 6px; margin-right: 8px; border-width: 1px; border-color: rgba(255, 255, 255, 0.4); flex-shrink: 0; }
@@ -359,7 +369,7 @@
 /* 2026-10-27 yön C: dolgulu hap kalktı (ekranda tek doygun dolgu birincil eylem olsun); seçili = turuncu simge + kalın turuncu
    yazı + 3 pt üst çizgi (biçim: çizgi ve kalınlık, yalnız renk değil). Çizgi yeni sekmeye kısa bir yayla kayar (UiKok
    SekmeGosterge, 180 ms, yalnız translate); sekmelerin kendi çizgisi gösterge kurulamazsa (ilk kare) yedektir. */
-.sekme-cubugu { flex-direction: row; background-color: var(--bar); border-top-width: 1px; border-color: var(--ln); flex-shrink: 0; padding: 6px 8px 0 8px; }
+.sekme-cubugu { flex-direction: row; background-color: rgba(31, 21, 40, 0.86); border-top-width: 1px; border-color: var(--cam-ust); flex-shrink: 0; padding: 6px 8px 0 8px; }
 .sekme { flex-grow: 1; flex-basis: 0; min-height: 50px; align-items: center; justify-content: center; padding: 4px 2px; margin: 0 2px 6px 2px; border-radius: 16px; }
 .sekme--secili { background-color: rgba(0, 0, 0, 0); }   /* C: dolgulu hap yok; turuncu simge + yazı + 3 pt üst çizgi (biçimle de okunur) */
 /* 2026-11-07 stüdyo incelemesi (AD4): seçili sekme biçimle öne çıkar: hafif turuncu plaka (doygun dolgu değil; tek doygun dolgu
@@ -382,7 +392,7 @@
 .gosterge-var .sekme--secili .sekme-cizgi { display: none; }
 
 /* alt sayfa (Hızlı maç) */
-.alt-sayfa { background-color: var(--navy); border-top-width: 1px; border-color: var(--ln); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 0 16px 16px 16px; max-height: 88%; }
+.alt-sayfa { background-color: rgba(38, 26, 48, 0.97); border-top-width: 1px; border-color: var(--cam-ust); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 0 16px 16px 16px; max-height: 88%; }
 .tutamak-alan { height: 28px; align-items: center; justify-content: center; }
 .tutamak { width: 40px; height: 5px; border-radius: 3px; background-color: rgba(255, 255, 255, 0.35); }
 .alt-kaydir { flex-shrink: 1; }
@@ -457,7 +467,7 @@
 .grup-kalin, .bolum { letter-spacing: 0.3px; }
 
 /* üst şerit hapları (a-top): 44 pt yükseklik, yarı saydam lacivert, ince çerçeve */
-.ust-hap { flex-direction: row; align-items: center; min-height: 44px; border-radius: 22px; background-color: rgba(38, 26, 48, 0.72); border-width: 1px; border-color: var(--ln); }
+.ust-hap { flex-direction: row; align-items: center; min-height: 44px; border-radius: 22px; background-color: var(--cam2); border-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); }
 .profil-hap { padding: 3px 14px 3px 3px; flex-shrink: 1; transition-property: scale; transition-duration: 0.08s; }
 .profil-hap:active { scale: 0.97 0.97; }
 /* 2026-10-31 portre: daire kırpar (UI Toolkit yuvarlak köşeyi overflow: hidden ile maskeler) */
@@ -516,7 +526,7 @@
 
 /* üç kutucuk (a-tile): 1.25 / 1 / 1; büyük yazıda alt alta */
 .karo-satir { flex-direction: row; flex-wrap: nowrap; margin: 0 -4px; }
-.karo { flex-grow: 1; flex-basis: 0; min-height: 64px; margin: 0 4px; padding: 9px 10px; border-radius: 16px; background-color: var(--navy); border-width: 1px; border-color: var(--ln);
+.karo { flex-grow: 1; flex-basis: 0; min-height: 64px; margin: 0 4px; padding: 9px 10px; border-radius: 16px; background-color: var(--cam); border-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); border-bottom-color: var(--cam-alt);
         align-items: flex-start; justify-content: flex-start; }
 .karo--genis { flex-grow: 1.25; }
 .karo--altin { border-color: rgba(249, 210, 114, 0.45); -unity-background-scale-mode: stretch-to-fill; }
@@ -791,7 +801,7 @@
 
 /* 2026-11-10 Seviye ödülü ve Seviye yolu (AnaEkran.SvHedefSatir / SeviyeYoluKur, UiKok.SeviyeAni). Oyna satırı ≥ 44 pt dokunma. */
 .sv-hedef { flex-direction: row; align-items: center; justify-content: space-between; min-height: 44px; margin-top: 8px; padding: 6px 12px;
-            border-radius: 12px; border-width: 1px; border-color: var(--ln); background-color: rgba(38, 26, 48, 0.92); }
+            border-radius: 12px; background-color: var(--cam); border-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); border-bottom-color: var(--cam-alt); }
 .sv-hedef:active { background-color: rgba(60, 42, 74, 0.95); }
 .sv-hedef-sol { flex-grow: 1; flex-shrink: 1; min-width: 0; margin-right: 12px; }
 .sv-hedef-cubuk { margin-top: 4px; }
@@ -799,7 +809,7 @@
 .sv-hedef-sag .ikon { margin-right: 4px; }
 .sv-hedef-ac { margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .kisa .sv-hedef { margin-top: 6px; padding: 4px 12px; }
-.sv-yol { flex-direction: row; align-items: center; padding: 10px 12px; margin: 4px 0; border-radius: 12px; border-width: 1px; border-color: var(--ln); background-color: rgba(38, 26, 48, 0.92); }
+.sv-yol { flex-direction: row; align-items: center; padding: 10px 12px; margin: 4px 0; border-radius: 12px; background-color: var(--cam); border-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); border-bottom-color: var(--cam-alt); }
 .sv-yol--buyuk { border-color: rgba(249, 210, 114, 0.45); }
 .sv-yol--siradaki { border-color: rgba(255, 160, 77, 0.70); }
 .sv-yol-no { min-width: 64px; margin-right: 8px; flex-shrink: 0; }
@@ -817,7 +827,7 @@
 .dolap-siradaki { margin-top: 0; margin-bottom: 8px; }
 
 /* Gelişim (2026-11-10, Core/Gelisim): dal kartı Seviye yolu kartıyla aynı zemin; − / + düğmeleri 44 pt; basamaklar eşit pay. */
-.gel-dal { padding: 10px 12px; margin: 4px 0; border-radius: 12px; border-width: 1px; border-color: var(--ln); background-color: rgba(38, 26, 48, 0.92); }
+.gel-dal { padding: 10px 12px; margin: 4px 0; border-radius: 12px; background-color: var(--cam); border-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); border-bottom-color: var(--cam-alt); }
 .gel-alt { flex-direction: row; align-items: center; margin-top: 6px; }
 .gel-cubuk { flex-direction: row; flex-grow: 1; flex-shrink: 1; min-width: 0; height: 12px; margin: 0 10px; }
 .gel-basamak { flex-grow: 1; flex-basis: 0; margin: 0 1px; border-radius: 3px; background-color: rgba(255, 255, 255, 0.12); }
@@ -840,3 +850,16 @@
 .son-maclar { flex-direction: row; flex-wrap: wrap; margin-bottom: 4px; }
 .son-hap { padding: 3px 8px; margin: 0 6px 6px 0; border-radius: 10px; border-width: 1px; border-color: var(--ln); background-color: var(--navy); }
 .son-hap--g { color: var(--tx); border-color: rgba(201, 238, 75, 0.45); }
+
+/* 2026-11-14 gece: standart liste satırı ve grup başlığı (docs/arayuz_tasarim_dili.md §6.4). Yeni listeler bunlarla kurulur;
+   eski ekranlar dokunuldukça taşınır. Satır ≥ 56, simge kutusu 28, metin sütunu daralır, sağ sütun daralmaz. */
+.liste-satir { flex-direction: row; align-items: center; min-height: 56px; padding: 10px 14px; }
+.liste-satir:active { background-color: rgba(255, 255, 255, 0.06); }
+.liste-satir-ikon { width: 28px; height: 28px; margin-right: 12px; flex-shrink: 0; align-items: center; justify-content: center; }
+.liste-satir-metin { flex-grow: 1; flex-shrink: 1; min-width: 0; }
+.liste-satir-baslik { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); color: var(--tx); }
+.liste-satir-alt { color: var(--mu); margin-top: 2px; }
+.liste-satir-sag { flex-shrink: 0; margin-left: 12px; align-items: flex-end; justify-content: center; }
+.liste-ayirac { height: 1px; background-color: var(--cam-kenar); margin-left: 54px; }
+.kart.liste-grup { padding: 0; overflow: hidden; }
+.bolum-baslik { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); color: var(--mu); letter-spacing: 0.6px; margin: 18px 4px 6px 4px; }

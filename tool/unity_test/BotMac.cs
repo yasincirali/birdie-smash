@@ -158,6 +158,7 @@ static class BotMac
         Turlar34(); Drillar(); MacSayisilari(); MacHikayeleri(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Efsaneler(); SmacHareketleri(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
         KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
+        ServisDurusu();   // 2026-11-14 gece: karşılayan servis kurulunca yorgun pozunda kalmaz
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
         FileStandart();   // 2026-10-27 ekran/file (ayrı satır: liste başka dallarda da büyüyor)
         IkizMaclar();   // 2026-11-07 online: iki çekirdek gecikmeli kuyrukla (Core/Uzak)
@@ -1469,6 +1470,18 @@ static class BotMac
     static bool Hata(Match M) { var p = M.s != null ? M.s.landPred : null; return p == null || (p.net != null && !p.net.ok) || M.IsOut(p.x, p.y, false); }
 
     // Vuruş anı ağır çekimi: yumuşak iniş/çıkış, yeni taban, Hareketi azalt zorluğu değiştirmez (2026-10-26).
+    // 2026-11-14 gece (yasin: "Servis anında rakibin duruşunda anormallik var, anatomiye uygun olmalı"): yorgun pozu (eller
+    // dizde) yalnız sayı arasında; servis kurulduktan sonra karşılayan rakip boşta/karşılama duruşunda bekler.
+    static void ServisDurusu()
+    {
+        var M = new Match(5, new MatchOptions { easy = true });
+        M.server = "me"; M.op.nefes = .2f; M.op.vx = M.op.vy = 0; string c; float ph;
+        M.between = false; M.PickClip(M.op, false, out c, out ph);
+        if (M.s == null && c == "yorgun") Fail("servis kuruluyken yorgun rakip eller dizde bekliyor");
+        string c1 = c; M.between = true; M.PickClip(M.op, false, out c, out ph);
+        if (c != "yorgun") Fail("sayı arasında yorgun pozu kayboldu: " + c);
+        M.between = false; Console.WriteLine("servis duruşu: kurulu " + c1 + ", sayı arası " + c);
+    }
     static void Pencereler()
     {
         const float dt = 1f / 60f;

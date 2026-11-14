@@ -1491,7 +1491,12 @@ namespace BirdieSmash.Core
                 hit = CLIP_HIT.TryGetValue(clip, out hit) ? hit : .55f; ph = hit + (1 - o.sw) * (1 - hit);
             }
             else if (s == null && !between && server == who && o.svClip != null) { clip = o.svClip; ph = 0; }   // servis duruşu
-            else if (!isMe && (s == null || between) && o.nefes < .4f && spd < .4f) { clip = "yorgun"; ph = (clock * .55f) % 1f; }   // nefesi bitmiş rakip sayı arasında eller dizde
+            // Yorgun pozu (eller dizde) yalnız sayı arasında (2026-11-14 gece, yasin iki ekranla: "Servis anında rakibin duruşunda
+            // anormallik var, anatomiye uygun olmalı"): koşul s == null idi, yani servis kurulduktan sonra da sürüyordu; ben servis
+            // atarken yorgun rakip çömelmiş, dizleri açık, eller dizde bekliyordu. Gerçekte karşılayan servisçi hazır olunca
+            // karşılama duruşuna geçer (sol ayak önde, raket yukarıda, ağırlık ön ayakta). Servis kurulunca (between biter) boşta/
+            // karşılama duruşu; nefes sayı arası pozunda ve koşu/isabette görünmeye devam eder.
+            else if (!isMe && between && o.nefes < .4f && spd < .4f) { clip = "yorgun"; ph = (clock * .55f) % 1f; }   // nefesi bitmiş rakip sayı arasında eller dizde
             else if (o.prepA > .08f && o.prepClip != null)
             {
                 clip = o.prepClip; o.hamleKilit = false;

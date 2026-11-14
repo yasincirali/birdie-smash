@@ -1,4 +1,9 @@
 === UNITY ===
+Cam menüler ve servis duruşu (14 Kasım gece):
+- Menülerde kartlar, düğmeler, üst haplar ve sekme çubuğu yarı saydam cam yüzeye geçti; düğme ve çip boyları tek standarda oturdu.
+- Sen servis atarken yorgun rakip artık çömelip ellerini dizine koymuyor, karşılama duruşunda bekliyor.
+- Rakip raketi yandan ya da eğik görününce kordajı beyaz dolu disk gibi görünmüyor.
+
 Sayı yazıları ve geç kalınan smaç (14 Kasım gece):
 - Rakip topa yetişemeyip uzanınca artık "Kurtardı!" yazmıyor; sayı yazısı "YETİŞEMEDİ" oluyor. Drop ile alınan sayı "DROP SAYISI" diye yazılıyor.
 - Top gövdenin gerisindeyken attığın smaç daha zayıf gider; artık bunu hissettiriyor: sarsıntı ve flaş küçük, maçta ilk iki kez "Geç kaldın: topun altına gir" yazıyor.
