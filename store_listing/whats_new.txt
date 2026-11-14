@@ -1,4 +1,9 @@
 === UNITY ===
+Zorluk yalnız rakip, hareket ayrı ayar; rakip raketi (14 Kasım):
+- Zorluk (Kolay, Orta, Zor, Usta) artık yalnız rakibin gücünü seçiyor. Oyuncunun koşusu ayrı ayar: Ayarlar > Oyuncu hareketi > Otomatik, Yardımlı ya da Elle. Bugünkü oyunun değişmez; eski seçimin bu ayara taşındı.
+- Usta günü ve Zor daveti de yalnız rakibi güçlendiriyor, koşunu değiştirmiyor.
+- Maçta rakibin raketi ara sıra içi beyaz dolu görünüyordu (telefon görüntü kalitesini düşürdüğünde). Teller artık uzaklığa göre saydamlaşıyor.
+Nasıl denenir: Ayarlar'da Oyuncu hareketi'ni Otomatik yap, sonra Hızlı maçta Usta'yı seç: rakip güçlü olmalı ama oyuncun topa kendisi koşmalı. Elle'ye alıp Kolay oyna: koşu senin, rakip yavaş olmalı. Uzun bir maçta rakibin raketine bak: kafanın içi beyaz dolu görünmemeli.
 Kariyerde ilerleme anı (14 Kasım öğle):
 - Kariyer maçının sonunda "Ana menü"ye basınca doğrudan Kariyer açılıyor; kazandığın basamağın işareti ve yeni basamak gözünün önünde büyüyor.
 - Bir turun finalini kazanınca Kariyer önce eski turda açılıyor, sonra kayarak yeni tura geçiyor; yeni turun adı hafifçe yaylanıyor, kartta 2 saniye "Yeni tur açıldı" yazıyor.

@@ -107,7 +107,7 @@ namespace BirdieSmash.Core
         void DegistiriciKur(string id)
         {
             degistirici = id; if (id == null) return;
-            if (id == "usta") easy = false;
+            if (id == "usta") sert = true;   // 2026-11-14: Usta günü rakibi Usta gücünde; koşu oyuncunun hareket ayarında (eskiden zorla elleydi)
             if (id == "patron") { stil = stil.Clone(); stil.patron = stil.imza != null; stil.imzaAra = 2; stil.imzaP = .8f; }
             if (id == "nefes") { GS = GS.Kopya(); GS.yorK /= .7f; stil = stil.Clone(); stil.yorK /= .7f; }
             if (id == "geri") { sc[1] = GERI_FARK; enBuyukGeri = GERI_FARK; geriRakip = GERI_FARK; }   // senaryo: rakip önde başlar; sayı değeri, tavan ve servis kuralı aynı

@@ -34,6 +34,15 @@ namespace BirdieSmash.Game
             // 2026-11-10 (fikir 7 Kas 18:05 #4, yasin "üçünü de al"): "Oyuncu görünümü" model çipleri Dolap'a taşındı (UiKok.ModelCipleri,
             // Dolap › Beden ve tek bedenli modellerde bilgi kartı). Kimlik kararı giydirmenin ilk adımı; Ayarlar'la Dolap arasında mekik bitti.
             // Kayıt anahtarı ve değerleri aynı (tuytop_model): kimsenin seçimi değişmez.
+            // Oyuncu hareketi (2026-11-14, yasin: "manuel hareket ayrı bir özellik olarak beklesin"): zorluk yalnız rakibi seçer,
+            // koşu burada. Üç eşit çip + seçilinin tek soluk cümlesi (kamera/kaydırma kalıbı). Maç sırasında değişmez.
+            c.Add(Grup(L.T("Oyuncu hareketi"))); var hr = Satir("sigdir-grup"); c.Add(hr);
+            for (int i = 0; i < Ayar.HAREKET_AD.Length; i++)
+            {
+                int id = i; var hc = Cip(L.T(Ayar.HAREKET_AD[i]), Ayar.hareket == id, () => { Ayar.hareket = id; Ayar.Kaydet(); Degisti(); });
+                Erisim.Etiket(hc, L.T(Ayar.HAREKET_AD[i]) + ". " + L.T(HAREKET_ACIK[i]), "dugme", Ayar.hareket == id); hr.Add(hc);
+            }
+            c.Add(Yazi(L.T(HAREKET_ACIK[Mathf.Clamp(Ayar.hareket, 0, 2)]), 12, "soluk"));
             c.Add(Grup(L.T("Kamera"))); var km = Satir(); c.Add(km);
             for (int i = 0; i < GameRoot.KAMERA_SIRA.Length; i++)
             {

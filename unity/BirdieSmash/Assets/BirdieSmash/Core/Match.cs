@@ -98,6 +98,10 @@ namespace BirdieSmash.Core
     {
         public bool easy = true, reduce, ilk; public int target = 21; public Style stil; public string saha = "salon";
         public int bestRally; public bool ogr, ogrKisa, kosuYardim; public float rakipK = 1; public string formaRenk = "#4fb8ff";
+        // Sert rakip (2026-11-14, yasin: "zorluk seviyesi rakibin zorluğunu ifade etsin. Manuel hareket ayrı bir özellik"): rakibin
+        // hız/hata/hücum profili ve Usta gücü eskiden `easy`'ye (otomatik koşu) bağlıydı; elle koşan oyuncu kendiliğinden güçlü rakip
+        // alıyordu. Artık ayrı: oyun Zor/Usta zorlukta true verir. null = eski davranış (!easy; bot testleri ve eski imzalar).
+        public bool? sert;
         public GearStats gs;   // ekipman çarpanları (Gear.Hesap); null = nötr (bot testleri, eski imza)
         // 2026-10-26: Günün maçı değiştiricisi (Core/Gunluk; null = yok) ve antrenman görevi (Core/Dril; ogr ile birlikte).
         public string degistirici; public DrilTanim dril;
@@ -125,6 +129,7 @@ namespace BirdieSmash.Core
         // (Öğretici dönemi). Online paket ve kayıt bu alanı hiç taşımadı.
         // Son sayı sıçrayarak smaçla mı alındı (yalnız görüntü ve sayı arası süresi; Point yazar, bir sonraki Point'e kadar geçerli).
         public bool sovSayi;
+        public bool sert;   // MatchOptions.sert notu: rakip profili (Usta gücü, hız, hücum, hata); easy yalnız oyuncunun koşusu
         public bool easy = true, reduce, ilk, between, split, splitPending, over, matchDone, deceive, kisaBekle, flow;
         public Action svPending;
         // maç sonu istatistiği (HTML oInfo)
@@ -189,7 +194,7 @@ namespace BirdieSmash.Core
 
         public Match(int seed, MatchOptions o)
         {
-            rng = new Random(seed); lastik = o.lastik; easy = o.easy; kosuYardim = o.kosuYardim; net.sakin = o.reduce; target = o.ilk ? 5 : o.target; reduce = o.reduce; ilk = o.ilk; saha = o.saha; bestRally = o.bestRally;
+            rng = new Random(seed); lastik = o.lastik; easy = o.easy; sert = o.sert ?? !o.easy; kosuYardim = o.kosuYardim; net.sakin = o.reduce; target = o.ilk ? 5 : o.target; reduce = o.reduce; ilk = o.ilk; saha = o.saha; bestRally = o.bestRally;
             stil = o.stil ?? STIL[STIL_SIRA[rng.Next(3)]]; GS = o.gs ?? GearStats.Notr;
             if (o.ogr && o.dril != null) { ogrDril = o.dril; o.ogr = true; }
             if (!o.ogr) gorevler = GorevSec();
@@ -211,7 +216,7 @@ namespace BirdieSmash.Core
         // Usta yolu birebir eski. Antrenmanda rakip antrenördür, dokunulmaz.
         void UstaGucu()
         {
-            if (easy || ogr != null || stil.usta >= 0) return; float k = KariyerVeri.Usta.carpan; if (k == 1) return;
+            if (!sert || ogr != null || stil.usta >= 0) return; float k = KariyerVeri.Usta.carpan; if (k == 1) return;
             stil = stil.Clone(); stil.hiz *= k; stil.hata /= k;
         }
         // Zorluk kademesi (Ayar.zorluk notu): Kolay'da rakip yumuşar, Usta'da güçlenir; Usta yolu kendi g'siyle, antrenör dokunulmaz.
@@ -333,7 +338,7 @@ namespace BirdieSmash.Core
         // hiç uygulanmıyor: rakip yalnız smaçla yoruluyor. Demo HTML'in bugünkü davranışını taşır; düzeltme kararı yasin'de.
         public static bool OP_KOSU_YORAR = false;
         float opRunX = float.NaN, opRunY;
-        public float OpSpd() { return (GS.rakip * stil.hiz * (easy ? 3.2f : 3.6f) + Math.Min(.55f, (sc[0] + sc[1]) * .02f)) * OpNefesF() - Math.Min(.8f, Lastik() * .12f); }
+        public float OpSpd() { return (GS.rakip * stil.hiz * (sert ? 3.6f : 3.2f) + Math.Min(.55f, (sc[0] + sc[1]) * .02f)) * OpNefesF() - Math.Min(.8f, Lastik() * .12f); }
 
         // Round-the-head (stüdyo incelemesi 2026-11-05, oyun tasarımı 2): baş üstü top sol omuzun üstündeyse (backhand tarafı ama
         // gövdeden en çok RTH_ERIS uzakta, ve top RTH_Z'den yüksekte: daha alçak baş üstü topa raket başın arkasından dolanamaz) gerçek oyuncu backhand'e dönmez, raketi başın arkasından dolar: smaç mümkün, bedeli
@@ -773,7 +778,7 @@ namespace BirdieSmash.Core
         {
             float rast = (R01() * 2 - 1) * .8f;
             if (ogr != null || Dril != null || type == "drive") return rast;   // drive düellosu düz değiş tokuştur: boşluğa değil vücuda
-            float w = (easy ? .25f : .45f) * stil.hucum * OpNefesF(); if (w > .75f) w = .75f;
+            float w = (sert ? .45f : .25f) * stil.hucum * OpNefesF(); if (w > .75f) w = .75f;
             if (R01() >= w) return rast;
             float taraf = me.x > Court.MID ? -1 : 1, uzak = Math.Min(1, Math.Abs(me.x - Court.MID) / ((Court.SR - Court.SL) * .3f));
             return taraf * (.35f + .3f * uzak + R01() * .1f);   // en çok .75: Plan ×.62 ile tekler çizgisinin içinde (eski rastgele ±.8)
@@ -824,7 +829,7 @@ namespace BirdieSmash.Core
             if (type == "drive") val *= DriveHiz();
             if (obh && type == "clear") ty = Math.Max(ty, Court.NET + 1.2f);   // backhand clear'ı kısa kalır
             // geride kalınca rakip daha çok hata yapar (lastik bant); yorgunken sapma büyür
-            float hata = stil.hata * (.5f + (easy ? .3f : 0) + (obh ? .35f : 0) + Math.Min(.9f, Lastik() * .15f)) * (1 + (1 - OpNefesF()) * 3);
+            float hata = stil.hata * (.5f + (sert ? 0 : .3f) + (obh ? .35f : 0) + Math.Min(.9f, Lastik() * .15f)) * (1 + (1 - OpNefesF()) * 3);
             if (I.zor) { hata *= 1.6f; if (type == "lift" || type == "clear") ty = Math.Max(Court.NET + 2.2f, ty - 1.4f); }   // baskıda dönüş kısa kalır
             Func<float> g = () => (R01() - .5f) * hata;
             Shuttle.Aim(hx, hy, hz, tx + g(), ty + g(), byAngle, val, out vx, out vy, out vz);

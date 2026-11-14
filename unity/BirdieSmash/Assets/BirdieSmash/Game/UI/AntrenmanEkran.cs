@@ -125,13 +125,12 @@ namespace BirdieSmash.Game
             var ra = new VisualElement(); ra.AddToClassList("esnek-yatay"); rr.Add(ra);
             // 2026-11-10 inceleme (fikir 02:05 #4): saha, uzunluk ve zorluk ayrı satırdı; rakibin tarzıyla aynı satırda (maçın
             // kimliği tek yerde), sayfa altı yazı bloğundan beşe iner, ödül satırı öne çıkar.
-            bool usta = g.deg.id == "usta", ustaYardim = GameRoot.GunlukUstaYardimli(g);
-            string bilgi = L.T(st.ad) + " · " + L.T(CourtView.SAHA[g.saha].ad) + " · " + L.T("{0} sayı", g.uzunluk) + " · " + L.T(ustaYardim ? "Zor" : usta ? "Usta" : Ayar.ZorlukAd);
+            bool usta = g.deg.id == "usta";
+            string bilgi = L.T(st.ad) + " · " + L.T(CourtView.SAHA[g.saha].ad) + " · " + L.T("{0} sayı", g.uzunluk) + " · " + L.T(usta ? "Usta" : Ayar.ZorlukAd);
             ra.Add(Yazi(st.isim, 20, "kalin")); var bl = Yazi(bilgi, 14, "soluk"); bl.style.whiteSpace = WhiteSpace.Normal; ra.Add(bl);
             Erisim.Etiket(rr, L.T("Rakip") + " " + st.isim + ", " + bilgi, "metin");
             var dk = Kart("imza-kart"); c.Add(dk);
-            // Usta yolunu açmamış oyuncu Usta gününde Zor oynar (GameRoot.GunlukUstaYardimli): açıklama ve zorluk etiketi onun maçını anlatır.
-            string acik = ustaYardim ? L.T("Koşmak sende; geç kalırsan oyuncun koşar, dokunursan yine sen yönlendirirsin") : L.T(g.deg.aciklama);
+            string acik = L.T(g.deg.aciklama);
             dk.Add(Yazi(L.T(g.deg.ad), 16, "kalin")); dk.Add(Yazi(acik, 14, "ipucu"));
             Erisim.Etiket(dk, L.T(g.deg.ad) + ". " + acik, "metin");
             var od = Yazi(alindi ? "✓ " + L.T("Bugünün ödülü alındı. Yarın yenisi.") : L.T("Kazanınca bir kez +{0} Tüy, +{1} XP · kaybetsen de maç ödülü", Gunluk.OdulTuy, Gunluk.OdulXp), 14, alindi ? "durum-gecti" : "altin");
@@ -164,7 +163,7 @@ namespace BirdieSmash.Game
             var rk = Satir("rakip-satir"); kart.Add(rk);
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);
             rk.Add(Yazi(L.T("Rakip") + " " + st.isim + " · " + L.T(st.ad) + " · " + L.T("{0} sayı", b.uzunluk) + " · " + L.T(Ayar.ZorlukAd), 14, "soluk"));
-            { var ac2 = Yazi(Ayar.UstaZor ? L.T("Usta zorluk: koşmak da sende. Kaybetmek geri düşürmez.") : L.T("{0} zorlukta oynanır. Kaybetmek geri düşürmez.", L.T(Ayar.ZorlukAd)), 12, "soluk"); ac2.style.whiteSpace = WhiteSpace.Normal; kart.Add(ac2); }
+            { var ac2 = Yazi(L.T("{0} zorlukta oynanır. Kaybetmek geri düşürmez.", L.T(Ayar.ZorlukAd)), 12, "soluk"); ac2.style.whiteSpace = WhiteSpace.Normal; kart.Add(ac2); }
             kart.Add(Dugme(L.T("Şampiyon yolunu oyna"), () => root.UstaOyna(), "dugme--birincil", L.T("{0}. basamak", pr.Usta + 1), 18));
             Erisim.Etiket(kart, L.T(Ayar.YolAd) + ", " + L.T(Ayar.ZorlukAd) + ", " + L.T("{0} basamak geçildi", pr.Usta) + ", " + L.T("Sıradaki") + " " + L.T(b.yer), "metin");
             return kart;

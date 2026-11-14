@@ -437,11 +437,17 @@ namespace BirdieSmash.Game
         // Zorluk çipleri (2026-11-05, Ayar.zorluk notu): Hızlı maç ve kariyer kartı aynı satırı kullanır (Ayarlar 2026-11-07'de çıktı). Dört kısa ad tek
         // satırda; seçilenin açıklaması altında tek soluk satır (unslop: açıklama çipe girmez). Koşu yardımı ayrı açma/kapama
         // değil, Zor ile Usta'yı ayıran şey (eski "Koşu yardımı açık/Kapalı" satırı buraya katıldı).
+        // 2026-11-14 (yasin: "zorluk seviyesi rakibin zorluğunu ifade etsin"): açıklamalar yalnız rakibi anlatır; koşu Ayarlar ›
+        // Oyuncu hareketi (Ayar.hareket, HAREKET_ACIK).
         static readonly string[] ZORLUK_ACIK = {
-            "Oyuncun topa kendisi koşar; rakip daha yavaş, sık hata yapar",
+            "Rakip yavaş, sık hata yapar; geride kalınca gevşer",
+            "Rakip dengeli; geride kalınca biraz gevşer",
+            "Rakip hızlı, az hata yapar",
+            "Rakip en güçlü hâlinde; hiç gevşemez" };
+        internal static readonly string[] HAREKET_ACIK = {
             "Oyuncun topa kendisi koşar, sen yalnız vurursun",
             "Koşmak sende; geç kalırsan oyuncun koşar, dokunursan yine sen yönlendirirsin",
-            "Her adım senin dokunuşunla; rakip daha hızlı, az hata yapar" };
+            "Her adım senin dokunuşunla" };
         // Maç uzunluğu çipleri (tuytop_target). 2026-11-08 (inceleme turu): Hızlı maç sayfası ve kariyer maç ayrıntısı aynı satırı
         // kullanır; Ayarlar › Oyun grubu kalktı. Kariyer kartı "senin seçimin" yazıp seçimi başka sayfada değiştiriyordu, Hızlı
         // maçta 21 seçen oyuncunun kariyeri sessizce 21 sayı oluyordu. Seçim oynamadan hemen önce görülen yerde; anahtar aynı.

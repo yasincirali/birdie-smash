@@ -49,9 +49,17 @@ namespace BirdieSmash.Game
         // geç kalınca koşu yardımı) · 3 Usta (koşmak sende, yardımsız, rakip güçlü = eski Usta'nın bir üstü). easy/kosuYardim eski
         // okuyucular için türetilmiş kalır (Match, tur betikleri); yazanlar kademeye çevrilir. Kayıt tuytop_zorluk; yoksa eski
         // tuytop_easy'den taşınır (1 → Orta, 0 → Usta), oyuncunun bugünkü oyunu değişmez.
+        // 2026-11-14 (yasin: "zorluk seviyesi rakibin zorluğunu ifade etsin. Manuel hareket ayrı bir özellik olarak beklesin"):
+        // zorluk artık YALNIZ rakibi belirler: ×k (ZORLUK_RAKIP), lastik bant ve Zor/Usta'da sert profil (Match.sert: Usta gücü,
+        // hız, hücum, hata; eskiden elle koşuya bağlıydı). Her kademenin rakibi eskisiyle birebir; oyuncunun koşusu ayrı `hareket`.
         public static int zorluk = 1;
         public static readonly string[] ZORLUK_AD = { "Kolay", "Orta", "Zor", "Usta" };
         public static readonly float[] ZORLUK_RAKIP = { .85f, 1f, 1f, 1.15f };   // rakip hız ×k, hata ÷k (UstaGucu ile aynı ölçek)
+        // Oyuncu hareketi (2026-11-14, Ayarlar › Oyuncu hareketi; tuytop_hareket): 0 Otomatik (oyuncu topa kendisi koşar, sen
+        // vurursun) · 1 Yardımlı (koşmak sende, geç kalırsan oyuncun koşar) · 2 Elle (her adım senin dokunuşunla). Kayıt yoksa eski
+        // zorluktan taşınır (Kolay/Orta → Otomatik, Zor → Yardımlı, Usta → Elle): oyuncunun bugünkü koşusu değişmez.
+        public static int hareket = 0;
+        public static readonly string[] HAREKET_AD = { "Otomatik", "Yardımlı", "Elle" };
         // Şampiyon yolu (2026-11-10, fikir 8 Kas 00:09 #2, yasin "üçünü de al"): kariyer sonrası merdiven seçili zorlukta oynanır;
         // Ad buradan okunur ki kart, sonuç ve profil aynı desin. 2026-11-13 (inceleme 12:05 #5): Usta'da ad değişmiyor
         // ("Usta yolu" iki ayrı mod gibi görünüyordu, kart cümleleri ad değişimini anlatmaya harcanıyordu); zorluk kartta "Usta" etiketiyle.
@@ -62,8 +70,8 @@ namespace BirdieSmash.Game
         // Lastik bant (Match.lastik notu, 2026-11-11): geride kalınca rakibin gevşemesi yalnız alt kademelerde tam.
         public static readonly float[] ZORLUK_LASTIK = { 1f, .7f, .3f, 0f };
         public static float Lastik => ZORLUK_LASTIK[Mathf.Clamp(zorluk, 0, 3)];
-        public static bool easy { get => zorluk <= 1; set { if (value != easy) zorluk = value ? 1 : 3; } }
-        public static bool kosuYardim { get => zorluk == 2; set { if (!easy) zorluk = value ? 2 : 3; } }
+        public static bool easy { get => hareket == 0; set { if (value != easy) hareket = value ? 0 : 2; } }
+        public static bool kosuYardim { get => hareket == 1; set { if (!easy) hareket = value ? 1 : 2; } }
         // Seyirci düzeyi (2026-11-11 inceleme, fikir 23:05 #6; tuytop_seyirci 0 kapalı · 1 az · 2 normal, yoksa normal = eski oyuncu
         // değişmez): uğultu, ooo, alkış, coşku ve tribün nefesi. Raket, file, düdük ve müzik etkilenmez (Sfx.trb).
         public static int seyirci = 2;
@@ -192,6 +200,7 @@ namespace BirdieSmash.Game
             if (len == "len5" || len == "len11" || len == "len21") target = int.Parse(len.Substring(3));
             else { int t = EskiInt("tuytop_target", 5); target = t == 11 || t == 21 ? t : 5; }   // bilinmeyen (eski len7 dahil) 5 olur
             zorluk = Mathf.Clamp(EskiInt("tuytop_zorluk", EskiInt("tuytop_easy", 1) == 1 ? 1 : 3), 0, 3);
+            hareket = Mathf.Clamp(EskiInt("tuytop_hareket", zorluk <= 1 ? 0 : zorluk == 2 ? 1 : 2), 0, 2);
             kosIpucu = EskiInt("tuytop_kos_ipucu", 0) == 1;   // 2026-10-29: "Dokun: oraya koş" koşu sende ilk maçta görüldü
             saha = Str("tuytop_saha", "salon"); if (!CourtView.SAHA.ContainsKey(saha)) saha = "salon";
             hizliRakip = Str("tuytop_hizli_rakip", "");
@@ -294,7 +303,7 @@ namespace BirdieSmash.Game
             kayit.Set("tuytop_v2", Json.Write(new Dictionary<string, object> { { "rally", (double)bestRally }, { "wins", (double)wins }, { "kariyer", (double)kariyer }, { "gorev", (double)gorev }, { "sampiyon", sampiyon } }));
             PlayerPrefs.SetString("tuytop_len", "len" + target); PlayerPrefs.SetString("tuytop_saha", saha); PlayerPrefs.SetString("tuytop_hizli_rakip", hizliRakip ?? ""); PlayerPrefs.SetString("tuytop_model", model); PlayerPrefs.SetString("tuytop_kamera", kamera);
             PlayerPrefs.SetString("tuytop_mod", kariyerModu ? "k" : "s"); if (antrenman) PlayerPrefs.SetString("tuytop_antrenman", "1");
-            PlayerPrefs.SetInt("tuytop_zorluk", zorluk); PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0); PlayerPrefs.SetInt("tuytop_muzik", muzik ? 1 : 0); PlayerPrefs.SetInt("tuytop_titresim", titresim ? 1 : 0); PlayerPrefs.SetInt("tuytop_seyirci", seyirci); PlayerPrefs.SetInt("tuytop_kaydirma", kaydirma); if (kosIpucu) PlayerPrefs.SetInt("tuytop_kos_ipucu", 1);
+            PlayerPrefs.SetInt("tuytop_zorluk", zorluk); PlayerPrefs.SetInt("tuytop_hareket", hareket); PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0); PlayerPrefs.SetInt("tuytop_muzik", muzik ? 1 : 0); PlayerPrefs.SetInt("tuytop_titresim", titresim ? 1 : 0); PlayerPrefs.SetInt("tuytop_seyirci", seyirci); PlayerPrefs.SetInt("tuytop_kaydirma", kaydirma); if (kosIpucu) PlayerPrefs.SetInt("tuytop_kos_ipucu", 1);
             PlayerPrefs.SetString("tuytop_dil", dilSistem ? "sistem" : dil); PlayerPrefs.SetString("tuytop_puan", puan.ToString()); PlayerPrefs.SetString("tuytop_yazi", yazi); PlayerPrefs.SetString("tuytop_fps", fps ? "1" : "0");
             var rg = new Dictionary<string, object>(); foreach (var kv in RGOR) rg[kv.Key] = kv.Value; PlayerPrefs.SetString("tuytop_raket_gor", Json.Write(rg));
             var gv = new Dictionary<string, object>(); foreach (var kv in GORUNUM) gv[kv.Key] = kv.Value; foreach (var kv in KOZ) gv[kv.Key] = kv.Value; gv["ayk_gor"] = AYK_GOR; PlayerPrefs.SetString("tuytop_gorunum", Json.Write(gv));
