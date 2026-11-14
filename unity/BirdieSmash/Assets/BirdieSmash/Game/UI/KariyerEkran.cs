@@ -273,11 +273,7 @@ namespace BirdieSmash.Game
             ra.Add(Yazi(st.isim + " · " + L.T(st.ad) + (karne ? " · " + kG + "–" + kY : ""), 14, "soluk"));
             // Güç ve dünya sırası (2026-11-14 hikâye): rakibin görünen gücü güç merdiveniyle tur tur artar; aynı tarzla yeniden
             // karşılaşınca o günkü güç yazar ("daha güçlü rakiplerle karşılaştığımı hissetmeliyim").
-            int gc = Hikaye.Guc(g), og = Hikaye.OncekiKarsilasma(g);
-            string gs = L.T("Güç {0} · Dünya {1}.", gc, SiraYaz(Hikaye.RakipSira(g)));
-            var gy = Yazi(gs, 13, "soluk"); gy.AddToClassList("rakip-guc"); ra.Add(gy);
-            string ks = og >= 0 ? L.T("Son karşılaşma: {0} · o gün güç {1}", L.T(KariyerVeri.Al(og).yer), Hikaye.Guc(og)) : null;
-            if (ks != null) { var ky = Yazi(ks, 13, "soluk"); ky.AddToClassList("rakip-guc"); ra.Add(ky); }
+            string gs, ks; GucSatirlari(ra, g, out gs, out ks);
             if (acik) { var yr = Satir("rakip-satir"); yr.pickingMode = PickingMode.Ignore; ra.Add(yr); yr.Add(UcYildiz(p.Maske(g), 16)); var yy = Yazi(p.Yildiz(g) + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy); }
             Erisim.Etiket(rr, (b + 1) + ". " + L.T(kb.yer) + ", " + L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad) + ", " + gs + (ks != null ? ", " + ks : "") + (karne ? ", " + L.T("Bu rakiple {0} galibiyet, {1} yenilgi", kG, kY) : "") + (acik ? ", " + L.T("{0}/3 yıldız", p.Yildiz(g)) : ""), "metin");
             var ip = Yazi(L.T(st.ipucu), 14, "ipucu"); Erisim.Etiket(ip, L.T(st.ipucu), "metin"); kart.Add(ip);
@@ -288,6 +284,15 @@ namespace BirdieSmash.Game
             return kart;
         }
 
+        // Güç + dünya sırası ve (varsa) son karşılaşma satırları: maç özeti ve maç kartı aynı biçim.
+        void GucSatirlari(VisualElement ra, int g, out string gs, out string ks)
+        {
+            int og = Hikaye.OncekiKarsilasma(g);
+            gs = L.T("Güç {0} · Dünya {1}.", Hikaye.Guc(g), SiraYaz(Hikaye.RakipSira(g)));
+            var gy = Yazi(gs, 13, "soluk"); gy.AddToClassList("rakip-guc"); ra.Add(gy);
+            ks = og >= 0 ? L.T("Son karşılaşma: {0} · o gün güç {1}", L.T(KariyerVeri.Al(og).yer), Hikaye.Guc(og)) : null;
+            if (ks != null) { var ky = Yazi(ks, 13, "soluk"); ky.AddToClassList("rakip-guc"); ra.Add(ky); }
+        }
         // Sıra yazımı: binlik ayırıcı dile göre (TR 1.840, EN 1,840).
         static string SiraYaz(int n) { return n >= 1000 ? (n / 1000) + (L.En ? "," : ".") + (n % 1000).ToString("000") : n.ToString(); }
 
@@ -349,7 +354,8 @@ namespace BirdieSmash.Game
             var ra = new VisualElement(); ra.AddToClassList("esnek-yatay"); rr.Add(ra);
             int kG, kY; bool karne = Ayar.Karne(st.id, out kG, out kY);   // karne (fikir 12:05 #4): maç kartıyla aynı biçim
             ra.Add(Yazi(st.isim, 20, "kalin")); ra.Add(Yazi(L.T(st.ad) + (karne ? " · " + kG + "–" + kY : ""), 14, "soluk"));
-            Erisim.Etiket(rr, L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad) + (karne ? ", " + L.T("Bu rakiple {0} galibiyet, {1} yenilgi", kG, kY) : ""), "metin");
+            string gs, ks; GucSatirlari(ra, g, out gs, out ks);
+            Erisim.Etiket(rr, L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad) + ", " + gs + (ks != null ? ", " + ks : "") + (karne ? ", " + L.T("Bu rakiple {0} galibiyet, {1} yenilgi", kG, kY) : ""), "metin");
             var ip = Yazi(L.T(st.ipucu), 14, "ipucu"); Erisim.Etiket(ip, L.T(st.ipucu), "metin"); c.Add(ip);
             if (im != null)
             {
