@@ -2,7 +2,24 @@
   "mcpServers": {
     "blender": {
       "command": "uvx",
-      "args": ["mcp-for-blender"]
+      "args": [
+        "mcp-for-blender"
+      ]
+    },
+    "codebase-memory-mcp": {
+      "command": "C:\\Users\\vasin\\AppData\\Local\\Programs\\codebase-memory-mcp\\codebase-memory-mcp.exe",
+      "args": []
+    },
+    "dart": {
+      "command": "C:\\flutter\\bin\\dart.bat",
+      "args": [
+        "mcp-server",
+        "--force-roots-fallback"
+      ]
+    },
+    "ui-ux-pro-mcp": {
+      "command": "C:\\Users\\vasin\\AppData\\Roaming\\npm\\ui-ux-pro-mcp.cmd",
+      "args": []
     }
   }
 }
