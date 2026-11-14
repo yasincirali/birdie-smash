@@ -61,22 +61,61 @@ namespace BirdieSmash.Game
             // yerine oturduktan sonra kurulur (yeni şerit aynı konumda doğar, sıçrama görünmez). Önce 0,3 sn bekleyip tek karede
             // zıplıyordu. Hafif fiske (kart genişliğinin %15'i) yönündeki komşu karta geçer; önce yarıdan fazla sürüklemek gerekiyordu.
             // Hareketi azaltta tween yok, eskisi gibi anında. Yeni basış tween'i keser.
-            float twX0 = 0, twX1 = 0, twT0 = -1; int twIdx = -1; IVisualElementScheduledItem tw = null;
+            // 2026-11-14 inceleme (fikir 12:05 #7): tween zamanlayıcısı ilk kaymadan sonra sekme açık kaldıkça 16 ms'de boş dönüyordu,
+            // 100 ms yoklama da hep açıktı. Tween bitince duraklar; yoklama şerit oturunca durur, basış/tekerlekle yeniden başlar.
+            float twX0 = 0, twX1 = 0, twT0 = -1; int twIdx = -1; IVisualElementScheduledItem tw = null, it = null; System.Action twBitti = null;
+            System.Action twBaslat = () =>
+            {
+                if (tw != null) { tw.Resume(); return; }
+                tw = hs.schedule.Execute(() =>
+                {
+                    if (twT0 < 0) return;
+                    float k = Mathf.Clamp01((Time.realtimeSinceStartup - twT0) / .24f), e = 1 - (1 - k) * (1 - k) * (1 - k);   // ease-out kübik
+                    hs.scrollOffset = new Vector2(Mathf.Lerp(twX0, twX1, e), 0); sonX = hs.scrollOffset.x; Kalite.Hareket();
+                    if (k < 1) return;
+                    twT0 = -1; sabit = 0; tw.Pause(); if (it != null) it.Resume();
+                    var bt = twBitti; twBitti = null; if (bt != null) bt();
+                    if (twIdx != kariyerTur) { Yerel.Hap("tick"); kariyerY = sayfaSv.scrollOffset.y; KariyerTurSec(twIdx); }
+                }).Every(16);
+            };
+            // Yeni tur anı (fikir 12:05 #2): önceki turun finali kazanılıp yeni tur açıldıysa şerit önce eski turun kartında doğar (final
+            // ✓'i BasamakBuyut'la büyür), 0,35 sn sonra aynı 240 ms tween'le yeni tura kayar; varınca kart başlığı bir kez 1,04×
+            // yaylanır, durum satırı 2 sn "Yeni tur açıldı" der, tık + tick titreşimi (üç kanal). Önce şerit tek karede yeni turda
+            // doğuyordu, 4 turlu kariyerin en büyük ilerleme anı görünmüyordu. Hareketi azaltta kayma/yaylanma yok: şerit yeni turda
+            // doğar, yazı + tık + titreşim kalır. Basış anı keser. Konfeti/rozet yok.
+            int yeniTur = basAniDen >= 0 && basAniA >= 0 && KariyerVeri.TurOf(basAniA) > KariyerVeri.TurOf(basAniDen) && kariyerTur == KariyerVeri.TurOf(basAniA) && kariyerTur > 0 ? kariyerTur : -1;
             EventCallback<GeometryChangedEvent> gc = null; gc = e =>
             {
                 float vw = hs.layout.width; if (float.IsNaN(vw) || vw <= 0) return;
                 hs.UnregisterCallback(gc); w = Mathf.Round(Mathf.Max(vw * .8f, vw - 36));
                 foreach (var kt in kartlar) kt.style.width = w;
-                hs.schedule.Execute(() => hs.scrollOffset = new Vector2(Mathf.Max(0, kariyerTur * (w + TUR_ARALIK) - (vw - w) / 2), 0)).StartingIn(0);
+                bool kay = yeniTur > 0 && !Ayar.reduce;
+                float x1 = Mathf.Max(0, kariyerTur * (w + TUR_ARALIK) - (vw - w) / 2), x0 = kay ? Mathf.Max(0, (yeniTur - 1) * (w + TUR_ARALIK) - (vw - w) / 2) : x1;
+                hs.schedule.Execute(() =>
+                {
+                    hs.scrollOffset = new Vector2(x0, 0);
+                    if (yeniTur < 0) return;
+                    var yk = kartlar[yeniTur];
+                    System.Action var_ = () =>
+                    {
+                        if (root != null && root.sfx != null) root.sfx.Tik(1568); Yerel.Hap("tick"); Kalite.Hareket();
+                        var ad = yk.Q<Label>("tur-ad"); if (ad != null) BasamakBuyut(ad, 1.04f, 0);
+                        var dz = yk.Q<Label>(null, "tur-durum");
+                        if (dz != null) { string eski = dz.text; dz.text = L.T("Yeni tur açıldı"); dz.schedule.Execute(() => dz.text = eski).StartingIn(2000); }
+                    };
+                    if (!kay) { var_(); return; }
+                    twX0 = x0; twX1 = x1; twIdx = kariyerTur; twT0 = Time.realtimeSinceStartup + .35f; twBitti = var_; twBaslat();
+                }).StartingIn(0);
             };
             hs.RegisterCallback(gc);
-            hs.RegisterCallback<PointerDownEvent>(e => { basili = true; twT0 = -1; hs.userData = hs.scrollOffset.x; }, TrickleDown.TrickleDown);
+            hs.RegisterCallback<PointerDownEvent>(e => { basili = true; twT0 = -1; twBitti = null; hs.userData = hs.scrollOffset.x; sabit = 0; if (it != null) it.Resume(); }, TrickleDown.TrickleDown);
+            hs.RegisterCallback<WheelEvent>(e => { sabit = 0; if (it != null) it.Resume(); }, TrickleDown.TrickleDown);
             hs.RegisterCallback<PointerUpEvent>(e => basili = false, TrickleDown.TrickleDown);
             hs.RegisterCallback<PointerCancelEvent>(e => basili = false, TrickleDown.TrickleDown);
             hs.RegisterCallback<PointerCaptureOutEvent>(e => basili = false, TrickleDown.TrickleDown);
             // Kart üstünde başlayan dikey sürükleme sayfaya geçsin (iç içe kaydırma).
             hs.nestedInteractionKind = ScrollView.NestedInteractionKind.ForwardScrolling;
-            var it = hs.schedule.Execute(() =>
+            it = hs.schedule.Execute(() =>
             {
                 if (w <= 0) return; float x = hs.scrollOffset.x;
                 if (Mathf.Abs(x - sonX) > .5f) { sonX = x; sabit = 0; return; }
@@ -87,20 +126,12 @@ namespace BirdieSmash.Game
                 float hedef = Mathf.Max(0, idx * (w + TUR_ARALIK) - (vw - w) / 2);
                 if (Mathf.Abs(hedef - x) > 1 && !Ayar.reduce)
                 {
-                    twX0 = x; twX1 = hedef; twIdx = idx; twT0 = Time.realtimeSinceStartup;
-                    if (tw == null) tw = hs.schedule.Execute(() =>
-                    {
-                        if (twT0 < 0) return;
-                        float k = Mathf.Clamp01((Time.realtimeSinceStartup - twT0) / .24f), e = 1 - (1 - k) * (1 - k) * (1 - k);   // ease-out kübik
-                        hs.scrollOffset = new Vector2(Mathf.Lerp(twX0, twX1, e), 0); sonX = hs.scrollOffset.x;
-                        if (k < 1) return;
-                        twT0 = -1; sabit = 0;
-                        if (twIdx != kariyerTur) { Yerel.Hap("tick"); kariyerY = sayfaSv.scrollOffset.y; KariyerTurSec(twIdx); }
-                    }).Every(16);
+                    twX0 = x; twX1 = hedef; twIdx = idx; twT0 = Time.realtimeSinceStartup; twBaslat();
                     return;
                 }
                 if (idx != kariyerTur) { Yerel.Hap("tick"); kariyerY = sayfaSv.scrollOffset.y; KariyerTurSec(idx); }
                 else if (Mathf.Abs(hedef - x) > 1) hs.scrollOffset = new Vector2(hedef, 0);
+                else it.Pause();   // şerit oturdu: basış/tekerlek yeniden başlatır
             }).Every(100);
             hs.RegisterCallback<DetachFromPanelEvent>(e => { it.Pause(); if (tw != null) tw.Pause(); });   // sekme yeniden kurulunca eski şeridin zamanlayıcısı durur
         }
@@ -127,7 +158,7 @@ namespace BirdieSmash.Game
             var ust = Satir("arali"); ust.pickingMode = PickingMode.Ignore; kb.Add(ust);
             var adk = new VisualElement(); adk.AddToClassList("esnek-yatay"); adk.pickingMode = PickingMode.Ignore; ust.Add(adk);
             adk.Add(Yazi(L.T("Tur {0}", t + 1), 12, "etiket"));
-            var ad = Yazi(L.T(TurAd(t)), 20, "kalin"); adk.Add(ad);
+            var ad = Yazi(L.T(TurAd(t)), 20, "kalin"); ad.name = "tur-ad"; adk.Add(ad);
             if (!acik) ust.Add(Ikon(Ikonlar.Kilit, 20, SOLUK)); else if (veri) ust.Add(YildizSayac(p.TurYildiz(t), 18, 14));
             if (tv != null && !string.IsNullOrEmpty(tv.tema)) { var tm = Yazi(L.T(tv.tema), 14); tm.AddToClassList("tur-tema"); kb.Add(tm); }
             if (!acik) { var ky = Yazi(KilitNedeni(t), 13, "soluk"); ky.AddToClassList("tur-durum"); kb.Add(ky); }
@@ -230,9 +261,12 @@ namespace BirdieSmash.Game
             var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(st.renk); AvatarIc(av, Portre.Rakip(st), 30); rr.Add(av);
             var ra = new VisualElement(); ra.AddToClassList("esnek-yatay"); rr.Add(ra);
             var ay = Yazi((b + 1) + ". " + L.T(kb.yer) + (final ? " · " + L.T("Final") : ""), 17, "kalin"); ra.Add(ay);
-            ra.Add(Yazi(st.isim + " · " + L.T(st.ad), 14, "soluk"));
+            // 2026-11-14 inceleme (fikir 12:05 #4): rakip karnesi Hızlı maç çiplerinde ve maç sonunda vardı, kariyer maç kartında yoktu;
+            // aynı basamakta takılan oyuncu "bu rakiple kaç kez kaybettim"i maça başlarken görmüyordu. Aynı biçim, sayıyla, renksiz.
+            int kG, kY; bool karne = Ayar.Karne(st.id, out kG, out kY);
+            ra.Add(Yazi(st.isim + " · " + L.T(st.ad) + (karne ? " · " + kG + "–" + kY : ""), 14, "soluk"));
             if (acik) { var yr = Satir("rakip-satir"); yr.pickingMode = PickingMode.Ignore; ra.Add(yr); yr.Add(UcYildiz(p.Maske(g), 16)); var yy = Yazi(p.Yildiz(g) + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy); }
-            Erisim.Etiket(rr, (b + 1) + ". " + L.T(kb.yer) + ", " + L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad) + (acik ? ", " + L.T("{0}/3 yıldız", p.Yildiz(g)) : ""), "metin");
+            Erisim.Etiket(rr, (b + 1) + ". " + L.T(kb.yer) + ", " + L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad) + (karne ? ", " + L.T("Bu rakiple {0} galibiyet, {1} yenilgi", kG, kY) : "") + (acik ? ", " + L.T("{0}/3 yıldız", p.Yildiz(g)) : ""), "metin");
             var ip = Yazi(L.T(st.ipucu), 14, "ipucu"); Erisim.Etiket(ip, L.T(st.ipucu), "metin"); kart.Add(ip);
             if (acik) { var zs = Satir(); kart.Add(zs); ZorlukSatir(zs, kart); }
             if (acik) { string ol = L.T(p.Kazanildi(g) ? "Yeniden oyna" : "Oyna"); var o = Dugme(ol, () => KariyerOyna(g), "dugme--birincil", null, 19); o.AddToClassList("mac-ozet-oyna"); Sigdir(o); Erisim.Etiket(o, ol + ", " + L.T(kb.yer), "dugme"); kart.Add(o); }   // yer adı kartın başlığında; ekran okuyucu yine söyler
@@ -297,8 +331,9 @@ namespace BirdieSmash.Game
             var rr = Satir("profil-ust"); c.Add(rr);
             var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(st.renk); AvatarIc(av, Portre.Rakip(st), 30); rr.Add(av);
             var ra = new VisualElement(); ra.AddToClassList("esnek-yatay"); rr.Add(ra);
-            ra.Add(Yazi(st.isim, 20, "kalin")); ra.Add(Yazi(L.T(st.ad), 14, "soluk"));
-            Erisim.Etiket(rr, L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad), "metin");
+            int kG, kY; bool karne = Ayar.Karne(st.id, out kG, out kY);   // karne (fikir 12:05 #4): maç kartıyla aynı biçim
+            ra.Add(Yazi(st.isim, 20, "kalin")); ra.Add(Yazi(L.T(st.ad) + (karne ? " · " + kG + "–" + kY : ""), 14, "soluk"));
+            Erisim.Etiket(rr, L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad) + (karne ? ", " + L.T("Bu rakiple {0} galibiyet, {1} yenilgi", kG, kY) : ""), "metin");
             var ip = Yazi(L.T(st.ipucu), 14, "ipucu"); Erisim.Etiket(ip, L.T(st.ipucu), "metin"); c.Add(ip);
             if (im != null)
             {

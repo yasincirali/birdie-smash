@@ -1430,9 +1430,9 @@ namespace BirdieSmash.Game
             {
                 float hw = (w - gap) / 2;
                 if (Baglanti(new Rect(x, yb, hw, bh), L.T(ayrinti ? "Ayrıntıları gizle" : "Ayrıntılar"), al)) { ayrinti = !ayrinti; ayrintiT = Time.unscaledTime; Yerel.Hap("tick"); }
-                if (Baglanti(new Rect(x + hw + gap, yb, hw, bh), L.T("Ana menü"), al)) root.AnaMenu();
+                if (Baglanti(new Rect(x + hw + gap, yb, hw, bh), L.T("Ana menü"), al)) root.AnaMenuSonuc();
             }
-            else if (Baglanti(new Rect(x, yb, w, bh), L.T("Ana menü"), al)) root.AnaMenu();
+            else if (Baglanti(new Rect(x, yb, w, bh), L.T("Ana menü"), al)) root.AnaMenuSonuc();
             float son = yb + bh, sinir = H - bot;
             // ölçü içerik + alt blok (r108: son − yIcerik aradaki boşluğu da sayıyordu, boşluk kendini koruyordu)
             if (hero && Event.current.type == EventType.Repaint) heroH = Mathf.Max(0, yIcerikSon - yIcerik) + 6 * s + blokH;

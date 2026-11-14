@@ -327,8 +327,11 @@ namespace BirdieSmash.Game
             altKatman.style.backgroundColor = new Color(altZemin.r, altZemin.g, altZemin.b, altZemin.a * k);
         }
         void AltZeminSifirla() { altKatman.style.backgroundColor = StyleKeyword.Null; altKatman.style.transitionDuration = StyleKeyword.Null; altKatman.style.transitionProperty = StyleKeyword.Null; }
-        // Maçtan ana menüye dönüş (GameRoot.AnaMenu): açık sayfalar kapanır, Oyna sekmesi.
-        public void MenuyeDon() { MagazaOnIsit(); var once = gez.sekme; kariyerTur = -1; gez.SekmeSec(Sekme.Oyna); Uygula(once, false); Kirlet(); if (OyuncuSecGerekli()) OyuncuSecAc(); }   // harita yeniden sıradakinin turunu açar (yeni tur açılmış olabilir)
+        // Maçtan ana menüye dönüş (GameRoot.AnaMenu): açık sayfalar kapanır, Oyna sekmesi (kariyer maçı sonundan Kariyer, 2026-11-14).
+        // Kirlet de Uygula'yı çağırır: Kariyer'de ilk Uygula atlanır, yoksa sekme iki kez kurulur ve basamak anı (bir kez oynar,
+        // BasamakAniHazirla değeri hemen yazar) ilk, hemen sökülen kurulumda tükenir. Oyna yolu bugünkü gibi.
+        public void MenuyeDon() { MenuyeDon(Sekme.Oyna); }
+        public void MenuyeDon(Sekme hedef) { MagazaOnIsit(); var once = gez.sekme; kariyerTur = -1; gez.SekmeSec(hedef); if (hedef == Sekme.Oyna) Uygula(once, false); Kirlet(); if (OyuncuSecGerekli()) OyuncuSecAc(); }   // harita yeniden sıradakinin turunu açar (yeni tur açılmış olabilir)
 
         void Uygula(Sekme once, bool anim)
         {
@@ -413,6 +416,7 @@ namespace BirdieSmash.Game
         void TuyUcur(VisualElement tuy, Label tz, int once, int hedef, VisualElement kaynak = null)
         {
             var kb = kok.worldBound; var hb = tuy.worldBound; if (float.IsNaN(hb.x) || kb.width < 1) { tz.text = Sayi(hedef); return; }
+            Kalite.Hareket();   // menü durgun çizimi (Kalite, 2026-11-14) uçuş boyunca tam hızda kalsın: uçuş < 1 sn, eşik 3 sn
             Vector2 bas = new Vector2(kb.width * .5f, kb.height * .45f), son = new Vector2(hb.x - kb.x + 18, hb.y - kb.y + hb.height * .5f);
             if (kaynak != null) { var sb = kaynak.worldBound; if (!float.IsNaN(sb.x) && sb.width > 1) bas = new Vector2(sb.center.x - kb.x, sb.center.y - kb.y); }
             for (int i = 0; i < 6; i++)

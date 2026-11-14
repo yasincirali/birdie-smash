@@ -14,6 +14,7 @@ namespace BirdieSmash.Game
     {
         static Dictionary<string, string> d; static List<KeyValuePair<Regex, string>> kalip;
         static readonly Dictionary<string, string> UNITY_EK = new Dictionary<string, string> {
+            {"Yeni tur açıldı","New tour unlocked"},{"Bu rakiple {0} galibiyet, {1} yenilgi","{0} wins, {1} losses against this rival"},   // 2026-11-14 12:05 inceleme: yeni tur anı, kariyer karnesi
             {"Son maçlar","Recent matches"},{"Son {0}: {1} galibiyet","Last {0}: {1} wins"},{"Kazanılan maç","Match won"},{"Kaybedilen maç","Match lost"},   // 2026-11-14 Profil son maçlar
             // 2026-11-12 inceleme turu: Tüy dükkânı hedef satırı, bağlanırken/hata durumu.
             {"{0} Tüy eksik","{0} Feathers short"},{"Hedefine yeter","Covers your goal"},{"Fiyat alınıyor…","Getting price…"},{"Mağazaya bağlanılamadı","Couldn't reach the store"},{"İnternet bağlantını kontrol edip yeniden dene.","Check your connection and try again."},{"Yeniden dene","Try again"},

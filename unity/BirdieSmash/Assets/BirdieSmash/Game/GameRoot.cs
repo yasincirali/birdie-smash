@@ -335,7 +335,18 @@ namespace BirdieSmash.Game
             if (kisa) StartMatch(false, false, true); else StartMatch(false, false, false);
         }
         // Duraklatılmış maçtan ana menüye çıkınca maç bekler (HTML anaMenu: M korunur, menüde "Maça devam et").
-        public void AnaMenu() { bekleyen = ekran == Ekran.Oyun && paused && match != null && match.ogr == null; ekran = Ekran.Menu; paused = false; KadrajSifirla(); Uyanik(false); if (ui != null) ui.MenuyeDon(); sfx.SuAlti(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); AudioListener.pause = false; }
+        // 2026-11-14 inceleme (fikir 12:05 #1): kariyer maçının sonundaki "Ana menü" Kariyer sekmesini açar; basamak ilerleme anı
+        // (KariyerEkran.BasamakAniHazirla) oyuncunun gözü önünde oynar. Önce her dönüş Oyna'ya düşüyordu, an ancak oyuncu Kariyer'e
+        // kendisi dokununca görünüyordu. Yalnız maç sonundaki iki "Ana menü" bağlantısı çağırır: Atölye/hedef/antrenman yolları
+        // AnaMenu'den sonra başka sekme açtığından Kariyer kurulup anı boşa tüketmesin diye onlar eski AnaMenu'de kalır.
+        // Hızlı maç, Günün maçı, Usta yolu, antrenman görevi ve öğretici maç Oyna'ya döner (bugünkü gibi).
+        public void AnaMenuSonuc()
+        {
+            bool kariyer = ekran == Ekran.Bitti && mod == Mod.Normal && Ayar.kariyerModu && match != null && match.ogr == null;
+            donSekme = kariyer ? Sekme.Kariyer : Sekme.Oyna; AnaMenu();
+        }
+        Sekme donSekme = Sekme.Oyna;   // AnaMenu bir kez okur, Oyna'ya geri koyar (sekme dokunuşu değil: tık/geçiş yok)
+        public void AnaMenu() { bekleyen = ekran == Ekran.Oyun && paused && match != null && match.ogr == null; ekran = Ekran.Menu; paused = false; KadrajSifirla(); Uyanik(false); var ds = donSekme; donSekme = Sekme.Oyna; if (ui != null) ui.MenuyeDon(ds); sfx.SuAlti(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); AudioListener.pause = false; }
         public void MacaDon() { if (!bekleyen) return; bekleyen = false; ekran = Ekran.Oyun; paused = true; Devam(); }
         // Duraklatınca tüm ses susar (HTML AC.suspend), devamda kaldığı yerden sürer.
         public void Duraklat() { if (ekran == Ekran.Oyun && !paused) { paused = true; erkenT = 0; Uyanik(false); input.Reset(); sfx.Ugultu(false, 0); AudioListener.pause = true; } }
