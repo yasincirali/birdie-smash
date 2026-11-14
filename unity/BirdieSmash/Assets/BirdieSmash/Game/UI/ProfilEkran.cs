@@ -164,6 +164,24 @@ namespace BirdieSmash.Game
             }
             mk.Add(Yazi(L.T("Bronz 9 yıldız, altın 18 yıldız. Satılmaz, yalnız oynayarak gelir."), 12, "soluk"));
 
+            // Son maçlar (2026-11-14 inceleme, fikir 07:05 #1): en yeni solda en çok 10 hap, ✓/✗ + skor + zorluğun baş harfi
+            // (yalnız renk değil); altında "Son n: g galibiyet". Hiç maç yoksa bölüm yok. Büyük yazıda haplar sarar.
+            var sm = Ayar.SonMaclar();
+            if (sm.Count > 0)
+            {
+                c.Add(Grup(L.T("Son maçlar")));
+                var hr = new VisualElement(); hr.AddToClassList("son-maclar"); c.Add(hr); int gs = 0;
+                foreach (var m in sm)
+                {
+                    if (m.g) gs++;
+                    string zd = L.T(Ayar.ZORLUK_AD[m.zorluk]);
+                    var h = Yazi((m.g ? "✓ " : "✗ ") + m.ben + "–" + m.rakip + " · " + zd.Substring(0, 1), 12, m.g ? "son-hap--g" : "soluk");
+                    h.AddToClassList("son-hap"); hr.Add(h);
+                    Erisim.Etiket(h, L.T(m.g ? "Kazanılan maç" : "Kaybedilen maç") + ", " + m.ben + "–" + m.rakip + ", " + zd, "metin");
+                }
+                c.Add(Yazi(L.T("Son {0}: {1} galibiyet", sm.Count, gs), 12, "soluk"));
+            }
+
             c.Add(Grup(L.T("İstatistikler")));
             var iz = Satir("izgara"); c.Add(iz);
             // 2026-11-07 inceleme: Rekor ralli, Galibiyet, Smaç üstteki üç büyük sayıda (smaç rekoru varsa Smaç ızgarada, 2026-11-13); ızgarada tekrar edilmez (büyük yazıda üç satır kısa).

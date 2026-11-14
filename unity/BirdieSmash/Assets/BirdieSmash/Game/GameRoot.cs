@@ -339,7 +339,11 @@ namespace BirdieSmash.Game
         public void MacaDon() { if (!bekleyen) return; bekleyen = false; ekran = Ekran.Oyun; paused = true; Devam(); }
         // Duraklatınca tüm ses susar (HTML AC.suspend), devamda kaldığı yerden sürer.
         public void Duraklat() { if (ekran == Ekran.Oyun && !paused) { paused = true; erkenT = 0; Uyanik(false); input.Reset(); sfx.Ugultu(false, 0); AudioListener.pause = true; } }
-        public void Devam() { paused = false; AudioListener.pause = false; input.Reset(); if (ekran == Ekran.Oyun) { Uyanik(true); if (match != null && match.s != null && match.ogr == null && !geriKapali) geriT = GERI; } }
+        // 2026-11-14 inceleme (fikir 07:05 #2, #5): geri sayım yalnız top gerçekten havadayken; sayı arasında top yere düşmüş ama
+        // match.s servis kurulana dek duruyor (s.dead), dönen oyuncu boşuna 1,2 sn bekliyordu (29 Eki kararı "yalnız top havadayken").
+        // Ses tek karede tam açılmasın: dinleyici 0,25 sn'de 0 → hedef (Update), kulaklıkta ani giriş yok.
+        public void Devam() { paused = false; AudioListener.pause = false; input.Reset(); if (ekran == Ekran.Oyun) { sesAcT = 0; if (Ayar.ses) AudioListener.volume = 0; Uyanik(true); if (match != null && match.s != null && !match.s.dead && match.ogr == null && !geriKapali) geriT = GERI; } }
+        float sesAcT = -1;
         // D5 (2026-10-31): arka planda iOS uygulamayı uyarısız kapatabilir; bekleyen kayıt ve PlayerPrefs diske yazılır.
         void OnApplicationQuit() { Cokme.Cikis(); }
         void OnApplicationPause(bool p) { Cokme.Durum(p); if (p) { Duraklat(); BekleyenKayit(); PlayerPrefs.Save(); Bulut.Yaz(); } }   // arka plana geçince kendiliğinden duraklar; top bir anda üstüne düşmez
@@ -384,7 +388,7 @@ namespace BirdieSmash.Game
         {
             ekran = Ekran.Bitti; Uyanik(false); var M = match; bittiIlk = M.ilk; sfx.MacSonu(won); sfx.Ugultu(false, 0);
             if (won) Ayar.wins++;
-            if (mod != Mod.Dril && M.ogr == null && M.stil != null) Ayar.KarneYaz(M.stil.id, won);   // rakip karnesi (Ayar.Karne): antrenman ve Sonsuz sayılmaz
+            if (mod != Mod.Dril && M.ogr == null && M.stil != null) { Ayar.KarneYaz(M.stil.id, won); Ayar.SonMacYaz(won, M.sc[0], M.sc[1], Ayar.zorluk); }   // rakip karnesi (Ayar.Karne): antrenman ve Sonsuz sayılmaz
             if (!M.easy && M.ogr == null) Ayar.kosIpucu = true;   // Hud.KosIpucu: koşu sende ilk maç ipucu bir kez
             // Beceri unvanı (2026-11-07 inceleme): maçtan önceki kazanılmış beceri unvanları; maç sonu kartı yeni açılanı tek satırla söyler.
             var beceri0 = Ayar.ilerleme != null ? Karakter.BeceriKazanilan(Ayar.ilerleme) : null;
@@ -933,6 +937,7 @@ namespace BirdieSmash.Game
         {
             FitCamera(); Cokme.Tik(this);
             float dt = Mathf.Min(.05f, Time.unscaledDeltaTime);
+            if (sesAcT >= 0) { sesAcT += Time.unscaledDeltaTime; float sv = Mathf.Min(1, sesAcT / .25f); AudioListener.volume = Ayar.ses ? sv : 0; if (sv >= 1 || paused) { if (paused) AudioListener.volume = Ayar.ses ? 1 : 0; sesAcT = -1; } }
             // 2026-11-12 (yasin: "sayı sonrası animasyonda kasma, maç sonu sevinçte donma"): kayıt (JSON + senkron PlayerPrefs.Save +
             // Game Center) sayı arasının İLK karesinde, yani sayı sevinci ve yazısı başlarken yapılıyordu; maç sonunda da EndMatch
             // aynı karede yazıyordu, zafer sevinci oynarken. Sayı arasında yalnız son .15 sn'de (sevinç bitmiş, servis kurulmadan;
