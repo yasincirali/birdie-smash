@@ -955,6 +955,10 @@ namespace BirdieSmash.Game
             // 2026-11-12 Bel: önden-yandan ve arkadan (kuyruk)
             foreach (var o in Kozmetik.Liste(Kozmetik.BEL)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.BEL, o.id); yield return Bekle(20); root.vitrin.a = 40; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_bel_" + o.id); root.vitrin.a = 200; yield return Bekle(4); yield return Cek("model_vitrin_bel_" + o.id + "_2"); }
             ui.KarakterDene(Kozmetik.BEL, "yok");
+            // 2026-11-14 Ayakkabı görünümü: sayfa + her görünüm yandan ve önden (vitrin AYAK odağı ayakları kadraja alır)
+            ui.KarakterAc(UiKok.KAR_AYK); yield return Bekle(30); yield return Cek("menu_karakter_ayak");
+            foreach (var o in Kozmetik.Liste(Kozmetik.AYAK)) { if (o.id == "yok") continue; ui.KarakterDene(Kozmetik.AYAK, o.id); yield return Bekle(20); root.vitrin.a = 70; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("model_vitrin_ayak_" + o.id); root.vitrin.a = 0; yield return Bekle(4); yield return Cek("model_vitrin_ayak_" + o.id + "_2"); }
+            ui.KarakterDene(Kozmetik.AYAK, "yok");
             ui.KarakterDene(Kozmetik.SIRT, "yildiz_pelerin"); ui.KarakterDene(Kozmetik.SAPKA, "kapson"); yield return Bekle(20); root.vitrin.a = 200; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("menu_karakter_sirt_hepsini_al");
             Ayar.reduce = aksRd; Ayar.reduceSecim = aksRs;
             ui.SoyunmaSegment(0); yield return Bekle(5);

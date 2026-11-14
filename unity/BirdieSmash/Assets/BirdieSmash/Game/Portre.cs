@@ -39,7 +39,7 @@ namespace BirdieSmash.Game
         static PlayerView.Gorunum DeneGorunum(string kat, string id)
         {
             var g = PlayerView.Benim();
-            if (kat == Kozmetik.SAC) { g.sacModel = id; g.sapka = null; } else if (kat == Kozmetik.SAPKA) g.sapka = id; else if (kat == Kozmetik.YUZ) g.yuz = id; else if (kat == Kozmetik.SIRT) g.sirt = id; else if (kat == Kozmetik.KOL) g.kol = id; else if (kat == Kozmetik.BEL) g.bel = id;
+            if (kat == Kozmetik.SAC) { g.sacModel = id; g.sapka = null; } else if (kat == Kozmetik.SAPKA) g.sapka = id; else if (kat == Kozmetik.YUZ) g.yuz = id; else if (kat == Kozmetik.SIRT) g.sirt = id; else if (kat == Kozmetik.KOL) g.kol = id; else if (kat == Kozmetik.BEL) g.bel = id; else if (kat == Kozmetik.AYAK) g.ayak = id;
             return g;
         }
         static string DeneAnahtar(string kat, string id, PlayerView.Gorunum g) { return "kc|" + kat + "|" + id + "|" + Ayar.model + g.Anahtar(); }
@@ -50,7 +50,7 @@ namespace BirdieSmash.Game
         }
         public static Texture Dene(string kat, string id)
         {
-            var g = DeneGorunum(kat, id); return Al(DeneAnahtar(kat, id, g), g, true, KBOY, krt, ksira, KSINIR, kat == Kozmetik.SIRT, kat == Kozmetik.KOL);
+            var g = DeneGorunum(kat, id); return Al(DeneAnahtar(kat, id, g), g, true, KBOY, krt, ksira, KSINIR, kat == Kozmetik.SIRT, kat == Kozmetik.KOL, kat == Kozmetik.AYAK);
         }
 
         // Düşük bellek uyarısı (2026-11-13 inceleme 22:12, fikir #2): Cokme.DusukBellek yalnız UnloadUnusedAssets + GC
@@ -65,13 +65,13 @@ namespace BirdieSmash.Game
         }
 
         static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben) { return Al(anahtar, g, ben, BOY, rt, sira, SINIR); }
-        static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben, int boy, Dictionary<string, RenderTexture> on, List<string> sr, int sinir, bool arka = false, bool kol = false)
+        static Texture Al(string anahtar, PlayerView.Gorunum g, bool ben, int boy, Dictionary<string, RenderTexture> on, List<string> sr, int sinir, bool arka = false, bool kol = false, bool ayak = false)
         {
             RenderTexture t; if (on.TryGetValue(anahtar, out t) && t != null && t.IsCreated()) return t;
             // D6 (2026-10-31): RT içeriği kaybolmuşsa (arka plandan dönüş, bellek baskısı) eski nesne yok edilmeden yerine yenisi
             // konuyordu; bellek sızıntısı. Önce eskisi bırakılır.
             if (t != null) { t.Release(); Object.Destroy(t); on.Remove(anahtar); }
-            try { t = Ciz(g, ben, boy, arka, kol); } catch (System.Exception e) { Debug.LogWarning("Birdie Smash portre çizilemedi: " + e.Message); return null; }
+            try { t = Ciz(g, ben, boy, arka, kol, ayak); } catch (System.Exception e) { Debug.LogWarning("Birdie Smash portre çizilemedi: " + e.Message); return null; }
             if (t == null) return null;
             on[anahtar] = t; sr.Remove(anahtar); sr.Add(anahtar);
             while (sr.Count > sinir) { var e = sr[0]; sr.RemoveAt(0); RenderTexture o; if (on.TryGetValue(e, out o) && o != null) { o.Release(); Object.Destroy(o); } on.Remove(e); }
@@ -111,7 +111,7 @@ namespace BirdieSmash.Game
         // kol (2026-11-12, inceleme 17:05): kalkan üst kolda, baş kadrajının dışında kalıyordu; altı Kol kartı aynı baş portresini
         // gösteriyordu ("aynı resim, farklı ad" satın almayı durdurur). Kol kartında kadraj kalkanın kendi sınırlarına oturur,
         // kamera figürün dönüşünden bağımsız olarak kalkanın bulunduğu yandan, üç çeyrek önden bakar. Kalkan bulunamazsa baş kadrajı.
-        static RenderTexture Ciz(PlayerView.Gorunum g, bool ben, int boy, bool arka = false, bool kol = false)
+        static RenderTexture Ciz(PlayerView.Gorunum g, bool ben, int boy, bool arka = false, bool kol = false, bool ayak = false)
         {
             Kur();
             var fig = PlayerView.Build(kok, Ayar.model, ben, g.forma, false, g);
@@ -128,6 +128,9 @@ namespace BirdieSmash.Game
                 Bounds kb = new Bounds(); bool kalkan = false;
                 if (kol && fig.KolKok != null)
                     foreach (var r in fig.KolKok.GetComponentsInChildren<Renderer>()) if (r.enabled) { if (!kalkan) { kb = r.bounds; kalkan = true; } else kb.Encapsulate(r.bounds); }
+                // 2026-11-14 Ayakkabı görünümü kartı: kadraj iki ayakkabının sınırına (kalkan yolunun aynısı); bulunamazsa baş kadrajı
+                if (ayak && fig.AyakKok != null)
+                    foreach (var p in fig.AyakKok) if (p != null) foreach (var r in p.GetComponentsInChildren<Renderer>()) if (r.enabled) { if (!kalkan) { kb = r.bounds; kalkan = true; } else kb.Encapsulate(r.bounds); }
                 if (kalkan)
                 {
                     var govde = new Vector3(bas != null ? bas.position.x : YER.x, kb.center.y, bas != null ? bas.position.z : YER.z);

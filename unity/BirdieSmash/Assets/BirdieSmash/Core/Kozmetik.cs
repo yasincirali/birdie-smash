@@ -20,7 +20,9 @@ namespace BirdieSmash.Core
     // bant false: bu saçta kafa bandı gizlenir (saç hacminin içinde kalır). garip: tuhaf/iddialı biçim (fiyatı yüksek tutulur).
     // nadir (2026-11-01 Dolap yenilemesi): siradan / nadir / destansi / mistik; null = sınıfsız (varsayılan "yok" öğeleri).
     // renk: hazır ağın (varlik kaykit) ana rengi yerine (KayKit iskelet paketinde hepsi aynı gül kurusu; mistikler gece rengine).
-    public class KozmetikOge { public string id, ad, n, varlik, paket, nadir, renk, koleksiyon; public int sv = 1, fiyat; public bool bant = true, garip; }
+    // aks (2026-11-14, saç/yüz/ayakkabı rafı): saç biçimi FBX parçası yerine baş çerçevesine takılan hazır ağla gelir
+    // (Resources/karakter/aks/<aks>.bytes; varlik o saçın altındaki taban saçı, null = kel). Bkz. Game/Aksesuar.Kur.
+    public class KozmetikOge { public string id, ad, n, varlik, paket, nadir, renk, koleksiyon, aks; public int sv = 1, fiyat; public bool bant = true, garip; }
 
     // Rakibin görünüşü (stil.json gorunum). Boş alan = varsayılan (ilk öğe / modelin rengi).
     public class RakipGorunum { public string tip, sac, sacRenk, ten, ayakkabi, aykRenk; }
@@ -43,7 +45,12 @@ namespace BirdieSmash.Core
         // 2026-11-12 Bel (yasin: konsept setleri, "app boyutunu artırmadan"): leğene bağlı etek, kemer, kuyruk, simit. Set, yeni model
         // dosyası yerine aynı gövdeye takılan parçalarla kurulur; bel bunun eksik takma noktasıydı. Sona eklendi (kayıt sırası değişmez).
         public const string BEL = "bel";
-        public static readonly string[] KAT = { TIP, SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC, KOL, BEL };
+        // 2026-11-14 Ayakkabı görünümü (yasin: "ayakkabıda da eksiğimiz var"): ayakkabı bir ekipman (güç Gear'de, 5 model) ve
+        // kozmetik tarafı yalnız renkti. Görünüm ekipman ayakkabısının üstüne giyilir (Aksesuar.Ayak gizler ve yerine takar), güç
+        // değişmez. Ayrı kategori, çünkü Gear'in ayakkabı modeli satın alınan bir ekipman, bu Tüy ile alınan bir görünüş.
+        // Sona eklendi (kayıt sırası değişmez).
+        public const string AYAK = "ayak";
+        public static readonly string[] KAT = { TIP, SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC, KOL, BEL, AYAK };
         static Dictionary<string, KozmetikOge[]> veri; static Dictionary<string, RakipGorunum> rakip;
         public static void Sifirla() { veri = null; rakip = null; }
 
@@ -125,7 +132,7 @@ namespace BirdieSmash.Core
             if (veri != null) return;
             var o = Json.Obj(Json.Parse(KariyerVeri.Metin("karakter"))); if (o == null) throw new InvalidOperationException("Birdie Smash: veri/karakter.json okunamadı");
             var v = new Dictionary<string, KozmetikOge[]>();
-            foreach (var k in new[] { "tipler", SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC, KOL, BEL })
+            foreach (var k in new[] { "tipler", SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC, KOL, BEL, AYAK })
             {
                 var l = new List<KozmetikOge>(); var a = o.ContainsKey(k) ? o[k] as List<object> : null;
                 if (a != null) foreach (var x in a)
@@ -134,7 +141,7 @@ namespace BirdieSmash.Core
                         // Yalnız görünüş: bir etki/güç alanı yazılırsa sessiz kalmasın (güç satılmaz, tasarım §4.3).
                         foreach (var yasak in new[] { "etki", "guc", "kontrol", "hiz", "tatli", "kosu", "enerji", "toparla", "yor", "uzanma", "jumpTatli" })
                             if (d.ContainsKey(yasak)) throw new InvalidOperationException("Birdie Smash: karakter.json " + k + " öğesinde güç alanı: " + yasak);
-                        l.Add(new KozmetikOge { id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), n = Json.Str(d, "n", ""), varlik = Json.Str(d, "varlik", null), paket = Json.Str(d, "paket", null), nadir = Json.Str(d, "nadir", null), renk = Json.Str(d, "renk", null), koleksiyon = Json.Str(d, "set", null),
+                        l.Add(new KozmetikOge { id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), n = Json.Str(d, "n", ""), varlik = Json.Str(d, "varlik", null), paket = Json.Str(d, "paket", null), nadir = Json.Str(d, "nadir", null), renk = Json.Str(d, "renk", null), koleksiyon = Json.Str(d, "set", null), aks = Json.Str(d, "aks", null),
                             sv = (int)Json.Num(d, "sv", 1), fiyat = (int)Json.Num(d, "fiyat", 0), bant = Json.Bool(d, "bant", true), garip = Json.Bool(d, "garip", false) });
                     }
                 if (l.Count == 0 || l[0].fiyat != 0 || l[0].sv != 1) throw new InvalidOperationException("Birdie Smash: karakter.json " + k + " ilk öğesi ücretsiz ve Sv 1 olmalı (varsayılan)");

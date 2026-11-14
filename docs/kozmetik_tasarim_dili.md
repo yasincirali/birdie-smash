@@ -22,6 +22,10 @@ Dil tek cümleyle: **tombul oyuncak**. Oyuncu modeli iri başlı, yuvarlak hatl�
    bunu zorlar: renk fazlaysa en yakın tonları birleştirir, üçgen fazlaysa eşyayı daha kaba bölüntüyle yeniden
    kurar, yine sığmazsa "SIĞMADI" yazar ve eşya elle sadeleştirilir.
 6. **Yalnız görünüş.** Hiçbir eşya vuruşu, hızı, savunmayı değiştirmez; yeni model dosyası eklenmez.
+7. **Saç ve ayakkabı da hazır ağ (2026-11-14).** Yeni saç biçimi FBX'e parça olarak eklenmez (dört tipi yeniden
+   üretmek ve app boyutu); baş çerçevesine takılan kabuktur (`sac_model[].aks`). Saç rengini alacak her yüzey
+   `SAC_YER` (#5a3a24) ile boyanır, oyun onu oyuncunun saç rengiyle değiştirir. Ayakkabı görünümü tur 4 ağıdır:
+   birim ayakkabı boyu, köken taban ortası, x ayakkabı enine gerilir; hiçbir nokta tabanın altına (y < 0) inmez.
 
 ## Yeni eşya eklerken sor
 
