@@ -66,12 +66,14 @@ namespace BirdieSmash.Game
             public string kol;
             // 2026-11-12 Dolap › Bel: leğene bağlı etek, kemer, kuyruk (Kozmetik.BEL; Aksesuar.Bel).
             public string bel;
+            // 2026-11-14 Dolap › Ayakkabı görünümü: ekipman ayakkabısının yerine giyilen görünüş (Kozmetik.AYAK; Aksesuar.Ayak).
+            public string ayak;
             public bool sacParla;   // 2026-11-01 mistik saç boyası: saç malzemesi hafifçe kendinden ışır
             public bool isin;       // 2026-11-01 ışın kaplaması: çerçeve ve kordaj kendinden ışır, hale + renkli salınım izi (IsinKur)
             // 2026-10-30 Dolap › Raket: kafa şekli (RaketSekil; null/"oval" = FBX'in kendi kafası) ve şaft rengi (null = FBX rengi).
             public string kafa; public Color? saft;
             // Sahnedeki figürü yeniden kurmak gerekip gerekmediğinin özeti (GameRoot, Vitrin).
-            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kol + "|" + bel + "|" + kafa + saft + (sacParla ? "|p" : "") + (isin ? "|i" : ""); }
+            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kol + "|" + bel + "|" + ayak + "|" + kafa + saft + (sacParla ? "|p" : "") + (isin ? "|i" : ""); }
         }
         static Color? Renk(string h) { return h != null ? Kit.Hex(h) : (Color?)null; }
         public static Gorunum Benim()
@@ -80,7 +82,7 @@ namespace BirdieSmash.Game
             return new Gorunum { forma = Kit.Hex(gs.forma), cerceve = Kit.Hex(kp ?? gs.raketRenk), bant = gs.bant != null ? Kit.Hex(gs.bant) : (Color?)null, bilek = gs.bileklik != null ? Kit.Hex(gs.bileklik) : (Color?)null,
                 grip = Kit.Hex(Vitrin.RAK_RENK[r["grip"]]), tel = Kit.Hex(Vitrin.RAK_RENK[r["tel"]]), tel2 = Kit.Hex(Vitrin.RAK_RENK[r["desen"] == "iki" ? r["tel2"] : r["tel"]]),
                 ten = Renk(Ayar.GorunumRenk("ten")), sac = Renk(Ayar.GorunumRenk("sac")), ayakkabi = Renk(Ayar.GorunumRenk("ayakkabi")), gripCizgi = gs.gripDoku == "cizgi",
-                tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.AykGorunum, sapka = Ayar.KOZ[Kozmetik.SAPKA], yuz = Ayar.KOZ[Kozmetik.YUZ], sirt = Ayar.KOZ[Kozmetik.SIRT], kol = Ayar.KOZ[Kozmetik.KOL], bel = Ayar.KOZ[Kozmetik.BEL], sacParla = Ayar.SacParla, isin = Ayar.KaplamaIsin,
+                tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.AykGorunum, sapka = Ayar.KOZ[Kozmetik.SAPKA], yuz = Ayar.KOZ[Kozmetik.YUZ], sirt = Ayar.KOZ[Kozmetik.SIRT], kol = Ayar.KOZ[Kozmetik.KOL], bel = Ayar.KOZ[Kozmetik.BEL], ayak = Ayar.KOZ[Kozmetik.AYAK], sacParla = Ayar.SacParla, isin = Ayar.KaplamaIsin,
                 sort = Renk(Ayar.GorunumRenk("sort")), kumas = Ayar.gear != null ? Ayar.gear.kumas : null,
                 kafa = r["kafa"], saft = r["saft"] != "model" && Vitrin.RAK_RENK.ContainsKey(r["saft"]) ? Kit.Hex(Vitrin.RAK_RENK[r["saft"]]) : (Color?)null };
         }
@@ -210,10 +212,14 @@ namespace BirdieSmash.Game
                 if (isinRenk.HasValue && kafa != null) IsinKur(isinRenk.Value);
                 if (anim != null && anim["idle"] != null) Sample("idle", 0, null, 0, 1);
                 Calibrate(); AltKatmanKur();
-                if (!hakem) aksesuar = Aksesuar.Kur(model, kHead, Vector3.up, bantMeta, gor.sapka, gor.yuz, gor.forma, gor.sac);
+                // 2026-11-14: hazır ağlı saç (karakter.json sac_model[].aks) şapkasızken kafaya takılır; şapkayla Varyant kısa kesimi açar
+                var sacOge = gor.sacModel != null ? Kozmetik.Bul(Kozmetik.SAC, gor.sacModel) : null;
+                string sacAks = !hakem && sacOge != null && !Aksesuar.Var(gor.sapka) ? sacOge.aks : null;
+                if (!hakem) aksesuar = Aksesuar.Kur(model, kHead, Vector3.up, bantMeta, gor.sapka, gor.yuz, gor.forma, gor.sac, sacAks);
                 if (!hakem && Aksesuar.Var(gor.sirt)) sirtKok = Aksesuar.Sirt(model, Vector3.up, gor.sirt);
                 if (!hakem && Aksesuar.Var(gor.kol)) kolKok = Aksesuar.Kol(model, Vector3.up, gor.kol);
                 if (!hakem && Aksesuar.Var(gor.bel)) Aksesuar.Bel(model, Vector3.up, gor.bel);
+                if (!hakem && Aksesuar.Var(gor.ayak)) ayakKok = Aksesuar.Ayak(model, Vector3.up, gor.ayak);
                 if (!hakem && kThigh.Count > 0)
                 {   // ayak kilidi: boşta pozunda (taban y=0'da) bilek yüksekliği
                     ZincirKur(); bilek0 = new float[2];
@@ -517,7 +523,7 @@ namespace BirdieSmash.Game
             yayRenk = new[] { new GradientColorKey(c, 0), new GradientColorKey(Color.Lerp(c, Color.white, .5f), 1) };
         }
         GradientColorKey[] yayRenk;
-        BantMeta bantMeta; Transform aksesuar, sirtKok, kolKok; public Transform KolKok { get { return kolKok; } } public Transform AksesuarKok { get { return aksesuar; } } public Transform SirtKok { get { return sirtKok; } }
+        BantMeta bantMeta; Transform aksesuar, sirtKok, kolKok; Transform[] ayakKok; public Transform[] AyakKok { get { return ayakKok; } } public Transform KolKok { get { return kolKok; } } public Transform AksesuarKok { get { return aksesuar; } } public Transform SirtKok { get { return sirtKok; } }
         readonly Gradient yayGrad = new Gradient(); readonly GradientAlphaKey[] yayS = new GradientAlphaKey[2]; float yayA = -1;
         static readonly GradientColorKey[] YAY_RENK = { new GradientColorKey(Color.white, 0), new GradientColorKey(Color.white, 1) };
         // Varsayılan şort: SORT_RENK (rocketbox_kit, düz lacivert .075/.095/.15) ÷ doku grisi .86 (gamma uzayında çarpım).
@@ -582,7 +588,7 @@ namespace BirdieSmash.Game
                 else if (tag == "ayakkabi" && bas.StartsWith("ayk_")) ayk[bas.Substring(4)] = t.gameObject;
             }
             // Seçim yoksa (hakem, eski çağrı) ya da seçilen parça bu FBX'te yoksa tipin varsayılanı (sözleşme §6.2: _clips.json tip).
-            string sm = g.sacModel; if (Aksesuar.Var(g.sapka) && sm != null && Aksesuar.HACIMLI.Contains(sm)) sm = "kisa";   // şapkanın altında hacimli saç kısa kesime döner
+            string sm = g.sacModel; if (Aksesuar.Var(g.sapka) && sm != null && (Aksesuar.HACIMLI.Contains(sm) || Aksesuar.AksSac(sm))) sm = "kisa";   // şapkanın altında hacimli saç (ve hazır ağlı saç) kısa kesime döner
             var so = sm != null ? Kozmetik.Bul(Kozmetik.SAC, sm) : null; var sv = Kozmetik.Oge(Kozmetik.SAC, null);
             string sacVars = tipMeta != null && !string.IsNullOrEmpty(tipMeta.sac) ? tipMeta.sac : sv != null ? sv.varlik : null;
             string acik = VaryantAc(sac, so != null ? so.varlik : sacVars, so != null && so.varlik == null, sacVars); AcikSac = acik;

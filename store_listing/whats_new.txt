@@ -1,4 +1,9 @@
 === UNITY ===
+Dolap: 18 saç, 15 yüz eşyası ve ayakkabı görünümü (14 Kasım gece):
+- Saç modeli rafına 18 yeni biçim: Kâse kesim, Küt bob, Dev bukle gibi klasikler ve Brokoli, Tavuk ibiği, Spagetti, Rüzgâr tüneli, Gökkuşağı, Bulut, Alev, Tüy top topuzu gibi garip olanlar. Saç rengi seçtiysen yeni saçlar da o rengi alıyor; şapka takınca kısa kesime dönüyor.
+- Yüz rafına 15 eşya: gözlükler (kalın kare, spor, pilot, yıldız, kalp, dalgıç maskesi, robot vizör), monokl, hakem düdüğü, sakız balonu, gür kaşlar, keçi sakalı, tüy bıyık, nefes ve yara bandı.
+- Ayakkabı sayfasında yeni "Ayakkabı görünümü" rafı: 14 görünüm (kanvas, yağmur çizmesi, takunya, ördek terlik, dinozor ayağı, tekerlekli paten, yaylı, roket, bulut taban…). Görünüm yalnız görünüş; hız ve uzanma altındaki ayakkabıdan gelir. "Görünüm yok" eski ayakkabıyı gösterir.
+Nasıl denenir: Dolap > Saç'ta yeni biçimlere dokun, vitrindeki oyuncuda kafaya düzgün oturmalı, saç rengini değiştirince yeni saç da değişmeli. Şapka takınca saç kısa kesime dönmeli. Dolap > Yüz'de gözlükleri dene: gözlerin üstünde durmalı. Dolap > Ayakkabı'da Ayakkabı görünümü rafından birini dene: iki ayakta da görünmeli, koşarken ayakla dönmeli, maçta hız değişmemeli. Sade ve Tüycük tiplerinde görünüm çıkmaz, bu beklenen.
 Cam menüler ve servis duruşu (14 Kasım gece):
 - Menülerde kartlar, düğmeler, üst haplar ve sekme çubuğu yarı saydam cam yüzeye geçti; düğme ve çip boyları tek standarda oturdu.
 - Sen servis atarken yorgun rakip artık çömelip ellerini dizine koymuyor, karşılama duruşunda bekliyor.

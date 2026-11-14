@@ -55,8 +55,8 @@ namespace BirdieSmash.Game
             var vt = root.vitrin; if (vt == null) return; bool d = DenemeVar();
             DenemeSil(); vt.Sevinc(null); vt.Odak(Vitrin.TAM); if (d) vt.Yenile();
         }
-        bool DenemeVar() { var vt = root.vitrin; return vt.deneTip != null || vt.deneSac != null || vt.deneAyk != null || vt.deneSapka != null || vt.deneYuz != null || vt.deneSevinc != null || vt.deneMacSonu != null || vt.deneSirt != null || vt.deneKol != null || vt.deneBel != null; }
-        void DenemeSil() { var vt = root.vitrin; vt.deneTip = vt.deneSac = vt.deneAyk = vt.deneSapka = vt.deneYuz = vt.deneSevinc = vt.deneMacSonu = vt.deneSirt = vt.deneSmac = vt.deneKol = vt.deneBel = null; }
+        bool DenemeVar() { var vt = root.vitrin; return vt.deneTip != null || vt.deneSac != null || vt.deneAyk != null || vt.deneSapka != null || vt.deneYuz != null || vt.deneSevinc != null || vt.deneMacSonu != null || vt.deneSirt != null || vt.deneKol != null || vt.deneBel != null || vt.deneAyak != null; }
+        void DenemeSil() { var vt = root.vitrin; vt.deneTip = vt.deneSac = vt.deneAyk = vt.deneSapka = vt.deneYuz = vt.deneSevinc = vt.deneMacSonu = vt.deneSirt = vt.deneSmac = vt.deneKol = vt.deneBel = vt.deneAyak = null; }
         // Kategori kamerayı çağırır (araştırma: her kategorinin bir kadrajı); Raket vitrini tezgâha geçirir, diğerleri figüre döndürür.
         void KarakterOdakAyarla()
         {
@@ -109,7 +109,7 @@ namespace BirdieSmash.Game
         static string[] KarKat(int i)
         {
             return i == KAR_TIP ? new[] { Kozmetik.TIP } : i == KAR_SAC ? new[] { Kozmetik.SAC } : i == KAR_SAPKA ? new[] { Kozmetik.SAPKA } : i == KAR_TEN ? new[] { Kozmetik.YUZ }
-                : i == KAR_SEVINC ? new[] { Kozmetik.SEVINC, Kozmetik.MAC_SONU, Kozmetik.SMAC } : i == KAR_SIRT ? new[] { Kozmetik.SIRT, Kozmetik.KOL, Kozmetik.BEL } : null;
+                : i == KAR_SEVINC ? new[] { Kozmetik.SEVINC, Kozmetik.MAC_SONU, Kozmetik.SMAC } : i == KAR_SIRT ? new[] { Kozmetik.SIRT, Kozmetik.KOL, Kozmetik.BEL } : i == KAR_AYK ? new[] { Kozmetik.AYAK } : null;
         }
         static bool KarSayim(int i, out int sahip, out int toplam)
         {
@@ -168,7 +168,7 @@ namespace BirdieSmash.Game
         bool KategoriDeneniyor(int i)
         {
             var vt = root.vitrin; if (vt == null) return false;
-            return i == KAR_TIP ? vt.deneTip != null : i == KAR_SAC ? vt.deneSac != null : i == KAR_SAPKA ? vt.deneSapka != null : i == KAR_TEN ? vt.deneYuz != null : i == KAR_SEVINC ? vt.deneSevinc != null || vt.deneMacSonu != null || vt.deneSmac != null : i == KAR_SIRT ? vt.deneSirt != null || vt.deneKol != null || vt.deneBel != null : i == KAR_AYK && vt.deneAyk != null;
+            return i == KAR_TIP ? vt.deneTip != null : i == KAR_SAC ? vt.deneSac != null : i == KAR_SAPKA ? vt.deneSapka != null : i == KAR_TEN ? vt.deneYuz != null : i == KAR_SEVINC ? vt.deneSevinc != null || vt.deneMacSonu != null || vt.deneSmac != null : i == KAR_SIRT ? vt.deneSirt != null || vt.deneKol != null || vt.deneBel != null : i == KAR_AYK && (vt.deneAyk != null || vt.deneAyak != null);
         }
         void KategoriSec(int i)
         {
@@ -521,6 +521,10 @@ namespace BirdieSmash.Game
         void AyakkabiSayfa(VisualElement c)
         {
             var gr = Ayar.gear; int sv = gr.Seviye(); string gor = Ayar.AykGorunum;
+            // 2026-11-14 Ayakkabı görünümü (Tüy ile; güç ekipmanda kalır): sayfanın başında, çünkü ayakkabı sayfasına gelen önce
+            // görünüş arıyor. Ekipman modeli ve renk aşağıda aynı kaldı; görünüm seçiliyken onlar figürde görünmez (yazı söyler).
+            KozIzgara(c, Kozmetik.AYAK, "Ayakkabı görünümü", root.vitrin.deneAyak);
+            c.Add(Yazi(L.T("Görünüm ayakkabının üstüne giyilir: hız ve uzanma tabandaki ayakkabıdan gelir, değişmez. \"Görünüm yok\" seçince aşağıdaki model ve renk görünür."), 12, "soluk"));
             c.Add(Grup(L.T("Ayakkabı modeli · {0}", L.T(Gear.GEAR["ayakkabi"][gor].ad))));
             var cp = Satir("secim"); cp.style.flexWrap = Wrap.Wrap; c.Add(cp);
             cp.Add(Cip(L.T("Tabanla aynı"), Ayar.AYK_GOR == "taban", () => { Ayar.AYK_GOR = "taban"; Ayar.Kaydet(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
@@ -640,7 +644,7 @@ namespace BirdieSmash.Game
         {
             KozIzgara(c, Kozmetik.SAPKA, "Şapka", root.vitrin.deneSapka);
             string sm = Ayar.KOZ[Kozmetik.SAC];
-            if (Ayar.VaryantGorunur && Aksesuar.HACIMLI.Contains(sm)) c.Add(Yazi(L.T("{0} saç şapkanın altında kısa kesime döner; şapkayı çıkarınca geri gelir.", L.T(Kozmetik.Oge(Kozmetik.SAC, sm).ad)), 12, "soluk"));
+            if (Ayar.VaryantGorunur && (Aksesuar.HACIMLI.Contains(sm) || Aksesuar.AksSac(sm))) c.Add(Yazi(L.T("{0} saç şapkanın altında kısa kesime döner; şapkayı çıkarınca geri gelir.", L.T(Kozmetik.Oge(Kozmetik.SAC, sm).ad)), 12, "soluk"));
             c.Add(Yazi(L.T("Şapkalar her oyuncu görünümünde takılır, Tüy ile bir kez alınır."), 12, "soluk"));
         }
 

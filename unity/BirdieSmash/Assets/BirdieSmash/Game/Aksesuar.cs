@@ -17,6 +17,8 @@ namespace BirdieSmash.Game
         // Şapkanın altında hacimli saç kısa kesime döner (saç şapkanın içinden çıkmasın; Oyuncak 3B'de saç parçası seçilir).
         public static readonly HashSet<string> HACIMLI = new HashSet<string> { "afro", "topuz", "anime", "mohikan", "rasta", "kirpi", "ananas", "uzay", "pompadur", "atkuyrugu" };
         public static bool Var(string id) { return !string.IsNullOrEmpty(id) && id != "yok"; }
+        // Hazır ağlı saç (2026-11-14): FBX parçası değil, baş çerçevesine takılır; şapkanın içinden çıkacağı için şapkayla kısa kesime döner.
+        public static bool AksSac(string sm) { var o = Kozmetik.Bul(Kozmetik.SAC, sm); return o != null && o.aks != null; }
 
         // Baş çerçevesini ölçer ve aksesuarları kurar. Dönüş: kök (kafa kemiğinin çocuğu) ya da null.
         // 2026-10-30 r65: BakeMesh yolu baş merkezini modelin ölçeksiz yerel koordinatında verdi (oyuncak: merkez y .83, baş
@@ -24,9 +26,12 @@ namespace BirdieSmash.Game
         // (VekilDuzelt'ten sonra baş kemiğine oturan, kalibrasyonun kullandığı işaret) ve cetvel goz__isaret: Blender'da tam
         // .2 birim önde, aradaki dünya uzaklığı / .2 = model biriminin dünya karşılığı. Bant halkasının işarete göre yeri ve
         // yarıçapı _clips.json "bant" alanından (Blender ölçümü). Alan yoksa eski BakeMesh yolu yedek.
-        public static Transform Kur(Transform model, Transform kafa, Vector3 dikey, PlayerView.BantMeta bant, string sapka, string yuz, Color forma, Color? sac)
+        // sacAks (2026-11-14): saç biçimi baş çerçevesine takılan hazır ağ (karakter.json sac_model[].aks); şapka takılıyken çağıran
+        // null verir (saç şapkanın altında kısa kesime döner, PlayerView.Varyant). Saç ve yüz ağlarında SAC_YER rengindeki alt ağ
+        // oyuncunun saç rengini alır (SacBoya).
+        public static Transform Kur(Transform model, Transform kafa, Vector3 dikey, PlayerView.BantMeta bant, string sapka, string yuz, Color forma, Color? sac, string sacAks = null)
         {
-            if (model == null || kafa == null || (!Var(sapka) && !Var(yuz))) return null;
+            if (model == null || kafa == null || (!Var(sapka) && !Var(yuz) && !Var(sacAks))) return null;
             Transform bas = null, goz = null;
             foreach (var t in model.GetComponentsInChildren<Transform>(true)) { if (t.name.StartsWith("bas__")) bas = t; else if (t.name.StartsWith("goz__")) goz = t; }
             Vector3 ileri = bas != null && goz != null ? Vector3.ProjectOnPlane(goz.position - bas.position, dikey) : Vector3.zero;
@@ -45,10 +50,33 @@ namespace BirdieSmash.Game
             var kok = new GameObject("aksesuar").transform; kok.SetParent(kafa, true);
             kok.position = c; kok.rotation = Quaternion.LookRotation(ileri.normalized, dikey.normalized);
             float ls = kafa.lossyScale.x; kok.localScale = new Vector3(yan, ust, (on + arka) * .5f) * (r / Mathf.Max(1e-5f, ls));
+            if (Var(sacAks)) HazirAg(kok, sacAks);
             if (Var(sapka)) Sapka(kok, sapka, forma);
             if (Var(yuz)) Yuz(kok, yuz, forma, on > 1);   // elipsoit oranı yalnız Oyuncak'larda: tombul yüz, öne çıkan dudak
+            if (sac.HasValue) SacBoya(kok, sac.Value);
             foreach (var rd in kok.GetComponentsInChildren<Renderer>()) rd.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             return kok;
+        }
+
+        // Saç rengi (2026-11-14): ozel_aksesuar.py saç kabuğunu, kaşı ve sakalı SAC_YER (#5a3a24) ile yazar; oyuncu bir saç rengi
+        // seçtiyse (null = "Modelin rengi": kahve kalır) o alt ağın malzemesi o renkle değişir. Paylaşılan önbellek malzemesine
+        // dokunulmaz, yeni malzeme bu figüründür (PlayerView.Sil temizler).
+        static readonly Color32 SAC_YER = new Color32(0x5a, 0x3a, 0x24, 255);
+        static void SacBoya(Transform kok, Color sac)
+        {
+            Material yeni = null;
+            foreach (var rd in kok.GetComponentsInChildren<MeshRenderer>())
+            {
+                var ms = rd.sharedMaterials; bool d = false;
+                for (int i = 0; i < ms.Length; i++)
+                {
+                    if (ms[i] == null) continue; Color32 c = ms[i].color;
+                    if (Mathf.Abs(c.r - SAC_YER.r) > 2 || Mathf.Abs(c.g - SAC_YER.g) > 2 || Mathf.Abs(c.b - SAC_YER.b) > 2) continue;
+                    if (yeni == null) yeni = Mat(sac, .2f);
+                    ms[i] = yeni; d = true;
+                }
+                if (d) rd.sharedMaterials = ms;
+            }
         }
 
         // Bant halkası: deri ağı o anki pozla pişirilir (BakeMesh), dünya noktalarına çevrilir; merkez ortalama, yarıçap dikeye
@@ -212,7 +240,7 @@ namespace BirdieSmash.Game
                 catch (System.Exception e) { Debug.LogWarning("aksesuar " + id + ": " + e.Message); h = null; }
                 Resources.UnloadAsset(ta);
             }
-            if (h != null) Boya(h, Kozmetik.Bul(Kozmetik.SAPKA, id) ?? Kozmetik.Bul(Kozmetik.SIRT, id) ?? Kozmetik.Bul(Kozmetik.KOL, id) ?? Kozmetik.Bul(Kozmetik.BEL, id));
+            if (h != null) Boya(h, Kozmetik.Bul(Kozmetik.SAPKA, id) ?? Kozmetik.Bul(Kozmetik.SIRT, id) ?? Kozmetik.Bul(Kozmetik.KOL, id) ?? Kozmetik.Bul(Kozmetik.BEL, id) ?? Kozmetik.Bul(Kozmetik.SAC, id) ?? Kozmetik.Bul(Kozmetik.YUZ, id) ?? Kozmetik.Bul(Kozmetik.AYAK, id));
             if (h != null && h.mats != null) foreach (var m in h.mats) Kit.Paylas(m);   // 2026-11-11: önbellekte; PlayerView.Sil silmesin (Kit.Paylasilan)
             hazir[id] = h; return h;
         }
@@ -402,6 +430,75 @@ namespace BirdieSmash.Game
             float ls = legen.lossyScale.x; kok.localScale = Vector3.one * (w / Mathf.Max(1e-5f, ls));
             var g = HazirObj(kok, h); g.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             return kok;
+        }
+
+        // Ayakkabı görünümü (2026-11-14; tur 4): her ayağa bir kopya, ekipman ayakkabısının yerine. Çerçeve ekipman ayakkabısının
+        // kendisinden ölçülür (ayakkabı ağı BakeMesh, ayak yere basarken; tip ve ayakkabı modeli ne olursa olsun aynı yol): sağ/sol
+        // ayrı, zemin düzleminde temel bileşen yönü = burun (ileriye çevrilir), köken taban ortası, birim = ayakkabı boyu, x ekseni
+        // ayakkabı enine gerilir. Ölçüden sonra ekipman ayakkabısı gizlenir; görünüm ayak kemiğine bağlanır, ayakla döner.
+        // Ayakkabı parçası olmayan modelde (Sade, Tüycük) ölçü yok: null döner, figür ekipman ayakkabısıyla kalır.
+        // tool/karakter/aks_giy.py aynı ölçüyü Blender'da yapar (önizleme). Yalnız görünüş: Core'a hiçbir değer gitmez.
+        public static Transform[] Ayak(Transform model, Vector3 dikey, string id)
+        {
+            var h = Hazir(id); if (model == null || h == null || h.tur != 4) return null;
+            Transform bas = null, goz = null, ayakL = null, ayakR = null; SkinnedMeshRenderer ayk = null;
+            foreach (var t in model.GetComponentsInChildren<Transform>(true))
+            {
+                string n = t.name.ToLowerInvariant();
+                if (t.name.StartsWith("bas__")) bas = t; else if (t.name.StartsWith("goz__")) goz = t;
+                if (n.Contains("__")) { if (ayk == null && t.gameObject.activeInHierarchy && PlayerView.Etiket(t.name) == "ayakkabi") ayk = t.GetComponent<SkinnedMeshRenderer>(); continue; }
+                if (n.Contains("foot") && !n.Contains("ik") && !n.Contains("roll") && !n.Contains("step")) { if (ayakL == null && Sol(n)) ayakL = t; else if (ayakR == null && Sag(n)) ayakR = t; }
+            }
+            if (ayk == null || ayk.sharedMesh == null || ayakL == null || ayakR == null) return null;
+            Vector3 up = dikey.normalized;
+            Vector3 ileri = bas != null && goz != null ? Vector3.ProjectOnPlane(goz.position - bas.position, up) : Vector3.zero;
+            if (ileri.sqrMagnitude < 1e-8f) ileri = Vector3.ProjectOnPlane(model.forward, up);
+            ileri.Normalize(); var sag = Vector3.Cross(up, ileri);
+            // r179 (ekran turu): TRS(konum, dönüş, 1) ile dünyaya çevrilen pişmiş ağ ayakkabıyı ayağın önüne ve altına koydu: oyuncak
+            // FBX'te ölçek modelin üst düğümünde, BakeMesh onu (r65 bant notundaki gibi) taşımıyor. İki dönüşüm de denenir; iki
+            // tarafın ağırlık merkezi ayak kemiklerine en yakın düşen seçilir (ölçek nerede durursa dursun doğru olan kazanır).
+            var m = new Mesh(); ayk.BakeMesh(m, false); var ham = m.vertices; Object.Destroy(m); if (ham.Length < 8) return null;
+            var adaylar = new[] { ayk.transform.localToWorldMatrix, Matrix4x4.TRS(ayk.transform.position, ayk.transform.rotation, Vector3.one) };
+            Vector3[] v = null; Vector3 cx = Vector3.zero; float enIyi = float.MaxValue;
+            foreach (var M in adaylar)
+            {
+                var w = new Vector3[ham.Length]; Vector3 c = Vector3.zero; for (int i = 0; i < ham.Length; i++) { w[i] = M.MultiplyPoint3x4(ham[i]); c += w[i]; } c /= ham.Length;
+                Vector3 cl = Vector3.zero, cr = Vector3.zero; int nl = 0, nr = 0; var ls = Vector3.Cross(up, ileri);
+                for (int i = 0; i < w.Length; i++) { if (Vector3.Dot(w[i] - c, ls) < 0) { cl += w[i]; nl++; } else { cr += w[i]; nr++; } }
+                if (nl == 0 || nr == 0) continue; cl /= nl; cr /= nr;
+                float e = Mathf.Min((cl - ayakL.position).magnitude + (cr - ayakR.position).magnitude, (cl - ayakR.position).magnitude + (cr - ayakL.position).magnitude);
+                if (e < enIyi) { enIyi = e; v = w; cx = c; }
+            }
+            if (v == null) return null;
+            var kok = new List<Transform>();
+            for (int s = 0; s < 2; s++)
+            {
+                float sg = s == 0 ? -1 : 1; Transform kemik = Vector3.Dot(ayakL.position - cx, sag) * sg > 0 ? ayakL : ayakR;
+                // zemin düzleminde temel bileşen (2B kovaryans): ayağın dışa dönük açısı da yakalanır
+                double mf = 0, ml = 0; int say = 0;
+                for (int i = 0; i < v.Length; i++) { var d = v[i] - cx; if (Vector3.Dot(d, sag) * sg <= 0) continue; mf += Vector3.Dot(d, ileri); ml += Vector3.Dot(d, sag); say++; }
+                if (say < 4) continue; mf /= say; ml /= say;
+                double sff = 0, sll = 0, sfl = 0;
+                for (int i = 0; i < v.Length; i++) { var d = v[i] - cx; if (Vector3.Dot(d, sag) * sg <= 0) continue; double a = Vector3.Dot(d, ileri) - mf, b = Vector3.Dot(d, sag) - ml; sff += a * a; sll += b * b; sfl += a * b; }
+                float th = .5f * Mathf.Atan2((float)(2 * sfl), (float)(sff - sll));
+                Vector3 f = (ileri * Mathf.Cos(th) + sag * Mathf.Sin(th)).normalized, l = Vector3.Cross(up, f);
+                float f0 = float.MaxValue, f1 = float.MinValue, l0 = float.MaxValue, l1 = float.MinValue, y0 = float.MaxValue;
+                for (int i = 0; i < v.Length; i++)
+                {
+                    var d = v[i] - cx; if (Vector3.Dot(d, sag) * sg <= 0) continue;
+                    float a = Vector3.Dot(d, f), b = Vector3.Dot(d, l); f0 = Mathf.Min(f0, a); f1 = Mathf.Max(f1, a); l0 = Mathf.Min(l0, b); l1 = Mathf.Max(l1, b); y0 = Mathf.Min(y0, Vector3.Dot(v[i], up));
+                }
+                float L = f1 - f0, W = l1 - l0; if (L < 1e-4f) continue;
+                Vector3 o = cx + f * ((f0 + f1) * .5f) + l * ((l0 + l1) * .5f); o += up * (y0 - Vector3.Dot(o, up));
+                var k = new GameObject(s == 0 ? "ayak_sol" : "ayak_sag").transform; k.SetParent(kemik, false);
+                k.position = o; k.rotation = Quaternion.LookRotation(f, up);
+                // x = en, y ve z = boy; kemiğin ölçeğine bölünür (oyuncak FBX'te kemik ölçeği 1 değil; Bel ile aynı varsayım: kemik ölçeği eşit)
+                k.localScale = new Vector3(W, L, L) / Mathf.Max(1e-5f, kemik.lossyScale.x);
+                var g = HazirObj(k, h); g.GetComponent<MeshRenderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
+                kok.Add(k);
+            }
+            ayk.enabled = false;   // ekipman ayakkabısı görünmez (ağı ve kemiği durur: ayak kilidi ve tanı bundan etkilenmez)
+            return kok.ToArray();
         }
 
         // Sarım yönü elle tutturulmaz: her ağ iki yüzlü yazılır (arka yüz ters normalle ayrı köşeler), hangi taraftan bakılsa dolu.

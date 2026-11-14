@@ -46,6 +46,8 @@ static class BotMac
     static int fails = 0;
     static float smacHizMax;
     static void Fail(string m) { Console.WriteLine("HATA: " + m); fails++; }
+    // BSA1 hazır ağının tur baytı (0 baş, 1 sırt, 2 kol, 3 bel, 4 ayak); dosya yoksa -1.
+    static int AksTur(string id) { var p = "unity/BirdieSmash/Assets/Resources/karakter/aks/" + id + ".bytes"; if (!System.IO.File.Exists(p)) return -1; var b = System.IO.File.ReadAllBytes(p); return b.Length > 4 && b[0] == (byte)'B' ? b[4] : -1; }
     static readonly Random rng = new Random(7);
 
     // insan benzeri bot: servis türünü rastgele seçer, pencere açıkken çoğu orta, bazen sert/yavaş kaydırır
@@ -1072,11 +1074,20 @@ static class BotMac
         if (T.Length != 4 || T[0].id != "atlet" || T[0].varlik != null) Fail("4 tip, ilki Atlet (oyuncak.fbx)");
         int bedava = T.Count(t => t.fiyat == 0 && t.sv == 1); if (bedava < 1 || bedava > 2) Fail("başta 1–2 tip ücretsiz olmalı: " + bedava);
         if (Kozmetik.Bul(Kozmetik.TIP, "kadin") == null || Kozmetik.Bul(Kozmetik.TIP, "kadin").fiyat != 0 || Kozmetik.Bul(Kozmetik.TIP, "kadin").sv != 1) Fail("kimlik satılmaz: Atletik kadın baştan ücretsiz olmalı");
-        if (S.Length < 10 || S[0].fiyat != 0 || S.Count(o => o.varlik == null) != 1) Fail("en az 10 saç biçimi, ilki ücretsiz, bir tane kazıtılmış (parçasız)");
+        if (S.Length < 10 || S[0].fiyat != 0 || S.Count(o => o.varlik == null && o.aks == null) != 1) Fail("en az 10 saç biçimi, ilki ücretsiz, bir tane kazıtılmış (parçasız)");
         foreach (var o in T.Concat(S)) { if (o.fiyat < 0 || o.fiyat > 2500 || (o.sv == 1 && o.fiyat > 0)) Fail("kozmetik fiyat/kapı: " + o.id + " " + o.fiyat + " Sv " + o.sv); if (o.paket != null) Fail("paket alanı şimdilik boş olmalı (IAP yok): " + o.id); }
         int garipMin = S.Where(o => o.garip).Select(o => o.fiyat).DefaultIfEmpty(0).Min(), sadeMax = S.Where(o => !o.garip).Select(o => o.fiyat).Max();
         if (S.Count(o => o.garip) < 2 || garipMin <= sadeMax) Fail("garip saçlar en pahalılar olmalı: " + garipMin + " ≤ " + sadeMax);
-        if (S.Distinct().Count() != S.Select(o => o.id).Distinct().Count() || S.Where(o => o.varlik != null).Select(o => o.varlik).Distinct().Count() != S.Count(o => o.varlik != null)) Fail("saç kimlik/varlık tekrarı");
+        if (S.Distinct().Count() != S.Select(o => o.id).Distinct().Count() || S.Where(o => o.varlik != null && o.aks == null).Select(o => o.varlik).Distinct().Count() != S.Count(o => o.varlik != null && o.aks == null)) Fail("saç kimlik/varlık tekrarı");
+        // (1a') hazır ağlı saç (2026-11-14, yasin: "tüy harcatmaya değecek saç modelleri"): aks = Resources/karakter/aks/<aks>.bytes, baş (tur 0);
+        // varlik altındaki FBX saçıdır (null kazıtılmış, tekrar serbest). Ayakkabı görünümü (ayak): ilki "yok" ücretsiz, ağlar tur 4.
+        foreach (var o in S.Where(o => o.aks != null)) if (AksTur(o.aks) != 0) Fail("saç hazır ağı yok ya da baş ağı değil: " + o.id);
+        {
+            var AY = Kozmetik.Liste(Kozmetik.AYAK);
+            if (AY.Length < 10 || AY[0].id != "yok" || AY[0].fiyat != 0 || AY[0].sv != 1) Fail("ayak: ilki 'yok' ücretsiz, en az 9 görünüm");
+            foreach (var o in AY.Skip(1)) { if (AksTur(o.id) != 4) Fail("ayak ağı yok ya da tur 4 değil: " + o.id); if (o.fiyat <= 0 || o.fiyat > 2500 || o.sv < 2 || o.nadir == null || o.paket != null) Fail("ayak fiyat/kapı/nadirlik: " + o.id); }
+            foreach (var o in Kozmetik.Liste(Kozmetik.YUZ)) if (o.varlik == "ozel" && AksTur(o.id) != 0) Fail("yüz ağı yok ya da baş ağı değil: " + o.id);
+        }
         // (1b) şapka ve yüz aksesuarı (2026-10-30): ilki "yok" ücretsiz varsayılan, en az 7 şapka ve 5 yüz, fiyat kuralı aynı
         var SA = Kozmetik.Liste(Kozmetik.SAPKA); var YU = Kozmetik.Liste(Kozmetik.YUZ);
         if (SA.Length < 8 || YU.Length < 6 || SA[0].id != "yok" || YU[0].id != "yok" || SA[0].fiyat != 0 || YU[0].fiyat != 0) Fail("şapka/yüz: ilki 'yok' ücretsiz, en az 7 şapka ve 5 yüz");
@@ -1084,7 +1095,7 @@ static class BotMac
         var SI = Kozmetik.Liste(Kozmetik.SIRT);
         if (SI.Length < 4 || SI[0].id != "yok" || SI[0].fiyat != 0) Fail("sırt: ilki 'yok' ücretsiz, en az 3 pelerin");
         foreach (var o in SA.Concat(YU).Concat(SI)) if (o.fiyat < 0 || o.fiyat > 2500 || (o.sv == 1 && o.fiyat > 0) || o.paket != null) Fail("aksesuar fiyat/kapı: " + o.id);
-        foreach (var o in SA.Concat(SI))
+        foreach (var o in SA.Concat(SI).Concat(Kozmetik.Liste(Kozmetik.AYAK)))
         {
             if (o.nadir != null && !new[] { "siradan", "nadir", "destansi", "mistik" }.Contains(o.nadir)) Fail("nadirlik bilinmiyor: " + o.id);
             if ((o.varlik == "kaykit" || o.varlik == "ozel") && !System.IO.File.Exists("unity/BirdieSmash/Assets/Resources/karakter/aks/" + o.id + ".bytes")) Fail("hazır ağ yok: " + o.id);
@@ -1097,7 +1108,7 @@ static class BotMac
             string[] sinif = { "siradan", "nadir", "destansi", "mistik" };
             for (int i = 1; i < sinif.Length; i++)
             {
-                var alt = SA.Concat(SI).Where(o => o.nadir == sinif[i - 1]).Select(o => o.fiyat); var ust = SA.Concat(SI).Where(o => o.nadir == sinif[i]).Select(o => o.fiyat);
+                var alt = SA.Concat(SI).Concat(Kozmetik.Liste(Kozmetik.AYAK)).Where(o => o.nadir == sinif[i - 1]).Select(o => o.fiyat); var ust = SA.Concat(SI).Concat(Kozmetik.Liste(Kozmetik.AYAK)).Where(o => o.nadir == sinif[i]).Select(o => o.fiyat);
                 if (alt.Any() && ust.Any() && ust.Min() < alt.Max()) Fail("nadirlik bandı karışık: " + sinif[i] + " en ucuz " + ust.Min() + " < " + sinif[i - 1] + " en pahalı " + alt.Max());
             }
             int katalog = Kozmetik.KAT.Sum(kat => Kozmetik.Liste(kat).Sum(o => o.fiyat));
