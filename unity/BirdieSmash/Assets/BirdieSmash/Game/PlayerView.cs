@@ -224,7 +224,7 @@ namespace BirdieSmash.Game
                 if (!hakem && Aksesuar.Var(gor.sirt)) sirtKok = Aksesuar.Sirt(model, Vector3.up, gor.sirt);
                 if (!hakem && Aksesuar.Var(gor.kol)) kolKok = Aksesuar.Kol(model, Vector3.up, gor.kol);
                 if (!hakem && Aksesuar.Var(gor.bel)) Aksesuar.Bel(model, Vector3.up, gor.bel);
-                else if (hv != null) Aksesuar.Bel(model, Vector3.up, hv.aks + "_kuyruk");   // kuyruk bel eşyasıyla aynı yerde: bel eşyası takılıyken yok
+                else if (hv != null) { var ky = Aksesuar.Bel(model, Vector3.up, hv.aks + "_kuyruk"); if (ky != null) ky.gameObject.AddComponent<PelerinSalinim>().Kuyruk(); }   // kuyruk bel eşyasıyla aynı yerde: bel eşyası takılıyken yok; yay 2026-11-15
                 if (!hakem && Aksesuar.Var(gor.ayak)) ayakKok = Aksesuar.Ayak(model, Vector3.up, gor.ayak);
                 if (!hakem && kThigh.Count > 0)
                 {   // ayak kilidi: boşta pozunda (taban y=0'da) bilek yüksekliği

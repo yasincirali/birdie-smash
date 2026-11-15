@@ -9,7 +9,11 @@ namespace BirdieSmash.Game
 {
     public class PelerinSalinim : MonoBehaviour
     {
-        const float K = 70f, D = 11f, ILERI_DERECE = 26f, AZAMI = 60f, BURULMA = 10f;
+        const float D = 11f, BURULMA = 10f;
+        // 2026-11-15 inceleme #2: aynı yay hayvan kuyruğuna da takılır (ikincil hareket yalnız pelerindeydi; kuyruk gövdeye kaynak
+        // gibiydi). Varsayılanlar pelerinin eski sabitleri; kuyruk daha az açılır, durgunken taban açısı yok (Kuyruk()).
+        public float K = 70f, ILERI_DERECE = 26f, AZAMI = 60f, TABAN = 4f;
+        public void Kuyruk() { K = 90f; ILERI_DERECE = 18f; AZAMI = 35f; TABAN = 0f; }
         Quaternion r0; Vector3 onceki; bool ilk = true; float aci, hiz, bur, burHiz;
 
         void Start() { r0 = transform.localRotation; }
@@ -23,7 +27,7 @@ namespace BirdieSmash.Game
             var v = (p - onceki) / Mathf.Max(1e-4f, Time.deltaTime); onceki = p;
             var par = transform.parent != null ? transform.parent.rotation * r0 : transform.rotation;
             float ileri = Vector3.Dot(v, par * Vector3.forward), yan = Vector3.Dot(v, par * Vector3.right);
-            float hedef = Mathf.Clamp(ileri * ILERI_DERECE, 0f, AZAMI) + 4f;          // 4°: durgunken bile sırttan hafif açık
+            float hedef = Mathf.Clamp(ileri * ILERI_DERECE, 0f, AZAMI) + TABAN;       // pelerinde 4°: durgunken bile sırttan hafif açık
             float hedefB = Mathf.Clamp(-yan * BURULMA, -18f, 18f);
             hiz += (K * (hedef - aci) - D * hiz) * dt; aci += hiz * dt;
             burHiz += (K * (hedefB - bur) - D * burHiz) * dt; bur += burHiz * dt;

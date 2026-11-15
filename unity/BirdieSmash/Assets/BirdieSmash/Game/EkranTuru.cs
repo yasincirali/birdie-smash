@@ -934,6 +934,9 @@ namespace BirdieSmash.Game
                 ui.KarakterDene(Kozmetik.TIP, "panda"); ui.KarakterDene(Kozmetik.SAPKA, "noel_sapka"); ui.KarakterDene(Kozmetik.YUZ, "pos_biyik"); yield return Bekle(25); root.vitrin.a = 30; root.vitrin.v = 0; yield return Bekle(6); yield return Cek("model_vitrin_hayvan_panda_noel_biyik");
                 ui.KarakterDene(Kozmetik.TIP, "tavsan"); ui.KarakterDene(Kozmetik.SAPKA, "sombrero"); ui.KarakterDene(Kozmetik.YUZ, "yuvarlak"); ui.KarakterDene(Kozmetik.BEL, "tutu"); yield return Bekle(25); root.vitrin.a = 30; root.vitrin.v = 0; yield return Bekle(6); yield return Cek("model_vitrin_hayvan_tavsan_sombrero_gozluk_tutu");
                 if (Kozmetik.Bul(Kozmetik.TIP, "robot") != null) { ui.KarakterDene(Kozmetik.BEL, null); ui.KarakterDene(Kozmetik.TIP, "robot"); ui.KarakterDene(Kozmetik.SAPKA, "kep"); ui.KarakterDene(Kozmetik.YUZ, "pos_biyik"); yield return Bekle(25); root.vitrin.a = 30; root.vitrin.v = 0; yield return Bekle(6); yield return Cek("model_vitrin_robot_kep_biyik"); }
+                // 2026-11-15 inceleme #1: hayvan/robot tipindeyken Saç sayfası (başta neden + Beden'e dönüş, soluk kartlar) ve yazı denetimi
+                ui.KarakterDene(Kozmetik.SAPKA, null); ui.KategoriGec(UiKok.KAR_SAC); yield return Bekle(20); yield return Cek("model_sac_sayfa_hayvan"); { int hn; rap.AppendLine(ui.TasmaDenetimi("model_sac_sayfa_hayvan", out hn)); }
+                ui.KategoriGec(UiKok.KAR_TIP); yield return Bekle(6);
                 ui.KarakterDene(Kozmetik.SAPKA, null); ui.KarakterDene(Kozmetik.YUZ, null); ui.KarakterDene(Kozmetik.BEL, null); ui.KarakterDene(Kozmetik.TIP, "guclu"); yield return Bekle(10);
             }
             t = null; ui.KarakterAc(UiKok.KAR_SAC); yield return Bekle(30);
