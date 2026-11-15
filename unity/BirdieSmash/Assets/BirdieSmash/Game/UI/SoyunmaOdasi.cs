@@ -289,18 +289,28 @@ namespace BirdieSmash.Game
             var k = Kart("teknik-kart"); c.Add(k);
             string kim = Gear.Kimlik(r, SapYazi(gr), r.saft != null ? L.T(r.saft) : null); if (kim != null) k.Add(Yazi(kim, 13, "kimlik-satir"));
             int dm = r.dengeMm ?? 290; string da = Gear.DengeAd(dm);
-            TeknikSatir(k, "Ağırlık", r.u + " · " + (r.gram ?? 0) + " g " + L.T("(telsiz)"), "U sınıfı: 5U 75–79 g, 4U 80–84 g, 3U 85–89 g. Hafif raket elde hızlı döner; ağır raket topu daha sert iter, kolu daha çok yorar.");
-            TeknikSatir(k, "Denge noktası", dm + " mm · " + L.T(da), "Sapın ucundan ağırlık merkezine uzaklık. Kafa ağır: smaç ve clear güçlü, drive ve file geç. Kafa hafif: savunma ve file hızlı, smaç yumuşak.");
-            TeknikSatir(k, "Şaft", L.T(r.saft ?? "orta"), "Esnek şaft affeder: zamanlama kaçsa da top yerine gider (tatlı nokta geniş, sapma az), ama topu bir an tutar, smaç yavaşlar. Sert şaft hızlı kolda gücü doğrudan aktarır; zamanlama ister, tatlı nokta daralır.");
-            TeknikSatir(k, "Önerilen gerginlik", (r.telMin ?? 20) + "–" + (r.telMax ?? 28) + " lbs", "Üreticinin gövdeye yazdığı aralık. Gevşek tel tramplen ve geniş tatlı nokta, sıkı tel his ve kontrol verir.");
+            // İnceleme 2026-11-15 12:05 #2: denerken sayfa yalnız denenenin sayısını yazıyordu; oyuncu iki sayfa arasında ezber
+            // yapıyordu. Şimdi her satırda seçili rakete fark: işaretli sayı ya da "seninki …". Yalnız yazı (renk yok), aynıysa boş.
+            GearModel s0 = null; if (dene != null && dene != gr.raket) Gear.GEAR["raket"].TryGetValue(gr.raket, out s0);
+            int sdm = s0 != null ? s0.dengeMm ?? 290 : dm;
+            string sTel = s0 != null ? (s0.telMin ?? 20) + "–" + (s0.telMax ?? 28) + " lbs" : null, tel = (r.telMin ?? 20) + "–" + (r.telMax ?? 28) + " lbs";
+            TeknikSatir(k, "Ağırlık", r.u + " · " + (r.gram ?? 0) + " g " + L.T("(telsiz)"), "U sınıfı: 5U 75–79 g, 4U 80–84 g, 3U 85–89 g. Hafif raket elde hızlı döner; ağır raket topu daha sert iter, kolu daha çok yorar.", s0 != null ? Fark((r.gram ?? 0) - (s0.gram ?? 0), " g") : null);
+            TeknikSatir(k, "Denge noktası", dm + " mm · " + L.T(da), "Sapın ucundan ağırlık merkezine uzaklık. Kafa ağır: smaç ve clear güçlü, drive ve file geç. Kafa hafif: savunma ve file hızlı, smaç yumuşak.", s0 != null ? Fark(dm - sdm, " mm") : null);
+            TeknikSatir(k, "Şaft", L.T(r.saft ?? "orta"), "Esnek şaft affeder: zamanlama kaçsa da top yerine gider (tatlı nokta geniş, sapma az), ama topu bir an tutar, smaç yavaşlar. Sert şaft hızlı kolda gücü doğrudan aktarır; zamanlama ister, tatlı nokta daralır.", s0 != null && (s0.saft ?? "orta") != (r.saft ?? "orta") ? L.T("seninki {0}", L.T(s0.saft ?? "orta")) : null);
+            TeknikSatir(k, "Önerilen gerginlik", tel, "Üreticinin gövdeye yazdığı aralık. Gevşek tel tramplen ve geniş tatlı nokta, sıkı tel his ve kontrol verir.", sTel != null && sTel != tel ? L.T("seninki {0}", sTel) : null);
             TeknikSatir(k, "Sap ölçüsü", gr.sap + " · " + Gear.SapMm(gr.sap, L.T("inç")), "Sap çevresi; sayı büyüdükçe incelir. Kalın sap (G4) sağlam tutuş ve kontrol, ince sap (G6) parmak ve bilek oyunu, hızlı drive.");
             k.Add(Yazi(L.T("Maçta") + ": " + L.T(r.n), 13, "ipucu"));
         }
-        void TeknikSatir(VisualElement k, string ad, string deger, string anlam)
+        // İşaretli fark ("seninkinden −5 g"); eksi için tipografik eksi (U+2212), tire değil.
+        static string Fark(int d, string birim) { return d == 0 ? null : L.T("seninkinden {0}", (d > 0 ? "+" : "\u2212") + System.Math.Abs(d) + birim); }
+        // fark (denerken, seçili rakete göre) değerin altında kendi satırında, sağa yaslı: değer sütunu daralmadığı için aynı
+        // satıra eklenince büyük yazıda kart dışına taşardı.
+        void TeknikSatir(VisualElement k, string ad, string deger, string anlam, string fark = null)
         {
             var s = Satir("arali"); s.style.marginTop = 8; k.Add(s); s.Add(Yazi(L.T(ad), 14, "kalin")); var v = Yazi(deger, 14, "rakam"); v.style.flexShrink = 0f; s.Add(v);
+            if (fark != null) { var f = Yazi(fark, 12, "rakam"); f.AddToClassList("soluk"); f.style.alignSelf = Align.FlexEnd; f.style.whiteSpace = WhiteSpace.Normal; f.style.unityTextAlign = TextAnchor.MiddleRight; k.Add(f); }
             var a = Yazi(L.T(anlam), 12, "soluk"); a.style.whiteSpace = WhiteSpace.Normal; k.Add(a);
-            Erisim.Etiket(s, L.T(ad) + ", " + deger, "metin");
+            Erisim.Etiket(s, L.T(ad) + ", " + deger + (fark != null ? ", " + fark : ""), "metin");
         }
 
         // Yuva kartı: dokununca yuva sayfası. "Hazır" = yükseltme alınabilir ya da seviyesi gelmiş, Tüy'ü yeten model var.

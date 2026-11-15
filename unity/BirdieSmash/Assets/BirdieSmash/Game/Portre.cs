@@ -42,7 +42,19 @@ namespace BirdieSmash.Game
             if (kat == Kozmetik.SAC) { g.sacModel = id; g.sapka = null; } else if (kat == Kozmetik.SAPKA) g.sapka = id; else if (kat == Kozmetik.YUZ) g.yuz = id; else if (kat == Kozmetik.SIRT) g.sirt = id; else if (kat == Kozmetik.KOL) g.kol = id; else if (kat == Kozmetik.BEL) g.bel = id; else if (kat == Kozmetik.AYAK) g.ayak = id;
             return g;
         }
-        static string DeneAnahtar(string kat, string id, PlayerView.Gorunum g) { return "kc|" + kat + "|" + id + "|" + Ayar.model + g.Anahtar(); }
+        // İnceleme 2026-11-15 12:05 #3: anahtar bütün görünüştü (Gorunum.Anahtar: raket rengi, tel, grip, ayakkabı…). Katalog 166
+        // resimli karta çıktı (#110) ve tavan 80; tel rengini değiştirmek bile bütün baş resimlerini geçersiz kılıp kare kare
+        // yeniden çizdiriyordu. Raket hiçbir küçük resme girmez (Ciz raketi gizler), baş kadrajı çeneden yukarısı, Kol/Ayakkabı
+        // kadrajı kendi ağının sınırı: anahtar yalnız o kadrajda görünen alanları taşır. Saç şapka resminde görünür (şapkanın
+        // altından), o yüzden baş kategorilerinde saç anahtarda kalır. Bilinmeyen kategori bütün gövdeyi taşır (raket hariç).
+        static string DeneAnahtar(string kat, string id, PlayerView.Gorunum g)
+        {
+            string ortak = "" + g.forma + "|" + g.ten + "|" + g.tip + "|" + g.kumas + "|" + g.sirt;
+            string bas = "|" + g.sac + "|" + g.sacModel + "|" + g.sapka + "|" + g.yuz + "|" + g.bant + (g.sacParla ? "|p" : "");
+            string govde = "|" + g.bilek + "|" + g.kol + "|" + g.bel + "|" + g.sort, alt = "|" + g.ayakkabi + "|" + g.aykModel + "|" + g.ayak + "|" + g.sort;
+            string dar = kat == Kozmetik.SAC || kat == Kozmetik.SAPKA || kat == Kozmetik.YUZ ? ortak + bas : kat == Kozmetik.KOL ? ortak + govde : kat == Kozmetik.AYAK ? ortak + alt : ortak + bas + govde + alt;
+            return "kc|" + kat + "|" + id + "|" + Ayar.model + "|" + dar;
+        }
         // Önbellekte varsa hemen döner (kart kurulurken çizim beklemesin); yoksa null: çağıran Dene'yi sırayla, kare kare çağırır.
         public static Texture DeneHazir(string kat, string id)
         {

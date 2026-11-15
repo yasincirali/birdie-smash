@@ -190,6 +190,13 @@ namespace BirdieSmash.Game
             foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect", "poor" }) { string tt = t, qq = q; isitSira.Enqueue(() => Vurus(tt, qq, false, false, false, true)); }
             isitSira.Enqueue(() => Vurus("clear", "good", false, false, true, true)); isitSira.Enqueue(() => Vurus("drop", "good", false, false, true, true));
             isitSira.Enqueue(() => Vurus("jump", "good", false, false, false, true));
+            // İnceleme 2026-11-15 12:05 #1: kesme (slice) vuruşu anahtara girdiği hâlde ısıtılmıyordu; oturumun ilk aldatmasında
+            // (oyunun ustalık anı) iki tampon + yankı o vuruş karesinde sentezleniyordu. Slice poor'da açılmaz (Aldatma:241), bu
+            // yüzden yalnız good/perfect, iki taraf. Rakibin tam smacı ve sıçrama perfect'i de aynı delikti.
+            foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect" }) foreach (var op in new[] { false, true })
+            { string tt = t, qq = q; bool oo = op; isitSira.Enqueue(() => Vurus(tt, qq, true, false, false, oo)); }
+            isitSira.Enqueue(() => Vurus("smash", "perfect", false, true, false, true)); isitSira.Enqueue(() => Vurus("smash", "good", false, true, false, true));
+            isitSira.Enqueue(() => Vurus("jump", "perfect", false, false, false, true));
             ArtKur();
         }
         // Ralli sesleri (İnceleme turu 2026-11-10 17:08 #4): ralli notası (15 basamak × 3 renk) ve perfect serisi tonları (13)

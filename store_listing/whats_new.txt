@@ -1,4 +1,10 @@
 === UNITY ===
+Ayarlar anahtarları, raket kıyası ve akıcılık (15 Kasım öğle):
+- Ayarlar'da Ses, Müzik, Titreşim ve Hareketi azalt artık tek bir kartta, aralarında ince çizgiyle. Anahtara dokununca top yerinde kayıyor ve renk yumuşakça değişiyor; yanındaki "açık/kapalı" yazısı kalktı (durumu topun yeri ve tik gösteriyor).
+- Dolap'ta bir raketi denerken Teknik sayfada her ölçünün altında seninkine göre fark yazıyor: "seninkinden −5 g", "seninki esnek" gibi.
+- Oyunun ilk kesme (slice) vuruşunda ve rakibin ilk tam smacında ses artık önceden hazır; o vuruşta takılma olmamalı.
+- Dolap'ta raket ya da ayakkabı rengini değiştirince saç ve şapka resimleri baştan çizilmiyor; boş kutular daha az.
+Nasıl denenir: Ayarlar'ı aç: dört anahtar tek kartta olmalı; birine dokun, top kayarak yer değiştirmeli (Hareketi azalt açıkken anında). Dolap > Raket'te başka bir rakete dokun, Teknik sayfayı aç: ağırlık ve denge altında fark yazmalı. Yeni bir maçta ilk aldatma vuruşunu yap: takılma hissedilmemeli. Raket rengini değiştirip Şapka rafına dön: resimler hemen görünmeli.
 Dolap sırası, dünya sırası ve rakip smacı (15 Kasım sabah):
 - Dolap raflarında eşyalar artık seviyeye göre diziliyor: açabildiklerin başta, kilitliler sonda. Önceden yeni paketler sona eklendiği için Sv 3 saçı Sv 15 kilidinin arkasında kalıyordu.
 - Yeni bir kariyer basamağını kazanınca maç sonu kartında dünya sıran da yazıyor (ör. "Dünya 1.360 (−480)"). Kariyer sekmesine dönünce sayı eskisinden yenisine akarak iniyor.

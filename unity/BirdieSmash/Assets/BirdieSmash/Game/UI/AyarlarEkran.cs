@@ -65,11 +65,14 @@ namespace BirdieSmash.Game
             int ks = System.Array.IndexOf(GameRoot.KAMERA_SIRA, Ayar.kamera);
             if (ks >= 0) c.Add(Yazi(L.T(KAMERA_ACIK[ks]), 12, "soluk"));
             c.Add(Grup(L.T("Ses ve his")));
-            c.Add(AnahtarSatir(L.T("Ses"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Degisti(); }));
-            c.Add(AnahtarSatir(L.T("Müzik"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.Kaydet(); Degisti(); }));
-            c.Add(AnahtarSatir(L.T("Titreşim"), Ayar.titresim, () => { Ayar.titresim = !Ayar.titresim; Ayar.Kaydet(); if (Ayar.titresim) Yerel.Hap("tick"); Degisti(); }));
-            c.Add(AnahtarSatir(L.T("Hareketi azalt"), Ayar.reduce, Ayar.reduceSistem ? (System.Action)null : () => { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.Kaydet(); Degisti(); },
-                Ayar.reduceSistem ? L.T("Sistem ayarından") : null));
+            // İnceleme 2026-11-15 12:05 #4: dört ayrı cam düğme yerine tek liste grubu (§6.4); yenileme geçiş bitince (DegistiSonra).
+            // Hareketi azalt kendi değerini değiştirdiği için DegistiSonra açılırken bekler, kapanırken hemen yeniler: ikisi de doğru.
+            c.Add(ListeGrup(
+                AnahtarSatir(L.T("Ses"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); DegistiSonra(); }),
+                AnahtarSatir(L.T("Müzik"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.Kaydet(); DegistiSonra(); }),
+                AnahtarSatir(L.T("Titreşim"), Ayar.titresim, () => { Ayar.titresim = !Ayar.titresim; Ayar.Kaydet(); if (Ayar.titresim) Yerel.Hap("tick"); DegistiSonra(); }),
+                AnahtarSatir(L.T("Hareketi azalt"), Ayar.reduce, Ayar.reduceSistem ? (System.Action)null : () => { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.Kaydet(); DegistiSonra(); },
+                    Ayar.reduceSistem ? L.T("Sistem ayarından") : null)));
             // Seyirci, "Ses ve his" grubunun SONUNDA (2026-11-14 inceleme, fikir 17:05 #1): 13 Kas'ta Grup başlığına çevrilince
             // Titreşim ve Hareketi azalt görsel olarak ve VoiceOver başlık gezintisinde "Seyirci" altına düşmüştü.
             // Seyirci (2026-11-11 inceleme, fikir 23:05 #6): kulaklıkla raket sesini net duymak isteyen için; üç çip, seçili ✓ + yazı (Cip).
