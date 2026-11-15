@@ -40,7 +40,7 @@ onay beklemeden yap, sonunda Türkçe özetle; push saatleri kuralı (hafta içi
   yazı hiçbir dilde/boyda üst üste binmez, yan boşluklar ve düğme içi ortalama simetrik. UI PR'ında `ekran/kisa-yazi-*`
   turu `yazi_tasma.txt` + `yazi_cakisma.txt` "toplam 0" ister.
   15 Kas (yasin: "menüleri kolaylaştır, anlaşılır ve estetik kıl; HIG + glassmorphism, renkte best practice"): §7 sadelik (ekran başına tek iş, tek birincil eylem,
-  öğe bütçesi, kademeli açma), §8 renk rol tablosu + 60-30-10 + ölçülmüş kontrast, §9 denetim listesi; her UI PR'ı §9'u yanıtlar.
+  öğe bütçesi, kademeli açma), §8 renk rol tablosu + 60-30-10 + ölçülmüş kontrast, §9 denetim listesi, §10 gerçek tasarım (AI slop yok); her UI PR'ı §9'u yanıtlar.
 
 ## Skill ve MCP yönlendirmesi (yasin 2026-10-29: "Unity oyuna Unity, Flutter'a Flutter")
 
@@ -52,6 +52,7 @@ Kod yazmadan önce ilgili skill çağrılır; uymuyorsa özette "skill dışı" 
 | Karakter, rig, klip (`tool/karakter/`) | `birdie-karakter`, `3d-animator` | `blender` (yalnız PC) |
 | Flutter kabuğu (`lib/`, `ios/`, WebView, haptic, devir kanalı) | `flutter-architecture`, `flutter-expert` ⚠️, `flutter-testing` | `dart` |
 | Menü/ekran tasarımı, UI cilası | `ui-ux-pro-max`, `emil-design-eng` | `ui-ux-pro-mcp` |
+| AI slop denetimi (yasin 2026-11-15: "AI slop görsel yok, incelikli ve zarif gerçek tasarım") | görsel/arayüz `unslop`, oyuncuya görünen metin `no-ai-slop` (petergyang/no-ai-slop, MIT); kural `docs/arayuz_tasarim_dili.md` §10 | — |
 | Menü/HUD hareketi, geçiş, animasyon denetimi | `animate`, `apple-design`, `design-motion-principles`; denetim `review-animations`, `improve-animations`, `find-animation-opportunities`; ad bulma `animation-vocabulary` | — |
 | Tasarım sistemi, token, bileşen kuralı | `design-system` (yargısı alınır, CSS sözdizimi alınmaz; kural kaynağı `docs/arayuz_tasarim_dili.md`) | `ui-ux-pro-mcp` |
 | Hata / çökme / stack trace | `debugging-wizard`, sonra `uw-unity-debugging` | — |

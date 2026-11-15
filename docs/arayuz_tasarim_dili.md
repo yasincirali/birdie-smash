@@ -1,6 +1,6 @@
 # Birdie Smash arayüz tasarım dili
 
-> Son güncelleme 15 Kasım 2026 (yasin: "UI menüleri kolaylaştırma, anlaşılır kılma ve estetik olarak güzel gözükme hedefimiz var; Apple HIG ve glassmorphism kullanabilirsin, renk seçimleri için best practice'lerden örnek al; sonraki update'ler buradan örnek alsın"): §7 sadelik ve anlaşılırlık, §8 renk, §9 ekran denetim listesi eklendi; §6.1'e katman sırası.
+> Son güncelleme 15 Kasım 2026 (yasin: "UI menüleri kolaylaştırma, anlaşılır kılma ve estetik olarak güzel gözükme hedefimiz var; Apple HIG ve glassmorphism kullanabilirsin, renk seçimleri için best practice'lerden örnek al; sonraki update'ler buradan örnek alsın"): §7 sadelik ve anlaşılırlık, §8 renk, §9 ekran denetim listesi, §10 gerçek tasarım (AI slop yok) eklendi; §6.1'e katman sırası.
 
 Kaynak: yasin 14 Kasım 2026 ("uygulama genelinde simetri, üst üste binen yazı vs kontrol edelim, tasarım dili kuralları için bir MD oluştur, ona göre yapsın"). Menü (UI Toolkit, `Game/UI/`, `Resources/ui/menu_stil.uss`) ve maç HUD'u (IMGUI, `Game/Hud.cs`) için **her** ekran değişikliği bu kurallara uyar. Kozmetik eşya dili ayrıdır: `docs/kozmetik_tasarim_dili.md`.
 
@@ -170,4 +170,18 @@ Kısa "HIG kontrolü" bölümüne şu sorular yanıtlanır:
 5. Renkler rol tablosuna uyuyor mu; turuncu yalnız eylem/seçili mi; anlam yalnız renkle mi verilmiş (§8)?
 6. Dokunma ≥44, yazı ×2'de taşma/çakışma yok, hareketi azalt, erişim etiketi (§1, §3, §5)?
 7. Dokunuşta takılma yok: kayıt `KaydetSonra`, sayfa yerinde güncelleniyor mu (§7.8)?
+8. `unslop` işaret listesi ve §10.2 temiz mi; yeni metin `no-ai-slop` süzgecinden geçti mi?
+
+## 10. Gerçek tasarım: AI slop yok
+
+Kaynak: yasin 15 Kasım 2026 22:20 ("AI slop görseller istemiyoruz; gerçek bir tasarım, arkasında düşünülmüş incelik ve zarafette bir oyun UI ve menü tasarımı istiyoruz"). Denetim iki skill'le yapılır: görsel/arayüz için `unslop` (`references/signs.md`), oyuncuya görünen metin (EN menü, mağaza, TestFlight notu) için `no-ai-slop` (petergyang/no-ai-slop, MIT; Türkçe metinde aynı yargı).
+
+Zarafet ölçütü: her öğenin bir nedeni vardır ve neden kod yorumunda yazar. "Güzel dursun" tek başına neden değildir.
+
+1. **Oyunun kendi dili**: arayüz badminton ve "Gün Batımı Salonu"ndan beslenir: tüy topun yayı, file çizgisi, salon ışığı, skor tabelası. Jenerik "mobil oyun" kalıbı (parlak gradyanlı düğme, her yerde yıldız patlaması, metalik çerçeve, sandık açma ışıması) kullanılmaz.
+2. **AI slop görsel işaretleri** (görürsen kaldır): amaçsız mor-mavi gradyan lekeleri; her karta aynı parıltı/gölge; emoji ya da karışık stilde simge (simge seti tek: aynı çizgi kalınlığı, aynı köşe yuvarlaklığı, `Ikonlar`); ortalanmış uzun paragraf; her başlığın yanında rozet; anlamsız 3B "glossy" yüzey; stok illüstrasyon havası; aynı bilgiyi üç kez söyleyen kart; rastgele eğik yerleşim.
+3. **İncelik ayrıntıları** (bunlar kaliteyi taşır): optik hizalama (simge yazının x-yüksekliğine ortalı, ▶ gibi üçgen simgeler sağa 1 pt kaydırılır); sayılar sabit genişlikte (değişince titremez); başlık ile gövde arasında net ağırlık farkı (Baloo başlık, Nunito gövde, üç boy yeterli); ışık hep yukarıdan (cam üst kenarı açık, alt kenar koyu, tutarlı); basılı durum her düğmede aynı (%98 + bir ton açık, 80 ms); boş durumlar bile tasarlanmış (tek cümle + tek eylem, "veri yok" değil).
+4. **Az ama doğru**: bir ekranda en fazla bir "an" (ödül, yükseltme, yeni eşya) hareketli olur; geri kalan sakin durur. Sakinlik zarafetin yarısıdır.
+5. **Metin insan sesi**: kısa, somut, oyuncuya hitap eden ("Raketini seç", "3 maç kaldı"). Pazarlama dili, abartı ("muhteşem", "inanılmaz"), "sadece X değil, Y" kalıbı, üçlü sıfat dizisi yok (`no-ai-slop`).
+6. **Kanıt gerçek kareyle**: tasarım kararı mock-up'la değil ekran turu karesiyle (`ekran-sonuc`) doğrulanır; önce/sonra artifact'i gerçek oyun karesi gösterir.
 
