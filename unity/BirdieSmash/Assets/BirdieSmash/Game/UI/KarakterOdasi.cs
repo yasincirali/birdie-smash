@@ -454,7 +454,7 @@ namespace BirdieSmash.Game
                 Erisim.Etiket(k, L.T("Beden tipi") + ", " + L.T(o.ad) + ", " + durum + (dn == o.id ? ", " + L.T("deneniyor") : ""), "dugme", du == ModelDurum.Secili);
                 iz.Add(k);
             }
-            var hvo = Kozmetik.Bul(Kozmetik.TIP, dn ?? sec); if (hvo != null && hvo.aks != null) c.Add(Yazi(L.T("Hayvan tipinde saç ve ten rengi görünmez. Kulaklar şapkanın, kuyruk bel eşyasının altında kalır."), 12, "soluk"));   // 2026-11-15 hayvan tipi: neyin neden görünmediği yazılır
+            var hvo = Kozmetik.Bul(Kozmetik.TIP, dn ?? sec); if (hvo != null && hvo.aks != null) c.Add(Yazi(L.T("Bu tipte saç ve ten rengi görünmez. Kulak ya da anten şapkanın, kuyruk bel eşyasının altında kalır."), 12, "soluk"));   // 2026-11-15 hayvan tipi: neyin neden görünmediği yazılır
             if (dn != null) { var o = Kozmetik.Oge(Kozmetik.TIP, dn); DenemeKart(c, Kozmetik.TIP, dn, o.ad, o.fiyat, o.sv, Kozmetik.Durum(gr, Kozmetik.TIP, dn, sec), Kozmetik.AlOlur(gr, Kozmetik.TIP, dn, sec)); }
         }
 

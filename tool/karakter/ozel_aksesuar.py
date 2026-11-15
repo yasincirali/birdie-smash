@@ -1665,7 +1665,36 @@ def hv_tavsan_kulak():
 def hv_tavsan_kuyruk():
     ag = Ag(); top(ag, '#ffffff', (0, -.08, -.58), .24, 8, 5); ag.yaz('hv_tavsan_kuyruk', 3)
 
-HAYVAN = {f.__name__: f for f in (hv_kedi_kafa, hv_kedi_kulak, hv_kedi_kuyruk, hv_panda_kafa, hv_panda_kulak, hv_panda_kuyruk, hv_tavsan_kafa, hv_tavsan_kulak, hv_tavsan_kuyruk)}
+# ---- Robot tipi (2026-11-15, yön notu: hayvandan sonra robot; aynı tarif, ön ek yine hv_ = "başı örten tip parçası") ----
+# Kask kabuğu hayvanla aynı ölçü (şapka/yüz eşyası sarmalayıcıları değişmeden çalışsın). Yüz bir vizör bandı: büyük yama
+# merkezden yelpazeyle kürenin içine gömülüyordu (kiriş), bu yüzden bant ızgara olarak yüzeye serilir.
+def hv_bant(ag, renk, x0, x1, y0, y1, e=.035, nx=8, ny=3):
+    P = lambda i, j, ee: (x0 + (x1 - x0) * i / nx, y0 + (y1 - y0) * j / ny, hv_z(x0 + (x1 - x0) * i / nx, y0 + (y1 - y0) * j / ny, ee))
+    for i in range(nx):
+        for j in range(ny): ag.dortgen(renk, P(i, j, e), P(i + 1, j, e), P(i + 1, j + 1, e), P(i, j + 1, e))
+        ag.dortgen(renk, P(i, 0, -.02), P(i + 1, 0, -.02), P(i + 1, 0, e), P(i, 0, e)); ag.dortgen(renk, P(i, ny, e), P(i + 1, ny, e), P(i + 1, ny, -.02), P(i, ny, -.02))
+    for j in range(ny):
+        ag.dortgen(renk, P(0, j, e), P(0, j + 1, e), P(0, j + 1, -.02), P(0, j, -.02)); ag.dortgen(renk, P(nx, j, -.02), P(nx, j + 1, -.02), P(nx, j + 1, e), P(nx, j, e))
+RB_M, RB_K, RB_I, RB_T = '#a9bccd', '#1f2a38', '#62e6ff', '#ff8a3c'   # metal, vizör/kablo, ışık, turuncu vurgu
+def hv_robot_kafa():
+    ag = Ag(); hv_kafa(ag, RB_M); hv_bant(ag, RB_K, -.98, .98, -.72, -.10)
+    for s in (-1, 1):
+        hv_yama(ag, RB_I, (s * .50, -.40), .17, .20, .07, n=10); hv_yama(ag, RB_T, (s * 1.02, -.92), .085, .085, .03, n=8)
+    hv_bant(ag, RB_K, -.30, .30, -1.04, -.90, .03, 4, 1)   # ağız ızgarası: koyu yuva + üç ışık çizgisi
+    for x in (-.17, 0, .17): hv_bant(ag, RB_I, x - .045, x + .045, -1.01, -.93, .05, 1, 1)
+    ag.yaz('hv_robot_kafa', 0)
+def hv_robot_kulak():   # anten + yan kulaklık kapakları; şapka takılınca gizlenir (anten şapkayı delmesin)
+    ag = Ag(); silindir(ag, RB_K, (0, 1.04, 0), (0, 1.52, 0), .075, 6); top(ag, RB_T, (0, 1.66, 0), .21, 8, 5)
+    for s in (-1, 1): silindir(ag, RB_K, (s * 1.34, -.36, .03), (s * 1.60, -.36, .03), .34, 10); silindir(ag, RB_T, (s * 1.58, -.36, .03), (s * 1.64, -.36, .03), .15, 8)
+    ag.yaz('hv_robot_kulak', 0)
+def hv_robot_kuyruk():   # şarj kablosu: ucunda fiş
+    ag = Ag()
+    boru(ag, RB_K, [((0, -.08, -.42), .055), ((0, -.30, -.70), .055), ((0, -.36, -1.0), .055), ((0, -.14, -1.24), .055), ((0, .20, -1.28), .055)], 6)
+    kutu(ag, RB_T, (-.12, .18, -1.38), (.12, .40, -1.18))
+    for s in (-1, 1): kutu(ag, RB_M, (s * .06 - .02, .40, -1.31), (s * .06 + .02, .56, -1.25))
+    ag.yaz('hv_robot_kuyruk', 3)
+
+HAYVAN = {f.__name__: f for f in (hv_robot_kafa, hv_robot_kulak, hv_robot_kuyruk, hv_kedi_kafa, hv_kedi_kulak, hv_kedi_kuyruk, hv_panda_kafa, hv_panda_kulak, hv_panda_kuyruk, hv_tavsan_kafa, hv_tavsan_kulak, hv_tavsan_kuyruk)}
 
 
 KALEM = {
