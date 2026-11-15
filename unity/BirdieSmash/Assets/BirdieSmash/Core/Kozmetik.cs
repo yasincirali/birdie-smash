@@ -25,7 +25,7 @@ namespace BirdieSmash.Core
     public class KozmetikOge { public string id, ad, n, varlik, paket, nadir, renk, koleksiyon, aks; public int sv = 1, fiyat; public bool bant = true, garip; }
 
     // Rakibin görünüşü (stil.json gorunum). Boş alan = varsayılan (ilk öğe / modelin rengi).
-    public class RakipGorunum { public string tip, sac, sacRenk, ten, ayakkabi, aykRenk; }
+    public class RakipGorunum { public string tip, sac, sacRenk, ten, ayakkabi, aykRenk, sapka; }
 
     public static class Kozmetik
     {
@@ -143,6 +143,20 @@ namespace BirdieSmash.Core
         // Seviye gelince açılanlar (Profil "Sıradaki açılış").
         public static List<KozmetikOge> Acilan(string kat, int sv) { var l = new List<KozmetikOge>(); foreach (var o in Liste(kat)) if (o.sv == sv) l.Add(o); return l; }
 
+        // Rakip çeşitliliği (2026-11-15, yasin: "Rakip çeşitliliği de otomasyonda olmalı ve oyun karakterleri ve tipleri değişmeli
+        // sürekli"): tur = oynanan maç sayısı. Rakibin tipi her maçta katalogdaki sıradaki tipe geçer (insan bedenleri, hayvanlar,
+        // robot; yeni tip karakter.json'a girince kendiliğinden havuza girer, kod değişmez). Üç maçta bir de şapka takar. Saç, ten
+        // ve ayakkabı rakibin kimliğinden kalır (insan bedeninde tanınır). Rastgele değil belirlenimli: maç kartındaki portre,
+        // sahadaki oyuncu ve Hud aynı turu okur, aynı görünüşü verir; ardışık iki maçta tip hiç aynı olmaz (N > 1).
+        public static RakipGorunum RakipTur(string stilId, int tur)
+        {
+            var r = Rakip(stilId); if (r == null) return null; var T = Liste(TIP); if (T.Length < 2) return r;
+            int h = 0; foreach (char c in stilId) h = (h * 31 + c) & 0x7fffff; if (tur < 0) tur = 0;
+            int b = 0; for (int i = 0; i < T.Length; i++) if (T[i].id == r.tip) b = i;
+            var y = new RakipGorunum { tip = T[(b + tur + h % T.Length) % T.Length].id, sac = r.sac, sacRenk = r.sacRenk, ten = r.ten, ayakkabi = r.ayakkabi, aykRenk = r.aykRenk };
+            var S = Liste(SAPKA); if (S.Length > 0 && (h + tur) % 3 == 0) y.sapka = S[(h / 7 + tur * 5) % S.Length].id;
+            return y;
+        }
         public static RakipGorunum Rakip(string stilId) { Yukle(); RakipGorunum r; return stilId != null && rakip.TryGetValue(stilId, out r) ? r : null; }
 
         static void Yukle()
