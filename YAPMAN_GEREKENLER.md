@@ -275,7 +275,7 @@ Her dil için (sağ üst dil menüsü) ilgili klasördeki dosyayı yapıştır:
      iOS App › 1.0 Prepare for Submission › sağ üstten dil seç › **Keywords**. Olduğu gibi, virgülden sonra boşluksuz:
      - Türkçe: `günlük maç,tüy top,raket,spor oyunu,file,smaç,ralli,kariyer,turnuva,arcade,tek oyunculu,offline`
      - English (U.S.): `daily match,shuttlecock,racket,sports,serve,net,rally,career,tournament,arcade,offline,single player`
-     Kaynak `store_listing/<dil>/keywords.txt` (ikisi de 100 karakter sınırının altında).
+     Kaynak `store_listing/<dil>/keywords.txt` (ikisi de 100 karakter sınırı içinde).
 3. ~~İkinci kategori Arcade olsun mu?~~ Karar (2026-11-07): Sports + Arcade (yukarıda B.4).
 
 ## Reklam alanı (2026-11-06)
