@@ -409,7 +409,8 @@ namespace BirdieSmash.Game
             if (!M.easy && M.ogr == null) Ayar.kosIpucu = true;   // Hud.KosIpucu: koşu sende ilk maç ipucu bir kez
             // Beceri unvanı (2026-11-07 inceleme): maçtan önceki kazanılmış beceri unvanları; maç sonu kartı yeni açılanı tek satırla söyler.
             var beceri0 = Ayar.ilerleme != null ? Karakter.BeceriKazanilan(Ayar.ilerleme) : null;
-            if (M.ogr == null && Ayar.ilerleme != null) Ayar.ilerleme.MacSay(M.smashes, M.smacKarsila, M.deceives);   // Profil istatistiği (2026-10-26; cihazda)
+            if (M.ogr == null && Ayar.ilerleme != null) Ayar.ilerleme.MacSay(M.smashes, M.smacKarsila, M.deceives);
+            if (M.ogr == null && M.stil != null) PlayerView.RakipTurIlerle(M.stil.id);   // 2026-11-15: bu rakip bir sonraki maçta başka tipte gelir   // Profil istatistiği (2026-10-26; cihazda)
             // Yardım kademesi (Core/Ilerleme.Yardim): Usta yolu dışındaki her maç. Kayıpta sonuç ekranı söyler (gizli kolaylık değil).
             // 2026-11-10 inceleme: yardım yalnız Kolay/Orta seçen oyuncuya uygulanır (Secenek: Ayar.zorluk ≤ 1; 2026-11-14 koşudan ayrıldı). Zor/Usta'yı bilerek seçen
             // oyuncunun rakibi gizlice yavaşlamasın; kademe sayılmaya devam eder (kayıp sayacı) ve 3+ kayıpta sonuç kartı kademe
