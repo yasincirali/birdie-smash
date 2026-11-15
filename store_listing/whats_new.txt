@@ -1,4 +1,7 @@
 === UNITY ===
+Oyun küçüldü (15 Kasım):
+- Artık seçilemeyen iki eski oyuncu modeli (Gerçekçi ve Sade) oyundan çıkarıldı; indirme boyutu yaklaşık 12 MB küçüldü. Bu modellerden biri seçili kalmışsa oyuncun Oyuncak 3B olarak görünür; forma, renk, saç ve aksesuar seçimlerin durur.
+Nasıl denenir: Dolap > Beden'i aç: en üstte yalnız Oyuncak 3B ve Tüycük olmalı. Bir maç oyna: oyuncun ve rakibin her zamanki gibi görünmeli. Önceden Gerçekçi ya da Sade seçiliyse oyuncun Oyuncak 3B olarak gelmeli, Tüy ve eşyaların eksilmemeli.
 Ayarlar anahtarları, raket kıyası ve akıcılık (15 Kasım öğle):
 - Ayarlar'da Ses, Müzik, Titreşim ve Hareketi azalt artık tek bir kartta, aralarında ince çizgiyle. Anahtara dokununca top yerinde kayıyor ve renk yumuşakça değişiyor; yanındaki "açık/kapalı" yazısı kalktı (durumu topun yeri ve tik gösteriyor).
 - Dolap'ta bir raketi denerken Teknik sayfada her ölçünün altında seninkine göre fark yazıyor: "seninkinden −5 g", "seninki esnek" gibi.

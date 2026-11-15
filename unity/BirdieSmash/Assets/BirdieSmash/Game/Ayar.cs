@@ -245,8 +245,11 @@ namespace BirdieSmash.Game
         public static bool ModelSecenek(string m) { return m == "oyuncak" || m == "tuycuk"; }
         public static bool ModelVar(string m)
         {
-            if (m == "oyuncak" || m == "rocketbox") return true;
-            if (m != "sade" && m != "tuycuk") return false; // Tur 2: varlık sınaması küçük <model>_clips.json ile (FBX ile hep birlikte gelir; PlayerView onu da okur): FBX'i
+            // 2026-11-15 (yasin: "kaldır"): Gerçekçi (rocketbox) ve Sade'nin FBX ve dokuları (~15 MB) build'den çıktı; 7 Kasım'dan
+            // beri yeni oyuncuya sunulmuyorlardı. Kayıtlı "rocketbox"/"sade" seçimi Yukle'de Oyuncak 3B'ye düşer (dosya yok); beden
+            // tipi, saç, renk ve aksesuar seçimleri kayıtta durur ve Oyuncak'ta görünür. Kod yolları kaldı: FBX geri konursa çalışır.
+            if (m == "oyuncak") return true;
+            if (m != "rocketbox" && m != "sade" && m != "tuycuk") return false; // Tur 2: varlık sınaması küçük <model>_clips.json ile (FBX ile hep birlikte gelir; PlayerView onu da okur): FBX'i
             // yüklemek (ağ + 26 klip, ~2 MB) o modeli seçmeyen oyuncuda da her açılışta Ayar.Yukle'de belleğe alıyordu.
             int v;
             if (!modelVar.TryGetValue(m, out v)) { var js = Resources.Load<TextAsset>("karakter/" + m + "_clips"); v = js != null ? 1 : 0; if (js != null) Resources.UnloadAsset(js); modelVar[m] = v; }

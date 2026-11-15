@@ -343,7 +343,7 @@ namespace BirdieSmash.Game
             var kart = Kart("deneme-kart"); c.Add(kart); if (gez.sekme == Sekme.Soyunma) kart.AddToClassList("deneme-kart--dolap");
             kart.Add(Yazi(L.T("Ayakkabı modeli bu modelde görünmez"), 15, "kalin"));
             kart.Add(Yazi(metin, 13, "ipucu"));
-            kart.Add(Dugme(L.T("Gerçekçi'ye geç"), () => { Ayar.model = "rocketbox"; Ayar.Kaydet(); root.ModelDegisti(); Tik(); SoyunmaGovdeKur(true); }, "dugme--birincil", null, 16));
+            if (Ayar.ModelVar("rocketbox")) kart.Add(Dugme(L.T("Gerçekçi'ye geç"), () => { Ayar.model = "rocketbox"; Ayar.Kaydet(); root.ModelDegisti(); Tik(); SoyunmaGovdeKur(true); }, "dugme--birincil", null, 16));
             Erisim.Etiket(kart, L.T("Ayakkabı modeli bu modelde görünmez") + ". " + metin, "metin");
         }
 

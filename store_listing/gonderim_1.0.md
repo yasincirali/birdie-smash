@@ -91,7 +91,7 @@ ASC › iOS App › **1.0 Prepare for Submission**:
    (AdMob app-ads.txt dosyasını bu alan adında arar; dosya yayında).
 3. **Screenshots › iPhone 6.9"**: `store_listing/gorsel/<dil>/6.9/01…05` sırayla (6.5" isteğe bağlı, aynı klasörün 6.5'i).
 4. **Build** › + › 1.0.0 sürümlü en yeni build (bu PR birleştikten sonraki ilk TestFlight build'i ya da daha yenisi).
-5. Copyright: `2026 <adın soyadın>`.
+5. Copyright: `2026 <adın soyadın>` (karar 2026-11-15: kendi adın, Apple hesabındaki yazımıyla; © yazma).
 6. **App Review Information**: ad, telefon, e-posta senin; **Sign-in required işaretsiz**; Notes:
    "Offline single-player game, no account. Ads: AdMob banner in menus and an optional rewarded ad after a match.
    Restore Purchases is at the bottom of the Feather shop."
