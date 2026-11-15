@@ -68,7 +68,7 @@ namespace BirdieSmash.Game
         }
         void KombinUygula()
         {
-            DenemeSil(); Ayar.GearHesap(); Ayar.Kaydet(); root.vitrin.Yenile(); kirli[(int)Sekme.Profil] = true; Degisti();
+            DenemeSil(); Ayar.GearHesap(); Ayar.KaydetSonra(); root.vitrin.Yenile(); kirli[(int)Sekme.Profil] = true; Degisti();
             SoyunmaGovdeKur(true);
         }
 

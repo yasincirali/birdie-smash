@@ -279,7 +279,7 @@ namespace BirdieSmash.Game
         public static int GelisimBos { get { return gear == null || gelisim == null ? 0 : Gelisim.Bos(gelisim, gear.Seviye()); } }
         public static bool GelisimVer(int dal) { if (!Gelisim.Ver(gelisim, dal, gear.Seviye())) return false; GelisimYaz(); return true; }
         public static bool GelisimGeriAl(int dal) { if (!Gelisim.GeriAl(gelisim, dal)) return false; GelisimYaz(); return true; }
-        static void GelisimYaz() { try { PlayerPrefs.SetString(Gelisim.ANAHTAR, Gelisim.Yaz(gelisim)); PlayerPrefs.Save(); } catch { } GearHesap(); }
+        static void GelisimYaz() { try { PlayerPrefs.SetString(Gelisim.ANAHTAR, Gelisim.Yaz(gelisim)); } catch { } KaydetSonra(); GearHesap(); }
         // Aldatıcı vuruşlar (2026-10-26, Core/Aldatma): seviye kapısı maça buradan gider (her maç kurulumunda GearHesap çağrılır);
         // ilk fırsat açıklaması bir kez gösterilir, görülenler ilerleme kaydında (tuytop_ilerleme.aldatmaGor).
         static void AldatmaKur()
@@ -300,8 +300,19 @@ namespace BirdieSmash.Game
         public static bool SacParla { get { string id; if (!GORUNUM.TryGetValue("sac", out id)) return false; var o = Karakter.Oge("sac", id); return o != null && o.parla && o.renk != null && (gear == null || o.sv <= gear.Seviye()); } }
         // Seçili raket kaplaması ışın mı (parla = ışın; seviyesi gelmemişse yok sayılır).
         public static bool KaplamaIsin { get { string id; if (!GORUNUM.TryGetValue("kaplama", out id)) return false; var o = Karakter.Oge("kaplama", id); return o != null && o.parla && o.renk != null && (gear == null || o.sv <= gear.Seviye()); } }
+        // Menüde ertelenen kayıt (2026-11-15 inceleme, fikir 22:05 #1; yasin 15 Kas "takılma olmamalı"): Dolap/Ayarlar/Gelişim'de
+        // her dokunuş tam kayıt (ilerleme + görünüş JSON'ları, GearYaz/EkoYaz) ve senkron PlayerPrefs.Save ödüyordu; çip çipe hızlı
+        // dokunan oyuncu her seferinde tek kare kaybediyordu. Kozmetik seçim, ayar, gelişim puanı ve sahip olunan eşyayı takma artık
+        // yalnız kirli bayrağı koyar; GameRoot.Update son dokunuştan KAYIT_GECIK sonra (menüde) ya da sayı arasında (maçta) TEK kez
+        // yazar, arka plana geçiş (OnApplicationPause) beklemeden yazar. Satın alma, yükseltme, Tüy, IAP, ödül ve maç başlangıcı
+        // eskisi gibi hemen Kaydet() çağırır (ekonomi güvenliği): kayıp penceresi en çok KAYIT_GECIK ve yalnız görünüş/ayar.
+        public const float KAYIT_GECIK = .6f;
+        public static bool KayitKirli { get; private set; }
+        public static float KayitT { get; private set; }
+        public static void KaydetSonra() { KayitKirli = true; KayitT = Time.unscaledTime + KAYIT_GECIK; }
         public static void Kaydet()
         {
+            KayitKirli = false;
             if (ilerleme != null) { kariyer = ilerleme.Tur1Gecilen(); PlayerPrefs.SetString(Ilerleme.ANAHTAR, ilerleme.Yaz()); }
             kayit.Set("tuytop_v2", Json.Write(new Dictionary<string, object> { { "rally", (double)bestRally }, { "wins", (double)wins }, { "kariyer", (double)kariyer }, { "gorev", (double)gorev }, { "sampiyon", sampiyon } }));
             PlayerPrefs.SetString("tuytop_len", "len" + target); PlayerPrefs.SetString("tuytop_saha", saha); PlayerPrefs.SetString("tuytop_hizli_rakip", hizliRakip ?? ""); PlayerPrefs.SetString("tuytop_model", model); PlayerPrefs.SetString("tuytop_kamera", kamera);

@@ -39,7 +39,7 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Oyuncu hareketi"))); var hr = Satir("sigdir-grup"); c.Add(hr);
             for (int i = 0; i < Ayar.HAREKET_AD.Length; i++)
             {
-                int id = i; var hc = Cip(L.T(Ayar.HAREKET_AD[i]), Ayar.hareket == id, () => { Ayar.hareket = id; Ayar.Kaydet(); Degisti(); });
+                int id = i; var hc = Cip(L.T(Ayar.HAREKET_AD[i]), Ayar.hareket == id, () => { Ayar.hareket = id; Ayar.KaydetSonra(); Degisti(); });
                 Erisim.Etiket(hc, L.T(Ayar.HAREKET_AD[i]) + ". " + L.T(HAREKET_ACIK[i]), "dugme", Ayar.hareket == id); hr.Add(hc);
             }
             c.Add(Yazi(L.T(HAREKET_ACIK[Mathf.Clamp(Ayar.hareket, 0, 2)]), 12, "soluk"));
@@ -51,13 +51,13 @@ namespace BirdieSmash.Game
             // Kaydırma (2026-11-12 inceleme, fikir 07:05 #5): vuruş eşiği üç kademe; seçili kademenin tek soluk cümlesi (kamera kalıbı).
             c.Add(Grup(L.T("Kaydırma"))); var kd = Satir(); kd.AddToClassList("cip-sarar"); c.Add(kd);
             string[] Ka = { "Kısa", "Normal", "Uzun" }, KaAcik = { "Kısa ve yavaş kaydırma da vuruş sayılır", "Varsayılan eşik", "Yalnız uzun, hızlı kaydırma vuruş sayılır" };
-            for (int i = 0; i < 3; i++) { int id = i; kd.Add(Cip(L.T(Ka[i]), Ayar.kaydirma == id, () => { Ayar.kaydirma = id; Ayar.Kaydet(); Degisti(); })); }
+            for (int i = 0; i < 3; i++) { int id = i; kd.Add(Cip(L.T(Ka[i]), Ayar.kaydirma == id, () => { Ayar.kaydirma = id; Ayar.KaydetSonra(); Degisti(); })); }
             c.Add(Yazi(L.T(KaAcik[Mathf.Clamp(Ayar.kaydirma, 0, 2)]), 12, "soluk"));
             c.Add(Grup(L.T("Kamera"))); var km = Satir(); c.Add(km);
             for (int i = 0; i < GameRoot.KAMERA_SIRA.Length; i++)
             {
                 string id = GameRoot.KAMERA_SIRA[i];
-                var kc = Cip(L.T(GameRoot.KAMERA_AD[i]), Ayar.kamera == id, () => { Ayar.kamera = id; Ayar.Kaydet(); root.KameraDegisti(); Degisti(); });
+                var kc = Cip(L.T(GameRoot.KAMERA_AD[i]), Ayar.kamera == id, () => { Ayar.kamera = id; Ayar.KaydetSonra(); root.KameraDegisti(); Degisti(); });
                 Erisim.Etiket(kc, L.T(GameRoot.KAMERA_AD[i]) + ". " + L.T(KAMERA_ACIK[i]), "dugme", Ayar.kamera == id); km.Add(kc);
             }
             // 2026-11-10 inceleme (fikir 07:06 #3): çipler yalnız ad söylüyordu, farkı görmek için maça girip çıkmak gerekiyordu.
@@ -68,30 +68,30 @@ namespace BirdieSmash.Game
             // İnceleme 2026-11-15 12:05 #4: dört ayrı cam düğme yerine tek liste grubu (§6.4); yenileme geçiş bitince (DegistiSonra).
             // Hareketi azalt kendi değerini değiştirdiği için DegistiSonra açılırken bekler, kapanırken hemen yeniler: ikisi de doğru.
             c.Add(ListeGrup(
-                AnahtarSatir(L.T("Ses"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); DegistiSonra(); }),
-                AnahtarSatir(L.T("Müzik"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.Kaydet(); DegistiSonra(); }),
-                AnahtarSatir(L.T("Titreşim"), Ayar.titresim, () => { Ayar.titresim = !Ayar.titresim; Ayar.Kaydet(); if (Ayar.titresim) Yerel.Hap("tick"); DegistiSonra(); }),
-                AnahtarSatir(L.T("Hareketi azalt"), Ayar.reduce, Ayar.reduceSistem ? (System.Action)null : () => { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.Kaydet(); DegistiSonra(); },
+                AnahtarSatir(L.T("Ses"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.KaydetSonra(); DegistiSonra(); }),
+                AnahtarSatir(L.T("Müzik"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.KaydetSonra(); DegistiSonra(); }),
+                AnahtarSatir(L.T("Titreşim"), Ayar.titresim, () => { Ayar.titresim = !Ayar.titresim; Ayar.KaydetSonra(); if (Ayar.titresim) Yerel.Hap("tick"); DegistiSonra(); }),
+                AnahtarSatir(L.T("Hareketi azalt"), Ayar.reduce, Ayar.reduceSistem ? (System.Action)null : () => { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.KaydetSonra(); DegistiSonra(); },
                     Ayar.reduceSistem ? L.T("Sistem ayarından") : null)));
             // Seyirci, "Ses ve his" grubunun SONUNDA (2026-11-14 inceleme, fikir 17:05 #1): 13 Kas'ta Grup başlığına çevrilince
             // Titreşim ve Hareketi azalt görsel olarak ve VoiceOver başlık gezintisinde "Seyirci" altına düşmüştü.
             // Seyirci (2026-11-11 inceleme, fikir 23:05 #6): kulaklıkla raket sesini net duymak isteyen için; üç çip, seçili ✓ + yazı (Cip).
             var sy = Satir(); sy.AddToClassList("cip-sarar"); c.Add(Grup(L.T("Seyirci"))); c.Add(sy);   // 2026-11-13: diğer başlıklarla aynı Grup biçimi (tek düz yazı başlıktı)
-            sy.Add(Cip(L.T("Kapalı"), Ayar.seyirci == 0, () => { Ayar.seyirci = 0; Ayar.Kaydet(); Degisti(); }));
-            sy.Add(Cip(L.T("Az"), Ayar.seyirci == 1, () => { Ayar.seyirci = 1; Ayar.Kaydet(); Degisti(); }));
-            sy.Add(Cip(L.T("Normal"), Ayar.seyirci == 2, () => { Ayar.seyirci = 2; Ayar.Kaydet(); Degisti(); }));
+            sy.Add(Cip(L.T("Kapalı"), Ayar.seyirci == 0, () => { Ayar.seyirci = 0; Ayar.KaydetSonra(); Degisti(); }));
+            sy.Add(Cip(L.T("Az"), Ayar.seyirci == 1, () => { Ayar.seyirci = 1; Ayar.KaydetSonra(); Degisti(); }));
+            sy.Add(Cip(L.T("Normal"), Ayar.seyirci == 2, () => { Ayar.seyirci = 2; Ayar.KaydetSonra(); Degisti(); }));
             // Sıra anlamla (2026-11-14 inceleme, fikir 22:05 #3): oyun hissi (hareket, kaydırma, kamera) → ses → görünüm (yazı boyutu,
             // dil). Yazı boyutu eskiden kamera ile kaydırmanın arasındaydı; "vuruş tutmuyor" diyen oyuncu hareket ve kaydırmayı yan
             // yana bulur. Yazı boyutu da diğer çipli gruplar gibi seçilinin tek soluk cümlesini alır. Anahtarlar aynı.
             c.Add(Grup(L.T("Yazı boyutu"))); var yz = Satir(); c.Add(yz);
             string[] Yk = { "sistem", "normal", "buyuk" }, Ya = { "Sistem", "Normal", "Büyük" };
-            for (int i = 0; i < 3; i++) { string id = Yk[i]; var yc = Cip(L.T(Ya[i]), Ayar.yazi == id, () => { Ayar.yazi = id; Ayar.Kaydet(); Degisti(); }); Erisim.Etiket(yc, L.T(Ya[i]) + ". " + L.T(YAZI_ACIK[i]), "dugme", Ayar.yazi == id); yz.Add(yc); }
+            for (int i = 0; i < 3; i++) { string id = Yk[i]; var yc = Cip(L.T(Ya[i]), Ayar.yazi == id, () => { Ayar.yazi = id; Ayar.KaydetSonra(); Degisti(); }); Erisim.Etiket(yc, L.T(Ya[i]) + ". " + L.T(YAZI_ACIK[i]), "dugme", Ayar.yazi == id); yz.Add(yc); }
             int ys = System.Array.IndexOf(Yk, Ayar.yazi); c.Add(Yazi(L.T(YAZI_ACIK[ys < 0 ? 0 : ys]), 12, "soluk"));
             c.Add(Grup(L.T("Dil"))); var dl = Satir(); c.Add(dl);
             // "Sistem" (2026-11-12): iOS'un uygulama başına dil ayarını izler; Yazı satırındaki Sistem çipiyle aynı kalıp.
-            dl.Add(Cip(L.T("Sistem"), Ayar.dilSistem, () => { Ayar.dilSistem = true; Ayar.dil = Ayar.SistemDil(); Ayar.Kaydet(); }));
-            dl.Add(Cip("Türkçe", !Ayar.dilSistem && Ayar.dil == "tr", () => { Ayar.dilSistem = false; Ayar.dil = "tr"; Ayar.Kaydet(); }));
-            dl.Add(Cip("English", !Ayar.dilSistem && Ayar.dil == "en", () => { Ayar.dilSistem = false; Ayar.dil = "en"; Ayar.Kaydet(); }));
+            dl.Add(Cip(L.T("Sistem"), Ayar.dilSistem, () => { Ayar.dilSistem = true; Ayar.dil = Ayar.SistemDil(); Ayar.KaydetSonra(); }));
+            dl.Add(Cip("Türkçe", !Ayar.dilSistem && Ayar.dil == "tr", () => { Ayar.dilSistem = false; Ayar.dil = "tr"; Ayar.KaydetSonra(); }));
+            dl.Add(Cip("English", !Ayar.dilSistem && Ayar.dil == "en", () => { Ayar.dilSistem = false; Ayar.dil = "en"; Ayar.KaydetSonra(); }));
             // Game Center düğmesi buradan kalktı (2026-11-07 inceleme, fikir 20:09 #3): başlıksız, "Dil" grubunun parçası gibi
             // okunuyordu ve Profil › Başarımlar'da aynısı vardı. Başarımı gören oyuncu oradan geçer; Ayarlar bir öğe kısa.
             c.Add(Grup(L.T("Yardım")));

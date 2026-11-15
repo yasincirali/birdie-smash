@@ -215,7 +215,7 @@ namespace BirdieSmash.Game
             if (ps == null || ps == "cerceve")
             {
                 var kl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("kaplama")) kl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, parla = o.parla, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
-                OrnekSira(c, L.T("Çerçeve kaplaması"), kl, Ayar.GORUNUM["kaplama"], id => { Ayar.GORUNUM["kaplama"] = id; Ayar.Kaydet(); });
+                OrnekSira(c, L.T("Çerçeve kaplaması"), kl, Ayar.GORUNUM["kaplama"], id => { Ayar.GORUNUM["kaplama"] = id; Ayar.KaydetSonra(); });
             }
             if (ps == null || ps == "saft") SaftSira(c);
             if (ps == null || ps == "grip") RenkSira(c, "Grip", "grip");
@@ -223,8 +223,8 @@ namespace BirdieSmash.Game
             {
                 RenkSira(c, "Kordaj", "tel");
                 c.Add(Grup(L.T("Desen"))); var ds = Satir(); c.Add(ds);
-                ds.Add(Cip(L.T("Tek renk"), Ayar.RGOR["desen"] == "tek", () => { Ayar.RGOR["desen"] = "tek"; Ayar.Kaydet(); root.vitrin.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
-                ds.Add(Cip(L.T("Ana ve çapraz ayrı"), Ayar.RGOR["desen"] == "iki", () => { Ayar.RGOR["desen"] = "iki"; Ayar.Kaydet(); root.vitrin.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
+                ds.Add(Cip(L.T("Tek renk"), Ayar.RGOR["desen"] == "tek", () => { Ayar.RGOR["desen"] = "tek"; Ayar.KaydetSonra(); root.vitrin.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
+                ds.Add(Cip(L.T("Ana ve çapraz ayrı"), Ayar.RGOR["desen"] == "iki", () => { Ayar.RGOR["desen"] = "iki"; Ayar.KaydetSonra(); root.vitrin.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
                 if (Ayar.RGOR["desen"] == "iki") RenkSira(c, "Çapraz teller", "tel2");
             }
             if (ps == null) TeknikKur(c);
@@ -247,7 +247,7 @@ namespace BirdieSmash.Game
                 var d = new VisualElement(); d.AddToClassList("renk"); d.AddToClassList("sekil-ornek"); if (on) d.AddToClassList("renk--secili"); d.style.backgroundColor = Kit.Hex("#33233F");
                 d.Add(Ikon(RaketSekil.Ikon(id), 30, on ? TURUNCU : Color.white));
                 var y = Yazi(L.T(RaketSekil.Ad(id)), 10, "renk-kilit-yazi"); y.style.color = Color.white; d.Add(y);
-                if (!on) d.AddManipulator(new Clickable(() => { Ayar.RGOR["kafa"] = k; Ayar.Kaydet(); Tik(); root.vitrin.Yenile(); root.vitrin.RaketParca("kafa", true); SoyunmaGovdeKur(true); }));
+                if (!on) d.AddManipulator(new Clickable(() => { Ayar.RGOR["kafa"] = k; Ayar.KaydetSonra(); Tik(); root.vitrin.Yenile(); root.vitrin.RaketParca("kafa", true); SoyunmaGovdeKur(true); }));
                 Erisim.Etiket(d, L.T("Kafa şekli") + ", " + L.T(RaketSekil.Ad(id)), "dugme", on); s.Add(d);
             }
         }
@@ -256,7 +256,7 @@ namespace BirdieSmash.Game
         {
             var l = new List<Ornek> { new Ornek { id = "model", ad = "Modelin rengi", renk = null, acik = true } };
             foreach (var id in Vitrin.RAK_SIRA) l.Add(new Ornek { id = id, ad = Vitrin.RAK_AD[id], renk = Vitrin.RAK_RENK[id], acik = true });
-            OrnekSira(c, L.T("Şaft"), l, Ayar.RGOR["saft"], id => { Ayar.RGOR["saft"] = id; Ayar.Kaydet(); });
+            OrnekSira(c, L.T("Şaft"), l, Ayar.RGOR["saft"], id => { Ayar.RGOR["saft"] = id; Ayar.KaydetSonra(); });
         }
 
         // Vitrinin sol altı: Yüz · Ayak · Tutuş. 2026-11-07 (stüdyo AD2/UX3): 44×44 simge düğme; yazılı hâli altındaki kategori
@@ -332,7 +332,7 @@ namespace BirdieSmash.Game
             for (int i = 0; i < Ayar.MODELLER.Length; i++)
             {
                 string id = Ayar.MODELLER[i]; if (!Ayar.ModelVar(id)) continue; if (!Ayar.ModelSecenek(id) && Ayar.model != id) continue;
-                var ci = Cip(L.T(Ayar.MODEL_AD[i]), Ayar.model == id, () => { if (Ayar.model == id) return; Ayar.model = id; Ayar.Kaydet(); DenemeSil(); root.ModelDegisti(); karAlt = KarGecerli(id == "oyuncak" ? KAR_TIP : karAlt); KarakterOdakAyarla(); Tik(); SoyunmaGovdeKur(true); });
+                var ci = Cip(L.T(Ayar.MODEL_AD[i]), Ayar.model == id, () => { if (Ayar.model == id) return; Ayar.model = id; Ayar.KaydetSonra(); DenemeSil(); root.ModelDegisti(); karAlt = KarGecerli(id == "oyuncak" ? KAR_TIP : karAlt); KarakterOdakAyarla(); Tik(); SoyunmaGovdeKur(true); });
                 ci.style.flexBasis = new StyleLength(new Length(40, LengthUnit.Percent)); m.Add(ci);
             }
         }
@@ -343,7 +343,7 @@ namespace BirdieSmash.Game
             var kart = Kart("deneme-kart"); c.Add(kart); if (gez.sekme == Sekme.Soyunma) kart.AddToClassList("deneme-kart--dolap");
             kart.Add(Yazi(L.T("Ayakkabı modeli bu modelde görünmez"), 15, "kalin"));
             kart.Add(Yazi(metin, 13, "ipucu"));
-            if (Ayar.ModelVar("rocketbox")) kart.Add(Dugme(L.T("Gerçekçi'ye geç"), () => { Ayar.model = "rocketbox"; Ayar.Kaydet(); root.ModelDegisti(); Tik(); SoyunmaGovdeKur(true); }, "dugme--birincil", null, 16));
+            if (Ayar.ModelVar("rocketbox")) kart.Add(Dugme(L.T("Gerçekçi'ye geç"), () => { Ayar.model = "rocketbox"; Ayar.KaydetSonra(); root.ModelDegisti(); Tik(); SoyunmaGovdeKur(true); }, "dugme--birincil", null, 16));
             Erisim.Etiket(kart, L.T("Ayakkabı modeli bu modelde görünmez") + ". " + metin, "metin");
         }
 
@@ -381,7 +381,7 @@ namespace BirdieSmash.Game
             var gr = Ayar.gear; var vt = root.vitrin;
             if (kat == "ayakkabi") { if (!gr.Sec("ayakkabi", id)) return; vt.deneAyk = null; Ayar.GearHesap(); }
             else { Ayar.KOZ[kat] = id; vt.DeneYaz(kat, null); if (SevincKat(kat)) vt.Sevinc(SevOn(kat, id)); }
-            Ayar.Kaydet(); vt.Yenile(); vt.Belir(kat); kirli[(int)Sekme.Profil] = true; SoyunmaGovdeKur(true);
+            Ayar.KaydetSonra(); vt.Yenile(); vt.Belir(kat); kirli[(int)Sekme.Profil] = true; SoyunmaGovdeKur(true);
         }
         void KozAl(string kat, string id)
         {
@@ -486,7 +486,7 @@ namespace BirdieSmash.Game
             if (go != null && !go.bant && Ayar.gear.bant != "yok") c.Add(Yazi(L.T("{0} saçta kafa bandı görünmez (saçın içinde kalır); bandın etkisi sürer.", L.T(go.ad)), 12, "soluk"));
             if (dn != null) { var o = Kozmetik.Oge(Kozmetik.SAC, dn); DenemeKart(c, Kozmetik.SAC, dn, o.ad, o.fiyat, o.sv, Kozmetik.Durum(gr, Kozmetik.SAC, dn, sec), Kozmetik.AlOlur(gr, Kozmetik.SAC, dn, sec)); }
             var l = new List<Ornek>(); foreach (var o in Karakter.Gorunum("sac")) l.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, parla = o.parla, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
-            OrnekSira(c, L.T("Saç rengi"), l, Ayar.GORUNUM["sac"], id => { Ayar.GORUNUM["sac"] = id; Ayar.Kaydet(); }, true);
+            OrnekSira(c, L.T("Saç rengi"), l, Ayar.GORUNUM["sac"], id => { Ayar.GORUNUM["sac"] = id; Ayar.KaydetSonra(); }, true);
         }
 
         // ---- Ayakkabı tabanı (Oyun segmenti, 2026-10-30): seçili/denenen ayakkabı kartı (5 çubuk) + model satırları ----
@@ -549,16 +549,16 @@ namespace BirdieSmash.Game
             c.Add(Yazi(L.T("Görünüm ayakkabının üstüne giyilir: hız ve uzanma tabandaki ayakkabıdan gelir, değişmez. \"Görünüm yok\" seçince aşağıdaki model ve renk görünür."), 12, "soluk"));
             c.Add(Grup(L.T("Ayakkabı modeli · {0}", L.T(Gear.GEAR["ayakkabi"][gor].ad))));
             var cp = Satir("secim"); cp.style.flexWrap = Wrap.Wrap; c.Add(cp);
-            cp.Add(Cip(L.T("Tabanla aynı"), Ayar.AYK_GOR == "taban", () => { Ayar.AYK_GOR = "taban"; Ayar.Kaydet(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
+            cp.Add(Cip(L.T("Tabanla aynı"), Ayar.AYK_GOR == "taban", () => { Ayar.AYK_GOR = "taban"; Ayar.KaydetSonra(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
             foreach (var a in Gear.GEAR["ayakkabi"].Values)
             {
                 string id = a.id; bool sahip = gr.Sahip("ayakkabi", id), sec = Ayar.AYK_GOR != "taban" && gor == id;
-                if (sahip) cp.Add(Cip(L.T(a.ad), sec, () => { Ayar.AYK_GOR = id; Ayar.Kaydet(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
+                if (sahip) cp.Add(Cip(L.T(a.ad), sec, () => { Ayar.AYK_GOR = id; Ayar.KaydetSonra(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
             }
             c.Add(Yazi(L.T("Sahip olduğun ayakkabıların görünüşünü taşırsın; tabanın gücü değişmez. Yeni model Oyun › Ayakkabı tabanında alınır."), 12, "soluk"));
             c.Add(Dugme(L.T("Ayakkabı tabanı · Oyun"), () => { Tik(); SoyunmaSegment(0); }, null, L.T("Güç, fiyat ve çubuklar orada"), 14));
             var l = new List<Ornek>(); foreach (var o in Karakter.Gorunum("ayakkabi")) l.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
-            OrnekSira(c, L.T("Ayakkabı rengi"), l, Ayar.GORUNUM["ayakkabi"], id => { Ayar.GORUNUM["ayakkabi"] = id; Ayar.Kaydet(); }, true);
+            OrnekSira(c, L.T("Ayakkabı rengi"), l, Ayar.GORUNUM["ayakkabi"], id => { Ayar.GORUNUM["ayakkabi"] = id; Ayar.KaydetSonra(); }, true);
         }
 
         // Kartın üstüne öğe takılı baş portresi (Portre.Dene). Önbellekteyse hemen; değilse kart sırasına göre 1 karede bir çizilir
@@ -693,13 +693,13 @@ namespace BirdieSmash.Game
             var tipO = Kozmetik.Bul(Kozmetik.TIP, root.vitrin.deneTip ?? Ayar.KOZ[Kozmetik.TIP]);
             if (tipO != null && tipO.aks != null) { c.Add(Yazi(L.T("{0} tipinde ten rengi görünmez.", L.T(tipO.ad)), 12, "soluk")); return; }
             var l = new List<Ornek>(); foreach (var o in Karakter.Gorunum("ten")) l.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
-            OrnekSira(c, L.T("Ten tonu"), l, Ayar.GORUNUM["ten"], id => { Ayar.GORUNUM["ten"] = id; Ayar.Kaydet(); }, true);
+            OrnekSira(c, L.T("Ten tonu"), l, Ayar.GORUNUM["ten"], id => { Ayar.GORUNUM["ten"] = id; Ayar.KaydetSonra(); }, true);
             c.Add(Yazi(L.T("Ten tonlarının hepsi baştan açık ve ücretsiz."), 12, "soluk"));
             // Sade (2026-10-27): saç biçimi tek, saç kabuğu düz renkli parça: saç rengi burada (Saç sayfası Sade'de yok).
             if (Ayar.model == "sade")
             {
                 var sl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("sac")) sl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, parla = o.parla, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
-                OrnekSira(c, L.T("Saç rengi"), sl, Ayar.GORUNUM["sac"], id => { Ayar.GORUNUM["sac"] = id; Ayar.Kaydet(); }, true);
+                OrnekSira(c, L.T("Saç rengi"), sl, Ayar.GORUNUM["sac"], id => { Ayar.GORUNUM["sac"] = id; Ayar.KaydetSonra(); }, true);
             }
         }
 
@@ -714,11 +714,11 @@ namespace BirdieSmash.Game
             // Tüycük (2026-10-29): forma rengi gövdenin tüy rengidir (karın onun açığı); şort ağı yok, şort satırı gösterilmez (yalnız
             // görünen seçim sunulur). Gerçekçi ve Sade'de satırlar aynen.
             bool tc = Ayar.model == "tuycuk";
-            OrnekSira(c, L.T(tc ? "Tüy rengi (forma)" : "Forma rengi"), fr, gr.renk, id => { gr.renk = id; Ayar.GearHesap(); Ayar.Kaydet(); });
+            OrnekSira(c, L.T(tc ? "Tüy rengi (forma)" : "Forma rengi"), fr, gr.renk, id => { gr.renk = id; Ayar.GearHesap(); Ayar.KaydetSonra(); });
             if (Ayar.SortGorunur)
             {
                 var sl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("sort")) sl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
-                OrnekSira(c, L.T("Şort rengi"), sl, Ayar.GORUNUM["sort"], id => { Ayar.GORUNUM["sort"] = id; Ayar.Kaydet(); });
+                OrnekSira(c, L.T("Şort rengi"), sl, Ayar.GORUNUM["sort"], id => { Ayar.GORUNUM["sort"] = id; Ayar.KaydetSonra(); });
             }
             c.Add(Yazi(L.T("Renkler yalnız görünüştür, ücretsiz."), 12, "soluk"));
             c.Add(Grup(L.T("Takılı olanlar")));

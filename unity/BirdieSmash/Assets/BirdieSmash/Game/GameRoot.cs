@@ -362,8 +362,8 @@ namespace BirdieSmash.Game
         public void Devam() { paused = false; AudioListener.pause = false; input.Reset(); if (ekran == Ekran.Oyun) { sesAcT = 0; if (Ayar.ses) AudioListener.volume = 0; Uyanik(true); if (match != null && match.s != null && !match.s.dead && match.ogr == null && !geriKapali) geriT = GERI; } }
         float sesAcT = -1;
         // D5 (2026-10-31): arka planda iOS uygulamayı uyarısız kapatabilir; bekleyen kayıt ve PlayerPrefs diske yazılır.
-        void OnApplicationQuit() { Cokme.Cikis(); }
-        void OnApplicationPause(bool p) { Cokme.Durum(p); if (p) { Duraklat(); BekleyenKayit(); PlayerPrefs.Save(); Bulut.Yaz(); } }   // arka plana geçince kendiliğinden duraklar; top bir anda üstüne düşmez
+        void OnApplicationQuit() { if (Ayar.KayitKirli) Ayar.Kaydet(); Cokme.Cikis(); }
+        void OnApplicationPause(bool p) { Cokme.Durum(p); if (p) { Duraklat(); BekleyenKayit(); if (Ayar.KayitKirli) Ayar.Kaydet(); PlayerPrefs.Save(); Bulut.Yaz(); } }   // arka plana geçince kendiliğinden duraklar; top bir anda üstüne düşmez
         // Odak kaybı da duraklatır (2026-10-27, oyun incelemesi): Denetim Merkezi/Bildirim Merkezi açılması, gelen arama afişi,
         // Siri ve sistem uyarısı uygulamayı arka plana atmadan yalnız etkinliği alır (iOS willResignActive); oyun sürerken top
         // oyuncunun göremediği anda yere düşüyordu. Duraklat menüde ve maç sonunda hiçbir şey yapmaz. Yalnız telefonda: masaüstü
@@ -965,6 +965,8 @@ namespace BirdieSmash.Game
             // aynı karede yazıyordu, zafer sevinci oynarken. Sayı arasında yalnız son .15 sn'de (sevinç bitmiş, servis kurulmadan;
             // maç sayısında hiç: EndMatch yazar), maç sonunda sevinç bitince (KAYIT_ERTELE) ya da perde kapanınca. Duraklatma, menü
             // ve arka plana geçiş (OnApplicationPause) eskisi gibi hemen yazar: kayıp penceresi en çok birkaç saniye.
+            // Menüde ertelenen kayıt (Ayar.KaydetSonra, 2026-11-15): menüde son dokunuştan KAYIT_GECIK sonra; maçta sayı arası kuralına katılır.
+            if (Ayar.KayitKirli) { if (ekran == Ekran.Oyun || ekran == Ekran.Bitti) kaydetBekle = true; else if (Time.unscaledTime >= Ayar.KayitT) Ayar.Kaydet(); }
             bool sevincte = ekran == Ekran.Bitti && Time.unscaledTime < kayitErteleT && !hud.PerdeKapali;
             if ((kaydetBekle || Basarim.Bekliyor) && !sevincte && (ekran != Ekran.Oyun || paused || match == null || match.between && !match.matchDone && match.betweenT < .15f)) BekleyenKayit();
             if (ekran == Ekran.Oyun && !paused)

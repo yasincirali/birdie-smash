@@ -1,4 +1,10 @@
 === UNITY ===
+Menüler daha akıcı, Gelişim basılı tutunca dolar (15 Kasım gece):
+- Dolap'ta, Ayarlar'da ve Gelişim'de art arda hızlı dokunurken ekran artık takılmıyor; seçimler arka planda tek seferde kaydediliyor.
+- Gelişim'de + ve − düğmelerini basılı tutunca puanlar hızlanarak dağılıyor; sayfa her adımda yeniden çizilmiyor. Sayfanın üstündeki uzun açıklama tek kısa satıra indi.
+- Ana ekrandaki seviye çubuğu dağıtılmamış puan varken de görünüyor; sağda "Dağıt" yazıyor ve dokununca Gelişim açılıyor.
+- İlk maçtan sonraki "Oyuncunu seç" kartları dokunuşta anında seçiliyor.
+Nasıl denenir: Gelişim'i aç, + düğmesini basılı tut: puanlar hızlanarak dolmalı, puan bitince durmalı. Ana ekranda puanın varken seviye çubuğu ve "Dağıt" birlikte görünmeli. Dolap'ta renkleri art arda hızlıca değiştir: takılma olmamalı; uygulamayı kapatıp aç, son seçtiğin renk kalmalı.
 Maçtan sonra menüde takılma azaltıldı (15 Kasım gece):
 - Rakip çeşitliliği her maçtan sonra bütün rakip resimlerini baştan çizdiriyordu; Kariyer açılırken kısa bir takılma yapabiliyordu. Artık yalnız az önce oynadığın rakip yeni görünüşüne geçiyor.
 Nasıl denenir: Bir maç oyna, bitince Kariyer'e dön: sayfa takılmadan açılmalı ve yalnız az önce oynadığın rakibin resmi değişmiş olmalı. Aynı rakiple yeniden oyna: sahada karttaki yeni görünüşüyle gelmeli.

@@ -117,7 +117,7 @@ namespace BirdieSmash.Game
             // ad (yalnız cihazda)
             c.Add(Grup(L.T("Adın")));
             var tf = new TextField { value = p.Ad ?? "", maxLength = Ilerleme.AD_AZAMI, isDelayed = true }; tf.AddToClassList("ad-alan"); tf.style.fontSize = Mathf.Round(16 * K);
-            tf.RegisterValueChangedCallback(e => { p.Ad = e.newValue; Ayar.Kaydet(); kirli[(int)Sekme.Profil] = true; var kk = sekmeKok[(int)Sekme.Profil]; kk.schedule.Execute(() => { if (gez.sekme == Sekme.Profil && gez.Ust == null) SekmeKur(Sekme.Profil); }).StartingIn(16); });
+            tf.RegisterValueChangedCallback(e => { p.Ad = e.newValue; Ayar.KaydetSonra(); kirli[(int)Sekme.Profil] = true; var kk = sekmeKok[(int)Sekme.Profil]; kk.schedule.Execute(() => { if (gez.sekme == Sekme.Profil && gez.Ust == null) SekmeKur(Sekme.Profil); }).StartingIn(16); });
             Erisim.Etiket(tf, L.T("Adın") + ", " + L.T("cihazında ve kendi iCloud hesabında tutulur"), "metin_alani", false, false, p.Ad ?? ""); c.Add(tf);
             // Yer tutucu (2026-11-07, yasin "yap", arayüz cilası): boş alan ne yazılacağını söylesin. Unity 6 textEdition.placeholder
             // yerine kendi soluk etiketimiz (mono ile Unity'siz derleme 2021 başvurularıyla yapılıyor); alan boşken ve odak yokken görünür.
@@ -131,7 +131,7 @@ namespace BirdieSmash.Game
             // unvanlar
             c.Add(Grup(L.T("Unvan")));
             var kz = Karakter.Kazanilan(p, L_, p.AntrenmanYildiz); var us = Satir("cip-sarar"); c.Add(us);   // 2026-10-31 (yasin IMG_1517): 5 unvan eşit dar çipe sıkışıp harf harf bölünüyordu; çip yazısı kadar geniş, sığmayan alt satıra
-            foreach (var u in kz) { string id = u.id; us.Add(Cip(L.T(u.ad) + Karakter.KademeEki(u, p), u.id == un.id, () => { p.Unvan = id; Ayar.Kaydet(); kirli[(int)Sekme.Profil] = true; SekmeKur(Sekme.Profil); })); }
+            foreach (var u in kz) { string id = u.id; us.Add(Cip(L.T(u.ad) + Karakter.KademeEki(u, p), u.id == un.id, () => { p.Unvan = id; Ayar.KaydetSonra(); kirli[(int)Sekme.Profil] = true; SekmeKur(Sekme.Profil); })); }
             // Kademe (2026-11-07): yalnız seçili beceri unvanının sıradaki eşiği, tek satır; yeni satır listesi yok.
             int se_ = Karakter.SonrakiEsik(un, p);
             if (se_ > 0) { var ks = Yazi(L.T("{0}: sonraki kademe {1}/{2}", L.T(un.ad) + Karakter.KademeEki(un, p), p.Sayac(un.sayac), se_), 12, "soluk"); ks.style.whiteSpace = WhiteSpace.Normal; Erisim.Etiket(ks, ks.text, "metin"); c.Add(ks); }

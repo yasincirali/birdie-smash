@@ -27,6 +27,7 @@ namespace BirdieSmash.Game
             new[] { "Fırtına", "kadin", "kisa", "sari", "t6", "mavi", "kirmizi", "beyaz", "dogal" },
         };
         Dictionary<string, object> oyuncuSecOnce; int oyuncuSecSecili = -1;
+        readonly List<VisualElement> hazirKart = new List<VisualElement>(), hazirTik = new List<VisualElement>();
 
         // MenuyeDon'dan: gösterilmeli mi (bir kez, varsayılan görünüşte, Oyuncak 3B'de).
         bool OyuncuSecGerekli()
@@ -51,19 +52,19 @@ namespace BirdieSmash.Game
             Ayar.GORUNUM["sac"] = h[3]; Ayar.GORUNUM["ten"] = h[4]; Ayar.GORUNUM["ayakkabi"] = h[8];
             if (gr.RenkAcik(h[5], Ayar.sampiyon)) gr.renk = h[5];
             Ayar.RGOR["grip"] = h[6]; Ayar.RGOR["tel"] = h[7];
-            Ayar.GearHesap(); Ayar.Kaydet(); root.vitrin.Yenile(); kirli[(int)Sekme.Profil] = true;
+            Ayar.GearHesap(); Ayar.KaydetSonra(); root.vitrin.Yenile(); kirli[(int)Sekme.Profil] = true;
         }
         void OyuncuSecKur()
         {
             var c = AltSayfaKur(L.T("Oyuncunu seç"));
             c.Add(Yazi(L.T("Birini seç, üstte hemen gör. Her şeyi sonra Dolap'ta değiştirebilirsin."), 13, "etiket"));
-            var iz = Satir("izgara"); iz.AddToClassList("hazir-izgara"); c.Add(iz);
+            var iz = Satir("izgara"); iz.AddToClassList("hazir-izgara"); c.Add(iz); hazirKart.Clear(); hazirTik.Clear();
             for (int i = 0; i < HAZIR.Length; i++)
             {
                 int ii = i; var h = HAZIR[i]; bool on = oyuncuSecSecili == i;
                 var k = Kart("hazir-kart"); k.AddToClassList("dugme"); if (on) k.AddToClassList("secili");
                 var ust = Satir("rakip-satir"); ust.pickingMode = PickingMode.Ignore; k.Add(ust);
-                if (on) { var ik = Ikon(Ikonlar.Tik, 14, TURUNCU); ik.style.marginRight = 4; ust.Add(ik); }
+                { var ik = Ikon(Ikonlar.Tik, 14, TURUNCU); ik.style.marginRight = 4; ik.style.display = on ? DisplayStyle.Flex : DisplayStyle.None; ust.Add(ik); hazirTik.Add(ik); }
                 ust.Add(Yazi(L.T(h[0]), 15, "kalin"));
                 // Üç renk noktası (forma, ten, saç) + yazıyla beden/saç: kart yalnız renkle ayırt edilmez.
                 var nk = Satir("rakip-satir"); nk.pickingMode = PickingMode.Ignore; k.Add(nk);
@@ -72,17 +73,30 @@ namespace BirdieSmash.Game
                 var sc = Karakter.Oge("sac", h[3]); if (sc != null && sc.renk != null) nk.Add(Nokta(sc.renk));
                 string alt = L.T(Kozmetik.Oge(Kozmetik.TIP, h[1]).ad) + " · " + L.T(Kozmetik.Oge(Kozmetik.SAC, h[2]).ad);
                 k.Add(Yazi(alt, 12, "ipucu"));
-                k.AddManipulator(new Clickable(() => { oyuncuSecSecili = ii; HazirUygula(HAZIR[ii]); Tik(); OyuncuSecKur(); }));
-                Erisim.Etiket(k, L.T(h[0]) + ", " + alt, "dugme", on); iz.Add(k);
+                k.AddManipulator(new Clickable(() => { HazirSecGoster(ii); HazirUygula(HAZIR[ii]); Tik(); }));
+                Erisim.Etiket(k, L.T(h[0]) + ", " + alt, "dugme", on); iz.Add(k); hazirKart.Add(k);
             }
             // r100: alt sayfa vitrini fazla örtüyordu; Rastgele ve Atla tek satırda (büyük yazıda alt alta, USS).
             var ds = Satir("arali"); ds.AddToClassList("hazir-dugmeler"); c.Add(ds);
-            var rd = Dugme(L.T("Rastgele"), () => { oyuncuSecSecili = Random.Range(0, HAZIR.Length); HazirUygula(HAZIR[oyuncuSecSecili]); Tik(); OyuncuSecKur(); }, null, null, 15); rd.AddToClassList("hazir-dugme"); ds.Add(rd);
+            var rd = Dugme(L.T("Rastgele"), () => { HazirSecGoster(Random.Range(0, HAZIR.Length)); HazirUygula(HAZIR[oyuncuSecSecili]); Tik(); }, null, null, 15); rd.AddToClassList("hazir-dugme"); ds.Add(rd);
             var at = Dugme(L.T("Atla"), OyuncuSecAtla, null, null, 15); at.AddToClassList("hazir-dugme"); ds.Add(at);
             AltEylem(Dugme(L.T("Bununla oyna"), () => { root.sfx.Yukselt(); Yerel.Hap("tick"); OyuncuSecKapat(); }, "dugme--birincil", null, 19));
         }
         // EkranTuru için: bir kartı seç / Atla.
-        public void OyuncuSecHazir(int i) { oyuncuSecSecili = i; HazirUygula(HAZIR[i]); OyuncuSecKur(); }
+        public void OyuncuSecHazir(int i) { HazirSecGoster(i); HazirUygula(HAZIR[i]); }
+        // Kart dokunuşu (2026-11-15 inceleme, fikir 22:05 #4): alt sayfa (altı kart + düğmeler) her dokunuşta baştan kuruluyor ve
+        // senkron kayıt yapılıyordu; ekran oyuncunun İLK maçından hemen sonra, ilk izlenim anı. Artık yalnız eski kartın seçili
+        // sınıfı/✓'i kalkar, yenisine eklenir (erişim bilgisi de); kayıt ertelenir (Ayar.KaydetSonra). Figür (vitrin) aynı.
+        void HazirSecGoster(int i)
+        {
+            for (int j = 0; j < hazirKart.Count; j++)
+            {
+                bool on = j == i; var k = hazirKart[j]; if (on) k.AddToClassList("secili"); else k.RemoveFromClassList("secili");
+                hazirTik[j].style.display = on ? DisplayStyle.Flex : DisplayStyle.None;
+                var b = k.userData as ErisimBilgi; if (b != null) b.secili = on;
+            }
+            oyuncuSecSecili = i;
+        }
         public void OyuncuSecAtla() { if (oyuncuSecOnce != null) KombinGiy(oyuncuSecOnce); OyuncuSecKapat(); }
         VisualElement Nokta(string hex) { var n = new VisualElement(); n.AddToClassList("renk-nokta"); n.style.backgroundColor = Kit.Hex(hex); n.pickingMode = PickingMode.Ignore; return n; }
         void OyuncuSecKapat() { var once = gez.sekme; gez.AltKapat(); gez.SekmeSec(Sekme.Oyna); Uygula(once, true); Kirlet(); }
