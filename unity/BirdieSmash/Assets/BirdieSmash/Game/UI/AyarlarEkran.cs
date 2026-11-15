@@ -109,7 +109,8 @@ namespace BirdieSmash.Game
                 ? "https://murphysoft.app/birdie-smash/support/" : "https://murphysoft.app/birdie-smash/destek/"); });
             Erisim.Etiket(ds, L.T("Destek") + ". " + L.T("Tarayıcıda açılır"), "dugme"); c.Add(ds);
             c.Add(Bosluk(8)); c.Add(Yazi(L.T("Sürüm {0}", Application.version), 12, "soluk"));
-            // Tanı (2026-11-11, Cokme.cs): yalnız gizli FPS katmanı açıkken ve önceki oturum oyun açıkken bittiyse. Kayıt cihazda
+            // Tanı (2026-11-11, Cokme.cs): yalnız gizli FPS katmanı açıkken. 2026-11-15: önceki oturumun izi her zaman, yeni çökme
+            // varsa en üstte; eski çökme kaydı altta. Kayıt cihazda
             // kalır; paylaş düğmesi sistem sayfasıyla metni testçinin seçtiği yere gönderir, "Sil" kaydı kaldırır.
             if (Ayar.fps && Cokme.Son != null)
             {

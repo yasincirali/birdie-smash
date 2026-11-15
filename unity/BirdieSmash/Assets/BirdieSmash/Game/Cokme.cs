@@ -28,7 +28,7 @@ namespace BirdieSmash.Game
         {
             if (kurulu) return; kurulu = true;
             izYol = Path.Combine(Application.persistentDataPath, "son_oturum.txt"); cokmeYol = Path.Combine(Application.persistentDataPath, "son_cokme.txt");
-            string yeni = null;
+            string yeni = null, onceki = null;
             // 2026-11-15 (yasin: "maçta donma ve kasma yaşadım, crash de olmadı, donup kaldı"; paylaşılan kayıt bir önceki günün
             // oturumuydu): donan oturum arka plana düzgün geçtiği için dosya "arka" diyordu ve hata satırlarıyla birlikte atılıyordu.
             // Oyun mantığı her karede istisna atıp donarsa ana iş parçacığı yaşar, iz "arka"/"cikis" ile biter; hata satırı olan
@@ -38,6 +38,7 @@ namespace BirdieSmash.Game
                 if (File.Exists(izYol))
                 {
                     var s = File.ReadAllText(izYol);
+                    onceki = (s.StartsWith("arka") ? "Önceki oturum arka planda bitti (kapatıldı)\n" : s.StartsWith("cikis") ? "Önceki oturum düzgün kapandı\n" : "Önceki oturum\n") + s;
                     if (s.StartsWith("onde")) yeni = "Önceki oturum oyun açıkken bitti (çökme ya da bellek)\n" + s;
                     else if (s.Contains("\nhata: ")) yeni = "Önceki oturumda hata oldu (oyun kapanmadı)\n" + s;
                 }
@@ -54,7 +55,17 @@ namespace BirdieSmash.Game
                 }
             }
             catch { }
-            try { if (yeni != null) File.WriteAllText(cokmeYol, yeni); Son = yeni ?? (File.Exists(cokmeYol) ? File.ReadAllText(cokmeYol) : null); } catch { Son = yeni; }
+            // 2026-11-15 (yasin aynı 14 Kasım kaydını iki kez paylaştı; o gün menüde takılma ve çökme yaşamıştı): yeni çökme yoksa
+            // Tanı son_cokme.txt'deki eski kaydı gösteriyordu, bugünkü oturum hiç görünmüyordu. Artık yeni çökme yoksa önceki
+            // oturumun izi (nasıl bittiği, en uzun kare, takılma sayısı, hata satırları) gösterilir; eski çökme kaydı tarihiyle altta.
+            try
+            {
+                if (yeni != null) File.WriteAllText(cokmeYol, yeni);
+                string eski = yeni == null && File.Exists(cokmeYol) ? File.ReadAllText(cokmeYol) : null;
+                Son = yeni ?? onceki;
+                if (eski != null) Son = (Son != null ? Son + "\n" : "") + "--- Eski çökme kaydı\n" + eski;
+            }
+            catch { Son = yeni ?? onceki; }
             Application.logMessageReceived += Gunluk;
             Application.lowMemory += DusukBellek;
             Yaz("onde", null);
