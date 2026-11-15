@@ -29,9 +29,9 @@ namespace BirdieSmash.Game
         // sacAks (2026-11-14): saç biçimi baş çerçevesine takılan hazır ağ (karakter.json sac_model[].aks); şapka takılıyken çağıran
         // null verir (saç şapkanın altında kısa kesime döner, PlayerView.Varyant). Saç ve yüz ağlarında SAC_YER rengindeki alt ağ
         // oyuncunun saç rengini alır (SacBoya).
-        public static Transform Kur(Transform model, Transform kafa, Vector3 dikey, PlayerView.BantMeta bant, string sapka, string yuz, Color forma, Color? sac, string sacAks = null)
+        public static Transform Kur(Transform model, Transform kafa, Vector3 dikey, PlayerView.BantMeta bant, string sapka, string yuz, Color forma, Color? sac, string sacAks = null, string hayvan = null)
         {
-            if (model == null || kafa == null || (!Var(sapka) && !Var(yuz) && !Var(sacAks))) return null;
+            if (model == null || kafa == null || (!Var(sapka) && !Var(yuz) && !Var(sacAks) && !Var(hayvan))) return null;
             Transform bas = null, goz = null;
             foreach (var t in model.GetComponentsInChildren<Transform>(true)) { if (t.name.StartsWith("bas__")) bas = t; else if (t.name.StartsWith("goz__")) goz = t; }
             Vector3 ileri = bas != null && goz != null ? Vector3.ProjectOnPlane(goz.position - bas.position, dikey) : Vector3.zero;
@@ -51,8 +51,21 @@ namespace BirdieSmash.Game
             kok.position = c; kok.rotation = Quaternion.LookRotation(ileri.normalized, dikey.normalized);
             float ls = kafa.lossyScale.x; kok.localScale = new Vector3(yan, ust, (on + arka) * .5f) * (r / Mathf.Max(1e-5f, ls));
             if (Var(sacAks)) HazirAg(kok, sacAks);
-            if (Var(sapka)) Sapka(kok, sapka, forma);
-            if (Var(yuz)) Yuz(kok, yuz, forma, on > 1);   // elipsoit oranı yalnız Oyuncak'larda: tombul yüz, öne çıkan dudak
+            // Hayvan tipi (2026-11-15; karakter.json tipler[].aks, tool/karakter/ozel_aksesuar.py HAYVAN): başı tümden örten kafa + kulak.
+            // Kulak şapkanın altında kalır (şapka takılıyken kurulmaz). Hayvan kafası saçlı baştan geniş (yan 1,46'ya karşı 1,10) ama aynı
+            // yükseklikte: şapka yalnız ende ve derinlikte büyür, tepeye aynı yerden oturur. Yüz eşyası insan yüzüne göre çizildi (göz hizası
+            // z ≈ 1,0); hayvan yüzü .4 önde ve aşağı doğru geri kaçıyor, bu yüzden öne taşınır ve göz hizası çevresinde 15° yatırılır.
+            Transform sk = kok, yk = kok;
+            if (Var(hayvan))
+            {
+                HazirAg(kok, hayvan + "_kafa"); if (!Var(sapka)) HazirAg(kok, hayvan + "_kulak");
+                sk = new GameObject("hv_sapka").transform; sk.SetParent(kok, false); sk.localScale = new Vector3(1.28f, 1f, 1.26f);
+                yk = new GameObject("hv_yuz").transform; yk.SetParent(kok, false);
+                var dn = Quaternion.Euler(15f, 0f, 0f); var eksen = new Vector3(0f, -.4f, 1.41f);
+                yk.localRotation = dn; yk.localPosition = dn * (new Vector3(0f, 0f, .40f) - eksen) + eksen;
+            }
+            if (Var(sapka)) Sapka(sk, sapka, forma);
+            if (Var(yuz)) Yuz(yk, yuz, forma, on > 1);   // elipsoit oranı yalnız Oyuncak'larda: tombul yüz, öne çıkan dudak
             if (sac.HasValue) SacBoya(kok, sac.Value);
             foreach (var rd in kok.GetComponentsInChildren<Renderer>()) rd.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
             return kok;

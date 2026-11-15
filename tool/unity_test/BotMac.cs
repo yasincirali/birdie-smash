@@ -1084,7 +1084,10 @@ static class BotMac
         string[] guc = { "etki", "guc", "kontrol", "hiz", "tatli", "kosu", "enerji", "toparla", "yor", "uzanma", "jumpTatli", "slice", "akis" };
         foreach (var k in new[] { "tipler", "sac_model", "sapka", "yuz" }) foreach (var x in (List<object>)veri[k]) { var d = Json.Obj(x); foreach (var alan in guc) if (d.ContainsKey(alan)) Fail("kozmetikte güç alanı: " + k + "/" + Json.Str(d, "id", "?") + "." + alan); }
         var T = Kozmetik.Liste(Kozmetik.TIP); var S = Kozmetik.Liste(Kozmetik.SAC);
-        if (T.Length != 4 || T[0].id != "atlet" || T[0].varlik != null) Fail("4 tip, ilki Atlet (oyuncak.fbx)");
+        // 2026-11-15 hayvan tipleri: beden tipi sayısı (aks'sız) yine 4; hayvan = var olan bir bedenin FBX'i + aks ön eki + kürk rengi, yeni FBX yok.
+        if (T.Count(o => o.aks == null) != 4 || T[0].id != "atlet" || T[0].varlik != null) Fail("4 beden tipi, ilki Atlet (oyuncak.fbx)");
+        foreach (var o in T) if (o.aks != null && (o.renk == null || !o.aks.StartsWith("hv_") || o.sv < 2 || o.fiyat <= 0 || (o.varlik != null && !T.Any(b => b.aks == null && b.varlik == o.varlik)))) Fail("hayvan tipi: kürk rengi, hv_ ön eki, var olan beden, Tüy ve seviye: " + o.id);
+        foreach (var o in T) if (o.aks != null) foreach (var hvEk in new[] { "_kafa", "_kulak", "_kuyruk" }) if (!System.IO.File.Exists("unity/BirdieSmash/Assets/Resources/karakter/aks/" + o.aks + hvEk + ".bytes")) Fail("hayvan parçası yok: " + o.aks + hvEk);
         int bedava = T.Count(t => t.fiyat == 0 && t.sv == 1); if (bedava < 1 || bedava > 2) Fail("başta 1–2 tip ücretsiz olmalı: " + bedava);
         if (Kozmetik.Bul(Kozmetik.TIP, "kadin") == null || Kozmetik.Bul(Kozmetik.TIP, "kadin").fiyat != 0 || Kozmetik.Bul(Kozmetik.TIP, "kadin").sv != 1) Fail("kimlik satılmaz: Atletik kadın baştan ücretsiz olmalı");
         if (S.Length < 10 || S[0].fiyat != 0 || S.Count(o => o.varlik == null && o.aks == null) != 1) Fail("en az 10 saç biçimi, ilki ücretsiz, bir tane kazıtılmış (parçasız)");
@@ -1357,7 +1360,7 @@ static class BotMac
             var parts = new HashSet<string>(((List<object>)js["parts"]).Select(x => (string)x));
             string fbx = System.Text.Encoding.ASCII.GetString(System.IO.File.ReadAllBytes(R + ad + ".fbx"));
             var tip = js.ContainsKey("tip") ? Json.Obj(js["tip"]) : null;
-            if (tip == null || Json.Str(tip, "id", null) != t.id) Fail(ad + "_clips.json tip kimliği " + (tip != null ? Json.Str(tip, "id", "?") : "yok") + " ≠ " + t.id);
+            if (t.aks == null && (tip == null || Json.Str(tip, "id", null) != t.id)) Fail(ad + "_clips.json tip kimliği " + (tip != null ? Json.Str(tip, "id", "?") : "yok") + " ≠ " + t.id);
             else
             {
                 if (Kozmetik.Bul(Kozmetik.SAC, Json.Str(tip, "sac", null)) == null) Fail(ad + ": tipin varsayılan saçı bilinmiyor " + Json.Str(tip, "sac", null));

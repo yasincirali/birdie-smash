@@ -923,8 +923,17 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_TIP); yield return Bekle(20);
             foreach (var o in Kozmetik.Liste(Kozmetik.TIP))
             {
-                ui.KarakterDene(Kozmetik.TIP, o.id); yield return Bekle(25); yield return Cek("model_vitrin_tip_" + o.id);
+                ui.KarakterDene(Kozmetik.TIP, o.id); yield return Bekle(25); if (o.aks != null) { root.vitrin.a = 30; root.vitrin.v = 0; yield return Bekle(6); } yield return Cek("model_vitrin_tip_" + o.id);
                 VaryantSatir("vitrin tip=" + o.id, root.vitrin.Fig, PlayerView.ModelYolu("oyuncak", o.id), null, null, ref t);
+                if (o.aks != null) { root.vitrin.a = 200; root.vitrin.v = 0; yield return Bekle(6); yield return Cek("model_vitrin_tip_" + o.id + "_arka"); }   // 2026-11-15 hayvan: kuyruk ve kulak arkadan
+            }
+            // 2026-11-15 hayvan tipi + şapka (kulak gizlenir, şapka geniş başa oturur) + yüz eşyası (öne taşınır); sonra eski son deneme (guclu) geri
+            if (Kozmetik.Bul(Kozmetik.TIP, "kedi") != null)
+            {
+                ui.KarakterDene(Kozmetik.TIP, "kedi"); ui.KarakterDene(Kozmetik.SAPKA, "kep"); ui.KarakterDene(Kozmetik.YUZ, "gunes"); yield return Bekle(25); root.vitrin.a = 30; root.vitrin.v = 0; yield return Bekle(6); yield return Cek("model_vitrin_hayvan_kedi_kep_gunes");
+                ui.KarakterDene(Kozmetik.TIP, "panda"); ui.KarakterDene(Kozmetik.SAPKA, "noel_sapka"); ui.KarakterDene(Kozmetik.YUZ, "pos_biyik"); yield return Bekle(25); root.vitrin.a = 30; root.vitrin.v = 0; yield return Bekle(6); yield return Cek("model_vitrin_hayvan_panda_noel_biyik");
+                ui.KarakterDene(Kozmetik.TIP, "tavsan"); ui.KarakterDene(Kozmetik.SAPKA, "sombrero"); ui.KarakterDene(Kozmetik.YUZ, "yuvarlak"); ui.KarakterDene(Kozmetik.BEL, "tutu"); yield return Bekle(25); root.vitrin.a = 30; root.vitrin.v = 0; yield return Bekle(6); yield return Cek("model_vitrin_hayvan_tavsan_sombrero_gozluk_tutu");
+                ui.KarakterDene(Kozmetik.SAPKA, null); ui.KarakterDene(Kozmetik.YUZ, null); ui.KarakterDene(Kozmetik.BEL, null); ui.KarakterDene(Kozmetik.TIP, "guclu"); yield return Bekle(10);
             }
             t = null; ui.KarakterAc(UiKok.KAR_SAC); yield return Bekle(30);
             foreach (var o in Kozmetik.Liste(Kozmetik.SAC))
