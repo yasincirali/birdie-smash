@@ -442,7 +442,7 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Beden tipi · {0}", L.T(Kozmetik.Oge(Kozmetik.TIP, sec).ad))));
             c.Add(Yazi(L.T("Yalnız görünüş: maçta boy ve kol uzunluğu fark etmez. Sahip olduğun tipler arasında geçiş ücretsiz."), 12, "soluk"));
             var iz = Satir("izgara"); iz.AddToClassList("koz-izgara"); c.Add(iz);
-            foreach (var o in Kozmetik.Liste(Kozmetik.TIP))
+            foreach (var o in Kozmetik.Gosterim(Kozmetik.TIP))
             {
                 var du = Kozmetik.Durum(gr, Kozmetik.TIP, o.id, sec); string id = o.id; Texture2D ik; string durum = KozDurum(Kozmetik.TIP, o, du, out ik);
                 var k = Kart("koz-kart"); k.AddToClassList("dugme"); if (du == ModelDurum.Secili) k.AddToClassList("secili"); if (du == ModelDurum.Kilitli) k.AddToClassList("kilitli"); if (dn == o.id) k.AddToClassList("denenen");
@@ -463,7 +463,7 @@ namespace BirdieSmash.Game
             var gr = Ayar.gear; string sec = Ayar.KOZ[Kozmetik.SAC], dn = root.vitrin.deneSac; int sv = gr.Seviye();
             c.Add(Grup(L.T("Saç modeli · {0}", L.T(Kozmetik.Oge(Kozmetik.SAC, dn ?? sec).ad))));
             var iz = Satir("izgara"); iz.AddToClassList("koz-izgara"); c.Add(iz); int ks = 0;
-            foreach (var o in Kozmetik.Liste(Kozmetik.SAC))
+            foreach (var o in Kozmetik.Gosterim(Kozmetik.SAC))
             {
                 var du = Kozmetik.Durum(gr, Kozmetik.SAC, o.id, sec); string id = o.id; Texture2D ik; string durum = KozDurum(Kozmetik.SAC, o, du, out ik);
                 var k = Kart("sac-kare"); k.AddToClassList("dugme"); if (du == ModelDurum.Secili) k.AddToClassList("secili"); if (du == ModelDurum.Kilitli) k.AddToClassList("kilitli"); if (dn == o.id) k.AddToClassList("denenen");
@@ -609,7 +609,7 @@ namespace BirdieSmash.Game
         void KozIzgaraIc(VisualElement c, string kat, string baslik, string dn, bool resim)
         {
             var gr = Ayar.gear; string sec = Ayar.KOZ[kat];
-            string su; kozSet.TryGetValue(kat, out su); var tum = Kozmetik.Liste(kat); bool setVar = false; foreach (var o in tum) if (o.koleksiyon != null) { setVar = true; break; }
+            string su; kozSet.TryGetValue(kat, out su); var tum = Kozmetik.Gosterim(kat); bool setVar = false; foreach (var o in tum) if (o.koleksiyon != null) { setVar = true; break; }
             if (setVar)
             {
                 var cs = Satir("cip-sarar"); cs.AddToClassList("koz-set"); c.Add(cs); System.Action yenile = () => { c.Clear(); KozIzgaraIc(c, kat, baslik, dn, resim); };

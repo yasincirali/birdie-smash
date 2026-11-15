@@ -52,9 +52,27 @@ namespace BirdieSmash.Core
         public const string AYAK = "ayak";
         public static readonly string[] KAT = { TIP, SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC, KOL, BEL, AYAK };
         static Dictionary<string, KozmetikOge[]> veri; static Dictionary<string, RakipGorunum> rakip;
-        public static void Sifirla() { veri = null; rakip = null; }
+        static Dictionary<string, KozmetikOge[]> gosterim;
+        public static void Sifirla() { veri = null; rakip = null; gosterim = null; }
 
         public static KozmetikOge[] Liste(string kat) { Yukle(); KozmetikOge[] a; return veri.TryGetValue(kat, out a) ? a : new KozmetikOge[0]; }
+        // 2026-11-15 (inceleme turu: paketler dizinin sonuna eklendiği için Dolap rafında Sv 3 saçı Sv 15 kilidinden sonra
+        // çıkıyordu): YALNIZ gösterim sırası. Varsayılan (dizinin ilki) başta, sonra seviye, eşitse fiyat, eşitse veri sırası
+        // (kararlı). Veri dizisi, kayıt ve "ilk öğe varsayılan" kuralı değişmez; Liste() hâlâ veri sırasını döndürür.
+        public static KozmetikOge[] Gosterim(string kat)
+        {
+            Yukle(); if (gosterim == null) gosterim = new Dictionary<string, KozmetikOge[]>();
+            KozmetikOge[] g; if (gosterim.TryGetValue(kat, out g)) return g;
+            var l = Liste(kat); var sira = new int[l.Length]; for (int i = 0; i < sira.Length; i++) sira[i] = i;
+            System.Array.Sort(sira, (a, b) =>
+            {
+                if (a == b) return 0; if (a == 0) return -1; if (b == 0) return 1;
+                int c = l[a].sv.CompareTo(l[b].sv); if (c != 0) return c;
+                c = l[a].fiyat.CompareTo(l[b].fiyat); return c != 0 ? c : a.CompareTo(b);
+            });
+            g = new KozmetikOge[l.Length]; for (int i = 0; i < g.Length; i++) g[i] = l[sira[i]];
+            gosterim[kat] = g; return g;
+        }
         public static KozmetikOge Bul(string kat, string id) { foreach (var o in Liste(kat)) if (o.id == id) return o; return null; }
         // Listenin ilki varsayılandır: var olan oyuncu ve hakemler bu görünüşle kalır.
         // Rakibin sevinci (2026-11-07): tarzın seçimi veride varsa o, yoksa kategorinin varsayılanı (yumruk / zafer). Online'da

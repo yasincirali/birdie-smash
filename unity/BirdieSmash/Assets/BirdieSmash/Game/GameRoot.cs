@@ -417,7 +417,7 @@ namespace BirdieSmash.Game
             int yardim0 = Ayar.ilerleme != null ? Ayar.ilerleme.Yardim : 0;
             if (M.ogr == null && Ayar.ilerleme != null && M.stil.usta < 0) Ayar.ilerleme.YardimIsle(won);
             bool yumusadi = Ayar.ilerleme != null && Ayar.ilerleme.Yardim > yardim0;
-            string kNot = ""; bool kariyerIlk = false; int yeniYildiz = 0; bittiYildiz = null; int ekTuy = 0, ekXp = 0; string ekAd = null; bittiSkor = null;
+            string kNot = "", dunyaEk = ""; bool kariyerIlk = false; int yeniYildiz = 0; bittiYildiz = null; int ekTuy = 0, ekXp = 0; string ekAd = null; bittiSkor = null;
             BittiSifirla(); bittiKazandi = won;
             // Kolay'dan Usta'ya davet (stüdyo incelemesi 2026-11-05, oyun tasarımı 6): Kolay'da rahat kazanan oyuncuya (3+ galibiyet,
             // bu maçta 5+ tam orta) tek maçlık "Zor'u dene" (2026-11-05 dört kademe: önce Usta'ydı; Zor koşu yardımlı, adım daha küçük). Ayar değişmez, maç Usta ödülüyle (×1,25) oynanır; en çok 2 kez gösterilir.
@@ -430,7 +430,11 @@ namespace BirdieSmash.Game
                 var r = Ayar.ilerleme.Isle(g, won, bg != null && bg.bitti, M.sc[0], M.sc[1], M.target);
                 // Tur töreni (2026-11-07 stüdyo GD1/GD5): tur finali ya da yeni tur mührü menüye dönüşte bir kez sahnelenir (UiKok.TurToren)
                 int muhur1 = Ayar.ilerleme.Muhur(torenTur); if (r.turBitti || muhur1 > muhur0) UiKok.TorenBekle(torenTur, r.turBitti, muhur0, muhur1);
-                kariyerIlk = r.ilkGalibiyet; kNot = won ? r.not : ""; yeniYildiz = r.yeniYildiz; if (r.ilkGalibiyet) bittiYeniG = g;   // kayıpta "X basamağı seni bekliyor" yazılmaz: basamak adı üst satırda ve düğme altında zaten var (2026-11-12 22:05 fikir 6)
+                kariyerIlk = r.ilkGalibiyet; kNot = won ? r.not : "";
+                // 2026-11-15 (inceleme turu): yeni basamağın kazanıldığı kartta dünya sırası da söylenir, var olan "açılan" satırının
+                // sonunda (yeni satır yok); kayıpta hiçbir şey. Kariyer'e dönünce aynı sayı akarak iner (KariyerEkran.DunyaSiraAkit).
+                if (r.ilkGalibiyet) { int gn = Hikaye.Galibiyet(Ayar.ilerleme), ds1 = Hikaye.OyuncuSira(gn), ds0 = Hikaye.OyuncuSira(gn - 1); if (ds1 < ds0) dunyaEk = " · " + (ds1 == 1 ? L.T("Dünya 1 numarası") : L.T("Dünya {0} (−{1})", UiKok.SiraYaz(ds1), UiKok.SiraYaz(ds0 - ds1))); }
+                 yeniYildiz = r.yeniYildiz; if (r.ilkGalibiyet) bittiYeniG = g;   // kayıpta "X basamağı seni bekliyor" yazılmaz: basamak adı üst satırda ve düğme altında zaten var (2026-11-12 22:05 fikir 6)
                 Ayar.kariyer = Ayar.ilerleme.Tur1Gecilen(); if (Ayar.kariyer >= Match.KARIYER.Length) Ayar.sampiyon = true;
                 if (kariyerIlk && KariyerVeri.TurOf(g) == 0) { Basarim.Ver("bs_kariyer_" + Ayar.kariyer); Basarim.Giris(Ayar.kariyer); }   // giriş isteği ilk basamaktan sonra
                 if (r.turBitti) Yerel.Hap("flow");   // tur finali: güçlü desen (HAP'ta "success" yok, en uzun desen "flow")
@@ -480,7 +484,7 @@ namespace BirdieSmash.Game
             // birebir kopyası olduğu için orada değiştirilmez.
             int hik = won ? M.MacHikaye() : 0;
             bittiBas = hik == 1 ? L.T("Geri dönüş") : hik == 2 ? L.T("Kıl payı") : won ? (L.En ? "Victory" : "Galibiyet") : L.T("Bu sefer rakip aldı");
-            if (kNot != "") { if (kariyerIlk) bittiAcilan = L.Cumle(kNot); else bittiAltNot = L.Cumle(kNot); }
+            if (kNot != "") { if (kariyerIlk) bittiAcilan = L.Cumle(kNot) + dunyaEk; else bittiAltNot = L.Cumle(kNot); }
             if (hik == 1) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("{0}–{1} gerideyken döndün.", M.geriBen, M.geriRakip);
             if (yumusadi && Ayar.zorluk <= 1) bittiAltNot = (bittiAltNot != null ? bittiAltNot + " " : "") + L.T("Sıradaki maçta rakip biraz yavaşlayacak.");
             // Zorluk ipucu (2026-11-12 22:05 fikir 2, inceleme YAP kısmen): Ayarlar'daki zorluk 2026-11-07'de çıktı, cümle artık olmayan
@@ -1215,7 +1219,8 @@ namespace BirdieSmash.Game
                     // Gövdenin gerisinden smaç (e.arka, 2026-11-14 inceleme fikir 22:05 #1): Core'da %15 yavaş ve düz; his de bunu söyler:
                     // dalga beyaz ve küçük, sarsıntı yarım, flaş yok. Tam smaç hissi yalnız topun altına girilen smaçta.
                     bool tamSmac = e.type == "smash" && !e.arka;
-                    fx.Dalga(at, tamSmac ? limon : Color.white, tamSmac ? 90 : e.arka ? 60 : 46);
+                    // 2026-11-15 (inceleme turu): limon = benim iyi anım (HUD dili); rakibin tam smacının dalgası onun HUD lilasında.
+                    fx.Dalga(at, tamSmac ? (mine ? limon : Kit.Hex(Hud.RAKIP_HUD)) : Color.white, tamSmac ? 90 : e.arka ? 60 : 46);
                     // File önü kill (2026-10-29, "file önü smaç oyunu değiştirsin"): Core onu smaç diye uçurur, gerçek adı e.text'te.
                     // Kısa ve sert: sarsıntı smaçtan büyük, yakınlaşma küçük (file dibinde kadraj kaymasın), halo rengi altın.
                     bool kill = e.text == "kill";
