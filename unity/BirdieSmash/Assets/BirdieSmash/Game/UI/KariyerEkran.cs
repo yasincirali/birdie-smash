@@ -28,7 +28,8 @@ namespace BirdieSmash.Game
             bas.Add(YildizSayac(p.ToplamYildiz, TurSayisiVeri() * 18, 15));
             // Dünya sırası (2026-11-14 hikâye, Core/Hikaye): kazanılan basamakla yükselir, kayıpta düşmez; 1'den sonra unvanı koru.
             { int ds = Hikaye.OyuncuSira(Hikaye.Galibiyet(p)); string dy = ds == 1 ? L.T("Dünya 1 numarası · unvanını koru") : L.T("Dünya sıralaman: {0}.", SiraYaz(ds));
-              var dsy = Yazi(dy, 14, "soluk"); dsy.AddToClassList("dunya-sira"); Erisim.Etiket(dsy, dy, "metin"); c.Add(dsy); }
+              var dsy = Yazi(dy, 14, "soluk"); dsy.AddToClassList("dunya-sira"); Erisim.Etiket(dsy, dy, "metin"); c.Add(dsy);
+              DunyaSiraAkit(dsy, ds); }
             // Career.Line satırı kalktı (fikir 22:10 #2): aynı maç başlık altında, tur kartında, maç kartında ve düğmede dört kez yazıyordu.
 
             // 2026-11-07 (yasin, Dolap/Kariyer alternatifleri, seçim "A: yatay tur kartları"): çip satırı + tur kartı + altı düğümlük
@@ -224,6 +225,33 @@ namespace BirdieSmash.Game
             basAniDen = gorulen; basAniA = sira;
             if (root != null && root.sfx != null) root.sfx.Tik(1175); Yerel.Hap("tick");
         }
+        // 2026-11-15 (inceleme turu, yasin 14 Kas "zaman geçtikçe güçlendiğimi hissetmeliyim"): dünya sırası Kariyer her
+        // kurulduğunda son değeri düz yazıyordu; galibiyetten sonraki 1.840 → 1.360 düşüşü hiç görülmüyordu. Son gösterilen
+        // sıra tuytop_dunya_gosterilen'de; yeni sıra daha iyiyse sayı basamak animasyonundan sonra 0,6 sn'de eskisinden
+        // yenisine akar (ease-out), bitişte tek tık. 1'e inince satır yaylanır. Hareketi azaltta doğrudan yeni değer.
+        // Erişim etiketi baştan son değeri okur (ara sayılar okunmaz). Kayıpta sıra düşmediği için geri akış yok.
+        void DunyaSiraAkit(Label l, int ds)
+        {
+            int once = PlayerPrefs.GetInt("tuytop_dunya_gosterilen", -1);
+            if (once != ds) { PlayerPrefs.SetInt("tuytop_dunya_gosterilen", ds); PlayerPrefs.Save(); }
+            if (once < 0 || ds >= once || Ayar.reduce || l == null) return;
+            System.Func<int, string> yaz = n => n == 1 ? L.T("Dünya 1 numarası · unvanını koru") : L.T("Dünya sıralaman: {0}.", SiraYaz(n));
+            l.text = yaz(once);
+            float bas = -1; const float SURE = .6f; int gecikme = basAniA >= 0 ? 450 : 250;
+            IVisualElementScheduledItem it = null;
+            it = l.schedule.Execute(() =>
+            {
+                if (l.panel == null) { it.Pause(); return; }
+                if (bas < 0) bas = Time.unscaledTime;
+                float t = Mathf.Clamp01((Time.unscaledTime - bas) / SURE), e = 1 - (1 - t) * (1 - t) * (1 - t);
+                int n = Mathf.RoundToInt(Mathf.Lerp(once, ds, e)); l.text = yaz(t >= 1 ? ds : n);
+                if (t >= 1)
+                {
+                    it.Pause(); if (root != null && root.sfx != null) root.sfx.Tik(1320); Yerel.Hap("tick");
+                    if (ds == 1) BasamakBuyut(l, 1.12f, 0);
+                }
+            }).Every(16).StartingIn(gecikme);
+        }
         static void BasamakBuyut(VisualElement v, float bas, int gecikmeMs)
         {
             if (Ayar.reduce) return;
@@ -289,12 +317,15 @@ namespace BirdieSmash.Game
         {
             int og = Hikaye.OncekiKarsilasma(g);
             gs = L.T("Güç {0} · Dünya {1}.", Hikaye.Guc(g), SiraYaz(Hikaye.RakipSira(g)));
-            var gy = Yazi(gs, 13, "soluk"); gy.AddToClassList("rakip-guc"); ra.Add(gy);
             ks = og >= 0 ? L.T("Son karşılaşma: {0} · o gün güç {1}", L.T(KariyerVeri.Al(og).yer), Hikaye.Guc(og)) : null;
-            if (ks != null) { var ky = Yazi(ks, 13, "soluk"); ky.AddToClassList("rakip-guc"); ra.Add(ky); }
+            // 2026-11-15 (inceleme turu): iki soluk satır ("Güç 34 · Dünya 610." + "Son karşılaşma: Sevilla · o gün güç 21") tek
+            // satır oldu: "Güç 21 → 34 · Dünya 610." Rakibin büyüdüğü tek bakışta okunur, dar ekranda + büyük yazıda kart kısalır.
+            // Ekran okuyucu ok işaretini okumasın diye erişim etiketleri (gs, ks) eski iki cümleyle kalır; yer adı orada.
+            string gor = og >= 0 ? L.T("Güç {0} → {1} · Dünya {2}.", Hikaye.Guc(og), Hikaye.Guc(g), SiraYaz(Hikaye.RakipSira(g))) : gs;
+            var gy = Yazi(gor, 13, "soluk"); gy.AddToClassList("rakip-guc"); gy.pickingMode = PickingMode.Ignore; ra.Add(gy);
         }
         // Sıra yazımı: binlik ayırıcı dile göre (TR 1.840, EN 1,840).
-        static string SiraYaz(int n) { return n >= 1000 ? (n / 1000) + (L.En ? "," : ".") + (n % 1000).ToString("000") : n.ToString(); }
+        internal static string SiraYaz(int n) { return n >= 1000 ? (n / 1000) + (L.En ? "," : ".") + (n % 1000).ToString("000") : n.ToString(); }
 
         void KariyerOyna(int g)
         {

@@ -24,6 +24,7 @@ namespace BirdieSmash.Game
     {
         public const float G = 3.2f, L = .066f * G, Rt = .032f * G, Rb = .012f * G, Rc = .0135f * G;
         public static bool SLICE_TAKLA = true;
+        static readonly Color RAKIP_IZ = new Color(.914f, .608f, 1f);   // Hud.RAKIP_HUD #E99BFF; rakibin smaç izi (2026-11-15)
         Transform body; GameObject lines; readonly GameObject[] ghosts = new GameObject[3]; Material[] ghostM = new Material[3];
         Transform shadow; Material shadowM; LineRenderer trail, hLine, gLine, ring, ringS, prevRing, prevX1, prevX2; Transform ringFill, ringNokta; Material ringFillM, ringNoktaM, ringSM, prevM; LineRenderer erIc, erDis, ayakL, ayakR; Material ayakM, ayakDolguM; Transform ayakDolguL, ayakDolguR;
         readonly List<Vector3> trailPts = new List<Vector3>(); readonly List<float> trailT = new List<float>();
@@ -264,7 +265,7 @@ namespace BirdieSmash.Game
                 int n = trailPts.Count; trail.positionCount = n; for (int i = 0; i < n; i++) trail.SetPosition(i, trailPts[i]);
                 Color c; float w, a;
                 if (M.flow && s.from == "me") { c = new Color(1, .82f, .23f); w = 2.5f; a = .9f; } else if (s.super) { c = new Color(1, .47f, .16f); w = 7; a = .8f; }   // 10/.9 idi: kalın eklemeli turuncu topun kendisini örtüyordu
-                else if (s.type == "smash") { c = new Color(.85f, 1, .35f); w = 6; a = .8f; } else { c = Color.white; w = 4f; a = .45f; }
+                else if (s.type == "smash") { c = s.from == "me" ? new Color(.85f, 1, .35f) : RAKIP_IZ; w = 6; a = .8f; } else { c = Color.white; w = 4f; a = .45f; }   // 2026-11-15: rakip smacı lila (Hud.RAKIP_HUD), limon yalnız benim
                 if (c != izC || w != izW || a != izA)
                 {
                     izC = c; izW = w; izA = a;

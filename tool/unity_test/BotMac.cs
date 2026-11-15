@@ -157,7 +157,7 @@ static class BotMac
         Yardimlar();   // 2026-10-29 kayıpta rakip yumuşar (ayrı satır)
         Console.WriteLine("görev tamamlandı: " + gorevN + " kez");
         Antrenman(); TamAntrenman(); Kariyer(); Ekipman(); Devirler(); Ozetler(); YenilgiIpuclari(); Gezintiler(); Veri(); Ilerlemeler(); Imzalar(); EkipmanV2(); Tarzlar();
-        Turlar34(); Drillar(); MacSayisilari(); MacHikayeleri(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Efsaneler(); SmacHareketleri(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
+        Turlar34(); Drillar(); MacSayisilari(); MacHikayeleri(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Efsaneler(); SmacHareketleri(); KozmetikGosterim(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
         KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
         ServisDurusu();   // 2026-11-14 gece: karşılayan servis kurulunca yorgun pozunda kalmaz
@@ -996,6 +996,19 @@ static class BotMac
         if (!Kozmetik.Sahip(g, Kozmetik.SMAC, "duz") || Kozmetik.Sahip(g, Kozmetik.SMAC, "yay") || Kozmetik.Durum(g, Kozmetik.SMAC, "yay", "duz") != ModelDurum.Kilitli) Fail("smaç hareketi: Sv 1'de yalnız düz");
         g.eko.xp = Gear.Sv30Xp(); foreach (var o in l) if (!Kozmetik.Sahip(g, Kozmetik.SMAC, o.id)) Fail("smaç hareketi Sv 30'da açık olmalı: " + o.id);
         if (Array.IndexOf(Kozmetik.KAT, Kozmetik.SMAC) < 0) Fail("smaç hareketi KAT'ta yok (kayıt ve kart dolaşmaz)");
+    }
+    // 2026-11-15 Dolap gösterim sırası (Kozmetik.Gosterim): her kategoride ilk öğe varsayılan, sonrası seviye azalmaz,
+    // aynı öğeler (kayıp/çift yok); Liste() veri sırası değişmez (varsayılan ve kayıt aynı).
+    static void KozmetikGosterim()
+    {
+        foreach (var k in Kozmetik.KAT)
+        {
+            var l = Kozmetik.Liste(k); var g = Kozmetik.Gosterim(k); if (l.Length != g.Length) Fail("gösterim: uzunluk " + k);
+            if (g.Length == 0) continue; if (g[0].id != Kozmetik.Varsayilan(k)) Fail("gösterim: ilk öğe varsayılan değil " + k);
+            for (int i = 2; i < g.Length; i++) if (g[i].sv < g[i - 1].sv || (g[i].sv == g[i - 1].sv && g[i].fiyat < g[i - 1].fiyat)) Fail("gösterim: sıra " + k + " " + g[i].id);
+            var h = new HashSet<string>(); foreach (var o in g) h.Add(o.id); foreach (var o in l) if (!h.Contains(o.id)) Fail("gösterim: kayıp " + k + " " + o.id);
+            if (!object.ReferenceEquals(Kozmetik.Gosterim(k), g)) Fail("gösterim: önbellek " + k);
+        }
     }
     static void Gelisimler()
     {

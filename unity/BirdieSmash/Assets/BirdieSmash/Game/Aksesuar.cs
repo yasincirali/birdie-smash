@@ -132,7 +132,7 @@ namespace BirdieSmash.Game
                     {
                         var mor = Mat(new Color(.33f, .2f, .6f), .3f); var sari = Mat(new Color(1, .82f, .3f), .5f);
                         P(PrimitiveType.Cylinder, k, new Vector3(0, .3f, 0), new Vector3(2.9f, .025f, 2.9f), mor);
-                        Ag(k, Koni(20), mor, new Vector3(0, .28f, 0), new Vector3(-14, 0, 0), new Vector3(1.0f, 2.3f, 1.0f));
+                        Ag(k, Onb("koni20", () => Koni(20)), mor, new Vector3(0, .28f, 0), new Vector3(-14, 0, 0), new Vector3(1.0f, 2.3f, 1.0f));
                         P(PrimitiveType.Cylinder, k, new Vector3(0, .36f, 0), new Vector3(2.02f, .08f, 2.02f), sari);
                         P(PrimitiveType.Sphere, k, new Vector3(.45f, .95f, .55f), Vector3.one * .16f, sari);
                         P(PrimitiveType.Sphere, k, new Vector3(-.35f, 1.35f, .2f), Vector3.one * .12f, sari);
@@ -144,7 +144,7 @@ namespace BirdieSmash.Game
                         P(PrimitiveType.Sphere, k, new Vector3(0, .02f, 0), new Vector3(2.28f, 2.36f, 2.3f), metal);
                         P(PrimitiveType.Cube, k, new Vector3(0, -.36f, 1.1f), new Vector3(1.25f, .11f, .12f), siyah);
                         P(PrimitiveType.Cube, k, new Vector3(0, -.62f, 1.06f), new Vector3(.08f, .42f, .12f), siyah);
-                        Ag(k, Tup(new[] { new Vector3(0, .98f, -.05f), new Vector3(0, 1.4f, -.35f), new Vector3(0, 1.45f, -.85f), new Vector3(0, 1.1f, -1.25f) }, new[] { .14f, .22f, .2f, .05f }, 8), fm, Vector3.zero, Vector3.zero, Vector3.one);
+                        Ag(k, Onb("tup_kask", () => Tup(new[] { new Vector3(0, .98f, -.05f), new Vector3(0, 1.4f, -.35f), new Vector3(0, 1.45f, -.85f), new Vector3(0, 1.1f, -1.25f) }, new[] { .14f, .22f, .2f, .05f }, 8)), fm, Vector3.zero, Vector3.zero, Vector3.one);
                         break;
                     }
                 case "kulaklik":
@@ -152,7 +152,7 @@ namespace BirdieSmash.Game
                         var siyah = Mat(new Color(.1f, .1f, .12f), .5f);
                         var yay = new List<Vector3>(); var rs = new List<float>();
                         for (int i = 0; i <= 12; i++) { float a = Mathf.PI * i / 12; yay.Add(new Vector3(Mathf.Cos(a) * 1.06f, -.25f + Mathf.Sin(a) * 1.27f, -.05f)); rs.Add(.09f); }
-                        Ag(k, Tup(yay.ToArray(), rs.ToArray(), 8), siyah, Vector3.zero, Vector3.zero, Vector3.one);
+                        Ag(k, Onb("tup_kulaklik", () => Tup(yay.ToArray(), rs.ToArray(), 8)), siyah, Vector3.zero, Vector3.zero, Vector3.one);
                         foreach (int sx in new[] { -1, 1 })
                         {
                             P(PrimitiveType.Cylinder, k, new Vector3(1.08f * sx, -.45f, -.05f), new Vector3(.62f, .13f, .62f), siyah, new Vector3(0, 0, 90));
@@ -187,7 +187,7 @@ namespace BirdieSmash.Game
                 case "yuvarlak":
                     {
                         var cerceve = Mat(new Color(.55f, .38f, .18f), .6f);
-                        foreach (int sx in new[] { -1, 1 }) Ag(k, Halka(24, 8, .16f, .032f), cerceve, new Vector3(.32f * sx, -.4f, 1.0f), new Vector3(0, 12 * sx, 0), Vector3.one);
+                        foreach (int sx in new[] { -1, 1 }) Ag(k, Onb("halka_gozluk", () => Halka(24, 8, .16f, .032f)), cerceve, new Vector3(.32f * sx, -.4f, 1.0f), new Vector3(0, 12 * sx, 0), Vector3.one);
                         P(PrimitiveType.Cube, k, new Vector3(0, -.36f, 1.04f), new Vector3(.18f, .04f, .04f), cerceve);
                         foreach (int sx in new[] { -1, 1 }) P(PrimitiveType.Cube, k, new Vector3(.64f * sx, -.36f, .55f), new Vector3(.04f, .04f, .85f), cerceve, new Vector3(0, -12 * sx, 0));
                         break;
@@ -206,7 +206,7 @@ namespace BirdieSmash.Game
                     }
                 case "korsan":
                     P(PrimitiveType.Cylinder, k, new Vector3(-.33f, -.4f, .99f), new Vector3(.4f, .03f, .36f), siyah, new Vector3(90, -14, 0));
-                    Ag(k, Halka(32, 6, 1.03f, .03f), siyah, new Vector3(0, -.05f, 0), new Vector3(-90 + 18, 0, 22), Vector3.one);
+                    Ag(k, Onb("halka_bant", () => Halka(32, 6, 1.03f, .03f)), siyah, new Vector3(0, -.05f, 0), new Vector3(-90 + 18, 0, 22), Vector3.one);
                     break;
                 case "boya":
                     {
@@ -507,7 +507,18 @@ namespace BirdieSmash.Game
             var v = new List<Vector3>(m.vertices); var nr = new List<Vector3>(m.normals); var t = new List<int>(m.triangles); int n = v.Count, tn = t.Count;
             for (int i = 0; i < n; i++) { v.Add(v[i]); nr.Add(-nr[i]); }
             for (int i = 0; i < tn; i += 3) { t.Add(t[i] + n); t.Add(t[i + 2] + n); t.Add(t[i + 1] + n); }
-            var o = new Mesh(); o.SetVertices(v); o.SetNormals(nr); o.SetTriangles(t, 0); o.RecalculateBounds(); return o;
+            var o = new Mesh(); o.SetVertices(v); o.SetNormals(nr); o.SetTriangles(t, 0); o.RecalculateBounds();
+            Object.Destroy(m); return o;   // ara ağ sahipsiz kalıyordu (2026-11-15)
+        }
+        // 2026-11-15 (inceleme turu): yordamsal ağlar her figür kurulumunda baştan yapılıyor, PlayerView.Sil yalnız malzemeleri
+        // topladığı için Dolap'taki her deneme dokunuşu iki Mesh'i maç perdesine kadar sahipsiz bırakıyordu. Parametreler sabit
+        // (5 çağrı yeri), ağ paylaşılır: anahtarla kalıcı önbellek. UnloadUnusedAssets dokunmasın diye işaretli; figür ağı
+        // silmez (sharedMesh), tek kopya oyun boyu yaşar (birkaç KB).
+        static readonly Dictionary<string, Mesh> ycache = new Dictionary<string, Mesh>();
+        static Mesh Onb(string a, System.Func<Mesh> yap)
+        {
+            Mesh m; if (ycache.TryGetValue(a, out m) && m != null) return m;
+            m = yap(); m.name = "aks_" + a; m.hideFlags = HideFlags.DontUnloadUnusedAsset; ycache[a] = m; return m;
         }
         // ---- yordamsal ağlar (birim ölçüde; kök ölçeği baş yarıçapı) ----
         static Mesh Koni(int n)

@@ -1,4 +1,11 @@
 === UNITY ===
+Dolap sırası, dünya sırası ve rakip smacı (15 Kasım sabah):
+- Dolap raflarında eşyalar artık seviyeye göre diziliyor: açabildiklerin başta, kilitliler sonda. Önceden yeni paketler sona eklendiği için Sv 3 saçı Sv 15 kilidinin arkasında kalıyordu.
+- Yeni bir kariyer basamağını kazanınca maç sonu kartında dünya sıran da yazıyor (ör. "Dünya 1.360 (−480)"). Kariyer sekmesine dönünce sayı eskisinden yenisine akarak iniyor.
+- Maç kartında rakibin gücü tek satırda: "Güç 21 → 34 · Dünya 610", geçen karşılaşmadan bu yana ne kadar büyüdüğü bir bakışta.
+- Rakibin smaç izi ve vuruş dalgası artık lila; limon yeşili yalnız senin smacında.
+- Dolap'ta çok eşya denerken bellek artık birikmiyor.
+Nasıl denenir: Dolap > Saç ve Şapka'yı aç: ilk satırlar senin seviyende açılabilen eşyalar olmalı, seviye kilitleri aşağı doğru artmalı. Kariyer'de yeni bir basamağı kazan: kartta dünya sırası ve farkı görünmeli, Kariyer sekmesinde sayı kısa sürede yeni değere akmalı. Bir rakip smaç attığında iz lila olmalı.
 Dolap > Ayakkabı cilası (15 Kasım gece):
 - Ayakkabı yakın planı artık ayakkabıları kadrajın ortasına alıyor; iri baldırlar kareyi doldurmuyor, iki ayakkabının burnu ve yanları görünüyor.
 - Ayakkabı, sırt ve kol eşyası denediğinde ya da seçtiğinde eşya bir anda belirmiyor, kısa bir yaylanmayla yerine oturuyor (Hareketi azalt açıksa anında).
