@@ -18,6 +18,8 @@ namespace BirdieSmash.Game
     public static class Cokme
     {
         static string izYol, cokmeYol; static float yazT; static int dusukBellek; static bool kurulu;
+        // Takılma izi (2026-11-15): oturumdaki en uzun kare ve 100 ms'yi aşan kare sayısı; "kasma" raporu sayıyla gelsin.
+        static float enUzun; static int uzunN; static string enUzunEkran = "";
         static readonly string[] hata = new string[3]; static int hataN;
         static readonly StringBuilder sb = new StringBuilder(512);
         public static string Son { get; private set; }   // önceki ön plan bitişi / CrashReport metni; yoksa null
@@ -27,7 +29,20 @@ namespace BirdieSmash.Game
             if (kurulu) return; kurulu = true;
             izYol = Path.Combine(Application.persistentDataPath, "son_oturum.txt"); cokmeYol = Path.Combine(Application.persistentDataPath, "son_cokme.txt");
             string yeni = null;
-            try { if (File.Exists(izYol)) { var s = File.ReadAllText(izYol); if (s.StartsWith("onde")) yeni = "Önceki oturum oyun açıkken bitti (çökme ya da bellek)\n" + s; } } catch { }
+            // 2026-11-15 (yasin: "maçta donma ve kasma yaşadım, crash de olmadı, donup kaldı"; paylaşılan kayıt bir önceki günün
+            // oturumuydu): donan oturum arka plana düzgün geçtiği için dosya "arka" diyordu ve hata satırlarıyla birlikte atılıyordu.
+            // Oyun mantığı her karede istisna atıp donarsa ana iş parçacığı yaşar, iz "arka"/"cikis" ile biter; hata satırı olan
+            // oturum da artık saklanır.
+            try
+            {
+                if (File.Exists(izYol))
+                {
+                    var s = File.ReadAllText(izYol);
+                    if (s.StartsWith("onde")) yeni = "Önceki oturum oyun açıkken bitti (çökme ya da bellek)\n" + s;
+                    else if (s.Contains("\nhata: ")) yeni = "Önceki oturumda hata oldu (oyun kapanmadı)\n" + s;
+                }
+            }
+            catch { }
             try
             {
                 var r = CrashReport.reports;
@@ -67,7 +82,9 @@ namespace BirdieSmash.Game
         public static void Tik(GameRoot root)
         {
             if (!kurulu) return;
-            yazT -= Time.unscaledDeltaTime; if (yazT > 0) return; yazT = 2;
+            float dt = Time.unscaledDeltaTime;
+            if (Time.frameCount > 30 && dt > .1f && dt < 30) { uzunN++; if (dt > enUzun) { enUzun = dt; enUzunEkran = root.ekran.ToString(); } }   // ilk kareler açılış perdesinin arkasında; 30 sn üstü arka plandan dönüş
+            yazT -= dt; if (yazT > 0) return; yazT = 2;
             Yaz("onde", root);
         }
         public static void Durum(bool arka) { if (kurulu) Yaz(arka ? "arka" : "onde", null); }
@@ -85,6 +102,7 @@ namespace BirdieSmash.Game
                 sb.Append("açık ").Append(Mathf.RoundToInt(Time.realtimeSinceStartup)).Append(" sn · bellek ")
                   .Append(UnityEngine.Profiling.Profiler.GetTotalReservedMemoryLong() / 1048576).Append(" MB ayrılmış / ").Append(SystemInfo.systemMemorySize).Append(" MB · mono ")
                   .Append(UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong() / 1048576).Append(" MB · düşük bellek uyarısı ").Append(dusukBellek).Append('\n');
+                sb.Append("en uzun kare ").Append(Mathf.RoundToInt(enUzun * 1000)).Append(" ms (").Append(enUzunEkran).Append(") · 100 ms üstü kare ").Append(uzunN).Append('\n');
                 sb.Append("kalite ").Append(Kalite.Basamak).Append(" · ısı ").Append(Kalite.Isil).Append(" · hedef ").Append(Application.targetFrameRate).Append(" fps · model ").Append(Ayar.model).Append(" · kamera ").Append(Ayar.kamera).Append('\n');
                 if (root != null)
                 {
