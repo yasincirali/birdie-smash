@@ -1,0 +1,454 @@
+[New LWP 8013]
+[New LWP 8011]
+[New LWP 8010]
+[New LWP 8009]
+[New LWP 8008]
+[New LWP 8006]
+[New LWP 8005]
+[New LWP 8004]
+[New LWP 8003]
+[New LWP 8002]
+[New LWP 8001]
+[New LWP 8000]
+[New LWP 7999]
+[New LWP 7998]
+[New LWP 7997]
+[New LWP 7996]
+[New LWP 7995]
+[New LWP 7994]
+[New LWP 7993]
+[New LWP 7992]
+[New LWP 7991]
+[New LWP 7990]
+[New LWP 7989]
+[New LWP 7988]
+[New LWP 7987]
+[New LWP 7986]
+[New LWP 7985]
+[New LWP 7984]
+[New LWP 7983]
+[New LWP 7982]
+[New LWP 7981]
+[New LWP 7980]
+[New LWP 7979]
+[New LWP 7978]
+[New LWP 7977]
+[New LWP 7976]
+[New LWP 7975]
+[New LWP 7973]
+[New LWP 7972]
+[New LWP 7971]
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/usr/lib/x86_64-linux-gnu/libthread_db.so.1".
+0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 41 (Thread 0x7ebacc5ff6c0 (LWP 7971) "AssetGarbageCol"):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdcef9e0 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 40 (Thread 0x7ebacb5fe6c0 (LWP 7972) "AssetGarbageCol"):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdcef9e0 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 39 (Thread 0x7ebaca5fd6c0 (LWP 7973) "AssetGarbageCol"):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdcef9e0 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 38 (Thread 0x7ebac95fc6c0 (LWP 7975) "SDLTimer"):
+#0  0x00007ebacc6b4792 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacc6a82fc in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007ebacc6a86d7 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#3  0x00007ebacc6b4698 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007ebacee339f9 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#5  0x00007ebacee33760 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#6  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 37 (Thread 0x7ebac71ff6c0 (LWP 7976) "Finalizer"):
+#0  0x00007ebacc6b4792 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacc6a82fc in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007ebacc6a86d7 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#3  0x00007ebacc6b4698 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007ebac7a3975c in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#5  0x00007ebac7a02f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#6  0x00007ebac7a02ded in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#7  0x00007ebac7a7bfc0 in GC_inner_start_routine () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#8  0x00007ebac7a7bc51 in GC_start_routine () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#9  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#10 0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 36 (Thread 0x7ebac6ffe6c0 (LWP 7977) "Job.Worker 0"):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 35 (Thread 0x7ebac5ffd6c0 (LWP 7978) "Job.Worker 1"):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 34 (Thread 0x7ebac4ffc6c0 (LWP 7979) "Job.Worker 2"):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 33 (Thread 0x7ebac3ffb6c0 (LWP 7980) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 32 (Thread 0x7ebac2ffa6c0 (LWP 7981) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 31 (Thread 0x7ebac1ff96c0 (LWP 7982) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 30 (Thread 0x7eba2ffff6c0 (LWP 7983) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 29 (Thread 0x7eba2effe6c0 (LWP 7984) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 28 (Thread 0x7eba2dffd6c0 (LWP 7985) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 27 (Thread 0x7eba27fff6c0 (LWP 7986) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 26 (Thread 0x7eba26ffe6c0 (LWP 7987) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 25 (Thread 0x7eba25ffd6c0 (LWP 7988) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 24 (Thread 0x7eba24ffc6c0 (LWP 7989) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 23 (Thread 0x7eba23ffb6c0 (LWP 7990) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 22 (Thread 0x7eba22ffa6c0 (LWP 7991) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 21 (Thread 0x7eba21ff96c0 (LWP 7992) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 20 (Thread 0x7eba20ff86c0 (LWP 7993) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 19 (Thread 0x7eba1fff76c0 (LWP 7994) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 18 (Thread 0x7eba1eff66c0 (LWP 7995) "Background Job."):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdc92f72 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdc95978 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 17 (Thread 0x7eba1dff56c0 (LWP 7996) "BatchDeleteObje"):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacddb23c7 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacdcc7823 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 16 (Thread 0x7eba1cff46c0 (LWP 7997) "Loading.AsyncRe"):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdacd130 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 15 (Thread 0x7eba109ff6c0 (LWP 7998) "llvmpipe-0"):
+#0  0x00007eba19019997 in ?? ()
+#1  0x00001fb500001fb5 in ?? ()
+#2  0x00001fb500001fb5 in ?? ()
+#3  0x00009ff500009ff5 in ?? ()
+#4  0x00009ff500009ff5 in ?? ()
+#5  0x3eef88263ec9e076 in ?? ()
+#6  0x3f8000003f04eecc in ?? ()
+#7  0x3ef013dc3eca59f4 in ?? ()
+#8  0x3f8000003f05402b in ?? ()
+#9  0x3e99b0603e99b060 in ?? ()
+#10 0x3e99b0603e99b05f in ?? ()
+#11 0x3e99b05f3e99b060 in ?? ()
+#12 0x000000003e99b060 in ?? ()
+#13 0x0000000019013201 in ?? ()
+#14 0x0000000000000000 in ?? ()
+
+Thread 14 (Thread 0x7eba0f9fe6c0 (LWP 7999) "llvmpipe-1"):
+#0  0x00007eba088fe477 in ?? ()
+#1  0x00001fb500001fb5 in ?? ()
+#2  0x00001fb500001fb5 in ?? ()
+#3  0x00009ff500009ff5 in ?? ()
+#4  0x00009ff500009ff5 in ?? ()
+#5  0x0000000000000000 in ?? ()
+
+Thread 13 (Thread 0x7eba0e9fd6c0 (LWP 8000) "llvmpipe-2"):
+#0  0x00007eba01ef54ce in ?? ()
+#1  0x00001fb500001fb5 in ?? ()
+#2  0x00001fb500001fb5 in ?? ()
+#3  0x00009ff500009ff5 in ?? ()
+#4  0x00009ff500009ff5 in ?? ()
+#5  0x3e97e71a3e7fc94c in ?? ()
+#6  0x3f8000003ea36816 in ?? ()
+#7  0x3e9db46b3e844431 in ?? ()
+#8  0x3f8000003eaabc82 in ?? ()
+#9  0x0000000000000001 in ?? ()
+#10 0x0000000000000001 in ?? ()
+#11 0x00007eba0e9fcaa0 in ?? ()
+#12 0x000000003f19999a in ?? ()
+#13 0x0000000000000000 in ?? ()
+
+Thread 12 (Thread 0x7eba0d9fc6c0 (LWP 8001) "llvmpipe-3"):
+#0  0x00007eba089014b1 in ?? ()
+#1  0x00007eba088ff8bd in ?? ()
+#2  0x00001fb500001fb5 in ?? ()
+#3  0x00001fb500001fb5 in ?? ()
+#4  0x00009ff500009ff5 in ?? ()
+#5  0x00009ff500009ff5 in ?? ()
+#6  0x0000000000000000 in ?? ()
+
+Thread 11 (Thread 0x7eba0c9fb6c0 (LWP 8002) "BirdieSmash"):
+#0  0x00007ebacc6b4792 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacc6a82fc in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007ebacc6a86d7 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#3  0x00007ebacc6ab147 in pthread_cond_wait () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007eba198adadd in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#5  0x00007eba19bb7a4c in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#6  0x00007eba198ada1c in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#7  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 10 (Thread 0x7eba0b9fa6c0 (LWP 8003) "BirdieSmash"):
+#0  0x00007ebacc6b4792 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacc6a82fc in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007ebacc6a86d7 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#3  0x00007ebacc6ab147 in pthread_cond_wait () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007eba198adadd in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#5  0x00007eba19bb7a4c in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#6  0x00007eba198ada1c in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#7  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 9 (Thread 0x7eba0a9f96c0 (LWP 8004) "BirdieSmash"):
+#0  0x00007ebacc6b4792 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacc6a82fc in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007ebacc6a86d7 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#3  0x00007ebacc6ab147 in pthread_cond_wait () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007eba198adadd in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#5  0x00007eba19bb7a4c in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#6  0x00007eba198ada1c in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#7  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 8 (Thread 0x7eba099f86c0 (LWP 8005) "BirdieSmash"):
+#0  0x00007ebacc6b4792 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacc6a82fc in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007ebacc6a86d7 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#3  0x00007ebacc6ab147 in pthread_cond_wait () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007eba198adadd in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#5  0x00007eba19bb7a4c in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#6  0x00007eba198ada1c in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#7  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 7 (Thread 0x7eba03fff6c0 (LWP 8006) "BirdieS:disk$0"):
+#0  0x00007ebacc6b4792 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacc6a82fc in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007ebacc6a86d7 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#3  0x00007ebacc6ab147 in pthread_cond_wait () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007eba198adadd in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#5  0x00007eba1986201c in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#6  0x00007eba198ada1c in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#7  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 6 (Thread 0x7eba02ffe6c0 (LWP 8008) "UnityGfxDeviceW"):
+#0  0x00007ebacc6b4792 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacc6a82fc in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007ebacc6a86d7 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#3  0x00007ebacc6ab147 in pthread_cond_wait () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007eba198adadd in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#5  0x00007eba19bb865b in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#6  0x00007eba19bb35e9 in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#7  0x00007eba19bb8c21 in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#8  0x00007eba19bb8cfc in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#9  0x00007eba19bef146 in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#10 0x00007eba1a154d21 in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#11 0x00007eba1a155a34 in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#12 0x00007eba19bf3319 in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#13 0x00007eba196b3728 in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#14 0x00007eba196b4115 in ?? () from /usr/lib/x86_64-linux-gnu/libgallium-26.0.8-1ubuntu0.3.so
+#15 0x00007ebace0addb9 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#16 0x00007ebace0bc752 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#17 0x00007ebacea8d490 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#18 0x00007ebacea89ecf in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#19 0x00007ebacea967e0 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#20 0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#21 0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#22 0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 5 (Thread 0x7ebac01bb6c0 (LWP 8009) "BirdieSmash"):
+#0  0x00007ebacc6b4792 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacc6a82fc in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007ebacc6f7c82 in clock_nanosleep () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#3  0x00007ebacc707947 in nanosleep () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007ebacc73f0ba in usleep () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacd24dbdc in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#6  0x00007ebacd21a7d8 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#7  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 4 (Thread 0x7ebac0d116c0 (LWP 8010) "BirdieSmash"):
+#0  0x00007ebacc6b4792 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacc6a82fc in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007ebacc6f7c82 in clock_nanosleep () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#3  0x00007ebacc707947 in nanosleep () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007ebacc73f0ba in usleep () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007ebacd24dbdc in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#6  0x00007ebacd21a7d8 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#7  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 3 (Thread 0x7ebac00ba6c0 (LWP 8011) "Loading.Preload"):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacdd07ae9 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebacddb0f2b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacc6abe6b in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007ebacc73f55c in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+
+Thread 2 (Thread 0x7eba013ff6c0 (LWP 8013) "BirdieSmash"):
+#0  0x00007ebacc6b4792 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebacc6a82fc in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007ebacc6a86d7 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#3  0x00007ebacc6ab402 in pthread_cond_timedwait () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007ebac7a4d303 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#5  0x00007ebac7a5648c in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#6  0x00007ebac79fc78d in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#7  0x00007ebac79ac8f8 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+#8  0x0000000041c445f6 in ?? ()
+#9  0x00007eb9fa8017e0 in ?? ()
+#10 0x00007eb9fa957bd0 in ?? ()
+#11 0x00007eb9fa957bd0 in ?? ()
+#12 0x00007eb9fa957bd0 in ?? ()
+#13 0x0000000000002710 in ?? ()
+#14 0x00007eb95800f5e0 in ?? ()
+#15 0x00007eba013fe990 in ?? ()
+#16 0x00007eba013fe840 in ?? ()
+#17 0x00007eb9fa03f9c0 in ?? ()
+#18 0x0000000041c4452c in ?? ()
+#19 0x000000000000000e in ?? ()
+#20 0x0000000041bee1f0 in ?? ()
+#21 0x00007eb9fa6147e0 in ?? ()
+#22 0x0000000041c4443c in ?? ()
+#23 0x00007eb9fa84a900 in ?? ()
+#24 0x00007ebac7a3db89 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/BirdieSmash_Data/MonoBleedingEdge/x86_64/libmonobdwgc-2.0.so
+
+Thread 1 (Thread 0x7ebacf1063c0 (LWP 7970) "BirdieSmash"):
+#0  0x00007ebacc73ca2d in syscall () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007ebace04ba62 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#2  0x00007ebace03bd1f in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#3  0x00007ebacd9f953f in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#4  0x00007ebacdcfdfa7 in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#5  0x00007ebacdcd694b in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#6  0x00007ebacdcd698a in ?? () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#7  0x00007ebacdfa7af5 in PlayerMain(int, char**) () from /home/runner/work/birdie-smash/birdie-smash/build/StandaloneLinux64/UnityPlayer.so
+#8  0x00007ebacc62a8c1 in ?? () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#9  0x00007ebacc62a9d8 in __libc_start_main () from /usr/lib/x86_64-linux-gnu/libc.so.6
+#10 0x0000000000201029 in _start ()
+[Inferior 1 (process 7970) detached]
