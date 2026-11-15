@@ -85,7 +85,7 @@ namespace BirdieSmash.Game
             { string d0 = Ayar.dil; Ayar.dil = "tr"; root.ui.Kirlet(); yield return MenuTuru("tr_", true); Ayar.yaziTest = 2; yield return MenuTuru("x2_tr_", true);
               Ayar.yaziTest = 0; Ayar.dil = d0; root.ui.Kirlet(); root.ui.SekmeAc(Sekme.Kariyer); root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(5); }
             yield return PerdeTuru();   // 2026-10-27 yön C: perde v2 ve açılış anı kareleri
-            var modeller = new System.Collections.Generic.List<string> { "oyuncak", "rocketbox" };
+            var modeller = new System.Collections.Generic.List<string> { "oyuncak" }; if (Ayar.ModelVar("rocketbox")) modeller.Add("rocketbox");   // 2026-11-15: Gerçekçi ve Sade build'den çıktı
             if (Resources.Load<GameObject>("karakter/sade") != null) modeller.Add("sade");
             foreach (var mdl in modeller)
             {
@@ -657,7 +657,7 @@ namespace BirdieSmash.Game
             ol.Basla(); root.Oyna(); yield return null;
             for (int i = 0; i < 900 && hud.PerdeVar; i++) yield return null;
             rap.AppendLine(ol.Bitir("perde_oyna"));
-            var modeller = new List<string> { "oyuncak", "rocketbox" }; if (Resources.Load<GameObject>("karakter/sade") != null) modeller.Add("sade");
+            var modeller = new List<string> { "oyuncak" }; if (Ayar.ModelVar("rocketbox")) modeller.Add("rocketbox"); if (Resources.Load<GameObject>("karakter/sade") != null) modeller.Add("sade");
             if (Ayar.ModelVar("tuycuk")) modeller.Add("tuycuk");   // 2026-10-29: Tüycük'ün ralli kare süresi de ölçülsün (sona eklenir, diğer satırlar aynı)
             foreach (var mdl in modeller)
             {
@@ -997,10 +997,12 @@ namespace BirdieSmash.Game
             yield return Dizilis();
             // başka model seçiliyken: Karakter sayfası uyarı kartı (deneme figürü değiştirmez) ve Ayarlar'daki üç model
             Ayar.KOZ[Kozmetik.TIP] = "atlet"; Ayar.KOZ[Kozmetik.SAC] = "kisa"; Ayar.gear.ayakkabi = "klasik";
+            if (Ayar.ModelVar("rocketbox")) {
             Ayar.model = "rocketbox"; root.GorunumDegisti(); root.ModelDegisti(); root.AnaMenu(); yield return Bekle(10);
             ui.SekmeAc(Sekme.Soyunma); yield return Bekle(20); ui.KarakterAc(UiKok.KAR_TIP); yield return Bekle(10); ui.KarakterDene(Kozmetik.TIP, "guclu"); yield return Bekle(30); yield return Cek("model_gercekci_karakter_uyari");
             t = null; VaryantSatir("vitrin gerçekçi tip=guclu (parça beklenmez)", root.vitrin.Fig, "rocketbox", null, null, ref t);
             ui.SoyunmaSegment(0); ui.AyarlarAc(); yield return Bekle(20); yield return Cek("model_ayarlar_gercekci"); ui.Geri(); yield return Bekle(5);
+            }
             // Sade maçta ve modeller arası gidiş-dönüş (rocketbox → sade → oyuncak): figür her seferinde çiziliyor mu
             foreach (var mdl in new[] { "sade", "oyuncak" })
             {
@@ -1028,6 +1030,7 @@ namespace BirdieSmash.Game
         IEnumerator Gercekci()
         {
             var ui = root.ui; var gr = Ayar.gear; if (ui == null || gr == null) yield break;
+            if (!Ayar.ModelVar("rocketbox")) { rap.AppendLine("=== gerçekçi · FBX yok (2026-11-15 build'den çıktı), bölüm atlandı"); yield break; }
             string m0 = Ayar.model, ay0 = gr.ayakkabi, b0 = gr.bant, bl0 = gr.bileklik, k0 = gr.kumas, r0 = gr.renk, s0 = Ayar.GORUNUM["sort"], ar0 = Ayar.GORUNUM["ayakkabi"], g0 = Ayar.RGOR["grip"], t0 = Ayar.RGOR["tel"];
             bool rd0 = Ayar.reduce, rs0 = Ayar.reduceSecim;
             rap.AppendLine("=== gerçekçi aksesuarlar (vitrin: önden, dönme kapalı; maç: seçim) · ekran " + Screen.width + "x" + Screen.height);

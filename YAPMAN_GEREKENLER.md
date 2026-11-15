@@ -266,8 +266,16 @@ Her dil için (sağ üst dil menüsü) ilgili klasördeki dosyayı yapıştır:
 ### Açık sorular (senin kararın)
 
 1. ~~Destek e-postası ve Support URL~~ Karar (2026-11-08, stüdyo kuralı): support@murphysoft.app ve murphysoft.app/birdie-smash/support/ (yukarıda, `support_url.txt`).
-2. **Copyright satırı** ve App Store'da görünecek **geliştirici adı** (Apple hesabındaki
-   ad/şirket adı otomatik gelir).
+2. ~~Copyright satırı ve geliştirici adı~~ Karar (2026-11-15, yasin "bunları yap", önerilen seçenek): geliştirici adı
+   **kendi adın** (bireysel Apple hesabındaki ad App Store'da otomatik görünür, yapacak bir şey yok; stüdyo adı ancak
+   şirket hesabıyla olur). Copyright alanına `2026` + boşluk + Apple hesabındaki adın soyadın yazılır (ASC › iOS App ›
+   1.0 Prepare for Submission › General › Copyright; © işareti yazma, Apple ekler). Murphysoft adı web sitesinde ve
+   destek adresinde kalır.
+   - [ ] **Anahtar kelimeleri yeniden yapıştır** (11 Kasım'da değişti: tenis/masa tenisi çıktı). ASC › Birdie Smash ›
+     iOS App › 1.0 Prepare for Submission › sağ üstten dil seç › **Keywords**. Olduğu gibi, virgülden sonra boşluksuz:
+     - Türkçe: `günlük maç,tüy top,raket,spor oyunu,file,smaç,ralli,kariyer,turnuva,arcade,tek oyunculu,offline`
+     - English (U.S.): `daily match,shuttlecock,racket,sports,serve,net,rally,career,tournament,arcade,offline,single player`
+     Kaynak `store_listing/<dil>/keywords.txt` (ikisi de 100 karakter sınırı içinde).
 3. ~~İkinci kategori Arcade olsun mu?~~ Karar (2026-11-07): Sports + Arcade (yukarıda B.4).
 
 ## Reklam alanı (2026-11-06)

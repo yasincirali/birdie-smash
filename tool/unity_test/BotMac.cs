@@ -1320,6 +1320,9 @@ static class BotMac
     static void GercekciAksesuar()
     {
         string R = "unity/BirdieSmash/Assets/Resources/karakter/";
+        // 2026-11-15 (yasin: "kaldır"): Gerçekçi ve Sade build'den çıktı. Geri gelmesinler: iki dosya ~12 MB FBX.
+        foreach (var m in new[] { "rocketbox", "sade" }) if (System.IO.Directory.GetFiles(R, m + "*").Length > 0) Fail("kaldırılan model yeniden eklenmiş: " + m);
+        if (!System.IO.File.Exists(R + "rocketbox_clips.json")) { Console.WriteLine("gerçekçi aksesuar: model build'de yok, atlandı"); return; }
         var js = Json.Obj(Json.Parse(System.IO.File.ReadAllText(R + "rocketbox_clips.json")));
         var parts = new HashSet<string>(((List<object>)js["parts"]).Select(x => (string)x));
         string fbx = System.Text.Encoding.ASCII.GetString(System.IO.File.ReadAllBytes(R + "rocketbox.fbx"));
@@ -1348,7 +1351,7 @@ static class BotMac
     {
         string R = "unity/BirdieSmash/Assets/Resources/karakter/"; if (!System.IO.Directory.Exists(R)) { Fail("Resources/karakter bulunamadı (depo kökünden koş)"); return; }
         int parca = 0;
-        foreach (var m in new[] { "oyuncak", "rocketbox", "sade" }) if (!System.IO.File.Exists(R + m + ".fbx") || !System.IO.File.Exists(R + m + "_clips.json")) Fail("Ayarlar modeli eksik: " + m);
+        foreach (var m in new[] { "oyuncak", "tuycuk" }) if (!System.IO.File.Exists(R + m + ".fbx") || !System.IO.File.Exists(R + m + "_clips.json")) Fail("Ayarlar modeli eksik: " + m);
         foreach (var t in T)
         {
             string ad = "oyuncak" + (t.varlik != null ? "_" + t.varlik : "");
