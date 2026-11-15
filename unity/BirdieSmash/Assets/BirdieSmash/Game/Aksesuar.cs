@@ -254,6 +254,9 @@ namespace BirdieSmash.Game
                 Resources.UnloadAsset(ta);
             }
             if (h != null) Boya(h, Kozmetik.Bul(Kozmetik.SAPKA, id) ?? Kozmetik.Bul(Kozmetik.SIRT, id) ?? Kozmetik.Bul(Kozmetik.KOL, id) ?? Kozmetik.Bul(Kozmetik.BEL, id) ?? Kozmetik.Bul(Kozmetik.SAC, id) ?? Kozmetik.Bul(Kozmetik.YUZ, id) ?? Kozmetik.Bul(Kozmetik.AYAK, id));
+            // 2026-11-15 tip parçaları (hv_: hayvan/robot kafası, kulak, kuyruk) hafifçe kendinden ışır: vitrin ışığında beyaz kürk gri,
+            // yüz çizgileri donuk okunuyordu (r187). Renkle orantılı olduğundan koyu parça koyu kalır, açık renk ve robot ışıkları canlanır.
+            if (h != null && h.mats != null && id.StartsWith("hv_")) foreach (var m in h.mats) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", m.color * .3f); m.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None; }
             if (h != null && h.mats != null) foreach (var m in h.mats) Kit.Paylas(m);   // 2026-11-11: önbellekte; PlayerView.Sil silmesin (Kit.Paylasilan)
             hazir[id] = h; return h;
         }

@@ -1,4 +1,8 @@
 === UNITY ===
+Robot oyuncu ve daha canlı hayvan yüzleri (15 Kasım ikindi):
+- Dolap > Beden > Tip sayfasında yeni bir oyuncu var: Robot (Seviye 18, 2.500 Tüy). Metal gövde, ışıklı vizör, tepede anten ve belde şarj kablosu. Yalnız görünüş; oyuna etkisi yok.
+- Kedi, Tavşan ve Panda'nın başı artık daha aydınlık: beyaz kürk gri görünmüyor, göz ve ağız daha net.
+Nasıl denenir: Dolap > Beden > Tip'te Robot'a dokunup dene: vizör ve ağız ışıkları parlak görünmeli. Bir şapka dene: anten gizlenmeli, şapka başa oturmalı. Bel eşyası tak: kablo gizlenmeli. Tavşan'a dokun: kürk beyaz görünmeli. Bir maç oyna: oyuncun her zamanki gibi oynamalı.
 Oyun küçüldü (15 Kasım):
 - Artık seçilemeyen iki eski oyuncu modeli (Gerçekçi ve Sade) oyundan çıkarıldı; indirme boyutu yaklaşık 12 MB küçüldü. Bu modellerden biri seçili kalmışsa oyuncun Oyuncak 3B olarak görünür; forma, renk, saç ve aksesuar seçimlerin durur.
 Nasıl denenir: Dolap > Beden'i aç: en üstte yalnız Oyuncak 3B ve Tüycük olmalı. Bir maç oyna: oyuncun ve rakibin her zamanki gibi görünmeli. Önceden Gerçekçi ya da Sade seçiliyse oyuncun Oyuncak 3B olarak gelmeli, Tüy ve eşyaların eksilmemeli.
