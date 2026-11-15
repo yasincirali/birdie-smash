@@ -27,7 +27,7 @@ namespace BirdieSmash.Game
             var t = Yazi(L.T("Kariyer"), 24, "sekme-baslik"); Erisim.Etiket(t, L.T("Kariyer"), "baslik"); bas.Add(t);
             bas.Add(YildizSayac(p.ToplamYildiz, TurSayisiVeri() * 18, 15));
             // Dünya sırası (2026-11-14 hikâye, Core/Hikaye): kazanılan basamakla yükselir, kayıpta düşmez; 1'den sonra unvanı koru.
-            { int ds = Hikaye.OyuncuSira(Hikaye.Galibiyet(p)); string dy = ds == 1 ? L.T("Dünya 1 numarası · unvanını koru") : L.T("Dünya sıralaman: {0}.", SiraYaz(ds));
+            { int ds = Hikaye.OyuncuSira(Hikaye.Galibiyet(p)); string dy = ds == 1 ? L.T("Dünya 1 numarası · unvanını koru") : L.T("Dünya sıralaman: {0}", SiraYaz(ds));
               var dsy = Yazi(dy, 14, "soluk"); dsy.AddToClassList("dunya-sira"); Erisim.Etiket(dsy, dy, "metin"); c.Add(dsy);
               DunyaSiraAkit(dsy, ds); }
             // Career.Line satırı kalktı (fikir 22:10 #2): aynı maç başlık altında, tur kartında, maç kartında ve düğmede dört kez yazıyordu.
@@ -235,7 +235,7 @@ namespace BirdieSmash.Game
             int once = PlayerPrefs.GetInt("tuytop_dunya_gosterilen", -1);
             if (once != ds) { PlayerPrefs.SetInt("tuytop_dunya_gosterilen", ds); PlayerPrefs.Save(); }
             if (once < 0 || ds >= once || Ayar.reduce || l == null) return;
-            System.Func<int, string> yaz = n => n == 1 ? L.T("Dünya 1 numarası · unvanını koru") : L.T("Dünya sıralaman: {0}.", SiraYaz(n));
+            System.Func<int, string> yaz = n => n == 1 ? L.T("Dünya 1 numarası · unvanını koru") : L.T("Dünya sıralaman: {0}", SiraYaz(n));
             l.text = yaz(once);
             float bas = -1; const float SURE = .6f; int gecikme = basAniA >= 0 ? 450 : 250;
             IVisualElementScheduledItem it = null;
@@ -316,12 +316,12 @@ namespace BirdieSmash.Game
         void GucSatirlari(VisualElement ra, int g, out string gs, out string ks)
         {
             int og = Hikaye.OncekiKarsilasma(g);
-            gs = L.T("Güç {0} · Dünya {1}.", Hikaye.Guc(g), SiraYaz(Hikaye.RakipSira(g)));
+            gs = L.T("Güç {0} · Dünya {1}", Hikaye.Guc(g), SiraYaz(Hikaye.RakipSira(g)));
             ks = og >= 0 ? L.T("Son karşılaşma: {0} · o gün güç {1}", L.T(KariyerVeri.Al(og).yer), Hikaye.Guc(og)) : null;
             // 2026-11-15 (inceleme turu): iki soluk satır ("Güç 34 · Dünya 610." + "Son karşılaşma: Sevilla · o gün güç 21") tek
             // satır oldu: "Güç 21 → 34 · Dünya 610." Rakibin büyüdüğü tek bakışta okunur, dar ekranda + büyük yazıda kart kısalır.
             // Ekran okuyucu ok işaretini okumasın diye erişim etiketleri (gs, ks) eski iki cümleyle kalır; yer adı orada.
-            string gor = og >= 0 ? L.T("Güç {0} → {1} · Dünya {2}.", Hikaye.Guc(og), Hikaye.Guc(g), SiraYaz(Hikaye.RakipSira(g))) : gs;
+            string gor = og >= 0 ? L.T("Güç {0} → {1} · Dünya {2}", Hikaye.Guc(og), Hikaye.Guc(g), SiraYaz(Hikaye.RakipSira(g))) : gs;
             var gy = Yazi(gor, 13, "soluk"); gy.AddToClassList("rakip-guc"); gy.pickingMode = PickingMode.Ignore; ra.Add(gy);
         }
         // Sıra yazımı: binlik ayırıcı dile göre (TR 1.840, EN 1,840).
