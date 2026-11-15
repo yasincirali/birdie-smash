@@ -265,7 +265,7 @@ namespace BirdieSmash.Game
                 int n = trailPts.Count; trail.positionCount = n; for (int i = 0; i < n; i++) trail.SetPosition(i, trailPts[i]);
                 Color c; float w, a;
                 if (M.flow && s.from == "me") { c = new Color(1, .82f, .23f); w = 2.5f; a = .9f; } else if (s.super) { c = new Color(1, .47f, .16f); w = 7; a = .8f; }   // 10/.9 idi: kalın eklemeli turuncu topun kendisini örtüyordu
-                else if (s.type == "smash") { c = s.from == "me" ? new Color(.85f, 1, .35f) : RAKIP_IZ; w = 6; a = .8f; }   // 2026-11-15: rakip smacı lila (Hud.RAKIP_HUD), limon yalnız benim else { c = Color.white; w = 4f; a = .45f; }
+                else if (s.type == "smash") { c = s.from == "me" ? new Color(.85f, 1, .35f) : RAKIP_IZ; w = 6; a = .8f; } else { c = Color.white; w = 4f; a = .45f; }   // 2026-11-15: rakip smacı lila (Hud.RAKIP_HUD), limon yalnız benim
                 if (c != izC || w != izW || a != izA)
                 {
                     izC = c; izW = w; izA = a;
