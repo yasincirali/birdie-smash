@@ -144,7 +144,9 @@ namespace BirdieSmash.Game
             }
             bool kilit = gr.Seviye() < o.sv; int eksik = o.fiyat - gr.eko.tuy;
             string bas = L.T("Sıradaki: {0}", L.T(o.ad));   // sayfa bağlamı alt satırdaki "Sırt 3/40" sayımında (küçük harfe çevirme dile göre bozulurdu)
-            string alt = kol + " · " + (kilit ? L.T("Sv {0} ile açılır", o.sv) : eksik > 0 ? L.T("{0} Tüy kaldı", eksik) : L.T("Alabilirsin"));
+            // 2026-11-15 inceleme #5 (r180: "Unlocks at Lv" / "3" ikiye bölündü, seviye sağ rozette de yazıyordu): kilitliyken alt
+            // satır yalnız sayım; seviye rozette bir kez. Erişim etiketi kilit cümlesini okumaya devam eder.
+            string alt = kilit ? kol : kol + " · " + (eksik > 0 ? L.T("{0} Tüy kaldı", eksik) : L.T("Alabilirsin"));
             sol.Add(Yazi(bas, 14, "kalin"));
             if (!kilit) { var cb = Cubuk(o.fiyat > 0 ? Mathf.Clamp01(gr.eko.tuy / (float)o.fiyat) : 1, eksik > 0 ? TURUNCU : CAMGOBEGI, 5); cb.AddToClassList("sv-hedef-cubuk"); sol.Add(cb); }
             sol.Add(Yazi(alt, 12, "soluk"));
@@ -152,7 +154,7 @@ namespace BirdieSmash.Game
             sag.Add(Ikon(kilit ? Ikonlar.Kilit : Ikonlar.Tuy, 16, kilit ? SOLUK : ALTIN)); sag.Add(Yazi(kilit ? L.T("Sv {0}", o.sv) : Sayi(o.fiyat), 16, "rakam"));
             string sk = kat, sid = o.id;
             d.AddManipulator(new Clickable(() => SiradakiDene(sk, sid)));
-            Erisim.Etiket(d, bas + ", " + (kilit ? L.T("Sv {0}", o.sv) : o.fiyat + " " + L.T("Tüy")) + ", " + alt + ", " + L.T("dene"), "dugme");
+            Erisim.Etiket(d, bas + ", " + (kilit ? L.T("Sv {0} ile açılır", o.sv) : o.fiyat + " " + L.T("Tüy")) + ", " + alt + ", " + L.T("dene"), "dugme");
         }
         // Sıradaki eşyaya git: kendi kategorisi açılır, figür onu dener (alma yine alttaki çubuktan, oyuncunun dokunuşuyla).
         void SiradakiDene(string kat, string id)
@@ -285,11 +287,13 @@ namespace BirdieSmash.Game
             if (karAlt == KAR_RAKET) { RaketSayfa(c); return; }
             GorunumRozet(c);
             KoleksiyonSatir(c);
-            KombinSatir(c);
             if (!Ayar.VaryantGorunur) TekBedenKart(c);
             if (!Ayar.AykModelGorunur && karAlt == KAR_AYK) ModelUyari(c);
             if (karAlt == KAR_TIP) TipSayfa(c); else if (karAlt == KAR_SAC) SacSayfa(c); else if (karAlt == KAR_AYK) AyakkabiSayfa(c); else if (karAlt == KAR_KIYAFET) KiyafetSayfa(c);
             else if (karAlt == KAR_SAPKA) SapkaSayfa(c); else if (karAlt == KAR_SEVINC) SevincSayfa(c); else if (karAlt == KAR_SIRT) SirtSayfa(c); else TenSayfa(c);
+            // 2026-11-15 inceleme #6 (r180, 390×845: ayakkabı ızgarasının ilk sırası ekranın altında kesikti): kombin (kaydet/rastgele)
+            // ikincil iş; seçilecek eşyanın önüne değil sayfa sonuna, her kategoride aynı yere.
+            KombinSatir(c);
         }
         // "Oyunu etkilemez" rozeti: Görünüm'deki hiçbir seçim maçta bir sayıyı değiştirmez (yazıyla; renk yalnız süs).
         void GorunumRozet(VisualElement c)
@@ -365,7 +369,7 @@ namespace BirdieSmash.Game
         {
             var vt = root.vitrin;
             vt.DeneYaz(kat, id); if (SevincKat(kat)) vt.Sevinc(SevOn(kat, id));
-            vt.Yenile(); SoyunmaGovdeKur(true);
+            vt.Yenile(); vt.Belir(kat); SoyunmaGovdeKur(true);
         }
         void DenemeBirak(string kat)
         {
@@ -377,7 +381,7 @@ namespace BirdieSmash.Game
             var gr = Ayar.gear; var vt = root.vitrin;
             if (kat == "ayakkabi") { if (!gr.Sec("ayakkabi", id)) return; vt.deneAyk = null; Ayar.GearHesap(); }
             else { Ayar.KOZ[kat] = id; vt.DeneYaz(kat, null); if (SevincKat(kat)) vt.Sevinc(SevOn(kat, id)); }
-            Ayar.Kaydet(); vt.Yenile(); kirli[(int)Sekme.Profil] = true; SoyunmaGovdeKur(true);
+            Ayar.Kaydet(); vt.Yenile(); vt.Belir(kat); kirli[(int)Sekme.Profil] = true; SoyunmaGovdeKur(true);
         }
         void KozAl(string kat, string id)
         {
@@ -524,6 +528,16 @@ namespace BirdieSmash.Game
             // 2026-11-14 Ayakkabı görünümü (Tüy ile; güç ekipmanda kalır): sayfanın başında, çünkü ayakkabı sayfasına gelen önce
             // görünüş arıyor. Ekipman modeli ve renk aşağıda aynı kaldı; görünüm seçiliyken onlar figürde görünmez (yazı söyler).
             KozIzgara(c, Kozmetik.AYAK, "Ayakkabı görünümü", root.vitrin.deneAyak);
+            // 2026-11-15 inceleme #4 (kısmi): görünüm takılıyken (ya da deneniyorken) model ve renk figürde görünmüyor ama iki satır
+            // ve iki uzun açıklama açık kalıyordu; üç "görünüş" kavramı aynı sayfada. Şimdi tek satır + Oyun düğmesi; "Görünüm yok"
+            // seçilince model ve renk satırları gelir. Kayıt anahtarları (AYK_GOR, KOZ["ayak"]) aynı; tek ızgara birleşimi şimdilik yok.
+            string takili = root.vitrin.deneAyak ?? Ayar.KOZ[Kozmetik.AYAK];
+            if (Aksesuar.Var(takili))
+            {
+                c.Add(Yazi(L.T("Yalnız görünüş: hız ve uzanma tabandaki ayakkabıdan. Model ve renk \"Görünüm yok\" seçilince görünür."), 12, "soluk"));
+                c.Add(Dugme(L.T("Ayakkabı tabanı · Oyun"), () => { Tik(); SoyunmaSegment(0); }, null, L.T("Güç, fiyat ve çubuklar orada"), 14));
+                return;
+            }
             c.Add(Yazi(L.T("Görünüm ayakkabının üstüne giyilir: hız ve uzanma tabandaki ayakkabıdan gelir, değişmez. \"Görünüm yok\" seçince aşağıdaki model ve renk görünür."), 12, "soluk"));
             c.Add(Grup(L.T("Ayakkabı modeli · {0}", L.T(Gear.GEAR["ayakkabi"][gor].ad))));
             var cp = Satir("secim"); cp.style.flexWrap = Wrap.Wrap; c.Add(cp);
