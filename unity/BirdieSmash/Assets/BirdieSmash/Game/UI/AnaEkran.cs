@@ -248,21 +248,36 @@ namespace BirdieSmash.Game
         VisualElement SvHedefSatir()
         {
             // 2026-11-10: dağıtılmamış gelişim puanı varken satır onu söyler ve Gelişim sayfasını açar (tek "sıradaki iş" satırı;
-            // iki satır küçük ekranda Oyna düğmesini iterdi). Puan dağıtılınca satır yine seviye ödülüne döner.
-            if (Ayar.GelisimBos > 0) return GelisimSatir();
-            int L_, kalan, gerek; Ayar.gear.OyuncuSv(out L_, out kalan, out gerek); if (gerek <= 0) return EfsaneSatir();
+            // iki satır küçük ekranda Oyna düğmesini iterdi).
+            // 2026-11-15 (inceleme, fikir 22:05 #7): puanı bekleten oyuncu maç → XP → seviye ödülü döngüsünün tek göstergesini ana
+            // ekranda hiç görmüyordu (Badminton League / Tennis Clash çubuğu hep tutar). Satır yine tek: XP çubuğu ve seviye hep
+            // görünür; dağıtılmamış puan varken yalnız sağ blok "+Tüy" yerine "Dağıt (n) ›" olur ve dokunuş Gelişim'i açar.
+            // Nokta/rozet yok, yazıyla (YAPMA listesindeki "seviye eşyasına nokta" ile çelişmez).
+            int L_, kalan, gerek; Ayar.gear.OyuncuSv(out L_, out kalan, out gerek); if (gerek <= 0) return EfsaneSatir() ?? (Ayar.GelisimBos > 0 ? GelisimSatir() : null);
             int sv = L_ + 1; string ac = SvAcilanOzet(sv, 1);
             var d = new VisualElement(); d.AddToClassList("sv-hedef");
             var sol = new VisualElement(); sol.AddToClassList("sv-hedef-sol"); sol.pickingMode = PickingMode.Ignore; d.Add(sol);
             sol.Add(Yazi(L.T("Sv {0} ödülü · {1} XP kaldı", sv, gerek - kalan), 14, "kalin"));
             var c2 = Cubuk(kalan / (float)gerek, TURUNCU, 5); c2.AddToClassList("sv-hedef-cubuk"); sol.Add(c2);
             var sag = new VisualElement(); sag.AddToClassList("sv-hedef-sag"); sag.pickingMode = PickingMode.Ignore; d.Add(sag);
+            string bas = L.T("Sv {0} ödülü · {1} XP kaldı", sv, gerek - kalan);
+            if (SvSagGelisim(d, sag, bas)) return d;
             sag.Add(Ikon(Ikonlar.Tuy, 16, ALTIN)); sag.Add(Yazi("+" + Gear.SvOdul(sv), 16, "rakam"));
             // açılan eşya sol blokta, çubuğun altında: sağda dururken 375 pt'te başlığı iki satıra sarıyordu
             if (ac != null && K <= 1.35f) { var a = Yazi(ac, 12, "soluk"); a.AddToClassList("sv-hedef-ac"); sol.Add(a); }
             d.AddManipulator(new Clickable(() => { Tik(); SeviyeYoluAc(); }));
-            Erisim.Etiket(d, L.T("Sv {0} ödülü · {1} XP kaldı", sv, gerek - kalan) + ", " + L.T("+{0} Tüy", Gear.SvOdul(sv)) + (ac != null ? ", " + ac : "") + ", " + L.T("Seviye yolu"), "dugme");
+            Erisim.Etiket(d, bas + ", " + L.T("+{0} Tüy", Gear.SvOdul(sv)) + (ac != null ? ", " + ac : "") + ", " + L.T("Seviye yolu"), "dugme");
             return d;
+        }
+        // Dağıtılmamış puan varken sağ blok (2026-11-15): "Dağıt (n) ›", dokunuş Gelişim; true = satır hazır.
+        bool SvSagGelisim(VisualElement d, VisualElement sag, string bas)
+        {
+            int bos = Ayar.GelisimBos; if (bos <= 0) return false;
+            d.AddToClassList("sv-hedef--gelisim");
+            sag.Add(Yazi(L.T("Dağıt ({0})", bos) + " ›", 15, "kalin"));
+            d.AddManipulator(new Clickable(() => { Tik(); GelisimAc(); }));
+            Erisim.Etiket(d, bas + ", " + L.T("Dağıtılacak puan: {0}", bos) + ", " + L.T("Gelişim: oyuncunu güçlendir"), "dugme");
+            return true;
         }
         // Sv 30'dan sonra satır boş kalıyordu (2026-11-10 Efsane kademeleri, Gear.EFSANE_XP): aynı kalıp, sıradaki kademe ve +300 Tüy.
         VisualElement EfsaneSatir()
@@ -274,6 +289,7 @@ namespace BirdieSmash.Game
             sol.Add(Yazi(bas, 14, "kalin"));
             var c2 = Cubuk(kalan / (float)Gear.EFSANE_XP, ALTIN, 5); c2.AddToClassList("sv-hedef-cubuk"); sol.Add(c2);
             var sag = new VisualElement(); sag.AddToClassList("sv-hedef-sag"); sag.pickingMode = PickingMode.Ignore; d.Add(sag);
+            if (SvSagGelisim(d, sag, bas)) return d;
             sag.Add(Ikon(Ikonlar.Tuy, 16, ALTIN)); sag.Add(Yazi("+" + Gear.EFSANE_TUY, 16, "rakam"));
             d.AddManipulator(new Clickable(() => { Tik(); SeviyeYoluAc(); }));
             Erisim.Etiket(d, bas + ", " + L.T("+{0} Tüy", Gear.EFSANE_TUY) + ", " + L.T("Seviye yolu"), "dugme");
@@ -334,12 +350,12 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Rakip")));
             var r = Satir(); r.AddToClassList("cip-sarar"); r.AddToClassList("cip-iki"); c.Add(r);
             string sec = GameRoot.HizliSecili();
-            r.Add(Cip(L.T("Rastgele"), sec == null, () => { Ayar.hizliRakip = ""; Ayar.Kaydet(); Degisti(); }, L.T("her maç başka")));
+            r.Add(Cip(L.T("Rastgele"), sec == null, () => { Ayar.hizliRakip = ""; Ayar.KaydetSonra(); Degisti(); }, L.T("her maç başka")));
             foreach (var id in KariyerVeri.HizliHavuz(Ayar.ilerleme))
             {
                 var st = KariyerVeri.Stil[id]; string sid = id;
                 int kG, kY; string alt = Ayar.Karne(id, out kG, out kY) ? L.T(st.ad) + " · " + kG + "–" + kY : L.T(st.ad);   // karne (fikir 23:05 #2): sayıyla, renkle değil
-                r.Add(Cip(st.isim, sec == id, () => { Ayar.hizliRakip = sid; Ayar.Kaydet(); Degisti(); }, alt));
+                r.Add(Cip(st.isim, sec == id, () => { Ayar.hizliRakip = sid; Ayar.KaydetSonra(); Degisti(); }, alt));
             }
             // 2026-11-14 inceleme (fikir 02:05 #4): not havuz tamken de yazıyordu; yalnız kariyerde yenilmemiş rakip kaldıysa.
             if (KariyerVeri.HizliHavuzEksik(Ayar.ilerleme)) { var n = Yazi(L.T("Kariyerde yendiğin rakipler buraya eklenir."), 13, "soluk"); n.style.whiteSpace = WhiteSpace.Normal; c.Add(n); }
@@ -408,7 +424,7 @@ namespace BirdieSmash.Game
             for (int i = 0; i < 4; i++)
             {
                 string id = CourtView.SIRA[i]; var sh = CourtView.SAHA[id];
-                var d = Cip(L.T(SAHA_KISA[i]), Ayar.saha == id, () => { Ayar.saha = id; Ayar.Kaydet(); root.SahaSecildi(); Degisti(); });
+                var d = Cip(L.T(SAHA_KISA[i]), Ayar.saha == id, () => { Ayar.saha = id; Ayar.KaydetSonra(); root.SahaSecildi(); Degisti(); });
                 d.style.paddingLeft = d.style.paddingRight = 4f; d.style.minHeight = 44f;
                 Erisim.Etiket(d, L.T(sh.ad), "dugme", Ayar.saha == id, false);
                 var ic = d.Q(null, "cip-ic"); var alt = new VisualElement(); alt.style.flexDirection = FlexDirection.Row; alt.style.alignItems = Align.Center; alt.pickingMode = PickingMode.Ignore;
@@ -458,7 +474,7 @@ namespace BirdieSmash.Game
             int[] Ls = { 5, 11, 21 }; string[] La = { "5 sayı", "11 sayı", "21 sayı" }, Lb = { "Yaklaşık 2 dakika", "Kısa maç", "Resmî maç uzunluğu" };
             for (int i = 0; i < 3; i++)
             {
-                int v = Ls[i]; var cp = Cip(L.T(La[i]), Ayar.target == v, () => { Ayar.target = v; Ayar.Kaydet(); Degisti(); });
+                int v = Ls[i]; var cp = Cip(L.T(La[i]), Ayar.target == v, () => { Ayar.target = v; Ayar.KaydetSonra(); Degisti(); });
                 Erisim.Etiket(cp, L.T(La[i]) + ". " + L.T(Lb[i]), "dugme", Ayar.target == v); satir.Add(cp);
             }
             int si = System.Array.IndexOf(Ls, Ayar.target); if (si >= 0) c.Add(Yazi(L.T(Lb[si]), 12, "soluk"));
@@ -468,7 +484,7 @@ namespace BirdieSmash.Game
             satir.AddToClassList("cip-sarar");   // dört çip: büyük yazıda sözcük kırılmaz, satır sarar
             for (int i = 0; i < 4; i++)
             {   // VoiceOver: çip adı + kademenin açıklaması (açıklama satırı yalnız seçili için görünür; UX incelemesi 2026-11-05)
-                int v = i; var cp = Cip(L.T(Ayar.ZORLUK_AD[i]), Ayar.zorluk == v, () => { Ayar.zorluk = v; Ayar.Kaydet(); Degisti(); });
+                int v = i; var cp = Cip(L.T(Ayar.ZORLUK_AD[i]), Ayar.zorluk == v, () => { Ayar.zorluk = v; Ayar.KaydetSonra(); Degisti(); });
                 Erisim.Etiket(cp, L.T(Ayar.ZORLUK_AD[i]) + ". " + L.T(ZORLUK_ACIK[i]), "dugme", Ayar.zorluk == v);
                 // 2026-11-14 inceleme (ikinci göz, r168): dört kademe yazı genişliğinde ve seçilenin ✓'ü onu büyütüyordu; satır
                 // eğri duruyor, seçim değişince çipler yer değiştiriyordu (Maç uzunluğu satırı eşit). Normal yazıda dört eşit pay;
