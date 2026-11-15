@@ -1,4 +1,8 @@
 === UNITY ===
+Rakipler artık her maçta değişiyor (15 Kasım akşam):
+- Rakibin tipi maçtan maça değişiyor: bir maç insan, sonraki kedi, panda, tavşan ya da robot olabilir. Arada bir şapka da takıyor. Maç kartındaki küçük resim sahada göreceğin rakiple aynı.
+- Oyuna yeni bir oyuncu tipi eklendiğinde rakipler de onu kendiliğinden kullanmaya başlar.
+Nasıl denenir: Kariyer'de sıradaki maç kartına bak, rakibin resmini aklında tut ve maçı oyna: sahadaki rakip aynı görünmeli. Maç bitince karta dön: rakip başka bir tipte görünmeli. Art arda üç dört maç oyna: en az bir hayvan ya da robot rakip ve bir şapkalı rakip görmelisin.
 Hayvan kuyruğu sallanıyor, Saç sayfası uyarıyor (15 Kasım akşam):
 - Kedi, Tavşan ve Panda'nın kuyruğu artık koşarken ve dururken hafifçe sallanıyor (Hareketi azalt açıkken sabit).
 - Hayvan ya da Robot tipi seçiliyken Saç sayfasının başında "Kedi tipinde saç görünmez" yazıyor; dokununca Beden sayfasına dönülüyor. Saç kartları soluk görünüyor, yine denenebilir. Ten tonu sırası bu tiplerde gizli.

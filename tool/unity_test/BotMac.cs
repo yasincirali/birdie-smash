@@ -1304,6 +1304,20 @@ static class BotMac
             var r = Kozmetik.Rakip(id); if (r == null) { Fail("rakip görünüşü yok: " + id); continue; }
             if (Kozmetik.Bul(Kozmetik.TIP, r.tip) == null || Kozmetik.Bul(Kozmetik.SAC, r.sac) == null || !Gear.GEAR["ayakkabi"].ContainsKey(r.ayakkabi) || (r.sacRenk != null && !Karakter.Gorunum("sac").Any(o => o.id == r.sacRenk)) || (r.ten != null && !Karakter.Gorunum("ten").Any(o => o.id == r.ten))) Fail("rakip görünüşünde bilinmeyen kimlik: " + id);
         }
+        // (6b) 2026-11-15 rakip çeşitliliği: tip maçtan maça değişir, katalogdaki her tip (hayvan ve robot dahil) sırayla gelir, şapka ara sıra
+        foreach (var id in KariyerVeri.Stil.Keys)
+        {
+            int tn = Kozmetik.Liste(Kozmetik.TIP).Length; var gorulen = new HashSet<string>(); string onceki = null; int sapkali = 0;
+            for (int tur = 0; tur < tn * 3; tur++)
+            {
+                var r = Kozmetik.RakipTur(id, tur); if (r == null || Kozmetik.Bul(Kozmetik.TIP, r.tip) == null) { Fail("rakip turu geçersiz tip: " + id + " tur " + tur); break; }
+                if (r.tip == onceki) Fail("rakip tipi ardışık iki maçta aynı: " + id + " tur " + tur); onceki = r.tip; if (tur < tn) gorulen.Add(r.tip);
+                if (r.sapka != null) { sapkali++; if (Kozmetik.Bul(Kozmetik.SAPKA, r.sapka) == null) Fail("rakip şapkası katalogda yok: " + r.sapka); }
+                var r2 = Kozmetik.RakipTur(id, tur); if (r2.tip != r.tip || r2.sapka != r.sapka) Fail("rakip turu belirlenimli değil");
+            }
+            if (gorulen.Count != tn) Fail("rakip " + id + " " + tn + " maçta her tipi görmeli, gördüğü " + gorulen.Count);
+            if (sapkali == 0 || sapkali > tn * 2) Fail("rakip şapkası ara sıra olmalı: " + id + " " + sapkali);
+        }
         // (7) açılış listesi: tip, saç modeli ve ayakkabı türüyle
         var ac4 = Karakter.AcilanlarTurlu(4); if (!ac4.Any(a => a[0] == "Tip" && a[1] == "Uzun ve ince") || !ac4.Any(a => a[0] == "Ayakkabı" && a[1] == "Hafif hız")) Fail("Sv 4 açılışı tip ve ayakkabı içermeli");
         if (Karakter.AcilanlarTurlu(16).Any(a => a[0] == "Ayakkabı")) Fail("ayakkabı RENGİ 'Ayakkabı rengi' etiketiyle olmalı");

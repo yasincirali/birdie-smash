@@ -91,8 +91,8 @@ namespace BirdieSmash.Game
         // kızıl saçlı). Forma ve raket bugünkü gibi; veri yoksa bugünkü görünüş.
         public static Gorunum Rakip(Style st, Color forma)
         {
-            var g = new Gorunum { forma = forma, cerceve = Kit.Hex("#e9eef0") }; var r = Kozmetik.Rakip(st != null ? st.id : null); if (r == null) return g;
-            g.tip = r.tip; g.sacModel = r.sac; g.aykModel = r.ayakkabi;
+            var g = new Gorunum { forma = forma, cerceve = Kit.Hex("#e9eef0") }; var r = Kozmetik.RakipTur(st != null ? st.id : null, Ayar.ilerleme != null ? Ayar.ilerleme.Mac : 0); if (r == null) return g;   // 2026-11-15: tip ve şapka maçtan maça değişir (Kozmetik.RakipTur)
+            g.tip = r.tip; g.sacModel = r.sac; g.aykModel = r.ayakkabi; g.sapka = r.sapka;
             var o = r.sacRenk != null ? Karakter.Oge("sac", r.sacRenk) : null; if (o != null) g.sac = Renk(o.renk);
             o = r.ten != null ? Karakter.Oge("ten", r.ten) : null; if (o != null) g.ten = Renk(o.renk);
             o = r.aykRenk != null ? Karakter.Oge("ayakkabi", r.aykRenk) : null; if (o != null) g.ayakkabi = Renk(o.renk);
