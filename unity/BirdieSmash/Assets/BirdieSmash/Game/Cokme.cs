@@ -19,7 +19,7 @@ namespace BirdieSmash.Game
     {
         static string izYol, cokmeYol; static float yazT; static int dusukBellek; static bool kurulu;
         // Takılma izi (2026-11-15): oturumdaki en uzun kare ve 100 ms'yi aşan kare sayısı; "kasma" raporu sayıyla gelsin.
-        static float enUzun; static int uzunN; static string enUzunEkran = "";
+        static float enUzun; static int uzunN, ortaN; static string enUzunEkran = "";
         static readonly string[] hata = new string[3]; static int hataN;
         static readonly StringBuilder sb = new StringBuilder(512);
         public static string Son { get; private set; }   // önceki ön plan bitişi / CrashReport metni; yoksa null
@@ -83,9 +83,25 @@ namespace BirdieSmash.Game
         {
             if (!kurulu) return;
             float dt = Time.unscaledDeltaTime;
-            if (Time.frameCount > 30 && dt > .1f && dt < 30) { uzunN++; if (dt > enUzun) { enUzun = dt; enUzunEkran = root.ekran.ToString(); } }   // ilk kareler açılış perdesinin arkasında; 30 sn üstü arka plandan dönüş
-            yazT -= dt; if (yazT > 0) return; yazT = 2;
+            if (Time.frameCount > 30 && dt > .1f && dt < 30) { uzunN++; if (dt > enUzun) { enUzun = dt; enUzunEkran = UzunYer(root); } }   // ilk kareler açılış perdesinin arkasında; 30 sn üstü arka plandan dönüş
+            else if (Time.frameCount > 30 && dt > .05f && dt <= .1f) ortaN++;
+            // 2026-11-15 inceleme: ralli sürerken periyodik yazım yok. Her yazım tarih/enum metni + StringBuilder.ToString + dosya G/Ç
+            // (birkaç KB çöp); dakikada ~30 kez tam ralli ortasında GC başağrısı riski. yazT sıfırda bekler, sayı arası, duraklatma,
+            // menü ya da arka plana geçişte (Durum) hemen yazar. Hata satırı ve düşük bellek yolu etkilenmez. Bedeli: ralli ortası
+            // çökmede son ralli skoru eksik kalabilir; hata satırı yine düşer.
+            yazT -= dt; if (yazT > 0) return;
+            var M = root.match; if (root.ekran == Ekran.Oyun && !root.paused && M != null && !M.between) return;
+            yazT = 2;
             Yaz("onde", root);
+        }
+        // En uzun karenin yeri (2026-11-15 inceleme #8): yalnız "Oyun/Menu" kasma raporunda yer tahmini istiyordu. Maçta ralli mi sayı
+        // arası mı, menüde hangi sayfa (Hud'un gizli FPS göstergesiyle aynı adlar). Metin yalnız 100 ms üstü yeni rekorda kurulur.
+        static string UzunYer(GameRoot root)
+        {
+            var M = root.match;
+            if (root.ekran == Ekran.Oyun) return root.paused ? "Oyun · duraklatma" : M != null && M.between ? "Oyun · sayı arası" : M != null ? "Oyun · ralli " + M.rally : "Oyun";
+            if (root.ekran == Ekran.Menu && root.ui != null) return "Menu · " + root.ui.FpsAdi;
+            return root.ekran.ToString();
         }
         public static void Durum(bool arka) { if (kurulu) Yaz(arka ? "arka" : "onde", null); }
         public static void Cikis() { if (kurulu) Yaz("cikis", null); }
@@ -102,7 +118,7 @@ namespace BirdieSmash.Game
                 sb.Append("açık ").Append(Mathf.RoundToInt(Time.realtimeSinceStartup)).Append(" sn · bellek ")
                   .Append(UnityEngine.Profiling.Profiler.GetTotalReservedMemoryLong() / 1048576).Append(" MB ayrılmış / ").Append(SystemInfo.systemMemorySize).Append(" MB · mono ")
                   .Append(UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong() / 1048576).Append(" MB · düşük bellek uyarısı ").Append(dusukBellek).Append('\n');
-                sb.Append("en uzun kare ").Append(Mathf.RoundToInt(enUzun * 1000)).Append(" ms (").Append(enUzunEkran).Append(") · 100 ms üstü kare ").Append(uzunN).Append('\n');
+                sb.Append("en uzun kare ").Append(Mathf.RoundToInt(enUzun * 1000)).Append(" ms (").Append(enUzunEkran).Append(") · 100 ms üstü kare ").Append(uzunN).Append(" · 50–100 ms ").Append(ortaN).Append('\n');
                 sb.Append("kalite ").Append(Kalite.Basamak).Append(" · ısı ").Append(Kalite.Isil).Append(" · hedef ").Append(Application.targetFrameRate).Append(" fps · model ").Append(Ayar.model).Append(" · kamera ").Append(Ayar.kamera).Append('\n');
                 if (root != null)
                 {

@@ -463,11 +463,18 @@ namespace BirdieSmash.Game
         {
             var gr = Ayar.gear; string sec = Ayar.KOZ[Kozmetik.SAC], dn = root.vitrin.deneSac; int sv = gr.Seviye();
             c.Add(Grup(L.T("Saç modeli · {0}", L.T(Kozmetik.Oge(Kozmetik.SAC, dn ?? sec).ad))));
+            // 2026-11-15 inceleme #1: hayvan/robot tipindeyken saç kafanın altında kalır; uyarı yalnız Beden sayfasındaydı, oyuncu Saç'a
+            // geçip 1.800+ Tüy'lük tipin ardından görünmeyecek saç alabiliyordu ("bozuk"). Sayfanın başında neden + Beden'e dönüş, kartlar
+            // soluk ama denenebilir; Al engellenmez (insan tipine dönünce görünür). Vitrinde geçici insan tipi denemesi YAPMA (şimdilik):
+            // tip değişimi vitrinde tam yeniden kurulum.
+            var tipO = Kozmetik.Bul(Kozmetik.TIP, root.vitrin.deneTip ?? Ayar.KOZ[Kozmetik.TIP]); bool sacGizli = tipO != null && tipO.aks != null;
+            if (sacGizli) c.Add(Dugme(L.T("{0} tipinde saç görünmez", L.T(tipO.ad)) + "  ›", () => KategoriSec(KAR_TIP), null, L.T("Beden tipini değiştir"), 14));
             var iz = Satir("izgara"); iz.AddToClassList("koz-izgara"); c.Add(iz); int ks = 0;
             foreach (var o in Kozmetik.Gosterim(Kozmetik.SAC))
             {
                 var du = Kozmetik.Durum(gr, Kozmetik.SAC, o.id, sec); string id = o.id; Texture2D ik; string durum = KozDurum(Kozmetik.SAC, o, du, out ik);
                 var k = Kart("sac-kare"); k.AddToClassList("dugme"); if (du == ModelDurum.Secili) k.AddToClassList("secili"); if (du == ModelDurum.Kilitli) k.AddToClassList("kilitli"); if (dn == o.id) k.AddToClassList("denenen");
+                if (sacGizli) k.style.opacity = .6f;
                 k.Add(Yazi(L.T(o.ad), 12, "kalin")); KucukResim(k, Kozmetik.SAC, id, ks++, 52);
                 var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; dr.style.flexWrap = Wrap.Wrap; k.Add(dr); if (ik != null) { var i = Ikon(ik, 11, du == ModelDurum.Secili ? TURUNCU : SOLUK); i.style.marginRight = 2; dr.Add(i); }   // r55: " · deneniyor" dar kartta alta sarar
                 dr.Add(Yazi(du == ModelDurum.Kilitli ? L.T("Sv {0}", o.sv) : durum, 10, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"));
@@ -682,6 +689,9 @@ namespace BirdieSmash.Game
             int sv = Ayar.gear.Seviye();
             KozIzgara(c, Kozmetik.YUZ, "Yüz aksesuarı", root.vitrin.deneYuz);
             if (!Ayar.VaryantGorunur && Ayar.model != "sade") return;   // Gerçekçi ve Tüycük'te ten sabit
+            // 2026-11-15 inceleme #1: hayvan/robot tipinde ten görünmez; sıra seçilebilir ama vitrinde hiçbir şey değiştirmiyordu.
+            var tipO = Kozmetik.Bul(Kozmetik.TIP, root.vitrin.deneTip ?? Ayar.KOZ[Kozmetik.TIP]);
+            if (tipO != null && tipO.aks != null) { c.Add(Yazi(L.T("{0} tipinde ten rengi görünmez.", L.T(tipO.ad)), 12, "soluk")); return; }
             var l = new List<Ornek>(); foreach (var o in Karakter.Gorunum("ten")) l.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
             OrnekSira(c, L.T("Ten tonu"), l, Ayar.GORUNUM["ten"], id => { Ayar.GORUNUM["ten"] = id; Ayar.Kaydet(); }, true);
             c.Add(Yazi(L.T("Ten tonlarının hepsi baştan açık ve ücretsiz."), 12, "soluk"));

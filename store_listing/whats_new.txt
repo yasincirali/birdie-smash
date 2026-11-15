@@ -1,4 +1,10 @@
 === UNITY ===
+Hayvan kuyruğu sallanıyor, Saç sayfası uyarıyor (15 Kasım akşam):
+- Kedi, Tavşan ve Panda'nın kuyruğu artık koşarken ve dururken hafifçe sallanıyor (Hareketi azalt açıkken sabit).
+- Hayvan ya da Robot tipi seçiliyken Saç sayfasının başında "Kedi tipinde saç görünmez" yazıyor; dokununca Beden sayfasına dönülüyor. Saç kartları soluk görünüyor, yine denenebilir. Ten tonu sırası bu tiplerde gizli.
+- Antrenman'daki aldatıcı vuruş kartları kısaldı: açık kartta tek satır nasıl yapılır, kilitli kartta yalnız eksik olan.
+- Maç sırasında arka planda tutulan tanı kaydı artık ralli ortasında yazılmıyor; uzun maçlarda daha az takılma ve pil.
+Nasıl denenir: Dolap > Beden'de Kedi'yi dene ve figürü döndür: kuyruk hareket etmeli. Sonra Saç sayfasına geç: en üstte uyarı satırı olmalı, ona dokununca Beden'e dönmeli. Antrenman sayfasının altına in: aldatma kartları kısa olmalı. Uzun bir maç oyna: takılma olmamalı.
 Robot oyuncu ve daha canlı hayvan yüzleri (15 Kasım ikindi):
 - Dolap > Beden > Tip sayfasında yeni bir oyuncu var: Robot (Seviye 18, 2.500 Tüy). Metal gövde, ışıklı vizör, tepede anten ve belde şarj kablosu. Yalnız görünüş; oyuna etkisi yok.
 - Kedi, Tavşan ve Panda'nın başı artık daha aydınlık: beyaz kürk gri görünmüyor, göz ve ağız daha net.

@@ -124,13 +124,17 @@ namespace BirdieSmash.Game
             Ayar.ilerleme = eski; ui.Kirlet(); ui.KariyerTurSec(-1); ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
         }
 
-        // Karakter odası: Soyunma › Karakter (vitrin figürü + seçenekler), oyuncunun kendi kaydıyla; afro saç denemesi vitrinde
+        // Karakter odası: Soyunma › Karakter (vitrin figürü + seçenekler), oyuncunun kendi kaydıyla; Kedi tipi (yoksa afro saç) denemesi vitrinde
         // (alınmamış öğe kayda yazılmaz).
         IEnumerator MgKarakter(string ad)
         {
             var ui = root.ui; if (ui == null) yield break;
             ui.SekmeAc(Sekme.Soyunma); ui.SoyunmaSegment(UiKok.SEG_KARAKTER); yield return Bekle(30);
-            ui.KarakterDene(Kozmetik.SAC, "afro"); yield return Bekle(40); yield return Cek(ad);
+            // 2026-11-15 inceleme #6: en ayırt edici yeni içerik (hayvan/robot tipleri) mağazada görünmüyordu. Tip seçilebilen modelde
+            // Beden sayfası açılır ve Kedi denenir (kart ızgarası insan/hayvan/robot çeşitliliğini de gösterir); başlık metni aynı kalır.
+            if (Ayar.VaryantGorunur) { ui.KategoriGec(UiKok.KAR_TIP); yield return Bekle(10); ui.KarakterDene(Kozmetik.TIP, "kedi"); }
+            else ui.KarakterDene(Kozmetik.SAC, "afro");
+            yield return Bekle(40); yield return Cek(ad);
             int n; rap.AppendLine("magaza " + ad + " · " + ui.TasmaDenetimi(ad, out n));
             ui.SoyunmaSegment(0); ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
         }
