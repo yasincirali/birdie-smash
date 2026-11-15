@@ -1,5 +1,7 @@
 # Birdie Smash arayüz tasarım dili
 
+> Son güncelleme 15 Kasım 2026 (yasin: "UI menüleri kolaylaştırma, anlaşılır kılma ve estetik olarak güzel gözükme hedefimiz var; Apple HIG ve glassmorphism kullanabilirsin, renk seçimleri için best practice'lerden örnek al; sonraki update'ler buradan örnek alsın"): §7 sadelik ve anlaşılırlık, §8 renk, §9 ekran denetim listesi eklendi; §6.1'e katman sırası.
+
 Kaynak: yasin 14 Kasım 2026 ("uygulama genelinde simetri, üst üste binen yazı vs kontrol edelim, tasarım dili kuralları için bir MD oluştur, ona göre yapsın"). Menü (UI Toolkit, `Game/UI/`, `Resources/ui/menu_stil.uss`) ve maç HUD'u (IMGUI, `Game/Hud.cs`) için **her** ekran değişikliği bu kurallara uyar. Kozmetik eşya dili ayrıdır: `docs/kozmetik_tasarim_dili.md`.
 
 Kural ihlali bir tasarım tercihi değil, hatadır. Bir kuraldan bilerek sapılırsa nedeni kodda karar yorumu olarak yazılır ve PR'ın "HIG kontrolü" bölümünde söylenir.
@@ -56,7 +58,8 @@ Kaynak: yasin 14 Kasım 2026 gece ("menü kısımlarında butonları, listelerin
 | Sekme çubuğu | Alttaki 5 sekme | `.sekme-cubugu` | .86, üstte ışık çizgisi |
 | Alt sayfa | Uzun okuma, seçim listesi | `.alt-sayfa` | .97 (neredeyse opak), üstte ışık çizgisi |
 
-Cam kuralları:
+Cam kuralları (Apple HIG "Materials" + Liquid Glass ilkesiyle, 15 Kasım güncellemesi):
+0. **Katman sırası**: içerik (zemin, kartlar, listeler) altta; gezinme ve kontroller (üst haplar, sekme çubuğu, alt sayfa tutamağı, yüzen düğmeler) üstte. En belirgin cam üst katmandadır: üst haplar ve sekme çubuğu içerikten bir tık daha açık ve parlak kenarlı görünür, kart camı daha sakin kalır. Göz önce nerede olduğunu (gezinme), sonra ne yapacağını (içerik) okur.
 1. UI Toolkit'te arka plan bulanıklığı yok. Cam, yarı saydam mor dolgu + üstte açık + altta koyu kenar çizgisiyle kurulur. Gölge, parıltı ya da ışık süpürmesi eklenmez.
 2. Opaklık okunurluk içindir. Kart .80'in, düğme .72'nin altına inmez. Arkada salon resmi ya da güneş varken gövde yazısı ≥ 4,5:1 kalır.
 3. Cam yalnız menüde kullanılır. Maç HUD'u kortun üstünde okunurluk kuralına bağlıdır (`Hud.cs`) ve cam değildir.
@@ -114,3 +117,57 @@ Standart liste satırı (`.liste-satir`):
 1. Yeni ekran önce bu bölümdeki bileşenlerle kurulur. Yeni bir sınıf gerekiyorsa adı ve kuralı buraya eklenir.
 2. Eski ekranlar dokunuldukça bu standarda taşınır; aynı PR'da o ekranın listeleri `.liste-satir`'a, düğmeleri tablodaki türlere çevrilir.
 3. Doğrulama §5'teki gibidir. Ek olarak değişen ekranın karesinde camın okunurluğuna bakılır (arkada salon resmi ya da güneş varken).
+
+## 7. Sadelik ve anlaşılırlık
+
+Kaynak: yasin 15 Kasım 2026. Amaç: oyuncu bir menüyü ilk açışta 3 saniyede "burada ne yaparım" sorusunu yanıtlar. Hedef kitle telefonda kısa seans oynayan arcade spor oyuncusu (Badminton League, Tennis Clash bilen); menüde değil sahada vakit geçirmek ister.
+
+1. **Ekran başına tek iş.** Her sekme ve alt sayfa tek cümleyle anlatılabilir ("Oyna: maça gir", "Dolap: oyuncunu ve raketini giydir"). İkinci bir iş varsa alt sayfaya ya da başka sekmeye gider.
+2. **Tek birincil eylem** (§6.2): turuncu dolgu ekranda bir kez. Göz önce ona gider; diğer her şey cam ikincil ya da metin bağlantısı.
+3. **Görünür öğe bütçesi**: ilk ekranda (kaydırmadan) en fazla 1 birincil eylem, 3–4 kart ya da liste grubu, 7 ± 2 dokunulabilir öğe. Fazlası kaydırmanın altına ya da alt sayfaya.
+4. **Kademeli açma** (progressive disclosure): ayrıntı (stat tablosu, kural açıklaması, uzun liste) varsayılan olarak kapalı; tek satır özet + `›` ile açılır. Kural metni her açılışta tekrar edilmez (bir kez gösterilir ya da tek kısa satıra iner).
+5. **Metin**: başlık 1–3 kelime, açıklama tek satır, cümle düzeni (Baloo başlık hariç büyük harf yok). Düğme yazısı fiil ("Oyna", "Giy", "Yükselt"), tek kelime tercih. "Tamam/Evet" yerine eylemin adı. Aynı şey her ekranda aynı adla anılır (Tüy, Sv, Dolap, Atölye).
+6. **Durum hep görünür**: seçili, kilitli, yeni açılan ve yetersiz Tüy durumları ikon + yazıyla aynı yerde ve aynı biçimde. Kilitte "neden" ve "ne zaman" (Sv 10 ile açılır) birlikte.
+7. **Geri dönüş ve güven**: geri alınamayan işte (satın alma, sıfırlama) onay; her şey geri alınabiliyorsa onay yok, anında uygulanır. Deneme (vitrinde giy) satın almadan ayrı ve açıkça "deneme" diye yazar.
+8. **Dokunuşta anında karşılık**: her dokunuş 100 ms içinde görünür tepki (basılı durum, seçim, ses/hap). Ağır iş (kayıt, figür kurulumu) perde arkasına (`Ayar.KaydetSonra`, CLAUDE.md "takılma yok").
+9. **Sistem kalıbı önce**: alt sayfa aşağı çekilince kapanır, sekmeler hep altta, geri sol üstte, basılı tutma tekrar eder (stepper), kaydırma yerini korur. Yeni bir etkileşim icat edilmeden önce iOS'taki karşılığı aranır.
+10. **Sessiz süs yok**: yalnız anlam taşıyan hareket ve parıltı (§4). "AI slop" işaretleri (`.claude/skills/unslop/references/signs.md`): her karta gradyan, her başlığa emoji, rastgele rozet, aynı bilgiyi üç kez söyleyen satır, ortalanmış uzun paragraf.
+
+## 8. Renk
+
+Palet "Gün Batımı Salonu" sabittir (yasin 27 Eki); yeni ton eklenmez, mevcut değişkenler anlamına göre kullanılır. Kurallar yaygın kabul gören pratiklerden (Apple HIG Color + Dark Mode, Material 3 tonal yüzeyler, WCAG 2.2) alınmıştır.
+
+### 8.1 Rol tablosu (tek anlam, tek renk)
+
+| Rol | Değişken | Değer | Nerede | Nerede DEĞİL |
+|---|---|---|---|---|
+| Zemin | `--ink` | #1A1221 | sayfa arkası | yazı |
+| Yüzey (cam) | `--cam`, `--cam2`, `--cam3` | mor, .80/.72/.82 | kart, düğme, basılı | zemin |
+| Birincil eylem / seçili | `--sun` | #FFA04D | tek birincil düğme, seçili çerçeve, sekme simgesi | süs, uyarı |
+| Sen | `--lime` | #C9EE4B | oyuncunun skoru, kendi satırı, "sen" | düğme dolgusu (birincil turuncudur) |
+| Rakip | `--coral` | #E99BFF | rakip skoru ve adı | hata |
+| Ödül / Tüy | `--gold` | #F9D272 | Tüy, kupa, seviye ödülü | seçili durum |
+| Bilgi | `--sky` | #8FC6FF | ipucu, bağlantı | eylem |
+| Ana yazı / ikincil yazı | `--tx` / `--mu` | #F3EAEE / #CBB8C5 | gövde / açıklama | — |
+
+### 8.2 Kurallar
+
+1. **60-30-10**: ekranın ~%60'ı zemin, ~%30'u cam yüzey, en fazla ~%10'u vurgu renkleri (turuncu, limon, orkide, altın). Bir ekranda aynı anda en fazla iki vurgu rengi baskın olur; turuncu her zaman "bas" demektir.
+2. **Saf siyah ve saf beyaz yok**: zemin mor-kahve, yazı sıcak beyaz (göz yorgunluğu ve OLED'de lekelenme). Koyu zeminde vurgular doygun ama açık tonludur (yukarıdaki değerler); koyu zeminde koyu doygun renk (ör. saf kırmızı #FF0000) kullanılmaz.
+3. **Yükseklik = açıklık**: koyu temada üstteki yüzey bir tık daha açıktır (zemin < kart < düğme < basılı); gölgeyle değil tonla ayrılır (Material 3 tonal elevation, HIG dark mode).
+4. **Kontrast (ölçüldü, 15 Kas)**: `--tx` cam üstünde 13,1:1; `--mu` cam üstünde 8,2:1, `--cam2` üstünde 7,2:1; koyu yazı turuncu üstünde 9,4:1; vurgu renkleri cam üstünde 7,6–11,6:1. Alt sınır gövde 4,5:1, büyük kalın 3:1, simge ve çerçeve 3:1. `--mu`'dan daha soluk bir yazı rengi eklenmez; pasif öğe opaklıkla değil "kilit + yazı" ile ayrılır, opaklık gerekiyorsa en az .6 ve yazı yine 4,5:1.
+5. **Renk körlüğü**: sen/rakip ayrımı limon–orkide (parlaklıkları da farklı) + konum (sen solda/altta) + ad; seçili turuncu çerçeve + ✓; kazanç/kayıp ok ve işaretle (▲ ▼, +/−). Kırmızı–yeşil ikilisi tek başına anlam taşımaz.
+6. **Turuncu kıtlığı**: turuncu yalnız birincil eylem, seçili durum ve aktif sekme içindir. Başlıkta, süste, rozette turuncu yoksa göz eylemi saniyede bulur.
+7. **Kozmetik renkler ayrıdır**: oyuncunun seçtiği forma/raket renkleri arayüz rolü taşımaz; menüde yalnız kendi örnek yuvarlağında görünür (`docs/kozmetik_tasarim_dili.md`).
+
+## 9. Ekran denetim listesi (her menü değişikliğinde PR'a)
+
+Kısa "HIG kontrolü" bölümüne şu sorular yanıtlanır:
+1. Bu ekranın tek işi ne? Tek birincil eylem var mı?
+2. İlk ekranda kaç dokunulabilir öğe ve kaç kart var (§7.3 bütçesi)?
+3. Tekrar eden ya da her açılışta okunan uzun metin kaldı mı (§7.4)?
+4. Cam katman sırası doğru mu: gezinme üstte, içerik sakin; cam içinde cam yok (§6.1)?
+5. Renkler rol tablosuna uyuyor mu; turuncu yalnız eylem/seçili mi; anlam yalnız renkle mi verilmiş (§8)?
+6. Dokunma ≥44, yazı ×2'de taşma/çakışma yok, hareketi azalt, erişim etiketi (§1, §3, §5)?
+7. Dokunuşta takılma yok: kayıt `KaydetSonra`, sayfa yerinde güncelleniyor mu (§7.8)?
+
