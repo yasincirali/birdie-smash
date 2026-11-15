@@ -923,7 +923,7 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_TIP); yield return Bekle(20);
             foreach (var o in Kozmetik.Liste(Kozmetik.TIP))
             {
-                ui.KarakterDene(Kozmetik.TIP, o.id); yield return Bekle(25); yield return Cek("model_vitrin_tip_" + o.id);
+                ui.KarakterDene(Kozmetik.TIP, o.id); yield return Bekle(25); if (o.aks != null) { root.vitrin.a = 30; root.vitrin.v = 0; yield return Bekle(6); } yield return Cek("model_vitrin_tip_" + o.id);
                 VaryantSatir("vitrin tip=" + o.id, root.vitrin.Fig, PlayerView.ModelYolu("oyuncak", o.id), null, null, ref t);
                 if (o.aks != null) { root.vitrin.a = 200; root.vitrin.v = 0; yield return Bekle(6); yield return Cek("model_vitrin_tip_" + o.id + "_arka"); }   // 2026-11-15 hayvan: kuyruk ve kulak arkadan
             }

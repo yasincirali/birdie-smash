@@ -210,7 +210,7 @@ namespace BirdieSmash.Game
                 // Hayvan tipi (2026-11-15): yeni FBX değil; tipin bedeni + kürk rengi (ten hücresi) + saçsız baş + hayvan kafası/kulak/kuyruk
                 // (Aksesuar.Kur hayvan, Aksesuar.Bel). Çağıranın Gorunum'u değişmez: kopya üstünde ten ve saç ezilir.
                 var hv = !hakem && modelAd == "oyuncak" && gor != null && gor.tip != null ? Kozmetik.Bul(Kozmetik.TIP, gor.tip) : null; if (hv != null && hv.aks == null) hv = null;
-                if (hv != null) { gor = gor.Kopya(); gor.ten = Renk(hv.renk); gor.sacModel = "kel"; }
+                tenDuz = hv != null; if (hv != null) { gor = gor.Kopya(); gor.ten = Renk(hv.renk); gor.sacModel = "kel"; }
                 tenAtlas = gor.ten; Varyant(gor); Paint(gor); if (!hakem) RaketSekil.Uygula(model, gor.kafa);   // ten önce: Varyant gövde atlasını Paint'ten önce bağlıyor
                 // 2026-11-01 (r115): ışın halesi çerçeve ağının kopyası; Paint içinde kurulunca kafa biçimi (kalp, elmas…) henüz uygulanmamıştı,
                 // hale oval kaldı ve kalp çerçevenin dışında ikinci bir halka gibi göründü. Hale biçimden sonra kurulur.
@@ -372,14 +372,14 @@ namespace BirdieSmash.Game
             if (asil == null) return null; string n = asil.name.ToLowerInvariant(); string ek = n.Contains("body") ? "_govde" : n.Contains("head") ? "_bas" : null;
             if (ek == null) return null; var tx = Resources.Load<Texture2D>("karakter/" + modelAdi + ek); if (tx == null) return null;
             string anahtar = modelAdi + ek; bool tenli = ek == "_govde" && tenAtlas.HasValue && modelAdi.StartsWith("oyuncak");
-            if (tenli) anahtar += "#" + ColorUtility.ToHtmlStringRGB(tenAtlas.Value);
+            if (tenli) anahtar += "#" + ColorUtility.ToHtmlStringRGB(tenAtlas.Value) + (tenDuz ? "k" : "");
             Material m;
             if (tenli) { tenSira.Remove(anahtar); tenSira.Add(anahtar); }
             if (!dokuM.TryGetValue(anahtar, out m) || m == null)
             {
                 if (tenli)
                 {
-                    tx = TenliAtlas(tx, tenAtlas.Value);
+                    tx = TenliAtlas(tx, tenAtlas.Value, tenDuz);
                     // 2026-10-31 (Unity incelemesi O3): her model × ton bir atlas kopyası (~1,3 MB) üretir ve statik sözlük
                     // onu sonsuza dek tutuyordu. En eski tonlar sözlükten düşer; yok etmek yerine bırakılır, çünkü sahnedeki bir
                     // figür hâlâ kullanıyor olabilir. Menüye dönüşteki UnloadUnusedAssets kullanılmayanı boşaltır.
@@ -404,7 +404,7 @@ namespace BirdieSmash.Game
         // uzun 221,179,151 (%36 / %61). Diğer ikisi o modelde küçük ayrıntı (dudak, kulak içi). Bu yüzden atlas başına asıl
         // ten hücresi tabloda; üç hücre de seçilen tona asıl tene oranlarıyla boyanır (ayrıntı tenden açık/koyu kalır).
         // Atlas yeniden üretilip roller değişirse tabloyu tool/karakter ölçümüyle güncelle.
-        Color? tenAtlas; public static string TenTani = "yok";   // ekran turu tanısı
+        Color? tenAtlas; bool tenDuz; public static string TenTani = "yok";   // ekran turu tanısı
         static readonly Color32[] TEN_HUCRE = { new Color32(221, 179, 151, 255), new Color32(209, 160, 142, 255), new Color32(129, 97, 63, 255) };
         static Color32 AsilTen(string atlas)
         {
@@ -414,7 +414,9 @@ namespace BirdieSmash.Game
         }
         static bool Yakin(Color32 a, Color32 b) { return Mathf.Abs(a.r - b.r) <= 8 && Mathf.Abs(a.g - b.g) <= 8 && Mathf.Abs(a.b - b.b) <= 8; }
         static byte Oran(byte ton, byte hucre, byte asil) { return (byte)Mathf.Clamp(Mathf.RoundToInt(ton * (float)hucre / Mathf.Max(1, asil)), 0, 255); }
-        static Texture2D TenliAtlas(Texture2D kaynak, Color ten)
+        // duz (2026-11-15 hayvan kürkü, r186): oranlı boyama insan teni için; kürkte ayrıntı hücresi asıl tenden açıksa oran 255'e
+        // kırpılıp rengi kaydırıyordu (turuncu kedi kolu sarı-yeşil çıktı). Kürk üç hücreye de aynı renkle, oransız yazılır.
+        static Texture2D TenliAtlas(Texture2D kaynak, Color ten, bool duz = false)
         {
             int w = kaynak.width, h = kaynak.height;
             var rt = RenderTexture.GetTemporary(w, h, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
@@ -422,7 +424,7 @@ namespace BirdieSmash.Game
             var t = new Texture2D(w, h, TextureFormat.RGBA32, true, false) { name = kaynak.name + "_ten", filterMode = kaynak.filterMode, anisoLevel = kaynak.anisoLevel, wrapMode = kaynak.wrapMode };
             t.ReadPixels(new Rect(0, 0, w, h), 0, 0, false); RenderTexture.active = once; RenderTexture.ReleaseTemporary(rt);
             Color32 tn = ten, asil = AsilTen(kaynak.name); var yeni = new Color32[TEN_HUCRE.Length];
-            for (int k = 0; k < TEN_HUCRE.Length; k++) { var c = TEN_HUCRE[k]; yeni[k] = new Color32(Oran(tn.r, c.r, asil.r), Oran(tn.g, c.g, asil.g), Oran(tn.b, c.b, asil.b), 255); }
+            for (int k = 0; k < TEN_HUCRE.Length; k++) { var c = TEN_HUCRE[k]; yeni[k] = duz ? new Color32(tn.r, tn.g, tn.b, 255) : new Color32(Oran(tn.r, c.r, asil.r), Oran(tn.g, c.g, asil.g), Oran(tn.b, c.b, asil.b), 255); }
             var px = t.GetPixels32(); int say = 0;
             for (int i = 0; i < px.Length; i++) for (int k = 0; k < TEN_HUCRE.Length; k++) if (Yakin(px[i], TEN_HUCRE[k])) { px[i] = yeni[k]; if (Yakin(TEN_HUCRE[k], asil)) say++; break; }
             TenTani = kaynak.name + " " + w + "x" + h + " asıl ten " + asil.r + "," + asil.g + "," + asil.b + " → " + tn.r + "," + tn.g + "," + tn.b + " eşleşen " + say;
