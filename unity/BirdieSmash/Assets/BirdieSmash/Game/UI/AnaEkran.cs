@@ -213,10 +213,13 @@ namespace BirdieSmash.Game
             // yolunda iki titreşim olmasın diye yalnız maç kartı yolunda.
             kart.AddManipulator(new Clickable(() => { if (tamam) SekmeAc(Sekme.Kariyer); else { Yerel.Hap("tick"); MacKartAc(g); } }));
             var bas = new VisualElement(); bas.AddToClassList("plaka-ust"); bas.pickingMode = PickingMode.Ignore; kart.Add(bas);
-            var serit = new VisualElement(); serit.AddToClassList("serit"); Doku(serit, Ikonlar.EgikLimonKucuk); serit.pickingMode = PickingMode.Ignore; bas.Add(serit);
+            // 2026-11-16 inceleme (fikir 02:05 #2, docs/arayuz_tasarim_dili.md §8): altın = ödül, turuncu = bas. "Sıradaki maç" bir
+            // ödül değil; şeritsiz soluk etiket. Altın hap yalnız "Kariyer tamam" (gerçek ödül anı) kalır.
+            var serit = new VisualElement(); serit.AddToClassList("serit"); if (tamam) Doku(serit, Ikonlar.EgikLimonKucuk); else serit.AddToClassList("serit--duz"); serit.pickingMode = PickingMode.Ignore; bas.Add(serit);
             serit.Add(Yazi(L.T(tamam ? "Kariyer tamam" : "Sıradaki maç"), 13, "serit-yazi"));   // 2026-11-06 unslop: büyük harf + geniş aralık etiket yerine cümle düzeni
             bas.Add(Yazi(L.T(TurAd(tr)) + " · " + (i + 1) + "/" + KariyerVeri.BASAMAK, 12, "plaka-tur"));
-            kart.Add(Baslik(L.T(kb.yer), Px(38, 32), "plaka-baslik"));
+            if (K <= 1.35f) { var pb = Yazi(Buyuk(L.T(kb.yer)), Px(38, 32), "baslik"); pb.AddToClassList("plaka-baslik"); SatirSigdir(pb); kart.Add(pb); }   // 2026-11-16: tek satır (UiOge.SatirSigdir)
+            else kart.Add(Baslik(L.T(kb.yer), Px(38, 32), "plaka-baslik"));
             var rk = new VisualElement(); rk.AddToClassList("plaka-meta"); rk.pickingMode = PickingMode.Ignore; kart.Add(rk);
             var sol = new VisualElement(); sol.AddToClassList("plaka-rakip"); sol.pickingMode = PickingMode.Ignore; rk.Add(sol);
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.AddToClassList("plaka-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); sol.Add(nok);
@@ -227,10 +230,36 @@ namespace BirdieSmash.Game
             {
                 var b = new VisualElement(); b.AddToClassList("basamak"); b.pickingMode = PickingMode.Ignore; int gj = KariyerVeri.Global(tr, j);
                 bool simdi = gj == g && !tamam; b.AddToClassList(p.Kazanildi(gj) && !simdi ? "basamak--gecti" : simdi ? "basamak--simdi" : "basamak--kilit");
-                if (simdi) Doku(b, Ikonlar.Serit); bc.Add(b);
+                bc.Add(b);   // 2026-11-16 (§8): şimdiki basamak çizgili turuncu doku yerine açık çerçeve (USS); geçilen limon = senin yolun
             }
+            BasamakDolar(bc, tr, tamam);
             Erisim.Etiket(kart, L.T(tamam ? "Kariyer tamam" : "Sıradaki maç") + ", " + L.T(TurAd(tr)) + ", " + L.T(kb.yer) + ", " + L.T("Rakip") + " " + st.isim + " · " + L.T(st.ad) + ", " + L.T(CourtView.SAHA[kb.saha].ad) + ", " + (i + 1) + "/" + KariyerVeri.BASAMAK + ", " + L.T("{0}/3 yıldız", p.Yildiz(g)), "dugme");
             return kart;
+        }
+
+        // Basamak dolumu (2026-11-16 inceleme, fikir 02:05 #5): galibiyetten Oyna'ya dönen oyuncu yeni basamağı hazır görüyordu;
+        // "ilerledim" anı yoktu (Tennis Clash tur haritası, Badminton League lig çubuğu dönüşte dolar). Oturum içi bellek (yeni
+        // tuytop anahtarı yok): aynı turda geçilen sayısı arttıysa yalnız son geçilen basamak soldan sağa 0,35 sn dolar (scale,
+        // yerleşim yeniden hesaplanmaz), bitince tek "tick". Soğuk açılışta, tur değişince, kariyer bitince ve hareketi azaltta
+        // oynamaz. Maç sonu perdesi kalkmadan başlamaz (en çok 6 sn bekler). Takılma: ayırma yok, tek öğede stil geçişi.
+        static int sonTur = -1, sonGecti = -1;
+        void BasamakDolar(VisualElement bc, int tr, bool tamam)
+        {
+            VisualElement yeni = null; int say = 0;
+            foreach (var ch in bc.Children()) if (ch.ClassListContains("basamak--gecti")) { say++; yeni = ch; }
+            bool oynat = !tamam && !Ayar.reduce && yeni != null && sonTur == tr && sonGecti >= 0 && say > sonGecti;
+            sonTur = tr; sonGecti = say;
+            if (!oynat) return;
+            var b = yeni; b.AddToClassList("basamak--dolar"); b.style.scale = new Scale(new Vector3(0f, 1f, 1f));
+            float t0 = Time.realtimeSinceStartup; bool bitti = false;
+            b.schedule.Execute(() =>
+            {
+                if (bitti) return;
+                if (b.panel == null) { bitti = true; return; }   // yüzey yeniden kuruldu: yeni öğe son hâlde
+                var hud = root.HudKatman; if (hud != null && hud.PerdeVar && Time.realtimeSinceStartup - t0 < 6f) return;
+                bitti = true; Kalite.Hareket(); b.style.scale = new Scale(Vector3.one);
+                b.schedule.Execute(() => { if (b.panel != null) Yerel.Hap("tick"); }).StartingIn(350);
+            }).StartingIn(150).Every(100).Until(() => bitti);
         }
 
         // ---- Hızlı maç alt sayfası ----
@@ -484,7 +513,7 @@ namespace BirdieSmash.Game
             satir.AddToClassList("cip-sarar");   // dört çip: büyük yazıda sözcük kırılmaz, satır sarar
             for (int i = 0; i < 4; i++)
             {   // VoiceOver: çip adı + kademenin açıklaması (açıklama satırı yalnız seçili için görünür; UX incelemesi 2026-11-05)
-                int v = i; var cp = Cip(L.T(Ayar.ZORLUK_AD[i]), Ayar.zorluk == v, () => { Ayar.zorluk = v; Ayar.KaydetSonra(); Degisti(); });
+                int v = i; var cp = Cip(L.T(Ayar.ZORLUK_AD[i]), Ayar.zorluk == v, () => { Ayar.zorluk = v; Ayar.KaydetSonra(); Degisti(true); });
                 Erisim.Etiket(cp, L.T(Ayar.ZORLUK_AD[i]) + ". " + L.T(ZORLUK_ACIK[i]), "dugme", Ayar.zorluk == v);
                 // 2026-11-14 inceleme (ikinci göz, r168): dört kademe yazı genişliğinde ve seçilenin ✓'ü onu büyütüyordu; satır
                 // eğri duruyor, seçim değişince çipler yer değiştiriyordu (Maç uzunluğu satırı eşit). Normal yazıda dört eşit pay;
@@ -492,12 +521,19 @@ namespace BirdieSmash.Game
                 if (K <= 1.35f) { cp.style.flexGrow = 1f; cp.style.flexBasis = 0f; }
                 satir.Add(cp);
             }
+            // 2026-11-16 inceleme (fikir 02:05 #3, HIG segmented control): dört ayrı cam çip göze dört kart sayılıyordu (Oyna'da
+            // §7.3 bütçesi aşılıyordu). Normal yazıda tek cam kapsül içinde dört segment (USS .segment); büyük yazıda sarma kalır.
+            if (K <= 1.35f) satir.AddToClassList("segment");
             if (aciklama) c.Add(Yazi(L.T(ZORLUK_ACIK[Mathf.Clamp(Ayar.zorluk, 0, 3)]), 12, "soluk"));
         }
         // Ayar değişti: görünen yüzey (alt sayfa / sayfa / sekme) yeniden kurulur; kaydırma yeri ScrollView'de kalır.
-        void Degisti()
+        // yalnizZorluk (2026-11-16 inceleme, fikir 02:05 #4): zorluk çipi dört sekmeyi ve üst şeridi kirletiyordu; Dolap ve Profil
+        // bir sonraki açılışta boşuna yeniden kuruluyordu. Zorluğu yalnız Oyna (çipler, OYNA alt satırı) ve Kariyer (maç kartı)
+        // gösterir; yalnız onlar kirlenir, üst şerit kurulmaz. Görünen yüzey bugünkü gibi yeniden kurulur (✓ ölçüsü Sigdir'de).
+        void Degisti(bool yalnizZorluk = false)
         {
-            for (int i = 0; i < 4; i++) kirli[i] = true; ustKirli = true;
+            if (yalnizZorluk) { kirli[(int)Sekme.Oyna] = true; kirli[(int)Sekme.Kariyer] = true; }
+            else { for (int i = 0; i < 4; i++) kirli[i] = true; ustKirli = true; }
             string altS = gez.AcikAltSayfa;
             if (altS != null) { var eski = altSayfa != null ? altSayfa.Q<ScrollView>() : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; AltSayfaYenidenKur(altS); KaydirmaGeri(altSayfa, of); }
             string u = gez.Ust; if (u != null && !Gezinti.AltSayfa(u)) { var eski = sayfa.Q<ScrollView>(); Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; SayfaKur(u); KaydirmaGeri(sayfa, of); }

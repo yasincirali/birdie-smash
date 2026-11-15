@@ -77,6 +77,24 @@ namespace BirdieSmash.Game
             float taban = l.style.fontSize.value.value;
             l.RegisterCallback<GeometryChangedEvent>(e => KelimeOlc(l, taban, minOran));
         }
+        // Tek satıra sığdır (2026-11-16 inceleme, fikir 02:05 #7; r163 "MAHALLE SALONU" plakada iki satırdı, kutucuklar sekme
+        // çubuğuna dayanıyordu): bütün yazı taban boyutun %75'ine kadar küçülerek tek satıra sığıyorsa öyle; sığmıyorsa KelimeOlc
+        // (sarma serbest, sözcük bölünmez). Hedef hep taban boyuttan hesaplanır: boyut değişince yeniden ölçmek aynı sonucu verir,
+        // GeometryChanged döngüsü kurmaz (r133 dersi). Büyük yazıda (K > 1,35) çağrılmaz: orada okunurluk önce, sarma kalır.
+        void SatirSigdir(Label l, float minOran = .75f)
+        {
+            float taban = l.style.fontSize.value.value;
+            l.RegisterCallback<GeometryChangedEvent>(e =>
+            {
+                float w = l.contentRect.width; if (float.IsNaN(w) || w <= 1 || taban <= 0 || string.IsNullOrEmpty(l.text)) return;
+                float simdi = l.resolvedStyle.fontSize; if (float.IsNaN(simdi) || simdi <= 0) return;
+                var o = l.MeasureTextSize(l.text, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined);
+                float gen = o.x * taban / simdi; if (float.IsNaN(gen) || gen <= 0) return;
+                float hedef = Mathf.Min(taban, Mathf.Floor(taban * (w - 2) / gen * 2) / 2);
+                if (hedef < taban * minOran) { KelimeOlc(l, taban, .6f); return; }
+                if (Mathf.Abs(hedef - simdi) > .25f) l.style.fontSize = hedef;
+            });
+        }
         static void KelimeOlc(Label l, float taban, float minOran)
         {
             float w = l.contentRect.width; if (float.IsNaN(w) || w <= 1 || taban <= 0 || string.IsNullOrEmpty(l.text)) return;
