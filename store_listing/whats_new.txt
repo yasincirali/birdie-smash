@@ -1,4 +1,7 @@
 === UNITY ===
+Maçtan sonra menüde takılma azaltıldı (15 Kasım gece):
+- Rakip çeşitliliği her maçtan sonra bütün rakip resimlerini baştan çizdiriyordu; Kariyer açılırken kısa bir takılma yapabiliyordu. Artık yalnız az önce oynadığın rakip yeni görünüşüne geçiyor.
+Nasıl denenir: Bir maç oyna, bitince Kariyer'e dön: sayfa takılmadan açılmalı ve yalnız az önce oynadığın rakibin resmi değişmiş olmalı. Aynı rakiple yeniden oyna: sahada karttaki yeni görünüşüyle gelmeli.
 Rakipler artık her maçta değişiyor (15 Kasım akşam):
 - Rakibin tipi maçtan maça değişiyor: bir maç insan, sonraki kedi, panda, tavşan ya da robot olabilir. Arada bir şapka da takıyor. Maç kartındaki küçük resim sahada göreceğin rakiple aynı.
 - Oyuna yeni bir oyuncu tipi eklendiğinde rakipler de onu kendiliğinden kullanmaya başlar.

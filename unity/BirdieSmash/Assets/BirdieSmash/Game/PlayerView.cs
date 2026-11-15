@@ -89,9 +89,15 @@ namespace BirdieSmash.Game
         }
         // Rakip (2026-10-26): tip, saç biçimi/rengi, ten ve ayakkabı stil.json'daki gorunum'dan (rakip kimliği: Blaze hep dikenli
         // kızıl saçlı). Forma ve raket bugünkü gibi; veri yoksa bugünkü görünüş.
+        // Tur rakip başına sayılır (2026-11-15 akşam, yasin "ana menüde takılma"): ilk sürümde tur = toplam maç sayısıydı, her maçtan
+        // sonra BÜTÜN rakiplerin portre anahtarı değişiyor, Kariyer açılınca yedi portre ana iş parçacığında art arda yeniden
+        // çiziliyordu (her biri bir FBX figürü). Şimdi yalnız oynadığın rakip bir sonraki görünüşüne geçer: maç başına en çok bir
+        // yeni portre. Kayıt PlayerPrefs'te (ayrı Save yok; arka plana geçişteki toplu kayıtla yazılır), kaybolursa tur 0'dan başlar.
+        public static int RakipTur(string stilId) { return PlayerPrefs.GetInt("rk_tur_" + stilId, 0); }
+        public static void RakipTurIlerle(string stilId) { if (stilId != null) PlayerPrefs.SetInt("rk_tur_" + stilId, RakipTur(stilId) + 1); }
         public static Gorunum Rakip(Style st, Color forma)
         {
-            var g = new Gorunum { forma = forma, cerceve = Kit.Hex("#e9eef0") }; var r = Kozmetik.RakipTur(st != null ? st.id : null, Ayar.ilerleme != null ? Ayar.ilerleme.Mac : 0); if (r == null) return g;   // 2026-11-15: tip ve şapka maçtan maça değişir (Kozmetik.RakipTur)
+            var g = new Gorunum { forma = forma, cerceve = Kit.Hex("#e9eef0") }; var r = Kozmetik.RakipTur(st != null ? st.id : null, st != null ? RakipTur(st.id) : 0); if (r == null) return g;   // 2026-11-15: tip ve şapka maçtan maça değişir (Kozmetik.RakipTur)
             g.tip = r.tip; g.sacModel = r.sac; g.aykModel = r.ayakkabi; g.sapka = r.sapka;
             var o = r.sacRenk != null ? Karakter.Oge("sac", r.sacRenk) : null; if (o != null) g.sac = Renk(o.renk);
             o = r.ten != null ? Karakter.Oge("ten", r.ten) : null; if (o != null) g.ten = Renk(o.renk);
