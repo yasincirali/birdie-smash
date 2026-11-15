@@ -1594,6 +1594,80 @@ YENI_SAC_YUZ_AYAK = {
 }
 
 
+# ---- Hayvan tipleri (2026-11-15, yasin "bunları yap": yeni karakter tipi yönü HAYVAN önce) ----
+# Yeni FBX yok (tip başına ~3,4 MB olurdu): hayvan = ortak oyuncak bedeni + başı tümden örten hayvan kafası (tur 0, baş çerçevesi)
+# + kulak (ayrı kalem: şapka takılınca gizlenir) + kuyruk (tur 3, bel çerçevesi) + gövde atlasında ten hücresinin kürk rengine
+# boyanması (PlayerView.TenliAtlas). Tip başına üç küçük .bytes. Kafa saç kabuğu kadar yüksek (tepe ≈ 1,1) ki şapkalar saçlı
+# baştaki gibi otursun; yüz düz (burun çıkıntısı yok): yüz aksesuarları yüzeye oturur. Ölçü (aks_giy YUZ_OLC, saçsız baş): tepe
+# .7, yan 1.0 (kulak), ön 1.07 (burun y −.9), çene y −1.5 z .85; kabuk hepsini dışarıda bırakır. İlk önizlemede dar ve uzun kabuk (1,25 × 1,50) yumurta gibi okundu; yuvarlak
+# ve geniş baş (1,46) maskot gibi duruyor, şapkalar Aksesuar.Kur'da HV_SAPKA ile büyütülür.
+HV_C, HV_R = (0, -.36, .03), (1.46, 1.46, 1.38)
+def hv_z(x, y, e=.0):
+    return HV_C[2] + HV_R[2] * math.sqrt(max(0, 1 - (x / HV_R[0]) ** 2 - ((y - HV_C[1]) / HV_R[1]) ** 2)) + e
+def hv_yama(ag, renk, c, rx, ry, e=.03, aci=0, n=12):
+    """Kafa yüzeyine yapışık oval yama (göz, yanak, burun çevresi): merkezden yelpaze, kenarda içe dönük etek (havada durmaz)."""
+    n = D(n, 8); ca, sa = math.cos(math.radians(aci)), math.sin(math.radians(aci))
+    ks = [(c[0] + rx * math.cos(2 * math.pi * i / n) * ca - ry * math.sin(2 * math.pi * i / n) * sa, c[1] + rx * math.cos(2 * math.pi * i / n) * sa + ry * math.sin(2 * math.pi * i / n) * ca) for i in range(n)]
+    m = (c[0], c[1], hv_z(c[0], c[1], e)); on = [(x, y, hv_z(x, y, e)) for x, y in ks]; ar = [(x, y, hv_z(x, y, -.02)) for x, y in ks]
+    for i in range(n): j = (i + 1) % n; ag.ucgen(renk, m, on[i], on[j]); ag.dortgen(renk, on[i], ar[i], ar[j], on[j])
+def hv_kafa(ag, kurk):
+    elipsoid(ag, kurk, HV_C, HV_R, 16, 9, -54, 90)
+def hv_goz(ag, koyu, isik, x=.56, y=-.40, rx=.16, ry=.22):
+    for s in (-1, 1):
+        hv_yama(ag, koyu, (s * x, y), rx, ry, .035); hv_yama(ag, isik, (s * x - .05, y + .08), .055, .06, .055, n=8)
+def hv_agiz(ag, koyu, y=-.80, w=.15):
+    for s in (-1, 1):
+        boru(ag, koyu, [((0, y, hv_z(0, y, .03)), .022), ((s * w * .5, y - .09, hv_z(s * w * .5, y - .09, .03)), .022), ((s * w, y - .06, hv_z(s * w, y - .06, .03)), .018)], 5)
+def hv_burun(ag, renk, y=-.72, r=(.12, .085, .07)):
+    elipsoid(ag, renk, (0, y, hv_z(0, y, .0)), r, 8, 4)
+
+def hv_kedi_kafa():
+    ag = Ag(); K, A, S, P = '#f0993e', '#fbe9cf', '#2b2430', '#f2a1b5'
+    hv_kafa(ag, K); hv_yama(ag, A, (0, -.86), .50, .33, .02, n=14); hv_goz(ag, S, A); hv_burun(ag, P); hv_agiz(ag, S)
+    ag.yaz('hv_kedi_kafa', 0)
+def hv_kedi_kulak():
+    ag = Ag(); K, P = '#f0993e', '#f2a1b5'
+    for s in (-1, 1):
+        koni(ag, K, (s * .80, .66, 0), (s * 1.02, 1.52, .0), .50, 8); koni(ag, P, (s * .81, .78, .22), (s * .98, 1.32, .14), .27, 6)
+    ag.yaz('hv_kedi_kulak', 0)
+def hv_kedi_kuyruk():
+    ag = Ag(); K, A = '#f0993e', '#fbe9cf'
+    yol = [((0, -.08, -.42), .10), ((0, -.16, -.72), .10), ((0, -.02, -1.02), .095), ((0, .30, -1.18), .09), ((0, .66, -1.16), .085), ((0, .92, -.98), .08), ((0, .98, -.74), .075)]
+    boru(ag, K, yol, 8); top(ag, A, (0, .95, -.66), .10, 8, 4)
+    ag.yaz('hv_kedi_kuyruk', 3)
+
+def hv_panda_kafa():
+    ag = Ag(); B, S = '#f7f5ef', '#2e2c33'
+    hv_kafa(ag, B)
+    for s in (-1, 1):
+        hv_yama(ag, S, (s * .56, -.44), .26, .35, .03, s * 22, 12); hv_yama(ag, B, (s * .52, -.38), .10, .11, .05, n=8); hv_yama(ag, S, (s * .51, -.39), .055, .06, .065, n=8)
+    hv_burun(ag, S, -.78, (.13, .09, .07)); hv_agiz(ag, S, -.86)
+    ag.yaz('hv_panda_kafa', 0)
+def hv_panda_kulak():
+    ag = Ag(); S = '#2e2c33'
+    for s in (-1, 1): elipsoid(ag, S, (s * 1.0, .86, -.02), (.42, .42, .26), 10, 5)
+    ag.yaz('hv_panda_kulak', 0)
+def hv_panda_kuyruk():
+    ag = Ag(); top(ag, '#f7f5ef', (0, -.10, -.56), .20, 8, 5); ag.yaz('hv_panda_kuyruk', 3)
+
+def hv_tavsan_kafa():
+    ag = Ag(); K, S, P, B = '#efe9e4', '#2b2430', '#f2a1b5', '#ffffff'
+    hv_kafa(ag, K); hv_goz(ag, S, B)
+    for s in (-1, 1): hv_yama(ag, P, (s * .82, -.72), .15, .11, .025, n=10)
+    hv_burun(ag, P, -.70, (.10, .07, .06)); hv_agiz(ag, S, -.77, .13)
+    for s in (-1, 1): hv_yama(ag, B, (s * .055, -.95), .05, .075, .04, n=8)
+    ag.yaz('hv_tavsan_kafa', 0)
+def hv_tavsan_kulak():
+    ag = Ag(); K, P = '#efe9e4', '#f2a1b5'
+    for s in (-1, 1):
+        egik(ag, K, (s * .52, 1.66, -.06), (.14, .86, .26), (s * .16, 1, -.06), 8, 5); egik(ag, P, (s * .53, 1.66, .06), (.07, .62, .15), (s * .16, 1, -.06), 6, 4)
+    ag.yaz('hv_tavsan_kulak', 0)
+def hv_tavsan_kuyruk():
+    ag = Ag(); top(ag, '#ffffff', (0, -.08, -.58), .24, 8, 5); ag.yaz('hv_tavsan_kuyruk', 3)
+
+HAYVAN = {f.__name__: f for f in (hv_kedi_kafa, hv_kedi_kulak, hv_kedi_kuyruk, hv_panda_kafa, hv_panda_kulak, hv_panda_kuyruk, hv_tavsan_kafa, hv_tavsan_kulak, hv_tavsan_kuyruk)}
+
+
 KALEM = {
     'tac': tac, 'hale': hale, 'seytan': seytan, 'kedi': kedi,
     'melek_kanat': lambda: kanat('melek_kanat', '#f6f3ea', KANAT, (('#dcd5c4', .70), ('#fffdf6', .42))),
@@ -1615,7 +1689,7 @@ KALEM = {
     'kabak_kalkan': kabak_kalkan, 'ag_kalkan': ag_kalkan, 'kazan': kazan, 'kedi_kuyruk': kedi_kuyruk,
     'dondurma': dondurma, 'cupcake': cupcake, 'krema_biyik': krema_biyik, 'lolipop': lolipop, 'donut': donut, 'makaron_kusak': makaron_kusak,
 }
-KALEM.update(YENI_SAC_YUZ_AYAK)
+KALEM.update(YENI_SAC_YUZ_AYAK); KALEM.update(HAYVAN)
 
 if __name__ == '__main__':
     for k in (sys.argv[1:] or KALEM):

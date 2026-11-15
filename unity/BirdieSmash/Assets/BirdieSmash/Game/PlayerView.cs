@@ -73,6 +73,7 @@ namespace BirdieSmash.Game
             // 2026-10-30 Dolap › Raket: kafa şekli (RaketSekil; null/"oval" = FBX'in kendi kafası) ve şaft rengi (null = FBX rengi).
             public string kafa; public Color? saft;
             // Sahnedeki figürü yeniden kurmak gerekip gerekmediğinin özeti (GameRoot, Vitrin).
+            public Gorunum Kopya() { return (Gorunum)MemberwiseClone(); }
             public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kol + "|" + bel + "|" + ayak + "|" + kafa + saft + (sacParla ? "|p" : "") + (isin ? "|i" : ""); }
         }
         static Color? Renk(string h) { return h != null ? Kit.Hex(h) : (Color?)null; }
@@ -206,6 +207,10 @@ namespace BirdieSmash.Game
             {
                 PrefabAdi = prefab.name; modelAdi = DokuAdi(prefab.name, modelAd); model = Instantiate(prefab, yaw).transform; model.localPosition = Vector3.zero; model.localScale = Vector3.one * SCALE;
                 anim = model.GetComponentInChildren<Animation>();
+                // Hayvan tipi (2026-11-15): yeni FBX değil; tipin bedeni + kürk rengi (ten hücresi) + saçsız baş + hayvan kafası/kulak/kuyruk
+                // (Aksesuar.Kur hayvan, Aksesuar.Bel). Çağıranın Gorunum'u değişmez: kopya üstünde ten ve saç ezilir.
+                var hv = !hakem && modelAd == "oyuncak" && gor != null && gor.tip != null ? Kozmetik.Bul(Kozmetik.TIP, gor.tip) : null; if (hv != null && hv.aks == null) hv = null;
+                if (hv != null) { gor = gor.Kopya(); gor.ten = Renk(hv.renk); gor.sacModel = "kel"; }
                 tenAtlas = gor.ten; Varyant(gor); Paint(gor); if (!hakem) RaketSekil.Uygula(model, gor.kafa);   // ten önce: Varyant gövde atlasını Paint'ten önce bağlıyor
                 // 2026-11-01 (r115): ışın halesi çerçeve ağının kopyası; Paint içinde kurulunca kafa biçimi (kalp, elmas…) henüz uygulanmamıştı,
                 // hale oval kaldı ve kalp çerçevenin dışında ikinci bir halka gibi göründü. Hale biçimden sonra kurulur.
@@ -215,10 +220,11 @@ namespace BirdieSmash.Game
                 // 2026-11-14: hazır ağlı saç (karakter.json sac_model[].aks) şapkasızken kafaya takılır; şapkayla Varyant kısa kesimi açar
                 var sacOge = gor.sacModel != null ? Kozmetik.Bul(Kozmetik.SAC, gor.sacModel) : null;
                 string sacAks = !hakem && sacOge != null && !Aksesuar.Var(gor.sapka) ? sacOge.aks : null;
-                if (!hakem) aksesuar = Aksesuar.Kur(model, kHead, Vector3.up, bantMeta, gor.sapka, gor.yuz, gor.forma, gor.sac, sacAks);
+                if (!hakem) aksesuar = Aksesuar.Kur(model, kHead, Vector3.up, bantMeta, gor.sapka, gor.yuz, gor.forma, gor.sac, sacAks, hv != null ? hv.aks : null);
                 if (!hakem && Aksesuar.Var(gor.sirt)) sirtKok = Aksesuar.Sirt(model, Vector3.up, gor.sirt);
                 if (!hakem && Aksesuar.Var(gor.kol)) kolKok = Aksesuar.Kol(model, Vector3.up, gor.kol);
                 if (!hakem && Aksesuar.Var(gor.bel)) Aksesuar.Bel(model, Vector3.up, gor.bel);
+                else if (hv != null) Aksesuar.Bel(model, Vector3.up, hv.aks + "_kuyruk");   // kuyruk bel eşyasıyla aynı yerde: bel eşyası takılıyken yok
                 if (!hakem && Aksesuar.Var(gor.ayak)) ayakKok = Aksesuar.Ayak(model, Vector3.up, gor.ayak);
                 if (!hakem && kThigh.Count > 0)
                 {   // ayak kilidi: boşta pozunda (taban y=0'da) bilek yüksekliği
