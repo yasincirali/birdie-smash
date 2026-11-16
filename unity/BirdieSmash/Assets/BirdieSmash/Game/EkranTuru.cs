@@ -64,7 +64,12 @@ namespace BirdieSmash.Game
             // her karede YaziTara + Cakisma (yazi_tasma.txt, yazi_cakisma.txt).
             if (kip == "yazi")
             {
-                yield return Cek("00_ilk_kare"); yield return MenuTuru("", true); Ayar.yaziTest = 2; yield return MenuTuru("x2_", true); Ayar.yaziTest = 0;
+                // 2026-11-16 inceleme (fikir 02:05 #1): bu dal tam turdaki `Ayar.antrenman = true` satırını atlıyordu; r193'te Oyna'nın
+                // üç karesi de ilk açılış hâliydi (sekme çubuğu, zorluk çipleri, kutucuklar ve Sv satırı ×2'de hiç taranmadı, kapı
+                // yanlış "0" diyordu). İlk açılış tek kare (menu_ilk_oyna), sonra kaydetmeden düzenli menü; durum rapora yazılır.
+                yield return Cek("00_ilk_kare"); yield return MenuTuru("ilk_");
+                Ayar.antrenman = true; if (root.ui != null) root.ui.Kirlet(); rap.AppendLine("yazı turu: düzenli menü (antrenman=" + Ayar.antrenman + ", galibiyet=" + Ayar.wins + ")");
+                yield return MenuTuru("", true); Ayar.yaziTest = 2; yield return MenuTuru("x2_", true); Ayar.yaziTest = 0;
                 { string d0 = Ayar.dil; Ayar.dil = "tr"; root.ui.Kirlet(); yield return MenuTuru("tr_", true); Ayar.yaziTest = 2; yield return MenuTuru("x2_tr_", true); Ayar.yaziTest = 0; Ayar.dil = d0; root.ui.Kirlet(); }
                 File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
             }

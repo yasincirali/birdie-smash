@@ -1,4 +1,10 @@
 === UNITY ===
+Ana ekran sadeleşti, kariyer çubuğu dolarak ilerliyor (16 Kasım gece):
+- Zorluk seçimi dört ayrı düğme yerine tek bir kapsül; seçili kademe açık zeminli, turuncu çerçeveli ve tikli. Zorluğu değiştirmek artık diğer sekmeleri yeniden çizdirmiyor.
+- "Sıradaki maç" etiketi sade yazıya döndü; geçtiğin basamaklar yeşil, şimdiki basamak çerçeveli. Turuncu yalnız basılacak yerde kalıyor.
+- Maç kazanıp ana ekrana dönünce yeni geçtiğin basamak soldan sağa doluyor ve hafif bir titreşim veriyor (Hareketi azalt açıkken anında dolu).
+- Uzun salon adları tek satıra sığıyor; altındaki kutucuklar sekme çubuğuna yaslanmıyor.
+Nasıl denenir: Ana ekranda zorluk kapsülünde kademeleri art arda değiştir: takılma olmamalı, seçili kademe tikli görünmeli. Kariyer maçı kazan ve Devam'a bas: ana ekranda yeni basamak dolmalı. "Mahalle Salonu" gibi uzun adlı bir yerde başlık tek satırda olmalı.
 Menüler daha akıcı, Gelişim basılı tutunca dolar (15 Kasım gece):
 - Dolap'ta, Ayarlar'da ve Gelişim'de art arda hızlı dokunurken ekran artık takılmıyor; seçimler arka planda tek seferde kaydediliyor.
 - Gelişim'de + ve − düğmelerini basılı tutunca puanlar hızlanarak dağılıyor; sayfa her adımda yeniden çizilmiyor. Sayfanın üstündeki uzun açıklama tek kısa satıra indi.
