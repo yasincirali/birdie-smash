@@ -171,7 +171,7 @@ namespace BirdieSmash.Game
             return g;
         }
         // Anahtar satırının sayfa yenilemesi: top kayarken sayfa baştan kurulmasın, geçiş (.18 sn) bitince. Hareketi azaltta hemen.
-        void DegistiSonra() { if (Ayar.reduce || kok == null) Degisti(); else kok.schedule.Execute(Degisti).StartingIn(200); }
+        void DegistiSonra() { if (Ayar.reduce || kok == null) Degisti(); else kok.schedule.Execute(() => Degisti()).StartingIn(200); }
         // Sığdır (2026-10-26, r13): dar çiplerde (segment, tutuş) tek kelimelik etiket hece ortasından bölünmesin ("Chara cter",
         // "Shoe s"). Etiket tek satıra alınır; çipin iç genişliğine sığmıyorsa yazı boyutu en çok minOran'a kadar küçülür.
         // Neden kodda: Unity 6000.0'da USS'te otomatik yazı boyutu yok. Hesap her seferinde taban boyuttan yapılır (şimdiki

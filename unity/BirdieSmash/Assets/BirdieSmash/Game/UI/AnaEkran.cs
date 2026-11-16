@@ -530,7 +530,10 @@ namespace BirdieSmash.Game
         // yalnizZorluk (2026-11-16 inceleme, fikir 02:05 #4): zorluk çipi dört sekmeyi ve üst şeridi kirletiyordu; Dolap ve Profil
         // bir sonraki açılışta boşuna yeniden kuruluyordu. Zorluğu yalnız Oyna (çipler, OYNA alt satırı) ve Kariyer (maç kartı)
         // gösterir; yalnız onlar kirlenir, üst şerit kurulmaz. Görünen yüzey bugünkü gibi yeniden kurulur (✓ ölçüsü Sigdir'de).
-        void Degisti(bool yalnizZorluk = false)
+        // Ayrı aşırı yükleme (isteğe bağlı parametre değil): Degisti yöntem grubu olarak Action'a veriliyor (KarakterOdasi, SoyunmaOdasi,
+        // DegistiSonra); isteğe bağlı parametre o dönüşümü kırıyordu (r195 CS1503).
+        void Degisti() { Degisti(false); }
+        void Degisti(bool yalnizZorluk)
         {
             if (yalnizZorluk) { kirli[(int)Sekme.Oyna] = true; kirli[(int)Sekme.Kariyer] = true; }
             else { for (int i = 0; i < 4; i++) kirli[i] = true; ustKirli = true; }
