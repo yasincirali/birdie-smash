@@ -22,11 +22,11 @@
              "hiz": 1.08, "hata": 0.85, "ev": 3.0, "yorK": 0.9, "geriK": 1, "uyum": 0.3, "gorunum": {"tip": "kadin", "sac": "orgu", "sacRenk": "sari", "ten": "t6", "ayakkabi": "karbon"}, "imza": "karma", "sevinc": "alkis", "macSonu": "selam"}
 },
 "imzalar": {
-  "yildirim":   {"ad": "Yıldırım smaç", "uyari": "Yıldırım smaç: çapraz gelir!", "cevap": "Hazırlıkta raketinde turuncu ışık. Hep çapraz gelir: karşıla", "renk": "#ff8a3c"},
-  "duvarblok":  {"ad": "Duvar blok", "uyari": "Duvar blok: smaç yerine drop at!", "cevap": "Raket önde, mavi ışık: smaçını fileye bloklar. Drop at", "renk": "#7ad7ff"},
-  "tuldrop":    {"ad": "Tül drop", "uyari": "Tül drop: erken öne çık!", "cevap": "Bilek kırılır, pembe ışık: top fileyi sıyırır. Erken öne çık", "renk": "#ff8fc8"},
-  "mermi":      {"ad": "Mermi drive", "uyari": "Mermi drive: blokla ya da kaldır!", "cevap": "Yere eğilir, mor ışık: iki düz drive, ikincisi gövdene. Blokla ya da kaldır", "renk": "#c9a0ff"},
-  "golgeflick": {"ad": "Gölge flick", "uyari": "Gölge flick: geri adım at!", "cevap": "Drop duruşunda durur, yeşil ışık: arka çizgiye flick. Geri adım at", "renk": "#5cf0c8"},
+  "yildirim":   {"ad": "Yıldırım smaç", "uyari": "Yıldırım smaç: çapraz gelir!", "cevap": "Hazırlıkta raketinde turuncu ışık. Hep çapraz gelir: karşıla", "renk": "#ff8a3c", "ders": "savunma"},
+  "duvarblok":  {"ad": "Duvar blok", "uyari": "Duvar blok: smaç yerine drop at!", "cevap": "Raket önde, mavi ışık: smaçını fileye bloklar. Drop at", "renk": "#7ad7ff", "ders": "drop"},
+  "tuldrop":    {"ad": "Tül drop", "uyari": "Tül drop: erken öne çık!", "cevap": "Bilek kırılır, pembe ışık: top fileyi sıyırır. Erken öne çık", "renk": "#ff8fc8", "ders": "file_dibi"},
+  "mermi":      {"ad": "Mermi drive", "uyari": "Mermi drive: blokla ya da kaldır!", "cevap": "Yere eğilir, mor ışık: iki düz drive, ikincisi gövdene. Blokla ya da kaldır", "renk": "#c9a0ff", "ders": "blok"},
+  "golgeflick": {"ad": "Gölge flick", "uyari": "Gölge flick: geri adım at!", "cevap": "Drop duruşunda durur, yeşil ışık: arka çizgiye flick. Geri adım at", "renk": "#5cf0c8", "ders": "derin"},
   "karma":      {"ad": "Üç imza", "uyari": "Aria önceki patronların imzalarını sırayla dener!", "cevap": "Duvar blok, mermi drive, gölge flick: sırayla gelir", "renk": "#ffffff", "sira": ["duvarblok", "mermi", "golgeflick"]}
 }
 }

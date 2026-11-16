@@ -297,7 +297,14 @@ namespace BirdieSmash.Game
                 if (n.Contains("thigh") || n.Contains("upperleg")) kThigh.Add(t);
                 if (n.Contains("calf") || n.Contains("lowerleg")) kCalf.Add(t);
             }
-            foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>(true)) r.updateWhenOffscreen = true;   // sınır gerçek pozdan (kırpılma yok)
+            // Sınır gerçek pozdan (kırpılma yok); koşan/sıçrayan oyuncu için. 2026-11-16 inceleme (fikir 22:05 #5a): hakem
+            // oturur ve rallide kıpırdamaz; her kare kemikten sınır hesabı boşa gidiyordu. Hakemde içe aktarma sınırı (ayakta
+            // bağlama pozu) %40 büyütülüp sabit kalır: oturuşta öne çıkan diz ve işaret eden kol bu kutunun içinde.
+            foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+            {
+                r.updateWhenOffscreen = !hakem;
+                if (hakem) { var lb = r.localBounds; lb.Expand(lb.size * .4f); r.localBounds = lb; }
+            }
             if (kHead == null || la == null || ra == null || feet.Count == 0) { CalibrateIsaret(); return; }
             Vector3 fm = Vector3.zero; foreach (var f in feet) fm += yaw.InverseTransformPoint(f.position); fm /= feet.Count;
             Vector3 up = yaw.InverseTransformPoint(kHead.position) - fm, right = yaw.InverseTransformPoint(ra.position) - yaw.InverseTransformPoint(la.position);
@@ -1565,19 +1572,31 @@ namespace BirdieSmash.Game
         // nokta ışık (poz Match.Prep'te tutulur, ses Sfx.Imza'da: anlam yalnız renkle verilmez). Hareketi azaltta ışık sabit
         // kalır; parlama (ilk an büyüyüp küçülme) ve nabız kalkar. Mermi drive'da gövde 12 cm eğilir (yere eğilir).
         Transform imzaKure; Light imzaIsik; Material imzaMat; float imzaA, imzaYas; string imzaRenkId;
+        // 2026-11-16 inceleme (fikir 22:05 #1): küre + toplamalı malzeme + nokta ışık ilk imza hazırlığında, ralli ortasında
+        // kuruluyordu; Metal ışık geçişini ve malzemeyi o karede derleyip telgrafın ilk karelerini takıltıyordu. Patron rakipte
+        // (GameRoot.Kur, perde kapalıyken) önceden kurulur ve birkaç kare neredeyse saydam çizilir (Fx.Isit deseni).
+        int imzaIsitKare = -10;
+        public void ImzaIsit()
+        {
+            if (hakem || imzaKure != null) return;
+            ImzaKur(); imzaIsitKare = Time.frameCount; imzaKure.gameObject.SetActive(true);
+            var c = Color.white; c.a = .004f; imzaMat.color = c; imzaIsik.color = Color.white; imzaIsik.intensity = .01f; imzaA = 0;
+        }
+        void ImzaKur()
+        {
+            imzaMat = Kit.Additive(Color.white);
+            var g = Kit.Prim(PrimitiveType.Sphere, "imza_isik", kafa != null ? kafa : (model != null ? model : transform), kafa != null ? Vector3.zero : new Vector3(.35f, 1.5f, 0), Vector3.one * .32f, imzaMat);
+            var col = g.GetComponent<Collider>(); if (col != null) Destroy(col);
+            var r = g.GetComponent<Renderer>(); r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; r.receiveShadows = false;
+            imzaKure = g.transform; if (kafa != null) imzaKure.localScale = Vector3.one * (.32f / Mathf.Max(.01f, kafa.lossyScale.x));
+            imzaIsik = g.AddComponent<Light>(); imzaIsik.type = LightType.Point; imzaIsik.range = 2.2f; imzaIsik.shadows = LightShadows.None;
+        }
         void ImzaIsik(Athlete o, bool reduce, float dt)
         {
             bool on = !hakem && o.imzaT > 0 && o.imzaId != null;
             if (!on && imzaKure == null) return;
-            if (imzaKure == null)
-            {
-                imzaMat = Kit.Additive(Color.white);
-                var g = Kit.Prim(PrimitiveType.Sphere, "imza_isik", kafa != null ? kafa : (model != null ? model : transform), kafa != null ? Vector3.zero : new Vector3(.35f, 1.5f, 0), Vector3.one * .32f, imzaMat);
-                var col = g.GetComponent<Collider>(); if (col != null) Destroy(col);
-                var r = g.GetComponent<Renderer>(); r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; r.receiveShadows = false;
-                imzaKure = g.transform; if (kafa != null) imzaKure.localScale = Vector3.one * (.32f / Mathf.Max(.01f, kafa.lossyScale.x));
-                imzaIsik = g.AddComponent<Light>(); imzaIsik.type = LightType.Point; imzaIsik.range = 2.2f; imzaIsik.shadows = LightShadows.None;
-            }
+            if (imzaKure == null) ImzaKur();
+            if (!on && Time.frameCount - imzaIsitKare <= 2) return;   // ısıtma çizimi birkaç kare sürsün
             if (on && imzaRenkId != o.imzaId)
             {
                 imzaRenkId = o.imzaId; var b = KariyerVeri.Imza(o.imzaId); var c = Kit.Hex(b != null ? b.renk : "#ffffff"); imzaMat.color = c; imzaIsik.color = c; imzaYas = 0;

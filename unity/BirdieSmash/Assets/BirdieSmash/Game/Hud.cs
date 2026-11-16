@@ -1889,7 +1889,7 @@ namespace BirdieSmash.Game
         }
         void TopCiz()
         {
-            var y = root.yukleyici; if (y == null || y.rt == null) return;
+            var y = root.yukleyici; if (y == null || (y.rt == null && y.serit == null)) return;
             Vector2 p; float boy, aci, donus, al; bool serbest; if (!TopDurum(out p, out boy, out aci, out donus, out al, out serbest) || al <= 0) return;
             if (!serbest)
             {   // HTML ucan: topun arkasında 6 beyaz hız çizgisi (L = W/2), uçuş yönünde

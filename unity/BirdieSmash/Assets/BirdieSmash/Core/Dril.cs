@@ -78,6 +78,10 @@ namespace BirdieSmash.Core
         {
             if (won || M.ogr != null) return null;
             var aday = new List<string>();
+            // 2026-11-16 inceleme (fikir 22:05 #3): imza ipucu çıkan patron kaybında ders imzanın cevabını çalıştırır
+            // (stil.json imzalar.<id>.ders); karmada son denenen imzanınki. Üç yıldızlıysa aşağıdaki eski sıraya düşer.
+            var im = Ozet.ImzaKaybi(M);
+            if (im != null) { var d = im.sira != null ? KariyerVeri.Imza(M.SonImza()) : im; if (d != null && d.ders != null) aday.Add(d.ders); }
             int neden = Ozet.Neden(M);
             if (neden == Ozet.NEDEN_DISARI) aday.Add("derin");
             else if (neden == Ozet.NEDEN_RAKIP_SMAC) { aday.Add("savunma"); aday.Add("blok"); }

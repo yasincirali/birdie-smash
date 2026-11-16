@@ -30,6 +30,11 @@ namespace BirdieSmash.Game
         public static Yukleyici Build(Transform root)
         {
             var g = new GameObject("yukleyici"); g.transform.SetParent(root, false); var y = g.AddComponent<Yukleyici>();
+            // 2026-11-16 inceleme (fikir 22:05 #7): doku pakette hep var (DokuAyar "tuy"); şerit yüklenince 3B yedek (kamera,
+            // 512² MSAA RT, nokta ışık, üç ağ, altı malzeme) her açılışta kurulup hiç çizilmiyordu. Şerit varsa yedek kurulmaz;
+            // yalnız doku eksik eski bir kopyada RT yolu çalışır (Hud.TopCiz ikisine de bakar). Faz hesabı ikisinde de aynı.
+            y.serit = Resources.Load<Texture2D>("ui/tuy_don");
+            if (y.serit != null) { g.SetActive(false); return y; }
             // 512² + 4× MSAA (256² ve kenar yumuşatmasız: tam ekran perdenin %30'una büyütülünce bulanık ve basamaklıydı).
             y.rt = new RenderTexture(512, 512, 16) { name = "yukleyici", antiAliasing = 4 };
             var cg = new GameObject("yukleyici_kamera"); cg.transform.SetParent(g.transform, false); y.kam = cg.AddComponent<Camera>();
@@ -51,13 +56,12 @@ namespace BirdieSmash.Game
             // Ağırlık merkezi değil, görünen kütlenin ortası pivota: mantar ucundan (+Rc) etek ağzına (−L) orta nokta. Eksen
             // dönüşü bu noktanın çevresinde: top yerinde döner, kayıyormuş gibi görünmez.
             y.top.localPosition = new Vector3(0, 0, (ShuttleView.L - ShuttleView.Rc) * .5f);
-            y.serit = Resources.Load<Texture2D>("ui/tuy_don");
             g.SetActive(false); return y;
         }
 
         public void Goster(bool on)
         {
-            if (on == acik) return; acik = on; gameObject.SetActive(on); kam.enabled = on && serit == null;
+            if (on == acik) return; acik = on; gameObject.SetActive(on); if (kam != null) kam.enabled = on;
         }
 
         void Update()
@@ -66,6 +70,7 @@ namespace BirdieSmash.Game
             bool poz = Time.frameCount - pozKare <= 1;   // Hud.Update bu Update'ten önce ya da sonra koşabilir: bir kare tolerans
             float ys = Yerel.AcilisSure();   // yerel açılış perdesi açıkken faz onun süresinden (BirdieAcilis.mm, aynı 2,4 rad/sn)
             if (TestFaz >= 0) faz = TestFaz; else if (ys >= 0 && !rm) faz = ys * 2.4f; else if (!rm) faz += dt * (poz ? pozDonus : 2.4f);
+            if (eksen == null) return;   // şerit yolu: yalnız faz gerekir
             // 2026-10-30: bekleme pozunda düzlem içi ±9° salınım kalktı (yasin: top "tam durmalı", yalnız kendi ekseninde dönmeli).
             float aci = poz ? pozAci : -44;   // ekranda mantar sağ alta bakar
             var yon = new Vector3(Mathf.Cos(aci * Mathf.Deg2Rad), Mathf.Sin(aci * Mathf.Deg2Rad), -.35f);   // biraz kameraya dönük: 3B okunsun

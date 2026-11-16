@@ -16,7 +16,7 @@ using System.IO;
 
 namespace BirdieSmash.Core
 {
-    public class ImzaBilgi { public string id, ad, uyari, cevap, renk; public string[] sira; }
+    public class ImzaBilgi { public string id, ad, uyari, cevap, renk, ders; public string[] sira; }   // ders: kayıpta önerilen görev (Dril.Oner, 2026-11-16)
 
     public class KariyerTur { public string id, ad, tema = "", bolum = "", hikaye = ""; public int epMin, epMax; public float tepki = 1, hucum = 1; public Kariyer[] b = new Kariyer[0]; public bool Var { get { return b.Length > 0; } } }
     // Usta yolu (kariyer.json "usta"): g = g + adim × çevrim, en çok tavan; tepki/hucum Tur 4 gibi ek zorluk.
@@ -111,7 +111,7 @@ namespace BirdieSmash.Core
                 };
             }
             var im = new Dictionary<string, ImzaBilgi>(); object io; if (so.TryGetValue("imzalar", out io))
-                foreach (var kv in Json.Obj(io)) { var d = Json.Obj(kv.Value); im[kv.Key] = new ImzaBilgi { id = kv.Key, ad = Json.Str(d, "ad", kv.Key), uyari = Json.Str(d, "uyari", ""), cevap = Json.Str(d, "cevap", ""), renk = Json.Str(d, "renk", "#ffffff"), sira = d.ContainsKey("sira") ? Strs(d, "sira") : null }; }
+                foreach (var kv in Json.Obj(io)) { var d = Json.Obj(kv.Value); im[kv.Key] = new ImzaBilgi { id = kv.Key, ad = Json.Str(d, "ad", kv.Key), uyari = Json.Str(d, "uyari", ""), cevap = Json.Str(d, "cevap", ""), renk = Json.Str(d, "renk", "#ffffff"), ders = Json.Str(d, "ders", null), sira = d.ContainsKey("sira") ? Strs(d, "sira") : null }; }
             var tl = new List<KariyerTur>(); var tj = ko["turlar"] as List<object>;
             for (int t = 0; t < tj.Count && t < TUR; t++)
             {

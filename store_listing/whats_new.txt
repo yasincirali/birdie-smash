@@ -1,4 +1,9 @@
 === UNITY ===
+Patron maçları daha akıcı, maç sonu tek tavsiye (16 Kasım gece):
+- Patron rakibin imza vuruşu ışığı artık maç başlamadan hazırlanıyor; imzanın ilk geldiği anda kısa takılma olmamalı.
+- Patrona imzayı okuyamadan kaybedince maç sonundaki ipucu ve altındaki ders düğmesi artık aynı vuruştan bahsediyor (ör. Duvar blok için drop dersi).
+- Dolap'ta şapka ve ayakkabı denerken arka planda daha az iş yapılıyor; uygulama açılışı da biraz daha hafif.
+Nasıl denenir: Kariyerde bir turun final maçını (patron) oyna: imza ışığı ilk yandığında oyun takılmamalı. İmzayı okumadan kaybet: ipucu yazısı ile "ders" düğmesi aynı vuruşu önermeli. Dolap'ta şapka ve ayakkabı kategorilerinde bir süre gez: akıcı kalmalı. Uygulamayı kapatıp aç: açılış perdesindeki dönen top eskisi gibi görünmeli.
 Her turun kendi salonu, menü müziği takılmadan açılıyor (16 Kasım akşam):
 - Kariyerde Asya, Avrupa, Dünya Finalleri, Pasifik, Amerika, Büyük Kupa ve Efsaneler turlarının salon duvarı, ışık şeridi ve flamaları artık her turda farklı renkte. Kort aynı kalıyor. Turun final maçında salon ışığı biraz kısılıyor.
 - Menü müziği artık açılışta tek seferde belleğe kopyalanmıyor; uygulama ilk açıldığında menüdeki kısa takılma kalkmalı ve daha az bellek kullanılıyor.

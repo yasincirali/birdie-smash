@@ -44,6 +44,12 @@ namespace BirdieSmash.Core
         }
         // Dönüş: Türkçe kalıp + yer tutucu değeri (çeviri görünümde L.T ile; Core dil bilmez).
         public const string IMZA_IPUCU = "İmza vuruşu {0}: {1}.";
+        // Kayıpta imza ipucu koşulu (Ipucu ve Dril.Oner aynı yerden sorar: yazı ve ders düğmesi aynı vuruştan bahseder).
+        public static ImzaBilgi ImzaKaybi(Match M)
+        {
+            if (M.imzaSay < 1 || M.okudun >= M.imzaSay || M.stil == null || !M.stil.patron) return null;
+            var im = KariyerVeri.Imza(M.stil.imza); return im != null && im.cevap.Length > 0 ? im : null;
+        }
         public static string Ipucu(Match M, bool won, out object arg)
         {
             arg = null;
@@ -51,8 +57,7 @@ namespace BirdieSmash.Core
             // İmza önce (2026-11-16 07:11 inceleme, fikir 07:05 #1): patron finalinde imza en az bir kez geldi ve okunmadıysa kaybın
             // öğrenilecek tek şeyi o; genel cümle yerine imzanın adı ve cevabı (kart verisi, metin zaten çevrili). arg = ImzaBilgi:
             // görünüm iki parçayı ayrı çevirir. Okuduysa ya da imza hiç gelmediyse eski sıra (sıfır sayaç kuralı).
-            if (M.imzaSay >= 1 && M.okudun < M.imzaSay && M.stil != null && M.stil.patron)
-            { var im = KariyerVeri.Imza(M.stil.imza); if (im != null && im.cevap.Length > 0) { arg = im; return IMZA_IPUCU; } }
+            var im = ImzaKaybi(M); if (im != null) { arg = im; return IMZA_IPUCU; }
             if (M.outsBen >= 2) { arg = M.outsBen; return "{0} vuruşun dışarı gitti: çizgiden biraz içeriye nişan al."; }
             // Rakibe özel ipucu (2026-11-07 inceleme, fikir 00:03 #2): genel cümle üçüncü kayıptan sonra okunmuyor; rakibin sayı
             // kaynağı ≥3 ise adıyla tek çare. Kendi dışarılarım önce gelir (kendi hatam daha kolay düzelir). Oyuncuyu suçlamaz.

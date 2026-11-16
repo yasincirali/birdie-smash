@@ -26,6 +26,8 @@ namespace BirdieSmash.Core
     {
         public const float IMZA_HAZIRLIK = .4f, IMZA_P = .5f; public const int IMZA_AZAMI = 4, IMZA_ARA = 4;
         public int imzaSay, okudun; int imzaSonPuan = 1 - IMZA_ARA, karmaI; bool duvarBlokla, imzaOkundu, mermiIkinci; string imzaUyarildi = "";
+        // Karmada (Aria) son denenen imza; Dril.Oner dersi ondan seçer. Hiç denenmediyse sıranın ilki.
+        public string SonImza() { var b = KariyerVeri.Imza("karma"); return b == null || b.sira == null || b.sira.Length == 0 ? null : b.sira[karmaI == 0 ? 0 : (karmaI - 1) % b.sira.Length]; }
         public float ImzaHazirlik { get { return IMZA_HAZIRLIK + (easy ? .2f : 0); } }
 
         // Şimdi imza kullanılabilir mi; kullanılabilirse hangisi (karma sıradakini verir).
