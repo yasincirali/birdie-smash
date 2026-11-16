@@ -183,20 +183,20 @@ namespace BirdieSmash.Game
         public void Isit()
         {
             isitSira.Clear();   // tel/raket değişip yeniden istenirse sıra ikilenmesin
-            isitSira.Enqueue(() => Vurus("clear", "good", false, false, true, false)); isitSira.Enqueue(() => Vurus("drop", "good", false, false, true, false));
-            foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect", "poor" }) { string tt = t, qq = q; isitSira.Enqueue(() => Vurus(tt, qq, false, false, false, false)); }
-            isitSira.Enqueue(() => Vurus("smash", "perfect", false, true, false, false)); isitSira.Enqueue(() => Vurus("smash", "good", false, true, false, false));
-            isitSira.Enqueue(() => Vurus("jump", "perfect", false, false, false, false)); isitSira.Enqueue(() => Vurus("jump", "good", false, false, false, false));
-            foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect", "poor" }) { string tt = t, qq = q; isitSira.Enqueue(() => Vurus(tt, qq, false, false, false, true)); }
-            isitSira.Enqueue(() => Vurus("clear", "good", false, false, true, true)); isitSira.Enqueue(() => Vurus("drop", "good", false, false, true, true));
-            isitSira.Enqueue(() => Vurus("jump", "good", false, false, false, true));
+            Sira("clear", "good", false, false, true, false); Sira("drop", "good", false, false, true, false);
+            foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect", "poor" }) { string tt = t, qq = q; Sira(tt, qq, false, false, false, false); }
+            Sira("smash", "perfect", false, true, false, false); Sira("smash", "good", false, true, false, false);
+            Sira("jump", "perfect", false, false, false, false); Sira("jump", "good", false, false, false, false);
+            foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect", "poor" }) { string tt = t, qq = q; Sira(tt, qq, false, false, false, true); }
+            Sira("clear", "good", false, false, true, true); Sira("drop", "good", false, false, true, true);
+            Sira("jump", "good", false, false, false, true);
             // İnceleme 2026-11-15 12:05 #1: kesme (slice) vuruşu anahtara girdiği hâlde ısıtılmıyordu; oturumun ilk aldatmasında
             // (oyunun ustalık anı) iki tampon + yankı o vuruş karesinde sentezleniyordu. Slice poor'da açılmaz (Aldatma:241), bu
             // yüzden yalnız good/perfect, iki taraf. Rakibin tam smacı ve sıçrama perfect'i de aynı delikti.
             foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect" }) foreach (var op in new[] { false, true })
-            { string tt = t, qq = q; bool oo = op; isitSira.Enqueue(() => Vurus(tt, qq, true, false, false, oo)); }
-            isitSira.Enqueue(() => Vurus("smash", "perfect", false, true, false, true)); isitSira.Enqueue(() => Vurus("smash", "good", false, true, false, true));
-            isitSira.Enqueue(() => Vurus("jump", "perfect", false, false, false, true));
+            { string tt = t, qq = q; bool oo = op; Sira(tt, qq, true, false, false, oo); }
+            Sira("smash", "perfect", false, true, false, true); Sira("smash", "good", false, true, false, true);
+            Sira("jump", "perfect", false, false, false, true);
             ArtKur();
         }
         // Ralli sesleri (İnceleme turu 2026-11-10 17:08 #4): ralli notası (15 basamak × 3 renk) ve perfect serisi tonları (13)
@@ -250,12 +250,25 @@ namespace BirdieSmash.Game
             }
             for (int i = 0; i < 2 && isitSira.Count > 0; i++) { var f = isitSira.Dequeue(); try { f(); } catch (System.Exception) { } }
         }
+        // İnceleme 2026-11-16 12:05 #2: rövanşta tel/raket aynıysa 52 işin hepsi önbellekten dönüyordu ama sıra karede ikişer
+        // işlendiği için perde ~26 kare (60 Hz'de ~0,43 sn) boşuna kapalı kalıyordu. Önbellekte olan sıraya girmez; ilk maç ve
+        // tel değişimi bugünkü gibi. Anahtar tek fonksiyondan (Vurus da aynısını kullanır), ikisi ayrışamaz.
+        void Sira(string type, string q, bool slice, bool super_, bool serve, bool op)
+        {
+            if (vses.ContainsKey(VurusAnahtar(type, q, slice, super_, serve, op))) return;
+            isitSira.Enqueue(() => Vurus(type, q, slice, super_, serve, op));
+        }
+        static string VurusAnahtar(string type, string q, bool slice, bool super_, bool serve, bool op)
+        {
+            var GS = Ayar.GS; bool jump = type == "jump"; type = Tur(type);
+            return type + q + slice + super_ + serve + op + jump + GS.ton.ToString("0.000") + GS.kafa.ToString("0.000");
+        }
         static string Tur(string type) { return type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type == "push" ? "drive" : HITMIX.ContainsKey(type ?? "") ? type : "clear"; }
         AudioClip Vurus(string type, string q, bool slice, bool super_, bool serve, bool op)
         {
             // sıçrayarak smaç smaç karışımını kullanır ama kuyruğu dolu (Dolu): önbellek anahtarına girer
+            string k = VurusAnahtar(type, q, slice, super_, serve, op);
             var GS = Ayar.GS; bool jump = type == "jump"; type = Tur(type); bool dolu = super_ || jump;
-            string k = type + q + slice + super_ + serve + op + jump + GS.ton.ToString("0.000") + GS.kafa.ToString("0.000");
             AudioClip[] v; if (!vses.TryGetValue(k, out v))
             {
                 v = new AudioClip[2];

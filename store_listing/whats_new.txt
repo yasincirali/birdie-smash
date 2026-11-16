@@ -1,4 +1,10 @@
 === UNITY ===
+Zorluk kapsülünde kayan seçim, rövanş daha hızlı açılıyor (16 Kasım öğle):
+- Zorluk kapsülünde başka bir kademeye dokununca seçili zemin eski kademeden yenisine kayıyor (Hareketi azalt açıkken anında).
+- Dolap, Karakter ve Antrenman'daki sekme şeritleri yeniden alt çizgili; bir önceki sürümde yanlışlıkla zorluk kapsülü gibi kutulu görünüyorlardı.
+- Aynı raketle "Bir maç daha" dediğinde perde, sesler zaten hazır olduğu için daha kısa kapalı kalıyor.
+- İlk Usta sayısında, Sonsuz ralli rekorunda ve maç sonu kartında kayıt artık o anda değil biraz sonra yapılıyor; eski telefonlarda o anlardaki takılma azalmalı.
+Nasıl denenir: Ana ekranda zorluğu Kolay'dan Usta'ya değiştir: turuncu çerçeveli zemin kayarak gitmeli, tik yeni kademede olmalı. Dolap'ta kategori şeridine bak: seçili sekmenin altında turuncu çizgi olmalı, kutu olmamalı. Bir maç bitirip aynı raketle "Bir maç daha"ya bas: saha hemen açılmalı.
 Final maçında imza vuruşu ipucu, maç başında daha akıcı kart (16 Kasım sabah):
 - Tur finalinde rakibin imza vuruşunu okuyamadan kaybedersen, maç sonu ipucu artık o vuruşun adını ve nasıl karşılanacağını söylüyor. Ayrıntılar'da kaç imzayı okuduğun yazıyor.
 - Maç başındaki rakip kartı ve file her karede daha az iş yapıyor; eski telefonlarda ilk servis sırasında takılma azalmalı.

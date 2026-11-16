@@ -907,7 +907,7 @@ namespace BirdieSmash.Game
             if (M.easy || M.Dril != null) return y;
             if (ustaKart < 0) ustaKart = PlayerPrefs.GetInt(USTA_KART, 0);
             if (ustaKart > 0) return y;
-            if (M.sc[0] + M.sc[1] > 0) { ustaKart = 1; PlayerPrefs.SetInt(USTA_KART, 1); PlayerPrefs.Save(); return y; }
+            if (M.sc[0] + M.sc[1] > 0) { ustaKart = 1; PlayerPrefs.SetInt(USTA_KART, 1); Ayar.KaydetSonra(); return y; }   // Save sayı/rekor karesinde değil, ertelenen kayıtta (İnceleme 2026-11-16 12:05 #5)
             if (ustaKartSt == null || ustaKartSt.fontSize != Mathf.RoundToInt(13 * fu)) ustaKartSt = new GUIStyle(left) { wordWrap = true, fontSize = Mathf.RoundToInt(13 * fu) };
             float w = ColW, x = ColX, iw = w - 32 * u;
             string bas = L.T(M.kosuYardim ? "Yardımlı: koşu senin" : "Elle: koşu senin"), metin = L.T("Ayak izlerinin yanına dokun, oyuncun yerini alır; başka yere dokunursan oraya koşar. Top parlayınca kaydır.") + "\n" + L.T("Düz halkanın içindeysen tam vuruş, kesik halkadaysan uzanırsın.") + (M.kosuYardim ? "\n" + L.T("Geç kalırsan oyuncun topa kendisi koşar; dokunursan yine sen yönlendirirsin.") : "");
@@ -1049,7 +1049,7 @@ namespace BirdieSmash.Game
         static bool OgrGizli
         {
             get { if (ogrGizliK < 0) { try { ogrGizliK = PlayerPrefs.GetInt("tuytop_ogr_gizli", 0); } catch { ogrGizliK = 0; } } return ogrGizliK == 1; }
-            set { ogrGizliK = value ? 1 : 0; PlayerPrefs.SetInt("tuytop_ogr_gizli", ogrGizliK); PlayerPrefs.Save(); }
+            set { ogrGizliK = value ? 1 : 0; PlayerPrefs.SetInt("tuytop_ogr_gizli", ogrGizliK); Ayar.KaydetSonra(); }
         }
         // hız bandı: bölgeler oyunun kendi eşikleri; hedef bölge ▸ ile ve çerçeveyle (yalnız renkle değil)
         void HizBandi(OgrAdim a, int hb, float igne, float bx, float yy, float bwid)

@@ -232,7 +232,7 @@ namespace BirdieSmash.Game
             if (o.ogr || mod != Mod.Normal || st == null || st.kariyer < 0 || !st.patron || geriKapali) return;
             string gor = PlayerPrefs.GetString(GIRIS_ANAHTAR, ""), id = st.kariyer.ToString();
             if (("," + gor + ",").Contains("," + id + ",")) return;
-            PlayerPrefs.SetString(GIRIS_ANAHTAR, gor.Length == 0 ? id : gor + "," + id); PlayerPrefs.Save();
+            PlayerPrefs.SetString(GIRIS_ANAHTAR, gor.Length == 0 ? id : gor + "," + id); Ayar.KaydetSonra();
             girisT = GIRIS; GIRIS_LAF.TryGetValue(st.id, out girisLaf);
             // Rövanş (2026-11-14 hikâye): bu tarzla kariyerde daha önce karşılaştıysan rakip o güne değinir; güç merdiveni onu
             // o günden beri gerçekten güçlendirdi (Core/Hikaye.OncekiKarsilasma).
@@ -293,7 +293,7 @@ namespace BirdieSmash.Game
         {
             ekran = Ekran.Bitti; Uyanik(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); bittiIlk = false; odul = null;
             int eski = SonsuzRekor; bool rekor = skor > eski, esik = false;
-            if (rekor) { PlayerPrefs.SetInt(Sonsuz.ANAHTAR, skor); PlayerPrefs.Save(); Yerel.Hap("flow"); }
+            if (rekor) { PlayerPrefs.SetInt(Sonsuz.ANAHTAR, skor); kaydetBekle = true; kayitErteleT = Time.unscaledTime + KAYIT_ERTELE; Yerel.Hap("flow"); }   // Save sayı/rekor karesinde değil, ertelenen kayıtta (İnceleme 2026-11-16 12:05 #5)
             int yeniEsik = Sonsuz.YeniEsik(skor, eski); esik = yeniEsik > 0;
             yukseltHazir = false; HedefHesapla();
             BittiSifirla(); bittiKazandi = rekor; bittiBas = L.T(rekor && eski > 0 ? "Yeni rekor" : "Sonsuz ralli"); bittiUst = L.T("Antrenman") + " · " + L.T("Sonsuz ralli");
@@ -622,7 +622,7 @@ namespace BirdieSmash.Game
             rekKart = rekGoruldu = rekIzlendi = rekDenendi = false;
         }
 
-        public void UstaDavetGordu() { if (ustaDavetSayildi) return; ustaDavetSayildi = true; PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); PlayerPrefs.Save(); }
+        public void UstaDavetGordu() { if (ustaDavetSayildi) return; ustaDavetSayildi = true; PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); kaydetBekle = true; }   // maç sonu kartı karesinde Save yok (2026-11-16 12:05 #5)
         public void UstaDene() { ustaDeneSonraki = true; ustaDavet = false; TekrarOyna(); }
         Style rovansStil, rovansSiradaki, sonHizliStil;   // rovansStil: maç sonu ekranında sunulan; rovansSiradaki: yalnız ana düğmeyle başlayan maça geçer
         public void TekrarOyna()
