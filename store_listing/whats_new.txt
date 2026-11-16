@@ -1,4 +1,7 @@
 === UNITY ===
+Sayı arasında iki yeni kısa hareket (17 Kasım gece):
+- Sayıyı kaybeden oyuncu orta uzunlukta bir ralliden sonra alnındaki teri siliyor; kısa rallilerde ara sıra raketinin tellerini düzeltiyor. İkisi de bir saniyeden kısa, sayı arasını uzatmıyor. Sen de rakip de yapıyor.
+Nasıl denenir: Bir maç oyna. 5 ile 7 vuruş arası süren bir ralliyi kaybet: oyuncun sol koluyla alnını silmeli. Kısa rallilerde birkaç sayı izle: kaybeden taraf ara sıra raketini önüne alıp tellerine dokunmalı. Servis her zamanki sürede başlamalı.
 Patron maçları daha akıcı, maç sonu tek tavsiye (16 Kasım gece):
 - Patron rakibin imza vuruşu ışığı artık maç başlamadan hazırlanıyor; imzanın ilk geldiği anda kısa takılma olmamalı.
 - Patrona imzayı okuyamadan kaybedince maç sonundaki ipucu ve altındaki ders düğmesi artık aynı vuruştan bahsediyor (ör. Duvar blok için drop dersi).

@@ -1047,7 +1047,7 @@ namespace BirdieSmash.Game
         // file) seçili sevincin kısası: zirvesine kadar oynar, söner (zıpla dönüşünü, zafer inişini yarıda kesmesin diye zirve +.15).
         // Uzun ralliyi kaybeden kısa başını eğer ("of"), kollar maç duruşunda: rakibin sevinci karşısında okunur. Maç sonu aynı.
         // Yalnız Game katmanı; online'da da her telefonun yerel görüntüsü (Core'a, pakete dokunmaz).
-        public const int SEV_UZUN = 8; const float SEV_OF = .6f;
+        public const int SEV_UZUN = 8; const float SEV_OF = .6f; const int SEV_TER = 5; const float SEV_BEKLE = .75f;
         static float SevincKisa(string id) { return Mathf.Max(.55f, SevincZirve(id) + .15f); }
         // "zafer" maç sonu sevincinin evreleri (sn): hazırlık, iniş, pompa döngüsünün başı; pompa sıklığı (yarım dalga/sn).
         const float Z_HAZIR = .2f, Z_INIS = .62f, Z_DONGU = .8f, Z_POMPA = 2f;
@@ -1068,6 +1068,11 @@ namespace BirdieSmash.Game
                     sevSure = M.sovSayi ? SEVINC_UZUN : kazanilmis ? SEVINC_SURE : SevincKisa(sevId);
                 }
                 else if (M.rally >= SEV_UZUN) { sevId = "of"; sevDongu = false; sevT = 0; sevSure = SEV_OF; }
+                // Sayı arası kısa bekleme hareketleri (2026-11-17, yasin: "yeni hareketler ekleyelim"): sayıyı kaybeden orta uzunlukta
+                // ralliden sonra alnını siler, kısa rallide üç sayıda bir raketinin tellerini düzeltir. Kısa (0,75 sn; sayı arasını
+                // uzatmaz: "sayı arasında uzun animasyon yok" kuralı), kemik katmanı (yeni FBX yok), sayıya bağlı belirlenimli.
+                else if (M.rally >= SEV_TER) { sevId = "ter"; sevDongu = false; sevT = 0; sevSure = SEV_BEKLE; }
+                else if (top % 3 == (isMe ? 1 : 2)) { sevId = "tel"; sevDongu = false; sevT = 0; sevSure = SEV_BEKLE; }
             }
             if (sevT < 0) { sevW = 0; return; }
             sevT += dt;
@@ -1249,6 +1254,8 @@ namespace BirdieSmash.Game
                 case "of": egil = 12 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .25f)); break;   // uzun ralli kaybı: baş öne, kollar yerinde
                 // Dinlenme (2026-11-13, Oyna afişi "yorulunca durabilirler"): giriş .5 sn, nefes 0,7 Hz (göğüs inip kalkar).
                 // dinlen: eller dizlerin üstünde, gövde öne eğik soluklanma; bel: dik duruş, eller belde, omuzlar nefesle kalkar.
+                case "ter": egil = 5 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .2f)); break;
+                case "tel": egil = 9 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .2f)); break;
                 case "dinlen": egil = 30 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .5f)) + 3 * Mathf.Sin(t * 4.4f) * salla; break;
                 case "bel": egil = -3 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .5f)) - 2.5f * Mathf.Max(0, Mathf.Sin(t * 4.4f)) * salla; break;
                 // danslar (omurga): salla = 0 (hareketi azalt) iken duruş sabit
@@ -1358,6 +1365,13 @@ namespace BirdieSmash.Game
                       IK(SU, SE, SH, Vector3.Lerp(SH != null ? SH.position : hR, hR, a), ri - fw * .5f);
                       IK(LU, LE, LH, Vector3.Lerp(LH != null ? LH.position : hL, hL, a), -ri - fw * .5f);
                       RaketDik(SH, Vector3.Slerp(up, -up - fw * .4f + ri * .3f, a)); } break;
+                case "ter":      // sol ön kol alından geçer (sağdan sola siler); raketli kol maç duruşunda kalır
+                    { float a = rm ? .5f : Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - .15f) / .45f));
+                      IK(LU, LE, LH, (sR + sL) * .5f + up * L * .4f + fw * L * .3f + ri * L * (.16f - .3f * a), -ri * .6f + up * .5f + fw * .4f); } break;
+                case "tel":      // raket göğüs önünde, kafası sola yukarı; sol elin parmakları tellerde gezinir
+                    { Vector3 nd = (up * .8f - ri * .55f + fw * .1f).normalized;
+                      IK(SU, SE, SH, sR + fw * L * .5f - up * L * .18f - ri * L * .04f, ri - up * .5f); RaketDik(SH, nd);
+                      if (SH != null) IK(LU, LE, LH, SH.position + nd * L * (.52f + .05f * Mathf.Sin(t * 13) * salla) + fw * L * .05f, -ri - up * .5f); } break;
                 case "iyi_oyun": // raket rakibe doğru kalkar (fileden selam)
                     IK(SU, SE, SH, sR + fw * L * .7f + up * L * .45f + ri * L * .1f, ri - up * .3f); break;
             }
