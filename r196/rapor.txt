@@ -1,0 +1,72 @@
+menu_ilk_oyna · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-1422138917 rules=606 complexSelectors=633 m_Rules=606 m_ComplexSelectors=633 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+yazı turu: düzenli menü (antrenman=True, galibiyet=0)
+menu_oyna · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-1422138917 rules=606 complexSelectors=633 m_Rules=606 m_ComplexSelectors=633 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+dolap şapka dibi · çocuk 8 · içerik 3565 · görünen 233 · kayma 3333 · alan 233 · üst 515
+dolap çip 8 eski · çocuk 14 · içerik 4722 · görünen 233 · kayma 3333 · alan 233 · üst 515
+dolap çip 2 eski · çocuk 14 · içerik 1731 · görünen 233 · kayma 3333 · alan 233 · üst 515
+dolap çip 4 eski · çocuk 13 · içerik 894 · görünen 233 · kayma 3333 · alan 233 · üst 515
+dolap çip 7 eski · çocuk 15 · içerik 1565 · görünen 233 · kayma 3333 · alan 233 · üst 515
+dolap şapka dibi · çocuk 8 · içerik 3565 · görünen 233 · kayma 3333 · alan 233 · üst 515
+dolap çip 8 yeni · çocuk 14 · içerik 4722 · görünen 233 · kayma 0 · alan 233 · üst 515
+dolap çip 2 yeni · çocuk 14 · içerik 1731 · görünen 233 · kayma 0 · alan 233 · üst 515
+dolap çip 4 yeni · çocuk 13 · içerik 894 · görünen 233 · kayma 0 · alan 233 · üst 515
+dolap çip 7 yeni · çocuk 15 · içerik 1565 · görünen 233 · kayma 0 · alan 233 · üst 515
+dans robot · bacak kod 0 r 0.026 kalçaAta True
+dans tavuk · bacak kod 0 r 0.026 kalçaAta True
+dans twist · bacak kod 0 r 0.026 kalçaAta True
+dans dalga · bacak kod 0 r 0.026 kalçaAta True
+dans helikopter · bacak kod 0 r 0.026 kalçaAta True
+dans gitar · bacak kod 0 r 0.026 kalçaAta True
+ten t1 model oyuncak · oyuncak_govde 512x512 asıl ten 129,97,63 → 246,215,195 eşleşen 4096
+ten_fig t1 · ayk_klasik__ayakkabi=Standard/oyuncak_govde_ten/FFFFFF ayk_klasik__ayakkabi=ayk_ust/dokusuz/E6E8EB oy_forma__forma=Standard/dokusuz/4FB8FF oy_govde__govde=Standard/oyuncak_govde_ten/FFFFFF Cone__tuy=tuy_g/dokusuz/F7F7F2 Sphere__mantar=mantar_g/dokusuz/BF9966 sac_kisa__sac=Standard/oyuncak_sac/2B1D14 golge=Sprites/Default//000000 nefes_zemin=Sprites/Default/dokusuz/FFFFFF nefes=Sprites/Default/dokusuz/FFFFFF 
+ten t5 model oyuncak · oyuncak_govde 512x512 asıl ten 129,97,63 → 122,76,51 eşleşen 4096
+ten_fig t5 · ayk_klasik__ayakkabi=Standard/oyuncak_govde_ten/FFFFFF ayk_klasik__ayakkabi=ayk_ust/dokusuz/E6E8EB oy_forma__forma=Standard/dokusuz/4FB8FF oy_govde__govde=Standard/oyuncak_govde_ten/FFFFFF Cone__tuy=tuy_g/dokusuz/F7F7F2 Sphere__mantar=mantar_g/dokusuz/BF9966 sac_kisa__sac=Standard/oyuncak_sac/2B1D14 golge=Sprites/Default//000000 nefes_zemin=Sprites/Default/dokusuz/FFFFFF nefes=Sprites/Default/dokusuz/FFFFFF 
+vitrin rt 356x360 ekran 390x845
+menu_x2_oyna · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-1422138917 rules=606 complexSelectors=633 m_Rules=606 m_ComplexSelectors=633 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+dolap şapka dibi · çocuk 8 · içerik 10431 · görünen 304 · kayma 10127 · alan 304 · üst 446
+dolap çip 8 eski · çocuk 14 · içerik 13474 · görünen 304 · kayma 10127 · alan 304 · üst 446
+dolap çip 2 eski · çocuk 14 · içerik 4678 · görünen 304 · kayma 10127 · alan 304 · üst 446
+dolap çip 4 eski · çocuk 13 · içerik 1654 · görünen 304 · kayma 10127 · alan 304 · üst 446
+dolap çip 7 eski · çocuk 15 · içerik 3805 · görünen 304 · kayma 10127 · alan 304 · üst 446
+dolap şapka dibi · çocuk 8 · içerik 10431 · görünen 304 · kayma 10127 · alan 304 · üst 446
+dolap çip 8 yeni · çocuk 14 · içerik 13474 · görünen 304 · kayma 0 · alan 304 · üst 446
+dolap çip 2 yeni · çocuk 14 · içerik 4678 · görünen 304 · kayma 0 · alan 304 · üst 446
+dolap çip 4 yeni · çocuk 13 · içerik 1654 · görünen 304 · kayma 0 · alan 304 · üst 446
+dolap çip 7 yeni · çocuk 15 · içerik 3805 · görünen 304 · kayma 0 · alan 304 · üst 446
+ten t1 model oyuncak · oyuncak_govde 512x512 asıl ten 129,97,63 → 122,76,51 eşleşen 4096
+ten_fig t1 · ayk_klasik__ayakkabi=Standard/oyuncak_govde_ten/FFFFFF ayk_klasik__ayakkabi=ayk_ust/dokusuz/E6E8EB oy_forma__forma=Standard/dokusuz/4FB8FF oy_govde__govde=Standard/oyuncak_govde_ten/FFFFFF Cone__tuy=tuy_g/dokusuz/F7F7F2 Sphere__mantar=mantar_g/dokusuz/BF9966 sac_kisa__sac=Standard/oyuncak_sac/2B1D14 golge=Sprites/Default//000000 nefes_zemin=Sprites/Default/dokusuz/FFFFFF nefes=Sprites/Default/dokusuz/FFFFFF 
+ten t5 model oyuncak · oyuncak_govde 512x512 asıl ten 129,97,63 → 122,76,51 eşleşen 4096
+ten_fig t5 · ayk_klasik__ayakkabi=Standard/oyuncak_govde_ten/FFFFFF ayk_klasik__ayakkabi=ayk_ust/dokusuz/E6E8EB oy_forma__forma=Standard/dokusuz/4FB8FF oy_govde__govde=Standard/oyuncak_govde_ten/FFFFFF Cone__tuy=tuy_g/dokusuz/F7F7F2 Sphere__mantar=mantar_g/dokusuz/BF9966 sac_kisa__sac=Standard/oyuncak_sac/2B1D14 golge=Sprites/Default//000000 nefes_zemin=Sprites/Default/dokusuz/FFFFFF nefes=Sprites/Default/dokusuz/FFFFFF 
+vitrin rt 356x256 ekran 390x845
+menu_tr_oyna · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-1422138917 rules=606 complexSelectors=633 m_Rules=606 m_ComplexSelectors=633 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+dolap şapka dibi · çocuk 8 · içerik 3420 · görünen 233 · kayma 3188 · alan 233 · üst 515
+dolap çip 8 eski · çocuk 14 · içerik 4558 · görünen 233 · kayma 3188 · alan 233 · üst 515
+dolap çip 2 eski · çocuk 14 · içerik 1685 · görünen 233 · kayma 3188 · alan 233 · üst 515
+dolap çip 4 eski · çocuk 13 · içerik 878 · görünen 233 · kayma 3188 · alan 233 · üst 515
+dolap çip 7 eski · çocuk 15 · içerik 1498 · görünen 233 · kayma 3188 · alan 233 · üst 515
+dolap şapka dibi · çocuk 8 · içerik 3420 · görünen 233 · kayma 3188 · alan 233 · üst 515
+dolap çip 8 yeni · çocuk 14 · içerik 4558 · görünen 233 · kayma 0 · alan 233 · üst 515
+dolap çip 2 yeni · çocuk 14 · içerik 1685 · görünen 233 · kayma 0 · alan 233 · üst 515
+dolap çip 4 yeni · çocuk 13 · içerik 878 · görünen 233 · kayma 0 · alan 233 · üst 515
+dolap çip 7 yeni · çocuk 15 · içerik 1498 · görünen 233 · kayma 0 · alan 233 · üst 515
+ten t1 model oyuncak · oyuncak_govde 512x512 asıl ten 129,97,63 → 122,76,51 eşleşen 4096
+ten_fig t1 · ayk_klasik__ayakkabi=Standard/oyuncak_govde_ten/FFFFFF ayk_klasik__ayakkabi=ayk_ust/dokusuz/E6E8EB oy_forma__forma=Standard/dokusuz/4FB8FF oy_govde__govde=Standard/oyuncak_govde_ten/FFFFFF Cone__tuy=tuy_g/dokusuz/F7F7F2 Sphere__mantar=mantar_g/dokusuz/BF9966 sac_kisa__sac=Standard/oyuncak_sac/2B1D14 golge=Sprites/Default//000000 nefes_zemin=Sprites/Default/dokusuz/FFFFFF nefes=Sprites/Default/dokusuz/FFFFFF 
+ten t5 model oyuncak · oyuncak_govde 512x512 asıl ten 129,97,63 → 122,76,51 eşleşen 4096
+ten_fig t5 · ayk_klasik__ayakkabi=Standard/oyuncak_govde_ten/FFFFFF ayk_klasik__ayakkabi=ayk_ust/dokusuz/E6E8EB oy_forma__forma=Standard/dokusuz/4FB8FF oy_govde__govde=Standard/oyuncak_govde_ten/FFFFFF Cone__tuy=tuy_g/dokusuz/F7F7F2 Sphere__mantar=mantar_g/dokusuz/BF9966 sac_kisa__sac=Standard/oyuncak_sac/2B1D14 golge=Sprites/Default//000000 nefes_zemin=Sprites/Default/dokusuz/FFFFFF nefes=Sprites/Default/dokusuz/FFFFFF 
+vitrin rt 356x360 ekran 390x845
+menu_x2_tr_oyna · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=-1422138917 rules=606 complexSelectors=633 m_Rules=606 m_ComplexSelectors=633 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+dolap şapka dibi · çocuk 8 · içerik 10431 · görünen 304 · kayma 10127 · alan 304 · üst 446
+dolap çip 8 eski · çocuk 14 · içerik 13474 · görünen 304 · kayma 10127 · alan 304 · üst 446
+dolap çip 2 eski · çocuk 14 · içerik 4823 · görünen 304 · kayma 10127 · alan 304 · üst 446
+dolap çip 4 eski · çocuk 13 · içerik 1544 · görünen 304 · kayma 10127 · alan 304 · üst 446
+dolap çip 7 eski · çocuk 15 · içerik 3710 · görünen 304 · kayma 10127 · alan 304 · üst 446
+dolap şapka dibi · çocuk 8 · içerik 10431 · görünen 304 · kayma 10127 · alan 304 · üst 446
+dolap çip 8 yeni · çocuk 14 · içerik 13474 · görünen 304 · kayma 0 · alan 304 · üst 446
+dolap çip 2 yeni · çocuk 14 · içerik 4823 · görünen 304 · kayma 0 · alan 304 · üst 446
+dolap çip 4 yeni · çocuk 13 · içerik 1544 · görünen 304 · kayma 0 · alan 304 · üst 446
+dolap çip 7 yeni · çocuk 15 · içerik 3710 · görünen 304 · kayma 0 · alan 304 · üst 446
+ten t1 model oyuncak · oyuncak_govde 512x512 asıl ten 129,97,63 → 122,76,51 eşleşen 4096
+ten_fig t1 · ayk_klasik__ayakkabi=Standard/oyuncak_govde_ten/FFFFFF ayk_klasik__ayakkabi=ayk_ust/dokusuz/E6E8EB oy_forma__forma=Standard/dokusuz/4FB8FF oy_govde__govde=Standard/oyuncak_govde_ten/FFFFFF Cone__tuy=tuy_g/dokusuz/F7F7F2 Sphere__mantar=mantar_g/dokusuz/BF9966 sac_kisa__sac=Standard/oyuncak_sac/2B1D14 golge=Sprites/Default//000000 nefes_zemin=Sprites/Default/dokusuz/FFFFFF nefes=Sprites/Default/dokusuz/FFFFFF 
+ten t5 model oyuncak · oyuncak_govde 512x512 asıl ten 129,97,63 → 122,76,51 eşleşen 4096
+ten_fig t5 · ayk_klasik__ayakkabi=Standard/oyuncak_govde_ten/FFFFFF ayk_klasik__ayakkabi=ayk_ust/dokusuz/E6E8EB oy_forma__forma=Standard/dokusuz/4FB8FF oy_govde__govde=Standard/oyuncak_govde_ten/FFFFFF Cone__tuy=tuy_g/dokusuz/F7F7F2 Sphere__mantar=mantar_g/dokusuz/BF9966 sac_kisa__sac=Standard/oyuncak_sac/2B1D14 golge=Sprites/Default//000000 nefes_zemin=Sprites/Default/dokusuz/FFFFFF nefes=Sprites/Default/dokusuz/FFFFFF 
+vitrin rt 356x256 ekran 390x845
