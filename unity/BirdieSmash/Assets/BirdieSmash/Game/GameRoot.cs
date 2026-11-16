@@ -122,9 +122,10 @@ namespace BirdieSmash.Game
         // Sahneyi maça göre kur: saha değiştiyse kort, model değiştiyse oyuncular ve hakemler, rakip forması her maçta.
         void Kur(Match M)
         {
-            if (court == null || courtId != M.saha)
+            string ck = M.saha + "|" + CourtView.Cevre + (CourtView.CevreFinal ? "|f" : "");   // tur çevresi (2026-11-16) de kort anahtarında
+            if (court == null || courtId != ck)
             {
-                if (court != null) Destroy(court); Color bg; court = CourtView.Build(transform, M.saha, out bg); cam.backgroundColor = bg; courtId = M.saha;
+                if (court != null) Destroy(court); Color bg; court = CourtView.Build(transform, M.saha, out bg); cam.backgroundColor = bg; courtId = ck;
                 var ak = court.transform.Find(CourtView.AKIS); akisR = ak != null ? ak.GetComponent<Renderer>() : null;
             }
             var gor = PlayerView.Benim(); string gk = gor.Anahtar();
@@ -155,7 +156,7 @@ namespace BirdieSmash.Game
             if (me == null || modelId != Ayar.model || gorunumId != PlayerView.Benim().Anahtar()) Kur(match);
             vitrin.Yenile();
         }
-        public void SahaDegisti() { if (ekran != Ekran.Oyun) { match.saha = Ayar.saha; Kur(match); } }
+        public void SahaDegisti() { if (ekran != Ekran.Oyun) { match.saha = Ayar.saha; CourtView.Cevre = null; CourtView.CevreFinal = false; Kur(match); } }
         // 2026-11-13 inceleme #4: Hızlı maç saha çipi her dokunuşta bütün kortu (tribün, ışık, LED) dokunuşla aynı karede yıkıp
         // kuruyordu; menü açıkken ana kamera sahneyi çizmiyor (UiKok cullingMask 0), kurulan kort görünmüyordu. Çip artık yalnız
         // seçimi yazar; kort Oyna → StartMatch → MacKur → Kur(match) içinde, maç perdesinin arkasında kurulur. Ekran/mağaza
@@ -177,6 +178,8 @@ namespace BirdieSmash.Game
             {
                 int g = Ayar.kariyerSecim >= 0 && Ayar.ilerleme.Acik(Ayar.kariyerSecim) ? Ayar.kariyerSecim : Ayar.ilerleme.Siradaki(); var kb = KariyerVeri.Al(g);
                 o.stil = Match.KariyerRakip(g); o.saha = kb.saha; if (kb.uzunluk > 0) o.target = kb.uzunluk; o.degistirici = kb.degistirici;   // kural maçı (veri; çoğu basamakta null)
+                // Tur çevresi (2026-11-16 inceleme, fikir 17:05 #1): turnuva sahasının duvarı/LED/flamaları tura göre; final basamağı kısık ışık.
+                var kt = KariyerVeri.Turlar; int ti = KariyerVeri.TurOf(g); CourtView.Cevre = kt != null && ti < kt.Length ? kt[ti].id : null; CourtView.CevreFinal = KariyerVeri.BasOf(g) == KariyerVeri.BASAMAK - 1;
             }
             else if (rovansSiradaki != null) o.stil = rovansSiradaki;   // Rövanş: az önce yenen rakip (saha Ayar.saha, zaten aynı)
             else if (HizliSecili() != null) o.stil = KariyerVeri.Serbest(HizliSecili(), Ayar.ilerleme);   // 2026-11-11: oyuncunun seçtiği rakip, güç yine oyuncunun seviyesinden
@@ -194,7 +197,7 @@ namespace BirdieSmash.Game
         }
         MatchOptions Secenek(bool ogr)
         {
-            Ayar.GearHesap();
+            Ayar.GearHesap(); CourtView.Cevre = null; CourtView.CevreFinal = false;   // tur çevresi yalnız kariyer maçında (StartMatch Secenek'ten sonra yazar)
             // Usta daveti bayrağı burada TÜKETİLİR: Günün maçı/Usta yolu/görev StartMatch'e uğramadan Secenek çağırır, bayrak sızmasın.
             bool ud = ustaDeneBu && !ogr; ustaDeneBu = false; ustaDeneMac = ud;
             // 2026-11-14: Zor daveti de yalnız rakibi Zor'a alır; oyuncunun hareket ayarı (Ayar.hareket) olduğu gibi kalır.
@@ -232,7 +235,7 @@ namespace BirdieSmash.Game
             if (o.ogr || mod != Mod.Normal || st == null || st.kariyer < 0 || !st.patron || geriKapali) return;
             string gor = PlayerPrefs.GetString(GIRIS_ANAHTAR, ""), id = st.kariyer.ToString();
             if (("," + gor + ",").Contains("," + id + ",")) return;
-            PlayerPrefs.SetString(GIRIS_ANAHTAR, gor.Length == 0 ? id : gor + "," + id); PlayerPrefs.Save();
+            PlayerPrefs.SetString(GIRIS_ANAHTAR, gor.Length == 0 ? id : gor + "," + id); Ayar.KaydetSonra();
             girisT = GIRIS; GIRIS_LAF.TryGetValue(st.id, out girisLaf);
             // Rövanş (2026-11-14 hikâye): bu tarzla kariyerde daha önce karşılaştıysan rakip o güne değinir; güç merdiveni onu
             // o günden beri gerçekten güçlendirdi (Core/Hikaye.OncekiKarsilasma).
@@ -293,7 +296,7 @@ namespace BirdieSmash.Game
         {
             ekran = Ekran.Bitti; Uyanik(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); bittiIlk = false; odul = null;
             int eski = SonsuzRekor; bool rekor = skor > eski, esik = false;
-            if (rekor) { PlayerPrefs.SetInt(Sonsuz.ANAHTAR, skor); PlayerPrefs.Save(); Yerel.Hap("flow"); }
+            if (rekor) { PlayerPrefs.SetInt(Sonsuz.ANAHTAR, skor); kaydetBekle = true; kayitErteleT = Time.unscaledTime + KAYIT_ERTELE; Yerel.Hap("flow"); }   // Save sayı/rekor karesinde değil, ertelenen kayıtta (İnceleme 2026-11-16 12:05 #5)
             int yeniEsik = Sonsuz.YeniEsik(skor, eski); esik = yeniEsik > 0;
             yukseltHazir = false; HedefHesapla();
             BittiSifirla(); bittiKazandi = rekor; bittiBas = L.T(rekor && eski > 0 ? "Yeni rekor" : "Sonsuz ralli"); bittiUst = L.T("Antrenman") + " · " + L.T("Sonsuz ralli");
@@ -520,6 +523,7 @@ namespace BirdieSmash.Game
             if (M.tepeden > 0) bb.Add(L.T("{0} tepeden", M.tepeden));
             if (M.saves > 0) bb.Add(L.T("{0} uzanma", M.saves));
             if (M.outsLeft > 0) bb.Add(L.T("{0} kez dışarıyı bıraktın", M.outsLeft));
+            if (M.imzaSay > 0) bb.Add(L.T("İmza {0}/{1} okudun", M.okudun, M.imzaSay));   // 2026-11-16 (fikir 07:05 #1): yalnız imza geldiyse
             if (M.tarzFark > 0) bb.Add(L.T("Tarzın {0} kez fark yarattı", M.tarzFark));   // 2026-11-07 tarz farkı (Match.tarzFark); Dengeli'de hep 0, yazılmaz
             bittiBilgi = string.Join(" · ", bb.ToArray());
             // En hızlı sayı smacı ve kişisel rekor (2026-11-07 inceleme, fikir 02:06 #3): Ayrıntılar'a tek satır; maç kartına yeni yazı yok.
@@ -553,7 +557,8 @@ namespace BirdieSmash.Game
             bittiDril = Dril.Oner(M, won, Ayar.ilerleme, Ayar.wins);
             // Özet (Ar-Ge 23 Eki #2): iki kart + ipucu; bittiBilgi artık "Ayrıntılar" ardında (Hud.Over).
             bittiKart = Ozet.Kartlar(M); object ia; string ik = Ozet.Ipucu(M, won, out ia);
-            bittiIpucu = ik == null ? null : ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
+            var iim = ia as ImzaBilgi;   // imza ipucu (Ozet.IMZA_IPUCU): ad ve cevap ayrı çevrilir
+            bittiIpucu = ik == null ? null : iim != null ? L.T(ik, L.T(iim.ad), L.T(iim.cevap)) : ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
             if (Ozet.PuanIste(won, kariyerIlk, Ayar.wins, Ayar.puan)) { CancelInvoke("PuanIste"); Invoke("PuanIste", 1.5f); }
             if (won) hud.Konfeti();
         }
@@ -620,7 +625,7 @@ namespace BirdieSmash.Game
             rekKart = rekGoruldu = rekIzlendi = rekDenendi = false;
         }
 
-        public void UstaDavetGordu() { if (ustaDavetSayildi) return; ustaDavetSayildi = true; PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); PlayerPrefs.Save(); }
+        public void UstaDavetGordu() { if (ustaDavetSayildi) return; ustaDavetSayildi = true; PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); kaydetBekle = true; }   // maç sonu kartı karesinde Save yok (2026-11-16 12:05 #5)
         public void UstaDene() { ustaDeneSonraki = true; ustaDavet = false; TekrarOyna(); }
         Style rovansStil, rovansSiradaki, sonHizliStil;   // rovansStil: maç sonu ekranında sunulan; rovansSiradaki: yalnız ana düğmeyle başlayan maça geçer
         public void TekrarOyna()

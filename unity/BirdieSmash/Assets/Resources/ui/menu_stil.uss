@@ -793,6 +793,7 @@
 .anahtar-yazilar { flex-grow: 1; flex-shrink: 1; min-width: 0; align-items: flex-start; margin-right: 12px; }
 .anahtar-satir .dugme-yazi { -unity-text-align: middle-left; white-space: normal; }
 .anahtar-satir .dugme-alt { -unity-text-align: middle-left; white-space: normal; }
+.anahtar-satir > .deger-yazi { flex-shrink: 0; margin-top: 0; -unity-text-align: middle-right; }   /* 2026-11-16 DegerSatir: sağdaki değer + ›, sığmazsa ad sarar, değer kısalmaz */
 /* İnceleme 2026-11-15 12:05 #5: top align-items ile değil translate ile sağa gider, ki kayabilsin (.18 sn ease-out); ray rengi
    aynı sürede solar. 51 − 2×2 dolgu − 27 top = 20 px yol. Hareketi azaltta 0 sn. */
 .anahtar { width: 51px; height: 31px; border-radius: 16px; padding: 2px; flex-shrink: 0; justify-content: center; align-items: flex-start; background-color: rgba(255, 255, 255, 0.18); transition-property: background-color; transition-duration: 0.18s; transition-timing-function: ease-out; }
@@ -882,8 +883,12 @@
 /* 2026-11-16 inceleme (fikir 02:05 #3, HIG segmented control): zorluk satırı normal yazıda tek cam kapsül, içinde dört segment.
    Seçili segment bir kat açık cam (--cam3) + 1,5 pt turuncu çerçeve + ✓; seçili olmayan segment zeminsiz. Dokunma alanı 44 pt
    (çip min-height), kapsül 48. Büyük yazıda sınıf eklenmez, bugünkü sarma kalır. */
-.segment { background-color: var(--cam2); border-radius: 14px; border-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); padding: 2px; margin: 4px; flex-wrap: nowrap; }
-.segment > .cip { margin: 0; background-color: rgba(0, 0, 0, 0); border-width: 0; border-radius: 12px; }
-.segment > .cip:active { background-color: var(--cam); }
-.segment > .cip--secili { background-color: var(--cam3); border-width: 1.5px; border-color: var(--sun); }
-.segment > .cip--secili:active { background-color: var(--cam3); }
+/* 2026-11-16 12:05 inceleme (#1): seçiciler ".segment" idi ve Dolap/Karakter/Antrenman sekme şeritlerine (AD1: sekme = alt çizgi)
+   bulaşıyordu; kapsül kendi adını taşır. (#4) Seçili zemin tek mutlak öğe (.segment-thumb, kod AnaEkran.KapsulThumb), segmentler
+   zeminsiz; thumb çiplerin altında çizilir (ilk çocuk), dokunuşu yutmaz. Seçili segmentte ✓ ve krem yazı kalır (yalnız renkle değil). */
+.segment--kapsul { background-color: var(--cam2); border-radius: 14px; border-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); padding: 2px; margin: 4px; flex-wrap: nowrap; }
+.segment--kapsul > .cip { margin: 0; background-color: rgba(0, 0, 0, 0); border-width: 0; border-radius: 12px; }
+.segment--kapsul > .cip:active { background-color: var(--cam); }
+.segment--kapsul > .cip--secili, .segment--kapsul > .cip--secili:active { background-color: rgba(0, 0, 0, 0); border-width: 0; }
+.segment-thumb { position: absolute; left: 0; top: 2px; bottom: 2px; border-radius: 12px; background-color: var(--cam3); border-width: 1.5px; border-color: var(--sun); transition-property: translate; transition-duration: 0.2s; transition-timing-function: ease-out; }
+.segment-thumb.anisiz, .az-hareket .segment-thumb { transition-duration: 0s; }

@@ -523,8 +523,35 @@ namespace BirdieSmash.Game
             }
             // 2026-11-16 inceleme (fikir 02:05 #3, HIG segmented control): dört ayrı cam çip göze dört kart sayılıyordu (Oyna'da
             // §7.3 bütçesi aşılıyordu). Normal yazıda tek cam kapsül içinde dört segment (USS .segment); büyük yazıda sarma kalır.
-            if (K <= 1.35f) satir.AddToClassList("segment");
+            // 2026-11-16 12:05 inceleme (#1): sınıf genel ".segment" idi; Dolap/Karakter/Antrenman sekme şeritleri de "segment"
+            // taşıdığı için cam kapsül + turuncu çerçeve onlara bulaşıyor, AD1'in "sekme = çizgi" dili bozuluyordu. Ayrı ad.
+            // (#4, HIG UISegmentedControl): seçili zemin dört çipte değil tek "thumb" öğede; dokununca eski kademeden yenisine kayar.
+            if (K <= 1.35f) { satir.AddToClassList("segment--kapsul"); KapsulThumb(satir, Mathf.Clamp(Ayar.zorluk, 0, 3)); }
             if (aciklama) c.Add(Yazi(L.T(ZORLUK_ACIK[Mathf.Clamp(Ayar.zorluk, 0, 3)]), 12, "soluk"));
+        }
+        // Kapsül thumb'ı (2026-11-16 12:05 inceleme #4): zorluk dokunuşu yüzeyi baştan kuruyor (#124 kapsamı); thumb eski kademenin
+        // yerinde, geçişsiz doğar, bir sonraki karede yeni kademeye translate ile kayar (.2 sn, USS). Yalnız transform: düzen yeniden
+        // hesaplanmaz, sınıf yalnız kurulumda yazılır. Hareketi azaltta (.az-hareket) süre 0. Konum ölçülen çipten (yüzde değil):
+        // kapsül iç boşluğu ve ✓ genişliği yüzdeyle kayardı. Eski kademe tek int; Oyna ve Kariyer aynı değeri paylaşır.
+        static int kapsulEski = -1;
+        void KapsulThumb(VisualElement satir, int hedef)
+        {
+            int eski = kapsulEski < 0 ? hedef : kapsulEski; kapsulEski = hedef;
+            var th = new VisualElement(); th.AddToClassList("segment-thumb"); th.AddToClassList("anisiz"); th.pickingMode = PickingMode.Ignore;
+            th.style.width = Length.Percent(25f); th.style.translate = new Translate(Length.Percent(eski * 100f), 0);
+            satir.Insert(0, th); bool ilk = true;
+            satir.RegisterCallback<GeometryChangedEvent>(e =>
+            {
+                int ci = ilk && eski != hedef ? eski : hedef; var cp = ci + 1 < satir.childCount ? satir[ci + 1] : null; if (cp == null) return;
+                th.style.width = cp.layout.width; th.style.translate = new Translate(cp.layout.x, 0);
+                if (!ilk) return; ilk = false;
+                if (eski == hedef) { th.RemoveFromClassList("anisiz"); return; }
+                th.schedule.Execute(() =>
+                {
+                    var hc = hedef + 1 < satir.childCount ? satir[hedef + 1] : null; if (hc == null) return;
+                    th.RemoveFromClassList("anisiz"); th.style.width = hc.layout.width; th.style.translate = new Translate(hc.layout.x, 0);
+                });
+            });
         }
         // Ayar değişti: görünen yüzey (alt sayfa / sayfa / sekme) yeniden kurulur; kaydırma yeri ScrollView'de kalır.
         // yalnizZorluk (2026-11-16 inceleme, fikir 02:05 #4): zorluk çipi dört sekmeyi ve üst şeridi kirletiyordu; Dolap ve Profil

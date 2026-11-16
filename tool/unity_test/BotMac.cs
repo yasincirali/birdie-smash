@@ -454,6 +454,17 @@ static class BotMac
         R.rakipFileSayi = 5; if (!Ozet.Ipucu(R, false, out a).StartsWith("{0} file önüne")) Fail("rakip file kovası ipucu");
         R.outsBen = 2; if (!Ozet.Ipucu(R, false, out a).StartsWith("{0} vuruşun dışarı")) Fail("kendi dışarılarım rakip ipucundan önce");
         R.outsBen = 0; R.rakipSmacSayi = 2; R.rakipFileSayi = 2; if (Ozet.Ipucu(R, false, out a).StartsWith("{0} ")) Fail("kova < 3 iken rakip ipucu olmamalı");
+        // 2026-11-16 imza ipucu (fikir 07:05 #1): patron imzası geldi ve okunmadıysa kayıpta imza cümlesi her şeyden önce;
+        // okunduysa, kazanınca ya da imza gelmediyse eski sıra.
+        var P = new Match(5, new MatchOptions { easy = true, stil = Match.KariyerRakip(5), target = 5 }); P.outsBen = 3;
+        if (P.stil.patron && P.stil.imza != null)
+        {
+            if (Ozet.Ipucu(P, false, out a) == Ozet.IMZA_IPUCU) Fail("imza gelmeden imza ipucu");
+            P.imzaSay = 2; P.okudun = 1; if (Ozet.Ipucu(P, false, out a) != Ozet.IMZA_IPUCU || !(a is ImzaBilgi)) Fail("okunmayan imza kayıpta ipucu olmalı");
+            if (Ozet.Ipucu(P, true, out a) != null) Fail("kazanınca imza ipucu olmamalı");
+            P.okudun = 2; if (Ozet.Ipucu(P, false, out a) == Ozet.IMZA_IPUCU) Fail("hepsi okunduysa imza ipucu olmamalı");
+        }
+        else Fail("KariyerRakip(5) patron + imza bekleniyordu");
         var say = new Dictionary<string, int>(); int kayip = 0;
         for (int m = 0; m < 80 && kayip < 50; m++)
         {

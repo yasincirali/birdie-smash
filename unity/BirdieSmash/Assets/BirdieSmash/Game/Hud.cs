@@ -85,7 +85,7 @@ namespace BirdieSmash.Game
         public void StilSifirla() { stilOn.Clear(); stilNo.Clear(); glifSt.Clear(); }
         Match servisM; string servisSon; float servisBas, servisHedef, servisT0 = -9;
         float ralliPop; int sonRalli; float[] pop = new float[2]; float flash; Color flashC; readonly List<Vector3> cams = new List<Vector3>();
-        class HawkV { public float x, y, t; public bool icerde, serve, baslik; public int cm; } HawkV hawk;
+        class HawkV { public float x, y, t; public bool icerde, serve, baslik; public int cm; public string yazi; } HawkV hawk, hawkHavuz;
         // Sayaç yalnız SetInt (Save yok): sayı anında eşzamanlı disk yazımı takılma yapıyordu (12 Kas kasma kuralı); kalıcılık sonraki Save'le.
         const string HAWK_N = "tuytop_hawk_n"; int hawkN = -1;
         // Daireye kırpılmış dikdörtgen: kaba kırpma (yalnız daire içi). Eskiden HawkCiz içinde closure'du; her OnGUI olayında
@@ -173,7 +173,10 @@ namespace BirdieSmash.Game
         {
             if (hawkN < 0) hawkN = PlayerPrefs.GetInt(HAWK_N, 0);
             bool bas = hawkN < 3; if (bas) PlayerPrefs.SetInt(HAWK_N, ++hawkN);
-            hawk = new HawkV { x = x, y = y, icerde = icerde, cm = cm, serve = serve, baslik = bas };
+            // 2026-11-16 inceleme (fikir 17:05 #7): kıl payı top sayı anına (sevinç, skor nabzı) denk gelir; HawkV tek örnek yeniden
+            // kullanılır, karar yazısı burada bir kez kurulur (HawkCiz 1,1 sn boyunca her OnGUI olayında birleştiriyordu).
+            var h = hawkHavuz ?? (hawkHavuz = new HawkV()); h.x = x; h.y = y; h.t = 0; h.icerde = icerde; h.cm = cm; h.serve = serve; h.baslik = bas;
+            h.yazi = L.T(icerde ? "İÇERİ" : "DIŞARI") + " · " + cm + " cm"; hawk = h;
         }
         // Tribün flaşları (HTML M.cams): sayı kazanınca 26 küçük flaş ekranın üst bandında, .5 sn.
         public void Kamera() { for (int k = 0; k < 26; k++) cams.Add(new Vector3(Random.value, 8 + Random.value * 48, -Random.value * .6f)); }
@@ -230,7 +233,11 @@ namespace BirdieSmash.Game
         }
         // ---- gizli kare hızı göstergesi (HTML FPS): üst satır son 1 sn, alt satır o ekranın toplamı; ekran değişince sıfırlanır.
         // Metin geliştirici içindir, çevrilmez (HTML ile aynı).
-        readonly List<Vector2> fpsK = new List<Vector2>(); string fpsEk = "", fpsYazi = ""; int fpsN, fpsTak; float fpsT, fpsEn, fpsYaz;
+        // 2026-11-16 inceleme (fikir 17:05 #3): ölçer kendi çöpünü üretmesin (gözlemci etkisi). Pencere sabit halka tampon
+        // (240 kare = 1 sn @ 120 Hz + pay; RemoveAt(0) kaydırması yoktu), stil tiny değişince bir kez kurulur (her OnGUI olayında
+        // new GUIStyle idi), yazı 500 ms'de bir. Takılmanın nedeni ayrışsın diye GC sayısı (10 sn pencere) ve yönetilen yığın eklendi.
+        const int FPS_HALKA = 240; readonly Vector2[] fpsK = new Vector2[FPS_HALKA]; int fpsBas, fpsSay; GUIStyle fpsSt, fpsStKaynak;
+        int gcSon = -1; float gcT0; int gcPencere; string fpsEk = "", fpsYazi = ""; int fpsN, fpsTak; float fpsT, fpsEn, fpsYaz;
         string FpsEkran()
         {
             if (perdeEvre > 0) return "Perde"; if (root.ekran == Ekran.Bitti) return "Maç sonu"; if (root.ekran == Ekran.Oyun) return root.paused ? "Duraklatma" : "Maç";
@@ -240,12 +247,14 @@ namespace BirdieSmash.Game
         {
             float now = Time.realtimeSinceStartup * 1000, d = Time.unscaledDeltaTime * 1000; string ek = FpsEkran();
             if (ek != fpsEk) { fpsEk = ek; fpsN = fpsTak = 0; fpsT = fpsEn = 0; }
-            if (d > 0 && d < 1000) { fpsK.Add(new Vector2(now, d)); fpsN++; fpsT += d; if (d > 50) fpsTak++; if (d > fpsEn) fpsEn = d; }
-            while (fpsK.Count > 0 && fpsK[0].x < now - 1000) fpsK.RemoveAt(0);
+            if (d > 0 && d < 1000) { if (fpsSay == FPS_HALKA) { fpsBas = (fpsBas + 1) % FPS_HALKA; fpsSay--; } fpsK[(fpsBas + fpsSay++) % FPS_HALKA] = new Vector2(now, d); fpsN++; fpsT += d; if (d > 50) fpsTak++; if (d > fpsEn) fpsEn = d; }
+            while (fpsSay > 0 && fpsK[fpsBas].x < now - 1000) { fpsBas = (fpsBas + 1) % FPS_HALKA; fpsSay--; }
+            int gc = System.GC.CollectionCount(0); if (gcSon < 0 || now - gcT0 > 10000) { gcPencere = gcSon < 0 ? 0 : gc - gcSon; gcSon = gc; gcT0 = now; }
             if (now - fpsYaz > 500)
             {
-                fpsYaz = now; float en = 0; int tak = 0; foreach (var q in fpsK) { if (q.y > en) en = q.y; if (q.y > 50) tak++; }
-                fpsYazi = fpsK.Count + " fps · en uzun " + Mathf.RoundToInt(en) + " ms · takılma " + tak + "\n" + ek + ": ort " + (fpsT > 0 ? Mathf.RoundToInt(fpsN / (fpsT / 1000)) : 0) + " fps · en uzun " + Mathf.RoundToInt(fpsEn) + " ms · takılma " + fpsTak + " · " + Mathf.RoundToInt(fpsT / 1000) + " sn";
+                fpsYaz = now; float en = 0; int tak = 0; for (int i = 0; i < fpsSay; i++) { var q = fpsK[(fpsBas + i) % FPS_HALKA]; if (q.y > en) en = q.y; if (q.y > 50) tak++; }
+                fpsYazi = fpsSay + " fps · en uzun " + Mathf.RoundToInt(en) + " ms · takılma " + tak + "\n" + ek + ": ort " + (fpsT > 0 ? Mathf.RoundToInt(fpsN / (fpsT / 1000)) : 0) + " fps · en uzun " + Mathf.RoundToInt(fpsEn) + " ms · takılma " + fpsTak + " · " + Mathf.RoundToInt(fpsT / 1000) + " sn"
+                    + "\nGC " + gcPencere + "/10 sn · yığın " + (System.GC.GetTotalMemory(false) >> 20) + " MB";
                 if (root.ekran == Ekran.Oyun || root.ekran == Ekran.Bitti) fpsYazi += "\n" + GameRoot.KaydirmaOlc.Ozet() + " · font atlası " + atlasN + " · ısı " + Kalite.Isil;
                 // 2026-11-08 (inceleme turu): açılış süresi yalnız CI ekran turunda (Linux yazılım render'ı) ölçülüyordu; iPhone'daki
                 // gerçek değer FPS ekran görüntüsüyle gelsin. İlk sayı motor başlangıcından menünün tam açılmasına (realtimeSinceStartup),
@@ -253,10 +262,12 @@ namespace BirdieSmash.Game
                 if (acilisSonT > 0) fpsYazi += "\nAçılış " + acilisSonT.ToString("F1") + " sn (perde " + (acilisAcT > 0 && acilisT0 >= 0 ? (acilisAcT - acilisT0).ToString("F1") : "?") + " sn)";
             }
         }
-        public void FpsAc(bool on) { Ayar.fps = on; Ayar.Kaydet(); fpsK.Clear(); fpsEk = ""; fpsYazi = ""; Yerel.Hap("tick"); }
+        public void FpsAc(bool on) { Ayar.fps = on; Ayar.Kaydet(); fpsBas = fpsSay = 0; gcSon = -1; fpsEk = ""; fpsYazi = ""; Yerel.Hap("tick"); }
         void FpsCiz()
         {
-            if (!Ayar.fps || fpsYazi == "") return; var st = new GUIStyle(tiny) { alignment = TextAnchor.UpperLeft, font = fKalin, wordWrap = false };
+            if (!Ayar.fps || fpsYazi == "") return;
+            if (fpsSt == null || fpsStKaynak != tiny) { fpsStKaynak = tiny; fpsSt = new GUIStyle(tiny) { alignment = TextAnchor.UpperLeft, font = fKalin, wordWrap = false }; }
+            var st = fpsSt;
             var sz = st.CalcSize(Ic(fpsYazi)); var r = new Rect(Mathf.Max(safe.xMin, 0) + 6 * u, top + 80 * u, sz.x + 12 * u, sz.y + 6 * u);
             Fill(r, new Color(0, 0, 0, .62f)); var o = GUI.color; GUI.color = Kit.Hex("#d8ff5a"); GUI.Label(new Rect(r.x + 6 * u, r.y + 3 * u, sz.x + 4, sz.y), fpsYazi, st); GUI.color = o;
         }
@@ -895,7 +906,7 @@ namespace BirdieSmash.Game
             // Başlık yalnız ilk 3 çizgi kamerasında (2026-11-14 inceleme, fikir 17:05 #4): kıl payı maçta sık, başlık + karar + sayı
             // nedeni üç yazı ediyordu; daire kendini anlatıyor. Karar satırı rengin yanında yazıyla kalır (renk körlüğü).
             if (h.baslik) Shadowed(new Rect(cx - 100 * u, cy - R - 22 * u, 200 * u, 16 * u), L.T("ÇİZGİ KAMERASI"), tiny, new Color(.62f, .73f, .7f, fade));
-            if (h.t > .36f) Shadowed(new Rect(cx - 150 * u, cy + R + 6 * u, 300 * u, 28 * u), L.T(h.icerde ? "İÇERİ" : "DIŞARI") + " · " + h.cm + " cm", Stil(mid, Mathf.RoundToInt(20 * fu)), h.icerde ? new Color(.85f, 1, .35f, fade) : new Color(1, .48f, .42f, fade));
+            if (h.t > .36f) Shadowed(new Rect(cx - 150 * u, cy + R + 6 * u, 300 * u, 28 * u), h.yazi, Stil(mid, Mathf.RoundToInt(20 * fu)), h.icerde ? new Color(.85f, 1, .35f, fade) : new Color(1, .48f, .42f, fade));
         }
         // İlk Usta maçı kartı (2026-10-31 Ar-Ge U4, yasin "ilerle ve devam et"): Usta'ya ilk giren oyuncu ana ekrandaki tek satır
         // dışında koşunun kendisinde olduğunu, nasıl koşulduğunu ve iki halkanın anlamını bilmiyordu. Yalnız ilk Usta maçında,
@@ -907,7 +918,7 @@ namespace BirdieSmash.Game
             if (M.easy || M.Dril != null) return y;
             if (ustaKart < 0) ustaKart = PlayerPrefs.GetInt(USTA_KART, 0);
             if (ustaKart > 0) return y;
-            if (M.sc[0] + M.sc[1] > 0) { ustaKart = 1; PlayerPrefs.SetInt(USTA_KART, 1); PlayerPrefs.Save(); return y; }
+            if (M.sc[0] + M.sc[1] > 0) { ustaKart = 1; PlayerPrefs.SetInt(USTA_KART, 1); Ayar.KaydetSonra(); return y; }   // Save sayı/rekor karesinde değil, ertelenen kayıtta (İnceleme 2026-11-16 12:05 #5)
             if (ustaKartSt == null || ustaKartSt.fontSize != Mathf.RoundToInt(13 * fu)) ustaKartSt = new GUIStyle(left) { wordWrap = true, fontSize = Mathf.RoundToInt(13 * fu) };
             float w = ColW, x = ColX, iw = w - 32 * u;
             string bas = L.T(M.kosuYardim ? "Yardımlı: koşu senin" : "Elle: koşu senin"), metin = L.T("Ayak izlerinin yanına dokun, oyuncun yerini alır; başka yere dokunursan oraya koşar. Top parlayınca kaydır.") + "\n" + L.T("Düz halkanın içindeysen tam vuruş, kesik halkadaysan uzanırsın.") + (M.kosuYardim ? "\n" + L.T("Geç kalırsan oyuncun topa kendisi koşar; dokunursan yine sen yönlendirirsin.") : "");
@@ -919,6 +930,10 @@ namespace BirdieSmash.Game
             return y + h + 8 * u;
         }
         int gucK = -2; bool gucEn; string gucYazi; GUIStyle gucSt;
+        // Kartın yer ve imza/laf satırları (2026-11-16 inceleme, fikir 07:05 #4): kart ilk servis ve ralli karelerinin üstünde açık;
+        // eskiden her OnGUI geçişinde iki metin birleştirme + yeni GUIStyle ayrılıyordu. Metin rakip/laf/dil değişince bir kez,
+        // sarmalı stil tabanı leftWrap deseniyle bir kez, boy Stil() önbelleğinden.
+        Style kartSt; bool kartLaf, kartEn; string kartLafMetin, kartYer, kartSatir; GUIStyle leftBWrap, leftBWrapTaban;
         float RakipKart(Match M, float y)
         {
             // HTML rkGir: yukarıdan 10 px, solarak, .22 sn (hareketi azaltta anında)
@@ -937,11 +952,19 @@ namespace BirdieSmash.Game
             }
             Etk(new Rect(x + 16 * u, y + 8 * u, w - 24 * u - gw, 26 * u), st.isim, Stil(leftB, Mathf.RoundToInt(20 * fu)));
             var kb = KariyerVeri.Al(st.kariyer); var im = st.patron ? KariyerVeri.Imza(st.imza) : null;   // serbest maçta taban tarz imzayı taşır ama atmaz
-            Etk(new Rect(x + 16 * u, y + 34 * u, w - 24 * u, 18 * u), kb != null ? L.T(st.ad) + " · " + L.T(kb.yer) : L.T(st.ad), left);
+            bool laf = root.girisT > 0 && root.girisLaf != null;
+            if (kartSt != st || kartLaf != laf || kartEn != L.En || (laf && kartLafMetin != root.girisLaf))
+            {
+                kartSt = st; kartLaf = laf; kartEn = L.En; kartLafMetin = root.girisLaf;
+                kartYer = kb != null ? L.T(st.ad) + " · " + L.T(kb.yer) : L.T(st.ad);
+                kartSatir = laf ? "“" + L.T(root.girisLaf) + "”" : im != null ? L.T(im.ad) + ": " + L.T(im.cevap) : L.T(st.ipucu);
+            }
+            Etk(new Rect(x + 16 * u, y + 34 * u, w - 24 * u, 18 * u), kartYer, left);
             // Patron (final): ipucu yerine imza vuruşu ve cevabı (tasarım §3.3: kart rakibin tek fikrini söyler; finalde o fikir imzadır)
             // Rakip girişi (ilk kez, GameRoot.GirisKur): giriş süresince tarzın lafı tırnakla, sonra imza/ipucu satırı.
-            bool laf = root.girisT > 0 && root.girisLaf != null;
-            Etk(new Rect(x + 16 * u, y + 54 * u, w - 24 * u, 36 * u), laf ? "“" + L.T(root.girisLaf) + "”" : im != null ? L.T(im.ad) + ": " + L.T(im.cevap) : L.T(st.ipucu), new GUIStyle(laf ? leftB : left) { wordWrap = true, fontSize = Mathf.RoundToInt((laf ? 14 : 12) * fu) });
+            if (leftWrap == null || leftWrapTaban != left) { leftWrap = new GUIStyle(left) { wordWrap = true }; leftWrapTaban = left; }
+            if (leftBWrap == null || leftBWrapTaban != leftB) { leftBWrap = new GUIStyle(leftB) { wordWrap = true }; leftBWrapTaban = leftB; }
+            Etk(new Rect(x + 16 * u, y + 54 * u, w - 24 * u, 36 * u), kartSatir, Stil(laf ? leftBWrap : leftWrap, Mathf.RoundToInt((laf ? 14 : 12) * fu)));
             GUI.contentColor = GUI.backgroundColor = Color.white;
             if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition) ) { if (root.girisT > 0) root.GirisAtla(); else root.rakipKartT = 0; }   // dokununca hemen kapanır
             return y0 + h + 8 * u;
@@ -1037,7 +1060,7 @@ namespace BirdieSmash.Game
         static bool OgrGizli
         {
             get { if (ogrGizliK < 0) { try { ogrGizliK = PlayerPrefs.GetInt("tuytop_ogr_gizli", 0); } catch { ogrGizliK = 0; } } return ogrGizliK == 1; }
-            set { ogrGizliK = value ? 1 : 0; PlayerPrefs.SetInt("tuytop_ogr_gizli", ogrGizliK); PlayerPrefs.Save(); }
+            set { ogrGizliK = value ? 1 : 0; PlayerPrefs.SetInt("tuytop_ogr_gizli", ogrGizliK); Ayar.KaydetSonra(); }
         }
         // hız bandı: bölgeler oyunun kendi eşikleri; hedef bölge ▸ ile ve çerçeveyle (yalnız renkle değil)
         void HizBandi(OgrAdim a, int hb, float igne, float bx, float yy, float bwid)
