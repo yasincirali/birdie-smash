@@ -919,6 +919,10 @@ namespace BirdieSmash.Game
             return y + h + 8 * u;
         }
         int gucK = -2; bool gucEn; string gucYazi; GUIStyle gucSt;
+        // Kartın yer ve imza/laf satırları (2026-11-16 inceleme, fikir 07:05 #4): kart ilk servis ve ralli karelerinin üstünde açık;
+        // eskiden her OnGUI geçişinde iki metin birleştirme + yeni GUIStyle ayrılıyordu. Metin rakip/laf/dil değişince bir kez,
+        // sarmalı stil tabanı leftWrap deseniyle bir kez, boy Stil() önbelleğinden.
+        Style kartSt; bool kartLaf, kartEn; string kartLafMetin, kartYer, kartSatir; GUIStyle leftBWrap, leftBWrapTaban;
         float RakipKart(Match M, float y)
         {
             // HTML rkGir: yukarıdan 10 px, solarak, .22 sn (hareketi azaltta anında)
@@ -937,11 +941,19 @@ namespace BirdieSmash.Game
             }
             Etk(new Rect(x + 16 * u, y + 8 * u, w - 24 * u - gw, 26 * u), st.isim, Stil(leftB, Mathf.RoundToInt(20 * fu)));
             var kb = KariyerVeri.Al(st.kariyer); var im = st.patron ? KariyerVeri.Imza(st.imza) : null;   // serbest maçta taban tarz imzayı taşır ama atmaz
-            Etk(new Rect(x + 16 * u, y + 34 * u, w - 24 * u, 18 * u), kb != null ? L.T(st.ad) + " · " + L.T(kb.yer) : L.T(st.ad), left);
+            bool laf = root.girisT > 0 && root.girisLaf != null;
+            if (kartSt != st || kartLaf != laf || kartEn != L.En || (laf && kartLafMetin != root.girisLaf))
+            {
+                kartSt = st; kartLaf = laf; kartEn = L.En; kartLafMetin = root.girisLaf;
+                kartYer = kb != null ? L.T(st.ad) + " · " + L.T(kb.yer) : L.T(st.ad);
+                kartSatir = laf ? "“" + L.T(root.girisLaf) + "”" : im != null ? L.T(im.ad) + ": " + L.T(im.cevap) : L.T(st.ipucu);
+            }
+            Etk(new Rect(x + 16 * u, y + 34 * u, w - 24 * u, 18 * u), kartYer, left);
             // Patron (final): ipucu yerine imza vuruşu ve cevabı (tasarım §3.3: kart rakibin tek fikrini söyler; finalde o fikir imzadır)
             // Rakip girişi (ilk kez, GameRoot.GirisKur): giriş süresince tarzın lafı tırnakla, sonra imza/ipucu satırı.
-            bool laf = root.girisT > 0 && root.girisLaf != null;
-            Etk(new Rect(x + 16 * u, y + 54 * u, w - 24 * u, 36 * u), laf ? "“" + L.T(root.girisLaf) + "”" : im != null ? L.T(im.ad) + ": " + L.T(im.cevap) : L.T(st.ipucu), new GUIStyle(laf ? leftB : left) { wordWrap = true, fontSize = Mathf.RoundToInt((laf ? 14 : 12) * fu) });
+            if (leftWrap == null || leftWrapTaban != left) { leftWrap = new GUIStyle(left) { wordWrap = true }; leftWrapTaban = left; }
+            if (leftBWrap == null || leftBWrapTaban != leftB) { leftBWrap = new GUIStyle(leftB) { wordWrap = true }; leftBWrapTaban = leftB; }
+            Etk(new Rect(x + 16 * u, y + 54 * u, w - 24 * u, 36 * u), kartSatir, Stil(laf ? leftBWrap : leftWrap, Mathf.RoundToInt((laf ? 14 : 12) * fu)));
             GUI.contentColor = GUI.backgroundColor = Color.white;
             if (Event.current.type == EventType.MouseDown && r.Contains(Event.current.mousePosition) ) { if (root.girisT > 0) root.GirisAtla(); else root.rakipKartT = 0; }   // dokununca hemen kapanır
             return y0 + h + 8 * u;

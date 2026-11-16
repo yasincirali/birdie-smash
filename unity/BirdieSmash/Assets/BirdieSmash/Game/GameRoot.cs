@@ -520,6 +520,7 @@ namespace BirdieSmash.Game
             if (M.tepeden > 0) bb.Add(L.T("{0} tepeden", M.tepeden));
             if (M.saves > 0) bb.Add(L.T("{0} uzanma", M.saves));
             if (M.outsLeft > 0) bb.Add(L.T("{0} kez dışarıyı bıraktın", M.outsLeft));
+            if (M.imzaSay > 0) bb.Add(L.T("İmza {0}/{1} okudun", M.okudun, M.imzaSay));   // 2026-11-16 (fikir 07:05 #1): yalnız imza geldiyse
             if (M.tarzFark > 0) bb.Add(L.T("Tarzın {0} kez fark yarattı", M.tarzFark));   // 2026-11-07 tarz farkı (Match.tarzFark); Dengeli'de hep 0, yazılmaz
             bittiBilgi = string.Join(" · ", bb.ToArray());
             // En hızlı sayı smacı ve kişisel rekor (2026-11-07 inceleme, fikir 02:06 #3): Ayrıntılar'a tek satır; maç kartına yeni yazı yok.
@@ -553,7 +554,8 @@ namespace BirdieSmash.Game
             bittiDril = Dril.Oner(M, won, Ayar.ilerleme, Ayar.wins);
             // Özet (Ar-Ge 23 Eki #2): iki kart + ipucu; bittiBilgi artık "Ayrıntılar" ardında (Hud.Over).
             bittiKart = Ozet.Kartlar(M); object ia; string ik = Ozet.Ipucu(M, won, out ia);
-            bittiIpucu = ik == null ? null : ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
+            var iim = ia as ImzaBilgi;   // imza ipucu (Ozet.IMZA_IPUCU): ad ve cevap ayrı çevrilir
+            bittiIpucu = ik == null ? null : iim != null ? L.T(ik, L.T(iim.ad), L.T(iim.cevap)) : ia == null ? L.T(ik) : L.T(ik, ia is string ? L.Cumle((string)ia) : ia); hud.ayrinti = false;
             if (Ozet.PuanIste(won, kariyerIlk, Ayar.wins, Ayar.puan)) { CancelInvoke("PuanIste"); Invoke("PuanIste", 1.5f); }
             if (won) hud.Konfeti();
         }

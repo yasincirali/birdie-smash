@@ -1,4 +1,8 @@
 === UNITY ===
+Final maçında imza vuruşu ipucu, maç başında daha akıcı kart (16 Kasım sabah):
+- Tur finalinde rakibin imza vuruşunu okuyamadan kaybedersen, maç sonu ipucu artık o vuruşun adını ve nasıl karşılanacağını söylüyor. Ayrıntılar'da kaç imzayı okuduğun yazıyor.
+- Maç başındaki rakip kartı ve file her karede daha az iş yapıyor; eski telefonlarda ilk servis sırasında takılma azalmalı.
+Nasıl denenir: Bir turun final maçında imza vuruşunu (rakibin raketinde renkli ışık) karşılamadan kaybet: maç sonu ipucu imzanın adıyla başlamalı. Kazandığında ya da hepsini okuduğunda bu cümle çıkmamalı. Maç başında rakip kartı açıkken ilk servisi at: kart aynı görünmeli, takılma olmamalı.
 Ana ekran sadeleşti, kariyer çubuğu dolarak ilerliyor (16 Kasım gece):
 - Zorluk seçimi dört ayrı düğme yerine tek bir kapsül; seçili kademe açık zeminli, turuncu çerçeveli ve tikli. Zorluğu değiştirmek artık diğer sekmeleri yeniden çizdirmiyor.
 - "Sıradaki maç" etiketi sade yazıya döndü; geçtiğin basamaklar yeşil, şimdiki basamak çerçeveli. Turuncu yalnız basılacak yerde kalıyor.

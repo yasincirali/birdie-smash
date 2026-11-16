@@ -122,7 +122,13 @@ namespace BirdieSmash.Game
             }
             if (ul > ur) { SonGuncel = 0; UykuKare++; return; }
             Yaz(ul, ur, renk); YazBant(ul, ur); SonGuncel = (ur - ul + 1) * NZ;
-            mesh.SetVertices(v); if (renk) mesh.SetColors(c); tapeMesh.SetVertices(tv);
+            // 2026-11-16 inceleme (fikir 07:05 #5, kapsam daraltıldı): varsayılan bayrak her karede 792 köşeden sınırı yeniden
+            // hesaplayıp kurulumdaki sabit Kutu()'yu eziyordu; artık sınır sabit kalır (ağ sapması cm, kutu ±0,1 m pay taşır).
+            // Yalnız oynayan sütunları yüklemek (fikrin asıl önerisi) bu API ile olmaz: SetVertices(dizi, start, length) köşe
+            // sayısını length'e indirir, kısmi güncelleme değildir. Kısmi yükleme SetVertexBufferData + bilinen düzen ister;
+            // Editor'da ölçülmeden açılmaz.
+            const UnityEngine.Rendering.MeshUpdateFlags SABIT = UnityEngine.Rendering.MeshUpdateFlags.DontRecalculateBounds | UnityEngine.Rendering.MeshUpdateFlags.DontValidateIndices;
+            mesh.SetVertices(v, 0, v.Length, SABIT); if (renk) mesh.SetColors(c, 0, c.Length, SABIT); tapeMesh.SetVertices(tv, 0, tv.Length, SABIT);
         }
 
         // Tanı: dünyadaki köşelerden ölçülen file (rapor.txt; düz dururken çağrılmalı). Kit.W: dünya y = yükseklik.
