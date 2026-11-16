@@ -531,12 +531,24 @@ namespace BirdieSmash.Game
         // Menü müziği: açılır .8 sn'de (yumuşak giriş), söner .35 sn'de (perdenin kapanışı ≈.4 sn; maç sesi müziğin üstüne
         // binmesin). Sönünce duraklatılır, menüye dönünce kaldığı yerden sürer. Başka uygulamanın sesi 2 sn'de bir sorulur:
         // oyuncu menüdeyken Spotify'ı açarsa müzik çekilir, kapatırsa geri gelir.
+        int muzikPos;
+        void MuzikKonum(int p) { muzikPos = p; }
+        void MuzikOku(float[] o)
+        {
+            var v = muzikVeri; int n = v.Length, p = muzikPos;
+            for (int i = 0; i < o.Length; i++) { o[i] = v[p]; if (++p >= n) p = 0; }
+            muzikPos = p;
+        }
         void MuzikIsle(float dt)
         {
             if (muzik == null)
             {
                 if (!muzikHazir) return;
-                var c = AudioClip.Create("menu_muzik", muzikVeri.Length, 1, Synth.SR, false); c.SetData(muzikVeri, 0); muzikVeri = null;
+                // Akış klibi (2026-11-16 inceleme, fikir 17:05 #2; yasin 15 Kas "takılma yaşamamalıyız"): ~51 sn × 44,1 kHz = ~2,27 M
+                // örnek eskiden SetData ile ana iş parçacığında TEK karede klibe kopyalanıyordu; bu kare menünün ilk açılışına
+                // (afiş, perde, sekme girişi) denk geliyordu ve dizi + klip birkaç saniye iki kopya (~18 MB) yaşıyordu. Şimdi klip
+                // diziden okur (PCMReaderCallback, istek başına birkaç bin örnek): SetData yok, kopya yok, döngü konumu MuzikKonum.
+                var c = AudioClip.Create("menu_muzik", muzikVeri.Length, 1, Synth.SR, true, MuzikOku, MuzikKonum);
                 muzik = gameObject.AddComponent<AudioSource>(); muzik.clip = c; muzik.loop = true; muzik.volume = 0; muzik.playOnAwake = false; muzik.spatialBlend = 0;
             }
             bool menu = menude != null && menude();

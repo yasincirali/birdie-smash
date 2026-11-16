@@ -1,4 +1,10 @@
 === UNITY ===
+Her turun kendi salonu, menü müziği takılmadan açılıyor (16 Kasım akşam):
+- Kariyerde Asya, Avrupa, Dünya Finalleri, Pasifik, Amerika, Büyük Kupa ve Efsaneler turlarının salon duvarı, ışık şeridi ve flamaları artık her turda farklı renkte. Kort aynı kalıyor. Turun final maçında salon ışığı biraz kısılıyor.
+- Menü müziği artık açılışta tek seferde belleğe kopyalanmıyor; uygulama ilk açıldığında menüdeki kısa takılma kalkmalı ve daha az bellek kullanılıyor.
+- Ayarlar'da Seyirci artık "Ses ve his" listesinin bir satırı: dokundukça Kapalı, Az, Normal arasında değişiyor.
+- Çizgi kamerası kararı ve FPS göstergesi her karede daha az iş yapıyor. FPS göstergesinde çöp toplama sayısı ve bellek satırı var.
+Nasıl denenir: Kariyerde Asya Turu ve Dünya Finalleri'nde birer maç aç: duvar ve flama renkleri farklı olmalı, kort aynı. Bir turun final maçında salon biraz daha karanlık olmalı. Uygulamayı kapatıp aç: menü açılırken müzik başladığında takılma olmamalı. Ayarlar'da Seyirci satırına dokun: değer değişmeli, maçta seyirci sesi seçime uymalı. FPS göstergesini aç: alt satırda "GC" ve "yığın" yazmalı.
 Zorluk kapsülünde kayan seçim, rövanş daha hızlı açılıyor (16 Kasım öğle):
 - Zorluk kapsülünde başka bir kademeye dokununca seçili zemin eski kademeden yenisine kayıyor (Hareketi azalt açıkken anında).
 - Dolap, Karakter ve Antrenman'daki sekme şeritleri yeniden alt çizgili; bir önceki sürümde yanlışlıkla zorluk kapsülü gibi kutulu görünüyorlardı.

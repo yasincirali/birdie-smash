@@ -245,10 +245,31 @@ namespace BirdieSmash.Game
         // siluetleri ve yıldızlar. Işık hesaplamayan malzeme, gölge yok; kort ve top okunurluğuna dokunmaz (kortun ≥ 2 m gerisi).
         static readonly Dictionary<string, string[]> ARKA = new Dictionary<string, string[]> {
             {"salon",new[]{"#22313d","#11181d"}},{"turnuva",new[]{"#24457a","#0b1424"}},{"okul",new[]{"#5a3c24","#21170f"}},{"park",new[]{"#2b2457","#10163a"}}};
+        // Tur çevresi (2026-11-16 inceleme, fikir 17:05 #1): kariyerin 48 maçının 30'u "turnuva" sahasında ve şehir yalnız maç
+        // kartında yazıyordu; Dünya Finalleri ile Efsaneler'in 12 maçı birebir aynı salondu. Kort (BWF mavisi, çizgiler) ve fizik
+        // AYNI; yalnız çevre değişir: duvar degradesi, LED şerit vurgusu ve altı flama çiftinden turun üçü. Turun finali
+        // (6. basamak) salon ışığı %15 kısık, armatürler tam: "final gecesi". Yalnız kariyer maçında ve turnuva sahasında;
+        // Cevre null = bugünkü görünüm. GameRoot kort anahtarına Cevre'yi katar: tur değişince kort bir kez, maç perdesinin
+        // arkasında (Kur → MacKur) yeniden kurulur; maç içinde hiçbir şey değişmez. Tur kimliği metinde, renk süs (anlam taşımaz).
+        public static string Cevre; public static bool CevreFinal;
+        // {duvar üst, duvar alt, LED} + flama çifti sırası (cift dizisindeki indisler)
+        static readonly Dictionary<string, string[]> CEVRE = new Dictionary<string, string[]> {
+            {"asya",new[]{"#5a2a3e","#160b14","#ff7a5c"}},{"avrupa",new[]{"#2b3f66","#0c1220","#8fb8ff"}},{"dunya",new[]{"#3a2f63","#0d0b1e","#f2c14e"}},
+            {"pasifik",new[]{"#1d4f5c","#08171c","#5fe0c8"}},{"amerika",new[]{"#5c2430","#14080c","#ff9a62"}},{"buyukkupa",new[]{"#5a1f1f","#160808","#f2c14e"}},
+            {"efsaneler",new[]{"#4a3a1c","#140f06","#ffd27a"}}};
+        static readonly Dictionary<string, int[]> CEVRE_FLAMA = new Dictionary<string, int[]> {
+            {"asya",new[]{0,4,1}},{"avrupa",new[]{1,3,5}},{"dunya",new[]{4,1,0}},{"pasifik",new[]{2,1,5}},{"amerika",new[]{3,5,1}},{"buyukkupa",new[]{0,4,3}},{"efsaneler",new[]{4,1,2}}};
+        static string[] CevreRenk(string saha) { string[] c; return saha == "turnuva" && Cevre != null && CEVRE.TryGetValue(Cevre, out c) ? c : null; }
+        // Flama malzemeleri renge göre önbellekte (Kit.Unlit her çağrıda yeni Material yaratır; tur değişiminde kort yeniden kurulunca
+        // 24 malzeme birikmesin).
+        static readonly Dictionary<Color, Material> flamaMat = new Dictionary<Color, Material>();
+        static Material FlamaMat(Color c) { Material m; if (!flamaMat.TryGetValue(c, out m) || m == null) flamaMat[c] = m = Kit.Unlit(c); return m; }
         static void ArkaPlan(Transform k, string saha)
         {
             string[] r; if (!ARKA.TryGetValue(saha, out r)) r = ARKA["salon"];
+            var cr = CevreRenk(saha); if (cr != null) r = cr;
             var tex = new Texture2D(1, 64, TextureFormat.RGBA32, false); tex.wrapMode = TextureWrapMode.Clamp; Color a = Kit.Hex(r[0]), b = Kit.Hex(r[1]);
+            if (cr != null && CevreFinal) { a = Color.Lerp(Color.black, a, .85f); b = Color.Lerp(Color.black, b, .85f); }
             for (int i = 0; i < 64; i++) tex.SetPixel(0, i, Color.Lerp(a, b, Mathf.SmoothStep(0, 1, i / 63f))); tex.Apply();
             const float Y = -3.6f, GEN = 22, YUK = 9;
             Kit.Prim(PrimitiveType.Quad, "arka_duvar", k, Kit.W(Court.MID, Y, YUK / 2 - .2f), new Vector3(GEN, YUK, 1), Kit.Clear(Color.white, tex));
@@ -280,7 +301,7 @@ namespace BirdieSmash.Game
         static void UstSalon(Transform k, string saha, float Y, float GEN)
         {
             var g = new GameObject("ust_salon").transform; g.SetParent(k, false);
-            string vr; if (!VURGU.TryGetValue(saha, out vr)) vr = VURGU["salon"];
+            string vr; if (!VURGU.TryGetValue(saha, out vr)) vr = VURGU["salon"]; var cr = CevreRenk(saha); if (cr != null) vr = cr[2];
             // ikinci kat: z 2,5–4,3 m
             const float Z0 = 2.5f, Z1 = 4.3f;
             Kit.Prim(PrimitiveType.Quad, "ikinci_kat", g, Kit.W(Court.MID, Y + .02f, (Z0 + Z1) / 2), new Vector3(GEN * .92f, Z1 - Z0, 1), Kit.Clear(Color.white, KalabalikTex(saha)));
@@ -300,12 +321,12 @@ namespace BirdieSmash.Game
             if (saha == "turnuva")
             {   // ülke flamaları: ikinci katın üstünde, orta şerit dışında; iki renkli dikey bant (bayrak deseni değil, renk çifti)
                 string[][] cift = { new[]{"#d8323c","#f4f1ea"}, new[]{"#1f5fbf","#f2c14e"}, new[]{"#2e9a5a","#f4f1ea"}, new[]{"#f4f1ea","#c8102e"}, new[]{"#111111","#f2c14e"}, new[]{"#0b3d91","#d8323c"} };
-                int n = 0;
+                int n = 0; int[] fs; if (cr == null || !CEVRE_FLAMA.TryGetValue(Cevre, out fs)) fs = null;
                 for (float x = Court.MID - GEN * .44f; x < Court.MID + GEN * .44f; x += 1.15f)
                 {
-                    if (Mathf.Abs(x - Court.MID) < 2.5f) continue; var c = cift[n++ % cift.Length];
-                    Kit.Prim(PrimitiveType.Quad, "flama", g, Kit.W(x - .17f, Y + .03f, Z1 + .55f), new Vector3(.34f, .7f, 1), Kit.Unlit(Kit.Hex(c[0]) * .8f));
-                    Kit.Prim(PrimitiveType.Quad, "flama", g, Kit.W(x + .17f, Y + .03f, Z1 + .55f), new Vector3(.34f, .7f, 1), Kit.Unlit(Kit.Hex(c[1]) * .8f));
+                    if (Mathf.Abs(x - Court.MID) < 2.5f) continue; var c = fs != null ? cift[fs[n++ % fs.Length]] : cift[n++ % cift.Length];
+                    Kit.Prim(PrimitiveType.Quad, "flama", g, Kit.W(x - .17f, Y + .03f, Z1 + .55f), new Vector3(.34f, .7f, 1), FlamaMat(Kit.Hex(c[0]) * .8f));
+                    Kit.Prim(PrimitiveType.Quad, "flama", g, Kit.W(x + .17f, Y + .03f, Z1 + .55f), new Vector3(.34f, .7f, 1), FlamaMat(Kit.Hex(c[1]) * .8f));
                 }
             }
             else if (saha == "okul")

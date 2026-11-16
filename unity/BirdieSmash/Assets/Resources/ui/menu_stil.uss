@@ -793,6 +793,7 @@
 .anahtar-yazilar { flex-grow: 1; flex-shrink: 1; min-width: 0; align-items: flex-start; margin-right: 12px; }
 .anahtar-satir .dugme-yazi { -unity-text-align: middle-left; white-space: normal; }
 .anahtar-satir .dugme-alt { -unity-text-align: middle-left; white-space: normal; }
+.anahtar-satir > .deger-yazi { flex-shrink: 0; margin-top: 0; -unity-text-align: middle-right; }   /* 2026-11-16 DegerSatir: sağdaki değer + ›, sığmazsa ad sarar, değer kısalmaz */
 /* İnceleme 2026-11-15 12:05 #5: top align-items ile değil translate ile sağa gider, ki kayabilsin (.18 sn ease-out); ray rengi
    aynı sürede solar. 51 − 2×2 dolgu − 27 top = 20 px yol. Hareketi azaltta 0 sn. */
 .anahtar { width: 51px; height: 31px; border-radius: 16px; padding: 2px; flex-shrink: 0; justify-content: center; align-items: flex-start; background-color: rgba(255, 255, 255, 0.18); transition-property: background-color; transition-duration: 0.18s; transition-timing-function: ease-out; }

@@ -122,9 +122,10 @@ namespace BirdieSmash.Game
         // Sahneyi maça göre kur: saha değiştiyse kort, model değiştiyse oyuncular ve hakemler, rakip forması her maçta.
         void Kur(Match M)
         {
-            if (court == null || courtId != M.saha)
+            string ck = M.saha + "|" + CourtView.Cevre + (CourtView.CevreFinal ? "|f" : "");   // tur çevresi (2026-11-16) de kort anahtarında
+            if (court == null || courtId != ck)
             {
-                if (court != null) Destroy(court); Color bg; court = CourtView.Build(transform, M.saha, out bg); cam.backgroundColor = bg; courtId = M.saha;
+                if (court != null) Destroy(court); Color bg; court = CourtView.Build(transform, M.saha, out bg); cam.backgroundColor = bg; courtId = ck;
                 var ak = court.transform.Find(CourtView.AKIS); akisR = ak != null ? ak.GetComponent<Renderer>() : null;
             }
             var gor = PlayerView.Benim(); string gk = gor.Anahtar();
@@ -155,7 +156,7 @@ namespace BirdieSmash.Game
             if (me == null || modelId != Ayar.model || gorunumId != PlayerView.Benim().Anahtar()) Kur(match);
             vitrin.Yenile();
         }
-        public void SahaDegisti() { if (ekran != Ekran.Oyun) { match.saha = Ayar.saha; Kur(match); } }
+        public void SahaDegisti() { if (ekran != Ekran.Oyun) { match.saha = Ayar.saha; CourtView.Cevre = null; CourtView.CevreFinal = false; Kur(match); } }
         // 2026-11-13 inceleme #4: Hızlı maç saha çipi her dokunuşta bütün kortu (tribün, ışık, LED) dokunuşla aynı karede yıkıp
         // kuruyordu; menü açıkken ana kamera sahneyi çizmiyor (UiKok cullingMask 0), kurulan kort görünmüyordu. Çip artık yalnız
         // seçimi yazar; kort Oyna → StartMatch → MacKur → Kur(match) içinde, maç perdesinin arkasında kurulur. Ekran/mağaza
@@ -177,6 +178,8 @@ namespace BirdieSmash.Game
             {
                 int g = Ayar.kariyerSecim >= 0 && Ayar.ilerleme.Acik(Ayar.kariyerSecim) ? Ayar.kariyerSecim : Ayar.ilerleme.Siradaki(); var kb = KariyerVeri.Al(g);
                 o.stil = Match.KariyerRakip(g); o.saha = kb.saha; if (kb.uzunluk > 0) o.target = kb.uzunluk; o.degistirici = kb.degistirici;   // kural maçı (veri; çoğu basamakta null)
+                // Tur çevresi (2026-11-16 inceleme, fikir 17:05 #1): turnuva sahasının duvarı/LED/flamaları tura göre; final basamağı kısık ışık.
+                var kt = KariyerVeri.Turlar; int ti = KariyerVeri.TurOf(g); CourtView.Cevre = kt != null && ti < kt.Length ? kt[ti].id : null; CourtView.CevreFinal = KariyerVeri.BasOf(g) == KariyerVeri.BASAMAK - 1;
             }
             else if (rovansSiradaki != null) o.stil = rovansSiradaki;   // Rövanş: az önce yenen rakip (saha Ayar.saha, zaten aynı)
             else if (HizliSecili() != null) o.stil = KariyerVeri.Serbest(HizliSecili(), Ayar.ilerleme);   // 2026-11-11: oyuncunun seçtiği rakip, güç yine oyuncunun seviyesinden
@@ -194,7 +197,7 @@ namespace BirdieSmash.Game
         }
         MatchOptions Secenek(bool ogr)
         {
-            Ayar.GearHesap();
+            Ayar.GearHesap(); CourtView.Cevre = null; CourtView.CevreFinal = false;   // tur çevresi yalnız kariyer maçında (StartMatch Secenek'ten sonra yazar)
             // Usta daveti bayrağı burada TÜKETİLİR: Günün maçı/Usta yolu/görev StartMatch'e uğramadan Secenek çağırır, bayrak sızmasın.
             bool ud = ustaDeneBu && !ogr; ustaDeneBu = false; ustaDeneMac = ud;
             // 2026-11-14: Zor daveti de yalnız rakibi Zor'a alır; oyuncunun hareket ayarı (Ayar.hareket) olduğu gibi kalır.

@@ -159,6 +159,24 @@ namespace BirdieSmash.Game
             Erisim.Etiket(d, etiket, "dugme", acik, a == null, L.T(acik ? "açık" : "kapalı"));
             return d;
         }
+        // Değerli satır (2026-11-16 inceleme, fikir 17:05 #6; iOS Ayarlar "Zil sesi: Yansıma ›" kalıbı): solda sabit ad, sağda
+        // seçili değer + ›; dokununca sıradakine döner. Üç kademeli küçük ses ayarı için ayrı başlık + çip satırı gerekmesin.
+        // Değer yazıyla görünür (renk yok), erişim etiketi yeni değeri söyler; tıkta tick. Bütün satır dokunma alanı (≥ 56 pt).
+        VisualElement DegerSatir(string ad, string[] degerler, int secili, Action<int> a)
+        {
+            var d = new VisualElement(); d.AddToClassList("liste-satir"); d.AddToClassList("anahtar-satir");
+            var yz = new VisualElement(); yz.AddToClassList("anahtar-yazilar"); yz.pickingMode = PickingMode.Ignore; d.Add(yz);
+            yz.Add(Yazi(ad, 15, "dugme-yazi"));
+            int s = Mathf.Clamp(secili, 0, degerler.Length - 1);
+            var dg = Yazi(degerler[s] + "  ›", 15, "dugme-alt"); dg.AddToClassList("deger-yazi"); dg.pickingMode = PickingMode.Ignore; d.Add(dg);
+            d.AddManipulator(new Clickable(() =>
+            {
+                Yerel.Hap("tick"); s = (s + 1) % degerler.Length; dg.text = degerler[s] + "  ›";
+                Erisim.Etiket(d, ad, "dugme", false, false, degerler[s]); a(s);
+            }));
+            Erisim.Etiket(d, ad, "dugme", false, false, degerler[s]);
+            return d;
+        }
         // §6.4 grup: satırlar tek cam kartta, aralarında 1 pt ayırıcı (simgesiz satırda inset 16), son satırdan sonra yok.
         VisualElement ListeGrup(params VisualElement[] satirlar)
         {
