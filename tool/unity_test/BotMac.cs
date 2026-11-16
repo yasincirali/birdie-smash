@@ -462,6 +462,9 @@ static class BotMac
             if (Ozet.Ipucu(P, false, out a) == Ozet.IMZA_IPUCU) Fail("imza gelmeden imza ipucu");
             P.imzaSay = 2; P.okudun = 1; if (Ozet.Ipucu(P, false, out a) != Ozet.IMZA_IPUCU || !(a is ImzaBilgi)) Fail("okunmayan imza kayıpta ipucu olmalı");
             if (Ozet.Ipucu(P, true, out a) != null) Fail("kazanınca imza ipucu olmamalı");
+            // 2026-11-16 (fikir 22:05 #3): imza ipucu çıkan kayıpta ders düğmesi imzanın dersini önerir (3 dışarıya rağmen).
+            var imP = KariyerVeri.Imza(P.stil.imza); string beklenen = imP.sira != null ? KariyerVeri.Imza(P.SonImza()).ders : imP.ders;
+            P.okudun = 1; if (beklenen == null || Dril.Oner(P, false, null) != beklenen) Fail("imza kaybında ders imzanınki olmalı: " + Dril.Oner(P, false, null) + " / " + beklenen);
             P.okudun = 2; if (Ozet.Ipucu(P, false, out a) == Ozet.IMZA_IPUCU) Fail("hepsi okunduysa imza ipucu olmamalı");
         }
         else Fail("KariyerRakip(5) patron + imza bekleniyordu");

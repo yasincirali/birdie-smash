@@ -197,6 +197,10 @@ namespace BirdieSmash.Game
             float d = Mathf.Max(yariY / (gy * (1 - pay)), yariX / gx); kayma = d * gy * pay; return d;
         }
         // Odağın kamera konumu ve bakış noktası (dünya). Boy oranlı: her beden tipinde aynı kadraj.
+        // 2026-11-16 inceleme (fikir 22:05 #6): OdakPoz her kare koşuyor (kamera kapalıyken de); baş/ayak odağında
+        // GetComponentsInChildren her kare yeni dizi ayırıyordu (Dolap'ta şapka/ayakkabı denerken dakikalarca GC). Ayırmasız
+        // List aşırı yüklemesi tek tamponu yeniden kullanır; giydirme değişince önbellek tutmaya gerek kalmaz (her kare taze).
+        static readonly List<Renderer> rTampon = new List<Renderer>(32);
         void OdakPoz(out Vector3 cam, out Vector3 hedef)
         {
             float boy = bBas != null ? Mathf.Max(.8f, bBas.position.y - YER.y) : 1.8f; float kay;
@@ -236,7 +240,7 @@ namespace BirdieSmash.Game
                 if (ak != null && ak.gameObject.activeInHierarchy)
                 {
                     float ust = float.MinValue;
-                    foreach (var r in ak.GetComponentsInChildren<Renderer>()) if (r.enabled) ust = Mathf.Max(ust, r.bounds.max.y);
+                    ak.GetComponentsInChildren(false, rTampon); foreach (var r in rTampon) if (r.enabled) ust = Mathf.Max(ust, r.bounds.max.y);
                     ust += .06f * boy; float alt = h.y - yy;   // r115: .015 payla hale kadrajın üst kenarına yapıştı
                     if (ust > h.y + yy) { float yeniY = (ust - alt) * .5f; h.y = (ust + alt) * .5f; yy = Mathf.Max(yy, yeniY); }
                 }
@@ -255,7 +259,7 @@ namespace BirdieSmash.Game
                 // yatay açıklığı pencereyi genişletir, merkez yere biraz iner. Hiçbiri yoksa eski oran yolu.
                 Bounds kb = new Bounds(); bool sinir = false;
                 if (fig != null && fig.AyakKok != null)
-                    foreach (var p in fig.AyakKok) if (p != null && p.gameObject.activeInHierarchy) foreach (var r in p.GetComponentsInChildren<Renderer>()) if (r.enabled) { if (!sinir) { kb = r.bounds; sinir = true; } else kb.Encapsulate(r.bounds); }
+                    foreach (var p in fig.AyakKok) if (p != null && p.gameObject.activeInHierarchy) { p.GetComponentsInChildren(false, rTampon); foreach (var r in rTampon) if (r.enabled) { if (!sinir) { kb = r.bounds; sinir = true; } else kb.Encapsulate(r.bounds); } }
                 if (sinir)
                 {
                     m = kb.center; float e = kb.extents.magnitude;
