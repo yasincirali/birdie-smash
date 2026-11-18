@@ -1,4 +1,11 @@
 === UNITY ===
+Dolap daha kolay, iPad tam ekran, Maçın anı kalktı (19 Kasım gece):
+- Dolap'ta Yüz, Ayak ve Tutuş düğmeleri artık alttaki listeyi de açıyor: Yüz yüz eşyalarına, Ayak ayakkabılara, Tutuş raketin grip ve özellik sayfasına gider.
+- Oyuncu Dolap'ta daha büyük; sol üstteki büyüt düğmesi oyuncuyu bütün ekrana açar, yeniden dokununca liste geri gelir.
+- Seçili eşya kartı daha belirgin.
+- iPad'de oyun artık tam ekran açılıyor.
+- Maç sonundaki "Maçın anı" tekrarı kaldırıldı.
+Nasıl denenir: Dolap'ı aç, Yüz düğmesine dokun: liste Yüz sayfasına geçmeli; Ayak'a dokun: Ayakkabı; Tutuş'a dokun: Raket bölümünde Grip ve raketin özellikleri açılmalı. Sol üstteki büyüt düğmesine dokun: oyuncu bütün alanı kaplamalı, döndürebilmelisin; yeniden dokun: liste dönmeli. iPad'in varsa oyunu aç: kenarlarda siyah boşluk olmadan tam ekran açılmalı. Bir maç bitir: "Maçın anı" düğmesi görünmemeli.
 Patron maçları daha akıcı, maç sonu tek tavsiye (16 Kasım gece):
 - Patron rakibin imza vuruşu ışığı artık maç başlamadan hazırlanıyor; imzanın ilk geldiği anda kısa takılma olmamalı.
 - Patrona imzayı okuyamadan kaybedince maç sonundaki ipucu ve altındaki ders düğmesi artık aynı vuruştan bahsediyor (ör. Duvar blok için drop dersi).
