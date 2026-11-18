@@ -6,6 +6,11 @@ Dolap daha kolay, iPad tam ekran, Maçın anı kalktı (19 Kasım gece):
 - iPad'de oyun artık tam ekran açılıyor.
 - Maç sonundaki "Maçın anı" tekrarı kaldırıldı.
 Nasıl denenir: Dolap'ı aç, Yüz düğmesine dokun: liste Yüz sayfasına geçmeli; Ayak'a dokun: Ayakkabı; Tutuş'a dokun: Raket bölümünde Grip ve raketin özellikleri açılmalı. Sol üstteki büyüt düğmesine dokun: oyuncu bütün alanı kaplamalı, döndürebilmelisin; yeniden dokun: liste dönmeli. iPad'in varsa oyunu aç: kenarlarda siyah boşluk olmadan tam ekran açılmalı. Bir maç bitir: "Maçın anı" düğmesi görünmemeli.
+Ayarlar daha akıcı, sayfa başlıkları yine büyük (19 Kasım gece):
+- Ayarlar, Nasıl oynanır, Lisanslar, Antrenman ve Tüy dükkânı sayfalarının başlığı artık Geri yazısından küçük görünmüyor; eskisi gibi büyük.
+- Ayarlar'da Oyuncu hareketi, Kaydırma ve Kamera seçimine dokununca sayfa baştan kurulmuyor; seçim ve altındaki açıklama yerinde değişiyor, dokunuşta takılma olmamalı.
+- Kaydırma "Normal" seçeneğinin açıklaması artık ne yaptığını söylüyor: "Orta hızda bir kaydırma vuruş sayılır".
+Nasıl denenir: Ayarlar'ı aç: üstteki "Ayarlar" başlığı Geri düğmesinden büyük olmalı; Tüy dükkânı ve Antrenman'da da aynı. Ayarlar'da hareket, kaydırma ve kamera seçeneklerine sırayla dokun: turuncu çerçeve ve onay işareti dokunduğun seçeneğe geçmeli, alttaki cümle değişmeli, sayfa kaymamalı. Kaydırma'da Normal'i seç: yeni cümle görünmeli.
 Patron maçları daha akıcı, maç sonu tek tavsiye (16 Kasım gece):
 - Patron rakibin imza vuruşu ışığı artık maç başlamadan hazırlanıyor; imzanın ilk geldiği anda kısa takılma olmamalı.
 - Patrona imzayı okuyamadan kaybedince maç sonundaki ipucu ve altındaki ders düğmesi artık aynı vuruştan bahsediyor (ör. Duvar blok için drop dersi).

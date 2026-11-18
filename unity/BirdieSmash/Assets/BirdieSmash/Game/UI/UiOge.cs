@@ -217,6 +217,10 @@ namespace BirdieSmash.Game
                 string uzun = ""; foreach (var sz in l.text.Split(' ', '\n')) if (sz.Length > uzun.Length) uzun = sz; if (uzun.Length < 2) return;
                 float gen = l.MeasureTextSize(uzun, 0, VisualElement.MeasureMode.Undefined, 0, VisualElement.MeasureMode.Undefined).x * taban / simdi; if (gen <= 0) return;
                 float hedef = Mathf.Clamp(Mathf.Floor(taban * Mathf.Min(1, (w - 2) / gen) * 2) / 2, Mathf.Min(taban, YAZI_MIN), taban);
+                // 2026-11-19 inceleme (fikir 02:05 Ayarlar #1, r197 "Settings" 11 pt): büyümeyen etiketin genişliği yazının kendisi;
+                // oran hep 1'in az altında kalıp her GeometryChanged'de yarım punto indiriyordu (19 → 11, 16 yerleşim turu). Sözcük
+                // şimdiki boyutta zaten sığıyorsa küçültme yok; büyüme (kap genişleyince) serbest.
+                if (hedef < simdi && gen * simdi / taban <= w) return;
                 if (Mathf.Abs(hedef - simdi) > .25f) l.style.fontSize = hedef;
             });
         }
