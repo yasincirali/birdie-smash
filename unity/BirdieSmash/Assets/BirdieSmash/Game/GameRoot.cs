@@ -207,7 +207,6 @@ namespace BirdieSmash.Game
         // Maç kurulumunun ortak kuyruğu (2026-10-26: dört mod aynı yoldan; davranış eski StartMatch'le birebir).
         void MacKur(int tohum, MatchOptions o)
         {
-            ani.Sifirla(); AniDur(); aniIzlendi = false;   // Maçın anı her maç kendi rallilerinden (Günün maçı, Usta yolu, görev de buradan geçer)
             match = new Match(tohum, o); Basarim.MacBasla();
             Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; System.Array.Clear(iskaN, 0, iskaN.Length); yerN = 0; yerTop = null; yardimN = 0; yardimTop = null; hazirN = 0; enerjiDolu = match.energy >= 1;
             fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; seriBen = 0; seriBasFark = 0; seriGeriDondu = false; ledSeriT = 0; pencere = false; sfx.SuAlti(false); ReklamKartKapat(); ReklamSdk.OdulluHazirla(); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat(); vitrin.Bosalt(); afis.Bosalt();
@@ -585,19 +584,7 @@ namespace BirdieSmash.Game
             string m = L.T(w ? "Birdie Smash · Günün maçını {0}–{1} kazandım, en uzun ralli {2}." : "Birdie Smash · Günün maçı: {0}–{1}, en uzun ralli {2}.", M.sc[0], M.sc[1], M.maxRally)
                 + "\n" + L.T("Sen kaç alırsın?"); Yerel.Paylas(m);
         }
-        // Maçın anı: kayıt ve oynatma Game/MacAni; burada yalnız oynatmanın topu ve kart açma/kapama. 2026-11-06: beyaz küre
-        // (ani_top) yerine oyunun kendi tüy topu ve izi (ShuttleView), sahte Shuttle'la; kamera zafer yakın çekimi değil oyun kamerası.
-        readonly MacAni ani = new MacAni(); Shuttle aniS;
-        public bool AniVar { get { return ani.Var && match != null && match.ogr == null; } }
-        public bool AniAktif { get { return ani.Aktif; } }
-        public int AniVurus { get { return ani.Vurus; } }
-        public bool AniSmac { get { return ani.Smac; } }
-        public int AniBaglam { get { return ani.Baglam; } }
-        public float AniYavas { get { return ani.Aktif ? ani.YavasK : 0; } }
-        public void AniBaslat() { ani.Baslat(); aniS = new Shuttle { from = "", type = "clear" }; aniIzlendi = true; Yerel.Hap("tick"); }
-        public void AniDur() { ani.Bitir(); aniS = null; }
-        bool ustaDavetSayildi, aniIzlendi;
-        public bool AniIzlendi { get { return aniIzlendi; } }
+        bool ustaDavetSayildi;
         // ---- maç sonu ödüllü reklam (2026-11-07; kural Core/OdulluReklam, SDK Game/ReklamSdk, düğme Hud) ----
         // Kart durumu maç başına: teklif görüldü mü, izlendi mi, bu maç denendi mi. Kart kapanınca (yeni maç başlarken) ret/sus
         // sayacı işlenir; sayaç PlayerPrefs'te (tuytop_ öneki, cihaza özgü, buluta gitmez: günlük tavan cihaz başına yeter).
@@ -1006,15 +993,9 @@ namespace BirdieSmash.Game
                 }
             }
             shuttle.reduce = Ayar.reduce;
-            if (ani.Aktif && ekran == Ekran.Bitti) { bool tv; if (!ani.Oynat(dt, me, op, aniS, Ayar.reduce, out tv)) { AniDur(); tv = false; } shuttle.Show(match, tv ? aniS : null, dt, false, previewAt); }
-            else
-            {
-                if (ani.Aktif) AniDur();
-                me.Show(match.me, match, dt); op.Show(match.op, match, dt);
-                shuttle.Show(match, ekran == Ekran.Menu ? null : match.s, paused || geriT > 0 ? 0 : dt, previewOn && input.on && !input.hit, previewAt);
-                // Maçın anı kaydı (Game/MacAni): yalnız gerçek maçta (antrenman ve görev dışında), oyun akarken.
-                if (ekran == Ekran.Oyun && !paused && geriT <= 0 && match.ogr == null && !match.between) { var ts = match.s; bool tv = ts != null && !ts.dead; ani.Kaydet(dt, me, op, tv, tv ? Kit.W(ts.x, ts.y, ts.z) : Vector3.zero); }
-            }
+            // 2026-11-19 (yasin: "Maçın anını kaldır"): maç sonu tekrar izleme kaldırıldı; her karedeki görünüş kaydı da gitti.
+            me.Show(match.me, match, dt); op.Show(match.op, match, dt);
+            shuttle.Show(match, ekran == Ekran.Menu ? null : match.s, paused || geriT > 0 ? 0 : dt, previewOn && input.on && !input.hit, previewAt);
             // Usta duruş işareti yazıyla da (P3): maçın ilk iki varışında "Yerindesin"; sonra yalnız ayak izinin dolması (sessiz HUD).
             if (ekran == Ekran.Oyun && !match.easy && match.ogr == null && yerN < 2 && match.s != null && match.s != yerTop && match.Yerinde()) { yerTop = match.s; yerN++; hud.Say(L.T("Yerindesin"), Kit.W(match.me.x, match.me.y, 1.6f), Kit.Hex("#d8ff5a")); }
             // Zor koşu yardımı görünür (inceleme 5 Kas 20:10 YAP): görünmez yardım "ben dokunmadan koştu" diye kontrol kaybı gibi
@@ -1135,9 +1116,6 @@ namespace BirdieSmash.Game
         static readonly float ZAFER_TV = Mathf.Tan(20 * Mathf.Deg2Rad);
         void ZaferKamera(float dt, ref Vector3 p, ref Quaternion q, ref float tv)
         {
-            // Maçın anı oynarken oyun kamerası (2026-11-06): ralli tüm kortta geçer, yakın çekimde oyuncular ve top kadrajdan
-            // çıkıyordu. Bitiren vuruşun ağır çekiminde görüş %14 daralır (hafif yaklaşma); zafer durumu korunur, anı bitince kesmeyle döner.
-            if (ani.Aktif) { tv *= Mathf.Lerp(1, .86f, Mathf.SmoothStep(0, 1, ani.YavasK)); return; }
             if (!ZaferVar) { zaferK = 0; me.zaferBak = null; zaferAn0 = -1; return; }
             ZaferInis();
             if (zaferK <= 0) zaferYon = match.me.x >= Court.MID ? 1 : -1;   // oyuncunun bulunduğu yanın dışından: arkasında kort kalır
@@ -1263,7 +1241,6 @@ namespace BirdieSmash.Game
                     {
                         bool smac = mine && e.type == "smash";
                         // Bağlam (2026-11-12): mpYan önceki karenin durumu; benim sayım ben maç sayısındayken maçı bitirir, rakibinkindeyken kurtarır.
-                        if (match.ogr == null) { ani.SayiBitti(mine, (int)e.k, smac, !mine ? 0 : mpYan == 0 ? 1 : mpYan == 1 ? 2 : 0); if (match.matchDone) ani.Sec(match.sc[0] > match.sc[1]); }
                         // Canlı salon (2026-11-06 ek tur): seyirci benim sayımda ya da uzun rallide kalkar, smaçta panolar "SMASH!";
                         // rakibin maç sayısını kurtarınca tek kelime (Kurtardın!). mpYan önceki karenin durumu (skor bu olayla değişti).
                         if (mine || e.k >= 8) salonSicra = 0;

@@ -285,7 +285,7 @@ namespace BirdieSmash.Game
     // Koddan çizilen simgeler (beyaz + alfa; boya Image.tintColor). 96 px, 2×2 örnekleme ile kenar yumuşatma.
     public static class Ikonlar
     {
-        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Tisort, Gradyan, YildizDolu, YildizBos, Yukari, Asagi, Yuz, Ayak, Tutus, Solma;
+        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Tisort, Gradyan, YildizDolu, YildizBos, Yukari, Asagi, Yuz, Ayak, Tutus, Solma, Buyut;
         // 2026-10-26 Yayın Gecesi: simgeler (tüy, şimşek, hedef, güneş, çarpı, açık kilit) ve şekil dokuları (eğik düğme,
         // yayın plakası, etiket şeridi, basamak çizgisi, altın kutucuk, ışık süpürmesi, ışın). Hepsi 2× çözünürlükte (1 pt =
         // 2 doku pikseli; USS'te -unity-slice-scale: 0.5), açılışta bir kez; her biri birkaç KB.
@@ -342,6 +342,8 @@ namespace BirdieSmash.Game
             Yukari = Ciz((x, y) => y > -.55f && y < .6f && Mathf.Abs(x) < (.6f - y) * .62f); Asagi = Ciz((x, y) => y < .55f && y > -.6f && Mathf.Abs(x) < (y + .6f) * .62f);
             // Vitrin odak düğmeleri (2026-11-07 stüdyo incelemesi AD2): yazı yerine simge; "Face" kategori satırında da yazıyordu.
             // Yüz = halka baş + iki göz + gülüş; Ayak = ayakkabı silueti (taban + burun); Tutuş = sargılı raket sapı (eğik boşluklar).
+            // 2026-11-19 Dolap "İncele" (büyüt): dört köşe ayracı, sistemin tam ekran simgesi kalıbı.
+            Buyut = Ciz((x, y) => { float ax = Mathf.Abs(x), ay = Mathf.Abs(y); return ax > .25f && ay > .25f && ax < .75f && ay < .75f && (ax > .6f || ay > .6f); });
             Yuz = Ciz((x, y) =>
             {
                 float r = Mathf.Sqrt(x * x + y * y); bool halka = Mathf.Abs(r - .74f) < .12f;

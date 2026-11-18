@@ -132,7 +132,10 @@ namespace BirdieSmash.EditorTools
             // son çare kaydırmayla çiziyor ve mağaza 13" iPad karesi istiyordu. Apple yayınlanmış uygulamadan cihaz ailesi kaldırmaya
             // izin vermez, eklemeye izin verir: 1.0 iPhone ile çıkar, iPad sahibi uyumluluk modunda aynı kadrajı oynar. iPad düzeni
             // ayrı karar (o zaman bu satır + iPad kareleri). Flutter yolu da aynı: ios/Runner TARGETED_DEVICE_FAMILY = 1.
-            PlayerSettings.iOS.targetDevice = iOSTargetDevice.iPhoneOnly;
+            // 2026-11-19 (yasin: "Tablette tam ekran olmuyor"): uyumluluk modu iPad'de iPhone kadrajını küçük pencerede, siyah
+            // kenarlarla açıyordu. Menüler (Duyarli .genis sütunu) ve Kadraj iPad oranını zaten çözüyor (ekran turu 768×1024),
+            // evrensel ikiliye geçildi. Bedeli: mağaza 13" iPad karesi ister (OWNER adımı); aile sonradan kaldırılamaz.
+            PlayerSettings.iOS.targetDevice = iOSTargetDevice.iPhoneAndiPad;
             PlayerSettings.iOS.appleEnableAutomaticSigning = false;   // imza fastlane match'ten; Xcode otomatik imzaya kalkışmasın
             PlayerSettings.statusBarHidden = true;
             // Oyuncunun kendi müziği susmasın (2026-10-30 menü müziği): Ambient oturum; menü müziği başka ses varken çalmaz (Yerel).
