@@ -80,7 +80,7 @@ namespace BirdieSmash.Game
                 for (int i = 0; i < 3; i++) { float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 4) yield return null; yield return Cek("afis_" + i); }
                 File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
             }
-            if (kip == "dolap") { yield return Cek("00_ilk_kare"); yield return MenuTuru(); yield return DugmeKareleri(); yield return Varyantlar(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }
+            if (kip == "dolap") { yield return Cek("00_ilk_kare"); yield return MenuTuru(); yield return DugmeKareleri(); yield return SevincKareleri(); yield return Varyantlar(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             yield return MenuTuru(); if (root.HudKatman != null) rap.AppendLine("açılış süresi (gerçek, CI yazılım render'ı): " + root.HudKatman.AcilisTani);
             Ayar.antrenman = true; Ayar.easy = true; Ayar.target = 5; Ayar.reduce = false; if (root.ui != null) root.ui.Kirlet();   // r11: Oyna sekmesi ilk açılış kurulumunda kalıyordu
@@ -312,6 +312,15 @@ namespace BirdieSmash.Game
         // Menü kareleri: açılış perdesi kalkana kadar bekler (sesler hazırlanınca, en çok 12 sn).
         // 2026-11-13 kısa tur (yasin: düğme yerleşimi/simetri): kısa turda Dolap, Hızlı maç ve Ayarlar da çekilir ki yerleşim
         // düzeltmesi tam tur (90 dk) beklemeden görülsün.
+        // 2026-11-19: kısa tur sevinç karelerini çekmiyordu (MenuTuru yalnız tam turda Sevinç sayfasına iner); yeni kemik katmanı
+        // hareketleri (ter, tel) derleme dışında görülemiyordu. Sayfa açılır, iki hareketin iki anı çekilir.
+        IEnumerator SevincKareleri()
+        {
+            var ui = root != null ? root.ui : null; if (ui == null || root.vitrin == null) yield break;
+            ui.SekmeAc(Sekme.Soyunma); ui.SoyunmaSegment(2); yield return Bekle(20); ui.KarakterAc(UiKok.KAR_SEVINC); yield return Bekle(25);
+            foreach (var sv in new[] { "ter", "tel" }) { root.vitrin.Sevinc(sv); yield return Bekle(22); yield return Cek("sevinc_" + sv + "_a"); yield return Bekle(14); yield return Cek("sevinc_" + sv + "_b"); }
+            ui.Geri(); ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
+        }
         IEnumerator DugmeKareleri()
         {
             var ui = root != null ? root.ui : null; if (ui == null) yield break;
