@@ -16,6 +16,21 @@ namespace BirdieSmash.Game
     {
         int ayarDokun; float ayarDokunT; string lisans;
 
+        // Tek seçimli çip grubunda seçimi yerinde değiştirir: çerçeve sınıfı, ✓, erişim "seçili" ve altındaki tek soluk cümle.
+        // Sayfa kurulmaz (2026-11-19, takılma kuralı): dokunuşta ayırma bir ✓ ikonu ve bir string.
+        void SecimYerinde(VisualElement satir, int secili, Label acik, string[] acikTablo, string[] adTablo)
+        {
+            for (int j = 0; j < satir.childCount; j++)
+            {
+                var d = satir[j]; bool s = j == secili; d.EnableInClassList("cip--secili", s);
+                var ic = d.Q(null, "cip-ic"); var tk = d.Q(null, "cip-tik");
+                if (s && tk == null && ic != null) { tk = Ikon(Ikonlar.Tik, 16, TURUNCU); tk.AddToClassList("cip-tik"); ic.Insert(0, tk); }
+                else if (!s && tk != null) tk.RemoveFromHierarchy();
+                if (j < adTablo.Length && j < acikTablo.Length) Erisim.Etiket(d, L.T(adTablo[j]) + ". " + L.T(acikTablo[j]), "dugme", s);
+            }
+            if (acik != null && secili >= 0 && secili < acikTablo.Length) { acik.text = L.T(acikTablo[secili]); acik.style.display = DisplayStyle.Flex; }
+        }
+
         void AyarlarKur(VisualElement p)
         {
             var t = SayfaBasi(p, "Ayarlar");
@@ -36,13 +51,16 @@ namespace BirdieSmash.Game
             // Kayıt anahtarı ve değerleri aynı (tuytop_model): kimsenin seçimi değişmez.
             // Oyuncu hareketi (2026-11-14, yasin: "manuel hareket ayrı bir özellik olarak beklesin"): zorluk yalnız rakibi seçer,
             // koşu burada. Üç eşit çip + seçilinin tek soluk cümlesi (kamera/kaydırma kalıbı). Maç sırasında değişmez.
+            // Hareket, kaydırma ve kamera (2026-11-19 inceleme, fikir 02:05 Ayarlar #3): hiçbir sekmede görünmezler (salon kamerayı
+            // kendisi izler), dokunuşta menü kurulmaz; seçim ve soluk cümle yerinde değişir (SecimYerinde). Degisti() yalnız yazı boyutunda.
             c.Add(Grup(L.T("Oyuncu hareketi"))); var hr = Satir("sigdir-grup"); c.Add(hr);
+            Label hrA = null;
             for (int i = 0; i < Ayar.HAREKET_AD.Length; i++)
             {
-                int id = i; var hc = Cip(L.T(Ayar.HAREKET_AD[i]), Ayar.hareket == id, () => { Ayar.hareket = id; Ayar.KaydetSonra(); Degisti(); });
+                int id = i; var hc = Cip(L.T(Ayar.HAREKET_AD[i]), Ayar.hareket == id, () => { Ayar.hareket = id; Ayar.KaydetSonra(); SecimYerinde(hr, id, hrA, HAREKET_ACIK, Ayar.HAREKET_AD); });
                 Erisim.Etiket(hc, L.T(Ayar.HAREKET_AD[i]) + ". " + L.T(HAREKET_ACIK[i]), "dugme", Ayar.hareket == id); hr.Add(hc);
             }
-            c.Add(Yazi(L.T(HAREKET_ACIK[Mathf.Clamp(Ayar.hareket, 0, 2)]), 12, "soluk"));
+            hrA = Yazi(L.T(HAREKET_ACIK[Mathf.Clamp(Ayar.hareket, 0, 2)]), 12, "soluk"); c.Add(hrA);
             // 2026-11-10 inceleme (fikir 02:05 #2): "Hareket" (tek çip) ve "Ses" (üç çip) tek "Ses ve his" grubunda, dört anahtar
             // satırı; ad sabit, durum anahtarda. Tek seçimli gruplar (görünüm, kamera, yazı boyutu, dil) çip kalır. Davranış ve
             // tuytop_* anahtarları aynı: Müzik ayrı (2026-10-30, ses kapalıyken müzik de susar, seçim korunur); Titreşim
@@ -50,20 +68,24 @@ namespace BirdieSmash.Game
             // pasif, altında "Sistem ayarından".
             // Kaydırma (2026-11-12 inceleme, fikir 07:05 #5): vuruş eşiği üç kademe; seçili kademenin tek soluk cümlesi (kamera kalıbı).
             c.Add(Grup(L.T("Kaydırma"))); var kd = Satir(); kd.AddToClassList("cip-sarar"); c.Add(kd);
-            string[] Ka = { "Kısa", "Normal", "Uzun" }, KaAcik = { "Kısa ve yavaş kaydırma da vuruş sayılır", "Varsayılan eşik", "Yalnız uzun, hızlı kaydırma vuruş sayılır" };
-            for (int i = 0; i < 3; i++) { int id = i; kd.Add(Cip(L.T(Ka[i]), Ayar.kaydirma == id, () => { Ayar.kaydirma = id; Ayar.KaydetSonra(); Degisti(); })); }
-            c.Add(Yazi(L.T(KaAcik[Mathf.Clamp(Ayar.kaydirma, 0, 2)]), 12, "soluk"));
+            // 2026-11-19 inceleme (fikir 02:05 Ayarlar #5): Normal'in cümlesi "Varsayılan eşik" idi; geliştirici sözcüğü, en çok seçilen
+            // kademe oyuncuya bir şey söylemiyordu. Öbür ikisi gibi elden konuşur.
+            string[] Ka = { "Kısa", "Normal", "Uzun" }, KaAcik = { "Kısa ve yavaş kaydırma da vuruş sayılır", "Orta hızda bir kaydırma vuruş sayılır", "Yalnız uzun, hızlı kaydırma vuruş sayılır" };
+            Label kdA = null;
+            for (int i = 0; i < 3; i++) { int id = i; var kc0 = Cip(L.T(Ka[i]), Ayar.kaydirma == id, () => { Ayar.kaydirma = id; Ayar.KaydetSonra(); SecimYerinde(kd, id, kdA, KaAcik, Ka); }); Erisim.Etiket(kc0, L.T(Ka[i]) + ". " + L.T(KaAcik[i]), "dugme", Ayar.kaydirma == id); kd.Add(kc0); }
+            kdA = Yazi(L.T(KaAcik[Mathf.Clamp(Ayar.kaydirma, 0, 2)]), 12, "soluk"); c.Add(kdA);
             c.Add(Grup(L.T("Kamera"))); var km = Satir(); c.Add(km);
+            Label kmA = null;
             for (int i = 0; i < GameRoot.KAMERA_SIRA.Length; i++)
             {
-                string id = GameRoot.KAMERA_SIRA[i];
-                var kc = Cip(L.T(GameRoot.KAMERA_AD[i]), Ayar.kamera == id, () => { Ayar.kamera = id; Ayar.KaydetSonra(); root.KameraDegisti(); Degisti(); });
+                string id = GameRoot.KAMERA_SIRA[i]; int ki = i;
+                var kc = Cip(L.T(GameRoot.KAMERA_AD[i]), Ayar.kamera == id, () => { Ayar.kamera = id; Ayar.KaydetSonra(); root.KameraDegisti(); SecimYerinde(km, ki, kmA, KAMERA_ACIK, GameRoot.KAMERA_AD); });
                 Erisim.Etiket(kc, L.T(GameRoot.KAMERA_AD[i]) + ". " + L.T(KAMERA_ACIK[i]), "dugme", Ayar.kamera == id); km.Add(kc);
             }
             // 2026-11-10 inceleme (fikir 07:06 #3): çipler yalnız ad söylüyordu, farkı görmek için maça girip çıkmak gerekiyordu.
             // Zorluk satırının kalıbı: seçili açının tek soluk cümlesi (cümleler GameRoot kamera kadraj yorumundan).
             int ks = System.Array.IndexOf(GameRoot.KAMERA_SIRA, Ayar.kamera);
-            if (ks >= 0) c.Add(Yazi(L.T(KAMERA_ACIK[ks]), 12, "soluk"));
+            kmA = Yazi(ks >= 0 ? L.T(KAMERA_ACIK[ks]) : "", 12, "soluk"); kmA.style.display = ks >= 0 ? DisplayStyle.Flex : DisplayStyle.None; c.Add(kmA);
             c.Add(Grup(L.T("Ses ve his")));
             // İnceleme 2026-11-15 12:05 #4: dört ayrı cam düğme yerine tek liste grubu (§6.4); yenileme geçiş bitince (DegistiSonra).
             // Hareketi azalt kendi değerini değiştirdiği için DegistiSonra açılırken bekler, kapanırken hemen yeniler: ikisi de doğru.

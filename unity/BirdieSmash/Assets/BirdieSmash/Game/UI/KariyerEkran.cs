@@ -195,7 +195,7 @@ namespace BirdieSmash.Game
                 // çubuk satırın altından 6 pt boşlukla başlar.
                 hz.style.alignItems = Align.FlexStart; hz.style.flexWrap = Wrap.NoWrap;
                 var ek = Yazi(L.T("Ekipman {0}/{1}", ep, tv.epMin), 13, az ? "durum-simdi" : "soluk"); ek.style.flexShrink = 0f; ek.style.whiteSpace = WhiteSpace.NoWrap; ek.style.marginRight = 12f; hz.Add(ek);
-                var ey = Yazi(az ? L.T("{0} yükseltme eksik", tv.epMin - ep) : L.T("Hazırsın"), 13, az ? "soluk" : "durum-gecti"); ey.style.flexShrink = 1f; ey.style.minWidth = 0f; ey.style.whiteSpace = WhiteSpace.Normal; ey.style.unityTextAlign = TextAnchor.UpperRight; SozcukSigdir(ey); hz.Add(ey);   // ×2 TR "yükseltme" sözcüğü bölünmesin (r170)
+                var ey = Yazi(az ? L.T("{0} yükseltme eksik", tv.epMin - ep) : L.T("Hazırsın"), 13, az ? "soluk" : "durum-gecti"); ey.style.flexShrink = 1f; ey.style.flexGrow = 1f; ey.style.minWidth = 0f; ey.style.whiteSpace = WhiteSpace.Normal; ey.style.unityTextAlign = TextAnchor.UpperRight; SozcukSigdir(ey); hz.Add(ey);   // ×2 TR "yükseltme" sözcüğü bölünmesin (r170)
                 var iz = new VisualElement(); iz.style.marginTop = 6f; iz.AddToClassList("stat-iz"); iz.AddToClassList("tur-hazir-iz"); iz.pickingMode = PickingMode.Ignore; kb.Add(iz);
                 var dl = new VisualElement(); dl.AddToClassList("stat-dolu"); dl.style.width = Length.Percent(Mathf.Clamp01(ep / (float)Mathf.Max(1, tv.epMin)) * 100); dl.pickingMode = PickingMode.Ignore; iz.Add(dl);
                 if (az && acik) { var ag = Dugme(L.T("Atölye'ye git"), () => SekmeAc(Sekme.Atolye), "kucuk-dugme"); ag.style.alignSelf = Align.FlexStart; ag.style.marginTop = 8; kb.Add(ag); }
