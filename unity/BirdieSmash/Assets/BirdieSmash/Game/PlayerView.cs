@@ -1370,7 +1370,7 @@ namespace BirdieSmash.Game
                     // raket yüzün önünden geçiyordu. Hedef artık baş kemiğine göre alın; raketli kol yana iner, kafa öne-aşağı.
                     { float a = rm ? .5f : Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - .15f) / .45f));
                       Vector3 alin = kHead != null ? kHead.position + up * L * .75f + fw * L * .55f : (sR + sL) * .5f + up * L * .4f + fw * L * .3f;
-                      IK(SU, SE, SH, sR + ri * L * .25f - up * L * .75f + fw * L * .2f, ri - fw * .3f); RaketDik(SH, fw * .8f - up * .5f + ri * .2f);
+                      IK(SU, SE, SH, sR + ri * L * .25f - up * L * .6f + fw * L * .2f, ri - fw * .3f); RaketDik(SH, fw * .85f - up * .2f + ri * .25f);   // r200: −up·0,5 ile raket kafası zemine giriyordu
                       IK(LU, LE, LH, alin + ri * L * (.25f - .5f * a), -ri * .6f + up * .5f + fw * .4f); } break;
                 case "tel":      // raket gövdenin önünde çapraz, kafası sol omzun önünde; sol elin parmakları tellerde gezinir
                     // 2026-11-19 kare turu (r198): raket kol boyunun iki katı; kafa yukarı bakarken sol el tellere yetişmiyor, göğüste
