@@ -286,7 +286,7 @@ namespace BirdieSmash.Game
         void EkipmanGovde(VisualElement c)
         {
             var gr = Ayar.gear;   // Seviye satırı kalktı (2026-11-05, Ar-Ge 11:40 #3): üst çubukta Sv + XP ve Tüy zaten var, Profil'de ayrıntı
-            c.Add(Grup(L.T("Oyun tarzı"))); TarzGovde(c);
+            c.Add(Grup(L.T("Oyun tarzı"))); tarzKap = new VisualElement(); c.Add(tarzKap); TarzGovde(tarzKap);
             c.Add(Grup(L.T("Takımın")));
             var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true, null, Ayar.GelisimCubuk());
             RaketKimlikKart(c);
@@ -330,7 +330,7 @@ namespace BirdieSmash.Game
             foreach (var sp in new[] { "G4", "G5", "G6" })
             {
                 string s_ = sp;
-                r.Add(Cip(sp, gr.sap == sp, () => { if (gr.sap == s_) return; gr.sap = s_; Ayar.GearHesap(); Ayar.KaydetSonra(); root.sfx.Tik(); Degisti(); SoyunmaGovdeKur(true); },
+                r.Add(Cip(sp, gr.sap == sp, () => { if (gr.sap == s_) return; gr.sap = s_; Ayar.GearHesap(); Ayar.KaydetSonra(); Degisti(); SoyunmaGovdeKur(true); },
                     sp == "G4" ? L.T("Kalın") : sp == "G6" ? L.T("İnce") : L.T("Orta")));
             }
             var etki = Satir("tarz-haplar"); etki.pickingMode = PickingMode.Ignore; k.Add(etki);
@@ -485,7 +485,7 @@ namespace BirdieSmash.Game
 
         void RaketDene(string id)
         {
-            deneRaket = deneRaket == id ? null : id; Yerel.Hap("tick"); root.sfx.Tik();
+            deneRaket = deneRaket == id ? null : id; Tik();
             if (gez.AcikAltSayfa != Gezinti.YUVA) return;
             var eski = altSayfa != null ? altSayfa.Q<ScrollView>() : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; YuvaSayfaKur(); KaydirmaGeri(altSayfa, of);
         }
@@ -616,6 +616,15 @@ namespace BirdieSmash.Game
         // söyler (kilitli tarz da önizlenir: önce gör, sonra hedefle). Çubuk boyu = etiketteki yüzde / ÇUBUK_TAVAN (etiket etki
         // çarpanıyla aynı ölçüde, karakter.json tarzlar_not); ayrı veri yok. Çubuk 0'dan büyür (.22 sn; hareketi azaltta anında).
         string tarzOnizle; const float CUBUK_TAVAN = 40f;
+        // 2026-11-19 (Ar-Ge 12:06 #2, takılma yok): önizleme çipi yalnız bu bölümü yeniler; eskiden bütün Atölye (başlık, takım
+        // kartı, raket, 6 yuva, taban; ~60 öğe) baştan kuruluyor, kaydırma yeri iki kez yazılıyordu. Gerçek seçim ("Bu tarzı seç")
+        // takım gücünü değiştirdiği için sayfayı baştan kurmaya devam eder.
+        VisualElement tarzKap;
+        void TarzYerinde()
+        {
+            if (tarzKap == null || tarzKap.panel == null) { SoyunmaGovdeKur(true); return; }
+            tarzKap.Clear(); TarzGovde(tarzKap);
+        }
         void TarzGovde(VisualElement c)
         {
             int sv = Ayar.gear.Seviye(); string cur = Ayar.Tarz; if (tarzOnizle == null) tarzOnizle = cur;
@@ -628,7 +637,7 @@ namespace BirdieSmash.Game
             foreach (var t in Karakter.Tarzlar)
             {
                 string id = t.id; bool acik = sv >= t.sv;
-                var d = Cip(L.T(t.ad), id == tarzOnizle, () => { if (tarzOnizle == id) return; tarzOnizle = id; root.sfx.Tik(); SoyunmaGovdeKur(true); }, acik ? (id == cur ? L.T("Seçili") : null) : L.T("Sv {0}", t.sv));
+                var d = Cip(L.T(t.ad), id == tarzOnizle, () => { if (tarzOnizle == id) return; tarzOnizle = id; TarzYerinde(); }, acik ? (id == cur ? L.T("Seçili") : null) : L.T("Sv {0}", t.sv));
                 d.AddToClassList("segment-cip"); var eb = d.userData as ErisimBilgi; if (eb != null) eb.rol = "sekme"; ray.Add(d); if (id == tarzOnizle) secEl = d;
             }
             if (secEl != null) OrtayaKaydir(hk, secEl);
@@ -649,7 +658,7 @@ namespace BirdieSmash.Game
             Erisim.Etiket(bas, L.T(on.ad) + (!string.IsNullOrEmpty(on.oz) ? ", " + L.T(on.oz) : "") + ", " + durum, "metin", oSecili, !oAcik);
             if (oSecili) return;
             string ad = L.T(on.ad);
-            if (oAcik) { var sd = Dugme(L.T("Bu tarzı seç"), () => { Ayar.ilerleme.Tarz = on.id; Ayar.GearHesap(); Ayar.KaydetSonra(); root.sfx.Tik(); kirli[(int)Sekme.Profil] = true; SoyunmaGovdeKur(true); }, "dugme--birincil"); sd.style.marginTop = 12; Erisim.Etiket(sd, L.T("Bu tarzı seç") + ": " + ad, "dugme"); kart.Add(sd); }
+            if (oAcik) { var sd = Dugme(L.T("Bu tarzı seç"), () => { Ayar.ilerleme.Tarz = on.id; Ayar.GearHesap(); Ayar.KaydetSonra(); kirli[(int)Sekme.Profil] = true; SoyunmaGovdeKur(true); }, "dugme--birincil"); sd.style.marginTop = 12; Erisim.Etiket(sd, L.T("Bu tarzı seç") + ": " + ad, "dugme"); kart.Add(sd); }
             else { var pd = Pasif(KilitKalan(on.sv, sv)); pd.style.marginTop = 12; kart.Add(pd); }
         }
         // Etki çubuğu: ad (etiketin yüzdesiz kısmı değil, tam etiket: "Smaç hızı +%6") + iz. Yüzde etiketten okunur; okunamazsa

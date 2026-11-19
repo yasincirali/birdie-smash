@@ -162,7 +162,7 @@ namespace BirdieSmash.Game
             int hedef = karAlt;
             foreach (int i in KarSayfalar()) { var k = KarKat(i); if (k != null && System.Array.IndexOf(k, kat) >= 0) hedef = i; }
             // Kategori değişimi KategoriSec'ten: kaydırmayı sıfırlar (uzun sayfadan kısa sayfaya geçişte boş sayfa, 8 Kas hatası).
-            if (hedef != karAlt) KategoriSec(hedef); else { root.sfx.Tik(); Yerel.Hap("tick"); }
+            if (hedef != karAlt) KategoriSec(hedef); else Tik();
             Dene(kat, id);
         }
 
@@ -223,8 +223,8 @@ namespace BirdieSmash.Game
             {
                 RenkSira(c, "Kordaj", "tel");
                 c.Add(Grup(L.T("Desen"))); var ds = Satir(); c.Add(ds);
-                ds.Add(Cip(L.T("Tek renk"), Ayar.RGOR["desen"] == "tek", () => { Ayar.RGOR["desen"] = "tek"; Ayar.KaydetSonra(); root.vitrin.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
-                ds.Add(Cip(L.T("Ana ve çapraz ayrı"), Ayar.RGOR["desen"] == "iki", () => { Ayar.RGOR["desen"] = "iki"; Ayar.KaydetSonra(); root.vitrin.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
+                ds.Add(Cip(L.T("Tek renk"), Ayar.RGOR["desen"] == "tek", () => { Ayar.RGOR["desen"] = "tek"; Ayar.KaydetSonra(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
+                ds.Add(Cip(L.T("Ana ve çapraz ayrı"), Ayar.RGOR["desen"] == "iki", () => { Ayar.RGOR["desen"] = "iki"; Ayar.KaydetSonra(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
                 if (Ayar.RGOR["desen"] == "iki") RenkSira(c, "Çapraz teller", "tel2");
             }
             if (ps == null || ps == "grip") TeknikKur(c);
@@ -371,7 +371,7 @@ namespace BirdieSmash.Game
             var gr = Ayar.gear;
             bool sahip = kat == "ayakkabi" ? gr.Sahip("ayakkabi", id) : Kozmetik.Sahip(gr, kat, id) || Ayar.KOZ[kat] == id;
             if (sahip) { KozSec(kat, id); Tik(); }
-            else { Dene(kat, id); root.sfx.Tik(); Yerel.Hap("tick"); }
+            else { Dene(kat, id); Tik(); }
         }
         void Dene(string kat, string id)
         {

@@ -48,7 +48,34 @@ namespace BirdieSmash.Game
             // Tek birincil eylem: kendi turunda da başka turu incelerken de altta sabit (UX5/UX6).
             SiradakiSerit(k, p, sira);
             if (kariyerY > 0) { float y0 = kariyerY; sv.schedule.Execute(() => sv.scrollOffset = new Vector2(0, y0)).StartingIn(0); }
+            else if (veri && tr == KariyerVeri.TurOf(sira)) SimdiyeKaydir(sv);
             kariyerY = -1;
+        }
+
+        // 2026-11-19 inceleme (fikir 17:07 #2; Tennis Clash / Clash Royale yolu açılınca oyuncunun durağına kayar): 7 satırlık yol +
+        // üstteki kartlar yüzünden küçük telefonda 4.–6. basamaktaki oyuncu kendi düğümünü (12:06'dan beri yüzü orada) kaydırmadan
+        // görmüyordu. Kendi turunda, sayfa en üstteyken ve "Şimdi" düğümü görünür alanın orta çizgisinin altındaysa onu ortaya
+        // getirir; zaten görünürse dokunmaz. Yerleşimden sonra bir kez (genişlik/yükseklik ilk karede 0, OrtayaKaydir kalıbı);
+        // Degisti'nin KaydirmaGeri'si ya da oyuncunun kendi kaydırması (offset > 0) önceliklidir. Hareketi azaltta anında, değilse
+        // BasaKaydir ile aynı .25 sn ease-out. Yeni öğe yok, yalnız scrollOffset.
+        void SimdiyeKaydir(ScrollView sv)
+        {
+            EventCallback<GeometryChangedEvent> gc = null;
+            gc = e =>
+            {
+                var roz = sv.contentContainer.Q(null, "dugum-rozet--simdi");
+                if (roz == null) { sv.UnregisterCallback(gc); return; }
+                if (sv.layout.height <= 0 || roz.layout.height <= 0) return;
+                sv.UnregisterCallback(gc);
+                if (sv.scrollOffset.y > 0) return;
+                float y = sv.contentContainer.WorldToLocal(roz.worldBound.center).y - sv.layout.height * .5f;
+                if (y <= 0) return;
+                if (Ayar.reduce) { sv.scrollOffset = new Vector2(sv.scrollOffset.x, y); return; }
+                float t0 = Time.realtimeSinceStartup, son = sv.scrollOffset.y; bool bitti = false;   // başka biri (oyuncu, KaydirmaGeri) kaydırırsa durur
+                sv.schedule.Execute(() => { if (Mathf.Abs(sv.scrollOffset.y - son) > 1) { bitti = true; return; } float t = Mathf.Clamp01((Time.realtimeSinceStartup - t0) / .25f); if (t >= 1) bitti = true; t = 1 - (1 - t) * (1 - t) * (1 - t); sv.scrollOffset = new Vector2(sv.scrollOffset.x, y * t); son = sv.scrollOffset.y; })
+                    .Every(16).Until(() => bitti);
+            };
+            sv.RegisterCallback(gc);
         }
 
         // Tur başlığı: ‹ · "Tur n · bölüm" + ad + yıldız (kilitliyse kilit + neden) · ›. Hikâye cümlesi tek satır altında; hazırlık
@@ -210,6 +237,16 @@ namespace BirdieSmash.Game
             if (simdi && g == basAniA && basAniDen >= 0) BasamakBuyut(roz, .8f, 300);
             else if (final) roz.Add(Ikon(Ikonlar.Kupa, 18, simdi ? KOYU : acik ? ALTIN : SOLUK));
             else if (!acik) roz.Add(Ikon(Ikonlar.Kilit, 16, SOLUK));
+            else if (simdi && Portre.Benim() != null)
+            {
+                // 2026-11-19 (Ar-Ge 12:06 #1, OYUNCUYU GÖSTER): "sen buradasın" iğnesi oyuncunun kendi yüzü (harita ilerlemeli
+                // muadillerde olduğu gibi); numara sağ altta küçük rozet. Portre üst çubukta zaten çizili, önbellekten gelir (ek
+                // kamera çizimi yok). Rakip portresi düğüme eklenmedi: maç kartında var, düğümde ikinci yüz okumayı böler.
+                var av = new VisualElement(); av.AddToClassList("dugum-portre"); av.style.backgroundColor = Kit.Hex(Ayar.FORMA); av.pickingMode = PickingMode.Ignore;
+                AvatarIc(av, Portre.Benim(), 28); roz.Add(av);
+                var no = new VisualElement(); no.AddToClassList("dugum-no"); no.pickingMode = PickingMode.Ignore; roz.Add(no);
+                var nl = Yazi((b + 1).ToString(), 11, "kalin"); nl.style.unityTextAlign = TextAnchor.MiddleCenter; nl.style.paddingTop = 0f; nl.style.paddingBottom = 0f; no.Add(nl);
+            }
             else
             {
                 // 2026-11-14 (tasarım dili, r170): rakam 44 pt halkada kendi kutusundan taşıyordu (×1 22>20, ×2 32 pt rakam 9 pt'ye

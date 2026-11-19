@@ -17,6 +17,7 @@ namespace BirdieSmash.Game
     {
         // Başarım kimlikleri App Store Connect'teki ile aynı (Basarim); adlar yalnız bu liste için.
         bool basarimTum;   // Profil başarım listesi açık (oturum boyunca; 2026-11-11)
+        bool unvanTum;     // Profil kilitli unvan listesi açık (oturum boyunca; 2026-11-19)
         static readonly string[,] BASARIM = {
             { Basarim.ANTRENMAN, "Antrenmanı bitir" }, { Basarim.AKIS, "Akışa gir" }, { Basarim.RALLI20, "20 vuruşluk ralli" },
             { Basarim.SICRAMA, "Sıçrayarak smaç" }, { Basarim.GOREV3, "Bir maçta 3 görev" } };
@@ -85,7 +86,7 @@ namespace BirdieSmash.Game
                 if (!var_) sira_ = tu;
                 var hk = new VisualElement(); hk.AddToClassList("kupa-hucre"); if (!var_) hk.AddToClassList("kupa-hucre--yok");
                 hk.Add(Ikon(Ikonlar.Kupa, 28, var_ ? ALTIN : SOLUK)); int tt = tu;
-                hk.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); KariyerTurSec(tt); SekmeAc(Sekme.Kariyer); }));
+                hk.AddManipulator(new Clickable(() => { Tik(); KariyerTurSec(tt); SekmeAc(Sekme.Kariyer); }));
                 Erisim.Etiket(hk, L.T(TurAd(tu)) + ", " + L.T(var_ ? "Kazanıldı" : "Kazanılmadı"), "dugme"); raf.Add(hk);
                 int bit = 1 << (tu & 31);
                 if (var_ && (gorMaske & bit) == 0) { gorYeni |= bit; if (gorVar) { yeniOldu = true; if (!Ayar.reduce) KupaIndir(hk); } }
@@ -93,7 +94,7 @@ namespace BirdieSmash.Game
             if (kalan_ > 0)
             {
                 var ar = new VisualElement(); ar.AddToClassList("kupa-hucre"); ar.AddToClassList("kupa-hucre--yok"); ar.Add(Yazi("+" + kalan_, 15, "kalin")); int st = sira_;
-                ar.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); KariyerTurSec(st); SekmeAc(Sekme.Kariyer); }));
+                ar.AddManipulator(new Clickable(() => { Tik(); KariyerTurSec(st); SekmeAc(Sekme.Kariyer); }));
                 Erisim.Etiket(ar, L.T("{0} kupa daha", kalan_), "dugme"); raf.Add(ar);
             }
             if (gorYeni != gorMaske || !gorVar) PlayerPrefs.SetInt(KUPA_GOR, gorYeni);   // Save yok: bir sonraki Ayar.Kaydet yazar
@@ -117,7 +118,7 @@ namespace BirdieSmash.Game
             // ad (yalnız cihazda)
             c.Add(Grup(L.T("Adın")));
             var tf = new TextField { value = p.Ad ?? "", maxLength = Ilerleme.AD_AZAMI, isDelayed = true }; tf.AddToClassList("ad-alan"); tf.style.fontSize = Mathf.Round(16 * K);
-            tf.RegisterValueChangedCallback(e => { p.Ad = e.newValue; Ayar.KaydetSonra(); kirli[(int)Sekme.Profil] = true; var kk = sekmeKok[(int)Sekme.Profil]; kk.schedule.Execute(() => { if (gez.sekme == Sekme.Profil && gez.Ust == null) SekmeKur(Sekme.Profil); }).StartingIn(16); });
+            tf.RegisterValueChangedCallback(e => { p.Ad = e.newValue; Ayar.KaydetSonra(); kirli[(int)Sekme.Profil] = true; var kk = sekmeKok[(int)Sekme.Profil]; kk.schedule.Execute(() => { if (gez.sekme == Sekme.Profil && gez.Ust == null) SekmeYerindeKur(Sekme.Profil); }).StartingIn(16); });
             Erisim.Etiket(tf, L.T("Adın") + ", " + L.T("cihazında ve kendi iCloud hesabında tutulur"), "metin_alani", false, false, p.Ad ?? ""); c.Add(tf);
             // Yer tutucu (2026-11-07, yasin "yap", arayüz cilası): boş alan ne yazılacağını söylesin. Unity 6 textEdition.placeholder
             // yerine kendi soluk etiketimiz (mono ile Unity'siz derleme 2021 başvurularıyla yapılıyor); alan boşken ve odak yokken görünür.
@@ -131,13 +132,22 @@ namespace BirdieSmash.Game
             // unvanlar
             c.Add(Grup(L.T("Unvan")));
             var kz = Karakter.Kazanilan(p, L_, p.AntrenmanYildiz); var us = Satir("cip-sarar"); c.Add(us);   // 2026-10-31 (yasin IMG_1517): 5 unvan eşit dar çipe sıkışıp harf harf bölünüyordu; çip yazısı kadar geniş, sığmayan alt satıra
-            foreach (var u in kz) { string id = u.id; us.Add(Cip(L.T(u.ad) + Karakter.KademeEki(u, p), u.id == un.id, () => { p.Unvan = id; Ayar.KaydetSonra(); kirli[(int)Sekme.Profil] = true; SekmeKur(Sekme.Profil); })); }
+            foreach (var u in kz) { string id = u.id; us.Add(Cip(L.T(u.ad) + Karakter.KademeEki(u, p), u.id == un.id, () => { p.Unvan = id; Ayar.KaydetSonra(); kirli[(int)Sekme.Profil] = true; SekmeYerindeKur(Sekme.Profil); })); }   // 2026-11-19 inceleme (fikir 17:07 #1): seçince sayfa başa sıçramasın
             // Kademe (2026-11-07): yalnız seçili beceri unvanının sıradaki eşiği, tek satır; yeni satır listesi yok.
             int se_ = Karakter.SonrakiEsik(un, p);
             if (se_ > 0) { var ks = Yazi(L.T("{0}: sonraki kademe {1}/{2}", L.T(un.ad) + Karakter.KademeEki(un, p), p.Sayac(un.sayac), se_), 12, "soluk"); ks.style.whiteSpace = WhiteSpace.Normal; Erisim.Etiket(ks, ks.text, "metin"); c.Add(ks); }
-            foreach (var u in Karakter.Unvanlar)
+            // 2026-11-19 inceleme (fikir 17:07 #5): yeni oyuncuda 9–10 kilit satırı alt alta bir duvardı (Başarımlar 11 Kas'ta aynı
+            // sorundan katlandı). Kapalıyken en yakın 2 kilitli unvan (sayaçlılar ilerleme oranına göre önce) + "Tümünü göster (n)";
+            // açınca tam liste yerinde (sayfa kurulmaz, kaydırma yeri korunur). Liste oturum boyunca açık kalır.
+            var kilitli = new System.Collections.Generic.List<UnvanBilgi>();
+            foreach (var u in Karakter.Unvanlar) if (!kz.Contains(u)) kilitli.Add(u);
+            System.Func<UnvanBilgi, float> oran = u => u.sayac != null && u.esik > 0 ? Mathf.Min(p.Sayac(u.sayac), u.esik) / (float)u.esik : -1f;
+            var sirali = new System.Collections.Generic.List<UnvanBilgi>(kilitli);
+            for (int a = 1; a < sirali.Count; a++) { var x = sirali[a]; int b = a - 1; while (b >= 0 && oran(sirali[b]) < oran(x)) { sirali[b + 1] = sirali[b]; b--; } sirali[b + 1] = x; }   // kararlı sıralama: eşitlerde veri sırası
+            var ul = new VisualElement(); c.Add(ul);
+            System.Action<UnvanBilgi> kilitSatir = u =>
             {
-                if (kz.Contains(u)) continue; var ur = Satir("basarim"); ur.AddToClassList("kilitli"); c.Add(ur);
+                var ur = Satir("basarim"); ur.AddToClassList("kilitli"); ul.Add(ur);
                 ur.Add(Ikon(Ikonlar.Kilit, 18, SOLUK));
                 // 2026-10-31 (SE ×2 turu: ad ve koşul yan yana sığmayıp "champion" harf harf bölünüyordu): ad üstte, koşul altında
                 var us2 = new VisualElement(); us2.AddToClassList("esnek-yatay"); us2.pickingMode = PickingMode.Ignore; ur.Add(us2);
@@ -145,6 +155,14 @@ namespace BirdieSmash.Game
                 string nasil = L.T(u.nasil) + (u.sayac != null ? " · " + Mathf.Min(p.Sayac(u.sayac), u.esik) + "/" + u.esik : "");
                 us2.Add(Yazi(L.T(u.ad), 15)); us2.Add(Yazi(nasil, 12, "soluk"));
                 Erisim.Etiket(ur, L.T("Unvan") + " " + L.T(u.ad) + ", " + L.T("Kilitli") + ", " + nasil, "metin");
+            };
+            if (unvanTum || kilitli.Count <= 3) foreach (var u in kilitli) kilitSatir(u);
+            else
+            {
+                for (int a = 0; a < 2; a++) kilitSatir(sirali[a]);
+                VisualElement ut = null;
+                ut = Dugme(L.T("Tümünü göster ({0})", Karakter.Unvanlar.Length) + "  ›", () => { unvanTum = true; ul.Clear(); foreach (var u in kilitli) kilitSatir(u); ut.RemoveFromHierarchy(); }, "kucuk-dugme");
+                c.Add(ut);
             }
 
             // Tur mühürleri (2026-11-07, yasin karar kartı "Ekle"; GD5): her tur için mühür ya da sıradaki eşik. Fiyatsız prestij, satılmaz.
@@ -200,7 +218,7 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Başarımlar")));
             // Game Center listenin sonundan başlığın altına (2026-11-07 inceleme, fikir 20:09 #3): Ayarlar'daki kopya kalktı, tek yer
             // burası; uzun listenin dibinde aranmasın. Metin aynı anahtar ("Game Center'da aç" yeni çeviri isterdi).
-            if (Basarim.acik) { c.Add(Dugme(L.T("Game Center · Başarımlar") + "  ›", () => { Yerel.Hap("tick"); Basarim.Goster(); })); c.Add(Bosluk(6)); }
+            if (Basarim.acik) { c.Add(Dugme(L.T("Game Center · Başarımlar") + "  ›", () => { Basarim.Goster(); })); c.Add(Bosluk(6)); }
             // 2026-11-11 inceleme (fikir 19:05 #7): 23–25 satır alt alta, çoğu kilit + "Henüz değil"; sayfanın yarısı kilit duvarıydı.
             // Kapalıyken: kazanılanlar (gurur) + listedeki sıradaki 3 kilitli hedef + "Tümünü göster (n)". Açınca eski tam liste.
             var ids = new System.Collections.Generic.List<string>();
