@@ -9,7 +9,8 @@
   {"id": "kedi",   "ad": "Kedi",   "n": "Turuncu kürk, sivri kulak, uzun kuyruk", "sv": 6,  "fiyat": 1800, "varlik": null,    "aks": "hv_kedi",   "renk": "#f0993e", "nadir": "nadir"},
   {"id": "tavsan", "ad": "Tavşan", "n": "Uzun kulak, pembe yanak, ponpon kuyruk", "sv": 10, "fiyat": 2200, "varlik": "kadin", "aks": "hv_tavsan", "renk": "#efe9e4", "nadir": "nadir"},
   {"id": "panda",  "ad": "Panda",  "n": "İri gövde, siyah kol ve bacak",          "sv": 14, "fiyat": 2500, "varlik": "guclu", "aks": "hv_panda",  "renk": "#2e2c33", "nadir": "destansi"},
-  {"id": "robot",  "ad": "Robot",  "n": "Metal gövde, ışıklı vizör, şarj kablosu",  "sv": 18, "fiyat": 2500, "varlik": "uzun",  "aks": "hv_robot",  "renk": "#a9bccd", "nadir": "destansi"}
+  {"id": "robot",  "ad": "Robot",  "n": "Metal gövde, ışıklı vizör, şarj kablosu",  "sv": 18, "fiyat": 2500, "varlik": "uzun",  "aks": "hv_robot",  "renk": "#a9bccd", "nadir": "destansi"},
+  {"id": "bocek",  "ad": "Yapay Zekâ Böceği", "n": "Işıklı gözler, alında çip, uzun antenler, kanat kabuğu", "sv": 16, "fiyat": 2500, "varlik": null, "aks": "hv_bocek", "renk": "#9a5630", "nadir": "destansi"}
 ],
 "sac_model": [
   {"id": "kisa",      "ad": "Kısa kesim",   "sv": 1,  "fiyat": 0,   "varlik": "kisa"},
