@@ -544,6 +544,27 @@ BLU_HIT=D(BL_HIT,lean=(-0.03,0.05,-0.01),root=(-0.16,0.35,0.275),wrR=(-0.30,0.72
 BLU_HIT=bukuk(BLU_HIT,150); BLU_FOL=bukuk(D(BLU_HIT,root=(-0.17,0.36,0.265),wrR=(-0.26,0.70,0.48),rk=(-0.25,0.85,0.5),fpR=0),150)   # denetim #12
 BLU_REC=D(READY,twist=-20,lean=(-0.01,0.07,-0.01),root=(-0.07,0.18,0.38),wrR=(-0.04,0.40,0.46),wrL=(-0.10,-0.06,0.46),anR=(-0.10,0.30,0.12),fpR=-10,ftR=(-0.3,1,0),anL=(-0.13,0.05,0.05),fpL=-10,look=(-0.1,1,-0.1))
 bh_lunge=sample([(0,READY),(0.35,BLU_PREP),(0.6,BLU_HIT),(0.78,BLU_FOL),(6/7,BLU_REC),(1,READY)],8,hit=2,hold=1,lead=1)
+# ================= teknik vuruş klipleri (yasin 2026-11-20: "sporun doğasında olan teknik vuruşlar için animasyon";
+#     "eksik gördüklerinin hepsini yapalım") =================
+# Dördü de var olan bir klibin temasa kadarki anahtarlarını ve kare sayısını AYNEN paylaşır: oyun hazırlığı eski kliple
+# gösterir, klip temasta değişir; anahtar zamanı ve temas pozu aynı olduğu için poz sıçramaz (drop/net'teki kuralın aynısı).
+# --- backhand drop: bh_over'ın hazırlığı ve teması (aldatma), temasa yavaşlayarak girer, takip yok denecek kadar kısa:
+#     raket temas noktasının hemen önünde durur, gövde açılmaz. Eskiden backhand drop bh_over'ın sert takibiyle oynuyordu.
+BDP_FOL=bukuk(D(BO_HIT,wrR=(-0.20,-0.07,1.17),rk=(-0.22,0.10,0.95),rkFace=(0.15,-1,0)),158)
+bh_drop=sample([(0,READY),(2/9,BO_PREP),(5/9,BO_HIT),(6/9,BDP_FOL),(1,READY)],10,hit=2,hold=1,lead=1,yavas=True)
+# --- backhand net vuruşu: bh_low'un hamlesi ve teması; takip lift gibi yukarı kalkmaz (bh_low'da raket başı .65'e çıkıyordu),
+#     raket başı 10–15 cm ileri gider, yüzü açılır ve orada kalır (forehand net ile aynı gerekçe, denetim #13).
+BN_FOL=bukuk(D(BL_HIT,root=(-0.11,0.21,0.315),wrR=(-0.25,0.62,0.32),rk=(-0.30,0.88,-0.35),rkFace=(0,0.3,1),fpR=4,look=(-0.2,1,-0.3)),150)
+bh_net=sample([(0,READY),(0.32,BL_PREP),(0.55,BL_HIT),(0.72,BN_FOL),(1,READY)],8,hit=2,hold=1,lead=1)
+# --- net spin (tumble): net ile aynı hamle ve temas; temastan sonra raket başı topun altından sağdan sola süpürür ve yüzü
+#     yana döner (tüy top kendi ekseninde yuvarlanır). Bilek 8 cm sola, gövde yerinde.
+NS_FOL=bukuk(D(N_HIT,root=(0.02,0.33,0.29),wrR=(0.16,0.66,0.47),rk=(-0.45,0.80,0.40),rkFace=(0.5,-0.2,1),fpR=4,look=(0.05,1,-0.1)),150)
+net_spin=sample([(0,READY),(0.32,N_PREP),(0.55,N_HIT),(0.72,NS_FOL),(1,READY)],8,hit=2,hold=1,lead=1)
+# --- gövde bloğu: smaç gövdeye gelince raket sağa ya da sola uzanamaz; backhand yüzle gövdenin ÖNÜNDE karşılanır. Bloğun
+#     alçak duruşu (B_LOW) aynen; temasta el göbek önünde ortada, dirsek dışa-yukarı, raket başı sola-aşağı (kısa backhand
+#     servisinin kol dizilişi, SB0), kalça 2 poz cm daha iner, itiş birkaç santim.
+BG_HIT=D(B_LOW,root=(0,-0.02,0.33),lean=(0,0.06,-0.02),wrR=(0.0,0.30,0.49),elR=(1,0.4,0.5),rk=(-0.75,0.25,-0.60),rkFace=(0,1,0),wrL=(-0.24,0.10,0.44),look=(0,1,0.05))
+block_govde=sample([(0,READY),(0.3,B_LOW),(0.6,BG_HIT),(0.8,B_LOW),(1,READY)],6,hit=2,hold=1)
 # ================= ayak işi (yasin: "adımlamalar badminton sporunun doğasına uygun olmalı") =================
 # split step: rakip vururken küçük sıçrama, geniş ve alçak iniş
 # split step (2026-10-26, tüm beden turu, denetim §1): eski klipte ayaklar havada 13 cm (kaynak 3–8 cm), iniş 0,70 m geniş
@@ -641,7 +662,8 @@ CLIPS=dict(idle=idle,run=run,smash=smash,clear=clear,drive=drive,kill=kill,low=l
     drop=drop,net=net,   # drop/net 2026-10-24 sona eklendi: önceki klip satırları kaymasın
     kros_r=kros_r,kros_l=kros_l,   # 2026-10-26: hızlı yana çapraz koşu (Unity); HTML sprite'ı donuk, satırlar kaymaz
     geri_r=geri_r,geri_l=geri_l,   # 2026-11-05: yan dönük geri çekilme chassé'si (Unity)
-    rth=rth)   # 2026-11-05: round-the-head smaç (Unity); listenin sonunda
+    rth=rth,   # 2026-11-05: round-the-head smaç (Unity); listenin sonunda
+    bh_drop=bh_drop,bh_net=bh_net,net_spin=net_spin,block_govde=block_govde)   # 2026-11-20: teknik vuruşlar; sona eklendi, önceki kare aralıkları aynı
 KEYS=dict(ov=[S_PREP,S_DROP,S_HIT,S_FOL,C_HIT,DP_HIT],sv=[SB0,SB1,SB2,SB3],fl=[SF2,SF3],sh=[SH0,SH1,SH2,SH3],dr=[DR_PREP,DR_HIT,DR_FOL],lo=[L_PREP,L_HIT,L_FOL],bdn=[BD_PREP,BD_HIT,BD_FOL],bln=[BL_PREP,BL_HIT,BL_FOL],X0=[],bo=[BO_PREP,BO_HIT,BO_FOL],bd=[BD_PREP,BD_HIT,BD_FOL],bk=[BK_PREP,BK_HIT],bl=[BL_PREP,BL_HIT,BL_FOL],blu=[BLU_PREP,BLU_HIT],split=[split[2],split[4]],chr=[chasse_r[2],chasse_r[4]],chl=[chasse_l[2],chasse_l[4]],fwd=[fwd[1],fwd[4]],bkr=[back_r[2],back_r[4]],bkl=[back_l[2],back_l[4]],jump=[J_TAKE,J_AIR,J_LAND],yorgun=[YG0,YG1])
 
 # ---------- sahne ----------

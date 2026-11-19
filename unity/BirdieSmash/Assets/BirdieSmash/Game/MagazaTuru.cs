@@ -132,7 +132,7 @@ namespace BirdieSmash.Game
             ui.SekmeAc(Sekme.Soyunma); ui.SoyunmaSegment(UiKok.SEG_KARAKTER); yield return Bekle(30);
             // 2026-11-15 inceleme #6: en ayırt edici yeni içerik (hayvan/robot tipleri) mağazada görünmüyordu. Tip seçilebilen modelde
             // Beden sayfası açılır ve Kedi denenir (kart ızgarası insan/hayvan/robot çeşitliliğini de gösterir); başlık metni aynı kalır.
-            if (Ayar.VaryantGorunur) { ui.KategoriGec(UiKok.KAR_TIP); yield return Bekle(10); ui.KarakterDene(Kozmetik.TIP, "kedi"); }
+            if (Ayar.VaryantGorunur) { ui.KategoriGec(UiKok.KAR_TIP); yield return Bekle(10); ui.KarakterDene(Kozmetik.TIP, "guclu"); }
             else ui.KarakterDene(Kozmetik.SAC, "afro");
             yield return Bekle(40); yield return Cek(ad);
             int n; rap.AppendLine("magaza " + ad + " · " + ui.TasmaDenetimi(ad, out n));

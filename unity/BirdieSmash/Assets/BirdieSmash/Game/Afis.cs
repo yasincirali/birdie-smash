@@ -138,7 +138,7 @@ namespace BirdieSmash.Game
         // Dans 1, kısa hareket 0,35 yorar; 2,4'ü geçince sıradaki hareket dinlenmedir (eller dizde soluklanma ya da eller belde
         // derin nefes, 2,8 sn) ve yorgunluk sıfırlanır. Ara 3,5–6 sn rastgele, rakip 0,4–1,3 sn gecikmeyle: ikisi aynı ritimde
         // kımıldamaz. Hareketi azaltta döngü yok (değişmedi).
-        static readonly string[] DANSLAR = { "robot", "tavuk", "twist", "dalga", "helikopter", "gitar", "fiskiye", "ucak", "yildiz" };
+        static readonly string[] DANSLAR = { "robot", "tavuk", "twist", "dalga", "helikopter", "gitar", "fiskiye", "ucak", "yildiz", "aglak", "kulak", "toz", "esne" };
         static readonly string[] DINLEN = { "dinlen", "bel" };
         const float YORGUN_ESIK = 2.4f;
         float benYorgun, rakipYorgun; readonly System.Collections.Generic.List<string> havuz = new System.Collections.Generic.List<string>(12);

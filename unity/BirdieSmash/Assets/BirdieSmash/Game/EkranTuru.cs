@@ -260,7 +260,7 @@ namespace BirdieSmash.Game
         // kare yan yana (1920×480). Vuruş kliplerinde kareler hazırlıktan takibe eşit aralıklı, temas karesi dahil; döngülerde
         // faz 0..5/6. "klip_poz" satırı: temas karesi ve sağ elin gövdeye göre yanı (+ sağ: forehand, − sol: backhand çaprazı).
         static readonly string[] KLIP_SERIT = { "smash", "clear", "drop", "jump", "rth", "bh_over", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge", "block", "serve", "serve_bh", "serve_flick",
-            "fwd", "run", "chasse_r", "chasse_l", "kros_r", "kros_l", "geri_r", "geri_l", "back_r", "back_l", "split" };
+            "fwd", "run", "chasse_r", "chasse_l", "kros_r", "kros_l", "geri_r", "geri_l", "back_r", "back_l", "split", "bh_drop", "bh_net", "net_spin", "block_govde" };
         IEnumerator KlipSeritleri(string mdl)
         {
             var g = new GameObject("klip_serit"); var pv = PlayerView.Build(g.transform, mdl, true, Kit.Hex("#3aa0ff"));
@@ -435,7 +435,7 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_SEVINC); yield return Bekle(25); yield return Cek("menu_" + ek + "sevinc");
             if (ek == "") foreach (var sv in new[] { "kollar", "zipla", "alkis", "zafer", "egil", "iyi_oyun", "ter", "tel" }) { root.vitrin.Sevinc(sv); yield return Bekle(sv == "zipla" ? 18 : 30); yield return Cek("sevinc_" + sv); }
             // 2026-11-12 danslar: ikişer kare (farklı evre), hareketi azalt kapalıyken (salınımlı hâli görünsün)
-            if (ek == "") { bool dr = Ayar.reduce; Ayar.reduce = false; foreach (var sv in new[] { "robot", "tavuk", "twist", "dalga", "helikopter", "gitar", "fiskiye", "ucak", "yildiz" }) { root.vitrin.Sevinc(sv); yield return Bekle(22); yield return Cek("dans_" + sv + "_1"); { var df = root.vitrin.Fig; if (df != null) rap.AppendLine("dans " + sv + " · bacak kod " + df.TaniBacakKod + " r " + df.TaniBacakR.ToString("F3") + " kalçaAta " + df.TaniKalcaAta); } yield return Bekle(13); yield return Cek("dans_" + sv + "_2"); } Ayar.reduce = dr; }
+            if (ek == "") { bool dr = Ayar.reduce; Ayar.reduce = false; foreach (var sv in new[] { "robot", "tavuk", "twist", "dalga", "helikopter", "gitar", "fiskiye", "ucak", "yildiz", "aglak", "kulak", "toz", "esne" }) { root.vitrin.Sevinc(sv); yield return Bekle(22); yield return Cek("dans_" + sv + "_1"); { var df = root.vitrin.Fig; if (df != null) rap.AppendLine("dans " + sv + " · bacak kod " + df.TaniBacakKod + " r " + df.TaniBacakR.ToString("F3") + " kalçaAta " + df.TaniKalcaAta); } yield return Bekle(13); yield return Cek("dans_" + sv + "_2"); } Ayar.reduce = dr; }
             // 2026-11-10 smaç hareketleri (Kozmetik.SMAC): her hareketin temas öncesi (u .3) ve sonrası (u .75) karesi; saat sabit.
             if (ek == "") foreach (var sm in new[] { "duz", "yay", "makas", "donerek" }) foreach (var su in new[] { .3f, .75f })
                 { Vitrin.TestSmacT = .35f + su / Match.JUMP_HIZ; root.vitrin.Sevinc("smac:" + sm); yield return Bekle(4); yield return Cek("smac_" + sm + (su < .5f ? "_once" : "_sonra")); }

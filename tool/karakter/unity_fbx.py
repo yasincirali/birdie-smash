@@ -31,6 +31,8 @@ sys.argv = [sys.argv[0], '--', OUT, 'keys']
 ns = {'__name__': 'karakter', '__file__': SRC}
 exec(compile(src, SRC, 'exec'), ns)
 CLIPS, build, objs = ns['CLIPS'], ns['build'], ns['objs']
+if os.environ.get('BS_KLIPLER'):   # yalnız bu klipler (ilk öğe idle olmalı): klip_ekle.py var olan FBX'e yeni klip eklerken kullanır
+    CLIPS = {k: CLIPS[k] for k in os.environ['BS_KLIPLER'].split(',')}
 LOOP = {'idle', 'run', 'fwd', 'chasse_r', 'chasse_l', 'back_r', 'back_l', 'yorgun', 'kros_r', 'kros_l', 'geri_r', 'geri_l'}   # geri_*: 2026-11-05 yan dönük geri chassé; kros_*: 2026-10-26 hızlı yana çapraz koşu
 FR, GAP, FPS = 3, 10, 30   # poz başına 3 kare (Unity arası doldurur), klipler arası boşluk
 sc = bpy.context.scene; sc.render.fps = FPS

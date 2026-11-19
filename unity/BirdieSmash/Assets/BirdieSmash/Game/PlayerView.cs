@@ -492,6 +492,7 @@ namespace BirdieSmash.Game
                 string tag = Etiket(r.gameObject.name);
                 // hakemde raket ve top (pozla kurulan rijit parçalar = deri ağı olmayan MeshRenderer'lar) gizli
                 if (tag == "ayakkabi") { AyakkabiBoya(r, g.ayakkabi); continue; }
+                if (tag == "kulak" && Aksesuar.Var(g.sapka)) { r.enabled = false; continue; }   // maskot kulağı/anteni şapkayı delmesin (maskot.py)
                 if (tag == "sac" && r.gameObject.name.StartsWith("sac_")) { SacBoya(r, g.sac, g.sacParla); continue; }
                 if (tag == "isaret" || (tag == "bant" && (!g.bant.HasValue || bantGizle)) || (tag == "bilek" && !g.bilek.HasValue) || (hakem && !(r is SkinnedMeshRenderer))) { r.enabled = false; continue; }
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
@@ -1029,7 +1030,7 @@ namespace BirdieSmash.Game
         // Sevinç klibinin döngü süresi, tek kaynak (2026-11-12, inceleme 17:05): Dolap'taki alım anı (KarakterOdasi.AlimAni) kendi
         // listesini tutuyordu ve dansları bilmiyordu; dans 1,6 sn'de kesilip boşta duruşa atlıyor, dans sesi yarıda kalıyordu.
         public static float SevincSure(string id) { return id == "iyi_oyun" || id == "zafer" || id == "selam" || id == "egil" || Dans(id) ? 2.4f : 1.6f; }
-        public static bool Dans(string id) { return id == "robot" || id == "tavuk" || id == "twist" || id == "dalga" || id == "helikopter" || id == "gitar" || id == "fiskiye" || id == "ucak" || id == "yildiz"; }
+        public static bool Dans(string id) { return id == "robot" || id == "tavuk" || id == "twist" || id == "dalga" || id == "helikopter" || id == "gitar" || id == "fiskiye" || id == "ucak" || id == "yildiz" || id == "aglak" || id == "kulak" || id == "toz" || id == "esne"; }
         // Kademeli saat: her tam sayıda bekler, vuruşun ilk %30'unda bir sonrakine geçer (robotun kesik hareketi; sıçrama yok).
         static float Kademe(float x) { float f = Mathf.Floor(x); return f + Mathf.SmoothStep(0, 1, Mathf.Clamp01((x - f) / .3f)); }
         // Kademeli sevinç (2026-11-07 inceleme, fikir 10:06 #1): her sayıda tam sevinç, rakibin dışarı attığı topla 15 vuruşluk
@@ -1188,6 +1189,8 @@ namespace BirdieSmash.Game
             if (id == "gitar") return .68f - .1f * Mathf.Max(0, Mathf.Sin(t * 10));
             if (id == "fiskiye") return .84f - .08f * Mathf.Abs(Mathf.Sin(t * Mathf.PI * 6));
             if (id == "ucak") return .8f;
+            if (id == "aglak") return .85f - .05f * Mathf.Abs(Mathf.Sin(t * 10));   // hıçkırıkta dizler titrer
+            if (id == "kulak") return .8f;
             if (id == "yildiz") return 1 - .42f * (1 - Mathf.Sin((t % YILDIZ_P) / YILDIZ_P * Mathf.PI));   // her inişte dizler yaylanır
             return 1;
         }
@@ -1275,6 +1278,12 @@ namespace BirdieSmash.Game
                 case "ucak": orbit = t * 2.6f * salla; don = -orbit * Mathf.Rad2Deg; egil = 12; yat = -16 * salla; hop = .02f * Mathf.Abs(Mathf.Sin(t * 10)) * salla; break;
                 // yildiz: art arda yıldız zıplaması (0,5 sn), tepede kollar V, inişte kapanır ve dizler yaylanır.
                 case "yildiz": { float u = Mathf.Sin((t % YILDIZ_P) / YILDIZ_P * Mathf.PI); hop = .2f * u * salla; egil = -4 * u; } break;
+                // 2026-11-20 (yasin: "daha zorbalayıcı ve karşı tarafı rahatsız edici dansları eklemeliyiz"): dört alay. Hepsi rakibe
+                // dönük ve yerinde (kök dönmez): sayı arası kısa kesilse de poz okunur. Müstehcen işaret yok (mağaza yaş sınırı).
+                case "aglak": egil = 6; yat = 7 * Mathf.Sin(t * 5) * salla; hop = .015f * Mathf.Abs(Mathf.Sin(t * 10)) * salla; break;   // yalancı ağlama: iki yana sallanır, hıçkırır
+                case "kulak": egil = 14 + 4 * Mathf.Sin(t * 5) * salla; bur = 14; yat = -6; break;   // "duyamadım": sol kulak rakibe, gövde öne uzanır
+                case "toz": egil = -5; bur = -8; break;                                               // omuzdan toz silker: çene yukarıda
+                case "esne": egil = -8 - 3 * Mathf.Sin(t * 2.6f) * salla; yat = 4 * Mathf.Sin(t * 1.3f) * salla; break;   // esner: sırt geriye, ağır ağır
             }
         }
         const float YILDIZ_P = .5f;
@@ -1448,6 +1457,29 @@ namespace BirdieSmash.Game
                       IK(SU, SE, SH, sR + up * L * Mathf.Lerp(-.55f, .9f, u) + ri * L * Mathf.Lerp(.35f, .4f, u) + fw * L * .06f, ri - fw * .3f);
                       IK(LU, LE, LH, sL + up * L * Mathf.Lerp(-.55f, .9f, u) - ri * L * Mathf.Lerp(.35f, .4f, u) + fw * L * .06f, -ri - fw * .3f);
                       RaketDik(SH, Vector3.Slerp(-up + ri * .3f, up + ri * .15f, u)); } break;
+                case "aglak":   // iki yumruk gözlerin önünde küçük daireler çizer (gözyaşı siler); raket yukarı-dışa, yüzü kesmez
+                    { Vector3 g = kHead != null ? kHead.position + up * L * .38f + fw * L * .5f : (sR + sL) * .5f + up * L * .45f + fw * L * .3f;
+                      float c = Mathf.Sin(t * 12) * salla, d = Mathf.Cos(t * 12) * salla;
+                      IK(SU, SE, SH, g + ri * L * (.15f + .04f * c) + up * L * .03f * d, ri - up * .3f);
+                      IK(LU, LE, LH, g - ri * L * (.15f + .04f * c) - up * L * .03f * d, -ri - up * .3f);
+                      RaketDik(SH, up + ri * .6f); } break;
+                case "kulak":   // sol el kulağın arkasında kepçe, baş sağa döner (sol kulak rakibe); raket kalçada, kafası aşağı-arkaya
+                    if (kHead != null)
+                    { kHead.rotation = Quaternion.AngleAxis(28 * w, up) * kHead.rotation;
+                      IK(LU, LE, LH, kHead.position + up * L * .35f - ri * L * .42f + fw * L * .05f, -ri + up * .3f - fw * .3f); }
+                    IK(SU, SE, SH, sR - up * L * .62f + ri * L * .14f - fw * L * .04f, ri - fw * .5f);
+                    RaketDik(SH, -up - fw * .4f + ri * .3f); break;
+                case "toz":     // sol el sağ omzun üstünü dışa doğru süpürür (hızlı gidiş, yavaş dönüş); raket yanda, yere değmez
+                    { float p = rm ? .5f : (t * 2.2f) % 1, a = p < .35f ? Mathf.SmoothStep(0, 1, p / .35f) : 1 - Mathf.SmoothStep(0, 1, (p - .35f) / .65f);
+                      IK(LU, LE, LH, sR + up * L * .12f + fw * L * .22f + ri * L * (-.12f + .26f * a), -ri - up * .5f + fw * .3f);
+                      IK(SU, SE, SH, sR + ri * L * .25f - up * L * .6f + fw * L * .2f, ri - fw * .3f);
+                      RaketDik(SH, fw * .85f - up * .2f + ri * .25f); } break;
+                case "esne":    // sol el açık ağzı pat pat kapatır, raketli kol yukarı gerinir; baş geriye
+                    { Vector3 agiz = kHead != null ? kHead.position + up * L * .2f + fw * L * .5f : (sR + sL) * .5f + up * L * .3f + fw * L * .3f;
+                      if (kHead != null) kHead.rotation = Quaternion.AngleAxis(-14 * w, ri) * kHead.rotation;
+                      IK(LU, LE, LH, agiz + fw * L * (.04f + .05f * Mathf.Max(0, Mathf.Sin(t * 9)) * salla), -ri - up * .4f);
+                      IK(SU, SE, SH, sR + up * L * .85f + ri * L * .4f - fw * L * .1f, ri - fw * .3f);
+                      RaketDik(SH, up + ri * .5f - fw * .2f); } break;
                 case "iyi_oyun": // raket rakibe doğru kalkar (fileden selam)
                     IK(SU, SE, SH, sR + fw * L * .7f + up * L * .45f + ri * L * .1f, ri - up * .3f); break;
             }

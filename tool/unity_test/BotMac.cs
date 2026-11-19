@@ -1375,16 +1375,43 @@ static class BotMac
     // parts listesinde hem FBX'in düğüm adlarında (ikili dosyada ad dizgisi) var; tipin varsayılan saç/ayakkabısı geçerli;
     // Ayarlar'ın üç modeli (oyuncak, rocketbox, sade) FBX'iyle var. Ekran turu (EkranTuru.Varyantlar) aynı şeyi Unity'de
     // açılan parça ve aktif renderer sayısıyla ölçer; bu kapı Unity'siz, her derlemede.
+    // 2026-11-20: Core'un bildiği her klip (Match.CLIP_N) modelin FBX'inde olmalı; yeni klip eklenip bir model yeniden
+    // üretilmezse o modelde vuruş anında klip bulunamaz.
+    static void KlipTam(string ad, Dictionary<string, object> js)
+    {
+        var varOlan = new HashSet<string>(((List<object>)js["clips"]).Select(x => Json.Str(Json.Obj(x), "name", null)));
+        foreach (var k in Match.CLIP_N.Keys) if (!varOlan.Contains(k)) Fail(ad + "_clips.json'da klip yok: " + k);
+    }
+    // 2026-11-20 ücretli modeller: Oyuncak 3B ücretsiz ve ilk, ötekiler ücretli; modele taşınan tiplerin sahipliği ve seçimi
+    // korunur (ödenen Tüy boşa gitmez), ikinci çağrı bir şey değiştirmez.
+    static void ModelTasima()
+    {
+        var M = Kozmetik.Liste(Kozmetik.MODEL);
+        if (M.Length < 2 || M[0].id != "oyuncak") Fail("model: ilk öğe Oyuncak 3B olmalı");
+        foreach (var o in M) if (o.id != "oyuncak" && o.fiyat <= 0) Fail("model: ücretsiz maskot " + o.id);
+        foreach (var t in new[] { "kedi", "tavsan", "panda", "robot", "bocek" }) if (Kozmetik.Bul(Kozmetik.TIP, t) != null) Fail("model: tip hâlâ listede " + t);
+        var g = SvGear(1, 0); g.eko.acik.Add("tip:kedi"); g.eko.acik.Add("tip:bocek");
+        if (Kozmetik.TipModel(g, "panda") != "panda") Fail("model: seçili tip modele geçmeli");
+        if (!Kozmetik.Sahip(g, Kozmetik.MODEL, "kedi") || !Kozmetik.Sahip(g, Kozmetik.MODEL, "hamambocegi") || !Kozmetik.Sahip(g, Kozmetik.MODEL, "panda")) Fail("model: tip sahipliği modele taşınmalı");
+        if (Kozmetik.Sahip(g, Kozmetik.MODEL, "robot") || Kozmetik.Sahip(g, Kozmetik.MODEL, "tuycuk")) Fail("model: alınmamış model açılmamalı");
+        int n = g.eko.acik.Count; if (Kozmetik.TipModel(g, "atlet") != null || g.eko.acik.Count != n) Fail("model: taşıma ikinci kez bir şey yapmamalı");
+    }
     static void KarakterVarliklari(KozmetikOge[] T, KozmetikOge[] S)
     {
+        ModelTasima();
         string R = "unity/BirdieSmash/Assets/Resources/karakter/"; if (!System.IO.Directory.Exists(R)) { Fail("Resources/karakter bulunamadı (depo kökünden koş)"); return; }
         int parca = 0;
-        foreach (var m in new[] { "oyuncak", "tuycuk", "hamambocegi", "hamambocegi_erkek" }) if (!System.IO.File.Exists(R + m + ".fbx") || !System.IO.File.Exists(R + m + "_clips.json")) Fail("Ayarlar modeli eksik: " + m);
+        foreach (var m in Kozmetik.Liste(Kozmetik.MODEL).Select(o => o.id))
+        {
+            if (!System.IO.File.Exists(R + m + ".fbx") || !System.IO.File.Exists(R + m + "_clips.json")) { Fail("Ayarlar modeli eksik: " + m); continue; }
+            KlipTam(m, Json.Obj(Json.Parse(System.IO.File.ReadAllText(R + m + "_clips.json"))));
+        }
         foreach (var t in T)
         {
             string ad = "oyuncak" + (t.varlik != null ? "_" + t.varlik : "");
             if (!System.IO.File.Exists(R + ad + ".fbx") || !System.IO.File.Exists(R + ad + "_clips.json")) { Fail("beden tipinin FBX'i yok: " + t.id + " → " + ad); continue; }
             var js = Json.Obj(Json.Parse(System.IO.File.ReadAllText(R + ad + "_clips.json")));
+            KlipTam(ad, js);
             var parts = new HashSet<string>(((List<object>)js["parts"]).Select(x => (string)x));
             string fbx = System.Text.Encoding.ASCII.GetString(System.IO.File.ReadAllBytes(R + ad + ".fbx"));
             var tip = js.ContainsKey("tip") ? Json.Obj(js["tip"]) : null;
@@ -1888,7 +1915,7 @@ static class BotMac
                     // rth (round-the-head, 2026-11-05): baş üstünde sol omuz tarafı bilerek forehand dışı; RTH_ERIS (+.25 tolerans) içinde doğru taraf.
                     if (c == "rth" ? (yan > .1f || yan < -Match.RTH_ERIS - .25f) : (!bh && yan < -(a.tmZ > 1.95f ? .6f : .25f) || bh && yan > .1f)) tarafYanlis[i]++;
                     if (sonPrep[i] != null && sonPrep[i].StartsWith("bh_") != bh) temasEl[i]++; sonPrep[i] = null;
-                    if (i == 1 && (c == "low" || c == "bh_low" || c == "net" || c == "bh_drive" || c == "drive")) { opAlt++; if (!bh) opAltFh++; }
+                    if (i == 1 && (c == "low" || c == "bh_low" || c == "net" || c == "bh_net" || c == "net_spin" || c == "bh_drive" || c == "drive")) { opAlt++; if (!bh) opAltFh++; }
                 }
                 M.events.Clear();
             }
@@ -1903,7 +1930,7 @@ static class BotMac
         }
         if (hamleDus[1] > temas[1] / 10) Fail("vuruş: rakip hamle hazırlığından ayakta vuruşa dönüyor " + hamleDus[1]);
         if (opAltFh * 2 < opAlt) Fail("vuruş: rakip alçak vuruşların çoğunu backhand vuruyor (%" + (100f * opAltFh / Math.Max(1, opAlt)).ToString("0") + ")");
-        foreach (var need in new[] { "smash", "clear", "drop", "jump", "bh_over", "rth", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge" })
+        foreach (var need in new[] { "smash", "clear", "drop", "jump", "bh_over", "rth", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge", "bh_drop", "bh_net", "net_spin", "block_govde" })
             if (!gor.Contains(need)) Fail("vuruş: hiç görülmeyen vuruş klibi " + need);
     }
 
