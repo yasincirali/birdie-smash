@@ -1,4 +1,7 @@
 === UNITY ===
+Ter silme ve tel düzeltme hareketleri daha doğal (19 Kasım akşam):
+- Sayı arasındaki ter silme ve tel düzeltme artık yalnız kolla değil bütün bedenle yapılıyor: baş kola doğru dönüyor, gövde hafif eğiliyor, dizler kilitlenmiyor, kol yumuşak kalkıp iniyor. Hareket aceleye gelmeden, servis beklenirken tamamlanıyor; sayı arası uzamıyor.
+Nasıl denenir: Bir maç oyna. 5 ile 7 vuruşluk bir ralliyi kaybet: oyuncu alnını silerken başı ve gövdesi de oynamalı, hareket birden başlayıp birden bitmemeli. Kısa rallilerde kaybeden ara sıra raketine bakıp tellerini iki kez taramalı. Rakip servis attığında hareket yarıda kalsa bile oyuncun topa zamanında çıkmalı.
 Şampiyon yolu ve sekmeler (19 Kasım sabah):
 - Şampiyon yolu kilitliyken artık doğru hedefi yazıyor: son turun finalini kazanman gerekiyor (önceden yanlışlıkla Dünya Finalleri yazıyordu).
 - Şampiyon yolu kartı sadeleşti: zorluk yalnız başlığın yanında yazıyor, açıklama tek kısa cümle.
