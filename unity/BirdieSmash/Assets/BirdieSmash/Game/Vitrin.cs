@@ -75,7 +75,11 @@ namespace BirdieSmash.Game
             int w = Mathf.Max(256, Mathf.RoundToInt(pw * k)), h = Mathf.Max(256, Mathf.RoundToInt(ph * k));
             if (rt != null && Mathf.Abs(w - rt.width) < rt.width * .06f && Mathf.Abs(h - rt.height) < rt.height * .06f) return;
             var eski = rt; rt = YeniRt(w, h); kam.targetTexture = rt;
-            if (eski != null) { eski.Release(); Destroy(eski); }
+            // 2026-11-19 (yasin: "büyütme ikonuna ilk bastığımda pembe ekran geldi, ekrana tıklayınca gitti"): kamera figür durunca
+            // kapanıyor (durgun ≥ 2); yeni RT hiç çizilmeden ekranda kalıyor, ilk dokunuşa kadar boş bellek (pembe) görünüyordu.
+            // Eski kare yeni RT'ye ölçeklenip kopyalanır (aynı karede boşluk yok) ve kamera bir sonraki karede yeniden çizer.
+            if (eski != null) { Graphics.Blit(eski, rt); eski.Release(); Destroy(eski); }
+            durgun = 0;
         }
         static RenderTexture YeniRt(int w, int h)
         {
@@ -84,7 +88,7 @@ namespace BirdieSmash.Game
 
         public void Ac() { gameObject.SetActive(true); kam.enabled = true; durgun = 0; acT = Ayar.reduce ? 1 : 0; if (!Ayar.reduce) a = KAHRAMAN_ACI - 360; figBos = 0; salYapildi = false; Yenile(); }
         // Sevinç önizlemesi (2026-11-01): id verilince figür o hareketi döngüde yapar; null = boşta. Sevinç sayfasından çıkınca silinir.
-        public string sevinc; float sevincT;
+        public string sevinc; float sevincT; [System.NonSerialized] public float TestSevincT = -1;   // ekran turu: sevinç anını sabitler (CI kare hızı değişken)
         public static float TestSmacT = -1;   // ekran turu: smaç hareketi önizlemesinin saati sabit (kare hızı CI'da düşük)
         // smacId: "smac:" önekli önizlemenin kimliği bir kez ayrılır (2026-11-11 inceleme #5: önceden her karede Substring = GC).
         string smacId;
@@ -204,7 +208,16 @@ namespace BirdieSmash.Game
         void OdakPoz(out Vector3 cam, out Vector3 hedef)
         {
             float boy = bBas != null ? Mathf.Max(.8f, bBas.position.y - YER.y) : 1.8f; float kay;
-            cam = YER + new Vector3(0, 1.05f, 6.2f); hedef = YER + new Vector3(0, .95f, 0);
+            // 2026-11-19 (yasin: "default hâlinde de oyuncuyu tümden daha iyi görebilmeliyim"): tüm boy sabit 6,2 m uzaklıktı; kutuya
+            // bakmadan ~3,3 m yükseklik gösterdiği için figür kutunun yarısı kadardı. Artık ayaktan kaldırılmış raketin ucuna kadar
+            // (+ küçük pay) pencere kurulur ve Uzaklik kutunun oranına ve alttaki düğmelere göre çözer: figür kutuyu doldurur.
+            // Bakış yönü eskisiyle aynı (hafif yukarıdan, karşıdan); en çok 6,2 m (çok geniş kutuda eskisinden küçük olmaz).
+            {
+                float alt0 = YER.y - .04f * boy, ust0 = YER.y + 1.4f * boy, kayT;
+                var hT = new Vector3(YER.x, (alt0 + ust0) * .5f, YER.z);
+                float dT = Mathf.Min(6.2f, Uzaklik((ust0 - alt0) * .5f, .48f * boy, out kayT));
+                hedef = hT - Vector3.up * kayT; cam = hedef + new Vector3(0, .1f / 6.2f * dT, dT);
+            }
             if (odak == YUZ && bBas != null)
             {   // baş + saç (afro, topuz kesilmesin): yarı yükseklik ~16 cm
                 var h = bBas.position + Vector3.up * .06f * boy; float yy = .09f * boy, yx = .08f * boy;
@@ -473,7 +486,7 @@ namespace BirdieSmash.Game
             }
             if (suruk) { raKay = false; bosT = 0; }
             float hit; if (poz != null && odak == TUTUS) fig.ShowPoz(YER, a, poz, Match.CLIP_HIT.TryGetValue(poz, out hit) ? hit : .5f);
-            else if (sevinc != null) { sevincT += dt; if (smacId != null) fig.ShowSmac(YER, a, smacId, TestSmacT >= 0 ? TestSmacT : sevincT); else fig.ShowSevinc(YER, a, sevinc, sevincT); }   // Dolap › Sevinç önizlemesi (döngü)
+            else if (sevinc != null) { sevincT += dt; if (smacId != null) fig.ShowSmac(YER, a, smacId, TestSmacT >= 0 ? TestSmacT : sevincT); else fig.ShowSevinc(YER, a, sevinc, TestSevincT >= 0 ? TestSevincT : sevincT); }   // Dolap › Sevinç önizlemesi (döngü)
             else fig.ShowStatic(YER, a, 0);
             // geçiş: figür 0–60%'ta solar/kayar, raket 45–100%'te öne gelir
             float fK = Mathf.Clamp01(gec / .6f), rK = Mathf.Clamp01((gec - .45f) / .55f);

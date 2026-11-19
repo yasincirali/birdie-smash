@@ -72,11 +72,11 @@ namespace BirdieSmash.Game
         void KategoriKur()
         {
             if (soyunmaSegment == null) return; soyunmaSegment.Clear(); karAlt = KarGecerli(karAlt);
-            OdaSeciciYaz();
-            if (kategoriKaydir != null) kategoriKaydir.style.display = karAlt == KAR_RAKET || dolapIncele ? DisplayStyle.None : DisplayStyle.Flex;
+            // 2026-11-19 (Dolap A): şerit rakette de görünür (çekmecenin sekmeleri; oradan başka kategoriye tek dokunuşla dönülür).
+            if (kategoriKaydir != null) kategoriKaydir.style.display = DisplayStyle.Flex;
             foreach (int i in KarSayfalar())
             {
-                if (i == KAR_RAKET) continue;   // 2026-11-07 (yasin seçimi "tek Raket bölümü"): Raket üstteki Görünüm/Raket ayrımında
+                // 2026-11-07 "tek Raket bölümü" korunur: Raket şeridin son çipi (eskiden üstteki Görünüm/Raket ayrımındaydı, 2026-11-19 Dolap A).
                 // sayım adla aynı satırda ("Şapka 3/9"): alt satır yedi çipi birden iki satıra çıkarıp kısa ekranda vitrini daraltırdı
                 int ii = i, ks, kt; bool sayim = KarSayim(i, out ks, out kt); bool dn = KategoriDeneniyor(i);
                 var d = Cip(L.T(KAR_AD[i]) + (sayim ? " " + ks + "/" + kt : ""), karAlt == i, () => KategoriSec(ii), dn ? L.T("deneniyor") : null);
@@ -162,7 +162,7 @@ namespace BirdieSmash.Game
             int hedef = karAlt;
             foreach (int i in KarSayfalar()) { var k = KarKat(i); if (k != null && System.Array.IndexOf(k, kat) >= 0) hedef = i; }
             // Kategori değişimi KategoriSec'ten: kaydırmayı sıfırlar (uzun sayfadan kısa sayfaya geçişte boş sayfa, 8 Kas hatası).
-            if (hedef != karAlt) KategoriSec(hedef); else { root.sfx.Tik(); Yerel.Hap("tick"); }
+            if (hedef != karAlt) KategoriSec(hedef); else Tik();
             Dene(kat, id);
         }
 
@@ -223,19 +223,11 @@ namespace BirdieSmash.Game
             {
                 RenkSira(c, "Kordaj", "tel");
                 c.Add(Grup(L.T("Desen"))); var ds = Satir(); c.Add(ds);
-                ds.Add(Cip(L.T("Tek renk"), Ayar.RGOR["desen"] == "tek", () => { Ayar.RGOR["desen"] = "tek"; Ayar.KaydetSonra(); root.vitrin.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
-                ds.Add(Cip(L.T("Ana ve çapraz ayrı"), Ayar.RGOR["desen"] == "iki", () => { Ayar.RGOR["desen"] = "iki"; Ayar.KaydetSonra(); root.vitrin.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
+                ds.Add(Cip(L.T("Tek renk"), Ayar.RGOR["desen"] == "tek", () => { Ayar.RGOR["desen"] = "tek"; Ayar.KaydetSonra(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
+                ds.Add(Cip(L.T("Ana ve çapraz ayrı"), Ayar.RGOR["desen"] == "iki", () => { Ayar.RGOR["desen"] = "iki"; Ayar.KaydetSonra(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
                 if (Ayar.RGOR["desen"] == "iki") RenkSira(c, "Çapraz teller", "tel2");
             }
             if (ps == null || ps == "grip") TeknikKur(c);
-        }
-        // Üstte iki büyük sekme: Görünüm (figür, altı kategori) · Raket (işlev + görünüş + teknik sayfa).
-        VisualElement odaSecici;
-        void OdaSeciciYaz()
-        {
-            if (odaSecici == null) return; odaSecici.Clear(); bool rk = karAlt == KAR_RAKET;
-            var g = Cip(L.T("Görünüm"), !rk, () => RaketGorunum(false)); g.AddToClassList("oda-cip"); var gb = g.userData as ErisimBilgi; if (gb != null) gb.rol = "sekme"; odaSecici.Add(g);
-            var r = Cip(L.T("Raket"), rk, () => RaketGorunum(true)); r.AddToClassList("oda-cip"); var rb = r.userData as ErisimBilgi; if (rb != null) rb.rol = "sekme"; odaSecici.Add(r);
         }
         // Kafa şekli: üç biçim, örnek kare içinde biçimin kendisi çizili (yalnız adla değil); seçili ✓ + kalın çerçeve.
         void KafaSekliSira(VisualElement c)
@@ -300,12 +292,13 @@ namespace BirdieSmash.Game
             // raket görünümünde (vitrin rakette) yalnız raketin görünüşü: forma ve şapka figür görünmezken seçilmez
             karAlt = KarGecerli(karAlt);
             if (karAlt == KAR_RAKET) { RaketSayfa(c); return; }
-            GorunumRozet(c);
-            KoleksiyonSatir(c);
+            // 2026-11-19 (Dolap A, §7 öğe bütçesi): çekmecenin yarım durağında ilk görünen şey eşyalar olmalı. "Oyunu etkilemez"
+            // rozeti ve koleksiyon satırı (Sıradaki) ızgaranın altına indi; kategori çipindeki "3/9" sayımı yerinde kalır.
             if (!Ayar.VaryantGorunur) TekBedenKart(c);
             if (!Ayar.AykModelGorunur && karAlt == KAR_AYK) ModelUyari(c);
             if (karAlt == KAR_TIP) TipSayfa(c); else if (karAlt == KAR_SAC) SacSayfa(c); else if (karAlt == KAR_AYK) AyakkabiSayfa(c); else if (karAlt == KAR_KIYAFET) KiyafetSayfa(c);
             else if (karAlt == KAR_SAPKA) SapkaSayfa(c); else if (karAlt == KAR_SEVINC) SevincSayfa(c); else if (karAlt == KAR_SIRT) SirtSayfa(c); else TenSayfa(c);
+            KoleksiyonSatir(c); GorunumRozet(c);
             // 2026-11-15 inceleme #6 (r180, 390×845: ayakkabı ızgarasının ilk sırası ekranın altında kesikti): kombin (kaydet/rastgele)
             // ikincil iş; seçilecek eşyanın önüne değil sayfa sonuna, her kategoride aynı yere.
             KombinSatir(c);
@@ -378,7 +371,7 @@ namespace BirdieSmash.Game
             var gr = Ayar.gear;
             bool sahip = kat == "ayakkabi" ? gr.Sahip("ayakkabi", id) : Kozmetik.Sahip(gr, kat, id) || Ayar.KOZ[kat] == id;
             if (sahip) { KozSec(kat, id); Tik(); }
-            else { Dene(kat, id); root.sfx.Tik(); Yerel.Hap("tick"); }
+            else { Dene(kat, id); Tik(); }
         }
         void Dene(string kat, string id)
         {
@@ -587,13 +580,28 @@ namespace BirdieSmash.Game
             // 2026-10-31 (Unity incelemesi, Orta): her küçük resim ana iş parçacığında bir FBX figürü kurup çiziyor. Önceden
             // sıraya göre 34 ms arayla hepsi (17 saç) çiziliyordu; kaydırırken kare kaçabiliyordu. Artık yalnız görünen kart
             // çizilir ve bütün ızgara için en çok ~45 ms'de bir resim (kare başına en çok bir figür); görünmeyen bekler.
-            IVisualElementScheduledItem is_ = null;
-            is_ = im.schedule.Execute(() =>
-            {
-                if (im.panel == null) { is_.Pause(); return; }
-                float simdi = Time.realtimeSinceStartup; if (simdi - sonKucuk < .045f || !Gorunur(im)) return;
-                sonKucuk = simdi; is_.Pause(); im.image = Portre.Dene(kat, id); im.RemoveFromClassList("koz-resim--bekle");
-            }).StartingIn(30 + 10 * sira).Every(50);
+            // 2026-11-19 inceleme (fikir 22:06 #4): eskiden bekleyen her resim kendi 20 Hz zamanlayıcısını çalıştırıyordu; uzun bir
+            // ızgarada aşağıda bekleyen onlarca kart sayfa açık kaldıkça yoklanıyor, menü boştayken de uyanık kalıyordu. Artık tek
+            // kuyruk + tek zamanlayıcı (kok üstünde): sırayla tarar, görünen ilkini çizer, kuyruk boşalınca durur. "Kare başına en çok
+            // bir figür" kuralı aynı. `sira` artık kuyruğa giriş sırası (çağıranlar zaten kart sırasıyla çağırıyor).
+            kucukKuyruk.Add(new KucukIs { im = im, kat = kat, id = id });
+            if (kucukZaman == null) kucukZaman = kok.schedule.Execute(KucukTara).Every(50); else kucukZaman.Resume();
+        }
+        struct KucukIs { public Image im; public string kat, id; }
+        readonly List<KucukIs> kucukKuyruk = new List<KucukIs>();
+        IVisualElementScheduledItem kucukZaman;
+        void KucukTara()
+        {
+            float simdi = Time.realtimeSinceStartup;
+            if (simdi - sonKucuk >= .045f)
+                for (int i = 0; i < kucukKuyruk.Count; i++)
+                {
+                    var j = kucukKuyruk[i];
+                    if (j.im.panel == null) { kucukKuyruk.RemoveAt(i); i--; continue; }   // sayfa kapandı ya da yeniden kuruldu
+                    if (!Gorunur(j.im)) continue;
+                    kucukKuyruk.RemoveAt(i); sonKucuk = simdi; j.im.image = Portre.Dene(j.kat, j.id); j.im.RemoveFromClassList("koz-resim--bekle"); break;
+                }
+            if (kucukKuyruk.Count == 0) kucukZaman.Pause();
         }
         static float sonKucuk = -1;
         // Kaydırma alanının görünen kısmıyla kesişiyor mu (alan yoksa panel). Biraz pay: hemen altındaki satır da hazırlansın.

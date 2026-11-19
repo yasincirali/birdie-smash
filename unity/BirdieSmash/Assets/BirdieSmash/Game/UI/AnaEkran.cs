@@ -98,18 +98,23 @@ namespace BirdieSmash.Game
             }
         }
 
-        void KademeliAc(VisualElement c)
+        void KademeliAc(VisualElement c) { Kademeli(c.Children(), 40, 60, .25f, 14, int.MaxValue); }
+
+        // 2026-11-19 inceleme (fikir 22:06 #5): Profil "Tümünü göster" de aynı girişi kullanır (daha kısa: 30 ms ara, .18 sn, 8 pt).
+        // Yalnız ilk `ust` öğe kayar, kalanlar anında; yalnız opacity/translate (yerleşim yok). Çağıran hareketi azalt'a bakar.
+        void Kademeli(System.Collections.Generic.IEnumerable<VisualElement> ogeler, int ilk, int arali, float sure, float dy, int ust)
         {
             int i = 0;
-            foreach (var ch in c.Children())
+            foreach (var ch in ogeler)
             {
-                var v = ch; int bas = 40 + i * 60; i++;
-                v.style.opacity = 0f; v.style.translate = new Translate(0, 14, 0);
+                if (i >= ust) break;
+                var v = ch; int bas = ilk + i * arali; i++;
+                v.style.opacity = 0f; v.style.translate = new Translate(0, dy, 0);
                 v.style.transitionProperty = new System.Collections.Generic.List<StylePropertyName> { new StylePropertyName("opacity"), new StylePropertyName("translate") };
-                v.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(.25f, TimeUnit.Second) };
+                v.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(sure, TimeUnit.Second) };
                 v.style.transitionTimingFunction = new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseOut) };
                 v.schedule.Execute(() => { v.style.opacity = 1f; v.style.translate = new Translate(0, 0, 0); Kalite.Hareket(); }).StartingIn(bas);
-                v.schedule.Execute(() => { v.style.opacity = StyleKeyword.Null; v.style.translate = StyleKeyword.Null; v.style.transitionProperty = StyleKeyword.Null; v.style.transitionDuration = StyleKeyword.Null; v.style.transitionTimingFunction = StyleKeyword.Null; }).StartingIn(bas + 300);
+                v.schedule.Execute(() => { v.style.opacity = StyleKeyword.Null; v.style.translate = StyleKeyword.Null; v.style.transitionProperty = StyleKeyword.Null; v.style.transitionDuration = StyleKeyword.Null; v.style.transitionTimingFunction = StyleKeyword.Null; }).StartingIn(bas + (int)(sure * 1000) + 50);
             }
         }
 
@@ -134,7 +139,7 @@ namespace BirdieSmash.Game
             yz.Add(Baslik(t, Px(40, 34), "cta-baslik"));   // kısa ekranda (SE) 34: düğme 80 yerine ~70 pt, afişe yer kalır
             if (!string.IsNullOrEmpty(alt)) yz.Add(Yazi(alt, 14, "cta-alt"));
             var ik = new VisualElement(); ik.AddToClassList("cta-ikon"); ik.pickingMode = PickingMode.Ignore; ik.Add(Ikon(Ikonlar.Oyna, 24, CTA_OK)); d.Add(ik);   // 2026-10-27 yön C: koyu daire içinde turuncu ok
-            d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); PerdeKaynakYaz(d); a(); }));   // 2026-10-27: perde v2'nin 3B topu buradan kalkar
+            d.AddManipulator(new Clickable(() => { Tik(); PerdeKaynakYaz(d); a(); }));   // 2026-10-27: perde v2'nin 3B topu buradan kalkar
             Erisim.Etiket(d, string.IsNullOrEmpty(alt) ? t : t + ", " + alt, "dugme");
             if (!Ayar.reduce) Supur(sup);
             return d;
@@ -183,7 +188,7 @@ namespace BirdieSmash.Game
                 var ar = new VisualElement(); ar.AddToClassList("karo-alt-satir"); ar.pickingMode = PickingMode.Ignore; d.Add(ar);
                 if (altIkon != null) ar.Add(Ikon(altIkon, 12, ALTIN)); ar.Add(Yazi(alt, 12, "karo-alt"));
             }
-            d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); a(); })); Erisim.Etiket(d, erisim, "dugme");
+            d.AddManipulator(new Clickable(() => { Tik(); a(); })); Erisim.Etiket(d, erisim, "dugme");
             return d;
         }
         // Günün maçı kutucuğu (a-tile--gold): değiştiricinin adı, altında Tüy simgesi + "+40 Tüy" (alındıysa ✓ + "Bugün kazandın").
@@ -211,7 +216,7 @@ namespace BirdieSmash.Game
             // bittiyse (sıradaki basamak yok) Kariyer sekmesi.
             // Birleşme (2026-10-26, A + Ar-Ge) titreşimi iki yola da koymuştu; SekmeAc sekme değişince zaten "tick" verir: Kariyer
             // yolunda iki titreşim olmasın diye yalnız maç kartı yolunda.
-            kart.AddManipulator(new Clickable(() => { if (tamam) SekmeAc(Sekme.Kariyer); else { Yerel.Hap("tick"); MacKartAc(g); } }));
+            kart.AddManipulator(new Clickable(() => { if (tamam) SekmeAc(Sekme.Kariyer); else { Tik(); MacKartAc(g); } }));
             var bas = new VisualElement(); bas.AddToClassList("plaka-ust"); bas.pickingMode = PickingMode.Ignore; kart.Add(bas);
             // 2026-11-16 inceleme (fikir 02:05 #2, docs/arayuz_tasarim_dili.md §8): altın = ödül, turuncu = bas. "Sıradaki maç" bir
             // ödül değil; şeritsiz soluk etiket. Altın hap yalnız "Kariyer tamam" (gerçek ödül anı) kalır.
@@ -567,8 +572,13 @@ namespace BirdieSmash.Game
             string altS = gez.AcikAltSayfa;
             if (altS != null) { var eski = altSayfa != null ? altSayfa.Q<ScrollView>() : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; AltSayfaYenidenKur(altS); KaydirmaGeri(altSayfa, of); }
             string u = gez.Ust; if (u != null && !Gezinti.AltSayfa(u)) { var eski = sayfa.Q<ScrollView>(); Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; SayfaKur(u); KaydirmaGeri(sayfa, of); }
-            else if (u == null) { var k = sekmeKok[(int)gez.sekme]; var eski = k.Q<ScrollView>(null, "govde-kaydir") ?? k.Q<ScrollView>(); Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; SekmeKur(gez.sekme); KaydirmaGeri(k, of); }
+            else if (u == null) SekmeYerindeKur(gez.sekme);
             if (ustKirli) UstKur();
+        }
+        // Sekme gövdesini kaydırma yerini koruyarak yeniden kurar (Degisti ve Profil'in unvan/ad seçimi, 2026-11-19).
+        void SekmeYerindeKur(Sekme s)
+        {
+            var k = sekmeKok[(int)s]; var eski = k.Q<ScrollView>(null, "govde-kaydir") ?? k.Q<ScrollView>(); Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; SekmeKur(s); KaydirmaGeri(k, of);
         }
         // Yeniden kurulan gövdede kaydırma yeri korunur (yerleşimden sonra; ilk karede içerik yüksekliği henüz yok).
         static void KaydirmaGeri(VisualElement v, Vector2 of)

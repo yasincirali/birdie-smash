@@ -1,4 +1,51 @@
 === UNITY ===
+Profil ve Dolap'ta küçük düzenler (19 Kasım akşam):
+- Profil'de son maçların oyuncu kartının hemen altında; zorluk artık tek harf değil, en yeni maçta adıyla yazıyor.
+- Profil'deki büyük yüzüne dokununca Dolap açılıyor.
+- Profil'de "Tümünü göster" listeyi bir anda dökmek yerine satırları kısa bir akışla açıyor.
+- Kariyer maç kartında saha adı üstteki satıra geçti; kart bir satır kısaldı.
+- Atölye'de çubukların nereden geldiğini anlatan not artık "Takımın" kartının hemen altında ve gelişimi de sayıyor.
+- Dolap'ta küçük resimler daha az arka plan işiyle yükleniyor.
+Nasıl denenir: Profil'e git: son maçlar üstte görünmeli; büyük yüzüne dokun, Dolap açılmalı. Profil'de aşağıda "Tümünü göster"e bas: yeni satırlar yumuşakça gelmeli, sayfa sıçramamalı. Kariyer'de bir maça dokun: saha adı tur satırında olmalı. Dolap'ta Şapka ya da Saç sayfasında aşağı kaydır: resimler takılmadan dolmalı.
+Menüde dokunuş ve kaydırma düzeni (19 Kasım):
+- Menüdeki her düğme ve seçim aynı kısa tık sesini ve tek titreşimi veriyor; bazı düğmelerde gelen çift titreşim kalktı.
+- Kariyer açılınca yol, sıradaki maçının düğümüne kendiliğinden kayıyor.
+- Profil'de unvan seçince ya da adını değiştirince sayfa en üste sıçramıyor; kilitli unvanlardan yalnız en yakın ikisi görünüyor, gerisi "Tümünü göster" altında.
+- Dolap'ta "Hepsini al" anı daha akıcı.
+Nasıl denenir: Menüde birkaç düğmeye ve seçime dokun: her birinde aynı tık sesi ve tek hafif titreşim olmalı. Kariyer'in ileriki maçlarındaysan Kariyer sekmesine geç: yol senin düğümüne kaymalı. Profil'de aşağı kaydırıp bir unvana dokun: sayfa yerinde kalmalı. Dolap'ta birkaç parça deneyip Hepsini al'a bas: dans takılmadan başlamalı.
+Kariyer yolunda sen, iPad'de derli toplu menüler (19 Kasım):
+- Kariyer yolunda sıradaki maçın düğümünde artık kendi oyuncunun yüzü var; maç numarası köşedeki küçük rozette.
+- Kariyer yolundaki düğümler ve Profil'deki kupalar basınca diğer düğmeler gibi içeri çöküyor.
+- Atölye'de tarzlar arasında gezerken sayfa yeniden kurulmuyor, kaydırma yerinden oynamıyor.
+- iPad'de Kariyer, Profil, Atölye ve Ayarlar ekranın ortasında okunur genişlikte duruyor.
+Nasıl denenir: Kariyer'i aç: büyük düğümde oyuncunun yüzü ve köşede maç numarası görünmeli; düğümlere basınca hafifçe içeri çökmeli. Atölye'yi biraz aşağı kaydırıp tarzlara sırayla dokun: sayfa zıplamamalı, çubuklar büyüyerek gelmeli. iPad'de Kariyer ve Profil ortada tek sütun olmalı, kenarlarda boşluk kalmalı.
+Yeni karakter tipi: Yapay Zekâ Böceği (19 Kasım akşam):
+- Dolap, Beden sayfasına yeni bir tip geldi: kestane rengi sevimli bir böcek. Işıklı gözleri, alnında çipi, ucu ışıklı iki uzun anteni ve belinde kanat kabuğu var. Yalnız görünüş, oyunu etkilemiyor. Rakiplerde de ara sıra çıkabilir.
+Nasıl denenir: Dolap'ta Beden sayfasını aç, Yapay Zekâ Böceği kartına dokun: baş, antenler ve kanat kabuğu yerinde durmalı, hiçbir parça gövdenin içine girmemeli. Şapka tak: antenler gizlenmeli. Bir maç oyna, koşarken ve vururken parçalar yerinden oynamamalı.
+Ter silme ve tel düzeltme hareketleri daha doğal (19 Kasım akşam):
+- Sayı arasındaki ter silme ve tel düzeltme artık yalnız kolla değil bütün bedenle yapılıyor: baş kola doğru dönüyor, gövde hafif eğiliyor, dizler kilitlenmiyor, kol yumuşak kalkıp iniyor. Hareket aceleye gelmeden, servis beklenirken tamamlanıyor; sayı arası uzamıyor.
+Nasıl denenir: Bir maç oyna. 5 ile 7 vuruşluk bir ralliyi kaybet: oyuncu alnını silerken başı ve gövdesi de oynamalı, hareket birden başlayıp birden bitmemeli. Kısa rallilerde kaybeden ara sıra raketine bakıp tellerini iki kez taramalı. Rakip servis attığında hareket yarıda kalsa bile oyuncun topa zamanında çıkmalı.
+Yeni menü müziği (19 Kasım):
+- Menüde çalan parça yenilendi: ukulele, ksilofon, çan ve ıslıkla çalınan neşeli, sevimli bir ezgi. Yaklaşık 72 saniye, sonu başına kesintisiz bağlanıyor.
+Nasıl denenir: Müzik açıkken (Ayarlar) menüde bir dakikadan uzun bekle. Ezgi neşeli ve yumuşak olmalı, döngü başa dönerken kesinti ya da çıtırtı duyulmamalı. Maça girince müzik susmalı.
+Maçta sessiz salon (19 Kasım):
+- Ralli sırasında sürekli duyulan tribün uğultusu ve uzun rallilerdeki "ooo" kalktı; seyirci yalnız sayı olunca tepki veriyor (alkış, sevinç, iç çekiş).
+- Parmağını kaydırırken gelen hışırtı yalnız vuruş anında, daha kısık duyuluyor.
+Nasıl denenir: Ses açıkken bir maç oyna. Ralli sırasında arka planda hışırtı ya da uğultu olmamalı; raket, top ve ralli notaları duyulmalı. Uzun bir ralli bitince ve her sayıda seyirci tepkisi gelmeli.
+Dolap, Kariyer ve Atölye yenilendi (19 Kasım):
+- Dolap: oyuncu ekranın büyük kısmında; eşyalar altta açılıp kapanan bir panelde. Panelin üstündeki çizgiye dokun ya da yukarı çek: liste büyür; aşağı çek: liste küçülür, bir kez daha aşağı çekersen oyuncu bütün alanı kaplar. Raket artık kategori şeridinin son seçeneği. iPad'de liste sağda, oyuncu solda.
+- Kariyer: her tur dikey bir yol. Geçtiğin maçlar yıldızlarıyla, şimdiki maç büyük, sonunda tur mührü. Tur adının yanındaki oklarla turlar arasında geçilir; alttaki "Sıradaki maç" düğmesi maçı açar.
+- Atölye: oyun tarzları üstte tek sırada. Bir tarza dokununca etkileri çubuk olarak görünür (artı sağa yeşil, eksi sola gri); "Bu tarzı seç" ile seçilir. Kilitli tarzlar da incelenebilir.
+- Bütün düğmeler basınca aynı biçimde içeri çöker.
+Nasıl denenir: Dolap'ı aç: oyuncu büyük, eşya listesinin ilk sırası görünmeli. Panelin üstündeki kısa çizgiyi yukarı çek, sonra aşağı çek, sonra bir kez daha aşağı çek. Bir eşyaya dokun: oyuncunun üstünde hemen denenmeli. Kariyer'i aç: yolu yukarıdan aşağı izle, oklarla Tur 2'ye geç ve geri dön, "Sıradaki maç"a dokun. Atölye'de Smaşçı ve Duvar'a dokun: çubuklar büyüyerek gelmeli; açık bir tarzı seç. Büyük yazı açıkken (Ayarlar) yazılar kesilmemeli.
+Sevinçler daha canlı, üç yeni dans (19 Kasım):
+- Sevinç hareketleri 120 Hz ekranlarda 120 fps; girişleri yumuşak, gövde kavisli eğiliyor, baş hareketi geriden takip ediyor, zıplayıp inince dizler yaylanıyor.
+- Yeni danslar: Fıskiye (Sv 12), Yıldız zıplaması (Sv 18), Uçak (Sv 20); sayı sevinci ve maç sonu için Dolap > Hareketler'de.
+Nasıl denenir: Dolap > Hareketler'de mevcut dansları (Robot, Twist, Helikopter) ve yenileri sırayla dene: hareket akıcı olmalı, kollar bir anda fırlamamalı, baş gövdeyle birlikte doğal sallanmalı. Bir maç kazan: maç sonu sevinci akıcı görünmeli.
+Dolap'ta oyuncu varsayılan hâlde de büyük (19 Kasım sabah):
+- Dolap açılınca oyuncu artık kutuyu dolduruyor (ayaktan raketin ucuna kadar); vitrin biraz daha yüksek.
+- Büyüt düğmesine ilk basışta görünen pembe ekran giderildi.
+Nasıl denenir: Dolap'ı aç: oyuncu kutunun yarısı değil neredeyse tamamı kadar görünmeli, ayakları ve raketi kesilmemeli. Sol üstteki büyüt düğmesine dokun: pembe ekran olmadan hemen büyük görünüm gelmeli; yeniden dokun, sonra bir daha dene.
 Şampiyon yolu ve sekmeler (19 Kasım sabah):
 - Şampiyon yolu kilitliyken artık doğru hedefi yazıyor: son turun finalini kazanman gerekiyor (önceden yanlışlıkla Dünya Finalleri yazıyordu).
 - Şampiyon yolu kartı sadeleşti: zorluk yalnız başlığın yanında yazıyor, açıklama tek kısa cümle.

@@ -865,7 +865,7 @@ namespace BirdieSmash.Game
                 float segSpeed = Vector2.Distance(q, prev) / Mathf.Max(8, now - prev.z);
                 // Raket uğultusu yalnız vuruş hızında ya da pencere açıkken (2026-11-11 inceleme #4a): Usta'nın yavaş sürükleme
                 // koşusu raket sallanmadan "vuuş" çalıyordu.
-                sfx.Ugultu(true, segSpeed > .45f || M.HitWindow() ? segSpeed : 0);
+                sfx.Ugultu(true, M.HitWindow() ? segSpeed : 0);   // 2026-11-19: hışırtı yalnız vuruş penceresinde (Swoosh.Ayarla notu)
                 // Sürükleme mıknatıssız ince ayardır; parmak kıpırdamadan basılı kalınca dokunuşun mıknatıslı hedefini ezmesin (input.moved).
                 Vector2 c; if (!M.easy && M.s != null && !M.HitWindow() && !input.hit && input.moved && segSpeed < .6f && CourtPoint(pos, out c)) M.RunTo(c.x, c.y, 1.4f);
                 // Erken kaydırma tamponu (2026-10-31 U3): pencere açılmadan yapılan belirgin kaydırma saklanır, pencere ERKEN_MS

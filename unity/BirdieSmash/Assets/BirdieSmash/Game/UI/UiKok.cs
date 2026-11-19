@@ -842,7 +842,11 @@ namespace BirdieSmash.Game
             if (s == Gezinti.AYAR) AyarlarKur(sayfa); else if (s == Gezinti.NASIL) NasilKur(sayfa); else if (s == Gezinti.LISANS) LisansKur(sayfa); else if (s == Gezinti.ANTRENMAN) AntrenmanKur(sayfa); else if (s == Gezinti.DUKKAN) DukkanKur(sayfa);
         }
 
-        void Tik() { root.sfx.Tik(); Yerel.Hap("tick"); }
+        // 2026-11-19 inceleme (fikir 17:07 #3, yasin "düğme tıklamaları standart"): dokunuş geri bildirimi bileşende (Dugme/Cip/ham
+        // Clickable hepsi Tik). Eylem içinde de Tik çağrılıyordu: aynı dokunuşta iki ses + iki titreşim. Aynı karede ikinci Tik sessiz;
+        // böylece 20+ çağrı yerini tek tek ayıklamak gerekmedi. Özel sesler (Yukselt, Tik(1320)…) bu kapıdan geçmez, kalır.
+        int tikKare = -1;
+        void Tik() { if (Time.frameCount == tikKare) return; tikKare = Time.frameCount; root.sfx.Tik(); Yerel.Hap("tick"); }
 
         // ---- 2026-10-27 yön C mikro hareketler (araştırma §4.3; yalnız translate/opacity, ekranda tek döngü afişin nefesi) ----
         // Sekme göstergesi: tek bir 3 pt turuncu çizgi sekme çubuğunun üstünde; seçim değişince yeni sekmeye 180 ms'de kayar

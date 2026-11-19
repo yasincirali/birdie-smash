@@ -48,7 +48,7 @@ namespace BirdieSmash.Game
             for (int g = 0; g < Dril.GRUP.Length; g++)
             {
                 int gg = g; int y = 0, n = 0; foreach (var d in Dril.Liste) if (d.grup == Dril.GRUP[g]) { n++; y += pr.DrilYildiz(d.id); }
-                var cp = Cip(L.T(Dril.GRUP_AD[g]), antSaha == g, () => { if (antSaha == gg) return; Yerel.Hap("tick"); AntrenmanGrup(Dril.GRUP[gg]); Uygula(gez.sekme, false); }, y + "/" + n * Dril.YILDIZ);
+                var cp = Cip(L.T(Dril.GRUP_AD[g]), antSaha == g, () => { if (antSaha == gg) return; AntrenmanGrup(Dril.GRUP[gg]); Uygula(gez.sekme, false); }, y + "/" + n * Dril.YILDIZ);
                 cp.AddToClassList("segment-cip"); var eb = cp.userData as ErisimBilgi; if (eb != null) eb.rol = "sekme"; seg.Add(cp);
             }
             foreach (var d in Dril.Liste) if (d.grup == Dril.GRUP[antSaha]) c.Add(DrilSatir(d));
@@ -59,7 +59,7 @@ namespace BirdieSmash.Game
         VisualElement DrilSatir(DrilTanim d)
         {
             var pr = Ayar.ilerleme; int y = pr.DrilYildiz(d.id);
-            var kart = Kart("dugum"); string id = d.id; kart.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); DrilKartAc(id); }));
+            var kart = Kart("dugum"); string id = d.id; kart.AddManipulator(new Clickable(() => { Tik(); DrilKartAc(id); }));
             var r = Satir("basamak-satir"); r.pickingMode = PickingMode.Ignore; kart.Add(r);
             var orta = new VisualElement(); orta.AddToClassList("basamak-orta"); orta.pickingMode = PickingMode.Ignore; r.Add(orta);
             // 2026-11-10 (fikir 02:05 #6, r147): EN büyük yazıda "Behind-the-back" heceden bölünüyordu; en uzun kelime sığmazsa küçülür.
@@ -102,7 +102,7 @@ namespace BirdieSmash.Game
         VisualElement GunlukOzetKart()
         {
             var g = Bugun(); var st = Match.STIL[g.stil]; bool alindi = Ayar.ilerleme.GunlukAlindi(g.tarih);
-            var kart = Kart("siradaki"); kart.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); GunlukAc(); }));
+            var kart = Kart("siradaki"); kart.AddManipulator(new Clickable(() => { Tik(); GunlukAc(); }));
             var bas = Satir("arali"); kart.Add(bas);
             bas.Add(Yazi(L.T("Günün maçı"), 12, "etiket"));
             bas.Add(Yazi(alindi ? "✓ " + L.T("Bugün kazandın") : L.T("+{0} Tüy", Gunluk.OdulTuy), 12, alindi ? "durum-gecti" : "altin"));

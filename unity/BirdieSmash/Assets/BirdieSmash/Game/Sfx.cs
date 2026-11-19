@@ -9,7 +9,7 @@
 //   salon yansıması (55 ms) ve lowpass 1700 oda kuyruğu. Tür karışımı HITMIX, isabet ve slice çarpanları HTML ile aynı.
 //   Rakip: ×0,5, lowpass 3 kHz, 30 ms geç. Tel gerginliği (ton = √(T/26)) ve raket kafası (kafa) ekipmandan gelir.
 // Diğerleri HTML ile aynı: ralli melodisi (beşli dizi, ben 392 Hz / rakip 196 Hz, akışta armoni), ralli ≥ 6'da davul, smaçta
-// düdük, seyirci uğultusu (bandpass 520 → lowpass 1400, düzey .01 + min(.06, ralli·.0045)), vuruş penceresinde "su altı"
+// düdük, seyirci uğultusu (bandpass 520 → lowpass 1400; 2026-11-19 rallide sessiz, yalnız sayı tepkileri), vuruş penceresinde "su altı"
 // (tüm ses lowpass 750 Hz: AudioLowPassFilter dinleyicide), file "puf", bant tınısı, yer pıtırtısı, çizgi kamerası
 // davulu, sevinç/iç çekiş, yön değişiminde ayakkabı gıcırtısı, parmak hızıyla raket uğultusu (canlı bandpass).
 // Web Audio'daki son kompresör yok (Unity mikserinde yok; düzeyler HTML'deki kazançlarla).
@@ -28,6 +28,9 @@
 // 2026-10-30 menü müziği (Ar-Ge 30 Eki #1, yasin "1-2 yap", aday "B"): MenuMuzik aşağıda. Yalnız menüde; maçta müzik yok
 // (perde kapanırken söner, seyirci yükselir). Ayrı "Müzik" çipi (tuytop_muzik, varsayılan açık); başka uygulama ses
 // çalıyorsa başlamaz (iOS secondaryAudioShouldBeSilencedHint). Hareketi azalt müziği etkilemez (hareket değil ses).
+// 2026-11-19 "Tüy Pop" sevimli sürüm (yasin: "elektronik ve korkunç olmuş, sevimli bir ezgi olmalı", sonra "Ok ekle"):
+// eski FM piyano/minör akor/uzun yankı bırakıldı; Do majör 120 BPM, ukulele (Karplus-Strong), ksilofon, çan, ıslık,
+// pizzicato bas, yumuşak davul, kısa oda yankısı; 72 sn dikişsiz döngü. Taslağı muzik/sevimli.py, çıktısı onunla eşleşir.
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -219,7 +222,7 @@ namespace BirdieSmash.Game
             artSira.Enqueue(() => GaspKlip(.07f, .38f));
             for (int c = 0; c < 2; c++) { int cc = c; artSira.Enqueue(() => AlkisKlip(false, cc)); artSira.Enqueue(() => AlkisKlip(true, cc)); }
             artSira.Enqueue(() => ArpejKlip(523, SAYI_ARPEJ, .18f, .08f, .07f)); artSira.Enqueue(() => TonKlip(220, .25f, "sawtooth", .05f));
-            foreach (var d in new[] { "robot", "tavuk", "twist", "dalga", "helikopter", "gitar" }) { string dd = d; artSira.Enqueue(() => DansIsit(dd)); }
+            foreach (var d in new[] { "robot", "tavuk", "twist", "dalga", "helikopter", "gitar", "fiskiye", "ucak", "yildiz" }) { string dd = d; artSira.Enqueue(() => DansIsit(dd)); }
         }
         static readonly int[] SAYI_ARPEJ = { 0, 4, 7, 12 };
         // Dans() ile aynı parametreler; çalmadan yalnız klipleri kurar (anahtarlar aynı olduğu için Dans() önbellekten çalar).
@@ -233,6 +236,9 @@ namespace BirdieSmash.Game
                 case "dalga": ArpejKlip(523, new[] { 0, 4, 7, 12 }, .12f, .04f, .06f); GurultuKlip(.3f, "bandpass", 2500, .03f, 1, .05f); break;
                 case "helikopter": GurultuKlip(.06f, "lowpass", 320, .07f); GurultuKlip(.06f, "lowpass", 320, .07f, 1, .11f); GurultuKlip(.06f, "lowpass", 320, .07f, 1, .22f); break;
                 case "gitar": ArpejKlip(196, new[] { 0, 7, 12, 16, 19 }, .4f, .035f, .025f); break;
+                case "fiskiye": GurultuKlip(.03f, "highpass", 4000, .04f); GurultuKlip(.03f, "highpass", 4000, .04f, 1, .17f); GurultuKlip(.03f, "highpass", 4000, .04f, 1, .34f); break;
+                case "ucak": TonKlip(392, .3f, "triangle", .04f); TonKlip(523, .3f, "triangle", .04f, .15f); break;
+                case "yildiz": ArpejKlip(784, new[] { 0, 7, 12 }, .07f, .04f, .05f); break;
             }
         }
         // derinSakin (2026-11-12): perde kapalı ya da menü durağan. Ek sıra (ralli notaları, sayı/maç sonu sesleri) yalnız orada işlenir,
@@ -347,18 +353,16 @@ namespace BirdieSmash.Game
             else if (mine) VurusCal(Vurus(type, q, slice, super_, serve, false), kaz, perde);
             else { var k = Kaynak(); k.pitch = perde; k.panStereo = pan; k.PlayOneShot(Vurus(type, q, slice, super_, serve, true), kaz); }
             if (mine && !serve && (type == "smash" || type == "jump" || type == "kill")) Govde(.5f + .5f * p * (super_ ? 1.3f : 1));
-            if (rally >= 8 && rally % 4 == 0 && !serve && !macSayisi) Ooo(Mathf.Min(1, (rally - 4) / 16f));
             RallyNote(rally - 1, mine, mine && flow);
             if (rally >= 6) Kick(.12f + Mathf.Min(.12f, rally * .008f));
             if (Tur(type) == "smash" && (type == "smash" || type == "jump")) Whistle();
-            if (!macSayisi) crowdHedef = .01f + Mathf.Min(.06f, rally * .0045f);
             if (rally > 2 && rally % 5 == 0) Ton(523 * Mathf.Pow(2, Mathf.Min(rally, 30) / 24f), .2f, "triangle", .07f);
         }
         AudioSource Kaynak() { var k = vurusSrc[vurusSira]; vurusSira = (vurusSira + 1) % vurusSrc.Length; return k; }
         void VurusCal(AudioClip c, float kaz, float perde) { var k = Kaynak(); k.pitch = perde; k.panStereo = pan; k.PlayOneShot(c, kaz); }
         // Gövde darbesi: alçak sinüs süpürmesi, iki düzeyde önbellekte (kazanç oynatmada).
         void Govde(float v) { if (Kayitli("govde", v)) return; src.PlayOneShot(Bir("govde", s => s.Sweep(0, .09f, "sine", t => 80 * Mathf.Pow(45f / 80, Mathf.Min(1, t / .07f)), t => .32f * (t < .002f ? t / .002f : Mathf.Pow(.0005f, Mathf.Min(1, (t - .002f) / .08f)))), .1f), Mathf.Min(1.3f, v)); }
-        // Seyirci "ooo": geniş formant (380 → 620 Hz), 0,9 sn kabarıp söner; şiddet ralli uzunluğuyla.
+        // Seyirci "ooo": geniş formant (380 → 620 Hz), 0,9 sn kabarıp söner. 2026-11-19'dan beri rallide çağrılmıyor (aşağıda CrowdStart notu).
         void Ooo(float k) { if (Kayitli("ooo", .5f + .5f * k, trb)) return; trb.PlayOneShot(Bir("ooo", s => { s.NoiseSweep(0, .9f, 380, 620, 1.6f, .09f, false, u => Mathf.Sin(Mathf.PI * Mathf.Min(1, u * 1.3f)) * (1 - u * .4f)); s.NoiseSweep(0, .9f, 900, 1150, 2.2f, .035f, false, u => Mathf.Sin(Mathf.PI * Mathf.Min(1, u * 1.3f))); }, .95f), .5f + .5f * k); }
         // Alkış: rastgele zamanlı el çırpışları (her biri 4–7 ms gürültü, bandpass 900–2600 Hz), yoğunluk başta yüksek, sonda
         // seyrek. Ralli uzunluğuna göre iki boy (kısa 1,4 sn, uzun 2,4 sn); her boy iki çekimle önbellekte.
@@ -495,12 +499,15 @@ namespace BirdieSmash.Game
                 case "dalga": Arpej(523, new[] { 0, 4, 7, 12 }, .12f, .04f, .06f); Gurultu(.3f, "bandpass", 2500, .03f, 1, .05f); break;   // yükselen + alkış hışırtısı
                 case "helikopter": Gurultu(.06f, "lowpass", 320, .07f); Gurultu(.06f, "lowpass", 320, .07f, 1, .11f); Gurultu(.06f, "lowpass", 320, .07f, 1, .22f); break;   // vuvuvu
                 case "gitar": Arpej(196, new[] { 0, 7, 12, 16, 19 }, .4f, .035f, .025f); break;                                            // açık akor tıngırtısı
+                case "fiskiye": Gurultu(.03f, "highpass", 4000, .04f); Gurultu(.03f, "highpass", 4000, .04f, 1, .17f); Gurultu(.03f, "highpass", 4000, .04f, 1, .34f); break;   // tsk tsk tsk (DansIsit ile aynı anahtarlar)
+                case "ucak": Ton(392, .3f, "triangle", .04f); Ton(523, .3f, "triangle", .04f, .15f); break;                                  // vınn (iki ton yükselir)
+                case "yildiz": Arpej(784, new[] { 0, 7, 12 }, .07f, .04f, .05f); break;                                                 // boing arpeji
             }
         }
         public void Iyi() { Ton(784, .12f, "triangle", .05f); }
         public void Hedefte() { Ton(1320, .1f, "triangle", .05f); }
         public void Iska() { if (Kayitli("iska", .6f)) return; Gurultu(.05f, "highpass", 1200, .05f); }
-        public void MacSonu(bool won) { crowdHedef = .004f; SuAlti(false); if (won) Cheer(.18f); }
+        public void MacSonu(bool won) { crowdHedef = 0; SuAlti(false); if (won) Cheer(.18f); }
         // Vuruş penceresi: ses su altındaymış gibi boğulur (lowpass 750 Hz), vuruşla açılır; girişte alçak bir "vuuu".
         public void SuAlti(bool on) { if (on && suHedef > 1000) Gurultu(.25f, "lowpass", 300, .08f); suHedef = on ? 750 : 22000; }
         public void Ugultu(bool on, float sp) { swo.Ayarla(on, sp); }
@@ -564,7 +571,10 @@ namespace BirdieSmash.Game
         // için sessizlik yalnız servis beklerken sürüyor, ralli uzadıkça uğultu ve "Ooo" geri geliyordu; bayrak açıkken Hit
         // uğultuya ve Ooo'ya dokunmaz. Ralli tonları ve raket sesi kalır: sessiz salonda daha net duyulur.
         bool macSayisi;
-        public void CrowdStart() { crowdHedef = .01f; macSayisi = false; }
+        // 2026-11-19 (yasin: "Maç içinde beyaz gürültü sesi geliyor. Badminton maçları sesli olmaz. Sadece sayı olursa vs olur."):
+        // tribün uğultusu döngüsü (.01'den ralliyle .07'ye) ve uzun rallide her 4 vuruşta "Ooo" kalktı. Gerçek salonda ralli sırasında
+        // seyirci susar, ses yalnız sayıda gelir (alkış, coşku, iç çekiş Point'te kalır). Uğultu kaynağı sessiz kalır (0).
+        public void CrowdStart() { crowdHedef = 0; macSayisi = false; }
         public void CrowdSus() { crowdHedef = 0; macSayisi = true; }
         // Rakibin balıklamayla kurtarışı (Ev.Kurtaris): parkeye düşen gövdenin kısık "küt"ü + tribün nefesi. Anın tek sessiz
         // büyük hareketiydi (2026-11-11 inceleme #4). Titreşim yok: rakibin hareketi elde hissedilmez.
@@ -592,7 +602,9 @@ namespace BirdieSmash.Game
         AudioSource a; volatile float hedefF = 700, hedefG; float f = 700, g; readonly System.Random r = new System.Random(9);
         Synth.Biquad bq = new Synth.Biquad("bandpass", 700, 1.4f); int sayac; bool acik;
         void Awake() { a = gameObject.AddComponent<AudioSource>(); a.playOnAwake = false; a.loop = true; a.clip = AudioClip.Create("sessiz", Synth.SR, 1, Synth.SR, false); a.Play(); }
-        public void Ayarla(bool on, float sp) { acik = on && Ayar.ses; hedefG = acik ? Mathf.Min(.22f, sp * .09f) : 0; hedefF = 500 + Mathf.Min(3, sp) * 900; }
+        // 2026-11-19 (aynı istek): parmak hızlı kaydıkça sürekli duyulan hışırtı da "beyaz gürültü" gibi geliyordu. Tavan .22 → .10;
+        // GameRoot yalnız vuruş penceresinde hız verir (kısa savuruş sesi, sürekli değil).
+        public void Ayarla(bool on, float sp) { acik = on && Ayar.ses; hedefG = acik ? Mathf.Min(.10f, sp * .06f) : 0; hedefF = 500 + Mathf.Min(3, sp) * 900; }
         // Kaynak uygulama boyunca döngüdeydi; menüde de ses iş parçacığı her örnekte gürültü + bandpass hesaplıyordu (kazanç 0
         // olsa da). Uğultu kapalı ve sönmüşken duraklar, açılınca kaldığı yerden sürer (2026-11-11 inceleme #4c, pil/ısı).
         void Update()
@@ -612,53 +624,175 @@ namespace BirdieSmash.Game
         }
     }
 
-    // "Tüy Pop" menü döngüsü (yasin 2026-10-30 seçimi; dinleme sayfasındaki aday B, /mnt/project-files/birdie-smash/muzik/ezgi.py
-    // aday_b'nin birebir kopyası): 112 BPM, 12 ölçü (≈25,7 sn), F–G–Em–Am ×3. Her vuruşta sinüs davul (130 → 42 Hz; güçlü
-    // vuruşta .30, zayıfta .18), zayıf vuruşta el çırpma (bandpass 1500 gürültü), vuruş arası sinüs bas; akor tonlarından
-    // sekizlik arpej (kare, .22 sn, alçak geçiren 2400 Hz); 5. ölçüden ezgi (üçgen) iki kez. Dosya yok, lisans sorusu yok.
-    // Dikişsiz: tampon 2 sn uzun sentezlenir, döngü sonunu aşan kuyruk başa eklenir (çalan nota başta sönerek sürer).
-    // B bölümü (2026-11-12, inceleme 17:05): 25,7 sn'lik tek döngü Dolap'ta ("zaman geçirtici", yasin 10 Kas) iki dakikada beş kez
-    // dönüyordu. Aynı sentezle 12 ölçü daha: Am–F–C–G (vi–IV–I–V), arp dörtlük (yarı yoğunluk), ezgi bir oktav aşağı ve daha
-    // yumuşak; A-B döngüsü ≈51 sn. Sentez zaten arka iş parçacığında; tampon ~9 MB geçici, klip kurulunca bırakılır. Yeni dosya yok.
+    // "Tüy Pop" menü müziği. Geçmiş: 2026-10-30 yasin seçimi aday B (112 BPM kare pluck + sinüs davul, 12 ölçü ≈25,7 sn);
+    // 2026-11-12 B bölümü (A-B ≈51 sn). 2026-11-19 (yasin: müziği "kendi sentezimizi geliştir" + "Enstrüman kullan"; ilk enstrümanlı
+    // taslak FM piyano ve Em/Am ağırlığıyla "elektronik ve korkunç olmuş, sevimli bir ezgi olmalı"; ikinci taslağa "Ok ekle"):
+    // "sevimli" sürüm, /mnt/project-files/birdie-smash/muzik/sevimli.py'nin birebir kopyası (dinleme: artifact EuBVYNUGm714u44RAKf4J3).
+    // Do majör, 120 BPM, 36 ölçü = 72 sn: Giriş 4 · A 8 (ezgi ksilofon) · B 8 (ıslık) · A' 8 (çan + ksilofon) · Ara 4 (ukulele + el
+    // çırpma) · Dönüş 4. Enstrümanlar fiziksel/kip modelleri, dosya ve lisans yok: ukulele ve pizzicato bas Karplus-Strong (kesirli
+    // gecikmeli iki uçlu ortalama geri besleme, akort ±0), ksilofon (1, 3.93) ve çan (1, 2.76, 5.40) titreşim kipleri, ıslık sinüs +
+    // geç vibrato, yumuşak kick, el çırpma, shaker; kısa sıcak oda yankısı (Schroeder: 4 sönümlü tarak + 2 tüm geçiren).
+    // Dikişsiz: tampon 4 sn uzun, kuyruk başa eklenir. Sentez arka iş parçacığında (Sfx.Start); tampon 72 sn × 44,1 kHz ≈ 12,7 MB
+    // (eskisi ≈9 MB). Rastgele sayı üreteci sabit tohumlu: her cihazda aynı parça.
     public static class MenuMuzik
     {
         static readonly Dictionary<char, int> NOT = new Dictionary<char, int> { { 'C', 0 }, { 'D', 2 }, { 'E', 4 }, { 'F', 5 }, { 'G', 7 }, { 'A', 9 }, { 'B', 11 } };
         static int M(string s) { return 12 * (s[s.Length - 1] - '0' + 1) + NOT[s[0]] + (s.IndexOf('#') >= 0 ? 1 : 0); }
         static float Hz(int m) { return 440 * Mathf.Pow(2, (m - 69) / 12f); }
+        const int SR = Synth.SR;
+        static float[] buf, yank; static System.Random rnd;
+        static float R() { return (float)(rnd.NextDouble() * 2 - 1); }
+        static void Ekle(float t, float[] x, float v, float gonder = 0)
+        {
+            int i0 = Mathf.RoundToInt(t * SR), n = Mathf.Min(x.Length, buf.Length - i0);
+            for (int i = 0; i < n; i++) { float s = x[i] * v; buf[i0 + i] += s; if (gonder > 0) yank[i0 + i] += s * gonder; }
+        }
+        // Karplus-Strong: D = SR/f, P = tam kısım, w = kesir; geri besleme P'de (1-w), P+1'de w (iki uçlu süzgecin gecikmesi w: toplam SR/f).
+        static float[] Ks(float f, float sure, float rho, float parlak, float sustur)
+        {
+            float D = SR / f; int P = (int)D; float w = D - P; int n = (int)(sure * SR); var y = new float[n]; float lp = 0, tepe = 1e-9f;
+            for (int i = 0; i < n; i++)
+            {
+                float ex = i <= P ? R() : 0; lp = parlak * ex + (1 - parlak) * lp;
+                float v = lp + (i >= P ? rho * (1 - w) * y[i - P] : 0) + (i >= P + 1 ? rho * w * y[i - P - 1] : 0); y[i] = v;
+            }
+            for (int i = 0; i < n; i++)
+            {
+                float t = (float)i / SR, g = Mathf.Clamp01((sure - t) / .02f); if (sustur > 0 && t >= sustur) g *= Mathf.Exp(-(t - sustur) / .03f);
+                y[i] *= g; tepe = Mathf.Max(tepe, Mathf.Abs(y[i]));
+            }
+            for (int i = 0; i < n; i++) y[i] /= tepe;
+            return y;
+        }
+        static float[] Kip(float f, float sure, float[] oran, float[] gen, float[] tau, float atak)
+        {
+            int n = (int)(sure * SR); var y = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                float t = (float)i / SR, s = 0; for (int k = 0; k < oran.Length; k++) s += gen[k] * Mathf.Sin(2 * Mathf.PI * f * oran[k] * t) * Mathf.Exp(-t / tau[k]);
+                y[i] = s * Mathf.Min(1, t / atak) * Mathf.Clamp01((sure - t) / .02f);
+            }
+            return y;
+        }
+        static float[] Ksilofon(float f, float sure) { float s = Mathf.Sqrt(523 / f); return Kip(f, sure, new[] { 1f, 3.93f }, new[] { 1f, .25f }, new[] { .35f * s, .06f * s }, .0008f); }
+        static float[] Can(float f, float sure) { return Kip(f, sure, new[] { 1f, 2.76f, 5.40f }, new[] { 1f, .22f, .08f }, new[] { .9f, .25f, .08f }, .002f); }
+        static float[] Islik(float f, float sure)
+        {
+            int n = (int)(sure * SR); var y = new float[n]; double ph = 0;
+            for (int i = 0; i < n; i++)
+            {
+                float t = (float)i / SR; ph += f * (1 + .006f * Mathf.Sin(2 * Mathf.PI * 5.5f * t) * Mathf.Clamp01((t - .12f) / .15f)) / SR;
+                float g = Mathf.Min(1, t / .03f) * Mathf.Clamp01((sure - t) / .06f);
+                y[i] = (Mathf.Sin(2 * Mathf.PI * (float)(ph % 1)) + .08f * Mathf.Sin(4 * Mathf.PI * (float)(ph % 1))) * g;
+            }
+            return y;
+        }
+        static float[] Kick()
+        {
+            int n = (int)(.25f * SR); var y = new float[n]; double ph = 0;
+            for (int i = 0; i < n; i++) { float t = (float)i / SR; ph += (55 + 70 * Mathf.Exp(-t / .025f)) / SR; y[i] = Mathf.Sin(2 * Mathf.PI * (float)(ph % 1)) * Mathf.Exp(-t / .11f); }
+            return y;
+        }
+        static float[] Alkis()
+        {
+            int n = (int)(.2f * SR); var y = new float[n]; var bq = new Synth.Biquad("bandpass", 1300, 1.1f); float[] d = { 0, .009f, .018f };
+            for (int i = 0; i < n; i++)
+            {
+                float t = (float)i / SR, g = 0; for (int k = 0; k < 3; k++) if (t >= d[k]) g += Mathf.Exp(-(t - d[k]) / (k < 2 ? .006f : .05f));
+                y[i] = bq.Run(R()) * g * 2.5f;
+            }
+            return y;
+        }
+        static float[] Shaker()
+        {
+            int n = (int)(.08f * SR); var y = new float[n]; var bq = new Synth.Biquad("bandpass", 6500, .9f);
+            for (int i = 0; i < n; i++) { float s = Mathf.Sin(Mathf.PI * i / (float)n); y[i] = bq.Run(R()) * s * s; }
+            return y;
+        }
+        static readonly Dictionary<string, string[]> UKE = new Dictionary<string, string[]> { { "C", new[] { "G4", "C4", "E4", "C5" } }, { "F", new[] { "A4", "C4", "F4", "A4" } }, { "G", new[] { "G4", "D4", "G4", "B4" } } };
+        static readonly Dictionary<string, string> KOK = new Dictionary<string, string> { { "C", "C3" }, { "F", "F2" }, { "G", "G2" } };
+        static readonly string[] A_AK = { "C", "F", "G", "C" }, B_AK = { "F", "C", "G", "C" };
+        static readonly string[] EZ_A = { "G4 .5", "C5 .5", "E5 .5", "G5 .5", "E5 1", "C5 1", "A4 .5", "C5 .5", "F5 .5", "A5 .5", "G5 1", "F5 1",
+            "G5 .5", "F5 .5", "E5 .5", "D5 .5", "B4 1", "D5 1", "C5 .5", "E5 .5", "G5 1", "C6 2",
+            "G4 .5", "C5 .5", "E5 .5", "G5 .5", "E5 1", "C5 1", "A4 .5", "C5 .5", "F5 .5", "A5 .5", "G5 1", "F5 1",
+            "D5 .5", "E5 .5", "F5 .5", "G5 .5", "A5 1", "B5 1", "C6 1", "G5 .5", "E5 .5", "C5 2" };
+        static readonly string[] EZ_B = { "A5 1", "G5 .5", "F5 .5", "G5 1", "A5 1", "G5 1.5", "E5 .5", "C5 2", "D5 .5", "E5 .5", "F5 .5", "G5 .5", "A5 1", "G5 1", "G5 2", "E5 1", "C5 1",
+            "A5 1", "G5 .5", "F5 .5", "G5 1", "A5 1", "G5 1.5", "E5 .5", "C5 2", "D5 .5", "E5 .5", "F5 .5", "G5 .5", "A5 1", "B5 1", "C6 1", "E5 1", "C5 2" };
+        static readonly float[] TEL_B = { 0, 1, 1.5f, 2.5f, 3, 3.5f }, TEL_V = { 1, .7f, .55f, .55f, .75f, .5f };   // ukulele: aşağı aşağı yukarı yukarı aşağı yukarı
+        struct Bolum { public int o0, n; public string[] ak; public string dv, ez; public Bolum(int a, int b, string[] c, string d, string e) { o0 = a; n = b; ak = c; dv = d; ez = e; } }
+        static readonly Bolum[] BOLUM = { new Bolum(0, 4, A_AK, "shaker", null), new Bolum(4, 8, A_AK, "tam", "ksilofon"), new Bolum(12, 8, B_AK, "tam", "islik"),
+            new Bolum(20, 8, A_AK, "tam", "can"), new Bolum(28, 4, A_AK, "alkis", null), new Bolum(32, 4, B_AK, "shaker", null) };
+
         public static float[] TuyPop()
         {
-            float b = 60f / 112, L = 24 * 4 * b; int N = Mathf.RoundToInt(L * Synth.SR); var S = new Synth(L + 2, 21);
-            string[] bas = { "F2", "G2", "E2", "A2" }; string[][] ak = { new[] { "F3", "A3", "C4" }, new[] { "G3", "B3", "D4" }, new[] { "E3", "G3", "B3" }, new[] { "A3", "C4", "E4" } };
-            string[] basB = { "A2", "F2", "C3", "G2" }; string[][] akB = { new[] { "A3", "C4", "E4" }, new[] { "F3", "A3", "C4" }, new[] { "C4", "E4", "G4" }, new[] { "G3", "B3", "D4" } };
-            for (int k = 0; k < 24; k++)
-            {
-                bool B = k >= 12; float t0 = k * 4 * b; int kb = M((B ? basB : bas)[k % 4]); var a = (B ? akB : ak)[k % 4];
-                for (int j = 0; j < 4; j++)
+            float b = 60f / 120, OLC = 4 * b; int N = Mathf.RoundToInt(36 * OLC * SR);
+            buf = new float[N + 4 * SR]; yank = new float[buf.Length]; rnd = new System.Random(7);
+            var kick = Kick(); var govde = new Dictionary<string, float[]>();
+            foreach (var bl in BOLUM)
+                for (int k = 0; k < bl.n; k++)
                 {
-                    float v = j % 2 == 0 ? .30f : .18f;
-                    S.Sweep(t0 + j * b, .25f, "sine", t => 130 * Mathf.Pow(42f / 130, Mathf.Min(1, t / .14f)), t => v * Mathf.Pow(.0001f / v, Mathf.Min(1, t / .22f)));
-                    if (j % 2 == 1) S.Burst(t0 + j * b, .12f, "bandpass", 1500, .20f, .9f, 3);
-                    S.Decay(t0 + j * b + .5f * b, Hz(kb), "sine", .26f, .30f);
-                }
-                int a0 = M(a[0]) + 12, a1 = M(a[1]) + 12, a2 = M(a[2]) + 12; int[] arp = { a0, a1, a2, a1, a0 + 12, a2, a1, a2 };
-                for (int j = 0; j < 8; j += B ? 2 : 1) S.Tone(t0 + j * b / 2, Hz(arp[j]), B ? .30f : .22f, "square", .05f, new Synth.Biquad("lowpass", 2400, .8f));
-            }
-            string[] ezgi = { "A5 1", "G5 .5", "E5 .5", "G5 1", "C6 1", "B5 .5", "A5 .5", "G5 1", "D5 2", "E5 .5", "G5 .5", "B5 1", "A5 .5", "G5 .5", "E5 1", "A5 .5", "C6 .5", "A5 1", "E5 2" };
-            // A: 5.–12. ölçü ezgi iki kez; B: 17.–24. ölçü aynı ezgi bir oktav aşağı (C6/A5 tepeleri Am–F–C–G üstünde de akor tonu).
-            for (int bol = 0; bol < 2; bol++)
-            {
-                float te = (bol * 12 + 4) * 4 * b; int okt = bol == 0 ? 0 : -12; float ses = bol == 0 ? .13f : .12f;
-                for (int r = 0; r < 2; r++)
-                    foreach (var e in ezgi)
+                    int o = bl.o0 + k; float t0 = o * OLC; string a = bl.ak[k % 4];
+                    for (int s = 0; s < TEL_B.Length; s++)
                     {
-                        var p = e.Split(' '); float d = float.Parse(p[1], System.Globalization.CultureInfo.InvariantCulture) * b;
-                        S.Decay(te, Hz(M(p[0]) + okt), "triangle", ses, Mathf.Min(.7f, d * 1.2f)); te += d;
+                        float bt = TEL_B[s]; var tel = UKE[a]; bool yukari = bt != Mathf.Floor(bt);
+                        for (int q = 0; q < 4; q++) Ekle(t0 + bt * b + q * .008f, Ks(Hz(M(tel[yukari ? 3 - q : q])), .5f, .992f, .85f, .32f), .055f * TEL_V[s], .15f);
                     }
+                    float f0 = Hz(M(KOK[a]));
+                    float[] bv = bl.dv != "shaker" ? new[] { 0f, 2f, 2.5f } : new[] { 0f, 2f };
+                    foreach (float bt in bv)
+                    {
+                        Ekle(t0 + bt * b, Ks(f0, .4f, .985f, .4f, .3f), .30f);
+                        float[] gv; if (!govde.TryGetValue(a, out gv)) { int nn = (int)(.4f * SR); gv = new float[nn]; for (int i = 0; i < nn; i++) { float t = (float)i / SR; gv[i] = Mathf.Sin(2 * Mathf.PI * f0 * t) * Mathf.Exp(-t / .18f) * Mathf.Min(1, t / .004f); } govde[a] = gv; }
+                        Ekle(t0 + bt * b, gv, .22f);
+                    }
+                    for (int j = 0; j < 8; j++)
+                    {
+                        float tj = t0 + j * b / 2;
+                        Ekle(tj + (j % 2 == 1 ? .02f : 0), Shaker(), j % 2 == 1 ? .05f : .035f);   // geç vuruş: kıpır kıpır his
+                        if (bl.dv == "tam" && (j == 0 || j == 4)) Ekle(tj, kick, .42f);
+                        if ((bl.dv == "tam" || bl.dv == "alkis") && (j == 2 || j == 6)) Ekle(tj, Alkis(), .16f, .2f);
+                    }
+                    if (bl.o0 == 0 && k == 3) Ekle(t0 + 3 * b, Can(Hz(M("G5")), 1.2f), .10f, .3f);   // girişten ana bölüme çan
+                }
+            foreach (var bl in BOLUM)
+            {
+                if (bl.ez == null) continue; float te = bl.o0 * OLC; var ezgi = bl.ez == "islik" ? EZ_B : EZ_A;
+                foreach (var e in ezgi)
+                {
+                    var p = e.Split(' '); float d = float.Parse(p[1], System.Globalization.CultureInfo.InvariantCulture) * b, f = Hz(M(p[0]));
+                    if (bl.ez == "ksilofon") Ekle(te, Ksilofon(f, d + .35f), .22f, .2f);
+                    else if (bl.ez == "islik") Ekle(te, Islik(f, d * .92f), .11f, .25f);
+                    else { Ekle(te, Can(f, d + .6f), .13f, .25f); Ekle(te, Ksilofon(f / 2, d + .3f), .10f, .15f); }
+                    te += d;
+                }
             }
-            var o = new float[N]; float tepe = 1e-6f;
-            for (int i = 0; i < N; i++) { float x = S.buf[i] + (i + N < S.buf.Length ? S.buf[i + N] : 0); o[i] = x; tepe = Mathf.Max(tepe, Mathf.Abs(x)); }
-            float g = .8f / tepe; for (int i = 0; i < N; i++) o[i] *= g;
-            return o;
+            var yk = Yanki(yank);
+            var cikis = new float[N]; float tepe = 1e-6f;
+            for (int i = 0; i < buf.Length; i++) { float x = buf[i] + yk[i] * .4f; cikis[i % N] += x; }
+            for (int i = 0; i < N; i++) { cikis[i] = (float)System.Math.Tanh(cikis[i] * 1.3f) / 1.3f; tepe = Mathf.Max(tepe, Mathf.Abs(cikis[i])); }
+            float g = .8f / tepe; for (int i = 0; i < N; i++) cikis[i] *= g;
+            buf = yank = null; rnd = null;
+            return cikis;
+        }
+        // Kısa sıcak oda: sönümlü tarak y[n] = x[n] - d·x[n-1] + d·y[n-1] + g(1-d)·y[n-D]; tüm geçiren y[n] = -g·x[n] + x[n-D] + g·y[n-D].
+        static float[] Yanki(float[] x)
+        {
+            int n = x.Length; var top = new float[n]; int[] TD = { 1116, 1188, 1277, 1356 }; float[] TG = { .70f, .69f, .71f, .68f }; const float dd = .4f;
+            var y = new float[n];
+            for (int c = 0; c < 4; c++)
+            {
+                int D = TD[c]; float g = TG[c] * (1 - dd);
+                for (int i = 0; i < n; i++) { float v = x[i] - (i > 0 ? dd * x[i - 1] - dd * y[i - 1] : 0) + (i >= D ? g * y[i - D] : 0); y[i] = v; top[i] += v; }
+            }
+            int[] AD = { 225, 341 };
+            foreach (int D in AD)
+            {
+                var z = new float[n];
+                for (int i = 0; i < n; i++) z[i] = -.5f * top[i] + (i >= D ? top[i - D] + .5f * z[i - D] : 0);
+                top = z;
+            }
+            for (int i = 0; i < n; i++) top[i] *= .25f;
+            return top;
         }
     }
 }

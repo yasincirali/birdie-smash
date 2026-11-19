@@ -185,3 +185,22 @@ Zarafet ölçütü: her öğenin bir nedeni vardır ve neden kod yorumunda yazar
 5. **Metin insan sesi**: kısa, somut, oyuncuya hitap eden ("Raketini seç", "3 maç kaldı"). Pazarlama dili, abartı ("muhteşem", "inanılmaz"), "sadece X değil, Y" kalıbı, üçlü sıfat dizisi yok (`no-ai-slop`).
 6. **Kanıt gerçek kareyle**: tasarım kararı mock-up'la değil ekran turu karesiyle (`ekran-sonuc`) doğrulanır; önce/sonra artifact'i gerçek oyun karesi gösterir.
 
+
+## 11. Ekran kalıpları (yasin seçimi, 19 Kasım 2026)
+
+Kaynak: yasin 19 Kasım 2026 10:17 ("Üçünde önerilerini uygula kurallara uygun şekilde"), seçenek sayfası
+`https://claude.ai/artifact/AhLNpXh8XkiHWsZk1kkz3H` (üç ekranda A). Araştırma: Tennis Clash kupa yolu, Clash Royale sabit alt
+gezinme ve açılır panel, Brawl Stars iri simge ve bölmeli yerleşim, Apple HIG sheet.
+
+1. **Dolap = sahne + çekmece.** Figür alanın ~%60'ı; liste altta, üç duraklı çekmecede (İncele: çekmece kapalı · yarım ·
+   tam). Kategoriye dokunmak kamerayı o bölgeye götürür, eşyaya dokunmak figürde dener, tek turuncu düğme Giy/Al. Raket
+   şeridin son kategorisi. iPad'de çekmece sağ panel, figür solda tam boy. Durak geçişi animasyonsuz: vitrin RT'si kutuyla
+   boyutlanır, her karede boy değiştirmek takılma demektir (§7.8).
+2. **Kariyer = dikey tur yolu.** Başlıkta ‹ tur ›; altı basamak zikzak yol üstünde (geçilen ✓ + yıldız, şimdiki büyük güneş
+   diski + "Şimdi", kilitli kilit), sonunda mühür. Tek birincil eylem altta sabit "Sıradaki maç". Yol yukarıdan aşağı:
+   okuma ve ekran okuyucu sırası basamak sırasıyla aynı.
+3. **Atölye = seçici + çubuk.** Seçeneği çip şeridinde seç, önizlenen seçeneğin etkisini çubukla göster (orta çizgi = nötr,
+   artı sağa limon, eksi sola soluk, ▲/▼ ve yüzde yazısı yanında). Kilitli seçenek de önizlenir; düğme kaç seviye kaldığını
+   söyler. Uzun kart listesi yerine bir kart.
+4. **Basma dili tek.** Her düğme, çip, ikon düğmesi ve CTA basınca .06 sn'de %95, bırakınca .26 sn ease-out-back; dokunuşta
+   tick titreşimi (UiOge). Hareketi azaltta küçülme yok, renk değişimi kalır.

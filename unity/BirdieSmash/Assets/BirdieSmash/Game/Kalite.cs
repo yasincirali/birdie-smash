@@ -48,7 +48,7 @@ namespace BirdieSmash.Game
             bool oyunda = root != null && root.ekran == Ekran.Oyun && !root.paused;
             // Menü yalnız hareket sürerken yüksek hızda (2026-10-28, yasin "her yerde smooth"): kaydırma, sürükleme, USS geçişi
             // ya da perde HAREKET_SURE içinde olduysa ProMotion'da 120, durunca 60 (pil). Durağan menü eskisi gibi 60.
-            bool menuHareket = !oyunda && Time.unscaledTime - hareketSon < HAREKET_SURE;
+            bool menuHareket = !oyunda && (Time.unscaledTime - hareketSon < HAREKET_SURE || Time.unscaledTime - canliSon < HAREKET_SURE);
             int hz = EkranHz(), hedef = 60;
             if ((oyunda || menuHareket) && !Kilitli && !yuksekKapali && !dusukGuc && Isil < 2 && Basamak == 2 && tavan == 2 && hz >= 90) hedef = Mathf.Min(120, hz);
             if (Application.targetFrameRate != hedef) Application.targetFrameRate = hedef;
@@ -79,6 +79,12 @@ namespace BirdieSmash.Game
         const float HAREKET_SURE = .5f, MENU_DURGUN = 3f; static float hareketSon = -99;
         // Menü bir şey kıpırdattığında çağırır (UiKok: dokunma/sürükleme/tekerlek/USS geçişi; Hud: perde).
         public static void Hareket() { hareketSon = Time.unscaledTime; }
+        // 2026-11-19 (yasin: "sevinç hareketlerinin fps'lerini yükseltelim"): sevinç maç sonunda (Bitti) ve Dolap önizlemesinde
+        // menü sayılıyordu, dokunulmadıkça 60 Hz'de kalıyordu; ProMotion'da kollar ve dans kesik görünüyordu. Sevinç oynarken
+        // her kare çağrılır, hız yüksek basamağın koşullarıyla (ısı, düşük güç, basamak 2, ≥ 90 Hz) 120'ye çıkar. Hareket()'ten
+        // ayrı: MenuDurgun'u bozmaz (Sfx ses sentezi sırası menü kıpırdamasını bekler, sevinci değil).
+        public static void Canli() { canliSon = Time.unscaledTime; }
+        static float canliSon = -99;
         // Menü son HAREKET_SURE içinde kıpırdamadı mı (Sfx ek ses sırası bunu bekler: kaydırma sırasında sentez yok, 2026-11-12).
         public static bool MenuDurgun { get { return Time.unscaledTime - hareketSon >= HAREKET_SURE; } }
 
