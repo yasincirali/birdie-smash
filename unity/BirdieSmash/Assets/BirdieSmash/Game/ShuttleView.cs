@@ -60,6 +60,9 @@ namespace BirdieSmash.Game
             shadowM = Kit.Clear(new Color(0, 0, 0, .4f), Kit.RadialTex());
             shadow = Kit.Prim(PrimitiveType.Quad, "golge", transform, Vector3.zero, Vector3.one, shadowM).transform; shadow.rotation = Quaternion.Euler(90, 0, 0);
             trail = Kit.Line("iz", transform, Kit.Additive(Color.white)); trail.numCapVertices = 2;
+            // 2026-11-19 inceleme (fikir 07:06 #4): kuyruk eğrisi bir kez, normalize; kalınlık widthMultiplier ile. Her biçim
+            // değişiminde (ralli içinde smaç/düz/akış) yeni AnimationCurve ayrılıyordu.
+            trail.widthCurve = new AnimationCurve(new Keyframe(0, 0, 0, 0), new Keyframe(.6f, .55f), new Keyframe(1, 1, 0, 0));
             var dash = Kit.DashTex(2, 4);
             hLine = Kit.Line("yukseklik", transform, Kit.Clear(new Color(1, 1, 1, .22f), dash)); hLine.textureMode = LineTextureMode.Tile; hLine.widthMultiplier = .02f;
             gLine = Kit.Line("yer_cizgisi", transform, Kit.Clear(new Color(1, 1, 1, .1f)), false, true); gLine.widthMultiplier = .03f;
@@ -271,7 +274,7 @@ namespace BirdieSmash.Game
                     izC = c; izW = w; izA = a;
                     // Kuyruk yumuşak incelir (doğrusal koni ucu sivri ve "çizgi" gibiydi): genişlik ve saydamlık başta hızlı, kuyrukta
                     // yavaş söner; göz topun kendisinde kalır, iz yalnız yönü ve hızı söyler.
-                    trail.widthCurve = new AnimationCurve(new Keyframe(0, 0, 0, 0), new Keyframe(.6f, w / 28f * .55f), new Keyframe(1, w / 28f, 0, 0));
+                    trail.widthMultiplier = w / 28f;
                     izRenk[0] = new GradientColorKey(c, 0); izRenk[1] = new GradientColorKey(c, 1); izSaydam[0] = new GradientAlphaKey(0, 0); izSaydam[1] = new GradientAlphaKey(a, 1);
                     izGrad.SetKeys(izRenk, izSaydam); trail.colorGradient = izGrad;
                 }

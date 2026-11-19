@@ -1,4 +1,10 @@
 === UNITY ===
+Şampiyon yolu ve sekmeler (19 Kasım sabah):
+- Şampiyon yolu kilitliyken artık doğru hedefi yazıyor: son turun finalini kazanman gerekiyor (önceden yanlışlıkla Dünya Finalleri yazıyordu).
+- Şampiyon yolu kartı sadeleşti: zorluk yalnız başlığın yanında yazıyor, açıklama tek kısa cümle.
+- Açık olan sekmeye yeniden dokununca liste yumuşakça en başa kayıyor.
+- Topun izi daha az bellek harcıyor (görünüş aynı).
+Nasıl denenir: Kariyer'i bitirmediysen Oyna sekmesinde Şampiyon yolu kartına bak: "Efsaneler Kupası finalini kazan" yazmalı. Kariyer sekmesinde aşağı kaydır, alttaki Kariyer düğmesine yeniden dokun: liste en başa kaymalı. Hareketi azalt açıksa bir anda başa gelmeli.
 Sayı arasında iki yeni kısa hareket (19 Kasım gece):
 - Sayıyı kaybeden oyuncu orta uzunlukta bir ralliden sonra alnındaki teri siliyor; kısa rallilerde ara sıra raketinin tellerini düzeltiyor. İkisi de bir saniyeden kısa, sayı arasını uzatmıyor. Sen de rakip de yapıyor.
 Nasıl denenir: Bir maç oyna. 5 ile 7 vuruş arası süren bir ralliyi kaybet: oyuncun sol koluyla alnını silmeli. Kısa rallilerde birkaç sayı izle: kaybeden taraf ara sıra raketini önüne alıp tellerine dokunmalı. Servis her zamanki sürede başlamalı.
