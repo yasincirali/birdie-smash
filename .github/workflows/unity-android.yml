@@ -1,0 +1,64 @@
+name: Unity — Android APK (emülatör)
+
+# 2026-11-20 (yasin: "unity halini emulatorde ayağa kaldır"): PC'de Unity Editor kurulu değil; Flutter kabuğu HTML oyununu
+# açıyor. Bu iş Unity oyununu debug imzalı APK olarak derler (ARM64 + x86_64), artifact olarak bırakır:
+#   gh run download <run> -n birdie-android && adb install -r BirdieSmash.apk
+# Mağazaya gitmez, TestFlight'a dokunmaz. Tetik: `android/**` dallarına push.
+
+on:
+  push:
+    branches: ['android/**']
+    paths: ['unity/**', '.github/workflows/unity-android.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: unity-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Disk aç
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL || true
+          df -h /
+
+      - name: Unity Library önbelleği (geri yükle)
+        uses: actions/cache/restore@v4
+        with:
+          path: unity/BirdieSmash/Library
+          key: unity-library-android-v1-${{ hashFiles('unity/BirdieSmash/Assets/**', 'unity/BirdieSmash/Packages/**') }}
+          restore-keys: |
+            unity-library-android-v1-
+
+      - name: Unity Android APK
+        uses: game-ci/unity-builder@v4.8.2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          unityVersion: 6000.0.58f2
+          targetPlatform: Android
+          projectPath: unity/BirdieSmash
+          buildMethod: BirdieSmash.EditorTools.CiBuild.Android
+          buildName: BirdieSmash
+          versioning: None
+
+      - name: Unity Library önbelleği (kaydet)
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: unity/BirdieSmash/Library
+          key: unity-library-android-v1-${{ hashFiles('unity/BirdieSmash/Assets/**', 'unity/BirdieSmash/Packages/**') }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: birdie-android
+          path: build/Android/*.apk
+          if-no-files-found: error
+          retention-days: 5
