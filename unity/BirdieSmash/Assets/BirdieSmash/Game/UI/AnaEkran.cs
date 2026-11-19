@@ -567,8 +567,13 @@ namespace BirdieSmash.Game
             string altS = gez.AcikAltSayfa;
             if (altS != null) { var eski = altSayfa != null ? altSayfa.Q<ScrollView>() : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; AltSayfaYenidenKur(altS); KaydirmaGeri(altSayfa, of); }
             string u = gez.Ust; if (u != null && !Gezinti.AltSayfa(u)) { var eski = sayfa.Q<ScrollView>(); Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; SayfaKur(u); KaydirmaGeri(sayfa, of); }
-            else if (u == null) { var k = sekmeKok[(int)gez.sekme]; var eski = k.Q<ScrollView>(null, "govde-kaydir") ?? k.Q<ScrollView>(); Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; SekmeKur(gez.sekme); KaydirmaGeri(k, of); }
+            else if (u == null) SekmeYerindeKur(gez.sekme);
             if (ustKirli) UstKur();
+        }
+        // Sekme gövdesini kaydırma yerini koruyarak yeniden kurar (Degisti ve Profil'in unvan/ad seçimi, 2026-11-19).
+        void SekmeYerindeKur(Sekme s)
+        {
+            var k = sekmeKok[(int)s]; var eski = k.Q<ScrollView>(null, "govde-kaydir") ?? k.Q<ScrollView>(); Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; SekmeKur(s); KaydirmaGeri(k, of);
         }
         // Yeniden kurulan gövdede kaydırma yeri korunur (yerleşimden sonra; ilk karede içerik yüksekliği henüz yok).
         static void KaydirmaGeri(VisualElement v, Vector2 of)
