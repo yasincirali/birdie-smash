@@ -98,18 +98,23 @@ namespace BirdieSmash.Game
             }
         }
 
-        void KademeliAc(VisualElement c)
+        void KademeliAc(VisualElement c) { Kademeli(c.Children(), 40, 60, .25f, 14, int.MaxValue); }
+
+        // 2026-11-19 inceleme (fikir 22:06 #5): Profil "Tümünü göster" de aynı girişi kullanır (daha kısa: 30 ms ara, .18 sn, 8 pt).
+        // Yalnız ilk `ust` öğe kayar, kalanlar anında; yalnız opacity/translate (yerleşim yok). Çağıran hareketi azalt'a bakar.
+        void Kademeli(System.Collections.Generic.IEnumerable<VisualElement> ogeler, int ilk, int arali, float sure, float dy, int ust)
         {
             int i = 0;
-            foreach (var ch in c.Children())
+            foreach (var ch in ogeler)
             {
-                var v = ch; int bas = 40 + i * 60; i++;
-                v.style.opacity = 0f; v.style.translate = new Translate(0, 14, 0);
+                if (i >= ust) break;
+                var v = ch; int bas = ilk + i * arali; i++;
+                v.style.opacity = 0f; v.style.translate = new Translate(0, dy, 0);
                 v.style.transitionProperty = new System.Collections.Generic.List<StylePropertyName> { new StylePropertyName("opacity"), new StylePropertyName("translate") };
-                v.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(.25f, TimeUnit.Second) };
+                v.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(sure, TimeUnit.Second) };
                 v.style.transitionTimingFunction = new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseOut) };
                 v.schedule.Execute(() => { v.style.opacity = 1f; v.style.translate = new Translate(0, 0, 0); Kalite.Hareket(); }).StartingIn(bas);
-                v.schedule.Execute(() => { v.style.opacity = StyleKeyword.Null; v.style.translate = StyleKeyword.Null; v.style.transitionProperty = StyleKeyword.Null; v.style.transitionDuration = StyleKeyword.Null; v.style.transitionTimingFunction = StyleKeyword.Null; }).StartingIn(bas + 300);
+                v.schedule.Execute(() => { v.style.opacity = StyleKeyword.Null; v.style.translate = StyleKeyword.Null; v.style.transitionProperty = StyleKeyword.Null; v.style.transitionDuration = StyleKeyword.Null; v.style.transitionTimingFunction = StyleKeyword.Null; }).StartingIn(bas + (int)(sure * 1000) + 50);
             }
         }
 

@@ -289,12 +289,14 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Oyun tarzı"))); tarzKap = new VisualElement(); c.Add(tarzKap); TarzGovde(tarzKap);
             c.Add(Grup(L.T("Takımın")));
             var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true, null, Ayar.GelisimCubuk());
+            // 2026-11-19 inceleme (fikir 22:06 #3): dipnot sayfanın dibindeydi ve 10 Kas gelişiminden beri eksikti (çubuğa limon "+n"
+            // gelişim payı da giriyor). Açıkladığı kartın hemen altına taşındı, metin gelişimi de sayar.
+            c.Add(Yazi(L.T("Çubuklar ekipman ve gelişimden gelir, 50 ortalama. Tarz ve görünüm değiştirmez."), 12, "soluk"));
             RaketKimlikKart(c);
             c.Add(Grup(L.T("Yuvalar"))); var iz = Satir("izgara"); iz.AddToClassList("yuva-izgara"); c.Add(iz);
             foreach (var Y in Gear.YUVA) iz.Add(YuvaKare(Y));
             c.Add(Cip(L.T("Eşit şartlar"), gr.eko.esit, () => { gr.eko.esit = !gr.eko.esit; Ayar.GearHesap(); Ayar.KaydetSonra(); SoyunmaGovdeKur(true); }, L.T("Serbest maçta yükseltmeler sayılmaz")));
             c.Add(Grup(L.T("Ayakkabı tabanı"))); TabanBolum(c);
-            c.Add(Yazi(L.T("Çubuklar ekipmandan gelir; 50 ortalamadır. Tarz ve görünüm çubukları değiştirmez."), 12, "soluk"));
         }
 
         // 2026-11-07 (yasin: "kordaj gerginliği kaybolmuş"; ölçüler gerçek raket diliyle): Atölye'nin ana ekranında takılı raketin
