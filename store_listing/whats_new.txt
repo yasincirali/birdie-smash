@@ -1,4 +1,7 @@
 === UNITY ===
+Sayı arasında iki yeni kısa hareket (19 Kasım gece):
+- Sayıyı kaybeden oyuncu orta uzunlukta bir ralliden sonra alnındaki teri siliyor; kısa rallilerde ara sıra raketinin tellerini düzeltiyor. İkisi de bir saniyeden kısa, sayı arasını uzatmıyor. Sen de rakip de yapıyor.
+Nasıl denenir: Bir maç oyna. 5 ile 7 vuruş arası süren bir ralliyi kaybet: oyuncun sol koluyla alnını silmeli. Kısa rallilerde birkaç sayı izle: kaybeden taraf ara sıra raketini önüne alıp tellerine dokunmalı. Servis her zamanki sürede başlamalı.
 Dolap daha kolay, iPad tam ekran, Maçın anı kalktı (19 Kasım gece):
 - Dolap'ta Yüz, Ayak ve Tutuş düğmeleri artık alttaki listeyi de açıyor: Yüz yüz eşyalarına, Ayak ayakkabılara, Tutuş raketin grip ve özellik sayfasına gider.
 - Oyuncu Dolap'ta daha büyük; sol üstteki büyüt düğmesi oyuncuyu bütün ekrana açar, yeniden dokununca liste geri gelir.
