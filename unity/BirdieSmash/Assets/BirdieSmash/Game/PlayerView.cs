@@ -1390,13 +1390,15 @@ namespace BirdieSmash.Game
                     // 2026-11-19: 13 rad/sn titreme yerine iki yumuşak tarama; raket kendi ekseninde hafif döner (bakıyor), baş
                     // tellere eğilir. r198 notu geçerli: sol elin hedefi gerçek kafa konumundan (model oranı değişse de el telde).
                     { float k = Zarf(t, 0, .3f, .74f, 1.05f), p = rm ? .25f : Mathf.Clamp01((t - .3f) / .44f);
-                      if (kHead != null) kHead.rotation = Quaternion.AngleAxis(-8 * k * w, up) * Quaternion.AngleAxis(16 * k * w, ri) * kHead.rotation;
+                      if (kHead != null) kHead.rotation = Quaternion.AngleAxis(-14 * k * w, up) * Quaternion.AngleAxis(18 * k * w, ri) * kHead.rotation;
                       IK(SU, SE, SH, sR + fw * L * .45f - up * L * .55f + ri * L * .15f, ri - up * .5f);
                       if (SH != null && kafa != null)
-                      { Vector3 nd = (sL + up * L * .55f + fw * L * .5f - ri * L * .1f - SH.position).normalized; RaketDik(SH, nd);
+                      { // r204: kafa yüz hizasındaydı, önden bakınca el yüze dokunuyor gibi okunuyordu. Kafa sol omzun önüne ve dışına indi
+                        // (raket boyu ≈ 1,6 kol; kafa merkezi elden ≈ 1,3 kol), el çemberin altına değil tellerin üstüne gider.
+                        Vector3 nd = (sL + up * L * .2f + fw * L * .5f - ri * L * .25f - SH.position).normalized; RaketDik(SH, nd);
                         SH.rotation = Quaternion.AngleAxis(9 * Mathf.Sin(p * Mathf.PI * 2) * salla, nd) * SH.rotation;
                         Vector3 yan = Vector3.Cross(nd, fw).normalized;
-                        IK(LU, LE, LH, Vector3.Lerp(SH.position, kafa.position, .7f + .14f * (.5f - .5f * Mathf.Cos(p * Mathf.PI * 4))) + yan * L * .05f * Mathf.Sin(p * Mathf.PI * 2) * salla - fw * L * .04f, -ri - up * .5f); }
+                        IK(LU, LE, LH, Vector3.Lerp(SH.position, kafa.position, .88f + .12f * (.5f - .5f * Mathf.Cos(p * Mathf.PI * 4))) + yan * L * .05f * Mathf.Sin(p * Mathf.PI * 2) * salla - fw * L * .04f, -ri - up * .5f); }
                       Kat(0, SU, k); Kat(1, SE, k); Kat(5, SH, k); Kat(2, LU, k); Kat(3, LE, k); } break;
                 case "iyi_oyun": // raket rakibe doğru kalkar (fileden selam)
                     IK(SU, SE, SH, sR + fw * L * .7f + up * L * .45f + ri * L * .1f, ri - up * .3f); break;
