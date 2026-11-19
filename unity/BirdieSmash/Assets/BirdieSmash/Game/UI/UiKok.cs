@@ -242,7 +242,19 @@ namespace BirdieSmash.Game
         }
 
         // ---- gezinti ----
-        public void SekmeAc(Sekme s) { var once = gez.sekme; bool d = gez.SekmeSec(s); if (d) Yerel.Hap("tick"); Uygula(once, d); }
+        public void SekmeAc(Sekme s) { var once = gez.sekme; bool sayfaYok = gez.Ust == null; bool d = gez.SekmeSec(s); if (d) Yerel.Hap("tick"); Uygula(once, d); if (!d && sayfaYok) BasaKaydir(); }
+        // 2026-11-19 inceleme (fikir 07:06 #2, HIG sistem kalıbı): seçili sekmeye ikinci dokunuş, açık sayfa yoksa listeyi başa
+        // kaydırır (iOS sekme çubuğu davranışı; Kariyer 8 tur, Dükkân uzun). Açık sayfa varken ilk dokunuş köke döner (eskisi gibi).
+        // .25 sn ease-out, hareketi azaltta anında; yalnız scrollOffset değişir, sekme yeniden kurulmaz.
+        void BasaKaydir()
+        {
+            var k = sekmeKok[(int)gez.sekme]; if (k == null) return; var sv = k.Q<ScrollView>(null, "govde-kaydir") ?? k.Q<ScrollView>();
+            if (sv == null || sv.scrollOffset.y <= 0) return;
+            if (Ayar.reduce) { sv.scrollOffset = Vector2.zero; return; }
+            float y0 = sv.scrollOffset.y, t0 = Time.realtimeSinceStartup;
+            sv.schedule.Execute(() => { float t = Mathf.Clamp01((Time.realtimeSinceStartup - t0) / .25f); t = 1 - (1 - t) * (1 - t) * (1 - t); sv.scrollOffset = new Vector2(sv.scrollOffset.x, y0 * (1 - t)); Kalite.Hareket(); })
+                .Every(16).Until(() => sv.scrollOffset.y <= 0);
+        }
         public void AyarlarAc() { var once = gez.sekme; gez.Ac(Gezinti.AYAR); Uygula(once, true); }
         public void SeviyeYoluAc() { var once = gez.sekme; gez.Ac(Gezinti.SEVIYE); Uygula(once, true); }
         public void GelisimAc() { var once = gez.sekme; gez.Ac(Gezinti.GELISIM); Uygula(once, true); }
