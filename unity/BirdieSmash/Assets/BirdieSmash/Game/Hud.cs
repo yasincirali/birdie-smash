@@ -1907,7 +1907,9 @@ namespace BirdieSmash.Game
             }
             catch (System.Exception) { foreach (var t in d) if (t != null) Destroy(t); return null; }   // katman eksikse ad yok, açılış eskisi gibi
         }
-        void AdBirak() { if (adTex != null) foreach (var t in adTex) Destroy(t); adTex = null; adYok = true; }
+        // adYok burada kurulmaz: ekran turu açılış karelerini (PerdeKare) gerçek açılıştan sonra dondurur, dokular yeniden
+        // yüklenmeli. Oyunda açılış perdesi bir daha gelmediği için yeniden yükleme olmaz.
+        void AdBirak() { if (adTex != null) foreach (var t in adTex) Destroy(t); adTex = null; }
         void TopCiz()
         {
             var y = root.yukleyici; if (y == null || (y.rt == null && y.serit == null)) return;
