@@ -1374,13 +1374,16 @@ namespace BirdieSmash.Game
                     // (el sola giderken baş sağa: alın kolun altından kayar), bilek geriden gelir, kol inerken gövde geri açılır.
                     // Kollar tam çözülüp boşta pozuyla DÖNÜŞ uzayında karışır (Kat): el düz çizgide değil yay çizerek kalkar.
                     // r198/r200 notları geçerli: hedef baş kemiğine göre alın; raket −up·0,2'den fazla inmez (zemin).
-                    { float kL = Zarf(t, .04f, .34f, .72f, 1.05f), kR = Zarf(t, 0, .28f, .66f, 1f), a = rm ? .5f : Evre(t, .3f, .7f);
+                    { float kL = Zarf(t, 0, .2f, .84f, 1.05f), kR = Zarf(t, 0, .28f, .66f, 1f), a = rm ? .5f : Evre(t, .3f, .7f);
+                      // r203: çıkışta kol dönüş karışımıyla yana açılarak iniyordu (el sallar gibi). El artık hedefle taşınır: göğüs
+                      // önünden kalkar, sildikten sonra yüzün önünden göğse iner; karışım yalnız en başta ve en sonda.
+                      float in_ = (1 - Evre(t, .04f, .32f)) + Evre(t, .68f, .98f);
                       Vector3 alin = (sR + sL) * .5f + up * L * .4f + fw * L * .3f;
                       if (kHead != null)
                       { Quaternion hq = Quaternion.AngleAxis(Mathf.Lerp(-8, 12, a) * kL * w, up) * Quaternion.AngleAxis(10 * kL * w, ri) * Quaternion.AngleAxis(4 * kL * w, fw);
                         kHead.rotation = hq * kHead.rotation; alin = kHead.position + hq * (up * L * .75f + fw * L * .55f); }
                       IK(SU, SE, SH, sR + ri * L * .25f - up * L * .6f + fw * L * (.2f + .04f * Mathf.Sin(t * 5) * salla), ri - fw * .3f); RaketDik(SH, fw * .85f - up * .2f + ri * .25f);
-                      IK(LU, LE, LH, alin + ri * L * (.28f - .56f * a) + up * L * .04f * Mathf.Sin(a * Mathf.PI), -ri * .7f + fw * .5f + up * .25f);
+                      IK(LU, LE, LH, alin + ri * L * (.28f - .56f * a) + up * L * .04f * Mathf.Sin(a * Mathf.PI) - (up * L * .95f + fw * L * .1f) * in_, -ri * .7f + fw * .5f + up * .25f * (1 - in_));
                       if (LH != null) LH.rotation = Quaternion.AngleAxis(-20 * Mathf.Sin(a * Mathf.PI) * kL * w * salla, fw) * LH.rotation;   // bilek geriden gelir
                       Kat(0, SU, kR); Kat(1, SE, kR); Kat(5, SH, kR); Kat(2, LU, kL); Kat(3, LE, kL); } break;
                 case "tel":      // raket gövdenin önünde çapraz, kafası sol omzun önünde; sol elin parmakları telleri iki kez tarar

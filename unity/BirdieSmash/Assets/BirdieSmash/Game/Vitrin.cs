@@ -84,7 +84,7 @@ namespace BirdieSmash.Game
 
         public void Ac() { gameObject.SetActive(true); kam.enabled = true; durgun = 0; acT = Ayar.reduce ? 1 : 0; if (!Ayar.reduce) a = KAHRAMAN_ACI - 360; figBos = 0; salYapildi = false; Yenile(); }
         // Sevinç önizlemesi (2026-11-01): id verilince figür o hareketi döngüde yapar; null = boşta. Sevinç sayfasından çıkınca silinir.
-        public string sevinc; float sevincT;
+        public string sevinc; float sevincT; [System.NonSerialized] public float TestSevincT = -1;   // ekran turu: sevinç anını sabitler (CI kare hızı değişken)
         public static float TestSmacT = -1;   // ekran turu: smaç hareketi önizlemesinin saati sabit (kare hızı CI'da düşük)
         // smacId: "smac:" önekli önizlemenin kimliği bir kez ayrılır (2026-11-11 inceleme #5: önceden her karede Substring = GC).
         string smacId;
@@ -473,7 +473,7 @@ namespace BirdieSmash.Game
             }
             if (suruk) { raKay = false; bosT = 0; }
             float hit; if (poz != null && odak == TUTUS) fig.ShowPoz(YER, a, poz, Match.CLIP_HIT.TryGetValue(poz, out hit) ? hit : .5f);
-            else if (sevinc != null) { sevincT += dt; if (smacId != null) fig.ShowSmac(YER, a, smacId, TestSmacT >= 0 ? TestSmacT : sevincT); else fig.ShowSevinc(YER, a, sevinc, sevincT); }   // Dolap › Sevinç önizlemesi (döngü)
+            else if (sevinc != null) { sevincT += dt; if (smacId != null) fig.ShowSmac(YER, a, smacId, TestSmacT >= 0 ? TestSmacT : sevincT); else fig.ShowSevinc(YER, a, sevinc, TestSevincT >= 0 ? TestSevincT : sevincT); }   // Dolap › Sevinç önizlemesi (döngü)
             else fig.ShowStatic(YER, a, 0);
             // geçiş: figür 0–60%'ta solar/kayar, raket 45–100%'te öne gelir
             float fK = Mathf.Clamp01(gec / .6f), rK = Mathf.Clamp01((gec - .45f) / .55f);

@@ -318,7 +318,8 @@ namespace BirdieSmash.Game
         {
             var ui = root != null ? root.ui : null; if (ui == null || root.vitrin == null) yield break;
             ui.SekmeAc(Sekme.Soyunma); ui.SoyunmaSegment(2); yield return Bekle(20); ui.KarakterAc(UiKok.KAR_SEVINC); yield return Bekle(25);
-            foreach (var sv in new[] { "ter", "tel" }) { root.vitrin.Sevinc(sv); yield return Bekle(8); for (int k = 0; k < 6; k++) { yield return Cek("sevinc_" + sv + "_" + k); yield return Bekle(9); } }   // 2026-11-19: akış okunsun diye altı kare (yasin: "kalas gibi")
+            foreach (var sv in new[] { "ter", "tel" }) { root.vitrin.Sevinc(sv); int k = 0; foreach (float an in new[] { .15f, .32f, .45f, .58f, .72f, .9f }) { root.vitrin.TestSevincT = an; root.vitrin.a = 20; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("sevinc_" + sv + "_" + k++); } }
+            root.vitrin.TestSevincT = -1;   // 2026-11-19: akış okunsun diye altı kare (yasin: "kalas gibi")
             ui.Geri(); ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
         }
         IEnumerator DugmeKareleri()
