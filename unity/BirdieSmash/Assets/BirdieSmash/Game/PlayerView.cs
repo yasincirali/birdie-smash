@@ -1082,7 +1082,7 @@ namespace BirdieSmash.Game
                     yaw.rotation = Quaternion.AngleAxis(Vector3.SignedAngle(fw0, kb, Vector3.up) * .85f * k, Vector3.up) * yaw.rotation;
                 }
             }
-            SevincPoz(sevId, sevT, sevW, M.reduce);
+            SevincPoz(sevId, sevT, sevW, M.reduce); if (!sevDongu || sevT < 6) Kalite.Canli();   // 2026-11-19: sevinç sürerken ekran hızı yüksek; maç sonu döngüsünde ilk 6 sn (pil: kart açık kalabilir)
         }
         // Zafer kamerasının varacağı yer (GameRoot.ZaferKamera her kare yazar; zafer yoksa null).
         [System.NonSerialized] public Vector3? zaferBak;
@@ -1101,7 +1101,7 @@ namespace BirdieSmash.Game
             if (anim == null) return; Sample("idle", .25f, null, 0, 1); cur = "_sevinc";   // ShowStatic çıkışta boşta pozunu yeniden örneklesin
             float d = SevincSure(id), tt = t % d;
             float w = Mathf.Clamp01(Mathf.Min(tt / .15f, (d - tt) / .25f));
-            SevincPoz(id, tt, w, Ayar.reduce);
+            SevincPoz(id, tt, w, Ayar.reduce); Kalite.Canli();   // Dolap › Hareketler önizlemesi de yüksek hızda
         }
         // ---- Smaç hareketi (2026-11-10, Kozmetik.SMAC; yasin: "xp ve levele özgü animasyonlar, cool smash tricks") ----
         // Sıçrayarak smaç klibinin (jump) üstüne kemik katmanı: sevinç katmanıyla aynı yöntem, yeni FBX yok, dört modelde aynı.
