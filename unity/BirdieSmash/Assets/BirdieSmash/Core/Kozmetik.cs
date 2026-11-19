@@ -50,6 +50,25 @@ namespace BirdieSmash.Core
         // değişmez. Ayrı kategori, çünkü Gear'in ayakkabı modeli satın alınan bir ekipman, bu Tüy ile alınan bir görünüş.
         // Sona eklendi (kayıt sırası değişmez).
         public const string AYAK = "ayak";
+        // 2026-11-20 Oyuncu modeli (yasin: "toy 3d dışı ücretli olmalı"): karakter.json modeller. Aynı sahiplik/fiyat kuralı, yalnız
+        // görünüş. KAT'a girmez: Dolap sayımı ve deneme akışı kategori sayfalarına göre kurulu; model Beden sayfasının başındaki
+        // çiplerden alınır ve seçilir (seçim Ayar.model, kayıt tuytop_model).
+        public const string MODEL = "model";
+        // Modele taşınan beden tipleri: kedi, tavşan, panda ve robot tam gövdeli model oldu; Yapay Zekâ Böceği tipi kalktı,
+        // sahibi Hamamböceği modelini alır. "tip:<id>" sahipliği "model:<id>" olur (ödenen Tüy boşa gitmez); eski kayıt satırı
+        // silinmez (eski build aynen geri yazar). Dönüş: seçili tip taşındıysa geçilecek model, yoksa null.
+        static readonly string[][] TIP_MODEL = { new[] { "kedi", "kedi" }, new[] { "tavsan", "tavsan" }, new[] { "panda", "panda" }, new[] { "robot", "robot" }, new[] { "bocek", "hamambocegi" } };
+        public static string TipModel(Gear g, string seciliTip)
+        {
+            string hedef = null; bool degisti = false;
+            foreach (var t in TIP_MODEL)
+            {
+                bool secili = seciliTip == t[0]; if (secili) hedef = t[1];
+                if ((secili || g.eko.acik.Contains(TIP + ":" + t[0])) && g.eko.acik.Add(MODEL + ":" + t[1])) degisti = true;
+            }
+            if (degisti) g.EkoYaz();
+            return hedef;
+        }
         public static readonly string[] KAT = { TIP, SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC, KOL, BEL, AYAK };
         static Dictionary<string, KozmetikOge[]> veri; static Dictionary<string, RakipGorunum> rakip;
         static Dictionary<string, KozmetikOge[]> gosterim;
@@ -164,7 +183,7 @@ namespace BirdieSmash.Core
             if (veri != null) return;
             var o = Json.Obj(Json.Parse(KariyerVeri.Metin("karakter"))); if (o == null) throw new InvalidOperationException("Birdie Smash: veri/karakter.json okunamadı");
             var v = new Dictionary<string, KozmetikOge[]>();
-            foreach (var k in new[] { "tipler", SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC, KOL, BEL, AYAK })
+            foreach (var k in new[] { "tipler", SAC, SAPKA, YUZ, SEVINC, MAC_SONU, SIRT, SMAC, KOL, BEL, AYAK, "modeller" })
             {
                 var l = new List<KozmetikOge>(); var a = o.ContainsKey(k) ? o[k] as List<object> : null;
                 if (a != null) foreach (var x in a)
@@ -177,7 +196,7 @@ namespace BirdieSmash.Core
                             sv = (int)Json.Num(d, "sv", 1), fiyat = (int)Json.Num(d, "fiyat", 0), bant = Json.Bool(d, "bant", true), garip = Json.Bool(d, "garip", false) });
                     }
                 if (l.Count == 0 || l[0].fiyat != 0 || l[0].sv != 1) throw new InvalidOperationException("Birdie Smash: karakter.json " + k + " ilk öğesi ücretsiz ve Sv 1 olmalı (varsayılan)");
-                v[k == "tipler" ? TIP : k] = l.ToArray();
+                v[k == "tipler" ? TIP : k == "modeller" ? MODEL : k] = l.ToArray();
             }
             var r = new Dictionary<string, RakipGorunum>();
             var so = Json.Obj(Json.Parse(KariyerVeri.Metin("stil"))); var ss = so != null && so.ContainsKey("stiller") ? Json.Obj(so["stiller"]) : null;

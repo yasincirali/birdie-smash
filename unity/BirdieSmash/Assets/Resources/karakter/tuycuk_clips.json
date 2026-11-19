@@ -341,6 +341,46 @@
    "hitK": 9,
    "hold": 2,
    "drop": 5
+  },
+  {
+   "name": "bh_drop",
+   "first": 1231,
+   "last": 1258,
+   "loop": false,
+   "poses": 10,
+   "hitK": 5,
+   "hold": 2,
+   "drop": null
+  },
+  {
+   "name": "bh_net",
+   "first": 1268,
+   "last": 1289,
+   "loop": false,
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
+  },
+  {
+   "name": "net_spin",
+   "first": 1299,
+   "last": 1320,
+   "loop": false,
+   "poses": 8,
+   "hitK": 4,
+   "hold": 2,
+   "drop": null
+  },
+  {
+   "name": "block_govde",
+   "first": 1330,
+   "last": 1345,
+   "loop": false,
+   "poses": 6,
+   "hitK": 3,
+   "hold": 2,
+   "drop": null
   }
  ],
  "model": "tuycuk",

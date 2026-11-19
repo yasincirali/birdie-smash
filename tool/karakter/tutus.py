@@ -48,7 +48,8 @@ UE=Adlar()
 # klip → tutuş. Ön: el sıkışma (forehand). bh: başparmak (backhand, başparmak geniş arka yüzde). kil: file önü öldürme
 # (panhandle'a yakın, yüz fileye). parmak: file vuruşu, parmak uçlarıyla kontrol, el sapta yukarı kayar.
 KLIP_TUTUS={'bh_over':'bh','bh_drive':'bh','bh_kill':'bh','bh_low':'bh','bh_lunge':'bh','block':'bh','serve_bh':'bh',
-            'serve_flick':'bh','kill':'kil','net':'parmak'}
+            'serve_flick':'bh','kill':'kil','net':'parmak',
+            'bh_drop':'bh','bh_net':'bh','net_spin':'parmak','block_govde':'bh'}   # 2026-11-20 teknik vuruşlar: türedikleri klibin tutuşu
 # tutuş parametreleri: yuz = raket yüz normalinin avuç normalinden sap ekseni çevresinde dönüşü (°; + başparmak yanına);
 # dip = sapın dip ucundan hipotenar topuğa (model birimi; küçük = sapın dibinden güç tutuşu); bas = başparmak biçimi;
 # isaret = işaret parmağının açılması (°, tetik); bosluk = avuçla sap arası ek boşluk (m. birimi).

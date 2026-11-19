@@ -231,6 +231,11 @@ namespace BirdieSmash.Game
             var gv = Json.Obj(Json.Parse(Str("tuytop_gorunum", null)));
             if (gv != null) foreach (var k in new List<string>(GORUNUM.Keys)) { string v = Json.Str(gv, k, null); if (v != null && System.Array.Exists(Karakter.Gorunum(k), o => o.id == v)) GORUNUM[k] = v; }
             // Tip ve saç biçimi: kayıtta yoksa varsayılan; varsa sahip sayılır (Kozmetik.Koru: hiçbir seçim elden alınmaz).
+            // 2026-11-20: modele taşınan tip (kedi, tavşan, panda, robot, böcek) seçiliyse oyuncu o modele geçer; sahiplikler de taşınır.
+            // Seçili model sahip sayılır (Koru): ücretsizken Tüycük seçmiş oyuncu onu kaybetmez. Gerçekçi/Sade veride yok, dokunulmaz.
+            string tasinan = Kozmetik.TipModel(gear, gv != null ? Json.Str(gv, Kozmetik.TIP, null) : null);
+            if (tasinan != null && ModelVar(tasinan)) model = tasinan;
+            if (ModelSecenek(model)) Kozmetik.Koru(gear, Kozmetik.MODEL, model);
             foreach (var k in Kozmetik.KAT) KOZ[k] = Kozmetik.Koru(gear, k, gv != null ? Json.Str(gv, k, Kozmetik.Varsayilan(k)) : Kozmetik.Varsayilan(k));
             AYK_GOR = gv != null ? Json.Str(gv, "ayk_gor", "taban") : "taban";
             GearHesap();
@@ -241,19 +246,23 @@ namespace BirdieSmash.Game
         // dördüncü seçenek sona eklendi; var olan sıra ve varsayılan "oyuncak" değişmez. Kayıt değeri "tuycuk"; FBX'i olmayan
         // build'de Yukle onu bilinmeyen model gibi oyuncak'a düşürür.
         // 2026-11-20 Hamamböceği (yasin: "eklemlerini bizim uygulamaya uygun hale getirelim"): beşinci seçenek sona eklendi; Tüycük gibi
-        // Oyuncak iskeleti, klipleri ve beş ayakkabısı (tool/karakter/hamambocegi.py). Kayıt değeri "hamambocegi".
+        // Oyuncak iskeleti, klipleri ve beş ayakkabısı (tool/karakter/maskot.py). Kayıt değeri "hamambocegi".
         // Aynı gün erkek tipi (yasin: "bir erkek hamam böceği ekle renklendir ve oyuna ekle"): ayrı FBX, kayıt değeri "hamambocegi_erkek".
-        public static readonly string[] MODELLER = { "oyuncak", "rocketbox", "sade", "tuycuk", "hamambocegi", "hamambocegi_erkek" }, MODEL_AD = { "Oyuncak 3B", "Gerçekçi", "Sade", "Tüycük", "Hamamböceği", "Erkek Hamamböceği" };
-        public static bool Hamambocegi(string m) { return m != null && m.StartsWith("hamambocegi"); }
-        // Ayarlar'da sunulan modeller (2026-11-07, yasin: 4 → 2). Diğerleri kayıtlı seçim olarak yaşar, yeni oyuncuya sunulmaz.
-        public static bool ModelSecenek(string m) { return m == "oyuncak" || m == "tuycuk" || Hamambocegi(m); }
+        // Aynı gün kedi, tavşan, panda, robot (yasin: "tümden vücuda çevrilip player modelde yer almalı, toy 3d dışı ücretli"):
+        // eski beden tipleri tam gövdeli model oldu; Oyuncak 3B dışındaki modeller Tüy ile alınır (karakter.json modeller, Kozmetik.MODEL).
+        public static readonly string[] MODELLER = { "oyuncak", "rocketbox", "sade", "tuycuk", "hamambocegi", "hamambocegi_erkek", "kedi", "tavsan", "panda", "robot" }, MODEL_AD = { "Oyuncak 3B", "Gerçekçi", "Sade", "Tüycük", "Hamamböceği", "Erkek Hamamböceği", "Kedi", "Tavşan", "Panda", "Robot" };
+        // Maskot: tek bedenli, Oyuncak iskeletli ve beş ayakkabılı modeller (Tüycük dışındakiler tool/karakter/maskot.py).
+        public static bool Maskot(string m) { return m != null && m != "oyuncak" && Kozmetik.Bul(Kozmetik.MODEL, m) != null; }
+        // Dolap'ta sunulan modeller = veride satılanlar (2026-11-07'de 4 → 2 inmişti; 2026-11-20 yasin modelleri mağazaya açtı).
+        // Gerçekçi ve Sade veride yok: kayıtlı seçim olarak yaşar, yeni oyuncuya sunulmaz.
+        public static bool ModelSecenek(string m) { return Kozmetik.Bul(Kozmetik.MODEL, m) != null; }
         public static bool ModelVar(string m)
         {
             // 2026-11-15 (yasin: "kaldır"): Gerçekçi (rocketbox) ve Sade'nin FBX ve dokuları (~15 MB) build'den çıktı; 7 Kasım'dan
             // beri yeni oyuncuya sunulmuyorlardı. Kayıtlı "rocketbox"/"sade" seçimi Yukle'de Oyuncak 3B'ye düşer (dosya yok); beden
             // tipi, saç, renk ve aksesuar seçimleri kayıtta durur ve Oyuncak'ta görünür. Kod yolları kaldı: FBX geri konursa çalışır.
             if (m == "oyuncak") return true;
-            if (m != "rocketbox" && m != "sade" && m != "tuycuk" && !Hamambocegi(m)) return false; // Tur 2: varlık sınaması küçük <model>_clips.json ile (FBX ile hep birlikte gelir; PlayerView onu da okur): FBX'i
+            if (m != "rocketbox" && m != "sade" && !Maskot(m)) return false; // Tur 2: varlık sınaması küçük <model>_clips.json ile (FBX ile hep birlikte gelir; PlayerView onu da okur): FBX'i
             // yüklemek (ağ + 26 klip, ~2 MB) o modeli seçmeyen oyuncuda da her açılışta Ayar.Yukle'de belleğe alıyordu.
             int v;
             if (!modelVar.TryGetValue(m, out v)) { var js = Resources.Load<TextAsset>("karakter/" + m + "_clips"); v = js != null ? 1 : 0; if (js != null) Resources.UnloadAsset(js); modelVar[m] = v; }
@@ -266,7 +275,7 @@ namespace BirdieSmash.Game
         // tek, ama beş ayakkabı modeli (rocketbox.fbx ayk_<varlik>__ayakkabi) ve şort ağı var. Sade'de şort ağı var, ayakkabı
         // modeli yok (renk taban parçasında görünür). Oyuncak'ta şort gövde atlasında: şort rengi orada görünmez, sunulmaz.
         // Tüycük (2026-10-29) Oyuncak'ın beş ayakkabı parçasını aynı ayak kemikleriyle taşır: model görünür. Şortu yok (tek parça gövde).
-        public static bool AykModelGorunur { get { return model == "oyuncak" || model == "rocketbox" || model == "tuycuk" || Hamambocegi(model); } }
+        public static bool AykModelGorunur { get { return model == "oyuncak" || model == "rocketbox" || Maskot(model); } }
         public static bool SortGorunur { get { return model == "rocketbox" || model == "sade"; } }
         // 2026-11-10 oyuncu gelişimi (Core/Gelisim): GS = ekipman + tarz + gelişim. GSE yalnız ekipman kalır (Atölye çubukları
         // ekipmanı anlatır); gelişimin payı kendi sayfasında yüzdeyle yazılır. Eşit şartlarda ekipman seviyesi gibi etkisiz.

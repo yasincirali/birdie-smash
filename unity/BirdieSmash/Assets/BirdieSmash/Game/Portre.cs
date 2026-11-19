@@ -135,7 +135,7 @@ namespace BirdieSmash.Game
                 Transform bas = null;
                 foreach (var tr in fig.GetComponentsInChildren<Transform>(true))
                 { string n = tr.name.ToLowerInvariant(); if (n.Contains("__")) continue; if (n == "head" || n.EndsWith(" head")) { bas = tr; break; } }
-                float ust = float.MinValue; foreach (var r in fig.GetComponentsInChildren<Renderer>()) if (r.enabled && !r.gameObject.name.StartsWith("raket") && !(r is TrailRenderer)) ust = Mathf.Max(ust, r.bounds.max.y);
+                float ust = float.MinValue; foreach (var r in fig.GetComponentsInChildren<Renderer>()) if (r.enabled && !r.gameObject.name.StartsWith("raket") && !(r is TrailRenderer) && PlayerView.Etiket(r.gameObject.name) != "kulak") ust = Mathf.Max(ust, r.bounds.max.y);   // kulak/anten yüzü küçültmesin
                 if (ust == float.MinValue) ust = YER.y + 1.8f;
                 Bounds kb = new Bounds(); bool kalkan = false;
                 if (kol && fig.KolKok != null)

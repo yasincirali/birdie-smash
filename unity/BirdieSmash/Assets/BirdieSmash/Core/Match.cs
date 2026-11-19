@@ -143,26 +143,29 @@ namespace BirdieSmash.Core
         public static readonly Dictionary<string, float> CLIP_HIT = new Dictionary<string, float> {
             // 46943a8 (raket düşüşü, drop/file klibi): CLIP_HIT = (hit+0.05)/n, overhead 14 kare.
             {"smash",.6464f},{"clear",.6464f},{"drive",.5062f},{"kill",.4357f},{"low",.5062f},{"lunge",.5062f},{"serve",.5025f},{"serve_gec",.5525f},{"serve_bh",.505f},{"serve_flick",.505f},{"block",.5083f},
-            {"bh_over",.505f},{"bh_drive",.5062f},{"bh_kill",.4357f},{"bh_low",.5062f},{"bh_lunge",.5062f},{"jump",.6464f},{"drop",.6464f},{"rth",.6464f},{"net",.5062f}};
+            {"bh_over",.505f},{"bh_drive",.5062f},{"bh_kill",.4357f},{"bh_low",.5062f},{"bh_lunge",.5062f},{"jump",.6464f},{"drop",.6464f},{"rth",.6464f},{"net",.5062f},
+            // 2026-11-20 teknik vuruşlar (karakter.py): türedikleri klibin anahtar zamanları ve kare sayısı (temas kesri aynı).
+            {"bh_drop",.505f},{"bh_net",.5062f},{"net_spin",.5062f},{"block_govde",.5083f}};
         // Klip başına poz (kare) sayısı: hazırlıkta "geri salınımın tepesinde bekle" kuralı kare indeksleriyle yazıldı.
         // Görünüm FBX'in <model>_clips.json'undan günceller; varsayılanlar karakter.py CLIPS ile aynı.
         public static readonly Dictionary<string, int> CLIP_N = new Dictionary<string, int> {
             {"idle",8},{"run",8},{"smash",14},{"clear",14},{"drop",14},{"net",8},{"drive",8},{"kill",7},{"low",8},{"lunge",8},{"serve",20},{"serve_gec",20},{"serve_bh",10},{"serve_flick",10},{"block",6},
-            {"bh_over",10},{"bh_drive",8},{"bh_kill",7},{"bh_low",8},{"bh_lunge",8},{"split",7},{"chasse_r",8},{"chasse_l",8},{"fwd",8},{"back_r",8},{"back_l",8},{"jump",14},{"yorgun",10},{"kros_r",8},{"kros_l",8},{"geri_r",8},{"geri_l",8},{"rth",14}};
+            {"bh_over",10},{"bh_drive",8},{"bh_kill",7},{"bh_low",8},{"bh_lunge",8},{"split",7},{"chasse_r",8},{"chasse_l",8},{"fwd",8},{"back_r",8},{"back_l",8},{"jump",14},{"yorgun",10},{"kros_r",8},{"kros_l",8},{"geri_r",8},{"geri_l",8},{"rth",14},{"bh_drop",10},{"bh_net",8},{"net_spin",8},{"block_govde",6}};
         // Raket HEP sağ elde (yasin 2026-10-19): backhand aynalama değil, kendi klibi.
         public static readonly Dictionary<string, string> BH = new Dictionary<string, string> {
-            {"smash","bh_over"},{"clear","bh_over"},{"drop","bh_over"},{"net","bh_low"},{"drive","bh_drive"},{"kill","bh_kill"},{"low","bh_low"},{"lunge","bh_lunge"},{"block","bh_drive"},{"jump","bh_over"}};
+            {"smash","bh_over"},{"clear","bh_over"},{"drop","bh_drop"},{"net","bh_net"},{"drive","bh_drive"},{"kill","bh_kill"},{"low","bh_low"},{"lunge","bh_lunge"},{"block","bh_drive"},{"jump","bh_over"}};
         // Hazırlık temasa kalan süreyle oynar (HTML ce47f5c, animasyon denetimi 24 Eki): figür geri salınımın tepesinde
         // (PREP_KARE: karakter.py'deki *_PREP anahtarına en yakın kare) bekler, ileri salınım son SALINIM saniyesinde
         // oynar, temas karesi ancak raket topa değdiğinde gelir. Sıçrayarak smaçta salınım kalkıştan başlar.
         public static readonly Dictionary<string, int> PREP_KARE = new Dictionary<string, int> {
             // 46943a8: tüm kliplerde kupa/geri salınım tepesi 2. kare (raket düşüşü sonrası).
-            {"smash",2},{"clear",2},{"jump",2},{"rth",2},{"bh_over",2},{"drop",2},{"net",2},{"drive",2},{"bh_drive",2},{"kill",2},{"bh_kill",2},{"low",2},{"bh_low",2},{"lunge",2},{"bh_lunge",2},{"block",2}};
+            {"smash",2},{"clear",2},{"jump",2},{"rth",2},{"bh_over",2},{"drop",2},{"net",2},{"drive",2},{"bh_drive",2},{"kill",2},{"bh_kill",2},{"low",2},{"bh_low",2},{"lunge",2},{"bh_lunge",2},{"block",2},{"bh_drop",2},{"bh_net",2},{"net_spin",2},{"block_govde",2}};
         // render turu 24 Eki: overhead'de kupa pozu ile temas arası 7 kare (raket düşüşü); 100 ms'de kareler atlanıyordu,
         // ileri salınım 160 ms (Rambely vd.: kupa→temas ~150–200 ms). Backhand overhead 130 ms.
         public static readonly Dictionary<string, float> SALINIM = new Dictionary<string, float> {
-            {"jump",.28f},{"smash",.16f},{"rth",.16f},{"clear",.16f},{"drop",.16f},{"bh_over",.13f}};
+            {"jump",.28f},{"smash",.16f},{"rth",.16f},{"clear",.16f},{"drop",.16f},{"bh_over",.13f},{"bh_drop",.13f}};
         public const float SALINIM_JUMP = .28f, SALINIM_V = .1f;
+        const float NET_SPIN_Y = 1f, GOVDE_X = .25f;   // m: fileye uzaklık; temas noktasının oyuncu ekseninden yatay uzaklığı
         public static bool HasClip(string c) { return CLIP_N.ContainsKey(c); }
         public const float JUMP_HIZ = 1f / .53f;   // sıçrama 0,53 sn: kalkıştan 0,28 sn sonra tepe
         // Ayak işi adım boyu (fb1b245): m / döngü; chassé ~0,7 m taşır, eskiden hepsi 1,5 m'de bir dönüp ayak kayıyordu.
@@ -375,7 +378,7 @@ namespace BirdieSmash.Core
         // (düz) gider. Oyuncunun vuruş türü değişmez: kaydırdığı vuruş çıkar, klip ile uçuş aynı şeyi anlatır.
         public const float ARKA_SMAC = .3f, ARKA_GEC = .6f, ARKA_HIZ = .85f, ARKA_UZUN = .4f;
         static bool RthMu(Athlete o, string who, float sx, float sz) { if (sz <= RTH_Z || !HasClip("rth")) return false; float side = (sx - o.x) * (who == "me" ? 1 : -1); return side < -.6f && side >= -RTH_ERIS; }
-        static string RthKlip(string clip, Athlete o, string who, float sx, float sz) { return clip == "bh_over" && RthMu(o, who, sx, sz) ? "rth" : clip; }
+        static string RthKlip(string clip, Athlete o, string who, float sx, float sz) { return (clip == "bh_over" || clip == "bh_drop") && RthMu(o, who, sx, sz) ? "rth" : clip; }
         static string HandOf(Athlete o, string who, float sx, float sz) { float side = (sx - o.x) * (who == "me" ? 1 : -1); return side < -(sz > 1.95f ? .6f : .25f) ? "back" : "fore"; }
         // HUD (hale etiketi, servis şeridi, Hawk-Eye kırpması) iç kuralları kopyalamasın diye salt-okur sarmalayıcılar.
         public static string HandOfPublic(Athlete o, string who, float sx, float sz) { return HandOf(o, who, sx, sz); }
@@ -435,6 +438,10 @@ namespace BirdieSmash.Core
             h.hand = isServe ? "fore" : HandOf(h, from, hx, hz);
             string c = isServe ? (h.svClip ?? "serve") : h.shot == "lunge" ? "lunge" : h.shot == "over" ? (type == "jump" || h.jump > 0 ? "jump" : type == "smash" ? "smash" : type == "drop" && HasClip("drop") ? "drop" : "clear") : h.shot == "drive" ? "drive" : h.shot == "kill" ? "kill" : type == "block" ? "block" : type == "drop" && HasClip("net") ? "net" : "low";
             h.clip = RthKlip(ClipHand(c, h.hand), h, from, hx, hz);
+            // 2026-11-20 teknik vuruş klipleri (yalnız görünüş; uçuş ve sayı aynı): file dibindeki forehand net vuruşu bilek
+            // çevirmeli (tumble), gövdeye gelen smacın bloğu gövdenin önünde. İkisi de hazırlık klibiyle aynı temas pozunu paylaşır.
+            if (h.clip == "net" && Math.Abs(hy - Court.NET) < NET_SPIN_Y) h.clip = "net_spin";
+            else if (h.clip == "block" && Math.Abs(hx - h.x) < GOVDE_X) h.clip = "block_govde";
             // Takip vuruşa göre (fb1b245, denetim #5/#16): smaç/clear 300 ms, drop 200, drive 180, file öldürme 150,
             // net vuruşu 120, blok 100, lift 250; hamle toparlanması 300 ms. Eskiden hepsi 250 ms'ydi.
             h.swHiz = 1 / (isServe ? .25f : h.shot == "lunge" ? .3f : type == "block" ? .1f : h.shot == "over" ? (type == "drop" ? .2f : .3f) : h.shot == "drive" ? .18f : h.shot == "kill" ? .15f : type == "drop" ? .12f : .25f);

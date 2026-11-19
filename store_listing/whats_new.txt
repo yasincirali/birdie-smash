@@ -1,4 +1,21 @@
 === UNITY ===
+Kedi, Tavşan, Panda ve Robot artık tam gövdeli model; modeller Tüy ile (20 Kasım):
+- Kedi, Tavşan, Panda ve Robot beden tipi olmaktan çıktı: her birinin kendi gövdesi, kolu, bacağı ve kuyruğu var. Dolap'ta oyuncu modeli çiplerinde duruyorlar.
+- Oyuncak 3B dışındaki modeller Tüy ile alınıyor: Tüycük 1200, Kedi 1800, Hamamböceği 2000, Tavşan 2200, Erkek Hamamböceği 2200, Panda 2500, Robot 2500. Her birinin bir seviye kapısı var.
+- Daha önce aldığın hayvan tipi sende kalır ve model olarak açılır. Şu an kullandığın model de sende kalır.
+- Yapay Zekâ Böceği beden tipi kalktı; onu almış olanlara Hamamböceği modeli açıldı.
+- Şapka takınca kulaklar ve antenler gizleniyor.
+Nasıl denenir: Dolap'ta model çiplerine bak: sahip olmadıklarının altında fiyat ya da gereken seviye yazmalı. Tüyün yeten birine dokun: "Almak için yeniden dokun" yazmalı, ikinci dokunuşta alınmalı ve figür değişmeli. Yeni modellerle bir maç oyna, şapka tak: kulaklar şapkayı delmemeli. Eskiden hayvan tipin varsa açılışta o modelle gelmelisin.
+Dört teknik vuruşun kendi hareketi (20 Kasım):
+- Backhand drop artık sert savrulmuyor: raket temastan hemen sonra duruyor.
+- Backhand file vuruşunda raket yukarı kalkmıyor, öne uzanıp kalıyor.
+- Filenin dibindeki forehand file vuruşunda raket topun altından yana süpürüyor (bilek çevirmeli vuruş).
+- Smaç gövdene gelince blok gövdenin önünde, ters yüzle yapılıyor.
+Yalnız görünüş değişti; topun gidişi ve sayılar aynı.
+Nasıl denenir: Bir maç oyna. Sol arka köşeden drop at: raket kısa durmalı. Fileye yakın, solundan gelen topa file vuruşu yap: raket öne uzanıp kalmalı. Filenin hemen dibinde sağından file vuruşu yap: raket yana süpürmeli. Rakibin smacını tam gövdene gelirken karşıla: raket göbeğinin önünde olmalı. Vuruş anında oyuncu bir pozdan ötekine sıçrıyorsa hangi vuruşta olduğunu yaz.
+Dört alaycı sevinç (20 Kasım):
+- Dolap'ta Sevinç sayfasına rakibi kızdıran dört hareket geldi: Ağlak (yalancı gözyaşı siler), Toz silkme (omzundan toz atar), Duyamadım (elini kulağına götürüp rakibe uzanır), Esneme (ağzını pat pat kapatıp gerinir). Hem sayı sevinci hem maç sonu için seçilir; birini alınca ikisinde de açılır.
+Nasıl denenir: Dolap'ta Sevinç sayfasında dört yeni karta sırayla dokun: figür hareketi göstermeli, her birinde kısa bir ses çalmalı. Eller yüzün ya da gövdenin içine giriyorsa hangi harekette ve hangi modelde olduğunu yaz. Birini sayı sevinci seçip maç oyna: sayı alınca hareket rakibe dönük yapılmalı, raket yere ya da yüze girmemeli.
 İki yeni oyuncu modeli: Hamamböceği ve Erkek Hamamböceği (20 Kasım):
 - Dolap'taki model çiplerine iki hamamböceği geldi. İlki turuncu kabuklu ve üzgün bakışlı; erkeği koyu kabuklu, yeşil gözlü, bıyıklı ve papyonlu. Göğüsleri ve elcikleri forma rengini alıyor. Yalnız görünüş, oyunu etkilemiyor.
 Nasıl denenir: Dolap'ta model çiplerinden Hamamböceği'ni, sonra Erkek Hamamböceği'ni seç: figür değişmeli, raket sağ elcikte durmalı. Forma rengini değiştir: göğüs ve elcikler o renge dönmeli. Ayakkabı modelini değiştir, kafa bandı tak. Bir maç oyna: el ya da raket gövdenin içine giriyorsa hangi vuruşta olduğunu yaz.

@@ -5,12 +5,18 @@
   {"id": "atlet", "ad": "Atlet",         "n": "Dengeli boy ve omuz",       "sv": 1, "fiyat": 0,   "varlik": null},
   {"id": "kadin", "ad": "Atletik kadın", "n": "Çevik, dengeli yapı",       "sv": 1, "fiyat": 0,   "varlik": "kadin"},
   {"id": "uzun",  "ad": "Uzun ve ince",  "n": "Uzun bacak, dar omuz",      "sv": 4, "fiyat": 650, "varlik": "uzun"},
-  {"id": "guclu", "ad": "Güçlü",         "n": "İri gövde, kalın kol",      "sv": 8, "fiyat": 950, "varlik": "guclu"},
-  {"id": "kedi",   "ad": "Kedi",   "n": "Turuncu kürk, sivri kulak, uzun kuyruk", "sv": 6,  "fiyat": 1800, "varlik": null,    "aks": "hv_kedi",   "renk": "#f0993e", "nadir": "nadir"},
-  {"id": "tavsan", "ad": "Tavşan", "n": "Uzun kulak, pembe yanak, ponpon kuyruk", "sv": 10, "fiyat": 2200, "varlik": "kadin", "aks": "hv_tavsan", "renk": "#efe9e4", "nadir": "nadir"},
-  {"id": "panda",  "ad": "Panda",  "n": "İri gövde, siyah kol ve bacak",          "sv": 14, "fiyat": 2500, "varlik": "guclu", "aks": "hv_panda",  "renk": "#2e2c33", "nadir": "destansi"},
-  {"id": "robot",  "ad": "Robot",  "n": "Metal gövde, ışıklı vizör, şarj kablosu",  "sv": 18, "fiyat": 2500, "varlik": "uzun",  "aks": "hv_robot",  "renk": "#a9bccd", "nadir": "destansi"},
-  {"id": "bocek",  "ad": "Yapay Zekâ Böceği", "n": "Işıklı gözler, alında çip, uzun antenler, kanat kabuğu", "sv": 16, "fiyat": 2500, "varlik": null, "aks": "hv_bocek", "renk": "#9a5630", "nadir": "destansi"}
+  {"id": "guclu", "ad": "Güçlü",         "n": "İri gövde, kalın kol",      "sv": 8, "fiyat": 950, "varlik": "guclu"}
+],
+"modeller_not": "2026-11-20 oyuncu modelleri (yasin: 'cat rabbit, panda, robot da tümden vücuda çevrilip player modelde yer almalı, toy 3d dışı ücretli olmalı sen belirle uygun tüy fiyatlarını AI roach body typeını da kaldır'). id = Resources/karakter/<id>.fbx (tool/karakter/maskot.py; tuycuk.py). Oyuncak 3B ücretsiz varsayılan; ötekiler Tüy ve seviyeyle, YALNIZ görünüş. Sahiplik kaydı 'model:<id>' (Kozmetik.MODEL). Kedi, tavşan, panda ve robot eskiden beden tipiydi (tipler, fiyatları aynı kaldı): 'tip:<id>' sahipliği modele taşınır, Yapay Zekâ Böceği tipi (bocek) kalktı ve sahipliği hamambocegi modeline geçer (Kozmetik.TipModel). Seçili model her durumda sahip sayılır (Koru): Tüycük'ü ücretsizken seçmiş oyuncu onu kaybetmez. Fiyat merdiveni: en ucuz maskot bir dansın üstünde (1200), en pahalısı destansı şapka düzeyinde (2500).",
+"modeller": [
+  {"id": "oyuncak", "ad": "Oyuncak 3B", "sv": 1, "fiyat": 0},
+  {"id": "tuycuk", "ad": "Tüycük", "sv": 3, "fiyat": 1200},
+  {"id": "kedi", "ad": "Kedi", "sv": 6, "fiyat": 1800},
+  {"id": "hamambocegi", "ad": "Hamamböceği", "sv": 8, "fiyat": 2000},
+  {"id": "tavsan", "ad": "Tavşan", "sv": 10, "fiyat": 2200},
+  {"id": "hamambocegi_erkek", "ad": "Erkek Hamamböceği", "sv": 12, "fiyat": 2200},
+  {"id": "panda", "ad": "Panda", "sv": 14, "fiyat": 2500},
+  {"id": "robot", "ad": "Robot", "sv": 18, "fiyat": 2500}
 ],
 "sac_model": [
   {"id": "kisa",      "ad": "Kısa kesim",   "sv": 1,  "fiyat": 0,   "varlik": "kisa"},
@@ -113,7 +119,11 @@
   {"id": "gitar", "ad": "Raket gitar", "sv": 16, "fiyat": 1600},
   {"id": "fiskiye", "ad": "Fıskiye", "sv": 12, "fiyat": 1100},
   {"id": "yildiz", "ad": "Yıldız zıplaması", "sv": 18, "fiyat": 1800},
-  {"id": "ucak", "ad": "Uçak", "sv": 20, "fiyat": 2000}
+  {"id": "ucak", "ad": "Uçak", "sv": 20, "fiyat": 2000},
+  {"id": "aglak", "ad": "Ağlak", "sv": 7, "fiyat": 700},
+  {"id": "toz", "ad": "Toz silkme", "sv": 10, "fiyat": 900},
+  {"id": "kulak", "ad": "Duyamadım", "sv": 13, "fiyat": 1200},
+  {"id": "esne", "ad": "Esneme", "sv": 17, "fiyat": 1700}
 ],
 "smac": [
   {"id": "duz", "ad": "Düz sıçrayış", "sv": 1, "fiyat": 0},
@@ -134,7 +144,11 @@
   {"id": "gitar", "ad": "Raket gitar", "sv": 16, "fiyat": 1600},
   {"id": "fiskiye", "ad": "Fıskiye", "sv": 12, "fiyat": 1100},
   {"id": "yildiz", "ad": "Yıldız zıplaması", "sv": 18, "fiyat": 1800},
-  {"id": "ucak", "ad": "Uçak", "sv": 20, "fiyat": 2000}
+  {"id": "ucak", "ad": "Uçak", "sv": 20, "fiyat": 2000},
+  {"id": "aglak", "ad": "Ağlak", "sv": 7, "fiyat": 700},
+  {"id": "toz", "ad": "Toz silkme", "sv": 10, "fiyat": 900},
+  {"id": "kulak", "ad": "Duyamadım", "sv": 13, "fiyat": 1200},
+  {"id": "esne", "ad": "Esneme", "sv": 17, "fiyat": 1700}
 ],
 "yuz": [
   {"id": "yok", "ad": "Aksesuar yok", "sv": 1, "fiyat": 0},
