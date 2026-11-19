@@ -316,8 +316,8 @@ namespace BirdieSmash.Game
         // sayfanın işi kıyafet seçmek, model değiştirmek değil).
         void TekBedenKart(VisualElement c)
         {
-            bool rb = Ayar.model == "rocketbox", tc = Ayar.model == "tuycuk"; string bas = rb ? L.T("Gerçekçi: tek beden") : tc ? L.T("Tüycük: tek beden") : L.T("Sade: tek beden");
-            string metin = rb ? L.T("Beden, yüz ve saç bu modelde sabit. Ayakkabı, forma, şort, kafa bandı, bileklik ve raket değişir. Beden tipi ve saç biçimi Oyuncak 3B'de.")
+            bool rb = Ayar.model == "rocketbox", tc = Ayar.model == "tuycuk", hb = Ayar.Hamambocegi(Ayar.model); string bas = rb ? L.T("Gerçekçi: tek beden") : tc ? L.T("Tüycük: tek beden") : hb ? L.T("Hamamböceği: tek beden") : L.T("Sade: tek beden");
+            string metin = hb ? L.T("Beden ve yüz bu modelde sabit. Göğüs ve elcikler forma rengini alır; ayakkabı, kafa bandı, bileklik ve raket değişir. Beden tipi ve saç biçimi Oyuncak 3B'de.") : rb ? L.T("Beden, yüz ve saç bu modelde sabit. Ayakkabı, forma, şort, kafa bandı, bileklik ve raket değişir. Beden tipi ve saç biçimi Oyuncak 3B'de.")
                 : tc ? L.T("Beden, yüz ve tüy perçemi bu modelde sabit. Tüy rengi forma renginden gelir; ayakkabı, kafa bandı, bileklik ve raket değişir. Beden tipi ve saç biçimi Oyuncak 3B'de.")
                 : L.T("Beden ve saç biçimi bu modelde sabit. Forma, şort, ayakkabı rengi, ten, saç rengi, kafa bandı, bileklik ve raket değişir. Beden tipi ve saç biçimi Oyuncak 3B'de.");
             var kart = Kart("bilgi-kart"); c.Add(kart);

@@ -1,4 +1,7 @@
 === UNITY ===
+İki yeni oyuncu modeli: Hamamböceği ve Erkek Hamamböceği (20 Kasım):
+- Dolap'taki model çiplerine iki hamamböceği geldi. İlki turuncu kabuklu ve üzgün bakışlı; erkeği koyu kabuklu, yeşil gözlü, bıyıklı ve papyonlu. Göğüsleri ve elcikleri forma rengini alıyor. Yalnız görünüş, oyunu etkilemiyor.
+Nasıl denenir: Dolap'ta model çiplerinden Hamamböceği'ni, sonra Erkek Hamamböceği'ni seç: figür değişmeli, raket sağ elcikte durmalı. Forma rengini değiştir: göğüs ve elcikler o renge dönmeli. Ayakkabı modelini değiştir, kafa bandı tak. Bir maç oyna: el ya da raket gövdenin içine giriyorsa hangi vuruşta olduğunu yaz.
 Profil ve Dolap'ta küçük düzenler (19 Kasım akşam):
 - Profil'de son maçların oyuncu kartının hemen altında; zorluk artık tek harf değil, en yeni maçta adıyla yazıyor.
 - Profil'deki büyük yüzüne dokununca Dolap açılıyor.
