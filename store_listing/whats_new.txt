@@ -1,4 +1,12 @@
 === UNITY ===
+Profil ve Dolap'ta küçük düzenler (19 Kasım akşam):
+- Profil'de son maçların oyuncu kartının hemen altında; zorluk artık tek harf değil, en yeni maçta adıyla yazıyor.
+- Profil'deki büyük yüzüne dokununca Dolap açılıyor.
+- Profil'de "Tümünü göster" listeyi bir anda dökmek yerine satırları kısa bir akışla açıyor.
+- Kariyer maç kartında saha adı üstteki satıra geçti; kart bir satır kısaldı.
+- Atölye'de çubukların nereden geldiğini anlatan not artık "Takımın" kartının hemen altında ve gelişimi de sayıyor.
+- Dolap'ta küçük resimler daha az arka plan işiyle yükleniyor.
+Nasıl denenir: Profil'e git: son maçlar üstte görünmeli; büyük yüzüne dokun, Dolap açılmalı. Profil'de aşağıda "Tümünü göster"e bas: yeni satırlar yumuşakça gelmeli, sayfa sıçramamalı. Kariyer'de bir maça dokun: saha adı tur satırında olmalı. Dolap'ta Şapka ya da Saç sayfasında aşağı kaydır: resimler takılmadan dolmalı.
 Menüde dokunuş ve kaydırma düzeni (19 Kasım):
 - Menüdeki her düğme ve seçim aynı kısa tık sesini ve tek titreşimi veriyor; bazı düğmelerde gelen çift titreşim kalktı.
 - Kariyer açılınca yol, sıradaki maçının düğümüne kendiliğinden kayıyor.

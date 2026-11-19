@@ -580,13 +580,28 @@ namespace BirdieSmash.Game
             // 2026-10-31 (Unity incelemesi, Orta): her küçük resim ana iş parçacığında bir FBX figürü kurup çiziyor. Önceden
             // sıraya göre 34 ms arayla hepsi (17 saç) çiziliyordu; kaydırırken kare kaçabiliyordu. Artık yalnız görünen kart
             // çizilir ve bütün ızgara için en çok ~45 ms'de bir resim (kare başına en çok bir figür); görünmeyen bekler.
-            IVisualElementScheduledItem is_ = null;
-            is_ = im.schedule.Execute(() =>
-            {
-                if (im.panel == null) { is_.Pause(); return; }
-                float simdi = Time.realtimeSinceStartup; if (simdi - sonKucuk < .045f || !Gorunur(im)) return;
-                sonKucuk = simdi; is_.Pause(); im.image = Portre.Dene(kat, id); im.RemoveFromClassList("koz-resim--bekle");
-            }).StartingIn(30 + 10 * sira).Every(50);
+            // 2026-11-19 inceleme (fikir 22:06 #4): eskiden bekleyen her resim kendi 20 Hz zamanlayıcısını çalıştırıyordu; uzun bir
+            // ızgarada aşağıda bekleyen onlarca kart sayfa açık kaldıkça yoklanıyor, menü boştayken de uyanık kalıyordu. Artık tek
+            // kuyruk + tek zamanlayıcı (kok üstünde): sırayla tarar, görünen ilkini çizer, kuyruk boşalınca durur. "Kare başına en çok
+            // bir figür" kuralı aynı. `sira` artık kuyruğa giriş sırası (çağıranlar zaten kart sırasıyla çağırıyor).
+            kucukKuyruk.Add(new KucukIs { im = im, kat = kat, id = id });
+            if (kucukZaman == null) kucukZaman = kok.schedule.Execute(KucukTara).Every(50); else kucukZaman.Resume();
+        }
+        struct KucukIs { public Image im; public string kat, id; }
+        readonly List<KucukIs> kucukKuyruk = new List<KucukIs>();
+        IVisualElementScheduledItem kucukZaman;
+        void KucukTara()
+        {
+            float simdi = Time.realtimeSinceStartup;
+            if (simdi - sonKucuk >= .045f)
+                for (int i = 0; i < kucukKuyruk.Count; i++)
+                {
+                    var j = kucukKuyruk[i];
+                    if (j.im.panel == null) { kucukKuyruk.RemoveAt(i); i--; continue; }   // sayfa kapandı ya da yeniden kuruldu
+                    if (!Gorunur(j.im)) continue;
+                    kucukKuyruk.RemoveAt(i); sonKucuk = simdi; j.im.image = Portre.Dene(j.kat, j.id); j.im.RemoveFromClassList("koz-resim--bekle"); break;
+                }
+            if (kucukKuyruk.Count == 0) kucukZaman.Pause();
         }
         static float sonKucuk = -1;
         // Kaydırma alanının görünen kısmıyla kesişiyor mu (alan yoksa panel). Biraz pay: hemen altındaki satır da hazırlansın.

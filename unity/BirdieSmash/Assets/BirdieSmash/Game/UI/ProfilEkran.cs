@@ -50,6 +50,11 @@ namespace BirdieSmash.Game
             var kart = Kart("oyuncu-kart"); c.Add(kart);
             var r = Satir("profil-ust"); kart.Add(r);
             var av = new VisualElement(); av.AddToClassList("avatar"); av.AddToClassList("avatar--buyuk"); av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 54); r.Add(av);
+            // 2026-11-19 inceleme (fikir 22:06 #2, OYUNCUYU GÖSTER): büyük portre yalnız görüntüydü; görünümü değiştirmek Profil'den tek
+            // dokunuş olsun (Brawl Stars / Clash Royale profil simgesi kalıbı). Kalem simgesi yok, dokunulabilirlik basma tepkisiyle.
+            // "Tarz · Raket" satırı bağlanmadı: 13 pt satır 44 pt hedefe ancak kartı büyüterek ulaşır.
+            av.AddToClassList("dokunulur"); av.AddManipulator(new Clickable(() => { Tik(); SekmeAc(Sekme.Soyunma); }));
+            Erisim.Etiket(av, L.T("Görünümünü Dolap'ta değiştir"), "dugme");
             var ad = new VisualElement(); ad.AddToClassList("esnek-yatay"); r.Add(ad);
             ad.Add(Yazi(p.Ad ?? L.T("Oyuncu"), 22, "kalin")); var unY = Yazi(L.T(un.ad) + Karakter.KademeEki(un, p), 14, "altin"); ad.Add(unY); SozcukSigdir(unY);   // 2026-11-07: ×2'de "Neighbourhoo/d" bölünüyordu
             var svr = Satir("rakip-satir"); svr.style.marginTop = 6; ad.Add(svr);
@@ -113,6 +118,27 @@ namespace BirdieSmash.Game
                 Erisim.Etiket(sa, sa.text, "metin"); kart.Add(sa); break;
             }
 
+            // 2026-11-19 inceleme (fikir 22:06 #7): form oyuncunun en sık baktığı "nasıl gidiyorum" bilgisi; iki uzun listenin altında
+            // kalıyordu (Tennis Clash / Brawl Stars kartın hemen altında verir). Oyuncu kartının hemen altına taşındı. Hapta zorluğun
+            // açıklanmayan baş harfi (K/O/Z/U) kalktı: yalnız en yeni hapta adıyla bir kez; tümü erişim etiketinde.
+            // Son maçlar (2026-11-14 inceleme, fikir 07:05 #1): en yeni solda en çok 10 hap, ✓/✗ + skor + zorluğun baş harfi
+            // (yalnız renk değil); altında "Son n: g galibiyet". Hiç maç yoksa bölüm yok. Büyük yazıda haplar sarar.
+            var sm = Ayar.SonMaclar();
+            if (sm.Count > 0)
+            {
+                c.Add(Grup(L.T("Son maçlar")));
+                var hr = new VisualElement(); hr.AddToClassList("son-maclar"); c.Add(hr); int gs = 0;
+                foreach (var m in sm)
+                {
+                    if (m.g) gs++;
+                    string zd = L.T(Ayar.ZORLUK_AD[m.zorluk]);
+                    var h = Yazi((m.g ? "✓ " : "✗ ") + m.ben + "–" + m.rakip + (hr.childCount == 0 ? " · " + zd : ""), 12, m.g ? "son-hap--g" : "soluk");
+                    h.AddToClassList("son-hap"); hr.Add(h);
+                    Erisim.Etiket(h, L.T(m.g ? "Kazanılan maç" : "Kaybedilen maç") + ", " + m.ben + "–" + m.rakip + ", " + zd, "metin");
+                }
+                c.Add(Yazi(L.T("Son {0}: {1} galibiyet", sm.Count, gs), 12, "soluk"));
+            }
+
             GelisimKart(c);   // 2026-11-10 oyuncu gelişimi: oyuncu kartının hemen altında (kartın anlattığı oyuncunun değerleri)
 
             // ad (yalnız cihazda)
@@ -161,7 +187,7 @@ namespace BirdieSmash.Game
             {
                 for (int a = 0; a < 2; a++) kilitSatir(sirali[a]);
                 VisualElement ut = null;
-                ut = Dugme(L.T("Tümünü göster ({0})", Karakter.Unvanlar.Length) + "  ›", () => { unvanTum = true; ul.Clear(); foreach (var u in kilitli) kilitSatir(u); ut.RemoveFromHierarchy(); }, "kucuk-dugme");
+                ut = Dugme(L.T("Tümünü göster ({0})", Karakter.Unvanlar.Length) + "  ›", () => { unvanTum = true; ul.Clear(); var yeni = new System.Collections.Generic.List<VisualElement>(); foreach (var u in kilitli) { kilitSatir(u); if (u != sirali[0] && u != sirali[1]) yeni.Add(ul[ul.childCount - 1]); } ut.RemoveFromHierarchy(); if (!Ayar.reduce) Kademeli(yeni, 0, 30, .18f, 8, 8); }, "kucuk-dugme");
                 c.Add(ut);
             }
 
@@ -181,24 +207,6 @@ namespace BirdieSmash.Game
                 Erisim.Etiket(mr, L.T(TurAd(mt)) + ", " + (!mac ? L.T("Kilitli") : mh >= 2 ? L.T("Altın tur mührü") : mh == 1 ? L.T("Bronz tur mührü") : L.T("{0}/{1} yıldız", ys, 18)), "metin");
             }
             mk.Add(Yazi(L.T("Bronz 9 yıldız, altın 18 yıldız. Satılmaz, yalnız oynayarak gelir."), 12, "soluk"));
-
-            // Son maçlar (2026-11-14 inceleme, fikir 07:05 #1): en yeni solda en çok 10 hap, ✓/✗ + skor + zorluğun baş harfi
-            // (yalnız renk değil); altında "Son n: g galibiyet". Hiç maç yoksa bölüm yok. Büyük yazıda haplar sarar.
-            var sm = Ayar.SonMaclar();
-            if (sm.Count > 0)
-            {
-                c.Add(Grup(L.T("Son maçlar")));
-                var hr = new VisualElement(); hr.AddToClassList("son-maclar"); c.Add(hr); int gs = 0;
-                foreach (var m in sm)
-                {
-                    if (m.g) gs++;
-                    string zd = L.T(Ayar.ZORLUK_AD[m.zorluk]);
-                    var h = Yazi((m.g ? "✓ " : "✗ ") + m.ben + "–" + m.rakip + " · " + zd.Substring(0, 1), 12, m.g ? "son-hap--g" : "soluk");
-                    h.AddToClassList("son-hap"); hr.Add(h);
-                    Erisim.Etiket(h, L.T(m.g ? "Kazanılan maç" : "Kaybedilen maç") + ", " + m.ben + "–" + m.rakip + ", " + zd, "metin");
-                }
-                c.Add(Yazi(L.T("Son {0}: {1} galibiyet", sm.Count, gs), 12, "soluk"));
-            }
 
             c.Add(Grup(L.T("İstatistikler")));
             var iz = Satir("izgara"); c.Add(iz);
@@ -235,10 +243,12 @@ namespace BirdieSmash.Game
                 if (basarimTum || v || kilitGoster < 3) { BasarimSatir(liste, id, BasarimAdi(id)); if (!v) kilitGoster++; }
                 else gizli++;
             }
+            // 2026-11-19 inceleme (fikir 22:06 #5): "Tümünü göster" eskiden 15–25 satırı tek karede döküyordu; artık yalnız yeni
+            // açılan satırlardan ilk 8'i kısa kademeli girer (eskiden görünenler yerinde durur), hareketi azaltta anında.
             if (gizli > 0)
             {   // yerinde açılır (sayfa yeniden kurulmaz, kaydırma yeri korunur)
                 VisualElement td = null;
-                td = Dugme(L.T("Tümünü göster ({0})", ids.Count) + "  ›", () => { Tik(); basarimTum = true; liste.Clear(); foreach (var id in ids) BasarimSatir(liste, id, BasarimAdi(id)); td.RemoveFromHierarchy(); }, "kucuk-dugme");
+                td = Dugme(L.T("Tümünü göster ({0})", ids.Count) + "  ›", () => { Tik(); basarimTum = true; liste.Clear(); var yeni = new System.Collections.Generic.List<VisualElement>(); int kg = 0; foreach (var id in ids) { bool gorunurdu = Basarim.Var(id) || kg++ < 3; BasarimSatir(liste, id, BasarimAdi(id)); if (!gorunurdu) yeni.Add(liste[liste.childCount - 1]); } td.RemoveFromHierarchy(); if (!Ayar.reduce) Kademeli(yeni, 0, 30, .18f, 8, 8); }, "kucuk-dugme");
                 c.Add(td);
             }
             c.Add(Bosluk(20));

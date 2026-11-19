@@ -327,7 +327,11 @@ namespace BirdieSmash.Game
             var p = Ayar.ilerleme; var kb = KariyerVeri.Al(g); var st = Match.STIL[kb.stil]; int tr = KariyerVeri.TurOf(g), b = KariyerVeri.BasOf(g);
             bool acik = p.Acik(g), final = KariyerVeri.Final(g); int m = p.Maske(g); var im = final || kb.imza ? KariyerVeri.Imza(st.imza) : null;   // Tur 4: önceki patronlar finalden önce de imzalı
             var c = AltSayfaKur(L.T(kb.yer));
-            c.Add(Yazi(L.T(TurAd(tr)) + " · " + L.T("{0}. basamak", b + 1) + (final ? " · " + L.T("Final") : ""), 13, "etiket"));
+            // 2026-11-19 inceleme (fikir 22:06 #6, §7.3 öğe bütçesi): saha ayrı satırdı; bağlam olduğu için etiket satırına katıldı
+            // (sabit uzunlukta sayı da burada). Küçük telefonda Oyna'ya kadar bir satır eksik.
+            int uz = kb.uzunluk > 0 ? kb.uzunluk : Ayar.target;
+            var et = Yazi(L.T(TurAd(tr)) + " · " + L.T("{0}. basamak", b + 1) + (final ? " · " + L.T("Final") : "") + " · " + L.T(CourtView.SAHA[kb.saha].ad) + (kb.uzunluk > 0 ? " · " + L.T("{0} sayı", uz) : ""), 13, "etiket");
+            et.style.whiteSpace = WhiteSpace.Normal; Erisim.Etiket(et, et.text, "metin"); c.Add(et);
             // rakip: renk yuvarlağı yanında ad ve tarz (renk tek başına anlam taşımaz)
             var rr = Satir("profil-ust"); c.Add(rr);
             var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(st.renk); AvatarIc(av, Portre.Rakip(st), 30); rr.Add(av);
@@ -345,11 +349,8 @@ namespace BirdieSmash.Game
                 ik.Add(Yazi(L.T(im.cevap), 13, "ipucu"));
                 Erisim.Etiket(ik, L.T("İmza vuruşu") + ": " + L.T(im.ad) + ". " + L.T(im.cevap), "metin");
             }
-            int uz = kb.uzunluk > 0 ? kb.uzunluk : Ayar.target;
             // 2026-11-13 inceleme (fikir #6): uzunluk seçiliyse ("senin seçimin") çipler hemen altında; satır sayıyı ikinci kez
-            // yazmaz (çip değişince sayfa kurulmazsa eski sayıyı gösterip çiple çelişebiliyordu). Sabit uzunlukta bugünkü gibi.
-            var bil = Yazi(L.T("Saha") + ": " + L.T(CourtView.SAHA[kb.saha].ad) + (kb.uzunluk > 0 ? " · " + L.T("{0} sayı", uz) : ""), 13, "soluk");
-            Erisim.Etiket(bil, bil.text, "metin"); c.Add(bil);
+            // yazmaz (çip değişince sayfa kurulmazsa eski sayıyı gösterip çiple çelişebiliyordu). Sabit uzunlukta sayı etikette.
             // Kural maçı (2026-11-07): tek satır, Günün maçının çevrilmiş adı ve açıklaması (yeni metin anahtarı yok).
             var kd = kb.degistirici != null ? Gunluk.Deg(kb.degistirici) : null;
             if (kd != null) { var kr = Yazi(L.T(kd.ad) + " · " + L.T(kd.aciklama), 14, "ipucu"); Erisim.Etiket(kr, kr.text, "metin"); c.Add(kr); }
