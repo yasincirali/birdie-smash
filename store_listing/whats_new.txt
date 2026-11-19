@@ -1,4 +1,10 @@
 === UNITY ===
+Menüde dokunuş ve kaydırma düzeni (19 Kasım):
+- Menüdeki her düğme ve seçim aynı kısa tık sesini ve tek titreşimi veriyor; bazı düğmelerde gelen çift titreşim kalktı.
+- Kariyer açılınca yol, sıradaki maçının düğümüne kendiliğinden kayıyor.
+- Profil'de unvan seçince ya da adını değiştirince sayfa en üste sıçramıyor; kilitli unvanlardan yalnız en yakın ikisi görünüyor, gerisi "Tümünü göster" altında.
+- Dolap'ta "Hepsini al" anı daha akıcı.
+Nasıl denenir: Menüde birkaç düğmeye ve seçime dokun: her birinde aynı tık sesi ve tek hafif titreşim olmalı. Kariyer'in ileriki maçlarındaysan Kariyer sekmesine geç: yol senin düğümüne kaymalı. Profil'de aşağı kaydırıp bir unvana dokun: sayfa yerinde kalmalı. Dolap'ta birkaç parça deneyip Hepsini al'a bas: dans takılmadan başlamalı.
 Kariyer yolunda sen, iPad'de derli toplu menüler (19 Kasım):
 - Kariyer yolunda sıradaki maçın düğümünde artık kendi oyuncunun yüzü var; maç numarası köşedeki küçük rozette.
 - Kariyer yolundaki düğümler ve Profil'deki kupalar basınca diğer düğmeler gibi içeri çöküyor.
