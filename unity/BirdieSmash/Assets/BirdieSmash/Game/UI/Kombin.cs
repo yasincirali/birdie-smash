@@ -207,7 +207,12 @@ namespace BirdieSmash.Game
                 else { Ayar.KOZ[d.kat] = d.id; root.vitrin.DeneYaz(d.kat, null); }
             }
             if (!biri) return;
-            root.sfx.Yukselt(); Yerel.Hap("tick"); Ayar.Kaydet(); root.vitrin.Yenile(); kirli[(int)Sekme.Profil] = true; ustKirli = true; UstKur(); Degisti(); SoyunmaGovdeKur(true); AlimAni();
+            // 2026-11-19 inceleme (fikir 17:07 #4, TAKILMA YOK): kutlama karesinde Dolap gövdesi iki kez (Degisti açık sekmeyi zaten
+            // kuruyor), üst çubuk iki kez kuruluyor ve PlayerPrefs.Save eşzamanlı yazılıyordu. Şimdi gövde ve üst çubuk birer kez (alt
+            // sayfa açıksa Degisti sekmeyi kurmaz, o zaman gövde ayrıca); diske yazma bir sonraki karede (alım bellekte kesin, kayıp
+            // penceresi tek kare). Dokunuş titreşimi "Hepsini al" düğmesinden (Tik), burada yalnız alım sesi.
+            root.sfx.Yukselt(); root.vitrin.Yenile(); kirli[(int)Sekme.Profil] = true; Degisti(); if (gez.Ust != null) SoyunmaGovdeKur(true); AlimAni();
+            var sk = sekmeKok[(int)gez.sekme]; if (sk != null && sk.panel != null) sk.schedule.Execute(() => Ayar.Kaydet()).StartingIn(0); else Ayar.Kaydet();
         }
     }
 }
