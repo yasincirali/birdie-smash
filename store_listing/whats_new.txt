@@ -1,4 +1,8 @@
 === UNITY ===
+Dolap'ta oyuncu varsayılan hâlde de büyük (19 Kasım sabah):
+- Dolap açılınca oyuncu artık kutuyu dolduruyor (ayaktan raketin ucuna kadar); vitrin biraz daha yüksek.
+- Büyüt düğmesine ilk basışta görünen pembe ekran giderildi.
+Nasıl denenir: Dolap'ı aç: oyuncu kutunun yarısı değil neredeyse tamamı kadar görünmeli, ayakları ve raketi kesilmemeli. Sol üstteki büyüt düğmesine dokun: pembe ekran olmadan hemen büyük görünüm gelmeli; yeniden dokun, sonra bir daha dene.
 Şampiyon yolu ve sekmeler (19 Kasım sabah):
 - Şampiyon yolu kilitliyken artık doğru hedefi yazıyor: son turun finalini kazanman gerekiyor (önceden yanlışlıkla Dünya Finalleri yazıyordu).
 - Şampiyon yolu kartı sadeleşti: zorluk yalnız başlığın yanında yazıyor, açıklama tek kısa cümle.

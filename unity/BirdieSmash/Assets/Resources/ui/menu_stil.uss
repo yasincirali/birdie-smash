@@ -252,7 +252,7 @@
 .buyuk-yazi .tur-secici .cip { flex-basis: 40%; }
 
 /* Soyunma odası */
-.vitrin-alan { height: 54%; min-height: 190px; flex-shrink: 1; margin: 0 8px; border-radius: 16px; overflow: hidden; background-color: var(--navy); }
+.vitrin-alan { height: 58%; min-height: 190px; flex-shrink: 1; margin: 0 8px; border-radius: 16px; overflow: hidden; background-color: var(--navy); }
 .vitrin { flex-grow: 1; }
 .vitrin-yazi { position: absolute; top: 8px; right: 10px; -unity-text-align: middle-right; color: rgba(255, 255, 255, 0.75); background-color: rgba(26, 18, 33, 0.6); border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; padding: 3px 8px; }   /* r11: ortadaki yazı raketin ve başın üstüne biniyordu; sağ üst köşe, koyu zemin */
 /* r13 (2026-10-26): Yüz·Ayak·Tutuş ve oklar tek alt sütunda (SoyunmaOdasi); büyük yazıda üst üste binmiyorlar. */
@@ -563,7 +563,7 @@
 .kisa .cta { min-height: 68px; padding: 8px 18px 10px 22px; margin: 2px 0 8px 0; }
 .kisa .cta-ikon { width: 46px; height: 46px; border-radius: 23px; }
 .kisa .karo { min-height: 56px; padding: 7px 10px; }
-.kisa .vitrin-alan { height: 42%; min-height: 190px; }   /* 2026-10-31 sanat paketi 1: %40→%50 (kısa ekranda %36→%42); karakter sayfanın yıldızı, liste kayar */
+.kisa .vitrin-alan { height: 46%; min-height: 190px; }   /* 2026-10-31 sanat paketi 1: %40→%50 (kısa ekranda %36→%42); karakter sayfanın yıldızı, liste kayar */
 .kisa.buyuk-yazi .vitrin-alan { height: 34%; min-height: 180px; }
 .kisa .sekme-cubugu { padding-top: 4px; }
 .kisa .sekme { min-height: 46px; margin-bottom: 4px; }
