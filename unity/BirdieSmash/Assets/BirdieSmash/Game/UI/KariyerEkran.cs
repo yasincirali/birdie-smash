@@ -48,7 +48,34 @@ namespace BirdieSmash.Game
             // Tek birincil eylem: kendi turunda da başka turu incelerken de altta sabit (UX5/UX6).
             SiradakiSerit(k, p, sira);
             if (kariyerY > 0) { float y0 = kariyerY; sv.schedule.Execute(() => sv.scrollOffset = new Vector2(0, y0)).StartingIn(0); }
+            else if (veri && tr == KariyerVeri.TurOf(sira)) SimdiyeKaydir(sv);
             kariyerY = -1;
+        }
+
+        // 2026-11-19 inceleme (fikir 17:07 #2; Tennis Clash / Clash Royale yolu açılınca oyuncunun durağına kayar): 7 satırlık yol +
+        // üstteki kartlar yüzünden küçük telefonda 4.–6. basamaktaki oyuncu kendi düğümünü (12:06'dan beri yüzü orada) kaydırmadan
+        // görmüyordu. Kendi turunda, sayfa en üstteyken ve "Şimdi" düğümü görünür alanın orta çizgisinin altındaysa onu ortaya
+        // getirir; zaten görünürse dokunmaz. Yerleşimden sonra bir kez (genişlik/yükseklik ilk karede 0, OrtayaKaydir kalıbı);
+        // Degisti'nin KaydirmaGeri'si ya da oyuncunun kendi kaydırması (offset > 0) önceliklidir. Hareketi azaltta anında, değilse
+        // BasaKaydir ile aynı .25 sn ease-out. Yeni öğe yok, yalnız scrollOffset.
+        void SimdiyeKaydir(ScrollView sv)
+        {
+            EventCallback<GeometryChangedEvent> gc = null;
+            gc = e =>
+            {
+                var roz = sv.contentContainer.Q(null, "dugum-rozet--simdi");
+                if (roz == null) { sv.UnregisterCallback(gc); return; }
+                if (sv.layout.height <= 0 || roz.layout.height <= 0) return;
+                sv.UnregisterCallback(gc);
+                if (sv.scrollOffset.y > 0) return;
+                float y = sv.contentContainer.WorldToLocal(roz.worldBound.center).y - sv.layout.height * .5f;
+                if (y <= 0) return;
+                if (Ayar.reduce) { sv.scrollOffset = new Vector2(sv.scrollOffset.x, y); return; }
+                float t0 = Time.realtimeSinceStartup, son = sv.scrollOffset.y; bool bitti = false;   // başka biri (oyuncu, KaydirmaGeri) kaydırırsa durur
+                sv.schedule.Execute(() => { if (Mathf.Abs(sv.scrollOffset.y - son) > 1) { bitti = true; return; } float t = Mathf.Clamp01((Time.realtimeSinceStartup - t0) / .25f); if (t >= 1) bitti = true; t = 1 - (1 - t) * (1 - t) * (1 - t); sv.scrollOffset = new Vector2(sv.scrollOffset.x, y * t); son = sv.scrollOffset.y; })
+                    .Every(16).Until(() => bitti);
+            };
+            sv.RegisterCallback(gc);
         }
 
         // Tur başlığı: ‹ · "Tur n · bölüm" + ad + yıldız (kilitliyse kilit + neden) · ›. Hikâye cümlesi tek satır altında; hazırlık
