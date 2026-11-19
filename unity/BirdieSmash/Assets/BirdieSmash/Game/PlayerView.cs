@@ -1038,7 +1038,7 @@ namespace BirdieSmash.Game
         // file) seçili sevincin kısası: zirvesine kadar oynar, söner (zıpla dönüşünü, zafer inişini yarıda kesmesin diye zirve +.15).
         // Uzun ralliyi kaybeden kısa başını eğer ("of"), kollar maç duruşunda: rakibin sevinci karşısında okunur. Maç sonu aynı.
         // Yalnız Game katmanı; online'da da her telefonun yerel görüntüsü (Core'a, pakete dokunmaz).
-        public const int SEV_UZUN = 8; const float SEV_OF = .6f; const int SEV_TER = 5; const float SEV_BEKLE = .75f;
+        public const int SEV_UZUN = 8; const float SEV_OF = .6f; const int SEV_TER = 5; const float SEV_BEKLE = 1.05f;
         static float SevincKisa(string id) { return Mathf.Max(.55f, SevincZirve(id) + .15f); }
         // "zafer" maç sonu sevincinin evreleri (sn): hazırlık, iniş, pompa döngüsünün başı; pompa sıklığı (yarım dalga/sn).
         const float Z_HAZIR = .2f, Z_INIS = .62f, Z_DONGU = .8f, Z_POMPA = 2f;
@@ -1067,7 +1067,11 @@ namespace BirdieSmash.Game
             }
             if (sevT < 0) { sevW = 0; return; }
             sevT += dt;
-            bool surer = sevDongu ? M.matchDone : M.between && sevT < sevSure;
+            // 2026-11-19 (yasin: "hareket çok kalas gibi, gerçekçi akıcı bir hareket görülmeli anatomik olarak"): ter/tel 0,75 sn'ye
+            // sıkışmıştı ve sayı arası (0,7 sn) bitince kesiliyordu. Bu ikisi kaybedenin, yani servisi karşılayanın hareketi:
+            // servis atılana kadar (top yok, ralli 0) karşılama duruşunun üstünde tamamlanır; servis çıkınca kesilir. Sayı arası uzamaz.
+            bool bekleme = sevId == "ter" || sevId == "tel";
+            bool surer = sevDongu ? M.matchDone : sevT < sevSure && (M.between || (bekleme && M.s == null && M.rally == 0 && !M.matchDone));
             float hedef = surer ? 1 : 0; sevW = Mathf.MoveTowards(sevW, hedef, dt / (surer ? .15f : .15f));
             if (!surer && sevW <= 0) { sevT = -1; return; }
             // 2026-11-04 (yasin: "galibiyet sevinci kısmı çok dandik duruyor"): zafer kamerası yan-önden (70°) geliyor, oyuncu ise
@@ -1157,8 +1161,14 @@ namespace BirdieSmash.Game
         }
         // Sevinçte bacakların dikliği (0 = boşta pozunun maç duruşu, 1 = dik). Zafer: hazırlıkta çömelir, sıçrayışta açılır,
         // inişte dizden yaylanır (.18 sn), pompada dik. Zıpla: havada dik, inişte yaylanma. Diğerleri dik durur.
+        // Yumuşak evre ve zarf (2026-11-19 ter/tel): 5. derece yumuşatma (hız ve ivme uçlarda sıfır), giriş × çıkış.
+        static float Evre(float t, float a, float b) { float x = Mathf.Clamp01((t - a) / (b - a)); return x * x * x * (x * (6 * x - 15) + 10); }
+        static float Zarf(float t, float g0, float g1, float c0, float c1) { return Evre(t, g0, g1) * (1 - Evre(t, c0, c1)); }
         static float SevincDik(string id, float t, bool rm)
         {
+            // ter/tel: dizler kilitlenmez (varsayılan 1 bacağı %97 düzleştiriyordu: "kalas"); hareketle birlikte hafif doğrulur, geri çöker.
+            if (id == "ter") return .5f * Zarf(t, .04f, .34f, .72f, 1.05f);
+            if (id == "tel") return .35f * Zarf(t, 0, .3f, .74f, 1.05f);
             if (rm) return 1;
             if (id == "zafer")
             {
@@ -1245,8 +1255,8 @@ namespace BirdieSmash.Game
                 case "of": egil = 12 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .25f)); break;   // uzun ralli kaybı: baş öne, kollar yerinde
                 // Dinlenme (2026-11-13, Oyna afişi "yorulunca durabilirler"): giriş .5 sn, nefes 0,7 Hz (göğüs inip kalkar).
                 // dinlen: eller dizlerin üstünde, gövde öne eğik soluklanma; bel: dik duruş, eller belde, omuzlar nefesle kalkar.
-                case "ter": egil = 5 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .2f)); break;
-                case "tel": egil = 9 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .2f)); break;
+                case "ter": { float k = Zarf(t, .04f, .34f, .72f, 1.05f), a = rm ? .5f : Evre(t, .3f, .7f); egil = 6 * k; bur = Mathf.Lerp(6, -3, a) * k; yat = 3 * k; } break;   // sol omuz öne gelir, silerken açılır
+                case "tel": { float k = Zarf(t, 0, .3f, .74f, 1.05f); egil = 8 * k; bur = -5 * k; } break;   // gövde rakete doğru hafif eğilir ve döner
                 case "dinlen": egil = 30 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .5f)) + 3 * Mathf.Sin(t * 4.4f) * salla; break;
                 case "bel": egil = -3 * Mathf.SmoothStep(0, 1, Mathf.Clamp01(t / .5f)) - 2.5f * Mathf.Max(0, Mathf.Sin(t * 4.4f)) * salla; break;
                 // danslar (omurga): salla = 0 (hareketi azalt) iken duruş sabit
@@ -1269,6 +1279,8 @@ namespace BirdieSmash.Game
         }
         const float YILDIZ_P = .5f;
         readonly Quaternion[] sevKayit = new Quaternion[8]; readonly Transform[] sevKem = new Transform[8];
+        // Tek zincirin kendi ağırlığı: çözülen kemik, SevincPoz'un başında kaydedilen boşta dönüşüyle karışır (kayıt sırası: sevKem).
+        void Kat(int i, Transform b, float k) { if (b != null && k < .999f) b.localRotation = Quaternion.Slerp(sevKayit[i], b.localRotation, k); }
         void SevincPoz(string id, float t, float w, bool rm)
         {
             if (kKol == null) ZincirKur(); if (kKol == null || w <= 0.001f) return;
@@ -1390,21 +1402,38 @@ namespace BirdieSmash.Game
                       IK(SU, SE, SH, Vector3.Lerp(SH != null ? SH.position : hR, hR, a), ri - fw * .5f);
                       IK(LU, LE, LH, Vector3.Lerp(LH != null ? LH.position : hL, hL, a), -ri - fw * .5f);
                       RaketDik(SH, Vector3.Slerp(up, -up - fw * .4f + ri * .3f, a)); } break;
-                case "ter":      // sol el alından geçer (sağdan sola siler); raket yana iner
-                    // 2026-11-19 kare turu (r198): hedef omuz hizasına göreydi, iri başta el yanakta kalıyordu ve maç duruşundaki
-                    // raket yüzün önünden geçiyordu. Hedef artık baş kemiğine göre alın; raketli kol yana iner, kafa öne-aşağı.
-                    { float a = rm ? .5f : Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - .15f) / .45f));
-                      Vector3 alin = kHead != null ? kHead.position + up * L * .75f + fw * L * .55f : (sR + sL) * .5f + up * L * .4f + fw * L * .3f;
-                      IK(SU, SE, SH, sR + ri * L * .25f - up * L * .6f + fw * L * .2f, ri - fw * .3f); RaketDik(SH, fw * .85f - up * .2f + ri * .25f);   // r200: −up·0,5 ile raket kafası zemine giriyordu
-                      IK(LU, LE, LH, alin + ri * L * (.25f - .5f * a), -ri * .6f + up * .5f + fw * .4f); } break;
-                case "tel":      // raket gövdenin önünde çapraz, kafası sol omzun önünde; sol elin parmakları tellerde gezinir
-                    // 2026-11-19 kare turu (r198): raket kol boyunun iki katı; kafa yukarı bakarken sol el tellere yetişmiyor, göğüste
-                    // kalıyordu. Raketli el aşağı öne iner, raket sol omzun önündeki noktaya nişanlanır ve sol elin hedefi gerçek
-                    // kafa konumundan hesaplanır (model oranı değişse de el telde kalır).
-                    { IK(SU, SE, SH, sR + fw * L * .45f - up * L * .55f + ri * L * .15f, ri - up * .5f);
+                case "ter":      // sol ön kol alından geçer (sağdan sola siler); raket yana iner
+                    // 2026-11-19 (yasin: "kalas gibi... anatomik olarak akıcı"): yalnız kol oynuyor, poz 0,15 sn'de doğrusal giriyordu.
+                    // Şimdi evreli: raketli kol önce gevşer (kR), sol kol dirsekten kalkar (kL), baş öne eğilip ön kola doğru döner
+                    // (el sola giderken baş sağa: alın kolun altından kayar), bilek geriden gelir, kol inerken gövde geri açılır.
+                    // Kollar tam çözülüp boşta pozuyla DÖNÜŞ uzayında karışır (Kat): el düz çizgide değil yay çizerek kalkar.
+                    // r198/r200 notları geçerli: hedef baş kemiğine göre alın; raket −up·0,2'den fazla inmez (zemin).
+                    { float kL = Zarf(t, 0, .2f, .84f, 1.05f), kR = Zarf(t, 0, .28f, .66f, 1f), a = rm ? .5f : Evre(t, .3f, .7f);
+                      // r203: çıkışta kol dönüş karışımıyla yana açılarak iniyordu (el sallar gibi). El artık hedefle taşınır: göğüs
+                      // önünden kalkar, sildikten sonra yüzün önünden göğse iner; karışım yalnız en başta ve en sonda.
+                      float in_ = (1 - Evre(t, .04f, .32f)) + Evre(t, .68f, .98f);
+                      Vector3 alin = (sR + sL) * .5f + up * L * .4f + fw * L * .3f;
+                      if (kHead != null)
+                      { Quaternion hq = Quaternion.AngleAxis(Mathf.Lerp(-8, 12, a) * kL * w, up) * Quaternion.AngleAxis(10 * kL * w, ri) * Quaternion.AngleAxis(4 * kL * w, fw);
+                        kHead.rotation = hq * kHead.rotation; alin = kHead.position + hq * (up * L * .75f + fw * L * .55f); }
+                      IK(SU, SE, SH, sR + ri * L * .25f - up * L * .6f + fw * L * (.2f + .04f * Mathf.Sin(t * 5) * salla), ri - fw * .3f); RaketDik(SH, fw * .85f - up * .2f + ri * .25f);
+                      IK(LU, LE, LH, alin + ri * L * (.28f - .56f * a) + up * L * .04f * Mathf.Sin(a * Mathf.PI) - (up * L * .95f + fw * L * .1f) * in_, -ri * .7f + fw * .5f + up * .25f * (1 - in_));
+                      if (LH != null) LH.rotation = Quaternion.AngleAxis(-20 * Mathf.Sin(a * Mathf.PI) * kL * w * salla, fw) * LH.rotation;   // bilek geriden gelir
+                      Kat(0, SU, kR); Kat(1, SE, kR); Kat(5, SH, kR); Kat(2, LU, kL); Kat(3, LE, kL); } break;
+                case "tel":      // raket gövdenin önünde çapraz, kafası sol omzun önünde; sol elin parmakları telleri iki kez tarar
+                    // 2026-11-19: 13 rad/sn titreme yerine iki yumuşak tarama; raket kendi ekseninde hafif döner (bakıyor), baş
+                    // tellere eğilir. r198 notu geçerli: sol elin hedefi gerçek kafa konumundan (model oranı değişse de el telde).
+                    { float k = Zarf(t, 0, .3f, .74f, 1.05f), p = rm ? .25f : Mathf.Clamp01((t - .3f) / .44f);
+                      if (kHead != null) kHead.rotation = Quaternion.AngleAxis(-14 * k * w, up) * Quaternion.AngleAxis(18 * k * w, ri) * kHead.rotation;
+                      IK(SU, SE, SH, sR + fw * L * .45f - up * L * .55f + ri * L * .15f, ri - up * .5f);
                       if (SH != null && kafa != null)
-                      { RaketDik(SH, sL + up * L * .55f + fw * L * .5f - ri * L * .1f - SH.position);
-                        IK(LU, LE, LH, Vector3.Lerp(SH.position, kafa.position, .78f + .05f * Mathf.Sin(t * 13) * salla) - fw * L * .04f, -ri - up * .5f); } } break;
+                      { // r204: kafa yüz hizasındaydı, önden bakınca el yüze dokunuyor gibi okunuyordu. Kafa sol omzun önüne ve dışına indi
+                        // (raket boyu ≈ 1,6 kol; kafa merkezi elden ≈ 1,3 kol), el çemberin altına değil tellerin üstüne gider.
+                        Vector3 nd = (sL + up * L * .2f + fw * L * .5f - ri * L * .25f - SH.position).normalized; RaketDik(SH, nd);
+                        SH.rotation = Quaternion.AngleAxis(9 * Mathf.Sin(p * Mathf.PI * 2) * salla, nd) * SH.rotation;
+                        Vector3 yan = Vector3.Cross(nd, fw).normalized;
+                        IK(LU, LE, LH, Vector3.Lerp(SH.position, kafa.position, .88f + .12f * (.5f - .5f * Mathf.Cos(p * Mathf.PI * 4))) + yan * L * .05f * Mathf.Sin(p * Mathf.PI * 2) * salla - fw * L * .04f, -ri - up * .5f); }
+                      Kat(0, SU, k); Kat(1, SE, k); Kat(5, SH, k); Kat(2, LU, k); Kat(3, LE, k); } break;
                 case "fiskiye":   // sol el başın arkasında, raketli kol öne uzanır, raket ufka paralel (fıskiyenin borusu)
                     IK(SU, SE, SH, sR + fw * L * .85f + ri * L * .2f + up * L * .12f, ri - up * .4f);
                     if (kHead != null) IK(LU, LE, LH, kHead.position + up * L * .15f - fw * L * .22f - ri * L * .05f, -ri + up * .6f);

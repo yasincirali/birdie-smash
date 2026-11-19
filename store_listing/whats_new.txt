@@ -1,4 +1,10 @@
 === UNITY ===
+Yeni karakter tipi: Yapay Zekâ Böceği (19 Kasım akşam):
+- Dolap, Beden sayfasına yeni bir tip geldi: kestane rengi sevimli bir böcek. Işıklı gözleri, alnında çipi, ucu ışıklı iki uzun anteni ve belinde kanat kabuğu var. Yalnız görünüş, oyunu etkilemiyor. Rakiplerde de ara sıra çıkabilir.
+Nasıl denenir: Dolap'ta Beden sayfasını aç, Yapay Zekâ Böceği kartına dokun: baş, antenler ve kanat kabuğu yerinde durmalı, hiçbir parça gövdenin içine girmemeli. Şapka tak: antenler gizlenmeli. Bir maç oyna, koşarken ve vururken parçalar yerinden oynamamalı.
+Ter silme ve tel düzeltme hareketleri daha doğal (19 Kasım akşam):
+- Sayı arasındaki ter silme ve tel düzeltme artık yalnız kolla değil bütün bedenle yapılıyor: baş kola doğru dönüyor, gövde hafif eğiliyor, dizler kilitlenmiyor, kol yumuşak kalkıp iniyor. Hareket aceleye gelmeden, servis beklenirken tamamlanıyor; sayı arası uzamıyor.
+Nasıl denenir: Bir maç oyna. 5 ile 7 vuruşluk bir ralliyi kaybet: oyuncu alnını silerken başı ve gövdesi de oynamalı, hareket birden başlayıp birden bitmemeli. Kısa rallilerde kaybeden ara sıra raketine bakıp tellerini iki kez taramalı. Rakip servis attığında hareket yarıda kalsa bile oyuncun topa zamanında çıkmalı.
 Yeni menü müziği (19 Kasım):
 - Menüde çalan parça yenilendi: ukulele, ksilofon, çan ve ıslıkla çalınan neşeli, sevimli bir ezgi. Yaklaşık 72 saniye, sonu başına kesintisiz bağlanıyor.
 Nasıl denenir: Müzik açıkken (Ayarlar) menüde bir dakikadan uzun bekle. Ezgi neşeli ve yumuşak olmalı, döngü başa dönerken kesinti ya da çıtırtı duyulmamalı. Maça girince müzik susmalı.

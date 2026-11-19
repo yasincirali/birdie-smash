@@ -1694,7 +1694,34 @@ def hv_robot_kuyruk():   # şarj kablosu: ucunda fiş
     for s in (-1, 1): kutu(ag, RB_M, (s * .06 - .02, .40, -1.31), (s * .06 + .02, .56, -1.25))
     ag.yaz('hv_robot_kuyruk', 3)
 
-HAYVAN = {f.__name__: f for f in (hv_robot_kafa, hv_robot_kulak, hv_robot_kuyruk, hv_kedi_kafa, hv_kedi_kulak, hv_kedi_kuyruk, hv_panda_kafa, hv_panda_kulak, hv_panda_kuyruk, hv_tavsan_kafa, hv_tavsan_kulak, hv_tavsan_kuyruk)}
+# --- Yapay zekâ hamam böceği (2026-11-19, yasin: "Char olarak ai hamam böceği karakterini ekleyelim"). Okuma: sevimli, tombul bir
+#     böcek ve "yapay zekâ" olduğunu ışıklarıyla söylüyor (iri camgöbeği gözler, alında çip, anten uçlarında ışık). Gerçekçi böcek
+#     DEĞİL (tiksindirici ayrıntı yok: kıl, çok bacak, parlak yağlı kabuk yok); belirli bir karakterin kopyası da değil. Tarif
+#     robotla aynı: baş kabuğu + anten (şapkayla gizlenir) + belde kanat kabuğu. ≤4 renk, kozmetik tasarım dili "tombul oyuncak".
+BK_K, BK_A, BK_S, BK_I, BK_Y = '#9a5630', '#5e2f18', '#1f2a38', '#62e6ff', '#d9a06a'   # kestane kabuk, koyu kabuk, göz yuvası/çip, ışık, açık yüz
+def hv_bocek_kafa():
+    ag = Ag(); hv_kafa(ag, BK_K); hv_bant(ag, BK_Y, -.96, .96, -1.16, -.02, .015, 8, 4)   # açık yüz plakası (ızgara yama: büyük yelpaze yama kürenin içine batıyor)
+    for s in (-1, 1):
+        hv_yama(ag, BK_S, (s * .54, -.38), .30, .34, .035, n=12); hv_yama(ag, BK_I, (s * .54, -.40), .19, .23, .06, n=10)
+        hv_yama(ag, BK_S, (s * .50, -.44), .075, .10, .075, n=8)   # göz bebeği: bakış içe ve hafif aşağı (sevimli)
+    hv_bant(ag, BK_S, -.20, .20, .02, .22, .035, 4, 1)   # alın çipi: koyu yuva + üç ışık
+    for x in (-.12, 0, .12): hv_bant(ag, BK_I, x - .035, x + .035, .07, .17, .055, 1, 1)
+    hv_agiz(ag, BK_S, -.90, .24)
+    ag.yaz('hv_bocek_kafa', 0)
+def hv_bocek_kulak():   # iki uzun anten: öne-yana açılıp geriye kıvrılır, ucunda ışık; şapka takılınca gizlenir
+    ag = Ag()
+    for s in (-1, 1):
+        boru(ag, BK_A, [((s * .38, .92, .30), .10), ((s * .62, 1.50, .34), .09), ((s * 1.02, 1.98, .16), .08), ((s * 1.42, 2.20, -.20), .07), ((s * 1.66, 2.14, -.58), .065)], 6)
+        top(ag, BK_I, (s * 1.70, 2.10, -.70), .17, 8, 4)
+    ag.yaz('hv_bocek_kulak', 0)
+def hv_bocek_kuyruk():   # belde kanat kabuğu: iki yarım, ortada dikiş, altta küçük şarj ışığı
+    ag = Ag()
+    for s in (-1, 1): elipsoid(ag, BK_K, (s * .22, .55, -.60), (.38, .74, .24), 8, 5)
+    boru(ag, BK_A, [((0, 1.24, -.60), .04), ((0, .55, -.83), .04), ((0, -.14, -.62), .04)], 5)
+    top(ag, BK_I, (0, -.10, -.76), .08, 6, 3)
+    ag.yaz('hv_bocek_kuyruk', 3)
+
+HAYVAN = {f.__name__: f for f in (hv_bocek_kafa, hv_bocek_kulak, hv_bocek_kuyruk, hv_robot_kafa, hv_robot_kulak, hv_robot_kuyruk, hv_kedi_kafa, hv_kedi_kulak, hv_kedi_kuyruk, hv_panda_kafa, hv_panda_kulak, hv_panda_kuyruk, hv_tavsan_kafa, hv_tavsan_kulak, hv_tavsan_kuyruk)}
 
 
 KALEM = {
