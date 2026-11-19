@@ -1365,13 +1365,21 @@ namespace BirdieSmash.Game
                       IK(SU, SE, SH, Vector3.Lerp(SH != null ? SH.position : hR, hR, a), ri - fw * .5f);
                       IK(LU, LE, LH, Vector3.Lerp(LH != null ? LH.position : hL, hL, a), -ri - fw * .5f);
                       RaketDik(SH, Vector3.Slerp(up, -up - fw * .4f + ri * .3f, a)); } break;
-                case "ter":      // sol ön kol alından geçer (sağdan sola siler); raketli kol maç duruşunda kalır
+                case "ter":      // sol el alından geçer (sağdan sola siler); raket yana iner
+                    // 2026-11-19 kare turu (r198): hedef omuz hizasına göreydi, iri başta el yanakta kalıyordu ve maç duruşundaki
+                    // raket yüzün önünden geçiyordu. Hedef artık baş kemiğine göre alın; raketli kol yana iner, kafa öne-aşağı.
                     { float a = rm ? .5f : Mathf.SmoothStep(0, 1, Mathf.Clamp01((t - .15f) / .45f));
-                      IK(LU, LE, LH, (sR + sL) * .5f + up * L * .4f + fw * L * .3f + ri * L * (.16f - .3f * a), -ri * .6f + up * .5f + fw * .4f); } break;
-                case "tel":      // raket göğüs önünde, kafası sola yukarı; sol elin parmakları tellerde gezinir
-                    { Vector3 nd = (up * .8f - ri * .55f + fw * .1f).normalized;
-                      IK(SU, SE, SH, sR + fw * L * .5f - up * L * .18f - ri * L * .04f, ri - up * .5f); RaketDik(SH, nd);
-                      if (SH != null) IK(LU, LE, LH, SH.position + nd * L * (.52f + .05f * Mathf.Sin(t * 13) * salla) + fw * L * .05f, -ri - up * .5f); } break;
+                      Vector3 alin = kHead != null ? kHead.position + up * L * .75f + fw * L * .55f : (sR + sL) * .5f + up * L * .4f + fw * L * .3f;
+                      IK(SU, SE, SH, sR + ri * L * .25f - up * L * .75f + fw * L * .2f, ri - fw * .3f); RaketDik(SH, fw * .8f - up * .5f + ri * .2f);
+                      IK(LU, LE, LH, alin + ri * L * (.25f - .5f * a), -ri * .6f + up * .5f + fw * .4f); } break;
+                case "tel":      // raket gövdenin önünde çapraz, kafası sol omzun önünde; sol elin parmakları tellerde gezinir
+                    // 2026-11-19 kare turu (r198): raket kol boyunun iki katı; kafa yukarı bakarken sol el tellere yetişmiyor, göğüste
+                    // kalıyordu. Raketli el aşağı öne iner, raket sol omzun önündeki noktaya nişanlanır ve sol elin hedefi gerçek
+                    // kafa konumundan hesaplanır (model oranı değişse de el telde kalır).
+                    { IK(SU, SE, SH, sR + fw * L * .45f - up * L * .55f + ri * L * .15f, ri - up * .5f);
+                      if (SH != null && kafa != null)
+                      { RaketDik(SH, sL + up * L * .55f + fw * L * .5f - ri * L * .1f - SH.position);
+                        IK(LU, LE, LH, Vector3.Lerp(SH.position, kafa.position, .78f + .05f * Mathf.Sin(t * 13) * salla) - fw * L * .04f, -ri - up * .5f); } } break;
                 case "iyi_oyun": // raket rakibe doğru kalkar (fileden selam)
                     IK(SU, SE, SH, sR + fw * L * .7f + up * L * .45f + ri * L * .1f, ri - up * .3f); break;
             }

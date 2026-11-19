@@ -819,7 +819,8 @@ namespace BirdieSmash.Game
             g.style.flexShrink = 0f;
             var gy = Yazi(L.T("Geri"), 15, "kalin"); gy.style.whiteSpace = WhiteSpace.NoWrap; gy.style.flexShrink = 0f;
             g.Add(Ikon(Ikonlar.Geri, 18, Color.white)); g.Add(gy); g.AddManipulator(new Clickable(Geri)); Erisim.Etiket(g, L.T("Geri"), "dugme"); bas.Add(g);
-            var t = Yazi(L.T(baslik), 19, "sayfa-baslik"); t.pickingMode = PickingMode.Position; t.style.flexShrink = 1f; t.style.minWidth = 0f; SozcukSigdir(t); Erisim.Etiket(t, L.T(baslik), "baslik"); bas.Add(t);
+            var t = Yazi(L.T(baslik), 19, "sayfa-baslik"); t.pickingMode = PickingMode.Position; t.style.flexShrink = 1f; t.style.flexGrow = 1f; t.style.minWidth = 0f; SozcukSigdir(t);   // flexGrow: genişlik = kalan yer (SozcukSigdir kullanılabilir genişlikle ölçer, 2026-11-19)
+            Erisim.Etiket(t, L.T(baslik), "baslik"); bas.Add(t);
             return t;
         }
 

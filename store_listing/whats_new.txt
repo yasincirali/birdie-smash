@@ -1,7 +1,15 @@
 === UNITY ===
+<<<<<<< HEAD
 Sayı arasında iki yeni kısa hareket (17 Kasım gece):
 - Sayıyı kaybeden oyuncu orta uzunlukta bir ralliden sonra alnındaki teri siliyor; kısa rallilerde ara sıra raketinin tellerini düzeltiyor. İkisi de bir saniyeden kısa, sayı arasını uzatmıyor. Sen de rakip de yapıyor.
 Nasıl denenir: Bir maç oyna. 5 ile 7 vuruş arası süren bir ralliyi kaybet: oyuncun sol koluyla alnını silmeli. Kısa rallilerde birkaç sayı izle: kaybeden taraf ara sıra raketini önüne alıp tellerine dokunmalı. Servis her zamanki sürede başlamalı.
+=======
+Ayarlar daha akıcı, sayfa başlıkları yine büyük (19 Kasım gece):
+- Ayarlar, Nasıl oynanır, Lisanslar, Antrenman ve Tüy dükkânı sayfalarının başlığı artık Geri yazısından küçük görünmüyor; eskisi gibi büyük.
+- Ayarlar'da Oyuncu hareketi, Kaydırma ve Kamera seçimine dokununca sayfa baştan kurulmuyor; seçim ve altındaki açıklama yerinde değişiyor, dokunuşta takılma olmamalı.
+- Kaydırma "Normal" seçeneğinin açıklaması artık ne yaptığını söylüyor: "Orta hızda bir kaydırma vuruş sayılır".
+Nasıl denenir: Ayarlar'ı aç: üstteki "Ayarlar" başlığı Geri düğmesinden büyük olmalı; Tüy dükkânı ve Antrenman'da da aynı. Ayarlar'da hareket, kaydırma ve kamera seçeneklerine sırayla dokun: turuncu çerçeve ve onay işareti dokunduğun seçeneğe geçmeli, alttaki cümle değişmeli, sayfa kaymamalı. Kaydırma'da Normal'i seç: yeni cümle görünmeli.
+>>>>>>> origin/main
 Patron maçları daha akıcı, maç sonu tek tavsiye (16 Kasım gece):
 - Patron rakibin imza vuruşu ışığı artık maç başlamadan hazırlanıyor; imzanın ilk geldiği anda kısa takılma olmamalı.
 - Patrona imzayı okuyamadan kaybedince maç sonundaki ipucu ve altındaki ders düğmesi artık aynı vuruştan bahsediyor (ör. Duvar blok için drop dersi).
