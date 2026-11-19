@@ -90,7 +90,7 @@ namespace BirdieSmash.Game
             var rl = new List<string>(); foreach (var m in Gear.RENK.Values) if (gr.RenkAcik(m.id, Ayar.sampiyon)) rl.Add(m.id);
             if (rl.Count > 0) gr.renk = rl[Random.Range(0, rl.Count)];
             foreach (var k in new[] { "grip", "tel" }) Ayar.RGOR[k] = Vitrin.RAK_SIRA[Random.Range(0, Vitrin.RAK_SIRA.Length)];
-            kombinAktif = -1; KombinYaz(); root.sfx.Tik(); Yerel.Hap("tick"); KombinUygula();
+            kombinAktif = -1; KombinYaz(); Tik(); KombinUygula();
         }
 
         // Kombin satırı: gövdenin başında (Raket kategorisi hariç; orada parça rayı başta). Yuvalar 44 pt çip, seçili ✓ + "Giyili".
@@ -128,7 +128,7 @@ namespace BirdieSmash.Game
             if (giyili < 0 && kombinAktif >= 0 && kombinler[kombinAktif] != null)
             {
                 int a = kombinAktif;
-                c.Add(Dugme(L.T("Kombin {0}'i bu görünüşle güncelle", a + 1), () => { kombinler[a] = KombinSimdi(); KombinYaz(); root.sfx.Yukselt(); Yerel.Hap("tick"); SoyunmaGovdeKur(true); }, "kombin-kaydet", null, 14));
+                c.Add(Dugme(L.T("Kombin {0}'i bu görünüşle güncelle", a + 1), () => { kombinler[a] = KombinSimdi(); KombinYaz(); root.sfx.Yukselt(); SoyunmaGovdeKur(true); }, "kombin-kaydet", null, 14));
             }
         }
 
@@ -185,7 +185,7 @@ namespace BirdieSmash.Game
             // 2026-11-07 (GD6): "≈ N maç" son 5 maçın Tüy ortalamasıyla; 3 maçtan az veri varsa yazılmaz
             int mt = Hedef.MacTahmini(eksik, PlayerPrefs.GetString(Hedef.SON_ANAHTAR, "")); string ms = mt > 0 ? " · " + L.T("≈ {0} maç", mt) : "";
             if (Ayar.HedefMi(kat, id)) return Pasif(L.T("Hedefin · {0} Tüy kaldı", eksik) + ms, L.T("Maç sonunda ne kadar yaklaştığını görürsün"));
-            return Dugme(L.T("Hedef yap") + ms, () => { Ayar.HedefYaz(kat, id); Yerel.Hap("tick"); if (yenile != null) yenile(); }, "dugme--hedef", alt, 15);
+            return Dugme(L.T("Hedef yap") + ms, () => { Ayar.HedefYaz(kat, id); if (yenile != null) yenile(); }, "dugme--hedef", alt, 15);
         }
         // Maç sonu "Hedefin hazır" (Hud): ekipman modeli kendi yuva sayfasında, kozmetik ve ayakkabı Dolap'ta deneniyor olarak
         // açılır; alt çubuk "… Tüy ile al" der. Satın alma yine oyuncunun dokunuşuyla.

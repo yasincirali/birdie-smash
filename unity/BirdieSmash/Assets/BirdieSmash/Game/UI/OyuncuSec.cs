@@ -80,7 +80,7 @@ namespace BirdieSmash.Game
             var ds = Satir("arali"); ds.AddToClassList("hazir-dugmeler"); c.Add(ds);
             var rd = Dugme(L.T("Rastgele"), () => { HazirSecGoster(Random.Range(0, HAZIR.Length)); HazirUygula(HAZIR[oyuncuSecSecili]); Tik(); }, null, null, 15); rd.AddToClassList("hazir-dugme"); ds.Add(rd);
             var at = Dugme(L.T("Atla"), OyuncuSecAtla, null, null, 15); at.AddToClassList("hazir-dugme"); ds.Add(at);
-            AltEylem(Dugme(L.T("Bununla oyna"), () => { root.sfx.Yukselt(); Yerel.Hap("tick"); OyuncuSecKapat(); }, "dugme--birincil", null, 19));
+            AltEylem(Dugme(L.T("Bununla oyna"), () => { root.sfx.Yukselt(); OyuncuSecKapat(); }, "dugme--birincil", null, 19));
         }
         // EkranTuru için: bir kartı seç / Atla.
         public void OyuncuSecHazir(int i) { HazirSecGoster(i); HazirUygula(HAZIR[i]); }

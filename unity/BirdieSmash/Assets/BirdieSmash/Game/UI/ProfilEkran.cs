@@ -85,7 +85,7 @@ namespace BirdieSmash.Game
                 if (!var_) sira_ = tu;
                 var hk = new VisualElement(); hk.AddToClassList("kupa-hucre"); if (!var_) hk.AddToClassList("kupa-hucre--yok");
                 hk.Add(Ikon(Ikonlar.Kupa, 28, var_ ? ALTIN : SOLUK)); int tt = tu;
-                hk.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); KariyerTurSec(tt); SekmeAc(Sekme.Kariyer); }));
+                hk.AddManipulator(new Clickable(() => { Tik(); KariyerTurSec(tt); SekmeAc(Sekme.Kariyer); }));
                 Erisim.Etiket(hk, L.T(TurAd(tu)) + ", " + L.T(var_ ? "Kazanıldı" : "Kazanılmadı"), "dugme"); raf.Add(hk);
                 int bit = 1 << (tu & 31);
                 if (var_ && (gorMaske & bit) == 0) { gorYeni |= bit; if (gorVar) { yeniOldu = true; if (!Ayar.reduce) KupaIndir(hk); } }
@@ -93,7 +93,7 @@ namespace BirdieSmash.Game
             if (kalan_ > 0)
             {
                 var ar = new VisualElement(); ar.AddToClassList("kupa-hucre"); ar.AddToClassList("kupa-hucre--yok"); ar.Add(Yazi("+" + kalan_, 15, "kalin")); int st = sira_;
-                ar.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); KariyerTurSec(st); SekmeAc(Sekme.Kariyer); }));
+                ar.AddManipulator(new Clickable(() => { Tik(); KariyerTurSec(st); SekmeAc(Sekme.Kariyer); }));
                 Erisim.Etiket(ar, L.T("{0} kupa daha", kalan_), "dugme"); raf.Add(ar);
             }
             if (gorYeni != gorMaske || !gorVar) PlayerPrefs.SetInt(KUPA_GOR, gorYeni);   // Save yok: bir sonraki Ayar.Kaydet yazar
@@ -200,7 +200,7 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Başarımlar")));
             // Game Center listenin sonundan başlığın altına (2026-11-07 inceleme, fikir 20:09 #3): Ayarlar'daki kopya kalktı, tek yer
             // burası; uzun listenin dibinde aranmasın. Metin aynı anahtar ("Game Center'da aç" yeni çeviri isterdi).
-            if (Basarim.acik) { c.Add(Dugme(L.T("Game Center · Başarımlar") + "  ›", () => { Yerel.Hap("tick"); Basarim.Goster(); })); c.Add(Bosluk(6)); }
+            if (Basarim.acik) { c.Add(Dugme(L.T("Game Center · Başarımlar") + "  ›", () => { Basarim.Goster(); })); c.Add(Bosluk(6)); }
             // 2026-11-11 inceleme (fikir 19:05 #7): 23–25 satır alt alta, çoğu kilit + "Henüz değil"; sayfanın yarısı kilit duvarıydı.
             // Kapalıyken: kazanılanlar (gurur) + listedeki sıradaki 3 kilitli hedef + "Tümünü göster (n)". Açınca eski tam liste.
             var ids = new System.Collections.Generic.List<string>();

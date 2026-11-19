@@ -121,10 +121,10 @@ namespace BirdieSmash.Game
             // 2026-11-07 (murphysoft.app HTTPS ile açıldı): gizlilik ve destek stüdyo sitesinde; Destek sayfası support@murphysoft.app'i
             // ve SSS'yi taşır (e-posta bağlantısı uygulamada değil sayfada: mailto her cihazda posta uygulaması açmaz).
             bool en = Ayar.dil == "en";
-            var gz = Dugme(L.T("Gizlilik politikası") + "  ↗", () => { Yerel.Hap("tick"); Application.OpenURL(en
+            var gz = Dugme(L.T("Gizlilik politikası") + "  ↗", () => { Application.OpenURL(en
                 ? "https://murphysoft.app/birdie-smash/privacy/" : "https://murphysoft.app/birdie-smash/gizlilik/"); });
             Erisim.Etiket(gz, L.T("Gizlilik politikası") + ". " + L.T("Tarayıcıda açılır"), "dugme"); c.Add(gz);
-            var ds = Dugme(L.T("Destek") + "  ↗", () => { Yerel.Hap("tick"); Application.OpenURL(en
+            var ds = Dugme(L.T("Destek") + "  ↗", () => { Application.OpenURL(en
                 ? "https://murphysoft.app/birdie-smash/support/" : "https://murphysoft.app/birdie-smash/destek/"); });
             Erisim.Etiket(ds, L.T("Destek") + ". " + L.T("Tarayıcıda açılır"), "dugme"); c.Add(ds);
             c.Add(Bosluk(8)); c.Add(Yazi(L.T("Sürüm {0}", Application.version), 12, "soluk"));
@@ -136,8 +136,8 @@ namespace BirdieSmash.Game
                 c.Add(Grup(L.T("Tanı")));
                 string ilk = Cokme.Son.Length > 160 ? Cokme.Son.Substring(0, 160) + "…" : Cokme.Son;
                 c.Add(Yazi(ilk, 12, "soluk"));
-                c.Add(Dugme(L.T("Çökme kaydını paylaş"), () => { Yerel.Hap("tick"); Yerel.Paylas(Cokme.Son); }));
-                c.Add(Dugme(L.T("Çökme kaydını sil"), () => { Yerel.Hap("tick"); Cokme.Temizle(); Degisti(); }));
+                c.Add(Dugme(L.T("Çökme kaydını paylaş"), () => { Yerel.Paylas(Cokme.Son); }));
+                c.Add(Dugme(L.T("Çökme kaydını sil"), () => { Cokme.Temizle(); Degisti(); }));
             }
             c.Add(Bosluk(24));
         }
@@ -187,7 +187,7 @@ namespace BirdieSmash.Game
                 if (gid != null && Dril.Bul(gid) != null)
                 {
                     var dene = Yazi(L.T("Görevde dene ›"), 15, "kalin"); dene.AddToClassList("nasil-dene"); Erisim.Etiket(dene, L.T("Görevde dene"), "dugme");
-                    dene.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); DrilKartAc(gid); })); g.Add(dene);
+                    dene.AddManipulator(new Clickable(() => { Tik(); DrilKartAc(gid); })); g.Add(dene);
                 }
                 sr.AddManipulator(new Clickable(() =>
                 {

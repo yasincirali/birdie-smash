@@ -134,7 +134,7 @@ namespace BirdieSmash.Game
             yz.Add(Baslik(t, Px(40, 34), "cta-baslik"));   // kısa ekranda (SE) 34: düğme 80 yerine ~70 pt, afişe yer kalır
             if (!string.IsNullOrEmpty(alt)) yz.Add(Yazi(alt, 14, "cta-alt"));
             var ik = new VisualElement(); ik.AddToClassList("cta-ikon"); ik.pickingMode = PickingMode.Ignore; ik.Add(Ikon(Ikonlar.Oyna, 24, CTA_OK)); d.Add(ik);   // 2026-10-27 yön C: koyu daire içinde turuncu ok
-            d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); PerdeKaynakYaz(d); a(); }));   // 2026-10-27: perde v2'nin 3B topu buradan kalkar
+            d.AddManipulator(new Clickable(() => { Tik(); PerdeKaynakYaz(d); a(); }));   // 2026-10-27: perde v2'nin 3B topu buradan kalkar
             Erisim.Etiket(d, string.IsNullOrEmpty(alt) ? t : t + ", " + alt, "dugme");
             if (!Ayar.reduce) Supur(sup);
             return d;
@@ -183,7 +183,7 @@ namespace BirdieSmash.Game
                 var ar = new VisualElement(); ar.AddToClassList("karo-alt-satir"); ar.pickingMode = PickingMode.Ignore; d.Add(ar);
                 if (altIkon != null) ar.Add(Ikon(altIkon, 12, ALTIN)); ar.Add(Yazi(alt, 12, "karo-alt"));
             }
-            d.AddManipulator(new Clickable(() => { Yerel.Hap("tick"); a(); })); Erisim.Etiket(d, erisim, "dugme");
+            d.AddManipulator(new Clickable(() => { Tik(); a(); })); Erisim.Etiket(d, erisim, "dugme");
             return d;
         }
         // Günün maçı kutucuğu (a-tile--gold): değiştiricinin adı, altında Tüy simgesi + "+40 Tüy" (alındıysa ✓ + "Bugün kazandın").
@@ -211,7 +211,7 @@ namespace BirdieSmash.Game
             // bittiyse (sıradaki basamak yok) Kariyer sekmesi.
             // Birleşme (2026-10-26, A + Ar-Ge) titreşimi iki yola da koymuştu; SekmeAc sekme değişince zaten "tick" verir: Kariyer
             // yolunda iki titreşim olmasın diye yalnız maç kartı yolunda.
-            kart.AddManipulator(new Clickable(() => { if (tamam) SekmeAc(Sekme.Kariyer); else { Yerel.Hap("tick"); MacKartAc(g); } }));
+            kart.AddManipulator(new Clickable(() => { if (tamam) SekmeAc(Sekme.Kariyer); else { Tik(); MacKartAc(g); } }));
             var bas = new VisualElement(); bas.AddToClassList("plaka-ust"); bas.pickingMode = PickingMode.Ignore; kart.Add(bas);
             // 2026-11-16 inceleme (fikir 02:05 #2, docs/arayuz_tasarim_dili.md §8): altın = ödül, turuncu = bas. "Sıradaki maç" bir
             // ödül değil; şeritsiz soluk etiket. Altın hap yalnız "Kariyer tamam" (gerçek ödül anı) kalır.

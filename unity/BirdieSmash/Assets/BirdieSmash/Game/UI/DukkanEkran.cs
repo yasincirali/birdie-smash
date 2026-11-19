@@ -103,7 +103,7 @@ namespace BirdieSmash.Game
                 var hk = Kart("dukkan-durum"); c.Add(hk);
                 hk.Add(Yazi(L.T("Mağazaya bağlanılamadı"), 15, "kalin"));
                 hk.Add(Yazi(L.T("İnternet bağlantını kontrol edip yeniden dene."), 13, "soluk"));
-                hk.Add(Dugme(L.T("Yeniden dene"), () => { Tik(); Magaza.O.Baslat(); }, "dugme--hayalet"));
+                hk.Add(Dugme(L.T("Yeniden dene"), () => { Magaza.O.Baslat(); }, "dugme--hayalet"));
             }
 
             // Hedefi karşılayan en küçük paket (#1b); hedef yoksa ya da hiçbiri yetmiyorsa -1.
@@ -138,7 +138,7 @@ namespace BirdieSmash.Game
                 // "Satın alınamıyor" yalnız mağaza açıkken ürün gelmediyse.
                 if (!hata)
                     k.Add(yukleniyor ? Pasif(L.T("Fiyat alınıyor…")) : fiyat == null ? Pasif(L.T("Satın alınamıyor")) : m.SurenMi(id) ? Pasif(L.T("İşleniyor…")) : m.Suruyor || m.GeriYukleniyor ? Pasif(fiyat)
-                        : Dugme(fiyat, () => { dukkanNot = null; dukkanAlinan = id; Tik(); Magaza.O.Al(id); }));
+                        : Dugme(fiyat, () => { dukkanNot = null; dukkanAlinan = id; Magaza.O.Al(id); }));
                 string durumYazi = hata ? L.T("Mağazaya bağlanılamadı") : yukleniyor ? L.T("Fiyat alınıyor…") : fiyat ?? L.T("Satın alınamıyor");
                 Erisim.Etiket(k, L.T(pk.ad) + ", " + L.T("{0} Tüy", pk.tuy) + (pk.ek > 0 ? ", " + L.T("+%{0} fazla", pk.ek) : "") + (i == yeter ? ", " + L.T("Hedefine yeter") : "") + ", " + durumYazi, "dugme", false, fiyat == null || hata || yukleniyor);
             }
@@ -160,7 +160,7 @@ namespace BirdieSmash.Game
             else if (hata) { }
             else if (yukleniyor) rk.Add(Pasif(L.T("Fiyat alınıyor…")));
             else rk.Add(rf == null ? Pasif(L.T("Satın alınamıyor")) : m.SurenMi(TuyDukkan.REKLAMSIZ) ? Pasif(L.T("İşleniyor…")) : m.Suruyor || m.GeriYukleniyor ? Pasif(rf)
-                : Dugme(rf, () => { dukkanNot = null; Tik(); Magaza.O.Al(TuyDukkan.REKLAMSIZ); }));
+                : Dugme(rf, () => { dukkanNot = null; Magaza.O.Al(TuyDukkan.REKLAMSIZ); }));
             Erisim.Etiket(rk, L.T("Reklamsız") + ", " + (rVar ? L.T("Alındı") : hata ? L.T("Mağazaya bağlanılamadı") : yukleniyor ? L.T("Fiyat alınıyor…") : rf ?? L.T("Satın alınamıyor")), "dugme", false, rVar || rf == null || hata || yukleniyor);
 
             c.Add(Bosluk(12));
@@ -170,7 +170,7 @@ namespace BirdieSmash.Game
             // ve görünürlük korunur (App Store gereği).
             if (m.GeriYukleniyor) c.Add(Pasif(L.T("Kontrol ediliyor…")));
             else if (m.Suruyor) c.Add(Pasif(L.T("Satın alımları geri yükle")));
-            else c.Add(Dugme(L.T("Satın alımları geri yükle"), () => { Tik(); Magaza.O.GeriYukle(ok => { Reklam.Yenile(); dukkanNot = ok ? L.T("Kaydın yeniden okundu.") : L.T("Geri yüklenecek bir şey bulunamadı."); ustKirli = true; DukkanYenile(); }); }, "dugme--hayalet"));
+            else c.Add(Dugme(L.T("Satın alımları geri yükle"), () => { Magaza.O.GeriYukle(ok => { Reklam.Yenile(); dukkanNot = ok ? L.T("Kaydın yeniden okundu.") : L.T("Geri yüklenecek bir şey bulunamadı."); ustKirli = true; DukkanYenile(); }); }, "dugme--hayalet"));
             c.Add(Yazi(L.T("Tüy tüketilen bir üründür: harcayınca biter, süresi dolmaz. Rastgele ödül satılmaz."), 12, "soluk"));
             c.Add(Bosluk(24));
         }
