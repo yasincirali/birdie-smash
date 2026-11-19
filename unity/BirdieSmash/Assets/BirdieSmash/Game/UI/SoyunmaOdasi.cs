@@ -53,7 +53,13 @@ namespace BirdieSmash.Game
         readonly List<VisualElement> canliDolgu = new List<VisualElement>(); readonly List<Label> canliDeger = new List<Label>();
         readonly List<VisualElement> canliGel = new List<VisualElement>(); readonly List<Label> canliArti = new List<Label>();
         public const int SEG_KARAKTER = 3;
-        VisualElement vitrinOdak;
+        VisualElement vitrinOdak, vitrinUst, buyutDugme;
+        // 2026-11-19 (yasin: "Dolap'ta karakteri daha detaylı inceleyebilmeli, daha geniş olmalı; ama skinleri ve tipleri de güzel
+        // göstermeliyiz"): ikisi aynı anda sığmaz, oyuncu seçer. Vitrinin sol üstündeki İncele düğmesi vitrini Dolap'ın bütün
+        // alanına açar (kategori şeridi, liste ve deneme çubuğu gizlenir; döndürme ve Yüz · Ayak · Tutuş yakın planları çalışır),
+        // ikinci dokunuş listeye döner. Liste görünümünde vitrin %50 → %54 ve kenar payı 16 → 8 pt (figür daha geniş).
+        // Geçişte yalnız RT bir kez yeniden boyutlanır (Vitrin.Cozunurluk, GeometryChanged); karede ayırma yok.
+        bool dolapIncele;
 
         // EkranTuru ve maç sonu "Ekipmanı yükselt" için açık yöntemler.
         public void SoyunmaSegment(int i)
@@ -84,6 +90,9 @@ namespace BirdieSmash.Game
             // gelmiyordu; suruk açık kalıp vitrin kendiliğinden dönmeyi bırakıyordu. İptal ve yakalama kaybı da bırakma sayılır.
             vitrinIm.RegisterCallback<PointerCancelEvent>(e => VitrinIptal()); vitrinIm.RegisterCallback<PointerCaptureOutEvent>(e => VitrinIptal());
             vitrinYazi = Yazi("", VitrinPx(12), "vitrin-yazi"); ust.Add(vitrinYazi);
+            vitrinUst = ust; dolapIncele = false;
+            buyutDugme = new VisualElement(); buyutDugme.AddToClassList("dugme"); buyutDugme.AddToClassList("ikon-dugme"); buyutDugme.AddToClassList("vitrin-buyut");
+            buyutDugme.AddManipulator(new Clickable(() => DolapIncele(!dolapIncele))); ust.Add(buyutDugme); BuyutYaz();
             // 2026-10-26 (r13 incelemesi): yakın plan düğmeleri ve oklar tek bir alt sütunda (Yüz·Ayak·Tutuş üstte, oklar altta).
             // Eskiden ikisi ayrı ayrı mutlak konumdaydı (odak satırı alttan 60 pt); büyük yazıda "Raketi incele" iki satıra
             // çıkınca oklar satırı uzuyor, düğmeler üst üste biniyordu. Sütunda yükseklikler ne olursa olsun çakışmazlar.
@@ -112,6 +121,23 @@ namespace BirdieSmash.Game
             denemeCubuk = new VisualElement(); denemeCubuk.AddToClassList("deneme-cubuk"); denemeCubuk.style.display = DisplayStyle.None; k.Add(denemeCubuk);
             if (root.vitrin.odak == Vitrin.TAM) KarakterOdakAyarla();   // sekmeye dönüşte (Kapat odağı ve raket görünümünü sıfırladı)
             SoyunmaGovdeKur(false);
+        }
+
+        public void DolapIncele(bool ac)   // EkranTuru da çağırır
+        {
+            if (vitrinUst == null) return; dolapIncele = ac; Tik();
+            vitrinUst.EnableInClassList("vitrin-alan--genis", ac);
+            var gz = ac ? DisplayStyle.None : DisplayStyle.Flex;
+            if (soyunmaKaydir != null) soyunmaKaydir.style.display = gz;
+            if (odaSecici != null) odaSecici.style.display = gz;
+            KategoriKur(); DenemeCubukKur(); BuyutYaz();
+        }
+        void BuyutYaz()
+        {
+            if (buyutDugme == null) return; buyutDugme.Clear();
+            buyutDugme.EnableInClassList("odak-dugme--secili", dolapIncele);
+            var ic = Ikon(Ikonlar.Buyut, 20, dolapIncele ? TURUNCU : Color.white); ic.pickingMode = PickingMode.Ignore; buyutDugme.Add(ic);
+            Erisim.Etiket(buyutDugme, L.T(dolapIncele ? "Listeye dön" : "Oyuncuyu büyüt ve incele"), "dugme", dolapIncele);
         }
 
         // Atölye: oyunu etkileyen her şey (eski Oyun segmenti). Vitrin yok: Golf Clash'teki gibi kart + çubuk + "yükseltince".

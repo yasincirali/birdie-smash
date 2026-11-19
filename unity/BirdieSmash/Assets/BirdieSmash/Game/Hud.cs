@@ -1319,29 +1319,6 @@ namespace BirdieSmash.Game
         }
         void Over(Match M)
         {
-            // Maçın anı oynarken kart çizilmez; tek satır etiket ve tüm ekran "dokun, geç" (Game/MacAni).
-            // 2026-11-06 (yasin: "maçın anı görseli istenen gibi gözükmüyor"; öneri artifact'i YAP): çıplak tek satır yerine sinema
-            // şeritleri (üst/alt ince koyu bant, ekranın %7'si, güvenli alanın içine taşmaz), sol üstte neyin özel olduğu
-            // ("Maçın anı · 14 vuruşluk ralli") ve bitiş ağır çekiminde smaçla bittiyse tek kelime "Smaç!". Alt satır yalnız
-            // "Geçmek için dokun" (soluk). Hareketi azaltta ağır çekim yok, "Smaç!" yine görünür (renkle değil yazıyla).
-            if (root.AniAktif)
-            {
-                float u0 = Mathf.Min(W / 390f, H / 844f), bant = Mathf.Max(H * .07f, top + 28 * u0);
-                Fill(new Rect(-W, 0, W * 3, bant), new Color(A_INK.r, A_INK.g, A_INK.b, .92f));
-                Fill(new Rect(-W, H - Mathf.Max(H * .07f, bot + 28 * u0), W * 3, H), new Color(A_INK.r, A_INK.g, A_INK.b, .92f));
-                var st = Stil(mid, Mathf.RoundToInt(15 * u0 * Ayar.YaziK), FontStyle.Bold); st.alignment = TextAnchor.MiddleLeft;
-                string et = L.T("Maçın anı") + (root.AniBaglam == 1 ? " · " + L.T("Maçı bitiren sayı") : root.AniBaglam == 2 ? " · " + L.T("Kurtarılan maç sayısı") : "") + (root.AniVurus > 1 ? " · " + L.T("{0} vuruşluk ralli", root.AniVurus) : "");
-                Konturlu(new Rect(lx, bant + 10 * u0, rx - lx, 30 * u0), et, st, Color.white, Mathf.Max(1.5f, 2 * u0));
-                if (root.AniSmac && root.AniYavas > 0)
-                {
-                    var sb = Stil(mid, Mathf.RoundToInt(34 * u0 * Ayar.YaziK), FontStyle.Bold); var c = Kit.Hex("#d8ff5a"); c.a = Mathf.Clamp01(root.AniYavas * 1.5f);
-                    Konturlu(new Rect(0, H * .3f, W, 60 * u0), L.T("Smaç!"), sb, c, Mathf.Max(2, 3 * u0));
-                }
-                var sa = Stil(mid, Mathf.RoundToInt(13 * u0 * Ayar.YaziK), FontStyle.Normal);
-                Konturlu(new Rect(16 * u0, H - Mathf.Max(H * .07f, bot + 28 * u0) - 34 * u0, W - 32 * u0, 28 * u0), L.T("Geçmek için dokun"), sa, new Color(1, 1, 1, .75f), Mathf.Max(1, 1.5f * u0));
-                if (GUI.Button(new Rect(0, 0, W, H), GUIContent.none, GUIStyle.none)) root.AniDur();
-                return;
-            }
             // 2026-10-27 (duyarlı yerleşim): yerleşim ölçüsü s en-boyun küçüğüyle (390 × 844 tasarım karesi) kalır, ama YAZI telefonda
             // (en/boy < 0,62) 11 pt'nin altına inmez: SE'de (375 × 667) s = 0,79 idi, 12'lik satırlar (üst satır, SEN/rakip adı,
             // yıldız koşulları) 9,5 pt çıkıyordu. W/375 ≈ ekranın pt başına pikseli (en dar iPhone 375 pt; daha geniş telefonda
@@ -1438,13 +1415,11 @@ namespace BirdieSmash.Game
             // açıkken görünür (eski dizilim, sığmazsa ikişer yan yana).
             var od2 = R.bittiDril != null ? Dril.Bul(R.bittiDril) : null; bool ayrintiVar = !string.IsNullOrEmpty(R.bittiBilgi);
             bool yuk = od != null && R.yukseltHazir, hdz = od != null && R.hedefHazir && R.hedef.gecerli;
-            bool aniB = R.AniVar; bool payl = R.mod == Mod.Gunluk && Yerel.PaylasVar && R.match != null && R.match.matchDone;
-            int nTum = (aniB ? 1 : 0) + (payl ? 1 : 0) + (R.ustaDavet ? 1 : 0) + (yuk ? 1 : 0) + (hdz ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (od2 != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0);
+            bool payl = R.mod == Mod.Gunluk && Yerel.PaylasVar && R.match != null && R.match.matchDone;
+            int nTum = (payl ? 1 : 0) + (R.ustaDavet ? 1 : 0) + (yuk ? 1 : 0) + (hdz ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (od2 != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0);
             // 2026-11-07 ödüllü reklam (Core/OdulluReklam): yalnız tek ikincil yuva boşken; ana düğme yerinde kalır.
-            // 2026-11-09 (yasin: "reklam görüntüsü gelmesi lazım"): Maçın anı #44'ten beri neredeyse her maçta var ve yuvayı
-            // sayıldığı için teklif hiç çıkmıyordu. An bir tekrar izleme, eylem değil: teklif onun önüne geçer, an Ayrıntılar'da
-            // ve teklifin olmadığı maçlarda yerinde kalır. Diğer ikinciller (antrenman, yükselt, paylaş…) yine önceliklidir.
-            bool rek = RekVar(R, od, nTum - (aniB ? 1 : 0)); if (rek) nTum = 1 + (aniB ? 1 : 0);
+            // 2026-11-19: Maçın anı kaldırıldı (yasin); teklif yalnız diğer ikinciller yokken (antrenman, yükselt, paylaş… önceliklidir).
+            bool rek = RekVar(R, od, nTum); if (rek) nTum = 1;
             int nIk = ayr ? nTum : Mathf.Min(1, nTum);
             float bh = Mathf.Max(BH, 50 * s), gap = 8 * s;
             string ct = UiKok.Buyuk(CtaBaslik(R.bittiDugme, R.bittiDugmeAlt)); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), cah = string.IsNullOrEmpty(R.bittiDugmeAlt) ? 0 : aCtaAlt.CalcHeight(Ic(R.bittiDugmeAlt), w);
@@ -1461,14 +1436,9 @@ namespace BirdieSmash.Game
             // 2026-11-02 hedef eşya: yalnız bu maçın Tüy'ü hedefi yetişir yaptıysa (sonraki maçlarda satır "Hazır" der, düğme çıkmaz).
             if (hdz && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Hedefin hazır"), al)) { var hk = R.hedef; root.AnaMenu(); if (root.ui != null) root.ui.HedefeGit(hk.kat, hk.id); } }
             if (R.ustaDavet && ki < nIk) { R.UstaDavetGordu(); if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Zor'u dene · bir maç"), al)) root.UstaDene(); }
-            // Günün maçında Maçın anı paylaşmadan önce (UX incelemesi 2026-11-05): tek yuvada paylaş öndeydi, an hiç görünmüyordu.
-            // İzlendikten sonra yuva paylaşa döner (an düğmesi aşağıda yine sırasında).
-            bool aniOnce = aniB && payl && !R.AniIzlendi;
-            if (aniOnce && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Maçın anı"), al)) root.AniBaslat(); }
             if (payl && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Sonucu paylaş"), al)) root.GunlukPaylas(); }
             if (R.bittiIlk && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Tam antrenman"), al)) root.Antrenman(); }
             if (R.mod == Mod.Dril && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman görevleri"), al)) { root.AnaMenu(); if (root.ui != null) { var dg = Dril.Bul(root.drilId); if (dg != null && dg != Sonsuz.Tanim) root.ui.AntrenmanGrup(dg.grup); root.ui.AntrenmanAc(); } } }
-            if (aniB && !aniOnce && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Maçın anı"), al)) root.AniBaslat(); }
             if (ayrintiVar)
             {
                 float hw = (w - gap) / 2;
@@ -1742,7 +1712,6 @@ namespace BirdieSmash.Game
         }
         // Ödüllü reklam düğmesi bu kartta var mı (tek yuva kuralı: başka ikincil varsa yok). baska: kartın diğer ikincilleri.
         bool RekVar(GameRoot R, OdulSonuc od, int baska) { return od != null && R.mod != Mod.Dril && R.ReklamUygun(baska > 0); }
-        // Maçın anı sayılmaz: teklif anın önüne geçer (2026-11-09, yukarıdaki kart kodu).
         int DigerIkincil(GameRoot R, OdulSonuc od)
         {
             bool payl = R.mod == Mod.Gunluk && Yerel.PaylasVar && R.match != null && R.match.matchDone;

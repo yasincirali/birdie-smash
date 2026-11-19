@@ -73,7 +73,7 @@ namespace BirdieSmash.Game
         {
             if (soyunmaSegment == null) return; soyunmaSegment.Clear(); karAlt = KarGecerli(karAlt);
             OdaSeciciYaz();
-            if (kategoriKaydir != null) kategoriKaydir.style.display = karAlt == KAR_RAKET ? DisplayStyle.None : DisplayStyle.Flex;
+            if (kategoriKaydir != null) kategoriKaydir.style.display = karAlt == KAR_RAKET || dolapIncele ? DisplayStyle.None : DisplayStyle.Flex;
             foreach (int i in KarSayfalar())
             {
                 if (i == KAR_RAKET) continue;   // 2026-11-07 (yasin seçimi "tek Raket bölümü"): Raket üstteki Görünüm/Raket ayrımında
@@ -209,7 +209,7 @@ namespace BirdieSmash.Game
             // Kordaj → gerginlik + renk, Grip → sap ölçüsü + renk. Model alımı yuva kademeleriyle birlikte Atölye'de kalır.
             if (ps == null) { RaketKimlikKart(c, true); TelKur(c); }
             else if (ps == "kordaj") TelKur(c);
-            else if (ps == "grip") { var sk = Kart("raket-kimlik"); c.Add(sk); SapSecici(sk); }
+            else if (ps == "grip") RaketKimlikKart(c, true);   // 2026-11-19: Tutuş buraya açar; raketin kimliği (özellikleri) sap seçiciyle birlikte, teknik sayfa sonda
             c.Add(Grup(L.T("Görünüş"))); GorunumRozet(c);
             if (ps == null || ps == "kafa") KafaSekliSira(c);
             if (ps == null || ps == "cerceve")
@@ -227,7 +227,7 @@ namespace BirdieSmash.Game
                 ds.Add(Cip(L.T("Ana ve çapraz ayrı"), Ayar.RGOR["desen"] == "iki", () => { Ayar.RGOR["desen"] = "iki"; Ayar.KaydetSonra(); root.vitrin.Yenile(); root.sfx.Tik(); SoyunmaGovdeKur(true); }));
                 if (Ayar.RGOR["desen"] == "iki") RenkSira(c, "Çapraz teller", "tel2");
             }
-            if (ps == null) TeknikKur(c);
+            if (ps == null || ps == "grip") TeknikKur(c);
         }
         // Üstte iki büyük sekme: Görünüm (figür, altı kategori) · Raket (işlev + görünüş + teknik sayfa).
         VisualElement odaSecici;
@@ -273,10 +273,25 @@ namespace BirdieSmash.Game
                 var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("odak-dugme"); if (sec) d.AddToClassList("odak-dugme--secili");
                 var ic = new VisualElement(); ic.AddToClassList("cip-ic"); ic.pickingMode = PickingMode.Ignore; d.Add(ic);
                 ic.Add(Ikon(sim[i], 24, sec ? TURUNCU : YAZI));
-                d.AddManipulator(new Clickable(() => { Tik(); vt.Odak(sec ? Vitrin.TAM : o, o == Vitrin.TUTUS ? vt.poz ?? "drive" : null); SoyunmaGovdeKur(true); }));
+                // 2026-11-19 (yasin: "Görünümden yüz seçiliyorsa yüz skinlerine gitmeli, ayak seçerse ayaklara; Gripte de raket
+                // özelliklerine"): yakın plan düğmesi artık altındaki sayfayı da açar. Yüz → Yüz (Saç/Şapka açıksa orada kalır: onlar
+                // da yüz kadrajında), Ayak → Ayakkabı, Tutuş → Raket › Grip (sap ölçüsü, grip rengi ve raketin teknik sayfası).
+                // Kadraj ile liste hep aynı şeyi gösterir; eskiden kamera yüze gelirken liste Forma'da kalabiliyordu.
+                d.AddManipulator(new Clickable(() => OdakSec(o, sec)));
                 Erisim.Etiket(d, L.T("Yakın plan: {0}", L.T(ad[i])) + (sec ? ", " + L.T("tüm boya dönmek için yeniden dokun") : ""), "dugme", sec);
                 vitrinOdak.Add(d);
             }
+        }
+
+        void OdakSec(int o, bool sec)
+        {
+            var vt = root.vitrin;
+            if (sec) { Tik(); vt.Odak(Vitrin.TAM); SoyunmaGovdeKur(true); return; }   // aynısına ikinci dokunuş: tüm boy, sayfa yerinde
+            if (o == Vitrin.TUTUS) { raketParca = "grip"; RaketGorunum(true); return; }   // KarakterOdakAyarla kamerayı gripe götürür
+            int hedef = o == Vitrin.AYAK ? KAR_AYK : karAlt == KAR_SAC || karAlt == KAR_SAPKA || karAlt == KAR_TEN ? karAlt : KAR_TEN;
+            hedef = KarGecerli(hedef);
+            if (hedef != karAlt) { KategoriSec(hedef); if (vt.odak != o) { vt.Odak(o); SoyunmaGovdeKur(true); } return; }
+            Tik(); vt.Odak(o); SoyunmaGovdeKur(true);
         }
 
         // ---- Karakter gövdesi ----

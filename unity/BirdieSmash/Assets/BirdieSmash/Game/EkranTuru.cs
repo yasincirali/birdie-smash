@@ -406,6 +406,8 @@ namespace BirdieSmash.Game
             // 2026-11-07 Dolap › Raket: kimlik kartı, gerginlik, sap ölçüsü; sayfa sonunda teknik sayfa
             ui.KarakterAc(UiKok.KAR_KIYAFET); ui.RaketIncele(true); yield return Bekle(40); yield return Cek("menu_" + ek + "dolap_raket");
             ui.SayfaSonaKaydir(); yield return Bekle(10); yield return Cek("menu_" + ek + "dolap_raket_teknik"); ui.RaketIncele(false);
+            // 2026-11-19 Dolap İncele: vitrin bütün alanda, liste gizli; ikinci çağrı listeye döner.
+            ui.KarakterAc(UiKok.KAR_KIYAFET); ui.DolapIncele(true); yield return Bekle(40); yield return Cek("menu_" + ek + "dolap_incele"); ui.DolapIncele(false); yield return Bekle(10);
             ui.KarakterAc(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "kep"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_sapka_kep");
             ui.KarakterDene(Kozmetik.SAPKA, "buyucu"); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_sapka_buyucu");
             ui.KarakterAc(UiKok.KAR_TEN); ui.KarakterDene(Kozmetik.YUZ, "gunes"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_yuz_gunes");

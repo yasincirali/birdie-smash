@@ -2,6 +2,13 @@
 Sayı arasında iki yeni kısa hareket (19 Kasım gece):
 - Sayıyı kaybeden oyuncu orta uzunlukta bir ralliden sonra alnındaki teri siliyor; kısa rallilerde ara sıra raketinin tellerini düzeltiyor. İkisi de bir saniyeden kısa, sayı arasını uzatmıyor. Sen de rakip de yapıyor.
 Nasıl denenir: Bir maç oyna. 5 ile 7 vuruş arası süren bir ralliyi kaybet: oyuncun sol koluyla alnını silmeli. Kısa rallilerde birkaç sayı izle: kaybeden taraf ara sıra raketini önüne alıp tellerine dokunmalı. Servis her zamanki sürede başlamalı.
+Dolap daha kolay, iPad tam ekran, Maçın anı kalktı (19 Kasım gece):
+- Dolap'ta Yüz, Ayak ve Tutuş düğmeleri artık alttaki listeyi de açıyor: Yüz yüz eşyalarına, Ayak ayakkabılara, Tutuş raketin grip ve özellik sayfasına gider.
+- Oyuncu Dolap'ta daha büyük; sol üstteki büyüt düğmesi oyuncuyu bütün ekrana açar, yeniden dokununca liste geri gelir.
+- Seçili eşya kartı daha belirgin.
+- iPad'de oyun artık tam ekran açılıyor.
+- Maç sonundaki "Maçın anı" tekrarı kaldırıldı.
+Nasıl denenir: Dolap'ı aç, Yüz düğmesine dokun: liste Yüz sayfasına geçmeli; Ayak'a dokun: Ayakkabı; Tutuş'a dokun: Raket bölümünde Grip ve raketin özellikleri açılmalı. Sol üstteki büyüt düğmesine dokun: oyuncu bütün alanı kaplamalı, döndürebilmelisin; yeniden dokun: liste dönmeli. iPad'in varsa oyunu aç: kenarlarda siyah boşluk olmadan tam ekran açılmalı. Bir maç bitir: "Maçın anı" düğmesi görünmemeli.
 Ayarlar daha akıcı, sayfa başlıkları yine büyük (19 Kasım gece):
 - Ayarlar, Nasıl oynanır, Lisanslar, Antrenman ve Tüy dükkânı sayfalarının başlığı artık Geri yazısından küçük görünmüyor; eskisi gibi büyük.
 - Ayarlar'da Oyuncu hareketi, Kaydırma ve Kamera seçimine dokununca sayfa baştan kurulmuyor; seçim ve altındaki açıklama yerinde değişiyor, dokunuşta takılma olmamalı.
