@@ -286,6 +286,9 @@ namespace BirdieSmash.Game
             float ys = Yerel.AcilisSure();
             // Açılış saati: yerel perde açıkken onun süresi (spin onunla aynı anda görünür), sonra kare süresiyle sürer.
             if (perdeAcilis) acilisSpin = ys >= 0 ? ys : acilisSpin + Mathf.Min(d, .05f);
+            // Ad "Smash"ı otururken kısa titreşim (AdCiz). Yalnız vuruş anını 50 ms içinde yakalayan karede: motor geç açıldıysa
+            // ya da kare uzun sürdüyse geç gelen titreşim görüntüden kopar, hiç gelmemesi daha iyi. Hareketi azaltta darbe yok.
+            if (perdeAcilis && !adVurdu && acilisSpin >= AD_VURUS) { adVurdu = true; if (acilisSpin - AD_VURUS < .05f && !Ayar.reduce && !adYok) Yerel.Hap("hit"); }
             if (ys >= 0)
             {
                 if (!Ayar.reduce) perdeAci = ys * 1.2f;
@@ -315,7 +318,7 @@ namespace BirdieSmash.Game
                 bool sure = perdeAcilis && !Ayar.reduce ? acilisSpin >= ACILIS_EN_AZ : perdeT >= min;
                 if (hazir && akici && (sure || perdeAtla)) { perdeEvre = 3; perdeT = 0; perdeBek = false; Yerel.AcilisBitir(); if (perdeAcilis) acilisAcT = Time.realtimeSinceStartup; }
             }
-            else if (perdeEvre == 3 && perdeT >= (Ayar.reduce ? .25f : .35f)) { perdeEvre = 0; kaynakVar = false; if (perdeAcilis && acilisSonT < 0) acilisSonT = Time.realtimeSinceStartup; }
+            else if (perdeEvre == 3 && perdeT >= (Ayar.reduce ? .25f : .35f)) { perdeEvre = 0; kaynakVar = false; if (perdeAcilis && acilisSonT < 0) acilisSonT = Time.realtimeSinceStartup; if (perdeAcilis) AdBirak(); }
             if (perdeEvre != 2) perdeBek = false;
             TopPozYaz();
         }
@@ -1848,7 +1851,7 @@ namespace BirdieSmash.Game
                     GUIUtility.RotateAroundPivot(ang, c); Tex(new Rect(c.x - r, c.y - r, 2 * r, 2 * r), perdeTex[i], new Color(1, 1, 1, al)); GUI.matrix = m;
                 }
             }
-            TopCiz();
+            TopCiz(); AdCiz();
             if (perdeBek && root.yukleyici != null)
             {   // HTML perdeBekle: ortada dönen tüy top, altında "Hazırlanıyor…" (VoiceOver'a duyurma IMGUI'de yok, bilinen eksik)
                 Vector2 p; float boy, aci, donus, a_; bool serbest; TopDurum(out p, out boy, out aci, out donus, out a_, out serbest);
@@ -1856,6 +1859,57 @@ namespace BirdieSmash.Game
                 var pr = new Rect(W / 2 - sz.x / 2 - 14 * u, H / 2 + boy * .85f, sz.x + 28 * u, sz.y + 10 * u); Fill(pr, new Color(74 / 255f, 10 / 255f, 34 / 255f, .88f)); GUI.Label(pr, t, ps);
             }
         }
+        // Açılışta oyun adı (2026-11-19, yasin: "splash gifinde Birdie Smash ismi gözüküp kaybolmalı mı? oyun adını vurgulamak
+        // adına"): menüdeki marka adıyla aynı yazı, topun altında (tool/acilis_ad_uret.py; tasarım kararları orada).
+        // Yalnız soğuk açılışta: maça geçiş perdesi kısa ve her maçta tekrar eder, orada ad gürültü olur.
+        // Giriş "smaç vuruşu" (aynı gün, yasin dört seçenekli önizlemeden seçti, artifact 2yZ3UnsEj6JGdGjwFaFxFR): önce "Birdie"
+        // AD_B_GIR'de AD_B_SURE sn'de soldan kayarak belirir; top spinini bitirip durduğu anda (AD_VURUS = ACILIS_TUT +
+        // ACILIS_SPIN) "Smash" AD_S_K kadar büyükten AD_S_SURE sn'de kendi merkezine (AD_SMASH_M) çarpar gibi oturur, uçuş yayı
+        // onunla belirir ve kısa bir "hit" titreşimi gelir. Top ile adın aynı anda "durması" vuruş hissini verir.
+        // Üç katman BirdieAcilis.mm ile aynı dosya, yer ve eğri (devir görünmez). Perde açılırken ilk .2 sn'de söner, menüye ad
+        // taşımaz. Jenerik parıltı/ışık süpürmesi bilerek yok (arayuz_tasarim_dili §10). Hareketi azalt: baştan görünür,
+        // kayma/darbe yok. Dokular açılış bitince silinir (bir daha gerekmez).
+        const float AD_GEN = .56f, AD_Y = .24f, AD_B_GIR = .45f, AD_B_SURE = .4f, AD_B_KAY = .08f, AD_S_SURE = .2f, AD_S_K = .35f;
+        const float AD_VURUS = ACILIS_TUT + ACILIS_SPIN;
+        static readonly Vector2 AD_SMASH_M = new Vector2(.733f, .319f);   // betiğin yazdığı "Smash" merkezi (katmana oranla)
+        static readonly string[] AD_KATMAN = { "birdie", "smash", "yay" };
+        Texture2D[] adTex; bool adYok, adVurdu;
+        void AdCiz()
+        {
+            if (!perdeAcilis || (perdeEvre != 2 && perdeEvre != 3)) return;
+            if (adTex == null && !adYok) { adTex = AdDoku(); adYok = adTex == null; }
+            if (adTex == null) return;
+            float ts = perdeSabit >= 0 ? (perdeEvre == 2 ? perdeT : 9) : acilisSpin, son = perdeEvre == 3 ? 1 - Mathf.Clamp01(perdeT / .2f) : 1;
+            if (son <= 0) return;
+            float m = Mathf.Min(W, H), w = Mathf.Round(m * AD_GEN), h = Mathf.Round(w * adTex[0].height / adTex[0].width);
+            var r = new Rect(Mathf.Round(W / 2 - w / 2), Mathf.Round(H / 2 + m * AD_Y - h / 2), w, h);
+            bool rm = Ayar.reduce;
+            float pb = rm ? 1 : EaseOut3((ts - AD_B_GIR) / AD_B_SURE), ps = rm ? 1 : (ts - AD_VURUS) / AD_S_SURE;
+            Tex(new Rect(r.x - w * AD_B_KAY * (1 - pb), r.y, w, h), adTex[0], new Color(1, 1, 1, pb * son));
+            if (ps <= 0) return;
+            float k = 1 + AD_S_K * (1 - EaseOut3(ps)), mx = r.x + w * AD_SMASH_M.x, my = r.y + h * AD_SMASH_M.y;
+            Tex(new Rect(r.x, r.y, w, h), adTex[2], new Color(1, 1, 1, Mathf.Clamp01(ps * 2) * son));
+            Tex(new Rect(mx - (mx - r.x) * k, my - (my - r.y) * k, w * k, h * k), adTex[1], new Color(1, 1, 1, Mathf.Clamp01(ps * 3) * son));
+        }
+        static Texture2D[] AdDoku()
+        {
+            var d = new Texture2D[AD_KATMAN.Length];
+            try
+            {
+                for (int i = 0; i < d.Length; i++)
+                {
+                    var b = System.IO.File.ReadAllBytes(System.IO.Path.Combine(Application.streamingAssetsPath, "acilis_ad_" + AD_KATMAN[i] + ".png"));
+                    var t = new Texture2D(2, 2, TextureFormat.RGBA32, true);
+                    if (!t.LoadImage(b, true)) { Destroy(t); throw new System.Exception("png"); }
+                    t.filterMode = FilterMode.Trilinear; t.wrapMode = TextureWrapMode.Clamp; d[i] = t;
+                }
+                return d;
+            }
+            catch (System.Exception) { foreach (var t in d) if (t != null) Destroy(t); return null; }   // katman eksikse ad yok, açılış eskisi gibi
+        }
+        // adYok burada kurulmaz: ekran turu açılış karelerini (PerdeKare) gerçek açılıştan sonra dondurur, dokular yeniden
+        // yüklenmeli. Oyunda açılış perdesi bir daha gelmediği için yeniden yükleme olmaz.
+        void AdBirak() { if (adTex != null) foreach (var t in adTex) Destroy(t); adTex = null; }
         void TopCiz()
         {
             var y = root.yukleyici; if (y == null || (y.rt == null && y.serit == null)) return;

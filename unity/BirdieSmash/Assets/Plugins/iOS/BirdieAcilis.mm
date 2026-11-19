@@ -59,6 +59,10 @@ static void bsBitir(void)
 // < 0: hiç); yazi: topun altındaki etiket (nil: yok); yaziOlcek: Ayar.YaziK. Açılışta (aci 0, ilk kurulum) halkalar .25 sn'de belirir.
 // Açılış spini sabitleri: Hud ACILIS_* ile birebir aynı (tutma, süre, ilk boy, ilk karenin toplam fazı, eksen fazı eki).
 static const double BS_TUT = .12, BS_SPIN = 1.15, BS_K0 = .55, BS_AXP = M_PI * 2 / 16, BS_FAZ0 = 18.03125 * BS_AXP, BS_C0 = BS_FAZ0 - 2.4 * BS_TUT;
+// Oyun adı (2026-11-19): Hud AD_* ile birebir aynı tutulmalı (genişlik, merkezden aşağı, "Birdie" girişi, "Smash" darbesi,
+// "Smash" merkezi; vuruş anı = BS_TUT + BS_SPIN).
+static const double BS_AD_GEN = .56, BS_AD_Y = .24, BS_AD_B_GIR = .45, BS_AD_B_SURE = .4, BS_AD_B_KAY = .08, BS_AD_S_SURE = .2, BS_AD_S_K = .35;
+static const CGPoint BS_AD_SMASH_M = { .733, .319 };
 static double bsEase3(double x) { x = x < 0 ? 0 : x > 1 ? 1 : x; return 1 - pow(1 - x, 3); }
 static CGRect bsKare(double faz) { int fi = (int)floor(fmod(faz, BS_AXP) / BS_AXP * 16) % 16; return CGRectMake((fi % 4) * .25, (fi / 4) * .25, .25, .25); }
 
@@ -145,6 +149,48 @@ static void bsPerdeKur(UIWindow *unity, CGFloat aci, CGFloat topGecikme, NSStrin
         a.removedOnCompletion = NO; [T addAnimation:a forKey:@"don"];
     }
     if (topGecikme >= 0) [kok addSublayer:T];
+
+    // Oyun adı (2026-11-19, yasin: "splash gifinde Birdie Smash ismi gözüküp kaybolmalı mı?"; giriş "smaç vuruşu"; Hud.AdCiz
+    // ile aynı üç katman, yer ve eğri): yalnız açılışta, topun altında. "Birdie" BS_AD_B_GIR'de soldan kayarak belirir; top
+    // spinini bitirip durduğu anda "Smash" büyükten kendi merkezine çarpar gibi oturur, yay onunla belirir. 1/120 sn anahtar
+    // kareler render sunucusunda (ana iş parçacığı motoru açarken de zamanında oynar; Unity yarıda devralırsa sıçrama olmaz).
+    // Titreşimi Unity çalar (yalnız anı yakalarsa: geç titreşim görüntüden kopar). Söner kısmı Unity perdesinde. Hareketi
+    // azalt: baştan görünür. Katman eksikse ad yok, açılış eskisi gibi.
+    UIImage *adB = belir ? bsResim(@"acilis_ad_birdie.png") : nil, *adS = belir ? bsResim(@"acilis_ad_smash.png") : nil, *adY = belir ? bsResim(@"acilis_ad_yay.png") : nil;
+    if (adB != nil && adS != nil && adY != nil && adB.size.width > 0)
+    {
+        CGFloat aw = round(m * BS_AD_GEN), ah = round(aw * adB.size.height / adB.size.width);
+        CGRect r = CGRectMake(round(W / 2 - aw / 2), round(H / 2 + m * BS_AD_Y - ah / 2), aw, ah);
+        const int NB = (int)round(BS_AD_B_SURE * 120), NS = (int)round(BS_AD_S_SURE * 120);
+        NSArray *resimler = @[adY, adB, adS];
+        for (int L = 0; L < 3; L++)
+        {   // 0 yay, 1 Birdie, 2 Smash; Smash ölçeği kendi merkezinden (anchorPoint)
+            CALayer *A = [CALayer layer]; A.contents = (__bridge id)((UIImage *)resimler[L]).CGImage; A.bounds = CGRectMake(0, 0, aw, ah);
+            A.anchorPoint = L == 2 ? BS_AD_SMASH_M : CGPointMake(0, 0);
+            A.position = CGPointMake(r.origin.x + aw * A.anchorPoint.x, r.origin.y + ah * A.anchorPoint.y);
+            A.minificationFilter = kCAFilterTrilinear; A.magnificationFilter = kCAFilterLinear;
+            if (!rm)
+            {
+                int N = L == 1 ? NB : NS;
+                NSMutableArray *kt = [NSMutableArray arrayWithCapacity:N + 1], *ov = [NSMutableArray arrayWithCapacity:N + 1], *hv = [NSMutableArray arrayWithCapacity:N + 1];
+                for (int i = 0; i <= N; i++)
+                {
+                    double x = (double)i / N; [kt addObject:@(x)];
+                    if (L == 1) { double pb = bsEase3(x); [ov addObject:@(pb)]; [hv addObject:@(A.position.x - aw * BS_AD_B_KAY * (1 - pb))]; }
+                    else { [ov addObject:@(fmin(1, x * (L == 2 ? 3 : 2)))]; double k = 1 + BS_AD_S_K * (1 - bsEase3(x)); [hv addObject:[NSValue valueWithCATransform3D:CATransform3DMakeScale(k, k, 1)]]; }
+                }
+                NSArray *yollar = L == 1 ? @[@"opacity", @"position.x"] : L == 2 ? @[@"opacity", @"transform"] : @[@"opacity"], *degerler = @[ov, hv];
+                for (NSUInteger j = 0; j < yollar.count; j++)
+                {
+                    CAKeyframeAnimation *a = [CAKeyframeAnimation animationWithKeyPath:yollar[j]];
+                    a.values = degerler[j]; a.keyTimes = kt; a.duration = L == 1 ? BS_AD_B_SURE : BS_AD_S_SURE;
+                    a.beginTime = t0 + (L == 1 ? BS_AD_B_GIR : BS_TUT + BS_SPIN); a.fillMode = kCAFillModeBackwards;
+                    [A addAnimation:a forKey:[NSString stringWithFormat:@"ad%d_%@", L, yollar[j]]];
+                }
+            }
+            [kok addSublayer:A];
+        }
+    }
 
     // "Hazırlanıyor…" (Hud.PerdeCiz perdeBek): topun altında, koyu bordo zemin üstünde kalın yazı; Unity'deki boyutlar
     // (u = min(H/640, W/340), yazı 13·u·YaziK, yatay pay 14·u, dikey 10·u), aynı gecikmeyle belirir.
