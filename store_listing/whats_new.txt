@@ -1,4 +1,10 @@
 === UNITY ===
+Kariyer yolunda sen, iPad'de derli toplu menüler (19 Kasım):
+- Kariyer yolunda sıradaki maçın düğümünde artık kendi oyuncunun yüzü var; maç numarası köşedeki küçük rozette.
+- Kariyer yolundaki düğümler ve Profil'deki kupalar basınca diğer düğmeler gibi içeri çöküyor.
+- Atölye'de tarzlar arasında gezerken sayfa yeniden kurulmuyor, kaydırma yerinden oynamıyor.
+- iPad'de Kariyer, Profil, Atölye ve Ayarlar ekranın ortasında okunur genişlikte duruyor.
+Nasıl denenir: Kariyer'i aç: büyük düğümde oyuncunun yüzü ve köşede maç numarası görünmeli; düğümlere basınca hafifçe içeri çökmeli. Atölye'yi biraz aşağı kaydırıp tarzlara sırayla dokun: sayfa zıplamamalı, çubuklar büyüyerek gelmeli. iPad'de Kariyer ve Profil ortada tek sütun olmalı, kenarlarda boşluk kalmalı.
 Yeni menü müziği (19 Kasım):
 - Menüde çalan parça yenilendi: ukulele, ksilofon, çan ve ıslıkla çalınan neşeli, sevimli bir ezgi. Yaklaşık 72 saniye, sonu başına kesintisiz bağlanıyor.
 Nasıl denenir: Müzik açıkken (Ayarlar) menüde bir dakikadan uzun bekle. Ezgi neşeli ve yumuşak olmalı, döngü başa dönerken kesinti ya da çıtırtı duyulmamalı. Maça girince müzik susmalı.

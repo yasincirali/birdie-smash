@@ -964,3 +964,17 @@
    birincil düğme .98, CTA .98 (626. satır), ikon .94, profil hapı ve kupa hücresi .97/.94 ile ayrışmıştı; aynı dokunuş ekrandan
    ekrana farklı hissettiriyordu. Hepsi %95. Hareketi azaltta küçülme yok (.az-hareket kuralı daha özgül, kazanır). */
 .dugme--birincil:active, .ikon-dugme:active, .cta:active, .profil-hap:active, .kupa-hucre:active { scale: 0.95 0.95; }
+/* 2026-11-19 (Ar-Ge 12:06 #3): tur yolu düğümü tıklanır ama basınca tepkisizdi, kupa hücresi geçişsiz atlıyordu. İkisi de
+   aynı basma dili: .06 sn %95, bırakınca .26 sn ease-out-back. Hareketi azaltta küçülme yok. */
+.dugum-rozet, .kupa-hucre { transition-property: scale; transition-duration: 0.26s; transition-timing-function: ease-out-back; }
+.dugum-rozet:active { scale: 0.95 0.95; }
+.dugum-rozet:active, .kupa-hucre:active { transition-duration: 0.06s; transition-timing-function: ease-out; }
+.az-hareket .dugum-rozet, .az-hareket .kupa-hucre { transition-duration: 0s; }
+.az-hareket .dugum-rozet:active, .az-hareket .kupa-hucre:active { scale: 1 1; }
+/* 2026-11-19 (Ar-Ge 12:06 #1): şimdiki düğümde oyuncunun portresi (64 pt halkanın içinde 52), numara sağ altta rozet. */
+.dugum-portre { width: 52px; height: 52px; border-radius: 26px; overflow: hidden; align-items: center; justify-content: center; }
+.dugum-no { position: absolute; right: -4px; bottom: -4px; min-width: 22px; height: 22px; border-radius: 11px; padding: 0 4px; align-items: center; justify-content: center; background-color: var(--navy); border-width: 2px; border-color: var(--sun); }
+/* 2026-11-19 (Ar-Ge 12:06 #4, tablet): iPad'de Kariyer/Profil/Atölye tam eni kaplıyor, tur yolu zikzakı ve satırlar 800+ pt
+   uzuyordu. Sekme içeriği ve "Sıradaki maç" şeridi 600 pt orta sütun (telefondaki oran); Dolap kendi sağ paneliyle hariç. */
+.genis .sekme-icerik { max-width: 600px; width: 100%; align-self: center; margin-left: auto; margin-right: auto; }
+.genis .siradaki-serit { max-width: 568px; width: 100%; align-self: center; }

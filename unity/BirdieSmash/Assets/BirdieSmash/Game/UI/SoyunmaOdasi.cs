@@ -286,7 +286,7 @@ namespace BirdieSmash.Game
         void EkipmanGovde(VisualElement c)
         {
             var gr = Ayar.gear;   // Seviye satırı kalktı (2026-11-05, Ar-Ge 11:40 #3): üst çubukta Sv + XP ve Tüy zaten var, Profil'de ayrıntı
-            c.Add(Grup(L.T("Oyun tarzı"))); TarzGovde(c);
+            c.Add(Grup(L.T("Oyun tarzı"))); tarzKap = new VisualElement(); c.Add(tarzKap); TarzGovde(tarzKap);
             c.Add(Grup(L.T("Takımın")));
             var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true, null, Ayar.GelisimCubuk());
             RaketKimlikKart(c);
@@ -616,6 +616,15 @@ namespace BirdieSmash.Game
         // söyler (kilitli tarz da önizlenir: önce gör, sonra hedefle). Çubuk boyu = etiketteki yüzde / ÇUBUK_TAVAN (etiket etki
         // çarpanıyla aynı ölçüde, karakter.json tarzlar_not); ayrı veri yok. Çubuk 0'dan büyür (.22 sn; hareketi azaltta anında).
         string tarzOnizle; const float CUBUK_TAVAN = 40f;
+        // 2026-11-19 (Ar-Ge 12:06 #2, takılma yok): önizleme çipi yalnız bu bölümü yeniler; eskiden bütün Atölye (başlık, takım
+        // kartı, raket, 6 yuva, taban; ~60 öğe) baştan kuruluyor, kaydırma yeri iki kez yazılıyordu. Gerçek seçim ("Bu tarzı seç")
+        // takım gücünü değiştirdiği için sayfayı baştan kurmaya devam eder.
+        VisualElement tarzKap;
+        void TarzYerinde()
+        {
+            if (tarzKap == null || tarzKap.panel == null) { SoyunmaGovdeKur(true); return; }
+            tarzKap.Clear(); TarzGovde(tarzKap);
+        }
         void TarzGovde(VisualElement c)
         {
             int sv = Ayar.gear.Seviye(); string cur = Ayar.Tarz; if (tarzOnizle == null) tarzOnizle = cur;
@@ -628,7 +637,7 @@ namespace BirdieSmash.Game
             foreach (var t in Karakter.Tarzlar)
             {
                 string id = t.id; bool acik = sv >= t.sv;
-                var d = Cip(L.T(t.ad), id == tarzOnizle, () => { if (tarzOnizle == id) return; tarzOnizle = id; root.sfx.Tik(); SoyunmaGovdeKur(true); }, acik ? (id == cur ? L.T("Seçili") : null) : L.T("Sv {0}", t.sv));
+                var d = Cip(L.T(t.ad), id == tarzOnizle, () => { if (tarzOnizle == id) return; tarzOnizle = id; root.sfx.Tik(); TarzYerinde(); }, acik ? (id == cur ? L.T("Seçili") : null) : L.T("Sv {0}", t.sv));
                 d.AddToClassList("segment-cip"); var eb = d.userData as ErisimBilgi; if (eb != null) eb.rol = "sekme"; ray.Add(d); if (id == tarzOnizle) secEl = d;
             }
             if (secEl != null) OrtayaKaydir(hk, secEl);

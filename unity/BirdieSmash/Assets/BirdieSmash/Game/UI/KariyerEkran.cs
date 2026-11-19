@@ -210,6 +210,16 @@ namespace BirdieSmash.Game
             if (simdi && g == basAniA && basAniDen >= 0) BasamakBuyut(roz, .8f, 300);
             else if (final) roz.Add(Ikon(Ikonlar.Kupa, 18, simdi ? KOYU : acik ? ALTIN : SOLUK));
             else if (!acik) roz.Add(Ikon(Ikonlar.Kilit, 16, SOLUK));
+            else if (simdi && Portre.Benim() != null)
+            {
+                // 2026-11-19 (Ar-Ge 12:06 #1, OYUNCUYU GÖSTER): "sen buradasın" iğnesi oyuncunun kendi yüzü (harita ilerlemeli
+                // muadillerde olduğu gibi); numara sağ altta küçük rozet. Portre üst çubukta zaten çizili, önbellekten gelir (ek
+                // kamera çizimi yok). Rakip portresi düğüme eklenmedi: maç kartında var, düğümde ikinci yüz okumayı böler.
+                var av = new VisualElement(); av.AddToClassList("dugum-portre"); av.style.backgroundColor = Kit.Hex(Ayar.FORMA); av.pickingMode = PickingMode.Ignore;
+                AvatarIc(av, Portre.Benim(), 28); roz.Add(av);
+                var no = new VisualElement(); no.AddToClassList("dugum-no"); no.pickingMode = PickingMode.Ignore; roz.Add(no);
+                var nl = Yazi((b + 1).ToString(), 11, "kalin"); nl.style.unityTextAlign = TextAnchor.MiddleCenter; nl.style.paddingTop = 0f; nl.style.paddingBottom = 0f; no.Add(nl);
+            }
             else
             {
                 // 2026-11-14 (tasarım dili, r170): rakam 44 pt halkada kendi kutusundan taşıyordu (×1 22>20, ×2 32 pt rakam 9 pt'ye
