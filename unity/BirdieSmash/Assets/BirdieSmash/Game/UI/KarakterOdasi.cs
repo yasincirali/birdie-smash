@@ -72,11 +72,11 @@ namespace BirdieSmash.Game
         void KategoriKur()
         {
             if (soyunmaSegment == null) return; soyunmaSegment.Clear(); karAlt = KarGecerli(karAlt);
-            OdaSeciciYaz();
-            if (kategoriKaydir != null) kategoriKaydir.style.display = karAlt == KAR_RAKET || dolapIncele ? DisplayStyle.None : DisplayStyle.Flex;
+            // 2026-11-19 (Dolap A): şerit rakette de görünür (çekmecenin sekmeleri; oradan başka kategoriye tek dokunuşla dönülür).
+            if (kategoriKaydir != null) kategoriKaydir.style.display = DisplayStyle.Flex;
             foreach (int i in KarSayfalar())
             {
-                if (i == KAR_RAKET) continue;   // 2026-11-07 (yasin seçimi "tek Raket bölümü"): Raket üstteki Görünüm/Raket ayrımında
+                // 2026-11-07 "tek Raket bölümü" korunur: Raket şeridin son çipi (eskiden üstteki Görünüm/Raket ayrımındaydı, 2026-11-19 Dolap A).
                 // sayım adla aynı satırda ("Şapka 3/9"): alt satır yedi çipi birden iki satıra çıkarıp kısa ekranda vitrini daraltırdı
                 int ii = i, ks, kt; bool sayim = KarSayim(i, out ks, out kt); bool dn = KategoriDeneniyor(i);
                 var d = Cip(L.T(KAR_AD[i]) + (sayim ? " " + ks + "/" + kt : ""), karAlt == i, () => KategoriSec(ii), dn ? L.T("deneniyor") : null);
@@ -229,14 +229,6 @@ namespace BirdieSmash.Game
             }
             if (ps == null || ps == "grip") TeknikKur(c);
         }
-        // Üstte iki büyük sekme: Görünüm (figür, altı kategori) · Raket (işlev + görünüş + teknik sayfa).
-        VisualElement odaSecici;
-        void OdaSeciciYaz()
-        {
-            if (odaSecici == null) return; odaSecici.Clear(); bool rk = karAlt == KAR_RAKET;
-            var g = Cip(L.T("Görünüm"), !rk, () => RaketGorunum(false)); g.AddToClassList("oda-cip"); var gb = g.userData as ErisimBilgi; if (gb != null) gb.rol = "sekme"; odaSecici.Add(g);
-            var r = Cip(L.T("Raket"), rk, () => RaketGorunum(true)); r.AddToClassList("oda-cip"); var rb = r.userData as ErisimBilgi; if (rb != null) rb.rol = "sekme"; odaSecici.Add(r);
-        }
         // Kafa şekli: üç biçim, örnek kare içinde biçimin kendisi çizili (yalnız adla değil); seçili ✓ + kalın çerçeve.
         void KafaSekliSira(VisualElement c)
         {
@@ -300,12 +292,13 @@ namespace BirdieSmash.Game
             // raket görünümünde (vitrin rakette) yalnız raketin görünüşü: forma ve şapka figür görünmezken seçilmez
             karAlt = KarGecerli(karAlt);
             if (karAlt == KAR_RAKET) { RaketSayfa(c); return; }
-            GorunumRozet(c);
-            KoleksiyonSatir(c);
+            // 2026-11-19 (Dolap A, §7 öğe bütçesi): çekmecenin yarım durağında ilk görünen şey eşyalar olmalı. "Oyunu etkilemez"
+            // rozeti ve koleksiyon satırı (Sıradaki) ızgaranın altına indi; kategori çipindeki "3/9" sayımı yerinde kalır.
             if (!Ayar.VaryantGorunur) TekBedenKart(c);
             if (!Ayar.AykModelGorunur && karAlt == KAR_AYK) ModelUyari(c);
             if (karAlt == KAR_TIP) TipSayfa(c); else if (karAlt == KAR_SAC) SacSayfa(c); else if (karAlt == KAR_AYK) AyakkabiSayfa(c); else if (karAlt == KAR_KIYAFET) KiyafetSayfa(c);
             else if (karAlt == KAR_SAPKA) SapkaSayfa(c); else if (karAlt == KAR_SEVINC) SevincSayfa(c); else if (karAlt == KAR_SIRT) SirtSayfa(c); else TenSayfa(c);
+            KoleksiyonSatir(c); GorunumRozet(c);
             // 2026-11-15 inceleme #6 (r180, 390×845: ayakkabı ızgarasının ilk sırası ekranın altında kesikti): kombin (kaydet/rastgele)
             // ikincil iş; seçilecek eşyanın önüne değil sayfa sonuna, her kategoride aynı yere.
             KombinSatir(c);

@@ -408,7 +408,7 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_KIYAFET); ui.RaketIncele(true); yield return Bekle(40); yield return Cek("menu_" + ek + "dolap_raket");
             ui.SayfaSonaKaydir(); yield return Bekle(10); yield return Cek("menu_" + ek + "dolap_raket_teknik"); ui.RaketIncele(false);
             // 2026-11-19 Dolap İncele: vitrin bütün alanda, liste gizli; ikinci çağrı listeye döner.
-            ui.KarakterAc(UiKok.KAR_KIYAFET); ui.DolapIncele(true); yield return Bekle(40); yield return Cek("menu_" + ek + "dolap_incele"); ui.DolapIncele(false); yield return Bekle(10);
+            ui.KarakterAc(UiKok.KAR_KIYAFET); ui.DolapIncele(true); yield return Bekle(40); yield return Cek("menu_" + ek + "dolap_incele"); ui.DolapIncele(false); yield return Bekle(10); ui.DolapTam(true, false); yield return Bekle(30); yield return Cek("menu_" + ek + "dolap_tam"); ui.DolapTam(false, false); yield return Bekle(10);
             ui.KarakterAc(UiKok.KAR_SAPKA); ui.KarakterDene(Kozmetik.SAPKA, "kep"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_sapka_kep");
             ui.KarakterDene(Kozmetik.SAPKA, "buyucu"); yield return Bekle(30); yield return Cek("menu_" + ek + "karakter_sapka_buyucu");
             ui.KarakterAc(UiKok.KAR_TEN); ui.KarakterDene(Kozmetik.YUZ, "gunes"); yield return Bekle(40); yield return Cek("menu_" + ek + "karakter_yuz_gunes");
@@ -435,7 +435,7 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_SEVINC); yield return Bekle(25); yield return Cek("menu_" + ek + "sevinc");
             if (ek == "") foreach (var sv in new[] { "kollar", "zipla", "alkis", "zafer", "egil", "iyi_oyun", "ter", "tel" }) { root.vitrin.Sevinc(sv); yield return Bekle(sv == "zipla" ? 18 : 30); yield return Cek("sevinc_" + sv); }
             // 2026-11-12 danslar: ikişer kare (farklı evre), hareketi azalt kapalıyken (salınımlı hâli görünsün)
-            if (ek == "") { bool dr = Ayar.reduce; Ayar.reduce = false; foreach (var sv in new[] { "robot", "tavuk", "twist", "dalga", "helikopter", "gitar" }) { root.vitrin.Sevinc(sv); yield return Bekle(22); yield return Cek("dans_" + sv + "_1"); { var df = root.vitrin.Fig; if (df != null) rap.AppendLine("dans " + sv + " · bacak kod " + df.TaniBacakKod + " r " + df.TaniBacakR.ToString("F3") + " kalçaAta " + df.TaniKalcaAta); } yield return Bekle(13); yield return Cek("dans_" + sv + "_2"); } Ayar.reduce = dr; }
+            if (ek == "") { bool dr = Ayar.reduce; Ayar.reduce = false; foreach (var sv in new[] { "robot", "tavuk", "twist", "dalga", "helikopter", "gitar", "fiskiye", "ucak", "yildiz" }) { root.vitrin.Sevinc(sv); yield return Bekle(22); yield return Cek("dans_" + sv + "_1"); { var df = root.vitrin.Fig; if (df != null) rap.AppendLine("dans " + sv + " · bacak kod " + df.TaniBacakKod + " r " + df.TaniBacakR.ToString("F3") + " kalçaAta " + df.TaniKalcaAta); } yield return Bekle(13); yield return Cek("dans_" + sv + "_2"); } Ayar.reduce = dr; }
             // 2026-11-10 smaç hareketleri (Kozmetik.SMAC): her hareketin temas öncesi (u .3) ve sonrası (u .75) karesi; saat sabit.
             if (ek == "") foreach (var sm in new[] { "duz", "yay", "makas", "donerek" }) foreach (var su in new[] { .3f, .75f })
                 { Vitrin.TestSmacT = .35f + su / Match.JUMP_HIZ; root.vitrin.Sevinc("smac:" + sm); yield return Bekle(4); yield return Cek("smac_" + sm + (su < .5f ? "_once" : "_sonra")); }
