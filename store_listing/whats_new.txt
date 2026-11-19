@@ -1,4 +1,8 @@
 === UNITY ===
+Sevinçler daha canlı, üç yeni dans (19 Kasım):
+- Sevinç hareketleri 120 Hz ekranlarda 120 fps; girişleri yumuşak, gövde kavisli eğiliyor, baş hareketi geriden takip ediyor, zıplayıp inince dizler yaylanıyor.
+- Yeni danslar: Fıskiye (Sv 12), Yıldız zıplaması (Sv 18), Uçak (Sv 20); sayı sevinci ve maç sonu için Dolap > Hareketler'de.
+Nasıl denenir: Dolap > Hareketler'de mevcut dansları (Robot, Twist, Helikopter) ve yenileri sırayla dene: hareket akıcı olmalı, kollar bir anda fırlamamalı, baş gövdeyle birlikte doğal sallanmalı. Bir maç kazan: maç sonu sevinci akıcı görünmeli.
 Dolap'ta oyuncu varsayılan hâlde de büyük (19 Kasım sabah):
 - Dolap açılınca oyuncu artık kutuyu dolduruyor (ayaktan raketin ucuna kadar); vitrin biraz daha yüksek.
 - Büyüt düğmesine ilk basışta görünen pembe ekran giderildi.

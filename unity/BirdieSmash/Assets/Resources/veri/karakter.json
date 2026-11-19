@@ -109,7 +109,10 @@
   {"id": "twist", "ad": "Twist", "sv": 9, "fiyat": 850},
   {"id": "dalga", "ad": "Dalga", "sv": 11, "fiyat": 950},
   {"id": "helikopter", "ad": "Helikopter", "sv": 14, "fiyat": 1300},
-  {"id": "gitar", "ad": "Raket gitar", "sv": 16, "fiyat": 1600}
+  {"id": "gitar", "ad": "Raket gitar", "sv": 16, "fiyat": 1600},
+  {"id": "fiskiye", "ad": "Fıskiye", "sv": 12, "fiyat": 1100},
+  {"id": "yildiz", "ad": "Yıldız zıplaması", "sv": 18, "fiyat": 1800},
+  {"id": "ucak", "ad": "Uçak", "sv": 20, "fiyat": 2000}
 ],
 "smac": [
   {"id": "duz", "ad": "Düz sıçrayış", "sv": 1, "fiyat": 0},
@@ -127,7 +130,10 @@
   {"id": "twist", "ad": "Twist", "sv": 9, "fiyat": 850},
   {"id": "dalga", "ad": "Dalga", "sv": 11, "fiyat": 950},
   {"id": "helikopter", "ad": "Helikopter", "sv": 14, "fiyat": 1300},
-  {"id": "gitar", "ad": "Raket gitar", "sv": 16, "fiyat": 1600}
+  {"id": "gitar", "ad": "Raket gitar", "sv": 16, "fiyat": 1600},
+  {"id": "fiskiye", "ad": "Fıskiye", "sv": 12, "fiyat": 1100},
+  {"id": "yildiz", "ad": "Yıldız zıplaması", "sv": 18, "fiyat": 1800},
+  {"id": "ucak", "ad": "Uçak", "sv": 20, "fiyat": 2000}
 ],
 "yuz": [
   {"id": "yok", "ad": "Aksesuar yok", "sv": 1, "fiyat": 0},

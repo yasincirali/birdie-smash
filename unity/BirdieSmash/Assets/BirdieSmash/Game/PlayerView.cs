@@ -1029,7 +1029,7 @@ namespace BirdieSmash.Game
         // Sevinç klibinin döngü süresi, tek kaynak (2026-11-12, inceleme 17:05): Dolap'taki alım anı (KarakterOdasi.AlimAni) kendi
         // listesini tutuyordu ve dansları bilmiyordu; dans 1,6 sn'de kesilip boşta duruşa atlıyor, dans sesi yarıda kalıyordu.
         public static float SevincSure(string id) { return id == "iyi_oyun" || id == "zafer" || id == "selam" || id == "egil" || Dans(id) ? 2.4f : 1.6f; }
-        public static bool Dans(string id) { return id == "robot" || id == "tavuk" || id == "twist" || id == "dalga" || id == "helikopter" || id == "gitar"; }
+        public static bool Dans(string id) { return id == "robot" || id == "tavuk" || id == "twist" || id == "dalga" || id == "helikopter" || id == "gitar" || id == "fiskiye" || id == "ucak" || id == "yildiz"; }
         // Kademeli saat: her tam sayıda bekler, vuruşun ilk %30'unda bir sonrakine geçer (robotun kesik hareketi; sıçrama yok).
         static float Kademe(float x) { float f = Mathf.Floor(x); return f + Mathf.SmoothStep(0, 1, Mathf.Clamp01((x - f) / .3f)); }
         // Kademeli sevinç (2026-11-07 inceleme, fikir 10:06 #1): her sayıda tam sevinç, rakibin dışarı attığı topla 15 vuruşluk
@@ -1176,6 +1176,9 @@ namespace BirdieSmash.Game
             if (id == "robot") return .9f;
             if (id == "dalga") return 1 - .15f * Mathf.Abs(Mathf.Sin(t * 6));
             if (id == "gitar") return .68f - .1f * Mathf.Max(0, Mathf.Sin(t * 10));
+            if (id == "fiskiye") return .84f - .08f * Mathf.Abs(Mathf.Sin(t * Mathf.PI * 6));
+            if (id == "ucak") return .8f;
+            if (id == "yildiz") return 1 - .42f * (1 - Mathf.Sin((t % YILDIZ_P) / YILDIZ_P * Mathf.PI));   // her inişte dizler yaylanır
             return 1;
         }
         [System.NonSerialized] public int TaniBacakKod; [System.NonSerialized] public float TaniBacakR;
@@ -1220,15 +1223,12 @@ namespace BirdieSmash.Game
             SevincPoz("dur", 0, 1, Ayar.reduce);
             if (id != null && w > .001f) SevincPoz(id, t, w, Ayar.reduce);
         }
-        readonly Quaternion[] sevKayit = new Quaternion[6]; readonly Transform[] sevKem = new Transform[6];
-        void SevincPoz(string id, float t, float w, bool rm)
+        // Kök eğrisi (sıçrama m, dönüş °, öne eğilme °, burulma °, yana yatma °, uçak dairesi rad): yalnız id ve t'nin işlevi.
+        // 2026-11-19: SevincPoz'dan ayrıldı ki baş için geriden (t − BAS_GECIKME) yeniden hesaplanabilsin.
+        const float BAS_GECIKME = .08f, UCAK_R = .22f;
+        static void KokEgri(string id, float t, bool rm, float salla, out float hop, out float don, out float egil, out float bur, out float yat, out float orbit)
         {
-            if (kKol == null) ZincirKur(); if (kKol == null || w <= 0.001f) return;
-            Transform SU = kKol[3], SE = kKol[4], SH = kKol[5], LU = kKol[0], LE = kKol[1], LH = kKol[2];
-            Vector3 up = yaw.up, ri = yaw.right, fw = yaw.forward;
-            float salla = rm ? 0 : 1;
-            // sıçrama ve dönüş (kök): ağırlıkla
-            float hop = 0, don = 0, egil = 0, bur = 0, yat = 0;
+            hop = 0; don = 0; egil = 0; bur = 0; yat = 0; orbit = 0;
             switch (id)
             {
                 case "kollar": hop = .06f * Mathf.Abs(Mathf.Sin(t * 7)); break;
@@ -1256,18 +1256,52 @@ namespace BirdieSmash.Game
                 case "dalga": yat = 8 * Mathf.Sin(t * 6) * salla; break;
                 case "helikopter": egil = -4; hop = .05f * Mathf.Abs(Mathf.Sin(t * 8)); break;
                 case "gitar": egil = 10 + 8 * Mathf.Max(0, Mathf.Sin(t * 10)) * salla; bur = -10; break;
+                // 2026-11-19 (yasin: "kudurtucu animasyonlar da ekleyelim, eğlence dozu yüksek olmalı"): üç coşkulu dans.
+                // fiskiye: bel altı kademede sağdan sola süpürür (her kademede küçük zıplama), 0,2 sn'de hızla geri döner.
+                case "fiskiye":
+                    { float c = t % 1.2f, a = c < 1 ? Kademe(c * 6) / 6 : 1 - Mathf.SmoothStep(0, 1, (c - 1) / .2f);
+                      egil = 3; bur = (35 - 70 * a) * salla; hop = .025f * Mathf.Abs(Mathf.Sin(t * Mathf.PI * 6)) * salla; } break;
+                // ucak: kollar kanat, küçük bir daire çizerek koşar; gövde dönüşe yatar, adımlarda hafif seker.
+                case "ucak": orbit = t * 2.6f * salla; don = -orbit * Mathf.Rad2Deg; egil = 12; yat = -16 * salla; hop = .02f * Mathf.Abs(Mathf.Sin(t * 10)) * salla; break;
+                // yildiz: art arda yıldız zıplaması (0,5 sn), tepede kollar V, inişte kapanır ve dizler yaylanır.
+                case "yildiz": { float u = Mathf.Sin((t % YILDIZ_P) / YILDIZ_P * Mathf.PI); hop = .2f * u * salla; egil = -4 * u; } break;
             }
+        }
+        const float YILDIZ_P = .5f;
+        readonly Quaternion[] sevKayit = new Quaternion[8]; readonly Transform[] sevKem = new Transform[8];
+        void SevincPoz(string id, float t, float w, bool rm)
+        {
+            if (kKol == null) ZincirKur(); if (kKol == null || w <= 0.001f) return;
+            Transform SU = kKol[3], SE = kKol[4], SH = kKol[5], LU = kKol[0], LE = kKol[1], LH = kKol[2];
+            Vector3 up = yaw.up, ri = yaw.right, fw = yaw.forward;
+            float salla = rm ? 0 : 1;
+            // 2026-11-19 (yasin: "sevinçlerde animasyon kalitesini artıralım, odun gibi hareket etmesin"): yumuşak giriş ve canlılık
+            // katmanı. (1) Ağırlık smoothstep'le girer (doğrusal girişte kollar bir anda kalkıyordu). (2) Omurga eğilmesi tek göğüs
+            // kemiği yerine bel ve göğüs arasında paylaşılır (%40 / %60): gövde kırık değil kavisli eğilir. (3) Baş geriden gelir
+            // (follow-through): kök eğrisi 0,08 sn geriden de hesaplanır, fark başa ters yönde verilir; sıçrayışta baş hafif
+            // gecikir, dönüşte bakış arkada kalır. (4) Sıçrayıştan inişte dizler kısa bir an yaylanır (iniş sönümü). Hepsi poz
+            // fonksiyonu: saklı durum yok, Dolap önizlemesi ve maç aynı kareyi verir. Hareketi azaltta (salla = 0) hiçbiri.
+            float we = w * w * (3 - 2 * w); w = we;
+            float hop, don, egil, bur, yat, orbit; KokEgri(id, t, rm, salla, out hop, out don, out egil, out bur, out yat, out orbit);
+            float hopG, donG, egilG, burG, yatG, orbitG; KokEgri(id, Mathf.Max(0, t - BAS_GECIKME), rm, salla, out hopG, out donG, out egilG, out burG, out yatG, out orbitG);
+            if (orbit != 0 && salla > 0) transform.position += (ri * (Mathf.Cos(orbit) - 1) + fw * Mathf.Sin(orbit)) * UCAK_R * w;   // uçak: küçük daire
             transform.position += up * hop * w * salla;
             if (don != 0 && salla > 0) yaw.localRotation = Quaternion.AngleAxis(don, Vector3.up) * yaw.localRotation;
             // Bacak katmanı (2026-11-06, öneri artifact'i "sevinç" YAP; yasin: "maç sonundaki sevinç kısmı sorunlu"): kollar
             // boşta pozunun (maç duruşu, dizler bükük) üstüne kalkıyordu, her sevinç "çömelmiş teslim" gibi okunuyordu.
             // Leğen, iki bacağın da %97 boyuna erişeceği kadar dikey kalkar; ayaklar yerinde kalır (iki kemik IK, diz öne).
             // Zaferde hazırlık çömelmesi ve inişte dizden yaylanma bu katmanın ağırlığıyla verilir.
-            SevincBacak(SevincDik(id, t, rm) * w, fw);
+            float inis = hop < .04f ? Mathf.Clamp01((hopG - hop) * 10) * salla : 0;   // sıçrayıştan inerken dizler bir an yaylanır
+            SevincBacak(SevincDik(id, t, rm) * (1 - .22f * inis) * w, fw);
             // kayıt (yerel dönüşler): IK tam ağırlıkla çözülür, sonra kayıtla harmanlanır
-            var kem = sevKem; kem[0] = SU; kem[1] = SE; kem[2] = LU; kem[3] = LE; kem[4] = kOmurga.Count > 0 ? kOmurga[0] : null; kem[5] = SH;   // kare başı ayırma yok; el: RaketDik ağırlıkla karışsın
+            var kem = sevKem; kem[0] = SU; kem[1] = SE; kem[2] = LU; kem[3] = LE; kem[4] = kOmurga.Count > 0 ? kOmurga[0] : null; kem[5] = SH; kem[6] = kOmurga.Count > 1 ? kOmurga[1] : null; kem[7] = kHead;   // kare başı ayırma yok; el: RaketDik ağırlıkla karışsın
             for (int i = 0; i < kem.Length; i++) if (kem[i] != null) sevKayit[i] = kem[i].localRotation;
-            if ((egil != 0 || bur != 0 || yat != 0) && kOmurga.Count > 0) { var sp = kOmurga[0]; sp.rotation = Quaternion.AngleAxis(bur, up) * Quaternion.AngleAxis(egil, ri) * Quaternion.AngleAxis(yat, fw) * sp.rotation; }
+            if ((egil != 0 || bur != 0 || yat != 0) && kOmurga.Count > 0)
+            {   // bel %40, göğüs %60 (tek kemik varsa hepsi göğüste): kavisli eğilme
+                float pay = kOmurga.Count > 1 ? .4f : 0;
+                if (pay > 0) { var bl = kOmurga[1]; bl.rotation = Quaternion.AngleAxis(bur * pay, up) * Quaternion.AngleAxis(egil * pay, ri) * Quaternion.AngleAxis(yat * pay, fw) * bl.rotation; }
+                var sp = kOmurga[0]; float q = 1 - pay; sp.rotation = Quaternion.AngleAxis(bur * q, up) * Quaternion.AngleAxis(egil * q, ri) * Quaternion.AngleAxis(yat * q, fw) * sp.rotation;
+            }
             float L = SU != null && SE != null && SH != null ? (SE.position - SU.position).magnitude + (SH.position - SE.position).magnitude : .5f;
             Vector3 sR = SU != null ? SU.position : Vector3.zero, sL = LU != null ? LU.position : Vector3.zero;
             float s = Mathf.Sin(t * 14) * salla;
@@ -1371,8 +1405,28 @@ namespace BirdieSmash.Game
                       if (SH != null && kafa != null)
                       { RaketDik(SH, sL + up * L * .55f + fw * L * .5f - ri * L * .1f - SH.position);
                         IK(LU, LE, LH, Vector3.Lerp(SH.position, kafa.position, .78f + .05f * Mathf.Sin(t * 13) * salla) - fw * L * .04f, -ri - up * .5f); } } break;
+                case "fiskiye":   // sol el başın arkasında, raketli kol öne uzanır, raket ufka paralel (fıskiyenin borusu)
+                    IK(SU, SE, SH, sR + fw * L * .85f + ri * L * .2f + up * L * .12f, ri - up * .4f);
+                    if (kHead != null) IK(LU, LE, LH, kHead.position + up * L * .15f - fw * L * .22f - ri * L * .05f, -ri + up * .6f);
+                    RaketDik(SH, fw + ri * .15f); break;
+                case "ucak":   // kollar kanat gibi yana açık, dönüşe göre biri hafif yukarı biri aşağı
+                    { float k = .12f * Mathf.Sin(t * 5) * salla;
+                      IK(SU, SE, SH, sR + ri * L * .95f + up * L * (.08f + k) - fw * L * .05f, -up - fw * .3f);
+                      IK(LU, LE, LH, sL - ri * L * .95f + up * L * (.08f - k) - fw * L * .05f, -up - fw * .3f);
+                      RaketDik(SH, ri + up * .05f); } break;
+                case "yildiz":   // tepede kollar V (raket dimdik), inişte yanlara kapanır
+                    { float u = rm ? 1 : Mathf.Sin((t % YILDIZ_P) / YILDIZ_P * Mathf.PI);
+                      IK(SU, SE, SH, sR + up * L * Mathf.Lerp(-.55f, .9f, u) + ri * L * Mathf.Lerp(.35f, .4f, u) + fw * L * .06f, ri - fw * .3f);
+                      IK(LU, LE, LH, sL + up * L * Mathf.Lerp(-.55f, .9f, u) - ri * L * Mathf.Lerp(.35f, .4f, u) + fw * L * .06f, -ri - fw * .3f);
+                      RaketDik(SH, Vector3.Slerp(-up + ri * .3f, up + ri * .15f, u)); } break;
                 case "iyi_oyun": // raket rakibe doğru kalkar (fileden selam)
                     IK(SU, SE, SH, sR + fw * L * .7f + up * L * .45f + ri * L * .1f, ri - up * .3f); break;
+            }
+            // Baş geriden gelir (follow-through): kök eğrisinin 0,08 sn önceki hâliyle farkı başa ters verilir, ±18° ile sınırlı.
+            if (kHead != null && salla > 0)
+            {
+                float bp = Mathf.Clamp((egilG - egil) * .8f + (hop - hopG) * 120, -18, 18), by = Mathf.Clamp((burG - bur) * .6f + (donG - don) * .25f, -18, 18), br = Mathf.Clamp((yatG - yat) * .8f, -12, 12);
+                kHead.rotation = Quaternion.AngleAxis(by, up) * Quaternion.AngleAxis(bp, ri) * Quaternion.AngleAxis(br, fw) * kHead.rotation;
             }
             if (w < .999f) for (int i = 0; i < kem.Length; i++) if (kem[i] != null) kem[i].localRotation = Quaternion.Slerp(sevKayit[i], kem[i].localRotation, w);
         }
