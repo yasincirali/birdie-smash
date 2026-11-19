@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "skills": {
+    "meshy-3d-generation": {
+      "source": "meshy-dev/meshy-3d-agent",
+      "commit": "7f8e33196db4e9e26cbaa0da4fcc14104ccda81d",
+      "sourceType": "github",
+      "skillPath": "skills/meshy-3d-generation/SKILL.md",
+      "computedHash": "afb45a4c786a8c97f813f9d144c07b9f51c82a5a1d802e925c3f376badb3fe4c"
+    },
+    "meshy-3d-printing": {
+      "source": "meshy-dev/meshy-3d-agent",
+      "commit": "7f8e33196db4e9e26cbaa0da4fcc14104ccda81d",
+      "sourceType": "github",
+      "skillPath": "skills/meshy-3d-printing/SKILL.md",
+      "computedHash": "391317f9e168e255b53f798bcf4ceb2d01687e423a7a5814bb7b9dedbac38594"
+    }
+  }
+}

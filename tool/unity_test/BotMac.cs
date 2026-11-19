@@ -1379,7 +1379,7 @@ static class BotMac
     {
         string R = "unity/BirdieSmash/Assets/Resources/karakter/"; if (!System.IO.Directory.Exists(R)) { Fail("Resources/karakter bulunamadı (depo kökünden koş)"); return; }
         int parca = 0;
-        foreach (var m in new[] { "oyuncak", "tuycuk" }) if (!System.IO.File.Exists(R + m + ".fbx") || !System.IO.File.Exists(R + m + "_clips.json")) Fail("Ayarlar modeli eksik: " + m);
+        foreach (var m in new[] { "oyuncak", "tuycuk", "hamambocegi", "hamambocegi_erkek" }) if (!System.IO.File.Exists(R + m + ".fbx") || !System.IO.File.Exists(R + m + "_clips.json")) Fail("Ayarlar modeli eksik: " + m);
         foreach (var t in T)
         {
             string ad = "oyuncak" + (t.varlik != null ? "_" + t.varlik : "");

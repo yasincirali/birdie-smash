@@ -95,6 +95,38 @@ namespace BirdieSmash.EditorTools
             catch (Exception e) { Debug.LogError("Birdie Smash Linux build kırıldı: " + e); EditorApplication.Exit(1); }
         }
 
+        // Emülatör denemesi (unity-android.yml, 2026-11-20, yasin: "unity halini emulatorde ayağa kaldır"): PC'de Unity Editor yok,
+        // Flutter kabuğu HTML oyununu açıyor. Aynı sahne debug imzalı APK olarak derlenir; mağazaya gitmez (Android hattı yok).
+        // IL2CPP şart: ARM64/x86_64 Mono'da yok, emülatör imajı armeabi-v7a çalıştırmıyor. x86_64 emülatörde çevirisiz koşsun diye.
+        public static void Android()
+        {
+            try
+            {
+                string path = Arg("-customBuildPath") ?? "build/Android/BirdieSmash.apk";
+                DemoKurulum.Kur();
+                DokuAyar.Denetle();
+                Ayarla(Arg("-buildVersion"));
+                ReklamAyar();
+#pragma warning disable 618
+                PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, Bundle);
+                PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
+#pragma warning restore 618
+                PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64 | AndroidArchitecture.X86_64;
+                EditorUserBuildSettings.buildAppBundle = false;
+                var opt = new BuildPlayerOptions
+                {
+                    scenes = EditorBuildSettings.scenes.Where(s => s.enabled).Select(s => s.path).ToArray(),
+                    locationPathName = path, target = BuildTarget.Android, targetGroup = BuildTargetGroup.Android, options = BuildOptions.None
+                };
+                if (opt.scenes.Length == 0) throw new Exception("Build listesinde sahne yok (DemoKurulum.Kur)");
+                var rep = BuildPipeline.BuildPlayer(opt);
+                if (rep.summary.result != BuildResult.Succeeded) throw new Exception("BuildPlayer: " + rep.summary.result + ", hata " + rep.summary.totalErrors);
+                Debug.Log("Birdie Smash Android APK: " + path);
+                EditorApplication.Exit(0);
+            }
+            catch (Exception e) { Debug.LogError("Birdie Smash Android build kırıldı: " + e); EditorApplication.Exit(1); }
+        }
+
 #pragma warning disable 618   // BuildTargetGroup imzaları Unity 6'da eski sayılır (uyarı); DemoKurulum ile aynı aile, 2021+ derler
         static void Ayarla(string surum)
         {

@@ -240,16 +240,20 @@ namespace BirdieSmash.Game
         // 2026-10-29 Tüycük (yasin: "Oyuncu modellerimi değiştirme" → "yeni 3d model önerin varsa yeni seçenek olarak ekle"):
         // dördüncü seçenek sona eklendi; var olan sıra ve varsayılan "oyuncak" değişmez. Kayıt değeri "tuycuk"; FBX'i olmayan
         // build'de Yukle onu bilinmeyen model gibi oyuncak'a düşürür.
-        public static readonly string[] MODELLER = { "oyuncak", "rocketbox", "sade", "tuycuk" }, MODEL_AD = { "Oyuncak 3B", "Gerçekçi", "Sade", "Tüycük" };
+        // 2026-11-20 Hamamböceği (yasin: "eklemlerini bizim uygulamaya uygun hale getirelim"): beşinci seçenek sona eklendi; Tüycük gibi
+        // Oyuncak iskeleti, klipleri ve beş ayakkabısı (tool/karakter/hamambocegi.py). Kayıt değeri "hamambocegi".
+        // Aynı gün erkek tipi (yasin: "bir erkek hamam böceği ekle renklendir ve oyuna ekle"): ayrı FBX, kayıt değeri "hamambocegi_erkek".
+        public static readonly string[] MODELLER = { "oyuncak", "rocketbox", "sade", "tuycuk", "hamambocegi", "hamambocegi_erkek" }, MODEL_AD = { "Oyuncak 3B", "Gerçekçi", "Sade", "Tüycük", "Hamamböceği", "Erkek Hamamböceği" };
+        public static bool Hamambocegi(string m) { return m != null && m.StartsWith("hamambocegi"); }
         // Ayarlar'da sunulan modeller (2026-11-07, yasin: 4 → 2). Diğerleri kayıtlı seçim olarak yaşar, yeni oyuncuya sunulmaz.
-        public static bool ModelSecenek(string m) { return m == "oyuncak" || m == "tuycuk"; }
+        public static bool ModelSecenek(string m) { return m == "oyuncak" || m == "tuycuk" || Hamambocegi(m); }
         public static bool ModelVar(string m)
         {
             // 2026-11-15 (yasin: "kaldır"): Gerçekçi (rocketbox) ve Sade'nin FBX ve dokuları (~15 MB) build'den çıktı; 7 Kasım'dan
             // beri yeni oyuncuya sunulmuyorlardı. Kayıtlı "rocketbox"/"sade" seçimi Yukle'de Oyuncak 3B'ye düşer (dosya yok); beden
             // tipi, saç, renk ve aksesuar seçimleri kayıtta durur ve Oyuncak'ta görünür. Kod yolları kaldı: FBX geri konursa çalışır.
             if (m == "oyuncak") return true;
-            if (m != "rocketbox" && m != "sade" && m != "tuycuk") return false; // Tur 2: varlık sınaması küçük <model>_clips.json ile (FBX ile hep birlikte gelir; PlayerView onu da okur): FBX'i
+            if (m != "rocketbox" && m != "sade" && m != "tuycuk" && !Hamambocegi(m)) return false; // Tur 2: varlık sınaması küçük <model>_clips.json ile (FBX ile hep birlikte gelir; PlayerView onu da okur): FBX'i
             // yüklemek (ağ + 26 klip, ~2 MB) o modeli seçmeyen oyuncuda da her açılışta Ayar.Yukle'de belleğe alıyordu.
             int v;
             if (!modelVar.TryGetValue(m, out v)) { var js = Resources.Load<TextAsset>("karakter/" + m + "_clips"); v = js != null ? 1 : 0; if (js != null) Resources.UnloadAsset(js); modelVar[m] = v; }
@@ -262,7 +266,7 @@ namespace BirdieSmash.Game
         // tek, ama beş ayakkabı modeli (rocketbox.fbx ayk_<varlik>__ayakkabi) ve şort ağı var. Sade'de şort ağı var, ayakkabı
         // modeli yok (renk taban parçasında görünür). Oyuncak'ta şort gövde atlasında: şort rengi orada görünmez, sunulmaz.
         // Tüycük (2026-10-29) Oyuncak'ın beş ayakkabı parçasını aynı ayak kemikleriyle taşır: model görünür. Şortu yok (tek parça gövde).
-        public static bool AykModelGorunur { get { return model == "oyuncak" || model == "rocketbox" || model == "tuycuk"; } }
+        public static bool AykModelGorunur { get { return model == "oyuncak" || model == "rocketbox" || model == "tuycuk" || Hamambocegi(model); } }
         public static bool SortGorunur { get { return model == "rocketbox" || model == "sade"; } }
         // 2026-11-10 oyuncu gelişimi (Core/Gelisim): GS = ekipman + tarz + gelişim. GSE yalnız ekipman kalır (Atölye çubukları
         // ekipmanı anlatır); gelişimin payı kendi sayfasında yüzdeyle yazılır. Eşit şartlarda ekipman seviyesi gibi etkisiz.

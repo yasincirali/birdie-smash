@@ -18,7 +18,7 @@ namespace BirdieSmash.Core
         public readonly Dictionary<string, string> gorunus = new Dictionary<string, string>();
 
         public static readonly string[] RAKET_KAT = { "raket", "ayakkabi_model" };   // Gear model yuvaları (görünüş)
-        public static readonly string[] MODELLER = { "oyuncak", "rocketbox", "sade", "tuycuk" };
+        public static readonly string[] MODELLER = { "oyuncak", "rocketbox", "sade", "tuycuk", "hamambocegi", "hamambocegi_erkek" };
 
         public static bool KatBilinir(string k)
         {
