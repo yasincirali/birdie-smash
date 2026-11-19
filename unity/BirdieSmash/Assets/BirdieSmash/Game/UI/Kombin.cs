@@ -155,7 +155,7 @@ namespace BirdieSmash.Game
         void DenemeCubukKur()
         {
             if (denemeCubuk == null) return; denemeCubuk.Clear();
-            var l = Denenenler(); denemeCubuk.style.display = l.Count == 0 ? DisplayStyle.None : DisplayStyle.Flex; if (l.Count == 0) return;
+            var l = Denenenler(); denemeCubuk.style.display = l.Count == 0 || dolapIncele ? DisplayStyle.None : DisplayStyle.Flex; if (l.Count == 0) return;
             int top = 0, alinir = 0, enAzSv = 99; var adlar = new List<string>(); var kilitli = new List<string>();
             foreach (var d in l) { adlar.Add(L.T(d.ad)); if (d.du == ModelDurum.Kilitli) { kilitli.Add(L.T("{0}: Sv {1} gerekli", L.T(d.ad), d.sv)); enAzSv = Mathf.Min(enAzSv, d.sv); } else { top += d.fiyat; alinir++; } }
             // 2026-11-13 inceleme (fikir 02:05 #7, r161 yazi_tasma): "Wizard hat: Lv 10 needed" düğmenin alt satırında iki satıra sarıp
