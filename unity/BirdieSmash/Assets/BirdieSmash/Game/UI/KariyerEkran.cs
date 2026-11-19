@@ -187,7 +187,9 @@ namespace BirdieSmash.Game
             basAniDen = basAniA = -1; if (sira < 0) return;
             int gorulen = PlayerPrefs.GetInt("tuytop_kariyer_gorulen", -1);
             if (gorulen == sira) return;
-            PlayerPrefs.SetInt("tuytop_kariyer_gorulen", sira); PlayerPrefs.Save();
+            // 2026-11-20 inceleme (fikir 02:06 #3): Kariyer maç sonundan dönüşte basamak animasyonuyla aynı karede kuruluyor; senkron
+            // PlayerPrefs.Save eski iPhone'da kare kaybıydı. KaydetSonra geçişten sonra yazar (OnApplicationPause da yazar); kayıp olursa animasyon bir kez daha oynar.
+            PlayerPrefs.SetInt("tuytop_kariyer_gorulen", sira); Ayar.KaydetSonra();
             if (gorulen < 0 || sira < gorulen) return;
             basAniDen = gorulen; basAniA = sira;
             if (root != null && root.sfx != null) root.sfx.Tik(1175); Yerel.Hap("tick");
@@ -200,7 +202,7 @@ namespace BirdieSmash.Game
         void DunyaSiraAkit(Label l, int ds)
         {
             int once = PlayerPrefs.GetInt("tuytop_dunya_gosterilen", -1);
-            if (once != ds) { PlayerPrefs.SetInt("tuytop_dunya_gosterilen", ds); PlayerPrefs.Save(); }
+            if (once != ds) { PlayerPrefs.SetInt("tuytop_dunya_gosterilen", ds); Ayar.KaydetSonra(); }
             if (once < 0 || ds >= once || Ayar.reduce || l == null) return;
             System.Func<int, string> yaz = n => n == 1 ? L.T("Dünya 1 numarası · unvanını koru") : L.T("Dünya sıralaman: {0}", SiraYaz(n));
             l.text = yaz(once);
