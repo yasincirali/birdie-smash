@@ -81,7 +81,11 @@ namespace BirdieSmash.Game
         void SoyunmaKur(VisualElement k)
         {
             k.Clear(); var vt = root.vitrin;
-            odaSecici = Satir("oda-secici"); k.Add(odaSecici);   // Görünüm · Raket (OdaSeciciYaz, KategoriKur'da yenilenir)
+            // 2026-11-19 (yasin seçimi "Dolap A", artifact AhLNpXh8XkiHWsZk1kkz3H): üstteki Görünüm · Raket seçicisi kalktı, Raket
+            // kategori şeridinin son çipi. Liste vitrinin altında bir çekmecede (HIG sheet kalıbı, üç durak): İncele (çekmece kapalı,
+            // figür bütün alan) · yarım (varsayılan: figür alanın ~%60'ı, şerit + ilk sıra) · tam (vitrin küçülür, ızgara açılır).
+            // Tutamak dokunuşu ya da yukarı/aşağı sürükleme durak değiştirir. iPad'de (.genis) çekmece sağ panel, figür solda tam boy.
+            dolapTam = false; k.AddToClassList("dolap"); k.EnableInClassList("dolap--tam", false); dolapKok = k;
             var ust = new VisualElement(); ust.AddToClassList("vitrin-alan"); k.Add(ust);
             vitrinIm = new Image { image = vt.rt, scaleMode = ScaleMode.ScaleAndCrop }; vitrinIm.AddToClassList("vitrin"); ust.Add(vitrinIm);
             Erisim.Etiket(vitrinIm, L.T("Oyuncun, 360 derece görünüm"), "resim");
@@ -112,13 +116,19 @@ namespace BirdieSmash.Game
             // Yakın plan kadrajı kutunun en-boyuna ve alttaki düğmelerin payına göre (Vitrin.Uzaklik).
             ust.RegisterCallback<GeometryChangedEvent>(e => VitrinKutuYaz(ust, alt)); alt.RegisterCallback<GeometryChangedEvent>(e => VitrinKutuYaz(ust, alt));
             // 2026-11-01: kategori şeridi tek satır, yatay kayar (dokuz kategori iki-üç satır çip olup vitrini küçültüyordu).
+            cekmece = new VisualElement(); cekmece.AddToClassList("dolap-cekmece"); k.Add(cekmece);
+            cekmeceTutamak = new VisualElement(); cekmeceTutamak.AddToClassList("cekmece-tutamak"); cekmece.Add(cekmeceTutamak);
+            var cizgi = new VisualElement(); cizgi.AddToClassList("cekmece-tutamak-cizgi"); cizgi.pickingMode = PickingMode.Ignore; cekmeceTutamak.Add(cizgi);
+            cekmeceTutamak.RegisterCallback<PointerDownEvent>(TutamakBas); cekmeceTutamak.RegisterCallback<PointerUpEvent>(TutamakBirak);
+            cekmeceTutamak.RegisterCallback<PointerCancelEvent>(e => tBasili = false); cekmeceTutamak.RegisterCallback<PointerCaptureOutEvent>(e => tBasili = false);
+            TutamakEtiket();
             kategoriKaydir = new ScrollView(ScrollViewMode.Horizontal); kategoriKaydir.AddToClassList("kategori-kaydir");
-            kategoriKaydir.horizontalScrollerVisibility = ScrollerVisibility.Hidden; kategoriKaydir.verticalScrollerVisibility = ScrollerVisibility.Hidden; k.Add(kategoriKaydir);
+            kategoriKaydir.horizontalScrollerVisibility = ScrollerVisibility.Hidden; kategoriKaydir.verticalScrollerVisibility = ScrollerVisibility.Hidden; cekmece.Add(kategoriKaydir);
             soyunmaSeg = SEG_KARAKTER; soyunmaSegment = Satir("segment"); soyunmaSegment.AddToClassList("kategori-ray"); kategoriKaydir.Add(soyunmaSegment); KategoriKur();
-            soyunmaKaydir = Kaydirma(k); soyunmaKaydir.AddToClassList("govde-kaydir"); soyunmaKaydir.AddToClassList("soyunma-kaydir");
+            soyunmaKaydir = Kaydirma(cekmece); soyunmaKaydir.AddToClassList("govde-kaydir"); soyunmaKaydir.AddToClassList("soyunma-kaydir");
             soyunmaGovde = soyunmaKaydir.contentContainer; soyunmaGovde.AddToClassList("sekme-icerik");
-            // K4 (2026-10-31): satın alma alt çubuğu kaydırma alanının dışında, ekranın altında sabit (Kombin.cs).
-            denemeCubuk = new VisualElement(); denemeCubuk.AddToClassList("deneme-cubuk"); denemeCubuk.style.display = DisplayStyle.None; k.Add(denemeCubuk);
+            // K4 (2026-10-31): satın alma alt çubuğu kaydırma alanının dışında, çekmecenin altında sabit (Kombin.cs).
+            denemeCubuk = new VisualElement(); denemeCubuk.AddToClassList("deneme-cubuk"); denemeCubuk.style.display = DisplayStyle.None; cekmece.Add(denemeCubuk);
             if (root.vitrin.odak == Vitrin.TAM) KarakterOdakAyarla();   // sekmeye dönüşte (Kapat odağı ve raket görünümünü sıfırladı)
             SoyunmaGovdeKur(false);
         }
@@ -127,10 +137,36 @@ namespace BirdieSmash.Game
         {
             if (vitrinUst == null) return; dolapIncele = ac; Tik();
             vitrinUst.EnableInClassList("vitrin-alan--genis", ac);
-            var gz = ac ? DisplayStyle.None : DisplayStyle.Flex;
-            if (soyunmaKaydir != null) soyunmaKaydir.style.display = gz;
-            if (odaSecici != null) odaSecici.style.display = gz;
+            if (cekmece != null) cekmece.style.display = ac ? DisplayStyle.None : DisplayStyle.Flex;
+            if (ac) DolapTam(false, false);
             KategoriKur(); DenemeCubukKur(); BuyutYaz();
+        }
+
+        // ---- Çekmece durakları (2026-11-19, Dolap A) ----
+        // Neden yükseklik geçişi yok: vitrin kutusu her karede boy değiştirirse RT her karede yeniden ayrılırdı (takılma kuralı).
+        // Durak anında değişir, RT bir kez yeniden boyutlanır (GeometryChanged → Vitrin.Cozunurluk); his tutamak titreşimi ve
+        // Tik sesiyle verilir. Kare hızı: durak değişimi Kalite.Hareket() ile menüyü kısa süre 120 Hz'e alır.
+        VisualElement cekmece, cekmeceTutamak, dolapKok; bool dolapTam, tBasili; Vector2 tBas; float tBasT;
+        const float TUTAMAK_ESIK = 24, TUTAMAK_DOKUNUS = 8;
+        void TutamakBas(PointerDownEvent e) { tBasili = true; tBas = e.position; tBasT = Time.unscaledTime; cekmeceTutamak.CapturePointer(e.pointerId); e.StopPropagation(); }
+        void TutamakBirak(PointerUpEvent e)
+        {
+            if (!tBasili) return; tBasili = false; cekmeceTutamak.ReleasePointer(e.pointerId);
+            float dy = e.position.y - tBas.y;
+            if (Mathf.Abs(dy) < TUTAMAK_DOKUNUS && Time.unscaledTime - tBasT < .4f) { DolapTam(!dolapTam, true); return; }   // dokunuş: yarım ↔ tam
+            if (dy < -TUTAMAK_ESIK) DolapTam(true, true);
+            else if (dy > TUTAMAK_ESIK) { if (dolapTam) DolapTam(false, true); else DolapIncele(true); }   // yarımdan aşağı: çekmece kapanır, figür bütün alan
+        }
+        public void DolapTam(bool tam, bool ses)   // EkranTuru da çağırır
+        {
+            if (dolapKok == null) return; bool d = dolapTam != tam; dolapTam = tam;
+            dolapKok.EnableInClassList("dolap--tam", tam); TutamakEtiket();
+            if (d) { Kalite.Hareket(); if (ses) Tik(); }
+        }
+        void TutamakEtiket()
+        {
+            if (cekmeceTutamak == null) return;
+            Erisim.Etiket(cekmeceTutamak, L.T(dolapTam ? "Listeyi küçült" : "Listeyi büyüt"), "dugme");
         }
         void BuyutYaz()
         {
@@ -573,34 +609,70 @@ namespace BirdieSmash.Game
         }
 
         // ---- Tarz segmenti (karakter, adım 6) ----
+        // 2026-11-19 (yasin seçimi "Atölye A", artifact AhLNpXh8XkiHWsZk1kkz3H): beş uzun kart (her biri ad, cümle, 2–4 hap) yerine
+        // tek seçici: üstte tarz çipleri (yatay şerit, seçili ✓ + çerçeve, kilitli "Sv n"), altında önizlenen tarzın kartı. Kartta
+        // etkiler hap değil çubuk: orta çizgi = Dengeli, artı sağa limon, eksi sola soluk; ▲/▼ simgesi ve "+%6" yazısı yanında
+        // (renk körlüğü: yön biçimden ve yazıdan okunur). Tek birincil eylem "Bu tarzı seç"; kilitliyse pasif düğme kaç seviye kaldığını
+        // söyler (kilitli tarz da önizlenir: önce gör, sonra hedefle). Çubuk boyu = etiketteki yüzde / ÇUBUK_TAVAN (etiket etki
+        // çarpanıyla aynı ölçüde, karakter.json tarzlar_not); ayrı veri yok. Çubuk 0'dan büyür (.22 sn; hareketi azaltta anında).
+        string tarzOnizle; const float CUBUK_TAVAN = 40f;
         void TarzGovde(VisualElement c)
         {
-            int sv = Ayar.gear.Seviye(); string cur = Ayar.Tarz;
+            int sv = Ayar.gear.Seviye(); string cur = Ayar.Tarz; if (tarzOnizle == null) tarzOnizle = cur;
+            TarzBilgi on = null; foreach (var t in Karakter.Tarzlar) if (t.id == tarzOnizle) on = t;
+            if (on == null) { tarzOnizle = cur; foreach (var t in Karakter.Tarzlar) if (t.id == cur) on = t; }
             c.Add(Yazi(L.T("Ücretsiz. Maç dışında istediğin an değiştir."), 13, "soluk"));   // 2026-11-05 (Ar-Ge 11:40 #3): 3 satır → tek cümle
+            var hk = new ScrollView(ScrollViewMode.Horizontal); hk.AddToClassList("kategori-kaydir"); hk.AddToClassList("tarz-kaydir");
+            hk.horizontalScrollerVisibility = ScrollerVisibility.Hidden; hk.verticalScrollerVisibility = ScrollerVisibility.Hidden; c.Add(hk);
+            var ray = Satir("segment"); ray.AddToClassList("kategori-ray"); hk.Add(ray); VisualElement secEl = null;
             foreach (var t in Karakter.Tarzlar)
             {
-                bool acik = sv >= t.sv, secili = cur == t.id; string id = t.id;
-                var kart = Kart("tarz-kart"); if (secili) kart.AddToClassList("secili"); if (!acik) kart.AddToClassList("kilitli"); c.Add(kart);
-                var bas = Satir("arali"); bas.pickingMode = PickingMode.Ignore; kart.Add(bas); bas.Add(Yazi(L.T(t.ad), 17, "kalin"));
-                var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; bas.Add(dr); string durum;
-                if (secili) { dr.Add(Ikon(Ikonlar.Tik, 14, TURUNCU)); durum = L.T("Seçili"); }
-                else if (!acik) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = KilitKalan(t.sv, sv); }
-                else durum = L.T("Seç");
-                var dy = Yazi(durum, 12, secili ? "durum-gecti" : acik ? "durum-simdi" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
-                // 2026-11-07 stüdyo incelemesi (AD7): ▲ limon (kazanım = sen), ▼ soluk (ceza renk taşımaz); yön simgenin biçiminden okunur.
-                // 2026-11-08 (yasin: "her özelliğin açıklandığı alanlar çok amatör"): yüzdelerle dolu iki uzun cümle yerine tek cümle
-                // kimlik (oz) + her etki ayrı hap ("▲ Smaç hızı +%6"). Haplar sarılır, tek hap kartı taşmaz; Dengeli'de hap yok.
-                if (!string.IsNullOrEmpty(t.oz)) { var oz = Yazi(L.T(t.oz), 13, "tarz-oz"); oz.pickingMode = PickingMode.Ignore; kart.Add(oz); }
-                var haplar = Satir("tarz-haplar"); haplar.pickingMode = PickingMode.Ignore;
-                foreach (var a in Parcalar(t.arti)) TarzHap(haplar, Ikonlar.Yukari, LIMON, L.T(a), false);
-                foreach (var e in Parcalar(t.eksi)) TarzHap(haplar, Ikonlar.Asagi, SOLUK, L.T(e), true);
-                if (haplar.childCount > 0) kart.Add(haplar);
-                if (acik && !secili) kart.AddManipulator(new Clickable(() =>
-                {
-                    Ayar.ilerleme.Tarz = id; Ayar.GearHesap(); Ayar.KaydetSonra(); Tik(); kirli[(int)Sekme.Profil] = true; SoyunmaGovdeKur(true);
-                }));
-                Erisim.Etiket(kart, L.T(t.ad) + (t.oz != "" ? ", " + L.T(t.oz) : "") + (t.arti != "" ? ", " + L.T("Artı") + ": " + L.Cumle(t.arti) : "") + (t.eksi != "" ? ", " + L.T("Eksi") + ": " + L.Cumle(t.eksi) : "") + ", " + durum, acik && !secili ? "dugme" : "metin", secili, !acik);
+                string id = t.id; bool acik = sv >= t.sv;
+                var d = Cip(L.T(t.ad), id == tarzOnizle, () => { if (tarzOnizle == id) return; tarzOnizle = id; root.sfx.Tik(); SoyunmaGovdeKur(true); }, acik ? (id == cur ? L.T("Seçili") : null) : L.T("Sv {0}", t.sv));
+                d.AddToClassList("segment-cip"); var eb = d.userData as ErisimBilgi; if (eb != null) eb.rol = "sekme"; ray.Add(d); if (id == tarzOnizle) secEl = d;
             }
+            if (secEl != null) OrtayaKaydir(hk, secEl);
+            if (on == null) return;
+            bool oAcik = sv >= on.sv, oSecili = cur == on.id;
+            var kart = Kart("tarz-kart"); if (oSecili) kart.AddToClassList("secili"); if (!oAcik) kart.AddToClassList("kilitli"); c.Add(kart);
+            var bas = Satir("arali"); bas.pickingMode = PickingMode.Ignore; kart.Add(bas); bas.Add(Yazi(L.T(on.ad), 20, "kalin"));
+            var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; bas.Add(dr); string durum;
+            if (oSecili) { dr.Add(Ikon(Ikonlar.Tik, 14, TURUNCU)); durum = L.T("Seçili"); }
+            else if (!oAcik) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = KilitKalan(on.sv, sv); }
+            else durum = L.T("Seçilebilir");
+            var dy = Yazi(durum, 12, oSecili ? "durum-gecti" : oAcik ? "durum-simdi" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
+            if (!string.IsNullOrEmpty(on.oz)) { var oz = Yazi(L.T(on.oz), 14, "tarz-oz"); oz.pickingMode = PickingMode.Ignore; kart.Add(oz); }
+            int n = 0;
+            foreach (var a in Parcalar(on.arti)) { TarzCubuk(kart, L.T(a), a, false); n++; }
+            foreach (var e in Parcalar(on.eksi)) { TarzCubuk(kart, L.T(e), e, true); n++; }
+            if (n == 0) kart.Add(Yazi(L.T("Hiçbir çubuk değişmez."), 13, "soluk"));
+            Erisim.Etiket(bas, L.T(on.ad) + (!string.IsNullOrEmpty(on.oz) ? ", " + L.T(on.oz) : "") + ", " + durum, "metin", oSecili, !oAcik);
+            if (oSecili) return;
+            string ad = L.T(on.ad);
+            if (oAcik) { var sd = Dugme(L.T("Bu tarzı seç"), () => { Ayar.ilerleme.Tarz = on.id; Ayar.GearHesap(); Ayar.KaydetSonra(); root.sfx.Tik(); kirli[(int)Sekme.Profil] = true; SoyunmaGovdeKur(true); }, "dugme--birincil"); sd.style.marginTop = 12; Erisim.Etiket(sd, L.T("Bu tarzı seç") + ": " + ad, "dugme"); kart.Add(sd); }
+            else { var pd = Pasif(KilitKalan(on.sv, sv)); pd.style.marginTop = 12; kart.Add(pd); }
+        }
+        // Etki çubuğu: ad (etiketin yüzdesiz kısmı değil, tam etiket: "Smaç hızı +%6") + iz. Yüzde etiketten okunur; okunamazsa
+        // çubuk tavanın %25'i (yön yine doğru, sayı yazıda).
+        void TarzCubuk(VisualElement k, string yazi, string ham, bool eksi)
+        {
+            var r = new VisualElement(); r.AddToClassList("tarz-cubuk"); r.pickingMode = PickingMode.Ignore; k.Add(r);
+            var ust = Satir("rakip-satir"); ust.pickingMode = PickingMode.Ignore; r.Add(ust);
+            ust.Add(Ikon(eksi ? Ikonlar.Asagi : Ikonlar.Yukari, 12, eksi ? SOLUK : LIMON));
+            var y = Yazi(yazi, 13, eksi ? "soluk" : null); y.style.marginLeft = 4; y.style.whiteSpace = WhiteSpace.Normal; y.style.flexShrink = 1; ust.Add(y);
+            var iz = new VisualElement(); iz.AddToClassList("tarz-cubuk-iz"); iz.pickingMode = PickingMode.Ignore; r.Add(iz);
+            var orta = new VisualElement(); orta.AddToClassList("tarz-cubuk-orta"); orta.pickingMode = PickingMode.Ignore; iz.Add(orta);
+            var dl = new VisualElement(); dl.AddToClassList("tarz-cubuk-dolu"); dl.AddToClassList(eksi ? "tarz-cubuk-dolu--eksi" : "tarz-cubuk-dolu--arti"); dl.pickingMode = PickingMode.Ignore; iz.Add(dl);
+            float yuz = Yuzde(ham), hedef = Mathf.Clamp(yuz / CUBUK_TAVAN, .08f, 1f) * 50f;
+            if (Ayar.reduce) dl.style.width = Length.Percent(hedef);
+            else { dl.style.width = Length.Percent(0); dl.schedule.Execute(() => { dl.style.width = Length.Percent(hedef); Kalite.Hareket(); }).StartingIn(16); }
+            Erisim.Etiket(r, (eksi ? L.T("Eksi") : L.T("Artı")) + ": " + yazi, "metin");
+        }
+        static float Yuzde(string s)
+        {
+            int i = s.IndexOf('%'); if (i < 0) return CUBUK_TAVAN * .25f; int j = i + 1, v = 0; bool var_ = false;
+            while (j < s.Length && char.IsDigit(s[j])) { v = v * 10 + (s[j] - '0'); j++; var_ = true; }
+            return var_ ? v : CUBUK_TAVAN * .25f;
         }
         // Kilit satırı (2026-11-07 stüdyo UX4): "Sv 8 gerekli" hedef vermiyordu; kaç seviye kaldığı da yazar. Kilit Tüy ile aşılmaz (karar sabit).
         static string KilitKalan(int gerek, int simdi) { int k = gerek - simdi; return k > 0 ? L.T("Sv {0} · {1} seviye kaldı", gerek, k) : L.T("Sv {0} gerekli", gerek); }

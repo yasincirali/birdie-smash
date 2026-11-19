@@ -903,3 +903,64 @@
    kuralları (.kisa, .buyuk-yazi) yalnız liste görünümüne; incelemede vitrin kalan alanı doldurur. */
 .vitrin-buyut { position: absolute; top: 8px; left: 8px; width: 44px; height: 44px; min-width: 44px; padding: 0; align-items: center; justify-content: center; background-color: rgba(51, 35, 63, 0.9); }
 .vitrin-alan.vitrin-alan--genis, .kisa .vitrin-alan.vitrin-alan--genis, .buyuk-yazi .vitrin-alan.vitrin-alan--genis, .kisa.buyuk-yazi .vitrin-alan.vitrin-alan--genis { height: auto; flex-grow: 1; margin-bottom: 8px; }
+
+/* 2026-11-19 Dolap A (yasin seçimi, artifact AhLNpXh8XkiHWsZk1kkz3H): vitrin + alt çekmece, üç durak (SoyunmaOdasi.DolapTam).
+   Yarım (varsayılan): figür alanın ~%60'ı, çekmecede şerit + ızgaranın ilk sırası. Tam: vitrin küçülür, ızgara açılır.
+   İncele: çekmece gizli (vitrin-alan--genis). Durak geçişi animasyonsuz (RT her karede yeniden ayrılmasın; takılma kuralı).
+   Tutamak tam genişlik × 30 pt: HIG'deki sheet tutamağı gibi küçük çizgi, dokunma alanı bütün şerit (yükseklik 44'ün altında,
+   genişlik ekran boyu; bilinçli sapma: yarım durakta figürden 14 pt daha almamak için). iPad (.genis): çekmece sağ panel, tutamak yok. */
+.dolap-cekmece { flex-grow: 1; flex-shrink: 1; min-height: 0; margin-top: 8px; background-color: var(--cam); border-top-left-radius: 20px; border-top-right-radius: 20px; border-top-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); }
+.cekmece-tutamak { height: 30px; flex-shrink: 0; align-items: center; justify-content: center; }
+.cekmece-tutamak-cizgi { width: 36px; height: 5px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; background-color: rgba(243, 234, 238, 0.40); }
+.dolap .kategori-ray { margin-top: 0; }
+.dolap .vitrin-alan { height: 60%; min-height: 190px; }
+.dolap.dolap--tam .vitrin-alan { height: 32%; min-height: 150px; }
+.kisa .dolap .vitrin-alan { height: 50%; min-height: 180px; }
+.kisa .dolap.dolap--tam .vitrin-alan { height: 28%; min-height: 140px; }
+.buyuk-yazi .dolap .vitrin-alan { height: 36%; min-height: 180px; }
+.buyuk-yazi .dolap.dolap--tam .vitrin-alan, .kisa.buyuk-yazi .dolap .vitrin-alan { height: 26%; min-height: 140px; }
+.dolap .vitrin-alan.vitrin-alan--genis, .kisa .dolap .vitrin-alan.vitrin-alan--genis, .buyuk-yazi .dolap .vitrin-alan.vitrin-alan--genis, .kisa.buyuk-yazi .dolap .vitrin-alan.vitrin-alan--genis, .dolap.dolap--tam .vitrin-alan.vitrin-alan--genis { height: auto; flex-grow: 1; margin-bottom: 8px; }
+.dolap .soyunma-kaydir { min-height: 96px; }
+.genis .dolap { flex-direction: row; }
+.genis .dolap .vitrin-alan, .genis.buyuk-yazi .dolap .vitrin-alan { height: auto; min-height: 0; flex-grow: 1.4; flex-basis: 0; margin: 0 8px 8px 8px; }
+.genis .dolap .dolap-cekmece { flex-basis: 0; margin: 0 8px 8px 0; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; border-bottom-width: 1px; border-bottom-color: var(--cam-alt); padding-top: 8px; }
+.genis .cekmece-tutamak { display: none; }
+
+/* 2026-11-19 Kariyer A: dikey tur yolu (KariyerEkran.TurYol). Başlık kartında ‹ tur › oklar; yol satırları zikzak (düğüm bir
+   kenarda, yazı içe bakar); çizgi satırların arkasında tek Painter2D eğrisi. Şimdiki düğüm 64 pt (güneş diski), diğerleri 44. */
+.tur-baslik { padding: 10px 8px; }
+.tur-baslik-satir { flex-direction: row; align-items: center; }
+.tur-baslik-orta { align-items: center; margin: 0 8px; }
+.tur-baslik-orta > Label { -unity-text-align: middle-center; white-space: normal; }
+.tur-baslik .tur-hikaye { -unity-text-align: middle-center; margin: 6px 8px 0 8px; color: var(--mu); }
+.tur-baslik .kucuk-dugme { margin-left: 8px; }
+.tur-yol { margin: 8px 0 4px 0; padding: 4px 0; }
+.tur-yol-cizgi { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.yol-satir { flex-direction: row; align-items: center; min-height: 72px; margin: 4px 0; }
+.yol-satir--sol { padding-left: 10%; padding-right: 16px; }
+.yol-satir--sag { flex-direction: row-reverse; padding-right: 10%; padding-left: 16px; }
+.yol-yazi { flex-grow: 1; flex-shrink: 1; min-width: 0; margin: 0 12px; }
+.yol-yazi Label { white-space: normal; }
+.yol-satir--sag .yol-yazi { align-items: flex-end; }
+.yol-satir--sag .yol-yazi Label { -unity-text-align: upper-right; }
+.yol-satir--sag .yol-yazi .rakip-satir { flex-direction: row-reverse; }
+.yol-satir--sag .yol-yazi .rakip-satir > .yildizlar, .yol-satir--sag .yol-yazi .rakip-satir > VisualElement { margin-left: 0; margin-right: 6px; }
+.dugum-rozet--buyuk { width: 64px; height: 64px; border-radius: 32px; border-width: 3px; }
+.dugum-rozet--muhur { width: 52px; height: 52px; border-radius: 26px; border-color: rgba(249, 210, 114, 0.45); }
+.dugum-rozet--muhur.dugum-rozet--gecti { background-color: var(--gold); border-color: var(--gold); }
+
+/* 2026-11-19 Atölye A: tarz çipleri + önizleme kartında etki çubukları (SoyunmaOdasi.TarzCubuk). İzin ortası Dengeli; artı
+   ortadan sağa limon, eksi ortadan sola soluk. Genişlik 0'dan büyür (geçiş yalnız width, .22 sn; hareketi azaltta kod anında yazar). */
+.tarz-kaydir { margin: 4px 0 2px 0; }
+.tarz-kaydir .kategori-ray { margin: 4px 0 4px 0; }
+.tarz-cubuk { margin-top: 10px; }
+.tarz-cubuk-iz { height: 8px; margin-top: 5px; border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; background-color: var(--cam2); }
+.tarz-cubuk-orta { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background-color: var(--tx); }
+.tarz-cubuk-dolu { position: absolute; top: 0; bottom: 0; border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; transition-property: width; transition-duration: 0.22s; transition-timing-function: ease-out-cubic; }
+.tarz-cubuk-dolu--arti { left: 50%; background-color: var(--lime); }
+.tarz-cubuk-dolu--eksi { right: 50%; background-color: var(--mu); }
+
+/* 2026-11-19 (yasin: "buton click'lerinde standart olmalı"): basma dili tekti (.06 sn %95, bırakınca .26 sn ease-out-back) ama
+   birincil düğme .98, CTA .98 (626. satır), ikon .94, profil hapı ve kupa hücresi .97/.94 ile ayrışmıştı; aynı dokunuş ekrandan
+   ekrana farklı hissettiriyordu. Hepsi %95. Hareketi azaltta küçülme yok (.az-hareket kuralı daha özgül, kazanır). */
+.dugme--birincil:active, .ikon-dugme:active, .cta:active, .profil-hap:active, .kupa-hucre:active { scale: 0.95 0.95; }

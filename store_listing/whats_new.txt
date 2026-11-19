@@ -1,4 +1,10 @@
 === UNITY ===
+Dolap, Kariyer ve Atölye yenilendi (19 Kasım):
+- Dolap: oyuncu ekranın büyük kısmında; eşyalar altta açılıp kapanan bir panelde. Panelin üstündeki çizgiye dokun ya da yukarı çek: liste büyür; aşağı çek: liste küçülür, bir kez daha aşağı çekersen oyuncu bütün alanı kaplar. Raket artık kategori şeridinin son seçeneği. iPad'de liste sağda, oyuncu solda.
+- Kariyer: her tur dikey bir yol. Geçtiğin maçlar yıldızlarıyla, şimdiki maç büyük, sonunda tur mührü. Tur adının yanındaki oklarla turlar arasında geçilir; alttaki "Sıradaki maç" düğmesi maçı açar.
+- Atölye: oyun tarzları üstte tek sırada. Bir tarza dokununca etkileri çubuk olarak görünür (artı sağa yeşil, eksi sola gri); "Bu tarzı seç" ile seçilir. Kilitli tarzlar da incelenebilir.
+- Bütün düğmeler basınca aynı biçimde içeri çöker.
+Nasıl denenir: Dolap'ı aç: oyuncu büyük, eşya listesinin ilk sırası görünmeli. Panelin üstündeki kısa çizgiyi yukarı çek, sonra aşağı çek, sonra bir kez daha aşağı çek. Bir eşyaya dokun: oyuncunun üstünde hemen denenmeli. Kariyer'i aç: yolu yukarıdan aşağı izle, oklarla Tur 2'ye geç ve geri dön, "Sıradaki maç"a dokun. Atölye'de Smaşçı ve Duvar'a dokun: çubuklar büyüyerek gelmeli; açık bir tarzı seç. Büyük yazı açıkken (Ayarlar) yazılar kesilmemeli.
 Sevinçler daha canlı, üç yeni dans (19 Kasım):
 - Sevinç hareketleri 120 Hz ekranlarda 120 fps; girişleri yumuşak, gövde kavisli eğiliyor, baş hareketi geriden takip ediyor, zıplayıp inince dizler yaylanıyor.
 - Yeni danslar: Fıskiye (Sv 12), Yıldız zıplaması (Sv 18), Uçak (Sv 20); sayı sevinci ve maç sonu için Dolap > Hareketler'de.
