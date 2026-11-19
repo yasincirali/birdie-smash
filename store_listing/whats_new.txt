@@ -1,4 +1,7 @@
 === UNITY ===
+Yeni menü müziği (19 Kasım):
+- Menüde çalan parça yenilendi: ukulele, ksilofon, çan ve ıslıkla çalınan neşeli, sevimli bir ezgi. Yaklaşık 72 saniye, sonu başına kesintisiz bağlanıyor.
+Nasıl denenir: Müzik açıkken (Ayarlar) menüde bir dakikadan uzun bekle. Ezgi neşeli ve yumuşak olmalı, döngü başa dönerken kesinti ya da çıtırtı duyulmamalı. Maça girince müzik susmalı.
 Maçta sessiz salon (19 Kasım):
 - Ralli sırasında sürekli duyulan tribün uğultusu ve uzun rallilerdeki "ooo" kalktı; seyirci yalnız sayı olunca tepki veriyor (alkış, sevinç, iç çekiş).
 - Parmağını kaydırırken gelen hışırtı yalnız vuruş anında, daha kısık duyuluyor.
