@@ -9,7 +9,7 @@
 //   salon yansıması (55 ms) ve lowpass 1700 oda kuyruğu. Tür karışımı HITMIX, isabet ve slice çarpanları HTML ile aynı.
 //   Rakip: ×0,5, lowpass 3 kHz, 30 ms geç. Tel gerginliği (ton = √(T/26)) ve raket kafası (kafa) ekipmandan gelir.
 // Diğerleri HTML ile aynı: ralli melodisi (beşli dizi, ben 392 Hz / rakip 196 Hz, akışta armoni), ralli ≥ 6'da davul, smaçta
-// düdük, seyirci uğultusu (bandpass 520 → lowpass 1400, düzey .01 + min(.06, ralli·.0045)), vuruş penceresinde "su altı"
+// düdük, seyirci uğultusu (bandpass 520 → lowpass 1400; 2026-11-19 rallide sessiz, yalnız sayı tepkileri), vuruş penceresinde "su altı"
 // (tüm ses lowpass 750 Hz: AudioLowPassFilter dinleyicide), file "puf", bant tınısı, yer pıtırtısı, çizgi kamerası
 // davulu, sevinç/iç çekiş, yön değişiminde ayakkabı gıcırtısı, parmak hızıyla raket uğultusu (canlı bandpass).
 // Web Audio'daki son kompresör yok (Unity mikserinde yok; düzeyler HTML'deki kazançlarla).
@@ -350,18 +350,16 @@ namespace BirdieSmash.Game
             else if (mine) VurusCal(Vurus(type, q, slice, super_, serve, false), kaz, perde);
             else { var k = Kaynak(); k.pitch = perde; k.panStereo = pan; k.PlayOneShot(Vurus(type, q, slice, super_, serve, true), kaz); }
             if (mine && !serve && (type == "smash" || type == "jump" || type == "kill")) Govde(.5f + .5f * p * (super_ ? 1.3f : 1));
-            if (rally >= 8 && rally % 4 == 0 && !serve && !macSayisi) Ooo(Mathf.Min(1, (rally - 4) / 16f));
             RallyNote(rally - 1, mine, mine && flow);
             if (rally >= 6) Kick(.12f + Mathf.Min(.12f, rally * .008f));
             if (Tur(type) == "smash" && (type == "smash" || type == "jump")) Whistle();
-            if (!macSayisi) crowdHedef = .01f + Mathf.Min(.06f, rally * .0045f);
             if (rally > 2 && rally % 5 == 0) Ton(523 * Mathf.Pow(2, Mathf.Min(rally, 30) / 24f), .2f, "triangle", .07f);
         }
         AudioSource Kaynak() { var k = vurusSrc[vurusSira]; vurusSira = (vurusSira + 1) % vurusSrc.Length; return k; }
         void VurusCal(AudioClip c, float kaz, float perde) { var k = Kaynak(); k.pitch = perde; k.panStereo = pan; k.PlayOneShot(c, kaz); }
         // Gövde darbesi: alçak sinüs süpürmesi, iki düzeyde önbellekte (kazanç oynatmada).
         void Govde(float v) { if (Kayitli("govde", v)) return; src.PlayOneShot(Bir("govde", s => s.Sweep(0, .09f, "sine", t => 80 * Mathf.Pow(45f / 80, Mathf.Min(1, t / .07f)), t => .32f * (t < .002f ? t / .002f : Mathf.Pow(.0005f, Mathf.Min(1, (t - .002f) / .08f)))), .1f), Mathf.Min(1.3f, v)); }
-        // Seyirci "ooo": geniş formant (380 → 620 Hz), 0,9 sn kabarıp söner; şiddet ralli uzunluğuyla.
+        // Seyirci "ooo": geniş formant (380 → 620 Hz), 0,9 sn kabarıp söner. 2026-11-19'dan beri rallide çağrılmıyor (aşağıda CrowdStart notu).
         void Ooo(float k) { if (Kayitli("ooo", .5f + .5f * k, trb)) return; trb.PlayOneShot(Bir("ooo", s => { s.NoiseSweep(0, .9f, 380, 620, 1.6f, .09f, false, u => Mathf.Sin(Mathf.PI * Mathf.Min(1, u * 1.3f)) * (1 - u * .4f)); s.NoiseSweep(0, .9f, 900, 1150, 2.2f, .035f, false, u => Mathf.Sin(Mathf.PI * Mathf.Min(1, u * 1.3f))); }, .95f), .5f + .5f * k); }
         // Alkış: rastgele zamanlı el çırpışları (her biri 4–7 ms gürültü, bandpass 900–2600 Hz), yoğunluk başta yüksek, sonda
         // seyrek. Ralli uzunluğuna göre iki boy (kısa 1,4 sn, uzun 2,4 sn); her boy iki çekimle önbellekte.
@@ -506,7 +504,7 @@ namespace BirdieSmash.Game
         public void Iyi() { Ton(784, .12f, "triangle", .05f); }
         public void Hedefte() { Ton(1320, .1f, "triangle", .05f); }
         public void Iska() { if (Kayitli("iska", .6f)) return; Gurultu(.05f, "highpass", 1200, .05f); }
-        public void MacSonu(bool won) { crowdHedef = .004f; SuAlti(false); if (won) Cheer(.18f); }
+        public void MacSonu(bool won) { crowdHedef = 0; SuAlti(false); if (won) Cheer(.18f); }
         // Vuruş penceresi: ses su altındaymış gibi boğulur (lowpass 750 Hz), vuruşla açılır; girişte alçak bir "vuuu".
         public void SuAlti(bool on) { if (on && suHedef > 1000) Gurultu(.25f, "lowpass", 300, .08f); suHedef = on ? 750 : 22000; }
         public void Ugultu(bool on, float sp) { swo.Ayarla(on, sp); }
@@ -570,7 +568,10 @@ namespace BirdieSmash.Game
         // için sessizlik yalnız servis beklerken sürüyor, ralli uzadıkça uğultu ve "Ooo" geri geliyordu; bayrak açıkken Hit
         // uğultuya ve Ooo'ya dokunmaz. Ralli tonları ve raket sesi kalır: sessiz salonda daha net duyulur.
         bool macSayisi;
-        public void CrowdStart() { crowdHedef = .01f; macSayisi = false; }
+        // 2026-11-19 (yasin: "Maç içinde beyaz gürültü sesi geliyor. Badminton maçları sesli olmaz. Sadece sayı olursa vs olur."):
+        // tribün uğultusu döngüsü (.01'den ralliyle .07'ye) ve uzun rallide her 4 vuruşta "Ooo" kalktı. Gerçek salonda ralli sırasında
+        // seyirci susar, ses yalnız sayıda gelir (alkış, coşku, iç çekiş Point'te kalır). Uğultu kaynağı sessiz kalır (0).
+        public void CrowdStart() { crowdHedef = 0; macSayisi = false; }
         public void CrowdSus() { crowdHedef = 0; macSayisi = true; }
         // Rakibin balıklamayla kurtarışı (Ev.Kurtaris): parkeye düşen gövdenin kısık "küt"ü + tribün nefesi. Anın tek sessiz
         // büyük hareketiydi (2026-11-11 inceleme #4). Titreşim yok: rakibin hareketi elde hissedilmez.
@@ -598,7 +599,9 @@ namespace BirdieSmash.Game
         AudioSource a; volatile float hedefF = 700, hedefG; float f = 700, g; readonly System.Random r = new System.Random(9);
         Synth.Biquad bq = new Synth.Biquad("bandpass", 700, 1.4f); int sayac; bool acik;
         void Awake() { a = gameObject.AddComponent<AudioSource>(); a.playOnAwake = false; a.loop = true; a.clip = AudioClip.Create("sessiz", Synth.SR, 1, Synth.SR, false); a.Play(); }
-        public void Ayarla(bool on, float sp) { acik = on && Ayar.ses; hedefG = acik ? Mathf.Min(.22f, sp * .09f) : 0; hedefF = 500 + Mathf.Min(3, sp) * 900; }
+        // 2026-11-19 (aynı istek): parmak hızlı kaydıkça sürekli duyulan hışırtı da "beyaz gürültü" gibi geliyordu. Tavan .22 → .10;
+        // GameRoot yalnız vuruş penceresinde hız verir (kısa savuruş sesi, sürekli değil).
+        public void Ayarla(bool on, float sp) { acik = on && Ayar.ses; hedefG = acik ? Mathf.Min(.10f, sp * .06f) : 0; hedefF = 500 + Mathf.Min(3, sp) * 900; }
         // Kaynak uygulama boyunca döngüdeydi; menüde de ses iş parçacığı her örnekte gürültü + bandpass hesaplıyordu (kazanç 0
         // olsa da). Uğultu kapalı ve sönmüşken duraklar, açılınca kaldığı yerden sürer (2026-11-11 inceleme #4c, pil/ısı).
         void Update()

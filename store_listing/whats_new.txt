@@ -1,4 +1,8 @@
 === UNITY ===
+Maçta sessiz salon (19 Kasım):
+- Ralli sırasında sürekli duyulan tribün uğultusu ve uzun rallilerdeki "ooo" kalktı; seyirci yalnız sayı olunca tepki veriyor (alkış, sevinç, iç çekiş).
+- Parmağını kaydırırken gelen hışırtı yalnız vuruş anında, daha kısık duyuluyor.
+Nasıl denenir: Ses açıkken bir maç oyna. Ralli sırasında arka planda hışırtı ya da uğultu olmamalı; raket, top ve ralli notaları duyulmalı. Uzun bir ralli bitince ve her sayıda seyirci tepkisi gelmeli.
 Dolap, Kariyer ve Atölye yenilendi (19 Kasım):
 - Dolap: oyuncu ekranın büyük kısmında; eşyalar altta açılıp kapanan bir panelde. Panelin üstündeki çizgiye dokun ya da yukarı çek: liste büyür; aşağı çek: liste küçülür, bir kez daha aşağı çekersen oyuncu bütün alanı kaplar. Raket artık kategori şeridinin son seçeneği. iPad'de liste sağda, oyuncu solda.
 - Kariyer: her tur dikey bir yol. Geçtiğin maçlar yıldızlarıyla, şimdiki maç büyük, sonunda tur mührü. Tur adının yanındaki oklarla turlar arasında geçilir; alttaki "Sıradaki maç" düğmesi maçı açar.
