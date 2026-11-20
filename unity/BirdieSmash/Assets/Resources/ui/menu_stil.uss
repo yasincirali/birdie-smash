@@ -979,3 +979,12 @@
    uzuyordu. Sekme içeriği ve "Sıradaki maç" şeridi 600 pt orta sütun (telefondaki oran); Dolap kendi sağ paneliyle hariç. */
 .genis .sekme-icerik { max-width: 600px; width: 100%; align-self: center; margin-left: auto; margin-right: auto; }
 .genis .siradaki-serit { max-width: 568px; width: 100%; align-self: center; }
+/* 2026-11-20 inceleme (fikir 07:06 #3, §6.2 tek basma dili): renk/şekil örnekleri Dolap'ın en sık dokunulan öğesi ama düğme,
+   düğüm ve kupa hücresinin basma ölçeğini taşımıyordu. Aynı dil: basınca .06 sn'de %95, bırakınca .26 sn ease-out-back.
+   Yalnız scale ve border-color geçer; border-width geçişi her karede yerleşim hesaplatırdı. Hareketi azaltta küçülme yok. */
+.renk { transition-property: scale, border-color; transition-duration: 0.26s, 0.12s; transition-timing-function: ease-out-back, ease-out; }
+.renk:active { scale: 0.95 0.95; transition-duration: 0.06s, 0.12s; transition-timing-function: ease-out, ease-out; }
+.az-hareket .renk { transition-duration: 0s, 0s; }
+.az-hareket .renk:active { scale: 1 1; }
+/* 2026-11-20 inceleme (fikir 07:06 #4): açık tur mührü satırı Kariyer'e götürür; dokunma alanı 44 pt (HIG). */
+.muhur-satir--acik { min-height: 44px; margin-bottom: 0; }

@@ -572,7 +572,9 @@ namespace BirdieSmash.Game
                 c.Add(Dugme(L.T("Ayakkabı tabanı · Oyun"), () => { Tik(); SoyunmaSegment(0); }, null, L.T("Güç, fiyat ve çubuklar orada"), 14));
                 return;
             }
-            c.Add(Yazi(L.T("Görünüm ayakkabının üstüne giyilir: hız ve uzanma tabandaki ayakkabıdan gelir, değişmez. \"Görünüm yok\" seçince aşağıdaki model ve renk görünür."), 12, "soluk"));
+            // 2026-11-20 inceleme (fikir 07:06 #6, §7 sadelik): "güç değişmez" üç kez söyleniyordu (iki paragraf + düğme); tek soluk
+            // satır kaldı (görünüm takılıyken kullanılan cümle), yol düğmede.
+            c.Add(Yazi(L.T("Yalnız görünüş: hız ve uzanma tabandaki ayakkabıdan. Model ve renk \"Görünüm yok\" seçilince görünür."), 12, "soluk"));
             c.Add(Grup(L.T("Ayakkabı modeli · {0}", L.T(Gear.GEAR["ayakkabi"][gor].ad))));
             var cp = Satir("secim"); cp.style.flexWrap = Wrap.Wrap; c.Add(cp);
             cp.Add(Cip(L.T("Tabanla aynı"), Ayar.AYK_GOR == "taban", () => { Ayar.AYK_GOR = "taban"; Ayar.KaydetSonra(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
@@ -581,7 +583,6 @@ namespace BirdieSmash.Game
                 string id = a.id; bool sahip = gr.Sahip("ayakkabi", id), sec = Ayar.AYK_GOR != "taban" && gor == id;
                 if (sahip) cp.Add(Cip(L.T(a.ad), sec, () => { Ayar.AYK_GOR = id; Ayar.KaydetSonra(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
             }
-            c.Add(Yazi(L.T("Sahip olduğun ayakkabıların görünüşünü taşırsın; tabanın gücü değişmez. Yeni model Oyun › Ayakkabı tabanında alınır."), 12, "soluk"));
             c.Add(Dugme(L.T("Ayakkabı tabanı · Oyun"), () => { Tik(); SoyunmaSegment(0); }, null, L.T("Güç, fiyat ve çubuklar orada"), 14));
             var l = new List<Ornek>(); foreach (var o in Karakter.Gorunum("ayakkabi")) l.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
             OrnekSira(c, L.T("Ayakkabı rengi"), l, Ayar.GORUNUM["ayakkabi"], id => { Ayar.GORUNUM["ayakkabi"] = id; Ayar.KaydetSonra(); }, true);

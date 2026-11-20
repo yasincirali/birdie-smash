@@ -226,13 +226,19 @@ namespace BirdieSmash.Game
             {
                 // 2026-11-08 inceleme (fikir 07:05 #2): kilitli tur "0/18" değil "Kilitli" der; tur yıldızları artık yalnız burada.
                 if (!KariyerVeri.Turlar[mt].Var) continue; bool mac = p.TurAcik(mt); int mh = mac ? p.Muhur(mt) : 0, ys = p.TurYildiz(mt);
-                var mr = Satir("arali"); mr.AddToClassList("muhur-satir"); mr.pickingMode = PickingMode.Ignore; mk.Add(mr);
+                // 2026-11-20 inceleme (fikir 07:06 #4): açık turun satırı Kariyer'de o turu açar (eksik yıldızı gören oyuncu ‹ › ile
+                // aramaz; Profil'in kariyer kartıyla aynı yol). 44 pt, sonda "›"; kilitli tur dokunulmaz.
+                var mr = Satir("arali"); mr.AddToClassList("muhur-satir"); mk.Add(mr);
+                if (mac) { int tt = mt; mr.AddToClassList("muhur-satir--acik"); mr.AddToClassList("dokunulur"); mr.AddManipulator(new Clickable(() => { Tik(); KariyerTurSec(tt); SekmeAc(Sekme.Kariyer); })); }
+                else mr.pickingMode = PickingMode.Ignore;
                 var sol = Satir("rakip-satir"); sol.pickingMode = PickingMode.Ignore; mr.Add(sol);
                 sol.Add(Ikon(mh >= 2 ? Ikonlar.YildizDolu : Ikonlar.YildizBos, 18, mh >= 2 ? ALTIN : mh == 1 ? BRONZ : SOLUK));
                 var ay = Yazi(L.T(TurAd(mt)), 15); ay.style.marginLeft = 8; sol.Add(ay);
                 string dr = !mac ? L.T("Kilitli") : mh >= 2 ? L.T("Altın") : mh == 1 ? L.T("Bronz") + " · " + ys + "/18" : ys + "/18";
-                mr.Add(Yazi(dr, 13, mh > 0 ? "durum-gecti" : "soluk"));
-                Erisim.Etiket(mr, L.T(TurAd(mt)) + ", " + (!mac ? L.T("Kilitli") : mh >= 2 ? L.T("Altın tur mührü") : mh == 1 ? L.T("Bronz tur mührü") : L.T("{0}/{1} yıldız", ys, 18)), "metin");
+                var sag = Satir(null); sag.pickingMode = PickingMode.Ignore; sag.style.alignItems = Align.Center; mr.Add(sag);
+                var dy = Yazi(dr, 13, mh > 0 ? "durum-gecti" : "soluk"); dy.pickingMode = PickingMode.Ignore; sag.Add(dy);
+                if (mac) { var ok = Yazi("›", 18, "soluk"); ok.pickingMode = PickingMode.Ignore; ok.style.marginLeft = 6; sag.Add(ok); }
+                Erisim.Etiket(mr, L.T(TurAd(mt)) + ", " + (!mac ? L.T("Kilitli") : (mh >= 2 ? L.T("Altın tur mührü") : mh == 1 ? L.T("Bronz tur mührü") : L.T("{0}/{1} yıldız", ys, 18)) + ", " + L.T("Kariyer'de aç")), mac ? "dugme" : "metin");
             }
             mk.Add(Yazi(L.T("Bronz 9 yıldız, altın 18 yıldız. Satılmaz, yalnız oynayarak gelir."), 12, "soluk"));
 

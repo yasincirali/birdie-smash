@@ -382,7 +382,10 @@ namespace BirdieSmash.Game
             // 2026-10-27: Oyna / Kilitli kaydırmanın dışında, sayfanın dibinde (Duyarli.cs, kural 4)
             if (acik)
             {
-                AltEylem(Dugme(L.T(p.Kazanildi(g) ? "Yeniden oyna" : "Oyna") + ": " + L.T(kb.yer), () => KariyerOyna(g), "dugme--birincil", null, 19));
+                // 2026-11-20 inceleme (fikir 07:06 #5, §7.3): yer adı sayfa başlığında; düğmede tekrarı SE'de ve büyük yazıda iki satıra
+                // itiyordu. Düğme kısa, erişim etiketi yer adını taşır.
+                var od = Dugme(L.T(p.Kazanildi(g) ? "Yeniden oyna" : "Oyna"), () => KariyerOyna(g), "dugme--birincil", null, 19);
+                Erisim.Etiket(od, L.T(p.Kazanildi(g) ? "Yeniden oyna" : "Oyna") + ": " + L.T(kb.yer), "dugme"); AltEylem(od);
             }
             else AltEylem(Pasif(L.T("Kilitli"), b > 0 && p.TurAcik(tr) ? L.T("Önce {0} basamağını kazan", L.T(KariyerVeri.Al(g - 1).yer)) : KilitNedeni(tr)));
         }
