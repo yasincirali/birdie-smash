@@ -322,17 +322,19 @@ namespace BirdieSmash.Game
             var hatalar = new System.Collections.Generic.List<string>();
             Application.LogCallback yaz = (m, st, t) => { if ((t == LogType.Exception || t == LogType.Error || t == LogType.Assert) && hatalar.Count < 12) hatalar.Add(t + ": " + m + " @ " + (st != null && st.Length > 500 ? st.Substring(0, 500) : st)); };
             Application.logMessageReceived += yaz;
-            string ms0; Ayar.KOZ.TryGetValue(Kozmetik.MAC_SONU, out ms0); bool km0 = Ayar.kariyerModu;
-            foreach (var sv in new[] { "ucak", "nanik", "zafer" })
+            string ms0; Ayar.KOZ.TryGetValue(Kozmetik.MAC_SONU, out ms0); bool km0 = Ayar.kariyerModu; int tur = 0;
+            // Kariyer yolu (yasin'in kaydı: 5-2 galibiyet, Uçak): her galibiyet sıradaki basamağı açar, üretilmiş rakipler (Core/Rakipler)
+            // ve kendi modelleri sırayla gelir; son iki tur Hızlı maç.
+            foreach (var sv in new[] { "ucak", "ucak", "ucak", "ucak", "ucak", "ucak", "ucak", "nanik", "zafer" })
             {
-                Ayar.KOZ[Kozmetik.MAC_SONU] = sv; Ayar.kariyerModu = sv == "zafer";
+                Ayar.KOZ[Kozmetik.MAC_SONU] = sv; Ayar.kariyerModu = sv == "ucak"; Ayar.kariyerSecim = -1;
                 root.StartMatch(false, false, false); botAcik = false;
                 { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 4) yield return null; }
                 var mt = root.match; mt.sc[0] = 5; mt.sc[1] = 2; mt.matchDone = true; mt.between = true; mt.betweenT = 1.4f; float tz = Time.realtimeSinceStartup;
-                while (Time.realtimeSinceStartup - tz < .8f) yield return null; yield return Cek("macsonu_" + sv + "_a");
+                while (Time.realtimeSinceStartup - tz < .8f) yield return null; if (tur == 0 || sv != "ucak") yield return Cek("macsonu_" + sv + "_a");
                 while (root.ekran != Ekran.Bitti && Time.realtimeSinceStartup - tz < 6) yield return null;
-                rap.AppendLine("macsonu " + sv + " · ekran " + root.ekran + " · süre " + (Time.realtimeSinceStartup - tz).ToString("F1") + " · hata " + hatalar.Count);
-                yield return Bekle(30); yield return Cek("macsonu_" + sv + "_b");
+                rap.AppendLine("macsonu " + sv + " · rakip " + (mt.stil != null ? mt.stil.isim + "/" + mt.stil.model + (mt.stil.uretilen ? "/üretilmiş" : "") : "-") + " · kariyer " + Ayar.kariyerModu + " · ekran " + root.ekran + " · süre " + (Time.realtimeSinceStartup - tz).ToString("F1") + " · hata " + hatalar.Count);
+                yield return Bekle(30); yield return Cek("macsonu_" + sv + "_b" + (tur++));
             }
             foreach (var h in hatalar) rap.AppendLine("macsonu hata · " + h);
             if (ms0 != null) Ayar.KOZ[Kozmetik.MAC_SONU] = ms0; Ayar.kariyerModu = km0; Application.logMessageReceived -= yaz;
