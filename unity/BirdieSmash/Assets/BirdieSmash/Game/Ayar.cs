@@ -96,6 +96,10 @@ namespace BirdieSmash.Game
         // Kariyer, Hızlı maç ve Günün maçı sayılır; antrenman/görev/Sonsuz sayılmaz (GameRoot.EndMatch). Okuma her seferinde
         // kayıttan (menüde birkaç çip; iCloud eşitlemesi metni değiştirebilir, ayrı önbellek tutulmaz).
         public const string KARNE = "tuytop_karne";
+        // İnceleme 2026-11-20 22:10 (fikir 22:06 #5): üretilmiş rakibin id'si temel tarzın id'si; o anahtarla yazılsa adlı rakibin
+        // karnesine karışırdı, bu yüzden hiç yazılmıyordu ve rövanşta "aranızda 0–1" görünmüyordu. Ad kariyer boyunca tekil
+        // (Core/Rakipler), anahtar "u_" + ad; biçim ve tuytop_karne aynı (tohum değişirse eski girişler sessizce yetim kalır).
+        public static string KarneAnahtar(BirdieSmash.Core.Style st) { return st == null ? null : st.uretilen ? "u_" + st.isim : st.id; }
         public static bool Karne(string stil, out int g, out int y)
         {
             g = y = 0; if (string.IsNullOrEmpty(stil)) return false;
