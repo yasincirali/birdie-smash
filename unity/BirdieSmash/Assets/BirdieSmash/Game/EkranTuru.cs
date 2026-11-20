@@ -80,7 +80,7 @@ namespace BirdieSmash.Game
                 for (int i = 0; i < 3; i++) { float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 4) yield return null; yield return Cek("afis_" + i); }
                 File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
             }
-            if (kip == "dolap") { yield return Cek("00_ilk_kare"); yield return MenuTuru(); yield return DugmeKareleri(); yield return SevincKareleri(); yield return Varyantlar(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }
+            if (kip == "dolap") { yield return Cek("00_ilk_kare"); yield return MenuTuru(); yield return DugmeKareleri(); yield return SevincKareleri(); yield return Varyantlar(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); yield return MacSonuTani(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             yield return MenuTuru(); if (root.HudKatman != null) rap.AppendLine("açılış süresi (gerçek, CI yazılım render'ı): " + root.HudKatman.AcilisTani);
             Ayar.antrenman = true; Ayar.easy = true; Ayar.target = 5; Ayar.reduce = false; if (root.ui != null) root.ui.Kirlet();   // r11: Oyna sekmesi ilk açılış kurulumunda kalıyordu
@@ -314,6 +314,29 @@ namespace BirdieSmash.Game
         // düzeltmesi tam tur (90 dk) beklemeden görülsün.
         // 2026-11-19: kısa tur sevinç karelerini çekmiyordu (MenuTuru yalnız tam turda Sevinç sayfasına iner); yeni kemik katmanı
         // hareketleri (ter, tel) derleme dışında görülemiyordu. Sayfa açılır, iki hareketin iki anı çekilir.
+        // 2026-11-20 (yasin: "maç sonu sevinçte buga girdi"; ekran kaydında maç 5-2 bitmiş, oyuncu uçak pozunda, kare donuk, sonuç
+        // kartı gelmiyor): maç sonu akışı seçili dansla gerçek yoldan geçer (matchDone + bekleme → EndMatch); o sırada düşen hata
+        // satırları rapora yazılır. Dolap kipinin en sonunda: takılırsa öbür kareler çekilmiş olur.
+        IEnumerator MacSonuTani()
+        {
+            var hatalar = new System.Collections.Generic.List<string>();
+            Application.LogCallback yaz = (m, st, t) => { if ((t == LogType.Exception || t == LogType.Error || t == LogType.Assert) && hatalar.Count < 12) hatalar.Add(t + ": " + m + " @ " + (st != null && st.Length > 500 ? st.Substring(0, 500) : st)); };
+            Application.logMessageReceived += yaz;
+            string ms0; Ayar.KOZ.TryGetValue(Kozmetik.MAC_SONU, out ms0); bool km0 = Ayar.kariyerModu;
+            foreach (var sv in new[] { "ucak", "nanik", "zafer" })
+            {
+                Ayar.KOZ[Kozmetik.MAC_SONU] = sv; Ayar.kariyerModu = sv == "zafer";
+                root.StartMatch(false, false, false); botAcik = false;
+                { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 4) yield return null; }
+                var mt = root.match; mt.sc[0] = 5; mt.sc[1] = 2; mt.matchDone = true; mt.between = true; mt.betweenT = 1.4f; float tz = Time.realtimeSinceStartup;
+                while (Time.realtimeSinceStartup - tz < .8f) yield return null; yield return Cek("macsonu_" + sv + "_a");
+                while (root.ekran != Ekran.Bitti && Time.realtimeSinceStartup - tz < 6) yield return null;
+                rap.AppendLine("macsonu " + sv + " · ekran " + root.ekran + " · süre " + (Time.realtimeSinceStartup - tz).ToString("F1") + " · hata " + hatalar.Count);
+                yield return Bekle(30); yield return Cek("macsonu_" + sv + "_b");
+            }
+            foreach (var h in hatalar) rap.AppendLine("macsonu hata · " + h);
+            if (ms0 != null) Ayar.KOZ[Kozmetik.MAC_SONU] = ms0; Ayar.kariyerModu = km0; Application.logMessageReceived -= yaz;
+        }
         IEnumerator SevincKareleri()
         {
             var ui = root != null ? root.ui : null; if (ui == null || root.vitrin == null) yield break;
