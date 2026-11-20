@@ -165,6 +165,7 @@ static class BotMac
         FileStandart();   // 2026-10-27 ekran/file (ayrı satır: liste başka dallarda da büyüyor)
         IkizMaclar();   // 2026-11-07 online: iki çekirdek gecikmeli kuyrukla (Core/Uzak)
         GucMerdiveni();   // 2026-11-14 rakibin görünen gücü tur tur artar
+        Rakiplers();   // 2026-11-20 her rakip ayrı biri
         Hikayeler();   // 2026-11-14 kariyer hikâyesi: bölüm, güç sayısı, dünya sırası
         GeriKosu();   // 2026-11-14 geri koşu yavaş, rakip topa gerçekten yetişir, gövdenin gerisinden smaç yok
         FlickSerileri();   // 2026-11-10 inceleme 17:08 #1: ardışık flick servisi rakibi gittikçe az aldatır
@@ -782,8 +783,8 @@ static class BotMac
         int imzali = 0; foreach (var k in t4.b) if (k.imza) { imzali++; var r = KariyerVeri.Rakip(KariyerVeri.Global(3, k.basamak)); if (!r.patron || r.imza == null) Fail("imza bayraklı basamakta imza yok: " + k.yer); }
         if (imzali != 3) Fail("Dünya Finalleri'nde 3 imzalı basamak (Rocco, Nova, Vex) olmalı: " + imzali);
         var r0 = KariyerVeri.Rakip(KariyerVeri.Global(3, 3)); if (r0.patron || r0.imza != null) Fail("imzasız basamakta imza var");
-        var r1 = KariyerVeri.Rakip(KariyerVeri.Global(2, 0)); if (Math.Abs(r1.tepki - Match.STIL["vex"].tepki * t3.tepki * t3.b[0].tepki) > 1e-5 || Math.Abs(r1.hucum - t3.hucum) > 1e-5) Fail("tur ek zorluğu rakibe binmedi");
-        var y1 = KariyerVeri.Rakip(0); if (y1.tepki != Match.STIL[y1.id].tepki || y1.hucum != 1) Fail("Tur 1 rakibi değişti");
+        var r1 = KariyerVeri.RakipTaban(KariyerVeri.Global(2, 0));   // merdiven; üretilmiş kimliğin özelliği Rakiplers()'te if (Math.Abs(r1.tepki - Match.STIL["vex"].tepki * t3.tepki * t3.b[0].tepki) > 1e-5 || Math.Abs(r1.hucum - t3.hucum) > 1e-5) Fail("tur ek zorluğu rakibe binmedi");
+        var y1 = KariyerVeri.RakipTaban(0); if (y1.tepki != Match.STIL[y1.id].tepki || y1.hucum != 1) Fail("Tur 1 rakibi değişti");
         foreach (var t in new[] { t3, t4 }) foreach (var k in t.b) if (k.yer.Length == 0 || k.yer.Contains("All England")) Fail("mekân adı");
         Console.WriteLine("Tur 3–4: Vex/Aria, " + imzali + " imzalı basamak, tepki " + t3.tepki + "/" + t4.tepki + ", hücum " + t3.hucum + "/" + t4.hucum + ", Tur 1–2 aynı");
     }
@@ -2130,6 +2131,49 @@ static class BotMac
     // Kariyer hikâyesi (2026-11-14, Core/Hikaye). Kapı: her turun bölüm başlığı ve hikâye cümlesi var; güç sayısı 1–99, tur
     // ortalaması tur tur artar, Tur 1 ilk maç ≤ 30, son final ≥ 95; oyuncunun dünya sırası 0 galibiyette ILK_SIRA, galibiyetle hiç
     // artmaz, 24'te 1; rakip sırası ≥ 2; "son karşılaşma" aynı tarzın önceki basamağı.
+    // 2026-11-20 (yasin: "karşılaşılan her rakip ayrı isme ve özelliklere sahip olmalı ve tabiki finale yaklaştıkça daha zor
+    // rakipler olmalı"): final dışı basamaklar üretilmiş; kariyer boyunca ad tekil (altı adlı rakiple de çakışmaz), her biri bir
+    // özellik taşır, finaller ve Efsaneler adlı; aynı tohum aynı dünyayı, başka tohum başka adları verir; tarz ve merdiven
+    // (taban hız) basamaktan, özellik yalnız kendi alanını çarpar; ardışık iki üretilmiş rakip aynı adı taşımaz.
+    static void Rakiplers()
+    {
+        int t0 = Rakipler.Tohum;
+        foreach (int tohum in new[] { 0, 12345, -77 })
+        {
+            Rakipler.Tohum = tohum;
+            var adlar = new HashSet<string>(); foreach (var st in Match.STIL.Values) if (st.isim != null) adlar.Add(st.isim);
+            int uretilen = 0, maskot = 0; var oz = new HashSet<string>();
+            for (int g = 0; g < KariyerVeri.TUR * KariyerVeri.BASAMAK; g++)
+            {
+                if (!KariyerVeri.Var(g)) continue; var r = KariyerVeri.Rakip(g); var b = KariyerVeri.RakipTaban(g);
+                bool ur = Rakipler.Uretilir(g);
+                if (KariyerVeri.Final(g) || KariyerVeri.Turlar[KariyerVeri.TurOf(g)].adli) { if (ur || r.uretilen || r.isim != Match.STIL[r.id].isim) Fail("final/adli tur adlı rakip olmalı: " + g); continue; }
+                if (!ur || !r.uretilen) { Fail("final dışı basamak üretilmeli: " + g); continue; }
+                uretilen++; if (r.model != null) maskot++; oz.Add(r.ozellik);
+                if (string.IsNullOrEmpty(r.isim) || !adlar.Add(r.isim)) Fail("rakip adı tekil değil: " + r.isim + " (" + g + ", tohum " + tohum + ")");
+                if (r.id != b.id || r.imza != b.imza || r.patron != b.patron) Fail("üretilmiş rakip tarzı/imzası değişti: " + g);
+                if (string.IsNullOrEmpty(r.ozellikAd) || string.IsNullOrEmpty(r.ozellikN)) Fail("özelliğin adı/cümlesi yok: " + g);
+                if (r.gor == null || (r.model == null && (r.gor.tip == null || r.gor.sac == null))) Fail("üretilmiş görünüş eksik: " + g);
+                if (r.model != null && Array.IndexOf(Kozmetik.Liste(Kozmetik.MODEL).Select(m => m.id).ToArray(), r.model) < 0) Fail("katalogda olmayan model: " + r.model);
+                var r2 = KariyerVeri.Rakip(g); if (r2.isim != r.isim || r2.model != r.model || r2.ozellik != r.ozellik || r2.gor.Equals(null)) Fail("aynı basamak aynı rakibi vermeli: " + g);
+            }
+            if (uretilen != Rakipler.UretilenSayi || uretilen != 35) Fail("üretilen basamak sayısı " + uretilen + " (beklenen 35)");
+            if (maskot < 3 || maskot > 18) Fail("maskot payı tuhaf: " + maskot + "/35");
+            if (oz.Count < 5) Fail("özellik çeşidi az: " + oz.Count);
+            var u = UstaYolu.Rakip(0); if (!u.uretilen) Fail("Usta final dışı basamak üretilmeli");
+            Console.WriteLine("rakipler (tohum " + tohum + "): " + uretilen + " üretilmiş, " + maskot + " maskot, " + oz.Count + " özellik; ilk üç " + KariyerVeri.Rakip(0).isim + "/" + KariyerVeri.Rakip(1).isim + "/" + KariyerVeri.Rakip(2).isim + " · " + KariyerVeri.Rakip(0).ozellikAd);
+        }
+        Rakipler.Tohum = 1; string a1 = KariyerVeri.Rakip(0).isim + KariyerVeri.Rakip(7).isim + KariyerVeri.Rakip(14).isim;
+        Rakipler.Tohum = 2; string a2 = KariyerVeri.Rakip(0).isim + KariyerVeri.Rakip(7).isim + KariyerVeri.Rakip(14).isim;
+        if (a1 == a2) Fail("başka tohum başka rakipler vermeli");
+        foreach (var o in Rakipler.Ozellikler)
+        {
+            bool arti = o.hiz > 1 || o.hata < 1 || o.hucum > 1 || o.tepki < 1 || o.yorK < 1 || o.aldatP > 0 || o.uyum > 0;
+            bool eksi = o.hiz < 1 || o.hata > 1 || o.hucum < 1 || o.tepki > 1 || o.yorK > 1;
+            if (!arti || !eksi) Fail("özellik bir artı bir eksi taşımalı: " + o.id);
+        }
+        Rakipler.Tohum = t0;
+    }
     static void Hikayeler()
     {
         float once = -1; string oz = "";
@@ -2144,7 +2188,8 @@ static class BotMac
         if (Hikaye.Guc(0) > 30 || Hikaye.Guc(son) < 95) Fail("güç uçları: ilk " + Hikaye.Guc(0) + ", son " + Hikaye.Guc(son));
         if (Hikaye.OyuncuSira(0) != Hikaye.ILK_SIRA || Hikaye.OyuncuSira(Hikaye.ZIRVE_GALIBIYET) != 1) Fail("dünya sırası uçları");
         for (int w = 1; w <= 48; w++) if (Hikaye.OyuncuSira(w) > Hikaye.OyuncuSira(w - 1)) Fail("dünya sırası galibiyetle düştü: " + w);
-        int og = Hikaye.OncekiKarsilasma(KariyerVeri.Global(1, 1)); if (og < 0 || KariyerVeri.Al(og).stil != KariyerVeri.Al(KariyerVeri.Global(1, 1)).stil || Hikaye.OncekiKarsilasma(0) != -1) Fail("son karşılaşma");
+        // 2026-11-20: rövanş yalnız adlı rakipler arasında (Avrupa finali Vex → Büyük Kupa finali Vex); üretilmiş rakip ilk kez görülür.
+        int og = Hikaye.OncekiKarsilasma(KariyerVeri.Global(6, 5)); if (og != KariyerVeri.Global(2, 5) || Hikaye.OncekiKarsilasma(KariyerVeri.Global(1, 1)) != -1 || Hikaye.OncekiKarsilasma(0) != -1) Fail("son karşılaşma: " + og);
         Console.WriteLine("hikâye: tur başına güç ortalaması" + oz + "; dünya sırası 0/6/12/18/24 galibiyet " + Hikaye.OyuncuSira(0) + "/" + Hikaye.OyuncuSira(6) + "/" + Hikaye.OyuncuSira(12) + "/" + Hikaye.OyuncuSira(18) + "/" + Hikaye.OyuncuSira(24));
     }
 

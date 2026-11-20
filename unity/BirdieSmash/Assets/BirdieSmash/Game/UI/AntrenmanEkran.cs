@@ -163,7 +163,7 @@ namespace BirdieSmash.Game
                 Erisim.Etiket(kart, L.T(Ayar.YolAd) + ", " + L.T("Kilitli") + ", " + kosul, "metin");
                 return kart;
             }
-            var b = UstaYolu.Basamak(pr.Usta); var st = Match.STIL[b.stil];
+            var b = UstaYolu.Basamak(pr.Usta); var st = UstaYolu.Rakip(pr.Usta);
             kart.Add(Yazi(L.T("Sıradaki") + ": " + L.T(b.yer) + (b.final ? " · " + L.T("Final") : ""), 16, "kalin"));
             var rk = Satir("rakip-satir"); kart.Add(rk);
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);

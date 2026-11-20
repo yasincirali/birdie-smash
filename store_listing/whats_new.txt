@@ -1,4 +1,11 @@
 === UNITY ===
+Her kariyer rakibi ayrı biri (20 Kasım):
+- Kariyerde final dışı her maçta ayrı bir rakip var: kendi adı, kendi görünüşü ve bir özelliği. Aynı ad kariyer boyunca iki kez gelmiyor.
+- Rakiplerin bir kısmı hayvan ya da robot modelinde çıkıyor.
+- Özellik maç kartında yazıyor (ör. "Sabırlı: az hata yapar, az smaç atar"). Her özelliğin bir artısı bir eksisi var.
+- Rakipler finale yaklaştıkça yine zorlaşıyor. Tur finalleri ve Efsaneler Kupası bildiğin rakiplerle kalıyor.
+- Aynı maçı tekrar oynayınca aynı rakip gelir. Her oyuncunun rakipleri farklıdır.
+Nasıl denenir: Kariyer'de birkaç basamağa dokun: her birinde başka ad ve figür görmelisin, adın altında tarz ve özellik yazmalı. Bir maçı kaybedip yeniden aç: aynı rakip gelmeli. Bir tur finaline dokun: tanıdık rakip (Blaze, Rocco ...) durmalı.
 Menü cilası (20 Kasım sabah):
 - Profil'deki Tur mühürleri satırına dokununca Kariyer o turla açılıyor; eksik yıldızları bulmak için oklarla aramak gerekmiyor.
 - Kariyer'de maç kartının düğmesi artık yalnız "Oyna" ya da "Yeniden oyna" diyor; küçük ekranda iki satıra taşmıyor.

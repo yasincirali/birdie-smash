@@ -98,11 +98,12 @@ namespace BirdieSmash.Game
                 if (ben != null) ben.Sil();
                 ben = PlayerView.Build(transform, Ayar.model, true, gor.forma, false, gor); benAnah = k; GolgeKapat(ben);
             }
-            string rk = rakipSt == null ? "" : Ayar.model + rakipSt.isim + rakipSt.ad + rakipForma; rakipId = rakipSt != null ? rakipSt.id : null;
+            var rg = rakipSt != null ? PlayerView.Rakip(rakipSt, rakipForma) : null;
+            string rk = rakipSt == null ? "" : PlayerView.ModelAd(rg) + rakipSt.isim + rakipSt.ad + rakipForma + rg.Anahtar(); rakipId = rakipSt != null ? rakipSt.id : null;
             if (rk != rakipAnah)
             {
                 if (rakip != null) { rakip.Sil(); rakip = null; }
-                if (rakipSt != null) { rakip = PlayerView.Build(transform, Ayar.model, false, rakipForma, false, PlayerView.Rakip(rakipSt, rakipForma)); GolgeKapat(rakip); }
+                if (rakipSt != null) { rakip = PlayerView.Build(transform, PlayerView.ModelAd(rg), false, rakipForma, false, rg); GolgeKapat(rakip); }
                 rakipAnah = rk;
             }
             konturRakip.enabled = rakip != null; durgun = 0;   // figür değişmiş olabilir: yeniden çiz

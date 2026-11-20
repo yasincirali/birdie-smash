@@ -579,7 +579,7 @@ namespace BirdieSmash.Game
             var yenilenAd = new System.Collections.Generic.List<string>(); var rk = Satir("toren-rakipler"); rk.pickingMode = PickingMode.Ignore; ic.Add(rk);
             for (int b = 0; b < KariyerVeri.BASAMAK; b++)
             {
-                int g = KariyerVeri.Global(t, b); var st = Match.STIL[KariyerVeri.Al(g).stil]; bool yen = p.Kazanildi(g); if (yen) yenilenAd.Add(st.isim);
+                int g = KariyerVeri.Global(t, b); var st = KariyerVeri.Rakip(g); bool yen = p.Kazanildi(g); if (yen) yenilenAd.Add(st.isim);
                 var h = new VisualElement(); h.AddToClassList("toren-rakip"); h.pickingMode = PickingMode.Ignore; if (!yen) h.AddToClassList("toren-rakip--yok"); rk.Add(h);
                 var n = new VisualElement(); n.AddToClassList("toren-nokta"); n.style.backgroundColor = Kit.Hex(st.renk); n.pickingMode = PickingMode.Ignore; h.Add(n);
                 if (yen) n.Add(Ikon(Ikonlar.Tik, 14, MUREKKEP));

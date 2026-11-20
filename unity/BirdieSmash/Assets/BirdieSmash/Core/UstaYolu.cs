@@ -60,7 +60,9 @@ namespace BirdieSmash.Core
         {
             var b = Basamak(n); var u = KariyerVeri.Usta; var s = KariyerVeri.Stil[b.stil].Clone();
             s.hiz *= b.g; s.hata /= b.g; s.tepki *= u.tepki; s.hucum *= u.hucum; s.kariyer = -1; s.usta = n;
-            s.patron = b.final && s.imza != null; if (!s.patron) s.imza = null; return s;
+            s.patron = b.final && s.imza != null; if (!s.patron) s.imza = null;
+            if (!b.final) Rakipler.Giydir(s, Rakipler.UstaAnahtar(n));   // 2026-11-20: final dışı Usta rakibi de ayrı biri
+            return s;
         }
 
         // Basamağın görevi: kaynak kariyer basamağınınki (rakibe göre seçilmişti); imza yoksa "imzayı oku" yerine "5 tam orta".
