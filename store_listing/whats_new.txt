@@ -1,4 +1,10 @@
 === UNITY ===
+Kariyer ve Profil cilası (21 Kasım gece):
+- Kariyer yolunda bir basamağın satırının herhangi bir yerine (rakip adı, yer, yıldızlar) dokununca maç kartı açılır; önceden yalnız yuvarlak düğüm dokunuluyordu. Satır basılınca hafifçe küçülür.
+- Ekipmanı eksik turda başlık yalnız "3 yükseltme eksik" yazar.
+- Profil'de kazanılan başarımların tik işareti altın renkte (kupa rafı ve mühürlerle aynı). Mühür dipnotu tek satır.
+- Kupa rafında kazanılmamış kupalar biraz daha okunur.
+Nasıl denenir: Kariyer'de bir rakibin adına ya da yer yazısına dokun: maç kartı açılmalı, satır basılırken küçülmeli. Profil'de başarımlar listesinde kazanılanların tiki altın olmalı; Tur mühürleri altındaki yazı "Bronz 9 yıldız · Altın 18 yıldız" olmalı.
 Arkadaş maçı, ilk deneme (20 Kasım akşam; kapalı özellik):
 - İki iPhone arasında karşılıklı maç: Game Center ile arkadaşını çağır ya da rastgele rakip bul. 11 sayı, eşit güç (ekipman yalnız görünüş).
 - Maç ödül vermez, kariyere ve karneye yazılmaz. Duraklatma yok; uygulamadan çıkan oyuncu 10 sn sonra hükmen kaybeder.

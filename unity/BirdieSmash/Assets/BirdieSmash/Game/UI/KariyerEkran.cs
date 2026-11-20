@@ -99,7 +99,8 @@ namespace BirdieSmash.Game
                 if (ep < tv.epMin)
                 {
                     var hz = Satir("arali"); hz.style.alignItems = Align.Center; kb.Add(hz);
-                    var ek = Yazi(L.T("Ekipman {0}/{1}", ep, tv.epMin) + " · " + L.T("{0} yükseltme eksik", tv.epMin - ep), 13, "durum-simdi"); ek.AddToClassList("esnek-yatay"); SozcukSigdir(ek); hz.Add(ek);
+                    // 2026-11-21 inceleme (#4): tek sayı; "Ekipman 0/3 · 3 yükseltme eksik" aynı eksiği iki kez söylüyordu.
+                    var ek = Yazi(L.T("{0} yükseltme eksik", tv.epMin - ep), 13, "durum-simdi"); ek.AddToClassList("esnek-yatay"); SozcukSigdir(ek); hz.Add(ek);
                     hz.Add(Dugme(L.T("Atölye'ye git"), () => SekmeAc(Sekme.Atolye), "kucuk-dugme"));
                 }
             }
@@ -132,7 +133,7 @@ namespace BirdieSmash.Game
                 if (muhur) { dg = MuhurDugum(t, yz); }
                 else
                 {
-                    dg = BasamakNokta(g, sira); var kb = KariyerVeri.Al(g); var st = KariyerVeri.Rakip(g); bool simdi = g == sira && p.Acik(g);
+                    dg = BasamakNokta(g, sira, sr); var kb = KariyerVeri.Al(g); var st = KariyerVeri.Rakip(g); bool simdi = g == sira && p.Acik(g);
                     if (simdi) dg.AddToClassList("dugum-rozet--buyuk");
                     if (p.Kazanildi(g)) gecilen = b;
                     var ad = Yazi((simdi ? L.T("Şimdi") + " · " : "") + st.isim, 15, "kalin"); if (simdi) ad.AddToClassList("durum-simdi"); yz.Add(ad);
@@ -231,7 +232,7 @@ namespace BirdieSmash.Game
             v.style.transitionTimingFunction = new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseOutBack) };
             v.schedule.Execute(() => { v.style.scale = new Scale(Vector2.one); Kalite.Hareket(); }).StartingIn(gecikmeMs);
         }
-        VisualElement BasamakNokta(int g, int sira)
+        VisualElement BasamakNokta(int g, int sira, VisualElement sr)
         {
             var p = Ayar.ilerleme; int b = KariyerVeri.BasOf(g); bool gecti = p.Kazanildi(g), simdi = g == sira && p.Acik(g), acik = p.Acik(g), final = KariyerVeri.Final(g);
             var roz = new VisualElement(); roz.AddToClassList("dugum-rozet"); roz.AddToClassList(gecti ? "dugum-rozet--gecti" : simdi ? "dugum-rozet--simdi" : acik ? "dugum-rozet--acik" : "dugum-rozet--kilit");
@@ -258,9 +259,11 @@ namespace BirdieSmash.Game
                 n.style.flexShrink = 0f; n.style.paddingTop = 0f; n.style.paddingBottom = 0f; n.style.marginTop = 0f; n.style.marginBottom = 0f;
                 n.style.unityTextAlign = TextAnchor.MiddleCenter; n.style.color = simdi ? KOYU : YAZI; n.pickingMode = PickingMode.Ignore; roz.Add(n);
             }
-            int gg = g; roz.AddManipulator(new Clickable(() => { Tik(); MacKartAc(gg); }));
+            // 2026-11-21 inceleme (fikir 02:06 #1): dokunma hedefi satırın tamamı (rakip adı, yer, yıldızlar); yalnız 44 pt düğüm
+            // dokunuluyordu, satırın %60'ına basan oyuncuya hiçbir şey olmuyordu. Düğüm Ignore (çift tetik yok), basılma `dokunulur`.
+            int gg = g; roz.pickingMode = PickingMode.Ignore; sr.AddToClassList("dokunulur"); sr.AddManipulator(new Clickable(() => { Tik(); MacKartAc(gg); }));
             var kb = KariyerVeri.Al(g);
-            Erisim.Etiket(roz, (b + 1) + ". " + L.T("basamak") + ", " + L.T(kb.yer) + (final ? ", " + L.T("Final") : "") + ", " + L.T(gecti ? "Geçildi" : simdi ? "Şimdi" : acik ? "Açık" : "Kilitli"), "dugme");
+            Erisim.Etiket(sr, (b + 1) + ". " + L.T("basamak") + ", " + KariyerVeri.Rakip(g).isim + ", " + L.T(kb.yer) + (final ? ", " + L.T("Final") : "") + ", " + L.T(gecti ? "Geçildi" : simdi ? "Şimdi" : acik ? "Açık" : "Kilitli"), "dugme");
             return roz;
         }
 

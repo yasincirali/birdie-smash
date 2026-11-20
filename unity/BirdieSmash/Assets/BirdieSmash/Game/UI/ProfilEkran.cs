@@ -240,7 +240,8 @@ namespace BirdieSmash.Game
                 if (mac) { var ok = Yazi("›", 18, "soluk"); ok.pickingMode = PickingMode.Ignore; ok.style.marginLeft = 6; sag.Add(ok); }
                 Erisim.Etiket(mr, L.T(TurAd(mt)) + ", " + (!mac ? L.T("Kilitli") : (mh >= 2 ? L.T("Altın tur mührü") : mh == 1 ? L.T("Bronz tur mührü") : L.T("{0}/{1} yıldız", ys, 18)) + ", " + L.T("Kariyer'de aç")), mac ? "dugme" : "metin");
             }
-            mk.Add(Yazi(L.T("Bronz 9 yıldız, altın 18 yıldız. Satılmaz, yalnız oynayarak gelir."), 12, "soluk"));
+            // 2026-11-21 inceleme (fikir 02:06 #5): dipnot tek satır eşik; "Satılmaz…" cümlesi her açılışta tekrardı (mühür dükkânda yok).
+            mk.Add(Yazi(L.T("Bronz {0} yıldız · Altın {1} yıldız", Ilerleme.MUHUR_BRONZ, Ilerleme.MUHUR_ALTIN), 12, "soluk"));
 
             c.Add(Grup(L.T("İstatistikler")));
             var iz = Satir("izgara"); c.Add(iz);
@@ -296,7 +297,8 @@ namespace BirdieSmash.Game
         void BasarimSatir(VisualElement c, string id, string ad)
         {
             bool var_ = Basarim.Var(id); var r = Satir("basarim"); if (!var_) r.AddToClassList("kilitli"); c.Add(r);
-            r.Add(Ikon(var_ ? Ikonlar.Tik : Ikonlar.Kilit, 20, var_ ? TURUNCU : SOLUK));
+            // 2026-11-21 inceleme (#2): kazanılan altın (§8.1 ödül rengi, kupa rafı ve mühürle aynı); turuncu birincil eylemin.
+            r.Add(Ikon(var_ ? Ikonlar.Tik : Ikonlar.Kilit, 20, var_ ? ALTIN : SOLUK));
             r.Add(Yazi(ad, 15, "esnek-yatay")); string d = L.T(var_ ? "Kazanıldı" : "Henüz değil"); r.Add(Yazi(d, 12, var_ ? "durum-gecti" : "durum-kilit"));
             Erisim.Etiket(r, ad + ", " + d, "metin");
         }

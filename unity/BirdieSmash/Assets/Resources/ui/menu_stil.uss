@@ -236,7 +236,7 @@
 .dugum.kilitli { opacity: 0.85; }
 .dugum--final { border-color: rgba(249, 210, 114, 0.45); }
 .dugum--final.simdiki { border-color: var(--sun); }
-.dugum-rozet { width: 44px; height: 44px; border-radius: 22px; align-items: center; justify-content: center; flex-shrink: 0; border-width: 2px; border-color: rgba(255, 255, 255, 0.15); background-color: rgb(34, 24, 41); }
+.dugum-rozet { width: 44px; height: 44px; border-radius: 22px; align-items: center; justify-content: center; flex-shrink: 0; border-width: 2px; border-color: rgba(255, 255, 255, 0.15); background-color: var(--navy); }
 .dugum-rozet--gecti { background-color: var(--mu2); border-color: var(--mu2); }   /* 2026-11-06 unslop: turuncu yalnız "şimdi"de; geçilen nötr açık + ✓ */
 .dugum-rozet--simdi { border-color: var(--sun); background-color: var(--navy); }
 .dugum-rozet--acik { border-color: rgba(255, 255, 255, 0.5); }
@@ -760,10 +760,10 @@
    sayı ve etiketler üst üste biniyordu (r127 menu_se_x2_profil). Dikeyde boy içerikten gelir. */
 .uc-sayi--dikey .uc-sayi-oge { margin: 3px 0; flex-basis: auto; flex-grow: 0; flex-shrink: 0; }
 /* 2026-11-11 kariyer 8 tur: sekiz kupa tek sıraya sığmaz (8 × 48 > kart genişliği); dörderli iki sıra. */
-.kupa-raf { flex-direction: row; flex-wrap: wrap; margin-top: 8px; padding-bottom: 6px; border-bottom-width: 6px; border-color: #4A3560; }
+.kupa-raf { flex-direction: row; flex-wrap: wrap; margin-top: 8px; padding-bottom: 6px; border-bottom-width: 6px; border-color: var(--navy3); }
 .kupa-hucre { width: 25%; height: 48px; align-items: center; justify-content: center; border-radius: 16px; }
 .kupa-hucre:active { scale: 0.94 0.94; }
-.kupa-hucre--yok { opacity: 0.55; }
+.kupa-hucre--yok { opacity: 0.6; } /* 2026-11-21: §8.4 en az .6 (12 pt "+n" kontrastı) */
 
 /* 2026-11-06 13:40 Antrenman: üstte iki giriş yan yana (Sonsuz ralli, Temel ders); büyük yazıda alt alta. */
 .ant-cift { flex-direction: row; margin: 0 -4px 4px -4px; }
