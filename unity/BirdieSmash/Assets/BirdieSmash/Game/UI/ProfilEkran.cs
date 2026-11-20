@@ -64,7 +64,8 @@ namespace BirdieSmash.Game
             int efN, efK; Ayar.gear.EfsaneIlerleme(out efN, out efK);
             var hy = Yazi(gerek > 0 ? L.T("Sonraki seviyeye {0} XP", gerek - kalan) : efN > 0 ? L.T("Efsane {0}", efN) : L.T("En yüksek seviye"), 12, "soluk"); hy.style.marginLeft = 6; hy.style.flexShrink = 1; svr.Add(hy);
             ad.Add(Yazi(L.T(tz.ad) + " · " + L.T(Gear.GEAR["raket"][gr.raket].ad), 13, "soluk"));
-            Erisim.Etiket(r, (p.Ad ?? L.T("Oyuncu")) + ", " + L.T(un.ad) + Karakter.KademeEki(un, p) + ", " + L.T("Seviye {0}", L_) + ", " + L.T("Tarz") + " " + L.T(tz.ad), "metin");
+            System.Action<UnvanBilgi> kartEtiket = u0 => Erisim.Etiket(r, (p.Ad ?? L.T("Oyuncu")) + ", " + L.T(u0.ad) + Karakter.KademeEki(u0, p) + ", " + L.T("Seviye {0}", L_) + ", " + L.T("Tarz") + " " + L.T(tz.ad), "metin");
+            kartEtiket(un);
             kart.Add(gerek > 0 ? Cubuk(kalan / (float)gerek, CAMGOBEGI) : Cubuk(efK / (float)Gear.EFSANE_XP, ALTIN));
             // üç büyük sayı
             var uc = Satir("uc-sayi"); if (K >= 1.35f) uc.AddToClassList("uc-sayi--dikey"); kart.Add(uc);
@@ -158,10 +159,37 @@ namespace BirdieSmash.Game
             // unvanlar
             c.Add(Grup(L.T("Unvan")));
             var kz = Karakter.Kazanilan(p, L_, p.AntrenmanYildiz); var us = Satir("cip-sarar"); c.Add(us);   // 2026-10-31 (yasin IMG_1517): 5 unvan eşit dar çipe sıkışıp harf harf bölünüyordu; çip yazısı kadar geniş, sığmayan alt satıra
-            foreach (var u in kz) { string id = u.id; us.Add(Cip(L.T(u.ad) + Karakter.KademeEki(u, p), u.id == un.id, () => { p.Unvan = id; Ayar.KaydetSonra(); kirli[(int)Sekme.Profil] = true; SekmeYerindeKur(Sekme.Profil); })); }   // 2026-11-19 inceleme (fikir 17:07 #1): seçince sayfa başa sıçramasın
-            // Kademe (2026-11-07): yalnız seçili beceri unvanının sıradaki eşiği, tek satır; yeni satır listesi yok.
-            int se_ = Karakter.SonrakiEsik(un, p);
-            if (se_ > 0) { var ks = Yazi(L.T("{0}: sonraki kademe {1}/{2}", L.T(un.ad) + Karakter.KademeEki(un, p), p.Sayac(un.sayac), se_), 12, "soluk"); ks.style.whiteSpace = WhiteSpace.Normal; Erisim.Etiket(ks, ks.text, "metin"); c.Add(ks); }
+            // 2026-11-20 inceleme (fikir 02:06 #4): çipe dokunmak bütün Profil'i (portre, kupa rafı, son maçlar, listeler) silip
+            // kuruyor, kaydırma 33 ms sonra yerine oturuyordu. Değişen yalnız kartın unvan yazısı, çiplerin seçili hâli ve kademe
+            // satırı: bunlar yerinde güncellenir (Atölye TarzYerinde kalıbı), sayfa kurulmaz. Unvan yazısı .15 sn opaklıkla gelir.
+            var ks = Yazi("", 12, "soluk"); ks.style.whiteSpace = WhiteSpace.Normal;
+            UnvanBilgi[] unSec = { un }; System.Action unvanKur = null;
+            unvanKur = () =>
+            {
+                var su = unSec[0]; us.Clear();
+                foreach (var u in kz)
+                {
+                    var uu = u;
+                    us.Add(Cip(L.T(uu.ad) + Karakter.KademeEki(uu, p), uu.id == su.id, () =>
+                    {
+                        if (uu.id == unSec[0].id) return;
+                        p.Unvan = uu.id; unSec[0] = uu; Ayar.KaydetSonra();
+                        unY.text = L.T(uu.ad) + Karakter.KademeEki(uu, p); kartEtiket(uu);
+                        if (!Ayar.reduce)
+                        {
+                            unY.style.transitionProperty = new List<StylePropertyName> { new StylePropertyName("opacity") };
+                            unY.style.transitionDuration = new List<TimeValue> { new TimeValue(.15f, TimeUnit.Second) };
+                            unY.style.opacity = 0f; unY.schedule.Execute(() => unY.style.opacity = 1f).StartingIn(16);
+                        }
+                        unvanKur(); Kalite.Hareket();
+                    }));
+                }
+                // Kademe (2026-11-07): yalnız seçili beceri unvanının sıradaki eşiği, tek satır; yeni satır listesi yok.
+                int se_ = Karakter.SonrakiEsik(su, p);
+                if (se_ > 0) { ks.text = L.T("{0}: sonraki kademe {1}/{2}", L.T(su.ad) + Karakter.KademeEki(su, p), p.Sayac(su.sayac), se_); Erisim.Etiket(ks, ks.text, "metin"); ks.style.display = DisplayStyle.Flex; }
+                else ks.style.display = DisplayStyle.None;
+            };
+            unvanKur(); c.Add(ks);
             // 2026-11-19 inceleme (fikir 17:07 #5): yeni oyuncuda 9–10 kilit satırı alt alta bir duvardı (Başarımlar 11 Kas'ta aynı
             // sorundan katlandı). Kapalıyken en yakın 2 kilitli unvan (sayaçlılar ilerleme oranına göre önce) + "Tümünü göster (n)";
             // açınca tam liste yerinde (sayfa kurulmaz, kaydırma yeri korunur). Liste oturum boyunca açık kalır.

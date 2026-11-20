@@ -39,7 +39,7 @@ namespace BirdieSmash.Game
         }
         public void OyuncuSecAc()
         {
-            PlayerPrefs.SetString(OYUNCU_SEC_ANAHTAR, "1"); PlayerPrefs.Save();
+            PlayerPrefs.SetString(OYUNCU_SEC_ANAHTAR, "1"); Ayar.KaydetSonra();
             oyuncuSecOnce = KombinSimdi(); oyuncuSecSecili = -1;
             var once = gez.sekme; gez.SekmeSec(Sekme.Soyunma); karAlt = KarGecerli(KAR_TIP); gez.Ac(Gezinti.SEC); Uygula(once, true);
         }

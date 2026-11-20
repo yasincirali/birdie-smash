@@ -1,4 +1,9 @@
 === UNITY ===
+Profil ve Kariyer'de akıcılık (20 Kasım gece):
+- Profil'de unvan seçince sayfa artık baştan kurulmuyor: yalnız kartındaki unvan yumuşakça değişiyor, sayfa yerinde kalıyor.
+- Maçtan Kariyer'e dönüşte kayıt arka planda yapılıyor; eski telefonlarda geçiş daha akıcı.
+- Dolap'ta Sevinç sayfasındaki tekrar eden cümle kalktı.
+Nasıl denenir: Profil'de aşağı kaydır, Unvan bölümünde başka bir unvana dokun: sayfa kıpırdamamalı, kartın üstündeki unvan yazısı yeni unvana geçmeli. Bir kariyer maçı bitir, Kariyer'e dön: geçiş takılmamalı.
 Kedi, Tavşan, Panda ve Robot artık tam gövdeli model; modeller Tüy ile (20 Kasım):
 - Kedi, Tavşan, Panda ve Robot beden tipi olmaktan çıktı: her birinin kendi gövdesi, kolu, bacağı ve kuyruğu var. Dolap'ta oyuncu modeli çiplerinde duruyorlar.
 - Oyuncak 3B dışındaki modeller Tüy ile alınıyor: Tüycük 1200, Kedi 1800, Hamamböceği 2000, Tavşan 2200, Erkek Hamamböceği 2200, Panda 2500, Robot 2500. Her birinin bir seviye kapısı var.

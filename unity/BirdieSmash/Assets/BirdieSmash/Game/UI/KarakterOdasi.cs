@@ -643,7 +643,8 @@ namespace BirdieSmash.Game
             c.Add(Yazi(L.T("Sayıyı kazanınca, sayılar arasında bir an."), 12, "soluk"));
             KozIzgara(c, Kozmetik.MAC_SONU, "Maç sonu", root.vitrin.deneMacSonu, false);
             c.Add(Yazi(L.T("Maçı kazanınca. Kaybedince oyuncun raketini rakibe kaldırıp \"iyi oyundu\" der."), 12, "soluk"));
-            c.Add(Yazi(L.T("Sevinçler yalnız görünüştür, oyunu etkilemez. Rakip de sayı alınca kendi sevincini yapar."), 12, "soluk"));
+            // 2026-11-20 inceleme (fikir 02:06 #7): "yalnız görünüştür, oyunu etkilemez" kategori rozeti (KozIzgara) zaten söylüyor; tekrar kalktı.
+            c.Add(Yazi(L.T("Rakip de sayı alınca kendi sevincini yapar."), 12, "soluk"));
             // 2026-11-10 smaç hareketi (Kozmetik.SMAC): Tüy ile satılmaz, seviyeyle açılır; kartta fiyat yerine yalnız seviye yazar (KozDurum).
             KozIzgara(c, Kozmetik.SMAC, "Smaç hareketi", root.vitrin.deneSmac, false);
             c.Add(Yazi(L.T("Sıçrayarak smaçta havadaki duruşun. Seviyeyle açılır, Tüy ile alınmaz; vuruşun gücünü değiştirmez."), 12, "soluk"));

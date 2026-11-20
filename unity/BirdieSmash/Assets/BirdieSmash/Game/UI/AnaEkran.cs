@@ -93,7 +93,7 @@ namespace BirdieSmash.Game
             // Ek açıklama satırı ve "YENİ" rozeti yok: plaka sıradaki maçı zaten söylüyor. Güncelleyen oyuncu bir kez görür (zararsız).
             if (!root.bekleyen && PlayerPrefs.GetInt("tuytop_menu_acildi", 0) == 0)
             {
-                PlayerPrefs.SetInt("tuytop_menu_acildi", 1); PlayerPrefs.Save();
+                PlayerPrefs.SetInt("tuytop_menu_acildi", 1); Ayar.KaydetSonra();
                 if (!Ayar.reduce) KademeliAc(c);
             }
         }
