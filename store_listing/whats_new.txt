@@ -6,6 +6,9 @@ Her kariyer rakibi ayrı biri (20 Kasım):
 - Rakipler finale yaklaştıkça yine zorlaşıyor. Tur finalleri ve Efsaneler Kupası bildiğin rakiplerle kalıyor.
 - Aynı maçı tekrar oynayınca aynı rakip gelir. Her oyuncunun rakipleri farklıdır.
 Nasıl denenir: Kariyer'de birkaç basamağa dokun: her birinde başka ad ve figür görmelisin, adın altında tarz ve özellik yazmalı. Bir maçı kaybedip yeniden aç: aynı rakip gelmeli. Bir tur finaline dokun: tanıdık rakip (Blaze, Rocco ...) durmalı.
+Seviye çubuğu tek renk (20 Kasım):
+- Seviye ve gelişim çubukları her ekranda limon, Tüy çubuğu altın; turuncu yalnız basılacak düğmelerde.
+
 Menü cilası (20 Kasım sabah):
 - Profil'deki Tur mühürleri satırına dokununca Kariyer o turla açılıyor; eksik yıldızları bulmak için oklarla aramak gerekmiyor.
 - Kariyer'de maç kartının düğmesi artık yalnız "Oyna" ya da "Yeniden oyna" diyor; küçük ekranda iki satıra taşmıyor.
