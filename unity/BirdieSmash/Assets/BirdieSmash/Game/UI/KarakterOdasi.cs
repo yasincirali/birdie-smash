@@ -56,7 +56,7 @@ namespace BirdieSmash.Game
             DenemeSil(); vt.Sevinc(null); vt.Odak(Vitrin.TAM); if (d) vt.Yenile();
         }
         bool DenemeVar() { var vt = root.vitrin; return vt.deneTip != null || vt.deneSac != null || vt.deneAyk != null || vt.deneSapka != null || vt.deneYuz != null || vt.deneSevinc != null || vt.deneMacSonu != null || vt.deneSirt != null || vt.deneKol != null || vt.deneBel != null || vt.deneAyak != null; }
-        void DenemeSil() { var vt = root.vitrin; vt.deneTip = vt.deneSac = vt.deneAyk = vt.deneSapka = vt.deneYuz = vt.deneSevinc = vt.deneMacSonu = vt.deneSirt = vt.deneSmac = vt.deneKol = vt.deneBel = vt.deneAyak = null; }
+        void DenemeSil() { var vt = root.vitrin; vt.deneModel = null; vt.deneTip = vt.deneSac = vt.deneAyk = vt.deneSapka = vt.deneYuz = vt.deneSevinc = vt.deneMacSonu = vt.deneSirt = vt.deneSmac = vt.deneKol = vt.deneBel = vt.deneAyak = null; }
         // Kategori kamerayı çağırır (araştırma: her kategorinin bir kadrajı); Raket vitrini tezgâha geçirir, diğerleri figüre döndürür.
         void KarakterOdakAyarla()
         {
@@ -334,33 +334,57 @@ namespace BirdieSmash.Game
         // Oyuncu modeli (2026-11-10; önce Ayarlar › Oyuncu görünümü): Dolap › Beden'in başında ve tek bedenli modelin bilgi
         // kartında. Seçenek kuralı aynı (Ayar.ModelSecenek: Oyuncak 3B ve Tüycük; eski seçim kendi çipiyle kalır). Dokununca vitrin
         // ve arkadaki maç figürü değişir, kategori şeridi modele göre yeniden kurulur; denemeler modele özgü olduğundan bırakılır.
-        string modelAday;   // alınmak üzere ilk kez dokunulan model (ikinci dokunuş alır)
+        string modelAday;   // vitrinde denenen, alınmamış model (Tüy yetiyorsa ikinci dokunuş alır)
+        readonly Label[] modelAltL = new Label[Ayar.MODELLER.Length]; readonly VisualElement[] modelCi = new VisualElement[Ayar.MODELLER.Length];
+        // Alt satır: sahip olunan modelde yok; kilitliyse seviye + fiyat, Tüy yetmiyorsa eksik, denenirken "yeniden dokun".
+        string ModelAlt(int i)
+        {
+            string id = Ayar.MODELLER[i]; var gr = Ayar.gear; var mo = Kozmetik.Bul(Kozmetik.MODEL, id); var du = mo == null ? ModelDurum.Acik : Kozmetik.Durum(gr, Kozmetik.MODEL, id, Ayar.model);
+            if (du == ModelDurum.Secili || du == ModelDurum.Acik) return null;
+            if (du == ModelDurum.Kilitli) return L.T("Sv {0}", mo.sv) + " · " + mo.fiyat + " " + L.T("Tüy");
+            if (gr.eko.tuy < mo.fiyat) return L.T("{0} Tüy gerekli", mo.fiyat);
+            return modelAday == id ? L.T("Almak için yeniden dokun") : mo.fiyat + " " + L.T("Tüy");
+        }
         void ModelCipleri(VisualElement c)
         {
+            if (root.vitrin == null || root.vitrin.deneModel == null) modelAday = null;   // deneme bırakıldıysa (sekme/kategori) görmeden alma yok
             c.Add(Grup(L.T("Oyuncu modeli"))); var m = Satir(); m.style.flexWrap = Wrap.Wrap; c.Add(m);
             for (int i = 0; i < Ayar.MODELLER.Length; i++)
             {
+                modelAltL[i] = null;
                 string id = Ayar.MODELLER[i]; if (!Ayar.ModelVar(id)) continue; if (!Ayar.ModelSecenek(id) && Ayar.model != id) continue;
-                // 2026-11-20 ücretli modeller: sahip olunan çipe dokununca seçilir. Sahip olunmayan ilk dokunuşta aday olur (alt satır
-                // fiyatı ve "yeniden dokun"u yazar), ikinci dokunuşta alınır ve seçilir: tek dokunuşla Tüy harcanmaz. Seviye ya da
-                // Tüy yetmiyorsa alt satır nedenini söyler, dokunuş bir şey yapmaz.
+                // 2026-11-20 ücretli modeller: sahip olunan çipe dokununca seçilir. Sahip olunmayan ilk dokunuşta aday olur, ikinci
+                // dokunuşta alınır ve seçilir: tek dokunuşla Tüy harcanmaz. Seviye ya da Tüy yetmiyorsa alt satır nedenini söyler.
+                // İnceleme 2026-11-20 22:10 (fikir 22:06 #2, #3): ilk dokunuş artık modeli vitrinde DENER (dosya başı kuralı "önce gör,
+                // sonra karar ver"; kilitli ve Tüy'ü yetmeyen de denenir, alınamaz). Dolap gövdesi yeniden kurulmaz: yalnız çiplerin alt
+                // satırı yazılır, figür bir kare sonra kurulur (dokunuş karesinde ağır iş yok, TAKILMA YOK).
                 var gr = Ayar.gear; var mo = Kozmetik.Bul(Kozmetik.MODEL, id); var du = mo == null ? ModelDurum.Acik : Kozmetik.Durum(gr, Kozmetik.MODEL, id, Ayar.model);
                 bool sahip = du == ModelDurum.Secili || du == ModelDurum.Acik, alinir = du == ModelDurum.Alinir && gr.eko.tuy >= mo.fiyat;
-                string alt = sahip ? null : du == ModelDurum.Kilitli ? L.T("Sv {0}", mo.sv) + " · " + mo.fiyat + " " + L.T("Tüy") : !alinir ? L.T("{0} Tüy gerekli", mo.fiyat) : modelAday == id ? L.T("Almak için yeniden dokun") : mo.fiyat + " " + L.T("Tüy");
-                var ci = Cip(L.T(Ayar.MODEL_AD[i]), Ayar.model == id, () =>
+                string ad = L.T(Ayar.MODEL_AD[i]), alt = ModelAlt(i);
+                var ci = Cip(ad, Ayar.model == id, () =>
                 {
                     if (Ayar.model == id) return;
                     if (!sahip)
                     {
-                        if (!alinir) return;
-                        if (modelAday != id) { modelAday = id; SoyunmaGovdeKur(true); return; }
+                        if (modelAday != id || !alinir) { ModelDene(id, m); return; }
                         if (!Kozmetik.Al(gr, Kozmetik.MODEL, id, Ayar.model)) return;
                         root.sfx.Yukselt(); Yerel.Hap("tick"); ustKirli = true; UstKur();
                     }
                     modelAday = null; Ayar.model = id; Ayar.KaydetSonra(); DenemeSil(); root.ModelDegisti(); karAlt = KarGecerli(id == "oyuncak" ? KAR_TIP : karAlt); KarakterOdakAyarla(); Tik(); SoyunmaGovdeKur(true);
                 }, alt);
+                if (alt != null) { modelAltL[i] = ci.Q<Label>(className: "dugme-alt"); modelCi[i] = ci; }
                 ci.style.flexBasis = new StyleLength(new Length(40, LengthUnit.Percent)); m.Add(ci);
             }
+        }
+        void ModelDene(string id, VisualElement satir)
+        {
+            if (modelAday == id) return;
+            modelAday = id;
+            for (int i = 0; i < modelAltL.Length; i++)
+                if (modelAltL[i] != null) { string a = ModelAlt(i); modelAltL[i].text = a; Erisim.Etiket(modelCi[i], L.T(Ayar.MODEL_AD[i]) + ", " + a, "dugme", false, false); }
+            var vt = root.vitrin; if (vt == null) return;
+            vt.deneModel = id;
+            satir.schedule.Execute(() => { if (vt.deneModel == id) vt.Yenile(); });
         }
         void ModelUyari(VisualElement c)
         {

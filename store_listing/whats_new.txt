@@ -1,4 +1,11 @@
 === UNITY ===
+Menü cilası (20 Kasım gece):
+- Dolap'ta henüz almadığın oyuncu modeline (Kedi, Tavşan, Panda, Robot, Hamamböceği) dokununca model önce vitrinde denenir; Tüy ancak ikinci dokunuşta harcanır. Kilitli ya da Tüy'ün yetmeyen model de denenebilir.
+- Kariyer'de bir rakiple tekrar oynayınca maç kartında aranızdaki skor görünür (her basamağın kendi rakibi için de).
+- Kariyer maç kartında rakibin özelliği artık bir kez yazıyor.
+- Uzun sayfalarda kaydırırken sağ kenarda ince bir gösterge belirip duruşta kayboluyor.
+Nasıl denenir: Dolap'ta Karakter bölümünde Oyuncu modeli çiplerinden almadığın birine dokun: vitrindeki oyuncu o modele dönmeli, Tüy sayısı değişmemeli; başka sekmeye geçip dönünce eski modelin görünmeli. Kariyer'de bir basamağı kaybedip tekrar aç: rakip adının altında 0–1 görmelisin. Seviye yolu ya da Ayarlar'ı kaydır: sağda ince çizgi görünmeli, bırakınca solmalı.
+
 Yeni danslar, kışkırtan sevinçler ve mimikler (20 Kasım akşam):
 - İki yeni dans: Kıvır (kalça iki yana, yumruklar göğüs önünde döner) ve Disko (el çaprazda aşağıdan yukarı, kalça ters yana).
 - Dört kışkırtma: Nanik (eller kulakta, dil dışarıda), Gel gel (rakibi eliyle çağırır), Öpücük (rakibe öpücük yollar) ve Cık cık (parmak sallar, başıyla hayır der).
