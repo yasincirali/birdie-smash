@@ -125,6 +125,8 @@ namespace BirdieSmash.Game
             Transform bas = null, goz = null;
             foreach (var t in model.GetComponentsInChildren<Transform>(true)) { if (t.name.StartsWith("bas__")) bas = t; else if (t.name.StartsWith("goz__")) goz = t; }
             if (bas == null || goz == null) return null;
+            // Tüycük'ün yüzü gövde ağına bağlı, baş kemiği dönünce parçalar yüzden ayrılıyor (r215: dil gözün yanında): onda mimik yok.
+            if (modelAd == "tuycuk") return null;
             Vector3 ileri = Vector3.ProjectOnPlane(goz.position - bas.position, dikey);
             if (ileri.sqrMagnitude < 1e-8f) ileri = Vector3.ProjectOnPlane(model.forward, dikey);
             float s = (goz.position - bas.position).magnitude / .2f, r = bant.r * s;
@@ -133,16 +135,16 @@ namespace BirdieSmash.Game
             if (bant.yan > 0 && bant.ust > 0 && bant.on > 0 && bant.arka > 0) { yan = bant.yan; ust = bant.ust; on = bant.on; arka = bant.arka; }
             c += ileri.normalized * r * (on - arka) * .5f;
             var m = new MimikSet(); bool kasVar = false; string ad = modelAd ?? "";
-            if (ad == "kedi" || ad == "tavsan" || ad == "panda") { m.agiz = new Vector3(0, -.80f, 1.03f); m.kasYer = new Vector3(.45f, .08f, .86f); kasVar = true; }
-            else if (ad == "robot") m.agiz = new Vector3(0, -.80f, 1.03f);
-            else if (ad.StartsWith("hamambocegi")) { m.agiz = new Vector3(0, -1.13f, 1.2f); m.kasYer = new Vector3(.59f, .27f, .95f); kasVar = true; }
-            else if (ad == "tuycuk") { m.agiz = new Vector3(0, -1.75f, 1.28f); m.kasYer = new Vector3(.52f, -.45f, 1.12f); kasVar = true; }
+            // r215: maskot kaşları görünmedi (alın yüzeyine gömülü kaldı): öne alındı ve kalınlaştırıldı; robotta dil ışıklı ağzın hizasına indi.
+            if (ad == "kedi" || ad == "tavsan" || ad == "panda") { m.agiz = new Vector3(0, -.80f, 1.03f); m.kasYer = new Vector3(.45f, .1f, .98f); kasVar = true; }
+            else if (ad == "robot") m.agiz = new Vector3(0, -1.12f, .98f);
+            else if (ad.StartsWith("hamambocegi")) { m.agiz = new Vector3(0, -1.13f, 1.28f); m.kasYer = new Vector3(.59f, .42f, 1.0f); kasVar = true; }
             else m.agiz = new Vector3(0, -1.0f, .96f);
             m.kok = new GameObject("mimik").transform; m.kok.SetParent(kafa, true);
             m.kok.position = c; m.kok.rotation = Quaternion.LookRotation(ileri.normalized, dikey.normalized);
             m.kok.localScale = new Vector3(yan, ust, (on + arka) * .5f) * (r / Mathf.Max(1e-5f, kafa.lossyScale.x));
             m.dil = P(PrimitiveType.Sphere, m.kok, m.agiz, new Vector3(.2f, .07f, .01f), Mat(DIL_RENK, .45f)).transform;
-            if (kasVar) for (int i = 0; i < 2; i++) m.kas[i] = P(PrimitiveType.Capsule, m.kok, new Vector3((i == 0 ? -1 : 1) * m.kasYer.x, m.kasYer.y, m.kasYer.z), new Vector3(.06f, .15f, .06f), Mat(KAS_RENK, .1f), new Vector3(0, 0, 90)).transform;
+            if (kasVar) for (int i = 0; i < 2; i++) m.kas[i] = P(PrimitiveType.Capsule, m.kok, new Vector3((i == 0 ? -1 : 1) * m.kasYer.x, m.kasYer.y, m.kasYer.z), new Vector3(.09f, .17f, .09f), Mat(KAS_RENK, .1f), new Vector3(0, 0, 90)).transform;
             foreach (var rd in m.kok.GetComponentsInChildren<Renderer>()) rd.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;   // yüzde gölge lekesi olmasın
             m.kok.gameObject.SetActive(false);
             return m;
@@ -155,7 +157,7 @@ namespace BirdieSmash.Game
             if (dv && m.dil != null)
             {   // kök ağzın içinde kalır, uç öne ve aşağı uzar
                 var q = Quaternion.Euler(28, dilYan, 0);
-                m.dil.localRotation = q; m.dil.localScale = new Vector3(.2f, .07f, .34f * dil); m.dil.localPosition = m.agiz + q * new Vector3(0, 0, .12f * dil);
+                m.dil.localRotation = q; m.dil.localScale = new Vector3(.26f, .09f, .44f * dil); m.dil.localPosition = m.agiz + q * new Vector3(0, 0, .15f * dil);   // r215: Oyuncak'ta dil zor seçiliyordu
             }
             bool kv = w > .02f && (kalk != 0 || tek != 0 || kiz != 0);
             for (int i = 0; i < 2; i++)
@@ -165,7 +167,7 @@ namespace BirdieSmash.Game
                 int sx = i == 0 ? -1 : 1;   // 0 = sol kaş
                 k.localPosition = new Vector3(sx * m.kasYer.x, m.kasYer.y + (kalk + (i == 0 ? tek : 0)) * w, m.kasYer.z);
                 k.localRotation = Quaternion.Euler(0, 0, 90 + sx * kiz * w);   // dış uç yukarı = çatık
-                k.localScale = new Vector3(.06f, .15f * w, .06f);
+                k.localScale = new Vector3(.09f, .17f * w, .09f);
             }
         }
 

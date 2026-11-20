@@ -1549,10 +1549,13 @@ namespace BirdieSmash.Game
                 case "nanik":   // iki el kulak hizasında açık, sırayla çırpar; baş iki yana yatar, çene rakibe kalkık; dil dışarıda (MimikPoz)
                     if (kHead != null)
                     { float f = t * 8, c = Mathf.Sin(t * 16) * salla;
-                      kHead.rotation = Quaternion.AngleAxis(10 * Mathf.Sin(f - .6f) * salla * w, fw) * Quaternion.AngleAxis(-12 * w, ri) * kHead.rotation;
-                      Vector3 g = kHead.position + up * L * .34f + fw * L * .1f;
-                      IK(SU, SE, SH, g + ri * L * .42f + up * L * .05f * c, ri - fw * .25f + up * .1f);
-                      IK(LU, LE, LH, g - ri * L * .42f - up * L * .05f * c, -ri - fw * .25f + up * .1f);
+                      kHead.rotation = Quaternion.AngleAxis(10 * Mathf.Sin(f - .6f) * salla * w, fw) * Quaternion.AngleAxis(-8 * w, ri) * kHead.rotation;
+                      // r215: el baş kemiğine göre konunca maskotların iri kafasına giriyor, parmaklar yüzden çıkıyordu. Eller baş
+                      // küresinin (mimik çerçevesi: merkez ve yarıçap) dışında, kulak hizasında durur.
+                      float hr = BasR(); Vector3 g = hr > 0 ? mimik.kok.position - up * hr * .2f + fw * hr * .25f : kHead.position + up * L * .24f + fw * L * .12f;
+                      float ac = hr > 0 ? Mathf.Max(L * .44f, hr * 1.32f) : L * .46f;
+                      IK(SU, SE, SH, g + ri * ac + up * L * .05f * c, ri - fw * .25f + up * .1f);
+                      IK(LU, LE, LH, g - ri * ac - up * L * .05f * c, -ri - fw * .25f + up * .1f);
                       RaketDik(SH, up * (.7f + .2f * c) + ri); } break;
                 case "gelgel":  // sol kol rakibe uzanır, ön kol kendine çağırır (yay); çene her çağrıda kalkar; raket omuzda
                     { float c = rm ? .3f : GelC(t), cg = rm ? .3f : GelC(t - BAS_GECIKME);
@@ -1563,7 +1566,8 @@ namespace BirdieSmash.Game
                       if (kHead != null) kHead.rotation = Quaternion.AngleAxis(5 * w, fw) * Quaternion.AngleAxis((-5 - 9 * cg) * w, ri) * kHead.rotation; } break;
                 case "opucuk":  // sol el dudağa gider, sonra kol açılarak öpücüğü rakibe yollar; baş eli geriden izler; raket yanda
                     { float a = rm ? 1 : OpA(t), ag = rm ? 1 : OpA(t - BAS_GECIKME);
-                      Vector3 agiz = kHead != null ? kHead.position + up * L * .2f + fw * L * .5f : (sR + sL) * .5f + up * L * .3f + fw * L * .3f;
+                      // r215: el dudak yerine göz hizasına gidiyordu; ağız yeri mimik çerçevesinden (modelin gerçek ağzı), elin payıyla önünde
+                      float hr = BasR(); Vector3 agiz = hr > 0 ? mimik.kok.TransformPoint(mimik.agiz) + fw * hr * .45f - up * hr * .1f : kHead != null ? kHead.position + up * L * .08f + fw * L * .5f : (sR + sL) * .5f + up * L * .3f + fw * L * .3f;
                       Vector3 dis = sL + fw * L * .82f + up * L * .38f - ri * L * .38f;
                       IK(LU, LE, LH, sL + Vector3.Slerp(agiz - sL, dis - sL, a), -ri - up * .5f);
                       IK(SU, SE, SH, sR - up * L * .6f + ri * L * .22f - fw * L * .04f, ri - fw * .5f);
@@ -1571,7 +1575,7 @@ namespace BirdieSmash.Game
                       if (kHead != null) kHead.rotation = Quaternion.AngleAxis(-12 * ag * w, up) * Quaternion.AngleAxis(Mathf.Lerp(6, -8, ag) * w, ri) * kHead.rotation; } break;
                 case "cikcik":  // sol ön kol dik, el iki yana "cık cık" sallar; baş geriden ters yöne hayır der; raketli el belde
                     { float f = t * 9;
-                      IK(LU, LE, LH, sL + fw * L * .45f + up * L * .32f + ri * L * (.1f + .14f * Mathf.Sin(f) * salla), -up - ri * .2f);
+                      IK(LU, LE, LH, sL + fw * L * .5f + up * L * .2f + ri * L * (-.1f + .13f * Mathf.Sin(f) * salla), -up - ri * .2f);   // r215: el yüzün önünü kapatıyordu, omuz hizasına ve yana alındı
                       IK(SU, SE, SH, sR - up * L * .55f + ri * L * .22f + fw * L * .05f, ri - fw * .6f);
                       RaketDik(SH, ri * .6f - up * .35f - fw * .6f);
                       if (kHead != null) kHead.rotation = Quaternion.AngleAxis(-10 * Mathf.Sin(f - .5f) * salla * w, up) * Quaternion.AngleAxis(-5 * w, ri) * kHead.rotation; } break;
@@ -1608,6 +1612,9 @@ namespace BirdieSmash.Game
             }
             return false;
         }
+        // Baş küresinin dünya yarıçapı (mimik çerçevesi yoksa 0): el hedefleri iri kafalı modellerde başın dışında kalsın diye.
+        float BasR() { return mimik != null && mimik.kok != null ? mimik.kok.lossyScale.x : 0; }
+        public string MimikTani { get { if (mimik == null || mimik.kok == null) return "mimik yok"; var k = mimik.kas[0]; return "kok " + mimik.kok.gameObject.activeSelf + " r " + BasR().ToString("F3") + " dil " + (mimik.dil != null && mimik.dil.gameObject.activeSelf) + " kas " + (k == null ? "yok" : k.gameObject.activeInHierarchy + " yer " + k.localPosition.ToString("F2") + " olcek " + k.lossyScale.ToString("F3")); } }
         void MimikPoz(string id, float t, float w, bool rm)
         {
             if (mimik == null || mimik.kok == null) return;
