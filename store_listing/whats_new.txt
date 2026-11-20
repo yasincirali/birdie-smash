@@ -1,4 +1,11 @@
 === UNITY ===
+Menü cilası (20 Kasım sabah):
+- Profil'deki Tur mühürleri satırına dokununca Kariyer o turla açılıyor; eksik yıldızları bulmak için oklarla aramak gerekmiyor.
+- Kariyer'de maç kartının düğmesi artık yalnız "Oyna" ya da "Yeniden oyna" diyor; küçük ekranda iki satıra taşmıyor.
+- Dolap'ta renk örnekleri basınca hafifçe küçülüyor; zaten seçili renge dokunmak artık karakteri yeniden kurmuyor.
+- Atölye'de yükseltme anında kayıt bir an sonra yapılıyor; parlama ve ses takılmadan oynuyor.
+- Ayakkabı görünüm sayfasında aynı şeyi söyleyen iki paragraf tek satıra indi.
+Nasıl denenir: Profil'de Tur mühürleri bölümünde açık bir tura dokun: Kariyer o turla açılmalı. Kariyer'de bir basamağa dokun: alttaki düğme tek kısa satır olmalı. Dolap'ta raket renklerine art arda dokun: örnek basınca küçülmeli. Atölye'de bir yuvayı yükselt: parlama ve ses akıcı olmalı.
 Profil ve Kariyer'de akıcılık (20 Kasım gece):
 - Profil'de unvan seçince sayfa artık baştan kurulmuyor: yalnız kartındaki unvan yumuşakça değişiyor, sayfa yerinde kalıyor.
 - Maçtan Kariyer'e dönüşte kayıt arka planda yapılıyor; eski telefonlarda geçiş daha akıcı.

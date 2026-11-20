@@ -515,7 +515,16 @@ namespace BirdieSmash.Game
             else dg = Dugme(ne, () =>
             {
                 var once = gr.YukDegerler(Y.k, 0);
-                if (gr.Yukselt(Y.k)) { Ayar.GearHesap(); Ayar.Kaydet(); root.sfx.Yukselt(); Yerel.Hap("flow"); root.vitrin.Parlat(Y.k); yukOnce = once; yukK = Y.k; ustKirli = true; UstKur(); Degisti(); SoyunmaGovdeKur(true); }
+                // 2026-11-20 inceleme (fikir 07:06 #2, TAKILMA YOK): ödül karesinde gövde iki kez (Degisti açık sekmeyi zaten kuruyor),
+                // üst çubuk iki kez kuruluyor ve PlayerPrefs.Save eşzamanlı yazılıyordu. Kombin alımıyla aynı kalıp: gövde ve üst çubuk
+                // birer kez (sayfa açıksa Degisti sekmeyi kurmaz, o zaman gövde ayrıca); diske yazma bir sonraki karede (yükseltme
+                // bellekte kesin, kayıp penceresi tek kare). Parlama, ses ve titreşim ilk karede kalır.
+                if (gr.Yukselt(Y.k))
+                {
+                    Ayar.GearHesap(); root.sfx.Yukselt(); Yerel.Hap("flow"); root.vitrin.Parlat(Y.k); yukOnce = once; yukK = Y.k;
+                    Degisti(); if (gez.Ust != null) SoyunmaGovdeKur(true);
+                    var sk = sekmeKok[(int)gez.sekme]; if (sk != null && sk.panel != null) sk.schedule.Execute(() => Ayar.Kaydet()).StartingIn(0); else Ayar.Kaydet();
+                }
             }, "dugme--birincil");
             dg.AddToClassList("yuva-dugme"); r.Add(dg);
             Erisim.Etiket(kart, L.T(Y.ad) + ", " + sv + "/10", "metin");
@@ -726,7 +735,8 @@ namespace BirdieSmash.Game
                 bool on = Ayar.RGOR[k] == id; string rid = id;
                 var d = new VisualElement(); d.AddToClassList("renk"); if (on) d.AddToClassList("renk--secili"); d.style.backgroundColor = Kit.Hex(Vitrin.RAK_RENK[id]);
                 if (on) d.Add(Ikon(Ikonlar.Tik, 18, id == "beyaz" || id == "limon" ? Color.black : Color.white));
-                d.AddManipulator(new Clickable(() => { Ayar.RGOR[k] = rid; Ayar.KaydetSonra(); Tik(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
+                // Seçili renge dokunuş hiçbir şey kurmaz (2026-11-20 inceleme, fikir 07:06 #1b; OrnekSira'daki `!on` ile aynı).
+                if (!on) d.AddManipulator(new Clickable(() => { Ayar.RGOR[k] = rid; Ayar.KaydetSonra(); Tik(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
                 Erisim.Etiket(d, L.T(ad) + ", " + L.T(Vitrin.RAK_AD[id]), "dugme", on); s.Add(d);
             }
         }
