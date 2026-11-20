@@ -79,8 +79,11 @@ namespace BirdieSmash.Game
             // r100: alt sayfa vitrini fazla örtüyordu; Rastgele ve Atla tek satırda (büyük yazıda alt alta, USS).
             var ds = Satir("arali"); ds.AddToClassList("hazir-dugmeler"); c.Add(ds);
             var rd = Dugme(L.T("Rastgele"), () => { HazirSecGoster(Random.Range(0, HAZIR.Length)); HazirUygula(HAZIR[oyuncuSecSecili]); Tik(); }, null, null, 15); rd.AddToClassList("hazir-dugme"); ds.Add(rd);
-            var at = Dugme(L.T("Atla"), OyuncuSecAtla, null, null, 15); at.AddToClassList("hazir-dugme"); ds.Add(at);
-            AltEylem(Dugme(L.T("Bununla oyna"), () => { root.sfx.Yukselt(); OyuncuSecKapat(); }, "dugme--birincil", null, 19));
+            // 2026-11-20 inceleme (fikir 12:06 #5): "Atla" seçilen görünümü sessizce geri alıyordu. Kart seçilince gizlenir; tek
+            // birincil çıkış "Bununla oyna" kalır. Seçim yapılmadan önce bugünkü gibi görünür.
+            var at = Dugme(L.T("Atla"), OyuncuSecAtla, null, null, 15); at.AddToClassList("hazir-dugme"); ds.Add(at); hazirAtla = at;
+            if (oyuncuSecSecili >= 0) at.style.display = DisplayStyle.None;
+            AltEylem(Dugme(L.T("Bununla oyna"), () => { root.sfx.Yukselt(); OyuncuSecKapat(); SecimAni(); }, "dugme--birincil", null, 19));
         }
         // EkranTuru için: bir kartı seç / Atla.
         public void OyuncuSecHazir(int i) { HazirSecGoster(i); HazirUygula(HAZIR[i]); }
@@ -95,7 +98,16 @@ namespace BirdieSmash.Game
                 hazirTik[j].style.display = on ? DisplayStyle.Flex : DisplayStyle.None;
                 var b = k.userData as ErisimBilgi; if (b != null) b.secili = on;
             }
-            oyuncuSecSecili = i;
+            oyuncuSecSecili = i; if (hazirAtla != null) hazirAtla.style.display = i >= 0 ? DisplayStyle.None : DisplayStyle.Flex;
+        }
+        VisualElement hazirAtla;
+        // Kimlik anı (2026-11-20 inceleme, fikir 12:06 #4): "Bununla oyna"da figür durağandı. Kapanış Oyna sekmesine döner; orada
+        // görünen figür VS afişindeki (vitrin Soyunma dışında kapalı), o yüzden afişin kendi sevinci (oyuncuya dokununca oynayan
+        // aynı yol, süre PlayerView.SevincSure) bir kez oynar. Yeni ayırma yok. Hareketi azaltta yok (Yukselt sesi kalır).
+        void SecimAni()
+        {
+            if (Ayar.reduce || oyuncuSecSecili < 0 || root.afis == null || !root.afis.Acik) return;
+            root.afis.Sevinc();
         }
         public void OyuncuSecAtla() { if (oyuncuSecOnce != null) KombinGiy(oyuncuSecOnce); OyuncuSecKapat(); }
         VisualElement Nokta(string hex) { var n = new VisualElement(); n.AddToClassList("renk-nokta"); n.style.backgroundColor = Kit.Hex(hex); n.pickingMode = PickingMode.Ignore; return n; }

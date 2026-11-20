@@ -17,7 +17,14 @@ namespace BirdieSmash.Game
             var p = Ayar.gelisim; int sv = Ayar.gear.Seviye(), bos = Ayar.GelisimBos, top = Gelisim.Toplam(sv);
             var bas = Satir("arali"); bas.pickingMode = PickingMode.Ignore; c.Add(bas);
             // Sv 1'de puan yok: "hepsi dağıtıldı" yanlış olurdu, ilk puanın ne zaman geleceği yazar.
-            gelUst = Yazi(GelUstMetin(top, bos), 16, "kalin"); bas.Add(gelUst);
+            // 2026-11-20 (inceleme, fikir 17:06 #6; OYUNCUYU GÖSTER): "oyuncunu güçlendir" denen sayfada oyuncu yoktu (Oyna'dan
+            // açılınca bağlam kayboluyordu). Başlığın solunda 36 pt portre; üst çubukta çizilen önbellekteki doku (Portre.Benim),
+            // yeni figür/RT yok. Dokunuş yok: sayfanın tek işi puan. Yoksa eski insan simgesi (AvatarIc).
+            var bsol = Satir("rakip-satir"); bsol.pickingMode = PickingMode.Ignore; bsol.style.marginTop = 0; bsol.style.flexShrink = 1f; bas.Add(bsol);
+            var av = new VisualElement(); av.AddToClassList("avatar"); av.pickingMode = PickingMode.Ignore; av.style.width = 36; av.style.height = 36;
+            av.style.borderTopLeftRadius = av.style.borderTopRightRadius = av.style.borderBottomLeftRadius = av.style.borderBottomRightRadius = 18;
+            av.style.marginRight = 8; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 20); bsol.Add(av);
+            gelUst = Yazi(GelUstMetin(top, bos), 16, "kalin"); bsol.Add(gelUst);
             gelOran = top > 0 ? Yazi(L.T("{0}/{1} puan", top - bos, top), 13, "soluk") : null; if (gelOran != null) bas.Add(gelOran);
             // 2026-11-15 (inceleme, fikir 22:05 #5): iki varyantlı uzun paragraf her açılışta aynı kuralı tekrar ediyor, beş dal
             // kartını ilk ekranın altına itiyordu (büyük yazıda iki dal görünürdü). Tek kısa satır; Sv 1'de üst satır yeter.
@@ -36,7 +43,7 @@ namespace BirdieSmash.Game
         Label gelUst, gelOran;
         readonly Label[] gelSay = new Label[Gelisim.DAL];
         readonly VisualElement[] gelCb = new VisualElement[Gelisim.DAL], gelArti = new VisualElement[Gelisim.DAL], gelEksi = new VisualElement[Gelisim.DAL];
-        IVisualElementScheduledItem gelTekrar; int gelAdim; float gelBasT;
+        IVisualElementScheduledItem gelTekrar; int gelAdim; float gelBasT; Vector3 gelBasP; bool gelBekle; VisualElement gelSahip;
 
         // Bir adım; true = değer değişti.
         bool GelisimAdim(int dal, bool arti)
@@ -69,7 +76,7 @@ namespace BirdieSmash.Game
             if (etkin) d.RemoveFromClassList("gel-dugme--pasif"); else d.AddToClassList("gel-dugme--pasif");
             var b = d.userData as ErisimBilgi; if (b != null) b.pasif = !etkin;
         }
-        void GelTekrarDur() { if (gelTekrar != null) { gelTekrar.Pause(); gelTekrar = null; } }
+        void GelTekrarDur() { gelBekle = false; if (gelTekrar != null) { gelTekrar.Pause(); gelTekrar = null; } }
 
         // 2026-11-11 (inceleme, fikir 02:05 #2): Sv 1'de (hiç puan yok) beş kartta on soluk − / + düğmesi ve beş kez "0/10 · +%0"
         // ilk açan oyuncuya pasif düğme duvarı gösteriyordu; o durumda düğmeler çizilmez (kart: ad + cümle + basamaklar), üstteki
@@ -130,20 +137,40 @@ namespace BirdieSmash.Game
             var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("gel-dugme"); if (!etkin) d.AddToClassList("gel-dugme--pasif");
             // "-" ASCII: U+2212 Nunito'da yoksa boş kutu çıkar. Büyük yazıda glif 56 pt düğmeyi aşmasın diye ölçek 1,4'te durur.
             var y = Yazi(isaret, 22 * Mathf.Min(K, 1.4f) / Mathf.Max(1f, K), "kalin"); y.pickingMode = PickingMode.Ignore; d.Add(y);
-            // Pasiflik basışta sınıftan okunur (adımlar sınıfı yerinde değiştirir). Parmak kayarsa (sayfa kaydırma) tekrar durur.
+            // Pasiflik basışta sınıftan okunur (adımlar sınıfı yerinde değiştirir).
+            // 2026-11-20 (inceleme, fikir 17:06 #1; HIG / iOS UIStepper "gesture cancellation"): adım PointerDown'da verilip işaretçi
+            // hemen düğmeye bağlanıyordu; sayfayı kaydırmak için başparmağını kenardaki ± üstüne koyan oyuncu istemeden puan veriyor
+            // ve ScrollView sürüklemeyi hiç almıyordu. Artık basışta hiçbir şey olmaz: tek dokunuş adımı parmak kalkınca verilir;
+            // 0,4 sn tutunca ilk adım + bugünkü tekrar başlar ve işaretçi ancak o an bağlanır. Parmak 8 birimden fazla kayarsa ya da
+            // işaretçiyi başka öğe (ScrollView) alırsa dokunuş iptal olur, kaydırma sayfanındır. Basılma görseli (:active) aynı.
             d.RegisterCallback<PointerDownEvent>(e =>
             {
                 if (d.ClassListContains("gel-dugme--pasif")) return;
-                GelTekrarDur(); gelAdim = 0; gelBasT = Time.unscaledTime; d.CapturePointer(e.pointerId);
-                if (!GelisimAdim(dal, arti)) return;
+                GelTekrarDur(); gelAdim = 0; gelBasT = Time.unscaledTime; gelBasP = e.position; gelBekle = true; gelSahip = d; int pid = e.pointerId;
                 gelTekrar = d.schedule.Execute(() =>
                 {
-                    float t = Time.unscaledTime - gelBasT; if (t < .4f) return;
+                    if (gelBekle)
+                    {
+                        var tutan = d.panel != null ? d.panel.GetCapturingElement(pid) : null;
+                        if (tutan != null && tutan != d) { GelTekrarDur(); return; }   // kaydırma başladı
+                        if (Time.unscaledTime - gelBasT < .4f) return;
+                        gelBekle = false; d.CapturePointer(pid);
+                        if (!GelisimAdim(dal, arti)) GelTekrarDur();
+                        return;
+                    }
+                    float t = Time.unscaledTime - gelBasT;
                     if (t < 1.5f && (gelTekrarSay++ & 1) == 1) return;   // 70 ms tik: 1,5 sn'ye dek her ikinci (~7/sn), sonra her biri (~14/sn)
                     if (!GelisimAdim(dal, arti)) GelTekrarDur();   // tavan/sıfır: durur (son adımın sesi + hap GelisimAdim'de)
                 }).Every(70);
             });
-            d.RegisterCallback<PointerUpEvent>(e => { GelTekrarDur(); if (d.HasPointerCapture(e.pointerId)) d.ReleasePointer(e.pointerId); });
+            d.RegisterCallback<PointerMoveEvent>(e => { if (gelBekle && gelSahip == d && (e.position - gelBasP).sqrMagnitude > 64f) GelTekrarDur(); });
+            d.RegisterCallback<PointerUpEvent>(e =>
+            {
+                bool tek = gelBekle && gelSahip == d; if (gelSahip == d) GelTekrarDur();   // ikinci parmak başka düğmeyi tutuyorsa onu bozma
+                if (d.HasPointerCapture(e.pointerId)) d.ReleasePointer(e.pointerId);
+                if (tek && !d.ClassListContains("gel-dugme--pasif")) { gelAdim = 0; GelisimAdim(dal, arti); }
+            });
+            d.RegisterCallback<PointerLeaveEvent>(e => { if (gelBekle && gelSahip == d) GelTekrarDur(); });
             d.RegisterCallback<PointerCancelEvent>(e => GelTekrarDur());
             d.RegisterCallback<PointerCaptureOutEvent>(e => GelTekrarDur());
             d.RegisterCallback<DetachFromPanelEvent>(e => GelTekrarDur());
@@ -158,9 +185,11 @@ namespace BirdieSmash.Game
             int bos = Ayar.GelisimBos;
             var d = new VisualElement(); d.AddToClassList("sv-hedef"); d.AddToClassList("sv-hedef--gelisim");
             var sol = new VisualElement(); sol.AddToClassList("sv-hedef-sol"); sol.pickingMode = PickingMode.Ignore; d.Add(sol);
-            sol.Add(Yazi(L.T("Dağıtılacak puan: {0}", bos), 14, "kalin")); sol.Add(Yazi(L.T("Gelişim: oyuncunu güçlendir"), 12, "soluk"));
+            // 2026-11-20 (inceleme, fikir 17:06 #5; §7.3 tek mesaj): puan, "Gelişim: oyuncunu güçlendir" ve düz "Dağıt" aynı şeyi üç
+            // kez söylüyordu, "Dağıt" düğmeye benzemiyordu. Alt satır kalktı; sağ blok kardeş satırın (SvSagGelisim) "›" kalıbıyla.
+            sol.Add(Yazi(L.T("Dağıtılacak puan: {0}", bos), 14, "kalin"));
             var sag = new VisualElement(); sag.AddToClassList("sv-hedef-sag"); sag.pickingMode = PickingMode.Ignore; d.Add(sag);
-            sag.Add(Yazi(L.T("Dağıt"), 15, "kalin"));
+            sag.Add(Yazi(L.T("Dağıt") + " ›", 15, "kalin"));
             d.AddManipulator(new Clickable(() => { Tik(); GelisimAc(); }));
             Erisim.Etiket(d, L.T("Dağıtılacak puan: {0}", bos) + ", " + L.T("Gelişim: oyuncunu güçlendir"), "dugme");
             return d;

@@ -59,7 +59,7 @@ namespace BirdieSmash.Game
         // alanına açar (kategori şeridi, liste ve deneme çubuğu gizlenir; döndürme ve Yüz · Ayak · Tutuş yakın planları çalışır),
         // ikinci dokunuş listeye döner. Liste görünümünde vitrin %50 → %54 ve kenar payı 16 → 8 pt (figür daha geniş).
         // Geçişte yalnız RT bir kez yeniden boyutlanır (Vitrin.Cozunurluk, GeometryChanged); karede ayırma yok.
-        bool dolapIncele;
+        bool dolapIncele; Image buyutIkon;
 
         // EkranTuru ve maç sonu "Ekipmanı yükselt" için açık yöntemler.
         public void SoyunmaSegment(int i)
@@ -139,7 +139,11 @@ namespace BirdieSmash.Game
             vitrinUst.EnableInClassList("vitrin-alan--genis", ac);
             if (cekmece != null) cekmece.style.display = ac ? DisplayStyle.None : DisplayStyle.Flex;
             if (ac) DolapTam(false, false);
-            KategoriKur(); DenemeCubukKur(); BuyutYaz();
+            // 2026-11-20 (inceleme, fikir 17:06 #3; TAKILMA YOK): her açma/kapamada kategori şeridi (çipler + Kozmetik.Sayim) ve
+            // deneme çubuğu baştan kuruluyor, vitrin RT'si aynı karede yeniden boyutlanırken string ayrılıyordu; şerit de kapanışta
+            // ortaya sıçrıyordu. İncele'de içerik değişmez, yalnız çekmecenin görünürlüğü (deneme çubuğu çekmecenin içinde, onunla
+            // gizlenir) ve büyüt düğmesinin durumu değişir. Şerit/çubuk kurulumu içerik değişince çağıranlarda kalır.
+            BuyutYaz();
         }
 
         // ---- Çekmece durakları (2026-11-19, Dolap A) ----
@@ -170,9 +174,11 @@ namespace BirdieSmash.Game
         }
         void BuyutYaz()
         {
-            if (buyutDugme == null) return; buyutDugme.Clear();
+            if (buyutDugme == null) return;
             buyutDugme.EnableInClassList("odak-dugme--secili", dolapIncele);
-            var ic = Ikon(Ikonlar.Buyut, 20, dolapIncele ? TURUNCU : Color.white); ic.pickingMode = PickingMode.Ignore; buyutDugme.Add(ic);
+            // İkon bir kez kurulur, durum değişince yalnız rengi yazılır (Clear + yeni Image yok).
+            if (buyutIkon == null || buyutIkon.parent != buyutDugme) { buyutDugme.Clear(); buyutIkon = Ikon(Ikonlar.Buyut, 20, Color.white); buyutIkon.pickingMode = PickingMode.Ignore; buyutDugme.Add(buyutIkon); }
+            buyutIkon.tintColor = dolapIncele ? TURUNCU : Color.white;
             Erisim.Etiket(buyutDugme, L.T(dolapIncele ? "Listeye dön" : "Oyuncuyu büyüt ve incele"), "dugme", dolapIncele);
         }
 
