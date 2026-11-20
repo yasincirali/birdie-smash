@@ -144,9 +144,9 @@ Palet "Gün Batımı Salonu" sabittir (yasin 27 Eki); yeni ton eklenmez, mevcut 
 | Zemin | `--ink` | #1A1221 | sayfa arkası | yazı |
 | Yüzey (cam) | `--cam`, `--cam2`, `--cam3` | mor, .80/.72/.82 | kart, düğme, basılı | zemin |
 | Birincil eylem / seçili | `--sun` | #FFA04D | tek birincil düğme, seçili çerçeve, sekme simgesi | süs, uyarı |
-| Sen | `--lime` | #C9EE4B | oyuncunun skoru, kendi satırı, "sen" | düğme dolgusu (birincil turuncudur) |
+| Sen ve senin ilerlemen | `--lime` | #C9EE4B | oyuncunun skoru, kendi satırı, "sen"; seviye/XP çubuğu ve gelişim basamakları (yasin 20 Kas, karar kartı "A · Limon") | düğme dolgusu (birincil turuncudur) |
 | Rakip | `--coral` | #E99BFF | rakip skoru ve adı | hata |
-| Ödül / Tüy | `--gold` | #F9D272 | Tüy, kupa, seviye ödülü | seçili durum |
+| Ödül / Tüy | `--gold` | #F9D272 | Tüy, kupa, seviye ödülü, Tüy biriktirme çubuğu, Efsane XP | seçili durum, seviye çubuğu |
 | Bilgi | `--sky` | #8FC6FF | ipucu, bağlantı | eylem |
 | Ana yazı / ikincil yazı | `--tx` / `--mu` | #F3EAEE / #CBB8C5 | gövde / açıklama | — |
 
@@ -157,7 +157,7 @@ Palet "Gün Batımı Salonu" sabittir (yasin 27 Eki); yeni ton eklenmez, mevcut 
 3. **Yükseklik = açıklık**: koyu temada üstteki yüzey bir tık daha açıktır (zemin < kart < düğme < basılı); gölgeyle değil tonla ayrılır (Material 3 tonal elevation, HIG dark mode).
 4. **Kontrast (ölçüldü, 15 Kas)**: `--tx` cam üstünde 13,1:1; `--mu` cam üstünde 8,2:1, `--cam2` üstünde 7,2:1; koyu yazı turuncu üstünde 9,4:1; vurgu renkleri cam üstünde 7,6–11,6:1. Alt sınır gövde 4,5:1, büyük kalın 3:1, simge ve çerçeve 3:1. `--mu`'dan daha soluk bir yazı rengi eklenmez; pasif öğe opaklıkla değil "kilit + yazı" ile ayrılır, opaklık gerekiyorsa en az .6 ve yazı yine 4,5:1.
 5. **Renk körlüğü**: sen/rakip ayrımı limon–orkide (parlaklıkları da farklı) + konum (sen solda/altta) + ad; seçili turuncu çerçeve + ✓; kazanç/kayıp ok ve işaretle (▲ ▼, +/−). Kırmızı–yeşil ikilisi tek başına anlam taşımaz.
-6. **Turuncu kıtlığı**: turuncu yalnız birincil eylem, seçili durum ve aktif sekme içindir. Başlıkta, süste, rozette turuncu yoksa göz eylemi saniyede bulur.
+6. **Turuncu kıtlığı**: turuncu yalnız birincil eylem, seçili durum ve aktif sekme içindir. İlerleme çubukları turuncu olmaz (27 Ekim'deki "ilerleme turuncu" kararı 20 Kasım'da yasin'in seçimiyle kalktı): seviye ve gelişim limon, Tüy altın. Başlıkta, süste, rozette turuncu yoksa göz eylemi saniyede bulur.
 7. **Kozmetik renkler ayrıdır**: oyuncunun seçtiği forma/raket renkleri arayüz rolü taşımaz; menüde yalnız kendi örnek yuvarlağında görünür (`docs/kozmetik_tasarim_dili.md`).
 
 ## 9. Ekran denetim listesi (her menü değişikliğinde PR'a)

@@ -292,7 +292,7 @@ namespace BirdieSmash.Game
             var d = new VisualElement(); d.AddToClassList("sv-hedef");
             var sol = new VisualElement(); sol.AddToClassList("sv-hedef-sol"); sol.pickingMode = PickingMode.Ignore; d.Add(sol);
             sol.Add(Yazi(L.T("Sv {0} ödülü · {1} XP kaldı", sv, gerek - kalan), 14, "kalin"));
-            var c2 = Cubuk(kalan / (float)gerek, TURUNCU, 5); c2.AddToClassList("sv-hedef-cubuk"); sol.Add(c2);
+            var c2 = Cubuk(kalan / (float)gerek, LIMON, 5); // 2026-11-20 yasin karar kartı "A · Limon": seviye/XP ve gelişim = limon ("senin ilerlemen"), Tüy = altın; turuncu yalnız eylem/seçim (§8) c2.AddToClassList("sv-hedef-cubuk"); sol.Add(c2);
             var sag = new VisualElement(); sag.AddToClassList("sv-hedef-sag"); sag.pickingMode = PickingMode.Ignore; d.Add(sag);
             string bas = L.T("Sv {0} ödülü · {1} XP kaldı", sv, gerek - kalan);
             if (SvSagGelisim(d, sag, bas)) return d;
@@ -335,7 +335,7 @@ namespace BirdieSmash.Game
             int L_, kalan, gerek; Ayar.gear.OyuncuSv(out L_, out kalan, out gerek);
             int en, ek_; bool ef = Ayar.gear.EfsaneIlerleme(out en, out ek_);
             c.Add(Yazi(gerek > 0 ? L.T("Sv {0} · sonraki seviyeye {1} XP", L_, gerek - kalan) : en > 0 ? L.T("Sv 30 · Efsane {0}", en) : L.T("Sv 30 · en üst seviye"), 15, "kalin"));
-            if (gerek > 0) { var cb = Cubuk(kalan / (float)gerek, TURUNCU, 8); cb.style.marginTop = 6; cb.style.marginBottom = 4; c.Add(cb); }
+            if (gerek > 0) { var cb = Cubuk(kalan / (float)gerek, LIMON, 8); cb.style.marginTop = 6; cb.style.marginBottom = 4; c.Add(cb); }
             else if (ef)
             {
                 // Sv 30: liste boş kalırdı; sayfa Efsane kademesini anlatır (tek kart, sabit ödül, rastgelelik yok).
