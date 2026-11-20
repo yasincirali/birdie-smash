@@ -142,6 +142,9 @@ namespace BirdieSmash.Game
             else if (ad == "robot") m.agiz = new Vector3(0, -1.12f, .98f);
             else if (ad.StartsWith("hamambocegi")) { m.agiz = new Vector3(0, -1.13f, 1.28f); m.kasYer = new Vector3(.59f, .10f, 1.13f); kasVar = true; }   // şiş göz küresinin üst önü
             else m.agiz = new Vector3(0, -1.0f, .96f);
+            // r217: kaşlar üç kare turunda da görünmedi (etkin, ölçüsü doğru, yeri hesapla alın yüzeyinde; neden bulunamadı). Görülmeden
+            // doğrulanamayan parça gönderilmez: kaş kapalı, dil açık. Kaş kodu duruyor; açmak için bu satırı kaldır ve kare turunda doğrula.
+            kasVar = false;
             m.kok = new GameObject("mimik").transform; m.kok.SetParent(kafa, true);
             m.kok.position = c; m.kok.rotation = Quaternion.LookRotation(ileri.normalized, dikey.normalized);
             m.kok.localScale = new Vector3(yan, ust, (on + arka) * .5f) * (r / Mathf.Max(1e-5f, kafa.lossyScale.x));
