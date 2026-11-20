@@ -1639,7 +1639,8 @@ namespace BirdieSmash.Game
         Hacim[] kati; int katiN; float katiEl, katiKol; bool katiKuruldu;
         readonly Vector3[] katiElC = new Vector3[2]; readonly Quaternion[] katiBilek = new Quaternion[2]; Quaternion katiGogus;
         [System.NonSerialized] public float TaniKatiDerin;   // son karede itilen en büyük mesafe (m): ekran turu raporu
-        public string TaniKati { get { return "hacim " + katiN + " el " + katiEl.ToString("F3") + " itme " + TaniKatiDerin.ToString("F3"); } }
+        int katiAday = -1; string katiNeden = "kurulmadı";
+        public string TaniKati { get { return "hacim " + katiN + " (" + katiNeden + ", aday " + katiAday + ")" + " el " + katiEl.ToString("F3") + " itme " + TaniKatiDerin.ToString("F3"); } }
         const int KATI_ORNEK = 4000;   // model başına en çok bu kadar nokta ölçülür (ilk sevinçte takılma olmasın)
         static float NoktaParca(Vector3 p, Vector3 a, Vector3 b)
         {
@@ -1651,7 +1652,7 @@ namespace BirdieSmash.Game
         static bool KatiDisi(string et) { return et == "isaret" || et == "bilek" || et == "cerceve" || et == "grip" || et == "tel" || et == "tel2"; }   // işaret, bileklik ve raket gövde değil
         void KatiKur()
         {
-            katiKuruldu = true; katiN = 0; kati = null; if (kKol == null || kHead == null) return;
+            katiKuruldu = true; katiN = 0; kati = null; katiNeden = "kol/baş yok"; if (kKol == null || kHead == null) return;
             for (int i = 0; i < 2; i++) { var el = kKol[i * 3 + 2]; katiBilek[i] = el != null ? el.localRotation : Quaternion.identity; katiElC[i] = Vector3.zero; }
             Transform gk = kOmurga.Count > 0 ? kOmurga[kOmurga.Count - 1] : null; katiGogus = gk != null ? Quaternion.Inverse(gk.rotation) * yaw.rotation : Quaternion.identity;
             float L = kKol[3] != null && kKol[4] != null && kKol[5] != null ? (kKol[4].position - kKol[3].position).magnitude + (kKol[5].position - kKol[4].position).magnitude : .5f;
@@ -1660,7 +1661,7 @@ namespace BirdieSmash.Game
             var kem = new List<Transform>(); var gor = new HashSet<Transform>();
             foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>())
                 foreach (var b in r.bones) if (b != null && gor.Add(b)) kem.Add(b);
-            if (kem.Count == 0) return;
+            katiNeden = "kemik " + kem.Count; if (kem.Count == 0) return;
             var tur = new int[kem.Count]; var uc = new Vector3[kem.Count];
             Transform kop0 = kKol[0] != null ? kKol[0].parent : null, kop1 = kKol[3] != null ? kKol[3].parent : null;
             for (int i = 0; i < kem.Count; i++)
@@ -1682,7 +1683,23 @@ namespace BirdieSmash.Game
             {
                 if (!r.enabled || r.sharedMesh == null || r.name.StartsWith("raket")) continue;
                 string et = Etiket(r.gameObject.name); if (KatiDisi(et)) continue;
-                var m = new Mesh(); r.BakeMesh(m, true); var M = Matrix4x4.TRS(r.transform.position, r.transform.rotation, Vector3.one); var vs = m.vertices; Destroy(m);
+                // r218: tek dönüşümle (ölçekli pişirme + ölçeksiz matris) hiçbir modelde hacim kurulmadı (ölçek modelin üst düğümünde).
+                // İki pişirme × iki matris denenir; noktaları kemiklere en yakın düşüren kazanır (ölçek nerede durursa dursun).
+                Vector3[] vs = null; var M = Matrix4x4.identity; float enSkor = float.MaxValue;
+                for (int aday = 0; aday < 4; aday++)
+                {
+                    var m = new Mesh(); r.BakeMesh(m, aday < 2); var av = m.vertices; Destroy(m); if (av.Length == 0) break;
+                    var AM = aday % 2 == 0 ? r.transform.localToWorldMatrix : Matrix4x4.TRS(r.transform.position, r.transform.rotation, Vector3.one);
+                    float skor = 0; int say = 0;
+                    for (int v = 0; v < av.Length; v += Mathf.Max(1, av.Length / 120))
+                    {
+                        Vector3 p = AM.MultiplyPoint3x4(av[v]); float enY = float.MaxValue;
+                        foreach (var b in r.bones) if (b != null) enY = Mathf.Min(enY, (p - b.position).sqrMagnitude);
+                        skor += Mathf.Sqrt(enY); say++;
+                    }
+                    if (say > 0 && skor / say < enSkor) { enSkor = skor / say; vs = av; M = AM; katiAday = aday; }
+                }
+                if (vs == null) continue;
                 int adim = Mathf.Max(1, vs.Length / KATI_ORNEK);
                 for (int v = 0; v < vs.Length; v += adim)
                 {
@@ -1703,11 +1720,10 @@ namespace BirdieSmash.Game
                 var bb = mf.sharedMesh.bounds;
                 for (int k = 0; k < 8; k++) { nok.Add(r.transform.TransformPoint(bb.center + Vector3.Scale(bb.extents, new Vector3((k & 1) * 2 - 1, (k >> 1 & 1) * 2 - 1, (k >> 2 & 1) * 2 - 1) * .8f))); sahip.Add(t); }
             }
-            if (nok.Count < 50) return;
-            // shortcut: pişmiş ağın dönüşümü tek aday (ölçek üst düğümdeyse yanlış düşer); baş, eller, ayaklar noktaların kutusunda
-            // değilse hacim kurulmaz (yalnız eklem sınırı çalışır). Öyle bir model çıkarsa Aksesuar'daki iki adaylı yola geç.
+            katiNeden = "kemik " + kem.Count + " nokta " + nok.Count; if (nok.Count < 50) return;
+            // Güvenlik: baş ve eller noktaların kutusunda değilse dönüşüm yanlıştır, hacim kurulmaz (yalnız eklem sınırı çalışır).
             { var kutu = new Bounds(nok[0], Vector3.zero); foreach (var p in nok) kutu.Encapsulate(p); kutu.Expand(kutu.size.magnitude * .15f);
-              if (!kutu.Contains(kHead.position) || (kKol[2] != null && !kutu.Contains(kKol[2].position)) || (kKol[5] != null && !kutu.Contains(kKol[5].position))) return; }
+              if (!kutu.Contains(kHead.position) || (kKol[2] != null && !kutu.Contains(kKol[2].position)) || (kKol[5] != null && !kutu.Contains(kKol[5].position))) { katiNeden += " kutu dışı " + kutu.center.ToString("F2") + "/" + kutu.size.ToString("F2") + " baş " + kHead.position.ToString("F2"); return; } }
             var hac = new List<Hacim>(); var xs = new List<float>(); var ys = new List<float>(); var zs = new List<float>();
             for (int i = 0; i < kem.Count; i++)
             {
@@ -1727,7 +1743,7 @@ namespace BirdieSmash.Game
                 if (n < 6) continue; c /= n; float r = 0; for (int v = 0; v < nok.Count; v++) if (sahip[v] == -2 - s) r += (nok[v] - c).magnitude; r /= n;
                 katiElC[s] = el.InverseTransformPoint(c); if (s == 1) { katiEl = Mathf.Clamp(r, L * .04f, L * .12f); katiKol = katiEl * .75f; }
             }
-            kati = hac.ToArray(); katiN = kati.Length;
+            kati = hac.ToArray(); katiN = kati.Length; katiNeden += " tamam";
             // Ayar: kurulduğu pozda (klibin kendi pozu, geçerli sayılır) el, dirsek ve ön kol ortası hiçbir hacmin içinde kalmamalı;
             // kalıyorsa o hacim o kadar küçülür (en çok %40'ına). Böylece kaba ölçüm, kol yanda dururken kolu dışarı itmez.
             for (int h = 0; h < katiN; h++)
