@@ -133,8 +133,8 @@ namespace BirdieSmash.Game
                 {
                     if (m.g) gs++;
                     string zd = L.T(Ayar.ZORLUK_AD[m.zorluk]);
-                    var h = Yazi((m.g ? "✓ " : "✗ ") + m.ben + "–" + m.rakip + (hr.childCount == 0 ? " · " + zd : ""), 12, m.g ? "son-hap--g" : "soluk");
-                    h.AddToClassList("son-hap"); hr.Add(h);
+                    var h = IkonYazi(m.g, m.ben + "–" + m.rakip + (hr.childCount == 0 ? " · " + zd : ""), 12, m.g ? null : "soluk", m.g ? LIMON : SOLUK);
+                    h.AddToClassList("son-hap"); if (m.g) h.AddToClassList("son-hap--g"); hr.Add(h);
                     Erisim.Etiket(h, L.T(m.g ? "Kazanılan maç" : "Kaybedilen maç") + ", " + m.ben + "–" + m.rakip + ", " + zd, "metin");
                 }
                 c.Add(Yazi(L.T("Son {0}: {1} galibiyet", sm.Count, gs), 12, "soluk"));

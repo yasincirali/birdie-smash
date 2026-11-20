@@ -863,6 +863,8 @@
 
 /* 2026-11-14 Profil "Son maçlar" (inceleme, fikir 07:05 #1): küçük haplar sarar; galibiyet ✓ + yazı rengi, yenilgi ✗ + soluk (yalnız renk değil). */
 .son-maclar { flex-direction: row; flex-wrap: wrap; margin-bottom: 4px; }
+/* 2026-11-20 (fikir 17:06 #2): durum ikonu + yazı (UiOge.IkonYazi); ✓/✗ metinde değil, dokudan. */
+.ikon-yazi { flex-direction: row; align-items: center; }
 .son-hap { padding: 3px 8px; margin: 0 6px 6px 0; border-radius: 10px; border-width: 1px; border-color: var(--ln); background-color: var(--navy); }
 .son-hap--g { color: var(--tx); border-color: rgba(201, 238, 75, 0.45); }
 

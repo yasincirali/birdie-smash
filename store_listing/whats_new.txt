@@ -1,4 +1,12 @@
 === UNITY ===
+Menü cilası (20 Kasım akşamüstü):
+- Gelişim'de + ve − düğmeleri parmağını kaldırınca puan veriyor; düğmenin üstünden sayfayı kaydırmak artık istemeden puan vermiyor. Basılı tutunca hızlı verme aynı.
+- Gelişim sayfasının başında oyuncunun portresi duruyor.
+- Profil'deki son maçlarda ve Antrenman'da kazandın/bitti işaretleri artık yazıyla aynı yazı tipinde, küçük bir simgeyle.
+- Antrenman'da görev listesinin başında her yeni yıldızın kaç Tüy ve XP verdiği yazıyor.
+- Dolap'ta oyuncuyu büyütüp küçültmek daha akıcı; kategori şeridi kaydırdığın yerde kalıyor.
+- Oyna'daki "Dağıtılacak puan" satırı tek satıra indi.
+Nasıl denenir: Gelişim'i aç, parmağını bir + düğmesine koyup sayfayı aşağı kaydır: sayfa kaymalı, puan değişmemeli. Tek dokunuş bir puan vermeli, basılı tutunca hızlanmalı. Profil'de Son maçlar haplarına bak: simge ve skor aynı yazı tipinde olmalı. Antrenman'da Görevler başlığının altında Tüy satırını gör. Dolap'ta kategori şeridini sağa kaydır, büyüt düğmesine iki kez bas: şerit yerinde kalmalı.
 Menü cilası (20 Kasım öğle):
 - Ayarlar'da dili "Sistem"e alınca seçim işareti hemen oraya geçiyor (eskiden dil aynı kalınca işaret eski yerinde duruyordu).
 - Ayarlar'da yazı boyutunu değiştirmek menüyü bir kez kuruyor; sayfa sıçramıyor ve yerinde kalıyor.

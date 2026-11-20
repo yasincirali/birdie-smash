@@ -29,17 +29,18 @@ namespace BirdieSmash.Game
             var orta = new VisualElement(); orta.AddToClassList("basamak-orta"); orta.pickingMode = PickingMode.Ignore; r.Add(orta);
             orta.Add(Yazi(L.T(t.ad), 16, "kalin"));
             orta.Add(Yazi(L.T(t.kisa), 13, "soluk"));
-            string durum = acik ? "✓ " + L.T("Açık") : !svOk ? L.T("Sv {0}", t.sv) : L.T("Ekipman gerekli");
+            string durum = acik ? L.T("Açık") : !svOk ? L.T("Sv {0}", t.sv) : L.T("Ekipman gerekli");
             if (!svOk) { var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; dr.style.flexShrink = 0f;   // kilit + "Lv 15" daralmasın (2026-10-30 dil turu: İngilizce kabından taşıyordu)
                 dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); var dy = Yazi(durum, 12, "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy); r.Add(dr); }
-            else r.Add(Yazi(durum, 12, acik ? "durum-gecti" : "durum-kilit"));
-            string s1 = (svOk ? "✓ " : "✗ ") + L.T("Seviye") + ": " + (svOk ? L.T("Sv {0}", t.sv) : L.T("Sv {0} gerekli", t.sv));
-            string s2 = (ekOk ? "✓ " : "✗ ") + L.T("Ekipman") + ": " + L.T(t.ekAd);
+            else r.Add(acik ? IkonYazi(true, durum, 12, "durum-gecti", SOLUK) : Yazi(durum, 12, "durum-kilit"));
+            // 2026-11-20 (fikir 17:06 #2): ✓/✗ öneki metinden kalktı (yazı tipi düşmesi); kapı satırında işaret ikon, okuyucuya söz.
+            string s1 = L.T("Seviye") + ": " + (svOk ? L.T("Sv {0}", t.sv) : L.T("Sv {0} gerekli", t.sv));
+            string s2 = L.T("Ekipman") + ": " + L.T(t.ekAd);
             string s3 = L.T("Pozisyon") + ": " + L.T(t.konum), s4 = L.T("Jest") + ": " + L.T(t.jest);
             // 2026-11-15 inceleme #4: kart başına dört sabit satır yerine: açık kartta yalnız nasıl yapılır (✓'li iki kapı bilgi taşımıyordu),
             // kilitli kartta yalnız eksik kapı(lar). Ekran okuyucu etiketi tüm bilgiyi okumaya devam eder.
             if (acik) kart.Add(Yazi(s3 + " · " + s4, 12, "soluk"));
-            else { if (!svOk) kart.Add(Yazi(s1, 12, "soluk")); if (!ekOk) kart.Add(Yazi(s2, 12, "soluk")); }
+            else { if (!svOk) kart.Add(IkonYazi(false, s1, 12, "soluk", SOLUK)); if (!ekOk) kart.Add(IkonYazi(false, s2, 12, "soluk", SOLUK)); }
             Erisim.Etiket(kart, L.T(t.ad) + ", " + durum + ". " + L.T(t.kisa) + " " + s1 + ". " + s2 + ". " + s3 + ". " + s4, "metin");
             return kart;
         }
