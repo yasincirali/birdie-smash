@@ -66,7 +66,7 @@ namespace BirdieSmash.Game
             ad.Add(Yazi(L.T(tz.ad) + " · " + L.T(Gear.GEAR["raket"][gr.raket].ad), 13, "soluk"));
             System.Action<UnvanBilgi> kartEtiket = u0 => Erisim.Etiket(r, (p.Ad ?? L.T("Oyuncu")) + ", " + L.T(u0.ad) + Karakter.KademeEki(u0, p) + ", " + L.T("Seviye {0}", L_) + ", " + L.T("Tarz") + " " + L.T(tz.ad), "metin");
             kartEtiket(un);
-            kart.Add(gerek > 0 ? Cubuk(kalan / (float)gerek, CAMGOBEGI) : Cubuk(efK / (float)Gear.EFSANE_XP, ALTIN));
+            kart.Add(gerek > 0 ? Cubuk(kalan / (float)gerek, LIMON) : Cubuk(efK / (float)Gear.EFSANE_XP, ALTIN));
             // üç büyük sayı
             var uc = Satir("uc-sayi"); if (K >= 1.35f) uc.AddToClassList("uc-sayi--dikey"); kart.Add(uc);
             System.Action<string, string> Buyuk_ = (deger, et) => { var b = new VisualElement(); b.AddToClassList("uc-sayi-oge"); b.Add(Yazi(deger, 24, "rakam")); b.Add(Yazi(et, 12, "soluk")); Erisim.Etiket(b, et + " " + deger, "metin"); uc.Add(b); };

@@ -1,4 +1,7 @@
 === UNITY ===
+Seviye çubuğu tek renk (20 Kasım):
+- Seviye ve gelişim çubukları her ekranda limon, Tüy çubuğu altın; turuncu yalnız basılacak düğmelerde.
+
 Menü cilası (20 Kasım sabah):
 - Profil'deki Tur mühürleri satırına dokununca Kariyer o turla açılıyor; eksik yıldızları bulmak için oklarla aramak gerekmiyor.
 - Kariyer'de maç kartının düğmesi artık yalnız "Oyna" ya da "Yeniden oyna" diyor; küçük ekranda iki satıra taşmıyor.

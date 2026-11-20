@@ -148,7 +148,7 @@ namespace BirdieSmash.Game
             // satır yalnız sayım; seviye rozette bir kez. Erişim etiketi kilit cümlesini okumaya devam eder.
             string alt = kilit ? kol : kol + " · " + (eksik > 0 ? L.T("{0} Tüy kaldı", eksik) : L.T("Alabilirsin"));
             sol.Add(Yazi(bas, 14, "kalin"));
-            if (!kilit) { var cb = Cubuk(o.fiyat > 0 ? Mathf.Clamp01(gr.eko.tuy / (float)o.fiyat) : 1, eksik > 0 ? TURUNCU : CAMGOBEGI, 5); cb.AddToClassList("sv-hedef-cubuk"); sol.Add(cb); }
+            if (!kilit) { var cb = Cubuk(o.fiyat > 0 ? Mathf.Clamp01(gr.eko.tuy / (float)o.fiyat) : 1, ALTIN, 5); cb.AddToClassList("sv-hedef-cubuk"); sol.Add(cb); }
             sol.Add(Yazi(alt, 12, "soluk"));
             var sag = new VisualElement(); sag.AddToClassList("sv-hedef-sag"); sag.pickingMode = PickingMode.Ignore; d.Add(sag);
             sag.Add(Ikon(kilit ? Ikonlar.Kilit : Ikonlar.Tuy, 16, kilit ? SOLUK : ALTIN)); sag.Add(Yazi(kilit ? L.T("Sv {0}", o.sv) : Sayi(o.fiyat), 16, "rakam"));
