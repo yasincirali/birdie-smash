@@ -1,4 +1,8 @@
 === UNITY ===
+Arkadaş maçı, ilk deneme (20 Kasım akşam; kapalı özellik):
+- İki iPhone arasında karşılıklı maç: Game Center ile arkadaşını çağır ya da rastgele rakip bul. 11 sayı, eşit güç (ekipman yalnız görünüş).
+- Maç ödül vermez, kariyere ve karneye yazılmaz. Duraklatma yok; uygulamadan çıkan oyuncu 10 sn sonra hükmen kaybeder.
+Nasıl denenir: iki telefonda da Game Center oturumu açık olsun. Ayarlar başlığına 5 kez dokun, Oyna sekmesinde "Arkadaşınla oyna" çıkar. Birinde dokun, diğerini çağır. Bakılacaklar: maç iki telefonda aynı skorla bitiyor mu, top yerde bekleyip diriliyor mu, bir telefon kapatılınca diğeri "Rakip maçtan ayrıldı" görüyor mu.
 Menü cilası (20 Kasım gece):
 - Dolap'ta henüz almadığın oyuncu modeline (Kedi, Tavşan, Panda, Robot, Hamamböceği) dokununca model önce vitrinde denenir; Tüy ancak ikinci dokunuşta harcanır. Kilitli ya da Tüy'ün yetmeyen model de denenebilir.
 - Kariyer'de bir rakiple tekrar oynayınca maç kartında aranızdaki skor görünür (her basamağın kendi rakibi için de).

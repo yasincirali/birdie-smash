@@ -320,3 +320,14 @@ hazır ama kapalı; 1.0'da oyuncu online iz görmez. Aşağıdakiler 1.0'ı **be
    (küfür süzgeci + Bildir/Engelle + sunucu gerekir, App Store 1.2).
 3. Dereceli maç uzunluğu: 11 sayı tek oyun (öneri) ya da 21.
 Rapor: https://claude.ai/artifact/V2uZN5PBYvFSP3GC3RAynf
+
+### Arkadaş maçı, Game Center ile (2026-11-20, yasin: "ücretsiz bir hali yok mu" → "başlayalım")
+İlk online dilim UGS'siz: taşıma Game Center (GKMatch), ücret ve sunucu yok. Kod `claude/online-arkadas-maci` dalında,
+kapalı: giriş yalnız gizli tanı katmanı açıkken görünür. Denemek için senden gerekenler:
+1. App Store Connect'te App ID'ye Game Center yeteneği açık olmalı, profil yenilenmiş olmalı (Setup Match, `MATCH_FORCE=true`).
+   Build günlüğünde "Profil Game Center yetkisi taşımıyor" uyarısı varsa online da kapalıdır.
+2. İki iPhone, ikisinde de Game Center oturumu açık ve iki hesap birbirinin arkadaşı (ya da ikisi de "şimdi oyna" desin).
+3. İki telefonda da Ayarlar başlığına 5 kez dokun (tanı katmanı). Oyna sekmesinde "Arkadaşınla oyna" çıkar.
+4. 20 maç oyna; kopma, skor uyuşmazlığı, topun yerde bekleyip dirilmesi görürsen thread'e yaz (2. aşama geçiş ölçütü).
+Bilinen eksikler: "Maçtan çık" düğmesi yok (çıkış = uygulamayı kapatmak, rakip 10 sn sonra hükmen kazanır), rakip
+varsayılan figürle görünür, maç ödül vermez.

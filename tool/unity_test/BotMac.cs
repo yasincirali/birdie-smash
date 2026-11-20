@@ -170,6 +170,7 @@ static class BotMac
         GeriKosu();   // 2026-11-14 geri koşu yavaş, rakip topa gerçekten yetişir, gövdenin gerisinden smaç yok
         FlickSerileri();   // 2026-11-10 inceleme 17:08 #1: ardışık flick servisi rakibi gittikçe az aldatır
         ServisSaatleri();   // 2026-11-07 inceleme: online servis saati + çekilme (Core/Uzak)
+        Oturumlar();   // 2026-11-20 online oturum: selamlaşma, servis kurası, gecikme ölçümü, kopma (Core/Oturum)
         Ligler(); Kartlar();   // 2026-11-07 online: lig puanı (Core/Lig), oyuncu kartı (Core/OyuncuKarti)
         SicrayisBantlari();   // 2026-11-07 inceleme 16:05 #3: sıçrayış file uzaklığına göre (yalnız ölçüm, kural değişmedi)
         AdimTipleri();   // 2026-10-27 birleşik dal incelemesi: figürün kendi adım boyu (ekran/model) × işaretli faz (ekran/kosu)
@@ -2361,6 +2362,74 @@ static class BotMac
         var T = new Match(72, new MatchOptions { easy = true, target = 5 }); for (int i = 0; i < 60 * 20; i++) T.Update(dt);
         if (T.over || T.otoServis != 0 || T.s != null || T.ServisKalan != -1) Fail("servis saati tek oyunculuda işlememeli");
         Console.WriteLine("servis saati: ilk otomatik servis " + ilkOto.ToString("0.0") + " sn, hükmen bitiş " + t.ToString("0") + " sn, skor " + A.sc[0] + "-" + A.sc[1]);
+    }
+
+    // Online oturum (2026-11-20, Core/Oturum): iki oturum + iki maç gecikmeli kuyrukla bağlanır, taşıma yok. Kapı: iki taraf
+    // Hazir olur, servis tam bir tarafta, kartlar karşıya geçer, ölçülen gecikme gerçeğe yakın, maç aynalı skorla biter;
+    // bir taraf susunca kalan SESSIZ_KOPMA sonra hükmen kazanır; başka sürümle maç kurulmaz; bozuk bayt oturumu düşürmez.
+    static void Oturumlar()
+    {
+        const float dt = 1f / 60f;
+        foreach (float L in new[] { .04f, .15f })
+        {
+            var oa = new Oturum(11, new OyuncuKarti { ad = "Ayse", seviye = 7 }); var ob = new Oturum(12, new OyuncuKarti { ad = "Bora", seviye = 3 });
+            Match A = null, B = null; float t = 0; int guard = 0;
+            var yolAB = new List<KeyValuePair<float, byte[]>>(); var yolBA = new List<KeyValuePair<float, byte[]>>();
+            while (!(A != null && B != null && A.over && B.over) && guard++ < 60 * 60 * 30)
+            {
+                if (A == null && oa.durum == Oturum.Durum.Hazir) A = new Match(300, new MatchOptions { target = 11, uzak = true, uzakServis = oa.servisBende ? "me" : "op" });
+                if (B == null && ob.durum == Oturum.Durum.Hazir) B = new Match(301, new MatchOptions { target = 11, uzak = true, uzakServis = ob.servisBende ? "me" : "op" });
+                if (A != null) { Bot(A, dt); A.Update(dt); A.events.Clear(); }
+                if (B != null) { Bot(B, dt); B.Update(dt); B.events.Clear(); }
+                oa.Tik(dt, A != null ? A.uzak : null); ob.Tik(dt, B != null ? B.uzak : null); t += dt;
+                foreach (var b in oa.giden) yolAB.Add(new KeyValuePair<float, byte[]>(t + L, b));
+                foreach (var b in ob.giden) yolBA.Add(new KeyValuePair<float, byte[]>(t + L, b));
+                oa.giden.Clear(); ob.giden.Clear();
+                while (yolAB.Count > 0 && yolAB[0].Key <= t) { ob.Al(yolAB[0].Value); yolAB.RemoveAt(0); }
+                while (yolBA.Count > 0 && yolBA[0].Key <= t) { oa.Al(yolBA[0].Value); yolBA.RemoveAt(0); }
+            }
+            string ek = " (gecikme " + (L * 1000).ToString("0") + " ms)";
+            if (A == null || B == null) { Fail("oturum: selamlaşma bitmedi" + ek); continue; }
+            if (oa.servisBende == ob.servisBende) Fail("oturum: servis kurası iki tarafta aynı çıktı" + ek);
+            if (oa.rakip == null || oa.rakip.ad != "Bora" || ob.rakip == null || ob.rakip.ad != "Ayse" || ob.rakip.seviye != 7) Fail("oturum: oyuncu kartı karşıya geçmedi" + ek);
+            if (!(A.over && B.over)) Fail("oturum: maç bitmedi" + ek);
+            else if (A.hukmen || B.hukmen || A.sc[0] != B.sc[1] || A.sc[1] != B.sc[0]) Fail("oturum: skor uyuşmadı " + A.sc[0] + "-" + A.sc[1] + " / " + B.sc[1] + "-" + B.sc[0] + ek);
+            // Paket kare başında işlenir, cevap sonraki karede yola çıkar: ölçüm gerçeğin 1–1,5 kare (≤ 30 ms) üstündedir.
+            // Bu pay gerçek telefonda da var ve ileri sarmaya girmesi doğru (paket uygulanana dek geçen süre).
+            if (oa.gecikme < L || oa.gecikme - L > .03f || ob.gecikme < L || ob.gecikme - L > .03f) Fail("oturum: ölçülen gecikme " + oa.gecikme.ToString("0.000") + "/" + ob.gecikme.ToString("0.000") + " sn, gerçek " + L);
+            Console.WriteLine("oturum" + ek + ": servis " + (oa.servisBende ? "A" : "B") + ", ölçülen " + (oa.gecikme * 1000).ToString("0") + "/" + (ob.gecikme * 1000).ToString("0") + " ms, skor " + A.sc[0] + "-" + A.sc[1]);
+        }
+        // Kopma: B maçın 5. saniyesinde susar (uygulama kapandı). A en geç SESSIZ_KOPMA + 1 sn sonra hükmen kazanır.
+        {
+            var oa = new Oturum(21, null); var ob = new Oturum(22, null); Match A = null; float t = 0, sus = -1, bitis = -1;
+            for (int i = 0; i < 60 * 40 && bitis < 0; i++)
+            {
+                bool bCanli = sus < 0;
+                if (A == null && oa.durum == Oturum.Durum.Hazir) { A = new Match(310, new MatchOptions { target = 11, uzak = true, uzakServis = "op" }); }
+                if (A != null) { A.Update(dt); A.events.Clear(); if (bCanli && t > 5) sus = t; if (A.over) bitis = t; }
+                oa.Tik(dt, A != null ? A.uzak : null); if (bCanli) ob.Tik(dt, null); t += dt;
+                if (bCanli) foreach (var b in oa.giden) ob.Al(b);
+                if (bCanli) foreach (var b in ob.giden) oa.Al(b);
+                oa.giden.Clear(); ob.giden.Clear();
+            }
+            if (A == null || !A.over || !A.hukmen || A.hukmenKazanan != "me" || oa.kopmaNeden != "sessiz") Fail("oturum kopma: susan rakibe karşı hükmen galibiyet gelmedi");
+            // Sessizlik son gelen bayttan sayılır; o da en çok bir ping aralığı önce gelmiştir.
+            else if (bitis - sus < Oturum.SESSIZ_KOPMA - Oturum.PING_ARALIK - .1f || bitis - sus > Oturum.SESSIZ_KOPMA + .1f) Fail("oturum kopma: " + (bitis - sus).ToString("0.0") + " sn sonra (beklenen ~" + Oturum.SESSIZ_KOPMA + ")");
+            else Console.WriteLine("oturum kopma: rakip sustuktan " + (bitis - sus).ToString("0.0") + " sn sonra hükmen");
+        }
+        // Sürüm ve bozuk veri
+        {
+            var o = new Oturum(31, null); var m = new Oturum(32, null).giden[0]; m[1] = 99; o.Al(m);
+            if (o.durum != Oturum.Durum.Koptu || o.kopmaNeden != "surum") Fail("oturum: başka sürümün Merhaba'sı kabul edildi");
+            var o2 = new Oturum(33, null); o2.Al(null); o2.Al(new byte[0]); o2.Al(new byte[] { 200 }); o2.Al(new byte[] { 201, 1 }); o2.Al(new byte[] { 202 }); o2.Al(new byte[] { 77, 1, 2, 3 });
+            if (o2.durum != Oturum.Durum.Selam) Fail("oturum: bozuk bayt durumu değiştirdi");
+            // Kura berabere: aynı tohum aynı zarı atar; iki taraf yeniden atıp anlaşmalı. Aynı tohum ikinci zarı da eşitler,
+            // bu yüzden B'nin ikinci Merhaba'sı başka tohumdan gelir (gerçekte tohumlar zaten ayrı).
+            var x = new Oturum(40, null); var y = new Oturum(40, null); x.Al(y.giden[0]);
+            if (x.durum != Oturum.Durum.Selam || x.giden.Count != 2) Fail("oturum: berabere kurada yeniden atılmadı");
+            x.Al(new Oturum(41, null).giden[0]);
+            if (x.durum != Oturum.Durum.Hazir) Fail("oturum: yeniden atılan kura anlaşmadı");
+        }
     }
 
     // Lig (Core/Lig): Glicko-2 Glickman'ın örneğine uyar; gerçek beceri farkında puan doğru sıralanır; kupa kazanınca artar,
