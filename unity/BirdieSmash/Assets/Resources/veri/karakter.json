@@ -123,7 +123,13 @@
   {"id": "aglak", "ad": "Ağlak", "sv": 7, "fiyat": 700},
   {"id": "toz", "ad": "Toz silkme", "sv": 10, "fiyat": 900},
   {"id": "kulak", "ad": "Duyamadım", "sv": 13, "fiyat": 1200},
-  {"id": "esne", "ad": "Esneme", "sv": 17, "fiyat": 1700}
+  {"id": "esne", "ad": "Esneme", "sv": 17, "fiyat": 1700},
+  {"id": "kivir", "ad": "Kıvır", "sv": 5, "fiyat": 550},
+  {"id": "disko", "ad": "Disko", "sv": 15, "fiyat": 1400},
+  {"id": "nanik", "ad": "Nanik", "sv": 8, "fiyat": 800},
+  {"id": "gelgel", "ad": "Gel gel", "sv": 11, "fiyat": 1000},
+  {"id": "opucuk", "ad": "Öpücük", "sv": 14, "fiyat": 1300},
+  {"id": "cikcik", "ad": "Cık cık", "sv": 19, "fiyat": 1900}
 ],
 "smac": [
   {"id": "duz", "ad": "Düz sıçrayış", "sv": 1, "fiyat": 0},
@@ -148,7 +154,13 @@
   {"id": "aglak", "ad": "Ağlak", "sv": 7, "fiyat": 700},
   {"id": "toz", "ad": "Toz silkme", "sv": 10, "fiyat": 900},
   {"id": "kulak", "ad": "Duyamadım", "sv": 13, "fiyat": 1200},
-  {"id": "esne", "ad": "Esneme", "sv": 17, "fiyat": 1700}
+  {"id": "esne", "ad": "Esneme", "sv": 17, "fiyat": 1700},
+  {"id": "kivir", "ad": "Kıvır", "sv": 5, "fiyat": 550},
+  {"id": "disko", "ad": "Disko", "sv": 15, "fiyat": 1400},
+  {"id": "nanik", "ad": "Nanik", "sv": 8, "fiyat": 800},
+  {"id": "gelgel", "ad": "Gel gel", "sv": 11, "fiyat": 1000},
+  {"id": "opucuk", "ad": "Öpücük", "sv": 14, "fiyat": 1300},
+  {"id": "cikcik", "ad": "Cık cık", "sv": 19, "fiyat": 1900}
 ],
 "yuz": [
   {"id": "yok", "ad": "Aksesuar yok", "sv": 1, "fiyat": 0},

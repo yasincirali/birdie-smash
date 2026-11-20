@@ -319,6 +319,10 @@ namespace BirdieSmash.Game
             var ui = root != null ? root.ui : null; if (ui == null || root.vitrin == null) yield break;
             ui.SekmeAc(Sekme.Soyunma); ui.SoyunmaSegment(2); yield return Bekle(20); ui.KarakterAc(UiKok.KAR_SEVINC); yield return Bekle(25);
             foreach (var sv in new[] { "ter", "tel" }) { root.vitrin.Sevinc(sv); int k = 0; foreach (float an in new[] { .15f, .32f, .45f, .58f, .72f, .9f }) { root.vitrin.TestSevincT = an; root.vitrin.a = 20; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("sevinc_" + sv + "_" + k++); } }
+            // 2026-11-20 yeni danslar ve kışkırtmalar: tur başına altı an (akış ve mimik parçalarının yeri okunsun); nanik bir de
+            // maskot modellerde (dil ve kaş yeri modelden modele değişir).
+            foreach (var sv in new[] { "kivir", "disko", "nanik", "gelgel", "opucuk", "cikcik" }) { root.vitrin.Sevinc(sv); int k = 0; foreach (float an in new[] { .1f, .3f, .5f, .7f, .9f, 1.1f }) { root.vitrin.TestSevincT = an; root.vitrin.a = 20; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("yeni_" + sv + "_" + k++); } }
+            { string m0 = Ayar.model; foreach (var md in new[] { "kedi", "panda", "robot", "hamambocegi" }) { if (!Ayar.ModelVar(md)) continue; Ayar.model = md; root.ModelDegisti(); yield return Bekle(30); foreach (var sv in new[] { "nanik", "cikcik" }) { root.vitrin.Sevinc(sv); root.vitrin.TestSevincT = .5f; root.vitrin.a = 20; root.vitrin.v = 0; yield return Bekle(4); yield return Cek("mimik_" + md + "_" + sv); if (root.vitrin.Fig != null) rap.AppendLine("mimik " + md + " " + sv + " · " + root.vitrin.Fig.MimikTani); } } Ayar.model = m0; root.ModelDegisti(); yield return Bekle(20); }
             root.vitrin.TestSevincT = -1;   // 2026-11-19: akış okunsun diye altı kare (yasin: "kalas gibi")
             ui.Geri(); ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
         }
@@ -435,7 +439,7 @@ namespace BirdieSmash.Game
             ui.KarakterAc(UiKok.KAR_SEVINC); yield return Bekle(25); yield return Cek("menu_" + ek + "sevinc");
             if (ek == "") foreach (var sv in new[] { "kollar", "zipla", "alkis", "zafer", "egil", "iyi_oyun", "ter", "tel" }) { root.vitrin.Sevinc(sv); yield return Bekle(sv == "zipla" ? 18 : 30); yield return Cek("sevinc_" + sv); }
             // 2026-11-12 danslar: ikişer kare (farklı evre), hareketi azalt kapalıyken (salınımlı hâli görünsün)
-            if (ek == "") { bool dr = Ayar.reduce; Ayar.reduce = false; foreach (var sv in new[] { "robot", "tavuk", "twist", "dalga", "helikopter", "gitar", "fiskiye", "ucak", "yildiz", "aglak", "kulak", "toz", "esne" }) { root.vitrin.Sevinc(sv); yield return Bekle(22); yield return Cek("dans_" + sv + "_1"); { var df = root.vitrin.Fig; if (df != null) rap.AppendLine("dans " + sv + " · bacak kod " + df.TaniBacakKod + " r " + df.TaniBacakR.ToString("F3") + " kalçaAta " + df.TaniKalcaAta); } yield return Bekle(13); yield return Cek("dans_" + sv + "_2"); } Ayar.reduce = dr; }
+            if (ek == "") { bool dr = Ayar.reduce; Ayar.reduce = false; foreach (var sv in PlayerView.DANSLAR) { root.vitrin.Sevinc(sv); yield return Bekle(22); yield return Cek("dans_" + sv + "_1"); { var df = root.vitrin.Fig; if (df != null) rap.AppendLine("dans " + sv + " · bacak kod " + df.TaniBacakKod + " r " + df.TaniBacakR.ToString("F3") + " kalçaAta " + df.TaniKalcaAta); } yield return Bekle(13); yield return Cek("dans_" + sv + "_2"); } Ayar.reduce = dr; }
             // 2026-11-10 smaç hareketleri (Kozmetik.SMAC): her hareketin temas öncesi (u .3) ve sonrası (u .75) karesi; saat sabit.
             if (ek == "") foreach (var sm in new[] { "duz", "yay", "makas", "donerek" }) foreach (var su in new[] { .3f, .75f })
                 { Vitrin.TestSmacT = .35f + su / Match.JUMP_HIZ; root.vitrin.Sevinc("smac:" + sm); yield return Bekle(4); yield return Cek("smac_" + sm + (su < .5f ? "_once" : "_sonra")); }

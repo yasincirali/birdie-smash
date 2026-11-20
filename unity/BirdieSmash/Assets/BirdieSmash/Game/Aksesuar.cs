@@ -111,6 +111,73 @@ namespace BirdieSmash.Game
             return r > 1e-4f;
         }
 
+        // ---- Mimik parçaları (2026-11-20, yasin: "kışkırtıcı mimikler eklenebilir"; PlayerView.MimikPoz sürer) ----
+        // Yüzler sabit ağ olduğundan mimik baş çerçevesine (Kur ile aynı: bas/goz işaretleri + bant ölçüsü, birim baş: yan x, tepe y,
+        // ön z) takılan dil ve iki kaşla verilir. Ağız ve göz yeri modelden modele değişir; ölçüler üretim betiklerindeki yüz
+        // geometrisinden (tool/karakter/maskot.py BAS_C/BAS_R/BANT_Z, tuycuk.py GZ; Oyuncak için Yuz() içindeki bıyık ölçümü)
+        // birim başa çevrildi. Oyuncak'ın kendi kaşı var (çift kaş olmasın: yalnız dil); robotun vizöründe kaş okunmaz (yalnız dil).
+        // Üç ilkel, sevinç dışında kapalı; yeni doku ya da ağ dosyası yok (uygulama boyutu değişmez).
+        public class MimikSet { public Transform kok, dil; public readonly Transform[] kas = new Transform[2]; public Vector3 agiz, kasYer, elMerkez, elR; }   // elR > 0: baş elipsoidi (birim baş), kaş kalkarken alın yüzeyini izler
+        static readonly Color DIL_RENK = new Color(.94f, .41f, .54f), KAS_RENK = new Color(.17f, .14f, .19f);
+        public static MimikSet MimikKur(Transform model, Transform kafa, Vector3 dikey, PlayerView.BantMeta bant, string modelAd)
+        {
+            if (model == null || kafa == null || bant == null) return null;
+            Transform bas = null, goz = null;
+            foreach (var t in model.GetComponentsInChildren<Transform>(true)) { if (t.name.StartsWith("bas__")) bas = t; else if (t.name.StartsWith("goz__")) goz = t; }
+            if (bas == null || goz == null) return null;
+            // Tüycük'ün yüzü gövde ağına bağlı, baş kemiği dönünce parçalar yüzden ayrılıyor (r215: dil gözün yanında): onda mimik yok.
+            if (modelAd == "tuycuk") return null;
+            Vector3 ileri = Vector3.ProjectOnPlane(goz.position - bas.position, dikey);
+            if (ileri.sqrMagnitude < 1e-8f) ileri = Vector3.ProjectOnPlane(model.forward, dikey);
+            float s = (goz.position - bas.position).magnitude / .2f, r = bant.r * s;
+            Vector3 c = bas.position + dikey.normalized * bant.dz * s + ileri.normalized * bant.df * s;
+            float yan = 1, ust = 1, on = 1, arka = 1;
+            if (bant.yan > 0 && bant.ust > 0 && bant.on > 0 && bant.arka > 0) { yan = bant.yan; ust = bant.ust; on = bant.on; arka = bant.arka; }
+            c += ileri.normalized * r * (on - arka) * .5f;
+            var m = new MimikSet(); bool kasVar = false; string ad = modelAd ?? "";
+            // r215: maskot kaşları görünmedi (alın yüzeyine gömülü kaldı): öne alındı ve kalınlaştırıldı; robotta dil ışıklı ağzın hizasına indi.
+            // r216: kaşlar etkin ama görünmüyordu: Capsule ilkeli build'de çizilmiyor (dil Sphere, o çiziliyor). Kaş da uzatılmış küre oldu.
+            // Maskot alnı dik kıvrılıyor (y .06'da yüzey z .78, y .22'de .63): sabit z kaşı ya gömüyor ya havada bırakıyordu, yüzeyden hesaplanır.
+            if (ad == "kedi" || ad == "tavsan" || ad == "panda") { m.agiz = new Vector3(0, -.80f, 1.03f); m.kasYer = new Vector3(.45f, .06f, .78f); m.elMerkez = new Vector3(0, -.5325f, 0); m.elR = new Vector3(1.183f, 1.036f, 1.095f); kasVar = true; }
+            else if (ad == "robot") m.agiz = new Vector3(0, -1.12f, .98f);
+            else if (ad.StartsWith("hamambocegi")) { m.agiz = new Vector3(0, -1.13f, 1.28f); m.kasYer = new Vector3(.59f, .10f, 1.13f); kasVar = true; }   // şiş göz küresinin üst önü
+            else m.agiz = new Vector3(0, -1.0f, .96f);
+            // r217: kaşlar üç kare turunda da görünmedi (etkin, ölçüsü doğru, yeri hesapla alın yüzeyinde; neden bulunamadı). Görülmeden
+            // doğrulanamayan parça gönderilmez: kaş kapalı, dil açık. Kaş kodu duruyor; açmak için bu satırı kaldır ve kare turunda doğrula.
+            kasVar = false;
+            m.kok = new GameObject("mimik").transform; m.kok.SetParent(kafa, true);
+            m.kok.position = c; m.kok.rotation = Quaternion.LookRotation(ileri.normalized, dikey.normalized);
+            m.kok.localScale = new Vector3(yan, ust, (on + arka) * .5f) * (r / Mathf.Max(1e-5f, kafa.lossyScale.x));
+            m.dil = P(PrimitiveType.Sphere, m.kok, m.agiz, new Vector3(.2f, .07f, .01f), Mat(DIL_RENK, .45f)).transform;
+            if (kasVar) for (int i = 0; i < 2; i++) m.kas[i] = P(PrimitiveType.Sphere, m.kok, new Vector3((i == 0 ? -1 : 1) * m.kasYer.x, m.kasYer.y, m.kasYer.z), new Vector3(.36f, .09f, .09f), Mat(KAS_RENK, .1f)).transform;
+            foreach (var rd in m.kok.GetComponentsInChildren<Renderer>()) rd.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;   // yüzde gölge lekesi olmasın
+            m.kok.gameObject.SetActive(false);
+            return m;
+        }
+        // dil 0–1 (uzama), dilYan ° (iki yana), w sevinç ağırlığı (kaşlar onunla belirir), kalk/tek baş yarıçapı oranı, kiz ° (+ çatık).
+        public static void MimikAyar(MimikSet m, float dil, float dilYan, float w, float kalk, float tek, float kiz)
+        {
+            if (m == null || m.kok == null) return;
+            bool dv = dil > .02f; if (m.dil != null && m.dil.gameObject.activeSelf != dv) m.dil.gameObject.SetActive(dv);
+            if (dv && m.dil != null)
+            {   // kök ağzın içinde kalır, uç öne ve aşağı uzar
+                var q = Quaternion.Euler(28, dilYan, 0);
+                m.dil.localRotation = q; m.dil.localScale = new Vector3(.26f, .09f, .44f * dil); m.dil.localPosition = m.agiz + q * new Vector3(0, 0, .15f * dil);   // r215: Oyuncak'ta dil zor seçiliyordu
+            }
+            bool kv = w > .02f && (kalk != 0 || tek != 0 || kiz != 0);
+            for (int i = 0; i < 2; i++)
+            {
+                var k = m.kas[i]; if (k == null) continue;
+                if (k.gameObject.activeSelf != kv) k.gameObject.SetActive(kv); if (!kv) continue;
+                int sx = i == 0 ? -1 : 1;   // 0 = sol kaş
+                float ky = m.kasYer.y + (kalk + (i == 0 ? tek : 0)) * w, kz = m.kasYer.z;
+                if (m.elR.x > 0) { float xx = m.kasYer.x / m.elR.x, yy = (ky - m.elMerkez.y) / m.elR.y; kz = m.elR.z * Mathf.Sqrt(Mathf.Max(.05f, 1 - xx * xx - yy * yy)) + .03f; }
+                k.localPosition = new Vector3(sx * m.kasYer.x, ky, kz);
+                k.localRotation = Quaternion.Euler(0, 0, sx * kiz * w);   // dış uç yukarı = çatık
+                k.localScale = new Vector3(.36f * w, .09f, .09f);
+            }
+        }
+
         static Material Mat(Color c, float parlak = .25f) { return Kit.Lit(c, parlak); }
         static GameObject P(PrimitiveType t, Transform k, Vector3 p, Vector3 s, Material m, Vector3 aci = default(Vector3))
         {
