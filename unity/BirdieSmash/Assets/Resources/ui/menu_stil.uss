@@ -988,3 +988,9 @@
 .az-hareket .renk:active { scale: 1 1; }
 /* 2026-11-20 inceleme (fikir 07:06 #4): açık tur mührü satırı Kariyer'e götürür; dokunma alanı 44 pt (HIG). */
 .muhur-satir--acik { min-height: 44px; margin-bottom: 0; }
+/* 2026-11-20 inceleme (fikir 12:06 #4): Oyuncunu seç kartında seçili çerçeve geçişsiz atlıyordu; renk örneğiyle aynı 0,12 sn
+   kenar rengi geçişi (border-width geçmez, yerleşim hesabı). .dugme süreleri korunur; hareketi azaltta sıfır. */
+.hazir-kart.dugme { transition-property: background-color, scale, border-color; transition-duration: 0.14s, 0.26s, 0.12s; }
+.az-hareket .hazir-kart.dugme { transition-duration: 0s; }
+.hazir-kart.dugme:active { transition-duration: 0.06s, 0.06s, 0.06s; }
+.az-hareket .hazir-kart.dugme:active { transition-duration: 0s; }

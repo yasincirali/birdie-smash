@@ -206,14 +206,15 @@ namespace BirdieSmash.Game
             if (once < 0 || ds >= once || Ayar.reduce || l == null) return;
             System.Func<int, string> yaz = n => n == 1 ? L.T("Dünya 1 numarası · unvanını koru") : L.T("Dünya sıralaman: {0}", SiraYaz(n));
             l.text = yaz(once);
-            float bas = -1; const float SURE = .6f; int gecikme = basAniA >= 0 ? 450 : 250;
+            float bas = -1; const float SURE = .6f; int gecikme = basAniA >= 0 ? 450 : 250, son = once;
+            // 2026-11-20 inceleme (fikir 12:06 #6): sayı aynı kaldıkça metin yeniden biçimlenmez (karede string + yeniden düzen yok).
             IVisualElementScheduledItem it = null;
             it = l.schedule.Execute(() =>
             {
                 if (l.panel == null) { it.Pause(); return; }
                 if (bas < 0) bas = Time.unscaledTime;
                 float t = Mathf.Clamp01((Time.unscaledTime - bas) / SURE), e = 1 - (1 - t) * (1 - t) * (1 - t);
-                int n = Mathf.RoundToInt(Mathf.Lerp(once, ds, e)); l.text = yaz(t >= 1 ? ds : n);
+                int n = t >= 1 ? ds : Mathf.RoundToInt(Mathf.Lerp(once, ds, e)); if (n != son) { son = n; l.text = yaz(n); }
                 if (t >= 1)
                 {
                     it.Pause(); if (root != null && root.sfx != null) root.sfx.Tik(1320); Yerel.Hap("tick");

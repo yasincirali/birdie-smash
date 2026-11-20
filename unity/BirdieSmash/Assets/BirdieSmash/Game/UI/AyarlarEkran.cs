@@ -15,6 +15,7 @@ namespace BirdieSmash.Game
     public partial class UiKok
     {
         int ayarDokun; float ayarDokunT; string lisans;
+        static readonly string[] DIL_AD = { "Sistem", "Türkçe", "English" };
 
         // Tek seçimli çip grubunda seçimi yerinde değiştirir: çerçeve sınıfı, ✓, erişim "seçili" ve altındaki tek soluk cümle.
         // Sayfa kurulmaz (2026-11-19, takılma kuralı): dokunuşta ayırma bir ✓ ikonu ve bir string.
@@ -26,9 +27,11 @@ namespace BirdieSmash.Game
                 var ic = d.Q(null, "cip-ic"); var tk = d.Q(null, "cip-tik");
                 if (s && tk == null && ic != null) { tk = Ikon(Ikonlar.Tik, 16, TURUNCU); tk.AddToClassList("cip-tik"); ic.Insert(0, tk); }
                 else if (!s && tk != null) tk.RemoveFromHierarchy();
-                if (j < adTablo.Length && j < acikTablo.Length) Erisim.Etiket(d, L.T(adTablo[j]) + ". " + L.T(acikTablo[j]), "dugme", s);
+                // Açıklaması olmayan grup (Dil) yalnız adı okutur.
+                if (j < adTablo.Length && acikTablo == null) Erisim.Etiket(d, L.T(adTablo[j]), "dugme", s);
+                else if (j < adTablo.Length && j < acikTablo.Length) Erisim.Etiket(d, L.T(adTablo[j]) + ". " + L.T(acikTablo[j]), "dugme", s);
             }
-            if (acik != null && secili >= 0 && secili < acikTablo.Length) { acik.text = L.T(acikTablo[secili]); acik.style.display = DisplayStyle.Flex; }
+            if (acik != null && acikTablo != null && secili >= 0 && secili < acikTablo.Length) { acik.text = L.T(acikTablo[secili]); acik.style.display = DisplayStyle.Flex; }
         }
 
         void AyarlarKur(VisualElement p)
@@ -104,13 +107,20 @@ namespace BirdieSmash.Game
             // yana bulur. Yazı boyutu da diğer çipli gruplar gibi seçilinin tek soluk cümlesini alır. Anahtarlar aynı.
             c.Add(Grup(L.T("Yazı boyutu"))); var yz = Satir(); c.Add(yz);
             string[] Yk = { "sistem", "normal", "buyuk" }, Ya = { "Sistem", "Normal", "Büyük" };
-            for (int i = 0; i < 3; i++) { string id = Yk[i]; var yc = Cip(L.T(Ya[i]), Ayar.yazi == id, () => { Ayar.yazi = id; Ayar.KaydetSonra(); Degisti(); }); Erisim.Etiket(yc, L.T(Ya[i]) + ". " + L.T(YAZI_ACIK[i]), "dugme", Ayar.yazi == id); yz.Add(yc); }
-            int ys = System.Array.IndexOf(Yk, Ayar.yazi); c.Add(Yazi(L.T(YAZI_ACIK[ys < 0 ? 0 : ys]), 12, "soluk"));
+            // 2026-11-20 inceleme (fikir 12:06 #2, takılma kuralı): dokunuş Degisti() çağırıyordu; ölçek değişince bir sonraki karede
+            // HepsiniKur zaten her şeyi kuruyor, yani Ayarlar ve üst çubuk iki kez kuruluyordu. Artık seçim yerinde değişir; ölçek
+            // değiştiyse tek kurulum UiKok'taki MenuYaziK denetiminden gelir, değişmediyse (sistem 1,0 iken Normal) hiç kurulum yok.
+            var yzA = Yazi("", 12, "soluk"); int ys = System.Array.IndexOf(Yk, Ayar.yazi); ys = ys < 0 ? 0 : ys;
+            for (int i = 0; i < 3; i++) { string id = Yk[i]; int ii = i; var yc = Cip(L.T(Ya[i]), Ayar.yazi == id, () => { Ayar.yazi = id; Ayar.KaydetSonra(); SecimYerinde(yz, ii, yzA, YAZI_ACIK, Ya); }); Erisim.Etiket(yc, L.T(Ya[i]) + ". " + L.T(YAZI_ACIK[i]), "dugme", Ayar.yazi == id); yz.Add(yc); }
+            yzA.text = L.T(YAZI_ACIK[ys]); c.Add(yzA);
             c.Add(Grup(L.T("Dil"))); var dl = Satir(); c.Add(dl);
             // "Sistem" (2026-11-12): iOS'un uygulama başına dil ayarını izler; Yazı satırındaki Sistem çipiyle aynı kalıp.
-            dl.Add(Cip(L.T("Sistem"), Ayar.dilSistem, () => { Ayar.dilSistem = true; Ayar.dil = Ayar.SistemDil(); Ayar.KaydetSonra(); }));
-            dl.Add(Cip("Türkçe", !Ayar.dilSistem && Ayar.dil == "tr", () => { Ayar.dilSistem = false; Ayar.dil = "tr"; Ayar.KaydetSonra(); }));
-            dl.Add(Cip("English", !Ayar.dilSistem && Ayar.dil == "en", () => { Ayar.dilSistem = false; Ayar.dil = "en"; Ayar.KaydetSonra(); }));
+            // 2026-11-20 inceleme (fikir 12:06 #1): sayfa yalnız dil DEĞİŞİNCE yeniden kuruluyor (UiKok sonDil). Telefon Türkçe iken
+            // Türkçe → Sistem dokunuşu dili değiştirmiyor, ✓ eski çipte kalıyordu ama Sistem kaydediliyordu. Artık ✓ yerinde taşınır;
+            // dil değiştiyse bugünkü tek HepsiniKur yolu her şeyi o dilde kurar.
+            dl.Add(Cip(L.T("Sistem"), Ayar.dilSistem, () => { Ayar.dilSistem = true; Ayar.dil = Ayar.SistemDil(); Ayar.KaydetSonra(); SecimYerinde(dl, 0, null, null, DIL_AD); }));
+            dl.Add(Cip("Türkçe", !Ayar.dilSistem && Ayar.dil == "tr", () => { Ayar.dilSistem = false; Ayar.dil = "tr"; Ayar.KaydetSonra(); SecimYerinde(dl, 1, null, null, DIL_AD); }));
+            dl.Add(Cip("English", !Ayar.dilSistem && Ayar.dil == "en", () => { Ayar.dilSistem = false; Ayar.dil = "en"; Ayar.KaydetSonra(); SecimYerinde(dl, 2, null, null, DIL_AD); }));
             // Game Center düğmesi buradan kalktı (2026-11-07 inceleme, fikir 20:09 #3): başlıksız, "Dil" grubunun parçası gibi
             // okunuyordu ve Profil › Başarımlar'da aynısı vardı. Başarımı gören oyuncu oradan geçer; Ayarlar bir öğe kısa.
             c.Add(Grup(L.T("Yardım")));
