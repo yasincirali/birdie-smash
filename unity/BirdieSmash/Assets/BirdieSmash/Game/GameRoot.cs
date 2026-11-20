@@ -228,7 +228,13 @@ namespace BirdieSmash.Game
         void OnlineTik(float dt)
         {
             bool macta = mod == Mod.Online && ekran != Ekran.Menu && match != null && match.uzak != null && Online.oturum == onlineOturum;
-            if (Online.Tik(dt, macta ? match.uzak : null)) { hud.Perde(OnlineMacKur); return; }
+            if (Online.Tik(dt, macta ? match.uzak : null))
+            {
+                // Maç yalnız menüden ya da online sonuç ekranından başlar: süren maçın ortasında kabul edilen davet o maçı
+                // (kaydını, ödülünü) yarıda kesmesin. Öyle bir davette bağlantı kapanır, çağıran "rakip ayrıldı" görür.
+                if (ekran == Ekran.Menu || mod == Mod.Online && ekran == Ekran.Bitti) hud.Perde(OnlineMacKur); else Online.Kapat();
+                return;
+            }
             // Maç kurulmadan kopan oturum (rakip vazgeçti, sürümler uyuşmadı): kapanır, oyuncu olduğu ekranda kalır.
             if (!macta && Online.oturum != null && Online.oturum.durum == Oturum.Durum.Koptu) Online.Kapat();
         }

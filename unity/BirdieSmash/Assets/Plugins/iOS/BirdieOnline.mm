@@ -8,7 +8,7 @@
 // Gönderim hep güvenilir kipte: Core/Uzak sıralı ve kayıpsız taşıma varsayar.
 // shortcut: konum paketi de güvenilir gidiyor (10 Hz, kayıpta sıra bekletir); takılma ölçülürse konum güvenilmez kipe alınır.
 #import <GameKit/GameKit.h>
-#import "UnityAppController.h"
+#import <UIKit/UIKit.h>
 
 // Durum: 0 boş, 1 eşleştirme sayfası açık, 2 bağlı (iki oyuncu da hazır), 3 bitti (iptal, hata ya da rakip koptu)
 @interface BirdieOnline : NSObject <GKMatchmakerViewControllerDelegate, GKMatchDelegate, GKLocalPlayerListener>
@@ -30,8 +30,15 @@
 - (void)sayfaAc:(GKMatchmakerViewController *)vc
 {
     if (vc == nil) { self.durum = 3; return; }
+    // Kök denetleyici BirdieYerel.mm (BirdiePaylas) ile aynı yoldan; üstte açık bir sayfa varsa onun üstünden sunulur
+    // (ikinci sunum yoksa sessizce düşer).
+    UIViewController *kok = nil;
+    for (UIScene *sc in [UIApplication sharedApplication].connectedScenes)
+        if ([sc isKindOfClass:[UIWindowScene class]]) for (UIWindow *w in ((UIWindowScene *)sc).windows) if (w.isKeyWindow) kok = w.rootViewController;
+    if (kok == nil) { self.durum = 3; return; }
+    while (kok.presentedViewController != nil) kok = kok.presentedViewController;
     vc.matchmakerDelegate = self; self.durum = 1;
-    [UnityGetGLViewController() presentViewController:vc animated:YES completion:nil];
+    [kok presentViewController:vc animated:YES completion:nil];
 }
 
 - (void)ara
@@ -49,7 +56,8 @@
     self.durum = 0;
 }
 
-- (void)hazirMi { if (self.mac != nil && self.mac.expectedPlayerCount == 0) self.durum = 2; }
+// Bitti (3) kalıcıdır: kopmadan sonra gelen bir durum olayı bağlantıyı yeniden "bağlı" göstermesin.
+- (void)hazirMi { if (self.durum != 3 && self.mac != nil && self.mac.expectedPlayerCount == 0) self.durum = 2; }
 
 // ---- eşleştirme sayfası ----
 - (void)matchmakerViewControllerWasCancelled:(GKMatchmakerViewController *)vc
