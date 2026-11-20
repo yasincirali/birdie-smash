@@ -1345,6 +1345,7 @@ namespace BirdieSmash.Game
         void SevincPoz(string id, float t, float w, bool rm)
         {
             if (kKol == null) ZincirKur(); if (kKol == null || w <= 0.001f) return;
+            if (!katiKuruldu) KatiKur();   // kollar henüz klibin pozundayken ölçülür
             Transform SU = kKol[3], SE = kKol[4], SH = kKol[5], LU = kKol[0], LE = kKol[1], LH = kKol[2];
             Vector3 up = yaw.up, ri = yaw.right, fw = yaw.forward;
             float salla = rm ? 0 : 1;
@@ -1588,6 +1589,7 @@ namespace BirdieSmash.Game
                 float bp = Mathf.Clamp((egilG - egil) * .8f + (hop - hopG) * 120, -18, 18), by = Mathf.Clamp((burG - bur) * .6f + (donG - don) * .25f, -18, 18), br = Mathf.Clamp((yatG - yat) * .8f, -12, 12);
                 kHead.rotation = Quaternion.AngleAxis(by, up) * Quaternion.AngleAxis(bp, ri) * Quaternion.AngleAxis(br, fw) * kHead.rotation;
             }
+            Kati();
             if (w < .999f) for (int i = 0; i < kem.Length; i++) if (kem[i] != null) kem[i].localRotation = Quaternion.Slerp(sevKayit[i], kem[i].localRotation, w);
             MimikPoz(id, t, w, rm);
         }
@@ -1623,6 +1625,218 @@ namespace BirdieSmash.Game
             Aksesuar.MimikAyar(mimik, dil * w, dilYan, w, kalk, tek, kiz);
         }
         void LateUpdate() { if (mimik != null && mimik.kok != null && Time.frameCount > mimKare + 1 && mimik.kok.gameObject.activeSelf) mimik.kok.gameObject.SetActive(false); }
+
+        // ---- Katı gövde ve eklem sınırı (2026-11-20, yasin: "kol el vücuttan geçiyor ya da eklemler gerçek dışı hareketler
+        // yapıyor, skinler de katı madde olarak algılanmalı") ----
+        // Sevinç hedefleri omuz ve kol boyuna göre yazılı; tombul gövdede, iri maskot kafasında el ve raket ağın içine giriyordu.
+        // Gövde, modelin o an giydiği ağdan ölçülür (KatiKur, model başına bir kez): pişmiş ağın noktaları en yakın kemiğe
+        // verilir (ağ okunur işaretli değil, ağırlıklara bakılamaz), kol dışındaki her kemiğe kendi yerelinde bir elipsoit oturur
+        // (baş, omurga, leğen, bacaklar; şapka, saç ve sırt aksesuarı bağlı olduğu kemiğe sayılır). SevincPoz her kare kolları
+        // çözdükten sonra Kati çalışır: el, dirsek ve ön kol ortası elipsoitlerin dışına itilir, iki el birbirine girmez, raket
+        // gövdeyi kesmez. Eklemler: dirsek 35°'den fazla katlanmaz, üst kol sırtın arkasına 45°'den ve gövdenin karşı yanına
+        // geçmez, bilek 80° (dönme 100°), boyun 45°. Saklı durum yok: poz yine yalnız id ve t'nin işlevi.
+        struct Hacim { public Transform k; public Vector3 c, r; }
+        Hacim[] kati; int katiN; float katiEl, katiKol; bool katiKuruldu;
+        readonly Vector3[] katiElC = new Vector3[2]; readonly Quaternion[] katiBilek = new Quaternion[2]; Quaternion katiGogus;
+        [System.NonSerialized] public float TaniKatiDerin;   // son karede itilen en büyük mesafe (m): ekran turu raporu
+        public string TaniKati { get { return "hacim " + katiN + " el " + katiEl.ToString("F3") + " itme " + TaniKatiDerin.ToString("F3"); } }
+        const int KATI_ORNEK = 4000;   // model başına en çok bu kadar nokta ölçülür (ilk sevinçte takılma olmasın)
+        static float NoktaParca(Vector3 p, Vector3 a, Vector3 b)
+        {
+            Vector3 ab = b - a; float l = ab.sqrMagnitude; float t = l < 1e-10f ? 0 : Mathf.Clamp01(Vector3.Dot(p - a, ab) / l);
+            return (p - (a + ab * t)).magnitude;
+        }
+        // Verilen sıralı listenin %90'lık değeri.
+        static float Yuzde90(List<float> s) { s.Sort(); return s[Mathf.Min(s.Count - 1, (int)(s.Count * .9f))]; }
+        static bool KatiDisi(string et) { return et == "isaret" || et == "bilek" || et == "cerceve" || et == "grip" || et == "tel" || et == "tel2"; }   // işaret, bileklik ve raket gövde değil
+        void KatiKur()
+        {
+            katiKuruldu = true; katiN = 0; kati = null; if (kKol == null || kHead == null) return;
+            for (int i = 0; i < 2; i++) { var el = kKol[i * 3 + 2]; katiBilek[i] = el != null ? el.localRotation : Quaternion.identity; katiElC[i] = Vector3.zero; }
+            Transform gk = kOmurga.Count > 0 ? kOmurga[kOmurga.Count - 1] : null; katiGogus = gk != null ? Quaternion.Inverse(gk.rotation) * yaw.rotation : Quaternion.identity;
+            float L = kKol[3] != null && kKol[4] != null && kKol[5] != null ? (kKol[4].position - kKol[3].position).magnitude + (kKol[5].position - kKol[4].position).magnitude : .5f;
+            katiEl = L * .07f; katiKol = katiEl * .75f;
+            // kemikler: derili ağların kemik listesi. tur: -1 kol (hacim yok), -2/-3 sol/sağ el (el küresi ölçülür), ≥0 hacim sahibi kemiğin sırası
+            var kem = new List<Transform>(); var gor = new HashSet<Transform>();
+            foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>())
+                foreach (var b in r.bones) if (b != null && gor.Add(b)) kem.Add(b);
+            if (kem.Count == 0) return;
+            var tur = new int[kem.Count]; var uc = new Vector3[kem.Count];
+            Transform kop0 = kKol[0] != null ? kKol[0].parent : null, kop1 = kKol[3] != null ? kKol[3].parent : null;
+            for (int i = 0; i < kem.Count; i++)
+            {
+                Transform b = kem[i]; int t = i;
+                for (var a = b; a != null && a != model; a = a.parent)
+                {
+                    if (a == kKol[2] || a == kKol[5]) { t = a == kKol[2] ? -2 : -3; break; }
+                    if (a == kKol[0] || a == kKol[3] || ((a == kop0 || a == kop1) && !kOmurga.Contains(a))) { t = -1; break; }   // kol ve köprücük
+                    if (a == kHead) { t = kem.IndexOf(kHead); break; }   // kulak, saç kemikleri başa sayılır
+                }
+                tur[i] = t;
+                // kemiğin parçası: kendisinden ilk kemik çocuğuna (yoksa nokta)
+                uc[i] = b.position; foreach (Transform c in b) if (gor.Contains(c)) { uc[i] = c.position; break; }
+            }
+            // noktalar: derili ağlar pişirilir (Aksesuar.BantHalkasi ile aynı dönüşüm), kemiğe bağlı sabit parçalar köşe noktalarıyla
+            var nok = new List<Vector3>(); var sahip = new List<int>();
+            foreach (var r in model.GetComponentsInChildren<SkinnedMeshRenderer>())
+            {
+                if (!r.enabled || r.sharedMesh == null || r.name.StartsWith("raket")) continue;
+                string et = Etiket(r.gameObject.name); if (KatiDisi(et)) continue;
+                var m = new Mesh(); r.BakeMesh(m, true); var M = Matrix4x4.TRS(r.transform.position, r.transform.rotation, Vector3.one); var vs = m.vertices; Destroy(m);
+                int adim = Mathf.Max(1, vs.Length / KATI_ORNEK);
+                for (int v = 0; v < vs.Length; v += adim)
+                {
+                    Vector3 p = M.MultiplyPoint3x4(vs[v]); int en = -1; float enD = float.MaxValue;
+                    for (int i = 0; i < kem.Count; i++)
+                    {   // kol ince: gövdenin yan yüzü kola yakın düşüp kola yazılmasın diye kol uzaklığı 2,5 kat sayılır
+                        float d = NoktaParca(p, kem[i].position, uc[i]) * (tur[i] < 0 ? 2.5f : 1); if (d < enD) { enD = d; en = i; }
+                    }
+                    nok.Add(p); sahip.Add(tur[en]);
+                }
+            }
+            foreach (var r in model.GetComponentsInChildren<MeshRenderer>())
+            {
+                if (!r.enabled || r.name.StartsWith("raket") || KatiDisi(Etiket(r.name))) continue; var mf = r.GetComponent<MeshFilter>(); if (mf == null || mf.sharedMesh == null) continue;
+                if (mimik != null && mimik.kok != null && r.transform.IsChildOf(mimik.kok)) continue;
+                int t = -1; for (var a = r.transform.parent; a != null && a != model; a = a.parent) { int i = kem.IndexOf(a); if (i >= 0) { t = tur[i]; break; } }
+                if (t < 0) continue;   // kola/ele takılı (raket, bileklik) ya da kemiğe bağlı değil
+                var bb = mf.sharedMesh.bounds;
+                for (int k = 0; k < 8; k++) { nok.Add(r.transform.TransformPoint(bb.center + Vector3.Scale(bb.extents, new Vector3((k & 1) * 2 - 1, (k >> 1 & 1) * 2 - 1, (k >> 2 & 1) * 2 - 1) * .8f))); sahip.Add(t); }
+            }
+            if (nok.Count < 50) return;
+            // shortcut: pişmiş ağın dönüşümü tek aday (ölçek üst düğümdeyse yanlış düşer); baş, eller, ayaklar noktaların kutusunda
+            // değilse hacim kurulmaz (yalnız eklem sınırı çalışır). Öyle bir model çıkarsa Aksesuar'daki iki adaylı yola geç.
+            { var kutu = new Bounds(nok[0], Vector3.zero); foreach (var p in nok) kutu.Encapsulate(p); kutu.Expand(kutu.size.magnitude * .15f);
+              if (!kutu.Contains(kHead.position) || (kKol[2] != null && !kutu.Contains(kKol[2].position)) || (kKol[5] != null && !kutu.Contains(kKol[5].position))) return; }
+            var hac = new List<Hacim>(); var xs = new List<float>(); var ys = new List<float>(); var zs = new List<float>();
+            for (int i = 0; i < kem.Count; i++)
+            {
+                if (tur[i] != i) continue; Transform b = kem[i]; Vector3 c = Vector3.zero; int n = 0;
+                for (int v = 0; v < nok.Count; v++) if (sahip[v] == i) { c += b.InverseTransformPoint(nok[v]); n++; }
+                if (n < 12) continue; c /= n; xs.Clear(); ys.Clear(); zs.Clear();
+                for (int v = 0; v < nok.Count; v++) if (sahip[v] == i) { var e = b.InverseTransformPoint(nok[v]) - c; xs.Add(Mathf.Abs(e.x)); ys.Add(Mathf.Abs(e.y)); zs.Add(Mathf.Abs(e.z)); }
+                var rr = new Vector3(Yuzde90(xs), Yuzde90(ys), Yuzde90(zs)) * 1.1f;   // %90: kulak, sivri şapka ucu gibi çıkıntılar hacmi şişirmesin
+                if (rr.x < 1e-5f || rr.y < 1e-5f || rr.z < 1e-5f) continue;
+                hac.Add(new Hacim { k = b, c = c, r = rr });
+            }
+            // el küresi: el ve parmak noktalarının ortası (el yerelinde), yarıçap ortalama uzaklık
+            for (int s = 0; s < 2; s++)
+            {
+                Transform el = kKol[s * 3 + 2]; if (el == null) continue; Vector3 c = Vector3.zero; int n = 0;
+                for (int v = 0; v < nok.Count; v++) if (sahip[v] == -2 - s) { c += nok[v]; n++; }
+                if (n < 6) continue; c /= n; float r = 0; for (int v = 0; v < nok.Count; v++) if (sahip[v] == -2 - s) r += (nok[v] - c).magnitude; r /= n;
+                katiElC[s] = el.InverseTransformPoint(c); if (s == 1) { katiEl = Mathf.Clamp(r, L * .04f, L * .12f); katiKol = katiEl * .75f; }
+            }
+            kati = hac.ToArray(); katiN = kati.Length;
+            // Ayar: kurulduğu pozda (klibin kendi pozu, geçerli sayılır) el, dirsek ve ön kol ortası hiçbir hacmin içinde kalmamalı;
+            // kalıyorsa o hacim o kadar küçülür (en çok %40'ına). Böylece kaba ölçüm, kol yanda dururken kolu dışarı itmez.
+            for (int h = 0; h < katiN; h++)
+            {
+                float f = 1;
+                for (int s = 0; s < 2; s++)
+                {
+                    Transform E = kKol[s * 3 + 1], H = kKol[s * 3 + 2]; if (E == null || H == null) continue;
+                    f = Mathf.Min(f, Mathf.Min(HacimOran(h, H.TransformPoint(katiElC[s]), katiEl), Mathf.Min(HacimOran(h, E.position, katiKol), HacimOran(h, (E.position + H.position) * .5f, katiKol))));
+                }
+                if (f < 1) kati[h].r *= Mathf.Max(.4f, f * .97f);
+            }
+        }
+        // Noktanın (yarıçapı rp, dünya) h hacmine göre oranı: < 1 içeride.
+        float HacimOran(int h, Vector3 p, float rp)
+        {
+            var H = kati[h]; float sc = Mathf.Abs(H.k.lossyScale.x); if (sc < 1e-6f) return 2; float rl = rp / sc;
+            Vector3 e = H.k.InverseTransformPoint(p) - H.c; e.x /= H.r.x + rl; e.y /= H.r.y + rl; e.z /= H.r.z + rl; return e.magnitude;
+        }
+        // Nokta bir hacmin içindeyse merkezden dışarı doğru yüzeye taşınır. Döner: taşındı mı.
+        bool Disari(ref Vector3 p, float rp)
+        {
+            bool d = false;
+            for (int h = 0; h < katiN; h++)
+            {
+                var H = kati[h]; float sc = Mathf.Abs(H.k.lossyScale.x); if (sc < 1e-6f) continue; float rl = rp / sc;
+                Vector3 rr = H.r + Vector3.one * rl, e = H.k.InverseTransformPoint(p) - H.c, q = new Vector3(e.x / rr.x, e.y / rr.y, e.z / rr.z); float n = q.magnitude;
+                if (n >= 1) continue;
+                if (n < 1e-3f) { q = Vector3.forward; n = 1; }
+                Vector3 y = H.k.TransformPoint(H.c + Vector3.Scale(q / n, rr)); TaniKatiDerin = Mathf.Max(TaniKatiDerin, (y - p).magnitude); p = y; d = true;
+            }
+            return d;
+        }
+        const float DIRSEK_MIN = 35, OMUZ_ARKA = .7f, OMUZ_IC = .6f, BILEK_EGIM = 80, BILEK_DONME = 100, BOYUN_MAX = 45;
+        readonly Vector3[] katiS = new Vector3[2], katiE = new Vector3[2], katiH = new Vector3[2], katiOff = new Vector3[2]; readonly Quaternion[] katiHR = new Quaternion[2];
+        void Kati()
+        {
+            TaniKatiDerin = 0; if (kKol == null) return;
+            if (kHead != null) kHead.localRotation = Quaternion.RotateTowards(sevKayit[7], kHead.localRotation, BOYUN_MAX);
+            Transform gk = kOmurga.Count > 0 ? kOmurga[kOmurga.Count - 1] : null; Quaternion gq = gk != null ? gk.rotation * katiGogus : yaw.rotation;
+            Vector3 gri = gq * Vector3.right, gfw = gq * Vector3.forward, gup = gq * Vector3.up;
+            for (int s = 0; s < 2; s++)
+            {
+                Transform S = kKol[s * 3], E = kKol[s * 3 + 1], H = kKol[s * 3 + 2]; if (S == null || E == null || H == null) return;
+                katiS[s] = S.position; katiE[s] = E.position; katiH[s] = H.position; katiHR[s] = H.rotation; katiOff[s] = H.TransformPoint(katiElC[s]) - H.position;
+            }
+            for (int tur = 0; tur < 4; tur++)
+            {
+                for (int s = 0; s < 2; s++)
+                {
+                    Vector3 sp = katiS[s], e = katiE[s], h = katiH[s];
+                    float la = (kKol[s * 3 + 1].position - kKol[s * 3].position).magnitude, lb = (kKol[s * 3 + 2].position - kKol[s * 3 + 1].position).magnitude;
+                    if (la < 1e-5f || lb < 1e-5f) continue;
+                    // omuz: üst kol sırtın arkasına ve gövdenin karşı yanına sınırlı gider (arkadayken içe hiç geçmez)
+                    Vector3 u = (e - sp).normalized, ic = s == 0 ? gri : -gri; float b = Vector3.Dot(u, -gfw);
+                    if (b > OMUZ_ARKA) { u += gfw * (b - OMUZ_ARKA); b = OMUZ_ARKA; }
+                    float a = Vector3.Dot(u, ic), amax = Mathf.Lerp(OMUZ_IC, .1f, Mathf.Clamp01((b + .15f) / .3f)); if (a > amax) u -= ic * (a - amax);
+                    e = sp + u.normalized * la;
+                    if (katiN > 0)
+                    {
+                        Disari(ref e, katiKol);
+                        Vector3 m = (e + h) * .5f, m2 = m; if (Disari(ref m2, katiKol)) { e += m2 - m; h += m2 - m; }
+                        Vector3 hc = h + katiOff[s]; if (Disari(ref hc, katiEl)) h = hc - katiOff[s];
+                    }
+                    // erişim: dirsek en az DIRSEK_MIN açık, kol boyundan uzun değil; dirsek iki kemik boyuna tam oturtulur (o anki dirsek yönünde)
+                    Vector3 d = h - sp; float Lmin = Mathf.Sqrt(la * la + lb * lb - 2 * la * lb * Mathf.Cos(DIRSEK_MIN * Mathf.Deg2Rad));
+                    float Ld = Mathf.Clamp(d.magnitude, Lmin, la + lb - 1e-3f); Vector3 ud = d.sqrMagnitude > 1e-10f ? d.normalized : gfw; h = sp + ud * Ld;
+                    float ca = Mathf.Clamp((la * la + Ld * Ld - lb * lb) / (2 * la * Ld), -1, 1);
+                    Vector3 kp = Vector3.ProjectOnPlane(e - sp, ud); if (kp.sqrMagnitude < 1e-10f) kp = Vector3.ProjectOnPlane(-gup, ud); if (kp.sqrMagnitude < 1e-10f) kp = Vector3.ProjectOnPlane(gfw, ud);
+                    e = sp + ud * (la * ca) + kp.normalized * (la * Mathf.Sqrt(1 - ca * ca));
+                    katiE[s] = e; katiH[s] = h;
+                }
+                // iki el birbirinin içine girmez
+                Vector3 c0 = katiH[0] + katiOff[0], c1 = katiH[1] + katiOff[1], ee = c1 - c0; float em = ee.magnitude;
+                if (em < katiEl * 2 && em > 1e-5f) { Vector3 it = ee / em * (katiEl - em * .5f); katiH[0] -= it; katiH[1] += it; }
+            }
+            for (int s = 0; s < 2; s++)
+            {
+                Transform S = kKol[s * 3], E = kKol[s * 3 + 1], H = kKol[s * 3 + 2];
+                if ((katiE[s] - E.position).sqrMagnitude > 1e-10f || (katiH[s] - H.position).sqrMagnitude > 1e-10f)
+                {
+                    S.rotation = Quaternion.FromToRotation(E.position - S.position, katiE[s] - S.position) * S.rotation;
+                    E.rotation = Quaternion.FromToRotation(H.position - E.position, katiH[s] - E.position) * E.rotation;
+                    H.rotation = katiHR[s];
+                }
+                BilekSinir(H, katiBilek[s]);
+            }
+            // raket gövdeyi ve başı kesmez: şaftın ortası ve kafa dışarıda kalacak kadar bilekten döner
+            Transform SH = kKol[5];
+            if (kafa != null && SH != null && katiN > 0)
+                for (int k = 0; k < 2; k++)
+                {
+                    Vector3 p = Vector3.Lerp(SH.position, kafa.position, k == 0 ? .55f : 1), p2 = p;
+                    if (Disari(ref p2, katiKol) && (p - SH.position).sqrMagnitude > 1e-8f) SH.rotation = Quaternion.FromToRotation(p - SH.position, p2 - SH.position) * SH.rotation;
+                }
+        }
+        // Bilek: elin ön kola göre dönüşü, kurulum pozundan (raketi tutan boşta el) eğilme ve ön kol ekseninde dönme olarak sınırlanır.
+        static void BilekSinir(Transform el, Quaternion dinlenme)
+        {
+            Vector3 a = el.localPosition; if (a.sqrMagnitude < 1e-10f) return; a.Normalize();
+            Quaternion D = el.localRotation * Quaternion.Inverse(dinlenme);
+            Vector3 pr = a * Vector3.Dot(new Vector3(D.x, D.y, D.z), a); float tm = Mathf.Sqrt(pr.sqrMagnitude + D.w * D.w);
+            Quaternion tw = tm < 1e-5f ? Quaternion.identity : new Quaternion(pr.x / tm, pr.y / tm, pr.z / tm, D.w / tm), sw = D * Quaternion.Inverse(tw);
+            float sa = Quaternion.Angle(Quaternion.identity, sw), ta = Quaternion.Angle(Quaternion.identity, tw);
+            if (sa <= BILEK_EGIM && ta <= BILEK_DONME) return;
+            if (sa > BILEK_EGIM) sw = Quaternion.Slerp(Quaternion.identity, sw, BILEK_EGIM / sa);
+            if (ta > BILEK_DONME) tw = Quaternion.Slerp(Quaternion.identity, tw, BILEK_DONME / ta);
+            el.localRotation = sw * tw * dinlenme;
+        }
 
         // Kalça–omuz ayrışması (2026-10-27, ekran/kosu): hazırlıkta koşarken gövde fileye döner (Athlete.donus), bacaklar
         // gidişte kalır (Athlete.donusAyak, ayak işi klibi o çerçevede seçildi). Fark leğene verilir, omurganın ilk iki

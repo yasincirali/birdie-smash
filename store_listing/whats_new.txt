@@ -1,4 +1,9 @@
 === UNITY ===
+Sevinçlerde katı gövde ve eklem sınırı (20 Kasım gece):
+- Sayı ve maç sonu sevinçlerinde el, kol ve raket artık gövdenin, başın ve bacağın içinden geçmiyor. Gövde her modelin kendi ağından ölçülüyor: Kedi, Tavşan, Panda, Robot, Hamamböceği ve tombul tiplerde de geçerli; şapka, saç ve sırt aksesuarı da sayılıyor.
+- İki el birbirinin içine girmiyor.
+- Eklemler sınırlı: dirsek tam katlanmıyor, üst kol sırtın arkasına dolanmıyor, bilek ve boyun ters dönmüyor.
+Nasıl denenir: Dolap'ta Hareketler bölümünde Sevinç ve Maç sonu sayfalarını aç, iri modellerden birini (Panda, Kedi) seç ve Rakete alkış, Raket gitar, Fıskiye, Ağlak hareketlerine tek tek dokun: el ve raket gövdenin dışında kalmalı, kol titrememeli. Sonra bir maç oyna, sayı al ve maçı bitir.
 Yeni danslar, kışkırtan sevinçler ve mimikler (20 Kasım akşam):
 - İki yeni dans: Kıvır (kalça iki yana, yumruklar göğüs önünde döner) ve Disko (el çaprazda aşağıdan yukarı, kalça ters yana).
 - Dört kışkırtma: Nanik (eller kulakta, dil dışarıda), Gel gel (rakibi eliyle çağırır), Öpücük (rakibe öpücük yollar) ve Cık cık (parmak sallar, başıyla hayır der).
