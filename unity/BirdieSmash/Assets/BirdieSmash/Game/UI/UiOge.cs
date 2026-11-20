@@ -295,7 +295,7 @@ namespace BirdieSmash.Game
             // kapsül yalnız kaydırırken belirir, durunca 0,6 sn sonra solar. Yalnız değer değişince yazılır; boy değişmedikçe yerleşim
             // yazılmaz (translate + opacity), ayırma yok. Hareketi azaltta solma geçişi yok (USS .az-hareket).
             var gos = new VisualElement(); gos.AddToClassList("kaydir-gosterge"); gos.pickingMode = PickingMode.Ignore; sv.hierarchy.Add(gos);
-            float gosBoy = -1; IVisualElementScheduledItem gosSol = null;
+            float gosBoy = -1; bool gosAcik = false; IVisualElementScheduledItem gosSol = null;
             sv.verticalScroller.valueChanged += v =>
             {
                 Kalite.Hareket();   // parmak kalktıktan sonra süren eylemsiz kayma da yüksek hızda (Kalite)
@@ -303,9 +303,9 @@ namespace BirdieSmash.Game
                 if (float.IsNaN(vh) || float.IsNaN(ch) || ch <= vh + 1 || ust <= 0) return;
                 float boy = Mathf.Round(Mathf.Max(24, vh * vh / ch));
                 if (boy != gosBoy) { gosBoy = boy; gos.style.height = boy; }
-                gos.style.translate = new Translate(0, (vh - boy) * Mathf.Clamp01(v / ust), 0); gos.style.opacity = 1;
-                if (gosSol == null) gosSol = gos.schedule.Execute(() => gos.style.opacity = 0);
-                gosSol.ExecuteLater(600);
+                gos.style.translate = new Translate(0, (vh - boy) * Mathf.Clamp01(v / ust), 0);
+                if (!gosAcik) { gosAcik = true; gos.style.opacity = 1; }
+                if (gosSol == null) gosSol = gos.schedule.Execute(() => { gosAcik = false; gos.style.opacity = 0; }).StartingIn(600); else gosSol.ExecuteLater(600);   // her kaydırma solmayı 0,6 sn öteler
             };
             if (tamBoy) sv.contentViewport.RegisterCallback<GeometryChangedEvent>(e => { float h = sv.contentViewport.layout.height; if (!float.IsNaN(h)) sv.contentContainer.style.minHeight = h; });
             ebeveyn.Add(sv); return sv;

@@ -55,8 +55,8 @@ namespace BirdieSmash.Game
             var vt = root.vitrin; if (vt == null) return; bool d = DenemeVar();
             DenemeSil(); vt.Sevinc(null); vt.Odak(Vitrin.TAM); if (d) vt.Yenile();
         }
-        bool DenemeVar() { var vt = root.vitrin; return vt.deneTip != null || vt.deneSac != null || vt.deneAyk != null || vt.deneSapka != null || vt.deneYuz != null || vt.deneSevinc != null || vt.deneMacSonu != null || vt.deneSirt != null || vt.deneKol != null || vt.deneBel != null || vt.deneAyak != null; }
-        void DenemeSil() { var vt = root.vitrin; vt.deneModel = null; vt.deneTip = vt.deneSac = vt.deneAyk = vt.deneSapka = vt.deneYuz = vt.deneSevinc = vt.deneMacSonu = vt.deneSirt = vt.deneSmac = vt.deneKol = vt.deneBel = vt.deneAyak = null; }
+        bool DenemeVar() { var vt = root.vitrin; return vt.deneModel != null || vt.deneTip != null || vt.deneSac != null || vt.deneAyk != null || vt.deneSapka != null || vt.deneYuz != null || vt.deneSevinc != null || vt.deneMacSonu != null || vt.deneSirt != null || vt.deneKol != null || vt.deneBel != null || vt.deneAyak != null; }
+        void DenemeSil() { var vt = root.vitrin; modelAday = null; vt.deneModel = null; vt.deneTip = vt.deneSac = vt.deneAyk = vt.deneSapka = vt.deneYuz = vt.deneSevinc = vt.deneMacSonu = vt.deneSirt = vt.deneSmac = vt.deneKol = vt.deneBel = vt.deneAyak = null; }
         // Kategori kamerayı çağırır (araştırma: her kategorinin bir kadrajı); Raket vitrini tezgâha geçirir, diğerleri figüre döndürür.
         void KarakterOdakAyarla()
         {
