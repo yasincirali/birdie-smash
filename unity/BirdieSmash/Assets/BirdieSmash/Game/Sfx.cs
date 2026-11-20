@@ -222,7 +222,7 @@ namespace BirdieSmash.Game
             artSira.Enqueue(() => GaspKlip(.07f, .38f));
             for (int c = 0; c < 2; c++) { int cc = c; artSira.Enqueue(() => AlkisKlip(false, cc)); artSira.Enqueue(() => AlkisKlip(true, cc)); }
             artSira.Enqueue(() => ArpejKlip(523, SAYI_ARPEJ, .18f, .08f, .07f)); artSira.Enqueue(() => TonKlip(220, .25f, "sawtooth", .05f));
-            foreach (var d in new[] { "robot", "tavuk", "twist", "dalga", "helikopter", "gitar", "fiskiye", "ucak", "yildiz", "aglak", "kulak", "toz", "esne" }) { string dd = d; artSira.Enqueue(() => DansIsit(dd)); }
+            foreach (var d in PlayerView.DANSLAR) { string dd = d; artSira.Enqueue(() => DansIsit(dd)); }
         }
         static readonly int[] SAYI_ARPEJ = { 0, 4, 7, 12 };
         // Dans() ile aynı parametreler; çalmadan yalnız klipleri kurar (anahtarlar aynı olduğu için Dans() önbellekten çalar).
@@ -243,6 +243,12 @@ namespace BirdieSmash.Game
                 case "kulak": TonKlip(523, .07f, "triangle", .04f); TonKlip(784, .1f, "triangle", .04f, .09f); break;
                 case "toz": GurultuKlip(.05f, "highpass", 3000, .035f); GurultuKlip(.05f, "highpass", 3000, .035f, 1, .14f); break;
                 case "esne": TonKlip(392, .25f, "triangle", .04f); TonKlip(294, .35f, "triangle", .04f, .2f); break;
+                case "kivir": TonKlip(523, .06f, "triangle", .04f); TonKlip(659, .06f, "triangle", .04f, .1f); TonKlip(784, .08f, "triangle", .04f, .2f); break;
+                case "disko": TonKlip(440, .07f, "square", .028f); TonKlip(880, .09f, "square", .028f, .14f); break;
+                case "nanik": TonKlip(784, .08f, "triangle", .045f); TonKlip(659, .08f, "triangle", .045f, .1f); TonKlip(784, .08f, "triangle", .045f, .2f); TonKlip(587, .14f, "triangle", .045f, .3f); break;
+                case "gelgel": TonKlip(392, .07f, "triangle", .04f); TonKlip(523, .1f, "triangle", .04f, .1f); break;
+                case "opucuk": GurultuKlip(.04f, "highpass", 4000, .04f); TonKlip(1175, .08f, "sine", .04f, .06f); break;
+                case "cikcik": GurultuKlip(.025f, "highpass", 2500, .04f); GurultuKlip(.025f, "highpass", 2500, .04f, 1, .16f); break;
             }
         }
         // derinSakin (2026-11-12): perde kapalı ya da menü durağan. Ek sıra (ralli notaları, sayı/maç sonu sesleri) yalnız orada işlenir,
@@ -510,6 +516,13 @@ namespace BirdieSmash.Game
                 case "kulak": Ton(523, .07f, "triangle", .04f); Ton(784, .1f, "triangle", .04f, .09f); break;    // "ha?" (yükselen soru)
                 case "toz": Gurultu(.05f, "highpass", 3000, .035f); Gurultu(.05f, "highpass", 3000, .035f, 1, .14f); break;   // iki fırça
                 case "esne": Ton(392, .25f, "triangle", .04f); Ton(294, .35f, "triangle", .04f, .2f); break;     // uzun esneme (inen ton)
+                // 2026-11-20 yeni danslar ve kışkırtmalar (DansIsit ile aynı parametreler)
+                case "kivir": Ton(523, .06f, "triangle", .04f); Ton(659, .06f, "triangle", .04f, .1f); Ton(784, .08f, "triangle", .04f, .2f); break;   // üç adım yukarı
+                case "disko": Ton(440, .07f, "square", .028f); Ton(880, .09f, "square", .028f, .14f); break;                                       // oktav sıçrayışı
+                case "nanik": Ton(784, .08f, "triangle", .045f); Ton(659, .08f, "triangle", .045f, .1f); Ton(784, .08f, "triangle", .045f, .2f); Ton(587, .14f, "triangle", .045f, .3f); break;   // "na-na-na-naa"
+                case "gelgel": Ton(392, .07f, "triangle", .04f); Ton(523, .1f, "triangle", .04f, .1f); break;                                     // iki çağrı
+                case "opucuk": Gurultu(.04f, "highpass", 4000, .04f); Ton(1175, .08f, "sine", .04f, .06f); break;                                  // öpücük sesi
+                case "cikcik": Gurultu(.025f, "highpass", 2500, .04f); Gurultu(.025f, "highpass", 2500, .04f, 1, .16f); break;                     // cık cık
             }
         }
         public void Iyi() { Ton(784, .12f, "triangle", .05f); }

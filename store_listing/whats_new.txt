@@ -1,4 +1,10 @@
 === UNITY ===
+Yeni danslar, kışkırtan sevinçler ve mimikler (20 Kasım akşam):
+- İki yeni dans: Kıvır (kalça iki yana, yumruklar göğüs önünde döner) ve Disko (el çaprazda aşağıdan yukarı, kalça ters yana).
+- Dört kışkırtma: Nanik (eller kulakta, dil dışarıda), Gel gel (rakibi eliyle çağırır), Öpücük (rakibe öpücük yollar) ve Cık cık (parmak sallar, başıyla hayır der).
+- Mimik: karakter artık dil çıkarabiliyor ve kaşlarını oynatabiliyor. Kedi, Tavşan, Panda, Hamamböceği ve Tüycük'te kaşlar kalkıyor ve çatılıyor; eski Ağlak, Toz silkme ve Duyamadım hareketleri de kaş aldı.
+- Yeni hareketlerde kalça, gövde ve baş birbirini izleyerek akıyor; kollar yay çizerek gidiyor.
+Nasıl denenir: Dolap'ta Hareketler bölümünde Sevinç sayfasını aç, yeni altı harekete tek tek dokun ve önizlemeyi izle: hareket kesik kesik değil, akarak dönmeli. Nanik'te dil ağzın önünde durmalı, kaşlar gözlerin üstünde olmalı; farklı modellerde (Kedi, Panda, Hamamböceği) de bak. Birini kuşan, maçta sayı al: sayı arası uzamamalı.
 Menü cilası (20 Kasım sabah):
 - Profil'deki Tur mühürleri satırına dokununca Kariyer o turla açılıyor; eksik yıldızları bulmak için oklarla aramak gerekmiyor.
 - Kariyer'de maç kartının düğmesi artık yalnız "Oyna" ya da "Yeniden oyna" diyor; küçük ekranda iki satıra taşmıyor.
