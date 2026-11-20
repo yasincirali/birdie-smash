@@ -262,6 +262,16 @@ namespace BirdieSmash.Game
             var i = new Image { image = t, scaleMode = ScaleMode.ScaleToFit, tintColor = c }; i.AddToClassList("ikon");
             float s = Mathf.Round(pt * Mathf.Min(K, 1.6f)); i.style.width = s; i.style.height = s; i.pickingMode = PickingMode.Ignore; return i;
         }
+        // Durum işareti + yazı (2026-11-20 inceleme, fikir 17:06 #2): metindeki ✓/✗ öneki yazının TAMAMINI .sembol ile tema yazı
+        // tipine düşürüyordu (yan yana iki aile, rakam genişliği farklı, kalın sınıf etkisiz). İşaret dokudan ikon, yazı Nunito'da
+        // kalır (iOS Label: ikon + metin). Anlam yalnız renkte değil: tik/çarpı biçimi + yazı. Erişim etiketi çağıranda.
+        VisualElement IkonYazi(bool tik, string t, float px, string cls, Color c)
+        {
+            var s = new VisualElement(); s.AddToClassList("ikon-yazi"); s.pickingMode = PickingMode.Ignore;
+            var i = Ikon(tik ? Ikonlar.Tik : Ikonlar.Carpi, px, c); i.style.marginRight = 4; i.style.flexShrink = 0f; s.Add(i);
+            var l = Yazi(t, px, cls); l.style.whiteSpace = WhiteSpace.Normal; l.style.flexShrink = 1f; s.Add(l);
+            return s;
+        }
         VisualElement Kart(string cls = null) { var k = new VisualElement(); k.AddToClassList("kart"); if (cls != null) k.AddToClassList(cls); return k; }
         // Yatay sıra; varsayılan sınıf "secim" (çip sırası: büyük yazıda alt alta dizilir), başka sıralar kendi sınıfını verir.
         VisualElement Satir(string cls = "secim") { var s = new VisualElement(); s.AddToClassList("satir"); if (cls != null) s.AddToClassList(cls); return s; }

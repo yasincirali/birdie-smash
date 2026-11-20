@@ -634,7 +634,10 @@ namespace BirdieSmash.Game
             }
             if (altBosluk > 0) sekmeCubugu.style.paddingBottom = altBosluk;
             SekmeCubuguGorunur(); GostergeKur();
+            // Yazı boyutu Ayarlar'dan değişince açık tam sayfa yeniden kurulur; oyuncu yerini kaybetmesin (2026-11-20, fikir 12:06 #2).
+            var eski = sayfa != null ? (sayfa.Q<ScrollView>(null, "govde-kaydir") ?? sayfa.Q<ScrollView>()) : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero;
             for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true; Uygula(gez.sekme, false);
+            if (eski != null) KaydirmaGeri(sayfa, of);
         }
 
         void SekmeKur(Sekme s)
