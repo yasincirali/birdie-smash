@@ -1567,7 +1567,7 @@ namespace BirdieSmash.Game
                 case "opucuk":  // sol el dudağa gider, sonra kol açılarak öpücüğü rakibe yollar; baş eli geriden izler; raket yanda
                     { float a = rm ? 1 : OpA(t), ag = rm ? 1 : OpA(t - BAS_GECIKME);
                       // r215: el dudak yerine göz hizasına gidiyordu; ağız yeri mimik çerçevesinden (modelin gerçek ağzı), elin payıyla önünde
-                      float hr = BasR(); Vector3 agiz = hr > 0 ? mimik.kok.TransformPoint(mimik.agiz) + fw * hr * .45f - up * hr * .1f : kHead != null ? kHead.position + up * L * .08f + fw * L * .5f : (sR + sL) * .5f + up * L * .3f + fw * L * .3f;
+                      float hr = BasR(); Vector3 agiz = hr > 0 ? mimik.kok.TransformPoint(mimik.agiz) + fw * hr * .45f - up * hr * .8f   /* r216: hedef bilek; parmaklar gözü kapatıyordu, bilek çene altına */ : kHead != null ? kHead.position + up * L * .08f + fw * L * .5f : (sR + sL) * .5f + up * L * .3f + fw * L * .3f;
                       Vector3 dis = sL + fw * L * .82f + up * L * .38f - ri * L * .38f;
                       IK(LU, LE, LH, sL + Vector3.Slerp(agiz - sL, dis - sL, a), -ri - up * .5f);
                       IK(SU, SE, SH, sR - up * L * .6f + ri * L * .22f - fw * L * .04f, ri - fw * .5f);
