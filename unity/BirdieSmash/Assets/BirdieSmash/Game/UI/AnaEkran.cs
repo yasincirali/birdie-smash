@@ -210,7 +210,7 @@ namespace BirdieSmash.Game
         // (geçilen dolu limon, şimdiki çizgili desen, gelecek soluk).
         VisualElement SiradakiKart()
         {
-            var p = Ayar.ilerleme; int g = p.Siradaki(), tr = KariyerVeri.TurOf(g), i = KariyerVeri.BasOf(g); var kb = KariyerVeri.Al(g); var st = Match.STIL[kb.stil];
+            var p = Ayar.ilerleme; int g = p.Siradaki(), tr = KariyerVeri.TurOf(g), i = KariyerVeri.BasOf(g); var kb = KariyerVeri.Al(g); var st = KariyerVeri.Rakip(g);
             bool tamam = p.HepsiBitti;
             var kart = new VisualElement(); kart.AddToClassList("plaka"); Doku(kart, Ikonlar.Plaka); // 2026-10-26 (yasin onayı, ekran/inceleme ile aynı davranış): plakaya dokunmak o basamağın maç kartını açar; kariyer
             // bittiyse (sıradaki basamak yok) Kariyer sekmesi.

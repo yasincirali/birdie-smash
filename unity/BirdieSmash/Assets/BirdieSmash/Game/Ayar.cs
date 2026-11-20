@@ -204,6 +204,11 @@ namespace BirdieSmash.Game
             kosIpucu = EskiInt("tuytop_kos_ipucu", 0) == 1;   // 2026-10-29: "Dokun: oraya koş" koşu sende ilk maçta görüldü
             saha = Str("tuytop_saha", "salon"); if (!CourtView.SAHA.ContainsKey(saha)) saha = "salon";
             hizliRakip = Str("tuytop_hizli_rakip", "");
+            // 2026-11-20 her rakip ayrı biri (Core/Rakipler): oyuncunun rakip dünyası bu tohumdan. İlk açılışta rastgele yazılır,
+            // sonra hiç değişmez (aynı basamağın rakibi aynı kişi); iCloud METIN listesinde, yeni cihazda aynı rakipler.
+            int rt; string rs = Str(Rakipler.ANAHTAR, null);
+            if (rs == null || !int.TryParse(rs, out rt) || rt == 0) { rt = new System.Random().Next(1, int.MaxValue); try { PlayerPrefs.SetString(Rakipler.ANAHTAR, rt.ToString()); } catch { } }
+            Rakipler.Tohum = rt;
             // 2026-10-27 (yasin build 41: "3B model kaybolmuş, seçmeme rağmen görmedim"): build 40 notu Ayarlar'da "Sade" vaat
             // ediyordu, Resources'ta sade.fbx vardı (ekran turu her turda maçını çekiyor) ama seçenek yoktu ve "sade" kaydı burada
             // oyuncak'a dönüyordu. Artık geçerli model (MODELLER); FBX'i olmayan build'de yine oyuncak'a düşer.

@@ -18,7 +18,7 @@ namespace BirdieSmash.Core
 
         // Görünen koşu hızından güç sayısı. Doğrusal: merdivenin 1,9–4,35 m/s aralığı 18–99'a.
         public static int Guc(Style st) { if (st == null) return 0; return Math.Max(1, Math.Min(99, (int)Math.Round(18 + (st.hiz * 3.2f - 1.9f) * 40))); }
-        public static int Guc(int g) { return KariyerVeri.Var(g) ? Guc(KariyerVeri.Rakip(g)) : 0; }
+        public static int Guc(int g) { return KariyerVeri.Var(g) ? Guc(KariyerVeri.RakipTaban(g)) : 0; }   // merdiven (özellik değil)
 
         // Yuvarlak sıra: 100'ün üstü 10'a, 20'nin üstü 5'e yuvarlanır (gerçek sıralama listesi gibi "1.837" değil).
         static int Yuvarla(double r) { int v = (int)Math.Round(r); return v > 100 ? (v + 5) / 10 * 10 : v > 20 ? (v + 2) / 5 * 5 : Math.Max(1, v); }
@@ -38,11 +38,12 @@ namespace BirdieSmash.Core
             for (int t = 0; t < KariyerVeri.Turlar.Length; t++) for (int b = 0; b < KariyerVeri.BASAMAK; b++) if (p.Kazanildi(KariyerVeri.Global(t, b))) n++;
             return n;
         }
-        // Aynı tarzın bir önceki kariyer basamağı (yoksa -1).
+        // Aynı tarzın bir önceki kariyer basamağı (yoksa -1). 2026-11-20: yalnız adlı rakipler (finaller, adli tur) birbirini
+        // hatırlar; üretilmiş rakiple ilk ve tek karşılaşmadır (Rakipler), aynı tarzdaki başka biri "son karşılaşma" değil.
         public static int OncekiKarsilasma(int g)
         {
-            var k = KariyerVeri.Al(g); if (k == null) return -1;
-            for (int i = g - 1; i >= 0; i--) { var o = KariyerVeri.Al(i); if (o != null && o.stil == k.stil) return i; }
+            var k = KariyerVeri.Al(g); if (k == null || Rakipler.Uretilir(g)) return -1;
+            for (int i = g - 1; i >= 0; i--) { var o = KariyerVeri.Al(i); if (o != null && o.stil == k.stil && !Rakipler.Uretilir(i)) return i; }
             return -1;
         }
     }

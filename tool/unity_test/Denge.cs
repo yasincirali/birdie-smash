@@ -329,6 +329,32 @@ static class Denge
             int nm = a.Length > 1 ? int.Parse(a[1]) : 40; var ids = new List<string>(); foreach (var t in Karakter.Tarzlar) if (a.Length < 3 || Array.IndexOf(a[2].Split(','), t.id) >= 0) ids.Add(t.id);   // a[2]: "dengeli,duvar" yalnız o tarzlar
             Tablo("Oyun tarzı × tur", ids.ToArray(), (id, ep) => Karakter.Uygula(Ekipman(ep), id), nm, 5); return 0;
         }
+        // 2026-11-20 her rakip ayrı biri (Core/Rakipler): mono denge.exe ozellik <tur,..> <n>
+        // Final dışı basamakların taban rakibi (merdiven) ile aynı rakibin her özellikle hâli, aynı tohumlarla (eşli ölçüm);
+        // satır = özelliğin galibiyet oranına etkisi (puan, + = oyuncu daha çok kazanır). Hedef |Δ| ≤ 4: özellik kişilik verir,
+        // merdiveni (finale doğru zorlaşma) bozmaz. Bot Kolay pHit .07 (ayar kipiyle aynı), EP tur ortası.
+        if (a.Length > 0 && a[0] == "ozellik")
+        {
+            PHIT = .07; int nn = a.Length > 2 ? int.Parse(a[2]) : 40; var oz = Rakipler.Ozellikler; var top = new double[oz.Length]; double taban = 0; int say = 0;
+            foreach (var ts in (a.Length > 1 ? a[1] : "2,4,6").Split(','))
+            {
+                int t = int.Parse(ts) - 1; var tr = KariyerVeri.Turlar[t]; var gs = Ekipman((tr.epMin + tr.epMax) / 2);
+                for (int b = 0; b < KariyerVeri.BASAMAK; b++)
+                {
+                    int g = KariyerVeri.Global(t, b); if (!Rakipler.Uretilir(g)) continue; var k = KariyerVeri.Al(g); int L = k.uzunluk > 0 ? k.uzunluk : 5; double f, im;
+                    double o0 = Oyna(KariyerVeri.RakipTaban(g), L, true, gs, nn, 9000 + g * 1000, out f, out im, k.degistirici); taban += o0; say++;
+                    for (int i = 0; i < oz.Length; i++)
+                    {
+                        var st = KariyerVeri.RakipTaban(g); var o = oz[i];
+                        st.hiz *= o.hiz; st.hata *= o.hata; st.hucum *= o.hucum; st.tepki *= o.tepki; st.yorK *= o.yorK; st.aldatP += o.aldatP; st.uyum = Math.Min(.3f, st.uyum + o.uyum);
+                        top[i] += Oyna(st, L, true, gs, nn, 9000 + g * 1000, out f, out im, k.degistirici) - o0;
+                    }
+                }
+            }
+            Console.WriteLine("taban galibiyet %" + (100 * taban / say).ToString("F0") + " (" + say + " basamak × " + nn + " maç)");
+            for (int i = 0; i < oz.Length; i++) Console.WriteLine("  " + oz[i].id.PadRight(10) + " Δ " + (100 * top[i] / say).ToString("+0.0;-0.0") + " puan");
+            return 0;
+        }
         if (a.Length > 1 && a[0] == "lab") { LabTani(a[1], a.Length > 2 ? int.Parse(a[2]) : 20); return 0; }
         if (a.Length > 0 && a[0] == "dril") { if (a.Length > 2) BECERI = double.Parse(a[2], System.Globalization.CultureInfo.InvariantCulture); DrilTablo(a.Length > 1 ? int.Parse(a[1]) : 100); return 0; }
         // 2026-11-10 (8 tur): mono denge.exe ayar <tur,..> <n> <hedef1,..,hedef6> [hedef düşüşü/tur]
