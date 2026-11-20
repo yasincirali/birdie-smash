@@ -132,7 +132,7 @@ namespace BirdieSmash.Game
                 if (muhur) { dg = MuhurDugum(t, yz); }
                 else
                 {
-                    dg = BasamakNokta(g, sira); var kb = KariyerVeri.Al(g); var st = Match.STIL[kb.stil]; bool simdi = g == sira && p.Acik(g);
+                    dg = BasamakNokta(g, sira); var kb = KariyerVeri.Al(g); var st = KariyerVeri.Rakip(g); bool simdi = g == sira && p.Acik(g);
                     if (simdi) dg.AddToClassList("dugum-rozet--buyuk");
                     if (p.Kazanildi(g)) gecilen = b;
                     var ad = Yazi((simdi ? L.T("Şimdi") + " · " : "") + st.isim, 15, "kalin"); if (simdi) ad.AddToClassList("durum-simdi"); yz.Add(ad);
@@ -206,14 +206,15 @@ namespace BirdieSmash.Game
             if (once < 0 || ds >= once || Ayar.reduce || l == null) return;
             System.Func<int, string> yaz = n => n == 1 ? L.T("Dünya 1 numarası · unvanını koru") : L.T("Dünya sıralaman: {0}", SiraYaz(n));
             l.text = yaz(once);
-            float bas = -1; const float SURE = .6f; int gecikme = basAniA >= 0 ? 450 : 250;
+            float bas = -1; const float SURE = .6f; int gecikme = basAniA >= 0 ? 450 : 250, son = once;
+            // 2026-11-20 inceleme (fikir 12:06 #6): sayı aynı kaldıkça metin yeniden biçimlenmez (karede string + yeniden düzen yok).
             IVisualElementScheduledItem it = null;
             it = l.schedule.Execute(() =>
             {
                 if (l.panel == null) { it.Pause(); return; }
                 if (bas < 0) bas = Time.unscaledTime;
                 float t = Mathf.Clamp01((Time.unscaledTime - bas) / SURE), e = 1 - (1 - t) * (1 - t) * (1 - t);
-                int n = Mathf.RoundToInt(Mathf.Lerp(once, ds, e)); l.text = yaz(t >= 1 ? ds : n);
+                int n = t >= 1 ? ds : Mathf.RoundToInt(Mathf.Lerp(once, ds, e)); if (n != son) { son = n; l.text = yaz(n); }
                 if (t >= 1)
                 {
                     it.Pause(); if (root != null && root.sfx != null) root.sfx.Tik(1320); Yerel.Hap("tick");
@@ -291,7 +292,7 @@ namespace BirdieSmash.Game
         {
             if (p.HepsiBitti || sira < 0 || !p.Acik(sira)) return;
             int tr = KariyerVeri.TurOf(sira); if (tr >= KariyerVeri.Turlar.Length || !KariyerVeri.Turlar[tr].Var) return;
-            var kb = KariyerVeri.Al(sira); var st = Match.STIL[kb.stil]; int b = KariyerVeri.BasOf(sira);
+            var kb = KariyerVeri.Al(sira); var st = KariyerVeri.Rakip(sira); int b = KariyerVeri.BasOf(sira);
             string bas = L.T("Sıradaki maç"), alt = (b + 1) + ". " + L.T(kb.yer) + " · " + st.isim;
             var d = Dugme(bas, () => MacKartAc(sira), "dugme--birincil", alt, 17); d.AddToClassList("siradaki-serit"); Sigdir(d);
             Erisim.Etiket(d, bas + ", " + L.T(TurAd(tr)) + ", " + alt, "dugme"); k.Add(d);
@@ -326,7 +327,7 @@ namespace BirdieSmash.Game
         void MacKartKur()
         {
             int g = kartBasamak; if (!KariyerVeri.Var(g)) { AltKapat(); return; }
-            var p = Ayar.ilerleme; var kb = KariyerVeri.Al(g); var st = Match.STIL[kb.stil]; int tr = KariyerVeri.TurOf(g), b = KariyerVeri.BasOf(g);
+            var p = Ayar.ilerleme; var kb = KariyerVeri.Al(g); var st = KariyerVeri.Rakip(g); int tr = KariyerVeri.TurOf(g), b = KariyerVeri.BasOf(g);
             bool acik = p.Acik(g), final = KariyerVeri.Final(g); int m = p.Maske(g); var im = final || kb.imza ? KariyerVeri.Imza(st.imza) : null;   // Tur 4: önceki patronlar finalden önce de imzalı
             var c = AltSayfaKur(L.T(kb.yer));
             // 2026-11-19 inceleme (fikir 22:06 #6, §7.3 öğe bütçesi): saha ayrı satırdı; bağlam olduğu için etiket satırına katıldı
@@ -338,11 +339,13 @@ namespace BirdieSmash.Game
             var rr = Satir("profil-ust"); c.Add(rr);
             var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(st.renk); AvatarIc(av, Portre.Rakip(st), 30); rr.Add(av);
             var ra = new VisualElement(); ra.AddToClassList("esnek-yatay"); rr.Add(ra);
-            int kG, kY; bool karne = Ayar.Karne(st.id, out kG, out kY);   // karne (fikir 12:05 #4): maç kartıyla aynı biçim
-            ra.Add(Yazi(st.isim, 20, "kalin")); ra.Add(Yazi(L.T(st.ad) + (karne ? " · " + kG + "–" + kY : ""), 14, "soluk"));
+            int kG = 0, kY = 0; bool karne = !st.uretilen && Ayar.Karne(st.id, out kG, out kY);   // karne (fikir 12:05 #4): maç kartıyla aynı biçim; üretilmiş rakiple ilk karşılaşma
+            ra.Add(Yazi(st.isim, 20, "kalin")); ra.Add(Yazi(L.T(st.ad) + (st.ozellikAd != null ? " · " + L.T(st.ozellikAd) : "") + (karne ? " · " + kG + "–" + kY : ""), 14, "soluk"));
             string gs, ks; GucSatirlari(ra, g, out gs, out ks);
-            Erisim.Etiket(rr, L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad) + ", " + gs + (ks != null ? ", " + ks : "") + (karne ? ", " + L.T("Bu rakiple {0} galibiyet, {1} yenilgi", kG, kY) : ""), "metin");
-            var ip = Yazi(L.T(st.ipucu), 14, "ipucu"); Erisim.Etiket(ip, L.T(st.ipucu), "metin"); c.Add(ip);
+            Erisim.Etiket(rr, L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad) + (st.ozellikAd != null ? ", " + L.T(st.ozellikAd) : "") + ", " + gs + (ks != null ? ", " + ks : "") + (karne ? ", " + L.T("Bu rakiple {0} galibiyet, {1} yenilgi", kG, kY) : ""), "metin");
+            // 2026-11-20: üretilmiş rakibin özelliği tarzın ipucuna bir cümle ekler ("Sabırlı: az hata yapar, az smaç atar.").
+            string ipm = L.T(st.ipucu) + (st.ozellikN != null ? ". " + L.T(st.ozellikAd) + ": " + L.T(st.ozellikN).ToLowerInvariant() : "");
+            var ip = Yazi(ipm, 14, "ipucu"); Erisim.Etiket(ip, ipm, "metin"); c.Add(ip);
             if (im != null)
             {
                 var ik = Kart("imza-kart"); c.Add(ik);

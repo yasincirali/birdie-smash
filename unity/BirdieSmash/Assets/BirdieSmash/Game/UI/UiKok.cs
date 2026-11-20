@@ -579,7 +579,7 @@ namespace BirdieSmash.Game
             var yenilenAd = new System.Collections.Generic.List<string>(); var rk = Satir("toren-rakipler"); rk.pickingMode = PickingMode.Ignore; ic.Add(rk);
             for (int b = 0; b < KariyerVeri.BASAMAK; b++)
             {
-                int g = KariyerVeri.Global(t, b); var st = Match.STIL[KariyerVeri.Al(g).stil]; bool yen = p.Kazanildi(g); if (yen) yenilenAd.Add(st.isim);
+                int g = KariyerVeri.Global(t, b); var st = KariyerVeri.Rakip(g); bool yen = p.Kazanildi(g); if (yen) yenilenAd.Add(st.isim);
                 var h = new VisualElement(); h.AddToClassList("toren-rakip"); h.pickingMode = PickingMode.Ignore; if (!yen) h.AddToClassList("toren-rakip--yok"); rk.Add(h);
                 var n = new VisualElement(); n.AddToClassList("toren-nokta"); n.style.backgroundColor = Kit.Hex(st.renk); n.pickingMode = PickingMode.Ignore; h.Add(n);
                 if (yen) n.Add(Ikon(Ikonlar.Tik, 14, MUREKKEP));
@@ -634,7 +634,10 @@ namespace BirdieSmash.Game
             }
             if (altBosluk > 0) sekmeCubugu.style.paddingBottom = altBosluk;
             SekmeCubuguGorunur(); GostergeKur();
+            // Yazı boyutu Ayarlar'dan değişince açık tam sayfa yeniden kurulur; oyuncu yerini kaybetmesin (2026-11-20, fikir 12:06 #2).
+            var eski = sayfa != null ? (sayfa.Q<ScrollView>(null, "govde-kaydir") ?? sayfa.Q<ScrollView>()) : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero;
             for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true; Uygula(gez.sekme, false);
+            if (eski != null) KaydirmaGeri(sayfa, of);
         }
 
         void SekmeKur(Sekme s)
@@ -662,7 +665,7 @@ namespace BirdieSmash.Game
             var av = new VisualElement(); av.AddToClassList("ust-avatar"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 24); hap.Add(av);
             var sv = new VisualElement(); sv.AddToClassList("ust-sv"); sv.pickingMode = PickingMode.Ignore; hap.Add(sv);
             sv.Add(Yazi(L.T("Sv {0}", L_), 18, "rakam"));
-            var c = Cubuk(gerek > 0 ? kalan / (float)gerek : 1, TURUNCU, 5);   // 2026-10-27 yön C: ilerleme turuncu (limon yalnız sen: avatar halkası)
+            var c = Cubuk(gerek > 0 ? kalan / (float)gerek : 1, LIMON, 5);   // 2026-10-27 yön C: ilerleme turuncuydu (limon yalnız sen: avatar halkası)   // 2026-11-20 yasin karar kartı "A · Limon": seviye/XP ve gelişim = limon ("senin ilerlemen"), Tüy = altın; turuncu yalnız eylem/seçim (§8)
             c.AddToClassList("ust-xp"); sv.Add(c);   // tur 2: yorumun içinde kalmıştı, üst çubuğun XP şeridi hiç eklenmiyordu
             hap.AddManipulator(new Clickable(() => SekmeAc(Sekme.Profil)));
             Erisim.Etiket(hap, L.T("Seviye {0}", L_) + (gerek > 0 ? ", " + L.T("Sonraki seviyeye {0} XP", gerek - kalan) : "") + ", " + L.T("Profil"), "dugme");

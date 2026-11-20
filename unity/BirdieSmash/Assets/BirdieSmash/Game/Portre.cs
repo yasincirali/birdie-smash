@@ -32,7 +32,7 @@ namespace BirdieSmash.Game
         public static Texture Rakip(Style st)
         {
             if (st == null) return null; var f = Kit.Hex(st.renk); var g = PlayerView.Rakip(st, f);
-            return Al("rk|" + Ayar.model + st.isim + st.ad + g.Anahtar(), g, false);
+            return Al("rk|" + PlayerView.ModelAd(g) + st.isim + st.ad + g.Anahtar(), g, false);
         }
 
         // Kozmetik.SAC / SAPKA / YUZ öğesi takılı bugünkü görünüş. Saç küçük resminde şapka çıkarılır (saç görünsün).
@@ -126,7 +126,7 @@ namespace BirdieSmash.Game
         static RenderTexture Ciz(PlayerView.Gorunum g, bool ben, int boy, bool arka = false, bool kol = false, bool ayak = false)
         {
             Kur();
-            var fig = PlayerView.Build(kok, Ayar.model, ben, g.forma, false, g);
+            var fig = PlayerView.Build(kok, PlayerView.ModelAd(g), ben, g.forma, false, g);
             try
             {
                 fig.ShowStatic(YER, arka ? 155 : ben ? 18 : -18, 0);   // üç çeyrek, kameraya dönük (yön 0 = kameraya)

@@ -86,6 +86,10 @@ namespace BirdieSmash.Core
         // smaç ve drive seçiminin ağırlık çarpanı (1 = veri olduğu gibi). imzaAra/imzaP = imza sıklığı kuralı (Core/Imza; Günün
         // maçı "Patron provası" sıklaştırır, maç başı en çok IMZA_AZAMI değişmez). usta = Usta yolu basamağı (-1 değil).
         public float tepki = .18f, hucum = 1, imzaP = Match.IMZA_P; public int imzaAra = Match.IMZA_ARA, usta = -1;
+        // 2026-11-20 her rakip ayrı biri (Core/Rakipler): uretilen = adı ve görünüşü oyuncunun tohumundan üretilmiş kariyer/Usta
+        // rakibi (karnesi tutulmaz, rövanş lafı yok); model = rakibin kendi modeli (null = oyuncunun modeli, eski davranış);
+        // gor = üretilmiş görünüş (null = stil.json gorunum + tur döngüsü); ozellik = tek artı/eksili kişilik (stil.json ozellikler).
+        public bool uretilen; public string model, ozellik, ozellikAd, ozellikN; public RakipGorunum gor;
         public Style Clone() { return (Style)MemberwiseClone(); }
     }
 

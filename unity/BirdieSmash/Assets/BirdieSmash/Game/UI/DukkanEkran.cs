@@ -123,8 +123,10 @@ namespace BirdieSmash.Game
                 var bilgi = new VisualElement(); bilgi.AddToClassList("dukkan-kart-bilgi"); bilgi.pickingMode = PickingMode.Ignore; k.Add(bilgi);
                 var ic = new VisualElement(); ic.AddToClassList("satir"); ic.pickingMode = PickingMode.Ignore; bilgi.Add(ic);
                 ic.Add(Demet(i + 1)); ic.Add(Yazi(UiKok.Sayi(pk.tuy), 22, "rakam"));
+                // 2026-11-20 inceleme (fikir 12:06 #7): paketleri kıyaslatan bonus en küçük satırdı (12 pt, ayrı satır). Tüy sayısının
+                // yanına, 14 pt; dar kartta ve büyük yazıda satır sarar (binmez). Fiyat ve paket değerleri aynı (ekonomi dokunulmadı).
+                if (pk.ek > 0) { ic.style.flexWrap = Wrap.Wrap; ic.style.alignItems = Align.Center; var e = Yazi(L.T("+%{0} fazla", pk.ek), 14, "dukkan-ek"); e.style.marginLeft = 6; ic.Add(e); }
                 bilgi.Add(Yazi(L.T(pk.ad), 14, "kalin"));
-                if (pk.ek > 0) { var e = Yazi(L.T("+%{0} fazla", pk.ek), 12, "dukkan-ek"); bilgi.Add(e); }
                 if (i == yeter)
                 {
                     var ys = new VisualElement(); ys.AddToClassList("satir"); ys.AddToClassList("dukkan-yeter"); ys.pickingMode = PickingMode.Ignore; bilgi.Add(ys);

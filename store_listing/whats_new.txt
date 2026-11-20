@@ -5,6 +5,31 @@ Yeni danslar, kışkırtan sevinçler ve mimikler (20 Kasım akşam):
 - Mimik: karakter artık dil çıkarabiliyor ve kaşlarını oynatabiliyor. Kedi, Tavşan, Panda, Hamamböceği ve Tüycük'te kaşlar kalkıyor ve çatılıyor; eski Ağlak, Toz silkme ve Duyamadım hareketleri de kaş aldı.
 - Yeni hareketlerde kalça, gövde ve baş birbirini izleyerek akıyor; kollar yay çizerek gidiyor.
 Nasıl denenir: Dolap'ta Hareketler bölümünde Sevinç sayfasını aç, yeni altı harekete tek tek dokun ve önizlemeyi izle: hareket kesik kesik değil, akarak dönmeli. Nanik'te dil ağzın önünde durmalı, kaşlar gözlerin üstünde olmalı; farklı modellerde (Kedi, Panda, Hamamböceği) de bak. Birini kuşan, maçta sayı al: sayı arası uzamamalı.
+Her kariyer rakibi ayrı biri (20 Kasım):
+- Kariyerde final dışı her maçta ayrı bir rakip var: kendi adı, kendi görünüşü ve bir özelliği. Aynı ad kariyer boyunca iki kez gelmiyor.
+- Rakiplerin bir kısmı hayvan ya da robot modelinde çıkıyor.
+- Özellik maç kartında yazıyor (ör. "Sabırlı: az hata yapar, az smaç atar"). Her özelliğin bir artısı bir eksisi var.
+- Rakipler finale yaklaştıkça yine zorlaşıyor. Tur finalleri ve Efsaneler Kupası bildiğin rakiplerle kalıyor.
+- Aynı maçı tekrar oynayınca aynı rakip gelir. Her oyuncunun rakipleri farklıdır.
+Nasıl denenir: Kariyer'de birkaç basamağa dokun: her birinde başka ad ve figür görmelisin, adın altında tarz ve özellik yazmalı. Bir maçı kaybedip yeniden aç: aynı rakip gelmeli. Bir tur finaline dokun: tanıdık rakip (Blaze, Rocco ...) durmalı.
+Menü cilası (20 Kasım akşamüstü):
+- Gelişim'de + ve − düğmeleri parmağını kaldırınca puan veriyor; düğmenin üstünden sayfayı kaydırmak artık istemeden puan vermiyor. Basılı tutunca hızlı verme aynı.
+- Gelişim sayfasının başında oyuncunun portresi duruyor.
+- Profil'deki son maçlarda ve Antrenman'da kazandın/bitti işaretleri artık yazıyla aynı yazı tipinde, küçük bir simgeyle.
+- Antrenman'da görev listesinin başında her yeni yıldızın kaç Tüy ve XP verdiği yazıyor.
+- Dolap'ta oyuncuyu büyütüp küçültmek daha akıcı; kategori şeridi kaydırdığın yerde kalıyor.
+- Oyna'daki "Dağıtılacak puan" satırı tek satıra indi.
+Nasıl denenir: Gelişim'i aç, parmağını bir + düğmesine koyup sayfayı aşağı kaydır: sayfa kaymalı, puan değişmemeli. Tek dokunuş bir puan vermeli, basılı tutunca hızlanmalı. Profil'de Son maçlar haplarına bak: simge ve skor aynı yazı tipinde olmalı. Antrenman'da Görevler başlığının altında Tüy satırını gör. Dolap'ta kategori şeridini sağa kaydır, büyüt düğmesine iki kez bas: şerit yerinde kalmalı.
+Menü cilası (20 Kasım öğle):
+- Ayarlar'da dili "Sistem"e alınca seçim işareti hemen oraya geçiyor (eskiden dil aynı kalınca işaret eski yerinde duruyordu).
+- Ayarlar'da yazı boyutunu değiştirmek menüyü bir kez kuruyor; sayfa sıçramıyor ve yerinde kalıyor.
+- Oyuncunu seç'te bir oyuncu seçince "Atla" kalkıyor, seçimin kaybolmuyor; "Bununla oyna"ya basınca oyuncun kısa bir sevinç yapıyor.
+- Dükkân'da "+% fazla" bonusu Tüy sayısının hemen yanında, daha büyük yazıyla.
+- Kariyer'de dünya sıralaması sayılırken daha akıcı.
+Nasıl denenir: Ayarlar'da dil olarak Sistem, sonra Türkçe seç: işaret her dokunuşta seçtiğin çipe geçmeli. Yazı boyutunu Normal ile Büyük arasında değiştir: sayfa yerinde kalmalı. Yeni hesapla ilk maçtan sonra açılan Oyuncunu seç'te bir kart seç: Atla kaybolmalı; Bununla oyna'ya bas: oyuncu sevinç yapmalı. Dükkân'da paket kartlarına bak: bonus sayının yanında okunmalı.
+Seviye çubuğu tek renk (20 Kasım):
+- Seviye ve gelişim çubukları her ekranda limon, Tüy çubuğu altın; turuncu yalnız basılacak düğmelerde.
+
 Menü cilası (20 Kasım sabah):
 - Profil'deki Tur mühürleri satırına dokununca Kariyer o turla açılıyor; eksik yıldızları bulmak için oklarla aramak gerekmiyor.
 - Kariyer'de maç kartının düğmesi artık yalnız "Oyna" ya da "Yeniden oyna" diyor; küçük ekranda iki satıra taşmıyor.

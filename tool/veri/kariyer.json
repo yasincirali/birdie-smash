@@ -50,7 +50,7 @@
     {"stil": "duvar",  "g": 1.06, "tepki": 0.93, "yer": "Hong Kong",            "saha": "turnuva", "uzunluk": 11, "gorev": "tepe",    "imza": true},
     {"stil": "nova",   "g": 1.05, "tepki": 1.03, "yer": "Şanghay yarı finali",  "saha": "turnuva", "uzunluk": 11, "gorev": "uzan",    "imza": true},
     {"stil": "vex",    "g": 1.14, "tepki": 1.28, "yer": "Şanghay finali",       "saha": "turnuva", "uzunluk": 21, "gorev": "okudun",  "patron": true}]},
-  {"id": "efsaneler", "bolum": "Altısı birden", "hikaye": "Yolda yendiğin altı rakip, en iyi hâlleriyle Bali'de.", "tema": "Altı tarzın en iyileri: her rakip imza vuruşuyla gelir, final 21 sayı.", "ad": "Efsaneler Kupası", "ep": [56, 60], "tepki": 0.75, "hucum": 1.25, "basamaklar": [
+  {"id": "efsaneler", "adli": true, "bolum": "Altısı birden", "hikaye": "Yolda yendiğin altı rakip, en iyi hâlleriyle Bali'de.", "tema": "Altı tarzın en iyileri: her rakip imza vuruşuyla gelir, final 21 sayı.", "ad": "Efsaneler Kupası", "ep": [56, 60], "tepki": 0.75, "hucum": 1.25, "basamaklar": [
     {"stil": "smasci", "g": 1.12, "tepki": 1.18, "yer": "Bali grup 1",          "saha": "turnuva", "uzunluk": 11, "gorev": "karsila", "imza": true},
     {"stil": "file",   "g": 1.15, "tepki": 1.13, "yer": "Bali grup 2",          "saha": "turnuva", "uzunluk": 11, "gorev": "kill",    "imza": true},
     {"stil": "duvar",  "g": 1.08, "tepki": 1.48, "yer": "Bali grup 3",          "saha": "turnuva", "uzunluk": 11, "gorev": "drop",    "imza": true, "degistirici": "geri"},

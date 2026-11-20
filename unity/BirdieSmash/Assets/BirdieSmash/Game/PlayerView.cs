@@ -55,6 +55,9 @@ namespace BirdieSmash.Game
             // 2026-10-27 Gerçekçi aksesuarları: sort = şort rengi (null = modelin varsayılanı), kumas = forma kumaşı (Gear "kumas";
             // dokulu modelde formanın deseni ve parlaklığı, null = klasik).
             public string kumas;
+            // 2026-11-20 (Core/Rakipler): figürün modeli; null = oyuncunun modeli (Ayar.model). Üretilmiş rakip kendi modelini
+            // (kedi, robot ...) taşır, oyuncu hangi modeli seçmiş olursa olsun.
+            public string model;
             // 2026-10-26: tip (Kozmetik.TIP), saç biçimi (Kozmetik.SAC) ve ayakkabı modeli (Gear "ayakkabi") kimlikleri; null =
             // varsayılan (listenin ilki: hakemler ve eski çağrılar bugünkü görünüşle kalır).
             public string tip, sacModel, aykModel;
@@ -74,7 +77,7 @@ namespace BirdieSmash.Game
             public string kafa; public Color? saft;
             // Sahnedeki figürü yeniden kurmak gerekip gerekmediğinin özeti (GameRoot, Vitrin).
             public Gorunum Kopya() { return (Gorunum)MemberwiseClone(); }
-            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kol + "|" + bel + "|" + ayak + "|" + kafa + saft + (sacParla ? "|p" : "") + (isin ? "|i" : ""); }
+            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kol + "|" + bel + "|" + ayak + "|" + kafa + saft + (sacParla ? "|p" : "") + (isin ? "|i" : "") + (model != null ? "|m" + model : ""); }
         }
         static Color? Renk(string h) { return h != null ? Kit.Hex(h) : (Color?)null; }
         public static Gorunum Benim()
@@ -95,9 +98,13 @@ namespace BirdieSmash.Game
         // yeni portre. Kayıt PlayerPrefs'te (ayrı Save yok; arka plana geçişteki toplu kayıtla yazılır), kaybolursa tur 0'dan başlar.
         public static int RakipTur(string stilId) { return PlayerPrefs.GetInt("rk_tur_" + stilId, 0); }
         public static void RakipTurIlerle(string stilId) { if (stilId != null) PlayerPrefs.SetInt("rk_tur_" + stilId, RakipTur(stilId) + 1); }
+        // Figürü kurulacak model: görünüşün kendi modeli (dosyası build'deyse), yoksa oyuncunun modeli.
+        public static string ModelAd(Gorunum g) { return g != null && g.model != null && Ayar.ModelVar(g.model) ? g.model : Ayar.model; }
         public static Gorunum Rakip(Style st, Color forma)
         {
-            var g = new Gorunum { forma = forma, cerceve = Kit.Hex("#e9eef0") }; var r = Kozmetik.RakipTur(st != null ? st.id : null, st != null ? RakipTur(st.id) : 0); if (r == null) return g;   // 2026-11-15: tip ve şapka maçtan maça değişir (Kozmetik.RakipTur)
+            var g = new Gorunum { forma = forma, cerceve = Kit.Hex("#e9eef0") };
+            if (st != null && st.model != null && Ayar.ModelVar(st.model)) g.model = st.model;   // 2026-11-20 üretilmiş rakibin modeli
+            var r = st != null && st.gor != null ? st.gor : Kozmetik.RakipTur(st != null ? st.id : null, st != null ? RakipTur(st.id) : 0); if (r == null) return g;   // 2026-11-15: tip ve şapka maçtan maça değişir (Kozmetik.RakipTur)
             g.tip = r.tip; g.sacModel = r.sac; g.aykModel = r.ayakkabi; g.sapka = r.sapka;
             var o = r.sacRenk != null ? Karakter.Oge("sac", r.sacRenk) : null; if (o != null) g.sac = Renk(o.renk);
             o = r.ten != null ? Karakter.Oge("ten", r.ten) : null; if (o != null) g.ten = Renk(o.renk);

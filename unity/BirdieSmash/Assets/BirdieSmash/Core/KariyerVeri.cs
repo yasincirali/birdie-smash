@@ -18,7 +18,7 @@ namespace BirdieSmash.Core
 {
     public class ImzaBilgi { public string id, ad, uyari, cevap, renk, ders; public string[] sira; }   // ders: kayıpta önerilen görev (Dril.Oner, 2026-11-16)
 
-    public class KariyerTur { public string id, ad, tema = "", bolum = "", hikaye = ""; public int epMin, epMax; public float tepki = 1, hucum = 1; public Kariyer[] b = new Kariyer[0]; public bool Var { get { return b.Length > 0; } } }
+    public class KariyerTur { public string id, ad, tema = "", bolum = "", hikaye = ""; public int epMin, epMax; public float tepki = 1, hucum = 1; public bool adli; public Kariyer[] b = new Kariyer[0]; public bool Var { get { return b.Length > 0; } } }
     // Usta yolu (kariyer.json "usta"): g = g + adim × çevrim, en çok tavan; tepki/hucum Tur 4 gibi ek zorluk.
     // carpan (2026-10-27): Usta yolu dışındaki Usta maçlarında (Hızlı maç, kariyer, Günün maçı "Usta") rakibin g çarpanı (Match.UstaGucu).
     public class UstaVeri { public float g = 1, adim = .02f, tavan = 1.2f, tepki = 1, hucum = 1, carpan = 1; public int uzunluk = 5, finalUzunluk = 11; }
@@ -46,7 +46,10 @@ namespace BirdieSmash.Core
 
         // Basamağın rakibi: tarzın kopyası, hız ×g, hata ÷g (bugünkü kural). İmza vuruşu patronda (final) ve imza bayraklı
         // basamakta (Tur 4). Turun ek zorluğu tepki ve hücum çarpanı olarak biner (Tur 1–2'de 1: eski davranış birebir).
-        public static Style Rakip(int g)
+        // 2026-11-20: final dışı basamakta (Rakipler.Uretilir) tabanın üstüne üretilmiş kimlik giyer (ad, model, görünüş, özellik).
+        public static Style Rakip(int g) { var b = RakipTaban(g); if (Rakipler.Uretilir(g)) Rakipler.Giydir(b, Rakipler.Anahtar(g)); return b; }
+        // Merdivenin rakibi, kimliksiz: görünen güç sayısı (Hikaye.Guc) buradan, özelliğin küçük oynamasıyla dalgalanmasın.
+        public static Style RakipTaban(int g)
         {
             var k = Al(g); var t = Turlar[TurOf(g)]; var b = Stil[k.stil].Clone(); b.hiz *= k.g; b.hata /= k.g; b.kariyer = g;
             b.patron = k.patron || k.imza; if (!b.patron) b.imza = null; b.tepki *= t.tepki * k.tepki; b.hucum *= t.hucum; return b;
@@ -88,7 +91,7 @@ namespace BirdieSmash.Core
         }
         public static ImzaBilgi Imza(string id) { ImzaBilgi b; return id != null && Imzalar.TryGetValue(id, out b) ? b : null; }
 
-        public static void Sifirla() { turlar = null; stil = null; imza = null; sira = null; usta = null; Gear.VeriSifirla(); Karakter.Sifirla(); Dril.Sifirla(); Gunluk.Sifirla(); Aldatma.Sifirla(); }
+        public static void Sifirla() { turlar = null; stil = null; imza = null; sira = null; usta = null; Gear.VeriSifirla(); Karakter.Sifirla(); Dril.Sifirla(); Gunluk.Sifirla(); Aldatma.Sifirla(); Rakipler.Sifirla(); }
         // 2026-10-26 ekipman v2 ve karakter: gear.json ve karakter.json da aynı kaynaktan (Unity Resources, testte tool/veri).
         public static string Metin(string ad) { return Oku(ad); }
 
@@ -116,7 +119,7 @@ namespace BirdieSmash.Core
             for (int t = 0; t < tj.Count && t < TUR; t++)
             {
                 var d = Json.Obj(tj[t]); var ep = d.ContainsKey("ep") ? Nums(d, "ep") : new float[] { 0, 0 };
-                var tur = new KariyerTur { id = Json.Str(d, "id", "tur" + t), ad = Json.Str(d, "ad", ""), tema = Json.Str(d, "tema", ""), bolum = Json.Str(d, "bolum", ""), hikaye = Json.Str(d, "hikaye", ""), epMin = (int)ep[0], epMax = (int)ep[ep.Length - 1], tepki = F(d, "tepki", 1), hucum = F(d, "hucum", 1) };
+                var tur = new KariyerTur { id = Json.Str(d, "id", "tur" + t), ad = Json.Str(d, "ad", ""), tema = Json.Str(d, "tema", ""), bolum = Json.Str(d, "bolum", ""), hikaye = Json.Str(d, "hikaye", ""), epMin = (int)ep[0], epMax = (int)ep[ep.Length - 1], tepki = F(d, "tepki", 1), hucum = F(d, "hucum", 1), adli = Json.Bool(d, "adli", false) };
                 var bl = new List<Kariyer>(); var bj = d["basamaklar"] as List<object>;
                 for (int i = 0; bj != null && i < bj.Count && i < BASAMAK; i++)
                 {

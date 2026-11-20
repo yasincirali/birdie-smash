@@ -72,7 +72,7 @@ namespace BirdieSmash.Game
             var gv = M.BasamakGorevi;
             bittiKosul = new[] { L.T("Kazan"), GorevKosul(gv, M), L.T("Rakip ≤ {0}", Ilerleme.FarkSiniri(M.target)) };
             var p = Ayar.ilerleme; int n = won && !p.HepsiBitti ? p.Siradaki() : g;
-            if (KariyerVeri.Var(n)) { var nk = KariyerVeri.Al(n); bittiDugmeAlt = L.T(nk.yer) + " · " + Match.STIL[nk.stil].isim; }
+            if (KariyerVeri.Var(n)) { var nk = KariyerVeri.Al(n); bittiDugmeAlt = L.T(nk.yer) + " · " + KariyerVeri.Rakip(n).isim; }
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -141,7 +141,7 @@ namespace BirdieSmash.Game
                 modelId = Ayar.model;
             }
             if (op != null) Destroy(op.gameObject);
-            var opR = Kit.Hex(Match.OpRenk(M.stil, Ayar.FORMA)); op = PlayerView.Build(transform, Ayar.model, false, opR, false, PlayerView.Rakip(M.stil, opR)); op.KordajSeyrek(); if (M.stil != null && M.stil.patron && M.stil.imza != null) op.ImzaIsit();   // imza ışığı perde arkasında (22:05 #1)
+            var opR = Kit.Hex(Match.OpRenk(M.stil, Ayar.FORMA)); var opG = PlayerView.Rakip(M.stil, opR); op = PlayerView.Build(transform, PlayerView.ModelAd(opG), false, opR, false, opG); op.KordajSeyrek(); if (M.stil != null && M.stil.patron && M.stil.imza != null) op.ImzaIsit();   // imza ışığı perde arkasında (22:05 #1)
             // 2026-10-26: rakibin tipi/saçı/ayakkabısı stil.json gorunum
             if (net != null) Destroy(net.gameObject); net = NetView.Build(transform, M.net);
             input.Reset(); lastW = 0;
@@ -408,7 +408,8 @@ namespace BirdieSmash.Game
         {
             ekran = Ekran.Bitti; Uyanik(false); var M = match; bittiIlk = M.ilk; sfx.MacSonu(won); sfx.Ugultu(false, 0);
             if (won) Ayar.wins++;
-            if (mod != Mod.Dril && M.ogr == null && M.stil != null) { Ayar.KarneYaz(M.stil.id, won); Ayar.SonMacYaz(won, M.sc[0], M.sc[1], Ayar.zorluk); }   // rakip karnesi (Ayar.Karne): antrenman ve Sonsuz sayılmaz
+            // 2026-11-20: üretilmiş rakip (Core/Rakipler) altı adlı rakibin karnesine yazılmaz.
+            if (mod != Mod.Dril && M.ogr == null && M.stil != null) { if (!M.stil.uretilen) Ayar.KarneYaz(M.stil.id, won); Ayar.SonMacYaz(won, M.sc[0], M.sc[1], Ayar.zorluk); }   // rakip karnesi (Ayar.Karne): antrenman ve Sonsuz sayılmaz
             if (!M.easy && M.ogr == null) Ayar.kosIpucu = true;   // Hud.KosIpucu: koşu sende ilk maç ipucu bir kez
             // Beceri unvanı (2026-11-07 inceleme): maçtan önceki kazanılmış beceri unvanları; maç sonu kartı yeni açılanı tek satırla söyler.
             var beceri0 = Ayar.ilerleme != null ? Karakter.BeceriKazanilan(Ayar.ilerleme) : null;
@@ -502,7 +503,7 @@ namespace BirdieSmash.Game
             if (mod == Mod.Gunluk && gunluk != null) bittiUst = L.T("Günün maçı") + " · " + L.T(gunluk.deg.ad);
             else if (bittiUst == null && M.ogr == null) bittiUst = L.T("Hızlı maç") + " · " + L.T("Rakip") + " " + M.RakipAd(false);
             // Karne başlığa (2026-11-11 inceleme, fikir 23:05 #2): ilk maçta yazılmaz (1–0 bilgi değil), sonra "· aranızda 3–1".
-            int kG, kY; if (bittiUst != null && mod != Mod.Dril && M.ogr == null && M.stil != null && Ayar.Karne(M.stil.id, out kG, out kY) && kG + kY >= 2)
+            int kG, kY; if (bittiUst != null && mod != Mod.Dril && M.ogr == null && M.stil != null && !M.stil.uretilen && Ayar.Karne(M.stil.id, out kG, out kY) && kG + kY >= 2)
                 bittiUst += " · " + L.T("aranızda {0}–{1}", kG, kY);
             var bitenler = new List<string>(); foreach (var g in M.gorevler) if (g.bitti) bitenler.Add(L.Cumle(g.ad));
             // Sıfır sayaçlar yazılmaz (2026-11-07 inceleme, fikir 14:06 #5): "0 aldatma · 0 tepeden" oyuncuya "bunları yapmadın" diyor ve
@@ -550,7 +551,7 @@ namespace BirdieSmash.Game
                 // kaldığı için "yeniden oyna" kalır. Yeni düğme yok (maç sonu tek ana düğme kuralı); Günün maçı Oyna'da duruyor.
                 var gIlr = Ayar.ilerleme; int gSira = gIlr.HepsiBitti ? -1 : Ayar.kariyerSecim >= 0 && gIlr.Acik(Ayar.kariyerSecim) ? Ayar.kariyerSecim : gIlr.Siradaki();
                 bittiDugme = L.Cumle(Career.AgainLabel(Ayar.kariyerModu, true, gSira)); gunlukSonraOyna = true;
-                bittiDugmeAlt = Ayar.kariyerModu && KariyerVeri.Var(gSira) ? L.T(KariyerVeri.Al(gSira).yer) + " · " + Match.STIL[KariyerVeri.Al(gSira).stil].isim : null;   // BittiKariyer ile aynı biçim: başlık "Sıradaki", alt satır yer · tarz
+                bittiDugmeAlt = Ayar.kariyerModu && KariyerVeri.Var(gSira) ? L.T(KariyerVeri.Al(gSira).yer) + " · " + KariyerVeri.Rakip(gSira).isim : null;   // BittiKariyer ile aynı biçim: başlık "Sıradaki", alt satır yer · tarz
             }
             else if (mod == Mod.Gunluk) bittiDugme = L.T("Günün maçını yeniden oyna");
             // Kayıpta bir antrenman görevi önerisi (tasarım §3.6); görev zaten üç yıldızsa önerilmez.

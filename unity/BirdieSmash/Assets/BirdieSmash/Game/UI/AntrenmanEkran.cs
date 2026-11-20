@@ -41,9 +41,15 @@ namespace BirdieSmash.Game
             var ust = Satir("ant-cift"); c.Add(ust);
             int rk = GameRoot.SonsuzRekor;
             ust.Add(Dugme(L.T("Sonsuz ralli"), () => root.SonsuzOyna(), "ikincil-kart", rk > 0 ? L.T("Rekorun {0} vuruş", rk) : L.T("Kaçırana kadar, her 5 vuruşta hızlanır")));
-            ust.Add(Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", Ayar.antrenman ? "✓ " + L.T("Bitti") : L.T("15 adım, skor yok")));
+            ust.Add(Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", Ayar.antrenman ? L.T("Bitti") : L.T("15 adım, skor yok")));
             var bas = Satir("arali"); c.Add(bas);
             bas.Add(Yazi(L.T("Görevler"), 13, "etiket")); bas.Add(YildizSayac(pr.AntrenmanYildiz, Dril.ToplamYildiz, 15));
+            // 2026-11-20 (inceleme, fikir 17:06 #4; §7 ödül bilgisi kararın verildiği yerde): görev ödülü yalnız görev alt sayfasında
+            // 12 pt yazıyordu; oyuncu Antrenman'ı Tüy kaynağı olarak görmüyordu (Günün maçı ödülü listede, görevlerinki değil).
+            // Bir kez, başlığın altında tek satır; satır başına rozet yok. Değerler Gear'dan, ekonomi aynı.
+            var odS = Satir("rakip-satir"); odS.pickingMode = PickingMode.Ignore; c.Add(odS); odS.Add(Ikon(Ikonlar.Tuy, 14, ALTIN));
+            var odY = Yazi(L.T("+{0} Tüy, +{1} XP her yeni yıldız", Gear.DRIL_TUY, Gear.DRIL_XP), 12, "soluk"); odY.style.marginLeft = 4; odS.Add(odY);
+            Erisim.Etiket(odS, odY.text, "metin");
             var seg = Satir("segment"); c.Add(seg);
             for (int g = 0; g < Dril.GRUP.Length; g++)
             {
@@ -90,7 +96,7 @@ namespace BirdieSmash.Game
             var na = Yazi(L.T(d.nasil), 14); Erisim.Etiket(na, na.text, "metin"); c.Add(na);
             c.Add(Grup(L.T("Yıldızlar")));
             for (int i = 0; i < Dril.YILDIZ; i++) YildizSatir(c, y > i, L.T("12 topta {0} isabet", d.esik[i]));
-            var od = Yazi(L.T("Her yeni yıldız +{0} Tüy, +{1} XP. Aynı yıldızı ikinci kez almak ödül vermez.", Gear.DRIL_TUY, Gear.DRIL_XP), 12, "soluk"); Erisim.Etiket(od, od.text, "metin"); c.Add(od);
+            var od = Yazi(L.T("Her yeni yıldız +{0} Tüy, +{1} XP. Aynı yıldız ikinci kez ödül vermez.", Gear.DRIL_TUY, Gear.DRIL_XP), 12, "soluk"); Erisim.Etiket(od, od.text, "metin"); c.Add(od);
             string id = d.id;
             AltEylem(Dugme(L.T(y > 0 ? "Yeniden oyna" : "Başla"),   // 2026-11-05 unslop: görev adı sayfa başlığında; düğmede tekrarı iki satıra kırıyordu
                  () => { gez.AltKapat(); Uygula(gez.sekme, false); root.DrilOyna(id); }, "dugme--birincil", null, 19));
@@ -105,7 +111,7 @@ namespace BirdieSmash.Game
             var kart = Kart("siradaki"); kart.AddManipulator(new Clickable(() => { Tik(); GunlukAc(); }));
             var bas = Satir("arali"); kart.Add(bas);
             bas.Add(Yazi(L.T("Günün maçı"), 12, "etiket"));
-            bas.Add(Yazi(alindi ? "✓ " + L.T("Bugün kazandın") : L.T("+{0} Tüy", Gunluk.OdulTuy), 12, alindi ? "durum-gecti" : "altin"));
+            bas.Add(alindi ? IkonYazi(true, L.T("Bugün kazandın"), 12, "durum-gecti", SOLUK) : Yazi(L.T("+{0} Tüy", Gunluk.OdulTuy), 12, "altin"));
             kart.Add(Yazi(L.T(g.deg.ad), 18, "kalin"));
             var rk = Satir("rakip-satir"); kart.Add(rk);
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);
@@ -133,8 +139,9 @@ namespace BirdieSmash.Game
             string acik = L.T(g.deg.aciklama);
             dk.Add(Yazi(L.T(g.deg.ad), 16, "kalin")); dk.Add(Yazi(acik, 14, "ipucu"));
             Erisim.Etiket(dk, L.T(g.deg.ad) + ". " + acik, "metin");
-            var od = Yazi(alindi ? "✓ " + L.T("Bugünün ödülü alındı. Yarın yenisi.") : L.T("Kazanınca bir kez +{0} Tüy, +{1} XP · kaybetsen de maç ödülü", Gunluk.OdulTuy, Gunluk.OdulXp), 14, alindi ? "durum-gecti" : "altin");
-            Erisim.Etiket(od, od.text, "metin"); c.Add(od);
+            string odM = alindi ? L.T("Bugünün ödülü alındı. Yarın yenisi.") : L.T("Kazanınca bir kez +{0} Tüy, +{1} XP · kaybetsen de maç ödülü", Gunluk.OdulTuy, Gunluk.OdulXp);
+            var od = alindi ? IkonYazi(true, odM, 14, "durum-gecti", SOLUK) : Yazi(odM, 14, "altin");
+            Erisim.Etiket(od, odM, "metin"); c.Add(od);
             // 2026-11-13 (inceleme 12:05 #6): ayrı "Seri yok." satırı kalktı: olmayan kavramı anlatıyordu; kayıp ödülü ödül satırında.
             AltEylem(Dugme(L.T(alindi ? "Yeniden oyna" : "Oyna") + ": " + L.T("Günün maçı"), () => { gez.AltKapat(); Uygula(gez.sekme, false); root.GunlukOyna(); }, "dugme--birincil", null, 19));
         }
@@ -163,7 +170,7 @@ namespace BirdieSmash.Game
                 Erisim.Etiket(kart, L.T(Ayar.YolAd) + ", " + L.T("Kilitli") + ", " + kosul, "metin");
                 return kart;
             }
-            var b = UstaYolu.Basamak(pr.Usta); var st = Match.STIL[b.stil];
+            var b = UstaYolu.Basamak(pr.Usta); var st = UstaYolu.Rakip(pr.Usta);
             kart.Add(Yazi(L.T("Sıradaki") + ": " + L.T(b.yer) + (b.final ? " · " + L.T("Final") : ""), 16, "kalin"));
             var rk = Satir("rakip-satir"); kart.Add(rk);
             var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);
