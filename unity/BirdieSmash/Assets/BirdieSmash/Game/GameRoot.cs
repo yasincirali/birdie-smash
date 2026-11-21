@@ -110,7 +110,7 @@ namespace BirdieSmash.Game
             sfx.sakin = () => hud.PerdeKapali || ekran != Ekran.Oyun || paused || match == null || match.between || match.s == null;
             sfx.derinSakin = () => hud.PerdeKapali || ekran == Ekran.Menu && Kalite.MenuDurgun;   // ek ses sırası (Sfx.IsitIsle notu)
             Basarim.Esitle(Ayar.kariyer, Ayar.bestRally); Basarim.Giris(Ayar.kariyer);
-            Online.Dinle();   // yalnız gizli tanı katmanı açıkken: Game Center girişi + gelen arkadaş daveti
+            Online.Dinle();   // Game Center girişi + gelen arkadaş daveti (2026-11-21: herkese açık; giriş Basarim ile aynı oturum)
             match = new Match(1, new MatchOptions { easy = Ayar.easy, target = Ayar.target, saha = Ayar.saha });   // menü arkasında duran sahne
             Kur(match);
             AudioListener.volume = Ayar.ses ? 1 : 0;
@@ -242,9 +242,11 @@ namespace BirdieSmash.Game
         {
             var ot = Online.oturum; if (ot == null || ot.durum != Oturum.Durum.Hazir) return;
             var o = Secenek(false);
-            // İki telefonda aynı kural (oyuncunun zorluk ayarı sayılmaz): 11 sayı, koşu oyuncuda, koşu yardımı açık (online raporu
-            // "Skill gelişimi ve adalet"). Ekipman gücünü Match nötrler (eşit güç, yasin 2026-11-07). Rakip yapay zekâ ayarları boşta.
-            o.easy = false; o.kosuYardim = true; o.target = 11; o.yardim = 0; o.uzak = true; o.uzakServis = ot.servisBende ? "me" : "op";
+            // İki telefonda aynı kural (oyuncunun zorluk ayarı sayılmaz): 11 sayı. Ekipman gücünü Match nötrler (eşit güç, yasin
+            // 2026-11-07). Rakip yapay zekâ ayarları boşta. 2026-11-21 (yasin: hareket "en baştan assisted, semi-assisted ve pro"):
+            // koşuyu oyuncunun kendi seçimi yapar (Yardımlı oyuncu otomatik koşar); yardım güç vermez, Match uzak maçta kolay modun
+            // erişim, ivme ve vuruş notu kolaylığını kapatır (Match.KE). Eskiden herkes Yarı yardımlı oynuyordu.
+            o.easy = Ayar.hareket == 0; o.kosuYardim = Ayar.hareket == 1; o.sert = false; o.target = 11; o.yardim = 0; o.uzak = true; o.uzakServis = ot.servisBende ? "me" : "op";
             // Rakibin adı kartından (Game Center takma adı). Görünüşü henüz varsayılan tarz figürü: kart görünüş taşımıyor.
             var st = Match.STIL[Match.STIL_SIRA[0]].Clone(); st.isim = ot.rakip != null && !string.IsNullOrEmpty(ot.rakip.ad) ? ot.rakip.ad : L.T("Rakip");
             o.stil = st;

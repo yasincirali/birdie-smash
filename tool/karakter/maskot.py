@@ -414,6 +414,8 @@ def disa_aktar(hedef=RES):
     meta = json.load(open(os.path.join(RES, VERICI + '_clips.json'), encoding='utf-8'))
     hc = (H('head') + T_('head')) / 2   # bas__isaret; bant halkası ona göre (Unity Aksesuar şapkayı buna oturtur)
     meta['model'] = AD
+    # meta['klipKaynak'] = VERICI  # 2026-11-21 akşam geri alındı: Unity'de paylaşılan klipler maskotta örneklenmedi (ekran turu r227)
+    #   # 2026-11-21 boyut: Unity bu FBX'in animasyonunu almaz, Tüycük'ünkünü paylaşır (KarakterImport, PlayerView.KlipleriBagla)
     meta['parts'] = sorted(o.name for o in cikan if o.type == 'MESH' and not o.name.endswith('__isaret'))
     meta['bant'] = {'dz': round(BANT_Z - hc.z, 4), 'df': round(BAS_C.y - hc.y, 4), 'r': round((BAS_R[0] + BAS_R[1]) / 2 * kf + .004, 4)}
     json.dump(meta, open(os.path.join(hedef, AD + '_clips.json'), 'w', encoding='utf-8'), indent=1, ensure_ascii=False)

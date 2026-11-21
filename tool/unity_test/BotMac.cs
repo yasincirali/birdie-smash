@@ -1340,6 +1340,7 @@ static class BotMac
         Console.WriteLine("karakter: " + T.Length + " tip (" + bedava + " ücretsiz), " + S.Length + " saç biçimi (garip ≥ " + garipMin + " Tüy), 5 ayakkabı nötr toplamlı, kozmetik güç vermez, kapı/taşıma/rakip tamam");
         KarakterVarliklari(T, S);
         GercekciAksesuar();
+        PaylasilanKlip(); CarpismaKuresi();
     }
     // 2026-10-27 (yasin: "Gerçekçi de vücut özellikleri değil de sadece aksesuarlar değişmeli kafa bandı forma bileklik ayakkabı
     // şort tişört raket"): Gerçekçi'de sunulan her aksesuar seçeneğinin bir parçası olmalı. rocketbox.fbx'te ve _clips.json
@@ -1347,6 +1348,41 @@ static class BotMac
     // her kumaşın (klasik hariç) forma dokusu Resources'ta; şort renk listesi geçerli (ilki modelin rengi, Sv 1, kimlikler
     // tekil, renk biçimi #rrggbb), Karakter.GORUNUM_KAT'ta ve yalnız görünüş (karakter.json'da güç alanı yok). Ekran turu
     // (EkranTuru.Gercekci) aynı seçimleri Unity'de açık parça, aktif renderer ve bölge rengiyle ölçer.
+    // 2026-11-21 (boyut, yasin: "oyun boyutunun küçültülmesi"): klipKaynak taşıyan model (maskotlar → tuycuk) kendi animasyonunu
+    // build'e koymaz, kaynağın kliplerini kullanır (KarakterImport, PlayerView.KlipleriBagla). Kaynak var olmalı, kendisi
+    // paylaşmamalı (zincir yok) ve klip listesi (ad, kare aralığı, döngü, poz sayısı) birebir aynı olmalı: Match.CLIP_N ve LOOPS
+    // modelin kendi json'ından okunur, kaynakla ayrışırsa vuruş anı kayar.
+    // 2026-11-21 baş içine girme koruması (PlayerView.GirmeKoru): Tüycük dışındaki her modelin baş küresi carpisma.json'da
+    // olmalı (yeni FBX eklenince tool/karakter/carpisma_olc.py yeniden koşulmazsa kol o modelde başa girer, sessizce).
+    static void CarpismaKuresi()
+    {
+        string R = "unity/BirdieSmash/Assets/Resources/karakter/"; var js = Json.Obj(Json.Parse(System.IO.File.ReadAllText(R + "carpisma.json"))); int n = 0;
+        foreach (var f in System.IO.Directory.GetFiles(R, "*.fbx"))
+        {
+            string ad = System.IO.Path.GetFileNameWithoutExtension(f); if (ad == "tuycuk") continue;   // baş gövdeyle tek parça, ölçülemez
+            if (!js.ContainsKey(ad)) { Fail("baş küresi yok: " + ad + " (tool/karakter/carpisma_olc.py)"); continue; }
+            var b = (List<object>)Json.Obj(js[ad])["bas"]; double r = Convert.ToDouble(b[3]);
+            if (b.Count != 4 || r < .5 || r > 3) Fail("baş küresi yarıçapı tuhaf: " + ad + " " + r); else n++;
+        }
+        Console.WriteLine("baş küresi: " + n + " model");
+    }
+    static void PaylasilanKlip()
+    {
+        string R = "unity/BirdieSmash/Assets/Resources/karakter/"; int n = 0;
+        foreach (var f in System.IO.Directory.GetFiles(R, "*_clips.json"))
+        {
+            var js = Json.Obj(Json.Parse(System.IO.File.ReadAllText(f))); string kay = Json.Str(js, "klipKaynak", null); if (kay == null) continue;
+            string ad = System.IO.Path.GetFileName(f).Replace("_clips.json", ""); n++;
+            if (!System.IO.File.Exists(R + kay + ".fbx") || !System.IO.File.Exists(R + kay + "_clips.json")) { Fail("klip kaynağı yok: " + ad + " → " + kay); continue; }
+            var kj = Json.Obj(Json.Parse(System.IO.File.ReadAllText(R + kay + "_clips.json")));
+            if (Json.Str(kj, "klipKaynak", null) != null) Fail("klip kaynağı zincirli: " + kay);
+            Func<Dictionary<string, object>, string> imza = j => string.Join(";", ((List<object>)j["clips"]).Select(x => { var c = Json.Obj(x); return Json.Str(c, "name", "") + ":" + Json.Num(c, "first", 0) + "-" + Json.Num(c, "last", 0) + ":" + Json.Num(c, "poses", 0) + ":" + (c.ContainsKey("loop") && c["loop"] is bool b && b); }));
+            if (imza(js) != imza(kj)) Fail("paylaşılan klip listesi kaynaktan farklı: " + ad + " → " + kay);
+        }
+        Console.WriteLine("paylaşılan klip: " + n + " model kaynaktan");
+        // 2026-11-21 akşam: paylaşım oyunda kliplerin örneklenmediği görülünce geri alındı (KarakterImport sürüm 4); n = 0 beklenir.
+    }
+
     static void GercekciAksesuar()
     {
         string R = "unity/BirdieSmash/Assets/Resources/karakter/";

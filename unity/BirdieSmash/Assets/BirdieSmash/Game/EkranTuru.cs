@@ -75,7 +75,9 @@ namespace BirdieSmash.Game
             }
             if (kip == "gorsel")
             {
-                yield return Cek("00_ilk_kare"); yield return KlipSeritleri("oyuncak"); yield return FileKare();
+                // 2026-11-21 baş içine girme koruması (PlayerView.GirmeKoru): maskotun en çok giren üstten/backhand klipleri önce (süre sınırı).
+                yield return Cek("00_ilk_kare"); if (Ayar.ModelVar("kedi")) yield return KlipSeritleri("kedi", new[] { "bh_over", "bh_drop", "rth", "serve", "clear" });
+                yield return KlipSeritleri("oyuncak"); yield return FileKare();
                 if (root.ui != null) { root.AnaMenu(); root.ui.SekmeAc(Sekme.Oyna); }
                 for (int i = 0; i < 3; i++) { float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 4) yield return null; yield return Cek("afis_" + i); }
                 File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
@@ -261,13 +263,13 @@ namespace BirdieSmash.Game
         // faz 0..5/6. "klip_poz" satırı: temas karesi ve sağ elin gövdeye göre yanı (+ sağ: forehand, − sol: backhand çaprazı).
         static readonly string[] KLIP_SERIT = { "smash", "clear", "drop", "jump", "rth", "bh_over", "drive", "bh_drive", "kill", "bh_kill", "low", "bh_low", "net", "lunge", "bh_lunge", "block", "serve", "serve_bh", "serve_flick",
             "fwd", "run", "chasse_r", "chasse_l", "kros_r", "kros_l", "geri_r", "geri_l", "back_r", "back_l", "split", "bh_drop", "bh_net", "net_spin", "block_govde" };
-        IEnumerator KlipSeritleri(string mdl)
+        IEnumerator KlipSeritleri(string mdl, string[] klipler = null)
         {
             var g = new GameObject("klip_serit"); var pv = PlayerView.Build(g.transform, mdl, true, Kit.Hex("#3aa0ff"));
             Vector3 pos = Kit.W(-1.6f, Court.NET + 3.5f, 0), hedef = pos + Vector3.up * 1.0f;   // yan çizginin 1,6 m dışı, kendi yarım: kortta oyuncu yok, ışık aynı
             yield return null;
             // Süre (koşu turu 2400 sn; r42 832 sn sürdü): ayak işi şeritleri yalnız varsayılan modelde, 2000 sn'den sonra şerit yok.
-            foreach (var clip in KLIP_SERIT)
+            foreach (var clip in klipler ?? KLIP_SERIT)
             {
                 if (pv.Model == null || Time.realtimeSinceStartup > 2000) { rap.AppendLine("klip_poz " + mdl + " · süre sınırı, kalan şeritler atlandı"); break; }
                 if (mdl != "oyuncak" && Match.ADIM_BOY.ContainsKey(clip)) continue;
@@ -288,6 +290,7 @@ namespace BirdieSmash.Game
                     pv.ShowPoz(pos, 0, clip, ph[i]); c.Render();
                     RenderTexture.active = rt; tex.ReadPixels(new Rect(0, 0, 320, 480), i * 320, 0); RenderTexture.active = prev;
                     Vector3 l, r, e; float se; if (pv.TaniAyak(out l, out r, out e, out se)) sb.Append(" " + (e.x - pos.x).ToString("F2") + (Mathf.Abs(ph[i] * n - .5f - hitF) < .01f ? "*" : ""));
+                    if (pv.GirmeTani > .005f) sb.Append(" [baş " + (pv.GirmeTani * 100).ToString("F0") + " cm itildi]");
                 }
                 tex.Apply(); c.targetTexture = null;
                 File.WriteAllBytes(Path.Combine(dir, mdl + "_klip_" + clip + ".png"), tex.EncodeToPNG());
@@ -348,6 +351,9 @@ namespace BirdieSmash.Game
             yield return Profil(ui, ek);
             ui.SekmeAc(Sekme.Oyna); ui.HizliMacAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "hizli"); ui.Geri();
             ui.SekmeAc(Sekme.Oyna); ui.SeviyeYoluAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "seviye_yolu"); ui.Geri();   // 2026-11-10 Seviye yolu
+            // 2026-11-21 arkadaş maçı sayfası (Linux'ta Game Center yok: "giriş gerekiyor" durumu) ve hareket seçimi
+            ui.SekmeAc(Sekme.Oyna); ui.ArkadasAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "arkadas"); ui.Geri();
+            ui.SekmeAc(Sekme.Oyna); ui.HareketSecAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "hareket_sec"); ui.Geri();
             ui.GelisimAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "gelisim"); ui.Geri();   // 2026-11-10 oyuncu gelişimi
             ui.AyarlarAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "ayarlar"); ui.Geri(); yield return Bekle(5);
             // 2026-10-26 adım 7–8: antrenman sayfası (örnek yıldızlarla), görev kartı, Günün maçı kartı

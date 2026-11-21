@@ -118,7 +118,10 @@ jobs:
           W="$RUNNER_TEMP/sonuc"; git worktree add -B ekran-sonuc "$W" origin/ekran-sonuc
           D="r${{ github.run_number }}"; mkdir -p "$W/$D"; cp -r "$RUNNER_TEMP/ekran/." "$W/$D/" || true
           echo "${{ github.sha }}" > "$W/$D/sha.txt"
-          cd "$W" && git add "$D" && git commit -qm "ekran $D (${{ github.sha }})" && git push -q origin ekran-sonuc
+          cd "$W" && git add "$D" && git commit -qm "ekran $D (${{ github.sha }})"
+          # 2026-11-21: iki tur aynı anda bitince ikincinin push'u "fetch first" ile reddedildi, kareler kayboldu (r227/r229 sırası).
+          # Her koşu yalnız kendi rN klasörünü yazar: üstüne almak çakışmasızdır.
+          for i in 1 2 3 4 5; do git push -q origin ekran-sonuc && break; sleep $((i * 5)); git pull -q --rebase origin ekran-sonuc; done
 
       # 2026-11-10 yazı taşma kapısı (tool/yazi_tasma_kapi.py): sonuçlar dala yazıldıktan sonra; sayı tavanı geçerse iş kırmızı.
       - name: yazı taşma kapısı

@@ -6,6 +6,22 @@ Kariyer ve Profil cilası (21 Kasım akşam):
 - Profil'de "Son maçlar" başlığının sağında kaç maçtan kaçını kazandığın yazar ("7/10"); hapların altındaki satır kalktı. Toplam kariyer yıldızı İstatistikler'den "Tur mühürleri" başlığının sağına taşındı.
 - Profil'deki Gelişim kartı, dağıtılacak puan yokken en güçlü dalını yazar ("Öne çıkan: Güç 6").
 Nasıl denenir: Kariyer'i aç, altta turuncu düğmede iki yuvarlak yüz olmalı; yazı ortada kalmalı. Bir iki saniye dokunmadan bekle: rakibin baş harfi yüzüne dönmeli. Düğmeye dokun: maç kartı takılmadan açılmalı. Profil'de Son maçlar başlığının sağında sayı, Tur mühürleri başlığının sağında yıldız sayısı olmalı. Yazıyı en büyük boya getirip aynı yerlere bak: üst üste binen yazı olmamalı.
+Sesler netleşti, kollar başın içinden geçmiyor, yeni Kort seti (21 Kasım akşam):
+- Her vuruş türü kendi gerçek raket sesini çalıyor: smaç, sıçrayarak smaç, clear, drive, drop ve servis. Gerçek ses çalınca üstüne binen müzik notası, davul ve düdük artık yok.
+- Smaça karşı yumuşak savunmada blok hareketi oynuyor.
+- Sevinç, poz ve vuruş hareketlerinde oyuncunun kolu ve eli artık başının içinden geçmiyor.
+- Dolap'a yeni Kort seti geldi: Dev tüy şapka, Raket çantası, Havlu, Tüy kalkan ve Yıldırım perçem saç. Kozmetiktir, güç vermez.
+Nasıl denenir: Bir maç oyna ve smaç, sıçrayarak smaç, clear, drop ve servis seslerini dinle: her biri farklı ve gerçek raket gibi olmalı, vuruşta müzik notası duyulmamalı. Rakip smaç atınca yumuşak karşıla: oyuncun blok hareketi yapmalı. Bir sayı kazanıp sevinç hareketini izle: kol başın içinden geçmemeli. Dolap'ta set listesinde Kort'u seç: beş yeni eşya görünmeli, sırta Raket çantasını giy ve oyuncuyu döndür.
+Arkadaşınla oyna herkese açık, oyuncu hareketi baştan seçiliyor (21 Kasım):
+- Oyna sayfasında "Arkadaşınla oyna" kartı herkese görünüyor; gizli ayar gerekmiyor.
+- Kartta Game Center arkadaşların listeleniyor: birine "Davet et" de, isteği telefonuna bildirim olarak gider. "Arkadaş ekle" ile yeni arkadaş ekleyebilir, "Rastgele rakip bul" ile tanımadığın biriyle oynayabilirsin.
+- İlk Oyna'dan önce bir kez soruluyor: Yardımlı (oyuncun topa kendisi koşar), Yarı yardımlı (geç kalırsan koşar), Pro (her adım senin). Sonradan Ayarlar'dan değişir.
+- Arkadaş maçında da kendi hareket seçimin geçerli. Yardım yalnız koşuyu üstlenir, güç vermez.
+Nasıl denenir: Oyna'ya bas: önce üç seçenekli sayfa gelmeli, birini seçip başla. Oyna sayfasında aşağıdaki "Arkadaşınla oyna" kartına dokun: arkadaş listesi için izin istenmeli, sonra arkadaşların görünmeli. Bir arkadaşına "Davet et" de: o telefona bildirim gitmeli, kabul edince maç başlamalı.
+Vuruş sesleri ve daha küçük oyun (21 Kasım):
+- Raket vuruşları artık gerçek kayıttan gelen seslerle çalıyor: smaş en sert, drop en yumuşak; servisin de kendi sesi var.
+- Oyun boyutu biraz küçüldü: açılış tüy animasyonu ve karakter modelleri daha az yer tutuyor.
+Nasıl denenir: Bir maç oyna, smaş, drop ve servis vuruşlarını dinle: sesler birbirinden farklı ve gerçek raket gibi olmalı. Dolap'ta kedi, panda, robot gibi karakterleri giy ve maçta oyna: hareketleri önceki gibi akıcı olmalı. Uygulamayı kapatıp aç: açılıştaki tüy dönmesi önceki gibi görünmeli.
 Dolap cilası (21 Kasım öğle):
 - Dolap'ta Ayakkabı görünüşünde henüz almadığın ayakkabı modelleri de görünür ("Atölye'de" yazar); dokununca Atölye'de oyuncunun üstünde denenir, fiyatı ve gücü orada.
 - Kombin kaydedince ya da giyince o kombin çipi kısaca büyüyüp yerine oturur, giyince vitrindeki oyuncu parlar. Kombin dokunuşu artık takılmaz.

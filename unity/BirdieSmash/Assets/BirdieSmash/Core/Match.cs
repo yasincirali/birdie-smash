@@ -352,7 +352,7 @@ namespace BirdieSmash.Core
         // Ölçüm GeriOlc 60 maç: önde kalıp derine gelen topa yetişme Kolay %84 → %92, Usta %81 → %90. Rakibin planı D / v kalır:
         // 0,18 sn tepki payı kalkışını zaten karşılıyor (2026-10-26 MoveAcc ölçümü), ivmeyi eklemek onu iki kez cezalandırıyordu.
         static float KosuSure(float D, float v, float A, bool ivmeli) { if (D <= 0) return 0; if (!ivmeli) return D / v; float dHiz = v * v / (2 * A); return D >= dHiz ? D / v + v / (2 * A) : (float)Math.Sqrt(2 * D / A); }
-        float MeIvme() { return (split ? 20 : (easy ? 18 : 14)) * GS.kosu; }
+        float MeIvme() { return (split ? 20 : (KE ? 18 : 14)) * GS.kosu; }
         // Rakibin nefesi (HTML bdf1ed5): aynı eğri; yorgun rakip yavaş koşar, isabeti bozulur, smaç yerine clear seçer.
         // Tarzlar farklı yorulur: Smaşçı ×1,3, Duvar ×0,7, File oyuncusu arkaya koşunca ×1,8.
         public float OpNefesF() { return op.nefes < .4f ? .8f + .5f * op.nefes : 1; }
@@ -418,7 +418,7 @@ namespace BirdieSmash.Core
         float SliceKd(string from, bool slice) { return slice ? Shuttle.KD * (1 + .35f * (from == "me" ? GS.slice : 1)) : Shuttle.KD; }
         void StartFlight(string from, float vx, float vy, float vz, float hx, float hy, float hz, bool isServe, string type, bool isSuper, string q, bool slice = false)
         {
-            string oncekiVurus = s != null ? s.vurus : null;
+            string oncekiVurus = s != null ? s.vurus : null; var onceki = s;
             s = new Shuttle { x = hx, y = hy, z = hz, vx = vx, vy = vy, vz = vz, from = from, serve = isServe, type = type, super = isSuper, kd = SliceKd(from, slice), slice = slice, vurus = vurusAdi ?? type,
                 hx = hx, hy = hy, hz = hz, zTepe = hz, v0 = (float)Math.Sqrt(vx * vx + vy * vy + vz * vz), servisTur = isServe ? servisTurSon : null }; vurusAdi = null;   // 2026-10-26: Kesici raket / Aldatıcı tarzı slice sapmasını büyütür (GS.slice, nötr 1)
             rally++; maxRally = Math.Max(maxRally, rally);
@@ -440,7 +440,11 @@ namespace BirdieSmash.Core
                 if (!isServe && h.prepA > .5f && (ps == "low" && c0 == "drive" && hz < 1.3f || ps == "drive" && c0 == "low" && hz > .6f || ps == "kill" && (c0 == "over" && hz <= 1.95f || c0 == "drive" && hz > 1))) h.shot = ps;
             }
             h.hand = isServe ? "fore" : HandOf(h, from, hx, hz);
-            string c = isServe ? (h.svClip ?? "serve") : h.shot == "lunge" ? "lunge" : h.shot == "over" ? (type == "jump" || h.jump > 0 ? "jump" : type == "smash" ? "smash" : type == "drop" && HasClip("drop") ? "drop" : "clear") : h.shot == "drive" ? "drive" : h.shot == "kill" ? "kill" : type == "block" ? "block" : type == "drop" && HasClip("net") ? "net" : "low";
+            // 2026-11-21 (yasin: "eksik bazı vuruşların eklenmesi"): blok klibi hiç oynamıyordu. Oyuncunun bloğu uçuşa "drop" diye
+            // gider (ft), klip kararı uçuş türüne baktığı için blok net/alçak vuruş gibi görünüyordu; vuruşun kendi adı s.vurus'ta.
+            // Rakibin Plan'ında blok yok: smaca baskı altında verdiği file önü dönüşü (Baski: opType drop) gerçekte bloktur.
+            string vk = s.vurus == "block" || from == "op" && type == "drop" && SmacaKarsi(onceki) ? "block" : type;
+            string c = isServe ? (h.svClip ?? "serve") : h.shot == "lunge" ? "lunge" : h.shot == "over" ? (type == "jump" || h.jump > 0 ? "jump" : type == "smash" ? "smash" : type == "drop" && HasClip("drop") ? "drop" : "clear") : h.shot == "drive" ? "drive" : h.shot == "kill" ? "kill" : vk == "block" ? "block" : type == "drop" && HasClip("net") ? "net" : "low";
             h.clip = RthKlip(ClipHand(c, h.hand), h, from, hx, hz);
             // 2026-11-20 teknik vuruş klipleri (yalnız görünüş; uçuş ve sayı aynı): file dibindeki forehand net vuruşu bilek
             // çevirmeli (tumble), gövdeye gelen smacın bloğu gövdenin önünde. İkisi de hazırlık klibiyle aynı temas pozunu paylaşır.
@@ -448,7 +452,7 @@ namespace BirdieSmash.Core
             else if (h.clip == "block" && Math.Abs(hx - h.x) < GOVDE_X) h.clip = "block_govde";
             // Takip vuruşa göre (fb1b245, denetim #5/#16): smaç/clear 300 ms, drop 200, drive 180, file öldürme 150,
             // net vuruşu 120, blok 100, lift 250; hamle toparlanması 300 ms. Eskiden hepsi 250 ms'ydi.
-            h.swHiz = 1 / (isServe ? .25f : h.shot == "lunge" ? .3f : type == "block" ? .1f : h.shot == "over" ? (type == "drop" ? .2f : .3f) : h.shot == "drive" ? .18f : h.shot == "kill" ? .15f : type == "drop" ? .12f : .25f);
+            h.swHiz = 1 / (isServe ? .25f : h.shot == "lunge" ? .3f : vk == "block" ? .1f : h.shot == "over" ? (type == "drop" ? .2f : .3f) : h.shot == "drive" ? .18f : h.shot == "kill" ? .15f : type == "drop" ? .12f : .25f);
             var oth = from == "me" ? op : me; if (oth.sw <= 0) { oth.splitT = .3f; if (oth.yuru && oth.vAn > SPLIT_KOSU) oth.splitCik = oth.splitT; }   // rakip vururken split step
             // Koşarken split yok (2026-11-05, AnimOlc: run↔split maç başına ~5): split yerinde, ayaklar birlikte bir hop; tam
             // koşudayken (SPLIT_KOSU üstü) araya giren hop koşuyu 0,13 sn kesip figürü sıçratıyordu. Gerçekte koşan oyuncu
@@ -580,7 +584,7 @@ namespace BirdieSmash.Core
             R = new Reach();
             if (y <= Court.NET || z < .12f || z > 3.1f) return false;
             float d = Hyp(x - mx, y - my); bool kill = y - Court.NET < 2.3f && z > Court.NETH + .2f;
-            float R1 = easy ? 1.45f : 1.15f, R2 = (easy ? 2.2f : 1.75f) * GS.uzanma;   // uzanma: Duvar tarzı +%6 (2026-10-26)
+            float R1 = KE ? 1.45f : 1.15f, R2 = (KE ? 2.2f : 1.75f) * GS.uzanma;   // uzanma: Duvar tarzı +%6 (2026-10-26)
             if (d <= R1) { R = new Reach { lunge = false, over = z > 2.0f, kill = kill, d = d }; return true; }
             if (d <= R2 && z < 1.5f) { R = new Reach { lunge = true, d = d }; return true; }
             // Usta uzanma halkası (2026-10-31, Ar-Ge "Usta modu ve Dolap" U1, yasin "ilerle ve devam et"; araştırma: TopSpin 2K25
@@ -591,7 +595,7 @@ namespace BirdieSmash.Core
             return false;
         }
         public const float USTA_UZAN = .4f, UZAN_SAPMA = .3f;   // bot ölçümü (Tur 1/2 Usta, 200 maç): uzanmasız %49, .3 %58, .4 %57, .5 %67
-        public float ErisimIc { get { return easy ? 1.45f : 1.15f; } }   // görünüm: Usta erişim halkaları (ShuttleView)
+        public float ErisimIc { get { return KE ? 1.45f : 1.15f; } }   // görünüm: Usta erişim halkaları (ShuttleView)
         public int uzanSay;
         // Rakibin kurtarış ağır çekimi maçta yalnız bir kez (2026-11-13 inceleme, fikir #3): her balıklama 0,3 sn yavaşlatıyordu;
         // oyuncunun kazanan sandığı vuruş rakibin anı olarak tekrar tekrar izletiliyor, ralli ritmi bölünüyordu (maç sonunda
@@ -661,7 +665,7 @@ namespace BirdieSmash.Core
             // Tam orta penceresi: ekipmanın tatli'si × tarzın durum çarpanı (2026-10-26: Smaşçı sıçrayarak smaçta +%5, File ustası
             // file vuruşunda ve file önündeki drop/blokta +%10; nötr 1).
             float tk = type == "jump" ? GS.jumpTatli : type == "kill" || ((type == "drop" || type == "block") && Math.Abs(hy - Court.NET) < 2.3f) ? GS.fileTatli : 1;
-            string q = cq < .4f * GS.tatli * tk ? "perfect" : cq <= 1 ? "good" : easy ? "good" : "poor"; if ((I.lunge || I.uzan) && q == "perfect") q = "good"; if (sw.tap) q = "good";
+            string q = cq < .4f * GS.tatli * tk ? "perfect" : cq <= 1 ? "good" : KE ? "good" : "poor"; if ((I.lunge || I.uzan) && q == "perfect") q = "good"; if (sw.tap) q = "good";
             // Smaşçı: sıçrayış tarzsız enerjiyle henüz gelmezdi (smasciAn, ShotPlan "jump"); File/Smaşçı: tam orta tarzsız "good" olurdu.
             bool tarzAni = smasciAn || (q == "perfect" && tk > 1 && cq >= .4f * GS.tatli); smasciAn = false;
             string tarzEk = tarzAni && TarzAn() && q == "perfect" ? (type == "jump" ? " · Smaşçı" : " · File ustası") : "";
@@ -695,7 +699,7 @@ namespace BirdieSmash.Core
             if (I.lunge)
             {
                 me.dive = 1; me.yat = false; me.stun = .35f * GS.toparla; saves++; Yor(.15f);
-                bool duvar = GS.uzanma > 1 && I.d > (easy ? 2.2f : 1.75f);   // taban erişimin dışı: tarzsız yetişemezdin
+                bool duvar = GS.uzanma > 1 && I.d > (KE ? 2.2f : 1.75f);   // taban erişimin dışı: tarzsız yetişemezdin
                 if (duvar && TarzAn()) Say("me", "lunge", hx, hy, hz, "Duvar uzanışı!", 2); else if (saves <= 3) Say("me", "lunge", hx, hy, hz, "Uzandın!");   // öğretici: maçta ilk 3 kez
             }   // öğretici: maçta ilk 3 kez
             // Kaydırma anı temas anıdır, kalkış önceden bilinmez: figür temasta tepede (jump=.53 → sin(.53π) ≈ 1), sonra iner.
@@ -759,7 +763,7 @@ namespace BirdieSmash.Core
                 // sıfırlar. R01 çağrısı eskisi gibi yalnız benim flick'imde (IkizMaclar: online'da rakip insan, Match:455 siler).
                 if (tur == "flick" && who == "me")
                 {
-                    float sans = .75f - (easy ? .125f : .25f) * Math.Min(2, flickSeri); flickSeri++;
+                    float sans = .75f - (KE ? .125f : .25f) * Math.Min(2, flickSeri); flickSeri++;
                     deceive = R01() < sans;
                     if (uzak == null && !deceive && flickSeri >= 3 && flickBekledim < 2) { flickBekledim++; Say("op", null, op.x, op.y, 1.2f, "Bekliyordum!", 2); }
                 }
@@ -798,6 +802,12 @@ namespace BirdieSmash.Core
         public bool kosuYardim; float sonDokun = -9;
         public bool YardimKosuyor { get { return KosuYardimi() && me.manualT <= 0; } }   // Zor: yardım şu an koşturuyor (GameRoot ilk 2 kez "Koşu yardımı" der)
         bool KosuYardimi() { return kosuYardim && !easy && ogr == null && s != null && s.from == "op" && sonDokun < opHitAt && clock - opHitAt > KOSU_YARDIM_GEC; }
+        // Online yardım (2026-11-21, yasin: "oyuncu hareketleri en baştan assisted, semi-assisted ve pro olacak şekilde seçilebilsin"):
+        // online maçta her oyuncu kendi hareket yardımını seçer, ama yardım yalnız KOŞUYU üstlenir. Kolay modun geniş erişimi, hızlı
+        // ivmesi, "kötü yok" vuruş notu ve geniş pencere uzak maçta yoktur: Yardımlı oyuncu Pro'ya karşı güç kazanmaz (eşit güç, 7 Kas).
+        // Uzanma (USTA_UZAN, Erisim) yine yalnız elle koşana: otomatik koşu + uzanma ikiz maçta temas noktasını 2,5 m ayırıyordu
+        // (BotMac IkizMaclar); Yardımlı oyuncunun erişimi Pro'nun taban erişimi, uzanması yok.
+        bool KE { get { return easy && uzak == null; } }
         public bool DurusNoktasi(out float x, out float y)
         {
             x = y = 0; if (s == null || s.dead || s.from != "op") return false;
@@ -1236,6 +1246,7 @@ namespace BirdieSmash.Core
         // Drive ve blok kendi hazırlığıyla (ce47f5c): eskiden alçak vuruş klibinden gelip raket yere iniyordu.
         // Alçak vuruşun klibi vuruş türünden (Hit ile aynı kural): rakipte türü önceden bildiğimizden hazırlık temasla aynı klipte
         // (2026-11-05, AnimOlc: rakipte low→net temas uyumsuzluğu maç başına ~3, poz temasta sıçrıyordu).
+        static bool SmacaKarsi(Shuttle g) { return g != null && (g.vurus == "smash" || g.vurus == "jump" || g.vurus == "kill"); }   // rakibin smaca file önü dönüşü blok (StartFlight vk)
         static string AlcakKlip(string type) { return type == "block" ? "block" : type == "drop" && HasClip("net") ? "net" : "low"; }
         void Prep(Athlete o, string who, float dt)
         {
@@ -1244,7 +1255,7 @@ namespace BirdieSmash.Core
             {
                 tg = 1; o.prepT = I.t - s.t; o.prepShot = I.lunge ? "lunge" : ShotClass(who == "op" ? (I.opType ?? "") : "", I.z, I.y);
                 o.prepHand = PrepEl(o, who, I.x, I.z, I);
-                o.prepClip = RthKlip(ClipHand(o.prepShot == "over" ? (who == "op" && I.opType == "smash" && o.prepHand != "back" ? "jump" : who == "op" && I.opType == "drop" && HasClip("drop") ? "drop" : "clear") : o.prepShot == "low" && who == "op" ? AlcakKlip(I.opType) : o.prepShot, o.prepHand), o, who, I.x, I.z);
+                o.prepClip = RthKlip(ClipHand(o.prepShot == "over" ? (who == "op" && I.opType == "smash" && o.prepHand != "back" ? "jump" : who == "op" && I.opType == "drop" && HasClip("drop") ? "drop" : "clear") : o.prepShot == "low" && who == "op" ? AlcakKlip(I.opType == "drop" && SmacaKarsi(s) ? "block" : I.opType) : o.prepShot, o.prepHand), o, who, I.x, I.z);
             }
             else if (s == null && server == who) { tg = .6f; o.prepShot = "low"; o.prepClip = "serve"; }   // servisçi topu elinde tutar
             if (who == "me" && s != null && !s.dead && s.from == "op")
@@ -1309,7 +1320,7 @@ namespace BirdieSmash.Core
         // Ustalık tavanı (stüdyo incelemesi 2026-11-05, oyun tasarımı 5; yasin "hepsini ekle"): Usta yolunda her basamak pencereyi
         // biraz daha gerçek hıza yaklaştırır (taban .6 → en çok .85, basamak başı .02). Kolay, kariyer ve antrenman değişmez.
         public const float PENCERE_USTA_ADIM = .02f, PENCERE_USTA_TAVAN = .85f;
-        public float PencereTaban() { float b = easy ? PENCERE_KOLAY : PENCERE_USTA; if (!easy && stil.usta > 0) b = Math.Min(PENCERE_USTA_TAVAN, b + stil.usta * PENCERE_USTA_ADIM); return b * GS.yavas; }
+        public float PencereTaban() { float b = KE ? PENCERE_KOLAY : PENCERE_USTA; if (!KE && stil.usta > 0) b = Math.Min(PENCERE_USTA_TAVAN, b + stil.usta * PENCERE_USTA_ADIM); return b * GS.yavas; }
         // Giriş rampasının tükettiği oyun zamanı: hız 1'den tabana doğrusal iner, ortalama (1 + taban) / 2.
         public float PencereOn() { return PENCERE_IN * (1 + Math.Min(1, PencereTaban())) / 2; }
         public float PencereAdim(float dt, bool pencere)
@@ -1327,7 +1338,7 @@ namespace BirdieSmash.Core
         {
             Reach R; if (ReachInfo(out R)) return true;
             if (s == null || s.dead || s.from != "op" || s.agda || s.netHit || between) return false;
-            float on = PencereOn(), sp = s.Speed + Hyp(me.vx, me.vy), uzak = Hyp(s.x - me.x, s.y - me.y) - (easy ? 2.2f : 1.75f) * GS.uzanma;
+            float on = PencereOn(), sp = s.Speed + Hyp(me.vx, me.vy), uzak = Hyp(s.x - me.x, s.y - me.y) - (KE ? 2.2f : 1.75f) * GS.uzanma;
             if (uzak > sp * on + .05f) return false;   // bu sürede erişime varamaz: tahmine gerek yok
             float x = s.x, y = s.y, z = s.z, vx = s.vx, vy = s.vy, vz = s.vz;
             for (float t = 0; t < on + .02f; t += Shuttle.DT)   // +20 ms: rampa kare adımıyla iner, bir kare geç biter
