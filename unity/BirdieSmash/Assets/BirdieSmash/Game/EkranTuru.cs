@@ -1049,7 +1049,7 @@ namespace BirdieSmash.Game
                 string d0 = Ayar.GORUNUM["desen"], r0 = Ayar.gear.renk;
                 Ayar.model = "oyuncak"; Ayar.KOZ[Kozmetik.TIP] = "atlet"; root.GorunumDegisti(); root.ModelDegisti(); root.AnaMenu(); yield return Bekle(10);
                 ui.SekmeAc(Sekme.Soyunma); yield return Bekle(20); ui.KarakterAc(UiKok.KAR_KIYAFET); yield return Bekle(20);
-                yield return Cek("desen_sayfa"); { int dn; rap.AppendLine(ui.TasmaDenetimi("desen_sayfa", out dn)); }
+                ui.DolapTam(true, false); yield return Bekle(30); yield return Cek("desen_sayfa"); { int dn; rap.AppendLine(ui.TasmaDenetimi("desen_sayfa", out dn)); } ui.DolapTam(false, false); yield return Bekle(10);
                 foreach (var o in Karakter.Gorunum("desen"))
                 {
                     if (o.id == "kumas") continue;

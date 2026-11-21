@@ -40,9 +40,9 @@ namespace BirdieSmash.Game
             switch (d)
             {
                 // C: kumaş görünüşleri (eski Gerçekçi dokularının dili: hafif yan panel + delik, nefes çift şerit, esnek kuşak)
-                case "k_hafif": return Mathf.Abs(u - .5f) < .1f ? (Delik(u, v, 9) ? Koyu(c, .78f) : Acik(c, .22f)) : c;
-                case "k_nefes": return Mathf.Abs(u - .08f) < .025f || Mathf.Abs(u - .92f) < .025f ? (Delik(u, v, 12) ? Koyu(c, .7f) : Acik(c, .3f)) : c;
-                case "k_esnek": { float b = Mathf.Abs(v - (.95f - .9f * u)); return b < .06f ? Koyu(c, .78f) : c; }
+                case "k_hafif": return Mathf.Abs(u - .5f) < .12f ? (Delik(u, v, 9) ? Koyu(c, .6f) : Acik(c, .4f)) : c;
+                case "k_nefes": return Mathf.Abs(u - .08f) < .025f || Mathf.Abs(u - .92f) < .025f ? (Delik(u, v, 12) ? Koyu(c, .55f) : Acik(c, .45f)) : c;
+                case "k_esnek": { float b = Mathf.Abs(v - (.95f - .9f * u)); return b < .07f ? Koyu(c, .62f) : c; }
                 // A: desenler
                 case "yan_serit": { float s = Mathf.Abs(u - .5f); return s < .025f ? kar : s < .04f ? vur : c; }
                 case "omuz": return v > .74f && Mathf.Abs(u - .5f) < .16f ? kar : c;
@@ -50,7 +50,7 @@ namespace BirdieSmash.Game
                 case "gogus": return v > .56f && v < .68f ? kar : v > .52f && v < .56f ? vur : c;
                 case "cift_serit": return v > .26f && v < .31f || v > .36f && v < .41f ? kar : c;
                 case "amblem": return u < .12f && v > .6f && v < .82f && Tuy(u / .12f, (v - .6f) / .22f) ? kar : c;
-                case "degrade": return Color.Lerp(Koyu(c, .5f), c, Mathf.SmoothStep(0, 1, v));
+                case "degrade": return Color.Lerp(Koyu(c, .32f), Acik(c, .12f), Mathf.SmoothStep(0, 1, v));
             }
             return c;
         }

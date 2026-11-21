@@ -32,8 +32,8 @@ namespace BirdieSmash.EditorTools
         // aynı pozdaydı, paylaşılan klipler örneklenmiyordu). _clips.json'dan klipKaynak kalktı; sürüm artışı CI Library
         // önbelleğinde animasyonsuz içe aktarılmış maskot FBX'lerini yeniden içe aktartır.
         // 5: animasyon sıkıştırması KeyframeReduction → Optimal.
-        // 6: forma ağına desen UV'si (OnPostprocessModel).
-        public override uint GetVersion() { return 6; }
+        // 6: forma ağına desen UV'si (OnPostprocessModel). 7: ön yönü düzeltmesi.
+        public override uint GetVersion() { return 7; }
 
         bool Karakter() { var p = assetPath.Replace('\\', '/'); return p.Contains("Resources/karakter/") && p.EndsWith(".fbx"); }
 
@@ -91,7 +91,7 @@ namespace BirdieSmash.EditorTools
         // (PlayerView: atlas modelde düz takım rengi); o yüzden UV0 güvenle yeniden yazılır. Eşleme bağlanma pozunda silindirik ve
         // AYNALI: u = |açı| / π (0 = göğüs ortası, 1 = sırt ortası), v = forma yüksekliği (0 bel, 1 yaka). Aynalı olduğu için dikiş
         // yok (sağ ve sol yan aynı u'yu alır, üçgen dokunun boyunca gerilmez); bedeli: desen sağ/sol simetrik olur (sırt numarası gibi
-        // yönlü yazı yok, çapraz kuşak V olur). Ön yönü ayakkabı ağlarının formaya göre konumundan (ayak ucu önde), yoksa +Z.
+        // yönlü yazı yok, çapraz kuşak V olur). Ön yönü ayakkabı ağlarının formaya göre konumundan, yoksa +Z (ekran turu r238: ilk işaret ters çıktı, ön desenler sırtta göründü; işaret çevrildi. Ayakkabı ağlarının kutusu topuk tarafında ağır basıyor).
         // Tüycük'ün tüy gövdesi (tc_tuy__forma) desen almaz.
         void OnPostprocessModel(GameObject g)
         {
@@ -108,7 +108,7 @@ namespace BirdieSmash.EditorTools
             {
                 var v = m.vertices; if (v.Length == 0) continue; var p = new Vector3[v.Length]; Vector3 mn = Vector3.positiveInfinity, mx = Vector3.negativeInfinity;
                 for (int i = 0; i < v.Length; i++) { p[i] = w.MultiplyPoint3x4(v[i]); mn = Vector3.Min(mn, p[i]); mx = Vector3.Max(mx, p[i]); }
-                Vector3 c = (mn + mx) * .5f; float on = ayakN > 0 && ayak.z / ayakN < c.z ? -1 : 1, h = Mathf.Max(1e-4f, mx.y - mn.y);
+                Vector3 c = (mn + mx) * .5f; float on = ayakN > 0 && ayak.z / ayakN > c.z ? -1 : 1, h = Mathf.Max(1e-4f, mx.y - mn.y);
                 var uv = new Vector2[v.Length];
                 for (int i = 0; i < v.Length; i++)
                 {
