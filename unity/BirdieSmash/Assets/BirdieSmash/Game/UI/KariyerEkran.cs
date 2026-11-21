@@ -111,7 +111,7 @@ namespace BirdieSmash.Game
         }
         VisualElement TurOk(int hedef, Texture2D ik, string etiket)
         {
-            var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("ikon-dugme"); d.Add(Ikon(ik, 20, Color.white));
+            var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("ikon-dugme"); d.Add(Ikon(ik, 20, YAZI));
             bool var_ = hedef >= 0 && hedef < KariyerVeri.TUR;
             if (!var_) { d.style.visibility = Visibility.Hidden; return d; }
             d.AddManipulator(new Clickable(() => { Tik(); KariyerTurSec(hedef); })); Erisim.Etiket(d, etiket + ": " + L.T(TurAd(hedef)), "dugme");
@@ -297,7 +297,26 @@ namespace BirdieSmash.Game
             int tr = KariyerVeri.TurOf(sira); if (tr >= KariyerVeri.Turlar.Length || !KariyerVeri.Turlar[tr].Var) return;
             var kb = KariyerVeri.Al(sira); var st = KariyerVeri.Rakip(sira); int b = KariyerVeri.BasOf(sira);
             string bas = L.T("Sıradaki maç"), alt = (b + 1) + ". " + L.T(kb.yer) + " · " + st.isim;
-            var d = Dugme(bas, () => MacKartAc(sira), "dugme--birincil", alt, 17); d.AddToClassList("siradaki-serit"); Sigdir(d);
+            var d = Dugme(bas, () => MacKartAc(sira), "dugme--birincil", alt, 17); d.AddToClassList("siradaki-serit");
+            // İki yüz (2026-11-21 inceleme, fikir 17:06 #1; muadil maç öncesi "VS" kalıbı): şeritte kim kime karşı oynuyor
+            // görünmüyordu. Solda üst üste binen iki küçük daire: sen forma renginde, rakip kendi renginde. Çift mutlak konumda,
+            // yazı simetrik iç boşlukla ortada kalır (arayuz_tasarim_dili simetri kuralı). Rakip portresi burada ÇİZİLMEZ: önbellekte
+            // yoksa baş harf durur, menü durgunken bir kez ısıtılıp yerine konur (takılma kuralı; aynı ısıtma maç kartını ve maç
+            // başı portresini de bedavaya getirir).
+            d.AddToClassList("siradaki-serit--yuz");
+            var cift = new VisualElement(); cift.AddToClassList("serit-cift"); cift.pickingMode = PickingMode.Ignore; d.Add(cift);
+            var ben = new VisualElement(); ben.AddToClassList("serit-av"); ben.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(ben, Portre.Benim(), 16); cift.Add(ben);
+            var rav = new VisualElement(); rav.AddToClassList("serit-av"); rav.AddToClassList("serit-av--rakip"); rav.style.backgroundColor = Kit.Hex(st.renk); cift.Add(rav);
+            var rp = Portre.RakipHazir(st);
+            if (rp != null) AvatarIc(rav, rp, 16);
+            else
+            {
+                if (!string.IsNullOrEmpty(st.isim)) { var bh = Yazi(st.isim.Substring(0, 1), 13, "kalin"); bh.style.color = KOYU; bh.style.fontSize = 13; rav.Add(bh); }   // daire sabit 30 px: harf yazı ölçeğiyle büyümez
+                bool isitti = false;
+                rav.schedule.Execute(() => { if (isitti || !Kalite.MenuDurgun) return; isitti = true; var t = Portre.Rakip(st); if (t != null) { rav.Clear(); AvatarIc(rav, t, 16); } })
+                    .Every(300).Until(() => isitti || rav.panel == null);   // sekme kapanınca biter
+            }
+            Sigdir(d);
             Erisim.Etiket(d, bas + ", " + L.T(TurAd(tr)) + ", " + alt, "dugme"); k.Add(d);
         }
 
@@ -402,7 +421,10 @@ namespace BirdieSmash.Game
         {
             var r = Satir("basarim"); c.Add(r); if (!var_) r.AddToClassList("kilitli");
             r.Add(Ikon(var_ ? Ikonlar.YildizDolu : Ikonlar.YildizBos, 20, var_ ? ALTIN : SOLUK));
-            r.Add(Yazi(ad, 15, "esnek-yatay")); string d = L.T(var_ ? "Alındı" : "Henüz değil"); r.Add(Yazi(d, 12, var_ ? "durum-gecti" : "durum-kilit"));
+            // 2026-11-21 inceleme (fikir 17:06 #4, §7.3): satır sonundaki 12 pt "Alındı/Henüz değil" kalktı; durum dolu/boş yıldız
+            // şekliyle (yalnız renk değil) ve kilitli soluklaşmayla zaten okunuyor, ilk karşılaşmada üç kez "Henüz değil" yazıyordu.
+            // Erişim etiketi durumu söylemeye devam eder.
+            r.Add(Yazi(ad, 15, "esnek-yatay")); string d = L.T(var_ ? "Alındı" : "Henüz değil");
             Erisim.Etiket(r, L.T("Yıldız") + ": " + ad + ", " + d, "metin");
         }
     }

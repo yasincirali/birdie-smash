@@ -1,4 +1,11 @@
 === UNITY ===
+Kariyer ve Profil cilası (21 Kasım akşam):
+- Kariyer'in altındaki "Sıradaki maç" düğmesinde solda iki küçük yüz var: sen ve sıradaki rakibin. Rakibin yüzü önce baş harfiyle görünür, menüde bir an durunca yüzü gelir.
+- Maç kartı ilk açılışta takılmaz: rakibin portresi menü dururken önceden hazırlanır.
+- Maç kartındaki yıldız satırlarında "Alındı / Henüz değil" yazısı kalktı; dolu ya da boş yıldız durumu söylüyor.
+- Profil'de "Son maçlar" başlığının sağında kaç maçtan kaçını kazandığın yazar ("7/10"); hapların altındaki satır kalktı. Toplam kariyer yıldızı İstatistikler'den "Tur mühürleri" başlığının sağına taşındı.
+- Profil'deki Gelişim kartı, dağıtılacak puan yokken en güçlü dalını yazar ("Öne çıkan: Güç 6").
+Nasıl denenir: Kariyer'i aç, altta turuncu düğmede iki yuvarlak yüz olmalı; yazı ortada kalmalı. Bir iki saniye dokunmadan bekle: rakibin baş harfi yüzüne dönmeli. Düğmeye dokun: maç kartı takılmadan açılmalı. Profil'de Son maçlar başlığının sağında sayı, Tur mühürleri başlığının sağında yıldız sayısı olmalı. Yazıyı en büyük boya getirip aynı yerlere bak: üst üste binen yazı olmamalı.
 Sesler netleşti, kollar başın içinden geçmiyor, yeni Kort seti (21 Kasım akşam):
 - Her vuruş türü kendi gerçek raket sesini çalıyor: smaç, sıçrayarak smaç, clear, drive, drop ve servis. Gerçek ses çalınca üstüne binen müzik notası, davul ve düdük artık yok.
 - Smaça karşı yumuşak savunmada blok hareketi oynuyor.
