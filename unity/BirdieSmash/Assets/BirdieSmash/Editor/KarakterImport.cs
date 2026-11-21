@@ -31,7 +31,8 @@ namespace BirdieSmash.EditorTools
         // 4 (2026-11-21 akşam): maskotların klip paylaşımı geri alındı (ekran turu r227: kedi klip şeritlerinde altı karenin altısı
         // aynı pozdaydı, paylaşılan klipler örneklenmiyordu). _clips.json'dan klipKaynak kalktı; sürüm artışı CI Library
         // önbelleğinde animasyonsuz içe aktarılmış maskot FBX'lerini yeniden içe aktartır.
-        public override uint GetVersion() { return 4; }
+        // 5: animasyon sıkıştırması KeyframeReduction → Optimal.
+        public override uint GetVersion() { return 5; }
 
         bool Karakter() { var p = assetPath.Replace('\\', '/'); return p.Contains("Resources/karakter/") && p.EndsWith(".fbx"); }
 
@@ -51,7 +52,7 @@ namespace BirdieSmash.EditorTools
             if (!Karakter()) return;
             var mi = (ModelImporter)assetImporter;
             mi.animationType = ModelImporterAnimationType.Legacy;
-            mi.importAnimation = true; mi.resampleCurves = true; mi.animationCompression = ModelImporterAnimationCompression.KeyframeReduction;
+            mi.importAnimation = true; mi.resampleCurves = true; mi.animationCompression = ModelImporterAnimationCompression.Optimal;   // 2026-11-21 boyut: iOS raporunda Animations 36,6 MB; Optimal eğri başına yoğun/seyrek saklamayı seçer, hata payları aynı (.2)
             mi.animationRotationError = .2f; mi.animationPositionError = .2f; mi.animationScaleError = .2f;
             mi.materialImportMode = ModelImporterMaterialImportMode.ImportStandard; mi.materialLocation = ModelImporterMaterialLocation.InPrefab;
             mi.useFileScale = true; mi.globalScale = 1;
