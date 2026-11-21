@@ -31,9 +31,17 @@ namespace BirdieSmash.Game
         public static Texture Benim() { var g = PlayerView.Benim(); return Al("ben|" + Ayar.model + g.Anahtar(), g, true); }
         public static Texture Rakip(Style st)
         {
-            if (st == null) return null; var f = Kit.Hex(st.renk); var g = PlayerView.Rakip(st, f);
-            return Al("rk|" + PlayerView.ModelAd(g) + st.isim + st.ad + g.Anahtar(), g, false);
+            if (st == null) return null; var g = PlayerView.Rakip(st, Kit.Hex(st.renk));
+            return Al(RakipAnahtar(st, g), g, false);
         }
+        // Önbellekte varsa hemen döner, yoksa null ve çizmez (2026-11-21 inceleme, fikir 17:06 #1/#2): Kariyer "Sıradaki maç"
+        // şeridi kurulurken eşzamanlı FBX çizimi dokunuş karesine düşmesin; ısıtma menü durgunken KariyerEkran'dan gelir.
+        public static Texture RakipHazir(Style st)
+        {
+            if (st == null) return null; RenderTexture t;
+            return rt.TryGetValue(RakipAnahtar(st, PlayerView.Rakip(st, Kit.Hex(st.renk))), out t) && t != null && t.IsCreated() ? t : null;
+        }
+        static string RakipAnahtar(Style st, PlayerView.Gorunum g) { return "rk|" + PlayerView.ModelAd(g) + st.isim + st.ad + g.Anahtar(); }
 
         // Kozmetik.SAC / SAPKA / YUZ öğesi takılı bugünkü görünüş. Saç küçük resminde şapka çıkarılır (saç görünsün).
         static PlayerView.Gorunum DeneGorunum(string kat, string id)

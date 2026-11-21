@@ -206,7 +206,10 @@ namespace BirdieSmash.Game
             var r = Satir("arali"); r.pickingMode = PickingMode.Ignore; kart.Add(r);
             string ust = top == 0 ? L.T("İlk puanın Sv 2'de") : L.T("{0}/{1} puan", top - bos, top);
             r.Add(Yazi(ust, 15, "kalin")); r.Add(Yazi("›", 18, "soluk"));
-            string alt = top == 0 ? "" : bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : L.T("Dağılımı değiştir");
+            // 2026-11-21 inceleme (fikir 17:06 #7): boş puan yokken "Dağılımı değiştir" kartın kendi işini söylüyordu; yerine oyuncunun
+            // öne çıkan dalı (en yüksek, eşitlikte ilki). Hiç puan verilmemişse satır yok.
+            int en = 0; for (int i = 1; i < Gelisim.DAL; i++) if (p[i] > p[en]) en = i;
+            string alt = top == 0 ? "" : bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : p[en] > 0 ? L.T("Öne çıkan: {0} {1}", L.T(Gelisim.AD[en]), p[en]) : "";
             if (alt != "") { var ay = Yazi(alt, 13, bos > 0 ? "altin" : "soluk"); ay.style.marginTop = 4; ay.pickingMode = PickingMode.Ignore; kart.Add(ay); }
             kart.AddManipulator(new Clickable(() => { Tik(); GelisimAc(); }));
             Erisim.Etiket(kart, L.T("Gelişim") + ": " + ust + (alt != "" ? ", " + alt : ""), "dugme");

@@ -276,6 +276,8 @@ namespace BirdieSmash.Game
         // Yatay sıra; varsayılan sınıf "secim" (çip sırası: büyük yazıda alt alta dizilir), başka sıralar kendi sınıfını verir.
         VisualElement Satir(string cls = "secim") { var s = new VisualElement(); s.AddToClassList("satir"); if (cls != null) s.AddToClassList(cls); return s; }
         Label Grup(string t) { var l = Yazi(t, 13, "grup"); Erisim.Etiket(l, t, "baslik"); return l; }
+        // Başlık + sağda sayaç (2026-11-21 inceleme, fikir 17:06 #5/#6): Kupa rafı kalıbı; Profil'de aynı tür bilgi tek biçimde.
+        VisualElement GrupSatir(string t, VisualElement sag) { var r = Satir("arali"); r.AddToClassList("grup-satir"); r.Add(Grup(t)); r.Add(sag); return r; }
         VisualElement Bosluk(float pt) { var b = new VisualElement(); b.style.height = pt; b.pickingMode = PickingMode.Ignore; return b; }
         // İlerleme çubuğu (XP, basamak): yüzde 0..1.
         VisualElement Cubuk(float oran, Color c, float h = 8)

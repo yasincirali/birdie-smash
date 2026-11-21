@@ -145,7 +145,9 @@ namespace BirdieSmash.Game
             var sm = Ayar.SonMaclar();
             if (sm.Count > 0)
             {
-                c.Add(Grup(L.T("Son maçlar")));
+                // 2026-11-21 inceleme (fikir 17:06 #5): "Son n: g galibiyet" hapların altında ayrı 12 pt satırdı; Kupa rafı gibi
+                // başlığın sağında "g/n" (erişim etiketi cümleyi söyler). Sayı döngüden sonra yazılır.
+                var smSay = Yazi("", 13, "soluk"); c.Add(GrupSatir(L.T("Son maçlar"), smSay));
                 var hr = new VisualElement(); hr.AddToClassList("son-maclar"); c.Add(hr); int gs = 0;
                 foreach (var m in sm)
                 {
@@ -155,7 +157,7 @@ namespace BirdieSmash.Game
                     h.AddToClassList("son-hap"); if (m.g) h.AddToClassList("son-hap--g"); hr.Add(h);
                     Erisim.Etiket(h, L.T(m.g ? "Kazanılan maç" : "Kaybedilen maç") + ", " + m.ben + "–" + m.rakip + ", " + zd, "metin");
                 }
-                c.Add(Yazi(L.T("Son {0}: {1} galibiyet", sm.Count, gs), 12, "soluk"));
+                smSay.text = gs + "/" + sm.Count; Erisim.Etiket(smSay, L.T("Son {0}: {1} galibiyet", sm.Count, gs), "metin");
             }
 
             GelisimKart(c);   // 2026-11-10 oyuncu gelişimi: oyuncu kartının hemen altında (kartın anlattığı oyuncunun değerleri)
@@ -238,7 +240,11 @@ namespace BirdieSmash.Game
             }
 
             // Tur mühürleri (2026-11-07, yasin karar kartı "Ekle"; GD5): her tur için mühür ya da sıradaki eşik. Fiyatsız prestij, satılmaz.
-            c.Add(Grup(L.T("Tur mühürleri")));
+            // 2026-11-21 inceleme (fikir 17:06 #6, KPI hiyerarşisi): toplam kariyer yıldızı İstatistikler ızgarasından buraya,
+            // başlığın sağına; tur yıldızları zaten bu kartta, ızgara başka yerde görünmeyen sayılara kalır.
+            { var kys = YildizSayac(Ayar.ilerleme.ToplamYildiz, TurSayisiVeri() * 18, 13);
+              Erisim.Etiket(kys, L.T("Kariyer yıldızı") + ": " + Ayar.ilerleme.ToplamYildiz + "/" + TurSayisiVeri() * 18, "metin");
+              c.Add(GrupSatir(L.T("Tur mühürleri"), kys)); }
             var mk = Kart("muhur-kart"); c.Add(mk);
             for (int mt = 0; mt < KariyerVeri.Turlar.Length; mt++)
             {
@@ -267,7 +273,6 @@ namespace BirdieSmash.Game
             Deger(iz, L.T("Maç"), p.Mac.ToString());
             if (smacRekor > 0) Deger(iz, L.T("Smaç"), p.Smac.ToString());   // 2026-11-13: üstte smaç hızı varken toplam buraya iner
             Deger(iz, L.T("Görev"), Ayar.gorev.ToString());
-            Deger(iz, L.T("Kariyer yıldızı"), Ayar.ilerleme.ToplamYildiz + "/" + TurSayisiVeri() * 18);
             // Tur başına yıldızlar ızgaradan kalktı (2026-11-08 inceleme, fikir 07:05 #2): "Tur mühürleri" kartı aynı bilgiyi
             // veriyordu ve kilitli turda iki yer farklı söylüyordu (0/18 ile Kilitli); büyük yazıda ızgara dört satır kısaldı.
             // 2026-10-26 adım 7–9

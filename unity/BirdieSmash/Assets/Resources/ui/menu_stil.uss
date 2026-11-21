@@ -226,6 +226,12 @@
 /* 2026-11-07 (UX5): sabit sıradaki maç şeridi, kaydırmanın dışında, sekme çubuğunun üstünde; birincil düğmeden kısa */
 .siradaki-serit { flex-shrink: 0; min-height: 52px; margin: 4px 16px 8px 16px; padding: 6px 14px; }
 .kisa .siradaki-serit { min-height: 48px; margin-bottom: 4px; }
+/* 2026-11-21 (fikir 17:06 #1): şeritte iki yüz. Çift mutlak konumda solda; iki yanda eşit iç boşluk, yazı ortada kalır.
+   Kenarlık düğme turuncusu: üst üste binen iki daire ayrı okunur. */
+.siradaki-serit--yuz { padding-left: 62px; padding-right: 62px; }
+.serit-cift { position: absolute; left: 10px; top: 0; bottom: 0; flex-direction: row; align-items: center; }
+.serit-av { width: 30px; height: 30px; border-radius: 15px; border-width: 2px; border-color: var(--sun); align-items: center; justify-content: center; overflow: hidden; }
+.serit-av--rakip { margin-left: -8px; }
 .dugum { min-height: 44px; padding: 10px 12px; margin: 0; }
 .dugum--sol { margin-right: 14%; }
 .dugum--sag { margin-left: 14%; }
@@ -475,6 +481,9 @@
 .kalin-yari { -unity-font-definition: resource("fonts/Nunito-Bold"); }
 .sayfa-baslik { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); letter-spacing: 0.3px; }
 .grup-kalin, .bolum { letter-spacing: 0.3px; }
+/* 2026-11-21: başlık + sağda sayaç (GrupSatir); boşluk .grup ile aynı, satıra taşındı */
+.grup-satir { margin-top: 16px; margin-bottom: 6px; }
+.grup-satir .grup { margin-top: 0; margin-bottom: 0; }
 
 /* üst şerit hapları (a-top): 44 pt yükseklik, yarı saydam lacivert, ince çerçeve */
 .ust-hap { flex-direction: row; align-items: center; min-height: 44px; border-radius: 22px; background-color: var(--cam2); border-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); }
