@@ -228,7 +228,7 @@
 .kisa .siradaki-serit { min-height: 48px; margin-bottom: 4px; }
 /* 2026-11-21 (fikir 17:06 #1): şeritte iki yüz. Çift mutlak konumda solda; iki yanda eşit iç boşluk, yazı ortada kalır.
    Kenarlık düğme turuncusu: üst üste binen iki daire ayrı okunur. */
-.siradaki-serit--yuz { padding-left: 62px; padding-right: 62px; }
+.siradaki-serit--yuz { padding-left: 70px; padding-right: 70px; }   /* 10 + çift 52 + 8 boşluk */
 .serit-cift { position: absolute; left: 10px; top: 0; bottom: 0; flex-direction: row; align-items: center; }
 .serit-av { width: 30px; height: 30px; border-radius: 15px; border-width: 2px; border-color: var(--sun); align-items: center; justify-content: center; overflow: hidden; }
 .serit-av--rakip { margin-left: -8px; }

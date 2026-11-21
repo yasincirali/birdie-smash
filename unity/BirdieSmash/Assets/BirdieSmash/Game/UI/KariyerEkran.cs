@@ -311,10 +311,10 @@ namespace BirdieSmash.Game
             if (rp != null) AvatarIc(rav, rp, 16);
             else
             {
-                if (!string.IsNullOrEmpty(st.isim)) { var bh = Yazi(st.isim.Substring(0, 1), 13, "kalin"); bh.style.color = KOYU; rav.Add(bh); }
+                if (!string.IsNullOrEmpty(st.isim)) { var bh = Yazi(st.isim.Substring(0, 1), 13, "kalin"); bh.style.color = KOYU; bh.style.fontSize = 13; rav.Add(bh); }   // daire sabit 30 px: harf yazı ölçeğiyle büyümez
                 bool isitti = false;
                 rav.schedule.Execute(() => { if (isitti || !Kalite.MenuDurgun) return; isitti = true; var t = Portre.Rakip(st); if (t != null) { rav.Clear(); AvatarIc(rav, t, 16); } })
-                    .Every(300).Until(() => isitti);
+                    .Every(300).Until(() => isitti || rav.panel == null);   // sekme kapanınca biter
             }
             Sigdir(d);
             Erisim.Etiket(d, bas + ", " + L.T(TurAd(tr)) + ", " + alt, "dugme"); k.Add(d);
