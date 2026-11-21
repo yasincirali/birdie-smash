@@ -1340,7 +1340,7 @@ static class BotMac
         Console.WriteLine("karakter: " + T.Length + " tip (" + bedava + " ücretsiz), " + S.Length + " saç biçimi (garip ≥ " + garipMin + " Tüy), 5 ayakkabı nötr toplamlı, kozmetik güç vermez, kapı/taşıma/rakip tamam");
         KarakterVarliklari(T, S);
         GercekciAksesuar();
-        PaylasilanKlip();
+        PaylasilanKlip(); CarpismaKuresi();
     }
     // 2026-10-27 (yasin: "Gerçekçi de vücut özellikleri değil de sadece aksesuarlar değişmeli kafa bandı forma bileklik ayakkabı
     // şort tişört raket"): Gerçekçi'de sunulan her aksesuar seçeneğinin bir parçası olmalı. rocketbox.fbx'te ve _clips.json
@@ -1352,6 +1352,20 @@ static class BotMac
     // build'e koymaz, kaynağın kliplerini kullanır (KarakterImport, PlayerView.KlipleriBagla). Kaynak var olmalı, kendisi
     // paylaşmamalı (zincir yok) ve klip listesi (ad, kare aralığı, döngü, poz sayısı) birebir aynı olmalı: Match.CLIP_N ve LOOPS
     // modelin kendi json'ından okunur, kaynakla ayrışırsa vuruş anı kayar.
+    // 2026-11-21 baş içine girme koruması (PlayerView.GirmeKoru): Tüycük dışındaki her modelin baş küresi carpisma.json'da
+    // olmalı (yeni FBX eklenince tool/karakter/carpisma_olc.py yeniden koşulmazsa kol o modelde başa girer, sessizce).
+    static void CarpismaKuresi()
+    {
+        string R = "unity/BirdieSmash/Assets/Resources/karakter/"; var js = Json.Obj(Json.Parse(System.IO.File.ReadAllText(R + "carpisma.json"))); int n = 0;
+        foreach (var f in System.IO.Directory.GetFiles(R, "*.fbx"))
+        {
+            string ad = System.IO.Path.GetFileNameWithoutExtension(f); if (ad == "tuycuk") continue;   // baş gövdeyle tek parça, ölçülemez
+            if (!js.ContainsKey(ad)) { Fail("baş küresi yok: " + ad + " (tool/karakter/carpisma_olc.py)"); continue; }
+            var b = (List<object>)Json.Obj(js[ad])["bas"]; double r = Convert.ToDouble(b[3]);
+            if (b.Count != 4 || r < .5 || r > 3) Fail("baş küresi yarıçapı tuhaf: " + ad + " " + r); else n++;
+        }
+        Console.WriteLine("baş küresi: " + n + " model");
+    }
     static void PaylasilanKlip()
     {
         string R = "unity/BirdieSmash/Assets/Resources/karakter/"; int n = 0;

@@ -418,7 +418,7 @@ namespace BirdieSmash.Core
         float SliceKd(string from, bool slice) { return slice ? Shuttle.KD * (1 + .35f * (from == "me" ? GS.slice : 1)) : Shuttle.KD; }
         void StartFlight(string from, float vx, float vy, float vz, float hx, float hy, float hz, bool isServe, string type, bool isSuper, string q, bool slice = false)
         {
-            string oncekiVurus = s != null ? s.vurus : null;
+            string oncekiVurus = s != null ? s.vurus : null; var onceki = s;
             s = new Shuttle { x = hx, y = hy, z = hz, vx = vx, vy = vy, vz = vz, from = from, serve = isServe, type = type, super = isSuper, kd = SliceKd(from, slice), slice = slice, vurus = vurusAdi ?? type,
                 hx = hx, hy = hy, hz = hz, zTepe = hz, v0 = (float)Math.Sqrt(vx * vx + vy * vy + vz * vz), servisTur = isServe ? servisTurSon : null }; vurusAdi = null;   // 2026-10-26: Kesici raket / Aldatıcı tarzı slice sapmasını büyütür (GS.slice, nötr 1)
             rally++; maxRally = Math.Max(maxRally, rally);
@@ -440,7 +440,11 @@ namespace BirdieSmash.Core
                 if (!isServe && h.prepA > .5f && (ps == "low" && c0 == "drive" && hz < 1.3f || ps == "drive" && c0 == "low" && hz > .6f || ps == "kill" && (c0 == "over" && hz <= 1.95f || c0 == "drive" && hz > 1))) h.shot = ps;
             }
             h.hand = isServe ? "fore" : HandOf(h, from, hx, hz);
-            string c = isServe ? (h.svClip ?? "serve") : h.shot == "lunge" ? "lunge" : h.shot == "over" ? (type == "jump" || h.jump > 0 ? "jump" : type == "smash" ? "smash" : type == "drop" && HasClip("drop") ? "drop" : "clear") : h.shot == "drive" ? "drive" : h.shot == "kill" ? "kill" : type == "block" ? "block" : type == "drop" && HasClip("net") ? "net" : "low";
+            // 2026-11-21 (yasin: "eksik bazı vuruşların eklenmesi"): blok klibi hiç oynamıyordu. Oyuncunun bloğu uçuşa "drop" diye
+            // gider (ft), klip kararı uçuş türüne baktığı için blok net/alçak vuruş gibi görünüyordu; vuruşun kendi adı s.vurus'ta.
+            // Rakibin Plan'ında blok yok: smaca baskı altında verdiği file önü dönüşü (Baski: opType drop) gerçekte bloktur.
+            string vk = s.vurus == "block" || from == "op" && type == "drop" && SmacaKarsi(onceki) ? "block" : type;
+            string c = isServe ? (h.svClip ?? "serve") : h.shot == "lunge" ? "lunge" : h.shot == "over" ? (type == "jump" || h.jump > 0 ? "jump" : type == "smash" ? "smash" : type == "drop" && HasClip("drop") ? "drop" : "clear") : h.shot == "drive" ? "drive" : h.shot == "kill" ? "kill" : vk == "block" ? "block" : type == "drop" && HasClip("net") ? "net" : "low";
             h.clip = RthKlip(ClipHand(c, h.hand), h, from, hx, hz);
             // 2026-11-20 teknik vuruş klipleri (yalnız görünüş; uçuş ve sayı aynı): file dibindeki forehand net vuruşu bilek
             // çevirmeli (tumble), gövdeye gelen smacın bloğu gövdenin önünde. İkisi de hazırlık klibiyle aynı temas pozunu paylaşır.
@@ -448,7 +452,7 @@ namespace BirdieSmash.Core
             else if (h.clip == "block" && Math.Abs(hx - h.x) < GOVDE_X) h.clip = "block_govde";
             // Takip vuruşa göre (fb1b245, denetim #5/#16): smaç/clear 300 ms, drop 200, drive 180, file öldürme 150,
             // net vuruşu 120, blok 100, lift 250; hamle toparlanması 300 ms. Eskiden hepsi 250 ms'ydi.
-            h.swHiz = 1 / (isServe ? .25f : h.shot == "lunge" ? .3f : type == "block" ? .1f : h.shot == "over" ? (type == "drop" ? .2f : .3f) : h.shot == "drive" ? .18f : h.shot == "kill" ? .15f : type == "drop" ? .12f : .25f);
+            h.swHiz = 1 / (isServe ? .25f : h.shot == "lunge" ? .3f : vk == "block" ? .1f : h.shot == "over" ? (type == "drop" ? .2f : .3f) : h.shot == "drive" ? .18f : h.shot == "kill" ? .15f : type == "drop" ? .12f : .25f);
             var oth = from == "me" ? op : me; if (oth.sw <= 0) { oth.splitT = .3f; if (oth.yuru && oth.vAn > SPLIT_KOSU) oth.splitCik = oth.splitT; }   // rakip vururken split step
             // Koşarken split yok (2026-11-05, AnimOlc: run↔split maç başına ~5): split yerinde, ayaklar birlikte bir hop; tam
             // koşudayken (SPLIT_KOSU üstü) araya giren hop koşuyu 0,13 sn kesip figürü sıçratıyordu. Gerçekte koşan oyuncu
@@ -1242,6 +1246,7 @@ namespace BirdieSmash.Core
         // Drive ve blok kendi hazırlığıyla (ce47f5c): eskiden alçak vuruş klibinden gelip raket yere iniyordu.
         // Alçak vuruşun klibi vuruş türünden (Hit ile aynı kural): rakipte türü önceden bildiğimizden hazırlık temasla aynı klipte
         // (2026-11-05, AnimOlc: rakipte low→net temas uyumsuzluğu maç başına ~3, poz temasta sıçrıyordu).
+        static bool SmacaKarsi(Shuttle g) { return g != null && (g.vurus == "smash" || g.vurus == "jump" || g.vurus == "kill"); }   // rakibin smaca file önü dönüşü blok (StartFlight vk)
         static string AlcakKlip(string type) { return type == "block" ? "block" : type == "drop" && HasClip("net") ? "net" : "low"; }
         void Prep(Athlete o, string who, float dt)
         {
@@ -1250,7 +1255,7 @@ namespace BirdieSmash.Core
             {
                 tg = 1; o.prepT = I.t - s.t; o.prepShot = I.lunge ? "lunge" : ShotClass(who == "op" ? (I.opType ?? "") : "", I.z, I.y);
                 o.prepHand = PrepEl(o, who, I.x, I.z, I);
-                o.prepClip = RthKlip(ClipHand(o.prepShot == "over" ? (who == "op" && I.opType == "smash" && o.prepHand != "back" ? "jump" : who == "op" && I.opType == "drop" && HasClip("drop") ? "drop" : "clear") : o.prepShot == "low" && who == "op" ? AlcakKlip(I.opType) : o.prepShot, o.prepHand), o, who, I.x, I.z);
+                o.prepClip = RthKlip(ClipHand(o.prepShot == "over" ? (who == "op" && I.opType == "smash" && o.prepHand != "back" ? "jump" : who == "op" && I.opType == "drop" && HasClip("drop") ? "drop" : "clear") : o.prepShot == "low" && who == "op" ? AlcakKlip(I.opType == "drop" && SmacaKarsi(s) ? "block" : I.opType) : o.prepShot, o.prepHand), o, who, I.x, I.z);
             }
             else if (s == null && server == who) { tg = .6f; o.prepShot = "low"; o.prepClip = "serve"; }   // servisçi topu elinde tutar
             if (who == "me" && s != null && !s.dead && s.from == "op")
