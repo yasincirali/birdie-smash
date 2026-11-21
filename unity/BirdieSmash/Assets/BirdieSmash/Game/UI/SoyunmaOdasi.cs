@@ -415,7 +415,7 @@ namespace BirdieSmash.Game
                 var gd = new VisualElement(); gd.AddToClassList("stat-gelisim"); gd.pickingMode = PickingMode.Ignore; gd.style.left = Length.Percent(v[i]); gd.style.width = Length.Percent(g); gd.style.display = g > 0 ? DisplayStyle.Flex : DisplayStyle.None; iz.Add(gd);
                 var orta = new VisualElement(); orta.AddToClassList("stat-orta"); orta.pickingMode = PickingMode.Ignore; iz.Add(orta);
                 var dg = Yazi((v[i] + g).ToString(), 12, "stat-deger"); r.Add(dg);
-                Label ar = null; if (gel != null) { ar = Yazi(g > 0 ? "+" + g : "", 11, "stat-arti"); ar.style.display = g > 0 ? DisplayStyle.Flex : DisplayStyle.None; r.Add(ar); }
+                Label ar = null; if (gel != null) { ar = Yazi(g > 0 ? "+" + g : "", 12, "stat-arti"); ar.style.display = g > 0 ? DisplayStyle.Flex : DisplayStyle.None; r.Add(ar); }
                 string yonGel = g > 0 ? ", " + L.T("gelişimden artı {0}", g) : "";
                 int fark = karsi != null ? v[i] - karsi[i] : 0; string yon = "";
                 var isk = new VisualElement(); isk.AddToClassList("stat-isaret"); isk.pickingMode = PickingMode.Ignore; r.Add(isk);
@@ -511,11 +511,16 @@ namespace BirdieSmash.Game
             var kart = Kart("yuva"); c.Add(kart);
             var r = Satir("yuva-satir"); kart.Add(r);
             var sol = new VisualElement(); sol.AddToClassList("yuva-sol"); sol.pickingMode = PickingMode.Ignore; r.Add(sol);
-            sol.Add(Yazi(L.T("Yuva kademesi"), 15, "kalin"));
+            // 2026-11-21 inceleme (fikir 07:06 #4): başlık her yuvada aynı "Yuva kademesi", asıl bilgi altta 12 pt soluk "4/10 · Tel"
+            // idi; sayfa başlığı yuvayı zaten söylüyor. Büyük yazı kademenin kendisi (Tennis Clash "Seviye 4"), alt satır kalktı.
+            sol.Add(Yazi(L.T("Kademe {0}/10", sv), 15, "kalin"));
             var bol = Satir("seviye-bolme"); bol.pickingMode = PickingMode.Ignore; sol.Add(bol);
-            for (int i = 0; i < 10; i++) { var b = new VisualElement(); b.AddToClassList("bolme"); if (i < sv) b.AddToClassList("bolme--dolu"); b.pickingMode = PickingMode.Ignore; bol.Add(b); }
-            sol.Add(Yazi(sv + "/10 · " + L.T(Y.n), 12, "soluk"));
-            string ne = tam ? L.T("Tam") : kilit ? L.T("Sv {0} gerekli", gk) : az ? f + " " + L.T("Tüy") : L.T("Yükselt · {0}", f + " " + L.T("Tüy"));
+            for (int i = 0; i < 10; i++) { var b = new VisualElement(); b.AddToClassList("bolme"); if (i < sv) b.AddToClassList("bolme--dolu"); b.pickingMode = PickingMode.Ignore; bol.Add(b);
+                // 2026-11-21 inceleme (fikir 07:06 #3): yükseltme anında yeni dolan bölme sessizce dolu çiziliyordu (görüntü kanalı yalnız
+                // çubuk kayması). Bölme 1,25'ten 1'e iner (0,18 sn, yalnız scale: yerleşim yok); az-harekette sınıf hiç eklenmez.
+                if (i == sv - 1 && yukK == Y.k && !Ayar.reduce) { b.AddToClassList("bolme--yeni"); b.schedule.Execute(() => b.RemoveFromClassList("bolme--yeni")).StartingIn(33); }
+            }
+            string ne = tam ? L.T("Tam") : kilit ? L.T("Sv {0} gerekli", gk) : az ? L.T("{0} Tüy daha gerekli", f - gr.eko.tuy) : L.T("Yükselt · {0}", f + " " + L.T("Tüy"));
             VisualElement dg;
             if (tam || kilit || az) dg = Pasif(ne);   // kapı varsa nedeni yazar, düğme pasif ama okunur (§2.3)
             else dg = Dugme(ne, () =>
@@ -527,7 +532,9 @@ namespace BirdieSmash.Game
                 // bellekte kesin, kayıp penceresi tek kare). Parlama, ses ve titreşim ilk karede kalır.
                 if (gr.Yukselt(Y.k))
                 {
-                    Ayar.GearHesap(); root.sfx.Yukselt(); Yerel.Hap("flow"); root.vitrin.Parlat(Y.k); yukOnce = once; yukK = Y.k;
+                    Ayar.GearHesap(); root.sfx.Yukselt(); Yerel.Hap("flow"); if (root.vitrin.gameObject.activeSelf) root.vitrin.Parlat(Y.k); yukOnce = once; yukK = Y.k;
+                    // 2026-11-21 inceleme (fikir 07:06 #3): Atölye vitrinsiz; Parlat kapalı vitrinde yalnız sayaç sıfırlıyor, ışıltı oyuncu
+                    // Dolap'a geçince bağlamsız oynuyordu. Vitrin görünmüyorsa parlama yok (görüntü kanalı burada bölme "pop"u).
                     Degisti(); if (gez.Ust != null) SoyunmaGovdeKur(true);
                     var sk = sekmeKok[(int)gez.sekme]; if (sk != null && sk.panel != null) sk.schedule.Execute(() => Ayar.Kaydet()).StartingIn(0); else Ayar.Kaydet();
                 }
@@ -654,7 +661,7 @@ namespace BirdieSmash.Game
             foreach (var t in Karakter.Tarzlar)
             {
                 string id = t.id; bool acik = sv >= t.sv;
-                var d = Cip(L.T(t.ad), id == tarzOnizle, () => { if (tarzOnizle == id) return; tarzOnizle = id; TarzYerinde(); }, acik ? (id == cur ? L.T("Seçili") : null) : L.T("Sv {0}", t.sv));
+                var d = Cip(L.T(t.ad), id == tarzOnizle, () => { if (tarzOnizle == id) return; tarzOnizle = id; TarzYerinde(); }, acik ? null : L.T("Sv {0}", t.sv));   // 2026-11-21 inceleme (fikir 07:06 #5): "Seçili" alt yazısı altındaki kartta "✓ Seçili" olarak tekrar ediyordu; seçim çerçeve + erişim etiketiyle
                 d.AddToClassList("segment-cip"); var eb = d.userData as ErisimBilgi; if (eb != null) eb.rol = "sekme"; ray.Add(d); if (id == tarzOnizle) secEl = d;
             }
             if (secEl != null) OrtayaKaydir(hk, secEl);

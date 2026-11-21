@@ -33,7 +33,9 @@ namespace BirdieSmash.Game
             for (int i = 0; i < KOMBIN_SAY; i++) kombinler.Add(l != null && i < l.Count ? Json.Obj(l[i]) : null);
             int a; kombinAktif = int.TryParse(PlayerPrefs.GetString(KOMBIN_AKTIF, "-1"), out a) && a >= 0 && a < KOMBIN_SAY && kombinler[a] != null ? a : -1;
         }
-        void KombinYaz() { PlayerPrefs.SetString(KOMBIN_ANAHTAR, Json.Write(kombinler)); PlayerPrefs.SetString(KOMBIN_AKTIF, kombinAktif.ToString()); PlayerPrefs.Save(); }
+        void KombinYaz() { PlayerPrefs.SetString(KOMBIN_ANAHTAR, Json.Write(kombinler)); PlayerPrefs.SetString(KOMBIN_AKTIF, kombinAktif.ToString()); Ayar.KaydetSonra(); }
+        // 2026-11-21 inceleme (fikir 12:06 #3): PlayerPrefs.Save her kombin dokunuşunda, gövde kurulumuyla aynı karede eşzamanlı
+        // yazıyordu (TAKILMA YOK). Diğer ayarlar gibi gecikmeli; arka plana geçişte GameRoot zaten Save çağırıyor. Anahtarlar aynı.
 
         // Şu anki görünüşün anlık görüntüsü (yalnız görünüş alanları).
         static Dictionary<string, object> KombinSimdi()
@@ -93,6 +95,17 @@ namespace BirdieSmash.Game
             kombinAktif = -1; KombinYaz(); Tik(); KombinUygula();
         }
 
+        // 2026-11-21 inceleme (fikir 12:06 #2): kaydet/giy anında yalnız ses vardı, hangi yuvaya yazıldığı alt yazıdan okunuyordu.
+        // Yeniden kurulan çip bir kez 1,15 → 1 (0,18 sn, yalnız scale; Atölye bölmesiyle aynı kalıp), giyişte vitrin parlar.
+        // Hareketi azaltta ikisi de yok. Yerleşim değişmez, ayırma yalnız tek zamanlayıcı.
+        int kombinPop = -1;
+        void KombinPopAni(VisualElement d)
+        {
+            if (Ayar.reduce) return;
+            d.AddToClassList("kombin-cip--pop"); d.AddToClassList("kombin-cip--yeni");
+            d.schedule.Execute(() => d.RemoveFromClassList("kombin-cip--yeni")).StartingIn(33);
+            d.schedule.Execute(() => d.RemoveFromClassList("kombin-cip--pop")).StartingIn(260);
+        }
         // Kombin satırı: gövdenin başında (Raket kategorisi hariç; orada parça rayı başta). Yuvalar 44 pt çip, seçili ✓ + "Giyili".
         void KombinSatir(VisualElement c)
         {
@@ -105,7 +118,7 @@ namespace BirdieSmash.Game
             bool hicYok = true; for (int i = 0; i < KOMBIN_SAY; i++) if (kombinler[i] != null) { hicYok = false; break; }
             if (hicYok)
             {
-                var kd = Cip(L.T("Bu görünüşü kaydet"), false, () => { kombinler[0] = KombinSimdi(); kombinAktif = 0; KombinYaz(); root.sfx.Yukselt(); SoyunmaGovdeKur(true); });
+                var kd = Cip(L.T("Bu görünüşü kaydet"), false, () => { kombinler[0] = KombinSimdi(); kombinAktif = 0; kombinPop = 0; KombinYaz(); root.sfx.Yukselt(); SoyunmaGovdeKur(true); });
                 kd.AddToClassList("kombin-cip"); s.Add(kd);
                 Erisim.Etiket(kd, L.T("Bu görünüşü kaydet") + ", " + L.T("Kombin {0}", 1), "dugme");
             }
@@ -115,11 +128,13 @@ namespace BirdieSmash.Game
                 string ad = L.T("Kombin {0}", i + 1), alt = !dolu ? L.T("Boş · kaydet") : on ? L.T("Giyili") : L.T("Giy");
                 var d = Cip(ad, on, () =>
                 {
-                    if (kombinler[ii] == null) { kombinler[ii] = KombinSimdi(); kombinAktif = ii; KombinYaz(); root.sfx.Yukselt(); SoyunmaGovdeKur(true); }
-                    else { kombinAktif = ii; KombinYaz(); Tik(); KombinGiy(kombinler[ii]); }
+                    if (kombinler[ii] == null) { kombinler[ii] = KombinSimdi(); kombinAktif = ii; kombinPop = ii; KombinYaz(); root.sfx.Yukselt(); SoyunmaGovdeKur(true); }
+                    else { kombinAktif = ii; kombinPop = ii; KombinYaz(); KombinGiy(kombinler[ii]); if (!Ayar.reduce && root.vitrin != null && root.vitrin.gameObject.activeSelf) root.vitrin.Parlat("forma"); }   // Tik Cip'in içinde (çift titreşimdi)
                 }, alt);
                 d.AddToClassList("dar-cip"); d.AddToClassList("kombin-cip"); Sigdir(d); s.Add(d);
+                if (ii == kombinPop) KombinPopAni(d);
             }
+            kombinPop = -1;
             var r = Cip(L.T("Rastgele"), false, KombinRastgele); r.AddToClassList("dar-cip"); r.AddToClassList("kombin-cip"); Sigdir(r); s.Add(r);
             // 2026-11-06: alt satır "sahip olduklarından" dar çipte dört satıra bölünüp hece ortasından kırılıyordu (r124); bilgi
             // ekran okuyucu etiketinde kalır, görsel çip tek kelime (komşu Kombin çipleriyle aynı yükseklik)

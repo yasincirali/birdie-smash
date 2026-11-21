@@ -1,4 +1,21 @@
 === UNITY ===
+Dolap cilası (21 Kasım öğle):
+- Dolap'ta Ayakkabı görünüşünde henüz almadığın ayakkabı modelleri de görünür ("Atölye'de" yazar); dokununca Atölye'de oyuncunun üstünde denenir, fiyatı ve gücü orada.
+- Kombin kaydedince ya da giyince o kombin çipi kısaca büyüyüp yerine oturur, giyince vitrindeki oyuncu parlar. Kombin dokunuşu artık takılmaz.
+- Raket kafa şekli adları biraz büyüdü, seçili şeklin köşesinde tik var. Atölye ve Dolap'taki küçük etiketler biraz büyüdü.
+Nasıl denenir: Dolap > Ayakkabı (görünüm yok seçiliyken) model satırında "Atölye'de" yazan bir çipe dokun: Atölye açılmalı ve oyuncu o ayakkabıyla görünmeli. Dolap'ta bir kombin kaydet ve başka bir kombini giy: çip kısa bir büyüme yapmalı, oyuncu parlamalı. Raket kafa şeklinde seçili olanın köşesinde tik olmalı.
+Atölye ve Profil cilası (21 Kasım sabah):
+- Profil'deki "n. seviyede açılır" satırına dokununca o eşya Dolap'ta oyuncunun üstünde denenir (raket parçasıysa Atölye'de o yuva açılır).
+- Atölye'de yükseltince yeni dolan kademe bölmesi kısaca büyüyüp yerine oturur; ışıltı artık sonradan Dolap'ta boşuna oynamaz.
+- Tüy yetmeyince yükselt düğmesi kaç Tüy eksik olduğunu yazar. Yuva kartının başlığı "Kademe 4/10".
+- Tarz seçicide seçili tarzın altındaki "Seçili" yazısı kalktı (aşağıdaki kart söylüyor). Dolap saç modeli kartında seviye yazısı biraz büyüdü.
+Nasıl denenir: Profil'de kupa rafının altındaki "seviyede açılır" yazısına dokun: Dolap açılıp eşya giydirilmeli. Atölye'de bir yuvayı yükselt: yeni dolan bölme kısa bir büyüme yapmalı. Tüyün yetmeyen bir yuvada düğme "… Tüy daha gerekli" demeli.
+Kariyer ve Profil cilası (21 Kasım gece):
+- Kariyer yolunda bir basamağın satırının herhangi bir yerine (rakip adı, yer, yıldızlar) dokununca maç kartı açılır; önceden yalnız yuvarlak düğüm dokunuluyordu. Satır basılınca hafifçe küçülür.
+- Ekipmanı eksik turda başlık yalnız "3 yükseltme eksik" yazar.
+- Profil'de kazanılan başarımların tik işareti altın renkte (kupa rafı ve mühürlerle aynı). Mühür dipnotu tek satır.
+- Kupa rafında kazanılmamış kupalar biraz daha okunur.
+Nasıl denenir: Kariyer'de bir rakibin adına ya da yer yazısına dokun: maç kartı açılmalı, satır basılırken küçülmeli. Profil'de başarımlar listesinde kazanılanların tiki altın olmalı; Tur mühürleri altındaki yazı "Bronz 9 yıldız · Altın 18 yıldız" olmalı.
 Arkadaş maçı, ilk deneme (20 Kasım akşam; kapalı özellik):
 - İki iPhone arasında karşılıklı maç: Game Center ile arkadaşını çağır ya da rastgele rakip bul. 11 sayı, eşit güç (ekipman yalnız görünüş).
 - Maç ödül vermez, kariyere ve karneye yazılmaz. Duraklatma yok; uygulamadan çıkan oyuncu 10 sn sonra hükmen kaybeder.

@@ -236,7 +236,7 @@
 .dugum.kilitli { opacity: 0.85; }
 .dugum--final { border-color: rgba(249, 210, 114, 0.45); }
 .dugum--final.simdiki { border-color: var(--sun); }
-.dugum-rozet { width: 44px; height: 44px; border-radius: 22px; align-items: center; justify-content: center; flex-shrink: 0; border-width: 2px; border-color: rgba(255, 255, 255, 0.15); background-color: rgb(34, 24, 41); }
+.dugum-rozet { width: 44px; height: 44px; border-radius: 22px; align-items: center; justify-content: center; flex-shrink: 0; border-width: 2px; border-color: rgba(255, 255, 255, 0.15); background-color: var(--navy); }
 .dugum-rozet--gecti { background-color: var(--mu2); border-color: var(--mu2); }   /* 2026-11-06 unslop: turuncu yalnız "şimdi"de; geçilen nötr açık + ✓ */
 .dugum-rozet--simdi { border-color: var(--sun); background-color: var(--navy); }
 .dugum-rozet--acik { border-color: rgba(255, 255, 255, 0.5); }
@@ -272,6 +272,8 @@
 .seviye-bolme { flex-direction: row; margin: 6px 0 4px 0; flex-wrap: nowrap; }
 .bolme { width: 14px; height: 6px; margin-right: 3px; border-radius: 2px; background-color: rgba(255, 255, 255, 0.18); }
 .bolme--dolu { background-color: var(--sun); }
+.bolme { transition-property: scale; transition-duration: 0.18s; transition-timing-function: ease-out; }
+.bolme--yeni { scale: 1.25 1.25; }   /* 2026-11-21: Atölye yükseltmesinde yeni dolan bölme 1,25 → 1 (yalnız scale, yerleşim yok) */
 .onizle { flex-direction: row; align-items: center; margin: 4px 0 0 0; flex-wrap: nowrap; }
 .onizle-ad { width: 30%; color: var(--mu2); }
 .onizle-iz { flex-grow: 1; height: 6px; background-color: rgba(255, 255, 255, 0.1); border-radius: 3px; margin: 0 8px; }
@@ -402,7 +404,7 @@
 .sayfa, .alt-sayfa, .sekme-kok { transition-property: opacity, translate; transition-duration: 0.22s; transition-timing-function: ease-out; }
 .giris { opacity: 0; translate: 24px 0; }
 .alt-sayfa.giris { translate: 0 40px; }
-.az-hareket .sayfa, .az-hareket .alt-sayfa, .az-hareket .sekme-kok, .az-hareket .dugme, .az-hareket .onizle-kayar, .az-hareket .cta { transition-duration: 0s; }
+.az-hareket .sayfa, .az-hareket .alt-sayfa, .az-hareket .sekme-kok, .az-hareket .dugme, .az-hareket .onizle-kayar, .az-hareket .bolme, .az-hareket .cta { transition-duration: 0s; }
 .az-hareket .cta:active { scale: 1 1; }
 .az-hareket .cta-supurme { display: none; }
 .az-hareket .dugme:active { scale: 1 1; }
@@ -655,6 +657,7 @@
 .parca-kaydir { flex-shrink: 0; margin: 0 0 4px 0; }   /* 2026-11-07 (UX4): parça şeridi tek satır, yatay kayar */
 .parca-kaydir .kategori-ray { margin: 4px 0 4px 0; }
 .sekil-ornek { height: 64px; flex-basis: 28%; }
+.sekil-ornek .renk-kilit-yazi { color: var(--tx); }   /* 2026-11-21 (fikir 12:06 #4): ham Color.white yerine; zemin --navy2 */
 .buyuk-yazi .kategori-ray { flex-wrap: nowrap; }
 /* 2026-11-07 (r127 Dolap ×2): ".buyuk-yazi .segment .segment-cip { flex-basis: 40% }" daha özgül olduğu için yatay kayan
    kategori şeridinde her çip içerik genişliğinin %40'ı (≈415 pt) oluyordu, ekranda tek çip görünüyordu. */
@@ -692,6 +695,9 @@
    Alt çubuk: kaydırma alanının dışında, sabit; kart rengi + üst çizgi, deneme rengi gök (deneme-kart ile aynı anlam). */
 .kombin-satir { flex-wrap: wrap; }
 .kombin-cip { flex-basis: 22%; flex-grow: 1; min-height: 44px; }
+/* 2026-11-21 (fikir 12:06 #2): kaydedilen/giyilen kombin çipi bir kez 1,15 → 1; süre --pop sınıfından (basma geri bildirimi 0,08 sn kalır) */
+.kombin-cip--pop { transition-duration: 0.18s; transition-timing-function: ease-out; }
+.kombin-cip--yeni { scale: 1.15 1.15; }
 .buyuk-yazi .kombin-cip { flex-basis: 40%; }
 .kombin-kaydet { margin: 4px 4px 8px 4px; }
 .deneme-cubuk { flex-shrink: 0; margin: 0 16px 6px 16px; padding: 6px 8px; border-radius: 16px; background-color: var(--navy); border-width: 2px; border-color: var(--sky); }
@@ -760,10 +766,10 @@
    sayı ve etiketler üst üste biniyordu (r127 menu_se_x2_profil). Dikeyde boy içerikten gelir. */
 .uc-sayi--dikey .uc-sayi-oge { margin: 3px 0; flex-basis: auto; flex-grow: 0; flex-shrink: 0; }
 /* 2026-11-11 kariyer 8 tur: sekiz kupa tek sıraya sığmaz (8 × 48 > kart genişliği); dörderli iki sıra. */
-.kupa-raf { flex-direction: row; flex-wrap: wrap; margin-top: 8px; padding-bottom: 6px; border-bottom-width: 6px; border-color: #4A3560; }
+.kupa-raf { flex-direction: row; flex-wrap: wrap; margin-top: 8px; padding-bottom: 6px; border-bottom-width: 6px; border-color: var(--navy3); }
 .kupa-hucre { width: 25%; height: 48px; align-items: center; justify-content: center; border-radius: 16px; }
 .kupa-hucre:active { scale: 0.94 0.94; }
-.kupa-hucre--yok { opacity: 0.55; }
+.kupa-hucre--yok { opacity: 0.6; } /* 2026-11-21: §8.4 en az .6 (12 pt "+n" kontrastı) */
 
 /* 2026-11-06 13:40 Antrenman: üstte iki giriş yan yana (Sonsuz ralli, Temel ders); büyük yazıda alt alta. */
 .ant-cift { flex-direction: row; margin: 0 -4px 4px -4px; }

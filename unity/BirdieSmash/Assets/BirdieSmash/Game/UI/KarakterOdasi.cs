@@ -238,7 +238,10 @@ namespace BirdieSmash.Game
                 bool on = cur == id; string k = id;
                 var d = new VisualElement(); d.AddToClassList("renk"); d.AddToClassList("sekil-ornek"); if (on) d.AddToClassList("renk--secili"); d.style.backgroundColor = Kit.Hex("#33233F");
                 d.Add(Ikon(RaketSekil.Ikon(id), 30, on ? TURUNCU : Color.white));
-                var y = Yazi(L.T(RaketSekil.Ad(id)), 10, "renk-kilit-yazi"); y.style.color = Color.white; d.Add(y);
+                // 2026-11-21 inceleme (fikir 12:06 #4): ad 10 pt ham beyazdı, seçili yalnız ikon rengiyle ayrılıyordu. 12 pt, renk USS'ten
+                // (.sekil-ornek .renk-kilit-yazi), seçiliye ortak Cip'teki ✓ (renk körü oyuncu için yalnız renk değil).
+                var y = Yazi(L.T(RaketSekil.Ad(id)), 12, "renk-kilit-yazi"); d.Add(y);
+                if (on) { var tk = Ikon(Ikonlar.Tik, 16, TURUNCU); tk.AddToClassList("renk-isin-isaret"); d.Add(tk); }
                 if (!on) d.AddManipulator(new Clickable(() => { Ayar.RGOR["kafa"] = k; Ayar.KaydetSonra(); Tik(); root.vitrin.Yenile(); root.vitrin.RaketParca("kafa", true); SoyunmaGovdeKur(true); }));
                 Erisim.Etiket(d, L.T("Kafa şekli") + ", " + L.T(RaketSekil.Ad(id)), "dugme", on); s.Add(d);
             }
@@ -527,7 +530,7 @@ namespace BirdieSmash.Game
                 if (sacGizli) k.style.opacity = .6f;
                 k.Add(Yazi(L.T(o.ad), 12, "kalin")); KucukResim(k, Kozmetik.SAC, id, ks++, 52);
                 var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; dr.style.flexWrap = Wrap.Wrap; k.Add(dr); if (ik != null) { var i = Ikon(ik, 11, du == ModelDurum.Secili ? TURUNCU : SOLUK); i.style.marginRight = 2; dr.Add(i); }   // r55: " · deneniyor" dar kartta alta sarar
-                dr.Add(Yazi(du == ModelDurum.Kilitli ? L.T("Sv {0}", o.sv) : durum, 10, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"));
+                dr.Add(Yazi(du == ModelDurum.Kilitli ? L.T("Sv {0}", o.sv) : durum, 12, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"));
                 k.AddManipulator(new Clickable(() => KozDokun(Kozmetik.SAC, id)));
                 Erisim.Etiket(k, L.T("Saç modeli") + ", " + L.T(o.ad) + ", " + durum + (dn == o.id ? ", " + L.T("deneniyor") : ""), "dugme", du == ModelDurum.Secili);
                 iz.Add(k);
@@ -606,6 +609,10 @@ namespace BirdieSmash.Game
             {
                 string id = a.id; bool sahip = gr.Sahip("ayakkabi", id), sec = Ayar.AYK_GOR != "taban" && gor == id;
                 if (sahip) cp.Add(Cip(L.T(a.ad), sec, () => { Ayar.AYK_GOR = id; Ayar.KaydetSonra(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
+                // 2026-11-21 inceleme (fikir 12:06 #1): alınmamış model hiç görünmüyordu; sayfanın "önce gör" kuralının tek istisnasıydı.
+                // Şimdi çip "Atölye'de" alt yazısıyla durur; dokunuş Atölye'deki tabanda figürde dener (güç ve fiyat orada, satın alma
+                // da orada: 15 Kas kararı, güç taşıyan yuva Dolap'ta alınmaz). Dolap'ta deneAyk kurulmaz, alt çubuk satın alma önermez.
+                else cp.Add(Cip(L.T(a.ad), false, () => { SoyunmaSegment(0); Dene("ayakkabi", id); }, L.T("Atölye'de")));
             }
             c.Add(Dugme(L.T("Ayakkabı tabanı · Oyun"), () => { Tik(); SoyunmaSegment(0); }, null, L.T("Güç, fiyat ve çubuklar orada"), 14));
             var l = new List<Ornek>(); foreach (var o in Karakter.Gorunum("ayakkabi")) l.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
@@ -707,7 +714,7 @@ namespace BirdieSmash.Game
                 var k = Kart("koz-kart"); k.AddToClassList("dugme"); k.AddToClassList("koz-kart--kisa"); if (du == ModelDurum.Secili) k.AddToClassList("secili"); if (du == ModelDurum.Kilitli) k.AddToClassList("kilitli"); if (dn == o.id) k.AddToClassList("denenen");
                 if (o.nadir == "mistik") k.AddToClassList("koz-kart--mistik");
                 k.Add(Yazi(L.T(o.ad), 14, "kalin")); if (resim) KucukResim(k, kat, id, ks++, 72);
-                string nd = NadirAd(o.nadir); if (nd != null) k.Add(Yazi(nd, 11, "koz-nadir koz-nadir--" + o.nadir));
+                string nd = NadirAd(o.nadir); if (nd != null) k.Add(Yazi(nd, 12, "koz-nadir koz-nadir--" + o.nadir));
                 var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; dr.style.flexWrap = Wrap.Wrap; k.Add(dr); if (ik != null) { var i = Ikon(ik, 13, du == ModelDurum.Secili ? TURUNCU : SOLUK); i.style.marginRight = 4; dr.Add(i); }
                 dr.Add(Yazi(durum, 12, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"));
                 if (dn == o.id && du != ModelDurum.Secili) dr.Add(Yazi(" · " + L.T("deneniyor"), 12, "durum-simdi"));
@@ -787,7 +794,7 @@ namespace BirdieSmash.Game
                 var sl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("sort")) sl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
                 OrnekSira(c, L.T("Şort rengi"), sl, Ayar.GORUNUM["sort"], id => { Ayar.GORUNUM["sort"] = id; Ayar.KaydetSonra(); });
             }
-            c.Add(Yazi(L.T("Renkler yalnız görünüştür, ücretsiz."), 12, "soluk"));
+            c.Add(Yazi(L.T("Renkler ücretsiz."), 12, "soluk"));   // 2026-11-21 (fikir 12:06 #6): "yalnız görünüş" segment rozetinde zaten yazıyor
             c.Add(Grup(L.T("Takılı olanlar")));
             KiyafetSatir(c, "forma", L.T(Ayar.model == "rocketbox" ? "Formanın deseni ve parlaklığı kumaşa göre değişir." : tc ? "Kumaşın işlevi maçta; Tüycük'ün tüyü forma renginde, karnı onun açığı." : "Kumaşın işlevi maçta; bu modelde forma düz renk."));
             KiyafetSatir(c, "bant", L.T(tc ? "Perçemin altında görünür." : "Alında görünür."));
