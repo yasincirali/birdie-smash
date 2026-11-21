@@ -284,7 +284,9 @@ namespace BirdieSmash.Game
 
         void KariyerOyna(int g)
         {
-            Ayar.kariyerModu = true; Ayar.kariyerSecim = g; Ayar.GearHesap(); Ayar.Kaydet(); gez.Kapat(Gezinti.KART); Uygula(gez.sekme, false); root.Oyna();
+            gez.Kapat(Gezinti.KART); Uygula(gez.sekme, false);
+            // 2026-11-21 (fikir 22:06 #1): ilk maça giden her yolda bir kez sorulur; sayfa kapatılırsa mod/seçim yazılmaz
+            HareketOnce(() => { Ayar.kariyerModu = true; Ayar.kariyerSecim = g; Ayar.GearHesap(); Ayar.Kaydet(); root.Oyna(); });
         }
 
         // Sabit "Sıradaki" şeridi (2026-11-07 stüdyo UX5): haritada sıradaki maç düğüm → kart → Oyna diye üç dokunuştu ve şimdiki

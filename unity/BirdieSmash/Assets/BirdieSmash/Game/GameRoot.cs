@@ -456,7 +456,7 @@ namespace BirdieSmash.Game
 #endif
         }
 
-        void OnApplicationFocus(bool f) { if (f) Ayar.SistemOku(); else if (Application.isMobilePlatform) Duraklat(); }   // dönüşte sistem "Hareketi Azalt" ve yazı boyutu değişmiş olabilir
+        void OnApplicationFocus(bool f) { if (f) { Ayar.SistemOku(); if (ui != null) ui.ArkadasDonus(); } else if (Application.isMobilePlatform) Duraklat(); }   // dönüşte sistem "Hareketi Azalt" ve yazı boyutu değişmiş olabilir
 
         void EndMatch(bool won)
         {
