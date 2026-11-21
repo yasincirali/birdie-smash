@@ -63,10 +63,13 @@ namespace BirdieSmash.Game
             var hi = Yazi(L_.ToString(), 13, "kalin"); hi.AddToClassList("sv-halka-ic"); halka.Add(hi);
             int efN, efK; Ayar.gear.EfsaneIlerleme(out efN, out efK);
             var hy = Yazi(gerek > 0 ? L.T("Sonraki seviyeye {0} XP", gerek - kalan) : efN > 0 ? L.T("Efsane {0}", efN) : L.T("En yüksek seviye"), 12, "soluk"); hy.style.marginLeft = 6; hy.style.flexShrink = 1; svr.Add(hy);
-            ad.Add(Yazi(L.T(tz.ad) + " · " + L.T(Gear.GEAR["raket"][gr.raket].ad), 13, "soluk"));
-            System.Action<UnvanBilgi> kartEtiket = u0 => Erisim.Etiket(r, (p.Ad ?? L.T("Oyuncu")) + ", " + L.T(u0.ad) + Karakter.KademeEki(u0, p) + ", " + L.T("Seviye {0}", L_) + ", " + L.T("Tarz") + " " + L.T(tz.ad), "metin");
+            // 2026-11-22 inceleme (fikir 02:06 #5): "Dengeli · Denge" kekeme okunuyordu, hangisinin tarz hangisinin raket olduğu söylenmiyordu.
+            ad.Add(Yazi(L.T("{0} tarz · {1} raketi", L.T(tz.ad), L.T(Gear.GEAR["raket"][gr.raket].ad)), 13, "soluk"));
+            System.Action<UnvanBilgi> kartEtiket = u0 => Erisim.Etiket(r, (p.Ad ?? L.T("Oyuncu")) + ", " + L.T(u0.ad) + Karakter.KademeEki(u0, p) + ", " + L.T("Seviye {0}", L_) + ", " + L.T("Tarz") + " " + L.T(tz.ad) + ", " + L.T("{0} raketi", L.T(Gear.GEAR["raket"][gr.raket].ad)), "metin");
             kartEtiket(un);
-            kart.Add(gerek > 0 ? Cubuk(kalan / (float)gerek, LIMON) : Cubuk(efK / (float)Gear.EFSANE_XP, ALTIN));
+            // 2026-11-22 inceleme (fikir 02:06 #4): seviye ilerlemesi üç yerdeydi (üst çubuk, halka + "Sonraki seviyeye", bu çubuk); Sv 1'de
+            // iki boş gri çubuk alt alta yükleniyor iskeleti gibi okunuyordu. Kart çubuğu yalnız en yüksek seviyede (gerek 0) Efsane ilerlemesi olarak kalır: üst çubuk o zaman dolu, bilgi vermez.
+            if (gerek == 0) kart.Add(Cubuk(efK / (float)Gear.EFSANE_XP, ALTIN));
             // üç büyük sayı
             var uc = Satir("uc-sayi"); if (K >= 1.35f) uc.AddToClassList("uc-sayi--dikey"); kart.Add(uc);
             System.Action<string, string> Buyuk_ = (deger, et) => { var b = new VisualElement(); b.AddToClassList("uc-sayi-oge"); b.Add(Yazi(deger, 24, "rakam")); b.Add(Yazi(et, 12, "soluk")); Erisim.Etiket(b, et + " " + deger, "metin"); uc.Add(b); };

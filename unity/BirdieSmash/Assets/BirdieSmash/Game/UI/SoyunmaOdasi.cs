@@ -261,12 +261,9 @@ namespace BirdieSmash.Game
             // Atölye ve Dolap aynı seçim akışlarını paylaşır (ModelSec, TelBitti, yükselt): görünen yenilenir, öteki kirli kalır.
             if (gez.sekme == Sekme.Atolye) { AtolyeGovdeKur(yerKoru); kirli[(int)Sekme.Soyunma] = true; return; }
             kirli[(int)Sekme.Atolye] = true;
-            if (soyunmaGovde == null) return; var vt = root.vitrin; bool raketG = vt.hedefGec >= 1;
+            if (soyunmaGovde == null) return;
             Vector2 of = yerKoru && soyunmaKaydir != null ? soyunmaKaydir.scrollOffset : Vector2.zero;
-            int od = vt.odak;
-            string rp = vt.Parca; string rpAd = rp == "kafa" ? "Kafa şekli" : rp == "cerceve" ? "Çerçeve" : rp == "saft" ? "Şaft" : rp == "grip" ? "Grip" : rp == "kordaj" ? "Kordaj" : null;
-            vitrinYazi.text = raketG && rpAd != null ? L.T("Yakın plan: {0}", L.T(rpAd)) : L.T(raketG ? "Raketin, 360 derece görünüm" : od == Vitrin.YUZ ? "Yakın plan: yüz ve saç" : od == Vitrin.AYAK ? "Yakın plan: ayakkabılar" : od == Vitrin.TUTUS ? "Yakın plan: tutuş" : "Oyuncun, 360 derece görünüm");
-            OdakDugmeleriKur();
+            VitrinYaziKur();
             var c = soyunmaGovde; c.Clear();
             KarakterGovde(c); c.Add(Bosluk(20));
             DenemeCubukKur();
@@ -275,6 +272,15 @@ namespace BirdieSmash.Game
             // segment) kayma sıfırlanmıyordu. Uzun sayfanın (Şapka, Yüz ızgarası) dibindeyken kısa sayfaya geçince eski kayma kalıyor,
             // içerik görünen alanın üstünde kalıp sayfa boş görünüyordu. Yeni sayfa hep baştan açılır.
             else if (!yerKoru && KategoriUsteKaydir && soyunmaKaydir != null) { soyunmaKaydir.scrollOffset = Vector2.zero; var sk = soyunmaKaydir; sk.schedule.Execute(() => sk.scrollOffset = Vector2.zero).StartingIn(1); }
+        }
+        // 2026-11-22 inceleme (fikir 02:06 #2): yakın plan düğmesi yalnız kadrajı ve bu iki öğeyi değiştirir; sayfa gövdesi odağı okumaz.
+        // Eskiden her odak dokunuşu SoyunmaGovdeKur ile bütün ızgarayı baştan kuruyordu (basılma geri bildirimi yeniden kurulumla kesiliyordu).
+        void VitrinYaziKur()
+        {
+            var vt = root.vitrin; bool raketG = vt.hedefGec >= 1; int od = vt.odak;
+            string rp = vt.Parca; string rpAd = rp == "kafa" ? "Kafa şekli" : rp == "cerceve" ? "Çerçeve" : rp == "saft" ? "Şaft" : rp == "grip" ? "Grip" : rp == "kordaj" ? "Kordaj" : null;
+            vitrinYazi.text = raketG && rpAd != null ? L.T("Yakın plan: {0}", L.T(rpAd)) : L.T(raketG ? "Raketin, 360 derece görünüm" : od == Vitrin.YUZ ? "Yakın plan: yüz ve saç" : od == Vitrin.AYAK ? "Yakın plan: ayakkabılar" : od == Vitrin.TUTUS ? "Yakın plan: tutuş" : "Oyuncun, 360 derece görünüm");
+            OdakDugmeleriKur();
         }
         public static bool KategoriUsteKaydir = true;   // EkranTuru eski davranışı karşılaştırmak için bir an kapatır
         public void DolapSonaKaydir() { if (soyunmaKaydir != null) soyunmaKaydir.verticalScroller.value = soyunmaKaydir.verticalScroller.highValue; }

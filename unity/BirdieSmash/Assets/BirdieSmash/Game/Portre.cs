@@ -151,6 +151,17 @@ namespace BirdieSmash.Game
                 // 2026-11-14 Ayakkabı görünümü kartı: kadraj iki ayakkabının sınırına (kalkan yolunun aynısı); bulunamazsa baş kadrajı
                 if (ayak && fig.AyakKok != null)
                     foreach (var p in fig.AyakKok) if (p != null) foreach (var r in p.GetComponentsInChildren<Renderer>()) if (r.enabled) { if (!kalkan) { kb = r.bounds; kalkan = true; } else kb.Encapsulate(r.bounds); }
+                // 2026-11-22 inceleme (r240): "Görünüm yok" kartında aksesuar yok, kadraj başa düşüyor ve ayakkabı ızgarasının ilk
+                // kartı yüz gösteriyordu. Görünüm yoksa ayak kemikleri (Vitrin AYAK odağıyla aynı ad süzgeci) ile yer arası kadrajlanır:
+                // kart tabandaki ayakkabıyı gösterir. Kemik de yoksa eski baş kadrajı.
+                if (ayak && !kalkan)
+                    foreach (var tr in fig.GetComponentsInChildren<Transform>(true))
+                    {
+                        string n = tr.name.ToLowerInvariant();
+                        if (!n.Contains("foot") || n.Contains("step") || n.Contains("ik") || n.Contains("roll")) continue;
+                        var p = tr.position; var b = new Bounds(new Vector3(p.x, (p.y + YER.y) * .5f, p.z), new Vector3(.16f, Mathf.Max(p.y - YER.y, .05f) + .04f, .22f));
+                        if (!kalkan) { kb = b; kalkan = true; } else kb.Encapsulate(b);
+                    }
                 if (kalkan)
                 {
                     var govde = new Vector3(bas != null ? bas.position.x : YER.x, kb.center.y, bas != null ? bas.position.z : YER.z);

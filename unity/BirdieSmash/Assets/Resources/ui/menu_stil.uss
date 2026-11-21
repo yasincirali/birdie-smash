@@ -1044,3 +1044,7 @@
 .arkadas-satir .esnek-yatay { flex-direction: row; align-items: center; margin-left: 0; margin-right: 8px; }
 .arkadas-avatar { width: 36px; height: 36px; border-radius: 18px; border-width: 2px; border-color: var(--coral); background-color: var(--navy); margin-right: 10px; }
 .buyuk-yazi .online-alt { white-space: normal; }
+/* 2026-11-22 inceleme (fikir 02:06 #7): set süzgeci değişince ızgara .12 sn belirir; yalnız opacity (yerleşim her karede hesaplanmaz). */
+.koz-izgara { transition-property: opacity; transition-duration: 0.12s; transition-timing-function: ease-out; }
+.koz-solgun { opacity: 0; }
+.az-hareket .koz-izgara { transition-duration: 0s; }

@@ -1,4 +1,11 @@
 === UNITY ===
+Dolap ve Profil cilası (22 Kasım gece):
+- Dolap > Ayakkabı görünümünde "Görünüm yok" kartı artık oyuncunun yüzünü değil, ayağındaki ayakkabıyı gösteriyor.
+- Az eşyalı bölümlerde set süzgeci (Yılbaşı 0/1 gibi çipler) kalktı, ızgara hemen başlıyor. Kalabalık bölümlerde süzgeç değişince kartlar yumuşakça beliriyor.
+- Yüz, Ayak ve Tutuş yakın plan düğmeleri sayfayı baştan kurmuyor; dokunuş anında ve takılmadan cevap veriyor.
+- Profil kartında seviye çubuğu tekrarı kalktı (üstteki çubuk kalıyor). Tarz ve raket satırı artık "Dengeli tarz · Denge raketi" diye okunuyor.
+Nasıl denenir: Dolap > Ayakkabı görünümünü aç: ilk kart ayakkabı resmi göstermeli. Şapka bölümünde bir set çipine dokun: kartlar bir anda değil, kısa bir geçişle gelmeli. Yüz düğmesine art arda dokun: kamera yakınlaşıp uzaklaşmalı, liste yerinde kalmalı. Profil'de seviye halkasının altında ikinci boş çubuk olmamalı.
+
 Arkadaşınla oyna ve ilk maç (21 Kasım gece):
 - "Nasıl oynamak istersin?" artık ilk maça giden her yolda bir kez soruluyor: Kariyer haritası, Hızlı maç ve Günün maçı da. Seçim kartları sadeleşti (ad ve tek cümle).
 - Arkadaş sayfasında "Listeyi yenile" kalktı: liste açılışta ve uygulamaya dönünce kendiliğinden yenilenir. Her arkadaşın satırında adının baş harfi görünür; alttaki not tek cümle ve yalnız liste doluyken.

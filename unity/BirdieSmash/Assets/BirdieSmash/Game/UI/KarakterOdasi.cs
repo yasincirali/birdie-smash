@@ -281,12 +281,12 @@ namespace BirdieSmash.Game
         void OdakSec(int o, bool sec)
         {
             var vt = root.vitrin;
-            if (sec) { Tik(); vt.Odak(Vitrin.TAM); SoyunmaGovdeKur(true); return; }   // aynısına ikinci dokunuş: tüm boy, sayfa yerinde
+            if (sec) { Tik(); vt.Odak(Vitrin.TAM); VitrinYaziKur(); return; }   // aynısına ikinci dokunuş: tüm boy, sayfa yerinde
             if (o == Vitrin.TUTUS) { raketParca = "grip"; RaketGorunum(true); return; }   // KarakterOdakAyarla kamerayı gripe götürür
             int hedef = o == Vitrin.AYAK ? KAR_AYK : karAlt == KAR_SAC || karAlt == KAR_SAPKA || karAlt == KAR_TEN ? karAlt : KAR_TEN;
             hedef = KarGecerli(hedef);
-            if (hedef != karAlt) { KategoriSec(hedef); if (vt.odak != o) { vt.Odak(o); SoyunmaGovdeKur(true); } return; }
-            Tik(); vt.Odak(o); SoyunmaGovdeKur(true);
+            if (hedef != karAlt) { KategoriSec(hedef); if (vt.odak != o) { vt.Odak(o); VitrinYaziKur(); } return; }
+            Tik(); vt.Odak(o); VitrinYaziKur();
         }
 
         // ---- Karakter gövdesi ----
@@ -691,10 +691,21 @@ namespace BirdieSmash.Game
         void KozIzgaraIc(VisualElement c, string kat, string baslik, string dn, bool resim)
         {
             var gr = Ayar.gear; string sec = Ayar.KOZ[kat];
-            string su; kozSet.TryGetValue(kat, out su); var tum = Kozmetik.Gosterim(kat); bool setVar = false; foreach (var o in tum) if (o.koleksiyon != null) { setVar = true; break; }
+            string su; kozSet.TryGetValue(kat, out su); var tum = Kozmetik.Gosterim(kat); bool setVar = false;
+            // 2026-11-22 inceleme (fikir 02:06 #3, r240 Ayakkabı görünümü): her seti tek eşya olan küçük bölümde süzgeç iki satır çip
+            // olup ızgarayı katın altına itiyordu; tek eşyalı seti süzmek hiçbir kartı ayırmaz. Süzgeç yalnız bölüm üç ızgara satırını (9)
+            // aşıyor ve en az bir set iki ya da daha çok eşya taşıyorsa çizilir; çizilmezse (eski) süzgeç seçimi de yok sayılır.
+            if (tum.Length > 9) { var say = new Dictionary<string, int>(); foreach (var o in tum) if (o.koleksiyon != null) { int n; say.TryGetValue(o.koleksiyon, out n); say[o.koleksiyon] = ++n; if (n >= 2) { setVar = true; break; } } }
+            if (!setVar) su = null;
             if (setVar)
             {
-                var cs = Satir("cip-sarar"); cs.AddToClassList("koz-set"); c.Add(cs); System.Action yenile = () => { c.Clear(); KozIzgaraIc(c, kat, baslik, dn, resim); };
+                var cs = Satir("cip-sarar"); cs.AddToClassList("koz-set"); c.Add(cs); System.Action yenile = () =>
+                {
+                    c.Clear(); KozIzgaraIc(c, kat, baslik, dn, resim);
+                    // 2026-11-22 inceleme (fikir 02:06 #7): yeni ızgara bir karede değişiyordu, süzgecin neyi ayırdığı hissedilmiyordu.
+                    // Yalnız ızgara .12 sn opacity ile belirir (yerleşim yok, kademe yok); Hareketi azaltta solgun sınıfı hiç eklenmez (eklenirse ızgara bir kare boş kalırdı).
+                    var yeni = c.Q(className: "koz-izgara"); if (yeni != null && !Ayar.reduce) { yeni.AddToClassList("koz-solgun"); yeni.schedule.Execute(() => yeni.RemoveFromClassList("koz-solgun")).StartingIn(16); }
+                };
                 cs.Add(Cip(L.T("Hepsi"), su == null, () => { if (su == null) return; kozSet.Remove(kat); yenile(); }));
                 for (int si = 0; si < SET_ID.Length; si++)
                 {
