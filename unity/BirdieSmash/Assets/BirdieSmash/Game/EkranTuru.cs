@@ -325,7 +325,7 @@ namespace BirdieSmash.Game
             string ms0; Ayar.KOZ.TryGetValue(Kozmetik.MAC_SONU, out ms0); bool km0 = Ayar.kariyerModu; int tur = 0;
             // Kariyer yolu (yasin'in kaydı: 5-2 galibiyet, Uçak): her galibiyet sıradaki basamağı açar, üretilmiş rakipler (Core/Rakipler)
             // ve kendi modelleri sırayla gelir; son iki tur Hızlı maç.
-            foreach (var sv in new[] { "ucak", "ucak", "ucak", "ucak", "ucak", "ucak", "ucak", "nanik", "zafer" })
+            foreach (var sv in new[] { "ucak", "nanik" })
             {
                 Ayar.KOZ[Kozmetik.MAC_SONU] = sv; Ayar.kariyerModu = sv == "ucak"; Ayar.kariyerSecim = -1;
                 root.StartMatch(false, false, false); botAcik = false;
@@ -335,6 +335,24 @@ namespace BirdieSmash.Game
                 while (root.ekran != Ekran.Bitti && Time.realtimeSinceStartup - tz < 6) yield return null;
                 rap.AppendLine("macsonu " + sv + " · rakip " + (mt.stil != null ? mt.stil.isim + "/" + mt.stil.model + (mt.stil.uretilen ? "/üretilmiş" : "") : "-") + " · kariyer " + Ayar.kariyerModu + " · ekran " + root.ekran + " · süre " + (Time.realtimeSinceStartup - tz).ToString("F1") + " · hata " + hatalar.Count);
                 yield return Bekle(30); yield return Cek("macsonu_" + sv + "_b" + (tur++));
+            }
+            // Gerçek maç sayısı (2026-11-21): yukarıdaki turlar skoru elle bitiriyor; yasin'in kaydında maç gerçek bir vuruşla (file dibi
+            // öldürme) bitti ve oyuncuda bıyık, kanat, ördek terlik vardı. Bot maç sayısına kadar oynar, sayı olayları gerçek yoldan gelir.
+            {
+                string dil0 = Ayar.dil; var koz0 = new System.Collections.Generic.Dictionary<string, string>(Ayar.KOZ);
+                string[][] kombin = { new[] { "pos_biyik", "ejderha_kanat" }, new[] { "biyik", "kelebek_kanat" }, new[] { "pos_biyik", "melek_kanat" } };
+                for (int gi = 0; gi < kombin.Length; gi++)
+                {
+                    Ayar.dil = "en"; Ayar.KOZ[Kozmetik.MAC_SONU] = "ucak"; Ayar.KOZ[Kozmetik.YUZ] = kombin[gi][0]; Ayar.KOZ[Kozmetik.SIRT] = kombin[gi][1]; Ayar.KOZ["ayak"] = "ordek_terlik";
+                    Ayar.kariyerModu = gi != 2; Ayar.kariyerSecim = -1; root.StartMatch(false, false, false); botAcik = true;
+                    var mt = root.match; float t0 = Time.realtimeSinceStartup, enUzun = 0; int sayi = 0;
+                    while (!mt.matchDone && Time.realtimeSinceStartup - t0 < 90) { if (mt.sc[0] < mt.target - 1) mt.sc[0] = mt.target - 1; if (mt.sc[1] > 2) mt.sc[1] = 2; sayi = mt.sc[0] + mt.sc[1]; yield return null; }
+                    float tz = Time.realtimeSinceStartup; bool kazandi = mt.sc[0] > mt.sc[1];
+                    while (root.ekran != Ekran.Bitti && Time.realtimeSinceStartup - tz < 8) { enUzun = Mathf.Max(enUzun, Time.unscaledDeltaTime); yield return null; }
+                    rap.AppendLine("macsonu gerçek " + gi + " · " + kombin[gi][0] + "+" + kombin[gi][1] + " · bitti " + mt.matchDone + " · kazandı " + kazandi + " · skor " + mt.sc[0] + "-" + mt.sc[1] + " · ekran " + root.ekran + " · süre " + (Time.realtimeSinceStartup - tz).ToString("F1") + " · en uzun kare " + enUzun.ToString("F2") + " · hata " + hatalar.Count);
+                    botAcik = false; yield return Bekle(20); yield return Cek("macsonu_gercek_" + gi);
+                }
+                Ayar.dil = dil0; foreach (var kv in koz0) Ayar.KOZ[kv.Key] = kv.Value;
             }
             foreach (var h in hatalar) rap.AppendLine("macsonu hata · " + h);
             if (ms0 != null) Ayar.KOZ[Kozmetik.MAC_SONU] = ms0; Ayar.kariyerModu = km0; Application.logMessageReceived -= yaz;
