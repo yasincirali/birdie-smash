@@ -364,7 +364,8 @@ namespace BirdieSmash.Game
             // Ses eşlemesi (yasin 2026-11-21: "sesler karışmış, hangi ses hangi durumda netleştirelim"): kayıt vuruş TÜRÜNE göre seçilir.
             // Kesik (slice) kendi kaydını seçmiyor: vurus_slice drop kaydının aynı kesimiydi, kesik clear/drive de yumuşak drop sesi
             // çalıyordu. Kesik vuruş kendi türünün kaydını çalar; kesik his tüyün yolunda ve sentez yedeğinde kalır.
-            string t = Tur(type), kayitAd = serve ? "vurus_servis" : "vurus_" + t;
+            // Sıçrayarak smaçın kendi kaydı var (yasin 2026-11-21: eski drive kesimi "sıçrayarak smaça daha uygun"); yoksa smaç kaydı.
+            string t = Tur(type), kayitAd = serve ? "vurus_servis" : type == "jump" && Kayit("vurus_jump") != null ? "vurus_jump" : "vurus_" + t;
             var kv = Kayit(kayitAd + "_" + q) ?? Kayit(kayitAd);
             if (kv != null) { var c = kv[rnd.Next(kv.Length)]; if (mine) VurusCal(c, kaz, perde); else { opSrc.pitch = perde; opSrc.panStereo = pan; opSrc.PlayOneShot(c, .5f * kaz); } }
             else if (mine) VurusCal(Vurus(type, q, slice, super_, serve, false), kaz, perde);
@@ -545,7 +546,7 @@ namespace BirdieSmash.Game
         public void Ugultu(bool on, float sp) { swo.Ayarla(on, sp); }
 
         // ---- kayıtlı ses kancası (yukarıdaki başlık notu) ----
-        public static readonly string[] KAYIT_ADLARI = { "vurus_smash", "vurus_clear", "vurus_drive", "vurus_drop", "vurus_servis", "govde", "file", "file_bant", "bant", "yer", "yer_sert",
+        public static readonly string[] KAYIT_ADLARI = { "vurus_smash", "vurus_jump", "vurus_clear", "vurus_drive", "vurus_drop", "vurus_servis", "govde", "file", "file_bant", "bant", "yer", "yer_sert",
             "seyirci", "ooo", "alkis", "alkis_uzun", "cosku", "ic_cekis", "duduk", "gicirti", "hawk_ici", "hawk_disari", "sayi_ben", "sayi_rakip", "iska" };
         readonly Dictionary<string, AudioClip[]> kayit = new Dictionary<string, AudioClip[]>();
         // Yoksa null (sonuç önbellekte: Resources.Load ad başına bir kez sorulur).
