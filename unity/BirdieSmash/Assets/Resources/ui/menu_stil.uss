@@ -1027,6 +1027,9 @@
 .online-yuzler { flex-direction: row; align-items: center; flex-shrink: 0; width: 84px; height: 48px; }
 .online-ben { width: 48px; height: 48px; border-radius: 24px; border-width: 2px; border-color: var(--lime); background-color: var(--navy2); overflow: hidden; }
 .online-o { width: 44px; height: 44px; border-radius: 22px; margin-left: -12px; border-width: 2px; border-color: var(--coral); background-color: var(--navy); align-items: center; justify-content: center; }
+.online-o { transition-property: scale; transition-duration: 0.3s; transition-timing-function: ease-in-out; }
+.online-o--nabiz { scale: 1.08 1.08; }
+.az-hareket .online-o { transition-duration: 0s; }
 .online-yazilar { flex-grow: 1; flex-shrink: 1; min-width: 0; margin-left: 10px; }
 .online-baslik { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--tx); letter-spacing: 0.3px; }
 .online-alt { color: var(--mu2); margin-top: 1px; }

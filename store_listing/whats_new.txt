@@ -1,4 +1,11 @@
 === UNITY ===
+Arkadaşınla oyna ve ilk maç (21 Kasım gece):
+- "Nasıl oynamak istersin?" artık ilk maça giden her yolda bir kez soruluyor: Kariyer haritası, Hızlı maç ve Günün maçı da. Seçim kartları sadeleşti (ad ve tek cümle).
+- Arkadaş sayfasında "Listeyi yenile" kalktı: liste açılışta ve uygulamaya dönünce kendiliğinden yenilenir. Her arkadaşın satırında adının baş harfi görünür; alttaki not tek cümle ve yalnız liste doluyken.
+- "Arkadaşınla oyna" kartı oturumda bir kez kısa bir nabızla dikkat çeker (Hareketi azalt açıkken yok).
+- Dolap'tan çıkarken oyuncu portresi önceden hazırlanır, geçiş takılmaz.
+Nasıl denenir: Uygulamayı silip kur, Kariyer haritasından bir maça başla: önce hareket seçimi gelmeli, bir kez seçince bir daha gelmemeli. Oyna sekmesinde "Arkadaşınla oyna" kartının yuvarlağı bir kez iki kez büyüyüp küçülmeli. Arkadaş sayfasını aç, uygulamadan çıkıp geri dön: liste yenilenmeli. Dolap'ta kıyafet değiştir, birkaç saniye bekleyip Oyna'ya geç: geçiş akıcı olmalı, üstteki portre yeni görünüşte olmalı.
+
 Forma deseni (21 Kasım gece):
 - Dolap > Kıyafet'te yeni "Forma deseni" satırı. Kumaşın görünüşü artık oyundaki etkisinden ayrı: giydiğin kumaşın gücü sürer, görünüş olarak sahip olduğun başka bir kumaşı (Hafif, Nefes alan, Esnek) seçebilirsin.
 - Yedi yeni desen seviyeyle açılır: Göğüs bandı, Yan şerit, Çift şerit, Omuz bandı, Degrade, V kuşak, Tüy amblemi. Desenler forma rengine uyar, oyunu etkilemez.

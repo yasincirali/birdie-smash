@@ -375,7 +375,8 @@ namespace BirdieSmash.Game
             OyunSecenek(c, true);
             AltEylem(Dugme(L.T("Hızlı maç oyna"), () =>
             {
-                Ayar.kariyerModu = false; Ayar.GearHesap(); Ayar.Kaydet(); gez.Kapat(Gezinti.HIZLI); Uygula(gez.sekme, false); root.Oyna();
+                gez.Kapat(Gezinti.HIZLI); Uygula(gez.sekme, false);   // 2026-11-21 (fikir 22:06 #1): ilk maça giden her yolda bir kez sorulur; sayfa kapatılırsa mod yazılmaz
+                HareketOnce(() => { Ayar.kariyerModu = false; Ayar.GearHesap(); Ayar.Kaydet(); root.Oyna(); });
             }, "dugme--birincil", K > 1.35f ? null : HizliOzet(), 19));   // 2026-11-07 (UX2): büyük yazıda özet satırı CTA'yı 3 satıra büyütüp listeyi daraltıyordu; seçimler çiplerde zaten görünür
         }
 

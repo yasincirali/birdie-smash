@@ -91,6 +91,7 @@ namespace BirdieSmash.Game
             kok.RegisterCallback<WheelEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
             kok.RegisterCallback<TransitionRunEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
             zemin = kok.Q<VisualElement>("zemin"); alan = kok.Q<VisualElement>("alan"); ust = kok.Q<VisualElement>("ust"); icerik = kok.Q<VisualElement>("icerik");
+            ust.schedule.Execute(PortreIsit).Every(300);   // Dolap açıkken bugünkü portreyi durgun anda ısıtır (aşağıda)
             sayfa = kok.Q<VisualElement>("sayfa"); sekmeCubugu = kok.Q<VisualElement>("sekmeler"); ReklamKur(kok.Q<VisualElement>("reklam")); altKatman = kok.Q<VisualElement>("alt-katman"); kalkan = kok.Q<VisualElement>("kalkan");
             // 2026-10-26 Yayın Gecesi: gövde yazı tipi (2026-10-29 Tüycükler: Nunito; eskisi Barlow; Resources/fonts, OFL). Sınıf kuralları (menu_stil.uss) kalın ve başlık
             // dosyalarını seçer; kökteki satır içi değer, USS çözülemezse ya da tema yoksa da gövde yazısına düşülsün diye.
@@ -387,6 +388,17 @@ namespace BirdieSmash.Game
             if (ustKirli) UstKur();
         }
         string portreAnah;
+        // 2026-11-21 inceleme (fikir 22:06 #2): Dolap'tan çıkış karesinde üst çubuk, Oyna kartı, Kariyer ve Profil portreyi
+        // (Portre.Benim) önbellekte bulamayınca FBX figürünü aynı karede çiziyordu; vitrin kapanışı ve sekme girişiyle üst üste.
+        // Dolap açıkken görünüm her değiştiğinde portre menü durgunken (son dokunuştan sonra) bir kez çizilir; çıkışta hepsi
+        // önbellekten gelir. Vitrin kapalıyken yalnız bir bool okunur; anahtar dizesi yalnız Dolap'ta, 300 ms'de bir.
+        string portreIsitilen;
+        void PortreIsit()
+        {
+            if (root == null || root.vitrin == null || !root.vitrin.gameObject.activeSelf || !Kalite.MenuDurgun) return;
+            string pa = Ayar.model + PlayerView.Benim().Anahtar(); if (pa == portreIsitilen) return;
+            portreIsitilen = pa; Portre.Benim();
+        }
 
         // ---- Ödül anları (2026-10-31, sanat yönü ilk paketi; yasin "yap") ----
         // Tüy ve seviye eskiden sessizce bir sayı olarak değişiyordu. Menüye dönüşte (üst çubuk yeniden kurulurken) Tüy arttıysa

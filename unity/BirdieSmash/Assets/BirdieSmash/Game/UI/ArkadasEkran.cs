@@ -36,7 +36,9 @@ namespace BirdieSmash.Game
         // EkranTuru için: sayfayı eylemsiz açar (bayrağa dokunmaz).
         public void HareketSecAc() { hareketSonra = null; hareketSecim = Mathf.Clamp(Ayar.hareket, 0, 2); var once = gez.sekme; gez.Ac(Gezinti.HAREKET); Uygula(once, true); }
 
-        static readonly string[] HAREKET_ALT = { "Yeni başlayan için", "Biraz alışkın olana", "Tam kontrol isteyene" };
+        // 2026-11-21 inceleme (fikir 22:06 #5): adın yanındaki "Yeni başlayan için" alt yazısı kalktı. ×2'de sarılıp kart başına üç
+        // katman, ilk açılışta dokuz parça okutuyordu; ad + tek cümle Ayarlar'daki çip + cümleyle aynı dil. Fikirdeki "Önerilen"
+        // rozeti alınmadı (rozet yok kuralı): öneri, Yardımlı'nın varsayılan seçili gelmesiyle zaten görünür.
         void HareketSecKur()
         {
             var c = AltSayfaKur(L.T("Nasıl oynamak istersin?"));
@@ -50,10 +52,9 @@ namespace BirdieSmash.Game
                 var ust = Satir("rakip-satir"); ust.pickingMode = PickingMode.Ignore; k.Add(ust);
                 { var ik = Ikon(Ikonlar.Tik, 14, TURUNCU); ik.style.marginRight = 4; ik.style.display = on ? DisplayStyle.Flex : DisplayStyle.None; ust.Add(ik); hareketTik.Add(ik); }
                 ust.Add(Yazi(L.T(Ayar.HAREKET_AD[i]), 17, "kalin"));
-                var alt = Yazi(L.T(HAREKET_ALT[i]), 12, "soluk"); alt.style.marginLeft = 8; ust.Add(alt);
                 var ac = Yazi(L.T(HAREKET_ACIK[i]), 13, "ipucu"); ac.style.whiteSpace = WhiteSpace.Normal; ac.pickingMode = PickingMode.Ignore; k.Add(ac);
                 k.AddManipulator(new Clickable(() => { HareketSecGoster(ii); Tik(); }));
-                Erisim.Etiket(k, L.T(Ayar.HAREKET_AD[i]) + ", " + L.T(HAREKET_ALT[i]) + ". " + L.T(HAREKET_ACIK[i]), "dugme", on);
+                Erisim.Etiket(k, L.T(Ayar.HAREKET_AD[i]) + ". " + L.T(HAREKET_ACIK[i]), "dugme", on);
                 c.Add(k); hareketKart.Add(k);
             }
             AltEylem(Dugme(L.T("Bununla başla"), HareketOnayla, "dugme--birincil", null, 19));
@@ -91,8 +92,20 @@ namespace BirdieSmash.Game
             var alt = Yazi(L.T("Canlı maç · davet gönder ya da rakip bul"), 13, "online-alt"); alt.style.whiteSpace = WhiteSpace.Normal; yz.Add(alt);
             var ok = new VisualElement(); ok.AddToClassList("online-ok"); ok.pickingMode = PickingMode.Ignore; ok.Add(Ikon(Ikonlar.Ileri, 16, RAKIP)); d.Add(ok);
             d.AddManipulator(new Clickable(() => { Tik(); HareketOnce(ArkadasAc); }));
+            OnlineNabiz(o);
             Erisim.Etiket(d, L.T("Arkadaşınla oyna") + ", " + L.T("Canlı maç · davet gönder ya da rakip bul"), "dugme");
             return d;
+        }
+
+        // 2026-11-21 inceleme (fikir 22:06 #6): kart tamamen durağandı, büyük Oyna'nın altında gözden kaçabiliyordu (yasin "buton
+        // da ilgi çekici olsun"). Oturumda bir kez, giriş hareketi bittikten sonra rakip yuvası iki yumuşak nabız atar ("burada
+        // biri bekliyor"); döngü yok, birincil Oyna'yla yarışmaz. Yalnız sınıf değişir (USS geçişi), karede stil yazımı yok.
+        // Hareketi azaltta hiç başlamaz.
+        static bool onlineNabizOldu;
+        void OnlineNabiz(VisualElement o)
+        {
+            if (onlineNabizOldu || Ayar.reduce) return; int n = 0;
+            o.schedule.Execute(() => { onlineNabizOldu = true; o.ToggleInClassList("online-o--nabiz"); n++; }).StartingIn(600).Every(320).Until(() => n >= 4 || o.panel == null);
         }
 
         // ---- Arkadaş sayfası ----
@@ -105,21 +118,30 @@ namespace BirdieSmash.Game
         void ArkadasKur()
         {
             var c = AltSayfaKur(L.T("Arkadaşınla oyna"));
-            var ds = Satir("arali"); ds.AddToClassList("hazir-dugmeler"); c.Add(ds);
-            var ek = Dugme(L.T("Arkadaş ekle"), () => { Online.ArkadasEkle(); }, null, null, 15); ek.AddToClassList("hazir-dugme"); ds.Add(ek);
-            var yn = Dugme(L.T("Listeyi yenile"), () => { Online.ArkadasYukle(); ArkListeKur(); }, null, null, 15); yn.AddToClassList("hazir-dugme"); ds.Add(yn);
+            // 2026-11-21 inceleme (fikir 22:06 #3): "Listeyi yenile" kalktı. Sayfa her açılışta ve uygulamaya dönüşte (Ayarlar'dan
+            // izin verip ya da Apple'ın arkadaşlık sayfasından gelince, ArkadasDonus) kendiliğinden yeniler; düğme yeni bir şey getirmiyordu.
+            var ek = Dugme(L.T("Arkadaş ekle"), () => { Online.ArkadasEkle(); }, null, null, 15); ek.style.marginTop = 4; ek.style.marginBottom = 4; c.Add(ek);
             c.Add(Grup(L.T("Arkadaşların")));
             arkListe = new VisualElement(); c.Add(arkListe); ArkListeKur();
-            var not = Yazi(L.T("Game Center arkadaşının şu an oyunda olup olmadığını göstermiyor. Davet telefonuna bildirim olarak gider; kabul edince maç başlar."), 12, "soluk");
-            not.style.whiteSpace = WhiteSpace.Normal; not.style.marginTop = 10; c.Add(not);
             AltEylem(Dugme(L.T("Rastgele rakip bul"), () => { gez.AltKapat(); Uygula(gez.sekme, true); root.OnlineAra(); }, "dugme--birincil", L.T("11 sayı · eşit güç"), 19));
             // Liste köprüde yüklenir (izin penceresi dahil); durum değişince yalnız liste kabı yeniden kurulur. Sayfa kapanınca durur.
+            // 2026-11-21 (fikir 22:06 #8): liste geldi ya da izin yoksa yoklama durur; dönüş yenilemesi yeniden başlatır.
             var lv = arkListe; IVisualElementScheduledItem iz = null;
             iz = lv.schedule.Execute(() =>
             {
                 if (lv.panel == null) { iz.Pause(); return; }
                 if (Online.ArkadasDurum != arkGorulen) ArkListeKur();
+                if (arkGorulen == Online.ARK_HAZIR || arkGorulen == Online.ARK_IZIN_YOK) iz.Pause();   // giriş yok (ARK_YOK) eşzamansız girişle değişebilir: yoklama sürer
             }).Every(300);
+            arkIz = iz;
+        }
+        IVisualElementScheduledItem arkIz;
+        // Uygulamaya dönüşte (GameRoot.OnApplicationFocus) Arkadaş sayfası açıksa liste yeniden yüklenir.
+        public void ArkadasDonus()
+        {
+            if (arkListe == null || arkListe.panel == null) return;
+            if (Online.ArkadasDurum != Online.ARK_YUKLENIYOR) Online.ArkadasYukle();
+            if (arkIz != null) arkIz.Resume();
         }
         void ArkListeKur()
         {
@@ -132,13 +154,21 @@ namespace BirdieSmash.Game
                 {
                     string id = a.id, ad = a.ad;
                     var r = Kart("arkadas-satir"); var sol = new VisualElement(); sol.AddToClassList("esnek-yatay"); sol.pickingMode = PickingMode.Ignore; r.Add(sol);
-                    var av = new VisualElement(); av.AddToClassList("avatar"); av.AddToClassList("arkadas-avatar"); av.pickingMode = PickingMode.Ignore; av.Add(Ikon(Ikonlar.Kisi, 18, RAKIP)); sol.Add(av);
+                    var av = new VisualElement(); av.AddToClassList("avatar"); av.AddToClassList("arkadas-avatar"); av.pickingMode = PickingMode.Ignore; sol.Add(av);
+                    // 2026-11-21 (fikir 22:06 #4): her satırda aynı kişi ikonu vardı, liste yalnız adla ayrışıyordu. Adın baş harfi
+                    // (Kariyer şeridi kalıbı, sabit boy: daire yazı ölçeğiyle büyümez); harfle başlamayan adda ikon kalır.
+                    if (!string.IsNullOrEmpty(ad) && char.IsLetterOrDigit(ad[0])) { var bh = Yazi(ad.Substring(0, 1).ToUpper(), 15, "kalin"); bh.style.color = RAKIP; bh.style.fontSize = 15; av.Add(bh); }
+                    else av.Add(Ikon(Ikonlar.Kisi, 18, RAKIP));
                     var at = Yazi(ad, 16, "kalin"); at.style.flexShrink = 1f; at.style.minWidth = 0f; sol.Add(at);
                     var dv = Dugme(L.T("Davet et"), () => { gez.AltKapat(); Uygula(gez.sekme, true); Online.Davet(id, L.T("Birdie Smash'te bir maça ne dersin?")); }, null, null, 15);
                     dv.AddToClassList("kucuk-dugme"); dv.style.flexShrink = 0f; r.Add(dv);
                     Erisim.Etiket(dv, L.T("Davet et") + ", " + ad, "dugme");
                     arkListe.Add(r);
                 }
+                // 2026-11-21 (fikir 22:06 #7): iki cümlelik dipnot her durumda görünüyordu; boş liste ve izin yok kendi cümlesini
+                // söylüyor. Yalnız liste doluyken ve tek cümle; "çevrimiçi göstermiyor" sözü sunuculu aşamada zaten değişecek.
+                var not = Yazi(L.T("Davet bildirim olarak gider; kabul edince maç başlar."), 12, "soluk");
+                not.style.whiteSpace = WhiteSpace.Normal; not.style.marginTop = 10; arkListe.Add(not);
                 return;
             }
             string m = d == Online.ARK_IZIN_YOK ? L.T("Arkadaş listesine izin verilmedi. iPhone Ayarlar › Game Center › Arkadaş Listesi'nden açabilirsin; davet için rastgele rakip de bulabilirsin.")
