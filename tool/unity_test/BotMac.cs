@@ -1366,7 +1366,7 @@ static class BotMac
             if (imza(js) != imza(kj)) Fail("paylaşılan klip listesi kaynaktan farklı: " + ad + " → " + kay);
         }
         Console.WriteLine("paylaşılan klip: " + n + " model kaynaktan");
-        if (n < 6) Fail("maskotlar klip paylaşmıyor (beklenen ≥ 6, bulunan " + n + ")");
+        // 2026-11-21 akşam: paylaşım oyunda kliplerin örneklenmediği görülünce geri alındı (KarakterImport sürüm 4); n = 0 beklenir.
     }
 
     static void GercekciAksesuar()
