@@ -28,7 +28,10 @@ namespace BirdieSmash.EditorTools
         [System.Serializable] class Clip { public string name; public int first, last; public bool loop; }
         [System.Serializable] class Meta { public int fps; public float scale; public Clip[] clips; public string klipKaynak; }
 
-        public override uint GetVersion() { return 3; }
+        // 4 (2026-11-21 akşam): maskotların klip paylaşımı geri alındı (ekran turu r227: kedi klip şeritlerinde altı karenin altısı
+        // aynı pozdaydı, paylaşılan klipler örneklenmiyordu). _clips.json'dan klipKaynak kalktı; sürüm artışı CI Library
+        // önbelleğinde animasyonsuz içe aktarılmış maskot FBX'lerini yeniden içe aktartır.
+        public override uint GetVersion() { return 4; }
 
         bool Karakter() { var p = assetPath.Replace('\\', '/'); return p.Contains("Resources/karakter/") && p.EndsWith(".fbx"); }
 
