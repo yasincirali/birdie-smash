@@ -272,6 +272,8 @@
 .seviye-bolme { flex-direction: row; margin: 6px 0 4px 0; flex-wrap: nowrap; }
 .bolme { width: 14px; height: 6px; margin-right: 3px; border-radius: 2px; background-color: rgba(255, 255, 255, 0.18); }
 .bolme--dolu { background-color: var(--sun); }
+.bolme { transition-property: scale; transition-duration: 0.18s; transition-timing-function: ease-out; }
+.bolme--yeni { scale: 1.25 1.25; }   /* 2026-11-21: Atölye yükseltmesinde yeni dolan bölme 1,25 → 1 (yalnız scale, yerleşim yok) */
 .onizle { flex-direction: row; align-items: center; margin: 4px 0 0 0; flex-wrap: nowrap; }
 .onizle-ad { width: 30%; color: var(--mu2); }
 .onizle-iz { flex-grow: 1; height: 6px; background-color: rgba(255, 255, 255, 0.1); border-radius: 3px; margin: 0 8px; }
@@ -402,7 +404,7 @@
 .sayfa, .alt-sayfa, .sekme-kok { transition-property: opacity, translate; transition-duration: 0.22s; transition-timing-function: ease-out; }
 .giris { opacity: 0; translate: 24px 0; }
 .alt-sayfa.giris { translate: 0 40px; }
-.az-hareket .sayfa, .az-hareket .alt-sayfa, .az-hareket .sekme-kok, .az-hareket .dugme, .az-hareket .onizle-kayar, .az-hareket .cta { transition-duration: 0s; }
+.az-hareket .sayfa, .az-hareket .alt-sayfa, .az-hareket .sekme-kok, .az-hareket .dugme, .az-hareket .onizle-kayar, .az-hareket .bolme, .az-hareket .cta { transition-duration: 0s; }
 .az-hareket .cta:active { scale: 1 1; }
 .az-hareket .cta-supurme { display: none; }
 .az-hareket .dugme:active { scale: 1 1; }

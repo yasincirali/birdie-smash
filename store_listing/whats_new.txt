@@ -1,4 +1,10 @@
 === UNITY ===
+Atölye ve Profil cilası (21 Kasım sabah):
+- Profil'deki "n. seviyede açılır" satırına dokununca o eşya Dolap'ta oyuncunun üstünde denenir (raket parçasıysa Atölye'de o yuva açılır).
+- Atölye'de yükseltince yeni dolan kademe bölmesi kısaca büyüyüp yerine oturur; ışıltı artık sonradan Dolap'ta boşuna oynamaz.
+- Tüy yetmeyince yükselt düğmesi kaç Tüy eksik olduğunu yazar. Yuva kartının başlığı "Kademe 4/10".
+- Tarz seçicide seçili tarzın altındaki "Seçili" yazısı kalktı (aşağıdaki kart söylüyor). Dolap saç modeli kartında seviye yazısı biraz büyüdü.
+Nasıl denenir: Profil'de kupa rafının altındaki "seviyede açılır" yazısına dokun: Dolap açılıp eşya giydirilmeli. Atölye'de bir yuvayı yükselt: yeni dolan bölme kısa bir büyüme yapmalı. Tüyün yetmeyen bir yuvada düğme "… Tüy daha gerekli" demeli.
 Kariyer ve Profil cilası (21 Kasım gece):
 - Kariyer yolunda bir basamağın satırının herhangi bir yerine (rakip adı, yer, yıldızlar) dokununca maç kartı açılır; önceden yalnız yuvarlak düğüm dokunuluyordu. Satır basılınca hafifçe küçülür.
 - Ekipmanı eksik turda başlık yalnız "3 yükseltme eksik" yazar.

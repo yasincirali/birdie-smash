@@ -110,13 +110,31 @@ namespace BirdieSmash.Game
             // sıradaki açılış (Sv 30'da yok): tek cümle
             for (int s2 = L_ + 1; s2 <= 30; s2++)
             {
-                var ac = Karakter.Acilanlar(s2); if (ac.Count == 0) continue;
-                var tl = Karakter.AcilanlarTurlu(s2); var parca = new List<string>(); var say = new Dictionary<string, int>();
+                // 2026-11-21 inceleme (fikir 07:06 #7): önce Acilanlar + AcilanlarTurlu her seviyede iki tam tarama yapıyordu; boşluk
+                // kontrolü artık gösterilen listenin kendisi (yalnız Acilanlar'da olup listede görünmeyen seviye boş cümle basıyordu).
+                var tl = Karakter.AcilanlarTurlu(s2); if (tl.Count == 0) continue;
+                var parca = new List<string>(); var say = new Dictionary<string, int>();
                 foreach (var a in tl) { int n; say.TryGetValue(a[1], out n); say[a[1]] = n + 1; }
                 // 2026-11-06: aynı ad iki yuvada açılınca ("Kırmızı, Kırmızı") hangi eşya olduğu yazılır: "Kırmızı (Forma rengi)"
                 foreach (var a in tl) parca.Add(say[a[1]] > 1 && a[0] != null ? L.T(a[1]) + " (" + L.T(a[0]) + ")" : L.T(a[1]));
                 var sa = Yazi(L.T("{0}. seviyede açılır: {1}", s2, string.Join(", ", parca.ToArray())), 13, "soluk"); sa.style.marginTop = 10; sa.style.whiteSpace = WhiteSpace.Normal;
-                Erisim.Etiket(sa, sa.text, "metin"); kart.Add(sa); break;
+                // 2026-11-21 inceleme (fikir 07:06 #1): satır düz yazıydı; seviye atlama sayfasındaki "Dolap'ta dene" kalıbı burada da
+                // (Brawl Stars / Clash Royale yolunda sıradaki ödüle dokunmak önizletir): Dolap eşyası varsa onu oyuncunun üstünde
+                // dener, yalnız Atölye eşyası varsa o yuvayı açar, ikisi de yoksa düz yazı kalır. Tarama yalnız bulunan seviyede.
+                string dn = null, yv = null; bool atl = false;
+                foreach (var g in Karakter.AcilanAralikGruplu(s2 - 1, s2))
+                {
+                    if (dn == null && g[0] == "Dolap" && g.Length > 3 && g[3] != null) dn = g[3];
+                    if (!atl && g[0] == "Atolye") { atl = true; yv = g[2]; }
+                }
+                if (dn != null || atl)
+                {
+                    sa.text += " ›"; sa.AddToClassList("dokunulur"); string dn_ = dn, yv_ = yv;
+                    sa.AddManipulator(new Clickable(() => { Tik(); if (dn_ != null) { SekmeAc(Sekme.Soyunma); SeviyeDene(dn_); } else if (yv_ != null) YuvaAc(yv_); else SekmeAc(Sekme.Atolye); }));
+                    Erisim.Etiket(sa, sa.text.TrimEnd(' ', '›') + " · " + L.T(dn != null ? "Dolap'ta dene" : "Atölye'de gör"), "dugme");
+                }
+                else Erisim.Etiket(sa, sa.text, "metin");
+                kart.Add(sa); break;
             }
 
             // 2026-11-19 inceleme (fikir 22:06 #7): form oyuncunun en sık baktığı "nasıl gidiyorum" bilgisi; iki uzun listenin altında
