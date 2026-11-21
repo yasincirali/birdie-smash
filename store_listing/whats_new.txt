@@ -1,4 +1,10 @@
 === UNITY ===
+Arkadaşınla oyna herkese açık, oyuncu hareketi baştan seçiliyor (21 Kasım):
+- Oyna sayfasında "Arkadaşınla oyna" kartı herkese görünüyor; gizli ayar gerekmiyor.
+- Kartta Game Center arkadaşların listeleniyor: birine "Davet et" de, isteği telefonuna bildirim olarak gider. "Arkadaş ekle" ile yeni arkadaş ekleyebilir, "Rastgele rakip bul" ile tanımadığın biriyle oynayabilirsin.
+- İlk Oyna'dan önce bir kez soruluyor: Yardımlı (oyuncun topa kendisi koşar), Yarı yardımlı (geç kalırsan koşar), Pro (her adım senin). Sonradan Ayarlar'dan değişir.
+- Arkadaş maçında da kendi hareket seçimin geçerli. Yardım yalnız koşuyu üstlenir, güç vermez.
+Nasıl denenir: Oyna'ya bas: önce üç seçenekli sayfa gelmeli, birini seçip başla. Oyna sayfasında aşağıdaki "Arkadaşınla oyna" kartına dokun: arkadaş listesi için izin istenmeli, sonra arkadaşların görünmeli. Bir arkadaşına "Davet et" de: o telefona bildirim gitmeli, kabul edince maç başlamalı.
 Vuruş sesleri ve daha küçük oyun (21 Kasım):
 - Raket vuruşları artık gerçek kayıttan gelen seslerle çalıyor: smaş en sert, drop en yumuşak; servis ve kesik vuruşun da kendi sesi var.
 - Oyun boyutu biraz küçüldü: açılış tüy animasyonu ve karakter modelleri daha az yer tutuyor.

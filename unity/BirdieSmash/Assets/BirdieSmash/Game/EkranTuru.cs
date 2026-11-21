@@ -351,6 +351,9 @@ namespace BirdieSmash.Game
             yield return Profil(ui, ek);
             ui.SekmeAc(Sekme.Oyna); ui.HizliMacAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "hizli"); ui.Geri();
             ui.SekmeAc(Sekme.Oyna); ui.SeviyeYoluAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "seviye_yolu"); ui.Geri();   // 2026-11-10 Seviye yolu
+            // 2026-11-21 arkadaş maçı sayfası (Linux'ta Game Center yok: "giriş gerekiyor" durumu) ve hareket seçimi
+            ui.SekmeAc(Sekme.Oyna); ui.ArkadasAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "arkadas"); ui.Geri();
+            ui.SekmeAc(Sekme.Oyna); ui.HareketSecAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "hareket_sec"); ui.Geri();
             ui.GelisimAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "gelisim"); ui.Geri();   // 2026-11-10 oyuncu gelişimi
             ui.AyarlarAc(); yield return Bekle(20); yield return Cek("menu_" + ek + "ayarlar"); ui.Geri(); yield return Bekle(5);
             // 2026-10-26 adım 7–8: antrenman sayfası (örnek yıldızlarla), görev kartı, Günün maçı kartı
