@@ -1,4 +1,9 @@
 === UNITY ===
+Dolap cilası (21 Kasım öğle):
+- Dolap'ta Ayakkabı görünüşünde henüz almadığın ayakkabı modelleri de görünür ("Atölye'de" yazar); dokununca Atölye'de oyuncunun üstünde denenir, fiyatı ve gücü orada.
+- Kombin kaydedince ya da giyince o kombin çipi kısaca büyüyüp yerine oturur, giyince vitrindeki oyuncu parlar. Kombin dokunuşu artık takılmaz.
+- Raket kafa şekli adları biraz büyüdü, seçili şeklin köşesinde tik var. Atölye ve Dolap'taki küçük etiketler biraz büyüdü.
+Nasıl denenir: Dolap > Ayakkabı (görünüm yok seçiliyken) model satırında "Atölye'de" yazan bir çipe dokun: Atölye açılmalı ve oyuncu o ayakkabıyla görünmeli. Dolap'ta bir kombin kaydet ve başka bir kombini giy: çip kısa bir büyüme yapmalı, oyuncu parlamalı. Raket kafa şeklinde seçili olanın köşesinde tik olmalı.
 Atölye ve Profil cilası (21 Kasım sabah):
 - Profil'deki "n. seviyede açılır" satırına dokununca o eşya Dolap'ta oyuncunun üstünde denenir (raket parçasıysa Atölye'de o yuva açılır).
 - Atölye'de yükseltince yeni dolan kademe bölmesi kısaca büyüyüp yerine oturur; ışıltı artık sonradan Dolap'ta boşuna oynamaz.

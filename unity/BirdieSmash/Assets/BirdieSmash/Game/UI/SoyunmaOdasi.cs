@@ -415,7 +415,7 @@ namespace BirdieSmash.Game
                 var gd = new VisualElement(); gd.AddToClassList("stat-gelisim"); gd.pickingMode = PickingMode.Ignore; gd.style.left = Length.Percent(v[i]); gd.style.width = Length.Percent(g); gd.style.display = g > 0 ? DisplayStyle.Flex : DisplayStyle.None; iz.Add(gd);
                 var orta = new VisualElement(); orta.AddToClassList("stat-orta"); orta.pickingMode = PickingMode.Ignore; iz.Add(orta);
                 var dg = Yazi((v[i] + g).ToString(), 12, "stat-deger"); r.Add(dg);
-                Label ar = null; if (gel != null) { ar = Yazi(g > 0 ? "+" + g : "", 11, "stat-arti"); ar.style.display = g > 0 ? DisplayStyle.Flex : DisplayStyle.None; r.Add(ar); }
+                Label ar = null; if (gel != null) { ar = Yazi(g > 0 ? "+" + g : "", 12, "stat-arti"); ar.style.display = g > 0 ? DisplayStyle.Flex : DisplayStyle.None; r.Add(ar); }
                 string yonGel = g > 0 ? ", " + L.T("gelişimden artı {0}", g) : "";
                 int fark = karsi != null ? v[i] - karsi[i] : 0; string yon = "";
                 var isk = new VisualElement(); isk.AddToClassList("stat-isaret"); isk.pickingMode = PickingMode.Ignore; r.Add(isk);

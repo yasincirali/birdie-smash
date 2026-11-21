@@ -657,6 +657,7 @@
 .parca-kaydir { flex-shrink: 0; margin: 0 0 4px 0; }   /* 2026-11-07 (UX4): parça şeridi tek satır, yatay kayar */
 .parca-kaydir .kategori-ray { margin: 4px 0 4px 0; }
 .sekil-ornek { height: 64px; flex-basis: 28%; }
+.sekil-ornek .renk-kilit-yazi { color: var(--tx); }   /* 2026-11-21 (fikir 12:06 #4): ham Color.white yerine; zemin --navy2 */
 .buyuk-yazi .kategori-ray { flex-wrap: nowrap; }
 /* 2026-11-07 (r127 Dolap ×2): ".buyuk-yazi .segment .segment-cip { flex-basis: 40% }" daha özgül olduğu için yatay kayan
    kategori şeridinde her çip içerik genişliğinin %40'ı (≈415 pt) oluyordu, ekranda tek çip görünüyordu. */
@@ -694,6 +695,9 @@
    Alt çubuk: kaydırma alanının dışında, sabit; kart rengi + üst çizgi, deneme rengi gök (deneme-kart ile aynı anlam). */
 .kombin-satir { flex-wrap: wrap; }
 .kombin-cip { flex-basis: 22%; flex-grow: 1; min-height: 44px; }
+/* 2026-11-21 (fikir 12:06 #2): kaydedilen/giyilen kombin çipi bir kez 1,15 → 1; süre --pop sınıfından (basma geri bildirimi 0,08 sn kalır) */
+.kombin-cip--pop { transition-duration: 0.18s; transition-timing-function: ease-out; }
+.kombin-cip--yeni { scale: 1.15 1.15; }
 .buyuk-yazi .kombin-cip { flex-basis: 40%; }
 .kombin-kaydet { margin: 4px 4px 8px 4px; }
 .deneme-cubuk { flex-shrink: 0; margin: 0 16px 6px 16px; padding: 6px 8px; border-radius: 16px; background-color: var(--navy); border-width: 2px; border-color: var(--sky); }
