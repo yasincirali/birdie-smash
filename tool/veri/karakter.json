@@ -53,7 +53,8 @@
   {"id": "gokkusagi", "ad": "Gökkuşağı", "sv": 14, "fiyat": 1600, "varlik": "kisa", "aks": "gokkusagi", "garip": true},
   {"id": "bulut", "ad": "Bulut", "sv": 16, "fiyat": 2000, "varlik": null, "aks": "bulut", "garip": true},
   {"id": "alev", "ad": "Alev", "sv": 17, "fiyat": 2400, "varlik": null, "aks": "alev", "garip": true},
-  {"id": "tuy_topuz", "ad": "Tüy top topuzu", "sv": 18, "fiyat": 2500, "varlik": null, "aks": "tuy_topuz", "garip": true}
+  {"id": "tuy_topuz", "ad": "Tüy top topuzu", "sv": 18, "fiyat": 2500, "varlik": null, "aks": "tuy_topuz", "garip": true},
+  {"id": "yildirim", "ad": "Yıldırım perçem", "sv": 12, "fiyat": 1350, "varlik": null, "aks": "yildirim", "garip": true}
 ],
 "aksesuar_not": "2026-10-30 Soyunma › Görünüm (yasin onayı): şapka ve yüz aksesuarları YALNIZ görünüş (güç alanı yasak, Kozmetik kilitler), Tüy ve seviyeyle; gerçek para yok. Her modelde görünür: parçalar Unity'de kafa kemiğine bağlanan basit geometriler (Game/Aksesuar.cs), bant halkasından ölçülen baş çerçevesinde. Hacimli saç (afro, topuz, anime…) şapkanın altında kısa kesime döner. İlk öğe 'yok' ücretsiz varsayılan. 2026-11-01 Tüy dengesi (yasin: \"seviye ve tüy ayrı olsun, alınamasın; tüy kazanma ve ürün çeşitliliği buna göre olmalı, hemen her şeyi alabilememeli\"): seviye kapısı Tüy ya da parayla aşılmaz. Kozmetik fiyatları nadirlik bantlarına çekildi (fiyat = yuvarla50(100 + 1,5·eski + 900·(eski/1000)²): sıradan 250–350, nadir 350–950, destansı 1100–2000, mistik 2400–2500; aynı formül saç, beden tipi, sevinç ve yüze de uygulandı). Ölçü: Tüy ile XP her maçta birlikte geldiği için çok oynayan da az oynayan da aynı oranda ilerler; dengeyi Tüy/XP oranı ve fiyatlar kurar, günlük tavan gerekmez. Sv 30'a gelen ücretsiz oyuncu bütün ekipman ve yükseltmeyi alıp kozmetiklerin ~%35'ini alabilir (önce ~%80'iydi; tool/ekonomi_denge.py). Oyuncu seçer, koleksiyon uzun sürer; alınmış öğe elden alınmaz.",
 "sapka": [
@@ -102,7 +103,8 @@
   {"id": "sombrero", "ad": "Sombrero", "sv": 14, "fiyat": 1600, "nadir": "destansi", "varlik": "ozel", "set": "gelenek"},
   {"id": "kavuk", "ad": "Kavuk", "sv": 18, "fiyat": 2400, "nadir": "mistik", "varlik": "ozel", "set": "gelenek"},
   {"id": "dondurma", "ad": "Dondurma kafa", "sv": 9, "fiyat": 900, "garip": true, "nadir": "nadir", "varlik": "ozel", "set": "tatli"},
-  {"id": "cupcake", "ad": "Kek şapka", "sv": 13, "fiyat": 1500, "nadir": "destansi", "varlik": "ozel", "set": "tatli"}
+  {"id": "cupcake", "ad": "Kek şapka", "sv": 13, "fiyat": 1500, "nadir": "destansi", "varlik": "ozel", "set": "tatli"},
+  {"id": "dev_tuy", "ad": "Dev tüy top", "sv": 6, "fiyat": 950, "nadir": "nadir", "varlik": "ozel", "set": "kort"}
 ],
 "sevinc_not": "2026-11-01 Dolap › Sevinç (Ar-Ge K3, yasin 'maç sonunda da sevinç kategorisi kısmını gönder'): sayı kazanınca ve maç sonunda oyuncunun yaptığı hareket. YALNIZ görünüş (güç alanı yasak), Tüy ve seviyeyle. Klip değil, kemik üstü işlemsel poz (Game/PlayerView Sevinc): her modelde aynı çalışır. Kaybeden maç sonunda hep 'iyi oyundu' (raketi rakibe kaldırır), satılmaz. İlk öğe ücretsiz varsayılan.",
 "sevinc": [
@@ -219,7 +221,8 @@
   {"id": "saz", "ad": "Saz", "sv": 6, "fiyat": 650, "nadir": "nadir", "varlik": "ozel", "set": "gelenek"},
   {"id": "davul", "ad": "Davul", "sv": 10, "fiyat": 1100, "nadir": "destansi", "varlik": "ozel", "set": "gelenek"},
   {"id": "yelpaze", "ad": "Dev yelpaze", "sv": 15, "fiyat": 1800, "nadir": "destansi", "varlik": "ozel", "set": "gelenek"},
-  {"id": "lolipop", "ad": "Dev lolipop", "sv": 7, "fiyat": 700, "nadir": "nadir", "varlik": "ozel", "set": "tatli"}
+  {"id": "lolipop", "ad": "Dev lolipop", "sv": 7, "fiyat": 700, "nadir": "nadir", "varlik": "ozel", "set": "tatli"},
+  {"id": "raket_canta", "ad": "Raket çantası", "sv": 4, "fiyat": 350, "nadir": "siradan", "varlik": "ozel", "set": "kort"}
 ],
 "kol_not": "2026-11-12 Dolap › Sırt sayfasında Kol (yasin: 'ayakkabı pelerin şapka, kalkan gibi şeyler satacağız ... oyuna etkisi olan şeyler olmayacak sadece görsellik ve absürtlük'): raketsiz ön kola takılan kalkanlar (tool/karakter/ozel_aksesuar.py tur 2, Game/Aksesuar.Kol). Kolun yüzeyi tipe göre ölçülür, kalkan kola gömülmez. YALNIZ görünüş (güç alanı yasak): savunmayı, vuruşu, hızı değiştirmez. Fiyat nadirlik bantlarında, ilk öğe yok ücretsiz.",
 "kol": [
@@ -238,7 +241,8 @@
   {"id": "ugur_bocegi", "ad": "Uğur böceği kalkanı", "sv": 10, "fiyat": 1100, "nadir": "destansi", "varlik": "ozel", "set": "masal"},
   {"id": "tef", "ad": "Tef", "sv": 4, "fiyat": 450, "nadir": "nadir", "varlik": "ozel", "set": "gelenek"},
   {"id": "kilim", "ad": "Kilim kalkanı", "sv": 11, "fiyat": 1200, "nadir": "destansi", "varlik": "ozel", "set": "gelenek"},
-  {"id": "donut", "ad": "Donut kalkanı", "sv": 10, "fiyat": 1100, "garip": true, "nadir": "destansi", "varlik": "ozel", "set": "tatli"}
+  {"id": "donut", "ad": "Donut kalkanı", "sv": 10, "fiyat": 1100, "garip": true, "nadir": "destansi", "varlik": "ozel", "set": "tatli"},
+  {"id": "tuy_kalkan", "ad": "Tüy top kalkanı", "sv": 8, "fiyat": 700, "nadir": "nadir", "varlik": "ozel", "set": "kort"}
 ],
 "bel_not": "2026-11-12 Dolap › Sırt sayfasında Bel (yasin: konsept setleri, app boyutunu artırmadan): leğene bağlı etek, kemer, kuyruk, simit. Yalnız görünüş.",
 "bel": [
@@ -254,7 +258,8 @@
   {"id": "obi", "ad": "Obi kuşağı", "sv": 5, "fiyat": 500, "nadir": "nadir", "varlik": "ozel", "set": "gelenek"},
   {"id": "pullu_kusak", "ad": "Pullu kuşak", "sv": 9, "fiyat": 900, "nadir": "nadir", "varlik": "ozel", "set": "gelenek"},
   {"id": "kilt", "ad": "İskoç eteği", "sv": 11, "fiyat": 1200, "nadir": "destansi", "varlik": "ozel", "set": "gelenek"},
-  {"id": "makaron_kusak", "ad": "Makaron kuşağı", "sv": 12, "fiyat": 1300, "nadir": "destansi", "varlik": "ozel", "set": "tatli"}
+  {"id": "makaron_kusak", "ad": "Makaron kuşağı", "sv": 12, "fiyat": 1300, "nadir": "destansi", "varlik": "ozel", "set": "tatli"},
+  {"id": "havlu", "ad": "Ter havlusu", "sv": 2, "fiyat": 250, "nadir": "siradan", "varlik": "ozel", "set": "kort"}
 ],
 "ayak_not": "2026-11-14 Dolap › Ayakkabı görünümü (yasin: \"ayakkabıda da eksiğimiz var\"; \"beğenmediğim yok yenilerini ekle çeşit olarak\"): ekipman ayakkabısının (güç) üstüne giyilen yalnız görünüş. Parçalar tool/karakter/ozel_aksesuar.py ile tur 4 (ayak) BSA1 ağları; oyunda ekipman ayakkabısının ağından ölçülen ayak çerçevesine (taban ortası köken, birim ayakkabı boyu, en ayakkabı eni) takılır ve ekipman ayakkabısı gizlenir (Game/Aksesuar.Ayak). Böylece her beden tipine ve ayakkabı modeline oturur, FBX büyümez. Ayakkabı parçası olmayan modellerde (Sade, Tüycük) görünmez. Aynı turda saç biçimleri de hazır ağ olarak geldi (sac_model[].aks: baş çerçevesine takılır, SAC_YER renkli kısım oyuncunun saç rengini alır; varlik altındaki FBX saçı, null = kazıtılmış; şapkayla kısa kesime döner). İlk öğe 'yok' ücretsiz.",
 "ayak": [
