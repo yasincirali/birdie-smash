@@ -722,6 +722,8 @@
 .hazir-dugmeler { margin-top: 4px; }
 .hazir-dugme { flex-grow: 1; flex-basis: 0; margin: 4px; }
 .buyuk-yazi .hazir-dugmeler { flex-direction: column; align-items: stretch; }
+/* 2026-11-21 yazı turu r228: sütun yönünde flex-basis 0 düğmeyi en küçük yüksekliğe ezip iki satırlık yazıyı kesiyordu ("Arkadaş ekle" ×2); büyük yazıda düğme kendi yazısı kadar uzar. */
+.buyuk-yazi .hazir-dugme { flex-basis: auto; flex-grow: 0; }
 .hazir-kart { padding: 8px; }
 /* 2026-11-01 Tüy dükkânı: cüzdan kartı, iki sütun paket kartı (dar ekranda da 2 sütun; kart içi dikey), bonus yazıyla */
 .dukkan-cuzdan { padding: 14px; margin-bottom: 8px; }
