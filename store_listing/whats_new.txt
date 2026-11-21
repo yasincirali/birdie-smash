@@ -1,4 +1,8 @@
 === UNITY ===
+Vuruş sesleri ve daha küçük oyun (21 Kasım):
+- Raket vuruşları artık gerçek kayıttan gelen seslerle çalıyor: smaş en sert, drop en yumuşak; servis ve kesik vuruşun da kendi sesi var.
+- Oyun boyutu küçüldü: hayvan karakterler hareketlerini ortak bir setten alıyor, açılış tüy animasyonu daha az yer tutuyor.
+Nasıl denenir: Bir maç oyna, smaş, drop ve servis vuruşlarını dinle: sesler birbirinden farklı ve gerçek raket gibi olmalı. Dolap'ta kedi, panda, robot gibi hayvan karakterleri giy ve maçta oyna: hareketleri önceki gibi akıcı olmalı, hiçbiri donup kalmamalı. Uygulamayı kapatıp aç: açılıştaki tüy dönmesi önceki gibi görünmeli.
 Dolap cilası (21 Kasım öğle):
 - Dolap'ta Ayakkabı görünüşünde henüz almadığın ayakkabı modelleri de görünür ("Atölye'de" yazar); dokununca Atölye'de oyuncunun üstünde denenir, fiyatı ve gücü orada.
 - Kombin kaydedince ya da giyince o kombin çipi kısaca büyüyüp yerine oturur, giyince vitrindeki oyuncu parlar. Kombin dokunuşu artık takılmaz.

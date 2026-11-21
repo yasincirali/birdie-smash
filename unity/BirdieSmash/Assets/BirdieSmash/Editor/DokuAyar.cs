@@ -31,7 +31,7 @@ namespace BirdieSmash.EditorTools
     public class DokuAyar : AssetPostprocessor
     {
         public override int GetPostprocessOrder() { return 100; }   // KarakterImport (0) tür/sRGB'yi yazdıktan sonra
-        public override uint GetVersion() { return 1; }             // değişince Unity dokuları yeniden içe aktarır
+        public override uint GetVersion() { return 2; }             // değişince Unity dokuları yeniden içe aktarır
 
         public struct Hedef { public string sinif; public TextureImporterFormat bicim; public int boy; public bool mip; public FilterMode suzme; public int aniso; public bool npotYok; public bool sikistirmasiz; }
 
@@ -47,9 +47,12 @@ namespace BirdieSmash.EditorTools
                 if (ad.EndsWith("_mg")) return new Hedef { sinif = "maske", bicim = TextureImporterFormat.ASTC_6x6, boy = 512, mip = true, suzme = FilterMode.Trilinear, aniso = 1 };
                 return new Hedef { sinif = "karakter", bicim = TextureImporterFormat.ASTC_6x6, boy = 1024, mip = true, suzme = FilterMode.Trilinear, aniso = 1 };
             }
-            // açılış tüy topu (4×4 kare, 1200×1196): arayüz sınıfının 1024 sınırı kareleri 256'ya küçültürdü; perde topu küçük
-            // de çizildiği için mip açık (küçültmede pırıltı yok).
-            if (ad == "tuy_don") return new Hedef { sinif = "tuy", bicim = TextureImporterFormat.ASTC_4x4, boy = 2048, mip = true, suzme = FilterMode.Trilinear, aniso = 1, npotYok = true };
+            // açılış tüy topu (4×4 kare): perde topu küçük de çizildiği için mip açık (küçültmede pırıltı yok).
+            // 2026-11-21 (boyut): şerit 1200×1196 idi; iOS build raporunda 7,3 MB = sıkıştırılmamış RGBA32 + mip (Denetle "ASTC_4x4
+            // ~1,8 MB" diyordu, build'e ASTC girmedi; en olası neden 2'nin kuvveti olmayan, blok boyuna bölünmeyen boy, sonraki build raporu doğrular). Şerit 1024² (256² kare),
+            // boy 1024: ASTC 4×4 + mip ~1,4 MB. Kare perdede ~%30 ekran (~350 px) çizilir, 256 kare oradan hafif büyür; kenar ince
+            // ayrıntısı olmayan yumuşak bir top, fark görünmez. StreamingAssets kopyası (açılışın yerel katmanı) ayrı, değişmedi.
+            if (ad == "tuy_don") return new Hedef { sinif = "tuy", bicim = TextureImporterFormat.ASTC_4x4, boy = 1024, mip = true, suzme = FilterMode.Trilinear, aniso = 1, npotYok = true };
             return new Hedef { sinif = "arayuz", bicim = TextureImporterFormat.ASTC_4x4, boy = 1024, mip = false, suzme = FilterMode.Bilinear, npotYok = true };
         }
 

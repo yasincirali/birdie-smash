@@ -293,6 +293,10 @@ namespace BirdieSmash.Game
             }
             return v[rnd.Next(2)];
         }
+        // 2026-11-21 (yasin: "benim daha önce eklediğim gerçekçi sesleri ekle"): 5 Kasım kaydından kesilen vuruşlar Resources/ses/vurus_*
+        // olarak girdi (smaç ×3, clear, drive, drop ×2, servis, slice); Hit önce kaydı çalar (Kayit: ad, sonra ad_1…_8), yoksa bu sentez.
+        // Düzey: smaç tepe −6 dBFS, clear/drive −8, slice −11, servis −12, drop −14 (sentezin tür sıralaması). Net ve blok Tur ile
+        // drop/clear kaydına düşer.
         // 2026-11-05 ses turu (yasin: "tatminkar ve gerçeğe yakın"): yasin'in örnek kayıtları yalnız ölçü olarak kullanıldı
         // (lisansı belirsiz, oyuna girmez). Kayıtlarda enerjinin çoğu 0,5–2 kHz'te ve 0,2–0,5 sn kuyruk var; eski sentez
         // 80 ms, tiz gürültü ağırlıklıydı. Eklenenler: tel yatağının alt modu (≈780 Hz) ve çerçeve gövdesi (1,1 kHz),
