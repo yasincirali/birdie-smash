@@ -30,6 +30,8 @@ namespace BirdieSmash.Game
         public const int TAM = 0, YUZ = 1, AYAK = 2, TUTUS = 3;
         public int odak { get; private set; }
         public string poz { get; private set; }
+        // 2026-11-20 inceleme (fikir 22:06 #2): alınmamış model de önce vitrinde denenir; Ayar.model ve maç figürü değişmez.
+        public string deneModel;
         public string deneTip, deneSac, deneAyk, deneSapka, deneYuz, deneSevinc, deneMacSonu, deneSirt, deneSmac, deneKol, deneBel, deneAyak;   // sevinç denemeleri figürü değiştirmez, önizlemede oynar
         // Kozmetik kategorisine göre deneme alanı (kategori → alan eşlemesi tek yerde; "ayakkabi" ayakkabı modeli).
         public string DeneAl(string kat) { return kat == Kozmetik.TIP ? deneTip : kat == Kozmetik.SAC ? deneSac : kat == Kozmetik.SAPKA ? deneSapka : kat == Kozmetik.YUZ ? deneYuz : kat == Kozmetik.SEVINC ? deneSevinc : kat == Kozmetik.MAC_SONU ? deneMacSonu : kat == Kozmetik.SIRT ? deneSirt : kat == Kozmetik.KOL ? deneKol : kat == Kozmetik.BEL ? deneBel : kat == Kozmetik.AYAK ? deneAyak : kat == Kozmetik.SMAC ? deneSmac : deneAyk; }
@@ -101,7 +103,7 @@ namespace BirdieSmash.Game
         // boş durmasın (eski cihazda arka plana atınca jetsam riski). Nesne ve UI bağı kalır; Ac() kamerayı açınca Unity RT'yi
         // kendiliğinden yeniden ayırır ve aynı karede, UI'dan önce çizer. Sekme değişiminde bırakılmaz (dönüşte yeniden ayırma takılması).
         public void Bosalt() { if (rt != null && rt.IsCreated()) rt.Release(); }
-        public void Kapat() { sevinc = null; smacId = null; kam.enabled = false; suruk = false; gec = hedefGec = 0; parca = null; raKay = false; odak = TAM; poz = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = deneSevinc = deneMacSonu = deneSirt = deneSmac = deneKol = deneBel = deneAyak = null; camVar = false; gameObject.SetActive(false); }
+        public void Kapat() { sevinc = null; smacId = null; kam.enabled = false; suruk = false; gec = hedefGec = 0; parca = null; raKay = false; odak = TAM; poz = null; deneModel = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = deneSevinc = deneMacSonu = deneSirt = deneSmac = deneKol = deneBel = deneAyak = null; camVar = false; gameObject.SetActive(false); }
         // Yakın plan seç (aynı odağa ikinci dokunuş Soyunma odasında Tüm boy'a döner). Tutuşa girerken el kameraya döner.
         public void Odak(int o, string klip = null)
         {
@@ -128,10 +130,10 @@ namespace BirdieSmash.Game
         {
             var g = PlayerView.Benim();
             if (deneTip != null) g.tip = deneTip; if (deneSac != null) g.sacModel = deneSac; if (deneAyk != null) g.aykModel = deneAyk; if (deneSapka != null) g.sapka = deneSapka; if (deneYuz != null) g.yuz = deneYuz; if (deneSirt != null) g.sirt = deneSirt; if (deneKol != null) g.kol = deneKol; if (deneBel != null) g.bel = deneBel; if (deneAyak != null) g.ayak = deneAyak;
-            string k = Ayar.model + g.Anahtar();
+            string mdl = deneModel ?? Ayar.model, k = mdl + g.Anahtar();
             if (k == anah && fig != null) return; anah = k;
             if (fig != null) fig.Sil(); if (raketPivot != null) Destroy(raketPivot.gameObject);
-            fig = PlayerView.Build(transform, Ayar.model, true, g.forma, false, g); fig.transform.position = YER;
+            fig = PlayerView.Build(transform, mdl, true, g.forma, false, g); fig.transform.position = YER;
             fig.ShowStatic(YER, 0, 0);
             // raket kopyası: rijit raket parçaları (deri ağı olmayan, etiketi raket kanalında) pivotun altına
             raketPivot = new GameObject("raket360").transform; raketPivot.SetParent(transform, false);

@@ -566,7 +566,7 @@ namespace BirdieSmash.Game
             // tribün flaşları
             foreach (var c in cams) { if (c.z < 0) continue; float a = 1 - c.z / .5f; Tex(new Rect(c.x * W - 10 * RefK, H - (H - (top + c.y * RefK)) - 10 * RefK, 20 * RefK, 20 * RefK), glow, new Color(1, 1, 1, a)); }
             if (hawk != null) HawkCiz(M);
-            if (root.ekran == Ekran.Oyun && !root.paused && DuraklatDugme(new Rect(rx - BH, top, BH, BH))) root.Duraklat();   // Duraklat
+            if (root.ekran == Ekran.Oyun && !root.paused && root.mod != Mod.Online && DuraklatDugme(new Rect(rx - BH, top, BH, BH))) root.Duraklat();   // Duraklat
             float y = top + 62 * u;
             if (root.rakipKartT > 0 && !ogr && root.ekran == Ekran.Oyun) y = RakipKart(M, y);   // r17: sonuç ekranının altından okunuyordu
             if (ogr && root.ekran == Ekran.Oyun) y = OgrKart(M, y);

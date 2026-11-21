@@ -339,12 +339,14 @@ namespace BirdieSmash.Game
             var rr = Satir("profil-ust"); c.Add(rr);
             var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(st.renk); AvatarIc(av, Portre.Rakip(st), 30); rr.Add(av);
             var ra = new VisualElement(); ra.AddToClassList("esnek-yatay"); rr.Add(ra);
-            int kG = 0, kY = 0; bool karne = !st.uretilen && Ayar.Karne(st.id, out kG, out kY);   // karne (fikir 12:05 #4): maç kartıyla aynı biçim; üretilmiş rakiple ilk karşılaşma
-            ra.Add(Yazi(st.isim, 20, "kalin")); ra.Add(Yazi(L.T(st.ad) + (st.ozellikAd != null ? " · " + L.T(st.ozellikAd) : "") + (karne ? " · " + kG + "–" + kY : ""), 14, "soluk"));
+            int kG = 0, kY = 0; bool karne = Ayar.Karne(Ayar.KarneAnahtar(st), out kG, out kY);   // karne (fikir 12:05 #4): maç kartıyla aynı biçim; üretilmiş rakip ad anahtarıyla (22:06 #5)
+            ra.Add(Yazi(st.isim, 20, "kalin")); ra.Add(Yazi(L.T(st.ad) + (karne ? " · " + kG + "–" + kY : ""), 14, "soluk"));
             string gs, ks; GucSatirlari(ra, g, out gs, out ks);
-            Erisim.Etiket(rr, L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad) + (st.ozellikAd != null ? ", " + L.T(st.ozellikAd) : "") + ", " + gs + (ks != null ? ", " + ks : "") + (karne ? ", " + L.T("Bu rakiple {0} galibiyet, {1} yenilgi", kG, kY) : ""), "metin");
-            // 2026-11-20: üretilmiş rakibin özelliği tarzın ipucuna bir cümle ekler ("Sabırlı: az hata yapar, az smaç atar.").
-            string ipm = L.T(st.ipucu) + (st.ozellikN != null ? ". " + L.T(st.ozellikAd) + ": " + L.T(st.ozellikN).ToLowerInvariant() : "");
+            Erisim.Etiket(rr, L.T("Rakip") + " " + st.isim + ", " + L.T(st.ad) + ", " + gs + (ks != null ? ", " + ks : "") + (karne ? ", " + L.T("Bu rakiple {0} galibiyet, {1} yenilgi", kG, kY) : ""), "metin");
+            // 2026-11-20: üretilmiş rakibin özelliği tarzın ipucuna bir cümle ekler. İnceleme 22:10 (fikir 22:06 #4, §7.5): özellik adı
+            // tarz satırında da yazıyordu (kartta iki kez); artık yalnız burada, "Sabırlı · Az hata yapar, az smaç atar". Küçültme
+            // kalktı: ToLowerInvariant Türkçe İ'yi bozar, not zaten cümle düzeninde.
+            string ipm = L.T(st.ipucu) + (st.ozellikN != null ? ". " + L.T(st.ozellikAd) + " · " + L.T(st.ozellikN) : "");
             var ip = Yazi(ipm, 14, "ipucu"); Erisim.Etiket(ip, ipm, "metin"); c.Add(ip);
             if (im != null)
             {

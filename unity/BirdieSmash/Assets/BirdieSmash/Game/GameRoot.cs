@@ -16,7 +16,8 @@ namespace BirdieSmash.Game
     public enum Ekran { Menu, Oyun, Bitti }
     // 2026-10-26 adım 7–9: maçın türü (maç sonu ve "Bir maç daha" buna göre). Normal = kariyer ya da Hızlı maç (Ayar.kariyerModu),
     // Dril = antrenman görevi (Core/Dril), Gunluk = Günün maçı (Core/Gunluk), Usta = Usta yolu (Core/UstaYolu).
-    public enum Mod { Normal, Dril, Gunluk, Usta }
+    // 2026-11-20: Online = arkadaş maçı (Game/Online); ödül, karne ve kariyer işlenmez (EndMatchOnline).
+    public enum Mod { Normal, Dril, Gunluk, Usta, Online }
 
     public class GameRoot : MonoBehaviour
     {
@@ -109,6 +110,7 @@ namespace BirdieSmash.Game
             sfx.sakin = () => hud.PerdeKapali || ekran != Ekran.Oyun || paused || match == null || match.between || match.s == null;
             sfx.derinSakin = () => hud.PerdeKapali || ekran == Ekran.Menu && Kalite.MenuDurgun;   // ek ses sırası (Sfx.IsitIsle notu)
             Basarim.Esitle(Ayar.kariyer, Ayar.bestRally); Basarim.Giris(Ayar.kariyer);
+            Online.Dinle();   // yalnız gizli tanı katmanı açıkken: Game Center girişi + gelen arkadaş daveti
             match = new Match(1, new MatchOptions { easy = Ayar.easy, target = Ayar.target, saha = Ayar.saha });   // menü arkasında duran sahne
             Kur(match);
             AudioListener.volume = Ayar.ses ? 1 : 0;
@@ -213,6 +215,54 @@ namespace BirdieSmash.Game
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
             GirisKur(o);
+        }
+
+        // ---- Online arkadaş maçı (2026-11-20; taşıma Game/Online, kurallar Core/Oturum + Core/Uzak) ----
+        // Akış: OnlineAra → Apple'ın eşleştirme sayfası → iki telefon bağlanır → selamlaşma (kart + servis kurası) → perde →
+        // OnlineMacKur. Davet edilen tarafta OnlineAra yok: davet kabul edilince aynı yol Online.Tik'ten başlar.
+        // Maçta duraklatma yok (iki telefonun saati birlikte akmalı, Core/Uzak başı); uygulamadan çıkan ya da bağlantısı
+        // kopan oyuncu Oturum.SESSIZ_KOPMA sonra hükmen kaybeder.
+        // shortcut: "Maçtan çık" düğmesi yok (çıkış = uygulamayı kapatmak), maç ekranı dokunuşu gelince Match.Ayril bağlanır.
+        Oturum onlineOturum;   // süren maçın oturumu: yeni oturumun paketleri eski maça verilmesin
+        public void OnlineAra() { Online.Ara(); }
+        void OnlineTik(float dt)
+        {
+            bool macta = mod == Mod.Online && ekran != Ekran.Menu && match != null && match.uzak != null && Online.oturum == onlineOturum;
+            if (Online.Tik(dt, macta ? match.uzak : null))
+            {
+                // Maç yalnız menüden ya da online sonuç ekranından başlar: süren maçın ortasında kabul edilen davet o maçı
+                // (kaydını, ödülünü) yarıda kesmesin. Öyle bir davette bağlantı kapanır, çağıran "rakip ayrıldı" görür.
+                if (ekran == Ekran.Menu || mod == Mod.Online && ekran == Ekran.Bitti) hud.Perde(OnlineMacKur); else Online.Kapat();
+                return;
+            }
+            // Maç kurulmadan kopan oturum (rakip vazgeçti, sürümler uyuşmadı): kapanır, oyuncu olduğu ekranda kalır.
+            if (!macta && Online.oturum != null && Online.oturum.durum == Oturum.Durum.Koptu) Online.Kapat();
+        }
+        void OnlineMacKur()
+        {
+            var ot = Online.oturum; if (ot == null || ot.durum != Oturum.Durum.Hazir) return;
+            var o = Secenek(false);
+            // İki telefonda aynı kural (oyuncunun zorluk ayarı sayılmaz): 11 sayı, koşu oyuncuda, koşu yardımı açık (online raporu
+            // "Skill gelişimi ve adalet"). Ekipman gücünü Match nötrler (eşit güç, yasin 2026-11-07). Rakip yapay zekâ ayarları boşta.
+            o.easy = false; o.kosuYardim = true; o.target = 11; o.yardim = 0; o.uzak = true; o.uzakServis = ot.servisBende ? "me" : "op";
+            // Rakibin adı kartından (Game Center takma adı). Görünüşü henüz varsayılan tarz figürü: kart görünüş taşımıyor.
+            var st = Match.STIL[Match.STIL_SIRA[0]].Clone(); st.isim = ot.rakip != null && !string.IsNullOrEmpty(ot.rakip.ad) ? ot.rakip.ad : L.T("Rakip");
+            o.stil = st;
+            mod = Mod.Online; onlineOturum = ot; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
+        }
+        // Arkadaş maçının sonu: yalnız sonuç. Tüy/XP, karne, kariyer, başarım ve mağaza puanı isteği yok (iki telefonla ödül
+        // kasılmasın; dereceli maç ödülü sunucu doğrulamasıyla 3. aşamada). Bağlantı açık kalır: son sayı paketi karşıya
+        // ulaşsın; sonuç ekranından çıkınca kapanır (AnaMenu).
+        void EndMatchOnline(bool won)
+        {
+            ekran = Ekran.Bitti; Uyanik(false); var M = match; bittiIlk = false; sfx.MacSonu(won); sfx.Ugultu(false, 0);
+            BittiSifirla(); bittiKazandi = won; ustaDavet = false; rovansStil = null; gunlukSonraOyna = false; odul = null;
+            bittiBas = won ? (L.En ? "Victory" : "Galibiyet") : L.T("Bu sefer rakip aldı"); bittiBaslik = bittiBas;
+            bittiUst = L.T("Arkadaş maçı") + " · " + M.RakipAd(false);
+            if (M.hukmen) bittiAltNot = L.T(won ? "Rakip maçtan ayrıldı." : "Maçtan ayrıldın.");
+            bittiKart = Ozet.Kartlar(M); bittiBilgi = ""; bittiIpucu = null; hud.ayrinti = false;
+            bittiDugme = L.T("Yeni arkadaş maçı");
+            if (won) hud.Konfeti();
         }
 
         // ---- Rakip girişi (2026-11-06 ek tur fikri 7, oyuncu gözü YAP küçültülmüş) ----
@@ -355,10 +405,12 @@ namespace BirdieSmash.Game
             donSekme = kariyer ? Sekme.Kariyer : Sekme.Oyna; AnaMenu();
         }
         Sekme donSekme = Sekme.Oyna;   // AnaMenu bir kez okur, Oyna'ya geri koyar (sekme dokunuşu değil: tık/geçiş yok)
-        public void AnaMenu() { bekleyen = ekran == Ekran.Oyun && paused && match != null && match.ogr == null; ekran = Ekran.Menu; paused = false; KadrajSifirla(); Uyanik(false); var ds = donSekme; donSekme = Sekme.Oyna; if (ui != null) ui.MenuyeDon(ds); sfx.SuAlti(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); AudioListener.pause = false; }
+        public void AnaMenu() { if (mod == Mod.Online && ekran != Ekran.Menu) { Online.Kapat(); onlineOturum = null; }   // maçtan/sonuçtan çıkış bağlantıyı kapatır; menüdeyken kurulan yeni oturuma dokunmaz
+ bekleyen = mod != Mod.Online && ekran == Ekran.Oyun && paused && match != null && match.ogr == null; ekran = Ekran.Menu; paused = false; KadrajSifirla(); Uyanik(false); var ds = donSekme; donSekme = Sekme.Oyna; if (ui != null) ui.MenuyeDon(ds); sfx.SuAlti(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); AudioListener.pause = false; }
         public void MacaDon() { if (!bekleyen) return; bekleyen = false; ekran = Ekran.Oyun; paused = true; Devam(); }
         // Duraklatınca tüm ses susar (HTML AC.suspend), devamda kaldığı yerden sürer.
-        public void Duraklat() { if (ekran == Ekran.Oyun && !paused) { paused = true; erkenT = 0; Uyanik(false); input.Reset(); sfx.Ugultu(false, 0); AudioListener.pause = true; } }
+        public void Duraklat() { if (mod == Mod.Online && ekran == Ekran.Oyun) return;   // online maç durmaz (OnlineTik notu)
+            if (ekran == Ekran.Oyun && !paused) { paused = true; erkenT = 0; Uyanik(false); input.Reset(); sfx.Ugultu(false, 0); AudioListener.pause = true; } }
         // 2026-11-14 inceleme (fikir 07:05 #2, #5): geri sayım yalnız top gerçekten havadayken; sayı arasında top yere düşmüş ama
         // match.s servis kurulana dek duruyor (s.dead), dönen oyuncu boşuna 1,2 sn bekliyordu (29 Eki kararı "yalnız top havadayken").
         // Ses tek karede tam açılmasın: dinleyici 0,25 sn'de 0 → hedef (Update), kulaklıkta ani giriş yok.
@@ -406,10 +458,11 @@ namespace BirdieSmash.Game
 
         void EndMatch(bool won)
         {
+            if (mod == Mod.Online) { EndMatchOnline(won); return; }
             ekran = Ekran.Bitti; Uyanik(false); var M = match; bittiIlk = M.ilk; sfx.MacSonu(won); sfx.Ugultu(false, 0);
             if (won) Ayar.wins++;
             // 2026-11-20: üretilmiş rakip (Core/Rakipler) altı adlı rakibin karnesine yazılmaz.
-            if (mod != Mod.Dril && M.ogr == null && M.stil != null) { if (!M.stil.uretilen) Ayar.KarneYaz(M.stil.id, won); Ayar.SonMacYaz(won, M.sc[0], M.sc[1], Ayar.zorluk); }   // rakip karnesi (Ayar.Karne): antrenman ve Sonsuz sayılmaz
+            if (mod != Mod.Dril && M.ogr == null && M.stil != null) { Ayar.KarneYaz(Ayar.KarneAnahtar(M.stil), won); Ayar.SonMacYaz(won, M.sc[0], M.sc[1], Ayar.zorluk); }   // rakip karnesi (Ayar.Karne): antrenman ve Sonsuz sayılmaz
             if (!M.easy && M.ogr == null) Ayar.kosIpucu = true;   // Hud.KosIpucu: koşu sende ilk maç ipucu bir kez
             // Beceri unvanı (2026-11-07 inceleme): maçtan önceki kazanılmış beceri unvanları; maç sonu kartı yeni açılanı tek satırla söyler.
             var beceri0 = Ayar.ilerleme != null ? Karakter.BeceriKazanilan(Ayar.ilerleme) : null;
@@ -503,7 +556,7 @@ namespace BirdieSmash.Game
             if (mod == Mod.Gunluk && gunluk != null) bittiUst = L.T("Günün maçı") + " · " + L.T(gunluk.deg.ad);
             else if (bittiUst == null && M.ogr == null) bittiUst = L.T("Hızlı maç") + " · " + L.T("Rakip") + " " + M.RakipAd(false);
             // Karne başlığa (2026-11-11 inceleme, fikir 23:05 #2): ilk maçta yazılmaz (1–0 bilgi değil), sonra "· aranızda 3–1".
-            int kG, kY; if (bittiUst != null && mod != Mod.Dril && M.ogr == null && M.stil != null && !M.stil.uretilen && Ayar.Karne(M.stil.id, out kG, out kY) && kG + kY >= 2)
+            int kG, kY; if (bittiUst != null && mod != Mod.Dril && M.ogr == null && M.stil != null && Ayar.Karne(Ayar.KarneAnahtar(M.stil), out kG, out kY) && kG + kY >= 2)
                 bittiUst += " · " + L.T("aranızda {0}–{1}", kG, kY);
             var bitenler = new List<string>(); foreach (var g in M.gorevler) if (g.bitti) bitenler.Add(L.Cumle(g.ad));
             // Sıfır sayaçlar yazılmaz (2026-11-07 inceleme, fikir 14:06 #5): "0 aldatma · 0 tepeden" oyuncuya "bunları yapmadın" diyor ve
@@ -619,6 +672,7 @@ namespace BirdieSmash.Game
         Style rovansStil, rovansSiradaki, sonHizliStil;   // rovansStil: maç sonu ekranında sunulan; rovansSiradaki: yalnız ana düğmeyle başlayan maça geçer
         public void TekrarOyna()
         {
+            if (mod == Mod.Online) { AnaMenuSonuc(); OnlineAra(); return; }   // "Yeni arkadaş maçı": eski bağlantı kapanır, eşleştirme sayfası açılır
             var m = mod;   // perde kapanınca hangi mod: maç sonundaki mod (ekrandaki düğme onu söyledi)
             if (m == Mod.Gunluk && gunlukSonraOyna) m = Mod.Normal;   // kazanılmış Günün maçı: düğme Oyna'nın maçını söyledi
             var rv = m == Mod.Normal && !ustaDeneSonraki ? rovansStil : null;   // Usta daveti (UstaDene) de buradan geçer; rövanşı taşımaz
@@ -953,6 +1007,7 @@ namespace BirdieSmash.Game
         {
             FitCamera(); Cokme.Tik(this);
             float dt = Mathf.Min(.05f, Time.unscaledDeltaTime);
+            OnlineTik(dt);
             if (sesAcT >= 0) { sesAcT += Time.unscaledDeltaTime; float sesK = Mathf.Min(1, sesAcT / .25f); AudioListener.volume = Ayar.ses ? sesK : 0; if (sesK >= 1 || paused) { if (paused) AudioListener.volume = Ayar.ses ? 1 : 0; sesAcT = -1; } }
             // 2026-11-12 (yasin: "sayı sonrası animasyonda kasma, maç sonu sevinçte donma"): kayıt (JSON + senkron PlayerPrefs.Save +
             // Game Center) sayı arasının İLK karesinde, yani sayı sevinci ve yazısı başlarken yapılıyordu; maç sonunda da EndMatch
@@ -977,7 +1032,8 @@ namespace BirdieSmash.Game
                     if (sonra != once) { if (sonra > 0) { sfx.Tik(660); Yerel.Hap("tick"); } else sfx.Tik(990); }
                     // 2026-11-10 (yasin "üçünü de al"): dokunuş geri sayımı geçer; bekletmek isteyen bekler, hazır olan başlar. İlk .2 sn
                     // sayılmaz: Oyna / Devam düğmesine basan parmağın aynı dokunuşu sayımı yutmasın. Dokunuş vuruş sayılmaz (input.Reset).
-                    if (geriT > 0 && geriT < GERI - .2f && YeniDokunus()) { geriT = 0; sfx.Tik(990); }
+                    // Online'da geçilmez: iki telefon aynı anda başlasın (erken servis karşıda geç başlayan uçuş olurdu).
+                    if (mod != Mod.Online && geriT > 0 && geriT < GERI - .2f && YeniDokunus()) { geriT = 0; sfx.Tik(990); }
                     if (geriT <= 0) { geriT = 0; input.Reset(); }
                 }
                 else { ZaferAtla(); ReadInput(); bool araIdi = match.between; match.Update(dt); if (araIdi && !match.between) fx.IzSondur(); }   // servis kuruldu: düşüş izi servis yerinde asılı kalmasın (2026-11-13)

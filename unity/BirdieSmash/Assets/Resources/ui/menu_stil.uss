@@ -407,6 +407,9 @@
 .az-hareket .cta-supurme { display: none; }
 .az-hareket .dugme:active { scale: 1 1; }
 .kaydir { flex-grow: 1; flex-shrink: 1; }
+/* 2026-11-20 inceleme (fikir 22:06 #6): kaydırma göstergesi, iOS gibi ince kapsül; kaydırırken belirir, durunca solar. */
+.kaydir-gosterge { position: absolute; right: 2px; top: 0; width: 3px; height: 24px; border-radius: 2px; background-color: rgba(255, 255, 255, 0.4); opacity: 0; transition-property: opacity; transition-duration: 0.15s; }
+.az-hareket .kaydir-gosterge { transition-duration: 0s; }
 
 /* Soyunma odası › Karakter (2026-10-26 karakter tasarımı): vitrinin yakın plan düğmeleri (sol alt, okların üstünde), alt
    segment Tip · Saç · Ayakkabı · Ten, tip kartları 2×2, saç biçimleri 5 sütun, ayakkabı satırları, deneme kartı.

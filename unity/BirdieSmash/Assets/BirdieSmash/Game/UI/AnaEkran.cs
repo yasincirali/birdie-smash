@@ -75,6 +75,9 @@ namespace BirdieSmash.Game
                     root.Oyna();
                 }));
             }
+            // 2026-11-20 online arkadaş maçı, kapalı özellik: yalnız gizli tanı katmanı açıkken (Online.Bayrak). Mağaza oyuncusu
+            // görmez; ekranın yeri ve biçimi online açılırken tasarım diline göre (§7, §9) yeniden ele alınır.
+            if (Online.Bayrak && !ilk && !root.bekleyen) c.Add(Dugme(L.T("Arkadaşınla oyna"), () => root.OnlineAra()));
             // 2026-10-26 adım 7–8: Günün maçı · Hızlı maç · Antrenman. "Tam antrenman" kartı Antrenman sayfasında (Temel ders);
             // ilk açılışta (antrenman görülmedi) Günün maçı yok: ilk yol tek düğme kalsın (§2.3).
             if (ilk) return;
