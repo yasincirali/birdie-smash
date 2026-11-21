@@ -1339,7 +1339,7 @@ static class BotMac
         if (Karakter.AcilanlarTurlu(16).Any(a => a[0] == "Ayakkabı")) Fail("ayakkabı RENGİ 'Ayakkabı rengi' etiketiyle olmalı");
         Console.WriteLine("karakter: " + T.Length + " tip (" + bedava + " ücretsiz), " + S.Length + " saç biçimi (garip ≥ " + garipMin + " Tüy), 5 ayakkabı nötr toplamlı, kozmetik güç vermez, kapı/taşıma/rakip tamam");
         KarakterVarliklari(T, S);
-        GercekciAksesuar();
+        FormaDeseni(); GercekciAksesuar();
         PaylasilanKlip(); CarpismaKuresi();
     }
     // 2026-10-27 (yasin: "Gerçekçi de vücut özellikleri değil de sadece aksesuarlar değişmeli kafa bandı forma bileklik ayakkabı
@@ -1383,6 +1383,16 @@ static class BotMac
         // 2026-11-21 akşam: paylaşım oyunda kliplerin örneklenmediği görülünce geri alındı (KarakterImport sürüm 4); n = 0 beklenir.
     }
 
+    static void FormaDeseni()
+    {
+        // 2026-11-21 forma deseni (yasin "önce C, sonra A"): ilk iki öğe kumaşa göre + düz (Sv 1), her kumaşın görünüşü var, kumas alanı gerçek bir kumaş, güç alanı yok.
+        var de = Karakter.Gorunum("desen");
+        if (!Karakter.GORUNUM_KAT.Contains("desen") || de.Length < 9 || de[0].id != "kumas" || de[1].id != "duz") Fail("forma deseni: GORUNUM_KAT'ta, en az 9 öğe, ilk ikisi kumas ve duz");
+        foreach (var k in Gear.GEAR["kumas"].Values) if (k.id != "klasik" && !de.Any(o => o.kumas == k.id && o.id == "k_" + k.id)) Fail("forma deseni: kumaşın görünüşü yok: " + k.id);
+        foreach (var o in de) if (o.kumas != null && !Gear.GEAR["kumas"].ContainsKey(o.kumas)) Fail("forma deseni: bilinmeyen kumaş " + o.kumas);
+        foreach (var x in (List<object>)Json.Obj(Json.Parse(System.IO.File.ReadAllText("tool/veri/karakter.json")))["desen"]) { var d = Json.Obj(x); foreach (var alan in new[] { "etki", "guc", "kontrol", "hiz", "kosu", "enerji" }) if (d.ContainsKey(alan)) Fail("forma deseninde güç alanı: " + alan); }
+        Console.WriteLine("forma deseni: " + de.Length + " öğe (kumaş görünüşü + desen), güç alanı yok");
+    }
     static void GercekciAksesuar()
     {
         string R = "unity/BirdieSmash/Assets/Resources/karakter/";

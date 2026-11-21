@@ -794,6 +794,18 @@ namespace BirdieSmash.Game
                 var sl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("sort")) sl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
                 OrnekSira(c, L.T("Şort rengi"), sl, Ayar.GORUNUM["sort"], id => { Ayar.GORUNUM["sort"] = id; Ayar.KaydetSonra(); });
             }
+            // Forma deseni (2026-11-21, yasin karar kartı "önce C, sonra A"): kumaşın görünüşü işlevinden ayrı seçilir; desenler seviyeyle
+            // açılır. Kare desenin forma rengindeki önizlemesi (göğüs solda, sırt sağda); "Kumaşına göre" giyilen kumaşın görünüşü.
+            if (Ayar.DesenGorunur)
+            {
+                var dl = new List<Ornek>(); Color fc = Kit.Hex(Ayar.GS.forma);
+                foreach (var o in Karakter.Gorunum("desen"))
+                {
+                    bool ac = Ayar.DesenAcik(o); string cz = Desen.Coz(o.id, gr.kumas);
+                    dl.Add(new Ornek { id = o.id, ad = o.ad, renk = Ayar.GS.forma, doku = Desen.Doku(cz, fc), acik = ac, neden = o.kumas != null ? L.T("Kumaşı Atölye'de alınca açılır") : L.T("Sv {0} gerekli", o.sv), kisa = o.kumas != null ? L.T("Atölye") : L.T("Sv {0}", o.sv) });
+                }
+                OrnekSira(c, L.T("Forma deseni"), dl, Ayar.GORUNUM["desen"], id => { Ayar.GORUNUM["desen"] = id; Ayar.KaydetSonra(); });
+            }
             c.Add(Yazi(L.T("Renkler ücretsiz."), 12, "soluk"));   // 2026-11-21 (fikir 12:06 #6): "yalnız görünüş" segment rozetinde zaten yazıyor
             c.Add(Grup(L.T("Takılı olanlar")));
             KiyafetSatir(c, "forma", L.T(Ayar.model == "rocketbox" ? "Formanın deseni ve parlaklığı kumaşa göre değişir." : tc ? "Kumaşın işlevi maçta; Tüycük'ün tüyü forma renginde, karnı onun açığı." : "Kumaşın işlevi maçta; bu modelde forma düz renk."));

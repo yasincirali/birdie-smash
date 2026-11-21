@@ -162,7 +162,7 @@ namespace BirdieSmash.Game
         // GSE = yalnız ekipman (5 çubuk ve yükseltme önizlemesi bunu anlatır), GS = ekipman + oyun tarzı (maç fiziği bunu
         // okur). Tarz ekipman kartına girmez: güç ekipmandan, tarz karakterden (tasarım §5.1).
         public static Gear gear; public static GearStats GS = GearStats.Notr, GSE = GearStats.Notr;
-        public static readonly Dictionary<string, string> GORUNUM = new Dictionary<string, string> { { "ten", "dogal" }, { "sac", "dogal" }, { "ayakkabi", "dogal" }, { "kaplama", "model" }, { "sort", "dogal" } };   // sort: 2026-10-27 şort rengi (Gerçekçi, Sade)
+        public static readonly Dictionary<string, string> GORUNUM = new Dictionary<string, string> { { "ten", "dogal" }, { "sac", "dogal" }, { "ayakkabi", "dogal" }, { "kaplama", "model" }, { "sort", "dogal" }, { "desen", "kumas" } };   // sort: 2026-10-27 şort rengi (Gerçekçi, Sade)
         public static readonly Dictionary<string, string> KOZ = new Dictionary<string, string> { { Kozmetik.TIP, "atlet" }, { Kozmetik.SAC, "kisa" }, { Kozmetik.SAPKA, "yok" }, { Kozmetik.YUZ, "yok" }, { Kozmetik.SEVINC, "yumruk" }, { Kozmetik.SMAC, "duz" }, { Kozmetik.SIRT, "yok" }, { Kozmetik.KOL, "yok" }, { Kozmetik.BEL, "yok" }, { Kozmetik.AYAK, "yok" }, { Kozmetik.MAC_SONU, "zafer" } };
         // Ayakkabı görünüşü (2026-10-30, Soyunma Oyun/Görünüm ayrımı): taban (güç) Gear "ayakkabi" seçimi Oyun'da; figürde görünen
         // model Görünüm'de, sahip olunan ayakkabılardan. "taban" = tabanla aynı model (eski kayıtların görünüşü değişmez).
@@ -315,6 +315,10 @@ namespace BirdieSmash.Game
         // Geçerli oyun tarzı: kayıttaki tarz, seviyesi geldiyse (Core/Karakter.Gecerli).
         public static string Tarz { get { return Karakter.Gecerli(ilerleme != null ? ilerleme.Tarz : "dengeli", gear != null ? gear.Seviye() : 1); } }
         // Görünüm öğesinin rengi (null = modelin kendi rengi). Seviyesi gelmemiş öğe görünmez (varsayılan).
+        // Forma deseni açık mı (2026-11-21): kumaş görünüşü o kumaşa sahip olunca, diğerleri seviyeyle.
+        public static bool DesenAcik(GorunumOge o) { return o != null && (o.kumas != null ? gear != null && gear.Sahip("kumas", o.kumas) : gear == null || o.sv <= gear.Seviye()); }
+        // Desen yalnız ayrı forma ağı olan modelde görünür (Tüycük'ün forması tüy gövdesi).
+        public static bool DesenGorunur { get { return model != "tuycuk"; } }
         public static string GorunumRenk(string kat)
         {
             string id; if (!GORUNUM.TryGetValue(kat, out id)) return null; var o = Karakter.Oge(kat, id);

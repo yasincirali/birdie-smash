@@ -1044,6 +1044,24 @@ namespace BirdieSmash.Game
                 root.AnaMenu(); yield return Bekle(20); ui.SekmeAc(Sekme.Soyunma); yield return Bekle(20); yield return Cek("model_gecis_" + mdl + "_vitrin");
                 t = null; VaryantSatir("vitrin geçiş model=" + mdl, root.vitrin.Fig, mdl, null, null, ref t);
             }
+            // 2026-11-21 forma deseni: Kıyafet sayfası (desen satırı) ve her desen önden + arkadan, bir kez de kedi tipinde.
+            {
+                string d0 = Ayar.GORUNUM["desen"], r0 = Ayar.gear.renk;
+                Ayar.model = "oyuncak"; Ayar.KOZ[Kozmetik.TIP] = "atlet"; root.GorunumDegisti(); root.ModelDegisti(); root.AnaMenu(); yield return Bekle(10);
+                ui.SekmeAc(Sekme.Soyunma); yield return Bekle(20); ui.KarakterAc(UiKok.KAR_KIYAFET); yield return Bekle(20);
+                yield return Cek("desen_sayfa"); { int dn; rap.AppendLine(ui.TasmaDenetimi("desen_sayfa", out dn)); }
+                foreach (var o in Karakter.Gorunum("desen"))
+                {
+                    if (o.id == "kumas") continue;
+                    Ayar.GORUNUM["desen"] = o.id; root.GorunumDegisti(); root.vitrin.Yenile(); yield return Bekle(12);
+                    root.vitrin.a = 20; root.vitrin.v = 0; yield return Bekle(6); yield return Cek("desen_" + o.id);
+                    root.vitrin.a = 200; root.vitrin.v = 0; yield return Bekle(6); yield return Cek("desen_" + o.id + "_arka");
+                    rap.AppendLine("desen " + o.id + " · doku " + (Desen.Doku(Desen.Coz(o.id, Ayar.gear.kumas), Kit.Hex(Ayar.GS.forma)) != null ? "var" : "düz"));
+                }
+                Ayar.gear.renk = "beyaz"; Ayar.GearHesap(); Ayar.GORUNUM["desen"] = "gogus"; root.GorunumDegisti(); root.vitrin.Yenile(); yield return Bekle(12); root.vitrin.a = 20; yield return Bekle(6); yield return Cek("desen_gogus_beyaz");
+                ui.KarakterDene(Kozmetik.TIP, "kedi"); Ayar.GORUNUM["desen"] = "v_kusak"; root.GorunumDegisti(); root.vitrin.Yenile(); yield return Bekle(25); root.vitrin.a = 20; yield return Bekle(6); yield return Cek("desen_v_kusak_kedi");
+                ui.KarakterDene(Kozmetik.TIP, "atlet"); Ayar.GORUNUM["desen"] = d0; Ayar.gear.renk = r0; Ayar.GearHesap();
+            }
             Ayar.KOZ[Kozmetik.TIP] = t0; Ayar.KOZ[Kozmetik.SAC] = s0; Ayar.gear.ayakkabi = a0; Ayar.model = m0;
             root.GorunumDegisti(); root.ModelDegisti(); root.AnaMenu(); ui.SekmeAc(Sekme.Oyna); yield return Bekle(5);
             File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());

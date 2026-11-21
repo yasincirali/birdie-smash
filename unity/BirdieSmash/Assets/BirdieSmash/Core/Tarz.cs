@@ -22,12 +22,12 @@ namespace BirdieSmash.Core
     public class UnvanBilgi { public string id, ad, nasil, sayac; public int tur = -1, sv, antrenman, esik; public int[] kademe; }
     // Görünüm öğesi: renk null = modelin kendi rengi.
     // parla (2026-11-01 mistik saç boyaları): renk hafifçe kendinden ışır (Alev, Buz, Yıldız tozu); yalnız görünüş.
-    public class GorunumOge { public string id, ad, renk; public int sv = 1; public bool parla; }
+    public class GorunumOge { public string id, ad, renk, kumas; public int sv = 1; public bool parla; }   // kumas: 2026-11-21 forma deseni, o kumaşın görünüşü (kumaşa sahip olunca açılır)
 
     public static class Karakter
     {
         static TarzBilgi[] tarzlar; static UnvanBilgi[] unvanlar; static Dictionary<string, GorunumOge[]> gorunum;
-        public static readonly string[] GORUNUM_KAT = { "ten", "sac", "ayakkabi", "kaplama", "sort" };   // sort: 2026-10-27 şort rengi
+        public static readonly string[] GORUNUM_KAT = { "ten", "sac", "ayakkabi", "kaplama", "sort", "desen" };   // desen: 2026-11-21 forma deseni (Game/Desen.cs)   // sort: 2026-10-27 şort rengi
         public static TarzBilgi[] Tarzlar { get { Yukle(); return tarzlar; } }
         public static UnvanBilgi[] Unvanlar { get { Yukle(); return unvanlar; } }
         public static GorunumOge[] Gorunum(string kat) { Yukle(); GorunumOge[] a; return gorunum.TryGetValue(kat, out a) ? a : new GorunumOge[0]; }
@@ -130,7 +130,7 @@ namespace BirdieSmash.Core
             foreach (var o in Kozmetik.Acilan(Kozmetik.TIP, sv)) l.Add(new[] { "Tip", o.ad });
             foreach (var o in Kozmetik.Acilan(Kozmetik.SAC, sv)) l.Add(new[] { "Saç modeli", o.ad });
             foreach (var m in Gear.RENK.Values) if (m.sv == sv && !m.kilit) l.Add(new[] { "Forma rengi", m.ad });
-            foreach (var k in GORUNUM_KAT) foreach (var o in Gorunum(k)) if (o.sv == sv) l.Add(new[] { k == "ten" ? "Ten tonu" : k == "sac" ? "Saç rengi" : k == "ayakkabi" ? "Ayakkabı rengi" : k == "sort" ? "Şort rengi" : "Raket kaplaması", o.ad });
+            foreach (var k in GORUNUM_KAT) foreach (var o in Gorunum(k)) if (o.sv == sv) l.Add(new[] { k == "ten" ? "Ten tonu" : k == "sac" ? "Saç rengi" : k == "ayakkabi" ? "Ayakkabı rengi" : k == "sort" ? "Şort rengi" : k == "desen" ? "Forma deseni" : "Raket kaplaması", o.ad });
             foreach (var u in Unvanlar) if (u.sv == sv) l.Add(new[] { "Unvan", u.ad });
             return l;
         }
@@ -203,7 +203,7 @@ namespace BirdieSmash.Core
             foreach (var k in GORUNUM_KAT)
             {
                 var l = new List<GorunumOge>(); var a = o.ContainsKey(k) ? o[k] as List<object> : null;
-                if (a != null) foreach (var x in a) { var d = Json.Obj(x); l.Add(new GorunumOge { id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), renk = Json.Str(d, "renk", null), sv = (int)Json.Num(d, "sv", 1), parla = Json.Bool(d, "parla", false) }); }
+                if (a != null) foreach (var x in a) { var d = Json.Obj(x); l.Add(new GorunumOge { id = Json.Str(d, "id", "?"), ad = Json.Str(d, "ad", ""), renk = Json.Str(d, "renk", null), kumas = Json.Str(d, "kumas", null), sv = (int)Json.Num(d, "sv", 1), parla = Json.Bool(d, "parla", false) }); }
                 g[k] = l.ToArray();
             }
             if (tl.Count == 0 || tl[0].etki.Count != 0) throw new InvalidOperationException("Birdie Smash: karakter.json ilk tarz etkisiz (Dengeli) olmalı");

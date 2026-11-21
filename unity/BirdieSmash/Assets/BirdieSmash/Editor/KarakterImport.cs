@@ -32,7 +32,8 @@ namespace BirdieSmash.EditorTools
         // aynı pozdaydı, paylaşılan klipler örneklenmiyordu). _clips.json'dan klipKaynak kalktı; sürüm artışı CI Library
         // önbelleğinde animasyonsuz içe aktarılmış maskot FBX'lerini yeniden içe aktartır.
         // 5: animasyon sıkıştırması KeyframeReduction → Optimal.
-        public override uint GetVersion() { return 5; }
+        // 6: forma ağına desen UV'si (OnPostprocessModel).
+        public override uint GetVersion() { return 6; }
 
         bool Karakter() { var p = assetPath.Replace('\\', '/'); return p.Contains("Resources/karakter/") && p.EndsWith(".fbx"); }
 
@@ -83,6 +84,40 @@ namespace BirdieSmash.EditorTools
                 arr[i] = new ModelImporterClipAnimation { name = c.name, takeName = take ?? c.name, firstFrame = c.first, lastFrame = c.last, loopTime = c.loop, wrapMode = c.loop ? WrapMode.Loop : WrapMode.ClampForever };
             }
             mi.clipAnimations = arr;
+        }
+
+        // Forma deseni (2026-11-21, yasin: kıyafet katmanı "önce C, sonra A"): her modelin forma ağı (<önek>_forma__forma) içe aktarımda
+        // desen UV'si alır. Oyuncak ve hayvan modellerinde forma düz renkti, UV'si gövde atlasında tek hücreye düşüyordu ve kullanılmıyordu
+        // (PlayerView: atlas modelde düz takım rengi); o yüzden UV0 güvenle yeniden yazılır. Eşleme bağlanma pozunda silindirik ve
+        // AYNALI: u = |açı| / π (0 = göğüs ortası, 1 = sırt ortası), v = forma yüksekliği (0 bel, 1 yaka). Aynalı olduğu için dikiş
+        // yok (sağ ve sol yan aynı u'yu alır, üçgen dokunun boyunca gerilmez); bedeli: desen sağ/sol simetrik olur (sırt numarası gibi
+        // yönlü yazı yok, çapraz kuşak V olur). Ön yönü ayakkabı ağlarının formaya göre konumundan (ayak ucu önde), yoksa +Z.
+        // Tüycük'ün tüy gövdesi (tc_tuy__forma) desen almaz.
+        void OnPostprocessModel(GameObject g)
+        {
+            if (!Karakter()) return;
+            var formalar = new System.Collections.Generic.List<(Mesh m, Matrix4x4 w)>(); Vector3 ayak = Vector3.zero; int ayakN = 0;
+            foreach (var r in g.GetComponentsInChildren<Renderer>(true))
+            {
+                Mesh m = r is SkinnedMeshRenderer sk ? sk.sharedMesh : r.GetComponent<MeshFilter>() != null ? r.GetComponent<MeshFilter>().sharedMesh : null;
+                if (m == null) continue; string ad = r.name;
+                if (ad.EndsWith("__forma") && ad.Contains("_forma__")) formalar.Add((m, r.transform.localToWorldMatrix));
+                else if (ad.EndsWith("__ayakkabi") || ad.EndsWith("__taban")) { ayak += r.transform.localToWorldMatrix.MultiplyPoint3x4(m.bounds.center); ayakN++; }
+            }
+            foreach (var (m, w) in formalar)
+            {
+                var v = m.vertices; if (v.Length == 0) continue; var p = new Vector3[v.Length]; Vector3 mn = Vector3.positiveInfinity, mx = Vector3.negativeInfinity;
+                for (int i = 0; i < v.Length; i++) { p[i] = w.MultiplyPoint3x4(v[i]); mn = Vector3.Min(mn, p[i]); mx = Vector3.Max(mx, p[i]); }
+                Vector3 c = (mn + mx) * .5f; float on = ayakN > 0 && ayak.z / ayakN < c.z ? -1 : 1, h = Mathf.Max(1e-4f, mx.y - mn.y);
+                var uv = new Vector2[v.Length];
+                for (int i = 0; i < v.Length; i++)
+                {
+                    float a = Mathf.Abs(Mathf.Atan2(p[i].x - c.x, (p[i].z - c.z) * on)) / Mathf.PI;
+                    uv[i] = new Vector2(a, (p[i].y - mn.y) / h);
+                }
+                m.uv = uv;
+            }
+            if (formalar.Count > 0) Debug.Log("Birdie Smash: desen UV " + Path.GetFileNameWithoutExtension(assetPath) + " · " + formalar.Count + " forma ağı · ön " + (ayakN > 0 ? "ayakkabıdan" : "+Z"));
         }
     }
 }

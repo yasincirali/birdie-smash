@@ -55,6 +55,8 @@ namespace BirdieSmash.Game
             // 2026-10-27 Gerçekçi aksesuarları: sort = şort rengi (null = modelin varsayılanı), kumas = forma kumaşı (Gear "kumas";
             // dokulu modelde formanın deseni ve parlaklığı, null = klasik).
             public string kumas;
+            // 2026-11-21 forma deseni (Desen.cs): çözülmüş desen kimliği (null/"duz" = düz renk). Kumaşın işlevi kumas'ta kalır.
+            public string desen;
             // 2026-11-20 (Core/Rakipler): figürün modeli; null = oyuncunun modeli (Ayar.model). Üretilmiş rakip kendi modelini
             // (kedi, robot ...) taşır, oyuncu hangi modeli seçmiş olursa olsun.
             public string model;
@@ -77,7 +79,7 @@ namespace BirdieSmash.Game
             public string kafa; public Color? saft;
             // Sahnedeki figürü yeniden kurmak gerekip gerekmediğinin özeti (GameRoot, Vitrin).
             public Gorunum Kopya() { return (Gorunum)MemberwiseClone(); }
-            public string Anahtar() { return "" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kol + "|" + bel + "|" + ayak + "|" + kafa + saft + (sacParla ? "|p" : "") + (isin ? "|i" : "") + (model != null ? "|m" + model : ""); }
+            public string Anahtar() { return "" + desen + "|" + forma + cerceve + bant + bilek + grip + tel + tel2 + ten + sac + ayakkabi + sort + gripCizgi + "|" + tip + "|" + sacModel + "|" + aykModel + "|" + kumas + "|" + sapka + "|" + yuz + "|" + sirt + "|" + kol + "|" + bel + "|" + ayak + "|" + kafa + saft + (sacParla ? "|p" : "") + (isin ? "|i" : "") + (model != null ? "|m" + model : ""); }
         }
         static Color? Renk(string h) { return h != null ? Kit.Hex(h) : (Color?)null; }
         public static Gorunum Benim()
@@ -87,7 +89,7 @@ namespace BirdieSmash.Game
                 grip = Kit.Hex(Vitrin.RAK_RENK[r["grip"]]), tel = Kit.Hex(Vitrin.RAK_RENK[r["tel"]]), tel2 = Kit.Hex(Vitrin.RAK_RENK[r["desen"] == "iki" ? r["tel2"] : r["tel"]]),
                 ten = Renk(Ayar.GorunumRenk("ten")), sac = Renk(Ayar.GorunumRenk("sac")), ayakkabi = Renk(Ayar.GorunumRenk("ayakkabi")), gripCizgi = gs.gripDoku == "cizgi",
                 tip = Ayar.KOZ[Kozmetik.TIP], sacModel = Ayar.KOZ[Kozmetik.SAC], aykModel = Ayar.AykGorunum, sapka = Ayar.KOZ[Kozmetik.SAPKA], yuz = Ayar.KOZ[Kozmetik.YUZ], sirt = Ayar.KOZ[Kozmetik.SIRT], kol = Ayar.KOZ[Kozmetik.KOL], bel = Ayar.KOZ[Kozmetik.BEL], ayak = Ayar.KOZ[Kozmetik.AYAK], sacParla = Ayar.SacParla, isin = Ayar.KaplamaIsin,
-                sort = Renk(Ayar.GorunumRenk("sort")), kumas = Ayar.gear != null ? Ayar.gear.kumas : null,
+                sort = Renk(Ayar.GorunumRenk("sort")), kumas = Ayar.gear != null ? Ayar.gear.kumas : null, desen = Desen.Coz(Ayar.GORUNUM["desen"], Ayar.gear != null ? Ayar.gear.kumas : null),
                 kafa = r["kafa"], saft = r["saft"] != "model" && Vitrin.RAK_RENK.ContainsKey(r["saft"]) ? Kit.Hex(Vitrin.RAK_RENK[r["saft"]]) : (Color?)null };
         }
         // Rakip (2026-10-26): tip, saç biçimi/rengi, ten ve ayakkabı stil.json'daki gorunum'dan (rakip kimliği: Blaze hep dikenli
@@ -493,7 +495,10 @@ namespace BirdieSmash.Game
             // (<model>_forma_<kumas>: rocketbox_kit.py _kumas; hafif yan panel + delik, nefes çift şerit, esnek çapraz kuşak) ve
             // parlaklığı. Dosya yoksa (klasik, ya da doku üretilmemiş model) gövde dokusu: bugünkü görünüş birebir.
             var formaTx = govdeTx != null && g.kumas != null ? Resources.Load<Texture2D>("karakter/" + modelAdi + "_forma_" + g.kumas) : null;
-            var formaM = govdeTx != null ? Kit.LitTex(g.forma, formaTx ?? govdeTx, .25f) : Kit.Lit(g.forma, .25f);
+            // Desen (2026-11-21): atlas modelde forma ağı KarakterImport'ta desen UV'si alır; doku rengi kendi içinde taşır (beyaz × doku).
+            // Tüycük'ün forması tüy gövdesidir, desen almaz. Düz desen = eski düz renk birebir.
+            var desenTx = govdeTx == null && modelAdi != "tuycuk" ? Desen.Doku(g.desen, g.forma) : null;
+            var formaM = govdeTx != null ? Kit.LitTex(g.forma, formaTx ?? govdeTx, .25f) : desenTx != null ? Kit.LitTex(Color.white, desenTx, .25f) : Kit.Lit(g.forma, .25f);
             if (govdeTx != null)
             {
                 Kit.Bump(formaM, Resources.Load<Texture2D>("karakter/" + modelAdi + "_govde_n"));
