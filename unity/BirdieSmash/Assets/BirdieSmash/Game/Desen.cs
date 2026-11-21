@@ -49,7 +49,7 @@ namespace BirdieSmash.Game
                 case "v_kusak": { if (u > .48f) return c; float b = v - (1.02f - 1.15f * u); return Mathf.Abs(b) < .065f ? kar : b > .065f && b < .085f ? vur : c; }   // yalnız önde
                 case "gogus": return v > .56f && v < .68f ? kar : v > .52f && v < .56f ? vur : c;
                 case "cift_serit": return v > .26f && v < .31f || v > .36f && v < .41f ? kar : c;
-                case "amblem": return u < .12f && v > .6f && v < .82f && Tuy(u / .12f, (v - .6f) / .22f) ? kar : c;
+                case "amblem": return u < .17f && v > .42f && v < .74f && Tuy(u / .17f, (v - .42f) / .32f) ? kar : c;   // r240: yakanın altında küçük kalıyordu, büyüdü ve indi
                 case "degrade": return Color.Lerp(Koyu(c, .32f), Acik(c, .12f), Mathf.SmoothStep(0, 1, v));
             }
             return c;
