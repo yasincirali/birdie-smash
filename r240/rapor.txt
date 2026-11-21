@@ -1,0 +1,221 @@
+menu_ilk_oyna · ana kamera açık maske 0 · salon yok · stil 1 menu_stil importedWithErrors=False importedWithWarnings=False contentHash=872873780 rules=707 complexSelectors=763 m_Rules=707 m_ComplexSelectors=763 imports=0 · tema tema importedWithErrors=False importedWithWarnings=False contentHash=-909455204 rules=0 complexSelectors=0 m_Rules=0 m_ComplexSelectors=0 imports=1 zemin Absolute kök renk RGBA(0.102, 0.071, 0.129, 1.000)
+mimik kedi nanik · kok True r 0.296 dil True kas yok
+mimik kedi cikcik · kok True r 0.296 dil False kas yok
+mimik panda nanik · kok True r 0.296 dil True kas yok
+mimik panda cikcik · kok True r 0.296 dil False kas yok
+mimik robot nanik · kok True r 0.296 dil True kas yok
+mimik robot cikcik · kok True r 0.296 dil False kas yok
+mimik hamambocegi nanik · kok True r 0.233 dil True kas yok
+mimik hamambocegi cikcik · kok True r 0.233 dil False kas yok
+=== varyantlar (vitrin: deneme yolu, maç: seçim) · ekran 390x845
+varyant vitrin tip=atlet · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.59×0.57×0.44 · ayk sınır 0.66×0.47×0.71 · tamam
+varyant vitrin tip=kadin · prefab oyuncak_kadin · tip kadin · saç kisa · ayk klasik · aktif renderer 11 · baş 1.137 · omuz 0.324 · saç sınır 0.50×0.48×0.56 · ayk sınır 0.69×0.37×0.51 · fark (serinin ilkine göre) baş -10.9% omuz -40.7% saç gen -5.5% saç boy -16.6% · tamam
+varyant vitrin tip=uzun · prefab oyuncak_uzun · tip uzun · saç kisa · ayk klasik · aktif renderer 11 · baş 1.461 · omuz 0.462 · saç sınır 0.67×0.64×0.74 · ayk sınır 0.84×0.50×0.66 · fark (serinin ilkine göre) baş +14.4% omuz -15.4% saç gen +24.7% saç boy +11.8% · tamam
+varyant vitrin tip=guclu · prefab oyuncak_guclu · tip guclu · saç kisa · ayk klasik · aktif renderer 11 · baş 1.239 · omuz 0.733 · saç sınır 0.57×0.52×0.64 · ayk sınır 0.99×0.52×0.77 · fark (serinin ilkine göre) baş -3.0% omuz +34.1% saç gen +8.0% saç boy -8.7% · tamam
+varyant vitrin sac=kisa · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.60×0.57×0.68 · ayk sınır 0.84×0.47×0.65 · tamam
+varyant vitrin sac=yan · prefab oyuncak · tip atlet · saç yan · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.59×0.57×0.67 · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -1.3% saç boy -1.0% · tamam
+varyant vitrin sac=atkuyrugu · prefab oyuncak · tip atlet · saç atkuyrugu · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.45×0.63×0.71 · ayk sınır 0.72×0.47×0.55 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +5.6% saç boy +10.1% · tamam
+varyant vitrin sac=kazima · prefab oyuncak · tip atlet · saç kazima · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.53×0.51×0.63 · ayk sınır 0.81×0.47×0.61 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -6.9% saç boy -11.3% · tamam
+varyant vitrin sac=kel · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 10 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.87×0.47×0.74 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=topuz · prefab oyuncak · tip atlet · saç topuz · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.62×0.66×0.67 · ayk sınır 0.87×0.47×0.71 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -1.3% saç boy +16.0% · tamam
+varyant vitrin sac=anime · prefab oyuncak · tip atlet · saç anime · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.90×0.71×0.95 · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +40.9% saç boy +24.0% · tamam
+varyant vitrin sac=orgu · prefab oyuncak · tip atlet · saç orgu · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.59×0.56×0.67 · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -0.3% saç boy -1.5% · tamam
+varyant vitrin sac=afro · prefab oyuncak · tip atlet · saç afro · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.80×0.72×0.86 · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +27.7% saç boy +25.1% · tamam
+varyant vitrin sac=rasta · prefab oyuncak · tip atlet · saç rasta · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.69×0.60×0.75 · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +10.6% saç boy +4.7% · tamam
+varyant vitrin sac=mullet · prefab oyuncak · tip atlet · saç mullet · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.59×0.63×0.67 · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -0.7% saç boy +10.7% · tamam
+varyant vitrin sac=mohikan · prefab oyuncak · tip atlet · saç mohikan · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.59×0.63×0.70 · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +3.0% saç boy +9.6% · tamam
+varyant vitrin sac=kirpi · prefab oyuncak · tip atlet · saç kirpi · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.71×0.61×0.77 · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +13.5% saç boy +5.9% · tamam
+varyant vitrin sac=iki_orgu · prefab oyuncak · tip atlet · saç iki_orgu · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.69×0.65×0.72 · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +6.8% saç boy +13.4% · tamam
+varyant vitrin sac=uzay · prefab oyuncak · tip atlet · saç uzay · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.67×0.62×0.71 · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +4.9% saç boy +8.9% · tamam
+varyant vitrin sac=pompadur · prefab oyuncak · tip atlet · saç pompadur · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.59×0.55×0.69 · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +1.8% saç boy -3.3% · tamam
+varyant vitrin sac=ananas · prefab oyuncak · tip atlet · saç ananas · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.58×0.76×0.68 · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -0.1% saç boy +32.8% · tamam
+varyant vitrin sac=kase · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=dalgali · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=perde · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=kut_bob · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=duz_tepe · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=daginik · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=kivircik · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=bukle · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=kalp_topuz · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=anten · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=brokoli · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=ibik · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=spagetti · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=ruzgar · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=gokkusagi · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 12 · baş 1.276 · omuz 0.546 · saç sınır 0.60×0.57×0.68 · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen 0.0% saç boy 0.0% · tamam
+varyant vitrin sac=bulut · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=alev · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=tuy_topuz · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin sac=yildirim · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır - · ayk sınır 0.84×0.47×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant vitrin ayk=klasik · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.60×0.57×0.68 · ayk sınır 0.84×0.47×0.65 · tamam
+varyant vitrin ayk=hafif · prefab oyuncak · tip atlet · saç kisa · ayk hafif · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.60×0.57×0.68 · ayk sınır 0.84×0.46×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen 0.0% saç boy 0.0% · tamam
+varyant vitrin ayk=yastikli · prefab oyuncak · tip atlet · saç kisa · ayk yastik · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.60×0.57×0.68 · ayk sınır 0.86×0.49×0.68 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen 0.0% saç boy 0.0% · tamam
+varyant vitrin ayk=bilekli · prefab oyuncak · tip atlet · saç kisa · ayk bilekli · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.60×0.57×0.68 · ayk sınır 0.84×0.48×0.66 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen 0.0% saç boy 0.0% · tamam
+varyant vitrin ayk=karbon · prefab oyuncak · tip atlet · saç kisa · ayk karbon · aktif renderer 11 · baş 1.276 · omuz 0.546 · saç sınır 0.60×0.57×0.68 · ayk sınır 0.84×0.45×0.65 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen 0.0% saç boy 0.0% · tamam
+vitrin sapka=kep · parça 3 · baş r 0.195 · merkez y 1.48
+vitrin sapka=kep_ters · parça 3 · baş r 0.195 · merkez y 1.48
+vitrin sapka=bere · parça 3 · baş r 0.195 · merkez y 1.48
+vitrin sapka=kedi · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=kulaklik · parça 5 · baş r 0.195 · merkez y 1.48
+vitrin sapka=tavsan · parça 5 · baş r 0.195 · merkez y 1.48
+vitrin sapka=ayi · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=seytan · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=buyucu · parça 5 · baş r 0.195 · merkez y 1.48
+vitrin sapka=yildiz · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=demir · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=boynuz · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=sovalye · parça 4 · baş r 0.195 · merkez y 1.48
+vitrin sapka=tac · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=kapson · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=kemik_buyucu · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=hale · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=pervane · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=tencere · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=mantar · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=kaktus · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=ordek · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=top_sapka · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=simit · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=ufo · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=noel_sapka · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=geyik · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=hediye_sapka · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=isik_tac · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=kardan_sapka · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=cam_agaci · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=orumcek · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=hayalet · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=balkabagi · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=cicek_tac · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=kurbaga · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=tek_boynuz · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=kirmizi_baslik · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=fes · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=hasir · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=viking · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=sombrero · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=kavuk · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=dondurma · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=cupcake · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sapka=dev_tuy · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=gunes · parça 5 · baş r 0.195 · merkez y 1.48
+vitrin yuz=yuvarlak · parça 5 · baş r 0.195 · merkez y 1.48
+vitrin yuz=boya · parça 4 · baş r 0.195 · merkez y 1.48
+vitrin yuz=biyik · parça 2 · baş r 0.195 · merkez y 1.48
+vitrin yuz=korsan · parça 2 · baş r 0.195 · merkez y 1.48
+vitrin yuz=kirmizi_burun · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=noel_sakal · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=vampir_dis · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=pirilti · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=pos_biyik · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=krema_biyik · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=nefes_bandi · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=yara_bandi · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=kalin_kas · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=kare_gozluk · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=spor_gozluk · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=kecisakal · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=monokl · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=duduk · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=pilot · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=yildiz_gozluk · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=kalp_gozluk · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=dalgic · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=sakiz · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=tuy_biyik · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin yuz=vizor · parça 1 · baş r 0.195 · merkez y 1.48
+vitrin sirt=gezgin_pelerin · omuz 0.546 · boy 0.239 · kök y 1.00 · alt uç y 0.43
+vitrin sirt=ayi_pelerin · omuz 0.546 · boy 0.238 · kök y 1.00 · alt uç y 0.43
+vitrin sirt=jetpack · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.58
+vitrin sirt=sovalye_pelerin · omuz 0.546 · boy 0.239 · kök y 1.00 · alt uç y 0.43
+vitrin sirt=yarasa_kanat · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.92
+vitrin sirt=yildiz_pelerin · omuz 0.546 · boy 0.230 · kök y 1.00 · alt uç y 0.43
+vitrin sirt=golge_pelerin · omuz 0.546 · boy 0.239 · kök y 1.00 · alt uç y 0.43
+vitrin sirt=ruh_pelerin · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.60
+vitrin sirt=melek_kanat · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.87
+vitrin sirt=top_tupu · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.64
+vitrin sirt=kurma · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.73
+vitrin sirt=kaplumbaga · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.58
+vitrin sirt=balon · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.95
+vitrin sirt=tavus · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.62
+vitrin sirt=seker_baston · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.62
+vitrin sirt=hediye_cuvali · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.55
+vitrin sirt=havai_fisek · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.64
+vitrin sirt=cam_sirt · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.64
+vitrin sirt=supurge · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.60
+vitrin sirt=fasulye · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.65
+vitrin sirt=kelebek_kanat · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.60
+vitrin sirt=ejderha_kanat · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.92
+vitrin sirt=saz · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.58
+vitrin sirt=davul · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.65
+vitrin sirt=yelpaze · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.57
+vitrin sirt=lolipop · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.67
+vitrin sirt=raket_canta · omuz 0.546 · boy 0.546 · kök y 1.00 · alt uç y 0.61
+servis eli atlet · klip serve_bh · inme 0.233 m
+varyant maç tip=atlet sac=afro ayk=karbon · prefab oyuncak · tip atlet · saç afro · ayk karbon · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.63×0.64×0.67 · ayk sınır 0.64×0.50×0.92 · tamam
+servis eli kadin · klip serve_bh · inme 0.200 m
+varyant maç tip=kadin sac=topuz ayk=hafif · prefab oyuncak_kadin · tip kadin · saç topuz · ayk hafif · aktif renderer 11 · baş 1.129 · omuz 0.324 · saç sınır 0.38×0.52×0.49 · ayk sınır 0.50×0.40×0.75 · fark (serinin ilkine göre) baş -11.2% omuz -40.7% saç gen -26.4% saç boy -19.1% · tamam
+servis eli uzun · klip serve_bh · inme 0.210 m
+varyant maç tip=uzun sac=mohikan ayk=bilekli · prefab oyuncak_uzun · tip uzun · saç mohikan · ayk bilekli · aktif renderer 11 · baş 1.449 · omuz 0.462 · saç sınır 0.52×0.64×0.65 · ayk sınır 0.58×0.56×1.01 · fark (serinin ilkine göre) baş +14.0% omuz -15.4% saç gen -3.4% saç boy +0.8% · tamam
+servis eli guclu · klip serve_bh · inme 0.236 m
+varyant maç tip=guclu sac=rasta ayk=yastikli · prefab oyuncak_guclu · tip guclu · saç rasta · ayk yastik · aktif renderer 11 · baş 1.234 · omuz 0.733 · saç sınır 0.55×0.49×0.57 · ayk sınır 0.82×0.58×1.00 · fark (serinin ilkine göre) baş -2.9% omuz +34.1% saç gen -14.7% saç boy -22.9% · tamam
+varyant dizilis tip=atlet · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.46×0.57×0.61 · ayk sınır 0.71×0.47×0.56 · tamam
+siluet tip=atlet · boy 1.74 m · en 3.84 m (raket hariç)
+varyant dizilis tip=kadin · prefab oyuncak_kadin · tip kadin · saç atkuyrugu · ayk klasik · aktif renderer 11 · baş 1.132 · omuz 0.324 · saç sınır 0.39×0.56×0.62 · ayk sınır 0.58×0.37×0.44 · fark (serinin ilkine göre) baş -10.9% omuz -40.7% saç gen +1.5% saç boy -2.8% · tamam
+siluet tip=kadin · boy 1.49 m · en 2.68 m (raket hariç)
+varyant dizilis tip=uzun · prefab oyuncak_uzun · tip uzun · saç yan · ayk klasik · aktif renderer 11 · baş 1.454 · omuz 0.462 · saç sınır 0.50×0.63×0.66 · ayk sınır 0.69×0.49×0.62 · fark (serinin ilkine göre) baş +14.4% omuz -15.4% saç gen +8.1% saç boy +10.8% · tamam
+siluet tip=uzun · boy 1.98 m · en 1.83 m (raket hariç)
+varyant dizilis tip=guclu · prefab oyuncak_guclu · tip guclu · saç kazima · ayk klasik · aktif renderer 11 · baş 1.233 · omuz 0.733 · saç sınır 0.41×0.46×0.54 · ayk sınır 0.86×0.52×0.60 · fark (serinin ilkine göre) baş -2.9% omuz +34.1% saç gen -10.7% saç boy -19.7% · tamam
+siluet tip=guclu · boy 1.62 m · en 1.55 m (raket hariç)
+varyant sac izgara sac=kisa · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.46×0.57×0.61 · ayk sınır 0.71×0.47×0.56 · tamam
+varyant sac izgara sac=yan · prefab oyuncak · tip atlet · saç yan · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.45×0.57×0.60 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -0.8% saç boy -1.0% · tamam
+varyant sac izgara sac=atkuyrugu · prefab oyuncak · tip atlet · saç atkuyrugu · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.44×0.63×0.71 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +17.3% saç boy +10.1% · tamam
+varyant sac izgara sac=kazima · prefab oyuncak · tip atlet · saç kazima · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.43×0.51×0.58 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen -4.6% saç boy -11.3% · tamam
+varyant sac izgara sac=kel · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 10 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=topuz · prefab oyuncak · tip atlet · saç topuz · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.43×0.66×0.61 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +0.5% saç boy +16.0% · tamam
+varyant sac izgara sac=anime · prefab oyuncak · tip atlet · saç anime · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.72×0.71×0.83 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +36.1% saç boy +24.0% · tamam
+varyant sac izgara sac=orgu · prefab oyuncak · tip atlet · saç orgu · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.45×0.56×0.61 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +0.4% saç boy -1.5% · tamam
+varyant sac izgara sac=afro · prefab oyuncak · tip atlet · saç afro · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.64×0.72×0.76 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +24.2% saç boy +25.1% · tamam
+varyant sac izgara sac=rasta · prefab oyuncak · tip atlet · saç rasta · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.54×0.60×0.66 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +8.4% saç boy +4.7% · tamam
+varyant sac izgara sac=mullet · prefab oyuncak · tip atlet · saç mullet · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.44×0.63×0.61 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +0.2% saç boy +10.7% · tamam
+varyant sac izgara sac=mohikan · prefab oyuncak · tip atlet · saç mohikan · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.43×0.63×0.64 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +5.8% saç boy +9.6% · tamam
+varyant sac izgara sac=kirpi · prefab oyuncak · tip atlet · saç kirpi · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.57×0.61×0.67 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +10.4% saç boy +5.9% · tamam
+varyant sac izgara sac=iki_orgu · prefab oyuncak · tip atlet · saç iki_orgu · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.56×0.65×0.62 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +1.8% saç boy +13.4% · tamam
+varyant sac izgara sac=uzay · prefab oyuncak · tip atlet · saç uzay · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.54×0.62×0.61 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +0.6% saç boy +8.9% · tamam
+varyant sac izgara sac=pompadur · prefab oyuncak · tip atlet · saç pompadur · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.44×0.55×0.63 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +3.7% saç boy -3.3% · tamam
+varyant sac izgara sac=ananas · prefab oyuncak · tip atlet · saç ananas · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.43×0.76×0.62 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen +1.8% saç boy +32.8% · tamam
+varyant sac izgara sac=kase · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=dalgali · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=perde · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=kut_bob · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=duz_tepe · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=daginik · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=kivircik · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=bukle · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=kalp_topuz · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=anten · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=brokoli · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=ibik · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=spagetti · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=ruzgar · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=gokkusagi · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 12 · baş 1.271 · omuz 0.546 · saç sınır 0.46×0.57×0.61 · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen 0.0% saç boy 0.0% · tamam
+varyant sac izgara sac=bulut · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=alev · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=tuy_topuz · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant sac izgara sac=yildirim · prefab oyuncak · tip atlet · saç yok · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır - · ayk sınır 0.71×0.47×0.56 · fark (serinin ilkine göre) baş 0.0% omuz 0.0% saç gen - saç boy - · tamam
+varyant maç geçiş model=oyuncak · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 11 · baş 1.271 · omuz 0.546 · saç sınır 0.46×0.51×0.54 · ayk sınır 0.65×0.51×0.92 · tamam
+varyant vitrin geçiş model=oyuncak · prefab oyuncak · tip atlet · saç kisa · ayk klasik · aktif renderer 11 · baş 1.278 · omuz 0.546 · saç sınır 0.67×0.57×0.67 · ayk sınır 0.74×0.47×0.87 · tamam
+taşma desen_sayfa · ekran 390x845 · panel 375x813 · 1 birim 1.04 pt · güvenli üst 0 alt 0 · yazı ×1.00 · 102 öğe · 1 sorun
+   ! dokunma alanı 390×31 pt · Shrink list · [0,307 375x30]
+desen duz · doku düz
+desen k_hafif · doku var
+desen k_nefes · doku var
+desen k_esnek · doku var
+desen gogus · doku var
+desen yan_serit · doku var
+desen cift_serit · doku var
+desen omuz · doku var
+desen degrade · doku var
+desen v_kusak · doku var
+desen amblem · doku var
