@@ -59,7 +59,7 @@ namespace BirdieSmash.Game
             {"Hızlı maç oyna","Play quick match"},
             {"Arkadaşınla oyna","Play a friend"},{"Arkadaş maçı","Friend match"},{"Yeni arkadaş maçı","New friend match"},
             {"Rakip maçtan ayrıldı.","Your opponent left the match."},{"Maçtan ayrıldın.","You left the match."},{"Rakip her maçta rastgele. Kariyerde yendiğin rakipler de gelir.","The opponent is random each match. Rivals you beat in the career join too."},
-            {"İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç","First time: 3-step training, then a 5-point match"},{"Sonraki seviyeye {0} XP","{0} XP to next level"},
+            {"İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç","First time: 3-step training, then a 5-point match"},{"Sonraki seviyeye {0} XP","{0} XP to next level"},{"{0} tarz · {1} raketi","{0} style · {1} racket"},{"{0} raketi","{0} racket"},
             {"Tel gerginliği","String tension"},{"Tüy","Feathers"},{"Oyun","Game"},{"Hareket","Motion"},{"Yardım","Help"},{"Oyuncu","Player"},
             {"İstatistikler","Stats"},{"Kazanıldı","Earned"},{"Henüz değil","Not yet"},{"Antrenmanı bitir","Finish the training"},{"Akışa gir","Get into flow"},
             {"20 vuruşluk ralli","20-shot rally"},{"Sıçrayarak smaç","Jump smash"},{"Bir maçta 3 görev","3 missions in one match"},
