@@ -51,7 +51,7 @@ namespace BirdieSmash.EditorTools
                 if (opt.scenes.Length == 0) throw new Exception("Build listesinde sahne yok (DemoKurulum.Kur)");
                 var rep = BuildPipeline.BuildPlayer(opt);
                 if (rep.summary.result != BuildResult.Succeeded) throw new Exception("BuildPlayer: " + rep.summary.result + ", hata " + rep.summary.totalErrors);
-                PlistSifreleme(Path.Combine(path, "Info.plist")); PlistProMotion(Path.Combine(path, "Info.plist")); PlistOyunModu(Path.Combine(path, "Info.plist")); PlistReklam(Path.Combine(path, "Info.plist"));
+                PlistSifreleme(Path.Combine(path, "Info.plist")); PlistProMotion(Path.Combine(path, "Info.plist")); PlistOyunModu(Path.Combine(path, "Info.plist")); PlistReklam(Path.Combine(path, "Info.plist")); PlistArkadas(Path.Combine(path, "Info.plist"));
                 IosYerellestirme(path);
                 Debug.Log("Birdie Smash iOS Xcode projesi: " + path);
                 EditorApplication.Exit(0);
@@ -309,6 +309,18 @@ namespace BirdieSmash.EditorTools
             Debug.Log("Birdie Smash: reklam plist anahtarları CiBuild'den eklendi");
         }
 
+        // Arkadaş listesi (2026-11-21, yasin: "arkadaşını ekleyebilsin, oyunda mı görebilsin, oynama isteği gönderebilsin"):
+        // GKLocalPlayer.loadFriends iOS 14.5+ amaç metni ister; yoksa liste izni sorulmadan reddedilir. Metin en/tr .lproj'de de.
+        const string ARKADAS_METNI = "Lets you see your Game Center friends in Birdie Smash and invite them to a match.";
+        const string ARKADAS_METNI_TR = "Game Center arkadaşlarını Birdie Smash'te görüp maça çağırabilmen için.";
+        static void PlistArkadas(string plist)
+        {
+            if (!File.Exists(plist)) return; var t = File.ReadAllText(plist);
+            if (t.Contains("NSGKFriendListUsageDescription")) return;
+            int i = t.LastIndexOf("</dict>", StringComparison.Ordinal); if (i < 0) return;
+            File.WriteAllText(plist, t.Substring(0, i) + "\t<key>NSGKFriendListUsageDescription</key>\n\t<string>" + ARKADAS_METNI + "</string>\n" + t.Substring(i));
+        }
+
         // ---- iOS yerelleştirme (2026-11-07 inceleme turu) ----
         // Unity'nin Xcode çıktısı yalnız İngilizce taşır: App Store ürün sayfası "Diller: English" der (oyun içi tam Türkçe olsa da;
         // dil listesi paketteki .lproj klasörlerinden okunur) ve ATT penceresi Türkçe cihazda İngilizce çıkar (5.1.1: amaç metni
@@ -318,8 +330,8 @@ namespace BirdieSmash.EditorTools
         // tool/unity_test derlemesi bu bloğu görmez). Hata build'i kırmaz, yalnız uyarı: dil satırı eksik kalır, oyun aynı çalışır.
         // Yeni dil = DILLER'e bir satır (Asya dilleri mağaza metniyle birlikte).
         static readonly string[][] DILLER = {
-            new[] { "en", "Birdie Smash", ATT_METNI },
-            new[] { "tr", "Birdie Smash", ATT_METNI_TR },
+            new[] { "en", "Birdie Smash", ATT_METNI, ARKADAS_METNI },
+            new[] { "tr", "Birdie Smash", ATT_METNI_TR, ARKADAS_METNI_TR },
         };
         static void IosYerellestirme(string xcode)
         {
@@ -343,6 +355,7 @@ namespace BirdieSmash.EditorTools
                     var kl = Path.Combine(xcode, d[0] + ".lproj"); Directory.CreateDirectory(kl);
                     string s = "\"CFBundleDisplayName\" = \"" + d[1] + "\";\n";
                     if (att) s += "\"NSUserTrackingUsageDescription\" = \"" + d[2] + "\";\n";
+                    s += "\"NSGKFriendListUsageDescription\" = \"" + d[3] + "\";\n";
                     File.WriteAllText(Path.Combine(kl, "InfoPlist.strings"), s, new System.Text.UTF8Encoding(false));
                     yazilan.Add(d[0] + ".lproj");
                 }

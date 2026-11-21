@@ -59,7 +59,9 @@ namespace BirdieSmash.Game
         // vurursun) · 1 Yardımlı (koşmak sende, geç kalırsan oyuncun koşar) · 2 Elle (her adım senin dokunuşunla). Kayıt yoksa eski
         // zorluktan taşınır (Kolay/Orta → Otomatik, Zor → Yardımlı, Usta → Elle): oyuncunun bugünkü koşusu değişmez.
         public static int hareket = 0;
-        public static readonly string[] HAREKET_AD = { "Otomatik", "Yardımlı", "Elle" };
+        // 2026-11-21 (yasin: "assisted, semi-assisted ve pro olacak şekilde seçilebilsin"): adlar Yardımlı · Yarı yardımlı · Pro.
+        // Değerler ve anahtar aynı (0/1/2): oyuncunun seçimi değişmez, yalnız adı. İlk açılışta bir kez sorulur (UiKok.HareketSec).
+        public static readonly string[] HAREKET_AD = { "Yardımlı", "Yarı yardımlı", "Pro" };
         // Şampiyon yolu (2026-11-10, fikir 8 Kas 00:09 #2, yasin "üçünü de al"): kariyer sonrası merdiven seçili zorlukta oynanır;
         // Ad buradan okunur ki kart, sonuç ve profil aynı desin. 2026-11-13 (inceleme 12:05 #5): Usta'da ad değişmiyor
         // ("Usta yolu" iki ayrı mod gibi görünüyordu, kart cümleleri ad değişimini anlatmaya harcanıyordu); zorluk kartta "Usta" etiketiyle.

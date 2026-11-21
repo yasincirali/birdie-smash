@@ -315,7 +315,7 @@ namespace BirdieSmash.Game
     // Koddan çizilen simgeler (beyaz + alfa; boya Image.tintColor). 96 px, 2×2 örnekleme ile kenar yumuşatma.
     public static class Ikonlar
     {
-        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Tisort, Gradyan, YildizDolu, YildizBos, Yukari, Asagi, Yuz, Ayak, Tutus, Solma, Buyut;
+        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Tisort, Gradyan, YildizDolu, YildizBos, Yukari, Asagi, Yuz, Ayak, Tutus, Solma, Buyut, Arkadas, Arti;
         // 2026-10-26 Yayın Gecesi: simgeler (tüy, şimşek, hedef, güneş, çarpı, açık kilit) ve şekil dokuları (eğik düğme,
         // yayın plakası, etiket şeridi, basamak çizgisi, altın kutucuk, ışık süpürmesi, ışın). Hepsi 2× çözünürlükte (1 pt =
         // 2 doku pikseli; USS'te -unity-slice-scale: 0.5), açılışta bir kez; her biri birkaç KB.
@@ -365,6 +365,19 @@ namespace BirdieSmash.Game
                 bool bas = (x * x + (y - .42f) * (y - .42f)) < .29f * .29f; float sx = x / .72f, sy = (y + .82f) / .72f;
                 bool omuz = sx * sx + sy * sy < 1 && y > -.86f && y < .02f; return bas || omuz;
             }, 0, .08f);
+            // Arkadaş maçı (2026-11-21): iki kişi, arkadaki biraz küçük ve sağda (Kisi'nin biçimi; arada boşluk ki iki figür okunur).
+            Arkadas = Ciz((x, y) =>
+            {
+                System.Func<float, float, float, bool> kisi = (cx, cy, k) =>
+                {
+                    float px = (x - cx) / k, py = (y - cy) / k; bool bas = (px * px + (py - .42f) * (py - .42f)) < .29f * .29f;
+                    float sx = px / .72f, sy = (py + .82f) / .72f; return bas || (sx * sx + sy * sy < 1 && py > -.86f && py < .02f);
+                };
+                bool on = kisi(-.26f, -.06f, .78f), arka = kisi(.36f, .08f, .66f);
+                bool kenar = kisi(-.26f, -.06f, .9f) && !on;   // öndekinin çevresinde ince boşluk: arkadaki onun arkasında kalır
+                return on || (arka && !kenar && !on);
+            });
+            Arti = Ciz((x, y) => (Mathf.Abs(x) < .12f && Mathf.Abs(y) < .66f) || (Mathf.Abs(y) < .12f && Mathf.Abs(x) < .66f));
             // Kariyer yıldızları (2026-10-26): alınan dolu, alınmayan yalnız çerçeve (renk körlüğü: biçim farkı, renk değil).
             YildizDolu = Ciz((x, y) => Yildiz(x, y, .92f)); YildizBos = Ciz((x, y) => Yildiz(x, y, .92f) && !Yildiz(x, y, .58f));
             // Stat çubuğunun artı/eksi işareti (2026-10-26, ekipman v2 ▲ ▼): glif değil çizim (yazı tipinde olmayabilir); yönü

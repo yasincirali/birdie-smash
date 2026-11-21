@@ -72,12 +72,13 @@ namespace BirdieSmash.Game
                 {
                     if (Ayar.antrenman && !Ayar.kariyerModu) { Ayar.kariyerModu = true; Ayar.GearHesap(); Ayar.Kaydet(); }
                     Ayar.kariyerSecim = -1;   // büyük Oyna her zaman sıradakini oynatır (haritadan seçilen yeniden oynama değil)
-                    root.Oyna();
+                    HareketOnce(root.Oyna);   // 2026-11-21: ilk Oyna'dan önce bir kez "Nasıl oynamak istersin?" (ArkadasEkran.cs)
                 }));
             }
-            // 2026-11-20 online arkadaş maçı, kapalı özellik: yalnız gizli tanı katmanı açıkken (Online.Bayrak). Mağaza oyuncusu
-            // görmez; ekranın yeri ve biçimi online açılırken tasarım diline göre (§7, §9) yeniden ele alınır.
-            if (Online.Bayrak && !ilk && !root.bekleyen) c.Add(Dugme(L.T("Arkadaşınla oyna"), () => root.OnlineAra()));
+            // 2026-11-20 online arkadaş maçı; 2026-11-21 (yasin: "default olarak açık gelsin", "buton da ilgi çekici olsun") herkese
+            // açık, düz düğme yerine kendi kartı (ArkadasEkran.OnlineKart): kutucuklardan önce, büyük Oyna'nın altında. İlk açılışta yok
+            // (ilk yol tek düğme, §2.3).
+            if (Online.Bayrak && !ilk && !root.bekleyen) c.Add(OnlineKart());
             // 2026-10-26 adım 7–8: Günün maçı · Hızlı maç · Antrenman. "Tam antrenman" kartı Antrenman sayfasında (Temel ders);
             // ilk açılışta (antrenman görülmedi) Günün maçı yok: ilk yol tek düğme kalsın (§2.3).
             if (ilk) return;
@@ -398,7 +399,7 @@ namespace BirdieSmash.Game
             if (KariyerVeri.HizliHavuzEksik(Ayar.ilerleme)) { var n = Yazi(L.T("Kariyerde yendiğin rakipler buraya eklenir."), 13, "soluk"); n.style.whiteSpace = WhiteSpace.Normal; c.Add(n); }
         }
 
-        void AltSayfaYenidenKur(string altS) { if (altS == Gezinti.SEVIYE) SeviyeYoluKur(); else if (altS == Gezinti.GELISIM) GelisimKur(); else if (altS == Gezinti.KART) MacKartKur(); else if (altS == Gezinti.YUVA) YuvaSayfaKur(); else if (altS == Gezinti.DRIL) DrilKartKur(); else if (altS == Gezinti.GUNLUK) GunlukKartKur(); else if (altS == Gezinti.SEC) OyuncuSecKur(); else HizliKur(); }
+        void AltSayfaYenidenKur(string altS) { if (altS == Gezinti.SEVIYE) SeviyeYoluKur(); else if (altS == Gezinti.GELISIM) GelisimKur(); else if (altS == Gezinti.KART) MacKartKur(); else if (altS == Gezinti.YUVA) YuvaSayfaKur(); else if (altS == Gezinti.DRIL) DrilKartKur(); else if (altS == Gezinti.GUNLUK) GunlukKartKur(); else if (altS == Gezinti.SEC) OyuncuSecKur(); else if (altS == Gezinti.ARKADAS) ArkadasKur(); else if (altS == Gezinti.HAREKET) HareketSecKur(); else HizliKur(); }
 
         // Alt sayfa iskeleti (Hızlı maç ve kariyer maç kartı ortak, 2026-10-26): tutamak (aşağı çekince kapanır, iOS kalıbı;
         // ayrıca Kapat, Geri ve zemine dokunma), başlık, kaydırmalı gövde. Dönüş: gövdenin içerik kabı.
