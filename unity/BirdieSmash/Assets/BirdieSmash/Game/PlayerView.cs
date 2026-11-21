@@ -255,7 +255,7 @@ namespace BirdieSmash.Game
                 // hale oval kaldı ve kalp çerçevenin dışında ikinci bir halka gibi göründü. Hale biçimden sonra kurulur.
                 if (isinRenk.HasValue && kafa != null) IsinKur(isinRenk.Value);
                 if (anim != null && anim["idle"] != null) Sample("idle", 0, null, 0, 1);
-                Calibrate(); AltKatmanKur();
+                Calibrate(); AltKatmanKur(); if (!hakem) BasKur();
                 // 2026-11-14: hazır ağlı saç (karakter.json sac_model[].aks) şapkasızken kafaya takılır; şapkayla Varyant kısa kesimi açar
                 var sacOge = gor.sacModel != null ? Kozmetik.Bul(Kozmetik.SAC, gor.sacModel) : null;
                 string sacAks = !hakem && sacOge != null && !Aksesuar.Var(gor.sapka) ? sacOge.aks : null;
@@ -749,7 +749,7 @@ namespace BirdieSmash.Game
             if (shadow != null) shadow.position = new Vector3(pos.x, .003f, pos.z);
             if (anim == null) return; if (D(clip) == null) clip = "idle";
             if (cur == clip && pozK == clip && Mathf.Abs(pozP - ph) < 1e-4f) return;
-            cur = clip; pozK = clip; pozP = ph; Sample(clip, ph, null, 0, 1); UstKol(clip, ph, 1);
+            cur = clip; pozK = clip; pozP = ph; Sample(clip, ph, null, 0, 1); UstKol(clip, ph, 1); GirmeKoru();
         }
 
         void Fallback(Color forma)
@@ -874,6 +874,71 @@ namespace BirdieSmash.Game
                 if (t.name.ToLowerInvariant().Contains("spine")) kOmurga.Insert(0, t);
         }
         readonly List<Transform> kOmurga = new List<Transform>();
+        // ---- Baş içine girme koruması (2026-11-21, yasin: "animasyonlarda karakterin skinlerinin içinden geçmesi") ----
+        // Maskotlar Tüycük'ün kliplerini taşır ama başları çok daha büyük: bpy ölçümünde backhand drop/over'da raket eli başın
+        // arkasına 20–25 cm, backhand geri adımda 14 cm giriyordu; oyuncak tiplerinde servis, clear ve round-the-head'de 8–10 cm.
+        // Klipleri model başına yeniden pişirmek boyutu geri büyütürdü (maskotların klip paylaşımı); bunun yerine poz bittikten
+        // sonra kol başın dışına itilir. Baş küresi tool/karakter/carpisma_olc.py'den (Resources/karakter/carpisma.json, boyun
+        // boyu L biriminde, eklem çerçevesinde). İlk çağrıda kemik çerçevesinden kurulur ve baş kemiğine yerel olarak saklanır,
+        // sonra baş dönse de küre onunla gider. Her karede iki kol × üç nokta (ön kol ortası, bilek, el ucu) en çok 4 tur:
+        // en derin nokta el ise ön kol dirsekten, ön kol ise üst kol omuzdan döner (tur başına en çok 35°, sıçrama yok).
+        // Ayırma yok, idempotent: aynı poza ikinci kez uygulanırsa nokta zaten dışarıda olduğundan bir şey yapmaz.
+        static Dictionary<string, Vector4> carpisma;
+        bool basKuruldu; Vector3 basYerel; float basR, kolKalin;
+        public float GirmeTani { get; private set; }   // son çağrıda düzeltmeden önceki en derin giriş (m, sahne ölçeğinde); ekran turu raporu
+        static Vector4? CarpismaBul(string ad)
+        {
+            if (carpisma == null)
+            {
+                carpisma = new Dictionary<string, Vector4>();
+                var ta = Resources.Load<TextAsset>("karakter/carpisma"); var t = ta != null ? ta.text : "";
+                // {"ad": {"bas": [x, y, z, r]}, ...}: JsonUtility sözlük okumaz; biçim sabit, elle ayrıştırılır.
+                int i = 0;
+                while ((i = t.IndexOf("\"bas\"", i)) >= 0)
+                {
+                    int q1 = t.LastIndexOf('"', t.LastIndexOf('{', i) - 1), q0 = q1 > 0 ? t.LastIndexOf('"', q1 - 1) : -1;
+                    int a = t.IndexOf('[', i), b = t.IndexOf(']', a); i = b;
+                    if (q0 < 0 || a < 0 || b < 0) break;
+                    var p = t.Substring(a + 1, b - a - 1).Split(','); if (p.Length < 4) continue;
+                    var v = new float[4]; bool ok = true;
+                    for (int k = 0; k < 4; k++) ok &= float.TryParse(p[k].Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out v[k]);
+                    if (ok) carpisma[t.Substring(q0 + 1, q1 - q0 - 1)] = new Vector4(v[0], v[1], v[2], v[3]);
+                }
+            }
+            Vector4 r; return ad != null && carpisma.TryGetValue(ad, out r) ? r : (Vector4?)null;
+        }
+        // Init'te boşta pozunun ilk karesi örneklendikten hemen sonra (ölçüm de idle'ın ilk karesinden): baş-boyun açısı ve omuz
+        // yüksekliği vuruş pozlarında değiştiği için çerçeve başka pozda kurulursa küre kayardı.
+        void BasKur()
+        {
+            basKuruldu = true; basR = 0; if (kHead == null) return; if (kKol == null) ZincirKur();
+            var c = CarpismaBul(PrefabAdi); Transform boyun = kHead.parent, kl = kKol[0] != null ? kKol[0].parent : null, kr = kKol[3] != null ? kKol[3].parent : null;
+            if (c == null || boyun == null || kl == null || kr == null || kKol[1] == null || kKol[2] == null) return;
+            Vector3 u = kHead.position - boyun.position; float L = u.magnitude; if (L < 1e-4f) return; u /= L;
+            Vector3 sv = Vector3.ProjectOnPlane(kr.position - kl.position, u).normalized, f = Vector3.Cross(sv, u);   // Blender u × s'nin karşılığı (sol el koordinatı)
+            var cv = c.Value; Vector3 mer = kHead.position + (sv * cv.x + u * cv.y + f * cv.z) * L; float olc = Mathf.Max(1e-4f, kHead.lossyScale.x);
+            basYerel = kHead.InverseTransformPoint(mer); basR = cv.w * L / olc;
+            kolKalin = .12f * (kKol[2].position - kKol[1].position).magnitude / olc;
+        }
+        void GirmeKoru()
+        {
+            if (!basKuruldu || basR <= 0 || kHead == null || kKol == null) return;
+            float olc = kHead.lossyScale.x; Vector3 mc = kHead.TransformPoint(basYerel); float R = (basR + kolKalin) * olc; GirmeTani = 0;
+            for (int s = 0; s < 2; s++)
+            {
+                Transform ua = kKol[s * 3], fa = kKol[s * 3 + 1], h = kKol[s * 3 + 2]; if (ua == null || fa == null || h == null) continue;
+                for (int tur = 0; tur < 4; tur++)
+                {
+                    Vector3 e = fa.position, w = h.position, uc = w + (w - e) * .5f;
+                    Vector3 p0 = (e + w) * .5f; float d0 = R - (p0 - mc).magnitude, d1 = R - (w - mc).magnitude, d2 = R - (uc - mc).magnitude;
+                    float d = Mathf.Max(d0, Mathf.Max(d1, d2)); if (tur == 0) GirmeTani = Mathf.Max(GirmeTani, d); if (d <= .002f * olc) break;
+                    Vector3 p = d == d0 ? p0 : d == d1 ? w : uc; Vector3 n = p - mc; n = n.sqrMagnitude > 1e-8f ? n.normalized : Vector3.up;
+                    Transform don = d == d0 ? ua : fa; Vector3 piv = don.position;
+                    var q = Quaternion.FromToRotation(p - piv, p + n * (d + .002f * olc) - piv);
+                    don.rotation = Quaternion.RotateTowards(Quaternion.identity, q, 35) * don.rotation;
+                }
+            }
+        }
         // İki kemikli IK: a (omuz/kalça) → b (dirsek/diz) → c (el/bilek) zinciri c hedefe, b kutup yönüne bükülür.
         static void IK(Transform a, Transform b, Transform c, Vector3 hedef, Vector3 kutup)
         {
@@ -1043,7 +1108,7 @@ namespace BirdieSmash.Game
             Uzan(o, M, j);   // kayma ve kalça: ayak kilidinden önce (kilit kalça kaymasını ayakta geri alır)
             FileItin(); AyakKilit(dt); HazirNefes(o, M); UzanKol(); ServisEller();
             if (isMe && !hakem && o.jump > 0 && (cur == "jump" || o.prepClip == "jump")) SmacHareket(Secim(Kozmetik.SMAC), 1 - o.jump, M.reduce);
-            Sevinc(M, dt);
+            Sevinc(M, dt); GirmeKoru();   // en son: sevinç ve uzanma katmanları da kolu başa sokabilir
         }
 
         // ---- Sevinç (2026-11-01, Ar-Ge K3; yasin "maç sonunda da sevinç kategorisi kısmını gönder") ----
@@ -1164,7 +1229,7 @@ namespace BirdieSmash.Game
             if (anim == null) return; Sample("idle", .25f, null, 0, 1); cur = "_sevinc";   // ShowStatic çıkışta boşta pozunu yeniden örneklesin
             float d = SevincSure(id), tt = t % d;
             float w = Mathf.Clamp01(Mathf.Min(tt / .15f, (d - tt) / .25f));
-            SevincPoz(id, tt, w, Ayar.reduce); Kalite.Canli();   // Dolap › Hareketler önizlemesi de yüksek hızda
+            SevincPoz(id, tt, w, Ayar.reduce); GirmeKoru(); Kalite.Canli();   // Dolap › Hareketler önizlemesi de yüksek hızda
         }
         // ---- Smaç hareketi (2026-11-10, Kozmetik.SMAC; yasin: "xp ve levele özgü animasyonlar, cool smash tricks") ----
         // Sıçrayarak smaç klibinin (jump) üstüne kemik katmanı: sevinç katmanıyla aynı yöntem, yeni FBX yok, dört modelde aynı.
@@ -1217,6 +1282,7 @@ namespace BirdieSmash.Game
             float gir = Mathf.Clamp01(Mathf.Min((u + .6f) / .25f, (1.5f - u) / .3f));
             Sample("jump", ph, "idle", .25f, Mathf.SmoothStep(0, 1, gir));
             if (hava) SmacHareket(id, u, false);
+            GirmeKoru();
         }
         // Sevinçte bacakların dikliği (0 = boşta pozunun maç duruşu, 1 = dik). Zafer: hazırlıkta çömelir, sıçrayışta açılır,
         // inişte dizden yaylanır (.18 sn), pompada dik. Zıpla: havada dik, inişte yaylanma. Diğerleri dik durur.
@@ -1306,6 +1372,7 @@ namespace BirdieSmash.Game
             if (anim == null) return;
             SevincPoz("dur", 0, 1, Ayar.reduce);
             if (id != null && w > .001f) SevincPoz(id, t, w, Ayar.reduce);
+            GirmeKoru();
         }
         // Kök eğrisi (sıçrama m, dönüş °, öne eğilme °, burulma °, yana yatma °, uçak dairesi rad): yalnız id ve t'nin işlevi.
         // 2026-11-19: SevincPoz'dan ayrıldı ki baş için geriden (t − BAS_GECIKME) yeniden hesaplanabilsin.
