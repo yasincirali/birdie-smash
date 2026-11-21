@@ -384,6 +384,7 @@
   }
  ],
  "model": "panda",
+ "klipKaynak": "tuycuk",
  "parts": [
   "Cone__tuy",
   "Sphere__mantar",

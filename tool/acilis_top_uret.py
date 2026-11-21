@@ -10,7 +10,8 @@ strip=Image.open(A+'Resources/ui/tuy_don.png').convert('RGBA')
 def gen(fi, ks, out=None, N=1024):
     m=N/.5; k=.3*m*ks; s=k/300; p=(N/2, N/2-.026*m); yon=math.radians(44)
     cork=(p[0]+math.cos(yon)*.56*k, p[1]+math.sin(yon)*.56*k)
-    fr=strip.crop(((fi%4)*300,(fi//4)*299,(fi%4)*300+300,(fi//4)*299+299))
+    cw,ch=strip.size[0]//4,strip.size[1]//4   # 2026-11-21: şerit 1024² (256² kare, boyut); geometri 300×299 kare biriminde kalır
+    fr=strip.crop(((fi%4)*cw,(fi//4)*ch,(fi%4)*cw+cw,(fi//4)*ch+ch)).resize((300,299),Image.LANCZOS)
     a=np.array(fr).astype(np.float32); a[...,:3]*=a[...,3:4]/255; fr=Image.fromarray(a.clip(0,255).astype(np.uint8))
     th=math.radians(44+135); c,sn=math.cos(th),math.sin(th)
     # f = (39,36) + R(-th)(q-cork)/s ; R(-th)=[[c,sn],[-sn,c]]

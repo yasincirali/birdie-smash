@@ -46,7 +46,7 @@ namespace BirdieSmash.Game
         // 1,03r, yan ,83r, tepe ,74r; r67) şapkayı saçın içine gömdü: şapka saçın üstüne oturur, oranlar baş + kısa saçtan
         // (yan ,92r, tepe 1,11r, arka 1,13r) küçük payla; ön yüzden (saçsız). Gerçekçi/Sade/Tüycük küreyle oturuyor, alan yok.
         [System.Serializable] public class BantMeta { public float dz, df, r, yan, ust, on, arka; }
-        [System.Serializable] class Meta { public ClipMeta[] clips; public TipMeta tip; public SacMeta[] sac; public BantMeta bant; }
+        [System.Serializable] class Meta { public ClipMeta[] clips; public TipMeta tip; public SacMeta[] sac; public BantMeta bant; public string klipKaynak; }
 
         // Görünüm: null alan = FBX'in kendi rengi (cerceve/grip/tel) ya da gizli (bant/bilek).
         public class Gorunum
@@ -205,21 +205,47 @@ namespace BirdieSmash.Game
             foreach (var y in yollar) { var o = Resources.Load<T>(y); if (o != null) return o; }
             return null;
         }
+        // Paylaşılan klipler (2026-11-21, yasin: "oyun boyutunun makul düzeyde tutulması, küçültülmesi"): maskot modelleri
+        // (kedi, tavşan, panda, robot, iki hamamböceği) Tüycük'ün iskeletine ve pişmiş kliplerine giydirilir (maskot.py); altı FBX
+        // aynı 37 klibi ayrı ayrı taşıyordu. iOS build raporu (TF 21 Kas): Animations 36,6 MB, oyuncu varlıklarının %57'si.
+        // Ölçüm (bpy, her klipte 3 karede bir, 53 kemik + raket/top nesneleri): altısı Tüycük'le dönüşte < 1°, konumda 1e-5 aynı.
+        // Bu modellerin _clips.json'ı klipKaynak: "tuycuk" taşır; KarakterImport onların animasyonunu içe aktarmaz, burada kaynak
+        // FBX'in klipleri modelin Animation'ına eklenir. Legacy eğri yolları kök altındaki kemik yoludur, kök adı girmez: aynı
+        // iskelette yol birebir aynı. Oyuncak beden tipleri (uzun, kadın, güçlü) farklı kemik boylarıyla kendi IK'sını taşır,
+        // paylaşılmaz. Kaynak klipler bir kez yüklenir (statik); kaynak FBX'in ağı belleğe gelir ama sahneye kurulmaz.
+        static readonly Dictionary<string, AnimationClip[]> paylasilanKlip = new Dictionary<string, AnimationClip[]>();
+        static Animation KlipleriBagla(Transform model, Animation anim, string kaynak)
+        {
+            if (anim != null && anim.GetClipCount() > 0) return anim;   // eski FBX kendi kliplerini taşıyorsa onları kullan
+            AnimationClip[] kl;
+            if (!paylasilanKlip.TryGetValue(kaynak, out kl))
+            {
+                var hepsi = Resources.LoadAll<AnimationClip>("karakter/" + kaynak); var l = new List<AnimationClip>();
+                foreach (var c in hepsi) if (c != null && c.legacy && !c.name.StartsWith("__preview__")) l.Add(c);
+                kl = l.ToArray(); paylasilanKlip[kaynak] = kl;
+                if (kl.Length == 0) Debug.LogWarning("Birdie Smash: paylaşılan klip kaynağı boş: karakter/" + kaynak); else Debug.Log("Birdie Smash: paylaşılan klip " + kaynak + " · " + kl.Length + " klip");
+            }
+            if (kl.Length == 0) return anim;
+            if (anim == null) { anim = model.gameObject.AddComponent<Animation>(); anim.playAutomatically = false; }
+            foreach (var c in kl) if (anim[c.name] == null) anim.AddClip(c, c.name);
+            return anim;
+        }
         void Init(string modelAd, Gorunum gor)
         {
             yaw = new GameObject("yon").transform; yaw.SetParent(transform, false);
             string yol = ModelYolu(modelAd, gor.tip);
             var prefab = IlkBulunan<GameObject>("karakter/" + yol, "karakter/" + modelAd, "karakter/oyuncak");
-            var js = IlkBulunan<TextAsset>("karakter/" + yol + "_clips", "karakter/" + modelAd + "_clips");
+            var js = IlkBulunan<TextAsset>("karakter/" + yol + "_clips", "karakter/" + modelAd + "_clips"); string klipKaynak = null;
             if (js != null)
             {
-                var meta = JsonUtility.FromJson<Meta>(js.text); tipMeta = meta != null && meta.tip != null && !string.IsNullOrEmpty(meta.tip.id) ? meta.tip : null; sacMeta = meta != null ? meta.sac : null; bantMeta = meta != null && meta.bant != null && meta.bant.r > 0 ? meta.bant : null;
+                var meta = JsonUtility.FromJson<Meta>(js.text); if (meta != null) klipKaynak = meta.klipKaynak; tipMeta = meta != null && meta.tip != null && !string.IsNullOrEmpty(meta.tip.id) ? meta.tip : null; sacMeta = meta != null ? meta.sac : null; bantMeta = meta != null && meta.bant != null && meta.bant.r > 0 ? meta.bant : null;
                 if (meta != null && meta.clips != null) foreach (var c in meta.clips) { if (c.poses > 0) Match.CLIP_N[c.name] = c.poses; LOOPS[c.name] = c.loop; if (c.adim > 0 && Match.ADIM_BOY.ContainsKey(c.name)) { Match.ADIM_BOY[c.name] = c.adim * SCALE; adimBoy[c.name] = c.adim * SCALE; } }
             }
             if (prefab != null)
             {
                 PrefabAdi = prefab.name; modelAdi = DokuAdi(prefab.name, modelAd); model = Instantiate(prefab, yaw).transform; model.localPosition = Vector3.zero; model.localScale = Vector3.one * SCALE;
                 anim = model.GetComponentInChildren<Animation>();
+                if (!string.IsNullOrEmpty(klipKaynak) && klipKaynak != prefab.name) anim = KlipleriBagla(model, anim, klipKaynak);
                 // Hayvan tipi (2026-11-15): yeni FBX değil; tipin bedeni + kürk rengi (ten hücresi) + saçsız baş + hayvan kafası/kulak/kuyruk
                 // (Aksesuar.Kur hayvan, Aksesuar.Bel). Çağıranın Gorunum'u değişmez: kopya üstünde ten ve saç ezilir.
                 var hv = !hakem && modelAd == "oyuncak" && gor != null && gor.tip != null ? Kozmetik.Bul(Kozmetik.TIP, gor.tip) : null; if (hv != null && hv.aks == null) hv = null;

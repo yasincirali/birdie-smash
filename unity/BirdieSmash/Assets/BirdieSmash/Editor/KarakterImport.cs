@@ -11,6 +11,10 @@
 // model başına ~8 MB eğri; maçta 4 figür farklı tip FBX'i yükleyebildiği için ~30 MB. Kemiklerin çoğunda konum ve ölçek sabit,
 // azaltma onları iki anahtara indirir; dönüşte 0.2° sınırı kol zincirinde raket ucunda ~1–2 cm eder (erişim IK p90 0.15 m'nin altında).
 // Örnekleme açık kalır (Euler sınırı sorunu yukarıda); azaltma örneklenmiş kuaterniyon eğrisine uygulanır.
+// 2026-11-21 (boyut, yasin: "oyun boyutunun makul düzeyde tutulması, küçültülmesi"): _clips.json'da klipKaynak başka bir modeli
+// gösteriyorsa (maskotlar → tuycuk) bu FBX'in animasyonu içe aktarılmaz; PlayerView.KlipleriBagla kaynağın kliplerini ekler.
+// Altı maskot × ~3,3 MB eğri build'den çıkar. Ağ sıkıştırması Low: yalnız paket boyutunu küçültür (çalışma belleği aynı),
+// Low köşe konumunu en az nicemler; el ve yüz ayrıntısında görünür kayma beklenmez (ekran turu Dolap/Yüz karesi kontrol).
 // GetVersion: ayar değişince Unity (CI Library önbelleği dahil) FBX'leri yeniden içe aktarsın.
 // Klip bölme OnPreprocessAnimation'da: defaultClipAnimations (take adı) OnPreprocessModel'de henüz dolu olmayabilir.
 using System.IO;
@@ -22,9 +26,9 @@ namespace BirdieSmash.EditorTools
     public class KarakterImport : AssetPostprocessor
     {
         [System.Serializable] class Clip { public string name; public int first, last; public bool loop; }
-        [System.Serializable] class Meta { public int fps; public float scale; public Clip[] clips; }
+        [System.Serializable] class Meta { public int fps; public float scale; public Clip[] clips; public string klipKaynak; }
 
-        public override uint GetVersion() { return 2; }
+        public override uint GetVersion() { return 3; }
 
         bool Karakter() { var p = assetPath.Replace('\\', '/'); return p.Contains("Resources/karakter/") && p.EndsWith(".fbx"); }
 
@@ -49,7 +53,16 @@ namespace BirdieSmash.EditorTools
             mi.materialImportMode = ModelImporterMaterialImportMode.ImportStandard; mi.materialLocation = ModelImporterMaterialLocation.InPrefab;
             mi.useFileScale = true; mi.globalScale = 1;
             mi.importBlendShapes = false; mi.importCameras = false; mi.importLights = false;
+            mi.meshCompression = ModelImporterMeshCompression.Low;
+            var meta = MetaOku(); if (meta != null && PaylasilanKlip(meta)) mi.importAnimation = false;
         }
+
+        Meta MetaOku()
+        {
+            string json = Path.Combine(Path.GetDirectoryName(assetPath), Path.GetFileNameWithoutExtension(assetPath) + "_clips.json");
+            return File.Exists(json) ? JsonUtility.FromJson<Meta>(File.ReadAllText(json)) : null;
+        }
+        bool PaylasilanKlip(Meta m) { return !string.IsNullOrEmpty(m.klipKaynak) && m.klipKaynak != Path.GetFileNameWithoutExtension(assetPath); }
 
         void OnPreprocessAnimation()
         {
@@ -57,7 +70,7 @@ namespace BirdieSmash.EditorTools
             var mi = (ModelImporter)assetImporter;
             string json = Path.Combine(Path.GetDirectoryName(assetPath), Path.GetFileNameWithoutExtension(assetPath) + "_clips.json");
             if (!File.Exists(json)) { Debug.LogWarning("Birdie Smash: " + json + " yok, klipler bölünmedi"); return; }
-            var meta = JsonUtility.FromJson<Meta>(File.ReadAllText(json));
+            var meta = JsonUtility.FromJson<Meta>(File.ReadAllText(json)); if (meta == null || PaylasilanKlip(meta)) return;
             var def = mi.defaultClipAnimations; string take = def.Length > 0 ? def[0].takeName : null;
             var arr = new ModelImporterClipAnimation[meta.clips.Length];
             for (int i = 0; i < arr.Length; i++)
