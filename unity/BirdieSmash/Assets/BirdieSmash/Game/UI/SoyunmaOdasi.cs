@@ -717,7 +717,7 @@ namespace BirdieSmash.Game
         }
 
         // ---- Görünüm segmenti (karakter, adım 6) ----
-        class Ornek { public string id, ad, renk, neden, kisa; public bool acik, parla; }   // parla: ışın/mistik öğe (köşede ◆, etikette "parlar")   // kisa: kilitli karede görünen kısa koşul ("Sv 14")
+        class Ornek { public string id, ad, renk, neden, kisa; public bool acik, parla; public Texture2D doku; }   // doku: 2026-11-21 forma deseni önizlemesi   // parla: ışın/mistik öğe (köşede ◆, etikette "parlar")   // kisa: kilitli karede görünen kısa koşul ("Sv 14")
 
         // Renk örnekleri: kare (44 pt) + seçili ✓ ve kalın çerçeve; "modelin rengi" kişi simgesiyle; kilitli kilit + "Sv n".
         // Başlıkta seçilenin adı (renk körlüğü: hangisinin seçili olduğu yazıyla da okunur).
@@ -730,6 +730,7 @@ namespace BirdieSmash.Game
                 bool on = o.id == secili; string id = o.id;
                 var d = new VisualElement(); d.AddToClassList("renk"); if (yuvarlak) d.AddToClassList("renk--yuvarlak"); if (on) d.AddToClassList("renk--secili"); if (!o.acik) d.AddToClassList("renk--kilit");
                 Color zemin = o.renk != null ? Kit.Hex(o.renk) : Kit.Hex("#22343a"); d.style.backgroundColor = zemin;
+                if (o.doku != null) { d.style.backgroundImage = new StyleBackground(o.doku); }
                 bool acikZemin = o.renk != null && zemin.r * .3f + zemin.g * .59f + zemin.b * .11f > .55f; Color ik = acikZemin ? Color.black : Color.white;
                 if (on) d.Add(Ikon(Ikonlar.Tik, 18, ik));
                 else if (!o.acik) { d.Add(Ikon(Ikonlar.Kilit, 14, ik)); if (!string.IsNullOrEmpty(o.kisa)) { var sy = Yazi(o.kisa, 10, "renk-kilit-yazi"); sy.style.color = ik; d.Add(sy); } }

@@ -1,4 +1,8 @@
 === UNITY ===
+Forma deseni (21 Kasım gece):
+- Dolap > Kıyafet'te yeni "Forma deseni" satırı. Kumaşın görünüşü artık oyundaki etkisinden ayrı: giydiğin kumaşın gücü sürer, görünüş olarak sahip olduğun başka bir kumaşı (Hafif, Nefes alan, Esnek) seçebilirsin.
+- Yedi yeni desen seviyeyle açılır: Göğüs bandı, Yan şerit, Çift şerit, Omuz bandı, Degrade, V kuşak, Tüy amblemi. Desenler forma rengine uyar, oyunu etkilemez.
+Nasıl denenir: Dolap > Kıyafet'e gir, Forma rengi satırının altında Forma deseni satırını bul. Açık bir desene dokun: oyuncunun forması o desenle görünmeli; oyuncuyu döndür, sırtta da görünmeli. Forma rengini değiştir: desen yeni renge uymalı. Bir maç oyna: oyuncu aynı desenle sahada olmalı.
 Kariyer ve Profil cilası (21 Kasım akşam):
 - Kariyer'in altındaki "Sıradaki maç" düğmesinde solda iki küçük yüz var: sen ve sıradaki rakibin. Rakibin yüzü önce baş harfiyle görünür, menüde bir an durunca yüzü gelir.
 - Maç kartı ilk açılışta takılmaz: rakibin portresi menü dururken önceden hazırlanır.

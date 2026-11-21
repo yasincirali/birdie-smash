@@ -21,7 +21,7 @@ namespace BirdieSmash.Game
     public partial class UiKok
     {
         const string KOMBIN_ANAHTAR = "tuytop_kombin", KOMBIN_AKTIF = "tuytop_kombin_aktif"; const int KOMBIN_SAY = 3;
-        static readonly string[] KOMBIN_GOR = { "ten", "sac", "ayakkabi", "kaplama", "sort" };
+        static readonly string[] KOMBIN_GOR = { "ten", "sac", "ayakkabi", "kaplama", "sort", "desen" };   // desen 2026-11-21
         static readonly string[] KOMBIN_RGOR = { "grip", "tel", "tel2", "desen", "kafa", "saft" };
         List<Dictionary<string, object>> kombinler; int kombinAktif = -1;
         VisualElement denemeCubuk;

@@ -32,7 +32,8 @@ namespace BirdieSmash.EditorTools
         // aynı pozdaydı, paylaşılan klipler örneklenmiyordu). _clips.json'dan klipKaynak kalktı; sürüm artışı CI Library
         // önbelleğinde animasyonsuz içe aktarılmış maskot FBX'lerini yeniden içe aktartır.
         // 5: animasyon sıkıştırması KeyframeReduction → Optimal.
-        public override uint GetVersion() { return 5; }
+        // 6: forma ağına desen UV'si (OnPostprocessModel). 7–8: ön yönü düzeltmesi (8: kemik ölçütü).
+        public override uint GetVersion() { return 8; }
 
         bool Karakter() { var p = assetPath.Replace('\\', '/'); return p.Contains("Resources/karakter/") && p.EndsWith(".fbx"); }
 
@@ -83,6 +84,46 @@ namespace BirdieSmash.EditorTools
                 arr[i] = new ModelImporterClipAnimation { name = c.name, takeName = take ?? c.name, firstFrame = c.first, lastFrame = c.last, loopTime = c.loop, wrapMode = c.loop ? WrapMode.Loop : WrapMode.ClampForever };
             }
             mi.clipAnimations = arr;
+        }
+
+        // Forma deseni (2026-11-21, yasin: kıyafet katmanı "önce C, sonra A"): her modelin forma ağı (<önek>_forma__forma) içe aktarımda
+        // desen UV'si alır. Oyuncak ve hayvan modellerinde forma düz renkti, UV'si gövde atlasında tek hücreye düşüyordu ve kullanılmıyordu
+        // (PlayerView: atlas modelde düz takım rengi); o yüzden UV0 güvenle yeniden yazılır. Eşleme bağlanma pozunda silindirik ve
+        // AYNALI: u = |açı| / π (0 = göğüs ortası, 1 = sırt ortası), v = forma yüksekliği (0 bel, 1 yaka). Aynalı olduğu için dikiş
+        // yok (sağ ve sol yan aynı u'yu alır, üçgen dokunun boyunca gerilmez); bedeli: desen sağ/sol simetrik olur (sırt numarası gibi
+        // yönlü yazı yok, çapraz kuşak V olur). Ön yönü ayak → parmak kemiğinden (aşağıda).
+        // Tüycük'ün tüy gövdesi (tc_tuy__forma) desen almaz.
+        void OnPostprocessModel(GameObject g)
+        {
+            if (!Karakter()) return;
+            var formalar = new System.Collections.Generic.List<(Mesh m, Matrix4x4 w)>(); Vector3 ayak = Vector3.zero; int ayakN = 0;
+            foreach (var r in g.GetComponentsInChildren<Renderer>(true))
+            {
+                Mesh m = r is SkinnedMeshRenderer sk ? sk.sharedMesh : r.GetComponent<MeshFilter>() != null ? r.GetComponent<MeshFilter>().sharedMesh : null;
+                if (m == null) continue; string ad = r.name;
+                if (ad.EndsWith("__forma") && ad.Contains("_forma__")) formalar.Add((m, r.transform.localToWorldMatrix));
+            }
+            // Ön yönü: ayak kemiğinden parmak kemiğine (bağlanma pozunda ayak ucu öndedir). r238/r239: ayakkabı ağı kutusu ölçütü
+            // oyuncakta ön ile arkayı ters verdi (ön desenler sırtta), kemik ölçütüne geçildi; kemik yoksa -Z.
+            foreach (var t in g.GetComponentsInChildren<Transform>(true))
+            {
+                string n = t.name.ToLowerInvariant(); if (n.Contains("__") || !n.Contains("foot") || n.Contains("ik") || n.Contains("roll")) continue;
+                foreach (Transform ch in t) { string cn = ch.name.ToLowerInvariant(); if (cn.Contains("toe") || cn.Contains("ball")) { var d = ch.position - t.position; d.y = 0; if (d.sqrMagnitude > 1e-8f) { ayak += d.normalized; ayakN++; } break; } }
+            }
+            foreach (var (m, w) in formalar)
+            {
+                var v = m.vertices; if (v.Length == 0) continue; var p = new Vector3[v.Length]; Vector3 mn = Vector3.positiveInfinity, mx = Vector3.negativeInfinity;
+                for (int i = 0; i < v.Length; i++) { p[i] = w.MultiplyPoint3x4(v[i]); mn = Vector3.Min(mn, p[i]); mx = Vector3.Max(mx, p[i]); }
+                Vector3 c = (mn + mx) * .5f; Vector3 ileri = ayakN > 0 && ayak.sqrMagnitude > 1e-6f ? ayak.normalized : Vector3.back, yan = Vector3.Cross(Vector3.up, ileri); float h = Mathf.Max(1e-4f, mx.y - mn.y);
+                var uv = new Vector2[v.Length];
+                for (int i = 0; i < v.Length; i++)
+                {
+                    Vector3 d = p[i] - c; float a = Mathf.Abs(Mathf.Atan2(Vector3.Dot(d, yan), Vector3.Dot(d, ileri))) / Mathf.PI;
+                    uv[i] = new Vector2(a, (p[i].y - mn.y) / h);
+                }
+                m.uv = uv;
+            }
+            if (formalar.Count > 0) Debug.Log("Birdie Smash: desen UV " + Path.GetFileNameWithoutExtension(assetPath) + " · " + formalar.Count + " forma ağı · ön " + (ayakN > 0 ? "parmak kemiğinden (" + ayakN + ")" : "-Z"));
         }
     }
 }

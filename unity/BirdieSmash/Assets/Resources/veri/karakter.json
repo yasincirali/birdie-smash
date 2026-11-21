@@ -353,5 +353,20 @@
   {"id": "limon",   "ad": "Limon",         "renk": "#d8ff5a", "sv": 12},
   {"id": "mor",     "ad": "Mor",           "renk": "#8a5ae2", "sv": 18},
   {"id": "altin",   "ad": "Altın",         "renk": "#ffc94a", "sv": 28}
+],
+"desen_not": "2026-11-21 forma deseni (yasin karar kartı: önce C, sonra A). Yalnız görünüş, güç alanı yok. kumas alanı: o kumaşın görünüşü, kumaşa sahip olunca açılır (sv yok sayılır). Diğerleri seviyeyle, ücretsiz. Doku kodla üretilir (Game/Desen.cs), dosya yok. Tüycük'te sunulmaz.",
+"desen": [
+  {"id": "kumas", "ad": "Kumaşına göre", "sv": 1},
+  {"id": "duz", "ad": "Düz", "sv": 1},
+  {"id": "k_hafif", "ad": "Hafif kumaş", "sv": 1, "kumas": "hafif"},
+  {"id": "k_nefes", "ad": "Nefes alan kumaş", "sv": 1, "kumas": "nefes"},
+  {"id": "k_esnek", "ad": "Esnek kumaş", "sv": 1, "kumas": "esnek"},
+  {"id": "gogus", "ad": "Göğüs bandı", "sv": 3},
+  {"id": "yan_serit", "ad": "Yan şerit", "sv": 5},
+  {"id": "cift_serit", "ad": "Çift şerit", "sv": 7},
+  {"id": "omuz", "ad": "Omuz bandı", "sv": 9},
+  {"id": "degrade", "ad": "Degrade", "sv": 11},
+  {"id": "v_kusak", "ad": "V kuşak", "sv": 15},
+  {"id": "amblem", "ad": "Tüy amblemi", "sv": 19}
 ]
 }
