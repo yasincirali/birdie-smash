@@ -361,12 +361,19 @@ namespace BirdieSmash.Game
         public void Hit(string type, string q, bool slice, bool super_, bool serve, bool mine, int rally, bool flow, float hiz = 0)
         {
             float p = hiz > 0 ? Mathf.Clamp01((hiz - 12) / 48f) : .5f, kaz = .8f + .35f * p, perde = 1.03f - .06f * p + (float)(rnd.NextDouble() - .5) * .02f;
-            string t = Tur(type), kayitAd = serve ? "vurus_servis" : slice ? "vurus_slice" : "vurus_" + t;
+            // Ses eşlemesi (yasin 2026-11-21: "sesler karışmış, hangi ses hangi durumda netleştirelim"): kayıt vuruş TÜRÜNE göre seçilir.
+            // Kesik (slice) kendi kaydını seçmiyor: vurus_slice drop kaydının aynı kesimiydi, kesik clear/drive de yumuşak drop sesi
+            // çalıyordu. Kesik vuruş kendi türünün kaydını çalar; kesik his tüyün yolunda ve sentez yedeğinde kalır.
+            string t = Tur(type), kayitAd = serve ? "vurus_servis" : "vurus_" + t;
             var kv = Kayit(kayitAd + "_" + q) ?? Kayit(kayitAd);
             if (kv != null) { var c = kv[rnd.Next(kv.Length)]; if (mine) VurusCal(c, kaz, perde); else { opSrc.pitch = perde; opSrc.panStereo = pan; opSrc.PlayOneShot(c, .5f * kaz); } }
             else if (mine) VurusCal(Vurus(type, q, slice, super_, serve, false), kaz, perde);
             else { var k = Kaynak(); k.pitch = perde; k.panStereo = pan; k.PlayOneShot(Vurus(type, q, slice, super_, serve, true), kaz); }
             if (mine && !serve && (type == "smash" || type == "jump" || type == "kill")) Govde(.5f + .5f * p * (super_ ? 1.3f : 1));
+            // Gerçek kayıt çalınca vuruş anında yalnız raket sesi (+ smaçta gövde) duyulur. Ralli notası, 6. vuruştan sonraki
+            // davul, smaç düdüğü ve 5'te bir ton gerçek raket sesinin üstüne binip "karışık" duyuluyordu (yasin 2026-11-21).
+            // Kaydı olmayan (sentez) yolda bu katmanlar eskisi gibi çalar.
+            if (kv != null) return;
             RallyNote(rally - 1, mine, mine && flow);
             if (rally >= 6) Kick(.12f + Mathf.Min(.12f, rally * .008f));
             if (Tur(type) == "smash" && (type == "smash" || type == "jump")) Whistle();
@@ -538,7 +545,7 @@ namespace BirdieSmash.Game
         public void Ugultu(bool on, float sp) { swo.Ayarla(on, sp); }
 
         // ---- kayıtlı ses kancası (yukarıdaki başlık notu) ----
-        public static readonly string[] KAYIT_ADLARI = { "vurus_smash", "vurus_clear", "vurus_drive", "vurus_drop", "vurus_servis", "vurus_slice", "govde", "file", "file_bant", "bant", "yer", "yer_sert",
+        public static readonly string[] KAYIT_ADLARI = { "vurus_smash", "vurus_clear", "vurus_drive", "vurus_drop", "vurus_servis", "govde", "file", "file_bant", "bant", "yer", "yer_sert",
             "seyirci", "ooo", "alkis", "alkis_uzun", "cosku", "ic_cekis", "duduk", "gicirti", "hawk_ici", "hawk_disari", "sayi_ben", "sayi_rakip", "iska" };
         readonly Dictionary<string, AudioClip[]> kayit = new Dictionary<string, AudioClip[]>();
         // Yoksa null (sonuç önbellekte: Resources.Load ad başına bir kez sorulur).
