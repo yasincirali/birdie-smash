@@ -110,11 +110,18 @@ namespace BirdieSmash.Game
         VisualElement Dugme(string t, Action a, string cls = null, string alt = null, float px = 16)
         {
             var d = new VisualElement(); d.AddToClassList("dugme"); if (cls != null) d.AddToClassList(cls);
+            // 2026-11-22 inceleme (fikir 17:06 #2): sondaki "  ›" / "  ↗" yazının parçasıydı, VoiceOver her satırda oku da okuyordu
+            // ve iki ok kalıbı vardı (Nasıl oynanır satırları oku ayrı öğe çiziyor). Ok burada ayrılır: sağda dokunulmaz ayrı öğe,
+            // erişim adı oksuz; "↗" dış bağlantı demek, etikete "Tarayıcıda açılır" kendiliğinden eklenir. Çağrı yerleri aynı.
+            string ok = null;
+            if (t != null && t.Length > 3 && (t.EndsWith("  ›") || t.EndsWith("  ↗"))) { ok = t.Substring(t.Length - 1); t = t.Substring(0, t.Length - 3); d.AddToClassList("dugme--ok"); }
             var ic = new VisualElement(); ic.AddToClassList("dugme-ic"); ic.pickingMode = PickingMode.Ignore; d.Add(ic);
             ic.Add(Yazi(t, px, "dugme-yazi"));
             if (!string.IsNullOrEmpty(alt)) ic.Add(Yazi(alt, px * .78f, "dugme-alt"));
+            if (ok != null) { var ol = Yazi(ok, px + 2, "dugme-ok"); ol.pickingMode = PickingMode.Ignore; d.Add(ol); }
             if (a != null) d.AddManipulator(new Clickable(() => { Tik(); a(); }));   // 2026-11-06: çip ve büyük düğme gibi her düğme dokunuşta ince tık (hareketi azaltta Hap susar); 2026-11-19 ses de burada (Tik)
-            Erisim.Etiket(d, string.IsNullOrEmpty(alt) ? t : t + ", " + alt, "dugme", false, a == null);
+            string et = string.IsNullOrEmpty(alt) ? t : t + ", " + alt; if (ok == "↗") et += ". " + L.T("Tarayıcıda açılır");
+            Erisim.Etiket(d, et, "dugme", false, a == null);
             return d;
         }
         VisualElement Pasif(string t, string alt = null) { var d = Dugme(t, null, "dugme--pasif", alt); return d; }

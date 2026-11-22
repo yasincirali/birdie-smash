@@ -71,7 +71,7 @@ namespace BirdieSmash.Game
         // Kategori şeridi (vitrinin altında, sabit): seçili ✓ + zemin, ekran okuyucuda "sekme, seçili". 7 kategori 4 + 3 satır.
         void KategoriKur()
         {
-            if (soyunmaSegment == null) return; soyunmaSegment.Clear(); karAlt = KarGecerli(karAlt);
+            if (soyunmaSegment == null) return; soyunmaSegment.Clear(); katSira.Clear(); karAlt = KarGecerli(karAlt);
             // 2026-11-19 (Dolap A): şerit rakette de görünür (çekmecenin sekmeleri; oradan başka kategoriye tek dokunuşla dönülür).
             if (kategoriKaydir != null) kategoriKaydir.style.display = DisplayStyle.Flex;
             foreach (int i in KarSayfalar())
@@ -81,7 +81,7 @@ namespace BirdieSmash.Game
                 int ii = i, ks, kt; bool sayim = KarSayim(i, out ks, out kt); bool dn = KategoriDeneniyor(i);
                 var d = Cip(L.T(KAR_AD[i]) + (sayim ? " " + ks + "/" + kt : ""), karAlt == i, () => KategoriSec(ii), dn ? L.T("deneniyor") : null);
                 if (sayim) { var eb = d.userData as ErisimBilgi; if (eb != null) eb.etiket = L.T(KAR_AD[i]) + ", " + L.T("{0} eşyadan {1} tanesi senin", kt, ks) + (dn ? ", " + L.T("deneniyor") : ""); }
-                d.AddToClassList("segment-cip"); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; soyunmaSegment.Add(d);
+                d.AddToClassList("segment-cip"); var b = d.userData as ErisimBilgi; if (b != null) b.rol = "sekme"; soyunmaSegment.Add(d); katSira.Add(i);
                 if (karAlt == i && kategoriKaydir != null) OrtayaKaydir(kategoriKaydir, d);   // seçili kategori görünür kalsın
             }
         }
@@ -178,8 +178,16 @@ namespace BirdieSmash.Game
             // 2026-10-31 (K2): denemeler kategori değişince silinmez; birkaç kategoride denenen parçalar alttaki çubukta birlikte
             // alınır ("Hepsini al"). Segmentten çıkınca (SegmentBirak) yine silinir.
             karAlt = i; Tik();
-            KarakterOdakAyarla(); KategoriKur(); SoyunmaGovdeKur(false);
+            KarakterOdakAyarla();
+            // 2026-11-22 inceleme (fikir 17:06 #4, takılma): şerit Clear + 9 çip baştan kuruluyordu; dokunulan çipin basılma tepkisi
+            // yarıda kesiliyor, şerit bir kare boş kalabiliyordu. Kategori değişince sayım ve "deneniyor" değişmez: yalnız eski ve
+            // yeni çipin seçimi yerinde (CipDurum), seçili ortaya. Şerit sayısı tutmazsa (alım/deneme sonrası) eski yol.
+            if (soyunmaSegment != null && soyunmaSegment.childCount == katSira.Count)
+                for (int j = 0; j < katSira.Count; j++) { var d = soyunmaSegment[j]; CipDurum(d, katSira[j] == i); if (katSira[j] == i && kategoriKaydir != null) OrtayaKaydir(kategoriKaydir, d); }
+            else KategoriKur();
+            SoyunmaGovdeKur(false, true);
         }
+        readonly List<int> katSira = new List<int>();   // şeritteki çiplerin kategori sırası (KategoriKur doldurur)
 
         // ---- Raket tezgâhı (2026-10-30) ----
         // Parça şeridi: Tüm raket · Kafa şekli · Çerçeve · Şaft · Grip · Kordaj. Seçilen parça vitrinde kadraja gelir ve bir kez

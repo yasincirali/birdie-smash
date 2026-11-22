@@ -390,6 +390,16 @@ namespace BirdieSmash.Game
         // seyrek. Ralli uzunluğuna göre iki boy (kısa 1,4 sn, uzun 2,4 sn); her boy iki çekimle önbellekte.
         // Art arda sayı (GameRoot.SeriSay): uzun ralli alkışıyla aynı örnek, 5+ seride uzun boy.
         public void SeriAlkis(bool uzun) { Alkis(uzun); }
+        // Ayarlar › Seyirci örneği (2026-11-22 inceleme, fikir 17:06 #3): seçilen düzeyde tek kısa alkış. Düzey Update'i beklemeden
+        // yazılır (Kapalı → Az ilk karede sessiz kalmasın). Kayıt yoksa yalnız menüde ısıtılmış sentez çalar; ısınmadıysa susar
+        // ki dokunuşta 1,4 sn'lik klip sentezlenmesin (takılma kuralı).
+        public void SeyirciOrnek()
+        {
+            if (!Ayar.ses || Ayar.seyirci <= 0) return;
+            trb.volume = Ayar.SeyirciK;
+            if (Kayitli("alkis", 1, trb)) return;
+            AudioClip c; if (cache.TryGetValue("alkis" + false + rnd.Next(2), out c)) trb.PlayOneShot(c, .9f);
+        }
         void Alkis(bool uzun)
         {
             if (Kayitli(uzun ? "alkis_uzun" : "alkis", 1, trb)) return;
