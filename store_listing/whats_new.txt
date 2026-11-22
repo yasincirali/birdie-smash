@@ -1,4 +1,10 @@
 === UNITY ===
+Vuruş gücü görünüyor, top kaydırdığın yöne gidiyor (22 Kasım gece):
+- Vurduğun anda oyuncunun ayağının önünde üç parçalı ince bir yay yanıyor: bir parça yumuşak vuruş (drop), iki parça orta (clear), üç parça sert vuruş (smaç). Yarım saniyede sönüyor. Tam ortadan smaçta yayın ucunda küçük bir nokta var.
+- Sert vuruşlarda topun arkasında kısa, ince bir iz kalıyor; ne kadar hızlı çıktıysa o kadar belirgin. Yumuşak vuruşta neredeyse hiç görünmüyor.
+- Top artık parmağını kaydırdığın yöne gidiyor: kenardayken dümdüz yukarı kaydırırsan top çizgi boyunca gider, eskisi gibi ortaya kaçmaz.
+Nasıl denenir: Bir maç aç. Yavaş, orta ve çok hızlı kaydırarak üç vuruş yap: ayağının önünde bir, iki ve üç parça yanmalı. Hızlı smaçta topun arkasında ince bir iz görmelisin. Kortun kenarına git ve dümdüz yukarı kaydır: top senin tarafındaki çizgiye paralel gitmeli.
+
 Kariyer artık bir dünya turu, menü düğmelerinde yeni sesler (22 Kasım gece):
 - Kariyer'in üstünde sekiz turun her biri resimli bir kart: her turun kendi mekânı (mahalle salonu, gün batımı şehri, gece arenası...), kaç maçın bittiği, yıldızlar ve tur mührü kartta görünüyor. Kartı kaydırıp dokunarak tur seçiliyor.
 - Rotadaki her durak artık şehrin adını, altında rakibi yazıyor; durağın yanında o maçtan kazanacağın Tüy görünüyor.
