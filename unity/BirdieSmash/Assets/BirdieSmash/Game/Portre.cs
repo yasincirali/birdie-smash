@@ -28,7 +28,12 @@ namespace BirdieSmash.Game
         static readonly Dictionary<string, RenderTexture> krt = new Dictionary<string, RenderTexture>();
         static readonly List<string> ksira = new List<string>();
 
-        public static Texture Benim() { var g = PlayerView.Benim(); return Al("ben|" + Ayar.model + g.Anahtar(), g, true); }
+        // 2026-11-23 inceleme (fikir 02:06 #4, r249 Profil karesi): rakip portreleri aynı 8'lik önbellekte; Dünya Turu rotası
+        // ve aşamalar yedi sekiz rakip çizince oyuncunun güncel portresi en eskiden atılıp yok ediliyordu. Üst çubuk avatarı
+        // anahtar değişmediği için yeniden kurulmuyor, yok edilen dokuyu gösterip boş daire kalıyordu. Güncel "ben" anahtarı
+        // atılmaz (yalnız o; eski görünüşlerin portreleri yine sırayla atılır, bellek sınırı aynı).
+        static string benSon;
+        public static Texture Benim() { var g = PlayerView.Benim(); benSon = "ben|" + Ayar.model + g.Anahtar(); return Al(benSon, g, true); }
         // Önbellekte varsa hemen döner, yoksa null ve çizmez (2026-11-22 inceleme, fikir 12:06 #2): Atölye başlığı her yükseltmede
         // kurulur; görünüş Dolap'ta değiştiyse eşzamanlı FBX çizimi dokunuş karesine düşmesin, ısıtma menü durgunken.
         public static Texture BenimHazir()
@@ -101,7 +106,7 @@ namespace BirdieSmash.Game
             try { t = Ciz(g, ben, boy, arka, kol, ayak); } catch (System.Exception e) { Debug.LogWarning("Birdie Smash portre çizilemedi: " + e.Message); return null; }
             if (t == null) return null;
             on[anahtar] = t; sr.Remove(anahtar); sr.Add(anahtar);
-            while (sr.Count > sinir) { var e = sr[0]; sr.RemoveAt(0); RenderTexture o; if (on.TryGetValue(e, out o) && o != null) { o.Release(); Object.Destroy(o); } on.Remove(e); }
+            while (sr.Count > sinir) { int ei = sr[0] == benSon && sr.Count > 1 ? 1 : 0; var e = sr[ei]; sr.RemoveAt(ei); RenderTexture o; if (on.TryGetValue(e, out o) && o != null) { o.Release(); Object.Destroy(o); } on.Remove(e); }
             return t;
         }
 

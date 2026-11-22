@@ -35,6 +35,40 @@ namespace BirdieSmash.Game
             t.SetPixels32(px); t.Apply(true, true); onbellek[k] = t; return t;
         }
 
+        // 2026-11-23 inceleme (fikir 02:06 #1, takılma): Dolap'ta forma rengine her dokunuş, desen satırındaki ~10 önizlemeyi yeni
+        // renkte 128² + mip olarak aynı karede üretiyordu ve hepsi ömür boyu önbellekte kalıyordu. Önizleme 44 pt karo içindir:
+        // 64², mip yok, 2×2 alt örnekle (ince şerit 64'te kaybolmasın). Ayrı önbellek, yalnız son iki renk tutulur: yeni sayfa
+        // kurulurken eski karolar hâlâ ağaçta olabilir, o yüzden bir önceki renk hemen yok edilmez, ondan eskisi edilir.
+        // Figürün dokusu Doku()'dan (128 + mip) gelmeye devam eder.
+        const int OW = 64;
+        static readonly Dictionary<string, Texture2D> onizleme = new Dictionary<string, Texture2D>();
+        static readonly List<string> onizlemeRenk = new List<string>();
+        public static Texture2D Onizleme(string desen, Color c)
+        {
+            if (string.IsNullOrEmpty(desen) || desen == "duz") return null;
+            string rk = ColorUtility.ToHtmlStringRGB(c), k = desen + "|" + rk; Texture2D t;
+            if (onizleme.TryGetValue(k, out t) && t != null) return t;
+            if (!onizlemeRenk.Contains(rk))
+            {
+                onizlemeRenk.Add(rk);
+                while (onizlemeRenk.Count > 2)
+                {
+                    string eski = "|" + onizlemeRenk[0]; onizlemeRenk.RemoveAt(0); var sil = new List<string>();
+                    foreach (var kv in onizleme) if (kv.Key.EndsWith(eski)) { if (kv.Value != null) Object.Destroy(kv.Value); sil.Add(kv.Key); }
+                    foreach (var s in sil) onizleme.Remove(s);
+                }
+            }
+            t = new Texture2D(OW, OW, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, name = "desen_on_" + desen };
+            var px = new Color32[OW * OW]; bool acik = c.r * .3f + c.g * .59f + c.b * .11f > .55f; Color kar = acik ? LACI : BEYAZ, vur = acik ? LACI : LIMON;
+            for (int y = 0; y < OW; y++) for (int x = 0; x < OW; x++)
+            {
+                Color a = Renk(desen, (x + .25f) / OW, (y + .25f) / OW, c, kar, vur) + Renk(desen, (x + .75f) / OW, (y + .25f) / OW, c, kar, vur)
+                        + Renk(desen, (x + .25f) / OW, (y + .75f) / OW, c, kar, vur) + Renk(desen, (x + .75f) / OW, (y + .75f) / OW, c, kar, vur);
+                px[y * OW + x] = a * .25f;
+            }
+            t.SetPixels32(px); t.Apply(false, true); onizleme[k] = t; return t;
+        }
+
         static Color Renk(string d, float u, float v, Color c, Color kar, Color vur)
         {
             switch (d)

@@ -1,4 +1,14 @@
 === UNITY ===
+Dolap ve Profil düzeltmeleri (23 Kasım gece):
+- Kilitli renkler artık soluk değil, gerçek renginde görünüyor; kilit ve kaçıncı seviyede açılacağı karonun altında küçük koyu bir etikette. Desen karolarında da yazı okunuyor.
+- Kariyerin sonunda açılan forma renginde artık "Final" yazıyor.
+- Kilitli bir renge ya da desene dokununca karo hafifçe sallanıyor, kilit sesi geliyor ve başlıkta nasıl açılacağı bir an görünüyor.
+- Forma rengini değiştirirken desen satırı daha hafif çiziliyor; eski telefonlarda dokunuşta takılma azalmalı.
+- Profil'de üst köşedeki yüz Kariyer'e girip çıktıktan sonra boş beyaz daireye dönüşmüyor.
+- Dolap'ta seçili kategori (Kıyafet gibi) şeridin dışında kalmıyor, ortada görünüyor.
+- Profil'de sıradaki seviyenin ödül satırı uzun liste yerine "2. seviyede 5 yeni eşya açılır" diye tek satır.
+Nasıl denenir: Dolap'ta Kıyafet'i aç: kilitli renkler parlak görünmeli, altlarında "Sv 14" gibi etiket olmalı. Kilitli birine dokun: karo sallanmalı, ses gelmeli, başlıkta koşul yazmalı. Forma rengini birkaç kez değiştir: desen karoları yeni renkte gelmeli, takılma olmamalı. Kariyer'i açıp kapat, sonra Profil'e geç: üst soldaki yuvarlakta yüzün görünmeli.
+
 Menülerde yeni görünüm: Stadyum Pop (22 Kasım gece):
 - Bütün menüler kort mavisine geçti. Oyna ekranında güneşin yerine salon ışığı ve oyuncuların bastığı yeşil kort var.
 - Ekranda tek sarı düğme var: oynatan düğme. Seçili sekme ve seçili çip de sarı; diğer düğmeler lacivert, hepsi koyu kenarlı ve kalın tabanlı, basınca aşağı oturuyor.

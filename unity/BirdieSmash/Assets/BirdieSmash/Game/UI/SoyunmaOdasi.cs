@@ -784,6 +784,7 @@ namespace BirdieSmash.Game
                 if (o.doku != null) { d.style.backgroundImage = new StyleBackground(o.doku); }
                 OrnekIc(d, o, o.id == secili, baslik);
                 if (o.acik) { var oo = o; var dd = d; d.AddManipulator(new Clickable(() => OrnekDokun(s, g, l, oo, dd, baslik, sec, yerinde))); }
+                else { var oo = o; var dd = d; d.AddManipulator(new Clickable(() => KilitDokun(g, dd, oo, baslik))); }
                 s.Add(d);
             }
         }
@@ -793,7 +794,14 @@ namespace BirdieSmash.Game
             Color zemin = o.renk != null ? Kit.Hex(o.renk) : Kit.Hex("#22343a");
             bool acikZemin = o.renk != null && zemin.r * .3f + zemin.g * .59f + zemin.b * .11f > .55f; Color ik = acikZemin ? Color.black : Color.white;
             if (on) d.Add(Ikon(Ikonlar.Tik, 18, ik));
-            else if (!o.acik) { d.Add(Ikon(Ikonlar.Kilit, 14, ik)); if (!string.IsNullOrEmpty(o.kisa)) { var sy = Yazi(o.kisa, 10, "renk-kilit-yazi"); sy.style.color = ik; d.Add(sy); } }
+            // 2026-11-23 inceleme (fikir 02:06 #2): kilitli karo %55 soluktu; açılacak rengin gerçeği görünmüyor, desen üstündeki kilit
+            // yazısı okunmuyordu. Karo tam renkte; kilit + koşul alt kenarda koyu hapta (her zeminde aynı beyaz yazı, açık kontur).
+            // Kilitli/açık ayrımı soluklukla değil hapla (ui-ux-pro #31). Hap küçük: desenin üst yarısı görünür kalır.
+            else if (!o.acik)
+            {
+                var hp = new VisualElement(); hp.AddToClassList("renk-kilit-hap"); hp.pickingMode = PickingMode.Ignore; d.Add(hp);
+                hp.Add(Ikon(Ikonlar.Kilit, 10, Color.white)); if (!string.IsNullOrEmpty(o.kisa)) { var sy = Yazi(o.kisa, 10, "renk-kilit-yazi"); sy.style.color = Color.white; hp.Add(sy); }
+            }
             else if (o.renk == null) d.Add(Ikon(Ikonlar.Kisi, 18, SOLUK));
             if (o.parla) { d.AddToClassList("renk--isin"); var pz = Yazi("◆", 11, "renk-isin-isaret"); pz.style.color = ik; d.Add(pz); }
             Erisim.Etiket(d, baslik + ", " + L.T(o.ad) + (o.parla ? ", " + L.T("parlar") : "") + (o.acik ? "" : ", " + o.neden), "dugme", on, !o.acik);
@@ -805,8 +813,25 @@ namespace BirdieSmash.Game
             if (!yerinde || KombinGiyiliNo() != kg) { SoyunmaGovdeKur(true); return; }
             for (int i = 0; i < s.childCount && i < l.Count; i++) if (s[i].ClassListContains("renk--secili")) OrnekIc(s[i], l[i], false, baslik);
             OrnekIc(d, o, true, baslik);
-            g.text = baslik + " · " + L.T(o.ad); Erisim.Etiket(g, g.text, "baslik");
+            kilitBaslik.Remove(g); g.text = baslik + " · " + L.T(o.ad); Erisim.Etiket(g, g.text, "baslik");
             RenkSonrasiKirli();
+        }
+        // 2026-11-23 inceleme (fikir 02:06 #7): kilitli karoya dokunuş ölüydü (ses, titreşim, yazı yok; §6.2 her dokunuş tek davranış).
+        // Kilit sesi + kısa yatay sallanma (hareketi azaltta yok) + grup başlığı 1,5 sn koşulu yazar; seçim değişmez. Koşul erişim
+        // etiketinde zaten okunuyor. Yalnız translate ve metin: yerleşim ve ayırma yok.
+        readonly Dictionary<Label, string> kilitBaslik = new Dictionary<Label, string>();
+        void KilitDokun(Label g, VisualElement d, Ornek o, string baslik)
+        {
+            Tik(d, "kilit");
+            if (!Ayar.reduce)
+            {
+                int[] dx = { 4, -4, 3, 0 }; for (int i = 0; i < dx.Length; i++) { int x = dx[i]; d.schedule.Execute(() => d.style.translate = new Translate(x, 0, 0)).StartingIn(i * 50); }
+                d.schedule.Execute(() => d.style.translate = StyleKeyword.Null).StartingIn(dx.Length * 50);
+            }
+            // asıl başlık bekletilir (userData erişim bilgisinin, kullanılmaz); açık karoya dokunulursa OrnekDokun siler, geri yazılmaz
+            if (!kilitBaslik.ContainsKey(g)) kilitBaslik[g] = g.text;
+            g.text = baslik + " · " + o.neden; string yazilan = g.text;
+            g.schedule.Execute(() => { string a; if (g.text == yazilan && kilitBaslik.TryGetValue(g, out a)) g.text = a; kilitBaslik.Remove(g); }).StartingIn(1500);
         }
         // SoyunmaGovdeKur'un kurmadığı öteki sekme yine kirli kalır (Atölye ve Dolap aynı Ayar'ı okur).
         void RenkSonrasiKirli() { kirli[(int)(gez.sekme == Sekme.Atolye ? Sekme.Soyunma : Sekme.Atolye)] = true; }

@@ -89,17 +89,26 @@ namespace BirdieSmash.Game
         // bitmemiş (genişlik 0) olduğundan kaydırma boşa gidiyor, Sırt seçiliyken şerit "Beden · Yüz · Saç · Şapka · B…" gösterip
         // seçili sekmeyi sağ kenarda kesiyordu. Parça şeridiyle aynı kalıp: genişlik gelince bir kez kaydırılır. ScrollTo çipi yalnız
         // kenara getirirdi; seçili çip görünür alanın ortasına alınır ki iki yanındaki komşular da okunsun (nereden geldim, nereye gidebilirim).
+        // 2026-11-23 inceleme (fikir 02:06 #5, r249 Dolap karesi): kaydırma çipin İLK yerleşiminde bir kez yapılıyordu; Stadyum Pop
+        // sonrası çipler ilk yerleşimden sonra da genişliyor (yazı tipi/sembol ataması sonraki karede), seçili çip yeniden sağ kenarın
+        // dışına itiliyordu. Artık şerit içeriğinin yerleşimi değiştikçe 1 sn boyunca yeniden ortalanır (kaydırma yerleşimi değiştirmez,
+        // oyuncunun parmağıyla çekişmez); aynı şerit için yeni ortalama istenirse eski bekçi bırakılır. Yerleşim hazırsa hemen.
+        static readonly Dictionary<ScrollView, EventCallback<GeometryChangedEvent>> ortaBekci = new Dictionary<ScrollView, EventCallback<GeometryChangedEvent>>();
         static void OrtayaKaydir(ScrollView sv, VisualElement el)
         {
-            EventCallback<GeometryChangedEvent> gc = null;
-            gc = e =>
+            EventCallback<GeometryChangedEvent> eski; if (ortaBekci.TryGetValue(sv, out eski)) { sv.contentContainer.UnregisterCallback(eski); ortaBekci.Remove(sv); }
+            float bitis = Time.unscaledTime + 1f;
+            System.Func<bool> uygula = () =>
             {
-                float g = sv.contentViewport.layout.width; if (el.layout.width <= 0 || g <= 0) return;
-                el.UnregisterCallback(gc);
+                float g = sv.contentViewport.layout.width; if (el.layout.width <= 0 || g <= 0) return false;
                 float x = el.layout.x + el.layout.width * .5f - g * .5f, enCok = Mathf.Max(0, sv.contentContainer.layout.width - g);
-                sv.scrollOffset = new Vector2(Mathf.Clamp(x, 0, enCok), sv.scrollOffset.y);
+                sv.scrollOffset = new Vector2(Mathf.Clamp(x, 0, enCok), sv.scrollOffset.y); return true;
             };
-            el.RegisterCallback(gc);
+            EventCallback<GeometryChangedEvent> gc = null;
+            gc = e => { if (Time.unscaledTime > bitis || el.parent == null) { sv.contentContainer.UnregisterCallback(gc); ortaBekci.Remove(sv); return; } uygula(); };
+            ortaBekci[sv] = gc; sv.contentContainer.RegisterCallback(gc);
+            el.schedule.Execute(() => { EventCallback<GeometryChangedEvent> b; if (ortaBekci.TryGetValue(sv, out b) && b == gc) { sv.contentContainer.UnregisterCallback(gc); ortaBekci.Remove(sv); } }).StartingIn(1000);
+            uygula();
         }
         // ---- Koleksiyon (2026-11-10, yasin: "dolap kısmı göz alıcı ve orada zaman geçirtici değil") ----
         // Dolap'ta "ne kadarı benim, sırada ne var" hiç yazmıyordu: kategori çipi yalnız addı, sahip olunan ile olunmayan ancak
@@ -803,7 +812,8 @@ namespace BirdieSmash.Game
         void KiyafetSayfa(VisualElement c)
         {
             var gr = Ayar.gear; int sv = gr.Seviye();
-            var fr = new List<Ornek>(); foreach (var m in Gear.RENK.Values) fr.Add(new Ornek { id = m.id, ad = m.ad, renk = m.renk, acik = gr.RenkAcik(m.id, Ayar.sampiyon), neden = m.kilit ? L.T("Kariyeri bitirince açılır") : L.T("Sv {0} gerekli", m.sv), kisa = m.kilit ? "" : L.T("Sv {0}", m.sv) });
+            var fr = new List<Ornek>(); foreach (var m in Gear.RENK.Values) fr.Add(new Ornek { id = m.id, ad = m.ad, renk = m.renk, acik = gr.RenkAcik(m.id, Ayar.sampiyon), neden = m.kilit ? L.T("Kariyeri bitirince açılır") : L.T("Sv {0} gerekli", m.sv), kisa = m.kilit ? L.T("Final") : L.T("Sv {0}", m.sv) });
+            // 2026-11-23 inceleme (fikir 02:06 #3): kariyer sonu rengi karoda yalnız kilitti, koşul yalnız erişim etiketindeydi; "Final".
             // Tüycük (2026-10-29): forma rengi gövdenin tüy rengidir (karın onun açığı); şort ağı yok, şort satırı gösterilmez (yalnız
             // görünen seçim sunulur). Gerçekçi ve Sade'de satırlar aynen.
             bool tc = Ayar.model == "tuycuk";
@@ -821,7 +831,7 @@ namespace BirdieSmash.Game
                 foreach (var o in Karakter.Gorunum("desen"))
                 {
                     bool ac = Ayar.DesenAcik(o); string cz = Desen.Coz(o.id, gr.kumas);
-                    dl.Add(new Ornek { id = o.id, ad = o.ad, renk = Ayar.GS.forma, doku = Desen.Doku(cz, fc), acik = ac, neden = o.kumas != null ? L.T("Kumaşı Atölye'de alınca açılır") : L.T("Sv {0} gerekli", o.sv), kisa = o.kumas != null ? L.T("Atölye") : L.T("Sv {0}", o.sv) });
+                    dl.Add(new Ornek { id = o.id, ad = o.ad, renk = Ayar.GS.forma, doku = Desen.Onizleme(cz, fc), acik = ac, neden = o.kumas != null ? L.T("Kumaşı Atölye'de alınca açılır") : L.T("Sv {0} gerekli", o.sv), kisa = o.kumas != null ? L.T("Atölye") : L.T("Sv {0}", o.sv) });
                 }
                 OrnekSira(c, L.T("Forma deseni"), dl, Ayar.GORUNUM["desen"], id => { Ayar.GORUNUM["desen"] = id; Ayar.KaydetSonra(); });
             }
