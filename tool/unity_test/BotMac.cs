@@ -160,6 +160,7 @@ static class BotMac
         Turlar34(); Drillar(); MacSayisilari(); MacHikayeleri(); Gunlukler(); UstaYollari(); Karakterler(); HedefEsya(); DolapSayim(); Gelisimler(); Efsaneler(); SmacHareketleri(); KozmetikGosterim(); Aldatmalar(); Pencereler(); FizikOlcumleri(); AyakIsleri();
         KosuYonleri();   // 2026-10-27 ekran/kosu (ayrı satır)
         VurusTutarliligi();   // 2026-10-27 ekran/kosu
+        KortYonu();   // 2026-11-22 vuruş parmağın kort yönünde gider
         ServisDurusu();   // 2026-11-14 gece: karşılayan servis kurulunca yorgun pozunda kalmaz
         Kadrajlar();   // 2026-10-27 yüksek top kadrajı (ayrı satır: birleştirme kolay olsun)
         FileStandart();   // 2026-10-27 ekran/file (ayrı satır: liste başka dallarda da büyüyor)
@@ -1929,6 +1930,29 @@ static class BotMac
             if (donAsim > 0) Fail("koşu: dönüş hızı/kalça ayrışması tavanı aşıldı " + donAsim);
         }
     }
+    // 2026-11-22 (yasin: "nereye yapıldıysa vuruş o directiona aksiyon almalı"): kort yönü (SwipeInput.kortVar) verilince
+    // hedef vuruş noktasından parmak yönündedir. Kenardan dümdüz ileri = çizgi boyu (tx ≈ hx), sağa eğik = hx'in sağı;
+    // uç sapma eski aralıkta (MID ± 3,12); kort yönü yoksa eski ekran oranı (bot ve testler değişmez); blok eski yönünde.
+    static void KortYonu()
+    {
+        Func<float, SwipeInput, ShotPlanR> plan = (hx, sw) =>
+        {
+            var M = new Match(1, new MatchOptions { easy = false });
+            M.s = new Shuttle { x = hx, y = Court.L - 2f, z = 2.5f, vy = 3, vz = -2, from = "op" }; M.me.x = hx; M.me.y = Court.L - 2f;
+            return M.ShotPlan(sw, new Reach(), true);
+        };
+        float sol = Court.SL + .4f;
+        var duz = plan(sol, new SwipeInput { dx = 0, dy = -200, speed = 1.2f, R = 40, kortVar = true, kortR = 0 });
+        if (Math.Abs(duz.tx - sol) > .01f) Fail("kort yönü: kenardan dümdüz clear çizgi boyu gitmedi (tx " + duz.tx + ")");
+        var eski = plan(sol, new SwipeInput { dx = 0, dy = -200, speed = 1.2f, R = 40 });
+        if (Math.Abs(eski.tx - Court.MID) > .01f) Fail("kort yönü yokken eski ekran oranı bozuldu (tx " + eski.tx + ")");
+        var sag = plan(sol, new SwipeInput { dx = 60, dy = -200, speed = 2.2f, R = 40, kortVar = true, kortR = .15f });
+        if (sag.tx <= sol + .3f) Fail("kort yönü: sağa eğik smaç sağa gitmedi (tx " + sag.tx + ")");
+        var uc = plan(Court.MID, new SwipeInput { dx = 300, dy = -100, speed = 1.2f, R = 40, kortVar = true, kortR = 5 });
+        if (uc.tx > Court.MID + 3.12f + .001f) Fail("kort yönü: uç sapma eski aralığı aştı (tx " + uc.tx + ")");
+        Console.WriteLine("kort yönü: düz " + duz.tx.ToString("0.00") + " (hx " + sol.ToString("0.00") + "), eğik smaç " + sag.tx.ToString("0.00") + ", uç " + uc.tx.ToString("0.00"));
+    }
+
     // Vuruş tutarlılığı (2026-10-27, ekran/kosu; yasin "animasyon tutarsızlıklarını gözden geçir ... backhand ve forehand
     // smaç, drive, net drop clear"). Bot maçlarında gösterilen hazırlık klibi kare kare izlenir:
     //  - hazırlıkta el değişimi (forehand ↔ backhand pozu, raket bir yandan öbürüne): önce bende 265, rakipte 286 / ~1100 temas;
