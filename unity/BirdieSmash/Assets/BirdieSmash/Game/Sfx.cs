@@ -154,6 +154,7 @@ namespace BirdieSmash.Game
         void Init(Transform listener)
         {
             src = gameObject.AddComponent<AudioSource>(); src.playOnAwake = false; src.spatialBlend = 0;
+            uiSrc = gameObject.AddComponent<AudioSource>(); uiSrc.playOnAwake = false; uiSrc.spatialBlend = 0;   // 2026-11-22 menü sesleri: perde oynatması src.pitch'i (Tik, Okudun) bozmasın diye ayrı kaynak
             trb = gameObject.AddComponent<AudioSource>(); trb.playOnAwake = false; trb.spatialBlend = 0;   // tribün tek-atımlıkları: düzeyi Ayar.SeyirciK (Update)
             // Vuruşlar perdeli çaldığı için ayrı kaynaklardan (PlayOneShot perde almaz); 4 kaynak üst üste binen vuruşa yeter.
             for (int i = 0; i < vurusSrc.Length; i++) { vurusSrc[i] = gameObject.AddComponent<AudioSource>(); vurusSrc[i].playOnAwake = false; vurusSrc[i].spatialBlend = 0; }
@@ -186,6 +187,7 @@ namespace BirdieSmash.Game
         public void Isit()
         {
             isitSira.Clear();   // tel/raket değişip yeniden istenirse sıra ikilenmesin
+            foreach (var u in UI_TURLER) { string uu = u; isitSira.Enqueue(() => UiKlip(uu)); }   // 2026-11-22: ilk menü dokunuşunda sentez takılması olmasın
             Sira("clear", "good", false, false, true, false); Sira("drop", "good", false, false, true, false);
             foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect", "poor" }) { string tt = t, qq = q; Sira(tt, qq, false, false, false, false); }
             Sira("smash", "perfect", false, true, false, false); Sira("smash", "good", false, true, false, false);
@@ -512,6 +514,43 @@ namespace BirdieSmash.Game
         public void OgrTamam() { Arpej(660, new[] { 0, 4, 7 }, .14f, .05f, .06f); }
         public void Yukselt() { Arpej(523, new[] { 0, 4, 7, 12 }, .14f, .05f, .06f); }
         public void Tik(float f = 880) { Ton(f, .05f, "triangle", .04f); }
+        // 2026-11-22 (yasin: "tüm butonlarda tatmin edici ses olmalı"; ses tasarımcısı ajanının tarifi): menü dokunuşları türüne göre
+        // sentezlenir, bir kez üretilip önbellekte durur (Bir). Tek 50 ms'lik bip her düğmede aynıydı ve telefon hoparlöründe incecikti.
+        // pop = varsayılan düğme/kart, bas = ekranın tek birincil düğmesi (gövdeli "tok" + parlak kuyruk), sec = çip/segment, sekme = alt
+        // sekme, geri = geri/kapat (alçalan iki nota), kilit = kilitli öğe (tok, perdesiz; hata vızıltısı değil), kaydir = kart oturması,
+        // odul = satın alma/ödül (üç nota). pop ve sec ±%3 perde: art arda dokunuş robot gibi tekrarlamasın. Düzey oyun içi vuruşların
+        // altında (en yüksek tepe bas .14; Tik .04 idi). Sessiz ayarı AudioListener'dan (GameRoot), ayrı kontrol gerekmez.
+        AudioSource uiSrc;
+        public static readonly string[] UI_TURLER = { "pop", "bas", "sec", "sekme", "geri", "kilit", "kaydir", "odul" };
+        public void UiSes(string tur)
+        {
+            if (uiSrc == null) { Tik(); return; }
+            uiSrc.pitch = tur == "pop" || tur == "sec" ? 1 + (float)(rnd.NextDouble() - .5) * .06f : 1;
+            uiSrc.PlayOneShot(UiKlip(tur));
+        }
+        AudioClip UiKlip(string tur)
+        {
+            return Bir("ui_" + tur, s =>
+            {
+                System.Func<float, Synth.Biquad> lp = f => new Synth.Biquad("lowpass", f, .707f);
+                switch (tur)
+                {
+                    case "bas":
+                        s.Decay(0, 150, "sine", .14f, .09f, 1.8f); s.Decay(0, 300, "triangle", .07f, .06f, 1.3f, lp(1800));
+                        s.Burst(0, .012f, "bandpass", 1800, .05f, 1); s.Tone(.025f, 1568, .07f, "sine", .04f); s.Tone(.025f, 2349, .05f, "sine", .02f); break;
+                    case "sec": s.Tone(0, 1175, .05f, "triangle", .045f, lp(4000)); s.Tone(.022f, 1568, .045f, "sine", .035f); break;
+                    case "sekme": s.Decay(0, 440, "triangle", .07f, .07f, 1.2f, lp(2200)); s.Burst(0, .01f, "bandpass", 1500, .025f, 1); break;
+                    case "geri": s.Tone(0, 523, .05f, "sine", .04f); s.Tone(.035f, 392, .06f, "sine", .04f, lp(1800)); break;
+                    case "kilit": s.Decay(0, 180, "triangle", .07f, .05f, 1, lp(700)); s.Burst(0, .02f, "lowpass", 600, .05f, .707f); break;
+                    case "kaydir": s.Burst(0, .012f, "bandpass", 3000, .02f, 2); s.Tone(0, 1400, .03f, "sine", .012f); break;
+                    case "odul":
+                        s.Tone(0, 988, .09f, "triangle", .06f); s.Tone(.07f, 1319, .09f, "triangle", .06f);
+                        s.Tone(.14f, 1976, .2f, "triangle", .07f); s.Tone(.14f, 3951, .12f, "sine", .015f); break;
+                    default:
+                        s.Decay(0, 520, "sine", .07f, .07f, 1.35f); s.Tone(0, 1040, .035f, "triangle", .025f, lp(3200)); s.Burst(0, .008f, "bandpass", 2400, .03f, 1.2f); break;
+                }
+            }, tur == "odul" ? .4f : .12f);
+        }
         // 2026-11-13 inceleme #2: tel kaydırıcısında her tam lbs bir çınlama; perde gerginlikle bir oktav yükselir (18 lbs tok,
         // 32 lbs tiz). Gerçek oyuncu gerginliği sesinden tanır. 15 ayrı perde: klipler Bir() önbelleğinde kalır.
         public void TelTik(float lbs) { float k = Mathf.Clamp01((lbs - 18) / 14f); Ton(Mathf.Round(520 * Mathf.Pow(2, k)), .04f, "triangle", .028f); }

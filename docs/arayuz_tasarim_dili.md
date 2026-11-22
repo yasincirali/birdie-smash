@@ -196,11 +196,29 @@ gezinme ve açılır panel, Brawl Stars iri simge ve bölmeli yerleşim, Apple H
    tam). Kategoriye dokunmak kamerayı o bölgeye götürür, eşyaya dokunmak figürde dener, tek turuncu düğme Giy/Al. Raket
    şeridin son kategorisi. iPad'de çekmece sağ panel, figür solda tam boy. Durak geçişi animasyonsuz: vitrin RT'si kutuyla
    boyutlanır, her karede boy değiştirmek takılma demektir (§7.8).
-2. **Kariyer = dikey tur yolu.** Başlıkta ‹ tur ›; altı basamak zikzak yol üstünde (geçilen ✓ + yıldız, şimdiki büyük güneş
-   diski + "Şimdi", kilitli kilit), sonunda mühür. Tek birincil eylem altta sabit "Sıradaki maç". Yol yukarıdan aşağı:
+2. **Kariyer = Dünya Turu + dikey rota** (22 Kasım 2026, yasin "önerin gibi ilerle"; seçenekler
+   `https://claude.ai/artifact/19MR43zwtCSMgJxmpkLeNM`, A + B'nin durak ödülleri + C'nin turnuva aşamaları; kalıp Tennis
+   Clash / Golf Clash şehir turu). Üstte sekiz tur kartı yatay şeritte (kart 232 pt: Painter2D mekân sahnesi 112 pt, "Tur n"
+   etiketi, Bitti/Buradasın rozeti, ad, maç sayısı + yıldız + ilerleme çubuğu + mühür satırı; kilitlide örtü + kilit +
+   neden). Kart dokunuşu turu seçer, seçili kart turuncu çerçeve. Altında hikâye satırı; grup turlarında (ilk durak "grup")
+   Grup · Çeyrek · Yarı · Final kutuları. Rota: altı durak zikzak (durak adı şehir, altında rakip; geçilen ✓ + yıldız,
+   şimdiki büyük disk + "Şimdi"), her durağın ucunda o duraktan alınacak Tüy (Gear.Odul: ilk galibiyet +60, eksik yıldız
+   başı +20; uydurma sayı yok), sonunda mühür. Tek birincil eylem altta sabit "Sıradaki maç". Yol yukarıdan aşağı:
    okuma ve ekran okuyucu sırası basamak sırasıyla aynı.
 3. **Atölye = seçici + çubuk.** Seçeneği çip şeridinde seç, önizlenen seçeneğin etkisini çubukla göster (orta çizgi = nötr,
    artı sağa limon, eksi sola soluk, ▲/▼ ve yüzde yazısı yanında). Kilitli seçenek de önizlenir; düğme kaç seviye kaldığını
    söyler. Uzun kart listesi yerine bir kart.
 4. **Basma dili tek.** Her düğme, çip, ikon düğmesi ve CTA basınca .06 sn'de %95, bırakınca .26 sn ease-out-back; dokunuşta
    tick titreşimi (UiOge). Hareketi azaltta küçülme yok, renk değişimi kalır.
+5. **Menü sesleri türe göre** (22 Kasım 2026, yasin "tüm butonlarda tatmin edici ses"; `Sfx.UiSes`). Her dokunuş bir ses
+   çalar, tür öğenin sınıfından gelir: `pop` (varsayılan düğme, kart), `bas` (birincil düğme; "hit" titreşimi), `sec` (çip),
+   `sekme` (alt gezinme), `geri` (geri, alt sayfa kapanışı), `kilit` (pasif/kilitli; hata vızıltısı değil), `kaydir`
+   (giyilen parça), `odul` (satın alma, seviye, tur mührü). Sesler sentezlenir, önbellekte durur, açılışta ısıtılır; düzey
+   oyun içi vuruşların altında. Yeni dokunulur öğe kendi sesini bu listeden alır, yeni bip yazılmaz.
+6. **Birincil düğme tıknaz.** Alt kenarı 4 pt koyu turuncu; basınca kenar 1 pt'ye iner, düğme 2 pt aşağı oturur (basılabilir
+   yüzey, spor oyunu menü dili). Dolgu ve yazı rengi aynı.
+7. **Maç içi göstergeler menüyle aynı dili konuşur** (22 Kasım 2026, yasin: güç göstergesi yeni tasarımla tek bütün). Renk
+   rolleri §8.1'deki gibi: oyuncuya ait gösterge (vuruş gücü yayı, top izi) limon, rakibe ait orkide, ödül altın; turuncu
+   yalnız seçim/birincil eylem, kortta kullanılmaz. Parlama, nabız, beyaz flaş, gradyan yok; düz renk + yarı saydamlık. Çizgi
+   1,5 pt, vurgu 2 pt, uçlar yuvarlak. Hızlı dolum (ease-out), yavaş sönüm; hareketi azaltta dolum anlık. Anlam yalnız renkle
+   verilmez (ör. güç = yanan dilim sayısı).

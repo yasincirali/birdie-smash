@@ -1,4 +1,11 @@
 === UNITY ===
+Kariyer artık bir dünya turu, menü düğmelerinde yeni sesler (22 Kasım gece):
+- Kariyer'in üstünde sekiz turun her biri resimli bir kart: her turun kendi mekânı (mahalle salonu, gün batımı şehri, gece arenası...), kaç maçın bittiği, yıldızlar ve tur mührü kartta görünüyor. Kartı kaydırıp dokunarak tur seçiliyor.
+- Rotadaki her durak artık şehrin adını, altında rakibi yazıyor; durağın yanında o maçtan kazanacağın Tüy görünüyor.
+- Dünya Finalleri ve Efsaneler Kupası'nda rotanın üstünde Grup, Çeyrek, Yarı ve Final aşamaları var.
+- Her düğmenin türüne göre kendi sesi var: ana düğme dolgun bir "tok", seçim çipleri parlak iki nota, geri dönüş alçalan iki nota, kilitli öğe boğuk bir ses, satın alma ve ödül anlarında üç notalı kısa bir müzik. Ana düğme basınca aşağı oturuyor.
+Nasıl denenir: Kariyer'i aç: üstte resimli tur kartları olmalı, bulunduğun turda "Buradasın" yazmalı. Kartları sağa kaydır, kilitli bir tura dokun: kilit ve nedeni görünmeli. Rotada durakların yanında Tüy miktarı olmalı. Menülerde farklı düğmelere bas: ana düğme, çip, geri ve sekme farklı ses vermeli.
+
 Ayarlar, Nasıl oynanır ve Dolap şeridi (22 Kasım akşam):
 - Ayarlar'da Ses, Müzik ve Titreşim anahtarı artık sayfayı baştan kurmuyor; sayfa kıpırdamadan yerinde kalıyor.
 - Seyirci ayarını değiştirince seçtiğin düzeyde kısa bir alkış duyuluyor (Kapalı'da ses yok).
