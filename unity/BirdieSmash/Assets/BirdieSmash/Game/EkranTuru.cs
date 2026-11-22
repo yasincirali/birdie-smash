@@ -537,9 +537,14 @@ namespace BirdieSmash.Game
             string[] ad = { "drop", "clear", "smac" }; float[] hiz = { .5f, 1.2f, 2.2f };
             for (int i = 0; i < 3; i++)
             {
-                botAcik = true; float t0 = Time.realtimeSinceStartup; Reach R;
-                while (Time.realtimeSinceStartup - t0 < 30 && !(root.match.s != null && root.match.s.from == "op" && root.match.ReachInfo(out R))) yield return null;
-                botAcik = false; bool ok = root.match.SwipeShot(new SwipeInput { dx = 0, dy = -200, speed = hiz[i], R = 40, dist = 4, side = 1 });
+                // r245: drop karesi "_yok" çıktı (erişim karesinde top sayı arasına düştü); vuruş tutana dek 30 sn içinde yeniden dene.
+                float t0 = Time.realtimeSinceStartup; Reach R; bool ok = false;
+                while (!ok && Time.realtimeSinceStartup - t0 < 30)
+                {
+                    botAcik = true; yield return null;
+                    if (root.match.s != null && root.match.s.from == "op" && root.match.ReachInfo(out R)) { botAcik = false; ok = root.match.SwipeShot(new SwipeInput { dx = 0, dy = -200, speed = hiz[i], R = 40, dist = 4, side = 1 }); }
+                }
+                botAcik = false;
                 float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < .2f) yield return null;
                 yield return Cek("guc_yayi_" + ad[i] + (ok ? "" : "_yok"));
             }
