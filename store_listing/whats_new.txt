@@ -1,4 +1,10 @@
 === UNITY ===
+Kariyer tur kartları daha akıcı (22 Kasım gece, ikinci tur):
+- Tur kartına dokununca sayfa artık baştan kurulmuyor: kart yumuşakça ortaya kayıyor, altındaki rota hafifçe beliriyor. Seçili kart çerçevesi yavaşça renk değiştiriyor ve kart biraz yükseliyor.
+- Kartları kaydırıp bırakınca şerit en yakın karta oturuyor, kısa bir "tık" sesi ve hafif titreşim geliyor.
+- "Buradasın" etiketinde artık oyuncunun yüzü var.
+Nasıl denenir: Kariyer'i aç, tur kartlarına sırayla dokun: sayfa zıplamamalı, kart ortaya kaymalı. Şeridi parmağınla kaydırıp iki kartın arasında bırak: en yakın kart ortaya oturmalı ve ses gelmeli. Kendi turunun kartında yüzünü gör.
+
 Kariyer artık bir dünya turu, menü düğmelerinde yeni sesler (22 Kasım gece):
 - Kariyer'in üstünde sekiz turun her biri resimli bir kart: her turun kendi mekânı (mahalle salonu, gün batımı şehri, gece arenası...), kaç maçın bittiği, yıldızlar ve tur mührü kartta görünüyor. Kartı kaydırıp dokunarak tur seçiliyor.
 - Rotadaki her durak artık şehrin adını, altında rakibi yazıyor; durağın yanında o maçtan kazanacağın Tüy görünüyor.

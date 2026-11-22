@@ -65,15 +65,95 @@ namespace BirdieSmash.Game
 
     public partial class UiKok
     {
+        ScrollView turSerit; VisualElement turAltKap;
+
         // Sekiz tur kartı yatay şeritte; seçili kart görünür alanın ortasına alınır (KarakterOdasi.OrtayaKaydir kalıbı).
-        VisualElement TurSerit(int secili, int sira)
+        // 2026-11-22 inceleme (fikir 22:06 #2): düz ScrollView bırakınca iki kartın arasında yarım kalabiliyordu. Kaydırma durunca
+        // (değer 150 ms değişmez ve parmak kalkmışsa) en yakın kart .25 sn ease-out ile ortaya oturur, bir kez "kaydir" sesi + tick
+        // titreşim (Dolap'ta giyilen parçanın sesiyle aynı dil). Seçim değişmez, yalnız konum. Parmak yeniden basarsa kayma durur.
+        // Hareketi azaltta anında oturur, ses kalır. Bekçi yalnız değer değişince başlar, durunca biter (sürekli zamanlayıcı yok).
+        // PointerUp kaçarsa basili true kalır ve şerit hiç oturmaz: düz ScrollView'a döner, yanlış anda zıplamaz.
+        ScrollView TurSerit(int secili, int sira)
         {
             var sv = new ScrollView(ScrollViewMode.Horizontal); sv.AddToClassList("tur-serit");
             sv.horizontalScrollerVisibility = ScrollerVisibility.Hidden; sv.verticalScrollerVisibility = ScrollerVisibility.Hidden;
             VisualElement sec = null;
             for (int t = 0; t < KariyerVeri.TUR; t++) { var k = TurKart2(t, t == secili, sira); sv.Add(k); if (t == secili) sec = k; }
             if (sec != null) OrtayaKaydir(sv, sec);
+            bool basili = false, izliyor = false; float sonDeg = 0;
+            sv.RegisterCallback<PointerDownEvent>(e => basili = true, TrickleDown.TrickleDown);
+            sv.RegisterCallback<PointerUpEvent>(e => basili = false, TrickleDown.TrickleDown);
+            sv.RegisterCallback<PointerCancelEvent>(e => basili = false, TrickleDown.TrickleDown);
+            sv.horizontalScroller.valueChanged += v =>
+            {
+                sonDeg = Time.realtimeSinceStartup; if (izliyor || seritKayiyor) return; izliyor = true;
+                sv.schedule.Execute(() =>
+                {
+                    if (seritKayiyor || basili || Time.realtimeSinceStartup - sonDeg < .15f) return;
+                    izliyor = false; SeritOtur(sv, EnYakinKart(sv), true);
+                }).Every(50).Until(() => !izliyor);
+            };
             return sv;
+        }
+
+        static VisualElement EnYakinKart(ScrollView sv)
+        {
+            float cx = sv.scrollOffset.x + sv.contentViewport.layout.width * .5f, en = float.MaxValue; VisualElement sec = null;
+            foreach (var k in sv.contentContainer.Children()) { float d = Mathf.Abs(k.layout.center.x - cx); if (d < en) { en = d; sec = k; } }
+            return sec;
+        }
+
+        // Kartı görünür alanın ortasına kaydırır; zaten oradaysa (1 px) hiçbir şey yapmaz, ses de çalmaz.
+        bool seritKayiyor;
+        void SeritOtur(ScrollView sv, VisualElement el, bool ses)
+        {
+            float g = sv.contentViewport.layout.width; if (el == null || g <= 0 || el.layout.width <= 0) return;
+            float x0 = sv.scrollOffset.x, x = Mathf.Clamp(el.layout.center.x - g * .5f, 0, Mathf.Max(0, sv.contentContainer.layout.width - g));
+            if (Mathf.Abs(x - x0) < 1) return;
+            System.Action bitti = () => { if (ses) { root.sfx.UiSes("kaydir"); Yerel.Hap("tick"); } };
+            if (Ayar.reduce) { sv.scrollOffset = new Vector2(x, sv.scrollOffset.y); bitti(); return; }
+            float t0 = Time.realtimeSinceStartup, son = x0; seritKayiyor = true;
+            sv.schedule.Execute(() =>
+            {
+                if (!seritKayiyor) return;
+                if (Mathf.Abs(sv.scrollOffset.x - son) > 1) { seritKayiyor = false; return; }   // oyuncu yeniden kaydırdı
+                float t = Mathf.Clamp01((Time.realtimeSinceStartup - t0) / .25f), e = 1 - (1 - t) * (1 - t) * (1 - t);
+                sv.scrollOffset = new Vector2(Mathf.Lerp(x0, x, e), sv.scrollOffset.y); son = sv.scrollOffset.x; Kalite.Hareket();
+                if (t >= 1) { seritKayiyor = false; bitti(); }
+            }).Every(16).Until(() => !seritKayiyor);
+        }
+
+        // 2026-11-22 inceleme (fikir 22:06 #1): kart dokunuşu SekmeKur ile bütün Kariyer sekmesini (sekiz Painter2D sahnesi, Dünya
+        // sırası, şerit, alt şerit) baştan kuruyordu; yeni ScrollView seçili kartı tek karede ortaya zıplatıyordu. Artık şerit
+        // kalır: eski/yeni kartın seçili sınıfı ve erişim durumu değişir, kart .25 sn ile ortaya kayar, yalnız alt kap (hikâye,
+        // aşamalar, rota, Usta) yeniden kurulur ve .12 sn belirir (PR #158 Dolap kategori kalıbı). Basamak animasyonu yeniden
+        // oynamaz (eski yolda BasamakAniHazirla aynı sırayı görüp sıfırlıyordu). Şerit panelde değilse eski SekmeKur yolu.
+        void TurSecYerinde(int t)
+        {
+            if (turSerit == null || turAltKap == null || turAltKap.panel == null || t < 0 || t >= turSerit.contentContainer.childCount) { KariyerTurSec(t); return; }
+            var cc = turSerit.contentContainer; int once = kariyerTur; kariyerTur = t;
+            if (once >= 0 && once < cc.childCount) KartSecili(cc[once], false); KartSecili(cc[t], true);
+            basAniDen = basAniA = -1;
+            TurAltKur(turAltKap, t, Ayar.ilerleme.Siradaki(), true);
+            SeritOtur(turSerit, cc[t], false);
+        }
+        static void KartSecili(VisualElement k, bool s)
+        {
+            k.EnableInClassList("tur-kart2--secili", s);
+            if (k.userData is ErisimBilgi b) { string sec = ", " + L.T("Seçili"); if (b.etiket.EndsWith(sec)) b.etiket = b.etiket.Substring(0, b.etiket.Length - sec.Length); if (s) b.etiket += sec; b.secili = s; }
+        }
+
+        // Seçili turun altı: hikâye/hazırlık, finallerde aşamalar, rota, son turda Usta yolu.
+        // sol: içerik yeni iç kapta solgun doğar ve 16 ms sonra belirir (ekrandaki kaba eklense önce 1→0 sönerdi; AntrenmanEkran kalıbı).
+        void TurAltKur(VisualElement kap, int tr, int sira, bool sol = false)
+        {
+            kap.Clear();
+            if (sol && !Ayar.reduce) { var ic = new VisualElement(); ic.AddToClassList("ant-liste"); ic.AddToClassList("koz-solgun"); ic.schedule.Execute(() => ic.RemoveFromClassList("koz-solgun")).StartingIn(16); kap.Add(ic); kap = ic; }
+            var tv = tr < KariyerVeri.Turlar.Length ? KariyerVeri.Turlar[tr] : null; bool veri = tv != null && tv.Var;
+            kap.Add(TurAlt(tr, tv));
+            if (veri && GrupTuru(tr)) kap.Add(FinalAsama(tr, sira));
+            if (veri) kap.Add(TurYol(tr, sira));
+            if (veri && tr == KariyerVeri.TUR - 1) kap.Add(UstaKart());   // 2026-10-26: Usta yolu son turun altında
         }
 
         VisualElement TurKart2(int t, bool secili, int sira)
@@ -88,12 +168,15 @@ namespace BirdieSmash.Game
             if (!acik) { var ort = new VisualElement(); ort.AddToClassList("tur-kart2-ortu"); ort.pickingMode = PickingMode.Ignore; ort.Add(Ikon(Ikonlar.Kilit, 26, YAZI)); sh.Add(ort); }
             var no = Yazi(L.T("Tur {0}", t + 1), 12, "tur-kart2-no"); no.pickingMode = PickingMode.Ignore; sh.Add(no);
             if (bitti) { var bt = new VisualElement(); bt.AddToClassList("tur-kart2-bitti"); bt.pickingMode = PickingMode.Ignore; bt.Add(Ikon(Ikonlar.Tik, 14, KOYU)); bt.Add(Yazi(L.T("Bitti"), 12, "koyu-yazi")); sh.Add(bt); }
-            else if (burada) { var bt = new VisualElement(); bt.AddToClassList("tur-kart2-bitti"); bt.AddToClassList("tur-kart2-burada"); bt.pickingMode = PickingMode.Ignore; bt.Add(Yazi(L.T("Buradasın"), 12, "koyu-yazi")); sh.Add(bt); }
+            else if (burada) { var bt = new VisualElement(); bt.AddToClassList("tur-kart2-bitti"); bt.AddToClassList("tur-kart2-burada"); bt.pickingMode = PickingMode.Ignore;
+                // 2026-11-22 inceleme (fikir 22:06 #3): rozet ile seçili çerçeve aynı turuncu; "ben buradayım" yüzle ayrılır (yalnız renkle anlam yok).
+                var av = new VisualElement(); av.AddToClassList("tur-kart2-av"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 14); bt.Add(av);
+                bt.Add(Yazi(L.T("Buradasın"), 12, "koyu-yazi")); sh.Add(bt); }
 
             var gv = new VisualElement(); gv.AddToClassList("tur-kart2-govde"); gv.pickingMode = PickingMode.Ignore; k.Add(gv);
             var ad = Yazi(L.T(TurAd(t)), 20, "tur-kart2-ad"); ad.name = "tur-ad"; SozcukSigdir(ad); gv.Add(ad);
             if (tv != null && tv.bolum.Length > 0) gv.Add(Yazi(L.T(tv.bolum), 12, "soluk"));
-            string erisim = L.T("Tur {0}", t + 1) + ", " + L.T(TurAd(t));
+            string erisim = L.T("Tur {0}/{1}", t + 1, KariyerVeri.TUR) + ", " + L.T(TurAd(t));   // 2026-11-22 (fikir 22:06 #7): kaydırma çubuğu gizli, kaç tur olduğu sesle de duyulsun
             if (!acik) { var ky = Yazi(KilitNedeni(t), 12, "soluk"); ky.AddToClassList("tur-kart2-kilit-yazi"); gv.Add(ky); erisim += ", " + KilitNedeni(t); }
             else if (veri)
             {
@@ -104,7 +187,7 @@ namespace BirdieSmash.Game
                 var mr = Satir("tur-kart2-odul"); mr.pickingMode = PickingMode.Ignore; mr.Add(Ikon(Ikonlar.Kupa, 14, mh > 0 ? ALTIN : SOLUK)); mr.Add(Yazi(ms, 12, mh > 0 ? "altin" : "soluk")); gv.Add(mr);
                 erisim += ", " + L.T("{0}/6 maç", kaz) + ", " + L.T("{0}/{1} yıldız", p.TurYildiz(t), 18) + ", " + ms;
             }
-            int tt = t; k.AddManipulator(new Clickable(() => { Tik(k); if (tt != kariyerTur) KariyerTurSec(tt); }));
+            int tt = t; k.AddManipulator(new Clickable(() => { Tik(k); if (tt != kariyerTur) TurSecYerinde(tt); }));
             Erisim.Etiket(k, erisim + (secili ? ", " + L.T("Seçili") : ""), "dugme", secili);
             return k;
         }
