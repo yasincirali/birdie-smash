@@ -1092,6 +1092,8 @@
 .yol-yazi { flex-grow: 1; flex-shrink: 1; }
 /* r241: rakip adı satırda büzülüp "The/o" diye kırılıyordu (ödül hapı satırı daralttı); etiket satırı doldurur, yıldızlar uçta. */
 .yol-yazi .rakip-satir > Label { flex-grow: 1; flex-shrink: 1; }
+/* r242 ×2: küçülen ad etiketi sütunda dikey büzülüp alt satırı kesiyordu; yazı sütununda etiket yüksekliği büzülmez. */
+.yol-yazi > Label { flex-shrink: 0; }
 /* Finallerde turnuva aşamaları: dört eşit kutu, şimdiki turuncu çerçeve, tamam limon ✓, kilitli soluk kilit (biçim + yazı). */
 .final-asama { flex-direction: row; justify-content: space-between; margin: 8px 0 4px 0; }
 .asama-kutu { flex-grow: 1; flex-basis: 0; margin: 0 3px; min-height: 64px; border-radius: 12px; align-items: center; justify-content: center; background-color: var(--cam2); border-width: 1px; border-color: rgba(255, 255, 255, 0.06); padding: 6px 2px; }

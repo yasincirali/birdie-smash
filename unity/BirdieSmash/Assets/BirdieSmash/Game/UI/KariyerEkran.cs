@@ -103,7 +103,7 @@ namespace BirdieSmash.Game
                     // 2026-11-22 Dünya Turu: rota durağı önce şehir (turun dili şehir şehir), altında rakip; şimdiki durakta "Şimdi · şehir".
                     var ad = Yazi((simdi ? L.T("Şimdi") + " · " : "") + L.T(kb.yer), 15, "kalin"); if (simdi) ad.AddToClassList("durum-simdi"); SozcukSigdir(ad); yz.Add(ad);   // r241 ×2: "Singapo/re" harf ortasından bölünüyordu
                     var alt = Satir("rakip-satir"); alt.pickingMode = PickingMode.Ignore; yz.Add(alt);
-                    alt.Add(Yazi(st.isim + (p.Acik(g) ? " · " + L.T(st.ad) : ""), 13, "soluk"));
+                    { var ry = Yazi(st.isim + (p.Acik(g) ? " · " + L.T(st.ad) : ""), 13, "soluk"); SozcukSigdir(ry); alt.Add(ry); }
                     if (p.Kazanildi(g)) { var ys = UcYildiz(p.Maske(g), 13); ys.style.marginLeft = 6; alt.Add(ys); }
                 }
                 sr.Add(dg); sr.Add(yz); dugumler.Add(dg);
