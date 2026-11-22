@@ -119,7 +119,7 @@ namespace BirdieSmash.Game
             ic.Add(Yazi(t, px, "dugme-yazi"));
             if (!string.IsNullOrEmpty(alt)) ic.Add(Yazi(alt, px * .78f, "dugme-alt"));
             if (ok != null) { var ol = Yazi(ok, px + 2, "dugme-ok"); ol.pickingMode = PickingMode.Ignore; d.Add(ol); }
-            if (a != null) d.AddManipulator(new Clickable(() => { Tik(); a(); }));   // 2026-11-06: çip ve büyük düğme gibi her düğme dokunuşta ince tık (hareketi azaltta Hap susar); 2026-11-19 ses de burada (Tik)
+            if (a != null) d.AddManipulator(new Clickable(() => { Tik(d); a(); }));   // 2026-11-06: çip ve büyük düğme gibi her düğme dokunuşta ince tık (hareketi azaltta Hap susar); 2026-11-19 ses de burada (Tik)
             string et = string.IsNullOrEmpty(alt) ? t : t + ", " + alt; if (ok == "↗") et += ". " + L.T("Tarayıcıda açılır");
             Erisim.Etiket(d, et, "dugme", false, a == null);
             return d;
@@ -133,7 +133,7 @@ namespace BirdieSmash.Game
             if (secili) { var tk = Ikon(Ikonlar.Tik, 16, TURUNCU); tk.AddToClassList("cip-tik"); ic.Add(tk); }   // 2026-11-07: seçili dili turuncu çerçeve + ✓ (krem dolgu kalktı); segment sekmesinde ✓ gizli (USS)
             var yz = new VisualElement(); yz.AddToClassList("cip-yazilar"); yz.pickingMode = PickingMode.Ignore; ic.Add(yz);
             yz.Add(Yazi(t, 14, "dugme-yazi")); if (!string.IsNullOrEmpty(alt)) yz.Add(Yazi(alt, 11.5f, "dugme-alt"));
-            if (a != null) d.AddManipulator(new Clickable(() => { Tik(); a(); }));
+            if (a != null) d.AddManipulator(new Clickable(() => { Tik(d); a(); }));
             Erisim.Etiket(d, string.IsNullOrEmpty(alt) ? t : t + ", " + alt, "dugme", secili, a == null);
             Sigdir(d); return d;
         }

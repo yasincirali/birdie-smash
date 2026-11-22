@@ -530,7 +530,7 @@ namespace BirdieSmash.Game
         void ModelSec(Yuva Y, string id)
         {
             var gr = Ayar.gear; if (!gr.Sec(Y.m, id)) return; if (Y.m == "raket") deneRaket = null;
-            Ayar.GearHesap(); Ayar.KaydetSonra(); root.vitrin.Yenile(); if (Y.m == "raket" || Y.m == "kordaj") { root.sfx.Deneme(); Yerel.Vurus("smash", "perfect", false); } else root.sfx.Tik();
+            Ayar.GearHesap(); Ayar.KaydetSonra(); root.vitrin.Yenile(); if (Y.m == "raket" || Y.m == "kordaj") { root.sfx.Deneme(); Yerel.Vurus("smash", "perfect", false); } else root.sfx.UiSes("kaydir");   // 2026-11-22: giyilen parça yerine oturur (kaydir)
             ustKirli = true; UstKur(); Degisti(); SoyunmaGovdeKur(true);
         }
 

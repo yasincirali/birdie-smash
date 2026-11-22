@@ -55,6 +55,7 @@ namespace BirdieSmash.Game
             {"Iska · {0}","Miss · {0}"},{"İÇERİ · {0} cm","IN · {0} cm"},{"DIŞARI · {0} cm","OUT · {0} cm"},{"Görev tamam: {0}","Mission done: {0}"},
             // 2026-10-26 UI Toolkit menü kabuğu (sekmeler, Kariyer listesi, Profil, Ayarlar grupları; HTML dondurulduğu için yalnız Unity)
             {"Soyunma odası","Locker room"},{"Profil","Profile"},{"Sıradaki maç","Next match"},{"Kariyer tamam","Career complete"},{"Final","Final"},
+            {"Buradasın","You are here"},{"{0}/6 maç","{0}/6 matches"},{"Tur ödülü: mühür","Tour reward: seal"},{"Turnuva aşamaları","Tournament stages"},{"Grup","Group"},{"Çeyrek","Quarter"},{"Yarı","Semi"},{"şimdi","now"},{"kilitli","locked"},{"Eksik yıldızlar {0} Tüy","Missing stars {0} Feathers"},{"İlk galibiyet 60 Tüy","First win 60 Feathers"},{"Atölye'ye git","Go to Workshop"},{"{0} yükseltme eksik","{0} upgrades missing"},{"Altın tur mührü","Gold tour seal"},{"Bronz tur mührü","Bronze tour seal"},
             {"Geçildi","Cleared"},{"Şimdi","Now"},{"Kilitli","Locked"},{"basamak","stage"},{"Yeniden oyna","Play again"},{"Kapat","Close"},
             {"Hızlı maç oyna","Play quick match"},
             {"Arkadaşınla oyna","Play a friend"},{"Arkadaş maçı","Friend match"},{"Yeni arkadaş maçı","New friend match"},

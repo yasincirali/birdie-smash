@@ -38,13 +38,13 @@ namespace BirdieSmash.Game
         {
             if (dukkanDinliyor) return; dukkanDinliyor = true;
             Magaza.O.Degisti += DukkanYenile;
-            Magaza.O.ReklamsizBitti += () => { dukkanNot = L.T("Reklamsız açık: menüdeki reklam şeridi kalktı."); root.sfx.Tik(); Yerel.Hap("win"); DukkanYenile(); };
+            Magaza.O.ReklamsizBitti += () => { dukkanNot = L.T("Reklamsız açık: menüdeki reklam şeridi kalktı."); root.sfx.UiSes("odul"); Yerel.Hap("win"); DukkanYenile(); };
             Magaza.O.Bitti += n =>
             {
                 dukkanNot = n > 0 ? L.T("{0} Tüy cüzdanında.", UiKok.Sayi(n)) : L.T("Satın alma tamamlanmadı, ücret alınmadı.");
                 if (n > 0)
                 {
-                    root.sfx.Tik(); Yerel.Hap("win"); ustKirli = true;
+                    root.sfx.UiSes("odul"); Yerel.Hap("win");   // 2026-11-22: ödül anı üç notalı "odul" sesi (tek bip yerine) ustKirli = true;
                     // 2026-11-12 inceleme (#5): tüyler satın alınan karttan cüzdan rakamına uçar, rakam sayar. Üst şerit menüye
                     // dönünce aynı artışı ikinci kez uçurmasın diye gösterilen değer burada güncellenir.
                     if (gez.Ust == Gezinti.DUKKAN && !Ayar.reduce) dukkanUcusOnce = Mathf.Max(0, Ayar.gear.eko.tuy - n);
