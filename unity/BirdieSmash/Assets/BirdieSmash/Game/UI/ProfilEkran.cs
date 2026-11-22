@@ -120,7 +120,10 @@ namespace BirdieSmash.Game
                 foreach (var a in tl) { int n; say.TryGetValue(a[1], out n); say[a[1]] = n + 1; }
                 // 2026-11-06: aynı ad iki yuvada açılınca ("Kırmızı, Kırmızı") hangi eşya olduğu yazılır: "Kırmızı (Forma rengi)"
                 foreach (var a in tl) parca.Add(say[a[1]] > 1 && a[0] != null ? L.T(a[1]) + " (" + L.T(a[0]) + ")" : L.T(a[1]));
-                var sa = Yazi(L.T("{0}. seviyede açılır: {1}", s2, string.Join(", ", parca.ToArray())), 13, "soluk"); sa.style.marginTop = 10; sa.style.whiteSpace = WhiteSpace.Normal;
+                // 2026-11-23 inceleme (fikir 02:06 #6, §7.3): beş eşyalık liste "(Forma rengi)" ekleriyle iki satıra çıkıyordu; satırın işi
+                // hedef işareti, envanter değil. İkiden fazlaysa sayı yazılır, tam liste erişim etiketinde kalır.
+                string tam = L.T("{0}. seviyede açılır: {1}", s2, string.Join(", ", parca.ToArray()));
+                var sa = Yazi(parca.Count > 2 ? L.T("{0}. seviyede {1} yeni eşya açılır", s2, parca.Count) : tam, 13, "soluk"); sa.style.marginTop = 10; sa.style.whiteSpace = WhiteSpace.Normal;
                 // 2026-11-21 inceleme (fikir 07:06 #1): satır düz yazıydı; seviye atlama sayfasındaki "Dolap'ta dene" kalıbı burada da
                 // (Brawl Stars / Clash Royale yolunda sıradaki ödüle dokunmak önizletir): Dolap eşyası varsa onu oyuncunun üstünde
                 // dener, yalnız Atölye eşyası varsa o yuvayı açar, ikisi de yoksa düz yazı kalır. Tarama yalnız bulunan seviyede.
@@ -134,9 +137,9 @@ namespace BirdieSmash.Game
                 {
                     sa.text += " ›"; sa.AddToClassList("dokunulur"); string dn_ = dn, yv_ = yv;
                     sa.AddManipulator(new Clickable(() => { Tik(); if (dn_ != null) { SekmeAc(Sekme.Soyunma); SeviyeDene(dn_); } else if (yv_ != null) YuvaAc(yv_); else SekmeAc(Sekme.Atolye); }));
-                    Erisim.Etiket(sa, sa.text.TrimEnd(' ', '›') + " · " + L.T(dn != null ? "Dolap'ta dene" : "Atölye'de gör"), "dugme");
+                    Erisim.Etiket(sa, tam + " · " + L.T(dn != null ? "Dolap'ta dene" : "Atölye'de gör"), "dugme");
                 }
-                else Erisim.Etiket(sa, sa.text, "metin");
+                else Erisim.Etiket(sa, tam, "metin");
                 kart.Add(sa); break;
             }
 
