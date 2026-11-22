@@ -812,6 +812,7 @@ namespace BirdieSmash.Game
             {
                 float r = (d0 + (d1 - d0) * k / N) * Mathf.Deg2Rad; var sp = root.cam.WorldToScreenPoint(Kit.W(cx + YAY_R * Mathf.Cos(r), cy + YAY_R * Mathf.Sin(r), 0));
                 if (sp.z <= 0) return; var q = new Vector2(sp.x, H - sp.y); if (k > 0) Cizgi(on, q, w, c); on = q;
+                if (k == 0 || k == N) Tex(new Rect(q.x - w / 2, q.y - w / 2, w, w), disk, c);   // yuvarlak uç (§11.7); Cizgi düz keser
             }
         }
         // Top kuyruğu (2026-11-22, aynı istek: "topun arkasını da gözü yormayacak şekilde"): yalnız senin vuruşunda, ilk 0,45 sn,
