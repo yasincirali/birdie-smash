@@ -22,13 +22,17 @@ namespace BirdieSmash.Game
         // dallar bu adları kullanıyor): CAMGOBEGI = TURUNCU = seçili/şimdi/ilerleme; LIMON yalnız "sen"; MERCAN = rakip (değeri
         // orkide, birincil eylemin turuncu ailesinden ayrılsın diye; neden ve ölçü menu_stil.uss başında); KOYU = sıcak
         // koyu yazı/simge (turuncu ve limon üstünde Lc 63 / 86); MUREKKEP = zemin.
-        public static readonly Color LIMON = Kit.Hex("#C9EE4B"), CAMGOBEGI = Kit.Hex("#FFA04D"), GOK = Kit.Hex("#8FC6FF"), MERCAN = Kit.Hex("#E99BFF"), ALTIN = Kit.Hex("#F9D272"),
-            SOLUK = Kit.Hex("#CBB8C5"), KOYU = Kit.Hex("#2A0F12"), MUREKKEP = Kit.Hex("#1A1221"), YAZI = Kit.Hex("#F3EAEE");
-        public static readonly Color TURUNCU = Kit.Hex("#FFA04D"), CTA_MUREKKEP = Kit.Hex("#1E0A0C"), CTA_OK = Kit.Hex("#FF8A57"), RAKIP = Kit.Hex("#E99BFF");
+        // 2026-11-22 Stadyum Pop (yasin: "stadyum pop tan devam edelim, ama ai unslop olmalı"): değerler menu_stil.uss kökü.
+        // Adlar yine aynı (başka dallar kullanıyor). TURUNCU / CAMGOBEGI artık sarı #FFC93C: "bas, şimdi, seçili" tek vurgu.
+        // MUREKKEP = kort mavisi zemin; KOYU = mürekkep #1B2340 (sarı üstünde 10:1); SEKME_SOLUK beyaz sekme çubuğunda soluk simge.
+        public static readonly Color LIMON = Kit.Hex("#C9EE4B"), CAMGOBEGI = Kit.Hex("#FFC93C"), GOK = Kit.Hex("#A9D6FF"), MERCAN = Kit.Hex("#E99BFF"), ALTIN = Kit.Hex("#F9D272"),
+            SOLUK = Kit.Hex("#D6E2FF"), KOYU = Kit.Hex("#1B2340"), MUREKKEP = Kit.Hex("#2659BE"), YAZI = Kit.Hex("#FFFFFF");
+        public static readonly Color TURUNCU = Kit.Hex("#FFC93C"), CTA_MUREKKEP = Kit.Hex("#1B2340"), CTA_OK = Kit.Hex("#FFC93C"), RAKIP = Kit.Hex("#E99BFF"), SEKME_SOLUK = Kit.Hex("#5A6690");
         // Birincil eylem degradesi (yön C: taslakta yatay #FF7A5C → #FFA04D). Dokuda dikey, çünkü 9 dilimde yan dilimler
         // sabit kalır, orta gerilir: dikey degrade her genişlikte aynı görünür. Alt ton #FF7A5C değil #FF9458: alt satır
         // (14–15 pt) koyu yazı orada durur; #FF7A5C üstünde Lc 53 (sınırın altı), #FF9458 üstünde 60,7, altı satırın ortasında 62.
-        public static readonly Color CTA_UST = Kit.Hex("#FFB25E"), CTA_ORTA = Kit.Hex("#FFA04D"), CTA_ALT = Kit.Hex("#FF9458");
+        // 2026-11-22 Stadyum Pop: sarı, üstte bir tık açık; alt dudak Egik(golge) ile koyu sarı (3B tıknaz düğme, mürekkep konturu USS).
+        public static readonly Color CTA_UST = Kit.Hex("#FFD966"), CTA_ORTA = Kit.Hex("#FFC93C"), CTA_ALT = Kit.Hex("#F7BA2C");
 
         public const float YAZI_MIN = 11;
         // Avatar içi (2026-10-31): karakter portresi (Portre) varsa dairenin içinde, yoksa eski insan simgesi.
@@ -437,8 +441,8 @@ namespace BirdieSmash.Game
         // ---- Yayın Gecesi dokuları ----
         // Cam plaka (2026-11-14 gece, docs/arayuz_tasarim_dili.md §6): menu_stil.uss --cam2 / --cam ile aynı iki değer; doku
         // dikey degrade (üst açık, alt koyu) ve yarı saydam, salonun ışığı arkadan sezilir. Opaklık .84/.80: yazı okunur kalır.
-        static readonly Color CAM_UST = new Color(66 / 255f, 48 / 255f, 80 / 255f, .84f), CAM_ALT = new Color(48 / 255f, 34 / 255f, 60 / 255f, .80f);
-        static readonly Color NAVY = Kit.Hex("#261A30"), NAVY2 = Kit.Hex("#33233F"), INK = Kit.Hex("#1A1221");   // 2026-10-27 yön C: kart, düğme, zemin (adlar A'dan)
+        static readonly Color CAM_UST = new Color(34 / 255f, 84 / 255f, 190 / 255f, .90f), CAM_ALT = new Color(18 / 255f, 46 / 255f, 126 / 255f, .86f);   // 2026-11-22 Stadyum Pop: lacivert-mavi panel
+        static readonly Color NAVY = Kit.Hex("#1B4197"), NAVY2 = Kit.Hex("#1E4DB3"), INK = Kit.Hex("#163C8E");   // 2026-11-22 Stadyum Pop: INK = Oyna zemininin alt koyu mavisi   // 2026-10-27 yön C: kart, düğme, zemin (adlar A'dan)
         static void YayinDokulari()
         {
             // Oyna zemini (yön A a-fade): üstte koyu (durum çubuğu ve üst şerit okunsun), ortada saydama yakın (afiş ve salon),
@@ -472,7 +476,8 @@ namespace BirdieSmash.Game
             // 2026-10-27 yön C: limon yerine gün batımı degradesi (UiKok.CTA_UST/ORTA/ALT, yukarıda); ad geriye uyum için aynı.
             // 2026-10-29 Tüycükler: Egik artık eğik değil, yuvarlak köşeli jöle düğme (aşağıda); ad ve dilimler geriye uyum için aynı.
             // 2026-11-06 ince kenar (yasin: "profesyonel ve lightweight"): alttaki 5 pt koyu dudak kalktı (golge 0); derinlik degradeden.
-            EgikLimon = Egik(96, 160, 28, UiKok.CTA_UST, UiKok.CTA_ORTA, UiKok.CTA_ALT, 0);
+            // 2026-11-22 Stadyum Pop: koyu sarı alt dudak geri geldi (boyun %10'u; 3B tıknaz düğme), kontur USS'te mürekkep.
+            EgikLimon = Egik(96, 160, 28, UiKok.CTA_UST, UiKok.CTA_ORTA, UiKok.CTA_ALT, 16);
             // Etiket şeridi (a-kick "SIRADAKİ MAÇ"): düz limon, küçük eğim (−12°), 22 pt.
             // 2026-10-27 yön C: dolgusuz altın çerçeve + altın yazı (C taslağı .etk span); ekranda tek doygun dolgu OYNA kalsın.
             // 2026-10-29 Tüycükler: eğik şerit yerine hap (yarıçap 20 doku pikseli; USS .serit yan dilimi 22). Dolgusuz altın çerçeve aynı.
@@ -522,7 +527,7 @@ namespace BirdieSmash.Game
             // Raket izi (perde P_IZ #F9D272): soldan sağa belirip uca doğru parlayan altın çizgi; bant kenarının yanında.
             AltinIz = Sekil(128, 8, (x, y, ic) => true, (x, y) => { float k = x / 128f, d = 1 - Mathf.Abs(y - 4) / 4f; return new Color(UiKok.ALTIN.r, UiKok.ALTIN.g, UiKok.ALTIN.b, k * k * Mathf.Clamp01(d * 1.6f)); }, Color.clear, 0);
         }
-        static readonly Color LIMON_D = Kit.Hex("#FFA04D");   // 2026-10-27 yön C: şimdiki basamak deseni turuncu (seçili/şimdi rengi); ad A'dan
+        static readonly Color LIMON_D = Kit.Hex("#FFC93C");   // 2026-11-22 Stadyum Pop sarı   // 2026-10-27 yön C: şimdiki basamak deseni turuncu (seçili/şimdi rengi); ad A'dan
         // Yuvarlak köşeli kutu (r doku pikseli) + ince çerçeve: IMGUI maç sonu kartları ve düğmeleri için (GUIStyle.border = r+2,
         // 9 dilim). IMGUI'de 1 doku pikseli = 1 ekran pikseli olduğu için Hud ölçek değişince yeniden üretir.
         public static Texture2D Kutu(int r, Color dolgu, Color cerceve, float kalin)

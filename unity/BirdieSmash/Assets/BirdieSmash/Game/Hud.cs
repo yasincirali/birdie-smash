@@ -1212,9 +1212,9 @@ namespace BirdieSmash.Game
         // 2026-10-27 yön C "Gün Batımı Salonu" (yasin karar kartı): menü USS kökündeki değerler. Adlar A'dan; anlam: A_LIMON yalnız
         // "sen" (senin skorun, halkan, "SEN", GALİBİYET başlığı, senin özet sayıların), A_TURUNCU ilerleme ve kazanım (ışınlar,
         // ✓, XP, seviye, açılan kart, basamak çizgisi), A_MERCAN rakip (değeri orkide: birincil eylemin turuncusundan ayrı).
-        static readonly Color A_INK = Kit.Hex("#1A1221"), A_LIMON = Kit.Hex("#C9EE4B"), A_LIMON_KOYU = Kit.Hex("#141A08"), A_ALTIN = Kit.Hex("#F9D272"), A_MERCAN = Kit.Hex("#E99BFF"),
-            A_YAZI = Kit.Hex("#F3EAEE"), A_SOLUK = Kit.Hex("#CBB8C5"), A_NAVY = Kit.Hex("#261A30"), A_NAVY3 = Kit.Hex("#33233F");
-        static readonly Color A_TURUNCU = Kit.Hex("#FFA04D"), A_CTA_MUREKKEP = Kit.Hex("#1E0A0C"), A_CTA_OK = Kit.Hex("#FF8A57");
+        static readonly Color A_INK = Kit.Hex("#1A3F95"), A_LIMON = Kit.Hex("#C9EE4B"), A_LIMON_KOYU = Kit.Hex("#141A08"), A_ALTIN = Kit.Hex("#F9D272"), A_MERCAN = Kit.Hex("#E99BFF"),
+            A_YAZI = Kit.Hex("#FFFFFF"), A_SOLUK = Kit.Hex("#D6E2FF"), A_NAVY = Kit.Hex("#1B4197"), A_NAVY3 = Kit.Hex("#1E4DB3");   // 2026-11-22 Stadyum Pop (menü kökü)
+        static readonly Color A_TURUNCU = Kit.Hex("#FFC93C"), A_CTA_MUREKKEP = Kit.Hex("#1B2340"), A_CTA_OK = Kit.Hex("#FFC93C");
         GUIStyle AStil(Font f, float px, TextAnchor hiza, bool sar)
         {
             var st = new GUIStyle(GUI.skin.label) { font = f, fontSize = Mathf.Max(8, Mathf.RoundToInt(px)), alignment = hiza, wordWrap = sar, richText = false, fontStyle = FontStyle.Normal, clipping = TextClipping.Overflow };
