@@ -61,7 +61,7 @@ namespace BirdieSmash.Game
             var tex = Kit.RadialTex();
             var spot = Kit.Prim(PrimitiveType.Quad, "vitrin_spot", g.transform, YER + new Vector3(0, .002f, 0), new Vector3(2.6f, 2.6f, 1), Kit.Clear(new Color(1f, .82f, .45f, .16f), tex));
             spot.transform.rotation = Quaternion.Euler(90, 0, 0); spot.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            var hale = Kit.Prim(PrimitiveType.Quad, "vitrin_hale", g.transform, YER + new Vector3(0, 1.25f, -2.2f), new Vector3(5.5f, 5.5f, 1), Kit.Clear(new Color(.55f, .38f, .68f, .55f), tex));
+            var hale = Kit.Prim(PrimitiveType.Quad, "vitrin_hale", g.transform, YER + new Vector3(0, 1.25f, -2.2f), new Vector3(5.5f, 5.5f, 1), Kit.Clear(new Color(.62f, .78f, 1f, .40f), tex));   // 2026-11-22 Stadyum Pop: mor hale yerine salon ışığı mavisi
             hale.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             g.SetActive(false); return vt;
         }
