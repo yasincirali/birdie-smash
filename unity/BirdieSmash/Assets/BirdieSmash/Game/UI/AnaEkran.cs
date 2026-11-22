@@ -206,6 +206,13 @@ namespace BirdieSmash.Game
             var d = Karo(Ikonlar.Gunes, L.T("Günün maçı"), L.T(g.deg.ad), altY, alindi ? Ikonlar.Tik : Ikonlar.Tuy, GunlukAc,
                 L.T("Günün maçı") + ", " + L.T(g.deg.ad) + ", " + L.T("Rakip") + " " + st.isim + ", " + (alindi ? L.T("Bugün kazandın") + ", " + altY : altY), "karo--altin");
             d.AddToClassList("karo--genis"); Doku(d, Ikonlar.AltinKaro);
+            // 2026-11-22 inceleme (fikir 07:06 #3): günün rakibinin portresi Oyna durgunken bir kez ısıtılır; Günün maçı sayfası
+            // açıldığı karede FBX çizmez (Kariyer şeridi kalıbı, kare başına en çok bir ısıtma).
+            if (Portre.RakipHazir(st) == null)
+            {
+                bool isitti = false;
+                d.schedule.Execute(() => { if (isitti || !IsitmaSirasi()) return; isitti = true; Portre.Rakip(st); }).Every(300).Until(() => isitti || d.panel == null);
+            }
             return d;
         }
 

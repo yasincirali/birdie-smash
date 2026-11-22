@@ -1048,3 +1048,8 @@
 .koz-izgara { transition-property: opacity; transition-duration: 0.12s; transition-timing-function: ease-out; }
 .koz-solgun { opacity: 0; }
 .az-hareket .koz-izgara { transition-duration: 0s; }
+/* 2026-11-22 inceleme (fikir 07:06 #2/#4): Antrenman görev listesi grup değişince aynı .12 sn opacity ile belirir (koz-solgun);
+   Şampiyon yolu kartında sen + rakip yüzleri metin akışında (Kariyer şeridindeki .serit-cift mutlak konumlu, burada değil). */
+.ant-liste { transition-property: opacity; transition-duration: 0.12s; transition-timing-function: ease-out; }
+.az-hareket .ant-liste { transition-duration: 0s; }
+.av-cift { flex-direction: row; align-items: center; margin-right: 8px; flex-shrink: 0; }

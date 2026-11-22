@@ -1,4 +1,11 @@
 === UNITY ===
+Antrenman, Günün maçı ve Dükkân cilası (22 Kasım sabah):
+- Antrenman'da görev grubu değiştirince sayfa başa dönmüyor; yalnız görev listesi kısa bir geçişle yenileniyor.
+- Günün maçı sayfası ilk dokunuşta takılmadan açılıyor: rakibin portresi Oyna sekmesinde önceden hazırlanıyor. Alttaki düğme artık yalnız "Oyna" diyor.
+- Şampiyon yolu kartında sıradaki rakibin yanında iki küçük yüz var: sen ve rakibin.
+- Dükkân'ın altındaki notlar geri yükleme düğmesinin altında tek, sade bir blokta.
+Nasıl denenir: Antrenman'ı aç, listenin en altına in, başka bir gruba dokun: sayfa yerinde kalmalı, liste yumuşakça değişmeli. Oyna'da bir an bekleyip Günün maçı'na dokun: sayfa takılmadan açılmalı, rakibin yüzü görünmeli. Dükkân'ın en altına in: iCloud ve Tüy notları geri yükleme düğmesinin altında aynı boyda olmalı.
+
 Dolap ve Profil cilası (22 Kasım gece):
 - Dolap > Ayakkabı görünümünde "Görünüm yok" kartı artık oyuncunun yüzünü değil, ayağındaki ayakkabıyı gösteriyor.
 - Az eşyalı bölümlerde set süzgeci (Yılbaşı 0/1 gibi çipler) kalktı, ızgara hemen başlıyor. Kalabalık bölümlerde süzgeç değişince kartlar yumuşakça beliriyor.

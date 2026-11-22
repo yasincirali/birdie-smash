@@ -50,16 +50,37 @@ namespace BirdieSmash.Game
             var odS = Satir("rakip-satir"); odS.pickingMode = PickingMode.Ignore; c.Add(odS); odS.Add(Ikon(Ikonlar.Tuy, 14, ALTIN));
             var odY = Yazi(L.T("+{0} Tüy, +{1} XP her yeni yıldız", Gear.DRIL_TUY, Gear.DRIL_XP), 12, "soluk"); odY.style.marginLeft = 4; odS.Add(odY);
             Erisim.Etiket(odS, odY.text, "metin");
+            // 2026-11-22 inceleme (fikir 07:06 #1/#2): grup çipi bütün sayfayı baştan kuruyordu (~40 öğe) ve kaydırma başa dönüyordu;
+            // dipteki Aldatıcı vuruşlara inip grup değiştiren oyuncu yukarı atılıyordu. Artık yalnız görev listesi kabı yenilenir,
+            // çiplerin seçili hâli yerinde değişir (Ayarlar PR #129 kalıbı). Liste .12 sn opacity ile belirir (Dolap set süzgeci
+            // PR #155 kalıbı); Hareketi azaltta sınıf hiç eklenmez (eklenirse liste bir kare boş kalırdı).
             var seg = Satir("segment"); c.Add(seg);
+            var cipler = new VisualElement[Dril.GRUP.Length];
+            var liste = new VisualElement();
             for (int g = 0; g < Dril.GRUP.Length; g++)
             {
                 int gg = g; int y = 0, n = 0; foreach (var d in Dril.Liste) if (d.grup == Dril.GRUP[g]) { n++; y += pr.DrilYildiz(d.id); }
-                var cp = Cip(L.T(Dril.GRUP_AD[g]), antSaha == g, () => { if (antSaha == gg) return; AntrenmanGrup(Dril.GRUP[gg]); Uygula(gez.sekme, false); }, y + "/" + n * Dril.YILDIZ);
-                cp.AddToClassList("segment-cip"); var eb = cp.userData as ErisimBilgi; if (eb != null) eb.rol = "sekme"; seg.Add(cp);
+                var cp = Cip(L.T(Dril.GRUP_AD[g]), antSaha == g, () => { if (antSaha == gg) return; AntrenmanGrup(Dril.GRUP[gg]); AntGrupGoster(cipler, liste, true); }, y + "/" + n * Dril.YILDIZ);
+                cp.AddToClassList("segment-cip"); var eb = cp.userData as ErisimBilgi; if (eb != null) eb.rol = "sekme"; seg.Add(cp); cipler[g] = cp;
             }
-            foreach (var d in Dril.Liste) if (d.grup == Dril.GRUP[antSaha]) c.Add(DrilSatir(d));
+            c.Add(liste); AntGrupGoster(cipler, liste, false);
             AldatmaBolum(c);   // 2026-10-26 aldatıcı vuruşlar: kilitliler de görünür, ne açtığıyla (Game/UI/AldatmaListe)
             c.Add(Bosluk(24));
+        }
+
+        void AntGrupGoster(VisualElement[] cipler, VisualElement liste, bool gecis)
+        {
+            for (int g = 0; g < cipler.Length; g++)
+            {
+                bool on = g == antSaha; cipler[g].EnableInClassList("cip--secili", on);
+                var eb = cipler[g].userData as ErisimBilgi; if (eb != null) eb.secili = on;
+            }
+            // İç kap her seferinde yeni: solgun sınıfı doğarken eklenir, kaldırılınca 0→1 belirir. Ekrandaki kaba eklense önce 1→0
+            // sönerdi (inceleme ajanı bulgusu). Dış kap geçişsiz, yalnız yer tutar.
+            liste.Clear(); var ic = new VisualElement(); ic.AddToClassList("ant-liste");
+            if (gecis && !Ayar.reduce) { ic.AddToClassList("koz-solgun"); ic.schedule.Execute(() => ic.RemoveFromClassList("koz-solgun")).StartingIn(16); }
+            foreach (var d in Dril.Liste) if (d.grup == Dril.GRUP[antSaha]) ic.Add(DrilSatir(d));
+            liste.Add(ic);
         }
 
         VisualElement DrilSatir(DrilTanim d)
@@ -105,29 +126,13 @@ namespace BirdieSmash.Game
         // ---- Günün maçı ----
         GunlukMac Bugun() { return Gunluk.Bugun(System.DateTime.Now); }
 
-        VisualElement GunlukOzetKart()
-        {
-            var g = Bugun(); var st = Match.STIL[g.stil]; bool alindi = Ayar.ilerleme.GunlukAlindi(g.tarih);
-            var kart = Kart("siradaki"); kart.AddManipulator(new Clickable(() => { Tik(); GunlukAc(); }));
-            var bas = Satir("arali"); kart.Add(bas);
-            bas.Add(Yazi(L.T("Günün maçı"), 12, "etiket"));
-            bas.Add(alindi ? IkonYazi(true, L.T("Bugün kazandın"), 12, "durum-gecti", SOLUK) : Yazi(L.T("+{0} Tüy", Gunluk.OdulTuy), 12, "altin"));
-            kart.Add(Yazi(L.T(g.deg.ad), 18, "kalin"));
-            var rk = Satir("rakip-satir"); kart.Add(rk);
-            var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);
-            rk.Add(Yazi(L.T("Rakip") + " " + st.isim + " · " + L.T(st.ad) + " · " + L.T("{0} sayı", g.uzunluk), 14, "soluk"));
-            if (alindi) kart.Add(Yazi(L.T("Yarın yenisi. Yeniden oynayabilirsin."), 12, "soluk"));
-            Erisim.Etiket(kart, L.T("Günün maçı") + ", " + L.T(g.deg.ad) + ", " + L.T("Rakip") + " " + st.isim + ", " + (alindi ? L.T("Bugün kazandın") : L.T("+{0} Tüy", Gunluk.OdulTuy)), "dugme");
-            return kart;
-        }
-
         void GunlukKartKur()
         {
             var g = Bugun(); var st = Match.STIL[g.stil]; bool alindi = Ayar.ilerleme.GunlukAlindi(g.tarih);
             var c = AltSayfaKur(L.T("Günün maçı"));
             c.Add(Yazi(L.T("Bugün herkes aynı maçı oynar."), 13, "etiket"));
             var rr = Satir("profil-ust"); c.Add(rr);
-            var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(st.renk); AvatarIc(av, Portre.Rakip(st), 30); rr.Add(av);
+            var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(st.renk); RakipAvatarIc(av, st, 30, 22); rr.Add(av);   // 2026-11-22 (fikir 07:06 #3): açılış karesinde FBX çizimi yok
             var ra = new VisualElement(); ra.AddToClassList("esnek-yatay"); rr.Add(ra);
             // 2026-11-10 inceleme (fikir 02:05 #4): saha, uzunluk ve zorluk ayrı satırdı; rakibin tarzıyla aynı satırda (maçın
             // kimliği tek yerde), sayfa altı yazı bloğundan beşe iner, ödül satırı öne çıkar.
@@ -143,7 +148,11 @@ namespace BirdieSmash.Game
             var od = alindi ? IkonYazi(true, odM, 14, "durum-gecti", SOLUK) : Yazi(odM, 14, "altin");
             Erisim.Etiket(od, odM, "metin"); c.Add(od);
             // 2026-11-13 (inceleme 12:05 #6): ayrı "Seri yok." satırı kalktı: olmayan kavramı anlatıyordu; kayıp ödülü ödül satırında.
-            AltEylem(Dugme(L.T(alindi ? "Yeniden oyna" : "Oyna") + ": " + L.T("Günün maçı"), () => { gez.AltKapat(); Uygula(gez.sekme, false); HareketOnce(root.GunlukOyna); }, "dugme--birincil", null, 19));
+            // 2026-11-22 inceleme (fikir 07:06 #5, §7.5): düğme sayfa başlığını tekrarlıyordu ("Oyna: Günün maçı"), büyük yazıda iki
+            // satıra kırılıyordu (görev düğmesi 5 Kas emsali). Ekran okuyucu bağlamı kaybetmesin diye etiket maçın adını taşır.
+            string eyl = L.T(alindi ? "Yeniden oyna" : "Oyna");
+            var gd = Dugme(eyl, () => { gez.AltKapat(); Uygula(gez.sekme, false); HareketOnce(root.GunlukOyna); }, "dugme--birincil", null, 19);
+            Erisim.Etiket(gd, eyl + ", " + L.T("Günün maçı"), "dugme"); AltEylem(gd);
         }
 
         // ---- Usta yolu ----
@@ -173,8 +182,12 @@ namespace BirdieSmash.Game
             var b = UstaYolu.Basamak(pr.Usta); var st = UstaYolu.Rakip(pr.Usta);
             kart.Add(Yazi(L.T("Sıradaki") + ": " + L.T(b.yer) + (b.final ? " · " + L.T("Final") : ""), 16, "kalin"));
             var rk = Satir("rakip-satir"); kart.Add(rk);
-            var nok = new VisualElement(); nok.AddToClassList("renk-nokta"); nok.style.backgroundColor = Kit.Hex(st.renk); rk.Add(nok);
-            rk.Add(Yazi(L.T("Rakip") + " " + st.isim + " · " + L.T(st.ad) + " · " + L.T("{0} sayı", b.uzunluk), 14, "soluk"));
+            // 2026-11-22 inceleme (fikir 07:06 #4, OYUNCUYU GÖSTER): sıradaki rakip yalnız yazıydı; Kariyer şeridindeki iki yüz (sen +
+            // rakip, aynı 30 px daireler) renk noktasının yerine. Rakip portresi durgun karede ısıtılır (RakipAvatarIc).
+            var cift = new VisualElement(); cift.AddToClassList("av-cift"); cift.pickingMode = PickingMode.Ignore; rk.Add(cift);
+            var ben = new VisualElement(); ben.AddToClassList("serit-av"); ben.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(ben, Portre.Benim(), 16); cift.Add(ben);
+            var rav = new VisualElement(); rav.AddToClassList("serit-av"); rav.AddToClassList("serit-av--rakip"); rav.style.backgroundColor = Kit.Hex(st.renk); RakipAvatarIc(rav, st, 16, 13); cift.Add(rav);
+            { var rkY = Yazi(L.T("Rakip") + " " + st.isim + " · " + L.T(st.ad) + " · " + L.T("{0} sayı", b.uzunluk), 14, "soluk"); rkY.style.whiteSpace = WhiteSpace.Normal; rkY.style.flexShrink = 1; rk.Add(rkY); }
             { var ac2 = Yazi(L.T("Kaybetmek geri düşürmez."), 12, "soluk"); ac2.style.whiteSpace = WhiteSpace.Normal; kart.Add(ac2); }
             kart.Add(Dugme(L.T("Şampiyon yolunu oyna"), () => root.UstaOyna(), "dugme--birincil", L.T("{0}. basamak", pr.Usta + 1), 18));
             Erisim.Etiket(kart, L.T(Ayar.YolAd) + ", " + L.T(Ayar.ZorlukAd) + ", " + L.T("{0} basamak geçildi", pr.Usta) + ", " + L.T("Sıradaki") + " " + L.T(b.yer), "metin");
