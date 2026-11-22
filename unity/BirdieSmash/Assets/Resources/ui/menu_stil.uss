@@ -37,10 +37,10 @@
     /* 2026-10-27 yön C "Gün Batımı Salonu" (yasin karar kartı 27 Eki 06:09 UTC). Değişken adları A'dan kaldı (ekran/duyarli
        dalı aynı dosyaya blok ekliyor; ad değişince birleştirme çakışır): --ink = zemin, --navy = kart, --navy2 = düğme,
        --navy3 = basılı; artık mor-kahve. --coral adı "rakip" demek, değeri orkide (aşağıda neden). */
-    --ink: #1A1221; --navy: #261A30; --navy2: #33233F; --navy3: #42304F;
-    --lime: #C9EE4B; --lime-ink: #141A08; --coral: #E99BFF; --gold: #F9D272; --sky: #8FC6FF;
-    --tx: #F3EAEE; --mu: #CBB8C5; --mu2: #DCCDD5; --ln: rgba(255, 255, 255, 0.10);
-    --sun: #FFA04D; --cta-ink: #1E0A0C; --bar: #1F1528;
+    --ink: #2659BE; --navy: #1B4197; --navy2: #1E4DB3; --navy3: #173F98;
+    --lime: #C9EE4B; --lime-ink: #141A08; --coral: #E99BFF; --gold: #F9D272; --sky: #A9D6FF;
+    --tx: #FFFFFF; --mu: #D6E2FF; --mu2: #E8EEFF; --ln: rgba(255, 255, 255, 0.14);
+    --sun: #FFC93C; --cta-ink: #1B2340; --bar: #FFFFFF;
     /* 2026-11-14 gece cam yüzey standardı (yasin: "butonları, listelerin yerleşimleri vs hepsini standartlara oturtup,
        glassmorphism falan kullanıp"; kurallar docs/arayuz_tasarim_dili.md §6). UI Toolkit'te arka plan bulanıklığı
        (backdrop-filter) yok: cam üç parçayla kurulur. (1) Mor tonlu yarı saydam dolgu, zeminin güneş ışığı ve salon arkadan
@@ -49,24 +49,24 @@
        ışığın yukarıdan geldiği. (3) Yan ve alt kenar ince ve koyu: yüzey zeminden ayrılır, gölge yok (box-shadow yok).
        Seviyeler: --cam kart/liste, --cam2 düğme ve hap (bir tık açık, basılabilir), --cam3 basılı. Alt sayfa ve maç HUD'u
        cam değildir: alt sayfa .97 (uzun okuma), HUD kortun üstünde okunurluk için kendi kuralında. */
-    --cam: rgba(48, 34, 60, 0.80); --cam2: rgba(66, 48, 80, 0.72); --cam3: rgba(86, 64, 102, 0.82);
-    --cam-ust: rgba(255, 255, 255, 0.22); --cam-kenar: rgba(255, 255, 255, 0.10); --cam-alt: rgba(0, 0, 0, 0.28);
+    --cam: rgba(16, 40, 112, 0.62); --cam2: rgba(30, 77, 179, 0.94); --cam3: rgba(23, 63, 152, 0.96);
+    --cam-ust: rgba(255, 255, 255, 0.22); --cam-kenar: rgba(20, 36, 79, 0.85); --cam-alt: #14244F;
 }
 
 .tam { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 /* 2026-10-26 gece: kök ve tam sayfa zemini artık OPAK ve koddan satır içi yazılır (UiKok.Uygula, GECE / INK_); aşağıdaki
    saydam değerler eziliyor. Neden: menü saydamken canlı maç sahnesi kartların arasından görünüyordu (yasin build 40). */
 .kok { flex-grow: 1; background-color: rgba(0, 0, 0, 0); }
-.kok.koyu { background-color: rgba(26, 18, 33, 0.92); }   /* yön A: diğer sekmelerde gece zemini (salon çok soluk seçilir) */
+.kok.koyu { background-color: rgba(38, 89, 190, 0.92); }   /* yön A: diğer sekmelerde gece zemini (salon çok soluk seçilir) */
 .kok.koyu #zemin { display: none; }
 .koyu-gunes { position: absolute; display: none; }
 .kok.koyu .koyu-gunes { display: flex; }   /* 2026-11-07 (AD3): koyu sekmede üstte soluk güneş kesiti (UiKok.ZeminKur) */
 .govde { flex-direction: column; }
 .alan { flex-grow: 1; flex-shrink: 1; }
 .icerik { flex-grow: 1; flex-shrink: 1; }
-.sayfa { display: none; background-color: rgba(26, 18, 33, 0.96); flex-direction: column; }
+.sayfa { display: none; background-color: rgba(38, 89, 190, 0.96); flex-direction: column; }
 .sekme-kok { flex-direction: column; }
-.alt-katman { display: none; background-color: rgba(10, 6, 14, 0.6); justify-content: flex-end; }
+.alt-katman { display: none; background-color: rgba(8, 18, 48, 0.6); justify-content: flex-end; }
 .kalkan { display: none; background-color: rgba(0, 0, 0, 0); }
 
 .yazi { -unity-font-definition: resource("fonts/Nunito-SemiBold"); color: var(--tx); white-space: normal; -unity-text-align: upper-left; margin: 0; padding: 0; flex-shrink: 1; }
@@ -103,10 +103,10 @@
 .dugme-alt { color: var(--mu); -unity-text-align: middle-center; margin-top: 2px; }
 .dugme--birincil { background-color: var(--sun); min-height: 56px; border-radius: 16px; margin-top: 10px; border-width: 0; }   /* §6: birincil 56 (eskisi 60); ekranda tek */
 .dugme--birincil .dugme-yazi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); letter-spacing: 0.5px; }   /* yön A: birincil başlık dar italik */
-.dugme--birincil:active { background-color: rgb(255, 178, 94); }
+.dugme--birincil:active { background-color: rgb(255, 214, 102); }
 .dugme--birincil .dugme-yazi { color: var(--cta-ink); }
 .dugme--birincil .dugme-alt { color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }   /* C: alt satır tam opak + kalın (APCA ≥ 60) */
-.dugme--pasif { background-color: rgb(34, 24, 41); }
+.dugme--pasif { background-color: rgb(22, 52, 128); }
 .dugme--pasif .dugme-yazi, .dugme--pasif .dugme-alt { color: rgba(255, 255, 255, 0.55); }
 .ikon-dugme { width: 44px; height: 44px; padding: 0; align-items: center; justify-content: center; border-radius: 22px; background-color: var(--cam2); border-color: var(--cam-kenar); border-top-color: var(--cam-ust); margin: 0; }
 .kucuk-dugme { padding: 6px 14px; margin: 0; }
@@ -124,8 +124,8 @@
    dolgu + kalın yazı + turuncu ✓. Krem dolgu ekranın en parlak yüzeyiydi, CTA ile yarışıyordu (hizli karesi: "Medium" ile
    "Play quick match"); üç ayrı seçili dili (krem çip, turuncu çerçeveli kart, turuncu çizgili sekme) oyuncu ayrı öğreniyordu.
    Artık doygun dolgu yalnız CTA'da. Kontrast: krem yazı / tint zemin ~12:1. Renk körlüğü: çerçeve kalınlığı + ✓ + kalın yazı. */
-.cip--secili { background-color: rgba(255, 160, 77, 0.16); border-color: var(--sun); border-width: 2px; }
-.cip--secili:active { background-color: rgba(255, 160, 77, 0.26); }
+.cip--secili { background-color: rgba(255, 201, 60, 0.16); border-color: var(--sun); border-width: 2px; }
+.cip--secili:active { background-color: rgba(255, 201, 60, 0.26); }
 .cip--secili .dugme-yazi { color: var(--tx); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .cip--secili .dugme-alt { color: var(--mu2); }
 .satir { flex-direction: row; flex-wrap: wrap; margin-left: -4px; margin-right: -4px; }
@@ -254,11 +254,11 @@
 /* Soyunma odası */
 .vitrin-alan { height: 58%; min-height: 190px; flex-shrink: 1; margin: 0 8px; border-radius: 16px; overflow: hidden; background-color: var(--navy); }
 .vitrin { flex-grow: 1; }
-.vitrin-yazi { position: absolute; top: 8px; right: 10px; -unity-text-align: middle-right; color: rgba(255, 255, 255, 0.75); background-color: rgba(26, 18, 33, 0.6); border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; padding: 3px 8px; }   /* r11: ortadaki yazı raketin ve başın üstüne biniyordu; sağ üst köşe, koyu zemin */
+.vitrin-yazi { position: absolute; top: 8px; right: 10px; -unity-text-align: middle-right; color: rgba(255, 255, 255, 0.75); background-color: rgba(38, 89, 190, 0.6); border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; padding: 3px 8px; }   /* r11: ortadaki yazı raketin ve başın üstüne biniyordu; sağ üst köşe, koyu zemin */
 /* r13 (2026-10-26): Yüz·Ayak·Tutuş ve oklar tek alt sütunda (SoyunmaOdasi); büyük yazıda üst üste binmiyorlar. */
 .vitrin-alt { position: absolute; left: 8px; right: 8px; bottom: 8px; flex-direction: column; align-items: stretch; }
 .vitrin-oklar { flex-direction: row; align-items: center; flex-wrap: nowrap; margin: 0; }
-.vitrin-gecis { flex-grow: 1; margin: 0 8px; background-color: rgba(51, 35, 63, 0.9); }
+.vitrin-gecis { flex-grow: 1; margin: 0 8px; background-color: rgba(30, 77, 179, 0.9); }
 .soyunma-kaydir { flex-grow: 1; flex-shrink: 1; }
 .renkler { flex-wrap: wrap; margin: 0 -3px; }
 .renk { flex-grow: 1; flex-basis: 20%; min-width: 44px; height: 44px; margin: 3px; border-radius: 12px; border-width: 1px; border-color: rgba(255, 255, 255, 0.25); align-items: center; justify-content: center; }
@@ -379,7 +379,7 @@
 .sekme--secili { background-color: rgba(0, 0, 0, 0); }   /* C: dolgulu hap yok; turuncu simge + yazı + 3 pt üst çizgi (biçimle de okunur) */
 /* 2026-11-07 stüdyo incelemesi (AD4): seçili sekme biçimle öne çıkar: hafif turuncu plaka (doygun dolgu değil; tek doygun dolgu
    CTA), simge %15 büyür ve 2 pt kalkar (yalnız scale/translate, .12 sn; hareketi azaltta 0). Üst çizgi kalır. */
-.sekme--secili { background-color: rgba(255, 160, 77, 0.14); border-radius: 14px; }
+.sekme--secili { background-color: rgba(255, 201, 60, 0.14); border-radius: 14px; }
 .sekme-ikon { transition-property: scale, translate; transition-duration: 0.12s; transition-timing-function: ease-out; }
 .sekme--secili .sekme-ikon { scale: 1.15 1.15; translate: 0 -2px; }
 .az-hareket .sekme-ikon { transition-duration: 0s; }
@@ -397,7 +397,7 @@
 .gosterge-var .sekme--secili .sekme-cizgi { display: none; }
 
 /* alt sayfa (Hızlı maç) */
-.alt-sayfa { background-color: rgba(38, 26, 48, 0.97); border-top-width: 1px; border-color: var(--cam-ust); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 0 16px 16px 16px; max-height: 88%; }
+.alt-sayfa { background-color: rgba(26, 63, 149, 0.98); border-top-width: 1px; border-color: var(--cam-ust); border-top-left-radius: 20px; border-top-right-radius: 20px; padding: 0 16px 16px 16px; max-height: 88%; }
 .tutamak-alan { height: 28px; align-items: center; justify-content: center; }
 .tutamak { width: 40px; height: 5px; border-radius: 3px; background-color: rgba(255, 255, 255, 0.35); }
 .alt-kaydir { flex-shrink: 1; }
@@ -423,10 +423,10 @@
 .vitrin-odak { flex-direction: row; flex-wrap: nowrap; margin: 0 0 4px 0; align-self: flex-start; }
 /* 2026-11-07 (AD2, UX3): odak düğmeleri yazı değil 44×44 simge; altındaki kategori satırıyla iki "Face" çakışıyordu (biri kamera,
    biri kategori). Ekran okuyucu adı aynı (Erisim.Etiket). Seçili = çip dili (turuncu çerçeve + tint). */
-.odak-dugme { min-width: 44px; width: 44px; height: 44px; margin-right: 6px; padding: 0; align-items: center; justify-content: center; background-color: rgba(51, 35, 63, 0.9); }
+.odak-dugme { min-width: 44px; width: 44px; height: 44px; margin-right: 6px; padding: 0; align-items: center; justify-content: center; background-color: rgba(30, 77, 179, 0.9); }
 .vitrin-odak--orta { flex-grow: 1; justify-content: center; align-self: center; margin: 0 4px; }   /* 2026-11-13: okların arasında, ortalı (simetri) */
 .vitrin-odak--orta .odak-dugme { margin: 0 4px; }
-.odak-dugme--secili { background-color: rgba(255, 160, 77, 0.22); border-color: var(--sun); border-width: 2px; }
+.odak-dugme--secili { background-color: rgba(255, 201, 60, 0.22); border-color: var(--sun); border-width: 2px; }
 .alt-segment { margin: 4px 0 8px 0; }
 /* 2026-10-30 Görünüm alt sayfaları altıya çıktı (Beden · Yüz · Saç · Şapka · Ayakkabı · Renk): iki satır üçer; büyük yazıda
    ikişer (segment kuralı). Tek satırda altı çip 390 pt'de "Ayakkabı"yı %70'in altına küçültüyordu. */
@@ -442,13 +442,13 @@
 .koz-nadir--nadir { color: var(--sky); }
 .koz-nadir--destansi { color: var(--coral); }
 .koz-nadir--mistik { color: var(--gold); }
-.koz-kart--mistik { border-width: 1px; border-color: rgba(249, 210, 114, 0.55); background-color: rgb(52, 38, 50); }
+.koz-kart--mistik { border-width: 1px; border-color: rgba(249, 210, 114, 0.55); background-color: rgb(30, 64, 150); }
 .izgara > .sac-kare { flex-basis: 17%; flex-grow: 1; margin: 3px; padding: 6px 4px; min-height: 64px; min-width: 56px; align-items: center; justify-content: center; }
 .sac-kare .yazi { -unity-text-align: middle-center; white-space: normal; }
 .koz-kart.secili, .sac-kare.secili, .ayk-satir.secili { border-width: 2px; border-color: var(--sun); }
 /* 2026-11-19 (yasin: "seçilen öge daha düzgün görünmeli"): seçili kart çerçeveye ek olarak hafif güneş zemini alır (✓ ve
    "Seçili" yazısı zaten var; renk tek ipucu değil). */
-.koz-kart.secili, .sac-kare.secili, .ayk-satir.secili { border-width: 3px; background-color: rgba(255, 160, 77, 0.14); }
+.koz-kart.secili, .sac-kare.secili, .ayk-satir.secili { border-width: 3px; background-color: rgba(255, 201, 60, 0.14); }
 .koz-kart.kilitli, .sac-kare.kilitli, .ayk-satir.kilitli { opacity: 0.85; }
 .denenen { border-width: 2px; border-color: var(--sky); }
 /* 2026-10-31 sanat paketi 1: saç/şapka/yüz kartlarında öğe takılı baş portresi (Portre.Dene). Çizilene dek soluk zemin,
@@ -503,7 +503,7 @@
 .isik-sag { position: absolute; right: -120px; top: -80px; width: 300px; height: 300px; }
 .afis { position: absolute; left: 0; right: 0; top: 8%; height: 54%; }
 .vs { position: absolute; left: 55%; top: 31%; -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); font-size: 44px; color: var(--tx);
-      text-shadow: 0 0 12px rgba(255, 160, 77, 0.85); -unity-text-outline-width: 0; }
+      text-shadow: 0 0 12px rgba(255, 201, 60, 0.85); -unity-text-outline-width: 0; }
 .buyuk-yazi .afis { opacity: 0.45; }
 .buyuk-yazi .vs { display: none; }
 .oyna-sahne { min-height: 140px; }
@@ -636,7 +636,7 @@
 .cta { -unity-slice-top: 34; -unity-slice-bottom: 44; }
 .cta:active { scale: 0.98 0.98; }
 .plaka { -unity-slice-bottom: 34; }
-.vs { text-shadow: 0 3px 0 rgba(30, 10, 12, 0.85); }
+.vs { text-shadow: 0 3px 0 rgba(27, 35, 64, 0.85); }
 .az-hareket .dugme:active, .az-hareket .cta:active, .az-hareket .ikon-dugme:active { translate: 0 0; scale: 1 1; }
 /* r51: Nunito ExtraBold Barlow Bold'dan geniş, "MATCH OF THE DAY" kutucukta kesiliyordu: harf aralığı daraldı. */
 .karo-etiket { letter-spacing: 0; }
@@ -671,7 +671,7 @@
 .buyuk-yazi .sekil-ornek { height: auto; min-height: 64px; }
 
 /* 2026-10-31 seviye anı: tam ekran, mürekkep zemin; ortada sütun (sekme çubuğu ve üst çubuk altta kalır, dokununca kapanır) */
-.seviye-ani { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(26, 18, 33, 0.94); align-items: center; justify-content: center; padding: 24px; }
+.seviye-ani { position: absolute; left: 0; top: 0; right: 0; bottom: 0; background-color: rgba(38, 89, 190, 0.94); align-items: center; justify-content: center; padding: 24px; }
 .seviye-ic { align-items: center; width: 100%; max-width: 360px; }
 /* 2026-11-10 (r147 seviye_ani 11 kesik, tur_toren taşma): içerik sütunda kayar, düğmeler altta sabit; büyük yazıda satırlar
    ezilmez. Sütun içerik kadar uzun, ekrandan uzunsa ekran boyu (kaydırma devreye girer). */
@@ -756,10 +756,10 @@
 .buyuk-yazi .dukkan-izgara > .dukkan-kart { flex-basis: 100%; }
 /* 2026-11-02 hedef eşya: Tüy yetmeyince "Hedef yap" ikincil düğme. Dosya sonunda: ikinci .dugme kuralı alt çizgiyi ezmesin. Güneş çerçeve + yazı (yalnız
    renk değil: başlık "Hedef yap" der). Birincil (dolu güneş) "Al"a ayrılmış kalır. */
-.dugme--hedef { background-color: rgba(255, 160, 77, 0.10); border-width: 2px; border-color: var(--sun); border-bottom-width: 2px; border-bottom-color: var(--sun); }
+.dugme--hedef { background-color: rgba(255, 201, 60, 0.10); border-width: 2px; border-color: var(--sun); border-bottom-width: 2px; border-bottom-color: var(--sun); }
 .dugme--hedef .dugme-yazi { color: var(--sun); -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); }
 .dugme--hedef .dugme-alt { color: rgba(255, 255, 255, 0.82); }
-.dugme--hedef:active { background-color: rgba(255, 160, 77, 0.22); }
+.dugme--hedef:active { background-color: rgba(255, 201, 60, 0.22); }
 
 /* 2026-11-06 ek tur fikir 5: Profil oyuncu kartı (büyük portre, seviye halkası, üç büyük sayı, kupa rafı). Kupa hücresi 48 pt
    (HIG ≥ 44), kazanılmamış kupa soluk + "n/4" yazısı (yalnız renk değil). Büyük yazıda üç sayı alt alta. */
@@ -789,7 +789,7 @@
 /* 2026-11-06 reklam şeridi yer tutucusu (Game/Reklam.cs): sekme çubuğunun üstünde 50 pt, sekme çubuğuyla aynı zemin ailesi
    (biraz koyu), üstte 1 pt çizgi; yazı küçük ve soluk, dikkat çekmez. SDK gelince şerit bu kutunun içine yerleşir. */
 /* 2026-11-11: bant üstte (gövdenin ilk çocuğu, güvenli alanın altında); çizgi artık altında. */
-.reklam-alani { flex-shrink: 0; height: 50px; background-color: rgb(20, 14, 25); border-bottom-width: 1px; border-color: var(--ln);
+.reklam-alani { flex-shrink: 0; height: 50px; background-color: rgb(12, 30, 80); border-bottom-width: 1px; border-color: var(--ln);
                 align-items: center; justify-content: center; display: none; }
 /* 2026-11-07 Profil ad alanı yer tutucusu (ProfilEkran): alanın içinde, metin başlangıcına hizalı, dokunuşu geçirir. */
 .ad-yer-tutucu { position: absolute; left: 12px; top: 0; bottom: 0; -unity-text-align: middle-left; }
@@ -834,7 +834,7 @@
 /* 2026-11-10 Seviye ödülü ve Seviye yolu (AnaEkran.SvHedefSatir / SeviyeYoluKur, UiKok.SeviyeAni). Oyna satırı ≥ 44 pt dokunma. */
 .sv-hedef { flex-direction: row; align-items: center; justify-content: space-between; min-height: 44px; margin-top: 8px; padding: 6px 12px;
             border-radius: 12px; background-color: var(--cam); border-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); border-bottom-color: var(--cam-alt); }
-.sv-hedef:active { background-color: rgba(60, 42, 74, 0.95); }
+.sv-hedef:active { background-color: rgba(34, 84, 190, 0.95); }
 .sv-hedef-sol { flex-grow: 1; flex-shrink: 1; min-width: 0; margin-right: 12px; }
 .sv-hedef-cubuk { margin-top: 4px; }
 .sv-hedef-sag { flex-direction: row; align-items: center; flex-shrink: 0; }
@@ -843,7 +843,7 @@
 .kisa .sv-hedef { margin-top: 6px; padding: 4px 12px; }
 .sv-yol { flex-direction: row; align-items: center; padding: 10px 12px; margin: 4px 0; border-radius: 12px; background-color: var(--cam); border-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); border-bottom-color: var(--cam-alt); }
 .sv-yol--buyuk { border-color: rgba(249, 210, 114, 0.45); }
-.sv-yol--siradaki { border-color: rgba(255, 160, 77, 0.70); }
+.sv-yol--siradaki { border-color: rgba(255, 201, 60, 0.70); }
 .sv-yol-no { min-width: 64px; margin-right: 8px; flex-shrink: 0; }
 .sv-yol-orta { flex-grow: 1; flex-shrink: 1; min-width: 0; }
 .sv-yol-tuy { flex-direction: row; align-items: center; flex-wrap: wrap; }
@@ -864,11 +864,11 @@
 .gel-cubuk { flex-direction: row; flex-grow: 1; flex-shrink: 1; min-width: 0; height: 12px; margin: 0 10px; }
 .gel-basamak { flex-grow: 1; flex-basis: 0; margin: 0 1px; border-radius: 3px; background-color: rgba(255, 255, 255, 0.12); }
 .gel-basamak--dolu { background-color: var(--lime); }   /* 2026-11-20 yasin "A · Limon": gelişim = senin ilerlemen (§8) */
-.gel-dugme { width: 44px; height: 44px; min-height: 44px; flex-shrink: 0; align-items: center; justify-content: center; padding: 0; border-radius: 12px; border-width: 1px; border-color: rgba(255, 160, 77, 0.70); }
+.gel-dugme { width: 44px; height: 44px; min-height: 44px; flex-shrink: 0; align-items: center; justify-content: center; padding: 0; border-radius: 12px; border-width: 1px; border-color: rgba(255, 201, 60, 0.70); }
 .gel-dugme--pasif { border-color: var(--ln); opacity: 0.45; }
 .gel-dugme--pasif:active { scale: 1 1; }
 .buyuk-yazi .gel-dugme { width: 56px; height: 56px; }
-.sv-hedef--gelisim { border-color: rgba(255, 160, 77, 0.70); }
+.sv-hedef--gelisim { border-color: rgba(255, 201, 60, 0.70); }
 .gel-kart { padding: 10px 12px; }
 .gel-ozet { flex-direction: row; align-items: center; min-height: 22px; }
 .gel-ozet-ad { width: 38%; flex-shrink: 0; }
@@ -876,7 +876,7 @@
 .gel-ozet-sayi { min-width: 44px; flex-shrink: 0; -unity-text-align: middle-right; }
 .buyuk-yazi .gel-ozet { flex-wrap: wrap; }
 .buyuk-yazi .gel-ozet-ad { width: 100%; }
-.seviye-gelisim { margin-top: 4px; -unity-text-align: middle-center; color: rgb(255, 196, 140); }
+.seviye-gelisim { margin-top: 4px; -unity-text-align: middle-center; color: rgb(255, 224, 140); }
 
 /* 2026-11-14 Profil "Son maçlar" (inceleme, fikir 07:05 #1): küçük haplar sarar; galibiyet ✓ + yazı rengi, yenilgi ✗ + soluk (yalnız renk değil). */
 .son-maclar { flex-direction: row; flex-wrap: wrap; margin-bottom: 4px; }
@@ -920,7 +920,7 @@
 /* 2026-11-19 (yasin: "karakteri daha detaylı inceleyebilmeli, daha geniş"): liste görünümünde vitrin %54 ve kenar payı 8 pt;
    İncele düğmesi (sol üst, 44 pt) vitrini Dolap'ın bütün alanına açar, liste gizlenir (UiKok.DolapIncele). Yükseklik
    kuralları (.kisa, .buyuk-yazi) yalnız liste görünümüne; incelemede vitrin kalan alanı doldurur. */
-.vitrin-buyut { position: absolute; top: 8px; left: 8px; width: 44px; height: 44px; min-width: 44px; padding: 0; align-items: center; justify-content: center; background-color: rgba(51, 35, 63, 0.9); }
+.vitrin-buyut { position: absolute; top: 8px; left: 8px; width: 44px; height: 44px; min-width: 44px; padding: 0; align-items: center; justify-content: center; background-color: rgba(30, 77, 179, 0.9); }
 .vitrin-alan.vitrin-alan--genis, .kisa .vitrin-alan.vitrin-alan--genis, .buyuk-yazi .vitrin-alan.vitrin-alan--genis, .kisa.buyuk-yazi .vitrin-alan.vitrin-alan--genis { height: auto; flex-grow: 1; margin-bottom: 8px; }
 
 /* 2026-11-19 Dolap A (yasin seçimi, artifact AhLNpXh8XkiHWsZk1kkz3H): vitrin + alt çekmece, üç durak (SoyunmaOdasi.DolapTam).
@@ -930,7 +930,7 @@
    genişlik ekran boyu; bilinçli sapma: yarım durakta figürden 14 pt daha almamak için). iPad (.genis): çekmece sağ panel, tutamak yok. */
 .dolap-cekmece { flex-grow: 1; flex-shrink: 1; min-height: 0; margin-top: 8px; background-color: var(--cam); border-top-left-radius: 20px; border-top-right-radius: 20px; border-top-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); }
 .cekmece-tutamak { height: 30px; flex-shrink: 0; align-items: center; justify-content: center; }
-.cekmece-tutamak-cizgi { width: 36px; height: 5px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; background-color: rgba(243, 234, 238, 0.40); }
+.cekmece-tutamak-cizgi { width: 36px; height: 5px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; background-color: rgba(255, 255, 255, 0.40); }
 .dolap .kategori-ray { margin-top: 0; }
 .dolap .vitrin-alan { height: 60%; min-height: 190px; }
 .dolap.dolap--tam .vitrin-alan { height: 32%; min-height: 150px; }
@@ -1060,13 +1060,13 @@
 .tur-kart2:active { scale: 0.97 0.97; }
 /* 2026-11-22 inceleme (fikir 22:06 #6): seçim artık yerinde değiştiği için çerçeve .12 sn'de geçer ve seçili kart 2 px yükselir
    (alt kenar koyu kalır, §11 tıknaz kalıp). Hareketi azaltta süre 0 ve yükselme yok. */
-.tur-kart2--secili { border-color: var(--sun); border-bottom-color: rgb(196, 110, 40); translate: 0 -2px; }
+.tur-kart2--secili { border-color: var(--sun); border-bottom-color: rgb(201, 143, 18); translate: 0 -2px; }
 .az-hareket .tur-kart2--secili { translate: 0 0; }
 /* 2026-11-22 inceleme (fikir 22:06 #3): "Buradasın" rozetinde oyuncunun yüzü; koyu ince halka turuncu zeminden ayırır. */
-.tur-kart2-av { width: 18px; height: 18px; border-radius: 9px; border-width: 1px; border-color: rgba(20, 14, 26, 0.55); margin-right: 4px; align-items: center; justify-content: center; overflow: hidden; }
+.tur-kart2-av { width: 18px; height: 18px; border-radius: 9px; border-width: 1px; border-color: rgba(14, 32, 84, 0.55); margin-right: 4px; align-items: center; justify-content: center; overflow: hidden; }
 .tur-kart2-sahne { height: 112px; }
-.tur-kart2-ortu { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(14, 10, 20, 0.62); align-items: center; justify-content: center; }
-.tur-kart2-no { position: absolute; left: 8px; top: 8px; padding: 3px 8px; border-radius: 10px; background-color: rgba(20, 14, 26, 0.72); color: var(--tx); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+.tur-kart2-ortu { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(10, 24, 64, 0.62); align-items: center; justify-content: center; }
+.tur-kart2-no { position: absolute; left: 8px; top: 8px; padding: 3px 8px; border-radius: 10px; background-color: rgba(14, 32, 84, 0.72); color: var(--tx); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .tur-kart2-bitti { position: absolute; right: 8px; top: 8px; flex-direction: row; align-items: center; padding: 3px 8px; border-radius: 10px; background-color: var(--lime); }
 .tur-kart2-burada { background-color: var(--sun); }
 .koyu-yazi { color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); margin-left: 2px; }
@@ -1094,5 +1094,54 @@
 .asama-kutu--simdi { border-width: 2px; border-color: var(--sun); }
 .asama-kutu--kilit { background-color: rgba(255, 255, 255, 0.03); }
 /* Birincil düğme tıknaz: alt kenar koyu 4 pt (basılabilir yüzey, spor oyunu menü dili); basınca kenar incelir, düğme 2 pt iner. */
-.dugme--birincil { border-bottom-width: 4px; border-bottom-color: rgb(196, 110, 40); }
+.dugme--birincil { border-bottom-width: 4px; border-bottom-color: rgb(201, 143, 18); }
 .dugme--birincil:active { border-bottom-width: 1px; translate: 0 2px; }
+
+/* ===== 2026-11-22 Stadyum Pop (yasin: "stadyum pop tan devam edelim, ama ai unslop olmalı gerçek bir tasarımcının elinden
+   çıkmış bir ui ve ux tasarımı olmalı"; seçim sayfası /mnt/project-files/birdie-smash/menu-tasarim-dilleri-2026-11-22/v4).
+   Yön (docs/arayuz_tasarim_dili.md §8): gündüz badminton salonu. Dünya kort mavisi (#2659BE, kökte); ekranın tek parlak öğesi
+   oyuncu ve rakip (afiş, Dolap vitrini); tek vurgu sarı #FFC93C = "bas, şimdi, seçili"; çizgi rengi mürekkep #1B2340.
+   Renkler yukarıdaki kurallarda değişkenden geldiği için bu blok rengi değil biçimi değiştirir: basılabilir her şey mürekkep
+   konturlu ve altı kalın (tıknaz 3B düğme, Supercell kalıbı), kartlar konturusuz düz panel (sakin zemin, düğme öne çıksın).
+   Lilita One denendi, ş ğ İ glifleri yok: başlık Baloo 2 ExtraBold'da kaldı, beyaz başlığa ince mürekkep konturu eklendi.
+   Kontrast (ölçüldü): beyaz yazı zeminde 6,5:1, kartta 9,3:1, düğmede 7,6:1; soluk #D6E2FF zeminde 5,0:1; mürekkep sarıda
+   10:1, beyaz sekme çubuğunda 15,4:1; soluk sekme yazısı #5A6690 beyazda 5,6:1. Kontur ve alt kalınlık her durumda aynı
+   olduğu için seçilince yerleşim kaymaz (kalınlık değişmez, yalnız renk). */
+.dugme { border-width: 2px; border-bottom-width: 4px; border-color: var(--cam-kenar); border-top-color: var(--cam-kenar); border-bottom-color: var(--cam-alt); }
+.dugme:active { translate: 0 1px; }
+.dugme--birincil, .dugme--birincil:active { border-color: var(--cta-ink); border-top-color: var(--cta-ink); border-width: 2px; border-bottom-width: 5px; }
+.dugme--pasif { border-color: rgba(20, 36, 79, 0.6); }
+.ikon-dugme { border-width: 2px; border-bottom-width: 3px; border-color: var(--cam-kenar); border-top-color: var(--cam-kenar); border-bottom-color: var(--cam-alt); }
+.cta { border-width: 2px; border-bottom-width: 6px; border-color: var(--cta-ink); border-radius: 16px; }
+.cip--secili { background-color: var(--sun); border-color: var(--cta-ink); }
+.cip--secili:active { background-color: rgb(255, 214, 102); }
+.cip--secili .dugme-yazi, .tur-cip--kilit.cip--secili .dugme-yazi { color: var(--cta-ink); }
+.cip--secili .dugme-alt { color: var(--cta-ink); }
+.segment-cip.cip--secili { background-color: rgba(0, 0, 0, 0); }
+.segment-cip.cip--secili .dugme-yazi { color: var(--tx); }
+/* beyaz başlık: ince mürekkep konturu, açık mavi zeminde harf kenarı netleşir (yazı tipi tek ağırlık, sahte kalınlık yok) */
+.baslik, .marka-ad, .vs { -unity-text-outline-width: 0.6px; -unity-text-outline-color: var(--cta-ink); }
+/* sekme çubuğu: beyaz panel, üstte 3 birim mürekkep çizgi; seçili sekme sarı hap + mürekkep yazı. Kayan gösterge ve üst çizgi
+   kalktı (hap tek başına okunur; iki gösterge aynı şeyi söylüyordu). */
+.sekme-cubugu { background-color: var(--bar); border-top-width: 3px; border-color: var(--cta-ink); }
+.sekme { border-width: 2px; border-bottom-width: 4px; border-color: rgba(0, 0, 0, 0); border-radius: 14px; }
+.sekme--secili { background-color: var(--sun); border-color: var(--cta-ink); }
+.sekme-yazi { color: #5A6690; }
+.sekme--secili .sekme-yazi { color: var(--cta-ink); }
+.sekme-gosterge, .sekme--secili .sekme-cizgi, .gosterge-var .sekme--secili .sekme-cizgi { display: none; }
+/* zemin: Gün Batımı'nın güneş bandı ve altın izi yok; kort ve salon ışığı koddan (UiKok.ZeminKur) */
+.zemin-bant, .zemin-iz, .kok.koyu .koyu-gunes { display: none; }
+.kort-zemin, .salon-isik { position: absolute; }
+.buyuk-yazi .kort-zemin { opacity: 0.5; }
+.tur-kart2 { border-color: var(--cam-kenar); border-bottom-color: var(--cam-alt); }
+/* üst haplar Stadyum Pop: basılabilir oldukları için mürekkep konturlu, para hapında beyaz "+" (UiKok.UstKur) */
+.ust-hap { border-width: 2px; border-bottom-width: 3px; border-color: var(--cam-kenar); border-top-color: var(--cam-kenar); border-bottom-color: var(--cam-alt); }
+.tuy-hap { padding-right: 6px; }
+.tuy-arti { width: 24px; height: 24px; border-radius: 8px; margin-left: 8px; background-color: #FFFFFF; border-width: 2px; border-color: var(--cta-ink); align-items: center; justify-content: center; flex-shrink: 0; }
+/* zorluk kapsülü: seçili segment beyaz + mürekkep (sarı Oyna düğmesinin hemen üstünde ikinci sarı olmasın) */
+.segment-thumb { background-color: #FFFFFF; border-width: 2px; border-color: var(--cta-ink); }
+.segment--kapsul > .cip--secili .dugme-yazi { color: var(--cta-ink); }
+.segment--kapsul { border-width: 2px; border-color: var(--cam-kenar); border-top-color: var(--cam-kenar); }
+/* sekme şeritleri (.segment-cip) alt çizgi dilinde kalır: yukarıdaki .dugme konturu onlara bulaşmasın */
+.segment-cip { border-width: 0; border-bottom-width: 3px; border-color: rgba(0, 0, 0, 0); border-top-color: rgba(0, 0, 0, 0); border-bottom-color: rgba(0, 0, 0, 0); }
+.segment-cip.cip--secili { border-bottom-color: var(--sun); }

@@ -64,7 +64,7 @@ namespace BirdieSmash.Game
                 int ii = i; var h = HAZIR[i]; bool on = oyuncuSecSecili == i;
                 var k = Kart("hazir-kart"); k.AddToClassList("dugme"); if (on) k.AddToClassList("secili");
                 var ust = Satir("rakip-satir"); ust.pickingMode = PickingMode.Ignore; k.Add(ust);
-                { var ik = Ikon(Ikonlar.Tik, 14, TURUNCU); ik.style.marginRight = 4; ik.style.display = on ? DisplayStyle.Flex : DisplayStyle.None; ust.Add(ik); hazirTik.Add(ik); }
+                { var ik = Ikon(Ikonlar.Tik, 14, KOYU); ik.style.marginRight = 4; ik.style.display = on ? DisplayStyle.Flex : DisplayStyle.None; ust.Add(ik); hazirTik.Add(ik); }
                 ust.Add(Yazi(L.T(h[0]), 15, "kalin"));
                 // Üç renk noktası (forma, ten, saç) + yazıyla beden/saç: kart yalnız renkle ayırt edilmez.
                 var nk = Satir("rakip-satir"); nk.pickingMode = PickingMode.Ignore; k.Add(nk);

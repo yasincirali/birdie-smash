@@ -359,7 +359,7 @@ namespace BirdieSmash.Game
                 if (sekmeDugme[i] != null)
                 {
                     sekmeDugme[i].EnableInClassList("sekme--secili", on); var b = sekmeDugme[i].userData as ErisimBilgi; if (b != null) b.secili = on;
-                    var im = sekmeDugme[i].Q<Image>(null, "sekme-ikon"); if (im != null) im.tintColor = on ? TURUNCU : SOLUK;   // seçili: limon dolgu üstünde koyu simge; 2026-10-27 yön C: dolgu yok, turuncu simge
+                    var im = sekmeDugme[i].Q<Image>(null, "sekme-ikon"); if (im != null) im.tintColor = on ? CTA_MUREKKEP : SEKME_SOLUK;   // 2026-11-22 Stadyum Pop: beyaz çubuk, seçili sarı hap üstünde mürekkep   // seçili: limon dolgu üstünde koyu simge; 2026-10-27 yön C: dolgu yok, turuncu simge
                 }
             }
             GostergeYerlestir(anim && s != once);   // 2026-10-27 yön C: üst çizgi yeni sekmeye yayla kayar
@@ -640,7 +640,7 @@ namespace BirdieSmash.Game
                 int i = (int)s; var d = new VisualElement(); d.AddToClassList("sekme"); sekmeDugme[i] = d;
                 var cizgi = new VisualElement(); cizgi.AddToClassList("sekme-cizgi"); cizgi.pickingMode = PickingMode.Ignore; d.Add(cizgi);
                 // 2026-11-07 (stüdyo AD4): simge 22 → 24, etiket 11 → 12; seçili simge USS'te büyür ve kalkar (stok iOS sekmesi gibiydi).
-                var im = Ikon(ik[i], 24, s == gez.sekme ? TURUNCU : SOLUK); im.AddToClassList("sekme-ikon"); d.Add(im);
+                var im = Ikon(ik[i], 24, s == gez.sekme ? CTA_MUREKKEP : SEKME_SOLUK); im.AddToClassList("sekme-ikon"); d.Add(im);
                 string ad = L.T(SEKME_AD[i]); if (etiket) d.Add(Yazi(ad, 12, "sekme-yazi"));
                 d.AddManipulator(new Clickable(() => SekmeAc(s))); Erisim.Etiket(d, ad, "sekme", s == gez.sekme);
                 sekmeCubugu.Add(d);
@@ -685,6 +685,9 @@ namespace BirdieSmash.Game
             var tuy = new VisualElement(); tuy.AddToClassList("ust-hap"); tuy.AddToClassList("tuy-hap"); ust.Add(tuy);
             tuy.AddManipulator(new Clickable(() => { Tik(); DukkanAc(); }));   // 2026-11-01 Tüy dükkânı'na açılır
             tuy.Add(Ikon(Ikonlar.Tuy, 20, ALTIN)); var tz = Yazi(Sayi(gr.eko.tuy), 20, "rakam"); tz.AddToClassList("ust-tuy"); tuy.Add(tz);
+            // 2026-11-22 Stadyum Pop: hap zaten dükkânı açıyordu ama düğme olduğu görünmüyordu; sağında beyaz "+" kutusu (para
+            // çubuğu kalıbı). Beyaz, sarı değil: sarı ekranda yalnız Oyna'nın. Ayrı dokunma alanı yok, bütün hap 44 pt.
+            var arti = new VisualElement(); arti.AddToClassList("tuy-arti"); arti.pickingMode = PickingMode.Ignore; arti.Add(Ikon(Ikonlar.Arti, 12, KOYU)); tuy.Add(arti);
             Erisim.Etiket(tuy, L.T("{0} Tüy", gr.eko.tuy) + ", " + L.T("Tüy dükkânı"), "dugme");
             OdulAnlari(tuy, tz, gr.eko.tuy, L_);
             var ayar = new VisualElement(); ayar.AddToClassList("dugme"); ayar.AddToClassList("ikon-dugme"); ayar.Add(Ikon(Ikonlar.Disli, 22, SOLUK));
@@ -707,6 +710,12 @@ namespace BirdieSmash.Game
             // kırpılıyor ve figürlerin arkasında gürültü oluyordu; düz şekil afişi öne çıkarır, perde → menü geçişi aynı resim.
             // Salon fonu artık çekilmez (salonImg null: SahneCiz atlar, ana kamera menüde yine yalnız temizler).
             gunesImg = new Image { image = Ikonlar.GunesDisk, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(1, 1, 1, .62f) }; gunesImg.AddToClassList("gunes-disk"); gunesImg.pickingMode = PickingMode.Ignore; zemin.Add(gunesImg);
+            // 2026-11-22 Stadyum Pop (yasin: "stadyum pop tan devam edelim, ama ai unslop olmalı"): batan güneş Gün Batımı
+            // dilinindi; gündüz salonunda yerini salon ışığı (üstte yumuşak beyaz) ve oyuncuların bastığı kort alır. Güneş öğesi
+            // kalır ama gizli (GunesYerlestir ve döndürme kodu dokunulmadan çalışsın); bant ve altın iz USS'te gizli.
+            gunesImg.style.display = DisplayStyle.None;
+            salonIsik = new Image { image = Ikonlar.Isik, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(1, 1, 1, .22f) }; salonIsik.AddToClassList("salon-isik"); salonIsik.pickingMode = PickingMode.Ignore; zemin.Add(salonIsik);
+            kortZemin = new VisualElement(); kortZemin.AddToClassList("kort-zemin"); kortZemin.pickingMode = PickingMode.Ignore; kortZemin.generateVisualContent += KortCiz; zemin.Add(kortZemin);
             var bant = new VisualElement(); bant.AddToClassList("zemin-bant"); bant.pickingMode = PickingMode.Ignore; zemin.Add(bant);
             var iz = new Image { image = Ikonlar.AltinIz, scaleMode = ScaleMode.StretchToFill }; iz.AddToClassList("zemin-iz"); iz.pickingMode = PickingMode.Ignore; zemin.Add(iz);
             zemin.RegisterCallback<GeometryChangedEvent>(e => GunesYerlestir());
@@ -723,7 +732,21 @@ namespace BirdieSmash.Game
             // diskin alt %30'u görünür (390 pt ekranda ~130 pt), yatayda ortalı; iPad'de büyümesin diye 560 sınırı (GunesYerlestir)
             if (zemin.parent != null) { zemin.parent.Insert(zemin.parent.IndexOf(zemin) + 1, koyuGunes); zemin.parent.RegisterCallback<GeometryChangedEvent>(e => KoyuGunesYerlestir()); }
         }
-        Image gunesImg, koyuGunes; float gunesAci, koyuGunesW = -1;
+        Image gunesImg, koyuGunes, salonIsik; VisualElement kortZemin; float gunesAci, koyuGunesW = -1;
+        // Kort (2026-11-22 Stadyum Pop): perspektifte yeşil badminton kortu, beyaz çizgiler; afişteki iki oyuncu üstünde durur.
+        // Tek parlak öğe afiş kalsın diye kort düz renk, gölgesiz; çizgiler 3 birim (çift kenar, orta çizgi, servis çizgisi).
+        static readonly Color KORT_YESIL = Kit.Hex("#38B26A"), KORT_CIZGI = new Color(1, 1, 1, .92f);
+        static void KortCiz(MeshGenerationContext ctx)
+        {
+            var r = ctx.visualElement.contentRect; float w = r.width, h = r.height; if (w <= 0 || h <= 0) return;
+            var p = ctx.painter2D; float ust = w * .30f, alt = -w * .10f;   // üst kenar yarı genişliği dar (uzak), alt geniş (yakın)
+            System.Func<float, float, Vector2> N = (u, v) => { float sol = Mathf.Lerp(ust, alt, v), sag = w - sol; return new Vector2(Mathf.Lerp(sol, sag, u), v * h); };
+            p.fillColor = KORT_YESIL; p.BeginPath(); p.MoveTo(N(0, 0)); p.LineTo(N(1, 0)); p.LineTo(N(1, 1)); p.LineTo(N(0, 1)); p.ClosePath(); p.Fill();
+            p.strokeColor = KORT_CIZGI; p.lineWidth = 3; p.lineJoin = LineJoin.Round;
+            p.BeginPath(); p.MoveTo(N(.04f, 0)); p.LineTo(N(.96f, 0)); p.LineTo(N(.96f, 1)); p.LineTo(N(.04f, 1)); p.ClosePath(); p.Stroke();
+            p.BeginPath(); p.MoveTo(N(.12f, 0)); p.LineTo(N(.12f, 1)); p.MoveTo(N(.88f, 0)); p.LineTo(N(.88f, 1)); p.Stroke();
+            p.BeginPath(); p.MoveTo(N(.5f, 0)); p.LineTo(N(.5f, 1)); p.MoveTo(N(.04f, .55f)); p.LineTo(N(.96f, .55f)); p.Stroke();
+        }
         // Güneş diski kare kalmalı (USS yüzdesi genişlik/yükseklik ayrı ölçer): genişliğin 1,25 katı, afişin ortasında
         // (afiş üst %8, boy %54 → merkez %35), yatayda ortalı; kenarları ekrandan taşar (batan güneş, tam daire değil).
         void GunesYerlestir()
@@ -732,6 +755,9 @@ namespace BirdieSmash.Game
             if (gunesImg == null) return; var r = zemin.contentRect; if (r.width <= 0 || r.height <= 0) return;
             float d = Mathf.Max(r.width * 1.25f, r.height * .5f); gunesImg.style.width = d; gunesImg.style.height = d;
             gunesImg.style.left = (r.width - d) / 2; gunesImg.style.top = r.height * .35f - d / 2;
+            // kort: afişteki ayakların hizasından (üst %19) plakanın arkasına (%36); salon ışığı üstte, genişliğin 1,4 katı
+            if (kortZemin != null) { kortZemin.style.left = 0; kortZemin.style.width = r.width; kortZemin.style.top = r.height * .19f; kortZemin.style.height = r.height * .17f; }
+            if (salonIsik != null) { float s = r.width * 1.4f; salonIsik.style.width = s; salonIsik.style.height = s * .7f; salonIsik.style.left = (r.width - s) / 2; salonIsik.style.top = -s * .3f; }
         }
         void KoyuGunesYerlestir()
         {
@@ -834,7 +860,7 @@ namespace BirdieSmash.Game
             return sb.ToString();
         }
         // 2026-10-27 yön C: GECE (diğer sekmeler) ve INK_ (Oyna, tam sayfa) mor-kahve zemin; ikisi aynı ton, Oyna'da salon fonu üstte.
-        static readonly Color GECE = new Color(0x1A / 255f, 0x12 / 255f, 0x21 / 255f, 1), INK_ = new Color(0x1A / 255f, 0x12 / 255f, 0x21 / 255f, 1);
+        static readonly Color GECE = new Color(0x26 / 255f, 0x59 / 255f, 0xBE / 255f, 1), INK_ = new Color(0x26 / 255f, 0x59 / 255f, 0xBE / 255f, 1);   // 2026-11-22 Stadyum Pop: kort mavisi #2659BE
         void OnDestroy() { if (salonRt != null) { salonRt.Release(); Destroy(salonRt); } }
 
         // Tam sayfa başı: "‹ Geri" (44 pt) + başlık.

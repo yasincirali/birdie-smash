@@ -1,4 +1,12 @@
 === UNITY ===
+Menülerde yeni görünüm: Stadyum Pop (22 Kasım gece):
+- Bütün menüler kort mavisine geçti. Oyna ekranında güneşin yerine salon ışığı ve oyuncuların bastığı yeşil kort var.
+- Ekranda tek sarı düğme var: oynatan düğme. Seçili sekme ve seçili çip de sarı; diğer düğmeler lacivert, hepsi koyu kenarlı ve kalın tabanlı, basınca aşağı oturuyor.
+- Alt sekme çubuğu beyaz, seçili sekme sarı bir hap içinde.
+- Tüy sayısının yanında "+" var; dokununca Tüy dükkânı açılıyor.
+- Ayarlar'da "Düğme sesi" satırı: Tüy, Ahşap, Balon, Retro, Kristal ya da Kapalı. Seçince o ses hemen çalıyor.
+Nasıl denenir: Menüleri sırayla aç (Oyna, Kariyer, Dolap, Atölye, Profil): hepsi mavi olmalı, yazılar rahat okunmalı, sarı yalnız ana düğmede ve seçili öğede olmalı. Ayarlar'da Düğme sesi'ni değiştir, sonra bir düğmeye bas: seçtiğin ses gelmeli. Telefonun sessiz anahtarı açıksa menü sesleri duyulmaz.
+
 Vuruş gücü görünüyor, top kaydırdığın yöne gidiyor (22 Kasım gece):
 - Vurduğun anda oyuncunun ayağının önünde üç parçalı ince bir yay yanıyor: bir parça yumuşak vuruş (drop), iki parça orta (clear), üç parça sert vuruş (smaç). Yarım saniyede sönüyor. Tam ortadan smaçta yayın ucunda küçük bir nokta var.
 - Sert vuruşlarda topun arkasında kısa, ince bir iz kalıyor; ne kadar hızlı çıktıysa o kadar belirgin. Yumuşak vuruşta neredeyse hiç görünmüyor.

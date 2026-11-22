@@ -50,7 +50,7 @@ namespace BirdieSmash.Game
                 int ii = i; bool on = hareketSecim == i;
                 var k = Kart("hareket-kart"); k.AddToClassList("dugme"); if (on) k.AddToClassList("secili");
                 var ust = Satir("rakip-satir"); ust.pickingMode = PickingMode.Ignore; k.Add(ust);
-                { var ik = Ikon(Ikonlar.Tik, 14, TURUNCU); ik.style.marginRight = 4; ik.style.display = on ? DisplayStyle.Flex : DisplayStyle.None; ust.Add(ik); hareketTik.Add(ik); }
+                { var ik = Ikon(Ikonlar.Tik, 14, KOYU); ik.style.marginRight = 4; ik.style.display = on ? DisplayStyle.Flex : DisplayStyle.None; ust.Add(ik); hareketTik.Add(ik); }
                 ust.Add(Yazi(L.T(Ayar.HAREKET_AD[i]), 17, "kalin"));
                 var ac = Yazi(L.T(HAREKET_ACIK[i]), 13, "ipucu"); ac.style.whiteSpace = WhiteSpace.Normal; ac.pickingMode = PickingMode.Ignore; k.Add(ac);
                 k.AddManipulator(new Clickable(() => { HareketSecGoster(ii); Tik(); }));
