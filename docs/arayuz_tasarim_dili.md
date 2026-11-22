@@ -217,3 +217,8 @@ gezinme ve açılır panel, Brawl Stars iri simge ve bölmeli yerleşim, Apple H
    oyun içi vuruşların altında. Yeni dokunulur öğe kendi sesini bu listeden alır, yeni bip yazılmaz.
 6. **Birincil düğme tıknaz.** Alt kenarı 4 pt koyu turuncu; basınca kenar 1 pt'ye iner, düğme 2 pt aşağı oturur (basılabilir
    yüzey, spor oyunu menü dili). Dolgu ve yazı rengi aynı.
+7. **Maç içi göstergeler menüyle aynı dili konuşur** (22 Kasım 2026, yasin: güç göstergesi yeni tasarımla tek bütün). Renk
+   rolleri §8.1'deki gibi: oyuncuya ait gösterge (vuruş gücü yayı, top izi) limon, rakibe ait orkide, ödül altın; turuncu
+   yalnız seçim/birincil eylem, kortta kullanılmaz. Parlama, nabız, beyaz flaş, gradyan yok; düz renk + yarı saydamlık. Çizgi
+   1,5 pt, vurgu 2 pt, uçlar yuvarlak. Hızlı dolum (ease-out), yavaş sönüm; hareketi azaltta dolum anlık. Anlam yalnız renkle
+   verilmez (ör. güç = yanan dilim sayısı).
