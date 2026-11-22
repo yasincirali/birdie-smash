@@ -106,7 +106,9 @@ namespace BirdieSmash.Game
                 // değerleri aynı. Sayfa yenilenmez (değer satırın kendisinde yazılı).
                 // 2026-11-22 inceleme (fikir 17:06 #3): ses ayarı sesle doğrulanır; seçilen düzeyde tek kısa alkış (Kapalı'da ve Ses
                 // kapalıyken sessiz). Klip menü durgunken ısıtılmış olandır, ısınmadıysa çalmaz (dokunuşta sentez yok).
-                DegerSatir(L.T("Seyirci"), new[] { L.T("Kapalı"), L.T("Az"), L.T("Normal") }, Ayar.seyirci, v => { Ayar.seyirci = v; Ayar.KaydetSonra(); root.sfx.SeyirciOrnek(); })));
+                DegerSatir(L.T("Seyirci"), new[] { L.T("Kapalı"), L.T("Az"), L.T("Normal") }, Ayar.seyirci, v => { Ayar.seyirci = v; Ayar.KaydetSonra(); root.sfx.SeyirciOrnek(); }),
+                // 2026-11-22 (yasin "o sesi de özel seçmek istiyorum"): düğme sesi paketi; her dokunuş sıradakine geçer ve onu çalar.
+                DegerSatir(L.T("Düğme sesi"), System.Array.ConvertAll(Sfx.PAKETLER, x => L.T(x)), Ayar.dugmeSes, v => { Ayar.dugmeSes = v; Ayar.KaydetSonra(); root.sfx.UiSes("bas"); })));
             // Sıra anlamla (2026-11-14 inceleme, fikir 22:05 #3): oyun hissi (hareket, kaydırma, kamera) → ses → görünüm (yazı boyutu,
             // dil). Yazı boyutu eskiden kamera ile kaydırmanın arasındaydı; "vuruş tutmuyor" diyen oyuncu hareket ve kaydırmayı yan
             // yana bulur. Yazı boyutu da diğer çipli gruplar gibi seçilinin tek soluk cümlesini alır. Anahtarlar aynı.

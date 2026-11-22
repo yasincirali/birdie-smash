@@ -522,13 +522,45 @@ namespace BirdieSmash.Game
         // altında (en yüksek tepe bas .14; Tik .04 idi). Sessiz ayarı AudioListener'dan (GameRoot), ayrı kontrol gerekmez.
         AudioSource uiSrc;
         public static readonly string[] UI_TURLER = { "pop", "bas", "sec", "sekme", "geri", "kilit", "kaydir", "odul" };
+        // Düğme sesi paketi (2026-11-22, yasin: "tuşlar sesli olmalı, ses modunda o sesi de özel seçmek istiyorum"). Ayarlar >
+        // "Düğme sesi" satırı Ayar.dugmeSes'i döndürür, her dokunuşta seçilen paketin bas sesi önizlenir. 0 Tüy = ilk tarif (aşağıda),
+        // diğerleri aynı sekiz türü tek bir tını ailesiyle çalar (tür perdeyi ve nota sayısını belirler, paket tınıyı). Kayıt yok,
+        // hepsi sentez (CC0 kuralı); seçili paket açılışta ısıtılır, diğerleri ilk önizlemede bir kez üretilir. "Kapalı" yalnız menü
+        // düğmelerini susturur; oyun sesleri ve ödül anları Ses anahtarına bağlı kalır. iOS sessiz anahtarı açıkken Apple HIG gereği
+        // efektler zaten çalmaz (ambient oturum); düğmeyi zorla çaldırmak için oturum değiştirilmedi.
+        public static readonly string[] PAKETLER = { "Tüy", "Ahşap", "Balon", "Retro", "Kristal", "Kapalı" };
         public void UiSes(string tur)
         {
             if (uiSrc == null) { Tik(); return; }
+            if (Ayar.dugmeSes == PAKETLER.Length - 1 && tur != "odul") return;
             uiSrc.pitch = tur == "pop" || tur == "sec" ? 1 + (float)(rnd.NextDouble() - .5) * .06f : 1;
             uiSrc.PlayOneShot(UiKlip(tur));
         }
         AudioClip UiKlip(string tur)
+        {
+            int pk = Ayar.dugmeSes; if (pk <= 0 || pk >= PAKETLER.Length - 1) return TuyKlip(tur);
+            return Bir("ui" + pk + "_" + tur, s =>
+            {
+                float m = tur == "bas" ? .8f : tur == "sec" ? 1.26f : tur == "sekme" ? .9f : tur == "kilit" ? .55f : tur == "kaydir" ? 1.5f : 1;
+                if (tur == "odul") { PaketNota(s, pk, 0, 1, 1); PaketNota(s, pk, .07f, 1.26f, 1); PaketNota(s, pk, .14f, 1.5f, 1.2f); return; }
+                PaketNota(s, pk, 0, m, tur == "kaydir" ? .5f : 1);
+                if (tur == "sec") PaketNota(s, pk, .03f, m * 1.33f, .8f);
+                if (tur == "geri") PaketNota(s, pk, .04f, .75f, .9f);
+                if (tur == "bas") s.Decay(0, 140, "sine", .1f, .08f, 1.6f);   // birincil düğmenin gövdesi her pakette
+            }, tur == "odul" ? .4f : .14f);
+        }
+        static void PaketNota(Synth s, int pk, float t, float m, float v)
+        {
+            System.Func<float, Synth.Biquad> lp = f => new Synth.Biquad("lowpass", f, .707f);
+            switch (pk)
+            {
+                case 1: s.Decay(t, 820 * m, "triangle", .09f * v, .045f, 1, lp(2400)); s.Burst(t, .006f, "bandpass", 2000 * m, .05f * v, 3); break;   // ahşap: kuru tok
+                case 2: s.Decay(t, 360 * m, "sine", .09f * v, .07f, .45f); break;   // balon: perde yukarı kayan "blop"
+                case 3: s.Tone(t, 660 * m, .055f, "square", .028f * v, lp(5000)); break;   // retro: kare dalga, 8-bit
+                default: s.Tone(t, 1760 * m, .14f, "sine", .035f * v); s.Tone(t, 2637 * m, .09f, "sine", .015f * v); break;   // kristal: çan
+            }
+        }
+        AudioClip TuyKlip(string tur)
         {
             return Bir("ui_" + tur, s =>
             {
