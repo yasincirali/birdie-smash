@@ -200,22 +200,16 @@
 .tur-cip--kilit .dugme-yazi { color: var(--mu); }
 .tur-cip--kilit.cip--secili .dugme-yazi { color: var(--tx); }
 .tur-kart { margin-top: 8px; margin-bottom: 10px; }
-/* 2026-11-07 yatay tur kartları: şerit, kart, seçili çerçeve, altı basamak tek satırda (sığmazsa sarar), açık maç kartı */
-.tur-serit { margin: 10px 0 6px 0; flex-shrink: 0; }
-.tur-kart--yatay { margin: 0 10px 0 0; flex-shrink: 0; }
-.tur-kart--secili { border-color: var(--sun); border-width: 2px; }
-.tur-kart--kilit .tur-tema { color: var(--mu2); }
+/* 2026-11-07 tur basamakları: altı basamak tek satırda (sığmazsa sarar), açık maç kartı. Eski yatay tur kartı ve ‹ Tur n ›
+   başlığı kuralları 2026-11-22'de silindi (Dünya Turu şeridi, .tur-kart2; inceleme 22:06 #8). */
 .tur-basamaklar { flex-direction: row; flex-wrap: wrap; justify-content: space-between; margin: 4px 0 8px 0; }
 .tur-basamaklar .dugum-rozet { margin-bottom: 4px; }   /* dar ekranda sararsa satırlar birbirine değmesin */
 .tur-durum { white-space: normal; margin-bottom: 6px; }
 .mac-ozet { margin-top: 4px; }
 .mac-ozet-oyna { margin-top: 10px; }
-/* 2026-11-07 tur giriş kartı (GD2): tema cümlesi, altı rakip noktası (yenilen ✓, yenilmeyen soluk halka), hazırlık çubuğu (bilgi) */
 .muhur-satir { min-height: 32px; align-items: center; margin-bottom: 4px; }
-.tur-tema { color: var(--tx); white-space: normal; margin: 6px 0 8px 0; }
-/* 2026-11-14 hikâye: bölümün cümlesi temanın üstünde; tema küçük ve soluk (kural bilgisi), ikisi tek blok gibi okunur */
+/* 2026-11-14 hikâye: bölümün cümlesi */
 .tur-hikaye { color: var(--tx); white-space: normal; margin: 6px 0 0 0; }
-.tur-tema-alt { color: var(--mu); margin-top: 4px; }
 .dunya-sira { margin: 2px 0 10px 0; }
 .rakip-guc { margin-top: 2px; }
 .tur-rakipler { flex-direction: row; flex-wrap: nowrap; margin: 0 0 10px 0; }
@@ -953,12 +947,6 @@
 
 /* 2026-11-19 Kariyer A: dikey tur yolu (KariyerEkran.TurYol). Başlık kartında ‹ tur › oklar; yol satırları zikzak (düğüm bir
    kenarda, yazı içe bakar); çizgi satırların arkasında tek Painter2D eğrisi. Şimdiki düğüm 64 pt (güneş diski), diğerleri 44. */
-.tur-baslik { padding: 10px 8px; }
-.tur-baslik-satir { flex-direction: row; align-items: center; }
-.tur-baslik-orta { align-items: center; margin: 0 8px; }
-.tur-baslik-orta > Label { -unity-text-align: middle-center; white-space: normal; }
-.tur-baslik .tur-hikaye { -unity-text-align: middle-center; margin: 6px 8px 0 8px; color: var(--mu); }
-.tur-baslik .kucuk-dugme { margin-left: 8px; }
 .tur-yol { margin: 8px 0 4px 0; padding: 4px 0; }
 .tur-yol-cizgi { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
 .yol-satir { flex-direction: row; align-items: center; min-height: 72px; margin: 4px 0; }
@@ -1068,9 +1056,14 @@
    gövde cam. Seçili kart turuncu 2 pt çerçeve (seçim rolü, §8.1); kilitli kartta sahne koyu örtü + kilit, yazı yine okunur. */
 .tur-serit { margin: 8px -16px 4px -16px; flex-shrink: 0; }
 .tur-serit .unity-scroll-view__content-container { flex-direction: row; padding: 4px 16px 8px 16px; }
-.tur-kart2 { width: 232px; margin-right: 12px; border-radius: 18px; overflow: hidden; background-color: var(--cam); border-width: 2px; border-color: rgba(255, 255, 255, 0.06); border-bottom-width: 4px; border-bottom-color: rgba(0, 0, 0, 0.35); transition-property: scale, border-color; transition-duration: 0.12s; }
+.tur-kart2 { width: 232px; margin-right: 12px; border-radius: 18px; overflow: hidden; background-color: var(--cam); border-width: 2px; border-color: rgba(255, 255, 255, 0.06); border-bottom-width: 4px; border-bottom-color: rgba(0, 0, 0, 0.35); transition-property: scale, border-color, translate; transition-duration: 0.12s; }
 .tur-kart2:active { scale: 0.97 0.97; }
-.tur-kart2--secili { border-color: var(--sun); border-bottom-color: rgb(196, 110, 40); }
+/* 2026-11-22 inceleme (fikir 22:06 #6): seçim artık yerinde değiştiği için çerçeve .12 sn'de geçer ve seçili kart 2 px yükselir
+   (alt kenar koyu kalır, §11 tıknaz kalıp). Hareketi azaltta süre 0 ve yükselme yok. */
+.tur-kart2--secili { border-color: var(--sun); border-bottom-color: rgb(196, 110, 40); translate: 0 -2px; }
+.az-hareket .tur-kart2--secili { translate: 0 0; }
+/* 2026-11-22 inceleme (fikir 22:06 #3): "Buradasın" rozetinde oyuncunun yüzü; koyu ince halka turuncu zeminden ayırır. */
+.tur-kart2-av { width: 18px; height: 18px; border-radius: 9px; border-width: 1px; border-color: rgba(20, 14, 26, 0.55); margin-right: 4px; align-items: center; justify-content: center; overflow: hidden; }
 .tur-kart2-sahne { height: 112px; }
 .tur-kart2-ortu { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(14, 10, 20, 0.62); align-items: center; justify-content: center; }
 .tur-kart2-no { position: absolute; left: 8px; top: 8px; padding: 3px 8px; border-radius: 10px; background-color: rgba(20, 14, 26, 0.72); color: var(--tx); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
