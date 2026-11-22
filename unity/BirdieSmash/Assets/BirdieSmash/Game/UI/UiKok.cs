@@ -685,6 +685,9 @@ namespace BirdieSmash.Game
             var tuy = new VisualElement(); tuy.AddToClassList("ust-hap"); tuy.AddToClassList("tuy-hap"); ust.Add(tuy);
             tuy.AddManipulator(new Clickable(() => { Tik(); DukkanAc(); }));   // 2026-11-01 Tüy dükkânı'na açılır
             tuy.Add(Ikon(Ikonlar.Tuy, 20, ALTIN)); var tz = Yazi(Sayi(gr.eko.tuy), 20, "rakam"); tz.AddToClassList("ust-tuy"); tuy.Add(tz);
+            // 2026-11-22 Stadyum Pop: hap zaten dükkânı açıyordu ama düğme olduğu görünmüyordu; sağında beyaz "+" kutusu (para
+            // çubuğu kalıbı). Beyaz, sarı değil: sarı ekranda yalnız Oyna'nın. Ayrı dokunma alanı yok, bütün hap 44 pt.
+            var arti = new VisualElement(); arti.AddToClassList("tuy-arti"); arti.pickingMode = PickingMode.Ignore; arti.Add(Ikon(Ikonlar.Arti, 12, KOYU)); tuy.Add(arti);
             Erisim.Etiket(tuy, L.T("{0} Tüy", gr.eko.tuy) + ", " + L.T("Tüy dükkânı"), "dugme");
             OdulAnlari(tuy, tz, gr.eko.tuy, L_);
             var ayar = new VisualElement(); ayar.AddToClassList("dugme"); ayar.AddToClassList("ikon-dugme"); ayar.Add(Ikon(Ikonlar.Disli, 22, SOLUK));

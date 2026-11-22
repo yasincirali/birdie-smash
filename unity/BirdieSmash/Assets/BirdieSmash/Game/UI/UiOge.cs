@@ -134,7 +134,7 @@ namespace BirdieSmash.Game
         {
             var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("cip"); if (secili) d.AddToClassList("cip--secili");
             var ic = new VisualElement(); ic.AddToClassList("cip-ic"); ic.pickingMode = PickingMode.Ignore; d.Add(ic);
-            if (secili) { var tk = Ikon(Ikonlar.Tik, 16, TURUNCU); tk.AddToClassList("cip-tik"); ic.Add(tk); }   // 2026-11-07: seçili dili turuncu çerçeve + ✓ (krem dolgu kalktı); segment sekmesinde ✓ gizli (USS)
+            if (secili) { var tk = Ikon(Ikonlar.Tik, 16, KOYU); tk.AddToClassList("cip-tik"); ic.Add(tk); }   // 2026-11-07: seçili dili turuncu çerçeve + ✓ (krem dolgu kalktı); segment sekmesinde ✓ gizli (USS); 2026-11-22 Stadyum Pop: sarı dolgu üstünde mürekkep ✓
             var yz = new VisualElement(); yz.AddToClassList("cip-yazilar"); yz.pickingMode = PickingMode.Ignore; ic.Add(yz);
             yz.Add(Yazi(t, 14, "dugme-yazi")); if (!string.IsNullOrEmpty(alt)) yz.Add(Yazi(alt, 11.5f, "dugme-alt"));
             if (a != null) d.AddManipulator(new Clickable(() => { Tik(d); a(); }));
@@ -145,7 +145,7 @@ namespace BirdieSmash.Game
         void CipDurum(VisualElement d, bool secili)
         {
             d.EnableInClassList("cip--secili", secili); var ic = d.Q(className: "cip-ic"); var tk = d.Q(className: "cip-tik");
-            if (secili && tk == null && ic != null) { tk = Ikon(Ikonlar.Tik, 16, TURUNCU); tk.AddToClassList("cip-tik"); ic.Insert(0, tk); }
+            if (secili && tk == null && ic != null) { tk = Ikon(Ikonlar.Tik, 16, KOYU); tk.AddToClassList("cip-tik"); ic.Insert(0, tk); }
             else if (!secili && tk != null) tk.RemoveFromHierarchy();
             var eb = d.userData as ErisimBilgi; if (eb != null) eb.secili = secili;
         }
@@ -431,7 +431,7 @@ namespace BirdieSmash.Game
             // Alt sayfa kaydırma solması (2026-11-07 UX2): kart renginde (#261A30) aşağı doğru opaklaşan 1×32 şerit; içerik
             // sürüyorsa listenin altında durur ("Hard" yarım kesik görünüp hata sanılıyordu, Saha bölümü fark edilmiyordu).
             Solma = new Texture2D(1, 32, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-            for (int i = 0; i < 32; i++) Solma.SetPixel(0, i, new Color(0x26 / 255f, 0x1A / 255f, 0x30 / 255f, Mathf.SmoothStep(1, 0, i / 31f)));
+            for (int i = 0; i < 32; i++) Solma.SetPixel(0, i, new Color(0x1A / 255f, 0x3F / 255f, 0x95 / 255f,   /* 2026-11-22 Stadyum Pop: alt sayfa #1A3F95 */ Mathf.SmoothStep(1, 0, i / 31f)));
             Solma.Apply(false, true);
             // Oyna sekmesinin zemini: USS'te gradyan yok. 2026-10-26: renk ve duraklar yön A'ya göre YayinDokulari'nda.
             Gradyan = new Texture2D(1, 64, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };

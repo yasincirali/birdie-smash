@@ -1134,3 +1134,11 @@
 .kort-zemin, .salon-isik { position: absolute; }
 .buyuk-yazi .kort-zemin { opacity: 0.5; }
 .tur-kart2 { border-color: var(--cam-kenar); border-bottom-color: var(--cam-alt); }
+/* üst haplar Stadyum Pop: basılabilir oldukları için mürekkep konturlu, para hapında beyaz "+" (UiKok.UstKur) */
+.ust-hap { border-width: 2px; border-bottom-width: 3px; border-color: var(--cam-kenar); border-top-color: var(--cam-kenar); border-bottom-color: var(--cam-alt); }
+.tuy-hap { padding-right: 6px; }
+.tuy-arti { width: 24px; height: 24px; border-radius: 8px; margin-left: 8px; background-color: #FFFFFF; border-width: 2px; border-color: var(--cta-ink); align-items: center; justify-content: center; flex-shrink: 0; }
+/* zorluk kapsülü: seçili segment beyaz + mürekkep (sarı Oyna düğmesinin hemen üstünde ikinci sarı olmasın) */
+.segment-thumb { background-color: #FFFFFF; border-width: 2px; border-color: var(--cta-ink); }
+.segment--kapsul > .cip--secili .dugme-yazi { color: var(--cta-ink); }
+.segment--kapsul { border-width: 2px; border-color: var(--cam-kenar); border-top-color: var(--cam-kenar); }

@@ -1,4 +1,12 @@
 === UNITY ===
+Menülerde yeni görünüm: Stadyum Pop (22 Kasım gece):
+- Bütün menüler kort mavisine geçti. Oyna ekranında güneşin yerine salon ışığı ve oyuncuların bastığı yeşil kort var.
+- Ekranda tek sarı düğme var: oynatan düğme. Seçili sekme ve seçili çip de sarı; diğer düğmeler lacivert, hepsi koyu kenarlı ve kalın tabanlı, basınca aşağı oturuyor.
+- Alt sekme çubuğu beyaz, seçili sekme sarı bir hap içinde.
+- Tüy sayısının yanında "+" var; dokununca Tüy dükkânı açılıyor.
+- Ayarlar'da "Düğme sesi" satırı: Tüy, Ahşap, Balon, Retro, Kristal ya da Kapalı. Seçince o ses hemen çalıyor.
+Nasıl denenir: Menüleri sırayla aç (Oyna, Kariyer, Dolap, Atölye, Profil): hepsi mavi olmalı, yazılar rahat okunmalı, sarı yalnız ana düğmede ve seçili öğede olmalı. Ayarlar'da Düğme sesi'ni değiştir, sonra bir düğmeye bas: seçtiğin ses gelmeli. Telefonun sessiz anahtarı açıksa menü sesleri duyulmaz.
+
 Kariyer tur kartları daha akıcı (22 Kasım gece, ikinci tur):
 - Tur kartına dokununca sayfa artık baştan kurulmuyor: kart yumuşakça ortaya kayıyor, altındaki rota hafifçe beliriyor. Seçili kart çerçevesi yavaşça renk değiştiriyor ve kart biraz yükseliyor.
 - Kartları kaydırıp bırakınca şerit en yakın karta oturuyor, kısa bir "tık" sesi ve hafif titreşim geliyor.

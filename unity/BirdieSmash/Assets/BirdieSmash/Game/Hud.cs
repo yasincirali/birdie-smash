@@ -119,7 +119,7 @@ namespace BirdieSmash.Game
         {
             blocks.Add(r); bool bas = r.Contains(Event.current.mousePosition) && Input.GetMouseButton(0);
             // 2026-11-07 (AD5): saf siyah disk yerine menü haplarının mor-kahvesi (#1A1221 %78) + ince halka (üst hap diliyle aynı)
-            Tex(r, disk, new Color(26 / 255f, 18 / 255f, 33 / 255f, bas ? .92f : .78f)); Tex(r, ringK, new Color(1, 1, 1, .22f));
+            Tex(r, disk, new Color(27 / 255f, 35 / 255f, 64 / 255f, bas ? .92f : .78f));   // 2026-11-22 Stadyum Pop: mürekkep #1B2340 Tex(r, ringK, new Color(1, 1, 1, .22f));
             float cw = r.width * .11f, chh = r.height * .36f, cx = r.center.x, cy = r.center.y - chh / 2;
             Fill(new Rect(cx - cw * 1.6f, cy, cw, chh), Color.white); Fill(new Rect(cx + cw * .6f, cy, cw, chh), Color.white);
             return GUI.Button(r, GUIContent.none, GUIStyle.none);

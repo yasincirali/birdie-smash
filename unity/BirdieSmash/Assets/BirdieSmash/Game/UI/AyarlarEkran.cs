@@ -25,7 +25,7 @@ namespace BirdieSmash.Game
             {
                 var d = satir[j]; bool s = j == secili; d.EnableInClassList("cip--secili", s);
                 var ic = d.Q(null, "cip-ic"); var tk = d.Q(null, "cip-tik");
-                if (s && tk == null && ic != null) { tk = Ikon(Ikonlar.Tik, 16, TURUNCU); tk.AddToClassList("cip-tik"); ic.Insert(0, tk); }
+                if (s && tk == null && ic != null) { tk = Ikon(Ikonlar.Tik, 16, KOYU); tk.AddToClassList("cip-tik"); ic.Insert(0, tk); }
                 else if (!s && tk != null) tk.RemoveFromHierarchy();
                 // Açıklaması olmayan grup (Dil) yalnız adı okutur.
                 if (j < adTablo.Length && acikTablo == null) Erisim.Etiket(d, L.T(adTablo[j]), "dugme", s);

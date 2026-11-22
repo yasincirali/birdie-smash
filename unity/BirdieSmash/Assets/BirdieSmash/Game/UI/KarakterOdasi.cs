@@ -244,7 +244,7 @@ namespace BirdieSmash.Game
             foreach (var id in RaketSekil.SIRA)
             {
                 bool on = cur == id; string k = id;
-                var d = new VisualElement(); d.AddToClassList("renk"); d.AddToClassList("sekil-ornek"); if (on) d.AddToClassList("renk--secili"); d.style.backgroundColor = Kit.Hex("#33233F");
+                var d = new VisualElement(); d.AddToClassList("renk"); d.AddToClassList("sekil-ornek"); if (on) d.AddToClassList("renk--secili"); d.style.backgroundColor = Kit.Hex("#1E4DB3");   /* 2026-11-22 Stadyum Pop düğme rengi */
                 d.Add(Ikon(RaketSekil.Ikon(id), 30, on ? TURUNCU : Color.white));
                 // 2026-11-21 inceleme (fikir 12:06 #4): ad 10 pt ham beyazdı, seçili yalnız ikon rengiyle ayrılıyordu. 12 pt, renk USS'ten
                 // (.sekil-ornek .renk-kilit-yazi), seçiliye ortak Cip'teki ✓ (renk körü oyuncu için yalnız renk değil).
