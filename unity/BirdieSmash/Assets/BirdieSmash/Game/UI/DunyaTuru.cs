@@ -91,7 +91,7 @@ namespace BirdieSmash.Game
             else if (burada) { var bt = new VisualElement(); bt.AddToClassList("tur-kart2-bitti"); bt.AddToClassList("tur-kart2-burada"); bt.pickingMode = PickingMode.Ignore; bt.Add(Yazi(L.T("Buradasın"), 12, "koyu-yazi")); sh.Add(bt); }
 
             var gv = new VisualElement(); gv.AddToClassList("tur-kart2-govde"); gv.pickingMode = PickingMode.Ignore; k.Add(gv);
-            var ad = Yazi(L.T(TurAd(t)), 20, "tur-kart2-ad"); ad.name = "tur-ad"; gv.Add(ad);
+            var ad = Yazi(L.T(TurAd(t)), 20, "tur-kart2-ad"); ad.name = "tur-ad"; SozcukSigdir(ad); gv.Add(ad);
             if (tv != null && tv.bolum.Length > 0) gv.Add(Yazi(L.T(tv.bolum), 12, "soluk"));
             string erisim = L.T("Tur {0}", t + 1) + ", " + L.T(TurAd(t));
             if (!acik) { var ky = Yazi(KilitNedeni(t), 12, "soluk"); ky.AddToClassList("tur-kart2-kilit-yazi"); gv.Add(ky); erisim += ", " + KilitNedeni(t); }
@@ -144,7 +144,7 @@ namespace BirdieSmash.Game
                 bool tamam = kz == bs[i].Length;
                 var k = new VisualElement(); k.AddToClassList("asama-kutu"); k.AddToClassList(tamam ? "asama-kutu--tamam" : simdi ? "asama-kutu--simdi" : acik ? "asama-kutu--acik" : "asama-kutu--kilit"); k.pickingMode = PickingMode.Ignore;
                 k.Add(Ikon(tamam ? Ikonlar.Tik : i == 3 ? Ikonlar.Kupa : !acik ? Ikonlar.Kilit : Ikonlar.Oyna, 16, tamam ? LIMON : simdi ? TURUNCU : i == 3 ? ALTIN : SOLUK));
-                k.Add(Yazi(L.T(ad[i]), 12, "kalin"));
+                var al = Yazi(L.T(ad[i]), 12, "kalin"); SozcukSigdir(al); k.Add(al);   // r241 ×2: "Çeyrek" dar kutuda bölünüyordu
                 if (i == 0) k.Add(Yazi(kz + "/3", 11, "soluk"));
                 r.Add(k);
                 sb.Append(L.T(ad[i])).Append(' ').Append(L.T(tamam ? "tamam" : simdi ? "şimdi" : acik ? "açık" : "kilitli")).Append(i < 3 ? ", " : "");

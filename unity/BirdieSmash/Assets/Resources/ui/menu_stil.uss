@@ -1090,6 +1090,8 @@
 .durak-odul { flex-direction: row; align-items: center; flex-shrink: 0; padding: 3px 8px; border-radius: 10px; background-color: rgba(249, 210, 114, 0.12); margin: 0 4px; }
 .durak-odul Label { margin-left: 3px; }
 .yol-yazi { flex-grow: 1; flex-shrink: 1; }
+/* r241: rakip adı satırda büzülüp "The/o" diye kırılıyordu (ödül hapı satırı daralttı); etiket satırı doldurur, yıldızlar uçta. */
+.yol-yazi .rakip-satir > Label { flex-grow: 1; flex-shrink: 1; }
 /* Finallerde turnuva aşamaları: dört eşit kutu, şimdiki turuncu çerçeve, tamam limon ✓, kilitli soluk kilit (biçim + yazı). */
 .final-asama { flex-direction: row; justify-content: space-between; margin: 8px 0 4px 0; }
 .asama-kutu { flex-grow: 1; flex-basis: 0; margin: 0 3px; min-height: 64px; border-radius: 12px; align-items: center; justify-content: center; background-color: var(--cam2); border-width: 1px; border-color: rgba(255, 255, 255, 0.06); padding: 6px 2px; }
