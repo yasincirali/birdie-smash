@@ -96,6 +96,7 @@ namespace BirdieSmash.Game
         static readonly Dictionary<ScrollView, EventCallback<GeometryChangedEvent>> ortaBekci = new Dictionary<ScrollView, EventCallback<GeometryChangedEvent>>();
         static void OrtayaKaydir(ScrollView sv, VisualElement el)
         {
+            var kopuk = new List<ScrollView>(); foreach (var kv in ortaBekci) if (kv.Key.panel == null) kopuk.Add(kv.Key); foreach (var k in kopuk) ortaBekci.Remove(k);   // yeniden kurulmuş şeritler
             EventCallback<GeometryChangedEvent> eski; if (ortaBekci.TryGetValue(sv, out eski)) { sv.contentContainer.UnregisterCallback(eski); ortaBekci.Remove(sv); }
             float bitis = Time.unscaledTime + 1f;
             System.Func<bool> uygula = () =>
@@ -107,7 +108,7 @@ namespace BirdieSmash.Game
             EventCallback<GeometryChangedEvent> gc = null;
             gc = e => { if (Time.unscaledTime > bitis || el.parent == null) { sv.contentContainer.UnregisterCallback(gc); ortaBekci.Remove(sv); return; } uygula(); };
             ortaBekci[sv] = gc; sv.contentContainer.RegisterCallback(gc);
-            el.schedule.Execute(() => { EventCallback<GeometryChangedEvent> b; if (ortaBekci.TryGetValue(sv, out b) && b == gc) { sv.contentContainer.UnregisterCallback(gc); ortaBekci.Remove(sv); } }).StartingIn(1000);
+            sv.schedule.Execute(() => { EventCallback<GeometryChangedEvent> b; if (ortaBekci.TryGetValue(sv, out b) && b == gc) { sv.contentContainer.UnregisterCallback(gc); ortaBekci.Remove(sv); } }).StartingIn(1000);
             uygula();
         }
         // ---- Koleksiyon (2026-11-10, yasin: "dolap kısmı göz alıcı ve orada zaman geçirtici değil") ----

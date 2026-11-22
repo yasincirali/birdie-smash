@@ -48,7 +48,8 @@ namespace BirdieSmash.Game
             if (string.IsNullOrEmpty(desen) || desen == "duz") return null;
             string rk = ColorUtility.ToHtmlStringRGB(c), k = desen + "|" + rk; Texture2D t;
             if (onizleme.TryGetValue(k, out t) && t != null) return t;
-            if (!onizlemeRenk.Contains(rk))
+            if (onizlemeRenk.Remove(rk)) onizlemeRenk.Add(rk);   // kullanım sırası: geri dönülen renk en yeni sayılır, atılmaz
+            else
             {
                 onizlemeRenk.Add(rk);
                 while (onizlemeRenk.Count > 2)

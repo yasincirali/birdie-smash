@@ -829,9 +829,10 @@ namespace BirdieSmash.Game
                 d.schedule.Execute(() => d.style.translate = StyleKeyword.Null).StartingIn(dx.Length * 50);
             }
             // asıl başlık bekletilir (userData erişim bilgisinin, kullanılmaz); açık karoya dokunulursa OrnekDokun siler, geri yazılmaz
+            var kopuk = new List<Label>(); foreach (var kv in kilitBaslik) if (kv.Key.panel == null) kopuk.Add(kv.Key); foreach (var k in kopuk) kilitBaslik.Remove(k);   // sayfa yeniden kurulduysa zamanlayıcısı çalışmamış başlıklar
             if (!kilitBaslik.ContainsKey(g)) kilitBaslik[g] = g.text;
             g.text = baslik + " · " + o.neden; string yazilan = g.text;
-            g.schedule.Execute(() => { string a; if (g.text == yazilan && kilitBaslik.TryGetValue(g, out a)) g.text = a; kilitBaslik.Remove(g); }).StartingIn(1500);
+            g.schedule.Execute(() => { string a; if (g.text == yazilan && kilitBaslik.TryGetValue(g, out a)) { g.text = a; kilitBaslik.Remove(g); } }).StartingIn(1500);
         }
         // SoyunmaGovdeKur'un kurmadığı öteki sekme yine kirli kalır (Atölye ve Dolap aynı Ayar'ı okur).
         void RenkSonrasiKirli() { kirli[(int)(gez.sekme == Sekme.Atolye ? Sekme.Soyunma : Sekme.Atolye)] = true; }
