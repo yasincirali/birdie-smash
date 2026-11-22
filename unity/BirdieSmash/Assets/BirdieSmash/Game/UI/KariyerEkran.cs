@@ -309,17 +309,25 @@ namespace BirdieSmash.Game
             var cift = new VisualElement(); cift.AddToClassList("serit-cift"); cift.pickingMode = PickingMode.Ignore; d.Add(cift);
             var ben = new VisualElement(); ben.AddToClassList("serit-av"); ben.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(ben, Portre.Benim(), 16); cift.Add(ben);
             var rav = new VisualElement(); rav.AddToClassList("serit-av"); rav.AddToClassList("serit-av--rakip"); rav.style.backgroundColor = Kit.Hex(st.renk); cift.Add(rav);
-            var rp = Portre.RakipHazir(st);
-            if (rp != null) AvatarIc(rav, rp, 16);
-            else
-            {
-                if (!string.IsNullOrEmpty(st.isim)) { var bh = Yazi(st.isim.Substring(0, 1), 13, "kalin"); bh.style.color = KOYU; bh.style.fontSize = 13; rav.Add(bh); }   // daire sabit 30 px: harf yazı ölçeğiyle büyümez
-                bool isitti = false;
-                rav.schedule.Execute(() => { if (isitti || !Kalite.MenuDurgun) return; isitti = true; var t = Portre.Rakip(st); if (t != null) { rav.Clear(); AvatarIc(rav, t, 16); } })
-                    .Every(300).Until(() => isitti || rav.panel == null);   // sekme kapanınca biter
-            }
+            RakipAvatarIc(rav, st, 16, 13);   // daire sabit 30 px: harf yazı ölçeğiyle büyümez
             Sigdir(d);
             Erisim.Etiket(d, bas + ", " + L.T(TurAd(tr)) + ", " + alt, "dugme"); k.Add(d);
+        }
+
+        // Rakip portresi dokunuş karesinde ÇİZİLMEZ (takılma kuralı): önbellekte varsa hemen konur, yoksa baş harf durur ve menü
+        // durgunken bir kez ısıtılıp yerine konur. 2026-11-22 inceleme (fikir 07:06 #3/#4): Kariyer şeridindeki kalıp ortak
+        // yardımcıya taşındı; Günün maçı sayfası ve Şampiyon yolu kartı da eşzamanlı Portre.Rakip çağırıyordu. Aynı karede en çok
+        // bir ısıtma (Oyna ve Kariyer sekmeleri ikisi de kurulu kalıyor; iki FBX çizimi tek kareye binmesin).
+        static int isitKare = -1;
+        static bool IsitmaSirasi() { if (!Kalite.MenuDurgun || Time.frameCount == isitKare) return false; isitKare = Time.frameCount; return true; }
+        void RakipAvatarIc(VisualElement av, Style st, int ikonPx, float harfPx)
+        {
+            var rp = Portre.RakipHazir(st);
+            if (rp != null) { AvatarIc(av, rp, ikonPx); return; }
+            if (st != null && !string.IsNullOrEmpty(st.isim)) { var bh = Yazi(st.isim.Substring(0, 1), harfPx, "kalin"); bh.style.color = KOYU; bh.style.fontSize = harfPx; av.Add(bh); }
+            bool isitti = false;
+            av.schedule.Execute(() => { if (isitti || !IsitmaSirasi()) return; isitti = true; var t = Portre.Rakip(st); if (t != null) { av.Clear(); AvatarIc(av, t, ikonPx); } })
+                .Every(300).Until(() => isitti || av.panel == null);   // sayfa kapanınca biter
         }
 
         static int TurSayisiVeri() { int n = 0; foreach (var t in KariyerVeri.Turlar) if (t.Var) n++; return n; }

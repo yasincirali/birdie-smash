@@ -156,7 +156,7 @@ namespace BirdieSmash.Game
             c.Add(Bosluk(12));
             var rk = Kart("dukkan-kart"); c.Add(rk);
             rk.Add(Yazi(L.T("Reklamsız"), 16, "kalin"));
-            rk.Add(Yazi(L.T("Menüdeki reklam şeridi kalkar. Maç sonundaki ödüllü reklam yalnız sen istersen açılır. Tüy vermez, bir kez alınır."), 13, "soluk"));
+            rk.Add(Yazi(L.T("Menüdeki reklam şeridi kalkar; maç sonu ödüllü reklam isteğe bağlı kalır. Tüy vermez, bir kez alınır."), 13, "soluk"));
             string rf = m.Fiyat(TuyDukkan.REKLAMSIZ); bool rVar = m.ReklamsizVar;
             if (rVar) rk.Add(Pasif(L.T("Alındı")));
             else if (hata) { }
@@ -166,13 +166,15 @@ namespace BirdieSmash.Game
             Erisim.Etiket(rk, L.T("Reklamsız") + ", " + (rVar ? L.T("Alındı") : hata ? L.T("Mağazaya bağlanılamadı") : yukleniyor ? L.T("Fiyat alınıyor…") : rf ?? L.T("Satın alınamıyor")), "dugme", false, rVar || rf == null || hata || yukleniyor);
 
             c.Add(Bosluk(12));
-            c.Add(Yazi(Bulut.Acik ? L.T("İlerlemen ve aldığın Tüy iCloud'a yedekleniyor; uygulamayı silsen de geri gelir.")
-                                  : L.T("iCloud kapalı: ilerlemen yalnız bu cihazda. Ayarlar'da iCloud'u açarsan yedeklenir."), 13, "soluk"));
             // 2026-11-12 inceleme (#4): geri yükleme paket düğmeleriyle aynı ağırlıktaydı; ikincil (hayalet) düğme, 48 pt yükseklik
             // ve görünürlük korunur (App Store gereği).
             if (m.GeriYukleniyor) c.Add(Pasif(L.T("Kontrol ediliyor…")));
             else if (m.Suruyor) c.Add(Pasif(L.T("Satın alımları geri yükle")));
             else c.Add(Dugme(L.T("Satın alımları geri yükle"), () => { Magaza.O.GeriYukle(ok => { Reklam.Yenile(); dukkanNot = ok ? L.T("Kaydın yeniden okundu.") : L.T("Geri yüklenecek bir şey bulunamadı."); ustKirli = true; DukkanYenile(); }); }, "dugme--hayalet"));
+            // 2026-11-22 inceleme (fikir 07:06 #7): dipte üç ayrı boyda dağınık blok vardı (13 pt iCloud, düğme, 12 pt dipnot). iCloud
+            // cümlesi geri yükleme düğmesinin altına, tüketilen ürün dipnotuyla aynı 12 pt bloğa indi; App Store'un istediği bilgi aynı.
+            c.Add(Yazi(Bulut.Acik ? L.T("İlerlemen ve aldığın Tüy iCloud'a yedekleniyor; uygulamayı silsen de geri gelir.")
+                                  : L.T("iCloud kapalı: ilerlemen yalnız bu cihazda. Ayarlar'da iCloud'u açarsan yedeklenir."), 12, "soluk"));
             c.Add(Yazi(L.T("Tüy tüketilen bir üründür: harcayınca biter, süresi dolmaz. Rastgele ödül satılmaz."), 12, "soluk"));
             c.Add(Bosluk(24));
         }
