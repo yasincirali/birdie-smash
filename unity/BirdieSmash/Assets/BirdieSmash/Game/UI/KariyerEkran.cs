@@ -44,10 +44,9 @@ namespace BirdieSmash.Game
 
             int tr = kariyerTur; var tv = tr < KariyerVeri.Turlar.Length ? KariyerVeri.Turlar[tr] : null; bool veri = tv != null && tv.Var;
             // 2026-11-22 Dünya Turu (DunyaTuru.cs): ‹ Tur n › başlığının yerine sekiz tur kartı şeridi; altında hikâye/hazırlık, finallerde aşamalar.
-            c.Add(TurSerit(tr, sira)); c.Add(TurAlt(tr, tv));
-            if (veri && GrupTuru(tr)) c.Add(FinalAsama(tr, sira));
-            if (veri) c.Add(TurYol(tr, sira));
-            if (veri && tr == KariyerVeri.TUR - 1) c.Add(UstaKart());   // 2026-10-26: Usta yolu son turun altında
+            // 2026-11-22 inceleme (fikir 22:06 #1): şeridin altı ayrı kapta; kart dokunuşu yalnız bu kabı yeniden kurar (TurSecYerinde).
+            turSerit = TurSerit(tr, sira); c.Add(turSerit);
+            turAltKap = new VisualElement(); c.Add(turAltKap); TurAltKur(turAltKap, tr, sira);
             c.Add(Bosluk(12));
             // Tek birincil eylem: kendi turunda da başka turu incelerken de altta sabit (UX5/UX6).
             SiradakiSerit(k, p, sira);
