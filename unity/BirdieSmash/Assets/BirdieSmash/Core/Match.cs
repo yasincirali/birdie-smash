@@ -56,7 +56,10 @@ namespace BirdieSmash.Core
     // Kaydırma: piksel değerleri 640 px yükseklikli referans ekrana ölçeklenmiş (HTML ile aynı eşikler).
     // 2026-10-26 aldatıcı vuruş jesti (Core/Aldatma.JestOku): bekle = dokunuştan kaydırmaya geçen sn, kavis = yayın yönü
     // (-1 sola, 0 yok, +1 sağa), kirik = V çizgisi. Verilmezse 0/false: eski kaydırma birebir.
-    public struct SwipeInput { public float dx, dy, speed, dist, R, side, bekle; public bool tap, curved, kirik; public int kavis; }
+    public struct SwipeInput { public float dx, dy, speed, dist, R, side, bekle; public bool tap, curved, kirik; public int kavis;
+        // Kort yönü (2026-11-22, yasin: "nereye yapıldıysa vuruş o directiona aksiyon almalı"): kaydırmanın kort zeminine izdüşümü,
+        // yan/ileri oranı. Görünüm (GameRoot) kameradan hesaplar; kortVar yoksa (bot, test) eski ekran oranı geçerli.
+        public float kortR; public bool kortVar; }
 
     public struct ShotPlanR { public string type; public float tx, d, val, hx, hy, hz, sp; public bool byAngle, bh, over, rth, arka; }
 
@@ -651,11 +654,16 @@ namespace BirdieSmash.Core
                 case "push": d = 3.3f; byAngle = false; val = 11 * GS.hiz; break;
                 default: d = Math.Min(P.bh ? 5.6f : 6.9f, (P.bh ? 4.6f : 5.5f) + (sp - .75f) * 1.4f + (GS.guc - 1) * 3); val = P.over ? (sp >= ATAK_CLEAR_SP && !P.bh ? ATAK_CLEAR_A : CLEAR_A) : LIFT_A; break;   // kafa ağır raket clear'i uzatır
             }
+            // Yön tutarlılığı (2026-11-22): eskiden hedef kort ortasına göre yazılıyordu (tx = MID + r·2,4); kenardan dümdüz kaydırma
+            // topu çapraz ortaya yolluyordu. Kort yönü varsa top vuruş noktasından parmağın yönünde gider; uç sapma eskiyle aynı
+            // (MID ± 1,3·2,4) kalır ki en sert açı ve dışarı riski değişmesin. Blok aşağı çekiştir, yönü eskisi gibi (hx + r·1,2).
+            if (sw.kortVar && type != "block") tx = Clamp(P.hx + sw.kortR * (P.hy - (Court.NET - d)), Court.MID - 3.12f, Court.MID + 3.12f);
             P.type = type; P.tx = tx; P.d = d; P.val = val; P.byAngle = byAngle; return P;
         }
 
         // Kesişten vuruş: yön = parmağın yönü, hız = güç ve tür, topun merkezine uzaklık = isabet.
         string vurusAdi;   // StartFlight'a giden vuruş adı (Shuttle.vurus); bir kez kullanılır
+        public float sonHiz; public int vurusNo;   // güç yayı (Hud.GucYayi): son vuruşun kaydırma hızı ve sayaç (yeni vuruşu tanır)
         public string sonTip, sonQ; public bool sonSlice;   // son SwipeShot: tür (jump/kill/lift/block dahil), isabet, slice
         public bool SwipeShot(SwipeInput sw)
         {
@@ -723,7 +731,7 @@ namespace BirdieSmash.Core
             ImzaCevap(type); VurusKaydet(type);
             me.sw = 1; GorevKontrol();
             string ft = type == "jump" || type == "kill" ? "smash" : type == "lift" ? "clear" : type == "block" ? "drop" : type == "push" ? "drive" : type;
-            sonTip = type; sonQ = q; sonSlice = slice;   // titreşim deseni (HTML hapHit) uçuş türünü değil vuruşun kendisini ister
+            sonTip = type; sonQ = q; sonSlice = slice; sonHiz = sw.tap ? 1 : sw.speed; vurusNo++;   // titreşim deseni (HTML hapHit) uçuş türünü değil vuruşun kendisini ister
             // Gövdenin gerisinden smaç (2026-11-14 inceleme, fikir 22:05 #1): 983fa47'den beri bu smaç %15 yavaş ve düz, ama kortta
             // tam smaç gibi sarsıntı/flaş alıyordu; oyuncu "smaç bozuldu" sanıyordu. Kural görünür olur: GameRoot hissi yarıya indirir
             // (e.arka), maçta ilk 2 kez öğretici yazı. Sıçrayışta enerjinin sıfırlanması bir denge kararı, geliştirme thread'inde.

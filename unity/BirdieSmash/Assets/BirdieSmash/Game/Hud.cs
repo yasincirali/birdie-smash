@@ -500,7 +500,7 @@ namespace BirdieSmash.Game
         void Play(Match M)
         {
             var gs = Ayar.GS; bool ogr = M.ogr != null;
-            Halo(M); Iz(M); TopIzi(M); if (ogr) OgrIz(M); HedefYazi(M);
+            Halo(M); GucYayi(M); Kuyruk(M); Iz(M); TopIzi(M); if (ogr) OgrIz(M); HedefYazi(M);
             // skor kutusu: sayı alınca büyür (HTML pop: 24·(1+.5·sin(pop·π)))
             float cx = W / 2, sy = top; var kr = new Rect(cx - 62 * u, sy, 124 * u, 34 * u); Boya(kr, hudKutu, Color.white);
             if (!ogr)
@@ -777,6 +777,70 @@ namespace BirdieSmash.Game
                 Shadowed(new Rect(sp.x - 80 * u, H - sp.y - 20 * u, 160 * u, 18 * u), L.T(t ?? root.previewTip), Stil(small, Mathf.RoundToInt(11 * fu), FontStyle.Bold), new Color(.85f, 1, .35f, .9f));
             }
             if (M.ogr != null) { var c = root.fx.HedefMerkez(M); if (c.HasValue) { var sp = root.cam.WorldToScreenPoint(c.Value); if (sp.z > 0) Shadowed(new Rect(sp.x - 60 * u, H - sp.y - 9 * u, 120 * u, 18 * u), L.T("Hedef"), Stil(small, Mathf.RoundToInt(12 * fu), FontStyle.Bold), new Color(.85f, 1, .35f, .85f)); } }
+        }
+        // Güç yayı (2026-11-22, yasin: "oyuncu karakterinin altında... full halka değil yay, gözü yormayan"; tasarım sayfasında E2 seçildi):
+        // vuruşun şiddeti oyuncunun ayağının önünde, zemine yatık üç dilimli yayla. Yanan dilim = oyunun kendi hız bandı
+        // (Match.ShotPlan: < 0,75 drop, ≤ 1,7 clear/lift/push, üstü smaç/drive), yani anlam renkte değil dilim sayısında.
+        // Menü dili (docs/arayuz_tasarim_dili.md §8): limon = sen, turuncu yok; parlama/nabız/flaş yok, iz 1,5 pt, dolu 2 pt,
+        // %75 opak. 0,12 sn'de ease-out dolar, 0,5 sn durur, 0,25 sn'de söner; hareketi azalt açıkken dolum anlık, sönüm kalır.
+        // Noktalar dünya düzleminde çizilir (Kit.W), perspektif kendiliğinden doğru; kare başına ayırma yok.
+        static readonly Color LIMON = new Color(0xC9 / 255f, 0xEE / 255f, 0x4B / 255f), YAY_IZ = new Color(0xF3 / 255f, 0xEA / 255f, 0xEE / 255f, .18f), YAY_KONTUR = new Color(0x1A / 255f, 0x12 / 255f, 0x21 / 255f);   // kontur = --ink
+        static readonly float[] YAY_DILIM = { 150, 113, 105, 75, 67, 30 };   // derece; 0° sağ, 90° kameraya doğru (+y)
+        const float YAY_R = .55f;   // m, gölgenin hemen dışı
+        int gyNo = -1; float gyT = -9, gySp; bool gyTam;
+        void GucYayi(Match M)
+        {
+            if (M.vurusNo != gyNo) { gyNo = M.vurusNo; if (M.vurusNo > 0) { gyT = Time.unscaledTime; gySp = M.sonHiz; gyTam = M.sonQ == "perfect"; } else gyT = -9; }
+            float a = Time.unscaledTime - gyT; if (a > .87f || M.me == null) return;
+            float op = .75f * (a < .62f ? 1 : 1 - (a - .62f) / .25f), dol = Ayar.reduce ? 1 : 1 - Mathf.Pow(1 - Mathf.Clamp01(a / .12f), 2);
+            int lv = gySp < .75f ? 1 : gySp <= 1.7f ? 2 : 3;
+            for (int i = 0; i < 3; i++)
+            {
+                bool yan = i < lv && dol > (float)i / lv; Color c = yan ? LIMON : YAY_IZ; c.a *= op;
+                // r244: yeşil salon zemininde limon kontrastı düşüktü; yanan dilimin altında koyu ince kontur (gölge/parlama değil).
+                if (yan) YayCiz(M.me.x, M.me.y, YAY_DILIM[2 * i], YAY_DILIM[2 * i + 1], 3.5f * u, new Color(YAY_KONTUR.r, YAY_KONTUR.g, YAY_KONTUR.b, .45f * op));
+                YayCiz(M.me.x, M.me.y, YAY_DILIM[2 * i], YAY_DILIM[2 * i + 1], (yan ? 2 : 1.5f) * u, c);
+            }
+            if (lv == 3 && gyTam && dol >= 1)   // tam orta: üçüncü dilimin ucunda küçük nokta (parlamaz)
+            {
+                float r = 24 * Mathf.Deg2Rad; var sp = root.cam.WorldToScreenPoint(Kit.W(M.me.x + YAY_R * Mathf.Cos(r), M.me.y + YAY_R * Mathf.Sin(r), 0));
+                if (sp.z > 0) { var c = LIMON; c.a = op; Tex(new Rect(sp.x - 2 * u, H - sp.y - 2 * u, 4 * u, 4 * u), disk, c); }
+            }
+        }
+        void YayCiz(float cx, float cy, float d0, float d1, float w, Color c)
+        {
+            const int N = 8; Vector2 on = Vector2.zero;
+            for (int k = 0; k <= N; k++)
+            {
+                float r = (d0 + (d1 - d0) * k / N) * Mathf.Deg2Rad; var sp = root.cam.WorldToScreenPoint(Kit.W(cx + YAY_R * Mathf.Cos(r), cy + YAY_R * Mathf.Sin(r), 0));
+                if (sp.z <= 0) return; var q = new Vector2(sp.x, H - sp.y); if (k > 0) Cizgi(on, q, w, c); on = q;
+                Tex(new Rect(q.x - w / 2, q.y - w / 2, w, w), disk, c);   // yuvarlak uç ve ek yeri (§11.7; r244 karesinde düz kesilen parçalar arasında boşluk vardı)
+            }
+        }
+        // Top kuyruğu (2026-11-22, aynı istek: "topun arkasını da gözü yormayacak şekilde"): yalnız senin vuruşunda, ilk 0,45 sn,
+        // topun son 0,09 sn'lik yolu. Uzunluk hızdan kendiliğinden gelir (sabit zaman penceresi); opaklık ve kalınlık çıkış
+        // hızına (Shuttle.v0: raket gücü, sıçrama, tepeden vuruş dahil) bağlı: drop'ta neredeyse yok, smaçta 2 pt limon çizgi.
+        // Vuruş laboratuvarında TopIzi zaten yolu çizer, orada kapalı. Tampon sabit (kare başına ayırma yok).
+        readonly Vector3[] kuyP = new Vector3[12]; readonly float[] kuyT = new float[12]; int kuyN; Shuttle kuyTop;
+        void Kuyruk(Match M)
+        {
+            var s = M.s; if (s == null || s.from != "me" || M.Dril != null || s.dead) { kuyTop = null; return; }
+            if (s != kuyTop) { kuyTop = s; kuyN = 0; }
+            float now = Time.unscaledTime, a = now - gyT; if (a > .45f) return;
+            if (Event.current.type == EventType.Repaint)
+            {
+                if (kuyN == kuyP.Length) { for (int i = 1; i < kuyN; i++) { kuyP[i - 1] = kuyP[i]; kuyT[i - 1] = kuyT[i]; } kuyN--; }
+                kuyP[kuyN] = Kit.W(s.x, s.y, s.z); kuyT[kuyN] = now; kuyN++;
+            }
+            float k = Mathf.Clamp01((s.v0 - 8) / 45f), op = .6f * k * (1 - a / .45f); if (op < .02f) return;
+            Vector2 on = Vector2.zero; bool acik = false;
+            for (int i = kuyN - 1; i >= 0; i--)
+            {
+                float yas = now - kuyT[i]; if (yas > .09f) break;
+                var sp = root.cam.WorldToScreenPoint(kuyP[i]); if (sp.z <= 0) break; var q = new Vector2(sp.x, H - sp.y);
+                if (acik) { var c = LIMON; c.a = op * (1 - yas / .09f); Cizgi(on, q, (1 + k) * u * (1 - yas / .18f), c); }
+                on = q; acik = true;
+            }
         }
         // Parmak izi (HTML swipeTrail): son 220 ms, vuruşta limon ve kalın, eklemeli.
         void Iz(Match M)
