@@ -14,6 +14,8 @@
 // sonunda mühür (kupa + mühüre kalan yıldız). Düğümün yanında rakip adı ve tarzı. Tek birincil eylem altta sabit "Sıradaki maç"
 // şeridi (maç kartını açar: zorluk, uzunluk, Oyna). Yol yukarıdan aşağı (1 → 6 → mühür): okuma ve VoiceOver sırası basamak sırasıyla
 // aynı; maketteki aşağıdan yukarı yol kaydırmalı sayfada şimdiki basamağı görünür alana getirmek için ek kaydırma isterdi.
+// 2026-11-22 (yasin "önerin gibi ilerle", Dünya Turu): başlık okları kalktı, yerine DunyaTuru.cs tur kartı şeridi; durak adı şehir,
+// rakip alt satırda, her durakta ödül (Gear.Odul değerleri); grup turlarında rota üstünde turnuva aşamaları.
 // Yol çizgisi tek bir Painter2D eğrisi (düğüm merkezlerinden), yalnız yerleşim değişince yeniden çizilir; karede iş yok.
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -41,7 +43,9 @@ namespace BirdieSmash.Game
             // Career.Line satırı kalktı (fikir 22:10 #2): aynı maç başlık altında, tur kartında, maç kartında ve düğmede dört kez yazıyordu.
 
             int tr = kariyerTur; var tv = tr < KariyerVeri.Turlar.Length ? KariyerVeri.Turlar[tr] : null; bool veri = tv != null && tv.Var;
-            c.Add(TurBaslik(tr, tv));
+            // 2026-11-22 Dünya Turu (DunyaTuru.cs): ‹ Tur n › başlığının yerine sekiz tur kartı şeridi; altında hikâye/hazırlık, finallerde aşamalar.
+            c.Add(TurSerit(tr, sira)); c.Add(TurAlt(tr, tv));
+            if (veri && GrupTuru(tr)) c.Add(FinalAsama(tr, sira));
             if (veri) c.Add(TurYol(tr, sira));
             if (veri && tr == KariyerVeri.TUR - 1) c.Add(UstaKart());   // 2026-10-26: Usta yolu son turun altında
             c.Add(Bosluk(12));
@@ -78,51 +82,11 @@ namespace BirdieSmash.Game
             sv.RegisterCallback(gc);
         }
 
-        // Tur başlığı: ‹ · "Tur n · bölüm" + ad + yıldız (kilitliyse kilit + neden) · ›. Hikâye cümlesi tek satır altında; hazırlık
-        // satırı yalnız ekipman eksikse (bilgi, kapı değil; "Atölye'ye git"). Oklar 44 pt, uçta pasif değil gizli (yer tutar, simetri).
-        VisualElement TurBaslik(int t, KariyerTur tv)
-        {
-            var p = Ayar.ilerleme; bool acik = p.TurAcik(t), veri = tv != null && tv.Var;
-            var kb = Kart("tur-baslik"); if (!acik) kb.AddToClassList("tur-kart--kilit");
-            var r = Satir("tur-baslik-satir"); kb.Add(r);
-            r.Add(TurOk(t - 1, Ikonlar.Geri, L.T("Önceki tur")));
-            var orta = new VisualElement(); orta.AddToClassList("esnek-yatay"); orta.AddToClassList("tur-baslik-orta"); orta.pickingMode = PickingMode.Ignore; r.Add(orta);
-            orta.Add(Yazi(L.T("Tur {0}", t + 1) + (tv != null && tv.bolum.Length > 0 ? " · " + L.T(tv.bolum) : ""), 12, "etiket"));
-            var ad = Yazi(L.T(TurAd(t)), 20, "kalin"); ad.name = "tur-ad"; orta.Add(ad);
-            if (!acik) { var ky = Yazi(KilitNedeni(t), 13, "soluk"); orta.Add(ky); }
-            else if (veri) orta.Add(YildizSayac(p.TurYildiz(t), 18, 14));
-            r.Add(TurOk(t + 1, Ikonlar.Ileri, L.T("Sonraki tur")));
-            if (tv != null && tv.hikaye.Length > 0) { var hy = Yazi(L.T(tv.hikaye), 14, "soluk"); hy.AddToClassList("tur-hikaye"); kb.Add(hy); }
-            if (acik && tv != null)
-            {
-                int ep = EkipmanPuani();
-                if (ep < tv.epMin)
-                {
-                    var hz = Satir("arali"); hz.style.alignItems = Align.Center; kb.Add(hz);
-                    // 2026-11-21 inceleme (#4): tek sayı; "Ekipman 0/3 · 3 yükseltme eksik" aynı eksiği iki kez söylüyordu.
-                    var ek = Yazi(L.T("{0} yükseltme eksik", tv.epMin - ep), 13, "durum-simdi"); ek.AddToClassList("esnek-yatay"); SozcukSigdir(ek); hz.Add(ek);
-                    hz.Add(Dugme(L.T("Atölye'ye git"), () => SekmeAc(Sekme.Atolye), "kucuk-dugme"));
-                }
-            }
-            int mh = acik ? p.Muhur(t) : 0;
-            Erisim.Etiket(orta, L.T("Tur {0}", t + 1) + ", " + L.T(TurAd(t)) + (veri && acik ? ", " + L.T("{0}/{1} yıldız", p.TurYildiz(t), 18) : "") + (!acik ? ", " + KilitNedeni(t) : "")
-                + (mh >= 2 ? ", " + L.T("Altın tur mührü") : mh == 1 ? ", " + L.T("Bronz tur mührü") : ""), "baslik");
-            return kb;
-        }
-        VisualElement TurOk(int hedef, Texture2D ik, string etiket)
-        {
-            var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("ikon-dugme"); d.Add(Ikon(ik, 20, YAZI));
-            bool var_ = hedef >= 0 && hedef < KariyerVeri.TUR;
-            if (!var_) { d.style.visibility = Visibility.Hidden; return d; }
-            d.AddManipulator(new Clickable(() => { Tik(); KariyerTurSec(hedef); })); Erisim.Etiket(d, etiket + ": " + L.T(TurAd(hedef)), "dugme");
-            return d;
-        }
-
         // Tur yolu: altı basamak satırı + mühür satırı. Çift satırda düğüm solda ve yazı sağında, tek satırda tersi (zikzak, yazılar
         // içe bakar, kenara taşmaz). Yol çizgisi satırların arkasında tek eğri; geçilen kısım altın tonunda (biçimle de: ✓ düğümler).
         VisualElement TurYol(int t, int sira)
         {
-            var p = Ayar.ilerleme; var kap = new VisualElement(); kap.AddToClassList("tur-yol");
+            var p = Ayar.ilerleme; var kap = new VisualElement(); kap.AddToClassList("tur-yol"); kap.AddToClassList("rota-harita");
             var cizgi = new VisualElement(); cizgi.AddToClassList("tur-yol-cizgi"); cizgi.pickingMode = PickingMode.Ignore; kap.Add(cizgi);
             var dugumler = new System.Collections.Generic.List<VisualElement>(); int gecilen = -1;
             for (int b = 0; b <= KariyerVeri.BASAMAK; b++)
@@ -136,12 +100,14 @@ namespace BirdieSmash.Game
                     dg = BasamakNokta(g, sira, sr); var kb = KariyerVeri.Al(g); var st = KariyerVeri.Rakip(g); bool simdi = g == sira && p.Acik(g);
                     if (simdi) dg.AddToClassList("dugum-rozet--buyuk");
                     if (p.Kazanildi(g)) gecilen = b;
-                    var ad = Yazi((simdi ? L.T("Şimdi") + " · " : "") + st.isim, 15, "kalin"); if (simdi) ad.AddToClassList("durum-simdi"); yz.Add(ad);
+                    // 2026-11-22 Dünya Turu: rota durağı önce şehir (turun dili şehir şehir), altında rakip; şimdiki durakta "Şimdi · şehir".
+                    var ad = Yazi((simdi ? L.T("Şimdi") + " · " : "") + L.T(kb.yer), 15, "kalin"); if (simdi) ad.AddToClassList("durum-simdi"); yz.Add(ad);
                     var alt = Satir("rakip-satir"); alt.pickingMode = PickingMode.Ignore; yz.Add(alt);
-                    alt.Add(Yazi(p.Acik(g) ? L.T(st.ad) : L.T(kb.yer), 13, "soluk"));
+                    alt.Add(Yazi(st.isim + (p.Acik(g) ? " · " + L.T(st.ad) : ""), 13, "soluk"));
                     if (p.Kazanildi(g)) { var ys = UcYildiz(p.Maske(g), 13); ys.style.marginLeft = 6; alt.Add(ys); }
                 }
                 sr.Add(dg); sr.Add(yz); dugumler.Add(dg);
+                if (!muhur) { var od = DurakOdul(KariyerVeri.Global(t, b)); if (od != null) sr.Add(od); }
             }
             int gc = gecilen;
             cizgi.generateVisualContent += mgc => YolCiz(mgc, cizgi, dugumler, gc);

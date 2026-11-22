@@ -1063,3 +1063,39 @@
 .dugme--ok { flex-direction: row; align-items: center; }
 .dugme--ok > .dugme-ic { flex-grow: 1; flex-shrink: 1; padding-left: 18px; }
 .dugme-ok { flex-shrink: 0; margin-left: 8px; width: 10px; opacity: 0.7; -unity-text-align: middle-center; }
+
+/* 2026-11-22 Dünya Turu (yasin "önerin gibi ilerle"; DunyaTuru.cs). Tur kartı şeridi: kart 232 pt, sahne 112 pt (Painter2D mekân),
+   gövde cam. Seçili kart turuncu 2 pt çerçeve (seçim rolü, §8.1); kilitli kartta sahne koyu örtü + kilit, yazı yine okunur. */
+.tur-serit { margin: 8px -16px 4px -16px; flex-shrink: 0; }
+.tur-serit .unity-scroll-view__content-container { flex-direction: row; padding: 4px 16px 8px 16px; }
+.tur-kart2 { width: 232px; margin-right: 12px; border-radius: 18px; overflow: hidden; background-color: var(--cam); border-width: 2px; border-color: rgba(255, 255, 255, 0.06); border-bottom-width: 4px; border-bottom-color: rgba(0, 0, 0, 0.35); transition-property: scale, border-color; transition-duration: 0.12s; }
+.tur-kart2:active { scale: 0.97 0.97; }
+.tur-kart2--secili { border-color: var(--sun); border-bottom-color: rgb(196, 110, 40); }
+.tur-kart2-sahne { height: 112px; }
+.tur-kart2-ortu { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(14, 10, 20, 0.62); align-items: center; justify-content: center; }
+.tur-kart2-no { position: absolute; left: 8px; top: 8px; padding: 3px 8px; border-radius: 10px; background-color: rgba(20, 14, 26, 0.72); color: var(--tx); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+.tur-kart2-bitti { position: absolute; right: 8px; top: 8px; flex-direction: row; align-items: center; padding: 3px 8px; border-radius: 10px; background-color: var(--lime); }
+.tur-kart2-burada { background-color: var(--sun); }
+.koyu-yazi { color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); margin-left: 2px; }
+.tur-kart2-govde { padding: 10px 12px 12px 12px; }
+.tur-kart2-ad { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--tx); white-space: normal; }
+.tur-kart2-kilit-yazi { white-space: normal; margin-top: 6px; }
+.tur-kart2 .arali { margin-top: 8px; align-items: center; }
+.tur-kart2-odul { flex-direction: row; align-items: center; margin-top: 8px; }
+.tur-kart2-odul Label { margin-left: 6px; white-space: normal; flex-shrink: 1; }
+.tur-alt { margin: 2px 0 4px 0; }
+.tur-alt .tur-hikaye { color: var(--mu); }
+/* Rota: haritanın açık zemini değil, koyu temada bir ton açık cam (yükseklik = açıklık, §8.2/3); durak ödülü satır sonunda altın. */
+.rota-harita { border-radius: 18px; background-color: rgba(255, 255, 255, 0.04); border-width: 1px; border-color: rgba(255, 255, 255, 0.06); }
+.durak-odul { flex-direction: row; align-items: center; flex-shrink: 0; padding: 3px 8px; border-radius: 10px; background-color: rgba(249, 210, 114, 0.12); margin: 0 4px; }
+.durak-odul Label { margin-left: 3px; }
+.yol-yazi { flex-grow: 1; flex-shrink: 1; }
+/* Finallerde turnuva aşamaları: dört eşit kutu, şimdiki turuncu çerçeve, tamam limon ✓, kilitli soluk kilit (biçim + yazı). */
+.final-asama { flex-direction: row; justify-content: space-between; margin: 8px 0 4px 0; }
+.asama-kutu { flex-grow: 1; flex-basis: 0; margin: 0 3px; min-height: 64px; border-radius: 12px; align-items: center; justify-content: center; background-color: var(--cam2); border-width: 1px; border-color: rgba(255, 255, 255, 0.06); padding: 6px 2px; }
+.asama-kutu Label { -unity-text-align: middle-center; margin-top: 2px; }
+.asama-kutu--simdi { border-width: 2px; border-color: var(--sun); }
+.asama-kutu--kilit { background-color: rgba(255, 255, 255, 0.03); }
+/* Birincil düğme tıknaz: alt kenar koyu 4 pt (basılabilir yüzey, spor oyunu menü dili); basınca kenar incelir, düğme 2 pt iner. */
+.dugme--birincil { border-bottom-width: 4px; border-bottom-color: rgb(196, 110, 40); }
+.dugme--birincil:active { border-bottom-width: 1px; translate: 0 2px; }

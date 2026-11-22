@@ -243,7 +243,7 @@ namespace BirdieSmash.Game
         }
 
         // ---- gezinti ----
-        public void SekmeAc(Sekme s) { var once = gez.sekme; bool sayfaYok = gez.Ust == null; bool d = gez.SekmeSec(s); if (d) Yerel.Hap("tick"); Uygula(once, d); if (!d && sayfaYok) BasaKaydir(); }
+        public void SekmeAc(Sekme s) { var once = gez.sekme; bool sayfaYok = gez.Ust == null; bool d = gez.SekmeSec(s); if (d) { root.sfx.UiSes("sekme"); Yerel.Hap("tick"); } Uygula(once, d); if (!d && sayfaYok) BasaKaydir(); }
         // 2026-11-19 inceleme (fikir 07:06 #2, HIG sistem kalıbı): seçili sekmeye ikinci dokunuş, açık sayfa yoksa listeyi başa
         // kaydırır (iOS sekme çubuğu davranışı; Kariyer 8 tur, Dükkân uzun). Açık sayfa varken ilk dokunuş köke döner (eskisi gibi).
         // .25 sn ease-out, hareketi azaltta anında; yalnız scrollOffset değişir, sekme yeniden kurulmaz.
@@ -264,7 +264,7 @@ namespace BirdieSmash.Game
         public void MacKartAc(int g) { var once = gez.sekme; kartBasamak = g; gez.Ac(Gezinti.KART); Uygula(once, true); }
         public void KariyerTurSec(int t) { kariyerTur = t; kirli[(int)Sekme.Kariyer] = true; if (gez.sekme == Sekme.Kariyer && gez.Ust == null) SekmeKur(Sekme.Kariyer); }
         void SayfaAc(string s) { var once = gez.sekme; gez.Ac(s); Uygula(once, true); }
-        public void Geri() { var once = gez.sekme; if (gez.Geri()) { Yerel.Hap("tick"); Uygula(once, true); } }
+        public void Geri() { var once = gez.sekme; if (gez.Geri()) { root.sfx.UiSes("geri"); Yerel.Hap("tick"); Uygula(once, true); } }
         void AltKapat() { var once = gez.sekme; gez.AltKapat(); Uygula(once, false); }
         // 2026-11-11 inceleme (fikir 20:05 #3, HIG standart gezinme): tam sayfada sol kenardan geri kaydırma 70 pt'de sayfayı bir
         // anda kaldırıyordu; parmak sayfayı taşımıyordu. Artık sayfa parmakla sağa kayar; altta dönülecek sekme (yığında tek sayfa
@@ -313,6 +313,7 @@ namespace BirdieSmash.Game
         bool altKapaniyor; Color altZemin = new Color(0, 0, 0, -1);
         void AltKapatKay()
         {
+            if (!altKapaniyor && Time.frameCount != tikKare) { tikKare = Time.frameCount; root.sfx.UiSes("geri"); }   // 2026-11-22: alt sayfa kapanışı geri sesiyle; aynı karede düğmenin pop'u çaldıysa ikinci ses yok
             var v = altSayfa; if (v == null) { AltKapat(); return; }
             if (altKapaniyor) return; altKapaniyor = true; Yerel.Hap("tick");
             float sure = Ayar.reduce ? 0.12f : 0.2f;
@@ -540,7 +541,7 @@ namespace BirdieSmash.Game
             if (puanVar) ey.Add(Dugme(L.T("Puanı dağıt"), () => { kapat(); GelisimAc(); }, ilkGrup != null ? "dugme--hayalet" : "dugme--birincil"));
             ey.Add(Dugme(L.T("Tamam"), kapat, ilkGrup != null || puanVar ? "dugme--hayalet" : "dugme--birincil"));
             Erisim.Etiket(ic, L.T("Seviye atladın") + ", " + L.T("Sv {0}", sv) + (svTuy > 0 ? ", " + L.T("Seviye ödülü +{0} Tüy", svTuy) : "") + (acilan.Count > 0 ? ", " + L.T("Açıldı") + ": " + string.Join(", ", acilan.ConvertAll(x => L.T(x))) : ""), "metin");
-            root.sfx.Tik(990); Yerel.Hap("win");
+            root.sfx.UiSes("odul"); Yerel.Hap("win");
             if (Ayar.reduce) return;
             o.style.opacity = 0f; o.experimental.animation.Start(0f, 1f, 220, (v, t) => v.style.opacity = t);
             sayi.style.scale = new Scale(Vector3.one * 1.4f);
@@ -602,7 +603,7 @@ namespace BirdieSmash.Game
             else if (bitti && sonrakiT < KariyerVeri.TUR) ey.Add(Yazi(L.T("Yakında: bu tur sonraki güncellemede gelir"), 13, "soluk"));
             ey.Add(Dugme(L.T("Tamam"), kapat, sonrakiVar ? "dugme--hayalet" : "dugme--birincil"));
             Erisim.Etiket(ic, (bitti ? L.T("Tur tamam") : muhurAd) + ", " + L.T(KariyerEkranTurAd(t)) + ", " + L.T("{0}/{1} yıldız", ys, 18) + ", " + alt + (yenilenAd.Count > 0 ? ", " + string.Join(", ", yenilenAd) : ""), "metin");
-            root.sfx.Tik(1180); Yerel.Hap(bitti || m1 >= 2 ? "flow" : "win");
+            root.sfx.UiSes("odul"); Yerel.Hap(bitti || m1 >= 2 ? "flow" : "win");
             if (Ayar.reduce) return;
             o.style.opacity = 0f; o.experimental.animation.Start(0f, 1f, 220, (v, k) => v.style.opacity = k);
             mi.style.scale = new Scale(Vector3.one * 1.5f);
@@ -861,7 +862,21 @@ namespace BirdieSmash.Game
         // Clickable hepsi Tik). Eylem içinde de Tik çağrılıyordu: aynı dokunuşta iki ses + iki titreşim. Aynı karede ikinci Tik sessiz;
         // böylece 20+ çağrı yerini tek tek ayıklamak gerekmedi. Özel sesler (Yukselt, Tik(1320)…) bu kapıdan geçmez, kalır.
         int tikKare = -1;
-        void Tik() { if (Time.frameCount == tikKare) return; tikKare = Time.frameCount; root.sfx.Tik(); Yerel.Hap("tick"); }
+        // 2026-11-22 (yasin "tüm butonlarda tatmin edici ses"): ses türü öğenin sınıfından (Sfx.UiSes); öğesiz çağrılar pop çalar.
+        // Birincil düğme "hit" titreşimi (14 ms), gerisi "tick": göz ve elin en çok bastığı yer en dolgun karşılığı alır.
+        void Tik(VisualElement e = null, string tur = null)
+        {
+            if (Time.frameCount == tikKare) return; tikKare = Time.frameCount;
+            tur = tur ?? UiSesTuru(e); root.sfx.UiSes(tur); Yerel.Hap(tur == "bas" ? "hit" : "tick");
+        }
+        static string UiSesTuru(VisualElement e)
+        {
+            if (e == null) return "pop";
+            if (e.ClassListContains("dugme--birincil")) return "bas";
+            if (e.ClassListContains("dugme--pasif") || e.ClassListContains("tur-kart2--kilit")) return "kilit";
+            if (e.ClassListContains("cip")) return "sec";
+            return "pop";
+        }
 
         // ---- 2026-10-27 yön C mikro hareketler (araştırma §4.3; yalnız translate/opacity, ekranda tek döngü afişin nefesi) ----
         // Sekme göstergesi: tek bir 3 pt turuncu çizgi sekme çubuğunun üstünde; seçim değişince yeni sekmeye 180 ms'de kayar
