@@ -46,6 +46,8 @@ namespace BirdieSmash.Game
             foreach (var k in KOMBIN_RGOR) d["rg_" + k] = Ayar.RGOR[k];
             d["ayk_gor"] = Ayar.AYK_GOR; d["renk"] = Ayar.gear.renk; return d;
         }
+        // Şu an giyili kombin yuvası (yoksa -1); renk yerinde güncellenirken kombin satırı bayatlamasın diye önce/sonra karşılaştırılır.
+        int KombinGiyiliNo() { KombinYukle(); var simdi = KombinSimdi(); for (int i = 0; i < KOMBIN_SAY; i++) if (KombinAyni(kombinler[i], simdi)) return i; return -1; }
         static bool KombinAyni(Dictionary<string, object> a, Dictionary<string, object> b)
         {
             if (a == null || b == null) return false;

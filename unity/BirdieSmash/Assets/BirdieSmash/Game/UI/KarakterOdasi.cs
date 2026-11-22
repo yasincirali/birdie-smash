@@ -539,7 +539,7 @@ namespace BirdieSmash.Game
             if (go != null && !go.bant && Ayar.gear.bant != "yok") c.Add(Yazi(L.T("{0} saçta kafa bandı görünmez (saçın içinde kalır); bandın etkisi sürer.", L.T(go.ad)), 12, "soluk"));
             if (dn != null) { var o = Kozmetik.Oge(Kozmetik.SAC, dn); DenemeKart(c, Kozmetik.SAC, dn, o.ad, o.fiyat, o.sv, Kozmetik.Durum(gr, Kozmetik.SAC, dn, sec), Kozmetik.AlOlur(gr, Kozmetik.SAC, dn, sec)); }
             var l = new List<Ornek>(); foreach (var o in Karakter.Gorunum("sac")) l.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, parla = o.parla, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
-            OrnekSira(c, L.T("Saç rengi"), l, Ayar.GORUNUM["sac"], id => { Ayar.GORUNUM["sac"] = id; Ayar.KaydetSonra(); }, true);
+            OrnekSira(c, L.T("Saç rengi"), l, Ayar.GORUNUM["sac"], id => { Ayar.GORUNUM["sac"] = id; Ayar.KaydetSonra(); }, true, false);
         }
 
         // ---- Ayakkabı tabanı (Oyun segmenti, 2026-10-30): seçili/denenen ayakkabı kartı (5 çubuk) + model satırları ----
@@ -616,7 +616,7 @@ namespace BirdieSmash.Game
             }
             c.Add(Dugme(L.T("Ayakkabı tabanı · Oyun"), () => { Tik(); SoyunmaSegment(0); }, null, L.T("Güç, fiyat ve çubuklar orada"), 14));
             var l = new List<Ornek>(); foreach (var o in Karakter.Gorunum("ayakkabi")) l.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
-            OrnekSira(c, L.T("Ayakkabı rengi"), l, Ayar.GORUNUM["ayakkabi"], id => { Ayar.GORUNUM["ayakkabi"] = id; Ayar.KaydetSonra(); }, true);
+            OrnekSira(c, L.T("Ayakkabı rengi"), l, Ayar.GORUNUM["ayakkabi"], id => { Ayar.GORUNUM["ayakkabi"] = id; Ayar.KaydetSonra(); }, true, false);
         }
 
         // Kartın üstüne öğe takılı baş portresi (Portre.Dene). Önbellekteyse hemen; değilse kart sırasına göre 1 karede bir çizilir
@@ -778,13 +778,13 @@ namespace BirdieSmash.Game
             var tipO = Kozmetik.Bul(Kozmetik.TIP, root.vitrin.deneTip ?? Ayar.KOZ[Kozmetik.TIP]);
             if (tipO != null && tipO.aks != null) { c.Add(Yazi(L.T("{0} tipinde ten rengi görünmez.", L.T(tipO.ad)), 12, "soluk")); return; }
             var l = new List<Ornek>(); foreach (var o in Karakter.Gorunum("ten")) l.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
-            OrnekSira(c, L.T("Ten tonu"), l, Ayar.GORUNUM["ten"], id => { Ayar.GORUNUM["ten"] = id; Ayar.KaydetSonra(); }, true);
+            OrnekSira(c, L.T("Ten tonu"), l, Ayar.GORUNUM["ten"], id => { Ayar.GORUNUM["ten"] = id; Ayar.KaydetSonra(); }, true, false);
             c.Add(Yazi(L.T("Ten tonlarının hepsi baştan açık ve ücretsiz."), 12, "soluk"));
             // Sade (2026-10-27): saç biçimi tek, saç kabuğu düz renkli parça: saç rengi burada (Saç sayfası Sade'de yok).
             if (Ayar.model == "sade")
             {
                 var sl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("sac")) sl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, parla = o.parla, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });
-                OrnekSira(c, L.T("Saç rengi"), sl, Ayar.GORUNUM["sac"], id => { Ayar.GORUNUM["sac"] = id; Ayar.KaydetSonra(); }, true);
+                OrnekSira(c, L.T("Saç rengi"), sl, Ayar.GORUNUM["sac"], id => { Ayar.GORUNUM["sac"] = id; Ayar.KaydetSonra(); }, true, false);
             }
         }
 
@@ -799,7 +799,7 @@ namespace BirdieSmash.Game
             // Tüycük (2026-10-29): forma rengi gövdenin tüy rengidir (karın onun açığı); şort ağı yok, şort satırı gösterilmez (yalnız
             // görünen seçim sunulur). Gerçekçi ve Sade'de satırlar aynen.
             bool tc = Ayar.model == "tuycuk";
-            OrnekSira(c, L.T(tc ? "Tüy rengi (forma)" : "Forma rengi"), fr, gr.renk, id => { gr.renk = id; Ayar.GearHesap(); Ayar.KaydetSonra(); });
+            OrnekSira(c, L.T(tc ? "Tüy rengi (forma)" : "Forma rengi"), fr, gr.renk, id => { gr.renk = id; Ayar.GearHesap(); Ayar.KaydetSonra(); }, false, false);
             if (Ayar.SortGorunur)
             {
                 var sl = new List<Ornek>(); foreach (var o in Karakter.Gorunum("sort")) sl.Add(new Ornek { id = o.id, ad = o.ad, renk = o.renk, acik = sv >= o.sv, neden = L.T("Sv {0} gerekli", o.sv), kisa = L.T("Sv {0}", o.sv) });

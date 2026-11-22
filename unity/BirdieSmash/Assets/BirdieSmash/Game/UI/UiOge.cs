@@ -130,6 +130,14 @@ namespace BirdieSmash.Game
             Erisim.Etiket(d, string.IsNullOrEmpty(alt) ? t : t + ", " + alt, "dugme", secili, a == null);
             Sigdir(d); return d;
         }
+        // Çipin seçili hâlini yerinde yazar (çerçeve sınıfı, ✓, erişim durumu); sayfa kurulmadan aç/kapa için (2026-11-22, fikir 12:06 #6).
+        void CipDurum(VisualElement d, bool secili)
+        {
+            d.EnableInClassList("cip--secili", secili); var ic = d.Q(className: "cip-ic"); var tk = d.Q(className: "cip-tik");
+            if (secili && tk == null && ic != null) { tk = Ikon(Ikonlar.Tik, 16, TURUNCU); tk.AddToClassList("cip-tik"); ic.Insert(0, tk); }
+            else if (!secili && tk != null) tk.RemoveFromHierarchy();
+            var eb = d.userData as ErisimBilgi; if (eb != null) eb.secili = secili;
+        }
         // Aç/kapa satırı (2026-11-10 inceleme, fikir 02:05 #2): Ayarlar'da Ses/Müzik/Titreşim/Hareket tek seçimli çiplerle aynı
         // görünüyordu (turuncu çerçeve + ✓) ve çip metni durumla değişiyordu ("Ses açık" ↔ "Ses kapalı"): eylem mi durum mu
         // okunmuyordu, "Titreşim açık" TR'de kesiliyordu. HIG kalıbı: solda sabit ad, sağda anahtar. Durum üç yolla okunur:

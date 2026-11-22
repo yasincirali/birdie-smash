@@ -1,4 +1,12 @@
 === UNITY ===
+Atölye, Gelişim ve Dolap renkleri (22 Kasım öğle):
+- Atölye'nin başlığında artık oyuncunun küçük portresi ve takılı raketinin adı var.
+- "Bu tarzı seç"e dokununca ses, titreşim ve kartın onay işaretinde kısa bir büyüme var; tarz çubukları daha akıcı doluyor, tarzlar arasında gezerken kart yumuşakça değişiyor.
+- "Eşit şartlar" çipi sayfayı baştan kurmuyor; yalnız takım çubukları güncelleniyor, sayfa yerinde kalıyor.
+- Gelişim sayfasının üstünde puan tek satırda: "Dağıtılacak puan: 3 / 10".
+- Dolap'ta raket renkleri (grip, kordaj, çapraz tel), kaplama, şaft, şort ve desen seçimi sayfayı yeniden kurmadan, anında değişiyor.
+Nasıl denenir: Atölye'yi aç: başlığın solunda oyuncunun yüzü, sağında raketin adı olmalı. Başka bir tarza geçip "Bu tarzı seç"e dokun: ses ve titreşim gelmeli, onay işareti bir kez büyüyüp oturmalı. Sayfanın altına inip "Eşit şartlar"a dokun: sayfa yerinde kalmalı, çubuklar değişmeli. Dolap > Raket > Kordaj'da renkleri hızlıca değiştir: liste kıpırdamamalı, başlıkta rengin adı değişmeli.
+
 Antrenman, Günün maçı ve Dükkân cilası (22 Kasım sabah):
 - Antrenman'da görev grubu değiştirince sayfa başa dönmüyor; yalnız görev listesi kısa bir geçişle yenileniyor.
 - Günün maçı sayfası ilk dokunuşta takılmadan açılıyor: rakibin portresi Oyna sekmesinde önceden hazırlanıyor. Alttaki düğme artık yalnız "Oyna" diyor.
