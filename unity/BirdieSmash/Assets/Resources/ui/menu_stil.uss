@@ -1142,3 +1142,6 @@
 .segment-thumb { background-color: #FFFFFF; border-width: 2px; border-color: var(--cta-ink); }
 .segment--kapsul > .cip--secili .dugme-yazi { color: var(--cta-ink); }
 .segment--kapsul { border-width: 2px; border-color: var(--cam-kenar); border-top-color: var(--cam-kenar); }
+/* sekme şeritleri (.segment-cip) alt çizgi dilinde kalır: yukarıdaki .dugme konturu onlara bulaşmasın */
+.segment-cip { border-width: 0; border-bottom-width: 3px; border-color: rgba(0, 0, 0, 0); border-top-color: rgba(0, 0, 0, 0); border-bottom-color: rgba(0, 0, 0, 0); }
+.segment-cip.cip--secili { border-bottom-color: var(--sun); }
