@@ -1,4 +1,10 @@
 === UNITY ===
+Vuruş gücü görünüyor, top kaydırdığın yöne gidiyor (22 Kasım gece):
+- Vurduğun anda oyuncunun ayağının önünde üç parçalı ince bir yay yanıyor: bir parça yumuşak vuruş (drop), iki parça orta (clear), üç parça sert vuruş (smaç). Yarım saniyede sönüyor. Tam ortadan smaçta yayın ucunda küçük bir nokta var.
+- Sert vuruşlarda topun arkasında kısa, ince bir iz kalıyor; ne kadar hızlı çıktıysa o kadar belirgin. Yumuşak vuruşta neredeyse hiç görünmüyor.
+- Top artık parmağını kaydırdığın yöne gidiyor: kenardayken dümdüz yukarı kaydırırsan top çizgi boyunca gider, eskisi gibi ortaya kaçmaz.
+Nasıl denenir: Bir maç aç. Yavaş, orta ve çok hızlı kaydırarak üç vuruş yap: ayağının önünde bir, iki ve üç parça yanmalı. Hızlı smaçta topun arkasında ince bir iz görmelisin. Kortun kenarına git ve dümdüz yukarı kaydır: top senin tarafındaki çizgiye paralel gitmeli.
+
 Kariyer tur kartları daha akıcı (22 Kasım gece, ikinci tur):
 - Tur kartına dokununca sayfa artık baştan kurulmuyor: kart yumuşakça ortaya kayıyor, altındaki rota hafifçe beliriyor. Seçili kart çerçevesi yavaşça renk değiştiriyor ve kart biraz yükseliyor.
 - Kartları kaydırıp bırakınca şerit en yakın karta oturuyor, kısa bir "tık" sesi ve hafif titreşim geliyor.

@@ -821,7 +821,19 @@ namespace BirdieSmash.Game
             if (jx.Length < n) { int m = Mathf.NextPowerOfTwo(n); jx = new float[m]; jy = new float[m]; jt = new float[m]; }
             float[] xs = jx, ys = jy, ts = jt;
             for (int i = 0; i < n; i++) { xs[i] = tr[i].x; ys[i] = tr[i].y; ts[i] = tr[i].z; }
-            Aldatma.JestOku(xs, ys, ts, n, input.p0.x, input.p0.y, input.t0, ref si); return si;
+            Aldatma.JestOku(xs, ys, ts, n, input.p0.x, input.p0.y, input.t0, ref si); return Yonlu(si);
+        }
+        // Kort yönü (2026-11-22, yasin: "nereye yapıldıysa vuruş o directiona"): kaydırma ekranda, hedef kortta. Topun zemindeki
+        // izdüşümünden parmak yönünde 8% ekran boyu ilerideki noktanın kort karşılığı alınır; perspektif bu yüzden hesaba girer
+        // (kenardan "dümdüz yukarı" kortta da dümdüz olur). Aşağı/yana çekişte (ileri bileşen yok) Core eski ekran oranını kullanır.
+        SwipeInput Yonlu(SwipeInput si)
+        {
+            var M = match; float l = Mathf.Sqrt(si.dx * si.dx + si.dy * si.dy); if (M.s == null || si.dy > -1 || l < 1) return si;
+            var g = cam.WorldToScreenPoint(Kit.W(M.s.x, M.s.y, 0)); if (g.z <= 0) return si;
+            float k = Screen.height * .08f / l; Vector2 c;   // ref y aşağı artar, ekran y yukarı: dy işaret değiştirir
+            if (!CourtPoint(new Vector2(g.x + si.dx * k, g.y - si.dy * k), out c)) return si;
+            float ileri = M.s.y - c.y; if (ileri < .05f) return si;
+            si.kortR = (c.x - M.s.x) / ileri; si.kortVar = true; return si;
         }
         bool Curved()
         {
@@ -856,7 +868,7 @@ namespace BirdieSmash.Game
             var a = M.OgrA(); if (a == null) return;
             if (a.servis != null) { if (M.s != null || M.svPending != null) return; var q = input.tr[input.tr.Count - 1]; float ddx = q.x - input.p0.x, ddy = q.y - input.p0.y; if (-ddy > 30) tip = Match.ServisTuru(ddx, ddy, sp); return; }
             Reach I; if (M.s == null || !M.ReachInfo(out I)) return;
-            var pl = M.ShotPlan(new SwipeInput { dx = dx, dy = dy, speed = sp, curved = Curved() }, I, true); tip = pl.type;
+            var pl = M.ShotPlan(Yonlu(new SwipeInput { dx = dx, dy = dy, speed = sp, curved = Curved() }), I, true); tip = pl.type;
         }
 
         // Aktif parmak (2026-11-07 inceleme, fikir 14:06 #1): kaydırma fingerId ile izlenir. Eskiden GetTouch(0) okunuyordu; 0. dokunuş
@@ -940,7 +952,7 @@ namespace BirdieSmash.Game
                     input.minD = Mathf.Min(input.minD, d / R);
                     float dx, dy, speed; SwipeVec(out dx, out dy, out speed);
                     // Hedef önizleme: parmak ekrandayken "şu an bıraksan top nereye düşer" (HTML M.preview)
-                    if (far > 14 && speed > .1f) { Reach I; if (M.ReachInfo(out I)) { var pl = M.ShotPlan(new SwipeInput { dx = dx, dy = dy, speed = speed, curved = Curved() }, I, true); previewOn = true; previewAt = new Vector2(Mathf.Clamp(pl.tx, Court.SL, Court.SR), Court.NET - pl.d); previewTip = pl.type; } }
+                    if (far > 14 && speed > .1f) { Reach I; if (M.ReachInfo(out I)) { var pl = M.ShotPlan(Yonlu(new SwipeInput { dx = dx, dy = dy, speed = speed, curved = Curved() }), I, true); previewOn = true; previewAt = new Vector2(Mathf.Clamp(pl.tx, Court.SL, Court.SR), Court.NET - pl.d); previewTip = pl.type; } }
                     // Topun üstünden geçmek şart değil: pencere açıkken belirgin kaydırma (70 px, kavis için yer) vuruştur; topu kesmek mükemmeli verir.
                     bool durdu = M.ogr != null && M.ogr.dur;
                     if (!durdu && (d <= R || (far > 70 * Ayar.KaydirmaK && speed > .45f * Ayar.KaydirmaK)))

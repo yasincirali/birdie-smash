@@ -76,7 +76,8 @@ namespace BirdieSmash.Game
             if (kip == "gorsel")
             {
                 // 2026-11-21 baş içine girme koruması (PlayerView.GirmeKoru): maskotun en çok giren üstten/backhand klipleri önce (süre sınırı).
-                yield return Cek("00_ilk_kare"); if (Ayar.ModelVar("kedi")) yield return KlipSeritleri("kedi", new[] { "bh_over", "bh_drop", "rth", "serve", "clear" });
+                yield return Cek("00_ilk_kare"); yield return GucKareleri();   // 2026-11-22 güç yayı (kısa turun başında, süre sınırı)
+                if (Ayar.ModelVar("kedi")) yield return KlipSeritleri("kedi", new[] { "bh_over", "bh_drop", "rth", "serve", "clear" });
                 yield return KlipSeritleri("oyuncak"); yield return FileKare();
                 if (root.ui != null) { root.AnaMenu(); root.ui.SekmeAc(Sekme.Oyna); }
                 for (int i = 0; i < 3; i++) { float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 4) yield return null; yield return Cek("afis_" + i); }
@@ -127,6 +128,7 @@ namespace BirdieSmash.Game
             yield return ImzaKare("imza_mermi", KariyerVeri.Global(1, 5), false);
             yield return ImzaKare("imza_duvar_azalt", KariyerVeri.Global(0, 5), true);
             yield return GirisKare();
+            yield return GucKareleri();   // 2026-11-22 güç yayı + top kuyruğu
             yield return GorevKare();
             yield return SonucKare("sonuc_galibiyet", true, false, 0, "en");   rap.AppendLine("sonuc_galibiyet · " + (root.HudKatman != null ? root.HudKatman.SonucTani : "hud yok"));   // tur 2: matris düz, ikincil düğme stili var olmalı
             yield return SonucKare("sonuc_galibiyet_azalt", true, true, 0, "en");
@@ -526,6 +528,27 @@ namespace BirdieSmash.Game
             float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 60 && !(root.match.op.imzaT > 0 && root.match.op.imzaId != null)) yield return null;
             yield return Bekle(6); yield return Cek(ad + (root.match.op.imzaT > 0 ? "" : "_yok"));
             botAcik = false; Ayar.ilerleme = eski; Ayar.reduce = r0; Ayar.kariyerModu = km; Ayar.kariyerSecim = -1;
+        }
+        // 2026-11-22 güç yayı ve top kuyruğu (Hud.GucYayi/Kuyruk): normal maçta rakibin topu erişime gelince bot durur, tur
+        // dümdüz bir drop, clear ve smaç kaydırır; vuruştan 0,2 sn sonra çekilir (yay 0,87 sn, kuyruk 0,45 sn görünür).
+        IEnumerator GucKareleri()
+        {
+            root.StartMatch(false, false, false);
+            string[] ad = { "drop", "clear", "smac" }; float[] hiz = { .5f, 1.2f, 2.2f };
+            for (int i = 0; i < 3; i++)
+            {
+                // r245: drop karesi "_yok" çıktı (erişim karesinde top sayı arasına düştü); vuruş tutana dek 30 sn içinde yeniden dene.
+                float t0 = Time.realtimeSinceStartup; Reach R; bool ok = false;
+                while (!ok && Time.realtimeSinceStartup - t0 < 30)
+                {
+                    botAcik = true; yield return null;
+                    if (root.match.s != null && root.match.s.from == "op" && root.match.ReachInfo(out R)) { botAcik = false; ok = root.match.SwipeShot(new SwipeInput { dx = 0, dy = -200, speed = hiz[i], R = 40, dist = 4, side = 1 }); }
+                }
+                botAcik = false;
+                float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < .2f) yield return null;
+                yield return Cek("guc_yayi_" + ad[i] + (ok ? "" : "_yok"));
+            }
+            root.AnaMenu(); yield return Bekle(5);
         }
         // 2026-11-06 ek tur: rakip girişi (Tur 2 finali Nova, ilk kez; kamera yaklaşmanın ortası, kart ve laf) ve sonsuz ralli
         // oynanırken (sayaç: vuruş · hız · rekor). Giriş geri sayımla açılır, tur onu kapalı tuttuğu için burada bir an açılır.
