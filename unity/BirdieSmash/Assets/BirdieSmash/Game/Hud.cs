@@ -784,7 +784,7 @@ namespace BirdieSmash.Game
         // Menü dili (docs/arayuz_tasarim_dili.md §8): limon = sen, turuncu yok; parlama/nabız/flaş yok, iz 1,5 pt, dolu 2 pt,
         // %75 opak. 0,12 sn'de ease-out dolar, 0,5 sn durur, 0,25 sn'de söner; hareketi azalt açıkken dolum anlık, sönüm kalır.
         // Noktalar dünya düzleminde çizilir (Kit.W), perspektif kendiliğinden doğru; kare başına ayırma yok.
-        static readonly Color LIMON = new Color(0xC9 / 255f, 0xEE / 255f, 0x4B / 255f), YAY_IZ = new Color(0xF3 / 255f, 0xEA / 255f, 0xEE / 255f, .18f);
+        static readonly Color LIMON = new Color(0xC9 / 255f, 0xEE / 255f, 0x4B / 255f), YAY_IZ = new Color(0xF3 / 255f, 0xEA / 255f, 0xEE / 255f, .18f), YAY_KONTUR = new Color(0x1A / 255f, 0x12 / 255f, 0x21 / 255f);   // kontur = --ink
         static readonly float[] YAY_DILIM = { 150, 113, 105, 75, 67, 30 };   // derece; 0° sağ, 90° kameraya doğru (+y)
         const float YAY_R = .55f;   // m, gölgenin hemen dışı
         int gyNo = -1; float gyT = -9, gySp; bool gyTam;
@@ -797,6 +797,8 @@ namespace BirdieSmash.Game
             for (int i = 0; i < 3; i++)
             {
                 bool yan = i < lv && dol > (float)i / lv; Color c = yan ? LIMON : YAY_IZ; c.a *= op;
+                // r244: yeşil salon zemininde limon kontrastı düşüktü; yanan dilimin altında koyu ince kontur (gölge/parlama değil).
+                if (yan) YayCiz(M.me.x, M.me.y, YAY_DILIM[2 * i], YAY_DILIM[2 * i + 1], 3.5f * u, new Color(YAY_KONTUR.r, YAY_KONTUR.g, YAY_KONTUR.b, .45f * op));
                 YayCiz(M.me.x, M.me.y, YAY_DILIM[2 * i], YAY_DILIM[2 * i + 1], (yan ? 2 : 1.5f) * u, c);
             }
             if (lv == 3 && gyTam && dol >= 1)   // tam orta: üçüncü dilimin ucunda küçük nokta (parlamaz)
@@ -812,7 +814,7 @@ namespace BirdieSmash.Game
             {
                 float r = (d0 + (d1 - d0) * k / N) * Mathf.Deg2Rad; var sp = root.cam.WorldToScreenPoint(Kit.W(cx + YAY_R * Mathf.Cos(r), cy + YAY_R * Mathf.Sin(r), 0));
                 if (sp.z <= 0) return; var q = new Vector2(sp.x, H - sp.y); if (k > 0) Cizgi(on, q, w, c); on = q;
-                if (k == 0 || k == N) Tex(new Rect(q.x - w / 2, q.y - w / 2, w, w), disk, c);   // yuvarlak uç (§11.7); Cizgi düz keser
+                Tex(new Rect(q.x - w / 2, q.y - w / 2, w, w), disk, c);   // yuvarlak uç ve ek yeri (§11.7; r244 karesinde düz kesilen parçalar arasında boşluk vardı)
             }
         }
         // Top kuyruğu (2026-11-22, aynı istek: "topun arkasını da gözü yormayacak şekilde"): yalnız senin vuruşunda, ilk 0,45 sn,
