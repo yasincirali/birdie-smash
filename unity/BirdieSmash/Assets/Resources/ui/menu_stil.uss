@@ -978,9 +978,10 @@
 .tarz-cubuk { margin-top: 10px; }
 .tarz-cubuk-iz { height: 8px; margin-top: 5px; border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; background-color: var(--cam2); }
 .tarz-cubuk-orta { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background-color: var(--tx); }
-.tarz-cubuk-dolu { position: absolute; top: 0; bottom: 0; border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; transition-property: width; transition-duration: 0.22s; transition-timing-function: ease-out-cubic; }
-.tarz-cubuk-dolu--arti { left: 50%; background-color: var(--lime); }
-.tarz-cubuk-dolu--eksi { right: 50%; background-color: var(--mu); }
+.tarz-cubuk-dolu { position: absolute; top: 0; bottom: 0; border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; transition-property: scale; transition-duration: 0.22s; transition-timing-function: ease-out-cubic; }   /* 2026-11-22 (fikir 12:06 #5): width yerine scale, yerleşim yok */
+.tarz-cubuk-dolu--arti { left: 50%; background-color: var(--lime); transform-origin: left; }
+.tarz-cubuk-dolu--eksi { right: 50%; background-color: var(--mu); transform-origin: right; }
+.tarz-tik { transition-property: scale; transition-duration: 0.18s; transition-timing-function: ease-out; }   /* fikir 12:06 #3: seçilen tarzın ✓'si 1,25 → 1 */
 
 /* 2026-11-19 (yasin: "buton click'lerinde standart olmalı"): basma dili tekti (.06 sn %95, bırakınca .26 sn ease-out-back) ama
    birincil düğme .98, CTA .98 (626. satır), ikon .94, profil hapı ve kupa hücresi .97/.94 ile ayrışmıştı; aynı dokunuş ekrandan

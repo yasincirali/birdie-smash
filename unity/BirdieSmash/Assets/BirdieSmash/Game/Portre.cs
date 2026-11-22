@@ -29,6 +29,13 @@ namespace BirdieSmash.Game
         static readonly List<string> ksira = new List<string>();
 
         public static Texture Benim() { var g = PlayerView.Benim(); return Al("ben|" + Ayar.model + g.Anahtar(), g, true); }
+        // Önbellekte varsa hemen döner, yoksa null ve çizmez (2026-11-22 inceleme, fikir 12:06 #2): Atölye başlığı her yükseltmede
+        // kurulur; görünüş Dolap'ta değiştiyse eşzamanlı FBX çizimi dokunuş karesine düşmesin, ısıtma menü durgunken.
+        public static Texture BenimHazir()
+        {
+            var g = PlayerView.Benim(); RenderTexture t;
+            return rt.TryGetValue("ben|" + Ayar.model + g.Anahtar(), out t) && t != null && t.IsCreated() ? t : null;
+        }
         public static Texture Rakip(Style st)
         {
             if (st == null) return null; var g = PlayerView.Rakip(st, Kit.Hex(st.renk));
