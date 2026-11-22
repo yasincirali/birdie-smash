@@ -1,4 +1,12 @@
 === UNITY ===
+Ayarlar, Nasıl oynanır ve Dolap şeridi (22 Kasım akşam):
+- Ayarlar'da Ses, Müzik ve Titreşim anahtarı artık sayfayı baştan kurmuyor; sayfa kıpırdamadan yerinde kalıyor.
+- Seyirci ayarını değiştirince seçtiğin düzeyde kısa bir alkış duyuluyor (Kapalı'da ses yok).
+- Satır sonundaki ok işaretleri sağda ayrı duruyor; VoiceOver artık oku okumuyor, dış bağlantılarda "Tarayıcıda açılır" diyor.
+- Nasıl oynanır'da maddeye dokununca ses geliyor, ok döner ve metin yumuşakça açılıyor. Üstteki ayrı açıklama kartı kalktı, kısa cümle "Temel dersi oyna" düğmesinin altında.
+- Dolap'ta kategori çipine dokununca şerit yeniden kurulmuyor; yalnız seçim değişiyor, alttaki liste yumuşakça beliriyor.
+Nasıl denenir: Ayarlar'ı aç, Ses ve Titreşim'i art arda aç kapa: sayfa kıpırdamamalı. Seyirci satırına dokun: Az ve Normal'de alkış duyulmalı. Nasıl oynanır'da bir maddeye dokun: ok aşağı dönmeli, metin belirmeli. Dolap'ta kategoriler arasında hızlıca gez: şerit yerinde kalmalı, seçili çip ortaya gelmeli.
+
 Atölye, Gelişim ve Dolap renkleri (22 Kasım öğle):
 - Atölye'nin başlığında artık oyuncunun küçük portresi ve takılı raketinin adı var.
 - "Bu tarzı seç"e dokununca ses, titreşim ve kartın onay işaretinde kısa bir büyüme var; tarz çubukları daha akıcı doluyor, tarzlar arasında gezerken kart yumuşakça değişiyor.

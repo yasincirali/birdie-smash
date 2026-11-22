@@ -268,7 +268,9 @@ namespace BirdieSmash.Game
             else if (dokunus && vt.hedefGec >= 1) { string p = vt.ParcaYeri(dv, W * .12f / dw); if (p != null && p != raketParca) RaketParcaSec(p); }   // tezgâhta parçaya dokunmak onu seçer
         }
 
-        void SoyunmaGovdeKur(bool yerKoru)
+        // sol (2026-11-22 inceleme, fikir 17:06 #4): kategori değişince yeni gövde bir karede beliriyordu; içerik yeni doğan iç kaba
+        // kurulur ve .12 sn opacity ile belirir (Antrenman/Tarz kalıbı, yerleşim yok). Hareketi azaltta ve öbür yollarda iç kap yok.
+        void SoyunmaGovdeKur(bool yerKoru, bool sol = false)
         {
             // Atölye ve Dolap aynı seçim akışlarını paylaşır (ModelSec, TelBitti, yükselt): görünen yenilenir, öteki kirli kalır.
             if (gez.sekme == Sekme.Atolye) { AtolyeGovdeKur(yerKoru); kirli[(int)Sekme.Soyunma] = true; return; }
@@ -277,6 +279,7 @@ namespace BirdieSmash.Game
             Vector2 of = yerKoru && soyunmaKaydir != null ? soyunmaKaydir.scrollOffset : Vector2.zero;
             VitrinYaziKur();
             var c = soyunmaGovde; c.Clear();
+            if (sol && !Ayar.reduce) { var ic = new VisualElement(); ic.AddToClassList("ant-liste"); ic.AddToClassList("koz-solgun"); ic.schedule.Execute(() => ic.RemoveFromClassList("koz-solgun")).StartingIn(16); c.Add(ic); c = ic; }
             KarakterGovde(c); c.Add(Bosluk(20));
             DenemeCubukKur();
             if (of.y > 0) { soyunmaKaydir.scrollOffset = of; var sk = soyunmaKaydir; sk.schedule.Execute(() => sk.scrollOffset = of).StartingIn(33); }
