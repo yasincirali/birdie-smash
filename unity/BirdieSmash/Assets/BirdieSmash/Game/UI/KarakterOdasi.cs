@@ -73,7 +73,8 @@ namespace BirdieSmash.Game
         {
             if (soyunmaSegment == null) return; soyunmaSegment.Clear(); katSira.Clear(); karAlt = KarGecerli(karAlt);
             // 2026-11-19 (Dolap A): şerit rakette de görünür (çekmecenin sekmeleri; oradan başka kategoriye tek dokunuşla dönülür).
-            if (kategoriKaydir != null) kategoriKaydir.style.display = DisplayStyle.Flex;
+            // 2026-11-23 (yuvalar): şeridin görünürlüğü artık USS'te (yuvalar sığmadığında şerit; satır içi display onu ezerdi).
+            YuvalarKur();
             foreach (int i in KarSayfalar())
             {
                 // 2026-11-07 "tek Raket bölümü" korunur: Raket şeridin son çipi (eskiden üstteki Görünüm/Raket ayrımındaydı, 2026-11-19 Dolap A).
@@ -193,11 +194,52 @@ namespace BirdieSmash.Game
             // yarıda kesiliyor, şerit bir kare boş kalabiliyordu. Kategori değişince sayım ve "deneniyor" değişmez: yalnız eski ve
             // yeni çipin seçimi yerinde (CipDurum), seçili ortaya. Şerit sayısı tutmazsa (alım/deneme sonrası) eski yol.
             if (soyunmaSegment != null && soyunmaSegment.childCount == katSira.Count)
+            {
                 for (int j = 0; j < katSira.Count; j++) { var d = soyunmaSegment[j]; CipDurum(d, katSira[j] == i); if (katSira[j] == i && kategoriKaydir != null) OrtayaKaydir(kategoriKaydir, d); }
+                foreach (var kv in yuvaEl) YuvaDurum(kv.Value, kv.Key == i);
+            }
             else KategoriKur();
             SoyunmaGovdeKur(false, true);
         }
         readonly List<int> katSira = new List<int>();   // şeritteki çiplerin kategori sırası (KategoriKur doldurur)
+
+        // ---- Yuvalar (2026-11-23, yasin seçimi "Dolap A", artifact Q3WbQ4HGx1Pv6VhfwXpBpV) ----
+        // Sorun (yasin, cihaz karesi): kategoriler yazılı, yatay kayan bir şeritteydi ("Ayakkabı 1/15 · Forma · Hareketler 4/31…"),
+        // yarısı ekran dışında kalıyor, neyin değiştirilebileceği bir bakışta görülmüyordu. Şimdi her kategori oyuncunun iki yanında
+        // bir yuva: dokunulan yuva alttaki çekmecenin (tepsinin) içeriğini belirler, seçili yuva sarı çerçeve + ✓ (yalnız renkle değil).
+        // Yerleşim: kategori listesi (Hareketler hariç) ikiye bölünür, ilk yarı solda, kalan sağda (7 kategoride Yüz · Şapka · Forma |
+        // Sırt · Ayakkabı · Raket); sıra KarSayfalar'dan gelir, yeni kategori kendiliğinden yerini alır. Hareketler giyilen bir parça
+        // değil, oyuncunun ne yaptığı: ayrı yuva, vitrinin sağ üstünde (sol üstteki İncele ile simetrik).
+        // Sayım (3/9) yuvada görünmez, erişim etiketinde söylenir: yuvada yalnız ad, 64 × 48 pt kutuda ikinci satır yazıyı küçültürdü.
+        // Yuvalar sığmadığında eski yazılı şerit döner (USS): tam durak (vitrin %32), büyük yazı (×1.35+), kısa ekranda 8 yuva.
+        // Bilinçli: ikisini birden göstermiyoruz, aynı seçimi iki yerde yapmak "hangisi?" sorusunu doğururdu.
+        VisualElement yuvaSol, yuvaSag, yuvaHareket; readonly Dictionary<int, VisualElement> yuvaEl = new Dictionary<int, VisualElement>();
+        void YuvalarKur()
+        {
+            if (yuvaSol == null) return; yuvaSol.Clear(); yuvaSag.Clear(); yuvaHareket.Clear(); yuvaEl.Clear();
+            var l = new List<int>(); foreach (int i in KarSayfalar()) if (i != KAR_SEVINC) l.Add(i);
+            int yari = (l.Count + 1) / 2;
+            for (int j = 0; j < l.Count; j++) (j < yari ? yuvaSol : yuvaSag).Add(Yuva(l[j]));
+            if (System.Array.IndexOf(KarSayfalar(), KAR_SEVINC) >= 0) { var h = Yuva(KAR_SEVINC); h.AddToClassList("dolap-yuva--hareket"); yuvaHareket.Add(h); }
+            if (dolapKok != null) dolapKok.EnableInClassList("dolap--yuva8", l.Count > 6);
+        }
+        VisualElement Yuva(int i)
+        {
+            int ii = i, ks, kt; bool sayim = KarSayim(i, out ks, out kt), dn = KategoriDeneniyor(i);
+            var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("dolap-yuva"); if (dn) d.AddToClassList("dolap-yuva--deneniyor");
+            var y = Yazi(L.T(KAR_AD[i]), 12, "dolap-yuva-yazi"); y.pickingMode = PickingMode.Ignore; d.Add(y);
+            var n = new VisualElement(); n.AddToClassList("dolap-yuva-nokta"); n.pickingMode = PickingMode.Ignore; d.Add(n);   // deneniyor (şekil; etiket de söyler)
+            d.AddManipulator(new Clickable(() => KategoriSec(ii)));   // Tik KategoriSec'te
+            Erisim.Etiket(d, L.T(KAR_AD[i]) + (sayim ? ", " + L.T("{0} eşyadan {1} tanesi senin", kt, ks) : "") + (dn ? ", " + L.T("deneniyor") : ""), "sekme", karAlt == i);
+            yuvaEl[i] = d; YuvaDurum(d, karAlt == i); return d;
+        }
+        void YuvaDurum(VisualElement d, bool secili)
+        {
+            d.EnableInClassList("dolap-yuva--secili", secili); var tk = d.Q(className: "dolap-yuva-tik");
+            if (secili && tk == null) { tk = new VisualElement(); tk.AddToClassList("dolap-yuva-tik"); tk.pickingMode = PickingMode.Ignore; tk.Add(Ikon(Ikonlar.Tik, 12, KOYU)); d.Add(tk); }   // sarı rozet içinde mürekkep ✓ (10:1)
+            else if (!secili && tk != null) tk.RemoveFromHierarchy();
+            var eb = d.userData as ErisimBilgi; if (eb != null) eb.secili = secili;
+        }
 
         // ---- Raket tezgâhı (2026-10-30) ----
         // Parça şeridi: Tüm raket · Kafa şekli · Çerçeve · Şaft · Grip · Kordaj. Seçilen parça vitrinde kadraja gelir ve bir kez

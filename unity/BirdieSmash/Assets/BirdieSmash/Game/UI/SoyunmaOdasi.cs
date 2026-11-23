@@ -113,6 +113,10 @@ namespace BirdieSmash.Game
             vitrinOdak.AddToClassList("vitrin-odak--orta"); ok.Add(vitrinOdak);
             var sag = new VisualElement(); sag.AddToClassList("dugme"); sag.AddToClassList("ikon-dugme"); sag.Add(Ikon(Ikonlar.Ileri, 20, Color.white)); sag.AddManipulator(new Clickable(() => VitrinCevir(1))); Erisim.Etiket(sag, L.T("Sağa çevir"), "dugme"); ok.Add(sag);
             OdakDugmeleriKur();
+            // 2026-11-23 Dolap yuvaları (KarakterOdasi.YuvalarKur): kaplar dokunuşu geçirir, boşlukta sürükleme vitrini döndürür.
+            yuvaSol = new VisualElement(); yuvaSol.AddToClassList("dolap-yuvalar"); yuvaSol.AddToClassList("dolap-yuvalar--sol"); yuvaSol.pickingMode = PickingMode.Ignore; ust.Add(yuvaSol);
+            yuvaSag = new VisualElement(); yuvaSag.AddToClassList("dolap-yuvalar"); yuvaSag.AddToClassList("dolap-yuvalar--sag"); yuvaSag.pickingMode = PickingMode.Ignore; ust.Add(yuvaSag);
+            yuvaHareket = new VisualElement(); yuvaHareket.AddToClassList("dolap-yuvalar"); yuvaHareket.AddToClassList("dolap-yuvalar--hareket"); yuvaHareket.pickingMode = PickingMode.Ignore; ust.Add(yuvaHareket);
             // Yakın plan kadrajı kutunun en-boyuna ve alttaki düğmelerin payına göre (Vitrin.Uzaklik).
             ust.RegisterCallback<GeometryChangedEvent>(e => VitrinKutuYaz(ust, alt)); alt.RegisterCallback<GeometryChangedEvent>(e => VitrinKutuYaz(ust, alt));
             // 2026-11-01: kategori şeridi tek satır, yatay kayar (dokuz kategori iki-üç satır çip olup vitrini küçültüyordu).
