@@ -1050,7 +1050,9 @@
 .kar-yuz--sen { border-color: var(--lime); }
 .kar-yuz--rakip { border-color: var(--coral); }
 .kar-vs-ad { flex-grow: 1; flex-basis: 0; flex-shrink: 1; min-width: 0; margin: 0 8px; }
-.kar-vs-ad--rakip { align-items: flex-end; }
+/* r252: rakip sütunu flex-end iken uzun tarz ("File oyuncusu", ×2 "Net player") sola taşıp VS'nin üstüne biniyordu. Sütunlar
+   esner, yazı sütun içinde sarar; rakip sağa hizalı kalır. */
+.kar-vs-ad Label { white-space: normal; }
 .kar-vs-ad--rakip Label { -unity-text-align: upper-right; }
 .kar-vs-yazi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--tx); flex-shrink: 0; }
 .kar-oyna { margin-top: 12px; }

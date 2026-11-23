@@ -97,7 +97,7 @@ namespace BirdieSmash.Game
             }
             var kb = KariyerVeri.Al(sira); var st = KariyerVeri.Rakip(sira);
             var ust = new VisualElement(); ust.AddToClassList("kar-hero-ust"); gv.Add(ust);
-            var et = Yazi(L.T(TurAd(tr)) + " · " + L.T(kb.yer), 13, "soluk"); et.AddToClassList("esnek-yatay"); et.style.whiteSpace = WhiteSpace.Normal; ust.Add(et);
+            var et = Yazi(L.T(TurAd(tr)) + " · " + L.T(kb.yer), 13, "soluk"); et.AddToClassList("esnek-yatay-sifir"); et.style.whiteSpace = WhiteSpace.Normal; ust.Add(et);
             var od = DurakOdul(sira); if (od != null) ust.Add(od);
             // Sen – VS – rakip: sen limon halkayla, rakip orkide (rol renkleri §8); adlar yazıyla da var, renk tek başına anlam taşımaz.
             // VS beyaz + mürekkep konturu: sarı yalnız Oyna'da kalsın (ekranda tek sarı eylem).
@@ -146,7 +146,7 @@ namespace BirdieSmash.Game
             var p = Ayar.ilerleme; var tv = tr < KariyerVeri.Turlar.Length ? KariyerVeri.Turlar[tr] : null; bool veri = tv != null && tv.Var, acik = p.TurAcik(tr);
             var kart = Kart("kar-tur"); kap.Add(kart);
             var bas = new VisualElement(); bas.AddToClassList("kar-tur-bas"); kart.Add(bas);
-            var ad = Yazi(L.T("Tur {0}", tr + 1) + " · " + L.T(TurAd(tr)), 17, "kalin"); ad.AddToClassList("esnek-yatay"); ad.style.whiteSpace = WhiteSpace.Normal; bas.Add(ad);
+            var ad = Yazi(L.T("Tur {0}", tr + 1) + " · " + L.T(TurAd(tr)), 17, "kalin"); ad.AddToClassList("esnek-yatay-sifir"); ad.style.whiteSpace = WhiteSpace.Normal; bas.Add(ad);
             string olcu = null;
             if (veri && acik)
             {
@@ -201,7 +201,7 @@ namespace BirdieSmash.Game
             var p = Ayar.ilerleme; var kap = Kart("kar-turlar");
             int simdi = p.HepsiBitti || sira < 0 ? KariyerVeri.TUR : KariyerVeri.TurOf(sira) + 1;
             var bas = new VisualElement(); bas.AddToClassList("kar-tur-bas"); kap.Add(bas);
-            var ba = Yazi(L.T("Dünya turu"), 17, "kalin"); ba.AddToClassList("esnek-yatay"); bas.Add(ba);
+            var ba = Yazi(L.T("Dünya turu"), 17, "kalin"); ba.AddToClassList("esnek-yatay-sifir"); bas.Add(ba);
             var sy = Yazi(Mathf.Min(simdi, KariyerVeri.TUR) + " / " + KariyerVeri.TUR, 14, "soluk"); sy.AddToClassList("kar-tur-olcu"); bas.Add(sy);
             Erisim.Etiket(bas, L.T("Dünya turu") + ", " + L.T("Tur {0}/{1}", Mathf.Min(simdi, KariyerVeri.TUR), KariyerVeri.TUR), "baslik");
             var iz = new VisualElement(); iz.AddToClassList("kar-tur-izgara"); kap.Add(iz);
