@@ -363,6 +363,7 @@ namespace BirdieSmash.Game
                 }
             }
             GostergeYerlestir(anim && s != once);   // 2026-10-27 yön C: üst çizgi yeni sekmeye yayla kayar
+            IsaretGuncelle();
             ust.style.display = tam == null ? DisplayStyle.Flex : DisplayStyle.None;
             if (tam != null) { SayfaKur(tam); sayfa.style.display = DisplayStyle.Flex; if (anim) Giris(sayfa); } else { sayfa.style.display = DisplayStyle.None; sayfa.Clear(); }
             string altS = gez.AcikAltSayfa;
@@ -652,7 +653,7 @@ namespace BirdieSmash.Game
                 sekmeCubugu.Add(d);
             }
             CubukAltPay();
-            SekmeCubuguGorunur(); GostergeKur();
+            SekmeCubuguGorunur(); GostergeKur(); IsaretKur();
             // Yazı boyutu Ayarlar'dan değişince açık tam sayfa yeniden kurulur; oyuncu yerini kaybetmesin (2026-11-20, fikir 12:06 #2).
             var eski = sayfa != null ? (sayfa.Q<ScrollView>(null, "govde-kaydir") ?? sayfa.Q<ScrollView>()) : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero;
             for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true; Uygula(gez.sekme, false);
@@ -920,18 +921,59 @@ namespace BirdieSmash.Game
         {
             gosterge = new VisualElement(); gosterge.AddToClassList("sekme-gosterge"); gosterge.pickingMode = PickingMode.Ignore;
             gostergeIc = new VisualElement(); gostergeIc.AddToClassList("sekme-gosterge-ic"); gostergeIc.pickingMode = PickingMode.Ignore; gosterge.Add(gostergeIc);
-            sekmeCubugu.Add(gosterge); sekmeCubugu.RemoveFromClassList("gosterge-var");
+            sekmeCubugu.Insert(0, gosterge); sekmeCubugu.RemoveFromClassList("gosterge-var");   // 2026-11-23: kapsül simgelerin ARKASINDA (ilk çocuk)
             if (!gostergeOlay) { gostergeOlay = true; sekmeCubugu.RegisterCallback<GeometryChangedEvent>(e => GostergeYerlestir(false)); }   // çubuk bir kez kurulur, olay bir kez
         }
         bool gostergeOlay;
+        // 2026-11-23 alt bant detayları 2-4 (yasin: "zekice düşünülmüş detaylar", detay sayfası Sn5jD8h6dR7U8MAR8DGoik). Yalnız gerçek
+        // veriden, sayı yok, baskı dili yok:
+        //  - Atölye noktası: Tüy'ün ve seviyenin yettiği bir yükseltme ya da alınabilir model varsa (GameRoot.YukseltAlinir, maç
+        //    sonu kartının "hazır" kararıyla aynı hesap). Dolap ve Profil'de "yeni" kaydı tutulmadığı için nokta yok (uydurma yok).
+        //  - Kariyer halkası: kupa simgesinin çevresinde bu turun durak ilerlemesi (Durak n/6), Kariyer tamamsa yok.
+        //  - Yarım maç: bitmemiş maç (root.bekleyen) varsa Oyna simgesinde küçük duraklat işareti.
+        // Sekme değişince ve çubuk kurulunca hesaplanır (karede değil); öğeler simge kabının çocuğu, dokunuş almaz.
+        VisualElement atolyeNokta, devamIsaret; HalkaCiz kariyerHalka;
+        sealed class HalkaCiz : VisualElement
+        {
+            public float oran; public Color renk, zemin;
+            public HalkaCiz() { pickingMode = PickingMode.Ignore; generateVisualContent += Ciz; }
+            void Ciz(MeshGenerationContext mgc)
+            {
+                var r = contentRect; if (r.width <= 0) return; var p = mgc.painter2D; float R = Mathf.Min(r.width, r.height) / 2 - 1.5f; var m = r.center;
+                p.lineWidth = 2.5f; p.lineCap = LineCap.Round;
+                p.strokeColor = zemin; p.BeginPath(); p.Arc(m, R, 0f, 360f); p.Stroke();
+                if (oran <= 0) return; p.strokeColor = renk; p.BeginPath(); p.Arc(m, R, -90f, -90f + 360f * Mathf.Clamp01(oran)); p.Stroke();
+            }
+        }
+        void IsaretKur()
+        {
+            VisualElement Kap(Sekme s) { var d = sekmeDugme[(int)s]; return d != null ? d.Q<VisualElement>(null, "sekme-ikon-kap") : null; }
+            var ka = Kap(Sekme.Atolye); atolyeNokta = null; if (ka != null) { atolyeNokta = new VisualElement(); atolyeNokta.AddToClassList("sekme-nokta"); atolyeNokta.pickingMode = PickingMode.Ignore; ka.Add(atolyeNokta); }
+            var kk = Kap(Sekme.Kariyer); kariyerHalka = null; if (kk != null) { kariyerHalka = new HalkaCiz { renk = new Color(.25f, .61f, .32f), zemin = new Color(.106f, .137f, .25f, .15f) }; kariyerHalka.AddToClassList("sekme-halka"); kk.Insert(0, kariyerHalka); }
+            var ko = Kap(Sekme.Oyna); devamIsaret = null; if (ko != null) { devamIsaret = Yazi("II", 8, "sekme-devam"); devamIsaret.pickingMode = PickingMode.Ignore; ko.Add(devamIsaret); }
+            IsaretGuncelle();
+        }
+        void IsaretGuncelle()
+        {
+            if (atolyeNokta != null) atolyeNokta.style.display = root != null && root.YukseltAlinir(Ayar.gear.Seviye()) ? DisplayStyle.Flex : DisplayStyle.None;
+            if (devamIsaret != null) devamIsaret.style.display = root != null && root.bekleyen ? DisplayStyle.Flex : DisplayStyle.None;
+            if (kariyerHalka != null)
+            {
+                var p = Ayar.ilerleme; bool goster = Ayar.antrenman && !p.HepsiBitti; int sg = p.Siradaki(); float o = goster && sg >= 0 ? KariyerVeri.BasOf(sg) / (float)KariyerVeri.BASAMAK : 0f;
+                kariyerHalka.style.display = goster ? DisplayStyle.Flex : DisplayStyle.None;
+                if (Mathf.Abs(kariyerHalka.oran - o) > .001f) { kariyerHalka.oran = o; kariyerHalka.MarkDirtyRepaint(); }
+            }
+        }
         void GostergeYerlestir(bool anim)
         {
             if (gosterge == null || gosterge.parent != sekmeCubugu) return; var d = sekmeDugme[(int)gez.sekme]; if (d == null) return;
             var lb = d.layout; if (float.IsNaN(lb.width) || lb.width <= 0) return;
-            float w = Mathf.Round(lb.width * .44f), x = lb.x + (lb.width - w) / 2; bool az = !anim || Ayar.reduce;
+            // 2026-11-23 (yasin: "alt bant ... zekice düşünülmüş detaylar", detay sayfası Sn5jD8h6dR7U8MAR8DGoik): gösterge artık simge
+            // arkasındaki sarı kapsülün kendisi (44 birim, .sekme-ikon-kap ile aynı); sekmeden sekmeye ease-out-back yayla kayar,
+            // seçili kabın kendi dolgusu gösterge varken söner (USS .gosterge-var). Eski dikey zıplama kalktı (kapsül havaya kalkıyordu).
+            float w = 44f, x = lb.x + (lb.width - w) / 2; bool az = !anim || Ayar.reduce;
             gosterge.EnableInClassList("anisiz", az); if (Mathf.Abs(gosterge.resolvedStyle.width - w) > .5f) gosterge.style.width = w;
             gosterge.style.translate = new Translate(x, 0);
-            if (!az) { gostergeIc.style.translate = new Translate(0, -4); gostergeIc.schedule.Execute(() => gostergeIc.style.translate = new Translate(0, 0)).StartingIn(90); }
             sekmeCubugu.AddToClassList("gosterge-var");
         }
         public string GostergeTani { get { return gosterge == null ? "yok" : "x " + gosterge.resolvedStyle.translate.x.ToString("F0") + " w " + gosterge.resolvedStyle.width.ToString("F0") + " sekme " + gez.sekme; } }

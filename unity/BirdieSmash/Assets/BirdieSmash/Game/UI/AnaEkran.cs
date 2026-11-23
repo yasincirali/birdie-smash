@@ -51,6 +51,9 @@ namespace BirdieSmash.Game
             // görülmedi) tek kart ilk maçın ne olduğunu söyler, kutucuklar yok. Galibiyeti olan (devirle gelen dahil) aynı ekranı görür.
             bool ilk = !Ayar.antrenman && Ayar.wins == 0 && !root.bekleyen;
             if (ilk) c.Add(IlkKart()); else if (usta && !root.bekleyen) c.Add(UstaKart()); else c.Add(SiradakiKart());
+            // 2026-11-23 Oyna A detayı (detay.html): plaka sahnenin alt üçte birine biner (yayın alt yazısı gibi); sahne ile maç bilgisi
+            // tek blok okunur, plakanın yediği boşluk sahneye döner. Yalnız negatif üst boşluk (USS .plaka--sahne), dokunuş aynı.
+            if (c.childCount > 0) c[c.childCount - 1].AddToClassList("plaka--sahne");
             // 2026-11-09 (yasin: "kariyeri farklı zorluklarda oynayabilme gelmesi lazım"): seçim 5 Kas'tan beri Kariyer'deki maç
             // kartındaydı, Oyna'dan oynayan görmüyordu. Aynı dört çip (tek ayar tuytop_zorluk) Oyna düğmesinin hemen üstünde;
             // açıklama satırı yok (düğmenin alt satırı kademeyi zaten söylüyor, küçük ekranda bir satır kazanılır).
@@ -67,8 +70,11 @@ namespace BirdieSmash.Game
                 // 2026-10-26 (yasin onayı, inceleme 2026-10-26 §2): "Sıradaki: {yer}" alt yazısı kalktı; yer hemen üstteki plakada
                 // yazıyordu. A tasarımında alt satır maçın biçimini söyler (sayı · saha · zorluk), ilk açılış ve şampiyon satırı kalır.
                 var p = Ayar.ilerleme; var kb = KariyerVeri.Al(p.Siradaki());
+                // 2026-11-23 Oyna A detayı: düğmenin sağ parçası zorluğu söyler; dokununca düğmenin altında dört kademe açılır (Kariyer'in
+                // maç kartı ve Ayarlar'la aynı tuytop_zorluk). Ayrı satır kalıcı değil: Oyna B'nin sadeliği korunur, seçim bir dokunuş uzakta.
+                bool bolunmus = !ilk && Ayar.antrenman && !p.HepsiBitti;
                 string alt = ilk ? null : !Ayar.antrenman ? L.T("İlk kez: 3 adımlık antrenman, sonra 5 sayılık maç") : p.HepsiBitti ? L.Cumle(Ayar.UstaZor ? Career.Line(p) : Career.Line(p).Replace("Usta yolu: ", "Şampiyon yolu: "))
-                    : L.T("{0} sayı", kb.uzunluk > 0 ? kb.uzunluk : Ayar.target) + " · " + L.T(Ayar.ZorlukAd)   // 2026-11-09: saha adı ("Okul (ahşap)") plakadaki yer adıyla iki ayrı yer gibi okunuyordu (inceleme 10 Kas 02:15); saha maç kartında
+                    : L.T("{0} sayı", kb.uzunluk > 0 ? kb.uzunluk : Ayar.target) + (bolunmus ? "" : " · " + L.T(Ayar.ZorlukAd))   // 2026-11-09: saha adı ("Okul (ahşap)") plakadaki yer adıyla iki ayrı yer gibi okunuyordu (inceleme 10 Kas 02:15); saha maç kartında
                       + (kb.degistirici != null && Gunluk.Deg(kb.degistirici) != null ? " · " + L.T(Gunluk.Deg(kb.degistirici).ad) : "");   // kural maçı adı
                 c.Add(BuyukDugme(L.T("Oyna"), alt, () =>
                 {
@@ -76,6 +82,7 @@ namespace BirdieSmash.Game
                     Ayar.kariyerSecim = -1;   // büyük Oyna her zaman sıradakini oynatır (haritadan seçilen yeniden oynama değil)
                     HareketOnce(root.Oyna);   // 2026-11-21: ilk Oyna'dan önce bir kez "Nasıl oynamak istersin?" (ArkadasEkran.cs)
                 }));
+                if (bolunmus) ZorlukParca(c[c.childCount - 1], c);
             }
             // 2026-11-20 online arkadaş maçı; 2026-11-21 (yasin: "default olarak açık gelsin", "buton da ilgi çekici olsun") herkese
             // açık, düz düğme yerine kendi kartı (ArkadasEkran.OnlineKart): kutucuklardan önce, büyük Oyna'nın altında. İlk açılışta yok
@@ -88,12 +95,16 @@ namespace BirdieSmash.Game
             // (Tüy ödülü, yıldız, sayı) çipte gizli (USS .cip-modu), ekran okuyucu etiketinde aynen kalır; sayfaları açınca görünür.
             var row = Satir("karo-satir"); row.AddToClassList("cip-modu"); c.Add(row);
             if (Ayar.antrenman && !root.bekleyen) row.Add(GunlukKaro());
+            // 2026-11-23 Oyna A detayı: çipte ad + tek kısa veri satırı (önceki karonun bilgisi: sayı, yıldız, ödül); 2×2 dizilir.
             row.Add(Karo(Ikonlar.Simsek, L.T("Hızlı maç"), L.T("{0} sayı", Ayar.target), GameRoot.HizliSecili() != null ? KariyerVeri.Stil[GameRoot.HizliSecili()].isim : L.T("Rastgele rakip"), null, HizliMacAc, L.T("Hızlı maç") + ", " + HizliOzet()));
+            CipAlt(row[row.childCount - 1], L.T("{0} sayı", Ayar.target) + " · " + L.T(Ayar.ZorlukAd));
             var p2 = Ayar.ilerleme;
             row.Add(Karo(Ikonlar.Hedef, L.T("Antrenman"), p2.AntrenmanYildiz + "/" + Dril.ToplamYildiz, L.T("yıldız"), Ikonlar.YildizDolu, AntrenmanAc,
                 L.T("Antrenman") + ", " + L.T("{0}/{1} yıldız · Temel ders ve {2} görev", p2.AntrenmanYildiz, Dril.ToplamYildiz, Dril.Liste.Length)));
+            CipAlt(row[row.childCount - 1], p2.AntrenmanYildiz + "/" + Dril.ToplamYildiz + " " + L.T("yıldız"));
             if (Online.Bayrak && !root.bekleyen)
                 row.Add(Karo(Ikonlar.Arkadas, L.T("Arkadaşınla"), "", null, null, () => HareketOnce(ArkadasAc), L.T("Arkadaşınla oyna") + ", " + L.T("Canlı maç · davet gönder ya da rakip bul"), "karo--arkadas"));
+            if (Online.Bayrak && !root.bekleyen) CipAlt(row[row.childCount - 1], L.T("Canlı maç"));
             // 2026-11-10 (yasin: "catch yok", kıyas: savaş geçidi şeridi, Forza seviye ödülü): sıradaki seviyenin ödülü ana ekranda
             // tek satır; dokununca Seviye yolu (Sv 30'a kadar bütün ödüller). Sv 30'da satır yok.
             row.Query<Label>(null, "karo-etiket").ForEach(e => e.style.fontSize = e.style.fontSize.value.value * 13f / 11f);   // çipte ad tek bilgi: 11 → 13
@@ -202,6 +213,24 @@ namespace BirdieSmash.Game
             d.AddManipulator(new Clickable(() => { Tik(); a(); })); Erisim.Etiket(d, erisim, "dugme");
             return d;
         }
+        // Çip veri satırı (2026-11-23 Oyna A): yalnız .cip-modu içinde görünür (USS), ekran okuyucu karonun etiketini okur.
+        void CipAlt(VisualElement karo, string t) { var l = Yazi(t, 11, "cip-alt"); l.pickingMode = PickingMode.Ignore; karo.Add(l); }
+        // Bölünmüş Oyna'nın sağ parçası (2026-11-23 Oyna A): zorluk adı + aşağı ok; dokunuş üst düğmeye geçmez (Clickable
+        // basışı yakalar). Dört kademe düğmenin hemen altındaki gizli satırda; seçim ekranı yeniden kurar, satır yine kapalı doğar.
+        void ZorlukParca(VisualElement cta, VisualElement c)
+        {
+            var z = new VisualElement(); z.AddToClassList("cta-zorluk");
+            z.Add(Yazi(L.T("Zorluk"), 11, "cta-zorluk-ust")); z.Add(Yazi(L.T(Ayar.ZorlukAd), 15, "cta-zorluk-ad"));
+            int ik = cta.IndexOf(cta.Q<VisualElement>(null, "cta-ikon")); if (ik < 0) cta.Add(z); else cta.Insert(ik, z);
+            var satir = Satir("zorluk-acilir"); satir.style.display = DisplayStyle.None; ZorlukSatir(satir, c, false); c.Add(satir);
+            z.AddManipulator(new Clickable(() =>
+            {
+                Tik(); bool ac = satir.resolvedStyle.display == DisplayStyle.None;
+                satir.style.display = ac ? DisplayStyle.Flex : DisplayStyle.None; z.EnableInClassList("cta-zorluk--acik", ac);
+                Erisim.Etiket(z, L.T("Zorluk") + ", " + L.T(Ayar.ZorlukAd), "dugme", ac);
+            }));
+            Erisim.Etiket(z, L.T("Zorluk") + ", " + L.T(Ayar.ZorlukAd), "dugme");
+        }
         // Günün maçı kutucuğu (a-tile--gold): değiştiricinin adı, altında Tüy simgesi + "+40 Tüy" (alındıysa ✓ + "Bugün kazandın").
         // r16: ödül değerin sağında mutlak konumdaydı (a-tile), "Long rally" gibi uzun adın üstüne biniyordu; alt satıra indi.
         VisualElement GunlukKaro()
@@ -212,7 +241,7 @@ namespace BirdieSmash.Game
             string altY = alindi ? L.T("Yarın: {0}", L.T(Gunluk.Bugun(System.DateTime.Now.AddDays(1)).deg.ad)) : L.T("+{0} Tüy", Gunluk.OdulTuy);
             var d = Karo(Ikonlar.Gunes, L.T("Günün maçı"), L.T(g.deg.ad), altY, alindi ? Ikonlar.Tik : Ikonlar.Tuy, GunlukAc,
                 L.T("Günün maçı") + ", " + L.T(g.deg.ad) + ", " + L.T("Rakip") + " " + st.isim + ", " + (alindi ? L.T("Bugün kazandın") + ", " + altY : altY), "karo--altin");
-            d.AddToClassList("karo--genis"); Doku(d, Ikonlar.AltinKaro);
+            d.AddToClassList("karo--genis"); Doku(d, Ikonlar.AltinKaro); CipAlt(d, altY);
             // 2026-11-22 inceleme (fikir 07:06 #3): günün rakibinin portresi Oyna durgunken bir kez ısıtılır; Günün maçı sayfası
             // açıldığı karede FBX çizmez (Kariyer şeridi kalıbı, kare başına en çok bir ısıtma).
             if (Portre.RakipHazir(st) == null)

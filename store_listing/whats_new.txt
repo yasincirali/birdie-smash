@@ -1,4 +1,11 @@
 === UNITY ===
+Yeni menü görünümü (23 Kasım):
+- Açılış ekranı artık menüyle aynı stadyum mavisinde; turuncu-kırmızı geçiş kalktı.
+- Alt sekme çubuğu inceldi ve ekranın altında yüzen beyaz bir kapsül oldu. Seçili sekmenin sarı zemini sekmeler arasında kayarak geçiyor.
+- Sekmelerde küçük işaretler: Atölye'de yeni yükseltme varsa nokta, Kariyer simgesinin çevresinde turdaki ilerleme halkası, yarım kalan maç varsa Oyna'da "II".
+- Oyna sayfasında sahne büyüdü; sıradaki maç plakası sahnenin altına biniyor. Zorluk Oyna düğmesinin sağ parçasında: dokununca dört kademe açılıyor.
+- Günün maçı, Hızlı maç, Antrenman ve Arkadaşınla artık küçük çipler; her birinde tek satır bilgi var (ödül, sayı, yıldız).
+Nasıl denenir: Uygulamayı aç: açılış mavi olmalı. Alt çubukta sekmeler arasında gez: sarı zemin kayarak geçmeli. Oyna'da düğmenin sağındaki "Zorluk"a dokun: altında dört kademe açılmalı, birini seç. Bir maçı yarıda bırakıp menüye dön: Oyna sekmesinde "II" görünmeli.
 Profil başarımları ve Dolap kombinleri (23 Kasım sabah):
 - Profil'de kilitli başarımların yanında artık ne kadar kaldığı yazıyor: "20 vuruşluk ralli" için 14/20, seviye 30 için 12/30, antrenman yıldızları için 9/24 gibi. "Henüz değil" ve "Kazanıldı" yazıları kalktı; kilit ve altın tik durumu gösteriyor.
 - Kapalı listede gösterilen üç kilitli başarım artık bitirmeye en yakın olanlar.

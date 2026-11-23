@@ -1174,3 +1174,39 @@
 .cip-modu .karo--altin .karo-etiket { color: var(--gold); }
 .kisa .cip-modu .karo { min-height: 44px; padding: 5px 10px; }
 .buyuk-yazi .cip-modu .karo { min-width: 0; }
+
+/* 2026-11-23 alt bant detayı 1, kayan kapsül: .sekme-gosterge sarı kapsül olarak geri geldi (Stadyum Pop bloğu onu gizliyordu).
+   Konum: çubuk dolgusu 4 + sekme dolgusu 2 = simge kabının üstü. Yalnız translate (yerleşim yok), 0,26 sn ease-out-back. */
+.sekme-cubugu .sekme-gosterge { display: flex; top: 6px; height: 26px; transition-duration: 0.26s; transition-timing-function: ease-out-back; }
+.sekme-cubugu .sekme-gosterge-ic { border-radius: 13px; background-color: var(--sun); transition-duration: 0s; }
+.kisa .sekme-cubugu .sekme-gosterge { top: 5px; }
+.gosterge-var .sekme--secili .sekme-ikon-kap { background-color: rgba(0, 0, 0, 0); }
+.sekme-cubugu .sekme-gosterge.anisiz, .az-hareket .sekme-cubugu .sekme-gosterge { transition-duration: 0s; }
+/* 2026-11-23 alt bant detayları 2-4 (UiKok IsaretKur): nokta, tur halkası, yarım maç işareti. Hepsi simge kabının içinde mutlak
+   konumlu, yerleşimi oynatmaz; nokta beyaz halkalı (sarı kapsülün üstünde de seçilir), işaret biçimle de okunur (II). */
+.sekme-ikon-kap { overflow: visible; }
+.sekme-nokta { position: absolute; top: 0; right: 6px; width: 8px; height: 8px; border-radius: 4px; background-color: #E8505B; border-width: 1.5px; border-color: #FFFFFF; }
+.sekme-halka { position: absolute; left: 9px; top: -4px; width: 26px; height: 34px; }
+.sekme-devam { position: absolute; top: -3px; right: 4px; padding: 0 3px; border-radius: 4px; background-color: var(--cta-ink); color: #FFFFFF; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+
+/* 2026-11-23 Oyna A detayları (menu-ux-ui-2026-11-23/detay.html). Plaka sahnenin alt üçte birine biner; çipte ad + tek veri
+   satırı, 2×2; Oyna'nın sağ parçası zorluk (dokununca dört kademe altta açılır). Renk rolleri §8: limon = bas, sarı = seçili. */
+.plaka--sahne { margin-top: -36px; }
+.kisa .plaka--sahne { margin-top: -24px; }
+.cip-alt { display: none; }
+.cip-modu .karo { flex-direction: column; align-items: flex-start; justify-content: center; flex-grow: 1; flex-basis: 40%; min-height: 52px; border-radius: 18px; padding: 7px 12px; }
+.cip-modu .karo-ust { flex-direction: row; align-items: center; }
+.cip-modu .karo-etiket { margin-left: 6px; }
+.cip-modu .cip-alt { display: flex; color: var(--mu); margin: 2px 0 0 19px; white-space: nowrap; -unity-font-definition: resource("fonts/Nunito-Bold"); }
+.cip-modu .karo--altin .cip-alt { color: var(--gold); }
+.kisa .cip-modu .karo { min-height: 48px; padding: 5px 12px; }
+.buyuk-yazi .cip-modu .karo { flex-basis: 100%; }
+.buyuk-yazi .cip-modu .cip-alt { white-space: normal; }
+.cta-zorluk { min-width: 64px; min-height: 52px; padding: 0 12px; margin-left: 6px; justify-content: center; align-items: center; flex-shrink: 0;
+    border-left-width: 2px; border-color: rgba(27, 35, 64, 0.25); }
+.cta-zorluk-ust { color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-Bold"); opacity: 0.8; }
+.cta-zorluk-ad { color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+.cta-zorluk:active { scale: 0.94 0.94; transition-duration: 0.06s; }
+.cta-zorluk--acik .cta-zorluk-ad { -unity-text-align: middle-center; }
+.zorluk-acilir { margin: -6px 0 10px 0; }
+.buyuk-yazi .cta-zorluk { min-width: 0; padding: 0 8px; }
