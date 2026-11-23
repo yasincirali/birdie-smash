@@ -95,6 +95,10 @@ namespace BirdieSmash.Game
             if (rl.Count > 0) gr.renk = rl[Random.Range(0, rl.Count)];
             foreach (var k in new[] { "grip", "tel" }) Ayar.RGOR[k] = Vitrin.RAK_SIRA[Random.Range(0, Vitrin.RAK_SIRA.Length)];
             kombinAktif = -1; KombinYaz(); Tik(); KombinUygula();
+            // 2026-11-23 inceleme (fikir 07:06 #5): Rastgele bir zar gibi kullanılır, sonuç tek karede beliriyordu. Kayıtlı kombini
+            // giyişle aynı an: vitrin parlar + giyilen parça sesi ("kaydir", Dolap 22 Kas kalıbı). Hareketi azaltta yalnız ses.
+            root.sfx.UiSes("kaydir");
+            if (!Ayar.reduce && root.vitrin != null && root.vitrin.gameObject.activeSelf) root.vitrin.Parlat("forma");
         }
 
         // 2026-11-21 inceleme (fikir 12:06 #2): kaydet/giy anında yalnız ses vardı, hangi yuvaya yazıldığı alt yazıdan okunuyordu.
@@ -109,8 +113,17 @@ namespace BirdieSmash.Game
             d.schedule.Execute(() => d.RemoveFromClassList("kombin-cip--pop")).StartingIn(260);
         }
         // Kombin satırı: gövdenin başında (Raket kategorisi hariç; orada parça rayı başta). Yuvalar 44 pt çip, seçili ✓ + "Giyili".
+        // 2026-11-23 inceleme (fikir 07:06 #4): kaydet/güncelle görünüşü değiştirmez ama bütün Dolap gövdesini (KarakterGovde + tüm
+        // ızgaralar) yeniden kuruyordu; pop + Yukselt sesiyle aynı karede takılma ve kaydırma zıplaması. Satır artık kendi kabında,
+        // kaydet/güncelle yalnız onu kurar (Kariyer TurAltKur kalıbı). Giy/Rastgele tam kurulum kalır: her ızgaranın seçimi değişir.
+        VisualElement kombinKab;
         void KombinSatir(VisualElement c)
         {
+            kombinKab = new VisualElement(); kombinKab.pickingMode = PickingMode.Ignore; c.Add(kombinKab); KombinSatirKur();
+        }
+        void KombinSatirKur()
+        {
+            var c = kombinKab; c.Clear();
             KombinYukle(); var simdi = KombinSimdi();
             c.Add(Grup(L.T("Kombinler")));
             var s = Satir("secim"); s.AddToClassList("kombin-satir"); c.Add(s);
@@ -120,7 +133,7 @@ namespace BirdieSmash.Game
             bool hicYok = true; for (int i = 0; i < KOMBIN_SAY; i++) if (kombinler[i] != null) { hicYok = false; break; }
             if (hicYok)
             {
-                var kd = Cip(L.T("Bu görünüşü kaydet"), false, () => { kombinler[0] = KombinSimdi(); kombinAktif = 0; kombinPop = 0; KombinYaz(); root.sfx.Yukselt(); SoyunmaGovdeKur(true); });
+                var kd = Cip(L.T("Bu görünüşü kaydet"), false, () => { kombinler[0] = KombinSimdi(); kombinAktif = 0; kombinPop = 0; KombinYaz(); root.sfx.Yukselt(); KombinSatirKur(); });
                 kd.AddToClassList("kombin-cip"); s.Add(kd);
                 Erisim.Etiket(kd, L.T("Bu görünüşü kaydet") + ", " + L.T("Kombin {0}", 1), "dugme");
             }
@@ -130,7 +143,7 @@ namespace BirdieSmash.Game
                 string ad = L.T("Kombin {0}", i + 1), alt = !dolu ? L.T("Boş · kaydet") : on ? L.T("Giyili") : L.T("Giy");
                 var d = Cip(ad, on, () =>
                 {
-                    if (kombinler[ii] == null) { kombinler[ii] = KombinSimdi(); kombinAktif = ii; kombinPop = ii; KombinYaz(); root.sfx.Yukselt(); SoyunmaGovdeKur(true); }
+                    if (kombinler[ii] == null) { kombinler[ii] = KombinSimdi(); kombinAktif = ii; kombinPop = ii; KombinYaz(); root.sfx.Yukselt(); KombinSatirKur(); }
                     else { kombinAktif = ii; kombinPop = ii; KombinYaz(); KombinGiy(kombinler[ii]); if (!Ayar.reduce && root.vitrin != null && root.vitrin.gameObject.activeSelf) root.vitrin.Parlat("forma"); }   // Tik Cip'in içinde (çift titreşimdi)
                 }, alt);
                 d.AddToClassList("dar-cip"); d.AddToClassList("kombin-cip"); Sigdir(d); s.Add(d);
@@ -145,7 +158,7 @@ namespace BirdieSmash.Game
             if (giyili < 0 && kombinAktif >= 0 && kombinler[kombinAktif] != null)
             {
                 int a = kombinAktif;
-                c.Add(Dugme(L.T("Kombin {0}'i bu görünüşle güncelle", a + 1), () => { kombinler[a] = KombinSimdi(); KombinYaz(); root.sfx.Yukselt(); SoyunmaGovdeKur(true); }, "kombin-kaydet", null, 14));
+                c.Add(Dugme(L.T("Kombin {0}'i bu görünüşle güncelle", a + 1), () => { kombinler[a] = KombinSimdi(); KombinYaz(); root.sfx.Yukselt(); KombinSatirKur(); }, "kombin-kaydet", null, 14));
             }
         }
 
