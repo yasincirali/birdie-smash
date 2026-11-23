@@ -82,7 +82,7 @@ static void bsPerdeKur(UIWindow *unity, CGFloat aci, CGFloat topGecikme, NSStrin
     }
     if (w == nil) w = [[UIWindow alloc] initWithFrame:b];
     w.frame = b; w.windowLevel = UIWindowLevelNormal + 1; w.userInteractionEnabled = NO;
-    w.backgroundColor = [UIColor colorWithRed:0xa3 / 255.0 green:0x23 / 255.0 blue:0x4b / 255.0 alpha:1];
+    w.backgroundColor = [UIColor colorWithRed:0x26 / 255.0 green:0x59 / 255.0 blue:0xBE / 255.0 alpha:1];   // Hud PERDE_C[0,0] (2026-11-23 Stadyum Pop)
     BsPerdeVC *vc = [[BsPerdeVC alloc] init]; vc.view.backgroundColor = [UIColor clearColor]; vc.view.frame = b; w.rootViewController = vc;
     CALayer *kok = vc.view.layer; CFTimeInterval simdi = CACurrentMediaTime(), t0 = simdi - (rm ? 0 : aci / 1.2);   // t0: dönüşlerin sıfır anı (açı süreden yazılır)
 
@@ -201,7 +201,7 @@ static void bsPerdeKur(UIWindow *unity, CGFloat aci, CGFloat topGecikme, NSStrin
         UILabel *lb = [[UILabel alloc] init]; lb.text = yazi; lb.font = f; lb.textColor = [UIColor whiteColor]; lb.textAlignment = NSTextAlignmentCenter;
         CGSize sz = [lb sizeThatFits:CGSizeMake(W, H)];
         lb.frame = CGRectMake(W / 2 - sz.width / 2 - 14 * u, H / 2 + k * .85, sz.width + 28 * u, sz.height + 10 * u);
-        lb.backgroundColor = [UIColor colorWithRed:74 / 255.0 green:10 / 255.0 blue:34 / 255.0 alpha:.88];
+        lb.backgroundColor = [UIColor colorWithRed:27 / 255.0 green:35 / 255.0 blue:64 / 255.0 alpha:.88];
         [vc.view addSubview:lb]; Y = lb.layer;
     }
     if (topGecikme > 0)
