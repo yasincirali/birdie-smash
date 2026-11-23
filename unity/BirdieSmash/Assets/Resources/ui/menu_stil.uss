@@ -1154,10 +1154,13 @@
 .kart.profil-kart:active { scale: 0.98 0.98; }
 .profil-kart .yazi { color: var(--cta-ink); }
 .profil-kart .profil-ust { margin: 0; }
-.profil-kart--dikey .profil-ust { flex-wrap: wrap; }
+/* Büyük yazıda (K ≥ 1,35) yan yana sütunlar adı 24 px'e sıkıştırıp harf harf bölüyordu (r250 ×2): yüz, ad, sıra alt alta. */
+.profil-kart--dikey .profil-ust { flex-direction: column; align-items: flex-start; }
+.profil-kart--dikey .profil-ust .esnek-yatay { flex-grow: 0; flex-shrink: 0; flex-basis: auto; width: 100%; margin: 8px 0 0 0; }
 .profil-yuz { width: 72px; height: 72px; border-radius: 16px; margin-right: 12px; border-width: 2px; border-color: var(--cta-ink); }
 .profil-sira { align-items: center; flex-shrink: 0; margin-left: 8px; min-width: 56px; }
 .profil-kart--dikey .profil-sira { margin: 8px 0 0 0; flex-direction: row; align-items: baseline; }
+.profil-kart--dikey .profil-sira .yazi { margin-right: 6px; }
 .profil-cubuk { background-color: rgba(27, 35, 64, 0.2); border-radius: 3px; margin: 10px 0 4px 0; }
 .profil-uc { margin-top: 4px; }
 .profil-kupa-raf { flex-direction: row; flex-wrap: wrap; margin-top: 8px; }
