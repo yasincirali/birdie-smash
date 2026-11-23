@@ -462,6 +462,8 @@ namespace BirdieSmash.Game
                 // Kayıp kartında da (r110: "Your serve · left court" kartın altından okunuyordu): sonuç ekranında hiç çizilmez.
                 if (root.ekran != Ekran.Bitti) Play(M);
                 if (root.geriT > 0 && !root.paused && root.ekran == Ekran.Oyun) GeriCiz();
+                // Duraklat açılış anı (2026-11-23 inceleme, fikir 17:06 #2 ve #5): önbellek her duraklatta bir kez kurulur, solma buradan sayar.
+                if (root.paused != pzAcik) { pzAcik = root.paused; pzBilgi = null; if (pzAcik) { pzT = Time.unscaledTime; Kalite.Hareket(); } }
                 if (root.paused) Pause(M);
                 if (root.ekran == Ekran.Bitti) Over(M);
             }
@@ -1174,57 +1176,42 @@ namespace BirdieSmash.Game
             // Kamera önizlemesi (2026-11-11 inceleme, fikir 21:05 #2): açı çipine dokununca örtü 0,6 sn %30'a iner ki yeni açı arkada
             // görülsün, sonra 0,25 sn'de geri koyulaşır. Hareketi azaltta da aynı (yalnız saydamlık, hareket yok).
             float kd = kameraOnizT < 0 ? 9 : Time.unscaledTime - kameraOnizT, oa = kd < .6f ? .30f : kd < .85f ? Mathf.Lerp(.30f, .86f, (kd - .6f) / .25f) : .86f;
+            // 2026-11-23 inceleme (fikir 17:06 #5): duraklat bir karede beliriyordu (maç → örtü sert kesme). 0,15 sn'de örtü ve içerik
+            // birlikte solarak gelir (oyuncunun sık tetiklediği eylem, kısa); düğmeler solma bitmeden de çalışır. Hareketi azaltta anında.
+            float fa = Ayar.reduce ? 1 : Mathf.Clamp01((Time.unscaledTime - pzT) / .15f); oa *= fa;
             var o0 = GUI.color; GUI.color = new Color(A_INK.r, A_INK.g, A_INK.b, oa); GUI.DrawTexture(new Rect(-W, 0, W * 3, H), Texture2D.whiteTexture); GUI.color = o0;
             float x = ColX, w = ColW, bh = Mathf.Max(BH, 50 * s), gap = 10 * s;
-            string bas = L.T("Duraklatıldı"), bilgi;
-            if (M.Dril == Sonsuz.Tanim) bilgi = L.T(M.Dril.ad) + " · " + SonsuzSayac(M.ogr);
-            else if (M.Dril != null) bilgi = L.T(M.Dril.ad) + " · " + L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(M.ogr.dene, M.Dril.top), M.Dril.top, M.ogr.isabet);
-            // 2026-11-14 inceleme (fikir 07:05 #6): kariyer yeri (şehir) kalktı; maç içinde hiçbir kararı etkilemiyor, maç kartında
-            // ve kariyer sayfasında yazıyor. Büyük yazıda satır ikiye iniyordu.
-            else bilgi = L.T("{0} sayı", M.target) + " · " + L.T("Rakip") + " " + M.RakipAd(false)
-                + (M.degistirici != null && Gunluk.Deg(M.degistirici) != null ? " · " + L.T(Gunluk.Deg(M.degistirici).ad) : "");   // kural maçında kuralın adı (2026-11-08)
-            string skor = M.Dril != null ? null : Sayi(M.sc[0]) + " – " + Sayi(M.sc[1]);
-            var bst = Sigdir(aSkor, bas, w); float bhY = bst.CalcHeight(Ic(bas), w), sh = skor == null ? 0 : aSkor.CalcHeight(Ic(skor), w), ih = aIpucu.CalcHeight(Ic(bilgi), w);
-            string ct = UiKok.Buyuk(L.T("Maça devam et")); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), ctaH = Mathf.Max(80 * s, cth + 22 * s);
-            float blok = bhY + 6 * s + sh + ih + 22 * s + ctaH + 12 * s + 4 * bh + 3 * gap;
-            // Bu maçın görevleri (2026-11-07 inceleme, fikir 20:09 #4): maç içinde yalnız 3 nokta görünüyor; duraklatan oyuncu
-            // "hangi yıldızı kovalıyordum" sorusunun cevabını burada okur. Simge + yazı (yalnız renk değil): ○ kalan + sayaç, ✓ biten
-            // soluk. Antrenman/Sonsuz rallide yok (M.Dril). Büyük yazıda blok sığmazsa yalnız kalanlar, o da sığmazsa hiç.
-            string[] gs = null; float gh = 0;
-            if (M.Dril == null && M.gorevler != null && M.gorevler.Count > 0)
-            {
-                for (int tur = 0; tur < 2 && (gs == null || blok + gh > H - top - bot - BH - 8 * s); tur++)
-                {
-                    var l = new List<string>(); gh = 10 * s;
-                    foreach (var g in M.gorevler)
-                    {
-                        if (g.bitti && tur == 1) continue;
-                        string t = g.bitti ? "✓ " + L.Cumle(g.ad) : "○ " + L.Cumle(g.ad) + " · " + Mathf.Min(g.say(M), g.hedef) + "/" + g.hedef;
-                        l.Add(t); gh += Glif(aIpucu, t).CalcHeight(Ic(t), w);
-                    }
-                    gs = l.ToArray();
-                }
-                if (gs.Length == 0 || blok + gh > H - top - bot - BH - 8 * s) { gs = null; gh = 0; }
-            }
-            blok += gh;
+            string bas = L.T("Duraklatıldı"); var bst = Sigdir(aSkor, bas, w);
+            if (pzBilgi == null || pzM != M || pzW != W || pzH != H || pzK != Ayar.YaziK || pzEn != L.En) PauseKur(M, bst, bas, w, s, bh, gap);
+            string bilgi = pzBilgi, ct = pzCt; string[] gs = pzGs; float bhY = pzBhY, sh = pzSh, ih = pzIh, ctaH = pzCtaH, blok = pzBlok;
             float y = Mathf.Max(top + BH + 8 * s, Mathf.Min((H - blok) / 2, H - bot - blok));
-            Yaz(new Rect(x, y, w, bhY), bas, bst, A_YAZI, 1); y += bhY + 6 * s;
-            if (skor != null)
+            Yaz(new Rect(x, y, w, bhY), bas, bst, A_YAZI, fa); y += bhY + 6 * s;
+            if (pzSkorA != null)
             {   // skor tabelası Baloo: senin sayın limon (yön C: limon = sen), rakip yazı rengi
-                string a0 = Sayi(M.sc[0]), b0 = " – " + Sayi(M.sc[1]); float aw = aSkor.CalcSize(Ic(a0)).x, bw = aSkor.CalcSize(Ic(b0)).x, sx = W / 2 - (aw + bw) / 2;
-                Yaz(new Rect(sx, y, aw + 2, sh), a0, aSkor, A_LIMON, 1); Yaz(new Rect(sx + aw, y, bw + 2, sh), b0, aSkor, A_YAZI, 1); y += sh;
+                string a0 = pzSkorA, b0 = pzSkorB; float aw = aSkor.CalcSize(Ic(a0)).x, bw = aSkor.CalcSize(Ic(b0)).x, sx = W / 2 - (aw + bw) / 2;
+                Yaz(new Rect(sx, y, aw + 2, sh), a0, aSkor, A_LIMON, fa); Yaz(new Rect(sx + aw, y, bw + 2, sh), b0, aSkor, A_YAZI, fa); y += sh;
             }
-            Yaz(new Rect(x, y, w, ih), bilgi, aIpucu, A_SOLUK, 1); y += ih + 22 * s;
+            Yaz(new Rect(x, y, w, ih), bilgi, aIpucu, A_SOLUK, fa); y += ih;
+            if (pzImza != null) { Yaz(new Rect(x, y, w, pzImH), pzImza, aIpucu, A_SOLUK, .8f * fa); y += pzImH; }
+            y += 22 * s;
             if (gs != null)
             {
                 y -= 12 * s;
-                foreach (var t in gs) { var gst = Glif(aIpucu, t); float th = gst.CalcHeight(Ic(t), w); Yaz(new Rect(x, y, w, th), t, gst, t[0] == '✓' ? A_SOLUK : A_YAZI, t[0] == '✓' ? .7f : 1); y += th; }
+                foreach (var t in gs) { var gst = Glif(aIpucu, t); float th = gst.CalcHeight(Ic(t), w); Yaz(new Rect(x, y, w, th), t, gst, t[0] == '✓' ? A_SOLUK : A_YAZI, (t[0] == '✓' ? .7f : 1) * fa); y += th; }
                 y += 22 * s;
             }
-            if (BuyukDugme(new Rect(x, y, w, ctaH), ct, null, s, 1)) { bastanOnayT = -1; root.Devam(); } y += ctaH + 12 * s;
+            if (BuyukDugme(new Rect(x, y, w, ctaH), ct, null, s, fa)) { bastanOnayT = -1; root.Devam(); } y += ctaH + 12 * s;
             // HTML duraklat satırı: Ses · Maçı baştan başlat · Ana menü (oyun sırasında ses düğmesi yalnız burada). 2026-11-06 13:40 inceleme:
             // "Ses açık" eylem mi durum mu okunmuyordu; "Ses: açık" durum okunur, dokunmak değiştirir (simge anahtar önerisi yazılı satır kararına takıldı).
-            if (ADugme(new Rect(x, y, w, bh), L.T(Ayar.ses ? "Ses: açık" : "Ses: kapalı"), 1)) { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.Kaydet(); Yerel.Hap("tick"); } y += bh + gap;
+            // 2026-11-23 inceleme (fikir 17:06 #4): müzik yalnız Ayarlar'daydı, kendi müziğiyle oynayan maçtan çıkmak zorundaydı. Aynı
+            // satırda iki yarım düğme (yeni satır yok, blok yüksekliği aynı); ses kapalıyken müzik de sustuğu için Müzik yarısı soluk.
+            // Kayıt KaydetSonra: dokunuşta eşzamanlı PlayerPrefs.Save yok (TAKILMA YOK).
+            {
+                float hg = 6 * s, hw = (w - hg) / 2;
+                if (ADugme(new Rect(x, y, hw, bh), L.T(Ayar.ses ? "Ses: açık" : "Ses: kapalı"), fa)) { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.KaydetSonra(); Yerel.Hap("tick"); }
+                if (ADugme(new Rect(x + hw + hg, y, hw, bh), L.T(Ayar.muzik ? "Müzik: açık" : "Müzik: kapalı"), (Ayar.ses ? 1 : .5f) * fa)) { Ayar.muzik = !Ayar.muzik; Ayar.KaydetSonra(); Yerel.Hap("tick"); }
+                y += bh + gap;
+            }
             // Kamera çipleri (2026-11-11 inceleme, fikir 21:05 #2): açı maçın hissini en çok değiştiren ayar, farkı görmek için
             // Ayarlar'a gidip maça dönmek gerekiyordu. Aynı üç seçenek ve anahtar (tuytop_kamera); seçili çip ✓ + turuncu çerçeve
             // (yalnız renk değil). Kadraj FitCamera'da duraklatmada da hemen yeniden çözülür; takip eğimi Devam'da kaldığı yerden.
@@ -1233,9 +1220,9 @@ namespace BirdieSmash.Game
                 for (int i = 0; i < kn; i++)
                 {
                     string id = GameRoot.KAMERA_SIRA[i]; bool sec = Ayar.kamera == id; var cr = new Rect(x + i * (cw + cg), y, cw, bh);
-                    if (ADugme(cr, (sec ? "✓ " : "") + L.T(GameRoot.KAMERA_AD[i]), sec ? 1 : .85f) && !sec)
-                    { Ayar.kamera = id; Ayar.Kaydet(); root.KameraDegisti(); kameraOnizT = Time.unscaledTime; Kalite.Hareket(); Yerel.Hap("tick"); }
-                    if (sec) KutuCiz(cr, aKutuLimon, 1);
+                    if (ADugme(cr, (sec ? "✓ " : "") + L.T(GameRoot.KAMERA_AD[i]), (sec ? 1 : .85f) * fa) && !sec)
+                    { Ayar.kamera = id; Ayar.KaydetSonra(); root.KameraDegisti(); kameraOnizT = Time.unscaledTime; Kalite.Hareket(); Yerel.Hap("tick"); }
+                    if (sec) KutuCiz(cr, aKutuLimon, fa);
                 }
                 y += bh + gap;
             }
@@ -1246,15 +1233,65 @@ namespace BirdieSmash.Game
             // reddedildi: yazılı üç satır her dilde daha okunur.
             bool ilerledi = M.Dril != null ? M.ogr != null && M.ogr.dene > 0 : M.sc[0] + M.sc[1] > 0, onay = bastanOnayT >= 0 && Time.unscaledTime - bastanOnayT < 2.5f;
             var rb = new Rect(x, y, w, bh);
-            bool bastan = ADugme(rb, L.T(onay ? "Emin misin? Bir kez daha dokun" : "Maçı baştan başlat"), 1);
-            if (onay) KutuCiz(rb, aKutuLimon, 1);   // lacivert kutunun üstüne turuncu çerçeve
+            bool bastan = ADugme(rb, L.T(onay ? "Emin misin? Bir kez daha dokun" : "Maçı baştan başlat"), fa);
+            if (onay) KutuCiz(rb, aKutuLimon, fa);   // lacivert kutunun üstüne turuncu çerçeve
             if (bastan)
             {
                 if (!ilerledi || onay) { bastanOnayT = -1; root.TekrarOyna(); }
                 else { bastanOnayT = Time.unscaledTime; Yerel.Hap("tick"); }
             }
             y += bh + gap;
-            if (ADugme(new Rect(x, y, w, bh), L.T("Ana menü"), 1)) root.AnaMenu();
+            if (ADugme(new Rect(x, y, w, bh), L.T("Ana menü"), fa)) root.AnaMenu();
+        }
+
+        // Duraklat önbelleği (2026-11-23 inceleme, fikir 17:06 #2, TAKILMA YOK): Pause her OnGUI olayında (Layout + Repaint +
+        // dokunuş) bilgi satırını, büyük harfli düğme yazısını ve görev listesini (new List + ToArray) yeniden kuruyordu; duraklatta
+        // biriken çöp devamdan sonraki ilk rallide toplanıyordu. Duraklat boyunca maç değişmez: yazılar ve ölçüler duraklat başına
+        // bir kez (ya da ekran/yazı boyutu/dil değişince) kurulur. Kamera çipi etiketi her olayda kalır (seçili çipte tek kısa dize).
+        bool pzAcik, pzEn; float pzT, pzW, pzH, pzK, pzBhY, pzSh, pzIh, pzImH, pzCtaH, pzBlok; Match pzM;
+        string pzBilgi, pzImza, pzSkorA, pzSkorB, pzCt; string[] pzGs;
+        void PauseKur(Match M, GUIStyle bst, string bas, float w, float s, float bh, float gap)
+        {
+            pzM = M; pzW = W; pzH = H; pzK = Ayar.YaziK; pzEn = L.En;
+            string bilgi;
+            if (M.Dril == Sonsuz.Tanim) bilgi = L.T(M.Dril.ad) + " · " + SonsuzSayac(M.ogr);
+            else if (M.Dril != null) bilgi = L.T(M.Dril.ad) + " · " + L.T("Top {0}/{1} · Hedefte {2}", Mathf.Min(M.ogr.dene, M.Dril.top), M.Dril.top, M.ogr.isabet);
+            // 2026-11-14 inceleme (fikir 07:05 #6): kariyer yeri (şehir) kalktı; maç içinde hiçbir kararı etkilemiyor, maç kartında
+            // ve kariyer sayfasında yazıyor. Büyük yazıda satır ikiye iniyordu.
+            else bilgi = L.T("{0} sayı", M.target) + " · " + L.T("Rakip") + " " + M.RakipAd(false)
+                + (M.degistirici != null && Gunluk.Deg(M.degistirici) != null ? " · " + L.T(Gunluk.Deg(M.degistirici).ad) : "");   // kural maçında kuralın adı (2026-11-08)
+            pzBilgi = bilgi;
+            pzSkorA = M.Dril != null ? null : Sayi(M.sc[0]); pzSkorB = M.Dril != null ? null : " – " + Sayi(M.sc[1]);
+            // 2026-11-23 inceleme (fikir 17:06 #3): patron maçında zorlanıp duraklatan oyuncu imza vuruşunun cevabını maç kartında
+            // görmüştü, maç içinde göremiyordu; ders maç sonuna (Ozet.Ipucu) kalıyordu. Kartla aynı satır, soluk. Zorluk değişmez.
+            var im = M.Dril == null && M.stil != null && M.stil.patron ? KariyerVeri.Imza(M.stil.imza) : null;
+            pzImza = im != null && !string.IsNullOrEmpty(im.cevap) ? L.T(im.ad) + ": " + L.T(im.cevap) : null;
+            pzBhY = bst.CalcHeight(Ic(bas), w); pzSh = pzSkorA == null ? 0 : aSkor.CalcHeight(Ic(pzSkorA + pzSkorB), w); pzIh = aIpucu.CalcHeight(Ic(bilgi), w);
+            pzImH = pzImza == null ? 0 : aIpucu.CalcHeight(Ic(pzImza), w);
+            pzCt = UiKok.Buyuk(L.T("Maça devam et")); float cth = Sigdir(aCta, pzCt, w - 100 * s).CalcHeight(Ic(pzCt), w - 100 * s); pzCtaH = Mathf.Max(80 * s, cth + 22 * s);
+            float blok = pzBhY + 6 * s + pzSh + pzIh + 22 * s + pzCtaH + 12 * s + 4 * bh + 3 * gap, sig = H - top - bot - BH - 8 * s;
+            // İmza satırı sığmazsa (büyük yazı, kısa ekran) düşer; görevler aşağıda kendi sığma döngüsüyle ondan önce düşer.
+            if (pzImza != null) { if (blok + pzImH > sig) { pzImza = null; pzImH = 0; } else blok += pzImH; }
+            // Bu maçın görevleri (2026-11-07 inceleme, fikir 20:09 #4): maç içinde yalnız 3 nokta görünüyor; duraklatan oyuncu
+            // "hangi yıldızı kovalıyordum" sorusunun cevabını burada okur. Simge + yazı (yalnız renk değil): ○ kalan + sayaç, ✓ biten
+            // soluk. Antrenman/Sonsuz rallide yok (M.Dril). Büyük yazıda blok sığmazsa yalnız kalanlar, o da sığmazsa hiç.
+            string[] gs = null; float gh = 0;
+            if (M.Dril == null && M.gorevler != null && M.gorevler.Count > 0)
+            {
+                for (int tur = 0; tur < 2 && (gs == null || blok + gh > sig); tur++)
+                {
+                    var l = new List<string>(); gh = 10 * s;
+                    foreach (var g in M.gorevler)
+                    {
+                        if (g.bitti && tur == 1) continue;
+                        string t = g.bitti ? "✓ " + L.Cumle(g.ad) : "○ " + L.Cumle(g.ad) + " · " + Mathf.Min(g.say(M), g.hedef) + "/" + g.hedef;
+                        l.Add(t); gh += Glif(aIpucu, t).CalcHeight(Ic(t), w);
+                    }
+                    gs = l.ToArray();
+                }
+                if (gs.Length == 0 || blok + gh > sig) { gs = null; gh = 0; }
+            }
+            pzGs = gs; pzBlok = blok + gh;
         }
 
         // ---- maç sonu (2026-10-26, arayüz yönü A "Yayın Gecesi", tasarım ph4; yasin yönü henüz onaylamadı) ----

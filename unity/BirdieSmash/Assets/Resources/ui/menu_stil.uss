@@ -824,12 +824,15 @@
 .anahtar-top { width: 27px; height: 27px; border-radius: 14px; background-color: var(--tx); align-items: center; justify-content: center; translate: 0 0; transition-property: translate; transition-duration: 0.18s; transition-timing-function: ease-out; }
 .anahtar--acik .anahtar-top { translate: 20px 0; }
 .az-hareket .anahtar, .az-hareket .anahtar-top { transition-duration: 0s; }
-/* §6.4 liste grubu (2026-11-15): tek cam kart, satırlar 56, ayırıcı 1 pt; simgesiz satırda inset 16. */
+/* §6.4 liste grubu (2026-11-15): tek cam kart, satırlar 56, ayırıcı 1 pt; simgesiz satırda inset 16.
+   2026-11-23 inceleme (fikir 17:06 #1): aşağıdaki 14 Kas standart blok (simgeli satır, inset 54) aynı özgüllükte sonra geldiği için
+   bu kuralları eziyordu; Ayarlar'ın simgesiz grubunda ayırıcı yazının 38 px sağından başlıyordu. Grup içi kurallar .liste-grup ile
+   daraltıldı (özgüllük kazanır), 14 Kas standardı simgeli listeler için belgedeki gibi kalır. */
 .liste-grup { border-radius: 16px; padding: 0; margin: 0 0 6px 0; background-color: var(--cam); border-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); border-bottom-color: var(--cam-alt); overflow: hidden; }
-.liste-satir { min-height: 56px; padding: 10px 14px 10px 16px; transition-property: background-color; transition-duration: 0.14s; }
-.liste-satir:active { background-color: var(--cam3); }
-.liste-ayirac { height: 1px; margin-left: 16px; background-color: var(--cam-kenar); }
-.az-hareket .liste-satir { transition-duration: 0s; }
+.liste-grup > .liste-satir { min-height: 56px; padding: 10px 14px 10px 16px; transition-property: background-color; transition-duration: 0.14s; }
+.liste-grup > .liste-satir:active { background-color: var(--cam3); }
+.liste-grup > .liste-ayirac { height: 1px; margin-left: 16px; background-color: var(--cam-kenar); }
+.az-hareket .liste-grup > .liste-satir { transition-duration: 0s; }
 .anahtar-satir--pasif { opacity: 0.6; }
 
 /* 2026-11-10 Seviye ödülü ve Seviye yolu (AnaEkran.SvHedefSatir / SeviyeYoluKur, UiKok.SeviyeAni). Oyna satırı ≥ 44 pt dokunma. */

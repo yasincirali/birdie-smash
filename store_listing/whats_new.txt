@@ -1,4 +1,11 @@
 === UNITY ===
+Duraklatma ekranı ve ses ayarları (23 Kasım akşamüstü):
+- Duraklatınca ekran bir anda değil, kısa bir solmayla açılıyor.
+- Duraklatma ekranında Ses'in yanında artık Müzik düğmesi de var; müziği kapatmak için maçtan çıkmak gerekmiyor.
+- Patron maçında duraklatınca rakibin imza vuruşu ve ona nasıl cevap verileceği yazıyor.
+- Duraklatma ekranı açıkken telefon arka planda daha az iş yapıyor; maça döndükten sonraki ilk vuruşta takılma azalmalı.
+- Ayarlar'da Ses kapalıyken Müzik, Seyirci ve Düğme sesi satırları soluk görünüyor (seçimlerin kaybolmuyor). Satırlar arasındaki çizgiler yazıyla aynı hizadan başlıyor.
+Nasıl denenir: Bir maçta duraklat: ekran yumuşakça gelmeli, Ses ve Müzik yan yana olmalı; Müzik'e dokun, maça dön, müzik kapalı olmalı. Kariyerde bir patron maçında duraklat: imza vuruşu satırını gör. Ayarlar'da Ses'i kapat: altındaki üç satır soluklaşmalı.
 Dükkân, ödül anları ve Gelişim (23 Kasım öğle):
 - Tüy dükkânında satın aldıktan sonra üstteki Tüy sayısı hemen güncelleniyor (eskiden menüye dönünce eski rakam kalıyordu).
 - Alım hedef eşyanın Tüy'ünü tamamladıysa dükkân bunu söylüyor ve "Şimdi al" düğmesi eşyanın sayfasını açıyor.
