@@ -332,6 +332,23 @@
 .stat-arti { color: var(--lime); white-space: nowrap; flex-shrink: 0; margin-left: 2px; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .stat-orta { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background-color: rgba(255, 255, 255, 0.55); }
 .stat-deger { min-width: 30px; white-space: nowrap; -unity-text-align: middle-right; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); flex-shrink: 0; }   /* r13: ×2'de "5" / "0" diye kırılıyordu */
+/* 2026-11-23 Atölye A (yasin seçimi): raket vitrini, ölçü çipleri, Sahada kutusu, tarz satırı. Yalnız atl-* sınıfları. */
+.atl-vitrin { align-items: stretch; }
+.atl-raket { align-self: center; margin: 4px 0 6px 0; rotate: -28deg; }   /* taslaktaki eğik raket: sap sağ altta, kafa sol üstte */
+.atl-ortala { -unity-text-align: middle-center; white-space: normal; }
+.atl-olcu { margin: 0 -4px; }   /* çip margin 4px: ızgaranın dış kenarı kartın yazı kenarıyla hizalı (§2.5) */
+.atl-bilgi { color: var(--mu2); white-space: normal; margin-top: 8px; }
+.atl-delta { margin-top: 10px; }
+.atl-delta-ad { color: var(--mu2); flex-shrink: 0; white-space: nowrap; }
+.atl-arti { color: var(--lime); margin-left: 4px; min-width: 30px; -unity-text-align: middle-right; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+.atl-eksi { color: #FFB4AB; margin-left: 4px; min-width: 30px; -unity-text-align: middle-right; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }   /* KAYIP, SoyunmaOdasi.cs */
+.atl-delta-iz { height: 8px; margin-top: 6px; border-radius: 4px; background-color: var(--cam2); }
+.atl-delta-orta { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background-color: var(--tx); }
+.atl-delta-dolu { position: absolute; top: 0; bottom: 0; border-radius: 4px; }
+.atl-delta-dolu--arti { left: 50%; background-color: var(--lime); }
+.atl-delta-dolu--eksi { right: 50%; background-color: #FFB4AB; }
+.atl-tarz { margin-top: 6px; }
+.atl-tarz-kap { margin-top: 4px; }
 .stat-isaret { width: 16px; margin-left: 4px; align-items: center; flex-shrink: 0; }
 .buyuk-yazi .stat-satir { flex-wrap: wrap; }
 .buyuk-yazi .stat-ad { width: 100%; }
