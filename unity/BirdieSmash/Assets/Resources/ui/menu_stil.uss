@@ -1152,6 +1152,34 @@
 .segment-cip { border-width: 0; border-bottom-width: 3px; border-color: rgba(0, 0, 0, 0); border-top-color: rgba(0, 0, 0, 0); border-bottom-color: rgba(0, 0, 0, 0); }
 .segment-cip.cip--secili { border-bottom-color: var(--sun); }
 
+/* 2026-11-23 Profil A (yasin seçimi; ProfilEkran.cs başındaki karar kaydı). Yalnız profil-* sınıfları: alt bant, Kariyer, Dolap,
+   Atölye aynı dosyaya paralel blok ekliyor. Oyuncu kartı altın dolgu + mürekkep kontur, altı kalın (basılabilir: Dolap'ı açar);
+   içindeki bütün yazı mürekkep (altın üstünde beyaz 1,5:1, mürekkep 10:1). */
+.kart.profil-kart { background-color: var(--gold); border-width: 2px; border-bottom-width: 4px; border-color: var(--cta-ink); border-radius: 16px; padding: 12px; }
+.kart.profil-kart:active { scale: 0.98 0.98; }
+.profil-kart .yazi { color: var(--cta-ink); }
+.profil-kart .profil-ust { margin: 0; }
+/* Büyük yazıda (K ≥ 1,35) yan yana sütunlar adı 24 px'e sıkıştırıp harf harf bölüyordu (r250 ×2): yüz, ad, sıra alt alta. */
+.profil-kart--dikey .profil-ust { flex-direction: column; align-items: flex-start; }
+.profil-kart--dikey .profil-ust .esnek-yatay { flex-grow: 0; flex-shrink: 0; flex-basis: auto; width: 100%; margin: 8px 0 0 0; }
+.profil-yuz { width: 72px; height: 72px; border-radius: 16px; margin-right: 12px; border-width: 2px; border-color: var(--cta-ink); }
+.profil-sira { align-items: center; flex-shrink: 0; margin-left: 8px; min-width: 56px; }
+.profil-kart--dikey .profil-sira { margin: 8px 0 0 0; flex-direction: row; align-items: baseline; }
+.profil-kart--dikey .profil-sira .yazi { margin-right: 6px; }
+.profil-cubuk { background-color: rgba(27, 35, 64, 0.2); border-radius: 3px; margin: 10px 0 4px 0; }
+.profil-uc { margin-top: 4px; }
+.profil-kupa-raf { flex-direction: row; flex-wrap: wrap; margin-top: 8px; }
+.profil-kupa-yuva { width: 23%; height: 48px; margin: 0 1% 6px 1%; align-items: center; justify-content: center; border-radius: 12px; border-width: 2px; border-color: rgba(0, 0, 0, 0); background-color: rgba(255, 255, 255, 0.08); }
+.profil-kupa-raf--tek .profil-kupa-yuva { width: 11.5%; margin: 0 0.5% 0 0.5%; }
+.profil-kupa-yuva:active { scale: 0.94 0.94; }
+.profil-kupa-yuva--var { background-color: rgba(249, 210, 114, 0.22); }
+.profil-kupa-yuva--sira { border-color: var(--mu); }
+.profil-kupa-yuva--yok Image { opacity: 0.6; }
+.profil-son-satir { align-items: center; }
+.profil-gm { flex-direction: row; flex-wrap: wrap; justify-content: flex-end; flex-shrink: 1; margin-left: 8px; }
+.profil-gm-harf { min-width: 26px; height: 26px; margin: 2px 0 2px 4px; border-radius: 8px; border-width: 2px; -unity-text-align: middle-center; }
+.profil-gm-harf--g { background-color: var(--lime); border-color: var(--lime); color: var(--lime-ink); }
+.profil-gm-harf--m { border-color: var(--mu); color: var(--tx); }
 /* 2026-11-23 alt bant C (yasin: "Beyaz alt bant incelmeli", seçim sayfası menu-ux-ui-2026-11-23): kenarlardan ayrık yüzen beyaz
    hap. Eskisi tam genişlik bant + ev çizgisi dolgusu, ~99 birim; yeni hap 46 birim sekme + kontur, altında zemin görünür (UiKok
    CubukAltPay). Seçili sekme: sarı yalnız simgenin arkasındaki 44×26 kapta (iOS 26 / Material 3 kalıbı), yazı mürekkep ve kalın;

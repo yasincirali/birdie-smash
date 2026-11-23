@@ -170,6 +170,7 @@ Kontrast (22 Kas ölçüldü): beyaz yazı zeminde 6,5:1, kartta 9,3:1, ikincil 
 5. **Renk körlüğü**: sen/rakip ayrımı limon–orkide (parlaklıkları da farklı) + konum (sen solda/altta) + ad; seçili sarı dolgu + mürekkep kontur + ✓; kazanç/kayıp ok ve işaretle (▲ ▼, +/−). Kırmızı–yeşil ikilisi tek başına anlam taşımaz.
 6. **Sarı kıtlığı**: sarı yalnız birincil eylem, seçili durum ve aktif sekme içindir (Supercell'in "en önemli düğme sarı" kalıbı). İlerleme çubukları sarı olmaz: seviye ve gelişim limon, Tüy altın (hep tüy simgesiyle, sarıyla karışmasın). Başlıkta, süste, rozette sarı yoksa göz eylemi saniyede bulur.
 7. **Kozmetik renkler ayrıdır**: oyuncunun seçtiği forma/raket renkleri arayüz rolü taşımaz; menüde yalnız kendi örnek yuvarlağında görünür (`docs/kozmetik_tasarim_dili.md`).
+8. **Profil oyuncu kartı istisnası** (yasin 23 Kas, "Profil A"): kartın tamamı altın (`--gold`, ödül rengi; sarı `--sun` değil) dolgulu, mürekkep konturlu ve altı kalındır, çünkü basılabilir (Dolap'ı açar). İçindeki yazı ve seviye çubuğu mürekkep (altın üstünde limon 1,3:1 okunmaz, mürekkep 10:1). Başka ekrana altın dolgulu kart eklenmez.
 
 ## 9. Ekran denetim listesi (her menü değişikliğinde PR'a)
 
