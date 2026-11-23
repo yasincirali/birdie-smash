@@ -54,7 +54,9 @@ namespace BirdieSmash.Game
             // 2026-11-09 (yasin: "kariyeri farklı zorluklarda oynayabilme gelmesi lazım"): seçim 5 Kas'tan beri Kariyer'deki maç
             // kartındaydı, Oyna'dan oynayan görmüyordu. Aynı dört çip (tek ayar tuytop_zorluk) Oyna düğmesinin hemen üstünde;
             // açıklama satırı yok (düğmenin alt satırı kademeyi zaten söylüyor, küçük ekranda bir satır kazanılır).
-            if (Ayar.antrenman && !usta && !root.bekleyen && !ilk) { var zs = Satir("oyna-zorluk"); c.Add(zs); ZorlukSatir(zs, c, false); }
+            // 2026-11-23 Oyna B (yasin seçti, menu-ux-ui-2026-11-23/secim.md): zorluk şeridi Oyna'dan kalktı; seçim Ayarlar › Oyun'da ve
+            // Kariyer'in maç kartında sürer (aynı tuytop_zorluk), Oyna düğmesinin alt satırı kademeyi söylemeye devam eder. Kazanılan
+            // satır sahneye (afiş) gider: ekranın yarısı mekân ve iki oyuncu, altında tek Oyna.
             if (root.bekleyen)
             {
                 c.Add(BuyukDugme(L.T("Maça devam et"), null, () => root.MacaDon()));
@@ -78,18 +80,23 @@ namespace BirdieSmash.Game
             // 2026-11-20 online arkadaş maçı; 2026-11-21 (yasin: "default olarak açık gelsin", "buton da ilgi çekici olsun") herkese
             // açık, düz düğme yerine kendi kartı (ArkadasEkran.OnlineKart): kutucuklardan önce, büyük Oyna'nın altında. İlk açılışta yok
             // (ilk yol tek düğme, §2.3).
-            if (Online.Bayrak && !ilk && !root.bekleyen) c.Add(OnlineKart());
+            // 2026-11-23 Oyna B: kart yerine aşağıdaki mod çiplerinden biri (taslakta seçilen yerleşim); online bayrağı aynı.
             // 2026-10-26 adım 7–8: Günün maçı · Hızlı maç · Antrenman. "Tam antrenman" kartı Antrenman sayfasında (Temel ders);
             // ilk açılışta (antrenman görülmedi) Günün maçı yok: ilk yol tek düğme kalsın (§2.3).
             if (ilk) return;
-            var row = Satir("karo-satir"); c.Add(row);
+            // 2026-11-23 Oyna B: üç kutucuk + arkadaş kartı tek sıra küçük mod çipine indi (simge + ad, ≥ 44 pt). Ayrıntı satırları
+            // (Tüy ödülü, yıldız, sayı) çipte gizli (USS .cip-modu), ekran okuyucu etiketinde aynen kalır; sayfaları açınca görünür.
+            var row = Satir("karo-satir"); row.AddToClassList("cip-modu"); c.Add(row);
             if (Ayar.antrenman && !root.bekleyen) row.Add(GunlukKaro());
             row.Add(Karo(Ikonlar.Simsek, L.T("Hızlı maç"), L.T("{0} sayı", Ayar.target), GameRoot.HizliSecili() != null ? KariyerVeri.Stil[GameRoot.HizliSecili()].isim : L.T("Rastgele rakip"), null, HizliMacAc, L.T("Hızlı maç") + ", " + HizliOzet()));
             var p2 = Ayar.ilerleme;
             row.Add(Karo(Ikonlar.Hedef, L.T("Antrenman"), p2.AntrenmanYildiz + "/" + Dril.ToplamYildiz, L.T("yıldız"), Ikonlar.YildizDolu, AntrenmanAc,
                 L.T("Antrenman") + ", " + L.T("{0}/{1} yıldız · Temel ders ve {2} görev", p2.AntrenmanYildiz, Dril.ToplamYildiz, Dril.Liste.Length)));
+            if (Online.Bayrak && !root.bekleyen)
+                row.Add(Karo(Ikonlar.Arkadas, L.T("Arkadaşınla"), "", null, null, () => HareketOnce(ArkadasAc), L.T("Arkadaşınla oyna") + ", " + L.T("Canlı maç · davet gönder ya da rakip bul"), "karo--arkadas"));
             // 2026-11-10 (yasin: "catch yok", kıyas: savaş geçidi şeridi, Forza seviye ödülü): sıradaki seviyenin ödülü ana ekranda
             // tek satır; dokununca Seviye yolu (Sv 30'a kadar bütün ödüller). Sv 30'da satır yok.
+            row.Query<Label>(null, "karo-etiket").ForEach(e => e.style.fontSize = e.style.fontSize.value.value * 13f / 11f);   // çipte ad tek bilgi: 11 → 13
             var sh = SvHedefSatir(); if (sh != null) c.Add(sh);
             // Menü ilk kez tam açılıyor (2026-11-12 inceleme, fikir 07:05 #3): öğreticiden sonra plaka, çipler, OYNA, kutucuklar ve
             // seviye satırı tek karede düşüyordu; nereye bakılacağı belli değildi. Yalnız bir kez (tuytop_menu_acildi): öğeler
@@ -184,7 +191,7 @@ namespace BirdieSmash.Game
             // 2026-11-02 (Ar-Ge 19:40 #1, r118): "8/63" karoya sığmayınca "8/6" satırda kalıp "3" alt satıra, yıldız ikonunun
             // altına düşüyordu (oyuncu hedefi geçmiş sanıyordu). Değer tek satır; sığmazsa %75'e kadar küçülür (Sigdir hesabı).
             // Kap ikonsuz: SigdirOlc yatay satırdaki ikonu genişlikten düşer, karonun üst satırındaki ikon burada sayılmasın.
-            var dk = new VisualElement(); dk.pickingMode = PickingMode.Ignore; d.Add(dk);
+            var dk = new VisualElement(); dk.AddToClassList("karo-deger-kap"); dk.pickingMode = PickingMode.Ignore; d.Add(dk);
             var dl = Yazi(deger, 20, "karo-deger"); dl.style.whiteSpace = WhiteSpace.NoWrap; dl.style.flexShrink = 0f; dk.Add(dl);
             float dt0 = dl.style.fontSize.value.value; dk.RegisterCallback<GeometryChangedEvent>(e => SigdirOlc(dk, dl, dt0, .75f));
             if (!string.IsNullOrEmpty(alt))

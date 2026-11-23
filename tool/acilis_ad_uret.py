@@ -20,7 +20,9 @@ A = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'unity', 'Bir
 S = 240                                   # yazı boyu (px)
 f = ImageFont.truetype(A + 'Resources/fonts/Baloo2-ExtraBold.ttf', S)
 KONTUR, DERIN = 16, 14                    # boyun ~%7'si ve ~%6'sı
-KREM, ALTIN, BORDO = (243, 234, 238, 255), (249, 210, 114, 255), (74, 10, 34, 255)
+# 2026-11-23 açılış A (yasin: "giriş splash gifiyle menü renkleri uyumsuz"): Stadyum Pop'a geçti. "Birdie" beyaz, "Smash"
+# menünün tek vurgusu sarı #FFC93C, kontur ve derinlik menüdeki mürekkep #1B2340 (adlar eski kalsın diye değişken adları aynı).
+KREM, ALTIN, BORDO = (255, 255, 255, 255), (255, 201, 60, 255), (27, 35, 64, 255)
 d = ImageDraw.Draw(Image.new('L', (1, 1)))
 k1, k2 = 'Birdie ', 'Smash'
 w1 = d.textlength(k1, font=f)

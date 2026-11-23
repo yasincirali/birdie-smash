@@ -173,7 +173,7 @@ namespace BirdieSmash.Game
             if (govde != null) { govde.style.top = pu; govde.style.left = ps; govde.style.right = pr; }
             altKatman.style.top = pu; altKatman.style.left = ps; altKatman.style.right = pr;
             guvPay = new Vector3(pu, ps, pr);
-            altBosluk = Mathf.Max(0, sa.yMin) * s; sekmeCubugu.style.paddingBottom = altBosluk; if (altSayfa != null) altSayfa.style.paddingBottom = altBosluk + 16;
+            altBosluk = Mathf.Max(0, sa.yMin) * s; CubukAltPay(); if (altSayfa != null) altSayfa.style.paddingBottom = altBosluk + 16;
             SutunYaz(pw);
         }
 
@@ -628,6 +628,10 @@ namespace BirdieSmash.Game
         // bitince düşer, yani kaybeden oyuncu menüsüz kalmaz. Devirle gelen galibiyetli oyuncu çubuğu hep görür.
         // Ayarlar düğmesi ve Tüy hapı üst şeritte kalır (Gizlilik/Destek ilk ekrandan erişilebilir, App Store).
         bool IlkAcilis => !Ayar.antrenman && Ayar.wins == 0 && (root == null || !root.bekleyen);
+        // 2026-11-23 (yasin "Beyaz alt bant incelmeli", seçim "Alt bant C"): sekme çubuğu kenarlardan ayrık yüzen beyaz hap.
+        // Ev çizgisi payı artık çubuğun içine dolgu olarak girmiyor (bant o kadar kalınlaşıyordu); hap, payın bir kısmı kadar
+        // yukarıda durur, altında zemin görünür. Akışta kalır: içerik hapın üstünde biter, her sayfaya ayrı alt boşluk gerekmez.
+        void CubukAltPay() { if (sekmeCubugu == null) return; sekmeCubugu.style.paddingBottom = 0f; sekmeCubugu.style.marginBottom = Mathf.Max(10f, altBosluk * .6f); }
         void SekmeCubuguGorunur() { if (sekmeCubugu != null) sekmeCubugu.style.display = IlkAcilis ? DisplayStyle.None : DisplayStyle.Flex; }
 
         void HepsiniKur()
@@ -640,12 +644,14 @@ namespace BirdieSmash.Game
                 int i = (int)s; var d = new VisualElement(); d.AddToClassList("sekme"); sekmeDugme[i] = d;
                 var cizgi = new VisualElement(); cizgi.AddToClassList("sekme-cizgi"); cizgi.pickingMode = PickingMode.Ignore; d.Add(cizgi);
                 // 2026-11-07 (stüdyo AD4): simge 22 → 24, etiket 11 → 12; seçili simge USS'te büyür ve kalkar (stok iOS sekmesi gibiydi).
-                var im = Ikon(ik[i], 24, s == gez.sekme ? CTA_MUREKKEP : SEKME_SOLUK); im.AddToClassList("sekme-ikon"); d.Add(im);
-                string ad = L.T(SEKME_AD[i]); if (etiket) d.Add(Yazi(ad, 12, "sekme-yazi"));
+                // 2026-11-23 yüzen hap (yasin "Alt bant C"): sarı yalnız simgenin arkasındaki kapta, yazı mürekkep; etiket 12 → 11.
+                var im = Ikon(ik[i], 24, s == gez.sekme ? CTA_MUREKKEP : SEKME_SOLUK); im.AddToClassList("sekme-ikon");
+                var kap = new VisualElement(); kap.AddToClassList("sekme-ikon-kap"); kap.pickingMode = PickingMode.Ignore; kap.Add(im); d.Add(kap);
+                string ad = L.T(SEKME_AD[i]); if (etiket) d.Add(Yazi(ad, 11, "sekme-yazi"));
                 d.AddManipulator(new Clickable(() => SekmeAc(s))); Erisim.Etiket(d, ad, "sekme", s == gez.sekme);
                 sekmeCubugu.Add(d);
             }
-            if (altBosluk > 0) sekmeCubugu.style.paddingBottom = altBosluk;
+            CubukAltPay();
             SekmeCubuguGorunur(); GostergeKur();
             // Yazı boyutu Ayarlar'dan değişince açık tam sayfa yeniden kurulur; oyuncu yerini kaybetmesin (2026-11-20, fikir 12:06 #2).
             var eski = sayfa != null ? (sayfa.Q<ScrollView>(null, "govde-kaydir") ?? sayfa.Q<ScrollView>()) : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero;

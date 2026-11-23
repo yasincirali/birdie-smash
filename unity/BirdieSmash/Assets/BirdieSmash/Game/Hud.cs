@@ -127,7 +127,11 @@ namespace BirdieSmash.Game
         // perde: evre 0 yok, 1 kapanıyor, 2 kapalı, 3 açılıyor
         int perdeEvre; float perdeT; System.Action perdeIs; float perdeAci; float perdeMin = .15f; bool perdeAtla, perdeBek;
         public static readonly float[][] PERDE_F = { new[] { 2.6f }, new[] { .86f }, new[] { .66f }, new[] { .47f }, new[] { .30f } };
-        public static readonly string[,] PERDE_C = { { "#a3234b", "#b52a52" }, { "#d84358", "#e85563" }, { "#f9665a", "#ff7a5c" }, { "#ffa04d", "#ffb35a" }, { "#f9d272", "#fde59a" } };
+        // 2026-11-23 açılış A (yasin: "giriş splash gifiyle menü renkleri uyumsuz", seçim sayfası menu-ux-ui-2026-11-23): gün batımı
+        // halkaları Stadyum Pop mavisine geçti; dış halka = menü zemini #2659BE (perde açılınca renk değişmez), içe doğru açılır,
+        // merkez gökyüzü mavisi (beyaz top ve sarı "Smash" mürekkep konturla okunur). StreamingAssets/perde_N.png aynı renklerle
+        // bu fonksiyonun Python eşiyle üretildi (birebir; eski renklerle karşılaştırıldı, fark ≤ 1). Renk değişirse ikisi birlikte.
+        public static readonly string[,] PERDE_C = { { "#2659BE", "#2b62c8" }, { "#2f69cf", "#3874d8" }, { "#4282e0", "#4d8de6" }, { "#64a3ef", "#72aef3" }, { "#a6d3ff", "#bfe0ff" } };
 
         // 2026-10-27 yön C (koordinatör: maç HUD'u da C'ye uysun): rakip vurgusu (skor, servis noktası, rakibin sayı yazısı ve
         // dalgası) mercan #ff7a6b yerine orkide; limon "sen" olarak kalır. Skor kutusunda (kort üstünde %70 koyu) orkide Lc −53,6
@@ -1822,7 +1826,7 @@ namespace BirdieSmash.Game
         // Geçiş: disk R = köşegen × .55, 120 ms gecikmeyle 330 ms'de 0 → 1 büyür (kübik ease-out); aynı anda tüy top hız
         // çizgileriyle (−.1W, .85H) → (1.1W, .12H) 280 ms'de uçar (mantar önde, ease-out). Kapalıyken halkalar döner; ses/sahne
         // hazır değilse .6 sn sonra ortada dönen top + "Hazırlanıyor…". Açılma 350 ms küçülme (ease-in-out).
-        // Açılış (soğuk açılış): kapalı diskle başlar (iOS açılış rengi = dış halka #a3234b, CiBuild), en az .6 sn, sonra aynı küçülme.
+        // Açılış (soğuk açılış): kapalı diskle başlar (iOS açılış rengi = dış halka, CiBuild; 2026-11-23 #a3234b → #2659BE), en az .6 sn, sonra aynı küçülme.
         // Hareketi azalt: ölçek/dönme/uçuş yok, 200 ms belirme ve 250 ms solma. Top HTML'deki çizilmiş tüy top (Yukleyici.serit, 2026-10-30).
         bool perdeAcilis, kaynakVar; int acilisIyi; float acilisBek, perdeSabit = -1; Vector2 perdeKaynak;
         float acilisSpin, acilisT0 = -1, acilisAcT = -1, acilisSonT = -1;   // ekran turu: gerçek açılışın süreleri (sn)
@@ -1920,7 +1924,7 @@ namespace BirdieSmash.Game
             {   // HTML perdeBekle: ortada dönen tüy top, altında "Hazırlanıyor…" (VoiceOver'a duyurma IMGUI'de yok, bilinen eksik)
                 Vector2 p; float boy, aci, donus, a_; bool serbest; TopDurum(out p, out boy, out aci, out donus, out a_, out serbest);
                 string t = L.T("Hazırlanıyor…"); var ps = Stil(small, -1, FontStyle.Bold); var sz = ps.CalcSize(Ic(t));
-                var pr = new Rect(W / 2 - sz.x / 2 - 14 * u, H / 2 + boy * .85f, sz.x + 28 * u, sz.y + 10 * u); Fill(pr, new Color(74 / 255f, 10 / 255f, 34 / 255f, .88f)); GUI.Label(pr, t, ps);
+                var pr = new Rect(W / 2 - sz.x / 2 - 14 * u, H / 2 + boy * .85f, sz.x + 28 * u, sz.y + 10 * u); Fill(pr, new Color(27 / 255f, 35 / 255f, 64 / 255f, .88f)); GUI.Label(pr, t, ps);
             }
         }
         // Açılışta oyun adı (2026-11-19, yasin: "splash gifinde Birdie Smash ismi gözüküp kaybolmalı mı? oyun adını vurgulamak

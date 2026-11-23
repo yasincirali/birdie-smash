@@ -1146,3 +1146,31 @@
 /* sekme şeritleri (.segment-cip) alt çizgi dilinde kalır: yukarıdaki .dugme konturu onlara bulaşmasın */
 .segment-cip { border-width: 0; border-bottom-width: 3px; border-color: rgba(0, 0, 0, 0); border-top-color: rgba(0, 0, 0, 0); border-bottom-color: rgba(0, 0, 0, 0); }
 .segment-cip.cip--secili { border-bottom-color: var(--sun); }
+
+/* 2026-11-23 alt bant C (yasin: "Beyaz alt bant incelmeli", seçim sayfası menu-ux-ui-2026-11-23): kenarlardan ayrık yüzen beyaz
+   hap. Eskisi tam genişlik bant + ev çizgisi dolgusu, ~99 birim; yeni hap 46 birim sekme + kontur, altında zemin görünür (UiKok
+   CubukAltPay). Seçili sekme: sarı yalnız simgenin arkasındaki 44×26 kapta (iOS 26 / Material 3 kalıbı), yazı mürekkep ve kalın;
+   biçimle okunur (dolgu + kalınlık), yalnız renkle değil. Simge büyüme/kalkma hareketi kapta dolgu olduğu için kalktı. */
+.sekme-cubugu { margin-left: 12px; margin-right: 12px; padding: 4px 6px; border-radius: 28px; border-width: 2px; border-top-width: 2px; border-bottom-width: 4px; border-color: var(--cta-ink); background-color: var(--bar); }
+.sekme { min-height: 46px; margin: 0; padding: 2px 0; border-width: 0; border-bottom-width: 0; border-radius: 22px; background-color: rgba(0, 0, 0, 0); }
+.sekme--secili { background-color: rgba(0, 0, 0, 0); border-color: rgba(0, 0, 0, 0); }
+.sekme-ikon-kap { width: 44px; height: 26px; border-radius: 13px; align-items: center; justify-content: center; transition-property: background-color; transition-duration: 0.12s; }
+.sekme--secili .sekme-ikon-kap { background-color: var(--sun); }
+.az-hareket .sekme-ikon-kap { transition-duration: 0s; }
+.sekme--secili .sekme-ikon { scale: 1 1; translate: 0 0; }
+.sekme-yazi { margin-top: 1px; }
+.sekme--secili .sekme-yazi { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+.kisa .sekme-cubugu { padding-top: 3px; padding-bottom: 3px; }
+.kisa .sekme { min-height: 44px; margin-bottom: 0; }
+.genis .sekme-cubugu { align-self: center; width: 640px; max-width: 92%; }
+
+/* 2026-11-23 Oyna B (yasin seçti): mod kutucukları tek sıra küçük çip. Simge + ad yan yana, ≥ 44 birim; değer ve alt satır
+   gizli (ekran okuyucu etiketi tam). Dar ekranda 4 çip sığmazsa ikişerli iki satıra kırılır. Büyük yazıda alt alta (eski kural). */
+.cip-modu { flex-wrap: wrap; margin: 2px -3px 0 -3px; }
+.cip-modu .karo { flex-direction: row; align-items: center; justify-content: center; min-height: 44px; min-width: 120px; padding: 6px 10px; margin: 3px; border-radius: 22px; }
+.cip-modu .karo-ust { align-self: auto; }
+.cip-modu .karo-etiket { color: var(--tx); white-space: nowrap; flex-grow: 0; flex-basis: auto; margin-left: 6px; letter-spacing: 0; }
+.cip-modu .karo-deger-kap, .cip-modu .karo-alt-satir { display: none; }
+.cip-modu .karo--altin .karo-etiket { color: var(--gold); }
+.kisa .cip-modu .karo { min-height: 44px; padding: 5px 10px; }
+.buyuk-yazi .cip-modu .karo { min-width: 0; }
