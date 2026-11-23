@@ -878,6 +878,8 @@
 .buyuk-yazi .gel-ozet { flex-wrap: wrap; }
 .buyuk-yazi .gel-ozet-ad { width: 100%; }
 .seviye-gelisim { margin-top: 4px; -unity-text-align: middle-center; color: rgb(255, 224, 140); }
+/* 2026-11-23 inceleme (fikir 12:06 #5): eşya da açıldıysa puan satırı "Dağıt ›" ile dokunulur, HIG 44 pt. */
+.seviye-gelisim--dokun { min-height: 44px; }
 
 /* 2026-11-14 Profil "Son maçlar" (inceleme, fikir 07:05 #1): küçük haplar sarar; galibiyet ✓ + yazı rengi, yenilgi ✗ + soluk (yalnız renk değil). */
 .son-maclar { flex-direction: row; flex-wrap: wrap; margin-bottom: 4px; }

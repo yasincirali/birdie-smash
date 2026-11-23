@@ -460,7 +460,7 @@ namespace BirdieSmash.Game
             }
             tz.experimental.animation.Start(0f, 1f, 820, (v, t) =>
             {
-                float k = Mathf.Clamp01((t - .35f) / .65f); tz.text = Sayi(Mathf.RoundToInt(Mathf.Lerp(once, hedef, k * (2 - k))));
+                float k = Mathf.Clamp01((t - .35f) / .65f); tz.text = Sayi(Mathf.RoundToInt(Mathf.Lerp(once, hedef, k * (2 - k)))); Kalite.Canli();
             }).OnCompleted(() => { tz.text = Sayi(hedef); root.sfx.Tik(1320); Yerel.Hap("tick"); });
             tuy.experimental.animation.Start(0f, 1f, 820, (v, t) => { float k = t < .6f ? 0 : (t - .6f) / .4f; v.style.scale = new Scale(Vector3.one * (1 + .12f * Mathf.Sin(k * Mathf.PI))); })
                 .OnCompleted(() => tuy.style.scale = StyleKeyword.Null);
@@ -476,7 +476,7 @@ namespace BirdieSmash.Game
         {
             float g = Mathf.Clamp01((Time.unscaledTime - azalBas) / AZAL_SN); int ms = Mathf.Max(1, Mathf.RoundToInt((1 - g) * AZAL_SN * 1000)); int o = azalOnce, h = azalHedef;
             tz.text = Sayi(Mathf.RoundToInt(Mathf.Lerp(o, h, g * (2 - g))));
-            tz.experimental.animation.Start(0f, 1f, ms, (v, t) => { float k = Mathf.Lerp(g, 1, t); tz.text = Sayi(Mathf.RoundToInt(Mathf.Lerp(o, h, k * (2 - k)))); })
+            tz.experimental.animation.Start(0f, 1f, ms, (v, t) => { float k = Mathf.Lerp(g, 1, t); tz.text = Sayi(Mathf.RoundToInt(Mathf.Lerp(o, h, k * (2 - k)))); Kalite.Canli(); })
                 .OnCompleted(() => tz.text = Sayi(h));
             tuy.experimental.animation.Start(0f, 1f, ms, (v, t) => { float k = Mathf.Lerp(g, 1, t); v.style.scale = new Scale(Vector3.one * (1 - .04f * Mathf.Sin(k * Mathf.PI))); })
                 .OnCompleted(() => tuy.style.scale = StyleKeyword.Null);
@@ -485,6 +485,24 @@ namespace BirdieSmash.Game
         // Seviye anı ve tur töreni iskeleti (2026-11-10 inceleme, fikir 02:05 #1): r147 büyük yazıda seviye anının 11 satırı ve
         // "Tamam" düğmesi ezilmişti (sütun ekrandan uzun, satırlar küçülüyordu). İçerik kayan sütunda, düğmeler altta sabit.
         // Kapatma artık yalnız zemine dokununca (önce içeriğe dokunmak da kapatıyordu; kaydırma sürüklemesi kapatmasın diye).
+        // 2026-11-23 inceleme (fikir 12:06 #2): ödül anları experimental.animation ile oynuyor, Kalite.Hareket/Canli çağırmıyordu;
+        // ProMotion'da 60 Hz'de, dokunuşsuz 3 sn sonra açılınca 30 fps çizimde kalıyordu. Animasyon süresince her güncellemede Canli
+        // (bir float yazımı, ayırma yok); 120 Hz koşulları (ısı, düşük güç, basamak) Kalite'de aynen geçerli.
+        static void CanliTut(VisualElement v, long ms) { if (!Ayar.reduce) v.schedule.Execute(Kalite.Canli).Every(0).ForDuration(ms); }
+        // 2026-11-23 inceleme (fikir 12:06 #3): kart açılışta 220 ms solarak geliyor, kapanışta bir karede yok oluyordu; tören →
+        // seviye anı zincirinde sert kesme. Kapanış açılışın tersi: 160 ms solma + 0,98 ölçek (iOS sunum/kapanış 200–240 ms
+        // kılavuzunun kısa ucu, çıkış girişten hızlı). Ardından gelen iş (sonraki kart, sekme) solmayı beklemez, kart üstte söner;
+        // solarken üstte şeffaf bir kalkan çift dokunuşu yutar. Hareketi azaltta anında kaldırılır.
+        void AniSondur(VisualElement o)
+        {
+            if (Ayar.reduce || o.panel == null) { o.RemoveFromHierarchy(); return; }
+            var kalkan = new VisualElement(); kalkan.style.position = Position.Absolute; kalkan.style.left = 0; kalkan.style.top = 0; kalkan.style.right = 0; kalkan.style.bottom = 0; o.Add(kalkan);
+            float o0 = o.resolvedStyle.opacity;
+            o.experimental.animation.Start(0f, 1f, 160, (v, t) =>
+            {
+                float e = t * t; v.style.opacity = o0 * (1 - e); if (v.childCount > 0) v[0].style.scale = new Scale(Vector3.one * (1 - .02f * e)); Kalite.Canli();
+            }).OnCompleted(() => o.RemoveFromHierarchy());
+        }
         VisualElement AniIskelet(VisualElement o, System.Action kapat, out VisualElement eylem)
         {
             o.RegisterCallback<ClickEvent>(e => { if (e.target == o) kapat(); });
@@ -506,7 +524,8 @@ namespace BirdieSmash.Game
         {
             if (seviyeAni != null) seviyeAni.RemoveFromHierarchy();
             var o = new VisualElement(); o.AddToClassList("seviye-ani"); seviyeAni = o; kok.Add(o);
-            System.Action kapat = () => { if (seviyeAni == o) seviyeAni = null; o.RemoveFromHierarchy(); };
+            bool kapandi = false;
+            System.Action kapat = () => { if (kapandi) return; kapandi = true; if (seviyeAni == o) seviyeAni = null; AniSondur(o); };
             VisualElement ey; var ic = AniIskelet(o, kapat, out ey);
             ic.Add(Yazi(Buyuk(L.T("Seviye atladın")), 15, "seviye-ust"));
             var sayi = Yazi(L.T("Sv {0}", sv), 64, "rakam"); sayi.AddToClassList("seviye-sayi"); ic.Add(sayi);
@@ -514,7 +533,8 @@ namespace BirdieSmash.Game
             int svTuy = Gear.SvOdulAralik(once, sv);
             if (svTuy > 0) { var or_ = new VisualElement(); or_.AddToClassList("seviye-odul"); or_.Add(Ikon(Ikonlar.Tuy, 22, ALTIN)); or_.Add(Yazi(L.T("+{0} Tüy", Sayi(svTuy)), 22, "rakam")); or_.Add(Yazi(L.T("Seviye ödülü"), 14, "soluk")); ic.Add(or_); }
             // 2026-11-10 oyuncu gelişimi: her seviye bir puan; an yalnız söyler, dağıtım Gelişim sayfasında (Oyna'daki satır götürür).
-            if (sv > once && Ayar.GelisimBos > 0) { var gy = Yazi(L.T("+{0} gelişim puanı", System.Math.Min(sv - once, Ayar.GelisimBos)), 15, "kalin"); gy.AddToClassList("seviye-gelisim"); ic.Add(gy); }
+            Label gy = null;
+            if (sv > once && Ayar.GelisimBos > 0) { gy = Yazi(L.T("+{0} gelişim puanı", System.Math.Min(sv - once, Ayar.GelisimBos)), 15, "kalin"); gy.AddToClassList("seviye-gelisim"); ic.Add(gy); }
             var acilan = Karakter.AcilanAralik(once, sv); var liste = new VisualElement(); liste.AddToClassList("seviye-liste"); ic.Add(liste);
             // 2026-11-07 stüdyo incelemesi (UX1, GD4): açılanlar nerede bulunacaklarıyla gruplu ("Dolapta", "Atölyede", "Ayrıca"),
             // grup başına en çok 3 satır; tek turuncu düğme ilk grubun yerine götürür (raket parçasıysa Atölye'de o yuva açık).
@@ -538,7 +558,16 @@ namespace BirdieSmash.Game
             // 2026-11-10 (Ar-Ge 19:49 #5): seviye puan verdi ama dağıtmak için Oyna'ya dönüp satırı bulmak gerekiyordu. Açılan eşya
             // yokken birincil düğme budur; varken ikinci sırada durur (üç düğme: eşya, puan, tamam).
             bool puanVar = Ayar.GelisimBos > 0;
-            if (puanVar) ey.Add(Dugme(L.T("Puanı dağıt"), () => { kapat(); GelisimAc(); }, ilkGrup != null ? "dugme--hayalet" : "dugme--birincil"));
+            // 2026-11-23 inceleme (fikir 12:06 #5): eşya + puan varken eylem sütununda üç düğme alt alta duruyordu (SE'de 3×52 pt,
+            // iki eşit hayalet). Puan satırı zaten içerikte: o satır 44 pt dokunulabilir olur ("Dağıt ›"), sütunda en çok iki düğme.
+            // Eşya yokken "Puanı dağıt" birincil kalır (tek iş o).
+            if (puanVar && ilkGrup != null && gy != null)
+            {
+                gy.text += " · " + L.T("Dağıt") + " ›"; gy.AddToClassList("seviye-gelisim--dokun");
+                gy.AddManipulator(new Clickable(() => { Tik(gy); kapat(); GelisimAc(); }));
+                Erisim.Etiket(gy, L.T("+{0} gelişim puanı", System.Math.Min(sv - once, Ayar.GelisimBos)) + ", " + L.T("Puanı dağıt"), "dugme");
+            }
+            else if (puanVar) ey.Add(Dugme(L.T("Puanı dağıt"), () => { kapat(); GelisimAc(); }, ilkGrup != null ? "dugme--hayalet" : "dugme--birincil"));
             ey.Add(Dugme(L.T("Tamam"), kapat, ilkGrup != null || puanVar ? "dugme--hayalet" : "dugme--birincil"));
             Erisim.Etiket(ic, L.T("Seviye atladın") + ", " + L.T("Sv {0}", sv) + (svTuy > 0 ? ", " + L.T("Seviye ödülü +{0} Tüy", svTuy) : "") + (acilan.Count > 0 ? ", " + L.T("Açıldı") + ": " + string.Join(", ", acilan.ConvertAll(x => L.T(x))) : ""), "metin");
             root.sfx.UiSes("odul"); Yerel.Hap("win");
@@ -547,6 +576,7 @@ namespace BirdieSmash.Game
             sayi.style.scale = new Scale(Vector3.one * 1.4f);
             sayi.experimental.animation.Start(0f, 1f, 420, (v, t) => { float e = 1 - Mathf.Pow(1 - t, 3); v.style.scale = new Scale(Vector3.one * Mathf.Lerp(1.4f, 1f, e)); });
             int j = 0; foreach (var c in liste.Children()) { var cc = c; int gec = 260 + 60 * j++; cc.style.opacity = 0f; cc.schedule.Execute(() => cc.experimental.animation.Start(0f, 1f, 200, (v, t) => v.style.opacity = t)).StartingIn(gec); }
+            CanliTut(o, Mathf.Max(420, 260 + 60 * j + 200));
         }
 
         // ---- Tur töreni (2026-11-07 stüdyo incelemesi GD1 + tur mührü GD5, yasin karar kartı "Ekle") ----
@@ -563,7 +593,8 @@ namespace BirdieSmash.Game
         {
             SeviyeAniKapat(); var p = Ayar.ilerleme; if (p == null || t < 0 || t >= KariyerVeri.Turlar.Length) { if (sonra != null) sonra(); return; }
             var o = new VisualElement(); o.AddToClassList("seviye-ani"); seviyeAni = o; kok.Add(o);
-            System.Action kapat = () => { if (seviyeAni == o) seviyeAni = null; o.RemoveFromHierarchy(); if (sonra != null) sonra(); };
+            bool kapandi = false;
+            System.Action kapat = () => { if (kapandi) return; kapandi = true; if (seviyeAni == o) seviyeAni = null; AniSondur(o); if (sonra != null) sonra(); };
             VisualElement ey; var ic = AniIskelet(o, kapat, out ey);
             bool yeniMuhur = m1 > m0; string muhurAd = m1 >= 2 ? L.T("Altın tur mührü") : L.T("Bronz tur mührü");
             ic.Add(Yazi(Buyuk(bitti ? L.T("Tur tamam") : muhurAd), 15, "seviye-ust"));
@@ -609,6 +640,7 @@ namespace BirdieSmash.Game
             mi.style.scale = new Scale(Vector3.one * 1.5f);
             mi.experimental.animation.Start(0f, 1f, 480, (v, k) => { float e = 1 - Mathf.Pow(1 - k, 3); v.style.scale = new Scale(Vector3.one * Mathf.Lerp(1.5f, 1f, e)); });
             int j = 0; foreach (var c in rk.Children()) { var cc = c; int gc = 300 + 70 * j++; cc.style.opacity = 0f; cc.schedule.Execute(() => cc.experimental.animation.Start(0f, 1f, 180, (v, k) => v.style.opacity = k)).StartingIn(gc); }
+            CanliTut(o, Mathf.Max(480, 300 + 70 * j + 180));
         }
         static string KariyerEkranTurAd(int t) { return TurAd(t); }
 

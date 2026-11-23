@@ -1,4 +1,11 @@
 === UNITY ===
+Dükkân, ödül anları ve Gelişim (23 Kasım öğle):
+- Tüy dükkânında satın aldıktan sonra üstteki Tüy sayısı hemen güncelleniyor (eskiden menüye dönünce eski rakam kalıyordu).
+- Alım hedef eşyanın Tüy'ünü tamamladıysa dükkân bunu söylüyor ve "Şimdi al" düğmesi eşyanın sayfasını açıyor.
+- Seviye atlama ve tur sonu kartları kapanırken bir anda kaybolmuyor, kısa bir solmayla gidiyor. Bu kartlar ve tüy uçuşu 120 Hz ekranlarda daha akıcı.
+- Seviye kartında yeni eşya ve gelişim puanı birlikte gelince alt alta üç düğme yerine iki düğme var; puan satırına ("Dağıt ›") dokununca Gelişim açılıyor.
+- Gelişim'de puanın varken her dalın yanında bir puanın ne kazandıracağı yazıyor (ör. "+%6 → +%8").
+Nasıl denenir: Dükkân'dan bir Tüy paketi al (test hesabıyla), sonra geri çık: üstteki Tüy sayısı yeni olmalı. Bir seviye atla: kart kapanırken yumuşakça solmalı. Puanın varken Gelişim'i aç: dalların yanında ok ve sonraki yüzde görünmeli.
 Profil başarımları ve Dolap kombinleri (23 Kasım sabah):
 - Profil'de kilitli başarımların yanında artık ne kadar kaldığı yazıyor: "20 vuruşluk ralli" için 14/20, seviye 30 için 12/30, antrenman yıldızları için 9/24 gibi. "Henüz değil" ve "Kazanıldı" yazıları kalktı; kilit ve altın tik durumu gösteriyor.
 - Kapalı listede gösterilen üç kilitli başarım artık bitirmeye en yakın olanlar.
