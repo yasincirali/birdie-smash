@@ -1,7 +1,7 @@
 === UNITY ===
 Yeni menü görünümü (23 Kasım):
 - Açılış ekranı artık menüyle aynı stadyum mavisinde; turuncu-kırmızı geçiş kalktı.
-- Alt sekme çubuğu inceldi ve ekranın altında yüzen beyaz bir kapsül oldu. Seçili sekmenin sarı zemini sekmeler arasında kayarak geçiyor.
+- Alt sekme çubuğu inceldi ve ekranın altında yüzen beyaz bir kapsül oldu. Simgeler ince çizgi oldu, çubuk ekranın altına biraz daha yaklaştı. Seçili sekmenin sarı zemini sekmeler arasında kayarak geçiyor.
 - Sekmelerde küçük işaretler: Atölye'de yeni yükseltme varsa nokta, Kariyer simgesinin çevresinde turdaki ilerleme halkası, yarım kalan maç varsa Oyna'da "II".
 - Oyna sayfasında sahne büyüdü; sıradaki maç plakası sahnenin altına biniyor. Zorluk Oyna düğmesinin sağ parçasında: dokununca dört kademe açılıyor.
 - Günün maçı, Hızlı maç, Antrenman ve Arkadaşınla artık küçük çipler; her birinde tek satır bilgi var (ödül, sayı, yıldız).
