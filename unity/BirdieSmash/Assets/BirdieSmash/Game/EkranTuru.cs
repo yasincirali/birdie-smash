@@ -48,9 +48,11 @@ namespace BirdieSmash.Game
             var g = new GameObject("ekran_turu"); var t = g.AddComponent<EkranTuru>(); t.dir = d; t.kip = kip; DontDestroyOnLoad(g);
         }
 
+        // 2026-11-23 inceleme (fikir 22:06 #1): Hud.SonucTani yalnız tur açıkken kurulur; oyuncuda maç sonu kartı tanı dizesi ayırmaz.
+        public static bool Acik;
         IEnumerator Start()
         {
-            Directory.CreateDirectory(dir); QualitySettings.vSyncCount = 0;   // xvfb ekranı 0 Hz: dikey eşitleme ilk karede bekletiyordu (tahmin)
+            Acik = true; Directory.CreateDirectory(dir); QualitySettings.vSyncCount = 0;   // xvfb ekranı 0 Hz: dikey eşitleme ilk karede bekletiyordu (tahmin)
             Debug.Log("EkranTuru başladı: " + dir);
             // Bekçi: ana döngü takılırsa nerede takıldığını günlükten görmek için 10 sn'de bir kare sayısı ve son adım.
             var bekci = new System.Threading.Thread(() => { for (int i = 0; i < 300; i++) { System.Threading.Thread.Sleep(10000); Debug.Log("EkranTuru bekçi: kare " + kare + " adım " + adim); } }); bekci.IsBackground = true; bekci.Start();
