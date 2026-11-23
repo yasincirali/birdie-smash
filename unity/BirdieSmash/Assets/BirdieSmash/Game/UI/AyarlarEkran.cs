@@ -95,9 +95,13 @@ namespace BirdieSmash.Game
             // 2026-11-22 inceleme (fikir 17:06 #1, takılma): Ses, Müzik ve Titreşim de DegistiSonra çağırıyordu; 200 ms sonra dört
             // sekme kirleniyor, üst şerit ve Ayarlar baştan kuruluyordu (art arda üç anahtar = üç tam kurulum). Hiçbir menü yüzeyi
             // bu üç ayarı okumuyor (müzik Sfx.MuzikIsle her karede bakıyor), anahtar kendini yerinde çiziyor: yalnız kayıt.
+            // 2026-11-23 inceleme (fikir 17:06 #6, HIG bağlı denetim): Ses kapalıyken müzik, seyirci örneği ve düğme sesi duyulmuyor ama
+            // satırlar tam opaktı; oyuncu Seyirci'yi değiştirip hiçbir şey duymuyordu. Üç satır soluk (anahtar-satir--pasif), seçimleri
+            // korunur ve dokunulabilir kalır; sınıf Ses dokunuşunda yerinde değişir (sayfa kurulmaz, 22 Kas kararı).
+            var sesBagli = new VisualElement[3];
             c.Add(ListeGrup(
-                AnahtarSatir(L.T("Ses"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.KaydetSonra(); }),
-                AnahtarSatir(L.T("Müzik"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.KaydetSonra(); }),
+                AnahtarSatir(L.T("Ses"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.KaydetSonra(); foreach (var sb in sesBagli) sb.EnableInClassList("anahtar-satir--pasif", !Ayar.ses); }),
+                sesBagli[0] = AnahtarSatir(L.T("Müzik"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.KaydetSonra(); }),
                 AnahtarSatir(L.T("Titreşim"), Ayar.titresim, () => { Ayar.titresim = !Ayar.titresim; Ayar.KaydetSonra(); if (Ayar.titresim) Yerel.Hap("tick"); }),
                 AnahtarSatir(L.T("Hareketi azalt"), Ayar.reduce, Ayar.reduceSistem ? (System.Action)null : () => { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.KaydetSonra(); DegistiSonra(); },
                     Ayar.reduceSistem ? L.T("Sistem ayarından") : null),
@@ -106,9 +110,10 @@ namespace BirdieSmash.Game
                 // değerleri aynı. Sayfa yenilenmez (değer satırın kendisinde yazılı).
                 // 2026-11-22 inceleme (fikir 17:06 #3): ses ayarı sesle doğrulanır; seçilen düzeyde tek kısa alkış (Kapalı'da ve Ses
                 // kapalıyken sessiz). Klip menü durgunken ısıtılmış olandır, ısınmadıysa çalmaz (dokunuşta sentez yok).
-                DegerSatir(L.T("Seyirci"), new[] { L.T("Kapalı"), L.T("Az"), L.T("Normal") }, Ayar.seyirci, v => { Ayar.seyirci = v; Ayar.KaydetSonra(); root.sfx.SeyirciOrnek(); }),
+                sesBagli[1] = DegerSatir(L.T("Seyirci"), new[] { L.T("Kapalı"), L.T("Az"), L.T("Normal") }, Ayar.seyirci, v => { Ayar.seyirci = v; Ayar.KaydetSonra(); root.sfx.SeyirciOrnek(); }),
                 // 2026-11-22 (yasin "o sesi de özel seçmek istiyorum"): düğme sesi paketi; her dokunuş sıradakine geçer ve onu çalar.
-                DegerSatir(L.T("Düğme sesi"), System.Array.ConvertAll(Sfx.PAKETLER, x => L.T(x)), Ayar.dugmeSes, v => { Ayar.dugmeSes = v; Ayar.KaydetSonra(); root.sfx.UiSes("bas"); })));
+                sesBagli[2] = DegerSatir(L.T("Düğme sesi"), System.Array.ConvertAll(Sfx.PAKETLER, x => L.T(x)), Ayar.dugmeSes, v => { Ayar.dugmeSes = v; Ayar.KaydetSonra(); root.sfx.UiSes("bas"); })));
+            foreach (var sb in sesBagli) sb.EnableInClassList("anahtar-satir--pasif", !Ayar.ses);
             // Sıra anlamla (2026-11-14 inceleme, fikir 22:05 #3): oyun hissi (hareket, kaydırma, kamera) → ses → görünüm (yazı boyutu,
             // dil). Yazı boyutu eskiden kamera ile kaydırmanın arasındaydı; "vuruş tutmuyor" diyen oyuncu hareket ve kaydırmayı yan
             // yana bulur. Yazı boyutu da diğer çipli gruplar gibi seçilinin tek soluk cümlesini alır. Anahtarlar aynı.

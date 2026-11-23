@@ -624,7 +624,7 @@ namespace BirdieSmash.Game
             hedef = odul != null ? Ayar.HedefBilgi() : new Hedef.Bilgi(); int t1 = Ayar.gear.eko.tuy;
             hedefHazir = hedef.gecerli && Hedef.YeniHazir(hedef.fiyat, t1 - odul.tuy, t1);
         }
-        bool YukseltAlinir(int seviye)
+        public bool YukseltAlinir(int seviye)
         {
             foreach (var y in Gear.YUVA) { int sv = Ayar.gear.eko.sv[y.k]; if (sv < 10 && Ayar.gear.eko.tuy >= Gear.YUK_FIYAT[sv - 1] && seviye >= Gear.YUK_SV[sv - 1] || Ayar.gear.AlinabilirVar(y.m)) return true; }
             return false;

@@ -61,14 +61,28 @@ namespace BirdieSmash.Game
                 int j = arti ? once : once - 1; var b = j >= 0 && j < cb.childCount ? cb[j] : null;
                 if (b != null) { if (arti) { b.AddToClassList("gel-basamak--dolu"); BasamakDol(b); } else { b.RemoveFromClassList("gel-basamak--dolu"); BasamakSon(b); } }
                 string yz = GelYuzde(dal, n);
-                if (gelSay[dal] != null) gelSay[dal].text = n + "/" + Gelisim.TAVAN + (yz != "" ? " · " + yz : "");
-                Erisim.Etiket(cb, L.T(Gelisim.AD[dal]) + ", " + n + "/" + Gelisim.TAVAN + (yz != "" ? ", " + yz : "") + ". " + L.T(Gelisim.NE[dal]), "metin");
+                if (gelSay[dal] != null) gelSay[dal].text = GelSayi(dal, n, bos > 0);
+                Erisim.Etiket(cb, L.T(Gelisim.AD[dal]) + ", " + n + "/" + Gelisim.TAVAN + (yz != "" ? ", " + yz : "") + GelSonrakiEt(dal, n, bos > 0) + ". " + L.T(Gelisim.NE[dal]), "metin");
             }
             for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true;   // altta duran sekme (Oyna satırı, Profil kartı) kapanışta kurulur
             if (gelUst != null) gelUst.text = GelUstMetin(top, bos);
-            for (int i = 0; i < Gelisim.DAL; i++) { GelPasif(gelArti[i], bos > 0 && Ayar.gelisim[i] < Gelisim.TAVAN); GelPasif(gelEksi[i], Ayar.gelisim[i] > 0); }
+            for (int i = 0; i < Gelisim.DAL; i++)
+            {
+                GelPasif(gelArti[i], bos > 0 && Ayar.gelisim[i] < Gelisim.TAVAN); GelPasif(gelEksi[i], Ayar.gelisim[i] > 0);
+                // son puan verilince ya da geri alınınca öbür dalların "→" önizlemesi de kalkar/gelir (yalnız değişince yazılır)
+                if (gelSay[i] != null && gelArti[i] != null) { string t = GelSayi(i, Ayar.gelisim[i], bos > 0); if (gelSay[i].text != t) gelSay[i].text = t; }
+            }
             return true;
         }
+        // 2026-11-23 inceleme (fikir 12:06 #6): sonraki puanın etkisi ancak puan verilince görünüyordu, oyuncu dallar arasında
+        // deneyerek seçiyordu. Puan varken ve tavanda değilken sayı satırının sonunda sıradaki puanın yüzdesi ("→ +%8"); puan
+        // yokken ya da tavanda yazı yok (baskı ya da boş vaat yok). Metin yalnız değişince yazılır (GelisimAdim yolu).
+        static string GelSayi(int dal, int n, bool puanVar)
+        {
+            string yz = GelYuzde(dal, n), s = n + "/" + Gelisim.TAVAN + (yz != "" ? " · " + yz : "");
+            return puanVar && n < Gelisim.TAVAN ? s + "  → " + GelYuzde(dal, n + 1) : s;
+        }
+        static string GelSonrakiEt(int dal, int n, bool puanVar) { return puanVar && n < Gelisim.TAVAN ? ", " + L.T("bir puanla {0}", GelYuzde(dal, n + 1)) : ""; }
         static string GelYuzde(int dal, int n) { if (n == 0) return ""; return L.En ? "+" + Gelisim.Yuzde(dal, n) + "%" : "+%" + Gelisim.Yuzde(dal, n); }
         static void GelPasif(VisualElement d, bool etkin)
         {
@@ -87,7 +101,7 @@ namespace BirdieSmash.Game
             var ust = Satir("arali"); ust.pickingMode = PickingMode.Ignore; k.Add(ust);
             ust.Add(Yazi(L.T(Gelisim.AD[dal]), 16, "kalin"));
             string yz = GelYuzde(dal, n);
-            var say = Yazi(n + "/" + Gelisim.TAVAN + (yz != "" ? " · " + yz : ""), 14, "rakam"); ust.Add(say); gelSay[dal] = say;
+            var say = Yazi(GelSayi(dal, n, puanVar && dugmeli), 14, "rakam"); ust.Add(say); gelSay[dal] = say;
             var ne = Yazi(L.T(Gelisim.NE[dal]), 12, "soluk"); ne.style.whiteSpace = WhiteSpace.Normal; k.Add(ne);
             var alt = new VisualElement(); alt.AddToClassList("gel-alt"); k.Add(alt);
             int d = dal;
