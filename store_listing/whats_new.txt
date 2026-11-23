@@ -1,4 +1,10 @@
 === UNITY ===
+Yeni Profil sayfası (23 Kasım):
+- Sayfanın başında altın renkli bir oyuncu kartı var: yüzün, adın, unvanın, tarzın ve raketin, dünya sıran ve seviye çubuğu. Karta dokununca Dolap açılır.
+- Rekor ralli, en hızlı smaç ve galibiyet kartın altında üç ayrı kutuda.
+- Kupalar artık sekiz yuvanın hepsini gösteriyor: kazandıkların altın zeminde, sıradaki ince çerçeveli. Bir kupaya dokununca Kariyer o tura açılır.
+- Son maçlar tek satır: kazandığın maç G, kaybettiğin M.
+Nasıl denenir: Profil sekmesini aç. Kartta seviye çubuğunun dolduğunu ve "Sonraki seviyeye ... XP" yazısını gör, karta dokun: Dolap açılmalı. Kupalar'da sıradaki tura dokun: Kariyer o turla açılmalı. Bir maç oyna, dön: Son maçlar satırının başına yeni harf gelmeli. Yazı boyutunu büyütünce hiçbir yazı üst üste binmemeli.
 Profil başarımları ve Dolap kombinleri (23 Kasım sabah):
 - Profil'de kilitli başarımların yanında artık ne kadar kaldığı yazıyor: "20 vuruşluk ralli" için 14/20, seviye 30 için 12/30, antrenman yıldızları için 9/24 gibi. "Henüz değil" ve "Kazanıldı" yazıları kalktı; kilit ve altın tik durumu gösteriyor.
 - Kapalı listede gösterilen üç kilitli başarım artık bitirmeye en yakın olanlar.
