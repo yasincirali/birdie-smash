@@ -59,7 +59,10 @@ namespace BirdieSmash.Game
             // Soyunma'da kapalı) MENU_DURGUN boyunca hiçbir dokunuş/kaydırma/USS geçişi olmadıysa çizim yarı hızda (Kariyer, Profil,
             // Atölye, sayfalar). Eşik 0,5 sn değil 3 sn: ScrollView ataletle dokunuşsuz kayar, 3 sn'de durmuş olur; afişin kesik
             // görünme kaygısı (7 Kas) afiş açıkken bu kural uygulanmadığı için geçerli. Dokunuş anında tam hıza döndürür.
-            bool menuDurgun = root != null && root.ekran == Ekran.Menu && Time.unscaledTime - hareketSon >= MENU_DURGUN && !Kilitli
+            // 2026-11-23 inceleme (fikir 12:06 #2): ödül anları (seviye, tur töreni, tüy uçuşu) Canli() çağırır; dokunuşsuz 3 sn
+            // sonra açılan seviye anı yarı hızda çizilmesin diye Canli de durgunluğu bozar.
+            bool menuDurgun = root != null && root.ekran == Ekran.Menu && Time.unscaledTime - hareketSon >= MENU_DURGUN
+                && Time.unscaledTime - canliSon >= HAREKET_SURE && !Kilitli
                 && (root.afis == null || !root.afis.Acik) && (root.vitrin == null || !root.vitrin.gameObject.activeSelf);
             bool durgun = root != null && root.ekran == Ekran.Oyun && root.paused && !menuHareket && !Kilitli || menuDurgun;
             int aralik = durgun ? 2 : 1;

@@ -337,6 +337,9 @@ namespace BirdieSmash.Game
     public static class Ikonlar
     {
         public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Tisort, Gradyan, YildizDolu, YildizBos, Yukari, Asagi, Yuz, Ayak, Tutus, Solma, Buyut, Arkadas, Arti;
+        // 2026-11-23 alt bant (yasin: "ikonlar daha minimalist olabilir"): sekme simgeleri tek kalınlıkta çizgi (iOS SF Symbols
+        // kalıbı); dolu simgeler menünün içinde (Oyna düğmesi, karolar) kalır. Önizleme menu-ux-ui-2026-11-23/sekme_ikon.png.
+        public static Texture2D SekmeOyna, SekmeKupa, SekmeTisort, SekmeKisi, SekmeRaket;
         // 2026-10-26 Yayın Gecesi: simgeler (tüy, şimşek, hedef, güneş, çarpı, açık kilit) ve şekil dokuları (eğik düğme,
         // yayın plakası, etiket şeridi, basamak çizgisi, altın kutucuk, ışık süpürmesi, ışın). Hepsi 2× çözünürlükte (1 pt =
         // 2 doku pikseli; USS'te -unity-slice-scale: 0.5), açılışta bir kez; her biri birkaç KB.
@@ -386,6 +389,20 @@ namespace BirdieSmash.Game
                 bool bas = (x * x + (y - .42f) * (y - .42f)) < .29f * .29f; float sx = x / .72f, sy = (y + .82f) / .72f;
                 bool omuz = sx * sx + sy * sy < 1 && y > -.86f && y < .02f; return bas || omuz;
             }, 0, .08f);
+            const float W = .075f;
+            System.Func<float, float, float, float, float, bool> Hal = (x, y, cx, cy, r) => Mathf.Abs(Mathf.Sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy)) - r) < W;
+            SekmeOyna = Ciz((x, y) => Hat(x, y, W, true, -.38f, .58f, .6f, 0, -.38f, -.58f));
+            SekmeKupa = Ciz((x, y) => (Mathf.Abs(x) > .46f && Hal(Mathf.Abs(x), y, .6f, .5f, .16f)) || (y < .28f && Hal(x, y, 0, .28f, .46f))
+                || Hat(x, y, W, false, -.46f, .28f, -.46f, .72f, .46f, .72f, .46f, .28f) || Cizgi(x, y, 0, -.18f, 0, -.56f, W) || Cizgi(x, y, -.3f, -.62f, .3f, -.62f, W));
+            SekmeTisort = Ciz((x, y) => Hat(x, y, W, false, -.2f, .64f, -.44f, .64f, -.8f, .3f, -.6f, .08f, -.42f, .2f, -.42f, -.7f, .42f, -.7f, .42f, .2f, .6f, .08f, .8f, .3f, .44f, .64f, .2f, .64f)
+                || (y < .64f && Hal(x, y, 0, .64f, .2f)));
+            SekmeKisi = Ciz((x, y) => Hal(x, y, 0, .36f, .25f) || (y > -.74f && Hal(x, y, 0, -.74f, .6f)));
+            SekmeRaket = Ciz((x, y) =>
+            {   // 34° eğik: dik raket büyüteç gibi okunuyordu (önizleme); iki tel çizgisi raketi söyler
+                float c = Mathf.Cos(-.6f), sn = Mathf.Sin(-.6f), rx = x * c - y * sn, ry = x * sn + y * c;
+                float ex = rx / .36f, ey = (ry - .3f) / .48f, e = Mathf.Sqrt(ex * ex + ey * ey);
+                return Mathf.Abs(e - 1) * .4f < W || Cizgi(rx, ry, 0, -.18f, 0, -.88f, W) || (e < 1 && (Mathf.Abs(rx) < .045f || Mathf.Abs(ry - .3f) < .045f));
+            });
             // Arkadaş maçı (2026-11-21): iki kişi, arkadaki biraz küçük ve sağda (Kisi'nin biçimi; arada boşluk ki iki figür okunur).
             Arkadas = Ciz((x, y) =>
             {
@@ -602,6 +619,13 @@ namespace BirdieSmash.Game
                 if ((yi > y) != (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) ic = !ic;
             }
             return ic;
+        }
+        // Çoklu çizgi (sekme simgeleri): noktalar x0,y0,x1,y1…; kapali ise son nokta ilkine bağlanır.
+        static bool Hat(float x, float y, float yari, bool kapali, params float[] p)
+        {
+            int n = p.Length / 2, m = kapali ? n : n - 1;
+            for (int i = 0; i < m; i++) { int j = (i + 1) % n; if (Cizgi(x, y, p[2 * i], p[2 * i + 1], p[2 * j], p[2 * j + 1], yari)) return true; }
+            return false;
         }
         static bool Cizgi(float x, float y, float ax, float ay, float bx, float by, float yari)
         {
