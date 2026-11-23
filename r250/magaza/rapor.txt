@@ -1,0 +1,34 @@
+ekran boyu istendi 1320x2868 · oldu 1320x2868
+magaza tr_01_smac · vuruş jump (perfect) · skor 9–7 · 1320x2868
+magaza tr_02_ralli · ralli 12 (en uzun 12)
+magaza tr_03_kariyer · taşma tr_03_kariyer · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 99 öğe · 3 sorun
+   ! kaydırma alanı güvenli alan dışında · ScrollView.unity-scroll-view.unity-scroll-view--scroll.unity-scroll-view--horizontal.tur-serit · [0,-280 375x260]
+   ! yazı kesik 36>18 · "Kenji · File oyuncusu" · [148,218 120x18]
+   ! yazı kesik 36>18 · "Fizz · Drive'cı" · [172,377 76x18]
+magaza tr_04_karakter · taşma tr_04_karakter · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 104 öğe · 9 sorun
+   ! sekme çubuğuyla çakışıyor · Henüz alınamaz, Sv 8 ile açılır · [26,674 227x66]
+   ! sekme çubuğuyla çakışıyor · "Sv 8 ile açılır" · [105,710 70x16]
+   ! sekme çubuğuyla çakışıyor · Bırak · [261,682 88x48]
+   ! dokunma alanı çakışıyor: Henüz alınamaz, Sv 8 ile açılır · Oyna · [10,722 68x57]
+   ! dokunma alanı çakışıyor: Henüz alınamaz, Sv 8 ile açılır · Kariyer · [82,722 68x57]
+   ! dokunma alanı çakışıyor: Henüz alınamaz, Sv 8 ile açılır · Dolap · [154,722 68x57]
+   ! dokunma alanı çakışıyor: Henüz alınamaz, Sv 8 ile açılır · Atölye · [225,722 68x57]
+   ! dokunma alanı çakışıyor: Bırak · Atölye · [225,722 68x57]
+   ! dokunma alanı çakışıyor: Bırak · Profil · [297,722 68x57]
+magaza tr_05_imza · rakip imza hazırlığı VAR (mermi)
+magaza en_01_smac · vuruş jump (perfect) · skor 9–7 · 1320x2868
+magaza en_02_ralli · ralli 12 (en uzun 12)
+magaza en_03_kariyer · taşma en_03_kariyer · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 99 öğe · 1 sorun
+   ! kaydırma alanı güvenli alan dışında · ScrollView.unity-scroll-view.unity-scroll-view--scroll.unity-scroll-view--horizontal.tur-serit · [0,-280 375x260]
+magaza en_04_karakter · taşma en_04_karakter · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 104 öğe · 9 sorun
+   ! sekme çubuğuyla çakışıyor · Not available yet, Unlocks at Lv 8 · [26,674 227x66]
+   ! sekme çubuğuyla çakışıyor · "Unlocks at Lv 8" · [97,710 84x16]
+   ! sekme çubuğuyla çakışıyor · Drop · [261,682 88x48]
+   ! dokunma alanı çakışıyor: Not available yet, Unlocks at Lv 8 · Play · [10,722 68x57]
+   ! dokunma alanı çakışıyor: Not available yet, Unlocks at Lv 8 · Career · [82,722 68x57]
+   ! dokunma alanı çakışıyor: Not available yet, Unlocks at Lv 8 · Wardrobe · [154,722 68x57]
+   ! dokunma alanı çakışıyor: Not available yet, Unlocks at Lv 8 · Workshop · [225,722 68x57]
+   ! dokunma alanı çakışıyor: Drop · Workshop · [225,722 68x57]
+   ! dokunma alanı çakışıyor: Drop · Profile · [297,722 68x57]
+magaza en_05_imza · rakip imza hazırlığı VAR (mermi)
+ekran boyu istendi 390x845 · oldu 390x845
