@@ -1212,8 +1212,8 @@ namespace BirdieSmash.Game
             // Kayıt KaydetSonra: dokunuşta eşzamanlı PlayerPrefs.Save yok (TAKILMA YOK).
             {
                 float hg = 6 * s, hw = (w - hg) / 2;
-                if (ADugme(new Rect(x, y, hw, bh), L.T(Ayar.ses ? "Ses: açık" : "Ses: kapalı"), fa)) { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.KaydetSonra(); Yerel.Hap("tick"); }
-                if (ADugme(new Rect(x + hw + hg, y, hw, bh), L.T(Ayar.muzik ? "Müzik: açık" : "Müzik: kapalı"), (Ayar.ses ? 1 : .5f) * fa)) { Ayar.muzik = !Ayar.muzik; Ayar.KaydetSonra(); Yerel.Hap("tick"); }
+                if (ADugme(new Rect(x, y, hw, bh), L.T(Ayar.ses ? "Ses: açık" : "Ses: kapalı"), fa)) { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.KaydetSonra(); }
+                if (ADugme(new Rect(x + hw + hg, y, hw, bh), L.T(Ayar.muzik ? "Müzik: açık" : "Müzik: kapalı"), (Ayar.ses ? 1 : .5f) * fa)) { Ayar.muzik = !Ayar.muzik; Ayar.KaydetSonra(); }
                 y += bh + gap;
             }
             // Kamera çipleri (2026-11-11 inceleme, fikir 21:05 #2): açı maçın hissini en çok değiştiren ayar, farkı görmek için
@@ -1225,7 +1225,7 @@ namespace BirdieSmash.Game
                 {
                     string id = GameRoot.KAMERA_SIRA[i]; bool sec = Ayar.kamera == id; var cr = new Rect(x + i * (cw + cg), y, cw, bh);
                     if (ADugme(cr, (sec ? "✓ " : "") + L.T(GameRoot.KAMERA_AD[i]), (sec ? 1 : .85f) * fa) && !sec)
-                    { Ayar.kamera = id; Ayar.KaydetSonra(); root.KameraDegisti(); kameraOnizT = Time.unscaledTime; Kalite.Hareket(); Yerel.Hap("tick"); }
+                    { Ayar.kamera = id; Ayar.KaydetSonra(); root.KameraDegisti(); kameraOnizT = Time.unscaledTime; Kalite.Hareket(); }
                     if (sec) KutuCiz(cr, aKutuLimon, fa);
                 }
                 y += bh + gap;
@@ -1457,10 +1457,10 @@ namespace BirdieSmash.Game
                 Tex(new Rect(c.x - sz / 2, c.y - sz / 2, sz, sz), Ikonlar.Isinlar, new Color(A_TURUNCU.r, A_TURUNCU.g, A_TURUNCU.b, .10f * Mathf.Clamp01(t / .4f)));   // yön C: güneş ışınları turuncu, %13 → %10
                 GUI.matrix = m;   // tur 2: bu satır da yorumun içinde kalmıştı: ışınların dönüşü sonuç ekranının tamamını döndürüyordu
             }
-            if (!string.IsNullOrEmpty(R.bittiUst)) { string us = UiKok.Buyuk(R.bittiUst); float uh = aUst.CalcHeight(Ic(us), w); Yaz(new Rect(x, y, w, uh), us, aUst, A_SOLUK, al); y += uh + 4 * s; }
+            if (!string.IsNullOrEmpty(R.bittiUst)) { string us = BuyukO(R.bittiUst); float uh = aUst.CalcHeight(Ic(us), w); Yaz(new Rect(x, y, w, uh), us, aUst, A_SOLUK, al); y += uh + 4 * s; }
             // başlık: yaylanarak (1,25 → 1), hareketi azaltta yalnız solma
             {
-                string bs = UiKok.Buyuk(R.bittiBas ?? R.bittiBaslik ?? ""); var st = Sigdir(hero ? Stil(aBas, Mathf.RoundToInt(56 * k)) : R.bittiKazandi && bs.Length <= 12 ? aBas : Stil(aBas, Mathf.RoundToInt(46 * k)), bs, w);   // r109: kahramanda 56 (74'lük başlık yüzü örtüyordu)
+                string bs = BuyukO(R.bittiBas ?? R.bittiBaslik ?? ""); var st = Sigdir(hero ? Stil(aBas, Mathf.RoundToInt(56 * k)) : R.bittiKazandi && bs.Length <= 12 ? aBas : Stil(aBas, Mathf.RoundToInt(46 * k)), bs, w);   // r109: kahramanda 56 (74'lük başlık yüzü örtüyordu)
                 float th = st.CalcHeight(Ic(bs), w); var r = new Rect(x, y, w, th);
                 float e = rm ? 1 : GeriYay(t / .35f), sc = rm ? 1 : Mathf.LerpUnclamped(1.25f, 1, e); var m = GUI.matrix; GUIUtility.ScaleAroundPivot(new Vector2(sc, sc), r.center);
                 var g = GUI.color; GUI.color = new Color(0, 0, 0, .45f * al); GUI.Label(new Rect(r.x, r.y + 5 * s, r.width, r.height), bs, st);
@@ -1487,8 +1487,8 @@ namespace BirdieSmash.Game
                 Yaz(new Rect(cx, y, aw, sh), a, aSkor, A_LIMON, al); cx += aw; Yaz(new Rect(cx, y, dw, sh), "–", aSkor, A_SOLUK, al); cx += dw;
                 Yaz(new Rect(cx, y, bw, sh), b, aSkor, A_YAZI, al); cx += bw + gp; Yuz(new Rect(cx, y + (sh - f) / 2, f, f), A_MERCAN, al, true);
                 float nx0 = W / 2 - tw / 2, ah = aAd.CalcHeight(Ic("S"), 100);
-                Yaz(new Rect(nx0 - 20 * s, y + sh + 3 * s, f + 40 * s, ah), UiKok.Buyuk(L.T("Sen")), aAd, A_LIMON, al);
-                Yaz(new Rect(cx - 30 * s, y + sh + 3 * s, f + 60 * s, ah), UiKok.Buyuk(M.RakipAd(false)), aAd, A_SOLUK, al);
+                Yaz(new Rect(nx0 - 20 * s, y + sh + 3 * s, f + 40 * s, ah), BuyukO(L.T("Sen")), aAd, A_LIMON, al);
+                Yaz(new Rect(cx - 30 * s, y + sh + 3 * s, f + 60 * s, ah), BuyukO(M.RakipAd(false)), aAd, A_SOLUK, al);
                 y += sh + ah + (hero ? 6 : 12) * s;
             }
             var od = R.odul; float blokH0 = AltBlokH(R, od, ayr, w, s);
@@ -1530,7 +1530,7 @@ namespace BirdieSmash.Game
             bool rek = RekVar(R, od, nTum); if (rek) nTum = 1;
             int nIk = ayr ? nTum : Mathf.Min(1, nTum);
             float bh = Mathf.Max(BH, 50 * s), gap = 8 * s;
-            string ct = UiKok.Buyuk(CtaBaslik(R.bittiDugme, R.bittiDugmeAlt)); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), cah = string.IsNullOrEmpty(R.bittiDugmeAlt) ? 0 : aCtaAlt.CalcHeight(Ic(R.bittiDugmeAlt), w);
+            string ct = SonucCta(R); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), cah = string.IsNullOrEmpty(R.bittiDugmeAlt) ? 0 : aCtaAlt.CalcHeight(Ic(R.bittiDugmeAlt), w);
             float ctaH = Mathf.Max(80 * s, cth + cah + 22 * s), blokH = ctaH + 12 * s + nIk * (bh + gap) + bh;
             // r16: kayıpta iki ikincil düğme (Ekipmanı yükselt + Antrenman: X) alt satırı ekran dışına itiyordu. Sığmazsa ikincil
             // düğmeler ikişer yan yana dizilir (sıra ve işlev aynı; yazı küçülerek sığar, hücre yine ≥ 44 pt).
@@ -1550,14 +1550,14 @@ namespace BirdieSmash.Game
             if (ayrintiVar)
             {
                 float hw = (w - gap) / 2;
-                if (Baglanti(new Rect(x, yb, hw, bh), L.T(ayrinti ? "Ayrıntıları gizle" : "Ayrıntılar"), al)) { ayrinti = !ayrinti; ayrintiT = Time.unscaledTime; Yerel.Hap("tick"); }
+                if (Baglanti(new Rect(x, yb, hw, bh), L.T(ayrinti ? "Ayrıntıları gizle" : "Ayrıntılar"), al)) { ayrinti = !ayrinti; ayrintiT = Time.unscaledTime; }
                 if (Baglanti(new Rect(x + hw + gap, yb, hw, bh), L.T("Ana menü"), al)) root.AnaMenuSonuc();
             }
             else if (Baglanti(new Rect(x, yb, w, bh), L.T("Ana menü"), al)) root.AnaMenuSonuc();
             float son = yb + bh, sinir = H - bot;
             // ölçü içerik + alt blok (r108: son − yIcerik aradaki boşluğu da sayıyordu, boşluk kendini koruyordu)
             if (hero && Event.current.type == EventType.Repaint) heroH = Mathf.Max(0, yIcerikSon - yIcerik) + 6 * s + blokH;
-            SonucTani = "sonuç " + W + "x" + H + " · s " + s.ToString("F2") + " sigK " + sigK.ToString("F2") + " yazı ×" + k.ToString("F2") + " (12'lik satır " + Mathf.RoundToInt(12 * k) + " px)"
+            if (EkranTuru.Acik && Event.current.type == EventType.Repaint) SonucTani = "sonuç " + W + "x" + H + " · s " + s.ToString("F2") + " sigK " + sigK.ToString("F2") + " yazı ×" + k.ToString("F2") + " (12'lik satır " + Mathf.RoundToInt(12 * k) + " px)"
                 + " · matris " + (GUI.matrix.isIdentity ? "düz" : "DÖNÜK") + " · ikincil düğme stili " + (aDug != null ? "var" : "YOK")   // tur 2: yoruma yapışan satırların kilidi
                 + (hero ? " · kahraman bandı %" + (zaferUst * 100).ToString("F0") + "–" + (zaferAlt * 100).ToString("F0") : "") + " · ikincil " + nIk + "/" + nTum + (R.hedef.gecerli ? " · hedef " + R.hedef.kat + ":" + R.hedef.id + (R.hedefHazir ? " hazır" : "") : "")
                 + " · alt düğme dibi " + son.ToString("F0") + " / sınır " + sinir.ToString("F0") + (son > sinir + 1 ? " · TAŞIYOR" : "") + " · üst " + top.ToString("F0") + " alt pay " + bot.ToString("F0");
@@ -1805,6 +1805,38 @@ namespace BirdieSmash.Game
         {
             if (string.IsNullOrEmpty(t)) return ""; int i = t.IndexOf(": "); return i > 0 && !string.IsNullOrEmpty(alt) ? t.Substring(0, i) : t;
         }
+        // 2026-11-23 inceleme (fikir 22:06 #1): maç sonu kartı her OnGUI olayında (karede ≥ 2) büyük harfli başlıkları yeniden
+        // kuruyordu (Buyuk = 3 ayırma, CtaBaslik Substring); zafer kamerası ve sevinç sürerken GC kesiği. Girdi aynı dize
+        // olduğu sürece sonuç önbellekten; L.T aynı dil için aynı dizeyi döndürür, dil değişince anahtar kendiliğinden değişir.
+        readonly Dictionary<string, string> buyukOnb = new Dictionary<string, string>();
+        string BuyukO(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return s; string b; if (buyukOnb.TryGetValue(s, out b)) return b;
+            if (buyukOnb.Count > 64) buyukOnb.Clear();   // shortcut: kaba sınır, rakip adı/başlık çeşidi küçük; büyürse LRU
+            b = UiKok.Buyuk(s); buyukOnb[s] = b; return b;
+        }
+        string ctaGir, ctaAltGir, ctaCik;
+        string SonucCta(GameRoot R)
+        {
+            if (!ReferenceEquals(R.bittiDugme, ctaGir) || !ReferenceEquals(R.bittiDugmeAlt, ctaAltGir) || ctaCik == null)
+            { ctaGir = R.bittiDugme; ctaAltGir = R.bittiDugmeAlt; ctaCik = BuyukO(CtaBaslik(ctaGir, ctaAltGir)); }
+            return ctaCik;
+        }
+        // 2026-11-23 inceleme (fikir 22:06 #2): son sayıdaki servis/ralli dokunuşu açılan kartın "Sıradaki maç"ına ya da ödüllü
+        // reklamına düşüp ödül anını atlatıyordu. Kart açıldıktan sonra .35 sn (başlık yaylanması kadar) düğmeler çizilir ama
+        // tıklanmaz; o sürede başlayan basış yutulur (MouseDown Use: düğme sıcak denetimi almaz, sonraki bırakış tık sayılmaz).
+        bool OverKilitli(Rect r)
+        {
+            if (!overAcik || Time.unscaledTime - overT0 >= .35f) return false;
+            var e = Event.current; if (e.type == EventType.MouseDown && r.Contains(e.mousePosition)) e.Use(); return true;
+        }
+        // 2026-11-23 inceleme (fikir 22:06 #3, §6.2 tek davranış): IMGUI düğmeleri de menü gibi ses + titreşim verir; çağıranlardaki
+        // tekil Hap'ler kalktı (çift titreşim olmasın). Birincil düğme menüdeki gibi "bas" sesi.
+        bool IgTik(Rect r, string ses)
+        {
+            if (OverKilitli(r)) return false;
+            bool b = GUI.Button(r, GUIContent.none, GUIStyle.none); if (b) { root.sfx.UiSes(ses); Yerel.Hap("tick"); } return b;
+        }
         bool BuyukDugme(Rect r, string t, string alt, float s, float al)
         {
             blocks.Add(r); bool bas = r.Contains(Event.current.mousePosition) && Input.GetMouseButton(0);
@@ -1816,7 +1848,7 @@ namespace BirdieSmash.Game
             var cr = new Rect(r.xMax - 24 * s - ci, r.y + (r.height - ci) / 2, ci, ci); Tex(cr, disk, new Color(A_CTA_MUREKKEP.r, A_CTA_MUREKKEP.g, A_CTA_MUREKKEP.b, al));
             Tex(new Rect(cr.x + ci * .3f, cr.y + ci * .3f, ci * .4f, ci * .4f), Ikonlar.Ileri, new Color(A_CTA_OK.r, A_CTA_OK.g, A_CTA_OK.b, al));
             GUI.matrix = m;
-            bool b = GUI.Button(r, GUIContent.none, GUIStyle.none); if (b) Yerel.Hap("tick"); return b;
+            return IgTik(r, "bas");
         }
         // Ödüllü reklam düğmesi bu kartta var mı (tek yuva kuralı: başka ikincil varsa yok). baska: kartın diğer ikincilleri.
         bool RekVar(GameRoot R, OdulSonuc od, int baska) { return od != null && R.mod != Mod.Dril && R.ReklamUygun(baska > 0); }
@@ -1833,7 +1865,7 @@ namespace BirdieSmash.Game
             int nTum = (yuk ? 1 : 0) + (hdz ? 1 : 0) + (R.bittiIlk ? 1 : 0) + (R.bittiDril != null && Dril.Bul(R.bittiDril) != null ? 1 : 0) + (R.mod == Mod.Dril ? 1 : 0);
             if (nTum == 0 && RekVar(R, od, DigerIkincil(R, od))) nTum = 1;
             int nIk = ayr ? nTum : Mathf.Min(1, nTum);
-            string ct = UiKok.Buyuk(CtaBaslik(R.bittiDugme, R.bittiDugmeAlt)); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), cah = string.IsNullOrEmpty(R.bittiDugmeAlt) ? 0 : aCtaAlt.CalcHeight(Ic(R.bittiDugmeAlt), w);
+            string ct = SonucCta(R); float cth = Sigdir(aCta, ct, w - 100 * s).CalcHeight(Ic(ct), w - 100 * s), cah = string.IsNullOrEmpty(R.bittiDugmeAlt) ? 0 : aCtaAlt.CalcHeight(Ic(R.bittiDugmeAlt), w);
             return Mathf.Max(80 * s, cth + cah + 22 * s) + 12 * s + nIk * (bh + gap) + bh + 6 * s;
         }
         // Ayrıntılar · Ana menü (2026-11-07 stüdyo AD6): hayalet düğme, saydam zemin + ince çerçeve + krem kalın yazı. Önceki
@@ -1841,17 +1873,19 @@ namespace BirdieSmash.Game
         bool Baglanti(Rect r, string t, float al)
         {
             blocks.Add(r); bool bas = r.Contains(Event.current.mousePosition) && Input.GetMouseButton(0);
+            var m = GUI.matrix; if (bas && !Ayar.reduce) GUIUtility.ScaleAroundPivot(new Vector2(.98f, .98f), r.center);
             KutuCiz(r, aHayalet, al); if (bas) Fill(r, new Color(1, 1, 1, .06f));
             Yaz(new Rect(r.x + 8, r.y, r.width - 16, r.height), t, Sigdir(aDug, t, r.width - 16), A_YAZI, al);
-            return GUI.Button(r, GUIContent.none, GUIStyle.none);
+            GUI.matrix = m; return IgTik(r, "pop");
         }
         // İkincil düğme (a-res2): lacivert yuvarlak kutu, kalın yazı; ≥ 44 pt (BH) ve ≥ 50 tasarım pikseli.
         bool ADugme(Rect r, string t, float al)
         {
             blocks.Add(r); bool bas = r.Contains(Event.current.mousePosition) && Input.GetMouseButton(0);
+            var m = GUI.matrix; if (bas && !Ayar.reduce) GUIUtility.ScaleAroundPivot(new Vector2(.98f, .98f), r.center);
             KutuCiz(r, aKutuS, al); if (bas) Fill(r, new Color(1, 1, 1, .06f));
             Yaz(new Rect(r.x + 8, r.y, r.width - 16, r.height), t, Sigdir(aDug, t, r.width - 16), A_YAZI, al);
-            return GUI.Button(r, GUIContent.none, GUIStyle.none);
+            GUI.matrix = m; return IgTik(r, "pop");
         }
 
         // ---- smaç perdesi (HTML perde): 5 halka × 24 dilim, komşu halkalar ters yönde 1,2 rad/sn döner. Kapanış: disk

@@ -5,6 +5,18 @@ Kariyer sayfası yenilendi (23 Kasım):
 - Altında turun altı durağı tek bir çizgide: geçtiklerin tikli, şimdiki durak sarı halkada senin yüzünle. Altında Grup, Çeyrek, Yarı, Final yazıyor. İlerleme tek sayı: "Durak 3/6".
 - En altta sekiz tur küçük kutularda; birine dokununca o turun durakları yukarıda açılır.
 Nasıl denenir: Kariyer'e gir. İlk bakışta sıradaki rakibini ve Oyna'yı görmelisin. Oyna'ya basınca maç başlamalı. Alttaki kutulardan başka bir tura dokun: duraklar çizgisi o tura geçmeli.
+Maç sonu kartı (23 Kasım gece):
+- Son sayıda ekrana hızlı dokunursan maç sonu kartı atlanmıyor: kart açıldıktan sonra çok kısa bir an düğmeler dokunuşu almıyor, ödülünü ve yıldızlarını görmeden yeni maç başlamıyor.
+- Kartın küçük düğmeleri (reklam, antrenman, Ana menü, Ayrıntılar) basılınca hafifçe küçülüyor, menüdeki gibi ses ve titreşim veriyor.
+- Kart açıkken telefon daha az iş yapıyor; kutlama sırasında takılma azalmalı.
+- Oyuncunu seç ekranında "Rastgele" artık her zaman başka bir oyuncu seçiyor.
+Nasıl denenir: Bir maçın son sayısında ekrana art arda hızlıca dokun: kart açılmalı ve yerinde kalmalı. Kartta küçük düğmelere bas: küçülüp ses ve titreşim vermeli. Duraklatmada Ses ve Müzik düğmeleri yine tek titreşim vermeli. Yeni oyuncuyla Oyuncunu seç'te Rastgele'ye birkaç kez dokun: her seferinde oyuncu değişmeli.
+Yeni Profil sayfası (23 Kasım):
+- Sayfanın başında altın renkli bir oyuncu kartı var: yüzün, adın, unvanın, tarzın ve raketin, dünya sıran ve seviye çubuğu. Karta dokununca Dolap açılır.
+- Rekor ralli, en hızlı smaç ve galibiyet kartın altında üç ayrı kutuda.
+- Kupalar artık sekiz yuvanın hepsini gösteriyor: kazandıkların altın zeminde, sıradaki ince çerçeveli. Bir kupaya dokununca Kariyer o tura açılır.
+- Son maçlar tek satır: kazandığın maç G, kaybettiğin M.
+Nasıl denenir: Profil sekmesini aç. Kartta seviye çubuğunun dolduğunu ve "Sonraki seviyeye ... XP" yazısını gör, karta dokun: Dolap açılmalı. Kupalar'da sıradaki tura dokun: Kariyer o turla açılmalı. Bir maç oyna, dön: Son maçlar satırının başına yeni harf gelmeli. Yazı boyutunu büyütünce hiçbir yazı üst üste binmemeli.
 Yeni menü görünümü (23 Kasım):
 - Açılış ekranı artık menüyle aynı stadyum mavisinde; turuncu-kırmızı geçiş kalktı.
 - Alt sekme çubuğu inceldi ve ekranın altında yüzen beyaz bir kapsül oldu. Simgeler ince çizgi oldu, çubuk ekranın altına biraz daha yaklaştı. Seçili sekmenin sarı zemini sekmeler arasında kayarak geçiyor.
