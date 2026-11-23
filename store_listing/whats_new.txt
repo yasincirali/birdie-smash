@@ -4,6 +4,12 @@ Dolap yeniden düzenlendi (23 Kasım akşam):
 - Hareketler ayrı kutu, oyuncu görüntüsünün sağ üst köşesinde.
 Nasıl denenir: Dolap'ı aç. Oyuncunun iki yanında altı kutu, sağ üstte Hareketler görmelisin. Bir kutuya dokun: kutu sarı çerçeve ve köşede tik alır, alttaki liste o kategoriye geçer. Listeyi tutamaktan yukarı çekip tam aç: kutular gizlenir, yazılı şerit üstte belirir.
 
+Yeni Profil sayfası (23 Kasım):
+- Sayfanın başında altın renkli bir oyuncu kartı var: yüzün, adın, unvanın, tarzın ve raketin, dünya sıran ve seviye çubuğu. Karta dokununca Dolap açılır.
+- Rekor ralli, en hızlı smaç ve galibiyet kartın altında üç ayrı kutuda.
+- Kupalar artık sekiz yuvanın hepsini gösteriyor: kazandıkların altın zeminde, sıradaki ince çerçeveli. Bir kupaya dokununca Kariyer o tura açılır.
+- Son maçlar tek satır: kazandığın maç G, kaybettiğin M.
+Nasıl denenir: Profil sekmesini aç. Kartta seviye çubuğunun dolduğunu ve "Sonraki seviyeye ... XP" yazısını gör, karta dokun: Dolap açılmalı. Kupalar'da sıradaki tura dokun: Kariyer o turla açılmalı. Bir maç oyna, dön: Son maçlar satırının başına yeni harf gelmeli. Yazı boyutunu büyütünce hiçbir yazı üst üste binmemeli.
 Yeni menü görünümü (23 Kasım):
 - Açılış ekranı artık menüyle aynı stadyum mavisinde; turuncu-kırmızı geçiş kalktı.
 - Alt sekme çubuğu inceldi ve ekranın altında yüzen beyaz bir kapsül oldu. Simgeler ince çizgi oldu, çubuk ekranın altına biraz daha yaklaştı. Seçili sekmenin sarı zemini sekmeler arasında kayarak geçiyor.
