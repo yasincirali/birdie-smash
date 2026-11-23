@@ -1,4 +1,10 @@
 === UNITY ===
+Profil başarımları ve Dolap kombinleri (23 Kasım sabah):
+- Profil'de kilitli başarımların yanında artık ne kadar kaldığı yazıyor: "20 vuruşluk ralli" için 14/20, seviye 30 için 12/30, antrenman yıldızları için 9/24 gibi. "Henüz değil" ve "Kazanıldı" yazıları kalktı; kilit ve altın tik durumu gösteriyor.
+- Kapalı listede gösterilen üç kilitli başarım artık bitirmeye en yakın olanlar.
+- Dolap'ta kombini kaydedip güncellerken sayfa baştan kurulmuyor; liste yerinden zıplamıyor, takılma azalmalı.
+- Kombinde "Rastgele"ye basınca oyuncu parlıyor ve giyinme sesi geliyor.
+Nasıl denenir: Profil'i aç, Başarımlar'a in: kilitli satırlarda sağda "14/20" gibi sayı görmelisin. Dolap'ta biraz aşağı kaydır, bir kombin kaydet: sayfa yerinde kalmalı. Rastgele'ye bas: oyuncu kısa bir an parlamalı, ses gelmeli.
 Dolap ve Profil düzeltmeleri (23 Kasım gece):
 - Kilitli renkler artık soluk değil, gerçek renginde görünüyor; kilit ve kaçıncı seviyede açılacağı karonun altında küçük koyu bir etikette. Desen karolarında da yazı okunuyor.
 - Kariyerin sonunda açılan forma renginde artık "Final" yazıyor.

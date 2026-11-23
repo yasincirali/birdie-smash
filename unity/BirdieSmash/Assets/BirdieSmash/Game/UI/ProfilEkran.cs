@@ -1,7 +1,7 @@
 // Profil sekmesi (2026-10-26, adım 1): oyuncu kartı (seviye, XP, Tüy, raket), istatistikler (eskiden ana menünün alt
 // satırı: rekor ralli, galibiyet, görev; + kariyer basamağı) ve başarımlar (yerel liste, tuytop_basarim; Game Center
 // bağlıysa "Game Center · Başarımlar"). Hepsi cihazda hesaplanır, hiçbir yere gönderilmez. Kazanılmamış başarım soluk +
-// "Henüz değil" yazısı (yalnız renkle değil).
+// kilit ikonu (yalnız renkle değil; 2026-11-23'ten beri "Henüz değil" yazısı yerine sayılabilirse "14/20").
 // 2026-10-26 adım 6 (karakter, tasarım §2.3, §5.5): oyuncu kartında ad (yalnız cihazda; Game Center takma adı okunmaz,
 // izin ekranı ve ağ yok), unvan ve tarz; unvan seçimi (kazanılanlar çip, kazanılmayanlar kilit + nasıl alınır); maç ve
 // smaç sayısı; "sıradaki açılış" (bir sonraki seviyede ne açılıyor: ara hedef görünür olsun, tasarım §5.7). Ad alanı
@@ -300,11 +300,18 @@ namespace BirdieSmash.Game
             ids.Add(Basarim.EFSANE); ids.Add(Basarim.ANTRENOR); ids.Add(Basarim.GUNUN_MACI); ids.Add(Basarim.USTA6); ids.Add(Basarim.IMZA_OKUR);
             int bKaz = 0; foreach (var id in ids) if (Basarim.Var(id)) bKaz++;
             var bs = Yazi(L.T("{0}/{1} kazanıldı", bKaz, ids.Count), 13, "soluk"); c.Add(bs);
-            var liste = new VisualElement(); c.Add(liste); int kilitGoster = 0, gizli = 0;
+            // 2026-11-23 inceleme (fikir 07:06 #3): kapalı listedeki "sıradaki 3 kilitli" veri sırasıyla değil, en yakın olan önce
+            // (unvan kalıbı, kararlı sıralama: oranı olmayanlar veri sırasıyla sonra). Görünür üç hedef "en kolay sonraki adım" olur.
+            // "Tümünü göster" açılınca tam liste eski sırada kalır (oyuncu yerini bilir).
+            var yakin = new System.Collections.Generic.List<string>();
+            foreach (var id in ids) if (!Basarim.Var(id)) yakin.Add(id);
+            System.Func<string, float> bOran = id => { int n, e; return BasarimIlerleme(id, out n, out e) ? n / (float)e : -1f; };
+            for (int a = 1; a < yakin.Count; a++) { var x = yakin[a]; float ox = bOran(x); int b = a - 1; while (b >= 0 && bOran(yakin[b]) < ox) { yakin[b + 1] = yakin[b]; b--; } yakin[b + 1] = x; }
+            if (yakin.Count > 3) yakin.RemoveRange(3, yakin.Count - 3);
+            var liste = new VisualElement(); c.Add(liste); int gizli = 0;
             foreach (var id in ids)
             {
-                bool v = Basarim.Var(id);
-                if (basarimTum || v || kilitGoster < 3) { BasarimSatir(liste, id, BasarimAdi(id)); if (!v) kilitGoster++; }
+                if (basarimTum || Basarim.Var(id) || yakin.Contains(id)) BasarimSatir(liste, id, BasarimAdi(id));
                 else gizli++;
             }
             // 2026-11-19 inceleme (fikir 22:06 #5): "Tümünü göster" eskiden 15–25 satırı tek karede döküyordu; artık yalnız yeni
@@ -312,7 +319,7 @@ namespace BirdieSmash.Game
             if (gizli > 0)
             {   // yerinde açılır (sayfa yeniden kurulmaz, kaydırma yeri korunur)
                 VisualElement td = null;
-                td = Dugme(L.T("Tümünü göster ({0})", ids.Count) + "  ›", () => { Tik(); basarimTum = true; liste.Clear(); var yeni = new System.Collections.Generic.List<VisualElement>(); int kg = 0; foreach (var id in ids) { bool gorunurdu = Basarim.Var(id) || kg++ < 3; BasarimSatir(liste, id, BasarimAdi(id)); if (!gorunurdu) yeni.Add(liste[liste.childCount - 1]); } td.RemoveFromHierarchy(); if (!Ayar.reduce) Kademeli(yeni, 0, 30, .18f, 8, 8); }, "kucuk-dugme");
+                td = Dugme(L.T("Tümünü göster ({0})", ids.Count) + "  ›", () => { Tik(); basarimTum = true; liste.Clear(); var yeni = new System.Collections.Generic.List<VisualElement>(); foreach (var id in ids) { bool gorunurdu = Basarim.Var(id) || yakin.Contains(id); BasarimSatir(liste, id, BasarimAdi(id)); if (!gorunurdu) yeni.Add(liste[liste.childCount - 1]); } td.RemoveFromHierarchy(); if (!Ayar.reduce) Kademeli(yeni, 0, 30, .18f, 8, 8); }, "kucuk-dugme");
                 c.Add(td);
             }
             c.Add(Bosluk(20));
@@ -328,8 +335,27 @@ namespace BirdieSmash.Game
             bool var_ = Basarim.Var(id); var r = Satir("basarim"); if (!var_) r.AddToClassList("kilitli"); c.Add(r);
             // 2026-11-21 inceleme (#2): kazanılan altın (§8.1 ödül rengi, kupa rafı ve mühürle aynı); turuncu birincil eylemin.
             r.Add(Ikon(var_ ? Ikonlar.Tik : Ikonlar.Kilit, 20, var_ ? ALTIN : SOLUK));
-            r.Add(Yazi(ad, 15, "esnek-yatay")); string d = L.T(var_ ? "Kazanıldı" : "Henüz değil"); r.Add(Yazi(d, 12, var_ ? "durum-gecti" : "durum-kilit"));
+            // 2026-11-23 inceleme (fikir 07:06 #1, #2): satır sonundaki 12 pt "Kazanıldı/Henüz değil" kalktı (Kariyer yıldızları 21 Kas
+            // kalıbı; durum ikon şekliyle + kilitli soluklaşmayla okunuyor). Yerine kilitli ve sayılabilir başarımda "14/20": "ne kadar
+            // kaldı" bir maç daha oynatır. Sayılamayanda sağ sütun boş. Erişim etiketi durumu söylemeye devam eder.
+            r.Add(Yazi(ad, 15, "esnek-yatay")); string d = L.T(var_ ? "Kazanıldı" : "Henüz değil");
+            int n, e;
+            if (!var_ && BasarimIlerleme(id, out n, out e)) { string ie = n + "/" + e; r.Add(Yazi(ie, 13, "soluk")); d = L.T("Kilitli") + ", " + ie; }
             Erisim.Etiket(r, ad + ", " + d, "metin");
+        }
+
+        // Kilitli başarımın sayılabilir ilerlemesi (2026-11-23, fikir 07:06 #1). Yalnız verisi başarımın koşuluyla birebir olanlar:
+        // USTA6 sayılmaz (p.Usta zorluk ayırmaz; "6/6 Kilitli" yanıltırdı). Eşiğe ulaşmış ama verilmemiş (eski kayıt) satırda sayı
+        // yazmak çelişki olurdu: o zaman false.
+        static bool BasarimIlerleme(string id, out int n, out int e)
+        {
+            n = 0; e = 0;
+            if (id == Basarim.RALLI20) { n = Ayar.bestRally; e = 20; }
+            else if (id == Basarim.EFSANE) { int sv, k, g; Ayar.gear.OyuncuSv(out sv, out k, out g); n = sv; e = 30; }
+            else if (id == Basarim.ANTRENOR) { n = Ayar.ilerleme.AntrenmanYildiz; e = Basarim.ANTRENOR_YILDIZ; }
+            else return false;
+            if (n < 0) n = 0;
+            return n < e;
         }
         const string KUPA_GOR = "tuytop_kupa_gor";
         // Yeni kupa inişi (2026-11-13 #4): yukarıdan 22 px, saydamdan; .5 sn geri yaylanan eğri. Satır içi stil sonra temizlenir
