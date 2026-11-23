@@ -104,7 +104,7 @@ namespace BirdieSmash.Game
             var vs = new VisualElement(); vs.AddToClassList("kar-vs"); vs.AddToClassList("dokunulur"); gv.Add(vs);
             var ben = new VisualElement(); ben.AddToClassList("kar-yuz"); ben.AddToClassList("kar-yuz--sen"); ben.style.backgroundColor = Kit.Hex(Ayar.FORMA); ben.pickingMode = PickingMode.Ignore; AvatarIc(ben, Portre.Benim(), 26); vs.Add(ben);
             var sa = new VisualElement(); sa.AddToClassList("kar-vs-ad"); sa.pickingMode = PickingMode.Ignore; vs.Add(sa); sa.Add(Yazi(L.T("Sen"), 16, "kalin"));
-            var v = Yazi("VS", 20, "kar-vs-yazi"); v.AddToClassList("vs"); vs.Add(v);
+            var v = Yazi("VS", 20, "kar-vs-yazi"); vs.Add(v);   // r260: ortak .vs sınıfı mutlak konumlu (Oyna sahnesi) ve büyük yazıda gizli; burada akışta kendi sınıfı
             var ra = new VisualElement(); ra.AddToClassList("kar-vs-ad"); ra.AddToClassList("kar-vs-ad--rakip"); ra.pickingMode = PickingMode.Ignore; vs.Add(ra);
             var rn = Yazi(st.isim, 16, "kalin"); SozcukSigdir(rn); ra.Add(rn); var rt = Yazi(L.T(st.ad), 12, "soluk"); SozcukSigdir(rt); ra.Add(rt);
             var rav = new VisualElement(); rav.AddToClassList("kar-yuz"); rav.AddToClassList("kar-yuz--rakip"); rav.style.backgroundColor = Kit.Hex(st.renk); rav.pickingMode = PickingMode.Ignore; vs.Add(rav);

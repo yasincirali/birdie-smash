@@ -1037,7 +1037,7 @@
 
 /* 2026-11-23 Kariyer A "Sıradaki maç önde" (DunyaTuru.cs başı). Üç blok: sıradaki maç kartı (sahne + sen/VS/rakip + tek sarı Oyna),
    seçili turun duraklar çizgisi (altı 44 pt düğüm, aşama etiketleri), sekiz tur kutusu (4 × 2, büyük yazıda 2 sütun).
-   Sarı yalnız Oyna ve "şimdi"de; seçili tur kutusu beyaz çerçeve. VS beyaz + mürekkep konturu (.vs). */
+   Sarı yalnız Oyna ve "şimdi"de; seçili tur kutusu beyaz çerçeve. VS beyaz + mürekkep konturu (.vs'nin konturu; .vs sınıfı mutlak konumlu olduğu için kullanılmaz). */
 .kar-hero { padding: 0; overflow: hidden; margin-top: 10px; }
 .kar-hero-sahne { height: 120px; }
 .kisa .kar-hero-sahne, .buyuk-yazi .kar-hero-sahne { height: 84px; }
@@ -1054,7 +1054,7 @@
    esner, yazı sütun içinde sarar; rakip sağa hizalı kalır. */
 .kar-vs-ad Label { white-space: normal; }
 .kar-vs-ad--rakip Label { -unity-text-align: upper-right; }
-.kar-vs-yazi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--tx); flex-shrink: 0; }
+.kar-vs-yazi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--tx); flex-shrink: 0; -unity-text-outline-width: 0.6px; -unity-text-outline-color: var(--cta-ink); }
 .kar-oyna { margin-top: 12px; }
 .kar-tur { margin-top: 12px; padding: 12px 6px 10px 6px; }
 .kar-tur-bas { flex-direction: row; align-items: center; margin: 0 8px; }
