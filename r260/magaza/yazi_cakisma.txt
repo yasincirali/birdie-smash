@@ -1,0 +1,5 @@
+toplam 4
+tr_03_kariyer · yazı çakışması 24×13 · "VS" ↔ "Ada"
+tr_03_kariyer · yazı çakışması 24×10 · "VS" ↔ "Drive'cı"
+en_03_kariyer · yazı çakışması 24×13 · "VS" ↔ "Ada"
+en_03_kariyer · yazı çakışması 24×10 · "VS" ↔ "Driver"
