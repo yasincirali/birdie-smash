@@ -819,12 +819,15 @@
 .anahtar-top { width: 27px; height: 27px; border-radius: 14px; background-color: var(--tx); align-items: center; justify-content: center; translate: 0 0; transition-property: translate; transition-duration: 0.18s; transition-timing-function: ease-out; }
 .anahtar--acik .anahtar-top { translate: 20px 0; }
 .az-hareket .anahtar, .az-hareket .anahtar-top { transition-duration: 0s; }
-/* §6.4 liste grubu (2026-11-15): tek cam kart, satırlar 56, ayırıcı 1 pt; simgesiz satırda inset 16. */
+/* §6.4 liste grubu (2026-11-15): tek cam kart, satırlar 56, ayırıcı 1 pt; simgesiz satırda inset 16.
+   2026-11-23 inceleme (fikir 17:06 #1): aşağıdaki 14 Kas standart blok (simgeli satır, inset 54) aynı özgüllükte sonra geldiği için
+   bu kuralları eziyordu; Ayarlar'ın simgesiz grubunda ayırıcı yazının 38 px sağından başlıyordu. Grup içi kurallar .liste-grup ile
+   daraltıldı (özgüllük kazanır), 14 Kas standardı simgeli listeler için belgedeki gibi kalır. */
 .liste-grup { border-radius: 16px; padding: 0; margin: 0 0 6px 0; background-color: var(--cam); border-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); border-bottom-color: var(--cam-alt); overflow: hidden; }
-.liste-satir { min-height: 56px; padding: 10px 14px 10px 16px; transition-property: background-color; transition-duration: 0.14s; }
-.liste-satir:active { background-color: var(--cam3); }
-.liste-ayirac { height: 1px; margin-left: 16px; background-color: var(--cam-kenar); }
-.az-hareket .liste-satir { transition-duration: 0s; }
+.liste-grup > .liste-satir { min-height: 56px; padding: 10px 14px 10px 16px; transition-property: background-color; transition-duration: 0.14s; }
+.liste-grup > .liste-satir:active { background-color: var(--cam3); }
+.liste-grup > .liste-ayirac { height: 1px; margin-left: 16px; background-color: var(--cam-kenar); }
+.az-hareket .liste-grup > .liste-satir { transition-duration: 0s; }
 .anahtar-satir--pasif { opacity: 0.6; }
 
 /* 2026-11-10 Seviye ödülü ve Seviye yolu (AnaEkran.SvHedefSatir / SeviyeYoluKur, UiKok.SeviyeAni). Oyna satırı ≥ 44 pt dokunma. */
@@ -873,6 +876,8 @@
 .buyuk-yazi .gel-ozet { flex-wrap: wrap; }
 .buyuk-yazi .gel-ozet-ad { width: 100%; }
 .seviye-gelisim { margin-top: 4px; -unity-text-align: middle-center; color: rgb(255, 224, 140); }
+/* 2026-11-23 inceleme (fikir 12:06 #5): eşya da açıldıysa puan satırı "Dağıt ›" ile dokunulur, HIG 44 pt. */
+.seviye-gelisim--dokun { min-height: 44px; }
 
 /* 2026-11-14 Profil "Son maçlar" (inceleme, fikir 07:05 #1): küçük haplar sarar; galibiyet ✓ + yazı rengi, yenilgi ✗ + soluk (yalnız renk değil). */
 .son-maclar { flex-direction: row; flex-wrap: wrap; margin-bottom: 4px; }
@@ -1130,3 +1135,67 @@
 /* sekme şeritleri (.segment-cip) alt çizgi dilinde kalır: yukarıdaki .dugme konturu onlara bulaşmasın */
 .segment-cip { border-width: 0; border-bottom-width: 3px; border-color: rgba(0, 0, 0, 0); border-top-color: rgba(0, 0, 0, 0); border-bottom-color: rgba(0, 0, 0, 0); }
 .segment-cip.cip--secili { border-bottom-color: var(--sun); }
+
+/* 2026-11-23 alt bant C (yasin: "Beyaz alt bant incelmeli", seçim sayfası menu-ux-ui-2026-11-23): kenarlardan ayrık yüzen beyaz
+   hap. Eskisi tam genişlik bant + ev çizgisi dolgusu, ~99 birim; yeni hap 46 birim sekme + kontur, altında zemin görünür (UiKok
+   CubukAltPay). Seçili sekme: sarı yalnız simgenin arkasındaki 44×26 kapta (iOS 26 / Material 3 kalıbı), yazı mürekkep ve kalın;
+   biçimle okunur (dolgu + kalınlık), yalnız renkle değil. Simge büyüme/kalkma hareketi kapta dolgu olduğu için kalktı. */
+.sekme-cubugu { margin-left: 12px; margin-right: 12px; padding: 4px 6px; border-radius: 28px; border-width: 2px; border-top-width: 2px; border-bottom-width: 4px; border-color: var(--cta-ink); background-color: var(--bar); }
+.sekme { min-height: 46px; margin: 0; padding: 2px 0; border-width: 0; border-bottom-width: 0; border-radius: 22px; background-color: rgba(0, 0, 0, 0); }
+.sekme--secili { background-color: rgba(0, 0, 0, 0); border-color: rgba(0, 0, 0, 0); }
+.sekme-ikon-kap { width: 44px; height: 26px; border-radius: 13px; align-items: center; justify-content: center; transition-property: background-color; transition-duration: 0.12s; }
+.sekme--secili .sekme-ikon-kap { background-color: var(--sun); }
+.az-hareket .sekme-ikon-kap { transition-duration: 0s; }
+.sekme--secili .sekme-ikon { scale: 1 1; translate: 0 0; }
+.sekme-yazi { margin-top: 1px; }
+.sekme--secili .sekme-yazi { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+.kisa .sekme-cubugu { padding-top: 3px; padding-bottom: 3px; }
+.kisa .sekme { min-height: 44px; margin-bottom: 0; }
+.genis .sekme-cubugu { align-self: center; width: 640px; max-width: 92%; }
+
+/* 2026-11-23 Oyna B (yasin seçti): mod kutucukları tek sıra küçük çip. Simge + ad yan yana, ≥ 44 birim; değer ve alt satır
+   gizli (ekran okuyucu etiketi tam). Dar ekranda 4 çip sığmazsa ikişerli iki satıra kırılır. Büyük yazıda alt alta (eski kural). */
+.cip-modu { flex-wrap: wrap; margin: 2px -3px 0 -3px; }
+.cip-modu .karo { flex-direction: row; align-items: center; justify-content: center; min-height: 44px; min-width: 120px; padding: 6px 10px; margin: 3px; border-radius: 22px; }
+.cip-modu .karo-ust { align-self: auto; }
+.cip-modu .karo-etiket { color: var(--tx); white-space: nowrap; flex-grow: 0; flex-basis: auto; margin-left: 6px; letter-spacing: 0; }
+.cip-modu .karo-deger-kap, .cip-modu .karo-alt-satir { display: none; }
+.cip-modu .karo--altin .karo-etiket { color: var(--gold); }
+.kisa .cip-modu .karo { min-height: 44px; padding: 5px 10px; }
+.buyuk-yazi .cip-modu .karo { min-width: 0; }
+
+/* 2026-11-23 alt bant detayı 1, kayan kapsül: .sekme-gosterge sarı kapsül olarak geri geldi (Stadyum Pop bloğu onu gizliyordu).
+   Konum: çubuk dolgusu 4 + sekme dolgusu 2 = simge kabının üstü. Yalnız translate (yerleşim yok), 0,26 sn ease-out-back. */
+.sekme-cubugu .sekme-gosterge { display: flex; top: 6px; height: 26px; transition-duration: 0.26s; transition-timing-function: ease-out-back; }
+.sekme-cubugu .sekme-gosterge-ic { border-radius: 13px; background-color: var(--sun); transition-duration: 0s; }
+.kisa .sekme-cubugu .sekme-gosterge { top: 5px; }
+.gosterge-var .sekme--secili .sekme-ikon-kap { background-color: rgba(0, 0, 0, 0); }
+.sekme-cubugu .sekme-gosterge.anisiz, .az-hareket .sekme-cubugu .sekme-gosterge { transition-duration: 0s; }
+/* 2026-11-23 alt bant detayları 2-4 (UiKok IsaretKur): nokta, tur halkası, yarım maç işareti. Hepsi simge kabının içinde mutlak
+   konumlu, yerleşimi oynatmaz; nokta beyaz halkalı (sarı kapsülün üstünde de seçilir), işaret biçimle de okunur (II). */
+.sekme-ikon-kap { overflow: visible; }
+.sekme-nokta { position: absolute; top: 0; right: 6px; width: 8px; height: 8px; border-radius: 4px; background-color: #E8505B; border-width: 1.5px; border-color: #FFFFFF; }
+.sekme-halka { position: absolute; left: 9px; top: -4px; width: 26px; height: 34px; }
+.sekme-devam { position: absolute; top: -3px; right: 4px; padding: 0 3px; border-radius: 4px; background-color: var(--cta-ink); color: #FFFFFF; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+
+/* 2026-11-23 Oyna A detayları (menu-ux-ui-2026-11-23/detay.html). Plaka sahnenin alt üçte birine biner; çipte ad + tek veri
+   satırı, 2×2; Oyna'nın sağ parçası zorluk (dokununca dört kademe altta açılır). Renk rolleri §8: limon = bas, sarı = seçili. */
+.plaka--sahne { margin-top: -36px; }
+.kisa .plaka--sahne { margin-top: -24px; }
+.cip-alt { display: none; }
+.cip-modu .karo { flex-direction: column; align-items: flex-start; justify-content: center; flex-grow: 1; flex-basis: 40%; min-height: 52px; border-radius: 18px; padding: 7px 12px; }
+.cip-modu .karo-ust { flex-direction: row; align-items: center; }
+.cip-modu .karo-etiket { margin-left: 6px; }
+.cip-modu .cip-alt { display: flex; color: var(--mu); margin: 2px 0 0 19px; white-space: nowrap; -unity-font-definition: resource("fonts/Nunito-Bold"); }
+.cip-modu .karo--altin .cip-alt { color: var(--gold); }
+.kisa .cip-modu .karo { min-height: 48px; padding: 5px 12px; }
+.buyuk-yazi .cip-modu .karo { flex-basis: 100%; }
+.buyuk-yazi .cip-modu .cip-alt { white-space: normal; }
+.cta-zorluk { min-width: 64px; min-height: 52px; padding: 0 12px; margin-left: 6px; justify-content: center; align-items: center; flex-shrink: 0;
+    border-left-width: 2px; border-color: rgba(27, 35, 64, 0.25); }
+.cta-zorluk-ust { color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-Bold"); opacity: 0.8; }
+.cta-zorluk-ad { color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+.cta-zorluk:active { scale: 0.94 0.94; transition-duration: 0.06s; }
+.cta-zorluk--acik .cta-zorluk-ad { -unity-text-align: middle-center; }
+.zorluk-acilir { margin: -6px 0 10px 0; }
+.buyuk-yazi .cta-zorluk { min-width: 0; padding: 0 8px; }
