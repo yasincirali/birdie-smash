@@ -1,4 +1,10 @@
 === UNITY ===
+Kariyer sayfası yenilendi (23 Kasım):
+- Sayfanın en üstünde artık sıradaki maç var: turun mekânı, sen ve rakibin yüzü, tek büyük Oyna. Oyna doğrudan maça götürür.
+- Rakibin yüzüne ya da adına dokununca maç kartı açılır (zorluk, yıldız görevleri).
+- Altında turun altı durağı tek bir çizgide: geçtiklerin tikli, şimdiki durak sarı halkada senin yüzünle. Altında Grup, Çeyrek, Yarı, Final yazıyor. İlerleme tek sayı: "Durak 3/6".
+- En altta sekiz tur küçük kutularda; birine dokununca o turun durakları yukarıda açılır.
+Nasıl denenir: Kariyer'e gir. İlk bakışta sıradaki rakibini ve Oyna'yı görmelisin. Oyna'ya basınca maç başlamalı. Alttaki kutulardan başka bir tura dokun: duraklar çizgisi o tura geçmeli.
 Profil başarımları ve Dolap kombinleri (23 Kasım sabah):
 - Profil'de kilitli başarımların yanında artık ne kadar kaldığı yazıyor: "20 vuruşluk ralli" için 14/20, seviye 30 için 12/30, antrenman yıldızları için 9/24 gibi. "Henüz değil" ve "Kazanıldı" yazıları kalktı; kilit ve altın tik durumu gösteriyor.
 - Kapalı listede gösterilen üç kilitli başarım artık bitirmeye en yakın olanlar.

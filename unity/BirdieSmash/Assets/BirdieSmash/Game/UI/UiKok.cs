@@ -899,7 +899,7 @@ namespace BirdieSmash.Game
         {
             if (e == null) return "pop";
             if (e.ClassListContains("dugme--birincil")) return "bas";
-            if (e.ClassListContains("dugme--pasif") || e.ClassListContains("tur-kart2--kilit")) return "kilit";
+            if (e.ClassListContains("dugme--pasif") || e.ClassListContains("kar-tur-kutu--kilit")) return "kilit";
             if (e.ClassListContains("cip")) return "sec";
             return "pop";
         }

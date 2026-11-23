@@ -65,134 +65,174 @@ namespace BirdieSmash.Game
 
     public partial class UiKok
     {
-        ScrollView turSerit; VisualElement turAltKap;
+        // 2026-11-23 (yasin "Career akışını hiç beğenmiyorum; önündeki turnuva ya da yarışları daha net görmeli, ilerleme ux tasarımı
+        // çok çirkin"; seçenek sayfası Q3WbQ4HGx1Pv6VhfwXpBpV, Kariyer seçilmedi → önerilen A "Sıradaki maç önde"). 11-22'deki sekiz
+        // geniş tur kartı şeridi sayfanın yarısını kaplıyor, sıradaki maç en altta kesik kalıyordu; bir kartta beş ilerleme ölçüsü üst
+        // üste biniyordu (6/6 maç, 15/18 yıldız, çubuk, mühür, "8 yükseltme eksik"). Şimdi üç blok, yukarıdan aşağı:
+        // 1) sıradaki maç kartı (KariyerSiradaki): mekân sahnesi, sen ve rakip yüzü, tek Oyna;
+        // 2) seçili turun duraklar çizgisi (TurAltKur): altı durak bağlı bir çizgide, altında Grup–Çeyrek–Yarı–Final etiketleri;
+        //    ilerleme tek ölçü "Durak n/6"; yıldız ve mühür bu sayfadan kalktı (maç kartında ve maç sonucunda duruyor);
+        // 3) sekiz tur kutusu (TurKutular): dokunulan tur 2. bloğa gelir.
+        // Mekân sahnesi (MekanSahne) ve durak ödülü (DurakOdul) 11-22 Dünya Turu'ndan aynen kaldı.
+        VisualElement turKutular, turAltKap;
 
-        // Sekiz tur kartı yatay şeritte; seçili kart görünür alanın ortasına alınır (KarakterOdasi.OrtayaKaydir kalıbı).
-        // 2026-11-22 inceleme (fikir 22:06 #2): düz ScrollView bırakınca iki kartın arasında yarım kalabiliyordu. Kaydırma durunca
-        // (değer 150 ms değişmez ve parmak kalkmışsa) en yakın kart .25 sn ease-out ile ortaya oturur, bir kez "kaydir" sesi + tick
-        // titreşim (Dolap'ta giyilen parçanın sesiyle aynı dil). Seçim değişmez, yalnız konum. Parmak yeniden basarsa kayma durur.
-        // Hareketi azaltta anında oturur, ses kalır. Bekçi yalnız değer değişince başlar, durunca biter (sürekli zamanlayıcı yok).
-        // PointerUp kaçarsa basili true kalır ve şerit hiç oturmaz: düz ScrollView'a döner, yanlış anda zıplamaz.
-        ScrollView TurSerit(int secili, int sira)
+        // Sıradaki maç: kariyerin tek birincil eylemi sayfanın en üstünde (eski sabit "Sıradaki maç" şeridinin ve en alttaki kesik
+        // durağın yerine). Oyna doğrudan maça gider (eski yol şerit → maç kartı → Oyna iki dokunuştu); zorluk/yıldız görevi
+        // görmek isteyen yüzler satırına dokunur, maç kartı açılır. Kariyer bitince Usta yolu kartı bu yerde.
+        VisualElement KariyerSiradaki(Ilerleme p, int sira)
         {
-            var sv = new ScrollView(ScrollViewMode.Horizontal); sv.AddToClassList("tur-serit");
-            sv.horizontalScrollerVisibility = ScrollerVisibility.Hidden; sv.verticalScrollerVisibility = ScrollerVisibility.Hidden;
-            VisualElement sec = null;
-            for (int t = 0; t < KariyerVeri.TUR; t++) { var k = TurKart2(t, t == secili, sira); sv.Add(k); if (t == secili) sec = k; }
-            if (sec != null) OrtayaKaydir(sv, sec);
-            bool basili = false, izliyor = false; float sonDeg = 0;
-            sv.RegisterCallback<PointerDownEvent>(e => basili = true, TrickleDown.TrickleDown);
-            sv.RegisterCallback<PointerUpEvent>(e => basili = false, TrickleDown.TrickleDown);
-            sv.RegisterCallback<PointerCancelEvent>(e => basili = false, TrickleDown.TrickleDown);
-            sv.horizontalScroller.valueChanged += v =>
+            if (p.HepsiBitti || sira < 0) return UstaKart();
+            int tr = KariyerVeri.TurOf(sira); bool veri = tr < KariyerVeri.Turlar.Length && KariyerVeri.Turlar[tr].Var;
+            var k = Kart("kar-hero");
+            var sh = new VisualElement(); sh.AddToClassList("kar-hero-sahne"); sh.pickingMode = PickingMode.Ignore; k.Add(sh);
+            sh.Add(new MekanSahne(tr) { style = { position = Position.Absolute, left = 0, right = 0, top = 0, bottom = 0 } });
+            var no = Yazi(L.T("Tur {0}", tr + 1), 12, "kar-hero-no"); sh.Add(no);
+            var gv = new VisualElement(); gv.AddToClassList("kar-hero-govde"); k.Add(gv);
+            if (!veri || !p.Acik(sira))
             {
-                sonDeg = Time.realtimeSinceStartup; if (izliyor || seritKayiyor) return; izliyor = true;
-                sv.schedule.Execute(() =>
-                {
-                    if (seritKayiyor || basili || Time.realtimeSinceStartup - sonDeg < .15f) return;
-                    izliyor = false; SeritOtur(sv, EnYakinKart(sv), true);
-                }).Every(50).Until(() => !izliyor);
-            };
-            return sv;
+                var ad = Yazi(L.T(TurAd(tr)), 20, "kalin"); SozcukSigdir(ad); gv.Add(ad);
+                var ky = Yazi(KilitNedeni(tr), 14, "soluk"); ky.style.whiteSpace = WhiteSpace.Normal; gv.Add(ky);
+                Erisim.Etiket(gv, L.T(TurAd(tr)) + ", " + KilitNedeni(tr), "metin");
+                return k;
+            }
+            var kb = KariyerVeri.Al(sira); var st = KariyerVeri.Rakip(sira);
+            var ust = new VisualElement(); ust.AddToClassList("kar-hero-ust"); gv.Add(ust);
+            var et = Yazi(L.T(TurAd(tr)) + " · " + L.T(kb.yer), 13, "soluk"); et.AddToClassList("esnek-yatay"); et.style.whiteSpace = WhiteSpace.Normal; ust.Add(et);
+            var od = DurakOdul(sira); if (od != null) ust.Add(od);
+            // Sen – VS – rakip: sen limon halkayla, rakip orkide (rol renkleri §8); adlar yazıyla da var, renk tek başına anlam taşımaz.
+            // VS beyaz + mürekkep konturu: sarı yalnız Oyna'da kalsın (ekranda tek sarı eylem).
+            var vs = new VisualElement(); vs.AddToClassList("kar-vs"); vs.AddToClassList("dokunulur"); gv.Add(vs);
+            var ben = new VisualElement(); ben.AddToClassList("kar-yuz"); ben.AddToClassList("kar-yuz--sen"); ben.style.backgroundColor = Kit.Hex(Ayar.FORMA); ben.pickingMode = PickingMode.Ignore; AvatarIc(ben, Portre.Benim(), 26); vs.Add(ben);
+            var sa = new VisualElement(); sa.AddToClassList("kar-vs-ad"); sa.pickingMode = PickingMode.Ignore; vs.Add(sa); sa.Add(Yazi(L.T("Sen"), 16, "kalin"));
+            var v = Yazi("VS", 20, "kar-vs-yazi"); v.AddToClassList("vs"); vs.Add(v);
+            var ra = new VisualElement(); ra.AddToClassList("kar-vs-ad"); ra.AddToClassList("kar-vs-ad--rakip"); ra.pickingMode = PickingMode.Ignore; vs.Add(ra);
+            var rn = Yazi(st.isim, 16, "kalin"); SozcukSigdir(rn); ra.Add(rn); var rt = Yazi(L.T(st.ad), 12, "soluk"); SozcukSigdir(rt); ra.Add(rt);
+            var rav = new VisualElement(); rav.AddToClassList("kar-yuz"); rav.AddToClassList("kar-yuz--rakip"); rav.style.backgroundColor = Kit.Hex(st.renk); rav.pickingMode = PickingMode.Ignore; vs.Add(rav);
+            RakipAvatarIc(rav, st, 26, 20);
+            vs.AddManipulator(new Clickable(() => { Tik(vs); MacKartAc(sira); }));
+            Erisim.Etiket(vs, L.T("Maç ayrıntısı") + ": " + L.T("Sen") + ", " + st.isim + ", " + L.T(st.ad), "dugme");
+            var oy = Dugme(L.T("Oyna"), () => KariyerOyna(sira), "dugme--birincil", null, 19); oy.AddToClassList("kar-oyna");
+            Erisim.Etiket(oy, L.T("Oyna") + ": " + L.T(kb.yer) + ", " + st.isim, "dugme"); gv.Add(oy);
+            return k;
         }
 
-        static VisualElement EnYakinKart(ScrollView sv)
-        {
-            float cx = sv.scrollOffset.x + sv.contentViewport.layout.width * .5f, en = float.MaxValue; VisualElement sec = null;
-            foreach (var k in sv.contentContainer.Children()) { float d = Mathf.Abs(k.layout.center.x - cx); if (d < en) { en = d; sec = k; } }
-            return sec;
-        }
-
-        // Kartı görünür alanın ortasına kaydırır; zaten oradaysa (1 px) hiçbir şey yapmaz, ses de çalmaz.
-        bool seritKayiyor;
-        void SeritOtur(ScrollView sv, VisualElement el, bool ses)
-        {
-            float g = sv.contentViewport.layout.width; if (el == null || g <= 0 || el.layout.width <= 0) return;
-            float x0 = sv.scrollOffset.x, x = Mathf.Clamp(el.layout.center.x - g * .5f, 0, Mathf.Max(0, sv.contentContainer.layout.width - g));
-            if (Mathf.Abs(x - x0) < 1) return;
-            System.Action bitti = () => { if (ses) { root.sfx.UiSes("kaydir"); Yerel.Hap("tick"); } };
-            if (Ayar.reduce) { sv.scrollOffset = new Vector2(x, sv.scrollOffset.y); bitti(); return; }
-            float t0 = Time.realtimeSinceStartup, son = x0; seritKayiyor = true;
-            sv.schedule.Execute(() =>
-            {
-                if (!seritKayiyor) return;
-                if (Mathf.Abs(sv.scrollOffset.x - son) > 1) { seritKayiyor = false; return; }   // oyuncu yeniden kaydırdı
-                float t = Mathf.Clamp01((Time.realtimeSinceStartup - t0) / .25f), e = 1 - (1 - t) * (1 - t) * (1 - t);
-                sv.scrollOffset = new Vector2(Mathf.Lerp(x0, x, e), sv.scrollOffset.y); son = sv.scrollOffset.x; Kalite.Hareket();
-                if (t >= 1) { seritKayiyor = false; bitti(); }
-            }).Every(16).Until(() => !seritKayiyor);
-        }
-
-        // 2026-11-22 inceleme (fikir 22:06 #1): kart dokunuşu SekmeKur ile bütün Kariyer sekmesini (sekiz Painter2D sahnesi, Dünya
-        // sırası, şerit, alt şerit) baştan kuruyordu; yeni ScrollView seçili kartı tek karede ortaya zıplatıyordu. Artık şerit
-        // kalır: eski/yeni kartın seçili sınıfı ve erişim durumu değişir, kart .25 sn ile ortaya kayar, yalnız alt kap (hikâye,
-        // aşamalar, rota, Usta) yeniden kurulur ve .12 sn belirir (PR #158 Dolap kategori kalıbı). Basamak animasyonu yeniden
-        // oynamaz (eski yolda BasamakAniHazirla aynı sırayı görüp sıfırlıyordu). Şerit panelde değilse eski SekmeKur yolu.
+        // Tur kutusu dokunuşu sekmeyi baştan kurmaz (11-22 TurSecYerinde kalıbı): kutuların seçili sınıfı değişir, yalnız duraklar
+        // bloğu yeniden kurulur, .12 sn belirir ve görünür alana gelir (kutular sayfanın dibinde, blok üstünde). Basamak animasyonu
+        // yeniden oynamaz. Kutular panelde değilse eski SekmeKur yolu.
         void TurSecYerinde(int t)
         {
-            if (turSerit == null || turAltKap == null || turAltKap.panel == null || t < 0 || t >= turSerit.contentContainer.childCount) { KariyerTurSec(t); return; }
-            var cc = turSerit.contentContainer; int once = kariyerTur; kariyerTur = t;
-            if (once >= 0 && once < cc.childCount) KartSecili(cc[once], false); KartSecili(cc[t], true);
+            var iz = turKutular?.Q(null, "kar-tur-izgara");
+            if (iz == null || turAltKap == null || turAltKap.panel == null || t < 0 || t >= iz.childCount) { KariyerTurSec(t); return; }
+            int once = kariyerTur; kariyerTur = t;
+            if (once >= 0 && once < iz.childCount) KutuSecili(iz[once], false); KutuSecili(iz[t], true);
             basAniDen = basAniA = -1;
             TurAltKur(turAltKap, t, Ayar.ilerleme.Siradaki(), true);
-            SeritOtur(turSerit, cc[t], false);
+            var sv = turAltKap.GetFirstAncestorOfType<ScrollView>(); var hedef = turAltKap;
+            if (sv != null) sv.schedule.Execute(() => { if (hedef.panel != null) sv.ScrollTo(hedef); }).StartingIn(32);
         }
-        static void KartSecili(VisualElement k, bool s)
+        static void KutuSecili(VisualElement k, bool s)
         {
-            k.EnableInClassList("tur-kart2--secili", s);
+            k.EnableInClassList("kar-tur-kutu--secili", s);
             if (k.userData is ErisimBilgi b) { string sec = ", " + L.T("Seçili"); if (b.etiket.EndsWith(sec)) b.etiket = b.etiket.Substring(0, b.etiket.Length - sec.Length); if (s) b.etiket += sec; b.secili = s; }
         }
 
-        // Seçili turun altı: hikâye/hazırlık, finallerde aşamalar, rota, son turda Usta yolu.
+        // Seçili turun bloğu: başlık "Tur n · ad" + tek ölçü (Durak n/6 ya da Tamamlandı), hikâye/hazırlık, duraklar çizgisi;
+        // son turda altında Usta yolu (kariyer bitmediyse; bittiyse Usta kartı en üstte).
         // sol: içerik yeni iç kapta solgun doğar ve 16 ms sonra belirir (ekrandaki kaba eklense önce 1→0 sönerdi; AntrenmanEkran kalıbı).
         void TurAltKur(VisualElement kap, int tr, int sira, bool sol = false)
         {
             kap.Clear();
-            if (sol && !Ayar.reduce) { var ic = new VisualElement(); ic.AddToClassList("ant-liste"); ic.AddToClassList("koz-solgun"); ic.schedule.Execute(() => ic.RemoveFromClassList("koz-solgun")).StartingIn(16); kap.Add(ic); kap = ic; }
-            var tv = tr < KariyerVeri.Turlar.Length ? KariyerVeri.Turlar[tr] : null; bool veri = tv != null && tv.Var;
-            kap.Add(TurAlt(tr, tv));
-            if (veri && GrupTuru(tr)) kap.Add(FinalAsama(tr, sira));
-            if (veri) kap.Add(TurYol(tr, sira));
-            if (veri && tr == KariyerVeri.TUR - 1) kap.Add(UstaKart());   // 2026-10-26: Usta yolu son turun altında
+            if (sol && !Ayar.reduce) { var ic = new VisualElement(); ic.AddToClassList("koz-solgun"); ic.schedule.Execute(() => ic.RemoveFromClassList("koz-solgun")).StartingIn(16); kap.Add(ic); kap = ic; }
+            var p = Ayar.ilerleme; var tv = tr < KariyerVeri.Turlar.Length ? KariyerVeri.Turlar[tr] : null; bool veri = tv != null && tv.Var, acik = p.TurAcik(tr);
+            var kart = Kart("kar-tur"); kap.Add(kart);
+            var bas = new VisualElement(); bas.AddToClassList("kar-tur-bas"); kart.Add(bas);
+            var ad = Yazi(L.T("Tur {0}", tr + 1) + " · " + L.T(TurAd(tr)), 17, "kalin"); ad.AddToClassList("esnek-yatay"); ad.style.whiteSpace = WhiteSpace.Normal; bas.Add(ad);
+            string olcu = null;
+            if (veri && acik)
+            {
+                int kaz = 0; for (int b = 0; b < KariyerVeri.BASAMAK; b++) if (p.Kazanildi(KariyerVeri.Global(tr, b))) kaz++;
+                olcu = kaz >= KariyerVeri.BASAMAK ? L.T("Tamamlandı") : L.T("Durak {0}/{1}", kaz + 1, KariyerVeri.BASAMAK);
+                var ol = Yazi(olcu, 14, kaz >= KariyerVeri.BASAMAK ? "altin" : "kalin"); ol.AddToClassList("kar-tur-olcu"); bas.Add(ol);
+            }
+            Erisim.Etiket(bas, ad.text + (olcu != null ? ", " + olcu : ""), "baslik");
+            kart.Add(TurAlt(tr, tv));
+            if (!acik) { var ky = Yazi(KilitNedeni(tr), 13, "soluk"); ky.AddToClassList("kar-tur-not"); ky.style.whiteSpace = WhiteSpace.Normal; kart.Add(ky); }
+            if (veri) kart.Add(TurDuraklar(tr, sira));
+            if (veri && tr == KariyerVeri.TUR - 1 && !p.HepsiBitti) kap.Add(UstaKart());   // 2026-10-26: Usta yolu son turun altında
         }
 
-        VisualElement TurKart2(int t, bool secili, int sira)
+        // Duraklar çizgisi: altı düğüm yan yana (BasamakNokta: geçilen ✓, şimdiki sarı halka + yüz, açık numara, kilitli kilit,
+        // final kupa; dokununca o durağın maç kartı), arkalarında tek düz çizgi (YolCiz, geçilen kesit altın). Altında aşama
+        // etiketleri düğüm gruplarına yayılır: grup turunda Grup (1–3) · Çeyrek · Yarı · Final, diğerlerinde Duraklar (1–4) · Yarı ·
+        // Final (kariyer.json'da 5. basamak yarı final, 6. final). Şimdiki aşama sarı + kalın (yalnız renk değil). Düğüm 44 pt sabit:
+        // en dar telefonda (320 pt) altı düğüm sığsın diye kart iç boşluğu 6.
+        VisualElement TurDuraklar(int t, int sira)
+        {
+            var p = Ayar.ilerleme; var kap = new VisualElement(); kap.AddToClassList("kar-adim");
+            var cizgi = new VisualElement(); cizgi.AddToClassList("kar-adim-cizgi"); cizgi.pickingMode = PickingMode.Ignore; kap.Add(cizgi);
+            var sr = new VisualElement(); sr.AddToClassList("kar-adim-dugumler"); kap.Add(sr);
+            var dugumler = new System.Collections.Generic.List<VisualElement>(); int gecilen = -1;
+            for (int b = 0; b < KariyerVeri.BASAMAK; b++)
+            {
+                int g = KariyerVeri.Global(t, b); var slot = new VisualElement(); slot.AddToClassList("kar-adim-slot"); sr.Add(slot);
+                var dg = BasamakNokta(g, sira, slot); slot.Add(dg); dugumler.Add(dg); if (p.Kazanildi(g)) gecilen = b;
+            }
+            int gc = gecilen;
+            cizgi.generateVisualContent += mgc => YolCiz(mgc, cizgi, dugumler, gc);
+            kap.RegisterCallback<GeometryChangedEvent>(e => cizgi.MarkDirtyRepaint());
+            bool grup = GrupTuru(t);
+            string[] ad = grup ? new[] { "Grup", "Çeyrek", "Yarı", "Final" } : new[] { "Duraklar", "Yarı", "Final" };
+            int[] n = grup ? new[] { 3, 1, 1, 1 } : new[] { 4, 1, 1 };
+            var et = new VisualElement(); et.AddToClassList("kar-adim-etiket"); et.pickingMode = PickingMode.Ignore; kap.Add(et);
+            for (int i = 0, b0 = 0; i < ad.Length; b0 += n[i], i++)
+            {
+                bool simdi = false, tamam = true, acik = false;
+                for (int b = b0; b < b0 + n[i]; b++) { int g = KariyerVeri.Global(t, b); if (!p.Kazanildi(g)) tamam = false; if (p.Acik(g)) acik = true; if (g == sira && p.Acik(g)) simdi = true; }
+                var l = Yazi(L.T(ad[i]), 12, simdi ? "durum-simdi" : tamam || acik ? "kalin" : "soluk"); if (simdi) l.AddToClassList("kalin");
+                l.style.flexGrow = n[i]; l.style.flexBasis = 0; l.style.unityTextAlign = TextAnchor.MiddleCenter; SozcukSigdir(l); et.Add(l);
+            }
+            return kap;
+        }
+
+        // Sekiz tur kutusu (4 × 2; büyük yazıda 2 sütun): rozet (✓ bitti, sarı numara = buradasın, numara = açık, kilit) + tur adı.
+        // Seçili kutu beyaz çerçeve (sarı "şimdi"ye ayrıldı) ve "Seçili" erişim adı. Başlık "Dünya turu n / 8" = bulunduğun tur.
+        VisualElement TurKutular(int secili, int sira)
+        {
+            var p = Ayar.ilerleme; var kap = Kart("kar-turlar");
+            int simdi = p.HepsiBitti || sira < 0 ? KariyerVeri.TUR : KariyerVeri.TurOf(sira) + 1;
+            var bas = new VisualElement(); bas.AddToClassList("kar-tur-bas"); kap.Add(bas);
+            var ba = Yazi(L.T("Dünya turu"), 17, "kalin"); ba.AddToClassList("esnek-yatay"); bas.Add(ba);
+            var sy = Yazi(Mathf.Min(simdi, KariyerVeri.TUR) + " / " + KariyerVeri.TUR, 14, "soluk"); sy.AddToClassList("kar-tur-olcu"); bas.Add(sy);
+            Erisim.Etiket(bas, L.T("Dünya turu") + ", " + L.T("Tur {0}/{1}", Mathf.Min(simdi, KariyerVeri.TUR), KariyerVeri.TUR), "baslik");
+            var iz = new VisualElement(); iz.AddToClassList("kar-tur-izgara"); kap.Add(iz);
+            for (int t = 0; t < KariyerVeri.TUR; t++) iz.Add(TurKutu(t, t == secili, sira));
+            return kap;
+        }
+        VisualElement TurKutu(int t, bool secili, int sira)
         {
             var p = Ayar.ilerleme; bool acik = p.TurAcik(t); var tv = t < KariyerVeri.Turlar.Length ? KariyerVeri.Turlar[t] : null; bool veri = tv != null && tv.Var;
             int kaz = 0; if (veri) for (int b = 0; b < KariyerVeri.BASAMAK; b++) if (p.Kazanildi(KariyerVeri.Global(t, b))) kaz++;
             bool bitti = veri && kaz == KariyerVeri.BASAMAK, burada = veri && sira >= 0 && KariyerVeri.TurOf(sira) == t && !bitti;
-            var k = new VisualElement(); k.AddToClassList("tur-kart2"); k.AddToClassList("dokunulur");
-            if (secili) k.AddToClassList("tur-kart2--secili"); if (!acik) k.AddToClassList("tur-kart2--kilit");
-            var sh = new VisualElement(); sh.AddToClassList("tur-kart2-sahne"); sh.pickingMode = PickingMode.Ignore; k.Add(sh);
-            sh.Add(new MekanSahne(t) { style = { position = Position.Absolute, left = 0, right = 0, top = 0, bottom = 0 } });
-            if (!acik) { var ort = new VisualElement(); ort.AddToClassList("tur-kart2-ortu"); ort.pickingMode = PickingMode.Ignore; ort.Add(Ikon(Ikonlar.Kilit, 26, YAZI)); sh.Add(ort); }
-            var no = Yazi(L.T("Tur {0}", t + 1), 12, "tur-kart2-no"); no.pickingMode = PickingMode.Ignore; sh.Add(no);
-            if (bitti) { var bt = new VisualElement(); bt.AddToClassList("tur-kart2-bitti"); bt.pickingMode = PickingMode.Ignore; bt.Add(Ikon(Ikonlar.Tik, 14, KOYU)); bt.Add(Yazi(L.T("Bitti"), 12, "koyu-yazi")); sh.Add(bt); }
-            else if (burada) { var bt = new VisualElement(); bt.AddToClassList("tur-kart2-bitti"); bt.AddToClassList("tur-kart2-burada"); bt.pickingMode = PickingMode.Ignore;
-                // 2026-11-22 inceleme (fikir 22:06 #3): rozet ile seçili çerçeve aynı turuncu; "ben buradayım" yüzle ayrılır (yalnız renkle anlam yok).
-                var av = new VisualElement(); av.AddToClassList("tur-kart2-av"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 14); bt.Add(av);
-                bt.Add(Yazi(L.T("Buradasın"), 12, "koyu-yazi")); sh.Add(bt); }
-
-            var gv = new VisualElement(); gv.AddToClassList("tur-kart2-govde"); gv.pickingMode = PickingMode.Ignore; k.Add(gv);
-            var ad = Yazi(L.T(TurAd(t)), 20, "tur-kart2-ad"); ad.name = "tur-ad"; SozcukSigdir(ad); gv.Add(ad);
-            if (tv != null && tv.bolum.Length > 0) gv.Add(Yazi(L.T(tv.bolum), 12, "soluk"));
-            string erisim = L.T("Tur {0}/{1}", t + 1, KariyerVeri.TUR) + ", " + L.T(TurAd(t));   // 2026-11-22 (fikir 22:06 #7): kaydırma çubuğu gizli, kaç tur olduğu sesle de duyulsun
-            if (!acik) { var ky = Yazi(KilitNedeni(t), 12, "soluk"); ky.AddToClassList("tur-kart2-kilit-yazi"); gv.Add(ky); erisim += ", " + KilitNedeni(t); }
-            else if (veri)
+            var k = new VisualElement(); k.AddToClassList("kar-tur-kutu"); k.AddToClassList("dokunulur");
+            if (secili) k.AddToClassList("kar-tur-kutu--secili"); if (!acik) k.AddToClassList("kar-tur-kutu--kilit");
+            var r = new VisualElement(); r.AddToClassList("kar-tur-rozet"); r.pickingMode = PickingMode.Ignore; k.Add(r);
+            r.AddToClassList(bitti ? "kar-tur-rozet--bitti" : burada ? "kar-tur-rozet--simdi" : acik ? "kar-tur-rozet--acik" : "kar-tur-rozet--kilit");
+            if (bitti) r.Add(Ikon(Ikonlar.Tik, 16, KOYU));
+            else if (!acik) r.Add(Ikon(Ikonlar.Kilit, 14, SOLUK));
+            else
             {
-                var r = Satir("arali"); r.pickingMode = PickingMode.Ignore; gv.Add(r);
-                r.Add(Yazi(L.T("{0}/6 maç", kaz), 13, "kalin")); r.Add(YildizSayac(p.TurYildiz(t), 18, 13));
-                var cb = Cubuk(kaz / 6f, LIMON, 6); cb.style.marginTop = 6; gv.Add(cb);
-                int mh = p.Muhur(t); string ms = mh >= 2 ? L.T("Altın tur mührü") : mh == 1 ? L.T("Bronz tur mührü") : L.T("Tur ödülü: mühür");
-                var mr = Satir("tur-kart2-odul"); mr.pickingMode = PickingMode.Ignore; mr.Add(Ikon(Ikonlar.Kupa, 14, mh > 0 ? ALTIN : SOLUK)); mr.Add(Yazi(ms, 12, mh > 0 ? "altin" : "soluk")); gv.Add(mr);
-                erisim += ", " + L.T("{0}/6 maç", kaz) + ", " + L.T("{0}/{1} yıldız", p.TurYildiz(t), 18) + ", " + ms;
+                // rozet 30 pt sabit; rakam en çok 18 pt (BasamakNokta'daki 44 pt halka kuralı), daralmaz, ortada
+                var nl = Yazi((t + 1).ToString(), 14, "kalin"); nl.style.fontSize = Mathf.Min(nl.style.fontSize.value.value, 18f); nl.style.flexShrink = 0f;
+                nl.style.paddingTop = 0f; nl.style.paddingBottom = 0f; nl.style.unityTextAlign = TextAnchor.MiddleCenter; nl.style.color = burada ? KOYU : YAZI; r.Add(nl);
             }
+            var ad = Yazi(L.T(TurAd(t)), 12, "kar-tur-ad"); ad.pickingMode = PickingMode.Ignore; SozcukSigdir(ad); k.Add(ad);
             int tt = t; k.AddManipulator(new Clickable(() => { Tik(k); if (tt != kariyerTur) TurSecYerinde(tt); }));
-            Erisim.Etiket(k, erisim + (secili ? ", " + L.T("Seçili") : ""), "dugme", secili);
+            string d = L.T(bitti ? "Bitti" : burada ? "Buradasın" : acik ? "Açık" : "Kilitli");
+            Erisim.Etiket(k, L.T("Tur {0}/{1}", t + 1, KariyerVeri.TUR) + ", " + L.T(TurAd(t)) + ", " + d + (secili ? ", " + L.T("Seçili") : ""), "dugme", secili);
             return k;
         }
 
-        // Seçili turun altındaki tek satır: hikâye + (eksikse) hazırlık. Ad, yıldız ve kilit kartta; burada tekrar edilmez.
+        // Seçili turun altındaki tek satır: hikâye + (eksikse) hazırlık. Ad ve ölçü başlıkta; burada tekrar edilmez.
         VisualElement TurAlt(int t, KariyerTur tv)
         {
             var kb = new VisualElement(); kb.AddToClassList("tur-alt");
@@ -211,36 +251,16 @@ namespace BirdieSmash.Game
             return kb;
         }
 
-        // Finaller (grup + eleme turları: Dünya Finalleri, Efsaneler Kupası): rotanın üstünde turnuva aşamaları Grup · Çeyrek · Yarı ·
-        // Final. Grup kutusu üç grup maçının kaçının kazanıldığını yazar. Veriden: ilk basamağın yeri "grup" içeriyorsa bu tur grup
-        // turudur (kariyer.json; çeviri anahtarı değil, ham veri).
+        // Grup turu (Dünya Finalleri, Efsaneler Kupası): ilk basamağın yeri "grup" içeriyorsa (kariyer.json ham verisi, çeviri
+        // anahtarı değil).
         static bool GrupTuru(int t) { if (t >= KariyerVeri.Turlar.Length || !KariyerVeri.Turlar[t].Var) return false; var y = KariyerVeri.Al(KariyerVeri.Global(t, 0)).yer; return y != null && y.Contains("grup"); }
-        VisualElement FinalAsama(int t, int sira)
-        {
-            var p = Ayar.ilerleme; var r = Satir("final-asama"); r.pickingMode = PickingMode.Ignore;
-            string[] ad = { "Grup", "Çeyrek", "Yarı", "Final" }; int[][] bs = { new[] { 0, 1, 2 }, new[] { 3 }, new[] { 4 }, new[] { 5 } };
-            var sb = new System.Text.StringBuilder(L.T("Turnuva aşamaları") + ": ");
-            for (int i = 0; i < 4; i++)
-            {
-                int kz = 0; bool simdi = false, acik = false;
-                foreach (var b in bs[i]) { int g = KariyerVeri.Global(t, b); if (p.Kazanildi(g)) kz++; if (g == sira && p.Acik(g)) simdi = true; if (p.Acik(g)) acik = true; }
-                bool tamam = kz == bs[i].Length;
-                var k = new VisualElement(); k.AddToClassList("asama-kutu"); k.AddToClassList(tamam ? "asama-kutu--tamam" : simdi ? "asama-kutu--simdi" : acik ? "asama-kutu--acik" : "asama-kutu--kilit"); k.pickingMode = PickingMode.Ignore;
-                k.Add(Ikon(tamam ? Ikonlar.Tik : i == 3 ? Ikonlar.Kupa : !acik ? Ikonlar.Kilit : Ikonlar.Oyna, 16, tamam ? LIMON : simdi ? TURUNCU : i == 3 ? ALTIN : SOLUK));
-                var al = Yazi(L.T(ad[i]), 12, "kalin"); SozcukSigdir(al); k.Add(al);   // r241 ×2: "Çeyrek" dar kutuda bölünüyordu
-                if (i == 0) k.Add(Yazi(kz + "/3", 11, "soluk"));
-                r.Add(k);
-                sb.Append(L.T(ad[i])).Append(' ').Append(L.T(tamam ? "tamam" : simdi ? "şimdi" : acik ? "açık" : "kilitli")).Append(i < 3 ? ", " : "");
-            }
-            Erisim.Etiket(r, sb.ToString(), "metin");
-            return r;
-        }
 
         // Durak ödülü (B'nin kalıbı: her duraktaki kazanç önceden görünür). Değerler Core/Gear.Odul'den: basamağın ilk galibiyeti +60 Tüy,
         // ilk kez alınan her yıldız +20. Uydurma sayı yok; maçın kendi galibiyet Tüy'ü (uzunluğa göre) burada yazılmaz, maç kartında.
+        // 2026-11-23: rota kalktı; ödül sıradaki maç kartının üst satırında (final durağında yok: ödülü tur sonu töreni söyler).
         VisualElement DurakOdul(int g)
         {
-            var p = Ayar.ilerleme; if (KariyerVeri.Final(g) && KariyerVeri.BasOf(g) == KariyerVeri.BASAMAK - 1 && !p.Kazanildi(g)) return null;   // final durağı ödülünü mühür satırı söyler
+            var p = Ayar.ilerleme; if (KariyerVeri.Final(g) && KariyerVeri.BasOf(g) == KariyerVeri.BASAMAK - 1 && !p.Kazanildi(g)) return null;
             int eksik = 0; for (int i = 0; i < 3; i++) if ((p.Maske(g) & (1 << i)) == 0) eksik++;
             string y; if (!p.Kazanildi(g)) y = "+60"; else if (eksik > 0) y = "+" + 20 * eksik; else return null;
             var r = Satir("durak-odul"); r.pickingMode = PickingMode.Ignore; r.Add(Ikon(Ikonlar.Tuy, 13, ALTIN)); r.Add(Yazi(y, 12, "altin"));
