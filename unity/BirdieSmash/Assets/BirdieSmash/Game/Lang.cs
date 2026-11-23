@@ -31,6 +31,20 @@ namespace BirdieSmash.Game
             {"Ses ve his","Sound and feel"},{"Müzik","Music"},{"Titreşim","Vibration"},{"Hareketi azalt","Reduce motion"},{"Sistem ayarından","From system settings"},
             {"açık","on"},{"kapalı","off"},{"Eksik yıldız: {0} maç","Missing stars: {0} matches"},
             {"Hedefte! ★","On target! ★"},
+            // 2026-11-23 Atölye A: raket vitrini ölçü cümleleri, Sahada kutusu, tarz satırı.
+            {"Değiştir","Change"},{"Sahada","On court"},{"Tarz: {0}","Style: {0}"},{"Raketi değiştir","Change racket"},
+            {"ortalamadan {0} fazla","{0} above average"},{"ortalamadan {0} eksik","{0} below average"},
+            {"Hepsi ortalamada: artı da eksi de yok.","All at average: no plus, no minus."},
+            {"50 ortalama. Ekipman ve gelişimden gelir; tarz ve görünüm değiştirmez.","50 is average. Comes from gear and growth; style and looks don't change it."},
+            {"Hafif raket elde hızlı döner; ağır raket topu daha sert iter, kolu daha çok yorar.","A light racket turns fast in the hand; a heavy one hits harder and tires the arm more."},
+            {"Kafa ağır: smaç ve clear güçlü, drive ve file geç kalır.","Head-heavy: strong smashes and clears, slower drives and net play."},
+            {"Kafa hafif: savunma ve file hızlı, smaç yumuşak.","Head-light: quick defence and net play, softer smashes."},
+            {"Dengeli: hücumda da savunmada da orta yol.","Even balance: a middle path in attack and defence."},
+            {"Esnek şaft zamanlama kaçsa da affeder, ama smaçı yavaşlatır.","A flexible shaft forgives late timing but slows your smash."},
+            {"Orta şaft: esneklik ile güç arasında.","Medium shaft: between forgiveness and power."},
+            {"Sert şaft hızlı kolda gücü doğrudan aktarır; zamanlama ister.","A stiff shaft passes a fast arm's power straight through; it needs timing."},
+            {"Gevşek tel geniş tatlı nokta, sıkı tel his ve kontrol verir.","Loose strings give a bigger sweet spot, tight strings give feel and control."},
+            {"Bu raket için {0}–{1} lbs.","{0}–{1} lbs for this racket."},{"Seninki önerinin üstünde.","Yours is above the range."},{"Seninki önerinin altında.","Yours is below the range."},
             // 2026-10-26 yön A sonuç ekranı ve Oyna afişi: yalnız Unity tasarımında olan kısa etiketler.
             {"Sen","You"},{"Reklam","Ad"},{"Reklam alanı","Ad space"},{"Rakip ≤ {0}","Opponent ≤ {0}"},{"yıldız","stars"},{"Rastgele rakip","Random opponent"},{"Seviye atladın","Level up"},
             // 2026-11-10 seviye ödülü ve Seviye yolu

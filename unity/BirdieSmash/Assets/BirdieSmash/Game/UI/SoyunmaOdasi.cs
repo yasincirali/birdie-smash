@@ -205,8 +205,7 @@ namespace BirdieSmash.Game
             var bp = Portre.BenimHazir(); AvatarIc(av, bp, 20);
             if (bp == null) { bool isitti = false; av.schedule.Execute(() => { if (isitti || !IsitmaSirasi()) return; isitti = true; var t = Portre.Benim(); if (t != null) { av.Clear(); AvatarIc(av, t, 20); } }).Every(300).Until(() => isitti || av.panel == null); }
             var bt = Yazi(L.T("Atölye"), 24, "sekme-baslik"); Erisim.Etiket(bt, L.T("Atölye"), "baslik"); bsol.Add(bt);
-            GearModel brk; if (Gear.GEAR["raket"].TryGetValue(Ayar.gear.raket, out brk))
-            { var ra = Yazi(L.T(brk.ad), 13, "soluk"); ra.style.flexShrink = 1; ra.style.whiteSpace = WhiteSpace.Normal; ra.style.unityTextAlign = TextAnchor.MiddleRight; ra.style.marginLeft = 8; Erisim.Etiket(ra, L.T("Takılı raket") + ": " + L.T(brk.ad), "metin"); bas.Add(ra); }
+            // 2026-11-23 (Atölye A): başlığın sağındaki raket adı kalktı; ad hemen altta raket vitrininde büyük yazıyor (iki kez söylenmez).
             EkipmanGovde(c); c.Add(Bosluk(20));
             if (of.y > 0) { atolyeKaydir.scrollOffset = of; var sk = atolyeKaydir; sk.schedule.Execute(() => sk.scrollOffset = of).StartingIn(33); }
         }
@@ -309,30 +308,161 @@ namespace BirdieSmash.Game
             }
         }
 
-        // ---- Oyun segmenti: tarz, takım, yuvalar, ayakkabı tabanı ----
+        // ---- Atölye A: raket vitrini, Sahada, tarz satırı; altta yuvalar, eşit şartlar, ayakkabı tabanı ----
+        // 2026-11-23 (yasin, menü UX+UI turu, seçim "Atölye A"; taslak menu-ux-ui-2026-11-23): sorun, tarz sekmeleri + tarz kartı +
+        // beş eşit çubuk + raket aynı uzun listedeydi; çubukların çoğu 50'de durduğu için bir şey anlatmıyordu, raketin kendisi
+        // (ağırlık, denge, şaft, gerginlik) sayfanın dibindeydi. Şimdi sıra oyuncunun sorusuna göre: (1) elimde ne var → büyük raket
+        // + dört ölçü çipi (dokununca tek cümle anlam), (2) sahada ne değişiyor → yalnız 50'den ayrılan çubuklar, işaret + sayıyla,
+        // (3) tarz tek satır, dokununca eski tarz seçicisi yerinde açılır (§7 kademeli açma). Beş çubuğun tamamı yuva sayfalarında
+        // ("Takımın şimdi") durur; burada kalkan bilgi yok, yalnız ilk ekrandan indi.
+        string atlBilgi;          // açık ölçü çipi (null = kapalı); sayfa yeniden kurulunca da açık kalır
+        bool atlTarzAcik;         // tarz seçicisi açık mı; "Bu tarzı seç" sonrası yeniden kurulumda açık kalsın
+        VisualElement atlSahada;
+        // Kayıp rengi yalnız Atölye'nin Sahada kutusunda: yasin'in seçtiği taslak "verdiğin kırmızı" diyor, §8.2.2 mavi zeminde saf
+        // kırmızıyı yasaklıyor. Açık mercan-pembe #FFB4AB kartta ~4,8:1 (gövde 4,5 sınırının üstü); anlam yine ▼ ve "−" ile de verilir.
+        static readonly Color KAYIP = Kit.Hex("#FFB4AB");
         void EkipmanGovde(VisualElement c)
         {
             var gr = Ayar.gear;   // Seviye satırı kalktı (2026-11-05, Ar-Ge 11:40 #3): üst çubukta Sv + XP ve Tüy zaten var, Profil'de ayrıntı
-            c.Add(Grup(L.T("Oyun tarzı"))); tarzKap = new VisualElement(); c.Add(tarzKap); TarzGovde(tarzKap);
-            c.Add(Grup(L.T("Takımın")));
-            var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true, null, Ayar.GelisimCubuk());
-            // 2026-11-19 inceleme (fikir 22:06 #3): dipnot sayfanın dibindeydi ve 10 Kas gelişiminden beri eksikti (çubuğa limon "+n"
-            // gelişim payı da giriyor). Açıkladığı kartın hemen altına taşındı, metin gelişimi de sayar.
-            c.Add(Yazi(L.T("Çubuklar ekipman ve gelişimden gelir, 50 ortalama. Tarz ve görünüm değiştirmez."), 12, "soluk"));
-            RaketKimlikKart(c);
+            RaketVitrin(c);
+            atlSahada = Kart("atl-sahada"); c.Add(atlSahada); SahadaIc(atlSahada);
+            TarzSatir(c);
             c.Add(Grup(L.T("Yuvalar"))); var iz = Satir("izgara"); iz.AddToClassList("yuva-izgara"); c.Add(iz);
             foreach (var Y in Gear.YUVA) iz.Add(YuvaKare(Y));
-            // 2026-11-22 inceleme (fikir 12:06 #6): çip bütün Atölye'yi (~60 öğe) kuruyordu; eşit şartlar yalnız takım çubuklarını
-            // değiştirir (Gear.KSv, GelisimCubuk). Çubuklar CanliCubukYaz ile, çip CipDurum ile yerinde; öteki sekmeler kirli kalır.
+            // 2026-11-22 inceleme (fikir 12:06 #6): çip bütün Atölye'yi kuruyordu. 2026-11-23 (Atölye A): eşit şartlar yalnız takım
+            // çubuklarını değiştirir (Gear.KSv, GelisimCubuk), onları da artık yalnız Sahada kutusu gösterir: kutu yerinde kurulur.
             VisualElement esc = null;
             esc = Cip(L.T("Eşit şartlar"), gr.eko.esit, () =>
             {
                 gr.eko.esit = !gr.eko.esit; Ayar.GearHesap(); Ayar.KaydetSonra();
-                if (canliDolgu.Count != 5) { SoyunmaGovdeKur(true); return; }
-                CanliCubukYaz(); CipDurum(esc, gr.eko.esit); RenkSonrasiKirli(); kirli[(int)Sekme.Profil] = true;
+                if (atlSahada == null || atlSahada.panel == null) { SoyunmaGovdeKur(true); return; }
+                atlSahada.Clear(); SahadaIc(atlSahada); CipDurum(esc, gr.eko.esit); RenkSonrasiKirli(); kirli[(int)Sekme.Profil] = true;
             }, L.T("Serbest maçta yükseltmeler sayılmaz"));
             c.Add(esc);
             c.Add(Grup(L.T("Ayakkabı tabanı"))); TabanBolum(c);
+        }
+
+        // Raket vitrini: 3B vitrin değil ("Vitrin yok" kararı sürer, RT maliyeti Dolap'ta), çizilmiş raket silueti büyük.
+        // Simge beyaz: kozmetik renk arayüz rolü taşımaz (§8.2.7), sarı yalnız eylem/seçili.
+        void RaketVitrin(VisualElement c)
+        {
+            var gr = Ayar.gear; GearModel r; if (!Gear.GEAR["raket"].TryGetValue(gr.raket, out r)) return;
+            var k = Kart("atl-vitrin"); c.Add(k);
+            var ik = Ikon(VitrinRaket(), 128, Color.white); ik.AddToClassList("atl-raket"); ik.pickingMode = PickingMode.Ignore; k.Add(ik);
+            var ad = Yazi(L.T(r.ad), 22, "kalin"); ad.AddToClassList("atl-ortala"); ad.pickingMode = PickingMode.Ignore; k.Add(ad);
+            var alt = Yazi(L.T("Takılı raket"), 13, "soluk"); alt.AddToClassList("atl-ortala"); alt.pickingMode = PickingMode.Ignore; k.Add(alt);
+            Erisim.Etiket(ad, L.T("Takılı raket") + ": " + L.T(r.ad), "metin");
+
+            int tmin, tmax; Gear.TelAralik(gr.raket, out tmin, out tmax); int tel = Mathf.RoundToInt(gr.tel);
+            int dm = r.dengeMm ?? 290; string da = Gear.DengeAd(dm), saft = r.saft ?? "orta";
+            // Aralık dışı gerginlik yalnız renkle verilmez (fikir 22:10 #5a kuralı): değerde ok, cümlede söz.
+            string telOk = tel > tmax ? " ↑" : tel < tmin ? " ↓" : "";
+            string[] ADLAR = { "Ağırlık", "Denge noktası", "Şaft", "Gerginlik" };   // "Denge" sözlükte "Balanced" (tarz adı), çipte ölçünün adı gerekir
+            string[] DEGER = { (r.u != null ? r.u + " · " : "") + (r.gram ?? 0) + " g", BuyukIlk(L.T(da)), BuyukIlk(L.T(saft)), tel + " lbs" + telOk };
+            string[] ANLAM = {
+                L.T("Hafif raket elde hızlı döner; ağır raket topu daha sert iter, kolu daha çok yorar."),
+                da == "kafa ağır" ? L.T("Kafa ağır: smaç ve clear güçlü, drive ve file geç kalır.")
+                    : da == "kafa hafif" ? L.T("Kafa hafif: savunma ve file hızlı, smaç yumuşak.") : L.T("Dengeli: hücumda da savunmada da orta yol."),
+                saft == "esnek" ? L.T("Esnek şaft zamanlama kaçsa da affeder, ama smaçı yavaşlatır.")
+                    : saft == "orta" ? L.T("Orta şaft: esneklik ile güç arasında.") : L.T("Sert şaft hızlı kolda gücü doğrudan aktarır; zamanlama ister."),
+                L.T("Gevşek tel geniş tatlı nokta, sıkı tel his ve kontrol verir.") + " " + L.T("Bu raket için {0}–{1} lbs.", tmin, tmax)
+                    + (tel > tmax ? " " + L.T("Seninki önerinin üstünde.") : tel < tmin ? " " + L.T("Seninki önerinin altında.") : "") };
+            var cipler = new VisualElement[4];
+            var bilgi = Yazi("", 13, "atl-bilgi"); bilgi.pickingMode = PickingMode.Ignore;
+            System.Action yaz = () =>
+            {
+                int a = System.Array.IndexOf(ADLAR, atlBilgi);
+                for (int i = 0; i < 4; i++) if (cipler[i] != null) CipDurum(cipler[i], i == a);
+                bilgi.text = a >= 0 ? ANLAM[a] : ""; bilgi.style.display = a >= 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            };
+            // 2×2 ızgara: §2.4 eşit öğe dizisi (çip flex-basis 0, iki satır aynı genişlik). Değer üstte (asıl bilgi), ad altında.
+            for (int sat = 0; sat < 2; sat++)
+            {
+                var s = Satir("secim"); s.AddToClassList("atl-olcu"); k.Add(s); if (sat == 0) s.style.marginTop = 10;
+                for (int j = 0; j < 2; j++)
+                {
+                    int i = sat * 2 + j; string adi = ADLAR[i];
+                    cipler[i] = Cip(DEGER[i], atlBilgi == adi, () => { atlBilgi = atlBilgi == adi ? null : adi; yaz(); }, L.T(adi));
+                    s.Add(cipler[i]);
+                }
+            }
+            k.Add(bilgi); yaz();
+            // Model ve gerginlik değişikliği raket yuvasının işi (teknik sayfa da orada); tek ikincil eylem.
+            var d = Dugme(L.T("Raketi değiştir") + "  ›", () => YuvaAc("raket"), "dugme--hayalet"); d.style.marginTop = 10; k.Add(d);
+        }
+        // Vitrin raketi (2026-11-23, r265 karesi): kafa şekli simgesi (RaketSekil.Ikon, 96 px, ince kontur + çubuk) 88 pt'de büyüteç
+        // gibi okunuyordu. Burada 256 px'lik gerçek raket silueti: kalın çerçeve, ince teller, T boğaz, ince şaft, kalın sap. Bir kez
+        // üretilir (alan), 2×2 örnekle kenar yumuşatılır; Hud tuzağı (UnloadUnusedAssets) için C# alanında tutulur.
+        static Texture2D vitrinRaket;
+        static Texture2D VitrinRaket()
+        {
+            if (vitrinRaket != null) return vitrinRaket;
+            const int n = 256; var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var px = new Color32[n * n];
+            for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
+                {
+                    int say = 0, tel = 0;
+                    for (int sy = 0; sy < 2; sy++) for (int sx = 0; sx < 2; sx++)
+                        {
+                            float fx = (x + .25f + .5f * sx) / n * 2 - 1, fy = (y + .25f + .5f * sy) / n * 2 - 1;
+                            float ex = fx / .36f, ey = (fy - .42f) / .5f, e = Mathf.Sqrt(ex * ex + ey * ey);
+                            bool cerceve = Mathf.Abs(e - 1) < .075f;
+                            bool sap = (Mathf.Abs(fx) < .022f && fy < -.07f && fy > -.6f) || (Mathf.Abs(fx) < .065f && fy <= -.6f && fy > -.97f)
+                                || (fy < -.04f && fy > -.2f && Mathf.Abs(fx) < .022f + (fy + .2f) * .45f && Mathf.Abs(fx) > -.1f && e > .9f);
+                            bool ag = e < 1 && (Mathf.Repeat(fx + 1, .08f) < .012f || Mathf.Repeat(fy + 1, .08f) < .012f);
+                            if (cerceve || sap) say++; else if (ag) tel++;
+                        }
+                    // Teller yarı saydam: çerçeveden geri planda dursun, raket "dolu yüzey" gibi okunmasın.
+                    px[y * n + x] = new Color32(255, 255, 255, (byte)((say * 255 + tel * 115) / 4));
+                }
+            t.SetPixels32(px); t.Apply(); vitrinRaket = t; return t;
+        }
+        static string BuyukIlk(string s) { return string.IsNullOrEmpty(s) ? s : s.Substring(0, 1).ToUpper(L.Kultur) + s.Substring(1); }
+
+        // Sahada: yalnız 50'den ayrılan takım çubukları. Satır: ad solda, ▲/▼ + işaretli sayı sağda; çubuk altında kendi satırında
+        // (§1.3), ortada 50 çizgisi, fark ortadan dışa doğru boyanır (kazanç limon, kayıp KAYIP). Gelişim payı sayıya dahil.
+        void SahadaIc(VisualElement k)
+        {
+            var v = Gear.Cubuklar(Ayar.GSE); var gel = Ayar.GelisimCubuk(); int n = 0;
+            k.Add(Yazi(L.T("Sahada"), 16, "kalin"));
+            for (int i = 0; i < 5; i++)
+            {
+                int g = gel != null ? Mathf.Min(gel[i], 100 - v[i]) : 0, t = v[i] + g, f = t - 50; if (f == 0) continue; n++;
+                bool arti = f > 0; string adi = L.T(Gear.CUBUK_AD[i]);
+                var r = new VisualElement(); r.AddToClassList("atl-delta"); r.pickingMode = PickingMode.Ignore; k.Add(r);
+                var ust = Satir("arali"); ust.pickingMode = PickingMode.Ignore; r.Add(ust);
+                ust.Add(Yazi(adi, 13, "atl-delta-ad"));
+                var sag = Satir("rakip-satir"); sag.pickingMode = PickingMode.Ignore; sag.style.marginTop = 0; ust.Add(sag);
+                sag.Add(Ikon(arti ? Ikonlar.Yukari : Ikonlar.Asagi, 12, arti ? LIMON : KAYIP));
+                var sy = Yazi((arti ? "+" : "−") + Mathf.Abs(f), 13, arti ? "atl-arti" : "atl-eksi"); sag.Add(sy);
+                var iz = new VisualElement(); iz.AddToClassList("atl-delta-iz"); iz.pickingMode = PickingMode.Ignore; r.Add(iz);
+                var dl = new VisualElement(); dl.AddToClassList("atl-delta-dolu"); dl.AddToClassList(arti ? "atl-delta-dolu--arti" : "atl-delta-dolu--eksi"); dl.pickingMode = PickingMode.Ignore;
+                dl.style.width = Length.Percent(Mathf.Min(50, Mathf.Abs(f))); iz.Add(dl);
+                var orta = new VisualElement(); orta.AddToClassList("atl-delta-orta"); orta.pickingMode = PickingMode.Ignore; iz.Add(orta);
+                Erisim.Etiket(r, adi + " " + t + ", " + L.T(arti ? "ortalamadan {0} fazla" : "ortalamadan {0} eksik", Mathf.Abs(f)), "metin");
+            }
+            // Boş durum tasarlanır (§10.3): tek cümle; 50 çizgisinin ne olduğu her durumda alt satırda.
+            if (n == 0) k.Add(Yazi(L.T("Hepsi ortalamada: artı da eksi de yok."), 13, "soluk"));
+            var dn = Yazi(L.T("50 ortalama. Ekipman ve gelişimden gelir; tarz ve görünüm değiştirmez."), 12, "soluk"); dn.style.marginTop = 8; k.Add(dn);
+        }
+
+        // Tarz tek satır: dokununca eski seçici (sekmeler + kart + "Bu tarzı seç") altında açılır; yerinde, sayfa kurulmaz (§7.8).
+        void TarzSatir(VisualElement c)
+        {
+            string cur = Ayar.Tarz, ad = cur; foreach (var t in Karakter.Tarzlar) if (t.id == cur) ad = L.T(t.ad);
+            tarzKap = new VisualElement(); tarzKap.AddToClassList("atl-tarz-kap");
+            VisualElement d = null;
+            d = Dugme(L.T("Tarz: {0}", ad), () =>
+            {
+                atlTarzAcik = !atlTarzAcik;
+                if (atlTarzAcik && tarzKap.childCount == 0) TarzGovde(tarzKap);
+                tarzKap.style.display = atlTarzAcik ? DisplayStyle.Flex : DisplayStyle.None;
+                var al = d.Q<Label>(className: "dugme-alt"); if (al != null) al.text = atlTarzAcik ? L.T("Kapat") : L.T("Değiştir");
+                Erisim.Etiket(d, L.T("Tarz: {0}", ad) + ", " + (atlTarzAcik ? L.T("açık") : L.T("kapalı")), "dugme");
+            }, "atl-tarz", atlTarzAcik ? L.T("Kapat") : L.T("Değiştir"));
+            Erisim.Etiket(d, L.T("Tarz: {0}", ad) + ", " + (atlTarzAcik ? L.T("açık") : L.T("kapalı")), "dugme");
+            c.Add(d); c.Add(tarzKap);
+            if (atlTarzAcik) TarzGovde(tarzKap); else tarzKap.style.display = DisplayStyle.None;
         }
 
         // 2026-11-07 (yasin: "kordaj gerginliği kaybolmuş"; ölçüler gerçek raket diliyle): Atölye'nin ana ekranında takılı raketin
