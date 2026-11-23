@@ -5,6 +5,27 @@ Yeni Profil sayfası (23 Kasım):
 - Kupalar artık sekiz yuvanın hepsini gösteriyor: kazandıkların altın zeminde, sıradaki ince çerçeveli. Bir kupaya dokununca Kariyer o tura açılır.
 - Son maçlar tek satır: kazandığın maç G, kaybettiğin M.
 Nasıl denenir: Profil sekmesini aç. Kartta seviye çubuğunun dolduğunu ve "Sonraki seviyeye ... XP" yazısını gör, karta dokun: Dolap açılmalı. Kupalar'da sıradaki tura dokun: Kariyer o turla açılmalı. Bir maç oyna, dön: Son maçlar satırının başına yeni harf gelmeli. Yazı boyutunu büyütünce hiçbir yazı üst üste binmemeli.
+Yeni menü görünümü (23 Kasım):
+- Açılış ekranı artık menüyle aynı stadyum mavisinde; turuncu-kırmızı geçiş kalktı.
+- Alt sekme çubuğu inceldi ve ekranın altında yüzen beyaz bir kapsül oldu. Simgeler ince çizgi oldu, çubuk ekranın altına biraz daha yaklaştı. Seçili sekmenin sarı zemini sekmeler arasında kayarak geçiyor.
+- Sekmelerde küçük işaretler: Atölye'de yeni yükseltme varsa nokta, Kariyer simgesinin çevresinde turdaki ilerleme halkası, yarım kalan maç varsa Oyna'da "II".
+- Oyna sayfasında sahne büyüdü; sıradaki maç plakası sahnenin altına biniyor. Zorluk Oyna düğmesinin sağ parçasında: dokununca dört kademe açılıyor.
+- Günün maçı, Hızlı maç, Antrenman ve Arkadaşınla artık küçük çipler; her birinde tek satır bilgi var (ödül, sayı, yıldız).
+Nasıl denenir: Uygulamayı aç: açılış mavi olmalı. Alt çubukta sekmeler arasında gez: sarı zemin kayarak geçmeli. Oyna'da düğmenin sağındaki "Zorluk"a dokun: altında dört kademe açılmalı, birini seç. Bir maçı yarıda bırakıp menüye dön: Oyna sekmesinde "II" görünmeli.
+Duraklatma ekranı ve ses ayarları (23 Kasım akşamüstü):
+- Duraklatınca ekran bir anda değil, kısa bir solmayla açılıyor.
+- Duraklatma ekranında Ses'in yanında artık Müzik düğmesi de var; müziği kapatmak için maçtan çıkmak gerekmiyor.
+- Patron maçında duraklatınca rakibin imza vuruşu ve ona nasıl cevap verileceği yazıyor.
+- Duraklatma ekranı açıkken telefon arka planda daha az iş yapıyor; maça döndükten sonraki ilk vuruşta takılma azalmalı.
+- Ayarlar'da Ses kapalıyken Müzik, Seyirci ve Düğme sesi satırları soluk görünüyor (seçimlerin kaybolmuyor). Satırlar arasındaki çizgiler yazıyla aynı hizadan başlıyor.
+Nasıl denenir: Bir maçta duraklat: ekran yumuşakça gelmeli, Ses ve Müzik yan yana olmalı; Müzik'e dokun, maça dön, müzik kapalı olmalı. Kariyerde bir patron maçında duraklat: imza vuruşu satırını gör. Ayarlar'da Ses'i kapat: altındaki üç satır soluklaşmalı.
+Dükkân, ödül anları ve Gelişim (23 Kasım öğle):
+- Tüy dükkânında satın aldıktan sonra üstteki Tüy sayısı hemen güncelleniyor (eskiden menüye dönünce eski rakam kalıyordu).
+- Alım hedef eşyanın Tüy'ünü tamamladıysa dükkân bunu söylüyor ve "Şimdi al" düğmesi eşyanın sayfasını açıyor.
+- Seviye atlama ve tur sonu kartları kapanırken bir anda kaybolmuyor, kısa bir solmayla gidiyor. Bu kartlar ve tüy uçuşu 120 Hz ekranlarda daha akıcı.
+- Seviye kartında yeni eşya ve gelişim puanı birlikte gelince alt alta üç düğme yerine iki düğme var; puan satırına ("Dağıt ›") dokununca Gelişim açılıyor.
+- Gelişim'de puanın varken her dalın yanında bir puanın ne kazandıracağı yazıyor (ör. "+%6 → +%8").
+Nasıl denenir: Dükkân'dan bir Tüy paketi al (test hesabıyla), sonra geri çık: üstteki Tüy sayısı yeni olmalı. Bir seviye atla: kart kapanırken yumuşakça solmalı. Puanın varken Gelişim'i aç: dalların yanında ok ve sonraki yüzde görünmeli.
 Profil başarımları ve Dolap kombinleri (23 Kasım sabah):
 - Profil'de kilitli başarımların yanında artık ne kadar kaldığı yazıyor: "20 vuruşluk ralli" için 14/20, seviye 30 için 12/30, antrenman yıldızları için 9/24 gibi. "Henüz değil" ve "Kazanıldı" yazıları kalktı; kilit ve altın tik durumu gösteriyor.
 - Kapalı listede gösterilen üç kilitli başarım artık bitirmeye en yakın olanlar.

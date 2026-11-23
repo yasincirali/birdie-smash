@@ -177,7 +177,8 @@ namespace BirdieSmash.EditorTools
             // kare girmeden geçilsin. iOS açılış görüntüsü de aynı düz renk.
             // 2026-10-27'de yön C ile #1A1221'e çekilmişti; 2026-10-29 (yasin: "html zamanlarındaki gibi olmalı") perde yeniden
             // HTML'deki halkalı diskle açıldığı için açılış rengi yine dış halka #a3234b (Apple HIG: ilk kareyle aynı renk).
-            var perde = new Color(0xa3 / 255f, 0x23 / 255f, 0x4b / 255f);
+            // 2026-11-23 açılış A: perde Stadyum Pop mavisine geçti, açılış rengi yine dış halka (#2659BE = menü zemini).
+            var perde = new Color(0x26 / 255f, 0x59 / 255f, 0xBE / 255f);
             PlayerSettings.SplashScreen.show = false; PlayerSettings.SplashScreen.showUnityLogo = false; PlayerSettings.SplashScreen.backgroundColor = perde;
             IosAcilisRengi(perde); IosAcilisTopu();
             var ikon = AssetDatabase.LoadAssetAtPath<Texture2D>(Icon);
