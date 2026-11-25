@@ -347,6 +347,7 @@
 .atl-delta-dolu { position: absolute; top: 0; bottom: 0; border-radius: 4px; }
 .atl-delta-dolu--arti { left: 50%; background-color: var(--lime); }
 .atl-delta-dolu--eksi { right: 50%; background-color: #FFB4AB; }
+.atl-delta-dolu--buyu { transition-property: scale; transition-duration: 0.22s; transition-timing-function: ease-out; }   /* 26 Kas inceleme #7: değişen çubuk 50 çizgisinden büyür (SoyunmaOdasi DeltaBuyu) */
 .atl-tarz { margin-top: 6px; }
 .atl-tarz-kap { margin-top: 4px; }
 .stat-isaret { width: 16px; margin-left: 4px; align-items: center; flex-shrink: 0; }
@@ -1232,11 +1233,10 @@
 .kisa .sekme-cubugu .sekme-gosterge { top: 5px; }
 .gosterge-var .sekme--secili .sekme-ikon-kap { background-color: rgba(0, 0, 0, 0); }
 .sekme-cubugu .sekme-gosterge.anisiz, .az-hareket .sekme-cubugu .sekme-gosterge { transition-duration: 0s; }
-/* 2026-11-23 alt bant detayları 2-4 (UiKok IsaretKur): nokta, tur halkası, yarım maç işareti. Hepsi simge kabının içinde mutlak
+/* 2026-11-23 alt bant detayları 2-4 (UiKok IsaretKur): nokta, yarım maç işareti (tur halkası 26 Kas incelemesinde kalktı, UiKok IsaretKur notu). Hepsi simge kabının içinde mutlak
    konumlu, yerleşimi oynatmaz; nokta beyaz halkalı (sarı kapsülün üstünde de seçilir), işaret biçimle de okunur (II). */
 .sekme-ikon-kap { overflow: visible; }
 .sekme-nokta { position: absolute; top: 0; right: 6px; width: 8px; height: 8px; border-radius: 4px; background-color: #E8505B; border-width: 1.5px; border-color: #FFFFFF; }
-.sekme-halka { position: absolute; left: 9px; top: -4px; width: 26px; height: 34px; }
 .sekme-devam { position: absolute; top: -3px; right: 4px; padding: 0 3px; border-radius: 4px; background-color: var(--cta-ink); color: #FFFFFF; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 
 /* 2026-11-23 Oyna A detayları (menu-ux-ui-2026-11-23/detay.html). Plaka sahnenin alt üçte birine biner; çipte ad + tek veri

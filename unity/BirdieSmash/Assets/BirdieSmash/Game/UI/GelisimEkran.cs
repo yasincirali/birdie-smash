@@ -215,15 +215,18 @@ namespace BirdieSmash.Game
         void GelisimKart(VisualElement c)
         {
             var p = Ayar.gelisim; if (p == null) return; int bos = Ayar.GelisimBos, top = Gelisim.Toplam(Ayar.gear.Seviye());
+            // 2026-11-26 inceleme (fikir 02:06 #3): puan yokken kart 0 puanlı sayfayı açan sahte düğmeydi ve "Sv 2'de" bilgisini sıradaki
+            // açılış satırıyla ikinci kez veriyordu; ilk puan o satıra eklendi (ProfilEkran), kart yalnız puan varken.
+            if (top == 0) return;
             c.Add(Grup(L.T("Gelişim")));
             var kart = Kart("gel-kart"); kart.AddToClassList("dugme"); c.Add(kart);
             var r = Satir("arali"); r.pickingMode = PickingMode.Ignore; kart.Add(r);
-            string ust = top == 0 ? L.T("İlk puanın Sv 2'de") : L.T("{0}/{1} puan", top - bos, top);
+            string ust = L.T("{0}/{1} puan", top - bos, top);
             r.Add(Yazi(ust, 15, "kalin")); r.Add(Yazi("›", 18, "soluk"));
             // 2026-11-21 inceleme (fikir 17:06 #7): boş puan yokken "Dağılımı değiştir" kartın kendi işini söylüyordu; yerine oyuncunun
             // öne çıkan dalı (en yüksek, eşitlikte ilki). Hiç puan verilmemişse satır yok.
             int en = 0; for (int i = 1; i < Gelisim.DAL; i++) if (p[i] > p[en]) en = i;
-            string alt = top == 0 ? "" : bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : p[en] > 0 ? L.T("Öne çıkan: {0} {1}", L.T(Gelisim.AD[en]), p[en]) : "";
+            string alt = bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : p[en] > 0 ? L.T("Öne çıkan: {0} {1}", L.T(Gelisim.AD[en]), p[en]) : "";
             if (alt != "") { var ay = Yazi(alt, 13, bos > 0 ? "altin" : "soluk"); ay.style.marginTop = 4; ay.pickingMode = PickingMode.Ignore; kart.Add(ay); }
             kart.AddManipulator(new Clickable(() => { Tik(); GelisimAc(); }));
             Erisim.Etiket(kart, L.T("Gelişim") + ": " + ust + (alt != "" ? ", " + alt : ""), "dugme");
