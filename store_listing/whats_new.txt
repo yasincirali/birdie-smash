@@ -1,4 +1,13 @@
 === UNITY ===
+Menü cilası: Profil, Atölye, alt çubuk (26 Kasım gece):
+- Sol üstteki seviye kapsülünde yüzün artık boş beyaz daire kalmıyor; yüz kaybolursa menü dururken kendiliğinden geri geliyor.
+- Yeni oyuncunun Profil sayfasında üç büyük sıfır yerine tek satır var: "İlk maçında rekorların burada birikir · Oyna". İlk maçtan sonra rekor kutuları görünür.
+- 1. seviyede Profil'deki ayrı "Gelişim" kartı kalktı; "2. seviyede 5 yeni eşya ve ilk gelişim puanın açılır" satırı ikisini birlikte söylüyor.
+- Alt çubukta Kariyer simgesinin arkasındaki gri halka kalktı (kilitli sekme gibi görünüyordu).
+- Atölye'de Tarz artık büyük bir düğme değil, "Tarz · Dengeli ›" satırı; tek büyük eylem "Raketi değiştir". Sahada kutusu boşken tek cümle.
+- Atölye'de raket ya da gelişim değişince Sahada çubukları ortadaki çizgiden dışa doğru kayarak büyüyor.
+- Atölye'ye ilk geçişteki küçük takılma azalmalı (raket çizimi menü dururken önceden hazırlanıyor).
+Nasıl denenir: Yeni kayıtla Profil'i aç: üç sıfır yerine tek satır olmalı, dokununca Oyna açılmalı; Gelişim kartı görünmemeli. Alt çubukta Kariyer simgesinin arkası boş olmalı. Sol üstteki yüz dolu olmalı. Atölye'de Tarz satırına dokun: tarz seçici altında açılmalı, sağdaki yazı "Kapat" olmalı. Raketi değiştirip Atölye'ye dön: değişen çubuklar ortadan dışa büyümeli. Ayarlarda hareketi azalt açıkken çubuklar anında görünmeli.
 Maç sonu kartı (23 Kasım gece):
 - Son sayıda ekrana hızlı dokunursan maç sonu kartı atlanmıyor: kart açıldıktan sonra çok kısa bir an düğmeler dokunuşu almıyor, ödülünü ve yıldızlarını görmeden yeni maç başlamıyor.
 - Kartın küçük düğmeleri (reklam, antrenman, Ana menü, Ayrıntılar) basılınca hafifçe küçülüyor, menüdeki gibi ses ve titreşim veriyor.
@@ -14,7 +23,7 @@ Nasıl denenir: Profil sekmesini aç. Kartta seviye çubuğunun dolduğunu ve "S
 Yeni menü görünümü (23 Kasım):
 - Açılış ekranı artık menüyle aynı stadyum mavisinde; turuncu-kırmızı geçiş kalktı.
 - Alt sekme çubuğu inceldi ve ekranın altında yüzen beyaz bir kapsül oldu. Simgeler ince çizgi oldu, çubuk ekranın altına biraz daha yaklaştı. Seçili sekmenin sarı zemini sekmeler arasında kayarak geçiyor.
-- Sekmelerde küçük işaretler: Atölye'de yeni yükseltme varsa nokta, Kariyer simgesinin çevresinde turdaki ilerleme halkası, yarım kalan maç varsa Oyna'da "II".
+- Sekmelerde küçük işaretler: Atölye'de yeni yükseltme varsa nokta, yarım kalan maç varsa Oyna'da "II".
 - Oyna sayfasında sahne büyüdü; sıradaki maç plakası sahnenin altına biniyor. Zorluk Oyna düğmesinin sağ parçasında: dokununca dört kademe açılıyor.
 - Günün maçı, Hızlı maç, Antrenman ve Arkadaşınla artık küçük çipler; her birinde tek satır bilgi var (ödül, sayı, yıldız).
 Nasıl denenir: Uygulamayı aç: açılış mavi olmalı. Alt çubukta sekmeler arasında gez: sarı zemin kayarak geçmeli. Oyna'da düğmenin sağındaki "Zorluk"a dokun: altında dört kademe açılmalı, birini seç. Bir maçı yarıda bırakıp menüye dön: Oyna sekmesinde "II" görünmeli.
