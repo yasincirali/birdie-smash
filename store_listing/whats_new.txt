@@ -1,4 +1,11 @@
 === UNITY ===
+Dokunma hissi (26 Kasım akşam):
+- Alt çubukta sekmeye basınca simge içeri çöküp yaylanıyor; sarı kapsül yeni sekmeye uzayarak kayıyor, simge bir kez sıçrıyor.
+- Bütün düğme ve seçim çiplerinde bırakınca aynı yumuşak yaylanma var; seçilen çipin rengi birden değil süzülerek değişiyor.
+- Ayarlar'daki anahtarlarda basılı tutunca top uzuyor, bırakınca yayla kayıyor (iPhone'daki gibi).
+- Raket telinin kaydırıcısında tutamak beyaz halkalı ve tutunca büyüyor, parmağın altında kaybolmuyor.
+- Hareketi azalt açıkken bunların hiçbiri oynamıyor.
+Nasıl denenir: Alt çubukta sekmeler arasında hızlıca geç. Ayarlar'da Ses anahtarına basılı tut, sonra bırak. Atölye'de tel gerginliğini kaydır. Hareketi azalt'ı açıp aynılarını dene: hareket olmamalı.
 Dolap ve Atölye cilası (26 Kasım öğlen, ikinci tur):
 - Dolap'ta Saç, Şapka, Yüz ve Sırt kutularında artık takılı (ya da denediğin) eşyanın küçük resmi var; boşsa yalnız ad.
 - Denediğin ama almadığın kategori kutusunun sol üst köşesinde "Deneme" etiketi çıkıyor (eski küçük sarı nokta yerine).

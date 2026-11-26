@@ -1065,9 +1065,16 @@ namespace BirdieSmash.Game
             // seçili kabın kendi dolgusu gösterge varken söner (USS .gosterge-var). Eski dikey zıplama kalktı (kapsül havaya kalkıyordu).
             float w = 44f, x = lb.x + (lb.width - w) / 2; bool az = !anim || Ayar.reduce;
             gosterge.EnableInClassList("anisiz", az); if (Mathf.Abs(gosterge.resolvedStyle.width - w) > .5f) gosterge.style.width = w;
-            gosterge.style.translate = new Translate(x, 0);
+            float once = gosterge.resolvedStyle.translate.x; gosterge.style.translate = new Translate(x, 0);
             sekmeCubugu.AddToClassList("gosterge-var");
+            // 2026-11-26 (yasin: "alt bar ... animasyonlar akıcı, göz alıcı"): kapsül yola çıkarken yatay uzar, varınca yayla toplanır;
+            // yeni sekmenin simgesi bir kez sıçrar. Sınıf 110 ms durur (hızlı geçiş), kalkınca taban kuralın ease-out-back'i geri
+            // yaylandırır (USS "hedef durumun süresi" kalıbı). Yalnız scale, yerleşim yok; sekme değişiminde bir kez, karede değil.
+            if (!az && Mathf.Abs(once - x) > 1f) { gostergeIc.AddToClassList("gosterge-ic--uza"); SekmePop(d); popIs?.Pause(); popIs = gostergeIc.schedule.Execute(PopBitir); popIs.ExecuteLater(110); }
         }
+        IVisualElementScheduledItem popIs; VisualElement popIkon;
+        void SekmePop(VisualElement d) { popIkon?.RemoveFromClassList("sekme-ikon--pop"); popIkon = d.Q<Image>(null, "sekme-ikon"); popIkon?.AddToClassList("sekme-ikon--pop"); }
+        void PopBitir() { gostergeIc.RemoveFromClassList("gosterge-ic--uza"); if (popIkon != null) { popIkon.RemoveFromClassList("sekme-ikon--pop"); popIkon = null; } }
         public string GostergeTani { get { return gosterge == null ? "yok" : "x " + gosterge.resolvedStyle.translate.x.ToString("F0") + " w " + gosterge.resolvedStyle.width.ToString("F0") + " sekme " + gez.sekme; } }
         // Perde v2 kapanışı: menü içeriği solarken 12 pt aşağı kayar (Hud.PerdeKayma); sekme çubuğu yerinde kalır.
         float sonKayma;

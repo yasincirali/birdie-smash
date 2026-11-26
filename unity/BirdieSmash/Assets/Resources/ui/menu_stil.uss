@@ -1307,3 +1307,45 @@
 .buyuk-yazi .cta-yazilar { flex-basis: 100%; }
 .buyuk-yazi .cta-zorluk { flex-grow: 1; align-items: flex-start; margin: 8px 0 0 0; padding: 6px 0 0 0; border-left-width: 0; border-top-width: 2px; min-height: 44px; }
 .buyuk-yazi .cta-ikon { margin-top: 8px; }
+
+/* ===== 2026-11-26 hareket dili "yay" (yasin 16:26: "alt bar ve tüm butonlar, kaydırılan, tıklanan bileşenler ... animasyonlar
+   akıcı smooth, tasarımlar göz alıcı ve modern"). Tek kural, her basılabilir öğede: basış 60 ms ease-out ile içeri, bırakış
+   ~0,3 sn ease-out-back ile hafif taşarak yerine (USS'te hedef durumun süresi geçerli; :active kuralı hızlı, taban kural yaylı).
+   Yalnız scale/translate/renk; genişlik yalnız anahtar topunda (27→33 birim, tek öğe, yalnız basılıyken). Hareketi azaltta hepsi
+   0 sn ve küçülme yok (aşağıdaki .az-hareket satırları). Renk rolleri değişmedi (§8): sarı = seçili, mürekkep = kontur. */
+
+/* Alt bar: basınca simge kabı içeri çöker, bırakınca yaylanır; seçilen sekmenin simgesi bir kez sıçrar (UiKok.SekmePop) ve sarı
+   kapsül yola çıkarken yatay uzayıp varınca toplanır (UiKok.GostergeYerlestir, .gosterge-ic--uza 110 ms). */
+.sekme-ikon-kap { transition-property: background-color, scale; transition-duration: 0.12s, 0.3s; transition-timing-function: ease-out, ease-out-back; }
+.sekme:active .sekme-ikon-kap { scale: 0.86 0.86; transition-duration: 0.12s, 0.06s; transition-timing-function: ease-out, ease-out; }
+.sekme-ikon { transition-property: scale; transition-duration: 0.34s; transition-timing-function: ease-out-back; }
+.sekme-ikon.sekme-ikon--pop { scale: 1.22 1.22; transition-duration: 0.1s; transition-timing-function: ease-out; }
+.sekme-cubugu .sekme-gosterge-ic { transition-property: scale; transition-duration: 0.32s; transition-timing-function: ease-out-back; }
+.sekme-cubugu .sekme-gosterge-ic.gosterge-ic--uza { scale: 1.32 0.84; transition-duration: 0.1s; transition-timing-function: ease-out; }
+.sekme-yazi { transition-property: color; transition-duration: 0.16s; transition-timing-function: ease-out; }
+
+/* Çip ve kart çipleri: seçim değişince dolgu ve kontur yumuşak geçer (yerinde değişen CipDurum için; sayfa baştan kurulunca etkisiz). */
+.cip { transition-property: background-color, scale, border-color; transition-duration: 0.14s, 0.3s, 0.14s; transition-timing-function: ease-out, ease-out-back, ease-out; }
+.cip:active { transition-duration: 0.06s, 0.06s, 0.06s; transition-timing-function: ease-out, ease-out, ease-out; }
+/* Yay bütün basılabilirlerde aynı uzunlukta (önceki 0,26 sn; 0,3 sn taşmayı göz seçer, art arda dokunuşta gecikme hissettirmez). */
+.dugme { transition-duration: 0.14s, 0.3s; }
+.cta, .dugum-rozet, .kupa-hucre, .dokunulur { transition-duration: 0.3s; }
+
+/* Anahtar (iOS kalıbı): basılıyken top 27 → 33 birim uzar (açıkken sola doğru, top rayın içinde kalır), bırakınca yayla kayar. */
+.anahtar-top { transition-property: translate, width; transition-duration: 0.3s, 0.16s; transition-timing-function: ease-out-back, ease-out; }
+.anahtar-satir:active .anahtar-top { width: 33px; }
+.anahtar-satir:active .anahtar--acik .anahtar-top { translate: 14px 0; }
+.anahtar-satir--pasif:active .anahtar-top { width: 27px; }
+.anahtar-satir--pasif:active .anahtar--acik .anahtar-top { translate: 20px 0; }
+
+/* Kaydırıcı (tel gerilimi): tutamak beyaz halkalı, tutunca büyür (parmağın altında da görünsün), bırakınca yaylanır. */
+.tel-kaydirici .unity-base-slider__dragger { border-width: 3px; border-color: #FFFFFF; transition-property: scale; transition-duration: 0.3s; transition-timing-function: ease-out-back; }
+.tel-kaydirici .unity-base-slider__drag-container:active .unity-base-slider__dragger { scale: 1.22 1.22; transition-duration: 0.08s; transition-timing-function: ease-out; }
+.tel-kaydirici .unity-base-slider__tracker { height: 8px; margin-top: -4px; border-radius: 4px; }
+
+.az-hareket .sekme-ikon-kap, .az-hareket .sekme-ikon, .az-hareket .sekme-cubugu .sekme-gosterge-ic, .az-hareket .sekme-yazi,
+.az-hareket .cip, .az-hareket .anahtar-top, .az-hareket .tel-kaydirici .unity-base-slider__dragger { transition-duration: 0s; }
+.az-hareket .sekme:active .sekme-ikon-kap, .az-hareket .sekme-ikon.sekme-ikon--pop, .az-hareket .sekme-cubugu .sekme-gosterge-ic.gosterge-ic--uza,
+.az-hareket .cip:active, .az-hareket .tel-kaydirici .unity-base-slider__drag-container:active .unity-base-slider__dragger { scale: 1 1; }
+.az-hareket .anahtar-satir:active .anahtar-top { width: 27px; }
+.az-hareket .anahtar-satir:active .anahtar--acik .anahtar-top { translate: 20px 0; }
