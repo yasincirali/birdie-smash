@@ -41,7 +41,9 @@ namespace BirdieSmash.Game
             var ust = Satir("ant-cift"); c.Add(ust);
             int rk = GameRoot.SonsuzRekor;
             ust.Add(Dugme(L.T("Sonsuz ralli"), () => root.SonsuzOyna(), "ikincil-kart", rk > 0 ? L.T("Rekorun {0} vuruş", rk) : L.T("Kaçırana kadar, her 5 vuruşta hızlanır")));
-            ust.Add(Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", Ayar.antrenman ? L.T("Bitti") : L.T("15 adım, skor yok")));
+            // 2026-11-26 inceleme (fikir 17:06 #6, §7.2; Badminton League/Brawl Stars eğitimi bitince ana yüzeyde tutmaz): biten ders
+            // Sonsuz ralli ile aynı ağırlıkta kart olarak duruyordu; artık görev listesinin dibinde tek satır, Sonsuz ralli tam genişlik.
+            if (!Ayar.antrenman) ust.Add(Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", L.T("15 adım, skor yok")));
             var bas = Satir("arali"); c.Add(bas);
             bas.Add(Yazi(L.T("Görevler"), 13, "etiket")); bas.Add(YildizSayac(pr.AntrenmanYildiz, Dril.ToplamYildiz, 15));
             // 2026-11-20 (inceleme, fikir 17:06 #4; §7 ödül bilgisi kararın verildiği yerde): görev ödülü yalnız görev alt sayfasında
@@ -64,6 +66,7 @@ namespace BirdieSmash.Game
                 cp.AddToClassList("segment-cip"); var eb = cp.userData as ErisimBilgi; if (eb != null) eb.rol = "sekme"; seg.Add(cp); cipler[g] = cp;
             }
             c.Add(liste); AntGrupGoster(cipler, liste, false);
+            if (Ayar.antrenman) { var td = Dugme(L.T("Temel dersi yeniden oyna") + "  ›", () => root.Antrenman(), "kucuk-dugme"); td.style.alignSelf = Align.FlexStart; td.style.marginTop = 8; c.Add(td); }
             AldatmaBolum(c);   // 2026-10-26 aldatıcı vuruşlar: kilitliler de görünür, ne açtığıyla (Game/UI/AldatmaListe)
             c.Add(Bosluk(24));
         }
@@ -185,7 +188,7 @@ namespace BirdieSmash.Game
             // 2026-11-22 inceleme (fikir 07:06 #4, OYUNCUYU GÖSTER): sıradaki rakip yalnız yazıydı; Kariyer şeridindeki iki yüz (sen +
             // rakip, aynı 30 px daireler) renk noktasının yerine. Rakip portresi durgun karede ısıtılır (RakipAvatarIc).
             var cift = new VisualElement(); cift.AddToClassList("av-cift"); cift.pickingMode = PickingMode.Ignore; rk.Add(cift);
-            var ben = new VisualElement(); ben.AddToClassList("serit-av"); ben.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(ben, Portre.Benim(), 16); cift.Add(ben);
+            var ben = new VisualElement(); ben.AddToClassList("serit-av"); ben.style.backgroundColor = Kit.Hex(Ayar.FORMA); BenAvatar(ben, 16); cift.Add(ben);
             var rav = new VisualElement(); rav.AddToClassList("serit-av"); rav.AddToClassList("serit-av--rakip"); rav.style.backgroundColor = Kit.Hex(st.renk); RakipAvatarIc(rav, st, 16, 13); cift.Add(rav);
             { var rkY = Yazi(L.T("Rakip") + " " + st.isim + " · " + L.T(st.ad) + " · " + L.T("{0} sayı", b.uzunluk), 14, "soluk"); rkY.style.whiteSpace = WhiteSpace.Normal; rkY.style.flexShrink = 1; rk.Add(rkY); }
             { var ac2 = Yazi(L.T("Kaybetmek geri düşürmez."), 12, "soluk"); ac2.style.whiteSpace = WhiteSpace.Normal; kart.Add(ac2); }

@@ -57,7 +57,7 @@ namespace BirdieSmash.Game
             var kart = Kart("profil-kart"); kart.AddToClassList("dokunulur"); if (K >= 1.35f) kart.AddToClassList("profil-kart--dikey"); c.Add(kart);
             kart.AddManipulator(new Clickable(() => { Tik(); SekmeAc(Sekme.Soyunma); }));
             var r = Satir("profil-ust"); r.pickingMode = PickingMode.Ignore; kart.Add(r);
-            var av = new VisualElement(); av.AddToClassList("avatar"); av.AddToClassList("profil-yuz"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 48); r.Add(av);
+            var av = new VisualElement(); av.AddToClassList("avatar"); av.AddToClassList("profil-yuz"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); BenAvatar(av, 48); r.Add(av);
             var ad = new VisualElement(); ad.AddToClassList("esnek-yatay"); ad.pickingMode = PickingMode.Ignore; r.Add(ad);
             ad.Add(Yazi(p.Ad ?? L.T("Oyuncu"), 22, "kalin")); var unY = Yazi(L.T(un.ad) + Karakter.KademeEki(un, p), 14, "kalin"); ad.Add(unY); SozcukSigdir(unY);   // 2026-11-07: ×2'de "Neighbourhoo/d" bölünüyordu
             // 2026-11-22 inceleme (fikir 02:06 #5): "Dengeli · Denge" kekeme okunuyordu, hangisinin tarz hangisinin raket olduğu söylenmiyordu.
@@ -71,6 +71,9 @@ namespace BirdieSmash.Game
             var cb = Cubuk(gerek > 0 ? kalan / (float)gerek : efK / (float)Gear.EFSANE_XP, CTA_MUREKKEP, 6); cb.AddToClassList("profil-cubuk"); kart.Add(cb);
             string svY = L.T("Seviye {0}", L_) + " · " + (gerek > 0 ? L.T("Sonraki seviyeye {0} XP", gerek - kalan) : efN > 0 ? L.T("Efsane {0}", efN) : L.T("En yüksek seviye"));
             kart.Add(Yazi(svY, 12, "kalin"));
+            // 2026-11-26 inceleme (fikir 17:06 #1; Brawl Stars/Clash Royale profil kartında "Değiştir"): kartın Dolap'a götürdüğü yalnız
+            // erişim etiketindeydi, gözle keşfedilmiyordu. Dipte tek satır + › (§7.4), yeni renk yok; erişim etiketi aynı.
+            var dg = Yazi(L.T("Görünümünü değiştir") + "  ›", 13, "kalin"); kart.Add(dg);
             System.Action<UnvanBilgi> kartEtiket = u0 => Erisim.Etiket(kart, (p.Ad ?? L.T("Oyuncu")) + ", " + L.T(u0.ad) + Karakter.KademeEki(u0, p) + ", " + svY + ", " + L.T("Dünya sıralaman: {0}", SiraYaz(ds)) + ", " + L.T("Tarz") + " " + L.T(tz.ad) + ", " + L.T("{0} raketi", L.T(Gear.GEAR["raket"][gr.raket].ad)) + ". " + L.T("Görünümünü Dolap'ta değiştir"), "dugme");
             kartEtiket(un);
             // üç büyük sayı: kartın dışında, üç ayrı panel (taslak A). Büyük yazıda (K ≥ 1,35) alt alta.
