@@ -866,6 +866,9 @@
 .sv-yol-tuy .ikon { margin-right: 4px; }
 .sv-yol-etiket { margin-left: 8px; padding: 1px 8px; border-radius: 8px; border-width: 1px; border-color: rgba(249, 210, 114, 0.45); color: var(--gold); }
 .buyuk-yazi .sv-yol { flex-direction: column; align-items: flex-start; }
+/* 2026-11-26 (fikir 22:06 #2): sıradaki 5 seviyede açılan eşyanın küçük resmi, kartın sağında; büyük yazıda altta. */
+.sv-yol-resim { width: 40px; height: 40px; flex-shrink: 0; margin-left: 8px; border-radius: 10px; background-color: rgba(255, 255, 255, 0.08); }
+.buyuk-yazi .sv-yol-resim { margin-left: 0; margin-top: 6px; }
 .buyuk-yazi .sv-yol-no { width: auto; }
 .seviye-odul { flex-direction: row; align-items: center; justify-content: center; flex-wrap: wrap; margin-top: 4px; margin-bottom: 8px; }
 .seviye-odul .ikon { margin-right: 6px; }
@@ -1268,10 +1271,11 @@
 .gosterge-var .sekme--secili .sekme-ikon-kap { background-color: rgba(0, 0, 0, 0); }
 .sekme-cubugu .sekme-gosterge.anisiz, .az-hareket .sekme-cubugu .sekme-gosterge { transition-duration: 0s; }
 /* 2026-11-23 alt bant detayları 2-4 (UiKok IsaretKur): nokta, yarım maç işareti (tur halkası 26 Kas incelemesinde kalktı, UiKok IsaretKur notu). Hepsi simge kabının içinde mutlak
-   konumlu, yerleşimi oynatmaz; nokta beyaz halkalı (sarı kapsülün üstünde de seçilir), işaret biçimle de okunur (II). */
+   konumlu, yerleşimi oynatmaz; nokta beyaz halkalı (sarı kapsülün üstünde de seçilir), işaret biçimle de okunur (iki çubuklu duraklat simgesi, 26 Kas). */
 .sekme-ikon-kap { overflow: visible; }
 .sekme-nokta { position: absolute; top: 0; right: 6px; width: 8px; height: 8px; border-radius: 4px; background-color: #E8505B; border-width: 1.5px; border-color: #FFFFFF; }
-.sekme-devam { position: absolute; top: -3px; right: 4px; padding: 0 3px; border-radius: 4px; background-color: var(--cta-ink); color: #FFFFFF; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+.sekme-devam { position: absolute; top: -3px; right: 4px; flex-direction: row; padding: 2px 2px; border-radius: 4px; background-color: var(--cta-ink); }
+.sekme-devam-cubuk { width: 2px; height: 7px; margin: 0 1px; background-color: #FFFFFF; }
 
 /* 2026-11-23 Oyna A detayları (menu-ux-ui-2026-11-23/detay.html). Plaka sahnenin alt üçte birine biner; çipte ad + tek veri
    satırı, 2×2; Oyna'nın sağ parçası zorluk (dokununca dört kademe altta açılır). Renk rolleri §8: limon = bas, sarı = seçili. */
