@@ -21,7 +21,12 @@ namespace BirdieSmash.Game
         // r16: kamera 3,35 m'de iken baş ve raket kadraj dışındaydı (maket ph0'da baş üstte boşlukla görünür); 4,4 m ve
         // daha alçak bakış: senin oyuncun başından dizine, ayaklar plakanın arkasında.
         public static Vector3 BEN = new Vector3(-.5f, 0, 0), RAKIP = new Vector3(.92f, 0, -1.7f);
-        public static Vector3 KAMERA = new Vector3(.1f, 1.1f, 4.4f), BAKIS = new Vector3(.12f, 1.02f, -.5f);
+        // 2026-11-26 (yasin: "Oyna sayfasında rakip de bizim karakterimiz de full gözükmeli, skinler gözükmüyor, bir çerçeve var
+        // gibi"): 4,4 m'de iki figür belden yukarı görünüyor, bacaklar ve ayakkabılar plaka kartının arkasında kalıyor, raket üstten
+        // kesiliyordu; Dolap'ta giydirilen ayakkabı/şort/sırt eşyası Oyna'da hiç görünmüyordu. Kamera 6,6 m'ye çekildi ve bakış
+        // alçaldı: RT'nin alt %26'sı plakanın arkasında (Duyarli.AFIS_ALT_PAY), ayaklar onun hemen üstünde (~%28), raket ucu
+        // üst kenarın altında. Hesap: dikey 30°'de 6,6 m = 3,53 m yükseklik; ayak→raket ucu ~2,4 m = %68.
+        public static Vector3 KAMERA = new Vector3(.1f, .9f, 6.6f), BAKIS = new Vector3(.12f, .78f, -.5f);
         public static float BEN_YON = 28, RAKIP_YON = -32, ACI = 30;
         // r17: −z'ye bakan kameranın ekran sağı dünya −x'tir; sabitler ekran gözüyle yazıldığı için (sol = ben) dünya
         // konumuna Ek() ile çevrilir (x ve yön işareti döner). r16–r17'de sen sağda, rakip solda çıkıyordu.

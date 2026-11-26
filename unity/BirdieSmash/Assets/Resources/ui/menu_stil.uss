@@ -59,8 +59,6 @@
 .kok { flex-grow: 1; background-color: rgba(0, 0, 0, 0); }
 .kok.koyu { background-color: rgba(38, 89, 190, 0.92); }   /* yön A: diğer sekmelerde gece zemini (salon çok soluk seçilir) */
 .kok.koyu #zemin { display: none; }
-.koyu-gunes { position: absolute; display: none; }
-.kok.koyu .koyu-gunes { display: flex; }   /* 2026-11-07 (AD3): koyu sekmede üstte soluk güneş kesiti (UiKok.ZeminKur) */
 .govde { flex-direction: column; }
 .alan { flex-grow: 1; flex-shrink: 1; }
 .icerik { flex-grow: 1; flex-shrink: 1; }
@@ -333,6 +331,10 @@
 .atl-ortala { -unity-text-align: middle-center; white-space: normal; }
 .atl-olcu { margin: 0 -4px; }   /* çip margin 4px: ızgaranın dış kenarı kartın yazı kenarıyla hizalı (§2.5) */
 .atl-bilgi { color: var(--mu2); white-space: normal; margin-top: 8px; }
+.atl-bilgi--ipucu { color: var(--mu); }   /* 2026-11-26: seçimsiz ipucu soluk; satır hep yer tutar (düğme sıçramaz) */
+.atl-bilgi { opacity: 1; transition-property: opacity; transition-duration: 0.15s; transition-timing-function: ease-out; }
+.atl-bilgi--gir { opacity: 0; transition-duration: 0s; }
+.az-hareket .atl-bilgi { transition-duration: 0s; }
 .atl-delta { margin-top: 10px; }
 .atl-delta-ad { color: var(--mu2); flex-shrink: 0; white-space: nowrap; }
 .atl-arti { color: var(--lime); margin-left: 4px; min-width: 30px; -unity-text-align: middle-right; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
@@ -509,10 +511,6 @@
 
 /* Oyna zemini (a-arena): projektör ışıkları ve VS afişi; içerik bunların üstünde kayar */
 /* 2026-10-29 açılış dili (UiKok.ZeminKur): güneş diski konumu koddan (kare), bant ve iz perdenin bandıyla aynı açıda. */
-.gunes-disk { position: absolute; transform-origin: center; }
-.zemin-bant { position: absolute; left: -30%; right: -30%; top: 56%; height: 24%; rotate: -14deg; background-color: var(--navy); border-top-width: 4px; border-color: var(--sun); }
-.zemin-iz { position: absolute; left: -10%; width: 70%; top: 54.2%; height: 6px; rotate: -14deg; transform-origin: right; }
-.buyuk-yazi .gunes-disk { opacity: 0.5; }
 .isik-sol { position: absolute; left: -120px; top: -80px; width: 300px; height: 300px; }
 .isik-sag { position: absolute; right: -120px; top: -80px; width: 300px; height: 300px; }
 .afis { position: absolute; left: 0; right: 0; top: 8%; height: 54%; }
@@ -759,7 +757,8 @@
    Satın alınan kart 0,6 sn altın çerçeve; hareketi azaltta geçiş yok. Büyük yazıda ızgara tek sütun (iki sütunda taşma adayı). */
 .dukkan-kart-bilgi { flex-grow: 1; }
 .dukkan-demet { margin-right: 6px; flex-shrink: 0; }
-.dukkan-hedef { color: var(--gold); margin-top: 6px; }
+.dukkan-hedef { margin: 6px 0 0 0; align-items: center; }   /* .satir eksi kenarı sıfırlanır, simge metin kolonunda */
+.dukkan-hedef .yazi { color: var(--gold); margin-left: 4px; }   /* 2026-11-26: satır + Tüy simgesi (DukkanEkran) */
 .dukkan-yeter { align-items: center; margin-top: 4px; }
 .dukkan-yeter .kalin { color: var(--gold); margin-left: 4px; }
 .dukkan-durum { padding: 14px; margin-bottom: 8px; }
@@ -887,6 +886,15 @@
 .buyuk-yazi .gel-dugme { width: 56px; height: 56px; }
 .sv-hedef--gelisim { border-color: rgba(255, 201, 60, 0.70); }
 .gel-kart { padding: 10px 12px; }
+/* 2026-11-26 Gelişim yetenek beşgeni + puan anı parlaması (GelisimEkran.GelRadarKur, KartParla). */
+.gel-radar-kap { height: 196px; margin: 4px 0 8px 0; align-items: center; justify-content: center; }
+.gel-radar { width: 140px; height: 140px; }
+.gel-radar-ad { position: absolute; color: var(--tx); -unity-font-style: bold; white-space: nowrap; }
+/* 2026-11-26 inceleme (fikir 17:06 #4): köşe adı dokunulur; dolgu 44 pt alan verir, eksi kenar boşluğu yazıyı yerinde tutar (GEL_AD_PX/PY). */
+.gel-radar-ad { padding: 16px 10px; margin: -16px -10px; -unity-text-align: middle-center; }
+.buyuk-yazi .gel-radar-kap { height: 240px; }
+.gel-dal { transition-property: background-color; transition-duration: 0.3s; transition-timing-function: ease-out; }
+.gel-dal--parla { background-color: rgba(201, 238, 75, 0.22); transition-duration: 0.05s; }
 .gel-ozet { flex-direction: row; align-items: center; min-height: 22px; }
 .gel-ozet-ad { width: 38%; flex-shrink: 0; }
 .gel-ozet-cubuk { flex-grow: 1; flex-shrink: 1; min-width: 0; margin: 0 8px; }
@@ -949,6 +957,11 @@
    genişlik ekran boyu; bilinçli sapma: yarım durakta figürden 14 pt daha almamak için). iPad (.genis): çekmece sağ panel, tutamak yok. */
 .dolap-cekmece { flex-grow: 1; flex-shrink: 1; min-height: 0; margin-top: 8px; background-color: var(--cam); border-top-left-radius: 20px; border-top-right-radius: 20px; border-top-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); }
 .cekmece-tutamak { height: 30px; flex-shrink: 0; align-items: center; justify-content: center; }
+/* 2026-11-26 kapalı çekmece: dipte tutamak şeridi kalır (yukarı kaydır / dokun açar); 44 pt dokunma alanı (HIG). */
+.cekmece-ic { flex-grow: 1; flex-shrink: 1; min-height: 0; }
+.dolap-cekmece--kapali { flex-grow: 0; }
+.dolap-cekmece--kapali .cekmece-ic { display: none; }
+.dolap-cekmece--kapali .cekmece-tutamak { height: 44px; }
 .cekmece-tutamak-cizgi { width: 36px; height: 5px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; background-color: rgba(255, 255, 255, 0.40); }
 .dolap .kategori-ray { margin-top: 0; }
 .dolap .vitrin-alan { height: 60%; min-height: 190px; }
@@ -1059,7 +1072,6 @@
 .kar-hero { padding: 0; overflow: hidden; margin-top: 10px; }
 .kar-hero-sahne { height: 120px; }
 .kisa .kar-hero-sahne, .buyuk-yazi .kar-hero-sahne { height: 84px; }
-.kar-hero-no { position: absolute; left: 10px; top: 10px; padding: 3px 8px; border-radius: 10px; background-color: rgba(14, 32, 84, 0.72); color: var(--tx); }
 .kar-hero-govde { padding: 12px 14px 14px 14px; }
 .kar-hero-ust { flex-direction: row; align-items: center; }
 .kar-hero-ust > .durak-odul { margin-left: 8px; }
@@ -1141,7 +1153,6 @@
 .sekme--secili .sekme-yazi { color: var(--cta-ink); }
 .sekme-gosterge, .sekme--secili .sekme-cizgi, .gosterge-var .sekme--secili .sekme-cizgi { display: none; }
 /* zemin: Gün Batımı'nın güneş bandı ve altın izi yok; kort ve salon ışığı koddan (UiKok.ZeminKur) */
-.zemin-bant, .zemin-iz, .kok.koyu .koyu-gunes { display: none; }
 .kort-zemin, .salon-isik { position: absolute; }
 .buyuk-yazi .kort-zemin { opacity: 0.5; }
 /* üst haplar Stadyum Pop: basılabilir oldukları için mürekkep konturlu, para hapında beyaz "+" (UiKok.UstKur) */
@@ -1177,8 +1188,16 @@
 .dolap-yuva--hareket { width: auto; min-width: 64px; margin: 0; padding: 4px 12px; }
 .dolap-yuva-yazi { color: var(--tx); -unity-text-align: middle-center; white-space: normal; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .dolap-yuva-tik { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 9px; background-color: var(--sun); align-items: center; justify-content: center; }
-.dolap-yuva-nokta { position: absolute; top: 5px; left: 5px; width: 7px; height: 7px; border-radius: 4px; background-color: var(--sun); display: none; }
-.dolap-yuva--deneniyor .dolap-yuva-nokta { display: flex; }
+/* 2026-11-26 inceleme (fikir 12:06 #1, #5, #6): takılı eşya resmi (Saç/Şapka/Yüz/Sırt), "Deneme" etiketi (eski 7 px nokta yerine; ✓ ile
+   aynı renk olsa da yazı ve köşe ayırır), seçimde ✓ yaylanması. Kısa ekranda resim küçülür ki yuva 44 pt kutuda kalsın. */
+.dolap-yuva-resim { width: 28px; height: 28px; margin-bottom: 2px; border-radius: 8px; background-color: rgba(255, 255, 255, 0.08); opacity: 1; transition-property: opacity; transition-duration: 0.2s; }
+.az-hareket .dolap-yuva-resim { transition-duration: 0s; }
+.kisa .dolap-yuva-resim { width: 22px; height: 22px; margin-bottom: 0; }
+.dolap-yuva-deneme { position: absolute; top: -7px; left: -6px; padding: 0 5px; border-radius: 8px; background-color: var(--sun); color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); display: none; }
+.dolap-yuva--deneniyor .dolap-yuva-deneme { display: flex; }
+.dolap-yuva-tik { scale: 1 1; transition-property: scale; transition-duration: 0.18s; transition-timing-function: ease-out-back; }
+.dolap-yuva-tik--gir { scale: 0.6 0.6; transition-duration: 0s; }
+.az-hareket .dolap-yuva-tik { transition-duration: 0s; }
 /* Kısa ekran (SE sınıfı, vitrin ~250 pt): üç yuva 44 pt'ye iner, aralık 2 pt, kolon payı 56; vitrin %50 → %54 ki üç yuva sığsın. */
 .kisa .dolap .vitrin-alan { height: 54%; }
 .kisa .dolap-yuvalar { top: 56px; bottom: 56px; }
@@ -1284,3 +1303,45 @@
 .buyuk-yazi .cta-yazilar { flex-basis: 100%; }
 .buyuk-yazi .cta-zorluk { flex-grow: 1; align-items: flex-start; margin: 8px 0 0 0; padding: 6px 0 0 0; border-left-width: 0; border-top-width: 2px; min-height: 44px; }
 .buyuk-yazi .cta-ikon { margin-top: 8px; }
+
+/* ===== 2026-11-26 hareket dili "yay" (yasin 16:26: "alt bar ve tüm butonlar, kaydırılan, tıklanan bileşenler ... animasyonlar
+   akıcı smooth, tasarımlar göz alıcı ve modern"). Tek kural, her basılabilir öğede: basış 60 ms ease-out ile içeri, bırakış
+   ~0,3 sn ease-out-back ile hafif taşarak yerine (USS'te hedef durumun süresi geçerli; :active kuralı hızlı, taban kural yaylı).
+   Yalnız scale/translate/renk; genişlik yalnız anahtar topunda (27→33 birim, tek öğe, yalnız basılıyken). Hareketi azaltta hepsi
+   0 sn ve küçülme yok (aşağıdaki .az-hareket satırları). Renk rolleri değişmedi (§8): sarı = seçili, mürekkep = kontur. */
+
+/* Alt bar: basınca simge kabı içeri çöker, bırakınca yaylanır; seçilen sekmenin simgesi bir kez sıçrar (UiKok.SekmePop) ve sarı
+   kapsül yola çıkarken yatay uzayıp varınca toplanır (UiKok.GostergeYerlestir, .gosterge-ic--uza 110 ms). */
+.sekme-ikon-kap { transition-property: background-color, scale; transition-duration: 0.12s, 0.3s; transition-timing-function: ease-out, ease-out-back; }
+.sekme:active .sekme-ikon-kap { scale: 0.86 0.86; transition-duration: 0.12s, 0.06s; transition-timing-function: ease-out, ease-out; }
+.sekme-ikon { transition-property: scale; transition-duration: 0.34s; transition-timing-function: ease-out-back; }
+.sekme-ikon.sekme-ikon--pop { scale: 1.22 1.22; transition-duration: 0.1s; transition-timing-function: ease-out; }
+.sekme-cubugu .sekme-gosterge-ic { transition-property: scale; transition-duration: 0.32s; transition-timing-function: ease-out-back; }
+.sekme-cubugu .sekme-gosterge-ic.gosterge-ic--uza { scale: 1.32 0.84; transition-duration: 0.1s; transition-timing-function: ease-out; }
+.sekme-yazi { transition-property: color; transition-duration: 0.16s; transition-timing-function: ease-out; }
+
+/* Çip ve kart çipleri: seçim değişince dolgu ve kontur yumuşak geçer (yerinde değişen CipDurum için; sayfa baştan kurulunca etkisiz). */
+.cip { transition-property: background-color, scale, border-color; transition-duration: 0.14s, 0.3s, 0.14s; transition-timing-function: ease-out, ease-out-back, ease-out; }
+.cip:active { transition-duration: 0.06s, 0.06s, 0.06s; transition-timing-function: ease-out, ease-out, ease-out; }
+/* Yay bütün basılabilirlerde aynı uzunlukta (önceki 0,26 sn; 0,3 sn taşmayı göz seçer, art arda dokunuşta gecikme hissettirmez). */
+.dugme { transition-duration: 0.14s, 0.3s; }
+.cta, .dugum-rozet, .kupa-hucre, .dokunulur { transition-duration: 0.3s; }
+
+/* Anahtar (iOS kalıbı): basılıyken top 27 → 33 birim uzar (açıkken sola doğru, top rayın içinde kalır), bırakınca yayla kayar. */
+.anahtar-top { transition-property: translate, width; transition-duration: 0.3s, 0.16s; transition-timing-function: ease-out-back, ease-out; }
+.anahtar-satir:active .anahtar-top { width: 33px; }
+.anahtar-satir:active .anahtar--acik .anahtar-top { translate: 14px 0; }
+.anahtar-satir--pasif:active .anahtar-top { width: 27px; }
+.anahtar-satir--pasif:active .anahtar--acik .anahtar-top { translate: 20px 0; }
+
+/* Kaydırıcı (tel gerilimi): tutamak beyaz halkalı, tutunca büyür (parmağın altında da görünsün), bırakınca yaylanır. */
+.tel-kaydirici .unity-base-slider__dragger { border-width: 3px; border-color: #FFFFFF; transition-property: scale; transition-duration: 0.3s; transition-timing-function: ease-out-back; }
+.tel-kaydirici .unity-base-slider__drag-container:active .unity-base-slider__dragger { scale: 1.22 1.22; transition-duration: 0.08s; transition-timing-function: ease-out; }
+.tel-kaydirici .unity-base-slider__tracker { height: 8px; margin-top: -4px; border-radius: 4px; }
+
+.az-hareket .sekme-ikon-kap, .az-hareket .sekme-ikon, .az-hareket .sekme-cubugu .sekme-gosterge-ic, .az-hareket .sekme-yazi,
+.az-hareket .cip, .az-hareket .anahtar-top, .az-hareket .tel-kaydirici .unity-base-slider__dragger { transition-duration: 0s; }
+.az-hareket .sekme:active .sekme-ikon-kap, .az-hareket .sekme-ikon.sekme-ikon--pop, .az-hareket .sekme-cubugu .sekme-gosterge-ic.gosterge-ic--uza,
+.az-hareket .cip:active, .az-hareket .tel-kaydirici .unity-base-slider__drag-container:active .unity-base-slider__dragger { scale: 1 1; }
+.az-hareket .anahtar-satir:active .anahtar-top { width: 27px; }
+.az-hareket .anahtar-satir:active .anahtar--acik .anahtar-top { translate: 20px 0; }

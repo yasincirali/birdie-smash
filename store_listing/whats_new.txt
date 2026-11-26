@@ -1,15 +1,58 @@
 === UNITY ===
+<<<<<<< HEAD
 Maç artık renkli (26 Kasım):
 - Her vuruşun kendi rengi var: smaç turuncu, düz vuruş mavi, drop pembe, yüksek top nane yeşili. Topun izi ve vuruş anındaki yıldızlar bu renkte.
 - Sayı aldığında topun düştüğü yerde beş renkli konfeti patlar; rakip sayı alınca küçük ve lila.
 - Tam ortadan vuruşta yıldızlar üç renkli.
 Nasıl denenir: Bir maç oyna. Smaç, drop ve yüksek top at; topun arkasındaki izin ve raketten çıkan yıldızların vuruşa göre renk değiştirdiğini görmelisin. Sayı alınca yerde renkli konfeti görmelisin. Oyun takılmamalı.
 
+=======
+Menü cilası (26 Kasım akşam, üçüncü tur):
+- Profil'deki oyuncu kartının altında "Görünümünü değiştir ›" yazıyor; karta dokununca Dolap açılıyor.
+- Oyna'daki mod düğmelerinde zorluk ve yıldız yazısı biraz büyüdü.
+- Gelişim'de üçgenin köşesindeki dal adına (ör. Güç) dokununca sayfa o dalın kartına kayıyor ve kart bir kez parlıyor.
+- Tüy dükkânında "Tüy eksik" satırının başında Tüy simgesi var.
+- Temel dersi bitirdiysen Antrenman'da üstte yalnız Sonsuz ralli duruyor; dersi tekrar oynamak için görevlerin altında "Temel dersi yeniden oyna ›" satırı var.
+- Menüde arka planda görünmeyen bir döndürme kalktı; menüde uzun kalınca pil ve ısı biraz daha iyi olmalı.
+Nasıl denenir: Profil'de karta dokun, Dolap açılmalı. Gelişim'de üçgenin köşesindeki bir ada dokun. Dükkân'ı bir hedef eşya seçiliyken aç. Antrenman'ı aç.
+Dokunma hissi (26 Kasım akşam):
+- Alt çubukta sekmeye basınca simge içeri çöküp yaylanıyor; sarı kapsül yeni sekmeye uzayarak kayıyor, simge bir kez sıçrıyor.
+- Bütün düğme ve seçim çiplerinde bırakınca aynı yumuşak yaylanma var; seçilen çipin rengi birden değil süzülerek değişiyor.
+- Ayarlar'daki anahtarlarda basılı tutunca top uzuyor, bırakınca yayla kayıyor (iPhone'daki gibi).
+- Raket telinin kaydırıcısında tutamak beyaz halkalı ve tutunca büyüyor, parmağın altında kaybolmuyor.
+- Hareketi azalt açıkken bunların hiçbiri oynamıyor.
+Nasıl denenir: Alt çubukta sekmeler arasında hızlıca geç. Ayarlar'da Ses anahtarına basılı tut, sonra bırak. Atölye'de tel gerginliğini kaydır. Hareketi azalt'ı açıp aynılarını dene: hareket olmamalı.
+Dolap ve Atölye cilası (26 Kasım öğlen, ikinci tur):
+- Dolap'ta Saç, Şapka, Yüz ve Sırt kutularında artık takılı (ya da denediğin) eşyanın küçük resmi var; boşsa yalnız ad.
+- Denediğin ama almadığın kategori kutusunun sol üst köşesinde "Deneme" etiketi çıkıyor (eski küçük sarı nokta yerine).
+- Bir kutuya dokununca köşedeki tik hafifçe yaylanarak beliriyor.
+- Dolap listesini kaydırırken küçük resimler parmak durunca çiziliyor; kaydırma daha akıcı olmalı.
+- Atölye'de "Eşit şartlar" düğmesi Sahada kutusunun başlığının yanına geldi; dokununca değişimi aynı yerde görürsün.
+- Atölye'de raketin ölçü düğmelerinin altında "Bir ölçüye dokun" ipucu duruyor; seçince açıklama yumuşakça beliriyor, "Raketi değiştir" düğmesi artık zıplamıyor.
+Nasıl denenir: Dolap'ı aç, bir şapka dene: Şapka kutusunda resim ve "Deneme" görmelisin. Uzun listeyi hızlı kaydır: takılma olmamalı. Atölye'de Eşit şartlar'a dokun: hemen altındaki çubuklar değişmeli. Ağırlık düğmesine dokun: alttaki düğme yerinde kalmalı.
+Menü listesi (26 Kasım öğlen):
+- Uygulama ikonu ve ilk açılıştaki logo açılış ekranının mavisine geçti.
+- Gelişim üç dala indi: Güç, Kontrol, Çabukluk. Tatlı nokta ve Dayanıklılık kalktı, o dallara verdiğin puanlar boş puan olarak geri geldi. Her puanın etkisi iki katı (dal dolunca +%20).
+- Gelişim sayfasının üstünde üç köşeli yetenek şekli var; puan verince şekil büyüyor, her puanda ses biraz daha yükseliyor, dal dolunca kutlama sesi ve titreşim geliyor.
+- Menü düğmelerinde ses ve titreşim artık parmağın değdiği anda geliyor (eskiden parmak kalkınca).
+- Oyna sayfasında sen ve rakip baştan ayağa görünüyorsunuz; ayakkabı ve kıyafet artık kartın arkasında kalmıyor.
+- Hızlı maçı kazanıp "Bir maç daha"ya basınca aynı tarzdaki rakip geliyor.
+- Dolap'ta listeyi aşağı kaydırıp kapatınca altta ince bir şerit kalıyor; yukarı kaydırınca ya da dokununca liste geri açılıyor. Alt çubuk biraz yukarıda.
+Nasıl denenir: Ana ekrandaki ikonun mavi olduğuna bak. Gelişim'i aç ve puan ver: şekil büyümeli, ses yükselmeli. Bir menü düğmesine basılı tut: ses hemen gelmeli. Oyna sayfasında iki oyuncunun ayakları görünmeli. Hızlı maç kazan, "Bir maç daha" de: rakibin tarzı aynı kalmalı. Dolap'ta listeyi aşağı kaydır, sonra alttaki şeridi yukarı kaydır.
+>>>>>>> origin/main
 Dolap yeniden düzenlendi (23 Kasım akşam):
 - Kategoriler artık oyuncunun iki yanında kutular halinde: solda Yüz, Şapka, Forma; sağda Sırt, Ayakkabı, Raket. Yazılı, kayan şerit kalktı.
 - Hareketler ayrı kutu, oyuncu görüntüsünün sağ üst köşesinde.
 Nasıl denenir: Dolap'ı aç. Oyuncunun iki yanında altı kutu, sağ üstte Hareketler görmelisin. Bir kutuya dokun: kutu sarı çerçeve ve köşede tik alır, alttaki liste o kategoriye geçer. Listeyi tutamaktan yukarı çekip tam aç: kutular gizlenir, yazılı şerit üstte belirir.
 
+Kariyer cilası (26 Kasım sabah):
+- Kariyer, Profil, Gelişim, Antrenman ve Arkadaş ekranlarında senin yüzün artık boş daire kalmıyor; hazır değilse önce küçük insan simgesi, menü dururken yüzün geliyor.
+- Sıradaki maç kartında "Sen" yazısının altında hangi zorlukta oynadığın yazıyor (Kolay, Orta, Zor, Usta).
+- Sahnedeki "Tur 3" etiketi ve tur kutularının üstündeki "3 / 8" kalktı; ilerleme tek sayı: "Durak n/6".
+- Bir maç kazanıp Kariyer'e dönünce yeni rakibin yüzü ve adı sağdan kayarak geliyor, VS hafifçe büyüyor.
+- Alttaki tur kutusuna dokununca sayfa durakların olduğu yere yumuşakça kayıyor (eskiden bir anda sıçrıyordu).
+- Final durağında ödül görünüyor: kupa ve "Tur 4 açılır".
+Nasıl denenir: Kariyer'e gir; "Sen"in altında zorluğu gör, rakibe dokunup maç kartında zorluğu değiştir, geri dönünce yazı değişmiş olmalı. Bir kariyer maçı kazanıp dön: yeni rakip kayarak gelmeli. Alttaki başka bir tur kutusuna dokun: sayfa yumuşakça yukarı kaymalı. Ayarlarda hareketi azalt açıkken kayma ve giriş olmamalı. Final durağına gelince kartın sağ üstünde kupa görünmeli.
 Kariyer sayfası yenilendi (23 Kasım):
 - Sayfanın en üstünde artık sıradaki maç var: turun mekânı, sen ve rakibin yüzü, tek büyük Oyna. Oyna doğrudan maça götürür.
 - Rakibin yüzüne ya da adına dokununca maç kartı açılır (zorluk, yıldız görevleri).

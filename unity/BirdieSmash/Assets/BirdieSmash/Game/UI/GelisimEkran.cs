@@ -23,7 +23,7 @@ namespace BirdieSmash.Game
             var bsol = Satir("rakip-satir"); bsol.pickingMode = PickingMode.Ignore; bsol.style.marginTop = 0; bsol.style.flexShrink = 1f; bas.Add(bsol);
             var av = new VisualElement(); av.AddToClassList("avatar"); av.pickingMode = PickingMode.Ignore; av.style.width = 36; av.style.height = 36;
             av.style.borderTopLeftRadius = av.style.borderTopRightRadius = av.style.borderBottomLeftRadius = av.style.borderBottomRightRadius = 18;
-            av.style.marginRight = 8; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 20); bsol.Add(av);
+            av.style.marginRight = 8; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); BenAvatar(av, 20); bsol.Add(av);
             // 2026-11-22 inceleme (fikir 12:06 #4, §7.4): "Dağıtılacak puan: 3" yanında "7/10 puan" aynı veriyi iki kez söylüyordu,
             // büyük yazıda başlık satırını sarıyordu. Tek etiket: kalan / toplam; bitince "10 puanın hepsi dağıtıldı".
             gelUst = Yazi(GelUstMetin(top, bos), 16, "kalin"); gelUst.style.whiteSpace = WhiteSpace.Normal; gelUst.style.flexShrink = 1; bsol.Add(gelUst);
@@ -31,7 +31,85 @@ namespace BirdieSmash.Game
             // kartını ilk ekranın altına itiyordu (büyük yazıda iki dal görünürdü). Tek kısa satır; Sv 1'de üst satır yeter.
             if (top > 0) { var ac = Yazi(L.T("Dal başına en çok 10 · ücretsiz değiştir"), 13, "soluk"); ac.style.whiteSpace = WhiteSpace.Normal; ac.style.marginTop = 4; ac.style.marginBottom = 6; c.Add(ac); }
             if (Ayar.gear.eko.esit && !Ayar.kariyerModu) { var es = Yazi(L.T("Eşit şartlar açık: gelişim bu maçlarda sayılmaz."), 13, "ipucu"); es.style.whiteSpace = WhiteSpace.Normal; es.style.marginBottom = 6; c.Add(es); }
-            for (int i = 0; i < Gelisim.DAL; i++) c.Add(GelisimDal(i, p[i], bos > 0, top > 0));
+            c.Add(GelRadarKur(p));
+            foreach (var i in Gelisim.GORUNEN) c.Add(GelisimDal(i, p[i], bos > 0, top > 0));   // 2026-11-26: üç dal (Core/Gelisim)
+        }
+
+        // 2026-11-26 (yasin: "Growth kısmı düzgün çalışmıyor, orası animasyon ve görsel olarak tatmin etmeli"; "Growth ilerledikçe
+        // skillerim gelişmeli"): sayfa beş düz kart ve küçük basamaklardan ibaretti; puan vermek "oyuncum gelişti" duygusunu
+        // vermiyordu. Üstte beş dallı yetenek şekli (spor oyunlarının oyuncu kartındaki beşgen): eksenler dalların doluluğu,
+        // limon alan = senin oyuncun (§8 "senin ilerlemen"). Puan verilince alan .28 sn'de yeni değerine esneyerek büyür, geri
+        // alınca küçülür; hareketi azaltta anında. Çizim Painter2D, yalnız değer değişirken (16 ms, en çok ~20 kare) yeniden çizilir.
+        // Kılavuz: 5 ve 10 halkası; adlar köşelerde. 2026-11-26 iki dal kalkınca beşgen üçgene döndü (eksen sayısı GORUNEN'den). Sayı ve "3/10" kartlarda kalır (renk tek başına anlam taşımaz).
+        VisualElement gelRadar; readonly float[] gelRGor = new float[RN], gelRHedef = new float[RN];
+        static readonly int RN = Gelisim.GORUNEN.Length;
+        IVisualElementScheduledItem gelRAni; float gelRAniT; readonly float[] gelRBas = new float[RN];
+        readonly Label[] gelREt = new Label[RN];
+        VisualElement GelRadarKur(int[] p)
+        {
+            var kap = new VisualElement(); kap.AddToClassList("gel-radar-kap"); kap.pickingMode = PickingMode.Ignore;
+            var r = new VisualElement(); r.AddToClassList("gel-radar"); r.pickingMode = PickingMode.Ignore; kap.Add(r); gelRadar = r;
+            for (int i = 0; i < RN; i++) { int d = Gelisim.GORUNEN[i]; gelRGor[i] = gelRHedef[i] = p[d] / (float)Gelisim.TAVAN; var l = Yazi(L.T(Gelisim.AD[d]), 11, "gel-radar-ad"); l.AddToClassList("dokunulur"); kap.Add(l); gelREt[i] = l;
+                l.AddManipulator(new Clickable(() => GelDalaGit(d))); Erisim.Etiket(l, L.T("{0} dalına git", L.T(Gelisim.AD[d])), "dugme"); }
+            r.generateVisualContent += GelRadarCiz;
+            kap.RegisterCallback<GeometryChangedEvent>(e => GelRadarEtiket(kap));
+            var et = ""; for (int i = 0; i < RN; i++) { int d = Gelisim.GORUNEN[i]; et += (i > 0 ? ", " : "") + L.T(Gelisim.AD[d]) + " " + p[d] + "/" + Gelisim.TAVAN; }
+            Erisim.Etiket(kap, L.T("Gelişim") + ": " + et, "resim");
+            return kap;
+        }
+        // 2026-11-26 inceleme (fikir 17:06 #4; FIFA/Brawl Stars yetenek ekranı): köşe adları yalnız resimdi, "Kontrol"e dokunan oyuncuya
+        // hiçbir şey olmuyordu. Ad dokunulur (44 pt görünmez alan USS'te, tek yay basış ölçeği): o dalın kartına .25 sn kayar ve kart
+        // bir kez parlar. Hareketi azaltta kaydırma anında, parlama yok. Ayırma yok (kart dizisi kurulumda dolar).
+        readonly VisualElement[] gelKart = new VisualElement[Gelisim.DAL];
+        void GelDalaGit(int dal)
+        {
+            var k = gelKart[dal]; if (k == null || k.panel == null) return; Tik();
+            var sv = k.GetFirstAncestorOfType<ScrollView>(); if (sv != null) YumusakKaydir(sv, k);
+            if (!Ayar.reduce) KartParla(k);
+        }
+        static Vector2 GelKose(int i, Vector2 m, float yr) { float a = -Mathf.PI / 2 + i * 2 * Mathf.PI / RN; return m + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * yr; }
+        const float GEL_AD_PX = 10, GEL_AD_PY = 16;   // .gel-radar-ad dolgusu (yatay, dikey), USS ile aynı
+        void GelRadarEtiket(VisualElement kap)
+        {
+            if (gelRadar == null) return; var rb = gelRadar.layout; if (float.IsNaN(rb.width) || rb.width < 10) return;
+            var m = rb.center; float yr = rb.width / 2 + 4;
+            for (int i = 0; i < RN; i++)
+            {
+                var l = gelREt[i]; if (l == null) continue; var k = GelKose(i, m, yr); var w = Mathf.Max(0, l.layout.width - 2 * GEL_AD_PX); var h = Mathf.Max(0, l.layout.height - 2 * GEL_AD_PY); if (float.IsNaN(w)) continue;   // yazının kendisi; dolgu dokunma alanı (USS)
+                float x = Mathf.Abs(k.x - m.x) < 2 ? k.x - w / 2 : k.x > m.x ? k.x : k.x - w; float y = i == 0 ? k.y - h : Mathf.Abs(k.y - m.y) < rb.height * .2f ? k.y - h / 2 : k.y;
+                l.style.left = Mathf.Clamp(x, 0, Mathf.Max(0, kap.layout.width - w)); l.style.top = y;
+            }
+        }
+        void GelRadarCiz(MeshGenerationContext mgc)
+        {
+            var r = gelRadar; if (r == null) return; float W = r.contentRect.width, H = r.contentRect.height; if (float.IsNaN(W) || W < 10) return;
+            var pz = mgc.painter2D; var m = new Vector2(W / 2, H / 2); float yr = Mathf.Min(W, H) / 2 - 2;
+            pz.lineJoin = LineJoin.Round;
+            for (int h = 1; h <= 2; h++)
+            {   // kılavuz halkaları (5 ve 10) + eksenler
+                pz.BeginPath(); for (int i = 0; i < RN; i++) { var k = GelKose(i, m, yr * h / 2f); if (i == 0) pz.MoveTo(k); else pz.LineTo(k); } pz.ClosePath();
+                pz.strokeColor = new Color(1, 1, 1, h == 2 ? .28f : .14f); pz.lineWidth = 1; pz.Stroke();
+            }
+            pz.BeginPath(); for (int i = 0; i < RN; i++) { pz.MoveTo(m); pz.LineTo(GelKose(i, m, yr)); } pz.strokeColor = new Color(1, 1, 1, .1f); pz.Stroke();
+            float top = 0; for (int i = 0; i < RN; i++) top += gelRGor[i]; if (top <= .001f) return;
+            pz.BeginPath();
+            for (int i = 0; i < RN; i++) { var k = GelKose(i, m, yr * Mathf.Max(.04f, gelRGor[i])); if (i == 0) pz.MoveTo(k); else pz.LineTo(k); }
+            pz.ClosePath(); pz.fillColor = new Color(LIMON.r, LIMON.g, LIMON.b, .38f); pz.Fill(); pz.strokeColor = LIMON; pz.lineWidth = 2.5f; pz.Stroke();
+        }
+        void GelRadarGuncelle()
+        {
+            if (gelRadar == null || gelRadar.panel == null) return;
+            for (int i = 0; i < RN; i++) { gelRBas[i] = gelRGor[i]; gelRHedef[i] = Ayar.gelisim[Gelisim.GORUNEN[i]] / (float)Gelisim.TAVAN; }
+            if (Ayar.reduce) { for (int i = 0; i < RN; i++) gelRGor[i] = gelRHedef[i]; gelRadar.MarkDirtyRepaint(); return; }
+            gelRAniT = Time.unscaledTime;
+            if (gelRAni != null) return;
+            gelRAni = gelRadar.schedule.Execute(() =>
+            {
+                float k = Mathf.Clamp01((Time.unscaledTime - gelRAniT) / .28f), e = 1 + 2.2f * Mathf.Pow(k - 1, 3) + 1.2f * Mathf.Pow(k - 1, 2);   // ease-out-back
+                for (int i = 0; i < RN; i++) gelRGor[i] = Mathf.LerpUnclamped(gelRBas[i], gelRHedef[i], e);
+                gelRadar.MarkDirtyRepaint(); Kalite.Hareket();
+                if (k >= 1) { gelRAni.Pause(); gelRAni = null; }
+            }).Every(16);
         }
         static string GelUstMetin(int top, int bos) { return top == 0 ? L.T("İlk puanın Sv 2'de") : bos > 0 ? L.T("Dağıtılacak puan: {0} / {1}", bos, top) : L.T("{0} puanın hepsi dağıtıldı", top); }
 
@@ -54,14 +132,22 @@ namespace BirdieSmash.Game
             gelAdim++;
             int n = Ayar.gelisim[dal], sv = Ayar.gear.Seviye(), bos = Ayar.GelisimBos, top = Gelisim.Toplam(sv);
             bool sinir = arti ? (bos == 0 || n >= Gelisim.TAVAN) : n == 0;
-            if (gelAdim == 1 || gelAdim % 3 == 0 || sinir) { if (arti) root.sfx.Yukselt(); else root.sfx.Tik(740); Yerel.Hap("tick"); }
+            // 2026-11-26: verilen her puan bir yarım ton yukarı (dalın doluluğu kulaktan da duyulur), tavana gelince arpej + "win"
+            // titreşimi; geri alma pes tık. Basılı tutarken yine 3 adımda bir.
+            if (gelAdim == 1 || gelAdim % 3 == 0 || sinir)
+            {
+                if (arti && n >= Gelisim.TAVAN) { root.sfx.Yukselt(); Yerel.Hap("win"); }
+                else { root.sfx.Tik(arti ? 660f * Mathf.Pow(2f, n / 12f) : 740f * Mathf.Pow(2f, -(Gelisim.TAVAN - n) / 24f)); Yerel.Hap("tick"); }
+            }
+            GelRadarGuncelle();
             var cb = gelCb[dal];
             if (cb != null)
             {
                 int j = arti ? once : once - 1; var b = j >= 0 && j < cb.childCount ? cb[j] : null;
                 if (b != null) { if (arti) { b.AddToClassList("gel-basamak--dolu"); BasamakDol(b); } else { b.RemoveFromClassList("gel-basamak--dolu"); BasamakSon(b); } }
                 string yz = GelYuzde(dal, n);
-                if (gelSay[dal] != null) gelSay[dal].text = GelSayi(dal, n, bos > 0);
+                if (gelSay[dal] != null) { gelSay[dal].text = GelSayi(dal, n, bos > 0); if (arti) SayiPop(gelSay[dal]); }
+                if (arti) KartParla(cb.parent?.parent);
                 Erisim.Etiket(cb, L.T(Gelisim.AD[dal]) + ", " + n + "/" + Gelisim.TAVAN + (yz != "" ? ", " + yz : "") + GelSonrakiEt(dal, n, bos > 0) + ". " + L.T(Gelisim.NE[dal]), "metin");
             }
             for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true;   // altta duran sekme (Oyna satırı, Profil kartı) kapanışta kurulur
@@ -97,7 +183,7 @@ namespace BirdieSmash.Game
         // "İlk puanın Sv 2'de" yeter. Yüzde yalnız n > 0 iken yazar. Puanı olan oyuncuda pasif düğme kalır (yerleşim oynamasın).
         VisualElement GelisimDal(int dal, int n, bool puanVar, bool dugmeli = true)
         {
-            var k = new VisualElement(); k.AddToClassList("gel-dal");
+            var k = new VisualElement(); k.AddToClassList("gel-dal"); gelKart[dal] = k;
             var ust = Satir("arali"); ust.pickingMode = PickingMode.Ignore; k.Add(ust);
             ust.Add(Yazi(L.T(Gelisim.AD[dal]), 16, "kalin"));
             string yz = GelYuzde(dal, n);
@@ -134,6 +220,21 @@ namespace BirdieSmash.Game
             b.style.transitionTimingFunction = new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseIn) };
             b.schedule.Execute(() => { b.style.scale = new Scale(new Vector3(0, 1, 1)); Kalite.Hareket(); }).StartingIn(16);
             b.schedule.Execute(() => { b.RemoveFromClassList("gel-basamak--dolu"); b.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(0, TimeUnit.Second) }; b.style.scale = new Scale(Vector3.one); }).StartingIn(150);
+        }
+        // Puan anı: sayı .9 → 1.15 → 1 yaylanır, dal kartı limon tonla bir kez parlar (.3 sn söner). Hareketi azaltta yalnız renk.
+        static void SayiPop(VisualElement l)
+        {
+            if (Ayar.reduce) return;
+            l.style.transitionProperty = new System.Collections.Generic.List<StylePropertyName> { new StylePropertyName("scale") };
+            l.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(0, TimeUnit.Second) };
+            l.style.transformOrigin = new TransformOrigin(Length.Percent(100), Length.Percent(50)); l.style.scale = new Scale(new Vector2(1.18f, 1.18f));
+            l.schedule.Execute(() => { l.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(.22f, TimeUnit.Second) };
+                l.style.transitionTimingFunction = new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseOutBack) }; l.style.scale = new Scale(Vector2.one); Kalite.Hareket(); }).StartingIn(16);
+        }
+        static void KartParla(VisualElement k)
+        {
+            if (k == null || !k.ClassListContains("gel-dal")) return;
+            k.AddToClassList("gel-dal--parla"); k.schedule.Execute(() => k.RemoveFromClassList("gel-dal--parla")).StartingIn(90);
         }
         static void BasamakDol(VisualElement b)
         {
@@ -225,7 +326,7 @@ namespace BirdieSmash.Game
             r.Add(Yazi(ust, 15, "kalin")); r.Add(Yazi("›", 18, "soluk"));
             // 2026-11-21 inceleme (fikir 17:06 #7): boş puan yokken "Dağılımı değiştir" kartın kendi işini söylüyordu; yerine oyuncunun
             // öne çıkan dalı (en yüksek, eşitlikte ilki). Hiç puan verilmemişse satır yok.
-            int en = 0; for (int i = 1; i < Gelisim.DAL; i++) if (p[i] > p[en]) en = i;
+            int en = Gelisim.GORUNEN[0]; foreach (var i in Gelisim.GORUNEN) if (p[i] > p[en]) en = i;
             string alt = bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : p[en] > 0 ? L.T("Öne çıkan: {0} {1}", L.T(Gelisim.AD[en]), p[en]) : "";
             if (alt != "") { var ay = Yazi(alt, 13, bos > 0 ? "altin" : "soluk"); ay.style.marginTop = 4; ay.pickingMode = PickingMode.Ignore; kart.Add(ay); }
             kart.AddManipulator(new Clickable(() => { Tik(); GelisimAc(); }));

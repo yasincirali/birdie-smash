@@ -353,7 +353,16 @@ namespace BirdieSmash.Game
                     Ayar.dil = "en"; Ayar.KOZ[Kozmetik.MAC_SONU] = "ucak"; Ayar.KOZ[Kozmetik.YUZ] = kombin[gi][0]; Ayar.KOZ[Kozmetik.SIRT] = kombin[gi][1]; Ayar.KOZ["ayak"] = "ordek_terlik";
                     Ayar.kariyerModu = gi != 2; Ayar.kariyerSecim = -1; root.StartMatch(false, false, false); botAcik = true;
                     var mt = root.match; float t0 = Time.realtimeSinceStartup, enUzun = 0; int sayi = 0;
-                    while (!mt.matchDone && Time.realtimeSinceStartup - t0 < 90) { if (mt.sc[0] < mt.target - 1) mt.sc[0] = mt.target - 1; if (mt.sc[1] > 2) mt.sc[1] = 2; sayi = mt.sc[0] + mt.sc[1]; yield return null; }
+                    // 2026-11-26 renkli maç: ilk turda her vuruş türünden bir kare (iz ve yıldız rengi) ve bir sayı karesi (konfeti).
+                    var renkGoruldu = new System.Collections.Generic.HashSet<string>(); int sayi0 = -1;
+                    while (!mt.matchDone && Time.realtimeSinceStartup - t0 < 90)
+                    {
+                        if (gi == 0 && mt.sc[0] < mt.target - 1 && Time.realtimeSinceStartup - t0 > 45) mt.sc[0] = mt.target - 1; else if (gi != 0 && mt.sc[0] < mt.target - 1) mt.sc[0] = mt.target - 1;
+                        if (mt.sc[1] > 2) mt.sc[1] = 2; sayi = mt.sc[0] + mt.sc[1];
+                        if (gi == 0 && mt.s != null && !mt.s.dead && mt.s.t > .08f && mt.s.t < .3f && renkGoruldu.Count < 4 && renkGoruldu.Add(mt.s.type)) yield return Cek("renk_vurus_" + mt.s.type);
+                        if (gi == 0 && sayi0 >= 0 && sayi != sayi0 && !renkGoruldu.Contains("#sayi")) { renkGoruldu.Add("#sayi"); yield return Bekle(5); yield return Cek("renk_sayi"); }
+                        sayi0 = sayi; yield return null;
+                    }
                     float tz = Time.realtimeSinceStartup; bool kazandi = mt.sc[0] > mt.sc[1];
                     while (root.ekran != Ekran.Bitti && Time.realtimeSinceStartup - tz < 8) { enUzun = Mathf.Max(enUzun, Time.unscaledDeltaTime); yield return null; }
                     rap.AppendLine("macsonu gerçek " + gi + " · " + kombin[gi][0] + "+" + kombin[gi][1] + " · bitti " + mt.matchDone + " · kazandı " + kazandi + " · skor " + mt.sc[0] + "-" + mt.sc[1] + " · ekran " + root.ekran + " · süre " + (Time.realtimeSinceStartup - tz).ToString("F1") + " · en uzun kare " + enUzun.ToString("F2") + " · hata " + hatalar.Count);

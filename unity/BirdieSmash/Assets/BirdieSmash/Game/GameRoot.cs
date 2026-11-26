@@ -185,10 +185,14 @@ namespace BirdieSmash.Game
                 var kt = KariyerVeri.Turlar; int ti = KariyerVeri.TurOf(g); CourtView.Cevre = kt != null && ti < kt.Length ? kt[ti].id : null; CourtView.CevreFinal = KariyerVeri.BasOf(g) == KariyerVeri.BASAMAK - 1;
             }
             else if (rovansSiradaki != null) o.stil = rovansSiradaki;   // Rövanş: az önce yenen rakip (saha Ayar.saha, zaten aynı)
+            // 2026-11-26 (yasin: "Rakiplerin tipleri tekrar oyna deyince değişmemeli"): kazandıktan sonra ana düğme ("Bir maç daha")
+            // rastgele havuzdan yeni tarz çekiyordu (HizliSec son tarzı bile dışlıyor). Artık aynı tarz gelir; güç yine oyuncunun
+            // bugünkü seviyesinden (Serbest), çünkü galibiyetle seviye değişmiş olabilir. Yeni rakip Oyna › Hızlı maç'tan seçilir.
+            else if (tekrarId != null && KariyerVeri.Stil.ContainsKey(tekrarId)) o.stil = KariyerVeri.Serbest(tekrarId, Ayar.ilerleme);
             else if (HizliSecili() != null) o.stil = KariyerVeri.Serbest(HizliSecili(), Ayar.ilerleme);   // 2026-11-11: oyuncunun seçtiği rakip, güç yine oyuncunun seviyesinden
             else o.stil = KariyerVeri.Serbest(KariyerVeri.HizliSec(Ayar.ilerleme, sonHizliStil != null ? sonHizliStil.id : null, rnd), Ayar.ilerleme);   // 2026-10-27: oyuncunun kariyer seviyesinde (KariyerVeri.Serbest); 2026-11-08: havuz = ilk üç + kariyerde yendiğin tarzlar, art arda aynı rakip yok
             sonHizliStil = Ayar.kariyerModu && !ogr ? null : o.stil;   // Match tarzı ölçekleyip klonlar (rakipK); rövanş ölçeksiz aslını taşır
-            rovansSiradaki = null; rovansStil = null;
+            rovansSiradaki = null; rovansStil = null; tekrarId = null;
             mod = Mod.Normal; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
         }
         // Hızlı maçta seçili rakip (2026-11-11 inceleme, fikir 22:05 #1): yalnız havuzdaysa (ilk üç + kariyerde yendiğin tarzlar);
@@ -671,14 +675,15 @@ namespace BirdieSmash.Game
 
         public void UstaDavetGordu() { if (ustaDavetSayildi) return; ustaDavetSayildi = true; PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); kaydetBekle = true; }   // maç sonu kartı karesinde Save yok (2026-11-16 12:05 #5)
         public void UstaDene() { ustaDeneSonraki = true; ustaDavet = false; TekrarOyna(); }
-        Style rovansStil, rovansSiradaki, sonHizliStil;   // rovansStil: maç sonu ekranında sunulan; rovansSiradaki: yalnız ana düğmeyle başlayan maça geçer
+        Style rovansStil, rovansSiradaki, sonHizliStil; string tekrarId;   // rovansStil: maç sonu ekranında sunulan; rovansSiradaki: yalnız ana düğmeyle başlayan maça geçer
         public void TekrarOyna()
         {
             if (mod == Mod.Online) { AnaMenuSonuc(); OnlineAra(); return; }   // "Yeni arkadaş maçı": eski bağlantı kapanır, eşleştirme sayfası açılır
             var m = mod;   // perde kapanınca hangi mod: maç sonundaki mod (ekrandaki düğme onu söyledi)
             if (m == Mod.Gunluk && gunlukSonraOyna) m = Mod.Normal;   // kazanılmış Günün maçı: düğme Oyna'nın maçını söyledi
-            var rv = m == Mod.Normal && !ustaDeneSonraki ? rovansStil : null;   // Usta daveti (UstaDene) de buradan geçer; rövanşı taşımaz
-            hud.Perde(() => { if (m == Mod.Dril) DrilBaslat(drilId); else if (m == Mod.Gunluk) GunlukBaslat(); else if (m == Mod.Usta) UstaBaslat(); else { rovansSiradaki = rv; StartMatch(false, false, false); } });
+            var rv = m == Mod.Normal && !ustaDeneSonraki ? rovansStil : null;
+            string tk = m == Mod.Normal && !ustaDeneSonraki && rv == null && !Ayar.kariyerModu && sonHizliStil != null ? sonHizliStil.id : null;   // Usta daveti (UstaDene) de buradan geçer; rövanşı taşımaz
+            hud.Perde(() => { if (m == Mod.Dril) DrilBaslat(drilId); else if (m == Mod.Gunluk) GunlukBaslat(); else if (m == Mod.Usta) UstaBaslat(); else { rovansSiradaki = rv; tekrarId = tk; StartMatch(false, false, false); } });
         }
         // Mağaza puanı (Ar-Ge 23 Eki #1): sonuç ekranından 1,5 sn sonra, oyuncu hâlâ oradaysa; yalnız sistem penceresi.
         // İstenmediyse sayılmaz. Apple ayrıca yılda 3 ile sınırlar; TestFlight'ta pencere hiç çıkmaz. Android hattı yok.
