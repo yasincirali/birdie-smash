@@ -1,4 +1,8 @@
 === UNITY ===
+Raket daha gerçekçi (26 Kasım):
+- Alt bardaki Atölye simgesi ve Atölye'deki raket gerçek badminton oranlarında: küçük kafa, ince uzun şaft, sargılı sap.
+- Atölye'deki raket artık senin raketin: Dolap'ta seçtiğin kafa şekli, çerçeve, tel, şaft ve grip rengiyle görünür. Dolap'ta bir rengi değiştirip Atölye'ye dön, raket aynı renkte olmalı.
+
 Oyna sayfası düellosu (26 Kasım akşam):
 - VS yazısı artık rakibin üstünde değil, iki oyuncunun tam arasında.
 - İki oyuncu birbirini kışkırtıyor: biri nanik yapar, gel gel der ya da toz atar, öteki hemen cevap verir. Kışkırtma dansın varsa senin oyuncun da onunla cevap verir; yoksa kollarını kavuşturur ya da raketini omzuna alır.

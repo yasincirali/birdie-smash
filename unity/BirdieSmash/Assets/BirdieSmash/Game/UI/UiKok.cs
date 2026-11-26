@@ -431,7 +431,8 @@ namespace BirdieSmash.Game
                 return;
             }
             // Atölye vitrin raketi (fikir 02:06 #8): 256² × 4 örnek ilk Atölye dokunuşunun karesinde üretiliyordu; menü durgunken bir kez.
-            if (vitrinRaket == null && Kalite.MenuDurgun) { VitrinRaket(); return; }
+            // 2026-11-26: doku raket görünüşüne bağlı; Dolap'ta görünüş değişince (aşağıda portreIsitilen) eskir, durgunken yenilenir.
+            if (vitrinRaketEski && Kalite.MenuDurgun) { VitrinRaket(); return; }
             // 2026-11-26 inceleme (fikir 22:06 #1, takılma): maçtan dönüşte Kirlet bütün sekmeleri kirletiyor, ilk Atölye dokunuşu tam
             // kurulum + giriş animasyonunu aynı karede yapıyordu. Menü durgunken Atölye arka planda bir kez kurulur; oyuncu ondan önce
             // dokunursa bugünkü yol. Yalnız Atölye: Kariyer kurulumu bir kez oynayan basamak/rakip girişini, Profil ilk kez görülen
@@ -440,7 +441,7 @@ namespace BirdieSmash.Game
             if (kirli[(int)Sekme.Atolye] && gez.sekme != Sekme.Atolye && seviyeAni == null && root != null && root.ekran == Ekran.Menu && root.vitrin != null && !root.vitrin.gameObject.activeSelf && Kalite.MenuDurgun) { SekmeKur(Sekme.Atolye); return; }
             if (root == null || root.vitrin == null || !root.vitrin.gameObject.activeSelf || !Kalite.MenuDurgun) return;
             string pa = Ayar.model + PlayerView.Benim().Anahtar(); if (pa == portreIsitilen) return;
-            portreIsitilen = pa; Portre.Benim();
+            portreIsitilen = pa; vitrinRaketEski = true; Portre.Benim();
         }
 
         // ---- Ödül anları (2026-10-31, sanat yönü ilk paketi; yasin "yap") ----
