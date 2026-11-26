@@ -1,4 +1,10 @@
 === UNITY ===
+Arkadaşınla oyna sayfası (27 Kasım gece):
+- Çevrimiçi arkadaşlar bölümünde kodunun yanında "Paylaş" düğmesi var; kodunu mesajla tek dokunuşla gönderebilirsin. Kod alanı boşken soluk "Ad#1234" örneği görünür.
+- "Davet et" ya da "Kabul et"e basınca düğme "Gönderiliyor…" olur, sonra "Gönderildi ✓" ya da "Gönderilemedi" yazar; iki kez basınca iki davet gitmez.
+- Sayfa açıkken bir arkadaşın seni çağırırsa adının altında hemen "Seni maça çağırdı" belirir. Gelen istekte "Seni eklemek istiyor" yazar.
+- "Çevrimiçi hesabın hazırlanıyor" yazısı artık takılı kalmıyor: bağlantı bitince sayfa kendiliğinden güncellenir, 10 saniyede olmazsa "Yeniden dene" çıkar.
+Nasıl denenir: Oyna > Arkadaşınla oyna'yı aç, kapat, hemen yeniden aç: birkaç saniye içinde kodun görünmeli. Paylaş'a dokun, paylaşım sayfası açılmalı. Bir arkadaşına davet gönder: düğme yerinde "Gönderildi ✓" yazmalı. İnternet kapalıyken sayfayı aç: 10 saniye sonra "Yeniden dene" görmelisin.
 Raket daha gerçekçi (26 Kasım):
 - Alt bardaki Atölye simgesi ve Atölye'deki raket gerçek badminton oranlarında: küçük kafa, ince uzun şaft, sargılı sap.
 - Atölye'deki raket artık senin raketin: Dolap'ta seçtiğin kafa şekli, çerçeve, tel, şaft ve grip rengiyle görünür. Dolap'ta bir rengi değiştirip Atölye'ye dön, raket aynı renkte olmalı.
