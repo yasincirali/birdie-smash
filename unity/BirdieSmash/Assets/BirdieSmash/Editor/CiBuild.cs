@@ -73,6 +73,7 @@ namespace BirdieSmash.EditorTools
             try
             {
                 string path = Arg("-customBuildPath") ?? "build/StandaloneLinux64/BirdieSmash";
+                UgsBagla();
                 DemoKurulum.Kur();
                 DokuAyar.Denetle();  // ekran turu da aynı boy/mip/süzmeyle çizsin (ASTC yalnız iOS/Android'de; Linux'ta DXT)
                 PlayerSettings.productName = "Birdie Smash"; PlayerSettings.companyName = "Birdie Smash";
@@ -127,9 +128,28 @@ namespace BirdieSmash.EditorTools
             catch (Exception e) { Debug.LogError("Birdie Smash Android build kırıldı: " + e); EditorApplication.Exit(1); }
         }
 
+        // UGS proje kimliği (2026-11-26, yasin: dashboard'da "birdie-smash"). Editor'da bağlama ProjectSettings.asset'te durur ve o dosya
+        // repoda yok; CI'da Application.cloudProjectId boş kalır, UnityServices.InitializeAsync atar. Burada dosyaya serileştirme
+        // üzerinden yazılır. Kimlik gizli değildir (istemci kodunda zaten bulunur).
+        const string UgsProjeId = "d3c0e9f1-7c91-449d-9ea5-64a4827cf7aa";
+        static void UgsBagla()
+        {
+            try
+            {
+                var o = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset");
+                if (o == null || o.Length == 0) { Debug.LogWarning("[CiBuild] UGS: ProjectSettings.asset bulunamadı"); return; }
+                var so = new SerializedObject(o[0]); var p = so.FindProperty("cloudProjectId");
+                if (p == null) { Debug.LogWarning("[CiBuild] UGS: cloudProjectId alanı yok"); return; }
+                p.stringValue = UgsProjeId; so.ApplyModifiedPropertiesWithoutUndo(); AssetDatabase.SaveAssets();
+                Debug.Log("[CiBuild] UGS proje kimliği yazıldı");
+            }
+            catch (Exception e) { Debug.LogWarning("[CiBuild] UGS bağlanamadı: " + e.Message); }
+        }
+
 #pragma warning disable 618   // BuildTargetGroup imzaları Unity 6'da eski sayılır (uyarı); DemoKurulum ile aynı aile, 2021+ derler
         static void Ayarla(string surum)
         {
+            UgsBagla();
             PlayerSettings.productName = "Birdie Smash"; PlayerSettings.companyName = "Birdie Smash";
             PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.iOS, Bundle);
             // Sürüm adı ve build numarası fastlane'de Info.plist'e yeniden yazılır (TestFlight'taki son numara + 1);
