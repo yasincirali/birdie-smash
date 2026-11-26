@@ -24,23 +24,24 @@ namespace BirdieSmash.Game
             var av = new VisualElement(); av.AddToClassList("avatar"); av.pickingMode = PickingMode.Ignore; av.style.width = 36; av.style.height = 36;
             av.style.borderTopLeftRadius = av.style.borderTopRightRadius = av.style.borderBottomLeftRadius = av.style.borderBottomRightRadius = 18;
             av.style.marginRight = 8; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 20); bsol.Add(av);
-            gelUst = Yazi(GelUstMetin(top, bos), 16, "kalin"); bsol.Add(gelUst);
-            gelOran = top > 0 ? Yazi(L.T("{0}/{1} puan", top - bos, top), 13, "soluk") : null; if (gelOran != null) bas.Add(gelOran);
+            // 2026-11-22 inceleme (fikir 12:06 #4, §7.4): "Dağıtılacak puan: 3" yanında "7/10 puan" aynı veriyi iki kez söylüyordu,
+            // büyük yazıda başlık satırını sarıyordu. Tek etiket: kalan / toplam; bitince "10 puanın hepsi dağıtıldı".
+            gelUst = Yazi(GelUstMetin(top, bos), 16, "kalin"); gelUst.style.whiteSpace = WhiteSpace.Normal; gelUst.style.flexShrink = 1; bsol.Add(gelUst);
             // 2026-11-15 (inceleme, fikir 22:05 #5): iki varyantlı uzun paragraf her açılışta aynı kuralı tekrar ediyor, beş dal
             // kartını ilk ekranın altına itiyordu (büyük yazıda iki dal görünürdü). Tek kısa satır; Sv 1'de üst satır yeter.
             if (top > 0) { var ac = Yazi(L.T("Dal başına en çok 10 · ücretsiz değiştir"), 13, "soluk"); ac.style.whiteSpace = WhiteSpace.Normal; ac.style.marginTop = 4; ac.style.marginBottom = 6; c.Add(ac); }
             if (Ayar.gear.eko.esit && !Ayar.kariyerModu) { var es = Yazi(L.T("Eşit şartlar açık: gelişim bu maçlarda sayılmaz."), 13, "ipucu"); es.style.whiteSpace = WhiteSpace.Normal; es.style.marginBottom = 6; c.Add(es); }
             for (int i = 0; i < Gelisim.DAL; i++) c.Add(GelisimDal(i, p[i], bos > 0, top > 0));
         }
-        static string GelUstMetin(int top, int bos) { return top == 0 ? L.T("İlk puanın Sv 2'de") : bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : L.T("Bütün puanların dağıtıldı"); }
+        static string GelUstMetin(int top, int bos) { return top == 0 ? L.T("İlk puanın Sv 2'de") : bos > 0 ? L.T("Dağıtılacak puan: {0} / {1}", bos, top) : L.T("{0} puanın hepsi dağıtıldı", top); }
 
         // Basılı tutunca tekrar (2026-11-15 inceleme, fikir 22:05 #2; iOS UIStepper kalıbı): Sv 30'da 29 puan 29 ayrı dokunuş,
         // her adımda alt sayfa baştan kuruluyor ve senkron kayıt yapılıyordu. Artık ilk dokunuş bir adım; 0,4 sn tutunca ~7/sn,
         // 1,5 sn'den sonra ~14/sn. Her adımda sayfa KURULMAZ: yalnız o dalın basamağı (BasamakDol/BasamakSon), sayısı, erişim
-        // bilgisi, üstteki iki etiket ve düğmelerin pasif sınıfı yerinde güncellenir (yalnız değişince yazılır). Ses her adımda
+        // bilgisi, üstteki etiket ve düğmelerin pasif sınıfı yerinde güncellenir (yalnız değişince yazılır). Ses her adımda
         // değil 3 adımda bir + tavana/sıfıra gelince; kayıt Ayar.KaydetSonra ile parmak kalkınca tek kez. Hareketi azaltta
         // basamaklar anında (Basamak* zaten kısa devre), tekrar aynı.
-        Label gelUst, gelOran;
+        Label gelUst;
         readonly Label[] gelSay = new Label[Gelisim.DAL];
         readonly VisualElement[] gelCb = new VisualElement[Gelisim.DAL], gelArti = new VisualElement[Gelisim.DAL], gelEksi = new VisualElement[Gelisim.DAL];
         IVisualElementScheduledItem gelTekrar; int gelAdim; float gelBasT; Vector3 gelBasP; bool gelBekle; VisualElement gelSahip;
@@ -60,15 +61,28 @@ namespace BirdieSmash.Game
                 int j = arti ? once : once - 1; var b = j >= 0 && j < cb.childCount ? cb[j] : null;
                 if (b != null) { if (arti) { b.AddToClassList("gel-basamak--dolu"); BasamakDol(b); } else { b.RemoveFromClassList("gel-basamak--dolu"); BasamakSon(b); } }
                 string yz = GelYuzde(dal, n);
-                if (gelSay[dal] != null) gelSay[dal].text = n + "/" + Gelisim.TAVAN + (yz != "" ? " · " + yz : "");
-                Erisim.Etiket(cb, L.T(Gelisim.AD[dal]) + ", " + n + "/" + Gelisim.TAVAN + (yz != "" ? ", " + yz : "") + ". " + L.T(Gelisim.NE[dal]), "metin");
+                if (gelSay[dal] != null) gelSay[dal].text = GelSayi(dal, n, bos > 0);
+                Erisim.Etiket(cb, L.T(Gelisim.AD[dal]) + ", " + n + "/" + Gelisim.TAVAN + (yz != "" ? ", " + yz : "") + GelSonrakiEt(dal, n, bos > 0) + ". " + L.T(Gelisim.NE[dal]), "metin");
             }
             for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true;   // altta duran sekme (Oyna satırı, Profil kartı) kapanışta kurulur
             if (gelUst != null) gelUst.text = GelUstMetin(top, bos);
-            if (gelOran != null) gelOran.text = L.T("{0}/{1} puan", top - bos, top);
-            for (int i = 0; i < Gelisim.DAL; i++) { GelPasif(gelArti[i], bos > 0 && Ayar.gelisim[i] < Gelisim.TAVAN); GelPasif(gelEksi[i], Ayar.gelisim[i] > 0); }
+            for (int i = 0; i < Gelisim.DAL; i++)
+            {
+                GelPasif(gelArti[i], bos > 0 && Ayar.gelisim[i] < Gelisim.TAVAN); GelPasif(gelEksi[i], Ayar.gelisim[i] > 0);
+                // son puan verilince ya da geri alınınca öbür dalların "→" önizlemesi de kalkar/gelir (yalnız değişince yazılır)
+                if (gelSay[i] != null && gelArti[i] != null) { string t = GelSayi(i, Ayar.gelisim[i], bos > 0); if (gelSay[i].text != t) gelSay[i].text = t; }
+            }
             return true;
         }
+        // 2026-11-23 inceleme (fikir 12:06 #6): sonraki puanın etkisi ancak puan verilince görünüyordu, oyuncu dallar arasında
+        // deneyerek seçiyordu. Puan varken ve tavanda değilken sayı satırının sonunda sıradaki puanın yüzdesi ("→ +%8"); puan
+        // yokken ya da tavanda yazı yok (baskı ya da boş vaat yok). Metin yalnız değişince yazılır (GelisimAdim yolu).
+        static string GelSayi(int dal, int n, bool puanVar)
+        {
+            string yz = GelYuzde(dal, n), s = n + "/" + Gelisim.TAVAN + (yz != "" ? " · " + yz : "");
+            return puanVar && n < Gelisim.TAVAN ? s + "  → " + GelYuzde(dal, n + 1) : s;
+        }
+        static string GelSonrakiEt(int dal, int n, bool puanVar) { return puanVar && n < Gelisim.TAVAN ? ", " + L.T("bir puanla {0}", GelYuzde(dal, n + 1)) : ""; }
         static string GelYuzde(int dal, int n) { if (n == 0) return ""; return L.En ? "+" + Gelisim.Yuzde(dal, n) + "%" : "+%" + Gelisim.Yuzde(dal, n); }
         static void GelPasif(VisualElement d, bool etkin)
         {
@@ -87,7 +101,7 @@ namespace BirdieSmash.Game
             var ust = Satir("arali"); ust.pickingMode = PickingMode.Ignore; k.Add(ust);
             ust.Add(Yazi(L.T(Gelisim.AD[dal]), 16, "kalin"));
             string yz = GelYuzde(dal, n);
-            var say = Yazi(n + "/" + Gelisim.TAVAN + (yz != "" ? " · " + yz : ""), 14, "rakam"); ust.Add(say); gelSay[dal] = say;
+            var say = Yazi(GelSayi(dal, n, puanVar && dugmeli), 14, "rakam"); ust.Add(say); gelSay[dal] = say;
             var ne = Yazi(L.T(Gelisim.NE[dal]), 12, "soluk"); ne.style.whiteSpace = WhiteSpace.Normal; k.Add(ne);
             var alt = new VisualElement(); alt.AddToClassList("gel-alt"); k.Add(alt);
             int d = dal;
@@ -201,12 +215,18 @@ namespace BirdieSmash.Game
         void GelisimKart(VisualElement c)
         {
             var p = Ayar.gelisim; if (p == null) return; int bos = Ayar.GelisimBos, top = Gelisim.Toplam(Ayar.gear.Seviye());
+            // 2026-11-26 inceleme (fikir 02:06 #3): puan yokken kart 0 puanlı sayfayı açan sahte düğmeydi ve "Sv 2'de" bilgisini sıradaki
+            // açılış satırıyla ikinci kez veriyordu; ilk puan o satıra eklendi (ProfilEkran), kart yalnız puan varken.
+            if (top == 0) return;
             c.Add(Grup(L.T("Gelişim")));
             var kart = Kart("gel-kart"); kart.AddToClassList("dugme"); c.Add(kart);
             var r = Satir("arali"); r.pickingMode = PickingMode.Ignore; kart.Add(r);
-            string ust = top == 0 ? L.T("İlk puanın Sv 2'de") : L.T("{0}/{1} puan", top - bos, top);
+            string ust = L.T("{0}/{1} puan", top - bos, top);
             r.Add(Yazi(ust, 15, "kalin")); r.Add(Yazi("›", 18, "soluk"));
-            string alt = top == 0 ? "" : bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : L.T("Dağılımı değiştir");
+            // 2026-11-21 inceleme (fikir 17:06 #7): boş puan yokken "Dağılımı değiştir" kartın kendi işini söylüyordu; yerine oyuncunun
+            // öne çıkan dalı (en yüksek, eşitlikte ilki). Hiç puan verilmemişse satır yok.
+            int en = 0; for (int i = 1; i < Gelisim.DAL; i++) if (p[i] > p[en]) en = i;
+            string alt = bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : p[en] > 0 ? L.T("Öne çıkan: {0} {1}", L.T(Gelisim.AD[en]), p[en]) : "";
             if (alt != "") { var ay = Yazi(alt, 13, bos > 0 ? "altin" : "soluk"); ay.style.marginTop = 4; ay.pickingMode = PickingMode.Ignore; kart.Add(ay); }
             kart.AddManipulator(new Clickable(() => { Tik(); GelisimAc(); }));
             Erisim.Etiket(kart, L.T("Gelişim") + ": " + ust + (alt != "" ? ", " + alt : ""), "dugme");

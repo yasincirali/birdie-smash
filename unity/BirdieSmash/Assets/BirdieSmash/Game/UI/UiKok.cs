@@ -43,7 +43,7 @@ namespace BirdieSmash.Game
         {
             get
             {
-                string u = gez.Ust; if (u == Gezinti.SEVIYE) return "Seviye yolu"; if (u == Gezinti.GELISIM) return "Gelişim"; if (u == Gezinti.AYAR) return "Ayarlar"; if (u == Gezinti.NASIL) return "Nasıl oynanır"; if (u == Gezinti.LISANS) return "Lisanslar"; if (u == Gezinti.HIZLI) return "Hızlı maç"; if (u == Gezinti.KART) return "Maç kartı"; if (u == Gezinti.YUVA) return "Yuva"; if (u == Gezinti.ANTRENMAN) return "Antrenman"; if (u == Gezinti.DRIL) return "Görev kartı"; if (u == Gezinti.GUNLUK) return "Günün maçı"; if (u == Gezinti.SEC) return "Oyuncunu seç"; if (u == Gezinti.DUKKAN) return "Tüy dükkânı";
+                string u = gez.Ust; if (u == Gezinti.SEVIYE) return "Seviye yolu"; if (u == Gezinti.GELISIM) return "Gelişim"; if (u == Gezinti.AYAR) return "Ayarlar"; if (u == Gezinti.NASIL) return "Nasıl oynanır"; if (u == Gezinti.LISANS) return "Lisanslar"; if (u == Gezinti.HIZLI) return "Hızlı maç"; if (u == Gezinti.KART) return "Maç kartı"; if (u == Gezinti.YUVA) return "Yuva"; if (u == Gezinti.ANTRENMAN) return "Antrenman"; if (u == Gezinti.DRIL) return "Görev kartı"; if (u == Gezinti.GUNLUK) return "Günün maçı"; if (u == Gezinti.SEC) return "Oyuncunu seç"; if (u == Gezinti.ARKADAS) return "Arkadaşınla oyna"; if (u == Gezinti.HAREKET) return "Nasıl oynamak istersin?"; if (u == Gezinti.DUKKAN) return "Tüy dükkânı";
                 if (gez.sekme == Sekme.Soyunma) return root.vitrin.hedefGec >= 1 ? "Raket tezgâhı" : "Dolap";
                 if (gez.sekme == Sekme.Atolye) return "Atölye";
                 return gez.sekme == Sekme.Kariyer ? "Kariyer" : gez.sekme == Sekme.Profil ? "Profil" : "Menü";
@@ -91,6 +91,7 @@ namespace BirdieSmash.Game
             kok.RegisterCallback<WheelEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
             kok.RegisterCallback<TransitionRunEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
             zemin = kok.Q<VisualElement>("zemin"); alan = kok.Q<VisualElement>("alan"); ust = kok.Q<VisualElement>("ust"); icerik = kok.Q<VisualElement>("icerik");
+            ust.schedule.Execute(PortreIsit).Every(300);   // Dolap açıkken bugünkü portreyi durgun anda ısıtır (aşağıda)
             sayfa = kok.Q<VisualElement>("sayfa"); sekmeCubugu = kok.Q<VisualElement>("sekmeler"); ReklamKur(kok.Q<VisualElement>("reklam")); altKatman = kok.Q<VisualElement>("alt-katman"); kalkan = kok.Q<VisualElement>("kalkan");
             // 2026-10-26 Yayın Gecesi: gövde yazı tipi (2026-10-29 Tüycükler: Nunito; eskisi Barlow; Resources/fonts, OFL). Sınıf kuralları (menu_stil.uss) kalın ve başlık
             // dosyalarını seçer; kökteki satır içi değer, USS çözülemezse ya da tema yoksa da gövde yazısına düşülsün diye.
@@ -172,7 +173,7 @@ namespace BirdieSmash.Game
             if (govde != null) { govde.style.top = pu; govde.style.left = ps; govde.style.right = pr; }
             altKatman.style.top = pu; altKatman.style.left = ps; altKatman.style.right = pr;
             guvPay = new Vector3(pu, ps, pr);
-            altBosluk = Mathf.Max(0, sa.yMin) * s; sekmeCubugu.style.paddingBottom = altBosluk; if (altSayfa != null) altSayfa.style.paddingBottom = altBosluk + 16;
+            altBosluk = Mathf.Max(0, sa.yMin) * s; CubukAltPay(); if (altSayfa != null) altSayfa.style.paddingBottom = altBosluk + 16;
             SutunYaz(pw);
         }
 
@@ -242,7 +243,7 @@ namespace BirdieSmash.Game
         }
 
         // ---- gezinti ----
-        public void SekmeAc(Sekme s) { var once = gez.sekme; bool sayfaYok = gez.Ust == null; bool d = gez.SekmeSec(s); if (d) Yerel.Hap("tick"); Uygula(once, d); if (!d && sayfaYok) BasaKaydir(); }
+        public void SekmeAc(Sekme s) { var once = gez.sekme; bool sayfaYok = gez.Ust == null; bool d = gez.SekmeSec(s); if (d) { root.sfx.UiSes("sekme"); Yerel.Hap("tick"); } Uygula(once, d); if (!d && sayfaYok) BasaKaydir(); }
         // 2026-11-19 inceleme (fikir 07:06 #2, HIG sistem kalıbı): seçili sekmeye ikinci dokunuş, açık sayfa yoksa listeyi başa
         // kaydırır (iOS sekme çubuğu davranışı; Kariyer 8 tur, Dükkân uzun). Açık sayfa varken ilk dokunuş köke döner (eskisi gibi).
         // .25 sn ease-out, hareketi azaltta anında; yalnız scrollOffset değişir, sekme yeniden kurulmaz.
@@ -263,7 +264,7 @@ namespace BirdieSmash.Game
         public void MacKartAc(int g) { var once = gez.sekme; kartBasamak = g; gez.Ac(Gezinti.KART); Uygula(once, true); }
         public void KariyerTurSec(int t) { kariyerTur = t; kirli[(int)Sekme.Kariyer] = true; if (gez.sekme == Sekme.Kariyer && gez.Ust == null) SekmeKur(Sekme.Kariyer); }
         void SayfaAc(string s) { var once = gez.sekme; gez.Ac(s); Uygula(once, true); }
-        public void Geri() { var once = gez.sekme; if (gez.Geri()) { Yerel.Hap("tick"); Uygula(once, true); } }
+        public void Geri() { var once = gez.sekme; if (gez.Geri()) { root.sfx.UiSes("geri"); Yerel.Hap("tick"); Uygula(once, true); } }
         void AltKapat() { var once = gez.sekme; gez.AltKapat(); Uygula(once, false); }
         // 2026-11-11 inceleme (fikir 20:05 #3, HIG standart gezinme): tam sayfada sol kenardan geri kaydırma 70 pt'de sayfayı bir
         // anda kaldırıyordu; parmak sayfayı taşımıyordu. Artık sayfa parmakla sağa kayar; altta dönülecek sekme (yığında tek sayfa
@@ -312,6 +313,7 @@ namespace BirdieSmash.Game
         bool altKapaniyor; Color altZemin = new Color(0, 0, 0, -1);
         void AltKapatKay()
         {
+            if (!altKapaniyor && Time.frameCount != tikKare) { tikKare = Time.frameCount; root.sfx.UiSes("geri"); }   // 2026-11-22: alt sayfa kapanışı geri sesiyle; aynı karede düğmenin pop'u çaldıysa ikinci ses yok
             var v = altSayfa; if (v == null) { AltKapat(); return; }
             if (altKapaniyor) return; altKapaniyor = true; Yerel.Hap("tick");
             float sure = Ayar.reduce ? 0.12f : 0.2f;
@@ -357,10 +359,11 @@ namespace BirdieSmash.Game
                 if (sekmeDugme[i] != null)
                 {
                     sekmeDugme[i].EnableInClassList("sekme--secili", on); var b = sekmeDugme[i].userData as ErisimBilgi; if (b != null) b.secili = on;
-                    var im = sekmeDugme[i].Q<Image>(null, "sekme-ikon"); if (im != null) im.tintColor = on ? TURUNCU : SOLUK;   // seçili: limon dolgu üstünde koyu simge; 2026-10-27 yön C: dolgu yok, turuncu simge
+                    var im = sekmeDugme[i].Q<Image>(null, "sekme-ikon"); if (im != null) im.tintColor = on ? CTA_MUREKKEP : SEKME_SOLUK;   // 2026-11-22 Stadyum Pop: beyaz çubuk, seçili sarı hap üstünde mürekkep   // seçili: limon dolgu üstünde koyu simge; 2026-10-27 yön C: dolgu yok, turuncu simge
                 }
             }
             GostergeYerlestir(anim && s != once);   // 2026-10-27 yön C: üst çizgi yeni sekmeye yayla kayar
+            IsaretGuncelle();
             ust.style.display = tam == null ? DisplayStyle.Flex : DisplayStyle.None;
             if (tam != null) { SayfaKur(tam); sayfa.style.display = DisplayStyle.Flex; if (anim) Giris(sayfa); } else { sayfa.style.display = DisplayStyle.None; sayfa.Clear(); }
             string altS = gez.AcikAltSayfa;
@@ -387,6 +390,27 @@ namespace BirdieSmash.Game
             if (ustKirli) UstKur();
         }
         string portreAnah;
+        // 2026-11-21 inceleme (fikir 22:06 #2): Dolap'tan çıkış karesinde üst çubuk, Oyna kartı, Kariyer ve Profil portreyi
+        // (Portre.Benim) önbellekte bulamayınca FBX figürünü aynı karede çiziyordu; vitrin kapanışı ve sekme girişiyle üst üste.
+        // Dolap açıkken görünüm her değiştiğinde portre menü durgunken (son dokunuştan sonra) bir kez çizilir; çıkışta hepsi
+        // önbellekten gelir. Vitrin kapalıyken yalnız bir bool okunur; anahtar dizesi yalnız Dolap'ta, 300 ms'de bir.
+        string portreIsitilen;
+        VisualElement ustAvatar; RenderTexture ustPortre; int ustPortreDeneme;
+        void PortreIsit()
+        {
+            // Üst şerit avatarı: canlı doku varken yalnız iki null/IsCreated okuması (ayırma yok). Çizim başarısızsa en çok 3 deneme.
+            if (ustAvatar != null && ustAvatar.panel != null && (ustPortre == null || !ustPortre.IsCreated()) && ustPortreDeneme < 3 && Kalite.MenuDurgun)
+            {
+                ustPortreDeneme++; var t = Portre.Benim() as RenderTexture;
+                if (t != null) { ustPortre = t; ustPortreDeneme = 0; ustAvatar.Clear(); ustAvatar.RemoveFromClassList("avatar--portre"); AvatarIc(ustAvatar, t, 24); }
+                return;   // aynı tikte ikinci ağır iş yok
+            }
+            // Atölye vitrin raketi (fikir 02:06 #8): 256² × 4 örnek ilk Atölye dokunuşunun karesinde üretiliyordu; menü durgunken bir kez.
+            if (vitrinRaket == null && Kalite.MenuDurgun) { VitrinRaket(); return; }
+            if (root == null || root.vitrin == null || !root.vitrin.gameObject.activeSelf || !Kalite.MenuDurgun) return;
+            string pa = Ayar.model + PlayerView.Benim().Anahtar(); if (pa == portreIsitilen) return;
+            portreIsitilen = pa; Portre.Benim();
+        }
 
         // ---- Ödül anları (2026-10-31, sanat yönü ilk paketi; yasin "yap") ----
         // Tüy ve seviye eskiden sessizce bir sayı olarak değişiyordu. Menüye dönüşte (üst çubuk yeniden kurulurken) Tüy arttıysa
@@ -447,7 +471,7 @@ namespace BirdieSmash.Game
             }
             tz.experimental.animation.Start(0f, 1f, 820, (v, t) =>
             {
-                float k = Mathf.Clamp01((t - .35f) / .65f); tz.text = Sayi(Mathf.RoundToInt(Mathf.Lerp(once, hedef, k * (2 - k))));
+                float k = Mathf.Clamp01((t - .35f) / .65f); tz.text = Sayi(Mathf.RoundToInt(Mathf.Lerp(once, hedef, k * (2 - k)))); Kalite.Canli();
             }).OnCompleted(() => { tz.text = Sayi(hedef); root.sfx.Tik(1320); Yerel.Hap("tick"); });
             tuy.experimental.animation.Start(0f, 1f, 820, (v, t) => { float k = t < .6f ? 0 : (t - .6f) / .4f; v.style.scale = new Scale(Vector3.one * (1 + .12f * Mathf.Sin(k * Mathf.PI))); })
                 .OnCompleted(() => tuy.style.scale = StyleKeyword.Null);
@@ -463,7 +487,7 @@ namespace BirdieSmash.Game
         {
             float g = Mathf.Clamp01((Time.unscaledTime - azalBas) / AZAL_SN); int ms = Mathf.Max(1, Mathf.RoundToInt((1 - g) * AZAL_SN * 1000)); int o = azalOnce, h = azalHedef;
             tz.text = Sayi(Mathf.RoundToInt(Mathf.Lerp(o, h, g * (2 - g))));
-            tz.experimental.animation.Start(0f, 1f, ms, (v, t) => { float k = Mathf.Lerp(g, 1, t); tz.text = Sayi(Mathf.RoundToInt(Mathf.Lerp(o, h, k * (2 - k)))); })
+            tz.experimental.animation.Start(0f, 1f, ms, (v, t) => { float k = Mathf.Lerp(g, 1, t); tz.text = Sayi(Mathf.RoundToInt(Mathf.Lerp(o, h, k * (2 - k)))); Kalite.Canli(); })
                 .OnCompleted(() => tz.text = Sayi(h));
             tuy.experimental.animation.Start(0f, 1f, ms, (v, t) => { float k = Mathf.Lerp(g, 1, t); v.style.scale = new Scale(Vector3.one * (1 - .04f * Mathf.Sin(k * Mathf.PI))); })
                 .OnCompleted(() => tuy.style.scale = StyleKeyword.Null);
@@ -472,6 +496,24 @@ namespace BirdieSmash.Game
         // Seviye anı ve tur töreni iskeleti (2026-11-10 inceleme, fikir 02:05 #1): r147 büyük yazıda seviye anının 11 satırı ve
         // "Tamam" düğmesi ezilmişti (sütun ekrandan uzun, satırlar küçülüyordu). İçerik kayan sütunda, düğmeler altta sabit.
         // Kapatma artık yalnız zemine dokununca (önce içeriğe dokunmak da kapatıyordu; kaydırma sürüklemesi kapatmasın diye).
+        // 2026-11-23 inceleme (fikir 12:06 #2): ödül anları experimental.animation ile oynuyor, Kalite.Hareket/Canli çağırmıyordu;
+        // ProMotion'da 60 Hz'de, dokunuşsuz 3 sn sonra açılınca 30 fps çizimde kalıyordu. Animasyon süresince her güncellemede Canli
+        // (bir float yazımı, ayırma yok); 120 Hz koşulları (ısı, düşük güç, basamak) Kalite'de aynen geçerli.
+        static void CanliTut(VisualElement v, long ms) { if (!Ayar.reduce) v.schedule.Execute(Kalite.Canli).Every(0).ForDuration(ms); }
+        // 2026-11-23 inceleme (fikir 12:06 #3): kart açılışta 220 ms solarak geliyor, kapanışta bir karede yok oluyordu; tören →
+        // seviye anı zincirinde sert kesme. Kapanış açılışın tersi: 160 ms solma + 0,98 ölçek (iOS sunum/kapanış 200–240 ms
+        // kılavuzunun kısa ucu, çıkış girişten hızlı). Ardından gelen iş (sonraki kart, sekme) solmayı beklemez, kart üstte söner;
+        // solarken üstte şeffaf bir kalkan çift dokunuşu yutar. Hareketi azaltta anında kaldırılır.
+        void AniSondur(VisualElement o)
+        {
+            if (Ayar.reduce || o.panel == null) { o.RemoveFromHierarchy(); return; }
+            var kalkan = new VisualElement(); kalkan.style.position = Position.Absolute; kalkan.style.left = 0; kalkan.style.top = 0; kalkan.style.right = 0; kalkan.style.bottom = 0; o.Add(kalkan);
+            float o0 = o.resolvedStyle.opacity;
+            o.experimental.animation.Start(0f, 1f, 160, (v, t) =>
+            {
+                float e = t * t; v.style.opacity = o0 * (1 - e); if (v.childCount > 0) v[0].style.scale = new Scale(Vector3.one * (1 - .02f * e)); Kalite.Canli();
+            }).OnCompleted(() => o.RemoveFromHierarchy());
+        }
         VisualElement AniIskelet(VisualElement o, System.Action kapat, out VisualElement eylem)
         {
             o.RegisterCallback<ClickEvent>(e => { if (e.target == o) kapat(); });
@@ -493,7 +535,8 @@ namespace BirdieSmash.Game
         {
             if (seviyeAni != null) seviyeAni.RemoveFromHierarchy();
             var o = new VisualElement(); o.AddToClassList("seviye-ani"); seviyeAni = o; kok.Add(o);
-            System.Action kapat = () => { if (seviyeAni == o) seviyeAni = null; o.RemoveFromHierarchy(); };
+            bool kapandi = false;
+            System.Action kapat = () => { if (kapandi) return; kapandi = true; if (seviyeAni == o) seviyeAni = null; AniSondur(o); };
             VisualElement ey; var ic = AniIskelet(o, kapat, out ey);
             ic.Add(Yazi(Buyuk(L.T("Seviye atladın")), 15, "seviye-ust"));
             var sayi = Yazi(L.T("Sv {0}", sv), 64, "rakam"); sayi.AddToClassList("seviye-sayi"); ic.Add(sayi);
@@ -501,7 +544,8 @@ namespace BirdieSmash.Game
             int svTuy = Gear.SvOdulAralik(once, sv);
             if (svTuy > 0) { var or_ = new VisualElement(); or_.AddToClassList("seviye-odul"); or_.Add(Ikon(Ikonlar.Tuy, 22, ALTIN)); or_.Add(Yazi(L.T("+{0} Tüy", Sayi(svTuy)), 22, "rakam")); or_.Add(Yazi(L.T("Seviye ödülü"), 14, "soluk")); ic.Add(or_); }
             // 2026-11-10 oyuncu gelişimi: her seviye bir puan; an yalnız söyler, dağıtım Gelişim sayfasında (Oyna'daki satır götürür).
-            if (sv > once && Ayar.GelisimBos > 0) { var gy = Yazi(L.T("+{0} gelişim puanı", System.Math.Min(sv - once, Ayar.GelisimBos)), 15, "kalin"); gy.AddToClassList("seviye-gelisim"); ic.Add(gy); }
+            Label gy = null;
+            if (sv > once && Ayar.GelisimBos > 0) { gy = Yazi(L.T("+{0} gelişim puanı", System.Math.Min(sv - once, Ayar.GelisimBos)), 15, "kalin"); gy.AddToClassList("seviye-gelisim"); ic.Add(gy); }
             var acilan = Karakter.AcilanAralik(once, sv); var liste = new VisualElement(); liste.AddToClassList("seviye-liste"); ic.Add(liste);
             // 2026-11-07 stüdyo incelemesi (UX1, GD4): açılanlar nerede bulunacaklarıyla gruplu ("Dolapta", "Atölyede", "Ayrıca"),
             // grup başına en çok 3 satır; tek turuncu düğme ilk grubun yerine götürür (raket parçasıysa Atölye'de o yuva açık).
@@ -525,15 +569,25 @@ namespace BirdieSmash.Game
             // 2026-11-10 (Ar-Ge 19:49 #5): seviye puan verdi ama dağıtmak için Oyna'ya dönüp satırı bulmak gerekiyordu. Açılan eşya
             // yokken birincil düğme budur; varken ikinci sırada durur (üç düğme: eşya, puan, tamam).
             bool puanVar = Ayar.GelisimBos > 0;
-            if (puanVar) ey.Add(Dugme(L.T("Puanı dağıt"), () => { kapat(); GelisimAc(); }, ilkGrup != null ? "dugme--hayalet" : "dugme--birincil"));
+            // 2026-11-23 inceleme (fikir 12:06 #5): eşya + puan varken eylem sütununda üç düğme alt alta duruyordu (SE'de 3×52 pt,
+            // iki eşit hayalet). Puan satırı zaten içerikte: o satır 44 pt dokunulabilir olur ("Dağıt ›"), sütunda en çok iki düğme.
+            // Eşya yokken "Puanı dağıt" birincil kalır (tek iş o).
+            if (puanVar && ilkGrup != null && gy != null)
+            {
+                gy.text += " · " + L.T("Dağıt") + " ›"; gy.AddToClassList("seviye-gelisim--dokun");
+                gy.AddManipulator(new Clickable(() => { Tik(gy); kapat(); GelisimAc(); }));
+                Erisim.Etiket(gy, L.T("+{0} gelişim puanı", System.Math.Min(sv - once, Ayar.GelisimBos)) + ", " + L.T("Puanı dağıt"), "dugme");
+            }
+            else if (puanVar) ey.Add(Dugme(L.T("Puanı dağıt"), () => { kapat(); GelisimAc(); }, ilkGrup != null ? "dugme--hayalet" : "dugme--birincil"));
             ey.Add(Dugme(L.T("Tamam"), kapat, ilkGrup != null || puanVar ? "dugme--hayalet" : "dugme--birincil"));
             Erisim.Etiket(ic, L.T("Seviye atladın") + ", " + L.T("Sv {0}", sv) + (svTuy > 0 ? ", " + L.T("Seviye ödülü +{0} Tüy", svTuy) : "") + (acilan.Count > 0 ? ", " + L.T("Açıldı") + ": " + string.Join(", ", acilan.ConvertAll(x => L.T(x))) : ""), "metin");
-            root.sfx.Tik(990); Yerel.Hap("win");
+            root.sfx.UiSes("odul"); Yerel.Hap("win");
             if (Ayar.reduce) return;
             o.style.opacity = 0f; o.experimental.animation.Start(0f, 1f, 220, (v, t) => v.style.opacity = t);
             sayi.style.scale = new Scale(Vector3.one * 1.4f);
             sayi.experimental.animation.Start(0f, 1f, 420, (v, t) => { float e = 1 - Mathf.Pow(1 - t, 3); v.style.scale = new Scale(Vector3.one * Mathf.Lerp(1.4f, 1f, e)); });
             int j = 0; foreach (var c in liste.Children()) { var cc = c; int gec = 260 + 60 * j++; cc.style.opacity = 0f; cc.schedule.Execute(() => cc.experimental.animation.Start(0f, 1f, 200, (v, t) => v.style.opacity = t)).StartingIn(gec); }
+            CanliTut(o, Mathf.Max(420, 260 + 60 * j + 200));
         }
 
         // ---- Tur töreni (2026-11-07 stüdyo incelemesi GD1 + tur mührü GD5, yasin karar kartı "Ekle") ----
@@ -550,7 +604,8 @@ namespace BirdieSmash.Game
         {
             SeviyeAniKapat(); var p = Ayar.ilerleme; if (p == null || t < 0 || t >= KariyerVeri.Turlar.Length) { if (sonra != null) sonra(); return; }
             var o = new VisualElement(); o.AddToClassList("seviye-ani"); seviyeAni = o; kok.Add(o);
-            System.Action kapat = () => { if (seviyeAni == o) seviyeAni = null; o.RemoveFromHierarchy(); if (sonra != null) sonra(); };
+            bool kapandi = false;
+            System.Action kapat = () => { if (kapandi) return; kapandi = true; if (seviyeAni == o) seviyeAni = null; AniSondur(o); if (sonra != null) sonra(); };
             VisualElement ey; var ic = AniIskelet(o, kapat, out ey);
             bool yeniMuhur = m1 > m0; string muhurAd = m1 >= 2 ? L.T("Altın tur mührü") : L.T("Bronz tur mührü");
             ic.Add(Yazi(Buyuk(bitti ? L.T("Tur tamam") : muhurAd), 15, "seviye-ust"));
@@ -590,12 +645,13 @@ namespace BirdieSmash.Game
             else if (bitti && sonrakiT < KariyerVeri.TUR) ey.Add(Yazi(L.T("Yakında: bu tur sonraki güncellemede gelir"), 13, "soluk"));
             ey.Add(Dugme(L.T("Tamam"), kapat, sonrakiVar ? "dugme--hayalet" : "dugme--birincil"));
             Erisim.Etiket(ic, (bitti ? L.T("Tur tamam") : muhurAd) + ", " + L.T(KariyerEkranTurAd(t)) + ", " + L.T("{0}/{1} yıldız", ys, 18) + ", " + alt + (yenilenAd.Count > 0 ? ", " + string.Join(", ", yenilenAd) : ""), "metin");
-            root.sfx.Tik(1180); Yerel.Hap(bitti || m1 >= 2 ? "flow" : "win");
+            root.sfx.UiSes("odul"); Yerel.Hap(bitti || m1 >= 2 ? "flow" : "win");
             if (Ayar.reduce) return;
             o.style.opacity = 0f; o.experimental.animation.Start(0f, 1f, 220, (v, k) => v.style.opacity = k);
             mi.style.scale = new Scale(Vector3.one * 1.5f);
             mi.experimental.animation.Start(0f, 1f, 480, (v, k) => { float e = 1 - Mathf.Pow(1 - k, 3); v.style.scale = new Scale(Vector3.one * Mathf.Lerp(1.5f, 1f, e)); });
             int j = 0; foreach (var c in rk.Children()) { var cc = c; int gc = 300 + 70 * j++; cc.style.opacity = 0f; cc.schedule.Execute(() => cc.experimental.animation.Start(0f, 1f, 180, (v, k) => v.style.opacity = k)).StartingIn(gc); }
+            CanliTut(o, Mathf.Max(480, 300 + 70 * j + 180));
         }
         static string KariyerEkranTurAd(int t) { return TurAd(t); }
 
@@ -615,25 +671,31 @@ namespace BirdieSmash.Game
         // bitince düşer, yani kaybeden oyuncu menüsüz kalmaz. Devirle gelen galibiyetli oyuncu çubuğu hep görür.
         // Ayarlar düğmesi ve Tüy hapı üst şeritte kalır (Gizlilik/Destek ilk ekrandan erişilebilir, App Store).
         bool IlkAcilis => !Ayar.antrenman && Ayar.wins == 0 && (root == null || !root.bekleyen);
+        // 2026-11-23 (yasin "Beyaz alt bant incelmeli", seçim "Alt bant C"): sekme çubuğu kenarlardan ayrık yüzen beyaz hap.
+        // Ev çizgisi payı artık çubuğun içine dolgu olarak girmiyor (bant o kadar kalınlaşıyordu); hap, payın bir kısmı kadar
+        // yukarıda durur, altında zemin görünür. Akışta kalır: içerik hapın üstünde biter, her sayfaya ayrı alt boşluk gerekmez.
+        void CubukAltPay() { if (sekmeCubugu == null) return; sekmeCubugu.style.paddingBottom = 0f; sekmeCubugu.style.marginBottom = Mathf.Max(8f, altBosluk - 22f); }   // 2026-11-23 (yasin "biraz daha aşağı"): kapsülün altı ana ekran çizgisinin hemen üstünde (iPhone 34 pt güvenli alanda 12 pt); daha aşağısı çizginin hareket alanına girer, dokunuş sistemle çakışır
         void SekmeCubuguGorunur() { if (sekmeCubugu != null) sekmeCubugu.style.display = IlkAcilis ? DisplayStyle.None : DisplayStyle.Flex; }
 
         void HepsiniKur()
         {
             sekmeCubugu.Clear(); kok.EnableInClassList("buyuk-yazi", K >= 1.35f);   // büyük yazıda çipler ve ızgaralar alt alta (USS)
             bool etiket = K <= 1.5f;   // ×1,5 üstünde sekme etiketi kalkar, simge + ekran okuyucu etiketi kalır (§2.4)
-            var ik = new[] { Ikonlar.Oyna, Ikonlar.Kupa, Ikonlar.Tisort, Ikonlar.Kisi, Ikonlar.Raket };
+            var ik = new[] { Ikonlar.SekmeOyna, Ikonlar.SekmeKupa, Ikonlar.SekmeTisort, Ikonlar.SekmeKisi, Ikonlar.SekmeRaket };   // 2026-11-23: çizgi simgeler (UiOge)
             foreach (var s in SEKME_SIRA)
             {
                 int i = (int)s; var d = new VisualElement(); d.AddToClassList("sekme"); sekmeDugme[i] = d;
                 var cizgi = new VisualElement(); cizgi.AddToClassList("sekme-cizgi"); cizgi.pickingMode = PickingMode.Ignore; d.Add(cizgi);
                 // 2026-11-07 (stüdyo AD4): simge 22 → 24, etiket 11 → 12; seçili simge USS'te büyür ve kalkar (stok iOS sekmesi gibiydi).
-                var im = Ikon(ik[i], 24, s == gez.sekme ? TURUNCU : SOLUK); im.AddToClassList("sekme-ikon"); d.Add(im);
-                string ad = L.T(SEKME_AD[i]); if (etiket) d.Add(Yazi(ad, 12, "sekme-yazi"));
+                // 2026-11-23 yüzen hap (yasin "Alt bant C"): sarı yalnız simgenin arkasındaki kapta, yazı mürekkep; etiket 12 → 11.
+                var im = Ikon(ik[i], 24, s == gez.sekme ? CTA_MUREKKEP : SEKME_SOLUK); im.AddToClassList("sekme-ikon");
+                var kap = new VisualElement(); kap.AddToClassList("sekme-ikon-kap"); kap.pickingMode = PickingMode.Ignore; kap.Add(im); d.Add(kap);
+                string ad = L.T(SEKME_AD[i]); if (etiket) d.Add(Yazi(ad, 11, "sekme-yazi"));
                 d.AddManipulator(new Clickable(() => SekmeAc(s))); Erisim.Etiket(d, ad, "sekme", s == gez.sekme);
                 sekmeCubugu.Add(d);
             }
-            if (altBosluk > 0) sekmeCubugu.style.paddingBottom = altBosluk;
-            SekmeCubuguGorunur(); GostergeKur();
+            CubukAltPay();
+            SekmeCubuguGorunur(); GostergeKur(); IsaretKur();
             // Yazı boyutu Ayarlar'dan değişince açık tam sayfa yeniden kurulur; oyuncu yerini kaybetmesin (2026-11-20, fikir 12:06 #2).
             var eski = sayfa != null ? (sayfa.Q<ScrollView>(null, "govde-kaydir") ?? sayfa.Q<ScrollView>()) : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero;
             for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true; Uygula(gez.sekme, false);
@@ -662,7 +724,12 @@ namespace BirdieSmash.Game
             ustKirli = false; ust.Clear(); var gr = Ayar.gear; int L_, kalan, gerek; gr.OyuncuSv(out L_, out kalan, out gerek);
             var sol = new VisualElement(); sol.AddToClassList("ust-sol"); ust.Add(sol);
             var hap = new VisualElement(); hap.AddToClassList("ust-hap"); hap.AddToClassList("profil-hap"); sol.Add(hap);
-            var av = new VisualElement(); av.AddToClassList("ust-avatar"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 24); hap.Add(av);
+            var av = new VisualElement(); av.AddToClassList("ust-avatar"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); hap.Add(av);
+            // 2026-11-26 inceleme (fikir 02:06 #1, r267): avatar Portre.Benim()'in o anki RT'sini tutuyordu; RT sonradan yok edilince ya da
+            // içeriği kaybolunca (Portre.Al eskisini Destroy edip yenisini çizer) hap boş beyaz daire kalıyordu, çünkü üst şerit ancak
+            // anahtar değişince yeniden kurulur. Artık önbellekten okunur (eşzamanlı FBX çizimi de dokunuş karesine düşmez); yoksa insan
+            // simgesi, ve PortreIsit her 300 ms'de tutulan dokunun hâlâ canlı olduğuna bakar, değilse menü durgunken yerinde yeniler.
+            ustAvatar = av; ustPortre = Portre.BenimHazir() as RenderTexture; ustPortreDeneme = 0; AvatarIc(av, ustPortre, 24);
             var sv = new VisualElement(); sv.AddToClassList("ust-sv"); sv.pickingMode = PickingMode.Ignore; hap.Add(sv);
             sv.Add(Yazi(L.T("Sv {0}", L_), 18, "rakam"));
             var c = Cubuk(gerek > 0 ? kalan / (float)gerek : 1, LIMON, 5);   // 2026-10-27 yön C: ilerleme turuncuydu (limon yalnız sen: avatar halkası)   // 2026-11-20 yasin karar kartı "A · Limon": seviye/XP ve gelişim = limon ("senin ilerlemen"), Tüy = altın; turuncu yalnız eylem/seçim (§8)
@@ -672,6 +739,9 @@ namespace BirdieSmash.Game
             var tuy = new VisualElement(); tuy.AddToClassList("ust-hap"); tuy.AddToClassList("tuy-hap"); ust.Add(tuy);
             tuy.AddManipulator(new Clickable(() => { Tik(); DukkanAc(); }));   // 2026-11-01 Tüy dükkânı'na açılır
             tuy.Add(Ikon(Ikonlar.Tuy, 20, ALTIN)); var tz = Yazi(Sayi(gr.eko.tuy), 20, "rakam"); tz.AddToClassList("ust-tuy"); tuy.Add(tz);
+            // 2026-11-22 Stadyum Pop: hap zaten dükkânı açıyordu ama düğme olduğu görünmüyordu; sağında beyaz "+" kutusu (para
+            // çubuğu kalıbı). Beyaz, sarı değil: sarı ekranda yalnız Oyna'nın. Ayrı dokunma alanı yok, bütün hap 44 pt.
+            var arti = new VisualElement(); arti.AddToClassList("tuy-arti"); arti.pickingMode = PickingMode.Ignore; arti.Add(Ikon(Ikonlar.Arti, 12, KOYU)); tuy.Add(arti);
             Erisim.Etiket(tuy, L.T("{0} Tüy", gr.eko.tuy) + ", " + L.T("Tüy dükkânı"), "dugme");
             OdulAnlari(tuy, tz, gr.eko.tuy, L_);
             var ayar = new VisualElement(); ayar.AddToClassList("dugme"); ayar.AddToClassList("ikon-dugme"); ayar.Add(Ikon(Ikonlar.Disli, 22, SOLUK));
@@ -694,6 +764,12 @@ namespace BirdieSmash.Game
             // kırpılıyor ve figürlerin arkasında gürültü oluyordu; düz şekil afişi öne çıkarır, perde → menü geçişi aynı resim.
             // Salon fonu artık çekilmez (salonImg null: SahneCiz atlar, ana kamera menüde yine yalnız temizler).
             gunesImg = new Image { image = Ikonlar.GunesDisk, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(1, 1, 1, .62f) }; gunesImg.AddToClassList("gunes-disk"); gunesImg.pickingMode = PickingMode.Ignore; zemin.Add(gunesImg);
+            // 2026-11-22 Stadyum Pop (yasin: "stadyum pop tan devam edelim, ama ai unslop olmalı"): batan güneş Gün Batımı
+            // dilinindi; gündüz salonunda yerini salon ışığı (üstte yumuşak beyaz) ve oyuncuların bastığı kort alır. Güneş öğesi
+            // kalır ama gizli (GunesYerlestir ve döndürme kodu dokunulmadan çalışsın); bant ve altın iz USS'te gizli.
+            gunesImg.style.display = DisplayStyle.None;
+            salonIsik = new Image { image = Ikonlar.Isik, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(1, 1, 1, .22f) }; salonIsik.AddToClassList("salon-isik"); salonIsik.pickingMode = PickingMode.Ignore; zemin.Add(salonIsik);
+            kortZemin = new VisualElement(); kortZemin.AddToClassList("kort-zemin"); kortZemin.pickingMode = PickingMode.Ignore; kortZemin.generateVisualContent += KortCiz; zemin.Add(kortZemin);
             var bant = new VisualElement(); bant.AddToClassList("zemin-bant"); bant.pickingMode = PickingMode.Ignore; zemin.Add(bant);
             var iz = new Image { image = Ikonlar.AltinIz, scaleMode = ScaleMode.StretchToFill }; iz.AddToClassList("zemin-iz"); iz.pickingMode = PickingMode.Ignore; zemin.Add(iz);
             zemin.RegisterCallback<GeometryChangedEvent>(e => GunesYerlestir());
@@ -710,7 +786,21 @@ namespace BirdieSmash.Game
             // diskin alt %30'u görünür (390 pt ekranda ~130 pt), yatayda ortalı; iPad'de büyümesin diye 560 sınırı (GunesYerlestir)
             if (zemin.parent != null) { zemin.parent.Insert(zemin.parent.IndexOf(zemin) + 1, koyuGunes); zemin.parent.RegisterCallback<GeometryChangedEvent>(e => KoyuGunesYerlestir()); }
         }
-        Image gunesImg, koyuGunes; float gunesAci, koyuGunesW = -1;
+        Image gunesImg, koyuGunes, salonIsik; VisualElement kortZemin; float gunesAci, koyuGunesW = -1;
+        // Kort (2026-11-22 Stadyum Pop): perspektifte yeşil badminton kortu, beyaz çizgiler; afişteki iki oyuncu üstünde durur.
+        // Tek parlak öğe afiş kalsın diye kort düz renk, gölgesiz; çizgiler 3 birim (çift kenar, orta çizgi, servis çizgisi).
+        static readonly Color KORT_YESIL = Kit.Hex("#38B26A"), KORT_CIZGI = new Color(1, 1, 1, .92f);
+        static void KortCiz(MeshGenerationContext ctx)
+        {
+            var r = ctx.visualElement.contentRect; float w = r.width, h = r.height; if (w <= 0 || h <= 0) return;
+            var p = ctx.painter2D; float ust = w * .30f, alt = -w * .10f;   // üst kenar yarı genişliği dar (uzak), alt geniş (yakın)
+            System.Func<float, float, Vector2> N = (u, v) => { float sol = Mathf.Lerp(ust, alt, v), sag = w - sol; return new Vector2(Mathf.Lerp(sol, sag, u), v * h); };
+            p.fillColor = KORT_YESIL; p.BeginPath(); p.MoveTo(N(0, 0)); p.LineTo(N(1, 0)); p.LineTo(N(1, 1)); p.LineTo(N(0, 1)); p.ClosePath(); p.Fill();
+            p.strokeColor = KORT_CIZGI; p.lineWidth = 3; p.lineJoin = LineJoin.Round;
+            p.BeginPath(); p.MoveTo(N(.04f, 0)); p.LineTo(N(.96f, 0)); p.LineTo(N(.96f, 1)); p.LineTo(N(.04f, 1)); p.ClosePath(); p.Stroke();
+            p.BeginPath(); p.MoveTo(N(.12f, 0)); p.LineTo(N(.12f, 1)); p.MoveTo(N(.88f, 0)); p.LineTo(N(.88f, 1)); p.Stroke();
+            p.BeginPath(); p.MoveTo(N(.5f, 0)); p.LineTo(N(.5f, 1)); p.MoveTo(N(.04f, .55f)); p.LineTo(N(.96f, .55f)); p.Stroke();
+        }
         // Güneş diski kare kalmalı (USS yüzdesi genişlik/yükseklik ayrı ölçer): genişliğin 1,25 katı, afişin ortasında
         // (afiş üst %8, boy %54 → merkez %35), yatayda ortalı; kenarları ekrandan taşar (batan güneş, tam daire değil).
         void GunesYerlestir()
@@ -719,6 +809,9 @@ namespace BirdieSmash.Game
             if (gunesImg == null) return; var r = zemin.contentRect; if (r.width <= 0 || r.height <= 0) return;
             float d = Mathf.Max(r.width * 1.25f, r.height * .5f); gunesImg.style.width = d; gunesImg.style.height = d;
             gunesImg.style.left = (r.width - d) / 2; gunesImg.style.top = r.height * .35f - d / 2;
+            // kort: afişteki ayakların hizasından (üst %19) plakanın arkasına (%36); salon ışığı üstte, genişliğin 1,4 katı
+            if (kortZemin != null) { kortZemin.style.left = 0; kortZemin.style.width = r.width; kortZemin.style.top = r.height * .19f; kortZemin.style.height = r.height * .17f; }
+            if (salonIsik != null) { float s = r.width * 1.4f; salonIsik.style.width = s; salonIsik.style.height = s * .7f; salonIsik.style.left = (r.width - s) / 2; salonIsik.style.top = -s * .3f; }
         }
         void KoyuGunesYerlestir()
         {
@@ -821,7 +914,7 @@ namespace BirdieSmash.Game
             return sb.ToString();
         }
         // 2026-10-27 yön C: GECE (diğer sekmeler) ve INK_ (Oyna, tam sayfa) mor-kahve zemin; ikisi aynı ton, Oyna'da salon fonu üstte.
-        static readonly Color GECE = new Color(0x1A / 255f, 0x12 / 255f, 0x21 / 255f, 1), INK_ = new Color(0x1A / 255f, 0x12 / 255f, 0x21 / 255f, 1);
+        static readonly Color GECE = new Color(0x26 / 255f, 0x59 / 255f, 0xBE / 255f, 1), INK_ = new Color(0x26 / 255f, 0x59 / 255f, 0xBE / 255f, 1);   // 2026-11-22 Stadyum Pop: kort mavisi #2659BE
         void OnDestroy() { if (salonRt != null) { salonRt.Release(); Destroy(salonRt); } }
 
         // Tam sayfa başı: "‹ Geri" (44 pt) + başlık.
@@ -849,7 +942,21 @@ namespace BirdieSmash.Game
         // Clickable hepsi Tik). Eylem içinde de Tik çağrılıyordu: aynı dokunuşta iki ses + iki titreşim. Aynı karede ikinci Tik sessiz;
         // böylece 20+ çağrı yerini tek tek ayıklamak gerekmedi. Özel sesler (Yukselt, Tik(1320)…) bu kapıdan geçmez, kalır.
         int tikKare = -1;
-        void Tik() { if (Time.frameCount == tikKare) return; tikKare = Time.frameCount; root.sfx.Tik(); Yerel.Hap("tick"); }
+        // 2026-11-22 (yasin "tüm butonlarda tatmin edici ses"): ses türü öğenin sınıfından (Sfx.UiSes); öğesiz çağrılar pop çalar.
+        // Birincil düğme "hit" titreşimi (14 ms), gerisi "tick": göz ve elin en çok bastığı yer en dolgun karşılığı alır.
+        void Tik(VisualElement e = null, string tur = null)
+        {
+            if (Time.frameCount == tikKare) return; tikKare = Time.frameCount;
+            tur = tur ?? UiSesTuru(e); root.sfx.UiSes(tur); Yerel.Hap(tur == "bas" ? "hit" : "tick");
+        }
+        static string UiSesTuru(VisualElement e)
+        {
+            if (e == null) return "pop";
+            if (e.ClassListContains("dugme--birincil")) return "bas";
+            if (e.ClassListContains("dugme--pasif") || e.ClassListContains("kar-tur-kutu--kilit")) return "kilit";
+            if (e.ClassListContains("cip")) return "sec";
+            return "pop";
+        }
 
         // ---- 2026-10-27 yön C mikro hareketler (araştırma §4.3; yalnız translate/opacity, ekranda tek döngü afişin nefesi) ----
         // Sekme göstergesi: tek bir 3 pt turuncu çizgi sekme çubuğunun üstünde; seçim değişince yeni sekmeye 180 ms'de kayar
@@ -861,18 +968,43 @@ namespace BirdieSmash.Game
         {
             gosterge = new VisualElement(); gosterge.AddToClassList("sekme-gosterge"); gosterge.pickingMode = PickingMode.Ignore;
             gostergeIc = new VisualElement(); gostergeIc.AddToClassList("sekme-gosterge-ic"); gostergeIc.pickingMode = PickingMode.Ignore; gosterge.Add(gostergeIc);
-            sekmeCubugu.Add(gosterge); sekmeCubugu.RemoveFromClassList("gosterge-var");
+            sekmeCubugu.Insert(0, gosterge); sekmeCubugu.RemoveFromClassList("gosterge-var");   // 2026-11-23: kapsül simgelerin ARKASINDA (ilk çocuk)
             if (!gostergeOlay) { gostergeOlay = true; sekmeCubugu.RegisterCallback<GeometryChangedEvent>(e => GostergeYerlestir(false)); }   // çubuk bir kez kurulur, olay bir kez
         }
         bool gostergeOlay;
+        // 2026-11-23 alt bant detayları 2-4 (yasin: "zekice düşünülmüş detaylar", detay sayfası Sn5jD8h6dR7U8MAR8DGoik). Yalnız gerçek
+        // veriden, sayı yok, baskı dili yok:
+        //  - Atölye noktası: Tüy'ün ve seviyenin yettiği bir yükseltme ya da alınabilir model varsa (GameRoot.YukseltAlinir, maç
+        //    sonu kartının "hazır" kararıyla aynı hesap). Dolap ve Profil'de "yeni" kaydı tutulmadığı için nokta yok (uydurma yok).
+        //  - Kariyer halkası: kupa simgesinin çevresinde bu turun durak ilerlemesi (Durak n/6), Kariyer tamamsa yok.
+        //  - Yarım maç: bitmemiş maç (root.bekleyen) varsa Oyna simgesinde küçük duraklat işareti.
+        // Sekme değişince ve çubuk kurulunca hesaplanır (karede değil); öğeler simge kabının çocuğu, dokunuş almaz.
+        VisualElement atolyeNokta, devamIsaret;
+        void IsaretKur()
+        {
+            VisualElement Kap(Sekme s) { var d = sekmeDugme[(int)s]; return d != null ? d.Q<VisualElement>(null, "sekme-ikon-kap") : null; }
+            var ka = Kap(Sekme.Atolye); atolyeNokta = null; if (ka != null) { atolyeNokta = new VisualElement(); atolyeNokta.AddToClassList("sekme-nokta"); atolyeNokta.pickingMode = PickingMode.Ignore; ka.Add(atolyeNokta); }
+            // 2026-11-26 inceleme (fikir 02:06 #4): Kariyer simgesinin arkasındaki ilerleme halkası kalktı. Yeni oyuncuda yalnız gri iz
+            // çiziliyordu (beyaz bantta "kilitli/basılı sekme" gibi okundu), dolgusu §8 rol tablosunda olmayan yeşildi; Kariyer A'da
+            // ilerlemenin tek ölçüsü sayfanın içindeki duraklar. Alınacak bir şey olursa Atölye'nin tek nokta kalıbı (sekme-nokta).
+            var ko = Kap(Sekme.Oyna); devamIsaret = null; if (ko != null) { devamIsaret = Yazi("II", 8, "sekme-devam"); devamIsaret.pickingMode = PickingMode.Ignore; ko.Add(devamIsaret); }
+            IsaretGuncelle();
+        }
+        void IsaretGuncelle()
+        {
+            if (atolyeNokta != null) atolyeNokta.style.display = root != null && root.YukseltAlinir(Ayar.gear.Seviye()) ? DisplayStyle.Flex : DisplayStyle.None;
+            if (devamIsaret != null) devamIsaret.style.display = root != null && root.bekleyen ? DisplayStyle.Flex : DisplayStyle.None;
+        }
         void GostergeYerlestir(bool anim)
         {
             if (gosterge == null || gosterge.parent != sekmeCubugu) return; var d = sekmeDugme[(int)gez.sekme]; if (d == null) return;
             var lb = d.layout; if (float.IsNaN(lb.width) || lb.width <= 0) return;
-            float w = Mathf.Round(lb.width * .44f), x = lb.x + (lb.width - w) / 2; bool az = !anim || Ayar.reduce;
+            // 2026-11-23 (yasin: "alt bant ... zekice düşünülmüş detaylar", detay sayfası Sn5jD8h6dR7U8MAR8DGoik): gösterge artık simge
+            // arkasındaki sarı kapsülün kendisi (44 birim, .sekme-ikon-kap ile aynı); sekmeden sekmeye ease-out-back yayla kayar,
+            // seçili kabın kendi dolgusu gösterge varken söner (USS .gosterge-var). Eski dikey zıplama kalktı (kapsül havaya kalkıyordu).
+            float w = 44f, x = lb.x + (lb.width - w) / 2; bool az = !anim || Ayar.reduce;
             gosterge.EnableInClassList("anisiz", az); if (Mathf.Abs(gosterge.resolvedStyle.width - w) > .5f) gosterge.style.width = w;
             gosterge.style.translate = new Translate(x, 0);
-            if (!az) { gostergeIc.style.translate = new Translate(0, -4); gostergeIc.schedule.Execute(() => gostergeIc.style.translate = new Translate(0, 0)).StartingIn(90); }
             sekmeCubugu.AddToClassList("gosterge-var");
         }
         public string GostergeTani { get { return gosterge == null ? "yok" : "x " + gosterge.resolvedStyle.translate.x.ToString("F0") + " w " + gosterge.resolvedStyle.width.ToString("F0") + " sekme " + gez.sekme; } }

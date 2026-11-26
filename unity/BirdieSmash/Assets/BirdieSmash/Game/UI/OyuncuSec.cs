@@ -64,7 +64,7 @@ namespace BirdieSmash.Game
                 int ii = i; var h = HAZIR[i]; bool on = oyuncuSecSecili == i;
                 var k = Kart("hazir-kart"); k.AddToClassList("dugme"); if (on) k.AddToClassList("secili");
                 var ust = Satir("rakip-satir"); ust.pickingMode = PickingMode.Ignore; k.Add(ust);
-                { var ik = Ikon(Ikonlar.Tik, 14, TURUNCU); ik.style.marginRight = 4; ik.style.display = on ? DisplayStyle.Flex : DisplayStyle.None; ust.Add(ik); hazirTik.Add(ik); }
+                { var ik = Ikon(Ikonlar.Tik, 14, KOYU); ik.style.marginRight = 4; ik.style.display = on ? DisplayStyle.Flex : DisplayStyle.None; ust.Add(ik); hazirTik.Add(ik); }
                 ust.Add(Yazi(L.T(h[0]), 15, "kalin"));
                 // Üç renk noktası (forma, ten, saç) + yazıyla beden/saç: kart yalnız renkle ayırt edilmez.
                 var nk = Satir("rakip-satir"); nk.pickingMode = PickingMode.Ignore; k.Add(nk);
@@ -78,7 +78,7 @@ namespace BirdieSmash.Game
             }
             // r100: alt sayfa vitrini fazla örtüyordu; Rastgele ve Atla tek satırda (büyük yazıda alt alta, USS).
             var ds = Satir("arali"); ds.AddToClassList("hazir-dugmeler"); c.Add(ds);
-            var rd = Dugme(L.T("Rastgele"), () => { HazirSecGoster(Random.Range(0, HAZIR.Length)); HazirUygula(HAZIR[oyuncuSecSecili]); Tik(); }, null, null, 15); rd.AddToClassList("hazir-dugme"); ds.Add(rd);
+            var rd = Dugme(L.T("Rastgele"), () => { HazirSecGoster(RastgeleHazir()); HazirUygula(HAZIR[oyuncuSecSecili]); Tik(); }, null, null, 15); rd.AddToClassList("hazir-dugme"); ds.Add(rd);
             // 2026-11-20 inceleme (fikir 12:06 #5): "Atla" seçilen görünümü sessizce geri alıyordu. Kart seçilince gizlenir; tek
             // birincil çıkış "Bununla oyna" kalır. Seçim yapılmadan önce bugünkü gibi görünür.
             var at = Dugme(L.T("Atla"), OyuncuSecAtla, null, null, 15); at.AddToClassList("hazir-dugme"); ds.Add(at); hazirAtla = at;
@@ -87,6 +87,11 @@ namespace BirdieSmash.Game
         }
         // EkranTuru için: bir kartı seç / Atla.
         public void OyuncuSecHazir(int i) { HazirSecGoster(i); HazirUygula(HAZIR[i]); }
+        // 2026-11-23 inceleme (fikir 22:06 #4): "Rastgele" seçili kartı da çekebiliyordu (1/6 ölü dokunuş); seçili varsa dışarıda.
+        int RastgeleHazir()
+        {
+            int n = HAZIR.Length; return oyuncuSecSecili < 0 ? Random.Range(0, n) : (oyuncuSecSecili + 1 + Random.Range(0, n - 1)) % n;
+        }
         // Kart dokunuşu (2026-11-15 inceleme, fikir 22:05 #4): alt sayfa (altı kart + düğmeler) her dokunuşta baştan kuruluyor ve
         // senkron kayıt yapılıyordu; ekran oyuncunun İLK maçından hemen sonra, ilk izlenim anı. Artık yalnız eski kartın seçili
         // sınıfı/✓'i kalkar, yenisine eklenir (erişim bilgisi de); kayıt ertelenir (Ayar.KaydetSonra). Figür (vitrin) aynı.

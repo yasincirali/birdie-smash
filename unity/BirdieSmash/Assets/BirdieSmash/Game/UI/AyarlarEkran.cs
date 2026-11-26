@@ -25,7 +25,7 @@ namespace BirdieSmash.Game
             {
                 var d = satir[j]; bool s = j == secili; d.EnableInClassList("cip--secili", s);
                 var ic = d.Q(null, "cip-ic"); var tk = d.Q(null, "cip-tik");
-                if (s && tk == null && ic != null) { tk = Ikon(Ikonlar.Tik, 16, TURUNCU); tk.AddToClassList("cip-tik"); ic.Insert(0, tk); }
+                if (s && tk == null && ic != null) { tk = Ikon(Ikonlar.Tik, 16, KOYU); tk.AddToClassList("cip-tik"); ic.Insert(0, tk); }
                 else if (!s && tk != null) tk.RemoveFromHierarchy();
                 // Açıklaması olmayan grup (Dil) yalnız adı okutur.
                 if (j < adTablo.Length && acikTablo == null) Erisim.Etiket(d, L.T(adTablo[j]), "dugme", s);
@@ -92,16 +92,28 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Ses ve his")));
             // İnceleme 2026-11-15 12:05 #4: dört ayrı cam düğme yerine tek liste grubu (§6.4); yenileme geçiş bitince (DegistiSonra).
             // Hareketi azalt kendi değerini değiştirdiği için DegistiSonra açılırken bekler, kapanırken hemen yeniler: ikisi de doğru.
+            // 2026-11-22 inceleme (fikir 17:06 #1, takılma): Ses, Müzik ve Titreşim de DegistiSonra çağırıyordu; 200 ms sonra dört
+            // sekme kirleniyor, üst şerit ve Ayarlar baştan kuruluyordu (art arda üç anahtar = üç tam kurulum). Hiçbir menü yüzeyi
+            // bu üç ayarı okumuyor (müzik Sfx.MuzikIsle her karede bakıyor), anahtar kendini yerinde çiziyor: yalnız kayıt.
+            // 2026-11-23 inceleme (fikir 17:06 #6, HIG bağlı denetim): Ses kapalıyken müzik, seyirci örneği ve düğme sesi duyulmuyor ama
+            // satırlar tam opaktı; oyuncu Seyirci'yi değiştirip hiçbir şey duymuyordu. Üç satır soluk (anahtar-satir--pasif), seçimleri
+            // korunur ve dokunulabilir kalır; sınıf Ses dokunuşunda yerinde değişir (sayfa kurulmaz, 22 Kas kararı).
+            var sesBagli = new VisualElement[3];
             c.Add(ListeGrup(
-                AnahtarSatir(L.T("Ses"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.KaydetSonra(); DegistiSonra(); }),
-                AnahtarSatir(L.T("Müzik"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.KaydetSonra(); DegistiSonra(); }),
-                AnahtarSatir(L.T("Titreşim"), Ayar.titresim, () => { Ayar.titresim = !Ayar.titresim; Ayar.KaydetSonra(); if (Ayar.titresim) Yerel.Hap("tick"); DegistiSonra(); }),
+                AnahtarSatir(L.T("Ses"), Ayar.ses, () => { Ayar.ses = !Ayar.ses; AudioListener.volume = Ayar.ses ? 1 : 0; Ayar.KaydetSonra(); foreach (var sb in sesBagli) sb.EnableInClassList("anahtar-satir--pasif", !Ayar.ses); }),
+                sesBagli[0] = AnahtarSatir(L.T("Müzik"), Ayar.muzik, () => { Ayar.muzik = !Ayar.muzik; Ayar.KaydetSonra(); }),
+                AnahtarSatir(L.T("Titreşim"), Ayar.titresim, () => { Ayar.titresim = !Ayar.titresim; Ayar.KaydetSonra(); if (Ayar.titresim) Yerel.Hap("tick"); }),
                 AnahtarSatir(L.T("Hareketi azalt"), Ayar.reduce, Ayar.reduceSistem ? (System.Action)null : () => { Ayar.reduceSecim = !Ayar.reduceSecim; Ayar.SistemOku(); Ayar.KaydetSonra(); DegistiSonra(); },
                     Ayar.reduceSistem ? L.T("Sistem ayarından") : null),
                 // Seyirci listenin beşinci satırı (2026-11-16 inceleme, fikir 17:05 #6): ayrı "Seyirci" başlığı + üç çip bir ses ayarı
                 // için sayfaya bir başlık ve bir satır ekliyordu; değerli satır Kapalı → Az → Normal döner. tuytop_seyirci ve
                 // değerleri aynı. Sayfa yenilenmez (değer satırın kendisinde yazılı).
-                DegerSatir(L.T("Seyirci"), new[] { L.T("Kapalı"), L.T("Az"), L.T("Normal") }, Ayar.seyirci, v => { Ayar.seyirci = v; Ayar.KaydetSonra(); })));
+                // 2026-11-22 inceleme (fikir 17:06 #3): ses ayarı sesle doğrulanır; seçilen düzeyde tek kısa alkış (Kapalı'da ve Ses
+                // kapalıyken sessiz). Klip menü durgunken ısıtılmış olandır, ısınmadıysa çalmaz (dokunuşta sentez yok).
+                sesBagli[1] = DegerSatir(L.T("Seyirci"), new[] { L.T("Kapalı"), L.T("Az"), L.T("Normal") }, Ayar.seyirci, v => { Ayar.seyirci = v; Ayar.KaydetSonra(); root.sfx.SeyirciOrnek(); }),
+                // 2026-11-22 (yasin "o sesi de özel seçmek istiyorum"): düğme sesi paketi; her dokunuş sıradakine geçer ve onu çalar.
+                sesBagli[2] = DegerSatir(L.T("Düğme sesi"), System.Array.ConvertAll(Sfx.PAKETLER, x => L.T(x)), Ayar.dugmeSes, v => { Ayar.dugmeSes = v; Ayar.KaydetSonra(); root.sfx.UiSes("bas"); })));
+            foreach (var sb in sesBagli) sb.EnableInClassList("anahtar-satir--pasif", !Ayar.ses);
             // Sıra anlamla (2026-11-14 inceleme, fikir 22:05 #3): oyun hissi (hareket, kaydırma, kamera) → ses → görünüm (yazı boyutu,
             // dil). Yazı boyutu eskiden kamera ile kaydırmanın arasındaydı; "vuruş tutmuyor" diyen oyuncu hareket ve kaydırmayı yan
             // yana bulur. Yazı boyutu da diğer çipli gruplar gibi seçilinin tek soluk cümlesini alır. Anahtarlar aynı.
@@ -131,12 +143,11 @@ namespace BirdieSmash.Game
             // 2026-11-07 (murphysoft.app HTTPS ile açıldı): gizlilik ve destek stüdyo sitesinde; Destek sayfası support@murphysoft.app'i
             // ve SSS'yi taşır (e-posta bağlantısı uygulamada değil sayfada: mailto her cihazda posta uygulaması açmaz).
             bool en = Ayar.dil == "en";
-            var gz = Dugme(L.T("Gizlilik politikası") + "  ↗", () => { Application.OpenURL(en
-                ? "https://murphysoft.app/birdie-smash/privacy/" : "https://murphysoft.app/birdie-smash/gizlilik/"); });
-            Erisim.Etiket(gz, L.T("Gizlilik politikası") + ". " + L.T("Tarayıcıda açılır"), "dugme"); c.Add(gz);
-            var ds = Dugme(L.T("Destek") + "  ↗", () => { Application.OpenURL(en
-                ? "https://murphysoft.app/birdie-smash/support/" : "https://murphysoft.app/birdie-smash/destek/"); });
-            Erisim.Etiket(ds, L.T("Destek") + ". " + L.T("Tarayıcıda açılır"), "dugme"); c.Add(ds);
+            // "  ↗" ekini Dugme ayırır ve etikete "Tarayıcıda açılır" ekler (2026-11-22, fikir 17:06 #2); elle etiket gerekmez.
+            c.Add(Dugme(L.T("Gizlilik politikası") + "  ↗", () => { Application.OpenURL(en
+                ? "https://murphysoft.app/birdie-smash/privacy/" : "https://murphysoft.app/birdie-smash/gizlilik/"); }));
+            c.Add(Dugme(L.T("Destek") + "  ↗", () => { Application.OpenURL(en
+                ? "https://murphysoft.app/birdie-smash/support/" : "https://murphysoft.app/birdie-smash/destek/"); }));
             c.Add(Bosluk(8)); c.Add(Yazi(L.T("Sürüm {0}", Application.version), 12, "soluk"));
             // Tanı (2026-11-11, Cokme.cs): yalnız gizli FPS katmanı açıkken. 2026-11-15: önceki oturumun izi her zaman, yeni çökme
             // varsa en üstte; eski çökme kaydı altta. Kayıt cihazda
@@ -176,11 +187,12 @@ namespace BirdieSmash.Game
         {
             SayfaBasi(p, "Nasıl oynanır");
             var sv = Kaydirma(p); sv.AddToClassList("govde-kaydir"); var c = sv.contentContainer; c.AddToClassList("sekme-icerik");
-            c.Add(Dugme(L.T("Temel dersi oyna"), Antrenmana, "dugme--birincil"));
+            // 2026-11-22 inceleme (fikir 17:06 #6): düğmenin altında ayrı bir kart "…; aşağıdakileri öğretmez." diyordu (neyin
+            // olmadığını söyleyen cümle, "o hâlde neden ders?"). Kontrolün tek cümlesi birincil düğmenin alt satırına indi.
+            c.Add(Dugme(L.T("Temel dersi oyna"), Antrenmana, "dugme--birincil", L.T("Kaydır = vur, hız = güç.")));
             var k = Kart(); c.Add(k);
-            k.Add(Yazi(L.T("Kaydır = vur, hız = güç. Antrenman vuruşları öğretir; aşağıdakileri öğretmez."), 15));
             // 2026-11-12 (inceleme 00:05 #5, sadeleştirme): yedi başlık açık metin olarak diziliyordu, okuyan oyuncu uzun metni
-            // geçiyordu. Başlıklar tek satır (≥44 pt, › / ⌄ ile, yalnız renkle değil), dokununca açılır, aynı anda bir tane açık.
+            // geçiyordu. Başlıklar tek satır (≥44 pt, › ile, açıkken döner; yalnız renkle değil), dokununca açılır, aynı anda bir tane açık.
             // Karşılığı olan görev varsa açık maddenin altında "Görevde dene ›" görev kartını açar (kilit/ödül kuralı kartın kendi
             // kuralı). Karşılığı olmayan madde (Akış, Nefes, Ekipman, Çubuklar) yalnız metin.
             var govde = new List<VisualElement>(); var oklar = new List<Label>(); var satirlar = new List<VisualElement>();
@@ -191,7 +203,9 @@ namespace BirdieSmash.Game
                 var b = Yazi(bas, 16, "kalin"); b.AddToClassList("nasil-baslik"); b.pickingMode = PickingMode.Ignore; sr.Add(b);
                 var ok = Yazi("›", 18, "nasil-ok"); ok.pickingMode = PickingMode.Ignore; sr.Add(ok); oklar.Add(ok);
                 Erisim.Etiket(sr, bas, "dugme", false, false, L.T("kapalı"));
-                var g = new VisualElement(); g.style.display = DisplayStyle.None; k.Add(g); govde.Add(g);
+                // 2026-11-22 inceleme (fikir 17:06 #5): gövde bir karede açılıyordu. Kapalı gövde hep solgun durur (sönmesi
+                // görünmezken biter), açılınca .12 sn belirir; hareketi azaltta sınıf hiç eklenmez.
+                var g = new VisualElement(); g.style.display = DisplayStyle.None; g.AddToClassList("ant-liste"); if (!Ayar.reduce) g.AddToClassList("koz-solgun"); k.Add(g); govde.Add(g);
                 g.Add(Yazi(L.T(NASIL[i, 1]), 14));
                 string gid = NASIL_GOREV[i];
                 if (gid != null && Dril.Bul(gid) != null)
@@ -201,10 +215,13 @@ namespace BirdieSmash.Game
                 }
                 sr.AddManipulator(new Clickable(() =>
                 {
-                    Yerel.Hap("tick"); bool ac = govde[ii].style.display == DisplayStyle.None;
+                    // 2026-11-22 inceleme (fikir 17:06 #5): yalnız titreşim veriyordu, öbür düğmeler Tik() (ses + titreşim, §6.2).
+                    // Ok metni "›" ↔ "⌄" değişiyordu (⌄ yazı tipinde doğrulanmadı); artık hep "›", açıkken 90° döner (.15 sn).
+                    Tik(); bool ac = govde[ii].style.display == DisplayStyle.None;
                     for (int j = 0; j < govde.Count; j++)
                     {
-                        bool a = ac && j == ii; govde[j].style.display = a ? DisplayStyle.Flex : DisplayStyle.None; oklar[j].text = a ? "⌄" : "›";
+                        bool a = ac && j == ii, once = govde[j].style.display == DisplayStyle.Flex; govde[j].style.display = a ? DisplayStyle.Flex : DisplayStyle.None; oklar[j].EnableInClassList("nasil-ok--acik", a);
+                        if (!Ayar.reduce && a != once) { var gj = govde[j]; if (a) gj.schedule.Execute(() => gj.RemoveFromClassList("koz-solgun")).StartingIn(16); else gj.AddToClassList("koz-solgun"); }
                         Erisim.Etiket(satirlar[j], L.T(NASIL[j, 0]), "dugme", false, false, L.T(a ? "açık" : "kapalı"));
                     }
                 }));

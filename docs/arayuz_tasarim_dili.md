@@ -70,7 +70,7 @@ Cam kuralları (Apple HIG "Materials" + Liquid Glass ilkesiyle, 15 Kasım günce
 
 | Tür | Yükseklik | Köşe | Dolgu | Kural |
 |---|---|---|---|---|
-| Birincil (`.dugme--birincil`) | 56 | 16 | turuncu `--sun`, koyu yazı | Ekranda **bir** tane. Tam genişlik, içeriğin altında. |
+| Birincil (`.dugme--birincil`) | 56 | 16 | sarı `--sun`, mürekkep yazı ve kontur | Ekranda **bir** tane. Tam genişlik, içeriğin altında. |
 | İkincil (`.dugme`) | ≥ 48 | 12 | `--cam2` | Birincilin yanında ya da kartta eylem. |
 | Simge düğme (`.ikon-dugme`) | 44 × 44 | 22 (daire) | `--cam2` | Erişilebilirlik etiketi zorunlu. |
 | Küçük (`.kucuk-dugme`) | ≥ 44 dokunma | 12 | `--cam2` | Satır içi (Değiştir, Gör). Görünen yazı küçük olsa da dokunma alanı 44. |
@@ -80,7 +80,7 @@ Düğme yazısı tek satır. Sığmazsa önce kısa metin aranır; kırılırsa 
 
 ### 6.3 Çipler ve seçim
 
-- Çip (`.cip`) ≥ 44 yükseklik, köşe 12, aralık 8. Seçili: turuncu 2 pt çerçeve + hafif turuncu dolgu + kalın yazı + ✓ simgesi (§3: anlam yalnız renkle verilmez).
+- Çip (`.cip`) ≥ 44 yükseklik, köşe 12, aralık 8. Seçili: sarı dolgu + mürekkep 2 pt kontur ve yazı + ✓ simgesi (§3: anlam yalnız renkle verilmez).
 - Bir sırada 2–4 çip, eşit genişlik (§2.4). 5 ve üstü ise yatay kaydırma değil, iki satır ya da alt sayfa.
 
 ### 6.4 Listeler
@@ -104,7 +104,7 @@ Standart liste satırı (`.liste-satir`):
 1. Üst şerit: solda seviye hapı, sağda Tüy hapı + ayarlar simge düğmesi; yükseklik 44, yan boşluk 16.
 2. Sayfa başlığı (`.sayfa-baslik`, Baloo): üst şeridin altında, solda.
 3. İçerik: kartlar arası 12, kart içi 14. Ana eylem (birincil düğme) içeriğin sonunda ya da sekme çubuğunun hemen üstünde, tek.
-4. Sekme çubuğu: 5 sekme, seçili sekme turuncu simge + yazı + üst çizgi.
+4. Sekme çubuğu: 5 sekme, beyaz çubuk; seçili sekme sarı hap + mürekkep simge ve yazı (22 Kas Stadyum Pop).
 5. Alt sayfa: tutamak + başlık + içerik + (varsa) tek birincil eylem; aşağı kaydırarak ya da dışına dokunarak kapanır.
 
 ### 6.6 Köşe ve boşluk ölçeği
@@ -123,7 +123,7 @@ Standart liste satırı (`.liste-satir`):
 Kaynak: yasin 15 Kasım 2026. Amaç: oyuncu bir menüyü ilk açışta 3 saniyede "burada ne yaparım" sorusunu yanıtlar. Hedef kitle telefonda kısa seans oynayan arcade spor oyuncusu (Badminton League, Tennis Clash bilen); menüde değil sahada vakit geçirmek ister.
 
 1. **Ekran başına tek iş.** Her sekme ve alt sayfa tek cümleyle anlatılabilir ("Oyna: maça gir", "Dolap: oyuncunu ve raketini giydir"). İkinci bir iş varsa alt sayfaya ya da başka sekmeye gider.
-2. **Tek birincil eylem** (§6.2): turuncu dolgu ekranda bir kez. Göz önce ona gider; diğer her şey cam ikincil ya da metin bağlantısı.
+2. **Tek birincil eylem** (§6.2): sarı dolgu ekranda bir kez. Göz önce ona gider; diğer her şey lacivert ikincil ya da metin bağlantısı.
 3. **Görünür öğe bütçesi**: ilk ekranda (kaydırmadan) en fazla 1 birincil eylem, 3–4 kart ya da liste grubu, 7 ± 2 dokunulabilir öğe. Fazlası kaydırmanın altına ya da alt sayfaya.
 4. **Kademeli açma** (progressive disclosure): ayrıntı (stat tablosu, kural açıklaması, uzun liste) varsayılan olarak kapalı; tek satır özet + `›` ile açılır. Kural metni her açılışta tekrar edilmez (bir kez gösterilir ya da tek kısa satıra iner).
 5. **Metin**: başlık 1–3 kelime, açıklama tek satır, cümle düzeni (Baloo başlık hariç büyük harf yok). Düğme yazısı fiil ("Oyna", "Giy", "Yükselt"), tek kelime tercih. "Tamam/Evet" yerine eylemin adı. Aynı şey her ekranda aynı adla anılır (Tüy, Sv, Dolap, Atölye).
@@ -135,30 +135,42 @@ Kaynak: yasin 15 Kasım 2026. Amaç: oyuncu bir menüyü ilk açışta 3 saniyed
 
 ## 8. Renk
 
-Palet "Gün Batımı Salonu" sabittir (yasin 27 Eki); yeni ton eklenmez, mevcut değişkenler anlamına göre kullanılır. Kurallar yaygın kabul gören pratiklerden (Apple HIG Color + Dark Mode, Material 3 tonal yüzeyler, WCAG 2.2) alınmıştır.
+Palet **"Stadyum Pop"** (yasin 22 Kas 2026: "stadyum pop tan devam edelim, ama ai unslop olmalı gerçek bir tasarımcının elinden çıkmış bir ui ve ux tasarımı olmalı"; seçim sayfası `/mnt/project-files/birdie-smash/menu-tasarim-dilleri-2026-11-22/v4-gorsel-yonler.html`). Önceki "Gün Batımı Salonu" (27 Eki) ve Dünya Turu renkleri (22 Kas v3, reddedildi) bununla bitti. Değişken adları geriye uyum için aynı kaldı (`--sun` artık sarı, `--ink` mavi zemin).
+
+**Yön (beş satır):**
+- Ürün: çocuk ve genel kitleye, kısa maçlı, kariyerli bir badminton oyunu.
+- Karakter: güneşli, sportif, zıplayan.
+- Dünya: gündüz badminton salonu; kort mavisi, yeşil kort, beyaz çizgi.
+- Anlar: oyuncu ile rakibin afişi (Oyna) ve büyük karakter vitrini (Dolap); renk ve ayrıntı yalnız orada.
+- İmza: mürekkep konturlu, altı kalın 3B düğme; ekranda tek sarı.
 
 ### 8.1 Rol tablosu (tek anlam, tek renk)
 
 | Rol | Değişken | Değer | Nerede | Nerede DEĞİL |
 |---|---|---|---|---|
-| Zemin | `--ink` | #1A1221 | sayfa arkası | yazı |
-| Yüzey (cam) | `--cam`, `--cam2`, `--cam3` | mor, .80/.72/.82 | kart, düğme, basılı | zemin |
-| Birincil eylem / seçili | `--sun` | #FFA04D | tek birincil düğme, seçili çerçeve, sekme simgesi | süs, uyarı |
-| Sen ve senin ilerlemen | `--lime` | #C9EE4B | oyuncunun skoru, kendi satırı, "sen"; seviye/XP çubuğu ve gelişim basamakları (yasin 20 Kas, karar kartı "A · Limon") | düğme dolgusu (birincil turuncudur) |
-| Rakip | `--coral` | #E99BFF | rakip skoru ve adı | hata |
-| Ödül / Tüy | `--gold` | #F9D272 | Tüy, kupa, seviye ödülü, Tüy biriktirme çubuğu, Efsane XP | seçili durum, seviye çubuğu |
-| Bilgi | `--sky` | #8FC6FF | ipucu, bağlantı | eylem |
-| Ana yazı / ikincil yazı | `--tx` / `--mu` | #F3EAEE / #CBB8C5 | gövde / açıklama | — |
+| Zemin | `--ink` | #2659BE (Oyna'da alta doğru #163C8E) | sayfa arkası | yazı |
+| Yüzey (panel) | `--cam`, `--cam2`, `--cam3` | lacivert-mavi .62 / #1E4DB3 / #173F98 | kart, ikincil düğme, basılı | zemin |
+| Çizgi / kontur | `--cam-kenar`, `--cta-ink` | #14244F / #1B2340 | basılabilir öğenin konturu ve alt kalınlığı | kart (kart konturusuz) |
+| Birincil eylem / seçili / şimdi | `--sun` | #FFC93C, üstünde mürekkep yazı | tek birincil düğme, seçili çip ve sekme hapı | süs, ilerleme çubuğu |
+| Sen ve senin ilerlemen | `--lime` | #C9EE4B | oyuncunun skoru, kendi satırı; seviye/XP çubuğu (yasin 20 Kas "A · Limon") | düğme dolgusu |
+| Rakip | `--coral` | #E99BFF | rakip skoru ve adı (kart üstünde) | hata |
+| Ödül / Tüy | `--gold` | #F9D272, hep tüy simgesiyle | Tüy, kupa, seviye ödülü | seçili durum |
+| Bilgi | `--sky` | #A9D6FF | ipucu, stat çubuğu | eylem |
+| Ana / ikincil yazı | `--tx` / `--mu` | #FFFFFF / #D6E2FF | gövde / açıklama | — |
+| Sekme çubuğu | `--bar` | #FFFFFF, soluk yazı #5A6690 | alt gezinme | içerik kartı |
+
+Kontrast (22 Kas ölçüldü): beyaz yazı zeminde 6,5:1, kartta 9,3:1, ikincil düğmede 7,6:1; `--mu` zeminde 5,0:1, kartta 7,2:1; mürekkep sarıda 10:1; vurgu renkleri kartta 4,7 (orkide) ile 7,0 (limon) arası. Orkide zeminde 2,5:1 olduğu için rakip adı zemine doğrudan yazılmaz, kart üstünde durur.
 
 ### 8.2 Kurallar
 
-1. **60-30-10**: ekranın ~%60'ı zemin, ~%30'u cam yüzey, en fazla ~%10'u vurgu renkleri (turuncu, limon, orkide, altın). Bir ekranda aynı anda en fazla iki vurgu rengi baskın olur; turuncu her zaman "bas" demektir.
-2. **Saf siyah ve saf beyaz yok**: zemin mor-kahve, yazı sıcak beyaz (göz yorgunluğu ve OLED'de lekelenme). Koyu zeminde vurgular doygun ama açık tonludur (yukarıdaki değerler); koyu zeminde koyu doygun renk (ör. saf kırmızı #FF0000) kullanılmaz.
-3. **Yükseklik = açıklık**: koyu temada üstteki yüzey bir tık daha açıktır (zemin < kart < düğme < basılı); gölgeyle değil tonla ayrılır (Material 3 tonal elevation, HIG dark mode).
-4. **Kontrast (ölçüldü, 15 Kas)**: `--tx` cam üstünde 13,1:1; `--mu` cam üstünde 8,2:1, `--cam2` üstünde 7,2:1; koyu yazı turuncu üstünde 9,4:1; vurgu renkleri cam üstünde 7,6–11,6:1. Alt sınır gövde 4,5:1, büyük kalın 3:1, simge ve çerçeve 3:1. `--mu`'dan daha soluk bir yazı rengi eklenmez; pasif öğe opaklıkla değil "kilit + yazı" ile ayrılır, opaklık gerekiyorsa en az .6 ve yazı yine 4,5:1.
-5. **Renk körlüğü**: sen/rakip ayrımı limon–orkide (parlaklıkları da farklı) + konum (sen solda/altta) + ad; seçili turuncu çerçeve + ✓; kazanç/kayıp ok ve işaretle (▲ ▼, +/−). Kırmızı–yeşil ikilisi tek başına anlam taşımaz.
-6. **Turuncu kıtlığı**: turuncu yalnız birincil eylem, seçili durum ve aktif sekme içindir. İlerleme çubukları turuncu olmaz (27 Ekim'deki "ilerleme turuncu" kararı 20 Kasım'da yasin'in seçimiyle kalktı): seviye ve gelişim limon, Tüy altın. Başlıkta, süste, rozette turuncu yoksa göz eylemi saniyede bulur.
+1. **60-30-10**: ekranın ~%60'ı zemin, ~%30'u panel, en fazla ~%10'u vurgu renkleri (sarı, limon, orkide, altın). Bir ekranda aynı anda en fazla iki vurgu rengi baskın olur; sarı her zaman "bas" ya da "seçili" demektir.
+2. **Saf siyah yok**: çizgi ve koyu yazı mürekkep #1B2340, zemin doygun ama orta koyulukta mavi (beyaz yazı 6,5:1). Beyaz yalnız yazı, sekme çubuğu ve kort çizgisi içindir; mavi zeminde koyu doygun renk (ör. saf kırmızı) kullanılmaz.
+3. **Basılabilir = konturlu**: kart düz, konturusuz lacivert paneldir; düğme, çip ve sekme mürekkep konturlu ve altı kalındır (3B). Kontur kalınlığı seçili ve seçili değilken aynıdır, yalnız renk değişir (yerleşim kaymaz). Gölge (box-shadow) yok.
+4. **Kontrast (ölçüldü, 22 Kas, sayılar 8.1'de)**. Alt sınır gövde 4,5:1, büyük kalın 3:1, simge ve çerçeve 3:1. `--mu`'dan daha soluk bir yazı rengi eklenmez; pasif öğe opaklıkla değil "kilit + yazı" ile ayrılır, opaklık gerekiyorsa en az .6 ve yazı yine 4,5:1.
+5. **Renk körlüğü**: sen/rakip ayrımı limon–orkide (parlaklıkları da farklı) + konum (sen solda/altta) + ad; seçili sarı dolgu + mürekkep kontur + ✓; kazanç/kayıp ok ve işaretle (▲ ▼, +/−). Kırmızı–yeşil ikilisi tek başına anlam taşımaz.
+6. **Sarı kıtlığı**: sarı yalnız birincil eylem, seçili durum ve aktif sekme içindir (Supercell'in "en önemli düğme sarı" kalıbı). İlerleme çubukları sarı olmaz: seviye ve gelişim limon, Tüy altın (hep tüy simgesiyle, sarıyla karışmasın). Başlıkta, süste, rozette sarı yoksa göz eylemi saniyede bulur.
 7. **Kozmetik renkler ayrıdır**: oyuncunun seçtiği forma/raket renkleri arayüz rolü taşımaz; menüde yalnız kendi örnek yuvarlağında görünür (`docs/kozmetik_tasarim_dili.md`).
+8. **Profil oyuncu kartı istisnası** (yasin 23 Kas, "Profil A"): kartın tamamı altın (`--gold`, ödül rengi; sarı `--sun` değil) dolgulu, mürekkep konturlu ve altı kalındır, çünkü basılabilir (Dolap'ı açar). İçindeki yazı ve seviye çubuğu mürekkep (altın üstünde limon 1,3:1 okunmaz, mürekkep 10:1). Başka ekrana altın dolgulu kart eklenmez.
 
 ## 9. Ekran denetim listesi (her menü değişikliğinde PR'a)
 
@@ -167,7 +179,7 @@ Kısa "HIG kontrolü" bölümüne şu sorular yanıtlanır:
 2. İlk ekranda kaç dokunulabilir öğe ve kaç kart var (§7.3 bütçesi)?
 3. Tekrar eden ya da her açılışta okunan uzun metin kaldı mı (§7.4)?
 4. Cam katman sırası doğru mu: gezinme üstte, içerik sakin; cam içinde cam yok (§6.1)?
-5. Renkler rol tablosuna uyuyor mu; turuncu yalnız eylem/seçili mi; anlam yalnız renkle mi verilmiş (§8)?
+5. Renkler rol tablosuna uyuyor mu; sarı yalnız eylem/seçili mi; anlam yalnız renkle mi verilmiş (§8)?
 6. Dokunma ≥44, yazı ×2'de taşma/çakışma yok, hareketi azalt, erişim etiketi (§1, §3, §5)?
 7. Dokunuşta takılma yok: kayıt `KaydetSonra`, sayfa yerinde güncelleniyor mu (§7.8)?
 8. `unslop` işaret listesi ve §10.2 temiz mi; yeni metin `no-ai-slop` süzgecinden geçti mi?
@@ -193,14 +205,37 @@ Kaynak: yasin 19 Kasım 2026 10:17 ("Üçünde önerilerini uygula kurallara uyg
 gezinme ve açılır panel, Brawl Stars iri simge ve bölmeli yerleşim, Apple HIG sheet.
 
 1. **Dolap = sahne + çekmece.** Figür alanın ~%60'ı; liste altta, üç duraklı çekmecede (İncele: çekmece kapalı · yarım ·
-   tam). Kategoriye dokunmak kamerayı o bölgeye götürür, eşyaya dokunmak figürde dener, tek turuncu düğme Giy/Al. Raket
+   tam). Kategoriye dokunmak kamerayı o bölgeye götürür, eşyaya dokunmak figürde dener, tek sarı düğme Giy/Al. Raket
    şeridin son kategorisi. iPad'de çekmece sağ panel, figür solda tam boy. Durak geçişi animasyonsuz: vitrin RT'si kutuyla
    boyutlanır, her karede boy değiştirmek takılma demektir (§7.8).
-2. **Kariyer = dikey tur yolu.** Başlıkta ‹ tur ›; altı basamak zikzak yol üstünde (geçilen ✓ + yıldız, şimdiki büyük güneş
-   diski + "Şimdi", kilitli kilit), sonunda mühür. Tek birincil eylem altta sabit "Sıradaki maç". Yol yukarıdan aşağı:
+   **Yuvalar** (23 Kasım 2026, yasin seçimi "Dolap A", `https://claude.ai/artifact/Q3WbQ4HGx1Pv6VhfwXpBpV`): kategoriler
+   yazılı şeritte değil, figürün iki yanında yuva (64 × 48 pt; liste ikiye bölünür, ilk yarı solda). Dokunulan yuva
+   çekmecenin içeriğini seçer; seçili yuva sarı çerçeve + köşede ✓ rozeti. Hareketler giyilmez, ayrı yuva sağ üstte
+   (İncele sol üstte). Yuva sığmadığında yazılı şerit döner: tam durak, büyük yazı, kısa ekranda 8 yuva; ikisi aynı anda yok.
+2. **Kariyer = Dünya Turu + dikey rota** (22 Kasım 2026, yasin "önerin gibi ilerle"; seçenekler
+   `https://claude.ai/artifact/19MR43zwtCSMgJxmpkLeNM`, A + B'nin durak ödülleri + C'nin turnuva aşamaları; kalıp Tennis
+   Clash / Golf Clash şehir turu). Üstte sekiz tur kartı yatay şeritte (kart 232 pt: Painter2D mekân sahnesi 112 pt, "Tur n"
+   etiketi, Bitti/Buradasın rozeti, ad, maç sayısı + yıldız + ilerleme çubuğu + mühür satırı; kilitlide örtü + kilit +
+   neden). Kart dokunuşu turu seçer, seçili kart sarı çerçeve. Altında hikâye satırı; grup turlarında (ilk durak "grup")
+   Grup · Çeyrek · Yarı · Final kutuları. Rota: altı durak zikzak (durak adı şehir, altında rakip; geçilen ✓ + yıldız,
+   şimdiki büyük disk + "Şimdi"), her durağın ucunda o duraktan alınacak Tüy (Gear.Odul: ilk galibiyet +60, eksik yıldız
+   başı +20; uydurma sayı yok), sonunda mühür. Tek birincil eylem altta sabit "Sıradaki maç". Yol yukarıdan aşağı:
    okuma ve ekran okuyucu sırası basamak sırasıyla aynı.
 3. **Atölye = seçici + çubuk.** Seçeneği çip şeridinde seç, önizlenen seçeneğin etkisini çubukla göster (orta çizgi = nötr,
    artı sağa limon, eksi sola soluk, ▲/▼ ve yüzde yazısı yanında). Kilitli seçenek de önizlenir; düğme kaç seviye kaldığını
    söyler. Uzun kart listesi yerine bir kart.
 4. **Basma dili tek.** Her düğme, çip, ikon düğmesi ve CTA basınca .06 sn'de %95, bırakınca .26 sn ease-out-back; dokunuşta
    tick titreşimi (UiOge). Hareketi azaltta küçülme yok, renk değişimi kalır.
+5. **Menü sesleri türe göre** (22 Kasım 2026, yasin "tüm butonlarda tatmin edici ses"; `Sfx.UiSes`). Her dokunuş bir ses
+   çalar, tür öğenin sınıfından gelir: `pop` (varsayılan düğme, kart), `bas` (birincil düğme; "hit" titreşimi), `sec` (çip),
+   `sekme` (alt gezinme), `geri` (geri, alt sayfa kapanışı), `kilit` (pasif/kilitli; hata vızıltısı değil), `kaydir`
+   (giyilen parça), `odul` (satın alma, seviye, tur mührü). Sesler sentezlenir, önbellekte durur, açılışta ısıtılır; düzey
+   oyun içi vuruşların altında. Yeni dokunulur öğe kendi sesini bu listeden alır, yeni bip yazılmaz.
+6. **Basılabilir her şey tıknaz** (22 Kasım 2026 Stadyum Pop, §8). Düğme, çip, ikon düğmesi ve sekme: 2 pt mürekkep kontur,
+   alt kenar 4 pt (birincil 5, büyük Oyna 6); basınca 1–2 pt aşağı oturur. Birincil sarı dolgu + mürekkep yazı, ikincil
+   lacivert-mavi + beyaz yazı. Kart konturusuz kalır: basılabilir olanla olmayan biçimden ayrılır.
+7. **Maç içi göstergeler menüyle aynı dili konuşur** (22 Kasım 2026, yasin: güç göstergesi yeni tasarımla tek bütün). Renk
+   rolleri §8.1'deki gibi: oyuncuya ait gösterge (vuruş gücü yayı, top izi) limon, rakibe ait orkide, ödül altın; sarı
+   yalnız seçim/birincil eylem, kortta kullanılmaz. Parlama, nabız, beyaz flaş, gradyan yok; düz renk + yarı saydamlık. Çizgi
+   1,5 pt, vurgu 2 pt, uçlar yuvarlak. Hızlı dolum (ease-out), yavaş sönüm; hareketi azaltta dolum anlık. Anlam yalnız renkle
+   verilmez (ör. güç = yanan dilim sayısı).

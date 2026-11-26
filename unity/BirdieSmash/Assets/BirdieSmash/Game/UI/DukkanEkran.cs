@@ -13,7 +13,7 @@ namespace BirdieSmash.Game
 {
     public partial class UiKok
     {
-        bool dukkanDinliyor, magazaIsitma; string dukkanNot, dukkanAlinan; int dukkanUcusOnce = -1; float dukkanY; ScrollView dukkanSv;
+        bool dukkanDinliyor, magazaIsitma; string dukkanNot, dukkanAlinan; bool dukkanHedefHazir; int dukkanUcusOnce = -1; float dukkanY; ScrollView dukkanSv;
 
         public void DukkanAc() { var once = gez.sekme; dukkanY = 0; Magaza.O.Baslat(); gez.Ac(Gezinti.DUKKAN); Uygula(once, true); }
 
@@ -38,13 +38,20 @@ namespace BirdieSmash.Game
         {
             if (dukkanDinliyor) return; dukkanDinliyor = true;
             Magaza.O.Degisti += DukkanYenile;
-            Magaza.O.ReklamsizBitti += () => { dukkanNot = L.T("Reklamsız açık: menüdeki reklam şeridi kalktı."); root.sfx.Tik(); Yerel.Hap("win"); DukkanYenile(); };
+            Magaza.O.ReklamsizBitti += () => { dukkanNot = L.T("Reklamsız açık: menüdeki reklam şeridi kalktı."); root.sfx.UiSes("odul"); Yerel.Hap("win"); DukkanYenile(); };
             Magaza.O.Bitti += n =>
             {
                 dukkanNot = n > 0 ? L.T("{0} Tüy cüzdanında.", UiKok.Sayi(n)) : L.T("Satın alma tamamlanmadı, ücret alınmadı.");
+                // 2026-11-23 inceleme (fikir 12:06 #4): alım hedef eşyayı karşılayınca hedef satırı kalkıyor, parayı verme nedeni hiç
+                // anılmıyordu; oyuncu eşyayı Dolap/Atölye'de kendisi arıyordu. Bu alım eksiği kapattıysa not hedefi söyler ve tek
+                // birincil düğme hedefin sayfasını açar (HedefeGit, maç sonu "Hedefin hazır" yolu). Eşyayı oyuncu orada görüp kendisi alır.
+                var hd = Ayar.HedefBilgi(); int tuyS = Ayar.gear.eko.tuy;
+                dukkanHedefHazir = n > 0 && hd.gecerli && Hedef.Kalan(hd.fiyat, tuyS) == 0 && Hedef.Kalan(hd.fiyat, tuyS - n) > 0;
+                if (dukkanHedefHazir) dukkanNot = L.T("Hedefin {0} için Tüy'ün yetiyor.", L.T(hd.ad));
                 if (n > 0)
                 {
-                    root.sfx.Tik(); Yerel.Hap("win"); ustKirli = true;
+                    root.sfx.UiSes("odul"); Yerel.Hap("win");   // 2026-11-22: ödül anı üç notalı "odul" sesi (tek bip yerine)
+                    ustKirli = true;   // 2026-11-23 inceleme (fikir 12:06 #1): 22 Kas'ta yorumun içine düşmüştü, üst şerit eski Tüy'ü gösteriyordu
                     // 2026-11-12 inceleme (#5): tüyler satın alınan karttan cüzdan rakamına uçar, rakam sayar. Üst şerit menüye
                     // dönünce aynı artışı ikinci kez uçurmasın diye gösterilen değer burada güncellenir.
                     if (gez.Ust == Gezinti.DUKKAN && !Ayar.reduce) dukkanUcusOnce = Mathf.Max(0, Ayar.gear.eko.tuy - n);
@@ -93,6 +100,8 @@ namespace BirdieSmash.Game
             // "maçla kazanılır"ı zaten söylüyor, iki satır aynı şeyi anlatıyordu. Fiyat ızgarası bir satır yukarı çıkar (SE).
             else ust.Add(Yazi(L.T("Tüy'le Dolap'ta skin, Atölye'de ekipman alırsın. Maç oynayarak da kazanırsın."), 13, "soluk"));
             if (!string.IsNullOrEmpty(dukkanNot)) { var n = Yazi(dukkanNot, 14, "kalin"); n.AddToClassList("dukkan-not"); c.Add(n); }
+            if (dukkanHedefHazir && !string.IsNullOrEmpty(dukkanNot) && hd.gecerli && eksik == 0)
+            { string hk = hd.kat, hi = hd.id; c.Add(Dugme(L.T("Şimdi al") + "  ›", () => { dukkanHedefHazir = false; dukkanNot = null; SekmeAc(gez.sekme); HedefeGit(hk, hi); }, "dugme--birincil")); }
 
             var m = Magaza.O;
             bool yukleniyor = m.durum == Magaza.Durum.Yukleniyor || m.durum == Magaza.Durum.Kapali, hata = m.durum == Magaza.Durum.Hata;
@@ -156,7 +165,7 @@ namespace BirdieSmash.Game
             c.Add(Bosluk(12));
             var rk = Kart("dukkan-kart"); c.Add(rk);
             rk.Add(Yazi(L.T("Reklamsız"), 16, "kalin"));
-            rk.Add(Yazi(L.T("Menüdeki reklam şeridi kalkar. Maç sonundaki ödüllü reklam yalnız sen istersen açılır. Tüy vermez, bir kez alınır."), 13, "soluk"));
+            rk.Add(Yazi(L.T("Menüdeki reklam şeridi kalkar; maç sonu ödüllü reklam isteğe bağlı kalır. Tüy vermez, bir kez alınır."), 13, "soluk"));
             string rf = m.Fiyat(TuyDukkan.REKLAMSIZ); bool rVar = m.ReklamsizVar;
             if (rVar) rk.Add(Pasif(L.T("Alındı")));
             else if (hata) { }
@@ -166,13 +175,15 @@ namespace BirdieSmash.Game
             Erisim.Etiket(rk, L.T("Reklamsız") + ", " + (rVar ? L.T("Alındı") : hata ? L.T("Mağazaya bağlanılamadı") : yukleniyor ? L.T("Fiyat alınıyor…") : rf ?? L.T("Satın alınamıyor")), "dugme", false, rVar || rf == null || hata || yukleniyor);
 
             c.Add(Bosluk(12));
-            c.Add(Yazi(Bulut.Acik ? L.T("İlerlemen ve aldığın Tüy iCloud'a yedekleniyor; uygulamayı silsen de geri gelir.")
-                                  : L.T("iCloud kapalı: ilerlemen yalnız bu cihazda. Ayarlar'da iCloud'u açarsan yedeklenir."), 13, "soluk"));
             // 2026-11-12 inceleme (#4): geri yükleme paket düğmeleriyle aynı ağırlıktaydı; ikincil (hayalet) düğme, 48 pt yükseklik
             // ve görünürlük korunur (App Store gereği).
             if (m.GeriYukleniyor) c.Add(Pasif(L.T("Kontrol ediliyor…")));
             else if (m.Suruyor) c.Add(Pasif(L.T("Satın alımları geri yükle")));
-            else c.Add(Dugme(L.T("Satın alımları geri yükle"), () => { Magaza.O.GeriYukle(ok => { Reklam.Yenile(); dukkanNot = ok ? L.T("Kaydın yeniden okundu.") : L.T("Geri yüklenecek bir şey bulunamadı."); ustKirli = true; DukkanYenile(); }); }, "dugme--hayalet"));
+            else c.Add(Dugme(L.T("Satın alımları geri yükle"), () => { Magaza.O.GeriYukle(ok => { Reklam.Yenile(); dukkanHedefHazir = false; dukkanNot = ok ? L.T("Kaydın yeniden okundu.") : L.T("Geri yüklenecek bir şey bulunamadı."); ustKirli = true; DukkanYenile(); }); }, "dugme--hayalet"));
+            // 2026-11-22 inceleme (fikir 07:06 #7): dipte üç ayrı boyda dağınık blok vardı (13 pt iCloud, düğme, 12 pt dipnot). iCloud
+            // cümlesi geri yükleme düğmesinin altına, tüketilen ürün dipnotuyla aynı 12 pt bloğa indi; App Store'un istediği bilgi aynı.
+            c.Add(Yazi(Bulut.Acik ? L.T("İlerlemen ve aldığın Tüy iCloud'a yedekleniyor; uygulamayı silsen de geri gelir.")
+                                  : L.T("iCloud kapalı: ilerlemen yalnız bu cihazda. Ayarlar'da iCloud'u açarsan yedeklenir."), 12, "soluk"));
             c.Add(Yazi(L.T("Tüy tüketilen bir üründür: harcayınca biter, süresi dolmaz. Rastgele ödül satılmaz."), 12, "soluk"));
             c.Add(Bosluk(24));
         }

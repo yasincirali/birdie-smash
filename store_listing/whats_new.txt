@@ -1,4 +1,181 @@
 === UNITY ===
+Dolap yeniden düzenlendi (23 Kasım akşam):
+- Kategoriler artık oyuncunun iki yanında kutular halinde: solda Yüz, Şapka, Forma; sağda Sırt, Ayakkabı, Raket. Yazılı, kayan şerit kalktı.
+- Hareketler ayrı kutu, oyuncu görüntüsünün sağ üst köşesinde.
+Nasıl denenir: Dolap'ı aç. Oyuncunun iki yanında altı kutu, sağ üstte Hareketler görmelisin. Bir kutuya dokun: kutu sarı çerçeve ve köşede tik alır, alttaki liste o kategoriye geçer. Listeyi tutamaktan yukarı çekip tam aç: kutular gizlenir, yazılı şerit üstte belirir.
+
+Kariyer sayfası yenilendi (23 Kasım):
+- Sayfanın en üstünde artık sıradaki maç var: turun mekânı, sen ve rakibin yüzü, tek büyük Oyna. Oyna doğrudan maça götürür.
+- Rakibin yüzüne ya da adına dokununca maç kartı açılır (zorluk, yıldız görevleri).
+- Altında turun altı durağı tek bir çizgide: geçtiklerin tikli, şimdiki durak sarı halkada senin yüzünle. Altında Grup, Çeyrek, Yarı, Final yazıyor. İlerleme tek sayı: "Durak 3/6".
+- En altta sekiz tur küçük kutularda; birine dokununca o turun durakları yukarıda açılır.
+Nasıl denenir: Kariyer'e gir. İlk bakışta sıradaki rakibini ve Oyna'yı görmelisin. Oyna'ya basınca maç başlamalı. Alttaki kutulardan başka bir tura dokun: duraklar çizgisi o tura geçmeli.
+Menü cilası: Profil, Atölye, alt çubuk (26 Kasım gece):
+- Sol üstteki seviye kapsülünde yüzün artık boş beyaz daire kalmıyor; yüz kaybolursa menü dururken kendiliğinden geri geliyor.
+- Yeni oyuncunun Profil sayfasında üç büyük sıfır yerine tek satır var: "İlk maçında rekorların burada birikir · Oyna". İlk maçtan sonra rekor kutuları görünür.
+- 1. seviyede Profil'deki ayrı "Gelişim" kartı kalktı; "2. seviyede 5 yeni eşya ve ilk gelişim puanın açılır" satırı ikisini birlikte söylüyor.
+- Alt çubukta Kariyer simgesinin arkasındaki gri halka kalktı (kilitli sekme gibi görünüyordu).
+- Atölye'de Tarz artık büyük bir düğme değil, "Tarz · Dengeli ›" satırı; tek büyük eylem "Raketi değiştir". Sahada kutusu boşken tek cümle.
+- Atölye'de raket ya da gelişim değişince Sahada çubukları ortadaki çizgiden dışa doğru kayarak büyüyor.
+- Atölye'ye ilk geçişteki küçük takılma azalmalı (raket çizimi menü dururken önceden hazırlanıyor).
+Nasıl denenir: Yeni kayıtla Profil'i aç: üç sıfır yerine tek satır olmalı, dokununca Oyna açılmalı; Gelişim kartı görünmemeli. Alt çubukta Kariyer simgesinin arkası boş olmalı. Sol üstteki yüz dolu olmalı. Atölye'de Tarz satırına dokun: tarz seçici altında açılmalı, sağdaki yazı "Kapat" olmalı. Raketi değiştirip Atölye'ye dön: değişen çubuklar ortadan dışa büyümeli. Ayarlarda hareketi azalt açıkken çubuklar anında görünmeli.
+Maç sonu kartı (23 Kasım gece):
+- Son sayıda ekrana hızlı dokunursan maç sonu kartı atlanmıyor: kart açıldıktan sonra çok kısa bir an düğmeler dokunuşu almıyor, ödülünü ve yıldızlarını görmeden yeni maç başlamıyor.
+- Kartın küçük düğmeleri (reklam, antrenman, Ana menü, Ayrıntılar) basılınca hafifçe küçülüyor, menüdeki gibi ses ve titreşim veriyor.
+- Kart açıkken telefon daha az iş yapıyor; kutlama sırasında takılma azalmalı.
+- Oyuncunu seç ekranında "Rastgele" artık her zaman başka bir oyuncu seçiyor.
+Nasıl denenir: Bir maçın son sayısında ekrana art arda hızlıca dokun: kart açılmalı ve yerinde kalmalı. Kartta küçük düğmelere bas: küçülüp ses ve titreşim vermeli. Duraklatmada Ses ve Müzik düğmeleri yine tek titreşim vermeli. Yeni oyuncuyla Oyuncunu seç'te Rastgele'ye birkaç kez dokun: her seferinde oyuncu değişmeli.
+Yeni Profil sayfası (23 Kasım):
+- Sayfanın başında altın renkli bir oyuncu kartı var: yüzün, adın, unvanın, tarzın ve raketin, dünya sıran ve seviye çubuğu. Karta dokununca Dolap açılır.
+- Rekor ralli, en hızlı smaç ve galibiyet kartın altında üç ayrı kutuda.
+- Kupalar artık sekiz yuvanın hepsini gösteriyor: kazandıkların altın zeminde, sıradaki ince çerçeveli. Bir kupaya dokununca Kariyer o tura açılır.
+- Son maçlar tek satır: kazandığın maç G, kaybettiğin M.
+Nasıl denenir: Profil sekmesini aç. Kartta seviye çubuğunun dolduğunu ve "Sonraki seviyeye ... XP" yazısını gör, karta dokun: Dolap açılmalı. Kupalar'da sıradaki tura dokun: Kariyer o turla açılmalı. Bir maç oyna, dön: Son maçlar satırının başına yeni harf gelmeli. Yazı boyutunu büyütünce hiçbir yazı üst üste binmemeli.
+Yeni menü görünümü (23 Kasım):
+- Açılış ekranı artık menüyle aynı stadyum mavisinde; turuncu-kırmızı geçiş kalktı.
+- Alt sekme çubuğu inceldi ve ekranın altında yüzen beyaz bir kapsül oldu. Simgeler ince çizgi oldu, çubuk ekranın altına biraz daha yaklaştı. Seçili sekmenin sarı zemini sekmeler arasında kayarak geçiyor.
+- Sekmelerde küçük işaretler: Atölye'de yeni yükseltme varsa nokta, yarım kalan maç varsa Oyna'da "II".
+- Oyna sayfasında sahne büyüdü; sıradaki maç plakası sahnenin altına biniyor. Zorluk Oyna düğmesinin sağ parçasında: dokununca dört kademe açılıyor.
+- Günün maçı, Hızlı maç, Antrenman ve Arkadaşınla artık küçük çipler; her birinde tek satır bilgi var (ödül, sayı, yıldız).
+Nasıl denenir: Uygulamayı aç: açılış mavi olmalı. Alt çubukta sekmeler arasında gez: sarı zemin kayarak geçmeli. Oyna'da düğmenin sağındaki "Zorluk"a dokun: altında dört kademe açılmalı, birini seç. Bir maçı yarıda bırakıp menüye dön: Oyna sekmesinde "II" görünmeli.
+Duraklatma ekranı ve ses ayarları (23 Kasım akşamüstü):
+- Duraklatınca ekran bir anda değil, kısa bir solmayla açılıyor.
+- Duraklatma ekranında Ses'in yanında artık Müzik düğmesi de var; müziği kapatmak için maçtan çıkmak gerekmiyor.
+- Patron maçında duraklatınca rakibin imza vuruşu ve ona nasıl cevap verileceği yazıyor.
+- Duraklatma ekranı açıkken telefon arka planda daha az iş yapıyor; maça döndükten sonraki ilk vuruşta takılma azalmalı.
+- Ayarlar'da Ses kapalıyken Müzik, Seyirci ve Düğme sesi satırları soluk görünüyor (seçimlerin kaybolmuyor). Satırlar arasındaki çizgiler yazıyla aynı hizadan başlıyor.
+Nasıl denenir: Bir maçta duraklat: ekran yumuşakça gelmeli, Ses ve Müzik yan yana olmalı; Müzik'e dokun, maça dön, müzik kapalı olmalı. Kariyerde bir patron maçında duraklat: imza vuruşu satırını gör. Ayarlar'da Ses'i kapat: altındaki üç satır soluklaşmalı.
+Dükkân, ödül anları ve Gelişim (23 Kasım öğle):
+- Tüy dükkânında satın aldıktan sonra üstteki Tüy sayısı hemen güncelleniyor (eskiden menüye dönünce eski rakam kalıyordu).
+- Alım hedef eşyanın Tüy'ünü tamamladıysa dükkân bunu söylüyor ve "Şimdi al" düğmesi eşyanın sayfasını açıyor.
+- Seviye atlama ve tur sonu kartları kapanırken bir anda kaybolmuyor, kısa bir solmayla gidiyor. Bu kartlar ve tüy uçuşu 120 Hz ekranlarda daha akıcı.
+- Seviye kartında yeni eşya ve gelişim puanı birlikte gelince alt alta üç düğme yerine iki düğme var; puan satırına ("Dağıt ›") dokununca Gelişim açılıyor.
+- Gelişim'de puanın varken her dalın yanında bir puanın ne kazandıracağı yazıyor (ör. "+%6 → +%8").
+Nasıl denenir: Dükkân'dan bir Tüy paketi al (test hesabıyla), sonra geri çık: üstteki Tüy sayısı yeni olmalı. Bir seviye atla: kart kapanırken yumuşakça solmalı. Puanın varken Gelişim'i aç: dalların yanında ok ve sonraki yüzde görünmeli.
+Profil başarımları ve Dolap kombinleri (23 Kasım sabah):
+- Profil'de kilitli başarımların yanında artık ne kadar kaldığı yazıyor: "20 vuruşluk ralli" için 14/20, seviye 30 için 12/30, antrenman yıldızları için 9/24 gibi. "Henüz değil" ve "Kazanıldı" yazıları kalktı; kilit ve altın tik durumu gösteriyor.
+- Kapalı listede gösterilen üç kilitli başarım artık bitirmeye en yakın olanlar.
+- Dolap'ta kombini kaydedip güncellerken sayfa baştan kurulmuyor; liste yerinden zıplamıyor, takılma azalmalı.
+- Kombinde "Rastgele"ye basınca oyuncu parlıyor ve giyinme sesi geliyor.
+Nasıl denenir: Profil'i aç, Başarımlar'a in: kilitli satırlarda sağda "14/20" gibi sayı görmelisin. Dolap'ta biraz aşağı kaydır, bir kombin kaydet: sayfa yerinde kalmalı. Rastgele'ye bas: oyuncu kısa bir an parlamalı, ses gelmeli.
+Dolap ve Profil düzeltmeleri (23 Kasım gece):
+- Kilitli renkler artık soluk değil, gerçek renginde görünüyor; kilit ve kaçıncı seviyede açılacağı karonun altında küçük koyu bir etikette. Desen karolarında da yazı okunuyor.
+- Kariyerin sonunda açılan forma renginde artık "Final" yazıyor.
+- Kilitli bir renge ya da desene dokununca karo hafifçe sallanıyor, kilit sesi geliyor ve başlıkta nasıl açılacağı bir an görünüyor.
+- Forma rengini değiştirirken desen satırı daha hafif çiziliyor; eski telefonlarda dokunuşta takılma azalmalı.
+- Profil'de üst köşedeki yüz Kariyer'e girip çıktıktan sonra boş beyaz daireye dönüşmüyor.
+- Dolap'ta seçili kategori (Kıyafet gibi) şeridin dışında kalmıyor, ortada görünüyor.
+- Profil'de sıradaki seviyenin ödül satırı uzun liste yerine "2. seviyede 5 yeni eşya açılır" diye tek satır.
+Nasıl denenir: Dolap'ta Kıyafet'i aç: kilitli renkler parlak görünmeli, altlarında "Sv 14" gibi etiket olmalı. Kilitli birine dokun: karo sallanmalı, ses gelmeli, başlıkta koşul yazmalı. Forma rengini birkaç kez değiştir: desen karoları yeni renkte gelmeli, takılma olmamalı. Kariyer'i açıp kapat, sonra Profil'e geç: üst soldaki yuvarlakta yüzün görünmeli.
+
+Menülerde yeni görünüm: Stadyum Pop (22 Kasım gece):
+- Bütün menüler kort mavisine geçti. Oyna ekranında güneşin yerine salon ışığı ve oyuncuların bastığı yeşil kort var.
+- Ekranda tek sarı düğme var: oynatan düğme. Seçili sekme ve seçili çip de sarı; diğer düğmeler lacivert, hepsi koyu kenarlı ve kalın tabanlı, basınca aşağı oturuyor.
+- Alt sekme çubuğu beyaz, seçili sekme sarı bir hap içinde.
+- Tüy sayısının yanında "+" var; dokununca Tüy dükkânı açılıyor.
+- Ayarlar'da "Düğme sesi" satırı: Tüy, Ahşap, Balon, Retro, Kristal ya da Kapalı. Seçince o ses hemen çalıyor.
+Nasıl denenir: Menüleri sırayla aç (Oyna, Kariyer, Dolap, Atölye, Profil): hepsi mavi olmalı, yazılar rahat okunmalı, sarı yalnız ana düğmede ve seçili öğede olmalı. Ayarlar'da Düğme sesi'ni değiştir, sonra bir düğmeye bas: seçtiğin ses gelmeli. Telefonun sessiz anahtarı açıksa menü sesleri duyulmaz.
+
+Vuruş gücü görünüyor, top kaydırdığın yöne gidiyor (22 Kasım gece):
+- Vurduğun anda oyuncunun ayağının önünde üç parçalı ince bir yay yanıyor: bir parça yumuşak vuruş (drop), iki parça orta (clear), üç parça sert vuruş (smaç). Yarım saniyede sönüyor. Tam ortadan smaçta yayın ucunda küçük bir nokta var.
+- Sert vuruşlarda topun arkasında kısa, ince bir iz kalıyor; ne kadar hızlı çıktıysa o kadar belirgin. Yumuşak vuruşta neredeyse hiç görünmüyor.
+- Top artık parmağını kaydırdığın yöne gidiyor: kenardayken dümdüz yukarı kaydırırsan top çizgi boyunca gider, eskisi gibi ortaya kaçmaz.
+Nasıl denenir: Bir maç aç. Yavaş, orta ve çok hızlı kaydırarak üç vuruş yap: ayağının önünde bir, iki ve üç parça yanmalı. Hızlı smaçta topun arkasında ince bir iz görmelisin. Kortun kenarına git ve dümdüz yukarı kaydır: top senin tarafındaki çizgiye paralel gitmeli.
+
+Kariyer tur kartları daha akıcı (22 Kasım gece, ikinci tur):
+- Tur kartına dokununca sayfa artık baştan kurulmuyor: kart yumuşakça ortaya kayıyor, altındaki rota hafifçe beliriyor. Seçili kart çerçevesi yavaşça renk değiştiriyor ve kart biraz yükseliyor.
+- Kartları kaydırıp bırakınca şerit en yakın karta oturuyor, kısa bir "tık" sesi ve hafif titreşim geliyor.
+- "Buradasın" etiketinde artık oyuncunun yüzü var.
+Nasıl denenir: Kariyer'i aç, tur kartlarına sırayla dokun: sayfa zıplamamalı, kart ortaya kaymalı. Şeridi parmağınla kaydırıp iki kartın arasında bırak: en yakın kart ortaya oturmalı ve ses gelmeli. Kendi turunun kartında yüzünü gör.
+
+Kariyer artık bir dünya turu, menü düğmelerinde yeni sesler (22 Kasım gece):
+- Kariyer'in üstünde sekiz turun her biri resimli bir kart: her turun kendi mekânı (mahalle salonu, gün batımı şehri, gece arenası...), kaç maçın bittiği, yıldızlar ve tur mührü kartta görünüyor. Kartı kaydırıp dokunarak tur seçiliyor.
+- Rotadaki her durak artık şehrin adını, altında rakibi yazıyor; durağın yanında o maçtan kazanacağın Tüy görünüyor.
+- Dünya Finalleri ve Efsaneler Kupası'nda rotanın üstünde Grup, Çeyrek, Yarı ve Final aşamaları var.
+- Her düğmenin türüne göre kendi sesi var: ana düğme dolgun bir "tok", seçim çipleri parlak iki nota, geri dönüş alçalan iki nota, kilitli öğe boğuk bir ses, satın alma ve ödül anlarında üç notalı kısa bir müzik. Ana düğme basınca aşağı oturuyor.
+Nasıl denenir: Kariyer'i aç: üstte resimli tur kartları olmalı, bulunduğun turda "Buradasın" yazmalı. Kartları sağa kaydır, kilitli bir tura dokun: kilit ve nedeni görünmeli. Rotada durakların yanında Tüy miktarı olmalı. Menülerde farklı düğmelere bas: ana düğme, çip, geri ve sekme farklı ses vermeli.
+
+Ayarlar, Nasıl oynanır ve Dolap şeridi (22 Kasım akşam):
+- Ayarlar'da Ses, Müzik ve Titreşim anahtarı artık sayfayı baştan kurmuyor; sayfa kıpırdamadan yerinde kalıyor.
+- Seyirci ayarını değiştirince seçtiğin düzeyde kısa bir alkış duyuluyor (Kapalı'da ses yok).
+- Satır sonundaki ok işaretleri sağda ayrı duruyor; VoiceOver artık oku okumuyor, dış bağlantılarda "Tarayıcıda açılır" diyor.
+- Nasıl oynanır'da maddeye dokununca ses geliyor, ok döner ve metin yumuşakça açılıyor. Üstteki ayrı açıklama kartı kalktı, kısa cümle "Temel dersi oyna" düğmesinin altında.
+- Dolap'ta kategori çipine dokununca şerit yeniden kurulmuyor; yalnız seçim değişiyor, alttaki liste yumuşakça beliriyor.
+Nasıl denenir: Ayarlar'ı aç, Ses ve Titreşim'i art arda aç kapa: sayfa kıpırdamamalı. Seyirci satırına dokun: Az ve Normal'de alkış duyulmalı. Nasıl oynanır'da bir maddeye dokun: ok aşağı dönmeli, metin belirmeli. Dolap'ta kategoriler arasında hızlıca gez: şerit yerinde kalmalı, seçili çip ortaya gelmeli.
+
+Atölye, Gelişim ve Dolap renkleri (22 Kasım öğle):
+- Atölye'nin başlığında artık oyuncunun küçük portresi ve takılı raketinin adı var.
+- "Bu tarzı seç"e dokununca ses, titreşim ve kartın onay işaretinde kısa bir büyüme var; tarz çubukları daha akıcı doluyor, tarzlar arasında gezerken kart yumuşakça değişiyor.
+- "Eşit şartlar" çipi sayfayı baştan kurmuyor; yalnız takım çubukları güncelleniyor, sayfa yerinde kalıyor.
+- Gelişim sayfasının üstünde puan tek satırda: "Dağıtılacak puan: 3 / 10".
+- Dolap'ta raket renkleri (grip, kordaj, çapraz tel), kaplama, şaft, şort ve desen seçimi sayfayı yeniden kurmadan, anında değişiyor.
+Nasıl denenir: Atölye'yi aç: başlığın solunda oyuncunun yüzü, sağında raketin adı olmalı. Başka bir tarza geçip "Bu tarzı seç"e dokun: ses ve titreşim gelmeli, onay işareti bir kez büyüyüp oturmalı. Sayfanın altına inip "Eşit şartlar"a dokun: sayfa yerinde kalmalı, çubuklar değişmeli. Dolap > Raket > Kordaj'da renkleri hızlıca değiştir: liste kıpırdamamalı, başlıkta rengin adı değişmeli.
+
+Antrenman, Günün maçı ve Dükkân cilası (22 Kasım sabah):
+- Antrenman'da görev grubu değiştirince sayfa başa dönmüyor; yalnız görev listesi kısa bir geçişle yenileniyor.
+- Günün maçı sayfası ilk dokunuşta takılmadan açılıyor: rakibin portresi Oyna sekmesinde önceden hazırlanıyor. Alttaki düğme artık yalnız "Oyna" diyor.
+- Şampiyon yolu kartında sıradaki rakibin yanında iki küçük yüz var: sen ve rakibin.
+- Dükkân'ın altındaki notlar geri yükleme düğmesinin altında tek, sade bir blokta.
+Nasıl denenir: Antrenman'ı aç, listenin en altına in, başka bir gruba dokun: sayfa yerinde kalmalı, liste yumuşakça değişmeli. Oyna'da bir an bekleyip Günün maçı'na dokun: sayfa takılmadan açılmalı, rakibin yüzü görünmeli. Dükkân'ın en altına in: iCloud ve Tüy notları geri yükleme düğmesinin altında aynı boyda olmalı.
+
+Dolap ve Profil cilası (22 Kasım gece):
+- Dolap > Ayakkabı görünümünde "Görünüm yok" kartı artık oyuncunun yüzünü değil, ayağındaki ayakkabıyı gösteriyor.
+- Az eşyalı bölümlerde set süzgeci (Yılbaşı 0/1 gibi çipler) kalktı, ızgara hemen başlıyor. Kalabalık bölümlerde süzgeç değişince kartlar yumuşakça beliriyor.
+- Yüz, Ayak ve Tutuş yakın plan düğmeleri sayfayı baştan kurmuyor; dokunuş anında ve takılmadan cevap veriyor.
+- Profil kartında seviye çubuğu tekrarı kalktı (üstteki çubuk kalıyor). Tarz ve raket satırı artık "Dengeli tarz · Denge raketi" diye okunuyor.
+Nasıl denenir: Dolap > Ayakkabı görünümünü aç: ilk kart ayakkabı resmi göstermeli. Şapka bölümünde bir set çipine dokun: kartlar bir anda değil, kısa bir geçişle gelmeli. Yüz düğmesine art arda dokun: kamera yakınlaşıp uzaklaşmalı, liste yerinde kalmalı. Profil'de seviye halkasının altında ikinci boş çubuk olmamalı.
+
+Arkadaşınla oyna ve ilk maç (21 Kasım gece):
+- "Nasıl oynamak istersin?" artık ilk maça giden her yolda bir kez soruluyor: Kariyer haritası, Hızlı maç ve Günün maçı da. Seçim kartları sadeleşti (ad ve tek cümle).
+- Arkadaş sayfasında "Listeyi yenile" kalktı: liste açılışta ve uygulamaya dönünce kendiliğinden yenilenir. Her arkadaşın satırında adının baş harfi görünür; alttaki not tek cümle ve yalnız liste doluyken.
+- "Arkadaşınla oyna" kartı oturumda bir kez kısa bir nabızla dikkat çeker (Hareketi azalt açıkken yok).
+- Dolap'tan çıkarken oyuncu portresi önceden hazırlanır, geçiş takılmaz.
+Nasıl denenir: Uygulamayı silip kur, Kariyer haritasından bir maça başla: önce hareket seçimi gelmeli, bir kez seçince bir daha gelmemeli. Oyna sekmesinde "Arkadaşınla oyna" kartının yuvarlağı bir kez iki kez büyüyüp küçülmeli. Arkadaş sayfasını aç, uygulamadan çıkıp geri dön: liste yenilenmeli. Dolap'ta kıyafet değiştir, birkaç saniye bekleyip Oyna'ya geç: geçiş akıcı olmalı, üstteki portre yeni görünüşte olmalı.
+
+Forma deseni (21 Kasım gece):
+- Dolap > Kıyafet'te yeni "Forma deseni" satırı. Kumaşın görünüşü artık oyundaki etkisinden ayrı: giydiğin kumaşın gücü sürer, görünüş olarak sahip olduğun başka bir kumaşı (Hafif, Nefes alan, Esnek) seçebilirsin.
+- Yedi yeni desen seviyeyle açılır: Göğüs bandı, Yan şerit, Çift şerit, Omuz bandı, Degrade, V kuşak, Tüy amblemi. Desenler forma rengine uyar, oyunu etkilemez.
+Nasıl denenir: Dolap > Kıyafet'e gir, Forma rengi satırının altında Forma deseni satırını bul. Açık bir desene dokun: oyuncunun forması o desenle görünmeli; oyuncuyu döndür, sırtta da görünmeli. Forma rengini değiştir: desen yeni renge uymalı. Bir maç oyna: oyuncu aynı desenle sahada olmalı.
+Kariyer ve Profil cilası (21 Kasım akşam):
+- Kariyer'in altındaki "Sıradaki maç" düğmesinde solda iki küçük yüz var: sen ve sıradaki rakibin. Rakibin yüzü önce baş harfiyle görünür, menüde bir an durunca yüzü gelir.
+- Maç kartı ilk açılışta takılmaz: rakibin portresi menü dururken önceden hazırlanır.
+- Maç kartındaki yıldız satırlarında "Alındı / Henüz değil" yazısı kalktı; dolu ya da boş yıldız durumu söylüyor.
+- Profil'de "Son maçlar" başlığının sağında kaç maçtan kaçını kazandığın yazar ("7/10"); hapların altındaki satır kalktı. Toplam kariyer yıldızı İstatistikler'den "Tur mühürleri" başlığının sağına taşındı.
+- Profil'deki Gelişim kartı, dağıtılacak puan yokken en güçlü dalını yazar ("Öne çıkan: Güç 6").
+Nasıl denenir: Kariyer'i aç, altta turuncu düğmede iki yuvarlak yüz olmalı; yazı ortada kalmalı. Bir iki saniye dokunmadan bekle: rakibin baş harfi yüzüne dönmeli. Düğmeye dokun: maç kartı takılmadan açılmalı. Profil'de Son maçlar başlığının sağında sayı, Tur mühürleri başlığının sağında yıldız sayısı olmalı. Yazıyı en büyük boya getirip aynı yerlere bak: üst üste binen yazı olmamalı.
+Sesler netleşti, kollar başın içinden geçmiyor, yeni Kort seti (21 Kasım akşam):
+- Her vuruş türü kendi gerçek raket sesini çalıyor: smaç, sıçrayarak smaç, clear, drive, drop ve servis. Gerçek ses çalınca üstüne binen müzik notası, davul ve düdük artık yok.
+- Smaça karşı yumuşak savunmada blok hareketi oynuyor.
+- Sevinç, poz ve vuruş hareketlerinde oyuncunun kolu ve eli artık başının içinden geçmiyor.
+- Dolap'a yeni Kort seti geldi: Dev tüy şapka, Raket çantası, Havlu, Tüy kalkan ve Yıldırım perçem saç. Kozmetiktir, güç vermez.
+Nasıl denenir: Bir maç oyna ve smaç, sıçrayarak smaç, clear, drop ve servis seslerini dinle: her biri farklı ve gerçek raket gibi olmalı, vuruşta müzik notası duyulmamalı. Rakip smaç atınca yumuşak karşıla: oyuncun blok hareketi yapmalı. Bir sayı kazanıp sevinç hareketini izle: kol başın içinden geçmemeli. Dolap'ta set listesinde Kort'u seç: beş yeni eşya görünmeli, sırta Raket çantasını giy ve oyuncuyu döndür.
+Arkadaşınla oyna herkese açık, oyuncu hareketi baştan seçiliyor (21 Kasım):
+- Oyna sayfasında "Arkadaşınla oyna" kartı herkese görünüyor; gizli ayar gerekmiyor.
+- Kartta Game Center arkadaşların listeleniyor: birine "Davet et" de, isteği telefonuna bildirim olarak gider. "Arkadaş ekle" ile yeni arkadaş ekleyebilir, "Rastgele rakip bul" ile tanımadığın biriyle oynayabilirsin.
+- İlk Oyna'dan önce bir kez soruluyor: Yardımlı (oyuncun topa kendisi koşar), Yarı yardımlı (geç kalırsan koşar), Pro (her adım senin). Sonradan Ayarlar'dan değişir.
+- Arkadaş maçında da kendi hareket seçimin geçerli. Yardım yalnız koşuyu üstlenir, güç vermez.
+Nasıl denenir: Oyna'ya bas: önce üç seçenekli sayfa gelmeli, birini seçip başla. Oyna sayfasında aşağıdaki "Arkadaşınla oyna" kartına dokun: arkadaş listesi için izin istenmeli, sonra arkadaşların görünmeli. Bir arkadaşına "Davet et" de: o telefona bildirim gitmeli, kabul edince maç başlamalı.
+Vuruş sesleri ve daha küçük oyun (21 Kasım):
+- Raket vuruşları artık gerçek kayıttan gelen seslerle çalıyor: smaş en sert, drop en yumuşak; servisin de kendi sesi var.
+- Oyun boyutu biraz küçüldü: açılış tüy animasyonu ve karakter modelleri daha az yer tutuyor.
+Nasıl denenir: Bir maç oyna, smaş, drop ve servis vuruşlarını dinle: sesler birbirinden farklı ve gerçek raket gibi olmalı. Dolap'ta kedi, panda, robot gibi karakterleri giy ve maçta oyna: hareketleri önceki gibi akıcı olmalı. Uygulamayı kapatıp aç: açılıştaki tüy dönmesi önceki gibi görünmeli.
+Dolap cilası (21 Kasım öğle):
+- Dolap'ta Ayakkabı görünüşünde henüz almadığın ayakkabı modelleri de görünür ("Atölye'de" yazar); dokununca Atölye'de oyuncunun üstünde denenir, fiyatı ve gücü orada.
+- Kombin kaydedince ya da giyince o kombin çipi kısaca büyüyüp yerine oturur, giyince vitrindeki oyuncu parlar. Kombin dokunuşu artık takılmaz.
+- Raket kafa şekli adları biraz büyüdü, seçili şeklin köşesinde tik var. Atölye ve Dolap'taki küçük etiketler biraz büyüdü.
+Nasıl denenir: Dolap > Ayakkabı (görünüm yok seçiliyken) model satırında "Atölye'de" yazan bir çipe dokun: Atölye açılmalı ve oyuncu o ayakkabıyla görünmeli. Dolap'ta bir kombin kaydet ve başka bir kombini giy: çip kısa bir büyüme yapmalı, oyuncu parlamalı. Raket kafa şeklinde seçili olanın köşesinde tik olmalı.
+Atölye ve Profil cilası (21 Kasım sabah):
+- Profil'deki "n. seviyede açılır" satırına dokununca o eşya Dolap'ta oyuncunun üstünde denenir (raket parçasıysa Atölye'de o yuva açılır).
+- Atölye'de yükseltince yeni dolan kademe bölmesi kısaca büyüyüp yerine oturur; ışıltı artık sonradan Dolap'ta boşuna oynamaz.
+- Tüy yetmeyince yükselt düğmesi kaç Tüy eksik olduğunu yazar. Yuva kartının başlığı "Kademe 4/10".
+- Tarz seçicide seçili tarzın altındaki "Seçili" yazısı kalktı (aşağıdaki kart söylüyor). Dolap saç modeli kartında seviye yazısı biraz büyüdü.
+Nasıl denenir: Profil'de kupa rafının altındaki "seviyede açılır" yazısına dokun: Dolap açılıp eşya giydirilmeli. Atölye'de bir yuvayı yükselt: yeni dolan bölme kısa bir büyüme yapmalı. Tüyün yetmeyen bir yuvada düğme "… Tüy daha gerekli" demeli.
+Kariyer ve Profil cilası (21 Kasım gece):
+- Kariyer yolunda bir basamağın satırının herhangi bir yerine (rakip adı, yer, yıldızlar) dokununca maç kartı açılır; önceden yalnız yuvarlak düğüm dokunuluyordu. Satır basılınca hafifçe küçülür.
+- Ekipmanı eksik turda başlık yalnız "3 yükseltme eksik" yazar.
+- Profil'de kazanılan başarımların tik işareti altın renkte (kupa rafı ve mühürlerle aynı). Mühür dipnotu tek satır.
+- Kupa rafında kazanılmamış kupalar biraz daha okunur.
+Nasıl denenir: Kariyer'de bir rakibin adına ya da yer yazısına dokun: maç kartı açılmalı, satır basılırken küçülmeli. Profil'de başarımlar listesinde kazanılanların tiki altın olmalı; Tur mühürleri altındaki yazı "Bronz 9 yıldız · Altın 18 yıldız" olmalı.
 Arkadaş maçı, ilk deneme (20 Kasım akşam; kapalı özellik):
 - İki iPhone arasında karşılıklı maç: Game Center ile arkadaşını çağır ya da rastgele rakip bul. 11 sayı, eşit güç (ekipman yalnız görünüş).
 - Maç ödül vermez, kariyere ve karneye yazılmaz. Duraklatma yok; uygulamadan çıkan oyuncu 10 sn sonra hükmen kaybeder.

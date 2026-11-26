@@ -154,6 +154,7 @@ namespace BirdieSmash.Game
         void Init(Transform listener)
         {
             src = gameObject.AddComponent<AudioSource>(); src.playOnAwake = false; src.spatialBlend = 0;
+            uiSrc = gameObject.AddComponent<AudioSource>(); uiSrc.playOnAwake = false; uiSrc.spatialBlend = 0;   // 2026-11-22 menü sesleri: perde oynatması src.pitch'i (Tik, Okudun) bozmasın diye ayrı kaynak
             trb = gameObject.AddComponent<AudioSource>(); trb.playOnAwake = false; trb.spatialBlend = 0;   // tribün tek-atımlıkları: düzeyi Ayar.SeyirciK (Update)
             // Vuruşlar perdeli çaldığı için ayrı kaynaklardan (PlayOneShot perde almaz); 4 kaynak üst üste binen vuruşa yeter.
             for (int i = 0; i < vurusSrc.Length; i++) { vurusSrc[i] = gameObject.AddComponent<AudioSource>(); vurusSrc[i].playOnAwake = false; vurusSrc[i].spatialBlend = 0; }
@@ -186,6 +187,7 @@ namespace BirdieSmash.Game
         public void Isit()
         {
             isitSira.Clear();   // tel/raket değişip yeniden istenirse sıra ikilenmesin
+            foreach (var u in UI_TURLER) { string uu = u; isitSira.Enqueue(() => UiKlip(uu)); }   // 2026-11-22: ilk menü dokunuşunda sentez takılması olmasın
             Sira("clear", "good", false, false, true, false); Sira("drop", "good", false, false, true, false);
             foreach (var t in HITMIX.Keys) foreach (var q in new[] { "good", "perfect", "poor" }) { string tt = t, qq = q; Sira(tt, qq, false, false, false, false); }
             Sira("smash", "perfect", false, true, false, false); Sira("smash", "good", false, true, false, false);
@@ -293,6 +295,10 @@ namespace BirdieSmash.Game
             }
             return v[rnd.Next(2)];
         }
+        // 2026-11-21 (yasin: "benim daha önce eklediğim gerçekçi sesleri ekle"): 5 Kasım kaydından kesilen vuruşlar Resources/ses/vurus_*
+        // olarak girdi (smaç ×3, clear, drive, drop ×2, servis, slice); Hit önce kaydı çalar (Kayit: ad, sonra ad_1…_8), yoksa bu sentez.
+        // Düzey: smaç tepe −6 dBFS, clear/drive −8, slice −11, servis −12, drop −14 (sentezin tür sıralaması). Net ve blok Tur ile
+        // drop/clear kaydına düşer.
         // 2026-11-05 ses turu (yasin: "tatminkar ve gerçeğe yakın"): yasin'in örnek kayıtları yalnız ölçü olarak kullanıldı
         // (lisansı belirsiz, oyuna girmez). Kayıtlarda enerjinin çoğu 0,5–2 kHz'te ve 0,2–0,5 sn kuyruk var; eski sentez
         // 80 ms, tiz gürültü ağırlıklıydı. Eklenenler: tel yatağının alt modu (≈780 Hz) ve çerçeve gövdesi (1,1 kHz),
@@ -357,12 +363,20 @@ namespace BirdieSmash.Game
         public void Hit(string type, string q, bool slice, bool super_, bool serve, bool mine, int rally, bool flow, float hiz = 0)
         {
             float p = hiz > 0 ? Mathf.Clamp01((hiz - 12) / 48f) : .5f, kaz = .8f + .35f * p, perde = 1.03f - .06f * p + (float)(rnd.NextDouble() - .5) * .02f;
-            string t = Tur(type), kayitAd = serve ? "vurus_servis" : slice ? "vurus_slice" : "vurus_" + t;
+            // Ses eşlemesi (yasin 2026-11-21: "sesler karışmış, hangi ses hangi durumda netleştirelim"): kayıt vuruş TÜRÜNE göre seçilir.
+            // Kesik (slice) kendi kaydını seçmiyor: vurus_slice drop kaydının aynı kesimiydi, kesik clear/drive de yumuşak drop sesi
+            // çalıyordu. Kesik vuruş kendi türünün kaydını çalar; kesik his tüyün yolunda ve sentez yedeğinde kalır.
+            // Sıçrayarak smaçın kendi kaydı var (yasin 2026-11-21: eski drive kesimi "sıçrayarak smaça daha uygun"); yoksa smaç kaydı.
+            string t = Tur(type), kayitAd = serve ? "vurus_servis" : type == "jump" && Kayit("vurus_jump") != null ? "vurus_jump" : "vurus_" + t;
             var kv = Kayit(kayitAd + "_" + q) ?? Kayit(kayitAd);
             if (kv != null) { var c = kv[rnd.Next(kv.Length)]; if (mine) VurusCal(c, kaz, perde); else { opSrc.pitch = perde; opSrc.panStereo = pan; opSrc.PlayOneShot(c, .5f * kaz); } }
             else if (mine) VurusCal(Vurus(type, q, slice, super_, serve, false), kaz, perde);
             else { var k = Kaynak(); k.pitch = perde; k.panStereo = pan; k.PlayOneShot(Vurus(type, q, slice, super_, serve, true), kaz); }
             if (mine && !serve && (type == "smash" || type == "jump" || type == "kill")) Govde(.5f + .5f * p * (super_ ? 1.3f : 1));
+            // Gerçek kayıt çalınca vuruş anında yalnız raket sesi (+ smaçta gövde) duyulur. Ralli notası, 6. vuruştan sonraki
+            // davul, smaç düdüğü ve 5'te bir ton gerçek raket sesinin üstüne binip "karışık" duyuluyordu (yasin 2026-11-21).
+            // Kaydı olmayan (sentez) yolda bu katmanlar eskisi gibi çalar.
+            if (kv != null) return;
             RallyNote(rally - 1, mine, mine && flow);
             if (rally >= 6) Kick(.12f + Mathf.Min(.12f, rally * .008f));
             if (Tur(type) == "smash" && (type == "smash" || type == "jump")) Whistle();
@@ -378,6 +392,16 @@ namespace BirdieSmash.Game
         // seyrek. Ralli uzunluğuna göre iki boy (kısa 1,4 sn, uzun 2,4 sn); her boy iki çekimle önbellekte.
         // Art arda sayı (GameRoot.SeriSay): uzun ralli alkışıyla aynı örnek, 5+ seride uzun boy.
         public void SeriAlkis(bool uzun) { Alkis(uzun); }
+        // Ayarlar › Seyirci örneği (2026-11-22 inceleme, fikir 17:06 #3): seçilen düzeyde tek kısa alkış. Düzey Update'i beklemeden
+        // yazılır (Kapalı → Az ilk karede sessiz kalmasın). Kayıt yoksa yalnız menüde ısıtılmış sentez çalar; ısınmadıysa susar
+        // ki dokunuşta 1,4 sn'lik klip sentezlenmesin (takılma kuralı).
+        public void SeyirciOrnek()
+        {
+            if (!Ayar.ses || Ayar.seyirci <= 0) return;
+            trb.volume = Ayar.SeyirciK;
+            if (Kayitli("alkis", 1, trb)) return;
+            AudioClip c; if (cache.TryGetValue("alkis" + false + rnd.Next(2), out c)) trb.PlayOneShot(c, .9f);
+        }
         void Alkis(bool uzun)
         {
             if (Kayitli(uzun ? "alkis_uzun" : "alkis", 1, trb)) return;
@@ -490,6 +514,75 @@ namespace BirdieSmash.Game
         public void OgrTamam() { Arpej(660, new[] { 0, 4, 7 }, .14f, .05f, .06f); }
         public void Yukselt() { Arpej(523, new[] { 0, 4, 7, 12 }, .14f, .05f, .06f); }
         public void Tik(float f = 880) { Ton(f, .05f, "triangle", .04f); }
+        // 2026-11-22 (yasin: "tüm butonlarda tatmin edici ses olmalı"; ses tasarımcısı ajanının tarifi): menü dokunuşları türüne göre
+        // sentezlenir, bir kez üretilip önbellekte durur (Bir). Tek 50 ms'lik bip her düğmede aynıydı ve telefon hoparlöründe incecikti.
+        // pop = varsayılan düğme/kart, bas = ekranın tek birincil düğmesi (gövdeli "tok" + parlak kuyruk), sec = çip/segment, sekme = alt
+        // sekme, geri = geri/kapat (alçalan iki nota), kilit = kilitli öğe (tok, perdesiz; hata vızıltısı değil), kaydir = kart oturması,
+        // odul = satın alma/ödül (üç nota). pop ve sec ±%3 perde: art arda dokunuş robot gibi tekrarlamasın. Düzey oyun içi vuruşların
+        // altında (en yüksek tepe bas .14; Tik .04 idi). Sessiz ayarı AudioListener'dan (GameRoot), ayrı kontrol gerekmez.
+        AudioSource uiSrc;
+        public static readonly string[] UI_TURLER = { "pop", "bas", "sec", "sekme", "geri", "kilit", "kaydir", "odul" };
+        // Düğme sesi paketi (2026-11-22, yasin: "tuşlar sesli olmalı, ses modunda o sesi de özel seçmek istiyorum"). Ayarlar >
+        // "Düğme sesi" satırı Ayar.dugmeSes'i döndürür, her dokunuşta seçilen paketin bas sesi önizlenir. 0 Tüy = ilk tarif (aşağıda),
+        // diğerleri aynı sekiz türü tek bir tını ailesiyle çalar (tür perdeyi ve nota sayısını belirler, paket tınıyı). Kayıt yok,
+        // hepsi sentez (CC0 kuralı); seçili paket açılışta ısıtılır, diğerleri ilk önizlemede bir kez üretilir. "Kapalı" yalnız menü
+        // düğmelerini susturur; oyun sesleri ve ödül anları Ses anahtarına bağlı kalır. iOS sessiz anahtarı açıkken Apple HIG gereği
+        // efektler zaten çalmaz (ambient oturum); düğmeyi zorla çaldırmak için oturum değiştirilmedi.
+        public static readonly string[] PAKETLER = { "Tüy", "Ahşap", "Balon", "Retro", "Kristal", "Kapalı" };
+        public void UiSes(string tur)
+        {
+            if (uiSrc == null) { Tik(); return; }
+            if (Ayar.dugmeSes == PAKETLER.Length - 1 && tur != "odul") return;
+            uiSrc.pitch = tur == "pop" || tur == "sec" ? 1 + (float)(rnd.NextDouble() - .5) * .06f : 1;
+            uiSrc.PlayOneShot(UiKlip(tur));
+        }
+        AudioClip UiKlip(string tur)
+        {
+            int pk = Ayar.dugmeSes; if (pk <= 0 || pk >= PAKETLER.Length - 1) return TuyKlip(tur);
+            return Bir("ui" + pk + "_" + tur, s =>
+            {
+                float m = tur == "bas" ? .8f : tur == "sec" ? 1.26f : tur == "sekme" ? .9f : tur == "kilit" ? .55f : tur == "kaydir" ? 1.5f : 1;
+                if (tur == "odul") { PaketNota(s, pk, 0, 1, 1); PaketNota(s, pk, .07f, 1.26f, 1); PaketNota(s, pk, .14f, 1.5f, 1.2f); return; }
+                PaketNota(s, pk, 0, m, tur == "kaydir" ? .5f : 1);
+                if (tur == "sec") PaketNota(s, pk, .03f, m * 1.33f, .8f);
+                if (tur == "geri") PaketNota(s, pk, .04f, .75f, .9f);
+                if (tur == "bas") s.Decay(0, 140, "sine", .1f, .08f, 1.6f);   // birincil düğmenin gövdesi her pakette
+            }, tur == "odul" ? .4f : .14f);
+        }
+        static void PaketNota(Synth s, int pk, float t, float m, float v)
+        {
+            System.Func<float, Synth.Biquad> lp = f => new Synth.Biquad("lowpass", f, .707f);
+            switch (pk)
+            {
+                case 1: s.Decay(t, 820 * m, "triangle", .09f * v, .045f, 1, lp(2400)); s.Burst(t, .006f, "bandpass", 2000 * m, .05f * v, 3); break;   // ahşap: kuru tok
+                case 2: s.Decay(t, 360 * m, "sine", .09f * v, .07f, .45f); break;   // balon: perde yukarı kayan "blop"
+                case 3: s.Tone(t, 660 * m, .055f, "square", .028f * v, lp(5000)); break;   // retro: kare dalga, 8-bit
+                default: s.Tone(t, 1760 * m, .14f, "sine", .035f * v); s.Tone(t, 2637 * m, .09f, "sine", .015f * v); break;   // kristal: çan
+            }
+        }
+        AudioClip TuyKlip(string tur)
+        {
+            return Bir("ui_" + tur, s =>
+            {
+                System.Func<float, Synth.Biquad> lp = f => new Synth.Biquad("lowpass", f, .707f);
+                switch (tur)
+                {
+                    case "bas":
+                        s.Decay(0, 150, "sine", .14f, .09f, 1.8f); s.Decay(0, 300, "triangle", .07f, .06f, 1.3f, lp(1800));
+                        s.Burst(0, .012f, "bandpass", 1800, .05f, 1); s.Tone(.025f, 1568, .07f, "sine", .04f); s.Tone(.025f, 2349, .05f, "sine", .02f); break;
+                    case "sec": s.Tone(0, 1175, .05f, "triangle", .045f, lp(4000)); s.Tone(.022f, 1568, .045f, "sine", .035f); break;
+                    case "sekme": s.Decay(0, 440, "triangle", .07f, .07f, 1.2f, lp(2200)); s.Burst(0, .01f, "bandpass", 1500, .025f, 1); break;
+                    case "geri": s.Tone(0, 523, .05f, "sine", .04f); s.Tone(.035f, 392, .06f, "sine", .04f, lp(1800)); break;
+                    case "kilit": s.Decay(0, 180, "triangle", .07f, .05f, 1, lp(700)); s.Burst(0, .02f, "lowpass", 600, .05f, .707f); break;
+                    case "kaydir": s.Burst(0, .012f, "bandpass", 3000, .02f, 2); s.Tone(0, 1400, .03f, "sine", .012f); break;
+                    case "odul":
+                        s.Tone(0, 988, .09f, "triangle", .06f); s.Tone(.07f, 1319, .09f, "triangle", .06f);
+                        s.Tone(.14f, 1976, .2f, "triangle", .07f); s.Tone(.14f, 3951, .12f, "sine", .015f); break;
+                    default:
+                        s.Decay(0, 520, "sine", .07f, .07f, 1.35f); s.Tone(0, 1040, .035f, "triangle", .025f, lp(3200)); s.Burst(0, .008f, "bandpass", 2400, .03f, 1.2f); break;
+                }
+            }, tur == "odul" ? .4f : .12f);
+        }
         // 2026-11-13 inceleme #2: tel kaydırıcısında her tam lbs bir çınlama; perde gerginlikle bir oktav yükselir (18 lbs tok,
         // 32 lbs tiz). Gerçek oyuncu gerginliği sesinden tanır. 15 ayrı perde: klipler Bir() önbelleğinde kalır.
         public void TelTik(float lbs) { float k = Mathf.Clamp01((lbs - 18) / 14f); Ton(Mathf.Round(520 * Mathf.Pow(2, k)), .04f, "triangle", .028f); }
@@ -534,7 +627,7 @@ namespace BirdieSmash.Game
         public void Ugultu(bool on, float sp) { swo.Ayarla(on, sp); }
 
         // ---- kayıtlı ses kancası (yukarıdaki başlık notu) ----
-        public static readonly string[] KAYIT_ADLARI = { "vurus_smash", "vurus_clear", "vurus_drive", "vurus_drop", "vurus_servis", "vurus_slice", "govde", "file", "file_bant", "bant", "yer", "yer_sert",
+        public static readonly string[] KAYIT_ADLARI = { "vurus_smash", "vurus_jump", "vurus_clear", "vurus_drive", "vurus_drop", "vurus_servis", "govde", "file", "file_bant", "bant", "yer", "yer_sert",
             "seyirci", "ooo", "alkis", "alkis_uzun", "cosku", "ic_cekis", "duduk", "gicirti", "hawk_ici", "hawk_disari", "sayi_ben", "sayi_rakip", "iska" };
         readonly Dictionary<string, AudioClip[]> kayit = new Dictionary<string, AudioClip[]>();
         // Yoksa null (sonuç önbellekte: Resources.Load ad başına bir kez sorulur).

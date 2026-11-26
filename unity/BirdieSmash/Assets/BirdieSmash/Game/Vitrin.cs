@@ -48,7 +48,7 @@ namespace BirdieSmash.Game
             // 512×720×4 B×4 örnek ≈ 5,6 MB karo belleğinde kalır, RAM'e yazılmaz). Afiş de aynı.
             vt.rt = YeniRt(512, 720);   // ilk boy; Dolap kutusu ölçülünce Cozunurluk kutunun piksel boyuna getirir
             var cg = new GameObject("vitrin_kamera"); cg.transform.SetParent(g.transform, false); vt.kam = cg.AddComponent<Camera>();
-            vt.kam.targetTexture = vt.rt; vt.kam.clearFlags = CameraClearFlags.SolidColor; vt.kam.backgroundColor = Kit.Hex("#261A30");   // 2026-10-27 yön C: kart rengi (eski koyu camgöbeği #0e1d20 menüde tek soğuk leke kalıyordu)
+            vt.kam.targetTexture = vt.rt; vt.kam.clearFlags = CameraClearFlags.SolidColor; vt.kam.backgroundColor = Kit.Hex("#1B4197");   // 2026-11-22 Stadyum Pop: panel lacivert-mavisi (mor vitrin mavi menüde tek sıcak leke kalıyordu)   // 2026-10-27 yön C: kart rengi (eski koyu camgöbeği #0e1d20 menüde tek soğuk leke kalıyordu)
             vt.kam.fieldOfView = 30; vt.kam.nearClipPlane = .05f; vt.kam.farClipPlane = 20; vt.kam.enabled = false;
             // dolgu ışığı: noktasal, kamera yanında (sahnenin tavan lambaları buraya ulaşmaz)
             var lg = new GameObject("vitrin_isik"); lg.transform.SetParent(g.transform, false); lg.transform.position = YER + new Vector3(-1.5f, 3, 3); var l = lg.AddComponent<Light>(); l.type = LightType.Point; l.range = 12; l.intensity = 1.6f;
@@ -61,7 +61,7 @@ namespace BirdieSmash.Game
             var tex = Kit.RadialTex();
             var spot = Kit.Prim(PrimitiveType.Quad, "vitrin_spot", g.transform, YER + new Vector3(0, .002f, 0), new Vector3(2.6f, 2.6f, 1), Kit.Clear(new Color(1f, .82f, .45f, .16f), tex));
             spot.transform.rotation = Quaternion.Euler(90, 0, 0); spot.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            var hale = Kit.Prim(PrimitiveType.Quad, "vitrin_hale", g.transform, YER + new Vector3(0, 1.25f, -2.2f), new Vector3(5.5f, 5.5f, 1), Kit.Clear(new Color(.55f, .38f, .68f, .55f), tex));
+            var hale = Kit.Prim(PrimitiveType.Quad, "vitrin_hale", g.transform, YER + new Vector3(0, 1.25f, -2.2f), new Vector3(5.5f, 5.5f, 1), Kit.Clear(new Color(.62f, .78f, 1f, .40f), tex));   // 2026-11-22 Stadyum Pop: mor hale yerine salon ışığı mavisi
             hale.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             g.SetActive(false); return vt;
         }

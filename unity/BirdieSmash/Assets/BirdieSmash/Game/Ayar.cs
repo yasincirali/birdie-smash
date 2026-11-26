@@ -59,7 +59,9 @@ namespace BirdieSmash.Game
         // vurursun) · 1 Yardımlı (koşmak sende, geç kalırsan oyuncun koşar) · 2 Elle (her adım senin dokunuşunla). Kayıt yoksa eski
         // zorluktan taşınır (Kolay/Orta → Otomatik, Zor → Yardımlı, Usta → Elle): oyuncunun bugünkü koşusu değişmez.
         public static int hareket = 0;
-        public static readonly string[] HAREKET_AD = { "Otomatik", "Yardımlı", "Elle" };
+        // 2026-11-21 (yasin: "assisted, semi-assisted ve pro olacak şekilde seçilebilsin"): adlar Yardımlı · Yarı yardımlı · Pro.
+        // Değerler ve anahtar aynı (0/1/2): oyuncunun seçimi değişmez, yalnız adı. İlk açılışta bir kez sorulur (UiKok.HareketSec).
+        public static readonly string[] HAREKET_AD = { "Yardımlı", "Yarı yardımlı", "Pro" };
         // Şampiyon yolu (2026-11-10, fikir 8 Kas 00:09 #2, yasin "üçünü de al"): kariyer sonrası merdiven seçili zorlukta oynanır;
         // Ad buradan okunur ki kart, sonuç ve profil aynı desin. 2026-11-13 (inceleme 12:05 #5): Usta'da ad değişmiyor
         // ("Usta yolu" iki ayrı mod gibi görünüyordu, kart cümleleri ad değişimini anlatmaya harcanıyordu); zorluk kartta "Usta" etiketiyle.
@@ -75,6 +77,8 @@ namespace BirdieSmash.Game
         // Seyirci düzeyi (2026-11-11 inceleme, fikir 23:05 #6; tuytop_seyirci 0 kapalı · 1 az · 2 normal, yoksa normal = eski oyuncu
         // değişmez): uğultu, ooo, alkış, coşku ve tribün nefesi. Raket, file, düdük ve müzik etkilenmez (Sfx.trb).
         public static int seyirci = 2;
+        // Düğme sesi paketi (2026-11-22): tuytop_dugme_ses 0 Tüy … 5 Kapalı (Sfx.PAKETLER); yoksa 0 = 22 Kasım sesleri.
+        public static int dugmeSes = 0;
         // Kaydırma eşiği (2026-11-12 inceleme, fikir 07:05 #5; tuytop_kaydirma 0 kısa · 1 normal · 2 uzun, yoksa normal = eski
         // davranış). Yalnız "vuruş sayıldı mı" eşiği (70 ref px mesafe, 0,45 hız) ölçeklenir; güç/yön (ShotPlan) aynı. Online açılınca
         // eşik yerel girdi sınıflandırması olarak kalır (eşit güç bozulmaz). Küçük el/tek el/motor zorluğu için Kısa.
@@ -160,7 +164,7 @@ namespace BirdieSmash.Game
         // GSE = yalnız ekipman (5 çubuk ve yükseltme önizlemesi bunu anlatır), GS = ekipman + oyun tarzı (maç fiziği bunu
         // okur). Tarz ekipman kartına girmez: güç ekipmandan, tarz karakterden (tasarım §5.1).
         public static Gear gear; public static GearStats GS = GearStats.Notr, GSE = GearStats.Notr;
-        public static readonly Dictionary<string, string> GORUNUM = new Dictionary<string, string> { { "ten", "dogal" }, { "sac", "dogal" }, { "ayakkabi", "dogal" }, { "kaplama", "model" }, { "sort", "dogal" } };   // sort: 2026-10-27 şort rengi (Gerçekçi, Sade)
+        public static readonly Dictionary<string, string> GORUNUM = new Dictionary<string, string> { { "ten", "dogal" }, { "sac", "dogal" }, { "ayakkabi", "dogal" }, { "kaplama", "model" }, { "sort", "dogal" }, { "desen", "kumas" } };   // sort: 2026-10-27 şort rengi (Gerçekçi, Sade)
         public static readonly Dictionary<string, string> KOZ = new Dictionary<string, string> { { Kozmetik.TIP, "atlet" }, { Kozmetik.SAC, "kisa" }, { Kozmetik.SAPKA, "yok" }, { Kozmetik.YUZ, "yok" }, { Kozmetik.SEVINC, "yumruk" }, { Kozmetik.SMAC, "duz" }, { Kozmetik.SIRT, "yok" }, { Kozmetik.KOL, "yok" }, { Kozmetik.BEL, "yok" }, { Kozmetik.AYAK, "yok" }, { Kozmetik.MAC_SONU, "zafer" } };
         // Ayakkabı görünüşü (2026-10-30, Soyunma Oyun/Görünüm ayrımı): taban (güç) Gear "ayakkabi" seçimi Oyun'da; figürde görünen
         // model Görünüm'de, sahip olunan ayakkabılardan. "taban" = tabanla aynı model (eski kayıtların görünüşü değişmez).
@@ -218,7 +222,7 @@ namespace BirdieSmash.Game
             // oyuncak'a dönüyordu. Artık geçerli model (MODELLER); FBX'i olmayan build'de yine oyuncak'a düşer.
             model = Str("tuytop_model", "oyuncak"); if (model == "sportif" || model == "aday") model = "rocketbox"; if (!ModelVar(model)) model = "oyuncak";
             kamera = Str("tuytop_kamera", "yayin"); if (System.Array.IndexOf(GameRoot.KAMERA_SIRA, kamera) < 0) kamera = "yayin";
-            reduceSecim = EskiInt("tuytop_reduce", 0) == 1; ses = EskiInt("tuytop_ses", 1) == 1; muzik = EskiInt("tuytop_muzik", 1) == 1; titresim = EskiInt("tuytop_titresim", 1) == 1; seyirci = Mathf.Clamp(EskiInt("tuytop_seyirci", 2), 0, 2); SistemOku();
+            reduceSecim = EskiInt("tuytop_reduce", 0) == 1; ses = EskiInt("tuytop_ses", 1) == 1; muzik = EskiInt("tuytop_muzik", 1) == 1; titresim = EskiInt("tuytop_titresim", 1) == 1; seyirci = Mathf.Clamp(EskiInt("tuytop_seyirci", 2), 0, 2); dugmeSes = Mathf.Clamp(EskiInt("tuytop_dugme_ses", 0), 0, 5); SistemOku();
             kaydirma = Mathf.Clamp(EskiInt("tuytop_kaydirma", 1), 0, 2);
             yazi = Str("tuytop_yazi", "sistem"); if (yazi != "normal" && yazi != "buyuk") yazi = "sistem"; fps = Str("tuytop_fps", "0") == "1";
             int pu; puan = int.TryParse(Str("tuytop_puan", "0"), out pu) ? Mathf.Clamp(pu, 0, Ozet.PUAN_AZAMI) : Ozet.PUAN_AZAMI;
@@ -313,6 +317,10 @@ namespace BirdieSmash.Game
         // Geçerli oyun tarzı: kayıttaki tarz, seviyesi geldiyse (Core/Karakter.Gecerli).
         public static string Tarz { get { return Karakter.Gecerli(ilerleme != null ? ilerleme.Tarz : "dengeli", gear != null ? gear.Seviye() : 1); } }
         // Görünüm öğesinin rengi (null = modelin kendi rengi). Seviyesi gelmemiş öğe görünmez (varsayılan).
+        // Forma deseni açık mı (2026-11-21): kumaş görünüşü o kumaşa sahip olunca, diğerleri seviyeyle.
+        public static bool DesenAcik(GorunumOge o) { return o != null && (o.kumas != null ? gear != null && gear.Sahip("kumas", o.kumas) : gear == null || o.sv <= gear.Seviye()); }
+        // Desen yalnız ayrı forma ağı olan modelde görünür (Tüycük'ün forması tüy gövdesi).
+        public static bool DesenGorunur { get { return model != "tuycuk"; } }
         public static string GorunumRenk(string kat)
         {
             string id; if (!GORUNUM.TryGetValue(kat, out id)) return null; var o = Karakter.Oge(kat, id);
@@ -339,7 +347,7 @@ namespace BirdieSmash.Game
             kayit.Set("tuytop_v2", Json.Write(new Dictionary<string, object> { { "rally", (double)bestRally }, { "wins", (double)wins }, { "kariyer", (double)kariyer }, { "gorev", (double)gorev }, { "sampiyon", sampiyon } }));
             PlayerPrefs.SetString("tuytop_len", "len" + target); PlayerPrefs.SetString("tuytop_saha", saha); PlayerPrefs.SetString("tuytop_hizli_rakip", hizliRakip ?? ""); PlayerPrefs.SetString("tuytop_model", model); PlayerPrefs.SetString("tuytop_kamera", kamera);
             PlayerPrefs.SetString("tuytop_mod", kariyerModu ? "k" : "s"); if (antrenman) PlayerPrefs.SetString("tuytop_antrenman", "1");
-            PlayerPrefs.SetInt("tuytop_zorluk", zorluk); PlayerPrefs.SetInt("tuytop_hareket", hareket); PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0); PlayerPrefs.SetInt("tuytop_muzik", muzik ? 1 : 0); PlayerPrefs.SetInt("tuytop_titresim", titresim ? 1 : 0); PlayerPrefs.SetInt("tuytop_seyirci", seyirci); PlayerPrefs.SetInt("tuytop_kaydirma", kaydirma); if (kosIpucu) PlayerPrefs.SetInt("tuytop_kos_ipucu", 1);
+            PlayerPrefs.SetInt("tuytop_zorluk", zorluk); PlayerPrefs.SetInt("tuytop_hareket", hareket); PlayerPrefs.SetInt("tuytop_easy", easy ? 1 : 0); PlayerPrefs.SetInt("tuytop_reduce", reduceSecim ? 1 : 0); PlayerPrefs.SetInt("tuytop_ses", ses ? 1 : 0); PlayerPrefs.SetInt("tuytop_muzik", muzik ? 1 : 0); PlayerPrefs.SetInt("tuytop_titresim", titresim ? 1 : 0); PlayerPrefs.SetInt("tuytop_seyirci", seyirci); PlayerPrefs.SetInt("tuytop_dugme_ses", dugmeSes); PlayerPrefs.SetInt("tuytop_kaydirma", kaydirma); if (kosIpucu) PlayerPrefs.SetInt("tuytop_kos_ipucu", 1);
             PlayerPrefs.SetString("tuytop_dil", dilSistem ? "sistem" : dil); PlayerPrefs.SetString("tuytop_puan", puan.ToString()); PlayerPrefs.SetString("tuytop_yazi", yazi); PlayerPrefs.SetString("tuytop_fps", fps ? "1" : "0");
             var rg = new Dictionary<string, object>(); foreach (var kv in RGOR) rg[kv.Key] = kv.Value; PlayerPrefs.SetString("tuytop_raket_gor", Json.Write(rg));
             var gv = new Dictionary<string, object>(); foreach (var kv in GORUNUM) gv[kv.Key] = kv.Value; foreach (var kv in KOZ) gv[kv.Key] = kv.Value; gv["ayk_gor"] = AYK_GOR; PlayerPrefs.SetString("tuytop_gorunum", Json.Write(gv));

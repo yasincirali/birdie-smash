@@ -21,7 +21,7 @@ namespace BirdieSmash.Game
     public partial class UiKok
     {
         const string KOMBIN_ANAHTAR = "tuytop_kombin", KOMBIN_AKTIF = "tuytop_kombin_aktif"; const int KOMBIN_SAY = 3;
-        static readonly string[] KOMBIN_GOR = { "ten", "sac", "ayakkabi", "kaplama", "sort" };
+        static readonly string[] KOMBIN_GOR = { "ten", "sac", "ayakkabi", "kaplama", "sort", "desen" };   // desen 2026-11-21
         static readonly string[] KOMBIN_RGOR = { "grip", "tel", "tel2", "desen", "kafa", "saft" };
         List<Dictionary<string, object>> kombinler; int kombinAktif = -1;
         VisualElement denemeCubuk;
@@ -33,7 +33,9 @@ namespace BirdieSmash.Game
             for (int i = 0; i < KOMBIN_SAY; i++) kombinler.Add(l != null && i < l.Count ? Json.Obj(l[i]) : null);
             int a; kombinAktif = int.TryParse(PlayerPrefs.GetString(KOMBIN_AKTIF, "-1"), out a) && a >= 0 && a < KOMBIN_SAY && kombinler[a] != null ? a : -1;
         }
-        void KombinYaz() { PlayerPrefs.SetString(KOMBIN_ANAHTAR, Json.Write(kombinler)); PlayerPrefs.SetString(KOMBIN_AKTIF, kombinAktif.ToString()); PlayerPrefs.Save(); }
+        void KombinYaz() { PlayerPrefs.SetString(KOMBIN_ANAHTAR, Json.Write(kombinler)); PlayerPrefs.SetString(KOMBIN_AKTIF, kombinAktif.ToString()); Ayar.KaydetSonra(); }
+        // 2026-11-21 inceleme (fikir 12:06 #3): PlayerPrefs.Save her kombin dokunuşunda, gövde kurulumuyla aynı karede eşzamanlı
+        // yazıyordu (TAKILMA YOK). Diğer ayarlar gibi gecikmeli; arka plana geçişte GameRoot zaten Save çağırıyor. Anahtarlar aynı.
 
         // Şu anki görünüşün anlık görüntüsü (yalnız görünüş alanları).
         static Dictionary<string, object> KombinSimdi()
@@ -44,6 +46,8 @@ namespace BirdieSmash.Game
             foreach (var k in KOMBIN_RGOR) d["rg_" + k] = Ayar.RGOR[k];
             d["ayk_gor"] = Ayar.AYK_GOR; d["renk"] = Ayar.gear.renk; return d;
         }
+        // Şu an giyili kombin yuvası (yoksa -1); renk yerinde güncellenirken kombin satırı bayatlamasın diye önce/sonra karşılaştırılır.
+        int KombinGiyiliNo() { KombinYukle(); var simdi = KombinSimdi(); for (int i = 0; i < KOMBIN_SAY; i++) if (KombinAyni(kombinler[i], simdi)) return i; return -1; }
         static bool KombinAyni(Dictionary<string, object> a, Dictionary<string, object> b)
         {
             if (a == null || b == null) return false;
@@ -91,11 +95,35 @@ namespace BirdieSmash.Game
             if (rl.Count > 0) gr.renk = rl[Random.Range(0, rl.Count)];
             foreach (var k in new[] { "grip", "tel" }) Ayar.RGOR[k] = Vitrin.RAK_SIRA[Random.Range(0, Vitrin.RAK_SIRA.Length)];
             kombinAktif = -1; KombinYaz(); Tik(); KombinUygula();
+            // 2026-11-23 inceleme (fikir 07:06 #5): Rastgele bir zar gibi kullanılır, sonuç tek karede beliriyordu. Kayıtlı kombini
+            // giyişle aynı an: vitrin parlar + giyilen parça sesi ("kaydir", Dolap 22 Kas kalıbı). Hareketi azaltta yalnız ses.
+            root.sfx.UiSes("kaydir");
+            if (!Ayar.reduce && root.vitrin != null && root.vitrin.gameObject.activeSelf) root.vitrin.Parlat("forma");
         }
 
+        // 2026-11-21 inceleme (fikir 12:06 #2): kaydet/giy anında yalnız ses vardı, hangi yuvaya yazıldığı alt yazıdan okunuyordu.
+        // Yeniden kurulan çip bir kez 1,15 → 1 (0,18 sn, yalnız scale; Atölye bölmesiyle aynı kalıp), giyişte vitrin parlar.
+        // Hareketi azaltta ikisi de yok. Yerleşim değişmez, ayırma yalnız tek zamanlayıcı.
+        int kombinPop = -1;
+        void KombinPopAni(VisualElement d)
+        {
+            if (Ayar.reduce) return;
+            d.AddToClassList("kombin-cip--pop"); d.AddToClassList("kombin-cip--yeni");
+            d.schedule.Execute(() => d.RemoveFromClassList("kombin-cip--yeni")).StartingIn(33);
+            d.schedule.Execute(() => d.RemoveFromClassList("kombin-cip--pop")).StartingIn(260);
+        }
         // Kombin satırı: gövdenin başında (Raket kategorisi hariç; orada parça rayı başta). Yuvalar 44 pt çip, seçili ✓ + "Giyili".
+        // 2026-11-23 inceleme (fikir 07:06 #4): kaydet/güncelle görünüşü değiştirmez ama bütün Dolap gövdesini (KarakterGovde + tüm
+        // ızgaralar) yeniden kuruyordu; pop + Yukselt sesiyle aynı karede takılma ve kaydırma zıplaması. Satır artık kendi kabında,
+        // kaydet/güncelle yalnız onu kurar (Kariyer TurAltKur kalıbı). Giy/Rastgele tam kurulum kalır: her ızgaranın seçimi değişir.
+        VisualElement kombinKab;
         void KombinSatir(VisualElement c)
         {
+            kombinKab = new VisualElement(); kombinKab.pickingMode = PickingMode.Ignore; c.Add(kombinKab); KombinSatirKur();
+        }
+        void KombinSatirKur()
+        {
+            var c = kombinKab; c.Clear();
             KombinYukle(); var simdi = KombinSimdi();
             c.Add(Grup(L.T("Kombinler")));
             var s = Satir("secim"); s.AddToClassList("kombin-satir"); c.Add(s);
@@ -105,7 +133,7 @@ namespace BirdieSmash.Game
             bool hicYok = true; for (int i = 0; i < KOMBIN_SAY; i++) if (kombinler[i] != null) { hicYok = false; break; }
             if (hicYok)
             {
-                var kd = Cip(L.T("Bu görünüşü kaydet"), false, () => { kombinler[0] = KombinSimdi(); kombinAktif = 0; KombinYaz(); root.sfx.Yukselt(); SoyunmaGovdeKur(true); });
+                var kd = Cip(L.T("Bu görünüşü kaydet"), false, () => { kombinler[0] = KombinSimdi(); kombinAktif = 0; kombinPop = 0; KombinYaz(); root.sfx.Yukselt(); KombinSatirKur(); });
                 kd.AddToClassList("kombin-cip"); s.Add(kd);
                 Erisim.Etiket(kd, L.T("Bu görünüşü kaydet") + ", " + L.T("Kombin {0}", 1), "dugme");
             }
@@ -115,11 +143,13 @@ namespace BirdieSmash.Game
                 string ad = L.T("Kombin {0}", i + 1), alt = !dolu ? L.T("Boş · kaydet") : on ? L.T("Giyili") : L.T("Giy");
                 var d = Cip(ad, on, () =>
                 {
-                    if (kombinler[ii] == null) { kombinler[ii] = KombinSimdi(); kombinAktif = ii; KombinYaz(); root.sfx.Yukselt(); SoyunmaGovdeKur(true); }
-                    else { kombinAktif = ii; KombinYaz(); Tik(); KombinGiy(kombinler[ii]); }
+                    if (kombinler[ii] == null) { kombinler[ii] = KombinSimdi(); kombinAktif = ii; kombinPop = ii; KombinYaz(); root.sfx.Yukselt(); KombinSatirKur(); }
+                    else { kombinAktif = ii; kombinPop = ii; KombinYaz(); KombinGiy(kombinler[ii]); if (!Ayar.reduce && root.vitrin != null && root.vitrin.gameObject.activeSelf) root.vitrin.Parlat("forma"); }   // Tik Cip'in içinde (çift titreşimdi)
                 }, alt);
                 d.AddToClassList("dar-cip"); d.AddToClassList("kombin-cip"); Sigdir(d); s.Add(d);
+                if (ii == kombinPop) KombinPopAni(d);
             }
+            kombinPop = -1;
             var r = Cip(L.T("Rastgele"), false, KombinRastgele); r.AddToClassList("dar-cip"); r.AddToClassList("kombin-cip"); Sigdir(r); s.Add(r);
             // 2026-11-06: alt satır "sahip olduklarından" dar çipte dört satıra bölünüp hece ortasından kırılıyordu (r124); bilgi
             // ekran okuyucu etiketinde kalır, görsel çip tek kelime (komşu Kombin çipleriyle aynı yükseklik)
@@ -128,7 +158,7 @@ namespace BirdieSmash.Game
             if (giyili < 0 && kombinAktif >= 0 && kombinler[kombinAktif] != null)
             {
                 int a = kombinAktif;
-                c.Add(Dugme(L.T("Kombin {0}'i bu görünüşle güncelle", a + 1), () => { kombinler[a] = KombinSimdi(); KombinYaz(); root.sfx.Yukselt(); SoyunmaGovdeKur(true); }, "kombin-kaydet", null, 14));
+                c.Add(Dugme(L.T("Kombin {0}'i bu görünüşle güncelle", a + 1), () => { kombinler[a] = KombinSimdi(); KombinYaz(); root.sfx.Yukselt(); KombinSatirKur(); }, "kombin-kaydet", null, 14));
             }
         }
 

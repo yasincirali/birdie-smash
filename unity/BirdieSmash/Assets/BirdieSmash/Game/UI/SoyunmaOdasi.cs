@@ -113,6 +113,10 @@ namespace BirdieSmash.Game
             vitrinOdak.AddToClassList("vitrin-odak--orta"); ok.Add(vitrinOdak);
             var sag = new VisualElement(); sag.AddToClassList("dugme"); sag.AddToClassList("ikon-dugme"); sag.Add(Ikon(Ikonlar.Ileri, 20, Color.white)); sag.AddManipulator(new Clickable(() => VitrinCevir(1))); Erisim.Etiket(sag, L.T("Sağa çevir"), "dugme"); ok.Add(sag);
             OdakDugmeleriKur();
+            // 2026-11-23 Dolap yuvaları (KarakterOdasi.YuvalarKur): kaplar dokunuşu geçirir, boşlukta sürükleme vitrini döndürür.
+            yuvaSol = new VisualElement(); yuvaSol.AddToClassList("dolap-yuvalar"); yuvaSol.AddToClassList("dolap-yuvalar--sol"); yuvaSol.pickingMode = PickingMode.Ignore; ust.Add(yuvaSol);
+            yuvaSag = new VisualElement(); yuvaSag.AddToClassList("dolap-yuvalar"); yuvaSag.AddToClassList("dolap-yuvalar--sag"); yuvaSag.pickingMode = PickingMode.Ignore; ust.Add(yuvaSag);
+            yuvaHareket = new VisualElement(); yuvaHareket.AddToClassList("dolap-yuvalar"); yuvaHareket.AddToClassList("dolap-yuvalar--hareket"); yuvaHareket.pickingMode = PickingMode.Ignore; ust.Add(yuvaHareket);
             // Yakın plan kadrajı kutunun en-boyuna ve alttaki düğmelerin payına göre (Vitrin.Uzaklik).
             ust.RegisterCallback<GeometryChangedEvent>(e => VitrinKutuYaz(ust, alt)); alt.RegisterCallback<GeometryChangedEvent>(e => VitrinKutuYaz(ust, alt));
             // 2026-11-01: kategori şeridi tek satır, yatay kayar (dokuz kategori iki-üç satır çip olup vitrini küçültüyordu).
@@ -194,7 +198,18 @@ namespace BirdieSmash.Game
             if (atolyeGovde == null) return; Vector2 of = yerKoru && atolyeKaydir != null ? atolyeKaydir.scrollOffset : Vector2.zero;
             var c = atolyeGovde; c.Clear(); canliDolgu.Clear(); canliDeger.Clear();
             // 2026-11-07 (AD7): Kariyer ve Profil'de sekme başlığı vardı, Atölye'de yoktu (sekmeler arası tutarsız). Dolap'ta yok: vitrin kimlik.
-            var bt = Yazi(L.T("Atölye"), 24, "sekme-baslik"); Erisim.Etiket(bt, L.T("Atölye"), "baslik"); c.Add(bt);
+            // 2026-11-22 inceleme (fikir 12:06 #2, OYUNCUYU GÖSTER): sayfanın konusu oyuncunun gücü ama oyuncu yoktu. Gelişim'deki
+            // 36 pt portre başlığın solunda (vitrin değil; "Vitrin yok" kararı sürer), sağda takılı raketin adı. Portre yalnız
+            // önbellekten (Portre.BenimHazir); yoksa insan simgesi ve menü durgunken tek ısıtma (Kariyer RakipAvatarIc kalıbı).
+            var bas = Satir("arali"); bas.pickingMode = PickingMode.Ignore; c.Add(bas);
+            var bsol = Satir("rakip-satir"); bsol.pickingMode = PickingMode.Ignore; bsol.style.marginTop = 0f; bsol.style.flexShrink = 0f; bas.Add(bsol);
+            var av = new VisualElement(); av.AddToClassList("avatar"); av.pickingMode = PickingMode.Ignore; av.style.width = 36; av.style.height = 36;
+            av.style.borderTopLeftRadius = av.style.borderTopRightRadius = av.style.borderBottomLeftRadius = av.style.borderBottomRightRadius = 18;
+            av.style.marginRight = 8; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); bsol.Add(av);
+            var bp = Portre.BenimHazir(); AvatarIc(av, bp, 20);
+            if (bp == null) { bool isitti = false; av.schedule.Execute(() => { if (isitti || !IsitmaSirasi()) return; isitti = true; var t = Portre.Benim(); if (t != null) { av.Clear(); AvatarIc(av, t, 20); } }).Every(300).Until(() => isitti || av.panel == null); }
+            var bt = Yazi(L.T("Atölye"), 24, "sekme-baslik"); Erisim.Etiket(bt, L.T("Atölye"), "baslik"); bsol.Add(bt);
+            // 2026-11-23 (Atölye A): başlığın sağındaki raket adı kalktı; ad hemen altta raket vitrininde büyük yazıyor (iki kez söylenmez).
             EkipmanGovde(c); c.Add(Bosluk(20));
             if (of.y > 0) { atolyeKaydir.scrollOffset = of; var sk = atolyeKaydir; sk.schedule.Execute(() => sk.scrollOffset = of).StartingIn(33); }
         }
@@ -256,18 +271,18 @@ namespace BirdieSmash.Game
             else if (dokunus && vt.hedefGec >= 1) { string p = vt.ParcaYeri(dv, W * .12f / dw); if (p != null && p != raketParca) RaketParcaSec(p); }   // tezgâhta parçaya dokunmak onu seçer
         }
 
-        void SoyunmaGovdeKur(bool yerKoru)
+        // sol (2026-11-22 inceleme, fikir 17:06 #4): kategori değişince yeni gövde bir karede beliriyordu; içerik yeni doğan iç kaba
+        // kurulur ve .12 sn opacity ile belirir (Antrenman/Tarz kalıbı, yerleşim yok). Hareketi azaltta ve öbür yollarda iç kap yok.
+        void SoyunmaGovdeKur(bool yerKoru, bool sol = false)
         {
             // Atölye ve Dolap aynı seçim akışlarını paylaşır (ModelSec, TelBitti, yükselt): görünen yenilenir, öteki kirli kalır.
             if (gez.sekme == Sekme.Atolye) { AtolyeGovdeKur(yerKoru); kirli[(int)Sekme.Soyunma] = true; return; }
             kirli[(int)Sekme.Atolye] = true;
-            if (soyunmaGovde == null) return; var vt = root.vitrin; bool raketG = vt.hedefGec >= 1;
+            if (soyunmaGovde == null) return;
             Vector2 of = yerKoru && soyunmaKaydir != null ? soyunmaKaydir.scrollOffset : Vector2.zero;
-            int od = vt.odak;
-            string rp = vt.Parca; string rpAd = rp == "kafa" ? "Kafa şekli" : rp == "cerceve" ? "Çerçeve" : rp == "saft" ? "Şaft" : rp == "grip" ? "Grip" : rp == "kordaj" ? "Kordaj" : null;
-            vitrinYazi.text = raketG && rpAd != null ? L.T("Yakın plan: {0}", L.T(rpAd)) : L.T(raketG ? "Raketin, 360 derece görünüm" : od == Vitrin.YUZ ? "Yakın plan: yüz ve saç" : od == Vitrin.AYAK ? "Yakın plan: ayakkabılar" : od == Vitrin.TUTUS ? "Yakın plan: tutuş" : "Oyuncun, 360 derece görünüm");
-            OdakDugmeleriKur();
+            VitrinYaziKur();
             var c = soyunmaGovde; c.Clear();
+            if (sol && !Ayar.reduce) { var ic = new VisualElement(); ic.AddToClassList("ant-liste"); ic.AddToClassList("koz-solgun"); ic.schedule.Execute(() => ic.RemoveFromClassList("koz-solgun")).StartingIn(16); c.Add(ic); c = ic; }
             KarakterGovde(c); c.Add(Bosluk(20));
             DenemeCubukKur();
             if (of.y > 0) { soyunmaKaydir.scrollOffset = of; var sk = soyunmaKaydir; sk.schedule.Execute(() => sk.scrollOffset = of).StartingIn(33); }
@@ -275,6 +290,15 @@ namespace BirdieSmash.Game
             // segment) kayma sıfırlanmıyordu. Uzun sayfanın (Şapka, Yüz ızgarası) dibindeyken kısa sayfaya geçince eski kayma kalıyor,
             // içerik görünen alanın üstünde kalıp sayfa boş görünüyordu. Yeni sayfa hep baştan açılır.
             else if (!yerKoru && KategoriUsteKaydir && soyunmaKaydir != null) { soyunmaKaydir.scrollOffset = Vector2.zero; var sk = soyunmaKaydir; sk.schedule.Execute(() => sk.scrollOffset = Vector2.zero).StartingIn(1); }
+        }
+        // 2026-11-22 inceleme (fikir 02:06 #2): yakın plan düğmesi yalnız kadrajı ve bu iki öğeyi değiştirir; sayfa gövdesi odağı okumaz.
+        // Eskiden her odak dokunuşu SoyunmaGovdeKur ile bütün ızgarayı baştan kuruyordu (basılma geri bildirimi yeniden kurulumla kesiliyordu).
+        void VitrinYaziKur()
+        {
+            var vt = root.vitrin; bool raketG = vt.hedefGec >= 1; int od = vt.odak;
+            string rp = vt.Parca; string rpAd = rp == "kafa" ? "Kafa şekli" : rp == "cerceve" ? "Çerçeve" : rp == "saft" ? "Şaft" : rp == "grip" ? "Grip" : rp == "kordaj" ? "Kordaj" : null;
+            vitrinYazi.text = raketG && rpAd != null ? L.T("Yakın plan: {0}", L.T(rpAd)) : L.T(raketG ? "Raketin, 360 derece görünüm" : od == Vitrin.YUZ ? "Yakın plan: yüz ve saç" : od == Vitrin.AYAK ? "Yakın plan: ayakkabılar" : od == Vitrin.TUTUS ? "Yakın plan: tutuş" : "Oyuncun, 360 derece görünüm");
+            OdakDugmeleriKur();
         }
         public static bool KategoriUsteKaydir = true;   // EkranTuru eski davranışı karşılaştırmak için bir an kapatır
         public void DolapSonaKaydir() { if (soyunmaKaydir != null) soyunmaKaydir.verticalScroller.value = soyunmaKaydir.verticalScroller.highValue; }
@@ -288,21 +312,183 @@ namespace BirdieSmash.Game
             }
         }
 
-        // ---- Oyun segmenti: tarz, takım, yuvalar, ayakkabı tabanı ----
+        // ---- Atölye A: raket vitrini, Sahada, tarz satırı; altta yuvalar, eşit şartlar, ayakkabı tabanı ----
+        // 2026-11-23 (yasin, menü UX+UI turu, seçim "Atölye A"; taslak menu-ux-ui-2026-11-23): sorun, tarz sekmeleri + tarz kartı +
+        // beş eşit çubuk + raket aynı uzun listedeydi; çubukların çoğu 50'de durduğu için bir şey anlatmıyordu, raketin kendisi
+        // (ağırlık, denge, şaft, gerginlik) sayfanın dibindeydi. Şimdi sıra oyuncunun sorusuna göre: (1) elimde ne var → büyük raket
+        // + dört ölçü çipi (dokununca tek cümle anlam), (2) sahada ne değişiyor → yalnız 50'den ayrılan çubuklar, işaret + sayıyla,
+        // (3) tarz tek satır, dokununca eski tarz seçicisi yerinde açılır (§7 kademeli açma). Beş çubuğun tamamı yuva sayfalarında
+        // ("Takımın şimdi") durur; burada kalkan bilgi yok, yalnız ilk ekrandan indi.
+        string atlBilgi;          // açık ölçü çipi (null = kapalı); sayfa yeniden kurulunca da açık kalır
+        bool atlTarzAcik;         // tarz seçicisi açık mı; "Bu tarzı seç" sonrası yeniden kurulumda açık kalsın
+        VisualElement atlSahada;
+        // Kayıp rengi yalnız Atölye'nin Sahada kutusunda: yasin'in seçtiği taslak "verdiğin kırmızı" diyor, §8.2.2 mavi zeminde saf
+        // kırmızıyı yasaklıyor. Açık mercan-pembe #FFB4AB kartta ~4,8:1 (gövde 4,5 sınırının üstü); anlam yine ▼ ve "−" ile de verilir.
+        static readonly Color KAYIP = Kit.Hex("#FFB4AB");
         void EkipmanGovde(VisualElement c)
         {
             var gr = Ayar.gear;   // Seviye satırı kalktı (2026-11-05, Ar-Ge 11:40 #3): üst çubukta Sv + XP ve Tüy zaten var, Profil'de ayrıntı
-            c.Add(Grup(L.T("Oyun tarzı"))); tarzKap = new VisualElement(); c.Add(tarzKap); TarzGovde(tarzKap);
-            c.Add(Grup(L.T("Takımın")));
-            var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true, null, Ayar.GelisimCubuk());
-            // 2026-11-19 inceleme (fikir 22:06 #3): dipnot sayfanın dibindeydi ve 10 Kas gelişiminden beri eksikti (çubuğa limon "+n"
-            // gelişim payı da giriyor). Açıkladığı kartın hemen altına taşındı, metin gelişimi de sayar.
-            c.Add(Yazi(L.T("Çubuklar ekipman ve gelişimden gelir, 50 ortalama. Tarz ve görünüm değiştirmez."), 12, "soluk"));
-            RaketKimlikKart(c);
+            RaketVitrin(c);
+            atlSahada = Kart("atl-sahada"); c.Add(atlSahada); SahadaIc(atlSahada);
+            TarzSatir(c);
             c.Add(Grup(L.T("Yuvalar"))); var iz = Satir("izgara"); iz.AddToClassList("yuva-izgara"); c.Add(iz);
             foreach (var Y in Gear.YUVA) iz.Add(YuvaKare(Y));
-            c.Add(Cip(L.T("Eşit şartlar"), gr.eko.esit, () => { gr.eko.esit = !gr.eko.esit; Ayar.GearHesap(); Ayar.KaydetSonra(); SoyunmaGovdeKur(true); }, L.T("Serbest maçta yükseltmeler sayılmaz")));
+            // 2026-11-22 inceleme (fikir 12:06 #6): çip bütün Atölye'yi kuruyordu. 2026-11-23 (Atölye A): eşit şartlar yalnız takım
+            // çubuklarını değiştirir (Gear.KSv, GelisimCubuk), onları da artık yalnız Sahada kutusu gösterir: kutu yerinde kurulur.
+            VisualElement esc = null;
+            esc = Cip(L.T("Eşit şartlar"), gr.eko.esit, () =>
+            {
+                gr.eko.esit = !gr.eko.esit; Ayar.GearHesap(); Ayar.KaydetSonra();
+                if (atlSahada == null || atlSahada.panel == null) { SoyunmaGovdeKur(true); return; }
+                atlSahada.Clear(); SahadaIc(atlSahada); CipDurum(esc, gr.eko.esit); RenkSonrasiKirli(); kirli[(int)Sekme.Profil] = true;
+            }, L.T("Serbest maçta yükseltmeler sayılmaz"));
+            c.Add(esc);
             c.Add(Grup(L.T("Ayakkabı tabanı"))); TabanBolum(c);
+        }
+
+        // Raket vitrini: 3B vitrin değil ("Vitrin yok" kararı sürer, RT maliyeti Dolap'ta), çizilmiş raket silueti büyük.
+        // Simge beyaz: kozmetik renk arayüz rolü taşımaz (§8.2.7), sarı yalnız eylem/seçili.
+        void RaketVitrin(VisualElement c)
+        {
+            var gr = Ayar.gear; GearModel r; if (!Gear.GEAR["raket"].TryGetValue(gr.raket, out r)) return;
+            var k = Kart("atl-vitrin"); c.Add(k);
+            var ik = Ikon(VitrinRaket(), 128, Color.white); ik.AddToClassList("atl-raket"); ik.pickingMode = PickingMode.Ignore; k.Add(ik);
+            var ad = Yazi(L.T(r.ad), 22, "kalin"); ad.AddToClassList("atl-ortala"); ad.pickingMode = PickingMode.Ignore; k.Add(ad);
+            var alt = Yazi(L.T("Takılı raket"), 13, "soluk"); alt.AddToClassList("atl-ortala"); alt.pickingMode = PickingMode.Ignore; k.Add(alt);
+            Erisim.Etiket(ad, L.T("Takılı raket") + ": " + L.T(r.ad), "metin");
+
+            int tmin, tmax; Gear.TelAralik(gr.raket, out tmin, out tmax); int tel = Mathf.RoundToInt(gr.tel);
+            int dm = r.dengeMm ?? 290; string da = Gear.DengeAd(dm), saft = r.saft ?? "orta";
+            // Aralık dışı gerginlik yalnız renkle verilmez (fikir 22:10 #5a kuralı): değerde ok, cümlede söz.
+            string telOk = tel > tmax ? " ↑" : tel < tmin ? " ↓" : "";
+            string[] ADLAR = { "Ağırlık", "Denge noktası", "Şaft", "Gerginlik" };   // "Denge" sözlükte "Balanced" (tarz adı), çipte ölçünün adı gerekir
+            string[] DEGER = { (r.u != null ? r.u + " · " : "") + (r.gram ?? 0) + " g", BuyukIlk(L.T(da)), BuyukIlk(L.T(saft)), tel + " lbs" + telOk };
+            string[] ANLAM = {
+                L.T("Hafif raket elde hızlı döner; ağır raket topu daha sert iter, kolu daha çok yorar."),
+                da == "kafa ağır" ? L.T("Kafa ağır: smaç ve clear güçlü, drive ve file geç kalır.")
+                    : da == "kafa hafif" ? L.T("Kafa hafif: savunma ve file hızlı, smaç yumuşak.") : L.T("Dengeli: hücumda da savunmada da orta yol."),
+                saft == "esnek" ? L.T("Esnek şaft zamanlama kaçsa da affeder, ama smaçı yavaşlatır.")
+                    : saft == "orta" ? L.T("Orta şaft: esneklik ile güç arasında.") : L.T("Sert şaft hızlı kolda gücü doğrudan aktarır; zamanlama ister."),
+                L.T("Gevşek tel geniş tatlı nokta, sıkı tel his ve kontrol verir.") + " " + L.T("Bu raket için {0}–{1} lbs.", tmin, tmax)
+                    + (tel > tmax ? " " + L.T("Seninki önerinin üstünde.") : tel < tmin ? " " + L.T("Seninki önerinin altında.") : "") };
+            var cipler = new VisualElement[4];
+            var bilgi = Yazi("", 13, "atl-bilgi"); bilgi.pickingMode = PickingMode.Ignore;
+            System.Action yaz = () =>
+            {
+                int a = System.Array.IndexOf(ADLAR, atlBilgi);
+                for (int i = 0; i < 4; i++) if (cipler[i] != null) CipDurum(cipler[i], i == a);
+                bilgi.text = a >= 0 ? ANLAM[a] : ""; bilgi.style.display = a >= 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            };
+            // 2×2 ızgara: §2.4 eşit öğe dizisi (çip flex-basis 0, iki satır aynı genişlik). Değer üstte (asıl bilgi), ad altında.
+            for (int sat = 0; sat < 2; sat++)
+            {
+                var s = Satir("secim"); s.AddToClassList("atl-olcu"); k.Add(s); if (sat == 0) s.style.marginTop = 10;
+                for (int j = 0; j < 2; j++)
+                {
+                    int i = sat * 2 + j; string adi = ADLAR[i];
+                    cipler[i] = Cip(DEGER[i], atlBilgi == adi, () => { atlBilgi = atlBilgi == adi ? null : adi; yaz(); }, L.T(adi));
+                    s.Add(cipler[i]);
+                }
+            }
+            k.Add(bilgi); yaz();
+            // Model ve gerginlik değişikliği raket yuvasının işi (teknik sayfa da orada); tek ikincil eylem.
+            var d = Dugme(L.T("Raketi değiştir") + "  ›", () => YuvaAc("raket"), "dugme--hayalet"); d.style.marginTop = 10; k.Add(d);
+        }
+        // Vitrin raketi (2026-11-23, r265 karesi): kafa şekli simgesi (RaketSekil.Ikon, 96 px, ince kontur + çubuk) 88 pt'de büyüteç
+        // gibi okunuyordu. Burada 256 px'lik gerçek raket silueti: kalın çerçeve, ince teller, T boğaz, ince şaft, kalın sap. Bir kez
+        // üretilir (alan), 2×2 örnekle kenar yumuşatılır; Hud tuzağı (UnloadUnusedAssets) için C# alanında tutulur.
+        static Texture2D vitrinRaket;
+        static Texture2D VitrinRaket()
+        {
+            if (vitrinRaket != null) return vitrinRaket;
+            const int n = 256; var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            var px = new Color32[n * n];
+            for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
+                {
+                    int say = 0, tel = 0;
+                    for (int sy = 0; sy < 2; sy++) for (int sx = 0; sx < 2; sx++)
+                        {
+                            float fx = (x + .25f + .5f * sx) / n * 2 - 1, fy = (y + .25f + .5f * sy) / n * 2 - 1;
+                            float ex = fx / .36f, ey = (fy - .42f) / .5f, e = Mathf.Sqrt(ex * ex + ey * ey);
+                            bool cerceve = Mathf.Abs(e - 1) < .075f;
+                            bool sap = (Mathf.Abs(fx) < .022f && fy < -.07f && fy > -.6f) || (Mathf.Abs(fx) < .065f && fy <= -.6f && fy > -.97f)
+                                || (fy < -.04f && fy > -.2f && Mathf.Abs(fx) < .022f + (fy + .2f) * .45f && Mathf.Abs(fx) > -.1f && e > .9f);
+                            bool ag = e < 1 && (Mathf.Repeat(fx + 1, .08f) < .012f || Mathf.Repeat(fy + 1, .08f) < .012f);
+                            if (cerceve || sap) say++; else if (ag) tel++;
+                        }
+                    // Teller yarı saydam: çerçeveden geri planda dursun, raket "dolu yüzey" gibi okunmasın.
+                    px[y * n + x] = new Color32(255, 255, 255, (byte)((say * 255 + tel * 115) / 4));
+                }
+            t.SetPixels32(px); t.Apply(); vitrinRaket = t; return t;
+        }
+        static string BuyukIlk(string s) { return string.IsNullOrEmpty(s) ? s : s.Substring(0, 1).ToUpper(L.Kultur) + s.Substring(1); }
+
+        // Sahada: yalnız 50'den ayrılan takım çubukları. Satır: ad solda, ▲/▼ + işaretli sayı sağda; çubuk altında kendi satırında
+        // (§1.3), ortada 50 çizgisi, fark ortadan dışa doğru boyanır (kazanç limon, kayıp KAYIP). Gelişim payı sayıya dahil.
+        void SahadaIc(VisualElement k)
+        {
+            var v = Gear.Cubuklar(Ayar.GSE); var gel = Ayar.GelisimCubuk(); int n = 0;
+            int[] once = sahadaOnce, onceGel = sahadaGel; sahadaOnce = (int[])v.Clone(); sahadaGel = gel != null ? (int[])gel.Clone() : null;
+            k.Add(Yazi(L.T("Sahada"), 16, "kalin"));
+            for (int i = 0; i < 5; i++)
+            {
+                int g = gel != null ? Mathf.Min(gel[i], 100 - v[i]) : 0, t = v[i] + g, f = t - 50; if (f == 0) continue; n++;
+                bool arti = f > 0; string adi = L.T(Gear.CUBUK_AD[i]);
+                var r = new VisualElement(); r.AddToClassList("atl-delta"); r.pickingMode = PickingMode.Ignore; k.Add(r);
+                var ust = Satir("arali"); ust.pickingMode = PickingMode.Ignore; r.Add(ust);
+                ust.Add(Yazi(adi, 13, "atl-delta-ad"));
+                var sag = Satir("rakip-satir"); sag.pickingMode = PickingMode.Ignore; sag.style.marginTop = 0; ust.Add(sag);
+                sag.Add(Ikon(arti ? Ikonlar.Yukari : Ikonlar.Asagi, 12, arti ? LIMON : KAYIP));
+                var sy = Yazi((arti ? "+" : "−") + Mathf.Abs(f), 13, arti ? "atl-arti" : "atl-eksi"); sag.Add(sy);
+                var iz = new VisualElement(); iz.AddToClassList("atl-delta-iz"); iz.pickingMode = PickingMode.Ignore; r.Add(iz);
+                var dl = new VisualElement(); dl.AddToClassList("atl-delta-dolu"); dl.AddToClassList(arti ? "atl-delta-dolu--arti" : "atl-delta-dolu--eksi"); dl.pickingMode = PickingMode.Ignore;
+                dl.style.width = Length.Percent(Mathf.Min(50, Mathf.Abs(f))); iz.Add(dl);
+                // 2026-11-26 inceleme (fikir 02:06 #7): raket/gelişim değişince kutu yeniden kurulup çubuk bir karede yer değiştiriyordu,
+                // oyuncu neyin değiştiğini görmüyordu. Değeri öncekinden farklı çubuk 50 çizgisinden dışa büyür (.22 sn ease-out, yalnız
+                // scale: yerleşim yeniden hesaplanmaz). İlk kurulumda ve hareketi azaltta yok. Stil kurulumda bir kez yazılır.
+                if (once != null && !Ayar.reduce && SahadaToplam(once, onceGel, i) != t) DeltaBuyu(dl, arti);
+                var orta = new VisualElement(); orta.AddToClassList("atl-delta-orta"); orta.pickingMode = PickingMode.Ignore; iz.Add(orta);
+                Erisim.Etiket(r, adi + " " + t + ", " + L.T(arti ? "ortalamadan {0} fazla" : "ortalamadan {0} eksik", Mathf.Abs(f)), "metin");
+            }
+            // Boş durum tasarlanır (§10.3): tek cümle; 50 çizgisinin ne olduğu her durumda alt satırda.
+            // 2026-11-26 inceleme (fikir 02:06 #5b): boş kutu iki açıklama cümlesiyle doluydu; boşken tek cümle (ne yapınca dolacağı),
+            // "50 ortalama" dipnotu yalnız çubuk varken (çizginin ne olduğunu çubuk görünce sorar).
+            if (n == 0) { k.Add(Yazi(L.T("Raket ya da gelişim değişince fark burada görünür."), 13, "soluk")); return; }
+            var dn = Yazi(L.T("50 ortalama. Ekipman ve gelişimden gelir; tarz ve görünüm değiştirmez."), 12, "soluk"); dn.style.marginTop = 8; k.Add(dn);
+        }
+
+        static int[] sahadaOnce, sahadaGel;   // önceki Sahada çubukları (ekipman + gelişim payı); yalnız değişeni oynatmak için
+        static int SahadaToplam(int[] v, int[] gel, int i) { return v[i] + (gel != null ? Mathf.Min(gel[i], 100 - v[i]) : 0); }
+        static void DeltaBuyu(VisualElement dl, bool arti)
+        {
+            dl.style.transformOrigin = new TransformOrigin(arti ? Length.Percent(0) : Length.Percent(100), Length.Percent(50));
+            dl.style.scale = new Scale(new Vector3(0, 1, 1)); dl.AddToClassList("atl-delta-dolu--buyu");
+            dl.schedule.Execute(() => dl.style.scale = new Scale(Vector3.one)).ExecuteLater(16);
+        }
+
+        // Tarz tek satır: dokununca eski seçici (sekmeler + kart + "Bu tarzı seç") altında açılır; yerinde, sayfa kurulmaz (§7.8).
+        void TarzSatir(VisualElement c)
+        {
+            string cur = Ayar.Tarz, ad = cur; foreach (var t in Karakter.Tarzlar) if (t.id == cur) ad = L.T(t.ad);
+            tarzKap = new VisualElement(); tarzKap.AddToClassList("atl-tarz-kap");
+            // 2026-11-26 inceleme (fikir 02:06 #5, §7.2 tek birincil eylem): Tarz, "Raketi değiştir" ile aynı boy ve dolguda tam genişlik
+            // düğmeydi; göz nereye gideceğini bilmiyordu. Artık iOS Ayarlar değer satırı (DegerSatir kalıbı): solda "Tarz", sağda seçili
+            // tarz + ›; bütün satır dokunma alanı (≥ 56 pt), açılınca sağdaki yazı "Kapat" olur. Yerinde açılan seçici aynı.
+            var d = new VisualElement(); d.AddToClassList("liste-satir"); d.AddToClassList("anahtar-satir"); d.AddToClassList("atl-tarz");
+            var yz = new VisualElement(); yz.AddToClassList("anahtar-yazilar"); yz.pickingMode = PickingMode.Ignore; d.Add(yz);
+            yz.Add(Yazi(L.T("Tarz"), 15, "dugme-yazi"));
+            var dg = Yazi((atlTarzAcik ? L.T("Kapat") : ad) + "  ›", 15, "dugme-alt"); dg.AddToClassList("deger-yazi"); dg.pickingMode = PickingMode.Ignore; d.Add(dg);
+            d.AddManipulator(new Clickable(() =>
+            {
+                Tik(); atlTarzAcik = !atlTarzAcik;
+                if (atlTarzAcik && tarzKap.childCount == 0) TarzGovde(tarzKap);
+                tarzKap.style.display = atlTarzAcik ? DisplayStyle.Flex : DisplayStyle.None;
+                dg.text = (atlTarzAcik ? L.T("Kapat") : ad) + "  ›";
+                Erisim.Etiket(d, L.T("Tarz: {0}", ad) + ", " + (atlTarzAcik ? L.T("açık") : L.T("kapalı")), "dugme");
+            }));
+            Erisim.Etiket(d, L.T("Tarz: {0}", ad) + ", " + (atlTarzAcik ? L.T("açık") : L.T("kapalı")), "dugme");
+            c.Add(d); c.Add(tarzKap);
+            if (atlTarzAcik) TarzGovde(tarzKap); else tarzKap.style.display = DisplayStyle.None;
         }
 
         // 2026-11-07 (yasin: "kordaj gerginliği kaybolmuş"; ölçüler gerçek raket diliyle): Atölye'nin ana ekranında takılı raketin
@@ -415,7 +601,7 @@ namespace BirdieSmash.Game
                 var gd = new VisualElement(); gd.AddToClassList("stat-gelisim"); gd.pickingMode = PickingMode.Ignore; gd.style.left = Length.Percent(v[i]); gd.style.width = Length.Percent(g); gd.style.display = g > 0 ? DisplayStyle.Flex : DisplayStyle.None; iz.Add(gd);
                 var orta = new VisualElement(); orta.AddToClassList("stat-orta"); orta.pickingMode = PickingMode.Ignore; iz.Add(orta);
                 var dg = Yazi((v[i] + g).ToString(), 12, "stat-deger"); r.Add(dg);
-                Label ar = null; if (gel != null) { ar = Yazi(g > 0 ? "+" + g : "", 11, "stat-arti"); ar.style.display = g > 0 ? DisplayStyle.Flex : DisplayStyle.None; r.Add(ar); }
+                Label ar = null; if (gel != null) { ar = Yazi(g > 0 ? "+" + g : "", 12, "stat-arti"); ar.style.display = g > 0 ? DisplayStyle.Flex : DisplayStyle.None; r.Add(ar); }
                 string yonGel = g > 0 ? ", " + L.T("gelişimden artı {0}", g) : "";
                 int fark = karsi != null ? v[i] - karsi[i] : 0; string yon = "";
                 var isk = new VisualElement(); isk.AddToClassList("stat-isaret"); isk.pickingMode = PickingMode.Ignore; r.Add(isk);
@@ -500,7 +686,7 @@ namespace BirdieSmash.Game
         void ModelSec(Yuva Y, string id)
         {
             var gr = Ayar.gear; if (!gr.Sec(Y.m, id)) return; if (Y.m == "raket") deneRaket = null;
-            Ayar.GearHesap(); Ayar.KaydetSonra(); root.vitrin.Yenile(); if (Y.m == "raket" || Y.m == "kordaj") { root.sfx.Deneme(); Yerel.Vurus("smash", "perfect", false); } else root.sfx.Tik();
+            Ayar.GearHesap(); Ayar.KaydetSonra(); root.vitrin.Yenile(); if (Y.m == "raket" || Y.m == "kordaj") { root.sfx.Deneme(); Yerel.Vurus("smash", "perfect", false); } else root.sfx.UiSes("kaydir");   // 2026-11-22: giyilen parça yerine oturur (kaydir)
             ustKirli = true; UstKur(); Degisti(); SoyunmaGovdeKur(true);
         }
 
@@ -511,11 +697,16 @@ namespace BirdieSmash.Game
             var kart = Kart("yuva"); c.Add(kart);
             var r = Satir("yuva-satir"); kart.Add(r);
             var sol = new VisualElement(); sol.AddToClassList("yuva-sol"); sol.pickingMode = PickingMode.Ignore; r.Add(sol);
-            sol.Add(Yazi(L.T("Yuva kademesi"), 15, "kalin"));
+            // 2026-11-21 inceleme (fikir 07:06 #4): başlık her yuvada aynı "Yuva kademesi", asıl bilgi altta 12 pt soluk "4/10 · Tel"
+            // idi; sayfa başlığı yuvayı zaten söylüyor. Büyük yazı kademenin kendisi (Tennis Clash "Seviye 4"), alt satır kalktı.
+            sol.Add(Yazi(L.T("Kademe {0}/10", sv), 15, "kalin"));
             var bol = Satir("seviye-bolme"); bol.pickingMode = PickingMode.Ignore; sol.Add(bol);
-            for (int i = 0; i < 10; i++) { var b = new VisualElement(); b.AddToClassList("bolme"); if (i < sv) b.AddToClassList("bolme--dolu"); b.pickingMode = PickingMode.Ignore; bol.Add(b); }
-            sol.Add(Yazi(sv + "/10 · " + L.T(Y.n), 12, "soluk"));
-            string ne = tam ? L.T("Tam") : kilit ? L.T("Sv {0} gerekli", gk) : az ? f + " " + L.T("Tüy") : L.T("Yükselt · {0}", f + " " + L.T("Tüy"));
+            for (int i = 0; i < 10; i++) { var b = new VisualElement(); b.AddToClassList("bolme"); if (i < sv) b.AddToClassList("bolme--dolu"); b.pickingMode = PickingMode.Ignore; bol.Add(b);
+                // 2026-11-21 inceleme (fikir 07:06 #3): yükseltme anında yeni dolan bölme sessizce dolu çiziliyordu (görüntü kanalı yalnız
+                // çubuk kayması). Bölme 1,25'ten 1'e iner (0,18 sn, yalnız scale: yerleşim yok); az-harekette sınıf hiç eklenmez.
+                if (i == sv - 1 && yukK == Y.k && !Ayar.reduce) { b.AddToClassList("bolme--yeni"); b.schedule.Execute(() => b.RemoveFromClassList("bolme--yeni")).StartingIn(33); }
+            }
+            string ne = tam ? L.T("Tam") : kilit ? L.T("Sv {0} gerekli", gk) : az ? L.T("{0} Tüy daha gerekli", f - gr.eko.tuy) : L.T("Yükselt · {0}", f + " " + L.T("Tüy"));
             VisualElement dg;
             if (tam || kilit || az) dg = Pasif(ne);   // kapı varsa nedeni yazar, düğme pasif ama okunur (§2.3)
             else dg = Dugme(ne, () =>
@@ -527,7 +718,9 @@ namespace BirdieSmash.Game
                 // bellekte kesin, kayıp penceresi tek kare). Parlama, ses ve titreşim ilk karede kalır.
                 if (gr.Yukselt(Y.k))
                 {
-                    Ayar.GearHesap(); root.sfx.Yukselt(); Yerel.Hap("flow"); root.vitrin.Parlat(Y.k); yukOnce = once; yukK = Y.k;
+                    Ayar.GearHesap(); root.sfx.Yukselt(); Yerel.Hap("flow"); if (root.vitrin.gameObject.activeSelf) root.vitrin.Parlat(Y.k); yukOnce = once; yukK = Y.k;
+                    // 2026-11-21 inceleme (fikir 07:06 #3): Atölye vitrinsiz; Parlat kapalı vitrinde yalnız sayaç sıfırlıyor, ışıltı oyuncu
+                    // Dolap'a geçince bağlamsız oynuyordu. Vitrin görünmüyorsa parlama yok (görüntü kanalı burada bölme "pop"u).
                     Degisti(); if (gez.Ust != null) SoyunmaGovdeKur(true);
                     var sk = sekmeKok[(int)gez.sekme]; if (sk != null && sk.panel != null) sk.schedule.Execute(() => Ayar.Kaydet()).StartingIn(0); else Ayar.Kaydet();
                 }
@@ -640,8 +833,13 @@ namespace BirdieSmash.Game
         void TarzYerinde()
         {
             if (tarzKap == null || tarzKap.panel == null) { SoyunmaGovdeKur(true); return; }
-            tarzKap.Clear(); TarzGovde(tarzKap);
+            // 2026-11-22 inceleme (fikir 12:06 #8): kart bir karede değişiyordu. Antrenman listesindeki kalıp: iç kap her seferinde
+            // yeni doğar, .12 sn opacity ile belirir (ekrandaki kaba eklense önce sönerdi); hareketi azaltta sınıf yok.
+            tarzKap.Clear(); var ic = new VisualElement(); ic.AddToClassList("ant-liste");
+            if (!Ayar.reduce) { ic.AddToClassList("koz-solgun"); ic.schedule.Execute(() => ic.RemoveFromClassList("koz-solgun")).StartingIn(16); }
+            TarzGovde(ic); tarzKap.Add(ic);
         }
+        bool tarzPop;   // "Bu tarzı seç"ten sonraki ilk kurulumda kartın ✓'si bir kez büyüyüp oturur
         void TarzGovde(VisualElement c)
         {
             int sv = Ayar.gear.Seviye(); string cur = Ayar.Tarz; if (tarzOnizle == null) tarzOnizle = cur;
@@ -654,7 +852,7 @@ namespace BirdieSmash.Game
             foreach (var t in Karakter.Tarzlar)
             {
                 string id = t.id; bool acik = sv >= t.sv;
-                var d = Cip(L.T(t.ad), id == tarzOnizle, () => { if (tarzOnizle == id) return; tarzOnizle = id; TarzYerinde(); }, acik ? (id == cur ? L.T("Seçili") : null) : L.T("Sv {0}", t.sv));
+                var d = Cip(L.T(t.ad), id == tarzOnizle, () => { if (tarzOnizle == id) return; tarzOnizle = id; TarzYerinde(); }, acik ? null : L.T("Sv {0}", t.sv));   // 2026-11-21 inceleme (fikir 07:06 #5): "Seçili" alt yazısı altındaki kartta "✓ Seçili" olarak tekrar ediyordu; seçim çerçeve + erişim etiketiyle
                 d.AddToClassList("segment-cip"); var eb = d.userData as ErisimBilgi; if (eb != null) eb.rol = "sekme"; ray.Add(d); if (id == tarzOnizle) secEl = d;
             }
             if (secEl != null) OrtayaKaydir(hk, secEl);
@@ -663,7 +861,12 @@ namespace BirdieSmash.Game
             var kart = Kart("tarz-kart"); if (oSecili) kart.AddToClassList("secili"); if (!oAcik) kart.AddToClassList("kilitli"); c.Add(kart);
             var bas = Satir("arali"); bas.pickingMode = PickingMode.Ignore; kart.Add(bas); bas.Add(Yazi(L.T(on.ad), 20, "kalin"));
             var dr = Satir("rakip-satir"); dr.pickingMode = PickingMode.Ignore; bas.Add(dr); string durum;
-            if (oSecili) { dr.Add(Ikon(Ikonlar.Tik, 14, TURUNCU)); durum = L.T("Seçili"); }
+            if (oSecili)
+            {
+                var tk = Ikon(Ikonlar.Tik, 14, TURUNCU); dr.Add(tk); durum = L.T("Seçili");
+                if (tarzPop && !Ayar.reduce) { tk.AddToClassList("tarz-tik"); tk.AddToClassList("bolme--yeni"); tk.schedule.Execute(() => tk.RemoveFromClassList("bolme--yeni")).StartingIn(33); }
+                tarzPop = false;
+            }
             else if (!oAcik) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = KilitKalan(on.sv, sv); }
             else durum = L.T("Seçilebilir");
             var dy = Yazi(durum, 12, oSecili ? "durum-gecti" : oAcik ? "durum-simdi" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
@@ -675,7 +878,10 @@ namespace BirdieSmash.Game
             Erisim.Etiket(bas, L.T(on.ad) + (!string.IsNullOrEmpty(on.oz) ? ", " + L.T(on.oz) : "") + ", " + durum, "metin", oSecili, !oAcik);
             if (oSecili) return;
             string ad = L.T(on.ad);
-            if (oAcik) { var sd = Dugme(L.T("Bu tarzı seç"), () => { Ayar.ilerleme.Tarz = on.id; Ayar.GearHesap(); Ayar.KaydetSonra(); kirli[(int)Sekme.Profil] = true; SoyunmaGovdeKur(true); }, "dugme--birincil"); sd.style.marginTop = 12; Erisim.Etiket(sd, L.T("Bu tarzı seç") + ": " + ad, "dugme"); kart.Add(sd); }
+            // 2026-11-22 inceleme (fikir 12:06 #3): oyunun gücünü değiştiren seçim yalnız ortak Tik'le sessiz geçiyordu. Raket seçimi
+            // gibi üç kanal: deneme vuruşu sesi + başarı titreşimi + kartın ✓'si .18 sn 1,25→1 (yalnız scale; hareketi azaltta yok,
+            // ses ve titreşim kalır). Takım çubukları değiştiği için sayfa yine kurulur (yer korunur).
+            if (oAcik) { var sd = Dugme(L.T("Bu tarzı seç"), () => { Ayar.ilerleme.Tarz = on.id; Ayar.GearHesap(); Ayar.KaydetSonra(); kirli[(int)Sekme.Profil] = true; root.sfx.Deneme(); Yerel.Hap("flow"); tarzPop = true; SoyunmaGovdeKur(true); }, "dugme--birincil"); sd.style.marginTop = 12; Erisim.Etiket(sd, L.T("Bu tarzı seç") + ": " + ad, "dugme"); kart.Add(sd); }
             else { var pd = Pasif(KilitKalan(on.sv, sv)); pd.style.marginTop = 12; kart.Add(pd); }
         }
         // Etki çubuğu: ad (etiketin yüzdesiz kısmı değil, tam etiket: "Smaç hızı +%6") + iz. Yüzde etiketten okunur; okunamazsa
@@ -690,8 +896,11 @@ namespace BirdieSmash.Game
             var orta = new VisualElement(); orta.AddToClassList("tarz-cubuk-orta"); orta.pickingMode = PickingMode.Ignore; iz.Add(orta);
             var dl = new VisualElement(); dl.AddToClassList("tarz-cubuk-dolu"); dl.AddToClassList(eksi ? "tarz-cubuk-dolu--eksi" : "tarz-cubuk-dolu--arti"); dl.pickingMode = PickingMode.Ignore; iz.Add(dl);
             float yuz = Yuzde(ham), hedef = Mathf.Clamp(yuz / CUBUK_TAVAN, .08f, 1f) * 50f;
-            if (Ayar.reduce) dl.style.width = Length.Percent(hedef);
-            else { dl.style.width = Length.Percent(0); dl.schedule.Execute(() => { dl.style.width = Length.Percent(hedef); Kalite.Hareket(); }).StartingIn(16); }
+            // 2026-11-22 inceleme (fikir 12:06 #5): genişlik geçişi .22 sn boyunca her karede yerleşim hesaplatıyordu. Yükseltme
+            // önizlemesindeki kalıp (27 Eki performans turu 2): genişlik baştan hedefte, yatay ölçek 0→1 (orta çizgiden: artı sol
+            // kenardan, eksi sağ kenardan; USS transform-origin). Yalnız dönüşüm, yerleşim değişmez.
+            dl.style.width = Length.Percent(hedef);
+            if (!Ayar.reduce) { dl.style.scale = new Scale(new Vector3(0, 1, 1)); dl.schedule.Execute(() => { dl.style.scale = new Scale(Vector3.one); Kalite.Hareket(); }).StartingIn(16); }
             Erisim.Etiket(r, (eksi ? L.T("Eksi") : L.T("Artı")) + ": " + yazi, "metin");
         }
         static float Yuzde(string s)
@@ -710,41 +919,108 @@ namespace BirdieSmash.Game
         }
 
         // ---- Görünüm segmenti (karakter, adım 6) ----
-        class Ornek { public string id, ad, renk, neden, kisa; public bool acik, parla; }   // parla: ışın/mistik öğe (köşede ◆, etikette "parlar")   // kisa: kilitli karede görünen kısa koşul ("Sv 14")
+        class Ornek { public string id, ad, renk, neden, kisa; public bool acik, parla; public Texture2D doku; }   // doku: 2026-11-21 forma deseni önizlemesi   // parla: ışın/mistik öğe (köşede ◆, etikette "parlar")   // kisa: kilitli karede görünen kısa koşul ("Sv 14")
 
         // Renk örnekleri: kare (44 pt) + seçili ✓ ve kalın çerçeve; "modelin rengi" kişi simgesiyle; kilitli kilit + "Sv n".
         // Başlıkta seçilenin adı (renk körlüğü: hangisinin seçili olduğu yazıyla da okunur).
-        void OrnekSira(VisualElement c, string baslik, List<Ornek> l, string secili, System.Action<string> sec, bool yuvarlak = false)
+        // 2026-11-22 inceleme (fikir 12:06 #1, takılma yok): renk dokunuşu bütün Dolap gövdesini (kategori şeridi, kombinler, bütün
+        // sıralar) baştan kuruyordu; Dolap'ta en sık yapılan iş renk denemek. Artık yalnız eski ve yeni karenin içi, başlıktaki ad
+        // ve erişim durumu yerinde yazılır. İki durumda gövde yine kurulur: `yerinde: false` (forma rengi: desen önizlemeleri forma
+        // renginde çizilir, GearHesap; saç, ten, ayakkabı rengi: aynı sayfadaki küçük resimler o renkle çizilir, Portre.DeneAnahtar)
+        // ve kombin satırındaki "Giyili" yuvası değişince (KombinAyni bütün görünüşe bakar). Yerinde kalanlar: raket renkleri
+        // (grip, kordaj, çapraz tel), kaplama, şaft, şort, desen.
+        void OrnekSira(VisualElement c, string baslik, List<Ornek> l, string secili, System.Action<string> sec, bool yuvarlak = false, bool yerinde = true)
         {
             string sad = ""; foreach (var o in l) if (o.id == secili) sad = L.T(o.ad);
-            c.Add(Grup(baslik + " · " + sad)); var s = Satir("renkler"); c.Add(s);
+            var g = Grup(baslik + " · " + sad); c.Add(g); var s = Satir("renkler"); c.Add(s);
             foreach (var o in l)
             {
-                bool on = o.id == secili; string id = o.id;
-                var d = new VisualElement(); d.AddToClassList("renk"); if (yuvarlak) d.AddToClassList("renk--yuvarlak"); if (on) d.AddToClassList("renk--secili"); if (!o.acik) d.AddToClassList("renk--kilit");
-                Color zemin = o.renk != null ? Kit.Hex(o.renk) : Kit.Hex("#22343a"); d.style.backgroundColor = zemin;
-                bool acikZemin = o.renk != null && zemin.r * .3f + zemin.g * .59f + zemin.b * .11f > .55f; Color ik = acikZemin ? Color.black : Color.white;
-                if (on) d.Add(Ikon(Ikonlar.Tik, 18, ik));
-                else if (!o.acik) { d.Add(Ikon(Ikonlar.Kilit, 14, ik)); if (!string.IsNullOrEmpty(o.kisa)) { var sy = Yazi(o.kisa, 10, "renk-kilit-yazi"); sy.style.color = ik; d.Add(sy); } }
-                else if (o.renk == null) d.Add(Ikon(Ikonlar.Kisi, 18, SOLUK));
-                if (o.parla) { d.AddToClassList("renk--isin"); var pz = Yazi("◆", 11, "renk-isin-isaret"); pz.style.color = ik; d.Add(pz); }
-                if (o.acik && !on) d.AddManipulator(new Clickable(() => { sec(id); Tik(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
-                Erisim.Etiket(d, baslik + ", " + L.T(o.ad) + (o.parla ? ", " + L.T("parlar") : "") + (o.acik ? "" : ", " + o.neden), "dugme", on, !o.acik); s.Add(d);
+                var d = new VisualElement(); d.AddToClassList("renk"); if (yuvarlak) d.AddToClassList("renk--yuvarlak"); if (!o.acik) d.AddToClassList("renk--kilit");
+                d.style.backgroundColor = o.renk != null ? Kit.Hex(o.renk) : Kit.Hex("#22343a");
+                if (o.doku != null) { d.style.backgroundImage = new StyleBackground(o.doku); }
+                OrnekIc(d, o, o.id == secili, baslik);
+                if (o.acik) { var oo = o; var dd = d; d.AddManipulator(new Clickable(() => OrnekDokun(s, g, l, oo, dd, baslik, sec, yerinde))); }
+                else { var oo = o; var dd = d; d.AddManipulator(new Clickable(() => KilitDokun(g, dd, oo, baslik))); }
+                s.Add(d);
             }
         }
+        void OrnekIc(VisualElement d, Ornek o, bool on, string baslik)
+        {
+            d.Clear(); d.EnableInClassList("renk--secili", on);
+            Color zemin = o.renk != null ? Kit.Hex(o.renk) : Kit.Hex("#22343a");
+            bool acikZemin = o.renk != null && zemin.r * .3f + zemin.g * .59f + zemin.b * .11f > .55f; Color ik = acikZemin ? Color.black : Color.white;
+            if (on) d.Add(Ikon(Ikonlar.Tik, 18, ik));
+            // 2026-11-23 inceleme (fikir 02:06 #2): kilitli karo %55 soluktu; açılacak rengin gerçeği görünmüyor, desen üstündeki kilit
+            // yazısı okunmuyordu. Karo tam renkte; kilit + koşul alt kenarda koyu hapta (her zeminde aynı beyaz yazı, açık kontur).
+            // Kilitli/açık ayrımı soluklukla değil hapla (ui-ux-pro #31). Hap küçük: desenin üst yarısı görünür kalır.
+            else if (!o.acik)
+            {
+                var hp = new VisualElement(); hp.AddToClassList("renk-kilit-hap"); hp.pickingMode = PickingMode.Ignore; d.Add(hp);
+                hp.Add(Ikon(Ikonlar.Kilit, 10, Color.white)); if (!string.IsNullOrEmpty(o.kisa)) { var sy = Yazi(o.kisa, 10, "renk-kilit-yazi"); sy.style.color = Color.white; hp.Add(sy); }
+            }
+            else if (o.renk == null) d.Add(Ikon(Ikonlar.Kisi, 18, SOLUK));
+            if (o.parla) { d.AddToClassList("renk--isin"); var pz = Yazi("◆", 11, "renk-isin-isaret"); pz.style.color = ik; d.Add(pz); }
+            Erisim.Etiket(d, baslik + ", " + L.T(o.ad) + (o.parla ? ", " + L.T("parlar") : "") + (o.acik ? "" : ", " + o.neden), "dugme", on, !o.acik);
+        }
+        void OrnekDokun(VisualElement s, Label g, List<Ornek> l, Ornek o, VisualElement d, string baslik, System.Action<string> sec, bool yerinde)
+        {
+            if (d.ClassListContains("renk--secili")) return;   // seçili renge dokunuş hiçbir şey kurmaz (2026-11-20, fikir 07:06 #1b)
+            int kg = KombinGiyiliNo(); sec(o.id); Tik(); root.vitrin.Yenile();
+            if (!yerinde || KombinGiyiliNo() != kg) { SoyunmaGovdeKur(true); return; }
+            for (int i = 0; i < s.childCount && i < l.Count; i++) if (s[i].ClassListContains("renk--secili")) OrnekIc(s[i], l[i], false, baslik);
+            OrnekIc(d, o, true, baslik);
+            kilitBaslik.Remove(g); g.text = baslik + " · " + L.T(o.ad); Erisim.Etiket(g, g.text, "baslik");
+            RenkSonrasiKirli();
+        }
+        // 2026-11-23 inceleme (fikir 02:06 #7): kilitli karoya dokunuş ölüydü (ses, titreşim, yazı yok; §6.2 her dokunuş tek davranış).
+        // Kilit sesi + kısa yatay sallanma (hareketi azaltta yok) + grup başlığı 1,5 sn koşulu yazar; seçim değişmez. Koşul erişim
+        // etiketinde zaten okunuyor. Yalnız translate ve metin: yerleşim ve ayırma yok.
+        readonly Dictionary<Label, string> kilitBaslik = new Dictionary<Label, string>();
+        void KilitDokun(Label g, VisualElement d, Ornek o, string baslik)
+        {
+            Tik(d, "kilit");
+            if (!Ayar.reduce)
+            {
+                int[] dx = { 4, -4, 3, 0 }; for (int i = 0; i < dx.Length; i++) { int x = dx[i]; d.schedule.Execute(() => d.style.translate = new Translate(x, 0, 0)).StartingIn(i * 50); }
+                d.schedule.Execute(() => d.style.translate = StyleKeyword.Null).StartingIn(dx.Length * 50);
+            }
+            // asıl başlık bekletilir (userData erişim bilgisinin, kullanılmaz); açık karoya dokunulursa OrnekDokun siler, geri yazılmaz
+            var kopuk = new List<Label>(); foreach (var kv in kilitBaslik) if (kv.Key.panel == null) kopuk.Add(kv.Key); foreach (var k in kopuk) kilitBaslik.Remove(k);   // sayfa yeniden kurulduysa zamanlayıcısı çalışmamış başlıklar
+            if (!kilitBaslik.ContainsKey(g)) kilitBaslik[g] = g.text;
+            g.text = baslik + " · " + o.neden; string yazilan = g.text;
+            g.schedule.Execute(() => { string a; if (g.text == yazilan && kilitBaslik.TryGetValue(g, out a)) { g.text = a; kilitBaslik.Remove(g); } }).StartingIn(1500);
+        }
+        // SoyunmaGovdeKur'un kurmadığı öteki sekme yine kirli kalır (Atölye ve Dolap aynı Ayar'ı okur).
+        void RenkSonrasiKirli() { kirli[(int)(gez.sekme == Sekme.Atolye ? Sekme.Soyunma : Sekme.Atolye)] = true; }
 
         void RenkSira(VisualElement c, string ad, string k)
         {
-            c.Add(Grup(L.T(ad) + " · " + L.T(Vitrin.RAK_AD[Ayar.RGOR[k]]))); var s = Satir("renkler"); c.Add(s);
+            var g = Grup(L.T(ad) + " · " + L.T(Vitrin.RAK_AD[Ayar.RGOR[k]])); c.Add(g); var s = Satir("renkler"); c.Add(s);
             foreach (var id in Vitrin.RAK_SIRA)
             {
-                bool on = Ayar.RGOR[k] == id; string rid = id;
-                var d = new VisualElement(); d.AddToClassList("renk"); if (on) d.AddToClassList("renk--secili"); d.style.backgroundColor = Kit.Hex(Vitrin.RAK_RENK[id]);
-                if (on) d.Add(Ikon(Ikonlar.Tik, 18, id == "beyaz" || id == "limon" ? Color.black : Color.white));
-                // Seçili renge dokunuş hiçbir şey kurmaz (2026-11-20 inceleme, fikir 07:06 #1b; OrnekSira'daki `!on` ile aynı).
-                if (!on) d.AddManipulator(new Clickable(() => { Ayar.RGOR[k] = rid; Ayar.KaydetSonra(); Tik(); root.vitrin.Yenile(); SoyunmaGovdeKur(true); }));
-                Erisim.Etiket(d, L.T(ad) + ", " + L.T(Vitrin.RAK_AD[id]), "dugme", on); s.Add(d);
+                string rid = id;
+                var d = new VisualElement(); d.AddToClassList("renk"); d.style.backgroundColor = Kit.Hex(Vitrin.RAK_RENK[id]);
+                RenkIc(d, ad, id, Ayar.RGOR[k] == id);
+                var dd = d; d.AddManipulator(new Clickable(() => RenkDokun(s, g, ad, k, rid, dd)));
+                s.Add(d);
             }
+        }
+        void RenkIc(VisualElement d, string ad, string id, bool on)
+        {
+            d.Clear(); d.EnableInClassList("renk--secili", on);
+            if (on) d.Add(Ikon(Ikonlar.Tik, 18, id == "beyaz" || id == "limon" ? Color.black : Color.white));
+            Erisim.Etiket(d, L.T(ad) + ", " + L.T(Vitrin.RAK_AD[id]), "dugme", on);
+        }
+        void RenkDokun(VisualElement s, Label g, string ad, string k, string id, VisualElement d)
+        {
+            // Seçili renge dokunuş hiçbir şey kurmaz (2026-11-20 inceleme, fikir 07:06 #1b; OrnekSira ile aynı).
+            if (d.ClassListContains("renk--secili")) return;
+            int kg = KombinGiyiliNo(); Ayar.RGOR[k] = id; Ayar.KaydetSonra(); Tik(); root.vitrin.Yenile();
+            if (KombinGiyiliNo() != kg) { SoyunmaGovdeKur(true); return; }
+            for (int i = 0; i < s.childCount && i < Vitrin.RAK_SIRA.Length; i++) if (s[i].ClassListContains("renk--secili")) RenkIc(s[i], ad, Vitrin.RAK_SIRA[i], false);
+            RenkIc(d, ad, id, true);
+            g.text = L.T(ad) + " · " + L.T(Vitrin.RAK_AD[id]); Erisim.Etiket(g, g.text, "baslik");
+            RenkSonrasiKirli();
         }
     }
 }

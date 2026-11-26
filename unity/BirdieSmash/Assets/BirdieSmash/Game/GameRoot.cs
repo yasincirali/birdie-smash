@@ -110,7 +110,7 @@ namespace BirdieSmash.Game
             sfx.sakin = () => hud.PerdeKapali || ekran != Ekran.Oyun || paused || match == null || match.between || match.s == null;
             sfx.derinSakin = () => hud.PerdeKapali || ekran == Ekran.Menu && Kalite.MenuDurgun;   // ek ses sırası (Sfx.IsitIsle notu)
             Basarim.Esitle(Ayar.kariyer, Ayar.bestRally); Basarim.Giris(Ayar.kariyer);
-            Online.Dinle();   // yalnız gizli tanı katmanı açıkken: Game Center girişi + gelen arkadaş daveti
+            Online.Dinle();   // Game Center girişi + gelen arkadaş daveti (2026-11-21: herkese açık; giriş Basarim ile aynı oturum)
             match = new Match(1, new MatchOptions { easy = Ayar.easy, target = Ayar.target, saha = Ayar.saha });   // menü arkasında duran sahne
             Kur(match);
             AudioListener.volume = Ayar.ses ? 1 : 0;
@@ -242,9 +242,11 @@ namespace BirdieSmash.Game
         {
             var ot = Online.oturum; if (ot == null || ot.durum != Oturum.Durum.Hazir) return;
             var o = Secenek(false);
-            // İki telefonda aynı kural (oyuncunun zorluk ayarı sayılmaz): 11 sayı, koşu oyuncuda, koşu yardımı açık (online raporu
-            // "Skill gelişimi ve adalet"). Ekipman gücünü Match nötrler (eşit güç, yasin 2026-11-07). Rakip yapay zekâ ayarları boşta.
-            o.easy = false; o.kosuYardim = true; o.target = 11; o.yardim = 0; o.uzak = true; o.uzakServis = ot.servisBende ? "me" : "op";
+            // İki telefonda aynı kural (oyuncunun zorluk ayarı sayılmaz): 11 sayı. Ekipman gücünü Match nötrler (eşit güç, yasin
+            // 2026-11-07). Rakip yapay zekâ ayarları boşta. 2026-11-21 (yasin: hareket "en baştan assisted, semi-assisted ve pro"):
+            // koşuyu oyuncunun kendi seçimi yapar (Yardımlı oyuncu otomatik koşar); yardım güç vermez, Match uzak maçta kolay modun
+            // erişim, ivme ve vuruş notu kolaylığını kapatır (Match.KE). Eskiden herkes Yarı yardımlı oynuyordu.
+            o.easy = Ayar.hareket == 0; o.kosuYardim = Ayar.hareket == 1; o.sert = false; o.target = 11; o.yardim = 0; o.uzak = true; o.uzakServis = ot.servisBende ? "me" : "op";
             // Rakibin adı kartından (Game Center takma adı). Görünüşü henüz varsayılan tarz figürü: kart görünüş taşımıyor.
             var st = Match.STIL[Match.STIL_SIRA[0]].Clone(); st.isim = ot.rakip != null && !string.IsNullOrEmpty(ot.rakip.ad) ? ot.rakip.ad : L.T("Rakip");
             o.stil = st;
@@ -454,7 +456,7 @@ namespace BirdieSmash.Game
 #endif
         }
 
-        void OnApplicationFocus(bool f) { if (f) Ayar.SistemOku(); else if (Application.isMobilePlatform) Duraklat(); }   // dönüşte sistem "Hareketi Azalt" ve yazı boyutu değişmiş olabilir
+        void OnApplicationFocus(bool f) { if (f) { Ayar.SistemOku(); if (ui != null) ui.ArkadasDonus(); } else if (Application.isMobilePlatform) Duraklat(); }   // dönüşte sistem "Hareketi Azalt" ve yazı boyutu değişmiş olabilir
 
         void EndMatch(bool won)
         {
@@ -622,7 +624,7 @@ namespace BirdieSmash.Game
             hedef = odul != null ? Ayar.HedefBilgi() : new Hedef.Bilgi(); int t1 = Ayar.gear.eko.tuy;
             hedefHazir = hedef.gecerli && Hedef.YeniHazir(hedef.fiyat, t1 - odul.tuy, t1);
         }
-        bool YukseltAlinir(int seviye)
+        public bool YukseltAlinir(int seviye)
         {
             foreach (var y in Gear.YUVA) { int sv = Ayar.gear.eko.sv[y.k]; if (sv < 10 && Ayar.gear.eko.tuy >= Gear.YUK_FIYAT[sv - 1] && seviye >= Gear.YUK_SV[sv - 1] || Ayar.gear.AlinabilirVar(y.m)) return true; }
             return false;
@@ -819,7 +821,19 @@ namespace BirdieSmash.Game
             if (jx.Length < n) { int m = Mathf.NextPowerOfTwo(n); jx = new float[m]; jy = new float[m]; jt = new float[m]; }
             float[] xs = jx, ys = jy, ts = jt;
             for (int i = 0; i < n; i++) { xs[i] = tr[i].x; ys[i] = tr[i].y; ts[i] = tr[i].z; }
-            Aldatma.JestOku(xs, ys, ts, n, input.p0.x, input.p0.y, input.t0, ref si); return si;
+            Aldatma.JestOku(xs, ys, ts, n, input.p0.x, input.p0.y, input.t0, ref si); return Yonlu(si);
+        }
+        // Kort yönü (2026-11-22, yasin: "nereye yapıldıysa vuruş o directiona"): kaydırma ekranda, hedef kortta. Topun zemindeki
+        // izdüşümünden parmak yönünde 8% ekran boyu ilerideki noktanın kort karşılığı alınır; perspektif bu yüzden hesaba girer
+        // (kenardan "dümdüz yukarı" kortta da dümdüz olur). Aşağı/yana çekişte (ileri bileşen yok) Core eski ekran oranını kullanır.
+        SwipeInput Yonlu(SwipeInput si)
+        {
+            var M = match; float l = Mathf.Sqrt(si.dx * si.dx + si.dy * si.dy); if (M.s == null || si.dy > -1 || l < 1) return si;
+            var g = cam.WorldToScreenPoint(Kit.W(M.s.x, M.s.y, 0)); if (g.z <= 0) return si;
+            float k = Screen.height * .08f / l; Vector2 c;   // ref y aşağı artar, ekran y yukarı: dy işaret değiştirir
+            if (!CourtPoint(new Vector2(g.x + si.dx * k, g.y - si.dy * k), out c)) return si;
+            float ileri = M.s.y - c.y; if (ileri < .05f) return si;
+            si.kortR = (c.x - M.s.x) / ileri; si.kortVar = true; return si;
         }
         bool Curved()
         {
@@ -854,7 +868,7 @@ namespace BirdieSmash.Game
             var a = M.OgrA(); if (a == null) return;
             if (a.servis != null) { if (M.s != null || M.svPending != null) return; var q = input.tr[input.tr.Count - 1]; float ddx = q.x - input.p0.x, ddy = q.y - input.p0.y; if (-ddy > 30) tip = Match.ServisTuru(ddx, ddy, sp); return; }
             Reach I; if (M.s == null || !M.ReachInfo(out I)) return;
-            var pl = M.ShotPlan(new SwipeInput { dx = dx, dy = dy, speed = sp, curved = Curved() }, I, true); tip = pl.type;
+            var pl = M.ShotPlan(Yonlu(new SwipeInput { dx = dx, dy = dy, speed = sp, curved = Curved() }), I, true); tip = pl.type;
         }
 
         // Aktif parmak (2026-11-07 inceleme, fikir 14:06 #1): kaydırma fingerId ile izlenir. Eskiden GetTouch(0) okunuyordu; 0. dokunuş
@@ -938,7 +952,7 @@ namespace BirdieSmash.Game
                     input.minD = Mathf.Min(input.minD, d / R);
                     float dx, dy, speed; SwipeVec(out dx, out dy, out speed);
                     // Hedef önizleme: parmak ekrandayken "şu an bıraksan top nereye düşer" (HTML M.preview)
-                    if (far > 14 && speed > .1f) { Reach I; if (M.ReachInfo(out I)) { var pl = M.ShotPlan(new SwipeInput { dx = dx, dy = dy, speed = speed, curved = Curved() }, I, true); previewOn = true; previewAt = new Vector2(Mathf.Clamp(pl.tx, Court.SL, Court.SR), Court.NET - pl.d); previewTip = pl.type; } }
+                    if (far > 14 && speed > .1f) { Reach I; if (M.ReachInfo(out I)) { var pl = M.ShotPlan(Yonlu(new SwipeInput { dx = dx, dy = dy, speed = speed, curved = Curved() }), I, true); previewOn = true; previewAt = new Vector2(Mathf.Clamp(pl.tx, Court.SL, Court.SR), Court.NET - pl.d); previewTip = pl.type; } }
                     // Topun üstünden geçmek şart değil: pencere açıkken belirgin kaydırma (70 px, kavis için yer) vuruştur; topu kesmek mükemmeli verir.
                     bool durdu = M.ogr != null && M.ogr.dur;
                     if (!durdu && (d <= R || (far > 70 * Ayar.KaydirmaK && speed > .45f * Ayar.KaydirmaK)))

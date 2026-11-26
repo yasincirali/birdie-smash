@@ -22,13 +22,17 @@ namespace BirdieSmash.Game
         // dallar bu adları kullanıyor): CAMGOBEGI = TURUNCU = seçili/şimdi/ilerleme; LIMON yalnız "sen"; MERCAN = rakip (değeri
         // orkide, birincil eylemin turuncu ailesinden ayrılsın diye; neden ve ölçü menu_stil.uss başında); KOYU = sıcak
         // koyu yazı/simge (turuncu ve limon üstünde Lc 63 / 86); MUREKKEP = zemin.
-        public static readonly Color LIMON = Kit.Hex("#C9EE4B"), CAMGOBEGI = Kit.Hex("#FFA04D"), GOK = Kit.Hex("#8FC6FF"), MERCAN = Kit.Hex("#E99BFF"), ALTIN = Kit.Hex("#F9D272"),
-            SOLUK = Kit.Hex("#CBB8C5"), KOYU = Kit.Hex("#2A0F12"), MUREKKEP = Kit.Hex("#1A1221"), YAZI = Kit.Hex("#F3EAEE");
-        public static readonly Color TURUNCU = Kit.Hex("#FFA04D"), CTA_MUREKKEP = Kit.Hex("#1E0A0C"), CTA_OK = Kit.Hex("#FF8A57"), RAKIP = Kit.Hex("#E99BFF");
+        // 2026-11-22 Stadyum Pop (yasin: "stadyum pop tan devam edelim, ama ai unslop olmalı"): değerler menu_stil.uss kökü.
+        // Adlar yine aynı (başka dallar kullanıyor). TURUNCU / CAMGOBEGI artık sarı #FFC93C: "bas, şimdi, seçili" tek vurgu.
+        // MUREKKEP = kort mavisi zemin; KOYU = mürekkep #1B2340 (sarı üstünde 10:1); SEKME_SOLUK beyaz sekme çubuğunda soluk simge.
+        public static readonly Color LIMON = Kit.Hex("#C9EE4B"), CAMGOBEGI = Kit.Hex("#FFC93C"), GOK = Kit.Hex("#A9D6FF"), MERCAN = Kit.Hex("#E99BFF"), ALTIN = Kit.Hex("#F9D272"),
+            SOLUK = Kit.Hex("#D6E2FF"), KOYU = Kit.Hex("#1B2340"), MUREKKEP = Kit.Hex("#2659BE"), YAZI = Kit.Hex("#FFFFFF");
+        public static readonly Color TURUNCU = Kit.Hex("#FFC93C"), CTA_MUREKKEP = Kit.Hex("#1B2340"), CTA_OK = Kit.Hex("#FFC93C"), RAKIP = Kit.Hex("#E99BFF"), SEKME_SOLUK = Kit.Hex("#5A6690");
         // Birincil eylem degradesi (yön C: taslakta yatay #FF7A5C → #FFA04D). Dokuda dikey, çünkü 9 dilimde yan dilimler
         // sabit kalır, orta gerilir: dikey degrade her genişlikte aynı görünür. Alt ton #FF7A5C değil #FF9458: alt satır
         // (14–15 pt) koyu yazı orada durur; #FF7A5C üstünde Lc 53 (sınırın altı), #FF9458 üstünde 60,7, altı satırın ortasında 62.
-        public static readonly Color CTA_UST = Kit.Hex("#FFB25E"), CTA_ORTA = Kit.Hex("#FFA04D"), CTA_ALT = Kit.Hex("#FF9458");
+        // 2026-11-22 Stadyum Pop: sarı, üstte bir tık açık; alt dudak Egik(golge) ile koyu sarı (3B tıknaz düğme, mürekkep konturu USS).
+        public static readonly Color CTA_UST = Kit.Hex("#FFD966"), CTA_ORTA = Kit.Hex("#FFC93C"), CTA_ALT = Kit.Hex("#F7BA2C");
 
         public const float YAZI_MIN = 11;
         // Avatar içi (2026-10-31): karakter portresi (Portre) varsa dairenin içinde, yoksa eski insan simgesi.
@@ -110,11 +114,18 @@ namespace BirdieSmash.Game
         VisualElement Dugme(string t, Action a, string cls = null, string alt = null, float px = 16)
         {
             var d = new VisualElement(); d.AddToClassList("dugme"); if (cls != null) d.AddToClassList(cls);
+            // 2026-11-22 inceleme (fikir 17:06 #2): sondaki "  ›" / "  ↗" yazının parçasıydı, VoiceOver her satırda oku da okuyordu
+            // ve iki ok kalıbı vardı (Nasıl oynanır satırları oku ayrı öğe çiziyor). Ok burada ayrılır: sağda dokunulmaz ayrı öğe,
+            // erişim adı oksuz; "↗" dış bağlantı demek, etikete "Tarayıcıda açılır" kendiliğinden eklenir. Çağrı yerleri aynı.
+            string ok = null;
+            if (t != null && t.Length > 3 && (t.EndsWith("  ›") || t.EndsWith("  ↗"))) { ok = t.Substring(t.Length - 1); t = t.Substring(0, t.Length - 3); d.AddToClassList("dugme--ok"); }
             var ic = new VisualElement(); ic.AddToClassList("dugme-ic"); ic.pickingMode = PickingMode.Ignore; d.Add(ic);
             ic.Add(Yazi(t, px, "dugme-yazi"));
             if (!string.IsNullOrEmpty(alt)) ic.Add(Yazi(alt, px * .78f, "dugme-alt"));
-            if (a != null) d.AddManipulator(new Clickable(() => { Tik(); a(); }));   // 2026-11-06: çip ve büyük düğme gibi her düğme dokunuşta ince tık (hareketi azaltta Hap susar); 2026-11-19 ses de burada (Tik)
-            Erisim.Etiket(d, string.IsNullOrEmpty(alt) ? t : t + ", " + alt, "dugme", false, a == null);
+            if (ok != null) { var ol = Yazi(ok, px + 2, "dugme-ok"); ol.pickingMode = PickingMode.Ignore; d.Add(ol); }
+            if (a != null) d.AddManipulator(new Clickable(() => { Tik(d); a(); }));   // 2026-11-06: çip ve büyük düğme gibi her düğme dokunuşta ince tık (hareketi azaltta Hap susar); 2026-11-19 ses de burada (Tik)
+            string et = string.IsNullOrEmpty(alt) ? t : t + ", " + alt; if (ok == "↗") et += ". " + L.T("Tarayıcıda açılır");
+            Erisim.Etiket(d, et, "dugme", false, a == null);
             return d;
         }
         VisualElement Pasif(string t, string alt = null) { var d = Dugme(t, null, "dugme--pasif", alt); return d; }
@@ -123,12 +134,20 @@ namespace BirdieSmash.Game
         {
             var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("cip"); if (secili) d.AddToClassList("cip--secili");
             var ic = new VisualElement(); ic.AddToClassList("cip-ic"); ic.pickingMode = PickingMode.Ignore; d.Add(ic);
-            if (secili) { var tk = Ikon(Ikonlar.Tik, 16, TURUNCU); tk.AddToClassList("cip-tik"); ic.Add(tk); }   // 2026-11-07: seçili dili turuncu çerçeve + ✓ (krem dolgu kalktı); segment sekmesinde ✓ gizli (USS)
+            if (secili) { var tk = Ikon(Ikonlar.Tik, 16, KOYU); tk.AddToClassList("cip-tik"); ic.Add(tk); }   // 2026-11-07: seçili dili turuncu çerçeve + ✓ (krem dolgu kalktı); segment sekmesinde ✓ gizli (USS); 2026-11-22 Stadyum Pop: sarı dolgu üstünde mürekkep ✓
             var yz = new VisualElement(); yz.AddToClassList("cip-yazilar"); yz.pickingMode = PickingMode.Ignore; ic.Add(yz);
             yz.Add(Yazi(t, 14, "dugme-yazi")); if (!string.IsNullOrEmpty(alt)) yz.Add(Yazi(alt, 11.5f, "dugme-alt"));
-            if (a != null) d.AddManipulator(new Clickable(() => { Tik(); a(); }));
+            if (a != null) d.AddManipulator(new Clickable(() => { Tik(d); a(); }));
             Erisim.Etiket(d, string.IsNullOrEmpty(alt) ? t : t + ", " + alt, "dugme", secili, a == null);
             Sigdir(d); return d;
+        }
+        // Çipin seçili hâlini yerinde yazar (çerçeve sınıfı, ✓, erişim durumu); sayfa kurulmadan aç/kapa için (2026-11-22, fikir 12:06 #6).
+        void CipDurum(VisualElement d, bool secili)
+        {
+            d.EnableInClassList("cip--secili", secili); var ic = d.Q(className: "cip-ic"); var tk = d.Q(className: "cip-tik");
+            if (secili && tk == null && ic != null) { tk = Ikon(Ikonlar.Tik, 16, KOYU); tk.AddToClassList("cip-tik"); ic.Insert(0, tk); }
+            else if (!secili && tk != null) tk.RemoveFromHierarchy();
+            var eb = d.userData as ErisimBilgi; if (eb != null) eb.secili = secili;
         }
         // Aç/kapa satırı (2026-11-10 inceleme, fikir 02:05 #2): Ayarlar'da Ses/Müzik/Titreşim/Hareket tek seçimli çiplerle aynı
         // görünüyordu (turuncu çerçeve + ✓) ve çip metni durumla değişiyordu ("Ses açık" ↔ "Ses kapalı"): eylem mi durum mu
@@ -276,6 +295,8 @@ namespace BirdieSmash.Game
         // Yatay sıra; varsayılan sınıf "secim" (çip sırası: büyük yazıda alt alta dizilir), başka sıralar kendi sınıfını verir.
         VisualElement Satir(string cls = "secim") { var s = new VisualElement(); s.AddToClassList("satir"); if (cls != null) s.AddToClassList(cls); return s; }
         Label Grup(string t) { var l = Yazi(t, 13, "grup"); Erisim.Etiket(l, t, "baslik"); return l; }
+        // Başlık + sağda sayaç (2026-11-21 inceleme, fikir 17:06 #5/#6): Kupa rafı kalıbı; Profil'de aynı tür bilgi tek biçimde.
+        VisualElement GrupSatir(string t, VisualElement sag) { var r = Satir("arali"); r.AddToClassList("grup-satir"); r.Add(Grup(t)); r.Add(sag); return r; }
         VisualElement Bosluk(float pt) { var b = new VisualElement(); b.style.height = pt; b.pickingMode = PickingMode.Ignore; return b; }
         // İlerleme çubuğu (XP, basamak): yüzde 0..1.
         VisualElement Cubuk(float oran, Color c, float h = 8)
@@ -315,7 +336,10 @@ namespace BirdieSmash.Game
     // Koddan çizilen simgeler (beyaz + alfa; boya Image.tintColor). 96 px, 2×2 örnekleme ile kenar yumuşatma.
     public static class Ikonlar
     {
-        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Tisort, Gradyan, YildizDolu, YildizBos, Yukari, Asagi, Yuz, Ayak, Tutus, Solma, Buyut;
+        public static Texture2D Tik, Geri, Ileri, Halka, Disli, Kilit, Oyna, Kupa, Raket, Kisi, Tisort, Gradyan, YildizDolu, YildizBos, Yukari, Asagi, Yuz, Ayak, Tutus, Solma, Buyut, Arkadas, Arti;
+        // 2026-11-23 alt bant (yasin: "ikonlar daha minimalist olabilir"): sekme simgeleri tek kalınlıkta çizgi (iOS SF Symbols
+        // kalıbı); dolu simgeler menünün içinde (Oyna düğmesi, karolar) kalır. Önizleme menu-ux-ui-2026-11-23/sekme_ikon.png.
+        public static Texture2D SekmeOyna, SekmeKupa, SekmeTisort, SekmeKisi, SekmeRaket;
         // 2026-10-26 Yayın Gecesi: simgeler (tüy, şimşek, hedef, güneş, çarpı, açık kilit) ve şekil dokuları (eğik düğme,
         // yayın plakası, etiket şeridi, basamak çizgisi, altın kutucuk, ışık süpürmesi, ışın). Hepsi 2× çözünürlükte (1 pt =
         // 2 doku pikseli; USS'te -unity-slice-scale: 0.5), açılışta bir kez; her biri birkaç KB.
@@ -365,6 +389,33 @@ namespace BirdieSmash.Game
                 bool bas = (x * x + (y - .42f) * (y - .42f)) < .29f * .29f; float sx = x / .72f, sy = (y + .82f) / .72f;
                 bool omuz = sx * sx + sy * sy < 1 && y > -.86f && y < .02f; return bas || omuz;
             }, 0, .08f);
+            const float W = .075f;
+            System.Func<float, float, float, float, float, bool> Hal = (x, y, cx, cy, r) => Mathf.Abs(Mathf.Sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy)) - r) < W;
+            SekmeOyna = Ciz((x, y) => Hat(x, y, W, true, -.38f, .58f, .6f, 0, -.38f, -.58f));
+            SekmeKupa = Ciz((x, y) => (Mathf.Abs(x) > .46f && Hal(Mathf.Abs(x), y, .6f, .5f, .16f)) || (y < .28f && Hal(x, y, 0, .28f, .46f))
+                || Hat(x, y, W, false, -.46f, .28f, -.46f, .72f, .46f, .72f, .46f, .28f) || Cizgi(x, y, 0, -.18f, 0, -.56f, W) || Cizgi(x, y, -.3f, -.62f, .3f, -.62f, W));
+            SekmeTisort = Ciz((x, y) => Hat(x, y, W, false, -.2f, .64f, -.44f, .64f, -.8f, .3f, -.6f, .08f, -.42f, .2f, -.42f, -.7f, .42f, -.7f, .42f, .2f, .6f, .08f, .8f, .3f, .44f, .64f, .2f, .64f)
+                || (y < .64f && Hal(x, y, 0, .64f, .2f)));
+            SekmeKisi = Ciz((x, y) => Hal(x, y, 0, .36f, .25f) || (y > -.74f && Hal(x, y, 0, -.74f, .6f)));
+            SekmeRaket = Ciz((x, y) =>
+            {   // 34° eğik: dik raket büyüteç gibi okunuyordu (önizleme); iki tel çizgisi raketi söyler
+                float c = Mathf.Cos(-.6f), sn = Mathf.Sin(-.6f), rx = x * c - y * sn, ry = x * sn + y * c;
+                float ex = rx / .36f, ey = (ry - .3f) / .48f, e = Mathf.Sqrt(ex * ex + ey * ey);
+                return Mathf.Abs(e - 1) * .4f < W || Cizgi(rx, ry, 0, -.18f, 0, -.88f, W) || (e < 1 && (Mathf.Abs(rx) < .045f || Mathf.Abs(ry - .3f) < .045f));
+            });
+            // Arkadaş maçı (2026-11-21): iki kişi, arkadaki biraz küçük ve sağda (Kisi'nin biçimi; arada boşluk ki iki figür okunur).
+            Arkadas = Ciz((x, y) =>
+            {
+                System.Func<float, float, float, bool> kisi = (cx, cy, k) =>
+                {
+                    float px = (x - cx) / k, py = (y - cy) / k; bool bas = (px * px + (py - .42f) * (py - .42f)) < .29f * .29f;
+                    float sx = px / .72f, sy = (py + .82f) / .72f; return bas || (sx * sx + sy * sy < 1 && py > -.86f && py < .02f);
+                };
+                bool on = kisi(-.26f, -.06f, .78f), arka = kisi(.36f, .08f, .66f);
+                bool kenar = kisi(-.26f, -.06f, .9f) && !on;   // öndekinin çevresinde ince boşluk: arkadaki onun arkasında kalır
+                return on || (arka && !kenar && !on);
+            });
+            Arti = Ciz((x, y) => (Mathf.Abs(x) < .12f && Mathf.Abs(y) < .66f) || (Mathf.Abs(y) < .12f && Mathf.Abs(x) < .66f));
             // Kariyer yıldızları (2026-10-26): alınan dolu, alınmayan yalnız çerçeve (renk körlüğü: biçim farkı, renk değil).
             YildizDolu = Ciz((x, y) => Yildiz(x, y, .92f)); YildizBos = Ciz((x, y) => Yildiz(x, y, .92f) && !Yildiz(x, y, .58f));
             // Stat çubuğunun artı/eksi işareti (2026-10-26, ekipman v2 ▲ ▼): glif değil çizim (yazı tipinde olmayabilir); yönü
@@ -397,7 +448,7 @@ namespace BirdieSmash.Game
             // Alt sayfa kaydırma solması (2026-11-07 UX2): kart renginde (#261A30) aşağı doğru opaklaşan 1×32 şerit; içerik
             // sürüyorsa listenin altında durur ("Hard" yarım kesik görünüp hata sanılıyordu, Saha bölümü fark edilmiyordu).
             Solma = new Texture2D(1, 32, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-            for (int i = 0; i < 32; i++) Solma.SetPixel(0, i, new Color(0x26 / 255f, 0x1A / 255f, 0x30 / 255f, Mathf.SmoothStep(1, 0, i / 31f)));
+            for (int i = 0; i < 32; i++) Solma.SetPixel(0, i, new Color(0x1A / 255f, 0x3F / 255f, 0x95 / 255f,   /* 2026-11-22 Stadyum Pop: alt sayfa #1A3F95 */ Mathf.SmoothStep(1, 0, i / 31f)));
             Solma.Apply(false, true);
             // Oyna sekmesinin zemini: USS'te gradyan yok. 2026-10-26: renk ve duraklar yön A'ya göre YayinDokulari'nda.
             Gradyan = new Texture2D(1, 64, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
@@ -407,8 +458,8 @@ namespace BirdieSmash.Game
         // ---- Yayın Gecesi dokuları ----
         // Cam plaka (2026-11-14 gece, docs/arayuz_tasarim_dili.md §6): menu_stil.uss --cam2 / --cam ile aynı iki değer; doku
         // dikey degrade (üst açık, alt koyu) ve yarı saydam, salonun ışığı arkadan sezilir. Opaklık .84/.80: yazı okunur kalır.
-        static readonly Color CAM_UST = new Color(66 / 255f, 48 / 255f, 80 / 255f, .84f), CAM_ALT = new Color(48 / 255f, 34 / 255f, 60 / 255f, .80f);
-        static readonly Color NAVY = Kit.Hex("#261A30"), NAVY2 = Kit.Hex("#33233F"), INK = Kit.Hex("#1A1221");   // 2026-10-27 yön C: kart, düğme, zemin (adlar A'dan)
+        static readonly Color CAM_UST = new Color(34 / 255f, 84 / 255f, 190 / 255f, .90f), CAM_ALT = new Color(18 / 255f, 46 / 255f, 126 / 255f, .86f);   // 2026-11-22 Stadyum Pop: lacivert-mavi panel
+        static readonly Color NAVY = Kit.Hex("#1B4197"), NAVY2 = Kit.Hex("#1E4DB3"), INK = Kit.Hex("#163C8E");   // 2026-11-22 Stadyum Pop: INK = Oyna zemininin alt koyu mavisi   // 2026-10-27 yön C: kart, düğme, zemin (adlar A'dan)
         static void YayinDokulari()
         {
             // Oyna zemini (yön A a-fade): üstte koyu (durum çubuğu ve üst şerit okunsun), ortada saydama yakın (afiş ve salon),
@@ -442,7 +493,8 @@ namespace BirdieSmash.Game
             // 2026-10-27 yön C: limon yerine gün batımı degradesi (UiKok.CTA_UST/ORTA/ALT, yukarıda); ad geriye uyum için aynı.
             // 2026-10-29 Tüycükler: Egik artık eğik değil, yuvarlak köşeli jöle düğme (aşağıda); ad ve dilimler geriye uyum için aynı.
             // 2026-11-06 ince kenar (yasin: "profesyonel ve lightweight"): alttaki 5 pt koyu dudak kalktı (golge 0); derinlik degradeden.
-            EgikLimon = Egik(96, 160, 28, UiKok.CTA_UST, UiKok.CTA_ORTA, UiKok.CTA_ALT, 0);
+            // 2026-11-22 Stadyum Pop: koyu sarı alt dudak geri geldi (boyun %10'u; 3B tıknaz düğme), kontur USS'te mürekkep.
+            EgikLimon = Egik(96, 160, 28, UiKok.CTA_UST, UiKok.CTA_ORTA, UiKok.CTA_ALT, 16);
             // Etiket şeridi (a-kick "SIRADAKİ MAÇ"): düz limon, küçük eğim (−12°), 22 pt.
             // 2026-10-27 yön C: dolgusuz altın çerçeve + altın yazı (C taslağı .etk span); ekranda tek doygun dolgu OYNA kalsın.
             // 2026-10-29 Tüycükler: eğik şerit yerine hap (yarıçap 20 doku pikseli; USS .serit yan dilimi 22). Dolgusuz altın çerçeve aynı.
@@ -492,7 +544,7 @@ namespace BirdieSmash.Game
             // Raket izi (perde P_IZ #F9D272): soldan sağa belirip uca doğru parlayan altın çizgi; bant kenarının yanında.
             AltinIz = Sekil(128, 8, (x, y, ic) => true, (x, y) => { float k = x / 128f, d = 1 - Mathf.Abs(y - 4) / 4f; return new Color(UiKok.ALTIN.r, UiKok.ALTIN.g, UiKok.ALTIN.b, k * k * Mathf.Clamp01(d * 1.6f)); }, Color.clear, 0);
         }
-        static readonly Color LIMON_D = Kit.Hex("#FFA04D");   // 2026-10-27 yön C: şimdiki basamak deseni turuncu (seçili/şimdi rengi); ad A'dan
+        static readonly Color LIMON_D = Kit.Hex("#FFC93C");   // 2026-11-22 Stadyum Pop sarı   // 2026-10-27 yön C: şimdiki basamak deseni turuncu (seçili/şimdi rengi); ad A'dan
         // Yuvarlak köşeli kutu (r doku pikseli) + ince çerçeve: IMGUI maç sonu kartları ve düğmeleri için (GUIStyle.border = r+2,
         // 9 dilim). IMGUI'de 1 doku pikseli = 1 ekran pikseli olduğu için Hud ölçek değişince yeniden üretir.
         public static Texture2D Kutu(int r, Color dolgu, Color cerceve, float kalin)
@@ -567,6 +619,13 @@ namespace BirdieSmash.Game
                 if ((yi > y) != (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) ic = !ic;
             }
             return ic;
+        }
+        // Çoklu çizgi (sekme simgeleri): noktalar x0,y0,x1,y1…; kapali ise son nokta ilkine bağlanır.
+        static bool Hat(float x, float y, float yari, bool kapali, params float[] p)
+        {
+            int n = p.Length / 2, m = kapali ? n : n - 1;
+            for (int i = 0; i < m; i++) { int j = (i + 1) % n; if (Cizgi(x, y, p[2 * i], p[2 * i + 1], p[2 * j], p[2 * j + 1], yari)) return true; }
+            return false;
         }
         static bool Cizgi(float x, float y, float ax, float ay, float bx, float by, float yari)
         {

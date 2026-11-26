@@ -1745,7 +1745,58 @@ KALEM = {
     'kabak_kalkan': kabak_kalkan, 'ag_kalkan': ag_kalkan, 'kazan': kazan, 'kedi_kuyruk': kedi_kuyruk,
     'dondurma': dondurma, 'cupcake': cupcake, 'krema_biyik': krema_biyik, 'lolipop': lolipop, 'donut': donut, 'makaron_kusak': makaron_kusak,
 }
-KALEM.update(YENI_SAC_YUZ_AYAK); KALEM.update(HAYVAN)
+# ---- Kort seti (2026-11-21, yasin: "yeni saç kıyafet ve aksesuarların eklenmesi ... oyun boyutunun makul düzeyde tutulması"):
+# oyunun kendi dünyası: tüy top, raket çantası, ter havlusu. Her kalem ~20 KB (.bytes), boyut bütçesi maskot klip paylaşımının
+# (~20 MB) yanında yok sayılır. Çerçeveler yukarıdaki bölümlerle aynı (baş, sırt, kol, bel).
+TUY, MANTAR, IP = '#fbfbf6', '#e9d7b8', '#d6342f'
+def dev_tuy():   # dev tüy top: mantar başlık kask gibi başı sarar (yan kenar 1,16 > saç), tepesinden açılan on dört tüylük etek, iki iplik sırası
+    ag = Ag()
+    kesik(ag, MANTAR, (0, .40, 0), (0, .92, 0), 1.17, 1.08, 16); elipsoid(ag, MANTAR, (0, .92, 0), (1.08, .30, 1.08), 16, 4, 0, 90)
+    halka(ag, IP, 1.14, .06, .78, 16, 4)
+    for k in range(14):
+        a = 2 * math.pi * k / 14; d = (math.sin(a) * .55, 1., math.cos(a) * .55); L = math.sqrt(sum(x * x for x in d)); d = tuple(x / L for x in d)
+        egik(ag, TUY, (math.sin(a) * (.62 + .55 * .40), 1.12 + .40 * L * .9, math.cos(a) * (.62 + .55 * .40)), (.30, .50, .06), d, 5, 3)
+    halka(ag, IP, .92, .05, 1.32, 14, 3); halka(ag, IP, 1.14, .05, 1.64, 14, 3)   # tüyleri bağlayan iki iplik sırası
+    ag.yaz('dev_tuy', 0)
+
+def raket_canta():   # raket çantası: sırtta çapraz termo çanta, açık fermuar şeridi, üst ucundan iki raket sapı bakar
+    ag = Ag(); C, F, G = '#26324f', '#cfe84a', '#f2f2f2'
+    a, b = (-.42, -.62, -.20), (.40, .26, -.20); d = [b[i] - a[i] for i in range(3)]; L = math.sqrt(sum(x * x for x in d)); u = [x / L for x in d]
+    q = lambda t, dz=0: (a[0] + u[0] * t, a[1] + u[1] * t, a[2] + u[2] * t + dz)
+    silindir(ag, C, q(.10), q(L - .10), .17, 10); elipsoid(ag, C, q(.10), (.17, .17, .17), 8, 4); elipsoid(ag, C, q(L - .10), (.17, .17, .17), 8, 4)
+    silindir(ag, F, q(.12, -.16), q(L - .12, -.16), .03, 5)   # fermuar: çantanın dış yüzünde boydan boya
+    for k, dz in ((0, -.05), (1, .05)):   # iki sap: çantanın üst ucundan dışarı, uçlarında kapak
+        o = (-.06 + .12 * k) * 1.0; p0 = q(L - .04, dz); p0 = (p0[0] - u[1] * o, p0[1] + u[0] * o, p0[2])
+        p1 = (p0[0] + u[0] * .26, p0[1] + u[1] * .26, p0[2]); silindir(ag, G, p0, p1, .035, 6); top(ag, IP if k == 0 else F, p1, .045, 6, 3)
+    ag.yaz('raket_canta', 1)
+
+def havlu():   # ter havlusu: sağ yanda bele sıkıştırılmış beyaz havlu (şortun dışında), alt ucunda iki renkli şerit, üstte kıvrılmış kenar
+    ag = Ag(); B, S1, S2 = '#f4f4ee', '#3a8fd9', '#cfe84a'
+    kutu(ag, B, (.92, -.35, -.30), (1.06, .18, .22))
+    kutu(ag, B, (.88, .12, -.31), (1.10, .27, .23))   # bel lastiğinin üstüne kıvrılan kenar
+    kutu(ag, S1, (1.055, -.28, -.305), (1.08, -.20, .225)); kutu(ag, S2, (1.055, -.17, -.305), (1.08, -.09, .225))
+    ag.yaz('havlu', 3)
+
+def tuy_kalkan():   # tüy top kalkanı: top tabandan bakılmış hali; tırtıklı beyaz tüy halkası, kırmızı iplik bandı, ortada mantar
+    ag = Ag()
+    dis = [((.50 if i % 2 == 0 else .42) * math.cos(2 * math.pi * i / 24), (.50 if i % 2 == 0 else .42) * math.sin(2 * math.pi * i / 24)) for i in range(24)]
+    bombe(ag, TUY, dis, 0, .04, .06); halka_z(ag, IP, (0, 0, .07), .30, .035, 18, 4); halka_z(ag, IP, (0, 0, .07), .40, .025, 18, 4)
+    bombe(ag, MANTAR, cember(.20, 14), .06, .12, .22, 3, False)
+    kayis(ag); ag.yaz('tuy_kalkan', 2)
+
+def yan_prizma(ag, renk, nokta, t):   # (z, y) dışbükey çokgen, x ekseninde ±t kalınlık (başın ortasından geçen dik düzlemde levha)
+    on = [(t, y, z) for z, y in nokta]; ar = [(-t, y, z) for z, y in nokta]; n = len(nokta)
+    for i in range(1, n - 1): ag.ucgen(renk, on[0], on[i], on[i + 1]); ag.ucgen(renk, ar[0], ar[i + 1], ar[i])
+    for i in range(n): k = (i + 1) % n; ag.dortgen(renk, on[i], ar[i], ar[k], on[k])
+
+def yildirim():   # yıldırım perçem: kısa kesim, tepede öne bakan kalın zikzak şimşek (iki üçgen üst üste kayık; smaç şimşeği)
+    ag = Ag(); kabuk(ag, SAC_YER, kisa_alt(-.08, -.42, -.70), N=16, K=4)
+    yan_prizma(ag, SAC_YER, [(.60, 1.00), (-.35, 1.00), (.72, 1.72)], .22)            # alt üçgen: tabanı tepeye gömülü, ucu öne-yukarı
+    yan_prizma(ag, SAC_YER, [(.98, 1.46), (.14, 1.46), (-.46, 2.26)], .20)            # üst üçgen: geriye-yukarı sivrilir
+    ag.yaz('yildirim', 0)
+
+KORT = {'dev_tuy': dev_tuy, 'raket_canta': raket_canta, 'havlu': havlu, 'tuy_kalkan': tuy_kalkan, 'yildirim': yildirim}
+KALEM.update(YENI_SAC_YUZ_AYAK); KALEM.update(HAYVAN); KALEM.update(KORT)
 
 if __name__ == '__main__':
     for k in (sys.argv[1:] or KALEM):
