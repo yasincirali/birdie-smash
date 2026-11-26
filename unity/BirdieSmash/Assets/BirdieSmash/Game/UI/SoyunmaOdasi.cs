@@ -424,6 +424,7 @@ namespace BirdieSmash.Game
         void SahadaIc(VisualElement k)
         {
             var v = Gear.Cubuklar(Ayar.GSE); var gel = Ayar.GelisimCubuk(); int n = 0;
+            int[] once = sahadaOnce, onceGel = sahadaGel; sahadaOnce = (int[])v.Clone(); sahadaGel = gel != null ? (int[])gel.Clone() : null;
             k.Add(Yazi(L.T("Sahada"), 16, "kalin"));
             for (int i = 0; i < 5; i++)
             {
@@ -438,12 +439,27 @@ namespace BirdieSmash.Game
                 var iz = new VisualElement(); iz.AddToClassList("atl-delta-iz"); iz.pickingMode = PickingMode.Ignore; r.Add(iz);
                 var dl = new VisualElement(); dl.AddToClassList("atl-delta-dolu"); dl.AddToClassList(arti ? "atl-delta-dolu--arti" : "atl-delta-dolu--eksi"); dl.pickingMode = PickingMode.Ignore;
                 dl.style.width = Length.Percent(Mathf.Min(50, Mathf.Abs(f))); iz.Add(dl);
+                // 2026-11-26 inceleme (fikir 02:06 #7): raket/gelişim değişince kutu yeniden kurulup çubuk bir karede yer değiştiriyordu,
+                // oyuncu neyin değiştiğini görmüyordu. Değeri öncekinden farklı çubuk 50 çizgisinden dışa büyür (.22 sn ease-out, yalnız
+                // scale: yerleşim yeniden hesaplanmaz). İlk kurulumda ve hareketi azaltta yok. Stil kurulumda bir kez yazılır.
+                if (once != null && !Ayar.reduce && SahadaToplam(once, onceGel, i) != t) DeltaBuyu(dl, arti);
                 var orta = new VisualElement(); orta.AddToClassList("atl-delta-orta"); orta.pickingMode = PickingMode.Ignore; iz.Add(orta);
                 Erisim.Etiket(r, adi + " " + t + ", " + L.T(arti ? "ortalamadan {0} fazla" : "ortalamadan {0} eksik", Mathf.Abs(f)), "metin");
             }
             // Boş durum tasarlanır (§10.3): tek cümle; 50 çizgisinin ne olduğu her durumda alt satırda.
-            if (n == 0) k.Add(Yazi(L.T("Hepsi ortalamada: artı da eksi de yok."), 13, "soluk"));
+            // 2026-11-26 inceleme (fikir 02:06 #5b): boş kutu iki açıklama cümlesiyle doluydu; boşken tek cümle (ne yapınca dolacağı),
+            // "50 ortalama" dipnotu yalnız çubuk varken (çizginin ne olduğunu çubuk görünce sorar).
+            if (n == 0) { k.Add(Yazi(L.T("Raket ya da gelişim değişince fark burada görünür."), 13, "soluk")); return; }
             var dn = Yazi(L.T("50 ortalama. Ekipman ve gelişimden gelir; tarz ve görünüm değiştirmez."), 12, "soluk"); dn.style.marginTop = 8; k.Add(dn);
+        }
+
+        static int[] sahadaOnce, sahadaGel;   // önceki Sahada çubukları (ekipman + gelişim payı); yalnız değişeni oynatmak için
+        static int SahadaToplam(int[] v, int[] gel, int i) { return v[i] + (gel != null ? Mathf.Min(gel[i], 100 - v[i]) : 0); }
+        static void DeltaBuyu(VisualElement dl, bool arti)
+        {
+            dl.style.transformOrigin = new TransformOrigin(arti ? Length.Percent(0) : Length.Percent(100), Length.Percent(50));
+            dl.style.scale = new Scale(new Vector3(0, 1, 1)); dl.AddToClassList("atl-delta-dolu--buyu");
+            dl.schedule.Execute(() => dl.style.scale = new Scale(Vector3.one)).ExecuteLater(16);
         }
 
         // Tarz tek satır: dokununca eski seçici (sekmeler + kart + "Bu tarzı seç") altında açılır; yerinde, sayfa kurulmaz (§7.8).
@@ -451,15 +467,21 @@ namespace BirdieSmash.Game
         {
             string cur = Ayar.Tarz, ad = cur; foreach (var t in Karakter.Tarzlar) if (t.id == cur) ad = L.T(t.ad);
             tarzKap = new VisualElement(); tarzKap.AddToClassList("atl-tarz-kap");
-            VisualElement d = null;
-            d = Dugme(L.T("Tarz: {0}", ad), () =>
+            // 2026-11-26 inceleme (fikir 02:06 #5, §7.2 tek birincil eylem): Tarz, "Raketi değiştir" ile aynı boy ve dolguda tam genişlik
+            // düğmeydi; göz nereye gideceğini bilmiyordu. Artık iOS Ayarlar değer satırı (DegerSatir kalıbı): solda "Tarz", sağda seçili
+            // tarz + ›; bütün satır dokunma alanı (≥ 56 pt), açılınca sağdaki yazı "Kapat" olur. Yerinde açılan seçici aynı.
+            var d = new VisualElement(); d.AddToClassList("liste-satir"); d.AddToClassList("anahtar-satir"); d.AddToClassList("atl-tarz");
+            var yz = new VisualElement(); yz.AddToClassList("anahtar-yazilar"); yz.pickingMode = PickingMode.Ignore; d.Add(yz);
+            yz.Add(Yazi(L.T("Tarz"), 15, "dugme-yazi"));
+            var dg = Yazi((atlTarzAcik ? L.T("Kapat") : ad) + "  ›", 15, "dugme-alt"); dg.AddToClassList("deger-yazi"); dg.pickingMode = PickingMode.Ignore; d.Add(dg);
+            d.AddManipulator(new Clickable(() =>
             {
-                atlTarzAcik = !atlTarzAcik;
+                Tik(); atlTarzAcik = !atlTarzAcik;
                 if (atlTarzAcik && tarzKap.childCount == 0) TarzGovde(tarzKap);
                 tarzKap.style.display = atlTarzAcik ? DisplayStyle.Flex : DisplayStyle.None;
-                var al = d.Q<Label>(className: "dugme-alt"); if (al != null) al.text = atlTarzAcik ? L.T("Kapat") : L.T("Değiştir");
+                dg.text = (atlTarzAcik ? L.T("Kapat") : ad) + "  ›";
                 Erisim.Etiket(d, L.T("Tarz: {0}", ad) + ", " + (atlTarzAcik ? L.T("açık") : L.T("kapalı")), "dugme");
-            }, "atl-tarz", atlTarzAcik ? L.T("Kapat") : L.T("Değiştir"));
+            }));
             Erisim.Etiket(d, L.T("Tarz: {0}", ad) + ", " + (atlTarzAcik ? L.T("açık") : L.T("kapalı")), "dugme");
             c.Add(d); c.Add(tarzKap);
             if (atlTarzAcik) TarzGovde(tarzKap); else tarzKap.style.display = DisplayStyle.None;

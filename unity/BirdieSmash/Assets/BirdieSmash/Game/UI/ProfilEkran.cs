@@ -74,15 +74,28 @@ namespace BirdieSmash.Game
             System.Action<UnvanBilgi> kartEtiket = u0 => Erisim.Etiket(kart, (p.Ad ?? L.T("Oyuncu")) + ", " + L.T(u0.ad) + Karakter.KademeEki(u0, p) + ", " + svY + ", " + L.T("Dünya sıralaman: {0}", SiraYaz(ds)) + ", " + L.T("Tarz") + " " + L.T(tz.ad) + ", " + L.T("{0} raketi", L.T(Gear.GEAR["raket"][gr.raket].ad)) + ". " + L.T("Görünümünü Dolap'ta değiştir"), "dugme");
             kartEtiket(un);
             // üç büyük sayı: kartın dışında, üç ayrı panel (taslak A). Büyük yazıda (K ≥ 1,35) alt alta.
+            int smacRekor = PlayerPrefs.GetInt("tuytop_smac_rekor", 0);
+            // 2026-11-26 inceleme (fikir 02:06 #2, FTUE): yeni oyuncuda ekranın en büyük rakamları üç sıfırdı ("henüz bir şey değilsin").
+            // Hiç kayıt yokken üç kutu yerine boş durum satırı (§10.3; Brawl Stars boş istatistikte ilk hedefi gösterir): dokununca Oyna.
+            // İlk maçtan sonra bugünkü üç sayı (Profil A).
+            if (Ayar.bestRally == 0 && smacRekor == 0 && p.Smac == 0 && Ayar.wins == 0 && Ayar.SonMaclar().Count == 0)
+            {
+                var bosS = new VisualElement(); bosS.AddToClassList("liste-satir"); bosS.AddToClassList("profil-bos"); c.Add(bosS);
+                var by = Yazi(L.T("İlk maçında rekorların burada birikir"), 14, "soluk"); by.style.flexGrow = 1; by.style.flexShrink = 1; by.style.whiteSpace = WhiteSpace.Normal; bosS.Add(by);
+                bosS.Add(Yazi(L.T("Oyna") + " ›", 15, "kalin"));
+                bosS.AddManipulator(new Clickable(() => { Tik(); SekmeAc(Sekme.Oyna); }));
+                Erisim.Etiket(bosS, L.T("İlk maçında rekorların burada birikir") + ", " + L.T("Oyna"), "dugme");
+            }
+            else {
             var uc = Satir("uc-sayi"); uc.AddToClassList("profil-uc"); if (K >= 1.35f) uc.AddToClassList("uc-sayi--dikey"); c.Add(uc);
             System.Action<string, string> Buyuk_ = (deger, et) => { var b = new VisualElement(); b.AddToClassList("uc-sayi-oge"); b.Add(Yazi(deger, 24, "rakam")); b.Add(Yazi(et, 12, "soluk")); Erisim.Etiket(b, et + " " + deger, "metin"); uc.Add(b); };
             // 2026-11-13 inceleme #5: ortadaki sayı en hızlı smaç rekoru (tuytop_smac_rekor; maç sonunda yazılıyordu ama yalnız o maçın
             // kartında anılıyordu). Badmintonun herkesin bildiği tek rakamı smaç hızı; raket/gelişim seçiminin somut sonucu burada
             // görünür. Rekor yoksa eski toplam smaç sayısı; toplam ızgaraya iner. Üç sayı kalır.
-            int smacRekor = PlayerPrefs.GetInt("tuytop_smac_rekor", 0);
             Buyuk_(Ayar.bestRally.ToString(), L.T("Rekor ralli"));
             if (smacRekor > 0) Buyuk_(L.T("{0} km/s", smacRekor), L.T("En hızlı smaç")); else Buyuk_(p.Smac.ToString(), L.T("Smaç"));
             Buyuk_(Ayar.wins.ToString(), L.T("Galibiyet"));
+            }
             // sıradaki açılış (Sv 30'da yok): tek cümle; 23 Kas'tan beri kartın dışında, üç sayının altında (altın kart üstünde soluk yazı okunmaz)
             for (int s2 = L_ + 1; s2 <= 30; s2++)
             {
@@ -96,7 +109,10 @@ namespace BirdieSmash.Game
                 // 2026-11-23 inceleme (fikir 02:06 #6, §7.3): beş eşyalık liste "(Forma rengi)" ekleriyle iki satıra çıkıyordu; satırın işi
                 // hedef işareti, envanter değil. İkiden fazlaysa sayı yazılır, tam liste erişim etiketinde kalır.
                 string tam = L.T("{0}. seviyede açılır: {1}", s2, string.Join(", ", parca.ToArray()));
-                var sa = Yazi(parca.Count > 2 ? L.T("{0}. seviyede {1} yeni eşya açılır", s2, parca.Count) : tam, 13, "soluk"); sa.style.marginTop = 10; sa.style.whiteSpace = WhiteSpace.Normal;
+                // 2026-11-26 inceleme (fikir 02:06 #3, §7.3): ilk gelişim puanı da bu seviyede geliyorsa aynı satırda söylenir; puanı 0
+                // iken ayrı "Gelişim" başlığı + kartı (GelisimKart) kurulmuyor (dokununca boş sayfa açan sahte düğmeydi).
+                bool ilkPuan = Gelisim.Toplam(L_) == 0 && Gelisim.Toplam(s2) > 0;
+                var sa = Yazi(ilkPuan ? L.T("{0}. seviyede {1} yeni eşya ve ilk gelişim puanın açılır", s2, parca.Count) : parca.Count > 2 ? L.T("{0}. seviyede {1} yeni eşya açılır", s2, parca.Count) : tam, 13, "soluk"); sa.style.marginTop = 10; sa.style.whiteSpace = WhiteSpace.Normal;
                 // 2026-11-21 inceleme (fikir 07:06 #1): satır düz yazıydı; seviye atlama sayfasındaki "Dolap'ta dene" kalıbı burada da
                 // (Brawl Stars / Clash Royale yolunda sıradaki ödüle dokunmak önizletir): Dolap eşyası varsa onu oyuncunun üstünde
                 // dener, yalnız Atölye eşyası varsa o yuvayı açar, ikisi de yoksa düz yazı kalır. Tarama yalnız bulunan seviyede.
