@@ -158,38 +158,59 @@ namespace BirdieSmash.Game
         static readonly string[] DINLEN = { "dinlen", "bel" };
         const float YORGUN_ESIK = 2.4f;
         float benYorgun, rakipYorgun; readonly System.Collections.Generic.List<string> havuz = new System.Collections.Generic.List<string>(12);
-        string Sec(bool benim, ref float yorgun)
+        // Kışkırtma düellosu (yasin 26 Kas: "birbirlerine kışkırtacak gibi hareketler yapmalılar"). Döngü artık iki kişilik bir
+        // sahne: biri kışkırtır (nanik, gel gel, kulak, toz, esneme, ağlak, çıkçık, öpücük; 20 Kas klipleri, yeni klip yok), öteki
+        // onun klibi bitmeden .25 sn önce cevap verir. Çoğu kez rakip açar; senin oyuncun yalnız SAHİP OLDUĞUN kışkırtmayla açar
+        // ya da cevap verir (alınmamış dans senin oyuncunda oynamaz kuralı sürer), yoksa umursamaz cevap verir: kollar kavuşuk,
+        // raket omuzda, raket çevirme. Rakip açılışlarının beşte biri eski çeşitlilik (tarz hareketi, diğer danslar) kalır ki
+        // sahne tek desene dönmesin. Hareketler yerinde oynar, VS'yi ve düğmeleri örtmez; kare bütçesi aynı (aynı anda en çok
+        // iki klip, eskisi gibi). Yorgunluk kuralı aynen: eşiği geçen sıradaki hareketinde dinlenir. Hareketi azaltta döngü yok.
+        static readonly string[] KISKIRT = { "nanik", "gelgel", "kulak", "toz", "esne", "aglak", "cikcik", "opucuk" };
+        static readonly string[] UMURSAMAZ = { "kavus", "omuz", "raket_cevir" };
+        string Sec(bool benim, bool cevap, ref float yorgun)
         {
             string onceki = benim ? benAks : rakipAks;
             if (yorgun >= YORGUN_ESIK) { yorgun = 0; return DINLEN[Random.Range(0, DINLEN.Length)]; }
             havuz.Clear();
-            if (benim) { havuz.Add("raket_cevir"); havuz.Add("el_salla"); havuz.Add("alkis"); foreach (var d in DANSLAR) if (Ayar.gear != null && Kozmetik.Sahip(Ayar.gear, Kozmetik.SEVINC, d)) havuz.Add(d); }
-            else { havuz.Add(rakipId == "smasci" ? "omuz" : rakipId == "duvar" ? "kavus" : "raket_cevir"); havuz.Add("raket_cevir"); foreach (var d in DANSLAR) havuz.Add(d); }
+            if (benim)
+            {
+                foreach (var d in KISKIRT) if (Ayar.gear != null && Kozmetik.Sahip(Ayar.gear, Kozmetik.SEVINC, d)) havuz.Add(d);
+                if (cevap || havuz.Count == 0) foreach (var d in UMURSAMAZ) havuz.Add(d);
+            }
+            else if (cevap || Random.value < .8f) foreach (var d in KISKIRT) havuz.Add(d);
+            else { havuz.Add(rakipId == "smasci" ? "omuz" : rakipId == "duvar" ? "kavus" : "raket_cevir"); foreach (var d in DANSLAR) if (System.Array.IndexOf(KISKIRT, d) < 0) havuz.Add(d); }
             if (havuz.Count > 1) havuz.Remove(onceki);
             string id = havuz[Random.Range(0, havuz.Count)];
             yorgun += PlayerView.Dans(id) ? 1 : .35f; return id;
         }
+        bool BenKiskirtabilir() { if (Ayar.gear == null) return false; foreach (var d in KISKIRT) if (Kozmetik.Sahip(Ayar.gear, Kozmetik.SEVINC, d)) return true; return false; }
         static float Sure(string id) { return id == "dinlen" || id == "bel" ? 2.8f : PlayerView.Dans(id) ? PlayerView.SevincSure(id) : AKS_SURE; }
         public static System.Action<string> DansSes;
-        public void Sevinc() { benAks = PlayerView.SevincSecimi(); benSure = PlayerView.SevincSure(benAks); benT = 0; durgun = 0; if (DansSes != null && PlayerView.Dans(benAks)) DansSes(benAks); }
+        public void Sevinc() { benAks = PlayerView.SevincSecimi(); benSure = PlayerView.SevincSure(benAks); benT = 0; benAktif = true; durgun = 0; if (DansSes != null && PlayerView.Dans(benAks)) DansSes(benAks); }
+        // benAktif/rakipAktif: eski "rakipT > -1" denetimi 1 sn'den uzun gecikmede rakibi hiç oynatmıyordu (gecikme −1,28'e
+        // kadar çıkabiliyordu); cevap gecikmesi klip boyu kadar olabildiği için bekleme artık bayrakla, saat negatiften sayar.
+        bool benAktif, rakipAktif;
         void Goster(float dt)
         {
-            bool hareket = benT >= 0 || rakipT >= 0;
+            bool hareket = benAktif || rakipAktif;
             if (!Ayar.reduce)
             {
                 aksSaat -= dt;
                 if (aksSaat <= 0 && !hareket)
                 {
                     aksSaat = Random.Range(AKS_ARA - 1, AKS_ARA + 1.5f);
-                    benAks = Sec(true, ref benYorgun); benSure = Sure(benAks); benT = 0;
-                    rakipAks = Sec(false, ref rakipYorgun); rakipSure = Sure(rakipAks); rakipT = -Random.Range(RAKIP_GEC * .5f, RAKIP_GEC * 1.6f); hareket = true;
+                    bool benAcar = BenKiskirtabilir() && Random.value < .35f;
+                    benAks = Sec(true, !benAcar, ref benYorgun); benSure = Sure(benAks);
+                    rakipAks = Sec(false, benAcar, ref rakipYorgun); rakipSure = Sure(rakipAks);
+                    float gec = -Mathf.Max(RAKIP_GEC * .5f, (benAcar ? benSure : rakipSure) - .25f);
+                    benT = benAcar ? 0 : gec; rakipT = benAcar ? gec : 0; benAktif = rakipAktif = hareket = true;
                 }
             }
             if (hareket)
             {   // her kare: süre ve faz ilerler (ph değişir, ShowPoz yeniden örnekler)
                 ph += dt * .45f; nefesBirik = 0;
-                if (benT >= 0) { benT += dt; if (benT > benSure) benT = -1; }
-                if (rakipT > -1 + 1e-4f || rakipT >= 0) { rakipT += dt; if (rakipT > rakipSure) rakipT = -1; }
+                if (benAktif) { benT += dt; if (benT > benSure) { benT = -1; benAktif = false; } }
+                if (rakipAktif) { rakipT += dt; if (rakipT > rakipSure) { rakipT = -1; rakipAktif = false; } }
             }
             else if (!Ayar.reduce) { nefesBirik += dt; if (nefesBirik >= NEFES_ADIM) { ph += nefesBirik * .45f; nefesBirik = 0; } }   // boşta duruş yavaş: nefes (yön A "oyuncu nefes alır")
             bool yeni = ph != uygPh || durgun == 0; uygPh = ph;

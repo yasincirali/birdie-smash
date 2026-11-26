@@ -1,4 +1,9 @@
 === UNITY ===
+Oyna sayfası düellosu (26 Kasım akşam):
+- VS yazısı artık rakibin üstünde değil, iki oyuncunun tam arasında.
+- İki oyuncu birbirini kışkırtıyor: biri nanik yapar, gel gel der ya da toz atar, öteki hemen cevap verir. Kışkırtma dansın varsa senin oyuncun da onunla cevap verir; yoksa kollarını kavuşturur ya da raketini omzuna alır.
+- Neon sahanın çizgileri keskinleşti, bulanık görünmüyor.
+Nasıl denenir: Oyna sayfasını açıp birkaç saniye bekle; rakip kışkırtınca senin oyuncunun cevap verdiğini görmelisin. VS iki oyuncunun arasında durmalı, düğmeler örtülmemeli. Neon sahada bir maç aç: çizgiler net olmalı.
 Neon salon (26 Kasım):
 - Yeni saha: koyu mavi-mor salon, yeşil mat, parlayan çizgiler, yanlarda neon panolar ve bulanık ışıklar. Oyuncuların iki yanından pembe ve camgöbeği ışık vurur.
 - Yeni oyuncu bu sahada başlar; daha önce saha seçtiysen seçimin aynı kalır. Oyna > Hızlı maç > Saha'dan "Neon" seçilir.
