@@ -501,11 +501,11 @@ namespace BirdieSmash.Game
             if (!saha) return;
             c.Add(Grup(L.T("Saha")));
             // 2026-11-07 inceleme (fikir 02:06 #5, defter): saha 2×2 yazı çipiydi ("Okul (ahşap)" parantezli) ve sahanın neye
-            // benzediğini söylemiyordu. Şimdi tek sıra dört çip; her birinde sahanın kendi renkleriyle çizilmiş küçük kort (çevre,
+            // benzediğini söylemiyordu. Şimdi tek sıra çip (2026-11-26 Neon salon ile beş); her birinde sahanın kendi renkleriyle çizilmiş küçük kort (çevre,
             // mat, file çizgisi; okulda tahta çizgileri, gecede yıldız) ve kısa ad. Seçili çip turuncu + ✓ (yalnız renk değil).
             // Doku yok: renkler CourtView.SAHA'dan, saha rengi değişince önizleme de değişir. Dar ekranda/büyük yazıda Sigdir küçültür.
             var s1 = Satir(); s1.AddToClassList("sigdir-grup"); c.Add(s1);   // dört ad tek ölçüde (SigdirOlc grup)
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < CourtView.SIRA.Length; i++)
             {
                 string id = CourtView.SIRA[i]; var sh = CourtView.SAHA[id];
                 var d = Cip(L.T(SAHA_KISA[i]), Ayar.saha == id, () => { Ayar.saha = id; Ayar.KaydetSonra(); root.SahaSecildi(); Degisti(); });
@@ -517,7 +517,7 @@ namespace BirdieSmash.Game
                 Sigdir(d); s1.Add(d);
             }
         }
-        static readonly string[] SAHA_KISA = { "Salon", "Turnuva", "Okul", "Gece" };   // CourtView.SIRA sırası; uzun ad erişim etiketinde
+        static readonly string[] SAHA_KISA = { "Neon", "Salon", "Turnuva", "Okul", "Gece" };   // CourtView.SIRA sırası; uzun ad erişim etiketinde
         static VisualElement MiniSaha(Saha sh)
         {
             var cev = new VisualElement(); cev.pickingMode = PickingMode.Ignore; cev.style.width = 44f; cev.style.height = 26f; cev.style.marginBottom = 4f;
@@ -530,6 +530,7 @@ namespace BirdieSmash.Game
             if (sh.tahta) for (int k = 1; k < 4; k++) { var t = new VisualElement(); t.pickingMode = PickingMode.Ignore; t.style.position = Position.Absolute; t.style.left = 0f; t.style.right = 0f; t.style.top = k * 4f; t.style.height = 1f; t.style.backgroundColor = new Color(0, 0, 0, .18f); kort.Add(t); }
             var file = new VisualElement(); file.pickingMode = PickingMode.Ignore; file.style.position = Position.Absolute; file.style.top = 0f; file.style.bottom = 0f; file.style.left = 16f; file.style.width = 1f; file.style.backgroundColor = beyaz; kort.Add(file);
             cev.Add(kort);
+            if (sh.neon) { kort.style.borderTopColor = kort.style.borderBottomColor = kort.style.borderLeftColor = kort.style.borderRightColor = new Color(.6f, 1, 1, .95f); file.style.backgroundColor = new Color(.6f, 1, 1, .95f); cev.style.borderBottomWidth = 2f; cev.style.borderBottomColor = new Color(1, .31f, .78f, .9f); }   // neon: camgöbeği çizgi, pembe kenar ışığı
             if (sh.ad == "Gece") for (int k = 0; k < 2; k++) { var y = new VisualElement(); y.pickingMode = PickingMode.Ignore; y.style.position = Position.Absolute; y.style.width = y.style.height = 2f; y.style.top = 2f; y.style.left = 5f + k * 30f; y.style.backgroundColor = new Color(1, .95f, .7f, .9f); cev.Add(y); }
             return cev;
         }
