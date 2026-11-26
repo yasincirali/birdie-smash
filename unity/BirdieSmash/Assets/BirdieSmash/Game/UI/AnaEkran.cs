@@ -475,7 +475,7 @@ namespace BirdieSmash.Game
             // 2026-11-05 unslop: başlık içerik genişliğinde kalıp Kapat'ın yanında iki satıra kırılıyordu ("Köşe / smacı"); kalan
             // genişliği alır, Kapat daralmaz.
             var t = Yazi(baslik, 19, "sayfa-baslik"); Erisim.Etiket(t, baslik, "baslik"); t.style.flexGrow = 1f; t.style.flexShrink = 1f; t.style.minWidth = 0f; t.style.marginRight = 12f; bas.Add(t);
-            var kp = Dugme(L.T("Kapat"), AltKapatKay, "kucuk-dugme"); kp.style.flexShrink = 0f; bas.Add(kp);
+            var kp = Dugme(L.T("Kapat"), AltKapatKay, "kucuk-dugme"); kp.AddToClassList("kapat-dugme"); kp.style.flexShrink = 0f; bas.Add(kp);
             var sv = Kaydirma(altSayfa); sv.AddToClassList("alt-kaydir");
             // 2026-11-07 (UX2): içerik görünen alandan uzunsa altta solma; sona kaydırınca kalkar (kaydırılabilir olduğu belli olsun).
             var sol = new Image { image = Ikonlar.Solma, scaleMode = ScaleMode.StretchToFill }; sol.AddToClassList("kaydir-solma"); sol.pickingMode = PickingMode.Ignore; sv.hierarchy.Add(sol);

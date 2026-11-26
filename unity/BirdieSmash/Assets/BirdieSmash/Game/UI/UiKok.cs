@@ -89,6 +89,7 @@ namespace BirdieSmash.Game
             kok.RegisterCallback<PointerDownEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
             kok.RegisterCallback<PointerMoveEvent>(e => { if (e.pressedButtons != 0) Kalite.Hareket(); }, TrickleDown.TrickleDown);
             kok.RegisterCallback<WheelEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
+            BasisSesiKur();
             kok.RegisterCallback<TransitionRunEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
             zemin = kok.Q<VisualElement>("zemin"); alan = kok.Q<VisualElement>("alan"); ust = kok.Q<VisualElement>("ust"); icerik = kok.Q<VisualElement>("icerik");
             ust.schedule.Execute(PortreIsit).Every(300);   // Dolap açıkken bugünkü portreyi durgun anda ısıtır (aşağıda)
@@ -243,7 +244,7 @@ namespace BirdieSmash.Game
         }
 
         // ---- gezinti ----
-        public void SekmeAc(Sekme s) { var once = gez.sekme; bool sayfaYok = gez.Ust == null; bool d = gez.SekmeSec(s); if (d) { root.sfx.UiSes("sekme"); Yerel.Hap("tick"); } Uygula(once, d); if (!d && sayfaYok) BasaKaydir(); }
+        public void SekmeAc(Sekme s) { var once = gez.sekme; bool sayfaYok = gez.Ust == null; bool d = gez.SekmeSec(s); if (d && !BasisCaldi()) { root.sfx.UiSes("sekme"); Yerel.Hap("tick"); } Uygula(once, d); if (!d && sayfaYok) BasaKaydir(); }
         // 2026-11-19 inceleme (fikir 07:06 #2, HIG sistem kalıbı): seçili sekmeye ikinci dokunuş, açık sayfa yoksa listeyi başa
         // kaydırır (iOS sekme çubuğu davranışı; Kariyer 8 tur, Dükkân uzun). Açık sayfa varken ilk dokunuş köke döner (eskisi gibi).
         // .25 sn ease-out, hareketi azaltta anında; yalnız scrollOffset değişir, sekme yeniden kurulmaz.
@@ -264,7 +265,7 @@ namespace BirdieSmash.Game
         public void MacKartAc(int g) { var once = gez.sekme; kartBasamak = g; gez.Ac(Gezinti.KART); Uygula(once, true); }
         public void KariyerTurSec(int t) { kariyerTur = t; kirli[(int)Sekme.Kariyer] = true; if (gez.sekme == Sekme.Kariyer && gez.Ust == null) SekmeKur(Sekme.Kariyer); }
         void SayfaAc(string s) { var once = gez.sekme; gez.Ac(s); Uygula(once, true); }
-        public void Geri() { var once = gez.sekme; if (gez.Geri()) { root.sfx.UiSes("geri"); Yerel.Hap("tick"); Uygula(once, true); } }
+        public void Geri() { var once = gez.sekme; if (gez.Geri()) { if (!BasisCaldi()) { root.sfx.UiSes("geri"); Yerel.Hap("tick"); } Uygula(once, true); } }
         void AltKapat() { var once = gez.sekme; gez.AltKapat(); Uygula(once, false); }
         // 2026-11-11 inceleme (fikir 20:05 #3, HIG standart gezinme): tam sayfada sol kenardan geri kaydırma 70 pt'de sayfayı bir
         // anda kaldırıyordu; parmak sayfayı taşımıyordu. Artık sayfa parmakla sağa kayar; altta dönülecek sekme (yığında tek sayfa
@@ -313,7 +314,7 @@ namespace BirdieSmash.Game
         bool altKapaniyor; Color altZemin = new Color(0, 0, 0, -1);
         void AltKapatKay()
         {
-            if (!altKapaniyor && Time.frameCount != tikKare) { tikKare = Time.frameCount; root.sfx.UiSes("geri"); }   // 2026-11-22: alt sayfa kapanışı geri sesiyle; aynı karede düğmenin pop'u çaldıysa ikinci ses yok
+            if (!altKapaniyor && Time.frameCount != tikKare && !BasisCaldi()) { tikKare = Time.frameCount; root.sfx.UiSes("geri"); }   // 2026-11-22: alt sayfa kapanışı geri sesiyle; aynı karede düğmenin pop'u çaldıysa ikinci ses yok
             var v = altSayfa; if (v == null) { AltKapat(); return; }
             if (altKapaniyor) return; altKapaniyor = true; Yerel.Hap("tick");
             float sure = Ayar.reduce ? 0.12f : 0.2f;
@@ -698,7 +699,7 @@ namespace BirdieSmash.Game
         // 2026-11-23 (yasin "Beyaz alt bant incelmeli", seçim "Alt bant C"): sekme çubuğu kenarlardan ayrık yüzen beyaz hap.
         // Ev çizgisi payı artık çubuğun içine dolgu olarak girmiyor (bant o kadar kalınlaşıyordu); hap, payın bir kısmı kadar
         // yukarıda durur, altında zemin görünür. Akışta kalır: içerik hapın üstünde biter, her sayfaya ayrı alt boşluk gerekmez.
-        void CubukAltPay() { if (sekmeCubugu == null) return; sekmeCubugu.style.paddingBottom = 0f; sekmeCubugu.style.marginBottom = Mathf.Max(8f, altBosluk - 22f); }   // 2026-11-23 (yasin "biraz daha aşağı"): kapsülün altı ana ekran çizgisinin hemen üstünde (iPhone 34 pt güvenli alanda 12 pt); daha aşağısı çizginin hareket alanına girer, dokunuş sistemle çakışır
+        void CubukAltPay() { if (sekmeCubugu == null) return; sekmeCubugu.style.paddingBottom = 0f; sekmeCubugu.style.marginBottom = Mathf.Max(12f, altBosluk - 14f); }   // 2026-11-23 (yasin "biraz daha aşağı"): kapsülün altı ana ekran çizgisinin hemen üstünde (iPhone 34 pt güvenli alanda 12 pt); daha aşağısı çizginin hareket alanına girer, dokunuş sistemle çakışır. 2026-11-26 (yasin "alt barı biraz yukarı alabiliriz", Dolap'ta): 8 pt yukarı, 34 pt alanda 20 pt; ev çizgisi olmayan cihazda en az 12
         void SekmeCubuguGorunur() { if (sekmeCubugu != null) sekmeCubugu.style.display = IlkAcilis ? DisplayStyle.None : DisplayStyle.Flex; }
 
         void HepsiniKur()
@@ -966,16 +967,52 @@ namespace BirdieSmash.Game
         // Clickable hepsi Tik). Eylem içinde de Tik çağrılıyordu: aynı dokunuşta iki ses + iki titreşim. Aynı karede ikinci Tik sessiz;
         // böylece 20+ çağrı yerini tek tek ayıklamak gerekmedi. Özel sesler (Yukselt, Tik(1320)…) bu kapıdan geçmez, kalır.
         int tikKare = -1;
+        // 2026-11-26 (yasin: "Menüde basma hissi ve sesler de iyileştirilmeli"): ses ve titreşim Clickable'ın içinden, yani parmak
+        // KALKINCA çalıyordu; basılma ölçeği ise parmak değer değmez. Göz "bastım" derken kulak ve el 100–300 ms sonra
+        // duyuyordu, basış boş hissettiriyordu. Oyun menülerindeki gibi geri bildirim artık basışta: kök TrickleDown'da basılan
+        // düğmeyi (dugme/cta/karo/cip/dokunulur) bulur; parmak 50 ms içinde 10 birimden fazla kaymadıysa (kaydırma değil) ses +
+        // titreşim hemen, daha kısa dokunuşta kalkış anında (Clickable'dan önce). Ardından gelen Tik aynı basış için sessiz kalır
+        // (çift ses yok). Kaydırmaya dönen basış sessiz; klavye/ekran okuyucu yolu Tik'te eskisi gibi çalar.
+        VisualElement basEl; Vector2 basP; float basT = -1, basCaldiT = -10; bool basCaldi; int basPid = -1;
+        static VisualElement Basilir(VisualElement e)
+        {
+            for (; e != null; e = e.parent)
+                if (e.ClassListContains("gel-dugme")) return null;   // Gelişim ± kendi adım sesini çalar (basılı tutunca tekrar)
+                else if (e.ClassListContains("dugme") || e.ClassListContains("sekme") || e.ClassListContains("cta") || e.ClassListContains("karo") || e.ClassListContains("cip") || e.ClassListContains("dokunulur")) return e;
+            return null;
+        }
+        void BasisSesiKur()
+        {
+            kok.RegisterCallback<PointerDownEvent>(e =>
+            {
+                basEl = Basilir(e.target as VisualElement); basCaldi = false; basP = e.position; basT = Time.unscaledTime; basPid = e.pointerId;
+                if (basEl == null) return; var el = basEl;
+                kok.schedule.Execute(() => { if (basEl == el && !basCaldi && basPid >= 0) BasisCal(); }).StartingIn(50);
+            }, TrickleDown.TrickleDown);
+            kok.RegisterCallback<PointerMoveEvent>(e => { if (basEl != null && !basCaldi && e.pointerId == basPid && ((Vector2)e.position - basP).sqrMagnitude > 100f) basEl = null; }, TrickleDown.TrickleDown);
+            kok.RegisterCallback<PointerUpEvent>(e => { if (basEl != null && !basCaldi && e.pointerId == basPid) BasisCal(); basPid = -1; }, TrickleDown.TrickleDown);
+            kok.RegisterCallback<PointerCancelEvent>(e => { basEl = null; basPid = -1; }, TrickleDown.TrickleDown);
+        }
+        // Basışta çalan ses bu eylemin sesiydi: bir kez true döner (sonraki eylem yine kendi sesini çalar).
+        bool BasisCaldi() { if (Time.unscaledTime - basCaldiT >= .8f) return false; basCaldiT = -10; return true; }
+        void BasisCal()
+        {
+            basCaldi = true; basCaldiT = Time.unscaledTime; tikKare = Time.frameCount;
+            string tur = UiSesTuru(basEl); root.sfx.UiSes(tur); Yerel.Hap(tur == "bas" ? "hit" : "tick");
+        }
         // 2026-11-22 (yasin "tüm butonlarda tatmin edici ses"): ses türü öğenin sınıfından (Sfx.UiSes); öğesiz çağrılar pop çalar.
         // Birincil düğme "hit" titreşimi (14 ms), gerisi "tick": göz ve elin en çok bastığı yer en dolgun karşılığı alır.
         void Tik(VisualElement e = null, string tur = null)
         {
             if (Time.frameCount == tikKare) return; tikKare = Time.frameCount;
+            if (BasisCaldi()) return;   // bu basışın sesi basışta çaldı (BasisSesiKur)
             tur = tur ?? UiSesTuru(e); root.sfx.UiSes(tur); Yerel.Hap(tur == "bas" ? "hit" : "tick");
         }
         static string UiSesTuru(VisualElement e)
         {
             if (e == null) return "pop";
+            if (e.ClassListContains("sekme")) return "sekme";
+            if (e.ClassListContains("geri-dugme") || e.ClassListContains("kapat-dugme")) return "geri";
             if (e.ClassListContains("dugme--birincil")) return "bas";
             if (e.ClassListContains("dugme--pasif") || e.ClassListContains("kar-tur-kutu--kilit")) return "kilit";
             if (e.ClassListContains("cip")) return "sec";

@@ -126,13 +126,18 @@ namespace BirdieSmash.Game
             cekmeceTutamak.RegisterCallback<PointerDownEvent>(TutamakBas); cekmeceTutamak.RegisterCallback<PointerUpEvent>(TutamakBirak);
             cekmeceTutamak.RegisterCallback<PointerCancelEvent>(e => tBasili = false); cekmeceTutamak.RegisterCallback<PointerCaptureOutEvent>(e => tBasili = false);
             TutamakEtiket();
+            // 2026-11-26 (yasin: "Dolap sekmesinde alt kısım kapatılıyor ama slide edip kapatıp açabileyim"): aşağı kaydırınca
+            // çekmece bütünüyle gizleniyordu (display none), tutamak da gidiyordu; geri açmanın tek yolu vitrinin köşesindeki büyüt
+            // düğmesiydi. Artık içerik ayrı kapta: kapalıyken yalnız iç kap gizlenir, çekmece dipte tutamak şeridi olarak kalır;
+            // yukarı kaydırmak ya da dokunmak açar. iPad'de (.genis) panel eskisi gibi tümüyle gizlenir (orada tutamak yok).
+            cekmeceIc = new VisualElement(); cekmeceIc.AddToClassList("cekmece-ic"); cekmece.Add(cekmeceIc);
             kategoriKaydir = new ScrollView(ScrollViewMode.Horizontal); kategoriKaydir.AddToClassList("kategori-kaydir");
-            kategoriKaydir.horizontalScrollerVisibility = ScrollerVisibility.Hidden; kategoriKaydir.verticalScrollerVisibility = ScrollerVisibility.Hidden; cekmece.Add(kategoriKaydir);
+            kategoriKaydir.horizontalScrollerVisibility = ScrollerVisibility.Hidden; kategoriKaydir.verticalScrollerVisibility = ScrollerVisibility.Hidden; cekmeceIc.Add(kategoriKaydir);
             soyunmaSeg = SEG_KARAKTER; soyunmaSegment = Satir("segment"); soyunmaSegment.AddToClassList("kategori-ray"); kategoriKaydir.Add(soyunmaSegment); KategoriKur();
-            soyunmaKaydir = Kaydirma(cekmece); soyunmaKaydir.AddToClassList("govde-kaydir"); soyunmaKaydir.AddToClassList("soyunma-kaydir");
+            soyunmaKaydir = Kaydirma(cekmeceIc); soyunmaKaydir.AddToClassList("govde-kaydir"); soyunmaKaydir.AddToClassList("soyunma-kaydir");
             soyunmaGovde = soyunmaKaydir.contentContainer; soyunmaGovde.AddToClassList("sekme-icerik");
             // K4 (2026-10-31): satın alma alt çubuğu kaydırma alanının dışında, çekmecenin altında sabit (Kombin.cs).
-            denemeCubuk = new VisualElement(); denemeCubuk.AddToClassList("deneme-cubuk"); denemeCubuk.style.display = DisplayStyle.None; cekmece.Add(denemeCubuk);
+            denemeCubuk = new VisualElement(); denemeCubuk.AddToClassList("deneme-cubuk"); denemeCubuk.style.display = DisplayStyle.None; cekmeceIc.Add(denemeCubuk);
             if (root.vitrin.odak == Vitrin.TAM) KarakterOdakAyarla();   // sekmeye dönüşte (Kapat odağı ve raket görünümünü sıfırladı)
             SoyunmaGovdeKur(false);
         }
@@ -141,7 +146,12 @@ namespace BirdieSmash.Game
         {
             if (vitrinUst == null) return; dolapIncele = ac; Tik();
             vitrinUst.EnableInClassList("vitrin-alan--genis", ac);
-            if (cekmece != null) cekmece.style.display = ac ? DisplayStyle.None : DisplayStyle.Flex;
+            if (cekmece != null)
+            {
+                bool genis = kok != null && kok.ClassListContains("genis");
+                cekmece.style.display = ac && genis ? DisplayStyle.None : DisplayStyle.Flex;
+                cekmece.EnableInClassList("dolap-cekmece--kapali", ac && !genis); TutamakEtiket();
+            }
             if (ac) DolapTam(false, false);
             // 2026-11-20 (inceleme, fikir 17:06 #3; TAKILMA YOK): her açma/kapamada kategori şeridi (çipler + Kozmetik.Sayim) ve
             // deneme çubuğu baştan kuruluyor, vitrin RT'si aynı karede yeniden boyutlanırken string ayrılıyordu; şerit de kapanışta
@@ -154,13 +164,14 @@ namespace BirdieSmash.Game
         // Neden yükseklik geçişi yok: vitrin kutusu her karede boy değiştirirse RT her karede yeniden ayrılırdı (takılma kuralı).
         // Durak anında değişir, RT bir kez yeniden boyutlanır (GeometryChanged → Vitrin.Cozunurluk); his tutamak titreşimi ve
         // Tik sesiyle verilir. Kare hızı: durak değişimi Kalite.Hareket() ile menüyü kısa süre 120 Hz'e alır.
-        VisualElement cekmece, cekmeceTutamak, dolapKok; bool dolapTam, tBasili; Vector2 tBas; float tBasT;
+        VisualElement cekmece, cekmeceIc, cekmeceTutamak, dolapKok; bool dolapTam, tBasili; Vector2 tBas; float tBasT;
         const float TUTAMAK_ESIK = 24, TUTAMAK_DOKUNUS = 8;
         void TutamakBas(PointerDownEvent e) { tBasili = true; tBas = e.position; tBasT = Time.unscaledTime; cekmeceTutamak.CapturePointer(e.pointerId); e.StopPropagation(); }
         void TutamakBirak(PointerUpEvent e)
         {
             if (!tBasili) return; tBasili = false; cekmeceTutamak.ReleasePointer(e.pointerId);
             float dy = e.position.y - tBas.y;
+            if (dolapIncele) { if (dy < -TUTAMAK_ESIK || Mathf.Abs(dy) < TUTAMAK_DOKUNUS) DolapIncele(false); return; }   // kapalı: yukarı ya da dokunuş açar
             if (Mathf.Abs(dy) < TUTAMAK_DOKUNUS && Time.unscaledTime - tBasT < .4f) { DolapTam(!dolapTam, true); return; }   // dokunuş: yarım ↔ tam
             if (dy < -TUTAMAK_ESIK) DolapTam(true, true);
             else if (dy > TUTAMAK_ESIK) { if (dolapTam) DolapTam(false, true); else DolapIncele(true); }   // yarımdan aşağı: çekmece kapanır, figür bütün alan
@@ -174,7 +185,7 @@ namespace BirdieSmash.Game
         void TutamakEtiket()
         {
             if (cekmeceTutamak == null) return;
-            Erisim.Etiket(cekmeceTutamak, L.T(dolapTam ? "Listeyi küçült" : "Listeyi büyüt"), "dugme");
+            Erisim.Etiket(cekmeceTutamak, L.T(dolapIncele ? "Listeyi aç" : dolapTam ? "Listeyi küçült" : "Listeyi büyüt"), "dugme");
         }
         void BuyutYaz()
         {

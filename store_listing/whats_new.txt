@@ -1,4 +1,12 @@
 === UNITY ===
+Menü listesi (26 Kasım öğlen):
+- Uygulama ikonu ve ilk açılıştaki logo açılış ekranının mavisine geçti.
+- Gelişim sayfasının üstünde beş dallı yetenek şekli var; puan verince şekil büyüyor, her puanda ses biraz daha yükseliyor, dal dolunca kutlama sesi ve titreşim geliyor.
+- Menü düğmelerinde ses ve titreşim artık parmağın değdiği anda geliyor (eskiden parmak kalkınca).
+- Oyna sayfasında sen ve rakip baştan ayağa görünüyorsunuz; ayakkabı ve kıyafet artık kartın arkasında kalmıyor.
+- Hızlı maçı kazanıp "Bir maç daha"ya basınca aynı tarzdaki rakip geliyor.
+- Dolap'ta listeyi aşağı kaydırıp kapatınca altta ince bir şerit kalıyor; yukarı kaydırınca ya da dokununca liste geri açılıyor. Alt çubuk biraz yukarıda.
+Nasıl denenir: Ana ekrandaki ikonun mavi olduğuna bak. Gelişim'i aç ve puan ver: şekil büyümeli, ses yükselmeli. Bir menü düğmesine basılı tut: ses hemen gelmeli. Oyna sayfasında iki oyuncunun ayakları görünmeli. Hızlı maç kazan, "Bir maç daha" de: rakibin tarzı aynı kalmalı. Dolap'ta listeyi aşağı kaydır, sonra alttaki şeridi yukarı kaydır.
 Dolap yeniden düzenlendi (23 Kasım akşam):
 - Kategoriler artık oyuncunun iki yanında kutular halinde: solda Yüz, Şapka, Forma; sağda Sırt, Ayakkabı, Raket. Yazılı, kayan şerit kalktı.
 - Hareketler ayrı kutu, oyuncu görüntüsünün sağ üst köşesinde.

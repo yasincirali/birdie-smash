@@ -887,6 +887,13 @@
 .buyuk-yazi .gel-dugme { width: 56px; height: 56px; }
 .sv-hedef--gelisim { border-color: rgba(255, 201, 60, 0.70); }
 .gel-kart { padding: 10px 12px; }
+/* 2026-11-26 Gelişim yetenek beşgeni + puan anı parlaması (GelisimEkran.GelRadarKur, KartParla). */
+.gel-radar-kap { height: 196px; margin: 4px 0 8px 0; align-items: center; justify-content: center; }
+.gel-radar { width: 140px; height: 140px; }
+.gel-radar-ad { position: absolute; color: var(--tx); -unity-font-style: bold; white-space: nowrap; }
+.buyuk-yazi .gel-radar-kap { height: 240px; }
+.gel-dal { transition-property: background-color; transition-duration: 0.3s; transition-timing-function: ease-out; }
+.gel-dal--parla { background-color: rgba(201, 238, 75, 0.22); transition-duration: 0.05s; }
 .gel-ozet { flex-direction: row; align-items: center; min-height: 22px; }
 .gel-ozet-ad { width: 38%; flex-shrink: 0; }
 .gel-ozet-cubuk { flex-grow: 1; flex-shrink: 1; min-width: 0; margin: 0 8px; }
@@ -949,6 +956,11 @@
    genişlik ekran boyu; bilinçli sapma: yarım durakta figürden 14 pt daha almamak için). iPad (.genis): çekmece sağ panel, tutamak yok. */
 .dolap-cekmece { flex-grow: 1; flex-shrink: 1; min-height: 0; margin-top: 8px; background-color: var(--cam); border-top-left-radius: 20px; border-top-right-radius: 20px; border-top-width: 1px; border-color: var(--cam-kenar); border-top-color: var(--cam-ust); }
 .cekmece-tutamak { height: 30px; flex-shrink: 0; align-items: center; justify-content: center; }
+/* 2026-11-26 kapalı çekmece: dipte tutamak şeridi kalır (yukarı kaydır / dokun açar); 44 pt dokunma alanı (HIG). */
+.cekmece-ic { flex-grow: 1; flex-shrink: 1; min-height: 0; }
+.dolap-cekmece--kapali { flex-grow: 0; }
+.dolap-cekmece--kapali .cekmece-ic { display: none; }
+.dolap-cekmece--kapali .cekmece-tutamak { height: 44px; }
 .cekmece-tutamak-cizgi { width: 36px; height: 5px; border-top-left-radius: 3px; border-top-right-radius: 3px; border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; background-color: rgba(255, 255, 255, 0.40); }
 .dolap .kategori-ray { margin-top: 0; }
 .dolap .vitrin-alan { height: 60%; min-height: 190px; }
