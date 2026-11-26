@@ -11,6 +11,12 @@
 //   · Eşit şartlarda (kariyer dışı "eşit" maç) etkisizdir: ekipman seviyesiyle aynı kural (Gear.KSv).
 //   · Puan seviyeden hesaplanır, ayrıca saklanmaz: eski kayıtla açan oyuncu seviyesi kadar puanı hazır bulur. Kayıt yalnız
 //     dağılımdır ("tuytop_gelisim" = "g,k,t,c,d"); bozuk ya da fazla dağılım okurken kırpılır, puan asla eksiye düşmez.
+//   · 2026-11-26 (yasin karar kartı "İki dalı kaldır, etkiyi büyüt"; önceki mesajı: "Growth ilerledikçe skillerim gelişmeli,
+//     kötü design edilmiş skilleri kaldıralım"): Tatlı nokta ve Dayanıklılık maçta en az hissedilen iki daldı (pencere ve
+//     yorulma farkı göze görünmüyor). Kalktılar; oyuncuya Güç, Kontrol, Çabukluk kalır ve puan başına etki iki katı: dal
+//     tavanında güç/kontrol +%20, koşu +%16. Bu, "ekipmanın altında" kuralını bilerek esnetir (yuva tavanı %18): yasin'in
+//     seçtiği kartta +%20 yazıyordu. Kayıt biçimi aynı kalır (beş alan, eski sürümle ve bulutla uyumlu); kalkan dalların
+//     puanı okurken sıfırlanır, yani oyuncuya boş puan olarak geri döner. 29 puan / 30 yuva: Sv 30'da bile bir dal eksik kalır.
 using System;
 
 namespace BirdieSmash.Core
@@ -20,11 +26,14 @@ namespace BirdieSmash.Core
         public const string ANAHTAR = "tuytop_gelisim";
         public const int DAL = 5, TAVAN = 10;
         public const int GUC = 0, KONTROL = 1, TATLI = 2, CABUK = 3, DAYAN = 4;
+        // Ekranda ve oyunda olan dallar (sıra = ekran sırası). TATLI ve DAYAN yalnız kayıt uyumu için dizide durur.
+        public static readonly int[] GORUNEN = { GUC, KONTROL, CABUK };
+        public static bool Kalkti(int dal) { return dal == TATLI || dal == DAYAN; }
         // Adlar takım çubuklarıyla aynı (Gear.CUBUK_AD): oyuncu aynı beş kavramı iki yerde iki adla görmesin.
         public static readonly string[] AD = { "Güç", "Kontrol", "Tatlı nokta", "Çabukluk", "Dayanıklılık" };
         public static readonly string[] NE = { "Smaç ve derin vuruş daha hızlı", "Vuruş nişan aldığın yere daha yakın düşer", "Temiz vuruş penceresi genişler", "Topa daha çabuk koşarsın", "Uzun rallide daha geç yorulursun" };
         // Puan başına etki (çarpan artışı). Dayanıklılıkta bölen: yorK /= 1 + .015n.
-        static readonly float[] ETKI = { .01f, .01f, .01f, .008f, .015f };
+        static readonly float[] ETKI = { .02f, .02f, 0, .016f, 0 };
 
         public static int Toplam(int sv) { return Math.Max(0, Math.Min(30, sv) - 1); }
         public static int Harcanan(int[] p) { int t = 0; for (int i = 0; i < DAL; i++) t += p[i]; return t; }
@@ -36,7 +45,7 @@ namespace BirdieSmash.Core
             if (!string.IsNullOrEmpty(kayit))
             {
                 var s = kayit.Split(',');
-                for (int i = 0; i < DAL && i < s.Length; i++) { int v; if (int.TryParse(s[i], out v)) p[i] = Math.Max(0, Math.Min(TAVAN, v)); }
+                for (int i = 0; i < DAL && i < s.Length; i++) { int v; if (!Kalkti(i) && int.TryParse(s[i], out v)) p[i] = Math.Max(0, Math.Min(TAVAN, v)); }
             }
             // Seviyenin verdiğinden fazlası (elle bozulmuş kayıt, XP'si düşmüş kayıt): sondan başlayarak kırpılır.
             int fazla = Harcanan(p) - Toplam(sv);
@@ -45,7 +54,7 @@ namespace BirdieSmash.Core
         }
         public static string Yaz(int[] p) { return p[0] + "," + p[1] + "," + p[2] + "," + p[3] + "," + p[4]; }
 
-        public static bool VerOlur(int[] p, int dal, int sv) { return dal >= 0 && dal < DAL && p[dal] < TAVAN && Bos(p, sv) > 0; }
+        public static bool VerOlur(int[] p, int dal, int sv) { return dal >= 0 && dal < DAL && !Kalkti(dal) && p[dal] < TAVAN && Bos(p, sv) > 0; }
         public static bool Ver(int[] p, int dal, int sv) { if (!VerOlur(p, dal, sv)) return false; p[dal]++; return true; }
         public static bool GeriAl(int[] p, int dal) { if (dal < 0 || dal >= DAL || p[dal] <= 0) return false; p[dal]--; return true; }
 

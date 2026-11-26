@@ -32,7 +32,7 @@ namespace BirdieSmash.Game
             if (top > 0) { var ac = Yazi(L.T("Dal başına en çok 10 · ücretsiz değiştir"), 13, "soluk"); ac.style.whiteSpace = WhiteSpace.Normal; ac.style.marginTop = 4; ac.style.marginBottom = 6; c.Add(ac); }
             if (Ayar.gear.eko.esit && !Ayar.kariyerModu) { var es = Yazi(L.T("Eşit şartlar açık: gelişim bu maçlarda sayılmaz."), 13, "ipucu"); es.style.whiteSpace = WhiteSpace.Normal; es.style.marginBottom = 6; c.Add(es); }
             c.Add(GelRadarKur(p));
-            for (int i = 0; i < Gelisim.DAL; i++) c.Add(GelisimDal(i, p[i], bos > 0, top > 0));
+            foreach (var i in Gelisim.GORUNEN) c.Add(GelisimDal(i, p[i], bos > 0, top > 0));   // 2026-11-26: üç dal (Core/Gelisim)
         }
 
         // 2026-11-26 (yasin: "Growth kısmı düzgün çalışmıyor, orası animasyon ve görsel olarak tatmin etmeli"; "Growth ilerledikçe
@@ -40,27 +40,28 @@ namespace BirdieSmash.Game
         // vermiyordu. Üstte beş dallı yetenek şekli (spor oyunlarının oyuncu kartındaki beşgen): eksenler dalların doluluğu,
         // limon alan = senin oyuncun (§8 "senin ilerlemen"). Puan verilince alan .28 sn'de yeni değerine esneyerek büyür, geri
         // alınca küçülür; hareketi azaltta anında. Çizim Painter2D, yalnız değer değişirken (16 ms, en çok ~20 kare) yeniden çizilir.
-        // Kılavuz: 5 ve 10 halkası; adlar köşelerde. Sayı ve "3/10" kartlarda kalır (renk tek başına anlam taşımaz).
-        VisualElement gelRadar; readonly float[] gelRGor = new float[Gelisim.DAL], gelRHedef = new float[Gelisim.DAL];
-        IVisualElementScheduledItem gelRAni; float gelRAniT; readonly float[] gelRBas = new float[Gelisim.DAL];
-        readonly Label[] gelREt = new Label[Gelisim.DAL];
+        // Kılavuz: 5 ve 10 halkası; adlar köşelerde. 2026-11-26 iki dal kalkınca beşgen üçgene döndü (eksen sayısı GORUNEN'den). Sayı ve "3/10" kartlarda kalır (renk tek başına anlam taşımaz).
+        VisualElement gelRadar; readonly float[] gelRGor = new float[RN], gelRHedef = new float[RN];
+        static readonly int RN = Gelisim.GORUNEN.Length;
+        IVisualElementScheduledItem gelRAni; float gelRAniT; readonly float[] gelRBas = new float[RN];
+        readonly Label[] gelREt = new Label[RN];
         VisualElement GelRadarKur(int[] p)
         {
             var kap = new VisualElement(); kap.AddToClassList("gel-radar-kap"); kap.pickingMode = PickingMode.Ignore;
             var r = new VisualElement(); r.AddToClassList("gel-radar"); r.pickingMode = PickingMode.Ignore; kap.Add(r); gelRadar = r;
-            for (int i = 0; i < Gelisim.DAL; i++) { gelRGor[i] = gelRHedef[i] = p[i] / (float)Gelisim.TAVAN; var l = Yazi(L.T(Gelisim.AD[i]), 11, "gel-radar-ad"); l.pickingMode = PickingMode.Ignore; kap.Add(l); gelREt[i] = l; }
+            for (int i = 0; i < RN; i++) { int d = Gelisim.GORUNEN[i]; gelRGor[i] = gelRHedef[i] = p[d] / (float)Gelisim.TAVAN; var l = Yazi(L.T(Gelisim.AD[d]), 11, "gel-radar-ad"); l.pickingMode = PickingMode.Ignore; kap.Add(l); gelREt[i] = l; }
             r.generateVisualContent += GelRadarCiz;
             kap.RegisterCallback<GeometryChangedEvent>(e => GelRadarEtiket(kap));
-            var et = ""; for (int i = 0; i < Gelisim.DAL; i++) et += (i > 0 ? ", " : "") + L.T(Gelisim.AD[i]) + " " + p[i] + "/" + Gelisim.TAVAN;
+            var et = ""; for (int i = 0; i < RN; i++) { int d = Gelisim.GORUNEN[i]; et += (i > 0 ? ", " : "") + L.T(Gelisim.AD[d]) + " " + p[d] + "/" + Gelisim.TAVAN; }
             Erisim.Etiket(kap, L.T("Gelişim") + ": " + et, "resim");
             return kap;
         }
-        static Vector2 GelKose(int i, Vector2 m, float yr) { float a = -Mathf.PI / 2 + i * 2 * Mathf.PI / Gelisim.DAL; return m + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * yr; }
+        static Vector2 GelKose(int i, Vector2 m, float yr) { float a = -Mathf.PI / 2 + i * 2 * Mathf.PI / RN; return m + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * yr; }
         void GelRadarEtiket(VisualElement kap)
         {
             if (gelRadar == null) return; var rb = gelRadar.layout; if (float.IsNaN(rb.width) || rb.width < 10) return;
             var m = rb.center; float yr = rb.width / 2 + 4;
-            for (int i = 0; i < Gelisim.DAL; i++)
+            for (int i = 0; i < RN; i++)
             {
                 var l = gelREt[i]; if (l == null) continue; var k = GelKose(i, m, yr); var w = l.layout.width; var h = l.layout.height; if (float.IsNaN(w)) continue;
                 float x = Mathf.Abs(k.x - m.x) < 2 ? k.x - w / 2 : k.x > m.x ? k.x : k.x - w; float y = i == 0 ? k.y - h : Mathf.Abs(k.y - m.y) < rb.height * .2f ? k.y - h / 2 : k.y;
@@ -74,26 +75,26 @@ namespace BirdieSmash.Game
             pz.lineJoin = LineJoin.Round;
             for (int h = 1; h <= 2; h++)
             {   // kılavuz halkaları (5 ve 10) + eksenler
-                pz.BeginPath(); for (int i = 0; i < Gelisim.DAL; i++) { var k = GelKose(i, m, yr * h / 2f); if (i == 0) pz.MoveTo(k); else pz.LineTo(k); } pz.ClosePath();
+                pz.BeginPath(); for (int i = 0; i < RN; i++) { var k = GelKose(i, m, yr * h / 2f); if (i == 0) pz.MoveTo(k); else pz.LineTo(k); } pz.ClosePath();
                 pz.strokeColor = new Color(1, 1, 1, h == 2 ? .28f : .14f); pz.lineWidth = 1; pz.Stroke();
             }
-            pz.BeginPath(); for (int i = 0; i < Gelisim.DAL; i++) { pz.MoveTo(m); pz.LineTo(GelKose(i, m, yr)); } pz.strokeColor = new Color(1, 1, 1, .1f); pz.Stroke();
-            float top = 0; for (int i = 0; i < Gelisim.DAL; i++) top += gelRGor[i]; if (top <= .001f) return;
+            pz.BeginPath(); for (int i = 0; i < RN; i++) { pz.MoveTo(m); pz.LineTo(GelKose(i, m, yr)); } pz.strokeColor = new Color(1, 1, 1, .1f); pz.Stroke();
+            float top = 0; for (int i = 0; i < RN; i++) top += gelRGor[i]; if (top <= .001f) return;
             pz.BeginPath();
-            for (int i = 0; i < Gelisim.DAL; i++) { var k = GelKose(i, m, yr * Mathf.Max(.04f, gelRGor[i])); if (i == 0) pz.MoveTo(k); else pz.LineTo(k); }
+            for (int i = 0; i < RN; i++) { var k = GelKose(i, m, yr * Mathf.Max(.04f, gelRGor[i])); if (i == 0) pz.MoveTo(k); else pz.LineTo(k); }
             pz.ClosePath(); pz.fillColor = new Color(LIMON.r, LIMON.g, LIMON.b, .38f); pz.Fill(); pz.strokeColor = LIMON; pz.lineWidth = 2.5f; pz.Stroke();
         }
         void GelRadarGuncelle()
         {
             if (gelRadar == null || gelRadar.panel == null) return;
-            for (int i = 0; i < Gelisim.DAL; i++) { gelRBas[i] = gelRGor[i]; gelRHedef[i] = Ayar.gelisim[i] / (float)Gelisim.TAVAN; }
-            if (Ayar.reduce) { for (int i = 0; i < Gelisim.DAL; i++) gelRGor[i] = gelRHedef[i]; gelRadar.MarkDirtyRepaint(); return; }
+            for (int i = 0; i < RN; i++) { gelRBas[i] = gelRGor[i]; gelRHedef[i] = Ayar.gelisim[Gelisim.GORUNEN[i]] / (float)Gelisim.TAVAN; }
+            if (Ayar.reduce) { for (int i = 0; i < RN; i++) gelRGor[i] = gelRHedef[i]; gelRadar.MarkDirtyRepaint(); return; }
             gelRAniT = Time.unscaledTime;
             if (gelRAni != null) return;
             gelRAni = gelRadar.schedule.Execute(() =>
             {
                 float k = Mathf.Clamp01((Time.unscaledTime - gelRAniT) / .28f), e = 1 + 2.2f * Mathf.Pow(k - 1, 3) + 1.2f * Mathf.Pow(k - 1, 2);   // ease-out-back
-                for (int i = 0; i < Gelisim.DAL; i++) gelRGor[i] = Mathf.LerpUnclamped(gelRBas[i], gelRHedef[i], e);
+                for (int i = 0; i < RN; i++) gelRGor[i] = Mathf.LerpUnclamped(gelRBas[i], gelRHedef[i], e);
                 gelRadar.MarkDirtyRepaint(); Kalite.Hareket();
                 if (k >= 1) { gelRAni.Pause(); gelRAni = null; }
             }).Every(16);
@@ -313,7 +314,7 @@ namespace BirdieSmash.Game
             r.Add(Yazi(ust, 15, "kalin")); r.Add(Yazi("›", 18, "soluk"));
             // 2026-11-21 inceleme (fikir 17:06 #7): boş puan yokken "Dağılımı değiştir" kartın kendi işini söylüyordu; yerine oyuncunun
             // öne çıkan dalı (en yüksek, eşitlikte ilki). Hiç puan verilmemişse satır yok.
-            int en = 0; for (int i = 1; i < Gelisim.DAL; i++) if (p[i] > p[en]) en = i;
+            int en = Gelisim.GORUNEN[0]; foreach (var i in Gelisim.GORUNEN) if (p[i] > p[en]) en = i;
             string alt = bos > 0 ? L.T("Dağıtılacak puan: {0}", bos) : p[en] > 0 ? L.T("Öne çıkan: {0} {1}", L.T(Gelisim.AD[en]), p[en]) : "";
             if (alt != "") { var ay = Yazi(alt, 13, bos > 0 ? "altin" : "soluk"); ay.style.marginTop = 4; ay.pickingMode = PickingMode.Ignore; kart.Add(ay); }
             kart.AddManipulator(new Clickable(() => { Tik(); GelisimAc(); }));

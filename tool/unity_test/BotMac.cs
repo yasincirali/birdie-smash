@@ -1030,23 +1030,26 @@ static class BotMac
     static void Gelisimler()
     {
         if (Gelisim.Toplam(1) != 0 || Gelisim.Toplam(2) != 1 || Gelisim.Toplam(30) != 29 || Gelisim.Toplam(99) != 29 || Gelisim.Toplam(0) != 0) Fail("gelişim: puan = seviye - 1, 29'da durur");
-        if (Gelisim.DAL * Gelisim.TAVAN <= Gelisim.Toplam(30)) Fail("gelişim: Sv 30'da her dal dolmamalı (seçim kalmaz)");
+        if (Gelisim.GORUNEN.Length * Gelisim.TAVAN <= Gelisim.Toplam(30)) Fail("gelişim: Sv 30'da her dal dolmamalı (seçim kalmaz)");
         var p = Gelisim.Oku(null, 10); if (Gelisim.Harcanan(p) != 0 || Gelisim.Bos(p, 10) != 9) Fail("gelişim: boş kayıt");
         p = Gelisim.Oku("3,2,0,0,0", 4); if (Gelisim.Yaz(p) != "3,0,0,0,0") Fail("gelişim: seviyeden fazlası sondan kırpılmalı: " + Gelisim.Yaz(p));
         p = Gelisim.Oku("99,-5,x", 30); if (Gelisim.Yaz(p) != "10,0,0,0,0") Fail("gelişim: bozuk değer 0..10'a çekilmeli: " + Gelisim.Yaz(p));
         p = Gelisim.Oku("2,1", 3); if (Gelisim.Yaz(p) != "2,0,0,0,0" || Gelisim.Bos(p, 3) != 0) Fail("gelişim: kısa kayıt");
         p = new int[5]; int sv = 30, n = 0; while (Gelisim.Ver(p, Gelisim.GUC, sv)) n++; if (n != 10 || p[0] != 10 || Gelisim.VerOlur(p, Gelisim.GUC, sv)) Fail("gelişim: dal tavanı 10");
-        while (Gelisim.Ver(p, Gelisim.KONTROL, sv)) { } while (Gelisim.Ver(p, Gelisim.TATLI, sv)) { }
-        if (Gelisim.Bos(p, sv) != 0 || p[2] != 9 || Gelisim.Ver(p, Gelisim.CABUK, sv)) Fail("gelişim: puan bitince verilmez");
+        // 2026-11-26: Tatlı nokta ve Dayanıklılık kalktı; verilmez, eski kayıttaki puanı okurken boşa döner.
+        if (Gelisim.Ver(p, Gelisim.TATLI, sv) || Gelisim.Ver(p, Gelisim.DAYAN, sv)) Fail("gelişim: kalkan dala puan verilmez");
+        if (Gelisim.Yaz(Gelisim.Oku("0,0,5,0,4", 30)) != "0,0,0,0,0" || Gelisim.Bos(Gelisim.Oku("2,0,5,0,4", 10), 10) != 7) Fail("gelişim: kalkan dalların puanı geri dönmeli");
+        while (Gelisim.Ver(p, Gelisim.KONTROL, sv)) { } while (Gelisim.Ver(p, Gelisim.CABUK, sv)) { }
+        if (Gelisim.Bos(p, sv) != 0 || p[3] != 9 || Gelisim.Ver(p, Gelisim.CABUK, sv)) Fail("gelişim: puan bitince verilmez");
         if (!Gelisim.GeriAl(p, Gelisim.GUC) || Gelisim.Bos(p, sv) != 1 || !Gelisim.Ver(p, Gelisim.CABUK, sv) || Gelisim.GeriAl(p, Gelisim.DAYAN)) Fail("gelişim: geri alma ücretsiz, boş daldan alınmaz");
-        if (Gelisim.Oku(Gelisim.Yaz(p), sv)[3] != 1 || Gelisim.Yaz(Gelisim.Oku(Gelisim.Yaz(p), sv)) != Gelisim.Yaz(p)) Fail("gelişim: kayıt gidiş dönüş");
+        if (Gelisim.Oku(Gelisim.Yaz(p), sv)[3] != 10 || Gelisim.Yaz(Gelisim.Oku(Gelisim.Yaz(p), sv)) != Gelisim.Yaz(p)) Fail("gelişim: kayıt gidiş dönüş");
         var tam = new[] { 10, 10, 10, 10, 10 }; var g = Gelisim.Uygula(GearStats.Notr, tam, false);
-        if (Math.Abs(g.guc - 1.10f) > 1e-4 || Math.Abs(g.kontrol - 1.10f) > 1e-4 || Math.Abs(g.tatli - 1.10f) > 1e-4 || Math.Abs(g.kosu - 1.08f) > 1e-4 || Math.Abs(g.yorK - 1 / 1.15f) > 1e-4) Fail("gelişim: tavan etkisi");
-        if (g.guc > 1.18f || g.kontrol > 1.18f || g.tatli > 1.18f) Fail("gelişim: etki ekipman yuva seviyesinin altında kalmalı");
+        if (Math.Abs(g.guc - 1.20f) > 1e-4 || Math.Abs(g.kontrol - 1.20f) > 1e-4 || g.tatli != 1 || Math.Abs(g.kosu - 1.16f) > 1e-4 || g.yorK != 1) Fail("gelişim: tavan etkisi (2026-11-26: +%20/+%16, kalkan dallar etkisiz)");
+        if (g.guc > 1.20f + 1e-4 || g.kontrol > 1.20f + 1e-4) Fail("gelişim: etki +%20'yi aşmamalı (yasin kartı)");
         if (GearStats.Notr.guc != 1 || Gelisim.Uygula(GearStats.Notr, tam, true) != GearStats.Notr || Gelisim.Uygula(GearStats.Notr, new int[5], false) != GearStats.Notr) Fail("gelişim: eşit şartlarda ve puansız etkisiz, Notr değişmez");
         if (g.hiz != 1 || g.enerji != 1 || g.slice != 1 || g.uzanma != 1) Fail("gelişim: yalnız beş dalın değerleri değişir");
         if (Array.IndexOf(BulutKayit.METIN, Gelisim.ANAHTAR) < 0) Fail("gelişim: dağılım buluta gitmeli");
-        Console.WriteLine("Gelişim: Sv 30'da 29 puan / 50 yuva, tavan güç ×" + g.guc.ToString("0.00") + " koşu ×" + g.kosu.ToString("0.00") + " yorulma ×" + g.yorK.ToString("0.00") + ", smaç hızı ×" + (SmacHizi(Gelisim.Uygula(GearStats.Notr, new[] { 10, 0, 0, 0, 0 }, false)) / SmacHizi(GearStats.Notr)).ToString("0.000"));
+        Console.WriteLine("Gelişim: Sv 30'da 29 puan / 30 yuva, tavan güç ×" + g.guc.ToString("0.00") + " koşu ×" + g.kosu.ToString("0.00") + " yorulma ×" + g.yorK.ToString("0.00") + ", smaç hızı ×" + (SmacHizi(Gelisim.Uygula(GearStats.Notr, new[] { 10, 0, 0, 0, 0 }, false)) / SmacHizi(GearStats.Notr)).ToString("0.000"));
     }
     // 2026-11-10 Dolap koleksiyon sayımı ve "Sıradaki": sayım kayıttan, aynı hareket iki kez sayılmaz, sıradaki eşya
     // önce seviyesi yeten en ucuz, yoksa en yakın seviye; alınınca değişir, hepsi alınınca null.

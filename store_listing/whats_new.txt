@@ -9,7 +9,8 @@ Dolap ve Atölye cilası (26 Kasım öğlen, ikinci tur):
 Nasıl denenir: Dolap'ı aç, bir şapka dene: Şapka kutusunda resim ve "Deneme" görmelisin. Uzun listeyi hızlı kaydır: takılma olmamalı. Atölye'de Eşit şartlar'a dokun: hemen altındaki çubuklar değişmeli. Ağırlık düğmesine dokun: alttaki düğme yerinde kalmalı.
 Menü listesi (26 Kasım öğlen):
 - Uygulama ikonu ve ilk açılıştaki logo açılış ekranının mavisine geçti.
-- Gelişim sayfasının üstünde beş dallı yetenek şekli var; puan verince şekil büyüyor, her puanda ses biraz daha yükseliyor, dal dolunca kutlama sesi ve titreşim geliyor.
+- Gelişim üç dala indi: Güç, Kontrol, Çabukluk. Tatlı nokta ve Dayanıklılık kalktı, o dallara verdiğin puanlar boş puan olarak geri geldi. Her puanın etkisi iki katı (dal dolunca +%20).
+- Gelişim sayfasının üstünde üç köşeli yetenek şekli var; puan verince şekil büyüyor, her puanda ses biraz daha yükseliyor, dal dolunca kutlama sesi ve titreşim geliyor.
 - Menü düğmelerinde ses ve titreşim artık parmağın değdiği anda geliyor (eskiden parmak kalkınca).
 - Oyna sayfasında sen ve rakip baştan ayağa görünüyorsunuz; ayakkabı ve kıyafet artık kartın arkasında kalmıyor.
 - Hızlı maçı kazanıp "Bir maç daha"ya basınca aynı tarzdaki rakip geliyor.
