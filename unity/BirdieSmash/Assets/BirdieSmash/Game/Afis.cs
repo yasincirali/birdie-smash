@@ -56,6 +56,16 @@ namespace BirdieSmash.Game
             a.konturBen = Isik(g.transform, "afis_kontur_ben", YER + Ek(BEN + new Vector3(-1.2f, 1.5f, -.35f)), UiKok.LIMON, 2.6f, 2.4f);
             g.SetActive(false); return a;
         }
+        // VS'nin yeri (2026-11-26, yasin: "oyna sayfasında kendi karakterim ve rakip arasında vs yazmalı, şu anda rakibin üstünde
+        // yazıyor"): VS kutunun sabit yüzdesindeydi (%55, %42,6; 4,4 m kadrajına göre). Kamera 6,6 m'ye çekilince figürler küçüldü ve
+        // ortaya toplandı, sabit nokta rakibin gövdesine düştü. Artık iki figürün göğüs hizasının (1,05 m) ekrandaki orta noktası bu
+        // kameradan hesaplanır: kadraj sabiti değişse de VS ikisinin arasında kalır. Dönen değer RT'nin görüş alanı (0..1, y aşağı).
+        public Vector2 VsNokta()
+        {
+            if (kam == null) return new Vector2(.55f, .426f);
+            Vector3 b = kam.WorldToViewportPoint(YER + Ek(BEN) + Vector3.up * 1.05f), r = kam.WorldToViewportPoint(YER + Ek(RAKIP) + Vector3.up * 1.05f);
+            return new Vector2((b.x + r.x) / 2, 1 - (b.y + r.y) / 2);
+        }
         static RenderTexture YeniRt(int w, int h)
         {
             return new RenderTexture(w, h, 16, RenderTextureFormat.ARGB32) { name = "afis", antiAliasing = Kalite.Basamak > 0 ? 2 : 1, memorylessMode = RenderTextureMemoryless.MSAA | RenderTextureMemoryless.Depth };   // çok örnekli tampon karo belleğinde

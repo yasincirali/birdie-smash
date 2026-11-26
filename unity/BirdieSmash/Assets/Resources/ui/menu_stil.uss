@@ -515,7 +515,7 @@
 .isik-sag { position: absolute; right: -120px; top: -80px; width: 300px; height: 300px; }
 .afis { position: absolute; left: 0; right: 0; top: 8%; height: 54%; }
 .vs { position: absolute; left: 55%; top: 31%; -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); font-size: 44px; color: var(--tx);
-      text-shadow: 0 0 12px rgba(255, 201, 60, 0.85); -unity-text-outline-width: 0; }
+      text-shadow: 0 0 12px rgba(255, 201, 60, 0.85); -unity-text-outline-width: 0; translate: -50% -50%; }
 .buyuk-yazi .afis { opacity: 0.45; }
 .buyuk-yazi .vs { display: none; }
 .oyna-sahne { min-height: 140px; }

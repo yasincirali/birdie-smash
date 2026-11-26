@@ -32,7 +32,8 @@ namespace BirdieSmash.Game
             // fizik ve topun arkasındaki koyu orta şerit (beyaz tüy okunsun, 6 Kas kuralı) aynı; değişen yalnız ışık ve renk.
             // 26 Kas ikinci tur (ilk gerçek kare r274): oyun kamerası yukarıdan bakar, arka duvar görünmez; kare Salon'dan zor
             // ayrılıyordu. Mat koyulaştı, yayın ışığı kısıldı (1,6 → 1,05, 44°), yan renkli ışıklar korta yaklaştı ve güçlendi,
-            // çizgi halesi iki kat genişledi: atmosfer kortun kendisinde okunur.
+            // atmosfer kortun kendisinde okunur. Aynı gün akşam (yasin TF'de: "saha çizimleri profesyonel olmalı, neon saha çizimi
+            // bulanık olmuş"): çizgi halesi 40 cm'lik bulanık banttı; çizgi keskin beyaz kalır, hale yalnız 10 cm ve %40 (ışıma ölçülü).
             {"neon",   new Saha{ad="Neon salon",kort="#22705a",tek="#22705a",cevre="#1d1b4c",ust="#0c0a2a",dol=.7f,neon=true}}};
         public static readonly string[] SIRA = { "neon", "salon", "turnuva", "okul", "park" };
         public const string AKIS = "akis_cizgileri";
@@ -48,7 +49,7 @@ namespace BirdieSmash.Game
             if (T.neon)
             {   // Neon kenar tüpü: çevre zeminin dış sınırında pembe parlayan şerit (yukarıdan bakan kamerada da görünen tek neon
                 // imza). Eklemeli, yerden 3 mm; uzun kenarlar u, kısa kenarlar v doğrultusunda sönen dokuyla.
-                float gx = (Court.CW + 3.2f) / 2, gy = (Court.L + 4.2f) / 2; var pembe = new Color(1f, .3f, .8f, .85f);
+                float gx = (Court.CW + 3.2f) / 2, gy = (Court.L + 4.2f) / 2; var pembe = new Color(1f, .3f, .8f, .6f);
                 foreach (float yon in new[] { -1f, 1f })
                 {
                     Kit.Prim(PrimitiveType.Cube, "neon_tup", k, new Vector3(yon * gx, -.003f, 0), new Vector3(.36f, .002f, gy * 2), Kit.Additive(pembe, SeritTex()));
@@ -93,15 +94,15 @@ namespace BirdieSmash.Game
             if (T.neon)
             {   // Neon: çizgi ışık hesaplamaz (gölgede de parlak), çevresinde 5 kat genişlikte eklemeli camgöbeği hale. Hale ağı akış
                 // ağıyla aynı yoldan kurulur; çizgi kenarına göre ±2,5 genişlik, yerden 1,5 mm yukarıda.
-                Kit.MeshObj("cizgiler", k, m, Kit.Unlit(new Color(.78f, 1f, 1f)));
+                Kit.MeshObj("cizgiler", k, m, Kit.Unlit(new Color(.94f, 1f, 1f)));
                 var hv = new List<Vector3>(); for (int i = 0; i < v.Count; i += 4)
                 {
-                    Vector3 c0 = (v[i] + v[i + 1]) / 2, c1 = (v[i + 2] + v[i + 3]) / 2, n2 = (v[i + 1] - v[i]) * 5f, uz = (c1 - c0).normalized * .1f, yuk = Vector3.up * .0015f;
+                    Vector3 c0 = (v[i] + v[i + 1]) / 2, c1 = (v[i + 2] + v[i + 3]) / 2, n2 = (v[i + 1] - v[i]) * 1.3f, uz = (c1 - c0).normalized * .03f, yuk = Vector3.up * .0015f;
                     hv.Add(c0 - uz - n2 + yuk); hv.Add(c0 - uz + n2 + yuk); hv.Add(c1 + uz + n2 + yuk); hv.Add(c1 + uz - n2 + yuk);
                 }
                 var hm = new Mesh { name = "neon_hale" }; hm.SetVertices(hv); hm.SetTriangles(tr, 0); hm.RecalculateBounds();
                 var hu = new Vector2[hv.Count]; for (int i = 0; i < hu.Length; i += 4) { hu[i] = new Vector2(0, 0); hu[i + 1] = new Vector2(1, 0); hu[i + 2] = new Vector2(1, 1); hu[i + 3] = new Vector2(0, 1); }
-                hm.uv = hu; Kit.MeshObj("neon_hale", k, hm, Kit.Additive(new Color(.35f, .95f, 1f, .9f), SeritTex()));
+                hm.uv = hu; Kit.MeshObj("neon_hale", k, hm, Kit.Additive(new Color(.35f, .95f, 1f, .4f), SeritTex()));
             }
             else Kit.MeshObj("cizgiler", k, m, Kit.Lit(new Color(.95f, .97f, .95f), .2f)).GetComponent<Renderer>().receiveShadows = true;
             // Akış (HTML cizgiler(true)): üst üste tam ortada çizgiler altın olur ve nabız atar (alfa .75 + .25·sin(t/180 ms)),

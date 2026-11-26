@@ -94,7 +94,7 @@ namespace BirdieSmash.Game
                     Ayar.model = "oyuncak"; Ayar.saha = sh; root.SahaDegisti(); root.StartMatch(false, false, false); botAcik = true;
                     yield return Bekle(60); yield return Cek("saha_" + sh); root.AnaMenu();
                 }
-                Ayar.saha = "neon"; root.SahaDegisti(); if (root.ui != null) { root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(30); yield return Cek("menu_neon_oyna"); }
+                Ayar.saha = "neon"; root.SahaDegisti(); Ayar.antrenman = true; if (root.ui != null) { root.ui.Kirlet(); root.ui.SekmeAc(Sekme.Kariyer); root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(40); yield return Cek("menu_neon_oyna"); }   // antrenman görüldü: Oyna afişi (sen, VS, rakip) çizilir
                 File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
             }
             if (kip == "dolap") { yield return Cek("00_ilk_kare"); yield return MenuTuru(); yield return DugmeKareleri(); yield return SevincKareleri(); yield return Varyantlar(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); yield return MacSonuTani(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }
