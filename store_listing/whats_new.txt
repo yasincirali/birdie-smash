@@ -1,4 +1,11 @@
 === UNITY ===
+Seviye yolu ve ödül anı (26 Kasım gece):
+- Seviye yolu artık yalnız sıradaki 5 seviyeyi gösteriyor; altındaki "Sv …–30'u göster ›" satırına dokununca gerisi aynı sayfada açılıyor.
+- Bu 5 seviyede açılacak saç, şapka, aksesuar gibi eşyaların küçük resmi kartın sağında görünüyor.
+- Seviye atladığında önce yalnız maçta kazandığın Tüy sayaca uçuyor; seviye ödülü Tüy'ü, seviye kartını kapatırken karttaki ödül satırından sayaca uçuyor.
+- Maçı duraklatıp menüye çıktığında Oyna sekmesindeki işaret artık küçük bir duraklat simgesi.
+- Maçtan döndükten sonra Atölye sekmesi arka planda hazırlanıyor; ilk açılışı daha akıcı olmalı.
+Nasıl denenir: Oyna'daki seviye satırına dokunup Seviye yolu'nu aç: 5 kart ve altında "göster" satırı olmalı, eşya açılan kartlarda küçük resim belirmeli. Seviye atlatan bir maç bitir: sayaç önce maç Tüy'ünü saymalı, kartı kapatınca ödül sayaca uçup bir kez daha artmalı. Bir maçı duraklatıp menüye dön: Oyna simgesinin köşesinde iki çubuklu işaret görmelisin. Maçtan sonra birkaç saniye bekleyip Atölye'ye geç.
 Neon salon (26 Kasım):
 - Yeni saha: koyu mavi-mor salon, yeşil mat, parlayan çizgiler, yanlarda neon panolar ve bulanık ışıklar. Oyuncuların iki yanından pembe ve camgöbeği ışık vurur.
 - Yeni oyuncu bu sahada başlar; daha önce saha seçtiysen seçimin aynı kalır. Oyna > Hızlı maç > Saha'dan "Neon" seçilir.
