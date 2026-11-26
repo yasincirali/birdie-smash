@@ -85,6 +85,18 @@ namespace BirdieSmash.Game
                 for (int i = 0; i < 3; i++) { float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 4) yield return null; yield return Cek("afis_" + i); }
                 File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
             }
+            // 2026-11-26 saha kısa turu (`ekran/kisa-saha-*`): yalnız saha kareleri (her saha bir maç anı + Oyna menüsü). Tam tur
+            // 90 dk sınırında sonuç dalına yazamadan iptal oluyordu (Neon salon ilk turu, 26 Kas); saha görünümü için menü/dolap gerekmez.
+            if (kip == "saha")
+            {
+                foreach (var sh in CourtView.SIRA)
+                {
+                    Ayar.model = "oyuncak"; Ayar.saha = sh; root.SahaDegisti(); root.StartMatch(false, false, false); botAcik = true;
+                    yield return Bekle(60); yield return Cek("saha_" + sh); root.AnaMenu();
+                }
+                Ayar.saha = "neon"; root.SahaDegisti(); if (root.ui != null) { root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(30); yield return Cek("menu_neon_oyna"); }
+                File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
+            }
             if (kip == "dolap") { yield return Cek("00_ilk_kare"); yield return MenuTuru(); yield return DugmeKareleri(); yield return SevincKareleri(); yield return Varyantlar(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             yield return MenuTuru(); if (root.HudKatman != null) rap.AppendLine("açılış süresi (gerçek, CI yazılım render'ı): " + root.HudKatman.AcilisTani);
