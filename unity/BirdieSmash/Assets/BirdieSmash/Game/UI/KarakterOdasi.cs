@@ -196,7 +196,7 @@ namespace BirdieSmash.Game
             if (soyunmaSegment != null && soyunmaSegment.childCount == katSira.Count)
             {
                 for (int j = 0; j < katSira.Count; j++) { var d = soyunmaSegment[j]; CipDurum(d, katSira[j] == i); if (katSira[j] == i && kategoriKaydir != null) OrtayaKaydir(kategoriKaydir, d); }
-                foreach (var kv in yuvaEl) YuvaDurum(kv.Value, kv.Key == i);
+                foreach (var kv in yuvaEl) YuvaDurum(kv.Value, kv.Key == i, true);
             }
             else KategoriKur();
             SoyunmaGovdeKur(false, true);
@@ -227,16 +227,62 @@ namespace BirdieSmash.Game
         {
             int ii = i, ks, kt; bool sayim = KarSayim(i, out ks, out kt), dn = KategoriDeneniyor(i);
             var d = new VisualElement(); d.AddToClassList("dugme"); d.AddToClassList("dolap-yuva"); if (dn) d.AddToClassList("dolap-yuva--deneniyor");
+            // 2026-11-26 inceleme (fikir 12:06 #1): yuvada yalnız kategori adı vardı; "hangi şapkam takılı" figüre bakarak çözülüyordu,
+            // yuva sekme düğmesi gibi okunuyordu, dolap gözü gibi değil (muadil: Fortnite Locker / Clash Royale yuvası eşyanın resmini
+            // gösterir). Baş portresi olan kategorilerde (Saç, Şapka, Yüz, Sırt) yuvanın üstünde takılı ya da denenen eşyanın küçük
+            // resmi, ad altında kalır. Kaynak kart ızgarasının önbelleği (Portre.DeneHazir); yoksa aynı sıralı kuyruk (kare başına bir figür).
+            // Forma, Ayakkabı, Raket, Beden, Hareketler şimdilik yalnız ad: ayrı resim kaynakları (Desen/RaketSekil) yuva ölçeğinde denenmedi.
+            if (YuvaPortreKat(i) != null) { var im = new Image { scaleMode = ScaleMode.ScaleToFit, pickingMode = PickingMode.Ignore }; im.AddToClassList("dolap-yuva-resim"); d.Add(im); }
             var y = Yazi(L.T(KAR_AD[i]), 12, "dolap-yuva-yazi"); y.pickingMode = PickingMode.Ignore; d.Add(y);
-            var n = new VisualElement(); n.AddToClassList("dolap-yuva-nokta"); n.pickingMode = PickingMode.Ignore; d.Add(n);   // deneniyor (şekil; etiket de söyler)
+            // 2026-11-26 inceleme (fikir 12:06 #5): denenen kategori 7 px sarı noktaydı, seçili ✓ ile aynı renk; yalnız renkle okunuyordu.
+            // Artık sol üst köşede "Deneme" yazılı küçük etiket (✓ sağ üstte: şekil ve yazı ayrı).
+            var n = Yazi(L.T("Deneme"), 11, "dolap-yuva-deneme"); n.pickingMode = PickingMode.Ignore; d.Add(n);
             d.AddManipulator(new Clickable(() => KategoriSec(ii)));   // Tik KategoriSec'te
             Erisim.Etiket(d, L.T(KAR_AD[i]) + (sayim ? ", " + L.T("{0} eşyadan {1} tanesi senin", kt, ks) : "") + (dn ? ", " + L.T("deneniyor") : ""), "sekme", karAlt == i);
-            yuvaEl[i] = d; YuvaDurum(d, karAlt == i); return d;
+            yuvaEl[i] = d; YuvaDurum(d, karAlt == i); YuvaResim(i, d); return d;
         }
-        void YuvaDurum(VisualElement d, bool secili)
+        static string YuvaPortreKat(int i) { return i == KAR_SAC ? Kozmetik.SAC : i == KAR_SAPKA ? Kozmetik.SAPKA : i == KAR_TEN ? Kozmetik.YUZ : i == KAR_SIRT ? Kozmetik.SIRT : null; }
+        string YuvaDeneId(int i) { var vt = root.vitrin; return vt == null ? null : i == KAR_SAC ? vt.deneSac : i == KAR_SAPKA ? vt.deneSapka : i == KAR_TEN ? vt.deneYuz : i == KAR_SIRT ? vt.deneSirt : null; }
+        // Yuvanın resmi: denenen varsa o, yoksa takılı. Aynı eşya için yeniden bakılmaz (userData = gösterilen id).
+        void YuvaResim(int i, VisualElement d)
+        {
+            var im = d.Q<Image>(className: "dolap-yuva-resim"); string kat = YuvaPortreKat(i); if (im == null || kat == null) return;
+            var vt = root.vitrin; string id = YuvaDeneId(i);
+            // Sırt yuvası kol ve bel denemesini de taşır ("Deneme" etiketi üçünde açılıyor): resim denenen parçayı gösterir.
+            if (id == null && i == KAR_SIRT && vt != null) { if (vt.deneKol != null) { kat = Kozmetik.KOL; id = vt.deneKol; } else if (vt.deneBel != null) { kat = Kozmetik.BEL; id = vt.deneBel; } }
+            if (id == null) Ayar.KOZ.TryGetValue(kat, out id);
+            // Boş yuva ("yok") yalnız ad: şapkasız baş resmi "takılı eşya" gibi okunurdu.
+            bool bos = string.IsNullOrEmpty(id) || id == "yok"; im.style.display = bos ? DisplayStyle.None : DisplayStyle.Flex; if (bos) return;
+            // Önbellek anahtarı ten/forma/saç rengini de içerir: aynı id'de görünüm değişirse resim yenilenir; her çağrıda bakılır (sözlük okuması).
+            im.userData = id;
+            var hazir = Portre.DeneHazir(kat, id); if (hazir != null) { im.image = hazir; im.RemoveFromClassList("koz-resim--bekle"); return; }
+            if (im.image == null) im.AddToClassList("koz-resim--bekle");
+            for (int q = 0; q < kucukKuyruk.Count; q++) if (kucukKuyruk[q].im == im && kucukKuyruk[q].id == id && kucukKuyruk[q].kat == kat) return;   // zaten sırada
+            KucukSiraya(im, kat, id);
+        }
+        // Deneme/seçim/alım sonrası (SoyunmaGovdeKur): yuvaların "Deneme" etiketi ve resmi yerinde güncellenir. Önceden nokta yalnız
+        // kategori şeridi baştan kurulunca güncelleniyordu; bir eşya deneyince yuvası bir sonraki kategori değişimine kadar eski kalıyordu.
+        void YuvalarTazele()
+        {
+            foreach (var kv in yuvaEl)
+            {
+                if (kv.Value.panel == null) continue;   // Atölye/Profil yeniden kurulumu: eski yuvalar
+                bool dn = KategoriDeneniyor(kv.Key); kv.Value.EnableInClassList("dolap-yuva--deneniyor", dn);
+                var eb = kv.Value.userData as ErisimBilgi; int ks, kt;
+                if (eb != null) eb.etiket = L.T(KAR_AD[kv.Key]) + (KarSayim(kv.Key, out ks, out kt) ? ", " + L.T("{0} eşyadan {1} tanesi senin", kt, ks) : "") + (dn ? ", " + L.T("deneniyor") : "");
+                YuvaResim(kv.Key, kv.Value);
+            }
+        }
+        // 2026-11-26 inceleme (fikir 12:06 #6): yeni seçilen yuvanın ✓ rozeti bir karede beliriyordu; artık .6→1 yaylanır (.18 sn,
+        // ease-out-back, yalnız scale). Yalnız dokunuşla seçimde (canli); yuvalar kurulurken ve hareketi azaltta yok.
+        void YuvaDurum(VisualElement d, bool secili, bool canli = false)
         {
             d.EnableInClassList("dolap-yuva--secili", secili); var tk = d.Q(className: "dolap-yuva-tik");
-            if (secili && tk == null) { tk = new VisualElement(); tk.AddToClassList("dolap-yuva-tik"); tk.pickingMode = PickingMode.Ignore; tk.Add(Ikon(Ikonlar.Tik, 12, KOYU)); d.Add(tk); }   // sarı rozet içinde mürekkep ✓ (10:1)
+            if (secili && tk == null)
+            {
+                tk = new VisualElement(); tk.AddToClassList("dolap-yuva-tik"); tk.pickingMode = PickingMode.Ignore; tk.Add(Ikon(Ikonlar.Tik, 12, KOYU)); d.Add(tk);   // sarı rozet içinde mürekkep ✓ (10:1)
+                if (canli && !Ayar.reduce) { var t = tk; t.AddToClassList("dolap-yuva-tik--gir"); t.schedule.Execute(() => t.RemoveFromClassList("dolap-yuva-tik--gir")).StartingIn(16); }
+            }
             else if (!secili && tk != null) tk.RemoveFromHierarchy();
             var eb = d.userData as ErisimBilgi; if (eb != null) eb.secili = secili;
         }
@@ -694,6 +740,10 @@ namespace BirdieSmash.Game
             // ızgarada aşağıda bekleyen onlarca kart sayfa açık kaldıkça yoklanıyor, menü boştayken de uyanık kalıyordu. Artık tek
             // kuyruk + tek zamanlayıcı (kok üstünde): sırayla tarar, görünen ilkini çizer, kuyruk boşalınca durur. "Kare başına en çok
             // bir figür" kuralı aynı. `sira` artık kuyruğa giriş sırası (çağıranlar zaten kart sırasıyla çağırıyor).
+            KucukSiraya(im, kat, id);
+        }
+        void KucukSiraya(Image im, string kat, string id)
+        {
             kucukKuyruk.Add(new KucukIs { im = im, kat = kat, id = id });
             if (kucukZaman == null) kucukZaman = kok.schedule.Execute(KucukTara).Every(50); else kucukZaman.Resume();
         }
@@ -703,17 +753,30 @@ namespace BirdieSmash.Game
         void KucukTara()
         {
             float simdi = Time.realtimeSinceStartup;
-            if (simdi - sonKucuk >= .045f)
+            // 2026-11-26 inceleme (fikir 12:06 #2, takılma): parmak ızgarayı kaydırırken her yeni görünen kart ana iş parçacığında bir
+            // FBX figürü kuruyordu; kare kaçışı tam akıcılığın en çok görüldüğü anda. Sayfa son 120 ms içinde kaydıysa çizim beklenir,
+            // durunca sıradaki görünen çizilir (iOS koleksiyon görünümü kalıbı). Tek ofset karşılaştırması, ayırma yok.
+            if (simdi - sonKucuk >= .045f && !Kayiyor(simdi))
                 for (int i = 0; i < kucukKuyruk.Count; i++)
                 {
                     var j = kucukKuyruk[i];
                     if (j.im.panel == null) { kucukKuyruk.RemoveAt(i); i--; continue; }   // sayfa kapandı ya da yeniden kuruldu
+                    var gid = j.im.userData as string; if (gid != null && (gid != j.id || Gizli(j.im))) { kucukKuyruk.RemoveAt(i); i--; continue; }   // yuva başka eşyaya geçti ya da yuvalar gizli (sonraki tazelemede yeniden girer; gizli iş zamanlayıcıyı uyanık tutmasın)
                     if (!Gorunur(j.im)) continue;
                     kucukKuyruk.RemoveAt(i); sonKucuk = simdi; j.im.image = Portre.Dene(j.kat, j.id); j.im.RemoveFromClassList("koz-resim--bekle"); break;
                 }
             if (kucukKuyruk.Count == 0) kucukZaman.Pause();
         }
         static float sonKucuk = -1;
+        static bool Gizli(VisualElement e) { for (; e != null; e = e.parent) if (e.resolvedStyle.display == DisplayStyle.None) return true; return false; }
+        ScrollView kaySv; Vector2 kayOf; float kayZaman = -1;
+        bool Kayiyor(float simdi)
+        {
+            var sv = soyunmaKaydir; if (sv == null) return false; var of = sv.scrollOffset;
+            if (sv != kaySv) { kaySv = sv; kayOf = of; return false; }   // yeni kurulan sayfa: ilk bakış hareket sayılmaz
+            if ((of - kayOf).sqrMagnitude > .25f) { kayOf = of; kayZaman = simdi; }
+            return simdi - kayZaman < .12f;
+        }
         // Kaydırma alanının görünen kısmıyla kesişiyor mu (alan yoksa panel). Biraz pay: hemen altındaki satır da hazırlansın.
         static bool Gorunur(VisualElement e)
         {

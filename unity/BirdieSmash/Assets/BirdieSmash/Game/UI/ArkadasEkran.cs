@@ -85,7 +85,7 @@ namespace BirdieSmash.Game
         {
             var d = new VisualElement(); d.AddToClassList("online-kart"); d.AddToClassList("dugme");
             var ik = new VisualElement(); ik.AddToClassList("online-yuzler"); ik.pickingMode = PickingMode.Ignore; d.Add(ik);
-            var ben = new VisualElement(); ben.AddToClassList("avatar"); ben.AddToClassList("online-ben"); ben.pickingMode = PickingMode.Ignore; AvatarIc(ben, Portre.Benim(), 22); ik.Add(ben);
+            var ben = new VisualElement(); ben.AddToClassList("avatar"); ben.AddToClassList("online-ben"); ben.pickingMode = PickingMode.Ignore; BenAvatar(ben, 22); ik.Add(ben);
             var o = new VisualElement(); o.AddToClassList("online-o"); o.pickingMode = PickingMode.Ignore; o.Add(Ikon(Ikonlar.Arkadas, 22, RAKIP)); ik.Add(o);
             var yz = new VisualElement(); yz.AddToClassList("online-yazilar"); yz.pickingMode = PickingMode.Ignore; d.Add(yz);
             yz.Add(Baslik(L.T("Arkadaşınla oyna"), Px(22, 20), "online-baslik"));

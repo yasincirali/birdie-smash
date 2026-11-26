@@ -214,7 +214,9 @@ namespace BirdieSmash.Game
             return d;
         }
         // Çip veri satırı (2026-11-23 Oyna A): yalnız .cip-modu içinde görünür (USS), ekran okuyucu karonun etiketini okur.
-        void CipAlt(VisualElement karo, string t) { var l = Yazi(t, 11, "cip-alt"); l.pickingMode = PickingMode.Ignore; karo.Add(l); }
+        // 2026-11-26 inceleme (fikir 17:06 #2): zorluk Oyna B'de yalnız bu satırda okunuyor; 11 pt ekranın en küçük yazısıydı,
+        // tasarım dilinin alt sınırı 12 pt (21 Kas Erişilebilirlik kararıyla aynı çizgi). Büyük yazıda satır zaten sarar (USS).
+        void CipAlt(VisualElement karo, string t) { var l = Yazi(t, 12, "cip-alt"); l.pickingMode = PickingMode.Ignore; karo.Add(l); }
         // Bölünmüş Oyna'nın sağ parçası (2026-11-23 Oyna A): zorluk adı + aşağı ok; dokunuş üst düğmeye geçmez (Clickable
         // basışı yakalar). Dört kademe düğmenin hemen altındaki gizli satırda; seçim ekranı yeniden kurar, satır yine kapalı doğar.
         void ZorlukParca(VisualElement cta, VisualElement c)
@@ -475,7 +477,7 @@ namespace BirdieSmash.Game
             // 2026-11-05 unslop: başlık içerik genişliğinde kalıp Kapat'ın yanında iki satıra kırılıyordu ("Köşe / smacı"); kalan
             // genişliği alır, Kapat daralmaz.
             var t = Yazi(baslik, 19, "sayfa-baslik"); Erisim.Etiket(t, baslik, "baslik"); t.style.flexGrow = 1f; t.style.flexShrink = 1f; t.style.minWidth = 0f; t.style.marginRight = 12f; bas.Add(t);
-            var kp = Dugme(L.T("Kapat"), AltKapatKay, "kucuk-dugme"); kp.style.flexShrink = 0f; bas.Add(kp);
+            var kp = Dugme(L.T("Kapat"), AltKapatKay, "kucuk-dugme"); kp.AddToClassList("kapat-dugme"); kp.style.flexShrink = 0f; bas.Add(kp);
             var sv = Kaydirma(altSayfa); sv.AddToClassList("alt-kaydir");
             // 2026-11-07 (UX2): içerik görünen alandan uzunsa altta solma; sona kaydırınca kalkar (kaydırılabilir olduğu belli olsun).
             var sol = new Image { image = Ikonlar.Solma, scaleMode = ScaleMode.StretchToFill }; sol.AddToClassList("kaydir-solma"); sol.pickingMode = PickingMode.Ignore; sv.hierarchy.Add(sol);

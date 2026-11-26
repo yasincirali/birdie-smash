@@ -185,10 +185,14 @@ namespace BirdieSmash.Game
                 var kt = KariyerVeri.Turlar; int ti = KariyerVeri.TurOf(g); CourtView.Cevre = kt != null && ti < kt.Length ? kt[ti].id : null; CourtView.CevreFinal = KariyerVeri.BasOf(g) == KariyerVeri.BASAMAK - 1;
             }
             else if (rovansSiradaki != null) o.stil = rovansSiradaki;   // Rövanş: az önce yenen rakip (saha Ayar.saha, zaten aynı)
+            // 2026-11-26 (yasin: "Rakiplerin tipleri tekrar oyna deyince değişmemeli"): kazandıktan sonra ana düğme ("Bir maç daha")
+            // rastgele havuzdan yeni tarz çekiyordu (HizliSec son tarzı bile dışlıyor). Artık aynı tarz gelir; güç yine oyuncunun
+            // bugünkü seviyesinden (Serbest), çünkü galibiyetle seviye değişmiş olabilir. Yeni rakip Oyna › Hızlı maç'tan seçilir.
+            else if (tekrarId != null && KariyerVeri.Stil.ContainsKey(tekrarId)) o.stil = KariyerVeri.Serbest(tekrarId, Ayar.ilerleme);
             else if (HizliSecili() != null) o.stil = KariyerVeri.Serbest(HizliSecili(), Ayar.ilerleme);   // 2026-11-11: oyuncunun seçtiği rakip, güç yine oyuncunun seviyesinden
             else o.stil = KariyerVeri.Serbest(KariyerVeri.HizliSec(Ayar.ilerleme, sonHizliStil != null ? sonHizliStil.id : null, rnd), Ayar.ilerleme);   // 2026-10-27: oyuncunun kariyer seviyesinde (KariyerVeri.Serbest); 2026-11-08: havuz = ilk üç + kariyerde yendiğin tarzlar, art arda aynı rakip yok
             sonHizliStil = Ayar.kariyerModu && !ogr ? null : o.stil;   // Match tarzı ölçekleyip klonlar (rakipK); rövanş ölçeksiz aslını taşır
-            rovansSiradaki = null; rovansStil = null;
+            rovansSiradaki = null; rovansStil = null; tekrarId = null;
             mod = Mod.Normal; MacKur(seed++ * 7919 + (int)(Time.realtimeSinceStartup * 1000), o);
         }
         // Hızlı maçta seçili rakip (2026-11-11 inceleme, fikir 22:05 #1): yalnız havuzdaysa (ilk üç + kariyerde yendiğin tarzlar);
@@ -671,14 +675,15 @@ namespace BirdieSmash.Game
 
         public void UstaDavetGordu() { if (ustaDavetSayildi) return; ustaDavetSayildi = true; PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); kaydetBekle = true; }   // maç sonu kartı karesinde Save yok (2026-11-16 12:05 #5)
         public void UstaDene() { ustaDeneSonraki = true; ustaDavet = false; TekrarOyna(); }
-        Style rovansStil, rovansSiradaki, sonHizliStil;   // rovansStil: maç sonu ekranında sunulan; rovansSiradaki: yalnız ana düğmeyle başlayan maça geçer
+        Style rovansStil, rovansSiradaki, sonHizliStil; string tekrarId;   // rovansStil: maç sonu ekranında sunulan; rovansSiradaki: yalnız ana düğmeyle başlayan maça geçer
         public void TekrarOyna()
         {
             if (mod == Mod.Online) { AnaMenuSonuc(); OnlineAra(); return; }   // "Yeni arkadaş maçı": eski bağlantı kapanır, eşleştirme sayfası açılır
             var m = mod;   // perde kapanınca hangi mod: maç sonundaki mod (ekrandaki düğme onu söyledi)
             if (m == Mod.Gunluk && gunlukSonraOyna) m = Mod.Normal;   // kazanılmış Günün maçı: düğme Oyna'nın maçını söyledi
-            var rv = m == Mod.Normal && !ustaDeneSonraki ? rovansStil : null;   // Usta daveti (UstaDene) de buradan geçer; rövanşı taşımaz
-            hud.Perde(() => { if (m == Mod.Dril) DrilBaslat(drilId); else if (m == Mod.Gunluk) GunlukBaslat(); else if (m == Mod.Usta) UstaBaslat(); else { rovansSiradaki = rv; StartMatch(false, false, false); } });
+            var rv = m == Mod.Normal && !ustaDeneSonraki ? rovansStil : null;
+            string tk = m == Mod.Normal && !ustaDeneSonraki && rv == null && !Ayar.kariyerModu && sonHizliStil != null ? sonHizliStil.id : null;   // Usta daveti (UstaDene) de buradan geçer; rövanşı taşımaz
+            hud.Perde(() => { if (m == Mod.Dril) DrilBaslat(drilId); else if (m == Mod.Gunluk) GunlukBaslat(); else if (m == Mod.Usta) UstaBaslat(); else { rovansSiradaki = rv; tekrarId = tk; StartMatch(false, false, false); } });
         }
         // Mağaza puanı (Ar-Ge 23 Eki #1): sonuç ekranından 1,5 sn sonra, oyuncu hâlâ oradaysa; yalnız sistem penceresi.
         // İstenmediyse sayılmaz. Apple ayrıca yılda 3 ile sınırlar; TestFlight'ta pencere hiç çıkmaz. Android hattı yok.
@@ -1274,21 +1279,24 @@ namespace BirdieSmash.Game
                 case Ev.Hit:
                     sfx.Hit(e.type, e.quality, e.slice, e.big, e.serve, mine, (int)e.k, M.flow, M.s != null ? M.s.Speed : 0);   // hız: vuruşun gücü sese biner (Sfx 2026-10-27)
                     fx.Burst(at, Color.white, e.type == "smash" ? 10 : 5, e.type == "smash" ? 220 : 120, "feather");
+                    // 2026-11-26 renkli maç (Fx.VurusRenk): tüyler beyaz kalır (top tüyü), yanında vuruş türünün renginde birkaç yıldız.
+                    // r271: yıldızlar yayın kamerasında görünmüyordu (boy ×1,8, sayı 8/5) ve en görünür öğe olan dalga beyaz kalıyordu.
+                    if (!e.serve) fx.Burst(at, Fx.VurusRenk(e.type), e.type == "smash" ? 8 : 5, e.type == "smash" ? 260 : 170, "spark", 1.8f);
                     // Gövdenin gerisinden smaç (e.arka, 2026-11-14 inceleme fikir 22:05 #1): Core'da %15 yavaş ve düz; his de bunu söyler:
                     // dalga beyaz ve küçük, sarsıntı yarım, flaş yok. Tam smaç hissi yalnız topun altına girilen smaçta.
                     bool tamSmac = e.type == "smash" && !e.arka;
                     // 2026-11-15 (inceleme turu): limon = benim iyi anım (HUD dili); rakibin tam smacının dalgası onun HUD lilasında.
-                    fx.Dalga(at, tamSmac ? (mine ? limon : Kit.Hex(Hud.RAKIP_HUD)) : Color.white, tamSmac ? 90 : e.arka ? 60 : 46);
+                    fx.Dalga(at, tamSmac ? (mine ? limon : Kit.Hex(Hud.RAKIP_HUD)) : e.serve ? Color.white : Fx.VurusRenk(e.type), tamSmac ? 90 : e.arka ? 60 : 46);   // 2026-11-26: smaç dışı vuruşun dalgası türünün renginde (servis beyaz)
                     // File önü kill (2026-10-29, "file önü smaç oyunu değiştirsin"): Core onu smaç diye uçurur, gerçek adı e.text'te.
                     // Kısa ve sert: sarsıntı smaçtan büyük, yakınlaşma küçük (file dibinde kadraj kaymasın), halo rengi altın.
                     bool kill = e.text == "kill";
                     if (e.arka) { if (!rm) shake = Mathf.Max(shake, 3); }
                     else if (e.type == "smash") { if (!rm) { shake = Mathf.Max(shake, e.big ? 12 : kill ? 9 : 6); punch = Mathf.Max(punch, e.big ? 1.09f : kill ? 1.03f : 1.05f); } hud.Flash(e.big ? .5f : .2f, e.big ? new Color(1, .55f, .24f) : kill ? Kit.Hex("#ffd27a") : limon); }
-                    if (mine) fx.Streak(at, M.flow ? Kit.Hex("#ffd23a") : Color.white, e.type == "smash" ? 16 : M.flow ? 12 : 6);
+                    if (mine) fx.Streak(at, M.flow ? Kit.Hex("#ffd23a") : Fx.VurusRenk(e.type), e.type == "smash" ? 16 : M.flow ? 12 : 6);
                     if (!mine && e.type == "smash") Yerel.Hap("tick");   // rakibin smacı: kısa tık (onun vuruşu titremez)
                     if (e.k >= 20 && M.ogr == null) Basarim.Ver(Basarim.RALLI20);
                     break;
-                case Ev.Perfect: sfx.Perfect((int)e.k); fx.Burst(at, limon, 18, 280, "spark"); break;
+                case Ev.Perfect: sfx.Perfect((int)e.k); fx.Burst(at, limon, 10, 280, "spark"); fx.Burst(at, Fx.GUNES, 4, 300, "spark"); fx.Burst(at, Fx.GOK, 4, 260, "spark"); break;   // 2026-11-26: tam orta üç renk (toplam 18, aynı sayı)
                 case Ev.Flow: sfx.Akis(); Yerel.Hap("ralli"); if (M.ogr == null) Basarim.Ver(Basarim.AKIS); break;
                 case Ev.Aldat: sfx.Aldat(); Yerel.Hap("tick"); break;   // aldatma okunsun diye elde de hissedilir (hareketi azaltta yok)
                 case Ev.Split: sfx.Split(); fx.Dalga(Kit.W(e.x, e.y, .05f), Color.white, 18); break;   // görüntü kanalı (2026-11-13 inceleme #4): sesi kapalı oynayan split'in tuttuğunu görsün; titreşim yok (rakip smaç tıkıyla çakışır)
@@ -1320,7 +1328,9 @@ namespace BirdieSmash.Game
                         if (mine && mpYan == 1 && match.ogr == null) hud.Say(L.T("Kurtardın!"), Kit.W(Court.MID, Court.NET - 2.6f, 2f), Kit.Hex("#7ad7ff"), 1.3f, true, 2);
                         sfx.Point(mine, smac, (int)e.k); hud.Pop(mine ? 0 : 1); Yerel.Hap(mine ? "win" : "lose");
                         // düşüş yerinde toz ve kazananın renginde dalga; benim sayımda üst bantta üç renkli kıvılcım (HTML point)
-                        if (e.x != 0 || e.y != 0) { var yer = Kit.W(e.x, e.y, .05f); fx.Burst(yer, new Color(.9f, 1, .94f, .7f), 14, 140, "dot"); fx.Dalga(yer, mine ? limon : Kit.Hex(Hud.RAKIP_HUD), 70); }
+                        if (e.x != 0 || e.y != 0) { var yer = Kit.W(e.x, e.y, .05f); fx.Burst(yer, new Color(.9f, 1, .94f, .7f), 8, 140, "dot"); fx.Dalga(yer, mine ? limon : Kit.Hex(Hud.RAKIP_HUD), 70);
+                            // 2026-11-26 renkli maç: düşüş yerinde konfeti; benim sayımda beş renk, rakibinkinde onun lilası (az ve kısa: kutlama benim).
+                            fx.Konfeti(yer + Vector3.up * .15f, mine ? Fx.KONFETI : Fx.KONFETI_RAKIP, mine ? 20 : 9, mine ? 260 : 170, "spark"); }
                         if (mine) hud.SayiKivilcim();
                         if (mine && e.big && M.ogr == null) Basarim.Ver(Basarim.SICRAMA);   // sıçrayarak smaçla alınan sayı
                         if (smac) { if (!rm) shake = Mathf.Max(shake, 10); hud.Flash(.35f, limon); }

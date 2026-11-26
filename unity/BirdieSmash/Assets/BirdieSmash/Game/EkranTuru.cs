@@ -97,7 +97,7 @@ namespace BirdieSmash.Game
                 Ayar.saha = "neon"; root.SahaDegisti(); if (root.ui != null) { root.ui.SekmeAc(Sekme.Oyna); yield return Bekle(30); yield return Cek("menu_neon_oyna"); }
                 File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
             }
-            if (kip == "dolap") { yield return Cek("00_ilk_kare"); yield return MenuTuru(); yield return DugmeKareleri(); yield return SevincKareleri(); yield return Varyantlar(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }
+            if (kip == "dolap") { yield return Cek("00_ilk_kare"); yield return MenuTuru(); yield return DugmeKareleri(); yield return SevincKareleri(); yield return Varyantlar(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); yield return MacSonuTani(); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break; }
             yield return Cek("00_ilk_kare"); Tani("acilis"); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString());
             yield return MenuTuru(); if (root.HudKatman != null) rap.AppendLine("açılış süresi (gerçek, CI yazılım render'ı): " + root.HudKatman.AcilisTani);
             Ayar.antrenman = true; Ayar.easy = true; Ayar.target = 5; Ayar.reduce = false; if (root.ui != null) root.ui.Kirlet();   // r11: Oyna sekmesi ilk açılış kurulumunda kalıyordu
@@ -333,6 +333,58 @@ namespace BirdieSmash.Game
         // düzeltmesi tam tur (90 dk) beklemeden görülsün.
         // 2026-11-19: kısa tur sevinç karelerini çekmiyordu (MenuTuru yalnız tam turda Sevinç sayfasına iner); yeni kemik katmanı
         // hareketleri (ter, tel) derleme dışında görülemiyordu. Sayfa açılır, iki hareketin iki anı çekilir.
+        // 2026-11-20 (yasin: "maç sonu sevinçte buga girdi"; ekran kaydında maç 5-2 bitmiş, oyuncu uçak pozunda, kare donuk, sonuç
+        // kartı gelmiyor): maç sonu akışı seçili dansla gerçek yoldan geçer (matchDone + bekleme → EndMatch); o sırada düşen hata
+        // satırları rapora yazılır. Dolap kipinin en sonunda: takılırsa öbür kareler çekilmiş olur.
+        IEnumerator MacSonuTani()
+        {
+            var hatalar = new System.Collections.Generic.List<string>();
+            Application.LogCallback yaz = (m, st, t) => { if ((t == LogType.Exception || t == LogType.Error || t == LogType.Assert) && hatalar.Count < 12) hatalar.Add(t + ": " + m + " @ " + (st != null && st.Length > 500 ? st.Substring(0, 500) : st)); };
+            Application.logMessageReceived += yaz;
+            string ms0; Ayar.KOZ.TryGetValue(Kozmetik.MAC_SONU, out ms0); bool km0 = Ayar.kariyerModu; int tur = 0;
+            // Kariyer yolu (yasin'in kaydı: 5-2 galibiyet, Uçak): her galibiyet sıradaki basamağı açar, üretilmiş rakipler (Core/Rakipler)
+            // ve kendi modelleri sırayla gelir; son iki tur Hızlı maç.
+            foreach (var sv in new[] { "ucak", "nanik" })
+            {
+                Ayar.KOZ[Kozmetik.MAC_SONU] = sv; Ayar.kariyerModu = sv == "ucak"; Ayar.kariyerSecim = -1;
+                root.StartMatch(false, false, false); botAcik = false;
+                { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 4) yield return null; }
+                var mt = root.match; mt.sc[0] = 5; mt.sc[1] = 2; mt.matchDone = true; mt.between = true; mt.betweenT = 1.4f; float tz = Time.realtimeSinceStartup;
+                while (Time.realtimeSinceStartup - tz < .8f) yield return null; if (tur == 0 || sv != "ucak") yield return Cek("macsonu_" + sv + "_a");
+                while (root.ekran != Ekran.Bitti && Time.realtimeSinceStartup - tz < 6) yield return null;
+                rap.AppendLine("macsonu " + sv + " · rakip " + (mt.stil != null ? mt.stil.isim + "/" + mt.stil.model + (mt.stil.uretilen ? "/üretilmiş" : "") : "-") + " · kariyer " + Ayar.kariyerModu + " · ekran " + root.ekran + " · süre " + (Time.realtimeSinceStartup - tz).ToString("F1") + " · hata " + hatalar.Count);
+                yield return Bekle(30); yield return Cek("macsonu_" + sv + "_b" + (tur++));
+            }
+            // Gerçek maç sayısı (2026-11-21): yukarıdaki turlar skoru elle bitiriyor; yasin'in kaydında maç gerçek bir vuruşla (file dibi
+            // öldürme) bitti ve oyuncuda bıyık, kanat, ördek terlik vardı. Bot maç sayısına kadar oynar, sayı olayları gerçek yoldan gelir.
+            {
+                string dil0 = Ayar.dil; var koz0 = new System.Collections.Generic.Dictionary<string, string>(Ayar.KOZ);
+                string[][] kombin = { new[] { "pos_biyik", "ejderha_kanat" }, new[] { "biyik", "kelebek_kanat" }, new[] { "pos_biyik", "melek_kanat" } };
+                for (int gi = 0; gi < kombin.Length; gi++)
+                {
+                    Ayar.dil = "en"; Ayar.KOZ[Kozmetik.MAC_SONU] = "ucak"; Ayar.KOZ[Kozmetik.YUZ] = kombin[gi][0]; Ayar.KOZ[Kozmetik.SIRT] = kombin[gi][1]; Ayar.KOZ["ayak"] = "ordek_terlik";
+                    Ayar.kariyerModu = gi != 2; Ayar.kariyerSecim = -1; root.StartMatch(false, false, false); botAcik = true;
+                    var mt = root.match; float t0 = Time.realtimeSinceStartup, enUzun = 0; int sayi = 0;
+                    // 2026-11-26 renkli maç: ilk turda her vuruş türünden bir kare (iz ve yıldız rengi) ve bir sayı karesi (konfeti).
+                    var renkGoruldu = new System.Collections.Generic.HashSet<string>(); int sayi0 = -1, ben0 = 99;
+                    while (!mt.matchDone && Time.realtimeSinceStartup - t0 < 90)
+                    {
+                        if (gi == 0 && mt.sc[0] < mt.target - 1 && Time.realtimeSinceStartup - t0 > 45) mt.sc[0] = mt.target - 1; else if (gi != 0 && mt.sc[0] < mt.target - 1) mt.sc[0] = mt.target - 1;
+                        if (mt.sc[1] > 2) mt.sc[1] = 2; sayi = mt.sc[0] + mt.sc[1];
+                        if (gi == 0 && mt.s != null && !mt.s.dead && mt.s.t > .04f && mt.s.t < .2f && renkGoruldu.Count < 4 && renkGoruldu.Add(mt.s.type)) yield return Cek("renk_vurus_" + mt.s.type);
+                        if (gi == 0 && sayi0 >= 0 && mt.sc[0] == ben0 + 1 && Time.realtimeSinceStartup - t0 < 44 && !renkGoruldu.Contains("#sayi")) { renkGoruldu.Add("#sayi"); yield return Bekle(5); yield return Cek("renk_sayi"); }
+                        sayi0 = sayi; ben0 = mt.sc[0]; yield return null;
+                    }
+                    float tz = Time.realtimeSinceStartup; bool kazandi = mt.sc[0] > mt.sc[1];
+                    while (root.ekran != Ekran.Bitti && Time.realtimeSinceStartup - tz < 8) { enUzun = Mathf.Max(enUzun, Time.unscaledDeltaTime); yield return null; }
+                    rap.AppendLine("macsonu gerçek " + gi + " · " + kombin[gi][0] + "+" + kombin[gi][1] + " · bitti " + mt.matchDone + " · kazandı " + kazandi + " · skor " + mt.sc[0] + "-" + mt.sc[1] + " · ekran " + root.ekran + " · süre " + (Time.realtimeSinceStartup - tz).ToString("F1") + " · en uzun kare " + enUzun.ToString("F2") + " · hata " + hatalar.Count);
+                    botAcik = false; yield return Bekle(20); yield return Cek("macsonu_gercek_" + gi);
+                }
+                Ayar.dil = dil0; foreach (var kv in koz0) Ayar.KOZ[kv.Key] = kv.Value;
+            }
+            foreach (var h in hatalar) rap.AppendLine("macsonu hata · " + h);
+            if (ms0 != null) Ayar.KOZ[Kozmetik.MAC_SONU] = ms0; Ayar.kariyerModu = km0; Application.logMessageReceived -= yaz;
+        }
         IEnumerator SevincKareleri()
         {
             var ui = root != null ? root.ui : null; if (ui == null || root.vitrin == null) yield break;
