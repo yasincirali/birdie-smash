@@ -1,4 +1,12 @@
 === UNITY ===
+Menü cilası (26 Kasım akşam, üçüncü tur):
+- Profil'deki oyuncu kartının altında "Görünümünü değiştir ›" yazıyor; karta dokununca Dolap açılıyor.
+- Oyna'daki mod düğmelerinde zorluk ve yıldız yazısı biraz büyüdü.
+- Gelişim'de üçgenin köşesindeki dal adına (ör. Güç) dokununca sayfa o dalın kartına kayıyor ve kart bir kez parlıyor.
+- Tüy dükkânında "Tüy eksik" satırının başında Tüy simgesi var.
+- Temel dersi bitirdiysen Antrenman'da üstte yalnız Sonsuz ralli duruyor; dersi tekrar oynamak için görevlerin altında "Temel dersi yeniden oyna ›" satırı var.
+- Menüde arka planda görünmeyen bir döndürme kalktı; menüde uzun kalınca pil ve ısı biraz daha iyi olmalı.
+Nasıl denenir: Profil'de karta dokun, Dolap açılmalı. Gelişim'de üçgenin köşesindeki bir ada dokun. Dükkân'ı bir hedef eşya seçiliyken aç. Antrenman'ı aç.
 Dokunma hissi (26 Kasım akşam):
 - Alt çubukta sekmeye basınca simge içeri çöküp yaylanıyor; sarı kapsül yeni sekmeye uzayarak kayıyor, simge bir kez sıçrıyor.
 - Bütün düğme ve seçim çiplerinde bırakınca aynı yumuşak yaylanma var; seçilen çipin rengi birden değil süzülerek değişiyor.

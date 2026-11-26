@@ -49,21 +49,33 @@ namespace BirdieSmash.Game
         {
             var kap = new VisualElement(); kap.AddToClassList("gel-radar-kap"); kap.pickingMode = PickingMode.Ignore;
             var r = new VisualElement(); r.AddToClassList("gel-radar"); r.pickingMode = PickingMode.Ignore; kap.Add(r); gelRadar = r;
-            for (int i = 0; i < RN; i++) { int d = Gelisim.GORUNEN[i]; gelRGor[i] = gelRHedef[i] = p[d] / (float)Gelisim.TAVAN; var l = Yazi(L.T(Gelisim.AD[d]), 11, "gel-radar-ad"); l.pickingMode = PickingMode.Ignore; kap.Add(l); gelREt[i] = l; }
+            for (int i = 0; i < RN; i++) { int d = Gelisim.GORUNEN[i]; gelRGor[i] = gelRHedef[i] = p[d] / (float)Gelisim.TAVAN; var l = Yazi(L.T(Gelisim.AD[d]), 11, "gel-radar-ad"); l.AddToClassList("dokunulur"); kap.Add(l); gelREt[i] = l;
+                l.AddManipulator(new Clickable(() => GelDalaGit(d))); Erisim.Etiket(l, L.T("{0} dalına git", L.T(Gelisim.AD[d])), "dugme"); }
             r.generateVisualContent += GelRadarCiz;
             kap.RegisterCallback<GeometryChangedEvent>(e => GelRadarEtiket(kap));
             var et = ""; for (int i = 0; i < RN; i++) { int d = Gelisim.GORUNEN[i]; et += (i > 0 ? ", " : "") + L.T(Gelisim.AD[d]) + " " + p[d] + "/" + Gelisim.TAVAN; }
             Erisim.Etiket(kap, L.T("Gelişim") + ": " + et, "resim");
             return kap;
         }
+        // 2026-11-26 inceleme (fikir 17:06 #4; FIFA/Brawl Stars yetenek ekranı): köşe adları yalnız resimdi, "Kontrol"e dokunan oyuncuya
+        // hiçbir şey olmuyordu. Ad dokunulur (44 pt görünmez alan USS'te, tek yay basış ölçeği): o dalın kartına .25 sn kayar ve kart
+        // bir kez parlar. Hareketi azaltta kaydırma anında, parlama yok. Ayırma yok (kart dizisi kurulumda dolar).
+        readonly VisualElement[] gelKart = new VisualElement[Gelisim.DAL];
+        void GelDalaGit(int dal)
+        {
+            var k = gelKart[dal]; if (k == null || k.panel == null) return; Tik();
+            var sv = k.GetFirstAncestorOfType<ScrollView>(); if (sv != null) YumusakKaydir(sv, k);
+            if (!Ayar.reduce) KartParla(k);
+        }
         static Vector2 GelKose(int i, Vector2 m, float yr) { float a = -Mathf.PI / 2 + i * 2 * Mathf.PI / RN; return m + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * yr; }
+        const float GEL_AD_PX = 10, GEL_AD_PY = 16;   // .gel-radar-ad dolgusu (yatay, dikey), USS ile aynı
         void GelRadarEtiket(VisualElement kap)
         {
             if (gelRadar == null) return; var rb = gelRadar.layout; if (float.IsNaN(rb.width) || rb.width < 10) return;
             var m = rb.center; float yr = rb.width / 2 + 4;
             for (int i = 0; i < RN; i++)
             {
-                var l = gelREt[i]; if (l == null) continue; var k = GelKose(i, m, yr); var w = l.layout.width; var h = l.layout.height; if (float.IsNaN(w)) continue;
+                var l = gelREt[i]; if (l == null) continue; var k = GelKose(i, m, yr); var w = Mathf.Max(0, l.layout.width - 2 * GEL_AD_PX); var h = Mathf.Max(0, l.layout.height - 2 * GEL_AD_PY); if (float.IsNaN(w)) continue;   // yazının kendisi; dolgu dokunma alanı (USS)
                 float x = Mathf.Abs(k.x - m.x) < 2 ? k.x - w / 2 : k.x > m.x ? k.x : k.x - w; float y = i == 0 ? k.y - h : Mathf.Abs(k.y - m.y) < rb.height * .2f ? k.y - h / 2 : k.y;
                 l.style.left = Mathf.Clamp(x, 0, Mathf.Max(0, kap.layout.width - w)); l.style.top = y;
             }
@@ -171,7 +183,7 @@ namespace BirdieSmash.Game
         // "İlk puanın Sv 2'de" yeter. Yüzde yalnız n > 0 iken yazar. Puanı olan oyuncuda pasif düğme kalır (yerleşim oynamasın).
         VisualElement GelisimDal(int dal, int n, bool puanVar, bool dugmeli = true)
         {
-            var k = new VisualElement(); k.AddToClassList("gel-dal");
+            var k = new VisualElement(); k.AddToClassList("gel-dal"); gelKart[dal] = k;
             var ust = Satir("arali"); ust.pickingMode = PickingMode.Ignore; k.Add(ust);
             ust.Add(Yazi(L.T(Gelisim.AD[dal]), 16, "kalin"));
             string yz = GelYuzde(dal, n);

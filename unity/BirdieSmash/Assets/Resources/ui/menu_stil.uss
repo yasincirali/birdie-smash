@@ -59,8 +59,6 @@
 .kok { flex-grow: 1; background-color: rgba(0, 0, 0, 0); }
 .kok.koyu { background-color: rgba(38, 89, 190, 0.92); }   /* yön A: diğer sekmelerde gece zemini (salon çok soluk seçilir) */
 .kok.koyu #zemin { display: none; }
-.koyu-gunes { position: absolute; display: none; }
-.kok.koyu .koyu-gunes { display: flex; }   /* 2026-11-07 (AD3): koyu sekmede üstte soluk güneş kesiti (UiKok.ZeminKur) */
 .govde { flex-direction: column; }
 .alan { flex-grow: 1; flex-shrink: 1; }
 .icerik { flex-grow: 1; flex-shrink: 1; }
@@ -513,10 +511,6 @@
 
 /* Oyna zemini (a-arena): projektör ışıkları ve VS afişi; içerik bunların üstünde kayar */
 /* 2026-10-29 açılış dili (UiKok.ZeminKur): güneş diski konumu koddan (kare), bant ve iz perdenin bandıyla aynı açıda. */
-.gunes-disk { position: absolute; transform-origin: center; }
-.zemin-bant { position: absolute; left: -30%; right: -30%; top: 56%; height: 24%; rotate: -14deg; background-color: var(--navy); border-top-width: 4px; border-color: var(--sun); }
-.zemin-iz { position: absolute; left: -10%; width: 70%; top: 54.2%; height: 6px; rotate: -14deg; transform-origin: right; }
-.buyuk-yazi .gunes-disk { opacity: 0.5; }
 .isik-sol { position: absolute; left: -120px; top: -80px; width: 300px; height: 300px; }
 .isik-sag { position: absolute; right: -120px; top: -80px; width: 300px; height: 300px; }
 .afis { position: absolute; left: 0; right: 0; top: 8%; height: 54%; }
@@ -763,7 +757,8 @@
    Satın alınan kart 0,6 sn altın çerçeve; hareketi azaltta geçiş yok. Büyük yazıda ızgara tek sütun (iki sütunda taşma adayı). */
 .dukkan-kart-bilgi { flex-grow: 1; }
 .dukkan-demet { margin-right: 6px; flex-shrink: 0; }
-.dukkan-hedef { color: var(--gold); margin-top: 6px; }
+.dukkan-hedef { margin: 6px 0 0 0; align-items: center; }   /* .satir eksi kenarı sıfırlanır, simge metin kolonunda */
+.dukkan-hedef .yazi { color: var(--gold); margin-left: 4px; }   /* 2026-11-26: satır + Tüy simgesi (DukkanEkran) */
 .dukkan-yeter { align-items: center; margin-top: 4px; }
 .dukkan-yeter .kalin { color: var(--gold); margin-left: 4px; }
 .dukkan-durum { padding: 14px; margin-bottom: 8px; }
@@ -895,6 +890,8 @@
 .gel-radar-kap { height: 196px; margin: 4px 0 8px 0; align-items: center; justify-content: center; }
 .gel-radar { width: 140px; height: 140px; }
 .gel-radar-ad { position: absolute; color: var(--tx); -unity-font-style: bold; white-space: nowrap; }
+/* 2026-11-26 inceleme (fikir 17:06 #4): köşe adı dokunulur; dolgu 44 pt alan verir, eksi kenar boşluğu yazıyı yerinde tutar (GEL_AD_PX/PY). */
+.gel-radar-ad { padding: 16px 10px; margin: -16px -10px; -unity-text-align: middle-center; }
 .buyuk-yazi .gel-radar-kap { height: 240px; }
 .gel-dal { transition-property: background-color; transition-duration: 0.3s; transition-timing-function: ease-out; }
 .gel-dal--parla { background-color: rgba(201, 238, 75, 0.22); transition-duration: 0.05s; }
@@ -1156,7 +1153,6 @@
 .sekme--secili .sekme-yazi { color: var(--cta-ink); }
 .sekme-gosterge, .sekme--secili .sekme-cizgi, .gosterge-var .sekme--secili .sekme-cizgi { display: none; }
 /* zemin: Gün Batımı'nın güneş bandı ve altın izi yok; kort ve salon ışığı koddan (UiKok.ZeminKur) */
-.zemin-bant, .zemin-iz, .kok.koyu .koyu-gunes { display: none; }
 .kort-zemin, .salon-isik { position: absolute; }
 .buyuk-yazi .kort-zemin { opacity: 0.5; }
 /* üst haplar Stadyum Pop: basılabilir oldukları için mürekkep konturlu, para hapında beyaz "+" (UiKok.UstKur) */

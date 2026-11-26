@@ -41,7 +41,9 @@ namespace BirdieSmash.Game
             var ust = Satir("ant-cift"); c.Add(ust);
             int rk = GameRoot.SonsuzRekor;
             ust.Add(Dugme(L.T("Sonsuz ralli"), () => root.SonsuzOyna(), "ikincil-kart", rk > 0 ? L.T("Rekorun {0} vuruş", rk) : L.T("Kaçırana kadar, her 5 vuruşta hızlanır")));
-            ust.Add(Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", Ayar.antrenman ? L.T("Bitti") : L.T("15 adım, skor yok")));
+            // 2026-11-26 inceleme (fikir 17:06 #6, §7.2; Badminton League/Brawl Stars eğitimi bitince ana yüzeyde tutmaz): biten ders
+            // Sonsuz ralli ile aynı ağırlıkta kart olarak duruyordu; artık görev listesinin dibinde tek satır, Sonsuz ralli tam genişlik.
+            if (!Ayar.antrenman) ust.Add(Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", L.T("15 adım, skor yok")));
             var bas = Satir("arali"); c.Add(bas);
             bas.Add(Yazi(L.T("Görevler"), 13, "etiket")); bas.Add(YildizSayac(pr.AntrenmanYildiz, Dril.ToplamYildiz, 15));
             // 2026-11-20 (inceleme, fikir 17:06 #4; §7 ödül bilgisi kararın verildiği yerde): görev ödülü yalnız görev alt sayfasında
@@ -64,6 +66,7 @@ namespace BirdieSmash.Game
                 cp.AddToClassList("segment-cip"); var eb = cp.userData as ErisimBilgi; if (eb != null) eb.rol = "sekme"; seg.Add(cp); cipler[g] = cp;
             }
             c.Add(liste); AntGrupGoster(cipler, liste, false);
+            if (Ayar.antrenman) { var td = Dugme(L.T("Temel dersi yeniden oyna") + "  ›", () => root.Antrenman(), "kucuk-dugme"); td.style.alignSelf = Align.FlexStart; td.style.marginTop = 8; c.Add(td); }
             AldatmaBolum(c);   // 2026-10-26 aldatıcı vuruşlar: kilitliler de görünür, ne açtığıyla (Game/UI/AldatmaListe)
             c.Add(Bosluk(24));
         }

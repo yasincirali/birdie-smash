@@ -214,7 +214,9 @@ namespace BirdieSmash.Game
             return d;
         }
         // Çip veri satırı (2026-11-23 Oyna A): yalnız .cip-modu içinde görünür (USS), ekran okuyucu karonun etiketini okur.
-        void CipAlt(VisualElement karo, string t) { var l = Yazi(t, 11, "cip-alt"); l.pickingMode = PickingMode.Ignore; karo.Add(l); }
+        // 2026-11-26 inceleme (fikir 17:06 #2): zorluk Oyna B'de yalnız bu satırda okunuyor; 11 pt ekranın en küçük yazısıydı,
+        // tasarım dilinin alt sınırı 12 pt (21 Kas Erişilebilirlik kararıyla aynı çizgi). Büyük yazıda satır zaten sarar (USS).
+        void CipAlt(VisualElement karo, string t) { var l = Yazi(t, 12, "cip-alt"); l.pickingMode = PickingMode.Ignore; karo.Add(l); }
         // Bölünmüş Oyna'nın sağ parçası (2026-11-23 Oyna A): zorluk adı + aşağı ok; dokunuş üst düğmeye geçmez (Clickable
         // basışı yakalar). Dört kademe düğmenin hemen altındaki gizli satırda; seçim ekranı yeniden kurar, satır yine kapalı doğar.
         void ZorlukParca(VisualElement cta, VisualElement c)

@@ -94,7 +94,11 @@ namespace BirdieSmash.Game
             if (eksik > 0)
             {
                 int mt = Hedef.MacTahmini(eksik, PlayerPrefs.GetString(Hedef.SON_ANAHTAR, ""));
-                ust.Add(Yazi(L.T("Hedef: {0}", L.T(hd.ad)) + " · " + L.T("{0} Tüy eksik", UiKok.Sayi(eksik)) + (mt > 0 ? " · " + L.T("≈ {0} maç", mt) : ""), 13, "dukkan-hedef"));
+                // 2026-11-26 inceleme (fikir 17:06 #5, §8.1): altın yalnız Tüy'ü anlatır, hep simgesiyle; satır simgesizdi. Renk aynı,
+                // başına 14 pt Tüy simgesi (Clash Royale'de eksik altın hep simgesiyle). "Hedefine yeter" satırında ✓ simgesi zaten var.
+                var hs = new VisualElement(); hs.AddToClassList("satir"); hs.AddToClassList("dukkan-hedef"); hs.pickingMode = PickingMode.Ignore; ust.Add(hs);
+                hs.Add(Ikon(Ikonlar.Tuy, 14, ALTIN));
+                var hy = Yazi(L.T("Hedef: {0}", L.T(hd.ad)) + " · " + L.T("{0} Tüy eksik", UiKok.Sayi(eksik)) + (mt > 0 ? " · " + L.T("≈ {0} maç", mt) : ""), 13); hy.style.flexShrink = 1; hy.style.whiteSpace = WhiteSpace.Normal; hs.Add(hy);
             }
             // 2026-11-14 inceleme (fikir 12:05 #5): Tüy'ün ne işe yaradığı yalnız hedef satırı yokken; hedef satırı "ne için" ve
             // "maçla kazanılır"ı zaten söylüyor, iki satır aynı şeyi anlatıyordu. Fiyat ızgarası bir satır yukarı çıkar (SE).

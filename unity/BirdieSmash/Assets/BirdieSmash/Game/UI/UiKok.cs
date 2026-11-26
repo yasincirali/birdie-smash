@@ -788,30 +788,23 @@ namespace BirdieSmash.Game
             // renginde diyagonal bant ve 4 pt turuncu kenarı, kenar boyunca altın raket izi. Fotoğraf her en-boyda farklı
             // kırpılıyor ve figürlerin arkasında gürültü oluyordu; düz şekil afişi öne çıkarır, perde → menü geçişi aynı resim.
             // Salon fonu artık çekilmez (salonImg null: SahneCiz atlar, ana kamera menüde yine yalnız temizler).
-            gunesImg = new Image { image = Ikonlar.GunesDisk, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(1, 1, 1, .62f) }; gunesImg.AddToClassList("gunes-disk"); gunesImg.pickingMode = PickingMode.Ignore; zemin.Add(gunesImg);
             // 2026-11-22 Stadyum Pop (yasin: "stadyum pop tan devam edelim, ama ai unslop olmalı"): batan güneş Gün Batımı
             // dilinindi; gündüz salonunda yerini salon ışığı (üstte yumuşak beyaz) ve oyuncuların bastığı kort alır. Güneş öğesi
             // kalır ama gizli (GunesYerlestir ve döndürme kodu dokunulmadan çalışsın); bant ve altın iz USS'te gizli.
-            gunesImg.style.display = DisplayStyle.None;
+            // 2026-11-26 inceleme (fikir 17:06 #3): Stadyum Pop kesinleşti (23 Kas secim.md); gizli disk yine 20 Hz döndürülüyor,
+            // koyu sekme kesiti gizliyken yerleştiriliyordu. Disk, kesit, bant, iz ve döndürme kalktı; GunesDisk dokusu Kariyer'de kalır.
             salonIsik = new Image { image = Ikonlar.Isik, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(1, 1, 1, .22f) }; salonIsik.AddToClassList("salon-isik"); salonIsik.pickingMode = PickingMode.Ignore; zemin.Add(salonIsik);
             kortZemin = new VisualElement(); kortZemin.AddToClassList("kort-zemin"); kortZemin.pickingMode = PickingMode.Ignore; kortZemin.generateVisualContent += KortCiz; zemin.Add(kortZemin);
-            var bant = new VisualElement(); bant.AddToClassList("zemin-bant"); bant.pickingMode = PickingMode.Ignore; zemin.Add(bant);
-            var iz = new Image { image = Ikonlar.AltinIz, scaleMode = ScaleMode.StretchToFill }; iz.AddToClassList("zemin-iz"); iz.pickingMode = PickingMode.Ignore; zemin.Add(iz);
-            zemin.RegisterCallback<GeometryChangedEvent>(e => GunesYerlestir());
-            // O2 (2026-10-31): güneş diski yalnız menüde döner; maçta zamanlayıcı her 50 ms stil yazıp yerleşimi kirletiyordu.
-            zemin.schedule.Execute(() => { if (gunesImg == null || Ayar.reduce || root.ekran != Ekran.Menu || zemin.resolvedStyle.display == DisplayStyle.None) return; gunesAci = Mathf.Repeat(gunesAci + 3 * .05f, 360); gunesImg.style.rotate = new Rotate(new Angle(gunesAci)); }).Every(50);
+            zemin.RegisterCallback<GeometryChangedEvent>(e => ZeminYerlestir());
             var zi = new Image { image = Ikonlar.Gradyan, scaleMode = ScaleMode.StretchToFill }; zi.pickingMode = PickingMode.Ignore; zi.AddToClassList("tam"); zemin.Add(zi);
             afisImg = new Image { image = root.afis.rt, scaleMode = ScaleMode.ScaleAndCrop }; afisImg.AddToClassList("afis"); afisImg.pickingMode = PickingMode.Ignore; zemin.Add(afisImg);
             vsYazi = new Label("VS"); vsYazi.AddToClassList("yazi"); vsYazi.AddToClassList("vs"); vsYazi.pickingMode = PickingMode.Ignore; zemin.Add(vsYazi);
             // 2026-11-07 stüdyo incelemesi (AD3): koyu sekmelerde (Kariyer, Dolap, Atölye, Profil, tam sayfalar) dünya hiç yoktu,
             // şablon hissinin ana kaynağıydı. Oyna'nın güneşinin soluk bir kesiti üst şeridin arkasından batar: aynı doku, sabit
             // (dönmez, hareket yok), %20 opak; yazılar sekme başlığından sonra başladığı için kontrast değişmez. Yeni asset yok.
-            koyuGunes = new Image { image = Ikonlar.GunesDisk, scaleMode = ScaleMode.StretchToFill, tintColor = new Color(1, 1, 1, .2f) };
-            koyuGunes.AddToClassList("koyu-gunes"); koyuGunes.pickingMode = PickingMode.Ignore;
-            // diskin alt %30'u görünür (390 pt ekranda ~130 pt), yatayda ortalı; iPad'de büyümesin diye 560 sınırı (GunesYerlestir)
-            if (zemin.parent != null) { zemin.parent.Insert(zemin.parent.IndexOf(zemin) + 1, koyuGunes); zemin.parent.RegisterCallback<GeometryChangedEvent>(e => KoyuGunesYerlestir()); }
+            // Stadyum Pop'ta (22 Kas) bu kesit USS'te gizlendi, 26 Kas'ta kodu da kalktı (yukarıdaki not).
         }
-        Image gunesImg, koyuGunes, salonIsik; VisualElement kortZemin; float gunesAci, koyuGunesW = -1;
+        Image salonIsik; VisualElement kortZemin;
         // Kort (2026-11-22 Stadyum Pop): perspektifte yeşil badminton kortu, beyaz çizgiler; afişteki iki oyuncu üstünde durur.
         // Tek parlak öğe afiş kalsın diye kort düz renk, gölgesiz; çizgiler 3 birim (çift kenar, orta çizgi, servis çizgisi).
         static readonly Color KORT_YESIL = Kit.Hex("#38B26A"), KORT_CIZGI = new Color(1, 1, 1, .92f);
@@ -826,23 +819,12 @@ namespace BirdieSmash.Game
             p.BeginPath(); p.MoveTo(N(.12f, 0)); p.LineTo(N(.12f, 1)); p.MoveTo(N(.88f, 0)); p.LineTo(N(.88f, 1)); p.Stroke();
             p.BeginPath(); p.MoveTo(N(.5f, 0)); p.LineTo(N(.5f, 1)); p.MoveTo(N(.04f, .55f)); p.LineTo(N(.96f, .55f)); p.Stroke();
         }
-        // Güneş diski kare kalmalı (USS yüzdesi genişlik/yükseklik ayrı ölçer): genişliğin 1,25 katı, afişin ortasında
-        // (afiş üst %8, boy %54 → merkez %35), yatayda ortalı; kenarları ekrandan taşar (batan güneş, tam daire değil).
-        void GunesYerlestir()
+        void ZeminYerlestir()
         {
-            KoyuGunesYerlestir();
-            if (gunesImg == null) return; var r = zemin.contentRect; if (r.width <= 0 || r.height <= 0) return;
-            float d = Mathf.Max(r.width * 1.25f, r.height * .5f); gunesImg.style.width = d; gunesImg.style.height = d;
-            gunesImg.style.left = (r.width - d) / 2; gunesImg.style.top = r.height * .35f - d / 2;
+            var r = zemin.contentRect; if (r.width <= 0 || r.height <= 0) return;
             // kort: afişteki ayakların hizasından (üst %19) plakanın arkasına (%36); salon ışığı üstte, genişliğin 1,4 katı
             if (kortZemin != null) { kortZemin.style.left = 0; kortZemin.style.width = r.width; kortZemin.style.top = r.height * .19f; kortZemin.style.height = r.height * .17f; }
             if (salonIsik != null) { float s = r.width * 1.4f; salonIsik.style.width = s; salonIsik.style.height = s * .7f; salonIsik.style.left = (r.width - s) / 2; salonIsik.style.top = -s * .3f; }
-        }
-        void KoyuGunesYerlestir()
-        {
-            // koyu sekme kesiti zemin gizliyken de yerleşir (kökün ölçüsüyle; uygulama koyu sekmede açılabilir)
-            // yalnız genişlik değişince yazılır: her GeometryChanged'de aynı stili yazmak yerleşimi kirletip döngüye sokuyordu (r133)
-            if (koyuGunes != null && koyuGunes.parent != null) { float w = koyuGunes.parent.contentRect.width; if (w > 0 && Mathf.Abs(w - koyuGunesW) > .5f) { koyuGunesW = w; float k = Mathf.Min(w, 560) * 1.1f; koyuGunes.style.width = k; koyuGunes.style.height = k; koyuGunes.style.left = (w - k) / 2; koyuGunes.style.top = -k * .7f; } }
         }
         // Afiş: Oyna görünürken açık. Rakip = Oyna'daki büyük düğmenin oynatacağı maçın rakibi (bekleyen maç, Usta yolu ya da
         // kariyerin sıradaki basamağı); ilk açılışta (antrenman görülmedi) afiş hiç çizilmez (aşağıda; eskiden rakipsiz, yalnız sen).
