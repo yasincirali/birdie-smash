@@ -123,6 +123,7 @@ namespace BirdieSmash.Game
             var ek = Dugme(L.T("Arkadaş ekle"), () => { Online.ArkadasEkle(); }, null, null, 15); ek.style.marginTop = 4; ek.style.marginBottom = 4; c.Add(ek);
             c.Add(Grup(L.T("Arkadaşların")));
             arkListe = new VisualElement(); c.Add(arkListe); ArkListeKur();
+            UgsBolumKur(c);
             AltEylem(Dugme(L.T("Rastgele rakip bul"), () => { gez.AltKapat(); Uygula(gez.sekme, true); root.OnlineAra(); }, "dugme--birincil", L.T("11 sayı · eşit güç"), 19));
             // Liste köprüde yüklenir (izin penceresi dahil); durum değişince yalnız liste kabı yeniden kurulur. Sayfa kapanınca durur.
             // 2026-11-21 (fikir 22:06 #8): liste geldi ya da izin yoksa yoklama durur; dönüş yenilemesi yeniden başlatır.

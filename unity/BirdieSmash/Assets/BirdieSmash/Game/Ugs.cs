@@ -15,11 +15,13 @@ namespace BirdieSmash.Game
 {
     public static class Ugs
     {
-        // Kapalı: arayüz bağlanana ve TestFlight'ta iki telefonla denenene kadar (yasin açar).
-        public static bool Bayrak { get { return false; } }
+        // Açık ama tembel: ağa yalnız Arkadaş sayfası açılınca çıkılır (açılışta değil), hata olursa o sayfa Game Center'a bakar. İlk TestFlight denemesi (2026-11-27) bunu görmek için.
+        public static bool Bayrak { get { return true; } }
 
         public enum Durum { Kapali, Baglaniyor, Hazir, Hata }
         public static Durum durum = Durum.Kapali;
+        public static string adKodu;                   // "Ad#1234": arkadaşların seni bununla ekler
+        public static readonly List<string> bekleyenDavet = new List<string>();   // davet gönderen UGS kimlikleri (sayfa gösterir)
         public static string hataNotu;                 // yalnız tanı günlüğü için; oyuncuya gösterilmez
         public struct Arkadas { public string id, ad; }
         public static event Action<string> DavetGeldi; // gönderenin UGS kimliği
@@ -40,6 +42,7 @@ namespace BirdieSmash.Game
             {
                 if (UnityServices.State == ServicesInitializationState.Uninitialized) await UnityServices.InitializeAsync();
                 if (!AuthenticationService.Instance.IsSignedIn) await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                adKodu = await AuthenticationService.Instance.GetPlayerNameAsync();
                 await FriendsService.Instance.InitializeAsync();
                 if (!dinleniyor) { FriendsService.Instance.MessageReceived += Gelen; dinleniyor = true; }
                 durum = Durum.Hazir; hataNotu = null; return true;
@@ -61,6 +64,20 @@ namespace BirdieSmash.Game
                 return true;
             }
             catch (Exception e) { hataNotu = e.GetType().Name + ": " + e.Message; Debug.LogWarning("[Ugs] " + hataNotu); return false; }
+        }
+
+        // Bana gelen arkadaş istekleri; kabul = aynı kişiye AddFriendAsync (UGS'de karşılıklı istek arkadaşlık olur).
+        public static List<Arkadas> Istekler()
+        {
+            var l = new List<Arkadas>();
+            try
+            {
+                if (durum != Durum.Hazir) return l;
+                foreach (var r in FriendsService.Instance.IncomingFriendRequests)
+                    l.Add(new Arkadas { id = r.Member.Id, ad = r.Member.Profile != null ? r.Member.Profile.Name : r.Member.Id });
+            }
+            catch (Exception e) { hataNotu = e.GetType().Name + ": " + e.Message; Debug.LogWarning("[Ugs] " + hataNotu); }
+            return l;
         }
 
         // Kabul edilmiş arkadaşlar (istekler ayrı listede, burada yok).
@@ -88,7 +105,7 @@ namespace BirdieSmash.Game
 
         static void Gelen(Unity.Services.Friends.Notifications.IMessageReceivedEvent e)
         {
-            try { if (e.GetAs<Iletisi>().tur == DAVET_ON && DavetGeldi != null) DavetGeldi(e.UserId); }
+            try { if (e.GetAs<Iletisi>().tur != DAVET_ON) return; if (!bekleyenDavet.Contains(e.UserId)) bekleyenDavet.Add(e.UserId); if (DavetGeldi != null) DavetGeldi(e.UserId); }
             catch (Exception ex) { Debug.LogWarning("[Ugs] " + ex.Message); }
         }
     }
