@@ -1,4 +1,12 @@
 === UNITY ===
+Dolap ve Atölye cilası (26 Kasım öğlen, ikinci tur):
+- Dolap'ta Saç, Şapka, Yüz ve Sırt kutularında artık takılı (ya da denediğin) eşyanın küçük resmi var; boşsa yalnız ad.
+- Denediğin ama almadığın kategori kutusunun sol üst köşesinde "Deneme" etiketi çıkıyor (eski küçük sarı nokta yerine).
+- Bir kutuya dokununca köşedeki tik hafifçe yaylanarak beliriyor.
+- Dolap listesini kaydırırken küçük resimler parmak durunca çiziliyor; kaydırma daha akıcı olmalı.
+- Atölye'de "Eşit şartlar" düğmesi Sahada kutusunun başlığının yanına geldi; dokununca değişimi aynı yerde görürsün.
+- Atölye'de raketin ölçü düğmelerinin altında "Bir ölçüye dokun" ipucu duruyor; seçince açıklama yumuşakça beliriyor, "Raketi değiştir" düğmesi artık zıplamıyor.
+Nasıl denenir: Dolap'ı aç, bir şapka dene: Şapka kutusunda resim ve "Deneme" görmelisin. Uzun listeyi hızlı kaydır: takılma olmamalı. Atölye'de Eşit şartlar'a dokun: hemen altındaki çubuklar değişmeli. Ağırlık düğmesine dokun: alttaki düğme yerinde kalmalı.
 Menü listesi (26 Kasım öğlen):
 - Uygulama ikonu ve ilk açılıştaki logo açılış ekranının mavisine geçti.
 - Gelişim sayfasının üstünde beş dallı yetenek şekli var; puan verince şekil büyüyor, her puanda ses biraz daha yükseliyor, dal dolunca kutlama sesi ve titreşim geliyor.

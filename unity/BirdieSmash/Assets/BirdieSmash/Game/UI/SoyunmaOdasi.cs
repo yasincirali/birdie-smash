@@ -291,7 +291,7 @@ namespace BirdieSmash.Game
             kirli[(int)Sekme.Atolye] = true;
             if (soyunmaGovde == null) return;
             Vector2 of = yerKoru && soyunmaKaydir != null ? soyunmaKaydir.scrollOffset : Vector2.zero;
-            VitrinYaziKur();
+            VitrinYaziKur(); YuvalarTazele();
             var c = soyunmaGovde; c.Clear();
             if (sol && !Ayar.reduce) { var ic = new VisualElement(); ic.AddToClassList("ant-liste"); ic.AddToClassList("koz-solgun"); ic.schedule.Execute(() => ic.RemoveFromClassList("koz-solgun")).StartingIn(16); c.Add(ic); c = ic; }
             KarakterGovde(c); c.Add(Bosluk(20));
@@ -332,7 +332,7 @@ namespace BirdieSmash.Game
         // ("Takımın şimdi") durur; burada kalkan bilgi yok, yalnız ilk ekrandan indi.
         string atlBilgi;          // açık ölçü çipi (null = kapalı); sayfa yeniden kurulunca da açık kalır
         bool atlTarzAcik;         // tarz seçicisi açık mı; "Bu tarzı seç" sonrası yeniden kurulumda açık kalsın
-        VisualElement atlSahada;
+        VisualElement atlSahada, atlSahadaIc;
         // Kayıp rengi yalnız Atölye'nin Sahada kutusunda: yasin'in seçtiği taslak "verdiğin kırmızı" diyor, §8.2.2 mavi zeminde saf
         // kırmızıyı yasaklıyor. Açık mercan-pembe #FFB4AB kartta ~4,8:1 (gövde 4,5 sınırının üstü); anlam yine ▼ ve "−" ile de verilir.
         static readonly Color KAYIP = Kit.Hex("#FFB4AB");
@@ -340,20 +340,25 @@ namespace BirdieSmash.Game
         {
             var gr = Ayar.gear;   // Seviye satırı kalktı (2026-11-05, Ar-Ge 11:40 #3): üst çubukta Sv + XP ve Tüy zaten var, Profil'de ayrıntı
             RaketVitrin(c);
-            atlSahada = Kart("atl-sahada"); c.Add(atlSahada); SahadaIc(atlSahada);
-            TarzSatir(c);
-            c.Add(Grup(L.T("Yuvalar"))); var iz = Satir("izgara"); iz.AddToClassList("yuva-izgara"); c.Add(iz);
-            foreach (var Y in Gear.YUVA) iz.Add(YuvaKare(Y));
+            atlSahada = Kart("atl-sahada"); c.Add(atlSahada);
             // 2026-11-22 inceleme (fikir 12:06 #6): çip bütün Atölye'yi kuruyordu. 2026-11-23 (Atölye A): eşit şartlar yalnız takım
             // çubuklarını değiştirir (Gear.KSv, GelisimCubuk), onları da artık yalnız Sahada kutusu gösterir: kutu yerinde kurulur.
+            // 2026-11-26 inceleme (fikir 12:06 #3): çip Yuvalar ızgarasının altında, etkilediği kutudan bir ekran aşağıdaydı;
+            // dokununca değişen şey görüş alanı dışında kalıyordu (§7.3 yakınlık). Artık Sahada kutusunun başlık satırında, sağda.
+            // Başlık satırı kutunun içi yeniden kurulurken kalır (çipin basılma tepkisi kesilmez); dar ekranda/×2'de çip alta sarar.
             VisualElement esc = null;
             esc = Cip(L.T("Eşit şartlar"), gr.eko.esit, () =>
             {
                 gr.eko.esit = !gr.eko.esit; Ayar.GearHesap(); Ayar.KaydetSonra();
-                if (atlSahada == null || atlSahada.panel == null) { SoyunmaGovdeKur(true); return; }
-                atlSahada.Clear(); SahadaIc(atlSahada); CipDurum(esc, gr.eko.esit); RenkSonrasiKirli(); kirli[(int)Sekme.Profil] = true;
+                if (atlSahadaIc == null || atlSahadaIc.panel == null) { SoyunmaGovdeKur(true); return; }
+                atlSahadaIc.Clear(); SahadaIc(atlSahadaIc); CipDurum(esc, gr.eko.esit); RenkSonrasiKirli(); kirli[(int)Sekme.Profil] = true;
             }, L.T("Serbest maçta yükseltmeler sayılmaz"));
-            c.Add(esc);
+            esc.style.flexGrow = 0f; esc.style.flexBasis = StyleKeyword.Auto; esc.style.marginRight = 0f; esc.style.marginLeft = StyleKeyword.Auto;   // sarınca da sağda
+            var bas = Satir("arali"); bas.style.flexWrap = Wrap.Wrap; bas.Add(Yazi(L.T("Sahada"), 16, "kalin")); bas.Add(esc); atlSahada.Add(bas);
+            atlSahadaIc = new VisualElement(); atlSahada.Add(atlSahadaIc); SahadaIc(atlSahadaIc);
+            TarzSatir(c);
+            c.Add(Grup(L.T("Yuvalar"))); var iz = Satir("izgara"); iz.AddToClassList("yuva-izgara"); c.Add(iz);
+            foreach (var Y in Gear.YUVA) iz.Add(YuvaKare(Y));
             c.Add(Grup(L.T("Ayakkabı tabanı"))); TabanBolum(c);
         }
 
@@ -383,12 +388,17 @@ namespace BirdieSmash.Game
                 L.T("Gevşek tel geniş tatlı nokta, sıkı tel his ve kontrol verir.") + " " + L.T("Bu raket için {0}–{1} lbs.", tmin, tmax)
                     + (tel > tmax ? " " + L.T("Seninki önerinin üstünde.") : tel < tmin ? " " + L.T("Seninki önerinin altında.") : "") };
             var cipler = new VisualElement[4];
-            var bilgi = Yazi("", 13, "atl-bilgi"); bilgi.pickingMode = PickingMode.Ignore;
+            var bilgi = Yazi("", 13, "atl-bilgi"); bilgi.pickingMode = PickingMode.Ignore; bool kurulu = false;   // ilk yazımda solma yok
             System.Action yaz = () =>
             {
                 int a = System.Array.IndexOf(ADLAR, atlBilgi);
                 for (int i = 0; i < 4; i++) if (cipler[i] != null) CipDurum(cipler[i], i == a);
-                bilgi.text = a >= 0 ? ANLAM[a] : ""; bilgi.style.display = a >= 0 ? DisplayStyle.Flex : DisplayStyle.None;
+                // 2026-11-26 inceleme (fikir 12:06 #4): satır None↔Flex açılıp kapanıyor, "Raketi değiştir" düğmesi her dokunuşta
+                // aşağı-yukarı sıçrıyordu; çiplerin dokunulabilir olduğunu da hiçbir şey söylemiyordu. Seçim yokken aynı yerde soluk
+                // ipucu cümlesi yer tutar; seçimde yeni metin .15 sn solarak belirir (yalnız opacity; hareketi azaltta anında).
+                bilgi.text = a >= 0 ? ANLAM[a] : L.T("Bir ölçüye dokun, ne demek olduğunu söyleyelim.");
+                bilgi.EnableInClassList("atl-bilgi--ipucu", a < 0);
+                if (kurulu && !Ayar.reduce) { bilgi.AddToClassList("atl-bilgi--gir"); bilgi.schedule.Execute(() => bilgi.RemoveFromClassList("atl-bilgi--gir")).StartingIn(16); }
             };
             // 2×2 ızgara: §2.4 eşit öğe dizisi (çip flex-basis 0, iki satır aynı genişlik). Değer üstte (asıl bilgi), ad altında.
             for (int sat = 0; sat < 2; sat++)
@@ -401,7 +411,7 @@ namespace BirdieSmash.Game
                     s.Add(cipler[i]);
                 }
             }
-            k.Add(bilgi); yaz();
+            k.Add(bilgi); yaz(); kurulu = true;
             // Model ve gerginlik değişikliği raket yuvasının işi (teknik sayfa da orada); tek ikincil eylem.
             var d = Dugme(L.T("Raketi değiştir") + "  ›", () => YuvaAc("raket"), "dugme--hayalet"); d.style.marginTop = 10; k.Add(d);
         }
@@ -440,7 +450,6 @@ namespace BirdieSmash.Game
         {
             var v = Gear.Cubuklar(Ayar.GSE); var gel = Ayar.GelisimCubuk(); int n = 0;
             int[] once = sahadaOnce, onceGel = sahadaGel; sahadaOnce = (int[])v.Clone(); sahadaGel = gel != null ? (int[])gel.Clone() : null;
-            k.Add(Yazi(L.T("Sahada"), 16, "kalin"));
             for (int i = 0; i < 5; i++)
             {
                 int g = gel != null ? Mathf.Min(gel[i], 100 - v[i]) : 0, t = v[i] + g, f = t - 50; if (f == 0) continue; n++;

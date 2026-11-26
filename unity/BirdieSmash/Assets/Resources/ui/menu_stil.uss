@@ -333,6 +333,10 @@
 .atl-ortala { -unity-text-align: middle-center; white-space: normal; }
 .atl-olcu { margin: 0 -4px; }   /* çip margin 4px: ızgaranın dış kenarı kartın yazı kenarıyla hizalı (§2.5) */
 .atl-bilgi { color: var(--mu2); white-space: normal; margin-top: 8px; }
+.atl-bilgi--ipucu { color: var(--mu); }   /* 2026-11-26: seçimsiz ipucu soluk; satır hep yer tutar (düğme sıçramaz) */
+.atl-bilgi { opacity: 1; transition-property: opacity; transition-duration: 0.15s; transition-timing-function: ease-out; }
+.atl-bilgi--gir { opacity: 0; transition-duration: 0s; }
+.az-hareket .atl-bilgi { transition-duration: 0s; }
 .atl-delta { margin-top: 10px; }
 .atl-delta-ad { color: var(--mu2); flex-shrink: 0; white-space: nowrap; }
 .atl-arti { color: var(--lime); margin-left: 4px; min-width: 30px; -unity-text-align: middle-right; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
@@ -1188,8 +1192,16 @@
 .dolap-yuva--hareket { width: auto; min-width: 64px; margin: 0; padding: 4px 12px; }
 .dolap-yuva-yazi { color: var(--tx); -unity-text-align: middle-center; white-space: normal; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .dolap-yuva-tik { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 9px; background-color: var(--sun); align-items: center; justify-content: center; }
-.dolap-yuva-nokta { position: absolute; top: 5px; left: 5px; width: 7px; height: 7px; border-radius: 4px; background-color: var(--sun); display: none; }
-.dolap-yuva--deneniyor .dolap-yuva-nokta { display: flex; }
+/* 2026-11-26 inceleme (fikir 12:06 #1, #5, #6): takılı eşya resmi (Saç/Şapka/Yüz/Sırt), "Deneme" etiketi (eski 7 px nokta yerine; ✓ ile
+   aynı renk olsa da yazı ve köşe ayırır), seçimde ✓ yaylanması. Kısa ekranda resim küçülür ki yuva 44 pt kutuda kalsın. */
+.dolap-yuva-resim { width: 28px; height: 28px; margin-bottom: 2px; border-radius: 8px; background-color: rgba(255, 255, 255, 0.08); opacity: 1; transition-property: opacity; transition-duration: 0.2s; }
+.az-hareket .dolap-yuva-resim { transition-duration: 0s; }
+.kisa .dolap-yuva-resim { width: 22px; height: 22px; margin-bottom: 0; }
+.dolap-yuva-deneme { position: absolute; top: -7px; left: -6px; padding: 0 5px; border-radius: 8px; background-color: var(--sun); color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); display: none; }
+.dolap-yuva--deneniyor .dolap-yuva-deneme { display: flex; }
+.dolap-yuva-tik { scale: 1 1; transition-property: scale; transition-duration: 0.18s; transition-timing-function: ease-out-back; }
+.dolap-yuva-tik--gir { scale: 0.6 0.6; transition-duration: 0s; }
+.az-hareket .dolap-yuva-tik { transition-duration: 0s; }
 /* Kısa ekran (SE sınıfı, vitrin ~250 pt): üç yuva 44 pt'ye iner, aralık 2 pt, kolon payı 56; vitrin %50 → %54 ki üç yuva sığsın. */
 .kisa .dolap .vitrin-alan { height: 54%; }
 .kisa .dolap-yuvalar { top: 56px; bottom: 56px; }
