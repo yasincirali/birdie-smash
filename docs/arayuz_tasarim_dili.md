@@ -208,6 +208,10 @@ gezinme ve açılır panel, Brawl Stars iri simge ve bölmeli yerleşim, Apple H
    tam). Kategoriye dokunmak kamerayı o bölgeye götürür, eşyaya dokunmak figürde dener, tek sarı düğme Giy/Al. Raket
    şeridin son kategorisi. iPad'de çekmece sağ panel, figür solda tam boy. Durak geçişi animasyonsuz: vitrin RT'si kutuyla
    boyutlanır, her karede boy değiştirmek takılma demektir (§7.8).
+   **Yuvalar** (23 Kasım 2026, yasin seçimi "Dolap A", `https://claude.ai/artifact/Q3WbQ4HGx1Pv6VhfwXpBpV`): kategoriler
+   yazılı şeritte değil, figürün iki yanında yuva (64 × 48 pt; liste ikiye bölünür, ilk yarı solda). Dokunulan yuva
+   çekmecenin içeriğini seçer; seçili yuva sarı çerçeve + köşede ✓ rozeti. Hareketler giyilmez, ayrı yuva sağ üstte
+   (İncele sol üstte). Yuva sığmadığında yazılı şerit döner: tam durak, büyük yazı, kısa ekranda 8 yuva; ikisi aynı anda yok.
 2. **Kariyer = Dünya Turu + dikey rota** (22 Kasım 2026, yasin "önerin gibi ilerle"; seçenekler
    `https://claude.ai/artifact/19MR43zwtCSMgJxmpkLeNM`, A + B'nin durak ödülleri + C'nin turnuva aşamaları; kalıp Tennis
    Clash / Golf Clash şehir turu). Üstte sekiz tur kartı yatay şeritte (kart 232 pt: Painter2D mekân sahnesi 112 pt, "Tur n"

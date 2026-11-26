@@ -1,4 +1,9 @@
 === UNITY ===
+Dolap yeniden düzenlendi (23 Kasım akşam):
+- Kategoriler artık oyuncunun iki yanında kutular halinde: solda Yüz, Şapka, Forma; sağda Sırt, Ayakkabı, Raket. Yazılı, kayan şerit kalktı.
+- Hareketler ayrı kutu, oyuncu görüntüsünün sağ üst köşesinde.
+Nasıl denenir: Dolap'ı aç. Oyuncunun iki yanında altı kutu, sağ üstte Hareketler görmelisin. Bir kutuya dokun: kutu sarı çerçeve ve köşede tik alır, alttaki liste o kategoriye geçer. Listeyi tutamaktan yukarı çekip tam aç: kutular gizlenir, yazılı şerit üstte belirir.
+
 Kariyer sayfası yenilendi (23 Kasım):
 - Sayfanın en üstünde artık sıradaki maç var: turun mekânı, sen ve rakibin yüzü, tek büyük Oyna. Oyna doğrudan maça götürür.
 - Rakibin yüzüne ya da adına dokununca maç kartı açılır (zorluk, yıldız görevleri).

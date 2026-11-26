@@ -1156,6 +1156,35 @@
 .segment-cip { border-width: 0; border-bottom-width: 3px; border-color: rgba(0, 0, 0, 0); border-top-color: rgba(0, 0, 0, 0); border-bottom-color: rgba(0, 0, 0, 0); }
 .segment-cip.cip--secili { border-bottom-color: var(--sun); }
 
+/* 2026-11-23 Dolap yuvaları (yasin seçimi "Dolap A", artifact Q3WbQ4HGx1Pv6VhfwXpBpV; UiKok.YuvalarKur). Kategoriler oyuncunun iki
+   yanında yuva; Hareketler ayrı yuva sağ üstte (İncele sol üstte, simetrik). Kolonlar İncele düğmesinin (8 + 44) ve alttaki
+   ok/odak satırının (8 + 44) arasında dikey ortalı; yuva 64 × 48 pt (dokunma ≥ 44), aralık 8. Seçili: sarı çerçeve + açık sarı
+   dolgu + köşede sarı rozet içinde ✓ (renk körlüğü: biçim de değişir). Deneniyor: sol üstte küçük sarı nokta (etiket de söyler).
+   Yuva sığmayan durumlarda yazılı şerit döner, yuvalar gizlenir: tam durak, büyük yazı, kısa ekranda 8 yuva. İncele'de yuva yok
+   (çekmece kapalı, seçilecek tepsi görünmez). vitrin-yazi Dolap'ta gizli: seçili yuva ve odak düğmesi aynı bilgiyi verir, sağ
+   üst köşe Hareketler'in. */
+.dolap .kategori-kaydir { display: none; }
+.dolap.dolap--tam .kategori-kaydir, .buyuk-yazi .dolap .kategori-kaydir, .kisa .dolap.dolap--yuva8 .kategori-kaydir { display: flex; }
+.dolap .vitrin-yazi { display: none; }
+.dolap-yuvalar { position: absolute; top: 60px; bottom: 60px; justify-content: center; align-items: center; }
+.dolap-yuvalar--sol { left: 8px; }
+.dolap-yuvalar--sag { right: 8px; }
+.dolap-yuvalar--hareket { top: 8px; bottom: auto; right: 8px; }
+.dolap.dolap--tam .dolap-yuvalar, .buyuk-yazi .dolap .dolap-yuvalar, .kisa .dolap.dolap--yuva8 .dolap-yuvalar, .vitrin-alan--genis .dolap-yuvalar { display: none; }
+.dolap-yuva { width: 64px; min-height: 48px; padding: 4px; margin: 4px 0; border-radius: 14px; align-items: center; justify-content: center; background-color: rgba(23, 63, 152, 0.88); }   /* kontur ve kalın alt kenar ortak .dugme'den (Stadyum Pop: her basılan) */
+.dolap-yuva:active { background-color: rgba(30, 77, 179, 0.95); }
+.dolap-yuva--secili, .dolap-yuva--secili:active { background-color: rgba(255, 201, 60, 0.22); border-color: var(--sun); border-top-color: var(--sun); border-bottom-color: var(--sun); }
+.dolap-yuva--hareket { width: auto; min-width: 64px; margin: 0; padding: 4px 12px; }
+.dolap-yuva-yazi { color: var(--tx); -unity-text-align: middle-center; white-space: normal; -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
+.dolap-yuva-tik { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 9px; background-color: var(--sun); align-items: center; justify-content: center; }
+.dolap-yuva-nokta { position: absolute; top: 5px; left: 5px; width: 7px; height: 7px; border-radius: 4px; background-color: var(--sun); display: none; }
+.dolap-yuva--deneniyor .dolap-yuva-nokta { display: flex; }
+/* Kısa ekran (SE sınıfı, vitrin ~250 pt): üç yuva 44 pt'ye iner, aralık 2 pt, kolon payı 56; vitrin %50 → %54 ki üç yuva sığsın. */
+.kisa .dolap .vitrin-alan { height: 54%; }
+.kisa .dolap-yuvalar { top: 56px; bottom: 56px; }
+.kisa .dolap-yuvalar--hareket { top: 8px; bottom: auto; }
+.kisa .dolap-yuva { min-height: 44px; margin: 1px 0; padding: 2px 4px; }
+.kisa .dolap-yuva--hareket { margin: 0; }
 /* 2026-11-23 Profil A (yasin seçimi; ProfilEkran.cs başındaki karar kaydı). Yalnız profil-* sınıfları: alt bant, Kariyer, Dolap,
    Atölye aynı dosyaya paralel blok ekliyor. Oyuncu kartı altın dolgu + mürekkep kontur, altı kalın (basılabilir: Dolap'ı açar);
    içindeki bütün yazı mürekkep (altın üstünde beyaz 1,5:1, mürekkep 10:1). */
