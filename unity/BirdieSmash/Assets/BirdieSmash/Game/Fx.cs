@@ -91,7 +91,7 @@ namespace BirdieSmash.Game
         }
 
         // HTML burst(x, y, col, n, spd, kind): hız px/sn → m/sn (1/28), ömür .4–.9 sn
-        public void Burst(Vector3 at, Color c, int n, float spd, string kind)
+        public void Burst(Vector3 at, Color c, int n, float spd, string kind, float boy = 1)   // boy: parçacık boyu çarpanı (2026-11-26 renkli yıldızlar uzak kamerada okunsun)
         {
             if (Ayar.reduce) n = Mathf.CeilToInt(n / 3f);
             var ps = kind == "feather" ? tuy : kind == "spark" ? kivilcim : cizgi;
@@ -102,7 +102,7 @@ namespace BirdieSmash.Game
                 // daha hızlı (×1,25): patlamanın yarıçapı aynı, yalnız daha çabuk açılıp duruyor.
                 bool yildiz = kind == "spark"; float s = spd / 28f * Random.Range(.3f, 1.2f) * (yildiz ? 1.25f : 1); ep.velocity = Random.onUnitSphere * s + Vector3.up * .8f; ep.startColor = c;
                 ep.startLifetime = yildiz ? Random.Range(.3f, .55f) : kind == "feather" ? Random.Range(.35f, .65f) : Random.Range(.4f, .9f);
-                ep.startSize = kind == "feather" ? Random.Range(.18f, .32f) : Random.Range(.06f, .16f); ep.rotation = Random.Range(0, 360f); ps.Emit(ep, 1);
+                ep.startSize = (kind == "feather" ? Random.Range(.18f, .32f) : Random.Range(.06f, .16f)) * boy; ep.rotation = Random.Range(0, 360f); ps.Emit(ep, 1);
             }
         }
         // ---- Renkli maç (2026-11-26, yasin: "Animasyonlar falan eğlenceli renkli halde olmalı") ----
@@ -118,10 +118,10 @@ namespace BirdieSmash.Game
             switch (type) { case "smash": case "jump": case "kill": return TURUNCU; case "drive": case "push": return GOK; case "drop": case "block": return PEMBE; default: return NANE; }
         }
         // Paletten sırayla renk alan patlama (konfeti): aynı Burst, renk parçacık başına döner.
-        public void Konfeti(Vector3 at, Color[] palet, int n, float spd, string kind)
+        public void Konfeti(Vector3 at, Color[] palet, int n, float spd, string kind, float boy = 1.7f)
         {
             if (palet == null || palet.Length == 0) return; int k = Mathf.Max(1, n / palet.Length);
-            for (int i = 0; i < palet.Length; i++) Burst(at, palet[i], k, spd, kind);
+            for (int i = 0; i < palet.Length; i++) Burst(at, palet[i], k, spd, kind, boy);
         }
         // benim vuruşumda dışa fırlayan ışık çizgileri (HTML streak: 600 px/sn, .18 sn)
         public void Streak(Vector3 at, Color c, int n)

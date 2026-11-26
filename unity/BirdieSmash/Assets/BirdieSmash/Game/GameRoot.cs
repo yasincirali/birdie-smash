@@ -1280,12 +1280,13 @@ namespace BirdieSmash.Game
                     sfx.Hit(e.type, e.quality, e.slice, e.big, e.serve, mine, (int)e.k, M.flow, M.s != null ? M.s.Speed : 0);   // hız: vuruşun gücü sese biner (Sfx 2026-10-27)
                     fx.Burst(at, Color.white, e.type == "smash" ? 10 : 5, e.type == "smash" ? 220 : 120, "feather");
                     // 2026-11-26 renkli maç (Fx.VurusRenk): tüyler beyaz kalır (top tüyü), yanında vuruş türünün renginde birkaç yıldız.
-                    if (!e.serve) fx.Burst(at, Fx.VurusRenk(e.type), e.type == "smash" ? 6 : 3, e.type == "smash" ? 240 : 150, "spark");
+                    // r271: yıldızlar yayın kamerasında görünmüyordu (boy ×1,8, sayı 8/5) ve en görünür öğe olan dalga beyaz kalıyordu.
+                    if (!e.serve) fx.Burst(at, Fx.VurusRenk(e.type), e.type == "smash" ? 8 : 5, e.type == "smash" ? 260 : 170, "spark", 1.8f);
                     // Gövdenin gerisinden smaç (e.arka, 2026-11-14 inceleme fikir 22:05 #1): Core'da %15 yavaş ve düz; his de bunu söyler:
                     // dalga beyaz ve küçük, sarsıntı yarım, flaş yok. Tam smaç hissi yalnız topun altına girilen smaçta.
                     bool tamSmac = e.type == "smash" && !e.arka;
                     // 2026-11-15 (inceleme turu): limon = benim iyi anım (HUD dili); rakibin tam smacının dalgası onun HUD lilasında.
-                    fx.Dalga(at, tamSmac ? (mine ? limon : Kit.Hex(Hud.RAKIP_HUD)) : Color.white, tamSmac ? 90 : e.arka ? 60 : 46);
+                    fx.Dalga(at, tamSmac ? (mine ? limon : Kit.Hex(Hud.RAKIP_HUD)) : e.serve ? Color.white : Fx.VurusRenk(e.type), tamSmac ? 90 : e.arka ? 60 : 46);   // 2026-11-26: smaç dışı vuruşun dalgası türünün renginde (servis beyaz)
                     // File önü kill (2026-10-29, "file önü smaç oyunu değiştirsin"): Core onu smaç diye uçurur, gerçek adı e.text'te.
                     // Kısa ve sert: sarsıntı smaçtan büyük, yakınlaşma küçük (file dibinde kadraj kaymasın), halo rengi altın.
                     bool kill = e.text == "kill";
