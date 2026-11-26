@@ -217,13 +217,8 @@
 .tur-rakip-nokta--yok { opacity: 0.35; }
 .tur-hazir-iz { flex-grow: 0; margin: 6px 0 0 0; }
 .tur-hazir-iz .stat-dolu { background-color: var(--lime); }
-/* 2026-11-07 (UX5): sabit sıradaki maç şeridi, kaydırmanın dışında, sekme çubuğunun üstünde; birincil düğmeden kısa */
-.siradaki-serit { flex-shrink: 0; min-height: 52px; margin: 4px 16px 8px 16px; padding: 6px 14px; }
-.kisa .siradaki-serit { min-height: 48px; margin-bottom: 4px; }
 /* 2026-11-21 (fikir 17:06 #1): şeritte iki yüz. Çift mutlak konumda solda; iki yanda eşit iç boşluk, yazı ortada kalır.
    Kenarlık düğme turuncusu: üst üste binen iki daire ayrı okunur. */
-.siradaki-serit--yuz { padding-left: 70px; padding-right: 70px; }   /* 10 + çift 52 + 8 boşluk */
-.serit-cift { position: absolute; left: 10px; top: 0; bottom: 0; flex-direction: row; align-items: center; }
 .serit-av { width: 30px; height: 30px; border-radius: 15px; border-width: 2px; border-color: var(--sun); align-items: center; justify-content: center; overflow: hidden; }
 .serit-av--rakip { margin-left: -8px; }
 .dugum { min-height: 44px; padding: 10px 12px; margin: 0; }
@@ -969,23 +964,6 @@
 .genis .dolap .dolap-cekmece { flex-basis: 0; margin: 0 8px 8px 0; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; border-bottom-width: 1px; border-bottom-color: var(--cam-alt); padding-top: 8px; }
 .genis .cekmece-tutamak { display: none; }
 
-/* 2026-11-19 Kariyer A: dikey tur yolu (KariyerEkran.TurYol). Başlık kartında ‹ tur › oklar; yol satırları zikzak (düğüm bir
-   kenarda, yazı içe bakar); çizgi satırların arkasında tek Painter2D eğrisi. Şimdiki düğüm 64 pt (güneş diski), diğerleri 44. */
-.tur-yol { margin: 8px 0 4px 0; padding: 4px 0; }
-.tur-yol-cizgi { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
-.yol-satir { flex-direction: row; align-items: center; min-height: 72px; margin: 4px 0; }
-.yol-satir--sol { padding-left: 10%; padding-right: 16px; }
-.yol-satir--sag { flex-direction: row-reverse; padding-right: 10%; padding-left: 16px; }
-.yol-yazi { flex-grow: 1; flex-shrink: 1; min-width: 0; margin: 0 12px; }
-.yol-yazi Label { white-space: normal; }
-.yol-satir--sag .yol-yazi { align-items: flex-end; }
-.yol-satir--sag .yol-yazi Label { -unity-text-align: upper-right; }
-.yol-satir--sag .yol-yazi .rakip-satir { flex-direction: row-reverse; }
-.yol-satir--sag .yol-yazi .rakip-satir > .yildizlar, .yol-satir--sag .yol-yazi .rakip-satir > VisualElement { margin-left: 0; margin-right: 6px; }
-.dugum-rozet--buyuk { width: 64px; height: 64px; border-radius: 32px; border-width: 3px; }
-.dugum-rozet--muhur { width: 52px; height: 52px; border-radius: 26px; border-color: rgba(249, 210, 114, 0.45); }
-.dugum-rozet--muhur.dugum-rozet--gecti { background-color: var(--gold); border-color: var(--gold); }
-
 /* 2026-11-19 Atölye A: tarz çipleri + önizleme kartında etki çubukları (SoyunmaOdasi.TarzCubuk). İzin ortası Dengeli; artı
    ortadan sağa limon, eksi ortadan sola soluk. Genişlik 0'dan büyür (geçiş yalnız width, .22 sn; hareketi azaltta kod anında yazar). */
 .tarz-kaydir { margin: 4px 0 2px 0; }
@@ -1016,7 +994,6 @@
 /* 2026-11-19 (Ar-Ge 12:06 #4, tablet): iPad'de Kariyer/Profil/Atölye tam eni kaplıyor, tur yolu zikzakı ve satırlar 800+ pt
    uzuyordu. Sekme içeriği ve "Sıradaki maç" şeridi 600 pt orta sütun (telefondaki oran); Dolap kendi sağ paneliyle hariç. */
 .genis .sekme-icerik { max-width: 600px; width: 100%; align-self: center; margin-left: auto; margin-right: auto; }
-.genis .siradaki-serit { max-width: 568px; width: 100%; align-self: center; }
 /* 2026-11-20 inceleme (fikir 07:06 #3, §6.2 tek basma dili): renk/şekil örnekleri Dolap'ın en sık dokunulan öğesi ama düğme,
    düğüm ve kupa hücresinin basma ölçeğini taşımıyordu. Aynı dil: basınca .06 sn'de %95, bırakınca .26 sn ease-out-back.
    Yalnız scale ve border-color geçer; border-width geçişi her karede yerleşim hesaplatırdı. Hareketi azaltta küçülme yok. */
@@ -1076,47 +1053,57 @@
 .dugme--ok > .dugme-ic { flex-grow: 1; flex-shrink: 1; padding-left: 18px; }
 .dugme-ok { flex-shrink: 0; margin-left: 8px; width: 10px; opacity: 0.7; -unity-text-align: middle-center; }
 
-/* 2026-11-22 Dünya Turu (yasin "önerin gibi ilerle"; DunyaTuru.cs). Tur kartı şeridi: kart 232 pt, sahne 112 pt (Painter2D mekân),
-   gövde cam. Seçili kart turuncu 2 pt çerçeve (seçim rolü, §8.1); kilitli kartta sahne koyu örtü + kilit, yazı yine okunur. */
-.tur-serit { margin: 8px -16px 4px -16px; flex-shrink: 0; }
-.tur-serit .unity-scroll-view__content-container { flex-direction: row; padding: 4px 16px 8px 16px; }
-.tur-kart2 { width: 232px; margin-right: 12px; border-radius: 18px; overflow: hidden; background-color: var(--cam); border-width: 2px; border-color: rgba(255, 255, 255, 0.06); border-bottom-width: 4px; border-bottom-color: rgba(0, 0, 0, 0.35); transition-property: scale, border-color, translate; transition-duration: 0.12s; }
-.tur-kart2:active { scale: 0.97 0.97; }
-/* 2026-11-22 inceleme (fikir 22:06 #6): seçim artık yerinde değiştiği için çerçeve .12 sn'de geçer ve seçili kart 2 px yükselir
-   (alt kenar koyu kalır, §11 tıknaz kalıp). Hareketi azaltta süre 0 ve yükselme yok. */
-.tur-kart2--secili { border-color: var(--sun); border-bottom-color: rgb(201, 143, 18); translate: 0 -2px; }
-.az-hareket .tur-kart2--secili { translate: 0 0; }
-/* 2026-11-22 inceleme (fikir 22:06 #3): "Buradasın" rozetinde oyuncunun yüzü; koyu ince halka turuncu zeminden ayırır. */
-.tur-kart2-av { width: 18px; height: 18px; border-radius: 9px; border-width: 1px; border-color: rgba(14, 32, 84, 0.55); margin-right: 4px; align-items: center; justify-content: center; overflow: hidden; }
-.tur-kart2-sahne { height: 112px; }
-.tur-kart2-ortu { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(10, 24, 64, 0.62); align-items: center; justify-content: center; }
-.tur-kart2-no { position: absolute; left: 8px; top: 8px; padding: 3px 8px; border-radius: 10px; background-color: rgba(14, 32, 84, 0.72); color: var(--tx); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
-.tur-kart2-bitti { position: absolute; right: 8px; top: 8px; flex-direction: row; align-items: center; padding: 3px 8px; border-radius: 10px; background-color: var(--lime); }
-.tur-kart2-burada { background-color: var(--sun); }
+/* 2026-11-23 Kariyer A "Sıradaki maç önde" (DunyaTuru.cs başı). Üç blok: sıradaki maç kartı (sahne + sen/VS/rakip + tek sarı Oyna),
+   seçili turun duraklar çizgisi (altı 44 pt düğüm, aşama etiketleri), sekiz tur kutusu (4 × 2, büyük yazıda 2 sütun).
+   Sarı yalnız Oyna ve "şimdi"de; seçili tur kutusu beyaz çerçeve. VS beyaz + mürekkep konturu (.vs'nin konturu; .vs sınıfı mutlak konumlu olduğu için kullanılmaz). */
+.kar-hero { padding: 0; overflow: hidden; margin-top: 10px; }
+.kar-hero-sahne { height: 120px; }
+.kisa .kar-hero-sahne, .buyuk-yazi .kar-hero-sahne { height: 84px; }
+.kar-hero-no { position: absolute; left: 10px; top: 10px; padding: 3px 8px; border-radius: 10px; background-color: rgba(14, 32, 84, 0.72); color: var(--tx); }
+.kar-hero-govde { padding: 12px 14px 14px 14px; }
+.kar-hero-ust { flex-direction: row; align-items: center; }
+.kar-hero-ust > .durak-odul { margin-left: 8px; }
+.kar-vs { flex-direction: row; align-items: center; min-height: 56px; margin-top: 10px; border-radius: 14px; }
+.kar-yuz { width: 48px; height: 48px; border-radius: 24px; border-width: 2px; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+.kar-yuz--sen { border-color: var(--lime); }
+.kar-yuz--rakip { border-color: var(--coral); }
+.kar-vs-ad { flex-grow: 1; flex-basis: 0; flex-shrink: 1; min-width: 0; margin: 0 8px; }
+/* r252: rakip sütunu flex-end iken uzun tarz ("File oyuncusu", ×2 "Net player") sola taşıp VS'nin üstüne biniyordu. Sütunlar
+   esner, yazı sütun içinde sarar; rakip sağa hizalı kalır. */
+.kar-vs-ad Label { white-space: normal; }
+.kar-vs-ad--rakip Label { -unity-text-align: upper-right; }
+.kar-vs-yazi { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--tx); flex-shrink: 0; -unity-text-outline-width: 0.6px; -unity-text-outline-color: var(--cta-ink); }
+.kar-oyna { margin-top: 12px; }
+.kar-tur { margin-top: 12px; padding: 12px 6px 10px 6px; }
+.kar-tur-bas { flex-direction: row; align-items: center; margin: 0 8px; }
+.kar-turlar .kar-tur-bas { margin: 0 2px; }
+.kar-tur-olcu { flex-shrink: 0; margin-left: 8px; }
+.kar-tur .tur-alt, .kar-tur-not { margin-left: 8px; margin-right: 8px; }
+.kar-adim { margin-top: 10px; }
+.kar-adim-cizgi { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
+.kar-adim-dugumler { flex-direction: row; }
+.kar-adim-slot { flex-grow: 1; flex-basis: 0; min-height: 48px; align-items: center; justify-content: center; }
+.kar-adim .dugum-rozet--simdi { border-width: 3px; }
+.kar-adim .dugum-portre { width: 38px; height: 38px; border-radius: 19px; }
+.kar-adim-etiket { flex-direction: row; margin-top: 6px; }
+.kar-adim-etiket Label { margin: 0 2px; }
+.kar-turlar { margin-top: 12px; }
+.kar-tur-izgara { flex-direction: row; flex-wrap: wrap; justify-content: space-between; margin-top: 10px; }
+.kar-tur-kutu { width: 23.5%; min-height: 76px; margin-bottom: 8px; padding: 8px 2px; border-radius: 12px; align-items: center; background-color: rgba(255, 255, 255, 0.06); border-width: 2px; border-color: rgba(0, 0, 0, 0); }
+.buyuk-yazi .kar-tur-kutu { width: 48.5%; }
+.kar-tur-kutu--secili { border-color: var(--tx); background-color: rgba(255, 255, 255, 0.12); }
+.kar-tur-kutu--kilit .kar-tur-ad { color: var(--mu); }
+.kar-tur-rozet { width: 30px; height: 30px; border-radius: 15px; border-width: 2px; border-color: rgba(255, 255, 255, 0.5); align-items: center; justify-content: center; margin-bottom: 4px; flex-shrink: 0; }
+.kar-tur-rozet--bitti { background-color: var(--mu2); border-color: var(--mu2); }
+.kar-tur-rozet--simdi { background-color: var(--sun); border-color: var(--cta-ink); }
+.kar-tur-rozet--kilit { border-color: rgba(255, 255, 255, 0.2); }
+.kar-tur-ad { white-space: normal; -unity-text-align: upper-center; color: var(--tx); }
 .koyu-yazi { color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); margin-left: 2px; }
-.tur-kart2-govde { padding: 10px 12px 12px 12px; }
-.tur-kart2-ad { -unity-font-definition: resource("fonts/Baloo2-ExtraBold"); color: var(--tx); white-space: normal; }
-.tur-kart2-kilit-yazi { white-space: normal; margin-top: 6px; }
-.tur-kart2 .arali { margin-top: 8px; align-items: center; }
-.tur-kart2-odul { flex-direction: row; align-items: center; margin-top: 8px; }
-.tur-kart2-odul Label { margin-left: 6px; white-space: normal; flex-shrink: 1; }
 .tur-alt { margin: 2px 0 4px 0; }
 .tur-alt .tur-hikaye { color: var(--mu); }
-/* Rota: haritanın açık zemini değil, koyu temada bir ton açık cam (yükseklik = açıklık, §8.2/3); durak ödülü satır sonunda altın. */
-.rota-harita { border-radius: 18px; background-color: rgba(255, 255, 255, 0.04); border-width: 1px; border-color: rgba(255, 255, 255, 0.06); }
+/* Durak ödülü hapı (sıradaki maç kartının üst satırında): altın. */
 .durak-odul { flex-direction: row; align-items: center; flex-shrink: 0; padding: 3px 8px; border-radius: 10px; background-color: rgba(249, 210, 114, 0.12); margin: 0 4px; }
 .durak-odul Label { margin-left: 3px; }
-.yol-yazi { flex-grow: 1; flex-shrink: 1; }
-/* r241: rakip adı satırda büzülüp "The/o" diye kırılıyordu (ödül hapı satırı daralttı); etiket satırı doldurur, yıldızlar uçta. */
-.yol-yazi .rakip-satir > Label { flex-grow: 1; flex-shrink: 1; }
-/* r242 ×2: küçülen ad etiketi sütunda dikey büzülüp alt satırı kesiyordu; yazı sütununda etiket yüksekliği büzülmez. */
-.yol-yazi > Label { flex-shrink: 0; }
-/* Finallerde turnuva aşamaları: dört eşit kutu, şimdiki turuncu çerçeve, tamam limon ✓, kilitli soluk kilit (biçim + yazı). */
-.final-asama { flex-direction: row; justify-content: space-between; margin: 8px 0 4px 0; }
-.asama-kutu { flex-grow: 1; flex-basis: 0; margin: 0 3px; min-height: 64px; border-radius: 12px; align-items: center; justify-content: center; background-color: var(--cam2); border-width: 1px; border-color: rgba(255, 255, 255, 0.06); padding: 6px 2px; }
-.asama-kutu Label { -unity-text-align: middle-center; margin-top: 2px; }
-.asama-kutu--simdi { border-width: 2px; border-color: var(--sun); }
-.asama-kutu--kilit { background-color: rgba(255, 255, 255, 0.03); }
 /* Birincil düğme tıknaz: alt kenar koyu 4 pt (basılabilir yüzey, spor oyunu menü dili); basınca kenar incelir, düğme 2 pt iner. */
 .dugme--birincil { border-bottom-width: 4px; border-bottom-color: rgb(201, 143, 18); }
 .dugme--birincil:active { border-bottom-width: 1px; translate: 0 2px; }
@@ -1157,7 +1144,6 @@
 .zemin-bant, .zemin-iz, .kok.koyu .koyu-gunes { display: none; }
 .kort-zemin, .salon-isik { position: absolute; }
 .buyuk-yazi .kort-zemin { opacity: 0.5; }
-.tur-kart2 { border-color: var(--cam-kenar); border-bottom-color: var(--cam-alt); }
 /* üst haplar Stadyum Pop: basılabilir oldukları için mürekkep konturlu, para hapında beyaz "+" (UiKok.UstKur) */
 .ust-hap { border-width: 2px; border-bottom-width: 3px; border-color: var(--cam-kenar); border-top-color: var(--cam-kenar); border-bottom-color: var(--cam-alt); }
 .tuy-hap { padding-right: 6px; }

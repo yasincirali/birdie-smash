@@ -1,4 +1,10 @@
 === UNITY ===
+Kariyer sayfası yenilendi (23 Kasım):
+- Sayfanın en üstünde artık sıradaki maç var: turun mekânı, sen ve rakibin yüzü, tek büyük Oyna. Oyna doğrudan maça götürür.
+- Rakibin yüzüne ya da adına dokununca maç kartı açılır (zorluk, yıldız görevleri).
+- Altında turun altı durağı tek bir çizgide: geçtiklerin tikli, şimdiki durak sarı halkada senin yüzünle. Altında Grup, Çeyrek, Yarı, Final yazıyor. İlerleme tek sayı: "Durak 3/6".
+- En altta sekiz tur küçük kutularda; birine dokununca o turun durakları yukarıda açılır.
+Nasıl denenir: Kariyer'e gir. İlk bakışta sıradaki rakibini ve Oyna'yı görmelisin. Oyna'ya basınca maç başlamalı. Alttaki kutulardan başka bir tura dokun: duraklar çizgisi o tura geçmeli.
 Menü cilası: Profil, Atölye, alt çubuk (26 Kasım gece):
 - Sol üstteki seviye kapsülünde yüzün artık boş beyaz daire kalmıyor; yüz kaybolursa menü dururken kendiliğinden geri geliyor.
 - Yeni oyuncunun Profil sayfasında üç büyük sıfır yerine tek satır var: "İlk maçında rekorların burada birikir · Oyna". İlk maçtan sonra rekor kutuları görünür.
