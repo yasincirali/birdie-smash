@@ -106,7 +106,7 @@ namespace BirdieSmash.Game
             yield return Varyantlar();   // 2026-10-27 model/varyant turu (ekran/model)
             yield return Gercekci();     // 2026-10-27 Gerçekçi aksesuarları (ekran/gercekci)
             yield return TuycukTuru();   // 2026-10-29 Tüycük (dördüncü model; maçla biter, AnaMenu'ye döner)
-            foreach (var s in new[] { "turnuva", "okul", "park" })
+            foreach (var s in new[] { "neon", "turnuva", "okul", "park" })
             {
                 Ayar.model = "oyuncak"; Ayar.saha = s; root.SahaDegisti(); root.StartMatch(false, false, false); botAcik = true;
                 yield return Bekle(60); yield return Cek("saha_" + s);

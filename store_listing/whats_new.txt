@@ -1,4 +1,8 @@
 === UNITY ===
+Neon salon (26 Kasım):
+- Yeni saha: koyu mavi-mor salon, yeşil mat, parlayan çizgiler, yanlarda neon panolar ve bulanık ışıklar. Oyuncuların iki yanından pembe ve camgöbeği ışık vurur.
+- Yeni oyuncu bu sahada başlar; daha önce saha seçtiysen seçimin aynı kalır. Oyna > Hızlı maç > Saha'dan "Neon" seçilir.
+Nasıl denenir: Oyna sayfasında Saha satırından Neon'u seç ve bir maç başlat: çizgiler parlamalı, arka duvarda renkli panolar ve ışık lekeleri görünmeli, top tepedeyken arkası koyu kalmalı (tüy rahat okunmalı).
 Dolap yeniden düzenlendi (23 Kasım akşam):
 - Kategoriler artık oyuncunun iki yanında kutular halinde: solda Yüz, Şapka, Forma; sağda Sırt, Ayakkabı, Raket. Yazılı, kayan şerit kalktı.
 - Hareketler ayrı kutu, oyuncu görüntüsünün sağ üst köşesinde.
