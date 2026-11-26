@@ -453,11 +453,14 @@ namespace BirdieSmash.Game
         // örtüyordu (r93). Tur bunu kapatır, anı yalnız SeviyeAniTur ile bir kez çeker.
         public static bool OdulAnlariKapali;
         public void SeviyeAniTur(int once, int sv) { SeviyeAni(once, sv); }
-        public void SeviyeAniKapat() { bekTz = null; if (seviyeAni != null) { seviyeAni.RemoveFromHierarchy(); seviyeAni = null; } }
+        // bekTz burada temizlenmez: TurToren açılırken bunu çağırır, seviye kartı törenin "Tamam"ından sonra gelir ve ödülü o uçurur.
+        // Kirlet yolunda şerit yeniden kurulur, OdulAnlari bekleyeni sıfırlayıp doğru toplamı yazar.
+        public void SeviyeAniKapat() { if (seviyeAni != null) { seviyeAni.RemoveFromHierarchy(); seviyeAni = null; } }
         VisualElement bekTuy; Label bekTz; int bekOnce, bekHedef;
         void BekleyenTuyUcur(VisualElement kaynak)
         {
-            var tz = bekTz; bekTz = null; if (tz == null || tz.panel == null || root.ekran != Ekran.Menu) return;
+            var tz = bekTz; bekTz = null; if (tz == null || tz.panel == null) return;
+            if (root.ekran != Ekran.Menu) { tz.text = Sayi(bekHedef); return; }
             TuyUcur(bekTuy, tz, bekOnce, bekHedef, kaynak);
         }
         void OdulAnlari(VisualElement tuy, Label tz, int hedef, int sv)
