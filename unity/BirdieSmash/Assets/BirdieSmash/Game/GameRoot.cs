@@ -1274,6 +1274,8 @@ namespace BirdieSmash.Game
                 case Ev.Hit:
                     sfx.Hit(e.type, e.quality, e.slice, e.big, e.serve, mine, (int)e.k, M.flow, M.s != null ? M.s.Speed : 0);   // hız: vuruşun gücü sese biner (Sfx 2026-10-27)
                     fx.Burst(at, Color.white, e.type == "smash" ? 10 : 5, e.type == "smash" ? 220 : 120, "feather");
+                    // 2026-11-26 renkli maç (Fx.VurusRenk): tüyler beyaz kalır (top tüyü), yanında vuruş türünün renginde birkaç yıldız.
+                    if (!e.serve) fx.Burst(at, Fx.VurusRenk(e.type), e.type == "smash" ? 6 : 3, e.type == "smash" ? 240 : 150, "spark");
                     // Gövdenin gerisinden smaç (e.arka, 2026-11-14 inceleme fikir 22:05 #1): Core'da %15 yavaş ve düz; his de bunu söyler:
                     // dalga beyaz ve küçük, sarsıntı yarım, flaş yok. Tam smaç hissi yalnız topun altına girilen smaçta.
                     bool tamSmac = e.type == "smash" && !e.arka;
@@ -1284,11 +1286,11 @@ namespace BirdieSmash.Game
                     bool kill = e.text == "kill";
                     if (e.arka) { if (!rm) shake = Mathf.Max(shake, 3); }
                     else if (e.type == "smash") { if (!rm) { shake = Mathf.Max(shake, e.big ? 12 : kill ? 9 : 6); punch = Mathf.Max(punch, e.big ? 1.09f : kill ? 1.03f : 1.05f); } hud.Flash(e.big ? .5f : .2f, e.big ? new Color(1, .55f, .24f) : kill ? Kit.Hex("#ffd27a") : limon); }
-                    if (mine) fx.Streak(at, M.flow ? Kit.Hex("#ffd23a") : Color.white, e.type == "smash" ? 16 : M.flow ? 12 : 6);
+                    if (mine) fx.Streak(at, M.flow ? Kit.Hex("#ffd23a") : Fx.VurusRenk(e.type), e.type == "smash" ? 16 : M.flow ? 12 : 6);
                     if (!mine && e.type == "smash") Yerel.Hap("tick");   // rakibin smacı: kısa tık (onun vuruşu titremez)
                     if (e.k >= 20 && M.ogr == null) Basarim.Ver(Basarim.RALLI20);
                     break;
-                case Ev.Perfect: sfx.Perfect((int)e.k); fx.Burst(at, limon, 18, 280, "spark"); break;
+                case Ev.Perfect: sfx.Perfect((int)e.k); fx.Burst(at, limon, 10, 280, "spark"); fx.Burst(at, Fx.GUNES, 4, 300, "spark"); fx.Burst(at, Fx.GOK, 4, 260, "spark"); break;   // 2026-11-26: tam orta üç renk (toplam 18, aynı sayı)
                 case Ev.Flow: sfx.Akis(); Yerel.Hap("ralli"); if (M.ogr == null) Basarim.Ver(Basarim.AKIS); break;
                 case Ev.Aldat: sfx.Aldat(); Yerel.Hap("tick"); break;   // aldatma okunsun diye elde de hissedilir (hareketi azaltta yok)
                 case Ev.Split: sfx.Split(); fx.Dalga(Kit.W(e.x, e.y, .05f), Color.white, 18); break;   // görüntü kanalı (2026-11-13 inceleme #4): sesi kapalı oynayan split'in tuttuğunu görsün; titreşim yok (rakip smaç tıkıyla çakışır)
@@ -1320,7 +1322,9 @@ namespace BirdieSmash.Game
                         if (mine && mpYan == 1 && match.ogr == null) hud.Say(L.T("Kurtardın!"), Kit.W(Court.MID, Court.NET - 2.6f, 2f), Kit.Hex("#7ad7ff"), 1.3f, true, 2);
                         sfx.Point(mine, smac, (int)e.k); hud.Pop(mine ? 0 : 1); Yerel.Hap(mine ? "win" : "lose");
                         // düşüş yerinde toz ve kazananın renginde dalga; benim sayımda üst bantta üç renkli kıvılcım (HTML point)
-                        if (e.x != 0 || e.y != 0) { var yer = Kit.W(e.x, e.y, .05f); fx.Burst(yer, new Color(.9f, 1, .94f, .7f), 14, 140, "dot"); fx.Dalga(yer, mine ? limon : Kit.Hex(Hud.RAKIP_HUD), 70); }
+                        if (e.x != 0 || e.y != 0) { var yer = Kit.W(e.x, e.y, .05f); fx.Burst(yer, new Color(.9f, 1, .94f, .7f), 8, 140, "dot"); fx.Dalga(yer, mine ? limon : Kit.Hex(Hud.RAKIP_HUD), 70);
+                            // 2026-11-26 renkli maç: düşüş yerinde konfeti; benim sayımda beş renk, rakibinkinde onun lilası (az ve kısa: kutlama benim).
+                            fx.Konfeti(yer + Vector3.up * .15f, mine ? Fx.KONFETI : Fx.KONFETI_RAKIP, mine ? 20 : 9, mine ? 260 : 170, "spark"); }
                         if (mine) hud.SayiKivilcim();
                         if (mine && e.big && M.ogr == null) Basarim.Ver(Basarim.SICRAMA);   // sıçrayarak smaçla alınan sayı
                         if (smac) { if (!rm) shake = Mathf.Max(shake, 10); hud.Flash(.35f, limon); }

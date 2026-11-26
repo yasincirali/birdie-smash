@@ -1,4 +1,10 @@
 === UNITY ===
+Maç artık renkli (26 Kasım):
+- Her vuruşun kendi rengi var: smaç turuncu, düz vuruş mavi, drop pembe, yüksek top nane yeşili. Topun izi ve vuruş anındaki yıldızlar bu renkte.
+- Sayı aldığında topun düştüğü yerde beş renkli konfeti patlar; rakip sayı alınca küçük ve lila.
+- Tam ortadan vuruşta yıldızlar üç renkli.
+Nasıl denenir: Bir maç oyna. Smaç, drop ve yüksek top at; topun arkasındaki izin ve raketten çıkan yıldızların vuruşa göre renk değiştirdiğini görmelisin. Sayı alınca yerde renkli konfeti görmelisin. Oyun takılmamalı.
+
 Dolap yeniden düzenlendi (23 Kasım akşam):
 - Kategoriler artık oyuncunun iki yanında kutular halinde: solda Yüz, Şapka, Forma; sağda Sırt, Ayakkabı, Raket. Yazılı, kayan şerit kalktı.
 - Hareketler ayrı kutu, oyuncu görüntüsünün sağ üst köşesinde.

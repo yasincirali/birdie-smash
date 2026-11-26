@@ -105,6 +105,24 @@ namespace BirdieSmash.Game
                 ep.startSize = kind == "feather" ? Random.Range(.18f, .32f) : Random.Range(.06f, .16f); ep.rotation = Random.Range(0, 360f); ps.Emit(ep, 1);
             }
         }
+        // ---- Renkli maç (2026-11-26, yasin: "Animasyonlar falan eğlenceli renkli halde olmalı") ----
+        // Vuruş, iz ve sayı efektleri beyazdı; ralli tek renk okunuyordu. Renk süs değil bilgi: her vuruş türünün kendi rengi var
+        // (smaç turuncu, drive gök, drop/file pembe, clear/lift nane), top izi ve kıvılcım aynı rengi taşır. Limon (ben) ve
+        // lila (rakip) HUD rolleri dalga ve sayı yazısında kalır. Parçacık sayısı artmadı sayılır: vuruşta +3–6 yıldız,
+        // sayıda +16; hepsi var olan havuzdan (yeni sistem, yeni doku yok). Hareketi azaltta Burst zaten üçte bire iner.
+        public static readonly Color TURUNCU = new Color(1, .54f, .24f), GOK = new Color(.48f, .84f, 1), PEMBE = new Color(1, .54f, .82f), NANE = new Color(.55f, 1, .78f),
+            LIMON = new Color(.85f, 1, .35f), GUNES = new Color(1, .82f, .23f);
+        public static readonly Color[] KONFETI = { LIMON, GOK, PEMBE, GUNES, TURUNCU }, KONFETI_RAKIP = { new Color(.914f, .608f, 1), PEMBE, Color.white };
+        public static Color VurusRenk(string type)
+        {
+            switch (type) { case "smash": case "jump": case "kill": return TURUNCU; case "drive": case "push": return GOK; case "drop": case "block": return PEMBE; default: return NANE; }
+        }
+        // Paletten sırayla renk alan patlama (konfeti): aynı Burst, renk parçacık başına döner.
+        public void Konfeti(Vector3 at, Color[] palet, int n, float spd, string kind)
+        {
+            if (palet == null || palet.Length == 0) return; int k = Mathf.Max(1, n / palet.Length);
+            for (int i = 0; i < palet.Length; i++) Burst(at, palet[i], k, spd, kind);
+        }
         // benim vuruşumda dışa fırlayan ışık çizgileri (HTML streak: 600 px/sn, .18 sn)
         public void Streak(Vector3 at, Color c, int n)
         {
