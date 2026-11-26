@@ -32,22 +32,44 @@ namespace BirdieSmash.Game
         static bool dinleniyor;
 
         // Anonim giriş + Friends. Ağ yoksa ya da kota bittiyse Hata'ya düşer; ikinci çağrı yeniden dener.
-        public static async Task<bool> Baslat()
+        // 2026-11-27 inceleme (fikir 02:06 #3): bağlanırken gelen ikinci çağrı eskiden hemen false dönüyordu; sayfa kapatıp açılınca
+        // "hazırlanıyor" yazısı bağlantı bitse de güncellenmiyordu. Artık süren kurulum paylaşılır (ikinci çağıran aynı görevi bekler)
+        // ve ağ asılırsa 10 sn sonra Hata'ya düşer (sayfa "Yeniden dene" gösterir). Zaman aşımından sonra biten iç görev zararsızdır:
+        // durum Hata kalır, sonraki Baslat yeniden kurar.
+        // İç kurulum tek görevdir: zaman aşımından sonra da sürer, "Yeniden dene" yeni bir kurulum başlatmaz, aynısını bekler
+        // (üst üste SignIn/Initialize olmaz); bu arada bittiyse yeniden deneme hemen Hazir'a geçer.
+        static Task<bool> suren; static Task icGorev;
+        const int ZAMAN_ASIMI_MS = 10000;
+        public static int surum;                        // durum ya da davet değişince artar; açık sayfa bunu yoklayıp yalnız değişince yeniden kurar
+        public static Task<bool> Baslat()
         {
-            if (!Bayrak) return false;
-            if (durum == Durum.Hazir) return true;
-            if (durum == Durum.Baglaniyor) return false;
-            durum = Durum.Baglaniyor;
+            if (!Bayrak) return Task.FromResult(false);
+            if (durum == Durum.Hazir) return Task.FromResult(true);
+            if (suren == null || suren.IsCompleted) suren = Kur();
+            return suren;
+        }
+
+        static async Task<bool> Kur()
+        {
+            durum = Durum.Baglaniyor; surum++;
             try
             {
-                if (UnityServices.State == ServicesInitializationState.Uninitialized) await UnityServices.InitializeAsync();
-                if (!AuthenticationService.Instance.IsSignedIn) await AuthenticationService.Instance.SignInAnonymouslyAsync();
-                adKodu = await AuthenticationService.Instance.GetPlayerNameAsync();
-                await FriendsService.Instance.InitializeAsync();
-                if (!dinleniyor) { FriendsService.Instance.MessageReceived += Gelen; dinleniyor = true; }
-                durum = Durum.Hazir; hataNotu = null; return true;
+                if (icGorev == null || icGorev.IsFaulted || icGorev.IsCanceled) icGorev = KurIc();
+                var ic = icGorev;
+                if (await Task.WhenAny(ic, Task.Delay(ZAMAN_ASIMI_MS)) != ic) throw new TimeoutException("UGS kurulumu 10 sn'de bitmedi");
+                await ic;
+                durum = Durum.Hazir; hataNotu = null; surum++; return true;
             }
-            catch (Exception e) { durum = Durum.Hata; hataNotu = e.GetType().Name + ": " + e.Message; Debug.LogWarning("[Ugs] " + hataNotu); return false; }
+            catch (Exception e) { durum = Durum.Hata; hataNotu = e.GetType().Name + ": " + e.Message; Debug.LogWarning("[Ugs] " + hataNotu); surum++; return false; }
+        }
+
+        static async Task KurIc()
+        {
+            if (UnityServices.State == ServicesInitializationState.Uninitialized) await UnityServices.InitializeAsync();
+            if (!AuthenticationService.Instance.IsSignedIn) await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            adKodu = await AuthenticationService.Instance.GetPlayerNameAsync();
+            await FriendsService.Instance.InitializeAsync();
+            if (!dinleniyor) { FriendsService.Instance.MessageReceived += Gelen; dinleniyor = true; }
         }
 
         public static string Kimlik { get { try { return durum == Durum.Hazir ? AuthenticationService.Instance.PlayerId : null; } catch (Exception) { return null; } } }
@@ -105,7 +127,7 @@ namespace BirdieSmash.Game
 
         static void Gelen(Unity.Services.Friends.Notifications.IMessageReceivedEvent e)
         {
-            try { if (e.GetAs<Iletisi>().tur != DAVET_ON) return; if (!bekleyenDavet.Contains(e.UserId)) bekleyenDavet.Add(e.UserId); if (DavetGeldi != null) DavetGeldi(e.UserId); }
+            try { if (e.GetAs<Iletisi>().tur != DAVET_ON) return; if (!bekleyenDavet.Contains(e.UserId)) bekleyenDavet.Add(e.UserId); surum++; if (DavetGeldi != null) DavetGeldi(e.UserId); }
             catch (Exception ex) { Debug.LogWarning("[Ugs] " + ex.Message); }
         }
     }
