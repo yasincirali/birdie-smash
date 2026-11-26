@@ -25,6 +25,8 @@ namespace BirdieSmash.Game
         public static event Action<string> DavetGeldi; // gönderenin UGS kimliği
 
         const string DAVET_ON = "birdie-davet";
+        // Friends iletisi parametresiz kurucusu olan bir tür ister (string olmaz).
+        public class Iletisi { public string tur; }
         static bool dinleniyor;
 
         // Anonim giriş + Friends. Ağ yoksa ya da kota bittiyse Hata'ya düşer; ikinci çağrı yeniden dener.
@@ -80,13 +82,13 @@ namespace BirdieSmash.Game
         public static async Task<bool> DavetEt(string arkadasId)
         {
             if (string.IsNullOrEmpty(arkadasId) || !await Baslat()) return false;
-            try { await FriendsService.Instance.MessageAsync(arkadasId, DAVET_ON); return true; }
+            try { await FriendsService.Instance.MessageAsync(arkadasId, new Iletisi { tur = DAVET_ON }); return true; }
             catch (Exception e) { hataNotu = e.GetType().Name + ": " + e.Message; Debug.LogWarning("[Ugs] " + hataNotu); return false; }
         }
 
         static void Gelen(Unity.Services.Friends.Notifications.IMessageReceivedEvent e)
         {
-            try { if (e.GetAs<string>() == DAVET_ON && DavetGeldi != null) DavetGeldi(e.UserId); }
+            try { if (e.GetAs<Iletisi>().tur == DAVET_ON && DavetGeldi != null) DavetGeldi(e.UserId); }
             catch (Exception ex) { Debug.LogWarning("[Ugs] " + ex.Message); }
         }
     }
