@@ -1,4 +1,8 @@
 === UNITY ===
+Raket daha gerçekçi (26 Kasım):
+- Alt bardaki Atölye simgesi ve Atölye'deki raket gerçek badminton oranlarında: küçük kafa, ince uzun şaft, sargılı sap.
+- Atölye'deki raket artık senin raketin: Dolap'ta seçtiğin kafa şekli, çerçeve, tel, şaft ve grip rengiyle görünür. Dolap'ta bir rengi değiştirip Atölye'ye dön, raket aynı renkte olmalı.
+
 Maç artık renkli (26 Kasım):
 - Her vuruşun kendi rengi var: smaç turuncu, düz vuruş mavi, drop pembe, yüksek top nane yeşili. Topun izi ve vuruş anındaki yıldızlar bu renkte.
 - Sayı aldığında topun düştüğü yerde beş renkli konfeti patlar; rakip sayı alınca küçük ve lila.

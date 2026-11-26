@@ -397,12 +397,9 @@ namespace BirdieSmash.Game
             SekmeTisort = Ciz((x, y) => Hat(x, y, W, false, -.2f, .64f, -.44f, .64f, -.8f, .3f, -.6f, .08f, -.42f, .2f, -.42f, -.7f, .42f, -.7f, .42f, .2f, .6f, .08f, .8f, .3f, .44f, .64f, .2f, .64f)
                 || (y < .64f && Hal(x, y, 0, .64f, .2f)));
             SekmeKisi = Ciz((x, y) => Hal(x, y, 0, .36f, .25f) || (y > -.74f && Hal(x, y, 0, -.74f, .6f)));
-            SekmeRaket = Ciz((x, y) =>
-            {   // 34° eğik: dik raket büyüteç gibi okunuyordu (önizleme); iki tel çizgisi raketi söyler
-                float c = Mathf.Cos(-.6f), sn = Mathf.Sin(-.6f), rx = x * c - y * sn, ry = x * sn + y * c;
-                float ex = rx / .36f, ey = (ry - .3f) / .48f, e = Mathf.Sqrt(ex * ex + ey * ey);
-                return Mathf.Abs(e - 1) * .4f < W || Cizgi(rx, ry, 0, -.18f, 0, -.88f, W) || (e < 1 && (Mathf.Abs(rx) < .045f || Mathf.Abs(ry - .3f) < .045f));
-            });
+            // 2026-11-26 (yasin: raket görseli daha gerçekçi): gerçek oranlı raket, çizim ve gerekçe RaketCizim.SekmeIc'te. Önceki 34° eğik
+            // oval kafa raket boyunun yarısıydı, büyüteç/tenis raketi gibi okunuyordu.
+            SekmeRaket = Ciz((x, y) => RaketCizim.SekmeIc(x, y, W));
             // Arkadaş maçı (2026-11-21): iki kişi, arkadaki biraz küçük ve sağda (Kisi'nin biçimi; arada boşluk ki iki figür okunur).
             Arkadas = Ciz((x, y) =>
             {

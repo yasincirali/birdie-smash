@@ -362,13 +362,13 @@ namespace BirdieSmash.Game
             c.Add(Grup(L.T("Ayakkabı tabanı"))); TabanBolum(c);
         }
 
-        // Raket vitrini: 3B vitrin değil ("Vitrin yok" kararı sürer, RT maliyeti Dolap'ta), çizilmiş raket silueti büyük.
-        // Simge beyaz: kozmetik renk arayüz rolü taşımaz (§8.2.7), sarı yalnız eylem/seçili.
+        // Raket vitrini: 3B vitrin değil ("Vitrin yok" kararı sürer, RT maliyeti Dolap'ta), çizilmiş raket büyük. 2026-11-26'dan
+        // beri oyuncunun raketi kendi renkleriyle (VitrinRaket); ton beyaz = dokunun rengi değişmez, sarı yalnız eylem/seçili.
         void RaketVitrin(VisualElement c)
         {
             var gr = Ayar.gear; GearModel r; if (!Gear.GEAR["raket"].TryGetValue(gr.raket, out r)) return;
             var k = Kart("atl-vitrin"); c.Add(k);
-            var ik = Ikon(VitrinRaket(), 128, Color.white); ik.AddToClassList("atl-raket"); ik.pickingMode = PickingMode.Ignore; k.Add(ik);
+            var ik = Ikon(VitrinRaket(), 148, Color.white); ik.AddToClassList("atl-raket"); ik.pickingMode = PickingMode.Ignore; k.Add(ik);
             var ad = Yazi(L.T(r.ad), 22, "kalin"); ad.AddToClassList("atl-ortala"); ad.pickingMode = PickingMode.Ignore; k.Add(ad);
             var alt = Yazi(L.T("Takılı raket"), 13, "soluk"); alt.AddToClassList("atl-ortala"); alt.pickingMode = PickingMode.Ignore; k.Add(alt);
             Erisim.Etiket(ad, L.T("Takılı raket") + ": " + L.T(r.ad), "metin");
@@ -416,31 +416,22 @@ namespace BirdieSmash.Game
             var d = Dugme(L.T("Raketi değiştir") + "  ›", () => YuvaAc("raket"), "dugme--hayalet"); d.style.marginTop = 10; k.Add(d);
         }
         // Vitrin raketi (2026-11-23, r265 karesi): kafa şekli simgesi (RaketSekil.Ikon, 96 px, ince kontur + çubuk) 88 pt'de büyüteç
-        // gibi okunuyordu. Burada 256 px'lik gerçek raket silueti: kalın çerçeve, ince teller, T boğaz, ince şaft, kalın sap. Bir kez
-        // üretilir (alan), 2×2 örnekle kenar yumuşatılır; Hud tuzağı (UnloadUnusedAssets) için C# alanında tutulur.
-        static Texture2D vitrinRaket;
+        // gibi okunuyordu; yerine 256 px'lik beyaz siluet geldi. 2026-11-26 (yasin: "raket görseli daha gerçekçi olmalı", karar
+        // kartında B önerisi): siluetin kafası da boyunun yarısıydı. Şimdi gerçek oranlı ve oyuncunun kendi raketi: Dolap'taki kafa
+        // şekli, çerçeve, ana/çapraz tel, şaft ve grip rengi (maçtaki 3B raketle aynı kaynak, PlayerView.Benim). Çizim RaketCizim.Vitrin.
+        // §8.2.7'den bilerek sapma: kozmetik renk burada arayüz rolü değil, nesnenin kendi rengi. Doku raket görünüşü değişince
+        // yeniden üretilir (mono'da ~25 ms): UiKok menü durgunken ısıtır (vitrinRaketEski), Hud tuzağı için C# alanında tutulur.
+        static Texture2D vitrinRaket; static string vitrinRaketAnahtar; internal static bool vitrinRaketEski = true;
         static Texture2D VitrinRaket()
         {
-            if (vitrinRaket != null) return vitrinRaket;
-            const int n = 256; var t = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
-            var px = new Color32[n * n];
-            for (int y = 0; y < n; y++) for (int x = 0; x < n; x++)
-                {
-                    int say = 0, tel = 0;
-                    for (int sy = 0; sy < 2; sy++) for (int sx = 0; sx < 2; sx++)
-                        {
-                            float fx = (x + .25f + .5f * sx) / n * 2 - 1, fy = (y + .25f + .5f * sy) / n * 2 - 1;
-                            float ex = fx / .36f, ey = (fy - .42f) / .5f, e = Mathf.Sqrt(ex * ex + ey * ey);
-                            bool cerceve = Mathf.Abs(e - 1) < .075f;
-                            bool sap = (Mathf.Abs(fx) < .022f && fy < -.07f && fy > -.6f) || (Mathf.Abs(fx) < .065f && fy <= -.6f && fy > -.97f)
-                                || (fy < -.04f && fy > -.2f && Mathf.Abs(fx) < .022f + (fy + .2f) * .45f && Mathf.Abs(fx) > -.1f && e > .9f);
-                            bool ag = e < 1 && (Mathf.Repeat(fx + 1, .08f) < .012f || Mathf.Repeat(fy + 1, .08f) < .012f);
-                            if (cerceve || sap) say++; else if (ag) tel++;
-                        }
-                    // Teller yarı saydam: çerçeveden geri planda dursun, raket "dolu yüzey" gibi okunmasın.
-                    px[y * n + x] = new Color32(255, 255, 255, (byte)((say * 255 + tel * 115) / 4));
-                }
-            t.SetPixels32(px); t.Apply(); vitrinRaket = t; return t;
+            var g = PlayerView.Benim(); var bos = new Color(.95f, .95f, .93f);
+            Color cer = g.cerceve ?? new Color(.91f, .93f, .94f), tel = g.tel ?? bos, tel2 = g.tel2 ?? tel, saft = g.saft ?? RaketCizim.SAFT_VARSAYILAN, grip = g.grip ?? new Color(.15f, .15f, .17f);
+            string kafa = g.kafa ?? "oval", an = kafa + cer + tel + tel2 + saft + grip; vitrinRaketEski = false;
+            if (vitrinRaket != null && an == vitrinRaketAnahtar) return vitrinRaket;
+            const int n = 256;
+            if (vitrinRaket == null) vitrinRaket = new Texture2D(n, n, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+            vitrinRaket.SetPixels32(RaketCizim.Vitrin(n, kafa, cer, tel, tel2, saft, grip)); vitrinRaket.Apply(); vitrinRaketAnahtar = an;
+            return vitrinRaket;
         }
         static string BuyukIlk(string s) { return string.IsNullOrEmpty(s) ? s : s.Substring(0, 1).ToUpper(L.Kultur) + s.Substring(1); }
 
