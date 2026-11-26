@@ -1,12 +1,10 @@
 === UNITY ===
-<<<<<<< HEAD
 Maç artık renkli (26 Kasım):
 - Her vuruşun kendi rengi var: smaç turuncu, düz vuruş mavi, drop pembe, yüksek top nane yeşili. Topun izi ve vuruş anındaki yıldızlar bu renkte.
 - Sayı aldığında topun düştüğü yerde beş renkli konfeti patlar; rakip sayı alınca küçük ve lila.
 - Tam ortadan vuruşta yıldızlar üç renkli.
 Nasıl denenir: Bir maç oyna. Smaç, drop ve yüksek top at; topun arkasındaki izin ve raketten çıkan yıldızların vuruşa göre renk değiştirdiğini görmelisin. Sayı alınca yerde renkli konfeti görmelisin. Oyun takılmamalı.
 
-=======
 Menü cilası (26 Kasım akşam, üçüncü tur):
 - Profil'deki oyuncu kartının altında "Görünümünü değiştir ›" yazıyor; karta dokununca Dolap açılıyor.
 - Oyna'daki mod düğmelerinde zorluk ve yıldız yazısı biraz büyüdü.
@@ -39,7 +37,6 @@ Menü listesi (26 Kasım öğlen):
 - Hızlı maçı kazanıp "Bir maç daha"ya basınca aynı tarzdaki rakip geliyor.
 - Dolap'ta listeyi aşağı kaydırıp kapatınca altta ince bir şerit kalıyor; yukarı kaydırınca ya da dokununca liste geri açılıyor. Alt çubuk biraz yukarıda.
 Nasıl denenir: Ana ekrandaki ikonun mavi olduğuna bak. Gelişim'i aç ve puan ver: şekil büyümeli, ses yükselmeli. Bir menü düğmesine basılı tut: ses hemen gelmeli. Oyna sayfasında iki oyuncunun ayakları görünmeli. Hızlı maç kazan, "Bir maç daha" de: rakibin tarzı aynı kalmalı. Dolap'ta listeyi aşağı kaydır, sonra alttaki şeridi yukarı kaydır.
->>>>>>> origin/main
 Dolap yeniden düzenlendi (23 Kasım akşam):
 - Kategoriler artık oyuncunun iki yanında kutular halinde: solda Yüz, Şapka, Forma; sağda Sırt, Ayakkabı, Raket. Yazılı, kayan şerit kalktı.
 - Hareketler ayrı kutu, oyuncu görüntüsünün sağ üst köşesinde.
