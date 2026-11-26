@@ -395,8 +395,18 @@ namespace BirdieSmash.Game
         // Dolap açıkken görünüm her değiştiğinde portre menü durgunken (son dokunuştan sonra) bir kez çizilir; çıkışta hepsi
         // önbellekten gelir. Vitrin kapalıyken yalnız bir bool okunur; anahtar dizesi yalnız Dolap'ta, 300 ms'de bir.
         string portreIsitilen;
+        VisualElement ustAvatar; RenderTexture ustPortre; int ustPortreDeneme;
         void PortreIsit()
         {
+            // Üst şerit avatarı: canlı doku varken yalnız iki null/IsCreated okuması (ayırma yok). Çizim başarısızsa en çok 3 deneme.
+            if (ustAvatar != null && ustAvatar.panel != null && (ustPortre == null || !ustPortre.IsCreated()) && ustPortreDeneme < 3 && Kalite.MenuDurgun)
+            {
+                ustPortreDeneme++; var t = Portre.Benim() as RenderTexture;
+                if (t != null) { ustPortre = t; ustPortreDeneme = 0; ustAvatar.Clear(); ustAvatar.RemoveFromClassList("avatar--portre"); AvatarIc(ustAvatar, t, 24); }
+                return;   // aynı tikte ikinci ağır iş yok
+            }
+            // Atölye vitrin raketi (fikir 02:06 #8): 256² × 4 örnek ilk Atölye dokunuşunun karesinde üretiliyordu; menü durgunken bir kez.
+            if (vitrinRaket == null && Kalite.MenuDurgun) { VitrinRaket(); return; }
             if (root == null || root.vitrin == null || !root.vitrin.gameObject.activeSelf || !Kalite.MenuDurgun) return;
             string pa = Ayar.model + PlayerView.Benim().Anahtar(); if (pa == portreIsitilen) return;
             portreIsitilen = pa; Portre.Benim();
@@ -714,7 +724,12 @@ namespace BirdieSmash.Game
             ustKirli = false; ust.Clear(); var gr = Ayar.gear; int L_, kalan, gerek; gr.OyuncuSv(out L_, out kalan, out gerek);
             var sol = new VisualElement(); sol.AddToClassList("ust-sol"); ust.Add(sol);
             var hap = new VisualElement(); hap.AddToClassList("ust-hap"); hap.AddToClassList("profil-hap"); sol.Add(hap);
-            var av = new VisualElement(); av.AddToClassList("ust-avatar"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 24); hap.Add(av);
+            var av = new VisualElement(); av.AddToClassList("ust-avatar"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); hap.Add(av);
+            // 2026-11-26 inceleme (fikir 02:06 #1, r267): avatar Portre.Benim()'in o anki RT'sini tutuyordu; RT sonradan yok edilince ya da
+            // içeriği kaybolunca (Portre.Al eskisini Destroy edip yenisini çizer) hap boş beyaz daire kalıyordu, çünkü üst şerit ancak
+            // anahtar değişince yeniden kurulur. Artık önbellekten okunur (eşzamanlı FBX çizimi de dokunuş karesine düşmez); yoksa insan
+            // simgesi, ve PortreIsit her 300 ms'de tutulan dokunun hâlâ canlı olduğuna bakar, değilse menü durgunken yerinde yeniler.
+            ustAvatar = av; ustPortre = Portre.BenimHazir() as RenderTexture; ustPortreDeneme = 0; AvatarIc(av, ustPortre, 24);
             var sv = new VisualElement(); sv.AddToClassList("ust-sv"); sv.pickingMode = PickingMode.Ignore; hap.Add(sv);
             sv.Add(Yazi(L.T("Sv {0}", L_), 18, "rakam"));
             var c = Cubuk(gerek > 0 ? kalan / (float)gerek : 1, LIMON, 5);   // 2026-10-27 yön C: ilerleme turuncuydu (limon yalnız sen: avatar halkası)   // 2026-11-20 yasin karar kartı "A · Limon": seviye/XP ve gelişim = limon ("senin ilerlemen"), Tüy = altın; turuncu yalnız eylem/seçim (§8)
@@ -938,7 +953,7 @@ namespace BirdieSmash.Game
         {
             if (e == null) return "pop";
             if (e.ClassListContains("dugme--birincil")) return "bas";
-            if (e.ClassListContains("dugme--pasif") || e.ClassListContains("tur-kart2--kilit")) return "kilit";
+            if (e.ClassListContains("dugme--pasif") || e.ClassListContains("kar-tur-kutu--kilit")) return "kilit";
             if (e.ClassListContains("cip")) return "sec";
             return "pop";
         }
@@ -964,24 +979,14 @@ namespace BirdieSmash.Game
         //  - Kariyer halkası: kupa simgesinin çevresinde bu turun durak ilerlemesi (Durak n/6), Kariyer tamamsa yok.
         //  - Yarım maç: bitmemiş maç (root.bekleyen) varsa Oyna simgesinde küçük duraklat işareti.
         // Sekme değişince ve çubuk kurulunca hesaplanır (karede değil); öğeler simge kabının çocuğu, dokunuş almaz.
-        VisualElement atolyeNokta, devamIsaret; HalkaCiz kariyerHalka;
-        sealed class HalkaCiz : VisualElement
-        {
-            public float oran; public Color renk, zemin;
-            public HalkaCiz() { pickingMode = PickingMode.Ignore; generateVisualContent += Ciz; }
-            void Ciz(MeshGenerationContext mgc)
-            {
-                var r = contentRect; if (r.width <= 0) return; var p = mgc.painter2D; float R = Mathf.Min(r.width, r.height) / 2 - 1.5f; var m = r.center;
-                p.lineWidth = 2.5f; p.lineCap = LineCap.Round;
-                p.strokeColor = zemin; p.BeginPath(); p.Arc(m, R, 0f, 360f); p.Stroke();
-                if (oran <= 0) return; p.strokeColor = renk; p.BeginPath(); p.Arc(m, R, -90f, -90f + 360f * Mathf.Clamp01(oran)); p.Stroke();
-            }
-        }
+        VisualElement atolyeNokta, devamIsaret;
         void IsaretKur()
         {
             VisualElement Kap(Sekme s) { var d = sekmeDugme[(int)s]; return d != null ? d.Q<VisualElement>(null, "sekme-ikon-kap") : null; }
             var ka = Kap(Sekme.Atolye); atolyeNokta = null; if (ka != null) { atolyeNokta = new VisualElement(); atolyeNokta.AddToClassList("sekme-nokta"); atolyeNokta.pickingMode = PickingMode.Ignore; ka.Add(atolyeNokta); }
-            var kk = Kap(Sekme.Kariyer); kariyerHalka = null; if (kk != null) { kariyerHalka = new HalkaCiz { renk = new Color(.25f, .61f, .32f), zemin = new Color(.106f, .137f, .25f, .15f) }; kariyerHalka.AddToClassList("sekme-halka"); kk.Insert(0, kariyerHalka); }
+            // 2026-11-26 inceleme (fikir 02:06 #4): Kariyer simgesinin arkasındaki ilerleme halkası kalktı. Yeni oyuncuda yalnız gri iz
+            // çiziliyordu (beyaz bantta "kilitli/basılı sekme" gibi okundu), dolgusu §8 rol tablosunda olmayan yeşildi; Kariyer A'da
+            // ilerlemenin tek ölçüsü sayfanın içindeki duraklar. Alınacak bir şey olursa Atölye'nin tek nokta kalıbı (sekme-nokta).
             var ko = Kap(Sekme.Oyna); devamIsaret = null; if (ko != null) { devamIsaret = Yazi("II", 8, "sekme-devam"); devamIsaret.pickingMode = PickingMode.Ignore; ko.Add(devamIsaret); }
             IsaretGuncelle();
         }
@@ -989,12 +994,6 @@ namespace BirdieSmash.Game
         {
             if (atolyeNokta != null) atolyeNokta.style.display = root != null && root.YukseltAlinir(Ayar.gear.Seviye()) ? DisplayStyle.Flex : DisplayStyle.None;
             if (devamIsaret != null) devamIsaret.style.display = root != null && root.bekleyen ? DisplayStyle.Flex : DisplayStyle.None;
-            if (kariyerHalka != null)
-            {
-                var p = Ayar.ilerleme; bool goster = Ayar.antrenman && !p.HepsiBitti; int sg = p.Siradaki(); float o = goster && sg >= 0 ? KariyerVeri.BasOf(sg) / (float)KariyerVeri.BASAMAK : 0f;
-                kariyerHalka.style.display = goster ? DisplayStyle.Flex : DisplayStyle.None;
-                if (Mathf.Abs(kariyerHalka.oran - o) > .001f) { kariyerHalka.oran = o; kariyerHalka.MarkDirtyRepaint(); }
-            }
         }
         void GostergeYerlestir(bool anim)
         {

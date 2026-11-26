@@ -31,6 +31,20 @@ namespace BirdieSmash.Game
             {"Ses ve his","Sound and feel"},{"Müzik","Music"},{"Titreşim","Vibration"},{"Hareketi azalt","Reduce motion"},{"Sistem ayarından","From system settings"},
             {"açık","on"},{"kapalı","off"},{"Eksik yıldız: {0} maç","Missing stars: {0} matches"},
             {"Hedefte! ★","On target! ★"},
+            // 2026-11-23 Atölye A: raket vitrini ölçü cümleleri, Sahada kutusu, tarz satırı.
+            {"Değiştir","Change"},{"Sahada","On court"},{"Tarz: {0}","Style: {0}"},{"Raketi değiştir","Change racket"},
+            {"ortalamadan {0} fazla","{0} above average"},{"ortalamadan {0} eksik","{0} below average"},
+            {"Hepsi ortalamada: artı da eksi de yok.","All at average: no plus, no minus."},
+            {"50 ortalama. Ekipman ve gelişimden gelir; tarz ve görünüm değiştirmez.","50 is average. Comes from gear and growth; style and looks don't change it."},
+            {"Hafif raket elde hızlı döner; ağır raket topu daha sert iter, kolu daha çok yorar.","A light racket turns fast in the hand; a heavy one hits harder and tires the arm more."},
+            {"Kafa ağır: smaç ve clear güçlü, drive ve file geç kalır.","Head-heavy: strong smashes and clears, slower drives and net play."},
+            {"Kafa hafif: savunma ve file hızlı, smaç yumuşak.","Head-light: quick defence and net play, softer smashes."},
+            {"Dengeli: hücumda da savunmada da orta yol.","Even balance: a middle path in attack and defence."},
+            {"Esnek şaft zamanlama kaçsa da affeder, ama smaçı yavaşlatır.","A flexible shaft forgives late timing but slows your smash."},
+            {"Orta şaft: esneklik ile güç arasında.","Medium shaft: between forgiveness and power."},
+            {"Sert şaft hızlı kolda gücü doğrudan aktarır; zamanlama ister.","A stiff shaft passes a fast arm's power straight through; it needs timing."},
+            {"Gevşek tel geniş tatlı nokta, sıkı tel his ve kontrol verir.","Loose strings give a bigger sweet spot, tight strings give feel and control."},
+            {"Bu raket için {0}–{1} lbs.","{0}–{1} lbs for this racket."},{"Seninki önerinin üstünde.","Yours is above the range."},{"Seninki önerinin altında.","Yours is below the range."},
             // 2026-10-26 yön A sonuç ekranı ve Oyna afişi: yalnız Unity tasarımında olan kısa etiketler.
             {"Sen","You"},{"Reklam","Ad"},{"Reklam alanı","Ad space"},{"Rakip ≤ {0}","Opponent ≤ {0}"},{"yıldız","stars"},{"Rastgele rakip","Random opponent"},{"Seviye atladın","Level up"},
             // 2026-11-10 seviye ödülü ve Seviye yolu
@@ -56,7 +70,7 @@ namespace BirdieSmash.Game
             {"Iska · {0}","Miss · {0}"},{"İÇERİ · {0} cm","IN · {0} cm"},{"DIŞARI · {0} cm","OUT · {0} cm"},{"Görev tamam: {0}","Mission done: {0}"},
             // 2026-10-26 UI Toolkit menü kabuğu (sekmeler, Kariyer listesi, Profil, Ayarlar grupları; HTML dondurulduğu için yalnız Unity)
             {"Soyunma odası","Locker room"},{"Profil","Profile"},{"Sıradaki maç","Next match"},{"Kariyer tamam","Career complete"},{"Final","Final"},{"Düğme sesi","Button sound"},{"Kapalı","Off"},{"Ahşap","Wood"},{"Balon","Bubble"},{"Retro","Retro"},{"Kristal","Crystal"},
-            {"Buradasın","You are here"},{"{0}/6 maç","{0}/6 matches"},{"Tur ödülü: mühür","Tour reward: seal"},{"Turnuva aşamaları","Tournament stages"},{"Grup","Group"},{"Çeyrek","Quarter"},{"Yarı","Semi"},{"şimdi","now"},{"kilitli","locked"},{"Eksik yıldızlar {0} Tüy","Missing stars {0} Feathers"},{"İlk galibiyet 60 Tüy","First win 60 Feathers"},{"Atölye'ye git","Go to Workshop"},{"{0} yükseltme eksik","{0} upgrades missing"},{"Altın tur mührü","Gold tour seal"},{"Bronz tur mührü","Bronze tour seal"},
+            {"Buradasın","You are here"},{"{0}/6 maç","{0}/6 matches"},{"Tur ödülü: mühür","Tour reward: seal"},{"Turnuva aşamaları","Tournament stages"},{"Durak {0}/{1}","Stop {0}/{1}"},{"Duraklar","Stops"},{"Dünya turu","World tour"},{"Grup","Group"},{"Çeyrek","Quarter"},{"Yarı","Semi"},{"şimdi","now"},{"kilitli","locked"},{"Eksik yıldızlar {0} Tüy","Missing stars {0} Feathers"},{"İlk galibiyet 60 Tüy","First win 60 Feathers"},{"Atölye'ye git","Go to Workshop"},{"{0} yükseltme eksik","{0} upgrades missing"},{"Altın tur mührü","Gold tour seal"},{"Bronz tur mührü","Bronze tour seal"},
             {"Geçildi","Cleared"},{"Şimdi","Now"},{"Kilitli","Locked"},{"basamak","stage"},{"Yeniden oyna","Play again"},{"Kapat","Close"},
             {"Hızlı maç oyna","Play quick match"},
             {"Arkadaşınla oyna","Play a friend"},{"Arkadaş maçı","Friend match"},{"Yeni arkadaş maçı","New friend match"},
