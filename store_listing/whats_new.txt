@@ -3,6 +3,22 @@ Raket daha gerçekçi (26 Kasım):
 - Alt bardaki Atölye simgesi ve Atölye'deki raket gerçek badminton oranlarında: küçük kafa, ince uzun şaft, sargılı sap.
 - Atölye'deki raket artık senin raketin: Dolap'ta seçtiğin kafa şekli, çerçeve, tel, şaft ve grip rengiyle görünür. Dolap'ta bir rengi değiştirip Atölye'ye dön, raket aynı renkte olmalı.
 
+Oyna sayfası düellosu (26 Kasım akşam):
+- VS yazısı artık rakibin üstünde değil, iki oyuncunun tam arasında.
+- İki oyuncu birbirini kışkırtıyor: biri nanik yapar, gel gel der ya da toz atar, öteki hemen cevap verir. Kışkırtma dansın varsa senin oyuncun da onunla cevap verir; yoksa kollarını kavuşturur ya da raketini omzuna alır.
+- Neon sahanın çizgileri keskinleşti, bulanık görünmüyor.
+Nasıl denenir: Oyna sayfasını açıp birkaç saniye bekle; rakip kışkırtınca senin oyuncunun cevap verdiğini görmelisin. VS iki oyuncunun arasında durmalı, düğmeler örtülmemeli. Neon sahada bir maç aç: çizgiler net olmalı.
+Seviye yolu ve ödül anı (26 Kasım gece):
+- Seviye yolu artık yalnız sıradaki 5 seviyeyi gösteriyor; altındaki "Sv …–30'u göster ›" satırına dokununca gerisi aynı sayfada açılıyor.
+- Bu 5 seviyede açılacak saç, şapka, aksesuar gibi eşyaların küçük resmi kartın sağında görünüyor.
+- Seviye atladığında önce yalnız maçta kazandığın Tüy sayaca uçuyor; seviye ödülü Tüy'ü, seviye kartını kapatırken karttaki ödül satırından sayaca uçuyor.
+- Maçı duraklatıp menüye çıktığında Oyna sekmesindeki işaret artık küçük bir duraklat simgesi.
+- Maçtan döndükten sonra Atölye sekmesi arka planda hazırlanıyor; ilk açılışı daha akıcı olmalı.
+Nasıl denenir: Oyna'daki seviye satırına dokunup Seviye yolu'nu aç: 5 kart ve altında "göster" satırı olmalı, eşya açılan kartlarda küçük resim belirmeli. Seviye atlatan bir maç bitir: sayaç önce maç Tüy'ünü saymalı, kartı kapatınca ödül sayaca uçup bir kez daha artmalı. Bir maçı duraklatıp menüye dön: Oyna simgesinin köşesinde iki çubuklu işaret görmelisin. Maçtan sonra birkaç saniye bekleyip Atölye'ye geç.
+Neon salon (26 Kasım):
+- Yeni saha: koyu mavi-mor salon, yeşil mat, parlayan çizgiler, yanlarda neon panolar ve bulanık ışıklar. Oyuncuların iki yanından pembe ve camgöbeği ışık vurur.
+- Yeni oyuncu bu sahada başlar; daha önce saha seçtiysen seçimin aynı kalır. Oyna > Hızlı maç > Saha'dan "Neon" seçilir.
+Nasıl denenir: Oyna sayfasında Saha satırından Neon'u seç ve bir maç başlat: çizgiler parlamalı, arka duvarda renkli panolar ve ışık lekeleri görünmeli, top tepedeyken arkası koyu kalmalı (tüy rahat okunmalı).
 Maç artık renkli (26 Kasım):
 - Her vuruşun kendi rengi var: smaç turuncu, düz vuruş mavi, drop pembe, yüksek top nane yeşili. Topun izi ve vuruş anındaki yıldızlar bu renkte.
 - Sayı aldığında topun düştüğü yerde beş renkli konfeti patlar; rakip sayı alınca küçük ve lila.

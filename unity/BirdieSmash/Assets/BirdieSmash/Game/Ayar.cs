@@ -145,7 +145,7 @@ namespace BirdieSmash.Game
             foreach (var p in Str(SON_MACLAR, "").Split(';')) { if (p.Length == 0 || n >= SON_MAC_SINIR) continue; sb.Append(';').Append(p); n++; }
             try { PlayerPrefs.SetString(SON_MACLAR, sb.ToString()); } catch { }
         }
-        public static string saha = "salon", model = "oyuncak", kamera = "yayin", dil = "tr", yazi = "sistem"; static float yaziSistem = 1;
+        public static string saha = "neon", model = "oyuncak", kamera = "yayin", dil = "tr", yazi = "sistem"; static float yaziSistem = 1;
         public static float YaziK { get { return yazi == "normal" ? 1 : yazi == "buyuk" ? 1.3f : Mathf.Clamp(yaziSistem, .9f, 1.3f); } }
         // Menü yazı ölçeği (2026-10-26, UI Toolkit menü kabuğu): flex yerleşimde metin sarılır, kart uzar, gövde kayar; bu
         // yüzden "Sistem" iOS'un tercih edilen boyutunu ×2'ye kadar izler (HIG Dynamic Type). Maç içi HUD IMGUI'de kaldığı
@@ -210,7 +210,8 @@ namespace BirdieSmash.Game
             zorluk = Mathf.Clamp(EskiInt("tuytop_zorluk", EskiInt("tuytop_easy", 1) == 1 ? 1 : 3), 0, 3);
             hareket = Mathf.Clamp(EskiInt("tuytop_hareket", zorluk <= 1 ? 0 : zorluk == 2 ? 1 : 2), 0, 2);
             kosIpucu = EskiInt("tuytop_kos_ipucu", 0) == 1;   // 2026-10-29: "Dokun: oraya koş" koşu sende ilk maçta görüldü
-            saha = Str("tuytop_saha", "salon"); if (!CourtView.SAHA.ContainsKey(saha)) saha = "salon";
+            saha = Str("tuytop_saha", "neon");   // 2026-11-26: yeni oyuncu Neon salonda başlar (yasin örnek görseli); kaydedilmiş seçim aynı kalır
+            if (!CourtView.SAHA.ContainsKey(saha)) saha = "salon";
             hizliRakip = Str("tuytop_hizli_rakip", "");
             // 2026-11-20 her rakip ayrı biri (Core/Rakipler): oyuncunun rakip dünyası bu tohumdan. İlk açılışta rastgele yazılır,
             // sonra hiç değişmez (aynı basamağın rakibi aynı kişi); iCloud METIN listesinde, yeni cihazda aynı rakipler.

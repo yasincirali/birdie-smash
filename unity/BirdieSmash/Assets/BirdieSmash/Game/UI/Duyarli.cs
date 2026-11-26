@@ -102,8 +102,10 @@ namespace BirdieSmash.Game
                 float pp = doc.rootVisualElement.layout.width > 1 ? Screen.width / doc.rootVisualElement.layout.width : 1;
                 root.afis.Cozunurluk(h * pp); if (afisImg.image != root.afis.rt) afisImg.image = root.afis.rt;
             }
-            // VS: 390×845 tasarım karesindeki yeri (kutunun %55 sağı, %42,6 aşağısı), boyu kutuyla (438 birimde 44)
-            vsYazi.style.left = sol + .55f * w; vsYazi.style.top = ust_ + .426f * h; vsYazi.style.fontSize = Mathf.Round(44 * Mathf.Clamp(h / 438f, .75f, 1.1f));
+            // VS: iki figürün arasındaki nokta (Afis.VsNokta, 26 Kas), boyu kutuyla (438 birimde 44). Yazı kendi ortasından konur
+            // (USS translate -50% -50%): yazı boyu ve dil değişse de orta nokta figürlerin arasında kalır.
+            var vn = root.afis != null ? root.afis.VsNokta() : new Vector2(.55f, .426f);
+            vsYazi.style.left = sol + vn.x * w; vsYazi.style.top = ust_ + vn.y * h; vsYazi.style.fontSize = Mathf.Round(44 * Mathf.Clamp(h / 438f, .75f, 1.1f));
         }
 
         // ---- 4) alt sayfanın birincil eylemi: kaydırmanın dışında, dipte sabit ----

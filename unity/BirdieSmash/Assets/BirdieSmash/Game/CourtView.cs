@@ -15,7 +15,7 @@ using BirdieSmash.Core;
 
 namespace BirdieSmash.Game
 {
-    public class Saha { public string ad, kort, tek, cevre, ust; public bool tahta; public float dol; }
+    public class Saha { public string ad, kort, tek, cevre, ust; public bool tahta, neon; public float dol; }
 
     public static class CourtView
     {
@@ -26,8 +26,16 @@ namespace BirdieSmash.Game
             {"salon",  new Saha{ad="Salon",kort="#2e7a4f",tek="#2e7a4f",cevre="#2b3a42",ust="#11181d",dol=.6f}},
             {"turnuva",new Saha{ad="Turnuva",kort="#237a4b",tek="#237a4b",cevre="#1d3b6e",ust="#0b1424",dol=.92f}},
             {"okul",   new Saha{ad="Okul (ahşap)",kort="#b07a45",tek="#b07a45",cevre="#7c5230",ust="#21170f",tahta=true,dol=.3f}},
-            {"park",   new Saha{ad="Gece",kort="#2d5e7d",tek="#2d5e7d",cevre="#1b2a38",ust="#090f18",dol=.38f}}};
-        public static readonly string[] SIRA = { "salon", "turnuva", "okul", "park" };
+            {"park",   new Saha{ad="Gece",kort="#2d5e7d",tek="#2d5e7d",cevre="#1b2a38",ust="#090f18",dol=.38f}},
+            // Neon salon (2026-11-26, yasin örnek görselle: "Ekte eklediğim görsele benzer bir saha atmosferi yaratılmalı"): koyu
+            // mavi-mor salon, yeşil mat, parlayan açık camgöbeği çizgiler, yanlarda neon panolar ve bulanık ışık lekeleri. Kort ölçüsü,
+            // fizik ve topun arkasındaki koyu orta şerit (beyaz tüy okunsun, 6 Kas kuralı) aynı; değişen yalnız ışık ve renk.
+            // 26 Kas ikinci tur (ilk gerçek kare r274): oyun kamerası yukarıdan bakar, arka duvar görünmez; kare Salon'dan zor
+            // ayrılıyordu. Mat koyulaştı, yayın ışığı kısıldı (1,6 → 1,05, 44°), yan renkli ışıklar korta yaklaştı ve güçlendi,
+            // atmosfer kortun kendisinde okunur. Aynı gün akşam (yasin TF'de: "saha çizimleri profesyonel olmalı, neon saha çizimi
+            // bulanık olmuş"): çizgi halesi 40 cm'lik bulanık banttı; çizgi keskin beyaz kalır, hale yalnız 10 cm ve %40 (ışıma ölçülü).
+            {"neon",   new Saha{ad="Neon salon",kort="#22705a",tek="#22705a",cevre="#1d1b4c",ust="#0c0a2a",dol=.7f,neon=true}}};
+        public static readonly string[] SIRA = { "neon", "salon", "turnuva", "okul", "park" };
         public const string AKIS = "akis_cizgileri";
 
         public static GameObject Build(Transform root, string sahaId, out Color clear)
@@ -38,6 +46,16 @@ namespace BirdieSmash.Game
             arena.GetComponent<Renderer>().receiveShadows = true;
             var cevre = Kit.Prim(PrimitiveType.Cube, "cevre", k, new Vector3(0, -.008f, 0), new Vector3(Court.CW + 3.2f, .01f, Court.L + 4.2f), Kit.Lit(Kit.Hex(T.cevre), .2f));
             cevre.GetComponent<Renderer>().receiveShadows = true;
+            if (T.neon)
+            {   // Neon kenar tüpü: çevre zeminin dış sınırında pembe parlayan şerit (yukarıdan bakan kamerada da görünen tek neon
+                // imza). Eklemeli, yerden 3 mm; uzun kenarlar u, kısa kenarlar v doğrultusunda sönen dokuyla.
+                float gx = (Court.CW + 3.2f) / 2, gy = (Court.L + 4.2f) / 2; var pembe = new Color(1f, .3f, .8f, .6f);
+                foreach (float yon in new[] { -1f, 1f })
+                {
+                    Kit.Prim(PrimitiveType.Cube, "neon_tup", k, new Vector3(yon * gx, -.003f, 0), new Vector3(.36f, .002f, gy * 2), Kit.Additive(pembe, SeritTex()));
+                    Kit.Prim(PrimitiveType.Cube, "neon_tup", k, new Vector3(0, -.003f, yon * gy), new Vector3(gx * 2, .002f, .36f), Kit.Additive(pembe, SeritTex(true)));
+                }
+            }
             Material km = T.tahta ? Kit.LitTex(Color.white, Kit.WoodTex(Kit.Hex(T.kort)), .35f) : Kit.Lit(Kit.Hex(T.kort), .3f);
             var floor = Kit.Prim(PrimitiveType.Cube, "kort", k, new Vector3(0, -.004f, 0), new Vector3(Court.CW + (T.tahta ? .1f : 1f), .01f, Court.L + (T.tahta ? .1f : 2f)), km);
             if (T.tahta) { var tm = floor.GetComponent<Renderer>().material; tm.mainTextureScale = new Vector2(1, 9); }
@@ -73,7 +91,20 @@ namespace BirdieSmash.Game
             seg(0, .76f + e, CW, .76f + e); seg(0, L - .76f - e, CW, L - .76f - e);
             seg(Court.MID, 0, Court.MID, N - Court.SSL); seg(Court.MID, N + Court.SSL, Court.MID, L);
             var m = new Mesh { name = "cizgiler" }; m.SetVertices(v); m.SetTriangles(tr, 0); m.RecalculateNormals(); m.RecalculateBounds();
-            Kit.MeshObj("cizgiler", k, m, Kit.Lit(new Color(.95f, .97f, .95f), .2f)).GetComponent<Renderer>().receiveShadows = true;
+            if (T.neon)
+            {   // Neon: çizgi ışık hesaplamaz (gölgede de parlak), çevresinde 5 kat genişlikte eklemeli camgöbeği hale. Hale ağı akış
+                // ağıyla aynı yoldan kurulur; çizgi kenarına göre ±2,5 genişlik, yerden 1,5 mm yukarıda.
+                Kit.MeshObj("cizgiler", k, m, Kit.Unlit(new Color(.94f, 1f, 1f)));
+                var hv = new List<Vector3>(); for (int i = 0; i < v.Count; i += 4)
+                {
+                    Vector3 c0 = (v[i] + v[i + 1]) / 2, c1 = (v[i + 2] + v[i + 3]) / 2, n2 = (v[i + 1] - v[i]) * 1.3f, uz = (c1 - c0).normalized * .03f, yuk = Vector3.up * .0015f;
+                    hv.Add(c0 - uz - n2 + yuk); hv.Add(c0 - uz + n2 + yuk); hv.Add(c1 + uz + n2 + yuk); hv.Add(c1 + uz - n2 + yuk);
+                }
+                var hm = new Mesh { name = "neon_hale" }; hm.SetVertices(hv); hm.SetTriangles(tr, 0); hm.RecalculateBounds();
+                var hu = new Vector2[hv.Count]; for (int i = 0; i < hu.Length; i += 4) { hu[i] = new Vector2(0, 0); hu[i + 1] = new Vector2(1, 0); hu[i + 2] = new Vector2(1, 1); hu[i + 3] = new Vector2(0, 1); }
+                hm.uv = hu; Kit.MeshObj("neon_hale", k, hm, Kit.Additive(new Color(.35f, .95f, 1f, .4f), SeritTex()));
+            }
+            else Kit.MeshObj("cizgiler", k, m, Kit.Lit(new Color(.95f, .97f, .95f), .2f)).GetComponent<Renderer>().receiveShadows = true;
             // Akış (HTML cizgiler(true)): üst üste tam ortada çizgiler altın olur ve nabız atar (alfa .75 + .25·sin(t/180 ms)),
             // 2,4 kat kalın. Ayrı ağ, kapalı başlar; GameRoot akışta açar ve rengini sürer.
             var av = new List<Vector3>(); for (int i = 0; i < v.Count; i += 4)
@@ -88,7 +119,7 @@ namespace BirdieSmash.Game
             foreach (float x in new[] { 0f, Court.CW })
                 Kit.Prim(PrimitiveType.Cylinder, "direk", k, Kit.W(x, N, Court.NETP / 2), new Vector3(.04f, Court.NETP / 2, .04f), post)
                    .GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
-            Tribun(k, T); if (Reklam.KENAR_PANO) KenarPano(k); Sandalyeler(k); Isik(k); ArkaPlan(k, sahaId ?? "salon");
+            Tribun(k, T); if (Reklam.KENAR_PANO) KenarPano(k); Sandalyeler(k); Isik(k, T.neon); ArkaPlan(k, sahaId ?? "salon");
             return k.gameObject;
         }
 
@@ -244,7 +275,7 @@ namespace BirdieSmash.Game
         // Tribün arkasına dikey degrade duvar (alt açık, üst saha rengine kararır) ve sahaya özgü tek imza: Gece parkında ağaç
         // siluetleri ve yıldızlar. Işık hesaplamayan malzeme, gölge yok; kort ve top okunurluğuna dokunmaz (kortun ≥ 2 m gerisi).
         static readonly Dictionary<string, string[]> ARKA = new Dictionary<string, string[]> {
-            {"salon",new[]{"#22313d","#11181d"}},{"turnuva",new[]{"#24457a","#0b1424"}},{"okul",new[]{"#5a3c24","#21170f"}},{"park",new[]{"#2b2457","#10163a"}}};
+            {"salon",new[]{"#22313d","#11181d"}},{"turnuva",new[]{"#24457a","#0b1424"}},{"okul",new[]{"#5a3c24","#21170f"}},{"park",new[]{"#2b2457","#10163a"}},{"neon",new[]{"#2c2470","#0d0b2e"}}};
         // Tur çevresi (2026-11-16 inceleme, fikir 17:05 #1): kariyerin 48 maçının 30'u "turnuva" sahasında ve şehir yalnız maç
         // kartında yazıyordu; Dünya Finalleri ile Efsaneler'in 12 maçı birebir aynı salondu. Kort (BWF mavisi, çizgiler) ve fizik
         // AYNI; yalnız çevre değişir: duvar degradesi, LED şerit vurgusu ve altı flama çiftinden turun üçü. Turun finali
@@ -297,7 +328,7 @@ namespace BirdieSmash.Game
         //  - Tavan: duvarın üst üçte biri zaten koyu; iki yanda (orta 5 m boş) üç sıra armatür ışığı, sönük ışınsal leke (ışık hesabı yok).
         //  - Sahaya göre tek imza: turnuvada ülke flamaları, okulda okul flamaları ve basketbol potası, salonda akustik paneller.
         // Orta şerit (topun yolu, MID ± 2,5 m) yalnız koyu tribün dokusu taşır; parlak öğe yok. Hepsi tek seferlik basit geometri.
-        static readonly Dictionary<string, string> VURGU = new Dictionary<string, string> { {"salon","#7fd3c7"},{"turnuva","#c4ed3f"},{"okul","#ffb35c"} };
+        static readonly Dictionary<string, string> VURGU = new Dictionary<string, string> { {"salon","#7fd3c7"},{"turnuva","#c4ed3f"},{"okul","#ffb35c"},{"neon","#5ff3ff"} };
         static void UstSalon(Transform k, string saha, float Y, float GEN)
         {
             var g = new GameObject("ust_salon").transform; g.SetParent(k, false);
@@ -338,6 +369,7 @@ namespace BirdieSmash.Game
                 Kit.Prim(PrimitiveType.Quad, "pota_cerceve", g, Kit.W(px, Y + .21f, 3.55f), new Vector3(.55f, .4f, 1), Kit.Unlit(new Color(.55f, .3f, .2f)));
                 Kit.Prim(PrimitiveType.Cylinder, "pota_cember", g, Kit.W(px, Y + .45f, 3.2f), new Vector3(.45f, .01f, .45f), Kit.Unlit(Kit.Hex("#e0662a")));
             }
+            else if (saha == "neon") NeonSalon(g, Y);
             else
             {   // salon: akustik duvar panelleri, iki yanda 3×2 ızgara, duvardan biraz açık
                 var pm = Kit.Unlit(new Color(.17f, .23f, .28f));
@@ -345,6 +377,60 @@ namespace BirdieSmash.Game
                     Kit.Prim(PrimitiveType.Quad, "akustik", g, Kit.W(Court.MID + yon * (3.6f + i * 1.9f), Y + .03f, Z1 + .6f + j * .95f), new Vector3(1.6f, .8f, 1), pm);
             }
             foreach (var c in g.GetComponentsInChildren<Collider>()) Object.Destroy(c);
+        }
+        // Neon salon duvarı (örnek görsel): iki yanda dikey neon panolar (pembe, mor, camgöbeği, mavi), üstte beyaz şerit
+        // armatürler ve bulanık ışık lekeleri (bokeh). Hepsi eklemeli, ışık hesabı yok, tek seferlik. Orta şerit (MID ± 2,5 m)
+        // boş: top tepedeyken arkası koyu kalır. Aynı tohum: her açılışta aynı duvar.
+        static void NeonSalon(Transform g, float Y)
+        {
+            var rnd = new System.Random(26); var yumusak = Kit.RadialTex();
+            string[] renk = { "#ff4fc8", "#8b5cff", "#38e8ff", "#3f7bff", "#ff3d7f" };
+            foreach (float yon in new[] { -1f, 1f })
+                for (int i = 0; i < 4; i++)
+                {
+                    float x = Court.MID + yon * (3.3f + i * 1.75f), h = .9f + (float)rnd.NextDouble() * .9f, z = .9f + (float)rnd.NextDouble() * 1.2f;
+                    var c = Kit.Hex(renk[rnd.Next(renk.Length)]);
+                    Kit.Prim(PrimitiveType.Quad, "neon_pano", g, Kit.W(x, Y + .03f, z), new Vector3(.8f, h, 1), Kit.Additive(new Color(c.r, c.g, c.b, .55f), PanoTex()));
+                    Kit.Prim(PrimitiveType.Quad, "neon_pano_hale", g, Kit.W(x, Y + .025f, z), new Vector3(1.9f, h + 1f, 1), Kit.Additive(new Color(c.r, c.g, c.b, .22f), yumusak));
+                }
+            // şerit armatürler: iki yanda, tavana doğru içe yaklaşan (perspektif) beyaz-mavi uzun lekeler
+            for (int s = 0; s < 3; s++) foreach (float yon in new[] { -1f, 1f })
+            {
+                float x = Court.MID + yon * (6.8f - s * 1.1f), z = 5.6f + s * .9f;
+                Kit.Prim(PrimitiveType.Quad, "neon_armatur", g, Kit.W(x, Y + .04f, z), new Vector3(1.6f - s * .3f, .32f, 1), Kit.Additive(new Color(.85f, .93f, 1f, .7f), yumusak));
+            }
+            // bokeh: 22 yumuşak daire, iki yan bölgede, farklı boy ve renkte
+            for (int i = 0; i < 22; i++)
+            {
+                float yon = i % 2 == 0 ? -1 : 1, x = Court.MID + yon * (2.8f + (float)rnd.NextDouble() * 7.5f), z = .5f + (float)rnd.NextDouble() * 6.5f, b = .35f + (float)rnd.NextDouble() * .8f;
+                var c = Kit.Hex(renk[rnd.Next(renk.Length)]);
+                Kit.Prim(PrimitiveType.Quad, "bokeh", g, Kit.W(x, Y + .035f, z), new Vector3(b, b, 1), Kit.Additive(new Color(c.r, c.g, c.b, .18f + (float)rnd.NextDouble() * .2f), yumusak));
+            }
+        }
+        // Neon pano dokusu: kenarları yumuşak, ortası dolu dikdörtgen (eklemeli malzemede parlayan tabela).
+        static Texture2D panoTex, seritTex, seritTexV;
+        static Texture2D PanoTex()
+        {
+            if (panoTex != null) return panoTex; const int N = 32; panoTex = new Texture2D(N, N, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            for (int y = 0; y < N; y++) for (int x = 0; x < N; x++)
+            {
+                float dx = Mathf.Min(x, N - 1 - x) / 6f, dy = Mathf.Min(y, N - 1 - y) / 6f, a = Mathf.Clamp01(Mathf.Min(dx, dy));
+                panoTex.SetPixel(x, y, new Color(1, 1, 1, a * a));
+            }
+            panoTex.Apply(); return panoTex;
+        }
+        // Çizgi halesi dokusu: u boyunca ortası parlak, kenara doğru sönen bant (v sabit).
+        static Texture2D SeritTex(bool dikey = false)
+        {
+            if (dikey)
+            {
+                if (seritTexV != null) return seritTexV; const int M = 32; seritTexV = new Texture2D(2, M, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+                for (int y = 0; y < M; y++) { float d = Mathf.Abs(y - (M - 1) / 2f) / ((M - 1) / 2f), a = Mathf.Pow(1 - d, 2.2f); seritTexV.SetPixel(0, y, new Color(1, 1, 1, a)); seritTexV.SetPixel(1, y, new Color(1, 1, 1, a)); }
+                seritTexV.Apply(); return seritTexV;
+            }
+            if (seritTex != null) return seritTex; const int N = 32; seritTex = new Texture2D(N, 2, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp };
+            for (int x = 0; x < N; x++) { float d = Mathf.Abs(x - (N - 1) / 2f) / ((N - 1) / 2f), a = Mathf.Pow(1 - d, 2.2f); seritTex.SetPixel(x, 0, new Color(1, 1, 1, a)); seritTex.SetPixel(x, 1, new Color(1, 1, 1, a)); }
+            seritTex.Apply(); return seritTex;
         }
         // İkinci kat kalabalığı: koyu zemin üstünde soluk giysi/baş noktaları; satırlar yukarı doğru kararır ve seyrelir.
         static Texture2D KalabalikTex(string saha)
@@ -369,14 +455,24 @@ namespace BirdieSmash.Game
         }
 
         // Yayın ışığı: tavanda kortun boyunca üç lamba (HTML lamba havuzları NET×.45, NET, NET×1.55), sıcak beyaz.
-        static void Isik(Transform k)
+        static void Isik(Transform k, bool neon = false)
         {
+            if (neon)
+            {   // Neon: iki yandan alçak renkli dolgu (solda pembe, sağda camgöbeği): oyuncuların kenarında görseldeki renkli parıltı.
+                // Gölge yok, menzil kısa: kort zemininin ortası yayın ışığında kalır, yeşil mat rengini korur.
+                for (int yi = 0; yi < 2; yi++)
+                {
+                    float x = yi == 0 ? -1f : Court.CW + 1f; var c = yi == 0 ? new Color(1f, .35f, .85f) : new Color(.3f, .9f, 1f);
+                    var g = new GameObject("neon_dolgu"); g.transform.SetParent(k, false); var l = g.AddComponent<Light>(); l.type = LightType.Point;
+                    g.transform.position = Kit.W(x, Court.NET, 1.3f); l.range = 9; l.intensity = 2.2f; l.color = c; l.shadows = LightShadows.None;
+                }
+            }
             foreach (float y in new[] { Court.NET * .45f, Court.NET, Court.NET * 1.55f })
             {
                 var g = new GameObject("lamba"); g.transform.SetParent(k, false); var l = g.AddComponent<Light>(); l.type = LightType.Spot;
                 g.transform.position = Kit.W(Court.MID, y, 9); g.transform.rotation = Quaternion.Euler(90, 0, 0);
                 // Stüdyo incelemesi (2026-11-05, sanat 3): 62° → 50°, ışık havuzu kortu toplar, kenarlar hafif kararır (doğal vinyet).
-                l.spotAngle = 50; l.range = 16; l.intensity = 1.6f; l.color = new Color(1, .965f, .88f); l.shadows = LightShadows.None;
+                l.spotAngle = neon ? 44 : 50; l.range = 16; l.intensity = neon ? 1.05f : 1.6f; l.color = neon ? new Color(.9f, .95f, 1f) : new Color(1, .965f, .88f); l.shadows = LightShadows.None;
             }
         }
     }

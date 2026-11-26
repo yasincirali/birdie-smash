@@ -433,6 +433,12 @@ namespace BirdieSmash.Game
             // Atölye vitrin raketi (fikir 02:06 #8): 256² × 4 örnek ilk Atölye dokunuşunun karesinde üretiliyordu; menü durgunken bir kez.
             // 2026-11-26: doku raket görünüşüne bağlı; Dolap'ta görünüş değişince (aşağıda portreIsitilen) eskir, durgunken yenilenir.
             if (vitrinRaketEski && Kalite.MenuDurgun) { VitrinRaket(); return; }
+            // 2026-11-26 inceleme (fikir 22:06 #1, takılma): maçtan dönüşte Kirlet bütün sekmeleri kirletiyor, ilk Atölye dokunuşu tam
+            // kurulum + giriş animasyonunu aynı karede yapıyordu. Menü durgunken Atölye arka planda bir kez kurulur; oyuncu ondan önce
+            // dokunursa bugünkü yol. Yalnız Atölye: Kariyer kurulumu bir kez oynayan basamak/rakip girişini, Profil ilk kez görülen
+            // kupanın inişini tüketir (gizliyken oynamış olur); Dolap vitrin açılınca zaten yeniden kurulur. Vitrin açıkken (Dolap'ın
+            // deneme raketi) ve seviye anı/tören sürerken kurulmaz.
+            if (kirli[(int)Sekme.Atolye] && gez.sekme != Sekme.Atolye && seviyeAni == null && root != null && root.ekran == Ekran.Menu && root.vitrin != null && !root.vitrin.gameObject.activeSelf && Kalite.MenuDurgun) { SekmeKur(Sekme.Atolye); return; }
             if (root == null || root.vitrin == null || !root.vitrin.gameObject.activeSelf || !Kalite.MenuDurgun) return;
             string pa = Ayar.model + PlayerView.Benim().Anahtar(); if (pa == portreIsitilen) return;
             portreIsitilen = pa; vitrinRaketEski = true; Portre.Benim();
@@ -448,15 +454,32 @@ namespace BirdieSmash.Game
         // örtüyordu (r93). Tur bunu kapatır, anı yalnız SeviyeAniTur ile bir kez çeker.
         public static bool OdulAnlariKapali;
         public void SeviyeAniTur(int once, int sv) { SeviyeAni(once, sv); }
+        // bekTz burada temizlenmez: TurToren açılırken bunu çağırır, seviye kartı törenin "Tamam"ından sonra gelir ve ödülü o uçurur.
+        // Kirlet yolunda şerit yeniden kurulur, OdulAnlari bekleyeni sıfırlayıp doğru toplamı yazar.
         public void SeviyeAniKapat() { if (seviyeAni != null) { seviyeAni.RemoveFromHierarchy(); seviyeAni = null; } }
+        VisualElement bekTuy; Label bekTz; int bekOnce, bekHedef;
+        void BekleyenTuyUcur(VisualElement kaynak)
+        {
+            var tz = bekTz; bekTz = null; if (tz == null || tz.panel == null) return;
+            if (root.ekran != Ekran.Menu) { tz.text = Sayi(bekHedef); return; }
+            TuyUcur(bekTuy, tz, bekOnce, bekHedef, kaynak);
+        }
         void OdulAnlari(VisualElement tuy, Label tz, int hedef, int sv)
         {
             int once = gosterilenTuy, svOnce = gosterilenSv; gosterilenTuy = hedef; gosterilenSv = sv;
+            bekTz = null;
             if (root.ekran != Ekran.Menu || OdulAnlariKapali) return;
-            if (once >= 0 && hedef > once && !Ayar.reduce)
+            // 2026-11-26 inceleme (fikir 22:06 #4): seviye atlanan dönüşte bütün Tüy (maç + seviye ödülü) kart açılmadan şeride
+            // uçuyordu, ardından gelen kart aynı ödülü yeniden "veriyor" gibiydi. Artık ilk uçuş yalnız maç Tüy'ünü sayar; seviye
+            // ödülü kart kapanırken karttaki ödül satırından şeride uçar (SeviyeAni kapat → BekleyenTuyUcur; muadil: ödül kartı
+            // kapanırken para sayaca). Kart hiç açılmazsa (maça girildi, Kirlet) şerit yeniden kurulunca doğru toplamı yazar.
+            int svTuy = once >= 0 && svOnce > 0 && sv > svOnce && !Ayar.reduce ? Gear.SvOdulAralik(svOnce, sv) : 0;
+            int ara = hedef - svTuy; if (svTuy > 0 && ara < once) { svTuy = 0; ara = hedef; }
+            if (svTuy > 0) { tz.text = Sayi(ara); bekTuy = tuy; bekTz = tz; bekOnce = ara; bekHedef = hedef; }
+            if (once >= 0 && ara > once && !Ayar.reduce)
             {
                 tz.text = Sayi(once);
-                tz.schedule.Execute(() => TuyUcur(tuy, tz, once, hedef)).StartingIn(250);   // yerleşim bitsin (hedefin yeri)
+                tz.schedule.Execute(() => TuyUcur(tuy, tz, once, ara)).StartingIn(250);   // yerleşim bitsin (hedefin yeri)
             }
             if (once >= 0 && hedef < once && !Ayar.reduce) { azalOnce = once; azalHedef = hedef; azalBas = Time.unscaledTime; }
             if (azalHedef == hedef && Time.unscaledTime - azalBas < AZAL_SN && !Ayar.reduce) TuyAzal(tuy, tz);
@@ -562,13 +585,14 @@ namespace BirdieSmash.Game
             if (seviyeAni != null) seviyeAni.RemoveFromHierarchy();
             var o = new VisualElement(); o.AddToClassList("seviye-ani"); seviyeAni = o; kok.Add(o);
             bool kapandi = false;
-            System.Action kapat = () => { if (kapandi) return; kapandi = true; if (seviyeAni == o) seviyeAni = null; AniSondur(o); };
+            VisualElement odulSatir = null;
+            System.Action kapat = () => { if (kapandi) return; kapandi = true; if (seviyeAni == o) seviyeAni = null; BekleyenTuyUcur(odulSatir); AniSondur(o); };
             VisualElement ey; var ic = AniIskelet(o, kapat, out ey);
             ic.Add(Yazi(Buyuk(L.T("Seviye atladın")), 15, "seviye-ust"));
             var sayi = Yazi(L.T("Sv {0}", sv), 64, "rakam"); sayi.AddToClassList("seviye-sayi"); ic.Add(sayi);
             // 2026-11-10 seviye ödülü (Gear.SvOdul): sayının hemen altında, tüy simgesiyle; açılanlar listesinden önce (eline geçen şey).
             int svTuy = Gear.SvOdulAralik(once, sv);
-            if (svTuy > 0) { var or_ = new VisualElement(); or_.AddToClassList("seviye-odul"); or_.Add(Ikon(Ikonlar.Tuy, 22, ALTIN)); or_.Add(Yazi(L.T("+{0} Tüy", Sayi(svTuy)), 22, "rakam")); or_.Add(Yazi(L.T("Seviye ödülü"), 14, "soluk")); ic.Add(or_); }
+            if (svTuy > 0) { var or_ = new VisualElement(); or_.AddToClassList("seviye-odul"); or_.Add(Ikon(Ikonlar.Tuy, 22, ALTIN)); or_.Add(Yazi(L.T("+{0} Tüy", Sayi(svTuy)), 22, "rakam")); or_.Add(Yazi(L.T("Seviye ödülü"), 14, "soluk")); ic.Add(or_); odulSatir = or_; }
             // 2026-11-10 oyuncu gelişimi: her seviye bir puan; an yalnız söyler, dağıtım Gelişim sayfasında (Oyna'daki satır götürür).
             Label gy = null;
             if (sv > once && Ayar.GelisimBos > 0) { gy = Yazi(L.T("+{0} gelişim puanı", System.Math.Min(sv - once, Ayar.GelisimBos)), 15, "kalin"); gy.AddToClassList("seviye-gelisim"); ic.Add(gy); }
@@ -1031,13 +1055,18 @@ namespace BirdieSmash.Game
             // 2026-11-26 inceleme (fikir 02:06 #4): Kariyer simgesinin arkasındaki ilerleme halkası kalktı. Yeni oyuncuda yalnız gri iz
             // çiziliyordu (beyaz bantta "kilitli/basılı sekme" gibi okundu), dolgusu §8 rol tablosunda olmayan yeşildi; Kariyer A'da
             // ilerlemenin tek ölçüsü sayfanın içindeki duraklar. Alınacak bir şey olursa Atölye'nin tek nokta kalıbı (sekme-nokta).
-            var ko = Kap(Sekme.Oyna); devamIsaret = null; if (ko != null) { devamIsaret = Yazi("II", 8, "sekme-devam"); devamIsaret.pickingMode = PickingMode.Ignore; ko.Add(devamIsaret); }
+            var ko = Kap(Sekme.Oyna); devamIsaret = null; if (ko != null) { devamIsaret = new VisualElement(); devamIsaret.AddToClassList("sekme-devam"); devamIsaret.pickingMode = PickingMode.Ignore; ko.Add(devamIsaret); for (int i = 0; i < 2; i++) { var c = new VisualElement(); c.AddToClassList("sekme-devam-cubuk"); c.pickingMode = PickingMode.Ignore; devamIsaret.Add(c); } }
+            // 2026-11-26 inceleme (fikir 22:06 #5): yarım maç işareti 8 pt "II" yazısıydı (proje alt sınırı 11 pt; büyük yazıda ölçeklenip
+            // simge kabından taşabilirdi, yazıyla simge taklidi). Artık sabit boy iki çubuklu duraklat simgesi; VoiceOver Oyna sekmesinde
+            // "yarım kalan maç var" duyar (IsaretGuncelle, ErisimBilgi.deger).
             IsaretGuncelle();
         }
         void IsaretGuncelle()
         {
             if (atolyeNokta != null) atolyeNokta.style.display = root != null && root.YukseltAlinir(Ayar.gear.Seviye()) ? DisplayStyle.Flex : DisplayStyle.None;
-            if (devamIsaret != null) devamIsaret.style.display = root != null && root.bekleyen ? DisplayStyle.Flex : DisplayStyle.None;
+            bool yarim = root != null && root.bekleyen;
+            if (devamIsaret != null) devamIsaret.style.display = yarim ? DisplayStyle.Flex : DisplayStyle.None;
+            var ob = sekmeDugme[(int)Sekme.Oyna] != null ? sekmeDugme[(int)Sekme.Oyna].userData as ErisimBilgi : null; if (ob != null) ob.deger = yarim ? L.T("Yarım kalan maç var") : null;
         }
         void GostergeYerlestir(bool anim)
         {

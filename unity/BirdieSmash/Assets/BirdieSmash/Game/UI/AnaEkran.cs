@@ -399,18 +399,52 @@ namespace BirdieSmash.Game
                 c.Add(ea); c.Add(k); return;
             }
             var acik = Yazi(L.T("Her seviye Tüy ve bir gelişim puanı verir, 5'in katları büyük ödül. Açılanlar Dolap ve Atölye'de seni bekler."), 13, "soluk"); acik.style.whiteSpace = WhiteSpace.Normal; acik.style.marginBottom = 6; c.Add(acik);
-            for (int sv = L_ + 1; sv <= 30; sv++)
+            // 2026-11-26 inceleme (fikir 22:06 #3, §7.4 kademeli açma): Sv 1'deki oyuncu 29 eşit kartı alt alta kaydırıyordu; asıl
+            // soru "sıradaki ne, büyük ödül ne zaman". Sıradaki 5 seviye görünür, altında tek satır "Sv n–30'u
+            // göster ›": dokununca satır kalkar, kalan kartlar sırayla aynı sayfaya eklenir (yeni sayfa yok). Kurulumda 29 yerine 5 kart.
+            // Ardışık 5 seviyede her zaman bir 5'in katı olduğundan sonraki büyük ödül bu beşin içindedir; ayrı kart gerekmez.
+            int son5 = System.Math.Min(30, L_ + 5);
+            for (int sv = L_ + 1; sv <= son5; sv++) SvYolKart(c, sv, L_, true);
+            if (son5 < 30)
             {
-                bool buyuk = sv % 5 == 0; string ac = SvAcilanOzet(sv, 3);
-                var k = new VisualElement(); k.AddToClassList("sv-yol"); if (buyuk) k.AddToClassList("sv-yol--buyuk"); if (sv == L_ + 1) k.AddToClassList("sv-yol--siradaki"); c.Add(k);
-                var no = Yazi(L.T("Sv {0}", sv), 20, "rakam"); no.AddToClassList("sv-yol-no"); k.Add(no);
-                var orta = new VisualElement(); orta.AddToClassList("sv-yol-orta"); k.Add(orta);
-                var tr = new VisualElement(); tr.AddToClassList("sv-yol-tuy"); orta.Add(tr);
-                tr.Add(Ikon(Ikonlar.Tuy, 16, ALTIN)); tr.Add(Yazi(L.T("+{0} Tüy", Gear.SvOdul(sv)), 16, "kalin"));
-                if (buyuk) { var be = Yazi(L.T("Büyük ödül"), 12, "sv-yol-etiket"); tr.Add(be); }
-                if (ac != null) { var ay = Yazi(L.T("Açılır: {0}", ac), 13, "soluk"); ay.style.whiteSpace = WhiteSpace.Normal; orta.Add(ay); }
-                Erisim.Etiket(k, L.T("Sv {0}", sv) + ", " + (buyuk ? L.T("Büyük ödül") + ", " : "") + L.T("+{0} Tüy", Gear.SvOdul(sv)) + (ac != null ? ", " + L.T("Açılır: {0}", ac) : ""), "metin");
+                VisualElement hepsi = null;
+                hepsi = Dugme(L.T("Sv {0}–30'u göster", son5 + 1) + "  ›", () =>
+                {
+                    hepsi.RemoveFromHierarchy();
+                    for (int sv = son5 + 1; sv <= 30; sv++) SvYolKart(c, sv, L_, false);
+                }, "kucuk-dugme");
+                hepsi.style.alignSelf = Align.FlexStart; hepsi.style.marginTop = 8; c.Add(hepsi);
             }
+        }
+        // 2026-11-26 inceleme (fikir 22:06 #2, OYUNCUYU GÖSTER): seviye yolu yalnız yazıydı, oyuncu açılacak eşyayı okuyup hayal
+        // ediyordu (muadil: Brawl Stars / Clash Royale ödül yolu ödülün kendisini resimle gösterir). Yalnız sıradaki 5 kartta, o
+        // seviyede açılan ilk resimli kozmetiğin (baş, sırt, kol, bel, ayak) küçük resmi sağda. Kaynak Dolap kartlarının önbelleği
+        // (Portre.DeneHazir); yoksa aynı sıralı kuyruk (KucukSiraya: kare başına en çok bir figür, kaydırırken beklenir). Tip ve
+        // hareketler resimsiz kalır (küçük resim kaynağı yok).
+        static readonly string[] SV_RESIM_KAT = { Kozmetik.SAC, Kozmetik.SAPKA, Kozmetik.YUZ, Kozmetik.SIRT, Kozmetik.KOL, Kozmetik.BEL, Kozmetik.AYAK };
+        VisualElement SvYolKart(VisualElement c, int sv, int L_, bool resimli)
+        {
+            bool buyuk = sv % 5 == 0; string ac = SvAcilanOzet(sv, 3);
+            var k = new VisualElement(); k.AddToClassList("sv-yol"); if (buyuk) k.AddToClassList("sv-yol--buyuk"); if (sv == L_ + 1) k.AddToClassList("sv-yol--siradaki"); c.Add(k);
+            var no = Yazi(L.T("Sv {0}", sv), 20, "rakam"); no.AddToClassList("sv-yol-no"); k.Add(no);
+            var orta = new VisualElement(); orta.AddToClassList("sv-yol-orta"); k.Add(orta);
+            var tr = new VisualElement(); tr.AddToClassList("sv-yol-tuy"); orta.Add(tr);
+            tr.Add(Ikon(Ikonlar.Tuy, 16, ALTIN)); tr.Add(Yazi(L.T("+{0} Tüy", Gear.SvOdul(sv)), 16, "kalin"));
+            if (buyuk) { var be = Yazi(L.T("Büyük ödül"), 12, "sv-yol-etiket"); tr.Add(be); }
+            if (ac != null) { var ay = Yazi(L.T("Açılır: {0}", ac), 13, "soluk"); ay.style.whiteSpace = WhiteSpace.Normal; orta.Add(ay); }
+            Erisim.Etiket(k, L.T("Sv {0}", sv) + ", " + (buyuk ? L.T("Büyük ödül") + ", " : "") + L.T("+{0} Tüy", Gear.SvOdul(sv)) + (ac != null ? ", " + L.T("Açılır: {0}", ac) : ""), "metin");
+            if (resimli) SvYolResim(k, sv);
+            return k;
+        }
+        void SvYolResim(VisualElement k, int sv)
+        {
+            foreach (var kat in SV_RESIM_KAT)
+                foreach (var o in Kozmetik.Acilan(kat, sv))
+                {
+                    var im = new Image { scaleMode = ScaleMode.ScaleToFit, pickingMode = PickingMode.Ignore }; im.AddToClassList("sv-yol-resim"); im.userData = o.id; k.Add(im);
+                    var hazir = Portre.DeneHazir(kat, o.id); if (hazir != null) im.image = hazir; else KucukSiraya(im, kat, o.id);
+                    return;
+                }
         }
 
         void HizliKur()
@@ -501,11 +535,11 @@ namespace BirdieSmash.Game
             if (!saha) return;
             c.Add(Grup(L.T("Saha")));
             // 2026-11-07 inceleme (fikir 02:06 #5, defter): saha 2×2 yazı çipiydi ("Okul (ahşap)" parantezli) ve sahanın neye
-            // benzediğini söylemiyordu. Şimdi tek sıra dört çip; her birinde sahanın kendi renkleriyle çizilmiş küçük kort (çevre,
+            // benzediğini söylemiyordu. Şimdi tek sıra çip (2026-11-26 Neon salon ile beş); her birinde sahanın kendi renkleriyle çizilmiş küçük kort (çevre,
             // mat, file çizgisi; okulda tahta çizgileri, gecede yıldız) ve kısa ad. Seçili çip turuncu + ✓ (yalnız renk değil).
             // Doku yok: renkler CourtView.SAHA'dan, saha rengi değişince önizleme de değişir. Dar ekranda/büyük yazıda Sigdir küçültür.
             var s1 = Satir(); s1.AddToClassList("sigdir-grup"); c.Add(s1);   // dört ad tek ölçüde (SigdirOlc grup)
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < CourtView.SIRA.Length; i++)
             {
                 string id = CourtView.SIRA[i]; var sh = CourtView.SAHA[id];
                 var d = Cip(L.T(SAHA_KISA[i]), Ayar.saha == id, () => { Ayar.saha = id; Ayar.KaydetSonra(); root.SahaSecildi(); Degisti(); });
@@ -517,7 +551,7 @@ namespace BirdieSmash.Game
                 Sigdir(d); s1.Add(d);
             }
         }
-        static readonly string[] SAHA_KISA = { "Salon", "Turnuva", "Okul", "Gece" };   // CourtView.SIRA sırası; uzun ad erişim etiketinde
+        static readonly string[] SAHA_KISA = { "Neon", "Salon", "Turnuva", "Okul", "Gece" };   // CourtView.SIRA sırası; uzun ad erişim etiketinde
         static VisualElement MiniSaha(Saha sh)
         {
             var cev = new VisualElement(); cev.pickingMode = PickingMode.Ignore; cev.style.width = 44f; cev.style.height = 26f; cev.style.marginBottom = 4f;
@@ -530,6 +564,7 @@ namespace BirdieSmash.Game
             if (sh.tahta) for (int k = 1; k < 4; k++) { var t = new VisualElement(); t.pickingMode = PickingMode.Ignore; t.style.position = Position.Absolute; t.style.left = 0f; t.style.right = 0f; t.style.top = k * 4f; t.style.height = 1f; t.style.backgroundColor = new Color(0, 0, 0, .18f); kort.Add(t); }
             var file = new VisualElement(); file.pickingMode = PickingMode.Ignore; file.style.position = Position.Absolute; file.style.top = 0f; file.style.bottom = 0f; file.style.left = 16f; file.style.width = 1f; file.style.backgroundColor = beyaz; kort.Add(file);
             cev.Add(kort);
+            if (sh.neon) { kort.style.borderTopColor = kort.style.borderBottomColor = kort.style.borderLeftColor = kort.style.borderRightColor = new Color(.6f, 1, 1, .95f); file.style.backgroundColor = new Color(.6f, 1, 1, .95f); cev.style.borderBottomWidth = 2f; cev.style.borderBottomColor = new Color(1, .31f, .78f, .9f); }   // neon: camgöbeği çizgi, pembe kenar ışığı
             if (sh.ad == "Gece") for (int k = 0; k < 2; k++) { var y = new VisualElement(); y.pickingMode = PickingMode.Ignore; y.style.position = Position.Absolute; y.style.width = y.style.height = 2f; y.style.top = 2f; y.style.left = 5f + k * 30f; y.style.backgroundColor = new Color(1, .95f, .7f, .9f); cev.Add(y); }
             return cev;
         }
