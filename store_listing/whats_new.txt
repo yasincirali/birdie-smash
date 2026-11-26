@@ -1,4 +1,10 @@
 === UNITY ===
+Maç artık renkli (26 Kasım):
+- Her vuruşun kendi rengi var: smaç turuncu, düz vuruş mavi, drop pembe, yüksek top nane yeşili. Topun izi ve vuruş anındaki yıldızlar bu renkte.
+- Sayı aldığında topun düştüğü yerde beş renkli konfeti patlar; rakip sayı alınca küçük ve lila.
+- Tam ortadan vuruşta yıldızlar üç renkli.
+Nasıl denenir: Bir maç oyna. Smaç, drop ve yüksek top at; topun arkasındaki izin ve raketten çıkan yıldızların vuruşa göre renk değiştirdiğini görmelisin. Sayı alınca yerde renkli konfeti görmelisin. Oyun takılmamalı.
+
 Menü cilası (26 Kasım akşam, üçüncü tur):
 - Profil'deki oyuncu kartının altında "Görünümünü değiştir ›" yazıyor; karta dokununca Dolap açılıyor.
 - Oyna'daki mod düğmelerinde zorluk ve yıldız yazısı biraz büyüdü.
