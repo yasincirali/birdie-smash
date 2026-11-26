@@ -4,6 +4,14 @@ Dolap yeniden düzenlendi (23 Kasım akşam):
 - Hareketler ayrı kutu, oyuncu görüntüsünün sağ üst köşesinde.
 Nasıl denenir: Dolap'ı aç. Oyuncunun iki yanında altı kutu, sağ üstte Hareketler görmelisin. Bir kutuya dokun: kutu sarı çerçeve ve köşede tik alır, alttaki liste o kategoriye geçer. Listeyi tutamaktan yukarı çekip tam aç: kutular gizlenir, yazılı şerit üstte belirir.
 
+Kariyer cilası (26 Kasım sabah):
+- Kariyer, Profil, Gelişim, Antrenman ve Arkadaş ekranlarında senin yüzün artık boş daire kalmıyor; hazır değilse önce küçük insan simgesi, menü dururken yüzün geliyor.
+- Sıradaki maç kartında "Sen" yazısının altında hangi zorlukta oynadığın yazıyor (Kolay, Orta, Zor, Usta).
+- Sahnedeki "Tur 3" etiketi ve tur kutularının üstündeki "3 / 8" kalktı; ilerleme tek sayı: "Durak n/6".
+- Bir maç kazanıp Kariyer'e dönünce yeni rakibin yüzü ve adı sağdan kayarak geliyor, VS hafifçe büyüyor.
+- Alttaki tur kutusuna dokununca sayfa durakların olduğu yere yumuşakça kayıyor (eskiden bir anda sıçrıyordu).
+- Final durağında ödül görünüyor: kupa ve "Tur 4 açılır".
+Nasıl denenir: Kariyer'e gir; "Sen"in altında zorluğu gör, rakibe dokunup maç kartında zorluğu değiştir, geri dönünce yazı değişmiş olmalı. Bir kariyer maçı kazanıp dön: yeni rakip kayarak gelmeli. Alttaki başka bir tur kutusuna dokun: sayfa yumuşakça yukarı kaymalı. Ayarlarda hareketi azalt açıkken kayma ve giriş olmamalı. Final durağına gelince kartın sağ üstünde kupa görünmeli.
 Kariyer sayfası yenilendi (23 Kasım):
 - Sayfanın en üstünde artık sıradaki maç var: turun mekânı, sen ve rakibin yüzü, tek büyük Oyna. Oyna doğrudan maça götürür.
 - Rakibin yüzüne ya da adına dokununca maç kartı açılır (zorluk, yıldız görevleri).

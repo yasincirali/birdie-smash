@@ -1059,7 +1059,6 @@
 .kar-hero { padding: 0; overflow: hidden; margin-top: 10px; }
 .kar-hero-sahne { height: 120px; }
 .kisa .kar-hero-sahne, .buyuk-yazi .kar-hero-sahne { height: 84px; }
-.kar-hero-no { position: absolute; left: 10px; top: 10px; padding: 3px 8px; border-radius: 10px; background-color: rgba(14, 32, 84, 0.72); color: var(--tx); }
 .kar-hero-govde { padding: 12px 14px 14px 14px; }
 .kar-hero-ust { flex-direction: row; align-items: center; }
 .kar-hero-ust > .durak-odul { margin-left: 8px; }

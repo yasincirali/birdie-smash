@@ -395,15 +395,39 @@ namespace BirdieSmash.Game
         // Dolap açıkken görünüm her değiştiğinde portre menü durgunken (son dokunuştan sonra) bir kez çizilir; çıkışta hepsi
         // önbellekten gelir. Vitrin kapalıyken yalnız bir bool okunur; anahtar dizesi yalnız Dolap'ta, 300 ms'de bir.
         string portreIsitilen;
-        VisualElement ustAvatar; RenderTexture ustPortre; int ustPortreDeneme;
+        // 2026-11-26 inceleme (fikir 07:06 #1): üst hap onarımı (02:06 #1) altı yere genellendi. Kariyer sıradaki maç "Sen" yüzü,
+        // "buradasın" düğümü, Profil kartı, Gelişim başlığı, Antrenman şeridi ve Arkadaş ekranı Portre.Benim()'i kurulum karesinde
+        // eşzamanlı çiziyor ve RT sonradan atılınca boş daire kalıyordu. BenAvatar önbellekten okur (yoksa insan simgesi) ve elemanı
+        // bu listeye koyar; PortreIsit panelden düşenleri atar, dokusu ölü/eksik olanları menü durgunken tek çizimle yerinde onarır.
+        sealed class BenAv { public VisualElement av; public RenderTexture t; public int px, yas; public bool goruldu; }
+        readonly List<BenAv> benAvlar = new List<BenAv>(8);
+        int benPortreDeneme;
+        void BenAvatar(VisualElement av, int px)
+        {
+            var t = Portre.BenimHazir() as RenderTexture; AvatarIc(av, t, px);
+            benAvlar.Add(new BenAv { av = av, t = t, px = px }); benPortreDeneme = 0;
+        }
         void PortreIsit()
         {
-            // Üst şerit avatarı: canlı doku varken yalnız iki null/IsCreated okuması (ayırma yok). Çizim başarısızsa en çok 3 deneme.
-            if (ustAvatar != null && ustAvatar.panel != null && (ustPortre == null || !ustPortre.IsCreated()) && ustPortreDeneme < 3 && Kalite.MenuDurgun)
+            // Canlı dokuda eleman başına iki null/IsCreated okuması (ayırma yok). Çizim başarısızsa en çok 3 deneme; aynı tikte tek ağır iş.
+            bool eksik = false;
+            for (int i = benAvlar.Count - 1; i >= 0; i--)
             {
-                ustPortreDeneme++; var t = Portre.Benim() as RenderTexture;
-                if (t != null) { ustPortre = t; ustPortreDeneme = 0; ustAvatar.Clear(); ustAvatar.RemoveFromClassList("avatar--portre"); AvatarIc(ustAvatar, t, 24); }
-                return;   // aynı tikte ikinci ağır iş yok
+                var b = benAvlar[i];
+                // panele geç eklenen eleman (kurulum ile ekleme arasına tik düşerse) hemen atılmasın: önce panelde görülmüş olmalı ya da ~3 sn
+                if (b.av.panel == null) { if (b.goruldu || ++b.yas > 10) benAvlar.RemoveAt(i); continue; }
+                b.goruldu = true;
+                if (b.t == null || !b.t.IsCreated()) eksik = true;
+            }
+            if (eksik && benPortreDeneme < 3 && Kalite.MenuDurgun)
+            {
+                benPortreDeneme++; var t = Portre.Benim() as RenderTexture;
+                if (t != null)
+                {
+                    benPortreDeneme = 0;
+                    for (int i = 0; i < benAvlar.Count; i++) { var b = benAvlar[i]; if (b.t != null && b.t.IsCreated()) continue; b.t = t; b.av.Clear(); b.av.RemoveFromClassList("avatar--portre"); AvatarIc(b.av, t, b.px); }
+                }
+                return;
             }
             // Atölye vitrin raketi (fikir 02:06 #8): 256² × 4 örnek ilk Atölye dokunuşunun karesinde üretiliyordu; menü durgunken bir kez.
             if (vitrinRaket == null && Kalite.MenuDurgun) { VitrinRaket(); return; }
@@ -729,7 +753,7 @@ namespace BirdieSmash.Game
             // içeriği kaybolunca (Portre.Al eskisini Destroy edip yenisini çizer) hap boş beyaz daire kalıyordu, çünkü üst şerit ancak
             // anahtar değişince yeniden kurulur. Artık önbellekten okunur (eşzamanlı FBX çizimi de dokunuş karesine düşmez); yoksa insan
             // simgesi, ve PortreIsit her 300 ms'de tutulan dokunun hâlâ canlı olduğuna bakar, değilse menü durgunken yerinde yeniler.
-            ustAvatar = av; ustPortre = Portre.BenimHazir() as RenderTexture; ustPortreDeneme = 0; AvatarIc(av, ustPortre, 24);
+            BenAvatar(av, 24);
             var sv = new VisualElement(); sv.AddToClassList("ust-sv"); sv.pickingMode = PickingMode.Ignore; hap.Add(sv);
             sv.Add(Yazi(L.T("Sv {0}", L_), 18, "rakam"));
             var c = Cubuk(gerek > 0 ? kalan / (float)gerek : 1, LIMON, 5);   // 2026-10-27 yön C: ilerleme turuncuydu (limon yalnız sen: avatar halkası)   // 2026-11-20 yasin karar kartı "A · Limon": seviye/XP ve gelişim = limon ("senin ilerlemen"), Tüy = altın; turuncu yalnız eylem/seçim (§8)

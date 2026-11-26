@@ -130,13 +130,15 @@ namespace BirdieSmash.Game
             if (simdi && g == basAniA && basAniDen >= 0) BasamakBuyut(roz, .8f, 300);
             else if (final) roz.Add(Ikon(Ikonlar.Kupa, 18, simdi ? KOYU : acik ? ALTIN : SOLUK));
             else if (!acik) roz.Add(Ikon(Ikonlar.Kilit, 16, SOLUK));
-            else if (simdi && Portre.Benim() != null)
+            else if (simdi)
             {
                 // 2026-11-19 (Ar-Ge 12:06 #1, OYUNCUYU GÖSTER): "sen buradasın" iğnesi oyuncunun kendi yüzü (harita ilerlemeli
                 // muadillerde olduğu gibi); numara sağ altta küçük rozet. Portre üst çubukta zaten çizili, önbellekten gelir (ek
                 // kamera çizimi yok). Rakip portresi düğüme eklenmedi: maç kartında var, düğümde ikinci yüz okumayı böler.
+                // 2026-11-26 (fikir 07:06 #1): portre hazır değilse eskiden numaralı halkaya düşüyordu; artık BenAvatar insan simgesiyle
+                // başlar, PortreIsit durgun anda yüze çevirir (numara rozeti iki durumda da var).
                 var av = new VisualElement(); av.AddToClassList("dugum-portre"); av.style.backgroundColor = Kit.Hex(Ayar.FORMA); av.pickingMode = PickingMode.Ignore;
-                AvatarIc(av, Portre.Benim(), 28); roz.Add(av);
+                BenAvatar(av, 28); roz.Add(av);
                 var no = new VisualElement(); no.AddToClassList("dugum-no"); no.pickingMode = PickingMode.Ignore; roz.Add(no);
                 var nl = Yazi((b + 1).ToString(), 11, "kalin"); nl.style.unityTextAlign = TextAnchor.MiddleCenter; nl.style.paddingTop = 0f; nl.style.paddingBottom = 0f; no.Add(nl);
             }

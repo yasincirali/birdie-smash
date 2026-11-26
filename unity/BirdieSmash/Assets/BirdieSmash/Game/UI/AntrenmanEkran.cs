@@ -185,7 +185,7 @@ namespace BirdieSmash.Game
             // 2026-11-22 inceleme (fikir 07:06 #4, OYUNCUYU GÖSTER): sıradaki rakip yalnız yazıydı; Kariyer şeridindeki iki yüz (sen +
             // rakip, aynı 30 px daireler) renk noktasının yerine. Rakip portresi durgun karede ısıtılır (RakipAvatarIc).
             var cift = new VisualElement(); cift.AddToClassList("av-cift"); cift.pickingMode = PickingMode.Ignore; rk.Add(cift);
-            var ben = new VisualElement(); ben.AddToClassList("serit-av"); ben.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(ben, Portre.Benim(), 16); cift.Add(ben);
+            var ben = new VisualElement(); ben.AddToClassList("serit-av"); ben.style.backgroundColor = Kit.Hex(Ayar.FORMA); BenAvatar(ben, 16); cift.Add(ben);
             var rav = new VisualElement(); rav.AddToClassList("serit-av"); rav.AddToClassList("serit-av--rakip"); rav.style.backgroundColor = Kit.Hex(st.renk); RakipAvatarIc(rav, st, 16, 13); cift.Add(rav);
             { var rkY = Yazi(L.T("Rakip") + " " + st.isim + " · " + L.T(st.ad) + " · " + L.T("{0} sayı", b.uzunluk), 14, "soluk"); rkY.style.whiteSpace = WhiteSpace.Normal; rkY.style.flexShrink = 1; rk.Add(rkY); }
             { var ac2 = Yazi(L.T("Kaybetmek geri düşürmez."), 12, "soluk"); ac2.style.whiteSpace = WhiteSpace.Normal; kart.Add(ac2); }

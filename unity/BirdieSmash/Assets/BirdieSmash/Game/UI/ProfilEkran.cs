@@ -57,7 +57,7 @@ namespace BirdieSmash.Game
             var kart = Kart("profil-kart"); kart.AddToClassList("dokunulur"); if (K >= 1.35f) kart.AddToClassList("profil-kart--dikey"); c.Add(kart);
             kart.AddManipulator(new Clickable(() => { Tik(); SekmeAc(Sekme.Soyunma); }));
             var r = Satir("profil-ust"); r.pickingMode = PickingMode.Ignore; kart.Add(r);
-            var av = new VisualElement(); av.AddToClassList("avatar"); av.AddToClassList("profil-yuz"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); AvatarIc(av, Portre.Benim(), 48); r.Add(av);
+            var av = new VisualElement(); av.AddToClassList("avatar"); av.AddToClassList("profil-yuz"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); BenAvatar(av, 48); r.Add(av);
             var ad = new VisualElement(); ad.AddToClassList("esnek-yatay"); ad.pickingMode = PickingMode.Ignore; r.Add(ad);
             ad.Add(Yazi(p.Ad ?? L.T("Oyuncu"), 22, "kalin")); var unY = Yazi(L.T(un.ad) + Karakter.KademeEki(un, p), 14, "kalin"); ad.Add(unY); SozcukSigdir(unY);   // 2026-11-07: ×2'de "Neighbourhoo/d" bölünüyordu
             // 2026-11-22 inceleme (fikir 02:06 #5): "Dengeli · Denge" kekeme okunuyordu, hangisinin tarz hangisinin raket olduğu söylenmiyordu.
