@@ -5,6 +5,7 @@
 // 6 haneli kodu (Paylaş ile) gönderir, öbürü kodu yazar, iki telefon aynı Relay'e bağlanır ve maç Game Center yoluyla aynı
 // Oturum katmanından başlar. Game Center bölümleri (liste, davet, "Rastgele rakip bul") aynen kalır; UGS kurulamazsa bölüm tek
 // cümle söyler (kartsız çalışıyoruz: kota bitince burası durur, Game Center sürer). Kod yazılırken bölüm yeniden kurulmaz.
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -13,7 +14,8 @@ namespace BirdieSmash.Game
     public partial class UiKok
     {
         VisualElement ugsKab; string ugsGirdi = ""; int ugsGorulen = -1; bool ugsYaziyor;
-        static int UgsSurum() { return Ugs.surum + UgsAg.surum; }
+        static int UgsSurum() { return Ugs.surum + UgsAg.surum + UgsEsles.surum; }
+        List<UgsSira.Satir> ugsListe; bool ugsListeAcik, ugsListeYukleniyor, ugsListeYok;
 
         // Bölüm, durum değişince (hazırlanıyor → kod hazır → bağlandı / hata) yalnız kendi kabını yeniden kurar; yoklama yalnız
         // tamsayı karşılaştırır (ayırma yok) ve sayfa kapanınca durur. Bağlandığında Online.Tik maçı kurar, sayfa zaten kapanır.
@@ -28,6 +30,33 @@ namespace BirdieSmash.Game
         void UgsKur()
         {
             if (ugsKab == null) return; ugsKab.Clear(); ugsGorulen = UgsSurum();
+            // Dereceli (UgsEsles): önce bu bölüm; arama sürerken oda kodu gösterilmez (aynı Relay odası eşleşmeye ait).
+            ugsKab.Add(Grup(L.T("Dereceli maç")));
+            ugsKab.Add(Bilgi(Derece.LigAdi + (Derece.Kupa >= 0 ? " · " + Derece.Kupa + " " + L.T("kupa") : "")));
+            if (UgsEsles.Araniyor)
+            {
+                ugsKab.Add(Bilgi(L.T("Rakip aranıyor… {0} sn", UgsEsles.saniye) + " " + L.T("Uygulamayı açık tut.")));
+                var ia = Dugme(L.T("İptal"), () => { Online.Kapat(); UgsKur(); }, null, null, 15); ia.style.marginTop = 4; ugsKab.Add(ia);
+                return;
+            }
+            if (UgsEsles.hal == UgsEsles.Hal.Bulunamadi) ugsKab.Add(Bilgi(L.T("Şu an uygun rakip bulunamadı. Biraz sonra dene, kodla ya da Game Center ile oyna.")));
+            else if (UgsEsles.hal == UgsEsles.Hal.Hata) ugsKab.Add(Bilgi(L.T("Dereceli arama şu an çalışmıyor. Game Center ile oynayabilirsin.")));
+            var rb = Dugme(L.T("Rakip bul"), () => { Online.DereceliAra(); UgsKur(); }, "dugme--birincil", L.T("Puanına yakın biri"), 17); rb.style.marginTop = 4; ugsKab.Add(rb);
+            var sl = Dugme(ugsListeAcik ? L.T("Sıralamayı gizle") : L.T("Sıralama"), UgsListeAc, null, null, 15); sl.style.marginTop = 4; ugsKab.Add(sl);
+            if (ugsListeAcik)
+            {
+                if (ugsListeYukleniyor) ugsKab.Add(Bilgi(L.T("Sıralama yükleniyor…")));
+                else if (ugsListe == null || ugsListeYok) ugsKab.Add(Bilgi(L.T("Sıralama henüz hazır değil.")));
+                else if (ugsListe.Count == 0) ugsKab.Add(Bilgi(L.T("Henüz sıralamada kimse yok. İlk dereceli maçını oyna.")));
+                else foreach (var sr in ugsListe)
+                {
+                    var rw = new VisualElement(); rw.AddToClassList("arkadas-satir"); rw.style.minHeight = 0f;
+                    var no = Yazi("#" + sr.sira, 14, "soluk"); no.style.width = 46f; no.style.flexShrink = 0f; rw.Add(no);
+                    var ad = Yazi(sr.ad + (sr.ben ? " · " + L.T("sen") : ""), 15, sr.ben ? "kalin" : null); ad.style.flexGrow = 1f; ad.style.flexShrink = 1f; ad.style.minWidth = 0f; rw.Add(ad);
+                    var kp = Yazi(sr.kupa.ToString(), 15, "kalin"); kp.style.flexShrink = 0f; rw.Add(kp);
+                    ugsKab.Add(rw);
+                }
+            }
             ugsKab.Add(Grup(L.T("Kodla oyna")));
             switch (UgsAg.hal)
             {
@@ -69,6 +98,13 @@ namespace BirdieSmash.Game
                                                  : L.T("Çevrimiçi oda şu an kurulamadı. Game Center ile arkadaşını yine çağırabilirsin.")));
         }
 
+        async void UgsListeAc()
+        {
+            ugsListeAcik = !ugsListeAcik; if (!ugsListeAcik) { UgsKur(); return; }
+            ugsListeYukleniyor = true; ugsListeYok = false; UgsKur();
+            var l = await UgsSira.Getir(); ugsListe = l; ugsListeYok = l == null; ugsListeYukleniyor = false;
+            if (ugsKab != null && ugsKab.panel != null) UgsKur();
+        }
         async void UgsOdaKur() { Online.Kapat(); await UgsAg.OdaKur(); if (ugsKab != null && ugsKab.panel != null) UgsKur(); }
         async void UgsKatil() { string g = ugsGirdi; Online.Kapat(); await UgsAg.Katil(g); if (ugsKab != null && ugsKab.panel != null) UgsKur(); }
     }

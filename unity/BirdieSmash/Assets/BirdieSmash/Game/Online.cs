@@ -56,7 +56,7 @@ namespace BirdieSmash.Game
         static int Durum() { return UgsAg.Aktif ? UgsAg.Durum : GcDurum(); }
         static void Gonder(byte[] b) { if (UgsAg.Aktif) UgsAg.Gonder(b); else GcGonder(b); }
         static int Al(byte[] t) { return UgsAg.Aktif ? UgsAg.Al(t) : GcAl(t); }
-        static void YerelKapat() { UgsAg.Kapat(); GcKapat(); }
+        static void YerelKapat() { UgsEsles.Iptal(); UgsAg.Kapat(); GcKapat(); }
 
         public static bool Bayrak { get { return true; } }
         // Game Center yalnız iOS'ta; Editor ve Linux ekran build'inde düğme yine görünür (tasarım ve tur), dokunuş hiçbir şey açmaz.
@@ -111,7 +111,7 @@ namespace BirdieSmash.Game
             try { ad = Social.localUser.userName; } catch (Exception) { }
             if (string.IsNullOrEmpty(ad) || ad == "Unauthenticated") ad = null;
 #endif
-            return new OyuncuKarti { ad = ad, seviye = Ayar.gear != null ? Ayar.gear.Seviye() : 1 };
+            return new OyuncuKarti { ad = ad, seviye = Ayar.gear != null ? Ayar.gear.Seviye() : 1, kupa = Derece.Kupa };
         }
 
         // Her karede (GameRoot.Update başı). bag = süren online maçın ağ ucu, yoksa null.
@@ -136,6 +136,9 @@ namespace BirdieSmash.Game
             return false;
         }
 
-        public static void Kapat() { if (oturum == null && Durum() == BOS) return; YerelKapat(); oturum = null; macIstendi = false; }
+        // dereceli: süren/biten maç Derece'ye işlenir (UgsEsles ile bulunan maç). Kapat her zaman sıfırlar; dereceli aramayı başlatan arayüz Kapat'tan SONRA kurar.
+        public static bool dereceli;
+        public static void Kapat() { if (oturum == null && Durum() == BOS && !UgsEsles.Araniyor) { dereceli = false; return; } YerelKapat(); oturum = null; macIstendi = false; dereceli = false; }
+        public static void DereceliAra() { Kapat(); dereceli = true; var _ = UgsEsles.Ara(Derece.Puan); }
     }
 }
