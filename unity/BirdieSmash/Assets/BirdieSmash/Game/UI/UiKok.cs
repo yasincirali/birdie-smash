@@ -862,18 +862,19 @@ namespace BirdieSmash.Game
         // nh: file yüksekliği (1,55 m) piksel olarak, çağıran perspektiften hesaplar.
         internal static void BwfFile(Painter2D p, System.Func<float, float, Vector2> P, float nh, float sr)
         {
-            // koyu ağ, ince ağ çizgileri, beyaz üst bant, iki direk (yükseklik 1,55 m)
-            var nl = P(0, .5f); var nr = P(1, .5f);   // BWF: direkler çift sahanın yan çizgisi üzerinde, file tam saha genişliğinde (6,1 m)
-            p.fillColor = new Color(.04f, .08f, .24f, .26f); p.BeginPath(); p.MoveTo(nl + new Vector2(0, -nh)); p.LineTo(nr + new Vector2(0, -nh)); p.LineTo(nr); p.LineTo(nl); p.ClosePath(); p.Fill();
+            // BWF: file 1,55 m (direkte) yüksekliğe kadar, 76 cm derinliğinde; alt kenar yerden ~79 cm, altı açık (yasin 2026-11-28:
+            // "file yere kadar olmamalı"). Direkler yere iner. Ağ, üst bant (7,5 cm), alt bant, orta kayış.
+            var nl = P(0, .5f); var nr = P(1, .5f);   // direkler çift sahanın yan çizgisinde, file tam saha genişliğinde (6,1 m)
+            float top = nl.y - nh, alt = nl.y - nh * .79f / 1.55f;
+            p.fillColor = new Color(.04f, .08f, .24f, .26f); p.BeginPath(); p.MoveTo(new Vector2(nl.x, top)); p.LineTo(new Vector2(nr.x, top)); p.LineTo(new Vector2(nr.x, alt)); p.LineTo(new Vector2(nl.x, alt)); p.ClosePath(); p.Fill();
             p.strokeColor = new Color(1, 1, 1, .2f); p.lineWidth = .6f * sr; float ag = 4f * sr;
-            p.BeginPath(); for (float x = nl.x; x <= nr.x; x += ag) { p.MoveTo(new Vector2(x, nl.y - nh)); p.LineTo(new Vector2(x, nl.y)); } for (float y = nl.y - nh; y <= nl.y; y += ag) { p.MoveTo(new Vector2(nl.x, y)); p.LineTo(new Vector2(nr.x, y)); } p.Stroke();
-            // detay (BWF): üst bant 7,5 cm beyaz, alt bant ince, orta kayış (tek parça beyaz şerit), direkler çift sahanın yan çizgisinde (yasin: 'file boyutu saçma', ağ eskiden 1,0 m taşıyordu)
-            float bant = Mathf.Max(2f * sr, nh * .075f / 1.55f * 1.0f);
-            Dik2(p, Color.white, nl.x, nl.y - nh, nr.x - nl.x, bant);
-            Dik2(p, new Color(1, 1, 1, .8f), nl.x, nl.y - 1.5f * sr, nr.x - nl.x, 1.5f * sr);
-            float orta = (nl.x + nr.x) / 2; Dik2(p, new Color(1, 1, 1, .85f), orta - .9f * sr, nl.y - nh, 1.8f * sr, nh);
+            p.BeginPath(); for (float x = nl.x; x <= nr.x; x += ag) { p.MoveTo(new Vector2(x, top)); p.LineTo(new Vector2(x, alt)); } for (float y = top; y <= alt; y += ag) { p.MoveTo(new Vector2(nl.x, y)); p.LineTo(new Vector2(nr.x, y)); } p.Stroke();
+            float bant = Mathf.Max(2f * sr, nh * .075f / 1.55f);
+            Dik2(p, Color.white, nl.x, top, nr.x - nl.x, bant);
+            Dik2(p, new Color(1, 1, 1, .8f), nl.x, alt - 1.5f * sr, nr.x - nl.x, 1.5f * sr);
+            float orta = (nl.x + nr.x) / 2; Dik2(p, new Color(1, 1, 1, .85f), orta - .9f * sr, top, 1.8f * sr, alt - top);
             var direk = Kit.Hex("#DFE6F5"); float dw = Mathf.Max(3f * sr, nh * .05f);
-            Dik2(p, direk, nl.x - dw / 2, nl.y - nh - 2 * sr, dw, nh + 2 * sr); Dik2(p, direk, nr.x - dw / 2, nl.y - nh - 2 * sr, dw, nh + 2 * sr);
+            Dik2(p, direk, nl.x - dw / 2, top - 2 * sr, dw, nl.y - top + 2 * sr); Dik2(p, direk, nr.x - dw / 2, top - 2 * sr, dw, nl.y - top + 2 * sr);
         }
         static void KortCiz(MeshGenerationContext ctx)
         {
