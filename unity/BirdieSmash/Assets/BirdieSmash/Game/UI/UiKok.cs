@@ -854,7 +854,7 @@ namespace BirdieSmash.Game
             System.Func<float, float, Vector2> Q = (x, y) => new Vector2(x * sx, y * sy);
             System.Action<Color, float, float, float, float> Dik = (c, x, y, w, h) => { p.fillColor = c; p.BeginPath(); p.MoveTo(Q(x, y)); p.LineTo(Q(x + w, y)); p.LineTo(Q(x + w, y + h)); p.LineTo(Q(x, y + h)); p.ClosePath(); p.Fill(); };
             // tribün: yukarı doğru sıklaşan 5 sıra, her sırada baş (altıgen) ve omuz; boş koltuklar %12
-            var rng = new System.Random(7); const int SIRA = 5; const float Y0 = 50, SIRA_H = 15;
+            var rng = new System.Random(7); const int SIRA = 5; const float Y0 = 72, SIRA_H = 15;
             for (int t = 0; t < SIRA; t++)
             {
                 float y = Y0 + t * SIRA_H; Dik(new Color(.03f, .06f, .19f, .55f + t * .06f), 0, y, 390, SIRA_H);
@@ -877,9 +877,9 @@ namespace BirdieSmash.Game
             // 2026-11-27 (yasin: "file gerçekçi boyutta, saha çizgileri gerçek, oyuncular dev gibi kalmış, saha daha büyük", seçenek A):
             // ölçek oyuncudan geliyor. Afiş figürü ~1,75 m = ~114 birim, yani fileye yakın derinlikte ~65 birim/m. Kamera buna
             // göre kuruldu: F/D(file) ≈ 62 → çift saha genişliği (6,1 m) ≈ 379 birim = ekranın tamamı; 1,55 m file ~96 birim, oyuncunun
-            // omzuna çıkar (gerçekte file ~1,55 m, oyuncu ~1,75 m). Kamera 2,2 m yükseklikte, ufuk 63: ayaklar y≈206, file tabanı ~199,
-            // uzak çizgi ~140 (tribün 50–139; yüksekçe kamera uzak yarıyı da gösterir, file ağı yarı saydam). Yakın yarı ekran dışına taşar, kartların arkasında kalır.
-            const float UFUK = 63, F = 540, KAM_H = 2.2f, MESAFE = 2f, UZUN = 13.4f, GENIS = 6.1f;
+            // omzuna çıkar (gerçekte file ~1,55 m, oyuncu ~1,75 m). Kamera 2,2 m yükseklikte, ufuk 91 (gerçek kareyle ayarlı: figürler tahminden büyük çıktı, file omuz hizasında kalsın diye saha 28 birim aşağı): file tabanı ~227 (plakanın arkası),
+            // uzak çizgi ~168 (tribün 72–161; yüksekçe kamera uzak yarıyı da gösterir, file ağı yarı saydam). Yakın yarı ekran dışına taşar, kartların arkasında kalır.
+            const float UFUK = 91, F = 540, KAM_H = 2.2f, MESAFE = 2f, UZUN = 13.4f, GENIS = 6.1f;
             System.Func<float, float, Vector2> P = (u, v) => { float D = MESAFE + (1 - v) * UZUN; return Q(195 + (u - .5f) * GENIS * F / D, UFUK + F * KAM_H / D); };
             System.Action<Color, Vector2, Vector2, Vector2, Vector2> Dortgen = (c, a1, b1, c1, d1) => { p.fillColor = c; p.BeginPath(); p.MoveTo(a1); p.LineTo(b1); p.LineTo(c1); p.LineTo(d1); p.ClosePath(); p.Fill(); };
             Dortgen(KORT_ZEMIN, P(-.9f, -.06f), P(1.9f, -.06f), P(1.9f, .97f), P(-.9f, .97f));   // v<1: yakın taban kamera arkasına geçmesin (D>0)
