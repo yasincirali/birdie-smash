@@ -1,4 +1,10 @@
 === UNITY ===
+Donma düzeltmesi, Sonsuz ralli zorluğu, final reklamı (27 Kasım akşam):
+- Sonsuz rallide oyunun donup ekranın siyah yanıp sönmesi düzeldi; duraklatma menüsü de artık açılıyor.
+- Sonsuz rallide Kolay, Orta, Zor, Usta seçebiliyorsun; her zorluğun rekoru ayrı.
+- Sonsuz rallide üstteki bilgi şeridi kalktı; sağ üst köşede küçük vuruş sayacı ve "i" var, saha görünüyor.
+- Kariyerde her tur finalinden ve her arkadaş maçından sonra 5 saniyelik bir duyuru çıkıyor, sonra ödüllü reklam açılıyor. Sonuna kadar izlersen Tüy ödülün yüzde 50 artıyor (arkadaş maçında +20 Tüy). "Geç" ile hemen geçebilirsin; reklamı erken kapatırsan uyarı gelir ve ödül olmaz.
+Nasıl denenir: Antrenman, Sonsuz ralli: altındaki zorluklardan birini seç ve oyna; oyun akmalı, pause'a basınca menü gelmeli, uygulamadan çıkıp dönünce oyun donmamalı. Bir tur finalini oyna: maç sonunda geri sayım çıkmalı, "Geç" ile kapanmalı ya da süre bitince reklam açılmalı.
 Maç sonu reklam teklifi (27 Kasım):
 - "Ödüle +%50 · reklam izle" düğmesinin sağında bir × var. Basınca teklif o maç için kapanıyor; izlemek istemezsen geçebilirsin.
 Nasıl denenir: Bir maçı kazan; teklif çıkarsa sağdaki ×'e bas. Teklif kaybolmalı, Tekrar oyna ve Ana menü yerinde durmalı.

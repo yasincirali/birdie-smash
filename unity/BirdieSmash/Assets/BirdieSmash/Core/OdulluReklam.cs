@@ -23,6 +23,14 @@ namespace BirdieSmash.Core
         public const string ANAHTAR = "tuytop_odullu_reklam";
         public const int ILK_GALIBIYET = 3, GUNLUK = 1, RET_SERI = 3, SUS_MAC = 3, ODUL_ESIK = 40;
 
+        // 2026-11-27 (yasin: "her kategori final maçı ve her online maç sonrası reklam gösterelim, tamamını izlerse %50 fazla
+        // tüy; kapatmak istediğinde uyaralım; otomatik açılsın; best practice'e bak"). AdMob kuralı (support.google.com/admob
+        // 9884467): kendiliğinden açılabilen tek ödüllü biçim "rewarded interstitial"; önünde ödülü söyleyen ve vazgeçme düğmesi olan
+        // bir giriş ekranı şart, oyuncuya vazgeçecek kadar süre verilir. Kapatmak isteyene "ödülünü kaybedeceksin" uyarısını SDK
+        // kendisi gösterir. Bu yerler (tur finali, Usta finali, online maç) normal maçın opt-in teklif sayacına (günde 1, 3 ret)
+        // girmez; aynı maçta ikisi birden çıkmaz. Online maçta Tüy ödülü yok (eşit güç), izleyene sabit ONLINE_TUY.
+        public const int ONLINE_TUY = 20;
+        public const float GIRIS_SN = 5f;
         public static int Ek(int tuy) { return tuy <= 0 ? 0 : (int)Math.Floor(tuy * .5 + .5); }
 
         public class Durum

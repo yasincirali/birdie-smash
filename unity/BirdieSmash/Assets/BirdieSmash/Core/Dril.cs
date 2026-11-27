@@ -102,15 +102,23 @@ namespace BirdieSmash.Core
     // ToplamYildiz değişmez. Ödül YOK (ekonomi kıt kuralı, inceleme 6 Kas 13:30): yalnız kişisel rekor (tuytop_sonsuz, buluta da
     // gider) ve 10/20/30 eşiğinin ilk geçişi sonuçta bir kez söylenir. Game Center başarımı eklenmedi: App Store Connect'te
     // başarım puanı 1000 sınırında (Basarim.cs), yeni kimlik yer açmadan girmez. İlk sürüm tek zorluk (Kolay koşu yardımı).
+    // 2026-11-27 (yasin: "sonsuz antrenmanda rakip zorluğunu seçebilelim"): Kolay/Orta/Zor/Usta. Zorluk antrenörün besleme
+    // kademesini ileri alır (BAS): Usta ilk toptan beş türü ve 6. hızın bir altını görür. Kademe tavanı (TAVAN) aynı, böylece
+    // besleme açıları (Dril.cs, k / TAVAN) bozulmaz. Rekor her zorlukta ayrı: Kolay eski tuytop_sonsuz'u sürdürür (oyuncunun
+    // rekoru silinmez), diğerleri tuytop_sonsuz_1..3. Seçim tuytop_sonsuz_zorluk (cihaz tercihi), Game katmanı yükler.
     public static class Sonsuz
     {
-        public const string ID = "sonsuz", ANAHTAR = "tuytop_sonsuz";
+        public const string ID = "sonsuz", ANAHTAR = "tuytop_sonsuz", ZORLUK_ANAHTAR = "tuytop_sonsuz_zorluk";
+        public static readonly int[] BAS = { 0, 1, 3, 5 };
+        public static int zorluk;
+        public static string AnahtarZ(int z) { return z <= 0 ? ANAHTAR : ANAHTAR + "_" + z; }
+        public static string Anahtar { get { return AnahtarZ(zorluk); } }
         public const int ADIM = 5, TAVAN = 6;   // her 5 isabette bir kademe; 6. kademeden (30 vuruş) sonra hız sabit
         public static readonly int[] ESIK = { 10, 20, 30 };
         public static readonly DrilTanim Tanim = new DrilTanim { id = ID, ad = "Sonsuz ralli", ogretir = "Kaçırana kadar her topu içeri düşür.",
             nasil = "Antrenör durmadan besler. Her 5 vuruşta top hızlanır ve yana açılır. İlk kaçan top oyunu bitirir.", besle = ID, olcu = ID, grup = "orta",
             top = 100000, esik = new[] { 0, 0, 0 } };
-        public static int Kademe(int isabet) { return Math.Min(TAVAN, isabet / ADIM); }
+        public static int Kademe(int isabet) { return Math.Min(TAVAN, BAS[Math.Max(0, Math.Min(BAS.Length - 1, zorluk))] + isabet / ADIM); }
         // Kademenin besleme havuzu: yeni tür sırayla girer, oyuncu önce ritmi bulsun.
         static readonly string[] SIRA = { "clear", "drive", "file", "yarim", "smash" };
         public static int Havuz(int kademe) { return Math.Min(SIRA.Length, 1 + kademe); }

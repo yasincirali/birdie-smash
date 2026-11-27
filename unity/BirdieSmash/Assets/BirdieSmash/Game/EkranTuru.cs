@@ -118,7 +118,12 @@ namespace BirdieSmash.Game
                     var mt = root.match; mt.sc[0] = 5; mt.sc[1] = 2; mt.matchDone = true; mt.between = true; mt.betweenT = 1.4f; float tz = Time.realtimeSinceStartup;
                     while (root.ekran != Ekran.Bitti && Time.realtimeSinceStartup - tz < 8) yield return null;
                     yield return Bekle(40); yield return Cek("macsonu_reklam_" + dl); rap.AppendLine("reklam " + dl + " · ekran " + root.ekran);
-                    root.ReklamGec(); yield return Bekle(10); yield return Cek("macsonu_reklam_gecildi_" + dl); root.AnaMenu(); yield return Bekle(10);
+                    root.ReklamGec(); yield return Bekle(10); yield return Cek("macsonu_reklam_gecildi_" + dl);
+                    // 2026-11-27 final/online otomatik reklamın giriş ekranı, Sonsuz ralli zorluk çipleri ve kenar sayacı
+                    root.EkranOtoRek(); yield return Bekle(8); yield return Cek("macsonu_oto_" + dl); root.OtoRekGec(); root.AnaMenu(); yield return Bekle(10);
+                    if (root.ui != null) { root.ui.AntrenmanAc(); yield return Bekle(20); yield return Cek("antrenman_sonsuz_" + dl); }
+                    root.DrilBaslat(Sonsuz.ID); botAcik = true; { float t2 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t2 < 6) yield return null; }
+                    yield return Cek("sonsuz_kenar_" + dl); botAcik = false; root.AnaMenu(); yield return Bekle(10);
                 }
                 File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
             }

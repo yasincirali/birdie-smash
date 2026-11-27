@@ -470,6 +470,7 @@ namespace BirdieSmash.Game
                 if (root.paused != pzAcik) { pzAcik = root.paused; pzBilgi = null; if (pzAcik) { pzT = Time.unscaledTime; Kalite.Hareket(); } }
                 if (root.paused) Pause(M);
                 if (root.ekran == Ekran.Bitti) Over(M);
+                if (root.OtoRekAcik) OtoRekCiz();
             }
             if (flash > 0) Fill(new Rect(0, 0, W, H), new Color(flashC.r, flashC.g, flashC.b, flash));
             PerdeCiz(); FpsCiz();
@@ -1072,6 +1073,20 @@ namespace BirdieSmash.Game
             // kaplamayan şekilde durabilir"): kartın "i" düğmesi kartı sağ kenarda tek bir 44 pt yuvarlak "i" düğmesine indirir,
             // ona dokununca kart geri gelir. Tercih kalıcı (tuytop_ogr_gizli): oyuncu bir kez kapattıysa sonraki adımlarda da kapalı
             // kalır. Bilgi adımları (oyun duruyor, "Anladım, devam" bekliyor) gizlenemez; görev sonucu kendi ekranında.
+            // 2026-11-27 (yasin, Sonsuz ralli videosu: "info butonu kenarda dursun görüşümüzü kapatmasın"): dar kart bile tam sütun
+            // genişliğinde rakip sahasının dip çizgisini örtüyordu. Sonsuz rallide kart yok: sağ üst kenarda tek kapsül [vuruş sayısı][i].
+            // "i" açıklamalı tam kartı açar ("−" geri kenara indirir; Görevi bitir orada). Rekor geçilince sayı yeşil ve "↑" ile (yalnız
+            // renk değil). Sayı yazısı yalnız isabet değişince kurulur (kart GC kuralı, OgrYaziGuncel).
+            if (a.dril == Sonsuz.Tanim && a.bilgi == null && !ogrDetay)
+            {
+                int rk = GameRoot.SonsuzRekor; bool yeni = rk > 0 && o.isabet > rk;
+                if (o.isabet != snKenarN || yeni != snKenarYeni) { snKenarN = o.isabet; snKenarYeni = yeni; snKenarYazi = (yeni ? "↑ " : "") + o.isabet; }
+                var ks = Stil(leftB, Mathf.RoundToInt(16 * fu)); float nw = Mathf.Max(BH * .7f, ks.CalcSize(Ic(snKenarYazi)).x + 14 * u);
+                var kr = new Rect(x + w - BH - nw, y, nw + BH, BH); blocks.Add(kr); Fill(kr, new Color(9 / 255f, 16 / 255f, 17 / 255f, .55f));
+                if (yeni) GUI.color = Kit.Hex("#d8ff5a"); Etk(new Rect(kr.x + 8 * u, y, nw - 8 * u, BH), snKenarYazi, ks); GUI.color = Color.white;
+                if (Button(new Rect(x + w - BH, y, BH, BH), "i")) ogrDetay = true;
+                return y + BH + 6 * u;
+            }
             if (OgrGizli && a.bilgi == null)
             {
                 var b = new Rect(x + w - BH, y, BH, BH);
@@ -1129,6 +1144,7 @@ namespace BirdieSmash.Game
         }
 
         string ogrAdimAnah; bool ogrDetay;
+        int snKenarN = -1; bool snKenarYeni; string snKenarYazi;
         static int ogrGizliK = -1;
         static bool OgrGizli
         {
@@ -1838,6 +1854,7 @@ namespace BirdieSmash.Game
         // tıklanmaz; o sürede başlayan basış yutulur (MouseDown Use: düğme sıcak denetimi almaz, sonraki bırakış tık sayılmaz).
         bool OverKilitli(Rect r)
         {
+            if (root.OtoRekAcik) return true;   // otomatik reklam girişi sonuç kartının üstünde: alttaki düğmeler basılmaz (olayı yemeden, giriş düğmeleri alsın)
             if (!overAcik || Time.unscaledTime - overT0 >= .35f) return false;
             var e = Event.current; if (e.type == EventType.MouseDown && r.Contains(e.mousePosition)) e.Use(); return true;
         }
@@ -1888,6 +1905,30 @@ namespace BirdieSmash.Game
             KutuCiz(r, aHayalet, al); if (bas) Fill(r, new Color(1, 1, 1, .06f));
             Yaz(new Rect(r.x + 8, r.y, r.width - 16, r.height), t, Sigdir(aDug, t, r.width - 16), A_YAZI, al);
             GUI.matrix = m; return IgTik(r, "pop");
+        }
+        // Final/online maç sonu otomatik ödüllü reklamın giriş ekranı (2026-11-27, AdMob rewarded interstitial kuralı): sonuç kartının
+        // üstünde koyu örtü, ortada kart. Başlık geri sayımı yazıyla söyler, altında ödül ve "erken kapatırsan ödül yok" cümlesi,
+        // süre çubuğu (hareketi azaltta da dolar: zaman bilgisidir, süs değil), iki tam genişlik düğme: "Şimdi izle" (birincil)
+        // ve "Geç". Düğmeler ≥ 44 pt (BH). Yazılar yalnız saniye değişince kurulur.
+        int otoSn = -1, otoEkY = -1; string otoBas, otoMet;
+        void OtoRekCiz()
+        {
+            var R = root; float kalan = R.OtoRekKalan; int sn = Mathf.CeilToInt(kalan);
+            if (sn != otoSn) { otoSn = sn; otoBas = L.T("Reklam {0} sn içinde başlıyor", Mathf.Max(1, sn)); }
+            if (R.OtoRekEk != otoEkY) { otoEkY = R.OtoRekEk; otoMet = L.T("Sonuna kadar izlersen +{0} Tüy kazanırsın. Erken kapatırsan ödül olmaz.", otoEkY); }
+            Fill(new Rect(0, 0, W, H), new Color(0, 0, 0, .55f));
+            float w = Mathf.Min(rx - lx, 360 * u), x = (W - w) / 2, iw = w - 32 * u;
+            if (leftWrap == null || leftWrapTaban != left) { leftWrap = new GUIStyle(left) { wordWrap = true }; leftWrapTaban = left; }
+            var ms = Stil(leftWrap, Mathf.RoundToInt(13 * fu)); float hm = ms.CalcHeight(Ic(otoMet), iw);
+            float h = 18 * u + 28 * u + 6 * u + hm + 14 * u + 6 * u + 16 * u + BH + 8 * u + BH + 18 * u, y = Mathf.Max(top, (H - h) / 2);
+            var r = new Rect(x, y, w, h); blocks.Add(r); GUI.Box(r, GUIContent.none, card);
+            float yy = y + 18 * u;
+            Etk(new Rect(x + 16 * u, yy, iw, 28 * u), otoBas, Sigdir(leftB, otoBas, iw)); yy += 28 * u + 6 * u;
+            GUI.Label(new Rect(x + 16 * u, yy, iw, hm), otoMet, ms); yy += hm + 14 * u;
+            Fill(new Rect(x + 16 * u, yy, iw, 6 * u), new Color(1, 1, 1, .14f));
+            Fill(new Rect(x + 16 * u, yy, iw * Mathf.Clamp01(1 - kalan / OdulluReklam.GIRIS_SN), 6 * u), Kit.Hex("#d8ff5a")); yy += 6 * u + 16 * u;
+            if (Button(new Rect(x + 16 * u, yy, iw, BH), "Şimdi izle", true)) R.OtoRekIzle(); yy += BH + 8 * u;
+            if (Button(new Rect(x + 16 * u, yy, iw, BH), "Geç")) R.OtoRekGec();
         }
         // İkincil düğme (a-res2): lacivert yuvarlak kutu, kalın yazı; ≥ 44 pt (BH) ve ≥ 50 tasarım pikseli.
         bool ADugme(Rect r, string t, float al)
