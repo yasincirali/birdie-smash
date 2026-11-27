@@ -1,8 +1,10 @@
-// Çevrimiçi (UGS) arkadaş bölümü (2026-11-27, yasin: "ranka göre eşleşme, arkadaşınla oynama, arkadaş ekleme, davet; karşıya
-// bildirim gidecek"). Arkadaş sayfasında Game Center bölümünün altında durur; Game Center listesi ve "Rastgele rakip bul"
-// aynen kalır. Bölüm ağa yalnız sayfa açılınca çıkar; kurulamazsa tek cümle söyler ve Game Center yoluna bırakır (kartsız
-// çalışıyoruz: UGS kotası bitince burası kapanır, Game Center sürer). Davet iletisi karşı uygulama açıkken düşer; kapalıyken
-// push bildirimi (APNs) ve davete katılma (Relay) sonraki dilim, o yüzden bekleyen davet şimdilik yalnız "seni çağırdı" der.
+// Kodlu oda (UGS Relay) bölümü (2026-11-27, yasin TestFlight'ta: "invite kısmında sadece kodla invite edilebilsin, tüm isim çok
+// uzun; davet edince oyna adımına geçilemiyor, karşıya tekrar davet butonu çıkıyor, sonsuz döngü, maça geçemiyorum, eklediğim
+// arkadaşı göremiyorum"). Kök neden: ad kodlu arkadaş + yalnız mesaj akışında davetin ulaşacağı bir maç taşıması yoktu ve alıcıda
+// "Katıl" yerine yine "Davet et" çıkıyordu. Arkadaş ekleme/davet iletisi bu yüzden kalktı; yerine tek ve kısa yol: biri oda kurar,
+// 6 haneli kodu (Paylaş ile) gönderir, öbürü kodu yazar, iki telefon aynı Relay'e bağlanır ve maç Game Center yoluyla aynı
+// Oturum katmanından başlar. Game Center bölümleri (liste, davet, "Rastgele rakip bul") aynen kalır; UGS kurulamazsa bölüm tek
+// cümle söyler (kartsız çalışıyoruz: kota bitince burası durur, Game Center sürer). Kod yazılırken bölüm yeniden kurulmaz.
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -11,109 +13,99 @@ namespace BirdieSmash.Game
 {
     public partial class UiKok
     {
-        VisualElement ugsKab; string ugsGirdi = "", ugsNot; int ugsGorulen = -1; bool ugsYaziyor;
+        VisualElement ugsKab; string ugsGirdi = ""; int ugsGorulen = -1; bool ugsYaziyor;
+        static int UgsSurum() { return Ugs.surum + UgsAg.surum + UgsEsles.surum; }
+        List<UgsSira.Satir> ugsListe; bool ugsListeAcik, ugsListeYukleniyor, ugsListeYok;
 
-        // 2026-11-27 inceleme (fikir 02:06 #6, #7): bölüm Ugs.surum'u yoklar; durum (hazırlanıyor → hazır/hata) ya da gelen davet
-        // değişince yalnız bu kap yeniden kurulur. Eskiden sayfa açıkken gelen davet hiç görünmüyordu ve "hazırlanıyor" takılı
-        // kalabiliyordu. Olay (Ugs.DavetGeldi) UGS geri çağrısından gelebilir; yoklama ana iş parçacığında kalmanın en basit yolu.
-        // Kod yazılırken yeniden kurulmaz (klavye ve odak düşmesin); alan bırakılınca sıradaki yoklama yakalar. Yoklama yalnız tamsayı karşılaştırır (ayırma yok), sayfa kapanınca durur. İlk bağlantı alt sayfa giriş hareketi (.22 sn)
-        // bittikten sonra başlar: UnityServices kurulumunun ilk ayırmaları kayan sayfayla aynı karelere düşmesin.
+        // Bölüm, durum değişince (hazırlanıyor → kod hazır → bağlandı / hata) yalnız kendi kabını yeniden kurar; yoklama yalnız
+        // tamsayı karşılaştırır (ayırma yok) ve sayfa kapanınca durur. Bağlandığında Online.Tik maçı kurar, sayfa zaten kapanır.
         void UgsBolumKur(VisualElement c)
         {
             if (!Ugs.Bayrak) return;
             var kab = ugsKab = new VisualElement(); c.Add(kab); UgsKur();
             IVisualElementScheduledItem iz = null;
-            iz = kab.schedule.Execute(() => { if (kab.panel == null) { iz.Pause(); return; } if (ugsKab == kab && Ugs.surum != ugsGorulen && !ugsYaziyor) UgsKur(); }).Every(400);
-            if (Ugs.durum != Ugs.Durum.Hazir) kab.schedule.Execute(() => { if (kab.panel != null) UgsAc(); }).StartingIn(260);
-        }
-
-        async void UgsAc()
-        {
-            var kab = ugsKab;
-            await Ugs.Baslat();
-            if (kab != null && kab.panel != null && kab == ugsKab) UgsKur();
+            iz = kab.schedule.Execute(() => { if (kab.panel == null) { iz.Pause(); return; } if (ugsKab == kab && UgsSurum() != ugsGorulen && !ugsYaziyor) UgsKur(); }).Every(400);
         }
 
         void UgsKur()
         {
-            if (ugsKab == null) return; ugsKab.Clear(); ugsGorulen = Ugs.surum;
-            ugsKab.Add(Grup(L.T("Çevrimiçi arkadaşlar")));
-            if (Ugs.durum == Ugs.Durum.Hata)
+            if (ugsKab == null) return; ugsKab.Clear(); ugsGorulen = UgsSurum();
+            // Dereceli (UgsEsles): önce bu bölüm; arama sürerken oda kodu gösterilmez (aynı Relay odası eşleşmeye ait).
+            ugsKab.Add(Grup(L.T("Dereceli maç")));
+            ugsKab.Add(Bilgi(Derece.LigAdi + (Derece.Kupa >= 0 ? " · " + Derece.Kupa + " " + L.T("kupa") : "")));
+            if (UgsEsles.Araniyor)
             {
-                ugsKab.Add(Bilgi(L.T("Çevrimiçi hesap şu an kurulamadı. Game Center ile arkadaşını yine çağırabilirsin.")));
-                var yd = Dugme(L.T("Yeniden dene"), UgsAc, null, null, 15); yd.style.marginTop = 4; ugsKab.Add(yd);
+                ugsKab.Add(Bilgi(L.T("Rakip aranıyor… {0} sn", UgsEsles.saniye) + " " + L.T("Uygulamayı açık tut.")));
+                var ia = Dugme(L.T("İptal"), () => { Online.Kapat(); UgsKur(); }, null, null, 15); ia.style.marginTop = 4; ugsKab.Add(ia);
                 return;
             }
-            if (Ugs.durum != Ugs.Durum.Hazir) { ugsKab.Add(Bilgi(L.T("Çevrimiçi hesabın hazırlanıyor…"))); return; }
-
-            if (!string.IsNullOrEmpty(Ugs.adKodu))
+            if (UgsEsles.hal == UgsEsles.Hal.Bulunamadi) ugsKab.Add(Bilgi(L.T("Şu an uygun rakip bulunamadı. Biraz sonra dene, kodla ya da Game Center ile oyna.")));
+            else if (UgsEsles.hal == UgsEsles.Hal.Hata) ugsKab.Add(Bilgi(L.T("Dereceli arama şu an çalışmıyor. Game Center ile oynayabilirsin.")));
+            var rb = Dugme(L.T("Rakip bul"), () => { Online.DereceliAra(); UgsKur(); }, "dugme--birincil", L.T("Puanına yakın biri"), 17); rb.style.marginTop = 4; ugsKab.Add(rb);
+            var sl = Dugme(ugsListeAcik ? L.T("Sıralamayı gizle") : L.T("Sıralama"), UgsListeAc, null, null, 15); sl.style.marginTop = 4; ugsKab.Add(sl);
+            if (ugsListeAcik)
             {
-                // 2026-11-27 inceleme (fikir 02:06 #2): kodu elle yazdırmak arkadaş eklemenin en büyük sürtünmesiydi. Kodun yanında
-                // sistem paylaş sayfası (Yerel.Paylas, Ayarlar'daki çökme kaydıyla aynı köprü); paylaş olmayan yerde düğme çizilmez.
-                var kr = new VisualElement(); kr.AddToClassList("arkadas-satir"); kr.style.minHeight = 0f; kr.style.paddingLeft = 0f;
-                var kod = Yazi(L.T("Senin kodun: {0}", Ugs.adKodu), 15, "kalin"); kod.style.whiteSpace = WhiteSpace.Normal; kod.style.flexShrink = 1f; kod.style.flexGrow = 1f; kod.style.minWidth = 0f; kr.Add(kod);
-                if (Yerel.PaylasVar)
+                if (ugsListeYukleniyor) ugsKab.Add(Bilgi(L.T("Sıralama yükleniyor…")));
+                else if (ugsListe == null || ugsListeYok) ugsKab.Add(Bilgi(L.T("Sıralama henüz hazır değil.")));
+                else if (ugsListe.Count == 0) ugsKab.Add(Bilgi(L.T("Henüz sıralamada kimse yok. İlk dereceli maçını oyna.")));
+                else foreach (var sr in ugsListe)
                 {
-                    string ak = Ugs.adKodu;
-                    var pd = Dugme(L.T("Paylaş"), () => Yerel.Paylas(L.T("Birdie Smash'te beni ekle: {0}", ak)), null, null, 15); pd.AddToClassList("kucuk-dugme"); pd.style.flexShrink = 0f; kr.Add(pd);
-                    Erisim.Etiket(pd, L.T("Kodunu paylaş"), "dugme");
+                    var rw = new VisualElement(); rw.AddToClassList("arkadas-satir"); rw.style.minHeight = 0f;
+                    var no = Yazi("#" + sr.sira, 14, "soluk"); no.style.width = 46f; no.style.flexShrink = 0f; rw.Add(no);
+                    var ad = Yazi(sr.ad + (sr.ben ? " · " + L.T("sen") : ""), 15, sr.ben ? "kalin" : null); ad.style.flexGrow = 1f; ad.style.flexShrink = 1f; ad.style.minWidth = 0f; rw.Add(ad);
+                    var kp = Yazi(sr.kupa.ToString(), 15, "kalin"); kp.style.flexShrink = 0f; rw.Add(kp);
+                    ugsKab.Add(rw);
                 }
-                ugsKab.Add(kr);
-                ugsKab.Add(Bilgi(L.T("Arkadaşın bu kodla seni ekler. Onun kodunu aşağıya yaz.")));
             }
-            var tf = new TextField { value = ugsGirdi, maxLength = 40 }; tf.AddToClassList("ad-alan");
+            ugsKab.Add(Grup(L.T("Kodla oyna")));
+            switch (UgsAg.hal)
+            {
+                case UgsAg.Hal.Kuruyor:
+                    ugsKab.Add(Bilgi(L.T("Oda hazırlanıyor…"))); return;
+                case UgsAg.Hal.Bekliyor:
+                case UgsAg.Hal.Bagli:
+                    if (!string.IsNullOrEmpty(UgsAg.kod))
+                    {
+                        // Kurucu: büyük kod + paylaş + rakip bekleniyor. Katılan taraf (kod yok) yalnız "bağlanıyor…" görür.
+                        string k = UgsAg.kod;
+                        var kod = Yazi(k, 34, "kalin"); kod.style.unityTextAlign = TextAnchor.MiddleCenter; kod.style.marginTop = 4; ugsKab.Add(kod);
+                        Erisim.Etiket(kod, L.T("Oda kodun: {0}", string.Join(" ", k.ToCharArray())), "metin");
+                        if (Yerel.PaylasVar)
+                        {
+                            var pd = Dugme(L.T("Kodu gönder"), () => Yerel.Paylas(L.T("Birdie Smash'te maça gel! Kod: {0}", k)), "dugme--birincil", null, 17); pd.style.marginTop = 4; ugsKab.Add(pd);
+                            Erisim.Etiket(pd, L.T("Oda kodunu gönder"), "dugme");
+                        }
+                        ugsKab.Add(Bilgi(L.T("Arkadaşın bu kodu yazınca maç başlar. Uygulamayı açık tut.")));
+                    }
+                    else ugsKab.Add(Bilgi(L.T("Bağlanıyor…")));
+                    var ip = Dugme(L.T("İptal"), () => { Online.Kapat(); UgsKur(); }, null, null, 15); ip.style.marginTop = 4; ugsKab.Add(ip);
+                    return;
+            }
+            ugsKab.Add(Bilgi(L.T("Bir oda kur, kodu arkadaşına gönder. Arkadaşın kodu yazınca maç başlar.")));
+            var od = Dugme(L.T("Oda kur"), UgsOdaKur, "dugme--birincil", null, 17); od.style.marginTop = 4; ugsKab.Add(od);
+
+            var tf = new TextField { value = ugsGirdi, maxLength = 8 }; tf.AddToClassList("ad-alan"); tf.style.marginTop = 8;
             tf.RegisterValueChangedCallback(e => ugsGirdi = e.newValue);
-            Erisim.Etiket(tf, L.T("Arkadaşının kodu"), "metin_alani", false, false, ugsGirdi); ugsKab.Add(tf);
+            Erisim.Etiket(tf, L.T("Arkadaşının oda kodu"), "metin_alani", false, false, ugsGirdi); ugsKab.Add(tf);
             // Yer tutucu biçimi gösterir (Profil'deki ad alanıyla aynı kendi etiketimiz; Unity 6 placeholder mono derlemesinde yok).
-            var ph = Yazi("Ad#1234", 16, "soluk"); ph.AddToClassList("ad-yer-tutucu"); ph.pickingMode = PickingMode.Ignore; tf.Add(ph);
+            var ph = Yazi(L.T("Oda kodu"), 16, "soluk"); ph.AddToClassList("ad-yer-tutucu"); ph.pickingMode = PickingMode.Ignore; tf.Add(ph);
             ugsYaziyor = false;
             System.Action phG = () => ph.style.display = string.IsNullOrEmpty(tf.value) && !ugsYaziyor ? DisplayStyle.Flex : DisplayStyle.None;
             tf.RegisterCallback<FocusInEvent>(e => { ugsYaziyor = true; ph.style.display = DisplayStyle.None; }); tf.RegisterCallback<FocusOutEvent>(e => { ugsYaziyor = false; phG(); }); tf.RegisterValueChangedCallback(e => phG()); phG();
-            var ek = Dugme(L.T("Arkadaş ekle"), UgsEkle, null, null, 15); ek.style.marginTop = 4; ek.style.marginBottom = 4; ugsKab.Add(ek);
-            if (!string.IsNullOrEmpty(ugsNot)) ugsKab.Add(Bilgi(ugsNot));
-
-            var ist = Ugs.Istekler();
-            foreach (var a in ist) UgsSatir(a, L.T("Kabul et"), true, L.T("Seni eklemek istiyor"));
-            var l = Ugs.Arkadaslar();
-            foreach (var a in l) UgsSatir(a, L.T("Davet et"), false, Ugs.bekleyenDavet.Contains(a.id) ? L.T("Seni maça çağırdı") : null);
-            if (l.Count == 0 && ist.Count == 0) ugsKab.Add(Bilgi(L.T("Henüz çevrimiçi arkadaşın yok. Kodunu bir arkadaşına gönder, o da seninkini eklesin.")));
+            var kd = Dugme(L.T("Koda katıl"), UgsKatil, null, null, 15); kd.style.marginTop = 4; kd.style.marginBottom = 4; ugsKab.Add(kd);
+            if (UgsAg.hal == UgsAg.Hal.Hata)
+                ugsKab.Add(Bilgi(UgsAg.kodYanlis ? L.T("Bu kodla oda bulunamadı. Kodu kontrol et ya da arkadaşından yenisini iste.")
+                                                 : L.T("Çevrimiçi oda şu an kurulamadı. Game Center ile arkadaşını yine çağırabilirsin.")));
         }
 
-        bool ugsEkleniyor;
-        async void UgsEkle()
+        async void UgsListeAc()
         {
-            if (ugsEkleniyor) return; ugsEkleniyor = true;
-            string g = ugsGirdi; bool ok = await Ugs.ArkadasEkle(g); ugsEkleniyor = false;
-            ugsNot = ok ? L.T("İstek gönderildi. Karşı taraf da seni ekleyince arkadaş olursunuz.") : L.T("İstek gönderilemedi. Kodu (Ad#1234) kontrol et.");
-            if (ok) ugsGirdi = "";
+            ugsListeAcik = !ugsListeAcik; if (!ugsListeAcik) { UgsKur(); return; }
+            ugsListeYukleniyor = true; ugsListeYok = false; UgsKur();
+            var l = await UgsSira.Getir(); ugsListe = l; ugsListeYok = l == null; ugsListeYukleniyor = false;
             if (ugsKab != null && ugsKab.panel != null) UgsKur();
         }
-
-        // 2026-11-27 inceleme (fikir 02:06 #4, #6): basınca düğme yerinde "Gönderiliyor…" olur ve devre dışı kalır (ikinci dokunuş
-        // ikinci davet atmıyor), sonuç da yerinde görünür: "Gönderildi ✓" ya da "Gönderilemedi", 2 sn sonra eski hâli. Sonuç eskiden
-        // kod alanının altında, satırdan uzakta çıkıyordu. Kabul başarılıysa kişi arkadaş listesine geçtiği için bölüm yeniden kurulur.
-        // Davet/istek bilgisi adın altında alt satır (eskiden satırın altında ayrı düz yazıydı). Hareket yok: yalnız metin + hafif tık.
-        void UgsSatir(Ugs.Arkadas a, string eylem, bool kabul, string alt)
-        {
-            string id = a.id, ad = a.ad;
-            var r = Kart("arkadas-satir"); var sol = new VisualElement(); sol.AddToClassList("esnek-yatay"); sol.style.flexDirection = FlexDirection.Column; sol.style.alignItems = Align.FlexStart; sol.pickingMode = PickingMode.Ignore; r.Add(sol);
-            var at = Yazi(ad, 16, "kalin"); at.style.flexShrink = 1f; at.style.minWidth = 0f; sol.Add(at);
-            if (alt != null) { var al = Yazi(alt, 13, "soluk"); al.style.whiteSpace = WhiteSpace.Normal; sol.Add(al); }
-            VisualElement d = null;
-            d = Dugme(eylem, async () =>
-            {
-                var y = d.Q<Label>(className: "dugme-yazi"); if (!d.enabledSelf || y == null) return;
-                d.SetEnabled(false); y.text = L.T("Gönderiliyor…");
-                bool ok = kabul ? await Ugs.ArkadasEkle(id) : await Ugs.DavetEt(id);
-                if (d.panel == null) return;
-                if (ok && kabul) { UgsKur(); return; }
-                y.text = ok ? L.T("Gönderildi ✓") : L.T("Gönderilemedi"); Erisim.Etiket(d, y.text + ", " + ad, "dugme");
-                if (ok) Yerel.Hap("tick");
-                d.schedule.Execute(() => { y.text = eylem; d.SetEnabled(true); Erisim.Etiket(d, eylem + ", " + ad, "dugme"); }).StartingIn(2000);
-            }, null, null, 15);
-            d.AddToClassList("kucuk-dugme"); d.style.flexShrink = 0f; r.Add(d);
-            Erisim.Etiket(d, eylem + ", " + ad + (alt != null ? ", " + alt : ""), "dugme");
-            ugsKab.Add(r);
-        }
+        async void UgsOdaKur() { Online.Kapat(); await UgsAg.OdaKur(); if (ugsKab != null && ugsKab.panel != null) UgsKur(); }
+        async void UgsKatil() { string g = ugsGirdi; Online.Kapat(); await UgsAg.Katil(g); if (ugsKab != null && ugsKab.panel != null) UgsKur(); }
     }
 }

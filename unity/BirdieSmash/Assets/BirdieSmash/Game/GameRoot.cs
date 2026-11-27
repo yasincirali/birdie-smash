@@ -266,6 +266,13 @@ namespace BirdieSmash.Game
             bittiBas = won ? (L.En ? "Victory" : "Galibiyet") : L.T("Bu sefer rakip aldı"); bittiBaslik = bittiBas;
             bittiUst = L.T("Arkadaş maçı") + " · " + M.RakipAd(false);
             if (M.hukmen) bittiAltNot = L.T(won ? "Rakip maçtan ayrıldı." : "Maçtan ayrıldın.");
+            if (Online.dereceli)
+            {
+                // Dereceli (UgsEsles): sonuç Derece'ye işlenir; başlık ve alt not kupa farkını söyler.
+                int kf = Derece.Uygula(won, onlineOturum != null ? onlineOturum.rakip : null);
+                bittiUst = L.T("Dereceli maç") + " · " + M.RakipAd(false);
+                bittiAltNot = (string.IsNullOrEmpty(bittiAltNot) ? "" : bittiAltNot + " ") + Derece.Ozet(kf);
+            }
             bittiKart = Ozet.Kartlar(M); bittiBilgi = ""; bittiIpucu = null; hud.ayrinti = false;
             bittiDugme = L.T("Yeni arkadaş maçı");
             if (won) hud.Konfeti();
