@@ -707,6 +707,16 @@
 .toren-rakip--yok { opacity: 0.45; }
 .toren-eksik { min-height: 44px; margin: 0 0 14px 0; }   /* 2026-11-10 bronz mühürde "Eksik yıldız: n maç ›" (ikincil, rakiplerin üstünde) */
 .toren-nokta { width: 28px; height: 28px; border-radius: 14px; align-items: center; justify-content: center; margin-bottom: 3px; border-width: 2px; border-color: rgba(255, 255, 255, 0.35); }
+/* 2026-11-27 inceleme (fikir 22:06 #2, #6): törende kupa + rakip yüzleri. Yüz 36 px, rakip rengi çerçeve; ✓ limon rozet (ilerleme rolü, §8), yüzün sağ altında. */
+.toren-kupa { align-self: center; margin: 0 0 4px 0; }
+.toren-kupa-yazi { -unity-text-align: middle-center; margin-bottom: 12px; }
+.toren-nokta--yuz { width: 36px; height: 36px; border-radius: 18px; overflow: hidden; border-width: 2px; }
+.toren-yuz { width: 100%; height: 100%; }
+.toren-tik { position: absolute; left: 29px; top: 22px; width: 16px; height: 16px; border-radius: 8px; background-color: var(--lime); align-items: center; justify-content: center; }
+.seviye-oge-satir { flex-direction: row; align-items: center; justify-content: center; margin: 2px 0; }
+.seviye-oge-resim { width: 48px; height: 48px; flex-shrink: 0; margin-right: 10px; border-radius: 12px; background-color: rgba(255, 255, 255, 0.08); }
+.seviye-oge-satir .seviye-oge { flex-shrink: 1; }
+.seviye-siradaki { margin-top: 12px; -unity-text-align: middle-center; white-space: normal; }
 .dugme--hayalet { background-color: rgba(0, 0, 0, 0); border-color: rgba(255, 255, 255, 0.25); border-width: 1px; }
 .dugme--hayalet:active { background-color: rgba(255, 255, 255, 0.06); }
 

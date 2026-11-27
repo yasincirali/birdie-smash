@@ -1,4 +1,10 @@
 === UNITY ===
+Ödül anları ve Dolap akıcılığı (27 Kasım gece):
+- Seviye atlayınca açılan eşyalardan biri Dolap'ta daha önce görüldüyse yanında küçük resmiyle gelir; kartın altında bir sonraki seviyenin ödülü yazar.
+- Bir turu bitirince kartta altın kupa iner ve "Kupa rafına eklendi" yazar.
+- Tur kartında rakipler artık renkli nokta ve kesik ad yerine yüzleriyle görünür; yendiklerinde küçük bir onay işareti var.
+- Dolap'ta oyuncuya bakarken arka plandaki gereksiz iş azaldı; dans sırasında takılma daha az.
+Nasıl denenir: Bir maç kazanıp seviye atla: açılan eşyanın resmi ve altta "Sıradaki" satırı görünmeli. Kariyer'de bir turun finalini kazan: kupa yukarıdan inmeli, rakip yüzleri sıralanmalı. Dolap'ta bir süre bekle ve bir eşya değiştir: portre güncellenmeli, takılma olmamalı.
 Maç sonu reklam teklifi (27 Kasım):
 - "Ödüle +%50 · reklam izle" düğmesinin sağında bir × var. Basınca teklif o maç için kapanıyor; izlemek istemezsen geçebilirsin.
 Nasıl denenir: Bir maçı kazan; teklif çıkarsa sağdaki ×'e bas. Teklif kaybolmalı, Tekrar oyna ve Ana menü yerinde durmalı.
