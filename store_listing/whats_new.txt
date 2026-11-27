@@ -2,6 +2,19 @@
 Maç sonu reklam teklifi (27 Kasım):
 - "Ödüle +%50 · reklam izle" düğmesinin sağında bir × var. Basınca teklif o maç için kapanıyor; izlemek istemezsen geçebilirsin.
 Nasıl denenir: Bir maçı kazan; teklif çıkarsa sağdaki ×'e bas. Teklif kaybolmalı, Tekrar oyna ve Ana menü yerinde durmalı.
+Kariyer yolu ve Atölye alımı (27 Kasım akşamüstü):
+- Kariyer'de maç kazanıp döndüğünde yolun yeni kısmı kısa bir hareketle dolar; geçtiğin yol artık limon rengi.
+- Kariyer'deki "yükseltme eksik" uyarısı sarı değil; sarı yalnız Oyna düğmesinde kalıyor.
+- Atölye'de bir model aldığında ekran bir kez yenilenir, sevinç daha akıcı başlar.
+- Antrenman listesinde görev satırları kısaldı; son oturumların isabeti görevin kendi sayfasında.
+- Günün maçı ödül cümlesi ve Dükkân açıklaması daha net.
+Nasıl denenir: Kariyer'de bir maç kazan ve Kariyer'e dön: yeni yol parçası soldan sağa dolmalı, sonra yeni durak belirmeli. Atölye'de Tüy'ün yettiği bir modeli al: takılma olmamalı. Antrenman'da bir göreve dokun: "Son oturum" satırı orada olmalı.
+Gelişim ve Kariyer cilası (27 Kasım öğle):
+- Gelişim sayfasında oyuncunun portresi daha büyük; her puan verdiğinde portre kısa bir sıçramayla tepki verir, dalı tavana getirince daha belirgin sıçrar.
+- Gelişim'de puan dağıttıktan sonra Dolap ve Kariyer'e geçiş daha akıcı (bu sayfalar artık boşuna baştan kurulmuyor).
+- Kariyer'de rakibin yüzü baş harfin yerine birden değil, yumuşakça belirerek gelir.
+- Gelişim'deki köşe adları ve Oyna düğmesindeki "Zorluk" yazısı biraz büyüdü ve daha net okunuyor; Gelişim'in üst satırı artık "Puanları istediğin an geri alabilirsin." diyor.
+Nasıl denenir: Gelişim'i aç, bir dala puan ver: portre sıçramalı. Basılı tut: her birkaç adımda bir sıçrar. Sonra Dolap'a ve Kariyer'e dokun: takılma olmamalı. Kariyer'i ilk açışta rakip yüzü yumuşak belirmeli.
 Menü akıcılığı (27 Kasım sabah):
 - Alt bantta soldaki bir sekmeye geçince sayfa artık soldan, sağdakine geçince sağdan kayarak gelir.
 - Dolap'a ilk girişte oyuncu bir tam tur döner; sonraki girişlerde kısa bir dönüşle hemen yerine oturur, beklemek yok.

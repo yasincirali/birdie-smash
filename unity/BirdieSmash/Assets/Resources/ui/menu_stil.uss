@@ -1293,7 +1293,7 @@
 .buyuk-yazi .cip-modu .cip-alt { white-space: normal; }
 .cta-zorluk { min-width: 64px; min-height: 52px; padding: 0 12px; margin-left: 6px; justify-content: center; align-items: center; flex-shrink: 0;
     border-left-width: 2px; border-color: rgba(27, 35, 64, 0.25); }
-.cta-zorluk-ust { color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-Bold"); opacity: 0.8; }
+.cta-zorluk-ust { color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-Bold"); }
 .cta-zorluk-ad { color: var(--cta-ink); -unity-font-definition: resource("fonts/Nunito-ExtraBold"); }
 .cta-zorluk:active { scale: 0.94 0.94; transition-duration: 0.06s; }
 .cta-zorluk--acik .cta-zorluk-ad { -unity-text-align: middle-center; }

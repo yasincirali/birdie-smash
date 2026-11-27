@@ -96,17 +96,11 @@ namespace BirdieSmash.Game
             var dad = Yazi(L.T(d.ad), 16, "kalin"); KelimeSigdir(dad); orta.Add(dad);
             orta.Add(Yazi(L.T(d.ogretir), 13, "soluk"));
             var yr = Satir("rakip-satir"); yr.pickingMode = PickingMode.Ignore; orta.Add(yr); yr.Add(UcYildiz((1 << y) - 1, 16)); var yy = Yazi(y + "/3", 12, "soluk"); yy.style.marginLeft = 4; yr.Add(yy);
-            // İlerleme: son 5 oturumun isabet yüzdesi yalnız yazıyla (2026-11-06 unslop, öneri artifact'i YAP: her satırdaki 6 px'lik
-            // mini çubuklar okunmuyor, her karta süs grafik ekliyordu). Yıldız gibi geri alınmaz bir şey değil, yalnız gidişatı gösterir.
-            var gec = pr.DrilGecmis(d.id); string gecYazi = null;
-            if (gec.Count > 0)
-            {
-                gecYazi = gec.Count > 1 ? L.T("Son {0} oturum: %{1} → %{2}", gec.Count, gec[0], gec[gec.Count - 1]) : L.T("Son oturum: %{0}", gec[0]);
-                var gy = Yazi(gecYazi, 12, "soluk"); gy.style.marginTop = 4; gy.pickingMode = PickingMode.Ignore; orta.Add(gy);
-            }
+            // 2026-11-27 inceleme (fikir 17:06 #5): "Son N oturum" satırı görev sayfasına indi (DrilKartKur); listede satır ad, öğretir,
+            // yıldız (§6.4 alt satır ≤ 2). Asıl ilerleme yıldız, gidişat bir dokunuş ötede.
             // 2026-11-06 13:40: "Yeni/Devam/Tamam" yazısı kalktı (21 satırın hepsinde aynı kelime bilgi taşımıyordu); durum yıldız + "n/3".
             string durum = L.T(y >= 3 ? "Tamam" : y > 0 ? "Devam" : "Yeni");   // yalnız ekran okuyucu için
-            Erisim.Etiket(kart, L.T("Görev") + ", " + L.T(d.ad) + ", " + L.T(d.ogretir) + ", " + L.T("{0}/3 yıldız", y) + (gecYazi != null ? ", " + gecYazi : "") + ", " + durum, "dugme");
+            Erisim.Etiket(kart, L.T("Görev") + ", " + L.T(d.ad) + ", " + L.T(d.ogretir) + ", " + L.T("{0}/3 yıldız", y) + ", " + durum, "dugme");
             return kart;
         }
 
@@ -120,6 +114,14 @@ namespace BirdieSmash.Game
             var na = Yazi(L.T(d.nasil), 14); Erisim.Etiket(na, na.text, "metin"); c.Add(na);
             c.Add(Grup(L.T("Yıldızlar")));
             for (int i = 0; i < Dril.YILDIZ; i++) YildizSatir(c, y > i, L.T("12 topta {0} isabet", d.esik[i]));
+            // İlerleme: son 5 oturumun isabet yüzdesi yalnız yazıyla (2026-11-06 unslop, öneri artifact'i YAP: her satırdaki 6 px'lik
+            // mini çubuklar okunmuyor, her karta süs grafik ekliyordu). Yıldız gibi geri alınmaz bir şey değil, yalnız gidişatı gösterir.
+            var gec = pr.DrilGecmis(d.id);
+            if (gec.Count > 0)
+            {
+                string gecYazi = gec.Count > 1 ? L.T("Son {0} oturum: %{1} → %{2}", gec.Count, gec[0], gec[gec.Count - 1]) : L.T("Son oturum: %{0}", gec[0]);
+                var gy = Yazi(gecYazi, 13, "soluk"); gy.style.marginTop = 4; Erisim.Etiket(gy, gecYazi, "metin"); c.Add(gy);
+            }
             var od = Yazi(L.T("Her yeni yıldız +{0} Tüy, +{1} XP. Aynı yıldız ikinci kez ödül vermez.", Gear.DRIL_TUY, Gear.DRIL_XP), 12, "soluk"); Erisim.Etiket(od, od.text, "metin"); c.Add(od);
             string id = d.id;
             AltEylem(Dugme(L.T(y > 0 ? "Yeniden oyna" : "Başla"),   // 2026-11-05 unslop: görev adı sayfa başlığında; düğmede tekrarı iki satıra kırıyordu
@@ -147,7 +149,7 @@ namespace BirdieSmash.Game
             string acik = L.T(g.deg.aciklama);
             dk.Add(Yazi(L.T(g.deg.ad), 16, "kalin")); dk.Add(Yazi(acik, 14, "ipucu"));
             Erisim.Etiket(dk, L.T(g.deg.ad) + ". " + acik, "metin");
-            string odM = alindi ? L.T("Bugünün ödülü alındı. Yarın yenisi.") : L.T("Kazanınca bir kez +{0} Tüy, +{1} XP · kaybetsen de maç ödülü", Gunluk.OdulTuy, Gunluk.OdulXp);
+            string odM = alindi ? L.T("Bugünün ödülü alındı. Yarın yenisi.") : L.T("Kazanınca bir kez +{0} Tüy, +{1} XP. Kaybedersen normal maç ödülünü alırsın, bu ödül bugün açık kalır.", Gunluk.OdulTuy, Gunluk.OdulXp);
             var od = alindi ? IkonYazi(true, odM, 14, "durum-gecti", SOLUK) : Yazi(odM, 14, "altin");
             Erisim.Etiket(od, odM, "metin"); c.Add(od);
             // 2026-11-13 (inceleme 12:05 #6): ayrı "Seri yok." satırı kalktı: olmayan kavramı anlatıyordu; kayıp ödülü ödül satırında.

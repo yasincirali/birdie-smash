@@ -535,18 +535,22 @@ namespace BirdieSmash.Game
             var vt = root.vitrin; vt.DeneYaz(kat, null); if (SevincKat(kat)) vt.Sevinc(SevOn(kat, Ayar.KOZ[kat]));
             vt.Yenile(); Tik(); SoyunmaGovdeKur(true);
         }
-        void KozSec(string kat, string id)
+        void KozSec(string kat, string id) { KozSec(kat, id, true); }
+        void KozSec(string kat, string id, bool govde)
         {
             var gr = Ayar.gear; var vt = root.vitrin;
             if (kat == "ayakkabi") { if (!gr.Sec("ayakkabi", id)) return; vt.deneAyk = null; Ayar.GearHesap(); }
             else { Ayar.KOZ[kat] = id; vt.DeneYaz(kat, null); if (SevincKat(kat)) vt.Sevinc(SevOn(kat, id)); }
-            Ayar.KaydetSonra(); vt.Yenile(); vt.Belir(kat); kirli[(int)Sekme.Profil] = true; SoyunmaGovdeKur(true);
+            Ayar.KaydetSonra(); vt.Yenile(); vt.Belir(kat); kirli[(int)Sekme.Profil] = true; if (govde) SoyunmaGovdeKur(true);
         }
+        // 2026-11-27 inceleme (fikir 17:06 #1, TAKILMA YOK): alım karesinde gövde (KozSec + Degisti) ve üst çubuk (UstKur + Degisti)
+        // ikişer kez kuruluyordu, üstüne sevinç başlıyordu. Kombin "Hepsini al" (19 Kas) kalıbı: Degisti açık sekmeyi ve üst çubuğu
+        // birer kez kurar; alt sayfa açıksa sekmeyi kurmaz, o zaman gövde ayrıca.
         void KozAl(string kat, string id)
         {
             var gr = Ayar.gear; bool ok = kat == "ayakkabi" ? gr.Al("ayakkabi", id) : Kozmetik.Al(gr, kat, id, Ayar.KOZ[kat]);
             if (!ok) return;
-            root.sfx.Yukselt(); Yerel.Hap("tick"); ustKirli = true; UstKur(); KozSec(kat, id); Degisti(); AlimAni();
+            root.sfx.Yukselt(); Yerel.Hap("tick"); KozSec(kat, id, false); Degisti(); if (gez.Ust != null) SoyunmaGovdeKur(true); AlimAni();
         }
         // Satın alma anı (2026-11-10, yasin: Dolap "göz alıcı değil"): eşya alınınca yalnız ses ve ✓ vardı, figür kıpırdamıyordu.
         // Artık figür kendi seçili sevincini bir kez yapar (yaklaşık 1,6 sn) ve boşta duruşa döner. Konfeti, parıltı, sayaç yok.
