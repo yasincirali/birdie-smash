@@ -1545,7 +1545,10 @@ namespace BirdieSmash.Game
             {
                 R.ReklamTeklifGordu(); var rr = IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk);
                 if (ADugme(new Rect(rr.x, rr.y, rr.width - bh - gap, rr.height), L.T("Ödüle +%50 · reklam izle"), al)) R.OdulluIzle();
-                if (ADugme(new Rect(rr.xMax - bh, rr.y, bh, rr.height), "×", al)) R.ReklamGec();
+                var xr = new Rect(rr.xMax - bh, rr.y, bh, rr.height); bool gec = ADugme(xr, "", al);
+                float xh = bh * .17f; var xm = xr.center; var xc = new Color(A_YAZI.r, A_YAZI.g, A_YAZI.b, al);   // × iki çizgi: yazı glifi 16 pt'de seçilmiyordu (r287)
+                Cizgi(xm + new Vector2(-xh, -xh), xm + new Vector2(xh, xh), 2.5f * s, xc); Cizgi(xm + new Vector2(-xh, xh), xm + new Vector2(xh, -xh), 2.5f * s, xc);
+                if (gec) R.ReklamGec();
             }
             if (od2 != null && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman: {0}", L.T(od2.ad)), al)) root.DrilOyna(od2.id); }
             if (yuk && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Ekipmanı yükselt"), al)) { root.AnaMenu(); if (root.ui != null) root.ui.SekmeAc(Sekme.Atolye); } }
