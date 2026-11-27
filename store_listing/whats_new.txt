@@ -1,4 +1,7 @@
 === UNITY ===
+Final reklamı gerçek reklam (28 Kasım):
+- Tur finali ve arkadaş maçı sonrası açılan ödüllü reklam artık test reklamı değil, gerçek reklam. Yeni birim ilk saatlerde boş dönebilir; o zaman geri sayım kartı çıkmaz.
+Nasıl denenir: Bir tur finalini bitir; geri sayımdan sonra gerçek bir reklam açılmalı. Reklama dokunma.
 Ödül anları ve Dolap akıcılığı (27 Kasım gece):
 - Seviye atlayınca açılan eşyalardan biri Dolap'ta daha önce görüldüyse yanında küçük resmiyle gelir; kartın altında bir sonraki seviyenin ödülü yazar.
 - Bir turu bitirince kartta altın kupa iner ve "Kupa rafına eklendi" yazar.
