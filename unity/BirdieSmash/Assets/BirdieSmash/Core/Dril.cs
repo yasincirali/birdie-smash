@@ -112,11 +112,17 @@ namespace BirdieSmash.Core
         public static readonly int[] BAS = { 0, 1, 3, 5 };
         public static int zorluk;
         public static string AnahtarZ(int z) { return z <= 0 ? ANAHTAR : ANAHTAR + "_" + z; }
-        public static string Anahtar { get { return AnahtarZ(zorluk); } }
+        public static string Anahtar { get { return AnahtarZY(zorluk, yarim); } }
+        // 2026-11-28 (yasin: "endless'ta sadece halfcourt antrenman modu da olmalı, precision'ı artırır"): yarım saha. Oyun alanı
+        // iki tarafta da sol koridor (sol tekler çizgisi … orta çizgi, oyuncunun bakışıyla solu; yasin'in görseli). Antrenör de bu
+        // alana oynar, oyuncunun bu alanın dışına düşen topu "dışarı"dır. Rekor ayrı (anahtarın sonuna "_y"). Seçim tuytop_sonsuz_yarim.
+        public const string YARIM_ANAHTAR = "tuytop_sonsuz_yarim";
+        public static bool yarim;
+        public static string AnahtarZY(int z, bool y) { return AnahtarZ(z) + (y ? "_y" : ""); }
         public const int ADIM = 5, TAVAN = 6;   // her 5 isabette bir kademe; 6. kademeden (30 vuruş) sonra hız sabit
         public static readonly int[] ESIK = { 10, 20, 30 };
         public static readonly DrilTanim Tanim = new DrilTanim { id = ID, ad = "Sonsuz ralli", ogretir = "Kaçırana kadar her topu içeri düşür.",
-            nasil = "Antrenör durmadan besler. Her 5 vuruşta top hızlanır ve yana açılır. İlk kaçan top oyunu bitirir.", besle = ID, olcu = ID, grup = "orta",
+            nasil = "Antrenör topu geri oynar ve sayı almaya çalışır; kaçırırsa elindeki toplardan hemen yenisini atar. Her 5 vuruşta besleme hızlanır. İlk kaçırdığın top oyunu bitirir.", besle = ID, olcu = ID, grup = "orta",
             top = 100000, esik = new[] { 0, 0, 0 } };
         public static int Kademe(int isabet) { return Math.Min(TAVAN, BAS[Math.Max(0, Math.Min(BAS.Length - 1, zorluk))] + isabet / ADIM); }
         // Kademenin besleme havuzu: yeni tür sırayla girer, oyuncu önce ritmi bulsun.
@@ -153,6 +159,7 @@ namespace BirdieSmash.Core
         // Bu topun hedef alanı [x0, x1, y0, y1] (rakip yarısı); köşe görevinde sırayla sol ve sağ köşe. null = alan yok.
         public float[] DrilAlan()
         {
+            if (SonsuzYarim) return Alan4(Court.SL, Court.MID, 0, Court.NET);   // yarım saha: antrenörün sol koridoru
             var d = Dril; if (d == null || d.alan == null || d.olcu == "aldat" || d.olcu == "karsila" || d.olcu == "kill" || d.olcu == "split" || d.olcu == "cesit") return null;
             // Kısa servis: alanın genişliği servisin gittiği kutudan (çapraz; skor antrenmanda hep 0, kutu sabit), derinliği veriden.
             if (d.olcu == "servis" && serveBox != null) return Alan4(Math.Min(serveBox.x0, serveBox.x1), Math.Max(serveBox.x0, serveBox.x1), d.alan[2], d.alan[3]);
@@ -279,7 +286,22 @@ namespace BirdieSmash.Core
             }
         }
         // Yana açılan besleme tek kortun içinde kalsın (çizgiden 0,35 m içeri): antrenörün dışarı topu oyuncuyu haksız bitirir.
-        static float KortIci(float x) { return Math.Max(Court.SL + .35f, Math.Min(Court.SR - .35f, x)); }
+        float KortIci(float x) { return yarimAcik ? YarimX(x) : Math.Max(Court.SL + .35f, Math.Min(Court.SR - .35f, x)); }
+        // 2026-11-28 (yasin: "endless rally'de karşımızdaki rakip topa vurabiliyorsa vurmalı, sayı almaya çalışmalı; alamazsa
+        // hemen toparlanıp olduğu yerden elindeki toplardan yenisiyle servis atıp devam ettirmeli, gerçek antrenman böyle olur"):
+        // Sonsuz rallide antrenör artık topu bırakmaz (icpt.leave yok), maç yapay zekâsıyla döner ve boşluğa oynar. Oyuncunun
+        // antrenörün karşıladığı her topu bir isabet sayılır (SonsuzKarsilandi); antrenör yetişemezse sayı oyuncunun, antrenör
+        // yerinden kalkıp yeni topu olduğu yerden besler (SetupServe konumları korur). Oyuncu kaçırınca oyun biter (eski kural).
+        bool SonsuzKarsi { get { var d = Dril; return d != null && d.olcu == Sonsuz.ID; } }
+        bool yarimAcik;   // bu maç yarım saha mı (maç başında Sonsuz.yarim'den; menüde değişse de maç ortasında kural değişmez)
+        bool SonsuzYarim { get { return SonsuzKarsi && yarimAcik; } }
+        public bool YarimSaha { get { return SonsuzYarim; } }
+        static float YarimX(float x) { return Math.Max(Court.SL + .3f, Math.Min(Court.MID - .3f, Court.SL + (x - Court.SL) * .5f)); }
+        void SonsuzKarsilandi()
+        {
+            ogr.isabet++; drVurdu = false;
+            if (ogr.isabet % Sonsuz.ADIM == 0 && ogr.isabet <= Sonsuz.ADIM * Sonsuz.TAVAN) { string yeni = Sonsuz.YeniTurYazi(Sonsuz.Kademe(ogr.isabet)); Say(null, null, Court.MID, Court.NET - 2f, 0, "Hızlanıyor" + (yeni != null ? " · " + yeni : ""), 1); }
+        }
 
         // Oyuncunun topu yere düştü (Land, sayıdan önce): bu top başarılı mı.
         void DrilDusus()
@@ -372,6 +394,8 @@ namespace BirdieSmash.Core
             var d = Dril; ogr.dene++;
             if (d.olcu == Sonsuz.ID)
             {   // ilk kaçan top biter; kademe atlayınca söylenir (oyuncu hızlanmayı hissetmeden önce bilsin)
+                // 2026-11-28 karşılıklı ralli: antrenörün kendi hatası (dışarı, file) oyunu bitirmez, sayılmaz; yeni top gelir.
+                if (winner == "me" && s != null && s.from == "op") return "Antrenör kaçırdı";
                 if (!drBasari) { if (ogr.bitisT <= 0 && !ogr.bitti) ogr.bitisT = 1.4f; return L_Bitti(why); }
                 ogr.isabet++;
                 if (!(ogr.isabet % Sonsuz.ADIM == 0 && ogr.isabet <= Sonsuz.ADIM * Sonsuz.TAVAN)) return ogr.isabet.ToString();

@@ -1017,6 +1017,7 @@ namespace BirdieSmash.Game
         float KayK() { float u = 1 - kayT / KAY_SURE; return u * u * u; }   // kalan ofset payı: 1 → 0, kübik ease-out
         public void Show(Athlete o, Match M, float dt)
         {
+            if (!isMe && !hakem && M != null && M.Dril == Sonsuz.Tanim) yiginKare = Time.frameCount;   // antrenör top yığını (TopYigini)
             KordajGuncelle();   // yalnız maçtaki rakipte dolu (KordajSeyrek); diğer figürlerde hemen döner
             // kendi bacağının adımı ve adım tavanı (Match.Athlete.adimBoy/ayakTurMax notu): tavan chassé adımı 0,99 m'den
             // kısaysa o oranda yükselir (en çok 6 tur/sn); gerçek oranlı modellerde adım ≥ 0,99, tavan aynen 3,6.
@@ -1720,7 +1721,34 @@ namespace BirdieSmash.Game
             mimKare = Time.frameCount; if (!mimik.kok.gameObject.activeSelf) mimik.kok.gameObject.SetActive(true);
             Aksesuar.MimikAyar(mimik, dil * w, dilYan, w, kalk, tek, kiz);
         }
-        void LateUpdate() { if (mimik != null && mimik.kok != null && Time.frameCount > mimKare + 1 && mimik.kok.gameObject.activeSelf) mimik.kok.gameObject.SetActive(false); }
+        void LateUpdate() { if (mimik != null && mimik.kok != null && Time.frameCount > mimKare + 1 && mimik.kok.gameObject.activeSelf) mimik.kok.gameObject.SetActive(false); TopYigini(); }
+
+        // ---- Antrenörün top yığını (2026-11-28, yasin: "sayı yerse … olduğu yerden elindeki toplardan yenisi ile servis atıp
+        // devam ettirmeli", referans görsel: antrenör sol elinde üst üste dizili tüy toplar, sağında raket) ----
+        // Sonsuz rallide rakip besleyici antrenördür: sol elinde dikey bir top yığını taşır, kaçırınca yenisini oradan atar.
+        // Yalnız görünüm: yığın Show bu karede ya da bir önceki karede Sonsuz dril için çağrıldıysa açık (menü figürleri, hakem,
+        // oyuncu hiç görmez). Bir kez kurulur (5 ilkel, gölgesiz, çarpıştırıcısız); karede yalnız konum/dönüş yazılır, ayırma
+        // yok (birdie-takilma-kurali). Kemiğe bağlanmaz: kemik ölçeği SCALE ve model başına değişiyor, dünya ölçüsü sabit kalsın.
+        Transform yigin; int yiginKare = -10;
+        void TopYigini()
+        {
+            bool ac = Time.frameCount <= yiginKare + 1 && kKol != null && kKol[2] != null;
+            if (!ac) { if (yigin != null && yigin.gameObject.activeSelf) yigin.gameObject.SetActive(false); return; }
+            if (yigin == null)
+            {
+                yigin = new GameObject("top_yigini").transform; yigin.SetParent(transform, false);
+                var tuy = Kit.Lit(new Color(.96f, .96f, .93f), .2f); var bant = Kit.Lit(new Color(.72f, .74f, .78f), .2f); var mantar = Kit.Lit(new Color(.80f, .62f, .40f), .3f);
+                // iç içe geçmiş eteklerden oluşan beyaz sütun, eteklerin kenarı ince gri halkalar, en üstte mantar başlık
+                Kit.Prim(PrimitiveType.Cylinder, "etek", yigin, new Vector3(0, .13f, 0), new Vector3(.10f, .13f, .10f), tuy);
+                for (int i = 0; i < 3; i++) Kit.Prim(PrimitiveType.Cylinder, "halka", yigin, new Vector3(0, .05f + i * .08f, 0), new Vector3(.106f, .006f, .106f), bant);
+                Kit.Prim(PrimitiveType.Sphere, "mantar", yigin, new Vector3(0, .27f, 0), new Vector3(.075f, .06f, .075f), mantar);
+                foreach (var r in yigin.GetComponentsInChildren<Renderer>()) { r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off; r.receiveShadows = false; }
+            }
+            if (!yigin.gameObject.activeSelf) yigin.gameObject.SetActive(true);
+            // el kemiğinin biraz altından dikey; gövdenin baktığı yöne hafif öne eğik (görseldeki tutuş)
+            Vector3 fw = yaw != null ? yaw.forward : transform.forward;
+            yigin.SetPositionAndRotation(kKol[2].position - Vector3.up * .12f + fw * .02f, Quaternion.LookRotation(fw, Vector3.up) * Quaternion.Euler(12f, 0, 0));
+        }
 
         // Kalça–omuz ayrışması (2026-10-27, ekran/kosu): hazırlıkta koşarken gövde fileye döner (Athlete.donus), bacaklar
         // gidişte kalır (Athlete.donusAyak, ayak işi klibi o çerçevede seçildi). Fark leğene verilir, omurganın ilk iki

@@ -855,7 +855,7 @@ static class BotMac
         if (Sonsuz.YeniEsik(21, 12) != 20 || Sonsuz.YeniEsik(21, 25) != 0 || Sonsuz.YeniEsik(9, 0) != 0 || Sonsuz.YeniEsik(31, 0) != 30) Fail("sonsuz eşik");
         // Bot kusursuz vurur (Kolay koşu yardımı her topa yetiştirir; ölçüm: 600 sn'de ~187 vuruş, 6. kademe dahil hepsi içeri):
         // demek ki hızlanan besleme ulaşılmaz değil. Bitişi sınamak için bot hedef sayıya gelince bırakır.
-        int snTop = 0; float snSure = 0; var Rs = new Random(9);
+        int snTop = 0, snKarsi = 0; float snSure = 0; var Rs = new Random(9);
         for (int k = 0; k < 4; k++)
         {
             int hedef = 8 + 9 * k;   // 8, 17, 26, 35: her kademeden geçer
@@ -866,11 +866,28 @@ static class BotMac
                 S.Update(1f / 60f); t += 1f / 60f; S.events.Clear(); if (S.over) { Fail("sonsuz ralli maç sonuna gitti"); break; }
             }
             if (!S.ogr.bitti) Fail("sonsuz ralli bitmedi: " + S.ogr.dene + " top");
-            if (S.ogr.isabet != hedef || S.ogr.dene != hedef + 1) Fail("sonsuz ralli ilk kaçışta bitmeli: hedef " + hedef + " top " + S.ogr.dene + " isabet " + S.ogr.isabet);
+            // 2026-11-28 karşılıklı ralli: antrenör topu geri oynar; karşıladığı top da isabettir, top (dene) yalnız sayı başına artar.
+            if (S.ogr.isabet != hedef || S.ogr.dene > hedef + 1) Fail("sonsuz ralli ilk kaçışta bitmeli: hedef " + hedef + " top " + S.ogr.dene + " isabet " + S.ogr.isabet);
+            snKarsi += S.ogr.isabet - (S.ogr.dene - 1);
             if (S.sc[0] + S.sc[1] != 0) Fail("sonsuz rallide skor yazıldı");
             snTop += S.ogr.isabet; snSure += t;
         }
-        Console.WriteLine("sonsuz ralli: 4 oyun ilk kaçışta bitti (8/17/26/35 vuruş), tempo " + (snSure / snTop).ToString("0.00") + " sn/vuruş");
+        Console.WriteLine("sonsuz ralli: 4 oyun ilk kaçışta bitti (8/17/26/35 vuruş), tempo " + (snSure / snTop).ToString("0.00") + " sn/vuruş, antrenör karşıladı " + snKarsi);
+        if (snKarsi <= 0) Fail("sonsuz ralli: antrenör hiç karşılık vermedi");
+        // Yarım saha (2026-11-28): sol koridor dışı dışarı; antrenörün topu da koridora düşer.
+        Sonsuz.yarim = true;
+        { var Y2 = new Match(70, new MatchOptions { easy = true, ogr = true, dril = Sonsuz.Tanim, target = 5 }); int yd = 0, yt = 0, g2 = 0;
+          if (!Y2.YarimSaha || !Y2.IsOut(Court.MID + .8f, 3f, false) || Y2.IsOut(Court.SL + .5f, 3f, false)) Fail("yarım saha sınırı");
+          while (!Y2.ogr.bitti && g2++ < 60 * 300)
+          {
+              Reach re; if (Y2.ogr.isabet < 12 && Y2.ReachInfo(out re) && Rs.NextDouble() < .25) Y2.SwipeShot(new SwipeInput { dx = -30, dy = -200, speed = 1.3f, R = 40, dist = 5 });
+              Y2.Update(1f / 60f);
+              foreach (var e in Y2.events) if (e.kind == Ev.Floor && e.who == "op") { yt++; if (e.x > Court.MID + .2f) yd++; }
+              Y2.events.Clear();
+          }
+          Console.WriteLine("sonsuz yarım saha: isabet " + Y2.ogr.isabet + ", antrenör düşüşü " + yt + " (koridor dışı " + yd + ")");
+          if (yd > 0) Fail("yarım saha: antrenör koridor dışına oynadı"); }
+        Sonsuz.yarim = false;
         Console.WriteLine("antrenman görevleri: 8 görev 12 topta biter, yıldız en iyi sonuç, ödül yalnız yeni yıldız (+" + Gear.DRIL_TUY + " Tüy)");
     }
 
