@@ -27,9 +27,8 @@ namespace BirdieSmash.Game
         public const bool TEST_KIMLIK = true;
 #else
         const string SERIT_ID = "ca-app-pub-6645967875947629/1662942089", ODULLU_ID = "ca-app-pub-6645967875947629/2951973024";
-        // 2026-11-27 final/online maç sonu otomatik ödüllü reklam (rewarded interstitial). yasin'in AdMob'unda bu biçimde birim
-        // henüz yok: Google'ın iOS TEST birimi (TestFlight'ta "Test ad" yazar, gelir getirmez). Gerçek birim gelince yalnız bu satır.
-        const string OTO_ID = "ca-app-pub-3940256099942544/6978759866";
+        // 2026-11-27 final/online maç sonu otomatik ödüllü reklam (rewarded interstitial): yasin'in AdMob birimi "Final reward".
+        const string OTO_ID = "ca-app-pub-6645967875947629/1477358806";
         public const bool TEST_KIMLIK = false;
 #endif
         const float SERIT_W = 320, SERIT_H = 50;
