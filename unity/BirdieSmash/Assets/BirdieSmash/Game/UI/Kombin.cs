@@ -116,7 +116,7 @@ namespace BirdieSmash.Game
         // 2026-11-23 inceleme (fikir 07:06 #4): kaydet/güncelle görünüşü değiştirmez ama bütün Dolap gövdesini (KarakterGovde + tüm
         // ızgaralar) yeniden kuruyordu; pop + Yukselt sesiyle aynı karede takılma ve kaydırma zıplaması. Satır artık kendi kabında,
         // kaydet/güncelle yalnız onu kurar (Kariyer TurAltKur kalıbı). Giy/Rastgele tam kurulum kalır: her ızgaranın seçimi değişir.
-        VisualElement kombinKab;
+        VisualElement kombinKab; bool kombinYerine;
         void KombinSatir(VisualElement c)
         {
             kombinKab = new VisualElement(); kombinKab.pickingMode = PickingMode.Ignore; c.Add(kombinKab); KombinSatirKur();
@@ -141,8 +141,10 @@ namespace BirdieSmash.Game
             {
                 int ii = i; bool dolu = kombinler[i] != null, on = giyili == i;
                 string ad = L.T("Kombin {0}", i + 1), alt = !dolu ? L.T("Boş · kaydet") : on ? L.T("Giyili") : L.T("Giy");
+                if (kombinYerine && dolu) alt = L.T("Yerine kaydet");
                 var d = Cip(ad, on, () =>
                 {
+                    if (kombinYerine) { kombinYerine = false; kombinler[ii] = KombinSimdi(); kombinAktif = ii; kombinPop = ii; KombinYaz(); root.sfx.Yukselt(); KombinSatirKur(); return; }
                     if (kombinler[ii] == null) { kombinler[ii] = KombinSimdi(); kombinAktif = ii; kombinPop = ii; KombinYaz(); root.sfx.Yukselt(); KombinSatirKur(); }
                     else { kombinAktif = ii; kombinPop = ii; KombinYaz(); KombinGiy(kombinler[ii]); if (!Ayar.reduce && root.vitrin != null && root.vitrin.gameObject.activeSelf) root.vitrin.Parlat("forma"); }   // Tik Cip'in içinde (çift titreşimdi)
                 }, alt);
@@ -160,6 +162,12 @@ namespace BirdieSmash.Game
                 int a = kombinAktif;
                 c.Add(Dugme(L.T("Kombin {0}'i bu görünüşle güncelle", a + 1), () => { kombinler[a] = KombinSimdi(); KombinYaz(); root.sfx.Yukselt(); KombinSatirKur(); }, "kombin-kaydet", null, 14));
             }
+            // 2026-11-27 inceleme (fikir 07:06 #6): üç yuva doluyken Rastgele ya da elle kurulan görünüş kaydedilemiyordu (yuvalar yalnız
+            // "Giy", giymek yeni görünüşü siliyordu). Tek satır yuvaları "Yerine kaydet" moduna alır; ikinci dokunuş yazar, satır
+            // "Vazgeç" olur. Diyalog yok (§6), sonuç yuvanın pop'u ve sesiyle görünür.
+            else if (giyili < 0 && !hicYok && kombinler[0] != null && kombinler[1] != null && kombinler[2] != null)
+                c.Add(Dugme(kombinYerine ? L.T("Vazgeç") : L.T("Bu görünüşü kaydet") + " ›", () => { kombinYerine = !kombinYerine; KombinSatirKur(); }, "kombin-kaydet", null, 14));
+            else kombinYerine = false;
         }
 
         // ---- Denemeler ve alt çubuk ----

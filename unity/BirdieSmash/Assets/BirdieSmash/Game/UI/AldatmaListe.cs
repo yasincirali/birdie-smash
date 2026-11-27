@@ -41,7 +41,15 @@ namespace BirdieSmash.Game
             // kilitli kartta yalnız eksik kapı(lar). Ekran okuyucu etiketi tüm bilgiyi okumaya devam eder.
             if (acik) kart.Add(Yazi(s3 + " · " + s4, 12, "soluk"));
             else { if (!svOk) kart.Add(IkonYazi(false, s1, 12, "soluk", SOLUK)); if (!ekOk) kart.Add(IkonYazi(false, s2, 12, "soluk", SOLUK)); }
-            Erisim.Etiket(kart, L.T(t.ad) + ", " + durum + ". " + L.T(t.kisa) + " " + s1 + ". " + s2 + ". " + s3 + ". " + s4, "metin");
+            // 2026-11-27 inceleme (fikir 07:06 #7): seviyesi yeten ama ekipmanı eksik kart sorunu söyleyip çözüme yol vermiyordu.
+            // Yalnız o kart dokunulur ve Atölye'yi açar (Kariyer'deki "Atölye'ye git" ile aynı gerekçe); seviye kilidinin çözümü oynamak.
+            bool atolye = svOk && !ekOk;
+            if (atolye)
+            {
+                kart.Add(Yazi(L.T("Atölye'de") + " ›", 12, "soluk")); kart.AddToClassList("dokunulur");
+                kart.AddManipulator(new Clickable(() => { Tik(kart); SekmeAc(Sekme.Atolye); }));
+            }
+            Erisim.Etiket(kart, L.T(t.ad) + ", " + durum + ". " + L.T(t.kisa) + " " + s1 + ". " + s2 + ". " + s3 + ". " + s4 + (atolye ? ". " + L.T("Atölye'yi aç") : ""), atolye ? "dugme" : "metin");
             return kart;
         }
     }

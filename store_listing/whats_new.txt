@@ -1,4 +1,11 @@
 === UNITY ===
+Menü akıcılığı (27 Kasım sabah):
+- Alt bantta soldaki bir sekmeye geçince sayfa artık soldan, sağdakine geçince sağdan kayarak gelir.
+- Dolap'a ilk girişte oyuncu bir tam tur döner; sonraki girişlerde kısa bir dönüşle hemen yerine oturur, beklemek yok.
+- Üç kombin yuvası doluyken yeni bir görünüşü (Rastgele ya da elle) kaydetmek için "Bu görünüşü kaydet" satırı çıkar; dokununca yuvalarda "Yerine kaydet" yazar, birine dokununca oraya yazılır.
+- Antrenman'daki aldatma listesinde seviyen yetiyor ama ekipman eksikse kartta "Atölye'de ›" yazar; karta dokununca Atölye açılır.
+- Maçtan sonra Dolap'a ilk dokunuş daha akıcı (görüntü belleği menüde beklerken hazırlanır).
+Nasıl denenir: Profil'den Oyna'ya, sonra Oyna'dan Profil'e geç; sayfanın kayma yönüne bak. Dolap'a gir, çık, yeniden gir: ikinci girişte uzun tur olmamalı. Üç kombini kaydet, Rastgele'ye bas, "Bu görünüşü kaydet"e ve sonra bir yuvaya dokun. Bir maç oyna, bitince hemen Dolap'a dokun: takılma olmamalı.
 Arkadaşınla oyna sayfası (27 Kasım gece):
 - Çevrimiçi arkadaşlar bölümünde kodunun yanında "Paylaş" düğmesi var; kodunu mesajla tek dokunuşla gönderebilirsin. Kod alanı boşken soluk "Ad#1234" örneği görünür.
 - "Davet et" ya da "Kabul et"e basınca düğme "Gönderiliyor…" olur, sonra "Gönderildi ✓" ya da "Gönderilemedi" yazar; iki kez basınca iki davet gitmez.
