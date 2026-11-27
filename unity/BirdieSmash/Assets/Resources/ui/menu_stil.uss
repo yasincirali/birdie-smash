@@ -930,6 +930,8 @@
    eski ekranlar dokunuldukça taşınır. Satır ≥ 56, simge kutusu 28, metin sütunu daralır, sağ sütun daralmaz. */
 .liste-satir { flex-direction: row; align-items: center; min-height: 56px; padding: 10px 14px; }
 .liste-satir:active { background-color: rgba(255, 255, 255, 0.06); }
+/* 2026-11-28 inceleme (ikinci göz, kare r301): Profil boş durum satırı liste dolgusuyla 14 px içeride, altındaki seviye satırı ve kartlar kenarda; iki yazı farklı hizadan başlıyordu. Yatay dolgu yok, 56 px yükseklik (dokunma alanı) kalır. */
+.profil-bos { padding-left: 0; padding-right: 0; }
 .liste-satir-ikon { width: 28px; height: 28px; margin-right: 12px; flex-shrink: 0; align-items: center; justify-content: center; }
 .liste-satir-metin { flex-grow: 1; flex-shrink: 1; min-width: 0; }
 .liste-satir-baslik { -unity-font-definition: resource("fonts/Nunito-ExtraBold"); color: var(--tx); }

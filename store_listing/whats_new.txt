@@ -1,4 +1,11 @@
 === UNITY ===
+Profil ve Gelişim sadeleşti (28 Kasım gece):
+- Gelişim sayfasında dal adları (Güç, Kontrol, Çabukluk) şeklin köşelerinde yeniden görünüyor.
+- Henüz puanın yokken boş şekil yerine oyuncun büyük görünür; şekil ilk puanla gelir.
+- Profil'de yazı boyları dört basamağa indi; adın ve dünya sıran aynı boyda.
+- Tek unvanın varken seçilemeyen büyük sarı düğme kalktı; ikinci unvanla seçim gelir.
+- Adını yazıp onaylayınca sayfa baştan kurulmuyor, yalnız ad değişiyor; takılma yok.
+Nasıl denenir: Yeni oyuncuyla Gelişim'i aç: büyük portre ve "İlk puanın Sv 2'de" görünmeli, şekil olmamalı. Seviye 2'den sonra şeklin köşelerinde dal adları olmalı. Profil'de adını değiştir: sayfa zıplamamalı, kaydırma yerinde kalmalı.
 Sonsuz rallide gerçek antrenman (28 Kasım):
 - Antrenör artık topu geri oynuyor ve sayı almaya çalışıyor. Kaçırırsa hemen doğrulup elindeki toplardan yenisini atıyor, ralli sürüyor. Senin kaçırdığın ilk top oyunu yine bitirir.
 - Antrenörün sol elinde üst üste dizili tüy toplar var.

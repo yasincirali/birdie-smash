@@ -59,12 +59,14 @@ namespace BirdieSmash.Game
             var r = Satir("profil-ust"); r.pickingMode = PickingMode.Ignore; kart.Add(r);
             var av = new VisualElement(); av.AddToClassList("avatar"); av.AddToClassList("profil-yuz"); av.pickingMode = PickingMode.Ignore; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); BenAvatar(av, 48); r.Add(av);
             var ad = new VisualElement(); ad.AddToClassList("esnek-yatay"); ad.pickingMode = PickingMode.Ignore; r.Add(ad);
-            ad.Add(Yazi(p.Ad ?? L.T("Oyuncu"), 22, "kalin")); var unY = Yazi(L.T(un.ad) + Karakter.KademeEki(un, p), 14, "kalin"); ad.Add(unY); SozcukSigdir(unY);   // 2026-11-07: ×2'de "Neighbourhoo/d" bölünüyordu
+            var adY = Yazi(p.Ad ?? L.T("Oyuncu"), 24, "kalin"); ad.Add(adY); var unY = Yazi(L.T(un.ad) + Karakter.KademeEki(un, p), 14, "kalin"); ad.Add(unY); SozcukSigdir(unY);   // 2026-11-07: ×2'de "Neighbourhoo/d" bölünüyordu
             // 2026-11-22 inceleme (fikir 02:06 #5): "Dengeli · Denge" kekeme okunuyordu, hangisinin tarz hangisinin raket olduğu söylenmiyordu.
-            ad.Add(Yazi(L.T("{0} tarz · {1} raketi", L.T(tz.ad), L.T(Gear.GEAR["raket"][gr.raket].ad)), 13));
+            ad.Add(Yazi(L.T("{0} tarz · {1} raketi", L.T(tz.ad), L.T(Gear.GEAR["raket"][gr.raket].ad)), 12));
+            // 2026-11-28 inceleme (fikir 02:06 #3, §10.3): Profil'de dokuz yazı boyu vardı (12–26); ad 22 ile dünya sırası 26 yan yana
+            // farklı boydaydı. Dört basamak: 24 başlık/ad/rakam, 16 satır adı, 14 ikincil, 12 sayaç ve dipnot.
             int ds = Hikaye.OyuncuSira(Hikaye.Galibiyet(p));
             var dk = new VisualElement(); dk.AddToClassList("profil-sira"); dk.pickingMode = PickingMode.Ignore; r.Add(dk);
-            dk.Add(Yazi(SiraYaz(ds), 26, "rakam")); dk.Add(Yazi(L.T("Dünya"), 12, "kalin"));
+            dk.Add(Yazi(SiraYaz(ds), 24, "rakam")); dk.Add(Yazi(L.T("Dünya"), 12, "kalin"));
             int efN, efK; Ayar.gear.EfsaneIlerleme(out efN, out efK);
             // Seviye çubuğu tek yerde (22 Kas fikir 02:06 #4 üç yeri bire indirmişti; halka kalktı, çubuk karta geldi). En yüksek
             // seviyede aynı çubuk Efsane ilerlemesini gösterir.
@@ -73,7 +75,7 @@ namespace BirdieSmash.Game
             kart.Add(Yazi(svY, 12, "kalin"));
             // 2026-11-26 inceleme (fikir 17:06 #1; Brawl Stars/Clash Royale profil kartında "Değiştir"): kartın Dolap'a götürdüğü yalnız
             // erişim etiketindeydi, gözle keşfedilmiyordu. Dipte tek satır + › (§7.4), yeni renk yok; erişim etiketi aynı.
-            var dg = Yazi(L.T("Görünümünü değiştir") + "  ›", 13, "kalin"); kart.Add(dg);
+            var dg = Yazi(L.T("Görünümünü değiştir") + "  ›", 14, "kalin"); kart.Add(dg);
             System.Action<UnvanBilgi> kartEtiket = u0 => Erisim.Etiket(kart, (p.Ad ?? L.T("Oyuncu")) + ", " + L.T(u0.ad) + Karakter.KademeEki(u0, p) + ", " + svY + ", " + L.T("Dünya sıralaman: {0}", SiraYaz(ds)) + ", " + L.T("Tarz") + " " + L.T(tz.ad) + ", " + L.T("{0} raketi", L.T(Gear.GEAR["raket"][gr.raket].ad)) + ". " + L.T("Görünümünü Dolap'ta değiştir"), "dugme");
             kartEtiket(un);
             // üç büyük sayı: kartın dışında, üç ayrı panel (taslak A). Büyük yazıda (K ≥ 1,35) alt alta.
@@ -85,7 +87,7 @@ namespace BirdieSmash.Game
             {
                 var bosS = new VisualElement(); bosS.AddToClassList("liste-satir"); bosS.AddToClassList("profil-bos"); c.Add(bosS);
                 var by = Yazi(L.T("İlk maçında rekorların burada birikir"), 14, "soluk"); by.style.flexGrow = 1; by.style.flexShrink = 1; by.style.whiteSpace = WhiteSpace.Normal; bosS.Add(by);
-                bosS.Add(Yazi(L.T("Oyna") + " ›", 15, "kalin"));
+                bosS.Add(Yazi(L.T("Oyna") + " ›", 16, "kalin"));
                 bosS.AddManipulator(new Clickable(() => { Tik(); SekmeAc(Sekme.Oyna); }));
                 Erisim.Etiket(bosS, L.T("İlk maçında rekorların burada birikir") + ", " + L.T("Oyna"), "dugme");
             }
@@ -115,7 +117,7 @@ namespace BirdieSmash.Game
                 // 2026-11-26 inceleme (fikir 02:06 #3, §7.3): ilk gelişim puanı da bu seviyede geliyorsa aynı satırda söylenir; puanı 0
                 // iken ayrı "Gelişim" başlığı + kartı (GelisimKart) kurulmuyor (dokununca boş sayfa açan sahte düğmeydi).
                 bool ilkPuan = Gelisim.Toplam(L_) == 0 && Gelisim.Toplam(s2) > 0;
-                var sa = Yazi(ilkPuan ? L.T("{0}. seviyede {1} yeni eşya ve ilk gelişim puanın açılır", s2, parca.Count) : parca.Count > 2 ? L.T("{0}. seviyede {1} yeni eşya açılır", s2, parca.Count) : tam, 13, "soluk"); sa.style.marginTop = 10; sa.style.whiteSpace = WhiteSpace.Normal;
+                var sa = Yazi(ilkPuan ? L.T("{0}. seviyede {1} yeni eşya ve ilk gelişim puanın açılır", s2, parca.Count) : parca.Count > 2 ? L.T("{0}. seviyede {1} yeni eşya açılır", s2, parca.Count) : tam, 12, "soluk"); sa.style.marginTop = 10; sa.style.whiteSpace = WhiteSpace.Normal;
                 // 2026-11-21 inceleme (fikir 07:06 #1): satır düz yazıydı; seviye atlama sayfasındaki "Dolap'ta dene" kalıbı burada da
                 // (Brawl Stars / Clash Royale yolunda sıradaki ödüle dokunmak önizletir): Dolap eşyası varsa onu oyuncunun üstünde
                 // dener, yalnız Atölye eşyası varsa o yuvayı açar, ikisi de yoksa düz yazı kalır. Tarama yalnız bulunan seviyede.
@@ -158,7 +160,7 @@ namespace BirdieSmash.Game
             }
             if (gorYeni != gorMaske || !gorVar) PlayerPrefs.SetInt(KUPA_GOR, gorYeni);   // Save yok: bir sonraki Ayar.Kaydet yazar
             if (yeniOldu) { root.sfx.Tik(1320); Yerel.Hap("tick"); }
-            var rb = Satir("arali"); kupaK.Add(rb); rb.Add(Yazi(L.T("Kupalar"), 14, "kalin")); var ksy = Yazi(kz_ + " / " + top_, 13, "soluk"); rb.Add(ksy);
+            var rb = Satir("arali"); kupaK.Add(rb); rb.Add(Yazi(L.T("Kupalar"), 14, "kalin")); var ksy = Yazi(kz_ + " / " + top_, 12, "soluk"); rb.Add(ksy);
             Erisim.Etiket(ksy, L.T("{0}/{1} kazanıldı", kz_, top_), "metin");
             kupaK.Add(raf);
 
@@ -175,7 +177,7 @@ namespace BirdieSmash.Game
                 for (int i = 0; i < n6; i++)
                 {
                     var m = sm[i]; if (m.g) gs++;
-                    var h = Yazi(L.T(m.g ? "G" : "M"), 13, "kalin"); h.AddToClassList("profil-gm-harf"); h.AddToClassList(m.g ? "profil-gm-harf--g" : "profil-gm-harf--m"); gm.Add(h);
+                    var h = Yazi(L.T(m.g ? "G" : "M"), 14, "kalin"); h.AddToClassList("profil-gm-harf"); h.AddToClassList(m.g ? "profil-gm-harf--g" : "profil-gm-harf--m"); gm.Add(h);
                     etk.Append(", ").Append(L.T(m.g ? "Kazanılan maç" : "Kaybedilen maç")).Append(" ").Append(m.ben).Append("–").Append(m.rakip).Append(" ").Append(L.T(Ayar.ZORLUK_AD[m.zorluk]));
                 }
                 Erisim.Etiket(sr, L.T("Son {0}: {1} galibiyet", n6, gs) + etk, "metin");
@@ -185,8 +187,21 @@ namespace BirdieSmash.Game
 
             // ad (yalnız cihazda)
             c.Add(Grup(L.T("Adın")));
+            // 2026-11-28 inceleme (fikir 02:06 #5, TAKILMA YOK): ad onaylanınca bütün Profil (portre, kupa rafı, listeler) yeniden
+            // kuruluyor, kurulum klavyenin kapanış hareketine denk geliyordu. Unvan çipi kalıbı (20 Kas): değişen yalnız kartın ad
+            // yazısı ve erişim etiketi; yerinde güncellenir, ad .15 sn opaklıkla gelir. Sayfa kurulmaz, kaydırma yerinde kalır.
+            UnvanBilgi[] unSec = { un };
             var tf = new TextField { value = p.Ad ?? "", maxLength = Ilerleme.AD_AZAMI, isDelayed = true }; tf.AddToClassList("ad-alan"); tf.style.fontSize = Mathf.Round(16 * K);
-            tf.RegisterValueChangedCallback(e => { p.Ad = e.newValue; Ayar.KaydetSonra(); kirli[(int)Sekme.Profil] = true; var kk = sekmeKok[(int)Sekme.Profil]; kk.schedule.Execute(() => { if (gez.sekme == Sekme.Profil && gez.Ust == null) SekmeYerindeKur(Sekme.Profil); }).StartingIn(16); });
+            tf.RegisterValueChangedCallback(e =>
+            {
+                p.Ad = e.newValue; Ayar.KaydetSonra(); adY.text = p.Ad ?? L.T("Oyuncu"); kartEtiket(unSec[0]);
+                if (!Ayar.reduce)
+                {
+                    adY.style.transitionProperty = new List<StylePropertyName> { new StylePropertyName("opacity") };
+                    adY.style.transitionDuration = new List<TimeValue> { new TimeValue(.15f, TimeUnit.Second) };
+                    adY.style.opacity = 0f; adY.schedule.Execute(() => adY.style.opacity = 1f).StartingIn(16);
+                }
+            });
             Erisim.Etiket(tf, L.T("Adın") + ", " + L.T("cihazında ve kendi iCloud hesabında tutulur"), "metin_alani", false, false, p.Ad ?? ""); c.Add(tf);
             // Yer tutucu (2026-11-07, yasin "yap", arayüz cilası): boş alan ne yazılacağını söylesin. Unity 6 textEdition.placeholder
             // yerine kendi soluk etiketimiz (mono ile Unity'siz derleme 2021 başvurularıyla yapılıyor); alan boşken ve odak yokken görünür.
@@ -204,11 +219,14 @@ namespace BirdieSmash.Game
             // kuruyor, kaydırma 33 ms sonra yerine oturuyordu. Değişen yalnız kartın unvan yazısı, çiplerin seçili hâli ve kademe
             // satırı: bunlar yerinde güncellenir (Atölye TarzYerinde kalıbı), sayfa kurulmaz. Unvan yazısı .15 sn opaklıkla gelir.
             var ks = Yazi("", 12, "soluk"); ks.style.whiteSpace = WhiteSpace.Normal;
-            UnvanBilgi[] unSec = { un }; System.Action unvanKur = null;
+            System.Action unvanKur = null;
             unvanKur = () =>
             {
                 var su = unSec[0]; us.Clear();
-                foreach (var u in kz)
+                // 2026-11-28 inceleme (fikir 02:06 #4, §7.2/§7.4): tek kazanılmış unvanda seçilemeyen, tam genişlik sarı çip birincil
+                // düğme gibi duruyordu ve kartta yazan unvanı tekrar ediyordu. İkinci unvana kadar çip satırı yok; kademe ve kilitliler kalır.
+                us.style.display = kz.Count > 1 ? DisplayStyle.Flex : DisplayStyle.None;
+                if (kz.Count > 1) foreach (var u in kz)
                 {
                     var uu = u;
                     us.Add(Cip(L.T(uu.ad) + Karakter.KademeEki(uu, p), uu.id == su.id, () =>
@@ -248,7 +266,7 @@ namespace BirdieSmash.Game
                 var us2 = new VisualElement(); us2.AddToClassList("esnek-yatay"); us2.pickingMode = PickingMode.Ignore; ur.Add(us2);
                 // Beceri unvanı (2026-11-07): koşulun yanında ilerleme ("212/300"); oyuncu ne kadar kaldığını görür, yeni satır yok.
                 string nasil = L.T(u.nasil) + (u.sayac != null ? " · " + Mathf.Min(p.Sayac(u.sayac), u.esik) + "/" + u.esik : "");
-                us2.Add(Yazi(L.T(u.ad), 15)); us2.Add(Yazi(nasil, 12, "soluk"));
+                us2.Add(Yazi(L.T(u.ad), 16)); us2.Add(Yazi(nasil, 12, "soluk"));
                 Erisim.Etiket(ur, L.T("Unvan") + " " + L.T(u.ad) + ", " + L.T("Kilitli") + ", " + nasil, "metin");
             };
             if (unvanTum || kilitli.Count <= 3) foreach (var u in kilitli) kilitSatir(u);
@@ -278,11 +296,11 @@ namespace BirdieSmash.Game
                 else mr.pickingMode = PickingMode.Ignore;
                 var sol = Satir("rakip-satir"); sol.pickingMode = PickingMode.Ignore; mr.Add(sol);
                 sol.Add(Ikon(mh >= 2 ? Ikonlar.YildizDolu : Ikonlar.YildizBos, 18, mh >= 2 ? ALTIN : mh == 1 ? BRONZ : SOLUK));
-                var ay = Yazi(L.T(TurAd(mt)), 15); ay.style.marginLeft = 8; sol.Add(ay);
+                var ay = Yazi(L.T(TurAd(mt)), 16); ay.style.marginLeft = 8; sol.Add(ay);
                 string dr = !mac ? L.T("Kilitli") : mh >= 2 ? L.T("Altın") : mh == 1 ? L.T("Bronz") + " · " + ys + "/18" : ys + "/18";
                 var sag = Satir(null); sag.pickingMode = PickingMode.Ignore; sag.style.alignItems = Align.Center; mr.Add(sag);
-                var dy = Yazi(dr, 13, mh > 0 ? "durum-gecti" : "soluk"); dy.pickingMode = PickingMode.Ignore; sag.Add(dy);
-                if (mac) { var ok = Yazi("›", 18, "soluk"); ok.pickingMode = PickingMode.Ignore; ok.style.marginLeft = 6; sag.Add(ok); }
+                var dy = Yazi(dr, 14, mh > 0 ? "durum-gecti" : "soluk"); dy.pickingMode = PickingMode.Ignore; sag.Add(dy);
+                if (mac) { var ok = Yazi("›", 16, "soluk"); ok.pickingMode = PickingMode.Ignore; ok.style.marginLeft = 6; sag.Add(ok); }
                 Erisim.Etiket(mr, L.T(TurAd(mt)) + ", " + (!mac ? L.T("Kilitli") : (mh >= 2 ? L.T("Altın tur mührü") : mh == 1 ? L.T("Bronz tur mührü") : L.T("{0}/{1} yıldız", ys, 18)) + ", " + L.T("Kariyer'de aç")), mac ? "dugme" : "metin");
             }
             // 2026-11-21 inceleme (fikir 02:06 #5): dipnot tek satır eşik; "Satılmaz…" cümlesi her açılışta tekrardı (mühür dükkânda yok).
@@ -314,7 +332,7 @@ namespace BirdieSmash.Game
             for (int tu = 1; tu < KariyerVeri.Turlar.Length; tu++) if (KariyerVeri.Turlar[tu].Var) ids.Add("bs_tur_" + (tu + 1));
             ids.Add(Basarim.EFSANE); ids.Add(Basarim.ANTRENOR); ids.Add(Basarim.GUNUN_MACI); ids.Add(Basarim.USTA6); ids.Add(Basarim.IMZA_OKUR);
             int bKaz = 0; foreach (var id in ids) if (Basarim.Var(id)) bKaz++;
-            var bs = Yazi(L.T("{0}/{1} kazanıldı", bKaz, ids.Count), 13, "soluk"); c.Add(bs);
+            var bs = Yazi(L.T("{0}/{1} kazanıldı", bKaz, ids.Count), 12, "soluk"); c.Add(bs);
             // 2026-11-23 inceleme (fikir 07:06 #3): kapalı listedeki "sıradaki 3 kilitli" veri sırasıyla değil, en yakın olan önce
             // (unvan kalıbı, kararlı sıralama: oranı olmayanlar veri sırasıyla sonra). Görünür üç hedef "en kolay sonraki adım" olur.
             // "Tümünü göster" açılınca tam liste eski sırada kalır (oyuncu yerini bilir).
@@ -342,7 +360,7 @@ namespace BirdieSmash.Game
 
         void Deger(VisualElement iz, string ad, string deger)
         {
-            var k = Kart("deger-kart"); k.Add(Yazi(deger, 26, "deger")); k.Add(Yazi(ad, 13, "soluk")); Erisim.Etiket(k, ad + ", " + deger, "metin"); iz.Add(k);
+            var k = Kart("deger-kart"); k.Add(Yazi(deger, 24, "deger")); k.Add(Yazi(ad, 12, "soluk")); Erisim.Etiket(k, ad + ", " + deger, "metin"); iz.Add(k);
         }
 
         void BasarimSatir(VisualElement c, string id, string ad)
@@ -353,9 +371,9 @@ namespace BirdieSmash.Game
             // 2026-11-23 inceleme (fikir 07:06 #1, #2): satır sonundaki 12 pt "Kazanıldı/Henüz değil" kalktı (Kariyer yıldızları 21 Kas
             // kalıbı; durum ikon şekliyle + kilitli soluklaşmayla okunuyor). Yerine kilitli ve sayılabilir başarımda "14/20": "ne kadar
             // kaldı" bir maç daha oynatır. Sayılamayanda sağ sütun boş. Erişim etiketi durumu söylemeye devam eder.
-            r.Add(Yazi(ad, 15, "esnek-yatay")); string d = L.T(var_ ? "Kazanıldı" : "Henüz değil");
+            r.Add(Yazi(ad, 16, "esnek-yatay")); string d = L.T(var_ ? "Kazanıldı" : "Henüz değil");
             int n, e;
-            if (!var_ && BasarimIlerleme(id, out n, out e)) { string ie = n + "/" + e; r.Add(Yazi(ie, 13, "soluk")); d = L.T("Kilitli") + ", " + ie; }
+            if (!var_ && BasarimIlerleme(id, out n, out e)) { string ie = n + "/" + e; r.Add(Yazi(ie, 12, "soluk")); d = L.T("Kilitli") + ", " + ie; }
             Erisim.Etiket(r, ad + ", " + d, "metin");
         }
 
