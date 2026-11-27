@@ -835,25 +835,70 @@ namespace BirdieSmash.Game
             // Stadyum Pop'ta (22 Kas) bu kesit USS'te gizlendi, 26 Kas'ta kodu da kalktı (yukarıdaki not).
         }
         Image salonIsik; VisualElement kortZemin;
-        // Kort (2026-11-22 Stadyum Pop): perspektifte yeşil badminton kortu, beyaz çizgiler; afişteki iki oyuncu üstünde durur.
-        // Tek parlak öğe afiş kalsın diye kort düz renk, gölgesiz; çizgiler 3 birim (çift kenar, orta çizgi, servis çizgisi).
-        static readonly Color KORT_YESIL = Kit.Hex("#38B26A"), KORT_CIZGI = new Color(1, 1, 1, .92f);
+        // Oyna sahnesi (2026-11-27, yasin: "oyna ekranının arkası cool bir sahne olsun, saha çizimi gerçek saha olsun, daha kort hissi,
+        // biraz sonra maça girme hissi; tribün ve file de çizili"). Eski kort düz yeşil bir yamuktu (yalnız beş çizgi, file yok, tribün
+        // yok). Şimdi tek painter2D çizimi: tribün (5 sıra seyirci, koltuk bandı), reklam şeridi, gerçek oranlı kort (çift/tek yan
+        // çizgi, kısa servis, çift uzun servis, orta çizgi) ve çizili file (ağ, üst bant, direkler). Perspektif gerçek bir iğne deliği
+        // kamerasından: nokta (u, v) → uzaklık D = d + (1−v)·L, x ölçeği f/D, y = ufuk + f·yükseklik/D; çizgi oranları BWF ölçüsünde
+        // (13,4 × 6,1 m; tek yan çizgi 0,46 m içte; kısa servis fileden 1,98 m; çift uzun servis 0,76 m içte). Çizim tasarım
+        // prototipinde (390 × 300 birim) yazıldı, her boyda orantıyla ölçeklenir. Seyirci düzeni sabit tohumlu (her açılışta aynı).
+        // Yalnız geometri değişince bir kez çizilir; karede iş yok. Ayaklar kortun %36 çizgisinde (ZeminYerlestir), file oyuncuların
+        // belinin arkasında kalır: "maça girmeden sahada duruyorlar".
+        static readonly Color KORT_YESIL = Kit.Hex("#2FA863"), KORT_CIZGI = new Color(1, 1, 1, .95f), KORT_ZEMIN = Kit.Hex("#12306B");
+        static readonly Color[] SEYIRCI = { Kit.Hex("#E8D7C3"), Kit.Hex("#F2B6C8"), Kit.Hex("#9EC5FF"), Kit.Hex("#FFD36B"), Kit.Hex("#C9A6FF"), Kit.Hex("#FFFFFF"), Kit.Hex("#9BE3B8") };
+        static readonly Color[] LED = { Kit.Hex("#FFE14D"), Kit.Hex("#FF7AC8"), Kit.Hex("#6FD1FF"), Kit.Hex("#FFFFFF") };
         static void KortCiz(MeshGenerationContext ctx)
         {
-            var r = ctx.visualElement.contentRect; float w = r.width, h = r.height; if (w <= 0 || h <= 0) return;
-            var p = ctx.painter2D; float ust = w * .30f, alt = -w * .10f;   // üst kenar yarı genişliği dar (uzak), alt geniş (yakın)
-            System.Func<float, float, Vector2> N = (u, v) => { float sol = Mathf.Lerp(ust, alt, v), sag = w - sol; return new Vector2(Mathf.Lerp(sol, sag, u), v * h); };
-            p.fillColor = KORT_YESIL; p.BeginPath(); p.MoveTo(N(0, 0)); p.LineTo(N(1, 0)); p.LineTo(N(1, 1)); p.LineTo(N(0, 1)); p.ClosePath(); p.Fill();
-            p.strokeColor = KORT_CIZGI; p.lineWidth = 3; p.lineJoin = LineJoin.Round;
-            p.BeginPath(); p.MoveTo(N(.04f, 0)); p.LineTo(N(.96f, 0)); p.LineTo(N(.96f, 1)); p.LineTo(N(.04f, 1)); p.ClosePath(); p.Stroke();
-            p.BeginPath(); p.MoveTo(N(.12f, 0)); p.LineTo(N(.12f, 1)); p.MoveTo(N(.88f, 0)); p.LineTo(N(.88f, 1)); p.Stroke();
-            p.BeginPath(); p.MoveTo(N(.5f, 0)); p.LineTo(N(.5f, 1)); p.MoveTo(N(.04f, .55f)); p.LineTo(N(.96f, .55f)); p.Stroke();
+            var r = ctx.visualElement.contentRect; if (r.width <= 0 || r.height <= 0) return;
+            var p = ctx.painter2D; float sx = r.width / 390f, sy = r.height / 300f, sr = Mathf.Min(sx, sy);
+            System.Func<float, float, Vector2> Q = (x, y) => new Vector2(x * sx, y * sy);
+            System.Action<Color, float, float, float, float> Dik = (c, x, y, w, h) => { p.fillColor = c; p.BeginPath(); p.MoveTo(Q(x, y)); p.LineTo(Q(x + w, y)); p.LineTo(Q(x + w, y + h)); p.LineTo(Q(x, y + h)); p.ClosePath(); p.Fill(); };
+            // tribün: yukarı doğru sıklaşan 5 sıra, her sırada baş (altıgen) ve omuz; boş koltuklar %12
+            var rng = new System.Random(7); const int SIRA = 5; const float Y0 = 60, SIRA_H = 15;
+            for (int t = 0; t < SIRA; t++)
+            {
+                float y = Y0 + t * SIRA_H; Dik(new Color(.03f, .06f, .19f, .55f + t * .06f), 0, y, 390, SIRA_H);
+                float adim = 10 + t * 1.4f, rr = (3 + t * .35f) * sr, a = .55f + t * .07f;
+                for (float x = (t % 2) * adim / 2; x < 390 + adim; x += adim)
+                {
+                    if (rng.NextDouble() < .12) { rng.NextDouble(); continue; }
+                    var col = SEYIRCI[(int)(rng.NextDouble() * SEYIRCI.Length)]; col.a = a;
+                    var bas = Q(x, y + SIRA_H * .4f); p.fillColor = col; p.BeginPath();
+                    for (int k = 0; k < 6; k++) { float ac = k * Mathf.PI / 3f; var n = bas + new Vector2(Mathf.Cos(ac), Mathf.Sin(ac)) * rr; if (k == 0) p.MoveTo(n); else p.LineTo(n); }
+                    p.ClosePath(); p.Fill();
+                    p.fillColor = new Color(.12f, .16f, .43f, a); var om = Q(x, y + SIRA_H * .95f); float ow = rr * 1.7f, oh = rr * 1.25f;
+                    p.BeginPath(); p.MoveTo(om + new Vector2(-ow, 0)); p.LineTo(om + new Vector2(-ow * .7f, -oh * .9f)); p.LineTo(om + new Vector2(ow * .7f, -oh * .9f)); p.LineTo(om + new Vector2(ow, 0)); p.ClosePath(); p.Fill();
+                }
+            }
+            float by = Y0 + SIRA * SIRA_H + 1; Dik(Kit.Hex("#0A1236"), 0, by, 390, 13);
+            for (int i = 0; i * 44 + 6 < 390; i++) { var c = LED[i % 4]; c.a = .9f; Dik(c, 6 + i * 44, by + 3, 34, 7); }
+            Dik(new Color(1, 1, 1, .35f), 0, by, 390, 1.5f);
+            // kort: iğne deliği kamerası
+            const float UFUK = 70, F = 300, KAM_H = 5, MESAFE = 5.5f, UZUN = 13.4f, GENIS = 6.1f;
+            System.Func<float, float, Vector2> P = (u, v) => { float D = MESAFE + (1 - v) * UZUN; return Q(195 + (u - .5f) * GENIS * F / D, UFUK + F * KAM_H / D); };
+            System.Action<Color, Vector2, Vector2, Vector2, Vector2> Dortgen = (c, a1, b1, c1, d1) => { p.fillColor = c; p.BeginPath(); p.MoveTo(a1); p.LineTo(b1); p.LineTo(c1); p.LineTo(d1); p.ClosePath(); p.Fill(); };
+            Dortgen(KORT_ZEMIN, P(-.35f, -.06f), P(1.35f, -.06f), P(1.35f, 1.2f), P(-.35f, 1.2f));
+            Dortgen(KORT_YESIL, P(0, 0), P(1, 0), P(1, 1), P(0, 1));
+            for (int i = 0; i < 6; i += 2) Dortgen(new Color(1, 1, 1, .05f), P(i / 6f, 0), P((i + 1) / 6f, 0), P((i + 1) / 6f, 1), P(i / 6f, 1));
+            p.strokeColor = KORT_CIZGI; p.lineWidth = 2 * sr; p.lineJoin = LineJoin.Round;
+            System.Action<float, float, float, float> Cz = (u1, v1, u2, v2) => { p.BeginPath(); p.MoveTo(P(u1, v1)); p.LineTo(P(u2, v2)); p.Stroke(); };
+            float yan = .46f / GENIS, sv = 1.98f / UZUN, ls = .76f / UZUN;
+            Cz(0, 0, 1, 0); Cz(0, 1, 1, 1); Cz(0, 0, 0, 1); Cz(1, 0, 1, 1); Cz(yan, 0, yan, 1); Cz(1 - yan, 0, 1 - yan, 1);
+            Cz(0, ls, 1, ls); Cz(0, 1 - ls, 1, 1 - ls); Cz(0, .5f - sv, 1, .5f - sv); Cz(0, .5f + sv, 1, .5f + sv); Cz(.5f, 0, .5f, .5f - sv); Cz(.5f, .5f + sv, .5f, 1);
+            // file: koyu ağ, ince ağ çizgileri, beyaz üst bant, iki direk (yükseklik 1,55 m)
+            var nl = P(-.04f, .5f); var nr = P(1.04f, .5f); float nh = F * 1.55f / (MESAFE + UZUN * .5f) * sy;
+            p.fillColor = new Color(.04f, .08f, .24f, .5f); p.BeginPath(); p.MoveTo(nl + new Vector2(0, -nh)); p.LineTo(nr + new Vector2(0, -nh)); p.LineTo(nr); p.LineTo(nl); p.ClosePath(); p.Fill();
+            p.strokeColor = new Color(1, 1, 1, .28f); p.lineWidth = .8f * sr; float ag = 5 * sr;
+            p.BeginPath(); for (float x = nl.x; x <= nr.x; x += ag) { p.MoveTo(new Vector2(x, nl.y - nh)); p.LineTo(new Vector2(x, nl.y)); } for (float y = nl.y - nh; y <= nl.y; y += ag) { p.MoveTo(new Vector2(nl.x, y)); p.LineTo(new Vector2(nr.x, y)); } p.Stroke();
+            Dik2(p, Color.white, nl.x, nl.y - nh - sr, nr.x - nl.x, 3.5f * sr);
+            var direk = Kit.Hex("#DFE6F5"); Dik2(p, direk, nl.x - 2 * sr, nl.y - nh - 3 * sr, 3.5f * sr, nh + 5 * sr); Dik2(p, direk, nr.x - 1.5f * sr, nl.y - nh - 3 * sr, 3.5f * sr, nh + 5 * sr);
         }
+        static void Dik2(Painter2D p, Color c, float x, float y, float w, float h) { p.fillColor = c; p.BeginPath(); p.MoveTo(new Vector2(x, y)); p.LineTo(new Vector2(x + w, y)); p.LineTo(new Vector2(x + w, y + h)); p.LineTo(new Vector2(x, y + h)); p.ClosePath(); p.Fill(); }
         void ZeminYerlestir()
         {
             var r = zemin.contentRect; if (r.width <= 0 || r.height <= 0) return;
             // kort: afişteki ayakların hizasından (üst %19) plakanın arkasına (%36); salon ışığı üstte, genişliğin 1,4 katı
-            if (kortZemin != null) { kortZemin.style.left = 0; kortZemin.style.width = r.width; kortZemin.style.top = r.height * .19f; kortZemin.style.height = r.height * .17f; }
+            if (kortZemin != null) { kortZemin.style.left = 0; kortZemin.style.width = r.width; kortZemin.style.top = 0; kortZemin.style.height = r.height * .4655f; }   // 2026-11-27: sahne tribünle birlikte tepeden başlar; ayaklar %36'da (KortCiz)
             if (salonIsik != null) { float s = r.width * 1.4f; salonIsik.style.width = s; salonIsik.style.height = s * .7f; salonIsik.style.left = (r.width - s) / 2; salonIsik.style.top = -s * .3f; }
         }
         // Afiş: Oyna görünürken açık. Rakip = Oyna'daki büyük düğmenin oynatacağı maçın rakibi (bekleyen maç, Usta yolu ya da
