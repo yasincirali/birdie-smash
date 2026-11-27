@@ -31,18 +31,18 @@ namespace BirdieSmash.Game
         static int YerelArkadaslar(byte[] t) { try { return BirdieOnlineArkadaslar(t, t.Length); } catch { return 0; } }
         static void YerelDavet(string id, string m) { try { BirdieOnlineDavet(id, m); } catch { } }
         static void YerelArkEkle() { try { BirdieOnlineArkadasEkle(); } catch { } }
-        static int Durum() { try { return BirdieOnlineDurum(); } catch { return 0; } }
-        static void Gonder(byte[] b) { try { BirdieOnlineGonder(b, b.Length); } catch { } }
-        static int Al(byte[] t) { try { return BirdieOnlineAl(t, t.Length); } catch { return 0; } }
+        static int GcDurum() { try { return BirdieOnlineDurum(); } catch { return 0; } }
+        static void GcGonder(byte[] b) { try { BirdieOnlineGonder(b, b.Length); } catch { } }
+        static int GcAl(byte[] t) { try { return BirdieOnlineAl(t, t.Length); } catch { return 0; } }
         static void YerelAra() { try { BirdieOnlineAra(); } catch { } }
-        static void YerelKapat() { try { BirdieOnlineKapat(); } catch { } }
+        static void GcKapat() { try { BirdieOnlineKapat(); } catch { } }
         static void YerelDinle() { try { BirdieOnlineDinle(); } catch { } }
 #else
-        static int Durum() { return 0; }
-        static void Gonder(byte[] b) { }
-        static int Al(byte[] t) { return 0; }
+        static int GcDurum() { return 0; }
+        static void GcGonder(byte[] b) { }
+        static int GcAl(byte[] t) { return 0; }
         static void YerelAra() { }
-        static void YerelKapat() { }
+        static void GcKapat() { }
         static void YerelDinle() { }
         static void YerelArkYukle() { }
         static int YerelArkDurum() { return ARK_YOK; }
@@ -51,6 +51,12 @@ namespace BirdieSmash.Game
         static void YerelArkEkle() { }
 #endif
         const int BOS = 0, ARIYOR = 1, BAGLI = 2;
+        // 2026-11-27: iki taşıma, tek oturum katmanı. Kodlu oda (UgsAg, Relay) açıksa o, yoksa Game Center; ikisi aynı anda açılmaz
+        // (Ara/Davet önce Kapat çağırır, Oda kur/Koda katıl UgsAg.Kapat'la başlar ama GC'yi de kapatmak için önce Online.Kapat).
+        static int Durum() { return UgsAg.Aktif ? UgsAg.Durum : GcDurum(); }
+        static void Gonder(byte[] b) { if (UgsAg.Aktif) UgsAg.Gonder(b); else GcGonder(b); }
+        static int Al(byte[] t) { return UgsAg.Aktif ? UgsAg.Al(t) : GcAl(t); }
+        static void YerelKapat() { UgsAg.Kapat(); GcKapat(); }
 
         public static bool Bayrak { get { return true; } }
         // Game Center yalnız iOS'ta; Editor ve Linux ekran build'inde düğme yine görünür (tasarım ve tur), dokunuş hiçbir şey açmaz.
@@ -103,6 +109,7 @@ namespace BirdieSmash.Game
             string ad = null;
 #if UNITY_IOS && !UNITY_EDITOR
             try { ad = Social.localUser.userName; } catch (Exception) { }
+            if (string.IsNullOrEmpty(ad) || ad == "Unauthenticated") ad = null;
 #endif
             return new OyuncuKarti { ad = ad, seviye = Ayar.gear != null ? Ayar.gear.Seviye() : 1 };
         }
@@ -112,6 +119,7 @@ namespace BirdieSmash.Game
         public static bool Tik(float dt, UzakBag bag)
         {
             if (!Bayrak && oturum == null) return false;
+            UgsAg.Guncelle();
             int d = Durum();
             if (oturum == null)
             {
