@@ -854,7 +854,7 @@ namespace BirdieSmash.Game
             System.Func<float, float, Vector2> Q = (x, y) => new Vector2(x * sx, y * sy);
             System.Action<Color, float, float, float, float> Dik = (c, x, y, w, h) => { p.fillColor = c; p.BeginPath(); p.MoveTo(Q(x, y)); p.LineTo(Q(x + w, y)); p.LineTo(Q(x + w, y + h)); p.LineTo(Q(x, y + h)); p.ClosePath(); p.Fill(); };
             // tribün: yukarı doğru sıklaşan 5 sıra, her sırada baş (altıgen) ve omuz; boş koltuklar %12
-            var rng = new System.Random(7); const int SIRA = 5; const float Y0 = 60, SIRA_H = 15;
+            var rng = new System.Random(7); const int SIRA = 5; const float Y0 = 50, SIRA_H = 15;
             for (int t = 0; t < SIRA; t++)
             {
                 float y = Y0 + t * SIRA_H; Dik(new Color(.03f, .06f, .19f, .55f + t * .06f), 0, y, 390, SIRA_H);
@@ -874,10 +874,15 @@ namespace BirdieSmash.Game
             for (int i = 0; i * 44 + 6 < 390; i++) { var c = LED[i % 4]; c.a = .9f; Dik(c, 6 + i * 44, by + 3, 34, 7); }
             Dik(new Color(1, 1, 1, .35f), 0, by, 390, 1.5f);
             // kort: iğne deliği kamerası
-            const float UFUK = 70, F = 300, KAM_H = 5, MESAFE = 5.5f, UZUN = 13.4f, GENIS = 6.1f;
+            // 2026-11-27 (yasin: "file gerçekçi boyutta, saha çizgileri gerçek, oyuncular dev gibi kalmış, saha daha büyük", seçenek A):
+            // ölçek oyuncudan geliyor. Afiş figürü ~1,75 m = ~114 birim, yani fileye yakın derinlikte ~65 birim/m. Kamera buna
+            // göre kuruldu: F/D(file) ≈ 62 → çift saha genişliği (6,1 m) ≈ 379 birim = ekranın tamamı; 1,55 m file ~96 birim, oyuncunun
+            // omzuna çıkar (gerçekte file ~1,55 m, oyuncu ~1,75 m). Kamera 2,2 m yükseklikte, ufuk 63: ayaklar y≈206, file tabanı ~199,
+            // uzak çizgi ~140 (tribün 50–139; yüksekçe kamera uzak yarıyı da gösterir, file ağı yarı saydam). Yakın yarı ekran dışına taşar, kartların arkasında kalır.
+            const float UFUK = 63, F = 540, KAM_H = 2.2f, MESAFE = 2f, UZUN = 13.4f, GENIS = 6.1f;
             System.Func<float, float, Vector2> P = (u, v) => { float D = MESAFE + (1 - v) * UZUN; return Q(195 + (u - .5f) * GENIS * F / D, UFUK + F * KAM_H / D); };
             System.Action<Color, Vector2, Vector2, Vector2, Vector2> Dortgen = (c, a1, b1, c1, d1) => { p.fillColor = c; p.BeginPath(); p.MoveTo(a1); p.LineTo(b1); p.LineTo(c1); p.LineTo(d1); p.ClosePath(); p.Fill(); };
-            Dortgen(KORT_ZEMIN, P(-.35f, -.06f), P(1.35f, -.06f), P(1.35f, 1.2f), P(-.35f, 1.2f));
+            Dortgen(KORT_ZEMIN, P(-.9f, -.06f), P(1.9f, -.06f), P(1.9f, .97f), P(-.9f, .97f));   // v<1: yakın taban kamera arkasına geçmesin (D>0)
             Dortgen(KORT_YESIL, P(0, 0), P(1, 0), P(1, 1), P(0, 1));
             for (int i = 0; i < 6; i += 2) Dortgen(new Color(1, 1, 1, .05f), P(i / 6f, 0), P((i + 1) / 6f, 0), P((i + 1) / 6f, 1), P(i / 6f, 1));
             p.strokeColor = KORT_CIZGI; p.lineWidth = 2 * sr; p.lineJoin = LineJoin.Round;
@@ -886,12 +891,17 @@ namespace BirdieSmash.Game
             Cz(0, 0, 1, 0); Cz(0, 1, 1, 1); Cz(0, 0, 0, 1); Cz(1, 0, 1, 1); Cz(yan, 0, yan, 1); Cz(1 - yan, 0, 1 - yan, 1);
             Cz(0, ls, 1, ls); Cz(0, 1 - ls, 1, 1 - ls); Cz(0, .5f - sv, 1, .5f - sv); Cz(0, .5f + sv, 1, .5f + sv); Cz(.5f, 0, .5f, .5f - sv); Cz(.5f, .5f + sv, .5f, 1);
             // file: koyu ağ, ince ağ çizgileri, beyaz üst bant, iki direk (yükseklik 1,55 m)
-            var nl = P(-.04f, .5f); var nr = P(1.04f, .5f); float nh = F * 1.55f / (MESAFE + UZUN * .5f) * sy;
-            p.fillColor = new Color(.04f, .08f, .24f, .5f); p.BeginPath(); p.MoveTo(nl + new Vector2(0, -nh)); p.LineTo(nr + new Vector2(0, -nh)); p.LineTo(nr); p.LineTo(nl); p.ClosePath(); p.Fill();
-            p.strokeColor = new Color(1, 1, 1, .28f); p.lineWidth = .8f * sr; float ag = 5 * sr;
+            var nl = P(-.082f, .5f); var nr = P(1.082f, .5f); float nh = F * 1.55f / (MESAFE + UZUN * .5f) * sy;
+            p.fillColor = new Color(.04f, .08f, .24f, .34f); p.BeginPath(); p.MoveTo(nl + new Vector2(0, -nh)); p.LineTo(nr + new Vector2(0, -nh)); p.LineTo(nr); p.LineTo(nl); p.ClosePath(); p.Fill();
+            p.strokeColor = new Color(1, 1, 1, .28f); p.lineWidth = .7f * sr; float ag = 3.2f * sr;
             p.BeginPath(); for (float x = nl.x; x <= nr.x; x += ag) { p.MoveTo(new Vector2(x, nl.y - nh)); p.LineTo(new Vector2(x, nl.y)); } for (float y = nl.y - nh; y <= nl.y; y += ag) { p.MoveTo(new Vector2(nl.x, y)); p.LineTo(new Vector2(nr.x, y)); } p.Stroke();
-            Dik2(p, Color.white, nl.x, nl.y - nh - sr, nr.x - nl.x, 3.5f * sr);
-            var direk = Kit.Hex("#DFE6F5"); Dik2(p, direk, nl.x - 2 * sr, nl.y - nh - 3 * sr, 3.5f * sr, nh + 5 * sr); Dik2(p, direk, nr.x - 1.5f * sr, nl.y - nh - 3 * sr, 3.5f * sr, nh + 5 * sr);
+            // detay (BWF): üst bant 7,5 cm beyaz, alt bant ince, orta kayış (tek parça beyaz şerit), direkler çift sahanın 0,5 m dışında
+            float bant = Mathf.Max(2f * sr, nh * .075f / 1.55f * 1.0f);
+            Dik2(p, Color.white, nl.x, nl.y - nh, nr.x - nl.x, bant);
+            Dik2(p, new Color(1, 1, 1, .8f), nl.x, nl.y - 1.5f * sr, nr.x - nl.x, 1.5f * sr);
+            float orta = (nl.x + nr.x) / 2; Dik2(p, new Color(1, 1, 1, .9f), orta - 1.2f * sr, nl.y - nh, 2.4f * sr, nh);
+            var direk = Kit.Hex("#DFE6F5"); float dw = Mathf.Max(3f * sr, nh * .05f);
+            Dik2(p, direk, nl.x - dw / 2, nl.y - nh - 2 * sr, dw, nh + 2 * sr); Dik2(p, direk, nr.x - dw / 2, nl.y - nh - 2 * sr, dw, nh + 2 * sr);
         }
         static void Dik2(Painter2D p, Color c, float x, float y, float w, float h) { p.fillColor = c; p.BeginPath(); p.MoveTo(new Vector2(x, y)); p.LineTo(new Vector2(x + w, y)); p.LineTo(new Vector2(x + w, y + h)); p.LineTo(new Vector2(x, y + h)); p.ClosePath(); p.Fill(); }
         void ZeminYerlestir()
