@@ -385,7 +385,7 @@ namespace BirdieSmash.Game
             // 2026-10-26 Yayın Gecesi: Oyna'nın VS afişi yalnız Oyna görünürken çizer (Vitrin ile aynı kural).
             AfisGuncelle(s == Sekme.Oyna && tam == null && root.ekran == Ekran.Menu);
             if (tam == null && kirli[(int)s]) SekmeKur(s);
-            if (tam == null && s != once && anim) Giris(sekmeKok[(int)s]);
+            if (tam == null && s != once && anim) Giris(sekmeKok[(int)s], System.Array.IndexOf(SEKME_SIRA, s) < System.Array.IndexOf(SEKME_SIRA, once));
             // portre: Dolap'ta görünüm değişince üst çubuğun avatarı da yenilensin (sekme değişiminde yoklanır)
             string pa = Ayar.model + PlayerView.Benim().Anahtar(); if (pa != portreAnah) { portreAnah = pa; ustKirli = true; kirli[(int)Sekme.Profil] = true; }
             if (ustKirli) UstKur();
@@ -439,6 +439,9 @@ namespace BirdieSmash.Game
             // kupanın inişini tüketir (gizliyken oynamış olur); Dolap vitrin açılınca zaten yeniden kurulur. Vitrin açıkken (Dolap'ın
             // deneme raketi) ve seviye anı/tören sürerken kurulmaz.
             if (kirli[(int)Sekme.Atolye] && gez.sekme != Sekme.Atolye && seviyeAni == null && root != null && root.ekran == Ekran.Menu && root.vitrin != null && !root.vitrin.gameObject.activeSelf && Kalite.MenuDurgun) { SekmeKur(Sekme.Atolye); return; }
+            // 2026-11-27 inceleme (fikir 07:06 #8, takılma): maç başında bırakılan vitrin RT'si ilk Dolap dokunuşunda figür çizimi ve
+            // Dolap kurulumuyla aynı karede yeniden ayrılıyordu. Menü durgunken yalnız ayırma (çizim yok); tikte tek ağır iş.
+            if (root != null && root.ekran == Ekran.Menu && root.vitrin != null && !root.vitrin.gameObject.activeSelf && root.vitrin.Bosaltildi && Kalite.MenuDurgun) { root.vitrin.RtIsit(); return; }
             if (root == null || root.vitrin == null || !root.vitrin.gameObject.activeSelf || !Kalite.MenuDurgun) return;
             string pa = Ayar.model + PlayerView.Benim().Anahtar(); if (pa == portreIsitilen) return;
             portreIsitilen = pa; vitrinRaketEski = true; Portre.Benim();
@@ -706,10 +709,12 @@ namespace BirdieSmash.Game
         static string KariyerEkranTurAd(int t) { return TurAd(t); }
 
         // Giriş: 24 pt sağdan, solarak, .22 sn (HTML pIn ile aynı); hareketi azaltta USS geçişi 0 sn, yalnız görünür olur.
-        void Giris(VisualElement v)
+        // 2026-11-27 inceleme (fikir 07:06 #4, uzamsal tutarlılık): sekme geçişi hep sağdan geliyordu; Profil'den Oyna'ya giderken
+        // alt bant göstergesi sola kayarken içerik ters yönden giriyordu. Çubukta soldaki sekmeye geçişte içerik soldan girer.
+        void Giris(VisualElement v, bool sol = false)
         {
-            if (v == null || Ayar.reduce) return; v.AddToClassList("giris");
-            v.schedule.Execute(() => v.RemoveFromClassList("giris")).StartingIn(33);
+            if (v == null || Ayar.reduce) return; v.AddToClassList("giris"); v.EnableInClassList("giris--sol", sol);
+            v.schedule.Execute(() => { v.RemoveFromClassList("giris"); v.RemoveFromClassList("giris--sol"); }).StartingIn(33);
         }
 
         // Durum değişti: hepsi kirli, görünen hemen yeniden kurulur.

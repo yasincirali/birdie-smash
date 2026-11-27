@@ -423,6 +423,7 @@
 .sayfa, .alt-sayfa, .sekme-kok { transition-property: opacity, translate; transition-duration: 0.22s; transition-timing-function: ease-out; }
 .giris { opacity: 0; translate: 24px 0; }
 .alt-sayfa.giris { translate: 0 40px; }
+.giris--sol { translate: -24px 0; }
 .az-hareket .sayfa, .az-hareket .alt-sayfa, .az-hareket .sekme-kok, .az-hareket .dugme, .az-hareket .onizle-kayar, .az-hareket .bolme, .az-hareket .cta { transition-duration: 0s; }
 .az-hareket .cta:active { scale: 1 1; }
 .az-hareket .cta-supurme { display: none; }

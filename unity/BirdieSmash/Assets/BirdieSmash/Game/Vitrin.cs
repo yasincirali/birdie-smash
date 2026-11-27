@@ -88,7 +88,16 @@ namespace BirdieSmash.Game
             return new RenderTexture(w, h, 16) { name = "vitrin", antiAliasing = Kalite.Basamak == 2 ? 4 : Kalite.Basamak == 1 ? 2 : 1, memorylessMode = RenderTextureMemoryless.MSAA | RenderTextureMemoryless.Depth };
         }
 
-        public void Ac() { gameObject.SetActive(true); kam.enabled = true; durgun = 0; acT = Ayar.reduce ? 1 : 0; if (!Ayar.reduce) a = KAHRAMAN_ACI - 360; figBos = 0; salYapildi = false; Yenile(); }
+        // 2026-11-27 inceleme (fikir 07:06 #5): her Dolap girişinde 3 sn tam tur vardı; kombin denemek için sık gelip giden oyuncu
+        // her seferinde bekliyordu. Tam tur oturumun ilk açılışında (tanıtım), sonrakilerde 0,45 sn "yerine oturma" (−50° → −20°).
+        static bool turGosterildi;
+        public void Ac()
+        {
+            gameObject.SetActive(true); kam.enabled = true; durgun = 0; acT = Ayar.reduce ? 1 : 0; figBos = 0; salYapildi = false;
+            acSure = turGosterildi ? OTURMA_SURE : ACILIS_SURE; acTur = turGosterildi ? OTURMA_ACI : 360;
+            if (!Ayar.reduce) { a = KAHRAMAN_ACI - acTur; turGosterildi = true; }
+            Yenile();
+        }
         // Sevinç önizlemesi (2026-11-01): id verilince figür o hareketi döngüde yapar; null = boşta. Sevinç sayfasından çıkınca silinir.
         public string sevinc; float sevincT; [System.NonSerialized] public float TestSevincT = -1;   // ekran turu: sevinç anını sabitler (CI kare hızı değişken)
         public static float TestSmacT = -1;   // ekran turu: smaç hareketi önizlemesinin saati sabit (kare hızı CI'da düşük)
@@ -102,7 +111,10 @@ namespace BirdieSmash.Game
         // belleği ve bant genişliği gider). Maç başında (GameRoot.MacBasla, perde arkası) RT bırakılır: maç boyunca ~10–15 MB
         // boş durmasın (eski cihazda arka plana atınca jetsam riski). Nesne ve UI bağı kalır; Ac() kamerayı açınca Unity RT'yi
         // kendiliğinden yeniden ayırır ve aynı karede, UI'dan önce çizer. Sekme değişiminde bırakılmaz (dönüşte yeniden ayırma takılması).
-        public void Bosalt() { if (rt != null && rt.IsCreated()) rt.Release(); }
+        public void Bosalt() { if (rt != null && rt.IsCreated()) { rt.Release(); Bosaltildi = true; } }
+        // Menü durgunken UiKok yalnız maçta bırakılan RT'yi geri ayırır (hiç açılmamış Dolap için bellek baştan ayrılmasın).
+        [System.NonSerialized] public bool Bosaltildi;
+        public void RtIsit() { Bosaltildi = false; if (rt != null && !rt.IsCreated()) rt.Create(); }
         public void Kapat() { sevinc = null; smacId = null; kam.enabled = false; suruk = false; gec = hedefGec = 0; parca = null; raKay = false; odak = TAM; poz = null; deneModel = null; deneTip = deneSac = deneAyk = deneSapka = deneYuz = deneSevinc = deneMacSonu = deneSirt = deneSmac = deneKol = deneBel = deneAyak = null; camVar = false; gameObject.SetActive(false); }
         // Yakın plan seç (aynı odağa ikinci dokunuş Soyunma odasında Tüm boy'a döner). Tutuşa girerken el kameraya döner.
         public void Odak(int o, string klip = null)
@@ -111,13 +123,15 @@ namespace BirdieSmash.Game
             if (o == TUTUS && odak != TUTUS) { a = TUTUS_ACI; v = 0; }
             odak = o; poz = o == TUTUS ? klip : null;
         }
+        const float OTURMA_SURE = .45f, OTURMA_ACI = 30f;
+        float acSure = ACILIS_SURE, acTur = 360;
         const float KAHRAMAN_ACI = -20, ACILIS_SURE = 3f, BAKIN_BEKLE = 6f, BAKIN_GENLIK = 20f, BAKIN_SURE = 4f;   // tepe hız ≈ 180°/sn açılış, ≈31°/sn salınım
         float acT = 1, figBos, salMerkezF; bool salYapildi;
         // Ok düğmesi / Sırt sekmesi açıyı elle koyar: açılış turu biter, o açı kalır (salınım yine o açının çevresinde).
         public void AciKoy(float x) { a = x; v = 0; acT = 1; figBos = 0; salYapildi = false; }
         void FigurBos(float dt)
         {
-            if (acT < 1) { acT = Mathf.Min(1, acT + dt / ACILIS_SURE); a = KAHRAMAN_ACI - 360 * (1 - Mathf.SmoothStep(0, 1, acT)); if (acT >= 1) a = KAHRAMAN_ACI; return; }
+            if (acT < 1) { acT = Mathf.Min(1, acT + dt / acSure); float e = acSure < ACILIS_SURE ? 1 - (1 - acT) * (1 - acT) : Mathf.SmoothStep(0, 1, acT); a = KAHRAMAN_ACI - acTur * (1 - e); if (acT >= 1) a = KAHRAMAN_ACI; return; }
             if (salYapildi) return;
             if (figBos <= BAKIN_BEKLE) salMerkezF = a; figBos += dt; if (figBos <= BAKIN_BEKLE) return;
             float t = (figBos - BAKIN_BEKLE) / BAKIN_SURE;
