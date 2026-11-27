@@ -61,11 +61,12 @@ namespace BirdieSmash.Game
             // görünme kaygısı (7 Kas) afiş açıkken bu kural uygulanmadığı için geçerli. Dokunuş anında tam hıza döndürür.
             // 2026-11-23 inceleme (fikir 12:06 #2): ödül anları (seviye, tur töreni, tüy uçuşu) Canli() çağırır; dokunuşsuz 3 sn
             // sonra açılan seviye anı yarı hızda çizilmesin diye Canli de durgunluğu bozar.
-            bool menuDurgun = root != null && root.ekran == Ekran.Menu && Time.unscaledTime - hareketSon >= MENU_DURGUN
-                && Time.unscaledTime - canliSon >= HAREKET_SURE && !Kilitli
-                && (root.afis == null || !root.afis.Acik) && (root.vitrin == null || !root.vitrin.gameObject.activeSelf);
-            bool durgun = root != null && root.ekran == Ekran.Oyun && root.paused && !menuHareket && !Kilitli || menuDurgun;
-            int aralik = durgun ? 2 : 1;
+            // 2026-11-27 KAPANDI (yasin'in kaydı: Sonsuz rallide smaç kaydırması sistem hareketine takılıp oyun duraklayınca ekran
+            // donup saniyede 30 kez siyah yanıp söndü, duraklat menüsü hiç çizilmedi, uygulamadan çıkıp dönmek düzeltmedi). iPhone'da
+            // (Metal, ProMotion) renderFrameInterval 2 atlanan karelerde boş drawable sunuyor; Linux CI turu bunu göstermiyordu.
+            // Yarı hızlı çizim tümüyle kalktı: tasarruf küçüktü (duran sahne), bedeli oyunun donmuş görünmesi. Hedef kare hızı
+            // (60/120, yukarısı) pil tasarrufunu taşımaya devam eder. Yukarıdaki 7 ve 14 Kas notları karar geçmişidir.
+            const int aralik = 1;
             if (UnityEngine.Rendering.OnDemandRendering.renderFrameInterval != aralik) UnityEngine.Rendering.OnDemandRendering.renderFrameInterval = aralik;
         }
 

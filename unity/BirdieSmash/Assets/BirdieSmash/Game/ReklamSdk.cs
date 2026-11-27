@@ -23,10 +23,13 @@ namespace BirdieSmash.Game
     public static class ReklamSdk
     {
 #if UNITY_ANDROID
-        const string SERIT_ID = "ca-app-pub-3940256099942544/6300978111", ODULLU_ID = "ca-app-pub-3940256099942544/5224354917";
+        const string SERIT_ID = "ca-app-pub-3940256099942544/6300978111", ODULLU_ID = "ca-app-pub-3940256099942544/5224354917", OTO_ID = "ca-app-pub-3940256099942544/5354046379";
         public const bool TEST_KIMLIK = true;
 #else
         const string SERIT_ID = "ca-app-pub-6645967875947629/1662942089", ODULLU_ID = "ca-app-pub-6645967875947629/2951973024";
+        // 2026-11-27 final/online maç sonu otomatik ödüllü reklam (rewarded interstitial). yasin'in AdMob'unda bu biçimde birim
+        // henüz yok: Google'ın iOS TEST birimi (TestFlight'ta "Test ad" yazar, gelir getirmez). Gerçek birim gelince yalnız bu satır.
+        const string OTO_ID = "ca-app-pub-3940256099942544/6978759866";
         public const bool TEST_KIMLIK = false;
 #endif
         const float SERIT_W = 320, SERIT_H = 50;
@@ -67,6 +70,7 @@ namespace BirdieSmash.Game
 #if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
         static BannerView serit; static bool seritAcik; static int sonX = int.MinValue, sonY = int.MinValue;
         static RewardedAd odullu; static bool odulluYukleniyor; static float odulluSonDeneme = -999;
+        static RewardedInterstitialAd oto; static bool otoYukleniyor; static float otoSonDeneme = -999;
 
         static void Ilklendir()
         {
@@ -75,7 +79,7 @@ namespace BirdieSmash.Game
             MobileAds.SetiOSAppPauseOnBackground(true);   // tam ekran reklam sürerken oyun ve ses durur
             // Yaş derecesi 4+ (store_listing/yas_derecesi.md): reklam içeriği de genel izleyici (G) sınırında kalır.
             MobileAds.SetRequestConfiguration(new RequestConfiguration { MaxAdContentRating = MaxAdContentRating.G });
-            MobileAds.Initialize(durum => OdulluHazirla());
+            MobileAds.Initialize(durum => { OdulluHazirla(); OtoHazirla(); });
         }
 #endif
 
@@ -148,6 +152,48 @@ namespace BirdieSmash.Game
             };
             ad.OnAdFullScreenContentClosed += () => kapat();
             ad.OnAdFullScreenContentFailed += h => { Debug.LogWarning("Ödüllü reklam açılamadı: " + h.GetMessage()); kazandi = false; kapat(); };
+            AudioListener.pause = true;
+            ad.Show(odul => kazandi = true);
+#else
+            bitti(false);
+#endif
+        }
+
+        // ---- otomatik ödüllü reklam (rewarded interstitial; kural Core/OdulluReklam, giriş ekranı Hud.OtoRekCiz) ----
+        public static bool OtoHazir
+        {
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
+            get { return oto != null && oto.CanShowAd(); }
+#else
+            get { return false; }
+#endif
+        }
+        public static void OtoHazirla()
+        {
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
+            if (!hazir || otoYukleniyor || OtoHazir || Time.realtimeSinceStartup - otoSonDeneme < 60) return;
+            otoYukleniyor = true; otoSonDeneme = Time.realtimeSinceStartup;
+            RewardedInterstitialAd.Load(OTO_ID, new AdRequest(), (ad, hata) =>
+            {
+                otoYukleniyor = false;
+                if (hata != null || ad == null) { Debug.LogWarning("Otomatik ödüllü reklam yüklenemedi: " + (hata != null ? hata.GetMessage() : "boş")); return; }
+                oto = ad; otoSonDeneme = -999;
+            });
+#endif
+        }
+        // bitti(true) yalnız SDK ödül kazanıldı dediyse (sonuna kadar izlendi); kapanınca bir kez.
+        public static void OtoGoster(Action<bool> bitti)
+        {
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
+            if (!OtoHazir) { bitti(false); return; }
+            var ad = oto; oto = null; bool kazandi = false, kapandi = false;
+            Action kapat = () =>
+            {
+                if (kapandi) return; kapandi = true; AudioListener.pause = false;
+                ad.Destroy(); otoSonDeneme = -999; OtoHazirla(); bitti(kazandi);
+            };
+            ad.OnAdFullScreenContentClosed += () => kapat();
+            ad.OnAdFullScreenContentFailed += h => { Debug.LogWarning("Otomatik ödüllü reklam açılamadı: " + h.GetMessage()); kazandi = false; kapat(); };
             AudioListener.pause = true;
             ad.Show(odul => kazandi = true);
 #else

@@ -414,6 +414,9 @@ namespace BirdieSmash.Core
             o.tuy += ek; eko.tuy += ek; o.ek.Add("reklam ödülü +" + ek); EkoYaz(); return ek;
         }
 
+        // Online maç sonu otomatik reklam ödülü (OdulluReklam.ONLINE_TUY): maçın ödül kartı yok, Tüy doğrudan cüzdana.
+        public int ReklamOduluSabit(int ek) { if (ek <= 0) return 0; eko.tuy += ek; EkoYaz(); return ek; }
+
         // Antrenman görevi ödülü (2026-10-26, tasarım §3.6): yalnız ilk kez alınan yıldız, yıldız başına +25 Tüy, +30 XP.
         // Aynı görevi tekrar oynamak ödül vermez (yıldız en iyi sonuçtur); maç ödülü (Odul) antrenmanda hiç yoktur.
         public const int DRIL_TUY = 25, DRIL_XP = 30;
