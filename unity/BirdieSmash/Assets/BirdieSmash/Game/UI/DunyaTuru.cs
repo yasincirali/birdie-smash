@@ -48,14 +48,15 @@ namespace BirdieSmash.Game
                 float x = 0; while (x < W) { float w = 10 + r() * 20, h = hz * (.2f + r() * .5f); Dik(pz, x, hz - h, w, h, t.siluet); if (r() > .55f) for (int k = 0; k < 4; k++) Dik(pz, x + 3 + (k % 2) * 6, hz - h + 5 + (k / 2) * 7, 2.5f, 3.5f, t.pencere * new Color(1, 1, 1, .5f)); x += w + 1; }
             }
             Dik(pz, 0, hz, W, H - hz, t.zemin);
-            // perspektif kort: üst kenar dar, alt kenar ekran dışına taşar; orta çizgi, servis çizgisi, file
-            Vector2 a = new Vector2(W * .22f, hz + 3), b = new Vector2(W * .78f, hz + 3), c = new Vector2(W * 1.12f, H), d = new Vector2(-W * .12f, H);
-            pz.fillColor = t.kort; pz.BeginPath(); pz.MoveTo(a); pz.LineTo(b); pz.LineTo(c); pz.LineTo(d); pz.ClosePath(); pz.Fill();
-            pz.strokeColor = new Color(1, 1, 1, .8f); pz.lineWidth = 1.5f;
-            pz.BeginPath(); pz.MoveTo(a); pz.LineTo(b); pz.LineTo(c); pz.LineTo(d); pz.ClosePath(); pz.Stroke();
-            pz.BeginPath(); pz.MoveTo(new Vector2(W * .5f, hz + 3)); pz.LineTo(new Vector2(W * .5f, H)); pz.Stroke();
-            float fy = hz + (H - hz) * .35f; Dik(pz, W * .12f, fy, W * .76f, 6, new Color(1, 1, 1, .22f));
-            pz.BeginPath(); pz.MoveTo(new Vector2(W * .12f, fy)); pz.LineTo(new Vector2(W * .88f, fy)); pz.Stroke();
+            // 2026-11-27 (yasin: "saha çizimleri her yerde nizami olmalı"): mekân kortu artık Oyna sahnesiyle aynı BWF ölçüsünde
+            // (UiKok.BwfCizgiler/BwfFile): iğne deliği kamerası 2,2 m yükseklikte, file ekranın %80'i, tek/çift yan çizgi, kısa ve
+            // uzun servis, orta çizgi, 1,55 m file. Eskiden dört çizgi + düz şerit file idi. Uzak çizgi ufkun hemen altında.
+            const float MESAFE = 2f, UZUN = 13.4f, GENIS = 6.1f, KAM = 2.2f;
+            float F = (MESAFE + UZUN * .5f) * W * .8f / GENIS, yo = hz - F * KAM / (MESAFE + UZUN) + 3;
+            System.Func<float, float, Vector2> P = (u, v) => { float D = MESAFE + (1 - v) * UZUN; return new Vector2(W / 2 + (u - .5f) * GENIS * F / D, yo + F * KAM / D); };
+            pz.fillColor = t.kort; pz.BeginPath(); pz.MoveTo(P(0, 0)); pz.LineTo(P(1, 0)); pz.LineTo(P(1, 1)); pz.LineTo(P(0, 1)); pz.ClosePath(); pz.Fill();
+            pz.lineJoin = LineJoin.Round; pz.strokeColor = new Color(1, 1, 1, .85f); pz.lineWidth = 1.5f; UiKok.BwfCizgiler(pz, P);
+            UiKok.BwfFile(pz, P, F * 1.55f / (MESAFE + UZUN * .5f), 1f);
         }
         static void Dik(Painter2D pz, float x, float y, float w, float h, Color c)
         { pz.fillColor = c; pz.BeginPath(); pz.MoveTo(new Vector2(x, y)); pz.LineTo(new Vector2(x + w, y)); pz.LineTo(new Vector2(x + w, y + h)); pz.LineTo(new Vector2(x, y + h)); pz.ClosePath(); pz.Fill(); }

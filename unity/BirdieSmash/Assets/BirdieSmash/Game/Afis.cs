@@ -20,7 +20,7 @@ namespace BirdieSmash.Game
         // dönük; rakip: sağda 1,7 m geride, sola 32° dönük. Kahraman alanı ~375 × 440 pt, dikey açı 30°.
         // r16: kamera 3,35 m'de iken baş ve raket kadraj dışındaydı (maket ph0'da baş üstte boşlukla görünür); 4,4 m ve
         // daha alçak bakış: senin oyuncun başından dizine, ayaklar plakanın arkasında.
-        public static Vector3 BEN = new Vector3(-.5f, 0, 0), RAKIP = new Vector3(.92f, 0, -1.7f);
+        public static Vector3 BEN = new Vector3(-.85f, 0, 0), RAKIP = new Vector3(1.35f, 0, -1.7f);
         // 2026-11-26 (yasin: "Oyna sayfasında rakip de bizim karakterimiz de full gözükmeli, skinler gözükmüyor, bir çerçeve var
         // gibi"): 4,4 m'de iki figür belden yukarı görünüyor, bacaklar ve ayakkabılar plaka kartının arkasında kalıyor, raket üstten
         // kesiliyordu; Dolap'ta giydirilen ayakkabı/şort/sırt eşyası Oyna'da hiç görünmüyordu. Kamera 6,6 m'ye çekildi ve bakış
