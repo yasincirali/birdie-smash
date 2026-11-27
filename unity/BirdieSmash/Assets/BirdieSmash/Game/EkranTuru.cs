@@ -85,6 +85,27 @@ namespace BirdieSmash.Game
                 for (int i = 0; i < 3; i++) { float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 4) yield return null; yield return Cek("afis_" + i); }
                 File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
             }
+            // 2026-11-27 sonsuz kısa turu (`ekran/kisa-sonsuz-*`): yasin'in kaydında Sonsuz rallide 4 vuruştan sonra oyun dondu.
+            // Ralli birkaç kez baştan oynanır; erişilen topa sırayla smaç/clear/drop kaydırılır, 2 sn'de bir durum yazılır (bekçi
+            // iş parçacığı kare sayısını 10 sn'de bir loglar: donma varsa kare artmaz).
+            if (kip == "sonsuz")
+            {
+                float[] hz = { 2.2f, 1.2f, .5f, 2.4f }; int vur = 0;
+                for (int el = 0; el < 6; el++)
+                {
+                    root.DrilBaslat(Sonsuz.ID); float t0 = Time.realtimeSinceStartup, logT = 0; int kac = 0;
+                    while (Time.realtimeSinceStartup - t0 < 40)
+                    {
+                        yield return null; var M = root.match; if (M == null) break;
+                        if (root.ekran != Ekran.Oyun) { rap.AppendLine("el " + el + " bitti · ekran " + root.ekran + " · isabet " + (M.ogr != null ? M.ogr.isabet : -1)); break; }
+                        Reach R; if (M.s != null && M.s.from == "op" && M.ReachInfo(out R)) { if (M.SwipeShot(new SwipeInput { dx = (vur % 3 - 1) * 40, dy = -200, speed = hz[vur % hz.Length], R = 40, dist = 4, side = 1 })) vur++; }
+                        if (Time.realtimeSinceStartup - logT > 2) { logT = Time.realtimeSinceStartup; rap.AppendLine("el " + el + " t " + (logT - t0).ToString("F0") + " · saat " + M.realClock.ToString("F1") + " · isabet " + (M.ogr != null ? M.ogr.isabet + "/" + M.ogr.dene : "-") + " · top " + (M.s == null ? "yok" : M.s.dead ? "yerde" : M.s.from) + " · ts " + Time.timeScale + " · paused " + root.paused + " · aralık " + UnityEngine.Rendering.OnDemandRendering.renderFrameInterval); File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); }
+                        if (Time.realtimeSinceStartup - t0 > 8 && kac++ % 600 == 0) yield return Cek("sonsuz_" + el + "_" + (int)(Time.realtimeSinceStartup - t0));
+                    }
+                    yield return Bekle(30); yield return Cek("sonsuz_sonu_" + el); if (root.ekran != Ekran.Menu) root.AnaMenu(); yield return Bekle(10);
+                }
+                File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
+            }
             // 2026-11-27 reklam kısa turu (`ekran/kisa-reklam-*`): maç sonu ödüllü reklam teklifi ve × düğmesi. CI'da AdMob yok
             // (OdulluHazir hep false), ReklamZorla teklifi yalnız turda çizdirir; kural (OdulluReklam.Uygun) gerçek oyunda aynen.
             if (kip == "reklam")
@@ -97,7 +118,12 @@ namespace BirdieSmash.Game
                     var mt = root.match; mt.sc[0] = 5; mt.sc[1] = 2; mt.matchDone = true; mt.between = true; mt.betweenT = 1.4f; float tz = Time.realtimeSinceStartup;
                     while (root.ekran != Ekran.Bitti && Time.realtimeSinceStartup - tz < 8) yield return null;
                     yield return Bekle(40); yield return Cek("macsonu_reklam_" + dl); rap.AppendLine("reklam " + dl + " · ekran " + root.ekran);
-                    root.ReklamGec(); yield return Bekle(10); yield return Cek("macsonu_reklam_gecildi_" + dl); root.AnaMenu(); yield return Bekle(10);
+                    root.ReklamGec(); yield return Bekle(10); yield return Cek("macsonu_reklam_gecildi_" + dl);
+                    // 2026-11-27 final/online otomatik reklamın giriş ekranı, Sonsuz ralli zorluk çipleri ve kenar sayacı
+                    root.EkranOtoRek(); yield return Bekle(8); yield return Cek("macsonu_oto_" + dl); root.OtoRekGec(); root.AnaMenu(); yield return Bekle(10);
+                    if (root.ui != null) { root.ui.AntrenmanAc(); yield return Bekle(20); yield return Cek("antrenman_sonsuz_" + dl); }
+                    root.DrilBaslat(Sonsuz.ID); botAcik = true; { float t2 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t2 < 6) yield return null; }
+                    yield return Cek("sonsuz_kenar_" + dl); botAcik = false; root.AnaMenu(); yield return Bekle(10);
                 }
                 File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
             }

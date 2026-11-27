@@ -81,7 +81,7 @@ namespace BirdieSmash.Game
 
         void Awake()
         {
-            Application.targetFrameRate = 60; Uyanik(false); Ayar.Yukle(); Cokme.Basla();   // çökme izi ilk iş (Cokme.cs)
+            Application.targetFrameRate = 60; Uyanik(false); Ayar.Yukle(); SonsuzZorlukYukle(); Cokme.Basla();   // çökme izi ilk iş (Cokme.cs)
             foreach (var c in FindObjectsByType<Camera>(FindObjectsSortMode.None)) if (c.gameObject.scene.IsValid() && c.transform.root != transform) c.gameObject.SetActive(false);
             foreach (var l in FindObjectsByType<Light>(FindObjectsSortMode.None)) if (l.transform.root != transform) l.gameObject.SetActive(false);
             var cg = new GameObject("kamera"); cg.transform.SetParent(transform, false); cam = cg.AddComponent<Camera>(); cg.AddComponent<AudioListener>();
@@ -215,7 +215,7 @@ namespace BirdieSmash.Game
         {
             match = new Match(tohum, o); Basarim.MacBasla();
             Kur(match); ekran = Ekran.Oyun; paused = false; Uyanik(true); ogrKayit = false; rakipKartT = o.ogr ? 0 : 1.5f; geriT = o.ogr || geriKapali ? 0 : GERI; erkenN = 0; System.Array.Clear(iskaN, 0, iskaN.Length); yerN = 0; yerTop = null; yardimN = 0; yardimTop = null; hazirN = 0; enerjiDolu = match.energy >= 1;
-            fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; seriBen = 0; seriBasFark = 0; seriGeriDondu = false; ledSeriT = 0; pencere = false; sfx.SuAlti(false); ReklamKartKapat(); ReklamSdk.OdulluHazirla(); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat(); vitrin.Bosalt(); afis.Bosalt();
+            fx.Temizle(); sfx.CrowdStart(); salonHey = 0; salonSicra = -1; salonDalga = -99; dalgaOldu = false; mpYan = -1; ledKod = int.MinValue; ledSmacT = 0; seriBen = 0; seriBasFark = 0; seriGeriDondu = false; ledSeriT = 0; pencere = false; sfx.SuAlti(false); ReklamKartKapat(); ReklamSdk.OdulluHazirla(); ReklamSdk.OtoHazirla(); odul = null; hud.MacBasi(); vitrin.Kapat(); afis.Kapat(); vitrin.Bosalt(); afis.Bosalt();
             bekleyen = false; AudioListener.pause = false; sfx.Isit();   // tel/raket değiştiyse yeni sesler perde kapalıyken
             bittiSkor = null; bittiDril = null;
             GirisKur(o);
@@ -269,6 +269,7 @@ namespace BirdieSmash.Game
             bittiKart = Ozet.Kartlar(M); bittiBilgi = ""; bittiIpucu = null; hud.ayrinti = false;
             bittiDugme = L.T("Yeni arkadaş maçı");
             if (won) hud.Konfeti();
+            OtoRekKur(true);
         }
 
         // ---- Rakip girişi (2026-11-06 ek tur fikri 7, oyuncu gözü YAP küçültülmüş) ----
@@ -346,16 +347,19 @@ namespace BirdieSmash.Game
 
         // 2026-11-06 Sonsuz ralli sonucu (Core/Sonsuz): Tüy/XP yok, yıldız yok. Büyük sayı skor, altında rekor; rekor kırıldıysa
         // ve 10/20/30 eşiği ilk kez geçildiyse tek satır. Kayıt tuytop_sonsuz (int, buluta gider). Düğme "Bir daha".
-        public static int SonsuzRekor { get { return PlayerPrefs.GetInt(Sonsuz.ANAHTAR, 0); } }
+        public static int SonsuzRekor { get { return PlayerPrefs.GetInt(Sonsuz.Anahtar, 0); } }
+        public static int SonsuzRekorZ(int z) { return PlayerPrefs.GetInt(Sonsuz.AnahtarZ(z), 0); }
+        public static void SonsuzZorlukYukle() { Sonsuz.zorluk = Mathf.Clamp(PlayerPrefs.GetInt(Sonsuz.ZORLUK_ANAHTAR, 0), 0, 3); }
+        public static void SonsuzZorlukSec(int z) { Sonsuz.zorluk = Mathf.Clamp(z, 0, 3); PlayerPrefs.SetInt(Sonsuz.ZORLUK_ANAHTAR, Sonsuz.zorluk); }
         public void SonsuzOyna() { DrilOyna(Sonsuz.ID); }
         void SonsuzSonu(int skor)
         {
             ekran = Ekran.Bitti; Uyanik(false); sfx.Ugultu(false, 0); sfx.CrowdSus(); bittiIlk = false; odul = null;
             int eski = SonsuzRekor; bool rekor = skor > eski, esik = false;
-            if (rekor) { PlayerPrefs.SetInt(Sonsuz.ANAHTAR, skor); kaydetBekle = true; kayitErteleT = Time.unscaledTime + KAYIT_ERTELE; Yerel.Hap("flow"); }   // Save sayı/rekor karesinde değil, ertelenen kayıtta (İnceleme 2026-11-16 12:05 #5)
+            if (rekor) { PlayerPrefs.SetInt(Sonsuz.Anahtar, skor); kaydetBekle = true; kayitErteleT = Time.unscaledTime + KAYIT_ERTELE; Yerel.Hap("flow"); }   // Save sayı/rekor karesinde değil, ertelenen kayıtta (İnceleme 2026-11-16 12:05 #5)
             int yeniEsik = Sonsuz.YeniEsik(skor, eski); esik = yeniEsik > 0;
             yukseltHazir = false; HedefHesapla();
-            BittiSifirla(); bittiKazandi = rekor; bittiBas = L.T(rekor && eski > 0 ? "Yeni rekor" : "Sonsuz ralli"); bittiUst = L.T("Antrenman") + " · " + L.T("Sonsuz ralli");
+            BittiSifirla(); bittiKazandi = rekor; bittiBas = L.T(rekor && eski > 0 ? "Yeni rekor" : "Sonsuz ralli"); bittiUst = L.T("Antrenman") + " · " + L.T("Sonsuz ralli") + " · " + L.T(Ayar.ZORLUK_AD[Sonsuz.zorluk]);
             bittiBaslik = L.T("Sonsuz ralli") + " · " + L.T("{0} vuruş", skor);
             bittiSkor = L.T("{0} vuruş", skor); bittiYildiz = null;
             bittiIpucu = (esik ? L.T("İlk kez {0} vuruş.", yeniEsik) + " " : "") + (rekor ? (eski > 0 ? L.T("Eski rekorun {0}.", eski) : L.T("İlk rekorun.")) : L.T("Rekorun {0}. Her 5 vuruşta top hızlanır.", eski));
@@ -535,6 +539,7 @@ namespace BirdieSmash.Game
             odul = Ayar.gear.Odul(won, kariyerIlk, M.target, !M.sert, M.gorevBitti, M.perfects, System.DateTime.Now, yeniYildiz, M.okudun, ekTuy, ekXp, ekAd);
             PlayerPrefs.SetString(Hedef.SON_ANAHTAR, Hedef.SonEkle(PlayerPrefs.GetString(Hedef.SON_ANAHTAR, ""), odul.tuy));   // "≈ N maç" (Core/Hedef.MacTahmini)
             rekKart = true;   // ödüllü reklam teklifi yalnız gerçek maç kartında (antrenman ve görev kartında yok)
+            if (M.ogr == null && (mod == Mod.Normal && KariyerVeri.Var(M.stil.kariyer) && KariyerVeri.Final(M.stil.kariyer) || mod == Mod.Usta && M.stil.usta >= 0 && UstaYolu.Basamak(M.stil.usta).final)) OtoRekKur(false);   // tur/Usta finali: otomatik ödüllü reklam
             if (odul.sonra > odul.once) Yerel.Hap("flow");   // seviye atladın
             if (odul.sonra >= 30) Basarim.Ver(Basarim.EFSANE);
             // "Ekipmanı yükselt": alınabilecek yükseltme ya da (ekipman v2) seviyesi gelmiş, Tüy'ü yeten model varsa.
@@ -669,10 +674,41 @@ namespace BirdieSmash.Game
                 rekIzlendi = true; Yerel.Hap("tick"); PlayerPrefs.Save(); Bulut.Yaz();
             });
         }
+        // ---- final ve online maç sonu otomatik ödüllü reklam (2026-11-27; kural Core/OdulluReklam, giriş ekranı Hud.OtoRekCiz) ----
+        // Sonuç kartının üstünde GIRIS_SN geri sayımlı giriş: ödül yazılı, "Geç" her an. Süre dolunca ya da "İzle" ile reklam açılır.
+        // Reklamsız alan oyuncuya hiç çıkmaz. Reklam yüklü değilse giriş de yok (boş bekleme yok). CI reklam turunda SDK yok:
+        // giriş çizilir, süre dolunca reklam yerine kapanır.
+        bool otoRek, otoOnline; float otoRekBas; int otoEk;
+        void OtoRekKur(bool online)
+        {
+            otoRek = false; if (!Reklam.ALAN) return;
+            if (!ReklamSdk.OtoHazir && !(EkranTuru.Acik && EkranTuru.ReklamZorla)) { ReklamSdk.OtoHazirla(); return; }
+            otoOnline = online; otoEk = online ? OdulluReklam.ONLINE_TUY : odul != null ? OdulluReklam.Ek(odul.tuy) : 0;
+            if (otoEk <= 0) return;
+            otoRek = true; otoRekBas = Time.unscaledTime; rekDenendi = true;   // aynı maçta opt-in teklifi ikinci kez çıkmaz
+        }
+        public bool OtoRekAcik { get { return otoRek && ekran == Ekran.Bitti; } }
+        public float OtoRekKalan { get { return Mathf.Max(0, OdulluReklam.GIRIS_SN - (Time.unscaledTime - otoRekBas)); } }
+        public int OtoRekEk { get { return otoEk; } }
+        public void OtoRekGec() { otoRek = false; }
+        public void EkranOtoRek() { if (EkranTuru.Acik && ekran == Ekran.Bitti) OtoRekKur(false); }   // yalnız CI reklam turu: giriş ekranının karesi
+        public void OtoRekIzle()
+        {
+            if (!otoRek) return; otoRek = false; if (EkranTuru.Acik) return;
+            var o = odul; bool onl = otoOnline; int ek = otoEk;
+            ReklamSdk.OtoGoster(k =>
+            {
+                if (!k || ekran != Ekran.Bitti || o != odul) return;   // yarıda kapandı (SDK uyardı) ya da kart değişti: ödül yok
+                if (onl) { Ayar.gear.ReklamOduluSabit(ek); bittiIpucu = L.T("Reklam ödülü: +{0} Tüy", ek); } else Ayar.gear.ReklamOdulu(o);
+                Yerel.Hap("tick"); PlayerPrefs.Save(); Bulut.Yaz();
+            });
+        }
+        void OtoRekTik() { if (otoRek && ekran == Ekran.Bitti && OtoRekKalan <= 0) OtoRekIzle(); }
+
         void ReklamKartKapat()
         {
             if (rekKart) { var d = RekDurum(); OdulluReklam.KartKapandi(d, rekGoruldu, rekIzlendi); RekYaz(d); }
-            rekKart = rekGoruldu = rekIzlendi = rekDenendi = false;
+            rekKart = rekGoruldu = rekIzlendi = rekDenendi = false; otoRek = false;
         }
 
         public void UstaDavetGordu() { if (ustaDavetSayildi) return; ustaDavetSayildi = true; PlayerPrefs.SetInt("tuytop_usta_davet", PlayerPrefs.GetInt("tuytop_usta_davet", 0) + 1); kaydetBekle = true; }   // maç sonu kartı karesinde Save yok (2026-11-16 12:05 #5)
@@ -1028,7 +1064,7 @@ namespace BirdieSmash.Game
         {
             FitCamera(); Cokme.Tik(this);
             float dt = Mathf.Min(.05f, Time.unscaledDeltaTime);
-            OnlineTik(dt);
+            OnlineTik(dt); OtoRekTik();
             if (sesAcT >= 0) { sesAcT += Time.unscaledDeltaTime; float sesK = Mathf.Min(1, sesAcT / .25f); AudioListener.volume = Ayar.ses ? sesK : 0; if (sesK >= 1 || paused) { if (paused) AudioListener.volume = Ayar.ses ? 1 : 0; sesAcT = -1; } }
             // 2026-11-12 (yasin: "sayı sonrası animasyonda kasma, maç sonu sevinçte donma"): kayıt (JSON + senkron PlayerPrefs.Save +
             // Game Center) sayı arasının İLK karesinde, yani sayı sevinci ve yazısı başlarken yapılıyordu; maç sonunda da EndMatch

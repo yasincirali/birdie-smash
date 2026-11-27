@@ -41,6 +41,18 @@ namespace BirdieSmash.Game
             var ust = Satir("ant-cift"); c.Add(ust);
             int rk = GameRoot.SonsuzRekor;
             ust.Add(Dugme(L.T("Sonsuz ralli"), () => root.SonsuzOyna(), "ikincil-kart", rk > 0 ? L.T("Rekorun {0} vuruş", rk) : L.T("Kaçırana kadar, her 5 vuruşta hızlanır")));
+            // 2026-11-27 (yasin: "sonsuz antrenmanda rakip zorluğunu seçebilelim"): kartın hemen altında dört çip, Oyna'daki zorluk
+            // satırının adlarıyla. Rekor zorluk başına (Core/Sonsuz.AnahtarZ); kart seçilen zorluğun rekorunu yazar. Seçim yalnız
+            // Antrenman alt sayfasını yeniden kurar (Degisti(true)), maç zorluğu (Ayar.zorluk) değişmez.
+            var sz = Satir(); sz.AddToClassList("cip-sarar"); c.Add(sz);
+            for (int i = 0; i < 4; i++)
+            {
+                int v = i; int r = GameRoot.SonsuzRekorZ(i);
+                var cp = Cip(L.T(Ayar.ZORLUK_AD[i]), Sonsuz.zorluk == v, () => { if (Sonsuz.zorluk == v) return; GameRoot.SonsuzZorlukSec(v); Degisti(true); });
+                Erisim.Etiket(cp, L.T("Sonsuz ralli") + ", " + L.T(Ayar.ZORLUK_AD[i]) + (r > 0 ? ", " + L.T("Rekorun {0} vuruş", r) : ""), "dugme", Sonsuz.zorluk == v);
+                if (K <= 1.35f) { cp.style.flexGrow = 1f; cp.style.flexBasis = 0f; }
+                sz.Add(cp);
+            }
             // 2026-11-26 inceleme (fikir 17:06 #6, §7.2; Badminton League/Brawl Stars eğitimi bitince ana yüzeyde tutmaz): biten ders
             // Sonsuz ralli ile aynı ağırlıkta kart olarak duruyordu; artık görev listesinin dibinde tek satır, Sonsuz ralli tam genişlik.
             if (!Ayar.antrenman) ust.Add(Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", L.T("15 adım, skor yok")));
