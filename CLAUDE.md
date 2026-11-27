@@ -4,14 +4,13 @@ Bağımsız badminton mobil oyunu (çalışma adı "Tüy Top" idi; yasin 2026-10
 ad global olsun, sandık ile hiçbir ilişkisi yok: ayrı marka, bundle
 `com.birdiesmash.app`, ayrı mağaza hattı). Çalışma biçimi: değişiklikleri
 onay beklemeden yap, sonunda Türkçe özetle; push saatleri kuralı (hafta içi
-09:00–18:30 TR push/PR/merge yok) burada da geçerli.
+08:00–18:30 TR push/PR/merge yok) burada da geçerli.
 
-- **Oyun tek dosyadır:** `assets/game/index.html` (HTML + canvas + Web Audio).
-  Prototip ve tasarım turları `https://claude.ai/artifact/4e8aG15tCWDe8hdtVCPryQ`
-  üzerinde yürür; her yayınlanan sürüm bu dosyaya kopyalanır. Oyun mantığı
-  Dart'a taşınmaz. localStorage anahtarları (`tuytop_*`) eski adla kalır ki
-  oyuncu ayarı sıfırlanmasın.
-- **Flutter kabuğu üç iş yapar:** mağaza/TestFlight hattı, tam ekran dikey
+- **Oyun Unity'dedir** (`unity/BirdieSmash`, aşağıda "Unity geçişi"). `assets/game/index.html`
+  (HTML + canvas + Web Audio) eski sürümdür: Unity secret'ları yoksa TestFlight hattının
+  yedeği olarak durur; yeni oyun/menü işi Unity'ye yazılır. Oyun mantığı Dart'a taşınmaz.
+  `tuytop_*` anahtarları eski adla kalır ki oyuncu ilerlemesi sıfırlanmasın.
+- **Flutter kabuğu (HTML yedek yolu) üç iş yapar:** mağaza/TestFlight hattı, tam ekran dikey
   WebView, `Haptic` JS kanalı → `HapticFeedback`. Oyun `buzz(desen)` ile
   titreşim ister; kanal yoksa `navigator.vibrate`'e düşer (tarayıcı).
 - **Ses ve his oyunun içindedir:** raket sesi tel gerilimine ve vuruş türüne
@@ -32,9 +31,8 @@ onay beklemeden yap, sonunda Türkçe özetle; push saatleri kuralı (hafta içi
   (bu hat), `.mcp.json` → `blender` MCP (yalnız PC), bulut `tool/bulut_kurulum.sh`
   (bpy + Mesh2Motion kütüphanesi). Hareket kaynağı önceliği: kendi pozlarımız →
   Mesh2Motion/CMU (CC0/serbest) → Mixamo (elle, yasin'ın hesabı).
-- Karakter: `tool/karakter/` (bpy, IK rig, 22 klip × 2 bakış → sprite sheet, oyuna base64 gömülü). Raket HEP sağ elde: backhand ayrı klip, aynalama yok. Ayak işi badminton: split step, chassé, öne adım, arkaya çapraz. Render.lar
-  `/mnt/project-files/birdie-smash/` altında; oyuna girişi (sprite ya da
-  three.js) henüz kararlaştırılmadı.
+- Karakter: `tool/karakter/` (bpy, IK rig, klipler → Unity'ye FBX: `unity/BirdieSmash/Assets/Resources/karakter/`). Raket HEP sağ elde: backhand ayrı klip, aynalama yok. Ayak işi badminton: split step, chassé, öne adım, arkaya çapraz. Renderlar
+  `/mnt/project-files/birdie-smash/` altında.
 
 - **Arayüz tasarım dili (yasin 2026-11-14):** her menü/HUD değişikliği `docs/arayuz_tasarim_dili.md`'ye uyar:
   yazı hiçbir dilde/boyda üst üste binmez, yan boşluklar ve düğme içi ortalama simetrik. UI PR'ında `ekran/kisa-yazi-*`
@@ -78,8 +76,8 @@ Maliyet kuralı: ajan pahalıdır; yalnız aşağıdaki anlarda, en fazla 3 para
 
 | An | Ajanlar (paralel) | Görev |
 |---|---|---|
-| Ar-Ge fikir turu (11:40/19:40) | `game-designer`, `art-director` | Rakip oyunla kıyaslı 2–3 fikir; arcade hissi önce |
-| Ar-Ge inceleme turu (12:10/20:10) | `ux-designer` + `accessibility-specialist`, `performance-analyst` | Son ekran turu karelerinden kontrast/okunurluk/HIG; kare süresi ve GC |
+| Ar-Ge fikir turu | `game-designer`, `art-director` | Rakip oyunla kıyaslı fikirler (sayı ve takvim `/mnt/project-files/birdie-smash/arge/TUR_*.md`); arcade hissi önce |
+| Ar-Ge inceleme turu | `ux-designer` + `accessibility-specialist`, `performance-analyst` | Son ekran turu karelerinden kontrast/okunurluk/HIG; kare süresi ve GC |
 | Ekonomi/ödül değişikliği | `economy-designer` | Öneri; karar dev thread'in |
 | PR açmadan önce (Unity diff) | `unity-specialist` ya da UI ise `unity-ui-specialist`, `qa-tester` | Diff incelemesi + BotMac/ekran turu test adımları |
 | Ses, efekt, sevinç, his | `sound-designer`, `technical-artist` | Somut parametreli öneri |
