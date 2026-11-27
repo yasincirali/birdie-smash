@@ -21,15 +21,18 @@ namespace BirdieSmash.Game
             // açılınca bağlam kayboluyordu). Başlığın solunda 36 pt portre; üst çubukta çizilen önbellekteki doku (Portre.Benim),
             // yeni figür/RT yok. Dokunuş yok: sayfanın tek işi puan. Yoksa eski insan simgesi (AvatarIc).
             var bsol = Satir("rakip-satir"); bsol.pickingMode = PickingMode.Ignore; bsol.style.marginTop = 0; bsol.style.flexShrink = 1f; bas.Add(bsol);
-            var av = new VisualElement(); av.AddToClassList("avatar"); av.pickingMode = PickingMode.Ignore; av.style.width = 36; av.style.height = 36;
-            av.style.borderTopLeftRadius = av.style.borderTopRightRadius = av.style.borderBottomLeftRadius = av.style.borderBottomRightRadius = 18;
-            av.style.marginRight = 8; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); BenAvatar(av, 20); bsol.Add(av);
+            // 2026-11-27 inceleme (fikir 12:06 #2): 36 → 44 pt; puan verilince portre kısa bir yayla büyür (PortrePop), "güçlenen benim".
+            // 56–64 önerildi ama büyük yazıda başlık satırı sarıyor; 44 orta yol.
+            var av = new VisualElement(); av.AddToClassList("avatar"); av.pickingMode = PickingMode.Ignore; av.style.width = 44; av.style.height = 44;
+            av.style.borderTopLeftRadius = av.style.borderTopRightRadius = av.style.borderBottomLeftRadius = av.style.borderBottomRightRadius = 22;
+            av.style.marginRight = 8; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); BenAvatar(av, 24); bsol.Add(av); gelPortre = av;
             // 2026-11-22 inceleme (fikir 12:06 #4, §7.4): "Dağıtılacak puan: 3" yanında "7/10 puan" aynı veriyi iki kez söylüyordu,
             // büyük yazıda başlık satırını sarıyordu. Tek etiket: kalan / toplam; bitince "10 puanın hepsi dağıtıldı".
             gelUst = Yazi(GelUstMetin(top, bos), 16, "kalin"); gelUst.style.whiteSpace = WhiteSpace.Normal; gelUst.style.flexShrink = 1; bsol.Add(gelUst);
             // 2026-11-15 (inceleme, fikir 22:05 #5): iki varyantlı uzun paragraf her açılışta aynı kuralı tekrar ediyor, beş dal
             // kartını ilk ekranın altına itiyordu (büyük yazıda iki dal görünürdü). Tek kısa satır; Sv 1'de üst satır yeter.
-            if (top > 0) { var ac = Yazi(L.T("Dal başına en çok 10 · ücretsiz değiştir"), 13, "soluk"); ac.style.whiteSpace = WhiteSpace.Normal; ac.style.marginTop = 4; ac.style.marginBottom = 6; c.Add(ac); }
+            // 2026-11-27 inceleme (fikir 12:06 #4, §10.2): "en çok 10" her kartın "n/10"unu tekrar ediyordu; yeni bilgi yalnız geri alınabilmesi.
+            if (top > 0) { var ac = Yazi(L.T("Puanları istediğin an geri alabilirsin."), 13, "soluk"); ac.style.whiteSpace = WhiteSpace.Normal; ac.style.marginTop = 4; ac.style.marginBottom = 6; c.Add(ac); }
             if (Ayar.gear.eko.esit && !Ayar.kariyerModu) { var es = Yazi(L.T("Eşit şartlar açık: gelişim bu maçlarda sayılmaz."), 13, "ipucu"); es.style.whiteSpace = WhiteSpace.Normal; es.style.marginBottom = 6; c.Add(es); }
             c.Add(GelRadarKur(p));
             foreach (var i in Gelisim.GORUNEN) c.Add(GelisimDal(i, p[i], bos > 0, top > 0));   // 2026-11-26: üç dal (Core/Gelisim)
@@ -49,7 +52,7 @@ namespace BirdieSmash.Game
         {
             var kap = new VisualElement(); kap.AddToClassList("gel-radar-kap"); kap.pickingMode = PickingMode.Ignore;
             var r = new VisualElement(); r.AddToClassList("gel-radar"); r.pickingMode = PickingMode.Ignore; kap.Add(r); gelRadar = r;
-            for (int i = 0; i < RN; i++) { int d = Gelisim.GORUNEN[i]; gelRGor[i] = gelRHedef[i] = p[d] / (float)Gelisim.TAVAN; var l = Yazi(L.T(Gelisim.AD[d]), 11, "gel-radar-ad"); l.AddToClassList("dokunulur"); kap.Add(l); gelREt[i] = l;
+            for (int i = 0; i < RN; i++) { int d = Gelisim.GORUNEN[i]; gelRGor[i] = gelRHedef[i] = p[d] / (float)Gelisim.TAVAN; var l = Yazi(L.T(Gelisim.AD[d]), 12, "gel-radar-ad");   // 2026-11-27: 12 pt alt sınır (fikir 12:06 #3) l.AddToClassList("dokunulur"); kap.Add(l); gelREt[i] = l;
                 l.AddManipulator(new Clickable(() => GelDalaGit(d))); Erisim.Etiket(l, L.T("{0} dalına git", L.T(Gelisim.AD[d])), "dugme"); }
             r.generateVisualContent += GelRadarCiz;
             kap.RegisterCallback<GeometryChangedEvent>(e => GelRadarEtiket(kap));
@@ -150,7 +153,11 @@ namespace BirdieSmash.Game
                 if (arti) KartParla(cb.parent?.parent);
                 Erisim.Etiket(cb, L.T(Gelisim.AD[dal]) + ", " + n + "/" + Gelisim.TAVAN + (yz != "" ? ", " + yz : "") + GelSonrakiEt(dal, n, bos > 0) + ". " + L.T(Gelisim.NE[dal]), "metin");
             }
-            for (int i = 0; i < SEKME_N; i++) kirli[i] = true; ustKirli = true;   // altta duran sekme (Oyna satırı, Profil kartı) kapanışta kurulur
+            // 2026-11-27 inceleme (fikir 12:06 #1, TAKILMA YOK): her puan beş sekmeyi kirletiyordu; Dolap ve Kariyer gelişim okumadığı
+            // hâlde Gelişim'den sonra ilk dokunuşta vitrin/mekân baştan kuruluyordu. Yalnız gelişimi gösterenler: Oyna (GelisimSatir),
+            // Profil (GelisimKart), Atölye (Sahada çubukları). Dolap ya da Kariyer gelişim gösterirse buraya eklenmeli.
+            kirli[(int)Sekme.Oyna] = kirli[(int)Sekme.Profil] = kirli[(int)Sekme.Atolye] = true; ustKirli = true;   // altta duran sekme kapanışta kurulur
+            if (arti && (gelAdim == 1 || gelAdim % 3 == 0 || sinir)) PortrePop(gelPortre, n >= Gelisim.TAVAN ? 1.14f : 1.08f);
             if (gelUst != null) gelUst.text = GelUstMetin(top, bos);
             for (int i = 0; i < Gelisim.DAL; i++)
             {
@@ -230,6 +237,17 @@ namespace BirdieSmash.Game
             l.style.transformOrigin = new TransformOrigin(Length.Percent(100), Length.Percent(50)); l.style.scale = new Scale(new Vector2(1.18f, 1.18f));
             l.schedule.Execute(() => { l.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(.22f, TimeUnit.Second) };
                 l.style.transitionTimingFunction = new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseOutBack) }; l.style.scale = new Scale(Vector2.one); Kalite.Hareket(); }).StartingIn(16);
+        }
+        VisualElement gelPortre;
+        // Portre tepkisi (2026-11-27): yalnız scale (yeniden yerleşim yok), SayiPop kalıbı; hareketi azaltta yok, ses/haptik kalır.
+        static void PortrePop(VisualElement v, float k)
+        {
+            if (v == null || Ayar.reduce) return;
+            v.style.transitionProperty = new System.Collections.Generic.List<StylePropertyName> { new StylePropertyName("scale") };
+            v.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(0, TimeUnit.Second) };
+            v.style.scale = new Scale(new Vector2(k, k));
+            v.schedule.Execute(() => { v.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(.18f, TimeUnit.Second) };
+                v.style.transitionTimingFunction = new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseOutBack) }; v.style.scale = new Scale(Vector2.one); Kalite.Hareket(); }).StartingIn(16);
         }
         static void KartParla(VisualElement k)
         {
