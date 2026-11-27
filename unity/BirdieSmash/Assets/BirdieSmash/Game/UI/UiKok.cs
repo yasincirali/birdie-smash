@@ -847,6 +847,34 @@ namespace BirdieSmash.Game
         static readonly Color KORT_YESIL = Kit.Hex("#2FA863"), KORT_CIZGI = new Color(1, 1, 1, .95f), KORT_ZEMIN = Kit.Hex("#12306B");
         static readonly Color[] SEYIRCI = { Kit.Hex("#E8D7C3"), Kit.Hex("#F2B6C8"), Kit.Hex("#9EC5FF"), Kit.Hex("#FFD36B"), Kit.Hex("#C9A6FF"), Kit.Hex("#FFFFFF"), Kit.Hex("#9BE3B8") };
         static readonly Color[] LED = { Kit.Hex("#FFE14D"), Kit.Hex("#FF7AC8"), Kit.Hex("#6FD1FF"), Kit.Hex("#FFFFFF") };
+        // BWF çizgileri ve file: Oyna sahnesi (KortCiz) ve Dünya Turu mekânları (DunyaTuru) aynı ölçüyü kullanır (yasin 2026-11-27:
+        // "saha çizimleri her yerde nizami olmalı"). P(u, v): kortun birim koordinatı (u 0..1 genişlik, v 0 uzak .. 1 yakın) → ekran.
+        // Çizgi rengi ve kalınlığı çağıran ayarlar. Ölçüler: 13,4 × 6,1 m; tek yan çizgisi 0,46 m içte; kısa servis fileden 1,98 m;
+        // çift uzun servis 0,76 m içte.
+        internal static void BwfCizgiler(Painter2D p, System.Func<float, float, Vector2> P)
+        {
+            const float UZUN = 13.4f, GENIS = 6.1f;
+            System.Action<float, float, float, float> Cz = (u1, v1, u2, v2) => { p.BeginPath(); p.MoveTo(P(u1, v1)); p.LineTo(P(u2, v2)); p.Stroke(); };
+            float yan = .46f / GENIS, sv = 1.98f / UZUN, ls = .76f / UZUN;
+            Cz(0, 0, 1, 0); Cz(0, 1, 1, 1); Cz(0, 0, 0, 1); Cz(1, 0, 1, 1); Cz(yan, 0, yan, 1); Cz(1 - yan, 0, 1 - yan, 1);
+            Cz(0, ls, 1, ls); Cz(0, 1 - ls, 1, 1 - ls); Cz(0, .5f - sv, 1, .5f - sv); Cz(0, .5f + sv, 1, .5f + sv); Cz(.5f, 0, .5f, .5f - sv); Cz(.5f, .5f + sv, .5f, 1);
+        }
+        // nh: file yüksekliği (1,55 m) piksel olarak, çağıran perspektiften hesaplar.
+        internal static void BwfFile(Painter2D p, System.Func<float, float, Vector2> P, float nh, float sr)
+        {
+            // koyu ağ, ince ağ çizgileri, beyaz üst bant, iki direk (yükseklik 1,55 m)
+            var nl = P(0, .5f); var nr = P(1, .5f);   // BWF: direkler çift sahanın yan çizgisi üzerinde, file tam saha genişliğinde (6,1 m)
+            p.fillColor = new Color(.04f, .08f, .24f, .26f); p.BeginPath(); p.MoveTo(nl + new Vector2(0, -nh)); p.LineTo(nr + new Vector2(0, -nh)); p.LineTo(nr); p.LineTo(nl); p.ClosePath(); p.Fill();
+            p.strokeColor = new Color(1, 1, 1, .2f); p.lineWidth = .6f * sr; float ag = 4f * sr;
+            p.BeginPath(); for (float x = nl.x; x <= nr.x; x += ag) { p.MoveTo(new Vector2(x, nl.y - nh)); p.LineTo(new Vector2(x, nl.y)); } for (float y = nl.y - nh; y <= nl.y; y += ag) { p.MoveTo(new Vector2(nl.x, y)); p.LineTo(new Vector2(nr.x, y)); } p.Stroke();
+            // detay (BWF): üst bant 7,5 cm beyaz, alt bant ince, orta kayış (tek parça beyaz şerit), direkler çift sahanın yan çizgisinde (yasin: 'file boyutu saçma', ağ eskiden 1,0 m taşıyordu)
+            float bant = Mathf.Max(2f * sr, nh * .075f / 1.55f * 1.0f);
+            Dik2(p, Color.white, nl.x, nl.y - nh, nr.x - nl.x, bant);
+            Dik2(p, new Color(1, 1, 1, .8f), nl.x, nl.y - 1.5f * sr, nr.x - nl.x, 1.5f * sr);
+            float orta = (nl.x + nr.x) / 2; Dik2(p, new Color(1, 1, 1, .85f), orta - .9f * sr, nl.y - nh, 1.8f * sr, nh);
+            var direk = Kit.Hex("#DFE6F5"); float dw = Mathf.Max(3f * sr, nh * .05f);
+            Dik2(p, direk, nl.x - dw / 2, nl.y - nh - 2 * sr, dw, nh + 2 * sr); Dik2(p, direk, nr.x - dw / 2, nl.y - nh - 2 * sr, dw, nh + 2 * sr);
+        }
         static void KortCiz(MeshGenerationContext ctx)
         {
             var r = ctx.visualElement.contentRect; if (r.width <= 0 || r.height <= 0) return;
@@ -896,27 +924,10 @@ namespace BirdieSmash.Game
                 for (int a = 0; a < 28; a++) { float ac = a * Mathf.PI * 2 / 28; var n = hv + new Vector2(Mathf.Cos(ac) * rx, Mathf.Sin(ac) * ry); if (a == 0) p.MoveTo(n); else p.LineTo(n); }
                 p.ClosePath(); p.Fill();
             }
-            for (int k = 0; k < 4; k++) Dortgen(new Color(0, 0, .08f, .07f), P(-.082f, .5f), P(1.082f, .5f), P(1.1f, .5f + .03f * (k + 1)), P(-.1f, .5f + .03f * (k + 1)));   // file gölgesi: yakın tarafa yumuşak düşer
-            System.Action Cizgiler = () => {
-            System.Action<float, float, float, float> Cz = (u1, v1, u2, v2) => { p.BeginPath(); p.MoveTo(P(u1, v1)); p.LineTo(P(u2, v2)); p.Stroke(); };
-            float yan = .46f / GENIS, sv = 1.98f / UZUN, ls = .76f / UZUN;
-            Cz(0, 0, 1, 0); Cz(0, 1, 1, 1); Cz(0, 0, 0, 1); Cz(1, 0, 1, 1); Cz(yan, 0, yan, 1); Cz(1 - yan, 0, 1 - yan, 1);
-            Cz(0, ls, 1, ls); Cz(0, 1 - ls, 1, 1 - ls); Cz(0, .5f - sv, 1, .5f - sv); Cz(0, .5f + sv, 1, .5f + sv); Cz(.5f, 0, .5f, .5f - sv); Cz(.5f, .5f + sv, .5f, 1);
-            };
-            p.lineJoin = LineJoin.Round; p.strokeColor = new Color(1, 1, 1, .14f); p.lineWidth = 5.5f * sr; Cizgiler();   // parıltı
-            p.strokeColor = KORT_CIZGI; p.lineWidth = 2 * sr; Cizgiler();
-            // file: koyu ağ, ince ağ çizgileri, beyaz üst bant, iki direk (yükseklik 1,55 m)
-            var nl = P(-.082f, .5f); var nr = P(1.082f, .5f); float nh = F * 1.55f / (MESAFE + UZUN * .5f) * sy;
-            p.fillColor = new Color(.04f, .08f, .24f, .34f); p.BeginPath(); p.MoveTo(nl + new Vector2(0, -nh)); p.LineTo(nr + new Vector2(0, -nh)); p.LineTo(nr); p.LineTo(nl); p.ClosePath(); p.Fill();
-            p.strokeColor = new Color(1, 1, 1, .28f); p.lineWidth = .7f * sr; float ag = 3.2f * sr;
-            p.BeginPath(); for (float x = nl.x; x <= nr.x; x += ag) { p.MoveTo(new Vector2(x, nl.y - nh)); p.LineTo(new Vector2(x, nl.y)); } for (float y = nl.y - nh; y <= nl.y; y += ag) { p.MoveTo(new Vector2(nl.x, y)); p.LineTo(new Vector2(nr.x, y)); } p.Stroke();
-            // detay (BWF): üst bant 7,5 cm beyaz, alt bant ince, orta kayış (tek parça beyaz şerit), direkler çift sahanın 0,5 m dışında
-            float bant = Mathf.Max(2f * sr, nh * .075f / 1.55f * 1.0f);
-            Dik2(p, Color.white, nl.x, nl.y - nh, nr.x - nl.x, bant);
-            Dik2(p, new Color(1, 1, 1, .8f), nl.x, nl.y - 1.5f * sr, nr.x - nl.x, 1.5f * sr);
-            float orta = (nl.x + nr.x) / 2; Dik2(p, new Color(1, 1, 1, .9f), orta - 1.2f * sr, nl.y - nh, 2.4f * sr, nh);
-            var direk = Kit.Hex("#DFE6F5"); float dw = Mathf.Max(3f * sr, nh * .05f);
-            Dik2(p, direk, nl.x - dw / 2, nl.y - nh - 2 * sr, dw, nh + 2 * sr); Dik2(p, direk, nr.x - dw / 2, nl.y - nh - 2 * sr, dw, nh + 2 * sr);
+            for (int k = 0; k < 4; k++) Dortgen(new Color(0, 0, .08f, .07f), P(0, .5f), P(1, .5f), P(1.02f, .5f + .03f * (k + 1)), P(-.02f, .5f + .03f * (k + 1)));   // file gölgesi: yakın tarafa yumuşak düşer
+            p.lineJoin = LineJoin.Round; p.strokeColor = new Color(1, 1, 1, .14f); p.lineWidth = 5.5f * sr; BwfCizgiler(p, P);   // parıltı
+            p.strokeColor = KORT_CIZGI; p.lineWidth = 2 * sr; BwfCizgiler(p, P);
+            BwfFile(p, P, F * 1.55f / (MESAFE + UZUN * .5f) * sy, sr);
             // tavan ışık huzmeleri (tribünün üstünden kortun ortasına) ve vinyet
             for (int h = 0; h < 3; h++)
             {
