@@ -355,8 +355,10 @@ namespace BirdieSmash.Game
         // 2026-11-06 Sonsuz ralli sonucu (Core/Sonsuz): Tüy/XP yok, yıldız yok. Büyük sayı skor, altında rekor; rekor kırıldıysa
         // ve 10/20/30 eşiği ilk kez geçildiyse tek satır. Kayıt tuytop_sonsuz (int, buluta gider). Düğme "Bir daha".
         public static int SonsuzRekor { get { return PlayerPrefs.GetInt(Sonsuz.Anahtar, 0); } }
-        public static int SonsuzRekorZ(int z) { return PlayerPrefs.GetInt(Sonsuz.AnahtarZ(z), 0); }
-        public static void SonsuzZorlukYukle() { Sonsuz.zorluk = Mathf.Clamp(PlayerPrefs.GetInt(Sonsuz.ZORLUK_ANAHTAR, 0), 0, 3); }
+        public static int SonsuzRekorZ(int z) { return PlayerPrefs.GetInt(Sonsuz.AnahtarZY(z, Sonsuz.yarim), 0); }
+        public static void SonsuzZorlukYukle() { Sonsuz.zorluk = Mathf.Clamp(PlayerPrefs.GetInt(Sonsuz.ZORLUK_ANAHTAR, 0), 0, 3); Sonsuz.yarim = PlayerPrefs.GetInt(Sonsuz.YARIM_ANAHTAR, 0) == 1; }
+        // 2026-11-28 (yasin: "endlesta sadece halfcourt antrenman modu da olmalı"): yarım saha seçimi kalıcı, rekoru ayrı (Sonsuz.AnahtarZY).
+        public static void SonsuzYarimSec(bool y) { Sonsuz.yarim = y; PlayerPrefs.SetInt(Sonsuz.YARIM_ANAHTAR, y ? 1 : 0); }
         public static void SonsuzZorlukSec(int z) { Sonsuz.zorluk = Mathf.Clamp(z, 0, 3); PlayerPrefs.SetInt(Sonsuz.ZORLUK_ANAHTAR, Sonsuz.zorluk); }
         public void SonsuzOyna() { DrilOyna(Sonsuz.ID); }
         void SonsuzSonu(int skor)
@@ -366,7 +368,7 @@ namespace BirdieSmash.Game
             if (rekor) { PlayerPrefs.SetInt(Sonsuz.Anahtar, skor); kaydetBekle = true; kayitErteleT = Time.unscaledTime + KAYIT_ERTELE; Yerel.Hap("flow"); }   // Save sayı/rekor karesinde değil, ertelenen kayıtta (İnceleme 2026-11-16 12:05 #5)
             int yeniEsik = Sonsuz.YeniEsik(skor, eski); esik = yeniEsik > 0;
             yukseltHazir = false; HedefHesapla();
-            BittiSifirla(); bittiKazandi = rekor; bittiBas = L.T(rekor && eski > 0 ? "Yeni rekor" : "Sonsuz ralli"); bittiUst = L.T("Antrenman") + " · " + L.T("Sonsuz ralli") + " · " + L.T(Ayar.ZORLUK_AD[Sonsuz.zorluk]);
+            BittiSifirla(); bittiKazandi = rekor; bittiBas = L.T(rekor && eski > 0 ? "Yeni rekor" : "Sonsuz ralli"); bittiUst = L.T("Antrenman") + " · " + L.T("Sonsuz ralli") + " · " + L.T(Ayar.ZORLUK_AD[Sonsuz.zorluk]) + (Sonsuz.yarim ? " · " + L.T("Yarım saha") : "");
             bittiBaslik = L.T("Sonsuz ralli") + " · " + L.T("{0} vuruş", skor);
             bittiSkor = L.T("{0} vuruş", skor); bittiYildiz = null;
             bittiIpucu = (esik ? L.T("İlk kez {0} vuruş.", yeniEsik) + " " : "") + (rekor ? (eski > 0 ? L.T("Eski rekorun {0}.", eski) : L.T("İlk rekorun.")) : L.T("Rekorun {0}. Her 5 vuruşta top hızlanır.", eski));

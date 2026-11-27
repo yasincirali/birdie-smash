@@ -1,4 +1,9 @@
 === UNITY ===
+Sonsuz rallide gerçek antrenman (28 Kasım):
+- Antrenör artık topu geri oynuyor ve sayı almaya çalışıyor. Kaçırırsa hemen doğrulup elindeki toplardan yenisini atıyor, ralli sürüyor. Senin kaçırdığın ilk top oyunu yine bitirir.
+- Antrenörün sol elinde üst üste dizili tüy toplar var.
+- Yeni Yarım saha modu: top yalnız sol koridorda oynanır, dışarı düşen top oyunu bitirir. İsabeti geliştirir; rekoru ayrı tutulur.
+Nasıl denenir: Antrenman > Sonsuz ralli kartının altında Tam saha / Yarım saha seç. Oyna: antrenör topu karşılamalı, kaçırınca bulunduğu yerden yeni servis atmalı. Yarım sahada topu sol koridorda tut; koridor dışı top oyunu bitirmeli.
 Final reklamı gerçek reklam (28 Kasım):
 - Tur finali ve arkadaş maçı sonrası açılan ödüllü reklam artık test reklamı değil, gerçek reklam. Yeni birim ilk saatlerde boş dönebilir; o zaman geri sayım kartı çıkmaz.
 Nasıl denenir: Bir tur finalini bitir; geri sayımdan sonra gerçek bir reklam açılmalı. Reklama dokunma.

@@ -124,6 +124,13 @@ namespace BirdieSmash.Game
                     if (root.ui != null) { root.ui.AntrenmanAc(); yield return Bekle(20); yield return Cek("antrenman_sonsuz_" + dl); }
                     root.DrilBaslat(Sonsuz.ID); botAcik = true; { float t2 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t2 < 6) yield return null; }
                     yield return Cek("sonsuz_kenar_" + dl); botAcik = false; root.AnaMenu(); yield return Bekle(10);
+                    // 2026-11-28 yarım saha (sol koridor) + antrenörün top yığını: çipler, 8 sn bot rallisi, sayaç raporu
+                    Sonsuz.yarim = true;
+                    if (root.ui != null) { root.ui.AntrenmanAc(); yield return Bekle(20); yield return Cek("antrenman_yarim_" + dl); }
+                    root.DrilBaslat(Sonsuz.ID); botAcik = true; { float t2 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t2 < 8) yield return null; }
+                    yield return Cek("sonsuz_yarim_" + dl);
+                    if (root.match != null && root.match.ogr != null) rap.AppendLine("sonsuz yarım " + dl + " · isabet " + root.match.ogr.isabet + " · top " + root.match.ogr.dene + " · yarım " + root.match.YarimSaha);
+                    botAcik = false; root.AnaMenu(); yield return Bekle(10); Sonsuz.yarim = false;
                 }
                 File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
             }

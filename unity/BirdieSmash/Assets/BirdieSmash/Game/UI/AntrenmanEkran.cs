@@ -53,6 +53,17 @@ namespace BirdieSmash.Game
                 if (K <= 1.35f) { cp.style.flexGrow = 1f; cp.style.flexBasis = 0f; }
                 sz.Add(cp);
             }
+            // 2026-11-28 (yasin: "endlesta sadece halfcourt antrenman modu da olmalı precision ı artırır"): tam / yarım saha (sol
+            // koridor, iki tarafta). Rekor ayrı tutulur; seçim zorluk çipleri gibi yalnız bu alt sayfayı yeniden kurar.
+            var sy = Satir(); sy.AddToClassList("cip-sarar"); c.Add(sy);
+            for (int i = 0; i < 2; i++)
+            {
+                bool y = i == 1; string ad = y ? "Yarım saha" : "Tam saha";
+                var cp = Cip(L.T(ad), Sonsuz.yarim == y, () => { if (Sonsuz.yarim == y) return; GameRoot.SonsuzYarimSec(y); Degisti(true); });
+                Erisim.Etiket(cp, L.T("Sonsuz ralli") + ", " + L.T(ad) + (y ? ", " + L.T("Topu sol koridorda tut") : ""), "dugme", Sonsuz.yarim == y);
+                if (K <= 1.35f) { cp.style.flexGrow = 1f; cp.style.flexBasis = 0f; }
+                sy.Add(cp);
+            }
             // 2026-11-26 inceleme (fikir 17:06 #6, §7.2; Badminton League/Brawl Stars eğitimi bitince ana yüzeyde tutmaz): biten ders
             // Sonsuz ralli ile aynı ağırlıkta kart olarak duruyordu; artık görev listesinin dibinde tek satır, Sonsuz ralli tam genişlik.
             if (!Ayar.antrenman) ust.Add(Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", L.T("15 adım, skor yok")));

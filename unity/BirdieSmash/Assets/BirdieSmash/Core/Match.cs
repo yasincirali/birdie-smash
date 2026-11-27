@@ -207,6 +207,7 @@ namespace BirdieSmash.Core
             rng = new Random(seed); lastik = o.lastik; easy = o.easy; sert = o.sert ?? !o.easy; kosuYardim = o.kosuYardim; net.sakin = o.reduce; target = o.ilk ? 5 : o.target; reduce = o.reduce; ilk = o.ilk; saha = o.saha; bestRally = o.bestRally;
             stil = o.stil ?? STIL[STIL_SIRA[rng.Next(3)]]; GS = o.gs ?? GearStats.Notr;
             if (o.ogr && o.dril != null) { ogrDril = o.dril; o.ogr = true; }
+            yarimAcik = o.ogr && o.dril != null && o.dril.olcu == Sonsuz.ID && Sonsuz.yarim;   // Sonsuz ralli yarım saha (maç başında sabitlenir)
             if (!o.ogr) gorevler = GorevSec();
             me.x = Court.MID; me.y = Court.L - 2.2f; op.x = Court.MID; op.y = 2.2f;
             if (o.ogr) OgrKur(o.ogrKisa);
@@ -292,6 +293,7 @@ namespace BirdieSmash.Core
         void SetupServe()
         {
             if (ogr != null) { var a = OgrA(); if (a != null && a.bilgi == null) server = a.servis != null ? "me" : "op"; if (a != null && a.drill) OgrCagriSec(true); }   // antrenman: servis adımında sen, vuruş adımında antrenör yüksek servisle başlatır
+            bool koru = SonsuzKarsi && ogr.dene > 0; float kmx = me.x, kmy = me.y, kox = op.x, koy = op.y;   // Sonsuz ralli: yeni top olduğu yerden
             s = null; me.vx = me.vy = 0; op.mvx = op.mvy = 0; me.tx = float.NaN; me.stun = 0; rally = 0; driveSeri = 0; between = false; icpt = null; serveMsg = ""; ImzaSifirla(); me.fakeUntil = -9; aldatHile = false;
             string sv = server, side = ServeSide(sv), rv = sv == "me" ? "op" : "me";
             float[] sb = BoxX(sv, side), rb = BoxX(rv, side);
@@ -304,7 +306,10 @@ namespace BirdieSmash.Core
             if (ogr != null) op.svTur = "yuksek";
             op.svClip = SERVIS[op.svTur].klip; me.svClip = "serve_bh";
             if (IlkSayi && ogr == null) serveMsg = "Rakip: " + RakipAd(true);
-            if (Dril != null) { DrilTopBasi(); if (sv == "op") wait = Dril.olcu == Sonsuz.ID ? .25f : .9f; }   // sonsuz ralli: antrenör durmadan besler (13:40 inceleme: .45 → .25)   // görev: antrenör yerini alır, top elle gelir
+            if (Dril != null) { DrilTopBasi(); if (sv == "op") wait = Dril.olcu == Sonsuz.ID ? .25f : .9f; }
+            // Karşılıklı Sonsuz ralli: oyuncu ve antrenör ışınlanmaz; antrenör balıklamadan kalkar (.6 sn, dive .67 sn'de söner,
+            // sayı arası .2 ile toplam ~.8) ve elindeki toplardan yenisini bulunduğu yerden besler.
+            if (koru) { me.x = kmx; me.y = kmy; op.x = kox; op.y = Math.Min(koy, Court.NET - .9f); if (sv == "op") wait = .6f; }   // sonsuz ralli: antrenör durmadan besler (13:40 inceleme: .45 → .25)   // görev: antrenör yerini alır, top elle gelir
             Emit(Ev.Serve, sv);
         }
 
@@ -313,7 +318,7 @@ namespace BirdieSmash.Core
         void Sinir(bool serve, out float x0, out float x1, out float y0, out float y1)
         {
             if (serve) { var b = serveBox; x0 = b.x0 == Court.MID ? Court.MID - LW / 2 : b.x0; x1 = b.x1 == Court.MID ? Court.MID + LW / 2 : b.x1; y0 = b.y0; y1 = b.y1; }
-            else { x0 = Court.SL; x1 = Court.SR; y0 = 0; y1 = Court.L; }
+            else { x0 = Court.SL; x1 = SonsuzYarim ? Court.MID + LW / 2 : Court.SR; y0 = 0; y1 = Court.L; }   // yarım saha: orta çizgi (dahil) sınır
         }
         // işaretli pay: >0 içeride, <0 dışarıda; mantarın kenarı ile alanın dış kenarı arasındaki en kısa mesafe (m)
         public float SinirPayi(float x, float y, bool serve)
@@ -556,7 +561,7 @@ namespace BirdieSmash.Core
                 if (blokla && !icpt.leave) { icpt.imza = "duvarblok"; icpt.imzaBasladi = true; icpt.opType = "drop"; }
                 else ImzaPlanla(t0, cands, need);
                 if (!blokla) RakipHilePlanla(t0);   // Tur 3+ rakibin aldatıcı vuruşu (Core/Aldatma; imzalı topta denemez)
-                if (Dril != null) icpt.leave = true;   // görev: antrenör geri oynamaz, her top tek vuruş
+                if (Dril != null && !SonsuzKarsi) icpt.leave = true;   // görev: antrenör geri oynamaz, her top tek vuruş (Sonsuz ralli hariç: karşılıklı, Core/Dril)
             }
         }
 
@@ -845,7 +850,7 @@ namespace BirdieSmash.Core
         float OpYerSec(string type)
         {
             float rast = (R01() * 2 - 1) * .8f;
-            if (ogr != null || Dril != null || type == "drive") return rast;   // drive düellosu düz değiş tokuştur: boşluğa değil vücuda
+            if ((ogr != null || Dril != null) && !SonsuzKarsi || type == "drive") return rast;   // drive düellosu düz değiş tokuştur: boşluğa değil vücuda
             float w = (sert ? .45f : .25f) * stil.hucum * OpNefesF(); if (w > .75f) w = .75f;
             if (R01() >= w) return rast;
             float taraf = me.x > Court.MID ? -1 : 1, uzak = Math.Min(1, Math.Abs(me.x - Court.MID) / ((Court.SR - Court.SL) * .3f));
@@ -870,6 +875,7 @@ namespace BirdieSmash.Core
             if (ogr == null && I.imza != null && I.imzaBasladi && ImzaVurus(I)) return;   // patronun imza vuruşu (Core/Imza)
             if (ogr == null && RakipHileVurus(I)) return;   // Tur 3+ rakibin aldatıcı vuruşu (Core/Aldatma)
             if (ogr == null && MermiIkinci(I)) return;
+            if (SonsuzKarsi && s.from == "me") SonsuzKarsilandi();   // Sonsuz ralli: antrenörün karşıladığı top isabettir
             float hx = s.x, hy = s.y, hz = Math.Max(.2f, s.z); float r0 = R01();
             string q = R01() < .12f ? "poor" : R01() < .3f ? "perfect" : "good";
             if (I.zor) { q = R01() < .5f ? "poor" : "good"; Say("op", null, hx, hy, 0, "Zor kurtardı", 1); if (ogr == null) { energy = Math.Min(1, energy + BASKI_ENERJI * GS.enerji); enerjiTaban = Math.Min(1, enerjiTaban + BASKI_ENERJI); } }   // Baski: son anda yetişti; rakibi yerinden eden vuruş oyuncuya küçük enerji (stüdyo 2026-11-05)
@@ -883,7 +889,7 @@ namespace BirdieSmash.Core
             if (type == "drive" && hz <= .8f) type = "clear";   // diz altından drive yok (ShotPlan ile aynı kural): alçak top kaldırılır
             { float n = op.nefes; if (type == "smash" && n < .4f && R01() < (.4f - n) / .4f * .8f) type = "clear"; if (type == "smash") OpYor(.12f * (orth ? RTH_YOR : 1)); }   // yorgun rakip smaç yerine clear seçer
             float vx, vy, vz;
-            if (ogr != null)
+            if (ogr != null && !SonsuzKarsi)
             {   // antrenör o adımın istediği topu besler
                 var a = OgrA(); string b = a != null && a.drill ? (OgrCagriSec(false) == "drive" ? "drive" : "clear") : (a != null && a.besle != null) ? a.besle : "clear";
                 if (b == "gevsek") { Shuttle.Aim(hx, hy, hz, Court.MID + (R01() - .5f) * 1.2f, Court.NET + 1.0f, true, 1.15f, out vx, out vy, out vz); StartFlight("op", vx, vy, vz, hx, hy, hz, false, "drop", false, q); return; }
@@ -892,10 +898,11 @@ namespace BirdieSmash.Core
             // Rakip file önünde arada gevşek top bırakır: sana öldürme şansı.
             if (type == "drop" && !I.overhead && hy > Court.NET - 2.6f && r0 < .35f / stil.hucum)   // hücumcu rakip gevşek top az bırakır
             {
-                Shuttle.Aim(hx, hy, hz, Court.MID + (R01() - .5f) * 2.4f, Court.NET + 1.0f, true, 1.15f, out vx, out vy, out vz);
+                Shuttle.Aim(hx, hy, hz, SonsuzYarim ? YarimX(Court.MID + (R01() - .5f) * 2.4f) : Court.MID + (R01() - .5f) * 2.4f, Court.NET + 1.0f, true, 1.15f, out vx, out vy, out vz);
                 StartFlight("op", vx, vy, vz, hx, hy, hz, false, "drop", false, q); return;
             }
             float tx, ty, val; bool byAngle; Plan(type, OpYerSec(type), I.overhead, out tx, out ty, out byAngle, out val);
+            if (SonsuzYarim) tx = YarimX(tx);   // yarım saha: antrenör de sol koridora oynar
             if (type == "drive") val *= DriveHiz();
             if (obh && type == "clear") ty = Math.Max(ty, Court.NET + 1.2f);   // backhand clear'ı kısa kalır
             // geride kalınca rakip daha çok hata yapar (lastik bant); yorgunken sapma büyür
