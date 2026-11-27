@@ -86,7 +86,8 @@ namespace BirdieSmash.Game
             if (kok == null) { kok = KodIskelet(); r.Add(kok); }
             // Menü kıpırdarken ekran hızı yükselir (Kalite.Hareket, 2026-10-28): dokunma, basılı sürükleme, tekerlek ve
             // her USS geçişi (sekme çizgisi, sayfa kayması, düğme). TrickleDown: alt öğeler olayı tüketse de kök duyar.
-            kok.RegisterCallback<PointerDownEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
+            kok.RegisterCallback<PointerDownEvent>(e => { Kalite.Hareket(); dokunusSay++; }, TrickleDown.TrickleDown);
+            kok.RegisterCallback<PointerUpEvent>(e => dokunusSay++, TrickleDown.TrickleDown);   // Clickable bırakışta uygular: uzun basışta durgun ısıtma araya girmesin
             kok.RegisterCallback<PointerMoveEvent>(e => { if (e.pressedButtons != 0) Kalite.Hareket(); }, TrickleDown.TrickleDown);
             kok.RegisterCallback<WheelEvent>(e => Kalite.Hareket(), TrickleDown.TrickleDown);
             BasisSesiKur();
@@ -396,6 +397,12 @@ namespace BirdieSmash.Game
         // Dolap açıkken görünüm her değiştiğinde portre menü durgunken (son dokunuştan sonra) bir kez çizilir; çıkışta hepsi
         // önbellekten gelir. Vitrin kapalıyken yalnız bir bool okunur; anahtar dizesi yalnız Dolap'ta, 300 ms'de bir.
         string portreIsitilen;
+        // 2026-11-27 inceleme (fikir 22:06 #3, takılma): Dolap açık ve durgunken PortreIsit her 300 ms PlayerView.Benim() + Anahtar()
+        // kurup birkaç KB çöp üretiyordu (vitrin dansı sırasında GC). Görünüş yalnız oyuncu dokununca değişir: kök her basış ve
+        // bırakışta sayacı artırır, sayaç değişmediyse anahtar hiç kurulmaz. Fikirdeki "Ayar görünüm sürümü" yerine bu: görünüşü
+        // yazan yol çok (GS, RGOR, KOZ, GORUNUM, kaplama…), birini unutmak eski portre bırakırdı. Bulut kaydı Dolap açıkken görünüşü
+        // değiştirirse portre bir sonraki dokunuşta yenilenir.
+        int dokunusSay, portreDokunus = -1;
         // 2026-11-26 inceleme (fikir 07:06 #1): üst hap onarımı (02:06 #1) altı yere genellendi. Kariyer sıradaki maç "Sen" yüzü,
         // "buradasın" düğümü, Profil kartı, Gelişim başlığı, Antrenman şeridi ve Arkadaş ekranı Portre.Benim()'i kurulum karesinde
         // eşzamanlı çiziyor ve RT sonradan atılınca boş daire kalıyordu. BenAvatar önbellekten okur (yoksa insan simgesi) ve elemanı
@@ -443,6 +450,7 @@ namespace BirdieSmash.Game
             // Dolap kurulumuyla aynı karede yeniden ayrılıyordu. Menü durgunken yalnız ayırma (çizim yok); tikte tek ağır iş.
             if (root != null && root.ekran == Ekran.Menu && root.vitrin != null && !root.vitrin.gameObject.activeSelf && root.vitrin.Bosaltildi && Kalite.MenuDurgun) { root.vitrin.RtIsit(); return; }
             if (root == null || root.vitrin == null || !root.vitrin.gameObject.activeSelf || !Kalite.MenuDurgun) return;
+            if (dokunusSay == portreDokunus) return; portreDokunus = dokunusSay;
             string pa = Ayar.model + PlayerView.Benim().Anahtar(); if (pa == portreIsitilen) return;
             portreIsitilen = pa; vitrinRaketEski = true; Portre.Benim();
         }
@@ -611,9 +619,25 @@ namespace BirdieSmash.Game
                 if (g == 0 && ilkDene == null) { var dn = ol.Find(x => x.Length > 3 && x[3] != null); if (dn != null) ilkDene = dn[3]; }
                 if (ilkGrup == null && g < 2) { ilkGrup = GRUP[g]; ilkYuva = ol[0][2]; }
                 var b = Yazi(L.T(BAS[g]), 13, "soluk"); b.AddToClassList("seviye-grup"); liste.Add(b);
-                for (int i = 0; i < ol.Count && i < 3; i++) { var y = Yazi(L.T(ol[i][1]), 17); y.AddToClassList("seviye-oge"); liste.Add(y); }
+                // 2026-11-27 inceleme (fikir 22:06 #1): Seviye yolu eşyayı resimle gösteriyor, seviye anı yalnız adıyla sayıyordu (ödül en
+                // heyecanlı anda en soluk). Dolapta grubunda ilk resmi hazır eşyanın satırında 48 px küçük resim; yalnız Dolap kartlarının
+                // önbelleği (Portre.DeneHazir), yoksa satır yazı kalır: ödül anına çizim/kuyruk işi girmez (TAKILMA YOK).
+                bool resimVar = g != 0;
+                for (int i = 0; i < ol.Count && i < 3; i++)
+                {
+                    var y = Yazi(L.T(ol[i][1]), 17); y.AddToClassList("seviye-oge");
+                    Texture rs = null; string dk = ol[i].Length > 3 ? ol[i][3] : null; int ay = dk != null ? dk.IndexOf('|') : -1;
+                    if (!resimVar && ay > 0) rs = Portre.DeneHazir(dk.Substring(0, ay), dk.Substring(ay + 1));
+                    if (rs == null) { liste.Add(y); continue; }
+                    resimVar = true; var sr = Satir("seviye-oge-satir"); sr.pickingMode = PickingMode.Ignore; liste.Add(sr);
+                    var im = new Image { image = rs, scaleMode = ScaleMode.ScaleToFit, pickingMode = PickingMode.Ignore }; im.AddToClassList("seviye-oge-resim"); sr.Add(im); sr.Add(y);
+                }
                 if (ol.Count > 3) liste.Add(Yazi(L.T("ve {0} öğe daha", ol.Count - 3), 14, "soluk"));
             }
+            // 2026-11-27 inceleme (fikir 22:06 #5): an kapanınca "bir maç daha" için sebep görünmüyordu. Tek soluk satır sıradaki
+            // seviyenin ödülünü söyler (Seviye yolu kartıyla aynı özet), 5'in katı "Büyük ödül" eki; dokunulmaz, son seviyede yok.
+            int sSv = sv + 1; string sAc = SvAcilanOzet(sSv, 2);   // açılan yoksa (Sv 30 sonrası dahil) null: satır yok
+            if (sAc != null) { var sy = Yazi(L.T("Sıradaki: Sv {0}", sSv) + " · " + sAc + (sSv % 5 == 0 ? " · " + L.T("Büyük ödül") : ""), 13, "soluk"); sy.AddToClassList("seviye-siradaki"); liste.Add(sy); }
             // "Dolap'ta dene" yalnız sekmeyi açıyordu, oyuncu açılan eşyayı listede kendisi arıyordu (inceleme 10 Kas 19:49 #5): artık ilk
             // denenebilir eşyanın sayfası açılır ve vitrinde giydirilir (kayda yazılmaz; "Denemeyi bırak" zaten var). Sayfa bu modelde
             // yoksa (tip/saç yalnız varyant görünürken) eski davranış: yalnız sekme.
@@ -663,6 +687,15 @@ namespace BirdieSmash.Game
             bool yeniMuhur = m1 > m0; string muhurAd = m1 >= 2 ? L.T("Altın tur mührü") : L.T("Bronz tur mührü");
             ic.Add(Yazi(Buyuk(bitti ? L.T("Tur tamam") : muhurAd), 15, "seviye-ust"));
             var ad = Yazi(L.T(KariyerEkranTurAd(t)), 30, "kalin"); ad.AddToClassList("toren-ad"); ic.Add(ad);
+            // 2026-11-27 inceleme (fikir 22:06 #2): turun asıl ödülü kupa kartta yoktu, yalnız Profil rafında iniyordu (Profil'e gitmeyen
+            // hiç görmüyordu). Final kazanılınca (bitti) adın altında altın kupa, rafla aynı iniş (KupaIndir); Profil'deki ilk görüş inişi
+            // değişmez. Büyük yazıda küçük kupa, alt satır yok (ad erişim etiketinde). Hareketi azaltta iniş yok.
+            if (bitti)
+            {
+                var ku = Ikon(Ikonlar.Kupa, K >= 1.35f ? 40 : 56, ALTIN); ku.pickingMode = PickingMode.Ignore; ku.AddToClassList("toren-kupa"); ic.Add(ku);
+                if (K < 1.35f) { var kt = Yazi(L.T("Kupa rafına eklendi"), 13, "soluk"); kt.AddToClassList("toren-kupa-yazi"); ic.Add(kt); }
+                if (!Ayar.reduce) KupaIndir(ku);
+            }
             int ys = p.TurYildiz(t);
             var mr = Satir("toren-muhur"); mr.pickingMode = PickingMode.Ignore; ic.Add(mr);
             // r147 büyük yazı: mühür yıldızı 56 → 40 (metne yer), satır tam genişlik (USS), metin sütunu kalan yeri alır ve sarar.
@@ -683,13 +716,23 @@ namespace BirdieSmash.Game
                 var ek = Dugme(L.T("Eksik yıldız: {0} maç", eksikN) + "  ›", () => { kapat(); kariyerTur = et; SekmeAc(Sekme.Kariyer); MacKartAc(eg); }, "toren-eksik", null, 14);
                 ic.Add(ek);
             }
-            // turda yenilen rakipler (renk noktası + ad; yenilmeyen soluk)
+            // turda yenilen rakipler (yenilmeyen soluk). 2026-11-27 inceleme (fikir 22:06 #6): renk noktası + 50 px'te kesilen 11 pt ad
+            // oyuncunun Kariyer'de yüzünden tanıdığı rakibi tanıtmıyordu. Altı yüzün hepsi önbellekteyse (Portre.RakipHazir, törende
+            // çizim yok) 36 px yüz + ✓, ad yalnız erişim etiketinde; biri bile eksikse bugünkü nokta + ad (karışık satır olmasın).
+            bool yuzler = true; var yuz = new Texture[KariyerVeri.BASAMAK];
+            for (int b = 0; b < KariyerVeri.BASAMAK && yuzler; b++) { yuz[b] = Portre.RakipHazir(KariyerVeri.Rakip(KariyerVeri.Global(t, b))); yuzler = yuz[b] != null; }
             var yenilenAd = new System.Collections.Generic.List<string>(); var rk = Satir("toren-rakipler"); rk.pickingMode = PickingMode.Ignore; ic.Add(rk);
             for (int b = 0; b < KariyerVeri.BASAMAK; b++)
             {
                 int g = KariyerVeri.Global(t, b); var st = KariyerVeri.Rakip(g); bool yen = p.Kazanildi(g); if (yen) yenilenAd.Add(st.isim);
                 var h = new VisualElement(); h.AddToClassList("toren-rakip"); h.pickingMode = PickingMode.Ignore; if (!yen) h.AddToClassList("toren-rakip--yok"); rk.Add(h);
                 var n = new VisualElement(); n.AddToClassList("toren-nokta"); n.style.backgroundColor = Kit.Hex(st.renk); n.pickingMode = PickingMode.Ignore; h.Add(n);
+                if (yuzler)
+                {
+                    n.AddToClassList("toren-nokta--yuz"); var yi = new Image { image = yuz[b], scaleMode = ScaleMode.ScaleAndCrop, pickingMode = PickingMode.Ignore }; yi.AddToClassList("toren-yuz"); n.Add(yi);
+                    if (yen) { var tk = new VisualElement(); tk.AddToClassList("toren-tik"); tk.pickingMode = PickingMode.Ignore; tk.Add(Ikon(Ikonlar.Tik, 10, KOYU)); h.Add(tk); }
+                    continue;
+                }
                 if (yen) n.Add(Ikon(Ikonlar.Tik, 14, MUREKKEP));
                 if (K < 1.35f) { var ry = Yazi(st.isim, 11, "soluk"); ry.style.whiteSpace = WhiteSpace.NoWrap; h.Add(ry); }   // büyük yazıda altı ad tek satıra sığmıyor (r137): yalnız nokta, ad erişilebilirlik etiketinde
             }
