@@ -222,7 +222,7 @@ namespace BirdieSmash.Game
         void ZorlukParca(VisualElement cta, VisualElement c)
         {
             var z = new VisualElement(); z.AddToClassList("cta-zorluk");
-            z.Add(Yazi(L.T("Zorluk"), 11, "cta-zorluk-ust")); z.Add(Yazi(L.T(Ayar.ZorlukAd), 15, "cta-zorluk-ad"));
+            z.Add(Yazi(L.T("Zorluk"), 12, "cta-zorluk-ust"));   // 2026-11-27: 12 pt alt sınır, soluklaştırma kalktı (fikir 12:06 #3) z.Add(Yazi(L.T(Ayar.ZorlukAd), 15, "cta-zorluk-ad"));
             int ik = cta.IndexOf(cta.Q<VisualElement>(null, "cta-ikon")); if (ik < 0) cta.Add(z); else cta.Insert(ik, z);
             var satir = Satir("zorluk-acilir"); satir.style.display = DisplayStyle.None; ZorlukSatir(satir, c, false); c.Add(satir);
             z.AddManipulator(new Clickable(() =>

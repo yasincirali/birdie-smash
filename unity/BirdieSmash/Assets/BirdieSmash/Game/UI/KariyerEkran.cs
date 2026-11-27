@@ -186,13 +186,21 @@ namespace BirdieSmash.Game
         // bir ısıtma (Oyna ve Kariyer sekmeleri ikisi de kurulu kalıyor; iki FBX çizimi tek kareye binmesin).
         static int isitKare = -1;
         static bool IsitmaSirasi() { if (!Kalite.MenuDurgun || Time.frameCount == isitKare) return false; isitKare = Time.frameCount; return true; }
+        // 2026-11-27 inceleme (fikir 12:06 #5): baş harf → yüz bir karede atlıyordu; yüz .15 sn'de belirir (yalnız opacity). Hareketi azaltta anında.
+        static void YuzBelir(VisualElement av)
+        {
+            if (Ayar.reduce || av.childCount == 0) return; var im = av[av.childCount - 1];
+            im.style.opacity = 0f; im.style.transitionProperty = new System.Collections.Generic.List<StylePropertyName> { new StylePropertyName("opacity") };
+            im.style.transitionDuration = new System.Collections.Generic.List<TimeValue> { new TimeValue(.15f, TimeUnit.Second) };
+            im.schedule.Execute(() => im.style.opacity = 1f).StartingIn(16);
+        }
         void RakipAvatarIc(VisualElement av, Style st, int ikonPx, float harfPx)
         {
             var rp = Portre.RakipHazir(st);
             if (rp != null) { AvatarIc(av, rp, ikonPx); return; }
             if (st != null && !string.IsNullOrEmpty(st.isim)) { var bh = Yazi(st.isim.Substring(0, 1), harfPx, "kalin"); bh.style.color = KOYU; bh.style.fontSize = harfPx; av.Add(bh); }
             bool isitti = false;
-            av.schedule.Execute(() => { if (isitti || !IsitmaSirasi()) return; isitti = true; var t = Portre.Rakip(st); if (t != null) { av.Clear(); AvatarIc(av, t, ikonPx); } })
+            av.schedule.Execute(() => { if (isitti || !IsitmaSirasi()) return; isitti = true; var t = Portre.Rakip(st); if (t != null) { av.Clear(); AvatarIc(av, t, ikonPx); YuzBelir(av); } })
                 .Every(300).Until(() => isitti || av.panel == null);   // sayfa kapanınca biter
         }
 
