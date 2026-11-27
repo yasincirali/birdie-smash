@@ -1,4 +1,7 @@
 === UNITY ===
+Maç sonu reklam teklifi (27 Kasım):
+- "Ödüle +%50 · reklam izle" düğmesinin sağında bir × var. Basınca teklif o maç için kapanıyor; izlemek istemezsen geçebilirsin.
+Nasıl denenir: Bir maçı kazan; teklif çıkarsa sağdaki ×'e bas. Teklif kaybolmalı, Tekrar oyna ve Ana menü yerinde durmalı.
 Kariyer yolu ve Atölye alımı (27 Kasım akşamüstü):
 - Kariyer'de maç kazanıp döndüğünde yolun yeni kısmı kısa bir hareketle dolar; geçtiğin yol artık limon rengi.
 - Kariyer'deki "yükseltme eksik" uyarısı sarı değil; sarı yalnız Oyna düğmesinde kalıyor.
