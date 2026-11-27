@@ -1,0 +1,4 @@
+reklam tr · ekran Bitti
+sonsuz yarım tr · isabet 0 · top 0 · yarım True
+reklam en · ekran Bitti
+sonsuz yarım en · isabet 0 · top 0 · yarım True
