@@ -50,8 +50,9 @@ namespace BirdieSmash.Game
             turKutular = TurKutular(kariyerTur, sira); c.Add(turKutular);
         }
 
-        static readonly Color YOL_RENK = new Color(1, 1, 1, .14f), YOL_GECTI = new Color(.976f, .824f, .447f, .55f);
-        static void YolCiz(MeshGenerationContext mgc, VisualElement cizgi, System.Collections.Generic.List<VisualElement> d, int gecilen)
+        // 2026-11-27 inceleme (fikir 17:06 #3): geçilen kesit altındı; altın Tüy/ödül rengi (§8.1), "senin ilerlemen" limon (--lime).
+        static readonly Color YOL_RENK = new Color(1, 1, 1, .14f), YOL_GECTI = new Color(.788f, .933f, .294f, .55f);
+        static void YolCiz(MeshGenerationContext mgc, VisualElement cizgi, System.Collections.Generic.List<VisualElement> d, int gecilen, int tur, int yDen, int yA, float dol)
         {
             if (d.Count < 2 || float.IsNaN(d[0].layout.width)) return;
             var pz = mgc.painter2D; pz.lineWidth = 6; pz.lineCap = LineCap.Round; pz.lineJoin = LineJoin.Round;
@@ -59,9 +60,19 @@ namespace BirdieSmash.Game
             for (int i = 0; i < d.Count; i++) m[i] = cizgi.WorldToLocal(d[i].worldBound.center);
             for (int i = 0; i < m.Length - 1; i++)
             {
-                Vector2 a = m[i], b = m[i + 1]; float oy = (b.y - a.y) * .5f;
-                pz.strokeColor = i <= gecilen ? YOL_GECTI : YOL_RENK;   // düğüm i geçildiyse ondan çıkan kesit yürünmüş yol
-                pz.BeginPath(); pz.MoveTo(a); pz.BezierCurveTo(new Vector2(a.x, a.y + oy), new Vector2(b.x, b.y - oy), b); pz.Stroke();
+                Vector2 a = m[i], b = m[i + 1]; float oy = (b.y - a.y) * .5f; Vector2 c1 = new Vector2(a.x, a.y + oy), c2 = new Vector2(b.x, b.y - oy);
+                int g = KariyerVeri.Global(tur, i); bool yeni = g >= yDen && g < yA && dol < 1f;
+                pz.strokeColor = i <= gecilen && !yeni ? YOL_GECTI : YOL_RENK;   // düğüm i geçildiyse ondan çıkan kesit yürünmüş yol
+                pz.BeginPath(); pz.MoveTo(a); pz.BezierCurveTo(c1, c2, b); pz.Stroke();
+                if (!yeni || dol <= 0f) continue;
+                // dolan kesit: eğrinin ilk "dol" kadarı 12 parçalı çizgiyle (Painter2D kısmi Bezier çizmez)
+                pz.strokeColor = YOL_GECTI; pz.BeginPath(); pz.MoveTo(a);
+                for (int k = 1; k <= 12; k++)
+                {
+                    float s = dol * k / 12f, r = 1 - s;
+                    pz.LineTo(r * r * r * a + 3 * r * r * s * c1 + 3 * r * s * s * c2 + s * s * s * b);
+                }
+                pz.Stroke();
             }
         }
         // Basamak noktası (44 pt): geçilen = ✓, şimdiki = güneş diski üstünde numara, açık = numara, kilitli = kilit, final = kupa

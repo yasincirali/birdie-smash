@@ -199,7 +199,7 @@ namespace BirdieSmash.Game
         }
 
         // Duraklar çizgisi: altı düğüm yan yana (BasamakNokta: geçilen ✓, şimdiki sarı halka + yüz, açık numara, kilitli kilit,
-        // final kupa; dokununca o durağın maç kartı), arkalarında tek düz çizgi (YolCiz, geçilen kesit altın). Altında aşama
+        // final kupa; dokununca o durağın maç kartı), arkalarında tek düz çizgi (YolCiz, geçilen kesit limon). Altında aşama
         // etiketleri düğüm gruplarına yayılır: grup turunda Grup (1–3) · Çeyrek · Yarı · Final, diğerlerinde Duraklar (1–4) · Yarı ·
         // Final (kariyer.json'da 5. basamak yarı final, 6. final). Şimdiki aşama sarı + kalın (yalnız renk değil). Düğüm 44 pt sabit:
         // en dar telefonda (320 pt) altı düğüm sığsın diye kart iç boşluğu 6.
@@ -215,7 +215,22 @@ namespace BirdieSmash.Game
                 var dg = BasamakNokta(g, sira, slot); slot.Add(dg); dugumler.Add(dg); if (p.Kazanildi(g)) gecilen = b;
             }
             int gc = gecilen;
-            cizgi.generateVisualContent += mgc => YolCiz(mgc, cizgi, dugumler, gc);
+            // 2026-11-27 inceleme (fikir 17:06 #4): yeni geçilen durakta yalnız ✓ büyüyordu, yol kesiti hazır dolu çiziliyordu. Basamak
+            // animasyonu varsa (bir kez, BasamakAniHazirla) yeni kesitler .45 sn ease-out ile dolar, ✓ ile aynı anda (120 ms) başlar.
+            // Yalnız bu öğe yeniden boyanır (yerleşim yok); hareketi azaltta doğrudan son hâl, ses/titreşim basamaktan kalır.
+            int yDen = -1, yA = -1; float dol = 1f;
+            if (basAniDen >= 0 && basAniA > basAniDen && !Ayar.reduce)
+            {
+                yDen = basAniDen; yA = basAniA; dol = 0f; float bas = -1; IVisualElementScheduledItem it = null;
+                it = cizgi.schedule.Execute(() =>
+                {
+                    if (cizgi.panel == null) { it.Pause(); return; }
+                    if (bas < 0) bas = Time.unscaledTime;
+                    float u = Mathf.Clamp01((Time.unscaledTime - bas) / .45f); dol = 1 - (1 - u) * (1 - u) * (1 - u);
+                    cizgi.MarkDirtyRepaint(); if (u >= 1) it.Pause();
+                }).Every(16).StartingIn(120);
+            }
+            cizgi.generateVisualContent += mgc => YolCiz(mgc, cizgi, dugumler, gc, t, yDen, yA, dol);
             kap.RegisterCallback<GeometryChangedEvent>(e => cizgi.MarkDirtyRepaint());
             bool grup = GrupTuru(t);
             string[] ad = grup ? new[] { "Grup", "Çeyrek", "Yarı", "Final" } : new[] { "Duraklar", "Yarı", "Final" };
@@ -281,7 +296,7 @@ namespace BirdieSmash.Game
                 {
                     var hz = Satir("arali"); hz.style.alignItems = Align.Center; kb.Add(hz);
                     // 2026-11-21 inceleme (#4): tek sayı; "Ekipman 0/3 · 3 yükseltme eksik" aynı eksiği iki kez söylüyordu.
-                    var ek = Yazi(L.T("{0} yükseltme eksik", tv.epMin - ep), 13, "durum-simdi"); ek.AddToClassList("esnek-yatay"); SozcukSigdir(ek); hz.Add(ek);
+                    var ek = Yazi(L.T("{0} yükseltme eksik", tv.epMin - ep), 13, "kalin"); ek.AddToClassList("soluk");   // 2026-11-27 (fikir 17:06 #2): sarı yalnız Oyna ve "şimdi" düğümünde (§8.2 #6) ek.AddToClassList("esnek-yatay"); SozcukSigdir(ek); hz.Add(ek);
                     hz.Add(Dugme(L.T("Atölye'ye git"), () => SekmeAc(Sekme.Atolye), "kucuk-dugme"));
                 }
             }

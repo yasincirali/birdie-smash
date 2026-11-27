@@ -102,7 +102,7 @@ namespace BirdieSmash.Game
             }
             // 2026-11-14 inceleme (fikir 12:05 #5): Tüy'ün ne işe yaradığı yalnız hedef satırı yokken; hedef satırı "ne için" ve
             // "maçla kazanılır"ı zaten söylüyor, iki satır aynı şeyi anlatıyordu. Fiyat ızgarası bir satır yukarı çıkar (SE).
-            else ust.Add(Yazi(L.T("Tüy'le Dolap'ta skin, Atölye'de ekipman alırsın. Maç oynayarak da kazanırsın."), 13, "soluk"));
+            else ust.Add(Yazi(L.T("Tüy'le Dolap'ta görünüm, Atölye'de ekipman alırsın. Maç oynayarak da kazanırsın."), 13, "soluk"));
             if (!string.IsNullOrEmpty(dukkanNot)) { var n = Yazi(dukkanNot, 14, "kalin"); n.AddToClassList("dukkan-not"); c.Add(n); }
             if (dukkanHedefHazir && !string.IsNullOrEmpty(dukkanNot) && hd.gecerli && eksik == 0)
             { string hk = hd.kat, hi = hd.id; c.Add(Dugme(L.T("Şimdi al") + "  ›", () => { dukkanHedefHazir = false; dukkanNot = null; SekmeAc(gez.sekme); HedefeGit(hk, hi); }, "dugme--birincil")); }

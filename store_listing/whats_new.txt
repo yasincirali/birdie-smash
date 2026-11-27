@@ -1,4 +1,11 @@
 === UNITY ===
+Kariyer yolu ve Atölye alımı (27 Kasım akşamüstü):
+- Kariyer'de maç kazanıp döndüğünde yolun yeni kısmı kısa bir hareketle dolar; geçtiğin yol artık limon rengi.
+- Kariyer'deki "yükseltme eksik" uyarısı sarı değil; sarı yalnız Oyna düğmesinde kalıyor.
+- Atölye'de bir model aldığında ekran bir kez yenilenir, sevinç daha akıcı başlar.
+- Antrenman listesinde görev satırları kısaldı; son oturumların isabeti görevin kendi sayfasında.
+- Günün maçı ödül cümlesi ve Dükkân açıklaması daha net.
+Nasıl denenir: Kariyer'de bir maç kazan ve Kariyer'e dön: yeni yol parçası soldan sağa dolmalı, sonra yeni durak belirmeli. Atölye'de Tüy'ün yettiği bir modeli al: takılma olmamalı. Antrenman'da bir göreve dokun: "Son oturum" satırı orada olmalı.
 Gelişim ve Kariyer cilası (27 Kasım öğle):
 - Gelişim sayfasında oyuncunun portresi daha büyük; her puan verdiğinde portre kısa bir sıçramayla tepki verir, dalı tavana getirince daha belirgin sıçrar.
 - Gelişim'de puan dağıttıktan sonra Dolap ve Kariyer'e geçiş daha akıcı (bu sayfalar artık boşuna baştan kurulmuyor).
