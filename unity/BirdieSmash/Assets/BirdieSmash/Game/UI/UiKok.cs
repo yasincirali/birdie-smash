@@ -885,11 +885,26 @@ namespace BirdieSmash.Game
             Dortgen(KORT_ZEMIN, P(-.9f, -.06f), P(1.9f, -.06f), P(1.9f, .97f), P(-.9f, .97f));   // v<1: yakın taban kamera arkasına geçmesin (D>0)
             Dortgen(KORT_YESIL, P(0, 0), P(1, 0), P(1, 1), P(0, 1));
             for (int i = 0; i < 6; i += 2) Dortgen(new Color(1, 1, 1, .05f), P(i / 6f, 0), P((i + 1) / 6f, 0), P((i + 1) / 6f, 1), P(i / 6f, 1));
-            p.strokeColor = KORT_CIZGI; p.lineWidth = 2 * sr; p.lineJoin = LineJoin.Round;
+            // Sanatsal dil (yasin 2026-11-27: "sanatsal bir dili olduğundan emin ol"): düz vektör yerine salon atmosferi. Uzakta mavi
+            // sis (derinlik), ışık havuzu (üç halka), fileden düşen yumuşak gölge, çizgilerde ince parıltı, tavandan inen üç ışık
+            // huzmesi ve kenarlarda kararma (vinyet). Hepsi düşük alfa yığını: gradyan nesnesi yok, her boyda aynı, karede iş yok.
+            for (int k = 0; k < 6; k++) Dortgen(new Color(KORT_ZEMIN.r, KORT_ZEMIN.g, KORT_ZEMIN.b, .09f), P(0, 0), P(1, 0), P(1, .08f * (6 - k) + .02f), P(0, .08f * (6 - k) + .02f));   // üst üste biner, sis kademeli solar (sert kenar yok)
+            var hv = P(.5f, .6f);
+            for (int k = 0; k < 3; k++)
+            {
+                float rx = (150 - k * 38) * sx, ry = (46 - k * 11) * sy; p.fillColor = new Color(1, 1, 1, .06f); p.BeginPath();
+                for (int a = 0; a < 28; a++) { float ac = a * Mathf.PI * 2 / 28; var n = hv + new Vector2(Mathf.Cos(ac) * rx, Mathf.Sin(ac) * ry); if (a == 0) p.MoveTo(n); else p.LineTo(n); }
+                p.ClosePath(); p.Fill();
+            }
+            for (int k = 0; k < 4; k++) Dortgen(new Color(0, 0, .08f, .07f), P(-.082f, .5f), P(1.082f, .5f), P(1.1f, .5f + .03f * (k + 1)), P(-.1f, .5f + .03f * (k + 1)));   // file gölgesi: yakın tarafa yumuşak düşer
+            System.Action Cizgiler = () => {
             System.Action<float, float, float, float> Cz = (u1, v1, u2, v2) => { p.BeginPath(); p.MoveTo(P(u1, v1)); p.LineTo(P(u2, v2)); p.Stroke(); };
             float yan = .46f / GENIS, sv = 1.98f / UZUN, ls = .76f / UZUN;
             Cz(0, 0, 1, 0); Cz(0, 1, 1, 1); Cz(0, 0, 0, 1); Cz(1, 0, 1, 1); Cz(yan, 0, yan, 1); Cz(1 - yan, 0, 1 - yan, 1);
             Cz(0, ls, 1, ls); Cz(0, 1 - ls, 1, 1 - ls); Cz(0, .5f - sv, 1, .5f - sv); Cz(0, .5f + sv, 1, .5f + sv); Cz(.5f, 0, .5f, .5f - sv); Cz(.5f, .5f + sv, .5f, 1);
+            };
+            p.lineJoin = LineJoin.Round; p.strokeColor = new Color(1, 1, 1, .14f); p.lineWidth = 5.5f * sr; Cizgiler();   // parıltı
+            p.strokeColor = KORT_CIZGI; p.lineWidth = 2 * sr; Cizgiler();
             // file: koyu ağ, ince ağ çizgileri, beyaz üst bant, iki direk (yükseklik 1,55 m)
             var nl = P(-.082f, .5f); var nr = P(1.082f, .5f); float nh = F * 1.55f / (MESAFE + UZUN * .5f) * sy;
             p.fillColor = new Color(.04f, .08f, .24f, .34f); p.BeginPath(); p.MoveTo(nl + new Vector2(0, -nh)); p.LineTo(nr + new Vector2(0, -nh)); p.LineTo(nr); p.LineTo(nl); p.ClosePath(); p.Fill();
@@ -902,6 +917,17 @@ namespace BirdieSmash.Game
             float orta = (nl.x + nr.x) / 2; Dik2(p, new Color(1, 1, 1, .9f), orta - 1.2f * sr, nl.y - nh, 2.4f * sr, nh);
             var direk = Kit.Hex("#DFE6F5"); float dw = Mathf.Max(3f * sr, nh * .05f);
             Dik2(p, direk, nl.x - dw / 2, nl.y - nh - 2 * sr, dw, nh + 2 * sr); Dik2(p, direk, nr.x - dw / 2, nl.y - nh - 2 * sr, dw, nh + 2 * sr);
+            // tavan ışık huzmeleri (tribünün üstünden kortun ortasına) ve vinyet
+            for (int h = 0; h < 3; h++)
+            {
+                float x0 = 70 + h * 125;
+                p.fillColor = new Color(1, 1, 1, .035f); p.BeginPath(); p.MoveTo(Q(x0 - 10, 0)); p.LineTo(Q(x0 + 10, 0)); p.LineTo(Q(195 + (x0 - 195) * .3f + 55, 205)); p.LineTo(Q(195 + (x0 - 195) * .3f - 55, 205)); p.ClosePath(); p.Fill();
+            }
+            for (int k = 0; k < 6; k++)
+            {
+                var vc = new Color(.02f, .04f, .14f, .08f);
+                Dik(vc, 0, 0, 16 - k * 2.5f, 300); Dik(vc, 390 - (16 - k * 2.5f), 0, 16 - k * 2.5f, 300); Dik(vc, 0, 0, 390, 14 - k * 2.3f);
+            }
         }
         static void Dik2(Painter2D p, Color c, float x, float y, float w, float h) { p.fillColor = c; p.BeginPath(); p.MoveTo(new Vector2(x, y)); p.LineTo(new Vector2(x + w, y)); p.LineTo(new Vector2(x + w, y + h)); p.LineTo(new Vector2(x, y + h)); p.ClosePath(); p.Fill(); }
         void ZeminYerlestir()
