@@ -654,9 +654,11 @@ namespace BirdieSmash.Game
         public bool ReklamUygun(bool baskaIkincil)
         {
             if (!rekKart || odul == null) return false;
+            if (EkranTuru.Acik && EkranTuru.ReklamZorla) return !rekDenendi;   // yalnız CI reklam turu (SDK yok); diğer ikinciller olsa da teklifi çizdir
             return OdulluReklam.Uygun(RekDurum(), OdulluReklam.Gun(System.DateTime.Now), Ayar.wins, odul.tuy, baskaIkincil, rekDenendi, ReklamSdk.OdulluHazir);
         }
         public void ReklamTeklifGordu() { rekGoruldu = true; }
+        public void ReklamGec() { if (!rekKart) return; rekGoruldu = true; rekDenendi = true; }   // × ile geçildi: bu maç teklif yok, kart kapanınca ret sayılır
         public void OdulluIzle()
         {
             if (!rekKart || odul == null || rekDenendi) return; rekDenendi = true; var o = odul;

@@ -49,7 +49,7 @@ namespace BirdieSmash.Game
         }
 
         // 2026-11-23 inceleme (fikir 22:06 #1): Hud.SonucTani yalnız tur açıkken kurulur; oyuncuda maç sonu kartı tanı dizesi ayırmaz.
-        public static bool Acik;
+        public static bool Acik, ReklamZorla;
         IEnumerator Start()
         {
             Acik = true; Directory.CreateDirectory(dir); QualitySettings.vSyncCount = 0;   // xvfb ekranı 0 Hz: dikey eşitleme ilk karede bekletiyordu (tahmin)
@@ -83,6 +83,22 @@ namespace BirdieSmash.Game
                 yield return KlipSeritleri("oyuncak"); yield return FileKare();
                 if (root.ui != null) { root.AnaMenu(); root.ui.SekmeAc(Sekme.Oyna); }
                 for (int i = 0; i < 3; i++) { float t0 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t0 < 4) yield return null; yield return Cek("afis_" + i); }
+                File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
+            }
+            // 2026-11-27 reklam kısa turu (`ekran/kisa-reklam-*`): maç sonu ödüllü reklam teklifi ve × düğmesi. CI'da AdMob yok
+            // (OdulluHazir hep false), ReklamZorla teklifi yalnız turda çizdirir; kural (OdulluReklam.Uygun) gerçek oyunda aynen.
+            if (kip == "reklam")
+            {
+                ReklamZorla = true; Ayar.kariyerModu = false;
+                foreach (var dl in new[] { "tr", "en" })
+                {
+                    Ayar.dil = dl; root.StartMatch(false, false, false); botAcik = false;
+                    { float t1 = Time.realtimeSinceStartup; while (Time.realtimeSinceStartup - t1 < 4) yield return null; }
+                    var mt = root.match; mt.sc[0] = 5; mt.sc[1] = 2; mt.matchDone = true; mt.between = true; mt.betweenT = 1.4f; float tz = Time.realtimeSinceStartup;
+                    while (root.ekran != Ekran.Bitti && Time.realtimeSinceStartup - tz < 8) yield return null;
+                    yield return Bekle(40); yield return Cek("macsonu_reklam_" + dl); rap.AppendLine("reklam " + dl + " · ekran " + root.ekran);
+                    root.ReklamGec(); yield return Bekle(10); yield return Cek("macsonu_reklam_gecildi_" + dl); root.AnaMenu(); yield return Bekle(10);
+                }
                 File.WriteAllText(Path.Combine(dir, "rapor.txt"), rap.ToString()); Application.Quit(0); yield break;
             }
             // 2026-11-26 saha kısa turu (`ekran/kisa-saha-*`): yalnız saha kareleri (her saha bir maç anı + Oyna menüsü). Tam tur

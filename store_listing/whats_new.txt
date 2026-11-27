@@ -1,4 +1,7 @@
 === UNITY ===
+Maç sonu reklam teklifi (27 Kasım):
+- "Ödüle +%50 · reklam izle" düğmesinin sağında bir × var. Basınca teklif o maç için kapanıyor; izlemek istemezsen geçebilirsin.
+Nasıl denenir: Bir maçı kazan; teklif çıkarsa sağdaki ×'e bas. Teklif kaybolmalı, Tekrar oyna ve Ana menü yerinde durmalı.
 Menü akıcılığı (27 Kasım sabah):
 - Alt bantta soldaki bir sekmeye geçince sayfa artık soldan, sağdakine geçince sağdan kayarak gelir.
 - Dolap'a ilk girişte oyuncu bir tam tur döner; sonraki girişlerde kısa bir dönüşle hemen yerine oturur, beklemek yok.

@@ -1538,7 +1538,15 @@ namespace BirdieSmash.Game
             float yb = Mathf.Max(y + 6 * s, H - bot - blokH);
             if (BuyukDugme(new Rect(x, yb, w, ctaH), ct, R.bittiDugmeAlt, s, al)) root.TekrarOyna(); yb += ctaH + 12 * s;
             int ki = 0; float kw = cift ? (w - gap) / 2 : w;
-            if (rek && ki < nIk) { R.ReklamTeklifGordu(); if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Ödüle +%50 · reklam izle"), al)) R.OdulluIzle(); }
+            // 2026-11-27 (yasin: "izlersen Tüy kazanırsın kalsın, ama X ile geçebilsin"): teklifin sağında kare bir × düğmesi (yükseklik
+            // kadar, ≥ 44 pt). Basınca teklif bu maç kapanır ve ret sayılır (OdulluReklam: 3 ret → 3 maç sus); ödül ve sayaç yanmaz.
+            // Teklif zaten isteğe bağlıydı (ana düğme yerinde), × "istemiyorum"u açıkça söyletir.
+            if (rek && ki < nIk)
+            {
+                R.ReklamTeklifGordu(); var rr = IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk);
+                if (ADugme(new Rect(rr.x, rr.y, rr.width - bh - gap, rr.height), L.T("Ödüle +%50 · reklam izle"), al)) R.OdulluIzle();
+                if (ADugme(new Rect(rr.xMax - bh, rr.y, bh, rr.height), "×", al)) R.ReklamGec();
+            }
             if (od2 != null && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Antrenman: {0}", L.T(od2.ad)), al)) root.DrilOyna(od2.id); }
             if (yuk && ki < nIk) { if (ADugme(IkincilYer(ref ki, ref yb, x, kw, bh, gap, cift, nIk), L.T("Ekipmanı yükselt"), al)) { root.AnaMenu(); if (root.ui != null) root.ui.SekmeAc(Sekme.Atolye); } }
             // 2026-11-02 hedef eşya: yalnız bu maçın Tüy'ü hedefi yetişir yaptıysa (sonraki maçlarda satır "Hazır" der, düğme çıkmaz).
