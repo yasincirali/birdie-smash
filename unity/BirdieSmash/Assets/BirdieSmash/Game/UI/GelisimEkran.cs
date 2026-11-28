@@ -23,9 +23,12 @@ namespace BirdieSmash.Game
             var bsol = Satir("rakip-satir"); bsol.pickingMode = PickingMode.Ignore; bsol.style.marginTop = 0; bsol.style.flexShrink = 1f; bas.Add(bsol);
             // 2026-11-27 inceleme (fikir 12:06 #2): 36 → 44 pt; puan verilince portre kısa bir yayla büyür (PortrePop), "güçlenen benim".
             // 56–64 önerildi ama büyük yazıda başlık satırı sarıyor; 44 orta yol.
-            var av = new VisualElement(); av.AddToClassList("avatar"); av.pickingMode = PickingMode.Ignore; av.style.width = 44; av.style.height = 44;
-            av.style.borderTopLeftRadius = av.style.borderTopRightRadius = av.style.borderBottomLeftRadius = av.style.borderBottomRightRadius = 22;
-            av.style.marginRight = 8; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); BenAvatar(av, 24); bsol.Add(av); gelPortre = av;
+            var av = new VisualElement(); av.AddToClassList("avatar"); av.pickingMode = PickingMode.Ignore; // 2026-11-28 inceleme (fikir 02:06 #1, ui-ux-pro ux #79 boş durum): Sv 1'de radar alanı sıfır bir üçgendi, "yüklenmedi" gibi
+            // okunuyordu. Puan yokken radar kurulmaz, portre 72 pt olur: sayfanın konusu güçlenecek oyuncu, yanında "İlk puanın Sv 2'de".
+            int avPx = top == 0 ? 72 : 44;
+            av.style.width = avPx; av.style.height = avPx;
+            av.style.borderTopLeftRadius = av.style.borderTopRightRadius = av.style.borderBottomLeftRadius = av.style.borderBottomRightRadius = avPx / 2;
+            av.style.marginRight = top == 0 ? 12 : 8; av.style.backgroundColor = Kit.Hex(Ayar.FORMA); BenAvatar(av, top == 0 ? 40 : 24); bsol.Add(av); gelPortre = av;
             // 2026-11-22 inceleme (fikir 12:06 #4, §7.4): "Dağıtılacak puan: 3" yanında "7/10 puan" aynı veriyi iki kez söylüyordu,
             // büyük yazıda başlık satırını sarıyordu. Tek etiket: kalan / toplam; bitince "10 puanın hepsi dağıtıldı".
             gelUst = Yazi(GelUstMetin(top, bos), 16, "kalin"); gelUst.style.whiteSpace = WhiteSpace.Normal; gelUst.style.flexShrink = 1; bsol.Add(gelUst);
@@ -34,7 +37,7 @@ namespace BirdieSmash.Game
             // 2026-11-27 inceleme (fikir 12:06 #4, §10.2): "en çok 10" her kartın "n/10"unu tekrar ediyordu; yeni bilgi yalnız geri alınabilmesi.
             if (top > 0) { var ac = Yazi(L.T("Puanları istediğin an geri alabilirsin."), 13, "soluk"); ac.style.whiteSpace = WhiteSpace.Normal; ac.style.marginTop = 4; ac.style.marginBottom = 6; c.Add(ac); }
             if (Ayar.gear.eko.esit && !Ayar.kariyerModu) { var es = Yazi(L.T("Eşit şartlar açık: gelişim bu maçlarda sayılmaz."), 13, "ipucu"); es.style.whiteSpace = WhiteSpace.Normal; es.style.marginBottom = 6; c.Add(es); }
-            c.Add(GelRadarKur(p));
+            if (top > 0) c.Add(GelRadarKur(p)); else gelRadar = null;
             foreach (var i in Gelisim.GORUNEN) c.Add(GelisimDal(i, p[i], bos > 0, top > 0));   // 2026-11-26: üç dal (Core/Gelisim)
         }
 
@@ -52,7 +55,8 @@ namespace BirdieSmash.Game
         {
             var kap = new VisualElement(); kap.AddToClassList("gel-radar-kap"); kap.pickingMode = PickingMode.Ignore;
             var r = new VisualElement(); r.AddToClassList("gel-radar"); r.pickingMode = PickingMode.Ignore; kap.Add(r); gelRadar = r;
-            for (int i = 0; i < RN; i++) { int d = Gelisim.GORUNEN[i]; gelRGor[i] = gelRHedef[i] = p[d] / (float)Gelisim.TAVAN; var l = Yazi(L.T(Gelisim.AD[d]), 12, "gel-radar-ad");   // 2026-11-27: 12 pt alt sınır (fikir 12:06 #3) l.AddToClassList("dokunulur"); kap.Add(l); gelREt[i] = l;
+            for (int i = 0; i < RN; i++) { int d = Gelisim.GORUNEN[i]; gelRGor[i] = gelRHedef[i] = p[d] / (float)Gelisim.TAVAN; var l = Yazi(L.T(Gelisim.AD[d]), 12, "gel-radar-ad"); l.AddToClassList("dokunulur"); kap.Add(l); gelREt[i] = l;   // 2026-11-27: 12 pt alt sınır (fikir 12:06 #3)
+                // 2026-11-28 inceleme: 27 Kas'taki yorum satırın sonuna eklenince kap.Add/gelREt yorumun içinde kalmıştı; dal adları radarda hiç görünmüyordu.
                 l.AddManipulator(new Clickable(() => GelDalaGit(d))); Erisim.Etiket(l, L.T("{0} dalına git", L.T(Gelisim.AD[d])), "dugme"); }
             r.generateVisualContent += GelRadarCiz;
             kap.RegisterCallback<GeometryChangedEvent>(e => GelRadarEtiket(kap));
