@@ -328,6 +328,9 @@
 /* 2026-11-23 Atölye A (yasin seçimi): raket vitrini, ölçü çipleri, Sahada kutusu, tarz satırı. Yalnız atl-* sınıfları. */
 .atl-vitrin { align-items: stretch; }
 .atl-raket { align-self: center; margin: 2px 0 6px 0; }   /* 2026-11-26: doku kendisi 40° eğik (kafa sol üstte); USS rotate kare dokunun köşelerini kırpıyordu */
+.atl-raket { transition-property: scale; transition-duration: 0.18s; transition-timing-function: ease-out; }
+.raket-pop { scale: 1.08 1.08; }   /* 2026-11-28 fikir 12:06 #3: yeni seçilen raket vitrinde 1,08 → 1 oturur (yalnız scale) */
+.az-hareket .atl-raket { transition-duration: 0s; }
 .atl-ortala { -unity-text-align: middle-center; white-space: normal; }
 .atl-olcu { margin: 0 -4px; }   /* çip margin 4px: ızgaranın dış kenarı kartın yazı kenarıyla hizalı (§2.5) */
 .atl-bilgi { color: var(--mu2); white-space: normal; margin-top: 8px; }
