@@ -88,12 +88,12 @@ namespace BirdieSmash.Game
             var ben = new VisualElement(); ben.AddToClassList("avatar"); ben.AddToClassList("online-ben"); ben.pickingMode = PickingMode.Ignore; BenAvatar(ben, 22); ik.Add(ben);
             var o = new VisualElement(); o.AddToClassList("online-o"); o.pickingMode = PickingMode.Ignore; o.Add(Ikon(Ikonlar.Arkadas, 22, RAKIP)); ik.Add(o);
             var yz = new VisualElement(); yz.AddToClassList("online-yazilar"); yz.pickingMode = PickingMode.Ignore; d.Add(yz);
-            yz.Add(Baslik(L.T("Arkadaşınla oyna"), Px(22, 20), "online-baslik"));
-            var alt = Yazi(L.T("Canlı maç · davet gönder ya da rakip bul"), 13, "online-alt"); alt.style.whiteSpace = WhiteSpace.Normal; yz.Add(alt);
+            yz.Add(Baslik(L.T("Çevrimiçi"), Px(22, 20), "online-baslik"));
+            var alt = Yazi(L.T("Dereceli maç, oda kodu, arkadaşlar"), 13, "online-alt"); alt.style.whiteSpace = WhiteSpace.Normal; yz.Add(alt);
             var ok = new VisualElement(); ok.AddToClassList("online-ok"); ok.pickingMode = PickingMode.Ignore; ok.Add(Ikon(Ikonlar.Ileri, 16, RAKIP)); d.Add(ok);
             d.AddManipulator(new Clickable(() => { Tik(); HareketOnce(ArkadasAc); }));
             OnlineNabiz(o);
-            Erisim.Etiket(d, L.T("Arkadaşınla oyna") + ", " + L.T("Canlı maç · davet gönder ya da rakip bul"), "dugme");
+            Erisim.Etiket(d, L.T("Çevrimiçi") + ", " + L.T("Dereceli maç, oda kodu, arkadaşlar"), "dugme");
             return d;
         }
 
@@ -112,19 +112,51 @@ namespace BirdieSmash.Game
         public void ArkadasAc()
         {
             if (Online.ArkadasDurum != Online.ARK_YUKLENIYOR) Online.ArkadasYukle();   // her açılışta yenile (yeni eklenen arkadaş, verilen izin)
+            if (!ugsListeYukleniyor) { ugsListe = null; ugsListeYok = false; }   // sıralama her açılışta tazelenir
             var once = gez.sekme; gez.Ac(Gezinti.ARKADAS); Uygula(once, true);
         }
         int arkGorulen = -1; VisualElement arkListe;
+        // 2026-11-28 (yasin: "arkadaşla oyna kısmını daha generic bir isimle değiştirelim ve buranın tasarımını düzeltelim; arkadaş
+        // ekleme, lobby kurma, ranka göre oynama kısımları anlaşılır olmalı"): sayfa "Çevrimiçi" oldu ve üç işi tek kaydırmada üst
+        // üste diziyordu (Game Center listesi, dereceli, kodlu oda, altta dördüncü bir "rastgele"). Şimdi üstte üç segment, her biri
+        // tek iş ve tek birincil alt eylem (§7.1–7.2): Dereceli (lig kartı + sıralama, "Rakip bul"), Oda (kod gir, "Oda kur"),
+        // Arkadaşlar (Game Center listesi + davet, "Arkadaş ekle"). Segment değişince sayfa yeniden kurulur (küçük sayfa, kaydırma
+        // başa döner; her sekme kendi işi). UGS yoksa (bayrak kapalı) segment çizilmez, yalnız Arkadaşlar.
+        static int onlineSekme; VisualElement onlineAlt;
+        public void OnlineSekmeAc(int i) { onlineSekme = Mathf.Clamp(i, 0, 2); if (gez.Ust == Gezinti.ARKADAS) ArkadasKur(); }   // EkranTuru
+        static readonly string[] ONLINE_SEKME = { "Dereceli", "Oda", "Arkadaşlar" };
         void ArkadasKur()
         {
-            var c = AltSayfaKur(L.T("Arkadaşınla oyna"));
-            // 2026-11-21 inceleme (fikir 22:06 #3): "Listeyi yenile" kalktı. Sayfa her açılışta ve uygulamaya dönüşte (Ayarlar'dan
-            // izin verip ya da Apple'ın arkadaşlık sayfasından gelince, ArkadasDonus) kendiliğinden yeniler; düğme yeni bir şey getirmiyordu.
-            var ek = Dugme(L.T("Arkadaş ekle"), () => { Online.ArkadasEkle(); }, null, null, 14); ek.style.marginTop = 4; ek.style.marginBottom = 4; c.Add(ek);
+            var c = AltSayfaKur(L.T("Çevrimiçi"));
+            if (!Ugs.Bayrak) onlineSekme = 2;
+            else
+            {
+                var seg = Satir("segment"); c.Add(seg);
+                for (int i = 0; i < ONLINE_SEKME.Length; i++)
+                {
+                    int ii = i;
+                    var cp = Cip(L.T(ONLINE_SEKME[i]), onlineSekme == i, () => { if (onlineSekme == ii) return; onlineSekme = ii; Tik(); ArkadasKur(); });
+                    cp.AddToClassList("segment-cip"); var eb = cp.userData as ErisimBilgi; if (eb != null) eb.rol = "sekme"; seg.Add(cp);
+                }
+            }
+            arkListe = null; ugsKab = null; onlineAlt = null;
+            if (onlineSekme == 2) { ArkadasGcKur(c); return; }
+            UgsBolumKur(c);
+            onlineAlt = onlineSekme == 0
+                ? Dugme(L.T("Rakip bul"), () => { if (UgsEsles.Araniyor) return; Online.DereceliAra(); UgsKur(); }, "dugme--birincil", L.T("Puanına yakın biri · 11 sayı"), 19)
+                : Dugme(L.T("Oda kur"), UgsOdaKur, "dugme--birincil", L.T("Kodu arkadaşına gönder"), 19);
+            AltEylem(onlineAlt); UgsAltGoster();
+        }
+
+        // Arkadaşlar sekmesi: Game Center listesi ve davet (Apple eşleştirme sayfası); birincil eylem "Arkadaş ekle".
+        void ArkadasGcKur(VisualElement c)
+        {
+            c.Add(Bilgi(L.T("Game Center arkadaşlarını davet et; kabul edince maç başlar. Kupa değişmez.")));
             c.Add(Grup(L.T("Arkadaşların")));
             arkListe = new VisualElement(); c.Add(arkListe); ArkListeKur();
-            UgsBolumKur(c);
-            AltEylem(Dugme(L.T("Rastgele rakip bul"), () => { gez.AltKapat(); Uygula(gez.sekme, true); root.OnlineAra(); }, "dugme--birincil", L.T("11 sayı · eşit güç"), 19));
+            var gr = Dugme(L.T("Game Center'da rastgele eşleş"), () => { gez.AltKapat(); Uygula(gez.sekme, true); root.OnlineAra(); }, "kucuk-dugme", null, 14);
+            gr.style.alignSelf = Align.FlexStart; gr.style.marginTop = 12; c.Add(gr);
+            AltEylem(Dugme(L.T("Arkadaş ekle"), () => { Online.ArkadasEkle(); }, "dugme--birincil", L.T("Game Center arkadaşlık isteği"), 19));
             // Liste köprüde yüklenir (izin penceresi dahil); durum değişince yalnız liste kabı yeniden kurulur. Sayfa kapanınca durur.
             // 2026-11-21 (fikir 22:06 #8): liste geldi ya da izin yoksa yoklama durur; dönüş yenilemesi yeniden başlatır.
             var lv = arkListe; IVisualElementScheduledItem iz = null;

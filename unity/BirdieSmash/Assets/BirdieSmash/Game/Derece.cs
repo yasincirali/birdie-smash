@@ -29,7 +29,7 @@ namespace BirdieSmash.Game
         {
             int fark = Lig.Sonuc(Ben, Rakip(rakip), kazandi);
             PlayerPrefs.SetString(ANAHTAR, Lig.Yaz(Ben)); Ayar.KaydetSonra();
-            UgsSira.Gonder(Kupa);
+            UgsSira.Gonder(Ben.kupa);   // 2026-11-28 (yasin: "leaderboard tüm online oynayan insanlara göre olmalı"): yerleşmede de yazılır (kupa 0), liste ilk maçtan itibaren herkesi gösterir
             return fark;
         }
 

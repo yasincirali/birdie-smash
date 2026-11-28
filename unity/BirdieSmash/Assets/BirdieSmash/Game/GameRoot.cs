@@ -273,6 +273,7 @@ namespace BirdieSmash.Game
                 bittiUst = L.T("Dereceli maç") + " · " + M.RakipAd(false);
                 bittiAltNot = (string.IsNullOrEmpty(bittiAltNot) ? "" : bittiAltNot + " ") + Derece.Ozet(kf);
             }
+            else UgsSira.Gonder(Derece.Ben.kupa);   // 2026-11-28: oda/Game Center maçı kupayı değiştirmez ama oyuncuyu "tüm oyuncular" sıralamasına yazar
             bittiKart = Ozet.Kartlar(M); bittiBilgi = ""; bittiIpucu = null; hud.ayrinti = false;
             bittiDugme = L.T("Yeni arkadaş maçı");
             if (won) hud.Konfeti();

@@ -103,8 +103,8 @@ namespace BirdieSmash.Game
                 L.T("Antrenman") + ", " + L.T("{0}/{1} yıldız · Temel ders ve {2} görev", p2.AntrenmanYildiz, Dril.ToplamYildiz, Dril.Liste.Length)));
             CipAlt(row[row.childCount - 1], p2.AntrenmanYildiz + "/" + Dril.ToplamYildiz + " " + L.T("yıldız"));
             if (Online.Bayrak && !root.bekleyen)
-                row.Add(Karo(Ikonlar.Arkadas, L.T("Arkadaşınla"), "", null, null, () => HareketOnce(ArkadasAc), L.T("Arkadaşınla oyna") + ", " + L.T("Canlı maç · davet gönder ya da rakip bul"), "karo--arkadas"));
-            if (Online.Bayrak && !root.bekleyen) CipAlt(row[row.childCount - 1], L.T("Canlı maç"));
+                row.Add(Karo(Ikonlar.Arkadas, L.T("Çevrimiçi"), "", null, null, () => HareketOnce(ArkadasAc), L.T("Çevrimiçi") + ", " + L.T("Dereceli maç, oda kodu, arkadaşlar"), "karo--arkadas"));
+            if (Online.Bayrak && !root.bekleyen) CipAlt(row[row.childCount - 1], L.T("Dereceli ve oda"));
             // 2026-11-10 (yasin: "catch yok", kıyas: savaş geçidi şeridi, Forza seviye ödülü): sıradaki seviyenin ödülü ana ekranda
             // tek satır; dokununca Seviye yolu (Sv 30'a kadar bütün ödüller). Sv 30'da satır yok.
             row.Query<Label>(null, "karo-etiket").ForEach(e => e.style.fontSize = e.style.fontSize.value.value * 13f / 11f);   // çipte ad tek bilgi: 11 → 13
