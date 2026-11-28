@@ -390,6 +390,7 @@ namespace BirdieSmash.Game
             // portre: Dolap'ta görünüm değişince üst çubuğun avatarı da yenilensin (sekme değişiminde yoklanır)
             string pa = Ayar.model + PlayerView.Benim().Anahtar(); if (pa != portreAnah) { portreAnah = pa; ustKirli = true; kirli[(int)Sekme.Profil] = true; }
             if (ustKirli) UstKur();
+            RaketPopOynat();   // yuva alt sayfası kapanınca yeni raket vitrinde oturur (SoyunmaOdasi, fikir 12:06 #3)
         }
         string portreAnah;
         // 2026-11-21 inceleme (fikir 22:06 #2): Dolap'tan çıkış karesinde üst çubuk, Oyna kartı, Kariyer ve Profil portreyi

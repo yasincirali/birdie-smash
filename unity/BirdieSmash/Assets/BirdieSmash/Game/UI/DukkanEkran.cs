@@ -86,7 +86,9 @@ namespace BirdieSmash.Game
             int tuy = Ayar.gear.eko.tuy, ucusOnce = dukkanUcusOnce; dukkanUcusOnce = -1;
             var ust = Kart("dukkan-cuzdan"); c.Add(ust);
             var cz = new VisualElement(); cz.AddToClassList("satir"); cz.pickingMode = PickingMode.Ignore; ust.Add(cz);
-            var czIkon = Ikon(Ikonlar.Tuy, 26, ALTIN); cz.Add(czIkon); var czSayi = Yazi(UiKok.Sayi(ucusOnce >= 0 ? ucusOnce : tuy), 26, "rakam"); cz.Add(czSayi);
+            // 2026-11-28 inceleme (fikir 12:06 #5): yedi yazı boyu (12/13/14/15/16/22/26) Profil/Arkadaş basamaklarına indi: 12 açıklama,
+            // 14 paket adı/not, 16 başlık ve paket Tüy sayısı, 24 tek büyük sayı cüzdan (§7.2 tek odak, §10.3).
+            var czIkon = Ikon(Ikonlar.Tuy, 24, ALTIN); cz.Add(czIkon); var czSayi = Yazi(UiKok.Sayi(ucusOnce >= 0 ? ucusOnce : tuy), 24, "rakam"); cz.Add(czSayi);
             Erisim.Etiket(ust, L.T("Cüzdanında {0} Tüy", tuy), "metin");
             // 2026-11-12 inceleme (#1): satın almanın nedeni (Dolap/Atölye'deki hedef eşya) dükkânda görünmüyordu, oyuncu kafasında
             // hesap yapıyordu. Hedef varsa tek satır; "≈ N maç" aynı satırda oynayarak kazanma yolunu da gösterir (baskı yok).
@@ -98,11 +100,11 @@ namespace BirdieSmash.Game
                 // başına 14 pt Tüy simgesi (Clash Royale'de eksik altın hep simgesiyle). "Hedefine yeter" satırında ✓ simgesi zaten var.
                 var hs = new VisualElement(); hs.AddToClassList("satir"); hs.AddToClassList("dukkan-hedef"); hs.pickingMode = PickingMode.Ignore; ust.Add(hs);
                 hs.Add(Ikon(Ikonlar.Tuy, 14, ALTIN));
-                var hy = Yazi(L.T("Hedef: {0}", L.T(hd.ad)) + " · " + L.T("{0} Tüy eksik", UiKok.Sayi(eksik)) + (mt > 0 ? " · " + L.T("≈ {0} maç", mt) : ""), 13); hy.style.flexShrink = 1; hy.style.whiteSpace = WhiteSpace.Normal; hs.Add(hy);
+                var hy = Yazi(L.T("Hedef: {0}", L.T(hd.ad)) + " · " + L.T("{0} Tüy eksik", UiKok.Sayi(eksik)) + (mt > 0 ? " · " + L.T("≈ {0} maç", mt) : ""), 12); hy.style.flexShrink = 1; hy.style.whiteSpace = WhiteSpace.Normal; hs.Add(hy);
             }
             // 2026-11-14 inceleme (fikir 12:05 #5): Tüy'ün ne işe yaradığı yalnız hedef satırı yokken; hedef satırı "ne için" ve
             // "maçla kazanılır"ı zaten söylüyor, iki satır aynı şeyi anlatıyordu. Fiyat ızgarası bir satır yukarı çıkar (SE).
-            else ust.Add(Yazi(L.T("Tüy'le Dolap'ta görünüm, Atölye'de ekipman alırsın. Maç oynayarak da kazanırsın."), 13, "soluk"));
+            else ust.Add(Yazi(L.T("Tüy'le Dolap'ta görünüm, Atölye'de ekipman alırsın. Maç oynayarak da kazanırsın."), 12, "soluk"));
             if (!string.IsNullOrEmpty(dukkanNot)) { var n = Yazi(dukkanNot, 14, "kalin"); n.AddToClassList("dukkan-not"); c.Add(n); }
             if (dukkanHedefHazir && !string.IsNullOrEmpty(dukkanNot) && hd.gecerli && eksik == 0)
             { string hk = hd.kat, hi = hd.id; c.Add(Dugme(L.T("Şimdi al") + "  ›", () => { dukkanHedefHazir = false; dukkanNot = null; SekmeAc(gez.sekme); HedefeGit(hk, hi); }, "dugme--birincil")); }
@@ -114,8 +116,8 @@ namespace BirdieSmash.Game
             if (hata)
             {
                 var hk = Kart("dukkan-durum"); c.Add(hk);
-                hk.Add(Yazi(L.T("Mağazaya bağlanılamadı"), 15, "kalin"));
-                hk.Add(Yazi(L.T("İnternet bağlantını kontrol edip yeniden dene."), 13, "soluk"));
+                hk.Add(Yazi(L.T("Mağazaya bağlanılamadı"), 16, "kalin"));
+                hk.Add(Yazi(L.T("İnternet bağlantını kontrol edip yeniden dene."), 12, "soluk"));
                 hk.Add(Dugme(L.T("Yeniden dene"), () => { Magaza.O.Baslat(); }, "dugme--hayalet"));
             }
 
@@ -135,7 +137,7 @@ namespace BirdieSmash.Game
                 // tırtıklı görünüyordu. Bilgi üst blokta büyür, düğme kartın dibine yaslanır (aynı sıradaki kartlar eş boy).
                 var bilgi = new VisualElement(); bilgi.AddToClassList("dukkan-kart-bilgi"); bilgi.pickingMode = PickingMode.Ignore; k.Add(bilgi);
                 var ic = new VisualElement(); ic.AddToClassList("satir"); ic.pickingMode = PickingMode.Ignore; bilgi.Add(ic);
-                ic.Add(Demet(i + 1)); ic.Add(Yazi(UiKok.Sayi(pk.tuy), 22, "rakam"));
+                ic.Add(Demet(i + 1)); ic.Add(Yazi(UiKok.Sayi(pk.tuy), 16, "rakam"));
                 // 2026-11-20 inceleme (fikir 12:06 #7): paketleri kıyaslatan bonus en küçük satırdı (12 pt, ayrı satır). Tüy sayısının
                 // yanına, 14 pt; dar kartta ve büyük yazıda satır sarar (binmez). Fiyat ve paket değerleri aynı (ekonomi dokunulmadı).
                 if (pk.ek > 0) { ic.style.flexWrap = Wrap.Wrap; ic.style.alignItems = Align.Center; var e = Yazi(L.T("+%{0} fazla", pk.ek), 14, "dukkan-ek"); e.style.marginLeft = 6; ic.Add(e); }
@@ -169,7 +171,7 @@ namespace BirdieSmash.Game
             c.Add(Bosluk(12));
             var rk = Kart("dukkan-kart"); c.Add(rk);
             rk.Add(Yazi(L.T("Reklamsız"), 16, "kalin"));
-            rk.Add(Yazi(L.T("Menüdeki reklam şeridi kalkar; maç sonu ödüllü reklam isteğe bağlı kalır. Tüy vermez, bir kez alınır."), 13, "soluk"));
+            rk.Add(Yazi(L.T("Menüdeki reklam şeridi kalkar; maç sonu ödüllü reklam isteğe bağlı kalır. Tüy vermez, bir kez alınır."), 12, "soluk"));
             string rf = m.Fiyat(TuyDukkan.REKLAMSIZ); bool rVar = m.ReklamsizVar;
             if (rVar) rk.Add(Pasif(L.T("Alındı")));
             else if (hata) { }

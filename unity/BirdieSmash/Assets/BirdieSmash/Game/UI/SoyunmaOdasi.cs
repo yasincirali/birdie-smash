@@ -364,11 +364,22 @@ namespace BirdieSmash.Game
 
         // Raket vitrini: 3B vitrin değil ("Vitrin yok" kararı sürer, RT maliyeti Dolap'ta), çizilmiş raket büyük. 2026-11-26'dan
         // beri oyuncunun raketi kendi renkleriyle (VitrinRaket); ton beyaz = dokunun rengi değişmez, sarı yalnız eylem/seçili.
+        // 2026-11-28 inceleme (fikir 12:06 #3): yeni raket vitrinde bir karede beliriyordu; seçimden sonra 1,08 → 1 oturur (yalnız
+        // scale, yerleşim yok; bolme--yeni kalıbı). Seçim yuva alt sayfasında olur ve sayfa açık kalır: pop sayfa kapanınca oynar
+        // (Goster çağırır), yoksa örtünün arkasında boşa giderdi. Az-harekette sınıf eklenmez; ses ve titreşim seçimde zaten var.
+        VisualElement vitrinRaketIk;
+        void RaketPopOynat()
+        {
+            if (!raketPop || gez.AcikAltSayfa != null || vitrinRaketIk == null || vitrinRaketIk.panel == null) return;
+            raketPop = false; if (Ayar.reduce) return;
+            var ik = vitrinRaketIk; ik.AddToClassList("raket-pop"); ik.schedule.Execute(() => ik.RemoveFromClassList("raket-pop")).StartingIn(33);
+        }
         void RaketVitrin(VisualElement c)
         {
             var gr = Ayar.gear; GearModel r; if (!Gear.GEAR["raket"].TryGetValue(gr.raket, out r)) return;
             var k = Kart("atl-vitrin"); c.Add(k);
             var ik = Ikon(VitrinRaket(), 148, Color.white); ik.AddToClassList("atl-raket"); ik.pickingMode = PickingMode.Ignore; k.Add(ik);
+            vitrinRaketIk = ik; RaketPopOynat();
             var ad = Yazi(L.T(r.ad), 22, "kalin"); ad.AddToClassList("atl-ortala"); ad.pickingMode = PickingMode.Ignore; k.Add(ad);
             var alt = Yazi(L.T("Takılı raket"), 13, "soluk"); alt.AddToClassList("atl-ortala"); alt.pickingMode = PickingMode.Ignore; k.Add(alt);
             Erisim.Etiket(ad, L.T("Takılı raket") + ": " + L.T(r.ad), "metin");
@@ -644,6 +655,18 @@ namespace BirdieSmash.Game
             // "Takımın şimdi" ve Teknik sayfa yalnız seçili raket). Model kartının gövdesine dokunmak = dene: üstteki kart o
             // raketle yeniden hesaplanır (Gear.Hesap, kayda yazılmaz), her çubukta ▲/▼ seçili rakete göre (ok + erişim etiketi
             // "artı n"; renk tek başına değil), Teknik sayfa o raketi anlatır. Sayfadan çıkınca deneme silinir (ayakkabı kipi gibi).
+            // 2026-11-28 inceleme (fikir 12:06 #2): dene dokunuşu bütün alt sayfayı (yuva kartı, model listesi) baştan kuruyordu;
+            // artık yalnız bu kap (Teknik + Takımın kartı) ve model kartlarının "denenen" sınıfı değişir (RaketDene).
+            denemeKap = new VisualElement(); c.Add(denemeKap); denemeKart.Clear(); denemeEtiket.Clear();
+            DenemeBolumKur(denemeKap, Y);
+            c.Add(Grup(L.T("Modeller")));
+            foreach (var m in Gear.GEAR[Y.m].Values) ModelKart(c, Y, m);
+            if (gr.eko.esit) c.Add(Yazi(L.T("Eşit şartlar açık: serbest maçta sayılmaz, kariyerde sayılır"), 12, "soluk"));
+        }
+
+        VisualElement denemeKap; readonly Dictionary<string, VisualElement> denemeKart = new Dictionary<string, VisualElement>(); readonly Dictionary<string, string> denemeEtiket = new Dictionary<string, string>();
+        void DenemeBolumKur(VisualElement c, Yuva Y)
+        {
             var gr0 = Ayar.gear; string dr_ = Y.k == "raket" && deneRaket != null && deneRaket != gr0.raket && Gear.GEAR["raket"].ContainsKey(deneRaket) ? deneRaket : null;
             if (Y.k == "raket") TeknikKur(c, dr_);
             if (dr_ == null) { c.Add(Grup(L.T("Takımın şimdi"))); var kc = Kart("cubuk-kart"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(Ayar.GSE), null, true, null, Ayar.GelisimCubuk()); }
@@ -654,9 +677,6 @@ namespace BirdieSmash.Game
                 var kc = Kart("cubuk-kart"); kc.AddToClassList("denenen"); c.Add(kc); CubukKart(kc, Gear.Cubuklar(dgs), Gear.Cubuklar(Ayar.GSE), false, null, Ayar.GelisimCubuk());
                 kc.Add(Yazi(L.T("Oklar seçili raketine göre. Karta yeniden dokununca deneme kapanır."), 12, "soluk"));
             }
-            c.Add(Grup(L.T("Modeller")));
-            foreach (var m in Gear.GEAR[Y.m].Values) ModelKart(c, Y, m);
-            if (gr.eko.esit) c.Add(Yazi(L.T("Eşit şartlar açık: serbest maçta sayılmaz, kariyerde sayılır"), 12, "soluk"));
         }
 
         void ModelKart(VisualElement c, Yuva Y, GearModel m)
@@ -670,7 +690,9 @@ namespace BirdieSmash.Game
             if (du == ModelDurum.Secili) { dr.Add(Ikon(Ikonlar.Tik, 14, TURUNCU)); durum = L.T("Seçili"); }
             else if (du == ModelDurum.Kilitli) { dr.Add(Ikon(Ikonlar.Kilit, 14, SOLUK)); durum = KilitKalan(m.sv, gr.Seviye()); }
             else if (du == ModelDurum.Alinir) durum = m.fiyat + " " + L.T("Tüy"); else durum = L.T("Senin");
-            var dy = Yazi(durum, 12, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy);
+            // 2026-11-28 inceleme (fikir 12:06 #4): alınır kartta fiyat hem başlıkta hem düğmede yazıyordu, Tüy yetmezken başlıktaki tam
+            // fiyat ile düğmedeki eksik yan yana karışıyordu. Fiyat yalnız düğmede (dükkân kalıbı); erişim etiketi durum'la söylemeye devam eder.
+            if (du != ModelDurum.Alinir) { var dy = Yazi(durum, 12, du == ModelDurum.Secili ? "durum-gecti" : "durum-kilit"); dy.style.marginLeft = 4; dr.Add(dy); }
             var ns = Yazi(L.T(m.n), 13, "ipucu"); kart.Add(ns);
             if (Y.m == "raket") { string kim = Gear.Kimlik(m, Ayar.gear.sap); if (kim != null) kart.Add(Yazi(kim, 12, "kimlik-satir")); }   // gerçek raketin gövde satırı
             else if (Y.m == "kordaj" && m.kalinlik.HasValue) kart.Add(Yazi(L.T("Tel kalınlığı") + " " + KalinlikYaz(m.kalinlik.Value), 12, "soluk"));
@@ -679,11 +701,12 @@ namespace BirdieSmash.Game
             // ediyordu; arcade oyuncu farkı çubuktan değil m.n cümlesinden ("Güç +6 · drive +4 · tatlı nokta dar") okur, kart yarıya
             // iner, büyük yazıda kaydırma azalır. Sayısal 5 çubuk sayfanın üstündeki "Takımın şimdi" kartında; seçince o kart yenilenir.
             Erisim.Etiket(kart, L.T(m.ad) + ", " + L.T(m.n) + ", " + durum + (denenir ? ", " + L.T(deneRaket == id ? "deneniyor" : "dokun, takımında dene") : ""), "metin", du == ModelDurum.Secili);
+            if (denenir) { denemeKart[id] = kart; denemeEtiket[id] = L.T(m.ad) + ", " + L.T(m.n) + ", " + durum; }
             if (du == ModelDurum.Acik) kart.Add(Dugme(L.T("Seç"), () => ModelSec(Y, id), "model-dugme"));
             else if (du == ModelDurum.Alinir)
             {
-                if (gr.AlOlur(Y.m, id)) kart.Add(Dugme(L.T("Al · {0}", m.fiyat + " " + L.T("Tüy")), () => { if (gr.Al(Y.m, id)) { root.sfx.Yukselt(); Yerel.Hap("flow"); ModelSec(Y, id); } }, "dugme--birincil", L.T("Bir kez alınır, hep senin"), 16));
-                else kart.Add(HedefDugme(Y.m, id, m.fiyat - gr.eko.tuy, L.T("{0} Tüy daha gerekli", m.fiyat - gr.eko.tuy), Degisti));   // 2026-11-02 hedef eşya
+                if (gr.AlOlur(Y.m, id)) kart.Add(Dugme(L.T("Al · {0}", m.fiyat + " " + L.T("Tüy")), () => { if (gr.Al(Y.m, id)) { root.sfx.Yukselt(); Yerel.Hap("flow"); ModelSec(Y, id, true); } }, "dugme--birincil", L.T("Bir kez alınır, hep senin"), 16));
+                else kart.Add(HedefDugme(Y.m, id, m.fiyat - gr.eko.tuy, L.T("{0} Tüy · {1} eksik", m.fiyat, m.fiyat - gr.eko.tuy), Degisti));   // 2026-11-02 hedef eşya
             }
             else if (du == ModelDurum.Kilitli) kart.Add(Pasif(L.T("Sv {0} gerekli", m.sv), L.T("Seviye atladıkça açılır")));
         }
@@ -692,13 +715,28 @@ namespace BirdieSmash.Game
         {
             deneRaket = deneRaket == id ? null : id; Tik();
             if (gez.AcikAltSayfa != Gezinti.YUVA) return;
+            if (denemeKap != null && denemeKap.panel != null)
+            {
+                foreach (var kv in denemeKart)
+                {
+                    bool d = kv.Key == deneRaket; kv.Value.EnableInClassList("denenen", d);
+                    Erisim.Etiket(kv.Value, denemeEtiket[kv.Key] + ", " + L.T(d ? "deneniyor" : "dokun, takımında dene"), "metin");
+                }
+                var Y = Gear.YuvaOf(yuvaAcik) ?? Gear.YUVA[0];
+                denemeKap.Clear(); DenemeBolumKur(denemeKap, Y);
+                if (!Ayar.reduce) { var k = denemeKap; k.AddToClassList("ant-liste"); k.AddToClassList("koz-solgun"); k.schedule.Execute(() => k.RemoveFromClassList("koz-solgun")).StartingIn(16); }
+                return;
+            }
             var eski = altSayfa != null ? altSayfa.Q<ScrollView>() : null; Vector2 of = eski != null ? eski.scrollOffset : Vector2.zero; YuvaSayfaKur(); KaydirmaGeri(altSayfa, of);
         }
-        void ModelSec(Yuva Y, string id)
+        // 2026-11-28 inceleme (fikir 12:06 #1): alımdan gelince (sessiz) ödül paketi Al düğmesinde çaldı (Yukselt + flow); burada
+        // ikinci ses ve titreşim aynı karede üst üste biniyordu. Ayrı UstKur da kalktı: Degisti ustKirli'yi koyup üst çubuğu bir kez kurar.
+        void ModelSec(Yuva Y, string id, bool sessiz = false)
         {
-            var gr = Ayar.gear; if (!gr.Sec(Y.m, id)) return; if (Y.m == "raket") deneRaket = null;
-            Ayar.GearHesap(); Ayar.KaydetSonra(); root.vitrin.Yenile(); if (Y.m == "raket" || Y.m == "kordaj") { root.sfx.Deneme(); Yerel.Vurus("smash", "perfect", false); } else root.sfx.UiSes("kaydir");   // 2026-11-22: giyilen parça yerine oturur (kaydir)
-            ustKirli = true; UstKur(); Degisti(); SoyunmaGovdeKur(true);
+            var gr = Ayar.gear; if (!gr.Sec(Y.m, id)) return; if (Y.m == "raket") { deneRaket = null; raketPop = gez.sekme == Sekme.Atolye; }
+            Ayar.GearHesap(); Ayar.KaydetSonra(); root.vitrin.Yenile();
+            if (!sessiz) { if (Y.m == "raket" || Y.m == "kordaj") { root.sfx.Deneme(); Yerel.Vurus("smash", "perfect", false); } else root.sfx.UiSes("kaydir"); }   // 2026-11-22: giyilen parça yerine oturur (kaydir)
+            Degisti(); SoyunmaGovdeKur(true);
         }
 
         void YuvaKur(VisualElement c, Yuva Y, int L_)
@@ -850,7 +888,7 @@ namespace BirdieSmash.Game
             if (!Ayar.reduce) { ic.AddToClassList("koz-solgun"); ic.schedule.Execute(() => ic.RemoveFromClassList("koz-solgun")).StartingIn(16); }
             TarzGovde(ic); tarzKap.Add(ic);
         }
-        bool tarzPop;   // "Bu tarzı seç"ten sonraki ilk kurulumda kartın ✓'si bir kez büyüyüp oturur
+        bool tarzPop, raketPop;   // "Bu tarzı seç"ten sonraki ilk kurulumda kartın ✓'si bir kez büyüyüp oturur
         void TarzGovde(VisualElement c)
         {
             int sv = Ayar.gear.Seviye(); string cur = Ayar.Tarz; if (tarzOnizle == null) tarzOnizle = cur;
