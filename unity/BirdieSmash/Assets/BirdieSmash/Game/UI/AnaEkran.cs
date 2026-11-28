@@ -410,8 +410,12 @@ namespace BirdieSmash.Game
                 VisualElement hepsi = null;
                 hepsi = Dugme(L.T("Sv {0}–30'u göster", son5 + 1) + "  ›", () =>
                 {
+                    // 2026-11-28 inceleme (fikir 17:06 #4): 25 kart bir karede duvar gibi beliriyordu. Profil "Tümünü göster" ile aynı
+                    // giriş (ilk 8 kart 30 ms arayla .18 sn, 8 pt; kalanı ekranın altında, anında). Yalnız opacity/translate; hareketi azaltta yok.
                     hepsi.RemoveFromHierarchy();
-                    for (int sv = son5 + 1; sv <= 30; sv++) SvYolKart(c, sv, L_, false);
+                    var yeni = new System.Collections.Generic.List<VisualElement>();
+                    for (int sv = son5 + 1; sv <= 30; sv++) yeni.Add(SvYolKart(c, sv, L_, false));
+                    if (!Ayar.reduce) Kademeli(yeni, 0, 30, .18f, 8, 8);
                 }, "kucuk-dugme");
                 hepsi.style.alignSelf = Align.FlexStart; hepsi.style.marginTop = 8; c.Add(hepsi);
             }

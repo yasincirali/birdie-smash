@@ -106,7 +106,9 @@ namespace BirdieSmash.Game
             // VS beyaz + mürekkep konturu: sarı yalnız Oyna'da kalsın (ekranda tek sarı eylem).
             var vs = new VisualElement(); vs.AddToClassList("kar-vs"); vs.AddToClassList("dokunulur"); gv.Add(vs);
             var ben = new VisualElement(); ben.AddToClassList("kar-yuz"); ben.AddToClassList("kar-yuz--sen"); ben.style.backgroundColor = Kit.Hex(Ayar.FORMA); ben.pickingMode = PickingMode.Ignore; BenAvatar(ben, 26); vs.Add(ben);
-            var sa = new VisualElement(); sa.AddToClassList("kar-vs-ad"); sa.pickingMode = PickingMode.Ignore; vs.Add(sa); sa.Add(Yazi(L.T("Sen"), 16, "kalin"));
+            var sa = new VisualElement(); sa.AddToClassList("kar-vs-ad"); sa.pickingMode = PickingMode.Ignore; vs.Add(sa); string benAd = p.Ad ?? L.T("Sen"); var bn = Yazi(benAd, 16, "kalin"); SozcukSigdir(bn); sa.Add(bn);
+            // 2026-11-28 inceleme (fikir 17:06 #2): rakip adıyla dururken oyuncu "Sen"di; muadil VS ekranları iki tarafı da adıyla
+            // gösterir. Profil'de yazılan ad burada görünür (yoksa "Sen"); erişim etiketi yine "Sen" ile başlar ki kim olduğu karışmasın.
             // 2026-11-26 inceleme (fikir 07:06 #2): Oyna doğrudan maça gidiyor, kademe yalnız maç kartındaydı; oyuncu Usta'da kaybedip
             // "kariyer çok zor" sanabiliyordu. "Sen"in altında bugünkü kademe (rakibin altındaki tarz satırıyla simetrik); satır yüzlerle
             // aynı dokunuş, maç kartında değişir. Yeni düğme yok.
@@ -117,7 +119,7 @@ namespace BirdieSmash.Game
             var rav = new VisualElement(); rav.AddToClassList("kar-yuz"); rav.AddToClassList("kar-yuz--rakip"); rav.style.backgroundColor = Kit.Hex(st.renk); rav.pickingMode = PickingMode.Ignore; vs.Add(rav);
             RakipAvatarIc(rav, st, 26, 20);
             vs.AddManipulator(new Clickable(() => { Tik(vs); MacKartAc(sira); }));
-            Erisim.Etiket(vs, L.T("Maç ayrıntısı") + ": " + L.T("Sen") + ", " + L.T("Zorluk") + " " + L.T(Ayar.ZorlukAd) + ", " + st.isim + ", " + L.T(st.ad), "dugme");
+            Erisim.Etiket(vs, L.T("Maç ayrıntısı") + ": " + L.T("Sen") + (p.Ad != null ? ", " + p.Ad : "") + ", " + L.T("Zorluk") + " " + L.T(Ayar.ZorlukAd) + ", " + st.isim + ", " + L.T(st.ad), "dugme");
             var oy = Dugme(L.T("Oyna"), () => KariyerOyna(sira), "dugme--birincil", null, 19); oy.AddToClassList("kar-oyna");
             Erisim.Etiket(oy, L.T("Oyna") + ": " + L.T(kb.yer) + ", " + st.isim, "dugme"); gv.Add(oy);
             // 2026-11-26 inceleme (fikir 07:06 #4): yeni durağa gelişte (basamak animasyonu, bir kez) yeni rakip kartta hazır duruyordu;
