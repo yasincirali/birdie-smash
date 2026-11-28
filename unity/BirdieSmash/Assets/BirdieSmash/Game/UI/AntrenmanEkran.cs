@@ -50,7 +50,7 @@ namespace BirdieSmash.Game
             // 2026-11-28 inceleme (fikir 07:06 #3, #4): çip dokunuşu Degisti(true) ile bütün alt sayfayı (~40 öğe) kuruyor, Oyna ve
             // Kariyer'i de kirletiyordu; ikisi bu seçimi okumuyor ve çip yeniden doğunca basılma hâli görünmeden kayboluyordu. Artık
             // çiplerin seçili hâli (CipDurum), erişim adları ve kartın rekor satırı yerinde yazılır, .12 sn opaklıkla (azaltta yok).
-            // "Tam saha" çipi kalktı: ikili seçim tek aç/kapa çipi (HIG toggle, §7.3 öğe bütçesi), zorlukların sonunda tek satır.
+            // "Tam saha" çipi kalktı: ikili seçim tek aç/kapa çipi (HIG toggle, §7.3 öğe bütçesi).
             var sz = Satir(); sz.AddToClassList("cip-sarar"); c.Add(sz);
             var zc = new VisualElement[4]; VisualElement yc = null;
             System.Action yaz = () =>
@@ -77,9 +77,10 @@ namespace BirdieSmash.Game
                 if (K <= 1.35f) { cp.style.flexGrow = 1f; cp.style.flexBasis = 0f; }
                 sz.Add(cp); zc[i] = cp;
             }
+            // Ekran turu r306: zorlukların yanında beşinci eşit çip "Yarım saha"yı 39 px'e kesti (TR/EN). Kendi satırında, doğal genişlikte.
+            var sy = Satir(); sy.AddToClassList("cip-sarar"); c.Add(sy);
             yc = Cip(L.T("Yarım saha"), Sonsuz.yarim, () => { GameRoot.SonsuzYarimSec(!Sonsuz.yarim); yaz(); kartYaz(); });
-            if (K <= 1.35f) { yc.style.flexGrow = 1f; yc.style.flexBasis = 0f; }
-            sz.Add(yc); yaz();
+            sy.Add(yc); yaz();
             // 2026-11-26 inceleme (fikir 17:06 #6, §7.2; Badminton League/Brawl Stars eğitimi bitince ana yüzeyde tutmaz): biten ders
             // Sonsuz ralli ile aynı ağırlıkta kart olarak duruyordu; artık görev listesinin dibinde tek satır, Sonsuz ralli tam genişlik.
             if (!Ayar.antrenman) ust.Add(Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", L.T("15 adım, skor yok")));
