@@ -254,7 +254,10 @@ namespace BirdieSmash.Game
             et.style.whiteSpace = WhiteSpace.Normal; Erisim.Etiket(et, et.text, "metin"); c.Add(et);
             // rakip: renk yuvarlağı yanında ad ve tarz (renk tek başına anlam taşımaz)
             var rr = Satir("profil-ust"); c.Add(rr);
-            var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(st.renk); AvatarIc(av, Portre.Rakip(st), 30); rr.Add(av);
+            var av = new VisualElement(); av.AddToClassList("avatar"); av.style.backgroundColor = Kit.Hex(st.renk); RakipAvatarIc(av, st, 30, 20); rr.Add(av);
+            // 2026-11-28 inceleme (fikir 07:06 #5): yüz önbellekte yoksa Portre.Rakip FBX figürü alt sayfanın açılış karesinde RT'ye
+            // çiziyordu (tören "Eksik yıldız", Kariyer yolu düğümleri; ısıtma yalnız sıradaki rakibe). Önbellek kalıbı: hazırsa yüz,
+            // değilse baş harf + durgunda ısıtma, yüz .15 sn belirir.
             var ra = new VisualElement(); ra.AddToClassList("esnek-yatay"); rr.Add(ra);
             int kG = 0, kY = 0; bool karne = Ayar.Karne(Ayar.KarneAnahtar(st), out kG, out kY);   // karne (fikir 12:05 #4): maç kartıyla aynı biçim; üretilmiş rakip ad anahtarıyla (22:06 #5)
             ra.Add(Yazi(st.isim, 20, "kalin")); ra.Add(Yazi(L.T(st.ad) + (karne ? " · " + kG + "–" + kY : ""), 14, "soluk"));

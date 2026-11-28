@@ -40,30 +40,47 @@ namespace BirdieSmash.Game
             // Üstte iki giriş: Sonsuz ralli (ödülsüz, yalnız rekor) ve Temel ders (durumu: bitti ya da 15 adım). Büyük yazıda alt alta.
             var ust = Satir("ant-cift"); c.Add(ust);
             int rk = GameRoot.SonsuzRekor;
-            ust.Add(Dugme(L.T("Sonsuz ralli"), () => root.SonsuzOyna(), "ikincil-kart", rk > 0 ? L.T("Rekorun {0} vuruş", rk) : L.T("Kaçırana kadar, her 5 vuruşta hızlanır")));
+            var sk = Dugme(L.T("Sonsuz ralli"), () => root.SonsuzOyna(), "ikincil-kart", rk > 0 ? L.T("Rekorun {0} vuruş", rk) : L.T("Kaçırana kadar, her 5 vuruşta hızlanır")); ust.Add(sk);
+            { var ska = sk.Q<Label>(className: "dugme-alt"); if (ska != null) ska.AddToClassList("sonsuz-alt"); }
             // 2026-11-27 (yasin: "sonsuz antrenmanda rakip zorluğunu seçebilelim"): kartın hemen altında dört çip, Oyna'daki zorluk
-            // satırının adlarıyla. Rekor zorluk başına (Core/Sonsuz.AnahtarZ); kart seçilen zorluğun rekorunu yazar. Seçim yalnız
-            // Antrenman alt sayfasını yeniden kurar (Degisti(true)), maç zorluğu (Ayar.zorluk) değişmez.
+            // satırının adlarıyla. Rekor zorluk başına (Core/Sonsuz.AnahtarZ); kart seçilen zorluğun rekorunu yazar. Maç zorluğu
+            // (Ayar.zorluk) değişmez.
+            // 2026-11-28 (yasin: "endlesta sadece halfcourt antrenman modu da olmalı precision ı artırır"): yarım saha (sol koridor,
+            // iki tarafta), rekor ayrı tutulur.
+            // 2026-11-28 inceleme (fikir 07:06 #3, #4): çip dokunuşu Degisti(true) ile bütün alt sayfayı (~40 öğe) kuruyor, Oyna ve
+            // Kariyer'i de kirletiyordu; ikisi bu seçimi okumuyor ve çip yeniden doğunca basılma hâli görünmeden kayboluyordu. Artık
+            // çiplerin seçili hâli (CipDurum), erişim adları ve kartın rekor satırı yerinde yazılır, .12 sn opaklıkla (azaltta yok).
+            // "Tam saha" çipi kalktı: ikili seçim tek aç/kapa çipi (HIG toggle, §7.3 öğe bütçesi).
             var sz = Satir(); sz.AddToClassList("cip-sarar"); c.Add(sz);
+            var zc = new VisualElement[4]; VisualElement yc = null;
+            System.Action yaz = () =>
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    int r = GameRoot.SonsuzRekorZ(i); CipDurum(zc[i], Sonsuz.zorluk == i);
+                    var eb = zc[i].userData as ErisimBilgi; if (eb != null) eb.etiket = L.T("Sonsuz ralli") + ", " + L.T(Ayar.ZORLUK_AD[i]) + (r > 0 ? ", " + L.T("Rekorun {0} vuruş", r) : "");
+                }
+                CipDurum(yc, Sonsuz.yarim);
+                var ey = yc.userData as ErisimBilgi; if (ey != null) ey.etiket = L.T("Sonsuz ralli") + ", " + L.T("Yarım saha") + ", " + L.T("Topu sol koridorda tut");
+            };
+            System.Action kartYaz = () =>
+            {
+                int r = GameRoot.SonsuzRekor; string alt = r > 0 ? L.T("Rekorun {0} vuruş", r) : L.T("Kaçırana kadar, her 5 vuruşta hızlanır");
+                var al = sk.Q<Label>(className: "dugme-alt"); if (al != null) al.text = alt;
+                var eb = sk.userData as ErisimBilgi; if (eb != null) eb.etiket = L.T("Sonsuz ralli") + ", " + alt;
+                if (!Ayar.reduce && al != null) { al.AddToClassList("koz-solgun"); al.schedule.Execute(() => al.RemoveFromClassList("koz-solgun")).StartingIn(16); }
+            };
             for (int i = 0; i < 4; i++)
             {
-                int v = i; int r = GameRoot.SonsuzRekorZ(i);
-                var cp = Cip(L.T(Ayar.ZORLUK_AD[i]), Sonsuz.zorluk == v, () => { if (Sonsuz.zorluk == v) return; GameRoot.SonsuzZorlukSec(v); Degisti(true); });
-                Erisim.Etiket(cp, L.T("Sonsuz ralli") + ", " + L.T(Ayar.ZORLUK_AD[i]) + (r > 0 ? ", " + L.T("Rekorun {0} vuruş", r) : ""), "dugme", Sonsuz.zorluk == v);
+                int v = i;
+                var cp = Cip(L.T(Ayar.ZORLUK_AD[i]), Sonsuz.zorluk == v, () => { if (Sonsuz.zorluk == v) return; GameRoot.SonsuzZorlukSec(v); yaz(); kartYaz(); });
                 if (K <= 1.35f) { cp.style.flexGrow = 1f; cp.style.flexBasis = 0f; }
-                sz.Add(cp);
+                sz.Add(cp); zc[i] = cp;
             }
-            // 2026-11-28 (yasin: "endlesta sadece halfcourt antrenman modu da olmalı precision ı artırır"): tam / yarım saha (sol
-            // koridor, iki tarafta). Rekor ayrı tutulur; seçim zorluk çipleri gibi yalnız bu alt sayfayı yeniden kurar.
+            // Ekran turu r306: zorlukların yanında beşinci eşit çip "Yarım saha"yı 39 px'e kesti (TR/EN). Kendi satırında, doğal genişlikte.
             var sy = Satir(); sy.AddToClassList("cip-sarar"); c.Add(sy);
-            for (int i = 0; i < 2; i++)
-            {
-                bool y = i == 1; string ad = y ? "Yarım saha" : "Tam saha";
-                var cp = Cip(L.T(ad), Sonsuz.yarim == y, () => { if (Sonsuz.yarim == y) return; GameRoot.SonsuzYarimSec(y); Degisti(true); });
-                Erisim.Etiket(cp, L.T("Sonsuz ralli") + ", " + L.T(ad) + (y ? ", " + L.T("Topu sol koridorda tut") : ""), "dugme", Sonsuz.yarim == y);
-                if (K <= 1.35f) { cp.style.flexGrow = 1f; cp.style.flexBasis = 0f; }
-                sy.Add(cp);
-            }
+            yc = Cip(L.T("Yarım saha"), Sonsuz.yarim, () => { GameRoot.SonsuzYarimSec(!Sonsuz.yarim); yaz(); kartYaz(); });
+            sy.Add(yc); yaz();
             // 2026-11-26 inceleme (fikir 17:06 #6, §7.2; Badminton League/Brawl Stars eğitimi bitince ana yüzeyde tutmaz): biten ders
             // Sonsuz ralli ile aynı ağırlıkta kart olarak duruyordu; artık görev listesinin dibinde tek satır, Sonsuz ralli tam genişlik.
             if (!Ayar.antrenman) ust.Add(Dugme(L.T("Temel ders"), () => root.Antrenman(), "ikincil-kart", L.T("15 adım, skor yok")));
