@@ -43,7 +43,7 @@ namespace BirdieSmash.Game
         {
             get
             {
-                string u = gez.Ust; if (u == Gezinti.SEVIYE) return "Seviye yolu"; if (u == Gezinti.GELISIM) return "Gelişim"; if (u == Gezinti.AYAR) return "Ayarlar"; if (u == Gezinti.NASIL) return "Nasıl oynanır"; if (u == Gezinti.LISANS) return "Lisanslar"; if (u == Gezinti.HIZLI) return "Hızlı maç"; if (u == Gezinti.KART) return "Maç kartı"; if (u == Gezinti.YUVA) return "Yuva"; if (u == Gezinti.ANTRENMAN) return "Antrenman"; if (u == Gezinti.DRIL) return "Görev kartı"; if (u == Gezinti.GUNLUK) return "Günün maçı"; if (u == Gezinti.SEC) return "Oyuncunu seç"; if (u == Gezinti.ARKADAS) return "Arkadaşınla oyna"; if (u == Gezinti.HAREKET) return "Nasıl oynamak istersin?"; if (u == Gezinti.DUKKAN) return "Tüy dükkânı";
+                string u = gez.Ust; if (u == Gezinti.SEVIYE) return "Seviye yolu"; if (u == Gezinti.GELISIM) return "Gelişim"; if (u == Gezinti.AYAR) return "Ayarlar"; if (u == Gezinti.NASIL) return "Nasıl oynanır"; if (u == Gezinti.LISANS) return "Lisanslar"; if (u == Gezinti.HIZLI) return "Hızlı maç"; if (u == Gezinti.KART) return "Maç kartı"; if (u == Gezinti.YUVA) return "Yuva"; if (u == Gezinti.ANTRENMAN) return "Antrenman"; if (u == Gezinti.DRIL) return "Görev kartı"; if (u == Gezinti.GUNLUK) return "Günün maçı"; if (u == Gezinti.SEC) return "Oyuncunu seç"; if (u == Gezinti.ARKADAS) return "Çevrimiçi"; if (u == Gezinti.HAREKET) return "Nasıl oynamak istersin?"; if (u == Gezinti.DUKKAN) return "Tüy dükkânı";
                 if (gez.sekme == Sekme.Soyunma) return root.vitrin.hedefGec >= 1 ? "Raket tezgâhı" : "Dolap";
                 if (gez.sekme == Sekme.Atolye) return "Atölye";
                 return gez.sekme == Sekme.Kariyer ? "Kariyer" : gez.sekme == Sekme.Profil ? "Profil" : "Menü";
@@ -902,22 +902,40 @@ namespace BirdieSmash.Game
             Cz(0, 0, 1, 0); Cz(0, 1, 1, 1); Cz(0, 0, 0, 1); Cz(1, 0, 1, 1); Cz(yan, 0, yan, 1); Cz(1 - yan, 0, 1 - yan, 1);
             Cz(0, ls, 1, ls); Cz(0, 1 - ls, 1, 1 - ls); Cz(0, .5f - sv, 1, .5f - sv); Cz(0, .5f + sv, 1, .5f + sv); Cz(.5f, 0, .5f, .5f - sv); Cz(.5f, .5f + sv, .5f, 1);
         }
-        // nh: file yüksekliği (1,55 m) piksel olarak, çağıran perspektiften hesaplar.
-        internal static void BwfFile(Painter2D p, System.Func<float, float, Vector2> P, float nh, float sr)
+        // Kort kamerası (iğne deliği, yalnız sapma açısı): kamera kort düzleminde (cx, cz) metrede, h yükseklikte, (tx, tz)'ye bakar.
+        // Kort ekseni: X yan (−3,05..3,05), Z boy (uzak −6,7 .. yakın +6,7), file Z=0. Dönen P3(u, v, hm): kortun birim koordinatı
+        // (u 0..1 genişlik, v 0 uzak .. 1 yakın) ve yerden yükseklik (m) → ekran; sx/sy çağıranın tuval ölçeği.
+        internal static System.Func<float, float, float, Vector2> KortKamera(float cx, float cz, float h, float F, float ox, float oy, float tx, float tz, float sx = 1, float sy = 1)
         {
-            // BWF: file 1,55 m (direkte) yüksekliğe kadar, 76 cm derinliğinde; alt kenar yerden ~79 cm, altı açık (yasin 2026-11-28:
-            // "file yere kadar olmamalı"). Direkler yere iner. Ağ, üst bant (7,5 cm), alt bant, orta kayış.
-            var nl = P(0, .5f); var nr = P(1, .5f);   // direkler çift sahanın yan çizgisinde, file tam saha genişliğinde (6,1 m)
-            float top = nl.y - nh, alt = nl.y - nh * .79f / 1.55f;
-            p.fillColor = new Color(.04f, .08f, .24f, .26f); p.BeginPath(); p.MoveTo(new Vector2(nl.x, top)); p.LineTo(new Vector2(nr.x, top)); p.LineTo(new Vector2(nr.x, alt)); p.LineTo(new Vector2(nl.x, alt)); p.ClosePath(); p.Fill();
-            p.strokeColor = new Color(1, 1, 1, .2f); p.lineWidth = .6f * sr; float ag = 4f * sr;
-            p.BeginPath(); for (float x = nl.x; x <= nr.x; x += ag) { p.MoveTo(new Vector2(x, top)); p.LineTo(new Vector2(x, alt)); } for (float y = top; y <= alt; y += ag) { p.MoveTo(new Vector2(nl.x, y)); p.LineTo(new Vector2(nr.x, y)); } p.Stroke();
-            float bant = Mathf.Max(2f * sr, nh * .075f / 1.55f);
-            Dik2(p, Color.white, nl.x, top, nr.x - nl.x, bant);
-            Dik2(p, new Color(1, 1, 1, .8f), nl.x, alt - 1.5f * sr, nr.x - nl.x, 1.5f * sr);
-            float orta = (nl.x + nr.x) / 2; Dik2(p, new Color(1, 1, 1, .85f), orta - .9f * sr, top, 1.8f * sr, alt - top);
-            var direk = Kit.Hex("#DFE6F5"); float dw = Mathf.Max(3f * sr, nh * .05f);
-            Dik2(p, direk, nl.x - dw / 2, top - 2 * sr, dw, nl.y - top + 2 * sr); Dik2(p, direk, nr.x - dw / 2, top - 2 * sr, dw, nl.y - top + 2 * sr);
+            float yaw = Mathf.Atan2(tx - cx, cz - tz), c = Mathf.Cos(yaw), s = Mathf.Sin(yaw);
+            return (u, v, hm) =>
+            {
+                float dx = (u - .5f) * 6.1f - cx, dz = cz - (v - .5f) * 13.4f;
+                float xc = dx * c - dz * s, zc = Mathf.Max(.3f, dx * s + dz * c);   // .3: kameranın arkasına düşen nokta çizimi ters çevirmesin
+                return new Vector2((ox + F * xc / zc) * sx, (oy + F * (h - hm) / zc) * sy);
+            };
+        }
+        // BWF file (yasin 2026-11-28: "file ortasında çizgi olmamalı", 2026-11-28 gece: "file yere kadar olmamalı"): 76 cm derin ağ,
+        // üst kenar 1,55 m, alt kenar ~79 cm (altı açık), 7,5 cm beyaz üst bant, ince alt kenar, direkler çift yan çizgide yere iner.
+        // Orta kayış çizilmez (yasin istemedi). Her nokta kendi derinliğiyle izdüşer: açılı kamerada uzak direk kısa, ağ gözü sıklaşır.
+        internal static void BwfFile(Painter2D p, System.Func<float, float, float, Vector2> P3, float sr)
+        {
+            const float UST = 1.55f, ALT = .79f, BANT = .075f;
+            System.Action<float, float, float, float> Dortgen = (h1, h2, u1, u2) => { p.BeginPath(); p.MoveTo(P3(u1, .5f, h1)); p.LineTo(P3(u2, .5f, h1)); p.LineTo(P3(u2, .5f, h2)); p.LineTo(P3(u1, .5f, h2)); p.ClosePath(); p.Fill(); };
+            p.fillColor = new Color(.04f, .08f, .24f, .26f); Dortgen(ALT, UST, 0, 1);
+            p.strokeColor = new Color(1, 1, 1, .2f); p.lineWidth = .6f * sr; p.BeginPath();
+            const float GOZ = .12f;   // görsel ağ gözü (gerçeği ~2 cm; ekranda okunacak sıklık)
+            for (float x = 0; x <= 6.1f + .001f; x += GOZ) { float u = x / 6.1f; p.MoveTo(P3(u, .5f, ALT)); p.LineTo(P3(u, .5f, UST)); }
+            for (float y = ALT; y <= UST + .001f; y += GOZ) { p.MoveTo(P3(0, .5f, y)); p.LineTo(P3(1, .5f, y)); }
+            p.Stroke();
+            p.fillColor = Color.white; Dortgen(UST - BANT, UST, 0, 1);
+            p.strokeColor = new Color(1, 1, 1, .8f); p.lineWidth = 1.2f * sr; p.BeginPath(); p.MoveTo(P3(0, .5f, ALT)); p.LineTo(P3(1, .5f, ALT)); p.Stroke();
+            p.strokeColor = Kit.Hex("#DFE6F5"); p.lineCap = LineCap.Round;
+            for (int k = 0; k < 2; k++)
+            {
+                Vector2 a = P3(k, .5f, 0), b = P3(k, .5f, UST + .04f);
+                p.lineWidth = Mathf.Max(2.5f * sr, (a - b).magnitude * .045f); p.BeginPath(); p.MoveTo(a); p.LineTo(b); p.Stroke();
+            }
         }
         static void KortCiz(MeshGenerationContext ctx)
         {
@@ -951,10 +969,15 @@ namespace BirdieSmash.Game
             // göre kuruldu: F/D(file) ≈ 62 → çift saha genişliği (6,1 m) ≈ 379 birim = ekranın tamamı; 1,55 m file ~96 birim, oyuncunun
             // omzuna çıkar (gerçekte file ~1,55 m, oyuncu ~1,75 m). Kamera 2,2 m yükseklikte, ufuk 91 (gerçek kareyle ayarlı: figürler tahminden büyük çıktı, file omuz hizasında kalsın diye saha 28 birim aşağı): file tabanı ~227 (plakanın arkası),
             // uzak çizgi ~168 (tribün 72–161; yüksekçe kamera uzak yarıyı da gösterir, file ağı yarı saydam). Yakın yarı ekran dışına taşar, kartların arkasında kalır.
-            const float UFUK = 91, F = 540, KAM_H = 2.2f, MESAFE = 2f, UZUN = 13.4f, GENIS = 6.1f;
-            System.Func<float, float, Vector2> P = (u, v) => { float D = MESAFE + (1 - v) * UZUN; return Q(195 + (u - .5f) * GENIS * F / D, UFUK + F * KAM_H / D); };
+            // 2026-11-28 (yasin: "file aşırı uzun, saha perspektif çizimi gerçekçi ve aynı zamanda sanatsal olmalı"): önden kamera
+            // fileyi ekranın tamamına geriyordu (6,1 m ≈ 379/390 birim, direkler kenarda). Kamera yayın açısına alındı: kortun sağ
+            // arkasından (7 m yan, fileden 10 m, 2,6 m yükseklik) merkeze bakar. File köşegen uzanır, ekranın ~%55'i; yakın direk
+            // büyük, uzak direk küçük, kort derinliği okunur. File üstü önceki karedeki yerinde (~131), tabanı plakanın arkasında.
+            const float UFUK = 91, F = 520;
+            var P3 = KortKamera(7f, 10f, 2.6f, F, 185, UFUK, -.3f, -.5f, sx, sy);
+            System.Func<float, float, Vector2> P = (u, v) => P3(u, v, 0);
             System.Action<Color, Vector2, Vector2, Vector2, Vector2> Dortgen = (c, a1, b1, c1, d1) => { p.fillColor = c; p.BeginPath(); p.MoveTo(a1); p.LineTo(b1); p.LineTo(c1); p.LineTo(d1); p.ClosePath(); p.Fill(); };
-            Dortgen(KORT_ZEMIN, P(-.9f, -.06f), P(1.9f, -.06f), P(1.9f, .97f), P(-.9f, .97f));   // v<1: yakın taban kamera arkasına geçmesin (D>0)
+            Dik(KORT_ZEMIN, 0, by + 13, 390, 300 - by - 13);   // salon zemini: açılı kortun dört yanını da kaplar
             Dortgen(KORT_YESIL, P(0, 0), P(1, 0), P(1, 1), P(0, 1));
             for (int i = 0; i < 6; i += 2) Dortgen(new Color(1, 1, 1, .05f), P(i / 6f, 0), P((i + 1) / 6f, 0), P((i + 1) / 6f, 1), P(i / 6f, 1));
             // Sanatsal dil (yasin 2026-11-27: "sanatsal bir dili olduğundan emin ol"): düz vektör yerine salon atmosferi. Uzakta mavi
@@ -971,7 +994,7 @@ namespace BirdieSmash.Game
             for (int k = 0; k < 4; k++) Dortgen(new Color(0, 0, .08f, .07f), P(0, .5f), P(1, .5f), P(1.02f, .5f + .03f * (k + 1)), P(-.02f, .5f + .03f * (k + 1)));   // file gölgesi: yakın tarafa yumuşak düşer
             p.lineJoin = LineJoin.Round; p.strokeColor = new Color(1, 1, 1, .14f); p.lineWidth = 5.5f * sr; BwfCizgiler(p, P);   // parıltı
             p.strokeColor = KORT_CIZGI; p.lineWidth = 2 * sr; BwfCizgiler(p, P);
-            BwfFile(p, P, F * 1.55f / (MESAFE + UZUN * .5f) * sy, sr);
+            BwfFile(p, P3, sr);
             // tavan ışık huzmeleri (tribünün üstünden kortun ortasına) ve vinyet
             for (int h = 0; h < 3; h++)
             {

@@ -53,10 +53,11 @@ namespace BirdieSmash.Game
             // uzun servis, orta çizgi, 1,55 m file. Eskiden dört çizgi + düz şerit file idi. Uzak çizgi ufkun hemen altında.
             const float MESAFE = 2f, UZUN = 13.4f, GENIS = 6.1f, KAM = 2.2f;
             float F = (MESAFE + UZUN * .5f) * W * .8f / GENIS, yo = hz - F * KAM / (MESAFE + UZUN) + 3;
-            System.Func<float, float, Vector2> P = (u, v) => { float D = MESAFE + (1 - v) * UZUN; return new Vector2(W / 2 + (u - .5f) * GENIS * F / D, yo + F * KAM / D); };
+            var P3 = UiKok.KortKamera(0, MESAFE + UZUN * .5f, KAM, F, W / 2, yo, 0, 0);   // önden (sapma 0): eski D = MESAFE + (1−v)·UZUN ile aynı
+            System.Func<float, float, Vector2> P = (u, v) => P3(u, v, 0);
             pz.fillColor = t.kort; pz.BeginPath(); pz.MoveTo(P(0, 0)); pz.LineTo(P(1, 0)); pz.LineTo(P(1, 1)); pz.LineTo(P(0, 1)); pz.ClosePath(); pz.Fill();
             pz.lineJoin = LineJoin.Round; pz.strokeColor = new Color(1, 1, 1, .85f); pz.lineWidth = 1.5f; UiKok.BwfCizgiler(pz, P);
-            UiKok.BwfFile(pz, P, F * 1.55f / (MESAFE + UZUN * .5f), 1f);
+            UiKok.BwfFile(pz, P3, 1f);
         }
         static void Dik(Painter2D pz, float x, float y, float w, float h, Color c)
         { pz.fillColor = c; pz.BeginPath(); pz.MoveTo(new Vector2(x, y)); pz.LineTo(new Vector2(x + w, y)); pz.LineTo(new Vector2(x + w, y + h)); pz.LineTo(new Vector2(x, y + h)); pz.ClosePath(); pz.Fill(); }
