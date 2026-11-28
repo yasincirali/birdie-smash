@@ -87,7 +87,7 @@ namespace BirdieSmash.Game
             {
                 var bosS = new VisualElement(); bosS.AddToClassList("liste-satir"); bosS.AddToClassList("profil-bos"); c.Add(bosS);
                 var by = Yazi(L.T("İlk maçında rekorların burada birikir"), 14, "soluk"); by.style.flexGrow = 1; by.style.flexShrink = 1; by.style.whiteSpace = WhiteSpace.Normal; bosS.Add(by);
-                bosS.Add(Yazi(L.T("Oyna") + " ›", 16, "kalin"));
+                var bo = Yazi(L.T("Oyna") + " ›", 16, "kalin"); bo.style.flexShrink = 0; bosS.Add(bo);   // 2026-11-28: 16 pt ×2 yazıda "Oyna ›" iki satıra bölünüyordu (r304); sol metin sarar, düğme yazısı daralmaz
                 bosS.AddManipulator(new Clickable(() => { Tik(); SekmeAc(Sekme.Oyna); }));
                 Erisim.Etiket(bosS, L.T("İlk maçında rekorların burada birikir") + ", " + L.T("Oyna"), "dugme");
             }
