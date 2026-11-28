@@ -120,7 +120,7 @@ namespace BirdieSmash.Game
             var c = AltSayfaKur(L.T("Arkadaşınla oyna"));
             // 2026-11-21 inceleme (fikir 22:06 #3): "Listeyi yenile" kalktı. Sayfa her açılışta ve uygulamaya dönüşte (Ayarlar'dan
             // izin verip ya da Apple'ın arkadaşlık sayfasından gelince, ArkadasDonus) kendiliğinden yeniler; düğme yeni bir şey getirmiyordu.
-            var ek = Dugme(L.T("Arkadaş ekle"), () => { Online.ArkadasEkle(); }, null, null, 15); ek.style.marginTop = 4; ek.style.marginBottom = 4; c.Add(ek);
+            var ek = Dugme(L.T("Arkadaş ekle"), () => { Online.ArkadasEkle(); }, null, null, 14); ek.style.marginTop = 4; ek.style.marginBottom = 4; c.Add(ek);
             c.Add(Grup(L.T("Arkadaşların")));
             arkListe = new VisualElement(); c.Add(arkListe); ArkListeKur();
             UgsBolumKur(c);
@@ -158,10 +158,10 @@ namespace BirdieSmash.Game
                     var av = new VisualElement(); av.AddToClassList("avatar"); av.AddToClassList("arkadas-avatar"); av.pickingMode = PickingMode.Ignore; sol.Add(av);
                     // 2026-11-21 (fikir 22:06 #4): her satırda aynı kişi ikonu vardı, liste yalnız adla ayrışıyordu. Adın baş harfi
                     // (Kariyer şeridi kalıbı, sabit boy: daire yazı ölçeğiyle büyümez); harfle başlamayan adda ikon kalır.
-                    if (!string.IsNullOrEmpty(ad) && char.IsLetterOrDigit(ad[0])) { var bh = Yazi(ad.Substring(0, 1).ToUpper(), 15, "kalin"); bh.style.color = RAKIP; bh.style.fontSize = 15; av.Add(bh); }
+                    if (!string.IsNullOrEmpty(ad) && char.IsLetterOrDigit(ad[0])) { var bh = Yazi(ad.Substring(0, 1).ToUpper(), 16, "kalin"); bh.style.color = RAKIP; av.Add(bh); }
                     else av.Add(Ikon(Ikonlar.Kisi, 18, RAKIP));
                     var at = Yazi(ad, 16, "kalin"); at.style.flexShrink = 1f; at.style.minWidth = 0f; sol.Add(at);
-                    var dv = Dugme(L.T("Davet et"), () => { gez.AltKapat(); Uygula(gez.sekme, true); Online.Davet(id, L.T("Birdie Smash'te bir maça ne dersin?")); }, null, null, 15);
+                    var dv = Dugme(L.T("Davet et"), () => { gez.AltKapat(); Uygula(gez.sekme, true); Online.Davet(id, L.T("Birdie Smash'te bir maça ne dersin?")); }, null, null, 14);
                     dv.AddToClassList("kucuk-dugme"); dv.style.flexShrink = 0f; r.Add(dv);
                     Erisim.Etiket(dv, L.T("Davet et") + ", " + ad, "dugme");
                     arkListe.Add(r);
@@ -177,6 +177,6 @@ namespace BirdieSmash.Game
                 : L.T("Arkadaşların yükleniyor…");
             arkListe.Add(Bilgi(m));
         }
-        Label Bilgi(string m) { var y = Yazi(m, 13, "etiket"); y.style.whiteSpace = WhiteSpace.Normal; return y; }
+        Label Bilgi(string m) { var y = Yazi(m, 12, "etiket"); y.style.whiteSpace = WhiteSpace.Normal; return y; }
     }
 }

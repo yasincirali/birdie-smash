@@ -1074,6 +1074,9 @@
    Şampiyon yolu kartında sen + rakip yüzleri metin akışında (Kariyer şeridindeki .serit-cift mutlak konumlu, burada değil). */
 .ant-liste { transition-property: opacity; transition-duration: 0.12s; transition-timing-function: ease-out; }
 .az-hareket .ant-liste { transition-duration: 0s; }
+/* 2026-11-28 inceleme (fikir 07:06 #3): Sonsuz ralli zorluk/yarım saha çipi kartın rekor satırını yerinde yazar, aynı .12 sn belirme. */
+.sonsuz-alt { transition-property: opacity; transition-duration: 0.12s; transition-timing-function: ease-out; }
+.az-hareket .sonsuz-alt { transition-duration: 0s; }
 .av-cift { flex-direction: row; align-items: center; margin-right: 8px; flex-shrink: 0; }
 
 /* 2026-11-22 inceleme (fikir 17:06 #2): düğme sonundaki › / ↗ ayrı öğe (Dugme ayırır), erişim adında yok. Yazı esner ve
