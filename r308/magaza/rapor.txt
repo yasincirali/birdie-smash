@@ -1,0 +1,53 @@
+ekran boyu istendi 1320x2868 · oldu 1320x2868
+magaza tr_01_smac · vuruş jump (perfect) · skor 9–7 · 1320x2868
+magaza tr_02_ralli · ralli 12 (en uzun 12)
+magaza tr_03_kariyer · taşma tr_03_kariyer · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 63 öğe · 10 sorun
+   ! güvenli alan / ekran dışında · Oyna · [20,749 67x46]
+   ! güvenli alan / ekran dışında · "Oyna" · [40,779 27x15]
+   ! güvenli alan / ekran dışında · Kariyer · [87,749 67x46]
+   ! güvenli alan / ekran dışında · "Kariyer" · [102,779 38x15]
+   ! güvenli alan / ekran dışında · Dolap · [154,749 67x46]
+   ! güvenli alan / ekran dışında · "Dolap" · [172,779 31x15]
+   ! güvenli alan / ekran dışında · Atölye · [221,749 67x46]
+   ! güvenli alan / ekran dışında · "Atölye" · [238,779 34x15]
+   ! güvenli alan / ekran dışında · Profil · [288,749 67x46]
+   ! güvenli alan / ekran dışında · "Profil" · [307,779 28x15]
+magaza tr_04_karakter · taşma tr_04_karakter · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 104 öğe · 11 sorun
+   ! sözcük bölünüyor "Ayakkabı" 53>49 · "Ayakkabı" · [302,254 49x33]
+   ! güvenli alan / ekran dışında · Oyna · [20,749 67x46]
+   ! güvenli alan / ekran dışında · "Oyna" · [40,779 27x15]
+   ! güvenli alan / ekran dışında · Kariyer · [87,749 67x46]
+   ! güvenli alan / ekran dışında · "Kariyer" · [102,779 37x15]
+   ! güvenli alan / ekran dışında · Dolap · [154,749 67x46]
+   ! güvenli alan / ekran dışında · "Dolap" · [172,779 32x15]
+   ! güvenli alan / ekran dışında · Atölye · [221,749 67x46]
+   ! güvenli alan / ekran dışında · "Atölye" · [238,779 34x15]
+   ! güvenli alan / ekran dışında · Profil · [288,749 67x46]
+   ! güvenli alan / ekran dışında · "Profil" · [307,779 28x15]
+magaza tr_05_imza · rakip imza hazırlığı VAR (mermi)
+magaza en_01_smac · vuruş jump (perfect) · skor 9–7 · 1320x2868
+magaza en_02_ralli · ralli 12 (en uzun 12)
+magaza en_03_kariyer · taşma en_03_kariyer · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 63 öğe · 10 sorun
+   ! güvenli alan / ekran dışında · Play · [20,749 67x46]
+   ! güvenli alan / ekran dışında · "Play" · [42,779 23x15]
+   ! güvenli alan / ekran dışında · Career · [87,749 67x46]
+   ! güvenli alan / ekran dışında · "Career" · [103,779 35x15]
+   ! güvenli alan / ekran dışında · Wardrobe · [154,749 67x46]
+   ! güvenli alan / ekran dışında · "Wardrobe" · [161,779 53x15]
+   ! güvenli alan / ekran dışında · Workshop · [221,749 67x46]
+   ! güvenli alan / ekran dışında · "Workshop" · [228,779 54x15]
+   ! güvenli alan / ekran dışında · Profile · [288,749 67x46]
+   ! güvenli alan / ekran dışında · "Profile" · [305,779 34x15]
+magaza en_04_karakter · taşma en_04_karakter · ekran 1320x2868 · panel 375x815 · 1 birim 3.52 pt · güvenli üst 53 alt 29 · yazı ×1.00 · 104 öğe · 10 sorun
+   ! güvenli alan / ekran dışında · Play · [20,749 67x46]
+   ! güvenli alan / ekran dışında · "Play" · [42,779 23x15]
+   ! güvenli alan / ekran dışında · Career · [87,749 67x46]
+   ! güvenli alan / ekran dışında · "Career" · [103,779 34x15]
+   ! güvenli alan / ekran dışında · Wardrobe · [154,749 67x46]
+   ! güvenli alan / ekran dışında · "Wardrobe" · [161,779 53x15]
+   ! güvenli alan / ekran dışında · Workshop · [221,749 67x46]
+   ! güvenli alan / ekran dışında · "Workshop" · [228,779 54x15]
+   ! güvenli alan / ekran dışında · Profile · [288,749 67x46]
+   ! güvenli alan / ekran dışında · "Profile" · [305,779 34x15]
+magaza en_05_imza · rakip imza hazırlığı VAR (mermi)
+ekran boyu istendi 390x845 · oldu 390x845
